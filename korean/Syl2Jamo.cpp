@@ -1,0 +1,192 @@
+ /*
+  * Unitex
+  *
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  * 
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+  *
+  */
+
+
+#include <stdlib.h>
+using namespace std;
+#include "unicode.h"
+#include "FileName.h"
+#include "Copyright.h"
+#include "jamoCodage.h"
+#include "etc.h"
+#include "IOBuffer.h"
+
+//
+//	change korean syllabes to korean alphabet
+//	syl2alpakr.exe -m mapfile -o out_file input_file 
+//
+static int jamoFlag;
+
+
+#define SZ1M	1024*1024
+#define SZ8M	1024*1024*8
+#define S64K	1024*64
+
+static void usage(int flag) {
+printf("%s",COPYRIGHT);
+printf("Syl2Jamo [-m mapfile] [-o outfile] [-j] [-c cTable] [-e [m/j]] input_file\n");
+printf("-m : convert table a sylabe to jamo\n");
+printf("-o : name of output file\n");
+printf("-O : remplace file \n");
+printf("   : default outfile name \"input_fileJM.ext\"\n");
+printf("-j : convert UNICODE compatibile jamos to UNICODE jamo of alphabet korean\n");
+printf("-c : convert characters with cTable which have pairs of change set\n");
+printf("   : format in the line \"[C/0xNNNN] [C/0xNNNN]\"  C: a character, NNNN : hex number\n");
+printf("-e : m : display from a syllalbe to jamos table\n");
+printf("-e : j : put jamoList to jamo.txt\n");
+exit(flag);
+}
+#ifdef DELETE
+void static setLocalKorean()
+{
+    return;
+    /*
+	char *langloc;
+	langloc = strdup(setlocale(LC_CTYPE,"Korean_korea.949"));
+	if(!langloc)
+		exitMessage("lanque of the Korean did set fail");
+	printf("Zone of languge (%s)\n",langloc);
+	free(langloc);
+        */
+}
+#endif
+
+class jamoCodage hangul;
+
+
+
+int main(int argc,char *argv[]) {
+setBufferMode();
+
+	char *ifilename = 0;
+	char *ofilename =0;
+	char extension[16];
+	int iargIndex = 1;
+	int remplaceFlag = 0;
+
+	FILE *ifile;
+	FILE *ofile;
+
+	jamoFlag  = 0;
+	if(argc == 1) usage(0);
+	while(iargIndex < argc){
+//	 fprintf(stderr,"%s\n",argv[iargIndex]);
+		if(*argv[iargIndex] != '-') break;
+		switch(argv[iargIndex][1]){
+		case 'm': 
+            iargIndex++;
+// 	 fprintf(stderr,"%s\n",argv[iargIndex]);
+			hangul.loadJamoMap(argv[iargIndex]);
+			break;
+		case 'o':iargIndex++; 
+			ofilename = new char [strlen(argv[iargIndex])+1];
+			strcpy(ofilename,argv[iargIndex]);
+			break;
+		case 'O':
+		   remplaceFlag = 1; break; 
+		case 'c':	// convertmap file for ideogramms
+			iargIndex++;
+			if(iargIndex >= argc) usage(1);
+			hangul.loadHJAMap(argv[iargIndex]);
+			break;
+		case 'j': 
+			jamoFlag = 1; break;
+		case 'e': 
+            iargIndex++;
+			if(iargIndex >= argc) usage(1);
+			switch(argv[iargIndex][0]){
+			case 'm':
+			{
+//               setLocalKorean();
+                ofile = u_fopen("jamoTable.txt",U_WRITE);
+                if(!ofile) fopenErrMessage("jamoTable.txt");
+                int length = hangul.mbcs949clen((unsigned char *)defaultSylToJamoMap);
+                unichar *outbuf = new unichar[length+1];
+                hangul.mbcsToUniStr((unsigned char *)defaultSylToJamoMap,outbuf);
+                u_fwrite(outbuf,length,ofile);
+				fclose(ofile);
+//wprintf(L"%s",defaultSylToJamoMap);
+                return(0);
+            }
+			case 'j':hangul.jamoMapOut(); return(0);
+			}
+		default:usage(1);
+		}
+		iargIndex++;
+	}
+
+	if(iargIndex != (argc -1 )) usage(1);
+//	setLocalKorean();
+
+			
+	ifilename = new char [strlen(argv[iargIndex])+1];
+	strcpy(ifilename,argv[iargIndex]);
+
+	if(!(ifile = u_fopen(ifilename,U_READ)))usage(1);
+
+	if(!ofilename){
+		ofilename = new char [strlen(ifilename)+3];
+		name_without_extension(ifilename,ofilename);
+		file_name_extension(ifilename,extension);
+		strcat(ofilename,"jm");
+		strcat(ofilename,extension);
+	}
+	 
+	if(!(ofile = u_fopen(ofilename,U_WRITE))) { 
+		printf("Can't open %s file for output"
+			,ofilename);
+		exitMessage("");
+	}
+
+	int rsz;
+	int hanjaCnt;
+	unichar  *buff = new unichar[SZ1M+1];
+	unichar  *hbuff = new unichar[SZ1M+1];
+	unichar *obuff = new unichar [SZ8M+1];
+	unichar *sbuff;
+	if(!buff || !obuff) exitMessage("mem alloc fail");
+	do{
+		if((rsz = u_fread(buff,SZ1M,ifile) ) ==  0) break;
+		buff[rsz] = 0;
+		hanjaCnt = hangul.convHJAtoHAN(buff,hbuff);
+		if(hanjaCnt) sbuff = hbuff;
+		else sbuff = buff;
+		if(jamoFlag)
+		  u_fwrite(obuff,
+                hangul.convertSyletCjamoToJamo(sbuff,obuff,rsz,SZ8M),ofile);
+		else
+		  u_fwrite(obuff,
+                hangul.convertSylToJamo(sbuff,obuff,rsz,SZ8M),ofile);
+	} while(rsz == SZ1M);
+	fclose(ifile);
+	fclose(ofile);
+	delete buff;
+	delete obuff;
+	if(remplaceFlag){
+	  remove(ifilename);
+	  rename(ofilename,ifilename);
+	}
+	delete ifilename;
+	delete ofilename;
+	return(0);
+}
+
+

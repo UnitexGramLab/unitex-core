@@ -1,0 +1,462 @@
+/*
+ * Unitex
+ *
+ * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
+#include <stdlib.h>
+
+using namespace std;
+
+#include "utils.h"
+#include <locale.h>
+#include <stdlib.h>
+#include "unicode.h"
+#include "Copyright.h"
+#include "FileName.h"
+#include "Alphabet.h"
+#include "etc.h"
+#include "bin.h"
+#include "bin3.h"
+#include "IOBuffer.h"
+
+
+
+static FILE *findFile;
+static unichar closeSymbol=(unichar)')';
+static unichar openSymbol=(unichar)'(';
+static unichar newLineSymbol=(unichar)'\n';
+//static unichar blancChar=L' ';
+static unichar ordinationChar=(unichar)' ';
+//static unichar tabsymbole = L'\t';
+static unichar coordinationChar=(unichar)'+';
+
+//
+//	save data for passing
+//
+struct savePassingData {
+	unichar *word;
+	unichar *info;
+	int current_index;
+};
+struct savePassingData aLine[4096];
+
+
+static void 
+usage(int flag)
+{
+printf("%s",COPYRIGHT);
+printf(
+"\nConsultDic [-d dicfile] [-l diclistfile] [-a alphabetfile] textTokenfile"\
+"\n diclistfile : list of dictionaries to be applied"\
+"\n divide a word to rac+ suf+ form"\
+"\n output file : seqMorphs.txt"\
+);
+if(flag) exitMessage("");
+exit(0);
+}
+
+//
+//	line for accumule all words on the path
+//
+#define SEGMAX	5
+#define SEG_LINE_MAX	2048
+
+static unichar lsegs[SEGMAX][SEG_LINE_MAX];
+static unichar info_flechi[SEG_LINE_MAX];
+static unichar info_cano[SEG_LINE_MAX];
+static unichar info_org[SEG_LINE_MAX];
+static unichar info_inf[SEG_LINE_MAX];
+							
+static unichar workBuff[1024*5];
+
+
+struct sufptr **sufoffset;
+
+static int findCnt;
+static int notFindCnt;
+static unichar save_flechi[SEG_LINE_MAX];
+static unichar save_cano[SEG_LINE_MAX];
+static unichar save_org[SEG_LINE_MAX];
+static unichar save_inf[SEG_LINE_MAX];
+static unichar save_tmp[SEG_LINE_MAX];
+
+
+static int
+convertInfosToGrf(int index)
+{
+    int signal = 0;
+	int i,cdepth;
+	struct savePassingData *sp = &aLine[index];
+	unichar *infos = sp->info;
+	unichar *wp;
+	wp = info_flechi;
+	for( i = 0; i < sp->current_index;i++) 	*wp++ = sp->word[i];
+	*wp = 0;
+	
+	wp = info_cano;
+	if((*infos == '+') ||(*infos == '-'))infos++;
+	if( ( *infos >= '0') && (*infos <= '9')){
+		i = 0;
+		while( ( *infos >= '0') && (*infos <= '9'))
+			i = i * 10 + *infos++ - '0';
+		cdepth = sp->current_index-i;
+		for(i = 0; i < cdepth;i++)	*wp++ = sp->word[i];
+	}
+	while(*infos != '.'){
+		if(!(*infos))  {
+//                  die("bad infos canon: %S\n", info_cano);
+                exitMessage("illegal info pas de .");
+                }
+		*wp++ = *infos++;
+	}
+	*wp = 0;
+	infos++;
+	wp = info_org;
+	while(*infos != '.'){
+		if(!(*infos)) {
+//                  die("bad infos orig : %S\n", info_org);
+
+                exitMessage("illegal info");
+                }
+		*wp++ = *infos++;
+	}
+	*wp=0;
+	infos++;
+	wp = info_inf;
+	while((*infos == ' ') || (*infos == '\t')) infos++;
+	
+	switch(*infos){
+    case '-' : if(*(infos+1))*wp++ = '+';
+                infos++;
+                signal = -1; break;
+    case '+' :  signal = 1;
+                if(*(infos+1)) break;
+                infos++; break;
+    default : signal = 0;
+    }
+ 	while(*infos) *wp++ = *infos++;
+	*wp = 0;
+	return(signal);
+}
+static void saveAsequnceMorpheme(int &saveCnt)
+{
+   if( (!save_flechi[0]) &&
+	(!save_cano[0])&&
+	(!save_org[0])&&
+	(!save_inf[0])) return;
+    unichar *iPtr = workBuff;
+    unichar *wp;
+	if(saveCnt){
+		*iPtr++ = ordinationChar;
+	} else {
+		*iPtr++ = openSymbol;
+	}
+	*iPtr++ = '{';
+
+	wp = save_flechi;while(*wp) *iPtr++ = *wp++;
+	*iPtr++ = ',';
+	wp = save_cano;while(*wp) *iPtr++ = *wp++;
+	
+	if(lsegs[2][0]){
+		*iPtr++ = '(';
+		wp = save_org;while(*wp) *iPtr++ = *wp++;
+		*iPtr++ = ')';
+	}
+	*iPtr++ = '.';
+	wp = save_inf;while(*wp) *iPtr++ = *wp++;
+	*iPtr++ = '}';
+	saveCnt++;
+	*iPtr=0;
+	u_fwrite(workBuff,(iPtr-workBuff),findFile);
+	save_flechi[0]= 0;
+	save_cano[0]= 0;
+	save_org[0]= 0;
+	save_inf[0]= 0;
+}
+
+static void ajouteBack()
+{
+    u_strcat(save_flechi,info_flechi);
+    u_strcat(save_cano,info_cano);
+    u_strcat(save_org,info_org);
+    u_strcat(save_inf,info_inf);
+}
+static void ajouteForward()
+{
+    u_strcat(save_flechi,info_flechi);
+    u_strcat(save_cano,info_cano);
+    u_strcat(save_org,info_org);
+    u_strcpy(save_tmp,save_inf);
+    u_strcpy(save_inf,info_inf);
+    u_strcat(save_inf,save_tmp);    
+}
+static int actForFinal(unichar *cc,int depth,int infoT,int suf,int sdepth)
+{
+
+	if(suf || infoT){ // not find
+		notFindCnt++;
+		return(0);
+	}
+	int index;
+	unichar *wp;
+	int saveCnt = 0;
+
+	if(findCnt)
+		u_fputc(coordinationChar,findFile);
+
+	int lastSign = 0;
+	for( index = 0; index < sdepth;index++){
+		if(aLine[index].info == 0) exitMessage("illegal info value");
+		wp = aLine[index].info;
+		if((wp[0] == '.') &&
+			(wp[1] == '.') &&
+			(wp[2] == 0)){	// info for branch the transition of path
+			continue;
+		}        
+		switch(convertInfosToGrf(index)){	// call next item and concation
+        case 1:     
+             switch(lastSign){
+             case 1: 
+                     ajouteBack(); break;
+             case 0: saveAsequnceMorpheme(saveCnt); 
+                     ajouteBack(); break;
+             case -1:
+             default: 
+                   fprintf(stderr,"%s::%d::+1",getUtoChar(aLine[index].info),lastSign);
+                   exitMessage("Inacceptable format");
+             }
+             lastSign = 1;
+             break;
+		case -1: 
+			 switch(lastSign){
+             case -1: 
+             case  0: ajouteBack(); break;
+             case  1:
+             default: 
+                   fprintf(stderr,"%s::%d::-1",getUtoChar(aLine[index].info),lastSign);
+                   exitMessage("Inacceptable format");
+             }// call next item and concation with info	
+     	   lastSign = -1;
+     	   break;
+		case 0:
+			 switch(lastSign){
+             case -1:
+             case  0: saveAsequnceMorpheme(saveCnt); 
+                      ajouteBack();break;  
+             case  1:
+                      ajouteForward();
+                      break;
+             default: 
+                   fprintf(stderr,"%s::%d",getUtoChar(aLine[index].info),lastSign);
+                   exitMessage("Inacceptable format");
+             }// call next item and concation with info	
+           lastSign = 0;
+		}
+	}
+    saveAsequnceMorpheme(saveCnt);
+	
+	if(saveCnt)
+	    u_fputc(closeSymbol,findFile);
+//		fwrite(&closeSymbol,2,1,findFile);
+	else
+		exitMessage("Illegal dictionary value");
+	findCnt++;
+	return(0);
+}
+static int actForInfo(unichar *c,int depth,int info,int suf,int sdepth)
+{
+	aLine[sdepth].word = c;
+	aLine[sdepth].current_index = depth;
+	aLine[sdepth].info = (unichar *)info;
+	return(++sdepth);
+}
+
+static 	int findWordCnt;
+static char tmpBuff0[2048];
+
+struct binFileList {
+	char *fname;
+	class explore_bin1 dic;
+	struct binFileList *next;
+};
+
+static struct binFileList *tailFile,*headFiles;
+int fileListCounter;
+static void
+getOneFile(char *filename)
+{
+	struct binFileList *tmp;	
+    tmp = new struct binFileList;
+	tmp->fname = new char[strlen(filename)+1];
+	tmp->next = 0;
+
+	strcpy(tmp->fname,filename);
+	if(headFiles){
+        tailFile->next = tmp;
+        tailFile = tailFile->next;
+	} else {
+        tailFile = headFiles= tmp;
+  	}
+	fileListCounter++;
+}
+static char buff[2048];
+static void getListFile(char *filename)
+{
+	register char *wp;
+	char pathName[1024];
+	int pathLen;
+	struct binFileList *tmp;
+	FILE *lstF;
+    if(!(lstF = fopen(filename,"rb")))
+    	fopenErrMessage(filename);	
+    get_filename_path(filename,pathName);
+    pathLen = strlen(pathName);
+    while(fgets(buff,1024,lstF)){
+    	wp = buff;
+
+    	while(*wp){
+    		if(*wp == 0x0d){ *wp = 0; break;}
+    		if(*wp == 0x0a){ *wp = 0; break;}
+    		wp++;
+    	}
+    	
+    	switch(buff[0]){
+    	case ' ':	// comment line
+    	case 0:
+    		continue;
+    	}
+
+    	tmp = new struct binFileList;
+    	tmp->fname = new char[pathLen+strlen(buff)+1];
+    	strcpy(tmp->fname,pathName);
+    	strcat(tmp->fname,buff);
+    	tmp->next = 0;
+    	if(headFiles){	
+           tailFile->next = tmp; 
+           tailFile = tailFile->next;
+    	} else {
+            tailFile = headFiles= tmp;	}
+    	fileListCounter++;
+    }
+    fclose(lstF);
+}
+
+
+void consultationLesTokens(char *textfile,Alphabet *PtrAlphabet)
+{
+	
+
+	struct binFileList *tmp;
+	
+	tmp = headFiles;
+	while(tmp){
+	     tmp->dic.loadBin(tmp->fname);
+	     tmp->dic.set_act_func(actForFinal,actForInfo);
+	     if(PtrAlphabet) tmp->dic.setAlphabetTable(PtrAlphabet);
+	    tmp= tmp->next;                
+    }
+	
+	
+	unsigned short *tokensmap;
+	unichar **tokensTable;
+	int tokensCnt = getStringTableFile(textfile,tokensmap,
+		tokensTable);
+
+
+	get_filename_path(textfile,tmpBuff0);
+	strcat(tmpBuff0,"seqMorphs.txt");
+	findFile = u_fopen(tmpBuff0,U_WRITE);
+	if(!findFile) exitMessage("Save file \"seqMorphs.txt\" open fail");
+
+	int wordCnt = 0;
+
+	strFileHeadLine(findFile,tokensCnt);
+    tmp = headFiles;	    
+	while(tmp){
+	  printf("load dictionnaire %s\n",tmp->fname);
+      tmp= tmp->next;                
+    }
+		
+	int sidx;
+	for(wordCnt = 0; wordCnt<tokensCnt;wordCnt++){
+
+		if(!(wordCnt % 10000)) printf("\rread token %d",wordCnt);
+		sidx = 0;
+	    tmp = headFiles;	    
+		while(tmp){
+        	findCnt = 0;
+            tmp->dic.searchMotAtTree(tokensTable[wordCnt],0);
+            if (findCnt) {
+               u_prints(tokensTable[wordCnt]);
+            }         
+            if(findCnt) findWordCnt++;
+    	    tmp= tmp->next;                
+        }
+//		fwrite(&newLineSymbol,2,1,findFile);
+        u_fputc(newLineSymbol,findFile);
+	}
+
+	fclose(findFile);
+}
+
+
+int main(int argc,char *argv[]) {
+setBufferMode();
+
+	int argIdx= 1;
+//	char *decodageMap = 0;
+//	char *hanjaFileName;
+ 	int debugFlag =0;
+ 	fileListCounter = 0;
+ 	Alphabet *saveAlphabet =0;
+	if(argc == 1) usage(0);
+	
+    while(argIdx < argc -1 ){
+		if(argv[argIdx][0] != '-'){
+			getOneFile(argv[argIdx]);
+			argIdx++;
+   			continue;
+		}
+		switch(argv[argIdx][1]){
+//		case 't':
+//			decodageMap = argv[++argIdx];
+//			break;
+//		case 'h':
+//		    hanjaFileName = argv[++argIdx];
+//			break;
+        case 'a':
+             ++argIdx; saveAlphabet =load_alphabet(argv[argIdx] );
+             if(!saveAlphabet) usage(0);
+             break; 
+		case 'l':
+			++argIdx;
+            getListFile(argv[argIdx]);
+			break;
+		case 'd':
+			debugFlag = 1; break;
+		default:
+			usage(1);
+		}
+		argIdx++;
+	}
+	if(argc -1  != argIdx) usage(1);
+	if(!fileListCounter) usage(1);
+	consultationLesTokens(argv[argIdx],saveAlphabet);
+	if(saveAlphabet) free_alphabet(saveAlphabet);
+	return 0;
+}

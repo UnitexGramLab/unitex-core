@@ -1,0 +1,124 @@
+ /*
+  * Unitex
+  *
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  * 
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+  *
+  */
+
+#include <stdlib.h>
+using namespace std;
+#include "unicode.h"
+#include "etc.h"
+#include "jamoCodage.h"
+#include "FileName.h"
+#include "state_machine_fst2.h"
+#include "Copyright.h"
+#include "IOBuffer.h"
+
+
+
+void usage(int flag)
+{
+printf("%s",COPYRIGHT);
+printf("Usage:\n");
+printf(
+"ExtractChar [-o outFile] [-c SS=0xxxx]* file.fs2 inputfile\n"\
+" -o outFile : if this option not exist, save paths at \"file\"lst.txt\n"\
+" -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \n");
+if(flag) exitMessage("");
+exit(0);
+}
+
+unsigned short retvalue[3];
+
+
+int main(int argc, char *argv[]) {
+setBufferMode();
+
+    char *ifilename;
+  	char *ofilename =0;
+	int iargIndex = 1;
+	
+	char extTmp[16];
+	FILE *ifile = 0;
+	FILE *ofile = 0;
+	class state_machine extracter;
+	class jamoCodage encode;
+	unichar tempBuff[1024];
+	if(argc == 1) usage(0);
+	retvalue[0] = 0x00d0;
+	retvalue[1] = 0x00a0;
+	retvalue[2] = 0;
+	
+	while(iargIndex < argc){
+		if(*argv[iargIndex] != '-') break;
+		switch(argv[iargIndex][1]){
+		case 'o':iargIndex++; 
+			ofilename = argv[iargIndex];
+			break;
+		case 'c':iargIndex++;
+		    u_strcpy_char(tempBuff,argv[iargIndex]);
+			if(!changeStrToVal((unsigned short*)tempBuff)) break;
+		default:
+			usage(1);
+		}
+		iargIndex++;
+	}
+//printf("langue change %s\n",setlocale(LC_ALL,"Korean_Korea.949"));
+	if(iargIndex != (argc -2 )) usage(1);
+	extracter.init_machine(argv[iargIndex],2);
+	iargIndex++;
+	ifilename = argv[iargIndex];
+	if(!ofilename){
+	   ofilename = new char [strlen(ifilename)+3];
+	   file_name_extension(ifilename,extTmp);
+	   name_without_extension(ifilename,ofilename);
+	   strcat(ofilename,"ex");
+	   strcat(ofilename,extTmp);
+	   
+	}
+	if(!(ofile = u_fopen(ofilename,U_WRITE)))fopenErrMessage(ofilename);
+	if(!(ifile = u_fopen(ifilename,U_READ))) fopenErrMessage(ifilename);
+
+	unsigned short exWord[1024];
+	unsigned short testWord[1024];
+	
+	unsigned short  *wp,*wwp;
+	int ii;
+    while(u_read_line(ifile,tempBuff)){
+	    wp = (unsigned short *)tempBuff;
+	    if((*wp != '\0') && (*wp != ' ')){
+             for (ii = 0; *wp && (*wp != ',');ii++)
+                exWord[ii] = *wp++;
+             while(*wp) wp++;
+             encode.convertSylToJamo(exWord,testWord,ii,1023);
+             wwp = testWord;
+             do{
+                extracter.curSMvalue(*wwp);
+                for(ii = 0; ii < extracter.outCnt;ii++)
+                  *wp++= extracter.uWord[ii];
+                extracter.outCnt=0;
+                
+             } while(*wwp++);
+             *wp=0;
+         }
+         u_fprintf(ofile,"%S\n",tempBuff);
+	}
+  
+  return 0;
+}
+
