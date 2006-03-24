@@ -24,166 +24,205 @@
 //---------------------------------------------------------------------------
 
 
-
+/**
+ * Allocates, initializes an returns an 'Alphabet*' structure
+ */
 Alphabet* new_alphabet() {
-Alphabet* a=(Alphabet*)malloc(sizeof(Alphabet));
+Alphabet* alphabet=(Alphabet*)malloc(sizeof(Alphabet));
 for (int i=0;i<0x10000;i++) {
-    a->t[i]=NULL;
-    a->t2[i]=0;
+    alphabet->t[i]=NULL;
+    alphabet->t2[i]=0;
 }
-return a;
-}
-
-
-void free_alphabet(Alphabet* a) {
-free(a);
+return alphabet;
 }
 
 
-void ajouter_min_maj(Alphabet* a,unichar min,unichar maj) {
-if (a->t[min]==NULL) {
-   a->t[min]=(unichar*)malloc(2*sizeof(unichar));
-   a->t[min][0]=maj;
-   a->t[min][1]='\0';
+/**
+ * Frees a given 'Alphabet*' structure
+ */
+void free_alphabet(Alphabet* alphabet) {
+free(alphabet);
+}
+
+
+/**
+ * Adds a letter equivalence to the given alphabet. For instance,
+ * if 'lower'="e" and 'upper'="E", "E" will now be considered as an
+ * uppercase equivalent of "e".
+ */
+void add_letter_equivalence(Alphabet* alphabet,unichar lower,unichar upper) {
+if (alphabet->t[lower]==NULL) {
+   alphabet->t[lower]=(unichar*)malloc(2*sizeof(unichar));
+   alphabet->t[lower][0]=upper;
+   alphabet->t[lower][1]='\0';
    return;
 }
-int L=u_strlen(a->t[min]);
-a->t[min]=(unichar*)realloc(a->t[min],(L+2)*sizeof(unichar));
-a->t[min][L]=maj;
-a->t[min][L+1]='\0';
+int L=u_strlen(alphabet->t[lower]);
+alphabet->t[lower]=(unichar*)realloc(alphabet->t[lower],(L+2)*sizeof(unichar));
+alphabet->t[lower][L]=upper;
+alphabet->t[lower][L+1]='\0';
 }
 
 
-
-Alphabet* load_alphabet(char* n) {
+/**
+ * Loads an alphabet file and returns the associated 'Alphabet*' structure.
+ */
+Alphabet* load_alphabet(char* filename) {
 FILE* f;
-f=u_fopen(n,U_READ);
+f=u_fopen(filename,U_READ);
 if (f==NULL) return NULL;
-Alphabet* a=new_alphabet();
+Alphabet* alphabet=new_alphabet();
 int c;
-unichar min,maj;
+unichar lower,upper;
 while ((c=u_fgetc(f))!=EOF) {
-      maj=(unichar)c;
-      if (maj=='#') {
+      upper=(unichar)c;
+      if (upper=='#') {
          // we are in the case of an interval #AZ -> [A..Z]
-         min=(unichar)u_fgetc(f);
-         maj=(unichar)u_fgetc(f);
-         if (min>maj) {
+         lower=(unichar)u_fgetc(f);
+         upper=(unichar)u_fgetc(f);
+         if (lower>upper) {
             fprintf(stderr,"Error in alphabet file: for an interval like #AZ, A must be before Z\n");
             u_fclose(f);
             return NULL;
          }
-         for (c=min;c<=maj;c++) {
-           a->t2[c]=(char)(a->t2[c] | 1);
-           a->t2[c]=(char)(a->t2[c] | 2);
-           ajouter_min_maj(a,(unichar)c,(unichar)c);
+         for (c=lower;c<=upper;c++) {
+           alphabet->t2[c]=(char)(alphabet->t2[c] | 1);
+           alphabet->t2[c]=(char)(alphabet->t2[c] | 2);
+           add_letter_equivalence(alphabet,(unichar)c,(unichar)c);
          }
          u_fgetc(f); // reading the \n
       }
       else {
-        a->t2[maj]=(char)(a->t2[maj] | 1);
-        min=(unichar)u_fgetc(f);
-        if (min!='\n') {
-          a->t2[min]=(char)(a->t2[min] | 2);
+        alphabet->t2[upper]=(char)(alphabet->t2[upper] | 1);
+        lower=(unichar)u_fgetc(f);
+        if (lower!='\n') {
+          alphabet->t2[lower]=(char)(alphabet->t2[lower] | 2);
           u_fgetc(f); // reading the \n
-          ajouter_min_maj(a,min,maj);
+          add_letter_equivalence(alphabet,lower,upper);
         }
         else {
           // we are in the case of a single (no min/maj distinction like in thai)
-          a->t2[maj]=(char)(a->t2[maj] | 2);
-          ajouter_min_maj(a,maj,maj);
+          alphabet->t2[upper]=(char)(alphabet->t2[upper] | 2);
+          add_letter_equivalence(alphabet,upper,upper);
         }
       }
 }
 u_fclose(f);
-return a;
+return alphabet;
 }
 
 
-
-int is_upper_of(unichar min,unichar maj,Alphabet* a) {
-if (a->t[min]==NULL) return 0;
+/**
+ * Returns 1 if 'upper' is considered as an uppercase equivalent
+ * of 'lower' for the given alphabet; returns 0 otherwise.
+ */
+int is_upper_of(unichar lower,unichar upper,Alphabet* alphabet) {
+if (alphabet->t[lower]==NULL) return 0;
 int i=0;
-while (a->t[min][i]!='\0') {
-      if (a->t[min][i]==maj) return 1;
+while (alphabet->t[lower][i]!='\0') {
+      if (alphabet->t[lower][i]==upper) return 1;
       i++;
 }
 return 0;
 }
 
 
-int is_equal_or_case_equal(unichar dic_letter,unichar text_letter,Alphabet* a) {
-return (dic_letter==text_letter || is_upper_of(dic_letter,text_letter,a));
+/**
+ * Returns a non-zero value if 'b' is identical to 'a' or if it is
+ * an uppercase equivalent of 'a' according for the given alphabet; 
+ * returns 0 otherwise.
+ */
+int is_equal_or_uppercase(unichar a,unichar b,Alphabet* alphabet) {
+return (a==b || is_upper_of(a,b,alphabet));
 }
 
 
-int is_upper(unichar c,Alphabet* a) {
-return (a->t2[c] & 1);
+/**
+ * Returns a non-zero value if 'b' is identical to 'a' or if it is
+ * an uppercase equivalent of 'a' according for the given alphabet; 
+ * returns 0 otherwise.
+ */
+int is_equal_or_uppercase(unichar* a,unichar* b,Alphabet* alphabet) {
+int i=0;
+while (a[i] && is_equal_or_uppercase(a[i],b[i],alphabet)) {i++;}
+return (a[i]=='\0' && b[i]=='\0');
 }
 
 
-
-int is_lower(unichar c,Alphabet* a) {
-return (a->t2[c] & 2);
+/**
+ * Returns 1 if 'c' is considered as an uppercase letter
+ * in the given alphabet, 0 otherwise.
+ */
+int is_upper(unichar c,Alphabet* alphabet) {
+return (alphabet->t2[c] & 1);
 }
 
 
-int is_letter(unichar c,Alphabet* a) {
-return is_upper(c,a)||is_lower(c,a);
+/**
+ * Returns 2 if 'c' is considered as a lowercase letter
+ * in the given alphabet, 0 otherwise.
+ */
+int is_lower(unichar c,Alphabet* alphabet) {
+return (alphabet->t2[c] & 2);
 }
 
-int all_are_letters(unichar* s,Alphabet* a) {
+
+/**
+ * Returns a non-zero value if 'c' is considered
+ * as a letter in for the given alphabet, 0 otherwise.
+ */
+int is_letter(unichar c,Alphabet* alphabet) {
+return is_upper(c,alphabet)||is_lower(c,alphabet);
+}
+
+
+/**
+ * Returns 1 if the string 's' is only made of letters,
+ * according to the given alphabet, 0 otherwise.
+ */
+int is_sequence_of_letters(unichar* s,Alphabet* alphabet) {
 for (int i=0;s[i]!='\0';i++) {
-   if (!is_letter(s[i],a)) return 0;
+   if (!is_letter(s[i],alphabet)) return 0;
 }
 return 1;
 }
 
 
-int all_in_lower(unichar* s,Alphabet* a) {
+/**
+ * Returns 1 if the string 's' is only made of lowercase letters,
+ * according to the given alphabet, 0 otherwise.
+ */
+int is_sequence_of_lowercase_letters(unichar* s,Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
-  if (!is_lower(s[i],a)) return 0;
+  if (!is_lower(s[i],alphabet)) return 0;
   i++;
 }
 return 1;
 }
 
 
-
-int all_in_upper(unichar* s,Alphabet* a) {
+/**
+ * Returns 1 if the string 's' is only made of uppercase letters,
+ * according to the given alphabet, 0 otherwise.
+ */
+int is_sequence_of_uppercase(unichar* s,Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
-  if (!is_upper(s[i],a)) return 0;
+  if (!is_upper(s[i],alphabet)) return 0;
   i++;
 }
 return 1;
 }
 
 
-
-int is_equal_ignore_case_and_quotes(unichar* dic,unichar* text,Alphabet* a) {
-int i=0;
-while (dic[i] && (is_equal_or_case_equal(dic[i],text[i],a)
-                  || are_equivalent_quotes(dic[i],text[i]))) {i++;}
-return (dic[i]=='\0' && text[i]=='\0');
-}
-
-
-int is_equal_ignore_case(unichar* dic,unichar* text,Alphabet* a) {
-int i=0;
-while (dic[i] && is_equal_or_case_equal(dic[i],text[i],a)) {i++;}
-return (dic[i]=='\0' && text[i]=='\0');
-}
-
-
-
-//
-// this function turns a Portuguese letter sequence into a lowercase one
-// it cannot be a general function, because of potential ambiguities
-// like A -> a or à in French
-// it works on Portuguese because the uppercase/lowercase are bijectives
-//
+/**
+ * This function turns a Portuguese letter sequence into a lowercase one.
+ * It cannot be a general function because of potential ambiguities
+ * like "A" -> "a" or "à" in French.
+ * It works on Portuguese because the uppercase/lowercase relations are 
+ * bijectives.
+ */
 void turn_portuguese_sequence_to_lowercase(unichar* s) {
 int i=0;
 while (s[i]!='\0') {
@@ -244,18 +283,29 @@ while (s[i]!='\0') {
 }
 
 
-
-//
-// replace ".+e" par ".+[eE]" for regular expressions
-//
-void replaceLetterByLetterSet(Alphabet* a,unichar* dest,unichar* src) {
+/**
+ * Takes a given unicode string 'dest' and
+ * replaces any lowercase letter by the set made of itself and
+ * its uppercase equivalent, surrounded with square brackets if
+ * the letter was not already between square brackets.
+ * Examples:
+ * 
+ * "For" => "F[oO][rR]"
+ * "F[ao]r" => "F[aAoO][rR]"
+ * 
+ * The output is stored in 'src'. The function assumes that 'src' is
+ * wide enough.
+ * 
+ * This function is used for morphological filter regular expressions.
+ */
+void replace_letter_by_letter_set(Alphabet* alphabet,unichar* dest,unichar* src) {
 int i=0,j=0;
 char inside_a_set=0;
 while (src[i]!='\0') {
    if (src[i]=='\\') {
       dest[j++]=src[i++];
       if (src[i]=='\0') {
-         // is there is nothing after a backslash, then we stop,
+         // If there is nothing after a backslash, then we stop,
          // and the RE compiler may indicate an error 
          dest[j]='\0';
          return;
@@ -272,12 +322,12 @@ while (src[i]!='\0') {
            dest[j++]=src[i++];
            inside_a_set=0;
         }
-   else if (a->t2[src[i]] & 2) {
+   else if (is_lower(src[i],alphabet)) {
            if (!inside_a_set) dest[j++]='[';
            dest[j++]=src[i];
            int k=0;
-           while (a->t[src[i]][k]!='\0') {
-              dest[j++]=a->t[src[i]][k++];
+           while (alphabet->t[src[i]][k]!='\0') {
+              dest[j++]=alphabet->t[src[i]][k++];
            }
            if (!inside_a_set) dest[j++]=']';
            i++;
