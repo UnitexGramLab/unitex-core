@@ -104,7 +104,7 @@ for (i = 0; i < fst2 -> nombre_etiquettes; ++i) {
             if (replaceLetters==1) {
                // replace ".+e" par ".+[eE]"
                unichar temp[1024];
-               replaceLetterByLetterSet(alph,temp,filterContent);
+               replace_letter_by_letter_set(alph,temp,filterContent);
                u_strcpy(filterContent,temp);
             }
             masterGF -> tab[i].content = (unichar *) malloc(sizeof(unichar) * (1 + u_strlen(filterContent)));

@@ -1630,7 +1630,7 @@ for (int i=0;i<n_transitions;i++) {
   pos=pos+2;
   int adr=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
   pos=pos+3;
-  if (is_equal_or_case_equal(c,word[string_pos],alph)) {
+  if (is_equal_or_uppercase(c,word[string_pos],alph)) {
      int res=exploreBinDic(adr,word,string_pos+1,BIN,alph);
      if (res!=NOT_IN_DICTIONARY) return res;
   }

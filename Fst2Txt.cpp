@@ -26,7 +26,7 @@
 #include "LiberationFst2.h"
 #include "Alphabet.h"
 #include "Liste_num.h"
-#include "Arbre_char.h"
+#include "UnicharTree.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "TransductionVariables.h"
@@ -724,7 +724,7 @@ while (t!=NULL) {
                  // the letter sequences may have been caught by the arbre_etiquette structure
                  int position=0;
                  unichar mot[1000];
-                 while (pos2+origine_courante<LENGTH && is_equal_or_case_equal(contenu[position],buffer[pos2+origine_courante],alphabet)) {
+                 while (pos2+origine_courante<LENGTH && is_equal_or_uppercase(contenu[position],buffer[pos2+origine_courante],alphabet)) {
                    mot[position++]=buffer[(pos2++)+origine_courante];
                  }
                  mot[position]='\0';
@@ -1115,7 +1115,7 @@ while (t!=NULL) {
                  // case of variable case match
                  int position=0;
                  unichar mot[1000];
-                 while (pos2+origine_courante<LENGTH && is_equal_or_case_equal(contenu[position],buffer[pos2+origine_courante],alphabet)) {
+                 while (pos2+origine_courante<LENGTH && is_equal_or_uppercase(contenu[position],buffer[pos2+origine_courante],alphabet)) {
                    mot[position++]=buffer[(pos2++)+origine_courante];
                  }
                  mot[position]='\0';

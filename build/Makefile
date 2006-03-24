@@ -208,10 +208,10 @@ FST2GRF_OBJS = IOBuffer.o Fst2Grf.o unicode.o AutomateFst2.o LiberationFst2.o Se
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = IOBuffer.o Fst2List.o unicode.o AutomateFst2.o LiberationFst2.o Alphabet.o Liste_num.o\
-                Arbre_char.o Copyright.o FileName.o String_hash.o TransductionVariables.o Error.o
+                UnicharTree.o Copyright.o FileName.o String_hash.o TransductionVariables.o Error.o
 
 FST2TXT      = Fst2Txt
-FST2TXT_OBJS = IOBuffer.o Fst2Txt.o unicode.o AutomateFst2.o LiberationFst2.o Alphabet.o Liste_num.o Arbre_char.o\
+FST2TXT_OBJS = IOBuffer.o Fst2Txt.o unicode.o AutomateFst2.o LiberationFst2.o Alphabet.o Liste_num.o UnicharTree.o\
                Copyright.o TransductionVariables.o String_hash.o Error.o
 
 FST2UNAMBIG      = Fst2Unambig

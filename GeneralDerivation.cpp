@@ -1166,11 +1166,11 @@ void explore_state (int adresse,
   }
   // if not, we go on with the next letter
   for (int i=0;i<c;i++) {
-    if (is_equal_or_case_equal((unichar)(tableau_bin[t]*256+tableau_bin[t+1]),
+    if (is_equal_or_uppercase((unichar)(tableau_bin[t]*256+tableau_bin[t+1]),
 			       remaining_word[pos_in_remaining_word],
 			       alphabet)
 	||
-	is_equal_or_case_equal(remaining_word[pos_in_remaining_word],
+	is_equal_or_uppercase(remaining_word[pos_in_remaining_word],
 			       (unichar)(tableau_bin[t]*256+tableau_bin[t+1]),
 			       alphabet)) {
       index = tableau_bin[t+2]*256*256+tableau_bin[t+3]*256+tableau_bin[t+4];

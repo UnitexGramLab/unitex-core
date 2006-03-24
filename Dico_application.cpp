@@ -206,7 +206,7 @@ for (int i=0;i<n_transitions;i++) {
   pos=pos+2;
   int adr=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
   pos=pos+3;
-  if (is_equal_or_case_equal(c,contenu[string_pos],ALPH)) {
+  if (is_equal_or_uppercase(c,contenu[string_pos],ALPH)) {
      // we explore the rest of the dictionary only
      // if the dico char is compatible with the token char
      entry[string_pos]=c;
@@ -336,7 +336,7 @@ for (int i=0;i<n_transitions;i++) {
   pos=pos+2;
   int adr=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
   pos=pos+3;
-  if (is_equal_or_case_equal(c,contenu[string_pos],ALPH)) {
+  if (is_equal_or_uppercase(c,contenu[string_pos],ALPH)) {
      // we explore the rest of the dictionary only
      // if the dico char is compatible with the token char
      entry[entry_pos]=c;

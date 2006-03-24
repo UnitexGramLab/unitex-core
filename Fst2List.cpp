@@ -29,7 +29,7 @@ using namespace std;
 #include "LiberationFst2.h"
 #include "Alphabet.h"
 #include "Liste_num.h"
-#include "Arbre_char.h"
+#include "UnicharTree.h"
 #include "Copyright.h"
 #include "FileName.h"
 #include <locale.h>

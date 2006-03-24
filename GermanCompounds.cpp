@@ -380,8 +380,8 @@ if (original_word[pos_in_original_word]=='\0') {
 }
 // if not, we go on with the next letter
 for (int i=0;i<c;i++) {
-  if (is_equal_or_case_equal((unichar)(tableau_bin[t]*256+tableau_bin[t+1]),original_word[pos_in_original_word],german_alphabet)
-      || is_equal_or_case_equal(original_word[pos_in_original_word],(unichar)(tableau_bin[t]*256+tableau_bin[t+1]),german_alphabet)) {
+  if (is_equal_or_uppercase((unichar)(tableau_bin[t]*256+tableau_bin[t+1]),original_word[pos_in_original_word],german_alphabet)
+      || is_equal_or_uppercase(original_word[pos_in_original_word],(unichar)(tableau_bin[t]*256+tableau_bin[t+1]),german_alphabet)) {
     index=tableau_bin[t+2]*256*256+tableau_bin[t+3]*256+tableau_bin[t+4];
     current_component[pos_in_current_component]=(unichar)(tableau_bin[t]*256+tableau_bin[t+1]);
     explore_state_german(index,current_component,pos_in_current_component+1,original_word,pos_in_original_word+1,

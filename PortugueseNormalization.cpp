@@ -388,7 +388,7 @@ for (int i=0;i<n_transitions;i++) {
   pos=pos+2;
   int adr=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
   pos=pos+3;
-  if (is_equal_or_case_equal(c,contenu[string_pos],ALPH)) {
+  if (is_equal_or_uppercase(c,contenu[string_pos],ALPH)) {
      // we explore the rest of the dictionary only
      // if the dico char is compatible with the token char
      entry[string_pos]=c;
@@ -489,7 +489,7 @@ if (pronouns==NULL) {
 }
 struct trans_arbre_normalization* trans=node->trans;
 while (trans!=NULL) {
-   if (is_equal_ignore_case(trans->s,pronouns->s,alph)) {
+   if (is_equal_or_uppercase(trans->s,pronouns->s,alph)) {
       // if the pronoun token is compatible with the tree token, according to
       // the upper/lower case variants described by the alphabet,
       // we continue the exploration of the tree

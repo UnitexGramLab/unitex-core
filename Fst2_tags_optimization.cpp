@@ -285,7 +285,7 @@ while (L!=NULL) {
    unichar lemma[1000];
    unichar code_gramm[1000];
    tokenize_tag_token_into_3_parts(tok->tab[L->n],inflected,lemma,code_gramm);
-   if ((case_variants_allowed && is_equal_ignore_case(s,inflected,alph)) ||
+   if ((case_variants_allowed && is_equal_or_uppercase(s,inflected,alph)) ||
        !u_strcmp(s,inflected)) {
       num=L->n;
       ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));

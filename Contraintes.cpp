@@ -376,13 +376,13 @@ if (etiq_FST->raw!=NULL) {
       }
       if (!u_strcmp_char(etiq_FST->raw,"<MIN>")) {
          // case of <MIN>
-         int x=all_in_lower(etiq_FST->raw,alph);
+         int x=is_sequence_of_lowercase_letters(etiq_FST->raw,alph);
          return (!negation(C) && x) ||
                 (negation(C) && !x);
       }
       if (!u_strcmp_char(etiq_FST->raw,"<MAJ>")) {
          // case of <MAJ>
-         int x=all_in_upper(etiq_FST->raw,alph);
+         int x=is_sequence_of_uppercase(etiq_FST->raw,alph);
          return (!negation(C) && x) ||
                 (negation(C) && !x);
       }
@@ -392,7 +392,7 @@ if (etiq_FST->raw!=NULL) {
    // there we have raw tags in both text automaton and grammar
    if (variantes_min_maj(C)) {
       // if there can be some min/maj variants
-      int x=is_equal_ignore_case(etiq_FST->raw,C->raw,alph);
+      int x=is_equal_or_uppercase(etiq_FST->raw,C->raw,alph);
       return (x && !negation(C)) ||
              (!x && negation(C));
    }
@@ -429,13 +429,13 @@ if (C->raw!=NULL) {
       }
       if (!u_strcmp_char(etiq_FST->flechi,"<MIN>")) {
          // case of <MIN>
-         int x=all_in_lower(etiq_FST->flechi,alph);
+         int x=is_sequence_of_lowercase_letters(etiq_FST->flechi,alph);
          return (!negation(C) && x) ||
                 (negation(C) && !x);
       }
       if (!u_strcmp_char(etiq_FST->flechi,"<MAJ>")) {
          // case of <MAJ>
-         int x=all_in_upper(etiq_FST->flechi,alph);
+         int x=is_sequence_of_uppercase(etiq_FST->flechi,alph);
          return (!negation(C) && x) ||
                 (negation(C) && !x);
       }
@@ -445,7 +445,7 @@ if (C->raw!=NULL) {
    // there we have raw tags in both text automaton and grammar
    if (variantes_min_maj(C)) {
       // if there can be some min/maj variants
-      int x=is_equal_ignore_case(etiq_FST->flechi,C->raw,alph);
+      int x=is_equal_or_uppercase(etiq_FST->flechi,C->raw,alph);
       return (x && !negation(C)) ||
              (!x && negation(C));
    }
@@ -485,7 +485,7 @@ if (C->flechi==NULL && C->canonique!=NULL && C->codes_gramm!=NULL) {
 }
 
 if (C->flechi!=NULL && C->canonique!=NULL && C->codes_gramm!=NULL) {
-   int x=is_equal_ignore_case(etiq_FST->flechi,C->flechi,alph) &&
+   int x=is_equal_or_uppercase(etiq_FST->flechi,C->flechi,alph) &&
          !u_strcmp(etiq_FST->canonique,C->canonique) &&
          infos_gramm_compatibles(etiq_FST,C);
    return (x && !negation(C)) ||

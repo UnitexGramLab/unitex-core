@@ -138,7 +138,7 @@ if (sequence[pos]=='\0') {
 }
 struct arbre_hash_trans* trans=n->trans;
 while (trans!=NULL) {
-  if (is_equal_or_case_equal(sequence[pos],trans->c,alph)) {
+  if (is_equal_or_uppercase(sequence[pos],trans->c,alph)) {
      // if we can follow the transition
      explorer_token_tree(pos+1,sequence,alph,trans->arr,l);
   }

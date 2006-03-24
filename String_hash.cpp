@@ -228,7 +228,7 @@ if (s[pos]=='\0') {
 }
 struct arbre_hash_trans* t=noeud->trans;
 while (t!=NULL) {
-   if (is_equal_or_case_equal(t->c,s[pos],alph)) {
+   if (is_equal_or_uppercase(t->c,s[pos],alph)) {
       if (exists_modulo_case(s,pos+1,t->arr,alph)) {
          return 1;
       }

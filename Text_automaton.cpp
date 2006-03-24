@@ -139,7 +139,7 @@ if (token[pos]==',' || token[pos]=='.' || token[pos]=='/' ||
 }
 global[pos_global]=token[pos];
 while (trans!=NULL) {
-  if (is_equal_or_case_equal(trans->c,token[pos],INFO->alph)) {
+  if (is_equal_or_uppercase(trans->c,token[pos],INFO->alph)) {
      explore_dictionary_tree(pos+1,token,global,pos_global+1,trans->arr,INFO,noeud,deplacement,indice_noeud_depart,is_not_unknown_token,token_courant);
   }
   trans=trans->suivant;
