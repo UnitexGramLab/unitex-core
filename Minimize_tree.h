@@ -24,7 +24,7 @@
 #define Minimize_treeH
 //---------------------------------------------------------------------------
 
-#include "Arbre_dico.h"
+#include "DictionaryTree.h"
 
 
 #define HAUTEUR_MAX 10000

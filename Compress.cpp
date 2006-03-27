@@ -26,7 +26,7 @@
 
 #include "unicode.h"
 #include "DELA.h"
-#include "Arbre_dico.h"
+#include "DictionaryTree.h"
 #include "String_hash.h"
 #include "Arbre_to_bin.h"
 #include "FileName.h"

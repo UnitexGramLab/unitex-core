@@ -141,7 +141,7 @@ CHECKDIC_OBJS = IOBuffer.o CheckDic.o unicode.o FileName.o DELA.o Alphabet.o Str
 				Copyright.o
 
 COMPRESS      = Compress
-COMPRESS_OBJS = IOBuffer.o Compress.o Copyright.o unicode.o DELA.o Arbre_dico.o Alphabet.o\
+COMPRESS_OBJS = IOBuffer.o Compress.o Copyright.o unicode.o DELA.o DictionaryTree.o Alphabet.o\
 				String_hash.o Arbre_to_bin.o FileName.o Minimize_tree.o
 
 CONCORD      = Concord

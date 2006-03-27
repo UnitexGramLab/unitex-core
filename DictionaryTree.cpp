@@ -20,7 +20,7 @@
   */
 
 //---------------------------------------------------------------------------
-#include "Arbre_dico.h"
+#include "DictionaryTree.h"
 //---------------------------------------------------------------------------
 
 
@@ -178,7 +178,6 @@ if (t->noeud==NULL) {
   t->noeud=new_arbre_dico();
 }
 explorer_arbre_dico(contenu,pos+1,t->noeud);
-int y=4;
 }
 
 

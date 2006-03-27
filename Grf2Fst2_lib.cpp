@@ -1480,8 +1480,6 @@ void free_closures(Llist_i_comp *closures,int n){
 // enleve les epsilon transitions du graphe
 //
 void virer_epsilon_transitions_comp(Etat_comp *letats,int n){
-  int i; 
-
   Llist_i_comp *closures = get_epsilon_closures(letats,n);
   remove_all_epsilon_transitions(letats,n);
   add_transitions_according_to_epsilon_closure(closures,letats,n);
@@ -1491,7 +1489,7 @@ void virer_epsilon_transitions_comp(Etat_comp *letats,int n){
 
   /*
   //OLD VERSION
-  for (i=0 ; i<n ; i++) {  
+  for (int i=0 ; i<n ; i++) {  
     letats[i]->trans=vider_epsilon_comp(letats[i]->trans,letats,i,mark); 
   }
   */
