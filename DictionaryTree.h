@@ -36,11 +36,33 @@
  * Dominique Revuz's algorithm.
  */
 struct dictionary_node {
-       struct liste_nombres* arr;
-       struct dictionary_tree_transition* trans;
-       int offset; // this value will be used to give to this node an adress in the .BIN file
-       int n_trans;
-       int hash_number;
+	/*
+	 * 'trans' is the list of the transitions outgoing from this node.
+	 */
+	struct dictionary_tree_transition* trans;
+	/*
+	 * 'n_trans' stands for the number of transitions outgoing from this node. It is
+	 * equivalent the size of the list 'trans', but it is cached for efficiency
+	 * reasons.
+	 */
+	int n_trans;
+	/*
+	 * 'single_INF_code_list' is a list that contains the numbers of all the single
+	 * INF codes that are associated with this node.
+	 */
+	struct liste_nombres* single_INF_code_list;
+	/*
+	 * 'INF_code' is a value representing the final INF line number associated
+	 * with this dictionary node. This INF code correspond to the union of all
+	 * the single INF codes of this node, separated with commas:
+	 * 
+	 * .DET:ms,.A:ms
+	 */
+	int INF_code;
+	/*
+	 * 'offset' is used to give to this node an adress in the .BIN file
+	 */
+	int offset;
 };
 
 
