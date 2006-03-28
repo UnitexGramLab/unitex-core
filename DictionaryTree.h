@@ -20,39 +20,41 @@
   */
 
 //---------------------------------------------------------------------------
-#ifndef Arbre_dicoH
-#define Arbre_dicoH
+#ifndef DictionaryTreeH
+#define DictionaryTreeH
 //---------------------------------------------------------------------------
 
 #include "unicode.h"
 #include "String_hash.h"
-
-struct liste_nbre {
-       int n;
-       struct liste_nbre* suivant;
-};
+#include "Liste_nombres.h"
 
 
-struct arbre_dico {
-       struct liste_nbre* arr;
-       struct arbre_dico_trans* trans;
+/**
+ * This structure represents a node of a DELAF dictionary being loaded before
+ * being compressed. In the first step, the dictionary is represented as a tree,
+ * and then it is compressed into an acylic minimal automaton, using
+ * Dominique Revuz's algorithm.
+ */
+struct dictionary_node {
+       struct liste_nombres* arr;
+       struct dictionary_tree_transition* trans;
        int offset; // this value will be used to give to this node an adress in the .BIN file
        int n_trans;
        int hash_number;
 };
 
 
-struct arbre_dico_trans {
-       unichar c;
-       struct arbre_dico* noeud;
-       struct arbre_dico_trans* suivant;
+struct dictionary_tree_transition {
+       unichar letter;
+       struct dictionary_node* node;
+       struct dictionary_tree_transition* next;
 };
 
 
-void free_arbre_dico(struct arbre_dico*);
-void free_arbre_dico_non_rec(struct arbre_dico*);
-void free_arbre_dico_trans(struct arbre_dico_trans*);
-void inserer_entree(unichar*,unichar*,struct arbre_dico*,struct string_hash*);
-struct arbre_dico* new_arbre_dico();
+void free_arbre_dico(struct dictionary_node*);
+void free_arbre_dico_non_rec(struct dictionary_node*);
+void free_arbre_dico_trans(struct dictionary_tree_transition*);
+void inserer_entree(unichar*,unichar*,struct dictionary_node*,struct string_hash*);
+struct dictionary_node* new_arbre_dico();
 
 #endif

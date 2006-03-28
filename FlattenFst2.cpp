@@ -304,7 +304,7 @@ for (int i=grammar->debut_graphe_fst2[1];i<limite;i++) {
     struct transition_comp* l=new_main_graph->states[i]->trans;
     while (l!=NULL) {
         printf("%d %d ",l->etiq,l->arr);
-        l=l->suivant;
+        l=l->next;
     }
     printf("\n");
 }

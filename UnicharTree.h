@@ -20,21 +20,22 @@
   */
 
 //---------------------------------------------------------------------------
-#ifndef Arbre_charH
-#define Arbre_charH
+#ifndef UnicharTreeH
+#define UnicharTreeH
 //---------------------------------------------------------------------------
 #include "unicode.h"
 #include "Alphabet.h"
 
-struct liste_nbre {
+
+struct liste_nombres {
        int etiq;
        int arr;
-       struct liste_nbre* suivant;
+       struct liste_nombres* suivant;
 };
 
 
 struct arbre_char {
-       struct liste_nbre* arr;
+       struct liste_nombres* arr;
        struct arbre_char_trans* trans;
 };
 
@@ -50,7 +51,7 @@ void free_arbre_char(struct arbre_char*);
 void free_arbre_char_trans(struct arbre_char_trans*);
 void inserer_etiquette(unichar*,int,int,struct arbre_char*);
 struct arbre_char* new_arbre_char();
-struct liste_nbre* get_matching_etiquettes(unichar*,struct arbre_char*,Alphabet*,int);
+struct liste_nombres* get_matching_etiquettes(unichar*,struct arbre_char*,Alphabet*,int);
 
 
 #endif

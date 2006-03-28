@@ -400,8 +400,8 @@ if (PARSING_MODE!=NORMAL_MODE
        // we proceed only if we have exactly read the contenu sequence
        // in both modes MERGE and REPLACE, we process the transduction if any
        int SOMMET2=sommet;
-       struct liste_nbre* RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
-       struct liste_nbre* TMP;
+       struct liste_nombres* RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
+       struct liste_nombres* TMP;
        while (RES!=NULL) {
           sommet=SOMMET2;
           Etiquette etiq=fst2->etiquette[RES->etiq];
@@ -793,8 +793,8 @@ if (PARSING_MODE!=NORMAL_MODE ||
        !(is_letter(mot[position-1],alphabet) && is_letter(buffer[pos2+origine_courante],alphabet))) {
        // we proceed only if we have exactly read the contenu sequence
        // in both modes MERGE and REPLACE, we process the transduction if any
-       struct liste_nbre* RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
-       struct liste_nbre* TMP;
+       struct liste_nombres* RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
+       struct liste_nombres* TMP;
        int SOMMET2=sommet;
        while (RES!=NULL) {
           sommet=SOMMET2;

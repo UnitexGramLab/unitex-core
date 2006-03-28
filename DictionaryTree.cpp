@@ -24,16 +24,16 @@
 //---------------------------------------------------------------------------
 
 
-struct liste_nbre* new_liste_nbre() {
-struct liste_nbre* l=(struct liste_nbre*)malloc(sizeof(struct liste_nbre));
+struct liste_nombres* new_liste_nbre() {
+struct liste_nombres* l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
 l->n=-1;
 l->suivant=NULL;
 return l;
 }
 
 
-struct arbre_dico* new_arbre_dico() {
-struct arbre_dico* a=(struct arbre_dico*)malloc(sizeof(struct arbre_dico));
+struct dictionary_node* new_arbre_dico() {
+struct dictionary_node* a=(struct dictionary_node*)malloc(sizeof(struct dictionary_node));
 a->arr=NULL;
 a->offset=-1;
 a->trans=NULL;
@@ -41,43 +41,34 @@ return a;
 }
 
 
-struct arbre_dico_trans* new_arbre_dico_trans() {
-struct arbre_dico_trans* t=(struct arbre_dico_trans*)malloc(sizeof(struct arbre_dico_trans));
-t->c='\0';
-t->noeud=NULL;
-t->suivant=NULL;
+struct dictionary_tree_transition* new_arbre_dico_trans() {
+struct dictionary_tree_transition* t=(struct dictionary_tree_transition*)malloc(sizeof(struct dictionary_tree_transition));
+t->letter='\0';
+t->node=NULL;
+t->next=NULL;
 return t;
 }
 
 
-void free_liste_nbre(struct liste_nbre* l) {
-struct liste_nbre* tmp;
-while (l!=NULL) {
-      tmp=l;
-      l=l->suivant;
-      free(tmp);
-}
-}
 
-
-void free_arbre_dico(struct arbre_dico* a) {
+void free_arbre_dico(struct dictionary_node* a) {
 if (a==NULL) return;
-free_liste_nbre(a->arr);
+free_liste_nombres(a->arr);
 free_arbre_dico_trans(a->trans);
 free(a);
 }
 
 
-void free_arbre_dico_non_rec(struct arbre_dico* a) {
+void free_arbre_dico_non_rec(struct dictionary_node* a) {
   if (a==NULL)
     return;
-  free_liste_nbre(a->arr);
-  struct arbre_dico_trans* t;
-  struct arbre_dico_trans* tmp;
+  free_liste_nombres(a->arr);
+  struct dictionary_tree_transition* t;
+  struct dictionary_tree_transition* tmp;
   t = a->trans;
   while (t!=NULL) {
     tmp=t;
-    t=t->suivant;
+    t=t->next;
     free(tmp);
   }
   free(a);
@@ -86,54 +77,54 @@ void free_arbre_dico_non_rec(struct arbre_dico* a) {
 
 
 
-void free_arbre_dico_trans(struct arbre_dico_trans* t) {
-struct arbre_dico_trans* tmp;
+void free_arbre_dico_trans(struct dictionary_tree_transition* t) {
+struct dictionary_tree_transition* tmp;
 while (t!=NULL) {
-       free_arbre_dico(t->noeud);
+       free_arbre_dico(t->node);
       tmp=t;
-      t=t->suivant;
+      t=t->next;
       free(tmp);
 }
 }
 
 
 
-struct arbre_dico_trans* get_transition(unichar c,struct arbre_dico** n) {
-struct arbre_dico_trans* tmp;
-if ((*n)->trans==NULL || c<((*n)->trans->c)) {
+struct dictionary_tree_transition* get_transition(unichar c,struct dictionary_node** n) {
+struct dictionary_tree_transition* tmp;
+if ((*n)->trans==NULL || c<((*n)->trans->letter)) {
    // if we must insert at first position
    tmp=new_arbre_dico_trans();
-   tmp->c=c;
-   tmp->suivant=(*n)->trans;
-   tmp->noeud=NULL;
+   tmp->letter=c;
+   tmp->next=(*n)->trans;
+   tmp->node=NULL;
    (*n)->trans=tmp;
    return tmp;
 }
-if (c==((*n)->trans->c)) {
+if (c==((*n)->trans->letter)) {
    // nothing to do
    return (*n)->trans;
 }
 tmp=(*n)->trans;
-while (tmp->suivant!=NULL && c>tmp->suivant->c) {
-   tmp=tmp->suivant;
+while (tmp->next!=NULL && c>tmp->next->letter) {
+   tmp=tmp->next;
 }
-if (tmp->suivant==NULL || (tmp->suivant->c)>c) {
+if (tmp->next==NULL || (tmp->next->letter)>c) {
    // if we must insert between tmp and tmp->suivant
-   struct arbre_dico_trans* ptr;
+   struct dictionary_tree_transition* ptr;
    ptr=new_arbre_dico_trans();
-   ptr->c=c;
-   ptr->suivant=tmp->suivant;
-   ptr->noeud=NULL;
-   tmp->suivant=ptr;
+   ptr->letter=c;
+   ptr->next=tmp->next;
+   ptr->node=NULL;
+   tmp->next=ptr;
    return ptr;
 }
 // there we have (tmp->suivant->c == c)
-return tmp->suivant;
+return tmp->next;
 }
 
 
 
-int is_in_list(int n,struct liste_nbre* l) {
+int is_in_list(int n,struct liste_nombres* l) {
 while (l!=NULL) {
    if (l->n==n) return 1;
    l=l->suivant;
@@ -147,7 +138,7 @@ int OK=0;
 unichar* compressed;
 struct string_hash* hash;
 
-void explorer_arbre_dico(unichar* contenu,int pos,struct arbre_dico* noeud) {
+void explorer_arbre_dico(unichar* contenu,int pos,struct dictionary_node* noeud) {
 if (contenu[pos]=='\0') {
    unichar tmp[3000];
    int N=get_hash_number(compressed,hash);
@@ -163,26 +154,30 @@ if (contenu[pos]=='\0') {
       // (case of duplicates), we do nothing
       return;
    }
+   struct liste_nombres* l_tmp0=new_liste_nbre();
+   l_tmp0->n=N;
+   l_tmp0->suivant=noeud->arr;
+   noeud->arr=l_tmp0;
    u_strcpy(tmp,hash->tab[noeud->hash_number]);
    u_strcat_char(tmp,",");
    u_strcat(tmp,compressed);
-   struct liste_nbre* l_tmp=new_liste_nbre();
-   l_tmp->n=N;
+   struct liste_nombres* l_tmp=new_liste_nbre();
+   l_tmp->n=get_hash_number(tmp,hash);
    l_tmp->suivant=noeud->arr;
    noeud->arr=l_tmp;
    noeud->hash_number=noeud->arr->n;
    return;
 }
-struct arbre_dico_trans* t=get_transition(contenu[pos],&noeud);
-if (t->noeud==NULL) {
-  t->noeud=new_arbre_dico();
+struct dictionary_tree_transition* t=get_transition(contenu[pos],&noeud);
+if (t->node==NULL) {
+  t->node=new_arbre_dico();
 }
-explorer_arbre_dico(contenu,pos+1,t->noeud);
+explorer_arbre_dico(contenu,pos+1,t->node);
 }
 
 
 
-void inserer_entree(unichar* contenu,unichar* compressed_,struct arbre_dico* noeud,struct string_hash* hash_) {
+void inserer_entree(unichar* contenu,unichar* compressed_,struct dictionary_node* noeud,struct string_hash* hash_) {
 compressed=compressed_;
 hash=hash_;
 explorer_arbre_dico(contenu,0,noeud);

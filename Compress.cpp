@@ -85,7 +85,7 @@ unichar s[DIC_WORD_SIZE];
 dic_entry *e;
 char bin[DIC_WORD_SIZE];
 char inf[DIC_WORD_SIZE];
-struct arbre_dico* racine;
+struct dictionary_node* racine;
 struct string_hash* hash;
 int i=0;
 

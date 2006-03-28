@@ -21,12 +21,12 @@
 
 //---------------------------------------------------------------------------
 
-#include "Arbre_char.h"
+#include "UnicharTree.h"
 //---------------------------------------------------------------------------
 
 
-struct liste_nbre* new_liste_nbre() {
-struct liste_nbre* l=(struct liste_nbre*)malloc(sizeof(struct liste_nbre));
+struct liste_nombres* new_liste_nbre() {
+struct liste_nombres* l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
 l->etiq=-1;
 l->arr=-1;
 l->suivant=NULL;
@@ -51,8 +51,8 @@ return t;
 }
 
 
-void free_liste_nbre(struct liste_nbre* l) {
-struct liste_nbre* tmp;
+void free_liste_nombres(struct liste_nombres* l) {
+struct liste_nombres* tmp;
 while (l!=NULL) {
       tmp=l;
       l=l->suivant;
@@ -63,7 +63,7 @@ while (l!=NULL) {
 
 void free_arbre_char(struct arbre_char* a) {
 if (a==NULL) return;
-free_liste_nbre(a->arr);
+free_liste_nombres(a->arr);
 free_arbre_char_trans(a->trans);
 free(a);
 }
@@ -91,8 +91,8 @@ return NULL;
 
 
 
-struct liste_nbre* get_liste_nbre(int etiq,int arr,struct liste_nbre* l) {
-struct liste_nbre* tmp;
+struct liste_nombres* get_liste_nbre(int etiq,int arr,struct liste_nombres* l) {
+struct liste_nombres* tmp;
 if (l==NULL) {
   // if etiq is not in the list we create it
   tmp=new_liste_nbre();
@@ -135,9 +135,9 @@ explorer_arbre_char(contenu,0,etiq,arr,noeud);
 }
 
 
-struct liste_nbre* RES;
+struct liste_nombres* RES;
 
-void ajouter_a_RES(struct liste_nbre* l) {
+void ajouter_a_RES(struct liste_nombres* l) {
 while (l!=NULL) {
       RES=get_liste_nbre(l->etiq,l->arr,RES);
       l=l->suivant;
@@ -167,7 +167,7 @@ if (PARSING_MODE) {
 }
 struct arbre_char_trans* trans=noeud->trans;
 while (trans!=NULL) {
-  if (is_equal_or_case_equal(trans->c,texte[pos],alphabet)) {
+  if (is_equal_or_uppercase(trans->c,texte[pos],alphabet)) {
      // if the transition can be followed
      explorer_arbre(texte,pos+1,trans->noeud,alphabet,PARSING_MODE,max_pos);
   }
@@ -176,7 +176,7 @@ while (trans!=NULL) {
 }
 
 
-struct liste_nbre* get_matching_etiquettes(unichar* texte,
+struct liste_nombres* get_matching_etiquettes(unichar* texte,
                                            struct arbre_char* racine,
                                            Alphabet* alphabet,int PARSING_MODE) {
 RES=NULL;

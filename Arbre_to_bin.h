@@ -29,6 +29,6 @@
 extern int N_STATES;
 extern int N_TRANSITIONS;
 
-void creer_et_sauver_bin(struct arbre_dico*,char*);
+void creer_et_sauver_bin(struct dictionary_node*,char*);
 
 #endif

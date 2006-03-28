@@ -33,20 +33,20 @@
 /* a hack to get bigger size on 64bit-architectures */
 
 struct node_list {
-   struct arbre_dico_trans* trans;
+   struct dictionary_tree_transition* trans;
    struct node_list* suivant;
 };
 
 extern struct node_list* tab_by_hauteur[];
-extern struct arbre_dico_trans* tab_trans[];
+extern struct dictionary_tree_transition* tab_trans[];
 
 
-void minimize_tree(struct arbre_dico*);
-int compare_nodes(struct arbre_dico_trans*,struct arbre_dico_trans*);
+void minimize_tree(struct dictionary_node*);
+int compare_nodes(struct dictionary_tree_transition*,struct dictionary_tree_transition*);
 void init_tab_by_hauteur();
 void free_tab_by_hauteur();
-int sort_by_height(struct arbre_dico*);
-void insert_trans_in_tab_by_hauteur(struct arbre_dico_trans*,int);
+int sort_by_height(struct dictionary_node*);
+void insert_trans_in_tab_by_hauteur(struct dictionary_tree_transition*,int);
 struct node_list* new_node_list();
 int convert_list_to_array(unsigned int);
 void quicksort(int, int);

@@ -29,9 +29,9 @@
 
 
 struct node_list* tab_by_hauteur[HAUTEUR_MAX];
-struct arbre_dico_trans* tab_trans[MAX_TRANS];
+struct dictionary_tree_transition* tab_trans[MAX_TRANS];
 
-void minimize_tree(struct arbre_dico* racine) {
+void minimize_tree(struct dictionary_node* racine) {
 printf("Minimizing...                      \n");
 init_tab_by_hauteur();
 unsigned int H;
@@ -57,29 +57,29 @@ free_tab_by_hauteur();
 // 2) by their hash_number (n° of line in INF file)
 // 3) by the transition that get out of them
 //
-int compare_nodes(struct arbre_dico_trans* a,struct arbre_dico_trans* b) {
-if (a==NULL || b==NULL || a->noeud==NULL || b->noeud==NULL) {
+int compare_nodes(struct dictionary_tree_transition* a,struct dictionary_tree_transition* b) {
+if (a==NULL || b==NULL || a->node==NULL || b->node==NULL) {
    fprintf(stderr,"Probleme dans compare_nodes\n");
    getchar();
    exit(1);
 }
 // then, the hash numbers
-if (a->noeud->arr!=NULL && b->noeud->arr==NULL) return -1;
-if (a->noeud->arr==NULL && b->noeud->arr!=NULL) return 1;
+if (a->node->arr!=NULL && b->node->arr==NULL) return -1;
+if (a->node->arr==NULL && b->node->arr!=NULL) return 1;
 
-if (a->noeud->arr!=NULL && b->noeud->arr!=NULL &&
-/*if (*/a->noeud->hash_number != b->noeud->hash_number)
-   return (a->noeud->hash_number - b->noeud->hash_number);
+if (a->node->arr!=NULL && b->node->arr!=NULL &&
+/*if (*/a->node->hash_number != b->node->hash_number)
+   return (a->node->hash_number - b->node->hash_number);
 // and finally the transitions
-a=a->noeud->trans;
-b=b->noeud->trans;
+a=a->node->trans;
+b=b->node->trans;
 while(a!=NULL && b!=NULL) {
    // if the unichars are different then nodes are different
-   if (a->c != b->c) return (a->c - b->c);
+   if (a->letter != b->letter) return (a->letter - b->letter);
    // if the unichars are equal and destination nodes are different...
-   if (a->noeud != b->noeud) return (a->noeud - b->noeud);
-   a=a->suivant;
-   b=b->suivant;
+   if (a->node != b->node) return (a->node - b->node);
+   a=a->next;
+   b=b->next;
 }
 if (a==NULL && b==NULL) {
    // if the transition lists are equal
@@ -124,7 +124,7 @@ for (i=0;i<HAUTEUR_MAX;i++) {
 
 
 
-int sort_by_height(struct arbre_dico* n) {
+int sort_by_height(struct dictionary_node* n) {
 if (n==NULL) {
    fprintf(stderr,"Probleme dans sort_by_height\n");
    exit(1);
@@ -133,21 +133,21 @@ if (n->trans==NULL) {
    // if the node is a leaf
    return 0;
 }
-struct arbre_dico_trans* trans=n->trans;
+struct dictionary_tree_transition* trans=n->trans;
 int res=-1;
 int k;
 while (trans!=NULL) {
-   k=sort_by_height(trans->noeud);
+   k=sort_by_height(trans->node);
    if (k>res) res=k;
    insert_trans_in_tab_by_hauteur(trans,k);
-   trans=trans->suivant;
+   trans=trans->next;
 }
 return 1+res;
 }
 
 
 
-void insert_trans_in_tab_by_hauteur(struct arbre_dico_trans* trans,int k) {
+void insert_trans_in_tab_by_hauteur(struct dictionary_tree_transition* trans,int k) {
   if (k > HAUTEUR_MAX)
     {
       fprintf(stderr, "HAUTEUR_MAX=%u reached: exiting!\n", HAUTEUR_MAX);
@@ -198,8 +198,8 @@ int convert_list_to_array(unsigned int k) {
 // on partitionne le tableau t
 //
 int partition_pour_quicksort(int m, int n) {
-struct arbre_dico_trans* pivot;
-struct arbre_dico_trans* tmp;
+struct dictionary_tree_transition* pivot;
+struct dictionary_tree_transition* tmp;
 int i = m-1;
 int j = n+1;         // indice final du pivot
 pivot=tab_trans[(m+n)/2];
@@ -231,7 +231,7 @@ if (debut<fin) {
 
 void fusionner(int size) {
 int i=1;
-struct arbre_dico_trans* base=tab_trans[0];
+struct dictionary_tree_transition* base=tab_trans[0];
 while (i<size) {
    if (compare_nodes(base,tab_trans[i])==0) {
      // if the base trans is equivalent to the current one
@@ -242,9 +242,9 @@ while (i<size) {
 #warning the solution
 #warning   free_arbre_dico_non_rec(tab_trans[i]->noeud);
 #warning is better, but not perfect: there is still a memory leak!
-     free_arbre_dico_non_rec(tab_trans[i]->noeud);
+     free_arbre_dico_non_rec(tab_trans[i]->node);
      // and modify the current one's destination node
-     tab_trans[i]->noeud=base->noeud;
+     tab_trans[i]->node=base->node;
    }
    else {
       base=tab_trans[i];

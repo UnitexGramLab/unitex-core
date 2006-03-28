@@ -33,7 +33,7 @@ static unsigned char* bin;
 static int taille;
 
 
-void numeroter_noeuds(struct arbre_dico* a) {
+void numeroter_noeuds(struct dictionary_node* a) {
 if (a==NULL) return;
 if (a->offset!=-1) {
    return;
@@ -45,23 +45,23 @@ if (a->arr!=NULL) {
    // if the node is a final one, we count 3 bytes for the adress of the INF line
    taille=taille+3;
 }
-struct arbre_dico_trans* tmp;
+struct dictionary_tree_transition* tmp;
 tmp=a->trans;
 while (tmp!=NULL) {
   taille=taille+5; // for each transition, we count 2 bytes for the unichar and 3 bytes for the dest adress
-  tmp=tmp->suivant;
+  tmp=tmp->next;
   (a->n_trans)++;  // we also count the number of transitions
 }
 tmp=a->trans;
 while (tmp!=NULL) {
-  numeroter_noeuds(tmp->noeud);
-  tmp=tmp->suivant;
+  numeroter_noeuds(tmp->node);
+  tmp=tmp->next;
 }
 }
 
 
 
-void remplir_tableau_bin(struct arbre_dico* a) {
+void remplir_tableau_bin(struct dictionary_node* a) {
 if (a==NULL) return;
 if (a->hash_number==-1) {
    return;
@@ -86,26 +86,26 @@ if (a->arr!=NULL) {
    bin[pos++]=(unsigned char)(adr);
 }
 a->hash_number=-1;
-struct arbre_dico_trans* tmp;
+struct dictionary_tree_transition* tmp;
 tmp=a->trans;
 while (tmp!=NULL) {
    N_TRANSITIONS++;
-   bin[pos++]=(unsigned char)((tmp->c)/256);
-   bin[pos++]=(unsigned char)((tmp->c)%256);
-   int adr=tmp->noeud->offset;
+   bin[pos++]=(unsigned char)((tmp->letter)/256);
+   bin[pos++]=(unsigned char)((tmp->letter)%256);
+   int adr=tmp->node->offset;
    bin[pos++]=(unsigned char)(adr/(256*256));
    adr=adr%(256*256);
    bin[pos++]=(unsigned char)(adr/256);
    adr=adr%256;
    bin[pos++]=(unsigned char)(adr);
-   remplir_tableau_bin(tmp->noeud);
-   tmp=tmp->suivant;
+   remplir_tableau_bin(tmp->node);
+   tmp=tmp->next;
 }
 }
 
 
 
-void creer_et_sauver_bin(struct arbre_dico* a,char* nom) {
+void creer_et_sauver_bin(struct dictionary_node* a,char* nom) {
 FILE *f;
 f=fopen(nom,"wb");
 if (f==NULL) {
