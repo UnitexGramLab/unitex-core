@@ -45,7 +45,7 @@ if (a->single_INF_code_list!=NULL) {
    // if the node is a final one, we count 3 bytes for the adress of the INF line
    taille=taille+3;
 }
-struct dictionary_tree_transition* tmp;
+struct dictionary_node_transition* tmp;
 tmp=a->trans;
 while (tmp!=NULL) {
   taille=taille+5; // for each transition, we count 2 bytes for the unichar and 3 bytes for the dest adress
@@ -86,7 +86,7 @@ if (a->single_INF_code_list!=NULL) {
    bin[pos++]=(unsigned char)(adr);
 }
 a->INF_code=-1;
-struct dictionary_tree_transition* tmp;
+struct dictionary_node_transition* tmp;
 tmp=a->trans;
 while (tmp!=NULL) {
    N_TRANSITIONS++;

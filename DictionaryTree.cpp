@@ -41,8 +41,8 @@ return a;
 }
 
 
-struct dictionary_tree_transition* new_arbre_dico_trans() {
-struct dictionary_tree_transition* t=(struct dictionary_tree_transition*)malloc(sizeof(struct dictionary_tree_transition));
+struct dictionary_node_transition* new_arbre_dico_trans() {
+struct dictionary_node_transition* t=(struct dictionary_node_transition*)malloc(sizeof(struct dictionary_node_transition));
 t->letter='\0';
 t->node=NULL;
 t->next=NULL;
@@ -63,8 +63,8 @@ void free_arbre_dico_non_rec(struct dictionary_node* a) {
   if (a==NULL)
     return;
   free_liste_nombres(a->single_INF_code_list);
-  struct dictionary_tree_transition* t;
-  struct dictionary_tree_transition* tmp;
+  struct dictionary_node_transition* t;
+  struct dictionary_node_transition* tmp;
   t = a->trans;
   while (t!=NULL) {
     tmp=t;
@@ -77,8 +77,8 @@ void free_arbre_dico_non_rec(struct dictionary_node* a) {
 
 
 
-void free_arbre_dico_trans(struct dictionary_tree_transition* t) {
-struct dictionary_tree_transition* tmp;
+void free_arbre_dico_trans(struct dictionary_node_transition* t) {
+struct dictionary_node_transition* tmp;
 while (t!=NULL) {
        free_arbre_dico(t->node);
       tmp=t;
@@ -89,8 +89,8 @@ while (t!=NULL) {
 
 
 
-struct dictionary_tree_transition* get_transition(unichar c,struct dictionary_node** n) {
-struct dictionary_tree_transition* tmp;
+struct dictionary_node_transition* get_transition(unichar c,struct dictionary_node** n) {
+struct dictionary_node_transition* tmp;
 if ((*n)->trans==NULL || c<((*n)->trans->letter)) {
    // if we must insert at first position
    tmp=new_arbre_dico_trans();
@@ -110,7 +110,7 @@ while (tmp->next!=NULL && c>tmp->next->letter) {
 }
 if (tmp->next==NULL || (tmp->next->letter)>c) {
    // if we must insert between tmp and tmp->suivant
-   struct dictionary_tree_transition* ptr;
+   struct dictionary_node_transition* ptr;
    ptr=new_arbre_dico_trans();
    ptr->letter=c;
    ptr->next=tmp->next;
@@ -164,7 +164,7 @@ if (contenu[pos]=='\0') {
    noeud->INF_code=get_hash_number(tmp,hash);
    return;
 }
-struct dictionary_tree_transition* t=get_transition(contenu[pos],&noeud);
+struct dictionary_node_transition* t=get_transition(contenu[pos],&noeud);
 if (t->node==NULL) {
   t->node=new_arbre_dico();
 }

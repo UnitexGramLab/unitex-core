@@ -29,7 +29,7 @@
 
 
 struct node_list* tab_by_hauteur[HAUTEUR_MAX];
-struct dictionary_tree_transition* tab_trans[MAX_TRANS];
+struct dictionary_node_transition* tab_trans[MAX_TRANS];
 
 void minimize_tree(struct dictionary_node* racine) {
 printf("Minimizing...                      \n");
@@ -57,7 +57,7 @@ free_tab_by_hauteur();
 // 2) by their hash_number (n° of line in INF file)
 // 3) by the transition that get out of them
 //
-int compare_nodes(struct dictionary_tree_transition* a,struct dictionary_tree_transition* b) {
+int compare_nodes(struct dictionary_node_transition* a,struct dictionary_node_transition* b) {
 if (a==NULL || b==NULL || a->node==NULL || b->node==NULL) {
    fprintf(stderr,"Probleme dans compare_nodes\n");
    getchar();
@@ -133,7 +133,7 @@ if (n->trans==NULL) {
    // if the node is a leaf
    return 0;
 }
-struct dictionary_tree_transition* trans=n->trans;
+struct dictionary_node_transition* trans=n->trans;
 int res=-1;
 int k;
 while (trans!=NULL) {
@@ -147,7 +147,7 @@ return 1+res;
 
 
 
-void insert_trans_in_tab_by_hauteur(struct dictionary_tree_transition* trans,int k) {
+void insert_trans_in_tab_by_hauteur(struct dictionary_node_transition* trans,int k) {
   if (k > HAUTEUR_MAX)
     {
       fprintf(stderr, "HAUTEUR_MAX=%u reached: exiting!\n", HAUTEUR_MAX);
@@ -198,8 +198,8 @@ int convert_list_to_array(unsigned int k) {
 // on partitionne le tableau t
 //
 int partition_pour_quicksort(int m, int n) {
-struct dictionary_tree_transition* pivot;
-struct dictionary_tree_transition* tmp;
+struct dictionary_node_transition* pivot;
+struct dictionary_node_transition* tmp;
 int i = m-1;
 int j = n+1;         // indice final du pivot
 pivot=tab_trans[(m+n)/2];
@@ -231,7 +231,7 @@ if (debut<fin) {
 
 void fusionner(int size) {
 int i=1;
-struct dictionary_tree_transition* base=tab_trans[0];
+struct dictionary_node_transition* base=tab_trans[0];
 while (i<size) {
    if (compare_nodes(base,tab_trans[i])==0) {
      // if the base trans is equivalent to the current one

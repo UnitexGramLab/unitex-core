@@ -39,7 +39,7 @@ struct dictionary_node {
 	/*
 	 * 'trans' is the list of the transitions outgoing from this node.
 	 */
-	struct dictionary_tree_transition* trans;
+	struct dictionary_node_transition* trans;
 	/*
 	 * 'n_trans' stands for the number of transitions outgoing from this node. It is
 	 * equivalent the size of the list 'trans', but it is cached for efficiency
@@ -69,16 +69,16 @@ struct dictionary_node {
 /*
  * 
  */
-struct dictionary_tree_transition {
+struct dictionary_node_transition {
        unichar letter;
        struct dictionary_node* node;
-       struct dictionary_tree_transition* next;
+       struct dictionary_node_transition* next;
 };
 
 
 void free_arbre_dico(struct dictionary_node*);
 void free_arbre_dico_non_rec(struct dictionary_node*);
-void free_arbre_dico_trans(struct dictionary_tree_transition*);
+void free_arbre_dico_trans(struct dictionary_node_transition*);
 void inserer_entree(unichar*,unichar*,struct dictionary_node*,struct string_hash*);
 struct dictionary_node* new_arbre_dico();
 
