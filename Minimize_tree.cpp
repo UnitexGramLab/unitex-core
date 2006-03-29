@@ -64,12 +64,12 @@ if (a==NULL || b==NULL || a->node==NULL || b->node==NULL) {
    exit(1);
 }
 // then, the hash numbers
-if (a->node->arr!=NULL && b->node->arr==NULL) return -1;
-if (a->node->arr==NULL && b->node->arr!=NULL) return 1;
+if (a->node->single_INF_code_list!=NULL && b->node->single_INF_code_list==NULL) return -1;
+if (a->node->single_INF_code_list==NULL && b->node->single_INF_code_list!=NULL) return 1;
 
-if (a->node->arr!=NULL && b->node->arr!=NULL &&
-/*if (*/a->node->hash_number != b->node->hash_number)
-   return (a->node->hash_number - b->node->hash_number);
+if (a->node->single_INF_code_list!=NULL && b->node->single_INF_code_list!=NULL &&
+/*if (*/a->node->INF_code != b->node->INF_code)
+   return (a->node->INF_code - b->node->INF_code);
 // and finally the transitions
 a=a->node->trans;
 b=b->node->trans;

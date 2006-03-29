@@ -34,7 +34,7 @@ return l;
 
 struct dictionary_node* new_arbre_dico() {
 struct dictionary_node* a=(struct dictionary_node*)malloc(sizeof(struct dictionary_node));
-a->arr=NULL;
+a->single_INF_code_list=NULL;
 a->offset=-1;
 a->trans=NULL;
 return a;
@@ -53,7 +53,7 @@ return t;
 
 void free_arbre_dico(struct dictionary_node* a) {
 if (a==NULL) return;
-free_liste_nombres(a->arr);
+free_liste_nombres(a->single_INF_code_list);
 free_arbre_dico_trans(a->trans);
 free(a);
 }
@@ -62,7 +62,7 @@ free(a);
 void free_arbre_dico_non_rec(struct dictionary_node* a) {
   if (a==NULL)
     return;
-  free_liste_nombres(a->arr);
+  free_liste_nombres(a->single_INF_code_list);
   struct dictionary_tree_transition* t;
   struct dictionary_tree_transition* tmp;
   t = a->trans;
@@ -142,30 +142,26 @@ void explorer_arbre_dico(unichar* contenu,int pos,struct dictionary_node* noeud)
 if (contenu[pos]=='\0') {
    unichar tmp[3000];
    int N=get_hash_number(compressed,hash);
-   if (noeud->arr==NULL) {
+   if (noeud->single_INF_code_list==NULL) {
       // if there is no node
-      noeud->arr=new_liste_nbre();
-      noeud->arr->n=N;
-      noeud->hash_number=N;
+      noeud->single_INF_code_list=new_liste_nbre();
+      noeud->single_INF_code_list->n=N;
+      noeud->INF_code=N;
       return;
    }
-   if (is_in_list(N,noeud->arr)) {
+   if (is_in_list(N,noeud->single_INF_code_list)) {
       // if the compressed string has allready been taken into account for this node
       // (case of duplicates), we do nothing
       return;
    }
-   struct liste_nombres* l_tmp0=new_liste_nbre();
-   l_tmp0->n=N;
-   l_tmp0->suivant=noeud->arr;
-   noeud->arr=l_tmp0;
-   u_strcpy(tmp,hash->tab[noeud->hash_number]);
+   struct liste_nombres* l_tmp=new_liste_nbre();
+   l_tmp->n=N;
+   l_tmp->suivant=noeud->single_INF_code_list;
+   noeud->single_INF_code_list=l_tmp;
+   u_strcpy(tmp,hash->tab[noeud->INF_code]);
    u_strcat_char(tmp,",");
    u_strcat(tmp,compressed);
-   struct liste_nombres* l_tmp=new_liste_nbre();
-   l_tmp->n=get_hash_number(tmp,hash);
-   l_tmp->suivant=noeud->arr;
-   noeud->arr=l_tmp;
-   noeud->hash_number=noeud->arr->n;
+   noeud->INF_code=get_hash_number(tmp,hash);
    return;
 }
 struct dictionary_tree_transition* t=get_transition(contenu[pos],&noeud);

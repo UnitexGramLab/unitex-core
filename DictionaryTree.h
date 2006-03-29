@@ -66,6 +66,9 @@ struct dictionary_node {
 };
 
 
+/*
+ * 
+ */
 struct dictionary_tree_transition {
        unichar letter;
        struct dictionary_node* node;
