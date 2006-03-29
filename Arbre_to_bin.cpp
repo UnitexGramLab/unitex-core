@@ -41,7 +41,7 @@ if (a->offset!=-1) {
 a->offset=taille;
 a->n_trans=0;
 taille=taille+2;  // 2 bytes for the number of transitions
-if (a->arr!=NULL) {
+if (a->single_INF_code_list!=NULL) {
    // if the node is a final one, we count 3 bytes for the adress of the INF line
    taille=taille+3;
 }
@@ -63,12 +63,12 @@ while (tmp!=NULL) {
 
 void remplir_tableau_bin(struct dictionary_node* a) {
 if (a==NULL) return;
-if (a->hash_number==-1) {
+if (a->INF_code==-1) {
    return;
 }
 N_STATES++;
 unichar n=(unichar)a->n_trans;
-if (a->arr==NULL) {
+if (a->single_INF_code_list==NULL) {
    // if the node is not a final one, we put to 1 the the heaviest bit
    n=(unichar)(n|32768);
 }
@@ -77,15 +77,15 @@ int pos=a->offset;
 bin[pos]=(unsigned char)(n/256);
 bin[pos+1]=(unsigned char)(n%256);
 pos=pos+2;
-if (a->arr!=NULL) {
-   int adr=a->hash_number;
+if (a->single_INF_code_list!=NULL) {
+   int adr=a->INF_code;
    bin[pos++]=(unsigned char)(adr/(256*256));
    adr=adr%(256*256);
    bin[pos++]=(unsigned char)(adr/256);
    adr=adr%256;
    bin[pos++]=(unsigned char)(adr);
 }
-a->hash_number=-1;
+a->INF_code=-1;
 struct dictionary_tree_transition* tmp;
 tmp=a->trans;
 while (tmp!=NULL) {
