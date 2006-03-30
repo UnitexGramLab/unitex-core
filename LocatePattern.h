@@ -48,8 +48,8 @@
 
 #define TAILLE_MOT 10000
 
-#define OCCIDENTAL 0
-#define THAI 1
+#define WORD_BY_WORD_TOKENIZATION 0
+#define CHAR_BY_CHAR_TOKENIZATION 1
 
 
 extern unsigned char* index_controle;
@@ -57,7 +57,6 @@ extern unsigned char** index_code_gramm;
 extern int pattern_compose_courant;
 extern struct noeud_code_gramm *racine_code_gramm;
 extern int ESPACE;
-extern int CHAR_BY_CHAR;
 extern struct liste_nombres* tag_token_list;
 
 /* $CD$ begin */
@@ -67,11 +66,11 @@ extern IndexGF_T*  indexGF;
 #endif
 /* $CD$ end   */
 
-int locate_pattern(char*,char*,char*,char*,char*,char*,char*,int,int,char*);
+int locate_pattern(char*,char*,char*,char*,char*,char*,char*,int,int,char*,int);
 
-void numerote_tags(Automate_fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*);
+void numerote_tags(Automate_fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int);
 void decouper_entre_angles(unichar*,unichar*,unichar*,unichar*,struct string_hash*,Alphabet*);
-unsigned char get_controle(unichar*,Alphabet*,struct string_hash*);
-void compute_token_controls(struct string_hash*,Alphabet*,char*);
+unsigned char get_controle(unichar*,Alphabet*,struct string_hash*,int);
+void compute_token_controls(struct string_hash*,Alphabet*,char*,int);
 
 #endif

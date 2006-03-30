@@ -33,6 +33,10 @@
 #define ALL_CASE_VARIANTS_ARE_ALLOWED 1
 #define MAX_TOKEN_IN_A_COMPOUND_WORD 256
 
+#define BEGIN_CASE_VARIANT_LIST -3
+#define END_CASE_VARIANT_LIST -5
+#define END_TOKEN_LIST -1
+
 
 /**
  * This structure represents a node in a compound word tree. It is used
@@ -126,10 +130,11 @@ struct DLC_tree_info {
 };
 
 
-int decouper_chaine_en_tokens(unichar*,int*,Alphabet*,struct string_hash*);
-void ajouter_a_dlc_sans_code(unichar*,Alphabet*,struct string_hash*,struct DLC_tree_info*);
-void ajouter_a_dlc_avec_code(unichar*,int,Alphabet*,struct string_hash*,struct DLC_tree_info*);
-int remplacer_dans_dlc(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*);
-void init_DLC_tree(struct DLC_tree_info*,int);
+struct DLC_tree_info* new_DLC_tree(int);
+void free_DLC_tree(struct DLC_tree_info*);
+void tokenize_compound_word(unichar*,int*,Alphabet*,struct string_hash*,int);
+void ajouter_a_dlc_sans_code(unichar*,Alphabet*,struct string_hash*,struct DLC_tree_info*,int);
+void ajouter_a_dlc_avec_code(unichar*,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int);
+int remplacer_dans_dlc(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int);
 
 #endif

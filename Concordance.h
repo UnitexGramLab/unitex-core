@@ -48,7 +48,6 @@
 #define GLOSSANET_ 2
 
 
-extern int CHAR_BY_CHAR;
 extern int sort_mode;
 extern int token_length[1000000];
 extern int buffer[BUFFER_SIZE];
@@ -61,12 +60,12 @@ extern int phrase_courante;
 
 
 void create_concordance(FILE*,FILE*,struct text_tokens*,int,int,int,char*,char*,
-                        char*,char*,char*,int,int*,char*);
+                        char*,char*,char*,int,int*,char*,int);
 void create_new_text_file(FILE*,FILE*,struct text_tokens*,char*,int,int*);
 void compute_token_length(struct text_tokens*);
 void write_HTML_header(FILE*,int,char*,char*);
 void write_HTML_end(FILE*);
-int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,int,int,int*);
+int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,int,int,int*,int);
 void reverse_initial_vowels_thai(unichar*);
 int get_decalage(int,int*,int);
 

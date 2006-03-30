@@ -26,10 +26,10 @@
 
 struct noeud *racine=nouveau_noeud();
 
-int est_un_mot_simple(unichar* m,Alphabet* alph) {
+int est_un_mot_simple(unichar* m,Alphabet* alph,int tokenization_mode) {
 int i;
 i=0;
-if (CHAR_BY_CHAR==THAI && u_strlen(m)>1) return 0;
+if (tokenization_mode==CHAR_BY_CHAR_TOKENIZATION && u_strlen(m)>1) return 0;
 
 while (m[i]!='\0' /*&& m[i]!='<' && m[i]!='>' && m[i]!='_'*/ && is_letter(m[i],alph)) {
    i++;
@@ -45,7 +45,7 @@ return 0;
 void load_dic_for_locate(char* dico,Alphabet* alph,struct string_hash* tok,
                          int n_octet_code_gramm,int existe_etiquette_DIC,
                          int existe_etiquette_CDIC,int existe_etiquette_SDIC,
-                         struct DLC_tree_info* DLC_tree) {
+                         struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 FILE* f;
 unichar flechi[TAILLE_MOT];
 unichar canonique[TAILLE_MOT];
@@ -67,7 +67,7 @@ while (read_DELA_line(f,s)) {
   struct liste_nombres* ptr_copy = ptr; // s.n.
   while (ptr!=NULL) {
       i=ptr->n;
-      index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL)|DIC_TOKEN_BIT_MASK);
+      index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
       if (code_gramm[0]!='\0') {
          if (index_code_gramm[i]==NULL) {
             index_code_gramm[i]=nouveau_code_pattern(n_octet_code_gramm);
@@ -92,12 +92,12 @@ while (read_DELA_line(f,s)) {
       ptr=ptr->suivant;
   }
   free_liste_nombres(ptr_copy); // s.n.
-  if (!est_un_mot_simple(flechi,alph)) {
+  if (!est_un_mot_simple(flechi,alph,tokenization_mode)) {
     // on est dans le cas d'un mot composé
     if (existe_etiquette_DIC || existe_etiquette_CDIC) {
        // si on a <DIC> dans le graphe, on charge betement toutes
        // les formes flechies composes
-       ajouter_a_dlc_sans_code(flechi,alph,tok,DLC_tree);
+       ajouter_a_dlc_sans_code(flechi,alph,tok,DLC_tree,tokenization_mode);
     }
     if (code_gramm[0]!='\0') {
       code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
@@ -122,7 +122,7 @@ while (read_DELA_line(f,s)) {
           while (j<n_octet_code_gramm) {
             for (z=0;z<8;z++)
               if (code_gramm_temp[j]&(1<<z)) {
-                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok,DLC_tree);
+                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok,DLC_tree,tokenization_mode);
               }
             j++;
           }
@@ -252,7 +252,7 @@ return c;
 // this function checks for each tag token if it verifies some patterns
 //
 void check_patterns_for_tag_tokens(Alphabet* alph,struct string_hash* tok,int n_octet_code_gramm,
-									struct DLC_tree_info* DLC_tree) {
+									struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 for (int i=0;i<tok->N;i++) {
    if (tok->tab[i][0]=='{' && u_strcmp_char(tok->tab[i],"{S}")  && u_strcmp_char(tok->tab[i],"{STOP}")) {
       // if the token is tag like {today,.ADV}
@@ -267,7 +267,7 @@ for (int i=0;i<tok->N;i++) {
       unichar code_gramm[2000];
       tokenize_tag_token_into_3_parts(tok->tab[i],flechi,canonique,code_gramm);
       ajouter_forme_flechie(canonique,0,racine,tok->tab[i]);
-      index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL)|DIC_TOKEN_BIT_MASK);
+      index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
       if (code_gramm[0]!='\0') {
          if (index_code_gramm[i]==NULL) {
             index_code_gramm[i]=nouveau_code_pattern(n_octet_code_gramm);
@@ -290,7 +290,7 @@ for (int i=0;i<tok->N;i++) {
          }
       }
       
-    if ( 0 && !est_un_mot_simple(flechi,alph)) {
+    if ( 0 && !est_un_mot_simple(flechi,alph,tokenization_mode)) {
     // on est dans le cas d'un mot composé
     if (code_gramm[0]!='\0') {
       unsigned char* code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
@@ -315,7 +315,7 @@ for (int i=0;i<tok->N;i++) {
           while (j<n_octet_code_gramm) {
             for (int z=0;z<8;z++)
               if (code_gramm_temp[j]&(1<<z)) {
-                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok,DLC_tree);
+                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok,DLC_tree,tokenization_mode);
               }
             j++;
           }

@@ -25,6 +25,7 @@
 #include "Error.h"
 //---------------------------------------------------------------------------
 
+void free_DLC_tree_node(struct DLC_tree_node*);
 
 /**
  * Allocates, initializes and returns a compound word tree node.
@@ -64,106 +65,178 @@ return t;
  * the 'index' array that will be used to access directly to the
  * compound words that begin by a given token. 'number_of_tokens'
  * is supposed to represent the total number of distinct tokens in
- * the text to parse. 'infos' is a structure that contains the
- * root and the index. This value is modified.
+ * the text to parse. The function returns a structure that contains the
+ * root and the index.
  */
-void init_DLC_tree(struct DLC_tree_info* DLC_tree,int number_of_tokens) {
+struct DLC_tree_info* new_DLC_tree(int number_of_tokens) {
+struct DLC_tree_info* DLC_tree=(struct DLC_tree_info*)malloc(sizeof(struct DLC_tree_info));
+if (DLC_tree==NULL) fatal_error("Not enough memory in init_DLC_tree",1);
 DLC_tree->root=new_DLC_tree_node();
 DLC_tree->index=(struct DLC_tree_node**)malloc(number_of_tokens*sizeof(struct DLC_tree_node*));
-if (DLC_tree->index==NULL) fatal_error("Not enough memory in init_DLC_tree",1);
+if (DLC_tree->index==NULL) fatal_error("Not enough memory in new_DLC_tree",1);
 for (int i=0;i<number_of_tokens;i++) {
 	DLC_tree->index[i]=NULL;
 }
+return DLC_tree;
 }
 
 
-int decouper_chaine_en_tokens(unichar* ch,int t[],Alphabet* alph,struct string_hash* tok) {
+/**
+ * Frees a transition list. For each transition, the destination node is
+ * also freed.
+ */
+void free_DLC_tree_transitions(struct DLC_tree_transition* transitions) {
+struct DLC_tree_transition* tmp;
+while (transitions!=NULL) {
+	free_DLC_tree_node(transitions->node);
+	tmp=transitions->next;
+	free(transitions);
+	transitions=tmp;
+}
+}
+
+
+/**
+ * Frees the compound word tree whose root is 'node'.
+ * 
+ * WARNING: this function tries to free both 'transitions' and 'destination_nodes',
+ *          so, in order to avoid double freeing, the programmer must take care not
+ *          to have a same node referenced in both 'transitions' and 'destination_nodes'.
+ */
+void free_DLC_tree_node(struct DLC_tree_node* node) {
+if (node==NULL) return;
+free_liste_nombres(node->patterns);
+if (node->array_of_patterns!=NULL) free(node->array_of_patterns);
+free_DLC_tree_transitions(node->transitions);
+if (node->destination_tokens!=NULL) free(node->destination_tokens);
+if (node->destination_nodes!=NULL) {
+	for (int i=0;i<node->number_of_transitions;i++) {
+		free_DLC_tree_node(node->destination_nodes[i]);
+	}
+	free(node->destination_nodes);
+}
+free(node);
+}
+
+
+/**
+ * Frees a compound word tree.
+ */
+void free_DLC_tree(struct DLC_tree_info* DLC_tree) {
+if (DLC_tree==NULL) return;
+if (DLC_tree->index!=NULL) free(DLC_tree->index);
+free_DLC_tree_node(DLC_tree->root);
+free(DLC_tree);
+}
+
+
+/**
+ * This function takes a unicode string 'word' representing a compound word, and
+ * tokenizes it into tokens. The output is an array 'tokens' that contains the
+ * numbers of the tokens that constitute the word. If case variants are allowed,
+ * a token can be replaced by a token list delimited by the special values
+ * BEGIN_CASE_VARIANT_LIST and END_CASE_VARIANT_LIST. The token list is ended
+ * by END_TOKEN_LIST.
+ * 
+ * The array 'tokens' is supposed to be large enough. 'tok' represents the text tokens.
+ * 'tokenization_mode' indicates if the word must be tokenized character by character
+ * or not.
+ */
+void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alph,struct string_hash* tok,
+							int tokenization_mode) {
 int i,c,n_token,j,k;
 struct liste_nombres* ptr;
-unichar m[400];
+unichar m[1024];
 k=0;
 n_token=0;
-if (CHAR_BY_CHAR==THAI) {
-   // if we are processing a thai dictionary, we go char by char
+if (tokenization_mode==CHAR_BY_CHAR_TOKENIZATION) {
+   /* If we must process the dictionary character by character */
    n_token=0;
    i=0;
    m[1]='\0';
-   while (ch[i]!='\0') {
-      m[0]=ch[i];
+   while (word[i]!='\0') {
+      m[0]=word[i];
       j=get_token_number(m,tok);
       if (j==-1) {
-         t[n_token++]=-3;
-         t[n_token++]=-5;
+      	 /* If a token of a compound word is not a token of the text,
+      	  * then we traduce it by an empty list. */
+         tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
+         tokens[n_token++]=END_CASE_VARIANT_LIST;
       }
-      else t[n_token++]=j;
+      else tokens[n_token++]=j;
       i++;
    }
-   t[n_token]=-1;
-   return 1;
+   tokens[n_token]=END_TOKEN_LIST;
+   return;
 }
-// if we are not in THAI mode
-while ((c=ch[k])!='\0') {
+/* If we are not in character by character mode */
+while ((c=word[k])!='\0') {
   if (c==' ') {
               j=ESPACE;
+              /* If the text does not contain the token space,
+               * then we traduce it by an empty list. */
               if (j==-1) {
-                t[n_token++]=-3;
-                t[n_token++]=-5;
+                tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
+                tokens[n_token++]=END_CASE_VARIANT_LIST;
               }
-              else t[n_token++]=j;
-              while ((c=ch[++k])==' ');
+              else tokens[n_token++]=j;
+              /* In case of several spaces, we consider them as just
+               * one space. Note that this case should not happen. */
+              while ((c=word[++k])==' ');
             }
     else if (is_letter((unichar)c,alph)) {
-              // on est dans le cas d'un mot
+              /* If we have a letter, then we look for a word */
               i=0;
               do {
                 m[i++]=(unichar)c;
-                c=ch[++k];
+                c=word[++k];
               }
               while (is_letter((unichar)c,alph));
               m[i]='\0';
-
+              /* The test (n_token>0) is used to allow case variants on the first
+               * token in any case. */
               if (n_token>0 && !ALL_CASE_VARIANTS_ARE_ALLOWED) {
-                // here we compute no case variant, we only look for the exact
-                // matching token
+                /* Here we compute no case variant, we only look for the exact
+                 * matching token */
                 j=get_token_number(m,tok);
                 if (j==-1) {
-                  t[n_token++]=-3;
-                  t[n_token++]=-5;
+                  tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
+                  tokens[n_token++]=END_CASE_VARIANT_LIST;
                 }
-                else t[n_token++]=j;
+                else tokens[n_token++]=j;
               }
               else {
-                // we compute all case variants
-                t[n_token++]=-3; // debut de liste de tokens
-
+                /* Here we compute all case variants */
+                tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
                 ptr=get_token_list_for_sequence(m,alph,tok);
                 struct liste_nombres* ptr_copy = ptr; // s.n.
-
                 while (ptr!=NULL) {
                   j=ptr->n;
-                  t[n_token++]=j;
+                  tokens[n_token++]=j;
                   ptr=ptr->suivant;
                 }
                 free_liste_nombres(ptr_copy); // s.n.
-
-                t[n_token++]=-5; // fin de liste de tokens
+                tokens[n_token++]=END_CASE_VARIANT_LIST;
               }
             }
-    else {
+    		else {
+    		   /* If we have a non letter character, then we take
+    		    * it as a token. */
                m[0]=(unichar)c;
                m[1]='\0';
                k++;
                j=get_token_number(m,tok);
+               /* If the text does not contain this token,
+               * then we traduce it by an empty list. */
                if (j==-1) {
-                  t[n_token++]=-3;
-                  t[n_token++]=-5;
-               } else t[n_token++]=j;
-    }
+                  tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
+                  tokens[n_token++]=END_CASE_VARIANT_LIST;
+               } else tokens[n_token++]=j;
+    		}
 }
-t[n_token]=-1;
-return 1;
+/* Finally, we end the token list. */
+tokens[n_token]=END_TOKEN_LIST;
 }
-
 
 
 void ajouter_code_a_etat_dlc(struct DLC_tree_node* n,int code) {
@@ -311,18 +384,18 @@ while (token_dlc[i]!=-5)  {
 
 
 void ajouter_a_dlc_sans_code(unichar* m,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree) {
+							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 int token_dlc_temp[MAX_TOKEN_IN_A_COMPOUND_WORD];
-decouper_chaine_en_tokens(m,token_dlc_temp,alph,tok);
+tokenize_compound_word(m,token_dlc_temp,alph,tok,tokenization_mode);
 ajouter_dlc(token_dlc_temp,0,DLC_tree->root,-555,DLC_tree);
 }
 
 
 
 void ajouter_a_dlc_avec_code(unichar* m,int code,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree) {
+							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 int token_dlc_temp[MAX_TOKEN_IN_A_COMPOUND_WORD];
-decouper_chaine_en_tokens(m,token_dlc_temp,alph,tok);
+tokenize_compound_word(m,token_dlc_temp,alph,tok,tokenization_mode);
 ajouter_dlc(token_dlc_temp,0,DLC_tree->root,code,DLC_tree);
 }
 
@@ -368,8 +441,8 @@ return resultat;
 
 
 int remplacer_dans_dlc(unichar* m,int code,int code2,Alphabet* alph,struct string_hash* tok,
-						struct DLC_tree_info* infos) {
+						struct DLC_tree_info* infos,int tokenization_mode) {
 int token_dlc[MAX_TOKEN_IN_A_COMPOUND_WORD];
-decouper_chaine_en_tokens(m,token_dlc,alph,tok);
+tokenize_compound_word(m,token_dlc,alph,tok,tokenization_mode);
 return inserer_dans_dlc(token_dlc,0,infos->root,code,code2);
 }

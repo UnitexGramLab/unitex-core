@@ -31,7 +31,6 @@
 //---------------------------------------------------------------------------
 
 
-//int CHAR_BY_CHAR;
 int sort_mode;
 int token_length[1000000];
 int buffer[BUFFER_SIZE];
@@ -46,7 +45,8 @@ int phrase_courante=1;
 void create_concordance(FILE* concor,FILE* text,struct text_tokens* tok,
                         int mode,int l,int r,char* font,char* fontsize,
                         char* dir,char* result_mode,char* alphabet_sort,
-                        int n_enter_char,int* enter_pos,char* program_path) {
+                        int n_enter_char,int* enter_pos,char* program_path,
+                        int thai_mode) {
 FILE* out;
 FILE* f;
 char nom_txt[2000];
@@ -94,7 +94,7 @@ if (f==NULL) {
    return;
 }
 // we create a raw text concordance
-N_MATCHES=create_raw_text_concordance(f,concor,text,tok,l,r,RES,n_enter_char,enter_pos);
+N_MATCHES=create_raw_text_concordance(f,concor,text,tok,l,r,RES,n_enter_char,enter_pos,thai_mode);
 u_fclose(f);
 // if necessary, we sort it
 if (sort_mode!=TEXT_ORDER) {
@@ -119,7 +119,7 @@ if (sort_mode!=TEXT_ORDER) {
       strcat(s,alphabet_sort);
       strcat(s,"\"");
    }
-   if (CHAR_BY_CHAR==THAI) strcat(s," -thai");
+   if (thai_mode) strcat(s," -thai");
    system(s);
 }
 f=u_fopen(nom_txt,U_READ);
@@ -229,7 +229,7 @@ while ((c=u_fgetc(f))!=EOF) {
   }
   if (can_print_line) {
   if (sort_mode!=TEXT_ORDER) {
-     if (CHAR_BY_CHAR==THAI) reverse_initial_vowels_thai(left);
+     if (thai_mode==CHAR_BY_CHAR_TOKENIZATION) reverse_initial_vowels_thai(left);
      if (RES!=TEXT_) {
          fprintf(out,"<tr><td nowrap>");
          u_fprints_html_reverse(left,out);
@@ -333,9 +333,9 @@ BUFFER_LENGTH=fread(buffer,sizeof(int),BUFFER_SIZE,text);
 
 
 void extract_left_context(int pos,unichar* left,struct text_tokens* tok,
-                          int LEFT_CONTEXT_LENGTH) {
+                          int LEFT_CONTEXT_LENGTH,int thai_mode) {
 int i=LEFT_CONTEXT_LENGTH-1;
-if (CHAR_BY_CHAR==THAI) {
+if (thai_mode) {
    // if we are in thai mode, we must ignore diacritic sign to count "real" printed chars
    i=0;
    int count=0;
@@ -419,7 +419,7 @@ if (output==NULL) {
 
 
 void extract_right_context(int pos,unichar* right,struct text_tokens* tok,
-                          int RIGHT_CONTEXT_LENGTH,int MATCH_LENGTH) {
+                          int RIGHT_CONTEXT_LENGTH,int MATCH_LENGTH,int thai_mode) {
 right[0]='\0';
 if (MATCH_LENGTH>=RIGHT_CONTEXT_LENGTH) {
    // we return if we all allready overpassed the right context length with the match
@@ -433,7 +433,7 @@ int l=0;
 unichar* s=tok->token[buffer[pos]];
 while (pos<BUFFER_LENGTH && count<RIGHT_CONTEXT_LENGTH) {
   right[i]=s[l++];
-  if (CHAR_BY_CHAR==THAI) {
+  if (thai_mode) {
      if (!u_is_to_be_ignored_thai(right[i])) count++;
   } else count++;
   i++;
@@ -507,7 +507,7 @@ while (s[i]!='\0') {
 
 int create_raw_text_concordance(FILE* f,FILE* concor,FILE* text,struct text_tokens* tok,
                                 int left_context_length,int right_context_length,int RES,
-                                int n_enter_char,int* enter_pos) {
+                                int n_enter_char,int* enter_pos,int thai_mode) {
 struct liste_matches* l;
 struct liste_matches* l_tmp;
 unichar left[5000];
@@ -553,7 +553,7 @@ while (l!=NULL) {
    for (int z=start_pos;z<=end_pos;z++) {
       fin_char=fin_char+token_length[buffer[z]];
    }
-   extract_left_context(start_pos,left,tok,left_context_length);
+   extract_left_context(start_pos,left,tok,left_context_length,thai_mode);
    extract_match(start_pos,end_pos,l->output,middle,tok);
    unichar indice[100];
    char ch[100];
@@ -565,15 +565,15 @@ while (l!=NULL) {
    sprintf(ch,"\t%d %d %d",debut_char,fin_char,locale_phrase_courante);
    u_strcpy_char(indice,ch);
    int MATCH_WIDTH;
-   if (CHAR_BY_CHAR==THAI) MATCH_WIDTH=u_strlen_thai_without_diacritic(middle);
+   if (thai_mode) MATCH_WIDTH=u_strlen_thai_without_diacritic(middle);
    else MATCH_WIDTH=u_strlen(middle);
-   extract_right_context(end_pos,right,tok,right_context_length,MATCH_WIDTH);
+   extract_right_context(end_pos,right,tok,right_context_length,MATCH_WIDTH,thai_mode);
    if (RES==GLOSSANET_) GOOD_MATCH=extract_href(end_pos,href,tok);
    if (GOOD_MATCH) {
       if (sort_mode!=TEXT_ORDER) {
          // if we must reverse the left context in thai mode,
          // we must reverse initial vowels with their following consonants
-         if (CHAR_BY_CHAR==THAI) reverse_initial_vowels_thai(left);
+         if (thai_mode) reverse_initial_vowels_thai(left);
       }
       // and we save them according to the sort mode
       switch(sort_mode) {

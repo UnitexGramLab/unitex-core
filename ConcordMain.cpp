@@ -61,7 +61,7 @@ char text_cod[2000];
 char tokens_txt[2000];
 char enter[2000];
 
-CHAR_BY_CHAR=OCCIDENTAL;
+int thai_mode=0;
 if (argc!=9) {
     // we look for the -thai and <snt_dir> optional parameters
     if (strcmp(argv[9],"-thai")) {
@@ -70,7 +70,7 @@ if (argc!=9) {
     }
     else {
        // if there is -thai
-       CHAR_BY_CHAR=THAI;
+       thai_mode=1;
        if (argc==11) {
           strcpy(snt_dir,argv[10]);
        }
@@ -149,7 +149,8 @@ get_filename_path(argv[1],f);
 char program_path[2000];
 get_filename_path(argv[0],program_path);
 create_concordance(concor,text,tok,sort_mode,longueur_avant,longueur_apres,argv[2],
-                   argv[3],f,argv[7],argv[8],n_enter_char,enter_pos,program_path);
+                   argv[3],f,argv[7],argv[8],n_enter_char,enter_pos,program_path,
+                   thai_mode);
 u_fclose(concor);
 fclose(text);
 free_text_tokens(tok);

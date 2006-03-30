@@ -148,6 +148,7 @@ else {
    }
 }
 
+int tokenization_mode;
 
 /* $CD$ begin */
 switch (aargc) {
@@ -155,7 +156,7 @@ switch (aargc) {
     case 7: // 6 arguments: pas de dynamic, pas de -thai, pas de -space
 
         strcpy(dynamicSntDir, staticSntDir);
-        CHAR_BY_CHAR=OCCIDENTAL;
+        tokenization_mode=WORD_BY_WORD_TOKENIZATION;
         GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
         break;
 
@@ -164,17 +165,17 @@ switch (aargc) {
 
         if (!strcmp(aargv[7], "-thai")) {
             strcpy(dynamicSntDir, staticSntDir);
-            CHAR_BY_CHAR=THAI;
+            tokenization_mode=CHAR_BY_CHAR_TOKENIZATION;
             GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
             }
         else if (!strcmp(aargv[7], "-space")) {
             strcpy(dynamicSntDir, staticSntDir);
-            CHAR_BY_CHAR=OCCIDENTAL;
+            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
             GESTION_DE_L_ESPACE=MODE_MORPHO;
             }
         else {
             strcpy(dynamicSntDir, aargv[7]);
-            CHAR_BY_CHAR=OCCIDENTAL;
+            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
             GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
             }
         break; 
@@ -190,9 +191,9 @@ switch (aargc) {
             }
         
         if (!strcmp(aargv[8], "-thai"))
-            CHAR_BY_CHAR=THAI;
+            tokenization_mode=CHAR_BY_CHAR_TOKENIZATION;
         else
-            CHAR_BY_CHAR=OCCIDENTAL;
+            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
         
         if (!strcmp(aargv[8], "-space"))
             GESTION_DE_L_ESPACE=MODE_MORPHO;
@@ -212,9 +213,9 @@ switch (aargc) {
             }
         
         if (!strcmp(aargv[8], "-thai"))
-            CHAR_BY_CHAR=THAI;
+            tokenization_mode=CHAR_BY_CHAR_TOKENIZATION;
         else
-            CHAR_BY_CHAR=OCCIDENTAL;
+            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
         
         if (!strcmp(aargv[8], "-space"))
             GESTION_DE_L_ESPACE=MODE_MORPHO;
@@ -227,9 +228,9 @@ switch (aargc) {
             }
         
         if (!strcmp(aargv[9], "-thai"))
-            CHAR_BY_CHAR=THAI;
+            tokenization_mode=CHAR_BY_CHAR_TOKENIZATION;
         else
-            CHAR_BY_CHAR=OCCIDENTAL;
+            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
         
         if (!strcmp(aargv[9], "-space"))
             GESTION_DE_L_ESPACE=MODE_MORPHO;
@@ -245,7 +246,8 @@ if (locate_pattern(text_cod,tokens_txt,		                     // the text repres
 				   aargv[3],					                 // Alphabet
 				   mode,					                     // SLA 
 				   output_mode,				                     // IMR
-                   dynamicSntDir) == 1) {
+                   dynamicSntDir,
+                   tokenization_mode) == 1) {
     return 0;
 }
 else {
