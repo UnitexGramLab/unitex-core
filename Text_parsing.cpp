@@ -681,7 +681,7 @@ while (a_meta!=NULL) {
                 }
                 break;
       case DIC: if (!(a_meta->negation)) {
-                  pos3=trouver_mot_compose_DIC(pos2,-555,infos->DLC_tree);
+                  pos3=trouver_mot_compose_DIC(pos2,UNDEFINED_COMPOUND_PATTERN,infos->DLC_tree);
                   if (pos3!=-1) {
                      int OK=1;
 #ifdef TRE_WCHAR
@@ -753,7 +753,7 @@ while (a_meta!=NULL) {
                      StackPointer=SOMMET;
                   }
                   break;
-      case CDIC: pos3=trouver_mot_compose_DIC(pos2,-555,infos->DLC_tree);
+      case CDIC: pos3=trouver_mot_compose_DIC(pos2,UNDEFINED_COMPOUND_PATTERN,infos->DLC_tree);
                   if (pos3!=-1) {
                      int OK=1;
 #ifdef TRE_WCHAR

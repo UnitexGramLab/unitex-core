@@ -239,210 +239,306 @@ tokens[n_token]=END_TOKEN_LIST;
 }
 
 
-void ajouter_code_a_etat_dlc(struct DLC_tree_node* n,int code) {
-struct liste_nombres *l,*precedent;
-int stop;
-
-if (n->patterns==NULL) {
-  // 1er cas liste vide
-  l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
-  l->n=code;
-  l->suivant=n->patterns;
-  n->patterns=l;
-  (n->number_of_patterns)++;
+/**
+ * This function adds a pattern number to the pattern list of a given
+ * compound word tree node.
+ */
+void add_pattern_to_DLC_tree_node(struct DLC_tree_node* node,int pattern) {
+struct liste_nombres *l,*previous;
+if (node->patterns==NULL) {
+  /* If the list is empty, we add the pattern */
+  l=new_liste_nombres();
+  l->n=pattern;
+  l->suivant=node->patterns;
+  node->patterns=l;
+  /* We update the length of the list */
+  (node->number_of_patterns)++;
   return;
 }
-if (n->patterns->n==code)
-  // 2eme cas: 1er element=code
+if (node->patterns->n==pattern)
+  /* If the first element of the list is the same than 'pattern'
+   * we have nothing to do */
   return;
-if (n->patterns->n>code) {
-  // 3eme cas: on doit inserer en tete de liste
-  l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
-  l->n=code;
-  l->suivant=n->patterns;
-  n->patterns=l;
-  (n->number_of_patterns)++;
+if (node->patterns->n>pattern) {
+  /* If we must insert 'pattern' at the beginning of the list */
+  l=new_liste_nombres();
+  l->n=pattern;
+  l->suivant=node->patterns;
+  node->patterns=l;
+  /* We update the length of the list */
+  (node->number_of_patterns)++;
   return;
 }
-// cas general
-precedent=n->patterns;
-stop=0;
-while (!stop && precedent->suivant!=NULL) {
-  if (precedent->suivant->n==code) return;
-  else if (precedent->suivant->n<code) precedent=precedent->suivant;
-  else stop=1;
+/* General case */
+previous=node->patterns;
+int stop=0;
+/* We parse the list until we have found the pattern or the place
+ * to insert the pattern */
+while (!stop && previous->suivant!=NULL) {
+	/* If we find the pattern in the list, we have nothing to do */
+	if (previous->suivant->n==pattern) return;
+	else if (previous->suivant->n<pattern) previous=previous->suivant;
+	else stop=1;
 }
-l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
-l->n=code;
-l->suivant=precedent->suivant;
-precedent->suivant=l;
-(n->number_of_patterns)++;
+/* If must insert the pattern */
+l=new_liste_nombres();
+l->n=pattern;
+l->suivant=previous->suivant;
+previous->suivant=l;
+/* We update the length of the list */
+(node->number_of_patterns)++;
 return;
 }
 
 
-
-
-
-
-
-
-
-
-struct DLC_tree_node* get_trans_dlc_sans_creer(struct DLC_tree_node* n,int t) {
+/**
+ * This function looks if 'token' tags a transition that outgoes from 'node'. If the
+ * parameter 'create_if_necessary' is set to 0, NULL is returned if no transition
+ * tagged by 'token' is found. Otherwise, a transition is created, and the destination
+ * node of this transition is created and returned.
+ */
+struct DLC_tree_node* get_DLC_tree_node(struct DLC_tree_node* node,int token,int create_if_necessary) {
 struct DLC_tree_transition* l;
-l=n->transitions;
-while (l!=NULL) {
-  if (l->token==t) return l->node;
-  l=l->next;
-}
-return NULL;
-}
-
-
-
-struct DLC_tree_node* get_trans_dlc(struct DLC_tree_node* n,int t) {
-struct DLC_tree_transition* l;
-struct DLC_tree_transition* precedent;
-int stop;
-if (n->transitions==NULL) {
-  // 1er cas liste vide
+if (node->transitions==NULL) {
+  /* If the list is empty */
+  /* We return if the function must not create the node */
+  if (!create_if_necessary) return NULL;
+  /* Otherwise, we create a transition */
   l=new_DLC_tree_transition();
-  l->token=t;
-  l->next=n->transitions;
+  l->token=token;
+  l->next=node->transitions;
+  /* And we create the destination node of this transition */
   l->node=new_DLC_tree_node();
-  n->transitions=l;
-  (n->number_of_transitions)++;
+  node->transitions=l;
+  (node->number_of_transitions)++;
+  /* Finally we return the created node */
   return l->node;
 }
-if (n->transitions->token==t)
-  // 2eme cas: 1er element=code
-  return n->transitions->node;
-if (n->transitions->token>t) {
-  // 3eme cas: on doit inserer en tete de liste
+if (node->transitions->token==token)
+  /* If the head of the list is the one we look for, we return it */
+  return node->transitions->node;
+if (node->transitions->token>token) {
+  /* If we must insert at the beginning of the list */
+  /* We return if the function must not create the node */
+  if (!create_if_necessary) return NULL;
+  /* Otherwise, we create a transition */
   l=new_DLC_tree_transition();
-  l->token=t;
-  l->next=n->transitions;
+  l->token=token;
+  l->next=node->transitions;
+  /* And we create the destination node of this transition */
   l->node=new_DLC_tree_node();
-  n->transitions=l;
-  (n->number_of_transitions)++;
+  node->transitions=l;
+  (node->number_of_transitions)++;
+  /* Finally we return the created node */
   return l->node;
 }
-// cas general
-precedent=n->transitions;
-stop=0;
-while (!stop && precedent->next!=NULL) {
-  if (precedent->next->token==t) return precedent->next->node;
-  else if (precedent->next->token<t) precedent=precedent->next;
-  else stop=1;
+/* General case */
+struct DLC_tree_transition* previous=node->transitions;
+int stop=0;
+/* We parse the list until we have found the node or the place
+ * to insert the node */
+while (!stop && previous->next!=NULL) {
+	/* If we find the node, we return it */
+	if (previous->next->token==token) return previous->next->node;
+	else if (previous->next->token<token) previous=previous->next;
+	else stop=1;
 }
+/* We return if the function must not create the node */
+if (!create_if_necessary) return NULL;
+/* Otherwise, we create a transition */
 l=new_DLC_tree_transition();
-l->token=t;
+l->token=token;
+/* And we create the destination node of this transition */
 l->node=new_DLC_tree_node();
-l->next=precedent->next;
-precedent->next=l;
-(n->number_of_transitions)++;
+l->next=previous->next;
+previous->next=l;
+(node->number_of_transitions)++;
+/* Finally we return the created node */
 return l->node;
 }
 
 
-
-void ajouter_dlc(int* token_dlc,int i,struct DLC_tree_node* n,int code,
-				struct DLC_tree_info* DLC_tree) {
+/**
+ * This function explores the compound word tree in order to associate
+ * a pattern number to a compound word. If the compound word is not already
+ * in the tree, it is inserted. As a side effect, the index of 'DLC_tree'
+ * is updated.
+ * 
+ * 'token_list' is an array representing the sequence of tokens that
+ * constitute the compound word. This array has been produced by the
+ * function 'tokenize_compound_word'.
+ * 
+ * 'pos' is the current position in the array 'token_list'.
+ * 
+ * 'node' is the current node in the tree.
+ * 
+ * 'pattern' is the pattern number to add.
+ * 
+ * 'DLC_tree' represents the tree and the compound word index.
+ */
+void associate_pattern_to_compound_word(int* token_list,int pos,struct DLC_tree_node* node,
+				int pattern,struct DLC_tree_info* DLC_tree) {
 struct DLC_tree_node* ptr;
-int pos,premier_token;
-if (token_dlc[i]==-1) {
-  // on est au bout de la branche
-  ajouter_code_a_etat_dlc(n,code);
+int next_token,first_token;
+if (token_list[pos]==END_TOKEN_LIST) {
+  /* If we are at the end of the token list, we
+   * add the pattern number to the current node */
+  add_pattern_to_DLC_tree_node(node,pattern);
   return;
 }
-premier_token=(i==0);
-if (token_dlc[i]!=-3) {
-  ptr=get_trans_dlc(n,token_dlc[i]);
-  if (premier_token) {
-     DLC_tree->index[token_dlc[i]]=ptr;
-  }
-  ajouter_dlc(token_dlc,i+1,ptr,code,DLC_tree);
-  return;
+first_token=(pos==0);
+if (token_list[pos]!=BEGIN_CASE_VARIANT_LIST) {
+	/* If the token is a single token, then we get the corresponding node */
+	ptr=get_DLC_tree_node(node,token_list[pos],1);
+	if (first_token) {
+		/* If the token is the first of the list, then we update the
+		 * index with it */
+		DLC_tree->index[token_list[pos]]=ptr;
+	}
+	/* And we add the pattern number to this node */
+	associate_pattern_to_compound_word(token_list,pos+1,ptr,pattern,DLC_tree);
+	return;
 }
-pos=i;
-do pos++;
-while (token_dlc[pos]!=-5);
+/* If we have a token list instead of a single token,
+ * we look for the index of the next token, that is to say
+ * to position that follows the end of the token list */
+next_token=pos;
+do {
+	next_token++;
+} while (token_list[next_token]!=END_CASE_VARIANT_LIST);
+next_token++;
+/* Then we parse the token list */
 pos++;
-// pos est l'endroit auquel on cherchera le token suivant
-i++;
-while (token_dlc[i]!=-5)  {
-  ptr=get_trans_dlc(n,token_dlc[i]);
-  if (premier_token) {
-     DLC_tree->index[token_dlc[i]]=ptr;
-  }
-  ajouter_dlc(token_dlc,pos,ptr,code,DLC_tree);
-  i++;
+while (token_list[pos]!=END_CASE_VARIANT_LIST)  {
+	/* We get the node that correspond to the single token (nested token 
+	 * lists are forbidden) */
+	ptr=get_DLC_tree_node(node,token_list[pos],1);
+	if (first_token) {
+		/* If the token is the first of the list, then we update the
+		 * index with it */
+		DLC_tree->index[token_list[pos]]=ptr;
+	}
+	/* And we add the pattern number to this node */
+	associate_pattern_to_compound_word(token_list,next_token,ptr,pattern,DLC_tree);
+	pos++;
 }
 }
 
 
-
-void ajouter_a_dlc_sans_code(unichar* m,Alphabet* alph,struct string_hash* tok,
+/**
+ * Adds a compound word to the tree 'DLC_tree' with the value
+ * UNDEFINED_COMPOUND_PATTERN. This is used when the user looks
+ * for any compound word, regardless the pattern, with <DIC> or <CDIC>.
+ */
+void add_compound_word_with_no_pattern(unichar* word,Alphabet* alph,struct string_hash* tok,
 							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
-int token_dlc_temp[MAX_TOKEN_IN_A_COMPOUND_WORD];
-tokenize_compound_word(m,token_dlc_temp,alph,tok,tokenization_mode);
-ajouter_dlc(token_dlc_temp,0,DLC_tree->root,-555,DLC_tree);
+add_compound_word_with_pattern(word,UNDEFINED_COMPOUND_PATTERN,alph,tok,DLC_tree,
+							tokenization_mode);
 }
 
 
-
-void ajouter_a_dlc_avec_code(unichar* m,int code,Alphabet* alph,struct string_hash* tok,
+/**
+ * Adds a compound word to the tree 'DLC_tree' with the pattern number
+ * 'pattern'.
+ */
+void add_compound_word_with_pattern(unichar* word,int pattern,Alphabet* alph,struct string_hash* tok,
 							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
-int token_dlc_temp[MAX_TOKEN_IN_A_COMPOUND_WORD];
-tokenize_compound_word(m,token_dlc_temp,alph,tok,tokenization_mode);
-ajouter_dlc(token_dlc_temp,0,DLC_tree->root,code,DLC_tree);
+int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
+tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
+associate_pattern_to_compound_word(token_list,0,DLC_tree->root,pattern,DLC_tree);
 }
 
 
-
-int inserer_code_dans_etat_dlc(struct DLC_tree_node* n,int code,int code2) {
-if (appartient_a_liste(code,n->patterns)) {
-  ajouter_code_a_etat_dlc(n,code2);
+/**
+ * This function inserts 'pattern2' in the pattern list of 'node' if and 
+ * only if the liste contains 'pattern1'. It returns 1 on success, 0
+ * otherwise. 
+ */
+int conditional_pattern_insertion(struct DLC_tree_node* node,int pattern1,int pattern2) {
+if (appartient_a_liste(pattern1,node->patterns)) {
+  add_pattern_to_DLC_tree_node(node,pattern2);
   return 1;
 }
 return 0;
 }
 
 
+/**
+ * This function explores the compound word tree in order to associate
+ * the pattern number 'pattern2' to a compound word if and only if this
+ * has already the pattern number 'pattern1' in its pattern list. 
+ * If the compound word is not in the tree, or if it has not 'pattern1' in its
+ * pattern list, the function fails and returns 0. Otherwise, 'pattern2' is added
+ * to the pattern list and the function returns a non-zero value.
+ * 
+ * 
+ * 'token_list' is an array representing the sequence of tokens that
+ * constitute the compound word. This array has been produced by the
+ * function 'tokenize_compound_word'.
+ * 
+ * 'pos' is the current position in the array 'token_list'.
+ * 
+ * 'node' is the current node in the tree.
+ * 
+ * 'pattern1' is the pattern number that must be in the pattern list of 'node'.
 
-int inserer_dans_dlc(int token_dlc[],int i,struct DLC_tree_node* n,int code,int code2) {
+ * 'pattern2' is the pattern number to add.
+ * 
+ * 'DLC_tree' represents the tree and the compound word index.
+ */
+int conditional_insertion_in_DLC_tree_node(int* token_list,int pos,struct DLC_tree_node* node,
+										int pattern1,int pattern2) {
 struct DLC_tree_node* ptr;
-int pos,resultat;
-resultat=0;
-if (token_dlc[i]==-1) {
-  // on est au bout de la branche
-  return inserer_code_dans_etat_dlc(n,code,code2);
+int next_token,result;
+result=0;
+if (token_list[pos]==END_TOKEN_LIST) {
+	/* If we are at the end of the token list */
+	return conditional_pattern_insertion(node,pattern1,pattern2);
 }
-if (token_dlc[i]!=-3) {
-  ptr=get_trans_dlc_sans_creer(n,token_dlc[i]);
-  if (ptr!=NULL) return inserer_dans_dlc(token_dlc,i+1,ptr,code,code2);
+if (token_list[pos]!=BEGIN_CASE_VARIANT_LIST) {
+	/* If the token is a single token, we get the corresponding node,
+	 * without creating it if it does not exist */
+  ptr=get_DLC_tree_node(node,token_list[pos],0);
+  /* If the node exists, we go on recursively, otherwise we fail */
+  if (ptr!=NULL) return conditional_insertion_in_DLC_tree_node(token_list,pos+1,ptr,pattern1,pattern2);
   else return 0;
 }
-pos=i;
-do pos++;
-while (token_dlc[pos]!=-5);
+/* If we have a token list instead of a single token,
+ * we look for the index of the next token, that is to say
+ * to position that follows the end of the token list */
+next_token=pos;
+do {
+	next_token++;
+} while (token_list[next_token]!=END_CASE_VARIANT_LIST);
+next_token++;
+/* Then we parse the token list */
 pos++;
-// pos est l'endroit auquel on cherchera le token suivant
-i++;
-while (token_dlc[i]!=-5)  {
-  ptr=get_trans_dlc_sans_creer(n,token_dlc[i]);
-  if (ptr!=NULL) resultat=resultat+inserer_dans_dlc(token_dlc,pos,ptr,code,code2);
-  i++;
+while (token_list[pos]!=END_CASE_VARIANT_LIST)  {
+	/* We get the node that correspond to the single token (nested token 
+	 * lists are forbidden). Note that we do not create the node if it does
+	 * not exist */
+	ptr=get_DLC_tree_node(node,token_list[pos],0);
+	/* If the node exist, we go on recursively. If at least one token leads
+	 * to a success, then the global result will be a success. */
+	if (ptr!=NULL) result=result+conditional_insertion_in_DLC_tree_node(token_list,next_token,ptr,pattern1,pattern2);
+	pos++;
 }
-return resultat;
+return result;
 }
 
 
-
-int remplacer_dans_dlc(unichar* m,int code,int code2,Alphabet* alph,struct string_hash* tok,
-						struct DLC_tree_info* infos,int tokenization_mode) {
-int token_dlc[MAX_TOKEN_IN_A_COMPOUND_WORD];
-tokenize_compound_word(m,token_dlc,alph,tok,tokenization_mode);
-return inserer_dans_dlc(token_dlc,0,infos->root,code,code2);
+/**
+ * This function associates the pattern number 'pattern2' to the word 'word' 
+ * in the compound word tree 'DLC_tree', if and only if: 
+ *   1) 'word' is already in the tree
+ *   2) 'pattern1' is in the pattern list associated to 'word'
+ * The function returns 0 if one of these conditions is not verified; otherwise
+ * it inserts 'pattern2' in the pattern list associated to 'word' and returns a
+ * non-zero value.
+ */
+int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,Alphabet* alph,
+						struct string_hash* tok,struct DLC_tree_info* infos,int tokenization_mode) {
+int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
+tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
+return conditional_insertion_in_DLC_tree_node(token_list,0,infos->root,pattern1,pattern2);
 }

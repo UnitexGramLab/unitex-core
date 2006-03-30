@@ -97,7 +97,7 @@ while (read_DELA_line(f,s)) {
     if (existe_etiquette_DIC || existe_etiquette_CDIC) {
        // si on a <DIC> dans le graphe, on charge betement toutes
        // les formes flechies composes
-       ajouter_a_dlc_sans_code(flechi,alph,tok,DLC_tree,tokenization_mode);
+       add_compound_word_with_no_pattern(flechi,alph,tok,DLC_tree,tokenization_mode);
     }
     if (code_gramm[0]!='\0') {
       code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
@@ -122,7 +122,7 @@ while (read_DELA_line(f,s)) {
           while (j<n_octet_code_gramm) {
             for (z=0;z<8;z++)
               if (code_gramm_temp[j]&(1<<z)) {
-                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok,DLC_tree,tokenization_mode);
+                add_compound_word_with_pattern(flechi,j*8+z,alph,tok,DLC_tree,tokenization_mode);
               }
             j++;
           }
@@ -315,7 +315,7 @@ for (int i=0;i<tok->N;i++) {
           while (j<n_octet_code_gramm) {
             for (int z=0;z<8;z++)
               if (code_gramm_temp[j]&(1<<z)) {
-                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok,DLC_tree,tokenization_mode);
+                add_compound_word_with_pattern(flechi,j*8+z,alph,tok,DLC_tree,tokenization_mode);
               }
             j++;
           }

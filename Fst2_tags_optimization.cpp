@@ -75,7 +75,7 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-  if (remplacer_dans_dlc(s,etiquette[e]->numero,pattern_compose_courant,alph,tok,
+  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->numero,pattern_compose_courant,alph,tok,
   						DLC_tree,tokenization_mode)) {
      etiquette[e]->pattern_compose=pattern_compose_courant;
   }
@@ -152,7 +152,7 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-  if (remplacer_dans_dlc(s,etiquette[e]->numero,pattern_compose_courant,alph,tok,
+  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->numero,pattern_compose_courant,alph,tok,
   						DLC_tree,tokenization_mode)) {
      etiquette[e]->pattern_compose=pattern_compose_courant;
   }
@@ -237,7 +237,7 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 // normal case
 //---mot compose
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-   ajouter_a_dlc_avec_code(s,pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode);
+   add_compound_word_with_pattern(s,pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode);
    etiquette[e]->pattern_compose=pattern_compose_courant;
    return;
 }
@@ -315,7 +315,7 @@ if (!case_variants_allowed) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-   ajouter_a_dlc_avec_code(s,pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode);
+   add_compound_word_with_pattern(s,pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode);
    etiquette[e]->pattern_compose=pattern_compose_courant;
    pattern_compose_courant++;
 } else {
