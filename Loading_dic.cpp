@@ -44,7 +44,8 @@ return 0;
 
 void load_dic_for_locate(char* dico,Alphabet* alph,struct string_hash* tok,
                          int n_octet_code_gramm,int existe_etiquette_DIC,
-                         int existe_etiquette_CDIC,int existe_etiquette_SDIC) {
+                         int existe_etiquette_CDIC,int existe_etiquette_SDIC,
+                         struct DLC_tree_info* DLC_tree) {
 FILE* f;
 unichar flechi[TAILLE_MOT];
 unichar canonique[TAILLE_MOT];
@@ -96,7 +97,7 @@ while (read_DELA_line(f,s)) {
     if (existe_etiquette_DIC || existe_etiquette_CDIC) {
        // si on a <DIC> dans le graphe, on charge betement toutes
        // les formes flechies composes
-       ajouter_a_dlc_sans_code(flechi,alph,tok);
+       ajouter_a_dlc_sans_code(flechi,alph,tok,DLC_tree);
     }
     if (code_gramm[0]!='\0') {
       code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
@@ -121,7 +122,7 @@ while (read_DELA_line(f,s)) {
           while (j<n_octet_code_gramm) {
             for (z=0;z<8;z++)
               if (code_gramm_temp[j]&(1<<z)) {
-                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok);
+                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok,DLC_tree);
               }
             j++;
           }
@@ -250,7 +251,8 @@ return c;
 //
 // this function checks for each tag token if it verifies some patterns
 //
-void check_patterns_for_tag_tokens(Alphabet* alph,struct string_hash* tok,int n_octet_code_gramm) {
+void check_patterns_for_tag_tokens(Alphabet* alph,struct string_hash* tok,int n_octet_code_gramm,
+									struct DLC_tree_info* DLC_tree) {
 for (int i=0;i<tok->N;i++) {
    if (tok->tab[i][0]=='{' && u_strcmp_char(tok->tab[i],"{S}")  && u_strcmp_char(tok->tab[i],"{STOP}")) {
       // if the token is tag like {today,.ADV}
@@ -313,7 +315,7 @@ for (int i=0;i<tok->N;i++) {
           while (j<n_octet_code_gramm) {
             for (int z=0;z<8;z++)
               if (code_gramm_temp[j]&(1<<z)) {
-                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok);
+                ajouter_a_dlc_avec_code(flechi,j*8+z,alph,tok,DLC_tree);
               }
             j++;
           }

@@ -22,14 +22,59 @@
 //---------------------------------------------------------------------------
 #include "LocatePattern.h"
 #include "CompoundWordTree.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
-struct DLC_tree_node* racine_dlc=nouveau_noeud_dlc();
-int n_dlc=0; 
-int t_dlc=0;
-struct DLC_tree_node* tableau_dlc[1000000];
+/**
+ * Allocates, initializes and returns a compound word tree node.
+ */
+struct DLC_tree_node* new_DLC_tree_node() {
+struct DLC_tree_node* n;
+n=(struct DLC_tree_node*)malloc(sizeof(struct DLC_tree_node));
+if (n==NULL) fatal_error("Not enough memory in new_DLC_tree_node",1);
+n->patterns=NULL;
+n->number_of_patterns=0;
+n->array_of_patterns=NULL;
+n->transitions=NULL;
+n->number_of_transitions=0;
+n->destination_tokens=NULL;
+n->destination_nodes=NULL;
+return n;
+}
 
+
+/**
+ * Allocates, initializes and returns a compound word tree transition.
+ * The default token number is -1.
+ */
+struct DLC_tree_transition* new_DLC_tree_transition() {
+struct DLC_tree_transition* t;
+t=(struct DLC_tree_transition*)malloc(sizeof(struct DLC_tree_transition));
+if (t==NULL) fatal_error("Not enough memory in new_DLC_tree_transition",1);
+t->token=-1;
+t->node=NULL;
+t->next=NULL;
+return t;
+}
+
+
+/**
+ * This function initializes the root of the compound word tree and
+ * the 'index' array that will be used to access directly to the
+ * compound words that begin by a given token. 'number_of_tokens'
+ * is supposed to represent the total number of distinct tokens in
+ * the text to parse. 'infos' is a structure that contains the
+ * root and the index. This value is modified.
+ */
+void init_DLC_tree(struct DLC_tree_info* DLC_tree,int number_of_tokens) {
+DLC_tree->root=new_DLC_tree_node();
+DLC_tree->index=(struct DLC_tree_node**)malloc(number_of_tokens*sizeof(struct DLC_tree_node*));
+if (DLC_tree->index==NULL) fatal_error("Not enough memory in init_DLC_tree",1);
+for (int i=0;i<number_of_tokens;i++) {
+	DLC_tree->index[i]=NULL;
+}
+}
 
 
 int decouper_chaine_en_tokens(unichar* ch,int t[],Alphabet* alph,struct string_hash* tok) {
@@ -164,31 +209,10 @@ return;
 
 
 
-struct DLC_tree_transition* nouvelle_transition_dlc() {
-struct DLC_tree_transition* t;
-t=(struct DLC_tree_transition*)malloc(sizeof(struct DLC_tree_transition));
-t_dlc++;
-t->token=-4444;
-t->node=NULL;
-t->next=NULL;
-return t;
-}
 
 
 
-struct DLC_tree_node* nouveau_noeud_dlc() {
-struct DLC_tree_node* n;
-n=(struct DLC_tree_node*)malloc(sizeof(struct DLC_tree_node));
-n_dlc++;
-n->patterns=NULL;
-n->number_of_patterns=0;
-n->array_of_patterns=NULL;
-n->transitions=NULL;
-n->number_of_transitions=0;
-n->destination_tokens=NULL;
-n->destination_nodes=NULL;
-return n;
-}
+
 
 
 
@@ -210,10 +234,10 @@ struct DLC_tree_transition* precedent;
 int stop;
 if (n->transitions==NULL) {
   // 1er cas liste vide
-  l=nouvelle_transition_dlc();
+  l=new_DLC_tree_transition();
   l->token=t;
   l->next=n->transitions;
-  l->node=nouveau_noeud_dlc();
+  l->node=new_DLC_tree_node();
   n->transitions=l;
   (n->number_of_transitions)++;
   return l->node;
@@ -223,10 +247,10 @@ if (n->transitions->token==t)
   return n->transitions->node;
 if (n->transitions->token>t) {
   // 3eme cas: on doit inserer en tete de liste
-  l=nouvelle_transition_dlc();
+  l=new_DLC_tree_transition();
   l->token=t;
   l->next=n->transitions;
-  l->node=nouveau_noeud_dlc();
+  l->node=new_DLC_tree_node();
   n->transitions=l;
   (n->number_of_transitions)++;
   return l->node;
@@ -239,9 +263,9 @@ while (!stop && precedent->next!=NULL) {
   else if (precedent->next->token<t) precedent=precedent->next;
   else stop=1;
 }
-l=nouvelle_transition_dlc();
+l=new_DLC_tree_transition();
 l->token=t;
-l->node=nouveau_noeud_dlc();
+l->node=new_DLC_tree_node();
 l->next=precedent->next;
 precedent->next=l;
 (n->number_of_transitions)++;
@@ -250,7 +274,8 @@ return l->node;
 
 
 
-void ajouter_dlc(int* token_dlc,int i,struct DLC_tree_node* n,int code) {
+void ajouter_dlc(int* token_dlc,int i,struct DLC_tree_node* n,int code,
+				struct DLC_tree_info* DLC_tree) {
 struct DLC_tree_node* ptr;
 int pos,premier_token;
 if (token_dlc[i]==-1) {
@@ -262,9 +287,9 @@ premier_token=(i==0);
 if (token_dlc[i]!=-3) {
   ptr=get_trans_dlc(n,token_dlc[i]);
   if (premier_token) {
-     tableau_dlc[token_dlc[i]]=ptr;
+     DLC_tree->index[token_dlc[i]]=ptr;
   }
-  ajouter_dlc(token_dlc,i+1,ptr,code);
+  ajouter_dlc(token_dlc,i+1,ptr,code,DLC_tree);
   return;
 }
 pos=i;
@@ -276,27 +301,29 @@ i++;
 while (token_dlc[i]!=-5)  {
   ptr=get_trans_dlc(n,token_dlc[i]);
   if (premier_token) {
-     tableau_dlc[token_dlc[i]]=ptr;
+     DLC_tree->index[token_dlc[i]]=ptr;
   }
-  ajouter_dlc(token_dlc,pos,ptr,code);
+  ajouter_dlc(token_dlc,pos,ptr,code,DLC_tree);
   i++;
 }
 }
 
 
 
-void ajouter_a_dlc_sans_code(unichar* m,Alphabet* alph,struct string_hash* tok) {
+void ajouter_a_dlc_sans_code(unichar* m,Alphabet* alph,struct string_hash* tok,
+							struct DLC_tree_info* DLC_tree) {
 int token_dlc_temp[MAX_TOKEN_IN_A_COMPOUND_WORD];
 decouper_chaine_en_tokens(m,token_dlc_temp,alph,tok);
-ajouter_dlc(token_dlc_temp,0,racine_dlc,-555);
+ajouter_dlc(token_dlc_temp,0,DLC_tree->root,-555,DLC_tree);
 }
 
 
 
-void ajouter_a_dlc_avec_code(unichar* m,int code,Alphabet* alph,struct string_hash* tok) {
+void ajouter_a_dlc_avec_code(unichar* m,int code,Alphabet* alph,struct string_hash* tok,
+							struct DLC_tree_info* DLC_tree) {
 int token_dlc_temp[MAX_TOKEN_IN_A_COMPOUND_WORD];
 decouper_chaine_en_tokens(m,token_dlc_temp,alph,tok);
-ajouter_dlc(token_dlc_temp,0,racine_dlc,code);
+ajouter_dlc(token_dlc_temp,0,DLC_tree->root,code,DLC_tree);
 }
 
 
@@ -340,8 +367,9 @@ return resultat;
 
 
 
-int remplacer_dans_dlc(unichar* m,int code,int code2,Alphabet* alph,struct string_hash* tok) {
+int remplacer_dans_dlc(unichar* m,int code,int code2,Alphabet* alph,struct string_hash* tok,
+						struct DLC_tree_info* infos) {
 int token_dlc[MAX_TOKEN_IN_A_COMPOUND_WORD];
 decouper_chaine_en_tokens(m,token_dlc,alph,tok);
-return inserer_dans_dlc(token_dlc,0,racine_dlc,code,code2);
+return inserer_dans_dlc(token_dlc,0,infos->root,code,code2);
 }

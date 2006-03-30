@@ -102,23 +102,34 @@ struct DLC_tree_node {
 };
 
 
+/**
+ * This structure represent a list of transitions in a compound word tree.
+ */
 struct DLC_tree_transition {
-  int token;
-  struct DLC_tree_node* node;
-  struct DLC_tree_transition* next;
+	/* The number of the token */
+	int token;
+	/* The destination node */
+	struct DLC_tree_node* node;
+	/* The following element of the list */
+	struct DLC_tree_transition* next;
 };
 
-struct DLC_tree_node* nouveau_noeud_dlc();
+
+/**
+ * This structure contains the root of a compound word tree, and 
+ * an array that is an index for accessing quickly to the compound
+ * words that begin by a given token.
+ */
+struct DLC_tree_info {
+	struct DLC_tree_node* root;
+	struct DLC_tree_node** index;
+};
+
+
 int decouper_chaine_en_tokens(unichar*,int*,Alphabet*,struct string_hash*);
-void ajouter_a_dlc_sans_code(unichar*,Alphabet*,struct string_hash*);
-void ajouter_a_dlc_avec_code(unichar*,int,Alphabet*,struct string_hash*);
-int remplacer_dans_dlc(unichar*,int,int,Alphabet*,struct string_hash*);
-
-
-
-extern struct DLC_tree_node* racine_dlc;
-extern int n_dlc;
-extern int t_dlc;
-extern struct DLC_tree_node* tableau_dlc[1000000];
+void ajouter_a_dlc_sans_code(unichar*,Alphabet*,struct string_hash*,struct DLC_tree_info*);
+void ajouter_a_dlc_avec_code(unichar*,int,Alphabet*,struct string_hash*,struct DLC_tree_info*);
+int remplacer_dans_dlc(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*);
+void init_DLC_tree(struct DLC_tree_info*,int);
 
 #endif

@@ -65,9 +65,9 @@ extern struct liste_nombres* tag_token_list;
 extern MasterGF_T* masterGF;
 extern IndexGF_T*  indexGF;
 #endif
-
-int locate_pattern(char*,char*,char*,char*,char*,char*,char*,int,int, char*);
 /* $CD$ end   */
+
+int locate_pattern(char*,char*,char*,char*,char*,char*,char*,int,int,char*);
 
 void numerote_tags(Automate_fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*);
 void decouper_entre_angles(unichar*,unichar*,unichar*,unichar*,struct string_hash*,Alphabet*);

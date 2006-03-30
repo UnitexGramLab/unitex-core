@@ -173,18 +173,22 @@ int n_octet_code_gramm=((nombre_patterns+1)/8)+1;
 // simples
 
 pattern_compose_courant=nombre_patterns+1;
+
+struct DLC_tree_info DLC_tree;
+init_DLC_tree(&DLC_tree,tok->N);
+
 printf("Loading dlf...\n");
-load_dic_for_locate(dlf,alph,tok,n_octet_code_gramm,existe_etiquette_DIC,existe_etiquette_CDIC,existe_etiquette_SDIC);
+load_dic_for_locate(dlf,alph,tok,n_octet_code_gramm,existe_etiquette_DIC,existe_etiquette_CDIC,existe_etiquette_SDIC,&DLC_tree);
 printf("Loading dlc...\n");
-load_dic_for_locate(dlc,alph,tok,n_octet_code_gramm,existe_etiquette_DIC,existe_etiquette_CDIC,existe_etiquette_SDIC);
+load_dic_for_locate(dlc,alph,tok,n_octet_code_gramm,existe_etiquette_DIC,existe_etiquette_CDIC,existe_etiquette_SDIC,&DLC_tree);
 // we look if the tag tokens like {today,.ADV} verify some patterns
 
-check_patterns_for_tag_tokens(alph,tok,n_octet_code_gramm);
+check_patterns_for_tag_tokens(alph,tok,n_octet_code_gramm,&DLC_tree);
 
 printf("Optimizing fst2 tags...\n");
-replace_pattern_tags(automate,alph,tok);
+replace_pattern_tags(automate,alph,tok,&DLC_tree);
 printf("Optimizing compound word dictionary...\n");
-optimize_dlc();
+optimize_dlc(&DLC_tree);
 free_string_hash(semantic_codes);
 init_transduction_variable_index(automate->variables);
 printf("Optimizing fst2...\n");
@@ -193,7 +197,7 @@ printf("Optimizing patterns...\n");
 init_pattern_transitions(tok);
 convert_pattern_lists(tok);
 printf("Working...\n");
-launch_locate(text_file,automate,mode,tok,out,output_mode,text_size,info);
+launch_locate(text_file,automate,mode,tok,out,output_mode,text_size,info,&DLC_tree);
 free_transduction_variable_index();
 fclose(text_file);
 if (info!=NULL) u_fclose(info);

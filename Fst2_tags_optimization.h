@@ -28,10 +28,12 @@
 #include "Alphabet.h"
 #include "String_hash.h"
 #include "AutomateFst2.h"
+#include "CompoundWordTree.h"
 
 #define SEPARATOR_CHAR 1
 
-void replace_pattern_tags(Automate_fst2*,Alphabet*,struct string_hash*);
+void replace_pattern_tags(Automate_fst2*,Alphabet*,struct string_hash*,
+						struct DLC_tree_info*);
 
 
 #endif

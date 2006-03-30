@@ -30,6 +30,19 @@
 #define DELAY CLOCKS_PER_SEC // delay between two prints (yyy% done)
 //---------------------------------------------------------------------------
 
+/**
+ * This structure is used for setting global values for the 'parcourir_opt'
+ * function.
+ */
+struct locate_infos {
+	/* The compound word tree */
+	struct DLC_tree_info* DLC_tree;
+};
+
+void parcourir_opt(int,int,int,int,struct liste_num**,int,struct context*,struct locate_infos*);
+
+
+
 int GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
 int texte[BUFFER_SIZE];
 int LENGTH;
@@ -63,7 +76,8 @@ if (LENGTH<BUFFER_SIZE) {
 
 
 void launch_locate(FILE* f,Automate_fst2* automate,int mode,struct string_hash* tok,FILE* out,
-                   int output_mode,long int text_size,FILE* info) {
+                   int output_mode,long int text_size,FILE* info,
+                   struct DLC_tree_info* DLC_tree) {
 LENGTH=fread(texte,sizeof(int),BUFFER_SIZE,f);
 statut_match=mode;
 transduction_mode=output_mode;
@@ -82,6 +96,12 @@ int n_read=0;
 int unite;
 clock_t startTime = clock();
 clock_t currentTime ;
+/*
+ * Initialization of some global settings 
+ */
+struct locate_infos infos;
+infos.DLC_tree=DLC_tree;
+
 
 unite=((text_size/100)>1000)?(text_size/100):1000;
 while (origine_courante<LENGTH && nombre_match!=SEARCH_LIMITATION) {
@@ -98,7 +118,7 @@ while (origine_courante<LENGTH && nombre_match!=SEARCH_LIMITATION) {
    }
    if (!(texte[origine_courante]==ESPACE && GESTION_DE_L_ESPACE==MODE_NON_MORPHO)) {
       StackBase = StackPointer = 0;
-      parcourir_opt(0,debut,0,0,NULL,0,NULL);
+      parcourir_opt(0,debut,0,0,NULL,0,NULL,&infos);
    }
    liste_match=ecrire_index_des_matches(liste_match,N_INT_ALLREADY_READ+origine_courante,&nombre_unites_reconnues,out);
    origine_courante++;
@@ -185,7 +205,8 @@ void parcourir_opt(int numero_graphe_courant,
                    int profondeur,
                    struct liste_num** LISTE,
                    int n_matches,
-                   struct context* ctx) {
+                   struct context* ctx,
+                   struct locate_infos* infos) {
 Etat_opt etat_courant;
 int pos2,k,pos3,pos4,k_pas_decale;
 struct liste_arrivees* arr;
@@ -262,21 +283,24 @@ if (ctx!=NULL && ctx->contextMode==FAILED_IN_NEGATIVE_CONTEXT) {
                }
                LISTE=ctx->list_of_matches;
                n_matches=ctx->n_matches;
-               parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,ctx->next);     
+               parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,
+               				ctx->next,infos);
             }
             else {
                // we handle separately the cases of context marks, because
                // they involve a modification of ctx->depth
                if (a_meta->numero_de_meta==CONTEXT_END_MARK) {
                   (ctx->depth)--;
-                  parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,ctx);
+                  parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,
+                  				ctx,infos);
                   (ctx->depth)++;
                }
                else
                if (a_meta->numero_de_meta==POSITIVE_CONTEXT_MARK
                   || a_meta->numero_de_meta==NEGATIVE_CONTEXT_MARK) {
                   (ctx->depth)++;
-                  parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,ctx);
+                  parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,
+                  				ctx,infos);
                   (ctx->depth)--;
                }
                else {
@@ -319,7 +343,7 @@ if (ctx!=NULL && ctx->contextMode==FAILED_IN_NEGATIVE_CONTEXT) {
    // finally, we explore all the states that can be reached from this state
    tmp=liste;
    while (liste!=NULL) {
-      parcourir_opt(numero_graphe_courant,liste->n,pos,profondeur,LISTE,n_matches,ctx);
+      parcourir_opt(numero_graphe_courant,liste->n,pos,profondeur,LISTE,n_matches,ctx,infos);
       liste=liste->suivant;
    }
    free_liste_nombres(tmp);
@@ -394,17 +418,13 @@ if ((a_sous_graphe=etat_courant->liste_sous_graphes) != NULL) {
 
   do
     { // process list of subgraphs
-      
       arr=a_sous_graphe->liste_arr;
-      
       while (arr!=NULL) {
-
         struct liste_num* L = NULL;
-
         StackBase = StackPointer;
         parcourir_opt(a_sous_graphe->numero_de_graphe,
                       debut_graphe[a_sous_graphe->numero_de_graphe],
-                      pos,profondeur,&L,0,NULL);
+                      pos,profondeur,&L,0,NULL,infos);
         StackBase = old_StackBase;
         if (L != NULL) { // at least one match by the called subgraph
           do
@@ -414,7 +434,8 @@ if ((a_sous_graphe=etat_courant->liste_sous_graphes) != NULL) {
                 StackPointer = L->sommet;
                 install_variable_backup(L->variable_backup);
               }
-              parcourir_opt(numero_graphe_courant,arr->arr,L->n,profondeur,LISTE,n_matches,ctx);
+              parcourir_opt(numero_graphe_courant,arr->arr,L->n,profondeur,LISTE,n_matches,
+              				ctx,infos);
               StackPointer=SOMMET;
               if (numero_graphe_courant == 0) // necessary only in main graph
                 install_variable_backup(var_backup);
@@ -424,13 +445,9 @@ if ((a_sous_graphe=etat_courant->liste_sous_graphes) != NULL) {
               free(l_tmp);
             }
           while (L != NULL);
-
         }
-
         arr=arr->suivant;
-
       } // end of while (arr!=NULL)
-
     }
   while ((a_sous_graphe=a_sous_graphe->suivant) != NULL);
 
@@ -468,10 +485,6 @@ while (a_meta!=NULL) {
 
     /* $CD$ begin */
     iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;
-    //if ( iMasterGF == -1 ||
-    //     MatchGF(TOKENS->tab[texte[pos2+origine_courante]], masterGF -> tab[iMasterGF].preg) == 0
-    //   ) {
-    //if (iMasterGF == -1 || OptMatchGF(indexGF, texte[pos2+origine_courante], iMasterGF) == 0) {
     /* $CD$ end   */
 
     sortie=ETIQUETTE[arr->etiquette_origine]->transduction;
@@ -479,18 +492,21 @@ while (a_meta!=NULL) {
       case SPACE_TAG:if (texte[pos+origine_courante]==ESPACE) {
                         if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                         if (transduction_mode==MERGE_TRANSDUCTIONS) push_char(' ');
-                        parcourir_opt(numero_graphe_courant,arr->arr,pos+1,profondeur,LISTE,n_matches,ctx);
+                        parcourir_opt(numero_graphe_courant,arr->arr,pos+1,profondeur,LISTE,
+                        				n_matches,ctx,infos);
                         StackPointer=SOMMET;
                       }
                       break;
       case DIESE: if (texte[pos+origine_courante]!=ESPACE) {
                      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,ctx);
+                     parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,
+                     				n_matches,ctx,infos);
                      StackPointer=SOMMET;
                   }
                   break;
       case EPSILON: if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,ctx);
+                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,
+                    			n_matches,ctx,infos);
                     StackPointer=SOMMET;
                     break;
       case POSITIVE_CONTEXT_MARK: {
@@ -503,7 +519,7 @@ while (a_meta!=NULL) {
                                                   LISTE,
                                                   n_matches,
                                                   ctx);
-                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c);
+                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c,infos);
                     remove_context(c);
                     break;
                     }
@@ -517,14 +533,14 @@ while (a_meta!=NULL) {
                                                   LISTE,
                                                   n_matches,
                                                   ctx);
-                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c);
+                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c,infos);
                     if (c->contextMode!=NEGATIVE_CONTEXT_HAS_MATCHED) {
                        // if we have not matched anything in the negative 
                        // context, then we can bypass anything looking for 
                        // the context end mark
                        c->contextMode=FAILED_IN_NEGATIVE_CONTEXT;
                        c->depth=0;
-                       parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c);
+                       parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c,infos);
                     }
                     remove_context(c);
                     break;
@@ -552,7 +568,8 @@ while (a_meta!=NULL) {
                        }
                        LISTE=ctx->list_of_matches;
                        n_matches=ctx->n_matches;
-                       parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,ctx->next);
+                       parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,
+                       				n_matches,ctx->next,infos);
                        break;
                     }
                     //***************************************************************
@@ -576,7 +593,8 @@ while (a_meta!=NULL) {
                          
                          // modification made by Sébastien Paumier
                       }*/
-                      parcourir_opt(numero_graphe_courant,arr->arr,pos/*pos2*/,profondeur,LISTE,n_matches,ctx);
+                      parcourir_opt(numero_graphe_courant,arr->arr,pos/*pos2*/,profondeur,LISTE,
+                      				n_matches,ctx,infos);
                       StackPointer=SOMMET;
                       set_variable_start(a_meta->numero_de_variable,old);
                       }
@@ -589,7 +607,8 @@ while (a_meta!=NULL) {
                          
                          // modification made by Sébastien Paumier
                       }*/
-                      parcourir_opt(numero_graphe_courant,arr->arr,pos/*pos2*/,profondeur,LISTE,n_matches,ctx);
+                      parcourir_opt(numero_graphe_courant,arr->arr,pos/*pos2*/,profondeur,LISTE,
+                      				n_matches,ctx,infos);
                       StackPointer=SOMMET;
                       set_variable_end(a_meta->numero_de_variable,old);
                       }
@@ -604,7 +623,7 @@ while (a_meta!=NULL) {
                               push_string(TOKENS->tab[texte[y+origine_courante]]);
                            }
                         }
-                        parcourir_opt(numero_graphe_courant,arr->arr,z,profondeur,LISTE,n_matches,ctx);
+                        parcourir_opt(numero_graphe_courant,arr->arr,z,profondeur,LISTE,n_matches,ctx,infos);
                         StackPointer=SOMMET;
                      }
                }
@@ -624,7 +643,8 @@ while (a_meta!=NULL) {
                         if (pos2 != pos) push_char(' ');
                         push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                         }
-                    parcourir_opt(numero_graphe_courant,arr->arr, pos4,profondeur,LISTE,n_matches,ctx);
+                    parcourir_opt(numero_graphe_courant,arr->arr, pos4,profondeur,LISTE,
+                    			n_matches,ctx,infos);
                     StackPointer = SOMMET;
                     break;
       /* $CD$ end   */
@@ -641,7 +661,8 @@ while (a_meta!=NULL) {
                    if (transduction_mode==MERGE_TRANSDUCTIONS) {
                       if (pos2!=pos) push_char(' ');
                    }
-                   parcourir_opt(numero_graphe_courant,arr->arr,pos+1,profondeur,LISTE,n_matches,ctx);
+                   parcourir_opt(numero_graphe_courant,arr->arr,pos+1,profondeur,LISTE,
+                   				n_matches,ctx,infos);
                    StackPointer=SOMMET;
                 }
                 else if (((k&MOT_TOKEN_BIT_MASK)&&!(a_meta->negation))
@@ -654,12 +675,13 @@ while (a_meta!=NULL) {
                       if (pos2!=pos) push_char(' ');
                       push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                    }
-                   parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                   parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                   				n_matches,ctx,infos);
                    StackPointer=SOMMET;
                 }
                 break;
       case DIC: if (!(a_meta->negation)) {
-                  pos3=trouver_mot_compose_DIC(pos2,-555);
+                  pos3=trouver_mot_compose_DIC(pos2,-555,infos->DLC_tree);
                   if (pos3!=-1) {
                      int OK=1;
 #ifdef TRE_WCHAR
@@ -680,7 +702,8 @@ while (a_meta!=NULL) {
                            for (int x=pos2;x<=pos3;x++)
                               push_string(TOKENS->tab[texte[x+origine_courante]]);
                         }
-                        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,n_matches,ctx);
+                        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
+                        				n_matches,ctx,infos);
                         StackPointer=SOMMET;
                      }
                   }
@@ -693,7 +716,8 @@ while (a_meta!=NULL) {
                         if (pos2!=pos) push_char(' ');
                         push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                      }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                     				n_matches,ctx,infos);
                      StackPointer=SOMMET;
                      break;
                   }
@@ -708,7 +732,8 @@ while (a_meta!=NULL) {
                              if (pos2!=pos) push_char(' ');
                              push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                           }
-                          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                          				n_matches,ctx,infos);
                           StackPointer=SOMMET;
                        }
                        break;
@@ -723,11 +748,12 @@ while (a_meta!=NULL) {
                         if (pos2!=pos) push_char(' ');
                         push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                      }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                     			n_matches,ctx,infos);
                      StackPointer=SOMMET;
                   }
                   break;
-      case CDIC: pos3=trouver_mot_compose_DIC(pos2,-555);
+      case CDIC: pos3=trouver_mot_compose_DIC(pos2,-555,infos->DLC_tree);
                   if (pos3!=-1) {
                      int OK=1;
 #ifdef TRE_WCHAR
@@ -748,7 +774,8 @@ while (a_meta!=NULL) {
                            for (int x=pos2;x<=pos3;x++)
                               push_string(TOKENS->tab[texte[x+origine_courante]]);
                         }
-                        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,n_matches,ctx);
+                        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
+                        				n_matches,ctx,infos);
                         StackPointer=SOMMET;
                      }
                   }
@@ -762,7 +789,8 @@ while (a_meta!=NULL) {
                         if (pos2!=pos) push_char(' ');
                         push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                      }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                     			n_matches,ctx,infos);
                      StackPointer=SOMMET;
                      break;
                   }
@@ -778,7 +806,8 @@ while (a_meta!=NULL) {
                         if (pos2!=pos) push_char(' ');
                         push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                      }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                     				n_matches,ctx,infos);
                      StackPointer=SOMMET;
                      break;
                   }
@@ -789,7 +818,8 @@ while (a_meta!=NULL) {
                              if (pos2!=pos) push_char(' ');
                              push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                          }
-                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                         				n_matches,ctx,infos);
                          StackPointer=SOMMET;
                       }
                       break;
@@ -805,7 +835,8 @@ while (a_meta!=NULL) {
                         if (pos2!=pos) push_char(' ');
                         push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                      }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                     				n_matches,ctx,infos);
                      StackPointer=SOMMET;
                      break;
                   }
@@ -816,7 +847,8 @@ while (a_meta!=NULL) {
                              if (pos2!=pos) push_char(' ');
                              push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                          }
-                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                         				n_matches,ctx,infos);
                          StackPointer=SOMMET;
                       }
                       break;
@@ -832,7 +864,8 @@ while (a_meta!=NULL) {
                         if (pos2!=pos) push_char(' ');
                         push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                      }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                     			n_matches,ctx,infos);
                      StackPointer=SOMMET;
                      break;
                   }
@@ -843,7 +876,8 @@ while (a_meta!=NULL) {
                              if (pos2!=pos) push_char(' ');
                              push_string(TOKENS->tab[texte[pos2+origine_courante]]);
                          }
-                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+                         			n_matches,ctx,infos);
                          StackPointer=SOMMET;
                       }
                       break;
@@ -871,7 +905,7 @@ while (a_pattern!=NULL) {
 
     sortie=ETIQUETTE[arr->etiquette_origine]->transduction;
     k=a_pattern->numero_de_pattern;
-    pos3=trouver_mot_compose_DIC(pos2,k);
+    pos3=trouver_mot_compose_DIC(pos2,k,infos->DLC_tree);
     if (pos3!=-1 && !(a_pattern->negation)) {
        int OK=1;
 #ifdef TRE_WCHAR
@@ -892,7 +926,8 @@ while (a_pattern!=NULL) {
              for (int x=pos2;x<=pos3;x++)
                 push_string(TOKENS->tab[texte[x+origine_courante]]);
           }
-          parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,n_matches,ctx);
+          parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
+          				n_matches,ctx,infos);
           StackPointer=SOMMET;
        }
     }
@@ -913,22 +948,12 @@ while (a_pattern!=NULL) {
     /* $CD$ begin */
 #ifdef TRE_WCHAR
     iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;  
-
-       /* 
-          printf("arr->etiquette_origine=%d\n", arr->etiquette_origine);     
-          printf("ETIQUETTE[arr->etiquette_origine]->contenu="); u_prints(ETIQUETTE[arr->etiquette_origine]->contenu); printf("\n");
-          printf("ETIQUETTE[arr->etiquette_origine]->contentGF="); u_prints(ETIQUETTE[arr->etiquette_origine]->contentGF); printf("\n");
-          printf("ETIQUETTE[arr->etiquette_origine]->entryMasterGF=%d\n", ETIQUETTE[arr->etiquette_origine]->entryMasterGF);
-          printf("masterGF -> tab[iMasterGF].content="); u_prints(masterGF -> tab[iMasterGF].content); printf("\n");
-          printf("TOKENS->tab[texte[pos2+origine_courante]]="); u_prints(TOKENS->tab[texte[pos2+origine_courante]]); printf("\n");
-    */
 #endif
     /* $CD$ end   */
-
     sortie=ETIQUETTE[arr->etiquette_origine]->transduction;
     k=a_pattern->numero_de_pattern;
     //---mots composes
-    pos3=trouver_mot_compose_DIC(pos2,k);
+    pos3=trouver_mot_compose_DIC(pos2,k,infos->DLC_tree);
     if (pos3!=-1 && !(a_pattern->negation)) {
       int OK=1;
 #ifdef TRE_WCHAR
@@ -949,7 +974,8 @@ while (a_pattern!=NULL) {
           for (int x=pos2;x<=pos3;x++)
             push_string(TOKENS->tab[texte[x+origine_courante]]);
         }
-        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,n_matches,ctx);
+        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
+        			n_matches,ctx,infos);
         StackPointer=SOMMET;
       }
     }
@@ -967,7 +993,8 @@ while (a_pattern!=NULL) {
             if (pos2!=pos) push_char(' ');
             push_string(TOKENS->tab[texte[pos2+origine_courante]]);
           }
-          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+          				n_matches,ctx,infos);
           StackPointer=SOMMET;
         }
       } else {
@@ -978,7 +1005,8 @@ while (a_pattern!=NULL) {
             if (pos2!=pos) push_char(' ');
             push_string(TOKENS->tab[texte[pos2+origine_courante]]);
           }
-          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+          				n_matches,ctx,infos);
           StackPointer=SOMMET;
         }
       }
@@ -1009,7 +1037,8 @@ if (etat_courant->nombre_de_tokens!=0) {
          if (pos2!=pos) push_char(' ');
          push_string(TOKENS->tab[texte[pos2+origine_courante]]);
       }
-      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,n_matches,ctx);
+      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
+      				n_matches,ctx,infos);
       StackPointer=SOMMET;
     
       /* $CD$ begin */
@@ -1077,14 +1106,14 @@ else return position_max;
 
 
 
-int trouver_mot_compose_DIC(int pos,int code) {
+int trouver_mot_compose_DIC(int pos,int code,struct DLC_tree_info* DLC_tree) {
 int position_max,p,res;
 struct DLC_tree_node *n;
 
 if (pos+origine_courante==LENGTH) {
    return -1;
 }
-if ((n=tableau_dlc[texte[pos+origine_courante]])==NULL) {
+if ((n=DLC_tree->index[texte[pos+origine_courante]])==NULL) {
    return -1;
 }
 if (-1!=dichotomie(code,n->array_of_patterns,n->number_of_patterns)) {

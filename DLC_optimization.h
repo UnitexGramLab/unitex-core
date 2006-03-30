@@ -28,6 +28,6 @@
 #include "CompoundWordTree.h"
 #include "Liste_nombres.h"
 
-void optimize_dlc();
+void optimize_dlc(struct DLC_tree_info*);
 
 #endif

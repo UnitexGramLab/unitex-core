@@ -31,6 +31,7 @@
 #include "Liste_num.h"
 #include "LocateConstants.h"
 #include "Context.h"
+#include "CompoundWordTree.h"
 
 /* $CD$ begin */
 #include "GF_lib.h"
@@ -73,10 +74,10 @@ extern IndexGF_T*   indexGF;
 /* $CD$ end   */
 
 
-void launch_locate(FILE*,Automate_fst2*,int,struct string_hash*,FILE*,int,long int,FILE*);
-void parcourir_opt(int,int,int,int,struct liste_num**,int,struct context*);
+void launch_locate(FILE*,Automate_fst2*,int,struct string_hash*,FILE*,int,long int,FILE*,
+					struct DLC_tree_info*);
 int dichotomie(int,int*,int);
-int trouver_mot_compose_DIC(int,int);
+int trouver_mot_compose_DIC(int,int,struct DLC_tree_info*);
 
 #endif
 

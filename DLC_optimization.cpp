@@ -57,7 +57,7 @@ if (n->number_of_transitions!=0) {
 
 
 
-void optimize_dlc() {
-optimiser_etat_dlc(racine_dlc);
+void optimize_dlc(struct DLC_tree_info* DLC_tree) {
+optimiser_etat_dlc(DLC_tree->root);
 } 
 
