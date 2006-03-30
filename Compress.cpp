@@ -118,7 +118,7 @@ if (INF==NULL) {
    return 1;
 }
 u_fprints_char("0000000000\n",INF);
-racine=new_arbre_dico();
+racine=new_dictionary_node();
 hash=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
 printf("Compressing...\n");
@@ -151,21 +151,21 @@ while(read_DELA_line(f,s)) {
            replace_unprotected_equal_sign(e->lemma,(unichar)' ');
            // we insert pomme de terre,pomme de terre.N
            get_compressed_line(e,tmp);
-           inserer_entree(e->inflected,tmp,racine,hash);
+           add_entry_to_dictionary_tree(e->inflected,tmp,racine,hash);
            // and pomme-de-terre,pomme-de-terre.N
            u_strcpy(e->inflected,inf_tmp);
            u_strcpy(e->lemma,lem_tmp);
            replace_unprotected_equal_sign(e->inflected,(unichar)'-');
            replace_unprotected_equal_sign(e->lemma,(unichar)'-');
            get_compressed_line(e,tmp);
-           inserer_entree(e->inflected,tmp,racine,hash);
+           add_entry_to_dictionary_tree(e->inflected,tmp,racine,hash);
         }
         else {
            // normal case
            unprotect_equal_signs(e->inflected);
            unprotect_equal_signs(e->lemma);
            get_compressed_line(e,tmp);
-           inserer_entree(e->inflected,tmp,racine,hash);
+           add_entry_to_dictionary_tree(e->inflected,tmp,racine,hash);
         }
         /* and last, but not least: don't forget to free your memory
            or it would be impossible to compress large dictionaries */

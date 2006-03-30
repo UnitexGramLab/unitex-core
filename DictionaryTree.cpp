@@ -21,19 +21,18 @@
 
 //---------------------------------------------------------------------------
 #include "DictionaryTree.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
-struct liste_nombres* new_liste_nbre() {
-struct liste_nombres* l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
-l->n=-1;
-l->suivant=NULL;
-return l;
-}
-
-
-struct dictionary_node* new_arbre_dico() {
+/**
+ * Allocates, initializes and returns a dictionary node.
+ */
+struct dictionary_node* new_dictionary_node() {
 struct dictionary_node* a=(struct dictionary_node*)malloc(sizeof(struct dictionary_node));
+if (a==NULL) {
+	fatal_error("Not enough memory in new_dictionary_node",1);
+}
 a->single_INF_code_list=NULL;
 a->offset=-1;
 a->trans=NULL;
@@ -41,59 +40,76 @@ return a;
 }
 
 
-struct dictionary_node_transition* new_arbre_dico_trans() {
+/**
+ * Allocates, initializes and returns a dictionary node transition.
+ */
+struct dictionary_node_transition* new_dictionary_node_transition() {
 struct dictionary_node_transition* t=(struct dictionary_node_transition*)malloc(sizeof(struct dictionary_node_transition));
-t->letter='\0';
+if (t==NULL) {
+	fatal_error("Not enough memory in new_arbre_dico_trans",1);
+}t->letter='\0';
 t->node=NULL;
 t->next=NULL;
 return t;
 }
 
 
-
-void free_arbre_dico(struct dictionary_node* a) {
+/**
+ * Frees all the dictionary graph whose root is 'a'.
+ */
+void free_dictionary_node(struct dictionary_node* a) {
 if (a==NULL) return;
 free_liste_nombres(a->single_INF_code_list);
-free_arbre_dico_trans(a->trans);
+free_dictionary_node_transition(a->trans);
 free(a);
 }
 
 
-void free_arbre_dico_non_rec(struct dictionary_node* a) {
-  if (a==NULL)
-    return;
-  free_liste_nombres(a->single_INF_code_list);
-  struct dictionary_node_transition* t;
-  struct dictionary_node_transition* tmp;
-  t = a->trans;
-  while (t!=NULL) {
-    tmp=t;
-    t=t->next;
-    free(tmp);
-  }
-  free(a);
+/**
+ * Frees the dictionary node 'a', but not the nodes pointed out by
+ * the transitions outgoing from 'a'.
+ */
+void free_dictionary_node_iterative(struct dictionary_node* a) {
+if (a==NULL) return;
+free_liste_nombres(a->single_INF_code_list);
+struct dictionary_node_transition* t;
+struct dictionary_node_transition* tmp;
+t = a->trans;
+while (t!=NULL) {
+   tmp=t;
+   t=t->next;
+   free(tmp);
+}
+free(a);
 }
 
 
-
-
-void free_arbre_dico_trans(struct dictionary_node_transition* t) {
+/**
+ * Frees the dictionary node transition 't', and all the dictionary graph whose root is 
+ * the dictionary node pointed out by 't'.
+ */
+void free_dictionary_node_transition(struct dictionary_node_transition* t) {
 struct dictionary_node_transition* tmp;
 while (t!=NULL) {
-       free_arbre_dico(t->node);
-      tmp=t;
-      t=t->next;
-      free(tmp);
+   free_dictionary_node(t->node);
+   tmp=t;
+   t=t->next;
+   free(tmp);
 }
 }
 
 
-
+/**
+ * This function looks for a transition of the dictionary node '*n' that is 
+ * tagged with 'c'. If the transition exists, it is returned. Otherwise, the
+ * transition is created, inserted according to the Unicode order and returned.
+ * In that case, the destination dictionary node is NULL. 
+ */
 struct dictionary_node_transition* get_transition(unichar c,struct dictionary_node** n) {
 struct dictionary_node_transition* tmp;
 if ((*n)->trans==NULL || c<((*n)->trans->letter)) {
-   // if we must insert at first position
-   tmp=new_arbre_dico_trans();
+   /* If we must insert at first position */
+   tmp=new_dictionary_node_transition();
    tmp->letter=c;
    tmp->next=(*n)->trans;
    tmp->node=NULL;
@@ -101,81 +117,102 @@ if ((*n)->trans==NULL || c<((*n)->trans->letter)) {
    return tmp;
 }
 if (c==((*n)->trans->letter)) {
-   // nothing to do
+   /* If the transition exists, we return it */
    return (*n)->trans;
 }
+/* Otherwise, we look for the transition, or the correct
+ * place to insert it */
 tmp=(*n)->trans;
 while (tmp->next!=NULL && c>tmp->next->letter) {
    tmp=tmp->next;
 }
 if (tmp->next==NULL || (tmp->next->letter)>c) {
-   // if we must insert between tmp and tmp->suivant
+   /* If we must insert between tmp and tmp->next */
    struct dictionary_node_transition* ptr;
-   ptr=new_arbre_dico_trans();
+   ptr=new_dictionary_node_transition();
    ptr->letter=c;
    ptr->next=tmp->next;
    ptr->node=NULL;
    tmp->next=ptr;
    return ptr;
 }
-// there we have (tmp->suivant->c == c)
+/* If we have (tmp->next->c == c) */
 return tmp->next;
 }
 
 
+/**
+ * This structure is used to pass several constant parameters to the function
+ * 'add_entry_to_dictionary_tree'.
+ */
+struct info {
+	unichar* INF_code;
+	struct string_hash* INF_code_list;
+};
 
-int is_in_list(int n,struct liste_nombres* l) {
-while (l!=NULL) {
-   if (l->n==n) return 1;
-   l=l->suivant;
-}
-return 0;
-}
 
-
-
-int OK=0;
-unichar* compressed;
-struct string_hash* hash;
-
-void explorer_arbre_dico(unichar* contenu,int pos,struct dictionary_node* noeud) {
-if (contenu[pos]=='\0') {
-   unichar tmp[3000];
-   int N=get_hash_number(compressed,hash);
-   if (noeud->single_INF_code_list==NULL) {
-      // if there is no node
-      noeud->single_INF_code_list=new_liste_nbre();
-      noeud->single_INF_code_list->n=N;
-      noeud->INF_code=N;
+/**
+ * This function explores a dictionary tree in order to insert an entry.
+ * 'inflected' is the inflected form to insert, and 'pos' is the current position
+ * in the string 'inflected'. 'node' is the current node in the dictionary tree.
+ * 'infos' is used to access to constant parameters.
+ */
+void add_entry_to_dictionary_tree(unichar* inflected,int pos,struct dictionary_node* node,
+                                  struct info* infos) {
+if (inflected[pos]=='\0') {
+   /* If we have reached the end of 'inflected', then we are in the
+    * node where the INF code must be inserted */
+   int N=get_hash_number(infos->INF_code,infos->INF_code_list);
+   if (node->single_INF_code_list==NULL) {
+      /* If there is no INF code in the node, then
+       * we add one and we return */
+      node->single_INF_code_list=new_liste_nombres();
+      node->single_INF_code_list->n=N;
+      node->INF_code=N;
       return;
    }
-   if (is_in_list(N,noeud->single_INF_code_list)) {
-      // if the compressed string has allready been taken into account for this node
-      // (case of duplicates), we do nothing
+   /* If there is an INF code list in the node ...*/
+   if (appartient_a_liste(N,node->single_INF_code_list)) {
+      /* If the INF code has allready been taken into account for this node
+       * (case of duplicates), we do nothing */
       return;
    }
-   struct liste_nombres* l_tmp=new_liste_nbre();
+   /* Otherwise, we add it to the INF code list */
+   struct liste_nombres* l_tmp=new_liste_nombres();
    l_tmp->n=N;
-   l_tmp->suivant=noeud->single_INF_code_list;
-   noeud->single_INF_code_list=l_tmp;
-   u_strcpy(tmp,hash->tab[noeud->INF_code]);
+   l_tmp->suivant=node->single_INF_code_list;
+   node->single_INF_code_list=l_tmp;
+   /* And we update the global INF line for this node */
+   unichar tmp[3000];
+   u_strcpy(tmp,infos->INF_code_list->tab[node->INF_code]);
    u_strcat_char(tmp,",");
-   u_strcat(tmp,compressed);
-   noeud->INF_code=get_hash_number(tmp,hash);
+   u_strcat(tmp,infos->INF_code);
+   node->INF_code=get_hash_number(infos->INF_code,infos->INF_code_list);
    return;
 }
-struct dictionary_node_transition* t=get_transition(contenu[pos],&noeud);
+/* If we are not at the end of 'inflected', then we look for
+ * the correct outgoing transition and we follow it */
+struct dictionary_node_transition* t=get_transition(inflected[pos],&node);
 if (t->node==NULL) {
-  t->node=new_arbre_dico();
+   /* We create the node if necessary */
+   t->node=new_dictionary_node();
 }
-explorer_arbre_dico(contenu,pos+1,t->node);
+add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos);
 }
 
 
-
-void inserer_entree(unichar* contenu,unichar* compressed_,struct dictionary_node* noeud,struct string_hash* hash_) {
-compressed=compressed_;
-hash=hash_;
-explorer_arbre_dico(contenu,0,noeud);
+/**
+ * This function inserts an entry in a dictionary tree. 'inflected' represents
+ * the inflected form of the entry, and 'INF_code' represents the compressed line
+ * that will be used for rebuilding the whole DELAF line. 'root' is the root
+ * of the dictionary tree and 'INF_code_list' is the structure that contains
+ * all the INF codes that are used in the given dictionary tree.
+ */
+void add_entry_to_dictionary_tree(unichar* inflected,unichar* INF_code,
+                                  struct dictionary_node* root,struct string_hash* INF_code_list) {
+struct info infos;
+infos.INF_code=INF_code;
+infos.INF_code_list=INF_code_list;
+add_entry_to_dictionary_tree(inflected,0,root,&infos);
 }
 

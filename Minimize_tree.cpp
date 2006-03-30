@@ -242,7 +242,7 @@ while (i<size) {
 #warning the solution
 #warning   free_arbre_dico_non_rec(tab_trans[i]->noeud);
 #warning is better, but not perfect: there is still a memory leak!
-     free_arbre_dico_non_rec(tab_trans[i]->node);
+     free_dictionary_node_iterative(tab_trans[i]->node);
      // and modify the current one's destination node
      tab_trans[i]->node=base->node;
    }

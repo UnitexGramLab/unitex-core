@@ -67,7 +67,9 @@ struct dictionary_node {
 
 
 /*
- * 
+ * This structure represent a list of transitions outgoing from a
+ * dictionary node. 'letter' and 'node' are the tag and the destination
+ * of the transition. 'next' is the following transition in the list.
  */
 struct dictionary_node_transition {
        unichar letter;
@@ -76,10 +78,10 @@ struct dictionary_node_transition {
 };
 
 
-void free_arbre_dico(struct dictionary_node*);
-void free_arbre_dico_non_rec(struct dictionary_node*);
-void free_arbre_dico_trans(struct dictionary_node_transition*);
-void inserer_entree(unichar*,unichar*,struct dictionary_node*,struct string_hash*);
-struct dictionary_node* new_arbre_dico();
+void free_dictionary_node(struct dictionary_node*);
+void free_dictionary_node_iterative(struct dictionary_node*);
+void free_dictionary_node_transition(struct dictionary_node_transition*);
+void add_entry_to_dictionary_tree(unichar*,unichar*,struct dictionary_node*,struct string_hash*);
+struct dictionary_node* new_dictionary_node();
 
 #endif
