@@ -20,8 +20,8 @@
   */
 
 //---------------------------------------------------------------------------
-#ifndef Arbre_mots_composesH
-#define Arbre_mots_composesH
+#ifndef CompoundWordTreeH
+#define CompoundWordTreeH
 //---------------------------------------------------------------------------
 
 #include "unicode.h"
@@ -33,24 +33,82 @@
 #define ALL_CASE_VARIANTS_ARE_ALLOWED 1
 #define MAX_TOKEN_IN_A_COMPOUND_WORD 256
 
-struct transition_dlc {
+
+/**
+ * This structure represents a node in a compound word tree. It is used
+ * by the locate functions to build a tree of all the compound words
+ * in order to speed up the consultation. In fact, this tree is a token tree:
+ * the branches are tagged by the numbers of the tokens that constitute 
+ * compound words. In a first step, the tree is built with transition lists.
+ * In a second step, thes lists are replaced by sorted arrays that 1) avoid
+ * duplicates and 2) allow dichotomy searches to speed up the process. Each
+ * node has two array: one for the token numbers ('destination_tokens') and
+ * one for the nodes pointed out by the transitions ('destination_nodes'). The
+ * set of transitions for a given token t is then represented by the couple:
+ * 
+ * (destination_tokens[k] , destination_nodes[k])
+ * 
+ * where destination_tokens[k] == t. These two arrays have been used to avoid
+ * an array of structure. This is a trick to optimize dichotomy searches, because
+ * testing destination_tokens[k] is quicker than testing t[k]->token.
+ * 
+ * For instance, if we have a transition tagged by 'the' that goes to the node 47 and another tagged 
+ * by "The" that goes to the node 129, and if the text contains the tokens "the",
+ * "The" and "THE" the original transition list is:
+ * 
+ * ("the" , 47) -> ("The" , 129) -> NULL
+ * 
+ * Once we have replaced tokens by all their case equivalents, we obtain the following 
+ * arrays:
+ * 
+ * destination_tokens	destination_nodes
+ * THE					47,129
+ * The					47,129
+ * the					47
+ */
+struct DLC_tree_node {
+	/*
+	 * 'patterns' is the list of the numbers of all the patterns that
+	 * can match the compound words corresponding to this node.
+	 */
+	struct liste_nombres* patterns;
+	/*
+	 * 'number_of_patterns' is the length of the list 'patterns' 
+	 */
+	int number_of_patterns;
+	/*
+	 * For optimization reasons, the list 'patterns' is replaced
+	 * by the sorted array 'array_of_patterns' before being used 
+	 * in the locate.
+	 */
+	int* array_of_patterns;
+	/*
+	 * 'transitions' is the list of transitions that outgo from
+	 * this node.
+	 */
+	struct DLC_tree_transition* transitions;
+	/*
+	 * 'number_of_transitions' is the length of the list 'transitions'.
+	 */
+	int number_of_transitions;
+	/*
+	 * Sorted array of tokens, including case equivalents. See comment above.
+	 */
+	int* destination_tokens;
+	/*
+	 * Sorted array of nodes. See comment above.
+	 */
+	struct DLC_tree_node** destination_nodes;
+};
+
+
+struct DLC_tree_transition {
   int token;
-  struct etat_dlc* arr;
-  struct transition_dlc* suivant;
+  struct DLC_tree_node* node;
+  struct DLC_tree_transition* next;
 };
 
-struct etat_dlc {
-  struct liste_nombres* patterns;
-  int nombre_patterns;
-  int* tab_patterns;
-  struct transition_dlc *liste;
-  int nombre_transitions;
-  int* tab_token;
-  struct etat_dlc **tab_arr;
-};
-
-
-struct etat_dlc* nouveau_noeud_dlc();
+struct DLC_tree_node* nouveau_noeud_dlc();
 int decouper_chaine_en_tokens(unichar*,int*,Alphabet*,struct string_hash*);
 void ajouter_a_dlc_sans_code(unichar*,Alphabet*,struct string_hash*);
 void ajouter_a_dlc_avec_code(unichar*,int,Alphabet*,struct string_hash*);
@@ -58,9 +116,9 @@ int remplacer_dans_dlc(unichar*,int,int,Alphabet*,struct string_hash*);
 
 
 
-extern struct etat_dlc* racine_dlc;
+extern struct DLC_tree_node* racine_dlc;
 extern int n_dlc;
 extern int t_dlc;
-extern struct etat_dlc* tableau_dlc[1000000];
+extern struct DLC_tree_node* tableau_dlc[1000000];
 
 #endif

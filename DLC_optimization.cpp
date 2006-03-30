@@ -24,31 +24,31 @@
 //---------------------------------------------------------------------------
 
 
-void optimiser_etat_dlc(struct etat_dlc* n) {
+void optimiser_etat_dlc(struct DLC_tree_node* n) {
 struct liste_nombres* tmp;
-struct transition_dlc* t;
+struct DLC_tree_transition* t;
 int i;
 if (n==NULL) return;
-if (n->nombre_patterns!=0) {
-  n->tab_patterns=(int*)malloc(sizeof(int)*n->nombre_patterns);
+if (n->number_of_patterns!=0) {
+  n->array_of_patterns=(int*)malloc(sizeof(int)*n->number_of_patterns);
   i=0;
   while (n->patterns!=NULL) {
-    n->tab_patterns[i++]=n->patterns->n;
+    n->array_of_patterns[i++]=n->patterns->n;
     tmp=n->patterns;
     n->patterns=n->patterns->suivant;
     free(tmp);
   }
 }
-if (n->nombre_transitions!=0) {
-  n->tab_token=(int*)malloc(sizeof(int)*n->nombre_transitions);
-  n->tab_arr=(struct etat_dlc**)malloc(sizeof(struct etat_dlc*)*n->nombre_transitions);
+if (n->number_of_transitions!=0) {
+  n->destination_tokens=(int*)malloc(sizeof(int)*n->number_of_transitions);
+  n->destination_nodes=(struct DLC_tree_node**)malloc(sizeof(struct DLC_tree_node*)*n->number_of_transitions);
   i=0;
-  while (n->liste!=NULL) {
-    n->tab_token[i]=n->liste->token;
-    n->tab_arr[i]=n->liste->arr;
-    t=n->liste;
-    n->liste=n->liste->suivant;
-    optimiser_etat_dlc(n->tab_arr[i]);
+  while (n->transitions!=NULL) {
+    n->destination_tokens[i]=n->transitions->token;
+    n->destination_nodes[i]=n->transitions->node;
+    t=n->transitions;
+    n->transitions=n->transitions->next;
+    optimiser_etat_dlc(n->destination_nodes[i]);
     i++;
     free(t);
   }

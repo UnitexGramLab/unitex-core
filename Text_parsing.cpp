@@ -1057,19 +1057,19 @@ return -1;
 
 
 
-int trouver_mot_compose(int pos,struct etat_dlc* n,int code) {
+int trouver_mot_compose(int pos,struct DLC_tree_node* n,int code) {
 int position_max,p,res;
 if (n==NULL)
   return -1;
-if (-1!=dichotomie(code,n->tab_patterns,n->nombre_patterns))
+if (-1!=dichotomie(code,n->array_of_patterns,n->number_of_patterns))
   position_max=pos-1;
 else position_max=-1;
 if (pos+origine_courante==LENGTH)
   return position_max;
-res=dichotomie(texte[pos+origine_courante],n->tab_token,n->nombre_transitions);
+res=dichotomie(texte[pos+origine_courante],n->destination_tokens,n->number_of_transitions);
 if (res==-1)
   return position_max;
-p=trouver_mot_compose(pos+1,n->tab_arr[res],code);
+p=trouver_mot_compose(pos+1,n->destination_nodes[res],code);
 if (p>position_max)
   return p;
 else return position_max;
@@ -1079,7 +1079,7 @@ else return position_max;
 
 int trouver_mot_compose_DIC(int pos,int code) {
 int position_max,p,res;
-struct etat_dlc *n;
+struct DLC_tree_node *n;
 
 if (pos+origine_courante==LENGTH) {
    return -1;
@@ -1087,7 +1087,7 @@ if (pos+origine_courante==LENGTH) {
 if ((n=tableau_dlc[texte[pos+origine_courante]])==NULL) {
    return -1;
 }
-if (-1!=dichotomie(code,n->tab_patterns,n->nombre_patterns)) {
+if (-1!=dichotomie(code,n->array_of_patterns,n->number_of_patterns)) {
    position_max=pos;
 }
 else position_max=-1;
@@ -1095,11 +1095,11 @@ pos++;
 if (pos+origine_courante==LENGTH) {
    return -1;
 }
-res=dichotomie(texte[pos+origine_courante],n->tab_token,n->nombre_transitions);
+res=dichotomie(texte[pos+origine_courante],n->destination_tokens,n->number_of_transitions);
 if (res==-1) {
    return position_max;
 }
-p=trouver_mot_compose(pos+1,n->tab_arr[res],code);
+p=trouver_mot_compose(pos+1,n->destination_nodes[res],code);
 if (p>position_max) {
    return p;
 }

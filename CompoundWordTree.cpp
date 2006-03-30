@@ -21,14 +21,14 @@
 
 //---------------------------------------------------------------------------
 #include "LocatePattern.h"
-#include "Arbre_mots_composes.h"
+#include "CompoundWordTree.h"
 //---------------------------------------------------------------------------
 
 
-struct etat_dlc* racine_dlc=nouveau_noeud_dlc();
+struct DLC_tree_node* racine_dlc=nouveau_noeud_dlc();
 int n_dlc=0; 
 int t_dlc=0;
-struct etat_dlc* tableau_dlc[1000000];
+struct DLC_tree_node* tableau_dlc[1000000];
 
 
 
@@ -121,7 +121,7 @@ return 1;
 
 
 
-void ajouter_code_a_etat_dlc(struct etat_dlc* n,int code) {
+void ajouter_code_a_etat_dlc(struct DLC_tree_node* n,int code) {
 struct liste_nombres *l,*precedent;
 int stop;
 
@@ -131,7 +131,7 @@ if (n->patterns==NULL) {
   l->n=code;
   l->suivant=n->patterns;
   n->patterns=l;
-  (n->nombre_patterns)++;
+  (n->number_of_patterns)++;
   return;
 }
 if (n->patterns->n==code)
@@ -143,7 +143,7 @@ if (n->patterns->n>code) {
   l->n=code;
   l->suivant=n->patterns;
   n->patterns=l;
-  (n->nombre_patterns)++;
+  (n->number_of_patterns)++;
   return;
 }
 // cas general
@@ -158,100 +158,100 @@ l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
 l->n=code;
 l->suivant=precedent->suivant;
 precedent->suivant=l;
-(n->nombre_patterns)++;
+(n->number_of_patterns)++;
 return;
 }
 
 
 
-struct transition_dlc* nouvelle_transition_dlc() {
-struct transition_dlc* t;
-t=(struct transition_dlc*)malloc(sizeof(struct transition_dlc));
+struct DLC_tree_transition* nouvelle_transition_dlc() {
+struct DLC_tree_transition* t;
+t=(struct DLC_tree_transition*)malloc(sizeof(struct DLC_tree_transition));
 t_dlc++;
 t->token=-4444;
-t->arr=NULL;
-t->suivant=NULL;
+t->node=NULL;
+t->next=NULL;
 return t;
 }
 
 
 
-struct etat_dlc* nouveau_noeud_dlc() {
-struct etat_dlc* n;
-n=(struct etat_dlc*)malloc(sizeof(struct etat_dlc));
+struct DLC_tree_node* nouveau_noeud_dlc() {
+struct DLC_tree_node* n;
+n=(struct DLC_tree_node*)malloc(sizeof(struct DLC_tree_node));
 n_dlc++;
 n->patterns=NULL;
-n->nombre_patterns=0;
-n->tab_patterns=NULL;
-n->liste=NULL;
-n->nombre_transitions=0;
-n->tab_token=NULL;
-n->tab_arr=NULL;
+n->number_of_patterns=0;
+n->array_of_patterns=NULL;
+n->transitions=NULL;
+n->number_of_transitions=0;
+n->destination_tokens=NULL;
+n->destination_nodes=NULL;
 return n;
 }
 
 
 
-struct etat_dlc* get_trans_dlc_sans_creer(struct etat_dlc* n,int t) {
-struct transition_dlc* l;
-l=n->liste;
+struct DLC_tree_node* get_trans_dlc_sans_creer(struct DLC_tree_node* n,int t) {
+struct DLC_tree_transition* l;
+l=n->transitions;
 while (l!=NULL) {
-  if (l->token==t) return l->arr;
-  l=l->suivant;
+  if (l->token==t) return l->node;
+  l=l->next;
 }
 return NULL;
 }
 
 
 
-struct etat_dlc* get_trans_dlc(struct etat_dlc* n,int t) {
-struct transition_dlc* l;
-struct transition_dlc* precedent;
+struct DLC_tree_node* get_trans_dlc(struct DLC_tree_node* n,int t) {
+struct DLC_tree_transition* l;
+struct DLC_tree_transition* precedent;
 int stop;
-if (n->liste==NULL) {
+if (n->transitions==NULL) {
   // 1er cas liste vide
   l=nouvelle_transition_dlc();
   l->token=t;
-  l->suivant=n->liste;
-  l->arr=nouveau_noeud_dlc();
-  n->liste=l;
-  (n->nombre_transitions)++;
-  return l->arr;
+  l->next=n->transitions;
+  l->node=nouveau_noeud_dlc();
+  n->transitions=l;
+  (n->number_of_transitions)++;
+  return l->node;
 }
-if (n->liste->token==t)
+if (n->transitions->token==t)
   // 2eme cas: 1er element=code
-  return n->liste->arr;
-if (n->liste->token>t) {
+  return n->transitions->node;
+if (n->transitions->token>t) {
   // 3eme cas: on doit inserer en tete de liste
   l=nouvelle_transition_dlc();
   l->token=t;
-  l->suivant=n->liste;
-  l->arr=nouveau_noeud_dlc();
-  n->liste=l;
-  (n->nombre_transitions)++;
-  return l->arr;
+  l->next=n->transitions;
+  l->node=nouveau_noeud_dlc();
+  n->transitions=l;
+  (n->number_of_transitions)++;
+  return l->node;
 }
 // cas general
-precedent=n->liste;
+precedent=n->transitions;
 stop=0;
-while (!stop && precedent->suivant!=NULL) {
-  if (precedent->suivant->token==t) return precedent->suivant->arr;
-  else if (precedent->suivant->token<t) precedent=precedent->suivant;
+while (!stop && precedent->next!=NULL) {
+  if (precedent->next->token==t) return precedent->next->node;
+  else if (precedent->next->token<t) precedent=precedent->next;
   else stop=1;
 }
 l=nouvelle_transition_dlc();
 l->token=t;
-l->arr=nouveau_noeud_dlc();
-l->suivant=precedent->suivant;
-precedent->suivant=l;
-(n->nombre_transitions)++;
-return l->arr;
+l->node=nouveau_noeud_dlc();
+l->next=precedent->next;
+precedent->next=l;
+(n->number_of_transitions)++;
+return l->node;
 }
 
 
 
-void ajouter_dlc(int* token_dlc,int i,struct etat_dlc* n,int code) {
-struct etat_dlc* ptr;
+void ajouter_dlc(int* token_dlc,int i,struct DLC_tree_node* n,int code) {
+struct DLC_tree_node* ptr;
 int pos,premier_token;
 if (token_dlc[i]==-1) {
   // on est au bout de la branche
@@ -301,7 +301,7 @@ ajouter_dlc(token_dlc_temp,0,racine_dlc,code);
 
 
 
-int inserer_code_dans_etat_dlc(struct etat_dlc* n,int code,int code2) {
+int inserer_code_dans_etat_dlc(struct DLC_tree_node* n,int code,int code2) {
 if (appartient_a_liste(code,n->patterns)) {
   ajouter_code_a_etat_dlc(n,code2);
   return 1;
@@ -311,8 +311,8 @@ return 0;
 
 
 
-int inserer_dans_dlc(int token_dlc[],int i,struct etat_dlc* n,int code,int code2) {
-struct etat_dlc* ptr;
+int inserer_dans_dlc(int token_dlc[],int i,struct DLC_tree_node* n,int code,int code2) {
+struct DLC_tree_node* ptr;
 int pos,resultat;
 resultat=0;
 if (token_dlc[i]==-1) {
