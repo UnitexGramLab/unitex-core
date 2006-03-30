@@ -31,7 +31,7 @@
 #include "Text_tokens.h"
 #include "Liste_nombres.h"
 #include "LocatePattern.h"
-#include "Arbre_mots_composes.h"
+#include "CompoundWordTree.h"
 #include "LocateConstants.h"
 
 struct noeud {

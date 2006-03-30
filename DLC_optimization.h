@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 
 #include "unicode.h"
-#include "Arbre_mots_composes.h"
+#include "CompoundWordTree.h"
 #include "Liste_nombres.h"
 
 void optimize_dlc();
