@@ -372,7 +372,7 @@ u_fprints(z,f);
 // if s is a not a tag, we return its length
 // else, the width is the max of length(inflected), length(lemma), length(code)
 //
-int width_of_tag(Etiquette e) {
+int width_of_tag(Fst2Tag e) {
 if (e->contenu[0]!='{') {
    return u_strlen(e->contenu);
 }

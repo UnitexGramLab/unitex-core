@@ -59,7 +59,7 @@ int line=0;
 // hhuh
 extern Automate_fst2* new_Automate_fst2();
 extern Etat_fst* graphe_fst2;
-extern Etiquette* etiquette_fst2;
+extern Fst2Tag* etiquette_fst2;
 extern int *debut_graphe_fst2;
 extern int *nombre_etats_par_grf;
 extern unichar** nom_graphe;
@@ -88,8 +88,8 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Etat_fst*)malloc(NBRE_ETATS*sizeof(Etat_fst));
-a->etiquette=(Etiquette*)malloc(MAX_FST2_TAGS*sizeof(Etiquette));
+a->etat=(Etat_fst*)malloc(MAX_FST2_STATES*sizeof(Etat_fst));
+a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
 graphe_fst2=a->etat;
 etiquette_fst2=a->etiquette;
 debut_graphe_fst2=a->debut_graphe_fst2;
@@ -748,7 +748,7 @@ static	unichar InF[1024];
 
 static void traiteEttiques()
 {
-	Etiquette et;
+	Fst2Tag et;
 
 	int wp,dp,ip,op;
 	int FpileIdx = 0;

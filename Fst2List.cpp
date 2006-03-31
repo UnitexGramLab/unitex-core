@@ -787,7 +787,7 @@ verboseMode  = 0;
 		int i;
 		unichar *wp;
 //        unichar *wwp;
-		Etiquette Eti;		
+		Fst2Tag Eti;		
 		while(h){
 		    if((foutput == stderr) || (foutput == stdout))
               fprintf(foutput,"C%d%s",h->index,getUtoChar(entreGO));
@@ -820,7 +820,7 @@ verboseMode  = 0;
 		int i,st,ed;
 		int tmp;
 		unichar *wp;
-		Etiquette Eti;
+		Fst2Tag Eti;
 		if(autoNum){
 			st = a->debut_graphe_fst2[autoNum];
 			ed =(autoNum  == a->nombre_graphes) ? a->nombre_etats :
@@ -1503,7 +1503,7 @@ uascToNum(unichar *uasc,int *val)
 void CFstApp::outWordsOfGraph(int depth)
 {
 	int s;
-	Etiquette Eti;
+	Fst2Tag Eti;
 	unichar *sp;
 	unichar *wp;
 	unichar *ep;

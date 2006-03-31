@@ -21,7 +21,7 @@
 
 //---------------------------------------------------------------------------
 
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "Error.h"
 #include "LocateConstants.h"
 
@@ -32,7 +32,7 @@
 //-------CHARGEMENT DU FST2------------------------
 
 Etat_fst* graphe_fst2;
-Etiquette* etiquette_fst2;
+Fst2Tag* etiquette_fst2;
 int *debut_graphe_fst2;
 int *nombre_etats_par_grf;
 unichar** nom_graphe;
@@ -110,7 +110,7 @@ free(e);
 }
 
 
-void free_etiquette(Etiquette e) {
+void free_etiquette(Fst2Tag e) {
 if (e->contenu!=NULL) free(e->contenu);
 if (e->transduction!=NULL) free(e->transduction);
 if (e->flechi!=NULL) free(e->flechi);
@@ -177,7 +177,7 @@ int n_etats=a->nombre_etats+1;
 int n_graphes=a->nombre_graphes+1;
 int n_etiq=a->nombre_etiquettes+1;
 a->etat=(Etat_fst*)realloc(a->etat,n_etats*sizeof(Etat_fst));
-a->etiquette=(Etiquette*)realloc(a->etiquette,n_etiq*sizeof(Etiquette));
+a->etiquette=(Fst2Tag*)realloc(a->etiquette,n_etiq*sizeof(Fst2Tag));
 // we count +1 because we start the graph numerotation at 1
 a->debut_graphe_fst2=(int*)realloc(a->debut_graphe_fst2,(1+n_graphes)*sizeof(int));
 if (a->nom_graphe!=NULL) {
@@ -191,9 +191,9 @@ a->nombre_etats_par_grf=(int*)realloc(a->nombre_etats_par_grf,n_graphes*sizeof(i
 //
 // cree et renvoie une nouvelle etiquette
 //
-Etiquette nouvelle_etiquette_mat() {
-Etiquette e;
-e=(Etiquette)malloc(sizeof(struct etiq_));
+Fst2Tag nouvelle_etiquette_mat() {
+Fst2Tag e;
+e=(Fst2Tag)malloc(sizeof(struct fst2Tag));
 if (e==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction nouvelle_etiquette_mat\n");
   exit(1);
@@ -222,7 +222,7 @@ return e;
 //
 // gere les etiquettes <...> (<MOT>, <avoir>, <avoir.V>, <eu,avoir.V>, <V>)
 //
-void decomposer_angles_etiquette_fst2(Etiquette e) {
+void decomposer_angles_etiquette_fst2(Fst2Tag e) {
 unichar temp[1000];
 int i,j;
 j=0;
@@ -335,7 +335,7 @@ return;
 //
 // gere les etiquettes  {...}
 //
-void decomposer_accolades_etiquette_fst2(Etiquette e) {
+void decomposer_accolades_etiquette_fst2(Fst2Tag e) {
 unichar temp[1000];
 char err[1000];
 int i,j;
@@ -384,7 +384,7 @@ u_strcpy(e->infos_gramm,temp);
 
 void creer_etiquette_variable(int position,unichar mot[]) {
 int L=u_strlen(mot);
-Etiquette e=nouvelle_etiquette_mat();
+Fst2Tag e=nouvelle_etiquette_mat();
 e->contenu=(unichar*)malloc(L*sizeof(unichar));
 for (int i=1;i<L-1;i++)
     e->contenu[i-1]=mot[i];
@@ -407,7 +407,7 @@ void creer_etiquette_fst2(int position,
                           int respect_min_maj) {
 /* $CD$ end   */
 
-Etiquette e;
+Fst2Tag e;
 int L=u_strlen(mot);
 if (mot[0]=='$' && L>2 && (mot[L-1]=='(' || mot[L-1]==')')) {
    // on est dans le cas d'une variable $a( ou $a)
@@ -620,7 +620,7 @@ nombre_etiquettes_fst2=etiquette_courante;
 //
 void initialiser_graphe_fst2() {
 long int i;
-for (i=0;i<NBRE_ETATS;i++)
+for (i=0;i<MAX_FST2_STATES;i++)
   graphe_fst2[i]=NULL;
 }
 
@@ -629,7 +629,7 @@ for (i=0;i<NBRE_ETATS;i++)
 //
 void initialiser_etiquettes() {
 long int i;
-for (i=0;i<NBRE_ETIQUETTES;i++)
+for (i=0;i<MAX_FST2_TAGS;i++)
   etiquette_fst2[i]=NULL;
 }
 
@@ -943,7 +943,7 @@ nombre_etats_fst2=etat_courant;
 //
 // charge le FST2
 //
-void charger_graphe_fst2(FILE *f,Etat_fst graphe_fst2_[],Etiquette etiquette_[],
+void charger_graphe_fst2(FILE *f,Etat_fst graphe_fst2_[],Fst2Tag etiquette_[],
                          int *nombre_graphe_fst2s_,int *nombre_etats_,int *nombre_etiquettes_,
                          int **debut_graphe_fst2_,unichar ***nom_graphe_,int noms,
                          int **nombre_etats_par_grf_) {
@@ -994,8 +994,8 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Etat_fst*)malloc(NBRE_ETATS*sizeof(Etat_fst));
-a->etiquette=(Etiquette*)malloc(NBRE_ETIQUETTES*sizeof(Etiquette));
+a->etat=(Etat_fst*)malloc(MAX_FST2_STATES*sizeof(Etat_fst));
+a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
 graphe_fst2=a->etat;
 etiquette_fst2=a->etiquette;
 debut_graphe_fst2=a->debut_graphe_fst2;
@@ -1041,8 +1041,8 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Etat_fst*)malloc(NBRE_ETATS*sizeof(Etat_fst));
-a->etiquette=(Etiquette*)malloc(NBRE_ETIQUETTES*sizeof(Etiquette));
+a->etat=(Etat_fst*)malloc(MAX_FST2_STATES*sizeof(Etat_fst));
+a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
 graphe_fst2=a->etat;
 etiquette_fst2=a->etiquette;
 debut_graphe_fst2=a->debut_graphe_fst2;
@@ -1095,7 +1095,7 @@ s[new_cursor]='\0';
 // of any tag of the given fst2
 //
 void unprotect_characters_in_fst2_tags(Automate_fst2* fst2) {
-Etiquette etiq;
+Fst2Tag etiq;
 for (int i=0;i<fst2->nombre_etiquettes;i++) {
    etiq=fst2->etiquette[i];
    if (etiq!=NULL) {

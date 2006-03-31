@@ -28,7 +28,7 @@
 //
 // si l'etiquette reconnait <E>, on met son champ controle a 1, a 0 sinon
 //
-void controler_epsilon_etiquette(Etiquette e) {
+void controler_epsilon_etiquette(Fst2Tag e) {
 if ((e->contenu!=NULL) && (u_strlen(e->contenu)>=3) &&(e->contenu[0]=='<') && (e->contenu[1]=='E') && (e->contenu[2]=='>'))
   e->controle=1;
 else e->controle=0;
@@ -88,7 +88,7 @@ free(*l);
 //
 // verifie si de l'etat e on peut atteindre par <E> une transition vers le graphe g
 //
-int peut_aller_par_E(Etat_fst e,int g,Etat_fst* graphe,Etiquette* etiquette,int *verifie){
+int peut_aller_par_E(Etat_fst e,int g,Etat_fst* graphe,Fst2Tag* etiquette,int *verifie){
 liste_transition l;
 if (e==NULL) return 0;
 l=e->trans;
@@ -117,7 +117,7 @@ return 0;
 // parcours les transitions partant de l'etat e
 //
 int explorer_etat(Etat_fst e,Liste_num l,int *debut_graphe,
-                  unichar** nom_graphe,Etat_fst* graphe,Etiquette* etiquette,
+                  unichar** nom_graphe,Etat_fst* graphe,Fst2Tag* etiquette,
                   int* verifie) {
 liste_transition liste;
 
@@ -177,7 +177,7 @@ return 0;
 //
 // renvoie 1 si une recursion est trouvee dans le graphe numero e, 0 sinon
 //
-int chercher_recursion(int e,Liste_num l,int* debut_graphe,unichar** nom_graphe,Etat_fst* graphe,Etiquette* etiquette,int* verifie) {
+int chercher_recursion(int e,Liste_num l,int* debut_graphe,unichar** nom_graphe,Etat_fst* graphe,Fst2Tag* etiquette,int* verifie) {
 int ret;
 
 if (appartient_a_liste(e,l)) {
@@ -199,7 +199,7 @@ return ret;
 // renvoie 1 si on retombe par <E> sur un etat deja explore, 0 sinon
 //
 int chercher_boucle_par_E_dans_etat(Etat_fst e,Etat_fst* graphe,
-                                    Etiquette* etiquette,int verifie[]) {
+                                    Fst2Tag* etiquette,int verifie[]) {
 liste_transition l;
 if (e->controle&8) {
   e->controle=(unsigned char)(e->controle-8);
@@ -236,7 +236,7 @@ return 0;
 //
 // renvoie 1 si une boucle par <E> est trouvee dans le graphe numero e, 0 sinon
 //
-int chercher_boucle_par_E(int e,int* debut_graphe,unichar** nom_graphe,Etat_fst* graphe,Etiquette* etiquette,int* verifie,int *nombre_etats_par_grf) {
+int chercher_boucle_par_E(int e,int* debut_graphe,unichar** nom_graphe,Etat_fst* graphe,Fst2Tag* etiquette,int* verifie,int *nombre_etats_par_grf) {
 int i,debut;
 debut=debut_graphe[e];
 if (debut<0) {
@@ -269,7 +269,7 @@ return 0;
 int pas_de_recursion_old(char *nom_fst2) {
 FILE *f;
 Etat_fst* graphe;
-Etiquette* etiquette;
+Fst2Tag* etiquette;
 int* debut_graphe;
 int* nombre_etats_par_grf;
 int* verifie;
@@ -284,8 +284,8 @@ if (f==NULL) {
   fprintf(stderr,"Cannot open the graph %s\n",nom_fst2);
   return 0;
 }
-graphe=(Etat_fst*)malloc(sizeof(Etat_fst)*NBRE_ETATS);
-etiquette=(Etiquette*)malloc(sizeof(Etiquette)*MAX_FST2_TAGS);
+graphe=(Etat_fst*)malloc(sizeof(Etat_fst)*MAX_FST2_STATES);
+etiquette=(Fst2Tag*)malloc(sizeof(Fst2Tag)*MAX_FST2_TAGS);
 if (graphe==NULL || etiquette==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
   exit(1);
@@ -526,7 +526,7 @@ tmp->suivant=d;
 //
 // teste si on peut reconnaitre <E> depuis l'etat courant
 //
-int explorer_graphe_E(int premier_etat,int indice,Etat_fst* graphe,Etiquette *etiquette,
+int explorer_graphe_E(int premier_etat,int indice,Etat_fst* graphe,Fst2Tag *etiquette,
                       int n_graphe,unichar** nom_graphe,
                       Liste_conditions conditions_pour_etat[],
                       Liste_conditions *cond_tmp) {
@@ -858,7 +858,7 @@ for (i=0;i<nombre_etats;i++) {
 int pas_de_recursion(char *nom_fst2) {
 FILE *f;
 Etat_fst* graphe;
-Etiquette* etiquette;
+Fst2Tag* etiquette;
 Liste_conditions* conditions;
 Liste_conditions* conditions_pour_etat;
 int* debut_graphe;
@@ -878,8 +878,8 @@ if (f==NULL) {
   fprintf(stderr,"Cannot open the graph %s\n",nom_fst2);
   return 0;
 }
-graphe=(Etat_fst*)malloc(sizeof(Etat_fst)*NBRE_ETATS);
-etiquette=(Etiquette*)malloc(sizeof(Etiquette)*MAX_FST2_TAGS);
+graphe=(Etat_fst*)malloc(sizeof(Etat_fst)*MAX_FST2_STATES);
+etiquette=(Fst2Tag*)malloc(sizeof(Fst2Tag)*MAX_FST2_TAGS);
 if (graphe==NULL || etiquette==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
   exit(1);

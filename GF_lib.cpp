@@ -33,7 +33,7 @@ void    w_strcpy( wchar_t*, unichar* );
 MasterGF_T* CreateMasterGF( Automate_fst2* fst2 , Alphabet* alph )
 {
     struct string_hash* hashFilters = new_string_hash_N(HASH_FILTERS_DIM);
-    Etiquette* fst2Labels = fst2 -> etiquette;
+    Fst2Tag* fst2Labels = fst2 -> etiquette;
     int i, ccode;
     
     for (i = 0; i < fst2 -> nombre_etiquettes; ++i) {

@@ -63,7 +63,7 @@ extern int origine_courante;
 extern long int nombre_unites_reconnues;
 extern int* debut_graphe;
 extern struct string_hash* TOKENS;
-extern Etiquette* ETIQUETTE;
+extern Fst2Tag* ETIQUETTE;
 extern int SENTENCE_DELIMITER_INDICE;
 extern int STOP_MARKER_INDICE;
 /* $CD$ begin */

@@ -471,7 +471,7 @@ if (T->etiquette < 0) {
    }
    return;
 }
-Etiquette e=a->etiquette[T->etiquette];
+Fst2Tag e=a->etiquette[T->etiquette];
 int pos=u_strlen(flechi);
 unichar out[MAX_CHARS_IN_STACK];
 unichar pile[MAX_CHARS_IN_STACK];
@@ -570,7 +570,7 @@ if (T->etiquette < 0) {
    }
    return;
 }
-Etiquette e=a->etiquette[T->etiquette];
+Fst2Tag e=a->etiquette[T->etiquette];
 int pos=u_strlen(flechi);
 unichar out[MAX_CHARS_IN_STACK];
 unichar pile[MAX_CHARS_IN_STACK];

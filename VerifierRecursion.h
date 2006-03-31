@@ -40,6 +40,6 @@ typedef struct liste_num* Liste_num;
 
 
 int pas_de_recursion(char *);
-int chercher_recursion(int,Liste_num,int*,unichar**,Etat_fst*,Etiquette*,int*);
+int chercher_recursion(int,Liste_num,int*,unichar**,Etat_fst*,Fst2Tag*,int*);
 
 #endif

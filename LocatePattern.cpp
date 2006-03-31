@@ -234,7 +234,7 @@ unichar tmp[TAILLE_MOT];
 unichar flechi[TAILLE_MOT];
 unichar canonique[TAILLE_MOT];
 unichar pattern[TAILLE_MOT];
-Etiquette* etiquette=fst2->etiquette;
+Fst2Tag* etiquette=fst2->etiquette;
 unichar t[2];
 t[0]=' ';
 t[1]='\0';

@@ -55,7 +55,7 @@ int numeroter_etiquettes_sur_octets_forts(Automate_fst2*,int,int);
 int get_etiquette_reelle(int);
 int get_numero_de_la_transition(int);
 void convertir_transitions_en_etats(Automate_fst2*,int,int,int*,FILE*,int,int,int,int*,char*);
-int width_of_tag(Etiquette);
+int width_of_tag(Fst2Tag);
 int calculer_largeur_max_pour_chaque_rang(Automate_fst2*,int,int*,int,int*);
 
 #endif

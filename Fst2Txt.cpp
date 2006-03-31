@@ -404,7 +404,7 @@ if (PARSING_MODE!=NORMAL_MODE
        struct liste_nombres* TMP;
        while (RES!=NULL) {
           sommet=SOMMET2;
-          Etiquette etiq=fst2->etiquette[RES->etiq];
+          Fst2Tag etiq=fst2->etiquette[RES->etiq];
           traiter_transduction(etiq->transduction);
           int longueur=u_strlen(etiq->contenu);
           unichar C=mot[longueur];
@@ -448,7 +448,7 @@ while (t!=NULL) {
       }
       else {
          // case of a normal tag
-         Etiquette etiq=fst2->etiquette[n_etiq];
+         Fst2Tag etiq=fst2->etiquette[n_etiq];
          unichar* contenu=etiq->contenu;
          if (etiq->controle & 64) {
             // case of a $a( variable tag
@@ -798,7 +798,7 @@ if (PARSING_MODE!=NORMAL_MODE ||
        int SOMMET2=sommet;
        while (RES!=NULL) {
           sommet=SOMMET2;
-          Etiquette etiq=fst2->etiquette[RES->etiq];
+          Fst2Tag etiq=fst2->etiquette[RES->etiq];
           traiter_transduction(etiq->transduction);
           int longueur=u_strlen(etiq->contenu);
           unichar C=mot[longueur];
@@ -840,7 +840,7 @@ while (t!=NULL) {
       }
       else {
          // case of a normal tag
-         Etiquette etiq=fst2->etiquette[n_etiq];
+         Fst2Tag etiq=fst2->etiquette[n_etiq];
          unichar* contenu=etiq->contenu;
          if (etiq->controle & 64) {
             // case of a $a( variable tag
@@ -1148,7 +1148,7 @@ free(arbre_etiquettes);
 }
 
 
-int not_a_letter_sequence(Etiquette e) {
+int not_a_letter_sequence(Fst2Tag e) {
 // we return false only if e is a letter sequence like %hello
 if (e->controle&4 || e->controle&64 || e->controle&128) {
    // case of @hello $a( and $a)

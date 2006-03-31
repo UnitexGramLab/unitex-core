@@ -174,7 +174,7 @@ while (trans!=NULL) {
    }
    else {
       // normal transition
-      Etiquette etiq;
+      Fst2Tag etiq;
       etiq=automate->etiquette[trans->etiquette];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
@@ -257,7 +257,7 @@ while (trans!=NULL) {
    }
    else {
       // normal transition
-      Etiquette etiq;
+      Fst2Tag etiq;
       etiq=automate->etiquette[trans->etiquette];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
@@ -318,7 +318,7 @@ while (trans!=NULL) {
    }
    else {
       // normal transition
-      Etiquette etiq;
+      Fst2Tag etiq;
       etiq=automate->etiquette[trans->etiquette];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
@@ -400,7 +400,7 @@ while (trans!=NULL) {
    }
    else {
       // normal transition
-      Etiquette etiq;
+      Fst2Tag etiq;
       etiq=automate->etiquette[trans->etiquette];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");

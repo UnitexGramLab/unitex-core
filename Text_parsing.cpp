@@ -52,7 +52,7 @@ long int nombre_unites_reconnues=0;
 int* debut_graphe;
 struct string_hash* TOKENS;
 struct text_tokens* tokens;
-Etiquette* ETIQUETTE;
+Fst2Tag* ETIQUETTE;
 int SENTENCE_DELIMITER_INDICE=-1;
 int STOP_MARKER_INDICE=-1;
 Automate_fst2* current_fst2=NULL;

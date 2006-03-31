@@ -28,8 +28,8 @@
 #include "Fst2.h"
 
 
-void liberer_etiquette(Etiquette);
-void liberer_graphe_fst2(int,int,int*,Etat_fst[],Etiquette[]);
+void liberer_etiquette(Fst2Tag);
+void liberer_graphe_fst2(int,int,int*,Etat_fst[],Fst2Tag[]);
 void liberer_transitions(liste_transition);
 void liberer_etat(Etat_fst);
 

@@ -41,7 +41,7 @@ free(e);
 
 
 
-void liberer_etiquette(Etiquette e) {
+void liberer_etiquette(Fst2Tag e) {
 if (e==NULL) return;
 if (e->contenu!=NULL) free(e->contenu);
 if (e->flechi!=NULL) free(e->flechi);
@@ -54,7 +54,7 @@ free(e);
 //
 // libere les ressources utilisees pour le stockage du FST2
 //
-void liberer_graphe_fst2(int nombre_etats,int nombre_etiquettes,int *debut_graphe,Etat_fst graphe[],Etiquette etiquette[]) {
+void liberer_graphe_fst2(int nombre_etats,int nombre_etiquettes,int *debut_graphe,Etat_fst graphe[],Fst2Tag etiquette[]) {
 int i;
 for (i=0;i<nombre_etats;i++)
   liberer_etat(graphe[i]);

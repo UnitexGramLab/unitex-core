@@ -243,7 +243,7 @@ ptr->suivant=tmp;
 
 
 
-void ajouter_liste_de_tokens(Etiquette e,int n_etiq,Etat_opt *e2,int arr,int* N) {
+void ajouter_liste_de_tokens(Fst2Tag e,int n_etiq,Etat_opt *e2,int arr,int* N) {
 struct liste_nombres* l;
 l=e->numeros;
 while (l!=NULL) {
@@ -308,8 +308,8 @@ ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),arr,etiq_origine);
 
 
 
-void optimiser_trans(struct transition_fst* ptr,Etat_opt* e2,Etiquette* etiquette) {
-Etiquette e;
+void optimiser_trans(struct transition_fst* ptr,Etat_opt* e2,Fst2Tag* etiquette) {
+Fst2Tag e;
 int controle;
 if (ptr->etiquette<0) {
   // cas d'un sous-graphe
@@ -385,7 +385,7 @@ if (i!=(*e2)->nombre_de_tokens) {
 
 
 
-void optimiser_etat(Etat_fst e1,Etat_opt* e2,int e,Etiquette* etiquette) {
+void optimiser_etat(Etat_fst e1,Etat_opt* e2,int e,Fst2Tag* etiquette) {
 struct transition_fst* ptr;
 if (e1==NULL) {
   *e2=NULL;

@@ -53,7 +53,7 @@ static inline int est_un_token_simple(unichar* string, Alphabet* alph,int tokeni
 }
 
 
-void deuxieme_cas_prime(int e,Etiquette* etiquette,unichar* s,Alphabet* alph,
+void deuxieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
 						int tokenization_mode) {
 int num;
@@ -99,7 +99,7 @@ free_liste_nombres(ptr_copy); // s.n.
 
 
 
-void deuxieme_cas(int e,Etiquette* etiquette,Alphabet* alph,struct string_hash* tok,
+void deuxieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
 				struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 unichar* s;
 unichar tmp[2000];
@@ -130,7 +130,7 @@ else etiquette[e]->numero=LEXICAL_TAG;
 
 
 
-void troisieme_cas_prime(int e,Etiquette* etiquette,unichar* s,Alphabet* alph,
+void troisieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
 						int tokenization_mode) {
 int num;
@@ -176,7 +176,7 @@ free_liste_nombres(ptr_copy); // s.n.
 
 
 
-void troisieme_cas(int e,Etiquette* etiquette,Alphabet* alph,struct string_hash* tok,
+void troisieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
 					struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 unichar* s;
 unichar tmp[2000];
@@ -217,7 +217,7 @@ else etiquette[e]->numero=LEXICAL_TAG;
 
 
 
-void quatrieme_cas_prime(int e,Etiquette* etiquette,unichar* s,Alphabet* alph,
+void quatrieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
 						int tokenization_mode) {
 int num;
@@ -257,7 +257,7 @@ free_liste_nombres(ptr_copy); // s.n.
 
 
 
-void quatrieme_cas(int e,Etiquette* etiquette,Alphabet* alph,struct string_hash* tok,
+void quatrieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
 					struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 unichar* s;
 unichar tmp[2000];
@@ -284,7 +284,7 @@ else etiquette[e]->numero=LEXICAL_TAG;
 
 
 
-void cas_normal(int e,Etiquette* etiquette,Alphabet* alph,struct string_hash* tok,
+void cas_normal(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
 				int case_variants_allowed,struct DLC_tree_info* DLC_tree,
 				int tokenization_mode) {
 int num;
@@ -344,7 +344,7 @@ if (!est_un_token_simple(s,alph,tokenization_mode)) {
 
 void replace_pattern_tags(Automate_fst2* automate,Alphabet* alph,struct string_hash* tok,
 							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
-Etiquette* etiquette=automate->etiquette;
+Fst2Tag* etiquette=automate->etiquette;
 int i;
 //printf("************** TRAITEMENT DES ANGLES ******************\n");
 for (i=0;i<etiquette_courante;i++) {

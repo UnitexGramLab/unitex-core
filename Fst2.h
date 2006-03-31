@@ -20,20 +20,21 @@
   */
 
 //---------------------------------------------------------------------------
-#ifndef AutomateFst2H
-#define AutomateFst2H
+#ifndef Fst2H
+#define Fst2H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "unicode.h"
 
-//----------CONSTANTES-------------------------------------------
 
+/* Maximum number of tags in a .fst2 */
+#define MAX_FST2_TAGS 100000
 
+/* Maximum number of states in a .fst2 */
+#define MAX_FST2_STATES 500000
 
-#define NBRE_ETIQUETTES 100000          // nbre max d'etiquettes (%etiq1%etiq2%....)
-#define NBRE_ETATS      500000          // nbre max d'etats dans le FST2
 #define FST2_FINAL_STATE_BIT_MASK 1
 #define FST2_INITIAL_STATE_BIT_MASK 2
 
@@ -42,7 +43,7 @@
 extern int etiquette_courante;
 
 //----------TYPES------------------------------------------
-struct etiq_{
+struct fst2Tag {
   int numero;
   unsigned char controle;
   unichar *contenu;
@@ -61,7 +62,7 @@ struct etiq_{
 
 };
 
-typedef struct etiq_* Etiquette;
+typedef struct fst2Tag* Fst2Tag;
 
 
 struct etat_fst {
@@ -94,7 +95,7 @@ struct variable_list {
 
 struct automate_fst2 {
     Etat_fst* etat;
-    Etiquette* etiquette;
+    Fst2Tag* etiquette;
     int nombre_graphes;
     int nombre_etats;
     int nombre_etiquettes;
@@ -108,7 +109,7 @@ typedef struct automate_fst2 Automate_fst2;
 
 
 //----------PROTOTYPES-------------------------------------------
-void charger_graphe_fst2(FILE*,Etat_fst[],Etiquette[],int*,int*,int*,int**,
+void charger_graphe_fst2(FILE*,Etat_fst[],Fst2Tag[],int*,int*,int*,int**,
                          unichar***,int,int**);
 
 liste_transition nouvelle_transition_mat();
