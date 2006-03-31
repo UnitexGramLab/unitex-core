@@ -28,7 +28,7 @@
 #include "DELA.h"
 #include "DictionaryTree.h"
 #include "String_hash.h"
-#include "Arbre_to_bin.h"
+#include "AutomatonDictionary2Bin.h"
 #include "FileName.h"
 #include "Minimize_tree.h"
 #include "Copyright.h"
@@ -183,14 +183,16 @@ u_fclose(f);
 sauver_lignes_hash(INF,hash);
 u_fclose(INF);
 minimize_tree(racine);
-creer_et_sauver_bin(racine,bin);
+int n_states;
+int n_transitions;
+creer_et_sauver_bin(racine,bin,&n_states,&n_transitions);
 printf("%d line%s read            \n"
        "%d INF entr%s created\n",
        i,
        (i!=1)?"s":"",
        hash->N,
        (hash->N!=1)?"ies":"y");
-printf("%d states, %d transitions\n",N_STATES,N_TRANSITIONS);
+printf("%d states, %d transitions\n",n_states,n_transitions);
 ecrire_nombre_lignes_INF(inf,hash->N);
 // the following line had been removed because of a slowness problem with
 // very large INF lines
