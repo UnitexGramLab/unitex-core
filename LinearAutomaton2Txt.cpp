@@ -24,8 +24,7 @@
 
 int isLinearAutomaton(Automate_fst2* fst2) {
 if (fst2==NULL) {
-   fprintf(stderr,"NULL error in isLinearAutomaton\n");
-   fatal_error(1);
+   fatal_error("NULL error in isLinearAutomaton\n");
 }
 liste_transition l;
 Etat_fst etat;
@@ -55,8 +54,7 @@ return LINEAR_AUTOMATON;
 
 int convertLinearAutomaton(Automate_fst2* fst2,FILE* f) {
 if (fst2==NULL) {
-   fprintf(stderr,"NULL error in convertLinearAutomaton\n");
-   fatal_error(1);
+   fatal_error("NULL error in convertLinearAutomaton\n");
 }
 liste_transition l;
 Etat_fst etat;

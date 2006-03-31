@@ -22,8 +22,8 @@
 #ifndef ErrorH
 #define ErrorH
 
-void fatal_error(int);
-void fatal_error(char*,int);
+void fatal_error(int,char*,...);
+void fatal_error(char*,...);
 
 #endif
 

@@ -22,94 +22,141 @@
 //---------------------------------------------------------------------------
 #include "AutomatonDictionary2Bin.h"
 #include "DictionaryTree.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
+/**
+ * This function associates an offset to the given dictionary node and updates
+ * the 'bin_size' value according to the number of bytes taken by this node
+ * and its transitions. Then, the function is called recursively on all the
+ * nodes that are children of 'node'.
+ * If the node has already been numbered (we are in an automaton, 
+ * not a tree), the function does nothing.
+ */
+void number_node(struct dictionary_node* node,int *bin_size) {
+if (node==NULL) return;
+if (node->offset!=-1) {
+	/* Nothing to do if there is already an offset */
+	return;
+}
+/* We give an offset to the node */
+node->offset=(*bin_size);
 
-void numeroter_noeuds(struct dictionary_node* a,int *taille) {
-if (a==NULL) return;
-if (a->offset!=-1) {
-   return;
+/* And we update 'bin_size' with the 2 bytes that will be used
+ * to code the number of transitions of this node */
+(*bin_size)=(*bin_size)+2;
+
+if (node->single_INF_code_list!=NULL) {
+	/* If the node is a final one, we add 3 bytes for coding the INF line number */
+	(*bin_size)=(*bin_size)+3;
 }
-a->offset=(*taille);
-a->n_trans=0;
-(*taille)=(*taille)+2;  // 2 bytes for the number of transitions
-if (a->single_INF_code_list!=NULL) {
-   // if the node is a final one, we count 3 bytes for the adress of the INF line
-   (*taille)=(*taille)+3;
-}
+/* Then we count the transitions */
+node->n_trans=0;
 struct dictionary_node_transition* tmp;
-tmp=a->trans;
+tmp=node->trans;
 while (tmp!=NULL) {
-  (*taille)=(*taille)+5; // for each transition, we count 2 bytes for the unichar and 3 bytes for the dest adress
-  tmp=tmp->next;
-  (a->n_trans)++;  // we also count the number of transitions
+	/* For each transition, we count 2 bytes for the letter and 3 bytes for the 
+	 * destination offset */
+  	(*bin_size)=(*bin_size)+5; 
+  	tmp=tmp->next;
+  	/* We update the number of transitions */
+	(node->n_trans)++;
 }
-tmp=a->trans;
+/* Finally, we number all the children of the node */
+tmp=node->trans;
 while (tmp!=NULL) {
-  numeroter_noeuds(tmp->node,taille);
+  number_node(tmp->node,bin_size);
   tmp=tmp->next;
 }
 }
 
 
-
-void remplir_tableau_bin(struct dictionary_node* a,int *n_states,int *n_transitions,
+/**
+ * This function dumps the information relative to 'node' and its transitions 
+ * in the 'bin' array. Then, the function is called recursively on the children
+ * nodes of 'node'. The function assumes that all nodes have previously been
+ * numbered with the function 'number_node'.
+ * 
+ * If the node has already been dumped, the function does nothing.
+ * 
+ * The parameters 'n_states' and 'n_transitions' are used to count the states
+ * and transitions of the dictionary automaton.
+ */
+void fill_bin_array(struct dictionary_node* node,int *n_states,int *n_transitions,
 						unsigned char* bin) {
-if (a==NULL) return;
-if (a->INF_code==-1) {
+if (node==NULL) return;
+if (node->INF_code==-1) {
+	/* We use this test to know if the node has already been dumped */
    return;
 }
+/* We increase the number of states */
 (*n_states)++;
-unichar n=(unichar)a->n_trans;
-if (a->single_INF_code_list==NULL) {
-   // if the node is not a final one, we put to 1 the the heaviest bit
+
+/* We cast the number of transitions into an unsigned number on 2 bytes */
+unichar n=(unichar)node->n_trans;
+if (node->single_INF_code_list==NULL) {
+   /* If the node is not a final one, we put to 1 the the heaviest bit */
    n=(unichar)(n|32768);
 }
-int pos=a->offset;
-// we write the 2 bytes info about the node
+
+/* We take the offset of the node as a base */
+int pos=node->offset;
+
+/* We write the 2 bytes information about the node. We force the byte order
+ * (higher byte first) to avoid little/big endian surprises */
 bin[pos]=(unsigned char)(n/256);
 bin[pos+1]=(unsigned char)(n%256);
 pos=pos+2;
-if (a->single_INF_code_list!=NULL) {
-   int adr=a->INF_code;
-   bin[pos++]=(unsigned char)(adr/(256*256));
-   adr=adr%(256*256);
-   bin[pos++]=(unsigned char)(adr/256);
-   adr=adr%256;
-   bin[pos++]=(unsigned char)(adr);
+if (node->single_INF_code_list!=NULL) {
+	/* If the node is a final one, we dump the number of the associated
+	 * INF line on 3 bytes, forcing the order (higher byte first) */
+	int INF_line_number=node->INF_code;
+	bin[pos++]=(unsigned char)(INF_line_number/(256*256));
+	INF_line_number=INF_line_number%(256*256);
+	bin[pos++]=(unsigned char)(INF_line_number/256);
+	INF_line_number=INF_line_number%256;
+	bin[pos++]=(unsigned char)(INF_line_number);
 }
-a->INF_code=-1;
+/* Then, we assign -1 to 'node->INF_code' in order to mark that the node
+ * has been dumped */
+node->INF_code=-1;
+/* And we process all the transitions of the node */
 struct dictionary_node_transition* tmp;
-tmp=a->trans;
+tmp=node->trans;
 while (tmp!=NULL) {
-   (*n_transitions)++;
-   bin[pos++]=(unsigned char)((tmp->letter)/256);
-   bin[pos++]=(unsigned char)((tmp->letter)%256);
-   int adr=tmp->node->offset;
-   bin[pos++]=(unsigned char)(adr/(256*256));
-   adr=adr%(256*256);
-   bin[pos++]=(unsigned char)(adr/256);
-   adr=adr%256;
-   bin[pos++]=(unsigned char)(adr);
-   remplir_tableau_bin(tmp->node,n_states,n_transitions,bin);
-   tmp=tmp->next;
+	/* We increase the number of transitions */
+	(*n_transitions)++;
+	/* We dump the letter of the transition on 2 bytes, forcing the order (higher byte first) */
+	bin[pos++]=(unsigned char)((tmp->letter)/256);
+	bin[pos++]=(unsigned char)((tmp->letter)%256);
+	/* We dump the offset of the destination node on 3 bytes, forcing the order (higher byte first) */
+	int dest_offset=tmp->node->offset;
+	bin[pos++]=(unsigned char)(dest_offset/(256*256));
+	dest_offset=dest_offset%(256*256);
+	bin[pos++]=(unsigned char)(dest_offset/256);
+	dest_offset=dest_offset%256;
+	bin[pos++]=(unsigned char)(dest_offset);
+	/* And we dump the destination node recursively */
+	fill_bin_array(tmp->node,n_states,n_transitions,bin);
+	tmp=tmp->next;
 }
 }
 
 
-
-void creer_et_sauver_bin(struct dictionary_node* a,char* nom,int *n_states,int *n_transitions) {
+/**
+ * 
+ */
+void create_and_save_bin(struct dictionary_node* root,char* output,int *n_states,int *n_transitions) {
 FILE *f;
-f=fopen(nom,"wb");
+f=fopen(output,"wb");
 if (f==NULL) {
-  fprintf(stderr,"Cannot write automaton file %s\n",nom);
-  exit(1);
+  fatal_error("Cannot write automaton file %s\",output);
 }
 int taille=4; // we jump after the 4 bytes describing the automaton size
 (*n_states)=0;
 (*n_transitions)=0;
-numeroter_noeuds(a,&taille);
+number_node(root,&taille);
 unsigned char* bin=(unsigned char*)malloc(taille*sizeof(unsigned char));
 if (bin==NULL) {
    fprintf(stderr,"Not enough memory to create the dictionary automaton\n");
@@ -124,9 +171,9 @@ n=n%(256*256);
 bin[2]=(unsigned char)(n/256);
 n=n%256;
 bin[3]=(unsigned char)(n);
-remplir_tableau_bin(a,n_states,n_transitions,bin);
+fill_bin_array(root,n_states,n_transitions,bin);
 if (fwrite(bin,1,taille,f)!=(unsigned)taille) {
-  fprintf(stderr,"Error while writing file %s\n",nom);
+  fprintf(stderr,"Error while writing file %s\n",output);
 }
 fclose(f);
 free(bin);

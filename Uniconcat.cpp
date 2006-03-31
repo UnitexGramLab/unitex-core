@@ -50,21 +50,18 @@ if (argc!=3) {
 }
 
 if (!strcmp(argv[1],argv[2])) {
-   fprintf(stderr,"<src> and <dst> files must be different\n");
-   fatal_error(1);
+   fatal_error("<src> and <dst> files must be different\n");
 }
 
 FILE* src=u_fopen(argv[1],U_READ);
 if (src==NULL) {
-   fprintf(stderr,"Cannot open %s\n",argv[1]);
-   fatal_error(1);
+   fatal_error("Cannot open %s\n",argv[1]);
 }
 
 FILE* dst=u_fopen(argv[2],U_APPEND);
 if (dst==NULL) {
-   fprintf(stderr,"Cannot open %s\n",argv[2]);
    u_fclose(src);
-   fatal_error(1);
+   fatal_error("Cannot open %s\n",argv[2]);
 }
 unichar buffer[BUFFER_SIZE];
 int n;

@@ -1068,8 +1068,7 @@ return a;
 
 int is_final_state(Etat_fst e) {
 if (e==NULL) {
-   fprintf(stderr,"NULL error in is_final_state\n");
-   fatal_error(1);
+   fatal_error("NULL error in is_final_state\n");
 }
 return e->controle&1;
 }

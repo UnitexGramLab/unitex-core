@@ -31,7 +31,7 @@
 struct dictionary_node* new_dictionary_node() {
 struct dictionary_node* a=(struct dictionary_node*)malloc(sizeof(struct dictionary_node));
 if (a==NULL) {
-	fatal_error("Not enough memory in new_dictionary_node",1);
+	fatal_error("Not enough memory in new_dictionary_node\n");
 }
 a->single_INF_code_list=NULL;
 a->offset=-1;
@@ -46,8 +46,9 @@ return a;
 struct dictionary_node_transition* new_dictionary_node_transition() {
 struct dictionary_node_transition* t=(struct dictionary_node_transition*)malloc(sizeof(struct dictionary_node_transition));
 if (t==NULL) {
-	fatal_error("Not enough memory in new_arbre_dico_trans",1);
-}t->letter='\0';
+	fatal_error("Not enough memory in new_arbre_dico_trans\n");
+}
+t->letter='\0';
 t->node=NULL;
 t->next=NULL;
 return t;

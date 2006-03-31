@@ -190,7 +190,7 @@ static void error_at_token_pos (char* message, int start, int length) {
   fprintf(stderr, "\n");
 
   if (++n_errors >= MAX_ERRORS)
-    fatal_error("Too many errors, giving up!", 1);
+    fatal_error("Too many errors, giving up!\n");
 
   last_start  = start;
   last_length = length;
@@ -581,7 +581,7 @@ while (a_meta!=NULL) {
                     }
                     //***************************************************************
                     if (ctx->contextMode==FAILED_IN_NEGATIVE_CONTEXT) {
-                       fatal_error("ERROR: unexpected FAILED_IN_NEGATIVE_CONTEXT",1);
+                       fatal_error("ERROR: unexpected FAILED_IN_NEGATIVE_CONTEXT\n");
                     }
                     break;
                     }

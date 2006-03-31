@@ -33,7 +33,9 @@ void free_DLC_tree_node(struct DLC_tree_node*);
 struct DLC_tree_node* new_DLC_tree_node() {
 struct DLC_tree_node* n;
 n=(struct DLC_tree_node*)malloc(sizeof(struct DLC_tree_node));
-if (n==NULL) fatal_error("Not enough memory in new_DLC_tree_node",1);
+if (n==NULL) {
+	fatal_error("Not enough memory in new_DLC_tree_node\n");
+}
 n->patterns=NULL;
 n->number_of_patterns=0;
 n->array_of_patterns=NULL;
@@ -52,7 +54,9 @@ return n;
 struct DLC_tree_transition* new_DLC_tree_transition() {
 struct DLC_tree_transition* t;
 t=(struct DLC_tree_transition*)malloc(sizeof(struct DLC_tree_transition));
-if (t==NULL) fatal_error("Not enough memory in new_DLC_tree_transition",1);
+if (t==NULL) {
+	fatal_error("Not enough memory in new_DLC_tree_transition\n");
+}
 t->token=-1;
 t->node=NULL;
 t->next=NULL;
@@ -70,10 +74,14 @@ return t;
  */
 struct DLC_tree_info* new_DLC_tree(int number_of_tokens) {
 struct DLC_tree_info* DLC_tree=(struct DLC_tree_info*)malloc(sizeof(struct DLC_tree_info));
-if (DLC_tree==NULL) fatal_error("Not enough memory in init_DLC_tree",1);
+if (DLC_tree==NULL) {
+	fatal_error("Not enough memory in init_DLC_tree\n");
+}
 DLC_tree->root=new_DLC_tree_node();
 DLC_tree->index=(struct DLC_tree_node**)malloc(number_of_tokens*sizeof(struct DLC_tree_node*));
-if (DLC_tree->index==NULL) fatal_error("Not enough memory in new_DLC_tree",1);
+if (DLC_tree->index==NULL) {
+	fatal_error("Not enough memory in new_DLC_tree\n");
+}
 for (int i=0;i<number_of_tokens;i++) {
 	DLC_tree->index[i]=NULL;
 }

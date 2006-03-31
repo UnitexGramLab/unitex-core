@@ -2096,7 +2096,7 @@ int get_sequence_desambiguisee_comp(unichar contenu[],int *pos,unichar mot[],int
    if (!u_strcmp_char(mot,"{STOP}")) {
       // if the graph contains the forbidden tag {STOP}, then
       // we raise a fatal error
-      fatal_error("ERROR: a graph contains the forbidden tag {STOP}",1);
+      fatal_error("ERROR: a graph contains the forbidden tag {STOP}\n");
    }
    (*pos)++;
    (*pos_seq)++;

@@ -21,13 +21,41 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
-void fatal_error(int error) {
-exit(error);
+
+#define DEFAULT_ERROR_CODE 1
+
+
+/**
+ * Exits the program with the given exit code.
+ */
+void fatal_error(int error_code) {
+exit(error_code);
 }
 
-void fatal_error(char* message,int error) {
-fprintf(stderr,"%s\n",message);
-fatal_error(error);
+
+/**
+ * Prints the given message and
+ * exits the program with the given exit code.
+ */
+void fatal_error(int error_code,char* fmt,...) {
+  va_list plist;
+  va_start(plist,fmt);
+  vfprintf(stderr,fmt,plist);
+  va_end(plist);
+  fatal_error(error_code);
 }
 
+
+/**
+ * Prints the given message and
+ * exits the program with the default exit code.
+ */
+void fatal_error(char* fmt,...) {
+  va_list plist;
+  va_start(plist,fmt);
+  vfprintf(stderr,fmt,plist);
+  va_end(plist);
+  fatal_error(DEFAULT_ERROR_CODE);
+}

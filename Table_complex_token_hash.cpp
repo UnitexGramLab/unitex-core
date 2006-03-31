@@ -41,15 +41,13 @@ struct tct_hash_block *hb;
 
 		hb = (struct tct_hash_block *) malloc(sizeof(struct tct_hash_block ));
 		if (hb==NULL) {
-		   fprintf(stderr,"Not enough memory in new_hash_block\n");
-		   fatal_error(1);
+		   fatal_error("Not enough memory in new_hash_block\n");
 		};
 
 		hb->complex_tokens = (int *) malloc(tct_hash_block_size * sizeof(int));
 		if (hb->complex_tokens==NULL) {
-		   fprintf(stderr,"Not enough memory in new_hash_block\n");
-		   fatal_error(1);
-		};
+		   fatal_error("Not enough memory in new_hash_block\n");
+		}
 
 		hb->N_blocks = 1;			// allocate one block only
 		hb->len = 0;
@@ -66,9 +64,8 @@ struct tct_hash*		new_tct_hash(int tct_hash_size,int tct_hash_block_size) {
 
       tct_h = (struct tct_hash *) malloc(sizeof(struct tct_hash));
       if (tct_h==NULL) {
-       fprintf(stderr,"Not enough memory in new_tct_hash for table_hash \n");
-       fatal_error(1);
-	  };
+       fatal_error("Not enough memory in new_tct_hash for table_hash\n");
+	  }
 
 	  tct_h->tct_hash_size			= tct_hash_size;
 	  tct_h->tct_hash_block_size	= tct_hash_block_size;
@@ -81,8 +78,7 @@ struct tct_hash*		new_tct_hash(int tct_hash_size,int tct_hash_block_size) {
  	  
 	  tct_h->tct_tab			= (int **) malloc( 1000000 * sizeof(int *) ) ;
       if (tct_h->tct_tab ==  NULL) {
-       fprintf(stderr,"Not enough memory in new_tct_hash for tab \n");
-       fatal_error(1);
+       fatal_error("Not enough memory in new_tct_hash for tab\n");
 	  };
 
       return(tct_h);      
@@ -194,8 +190,7 @@ int *realloc_tct_hash_block(struct tct_hash_block *tct_hb, const int tct_hash_bl
 						  malloc(( N_block * tct_hash_block_size) * sizeof(int ));
 
 	if ( new_block == NULL ) {
-		fprintf(stderr,"Not enough memory in realloc_ttc_hash_block\n");
-		fatal_error(1);
+		fatal_error("Not enough memory in realloc_ttc_hash_block\n");
 	};
 //    Copy  the old block in the new one 
      for(unsigned int i=0; i< tct_hb->len;i++) 

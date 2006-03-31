@@ -78,8 +78,7 @@ return NULL;
 
 int was_allready_in_token_tree(int* token,int pos,struct token_tree_node* n,int priority) {
 if (n==NULL) {
-   fprintf(stderr,"Internal error in was_allready_in_token_tree\n");
-   fatal_error(1);
+   fatal_error("Internal error in was_allready_in_token_tree\n");
 }
 if (token[pos]==-1) {
    // if we are at the end of the token

@@ -31,12 +31,12 @@ struct context* new_context(unsigned char context_mode,
                             struct context* next) {
 struct context* c=(struct context*)malloc(sizeof(struct context));
 if (c==NULL) {
-   fatal_error("malloc error in new_context",1);
+   fatal_error("malloc error in new_context\n");
 }
 c->contextMode=context_mode;
 c->continue_position=continue_position;
 if (stack==NULL) {
-   fatal_error("NULL stack error in new_context",1);
+   fatal_error("NULL stack error in new_context\n");
 }
 u_strcpy(c->stack,stack);
 c->stack_pointer=stack_pointer;

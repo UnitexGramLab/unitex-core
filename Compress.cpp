@@ -185,7 +185,7 @@ u_fclose(INF);
 minimize_tree(racine);
 int n_states;
 int n_transitions;
-creer_et_sauver_bin(racine,bin,&n_states,&n_transitions);
+create_and_save_bin(racine,bin,&n_states,&n_transitions);
 printf("%d line%s read            \n"
        "%d INF entr%s created\n",
        i,

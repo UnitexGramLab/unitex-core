@@ -20,15 +20,13 @@
   */
 
 //---------------------------------------------------------------------------
-#ifndef Arbre_to_binH
-#define Arbre_to_binH
+#ifndef AutomatonDictionary2BinH
+#define AutomatonDictionary2BinH
 //---------------------------------------------------------------------------
 #include "unicode.h"
 #include <stdlib.h>
 
-extern int N_STATES;
-extern int N_TRANSITIONS;
 
-void creer_et_sauver_bin(struct dictionary_node*,char*);
+void create_and_save_bin(struct dictionary_node*,char*,int*,int*);
 
 #endif

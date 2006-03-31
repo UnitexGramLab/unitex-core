@@ -458,8 +458,7 @@ n_occur=(int*)malloc(tok->N*sizeof(int));
 token_tree_root=new_token_tree_node();
 tct_h =new_tct_hash(TCT_HASH_SIZE,TCT_HASH_BLOCK_SIZE);
 if (part_of_a_word==NULL || has_been_processed==NULL || n_occur==NULL) {
-   fprintf(stderr,"Not enough memory to process!\n");
-   fatal_error(1);
+   fatal_error("Not enough memory in init_dico_application\n");
 }
 for (int i=0;i<=(tok->N)/4;i++) {
    part_of_a_word[i]=0;
