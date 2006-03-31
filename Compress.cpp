@@ -185,7 +185,9 @@ u_fclose(INF);
 minimize_tree(racine);
 int n_states;
 int n_transitions;
-create_and_save_bin(racine,bin,&n_states,&n_transitions);
+int bin_size;
+create_and_save_bin(racine,bin,&n_states,&n_transitions,&bin_size);
+printf("Binary file: %d bytes\n",bin_size);
 printf("%d line%s read            \n"
        "%d INF entr%s created\n",
        i,

@@ -145,25 +145,36 @@ while (tmp!=NULL) {
 
 
 /**
- * 
+ * This function saves the dictionary automaton whose initial state is 'root'
+ * in a .bin file named 'output'. 
+ * The parameters 'n_states' and 'n_transitions' are used to count the states
+ * and transitions of the dictionary automaton. 'bin_size' represents the size
+ * of the resulting .bin file.
  */
-void create_and_save_bin(struct dictionary_node* root,char* output,int *n_states,int *n_transitions) {
+void create_and_save_bin(struct dictionary_node* root,char* output,int *n_states,
+						int *n_transitions,int *bin_size) {
 FILE *f;
+/* The output file must be opened as a binary one */
 f=fopen(output,"wb");
 if (f==NULL) {
-  fatal_error("Cannot write automaton file %s\",output);
+  fatal_error("Cannot write automaton file %s\n",output);
 }
-int taille=4; // we jump after the 4 bytes describing the automaton size
+/* The .bin size is initialized to 4, because of the 4 first bytes that will be
+ * used to store the size of the .bin */
+(*bin_size)=4;
 (*n_states)=0;
 (*n_transitions)=0;
-number_node(root,&taille);
-unsigned char* bin=(unsigned char*)malloc(taille*sizeof(unsigned char));
+
+/* We give offsets to the dictionary node and we get the .bin size */
+number_node(root,bin_size);
+/* An then we allocate a byte array of the correct size */
+unsigned char* bin=(unsigned char*)malloc((*bin_size)*sizeof(unsigned char));
 if (bin==NULL) {
-   fprintf(stderr,"Not enough memory to create the dictionary automaton\n");
-   exit(1);
+   fatal_error("Not enough memory to create the dictionary automaton\n");
 }
-int n=taille;
-printf("Binary file: %d bytes\n",n);
+int n=(*bin_size);
+/* We save the .bin size on the 4 first bytes, forcing the byte order
+ * (higher byte first) */
 bin[0]=(unsigned char)(n/(256*256*256));
 n=n%(256*256*256);
 bin[1]=(unsigned char)(n/(256*256));
@@ -171,9 +182,11 @@ n=n%(256*256);
 bin[2]=(unsigned char)(n/256);
 n=n%256;
 bin[3]=(unsigned char)(n);
+/* Then we fill the 'bin' array */
 fill_bin_array(root,n_states,n_transitions,bin);
-if (fwrite(bin,1,taille,f)!=(unsigned)taille) {
-  fprintf(stderr,"Error while writing file %s\n",output);
+/* And we dump it to the output file */
+if (fwrite(bin,1,(*bin_size),f)!=(unsigned)(*bin_size)) {
+  fatal_error("Error while writing file %s\n",output);
 }
 fclose(f);
 free(bin);
