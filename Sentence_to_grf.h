@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 
 #include "unicode.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "Liste_nombres.h"
 
 #define WIDTH_OF_A_CHAR 10

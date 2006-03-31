@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 
 
-#include "AutomateFst2.h"
+#include "Fst2.h"
 
 
 void liberer_etiquette(Etiquette);

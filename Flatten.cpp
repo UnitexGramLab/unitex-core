@@ -27,7 +27,7 @@
 
 #include "Copyright.h"
 #include "unicode.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "Grf2Fst2_lib.h"
 #include "FlattenFst2.h"
 #include "Liste_nombres.h"

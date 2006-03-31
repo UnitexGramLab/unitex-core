@@ -26,7 +26,7 @@
 #include "unicode.h"
 #include "Alphabet.h"
 #include "String_hash.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 
 #ifndef DO_NOT_USE_TRE_LIBRARY
 #include "regex.h"

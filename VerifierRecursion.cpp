@@ -285,7 +285,7 @@ if (f==NULL) {
   return 0;
 }
 graphe=(Etat_fst*)malloc(sizeof(Etat_fst)*NBRE_ETATS);
-etiquette=(Etiquette*)malloc(sizeof(Etiquette)*NBRE_ETIQUETTES);
+etiquette=(Etiquette*)malloc(sizeof(Etiquette)*MAX_FST2_TAGS);
 if (graphe==NULL || etiquette==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
   exit(1);
@@ -879,7 +879,7 @@ if (f==NULL) {
   return 0;
 }
 graphe=(Etat_fst*)malloc(sizeof(Etat_fst)*NBRE_ETATS);
-etiquette=(Etiquette*)malloc(sizeof(Etiquette)*NBRE_ETIQUETTES);
+etiquette=(Etiquette*)malloc(sizeof(Etiquette)*MAX_FST2_TAGS);
 if (graphe==NULL || etiquette==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
   exit(1);

@@ -23,7 +23,7 @@
 
 using namespace std;
 #include "unicode.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "LiberationFst2.h"
 #include "Copyright.h"
 #include "FileName.h"
@@ -89,7 +89,7 @@ if (nombre_graphes_fst2==0) {
    return NULL;
 }
 a->etat=(Etat_fst*)malloc(NBRE_ETATS*sizeof(Etat_fst));
-a->etiquette=(Etiquette*)malloc(NBRE_ETIQUETTES*sizeof(Etiquette));
+a->etiquette=(Etiquette*)malloc(MAX_FST2_TAGS*sizeof(Etiquette));
 graphe_fst2=a->etat;
 etiquette_fst2=a->etiquette;
 debut_graphe_fst2=a->debut_graphe_fst2;

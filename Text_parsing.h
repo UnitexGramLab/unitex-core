@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 
 #include "Matches.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "TransductionStack.h"
 #include "String_hash.h"
 #include "Liste_num.h"

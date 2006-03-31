@@ -21,7 +21,6 @@
 
 //---------------------------------------------------------------------------
 #include "Loading_dic.h"
-#include "AutomateFst2.h"
 #include "Fst2_tags_optimization.h"
 #include "LocateConstants.h"
 //---------------------------------------------------------------------------

@@ -24,10 +24,9 @@
 #define Fst2_tags_optimizationH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
 #include "Alphabet.h"
 #include "String_hash.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "CompoundWordTree.h"
 
 #define SEPARATOR_CHAR 1

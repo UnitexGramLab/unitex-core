@@ -22,7 +22,7 @@
 #ifndef _FST2AUTALMOT_H_
 #define _FST2AUTALMOT_H_
 
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "autalmot_old.h"
 
 tAutAlMot * fst2AutAlMot(Automate_fst2 * A, int nb, tAlphMot * alphabetLu);

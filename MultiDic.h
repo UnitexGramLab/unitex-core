@@ -23,7 +23,7 @@
 #ifndef MultiDicH
 #define MultiDicH
 
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "FileName.h"
 
 #define DELAF_BIN 0

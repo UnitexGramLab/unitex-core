@@ -26,7 +26,7 @@
 
 #include "unicode.h"
 #include "FileName.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "Copyright.h"
 #include "Fst2_to_Mft.h"
 #include "String_hash.h"

@@ -35,7 +35,7 @@
 #include "String_hash.h"
 #include "String_list.h"
 #include "Sentence_to_grf.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "Normalization_transducer.h"
 #include "Text_tokens.h"
 #include "Liste_nombres.h"

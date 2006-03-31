@@ -39,7 +39,7 @@
 #include "unicode.h"
 #include "utils.h"
 #include "minim.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "fst2autalmot.h"
 
 

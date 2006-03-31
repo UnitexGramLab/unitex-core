@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <wchar.h>
 #include "unicode.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "LiberationFst2.h"
 #include "bitmap.h"
 #include "etc.h"

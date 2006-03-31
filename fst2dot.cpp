@@ -20,7 +20,7 @@
   */
 
 #include <stdio.h>
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "utils.h"
 #include "unicode.h"
 

@@ -33,7 +33,7 @@
 #include "Text_automaton.h"
 #include "Liste_nombres.h"
 #include "Normalization_transducer.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "String_list.h"
 #include "FileName.h"
 #include "Copyright.h"

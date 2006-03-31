@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 
 #include "unicode.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "String_hash.h"
 
 

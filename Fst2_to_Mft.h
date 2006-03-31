@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 
 #include "unicode.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "String_hash.h"
 
 void convert_fst2_to_mft(Automate_fst2*,FILE*);

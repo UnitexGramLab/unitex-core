@@ -27,7 +27,7 @@
 //	 comparer deux automate 
 //	first automate is text automates
 //	seconde automate is motif automates
-#include "AutomateFst2.h"
+#include "Fst2.h"
 
 class motif_auto_sur_texte_autos {
 	int startAutoNum;

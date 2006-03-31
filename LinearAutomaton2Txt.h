@@ -22,7 +22,7 @@
 #ifndef LinearAutomaton2TxtH
 #define LinearAutomaton2TxtH
 
-#include "AutomateFst2.h"
+#include "Fst2.h"
 
 #define LINEAR_AUTOMATON -1
 

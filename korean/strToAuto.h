@@ -27,7 +27,7 @@
 #include "segtype.h"
 #include "etcclass.h"
 #include "double_link_arbre.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 
 //
 //	structure for head of file which save automates and structures of morphemes

@@ -33,7 +33,7 @@
 #include "DELA.h"
 #include "String_hash.h"
 #include "LocatePattern.h"
-#include "AutomateFst2.h"
+#include "Fst2.h"
 #include "Text_tokens.h"
 #include "Liste_nombres.h"
 #include "Grammatical_codes.h"
