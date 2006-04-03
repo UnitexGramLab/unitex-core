@@ -216,6 +216,7 @@ struct appel_a_pattern* a_pattern;
 int SOMMET=StackPointer;
 unichar* sortie;
 
+
 /* $CD$ begin */
 int iMasterGF;
 /* $CD$ end   */
@@ -438,10 +439,14 @@ if ((a_sous_graphe=etat_courant->liste_sous_graphes) != NULL) {
               				ctx,infos);
               StackPointer=SOMMET;
               if (numero_graphe_courant == 0) // necessary only in main graph
-                install_variable_backup(var_backup);
+                if (transduction_mode != IGNORE_TRANSDUCTIONS) {
+                	install_variable_backup(var_backup);
+                }
               struct liste_num* l_tmp = L;
               L = L->suivant;
-              free_variable_backup(l_tmp->variable_backup);
+              if (transduction_mode != IGNORE_TRANSDUCTIONS) {
+              	free_variable_backup(l_tmp->variable_backup);
+              }
               free(l_tmp);
             }
           while (L != NULL);
@@ -482,7 +487,6 @@ if (a_meta!=NULL) {
 while (a_meta!=NULL) {
   arr=a_meta->liste_arr;
   while (arr!=NULL) {
-
     /* $CD$ begin */
     iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;
     /* $CD$ end   */
@@ -888,6 +892,7 @@ while (a_meta!=NULL) {
   a_meta=a_meta->suivant;
 }
 
+printf("ZZZ %d %d\n",numero_etat_courant,numero_graphe_courant);
 
 /////////////////////////////////////////////////////////
 // patterns composes

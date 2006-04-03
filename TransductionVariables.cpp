@@ -21,6 +21,7 @@
 
 //---------------------------------------------------------------------------
 #include "TransductionVariables.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
@@ -121,6 +122,9 @@ if (tab!=NULL) free(tab);
 
 
 void install_variable_backup(int* tab) {
+if (tab==NULL) {
+	fatal_error("NULL error in install_variable_backup\n");
+}
 int j=0;
 for (int i=0;i<transduction_variable_index->N;i++) {
    tab_transduction_variable[i]->start=tab[j++];

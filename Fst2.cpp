@@ -414,10 +414,10 @@ Fst2Tag e=new_Fst2Tag();
  * length-1 = length - 2(ignoring '$' and '('or ')') + 1(for '\0') 
  */
 e->input=(unichar*)malloc((length-1)*sizeof(unichar));
-for (int i=1;i<=length;i++) {
+for (int i=1;i<length;i++) {
 	e->input[i-1]=input[i];
 }
-e->input[length-1]='\0';
+e->input[length-2]='\0';
 /*
  * And we indicate if it is a variable start or end
  */
@@ -1012,7 +1012,6 @@ fst2->number_of_graphs=nombre_graphes_fst2;
 fst2->number_of_states=nombre_etats_fst2;
 fst2->number_of_tags=nombre_etiquettes_fst2;
 fst2->initial_states=debut_graphe_fst2;
-fst2->variables=liste_des_variables;
 resize(fst2);
 return fst2;
 }
