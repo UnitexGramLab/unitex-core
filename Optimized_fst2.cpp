@@ -404,10 +404,10 @@ convertir_liste_tokens_en_tableau(e2,e);
 
 
 
-void optimize_fst2(Automate_fst2* automate) {
+void optimize_fst2(Fst2* automate) {
 int i;
-for (i=0;i<automate->nombre_etats;i++) {
+for (i=0;i<automate->number_of_states;i++) {
   graphe_opt[i]=NULL;
-  optimiser_etat(automate->etat[i],&graphe_opt[i],i,automate->etiquette);
+  optimiser_etat(automate->states[i],&graphe_opt[i],i,automate->tags);
 }
 }

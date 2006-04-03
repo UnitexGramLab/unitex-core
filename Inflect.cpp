@@ -39,7 +39,7 @@ char repertoire[1000];
 FILE *f;
 FILE *f_out;
 int line=0;
-Automate_fst2* fst2[N_FST2];
+Fst2* fst2[N_FST2];
 int n_fst2=0;
 struct node* root;
 int ADD_TWO_POINTS=0;
@@ -53,7 +53,7 @@ void free_transducer_tree();
 struct node* new_node();
 void free_node(struct node*);
 void free_transition(struct transition*);
-void explore_state(unichar*,unichar*,unichar*,Automate_fst2*,int,unichar*,unichar*);
+void explore_state(unichar*,unichar*,unichar*,Fst2*,int,unichar*,unichar*);
 
 
 
@@ -422,7 +422,7 @@ struct couple_string {
    struct couple_string* suivant;
 };
 
-void explore_state_recursion(unichar*,unichar*,unichar*,Automate_fst2*,int,struct couple_string**,unichar*);
+void explore_state_recursion(unichar*,unichar*,unichar*,Fst2*,int,struct couple_string**,unichar*);
 
 
 
@@ -457,12 +457,12 @@ for (int i=pos-1;i<MAX_CHARS_IN_STACK;i++) {
 // explore the tag of the transition T
 //
 void explore_tag(struct fst2Transition* T,unichar* flechi,unichar* canonique,unichar* sortie,
-                 Automate_fst2* a,unichar* code_gramm,unichar* comment) {
+                 Fst2* a,unichar* code_gramm,unichar* comment) {
 if (T->tag_number < 0) {
    // if we are in the case of a call to a sub-graph
    struct couple_string* L=NULL;
    struct couple_string* temp;
-   explore_state_recursion(flechi,canonique,sortie,a,a->debut_graphe_fst2[-(T->tag_number)],&L,code_gramm);
+   explore_state_recursion(flechi,canonique,sortie,a,a->initial_states[-(T->tag_number)],&L,code_gramm);
    while (L!=NULL) {
       explore_state(L->flechi,canonique,L->out,a,T->state_number,code_gramm,comment);
       temp=L;
@@ -471,7 +471,7 @@ if (T->tag_number < 0) {
    }
    return;
 }
-Fst2Tag e=a->etiquette[T->tag_number];
+Fst2Tag e=a->tags[T->tag_number];
 int pos=u_strlen(flechi);
 unichar out[MAX_CHARS_IN_STACK];
 unichar pile[MAX_CHARS_IN_STACK];
@@ -526,9 +526,9 @@ explore_state(pile,canonique,out,a,T->state_number,code_gramm,comment);
 // explore the transducer a
 //
 void explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
-                   Automate_fst2* a,int etat_courant,unichar* code_gramm,
+                   Fst2* a,int etat_courant,unichar* code_gramm,
                    unichar* comment) {
-Fst2State e=a->etat[etat_courant];
+Fst2State e=a->states[etat_courant];
 if (is_final_state(e)) {
     // if we are in a final state, we save the computed things
     u_fprints(flechi,f_out);
@@ -556,12 +556,12 @@ while (t!=NULL) {
 // explore the tag of the transition T
 //
 void explore_tag_recursion(struct fst2Transition* T,unichar* flechi,unichar* canonique,unichar* sortie,
-                 Automate_fst2* a,struct couple_string** LISTE,unichar* code_gramm) {
+                 Fst2* a,struct couple_string** LISTE,unichar* code_gramm) {
 if (T->tag_number < 0) {
    // if we are in the case of a call to a sub-graph
    struct couple_string* L=NULL;
    struct couple_string* temp;
-   explore_state_recursion(flechi,canonique,sortie,a,a->debut_graphe_fst2[-(T->tag_number)],&L,code_gramm);
+   explore_state_recursion(flechi,canonique,sortie,a,a->initial_states[-(T->tag_number)],&L,code_gramm);
    while (L!=NULL) {
       explore_state_recursion(L->flechi,canonique,L->out,a,T->state_number,LISTE,code_gramm);
       temp=L;
@@ -570,7 +570,7 @@ if (T->tag_number < 0) {
    }
    return;
 }
-Fst2Tag e=a->etiquette[T->tag_number];
+Fst2Tag e=a->tags[T->tag_number];
 int pos=u_strlen(flechi);
 unichar out[MAX_CHARS_IN_STACK];
 unichar pile[MAX_CHARS_IN_STACK];
@@ -625,9 +625,9 @@ explore_state_recursion(pile,canonique,out,a,T->state_number,LISTE,code_gramm);
 // explore the sub-transducer a
 //
 void explore_state_recursion(unichar* flechi,unichar* canonique,unichar* sortie,
-                   Automate_fst2* a,int etat_courant,struct couple_string** L,
+                   Fst2* a,int etat_courant,struct couple_string** L,
                    unichar* code_gramm) {
-Fst2State e=a->etat[etat_courant];
+Fst2State e=a->states[etat_courant];
 if (is_final_state(e)) {
     // if we are in a final state, we save the computed things
     struct couple_string* res=(struct couple_string*)malloc(sizeof(struct couple_string));

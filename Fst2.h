@@ -183,19 +183,76 @@ struct fst2Transition {
 typedef struct fst2Transition* Fst2Transition;
 
 
-struct automate_fst2 {
-    Fst2State* etat;
-    Fst2Tag* etiquette;
-    int nombre_graphes;
-    int nombre_etats;
-    int nombre_etiquettes;
-    int* debut_graphe_fst2;
-    unichar** nom_graphe;
-    int* nombre_etats_par_grf;
-    struct variable_list* variables;
+/*
+ * This structure represents a list of graph variables corresponding to
+ * declarations like $a( or $a)
+ * 
+ * This structure is declared here instead of in TransductionVariables, 
+ * in order to minimize library dependancies, because many programs
+ * that use the Fst2 library do not use variables.
+ */
+struct variable_list {
+	/*
+	 * Name of the variable.
+	 */
+	unichar* name;
+	
+	/*
+	 * Starting position of the variable in the text, -1 if the starting position
+	 * of the variable has not been defined.
+	 */
+	int start;
+	
+	/*
+	 * Ending position of the variable in the text, -1 if the ending position
+	 * of the variable has not been defined.
+	 */
+	int end;
+	
+	/*
+	 * Next variable in the list.
+	 */
+	struct variable_list* next;
 };
 
-typedef struct automate_fst2 Automate_fst2;
+
+/*
+ * This structure represent a fst2. 
+ */
+struct fst2 {
+	/* Array that contains all the states of the fst2 */
+    Fst2State* states;
+    
+    /* Array that contains all the tags of the fst2 */
+    Fst2Tag* tags;
+    
+    /* Number of graphs contained in the fst2 */
+    int number_of_graphs;
+    
+    /* Number of states contained in the fst2 */
+    int number_of_states;
+    
+    /* Number of tags of the fst2 */
+    int number_of_tags;
+    
+    /* Array that indicates for each graph the number of its initial state */
+    int* initial_states;
+    
+    /*
+     * This array is used to store the graph names. We use the type unichar and
+     * not char, because this array is also used to store sentences, when the fst2
+     * represents a text automaton.
+     */
+    unichar** graph_names;
+    
+    /* This array indicates for each graph its number of states */
+    int* number_of_states_by_graphs;
+    
+    /* List of variables used in the graph. This list is initialized from
+     * the $a( and $a) deaclarations found in the tags. */
+    struct variable_list* variables;
+};
+typedef struct fst2 Fst2;
 
 
 //----------PROTOTYPES-------------------------------------------
@@ -203,11 +260,11 @@ void charger_graphe_fst2(FILE*,Fst2State[],Fst2Tag[],int*,int*,int*,int**,
                          unichar***,int,int**);
 
 Fst2Transition nouvelle_transition_mat();
-Automate_fst2* load_fst2(char*,int);
-void free_fst2(Automate_fst2*);
+Fst2* load_fst2(char*,int);
+void free_fst2(Fst2*);
 struct variable_list* get_variable(unichar*,struct variable_list*);
-Automate_fst2* load_one_sentence_of_fst2(char*,int,FILE*);
-void unprotect_characters_in_fst2_tags(Automate_fst2*);
+Fst2* load_one_sentence_of_fst2(char*,int,FILE*);
+void unprotect_characters_in_fst2_tags(Fst2*);
 void free_transition(struct fst2Transition*);
 
 int is_final_state(Fst2State);

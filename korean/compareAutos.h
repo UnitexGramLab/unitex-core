@@ -32,8 +32,8 @@
 class motif_auto_sur_texte_autos {
 	int startAutoNum;
 	int curAuto;
-	Automate_fst2* Motif_Automate;
-	Automate_fst2* Text_Automate;
+	Fst2* Motif_Automate;
+	Fst2* Text_Automate;
 
 #define	PATH_QUEUE_MAX	256
 	struct trace_queue {
@@ -68,7 +68,7 @@ public:
 		pathEtiQ[pathEtiQidx].path = curAuto;
 		pathEtiQ[pathEtiQidx].eti = 0;
 		pathEtiQidx++;
-		findCycleSubGraph(Motif_Automate->debut_graphe_fst2[curAuto],0,0);
+		findCycleSubGraph(Motif_Automate->initial_states[curAuto],0,0);
 		pathEtiQidx--;
 		if(pathEtiQidx)exitMessage("error in program");
 	}
@@ -82,7 +82,7 @@ public:
 
 	if( pathEtiQidx > PATH_QUEUE_MAX)	return;
 
-	if (is_final_state(Motif_Automate->etat[autoNo])) {	// terminal node 
+	if (is_final_state(Motif_Automate->states[autoNo])) {	// terminal node 
 		if(curAuto != startAutoNum){		// check continue  condition
 			skipCnt = 0;	// find next state
 			for(i = CautoDepth;i>=0; --i){
@@ -114,7 +114,7 @@ public:
 			afficher_match_fst2(0,L"");
 		}
 	}
-	for(struct fst2Transition *sui = Motif_Automate->etat[autoNo]->transitions;
+	for(struct fst2Transition *sui = Motif_Automate->states[autoNo]->transitions;
 	sui != 0 ; sui = sui->next){
 		if(sui->tag_number & FILE_PATH_MARK ) {	// handling sub call
 			CautoDepth++;
@@ -127,14 +127,14 @@ public:
 			pathEtiQ[pathEtiQidx].eti = 0;
 			
 			++pathEtiQidx;
-			findCycleSubGraph(Motif_Automate->debut_graphe_fst2[curAuto],pos,depth+1);
+			findCycleSubGraph(Motif_Automate->initial_states[curAuto],pos,depth+1);
 			--pathEtiQidx;			
 			curAuto = saveAuto;
 			--CautoDepth;
 			continue;
 		}
 		// verifiy next condition 
-		for( struct fst2Transition *tsui = Text_Automate->etat[pos]->transitions;
+		for( struct fst2Transition *tsui = Text_Automate->states[pos]->transitions;
 		tsui != 0; tsui = tsui->next){
 			if(matchVerify(sui->tag_number,tsui->tag_number)){
 				// forward 

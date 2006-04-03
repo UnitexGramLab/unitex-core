@@ -1444,7 +1444,7 @@ class mkTxt2Fst2Kr : public wideCharTable{
 	#define MAX_NO_ELEMENT_PHASE	4094
 	struct text_etat_fst2 *segOfPhrase[MAX_NO_ELEMENT_PHASE];
 	int segOfPhraseIdx;
-	Automate_fst2 *loadFst2;
+	Fst2 *loadFst2;
 	FILE *fidx;	// index file
 	class morpheme_info unePhraseAuto;
 
@@ -1976,10 +1976,10 @@ unePhraseAuto.prAuto(stderr,2);
 	void changeFst2TextAuto(int flag)
 	{
 #ifdef NOTFini
-		int lineNum = utoi(*loadFst2->nom_graphe);
+		int lineNum = utoi(*loadFst2->graph_names);
 		
 		if( (lineNum < 1 ) || (lineNum > unePhraseAuto.head.count_of_sentences)){
-			fprintf(stderr,"%s ",getUtoChar(loadFst2->nom_graphe));
+			fprintf(stderr,"%s ",getUtoChar(loadFst2->graph_names));
 			exitMessage("Illegal sentence number");
 		}
 		int off_automate =unePhraseAuto.sentenceInit.tableLoaded[lineNum-1];
@@ -1992,9 +1992,9 @@ unePhraseAuto.prAuto(stderr,2);
 		if(!fread(&cnt_etat,4,1,readFile))
 			exitMessage("read error");
 		offset += 4;
-		if(cnt_etat != loadFst2->nombre_etats)
+		if(cnt_etat != loadFst2->number_of_states)
 		{
-			fprintf(stderr,"%d < %d", cnt_etat,loadFst2->nombre_etats);
+			fprintf(stderr,"%d < %d", cnt_etat,loadFst2->number_of_states);
 			exitMessage("Count of state not match");
 		}
 		int i,j,k;
@@ -2005,7 +2005,7 @@ unePhraseAuto.prAuto(stderr,2);
 		if(!maptrans) exitMessage("Mem alloc fail");
 		for(i = 0; i < cnt_etat;i++)
 		{
-			t = loadFst2->etat[i]->transitions;
+			t = loadFst2->states[i]->transitions;
 			fread(&k,4,1,readFile);
 			fread(mapTrans,4*3,k,readFile);
 			wp = mapTrans;

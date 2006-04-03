@@ -342,9 +342,9 @@ if (!est_un_token_simple(s,alph,tokenization_mode)) {
 
 
 
-void replace_pattern_tags(Automate_fst2* automate,Alphabet* alph,struct string_hash* tok,
+void replace_pattern_tags(Fst2* automate,Alphabet* alph,struct string_hash* tok,
 							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
-Fst2Tag* etiquette=automate->etiquette;
+Fst2Tag* etiquette=automate->tags;
 int i;
 //printf("************** TRAITEMENT DES ANGLES ******************\n");
 for (i=0;i<etiquette_courante;i++) {

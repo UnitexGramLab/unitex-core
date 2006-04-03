@@ -24,30 +24,30 @@
 #include "utils.h"
 #include "unicode.h"
 
-void fst2_output_dot(Automate_fst2 * A, FILE * f) {
+void fst2_output_dot(Fst2 * A, FILE * f) {
 
 
   fprintf(f, "# FST2 output\n\n");
 
-  for (int i = 1; i <= A->nombre_graphes; i++) {
+  for (int i = 1; i <= A->number_of_graphs; i++) {
 
-    int base = A->debut_graphe_fst2[i];
+    int base = A->initial_states[i];
 
     fprintf(f,
 	    "digraph G%d {\n"
 	    "  graph [ center = true, orientation = landscape, rankdir = LR ];\n"
 	    "  node  [ shape  = circle ];\n\n", i);
 
-    for (int q = 0; q < A->nombre_etats_par_grf[i]; q++) {
+    for (int q = 0; q < A->number_of_states_by_graphs[i]; q++) {
 
       int qq = base + q;
 
       fprintf(f, "\n  %d [ label=\"%d\" ", q, q);      
-      if (is_final_state(A->etat[qq])) { fprintf(f, "shape=\"doublecircle\" "); }
+      if (is_final_state(A->states[qq])) { fprintf(f, "shape=\"doublecircle\" "); }
       fprintf(f, "];\n");
 
-      for (struct fst2Transition * trans = A->etat[qq]->transitions; trans; trans = trans->next) {
-	i_fprintf(f, "  %d -> %d [ label=\"%S\" ];\n", q, trans->state_number - base, A->etiquette[trans->tag_number]->input);
+      for (struct fst2Transition * trans = A->states[qq]->transitions; trans; trans = trans->next) {
+	i_fprintf(f, "  %d -> %d [ label=\"%S\" ];\n", q, trans->state_number - base, A->tags[trans->tag_number]->input);
       }
     }
     fprintf(f, "}\n\n");
@@ -69,7 +69,7 @@ int main(int argc, char ** argv) {
 
   char * fname = *argv;
 
-  Automate_fst2 * A = load_fst2(fname, 1);
+  Fst2 * A = load_fst2(fname, 1);
 
   if (A == NULL) { die("cannot load %s\n", fname); }
 

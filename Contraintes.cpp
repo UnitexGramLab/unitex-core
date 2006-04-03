@@ -310,15 +310,15 @@ free(c);
 
 
 
-void calculer_contraintes(Automate_fst2* text,Automate_fst2* grammar) {
+void calculer_contraintes(Fst2* text,Fst2* grammar) {
 int i;
-for (i=0;i<text->nombre_etiquettes;i++) {
-   etiq[i]=construire_contrainte_depuis_etiquette(text->etiquette[i]);
+for (i=0;i<text->number_of_tags;i++) {
+   etiq[i]=construire_contrainte_depuis_etiquette(text->tags[i]);
 }
-for (i=0;i<grammar->nombre_etiquettes;i++) {
-   contrainte1[i]=construire_contrainte_depuis_etiquette(grammar->etiquette[i]);
-   if (grammar->etiquette[i]->output!=NULL) {
-      contrainte2[i]=construire_contrainte2_depuis_string(grammar->etiquette[i]->output);
+for (i=0;i<grammar->number_of_tags;i++) {
+   contrainte1[i]=construire_contrainte_depuis_etiquette(grammar->tags[i]);
+   if (grammar->tags[i]->output!=NULL) {
+      contrainte2[i]=construire_contrainte2_depuis_string(grammar->tags[i]->output);
    }
 }
 }

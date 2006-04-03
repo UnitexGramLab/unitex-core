@@ -135,7 +135,7 @@ free(t);
 
 
 
-void explorer_automate_normalization(Automate_fst2*,int,
+void explorer_automate_normalization(Fst2*,int,
                                      struct noeud_arbre_normalization*,
                                      struct string_hash*,unichar*,
                                      Alphabet*);
@@ -144,12 +144,12 @@ void explorer_automate_normalization(Automate_fst2*,int,
 //
 // this function explores a sub-graph, considering tokens as int
 //
-void explorer_sub_automate_normalization(Automate_fst2* automate,int n,
+void explorer_sub_automate_normalization(Fst2* automate,int n,
                                      struct noeud_arbre_normalization* noeud_normalization,
                                      struct string_hash* hash,unichar* output,
                                      Alphabet* alph,struct temp_list** TEMP_LIST) {
 Fst2State etat;
-etat=automate->etat[n];
+etat=automate->states[n];
 if (is_final_state(etat)) {
    // if we are in a final state
    (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
@@ -161,7 +161,7 @@ while (trans!=NULL) {
    if (trans->tag_number<0) {
       // case of a sub-graph
       struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization(automate,automate->debut_graphe_fst2[-(trans->tag_number)],noeud_normalization,
+      explorer_sub_automate_normalization(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
                                         hash,output,alph,&TMP);
       while (TMP!=NULL) {
          // we continue to explore the current automaton
@@ -175,7 +175,7 @@ while (trans!=NULL) {
    else {
       // normal transition
       Fst2Tag etiq;
-      etiq=automate->etiquette[trans->tag_number];
+      etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
       if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
@@ -228,11 +228,11 @@ while (trans!=NULL) {
 //
 // this function explores a sub-graph, considering tokens as strings
 //
-void explorer_sub_automate_normalization_string(Automate_fst2* automate,int n,
+void explorer_sub_automate_normalization_string(Fst2* automate,int n,
                                      struct noeud_arbre_normalization* noeud_normalization,
                                      unichar* output,struct temp_list** TEMP_LIST) {
 Fst2State etat;
-etat=automate->etat[n];
+etat=automate->states[n];
 if (is_final_state(etat)) {
    // if we are in a final state
    (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
@@ -244,7 +244,7 @@ while (trans!=NULL) {
    if (trans->tag_number<0) {
       // case of a sub-graph
       struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization_string(automate,automate->debut_graphe_fst2[-(trans->tag_number)],noeud_normalization,
+      explorer_sub_automate_normalization_string(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
                                         output,&TMP);
       while (TMP!=NULL) {
          // we continue to explore the current automaton
@@ -258,7 +258,7 @@ while (trans!=NULL) {
    else {
       // normal transition
       Fst2Tag etiq;
-      etiq=automate->etiquette[trans->tag_number];
+      etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
       if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
@@ -288,12 +288,12 @@ while (trans!=NULL) {
 //
 // this function explore the normalization grammar to construct the token tree
 //
-void explorer_automate_normalization(Automate_fst2* automate,int n,
+void explorer_automate_normalization(Fst2* automate,int n,
                                      struct noeud_arbre_normalization* noeud_normalization,
                                      struct string_hash* hash,unichar* output,
                                      Alphabet* alph) {
 Fst2State etat;
-etat=automate->etat[n];
+etat=automate->states[n];
 if (is_final_state(etat)) {
    // if we are in a final state
    noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
@@ -305,7 +305,7 @@ while (trans!=NULL) {
    if (trans->tag_number<0) {
       // case of a sub-graph
       struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization(automate,automate->debut_graphe_fst2[-(trans->tag_number)],noeud_normalization,
+      explorer_sub_automate_normalization(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
                                         hash,output,alph,&TMP);
       while (TMP!=NULL) {
          // we continue to explore the current automaton
@@ -319,7 +319,7 @@ while (trans!=NULL) {
    else {
       // normal transition
       Fst2Tag etiq;
-      etiq=automate->etiquette[trans->tag_number];
+      etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
       if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
@@ -372,11 +372,11 @@ while (trans!=NULL) {
 //
 // this function explore the normalization grammar to construct the token tree
 //
-void explorer_automate_normalization_string(Automate_fst2* automate,int n,
+void explorer_automate_normalization_string(Fst2* automate,int n,
                                      struct noeud_arbre_normalization* noeud_normalization,
                                      unichar* output) {
 Fst2State etat;
-etat=automate->etat[n];
+etat=automate->states[n];
 if (is_final_state(etat)) {
    // if we are in a final state
    noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
@@ -388,7 +388,7 @@ while (trans!=NULL) {
    if (trans->tag_number<0) {
       // case of a sub-graph
       struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization_string(automate,automate->debut_graphe_fst2[-(trans->tag_number)],noeud_normalization,
+      explorer_sub_automate_normalization_string(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
                                         output,&TMP);
       while (TMP!=NULL) {
          // we continue to explore the current automaton
@@ -401,7 +401,7 @@ while (trans!=NULL) {
    else {
       // normal transition
       Fst2Tag etiq;
-      etiq=automate->etiquette[trans->tag_number];
+      etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
       if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
@@ -432,7 +432,7 @@ while (trans!=NULL) {
 // tokens are represented by integers
 //
 struct noeud_arbre_normalization* load_normalization_transducer(char* nom,Alphabet* alph,struct text_tokens* tok) {
-Automate_fst2* automate=load_fst2(nom,0);
+Fst2* automate=load_fst2(nom,0);
 if (automate==NULL) {
    // if the loading of the normalization transducer has failed, we return
    return NULL;
@@ -445,7 +445,7 @@ for (int i=0;i<tok->N;i++) {
 struct noeud_arbre_normalization* root=new_noeud_arbre_normalization();
 unichar a[1];
 a[0]='\0';
-explorer_automate_normalization(automate,automate->debut_graphe_fst2[1],root,hash,a,alph);
+explorer_automate_normalization(automate,automate->initial_states[1],root,hash,a,alph);
 free_fst2(automate);
 free_string_hash_without_insert(hash);
 return root;
@@ -458,7 +458,7 @@ return root;
 // tokens are represented by strings
 //
 struct noeud_arbre_normalization* load_normalization_transducer_string(char* nom) {
-Automate_fst2* automate=load_fst2(nom,0);
+Fst2* automate=load_fst2(nom,0);
 if (automate==NULL) {
    // if the loading of the normalization transducer has failed, we return
    return NULL;
@@ -466,7 +466,7 @@ if (automate==NULL) {
 struct noeud_arbre_normalization* root=new_noeud_arbre_normalization();
 unichar a[1];
 a[0]='\0';
-explorer_automate_normalization_string(automate,automate->debut_graphe_fst2[1],root,a);
+explorer_automate_normalization_string(automate,automate->initial_states[1],root,a);
 free_fst2(automate);
 return root;
 }

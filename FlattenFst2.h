@@ -46,23 +46,23 @@ struct flattened_main_graph_info {
 extern struct liste_nombres** dependences;
 extern int* new_graph_number;
 
-int flatten_fst2(Automate_fst2*,int,char*,int);
-void compute_dependences(Automate_fst2*);
-void compute_dependences_for_subgraph(Automate_fst2*,int,struct liste_nombres**);
-void print_dependences(Automate_fst2*);
-void check_for_graphs_to_keep(Automate_fst2*,int);
-int renumber_graphs_to_keep(Automate_fst2*);
-int flatten_main_graph(Automate_fst2*,int,struct flattened_main_graph_info*,int);
+int flatten_fst2(Fst2*,int,char*,int);
+void compute_dependences(Fst2*);
+void compute_dependences_for_subgraph(Fst2*,int,struct liste_nombres**);
+void print_dependences(Fst2*);
+void check_for_graphs_to_keep(Fst2*,int);
+int renumber_graphs_to_keep(Fst2*);
+int flatten_main_graph(Fst2*,int,struct flattened_main_graph_info*,int);
 struct flattened_main_graph_info* new_flattened_main_graph_info();
 void free_flattened_main_graph_info(struct flattened_main_graph_info*);
-int flatten_sub_graph_recursively(Automate_fst2*,int,int,int,
+int flatten_sub_graph_recursively(Fst2*,int,int,int,
                                   struct flattened_main_graph_info* new_main_graph,
                                   int,int,int*,int*);
 void remove_epsilon_transitions_in_flattened_graph(struct flattened_main_graph_info*);
 void compute_reverse_transitions_of_main_graph(struct flattened_main_graph_info*);
 int determinisation_new_main_graph(FILE*,Etat_comp*);
-void save_graphs_to_keep(Automate_fst2*,FILE*);
-void save_graph_to_be_kept(int,Automate_fst2*,FILE*);
-void copy_tags_into_file(Automate_fst2*,FILE*);
+void save_graphs_to_keep(Fst2*,FILE*);
+void save_graph_to_be_kept(int,Fst2*,FILE*);
+void copy_tags_into_file(Fst2*,FILE*);
 
 #endif

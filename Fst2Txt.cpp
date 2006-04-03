@@ -68,7 +68,7 @@ printf("Applies a grammar to a text. The text file is modified.\n");
 
 FILE *f;
 FILE *f_out;
-Automate_fst2* fst2;
+Fst2* fst2;
 int MODE;
 unichar buffer[BUFFER_SIZE];
 Alphabet* alphabet;
@@ -171,7 +171,7 @@ if (argc>=6) {
      return 1;
    }
 }
-arbre_etiquettes=(struct arbre_char**)malloc(sizeof(struct arbre_char*)*fst2->nombre_etats);
+arbre_etiquettes=(struct arbre_char**)malloc(sizeof(struct arbre_char*)*fst2->number_of_states);
 printf("Applying %s in %s mode...\n",argv[2],(MODE==MERGE)?"merge":"replace");
 pretraiter_etiquettes();
 parse_text();
@@ -318,7 +318,7 @@ void parse_text() {
 LENGTH=u_fread(buffer/*,sizeof(unichar)*/,BUFFER_SIZE,f);
 origine_courante=0;
 N=2;
-int debut=fst2->debut_graphe_fst2[1];
+int debut=fst2->initial_states[1];
 while (origine_courante<LENGTH) {
       if (LENGTH==BUFFER_SIZE && origine_courante>(LENGTH-200)) {
          // if must change of block
@@ -354,7 +354,7 @@ while (origine_courante<LENGTH) {
 
 
 void parcourir_initial(int e,int pos,int profondeur) {
-Fst2State etat_courant=fst2->etat[e];
+Fst2State etat_courant=fst2->states[e];
 
 if (profondeur > MAX_DEPTH) {
    fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
@@ -404,7 +404,7 @@ if (PARSING_MODE!=NORMAL_MODE
        struct liste_nombres* TMP;
        while (RES!=NULL) {
           sommet=SOMMET2;
-          Fst2Tag etiq=fst2->etiquette[RES->etiq];
+          Fst2Tag etiq=fst2->tags[RES->etiq];
           traiter_transduction(etiq->output);
           int longueur=u_strlen(etiq->input);
           unichar C=mot[longueur];
@@ -434,7 +434,7 @@ while (t!=NULL) {
          struct liste_num* liste=NULL;
          unichar pile_old[1000];
          u_strcpy(pile_old,pile);
-         parcourir_sous_graphe(fst2->debut_graphe_fst2[-n_etiq],pos,profondeur+1,&liste);
+         parcourir_sous_graphe(fst2->initial_states[-n_etiq],pos,profondeur+1,&liste);
          while (liste!=NULL) {
            sommet=liste->sommet;
            u_strcpy(pile,liste->pile);
@@ -448,7 +448,7 @@ while (t!=NULL) {
       }
       else {
          // case of a normal tag
-         Fst2Tag etiq=fst2->etiquette[n_etiq];
+         Fst2Tag etiq=fst2->tags[n_etiq];
          unichar* contenu=etiq->input;
          if (etiq->control & START_VAR_TAG_BIT_MASK) {
             // case of a $a( variable tag
@@ -750,7 +750,7 @@ while (t!=NULL) {
 
 
 void parcourir_sous_graphe(int e,int pos,int profondeur,struct liste_num** liste_arrivee) {
-Fst2State etat_courant=fst2->etat[e];
+Fst2State etat_courant=fst2->states[e];
 if (profondeur > MAX_DEPTH) {
    fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
    exit(1);
@@ -798,7 +798,7 @@ if (PARSING_MODE!=NORMAL_MODE ||
        int SOMMET2=sommet;
        while (RES!=NULL) {
           sommet=SOMMET2;
-          Fst2Tag etiq=fst2->etiquette[RES->etiq];
+          Fst2Tag etiq=fst2->tags[RES->etiq];
           traiter_transduction(etiq->output);
           int longueur=u_strlen(etiq->input);
           unichar C=mot[longueur];
@@ -827,7 +827,7 @@ while (t!=NULL) {
          struct liste_num* liste=NULL;
          unichar pile_old[1000];
          u_strcpy(pile_old,pile);
-         parcourir_sous_graphe(fst2->debut_graphe_fst2[-n_etiq],pos,profondeur+1,&liste);
+         parcourir_sous_graphe(fst2->initial_states[-n_etiq],pos,profondeur+1,&liste);
          while (liste!=NULL) {
            sommet=liste->sommet;
            u_strcpy(pile,liste->pile);
@@ -840,7 +840,7 @@ while (t!=NULL) {
       }
       else {
          // case of a normal tag
-         Fst2Tag etiq=fst2->etiquette[n_etiq];
+         Fst2Tag etiq=fst2->tags[n_etiq];
          unichar* contenu=etiq->input;
          if (etiq->control & START_VAR_TAG_BIT_MASK) {
             // case of a $a( variable tag
@@ -1141,7 +1141,7 @@ while (t!=NULL) {
 
 
 void free_arbre_etiquettes() {
-int L=fst2->nombre_etats;
+int L=fst2->number_of_states;
 for (int i=0;i<L;i++)
   free_arbre_char(arbre_etiquettes[i]);
 free(arbre_etiquettes);
@@ -1179,20 +1179,20 @@ struct fst2Transition* pretraiter_etiquette(struct arbre_char* racine,struct fst
 if (trans==NULL) return NULL;
 // case 2: transition by something else that a sequence of letter like %hello
 //         or sub-graph call
-if (trans->tag_number<0 || not_a_letter_sequence(fst2->etiquette[trans->tag_number])) {
+if (trans->tag_number<0 || not_a_letter_sequence(fst2->tags[trans->tag_number])) {
    trans->next=pretraiter_etiquette(racine,trans->next);
    return trans;
 }
 struct fst2Transition* tmp=pretraiter_etiquette(racine,trans->next);
-inserer_etiquette(fst2->etiquette[trans->tag_number]->input,trans->tag_number,trans->state_number,racine);
+inserer_etiquette(fst2->tags[trans->tag_number]->input,trans->tag_number,trans->state_number,racine);
 return tmp;
 }
 
 
 void pretraiter_etiquettes() {
-int L=fst2->nombre_etats;
+int L=fst2->number_of_states;
 for (int i=0;i<L;i++) {
   arbre_etiquettes[i]=new_arbre_char();
-  fst2->etat[i]->transitions=pretraiter_etiquette(arbre_etiquettes[i],fst2->etat[i]->transitions);
+  fst2->states[i]->transitions=pretraiter_etiquette(arbre_etiquettes[i],fst2->states[i]->transitions);
 }
 }

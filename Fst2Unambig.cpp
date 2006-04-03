@@ -51,7 +51,7 @@ if (argc!=3) {
    return 0;
 }
 printf("Loading text automaton...\n");
-Automate_fst2* fst2=load_fst2(argv[1],0);
+Fst2* fst2=load_fst2(argv[1],0);
 if (fst2==NULL) {
    fprintf(stderr,"Cannot load text automaton %s\n",argv[1]);
    return 1;

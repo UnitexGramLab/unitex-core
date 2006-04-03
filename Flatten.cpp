@@ -86,7 +86,7 @@ if (argc==4) {
    }
 }
 printf("Loading %s...\n",argv[1]);
-Automate_fst2* origin=load_fst2(argv[1],1);
+Fst2* origin=load_fst2(argv[1],1);
 if (origin==NULL) {
    fprintf(stderr,"Cannot load %s\n",argv[1]);
    return 1;

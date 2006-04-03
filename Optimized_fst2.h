@@ -87,6 +87,6 @@ extern struct etat_opt* graphe_opt[500000];
 
 
 
-void optimize_fst2(Automate_fst2*);
+void optimize_fst2(Fst2*);
 
 #endif

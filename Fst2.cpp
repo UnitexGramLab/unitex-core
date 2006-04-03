@@ -139,16 +139,16 @@ free(e);
 //
 // returns a new empty automaton
 //
-Automate_fst2* new_Automate_fst2() {
-Automate_fst2* a=(Automate_fst2*)malloc(sizeof(Automate_fst2));
-a->etat=NULL;
-a->etiquette=NULL;
-a->nombre_graphes=0;
-a->nombre_etats=0;
-a->nombre_etiquettes=0;
-a->debut_graphe_fst2=NULL;
-a->nom_graphe=NULL;
-a->nombre_etats_par_grf=NULL;
+Fst2* new_Automate_fst2() {
+Fst2* a=(Fst2*)malloc(sizeof(Fst2));
+a->states=NULL;
+a->tags=NULL;
+a->number_of_graphs=0;
+a->number_of_states=0;
+a->number_of_tags=0;
+a->initial_states=NULL;
+a->graph_names=NULL;
+a->number_of_states_by_graphs=NULL;
 a->variables=NULL;
 return a;
 }
@@ -157,23 +157,23 @@ return a;
 //
 // free the autoamata memory
 //
-void free_fst2(Automate_fst2* a) {
+void free_fst2(Fst2* a) {
 int i;
-for (i=0;i<a->nombre_etats;i++) {
-  free_etat(a->etat[i]);
+for (i=0;i<a->number_of_states;i++) {
+  free_etat(a->states[i]);
 }
-free(a->etat);
-for (i=0;i<a->nombre_etiquettes;i++)
-  free_etiquette(a->etiquette[i]);
-free(a->etiquette);
-if (a->nom_graphe!=NULL) {
-   for (i=0;i<a->nombre_graphes;i++) {
-     if (a->nom_graphe[i]!=NULL) free(a->nom_graphe[i]);
+free(a->states);
+for (i=0;i<a->number_of_tags;i++)
+  free_etiquette(a->tags[i]);
+free(a->tags);
+if (a->graph_names!=NULL) {
+   for (i=0;i<a->number_of_graphs;i++) {
+     if (a->graph_names[i]!=NULL) free(a->graph_names[i]);
    }
-   free(a->nom_graphe);
+   free(a->graph_names);
 }
-free(a->debut_graphe_fst2);
-free(a->nombre_etats_par_grf);
+free(a->initial_states);
+free(a->number_of_states_by_graphs);
 liberer_liste_variables(a->variables);
 free(a);
 }
@@ -182,20 +182,20 @@ free(a);
 //
 // readjust the size of arrays
 //
-void resize(Automate_fst2* a) {
+void resize(Fst2* a) {
   // +1 because of numeration does not start at 0 but 1
-int n_etats=a->nombre_etats+1;
-int n_graphes=a->nombre_graphes+1;
-int n_etiq=a->nombre_etiquettes+1;
-a->etat=(Fst2State*)realloc(a->etat,n_etats*sizeof(Fst2State));
-a->etiquette=(Fst2Tag*)realloc(a->etiquette,n_etiq*sizeof(Fst2Tag));
+int n_etats=a->number_of_states+1;
+int n_graphes=a->number_of_graphs+1;
+int n_etiq=a->number_of_tags+1;
+a->states=(Fst2State*)realloc(a->states,n_etats*sizeof(Fst2State));
+a->tags=(Fst2Tag*)realloc(a->tags,n_etiq*sizeof(Fst2Tag));
 // we count +1 because we start the graph numerotation at 1
-a->debut_graphe_fst2=(int*)realloc(a->debut_graphe_fst2,(1+n_graphes)*sizeof(int));
-if (a->nom_graphe!=NULL) {
+a->initial_states=(int*)realloc(a->initial_states,(1+n_graphes)*sizeof(int));
+if (a->graph_names!=NULL) {
    // we reallocate only if there is something
-   a->nom_graphe=(unichar**)realloc(a->nom_graphe,n_graphes*sizeof(unichar*));
+   a->graph_names=(unichar**)realloc(a->graph_names,n_graphes*sizeof(unichar*));
 }
-a->nombre_etats_par_grf=(int*)realloc(a->nombre_etats_par_grf,n_graphes*sizeof(int));
+a->number_of_states_by_graphs=(int*)realloc(a->number_of_states_by_graphs,n_graphes*sizeof(int));
 }
 
 
@@ -992,9 +992,9 @@ lire_etiquettes_fst2(f);
 //
 // loads an fst2 and returns its representation in an Automate_fst2 structure
 //
-Automate_fst2* load_fst2(char *file,int noms) {
+Fst2* load_fst2(char *file,int noms) {
 FILE *f;
-Automate_fst2* a=new_Automate_fst2();
+Fst2* a=new_Automate_fst2();
 f=u_fopen(file,U_READ);
 if (f==NULL) {
   fprintf(stderr,"Cannot open the file %s\n",file);
@@ -1005,29 +1005,29 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=a->etat;
-etiquette_fst2=a->etiquette;
-debut_graphe_fst2=a->debut_graphe_fst2;
+a->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
+a->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
+graphe_fst2=a->states;
+etiquette_fst2=a->tags;
+debut_graphe_fst2=a->initial_states;
 liste_des_variables=a->variables;
 initialiser_variables_fst2();
-nombre_etats_par_grf=a->nombre_etats_par_grf;
+nombre_etats_par_grf=a->number_of_states_by_graphs;
 if (noms) {
-   nom_graphe=a->nom_graphe;
+   nom_graphe=a->graph_names;
    lire_etats_fst2_avec_noms(f);
-   a->nom_graphe=nom_graphe;
+   a->graph_names=nom_graphe;
 }
 else {
    lire_etats_fst2(f);
 }
-a->nombre_etats_par_grf=nombre_etats_par_grf;
+a->number_of_states_by_graphs=nombre_etats_par_grf;
 lire_etiquettes_fst2(f);
 u_fclose(f);
-a->nombre_graphes=nombre_graphes_fst2;
-a->nombre_etats=nombre_etats_fst2;
-a->nombre_etiquettes=nombre_etiquettes_fst2;
-a->debut_graphe_fst2=debut_graphe_fst2;
+a->number_of_graphs=nombre_graphes_fst2;
+a->number_of_states=nombre_etats_fst2;
+a->number_of_tags=nombre_etiquettes_fst2;
+a->initial_states=debut_graphe_fst2;
 a->variables=liste_des_variables;
 resize(a);
 return a;
@@ -1038,10 +1038,10 @@ return a;
 //
 // loads one sentence of an fst2 and returns its representation in an Automate_fst2 structure
 //
-Automate_fst2* load_one_sentence_of_fst2(char *file,int SENTENCE,FILE* txt) {
+Fst2* load_one_sentence_of_fst2(char *file,int SENTENCE,FILE* txt) {
 FILE *f;
 int ETIQ_MAX;
-Automate_fst2* a=new_Automate_fst2();
+Fst2* a=new_Automate_fst2();
 f=u_fopen(file,U_READ);
 if (f==NULL) {
   fprintf(stderr,"Cannot open the file %s\n",file);
@@ -1052,24 +1052,24 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=a->etat;
-etiquette_fst2=a->etiquette;
-debut_graphe_fst2=a->debut_graphe_fst2;
+a->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
+a->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
+graphe_fst2=a->states;
+etiquette_fst2=a->tags;
+debut_graphe_fst2=a->initial_states;
 liste_des_variables=a->variables;
 initialiser_variables_fst2();
-nombre_etats_par_grf=a->nombre_etats_par_grf;
-nom_graphe=a->nom_graphe;
+nombre_etats_par_grf=a->number_of_states_by_graphs;
+nom_graphe=a->graph_names;
 lire_etats_fst2_avec_noms_for_one_sentence(f,SENTENCE,&ETIQ_MAX,txt);
-a->nombre_etats_par_grf=nombre_etats_par_grf;
+a->number_of_states_by_graphs=nombre_etats_par_grf;
 lire_etiquettes_fst2_under_limit(f,ETIQ_MAX);
 u_fclose(f);
-a->nom_graphe=nom_graphe;
-a->nombre_graphes=nombre_graphes_fst2;
-a->nombre_etats=nombre_etats_fst2;
-a->nombre_etiquettes=nombre_etiquettes_fst2;
-a->debut_graphe_fst2=debut_graphe_fst2;
+a->graph_names=nom_graphe;
+a->number_of_graphs=nombre_graphes_fst2;
+a->number_of_states=nombre_etats_fst2;
+a->number_of_tags=nombre_etiquettes_fst2;
+a->initial_states=debut_graphe_fst2;
 a->variables=liste_des_variables;
 resize(a);
 return a;
@@ -1151,10 +1151,10 @@ s[new_cursor]='\0';
 // This function unprotects characters in non NULL flechi and canonique members
 // of any tag of the given fst2
 //
-void unprotect_characters_in_fst2_tags(Automate_fst2* fst2) {
+void unprotect_characters_in_fst2_tags(Fst2* fst2) {
 Fst2Tag etiq;
-for (int i=0;i<fst2->nombre_etiquettes;i++) {
-   etiq=fst2->etiquette[i];
+for (int i=0;i<fst2->number_of_tags;i++) {
+   etiq=fst2->tags[i];
    if (etiq!=NULL) {
       if (etiq->inflected!=NULL) {unprotect_characters_in_sequence(etiq->inflected);}
       if (etiq->lemma!=NULL) {unprotect_characters_in_sequence(etiq->lemma);}

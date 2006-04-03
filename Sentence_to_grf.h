@@ -47,15 +47,15 @@ void remove_duplicates_grf_states(struct grf_state**,int*);
 int are_equivalent_grf_states(struct grf_state*,struct grf_state*);
 void save_grf_states(FILE*,struct grf_state**,int,int,char* font);
 
-void sentence_to_grf(Automate_fst2*,int,char*,FILE*);
+void sentence_to_grf(Fst2*,int,char*,FILE*);
 void write_grf_header(int,int,int,char*,FILE*);
-int calculer_rang(Automate_fst2*,int,int*,int);
-void explorer_rang_etat(int,int,Automate_fst2*,int*,char*,int*);
-int numeroter_etiquettes_sur_octets_forts(Automate_fst2*,int,int);
+int calculer_rang(Fst2*,int,int*,int);
+void explorer_rang_etat(int,int,Fst2*,int*,char*,int*);
+int numeroter_etiquettes_sur_octets_forts(Fst2*,int,int);
 int get_etiquette_reelle(int);
 int get_numero_de_la_transition(int);
-void convertir_transitions_en_etats(Automate_fst2*,int,int,int*,FILE*,int,int,int,int*,char*);
+void convertir_transitions_en_etats(Fst2*,int,int,int*,FILE*,int,int,int,int*,char*);
 int width_of_tag(Fst2Tag);
-int calculer_largeur_max_pour_chaque_rang(Automate_fst2*,int,int*,int,int*);
+int calculer_largeur_max_pour_chaque_rang(Fst2*,int,int*,int,int*);
 
 #endif

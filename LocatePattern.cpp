@@ -90,7 +90,7 @@ struct string_hash* semantic_codes=new_string_hash();
 extract_semantic_codes(dlf,semantic_codes);
 extract_semantic_codes(dlc,semantic_codes);
 printf("Loading fst2...\n");
-Automate_fst2* automate=load_fst2(fst2,1);
+Fst2* automate=load_fst2(fst2,1);
 if (automate==NULL) {
    fprintf(stderr,"Cannot load grammar %s\n",fst2);
    free_alphabet(alph);
@@ -225,7 +225,7 @@ return 1;
 
 
 
-void numerote_tags(Automate_fst2* fst2,struct string_hash* tok,int* nombre_patterns,
+void numerote_tags(Fst2* fst2,struct string_hash* tok,int* nombre_patterns,
                    struct string_hash* semantic_codes,Alphabet* alph,
                    int* existe_etiquette_DIC,int* existe_etiquette_CDIC,
                    int* existe_etiquette_SDIC,int tokenization_mode) {
@@ -234,12 +234,12 @@ unichar tmp[TAILLE_MOT];
 unichar flechi[TAILLE_MOT];
 unichar canonique[TAILLE_MOT];
 unichar pattern[TAILLE_MOT];
-Fst2Tag* etiquette=fst2->etiquette;
+Fst2Tag* etiquette=fst2->tags;
 unichar t[2];
 t[0]=' ';
 t[1]='\0';
 ESPACE=get_token_number(t,tok);
-for (i=0;i<fst2->nombre_etiquettes;i++) {
+for (i=0;i<fst2->number_of_tags;i++) {
   if (etiquette[i]->control&START_VAR_TAG_BIT_MASK) {
      // case of $a(
      etiquette[i]->number=VAR_START;

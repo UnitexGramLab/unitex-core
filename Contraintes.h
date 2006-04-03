@@ -55,7 +55,7 @@ void free_contrainte(struct contrainte*);
 struct contrainte* contruire_contrainte_depuis_etiquette(struct fst2Tag*);
 struct contrainte** allouer_contraintes(int);
 void free_contraintes(int,struct contrainte**);
-void calculer_contraintes(Automate_fst2*,Automate_fst2*);
+void calculer_contraintes(Fst2,Fst2);
 int contrainte1_verifiee(struct contrainte*,struct contrainte*,struct contrainte*,int*,Alphabet*);
 int contrainte_verifiee(struct contrainte*,struct contrainte*,Alphabet* alph);
 int codes_gramm_compatibles(struct contrainte*,struct contrainte*);

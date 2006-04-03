@@ -28,8 +28,8 @@
 #include "Fst2.h"
 #include "String_hash.h"
 
-void convert_fst2_to_mft(Automate_fst2*,FILE*);
-void convert_and_save_sentence(Automate_fst2*,int,FILE*);
+void convert_fst2_to_mft(Fst2*,FILE*);
+void convert_and_save_sentence(Fst2*,int,FILE*);
 
 
 #endif

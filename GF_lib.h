@@ -55,7 +55,7 @@ typedef struct IndexGF {
                        } IndexGF_T;
                        
                                                                        
-MasterGF_T* CreateMasterGF  ( Automate_fst2* , Alphabet* );
+MasterGF_T* CreateMasterGF  ( Fst2* , Alphabet* );
 void        FreeMasterGF    ( MasterGF_T*, int );
 
 IndexGF_T*  CreateIndexGF   ( MasterGF_T*, struct string_hash* );

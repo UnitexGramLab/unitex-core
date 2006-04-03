@@ -27,8 +27,8 @@
 #define LINEAR_AUTOMATON -1
 
 
-int isLinearAutomaton(Automate_fst2*);
-int convertLinearAutomaton(Automate_fst2*,FILE*);
+int isLinearAutomaton(Fst2*);
+int convertLinearAutomaton(Fst2*,FILE*);
 
 #endif
 

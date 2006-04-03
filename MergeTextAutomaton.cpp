@@ -51,13 +51,13 @@ printf("been manually modified. The text automaton is modified.\n");
 }
 
 
-void fst_header(Automate_fst2 * A, FILE * f) {
+void fst_header(Fst2 * A, FILE * f) {
 
   char buf[11];
   strcpy(buf, "0000000000");
 
   int i = 9;
-  int n = A->nombre_graphes;
+  int n = A->number_of_graphs;
 
   while (n) {
     buf[i--] = (char)('0' + (n % 10));
@@ -69,13 +69,13 @@ void fst_header(Automate_fst2 * A, FILE * f) {
 
 
 
-void output_fst(Automate_fst2 * A, int no, string_hash * hash, FILE * f) {
+void output_fst(Fst2 * A, int no, string_hash * hash, FILE * f) {
 
-  int stateno = A->debut_graphe_fst2[no];
+  int stateno = A->initial_states[no];
 
-  for (int i = 0; i < A->nombre_etats_par_grf[no]; i++) {
+  for (int i = 0; i < A->number_of_states_by_graphs[no]; i++) {
 
-    fst2State * state = A->etat[stateno + i];
+    fst2State * state = A->states[stateno + i];
 
     if (is_final_state(state)) {
 
@@ -86,7 +86,7 @@ void output_fst(Automate_fst2 * A, int no, string_hash * hash, FILE * f) {
       u_fputc(':', f); u_fputc(' ', f);
 
       for (fst2Transition * trans = state->transitions; trans; trans = trans->next) {
-	u_fprintf(f, "%d %d ", get_hash_number(A->etiquette[trans->tag_number]->input, hash), trans->state_number - stateno);
+	u_fprintf(f, "%d %d ", get_hash_number(A->tags[trans->tag_number]->input, hash), trans->state_number - stateno);
       }
 
       u_fputc('\n', f);
@@ -214,7 +214,7 @@ setBufferMode();
 
    printf("Loading %s...\n", *argv);
 
-  Automate_fst2 * A = load_fst2(*argv, 1);
+  Fst2 * A = load_fst2(*argv, 1);
  
   if (A == NULL) {
     fprintf(stderr, "Unable to load %s automaton\n", *argv);
@@ -239,10 +239,10 @@ setBufferMode();
 
   fst_header(A, out);
 
-  for (int i = 1; i <= A->nombre_graphes; i++) {
+  for (int i = 1; i <= A->number_of_graphs; i++) {
 
     if ((i % 100) == 0) {
-      printf("%d/%d sentences rebuilt...\n", i, A->nombre_graphes);
+      printf("%d/%d sentences rebuilt...\n", i, A->number_of_graphs);
     }
 
     char grfname[MAX_PATH];
@@ -270,7 +270,7 @@ setBufferMode();
     }
 
 
-    u_fprintf(out, "-%d %S\n", i, A->nom_graphe[i]);
+    u_fprintf(out, "-%d %S\n", i, A->graph_names[i]);
 
     if (grf) {
 

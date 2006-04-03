@@ -25,7 +25,7 @@
 #include "Fst2.h"
 #include "autalmot_old.h"
 
-tAutAlMot * fst2AutAlMot(Automate_fst2 * A, int nb, tAlphMot * alphabetLu);
+tAutAlMot * fst2AutAlMot(Fst2 * A, int nb, tAlphMot * alphabetLu);
 
 list_aut_old  * load_text_automaton(char * fname, bool developp = true);
 tAutAlMot * load_grammar_automaton(char * fname);

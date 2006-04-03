@@ -74,7 +74,7 @@ extern IndexGF_T*   indexGF;
 /* $CD$ end   */
 
 
-void launch_locate(FILE*,Automate_fst2*,int,struct string_hash*,FILE*,int,long int,FILE*,
+void launch_locate(FILE*,Fst2*,int,struct string_hash*,FILE*,int,long int,FILE*,
 					struct DLC_tree_info*);
 int dichotomie(int,int*,int);
 int trouver_mot_compose_DIC(int,int,struct DLC_tree_info*);

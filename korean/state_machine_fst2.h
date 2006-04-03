@@ -49,7 +49,7 @@ struct link
 	unsigned int val;
 	struct link *next;
 };
-	Automate_fst2* a;
+	Fst2* a;
 	int controlFlag;
 public:
 	state_machine(){
@@ -80,9 +80,9 @@ public:
 			sp  = ntp;
 		}
 		if(saveTransductionTable){
-			for( int i = 1; i < a->nombre_etiquettes;i++)
+			for( int i = 1; i < a->number_of_tags;i++)
 				if(saveTransductionTable[i])
-					a->etiquette[i]->output = (unichar *)saveTransductionTable[i];
+					a->tags[i]->output = (unichar *)saveTransductionTable[i];
 			delete saveTransductionTable;
 		}
 		if(a)free_fst2(a);
@@ -103,19 +103,19 @@ public:
 		outSize = sz;
 		outCnt = 0;
 	
-		saveTransductionTable = new unichar *[a->nombre_etiquettes];
-		for(i = 1; i < a->nombre_etiquettes;i++){
+		saveTransductionTable = new unichar *[a->number_of_tags];
+		for(i = 1; i < a->number_of_tags;i++){
 			saveTransductionTable[i] = 0;
 		}	
 
-		for(i = 1; i < a->nombre_etiquettes;i++){
-			saveTransductionTable[i] =(unichar *)a->etiquette[i]->output;
-			if(a->etiquette[i]->output){
+		for(i = 1; i < a->number_of_tags;i++){
+			saveTransductionTable[i] =(unichar *)a->tags[i]->output;
+			if(a->tags[i]->output){
 //		wprintf(L" %d %s\n",i,a->etiquette[i]->transduction);
-			 a->etiquette[i]->output = (unichar *)
-			 ajouteTransValue((unichar*)a->etiquette[i]->output);
+			 a->tags[i]->output = (unichar *)
+			 ajouteTransValue((unichar*)a->tags[i]->output);
 			}
-			wp =(unichar*)a->etiquette[i]->input;
+			wp =(unichar*)a->tags[i]->input;
 	 		if(*wp == '<'){
 	           if( (*(wp+1) ==  'E') && (*(wp+2) ==  '>'))
 	          	 exitMessage("do not accept the transition with null");
@@ -126,7 +126,7 @@ public:
                else if(findChangeStr(wp,&wt)){
 				    *wp=(unichar)wt;
 		       } else {
-				     fprintf(stderr,"un define %s\n",getUtoChar(a->etiquette[i]->input));
+				     fprintf(stderr,"un define %s\n",getUtoChar(a->tags[i]->input));
 				     exitMessage("");
 		       }
 	         }
@@ -253,22 +253,22 @@ case CMD_DIV:;
 
 void curSMvalue(unichar cval)
 {
-	struct fst2Transition *cT = a->etat[curEtat]->transitions;
+	struct fst2Transition *cT = a->states[curEtat]->transitions;
 	struct cmdInst *cmdPtr;
 	unichar *wp;
 	int nextArr = 0;
 
 	while(cT){
-        wp = (unichar *)a->etiquette[cT->tag_number]->input;
+        wp = (unichar *)a->tags[cT->tag_number]->input;
         if(*wp == '<'){
            wp++;
            if(*wp == '!'){
 		    nextArr = cT->state_number;
-		    cmdPtr = (struct cmdInst *)a->etiquette[cT->tag_number]->output;
+		    cmdPtr = (struct cmdInst *)a->tags[cT->tag_number]->output;
            }
         } else if(*wp == cval){
 		    nextArr = cT->state_number;
-		    cmdPtr = (struct cmdInst *)a->etiquette[cT->tag_number]->output;
+		    cmdPtr = (struct cmdInst *)a->tags[cT->tag_number]->output;
 		    break;
 		}
 		cT = cT->next;

@@ -68,7 +68,7 @@ extern IndexGF_T*  indexGF;
 
 int locate_pattern(char*,char*,char*,char*,char*,char*,char*,int,int,char*,int);
 
-void numerote_tags(Automate_fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int);
+void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int);
 void decouper_entre_angles(unichar*,unichar*,unichar*,unichar*,struct string_hash*,Alphabet*);
 unsigned char get_controle(unichar*,Alphabet*,struct string_hash*,int);
 void compute_token_controls(struct string_hash*,Alphabet*,char*,int);

@@ -146,7 +146,7 @@ setBufferMode();
 
 
 
-Automate_fst2* automate;
+Fst2* automate;
 printf("Loading %s...\n",argv[1]);
 automate=load_one_sentence_of_fst2(argv[1],SENTENCE,txt);
 if (automate==NULL) {

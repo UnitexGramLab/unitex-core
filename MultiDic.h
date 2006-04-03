@@ -38,7 +38,7 @@
 struct dic {
    char type;
    char priority;
-   Automate_fst2* fst2;
+   Fst2* fst2;
    unsigned char* bin;
    struct INF_codes* INF;
 };

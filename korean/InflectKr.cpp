@@ -57,7 +57,7 @@ int line=0;
 // loads an fst2 and returns its representation in an Automate_fst2 structure
 // same as load_fst2 but no message for the not exist file
 // hhuh
-extern Automate_fst2* new_Automate_fst2();
+extern Fst2* new_Automate_fst2();
 extern Fst2State* graphe_fst2;
 extern Fst2Tag* etiquette_fst2;
 extern int *debut_graphe_fst2;
@@ -71,14 +71,14 @@ extern int etiquette_courante;
 extern int nombre_etiquettes_de_depart;
 extern int etat_courant;
 extern void initialiser_variables_fst2();
-extern void resize(Automate_fst2* a);
+extern void resize(Fst2* a);
 extern void lire_etats_fst2(FILE *f);
 extern void lire_etiquettes_fst2(FILE *f); 
 extern void lire_etats_fst2_avec_noms(FILE *f);
 
-static Automate_fst2* load_fst22(char *file,int noms) {
+static Fst2* load_fst22(char *file,int noms) {
 FILE *f;
-Automate_fst2* a=new_Automate_fst2();
+Fst2* a=new_Automate_fst2();
 f=u_fopen(file,U_READ);
 if (f==NULL) {
   return NULL;
@@ -88,29 +88,29 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=a->etat;
-etiquette_fst2=a->etiquette;
-debut_graphe_fst2=a->debut_graphe_fst2;
+a->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
+a->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
+graphe_fst2=a->states;
+etiquette_fst2=a->tags;
+debut_graphe_fst2=a->initial_states;
 liste_des_variables=a->variables;
 initialiser_variables_fst2();
-nombre_etats_par_grf=a->nombre_etats_par_grf;
+nombre_etats_par_grf=a->number_of_states_by_graphs;
 if (noms) {
-   nom_graphe=a->nom_graphe;
+   nom_graphe=a->graph_names;
    lire_etats_fst2_avec_noms(f);
-   a->nom_graphe=nom_graphe;
+   a->graph_names=nom_graphe;
 }
 else {
    lire_etats_fst2(f);
 }
-a->nombre_etats_par_grf=nombre_etats_par_grf;
+a->number_of_states_by_graphs=nombre_etats_par_grf;
 lire_etiquettes_fst2(f);
 u_fclose(f);
-a->nombre_graphes=nombre_graphes_fst2;
-a->nombre_etats=nombre_etats_fst2;
-a->nombre_etiquettes=nombre_etiquettes_fst2;
-a->debut_graphe_fst2=debut_graphe_fst2;
+a->number_of_graphs=nombre_graphes_fst2;
+a->number_of_states=nombre_etats_fst2;
+a->number_of_tags=nombre_etiquettes_fst2;
+a->initial_states=debut_graphe_fst2;
 a->variables=liste_des_variables;
 resize(a);
 return a;
@@ -120,13 +120,13 @@ return a;
 //
 class fst_array {
 	class arbre_string0 a;
-	struct automate_fst2* fst2[N_FST2];
+	struct fst2* fst2[N_FST2];
 	int referenceCnt[N_FST2];
 	public:
 		fst_array(){
 		    int i;
 			for(i =0; i < N_FST2;i++){
-				fst2[i] = (struct automate_fst2 *)-1;
+				fst2[i] = (struct fst2 *)-1;
 				referenceCnt[i] = 0;
 			}
 
@@ -138,7 +138,7 @@ class fst_array {
 		};
 		~fst_array(){
 		};
-	struct automate_fst2 * loadfst2name(char *rep,unichar *nomFst)
+	struct fst2 * loadfst2name(char *rep,unichar *nomFst)
 	{
 		u_strcpy((unichar *)curFstName,(unichar *)nomFst);
 		char *wp = cur_fstName;
@@ -152,7 +152,7 @@ class fst_array {
 
 		int fstId;
 		fstId = a.put((unichar *)nomFst);
-		if(fst2[fstId] == (struct automate_fst2 *)-1){
+		if(fst2[fstId] == (struct fst2 *)-1){
 			fst2[fstId] = load_fst22(cur_fstName,1);
 		}
 		return(fst2[fstId]);
@@ -164,7 +164,7 @@ int ADD_TWO_POINTS=0;
 int REMOVE_DIGITS_FROM_GRAMM_CODE=1;
 
 
-static int inflect_kr(struct automate_fst2 *,unichar*,int mode);
+static int inflect_kr(struct fst2 *,unichar*,int mode);
 
 static void explore_state(int);
 #define MAX_DEPTH_AUTO	2048
@@ -204,7 +204,7 @@ static void lineErrMess()
 	exitMessage("");
 }
 
-static Automate_fst2* Ptr_cAuto;
+static Fst2* Ptr_cAuto;
 
 void cleanData()
 {
@@ -630,7 +630,7 @@ u_fprintf(stdout,"\n");
 	//	handling the derivation word
 	//  get derived words
 	class dicElements local;
-	struct automate_fst2 *fstAuto;
+	struct fst2 *fstAuto;
 	unichar *wp;
 	local.put(orgWord);
 	curDicElements = &local;
@@ -644,7 +644,7 @@ u_fprintf(stdout,"\n");
 				exitMessage("");
 			}
 			if((fstAuto = dev.loadfst2name(dervRep,wp))
-				!= (struct automate_fst2 *)0 ){
+				!= (struct fst2 *)0 ){
 				inflect_kr(fstAuto,orgWord->EC_canonique,DERIVATION_MODE);
 			}else {
 				printf("%s ",repertoire);
@@ -669,7 +669,7 @@ u_fprintf(stdout,"\n");
 			variation_code++;
 		}
 		if( (fstAuto = suf.loadfst2name(flexRep,variation_code))
-			!= (struct automate_fst2 *)0){
+			!= (struct fst2 *)0){
 			inflect_kr(fstAuto,orgWord->EC_canonique,FLEXION_MODE);
 			wEle = wEle->next;
 		} else{
@@ -710,20 +710,20 @@ u_fprintf(stdout,"\n");
 // inflect the lemma 'lemme', using the flexional transducer 'flex', and
 // taking 'code' as the basic grammatical code to be written in the DELAF
 //
-static int inflect_kr(Automate_fst2*fstAuto,unichar* flex,int modeflex)
+static int inflect_kr(Fst2*fstAuto,unichar* flex,int modeflex)
 {
 	grapheTraiteMode = modeflex;
 	auto_courant = 1;
 	startAutoNum = auto_courant;
 	curEtiCnt = 0;
 	Ptr_cAuto= fstAuto;
-	explore_state(Ptr_cAuto->debut_graphe_fst2[auto_courant]);
+	explore_state(Ptr_cAuto->initial_states[auto_courant]);
 	return(1);
 }
 
 
 
-void explore_state_recursion(unichar*,unichar*,unichar*,Automate_fst2*,int,struct couple_string**,unichar*);
+void explore_state_recursion(unichar*,unichar*,unichar*,Fst2*,int,struct couple_string**,unichar*);
 
 //
 // Shifts all the stack from the position pos
@@ -778,7 +778,7 @@ static void traiteEttiques()
 	FF[FIdx] = 0;OF[OIdx] = 0;    
 	
 	for(int i = 0; i < curEtiCnt;i++){
-		et=Ptr_cAuto->etiquette[etiQueue[i]];
+		et=Ptr_cAuto->tags[etiQueue[i]];
 if(debugFlag)
 	u_fprintf(stdout,"%S %S\n",et->output,et->input);
 		//
@@ -957,7 +957,7 @@ if(debugFlag){ FF[FIdx] = 0;  u_fprintf(stdout,"%S >>>>\n",FF);}
 void explore_state(int etat_courant)
 {
 	int save_auto;
-	Fst2State e=Ptr_cAuto->etat[etat_courant];
+	Fst2State e=Ptr_cAuto->states[etat_courant];
 	if (is_final_state(e)) {
 		if(auto_courant == startAutoNum){
 			traiteEttiques();
@@ -968,7 +968,7 @@ void explore_state(int etat_courant)
 		if (t->tag_number < 0) {
 			save_auto = auto_courant;
 			auto_courant = -(t->tag_number);
-		    explore_state(Ptr_cAuto->debut_graphe_fst2[-(t->tag_number)]);
+		    explore_state(Ptr_cAuto->initial_states[-(t->tag_number)]);
 		    auto_courant = save_auto;
 		}
 

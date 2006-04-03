@@ -30,13 +30,13 @@ void    w_strcpy( wchar_t*, unichar* );
 
 /*----------------------------------------------------------------------------*/
 
-MasterGF_T* CreateMasterGF( Automate_fst2* fst2 , Alphabet* alph )
+MasterGF_T* CreateMasterGF( Fst2* fst2 , Alphabet* alph )
 {
     struct string_hash* hashFilters = new_string_hash_N(HASH_FILTERS_DIM);
-    Fst2Tag* fst2Labels = fst2 -> etiquette;
+    Fst2Tag* fst2Labels = fst2 -> tags;
     int i, ccode;
     
-    for (i = 0; i < fst2 -> nombre_etiquettes; ++i) {
+    for (i = 0; i < fst2 -> number_of_tags; ++i) {
         if (fst2Labels[i] -> contentGF != NULL) {
             fst2Labels[i] -> entryMasterGF = get_hash_number(fst2Labels[i] -> contentGF, hashFilters);
         }

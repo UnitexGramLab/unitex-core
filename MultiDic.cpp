@@ -32,7 +32,7 @@ char nom_inf[1024];
 char extension[128];
 unsigned char* bin;
 struct INF_codes* INF;
-Automate_fst2* fst2;
+Fst2* fst2;
 struct multi_dic* M=(struct multi_dic*)malloc(sizeof(struct multi_dic));
 
 M->tab=(struct dic**)malloc((argc-FIRST_DIC_PARAMETER)*sizeof(struct dic*));

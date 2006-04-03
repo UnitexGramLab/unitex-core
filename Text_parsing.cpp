@@ -55,7 +55,7 @@ struct text_tokens* tokens;
 Fst2Tag* ETIQUETTE;
 int SENTENCE_DELIMITER_INDICE=-1;
 int STOP_MARKER_INDICE=-1;
-Automate_fst2* current_fst2=NULL;
+Fst2* current_fst2=NULL;
 
 
 void block_change(FILE* f) {
@@ -75,7 +75,7 @@ if (LENGTH<BUFFER_SIZE) {
 
 
 
-void launch_locate(FILE* f,Automate_fst2* automate,int mode,struct string_hash* tok,FILE* out,
+void launch_locate(FILE* f,Fst2* automate,int mode,struct string_hash* tok,FILE* out,
                    int output_mode,long int text_size,FILE* info,
                    struct DLC_tree_info* DLC_tree) {
 LENGTH=fread(texte,sizeof(int),BUFFER_SIZE,f);
@@ -84,14 +84,14 @@ transduction_mode=output_mode;
 init_matches();
 if (transduction_mode != IGNORE_TRANSDUCTIONS) // there may be transducer output
   ambig_transduction_mode = ALLOW_AMBIG_TRANSDUCTIONS; // so we allow different output
-debut_graphe=automate->debut_graphe_fst2;
+debut_graphe=automate->initial_states;
 int debut=debut_graphe[1];
 current_fst2=automate;
 N_INT_ALLREADY_READ=0;
 origine_courante=0;
 nombre_unites_reconnues=0;
 TOKENS=tok;
-ETIQUETTE=automate->etiquette;
+ETIQUETTE=automate->tags;
 int n_read=0;
 int unite;
 clock_t startTime = clock();
@@ -357,7 +357,7 @@ if (etat_courant->controle & 1) {
      // looking for a context, it's an error because every
      // opened context must be closed before the end of the graph
      char tmp[1024];
-     u_to_char(tmp,current_fst2->nom_graphe[numero_graphe_courant+1]);
+     u_to_char(tmp,current_fst2->graph_names[numero_graphe_courant+1]);
      fprintf(stderr,"ERROR: unclosed context in graph \"%s\"\n",tmp);
      free_context_list(ctx);
      return;
@@ -550,7 +550,7 @@ while (a_meta!=NULL) {
                     if (ctx==NULL) {
                        // if there was no current opened context
                        char tmp[1024];
-                       u_to_char(tmp,current_fst2->nom_graphe[numero_graphe_courant+1]);
+                       u_to_char(tmp,current_fst2->graph_names[numero_graphe_courant+1]);
                        fprintf(stderr,"ERROR: unexpected closing context mark in graph \"%s\"\n",tmp);
                        return;
                     }

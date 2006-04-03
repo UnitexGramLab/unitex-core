@@ -161,7 +161,7 @@ class CFstApp {
 
 public:
 	
-	struct automate_fst2 *a;
+	struct fst2 *a;
 	FILE *foutput;
 	ModeOut prMode;
 	autoType automateMode;
@@ -569,8 +569,8 @@ verboseMode  = 0;
 		}
 		headCyc = 0;
 		cyclePathCnt = 0;
-		for (i = 0; i < a->nombre_etats;i++){
-			a->etat[i]->control &=0x7f;
+		for (i = 0; i < a->number_of_states;i++){
+			a->states[i]->control &=0x7f;
 		}
 	}
 	void prCycleNode()
@@ -796,7 +796,7 @@ verboseMode  = 0;
 			ePtrCnt = tPtrCnt = 0;
 			for(i = 0; i < h->pathCnt;i++){
 //				putInt(0,h->pathEtiQueue[i].path);
-				Eti = a->etiquette[h->pathEtiQueue[i].eti];
+				Eti = a->tags[h->pathEtiQueue[i].eti];
 				wp = 	(unichar *)Eti->input;
 				
 				if(u_strcmp(wp,u_epsilon_string)){
@@ -822,9 +822,9 @@ verboseMode  = 0;
 		unichar *wp;
 		Fst2Tag Eti;
 		if(autoNum){
-			st = a->debut_graphe_fst2[autoNum];
-			ed =(autoNum  == a->nombre_graphes) ? a->nombre_etats :
-					a->debut_graphe_fst2[autoNum+1];
+			st = a->initial_states[autoNum];
+			ed =(autoNum  == a->number_of_graphs) ? a->number_of_states :
+					a->initial_states[autoNum+1];
 		} else {
 			st = nodeNum; ed = st+1;
 		}
@@ -832,7 +832,7 @@ verboseMode  = 0;
 		while(h){
 			tmp = h->pathEtiQueue[h->pathCnt -1].etatNo;
 			if(tmp & FILE_PATH_MARK)
-				tmp = a->debut_graphe_fst2[tmp & SUB_ID_MASK];
+				tmp = a->initial_states[tmp & SUB_ID_MASK];
 			if( ( tmp < st) || (tmp >= ed)){
 					h = h->next;continue;
 			}
@@ -845,10 +845,10 @@ verboseMode  = 0;
 			for(i = 0; i < h->pathCnt;i++){
 				tmp = h->pathEtiQueue[i].etatNo;
 				if(tmp & FILE_PATH_MARK)
-					tmp = a->debut_graphe_fst2[tmp & SUB_ID_MASK];
+					tmp = a->initial_states[tmp & SUB_ID_MASK];
 				if((tmp < st) || (tmp >= ed) )	break;
 
-				Eti = a->etiquette[h->pathEtiQueue[i].eti];
+				Eti = a->tags[h->pathEtiQueue[i].eti];
 				wp = (unichar *)	Eti->input;
 				if(u_strcmp(wp,u_epsilon_string) && *wp){
 					while(*wp)	EBuff[ePtrCnt++] = *wp++;
@@ -871,11 +871,11 @@ verboseMode  = 0;
 	void prSubGrapheCycle()
 	{
 		int i;
-		for(i = 0; i <= a->nombre_graphes;i++)
+		for(i = 0; i <= a->number_of_graphs;i++)
 		{
-			if(a->etat[a->debut_graphe_fst2[i]]->control & LOOP_NODE_MARK)
+			if(a->states[a->initial_states[i]]->control & LOOP_NODE_MARK)
 				fprintf(stderr,"the sub-graph %s has cycle path\n",
-				  getUtoChar(a->nom_graphe[i]));
+				  getUtoChar(a->graph_names[i]));
 		}
 	}
 
@@ -1001,13 +1001,13 @@ void CFstApp::loadGraph(char *fname)
 	  exit(1);
 	}
 
-	for( i = 0; i < a->nombre_etats;i++)
+	for( i = 0; i < a->number_of_states;i++)
 	{	
-		strans = a->etat[i]->transitions;
-		if(a->etat[i]->control & 0x80){
+		strans = a->states[i]->transitions;
+		if(a->states[i]->control & 0x80){
               exitMessage("Not vide control bit");
        }
-		a->etat[i]->control &= 0x7f;	// clean for mark recusive
+		a->states[i]->control &= 0x7f;	// clean for mark recusive
 		while(strans){
 			if(strans->tag_number < 0){
 				strans->tag_number = 
@@ -1017,9 +1017,9 @@ void CFstApp::loadGraph(char *fname)
 		}
 	}
 
-	ignoreTable = new int [a->nombre_graphes+1];
-    numOfIgnore = new int [a->nombre_graphes+1];
-    for( i = 0 ; i<= a->nombre_graphes;i++){
+	ignoreTable = new int [a->number_of_graphs+1];
+    numOfIgnore = new int [a->number_of_graphs+1];
+    for( i = 0 ; i<= a->number_of_graphs;i++){
     	ignoreTable[i] = 0;
     	numOfIgnore[i] = 0;
 	}
@@ -1027,27 +1027,27 @@ void CFstApp::loadGraph(char *fname)
 	if(arretSubListIdx) {
 	
 		for(i = 0; i< arretSubListIdx;i++){
-			for( j = 1; j <= a->nombre_graphes;j++){
-				if(!u_strcmp((unichar *)a->nom_graphe[j],arretSubList[i]))
+			for( j = 1; j <= a->number_of_graphs;j++){
+				if(!u_strcmp((unichar *)a->graph_names[j],arretSubList[i]))
 					break;
 			}
-			if( j > a->nombre_graphes){
+			if( j > a->number_of_graphs){
 				printf("Warning : Not exist the sub-graph %s\n",
 					getUtoChar(arretSubList[i]));
 				continue;
 			}
 			printf("%s %x graphe ignore the exploitation\n",
-                     getUtoChar(a->nom_graphe[j]),j);
+                     getUtoChar(a->graph_names[j]),j);
 			ignoreTable[j] = 1;
 		}
 	}
 	if(stopSignal){
 	
-		for( i = 0; i < a->nombre_etiquettes ;i++){
-			if(u_strcmp((unichar *)a->etiquette[i]->input,stopSignal))
+		for( i = 0; i < a->number_of_tags ;i++){
+			if(u_strcmp((unichar *)a->tags[i]->input,stopSignal))
 				continue;
-			for(j = 0; j < a->nombre_etats;j++){
-				strans = a->etat[j]->transitions;
+			for(j = 0; j < a->number_of_states;j++){
+				strans = a->states[j]->transitions;
 				while(strans){
 					if(strans->tag_number == i){
 						strans->tag_number |= STOP_PATH_MARK;
@@ -1062,8 +1062,8 @@ void CFstApp::loadGraph(char *fname)
 		unichar *wp;
 		int i,j,k,l,m;
 		unichar temp[256];
-		for( i = 0; i < a->nombre_etiquettes ;i++){
-			wp = (unichar *)a->etiquette[i]->input;
+		for( i = 0; i < a->number_of_tags ;i++){
+			wp = (unichar *)a->tags[i]->input;
 			for(j = 0; wp[j] ;j++) 	temp[j] = wp[j];
 			temp[j] = 0;
 			for(j = 0 ; j < changeStrToIdx;j++){
@@ -1081,7 +1081,7 @@ void CFstApp::loadGraph(char *fname)
 					temp[m] = 0;
 				}
 			}
-			wp = (unichar *)a->etiquette[i]->input;
+			wp = (unichar *)a->tags[i]->input;
 			if(u_strcmp(wp,temp)){
 			   printf("%0xth index, %s==>%s\n",i,
                         getUtoChar(wp),getUtoChar(temp));
@@ -1123,15 +1123,15 @@ void CFstApp::getWordsFromGraph(char *fname)
 		
 		listOut = 1;
 
-		for( i = 1; i <= a->nombre_graphes;i++){
-			u_fprintf(foutput,"[%d th automata %S]\n",i,a->nom_graphe[i]);
+		for( i = 1; i <= a->number_of_graphs;i++){
+			u_fprintf(foutput,"[%d th automata %S]\n",i,a->graph_names[i]);
 //			printf("[%d th automata %s]\n",i,getUtoChar(a->nom_graphe[i]));
 			
 			exploirerSubAuto(i);
 			prOutCycleAtNode(i,0);
 			u_fprintf(foutput,
 		" the automate %S, %d path, %d path stopped by cycle, %d error path\n",
-					a->nom_graphe[i],totalPath,totalLoop, errPath);
+					a->graph_names[i],totalPath,totalLoop, errPath);
 			CleanPathCounter();
 		}
 
@@ -1159,13 +1159,13 @@ void CFstApp::getWordsFromGraph(char *fname)
 				exploirerSubAuto(1);
 				if(verboseMode){
 printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
-            ,getUtoChar(a->nom_graphe[1])
+            ,getUtoChar(a->graph_names[1])
             ,totalPath,totalLoop, errPath);
 					if(stopPath){
-					     for(int inx = 0; inx <= a->nombre_graphes;inx++){
+					     for(int inx = 0; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
                               printf(" Sub call [%s] %d\n"
-                                ,getUtoChar(a->nom_graphe[inx])
+                                ,getUtoChar(a->graph_names[inx])
                                 ,numOfIgnore[inx]);
                                numOfIgnore[inx] = 0;
                            }
@@ -1189,18 +1189,18 @@ printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
 				exitMessage("list file open error");
 			i = 0;
 
-			for( sui = a->etat[0]->transitions;sui != 0 ; sui = sui->next){
+			for( sui = a->states[0]->transitions;sui != 0 ; sui = sui->next){
 				if(!(sui->tag_number & FILE_PATH_MARK))	continue;
 				ignoreTable[sui->tag_number & SUB_ID_MASK] = 1;
 				i++;
 			}
 			fprintf(listFile," %d\n",i);
 
-			for( sui = a->etat[0]->transitions;sui != 0 ; sui = sui->next){
+			for( sui = a->states[0]->transitions;sui != 0 ; sui = sui->next){
 				if(!(sui->tag_number & FILE_PATH_MARK)) continue;
 				cleanCyclePath();
 				
-				wp = (unichar *)a->nom_graphe[sui->tag_number & SUB_ID_MASK];
+				wp = (unichar *)a->graph_names[sui->tag_number & SUB_ID_MASK];
 				dp = tmpchar;
 				
 				while(*wp){*dp++ = (char)(*wp&0xff);wp++;}
@@ -1225,14 +1225,14 @@ printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
 				if(recursiveMode == SYMBOL)	prOutCycle();
                 if(verboseMode){
 printf(" the automate %s %d path, %d path stopped by cycle, %d error path \n"
-                    ,getUtoChar(a->nom_graphe[sui->tag_number & SUB_ID_MASK])
+                    ,getUtoChar(a->graph_names[sui->tag_number & SUB_ID_MASK])
                     ,totalPath,totalLoop, errPath);
 					
 					if(stopPath){
-					     for(int inx = 0; inx <= a->nombre_graphes;inx++){
+					     for(int inx = 0; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
                               printf(" sub-call[%s] %d\n",
-                                  getUtoChar(a->nom_graphe[inx]),
+                                  getUtoChar(a->graph_names[inx]),
                                   numOfIgnore[inx]);
                               numOfIgnore[inx] = 0;
                            }
@@ -1269,10 +1269,10 @@ void CFstApp::exploirerSubAuto(int startAutoNo)
 	CautoQueue[CautoDepth].next = 0;
     pathEtiQidx = 0;
 	pathEtiQ[pathEtiQidx].autoNo = callSubId;
-	pathEtiQ[pathEtiQidx].etatNo = a->debut_graphe_fst2[startAutoNo];
+	pathEtiQ[pathEtiQidx].etatNo = a->initial_states[startAutoNo];
 	pathEtiQ[pathEtiQidx].eti = 0;
 	pathEtiQidx++;
-	findCycleSubGraph(callSubId,1,a->debut_graphe_fst2[startAutoNo],0);
+	findCycleSubGraph(callSubId,1,a->initial_states[startAutoNo],0);
 	pathEtiQidx--;
 	if(pathEtiQidx)exitMessage("error in program");
 }
@@ -1312,7 +1312,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 		return;
 	}
 
-	if (is_final_state(a->etat[stateNo])) {	// terminal node 
+	if (is_final_state(a->states[stateNo])) {	// terminal node 
 		if(autoDepth != 1){		// check continue  condition
 			skipCnt = 0;	// find next state
 			for(i = CautoDepth;i>=0; --i){
@@ -1356,7 +1356,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 			}
 		}
 	}
-	for(struct fst2Transition *sui = a->etat[stateNo]->transitions;
+	for(struct fst2Transition *sui = a->states[stateNo]->transitions;
 	sui != 0 ; sui = sui->next){
 
 		if(sui->tag_number & STOP_PATH_MARK){
@@ -1417,7 +1417,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
            	} else { // find recusive call
               pathEtiQ[pathEtiQidx].eti = 0;
               pathEtiQ[pathEtiQidx].autoNo = autoStackMap[scanner].autoId;;
-              pathEtiQ[pathEtiQidx].etatNo = a->debut_graphe_fst2[tmp]| LOOP_PATH_MARK;;
+              pathEtiQ[pathEtiQidx].etatNo = a->initial_states[tmp]| LOOP_PATH_MARK;;
               ++pathEtiQidx;
               if(!IsCyclePath(stateDepth)) exitMessage("recusive find fail");
               --pathEtiQidx;
@@ -1425,7 +1425,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
             }
             pathEtiQ[pathEtiQidx].eti = 0;
             pathEtiQ[pathEtiQidx].autoNo = callId;
-            pathEtiQ[pathEtiQidx].etatNo = a->debut_graphe_fst2[tmp];
+            pathEtiQ[pathEtiQidx].etatNo = a->initial_states[tmp];
             ++pathEtiQidx;
             autoStackMap[autoDepth].autoId = callId;
             
@@ -1433,7 +1433,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 			CautoQueue[CautoDepth].aId = callId;
 			CautoQueue[CautoDepth].next = sui->state_number;
 			findCycleSubGraph(callId,autoDepth+1,
-                  a->debut_graphe_fst2[tmp],stateDepth+1);
+                  a->initial_states[tmp],stateDepth+1);
 			--pathEtiQidx;
 			--CautoDepth;
 			continue;
@@ -1460,7 +1460,7 @@ void CFstApp::CqueuePathPr(FILE *f,int depth)
 	{
 		if(pathEtiQ[i].autoNo != pidx){ // skip the same value
 			pidx = pathEtiQ[i].autoNo;
-			u_fprintf(f,"%S>",a->nom_graphe[pidx]);
+			u_fprintf(f,"%S>",a->graph_names[pidx]);
 		}
 	}
 }
@@ -1531,10 +1531,10 @@ void CFstApp::outWordsOfGraph(int depth)
 			ep = tp = u_null_string;
 		} else if(pathEtiQ[s].eti & FILE_PATH_MARK){
 			ep = (display_control == GRAPH) ? 
-				(unichar *)a->nom_graphe[pathEtiQ[s].eti & SUB_ID_MASK]:u_null_string;
+				(unichar *)a->graph_names[pathEtiQ[s].eti & SUB_ID_MASK]:u_null_string;
 			tp = u_null_string;
 		} else {
-			Eti = a->etiquette[pathEtiQ[s].eti & SUB_ID_MASK]; 
+			Eti = a->tags[pathEtiQ[s].eti & SUB_ID_MASK]; 
 			ep = (u_strcmp((unichar *)Eti->input,u_epsilon_string)) ? 
 				(unichar *)Eti->input : u_null_string;
 
@@ -1694,7 +1694,7 @@ void CFstApp::outWordsOfGraph(int depth)
 				while(*tp) TBuff[tPtrCnt++] = *tp++;				
 			}
 			if(pathEtiQ[s].eti & FILE_PATH_MARK)
-				outOneWord((unichar *)a->nom_graphe[pathEtiQ[s].eti & SUB_ID_MASK]);
+				outOneWord((unichar *)a->graph_names[pathEtiQ[s].eti & SUB_ID_MASK]);
 			else
                 outOneWord(u_null_string);
 			break;
