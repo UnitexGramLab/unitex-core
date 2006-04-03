@@ -2005,7 +2005,7 @@ unePhraseAuto.prAuto(stderr,2);
 		if(!maptrans) exitMessage("Mem alloc fail");
 		for(i = 0; i < cnt_etat;i++)
 		{
-			t = loadFst2->etat[i]->trans;
+			t = loadFst2->etat[i]->transitions;
 			fread(&k,4,1,readFile);
 			fread(mapTrans,4*3,k,readFile);
 			wp = mapTrans;

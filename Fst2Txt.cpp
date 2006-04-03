@@ -354,13 +354,13 @@ while (origine_courante<LENGTH) {
 
 
 void parcourir_initial(int e,int pos,int profondeur) {
-Etat_fst etat_courant=fst2->etat[e];
+Fst2State etat_courant=fst2->etat[e];
 
 if (profondeur > MAX_DEPTH) {
    fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
    exit(1);
 }
-if (etat_courant->controle&1) {
+if (etat_courant->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    if (pos>=taille_entree/*sommet>u_strlen(output)*/) {
       // and if the recognized input is longer than the current one, it replaces it
@@ -424,7 +424,7 @@ if (PARSING_MODE!=NORMAL_MODE
 }
 
 
-struct transition_fst* t=etat_courant->trans;
+struct transition_fst* t=etat_courant->transitions;
 while (t!=NULL) {
       sommet=SOMMET;
       // we process the transition of the current state
@@ -750,12 +750,12 @@ while (t!=NULL) {
 
 
 void parcourir_sous_graphe(int e,int pos,int profondeur,struct liste_num** liste_arrivee) {
-Etat_fst etat_courant=fst2->etat[e];
+Fst2State etat_courant=fst2->etat[e];
 if (profondeur > MAX_DEPTH) {
    fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
    exit(1);
 }
-if (etat_courant->controle&1) {
+if (etat_courant->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    pile[sommet]='\0';
    (*liste_arrivee)=inserer_si_absent(pos,(*liste_arrivee),sommet,pile);
@@ -817,7 +817,7 @@ if (PARSING_MODE!=NORMAL_MODE ||
 }
 }
 
-struct transition_fst* t=etat_courant->trans;
+struct transition_fst* t=etat_courant->transitions;
 while (t!=NULL) {
       sommet=SOMMET;
       // we process the transition of the current state
@@ -1193,6 +1193,6 @@ void pretraiter_etiquettes() {
 int L=fst2->nombre_etats;
 for (int i=0;i<L;i++) {
   arbre_etiquettes[i]=new_arbre_char();
-  fst2->etat[i]->trans=pretraiter_etiquette(arbre_etiquettes[i],fst2->etat[i]->trans);
+  fst2->etat[i]->transitions=pretraiter_etiquette(arbre_etiquettes[i],fst2->etat[i]->transitions);
 }
 }

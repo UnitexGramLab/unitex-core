@@ -253,7 +253,7 @@ case CMD_DIV:;
 
 void curSMvalue(unichar cval)
 {
-	struct transition_fst *cT = a->etat[curEtat]->trans;
+	struct transition_fst *cT = a->etat[curEtat]->transitions;
 	struct cmdInst *cmdPtr;
 	unichar *wp;
 	int nextArr = 0;

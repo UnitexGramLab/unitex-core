@@ -570,7 +570,7 @@ verboseMode  = 0;
 		headCyc = 0;
 		cyclePathCnt = 0;
 		for (i = 0; i < a->nombre_etats;i++){
-			a->etat[i]->controle &=0x7f;
+			a->etat[i]->control &=0x7f;
 		}
 	}
 	void prCycleNode()
@@ -873,7 +873,7 @@ verboseMode  = 0;
 		int i;
 		for(i = 0; i <= a->nombre_graphes;i++)
 		{
-			if(a->etat[a->debut_graphe_fst2[i]]->controle & LOOP_NODE_MARK)
+			if(a->etat[a->debut_graphe_fst2[i]]->control & LOOP_NODE_MARK)
 				fprintf(stderr,"the sub-graph %s has cycle path\n",
 				  getUtoChar(a->nom_graphe[i]));
 		}
@@ -1003,11 +1003,11 @@ void CFstApp::loadGraph(char *fname)
 
 	for( i = 0; i < a->nombre_etats;i++)
 	{	
-		strans = a->etat[i]->trans;
-		if(a->etat[i]->controle & 0x80){
+		strans = a->etat[i]->transitions;
+		if(a->etat[i]->control & 0x80){
               exitMessage("Not vide control bit");
        }
-		a->etat[i]->controle &= 0x7f;	// clean for mark recusive
+		a->etat[i]->control &= 0x7f;	// clean for mark recusive
 		while(strans){
 			if(strans->etiquette < 0){
 				strans->etiquette = 
@@ -1047,7 +1047,7 @@ void CFstApp::loadGraph(char *fname)
 			if(u_strcmp((unichar *)a->etiquette[i]->input,stopSignal))
 				continue;
 			for(j = 0; j < a->nombre_etats;j++){
-				strans = a->etat[j]->trans;
+				strans = a->etat[j]->transitions;
 				while(strans){
 					if(strans->etiquette == i){
 						strans->etiquette |= STOP_PATH_MARK;
@@ -1189,14 +1189,14 @@ printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
 				exitMessage("list file open error");
 			i = 0;
 
-			for( sui = a->etat[0]->trans;sui != 0 ; sui = sui->suivant){
+			for( sui = a->etat[0]->transitions;sui != 0 ; sui = sui->suivant){
 				if(!(sui->etiquette & FILE_PATH_MARK))	continue;
 				ignoreTable[sui->etiquette & SUB_ID_MASK] = 1;
 				i++;
 			}
 			fprintf(listFile," %d\n",i);
 
-			for( sui = a->etat[0]->trans;sui != 0 ; sui = sui->suivant){
+			for( sui = a->etat[0]->transitions;sui != 0 ; sui = sui->suivant){
 				if(!(sui->etiquette & FILE_PATH_MARK)) continue;
 				cleanCyclePath();
 				
@@ -1312,7 +1312,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 		return;
 	}
 
-	if( a->etat[stateNo]->controle & 1) {	// terminal node 
+	if( a->etat[stateNo]->control & FST2_FINAL_STATE_BIT_MASK) {	// terminal node 
 		if(autoDepth != 1){		// check continue  condition
 			skipCnt = 0;	// find next state
 			for(i = CautoDepth;i>=0; --i){
@@ -1356,7 +1356,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 			}
 		}
 	}
-	for(struct transition_fst *sui = a->etat[stateNo]->trans;
+	for(struct transition_fst *sui = a->etat[stateNo]->transitions;
 	sui != 0 ; sui = sui->suivant){
 
 		if(sui->etiquette & STOP_PATH_MARK){

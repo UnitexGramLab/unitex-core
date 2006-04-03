@@ -82,7 +82,7 @@ public:
 
 	if( pathEtiQidx > PATH_QUEUE_MAX)	return;
 
-	if( Motif_Automate->etat[autoNo]->controle & 1) {	// terminal node 
+	if( Motif_Automate->etat[autoNo]->control & FST2_FINAL_STATE_BIT_MASK) {	// terminal node 
 		if(curAuto != startAutoNum){		// check continue  condition
 			skipCnt = 0;	// find next state
 			for(i = CautoDepth;i>=0; --i){
@@ -114,7 +114,7 @@ public:
 			afficher_match_fst2(0,L"");
 		}
 	}
-	for(struct transition_fst *sui = Motif_Automate->etat[autoNo]->trans;
+	for(struct transition_fst *sui = Motif_Automate->etat[autoNo]->transitions;
 	sui != 0 ; sui = sui->suivant){
 		if(sui->etiquette & FILE_PATH_MARK ) {	// handling sub call
 			CautoDepth++;
@@ -134,7 +134,7 @@ public:
 			continue;
 		}
 		// verifiy next condition 
-		for( struct transition_fst *tsui = Text_Automate->etat[pos]->trans;
+		for( struct transition_fst *tsui = Text_Automate->etat[pos]->transitions;
 		tsui != 0; tsui = tsui->suivant){
 			if(matchVerify(sui->etiquette,tsui->etiquette)){
 				// forward 

@@ -148,14 +148,14 @@ void explorer_sub_automate_normalization(Automate_fst2* automate,int n,
                                      struct noeud_arbre_normalization* noeud_normalization,
                                      struct string_hash* hash,unichar* output,
                                      Alphabet* alph,struct temp_list** TEMP_LIST) {
-Etat_fst etat;
+Fst2State etat;
 etat=automate->etat[n];
-if (etat->controle&1) {
+if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
 }
 struct transition_fst* trans;
-trans=etat->trans;
+trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
    if (trans->etiquette<0) {
@@ -231,14 +231,14 @@ while (trans!=NULL) {
 void explorer_sub_automate_normalization_string(Automate_fst2* automate,int n,
                                      struct noeud_arbre_normalization* noeud_normalization,
                                      unichar* output,struct temp_list** TEMP_LIST) {
-Etat_fst etat;
+Fst2State etat;
 etat=automate->etat[n];
-if (etat->controle&1) {
+if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
 }
 struct transition_fst* trans;
-trans=etat->trans;
+trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
    if (trans->etiquette<0) {
@@ -292,14 +292,14 @@ void explorer_automate_normalization(Automate_fst2* automate,int n,
                                      struct noeud_arbre_normalization* noeud_normalization,
                                      struct string_hash* hash,unichar* output,
                                      Alphabet* alph) {
-Etat_fst etat;
+Fst2State etat;
 etat=automate->etat[n];
-if (etat->controle&1) {
+if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
 }
 struct transition_fst* trans;
-trans=etat->trans;
+trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
    if (trans->etiquette<0) {
@@ -375,14 +375,14 @@ while (trans!=NULL) {
 void explorer_automate_normalization_string(Automate_fst2* automate,int n,
                                      struct noeud_arbre_normalization* noeud_normalization,
                                      unichar* output) {
-Etat_fst etat;
+Fst2State etat;
 etat=automate->etat[n];
-if (etat->controle&1) {
+if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
 }
 struct transition_fst* trans;
-trans=etat->trans;
+trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
    if (trans->etiquette<0) {

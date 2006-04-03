@@ -528,8 +528,8 @@ explore_state(pile,canonique,out,a,T->arr,code_gramm,comment);
 void explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
                    Automate_fst2* a,int etat_courant,unichar* code_gramm,
                    unichar* comment) {
-Etat_fst e=a->etat[etat_courant];
-if (e->controle & 1) {
+Fst2State e=a->etat[etat_courant];
+if (e->control & FST2_FINAL_STATE_BIT_MASK) {
     // if we are in a final state, we save the computed things
     u_fprints(flechi,f_out);
     u_fprints_char(",",f_out);
@@ -543,7 +543,7 @@ if (e->controle & 1) {
     u_fprints(comment,f_out);
     u_fprints_char("\n",f_out);
 }
-struct transition_fst* t=e->trans;
+struct transition_fst* t=e->transitions;
 while (t!=NULL) {
     explore_tag(t,flechi,canonique,sortie,a,code_gramm,comment);
     t=t->suivant;
@@ -627,8 +627,8 @@ explore_state_recursion(pile,canonique,out,a,T->arr,LISTE,code_gramm);
 void explore_state_recursion(unichar* flechi,unichar* canonique,unichar* sortie,
                    Automate_fst2* a,int etat_courant,struct couple_string** L,
                    unichar* code_gramm) {
-Etat_fst e=a->etat[etat_courant];
-if (e->controle & 1) {
+Fst2State e=a->etat[etat_courant];
+if (e->control & FST2_FINAL_STATE_BIT_MASK) {
     // if we are in a final state, we save the computed things
     struct couple_string* res=(struct couple_string*)malloc(sizeof(struct couple_string));
     u_strcpy(res->flechi,flechi);
@@ -636,7 +636,7 @@ if (e->controle & 1) {
     res->suivant=(*L);
     (*L)=res;
 }
-struct transition_fst* t=e->trans;
+struct transition_fst* t=e->transitions;
 while (t!=NULL) {
     explore_tag_recursion(t,flechi,canonique,sortie,a,L,code_gramm);
     t=t->suivant;

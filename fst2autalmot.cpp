@@ -513,25 +513,25 @@ tAutAlMot * fst2AutAlMot(Automate_fst2 * A, int nb) {
     aut->type[q] = 0;
 
 
-    if (A->etat[qq]->control & 1)  { aut->type[q] |= AUT_FINAL;   }
-    if (A->etat[qq]->control & 2)  { aut->type[q] |= AUT_INITIAL; }
+    if (A->etat[qq]->control & FST2_FINAL_STATE_BIT_MASK)  { aut->type[q] |= AUT_FINAL;   }
+    if (A->etat[qq]->control & FST2_INITIAL_STATE_BIT_MASK)  { aut->type[q] |= AUT_INITIAL; }
 
     aut->etats[q] = NULL;
 
-    for (struct transition_fst * trans = A->etat[qq]->trans; trans; trans = trans->suivant) {
+    for (struct transition_fst * transitions = A->etat[qq]->transitions; transitions; transitions = transitions->suivant) {
 
       tSymbole symb;
 
-      load_text_symbol(& symb, A->etiquette[trans->etiquette]->input);
+      load_text_symbol(& symb, A->etiquette[transitions->etiquette]->input);
 
       alphabet_clear(alphabet);
 
       int nbflex = symbole_developp(alphabet, & symb);
 
-      if (nbflex == 0) { nouvTrans(aut, q, NULL, trans->arr - base); }
+      if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->arr - base); }
 
       while (nbflex--) {
-	nouvTrans(aut, q, alphabet->symb + nbflex, trans->arr - base);
+	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->arr - base);
 	free(alphabet->symb[nbflex].canonique);
       }
     }
@@ -581,12 +581,12 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
       aut->type[q] = 0;
 
-      if (A->etat[qq]->controle & 1 /*TERMINAL*/) { aut->type[q] |= AUT_TERMINAL; }
-      if (A->etat[qq]->controle & 2 /*INITIALL*/) { aut->type[q] |= AUT_INITIAL;  }
+      if (A->etat[qq]->control & FST2_FINAL_STATE_BIT_MASK) { aut->type[q] |= AUT_TERMINAL; }
+      if (A->etat[qq]->control & FST2_INITIAL_STATE_BIT_MASK) { aut->type[q] |= AUT_INITIAL;  }
 
       aut->etats[q] = NULL;
 
-      for (struct transition_fst * trans = A->etat[qq]->trans; trans; trans = trans->suivant) {
+      for (struct transition_fst * trans = A->etat[qq]->transitions; trans; trans = trans->suivant) {
 
 	tSymbole symb;
 
@@ -652,16 +652,16 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
     aut->type[q] = 0;
 
-    if (A->etat[qq]->control & 1) { aut->type[q] |= AUT_TERMINAL; }
-    if (A->etat[qq]->control & 2) { aut->type[q] |= AUT_INITIAL;  }
+    if (A->etat[qq]->control & FST2_FINAL_STATE_BIT_MASK) { aut->type[q] |= AUT_TERMINAL; }
+    if (A->etat[qq]->control & FST2_INITIAL_STATE_BIT_MASK) { aut->type[q] |= AUT_INITIAL;  }
 
     aut->etats[q] = NULL;
 
-    for (struct transition_fst * trans = A->etat[qq]->trans; trans; trans = trans->suivant) {
+    for (struct transition_fst * transitions = A->etat[qq]->transitions; transitions; transitions = transitions->suivant) {
 
       tSymbole symb;
 
-      u_strcpy(buf, A->etiquette[trans->etiquette]->input);
+      u_strcpy(buf, A->etiquette[transitions->etiquette]->input);
 
       //      debug("before=%S\n", buf);
       load_gramm_symbol(& symb, buf);
@@ -671,11 +671,11 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
       int nbflex = symbole_developp(alphabet, & symb);
 
-      if (nbflex == 0) { nouvTrans(aut, q, NULL, trans->arr - base); }
+      if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->arr - base); }
 
       while (nbflex--) {
 	//#warning "must free canonique!!!!????"
-	nouvTrans(aut, q, alphabet->symb + nbflex, trans->arr - base);
+	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->arr - base);
 	free(alphabet->symb[nbflex].canonique);
       }
 

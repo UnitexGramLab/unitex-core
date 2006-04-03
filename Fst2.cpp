@@ -31,7 +31,7 @@
 
 //-------CHARGEMENT DU FST2------------------------
 
-Etat_fst* graphe_fst2;
+Fst2State* graphe_fst2;
 Fst2Tag* etiquette_fst2;
 int *debut_graphe_fst2;
 int *nombre_etats_par_grf;
@@ -104,8 +104,8 @@ while (t!=NULL) {
 }
 
 
-void free_etat(Etat_fst e) {
-free_transition(e->trans);
+void free_etat(Fst2State e) {
+free_transition(e->transitions);
 free(e);
 }
 
@@ -176,7 +176,7 @@ void resize(Automate_fst2* a) {
 int n_etats=a->nombre_etats+1;
 int n_graphes=a->nombre_graphes+1;
 int n_etiq=a->nombre_etiquettes+1;
-a->etat=(Etat_fst*)realloc(a->etat,n_etats*sizeof(Etat_fst));
+a->etat=(Fst2State*)realloc(a->etat,n_etats*sizeof(Fst2State));
 a->etiquette=(Fst2Tag*)realloc(a->etiquette,n_etiq*sizeof(Fst2Tag));
 // we count +1 because we start the graph numerotation at 1
 a->debut_graphe_fst2=(int*)realloc(a->debut_graphe_fst2,(1+n_graphes)*sizeof(int));
@@ -651,15 +651,15 @@ initialiser_etiquettes();
 //
 // cree et renvoie un etat vierge
 //
-Etat_fst nouvel_etat() {
-Etat_fst e;
-e=(Etat_fst)malloc(sizeof(struct etat_fst));
+Fst2State nouvel_etat() {
+Fst2State e;
+e=(Fst2State)malloc(sizeof(struct fst2State));
 if (e==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction nouvel_etat\n");
   exit(1);
 }
-e->controle=0;
-e->trans=NULL;
+e->control=0;
+e->transitions=NULL;
 return e;
 }
 
@@ -713,15 +713,15 @@ return t;
 //
 // ajoute une transition a l'etat courant
 //
-void ajouter_transition_mat(struct etat_fst *e,int etiq,int etarr)
+void ajouter_transition_mat(struct fst2State *e,int etiq,int etarr)
 {
   struct transition_fst *ptr;
 
   ptr=nouvelle_transition_mat();
-  ptr->suivant=e->trans;
+  ptr->suivant=e->transitions;
   ptr->etiquette=etiq;
   ptr->arr=etarr;
-  e->trans=ptr;
+  e->transitions=ptr;
 }
 
 
@@ -763,8 +763,8 @@ for (j=0;j<nombre_graphes_fst2;j++) {
   while (c!='f') {
     graphe_fst2[etat_courant]=nouvel_etat();
     nombre_etats_par_grf[graphe_courant]++;
-    if(c=='t') graphe_fst2[etat_courant]->controle=1;
-    if (etat_relatif==0) graphe_fst2[etat_courant]->controle=(unsigned char)((graphe_fst2[etat_courant]->controle)|2);
+    if(c=='t') graphe_fst2[etat_courant]->control=FST2_FINAL_STATE_BIT_MASK;
+    if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|2);
     imot=lire_entier_fst2(f,&ok);
     while (ok) {
 	  etarr=lire_entier_fst2(f,&ok);
@@ -836,8 +836,8 @@ for (j=0;j<nombre_graphes_fst2;j++) {
   while (c!='f') {
     graphe_fst2[etat_courant]=nouvel_etat();
     nombre_etats_par_grf[graphe_courant]++;
-    if(c=='t') graphe_fst2[etat_courant]->controle=1;
-    if (etat_relatif==0) graphe_fst2[etat_courant]->controle=(unsigned char)((graphe_fst2[etat_courant]->controle)|2);
+    if(c=='t') graphe_fst2[etat_courant]->control=1;
+    if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|FST2_INITIAL_STATE_BIT_MASK);
     imot=lire_entier_fst2(f,&ok);
     while (ok) {
       etarr=lire_entier_fst2(f,&ok);
@@ -911,8 +911,8 @@ for (j=0;j<nombre_graphes_fst2;j++) {
      while (c!='f') {
        graphe_fst2[etat_courant]=nouvel_etat();
        nombre_etats_par_grf[graphe_courant]++;
-       if(c=='t') graphe_fst2[etat_courant]->controle=1;
-       if (etat_relatif==0) graphe_fst2[etat_courant]->controle=(unsigned char)((graphe_fst2[etat_courant]->controle)|2);
+       if(c=='t') graphe_fst2[etat_courant]->control=FST2_FINAL_STATE_BIT_MASK;
+       if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|FST2_INITIAL_STATE_BIT_MASK);
        imot=lire_entier_fst2(f,&ok);
        while (ok) {
          if (imot>(*ETIQ_MAX)) (*ETIQ_MAX)=imot;
@@ -943,7 +943,7 @@ nombre_etats_fst2=etat_courant;
 //
 // charge le FST2
 //
-void charger_graphe_fst2(FILE *f,Etat_fst graphe_fst2_[],Fst2Tag etiquette_[],
+void charger_graphe_fst2(FILE *f,Fst2State graphe_fst2_[],Fst2Tag etiquette_[],
                          int *nombre_graphe_fst2s_,int *nombre_etats_,int *nombre_etiquettes_,
                          int **debut_graphe_fst2_,unichar ***nom_graphe_,int noms,
                          int **nombre_etats_par_grf_) {
@@ -994,7 +994,7 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Etat_fst*)malloc(MAX_FST2_STATES*sizeof(Etat_fst));
+a->etat=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
 a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
 graphe_fst2=a->etat;
 etiquette_fst2=a->etiquette;
@@ -1041,7 +1041,7 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Etat_fst*)malloc(MAX_FST2_STATES*sizeof(Etat_fst));
+a->etat=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
 a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
 graphe_fst2=a->etat;
 etiquette_fst2=a->etiquette;
@@ -1066,11 +1066,11 @@ return a;
 
 
 
-int is_final_state(Etat_fst e) {
+int is_final_state(Fst2State e) {
 if (e==NULL) {
    fatal_error("NULL error in is_final_state\n");
 }
-return e->controle&1;
+return e->control&FST2_FINAL_STATE_BIT_MASK;
 }
 
 

@@ -62,7 +62,7 @@ struct string_hash* tags=new_string_hash();
 // first, we insert every tag in the string_hash
 int limite=fst2->debut_graphe_fst2[N]+fst2->nombre_etats_par_grf[N];
 for (int i=fst2->debut_graphe_fst2[N];i<limite;i++) {
-   struct transition_fst* trans=fst2->etat[i]->trans;
+   struct transition_fst* trans=fst2->etat[i]->transitions;
    while (trans!=NULL) {
       if (trans->etiquette < 0) {
          // if there is a subgraph call
@@ -90,13 +90,13 @@ for (int i=0;i<tags->N;i++) {
 u_fprints_char("%\n",f);
 // then, we write the content of the states
 for (int i=fst2->debut_graphe_fst2[N];i<limite;i++) {
-   if (fst2->etat[i]->controle & 1) {
+   if (fst2->etat[i]->control & FST2_FINAL_STATE_BIT_MASK) {
       u_fprints_char("t ",f);
    }
    else {
       u_fprints_char(": ",f);
    }
-   struct transition_fst* trans=fst2->etat[i]->trans;
+   struct transition_fst* trans=fst2->etat[i]->transitions;
    int debut=fst2->debut_graphe_fst2[N];
    int num;
    while (trans!=NULL) {

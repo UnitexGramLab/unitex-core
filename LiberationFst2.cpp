@@ -33,9 +33,9 @@ free(ptr);
 }
 
 
-void liberer_etat(Etat_fst e) {
+void liberer_etat(Fst2State e) {
 if (e==NULL) return;
-liberer_transitions(e->trans);
+liberer_transitions(e->transitions);
 free(e);
 }
 
@@ -54,7 +54,7 @@ free(e);
 //
 // libere les ressources utilisees pour le stockage du FST2
 //
-void liberer_graphe_fst2(int nombre_etats,int nombre_etiquettes,int *debut_graphe,Etat_fst graphe[],Fst2Tag etiquette[]) {
+void liberer_graphe_fst2(int nombre_etats,int nombre_etiquettes,int *debut_graphe,Fst2State graphe[],Fst2Tag etiquette[]) {
 int i;
 for (i=0;i<nombre_etats;i++)
   liberer_etat(graphe[i]);

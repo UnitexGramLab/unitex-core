@@ -386,15 +386,15 @@ if (i!=(*e2)->nombre_de_tokens) {
 
 
 
-void optimiser_etat(Etat_fst e1,Etat_opt* e2,int e,Fst2Tag* etiquette) {
+void optimiser_etat(Fst2State e1,Etat_opt* e2,int e,Fst2Tag* etiquette) {
 struct transition_fst* ptr;
 if (e1==NULL) {
   *e2=NULL;
   return;
 }
 *e2=nouveau_etat_opt();
-(*e2)->controle=e1->controle;
-ptr=e1->trans;
+(*e2)->controle=e1->control;
+ptr=e1->transitions;
 while (ptr!=NULL) {
   optimiser_trans(ptr,e2,etiquette);
   ptr=ptr->suivant;

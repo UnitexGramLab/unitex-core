@@ -27,13 +27,13 @@ if (fst2==NULL) {
    fatal_error("NULL error in isLinearAutomaton\n");
 }
 liste_transition l;
-Etat_fst etat;
+Fst2State etat;
 
 for (int sentence=1;sentence<fst2->nombre_graphes+1;sentence++) {
    int n=fst2->debut_graphe_fst2[sentence]+fst2->nombre_etats_par_grf[sentence];
    for (int i=fst2->debut_graphe_fst2[sentence];i<n;i++) {
       etat=fst2->etat[i];
-      l=etat->trans;
+      l=etat->transitions;
       if (is_final_state(etat)) {
          if (l!=NULL) {
             // the final state must not have any outgoing transition
@@ -57,10 +57,10 @@ if (fst2==NULL) {
    fatal_error("NULL error in convertLinearAutomaton\n");
 }
 liste_transition l;
-Etat_fst etat;
+Fst2State etat;
 for (int sentence=1;sentence<fst2->nombre_graphes+1;sentence++) {
    etat=fst2->etat[fst2->debut_graphe_fst2[sentence]];
-   l=etat->trans;
+   l=etat->transitions;
    do {
       if (is_final_state(etat)) {
          if (l!=NULL) {
@@ -84,7 +84,7 @@ for (int sentence=1;sentence<fst2->nombre_graphes+1;sentence++) {
          u_fprints(etiq,f);
          u_fprints_char(" ",f);
          etat=fst2->etat[l->arr];
-         l=etat->trans;
+         l=etat->transitions;
       }
    } while (etat!=NULL);
 }

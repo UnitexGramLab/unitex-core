@@ -42,8 +42,9 @@
 
 extern int etiquette_courante;
 
+
 /**
- * 
+ * This structure represents a tag of a .fst2 file.
  */
 struct fst2Tag {
 	/* number of the tag in the .fst2 */
@@ -139,15 +140,23 @@ struct fst2Tag {
 typedef struct fst2Tag* Fst2Tag;
 
 
-struct etat_fst {
-  unsigned char controle;        // etat final ou pas
-  // 1: est terminal
-  // 2: est initial
-  // 4: bit de marquage
-  struct transition_fst *trans;     // transitions partant de cet etat
+/*
+ * This structure represents a state of a .fst2 file.
+ */
+struct fst2State {
+	/* This control byte is used to set information about the state with
+	 * bit masks (FST2_FINAL_STATE_BIT_MASK and FST2_INITIAL_STATE_BIT_MASK).
+	 * This field can also be used to mark states when exploring a fst2. For
+	 * instance, it is used for cycle detection in the Grf2Fst2 program.
+	 */
+	unsigned char control;
+	
+	/*
+	 * Transitions outgoing from this state.
+	 */
+	struct transition_fst *transitions;
 };
-
-typedef struct etat_fst* Etat_fst;
+typedef struct fst2State* Fst2State;
 
 
 struct transition_fst {
@@ -168,7 +177,7 @@ struct variable_list {
 
 
 struct automate_fst2 {
-    Etat_fst* etat;
+    Fst2State* etat;
     Fst2Tag* etiquette;
     int nombre_graphes;
     int nombre_etats;
@@ -183,7 +192,7 @@ typedef struct automate_fst2 Automate_fst2;
 
 
 //----------PROTOTYPES-------------------------------------------
-void charger_graphe_fst2(FILE*,Etat_fst[],Fst2Tag[],int*,int*,int*,int**,
+void charger_graphe_fst2(FILE*,Fst2State[],Fst2Tag[],int*,int*,int*,int**,
                          unichar***,int,int**);
 
 liste_transition nouvelle_transition_mat();
@@ -191,7 +200,7 @@ Automate_fst2* load_fst2(char*,int);
 void free_fst2(Automate_fst2*);
 struct variable_list* get_variable(unichar*,struct variable_list*);
 Automate_fst2* load_one_sentence_of_fst2(char*,int,FILE*);
-int is_final_state(Etat_fst);
+int is_final_state(Fst2State);
 void unprotect_characters_in_fst2_tags(Automate_fst2*);
 void free_transition(struct transition_fst*);
 #endif

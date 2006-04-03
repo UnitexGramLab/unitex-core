@@ -58,7 +58,7 @@ int line=0;
 // same as load_fst2 but no message for the not exist file
 // hhuh
 extern Automate_fst2* new_Automate_fst2();
-extern Etat_fst* graphe_fst2;
+extern Fst2State* graphe_fst2;
 extern Fst2Tag* etiquette_fst2;
 extern int *debut_graphe_fst2;
 extern int *nombre_etats_par_grf;
@@ -88,7 +88,7 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->etat=(Etat_fst*)malloc(MAX_FST2_STATES*sizeof(Etat_fst));
+a->etat=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
 a->etiquette=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
 graphe_fst2=a->etat;
 etiquette_fst2=a->etiquette;
@@ -957,13 +957,13 @@ if(debugFlag){ FF[FIdx] = 0;  u_fprintf(stdout,"%S >>>>\n",FF);}
 void explore_state(int etat_courant)
 {
 	int save_auto;
-	Etat_fst e=Ptr_cAuto->etat[etat_courant];
-	if (e->controle & 1) {
+	Fst2State e=Ptr_cAuto->etat[etat_courant];
+	if (e->control & FST2_FINAL_STATE_BIT_MASK) {
 		if(auto_courant == startAutoNum){
 			traiteEttiques();
 		}
 	}
-	struct transition_fst* t=e->trans;
+	struct transition_fst* t=e->transitions;
 	while (t!=NULL) {
 		if (t->etiquette < 0) {
 			save_auto = auto_courant;

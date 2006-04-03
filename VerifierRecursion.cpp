@@ -88,10 +88,10 @@ free(*l);
 //
 // verifie si de l'etat e on peut atteindre par <E> une transition vers le graphe g
 //
-int peut_aller_par_E(Etat_fst e,int g,Etat_fst* graphe,Fst2Tag* etiquette,int *verifie){
+int peut_aller_par_E(Fst2State e,int g,Fst2State* graphe,Fst2Tag* etiquette,int *verifie){
 liste_transition l;
 if (e==NULL) return 0;
-l=e->trans;
+l=e->transitions;
 while (l!=NULL) {
   // cas positif
   if (l->etiquette==-g) {
@@ -116,20 +116,20 @@ return 0;
 //
 // parcours les transitions partant de l'etat e
 //
-int explorer_etat(Etat_fst e,Liste_num l,int *debut_graphe,
-                  unichar** nom_graphe,Etat_fst* graphe,Fst2Tag* etiquette,
+int explorer_etat(Fst2State e,Liste_num l,int *debut_graphe,
+                  unichar** nom_graphe,Fst2State* graphe,Fst2Tag* etiquette,
                   int* verifie) {
 liste_transition liste;
 
 int ret=0;
 int retour;
 if (e==NULL) return 0;
-if ((e->controle&8)||(e->controle&64)) {
+if ((e->control&8)||(e->control&64)) {
   return 0; // on a deja traite cet etat
 }
-e->controle=(unsigned char)(e->controle+8);
-e->controle=(unsigned char)(e->controle+64);
-liste=e->trans;
+e->control=(unsigned char)(e->control+8);
+e->control=(unsigned char)(e->control+64);
+liste=e->transitions;
 while (liste!=NULL) {
   if (liste->etiquette<0) {
     // cas d'un sous-graphe
@@ -152,7 +152,7 @@ while (liste!=NULL) {
   }
   liste=liste->suivant;
 }
-if (e->controle&8) e->controle=(unsigned char)(e->controle-8);
+if (e->control&8) e->control=(unsigned char)(e->control-8);
 return ret;
 }
 
@@ -177,7 +177,7 @@ return 0;
 //
 // renvoie 1 si une recursion est trouvee dans le graphe numero e, 0 sinon
 //
-int chercher_recursion(int e,Liste_num l,int* debut_graphe,unichar** nom_graphe,Etat_fst* graphe,Fst2Tag* etiquette,int* verifie) {
+int chercher_recursion(int e,Liste_num l,int* debut_graphe,unichar** nom_graphe,Fst2State* graphe,Fst2Tag* etiquette,int* verifie) {
 int ret;
 
 if (appartient_a_liste(e,l)) {
@@ -198,21 +198,21 @@ return ret;
 //
 // renvoie 1 si on retombe par <E> sur un etat deja explore, 0 sinon
 //
-int chercher_boucle_par_E_dans_etat(Etat_fst e,Etat_fst* graphe,
+int chercher_boucle_par_E_dans_etat(Fst2State e,Fst2State* graphe,
                                     Fst2Tag* etiquette,int verifie[]) {
 liste_transition l;
-if (e->controle&8) {
-  e->controle=(unsigned char)(e->controle-8);
+if (e->control&8) {
+  e->control=(unsigned char)(e->control-8);
   return 1; // on est deja passe par la...
 }
 
-e->controle=(unsigned char)(e->controle+8);
-l=e->trans;
+e->control=(unsigned char)(e->control+8);
+l=e->transitions;
 while (l!=NULL) {
   if (l->etiquette<0) {
     if (verifie[-l->etiquette]) {
       if (chercher_boucle_par_E_dans_etat(graphe[l->arr],graphe,etiquette,verifie)) {
-        e->controle=(unsigned char)(e->controle-8);
+        e->control=(unsigned char)(e->control-8);
         return 1;
       }
     }
@@ -221,13 +221,13 @@ while (l!=NULL) {
   if (etiquette[l->etiquette]->control) {
     // on est dans le cas <E>
     if (chercher_boucle_par_E_dans_etat(graphe[l->arr],graphe,etiquette,verifie)) {
-      e->controle=(unsigned char)(e->controle-8);
+      e->control=(unsigned char)(e->control-8);
       return 1;
     }
   }
   l=l->suivant;
 }
-e->controle=(unsigned char)(e->controle-8);
+e->control=(unsigned char)(e->control-8);
 return 0;
 }
 
@@ -236,7 +236,7 @@ return 0;
 //
 // renvoie 1 si une boucle par <E> est trouvee dans le graphe numero e, 0 sinon
 //
-int chercher_boucle_par_E(int e,int* debut_graphe,unichar** nom_graphe,Etat_fst* graphe,Fst2Tag* etiquette,int* verifie,int *nombre_etats_par_grf) {
+int chercher_boucle_par_E(int e,int* debut_graphe,unichar** nom_graphe,Fst2State* graphe,Fst2Tag* etiquette,int* verifie,int *nombre_etats_par_grf) {
 int i,debut;
 debut=debut_graphe[e];
 if (debut<0) {
@@ -245,10 +245,10 @@ if (debut<0) {
 }
 // on remet les controles comme apres le chargement
 for (i=0;i<nombre_etats_par_grf[e];i++) {
-  if (graphe[debut+i]->controle&8)
-    graphe[debut+i]->controle=(unsigned char)(graphe[debut+i]->controle-8);
-  if (graphe[debut+i]->controle&16)
-    graphe[debut+i]->controle=(unsigned char)(graphe[debut+i]->controle-16);
+  if (graphe[debut+i]->control&8)
+    graphe[debut+i]->control=(unsigned char)(graphe[debut+i]->control-8);
+  if (graphe[debut+i]->control&16)
+    graphe[debut+i]->control=(unsigned char)(graphe[debut+i]->control-16);
 }
 
 //--------------------
@@ -268,7 +268,7 @@ return 0;
 //
 int pas_de_recursion_old(char *nom_fst2) {
 FILE *f;
-Etat_fst* graphe;
+Fst2State* graphe;
 Fst2Tag* etiquette;
 int* debut_graphe;
 int* nombre_etats_par_grf;
@@ -284,7 +284,7 @@ if (f==NULL) {
   fprintf(stderr,"Cannot open the graph %s\n",nom_fst2);
   return 0;
 }
-graphe=(Etat_fst*)malloc(sizeof(Etat_fst)*MAX_FST2_STATES);
+graphe=(Fst2State*)malloc(sizeof(Fst2State)*MAX_FST2_STATES);
 etiquette=(Fst2Tag*)malloc(sizeof(Fst2Tag)*MAX_FST2_TAGS);
 if (graphe==NULL || etiquette==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
@@ -374,8 +374,8 @@ while (l!=NULL) {
 //
 // renvoie 1 si l'etat e est terminal, 0 sinon
 //
-int est_terminal(Etat_fst e) {
-return (e->controle & 1);
+int est_terminal(Fst2State e) {
+return (e->control & FST2_FINAL_STATE_BIT_MASK);
 }
 
 
@@ -526,12 +526,12 @@ tmp->suivant=d;
 //
 // teste si on peut reconnaitre <E> depuis l'etat courant
 //
-int explorer_graphe_E(int premier_etat,int indice,Etat_fst* graphe,Fst2Tag *etiquette,
+int explorer_graphe_E(int premier_etat,int indice,Fst2State* graphe,Fst2Tag *etiquette,
                       int n_graphe,unichar** nom_graphe,
                       Liste_conditions conditions_pour_etat[],
                       Liste_conditions *cond_tmp) {
 liste_transition l;
-Etat_fst e;
+Fst2State e;
 int retour=OK;
 int ret;
 
@@ -540,23 +540,23 @@ e=graphe[indice];
 
 if (est_terminal(e)) {
   // si on est arrive dans un etat terminal, c'est que le graphe a reconnu <E>
-  e->controle=(char)(e->controle|32);
+  e->control=(char)(e->control|32);
   // le 32 indique que de cet etat on peut reconnaitre <E> sans condition
   return RECONNAIT_E;
 }
-if (e->controle & 8) {
+if (e->control & 8) {
   // si on a fait une boucle, on en sort sans rien faire (on les traitera
   // plus tard)
   return OK;
 }
-if (e->controle & 16) {
+if (e->control & 16) {
   // si on est dans un etat deja visite
-  if (e->controle & 32) {
+  if (e->control & 32) {
     // si on peut atteindre <E> sans condition, on ne regarde rien
     // d'autre
     return RECONNAIT_E;
   }
-  if (e->controle & 64) {
+  if (e->control & 64) {
     // si on peut reconnaitre <E> avec des conditions, alors on retourne
     // une copie de ces conditions dans cond_tmp
     *cond_tmp=copie_liste_conditions(conditions_pour_etat[indice-premier_etat]);
@@ -565,12 +565,12 @@ if (e->controle & 16) {
   return OK;
 }
 
-l=e->trans;
+l=e->transitions;
 
-e->controle=(char)(e->controle | 16);
+e->control=(char)(e->control | 16);
 // la valeur 16 indique que l'on est deja passe par cet etat. Cela
 // permet d'eviter d'explorer plusieurs fois les memes chemins
-e->controle=(char)(e->controle | 8);
+e->control=(char)(e->control | 8);
 // la valeur 8 n'est que temporaire. Elle sert a detecter les boucles
 
 while (l!=NULL) {
@@ -580,7 +580,7 @@ while (l!=NULL) {
       ret=explorer_graphe_E(premier_etat,l->arr,graphe,etiquette,n_graphe,nom_graphe,conditions_pour_etat,cond_tmp);
       if (ret==RECONNAIT_E) {
         // si l'exploration a permis de reconnaitre <E>
-        e->controle=(char)(e->controle|64);
+        e->control=(char)(e->control|64);
         // on insere la nouvelle condition en tete des conditions
         inserer_en_debut_de_conditions(-(l->etiquette),cond_tmp);
         // on fusionne les nouvelles conditions avec celles deja existantes
@@ -599,10 +599,10 @@ while (l!=NULL) {
         // si l'exploration a permis de reconnaitre <E>
         if (*cond_tmp==NULL) {
           // 1er cas: pas de condition
-          e->controle=(char)(e->controle|32);
+          e->control=(char)(e->control|32);
         }
         else {
-        e->controle=(char)(e->controle|64);
+        e->control=(char)(e->control|64);
         // on insere la nouvelle condition en tete des conditions
         // on fusionne les nouvelles conditions avec celles deja existantes
         // pour cet etat
@@ -614,7 +614,7 @@ while (l!=NULL) {
     }
   l=l->suivant;
 }
-e->controle=(char)(e->controle-8);
+e->control=(char)(e->control-8);
 *cond_tmp=copie_liste_conditions(conditions_pour_etat[indice-premier_etat]);
 return retour;
 }
@@ -627,7 +627,7 @@ return retour;
 // <E>. Si c'est le cas, on reconnait_E est mis à 1
 // Si un des membres est marque 128, on supprime la condition
 //
-Condition resoudre_simple_condition(Condition c,Etat_fst graphe[],
+Condition resoudre_simple_condition(Condition c,Fst2State graphe[],
                                     int debut_graphe[],int *modification,
                                     int *reconnait_E) {
 // reconnait_E = 1 si on reconnait <E>
@@ -647,11 +647,11 @@ if ((*reconnait_E)==2) {
 if ((*reconnait_E)==1) {
   // si tous les elements suivant reconnaissent <E>
   c->suivant=tmp;
-  if (graphe[debut_graphe[c->numero]]->controle&32) {
+  if (graphe[debut_graphe[c->numero]]->control&32) {
     // si cet element aussi reconnait <E>
     return c;
   }
-  if (graphe[debut_graphe[c->numero]]->controle&64 && !(graphe[debut_graphe[c->numero]]->controle&128)) {
+  if (graphe[debut_graphe[c->numero]]->control&64 && !(graphe[debut_graphe[c->numero]]->control&128)) {
     // si on ne sait pas
     *reconnait_E=3;
     return c;
@@ -666,12 +666,12 @@ if ((*reconnait_E)==1) {
 }
 // si on n'est pas fixe sur la suite de la liste
 c->suivant=tmp;
-if (graphe[debut_graphe[c->numero]]->controle&32) {
+if (graphe[debut_graphe[c->numero]]->control&32) {
   // si l'element reconnait <E>, on ne peut toujours pas decider
   *reconnait_E=3;
   return c;
 }
-if (graphe[debut_graphe[c->numero]]->controle&128) {
+if (graphe[debut_graphe[c->numero]]->control&128) {
   // si l'element ne reconnait pas <E> alors on est fixe: la condition
   // ne peut etre verifie, on la supprime
   liberer_condition(c->suivant);
@@ -690,7 +690,7 @@ return c;
 //
 // nettoye recursivement la liste de conditions l
 //
-Liste_conditions resoudre_liste_conditions(Liste_conditions l,Etat_fst graphe[],
+Liste_conditions resoudre_liste_conditions(Liste_conditions l,Fst2State graphe[],
                                int debut_graphe[],int *modification,int *reconnait_E) {
 Liste_conditions tmp;
 if (l==NULL) return NULL;
@@ -718,7 +718,7 @@ return l;
 // resoud les conditions du graphe indice
 //
 void resoudre_conditions_du_graphe(int indice,Liste_conditions conditions[],
-                                   Etat_fst graphe[],int debut_graphe[],
+                                   Fst2State graphe[],int debut_graphe[],
                                    int *modification,unichar** nom_graphe) {
 int reconnait_E;
 if (conditions[indice]==NULL) {
@@ -733,7 +733,7 @@ conditions[indice]=resoudre_liste_conditions(conditions[indice],graphe,debut_gra
 
 if (reconnait_E==1) {
   // si une des conditions a ete verifiee
-  graphe[debut_graphe[indice]]->controle=(char)(graphe[debut_graphe[indice]]->controle|32);
+  graphe[debut_graphe[indice]]->control=(char)(graphe[debut_graphe[indice]]->control|32);
   liberer_liste_conditions(conditions[indice]);
   conditions[indice]=NULL;
   (*modification)++;
@@ -745,7 +745,7 @@ if (conditions[indice]==NULL) {
   // on le marque comme 128 (ne reconnait pas <E>)
   liberer_liste_conditions(conditions[indice]);
   conditions[indice]=NULL;
-  graphe[debut_graphe[indice]]->controle=(char)(graphe[debut_graphe[indice]]->controle|128);
+  graphe[debut_graphe[indice]]->control=(char)(graphe[debut_graphe[indice]]->control|128);
   (*modification)++;
 }
 }
@@ -757,7 +757,7 @@ if (conditions[indice]==NULL) {
 // modification vaut 1 si au moins une opération a été faite, 0 sinon
 //
 void resoudre_conditions(Liste_conditions conditions[],int nombre_graphes,
-                         Etat_fst graphe[],int debut_graphe[],int *modification,
+                         Fst2State graphe[],int debut_graphe[],int *modification,
                          unichar** nom_graphe) {
 int i;
 *modification=0;
@@ -766,17 +766,17 @@ int i;
 // 64 = le graphe peut reconnaitre <E> sous certaines conditions
 // 128 = le graphe ne reconnait pas <E>
 for (i=1;i<nombre_graphes+1;i++)
-  if (!(graphe[debut_graphe[i]]->controle&32)) {
-    if (!(graphe[debut_graphe[i]]->controle&64) ) {
-      if (!(graphe[debut_graphe[i]]->controle&128)) {
-        graphe[debut_graphe[i]]->controle=(char)(graphe[debut_graphe[i]]->controle|128);
+  if (!(graphe[debut_graphe[i]]->control&32)) {
+    if (!(graphe[debut_graphe[i]]->control&64) ) {
+      if (!(graphe[debut_graphe[i]]->control&128)) {
+        graphe[debut_graphe[i]]->control=(char)(graphe[debut_graphe[i]]->control|128);
         (*modification)++;
       }
     }
     // si le graphe ne reconnait pas deja <E> sans condition, et qu'il n'est
     // pas marque comme ne reconnaissant pas <E>, et qu'il peut reconnaitre <E>
     // sous conditions
-    else if (!(graphe[debut_graphe[i]]->controle&128)) {
+    else if (!(graphe[debut_graphe[i]]->control&128)) {
       // on ne traite le graphe que si on ne sait pas encore s'il peut
       // reconnaitre <E> ou non
       resoudre_conditions_du_graphe(i,conditions,graphe,debut_graphe,modification,nom_graphe);
@@ -790,7 +790,7 @@ for (i=1;i<nombre_graphes+1;i++)
 // verifie si le graphe indice a une recursion infinie dans ses conditions
 // renvoie 1 si oui, 0 sinon
 //
-int check_problemes_du_graphe(int indice,Etat_fst graphe[],int debut_graphe[],
+int check_problemes_du_graphe(int indice,Fst2State graphe[],int debut_graphe[],
                               Liste_conditions conditions[],Liste_num liste_deja_vus,
                               unichar** nom_graphe) {
 Liste_conditions l;
@@ -800,10 +800,10 @@ int ERROR=0;
 char temp[2000];
  u_to_char(temp,nom_graphe[indice]);
 
-if (graphe[debut_graphe[indice]]->controle&128)
+if (graphe[debut_graphe[indice]]->control&128)
   // si le graphe n'a pas de probleme
   return 0;
-if (graphe[debut_graphe[indice]]->controle&32) {
+if (graphe[debut_graphe[indice]]->control&32) {
   fprintf(stderr,"WARNING: the graph %s recognizes <E>\n",temp);
   return 0;
 }
@@ -835,20 +835,20 @@ return ERROR;
 // nettoye les marqueurs mis sur les champ controle des etats et met verifie[i]
 // a 1 si le grpahe i reconnait <E>, 0 sinon
 //
-void nettoyer_controle(Etat_fst graphe[],int debut_graphe[],int verifie[],int nombre_graphes,int nombre_etats) {
+void nettoyer_controle(Fst2State graphe[],int debut_graphe[],int verifie[],int nombre_graphes,int nombre_etats) {
 int i;
 if (verifie!=NULL) {
   for (i=1;i<nombre_graphes+1;i++)
-    if (graphe[debut_graphe[i]]->controle&32)
+    if (graphe[debut_graphe[i]]->control&32)
       verifie[i]=1;
     else verifie[i]=0;
 }
 for (i=0;i<nombre_etats;i++) {
-  if (graphe[i]->controle&8) graphe[i]->controle=(char)(graphe[i]->controle-8);
-  if (graphe[i]->controle&16) graphe[i]->controle=(char)(graphe[i]->controle-16);
-  if (graphe[i]->controle&32) graphe[i]->controle=(char)(graphe[i]->controle-32);
-  if (graphe[i]->controle&64) graphe[i]->controle=(char)(graphe[i]->controle-64);
-  if (graphe[i]->controle&128) graphe[i]->controle=(char)(graphe[i]->controle-128);
+  if (graphe[i]->control&8) graphe[i]->control=(char)(graphe[i]->control-8);
+  if (graphe[i]->control&16) graphe[i]->control=(char)(graphe[i]->control-16);
+  if (graphe[i]->control&32) graphe[i]->control=(char)(graphe[i]->control-32);
+  if (graphe[i]->control&64) graphe[i]->control=(char)(graphe[i]->control-64);
+  if (graphe[i]->control&128) graphe[i]->control=(char)(graphe[i]->control-128);
 }
 }
 
@@ -857,7 +857,7 @@ for (i=0;i<nombre_etats;i++) {
 //
 int pas_de_recursion(char *nom_fst2) {
 FILE *f;
-Etat_fst* graphe;
+Fst2State* graphe;
 Fst2Tag* etiquette;
 Liste_conditions* conditions;
 Liste_conditions* conditions_pour_etat;
@@ -878,7 +878,7 @@ if (f==NULL) {
   fprintf(stderr,"Cannot open the graph %s\n",nom_fst2);
   return 0;
 }
-graphe=(Etat_fst*)malloc(sizeof(Etat_fst)*MAX_FST2_STATES);
+graphe=(Fst2State*)malloc(sizeof(Fst2State)*MAX_FST2_STATES);
 etiquette=(Fst2Tag*)malloc(sizeof(Fst2Tag)*MAX_FST2_TAGS);
 if (graphe==NULL || etiquette==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
@@ -928,7 +928,7 @@ printf("Resolving <E> conditions\n");
 i=1;
 while (i) resoudre_conditions(conditions,nombre_graphes,graphe,debut_graphe,&i,nom_graphe);
 
-if (graphe[debut_graphe[1]]->controle&32) {
+if (graphe[debut_graphe[1]]->control&32) {
   // si le graphe principal reconnait <E>
   char temp[2000];
   u_to_char(temp,nom_graphe[1]);

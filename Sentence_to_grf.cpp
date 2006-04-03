@@ -47,7 +47,7 @@ int numeroter_etiquettes_sur_octets_forts(Automate_fst2* automate,int SENTENCE,i
 int debut=automate->debut_graphe_fst2[SENTENCE];
 int N=2;
 for (int i=0;i<nombre_etats;i++) {
-   struct transition_fst* trans=automate->etat[i+debut]->trans;
+   struct transition_fst* trans=automate->etat[i+debut]->transitions;
    while (trans!=NULL) {
       // we put the value in the 2 upper bytes
       trans->etiquette=(int)(trans->etiquette | (N<<NBRE_BITS_DE_DECALAGE));
@@ -74,7 +74,7 @@ for (int i=0;i<MAX_STATES;i++) {
 tab_grf_state[0]=new_grf_state("\"<E>\"",50,0);
 // we process the initial state
 int j;
-trans=automate->etat[debut]->trans;
+trans=automate->etat[debut]->transitions;
 while (trans!=NULL) {
   j=get_numero_de_la_transition(trans->etiquette);
   add_transition_to_grf_state(tab_grf_state[0],j);
@@ -85,7 +85,7 @@ tab_grf_state[1]=new_grf_state("\"\"",(width_max+100),10000);
 
 // then, we save all others states
 for (int i=0;i<nombre_etats;i++) {
-   trans=automate->etat[i+debut]->trans;
+   trans=automate->etat[i+debut]->transitions;
    while (trans!=NULL) {
       // we put the value in the 2 upper bytes
       // normal line:
@@ -102,7 +102,7 @@ for (int i=0;i<nombre_etats;i++) {
          tab_grf_state[N_GRF_STATES]=new_grf_state(temp,pos_X[rang[i]],rang[i]);
       }
       j=0;
-      struct transition_fst* TMP=automate->etat[trans->arr]->trans;
+      struct transition_fst* TMP=automate->etat[trans->arr]->transitions;
       while (TMP!=NULL) {
          j++;
          TMP=TMP->suivant;
@@ -111,7 +111,7 @@ for (int i=0;i<nombre_etats;i++) {
          // if we arrive on the final state
          add_transition_to_grf_state(tab_grf_state[N_GRF_STATES],1);
       } else {
-         TMP=automate->etat[trans->arr]->trans;
+         TMP=automate->etat[trans->arr]->transitions;
          while (TMP!=NULL) {
             j=get_numero_de_la_transition(TMP->etiquette);
             add_transition_to_grf_state(tab_grf_state[N_GRF_STATES],j);
@@ -142,7 +142,7 @@ for (int i=0;i<rang_max;i++) {
     position_verticale[i]=0;
 }
 for (int i=0;i<nombre_etats;i++) {
-   trans=automate->etat[i+debut]->trans;
+   trans=automate->etat[i+debut]->transitions;
    while (trans!=NULL) {
       position_verticale[rang[i]]++;
       trans=trans->suivant;
@@ -150,7 +150,7 @@ for (int i=0;i<nombre_etats;i++) {
 }
 write_grf_header(width_max+300,800,N,font,f);
 u_fprints_char("\"<E>\" 50 100 ",f);
-trans=automate->etat[debut]->trans;
+trans=automate->etat[debut]->transitions;
 // we save the initial state
 int j=0;
 while (trans!=NULL) {
@@ -160,7 +160,7 @@ while (trans!=NULL) {
 u_int_to_string(j,z);
 u_strcat_char(z," ");
 u_fprints(z,f);
-trans=automate->etat[debut]->trans;
+trans=automate->etat[debut]->transitions;
 while (trans!=NULL) {
   j=get_numero_de_la_transition(trans->etiquette);
   u_int_to_string(j,z);
@@ -176,7 +176,7 @@ u_fprints(z,f);
 
 // then, we save all others states
 for (int i=0;i<nombre_etats;i++) {
-   trans=automate->etat[i+debut]->trans;
+   trans=automate->etat[i+debut]->transitions;
    while (trans!=NULL) {
       // we put the value in the 2 upper bytes
       u_fprints_char("\"",f);
@@ -208,7 +208,7 @@ for (int i=0;i<nombre_etats;i++) {
       u_strcat_char(z," ");
       u_fprints(z,f);
       j=0;
-      struct transition_fst* TMP=automate->etat[trans->arr]->trans;
+      struct transition_fst* TMP=automate->etat[trans->arr]->transitions;
       while (TMP!=NULL) {
          j++;
          TMP=TMP->suivant;
@@ -220,7 +220,7 @@ for (int i=0;i<nombre_etats;i++) {
          u_int_to_string(j,z);
          u_strcat_char(z," ");
          u_fprints(z,f);
-         TMP=automate->etat[trans->arr]->trans;
+         TMP=automate->etat[trans->arr]->transitions;
          while (TMP!=NULL) {
             j=get_numero_de_la_transition(TMP->etiquette);
             u_int_to_string(j,z);
@@ -265,7 +265,7 @@ return RANG;
 
 void explorer_rang_etat(int etat_courant,int debut,Automate_fst2* automate,
                         int* rang,char* modif,int* RANG) {
-struct transition_fst* trans=automate->etat[etat_courant]->trans;
+struct transition_fst* trans=automate->etat[etat_courant]->transitions;
 int RANG_COURANT=rang[etat_courant-debut];
 while (trans!=NULL) {
    if (RANG_COURANT+1>rang[trans->arr-debut]) {
@@ -279,7 +279,7 @@ while (trans!=NULL) {
    trans=trans->suivant;
 }
 // then, we process all the nodes we have modified
-trans=automate->etat[etat_courant]->trans;
+trans=automate->etat[etat_courant]->transitions;
 while (trans!=NULL) {
    if (modif[trans->arr-debut]==1) {
       // if we must increase the path length
@@ -294,7 +294,7 @@ while (trans!=NULL) {
 
 void explorer_position_horizontale_etat(int etat_courant,int debut,Automate_fst2* automate,
                                         int* pos_X,char* modif,int* WIDTH) {
-struct transition_fst* trans=automate->etat[etat_courant]->trans;
+struct transition_fst* trans=automate->etat[etat_courant]->transitions;
 int POS_COURANTE=pos_X[etat_courant-debut];
 while (trans!=NULL) {
    int VAL=POS_COURANTE+(WIDTH_OF_A_CHAR*(width_of_tag(automate->etiquette[trans->etiquette])));
@@ -309,7 +309,7 @@ while (trans!=NULL) {
    trans=trans->suivant;
 }
 // then, we process all the nodes we have modified
-trans=automate->etat[etat_courant]->trans;
+trans=automate->etat[etat_courant]->transitions;
 while (trans!=NULL) {
    if (modif[(trans->arr)-debut]==1) {
       // if we must increase the path length
@@ -395,7 +395,7 @@ for (i=0;i<nombre_etats;i++) {
 int debut=automate->debut_graphe_fst2[SENTENCE];
 // first, we compute the maximum length for this column
 for (i=0;i<nombre_etats;i++) {
-   trans=automate->etat[i+debut]->trans;
+   trans=automate->etat[i+debut]->transitions;
    while (trans!=NULL) {
       int VAL=(WIDTH_OF_A_CHAR*(5+width_of_tag(automate->etiquette[trans->etiquette])));
       if (pos_X[rang[i]+1]<VAL) {

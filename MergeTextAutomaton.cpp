@@ -42,9 +42,6 @@ static unichar epsilon[] = { '<', 'E', '>', 0 };
 #define MAX_PATH 2000
 #endif
 
-#define STATE_TERMINAL   (1)
-
-
 void usage() {
 printf("%s",COPYRIGHT);
 printf("Usage: MergeTextAutomaton <text fst2>\n");
@@ -78,9 +75,9 @@ void output_fst(Automate_fst2 * A, int no, string_hash * hash, FILE * f) {
 
   for (int i = 0; i < A->nombre_etats_par_grf[no]; i++) {
 
-    etat_fst * state = A->etat[stateno + i];
+    fst2State * state = A->etat[stateno + i];
 
-    if (state->controle & STATE_TERMINAL) {
+    if (state->control & FST2_FINAL_STATE_BIT_MASK) {
 
       u_fprints_char("t\n", f);
 
@@ -88,7 +85,7 @@ void output_fst(Automate_fst2 * A, int no, string_hash * hash, FILE * f) {
 
       u_fputc(':', f); u_fputc(' ', f);
 
-      for (transition_fst * trans = state->trans; trans; trans = trans->suivant) {
+      for (transition_fst * trans = state->transitions; trans; trans = trans->suivant) {
 	u_fprintf(f, "%d %d ", get_hash_number(A->etiquette[trans->etiquette]->input, hash), trans->arr - stateno);
       }
 
