@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "unicode.h"
+#include "TransductionVariables.h"
 
 
 /* Maximum number of tags in a .fst2 */
@@ -34,9 +35,6 @@
 
 /* Maximum number of states in a .fst2 */
 #define MAX_FST2_STATES 500000
-
-#define FST2_FINAL_STATE_BIT_MASK 1
-#define FST2_INITIAL_STATE_BIT_MASK 2
 
 
 
@@ -145,8 +143,8 @@ typedef struct fst2Tag* Fst2Tag;
  */
 struct fst2State {
 	/* This control byte is used to set information about the state with
-	 * bit masks (FST2_FINAL_STATE_BIT_MASK and FST2_INITIAL_STATE_BIT_MASK).
-	 * This field can also be used to mark states when exploring a fst2. For
+	 * bit masks. The two lowest bits are reserved to mark initial and final
+	 * states. This field can also be used to mark states when exploring a fst2. For
 	 * instance, it is used for cycle detection in the Grf2Fst2 program.
 	 */
 	unsigned char control;
@@ -185,14 +183,6 @@ struct fst2Transition {
 typedef struct fst2Transition* Fst2Transition;
 
 
-struct variable_list {
-  unichar* name;
-  int start;
-  int end;
-  struct variable_list* suivant;
-};
-
-
 struct automate_fst2 {
     Fst2State* etat;
     Fst2Tag* etiquette;
@@ -217,7 +207,11 @@ Automate_fst2* load_fst2(char*,int);
 void free_fst2(Automate_fst2*);
 struct variable_list* get_variable(unichar*,struct variable_list*);
 Automate_fst2* load_one_sentence_of_fst2(char*,int,FILE*);
-int is_final_state(Fst2State);
 void unprotect_characters_in_fst2_tags(Automate_fst2*);
 void free_transition(struct fst2Transition*);
+
+int is_final_state(Fst2State);
+void set_final_state(Fst2State,int);
+int is_initial_state(Fst2State);
+void set_initial_state(Fst2State,int);
 #endif

@@ -150,7 +150,7 @@ void explorer_sub_automate_normalization(Automate_fst2* automate,int n,
                                      Alphabet* alph,struct temp_list** TEMP_LIST) {
 Fst2State etat;
 etat=automate->etat[n];
-if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
+if (is_final_state(etat)) {
    // if we are in a final state
    (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
 }
@@ -233,7 +233,7 @@ void explorer_sub_automate_normalization_string(Automate_fst2* automate,int n,
                                      unichar* output,struct temp_list** TEMP_LIST) {
 Fst2State etat;
 etat=automate->etat[n];
-if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
+if (is_final_state(etat)) {
    // if we are in a final state
    (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
 }
@@ -294,7 +294,7 @@ void explorer_automate_normalization(Automate_fst2* automate,int n,
                                      Alphabet* alph) {
 Fst2State etat;
 etat=automate->etat[n];
-if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
+if (is_final_state(etat)) {
    // if we are in a final state
    noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
 }
@@ -377,7 +377,7 @@ void explorer_automate_normalization_string(Automate_fst2* automate,int n,
                                      unichar* output) {
 Fst2State etat;
 etat=automate->etat[n];
-if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
+if (is_final_state(etat)) {
    // if we are in a final state
    noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
 }

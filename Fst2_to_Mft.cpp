@@ -90,7 +90,7 @@ for (int i=0;i<tags->N;i++) {
 u_fprints_char("%\n",f);
 // then, we write the content of the states
 for (int i=fst2->debut_graphe_fst2[N];i<limite;i++) {
-   if (fst2->etat[i]->control & FST2_FINAL_STATE_BIT_MASK) {
+   if (is_final_state(fst2->etat[i])) {
       u_fprints_char("t ",f);
    }
    else {

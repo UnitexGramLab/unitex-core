@@ -66,7 +66,7 @@ int i=0;
 while (l!=NULL) {
    get_hash_number(l->name,transduction_variable_index);
    tab_transduction_variable[i++]=new_transduction_variable();
-   l=l->suivant;
+   l=l->next;
 }
 }
 
@@ -127,4 +127,5 @@ for (int i=0;i<transduction_variable_index->N;i++) {
    tab_transduction_variable[i]->end=tab[j++];
 }
 }
+
 

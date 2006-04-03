@@ -360,7 +360,7 @@ if (profondeur > MAX_DEPTH) {
    fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
    exit(1);
 }
-if (etat_courant->control&FST2_FINAL_STATE_BIT_MASK) {
+if (is_final_state(etat_courant)) {
    // if we are in a final state
    if (pos>=taille_entree/*sommet>u_strlen(output)*/) {
       // and if the recognized input is longer than the current one, it replaces it
@@ -755,7 +755,7 @@ if (profondeur > MAX_DEPTH) {
    fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
    exit(1);
 }
-if (etat_courant->control&FST2_FINAL_STATE_BIT_MASK) {
+if (is_final_state(etat_courant)) {
    // if we are in a final state
    pile[sommet]='\0';
    (*liste_arrivee)=inserer_si_absent(pos,(*liste_arrivee),sommet,pile);

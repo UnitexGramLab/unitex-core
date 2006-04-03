@@ -43,7 +43,7 @@ void fst2_output_dot(Automate_fst2 * A, FILE * f) {
       int qq = base + q;
 
       fprintf(f, "\n  %d [ label=\"%d\" ", q, q);      
-      if (A->etat[qq]->control & FST2_FINAL_STATE_BIT_MASK) { fprintf(f, "shape=\"doublecircle\" "); }
+      if (is_final_state(A->etat[qq])) { fprintf(f, "shape=\"doublecircle\" "); }
       fprintf(f, "];\n");
 
       for (struct fst2Transition * trans = A->etat[qq]->transitions; trans; trans = trans->next) {

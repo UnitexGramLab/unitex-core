@@ -513,7 +513,7 @@ tAutAlMot * fst2AutAlMot(Automate_fst2 * A, int nb) {
     aut->type[q] = 0;
 
 
-    if (A->etat[qq]->control & FST2_FINAL_STATE_BIT_MASK)  { aut->type[q] |= AUT_FINAL;   }
+    if (is_final_state(A->etat[qq]->control))  { aut->type[q] |= AUT_FINAL;   }
     if (A->etat[qq]->control & FST2_INITIAL_STATE_BIT_MASK)  { aut->type[q] |= AUT_INITIAL; }
 
     aut->etats[q] = NULL;
@@ -581,8 +581,8 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
       aut->type[q] = 0;
 
-      if (A->etat[qq]->control & FST2_FINAL_STATE_BIT_MASK) { aut->type[q] |= AUT_TERMINAL; }
-      if (A->etat[qq]->control & FST2_INITIAL_STATE_BIT_MASK) { aut->type[q] |= AUT_INITIAL;  }
+      if (is_final_state(A->etat[qq])) { aut->type[q] |= AUT_TERMINAL; }
+      if (is_initial_state(A->etat[qq])) { aut->type[q] |= AUT_INITIAL;  }
 
       aut->etats[q] = NULL;
 
@@ -652,7 +652,7 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
     aut->type[q] = 0;
 
-    if (A->etat[qq]->control & FST2_FINAL_STATE_BIT_MASK) { aut->type[q] |= AUT_TERMINAL; }
+    if (is_final_state(A->etat[qq])) { aut->type[q] |= AUT_TERMINAL; }
     if (A->etat[qq]->control & FST2_INITIAL_STATE_BIT_MASK) { aut->type[q] |= AUT_INITIAL;  }
 
     aut->etats[q] = NULL;

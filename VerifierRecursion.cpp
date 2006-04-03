@@ -371,14 +371,6 @@ while (l!=NULL) {
 }
 
 
-//
-// renvoie 1 si l'etat e est terminal, 0 sinon
-//
-int est_terminal(Fst2State e) {
-return (e->control & FST2_FINAL_STATE_BIT_MASK);
-}
-
-
 
 //
 // supprime le dernier element de la condition
@@ -538,7 +530,7 @@ int ret;
 *cond_tmp=NULL;
 e=graphe[indice];
 
-if (est_terminal(e)) {
+if (is_final_state(e)) {
   // si on est arrive dans un etat terminal, c'est que le graphe a reconnu <E>
   e->control=(char)(e->control|32);
   // le 32 indique que de cet etat on peut reconnaitre <E> sans condition

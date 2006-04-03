@@ -258,7 +258,7 @@ for (int i=grammar->debut_graphe_fst2[1]; i<limite; i++) {
     Etat_comp etat=new_main_graph->states[new_main_graph->current_pos];
     Fst2State E=grammar->etat[i];
     (new_main_graph->current_pos)++;
-    if ((E->control) & FST2_FINAL_STATE_BIT_MASK) {
+    if (is_final_state(E)) {
        // if the original state is terminal, then the new state must be so
        etat->controle=(unsigned char)((etat->controle) | 1);
     }
@@ -351,7 +351,7 @@ for (int i=grammar->debut_graphe_fst2[N];i<limite;i++) {
     Etat_comp etat=new_main_graph->states[new_main_graph->current_pos];
     Fst2State E=grammar->etat[i];
     (new_main_graph->current_pos)++;
-    if ((E->control) & FST2_FINAL_STATE_BIT_MASK) {
+    if (is_final_state(E)) {
        // if the original state is terminal, then we must add an epsilon transition
        // pointing to the arr specified in parameter
        struct transition_comp* temp=nouvelle_transition_comp();
@@ -625,7 +625,7 @@ u_fprints_char(temp,f);
 u_fprints(grammar->nom_graphe[N],f);
 u_fprints_char("\n",f);
 for (int i=grammar->debut_graphe_fst2[N];i<limite;i++) {
-   if (grammar->etat[i]->control & FST2_FINAL_STATE_BIT_MASK) {
+   if (is_final_state(grammar->etat[i])) {
       u_fprints_char("t ",f);
    }
    else {

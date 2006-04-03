@@ -351,7 +351,7 @@ if (ctx!=NULL && ctx->contextMode==FAILED_IN_NEGATIVE_CONTEXT) {
 }
 
 // if we are in a final state...
-if (etat_courant->controle&FST2_FINAL_STATE_BIT_MASK) {
+if (etat_courant->controle & 1) {
   if (ctx!=NULL) {
      // if we have reached the final state of a graph while
      // looking for a context, it's an error because every

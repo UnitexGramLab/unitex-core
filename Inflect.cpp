@@ -529,7 +529,7 @@ void explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
                    Automate_fst2* a,int etat_courant,unichar* code_gramm,
                    unichar* comment) {
 Fst2State e=a->etat[etat_courant];
-if (e->control & FST2_FINAL_STATE_BIT_MASK) {
+if (is_final_state(e)) {
     // if we are in a final state, we save the computed things
     u_fprints(flechi,f_out);
     u_fprints_char(",",f_out);
@@ -628,7 +628,7 @@ void explore_state_recursion(unichar* flechi,unichar* canonique,unichar* sortie,
                    Automate_fst2* a,int etat_courant,struct couple_string** L,
                    unichar* code_gramm) {
 Fst2State e=a->etat[etat_courant];
-if (e->control & FST2_FINAL_STATE_BIT_MASK) {
+if (is_final_state(e)) {
     // if we are in a final state, we save the computed things
     struct couple_string* res=(struct couple_string*)malloc(sizeof(struct couple_string));
     u_strcpy(res->flechi,flechi);

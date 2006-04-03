@@ -82,7 +82,7 @@ public:
 
 	if( pathEtiQidx > PATH_QUEUE_MAX)	return;
 
-	if( Motif_Automate->etat[autoNo]->control & FST2_FINAL_STATE_BIT_MASK) {	// terminal node 
+	if (is_final_state(Motif_Automate->etat[autoNo])) {	// terminal node 
 		if(curAuto != startAutoNum){		// check continue  condition
 			skipCnt = 0;	// find next state
 			for(i = CautoDepth;i>=0; --i){

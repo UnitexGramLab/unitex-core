@@ -958,7 +958,7 @@ void explore_state(int etat_courant)
 {
 	int save_auto;
 	Fst2State e=Ptr_cAuto->etat[etat_courant];
-	if (e->control & FST2_FINAL_STATE_BIT_MASK) {
+	if (is_final_state(e)) {
 		if(auto_courant == startAutoNum){
 			traiteEttiques();
 		}

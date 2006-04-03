@@ -31,6 +31,36 @@
 
 #define N_MAX_TRANSDUCTION_VARIABLES 1000
 
+
+/*
+ * This structure represents a list of graph variables corresponding to
+ * declarations like $a( or $a)
+ */
+struct variable_list {
+	/*
+	 * Name of the variable.
+	 */
+	unichar* name;
+	
+	/*
+	 * Starting position of the variable in the text, -1 if the starting position
+	 * of the variable has not been defined.
+	 */
+	int start;
+	
+	/*
+	 * Ending position of the variable in the text, -1 if the ending position
+	 * of the variable has not been defined.
+	 */
+	int end;
+	
+	/*
+	 * Next variable in the list.
+	 */
+	struct variable_list* next;
+};
+
+
 struct transduction_variable {
   int start;
   int end;

@@ -1312,7 +1312,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 		return;
 	}
 
-	if( a->etat[stateNo]->control & FST2_FINAL_STATE_BIT_MASK) {	// terminal node 
+	if (is_final_state(a->etat[stateNo])) {	// terminal node 
 		if(autoDepth != 1){		// check continue  condition
 			skipCnt = 0;	// find next state
 			for(i = CautoDepth;i>=0; --i){

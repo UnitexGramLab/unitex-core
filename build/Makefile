@@ -209,7 +209,7 @@ FST2GRF_OBJS = IOBuffer.o Fst2Grf.o unicode.o Fst2.o LiberationFst2.o Sentence_t
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = IOBuffer.o Fst2List.o unicode.o Fst2.o LiberationFst2.o Alphabet.o Liste_num.o\
-                UnicharTree.o Copyright.o FileName.o String_hash.o TransductionVariables.o Error.o
+                UnicharTree.o Copyright.o FileName.o String_hash.o Error.o TransductionVariables.o
 
 FST2TXT      = Fst2Txt
 FST2TXT_OBJS = IOBuffer.o Fst2Txt.o unicode.o Fst2.o LiberationFst2.o Alphabet.o Liste_num.o UnicharTree.o\
@@ -217,7 +217,7 @@ FST2TXT_OBJS = IOBuffer.o Fst2Txt.o unicode.o Fst2.o LiberationFst2.o Alphabet.o
 
 FST2UNAMBIG      = Fst2Unambig
 FST2UNAMBIG_OBJS = Fst2.o Copyright.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o\
-                   unicode.o
+                   unicode.o 
 
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = IOBuffer.o Grf2Fst2.o Alphabet.o unicode.o Fst2.o LiberationFst2.o\

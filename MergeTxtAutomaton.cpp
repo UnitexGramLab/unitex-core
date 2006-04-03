@@ -66,7 +66,7 @@ void output_fst(Automate_fst2 * A, int no, string_hash * hash, FILE * f) {
 
     fst2State * state = A->etat[stateno + i];
 
-    if (state->control & FST2_FINAL_STATE_BIT_MASK) {
+    if (is_final_state(state)) {
 
       u_fprints_char("t\n", f);
 

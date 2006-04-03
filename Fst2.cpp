@@ -27,6 +27,14 @@
 
 //---------------------------------------------------------------------------
 
+/*
+ * These two constants are declared here instead of in the .h because
+ * we don't want people to write tests like (e->control & FST2_FINAL_STATE_BIT_MASK)
+ * We prefer writing: is_final_state(e)
+ */
+#define FST2_FINAL_STATE_BIT_MASK 1
+#define FST2_INITIAL_STATE_BIT_MASK 2
+
 
 
 //-------CHARGEMENT DU FST2------------------------
@@ -48,6 +56,8 @@ int etat_courant;
 
 
 
+
+
 struct variable_list* new_variable(unichar* n) {
 struct variable_list* v;
 v=(struct variable_list*)malloc(sizeof(struct variable_list));
@@ -55,7 +65,7 @@ v->name=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(n)));
 u_strcpy(v->name,n);
 v->start=-1;
 v->end=-1;
-v->suivant=NULL;
+v->next=NULL;
 return v;
 }
 
@@ -70,7 +80,7 @@ void liberer_liste_variables(struct variable_list* l) {
 struct variable_list* tmp;
 while (l!=NULL) {
       tmp=l;
-      l=l->suivant;
+      l=l->next;
       free_variable(tmp);
 }
 }
@@ -80,7 +90,7 @@ while (l!=NULL) {
 struct variable_list* ajouter_variable(unichar* name,struct variable_list* v) {
 if (v==NULL) return new_variable(name);
 if (!u_strcmp(v->name,name)) return v;
-v->suivant=ajouter_variable(name,v->suivant);
+v->next=ajouter_variable(name,v->next);
 return v;
 }
 
@@ -88,10 +98,11 @@ return v;
 struct variable_list* get_variable(unichar* name,struct variable_list* v) {
 while (v!=NULL) {
       if (!u_strcmp(name,v->name)) return v;
-      v=v->suivant;
+      v=v->next;
 }
 return NULL;
 }
+
 
 
 void free_transition(struct fst2Transition* t) {
@@ -1065,7 +1076,10 @@ return a;
 }
 
 
-
+/**
+ * This function returns 0 if the given state is not final and a non-zero value
+ * if the state is final.
+ */
 int is_final_state(Fst2State e) {
 if (e==NULL) {
    fatal_error("NULL error in is_final_state\n");
@@ -1073,6 +1087,49 @@ if (e==NULL) {
 return e->control&FST2_FINAL_STATE_BIT_MASK;
 }
 
+
+/**
+ * This function sets the finality of the given state.
+ */
+void set_final_state(Fst2State e,int finality) {
+if (e==NULL) {
+   fatal_error("NULL error in set_final_state\n");
+}
+/* First the compute the control byte without the finality bit */
+e->control=e->control & (0xFF-FST2_FINAL_STATE_BIT_MASK);
+/* And we add it if necessary*/
+if (finality) {
+	e->control=e->control | FST2_FINAL_STATE_BIT_MASK;
+}
+}
+
+
+/**
+ * This function returns 0 if the given state is not initial and a non-zero value
+ * if the state is final.
+ */
+int is_initial_state(Fst2State e) {
+if (e==NULL) {
+   fatal_error("NULL error in is_initial_state\n");
+}
+return e->control&FST2_INITIAL_STATE_BIT_MASK;
+}
+
+
+/**
+ * This function sets the initiality of the given state.
+ */
+void set_initial_state(Fst2State e,int finality) {
+if (e==NULL) {
+   fatal_error("NULL error in set_initial_state\n");
+}
+/* First the compute the control byte without the initiality bit */
+e->control=e->control & (0xFF-FST2_INITIAL_STATE_BIT_MASK);
+/* And we add it if necessary*/
+if (finality) {
+	e->control=e->control | FST2_INITIAL_STATE_BIT_MASK;
+}
+}
 
 
 
