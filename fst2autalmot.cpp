@@ -518,20 +518,20 @@ tAutAlMot * fst2AutAlMot(Automate_fst2 * A, int nb) {
 
     aut->etats[q] = NULL;
 
-    for (struct transition_fst * transitions = A->etat[qq]->transitions; transitions; transitions = transitions->suivant) {
+    for (struct fst2Transition * transitions = A->etat[qq]->transitions; transitions; transitions = transitions->next) {
 
       tSymbole symb;
 
-      load_text_symbol(& symb, A->etiquette[transitions->etiquette]->input);
+      load_text_symbol(& symb, A->tag_number[transitions->tag_number]->input);
 
       alphabet_clear(alphabet);
 
       int nbflex = symbole_developp(alphabet, & symb);
 
-      if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->arr - base); }
+      if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->state_number - base); }
 
       while (nbflex--) {
-	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->arr - base);
+	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->state_number - base);
 	free(alphabet->symb[nbflex].canonique);
       }
     }
@@ -586,11 +586,11 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
       aut->etats[q] = NULL;
 
-      for (struct transition_fst * trans = A->etat[qq]->transitions; trans; trans = trans->suivant) {
+      for (struct fst2Transition * trans = A->etat[qq]->transitions; trans; trans = trans->next) {
 
 	tSymbole symb;
 
-	u_strcpy(buf, A->etiquette[trans->etiquette]->input);
+	u_strcpy(buf, A->etiquette[trans->tag_number]->input);
 	load_text_symbol(& symb, buf);
 
         if (developp) { // developp symbols
@@ -598,13 +598,13 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
           int nbflex = symbole_developp(alphabet, & symb);
 
-          if (nbflex == 0) { nouvTrans(aut, q, NULL, trans->arr - base); }
+          if (nbflex == 0) { nouvTrans(aut, q, NULL, trans->state_number - base); }
 
           while (nbflex--) {
-            nouvTrans(aut, q, alphabet->symb + nbflex, trans->arr - base);
+            nouvTrans(aut, q, alphabet->symb + nbflex, trans->state_number - base);
             free(alphabet->symb[nbflex].canonique);
           }
-        } else { nouvTrans(aut, q, & symb, trans->arr - base); }
+        } else { nouvTrans(aut, q, & symb, trans->state_number - base); }
         
 //#warning "WARNING: free symb.canonic ????"
         
@@ -657,11 +657,11 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
     aut->etats[q] = NULL;
 
-    for (struct transition_fst * transitions = A->etat[qq]->transitions; transitions; transitions = transitions->suivant) {
+    for (struct fst2Transition * transitions = A->etat[qq]->transitions; transitions; transitions = transitions->next) {
 
       tSymbole symb;
 
-      u_strcpy(buf, A->etiquette[transitions->etiquette]->input);
+      u_strcpy(buf, A->tag_number[transitions->tag_number]->input);
 
       //      debug("before=%S\n", buf);
       load_gramm_symbol(& symb, buf);
@@ -671,11 +671,11 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
       int nbflex = symbole_developp(alphabet, & symb);
 
-      if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->arr - base); }
+      if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->state_number - base); }
 
       while (nbflex--) {
 	//#warning "must free canonique!!!!????"
-	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->arr - base);
+	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->state_number - base);
 	free(alphabet->symb[nbflex].canonique);
       }
 

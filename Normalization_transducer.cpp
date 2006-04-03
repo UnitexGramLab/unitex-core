@@ -154,18 +154,18 @@ if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
 }
-struct transition_fst* trans;
+struct fst2Transition* trans;
 trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
-   if (trans->etiquette<0) {
+   if (trans->tag_number<0) {
       // case of a sub-graph
       struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization(automate,automate->debut_graphe_fst2[-(trans->etiquette)],noeud_normalization,
+      explorer_sub_automate_normalization(automate,automate->debut_graphe_fst2[-(trans->tag_number)],noeud_normalization,
                                         hash,output,alph,&TMP);
       while (TMP!=NULL) {
          // we continue to explore the current automaton
-         explorer_sub_automate_normalization(automate,trans->arr,TMP->arr,
+         explorer_sub_automate_normalization(automate,trans->state_number,TMP->arr,
                                         hash,TMP->output,alph,TEMP_LIST);
          struct temp_list* z=TMP;
          TMP=TMP->suivant;
@@ -175,7 +175,7 @@ while (trans!=NULL) {
    else {
       // normal transition
       Fst2Tag etiq;
-      etiq=automate->etiquette[trans->etiquette];
+      etiq=automate->etiquette[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
       if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
@@ -195,7 +195,7 @@ while (trans!=NULL) {
               trans_norm->suivant=noeud_normalization->trans;
               noeud_normalization->trans=trans_norm;
            }
-           explorer_sub_automate_normalization(automate,trans->arr,trans_norm->arr,
+           explorer_sub_automate_normalization(automate,trans->state_number,trans_norm->arr,
                                            hash,tmp,alph,TEMP_LIST);
       }
       else {
@@ -211,7 +211,7 @@ while (trans!=NULL) {
               trans_norm->suivant=noeud_normalization->trans;
               noeud_normalization->trans=trans_norm;
            }
-           explorer_sub_automate_normalization(automate,trans->arr,trans_norm->arr,
+           explorer_sub_automate_normalization(automate,trans->state_number,trans_norm->arr,
                                            hash,tmp,alph,TEMP_LIST);
            struct liste_nombres* L=liste;
            liste=liste->suivant;
@@ -219,7 +219,7 @@ while (trans!=NULL) {
          }
       }
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 }
 
@@ -237,18 +237,18 @@ if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
 }
-struct transition_fst* trans;
+struct fst2Transition* trans;
 trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
-   if (trans->etiquette<0) {
+   if (trans->tag_number<0) {
       // case of a sub-graph
       struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization_string(automate,automate->debut_graphe_fst2[-(trans->etiquette)],noeud_normalization,
+      explorer_sub_automate_normalization_string(automate,automate->debut_graphe_fst2[-(trans->tag_number)],noeud_normalization,
                                         output,&TMP);
       while (TMP!=NULL) {
          // we continue to explore the current automaton
-         explorer_sub_automate_normalization_string(automate,trans->arr,TMP->arr,
+         explorer_sub_automate_normalization_string(automate,trans->state_number,TMP->arr,
                                         TMP->output,TEMP_LIST);
          struct temp_list* z=TMP;
          TMP=TMP->suivant;
@@ -258,7 +258,7 @@ while (trans!=NULL) {
    else {
       // normal transition
       Fst2Tag etiq;
-      etiq=automate->etiquette[trans->etiquette];
+      etiq=automate->etiquette[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
       if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
@@ -276,10 +276,10 @@ while (trans!=NULL) {
          trans_norm->suivant=noeud_normalization->trans;
          noeud_normalization->trans=trans_norm;
       }
-      explorer_sub_automate_normalization_string(automate,trans->arr,trans_norm->arr,
+      explorer_sub_automate_normalization_string(automate,trans->state_number,trans_norm->arr,
                                         tmp,TEMP_LIST);
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 }
 
@@ -298,18 +298,18 @@ if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
 }
-struct transition_fst* trans;
+struct fst2Transition* trans;
 trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
-   if (trans->etiquette<0) {
+   if (trans->tag_number<0) {
       // case of a sub-graph
       struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization(automate,automate->debut_graphe_fst2[-(trans->etiquette)],noeud_normalization,
+      explorer_sub_automate_normalization(automate,automate->debut_graphe_fst2[-(trans->tag_number)],noeud_normalization,
                                         hash,output,alph,&TMP);
       while (TMP!=NULL) {
          // we continue to explore the current automaton
-         explorer_automate_normalization(automate,trans->arr,TMP->arr,
+         explorer_automate_normalization(automate,trans->state_number,TMP->arr,
                                         hash,TMP->output,alph);
          struct temp_list* z=TMP;
          TMP=TMP->suivant;
@@ -319,7 +319,7 @@ while (trans!=NULL) {
    else {
       // normal transition
       Fst2Tag etiq;
-      etiq=automate->etiquette[trans->etiquette];
+      etiq=automate->etiquette[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
       if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
@@ -339,7 +339,7 @@ while (trans!=NULL) {
             trans_norm->suivant=noeud_normalization->trans;
             noeud_normalization->trans=trans_norm;
          }
-         explorer_automate_normalization(automate,trans->arr,trans_norm->arr,
+         explorer_automate_normalization(automate,trans->state_number,trans_norm->arr,
                                            hash,tmp,alph);
       }
       else {
@@ -355,7 +355,7 @@ while (trans!=NULL) {
               trans_norm->suivant=noeud_normalization->trans;
               noeud_normalization->trans=trans_norm;
            }
-           explorer_automate_normalization(automate,trans->arr,trans_norm->arr,
+           explorer_automate_normalization(automate,trans->state_number,trans_norm->arr,
                                            hash,tmp,alph);
            struct liste_nombres* L=liste;
            liste=liste->suivant;
@@ -363,7 +363,7 @@ while (trans!=NULL) {
          }
       }
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 }
 
@@ -381,18 +381,18 @@ if (etat->control&FST2_FINAL_STATE_BIT_MASK) {
    // if we are in a final state
    noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
 }
-struct transition_fst* trans;
+struct fst2Transition* trans;
 trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
-   if (trans->etiquette<0) {
+   if (trans->tag_number<0) {
       // case of a sub-graph
       struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization_string(automate,automate->debut_graphe_fst2[-(trans->etiquette)],noeud_normalization,
+      explorer_sub_automate_normalization_string(automate,automate->debut_graphe_fst2[-(trans->tag_number)],noeud_normalization,
                                         output,&TMP);
       while (TMP!=NULL) {
          // we continue to explore the current automaton
-         explorer_automate_normalization_string(automate,trans->arr,TMP->arr,TMP->output);
+         explorer_automate_normalization_string(automate,trans->state_number,TMP->arr,TMP->output);
          struct temp_list* z=TMP;
          TMP=TMP->suivant;
          free_temp_list(z);
@@ -401,7 +401,7 @@ while (trans!=NULL) {
    else {
       // normal transition
       Fst2Tag etiq;
-      etiq=automate->etiquette[trans->etiquette];
+      etiq=automate->etiquette[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
       if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
@@ -419,9 +419,9 @@ while (trans!=NULL) {
          trans_norm->suivant=noeud_normalization->trans;
          noeud_normalization->trans=trans_norm;
       }
-      explorer_automate_normalization_string(automate,trans->arr,trans_norm->arr,tmp);
+      explorer_automate_normalization_string(automate,trans->state_number,trans_norm->arr,tmp);
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 }
 

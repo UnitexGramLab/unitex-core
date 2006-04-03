@@ -89,24 +89,24 @@ free(*l);
 // verifie si de l'etat e on peut atteindre par <E> une transition vers le graphe g
 //
 int peut_aller_par_E(Fst2State e,int g,Fst2State* graphe,Fst2Tag* etiquette,int *verifie){
-liste_transition l;
+Fst2Transition l;
 if (e==NULL) return 0;
 l=e->transitions;
 while (l!=NULL) {
   // cas positif
-  if (l->etiquette==-g) {
+  if (l->tag_number==-g) {
     return 1;
   }
   // si on a <E> ou un sous-graphe qui reconnait <E>
   // on explore la suite
-  if (l->etiquette<0 && verifie[-(l->etiquette)]==2) {
-    if (peut_aller_par_E(graphe[l->arr],g,graphe,etiquette,verifie))
+  if (l->tag_number<0 && verifie[-(l->tag_number)]==2) {
+    if (peut_aller_par_E(graphe[l->state_number],g,graphe,etiquette,verifie))
       return 1;
   }
-  if (l->etiquette>=0 && etiquette[l->etiquette]->control)
-    if (peut_aller_par_E(graphe[l->arr],g,graphe,etiquette,verifie))
+  if (l->tag_number>=0 && etiquette[l->tag_number]->control)
+    if (peut_aller_par_E(graphe[l->state_number],g,graphe,etiquette,verifie))
       return 1;
-  l=l->suivant;
+  l=l->next;
 }
 return 0;
 }
@@ -119,7 +119,7 @@ return 0;
 int explorer_etat(Fst2State e,Liste_num l,int *debut_graphe,
                   unichar** nom_graphe,Fst2State* graphe,Fst2Tag* etiquette,
                   int* verifie) {
-liste_transition liste;
+Fst2Transition liste;
 
 int ret=0;
 int retour;
@@ -131,26 +131,26 @@ e->control=(unsigned char)(e->control+8);
 e->control=(unsigned char)(e->control+64);
 liste=e->transitions;
 while (liste!=NULL) {
-  if (liste->etiquette<0) {
+  if (liste->tag_number<0) {
     // cas d'un sous-graphe
-    retour=chercher_recursion(-(liste->etiquette),l,debut_graphe,nom_graphe,graphe,etiquette,verifie);
+    retour=chercher_recursion(-(liste->tag_number),l,debut_graphe,nom_graphe,graphe,etiquette,verifie);
     if (retour==1) {
       // si il y a une recursion
       return 1;
     }
-    if (verifie[-liste->etiquette] && explorer_etat(graphe[liste->arr],l,debut_graphe,nom_graphe,graphe,etiquette,verifie)) {
+    if (verifie[-liste->tag_number] && explorer_etat(graphe[liste->state_number],l,debut_graphe,nom_graphe,graphe,etiquette,verifie)) {
       // si le graphe reconnait <E>
       return 1;
     }
   }
   else
-  if (etiquette[liste->etiquette]->control) {
+  if (etiquette[liste->tag_number]->control) {
     // on est dans le cas <E>
-    if (explorer_etat(graphe[liste->arr],l,debut_graphe,nom_graphe,graphe,etiquette,verifie)) {
+    if (explorer_etat(graphe[liste->state_number],l,debut_graphe,nom_graphe,graphe,etiquette,verifie)) {
       return 1;
     }
   }
-  liste=liste->suivant;
+  liste=liste->next;
 }
 if (e->control&8) e->control=(unsigned char)(e->control-8);
 return ret;
@@ -200,7 +200,7 @@ return ret;
 //
 int chercher_boucle_par_E_dans_etat(Fst2State e,Fst2State* graphe,
                                     Fst2Tag* etiquette,int verifie[]) {
-liste_transition l;
+Fst2Transition l;
 if (e->control&8) {
   e->control=(unsigned char)(e->control-8);
   return 1; // on est deja passe par la...
@@ -209,23 +209,23 @@ if (e->control&8) {
 e->control=(unsigned char)(e->control+8);
 l=e->transitions;
 while (l!=NULL) {
-  if (l->etiquette<0) {
-    if (verifie[-l->etiquette]) {
-      if (chercher_boucle_par_E_dans_etat(graphe[l->arr],graphe,etiquette,verifie)) {
+  if (l->tag_number<0) {
+    if (verifie[-l->tag_number]) {
+      if (chercher_boucle_par_E_dans_etat(graphe[l->state_number],graphe,etiquette,verifie)) {
         e->control=(unsigned char)(e->control-8);
         return 1;
       }
     }
   }
   else
-  if (etiquette[l->etiquette]->control) {
+  if (etiquette[l->tag_number]->control) {
     // on est dans le cas <E>
-    if (chercher_boucle_par_E_dans_etat(graphe[l->arr],graphe,etiquette,verifie)) {
+    if (chercher_boucle_par_E_dans_etat(graphe[l->state_number],graphe,etiquette,verifie)) {
       e->control=(unsigned char)(e->control-8);
       return 1;
     }
   }
-  l=l->suivant;
+  l=l->next;
 }
 e->control=(unsigned char)(e->control-8);
 return 0;
@@ -530,7 +530,7 @@ int explorer_graphe_E(int premier_etat,int indice,Fst2State* graphe,Fst2Tag *eti
                       int n_graphe,unichar** nom_graphe,
                       Liste_conditions conditions_pour_etat[],
                       Liste_conditions *cond_tmp) {
-liste_transition l;
+Fst2Transition l;
 Fst2State e;
 int retour=OK;
 int ret;
@@ -574,15 +574,15 @@ e->control=(char)(e->control | 8);
 // la valeur 8 n'est que temporaire. Elle sert a detecter les boucles
 
 while (l!=NULL) {
-    if (l->etiquette < 0) {
+    if (l->tag_number < 0) {
       // cas d'un sous-graphe
       *cond_tmp=NULL;
-      ret=explorer_graphe_E(premier_etat,l->arr,graphe,etiquette,n_graphe,nom_graphe,conditions_pour_etat,cond_tmp);
+      ret=explorer_graphe_E(premier_etat,l->state_number,graphe,etiquette,n_graphe,nom_graphe,conditions_pour_etat,cond_tmp);
       if (ret==RECONNAIT_E) {
         // si l'exploration a permis de reconnaitre <E>
         e->control=(char)(e->control|64);
         // on insere la nouvelle condition en tete des conditions
-        inserer_en_debut_de_conditions(-(l->etiquette),cond_tmp);
+        inserer_en_debut_de_conditions(-(l->tag_number),cond_tmp);
         // on fusionne les nouvelles conditions avec celles deja existantes
         // pour cet etat
         fusionner(&conditions_pour_etat[indice-premier_etat],*cond_tmp);
@@ -591,10 +591,10 @@ while (l!=NULL) {
       retour=retour|ret;
     }
     else
-    if (etiquette[l->etiquette]->control&1) {
+    if (etiquette[l->tag_number]->control&1) {
       // cas d'une transition par <E>
       *cond_tmp=NULL;
-      ret=explorer_graphe_E(premier_etat,l->arr,graphe,etiquette,n_graphe,nom_graphe,conditions_pour_etat,cond_tmp);
+      ret=explorer_graphe_E(premier_etat,l->state_number,graphe,etiquette,n_graphe,nom_graphe,conditions_pour_etat,cond_tmp);
       if (ret==RECONNAIT_E) {
         // si l'exploration a permis de reconnaitre <E>
         if (*cond_tmp==NULL) {
@@ -612,7 +612,7 @@ while (l!=NULL) {
       }
       retour=retour|ret;
     }
-  l=l->suivant;
+  l=l->next;
 }
 e->control=(char)(e->control-8);
 *cond_tmp=copie_liste_conditions(conditions_pour_etat[indice-premier_etat]);

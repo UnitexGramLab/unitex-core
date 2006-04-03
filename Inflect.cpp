@@ -456,22 +456,22 @@ for (int i=pos-1;i<MAX_CHARS_IN_STACK;i++) {
 //
 // explore the tag of the transition T
 //
-void explore_tag(struct transition_fst* T,unichar* flechi,unichar* canonique,unichar* sortie,
+void explore_tag(struct fst2Transition* T,unichar* flechi,unichar* canonique,unichar* sortie,
                  Automate_fst2* a,unichar* code_gramm,unichar* comment) {
-if (T->etiquette < 0) {
+if (T->tag_number < 0) {
    // if we are in the case of a call to a sub-graph
    struct couple_string* L=NULL;
    struct couple_string* temp;
-   explore_state_recursion(flechi,canonique,sortie,a,a->debut_graphe_fst2[-(T->etiquette)],&L,code_gramm);
+   explore_state_recursion(flechi,canonique,sortie,a,a->debut_graphe_fst2[-(T->tag_number)],&L,code_gramm);
    while (L!=NULL) {
-      explore_state(L->flechi,canonique,L->out,a,T->arr,code_gramm,comment);
+      explore_state(L->flechi,canonique,L->out,a,T->state_number,code_gramm,comment);
       temp=L;
       L=L->suivant;
       free(temp);
    }
    return;
 }
-Fst2Tag e=a->etiquette[T->etiquette];
+Fst2Tag e=a->etiquette[T->tag_number];
 int pos=u_strlen(flechi);
 unichar out[MAX_CHARS_IN_STACK];
 unichar pile[MAX_CHARS_IN_STACK];
@@ -517,7 +517,7 @@ if (u_strcmp_char(etiq,"<E>")) {
 }
 // then, we go the next state
 pile[pos]='\0';
-explore_state(pile,canonique,out,a,T->arr,code_gramm,comment);
+explore_state(pile,canonique,out,a,T->state_number,code_gramm,comment);
 }
 
 
@@ -543,10 +543,10 @@ if (e->control & FST2_FINAL_STATE_BIT_MASK) {
     u_fprints(comment,f_out);
     u_fprints_char("\n",f_out);
 }
-struct transition_fst* t=e->transitions;
+struct fst2Transition* t=e->transitions;
 while (t!=NULL) {
     explore_tag(t,flechi,canonique,sortie,a,code_gramm,comment);
-    t=t->suivant;
+    t=t->next;
 }
 }
 
@@ -555,22 +555,22 @@ while (t!=NULL) {
 //
 // explore the tag of the transition T
 //
-void explore_tag_recursion(struct transition_fst* T,unichar* flechi,unichar* canonique,unichar* sortie,
+void explore_tag_recursion(struct fst2Transition* T,unichar* flechi,unichar* canonique,unichar* sortie,
                  Automate_fst2* a,struct couple_string** LISTE,unichar* code_gramm) {
-if (T->etiquette < 0) {
+if (T->tag_number < 0) {
    // if we are in the case of a call to a sub-graph
    struct couple_string* L=NULL;
    struct couple_string* temp;
-   explore_state_recursion(flechi,canonique,sortie,a,a->debut_graphe_fst2[-(T->etiquette)],&L,code_gramm);
+   explore_state_recursion(flechi,canonique,sortie,a,a->debut_graphe_fst2[-(T->tag_number)],&L,code_gramm);
    while (L!=NULL) {
-      explore_state_recursion(L->flechi,canonique,L->out,a,T->arr,LISTE,code_gramm);
+      explore_state_recursion(L->flechi,canonique,L->out,a,T->state_number,LISTE,code_gramm);
       temp=L;
       L=L->suivant;
       free(temp);
    }
    return;
 }
-Fst2Tag e=a->etiquette[T->etiquette];
+Fst2Tag e=a->etiquette[T->tag_number];
 int pos=u_strlen(flechi);
 unichar out[MAX_CHARS_IN_STACK];
 unichar pile[MAX_CHARS_IN_STACK];
@@ -616,7 +616,7 @@ if (u_strcmp_char(etiq,"<E>")) {
 }
 // then, we go the next state
 pile[pos]='\0';
-explore_state_recursion(pile,canonique,out,a,T->arr,LISTE,code_gramm);
+explore_state_recursion(pile,canonique,out,a,T->state_number,LISTE,code_gramm);
 }
 
 
@@ -636,10 +636,10 @@ if (e->control & FST2_FINAL_STATE_BIT_MASK) {
     res->suivant=(*L);
     (*L)=res;
 }
-struct transition_fst* t=e->transitions;
+struct fst2Transition* t=e->transitions;
 while (t!=NULL) {
     explore_tag_recursion(t,flechi,canonique,sortie,a,L,code_gramm);
-    t=t->suivant;
+    t=t->next;
 }
 }
 

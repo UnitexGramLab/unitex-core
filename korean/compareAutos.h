@@ -114,16 +114,16 @@ public:
 			afficher_match_fst2(0,L"");
 		}
 	}
-	for(struct transition_fst *sui = Motif_Automate->etat[autoNo]->transitions;
-	sui != 0 ; sui = sui->suivant){
-		if(sui->etiquette & FILE_PATH_MARK ) {	// handling sub call
+	for(struct fst2Transition *sui = Motif_Automate->etat[autoNo]->transitions;
+	sui != 0 ; sui = sui->next){
+		if(sui->tag_number & FILE_PATH_MARK ) {	// handling sub call
 			CautoDepth++;
 			CautoQueue[CautoDepth].aId = curAuto;
-			CautoQueue[CautoDepth].next = sui->arr;
+			CautoQueue[CautoDepth].next = sui->state_number;
 			saveAuto = curAuto;
-			curAuto = sui->etiquette & SUB_ID_MASK;
+			curAuto = sui->tag_number & SUB_ID_MASK;
 
-			pathEtiQ[pathEtiQidx].path = sui->etiquette;
+			pathEtiQ[pathEtiQidx].path = sui->tag_number;
 			pathEtiQ[pathEtiQidx].eti = 0;
 			
 			++pathEtiQidx;
@@ -134,15 +134,15 @@ public:
 			continue;
 		}
 		// verifiy next condition 
-		for( struct transition_fst *tsui = Text_Automate->etat[pos]->transitions;
-		tsui != 0; tsui = tsui->suivant){
-			if(matchVerify(sui->etiquette,tsui->etiquette)){
+		for( struct fst2Transition *tsui = Text_Automate->etat[pos]->transitions;
+		tsui != 0; tsui = tsui->next){
+			if(matchVerify(sui->tag_number,tsui->tag_number)){
 				// forward 
-				pathEtiQ[pathEtiQidx].path = sui->arr;
-				pathEtiQ[pathEtiQidx].eti = sui->etiquette;
+				pathEtiQ[pathEtiQidx].path = sui->state_number;
+				pathEtiQ[pathEtiQidx].eti = sui->tag_number;
 				++pathEtiQidx;
 
-				findCycleSubGraph(sui->arr,tsui->arr,depth+1);
+				findCycleSubGraph(sui->state_number,tsui->state_number,depth+1);
 				pathEtiQidx--;
 			}
 

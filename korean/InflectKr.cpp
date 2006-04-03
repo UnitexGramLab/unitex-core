@@ -963,19 +963,19 @@ void explore_state(int etat_courant)
 			traiteEttiques();
 		}
 	}
-	struct transition_fst* t=e->transitions;
+	struct fst2Transition* t=e->transitions;
 	while (t!=NULL) {
-		if (t->etiquette < 0) {
+		if (t->tag_number < 0) {
 			save_auto = auto_courant;
-			auto_courant = -(t->etiquette);
-		    explore_state(Ptr_cAuto->debut_graphe_fst2[-(t->etiquette)]);
+			auto_courant = -(t->tag_number);
+		    explore_state(Ptr_cAuto->debut_graphe_fst2[-(t->tag_number)]);
 		    auto_courant = save_auto;
 		}
 
-		etiQueue[curEtiCnt++] = t->etiquette;
-		explore_state(t->arr);
+		etiQueue[curEtiCnt++] = t->tag_number;
+		explore_state(t->state_number);
 		curEtiCnt--;
-		t = t->suivant;
+		t = t->next;
    }
    return;
 }

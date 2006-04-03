@@ -47,12 +47,12 @@ int numeroter_etiquettes_sur_octets_forts(Automate_fst2* automate,int SENTENCE,i
 int debut=automate->debut_graphe_fst2[SENTENCE];
 int N=2;
 for (int i=0;i<nombre_etats;i++) {
-   struct transition_fst* trans=automate->etat[i+debut]->transitions;
+   struct fst2Transition* trans=automate->etat[i+debut]->transitions;
    while (trans!=NULL) {
       // we put the value in the 2 upper bytes
-      trans->etiquette=(int)(trans->etiquette | (N<<NBRE_BITS_DE_DECALAGE));
+      trans->tag_number=(int)(trans->tag_number | (N<<NBRE_BITS_DE_DECALAGE));
       N++;
-      trans=trans->suivant;
+      trans=trans->next;
    }
 }
 return N;
@@ -66,7 +66,7 @@ void convertir_transitions_en_etats(Automate_fst2* automate,int SENTENCE,
 int N_GRF_STATES=2;
 int MAX_STATES=10000;
 int debut=automate->debut_graphe_fst2[SENTENCE];
-struct transition_fst* trans;
+struct fst2Transition* trans;
 struct grf_state* tab_grf_state[MAX_STATES];
 for (int i=0;i<MAX_STATES;i++) {
    tab_grf_state[i]=NULL;
@@ -76,9 +76,9 @@ tab_grf_state[0]=new_grf_state("\"<E>\"",50,0);
 int j;
 trans=automate->etat[debut]->transitions;
 while (trans!=NULL) {
-  j=get_numero_de_la_transition(trans->etiquette);
+  j=get_numero_de_la_transition(trans->tag_number);
   add_transition_to_grf_state(tab_grf_state[0],j);
-  trans=trans->suivant;
+  trans=trans->next;
 }
 // and the final state
 tab_grf_state[1]=new_grf_state("\"\"",(width_max+100),10000);
@@ -89,37 +89,37 @@ for (int i=0;i<nombre_etats;i++) {
    while (trans!=NULL) {
       // we put the value in the 2 upper bytes
       // normal line:
-      if (!u_strcmp_char(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->input,"\"")) {
+      if (!u_strcmp_char(automate->etiquette[get_etiquette_reelle(trans->tag_number)]->input,"\"")) {
          //u_fprints_char("\\\"",f);
          tab_grf_state[N_GRF_STATES]=new_grf_state("\"\\\"\"",pos_X[rang[i]],rang[i]);
       }
       else {
          unichar temp[10000];
          u_strcpy_char(temp,"\"");
-         u_strcat(temp,automate->etiquette[get_etiquette_reelle(trans->etiquette)]->input);
+         u_strcat(temp,automate->etiquette[get_etiquette_reelle(trans->tag_number)]->input);
          u_strcat_char(temp,"\"");
          //u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,f);
          tab_grf_state[N_GRF_STATES]=new_grf_state(temp,pos_X[rang[i]],rang[i]);
       }
       j=0;
-      struct transition_fst* TMP=automate->etat[trans->arr]->transitions;
+      struct fst2Transition* TMP=automate->etat[trans->state_number]->transitions;
       while (TMP!=NULL) {
          j++;
-         TMP=TMP->suivant;
+         TMP=TMP->next;
       }
       if (j==0) {
          // if we arrive on the final state
          add_transition_to_grf_state(tab_grf_state[N_GRF_STATES],1);
       } else {
-         TMP=automate->etat[trans->arr]->transitions;
+         TMP=automate->etat[trans->state_number]->transitions;
          while (TMP!=NULL) {
-            j=get_numero_de_la_transition(TMP->etiquette);
+            j=get_numero_de_la_transition(TMP->tag_number);
             add_transition_to_grf_state(tab_grf_state[N_GRF_STATES],j);
-            TMP=TMP->suivant;
+            TMP=TMP->next;
          }
       }
       N_GRF_STATES++;
-      trans=trans->suivant;
+      trans=trans->next;
    }
 }
 // now, we look for duplicate states
@@ -136,7 +136,7 @@ void convertir_transitions_en_etats_old(Automate_fst2* automate,int SENTENCE,
 unichar z[100];
 int position_verticale[2000];
 int debut=automate->debut_graphe_fst2[SENTENCE];
-struct transition_fst* trans;
+struct fst2Transition* trans;
 // we counts the number of boxes for each horizontal position
 for (int i=0;i<rang_max;i++) {
     position_verticale[i]=0;
@@ -145,7 +145,7 @@ for (int i=0;i<nombre_etats;i++) {
    trans=automate->etat[i+debut]->transitions;
    while (trans!=NULL) {
       position_verticale[rang[i]]++;
-      trans=trans->suivant;
+      trans=trans->next;
    }
 }
 write_grf_header(width_max+300,800,N,font,f);
@@ -155,18 +155,18 @@ trans=automate->etat[debut]->transitions;
 int j=0;
 while (trans!=NULL) {
   j++;
-  trans=trans->suivant;
+  trans=trans->next;
 }
 u_int_to_string(j,z);
 u_strcat_char(z," ");
 u_fprints(z,f);
 trans=automate->etat[debut]->transitions;
 while (trans!=NULL) {
-  j=get_numero_de_la_transition(trans->etiquette);
+  j=get_numero_de_la_transition(trans->tag_number);
   u_int_to_string(j,z);
   u_strcat_char(z," ");
   u_fprints(z,f);
-  trans=trans->suivant;
+  trans=trans->next;
 }
 // and the final state
 u_fprints_char("\n\"\" ",f);
@@ -181,11 +181,11 @@ for (int i=0;i<nombre_etats;i++) {
       // we put the value in the 2 upper bytes
       u_fprints_char("\"",f);
       // normal line:
-      if (!u_strcmp_char(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->input,"\"")) {
+      if (!u_strcmp_char(automate->etiquette[get_etiquette_reelle(trans->tag_number)]->input,"\"")) {
          u_fprints_char("\\\"",f);
       }
       else {
-           u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->input,f);
+           u_fprints(automate->etiquette[get_etiquette_reelle(trans->tag_number)]->input,f);
       }
       /*if (automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu[0]!='{') {
          u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,f);
@@ -208,10 +208,10 @@ for (int i=0;i<nombre_etats;i++) {
       u_strcat_char(z," ");
       u_fprints(z,f);
       j=0;
-      struct transition_fst* TMP=automate->etat[trans->arr]->transitions;
+      struct fst2Transition* TMP=automate->etat[trans->state_number]->transitions;
       while (TMP!=NULL) {
          j++;
-         TMP=TMP->suivant;
+         TMP=TMP->next;
       }
       if (j==0) {
          // if we arrive on the final state
@@ -220,17 +220,17 @@ for (int i=0;i<nombre_etats;i++) {
          u_int_to_string(j,z);
          u_strcat_char(z," ");
          u_fprints(z,f);
-         TMP=automate->etat[trans->arr]->transitions;
+         TMP=automate->etat[trans->state_number]->transitions;
          while (TMP!=NULL) {
-            j=get_numero_de_la_transition(TMP->etiquette);
+            j=get_numero_de_la_transition(TMP->tag_number);
             u_int_to_string(j,z);
             u_strcat_char(z," ");
             u_fprints(z,f);
-            TMP=TMP->suivant;
+            TMP=TMP->next;
          }
          u_fprints_char("\n",f);
       }
-      trans=trans->suivant;
+      trans=trans->next;
    }
 }
 }
@@ -265,28 +265,28 @@ return RANG;
 
 void explorer_rang_etat(int etat_courant,int debut,Automate_fst2* automate,
                         int* rang,char* modif,int* RANG) {
-struct transition_fst* trans=automate->etat[etat_courant]->transitions;
+struct fst2Transition* trans=automate->etat[etat_courant]->transitions;
 int RANG_COURANT=rang[etat_courant-debut];
 while (trans!=NULL) {
-   if (RANG_COURANT+1>rang[trans->arr-debut]) {
+   if (RANG_COURANT+1>rang[trans->state_number-debut]) {
       // if we must increase the path length
-      rang[trans->arr-debut]=RANG_COURANT+1;
+      rang[trans->state_number-debut]=RANG_COURANT+1;
       if ((RANG_COURANT+1)> (*RANG)) {
          (*RANG)=RANG_COURANT+1;
       }
-      modif[(trans->arr)-debut]=1;
+      modif[(trans->state_number)-debut]=1;
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 // then, we process all the nodes we have modified
 trans=automate->etat[etat_courant]->transitions;
 while (trans!=NULL) {
-   if (modif[trans->arr-debut]==1) {
+   if (modif[trans->state_number-debut]==1) {
       // if we must increase the path length
-      explorer_rang_etat(trans->arr,debut,automate,rang,modif,RANG);
-      modif[(trans->arr)-debut]=0;
+      explorer_rang_etat(trans->state_number,debut,automate,rang,modif,RANG);
+      modif[(trans->state_number)-debut]=0;
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 }
 
@@ -294,29 +294,29 @@ while (trans!=NULL) {
 
 void explorer_position_horizontale_etat(int etat_courant,int debut,Automate_fst2* automate,
                                         int* pos_X,char* modif,int* WIDTH) {
-struct transition_fst* trans=automate->etat[etat_courant]->transitions;
+struct fst2Transition* trans=automate->etat[etat_courant]->transitions;
 int POS_COURANTE=pos_X[etat_courant-debut];
 while (trans!=NULL) {
-   int VAL=POS_COURANTE+(WIDTH_OF_A_CHAR*(width_of_tag(automate->etiquette[trans->etiquette])));
-   if (VAL>pos_X[(trans->arr)-debut]) {
+   int VAL=POS_COURANTE+(WIDTH_OF_A_CHAR*(width_of_tag(automate->etiquette[trans->tag_number])));
+   if (VAL>pos_X[(trans->state_number)-debut]) {
       // if we must increase the path length
-      pos_X[(trans->arr)-debut]=VAL;
+      pos_X[(trans->state_number)-debut]=VAL;
       if (VAL > (*WIDTH)) {
          (*WIDTH)=VAL;
       }
-      modif[(trans->arr)-debut]=1;
+      modif[(trans->state_number)-debut]=1;
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 // then, we process all the nodes we have modified
 trans=automate->etat[etat_courant]->transitions;
 while (trans!=NULL) {
-   if (modif[(trans->arr)-debut]==1) {
+   if (modif[(trans->state_number)-debut]==1) {
       // if we must increase the path length
-      explorer_position_horizontale_etat(trans->arr,debut,automate,pos_X,modif,WIDTH);
-      modif[(trans->arr)-debut]=0;
+      explorer_position_horizontale_etat(trans->state_number,debut,automate,pos_X,modif,WIDTH);
+      modif[(trans->state_number)-debut]=0;
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 }
 
@@ -388,7 +388,7 @@ return i;
 int calculer_largeur_max_pour_chaque_rang(Automate_fst2* automate,int SENTENCE,
                                           int* pos_X,int nombre_etats,int* rang) {
 int i;
-struct transition_fst* trans;
+struct fst2Transition* trans;
 for (i=0;i<nombre_etats;i++) {
    pos_X[i]=0;
 }
@@ -397,11 +397,11 @@ int debut=automate->debut_graphe_fst2[SENTENCE];
 for (i=0;i<nombre_etats;i++) {
    trans=automate->etat[i+debut]->transitions;
    while (trans!=NULL) {
-      int VAL=(WIDTH_OF_A_CHAR*(5+width_of_tag(automate->etiquette[trans->etiquette])));
+      int VAL=(WIDTH_OF_A_CHAR*(5+width_of_tag(automate->etiquette[trans->tag_number])));
       if (pos_X[rang[i]+1]<VAL) {
          pos_X[rang[i]+1]=VAL;
       }
-      trans=trans->suivant;
+      trans=trans->next;
    }
 }
 // then, we compute the position

@@ -113,13 +113,13 @@ for (int i=1;i<=grammar->nombre_graphes;i++) {
 void compute_dependences_for_subgraph(Automate_fst2* grammar,int n,struct liste_nombres** L) {
 int limite=grammar->debut_graphe_fst2[n]+grammar->nombre_etats_par_grf[n];
 for (int etat=grammar->debut_graphe_fst2[n];etat<limite;etat++) {
-   struct transition_fst* trans=grammar->etat[etat]->transitions;
+   struct fst2Transition* trans=grammar->etat[etat]->transitions;
    while (trans!=NULL) {
-      if (trans->etiquette<0) {
+      if (trans->tag_number<0) {
          // if we find a reference to a subgraph, we store it in the list
-         *L=inserer_dans_liste_nombres(-(trans->etiquette),*L);
+         *L=inserer_dans_liste_nombres(-(trans->tag_number),*L);
       }
-      trans=trans->suivant;
+      trans=trans->next;
    }
 }
 }
@@ -262,15 +262,15 @@ for (int i=grammar->debut_graphe_fst2[1]; i<limite; i++) {
        // if the original state is terminal, then the new state must be so
        etat->controle=(unsigned char)((etat->controle) | 1);
     }
-    struct transition_fst* l=E->transitions;
+    struct fst2Transition* l=E->transitions;
     while (l!=NULL) {
        struct transition_comp* temp=nouvelle_transition_comp();
-       temp->etiq=l->etiquette;
+       temp->etiq=l->tag_number;
        // to compute the arr value, we must consider the relative value
        // of l->arr which is (l->arr)-grammar->debut_graphe_fst2[1]
        // and add to it the starting position of the current graph
        // which is 0 for the main graph
-       temp->arr=0+(l->arr)-grammar->debut_graphe_fst2[1];
+       temp->arr=0+(l->state_number)-grammar->debut_graphe_fst2[1];
        temp->suivant=etat->trans;
        if ((temp->etiq) < 0) {
           // if the transition is a reference to a sub-graph
@@ -278,7 +278,7 @@ for (int i=grammar->debut_graphe_fst2[1]; i<limite; i++) {
           tab[pos_in_tab++]=temp;
        }
        etat->trans=temp;
-       l=l->suivant;
+       l=l->next;
     }
 }
 new_main_graph->states[0]->controle=(unsigned char)((new_main_graph->states[0]->controle) | 2);
@@ -304,7 +304,7 @@ for (int i=grammar->debut_graphe_fst2[1];i<limite;i++) {
     else printf(": ");
     struct transition_comp* l=new_main_graph->states[i]->transitions;
     while (l!=NULL) {
-        printf("%d %d ",l->etiq,l->arr);
+        printf("%d %d ",l->etiq,l->state_number);
         l=l->next;
     }
     printf("\n");
@@ -360,17 +360,17 @@ for (int i=grammar->debut_graphe_fst2[N];i<limite;i++) {
        temp->suivant=etat->trans;
        etat->trans=temp;
     }
-    struct transition_fst* l=E->transitions;
+    struct fst2Transition* l=E->transitions;
     while (l!=NULL) {
-       if (RTN || ((l->etiquette>=0) || (depth<max_depth))) {
+       if (RTN || ((l->tag_number>=0) || (depth<max_depth))) {
           // if we must produce a FST and if we have a subgraph call
           struct transition_comp* temp=nouvelle_transition_comp();
-          temp->etiq=l->etiquette;
+          temp->etiq=l->tag_number;
           // to compute the arr value, we must consider the relative value
           // of l->arr which is (l->arr)-grammar->debut_graphe_fst2[1]
           // and add to it the starting position of the current graph
           // which is 0 for the main graph
-          temp->arr=initial_pos+(l->arr)-grammar->debut_graphe_fst2[N];
+          temp->arr=initial_pos+(l->state_number)-grammar->debut_graphe_fst2[N];
           temp->suivant=etat->trans;
           if ((temp->etiq) < 0) {
              // if the transition is a reference to a sub-graph
@@ -383,7 +383,7 @@ for (int i=grammar->debut_graphe_fst2[N];i<limite;i++) {
                 // if we have overpassed the maximum depth,
                 // we just produce a call to the subgraph taking
                 // care of the graph renumerotation
-                temp->etiq=-(new_graph_number[-(l->etiquette)]);
+                temp->etiq=-(new_graph_number[-(l->tag_number)]);
                 (*SUBGRAPH_CALL)++;
              }
           }
@@ -392,7 +392,7 @@ for (int i=grammar->debut_graphe_fst2[N];i<limite;i++) {
        else {
           (*SUBGRAPH_CALL_IGNORED)++;
        }
-       l=l->suivant;
+       l=l->next;
     }
 }
 // then, if there were some calls to subgraphs, we copy them
@@ -631,16 +631,16 @@ for (int i=grammar->debut_graphe_fst2[N];i<limite;i++) {
    else {
       u_fprints_char(": ",f);
    }
-   struct transition_fst* l=(grammar->etat[i])->transitions;
+   struct fst2Transition* l=(grammar->etat[i])->transitions;
    while (l!=NULL) {
-      if (l->etiquette < 0) {
-         sprintf(temp,"%d %d ",-new_graph_number[-(l->etiquette)],(l->arr)-grammar->debut_graphe_fst2[N]);
+      if (l->tag_number < 0) {
+         sprintf(temp,"%d %d ",-new_graph_number[-(l->tag_number)],(l->state_number)-grammar->debut_graphe_fst2[N]);
       }
       else {
-         sprintf(temp,"%d %d ",l->etiquette,(l->arr)-grammar->debut_graphe_fst2[N]);
+         sprintf(temp,"%d %d ",l->tag_number,(l->state_number)-grammar->debut_graphe_fst2[N]);
       }
       u_fprints_char(temp,f);
-      l=l->suivant;
+      l=l->next;
    }
    u_fprints_char("\n",f);
 }

@@ -253,25 +253,25 @@ case CMD_DIV:;
 
 void curSMvalue(unichar cval)
 {
-	struct transition_fst *cT = a->etat[curEtat]->transitions;
+	struct fst2Transition *cT = a->etat[curEtat]->transitions;
 	struct cmdInst *cmdPtr;
 	unichar *wp;
 	int nextArr = 0;
 
 	while(cT){
-        wp = (unichar *)a->etiquette[cT->etiquette]->input;
+        wp = (unichar *)a->etiquette[cT->tag_number]->input;
         if(*wp == '<'){
            wp++;
            if(*wp == '!'){
-		    nextArr = cT->arr;
-		    cmdPtr = (struct cmdInst *)a->etiquette[cT->etiquette]->output;
+		    nextArr = cT->state_number;
+		    cmdPtr = (struct cmdInst *)a->etiquette[cT->tag_number]->output;
            }
         } else if(*wp == cval){
-		    nextArr = cT->arr;
-		    cmdPtr = (struct cmdInst *)a->etiquette[cT->etiquette]->output;
+		    nextArr = cT->state_number;
+		    cmdPtr = (struct cmdInst *)a->etiquette[cT->tag_number]->output;
 		    break;
 		}
-		cT = cT->suivant;
+		cT = cT->next;
 	}
 	curEtat = 0;
 	if(nextArr){

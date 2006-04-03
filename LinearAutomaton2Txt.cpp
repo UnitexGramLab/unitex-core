@@ -26,7 +26,7 @@ int isLinearAutomaton(Automate_fst2* fst2) {
 if (fst2==NULL) {
    fatal_error("NULL error in isLinearAutomaton\n");
 }
-liste_transition l;
+Fst2Transition l;
 Fst2State etat;
 
 for (int sentence=1;sentence<fst2->nombre_graphes+1;sentence++) {
@@ -40,7 +40,7 @@ for (int sentence=1;sentence<fst2->nombre_graphes+1;sentence++) {
             return sentence;
          }
       } else {
-         if (l==NULL || l->suivant!=NULL) {
+         if (l==NULL || l->next!=NULL) {
             // if there is not exactly one transition in each state
             return sentence;
          }
@@ -56,7 +56,7 @@ int convertLinearAutomaton(Automate_fst2* fst2,FILE* f) {
 if (fst2==NULL) {
    fatal_error("NULL error in convertLinearAutomaton\n");
 }
-liste_transition l;
+Fst2Transition l;
 Fst2State etat;
 for (int sentence=1;sentence<fst2->nombre_graphes+1;sentence++) {
    etat=fst2->etat[fst2->debut_graphe_fst2[sentence]];
@@ -76,14 +76,14 @@ for (int sentence=1;sentence<fst2->nombre_graphes+1;sentence++) {
          // and we set 'etat' to NULL in order to quit the loop
          etat=NULL;
       } else {
-         if (l==NULL || l->suivant!=NULL) {
+         if (l==NULL || l->next!=NULL) {
             // if there is not exactly one transition in each state
             return sentence;
          }
-         unichar* etiq=fst2->etiquette[l->etiquette]->input;
+         unichar* etiq=fst2->etiquette[l->tag_number]->input;
          u_fprints(etiq,f);
          u_fprints_char(" ",f);
-         etat=fst2->etat[l->arr];
+         etat=fst2->etat[l->state_number];
          l=etat->transitions;
       }
    } while (etat!=NULL);

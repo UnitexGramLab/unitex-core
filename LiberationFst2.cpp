@@ -26,9 +26,9 @@
 //---------------------------------------------------------------------------
 
 
-void liberer_transitions(liste_transition ptr) {
+void liberer_transitions(Fst2Transition ptr) {
 if (ptr==NULL) return;
-liberer_transitions(ptr->suivant);
+liberer_transitions(ptr->next);
 free(ptr);
 }
 

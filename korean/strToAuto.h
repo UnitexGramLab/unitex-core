@@ -1999,7 +1999,7 @@ unePhraseAuto.prAuto(stderr,2);
 		}
 		int i,j,k;
 		int cnt_trans;
-		liste_transition *t;
+		Fst2Transition *t;
 		unsigned int *wp;
 		unsigned int *mapTrans  = new unsigned int [1024 * 3];
 		if(!maptrans) exitMessage("Mem alloc fail");
@@ -2010,7 +2010,7 @@ unePhraseAuto.prAuto(stderr,2);
 			fread(mapTrans,4*3,k,readFile);
 			wp = mapTrans;
 			while(t){
-				etiPtr = loadFst2->etiquette[t->etiquette];
+				etiPtr = loadFst2->tag_number[t->tag_number];
 				switch(etiPtr->input[1]){
 				case '{':
 				case '"':

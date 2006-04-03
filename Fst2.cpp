@@ -94,11 +94,11 @@ return NULL;
 }
 
 
-void free_transition(struct transition_fst* t) {
-struct transition_fst* tmp;
+void free_transition(struct fst2Transition* t) {
+struct fst2Transition* tmp;
 while (t!=NULL) {
     tmp=t;
-    t=t->suivant;
+    t=t->next;
     free(tmp);
 }
 }
@@ -695,16 +695,16 @@ return res;
 //
 // cree et renvoie une nouvelle transition
 //
-liste_transition nouvelle_transition_mat() {
-liste_transition t;
-t=(liste_transition)malloc(sizeof(struct transition_fst));
+Fst2Transition nouvelle_transition_mat() {
+Fst2Transition t;
+t=(Fst2Transition)malloc(sizeof(struct fst2Transition));
 if (t==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction nouvelle_transition_mat\n");
   exit(1);
 }
-t->etiquette=-1;
-t->arr=-1;
-t->suivant=NULL;
+t->tag_number=-1;
+t->state_number=-1;
+t->next=NULL;
 return t;
 }
 
@@ -715,12 +715,12 @@ return t;
 //
 void ajouter_transition_mat(struct fst2State *e,int etiq,int etarr)
 {
-  struct transition_fst *ptr;
+  struct fst2Transition *ptr;
 
   ptr=nouvelle_transition_mat();
-  ptr->suivant=e->transitions;
-  ptr->etiquette=etiq;
-  ptr->arr=etarr;
+  ptr->next=e->transitions;
+  ptr->tag_number=etiq;
+  ptr->state_number=etarr;
   e->transitions=ptr;
 }
 

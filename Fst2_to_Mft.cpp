@@ -62,19 +62,19 @@ struct string_hash* tags=new_string_hash();
 // first, we insert every tag in the string_hash
 int limite=fst2->debut_graphe_fst2[N]+fst2->nombre_etats_par_grf[N];
 for (int i=fst2->debut_graphe_fst2[N];i<limite;i++) {
-   struct transition_fst* trans=fst2->etat[i]->transitions;
+   struct fst2Transition* trans=fst2->etat[i]->transitions;
    while (trans!=NULL) {
-      if (trans->etiquette < 0) {
+      if (trans->tag_number < 0) {
          // if there is a subgraph call
          fprintf(stderr,"Error: a subgraph call was found in the text automaton.\n");
          fprintf(stderr,"This transition will be removed in the MFT file.\n");
-         struct transition_fst* tmp=trans->suivant;
+         struct fst2Transition* tmp=trans->next;
          free(trans);
          trans=tmp;
       }
       else {
-         get_hash_number(fst2->etiquette[trans->etiquette]->input,tags);
-         trans=trans->suivant;
+         get_hash_number(fst2->etiquette[trans->tag_number]->input,tags);
+         trans=trans->next;
       }
    }
 }
@@ -96,14 +96,14 @@ for (int i=fst2->debut_graphe_fst2[N];i<limite;i++) {
    else {
       u_fprints_char(": ",f);
    }
-   struct transition_fst* trans=fst2->etat[i]->transitions;
+   struct fst2Transition* trans=fst2->etat[i]->transitions;
    int debut=fst2->debut_graphe_fst2[N];
    int num;
    while (trans!=NULL) {
-      num=get_hash_number(fst2->etiquette[trans->etiquette]->input,tags);
-      sprintf(temp,"%d %d ",num,(trans->arr)-debut+1);
+      num=get_hash_number(fst2->etiquette[trans->tag_number]->input,tags);
+      sprintf(temp,"%d %d ",num,(trans->state_number)-debut+1);
       u_fprints_char(temp,f);
-      trans=trans->suivant;
+      trans=trans->next;
    }
    u_fprints_char("-1\n",f);
 }

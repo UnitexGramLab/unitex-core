@@ -30,7 +30,7 @@
 
 void liberer_etiquette(Fst2Tag);
 void liberer_graphe_fst2(int,int,int*,Fst2State[],Fst2Tag[]);
-void liberer_transitions(liste_transition);
+void liberer_transitions(Fst2Transition);
 void liberer_etat(Fst2State);
 
 

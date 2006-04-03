@@ -88,20 +88,20 @@ if (!(ptr->arr==n && ptr->etiquette_origine==etiq_origine)) {
 
 
 
-void ajouter_sous_graphe(struct transition_fst* trans,struct appel_a_sous_graphe** a) {
+void ajouter_sous_graphe(struct fst2Transition* trans,struct appel_a_sous_graphe** a) {
 struct appel_a_sous_graphe* ptr;
 int E;
-E=-(trans->etiquette);
+E=-(trans->tag_number);
 if (*a==NULL) {
   // 1er cas: liste vide
   *a=nouvelle_liste_sous_graphes();
   (*a)->numero_de_graphe=E;
-  ajouter_si_pas_deja_present(&((*a)->liste_arr),trans->arr,-2000);
+  ajouter_si_pas_deja_present(&((*a)->liste_arr),trans->state_number,-2000);
   return;
 }
 if ((*a)->numero_de_graphe==E) {
   // 2eme cas: mise a jour du premier element
-  ajouter_si_pas_deja_present(&((*a)->liste_arr),trans->arr,-2000);
+  ajouter_si_pas_deja_present(&((*a)->liste_arr),trans->state_number,-2000);
   return;
 }
 ptr=*a;
@@ -111,11 +111,11 @@ if (ptr->suivant==NULL) {
   // on insere en fin de liste
   ptr->suivant=nouvelle_liste_sous_graphes();
   ptr->suivant->numero_de_graphe=E;
-  ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),trans->arr,-2000);
+  ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),trans->state_number,-2000);
   return;
 }
 // on met a jour l'element
-ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),trans->arr,-2000);
+ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),trans->state_number,-2000);
 }
 
 
@@ -309,15 +309,15 @@ ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),arr,etiq_origine);
 
 
 
-void optimiser_trans(struct transition_fst* ptr,Etat_opt* e2,Fst2Tag* etiquette) {
+void optimiser_trans(struct fst2Transition* ptr,Etat_opt* e2,Fst2Tag* etiquette) {
 Fst2Tag e;
 int controle;
-if (ptr->etiquette<0) {
+if (ptr->tag_number<0) {
   // cas d'un sous-graphe
   ajouter_sous_graphe(ptr,&((*e2)->liste_sous_graphes));
   return;
 }
-e=etiquette[ptr->etiquette];
+e=etiquette[ptr->tag_number];
 if (e==NULL) {
    fprintf(stderr,"Internal problem in optimiser_trans\n");
    exit(1);
@@ -325,25 +325,25 @@ if (e==NULL) {
 controle=e->control;
 //---pattern mot compose
 if (e->compound_pattern!=NO_COMPOUND_PATTERN) {
-  ajouter_pattern(e->compound_pattern,ptr->etiquette,&((*e2)->liste_patterns_composes),ptr->arr,controle);
+  ajouter_pattern(e->compound_pattern,ptr->tag_number,&((*e2)->liste_patterns_composes),ptr->state_number,controle);
 }
 //----------------------
 if (controle&LEMMA_TAG_BIT_MASK) {
   // liste de mots
-  ajouter_liste_de_tokens(e,ptr->etiquette,e2,ptr->arr,&((*e2)->nombre_de_tokens));
+  ajouter_liste_de_tokens(e,ptr->tag_number,e2,ptr->state_number,&((*e2)->nombre_de_tokens));
   return;
 }
 if ((controle&TOKEN_TAG_BIT_MASK)&&(e->number!=-1)) {
   // mot tout seul
-  ajouter_token_a_liste_tokens(e->number,ptr->etiquette,&((*e2)->liste_tokens),ptr->arr,&((*e2)->nombre_de_tokens));
+  ajouter_token_a_liste_tokens(e->number,ptr->tag_number,&((*e2)->liste_tokens),ptr->state_number,&((*e2)->nombre_de_tokens));
   if (e->matching_tokens!=NULL) {
-     ajouter_liste_de_tokens(e,ptr->etiquette,e2,ptr->arr,&((*e2)->nombre_de_tokens));
+     ajouter_liste_de_tokens(e,ptr->tag_number,e2,ptr->state_number,&((*e2)->nombre_de_tokens));
   }
   return;
 }
 if ((controle&GRAMM_CODE_TAG_BIT_MASK)&&(e->number!=-1)) {
   // pattern
-  ajouter_pattern(e->number,ptr->etiquette,&((*e2)->liste_patterns),ptr->arr,controle);
+  ajouter_pattern(e->number,ptr->tag_number,&((*e2)->liste_patterns),ptr->state_number,controle);
   return;
 }
 if (controle&CONTROL_TAG_BIT_MASK) {
@@ -353,7 +353,7 @@ if (controle&CONTROL_TAG_BIT_MASK) {
      // if the meta is $a( or $a)
      k=get_token_number(e->input,transduction_variable_index);
   }
-  ajouter_meta(e->number,ptr->etiquette,&((*e2)->liste_metas),ptr->arr,controle,k);
+  ajouter_meta(e->number,ptr->tag_number,&((*e2)->liste_metas),ptr->state_number,controle,k);
   return;
 }
 }
@@ -387,7 +387,7 @@ if (i!=(*e2)->nombre_de_tokens) {
 
 
 void optimiser_etat(Fst2State e1,Etat_opt* e2,int e,Fst2Tag* etiquette) {
-struct transition_fst* ptr;
+struct fst2Transition* ptr;
 if (e1==NULL) {
   *e2=NULL;
   return;
@@ -397,7 +397,7 @@ if (e1==NULL) {
 ptr=e1->transitions;
 while (ptr!=NULL) {
   optimiser_trans(ptr,e2,etiquette);
-  ptr=ptr->suivant;
+  ptr=ptr->next;
 }
 convertir_liste_tokens_en_tableau(e2,e);
 }

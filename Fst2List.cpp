@@ -308,12 +308,12 @@ verboseMode  = 0;
     //
 
     struct callStackMapSt {
-     liste_transition tran;
+     Fst2Transition tran;
      int autoId;
     } *autoStackMap;
     struct callIdMap {
         int cnt;
-        liste_transition *list;
+        Fst2Transition *list;
         struct callIdMap *next;
     } *mapOfCallHead,*mapOfCallTail;
     
@@ -341,7 +341,7 @@ verboseMode  = 0;
         fPtr = new struct callIdMap;
         fPtr->cnt = count;
         fPtr->next = 0;
-        fPtr->list = new liste_transition [count];
+        fPtr->list = new Fst2Transition [count];
         for(i = 0; i < count;i++) fPtr->list[i] = cmap[i].tran;
     
         if(mapOfCallTail){
@@ -968,15 +968,15 @@ void prAutoStack(int depStack)
         fprintf(ff,"===== AutoStack\n");
     else
         u_fprintf(ff,"===== AutoStack\n");
-    struct transition_fst *k;
+    struct fst2Transition *k;
     for(i = 0;i < depStack;i++){
       k = autoStackMap[i].tran;
       if((ff == stderr) || (ff == stdout))
        fprintf(ff,"%d %d(%d ::%d)\n"
-            ,i,autoStackMap[i].autoId,k->arr,k->etiquette);
+            ,i,autoStackMap[i].autoId,k->state_number,k->tag_number);
       else
        u_fprintf(ff,"%d %d(%d ::%d)\n"
-            ,i,autoStackMap[i].autoId,k->arr,k->etiquette);
+            ,i,autoStackMap[i].autoId,k->state_number,k->tag_number);
     }
         
 }
@@ -993,7 +993,7 @@ void prAutoStackOnly()
 void CFstApp::loadGraph(char *fname)
 {
 	int i,j;
-	struct transition_fst *strans;
+	struct fst2Transition *strans;
 	
 	a=load_fst2(fname,1);
 	if (a==NULL) {
@@ -1009,11 +1009,11 @@ void CFstApp::loadGraph(char *fname)
        }
 		a->etat[i]->control &= 0x7f;	// clean for mark recusive
 		while(strans){
-			if(strans->etiquette < 0){
-				strans->etiquette = 
-					FILE_PATH_MARK | -strans->etiquette;
+			if(strans->tag_number < 0){
+				strans->tag_number = 
+					FILE_PATH_MARK | -strans->tag_number;
 			}
-			strans = strans->suivant;
+			strans = strans->next;
 		}
 	}
 
@@ -1049,10 +1049,10 @@ void CFstApp::loadGraph(char *fname)
 			for(j = 0; j < a->nombre_etats;j++){
 				strans = a->etat[j]->transitions;
 				while(strans){
-					if(strans->etiquette == i){
-						strans->etiquette |= STOP_PATH_MARK;
+					if(strans->tag_number == i){
+						strans->tag_number |= STOP_PATH_MARK;
 					}
-					strans = strans->suivant;
+					strans = strans->next;
 				}
 				
 			}
@@ -1181,7 +1181,7 @@ printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
 			{
 			FILE *listFile;
 			unichar *wp;
-			struct transition_fst *sui;
+			struct fst2Transition *sui;
 		strcpy(tmpchar,ofnameOnly);
 		strcat(tmpchar,"lst");
 			makeOfileName(ofNameTmp,tmpchar,".txt");
@@ -1189,18 +1189,18 @@ printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
 				exitMessage("list file open error");
 			i = 0;
 
-			for( sui = a->etat[0]->transitions;sui != 0 ; sui = sui->suivant){
-				if(!(sui->etiquette & FILE_PATH_MARK))	continue;
-				ignoreTable[sui->etiquette & SUB_ID_MASK] = 1;
+			for( sui = a->etat[0]->transitions;sui != 0 ; sui = sui->next){
+				if(!(sui->tag_number & FILE_PATH_MARK))	continue;
+				ignoreTable[sui->tag_number & SUB_ID_MASK] = 1;
 				i++;
 			}
 			fprintf(listFile," %d\n",i);
 
-			for( sui = a->etat[0]->transitions;sui != 0 ; sui = sui->suivant){
-				if(!(sui->etiquette & FILE_PATH_MARK)) continue;
+			for( sui = a->etat[0]->transitions;sui != 0 ; sui = sui->next){
+				if(!(sui->tag_number & FILE_PATH_MARK)) continue;
 				cleanCyclePath();
 				
-				wp = (unichar *)a->nom_graphe[sui->etiquette & SUB_ID_MASK];
+				wp = (unichar *)a->nom_graphe[sui->tag_number & SUB_ID_MASK];
 				dp = tmpchar;
 				
 				while(*wp){*dp++ = (char)(*wp&0xff);wp++;}
@@ -1216,16 +1216,16 @@ printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
 				}
 				listOut = 0;     // output disable
 				
-				exploirerSubAuto(sui->etiquette & SUB_ID_MASK);
+				exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
 				prSubGrapheCycle();			
 				CleanPathCounter();				
 				listOut = 1;    // output enable
-				exploirerSubAuto(sui->etiquette & SUB_ID_MASK);
+				exploirerSubAuto(sui->tag_number & SUB_ID_MASK);
 				
 				if(recursiveMode == SYMBOL)	prOutCycle();
                 if(verboseMode){
 printf(" the automate %s %d path, %d path stopped by cycle, %d error path \n"
-                    ,getUtoChar(a->nom_graphe[sui->etiquette & SUB_ID_MASK])
+                    ,getUtoChar(a->nom_graphe[sui->tag_number & SUB_ID_MASK])
                     ,totalPath,totalLoop, errPath);
 					
 					if(stopPath){
@@ -1253,10 +1253,10 @@ printf(" the automate %s %d path, %d path stopped by cycle, %d error path \n"
 //
 void CFstApp::exploirerSubAuto(int startAutoNo)
 {
-    struct transition_fst startCallTr;
+    struct fst2Transition startCallTr;
 //if(listOut) prCycleNode();
-    startCallTr.etiquette  = startAutoNo |FILE_PATH_MARK;
-    startCallTr.arr        = 0;   
+    startCallTr.tag_number  = startAutoNo |FILE_PATH_MARK;
+    startCallTr.state_number        = 0;   
     numberOfOutLine = 0;    // reset output lines
 	
     
@@ -1356,15 +1356,15 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 			}
 		}
 	}
-	for(struct transition_fst *sui = a->etat[stateNo]->transitions;
-	sui != 0 ; sui = sui->suivant){
+	for(struct fst2Transition *sui = a->etat[stateNo]->transitions;
+	sui != 0 ; sui = sui->next){
 
-		if(sui->etiquette & STOP_PATH_MARK){
+		if(sui->tag_number & STOP_PATH_MARK){
 			if(listOut){
 				totalPath++;
 				pathEtiQ[pathEtiQidx].autoNo = automateNo;
 				pathEtiQ[pathEtiQidx].etatNo = STOP_PATH_MARK;
-				pathEtiQ[pathEtiQidx].eti = sui->etiquette 
+				pathEtiQ[pathEtiQidx].eti = sui->tag_number 
 					& ~STOP_PATH_MARK;
 				pathEtiQidx++;
 				outWordsOfGraph(pathEtiQidx);
@@ -1376,25 +1376,25 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 		{
 			if(listOut){
 			    pathEtiQ[pathEtiQidx].autoNo = automateNo;
-    			pathEtiQ[pathEtiQidx].etatNo = sui->arr;
-    			pathEtiQ[pathEtiQidx].eti = sui->etiquette;
+    			pathEtiQ[pathEtiQidx].etatNo = sui->state_number;
+    			pathEtiQ[pathEtiQidx].eti = sui->tag_number;
     			pathEtiQidx++;
-    			findCycleSubGraph(automateNo,autoDepth,sui->arr,stateDepth+1);
+    			findCycleSubGraph(automateNo,autoDepth,sui->state_number,stateDepth+1);
     			pathEtiQidx--;
 			}
 			continue;
 		}
-		if(sui->etiquette & FILE_PATH_MARK ) {	// handling sub call
-			if(ignoreTable[sui->etiquette & SUB_ID_MASK]){
+		if(sui->tag_number & FILE_PATH_MARK ) {	// handling sub call
+			if(ignoreTable[sui->tag_number & SUB_ID_MASK]){
 			   // find stop condition path
 				if(listOut){
 					totalPath++;
 					stopPath++;
 				
-					numOfIgnore[sui->etiquette & SUB_ID_MASK]++;
+					numOfIgnore[sui->tag_number & SUB_ID_MASK]++;
 					
 					pathEtiQ[pathEtiQidx].autoNo = automateNo;
-					pathEtiQ[pathEtiQidx].eti = sui->etiquette;
+					pathEtiQ[pathEtiQidx].eti = sui->tag_number;
 					pathEtiQ[pathEtiQidx].etatNo = STOP_PATH_MARK;
 					pathEtiQidx++;
 					outWordsOfGraph(pathEtiQidx);
@@ -1405,10 +1405,10 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 			//
 			//    find cycle call
 			//
-			tmp = sui->etiquette & SUB_ID_MASK;
+			tmp = sui->tag_number & SUB_ID_MASK;
 			
     	    for(scanner = 0;scanner < autoDepth;scanner++)
-        	    if(autoStackMap[scanner].tran->etiquette == sui->etiquette)
+        	    if(autoStackMap[scanner].tran->tag_number == sui->tag_number)
         	       break;
             autoStackMap[autoDepth].tran = sui;                
             if(scanner == autoDepth)
@@ -1431,18 +1431,18 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
             
             CautoDepth++;
 			CautoQueue[CautoDepth].aId = callId;
-			CautoQueue[CautoDepth].next = sui->arr;
+			CautoQueue[CautoDepth].next = sui->state_number;
 			findCycleSubGraph(callId,autoDepth+1,
                   a->debut_graphe_fst2[tmp],stateDepth+1);
 			--pathEtiQidx;
 			--CautoDepth;
 			continue;
 		}
-		pathEtiQ[pathEtiQidx].etatNo = sui->arr;
-		pathEtiQ[pathEtiQidx].eti = sui->etiquette;
+		pathEtiQ[pathEtiQidx].etatNo = sui->state_number;
+		pathEtiQ[pathEtiQidx].eti = sui->tag_number;
 		pathEtiQ[pathEtiQidx].autoNo = automateNo;
 		++pathEtiQidx;
-		findCycleSubGraph(automateNo,autoDepth,sui->arr,stateDepth+1);
+		findCycleSubGraph(automateNo,autoDepth,sui->state_number,stateDepth+1);
 		pathEtiQidx--;
 	}
 }

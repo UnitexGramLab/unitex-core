@@ -154,18 +154,35 @@ struct fst2State {
 	/*
 	 * Transitions outgoing from this state.
 	 */
-	struct transition_fst *transitions;
+	struct fst2Transition* transitions;
 };
 typedef struct fst2State* Fst2State;
 
 
-struct transition_fst {
-  int etiquette;                // etiquette de la transition : un entier
-  int arr;                      // etat d'arrivee de la transition
-  struct transition_fst *suivant;   // transition suivante
+/*
+ * This structure represents a transition list in a fst2
+ */
+struct fst2Transition {
+	/*
+	 * Number of the transition tag.
+	 */
+	int tag_number;
+	
+	/*
+	 * Number of the state pointed by the transition. Note that this
+	 * number is ABSOLUTE. For instance, if the subgraph number 3 starts
+	 * at the state number 45, the 6th state of this subgraph will have the
+	 * number 45+6=51.
+	 * 
+	 */
+	int state_number;
+	
+	/*
+	 * Next transition of the list.
+	 */
+	struct fst2Transition* next;
 };
-
-typedef struct transition_fst *liste_transition;
+typedef struct fst2Transition* Fst2Transition;
 
 
 struct variable_list {
@@ -195,12 +212,12 @@ typedef struct automate_fst2 Automate_fst2;
 void charger_graphe_fst2(FILE*,Fst2State[],Fst2Tag[],int*,int*,int*,int**,
                          unichar***,int,int**);
 
-liste_transition nouvelle_transition_mat();
+Fst2Transition nouvelle_transition_mat();
 Automate_fst2* load_fst2(char*,int);
 void free_fst2(Automate_fst2*);
 struct variable_list* get_variable(unichar*,struct variable_list*);
 Automate_fst2* load_one_sentence_of_fst2(char*,int,FILE*);
 int is_final_state(Fst2State);
 void unprotect_characters_in_fst2_tags(Automate_fst2*);
-void free_transition(struct transition_fst*);
+void free_transition(struct fst2Transition*);
 #endif
