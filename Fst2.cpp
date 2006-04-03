@@ -18,14 +18,12 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-
 //---------------------------------------------------------------------------
-
 #include "Fst2.h"
 #include "Error.h"
 #include "LocateConstants.h"
-
 //---------------------------------------------------------------------------
+
 
 /*
  * These two constants are declared here instead of in the .h because
@@ -35,9 +33,6 @@
 #define FST2_FINAL_STATE_BIT_MASK 1
 #define FST2_INITIAL_STATE_BIT_MASK 2
 
-
-
-//-------CHARGEMENT DU FST2------------------------
 
 Fst2State* graphe_fst2;
 Fst2Tag* etiquette_fst2;
@@ -54,15 +49,16 @@ int etat_courant;
 
 
 
-
-
-
-
-struct variable_list* new_variable(unichar* n) {
+/**
+ * Allocates, initializes and returns a variable list item
+ */
+struct variable_list* new_variable_list(unichar* name) {
 struct variable_list* v;
 v=(struct variable_list*)malloc(sizeof(struct variable_list));
-v->name=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(n)));
-u_strcpy(v->name,n);
+if (v==NULL) {
+	fatal_error("Not enough memory in new_variable_list\n");
+}
+v->name=u_strdup(name);
 v->start=-1;
 v->end=-1;
 v->next=NULL;
@@ -70,42 +66,57 @@ return v;
 }
 
 
+/**
+ * Frees one variable list item
+ */
 void free_variable(struct variable_list* v) {
 if (v->name!=NULL) free(v->name);
 free(v);
 }
 
 
-void liberer_liste_variables(struct variable_list* l) {
+/**
+ * Frees a variable list
+ */
+void free_variable_list(struct variable_list* l) {
 struct variable_list* tmp;
 while (l!=NULL) {
-      tmp=l;
-      l=l->next;
-      free_variable(tmp);
+	tmp=l;
+	l=l->next;
+	free_variable(tmp);
 }
 }
 
 
-
-struct variable_list* ajouter_variable(unichar* name,struct variable_list* v) {
-if (v==NULL) return new_variable(name);
+/**
+ * Adds a variable at the end of the list, if it is not already in the list.
+ * The function returns the list, modified or not.
+ */
+struct variable_list* add_variable_to_list(unichar* name,struct variable_list* v) {
+if (v==NULL) return new_variable_list(name);
 if (!u_strcmp(v->name,name)) return v;
-v->next=ajouter_variable(name,v->next);
+v->next=add_variable_to_list(name,v->next);
 return v;
 }
 
 
+/**
+ * This function returns the variable list item corresponding to 'name'.
+ * If it is not in the list, NULL is returned.
+ */
 struct variable_list* get_variable(unichar* name,struct variable_list* v) {
 while (v!=NULL) {
-      if (!u_strcmp(name,v->name)) return v;
-      v=v->next;
+	if (!u_strcmp(name,v->name)) return v;
+	v=v->next;
 }
 return NULL;
 }
 
 
-
-void free_transition(struct fst2Transition* t) {
+/**
+ * Frees a transition list
+ */
+void free_Fst2Transition(Fst2Transition t) {
 struct fst2Transition* tmp;
 while (t!=NULL) {
     tmp=t;
@@ -115,31 +126,36 @@ while (t!=NULL) {
 }
 
 
-void free_etat(Fst2State e) {
-free_transition(e->transitions);
+/**
+ * Frees a state and all its transitions
+ */
+void free_Fst2State(Fst2State e) {
+free_Fst2Transition(e->transitions);
 free(e);
 }
 
 
-void free_etiquette(Fst2Tag e) {
+/**
+ * Frees a tag
+ */
+void free_Fst2Tag(Fst2Tag e) {
 if (e->input!=NULL) free(e->input);
 if (e->output!=NULL) free(e->output);
 if (e->inflected!=NULL) free(e->inflected);
 if (e->lemma!=NULL) free(e->lemma);
 if (e->codes!=NULL) free(e->codes);
-
+#warning matching_tokens should maybe be freed here
 /* $CD$ begin */
-if (e -> contentGF != NULL) free(e -> contentGF);
+if (e -> contentGF != NULL) free(e->contentGF);
 /* $CD$ end   */
-
 free(e);
 }
 
 
-//
-// returns a new empty automaton
-//
-Fst2* new_Automate_fst2() {
+/**
+ * Allocates, initializes and returns an empty automaton
+ */
+Fst2* new_Fst2() {
 Fst2* a=(Fst2*)malloc(sizeof(Fst2));
 a->states=NULL;
 a->tags=NULL;
@@ -154,60 +170,67 @@ return a;
 }
 
 
-//
-// free the autoamata memory
-//
-void free_fst2(Fst2* a) {
+/**
+ * Frees a fst2. The function assumes that if 'fst2' is not NULL, all
+ * its field are neither NULL nor already freed.
+ */
+void free_fst2(Fst2* fst2) {
+if (fst2==NULL) return;
 int i;
-for (i=0;i<a->number_of_states;i++) {
-  free_etat(a->states[i]);
+for (i=0;i<fst2->number_of_states;i++) {
+  free_Fst2State(fst2->states[i]);
 }
-free(a->states);
-for (i=0;i<a->number_of_tags;i++)
-  free_etiquette(a->tags[i]);
-free(a->tags);
-if (a->graph_names!=NULL) {
-   for (i=0;i<a->number_of_graphs;i++) {
-     if (a->graph_names[i]!=NULL) free(a->graph_names[i]);
+free(fst2->states);
+for (i=0;i<fst2->number_of_tags;i++)
+  free_Fst2Tag(fst2->tags[i]);
+free(fst2->tags);
+if (fst2->graph_names!=NULL) {
+   for (i=0;i<fst2->number_of_graphs;i++) {
+     if (fst2->graph_names[i]!=NULL) free(fst2->graph_names[i]);
    }
-   free(a->graph_names);
+   free(fst2->graph_names);
 }
-free(a->initial_states);
-free(a->number_of_states_by_graphs);
-liberer_liste_variables(a->variables);
-free(a);
-}
-
-
-//
-// readjust the size of arrays
-//
-void resize(Fst2* a) {
-  // +1 because of numeration does not start at 0 but 1
-int n_etats=a->number_of_states+1;
-int n_graphes=a->number_of_graphs+1;
-int n_etiq=a->number_of_tags+1;
-a->states=(Fst2State*)realloc(a->states,n_etats*sizeof(Fst2State));
-a->tags=(Fst2Tag*)realloc(a->tags,n_etiq*sizeof(Fst2Tag));
-// we count +1 because we start the graph numerotation at 1
-a->initial_states=(int*)realloc(a->initial_states,(1+n_graphes)*sizeof(int));
-if (a->graph_names!=NULL) {
-   // we reallocate only if there is something
-   a->graph_names=(unichar**)realloc(a->graph_names,n_graphes*sizeof(unichar*));
-}
-a->number_of_states_by_graphs=(int*)realloc(a->number_of_states_by_graphs,n_graphes*sizeof(int));
+free(fst2->initial_states);
+free(fst2->number_of_states_by_graphs);
+free_variable_list(fst2->variables);
+free(fst2);
 }
 
 
-//
-// cree et renvoie une nouvelle etiquette
-//
-Fst2Tag nouvelle_etiquette_mat() {
+/**
+ * Readjusts the size of the arrays, because arrays have a
+ * big default size.
+ */
+void resize(Fst2* fst2) {
+#warning replace resize by calls to realloc with size*2
+/*
+ * NOTE: there were +1 on fst2->number_of_states and fst2->number_of_tags,
+ *       but I removed them because it seemed to be unnecessary.
+ *       S. Paumier
+ */
+fst2->states=(Fst2State*)realloc(fst2->states,fst2->number_of_states*sizeof(Fst2State));
+fst2->tags=(Fst2Tag*)realloc(fst2->tags,fst2->number_of_tags*sizeof(Fst2Tag));
+/*
+ * We add +1 because we start the graph numerotation at 1 
+ */
+int n=fst2->number_of_graphs+1;
+fst2->initial_states=(int*)realloc(fst2->initial_states,n*sizeof(int));
+if (fst2->graph_names!=NULL) {
+   /* We reallocate only if there is something */
+   fst2->graph_names=(unichar**)realloc(fst2->graph_names,n*sizeof(unichar*));
+}
+fst2->number_of_states_by_graphs=(int*)realloc(fst2->number_of_states_by_graphs,n*sizeof(int));
+}
+
+
+/**
+ * Allocates, initializes and returns a new tag
+ */
+Fst2Tag new_Fst2Tag() {
 Fst2Tag e;
 e=(Fst2Tag)malloc(sizeof(struct fst2Tag));
 if (e==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction nouvelle_etiquette_mat\n");
-  exit(1);
+  fatal_error("Not enough memory in new_Fst2Tag\n");
 }
 e->number=0;
 e->control=0;
@@ -219,191 +242,195 @@ e->codes=NULL;
 e->matching_tokens=NULL;
 e->number_of_matching_tokens=0;
 e->compound_pattern=NO_COMPOUND_PATTERN;
-
 /* $CD$ begin */
-e -> contentGF = NULL;
-e -> entryMasterGF = -1;
+e->contentGF = NULL;
+e->entryMasterGF = -1;
 /* $CD$ end   */
-
 return e;
 }
 
 
-
-//
-// gere les etiquettes <...> (<MOT>, <avoir>, <avoir.V>, <eu,avoir.V>, <V>)
-//
-void decomposer_angles_etiquette_fst2(Fst2Tag e) {
-unichar temp[1000];
+/**
+ * Analyzes the input of the tag of the form "<...>" . If some fields
+ * need to be filled, the function fills them.
+ * 
+ * Examples: <be.V:P> => lemma="be", codes="V:P"
+ *           <!MOT>   => negation=true
+ */
+void analyze_tag_with_angles(Fst2Tag e) {
+unichar temp[2048];
 int i,j;
 j=0;
 i=1;
 if (e->input[i]=='!') {
   i++;
+  /* We set the negation bit if there is the negation sign '!' */
   e->control=(char)(e->control|NEGATION_TAG_BIT_MASK);
 }
-while ((e->input[i]!=',')&&(e->input[i]!='.')&&(e->input[i]!='>'))
+/* Then, we look for a separator, copying what we find in 'temp' */
+while ((e->input[i]!=',')&&(e->input[i]!='.')&&(e->input[i]!='>')) {
   temp[j++]=e->input[i++];
+}
 temp[j]='\0';
-// cas <avoir>, <V> ou <MOT>
+/*
+ * If we find a closing angle, we have three cases: <build>, <V> or <MOT>
+ */
 if (e->input[i]=='>') {
-  if (!u_strcmp_char(temp,"MOT")) {
-    return;
-  }
-  if (!u_strcmp_char(temp,"DIC")) {
-    return;
-  }
-  if (!u_strcmp_char(temp,"MAJ")) {
-    return;
-  }
-  if (!u_strcmp_char(temp,"MIN")) {
-    return;
-  }
-  if (!u_strcmp_char(temp,"PRE")) {
-    return;
-  }
-  if (!u_strcmp_char(temp,"NB")) {
-    return;
-  }
-  
-  /* $CD$ begin */
-  if (!u_strcmp_char(temp,"TOKEN")) {
-    return;
-  }
-  /* $CD$ end   */
-  
-
-  // on a <avoir> ou <V>
-  e->inflected=(unichar*)malloc(sizeof(unichar)*(j+1));
-  if (e->inflected==NULL) {
-    fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
-    exit(1);
-  }
-  u_strcpy(e->inflected,temp);
-  return;
+	/* If we have a meta symbol, we do nothing */
+	if (!u_strcmp_char(temp,"MOT")) {return;}
+	if (!u_strcmp_char(temp,"DIC")) {return;}
+	if (!u_strcmp_char(temp,"MAJ")) {return;}
+	if (!u_strcmp_char(temp,"MIN")) {return;}
+	if (!u_strcmp_char(temp,"PRE")) {return;}
+	if (!u_strcmp_char(temp,"NB")) {return;}
+	/* $CD$ begin */
+	if (!u_strcmp_char(temp,"TOKEN")) {return;}
+	/* $CD$ end   */
+	/* 
+	 * If we have a tag like <build> or <V>, we copy the content (build or V)
+	 * into the inflected field of the tag. This is a pure convention that we use 
+	 * because at this step, we cannot decide if we have a lemma or a grammatical
+	 * code. This problem is supposed to be resolved by a later function.
+	 */
+	e->inflected=u_strdup(temp);
+	return;
 }
-// cas <eu,avoir.V>
 if (e->input[i]==',') {
-  e->inflected=(unichar*)malloc(sizeof(unichar)*(j+1));
-  if (e->inflected==NULL) {
-    fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
-    exit(1);
-  }
-  u_strcpy(e->inflected,temp);
-  i++;
-  j=0;
-  while ((e->input[i]!='.')&&(e->input[i]!='>'))
-    temp[j++]=e->input[i++];
-  temp[j]='\0';
-  if (e->input[i]=='>') {
-  	char err[1000];
-  	u_to_char(err,e->input);
-    fprintf(stderr,"Invalid label %s\n",err);
-    exit(1);
-  }
-  e->lemma=(unichar*)malloc(sizeof(unichar)*(j+1));
-  if (e->lemma==NULL) {
-    fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
-    exit(1);
-  }
-  u_strcpy(e->lemma,temp);
-  i++;
-  j=0;
-  while (e->input[i]!='>')
-    temp[j++]=e->input[i++];
-  temp[j]='\0';
-  e->codes=(unichar*)malloc(sizeof(unichar)*(j+1));
-  if (e->codes==NULL) {
-    fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
-    exit(1);
-  }
-  u_strcpy(e->codes,temp);
-  return;
+	/*
+	 * If we find a comma, we have a tag like <built,build.V> and we copy the
+	 * sequence before the comma in the inflected field.
+	 */
+  	e->inflected=u_strdup(temp);
+	i++;
+	j=0;
+	/* Then we look for the next separator */
+	while ((e->input[i]!='.')&&(e->input[i]!='>')) {
+    	temp[j++]=e->input[i++];
+	}
+	temp[j]='\0';
+	/* A closing angle is an error since tags like <built,build> are not allowed */
+	if (e->input[i]=='>') {
+		/* We try to convert the invalid tag into ASCII to print it
+		 * in the error message */
+		char err[1024];
+		u_to_char(err,e->input);
+		fatal_error("Invalid label %s\n",err);
+	}
+	/* We copy the part between the comma and the point into the lemma field */
+	e->lemma=u_strdup(temp);
+	i++;
+	j=0;
+	while (e->input[i]!='>') {
+		temp[j++]=e->input[i++];
+	}
+	temp[j]='\0';
+	/* And we copy the remaining part of the tag (without the closing angle)
+	 * into the codes field */
+	e->codes=u_strdup(temp);
+	return;
 }
-// cas <avoir.N>
-e->lemma=(unichar*)malloc(sizeof(unichar)*(j+1));
-if (e->lemma==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
-  exit(1);
-}
-u_strcpy(e->lemma,temp);
+/*
+ * If we find a point, we have a tag like <build.V>, so we copy the sequence
+ * before the point into the lemma field.
+ */
+e->lemma=u_strdup(temp);
 i++;
 j=0;
-while (e->input[i]!='>')
-  temp[j++]=e->input[i++];
+while (e->input[i]!='>') {
+	temp[j++]=e->input[i++];
+}
 temp[j]='\0';
-e->codes=(unichar*)malloc(sizeof(unichar)*(j+1));
-if (e->codes==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
-  exit(1);
-}
-u_strcpy(e->codes,temp);
-return;
+/* And we copy the remaining part of the tag (without the closing angle)
+ * into the codes field */
+e->codes=u_strdup(temp);
 }
 
 
-
-//
-// gere les etiquettes  {...}
-//
-void decomposer_accolades_etiquette_fst2(Fst2Tag e) {
-unichar temp[1000];
-char err[1000];
+/**
+ * Analyzes the input of the tag of the form "{...}", different from the
+ * sentence delimiter "{S}". At the opposite of the tags of the form "<...>",
+ * a tag between round brackets must be of the form "{built,build.V}".
+ */
+void analyze_tag_with_round_brackets(Fst2Tag e) {
+unichar temp[2048];
+char err[2048];
 int i,j;
 j=0;
 i=1;
+/* We look for the comma */
 while ((e->input[i]!=',')&&(e->input[i]!='}')) {
-  temp[j++]=e->input[i++];
+	temp[j++]=e->input[i++];
 }
 if (e->input[i]=='}') {
-  u_to_char(err,e->input);
-  fprintf(stderr,"Invalid label %s: a tag must contain a valid DELAF line like {today,today.ADV}\n",err);
-  exit(1);
+	/* If we find the closing bracket, it is an error */
+	u_to_char(err,e->input);
+	fatal_error("Invalid label %s: a tag must contain a valid DELAF line like {today,today.ADV}\n",err);
 }
 temp[j]='\0';
-e->inflected=(unichar*)malloc(sizeof(unichar)*(j+1));
-u_strcpy(e->inflected,temp);
+/* We copy the inflected form and we look for the point */
+e->inflected=u_strdup(temp);
 i++;
 if (e->input[i]=='.') {
-   e->lemma=(unichar*)malloc(sizeof(unichar)*(j+1));
-   u_strcpy(e->lemma,temp);
+	/* If the lemma is an empty sequence, it means that the 
+	 * lemma is identical to the inflected form, so we copy it*/
+   e->lemma=u_strdup(e->inflected);
 }
 else {
-   j=0;
-   while ((e->input[i]!='.')&&(e->input[i]!='}')) {
-      temp[j++]=e->input[i++];
-   }
-   if (e->input[i]=='}') {
-      u_to_char(err,e->input);
-      fprintf(stderr,"Invalid label %s: a tag must contain a valid DELAF line like {today,today.ADV}\n",err);
-      exit(1);
-   }
-   temp[j]='\0';
-   e->lemma=(unichar*)malloc(sizeof(unichar)*(j+1));
-   u_strcpy(e->lemma,temp);
+	j=0;
+	/* If the lemma is not empty, we copy it into temp */
+	while ((e->input[i]!='.')&&(e->input[i]!='}')) {
+		temp[j++]=e->input[i++];
+	}
+	temp[j]='\0';
+	if (e->input[i]=='}') {
+		/* If we find the closing bracket, it is an error */
+		u_to_char(err,e->input);
+		fatal_error("Invalid label %s: a tag must contain a valid DELAF line like {today,today.ADV}\n",err);
+	}
+	e->lemma=u_strdup(temp);
 }
 i++;
 j=0;
+/* Finally, we copy the remaining sequence (without the closing bracket) into
+ * the lemma field */
 while (e->input[i]!='}') {
-   temp[j++]=e->input[i++];
+	temp[j++]=e->input[i++];
 }
 temp[j]='\0';
-e->codes=(unichar*)malloc(sizeof(unichar)*(j+1));
-u_strcpy(e->codes,temp);
+e->codes=u_strdup(temp);
 }
 
 
-void creer_etiquette_variable(int position,unichar mot[]) {
-int L=u_strlen(mot);
-Fst2Tag e=nouvelle_etiquette_mat();
-e->input=(unichar*)malloc(L*sizeof(unichar));
-for (int i=1;i<L-1;i++)
-    e->input[i-1]=mot[i];
-e->input[L-2]='\0';
-if (mot[L-1]=='(') e->control=START_VAR_TAG_BIT_MASK;
-else e->control=END_VAR_TAG_BIT_MASK;
-liste_des_variables=ajouter_variable(e->input,liste_des_variables);
-etiquette_fst2[position]=e;
+/**
+ * This function creates a tag a variable declaration of the form
+ * "$a(" or "$a)", and inserts it at the given position in the 
+ * tag array of the given fst2.
+ */
+void create_variable_tag(int position,unichar* input,Fst2* fst2) {
+int length=u_strlen(input);
+Fst2Tag e=new_Fst2Tag();
+/*
+ * We copy the variable name into the input field
+ * length-1 = length - 2(ignoring '$' and '('or ')') + 1(for '\0') 
+ */
+e->input=(unichar*)malloc((length-1)*sizeof(unichar));
+for (int i=1;i<=length;i++) {
+	e->input[i-1]=input[i];
+}
+e->input[length-1]='\0';
+/*
+ * And we indicate if it is a variable start or end
+ */
+if (input[length-1]=='(') {e->control=START_VAR_TAG_BIT_MASK;}
+else {e->control=END_VAR_TAG_BIT_MASK;}
+/*
+ * We add this variable to the variable list of the fst2
+ */
+fst2->variables=add_variable_to_list(e->input,fst2->variables);
+/*
+ * And we insert the tag into the tag array  of the fst2
+ */
+fst2->tags[position]=e;
 }
 
 
@@ -411,25 +438,18 @@ etiquette_fst2[position]=e;
 //
 // insere une etiquette dans le tableau
 //
-/* $CD$ begin */
-//void creer_etiquette_fst2(int position,unichar mot[],unichar transduction[],int respect_min_maj) {
-void creer_etiquette_fst2(int position, 
-                          unichar mot[], unichar contentGF[], unichar transduction[],
-                          int respect_min_maj) {
-/* $CD$ end   */
+void creer_etiquette_fst2(int position,unichar* mot,unichar* contentGF,unichar* transduction,
+                          int respect_min_maj,Fst2* fst2) {
 
 Fst2Tag e;
 int L=u_strlen(mot);
 if (mot[0]=='$' && L>2 && (mot[L-1]=='(' || mot[L-1]==')')) {
    // on est dans le cas d'une variable $a( ou $a)
-   creer_etiquette_variable(position,mot);
+   create_variable_tag(position,mot,fst2);
    return;
 }
 
-e=nouvelle_etiquette_mat();
-if (e==NULL) {
-   printf("oops");
-}
+e=new_Fst2Tag();
 e->input=(unichar*)malloc((u_strlen(mot)+1)*sizeof(unichar));
 if (e->input==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction creer_etiquette_fst2\n");
@@ -492,7 +512,7 @@ if (mot[0]=='{') {
   else {
     // on est soit dans le cas {....} soit dans le cas d'un char { seul
     if (mot[1]!='\0') {
-       decomposer_accolades_etiquette_fst2(e);
+       analyze_tag_with_round_brackets(e);
     }
   }
   etiquette_fst2[position]=e;
@@ -504,7 +524,7 @@ if ((mot[0]!='<') || (mot[1]=='\0')) {
   return;
 }
 // on est forcement dans le cas <...>
-decomposer_angles_etiquette_fst2(e);
+analyze_tag_with_angles(e);
 etiquette_fst2[position]=e;
 }
 
@@ -512,7 +532,7 @@ etiquette_fst2[position]=e;
 //
 // ajoute les etiquettes correspondante a s
 //
-void ajouter_etiquette_fst2(unichar s[])
+void ajouter_etiquette_fst2(unichar s[],Fst2* fst2)
 {
   unichar mot[500],transd[500];
   int i=1,j=0,k=0;
@@ -571,7 +591,7 @@ if (mot[i] != '\0') {
 if (transitionContent[0] == '\0') u_strcpy_char(transitionContent, "<TOKEN>");
 
 creer_etiquette_fst2(etiquette_courante, 
-                     transitionContent, filterContent, transd, respect_min_maj);
+                     transitionContent, filterContent, transd, respect_min_maj,fst2);
 /* $CD$ end   */
 
 etiquette_courante++;
@@ -582,7 +602,7 @@ etiquette_courante++;
 //
 // lit les etiquettes des transitions
 //
-void lire_etiquettes_fst2(FILE *f) {
+void lire_etiquettes_fst2(FILE *f,Fst2* fst2) {
 int i;
 unichar c;
 unichar mot[10000];
@@ -594,7 +614,7 @@ while (c!='f') {
   } while ((c=(unichar)u_fgetc(f))!='\n');
   while (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@'));
   mot[i]='\0';
-  ajouter_etiquette_fst2(mot);
+  ajouter_etiquette_fst2(mot,fst2);
 }
 nombre_etiquettes_de_depart=etiquette_courante;
 nombre_etiquettes_fst2=etiquette_courante;
@@ -605,7 +625,7 @@ nombre_etiquettes_fst2=etiquette_courante;
 //
 // lit les etiquettes des transitions jusqu'a l'etiquette d'indice ETIQ_MAX
 //
-void lire_etiquettes_fst2_under_limit(FILE *f,int ETIQ_MAX) {
+void lire_etiquettes_fst2_under_limit(FILE *f,int ETIQ_MAX,Fst2* fst2) {
 int i;
 unichar c;
 unichar mot[10000];
@@ -619,7 +639,7 @@ while (c!='f' && k<=ETIQ_MAX) {
   } while ((c=(unichar)u_fgetc(f))!='\n');
   while (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@')) {}
   mot[i]='\0';
-  ajouter_etiquette_fst2(mot);
+  ajouter_etiquette_fst2(mot,fst2);
 }
 nombre_etiquettes_de_depart=etiquette_courante;
 nombre_etiquettes_fst2=etiquette_courante;
@@ -951,50 +971,14 @@ nombre_etats_fst2=etat_courant;
 
 
 
-//
-// charge le FST2
-//
-void charger_graphe_fst2(FILE *f,Fst2State graphe_fst2_[],Fst2Tag etiquette_[],
-                         int *nombre_graphe_fst2s_,int *nombre_etats_,int *nombre_etiquettes_,
-                         int **debut_graphe_fst2_,unichar ***nom_graphe_,int noms,
-                         int **nombre_etats_par_grf_) {
-nombre_graphes_fst2=u_read_int(f);
-if (nombre_graphes_fst2==0) {
-   fprintf(stderr,"Error: empty FST2\n");
-   return;
-}
-graphe_fst2=graphe_fst2_;
-etiquette_fst2=etiquette_;
-debut_graphe_fst2=*debut_graphe_fst2_;
-initialiser_variables_fst2();
-nombre_etats_par_grf=*nombre_etats_par_grf_;
-if (noms) {
-   nom_graphe=*nom_graphe_;
-   lire_etats_fst2_avec_noms(f);
-   *nom_graphe_=nom_graphe;
-}
-else {
-   lire_etats_fst2(f);
-}
-lire_etiquettes_fst2(f);
-*nombre_etats_par_grf_=nombre_etats_par_grf;
-*nombre_graphe_fst2s_=nombre_graphes_fst2;
-*nombre_etats_=nombre_etats_fst2;
-*nombre_etiquettes_=nombre_etiquettes_fst2;
-*debut_graphe_fst2_=debut_graphe_fst2;
-}
-
-
-
-
 
 
 //
-// loads an fst2 and returns its representation in an Automate_fst2 structure
+// loads an fst2 and returns its representation in a Fst2 structure
 //
 Fst2* load_fst2(char *file,int noms) {
 FILE *f;
-Fst2* a=new_Automate_fst2();
+Fst2* fst2=new_Fst2();
 f=u_fopen(file,U_READ);
 if (f==NULL) {
   fprintf(stderr,"Cannot open the file %s\n",file);
@@ -1005,32 +989,32 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-a->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=a->states;
-etiquette_fst2=a->tags;
-debut_graphe_fst2=a->initial_states;
-liste_des_variables=a->variables;
+fst2->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
+fst2->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
+graphe_fst2=fst2->states;
+etiquette_fst2=fst2->tags;
+debut_graphe_fst2=fst2->initial_states;
+liste_des_variables=fst2->variables;
 initialiser_variables_fst2();
-nombre_etats_par_grf=a->number_of_states_by_graphs;
+nombre_etats_par_grf=fst2->number_of_states_by_graphs;
 if (noms) {
-   nom_graphe=a->graph_names;
+   nom_graphe=fst2->graph_names;
    lire_etats_fst2_avec_noms(f);
-   a->graph_names=nom_graphe;
+   fst2->graph_names=nom_graphe;
 }
 else {
    lire_etats_fst2(f);
 }
-a->number_of_states_by_graphs=nombre_etats_par_grf;
-lire_etiquettes_fst2(f);
+fst2->number_of_states_by_graphs=nombre_etats_par_grf;
+lire_etiquettes_fst2(f,fst2);
 u_fclose(f);
-a->number_of_graphs=nombre_graphes_fst2;
-a->number_of_states=nombre_etats_fst2;
-a->number_of_tags=nombre_etiquettes_fst2;
-a->initial_states=debut_graphe_fst2;
-a->variables=liste_des_variables;
-resize(a);
-return a;
+fst2->number_of_graphs=nombre_graphes_fst2;
+fst2->number_of_states=nombre_etats_fst2;
+fst2->number_of_tags=nombre_etiquettes_fst2;
+fst2->initial_states=debut_graphe_fst2;
+fst2->variables=liste_des_variables;
+resize(fst2);
+return fst2;
 }
 
 
@@ -1038,10 +1022,10 @@ return a;
 //
 // loads one sentence of an fst2 and returns its representation in an Automate_fst2 structure
 //
-Fst2* load_one_sentence_of_fst2(char *file,int SENTENCE,FILE* txt) {
+Fst2* load_one_sentence_of_fst2(char *file,int SENTENCE,FILE* txt,Fst2* fst2) {
 FILE *f;
 int ETIQ_MAX;
-Fst2* a=new_Automate_fst2();
+Fst2* a=new_Fst2();
 f=u_fopen(file,U_READ);
 if (f==NULL) {
   fprintf(stderr,"Cannot open the file %s\n",file);
@@ -1063,7 +1047,7 @@ nombre_etats_par_grf=a->number_of_states_by_graphs;
 nom_graphe=a->graph_names;
 lire_etats_fst2_avec_noms_for_one_sentence(f,SENTENCE,&ETIQ_MAX,txt);
 a->number_of_states_by_graphs=nombre_etats_par_grf;
-lire_etiquettes_fst2_under_limit(f,ETIQ_MAX);
+lire_etiquettes_fst2_under_limit(f,ETIQ_MAX,fst2);
 u_fclose(f);
 a->graph_names=nom_graphe;
 a->number_of_graphs=nombre_graphes_fst2;

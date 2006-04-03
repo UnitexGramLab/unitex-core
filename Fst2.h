@@ -45,7 +45,8 @@ extern int etiquette_courante;
  * This structure represents a tag of a .fst2 file.
  */
 struct fst2Tag {
-	/* number of the tag in the .fst2 */
+	/* Field used to indicate the nature of the tag. The possible values are
+	 * described in LocateConstants.h */
 	int number;
 	
 	/* This control byte is used to set information about the tag with
@@ -63,6 +64,9 @@ struct fst2Tag {
 	 * 
 	 * NOTE: if the input only contains a morphological filter like "<<^in>>",
 	 *       the default sequence "<TOKEN>" will be copied in the 'input' field.
+	 * 
+	 * NOTE 2: if the tag is a variable declaration like "$a(" or "$a)", this field
+	 *         only contains the name of the variable (here "a").
 	 */
 	unichar* input;
 	
@@ -149,9 +153,7 @@ struct fst2State {
 	 */
 	unsigned char control;
 	
-	/*
-	 * Transitions outgoing from this state.
-	 */
+	/* Transitions outgoing from this state */
 	struct fst2Transition* transitions;
 };
 typedef struct fst2State* Fst2State;
@@ -161,9 +163,7 @@ typedef struct fst2State* Fst2State;
  * This structure represents a transition list in a fst2
  */
 struct fst2Transition {
-	/*
-	 * Number of the transition tag.
-	 */
+	/* Number of the transition tag */
 	int tag_number;
 	
 	/*
@@ -175,9 +175,7 @@ struct fst2Transition {
 	 */
 	int state_number;
 	
-	/*
-	 * Next transition of the list.
-	 */
+	/* Next transition of the list */
 	struct fst2Transition* next;
 };
 typedef struct fst2Transition* Fst2Transition;
@@ -192,26 +190,18 @@ typedef struct fst2Transition* Fst2Transition;
  * that use the Fst2 library do not use variables.
  */
 struct variable_list {
-	/*
-	 * Name of the variable.
-	 */
+	/* Name of the variable */
 	unichar* name;
 	
-	/*
-	 * Starting position of the variable in the text, -1 if the starting position
-	 * of the variable has not been defined.
-	 */
+	/* Starting position of the variable in the text, -1 if the starting position
+	 * of the variable has not been defined */
 	int start;
 	
-	/*
-	 * Ending position of the variable in the text, -1 if the ending position
-	 * of the variable has not been defined.
-	 */
+	/* Ending position of the variable in the text, -1 if the ending position
+	 * of the variable has not been defined */
 	int end;
 	
-	/*
-	 * Next variable in the list.
-	 */
+	/* Next variable in the list */
 	struct variable_list* next;
 };
 
@@ -255,20 +245,17 @@ struct fst2 {
 typedef struct fst2 Fst2;
 
 
-//----------PROTOTYPES-------------------------------------------
-void charger_graphe_fst2(FILE*,Fst2State[],Fst2Tag[],int*,int*,int*,int**,
-                         unichar***,int,int**);
-
 Fst2Transition nouvelle_transition_mat();
 Fst2* load_fst2(char*,int);
 void free_fst2(Fst2*);
 struct variable_list* get_variable(unichar*,struct variable_list*);
-Fst2* load_one_sentence_of_fst2(char*,int,FILE*);
+Fst2* load_one_sentence_of_fst2(char*,int,FILE*,Fst2*);
 void unprotect_characters_in_fst2_tags(Fst2*);
-void free_transition(struct fst2Transition*);
+void free_Fst2Transition(Fst2Transition);
 
 int is_final_state(Fst2State);
 void set_final_state(Fst2State,int);
 int is_initial_state(Fst2State);
 void set_initial_state(Fst2State,int);
+
 #endif

@@ -18,10 +18,10 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-
 //---------------------------------------------------------------------------
-
 #include "VerifierRecursion.h"
+#include "Error.h"
+//---------------------------------------------------------------------------
 
 
 
@@ -263,68 +263,6 @@ return 0;
 }
 
 
-//
-// renvoie 1 si aucune boucle infinie n'est trouve dans le fst2 nom_fst2, 0 sinon
-//
-int pas_de_recursion_old(char *nom_fst2) {
-FILE *f;
-Fst2State* graphe;
-Fst2Tag* etiquette;
-int* debut_graphe;
-int* nombre_etats_par_grf;
-int* verifie;
-unichar** nom_graphe;
-int nombre_graphes;
-int nombre_etats;
-int nombre_etiquettes;
-int i,ret,retour;
-
-f=u_fopen(nom_fst2,U_READ);
-if (f==NULL) {
-  fprintf(stderr,"Cannot open the graph %s\n",nom_fst2);
-  return 0;
-}
-graphe=(Fst2State*)malloc(sizeof(Fst2State)*MAX_FST2_STATES);
-etiquette=(Fst2Tag*)malloc(sizeof(Fst2Tag)*MAX_FST2_TAGS);
-if (graphe==NULL || etiquette==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
-  exit(1);
-}
-charger_graphe_fst2(f,graphe,etiquette,&nombre_graphes,&nombre_etats,
-                         &nombre_etiquettes,&debut_graphe,&nom_graphe,1,&nombre_etats_par_grf);
-u_fclose(f);
-//---------------------------------
-verifie=(int*)malloc(sizeof(int)*(nombre_graphes+1));
-for (i=0;i<nombre_graphes+1;i++)
-  verifie[i]=0;
-for (i=0;i<nombre_etiquettes;i++)
-  controler_epsilon_etiquette(etiquette[i]);
-
-retour=0;
-
-for (i=1;i<nombre_graphes+1;i++) {
-  if (verifie[i]==0) {
-    ret=chercher_recursion(i,NULL,debut_graphe,nom_graphe,graphe,etiquette,verifie);
-    retour=ret||retour;
-  }
-}
-
-for (i=1;i<nombre_graphes+1;i++) {
-  ret=chercher_boucle_par_E(i,debut_graphe,nom_graphe,graphe,etiquette,verifie,nombre_etats_par_grf);
-  retour=ret||retour;
-}
-//--------------------------------------------------
-
-liberer_graphe_fst2(nombre_etats,nombre_etiquettes,debut_graphe,graphe,etiquette);
-for (i=1;i<=nombre_graphes;i++)
-  free(nom_graphe[i]);
-free(nom_graphe);
-free(verifie);
-free(nombre_etats_par_grf);
-free(graphe);
-free(etiquette);
-return !retour;
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -848,24 +786,28 @@ for (i=0;i<nombre_etats;i++) {
 // renvoie 1 si aucune boucle infinie n'est trouve dans le fst2 nom_fst2, 0 sinon
 //
 int pas_de_recursion(char *nom_fst2) {
-FILE *f;
+/*FILE *f;
 Fst2State* graphe;
-Fst2Tag* etiquette;
+Fst2Tag* etiquette;*/
 Liste_conditions* conditions;
 Liste_conditions* conditions_pour_etat;
-int* debut_graphe;
-int* nombre_etats_par_grf;
+/*int* debut_graphe;
+int* nombre_etats_par_grf;*/
 int* verifie;
-unichar** nom_graphe;
+/*unichar** nom_graphe;
 int nombre_graphes;
 int nombre_etats;
-int nombre_etiquettes;
+int nombre_etiquettes;*/
 int i,j;
 int ERROR=0;
 
+Fst2* fst2=load_fst2(nom_fst2,1);
+if (fst2==NULL) {
+	fatal_error("");
+}
 
 printf("Recursion detection started\n");
-f=u_fopen(nom_fst2,U_READ);
+/*f=u_fopen(nom_fst2,U_READ);
 if (f==NULL) {
   fprintf(stderr,"Cannot open the graph %s\n",nom_fst2);
   return 0;
@@ -880,37 +822,41 @@ charger_graphe_fst2(f,graphe,etiquette,&nombre_graphes,&nombre_etats,
                          &nombre_etiquettes,&debut_graphe,&nom_graphe,1,&nombre_etats_par_grf);
 
 u_fclose(f);
+*/
+
 //---------------------------------
-verifie=(int*)malloc(sizeof(int)*(nombre_graphes+1));
-conditions=(Liste_conditions*)malloc(sizeof(Liste_conditions)*(nombre_graphes+1));
+verifie=(int*)malloc(sizeof(int)*(fst2->number_of_graphs+1));
+conditions=(Liste_conditions*)malloc(sizeof(Liste_conditions)*(fst2->number_of_graphs+1));
 if (verifie==NULL || conditions==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
   exit(1);
 }
 
-for (i=0;i<nombre_graphes+1;i++) {
+for (i=0;i<fst2->number_of_graphs+1;i++) {
   verifie[i]=OK;
   conditions[i]=NULL;
 }
-for (i=0;i<nombre_etiquettes;i++)
-  controler_epsilon_etiquette(etiquette[i]);
+for (i=0;i<fst2->number_of_tags;i++)
+  controler_epsilon_etiquette(fst2->tags[i]);
 
 
 // on cherche les graphes qui reconnaissent <E> avec ou sans condition
-for (i=1;i<nombre_graphes+1;i++) {
-  conditions_pour_etat=(Liste_conditions*)malloc(sizeof(Liste_conditions)*nombre_etats_par_grf[i]);
+for (i=1;i<fst2->number_of_graphs+1;i++) {
+  conditions_pour_etat=(Liste_conditions*)malloc(sizeof(Liste_conditions)*fst2->number_of_states_by_graphs[i]);
   if (conditions_pour_etat==NULL) {
     fprintf(stderr,"Probleme d'allocation memoire\n");
     exit(1);
   }
-  for (j=0;j<nombre_etats_par_grf[i];j++)
+  for (j=0;j<fst2->number_of_states_by_graphs[i];j++)
     conditions_pour_etat[j]=NULL;
-  verifie[i]=explorer_graphe_E(debut_graphe[i],debut_graphe[i],graphe,etiquette,i,nom_graphe,conditions_pour_etat,&conditions[i]);
+  verifie[i]=explorer_graphe_E(fst2->initial_states[i],fst2->initial_states[i],
+  								fst2->states,fst2->tags,i,fst2->graph_names,
+  								conditions_pour_etat,&conditions[i]);
   if (conditions[i]!=NULL)
     liberer_liste_conditions(conditions[i]);
   conditions[i]=conditions_pour_etat[0];
   conditions_pour_etat[0]=NULL;
-  for (j=1;j<nombre_etats_par_grf[i];j++)
+  for (j=1;j<fst2->number_of_states_by_graphs[i];j++)
     liberer_liste_conditions(conditions_pour_etat[j]);
   free(conditions_pour_etat);
 }
@@ -918,38 +864,46 @@ for (i=1;i<nombre_graphes+1;i++) {
 
 printf("Resolving <E> conditions\n");
 i=1;
-while (i) resoudre_conditions(conditions,nombre_graphes,graphe,debut_graphe,&i,nom_graphe);
+while (i) resoudre_conditions(conditions,fst2->number_of_graphs,
+							fst2->states,fst2->initial_states,&i,
+							fst2->graph_names);
 
-if (graphe[debut_graphe[1]]->control&32) {
+if (fst2->states[fst2->initial_states[1]]->control&32) {
   // si le graphe principal reconnait <E>
   char temp[2000];
-  u_to_char(temp,nom_graphe[1]);
+  u_to_char(temp,fst2->graph_names[1]);
   fprintf(stderr,"ERROR: the main graph %s recognizes <E>\n",temp);
   ERROR=1;
 }
 
 if (!ERROR) {
   printf("Checking <E> dependancies\n");
-  for (i=1;(!ERROR) && i<nombre_graphes+1;i++) {
-    ERROR=ERROR|check_problemes_du_graphe(i,graphe,debut_graphe,conditions,NULL,nom_graphe);
+  for (i=1;(!ERROR) && i<fst2->number_of_graphs+1;i++) {
+    ERROR=ERROR|check_problemes_du_graphe(i,fst2->states,fst2->initial_states,
+    									conditions,NULL,fst2->graph_names);
   }
 }
-nettoyer_controle(graphe,debut_graphe,verifie,nombre_graphes,nombre_etats);
+nettoyer_controle(fst2->states,fst2->initial_states,verifie,fst2->number_of_graphs,
+					fst2->number_of_states);
 if (!ERROR) {
   printf("Looking for <E> loops\n");
-  for (i=1;!ERROR && i<nombre_graphes+1;i++) {
-    ERROR=chercher_boucle_par_E(i,debut_graphe,nom_graphe,graphe,etiquette,verifie,nombre_etats_par_grf);
+  for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
+    ERROR=chercher_boucle_par_E(i,fst2->initial_states,fst2->graph_names,
+    							fst2->states,fst2->tags,verifie,fst2->number_of_states_by_graphs);
   }
 }
-nettoyer_controle(graphe,debut_graphe,NULL,nombre_graphes,nombre_etats);
+nettoyer_controle(fst2->states,fst2->initial_states,NULL,fst2->number_of_graphs,
+					fst2->number_of_states);
 if (!ERROR) {
   printf("Looking for infinite recursions\n");
-  for (i=1;!ERROR && i<nombre_graphes+1;i++) {
-    ERROR=chercher_recursion(i,NULL,debut_graphe,nom_graphe,graphe,etiquette,verifie);
+  for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
+    ERROR=chercher_recursion(i,NULL,fst2->initial_states,fst2->graph_names,
+    						fst2->states,fst2->tags,verifie);
   }
 }
 
-
+free_fst2(fst2);
+/*
 liberer_graphe_fst2(nombre_etats,nombre_etiquettes,debut_graphe,graphe,etiquette);
 for (i=1;i<=nombre_graphes;i++) {
   free(nom_graphe[i]);
@@ -960,7 +914,7 @@ free(verifie);
 free(conditions);
 free(nombre_etats_par_grf);
 free(graphe);
-free(etiquette);
+free(etiquette);*/
 printf("Recursion detection completed\n");
 if (ERROR) return RECURSION;
 else return AUCUNE_RECURSION;

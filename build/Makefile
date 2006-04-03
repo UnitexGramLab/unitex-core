@@ -138,7 +138,7 @@ endif
 
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = IOBuffer.o CheckDic.o unicode.o FileName.o DELA.o Alphabet.o String_hash.o\
-				Copyright.o
+				Copyright.o Error.o
 
 COMPRESS      = Compress
 COMPRESS_OBJS = IOBuffer.o Compress.o Copyright.o unicode.o DELA.o DictionaryTree.o Alphabet.o\
@@ -162,7 +162,7 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_to
 				Facteurs_interdits.o Flexional_codes.o Error.o Context.o
 
 CONVERT      = Convert
-CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o Copyright.o CodePages.o
+CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o Copyright.o CodePages.o Error.o
 
 DICO      = Dico
 DICO_OBJS = Dico.o Liste_nombres.o Copyright.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
@@ -175,14 +175,14 @@ ELAG      = Elag
 ELAG_OBJS = IOBuffer.o Elag.o unicode.o elag-functions.o language.o fst_file.o aut-deter.o \
             aut-minim.o aut-emonde.o aut-concat.o autalmot.o \
             symbol.o hash_str_table.o String_hash.o language_parsing.o ustring.o \
-	    state_ens.o aut-alphabet.o symbol_op.o \
+	   		state_ens.o aut-alphabet.o symbol_op.o Error.o\
             aut-topo.o aut-inter.o aut-eval.o Copyright.o Alphabet.o
 
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = IOBuffer.o ElagComp.o unicode.o compgr.o autalmot.o fst_file.o hash_str_table.o String_hash.o\
                symbol.o ustring.o aut-deter.o aut-inter.o state_ens.o symbol_op.o language.o language_parsing.o \
      	       aut-minim.o aut-alphabet.o aut-emonde.o aut-concat.o aut-union.o aut-complement.o Copyright.o\
-     	       Alphabet.o
+     	       Alphabet.o Error.o
 
 EVAMB      = Evamb
 EVAMB_OBJS = IOBuffer.o Evamb.o unicode.o fst2autalmot.o autalmot_old.o implose.o Fst2.o String_hash.o\
@@ -243,11 +243,14 @@ MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o Copyright.o unicode.o 
                           FileName.o stack.o qsort.o grf.o Alphabet.o Error.o
 
 NORMALIZE      = Normalize
-NORMALIZE_OBJS = IOBuffer.o Normalize.o Copyright.o unicode.o FileName.o DELA.o String_hash.o Alphabet.o
+NORMALIZE_OBJS = IOBuffer.o Normalize.o Copyright.o unicode.o FileName.o DELA.o String_hash.o\
+				Alphabet.o Error.o
 
 
 POLYLEX      = PolyLex
-POLYLEX_OBJS = IOBuffer.o PolyLex.o Copyright.o unicode.o Alphabet.o DELA.o String_hash.o NorwegianCompounds.o GermanCompounds.o Compounds.o FileName.o RussianCompounds.o GeneralDerivation.o
+POLYLEX_OBJS = IOBuffer.o PolyLex.o Copyright.o unicode.o Alphabet.o DELA.o String_hash.o\
+				NorwegianCompounds.o GermanCompounds.o Compounds.o FileName.o\
+				RussianCompounds.o GeneralDerivation.o Error.o
 
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = IOBuffer.o Copyright.o Reconstrucao.o TransductionStack.o Optimized_fst2.o TransductionVariables.o Liste_num.o CompoundWordTree.o\
@@ -258,20 +261,21 @@ RECONSTRUCAO_OBJS = IOBuffer.o Copyright.o Reconstrucao.o TransductionStack.o Op
                Sentence_to_grf.o GF_lib.o Error.o Context.o
 
 REG2GRF      = Reg2Grf
-REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Copyright.o unicode.o Regular_expression.o
+REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Copyright.o unicode.o Regular_expression.o Error.o
 
 SORTTXT      = SortTxt
-SORTTXT_OBJS = IOBuffer.o SortTxt.o Copyright.o unicode.o
+SORTTXT_OBJS = IOBuffer.o SortTxt.o Copyright.o unicode.o Error.o
 
 TABLE2GRF      = Table2Grf
-TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Copyright.o unicode.o FileName.o
+TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Copyright.o unicode.o FileName.o Error.o
 
 TEXTAUTOMATON2MFT      = TextAutomaton2Mft
 TEXTAUTOMATON2MFT_OBJS = IOBuffer.o TextAutomaton2Mft.o Copyright.o unicode.o FileName.o Fst2.o\
                          Fst2_to_Mft.o String_hash.o Alphabet.o Error.o
 
 TOKENIZE      = Tokenize
-TOKENIZE_OBJS = IOBuffer.o Tokenize.o Copyright.o unicode.o Alphabet.o String_hash.o FileName.o DELA.o Table_hash.o
+TOKENIZE_OBJS = IOBuffer.o Tokenize.o Copyright.o unicode.o Alphabet.o String_hash.o\
+				FileName.o DELA.o Table_hash.o Error.o
 
 TXT2FST2      = Txt2Fst2
 TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Copyright.o Text_tokens.o Alphabet.o unicode.o Load_DLF_DLC.o\
@@ -280,7 +284,8 @@ TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Copyright.o Text_tokens.o Alphabet.o unico
 
 TAGSETNORM = TagsetNormFst2
 TAGSETNORM_OBJS = IOBuffer.o tagsetnorm.o Copyright.o unicode.o autalmot.o fst_file.o ustring.o \
-		  hash_str_table.o symbol.o language.o language_parsing.o aut-emonde.o
+					hash_str_table.o symbol.o language.o language_parsing.o aut-emonde.o\
+					Error.o
 
 ######################
 ## Korean programs  ##
@@ -288,7 +293,7 @@ TAGSETNORM_OBJS = IOBuffer.o tagsetnorm.o Copyright.o unicode.o autalmot.o fst_f
 
 COMPRESSKR	= CompressKr
 COMPRESSKR_OBJS = IOBuffer.o CompressKr.o etc.o pro_type.o \
-                  String_hash.o FileName.o Copyright.o unicode.o Alphabet.o
+                  String_hash.o FileName.o Copyright.o unicode.o Alphabet.o Error.o
                   
 CONSULTDIC = ConsultDic
 CONSULTDIC_OBJS = IOBuffer.o ConsultDic.o etc.o pro_type.o \
@@ -300,15 +305,15 @@ INFLECTKR_OBJS  = IOBuffer.o InflectKr.o etc.o pro_type.o \
 
 SUFFORM2RAC  = SufForm2Rac
 SUFFORM2RAC_OBJS  = IOBuffer.o SufForm2Rac.o  etc.o \
-		unicode.o Copyright.o FileName.o
+		unicode.o Copyright.o FileName.o Error.o
 
 MERGEBIN  = MergeBin
 MERGEBIN_OBJS  = IOBuffer.o MergeBin.o etc.o pro_type.o \
-                  unicode.o FileName.o Copyright.o
+                  unicode.o FileName.o Copyright.o Error.o
 
 SORTMORPH  = SortMorph
 SORTMORPH_OBJS  = IOBuffer.o SortMorph.o etc.o \
-                  Copyright.o FileName.o unicode.o
+                  Copyright.o FileName.o unicode.o Error.o
 
 JAMO2SYL  = Jamo2Syl
 JAMO2SYL_OBJS  = IOBuffer.o Jamo2Syl.o etc.o bitmap.o \
@@ -319,7 +324,7 @@ JAMO2SYL_OBJS  = IOBuffer.o Jamo2Syl.o etc.o bitmap.o \
 SYL2JAMO  = Syl2Jamo
 SYL2JAMO_OBJS  = IOBuffer.o Syl2Jamo.o jamoCodage.o etc.o \
                  pro_type.o codeForKorean.o segtype.o \
-                 unicode.o FileName.o Copyright.o
+                 unicode.o FileName.o Copyright.o Error.o
 
 TXT2FST2KR  = Txt2Fst2Kr
 TXT2FST2KR_OBJS  = IOBuffer.o Txt2Fst2Kr.o bitmap.o etc.o segtype.o \

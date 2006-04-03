@@ -64,7 +64,7 @@ void output_fst(Fst2 * A, int no, string_hash * hash, FILE * f) {
 
   for (int i = 0; i < A->number_of_states_by_graphs[no]; i++) {
 
-    fst2State * state = A->states[stateno + i];
+    Fst2State state = A->states[stateno + i];
 
     if (is_final_state(state)) {
 

@@ -52,7 +52,7 @@ extern struct contrainte** etiq=NULL;
 
 struct contrainte* new_contrainte();
 void free_contrainte(struct contrainte*);
-struct contrainte* contruire_contrainte_depuis_etiquette(struct fst2Tag*);
+struct contrainte* contruire_contrainte_depuis_etiquette(Fst2Tag);
 struct contrainte** allouer_contraintes(int);
 void free_contraintes(int,struct contrainte**);
 void calculer_contraintes(Fst2,Fst2);

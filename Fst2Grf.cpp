@@ -146,20 +146,20 @@ setBufferMode();
 
 
 
-Fst2* automate;
+Fst2* fst2;
 printf("Loading %s...\n",argv[1]);
-automate=load_one_sentence_of_fst2(argv[1],SENTENCE,txt);
-if (automate==NULL) {
+fst2=load_one_sentence_of_fst2(argv[1],SENTENCE,txt,fst2);
+if (fst2==NULL) {
    fprintf(stderr,"Cannot load text automata file %s\n",argv[1]);
    u_fclose(f);
    u_fclose(txt);
    return 1;
 }
 printf("Creating GRF...\n");
-sentence_to_grf(automate,SENTENCE,fontname,f);
+sentence_to_grf(fst2,SENTENCE,fontname,f);
 u_fclose(f);
 u_fclose(txt);
-free_fst2(automate);
+free_fst2(fst2);
 printf("Done.\n");
 return 0;
 }

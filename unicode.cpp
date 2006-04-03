@@ -20,7 +20,7 @@
   */
 
 #include "unicode.h"
-
+#include "Error.h"
 
 char tab_is_letter[8192];
 
@@ -1694,14 +1694,11 @@ int u_parse_int(unichar * str, unichar ** next) {
 
 
 unichar * u_strdup(const unichar * str) {
-
-  if (str == NULL) { return NULL; }
-
-  unichar * res = (unichar *) malloc((u_strlen(str) + 1) * sizeof(unichar));
-
-  for (int i = 0; (res[i] = str[i]) != 0; i++);
-
-  return res;
+if (str==NULL) {return NULL;}
+unichar* res=(unichar*)malloc((u_strlen(str)+1)*sizeof(unichar));
+if (res==NULL) {fatal_error("Not enough memory in u_strdup\n");}
+for (int i=0;(res[i]=str[i])!=0;i++);
+return res;
 }
 
 

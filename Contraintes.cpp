@@ -152,7 +152,7 @@ if (n_codes_flex!=0) {
 
 
 
-struct contrainte* construire_contrainte_depuis_etiquette(struct fst2Tag* e) {
+struct contrainte* construire_contrainte_depuis_etiquette(Fst2Tag e) {
 if (e==NULL) return NULL;
 struct contrainte* c=new_contrainte();
 if (e->inflected==NULL && e->lemma==NULL && e->codes==NULL) {

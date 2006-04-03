@@ -57,7 +57,7 @@ int line=0;
 // loads an fst2 and returns its representation in an Automate_fst2 structure
 // same as load_fst2 but no message for the not exist file
 // hhuh
-extern Fst2* new_Automate_fst2();
+extern Fst2* new_Fst2();
 extern Fst2State* graphe_fst2;
 extern Fst2Tag* etiquette_fst2;
 extern int *debut_graphe_fst2;
@@ -73,47 +73,47 @@ extern int etat_courant;
 extern void initialiser_variables_fst2();
 extern void resize(Fst2* a);
 extern void lire_etats_fst2(FILE *f);
-extern void lire_etiquettes_fst2(FILE *f); 
 extern void lire_etats_fst2_avec_noms(FILE *f);
+extern void lire_etiquettes_fst2(FILE*,Fst2*);
 
 static Fst2* load_fst22(char *file,int noms) {
 FILE *f;
-Fst2* a=new_Automate_fst2();
 f=u_fopen(file,U_READ);
 if (f==NULL) {
   return NULL;
 }
+Fst2* fst2=new_Fst2();
 nombre_graphes_fst2=u_read_int(f);
 if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-a->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=a->states;
-etiquette_fst2=a->tags;
-debut_graphe_fst2=a->initial_states;
-liste_des_variables=a->variables;
+fst2->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
+fst2->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
+graphe_fst2=fst2->states;
+etiquette_fst2=fst2->tags;
+debut_graphe_fst2=fst2->initial_states;
+liste_des_variables=fst2->variables;
 initialiser_variables_fst2();
-nombre_etats_par_grf=a->number_of_states_by_graphs;
+nombre_etats_par_grf=fst2->number_of_states_by_graphs;
 if (noms) {
-   nom_graphe=a->graph_names;
+   nom_graphe=fst2->graph_names;
    lire_etats_fst2_avec_noms(f);
-   a->graph_names=nom_graphe;
+   fst2->graph_names=nom_graphe;
 }
 else {
    lire_etats_fst2(f);
 }
-a->number_of_states_by_graphs=nombre_etats_par_grf;
-lire_etiquettes_fst2(f);
+fst2->number_of_states_by_graphs=nombre_etats_par_grf;
+lire_etiquettes_fst2(f,fst2);
 u_fclose(f);
-a->number_of_graphs=nombre_graphes_fst2;
-a->number_of_states=nombre_etats_fst2;
-a->number_of_tags=nombre_etiquettes_fst2;
-a->initial_states=debut_graphe_fst2;
-a->variables=liste_des_variables;
-resize(a);
-return a;
+fst2->number_of_graphs=nombre_graphes_fst2;
+fst2->number_of_states=nombre_etats_fst2;
+fst2->number_of_tags=nombre_etiquettes_fst2;
+fst2->initial_states=debut_graphe_fst2;
+fst2->variables=liste_des_variables;
+resize(fst2);
+return fst2;
 }
 //
 //
