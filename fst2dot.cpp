@@ -47,7 +47,7 @@ void fst2_output_dot(Automate_fst2 * A, FILE * f) {
       fprintf(f, "];\n");
 
       for (struct transition_fst * trans = A->etat[qq]->trans; trans; trans = trans->suivant) {
-	i_fprintf(f, "  %d -> %d [ label=\"%S\" ];\n", q, trans->arr - base, A->etiquette[trans->etiquette]->contenu);
+	i_fprintf(f, "  %d -> %d [ label=\"%S\" ];\n", q, trans->arr - base, A->etiquette[trans->etiquette]->input);
       }
     }
     fprintf(f, "}\n\n");

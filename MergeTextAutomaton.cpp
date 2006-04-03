@@ -89,7 +89,7 @@ void output_fst(Automate_fst2 * A, int no, string_hash * hash, FILE * f) {
       u_fputc(':', f); u_fputc(' ', f);
 
       for (transition_fst * trans = state->trans; trans; trans = trans->suivant) {
-	u_fprintf(f, "%d %d ", get_hash_number(A->etiquette[trans->etiquette]->contenu, hash), trans->arr - stateno);
+	u_fprintf(f, "%d %d ", get_hash_number(A->etiquette[trans->etiquette]->input, hash), trans->arr - stateno);
       }
 
       u_fputc('\n', f);

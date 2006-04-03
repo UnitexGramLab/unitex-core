@@ -21,6 +21,7 @@
 
 //---------------------------------------------------------------------------
 #include "FlattenFst2.h"
+#include "LocateConstants.h"
 //---------------------------------------------------------------------------
 
 
@@ -299,7 +300,7 @@ for (int i=0;i<pos_in_tab;i++) {
 #ifdef DEBUG
 printf("graphe 1:\n");
 for (int i=grammar->debut_graphe_fst2[1];i<limite;i++) {
-    if (new_main_graph->states[i]->controle & 1) printf("t ");
+    if (new_main_graph->states[i]->control & 1) printf("t ");
     else printf(": ");
     struct transition_comp* l=new_main_graph->states[i]->trans;
     while (l!=NULL) {
@@ -653,35 +654,35 @@ u_fprints_char("f \n",f);
 //
 void copy_tags_into_file(Automate_fst2* grammar, FILE* f) {
 for (int i=0; i<grammar->nombre_etiquettes; i++) {
-   if (grammar->etiquette[i]->controle & 4) {
+   if (grammar->etiquette[i]->control & RESPECT_CASE_TAG_BIT_MASK) {
       u_fprints_char("@",f);
    }
    else {
       u_fprints_char("%",f);
    }
    // if the tag is a variable, print '$'
-   if (grammar->etiquette[i]->controle & (64|128)) {
+   if (grammar->etiquette[i]->control & (START_VAR_TAG_BIT_MASK|END_VAR_TAG_BIT_MASK)) {
      u_fprints_char("$",f);
    }
    // print the content (label) of the tag
-   u_fprints(grammar->etiquette[i]->contenu,f);
+   u_fprints(grammar->etiquette[i]->input,f);
    // if any, we add the morphological filter: <A><<^pre>>
    if (grammar->etiquette[i]->contentGF!=NULL &&
        grammar->etiquette[i]->contentGF[0]!='\0') {
      u_fprints(grammar->etiquette[i]->contentGF,f);
    }
    // if any, we add transitions
-   if (grammar->etiquette[i]->transduction!=NULL &&
-       grammar->etiquette[i]->transduction[0]!='\0') {
+   if (grammar->etiquette[i]->output!=NULL &&
+       grammar->etiquette[i]->output[0]!='\0') {
      u_fprints_char("/",f);
-     u_fprints(grammar->etiquette[i]->transduction,f);
+     u_fprints(grammar->etiquette[i]->output,f);
    }
    // print closing '(' for variables
-   else if (grammar->etiquette[i]->controle & 64) {
+   else if (grammar->etiquette[i]->control & START_VAR_TAG_BIT_MASK) {
      u_fprints_char("(",f);
    }
    // or ')' resp.
-   else if (grammar->etiquette[i]->controle & 128) {
+   else if (grammar->etiquette[i]->control & END_VAR_TAG_BIT_MASK) {
      u_fprints_char(")",f);
    }
    u_fprints_char("\n",f);

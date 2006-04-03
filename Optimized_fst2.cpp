@@ -23,6 +23,7 @@
 #include "Liste_nombres.h"
 #include "LocatePattern.h"
 #include "Optimized_fst2.h"
+#include "LocateConstants.h"
 //---------------------------------------------------------------------------
 
 struct etat_opt* graphe_opt[500000];
@@ -245,7 +246,7 @@ ptr->suivant=tmp;
 
 void ajouter_liste_de_tokens(Fst2Tag e,int n_etiq,Etat_opt *e2,int arr,int* N) {
 struct liste_nombres* l;
-l=e->numeros;
+l=e->matching_tokens;
 while (l!=NULL) {
   ajouter_token_a_liste_tokens(l->n,n_etiq,&((*e2)->liste_tokens),arr,N);
   l=l->suivant;
@@ -321,10 +322,10 @@ if (e==NULL) {
    fprintf(stderr,"Internal problem in optimiser_trans\n");
    exit(1);
 }
-controle=e->controle;
+controle=e->control;
 //---pattern mot compose
-if (e->pattern_compose!=-777) {
-  ajouter_pattern(e->pattern_compose,ptr->etiquette,&((*e2)->liste_patterns_composes),ptr->arr,controle);
+if (e->compound_pattern!=NO_COMPOUND_PATTERN) {
+  ajouter_pattern(e->compound_pattern,ptr->etiquette,&((*e2)->liste_patterns_composes),ptr->arr,controle);
 }
 //----------------------
 if (controle&LEMMA_TAG_BIT_MASK) {
@@ -332,27 +333,27 @@ if (controle&LEMMA_TAG_BIT_MASK) {
   ajouter_liste_de_tokens(e,ptr->etiquette,e2,ptr->arr,&((*e2)->nombre_de_tokens));
   return;
 }
-if ((controle&TOKEN_TAG_BIT_MASK)&&(e->numero!=-1)) {
+if ((controle&TOKEN_TAG_BIT_MASK)&&(e->number!=-1)) {
   // mot tout seul
-  ajouter_token_a_liste_tokens(e->numero,ptr->etiquette,&((*e2)->liste_tokens),ptr->arr,&((*e2)->nombre_de_tokens));
-  if (e->numeros!=NULL) {
+  ajouter_token_a_liste_tokens(e->number,ptr->etiquette,&((*e2)->liste_tokens),ptr->arr,&((*e2)->nombre_de_tokens));
+  if (e->matching_tokens!=NULL) {
      ajouter_liste_de_tokens(e,ptr->etiquette,e2,ptr->arr,&((*e2)->nombre_de_tokens));
   }
   return;
 }
-if ((controle&GRAMM_CODE_TAG_BIT_MASK)&&(e->numero!=-1)) {
+if ((controle&GRAMM_CODE_TAG_BIT_MASK)&&(e->number!=-1)) {
   // pattern
-  ajouter_pattern(e->numero,ptr->etiquette,&((*e2)->liste_patterns),ptr->arr,controle);
+  ajouter_pattern(e->number,ptr->etiquette,&((*e2)->liste_patterns),ptr->arr,controle);
   return;
 }
 if (controle&CONTROL_TAG_BIT_MASK) {
   // meta
   int k=-1;
-  if (e->numero==VAR_START || e->numero==VAR_END) {
+  if (e->number==VAR_START || e->number==VAR_END) {
      // if the meta is $a( or $a)
-     k=get_token_number(e->contenu,transduction_variable_index);
+     k=get_token_number(e->input,transduction_variable_index);
   }
-  ajouter_meta(e->numero,ptr->etiquette,&((*e2)->liste_metas),ptr->arr,controle,k);
+  ajouter_meta(e->number,ptr->etiquette,&((*e2)->liste_metas),ptr->arr,controle,k);
   return;
 }
 }

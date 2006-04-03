@@ -73,7 +73,7 @@ for (int i=fst2->debut_graphe_fst2[N];i<limite;i++) {
          trans=tmp;
       }
       else {
-         get_hash_number(fst2->etiquette[trans->etiquette]->contenu,tags);
+         get_hash_number(fst2->etiquette[trans->etiquette]->input,tags);
          trans=trans->suivant;
       }
    }
@@ -100,7 +100,7 @@ for (int i=fst2->debut_graphe_fst2[N];i<limite;i++) {
    int debut=fst2->debut_graphe_fst2[N];
    int num;
    while (trans!=NULL) {
-      num=get_hash_number(fst2->etiquette[trans->etiquette]->contenu,tags);
+      num=get_hash_number(fst2->etiquette[trans->etiquette]->input,tags);
       sprintf(temp,"%d %d ",num,(trans->arr)-debut+1);
       u_fprints_char(temp,f);
       trans=trans->suivant;

@@ -83,7 +83,7 @@ return (c->controle & 4);
 
 
 
-void set_variantes_min_maj(struct contrainte* c) {
+void set_pas_de_variantes_min_maj(struct contrainte* c) {
 c->controle=(char)(c->controle | 4);
 }
 
@@ -155,45 +155,45 @@ if (n_codes_flex!=0) {
 struct contrainte* construire_contrainte_depuis_etiquette(struct fst2Tag* e) {
 if (e==NULL) return NULL;
 struct contrainte* c=new_contrainte();
-if (e->flechi==NULL && e->canonique==NULL && e->infos_gramm==NULL) {
+if (e->inflected==NULL && e->lemma==NULL && e->codes==NULL) {
    // if the tag is a raw one
-   if (e->controle & 4) {
-      // if the min/maj variants are allowed
-      set_variantes_min_maj(c);
+   if (e->control & RESPECT_CASE_TAG_BIT_MASK) {
+      // if the min/maj variants are not allowed
+      set_pas_de_variantes_min_maj(c);
    }
-   if (e->contenu[0]=='<' && e->contenu[1]=='!') {
+   if (e->input[0]=='<' && e->input[1]=='!') {
       set_negation(c);
       c->raw=(unichar*)malloc(6*sizeof(unichar));
-      if (!u_strcmp_char(e->contenu,"<!MOT>")) u_strcpy_char(c->raw,"<MOT>");
-      else if (!u_strcmp_char(e->contenu,"<!DIC>")) u_strcpy_char(c->raw,"<DIC>");
-      else if (!u_strcmp_char(e->contenu,"<!MAJ>")) u_strcpy_char(c->raw,"<MAJ>");
-      else if (!u_strcmp_char(e->contenu,"<!MIN>")) u_strcpy_char(c->raw,"<MIN>");
-      else if (!u_strcmp_char(e->contenu,"<!PRE>")) u_strcpy_char(c->raw,"<PRE>");
+      if (!u_strcmp_char(e->input,"<!MOT>")) u_strcpy_char(c->raw,"<MOT>");
+      else if (!u_strcmp_char(e->input,"<!DIC>")) u_strcpy_char(c->raw,"<DIC>");
+      else if (!u_strcmp_char(e->input,"<!MAJ>")) u_strcpy_char(c->raw,"<MAJ>");
+      else if (!u_strcmp_char(e->input,"<!MIN>")) u_strcpy_char(c->raw,"<MIN>");
+      else if (!u_strcmp_char(e->input,"<!PRE>")) u_strcpy_char(c->raw,"<PRE>");
       return c;
    }
-   c->raw=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(e->contenu)));
-   u_strcpy(c->raw,e->contenu);
+   c->raw=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(e->input)));
+   u_strcpy(c->raw,e->input);
    return c;
 }
-if (e->controle & 2) set_negation(c);
-if (e->flechi!=NULL && e->canonique==NULL && e->infos_gramm==NULL) {
+if (e->control & NEGATION_TAG_BIT_MASK) set_negation(c);
+if (e->inflected!=NULL && e->lemma==NULL && e->codes==NULL) {
    // we can't formally distinguish <manger> and <N>; so when we find
    // such a tag, we have <manger> with canonique!=NULL and we
    // build <N> with the following code
    c->contrainte_alternative=new_contrainte();
-   decouper_infos_gramm(e->flechi,c->contrainte_alternative);
+   decouper_infos_gramm(e->inflected,c->contrainte_alternative);
    if (negation(c)) set_negation(c->contrainte_alternative);
-   c->canonique=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(e->flechi)));
-   u_strcpy(c->canonique,e->flechi);
+   c->canonique=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(e->inflected)));
+   u_strcpy(c->canonique,e->inflected);
    return c;
 }
-if (e->flechi!= NULL && e->canonique!=NULL) {
-   c->flechi=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(e->flechi)));
-   u_strcpy(c->flechi,e->flechi);
-   c->canonique=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(e->canonique)));
-   u_strcpy(c->canonique,e->canonique);
+if (e->inflected!= NULL && e->lemma!=NULL) {
+   c->flechi=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(e->inflected)));
+   u_strcpy(c->flechi,e->inflected);
+   c->canonique=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(e->lemma)));
+   u_strcpy(c->canonique,e->lemma);
 }
-decouper_infos_gramm(e->infos_gramm,c);
+decouper_infos_gramm(e->codes,c);
 return c;
 }
 
@@ -317,8 +317,8 @@ for (i=0;i<text->nombre_etiquettes;i++) {
 }
 for (i=0;i<grammar->nombre_etiquettes;i++) {
    contrainte1[i]=construire_contrainte_depuis_etiquette(grammar->etiquette[i]);
-   if (grammar->etiquette[i]->transduction!=NULL) {
-      contrainte2[i]=construire_contrainte2_depuis_string(grammar->etiquette[i]->transduction);
+   if (grammar->etiquette[i]->output!=NULL) {
+      contrainte2[i]=construire_contrainte2_depuis_string(grammar->etiquette[i]->output);
    }
 }
 }

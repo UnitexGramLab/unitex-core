@@ -178,12 +178,12 @@ while (trans!=NULL) {
       etiq=automate->etiquette[trans->etiquette];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
-      if (etiq->transduction!=NULL && u_strcmp_char(etiq->transduction,"")
-          && u_strcmp_char(etiq->transduction,"<E>") && !only_spaces(etiq->transduction)) {
+      if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
+          && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
-         u_strcat(tmp,etiq->transduction);
+         u_strcat(tmp,etiq->output);
       }
-      if (!u_strcmp_char(etiq->contenu,"<E>")) {
+      if (!u_strcmp_char(etiq->input,"<E>")) {
          // case of an epsilon-transition
            struct trans_arbre_normalization* trans_norm;
            trans_norm=get_trans_arbre_normalization(EMPTY_TOKEN,noeud_normalization->trans);
@@ -199,7 +199,7 @@ while (trans!=NULL) {
                                            hash,tmp,alph,TEMP_LIST);
       }
       else {
-         struct liste_nombres* liste=get_token_list_for_sequence(etiq->contenu,alph,hash);
+         struct liste_nombres* liste=get_token_list_for_sequence(etiq->input,alph,hash);
          while (liste!=NULL) {
            struct trans_arbre_normalization* trans_norm;
            trans_norm=get_trans_arbre_normalization(liste->n,noeud_normalization->trans);
@@ -261,16 +261,16 @@ while (trans!=NULL) {
       etiq=automate->etiquette[trans->etiquette];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
-      if (etiq->transduction!=NULL && u_strcmp_char(etiq->transduction,"")
-          && u_strcmp_char(etiq->transduction,"<E>") && !only_spaces(etiq->transduction)) {
+      if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
+          && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
-         u_strcat(tmp,etiq->transduction);
+         u_strcat(tmp,etiq->output);
       }
       struct trans_arbre_normalization* trans_norm;
-      trans_norm=get_trans_arbre_normalization_string(etiq->contenu,noeud_normalization->trans);
+      trans_norm=get_trans_arbre_normalization_string(etiq->input,noeud_normalization->trans);
       if (trans_norm==NULL) {
          // if the transition does not exist in the tree, we create it
-         trans_norm=new_trans_arbre_normalization_string(etiq->contenu);
+         trans_norm=new_trans_arbre_normalization_string(etiq->input);
          // we also create the destination node
          trans_norm->arr=new_noeud_arbre_normalization();
          trans_norm->suivant=noeud_normalization->trans;
@@ -322,12 +322,12 @@ while (trans!=NULL) {
       etiq=automate->etiquette[trans->etiquette];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
-      if (etiq->transduction!=NULL && u_strcmp_char(etiq->transduction,"")
-          && u_strcmp_char(etiq->transduction,"<E>") && !only_spaces(etiq->transduction)) {
+      if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
+          && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
-         u_strcat(tmp,etiq->transduction);
+         u_strcat(tmp,etiq->output);
       }
-      if (!u_strcmp_char(etiq->contenu,"<E>")) {
+      if (!u_strcmp_char(etiq->input,"<E>")) {
          // case of an epsilon-transition
          struct trans_arbre_normalization* trans_norm;
          trans_norm=get_trans_arbre_normalization(EMPTY_TOKEN,noeud_normalization->trans);
@@ -343,7 +343,7 @@ while (trans!=NULL) {
                                            hash,tmp,alph);
       }
       else {
-         struct liste_nombres* liste=get_token_list_for_sequence(etiq->contenu,alph,hash);
+         struct liste_nombres* liste=get_token_list_for_sequence(etiq->input,alph,hash);
          while (liste!=NULL) {
            struct trans_arbre_normalization* trans_norm;
            trans_norm=get_trans_arbre_normalization(liste->n,noeud_normalization->trans);
@@ -404,16 +404,16 @@ while (trans!=NULL) {
       etiq=automate->etiquette[trans->etiquette];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
-      if (etiq->transduction!=NULL && u_strcmp_char(etiq->transduction,"")
-          && u_strcmp_char(etiq->transduction,"<E>") && !only_spaces(etiq->transduction)) {
+      if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
+          && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
-         u_strcat(tmp,etiq->transduction);
+         u_strcat(tmp,etiq->output);
       }
       struct trans_arbre_normalization* trans_norm;
-      trans_norm=get_trans_arbre_normalization_string(etiq->contenu,noeud_normalization->trans);
+      trans_norm=get_trans_arbre_normalization_string(etiq->input,noeud_normalization->trans);
       if (trans_norm==NULL) {
          // if the transition does not exist in the tree, we create it
-         trans_norm=new_trans_arbre_normalization_string(etiq->contenu);
+         trans_norm=new_trans_arbre_normalization_string(etiq->input);
          // we also create the destination node
          trans_norm->arr=new_noeud_arbre_normalization();
          trans_norm->suivant=noeud_normalization->trans;

@@ -780,36 +780,36 @@ static void traiteEttiques()
 	for(int i = 0; i < curEtiCnt;i++){
 		et=Ptr_cAuto->etiquette[etiQueue[i]];
 if(debugFlag)
-	u_fprintf(stdout,"%S %S\n",et->transduction,et->contenu);
+	u_fprintf(stdout,"%S %S\n",et->output,et->input);
 		//
 		//	gether informations
 		//
-		if (et->transduction && 
-            *(et->transduction) && 
-                u_strcmp_char(et->transduction,"<E>")) {
+		if (et->output && 
+            *(et->output) && 
+                u_strcmp_char(et->output,"<E>")) {
 				// if we are in a final state, we save the computed things
 			wp = 0;
-			while(et->transduction[wp]){
-				if(et->transduction[wp] == '<') break;
+			while(et->output[wp]){
+				if(et->output[wp] == '<') break;
 				wp++;
 			}			
-			if(!et->transduction[wp]) fst_err();
+			if(!et->output[wp]) fst_err();
 			
 			wp++;
-			while(et->transduction[wp]){
-				if(et->transduction[wp]==',') break;	
-				SuF[dp++] = et->transduction[wp++];
+			while(et->output[wp]){
+				if(et->output[wp]==',') break;	
+				SuF[dp++] = et->output[wp++];
 			}
-			if(et->transduction[wp]!=',') fst_err();
+			if(et->output[wp]!=',') fst_err();
 			wp++;
-			while(et->transduction[wp]){
-				if(et->transduction[wp] == '>') break;
-				InF[ip++] = et->transduction[wp++];
+			while(et->output[wp]){
+				if(et->output[wp] == '>') break;
+				InF[ip++] = et->output[wp++];
 			}
 		
 		}
-		if(et->contenu[0] == '<'){
-		  if(!u_strcmp_char(et->contenu,"<$>")){ 
+		if(et->input[0] == '<'){
+		  if(!u_strcmp_char(et->input,"<$>")){ 
 			// copy org to working stack
 			swp = orgWord->EC_canonique;
 			while(*swp)  FF[FIdx++] = *swp++;
@@ -821,9 +821,9 @@ if(debugFlag)
  		    }
             while(*swp) OF[OIdx++] = *swp++;
             continue;
-		  } else if (!u_strcmp_char(et->contenu,"<E>")) {
+		  } else if (!u_strcmp_char(et->input,"<E>")) {
 		     continue;
-		  } else if (findChangeStr((unichar*)et->contenu,temp)) {
+		  } else if (findChangeStr((unichar*)et->input,temp)) {
 				FF[FIdx++] = temp[0];
 				OF[OIdx++] = temp[0];
 				continue;
@@ -831,14 +831,14 @@ if(debugFlag)
         }
 		
 	   // if the tag is not <E>, we process it
-        for (wp=0; et->contenu[wp] !='\0';wp++) {
-            if( (swp = getConvTable(et->contenu[wp])) != 0){
+        for (wp=0; et->input[wp] !='\0';wp++) {
+            if( (swp = getConvTable(et->input[wp])) != 0){
 			     while(*swp) FF[FIdx++] = *swp++;
-                 OF[OIdx++] = et->contenu[wp];
+                 OF[OIdx++] = et->input[wp];
                  transFlag = 1;
                  continue; 
 			}
-			switch (et->contenu[wp]) {
+			switch (et->input[wp]) {
 			case '[':
 			      if(skipMark == -1 ){
                        exitMessage("skipMark is not defined");
@@ -909,8 +909,8 @@ if(debugFlag)
 				if(OpileIdx != 0) { FF[FIdx++] = Opile[--OpileIdx];}
 				break;
 			default:
-		       FF[FIdx++] = et->contenu[wp];
-		       OF[OIdx++] = et->contenu[wp];
+		       FF[FIdx++] = et->input[wp];
+		       OF[OIdx++] = et->input[wp];
 			}
 if(debugFlag){ FF[FIdx] = 0;  u_fprintf(stdout,"%S >>>>\n",FF);}
 		}

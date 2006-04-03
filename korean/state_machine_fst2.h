@@ -82,7 +82,7 @@ public:
 		if(saveTransductionTable){
 			for( int i = 1; i < a->nombre_etiquettes;i++)
 				if(saveTransductionTable[i])
-					a->etiquette[i]->transduction = (unichar *)saveTransductionTable[i];
+					a->etiquette[i]->output = (unichar *)saveTransductionTable[i];
 			delete saveTransductionTable;
 		}
 		if(a)free_fst2(a);
@@ -109,13 +109,13 @@ public:
 		}	
 
 		for(i = 1; i < a->nombre_etiquettes;i++){
-			saveTransductionTable[i] =(unichar *)a->etiquette[i]->transduction;
-			if(a->etiquette[i]->transduction){
+			saveTransductionTable[i] =(unichar *)a->etiquette[i]->output;
+			if(a->etiquette[i]->output){
 //		wprintf(L" %d %s\n",i,a->etiquette[i]->transduction);
-			 a->etiquette[i]->transduction = (unichar *)
-			 ajouteTransValue((unichar*)a->etiquette[i]->transduction);
+			 a->etiquette[i]->output = (unichar *)
+			 ajouteTransValue((unichar*)a->etiquette[i]->output);
 			}
-			wp =(unichar*)a->etiquette[i]->contenu;
+			wp =(unichar*)a->etiquette[i]->input;
 	 		if(*wp == '<'){
 	           if( (*(wp+1) ==  'E') && (*(wp+2) ==  '>'))
 	          	 exitMessage("do not accept the transition with null");
@@ -126,7 +126,7 @@ public:
                else if(findChangeStr(wp,&wt)){
 				    *wp=(unichar)wt;
 		       } else {
-				     fprintf(stderr,"un define %s\n",getUtoChar(a->etiquette[i]->contenu));
+				     fprintf(stderr,"un define %s\n",getUtoChar(a->etiquette[i]->input));
 				     exitMessage("");
 		       }
 	         }
@@ -259,16 +259,16 @@ void curSMvalue(unichar cval)
 	int nextArr = 0;
 
 	while(cT){
-        wp = (unichar *)a->etiquette[cT->etiquette]->contenu;
+        wp = (unichar *)a->etiquette[cT->etiquette]->input;
         if(*wp == '<'){
            wp++;
            if(*wp == '!'){
 		    nextArr = cT->arr;
-		    cmdPtr = (struct cmdInst *)a->etiquette[cT->etiquette]->transduction;
+		    cmdPtr = (struct cmdInst *)a->etiquette[cT->etiquette]->output;
            }
         } else if(*wp == cval){
 		    nextArr = cT->arr;
-		    cmdPtr = (struct cmdInst *)a->etiquette[cT->etiquette]->transduction;
+		    cmdPtr = (struct cmdInst *)a->etiquette[cT->etiquette]->output;
 		    break;
 		}
 		cT = cT->suivant;

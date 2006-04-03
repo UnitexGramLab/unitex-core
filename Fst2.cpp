@@ -111,11 +111,11 @@ free(e);
 
 
 void free_etiquette(Fst2Tag e) {
-if (e->contenu!=NULL) free(e->contenu);
-if (e->transduction!=NULL) free(e->transduction);
-if (e->flechi!=NULL) free(e->flechi);
-if (e->canonique!=NULL) free(e->canonique);
-if (e->infos_gramm!=NULL) free(e->infos_gramm);
+if (e->input!=NULL) free(e->input);
+if (e->output!=NULL) free(e->output);
+if (e->inflected!=NULL) free(e->inflected);
+if (e->lemma!=NULL) free(e->lemma);
+if (e->codes!=NULL) free(e->codes);
 
 /* $CD$ begin */
 if (e -> contentGF != NULL) free(e -> contentGF);
@@ -126,7 +126,7 @@ free(e);
 
 
 //
-// returns a new empty autoamata
+// returns a new empty automaton
 //
 Automate_fst2* new_Automate_fst2() {
 Automate_fst2* a=(Automate_fst2*)malloc(sizeof(Automate_fst2));
@@ -198,16 +198,16 @@ if (e==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction nouvelle_etiquette_mat\n");
   exit(1);
 }
-e->numero=0;
-e->controle=0;
-e->contenu=NULL;        // ATTENTION AUX STRCMP AVEC DES NULL!!!!!
-e->transduction=NULL;
-e->flechi=NULL;
-e->canonique=NULL;
-e->infos_gramm=NULL;
-e->numeros=NULL;
-e->nombre_mots=0;
-e->pattern_compose=-777;
+e->number=0;
+e->control=0;
+e->input=NULL;
+e->output=NULL;
+e->inflected=NULL;
+e->lemma=NULL;
+e->codes=NULL;
+e->matching_tokens=NULL;
+e->number_of_matching_tokens=0;
+e->compound_pattern=NO_COMPOUND_PATTERN;
 
 /* $CD$ begin */
 e -> contentGF = NULL;
@@ -227,15 +227,15 @@ unichar temp[1000];
 int i,j;
 j=0;
 i=1;
-if (e->contenu[i]=='!') {
+if (e->input[i]=='!') {
   i++;
-  e->controle=(char)(e->controle|2);
+  e->control=(char)(e->control|NEGATION_TAG_BIT_MASK);
 }
-while ((e->contenu[i]!=',')&&(e->contenu[i]!='.')&&(e->contenu[i]!='>'))
-  temp[j++]=e->contenu[i++];
+while ((e->input[i]!=',')&&(e->input[i]!='.')&&(e->input[i]!='>'))
+  temp[j++]=e->input[i++];
 temp[j]='\0';
 // cas <avoir>, <V> ou <MOT>
-if (e->contenu[i]=='>') {
+if (e->input[i]=='>') {
   if (!u_strcmp_char(temp,"MOT")) {
     return;
   }
@@ -263,70 +263,70 @@ if (e->contenu[i]=='>') {
   
 
   // on a <avoir> ou <V>
-  e->flechi=(unichar*)malloc(sizeof(unichar)*(j+1));
-  if (e->flechi==NULL) {
+  e->inflected=(unichar*)malloc(sizeof(unichar)*(j+1));
+  if (e->inflected==NULL) {
     fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
     exit(1);
   }
-  u_strcpy(e->flechi,temp);
+  u_strcpy(e->inflected,temp);
   return;
 }
 // cas <eu,avoir.V>
-if (e->contenu[i]==',') {
-  e->flechi=(unichar*)malloc(sizeof(unichar)*(j+1));
-  if (e->flechi==NULL) {
+if (e->input[i]==',') {
+  e->inflected=(unichar*)malloc(sizeof(unichar)*(j+1));
+  if (e->inflected==NULL) {
     fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
     exit(1);
   }
-  u_strcpy(e->flechi,temp);
+  u_strcpy(e->inflected,temp);
   i++;
   j=0;
-  while ((e->contenu[i]!='.')&&(e->contenu[i]!='>'))
-    temp[j++]=e->contenu[i++];
+  while ((e->input[i]!='.')&&(e->input[i]!='>'))
+    temp[j++]=e->input[i++];
   temp[j]='\0';
-  if (e->contenu[i]=='>') {
+  if (e->input[i]=='>') {
   	char err[1000];
-  	u_to_char(err,e->contenu);
+  	u_to_char(err,e->input);
     fprintf(stderr,"Invalid label %s\n",err);
     exit(1);
   }
-  e->canonique=(unichar*)malloc(sizeof(unichar)*(j+1));
-  if (e->canonique==NULL) {
+  e->lemma=(unichar*)malloc(sizeof(unichar)*(j+1));
+  if (e->lemma==NULL) {
     fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
     exit(1);
   }
-  u_strcpy(e->canonique,temp);
+  u_strcpy(e->lemma,temp);
   i++;
   j=0;
-  while (e->contenu[i]!='>')
-    temp[j++]=e->contenu[i++];
+  while (e->input[i]!='>')
+    temp[j++]=e->input[i++];
   temp[j]='\0';
-  e->infos_gramm=(unichar*)malloc(sizeof(unichar)*(j+1));
-  if (e->infos_gramm==NULL) {
+  e->codes=(unichar*)malloc(sizeof(unichar)*(j+1));
+  if (e->codes==NULL) {
     fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
     exit(1);
   }
-  u_strcpy(e->infos_gramm,temp);
+  u_strcpy(e->codes,temp);
   return;
 }
 // cas <avoir.N>
-e->canonique=(unichar*)malloc(sizeof(unichar)*(j+1));
-if (e->canonique==NULL) {
+e->lemma=(unichar*)malloc(sizeof(unichar)*(j+1));
+if (e->lemma==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
   exit(1);
 }
-u_strcpy(e->canonique,temp);
+u_strcpy(e->lemma,temp);
 i++;
 j=0;
-while (e->contenu[i]!='>')
-  temp[j++]=e->contenu[i++];
+while (e->input[i]!='>')
+  temp[j++]=e->input[i++];
 temp[j]='\0';
-e->infos_gramm=(unichar*)malloc(sizeof(unichar)*(j+1));
-if (e->infos_gramm==NULL) {
+e->codes=(unichar*)malloc(sizeof(unichar)*(j+1));
+if (e->codes==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction decomposer_angles_etiquettes_fst2\n");
   exit(1);
 }
-u_strcpy(e->infos_gramm,temp);
+u_strcpy(e->codes,temp);
 return;
 }
 
@@ -341,57 +341,57 @@ char err[1000];
 int i,j;
 j=0;
 i=1;
-while ((e->contenu[i]!=',')&&(e->contenu[i]!='}')) {
-  temp[j++]=e->contenu[i++];
+while ((e->input[i]!=',')&&(e->input[i]!='}')) {
+  temp[j++]=e->input[i++];
 }
-if (e->contenu[i]=='}') {
-  u_to_char(err,e->contenu);
+if (e->input[i]=='}') {
+  u_to_char(err,e->input);
   fprintf(stderr,"Invalid label %s: a tag must contain a valid DELAF line like {today,today.ADV}\n",err);
   exit(1);
 }
 temp[j]='\0';
-e->flechi=(unichar*)malloc(sizeof(unichar)*(j+1));
-u_strcpy(e->flechi,temp);
+e->inflected=(unichar*)malloc(sizeof(unichar)*(j+1));
+u_strcpy(e->inflected,temp);
 i++;
-if (e->contenu[i]=='.') {
-   e->canonique=(unichar*)malloc(sizeof(unichar)*(j+1));
-   u_strcpy(e->canonique,temp);
+if (e->input[i]=='.') {
+   e->lemma=(unichar*)malloc(sizeof(unichar)*(j+1));
+   u_strcpy(e->lemma,temp);
 }
 else {
    j=0;
-   while ((e->contenu[i]!='.')&&(e->contenu[i]!='}')) {
-      temp[j++]=e->contenu[i++];
+   while ((e->input[i]!='.')&&(e->input[i]!='}')) {
+      temp[j++]=e->input[i++];
    }
-   if (e->contenu[i]=='}') {
-      u_to_char(err,e->contenu);
+   if (e->input[i]=='}') {
+      u_to_char(err,e->input);
       fprintf(stderr,"Invalid label %s: a tag must contain a valid DELAF line like {today,today.ADV}\n",err);
       exit(1);
    }
    temp[j]='\0';
-   e->canonique=(unichar*)malloc(sizeof(unichar)*(j+1));
-   u_strcpy(e->canonique,temp);
+   e->lemma=(unichar*)malloc(sizeof(unichar)*(j+1));
+   u_strcpy(e->lemma,temp);
 }
 i++;
 j=0;
-while (e->contenu[i]!='}') {
-   temp[j++]=e->contenu[i++];
+while (e->input[i]!='}') {
+   temp[j++]=e->input[i++];
 }
 temp[j]='\0';
-e->infos_gramm=(unichar*)malloc(sizeof(unichar)*(j+1));
-u_strcpy(e->infos_gramm,temp);
+e->codes=(unichar*)malloc(sizeof(unichar)*(j+1));
+u_strcpy(e->codes,temp);
 }
 
 
 void creer_etiquette_variable(int position,unichar mot[]) {
 int L=u_strlen(mot);
 Fst2Tag e=nouvelle_etiquette_mat();
-e->contenu=(unichar*)malloc(L*sizeof(unichar));
+e->input=(unichar*)malloc(L*sizeof(unichar));
 for (int i=1;i<L-1;i++)
-    e->contenu[i-1]=mot[i];
-e->contenu[L-2]='\0';
-if (mot[L-1]=='(') e->controle=START_VAR_TAG_BIT_MASK;
-else e->controle=END_VAR_TAG_BIT_MASK;
-liste_des_variables=ajouter_variable(e->contenu,liste_des_variables);
+    e->input[i-1]=mot[i];
+e->input[L-2]='\0';
+if (mot[L-1]=='(') e->control=START_VAR_TAG_BIT_MASK;
+else e->control=END_VAR_TAG_BIT_MASK;
+liste_des_variables=ajouter_variable(e->input,liste_des_variables);
 etiquette_fst2[position]=e;
 }
 
@@ -419,26 +419,26 @@ e=nouvelle_etiquette_mat();
 if (e==NULL) {
    printf("oops");
 }
-e->contenu=(unichar*)malloc((u_strlen(mot)+1)*sizeof(unichar));
-if (e->contenu==NULL) {
+e->input=(unichar*)malloc((u_strlen(mot)+1)*sizeof(unichar));
+if (e->input==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction creer_etiquette_fst2\n");
   exit(1);
 }
-u_strcpy(e->contenu,mot);
+u_strcpy(e->input,mot);
 
 //---------------
 if (!u_strcmp_char(mot,"$[")) {
-   e->controle=POSITIVE_CONTEXT_MASK;
+   e->control=POSITIVE_CONTEXT_MASK;
    etiquette_fst2[position]=e;
    return;
 }
 if (!u_strcmp_char(mot,"$![")) {
-   e->controle=NEGATIVE_CONTEXT_MASK;
+   e->control=NEGATIVE_CONTEXT_MASK;
    etiquette_fst2[position]=e;
    return;
 }
 if (!u_strcmp_char(mot,"$]")) {
-   e->controle=CONTEXT_END_MASK;
+   e->control=CONTEXT_END_MASK;
    etiquette_fst2[position]=e;
    return;
 }
@@ -455,16 +455,16 @@ if (u_strlen(contentGF) > 0) {
     }
 /* $CD$ end   */
 
-e->transduction=(unichar*)malloc((u_strlen(transduction)+1)*sizeof(unichar));
-if (e->transduction==NULL) {
+e->output=(unichar*)malloc((u_strlen(transduction)+1)*sizeof(unichar));
+if (e->output==NULL) {
   fprintf(stderr,"Probleme d'allocation memoire dans la fonction creer_etiquette_fst2\n");
   exit(1);
 }
-u_strcpy(e->transduction,transduction);
+u_strcpy(e->output,transduction);
 if (transduction[0]!=0)
-  e->controle=(unsigned char)(e->controle|1);
+  e->control=(unsigned char)(e->control|TRANSDUCTION_TAG_BIT_MASK);
 if (respect_min_maj)
-  e->controle=(unsigned char)(e->controle|4);
+  e->control=(unsigned char)(e->control|RESPECT_CASE_TAG_BIT_MASK);
 
 //--- on determine e->type
 if ((mot[0]==' ')||(mot[0]=='#')||!u_strcmp_char(mot,"<E>")) {
@@ -1099,8 +1099,8 @@ Fst2Tag etiq;
 for (int i=0;i<fst2->nombre_etiquettes;i++) {
    etiq=fst2->etiquette[i];
    if (etiq!=NULL) {
-      if (etiq->flechi!=NULL) {unprotect_characters_in_sequence(etiq->flechi);}
-      if (etiq->canonique!=NULL) {unprotect_characters_in_sequence(etiq->canonique);}
+      if (etiq->inflected!=NULL) {unprotect_characters_in_sequence(etiq->inflected);}
+      if (etiq->lemma!=NULL) {unprotect_characters_in_sequence(etiq->lemma);}
    }
 }
 }

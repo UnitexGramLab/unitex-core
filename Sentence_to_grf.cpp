@@ -89,14 +89,14 @@ for (int i=0;i<nombre_etats;i++) {
    while (trans!=NULL) {
       // we put the value in the 2 upper bytes
       // normal line:
-      if (!u_strcmp_char(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,"\"")) {
+      if (!u_strcmp_char(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->input,"\"")) {
          //u_fprints_char("\\\"",f);
          tab_grf_state[N_GRF_STATES]=new_grf_state("\"\\\"\"",pos_X[rang[i]],rang[i]);
       }
       else {
          unichar temp[10000];
          u_strcpy_char(temp,"\"");
-         u_strcat(temp,automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu);
+         u_strcat(temp,automate->etiquette[get_etiquette_reelle(trans->etiquette)]->input);
          u_strcat_char(temp,"\"");
          //u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,f);
          tab_grf_state[N_GRF_STATES]=new_grf_state(temp,pos_X[rang[i]],rang[i]);
@@ -181,11 +181,11 @@ for (int i=0;i<nombre_etats;i++) {
       // we put the value in the 2 upper bytes
       u_fprints_char("\"",f);
       // normal line:
-      if (!u_strcmp_char(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,"\"")) {
+      if (!u_strcmp_char(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->input,"\"")) {
          u_fprints_char("\\\"",f);
       }
       else {
-           u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,f);
+           u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->input,f);
       }
       /*if (automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu[0]!='{') {
          u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,f);
@@ -373,13 +373,13 @@ u_fprints(z,f);
 // else, the width is the max of length(inflected), length(lemma), length(code)
 //
 int width_of_tag(Fst2Tag e) {
-if (e->contenu[0]!='{') {
-   return u_strlen(e->contenu);
+if (e->input[0]!='{') {
+   return u_strlen(e->input);
 }
-int i=u_strlen(e->flechi);
+int i=u_strlen(e->inflected);
 int j;
-if (i<(j=u_strlen(e->canonique))) i=j;
-if (i<(j=u_strlen(e->infos_gramm))) i=j;
+if (i<(j=u_strlen(e->lemma))) i=j;
+if (i<(j=u_strlen(e->codes))) i=j;
 return i;
 }
 

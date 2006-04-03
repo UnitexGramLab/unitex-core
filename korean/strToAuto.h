@@ -2011,10 +2011,10 @@ unePhraseAuto.prAuto(stderr,2);
 			wp = mapTrans;
 			while(t){
 				etiPtr = loadFst2->etiquette[t->etiquette];
-				switch(etiPtr->contenu[1]){
+				switch(etiPtr->input[1]){
 				case '{':
 				case '"':
-					if(etiPtr->contenu[1] == 0) break;
+					if(etiPtr->input[1] == 0) break;
 					for( j = 0; j < k;j++){
 
 					}

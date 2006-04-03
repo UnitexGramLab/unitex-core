@@ -240,102 +240,102 @@ t[0]=' ';
 t[1]='\0';
 ESPACE=get_token_number(t,tok);
 for (i=0;i<fst2->nombre_etiquettes;i++) {
-  if (etiquette[i]->controle&START_VAR_TAG_BIT_MASK) {
+  if (etiquette[i]->control&START_VAR_TAG_BIT_MASK) {
      // case of $a(
-     etiquette[i]->numero=VAR_START;
-     etiquette[i]->controle=(unsigned char)((etiquette[i]->controle-START_VAR_TAG_BIT_MASK)|CONTROL_TAG_BIT_MASK);
+     etiquette[i]->number=VAR_START;
+     etiquette[i]->control=(unsigned char)((etiquette[i]->control-START_VAR_TAG_BIT_MASK)|CONTROL_TAG_BIT_MASK);
   }
   else
-  if (etiquette[i]->controle&END_VAR_TAG_BIT_MASK) {
+  if (etiquette[i]->control&END_VAR_TAG_BIT_MASK) {
      // case of $a)
-     etiquette[i]->numero=VAR_END;
-     etiquette[i]->controle=(unsigned char)((etiquette[i]->controle-END_VAR_TAG_BIT_MASK)|CONTROL_TAG_BIT_MASK);
+     etiquette[i]->number=VAR_END;
+     etiquette[i]->control=(unsigned char)((etiquette[i]->control-END_VAR_TAG_BIT_MASK)|CONTROL_TAG_BIT_MASK);
   }
   else
-  if (etiquette[i]->controle&POSITIVE_CONTEXT_MASK) {
+  if (etiquette[i]->control&POSITIVE_CONTEXT_MASK) {
      // case of $[
-     etiquette[i]->numero=POSITIVE_CONTEXT_MARK;
-     etiquette[i]->controle=(unsigned char)((etiquette[i]->controle-POSITIVE_CONTEXT_MASK)|CONTROL_TAG_BIT_MASK);
+     etiquette[i]->number=POSITIVE_CONTEXT_MARK;
+     etiquette[i]->control=(unsigned char)((etiquette[i]->control-POSITIVE_CONTEXT_MASK)|CONTROL_TAG_BIT_MASK);
   }
   else
-  if (etiquette[i]->controle&NEGATIVE_CONTEXT_MASK) {
+  if (etiquette[i]->control&NEGATIVE_CONTEXT_MASK) {
      // case of $![
-     etiquette[i]->numero=NEGATIVE_CONTEXT_MARK;
-     etiquette[i]->controle=(unsigned char)((etiquette[i]->controle-NEGATIVE_CONTEXT_MASK)|CONTROL_TAG_BIT_MASK);
+     etiquette[i]->number=NEGATIVE_CONTEXT_MARK;
+     etiquette[i]->control=(unsigned char)((etiquette[i]->control-NEGATIVE_CONTEXT_MASK)|CONTROL_TAG_BIT_MASK);
   }
   else
-  if (etiquette[i]->controle&CONTEXT_END_MASK) {
+  if (etiquette[i]->control&CONTEXT_END_MASK) {
      // case of $]
-     etiquette[i]->numero=CONTEXT_END_MARK;
-     etiquette[i]->controle=(unsigned char)((etiquette[i]->controle-CONTEXT_END_MASK)|CONTROL_TAG_BIT_MASK);
+     etiquette[i]->number=CONTEXT_END_MARK;
+     etiquette[i]->control=(unsigned char)((etiquette[i]->control-CONTEXT_END_MASK)|CONTROL_TAG_BIT_MASK);
   }
   else
-  if (!u_strcmp_char(etiquette[i]->contenu,"#")) {
-    if (etiquette[i]->controle&RESPECT_CASE_TAG_BIT_MASK) {
+  if (!u_strcmp_char(etiquette[i]->input,"#")) {
+    if (etiquette[i]->control&RESPECT_CASE_TAG_BIT_MASK) {
        // on est dans le cas @#: # doit etre considere comme un token normal
-       etiquette[i]->numero=get_hash_number(etiquette[i]->contenu,tok);
-       index_controle[tok->N]=get_controle(etiquette[i]->contenu,alph,NULL,tokenization_mode);
-       etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|TOKEN_TAG_BIT_MASK);
+       etiquette[i]->number=get_hash_number(etiquette[i]->input,tok);
+       index_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
+       etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
     }
     else {
-       etiquette[i]->numero=DIESE;
-       etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+       etiquette[i]->number=DIESE;
+       etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
     }
   }
   else
-  if (!u_strcmp_char(etiquette[i]->contenu,"<E>")) {
-     etiquette[i]->numero=EPSILON;
-     etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+  if (!u_strcmp_char(etiquette[i]->input,"<E>")) {
+     etiquette[i]->number=EPSILON;
+     etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
   }
   else  {
-      etiquette[i]->numero=get_token_number(etiquette[i]->contenu,tok);
-      if ((etiquette[i]->numero<0) && u_strcmp_char(etiquette[i]->contenu,"<")) {
-        if (etiquette[i]->contenu[0]=='<') {
-          if (etiquette[i]->contenu[1]=='!') {
-            etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|NEGATION_TAG_BIT_MASK);
+      etiquette[i]->number=get_token_number(etiquette[i]->input,tok);
+      if ((etiquette[i]->number<0) && u_strcmp_char(etiquette[i]->input,"<")) {
+        if (etiquette[i]->input[0]=='<') {
+          if (etiquette[i]->input[1]=='!') {
+            etiquette[i]->control=(unsigned char)(etiquette[i]->control|NEGATION_TAG_BIT_MASK);
             j=2;
           } else j=1;
           k=0;
-          while (etiquette[i]->contenu[j]!='>')
-            tmp[k++]=etiquette[i]->contenu[j++];
+          while (etiquette[i]->input[j]!='>')
+            tmp[k++]=etiquette[i]->input[j++];
           tmp[k]='\0';
           if (!u_strcmp_char(tmp,"MOT")) {
-            etiquette[i]->numero=MOT;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=MOT;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
           } else if (!u_strcmp_char(tmp,"DIC")) {
             // <DIC> will be computed from 'dlf' and 'dlc'
             // <!DIC> will be computed from the 'err'
             // we do this because part of compound words that are not simple
             // words would recognized by <!DIC>, and we do not want 'aujourd' to
             // appear as an unknown word while it is part of "aujourd'hui"
-            if (etiquette[i]->contenu[1]!='!') (*existe_etiquette_DIC)=1;
-            etiquette[i]->numero=DIC;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            if (etiquette[i]->input[1]!='!') (*existe_etiquette_DIC)=1;
+            etiquette[i]->number=DIC;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
           } else if (!u_strcmp_char(tmp,"CDIC")) {
             (*existe_etiquette_CDIC)=1;
-            etiquette[i]->numero=CDIC;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=CDIC;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
           } else if (!u_strcmp_char(tmp,"SDIC")) {
             (*existe_etiquette_SDIC)=1;
-            etiquette[i]->numero=SDIC;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=SDIC;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
           } else if (!u_strcmp_char(tmp,"MAJ")) {
-            etiquette[i]->numero=MAJ;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=MAJ;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
           } else if (!u_strcmp_char(tmp,"MIN")) {
-            etiquette[i]->numero=MIN;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=MIN;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
           } else if (!u_strcmp_char(tmp,"PRE")) {
-            etiquette[i]->numero=PRE;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=PRE;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
           } else if (!u_strcmp_char(tmp,"NB")) {
-            etiquette[i]->numero=NB;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=NB;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
 
             /* $CD$ begin */
           } else if (!u_strcmp_char(tmp,"TOKEN")) {
-            etiquette[i]->numero=TOKEN;
-    		etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=TOKEN;
+    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
             /* $CD$ end   */
 
           } else {
@@ -344,57 +344,57 @@ for (i=0;i<fst2->nombre_etiquettes;i++) {
             decouper_entre_angles(tmp,flechi,canonique,pattern,semantic_codes,alph);
             // 1er cas: <V>
             if ((pattern[0]!='\0')&&(flechi[0]=='\0')&&(canonique[0]=='\0')) {
-               etiquette[i]->numero=(*nombre_patterns);
-    		   etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|GRAMM_CODE_TAG_BIT_MASK);
+               etiquette[i]->number=(*nombre_patterns);
+    		   etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
                inserer_code_gramm(*nombre_patterns,pattern,NULL);
                (*nombre_patterns)++;
             } else
             // 2eme cas: <manger.V>
             if ((flechi[0]=='\0')&&(canonique[0]!='\0')&&(pattern[0]!='\0')) {
-               etiquette[i]->numero=(*nombre_patterns);
-    		   etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|GRAMM_CODE_TAG_BIT_MASK);
-               etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|LEMMA_TAG_BIT_MASK);
+               etiquette[i]->number=(*nombre_patterns);
+    		   etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
+               etiquette[i]->control=(unsigned char)(etiquette[i]->control|LEMMA_TAG_BIT_MASK);
                inserer_code_gramm(*nombre_patterns,pattern,canonique);
                (*nombre_patterns)++;
-               etiquette[i]->canonique=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
-               u_strcpy(etiquette[i]->canonique,canonique);
+               etiquette[i]->lemma=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
+               u_strcpy(etiquette[i]->lemma,canonique);
             } else
             // 3eme cas: <mange,manger.V>
             if ((flechi[0]!='\0')&&(canonique[0]!='\0')&&(pattern[0]!='\0')) {
-               etiquette[i]->numero=(*nombre_patterns);
-    		   etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|GRAMM_CODE_TAG_BIT_MASK);
-               etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|LEMMA_TAG_BIT_MASK);
+               etiquette[i]->number=(*nombre_patterns);
+    		   etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
+               etiquette[i]->control=(unsigned char)(etiquette[i]->control|LEMMA_TAG_BIT_MASK);
                inserer_code_gramm(*nombre_patterns,pattern,canonique);
                (*nombre_patterns)++;
-               etiquette[i]->canonique=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
-               u_strcpy(etiquette[i]->canonique,canonique);
-               etiquette[i]->flechi=(unichar*)malloc((u_strlen(flechi)+1)*sizeof(unichar));
-               u_strcpy(etiquette[i]->flechi,flechi);
+               etiquette[i]->lemma=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
+               u_strcpy(etiquette[i]->lemma,canonique);
+               etiquette[i]->inflected=(unichar*)malloc((u_strlen(flechi)+1)*sizeof(unichar));
+               u_strcpy(etiquette[i]->inflected,flechi);
             } else
             // 4eme cas: <manger>
             if ((flechi[0]=='\0')&&(canonique[0]!='\0')&&(pattern[0]=='\0')) {
-               etiquette[i]->numero=LEXICAL_TAG;
-               etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|TOKEN_TAG_BIT_MASK);
-               etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|LEMMA_TAG_BIT_MASK);
-               etiquette[i]->canonique=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
-               u_strcpy(etiquette[i]->canonique,canonique);
+               etiquette[i]->number=LEXICAL_TAG;
+               etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
+               etiquette[i]->control=(unsigned char)(etiquette[i]->control|LEMMA_TAG_BIT_MASK);
+               etiquette[i]->lemma=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
+               u_strcpy(etiquette[i]->lemma,canonique);
             }// si on n'est dans aucun de ces 4 cas, c'est une erreur
           }
         }
         else {
           // si l'etiquette n'est pas dans les tokens, on l'y rajoute
           // a cause du feature B.C.
-          etiquette[i]->numero=get_hash_number(etiquette[i]->contenu,tok);
-          index_controle[tok->N]=get_controle(etiquette[i]->contenu,alph,NULL,tokenization_mode);
-          etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|TOKEN_TAG_BIT_MASK);
+          etiquette[i]->number=get_hash_number(etiquette[i]->input,tok);
+          index_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
+          etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
         }
       } else {
-          if (etiquette[i]->numero!=ESPACE) {
-            etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|TOKEN_TAG_BIT_MASK);
+          if (etiquette[i]->number!=ESPACE) {
+            etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
           }
           else {
-            etiquette[i]->numero=SPACE_TAG;
-            etiquette[i]->controle=(unsigned char)(etiquette[i]->controle|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->number=SPACE_TAG;
+            etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
           }
         }
     }

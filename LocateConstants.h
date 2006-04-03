@@ -65,7 +65,7 @@
 // this first bit mask set is used when a fst2 is loaded
 #define TRANSDUCTION_TAG_BIT_MASK 1
 #define NEGATION_TAG_BIT_MASK 2
-#define RESPECT_CASE_TAG_BIT_MASK 4
+#define RESPECT_CASE_TAG_BIT_MASK 4 // to 1 if case variants are not allowed
 #define START_VAR_TAG_BIT_MASK 64
 #define END_VAR_TAG_BIT_MASK 128
 
@@ -78,6 +78,11 @@
 #define CONTROL_TAG_BIT_MASK 16 // #, ESPACE, <E>, <MOT>, <DIC>, <SDIC>, <CDIC>, <MAJ>, <MIN>, <PRE>, $a(, $a), <NB>
 #define TOKEN_TAG_BIT_MASK 32 // lundi, <manger> (<manger> is there because it will be replaced by a token list)
 #define LEMMA_TAG_BIT_MASK 64 // used when a lemma is present a tag: <manger>, <manger.V>, <mange,manger.V>
+
+//---------------------------------------------------------------------------
+
+#define NO_COMPOUND_PATTERN -1
+
 
 //---------------------------------------------------------------------------
 #endif

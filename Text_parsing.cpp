@@ -487,7 +487,7 @@ while (a_meta!=NULL) {
     iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;
     /* $CD$ end   */
 
-    sortie=ETIQUETTE[arr->etiquette_origine]->transduction;
+    sortie=ETIQUETTE[arr->etiquette_origine]->output;
     switch (a_meta->numero_de_meta) {
       case SPACE_TAG:if (texte[pos+origine_courante]==ESPACE) {
                         if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
@@ -903,7 +903,7 @@ while (a_pattern!=NULL) {
 #endif
     /* $CD$ end   */
 
-    sortie=ETIQUETTE[arr->etiquette_origine]->transduction;
+    sortie=ETIQUETTE[arr->etiquette_origine]->output;
     k=a_pattern->numero_de_pattern;
     pos3=trouver_mot_compose_DIC(pos2,k,infos->DLC_tree);
     if (pos3!=-1 && !(a_pattern->negation)) {
@@ -950,7 +950,7 @@ while (a_pattern!=NULL) {
     iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;  
 #endif
     /* $CD$ end   */
-    sortie=ETIQUETTE[arr->etiquette_origine]->transduction;
+    sortie=ETIQUETTE[arr->etiquette_origine]->output;
     k=a_pattern->numero_de_pattern;
     //---mots composes
     pos3=trouver_mot_compose_DIC(pos2,k,infos->DLC_tree);
@@ -1031,7 +1031,7 @@ if (etat_courant->nombre_de_tokens!=0) {
       {
       /* $CD$ end   */
 
-      sortie=ETIQUETTE[arr->etiquette_origine]->transduction;
+      sortie=ETIQUETTE[arr->etiquette_origine]->output;
       if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
       if (transduction_mode==MERGE_TRANSDUCTIONS) {
          if (pos2!=pos) push_char(' ');

@@ -478,11 +478,11 @@ unichar pile[MAX_CHARS_IN_STACK];
 unichar etiq[MAX_CHARS_IN_STACK];
 int pos_etiq;
 u_strcpy(out,sortie);
-if (u_strcmp_char(e->transduction,"<E>")) {
-   u_strcat(out,e->transduction);
+if (u_strcmp_char(e->output,"<E>")) {
+   u_strcat(out,e->output);
 }
 u_strcpy(pile,flechi);
-u_strcpy(etiq,e->contenu);
+u_strcpy(etiq,e->input);
 if (u_strcmp_char(etiq,"<E>")) {
     // if the tag is not <E>, we process it
     for (pos_etiq=0;etiq[pos_etiq]!='\0';) {
@@ -577,11 +577,11 @@ unichar pile[MAX_CHARS_IN_STACK];
 unichar etiq[MAX_CHARS_IN_STACK];
 int pos_etiq;
 u_strcpy(out,sortie);
-if (u_strcmp_char(e->transduction,"<E>")) {
-   u_strcat(out,e->transduction);
+if (u_strcmp_char(e->output,"<E>")) {
+   u_strcat(out,e->output);
 }
 u_strcpy(pile,flechi);
-u_strcpy(etiq,e->contenu);
+u_strcpy(etiq,e->input);
 if (u_strcmp_char(etiq,"<E>")) {
     // if the tag is not <E>, we process it
     for (pos_etiq=0;etiq[pos_etiq]!='\0';) {

@@ -43,11 +43,11 @@ free(e);
 
 void liberer_etiquette(Fst2Tag e) {
 if (e==NULL) return;
-if (e->contenu!=NULL) free(e->contenu);
-if (e->flechi!=NULL) free(e->flechi);
-if (e->canonique!=NULL) free(e->canonique);
-if (e->infos_gramm!=NULL) free(e->infos_gramm);
-if (e->transduction!=NULL) free(e->transduction);
+if (e->input!=NULL) free(e->input);
+if (e->inflected!=NULL) free(e->inflected);
+if (e->lemma!=NULL) free(e->lemma);
+if (e->codes!=NULL) free(e->codes);
+if (e->output!=NULL) free(e->output);
 free(e);
 }
 

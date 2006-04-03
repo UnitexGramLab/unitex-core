@@ -513,8 +513,8 @@ tAutAlMot * fst2AutAlMot(Automate_fst2 * A, int nb) {
     aut->type[q] = 0;
 
 
-    if (A->etat[qq]->controle & 1)  { aut->type[q] |= AUT_FINAL;   }
-    if (A->etat[qq]->controle & 2)  { aut->type[q] |= AUT_INITIAL; }
+    if (A->etat[qq]->control & 1)  { aut->type[q] |= AUT_FINAL;   }
+    if (A->etat[qq]->control & 2)  { aut->type[q] |= AUT_INITIAL; }
 
     aut->etats[q] = NULL;
 
@@ -522,7 +522,7 @@ tAutAlMot * fst2AutAlMot(Automate_fst2 * A, int nb) {
 
       tSymbole symb;
 
-      load_text_symbol(& symb, A->etiquette[trans->etiquette]->contenu);
+      load_text_symbol(& symb, A->etiquette[trans->etiquette]->input);
 
       alphabet_clear(alphabet);
 
@@ -590,7 +590,7 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
 	tSymbole symb;
 
-	u_strcpy(buf, A->etiquette[trans->etiquette]->contenu);
+	u_strcpy(buf, A->etiquette[trans->etiquette]->input);
 	load_text_symbol(& symb, buf);
 
         if (developp) { // developp symbols
@@ -652,8 +652,8 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
     aut->type[q] = 0;
 
-    if (A->etat[qq]->controle & 1) { aut->type[q] |= AUT_TERMINAL; }
-    if (A->etat[qq]->controle & 2) { aut->type[q] |= AUT_INITIAL;  }
+    if (A->etat[qq]->control & 1) { aut->type[q] |= AUT_TERMINAL; }
+    if (A->etat[qq]->control & 2) { aut->type[q] |= AUT_INITIAL;  }
 
     aut->etats[q] = NULL;
 
@@ -661,7 +661,7 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
       tSymbole symb;
 
-      u_strcpy(buf, A->etiquette[trans->etiquette]->contenu);
+      u_strcpy(buf, A->etiquette[trans->etiquette]->input);
 
       //      debug("before=%S\n", buf);
       load_gramm_symbol(& symb, buf);

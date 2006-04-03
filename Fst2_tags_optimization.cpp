@@ -63,20 +63,20 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_hash_number(s,tok);
   if ((index_code_gramm[num]!=NULL)&&
-      (index_code_gramm[num][etiquette[e]->numero/8]&(1<<(etiquette[e]->numero%8)))) {
+      (index_code_gramm[num][etiquette[e]->number/8]&(1<<(etiquette[e]->number%8)))) {
       ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
       ptr_num->n=num;
-      ptr_num->suivant=etiquette[e]->numeros;
-      etiquette[e]->numeros=ptr_num;
-      etiquette[e]->nombre_mots++;
+      ptr_num->suivant=etiquette[e]->matching_tokens;
+      etiquette[e]->matching_tokens=ptr_num;
+      etiquette[e]->number_of_matching_tokens++;
    }
    return;
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->numero,pattern_compose_courant,alph,tok,
+  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,pattern_compose_courant,alph,tok,
   						DLC_tree,tokenization_mode)) {
-     etiquette[e]->pattern_compose=pattern_compose_courant;
+     etiquette[e]->compound_pattern=pattern_compose_courant;
   }
   return;
 }
@@ -85,12 +85,12 @@ struct liste_nombres* ptr_copy = ptr; // s.n.
 while (ptr!=NULL) {
   num=ptr->n;
   if ((index_code_gramm[num]!=NULL)&&
-      (index_code_gramm[num][etiquette[e]->numero/8]&(1<<(etiquette[e]->numero%8)))) {
+      (index_code_gramm[num][etiquette[e]->number/8]&(1<<(etiquette[e]->number%8)))) {
     ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
     ptr_num->n=num;
-    ptr_num->suivant=etiquette[e]->numeros;
-    etiquette[e]->numeros=ptr_num;
-    etiquette[e]->nombre_mots++;
+    ptr_num->suivant=etiquette[e]->matching_tokens;
+    etiquette[e]->matching_tokens=ptr_num;
+    etiquette[e]->number_of_matching_tokens++;
   }
   ptr=ptr->suivant;
 }
@@ -104,9 +104,9 @@ void deuxieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* to
 unichar* s;
 unichar tmp[2000];
 int i,j;
-s=get_formes_flechies(etiquette[e]->canonique,0,racine);
+s=get_formes_flechies(etiquette[e]->lemma,0,racine);
 if (s==NULL) {
-   etiquette[e]->numero=NOTHING_TAG;
+   etiquette[e]->number=NOTHING_TAG;
    return;
 }
 i=0;
@@ -122,10 +122,10 @@ while (s[i]!='\0') {
   deuxieme_cas_prime(e,etiquette,tmp,alph,tok,DLC_tree,tokenization_mode);
 }
 pattern_compose_courant++;
-if (etiquette[e]->numeros==NULL) {
-   etiquette[e]->numero=NOTHING_TAG;
+if (etiquette[e]->matching_tokens==NULL) {
+   etiquette[e]->number=NOTHING_TAG;
 }
-else etiquette[e]->numero=LEXICAL_TAG;
+else etiquette[e]->number=LEXICAL_TAG;
 }
 
 
@@ -140,20 +140,20 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_hash_number(s,tok);
    if ((index_code_gramm[num]!=NULL)&&
-      (index_code_gramm[num][etiquette[e]->numero/8]&(1<<(etiquette[e]->numero%8)))) {
+      (index_code_gramm[num][etiquette[e]->number/8]&(1<<(etiquette[e]->number%8)))) {
       ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
       ptr_num->n=num;
-      ptr_num->suivant=etiquette[e]->numeros;
-      etiquette[e]->numeros=ptr_num;
-      etiquette[e]->nombre_mots++;
+      ptr_num->suivant=etiquette[e]->matching_tokens;
+      etiquette[e]->matching_tokens=ptr_num;
+      etiquette[e]->number_of_matching_tokens++;
    }
    return;
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->numero,pattern_compose_courant,alph,tok,
+  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,pattern_compose_courant,alph,tok,
   						DLC_tree,tokenization_mode)) {
-     etiquette[e]->pattern_compose=pattern_compose_courant;
+     etiquette[e]->compound_pattern=pattern_compose_courant;
   }
   return;
 }
@@ -162,12 +162,12 @@ struct liste_nombres* ptr_copy = ptr; // s.n.
 while (ptr!=NULL) {
   num=ptr->n;
   if ((index_code_gramm[num]!=NULL)&&
-      (index_code_gramm[num][etiquette[e]->numero/8]&(1<<(etiquette[e]->numero%8)))) {
+      (index_code_gramm[num][etiquette[e]->number/8]&(1<<(etiquette[e]->number%8)))) {
     ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
     ptr_num->n=num;
-    ptr_num->suivant=etiquette[e]->numeros;
-    etiquette[e]->numeros=ptr_num;
-    etiquette[e]->nombre_mots++;
+    ptr_num->suivant=etiquette[e]->matching_tokens;
+    etiquette[e]->matching_tokens=ptr_num;
+    etiquette[e]->number_of_matching_tokens++;
   }
   ptr=ptr->suivant;
 }
@@ -181,9 +181,9 @@ void troisieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* t
 unichar* s;
 unichar tmp[2000];
 int i,j;
-s=get_formes_flechies(etiquette[e]->canonique,0,racine);
+s=get_formes_flechies(etiquette[e]->lemma,0,racine);
 if (s==NULL) {
-   etiquette[e]->numero=NOTHING_TAG;
+   etiquette[e]->number=NOTHING_TAG;
    return;
 }
 i=0;
@@ -199,20 +199,20 @@ while (s[i]!='\0') {
   if (tmp[0]=='{' && u_strcmp_char(tmp,"{S}") && u_strcmp_char(s,"{STOP}")) {
      // case of a token tag
      dic_entry* TMP=tokenize_tag_token(tmp);
-     if (!u_strcmp(TMP->inflected,etiquette[e]->flechi)) {
+     if (!u_strcmp(TMP->inflected,etiquette[e]->inflected)) {
         troisieme_cas_prime(e,etiquette,tmp,alph,tok,DLC_tree,tokenization_mode);
      }
      free_dic_entry(TMP);
   }
-  else if (!u_strcmp(tmp,etiquette[e]->flechi)) {
+  else if (!u_strcmp(tmp,etiquette[e]->inflected)) {
      troisieme_cas_prime(e,etiquette,tmp,alph,tok,DLC_tree,tokenization_mode);
   }
 }
 pattern_compose_courant++;
-if (etiquette[e]->numeros==NULL) {
-   etiquette[e]->numero=NOTHING_TAG;
+if (etiquette[e]->matching_tokens==NULL) {
+   etiquette[e]->number=NOTHING_TAG;
 }
-else etiquette[e]->numero=LEXICAL_TAG;
+else etiquette[e]->number=LEXICAL_TAG;
 }
 
 
@@ -228,16 +228,16 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    num=get_hash_number(s,tok);
    ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
    ptr_num->n=num;
-   ptr_num->suivant=etiquette[e]->numeros;
-   etiquette[e]->numeros=ptr_num;
-   etiquette[e]->nombre_mots++;
+   ptr_num->suivant=etiquette[e]->matching_tokens;
+   etiquette[e]->matching_tokens=ptr_num;
+   etiquette[e]->number_of_matching_tokens++;
    return;
 }
 // normal case
 //---mot compose
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
    add_compound_word_with_pattern(s,pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode);
-   etiquette[e]->pattern_compose=pattern_compose_courant;
+   etiquette[e]->compound_pattern=pattern_compose_courant;
    return;
 }
 //---mot simple
@@ -247,9 +247,9 @@ while (ptr!=NULL) {
   num=ptr->n;
   ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
   ptr_num->n=num;
-  ptr_num->suivant=etiquette[e]->numeros;
-  etiquette[e]->numeros=ptr_num;
-  etiquette[e]->nombre_mots++;
+  ptr_num->suivant=etiquette[e]->matching_tokens;
+  etiquette[e]->matching_tokens=ptr_num;
+  etiquette[e]->number_of_matching_tokens++;
   ptr=ptr->suivant;
 }
 free_liste_nombres(ptr_copy); // s.n.
@@ -262,9 +262,9 @@ void quatrieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* t
 unichar* s;
 unichar tmp[2000];
 int i,j;
-s=get_formes_flechies(etiquette[e]->canonique,0,racine);
+s=get_formes_flechies(etiquette[e]->lemma,0,racine);
 if (s==NULL) {
-  etiquette[e]->numero=NOTHING_TAG;
+  etiquette[e]->number=NOTHING_TAG;
   return;
 }
 i=0;
@@ -277,9 +277,9 @@ while (s[i]!='\0') {
   quatrieme_cas_prime(e,etiquette,tmp,alph,tok,DLC_tree,tokenization_mode);
 }
 pattern_compose_courant++;
-if (etiquette[e]->numeros==NULL)
-  etiquette[e]->numero=NOTHING_TAG;
-else etiquette[e]->numero=LEXICAL_TAG;
+if (etiquette[e]->matching_tokens==NULL)
+  etiquette[e]->number=NOTHING_TAG;
+else etiquette[e]->number=LEXICAL_TAG;
 }
 
 
@@ -290,7 +290,7 @@ void cas_normal(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
 int num;
 struct liste_nombres* ptr_num;
 struct liste_nombres* ptr;
-unichar* s=etiquette[e]->contenu;
+unichar* s=etiquette[e]->input;
 // first, we check if this tag can recognize some tag tokens
 struct liste_nombres* L=tag_token_list;
 while (L!=NULL) {
@@ -303,9 +303,9 @@ while (L!=NULL) {
       num=L->n;
       ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
       ptr_num->n=num;
-      ptr_num->suivant=etiquette[e]->numeros;
-      etiquette[e]->numeros=ptr_num;
-      etiquette[e]->nombre_mots++;
+      ptr_num->suivant=etiquette[e]->matching_tokens;
+      etiquette[e]->matching_tokens=ptr_num;
+      etiquette[e]->number_of_matching_tokens++;
    }
    L=L->suivant;
 }
@@ -315,27 +315,27 @@ if (!case_variants_allowed) {
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
    add_compound_word_with_pattern(s,pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode);
-   etiquette[e]->pattern_compose=pattern_compose_courant;
+   etiquette[e]->compound_pattern=pattern_compose_courant;
    pattern_compose_courant++;
 } else {
-   ptr=get_token_list_for_sequence(etiquette[e]->contenu,alph,tok);
+   ptr=get_token_list_for_sequence(etiquette[e]->input,alph,tok);
    struct liste_nombres* ptr_copy = ptr; // s.n.
    while (ptr!=NULL) {
      num=ptr->n;
      ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
      ptr_num->n=num;
-     ptr_num->suivant=etiquette[e]->numeros;
-     etiquette[e]->numeros=ptr_num;
-     etiquette[e]->nombre_mots++;
+     ptr_num->suivant=etiquette[e]->matching_tokens;
+     etiquette[e]->matching_tokens=ptr_num;
+     etiquette[e]->number_of_matching_tokens++;
      ptr=ptr->suivant;
    }
    free_liste_nombres(ptr_copy); // s.n.
-   if (etiquette[e]->numeros==NULL) {
-      etiquette[e]->numero=NOTHING_TAG;
+   if (etiquette[e]->matching_tokens==NULL) {
+      etiquette[e]->number=NOTHING_TAG;
    }
    else {
-      etiquette[e]->numero=LEXICAL_TAG;
-      etiquette[e]->controle=(unsigned char)(etiquette[e]->controle|LEMMA_TAG_BIT_MASK);
+      etiquette[e]->number=LEXICAL_TAG;
+      etiquette[e]->control=(unsigned char)(etiquette[e]->control|LEMMA_TAG_BIT_MASK);
    }
 }
 }
@@ -349,21 +349,21 @@ int i;
 //printf("************** TRAITEMENT DES ANGLES ******************\n");
 for (i=0;i<etiquette_courante;i++) {
   // cas des etiquettes entre angles
-  if (etiquette[i]->controle&LEMMA_TAG_BIT_MASK) {
+  if (etiquette[i]->control&LEMMA_TAG_BIT_MASK) {
     // cas <manger>
-    if (etiquette[i]->numero==LEXICAL_TAG) {
+    if (etiquette[i]->number==LEXICAL_TAG) {
        //printf("1");
        quatrieme_cas(i,etiquette,alph,tok,DLC_tree,tokenization_mode);
     }
     else
     // cas <mange,manger.V>
-    if ((etiquette[i]->canonique!=NULL)&&(etiquette[i]->flechi!=NULL)) {
+    if ((etiquette[i]->lemma!=NULL)&&(etiquette[i]->inflected!=NULL)) {
        //printf("2");
        troisieme_cas(i,etiquette,alph,tok,DLC_tree,tokenization_mode);
     }
     else
     // cas <manger.V>
-    if ((etiquette[i]->canonique!=NULL)&&(etiquette[i]->flechi==NULL)) {
+    if ((etiquette[i]->lemma!=NULL)&&(etiquette[i]->inflected==NULL)) {
        //printf("3");
        deuxieme_cas(i,etiquette,alph,tok,DLC_tree,tokenization_mode);
     }
@@ -372,9 +372,9 @@ for (i=0;i<etiquette_courante;i++) {
     // cas des etiquettes ou les variantes minuscules/majuscules sont permises
     // 32 :c'est une transition normale + !4 (variantes min/maj permises)
 
-    if (etiquette[i]->controle&TOKEN_TAG_BIT_MASK) {
+    if (etiquette[i]->control&TOKEN_TAG_BIT_MASK) {
        //printf("4");
-       cas_normal(i,etiquette,alph,tok,!(etiquette[i]->controle&RESPECT_CASE_TAG_BIT_MASK),
+       cas_normal(i,etiquette,alph,tok,!(etiquette[i]->control&RESPECT_CASE_TAG_BIT_MASK),
        			DLC_tree,tokenization_mode);
     }
   }

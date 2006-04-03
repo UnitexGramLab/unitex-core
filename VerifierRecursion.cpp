@@ -29,9 +29,9 @@
 // si l'etiquette reconnait <E>, on met son champ controle a 1, a 0 sinon
 //
 void controler_epsilon_etiquette(Fst2Tag e) {
-if ((e->contenu!=NULL) && (u_strlen(e->contenu)>=3) &&(e->contenu[0]=='<') && (e->contenu[1]=='E') && (e->contenu[2]=='>'))
-  e->controle=1;
-else e->controle=0;
+if ((e->input!=NULL) && (u_strlen(e->input)>=3) &&(e->input[0]=='<') && (e->input[1]=='E') && (e->input[2]=='>'))
+  e->control=1;
+else e->control=0;
 }
 
 
@@ -103,7 +103,7 @@ while (l!=NULL) {
     if (peut_aller_par_E(graphe[l->arr],g,graphe,etiquette,verifie))
       return 1;
   }
-  if (l->etiquette>=0 && etiquette[l->etiquette]->controle)
+  if (l->etiquette>=0 && etiquette[l->etiquette]->control)
     if (peut_aller_par_E(graphe[l->arr],g,graphe,etiquette,verifie))
       return 1;
   l=l->suivant;
@@ -144,7 +144,7 @@ while (liste!=NULL) {
     }
   }
   else
-  if (etiquette[liste->etiquette]->controle) {
+  if (etiquette[liste->etiquette]->control) {
     // on est dans le cas <E>
     if (explorer_etat(graphe[liste->arr],l,debut_graphe,nom_graphe,graphe,etiquette,verifie)) {
       return 1;
@@ -218,7 +218,7 @@ while (l!=NULL) {
     }
   }
   else
-  if (etiquette[l->etiquette]->controle) {
+  if (etiquette[l->etiquette]->control) {
     // on est dans le cas <E>
     if (chercher_boucle_par_E_dans_etat(graphe[l->arr],graphe,etiquette,verifie)) {
       e->controle=(unsigned char)(e->controle-8);
@@ -591,7 +591,7 @@ while (l!=NULL) {
       retour=retour|ret;
     }
     else
-    if (etiquette[l->etiquette]->controle&1) {
+    if (etiquette[l->etiquette]->control&1) {
       // cas d'une transition par <E>
       *cond_tmp=NULL;
       ret=explorer_graphe_E(premier_etat,l->arr,graphe,etiquette,n_graphe,nom_graphe,conditions_pour_etat,cond_tmp);

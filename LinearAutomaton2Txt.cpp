@@ -80,7 +80,7 @@ for (int sentence=1;sentence<fst2->nombre_graphes+1;sentence++) {
             // if there is not exactly one transition in each state
             return sentence;
          }
-         unichar* etiq=fst2->etiquette[l->etiquette]->contenu;
+         unichar* etiq=fst2->etiquette[l->etiquette]->input;
          u_fprints(etiq,f);
          u_fprints_char(" ",f);
          etat=fst2->etat[l->arr];

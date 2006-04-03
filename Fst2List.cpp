@@ -797,13 +797,13 @@ verboseMode  = 0;
 			for(i = 0; i < h->pathCnt;i++){
 //				putInt(0,h->pathEtiQueue[i].path);
 				Eti = a->etiquette[h->pathEtiQueue[i].eti];
-				wp = 	(unichar *)Eti->contenu;
+				wp = 	(unichar *)Eti->input;
 				
 				if(u_strcmp(wp,u_epsilon_string)){
 //					wwp = saveSep;while(*wwp) EBuff[ePtrCnt++] = *wwp++;
 					while(*wp)	EBuff[ePtrCnt++] = *wp++;
 				}
-				wp = (unichar *)Eti->transduction;
+				wp = (unichar *)Eti->output;
 				if((automateMode == TRANMODE) && wp && u_strcmp(wp,u_epsilon_string)){
 //				    wwp = saveSep;while(*wwp) EBuff[ePtrCnt++] = *wwp++;
 					while(*wp) TBuff[tPtrCnt++] = *wp++;
@@ -849,11 +849,11 @@ verboseMode  = 0;
 				if((tmp < st) || (tmp >= ed) )	break;
 
 				Eti = a->etiquette[h->pathEtiQueue[i].eti];
-				wp = (unichar *)	Eti->contenu;
+				wp = (unichar *)	Eti->input;
 				if(u_strcmp(wp,u_epsilon_string) && *wp){
 					while(*wp)	EBuff[ePtrCnt++] = *wp++;
 				}
-				wp = (unichar *)Eti->transduction;
+				wp = (unichar *)Eti->output;
 				if((automateMode == TRANMODE ) && wp && u_strcmp(wp,u_epsilon_string) && *wp ){
 					while(*wp) TBuff[tPtrCnt++] = *wp++;
 				}
@@ -1044,7 +1044,7 @@ void CFstApp::loadGraph(char *fname)
 	if(stopSignal){
 	
 		for( i = 0; i < a->nombre_etiquettes ;i++){
-			if(u_strcmp((unichar *)a->etiquette[i]->contenu,stopSignal))
+			if(u_strcmp((unichar *)a->etiquette[i]->input,stopSignal))
 				continue;
 			for(j = 0; j < a->nombre_etats;j++){
 				strans = a->etat[j]->trans;
@@ -1063,7 +1063,7 @@ void CFstApp::loadGraph(char *fname)
 		int i,j,k,l,m;
 		unichar temp[256];
 		for( i = 0; i < a->nombre_etiquettes ;i++){
-			wp = (unichar *)a->etiquette[i]->contenu;
+			wp = (unichar *)a->etiquette[i]->input;
 			for(j = 0; wp[j] ;j++) 	temp[j] = wp[j];
 			temp[j] = 0;
 			for(j = 0 ; j < changeStrToIdx;j++){
@@ -1081,7 +1081,7 @@ void CFstApp::loadGraph(char *fname)
 					temp[m] = 0;
 				}
 			}
-			wp = (unichar *)a->etiquette[i]->contenu;
+			wp = (unichar *)a->etiquette[i]->input;
 			if(u_strcmp(wp,temp)){
 			   printf("%0xth index, %s==>%s\n",i,
                         getUtoChar(wp),getUtoChar(temp));
@@ -1535,12 +1535,12 @@ void CFstApp::outWordsOfGraph(int depth)
 			tp = u_null_string;
 		} else {
 			Eti = a->etiquette[pathEtiQ[s].eti & SUB_ID_MASK]; 
-			ep = (u_strcmp((unichar *)Eti->contenu,u_epsilon_string)) ? 
-				(unichar *)Eti->contenu : u_null_string;
+			ep = (u_strcmp((unichar *)Eti->input,u_epsilon_string)) ? 
+				(unichar *)Eti->input : u_null_string;
 
-            if((int)(Eti->transduction)){
-			tp = (u_strcmp((unichar *)Eti->transduction,u_epsilon_string)) ? 
-				(unichar *)Eti->transduction:u_null_string;
+            if((int)(Eti->output)){
+			tp = (u_strcmp((unichar *)Eti->output,u_epsilon_string)) ? 
+				(unichar *)Eti->output:u_null_string;
 				} else tp = u_null_string;
 		}
 //wprintf(L"{%d,%x,%x,%s,%s}",s,pathEtiQ[s].etatNo,pathEtiQ[s].eti,ep,tp);

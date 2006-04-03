@@ -42,26 +42,100 @@
 
 extern int etiquette_courante;
 
-//----------TYPES------------------------------------------
+/**
+ * 
+ */
 struct fst2Tag {
-  int numero;
-  unsigned char controle;
-  unichar *contenu;
-  unichar *transduction;
-  unichar *flechi;
-  unichar *canonique;
-  unichar *infos_gramm;
-  struct liste_nombres* numeros;
-  int nombre_mots;
-  int pattern_compose;
-
-  /* $CD$ begin */
-  unichar* contentGF;
-  int entryMasterGF;
-  /* $CD$ end   */
-
+	/* number of the tag in the .fst2 */
+	int number;
+	
+	/* This control byte is used to set information about the tag with
+	 * bit masks. The meaning of these tags can be found in LocateConstants.h
+	 * 
+	 * This field is also used in the Grf2Fst2 program in order to mark the
+	 * tags that can match the empty word <E>.
+	 */
+	unsigned char control;
+	
+	/*
+	 * 'input' represents the input part of a tag, that is to say without
+	 * its morphological filter and output if any.
+	 * Example: "<V:P><<^in>>/[V]" => input="<V:P>"
+	 * 
+	 * NOTE: if the input only contains a morphological filter like "<<^in>>",
+	 *       the default sequence "<TOKEN>" will be copied in the 'input' field.
+	 */
+	unichar* input;
+	
+	/*
+	 * 'output' represents the input part of a tag, without the '/' separator.
+	 * If a tag contains no transduction, this field is supposed not to be NULL
+	 * but to contain an empty string just made of '\0'.
+	 */
+	unichar* output;
+	
+	/*
+	 * When the input of a tag is of the form "<built,build.V>" or "{built,build.V:K}",
+	 * this field represents the inflected part of the input (here "built"). If this
+	 * field is not relevant for a tag, it is setted to NULL.
+	 */
+	unichar* inflected;
+	
+	/*
+	 * When the input of a tag is of the form "<build.V>", "<build>", "<built,build.V>"
+	 * or "{built,build.V:K}", this field represents the lemma part of the input (here 
+	 * "build"). If this field is not relevant for a tag, it is setted to NULL.
+	 */
+	unichar* lemma;
+	
+	/*
+	 * When the input of a tag is of the form "<build.V+t:P1s:P2s>", "<V+t:P1s:P2s>",
+	 * "<build,build.V+t:P1s:P2s>" or "{build,build.V+t:P1s:P2s}", this field
+	 * represents the sequences of grammatical, semantic and inflectional codes of 
+	 * the input (here "V+t:P1s:P2s"). If this field is not relevant for a tag,
+	 * it is setted to NULL.
+	 */
+	unichar* codes;
+	
+	/*
+	 * This field represents the list of the numbers of the tokens that this tag
+	 * can match.
+	 */
+	struct liste_nombres* matching_tokens;
+	
+	/*
+	 * 'number_of_matching_tokens' is the length of the list 'matching_tokens'. It
+	 * is cached for efficiency reasons.
+	 */
+	int number_of_matching_tokens;
+	
+	/*
+	 * If the tag can match one or several compound words, a compound pattern is
+	 * created, and this field is used to store the number of this compound
+	 * pattern. Note that if a tag ("<Einstein>") can match both simple ("Einstein")
+	 * and compound ("Albert Einstein") words, simple words will be handled as
+	 * tokens, and compound words will be handled via a compound pattern.
+	 */
+	int compound_pattern;
+	
+	/* $CD$ begin */
+	/*
+	 * If a tag contains a morphological filter, it is copied into this field 
+	 * at the loading of the fst2. It is setted to NULL if there is
+	 * no morphological filter.
+	 */
+	unichar* contentGF;
+	/*
+	 * When a fst2 is used by the Locate program, all morphological filters are
+	 * compiled into automata in the GF_lib library. This field is used
+	 * to store the number of the morphological filter of the tag, if any. It is setted 
+	 * to -1 if there is no morphological filter. These numbers are global so two tags
+	 * can share the same filter number if their filters are identical (for instance
+	 * "<A><<^in>>" and "<N><<^in>>/NOUN").
+	 */
+	int entryMasterGF;
+	/* $CD$ end   */
 };
-
 typedef struct fst2Tag* Fst2Tag;
 
 
