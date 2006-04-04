@@ -892,8 +892,6 @@ while (a_meta!=NULL) {
   a_meta=a_meta->suivant;
 }
 
-printf("ZZZ %d %d\n",numero_etat_courant,numero_graphe_courant);
-
 /////////////////////////////////////////////////////////
 // patterns composes
 //

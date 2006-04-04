@@ -44,7 +44,6 @@ int nombre_etats_fst2;
 int nombre_graphes_fst2;
 int nombre_etiquettes_fst2;
 int etiquette_courante;
-int nombre_etiquettes_de_depart;
 int etat_courant;
 
 
@@ -402,7 +401,7 @@ e->codes=u_strdup(temp);
 
 
 /**
- * This function creates a tag a variable declaration of the form
+ * This function creates a tag for a variable declaration of the form
  * "$a(" or "$a)", and inserts it at the given position in the 
  * tag array of the given fst2.
  */
@@ -434,167 +433,184 @@ fst2->tags[position]=e;
 }
 
 
+/**
+ * This function creates a tag  and inserts it at the given
+ * position in the tag array of the given fst2. 'input', 'contentGF' and
+ * 'output' and not supposed to be NULL. 'input' is not supposed to be an
+ * empty string. After the execution, the field 'contentGF' of the created tag
+ * can be NULL, but 'output' cannot. No output is indicated by an empty string.
+ */
+void create_tag(int position,unichar* input,unichar* contentGF,unichar* output,
+                int respect_case,Fst2* fst2) {
 
-//
-// insere une etiquette dans le tableau
-//
-void creer_etiquette_fst2(int position,unichar* mot,unichar* contentGF,unichar* transduction,
-                          int respect_min_maj,Fst2* fst2) {
-
-Fst2Tag e;
-int L=u_strlen(mot);
-if (mot[0]=='$' && L>2 && (mot[L-1]=='(' || mot[L-1]==')')) {
-   // on est dans le cas d'une variable $a( ou $a)
-   create_variable_tag(position,mot,fst2);
+Fst2Tag tag;
+int L=u_strlen(input);
+if (input[0]=='$' && L>2 && (input[L-1]=='(' || input[L-1]==')')) {
+   /* If we have a variable declaration like $a( or $a) */
+   create_variable_tag(position,input,fst2);
    return;
 }
-
-e=new_Fst2Tag();
-e->input=(unichar*)malloc((u_strlen(mot)+1)*sizeof(unichar));
-if (e->input==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction creer_etiquette_fst2\n");
-  exit(1);
-}
-u_strcpy(e->input,mot);
-
-//---------------
-if (!u_strcmp_char(mot,"$[")) {
-   e->control=POSITIVE_CONTEXT_MASK;
-   etiquette_fst2[position]=e;
+tag=new_Fst2Tag();
+tag->input=u_strdup(input);
+/* First, we test if we have a context mark */
+if (!u_strcmp_char(input,"$[")) {
+   tag->control=POSITIVE_CONTEXT_MASK;
+   fst2->tags[position]=tag;
    return;
 }
-if (!u_strcmp_char(mot,"$![")) {
-   e->control=NEGATIVE_CONTEXT_MASK;
-   etiquette_fst2[position]=e;
+if (!u_strcmp_char(input,"$![")) {
+   tag->control=NEGATIVE_CONTEXT_MASK;
+   fst2->tags[position]=tag;
    return;
 }
-if (!u_strcmp_char(mot,"$]")) {
-   e->control=CONTEXT_END_MASK;
-   etiquette_fst2[position]=e;
+if (!u_strcmp_char(input,"$]")) {
+   tag->control=CONTEXT_END_MASK;
+   fst2->tags[position]=tag;
    return;
 }
-//---------------
-
+/*
+ * If we have a morphological filter, we copy it
+ */
 /* $CD$ begin */
 if (u_strlen(contentGF) > 0) {
-    e -> contentGF = (unichar *) malloc( (u_strlen(contentGF) + 1) * sizeof(unichar) );
-    if (e -> contentGF == NULL) {
-        fprintf(stderr,"Probleme d'allocation memoire dans la fonction creer_etiquette_fst2\n");
-        exit(1);
-        }       
-    u_strcpy(e -> contentGF, contentGF);
-    }
-/* $CD$ end   */
-
-e->output=(unichar*)malloc((u_strlen(transduction)+1)*sizeof(unichar));
-if (e->output==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction creer_etiquette_fst2\n");
-  exit(1);
+    tag->contentGF=u_strdup(contentGF);
 }
-u_strcpy(e->output,transduction);
-if (transduction[0]!=0)
-  e->control=(unsigned char)(e->control|TRANSDUCTION_TAG_BIT_MASK);
-if (respect_min_maj)
-  e->control=(unsigned char)(e->control|RESPECT_CASE_TAG_BIT_MASK);
-
-//--- on determine e->type
-if ((mot[0]==' ')||(mot[0]=='#')||!u_strcmp_char(mot,"<E>")) {
-  etiquette_fst2[position]=e;
+/* $CD$ end   */
+/*
+ * We copy the output, even if empty
+ */
+tag->output=u_strdup(output);
+if (output[0]!=0) {
+	/* But we set the output bit only if the output is not empty */
+	tag->control=(unsigned char)(tag->control|TRANSDUCTION_TAG_BIT_MASK);
+}
+if (respect_case) {
+	/* We set the case respect bit if necessary */
+	tag->control=(unsigned char)(tag->control|RESPECT_CASE_TAG_BIT_MASK);
+}
+/*
+ * If the input is ' ', # or <E>, we do nothing
+ */
+if ((input[0]==' ')||(input[0]=='#')||!u_strcmp_char(input,"<E>")) {
+  fst2->tags[position]=tag;
   return;
 }
-
-if (mot[0]=='{') {
-  if (!u_strcmp_char(mot,"{S}")) {
-    // cas particulier du delimiteur de phrase {S}
-    // NOTE: the {STOP} tag MUST NOT be handled here, since
-    //       we do not want it to be matched
+/*
+ * We handle inputs that start with a round bracket
+ */
+if (input[0]=='{') {
+  if (!u_strcmp_char(input,"{S}")) {
+  	/*
+  	 * If we have the sentence delimiter {S}, we do nothing.
+  	 * IMPORTANT: the {STOP} tag MUST NOT be handled here, since
+  	 *            we do not want it to be matched
+  	 */
   }
   else {
-    // on est soit dans le cas {....} soit dans le cas d'un char { seul
-    if (mot[1]!='\0') {
-       analyze_tag_with_round_brackets(e);
+    /*
+     * Here we a lexical tag like {built,build.V} or a single '{' character
+     */
+    if (input[1]!='\0') {
+    	/* If we have not a single '{', we analyze the lexical tag */
+       analyze_tag_with_round_brackets(tag);
     }
   }
-  etiquette_fst2[position]=e;
+  fst2->tags[position]=tag;
   return;
 }
-// on est ou dans le cas <...> ou dans le cas lexical
-if ((mot[0]!='<') || (mot[1]=='\0')) {
-  etiquette_fst2[position]=e;
-  return;
+if ((input[0]!='<') || (input[1]=='\0')) {
+	/*
+	 * If we have a single '<' character or an input that does not start with '<',
+	 * there is nothing special to do 
+	 */
+	fst2->tags[position]=tag;
+	return;
 }
-// on est forcement dans le cas <...>
-analyze_tag_with_angles(e);
-etiquette_fst2[position]=e;
+/*
+ * Finally, if we have an input that starts with '<' that is not a single '<',
+ * we analyze the tag assuming that it is of the form <...>
+ */
+analyze_tag_with_angles(tag);
+fst2->tags[position]=tag;
 }
 
 
-//
-// ajoute les etiquettes correspondante a s
-//
-void ajouter_etiquette_fst2(unichar s[],Fst2* fst2)
-{
-  unichar mot[500],transd[500];
-  int i=1,j=0,k=0;
-  int respect_min_maj;
-  respect_min_maj=(s[0]=='@');
-if ((!u_strcmp_char(s,"@/"))||(!u_strcmp_char(s,"%/"))) {
-  mot[0]='/';
-  mot[1]='\0';
-  transd[0]='\0';
-} else {
-    mot[k++]=s[i++];
-  while(s[i]!='\0' && !(s[i]=='/' && i>0 && s[i-1]!='\\'))
-    mot[k++]=s[i++];
-  mot[k]='\0';
-  if(s[i]=='/')
-    {
-      i++;
-      while(s[i]!='\0')
-	{
-	transd[j++]=s[i++];
+/**
+ * Creates the tag for the string 'line', representing a tag line
+ * in a .fst2 file like "%<V>/VERB", without an ending '\n'. The
+ * tag is added to the given fst2.
+ */
+void add_tag(unichar* line,Fst2* fst2,int *current_tag) {
+unichar all_input[2048],output[2048];
+int i=1,j=0,k=0;
+/* First, we look if the tag must respect case */
+int respect_case=(line[0]=='@');
+/*
+ * Then, we look for a '/' in order to see if there is an output. The first character
+ * is necessary a part of the input since tags with no input like "%/OUTPUT" are not
+ * allowed. We look for a '/' that is not preceeded by '\'. All the input is copied
+ * into 'all_input'.
+ */
+all_input[k++]=line[i++];
+while(line[i]!='\0' && !(line[i]=='/' && i>0 && line[i-1]!='\\')) {
+	all_input[k++]=line[i++];
+}
+all_input[k]='\0';
+/*
+ * If we find an output, we copy it
+ */
+if(line[i]=='/') {
+	i++;
+	while(line[i]!='\0') {
+		output[j++]=line[i++];
 	}
-    }
-  transd[j]='\0';
-  }
-
-
+}
+/* Then, if there is an output, we have it, and if not, 'output'
+ * contains an empty string */
+output[j]='\0';
+/*
+ * Now, we will analyze the string 'all_input', in order to see if it
+ * can be decomposed into an input and a morphological filter. A
+ * morphological filter is of the form "<<.....>>_f_", but the "_..._" part
+ * is optional.
+ */
 /* $CD$ begin */  
-//creer_etiquette_fst2(etiquette_courante,mot,transd,respect_min_maj);
-unichar transitionContent[500], filterContent[500];
-
-transitionContent[0] = '\0';
-filterContent[0] = '\0';
+unichar input[2048],filter[2048];
+input[0] = '\0';
+filter[0] = '\0';
 i = 0; j = 0;
-
-while ( mot[i] != '\0' && (mot[i] != '<' || mot[i+1] != '<') )
-    transitionContent[j++] = mot[i++];
-transitionContent[j] = '\0';
-    
-if (mot[i] != '\0') {
-    j = 0;
-    while ( mot[i] != '\0' && (mot[i] != '>' || mot[i+1] != '>') )
-        filterContent[j++] = mot[i++];
-    filterContent[j++] = '>'; filterContent[j++] = '>';
-    if (mot[i] != '\0') {
-        i += 2;
-        if (mot[i] == '_') {
-            do {
-                filterContent[j++] = mot[i++];
-                } while (mot[i] != '\0' && mot[i] != '_');
-            filterContent[j++] = '_';
-            }
-        }
-    filterContent[j] = '\0';
-    }
-    
-if (transitionContent[0] == '\0') u_strcpy_char(transitionContent, "<TOKEN>");
-
-creer_etiquette_fst2(etiquette_courante, 
-                     transitionContent, filterContent, transd, respect_min_maj,fst2);
+/* We copy the real input into 'input' */
+while (all_input[i]!='\0' && (all_input[i]!='<' || all_input[i+1]!='<')) {
+	input[j++]=all_input[i++];
+}
+input[j]='\0';
+/* If something remains, we have a morphological filter */
+if (all_input[i]!='\0') {
+	j = 0;
+	/* We copy the "<<...>>"  sequence */
+	while (all_input[i]!='\0' && (all_input[i]!='>' || all_input[i+1]!='>')) {
+		filter[j++]=all_input[i++];
+	}
+    filter[j++]='>';filter[j++]='>';
+    /* If something remains, then we have an optional part like "_f_",
+     * and we add it to 'filter' */
+    if (all_input[i]!='\0') {
+		i=i+2;
+		if (all_input[i]=='_') {
+			do {
+				filter[j++]=all_input[i++];
+			} while (all_input[i]!='\0' && all_input[i]!= '_');
+			filter[j++] = '_';
+		}
+	}
+    filter[j] = '\0';
+}
+/* If there is a morphological filter but no input ("%<<^in>>/PFX"), then
+ * we say that the input is any token */
+if (input[0]=='\0') {u_strcpy_char(input,"<TOKEN>");}
+create_tag((*current_tag),input,filter,output,respect_case,fst2);
 /* $CD$ end   */
-
-etiquette_courante++;
+(*current_tag)++;
 }
 
 
@@ -606,6 +622,7 @@ void lire_etiquettes_fst2(FILE *f,Fst2* fst2) {
 int i;
 unichar c;
 unichar mot[10000];
+int current_tag=0;
 while (((c=(unichar)u_fgetc(f))!='%')&&(c!='@'));
 while (c!='f') {
   i=0;
@@ -614,10 +631,9 @@ while (c!='f') {
   } while ((c=(unichar)u_fgetc(f))!='\n');
   while (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@'));
   mot[i]='\0';
-  ajouter_etiquette_fst2(mot,fst2);
+  add_tag(mot,fst2,&current_tag);
 }
-nombre_etiquettes_de_depart=etiquette_courante;
-nombre_etiquettes_fst2=etiquette_courante;
+nombre_etiquettes_fst2=current_tag;
 }
 
 
@@ -629,6 +645,7 @@ void lire_etiquettes_fst2_under_limit(FILE *f,int ETIQ_MAX,Fst2* fst2) {
 int i;
 unichar c;
 unichar mot[10000];
+int current_tag=0;
 int k=0;
 while (((c=(unichar)u_fgetc(f))!='%')&&(c!='@'));
 while (c!='f' && k<=ETIQ_MAX) {
@@ -639,10 +656,9 @@ while (c!='f' && k<=ETIQ_MAX) {
   } while ((c=(unichar)u_fgetc(f))!='\n');
   while (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@')) {}
   mot[i]='\0';
-  ajouter_etiquette_fst2(mot,fst2);
+  add_tag(mot,fst2,&current_tag);
 }
-nombre_etiquettes_de_depart=etiquette_courante;
-nombre_etiquettes_fst2=etiquette_courante;
+nombre_etiquettes_fst2=current_tag;
 }
 
 
@@ -668,7 +684,6 @@ for (i=0;i<MAX_FST2_TAGS;i++)
 // initialise les variables utilisees pour charger le FST2
 //
 void initialiser_variables_fst2(){
-nombre_etiquettes_de_depart=0;
 etiquette_courante=0;
 nombre_etiquettes_fst2=0;
 nombre_etats_fst2=0;
