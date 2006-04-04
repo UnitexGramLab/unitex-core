@@ -53,6 +53,11 @@ extern char* NBSP;
 
 typedef unsigned short int unichar;
 
+/* This constant must be used instead of 0xFFFF or 65536 in order
+ * to avoid problems if one day the type unichar becomes larger
+ * than 2 bytes */
+#define MAX_NUMBER_OF_UNICODE_CHARS (1<<sizeof(unichar)*8)
+
 
 void u_strcpy(unichar*, const unichar*);
 unichar* u_strncpy(unichar*, const unichar*, int);

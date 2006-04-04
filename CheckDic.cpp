@@ -30,13 +30,9 @@
 #include "String_hash.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
 
-//---------------------------------------------------------------------------
-
-//
-// e:\dela\french\delaf.dic DELAF
-//
 
 void usage() {
 printf("%s",COPYRIGHT);
@@ -50,70 +46,98 @@ printf("that contains check result informations. This file is stored in the\n");
 printf("<dela> directory.\n");
 }
 
-#define DELAS 0
-#define DELAF 1
+
 
 int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
-
 if (argc!=3) {
    usage();
    return 0;
 }
 FILE* dic;
 FILE* out;
-int TYPE;
+int is_a_DELAS;
 if (!strcmp(argv[2],"DELAS")) {
-   TYPE=DELAS;
+	is_a_DELAS=1;
 }
 else if (!strcmp(argv[2],"DELAF")) {
-     TYPE=DELAF;
+		is_a_DELAS=0;
 }
 else {
-     fprintf(stderr,"Invalid dictionary type %s\n",argv[2]);
-     return 1;
+	fatal_error("Invalid dictionary type %s\n",argv[2]);
 }
 dic=u_fopen(argv[1],U_READ);
 if (dic==NULL) {
-   fprintf(stderr,"Cannot open dictionary %s\n",argv[1]);
-   return 1;
+	fatal_error("Cannot open dictionary %s\n",argv[1]);
 }
-char res[1024];
-get_filename_path(argv[1],res);
-strcat(res,"CHECK_DIC.TXT");
-out=u_fopen(res,U_WRITE);
+char output_filename[2048];
+get_filename_path(argv[1],output_filename);
+strcat(output_filename,"CHECK_DIC.TXT");
+out=u_fopen(output_filename,U_WRITE);
 if (out==NULL) {
-   fprintf(stderr,"Cannot create %s\n",res);
-   u_fclose(dic);
-   return 1;
+	u_fclose(dic);
+	fatal_error("Cannot create %s\n",output_filename);
 }
 printf("Checking %s...\n",argv[1]);
-unichar s[5000];
-int line=1;
-char alphabet[65536];
-for (int i=0;i<65536;i++) {alphabet[i]=0;}
-struct string_hash* semantic=new_string_hash();
-struct string_hash* inflectional=new_string_hash();
-while (read_DELA_line(dic,s)) {
-   if (s[0]=='\0') {
-      char temp[1000];
-      sprintf(temp,"Line %d: empty line\n",line);
-      u_fprints_char(temp,out);
-   }
-   else if (s[0]=='/') {
-     // do nothing because comment
-   }
-   else {
-      if (TYPE==DELAS) check_DELAS_line(s,out,line,alphabet,semantic,inflectional);
-      else check_DELAF_line(s,out,line,alphabet,semantic,inflectional);
-   }
-   if (line%10000==0) {
-     printf("%d lines read...\r",line);
-  }
-  line++;
+unichar line[10000];
+int line_number=1;
+/*
+ * We declare and initialize an array in order to know which
+ * letters are used in the dictionary.
+ */
+char alphabet[MAX_NUMBER_OF_UNICODE_CHARS];
+for (int i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
+	alphabet[i]=0;
 }
-printf("%d lines read\n",line-1);
+/*
+ * We use two structures for the storage of the codes found in the
+ * dictionary. Note that 'semantic_codes' is used to store both grammatical and
+ * semantic codes.
+ */
+struct string_hash* semantic_codes=new_string_hash();
+struct string_hash* inflectional_codes=new_string_hash();
+/*
+ * We read all the lines and check them.
+ */
+while (read_DELA_line(dic,line)) {
+	if (line[0]=='\0') {
+		/* If we have an empty line, we print a unicode error message
+		 * into the output file */
+		char temp[1000];
+		sprintf(temp,"Line %d: empty line\n",line_number);
+		u_fprints_char(temp,out);
+	}
+	else if (line[0]=='/') {
+		/* If a line starts with '/', it is a commment line, so
+		 * we ignore it */
+	}
+	else {
+		/* If we have a line to check, we check it according to the
+		 * dictionary type */
+		if (is_a_DELAS) check_DELAS_line(line,out,line_number,alphabet,semantic_codes,inflectional_codes);
+		else check_DELAF_line(line,out,line_number,alphabet,semantic_codes,inflectional_codes);
+	}
+	/* At regular intervals, we display a message on the standard
+	 * output to show that the program is working */
+	if (line_number%10000==0) {
+		printf("%d lines read...\r",line_number);
+	}
+	line_number++;
+}
+printf("%d lines read\n",line_number-1);
 u_fclose(dic);
+/*
+ * Once we have checked all the lines, we print some informations
+ * in the output file.
+ * 
+ * First, we print the list of the characters that are used, with
+ * their unicode numbers shown in hexadecimal. This can be useful
+ * to detect different characters that are graphically identical
+ * like 'A' (upper of latin 'a' or upper of greek alpha ?).
+ */
 u_fprints_char("-----------------------------------\n",out);
 u_fprints_char("----  All chars used in forms  ----\n",out);
 u_fprints_char("-----------------------------------\n",out);
@@ -124,40 +148,51 @@ r[2]='(';
 r[3]='\0';
 r2[5]='\n';
 r2[6]='\0';
-for (int i=0;i<65536;i++) {
-  if (alphabet[i]) {
-     r[0]=(unichar)i;
-     u_char_to_hexa((unichar)i,r2);
-     r2[4]=')';
-     u_fprints(r,out);
-     u_fprints(r2,out);
-  }
+for (int i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
+	if (alphabet[i]) {
+		r[0]=(unichar)i;
+		u_char_to_hexa((unichar)i,r2);
+		r2[4]=')';
+		u_fprints(r,out);
+		u_fprints(r2,out);
+	}
 }
+/*
+ * Then we print the list of all grammatical and semantic codes used in the
+ * dictionary. If a code contains a non ASCII character, a space or a tabulation,
+ * we print a warning.
+ */
 u_fprints_char("-------------------------------------------------------------\n",out);
 char tmp[1000];
-sprintf(tmp,"----  %3d grammatical/semantic code%s",semantic->N,(semantic->N>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
+sprintf(tmp,"----  %3d grammatical/semantic code%s",semantic_codes->N,(semantic_codes->N>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
 u_fprints_char(tmp,out);
 u_fprints_char("-------------------------------------------------------------\n",out);
 unichar comment[2000];
-for (int i=0;i<semantic->N;i++) {
-   u_fprints(semantic->tab[i],out);
-   if (warning_on_code(semantic->tab[i],comment)) {
-      u_fprints_char(" ",out);
-      u_fprints(comment,out);
-   }
-   u_fprints_char("\n",out);
+for (int i=0;i<semantic_codes->N;i++) {
+	/* We print the code, followed if necessary by a warning */
+	u_fprints(semantic_codes->tab[i],out);
+	if (warning_on_code(semantic_codes->tab[i],comment)) {
+		u_fprints_char(" ",out);
+		u_fprints(comment,out);
+	}
+	u_fprints_char("\n",out);
 }
+/*
+ * Finally, we print the list of inflectional codes,
+ * with warnings in the case of non ASCII letters, spaces
+ * or tabulations.
+ */
 u_fprints_char("-----------------------------------------------------\n",out);
-sprintf(tmp,"----  %3d inflectional code%s",inflectional->N,(inflectional->N>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
+sprintf(tmp,"----  %3d inflectional code%s",inflectional_codes->N,(inflectional_codes->N>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
 u_fprints_char(tmp,out);
 u_fprints_char("-----------------------------------------------------\n",out);
-for (int i=0;i<inflectional->N;i++) {
-   u_fprints(inflectional->tab[i],out);
-   if (warning_on_code(inflectional->tab[i],comment)) {
-      u_fprints_char(" ",out);
-      u_fprints(comment,out);
-   }
-   u_fprints_char("\n",out);
+for (int i=0;i<inflectional_codes->N;i++) {
+	u_fprints(inflectional_codes->tab[i],out);
+	if (warning_on_code(inflectional_codes->tab[i],comment)) {
+		u_fprints_char(" ",out);
+		u_fprints(comment,out);
+	}
+	u_fprints_char("\n",out);
 }
 u_fclose(out);
 printf("Done.\n");
