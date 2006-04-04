@@ -70,8 +70,7 @@ extern int etiquette_courante;
 extern int nombre_etiquettes_de_depart;
 extern int etat_courant;
 extern void resize(Fst2* a);
-extern void read_fst2_states(FILE *f,Fst2*);
-extern void lire_etats_fst2_avec_noms(FILE *f);
+extern void read_fst2_states(FILE *f,Fst2*,int);
 extern void read_fst2_tags(FILE*,Fst2*);
 
 static Fst2* load_fst22(char *file,int noms) {
@@ -95,11 +94,11 @@ liste_des_variables=fst2->variables;
 nombre_etats_par_grf=fst2->number_of_states_by_graphs;
 if (noms) {
    nom_graphe=fst2->graph_names;
-   lire_etats_fst2_avec_noms(f);
+   read_fst2_states(f,fst2,1);
    fst2->graph_names=nom_graphe;
 }
 else {
-   read_fst2_states(f,fst2);
+   read_fst2_states(f,fst2,0);
 }
 fst2->number_of_states_by_graphs=nombre_etats_par_grf;
 read_fst2_tags(f,fst2);

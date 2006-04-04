@@ -742,9 +742,10 @@ state->transitions=transition;
 
 /**
  * Reads fst2 states from the given file 'f' and stores them into
- * the given fst2.
+ * the given fst2. If 'read_names' is non null, graph names are
+ * stored in the 'graph_names' array of the fst2.
  */
-void read_fst2_states(FILE *f,Fst2* fst2) {
+void read_fst2_states(FILE *f,Fst2* fst2,int read_names) {
 unichar c;
 int i,end_of_line,tag_number,destination_state_number,current_graph;
 int current_state=0;
@@ -757,10 +758,25 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 	/* We set the initial state of the graph */
 	fst2->initial_states[current_graph]=current_state;
 	int relative_state=0;
-	/* We ignore the graph name */
-	while ((c=(unichar)u_fgetc(f))!='\n');
-	/* We read the next char that must be 't' or ':' but not 'f', because 
-	 * empty graphs are not allowed */
+	/*
+	 * We read the graph name
+	 */
+	int tmp=0;
+	unichar graph_name[10000];
+	while ((c=(unichar)u_fgetc(f))!='\n') {
+		graph_name[tmp++]=c;
+	}
+	graph_name[tmp]='\0';
+	/*
+	 * And we save it if needed
+	 */
+	if (read_names) {
+		fst2->graph_names[current_graph]=u_strdup(graph_name);
+	}
+	/* 
+	 * We read the next char that must be 't' or ':' but not 'f', because 
+	 * empty graphs are not allowed 
+	 */
 	c=(unichar)u_fgetc(f);
 	if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c\n",c);}
 	/*
@@ -812,7 +828,7 @@ fst2->number_of_states=current_state;
 // lit les etats puis les ajoute a l'automate
 // RECUPERE EN PLUS LE NOM DE CHAQUE GRAPHE
 //
-void lire_etats_fst2_avec_noms(FILE *f) {
+/*void lire_etats_fst2_avec_noms(FILE *f) {
 unichar c;
 int i,j,end_of_line;
 int imot,etarr,graphe_courant;
@@ -877,7 +893,7 @@ for (j=0;j<nombre_graphes_fst2;j++) {
   u_fgetc(f);
 }
 nombre_etats_fst2=etat_courant;
-}
+}*/
 
 
 
@@ -966,7 +982,7 @@ nombre_etats_fst2=etat_courant;
 //
 // loads an fst2 and returns its representation in a Fst2 structure
 //
-Fst2* load_fst2(char *file,int noms) {
+Fst2* load_fst2(char *file,int read_names) {
 FILE *f;
 Fst2* fst2=new_Fst2();
 f=u_fopen(file,U_READ);
@@ -986,13 +1002,7 @@ fst2->initial_states=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
 if (fst2->initial_states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
 fst2->number_of_states_by_graphs=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
 if (fst2->number_of_states_by_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
-
-if (noms) {
-   lire_etats_fst2_avec_noms(f);
-}
-else {
-   read_fst2_states(f,fst2);
-}
+read_fst2_states(f,fst2,read_names);
 read_fst2_tags(f,fst2);
 u_fclose(f);
 resize(fst2);
