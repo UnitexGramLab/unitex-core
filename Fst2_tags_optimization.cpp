@@ -347,7 +347,7 @@ void replace_pattern_tags(Fst2* automate,Alphabet* alph,struct string_hash* tok,
 Fst2Tag* etiquette=automate->tags;
 int i;
 //printf("************** TRAITEMENT DES ANGLES ******************\n");
-for (i=0;i<etiquette_courante;i++) {
+for (i=0;i</*etiquette_courante*/automate->number_of_tags;i++) {
   // cas des etiquettes entre angles
   if (etiquette[i]->control&LEMMA_TAG_BIT_MASK) {
     // cas <manger>

@@ -42,8 +42,6 @@ unichar** nom_graphe;
 struct variable_list* liste_des_variables;
 int nombre_etats_fst2;
 int nombre_graphes_fst2;
-int nombre_etiquettes_fst2;
-int etiquette_courante;
 int etat_courant;
 
 
@@ -633,7 +631,7 @@ while (c!='f') {
   mot[i]='\0';
   add_tag(mot,fst2,&current_tag);
 }
-nombre_etiquettes_fst2=current_tag;
+fst2->number_of_tags=current_tag;
 }
 
 
@@ -658,7 +656,7 @@ while (c!='f' && k<=ETIQ_MAX) {
   mot[i]='\0';
   add_tag(mot,fst2,&current_tag);
 }
-nombre_etiquettes_fst2=current_tag;
+fst2->number_of_tags=current_tag;
 }
 
 
@@ -684,10 +682,7 @@ for (i=0;i<MAX_FST2_TAGS;i++)
 // initialise les variables utilisees pour charger le FST2
 //
 void initialiser_variables_fst2(){
-etiquette_courante=0;
-nombre_etiquettes_fst2=0;
 nombre_etats_fst2=0;
-etiquette_courante=0;
 etat_courant=0;
 initialiser_graphe_fst2();
 initialiser_etiquettes();
@@ -1025,7 +1020,6 @@ lire_etiquettes_fst2(f,fst2);
 u_fclose(f);
 fst2->number_of_graphs=nombre_graphes_fst2;
 fst2->number_of_states=nombre_etats_fst2;
-fst2->number_of_tags=nombre_etiquettes_fst2;
 fst2->initial_states=debut_graphe_fst2;
 resize(fst2);
 return fst2;
@@ -1066,7 +1060,6 @@ u_fclose(f);
 a->graph_names=nom_graphe;
 a->number_of_graphs=nombre_graphes_fst2;
 a->number_of_states=nombre_etats_fst2;
-a->number_of_tags=nombre_etiquettes_fst2;
 a->initial_states=debut_graphe_fst2;
 a->variables=liste_des_variables;
 resize(a);
