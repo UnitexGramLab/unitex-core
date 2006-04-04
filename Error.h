@@ -24,6 +24,7 @@
 
 void fatal_error(int,char*,...);
 void fatal_error(char*,...);
+void error(char*,...);
 
 #endif
 

@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 //------- encodings --------------
-#define ISO_XXX 0
+#define ONE_BYTE_ENCODING 0
 #define UTF8 1
 #define UTF16_LE 2
 #define UTF16_BE 3
@@ -40,9 +40,9 @@
 #define UNSUPPORTED_INPUT_ENCODING 3
 
 
-extern unichar unicode_src[256];
-extern unichar unicode_dest[256];
-extern unsigned char ascii_dest[65536];
+extern unichar unicode_src[0xFF];
+extern unichar unicode_dest[0xFF];
+extern unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 
 void init_thai(unichar unicode[]);
 void init_ansi(unichar unicode[]);
@@ -69,7 +69,7 @@ void init_windows949();    // korean wangsung code EUC-KR
 
 
 
-void init_uni2asc_code_page_array(unichar unicode[],unsigned char ascii[]);
+void init_uni2asc_code_page_array();
 
 int convert(FILE* input,FILE* output,int INPUT_ENCODING,int OUTPUT_ENCODING);
 void convert_unicode_to_ascii(FILE*,FILE*);

@@ -40,11 +40,11 @@ exit(error_code);
  * exits the program with the given exit code.
  */
 void fatal_error(int error_code,char* fmt,...) {
-  va_list plist;
-  va_start(plist,fmt);
-  vfprintf(stderr,fmt,plist);
-  va_end(plist);
-  fatal_error(error_code);
+va_list plist;
+va_start(plist,fmt);
+vfprintf(stderr,fmt,plist);
+va_end(plist);
+fatal_error(error_code);
 }
 
 
@@ -53,9 +53,21 @@ void fatal_error(int error_code,char* fmt,...) {
  * exits the program with the default exit code.
  */
 void fatal_error(char* fmt,...) {
-  va_list plist;
-  va_start(plist,fmt);
-  vfprintf(stderr,fmt,plist);
-  va_end(plist);
-  fatal_error(DEFAULT_ERROR_CODE);
+va_list plist;
+va_start(plist,fmt);
+vfprintf(stderr,fmt,plist);
+va_end(plist);
+fatal_error(DEFAULT_ERROR_CODE);
 }
+
+
+/**
+ * Prints the given message on the error stream.
+ */
+void error(char* fmt,...) {
+va_list plist;
+va_start(plist,fmt);
+vfprintf(stderr,fmt,plist);
+va_end(plist);
+}
+

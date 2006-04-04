@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 #include "unicode.h"
 #include "CodePages.h"
-#include "Copyright.h"
 #ifndef HGH_INSERT
 #include "codePageKr.h"
 #endif // HGH_INSERT
@@ -30,9 +29,9 @@
 //---------------------------------------------------------------------------
 
 
-unsigned short int unicode_src[256];
-unsigned short int unicode_dest[256];
-unsigned char ascii_dest[65536];
+unichar unicode_src[0xFF];
+unichar unicode_dest[0xFF];
+unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 
 
 void init_thai(unsigned short int unicode[]) {
@@ -539,73 +538,16 @@ while ((c=fgetc_normalized_carridge_return(entree))!=EOF) {
 
 
 
-void init_uni2asc_code_page_array(unichar unicode[],unsigned char ascii[]) {
+void init_uni2asc_code_page_array() {
 int i;
-for (i=0;i<65536;i++) {
-   ascii[i]='?';
+for (i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
+   ascii_dest[i]='?';
 }
-for (i=0;i<256;i++) {
-   ascii[unicode[i]]=(unsigned char)i;
+for (i=0;i<0xFF;i++) {
+   ascii_dest[unicode_dest[i]]=(unsigned char)i;
 }
 }
 
-
-
-void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Convert <src> [<dest>] <mode> <text_1> [<text_2> <text_3> ...]\n");
-printf(" <src> : encoding of the text file to be converted\n");
-printf("<dest> : optional encoding of the destination text file. The default value \n");
-printf("         is LITTLE-ENDIAN\n");
-printf("The following values are possible:\n");
-printf(" FRENCH\n");
-printf(" ENGLISH\n");
-printf(" GREEK\n");
-printf(" THAI\n");
-printf(" CZECH\n");
-printf(" GERMAN\n");
-printf(" SPANISH\n");
-printf(" PORTUGUESE\n");
-printf(" ITALIAN\n");
-printf(" NORWEGIAN\n");
-printf(" LATIN (default latin codepage)\n");
-printf(" windows-1252: Microsoft Windows Codepage 1252 - Latin I (Western Europe & USA)\n");   //$CD:20021206
-printf(" windows-1250: Microsoft Windows Codepage 1250 - Central Europe\n");                               //$CD:20021206
-printf(" windows-1257: Microsoft Windows Codepage 1257 - Baltic\n");                                       //$CD:20021206
-printf(" windows-1251: Microsoft Windows Codepage 1251 - Cyrillic\n");                                     //$CD:20021206
-printf(" windows-1254: Microsoft Windows Codepage 1254 - Turkish\n");                                      //$CD:20021206
-printf(" windows-1258: Microsoft Windows Codepage 1258 - Viet Nam\n");                                     //$CD:20021206
-printf(" iso-8859-1  : ISO Character Set 8859-1  - Latin 1 (Western Europe & USA)\n");         //$CD:20021206
-printf(" iso-8859-15 : ISO Character Set 8859-15 - Latin 9 (Western Europe & USA)\n");         //$CD:20021206
-printf(" iso-8859-2  : ISO Character Set 8859-2  - Latin 2 (Central & Eastern Europe)\n");               //$CD:20021206
-printf(" iso-8859-3  : ISO Character Set 8859-3  - Latin 3 (South Europe)\n");                             //$CD:20021206
-printf(" iso-8859-4  : ISO Character Set 8859-4  - Latin 4 (North Europe)\n");                             //$CD:20021206
-printf(" iso-8859-5  : ISO Character Set 8859-5  - Cyrillic\n");                                           //$CD:20021206
-printf(" iso-8859-7  : ISO Character Set 8859-7  - Greek\n");                                              //$CD:20021206
-printf(" iso-8859-9  : ISO Character Set 8859-9  - Latin 5 (Turkish)\n");                                  //$CD:20021206
-printf(" iso-8859-10 : ISO Character Set 8859-10 - Latin 6 (Nordic)\n");                                   //$CD:20021206
-#ifndef HGH_INSERT
-printf(" windows-949 : Microsoft Windows Codepage 949 (Korean)\n");
-printf(" KOREAN      : \n");
-#endif // HGH_INSERT
-printf(" next-step   : NextStep Codepage\n");
-printf(" UTF-8 (only for output)\n");
-printf(" LITTLE-ENDIAN\n");
-printf(" BIG-ENDIAN\n");
-printf("\n");
-printf("<mode> : this parameter specifies how the source/destination files\n");
-printf("         must be named. The possible values are:\n");
-printf("   -r : sources files will be replaced by destination files\n");
-printf("   -ps=PFX : source files will be renamed with the prefix PFX\n");
-printf("   -pd=PFX : destination files will be named with the prefix PFX\n");
-printf("   -ss=SFX : source files will be renamed with the suffix SFX\n");
-printf("   -sd=SFX : destination files will be named with the suffix SFX\n");
-printf("<text_i> : text file to be converted\n");
-printf("\n");
-printf("Converts a text file into another encoding.\n");
-printf("Type 'Convert <lang>' where <lang> is a valid codepage or character set to see\n");
-printf("the supported languages.\n");      //$CD:20021206
-}
 
 
 
@@ -952,7 +894,7 @@ switch(OUTPUT_ENCODING) {
 int (*input_function)(FILE*);
 int (*output_function)(unichar,FILE*);
 switch (INPUT_ENCODING) {
-  case ISO_XXX: input_function=read_iso_char; break;
+  case ONE_BYTE_ENCODING: input_function=read_iso_char; break;
   case UTF16_LE: input_function=u_fgetc_raw; break;
   case UTF16_BE: input_function=u_fgetc_raw_big_endian; break;
   case UTF8: input_function=read_utf8_diese_char; break;
@@ -962,7 +904,7 @@ switch (INPUT_ENCODING) {
   default: return UNSUPPORTED_INPUT_ENCODING; break;
 }
 switch (OUTPUT_ENCODING) {
-  case ISO_XXX: output_function=write_iso_char; break;
+  case ONE_BYTE_ENCODING: output_function=write_iso_char; break;
   case UTF16_LE: output_function=u_fputc_raw; break;
   case UTF16_BE: output_function=u_fputc_raw_big_endian; break;
   case UTF8: output_function=u_fputc_utf8; break;

@@ -47,7 +47,6 @@ printf("<dela> directory.\n");
 }
 
 
-
 int main(int argc, char **argv) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
