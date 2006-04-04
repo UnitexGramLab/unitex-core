@@ -652,48 +652,57 @@ read_fst2_tags(f,fst2,NO_TAG_LIMIT);
 }
 
 
-
-//
-// cree et renvoie un etat vierge
-//
-Fst2State nouvel_etat() {
-Fst2State e;
-e=(Fst2State)malloc(sizeof(struct fst2State));
-if (e==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction nouvel_etat\n");
-  exit(1);
+/**
+ * Creates, initializes and returns a fst2 state.
+ */
+Fst2State new_Fst2State() {
+Fst2State state;
+state=(Fst2State)malloc(sizeof(struct fst2State));
+if (state==NULL) {
+  fatal_error("Not enough memory in new_Fst2State\n");
 }
-e->control=0;
-e->transitions=NULL;
-return e;
+state->control=0;
+state->transitions=NULL;
+return state;
 }
 
-//
-// lit un entier relatif dans le fichier; si une fin de ligne est trouvee, ok vaut 0
-//
-int lire_entier_fst2(FILE *f,int *ok) {
+
+/**
+ * Reads and returns a signed integer in a .fst2 file. If an end of line is
+ * found, 'end_of_line' is setted to 1 and 0 is returned; Otherwise, 
+ * 'end_of_line' is setted to 0.
+ */
+int read_int(FILE *f,int *end_of_line) {
 unichar c;
-int res,negatif;
-do
-  c=(unichar)u_fgetc(f);
-while (((c<'0')||(c>'9'))&&(c!='-')&&(c!='\n'));
+int value,negative_number;
+/* We ignore spaces */
+do {
+	c=(unichar)u_fgetc(f);
+} while (c==' ');
+/* If 'c' is neither a digit nor a minus sign nor an end of line, we exit */
+if (((c<'0')||(c>'9'))&&(c!='-')&&(c!='\n')) {
+	fatal_error("Unexpected character in fst2: %c\n",c);
+}
 if (c=='\n') {
-  // si fin de ligne, on arrete et ok vaut 0
-  *ok=0;
+  /* If we have an end of line */
+  (*end_of_line)=1;
   return 0;
 }
-*ok=1;
+(*end_of_line)=0;
 if (c=='-') {
-  // on lit un nombre negatif
-  negatif=1;
+  /* If we have a minus sign, we note that we have a negative number
+   * and we read the next character that must be a digit */
+  negative_number=1;
   c=(unichar)u_fgetc(f);
-} else negatif=0;
-res=c-'0';
+  if (c<'0' || c>'9') {fatal_error("Unexpected character in fst2: %c\n",c);}
+} else {negative_number=0;}
+/* We compute the value of the integer */
+value=c-'0';
 while(((c=(unichar)u_fgetc(f))>='0')&&(c<='9')) {
-  res=res*10+(c-'0');
+	value=value*10+(c-'0');
 }
-if (negatif) res=-res;
-return res;
+if (negative_number) value=-value;
+return value;
 }
 
 
@@ -735,7 +744,7 @@ void ajouter_transition_mat(struct fst2State *e,int etiq,int etarr)
 //
 void lire_etats_fst2(FILE *f) {
 unichar c;
-int i,j,ok;
+int i,j,end_of_line;
 int imot,etarr,graphe_courant;
 int etat_relatif;
 debut_graphe_fst2=(int*)malloc((nombre_graphes_fst2+1)*sizeof(int));
@@ -766,18 +775,18 @@ for (j=0;j<nombre_graphes_fst2;j++) {
   while ((c!='t')&&(c!=':'));
   // on lit les etats du graphe
   while (c!='f') {
-    graphe_fst2[etat_courant]=nouvel_etat();
+    graphe_fst2[etat_courant]=new_Fst2State();
     nombre_etats_par_grf[graphe_courant]++;
     if(c=='t') graphe_fst2[etat_courant]->control=FST2_FINAL_STATE_BIT_MASK;
     if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|2);
-    imot=lire_entier_fst2(f,&ok);
-    while (ok) {
-	  etarr=lire_entier_fst2(f,&ok);
+    imot=read_int(f,&end_of_line);
+    while (!end_of_line) {
+	  etarr=read_int(f,&end_of_line);
       // etarr est un numero relatif; on calcule sa position reelle dans
       // le tableau des etats
       etarr=etarr+debut_graphe_fst2[graphe_courant];
 	  ajouter_transition_mat(graphe_fst2[etat_courant],imot,etarr);
-      imot=lire_entier_fst2(f,&ok);
+      imot=read_int(f,&end_of_line);
 	}
     while(((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f'));
     etat_courant++;
@@ -798,7 +807,7 @@ nombre_etats_fst2=etat_courant;
 //
 void lire_etats_fst2_avec_noms(FILE *f) {
 unichar c;
-int i,j,ok;
+int i,j,end_of_line;
 int imot,etarr,graphe_courant;
 int etat_relatif;
 unichar temp[10000];
@@ -839,18 +848,18 @@ for (j=0;j<nombre_graphes_fst2;j++) {
   while ((c!='t')&&(c!=':')&&(c!='f'));
   // on lit les etats du graphe
   while (c!='f') {
-    graphe_fst2[etat_courant]=nouvel_etat();
+    graphe_fst2[etat_courant]=new_Fst2State();
     nombre_etats_par_grf[graphe_courant]++;
     if(c=='t') graphe_fst2[etat_courant]->control=1;
     if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|FST2_INITIAL_STATE_BIT_MASK);
-    imot=lire_entier_fst2(f,&ok);
-    while (ok) {
-      etarr=lire_entier_fst2(f,&ok);
+    imot=read_int(f,&end_of_line);
+    while (!end_of_line) {
+      etarr=read_int(f,&end_of_line);
       // etarr est un numero relatif; on calcule sa position reelle dans
       // le tableau des etats
       etarr=etarr+debut_graphe_fst2[graphe_courant];
 	  ajouter_transition_mat(graphe_fst2[etat_courant],imot,etarr);
-      imot=lire_entier_fst2(f,&ok);
+      imot=read_int(f,&end_of_line);
 	}
     while(((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f'));
     etat_courant++;
@@ -871,7 +880,7 @@ nombre_etats_fst2=etat_courant;
 //
 void lire_etats_fst2_avec_noms_for_one_sentence(FILE *f,int SENTENCE,int* ETIQ_MAX,FILE* txt) {
 unichar c;
-int i,j,ok;
+int i,j,end_of_line;
 int imot,etarr,graphe_courant;
 int etat_relatif;
 unichar temp[100000];
@@ -914,19 +923,19 @@ for (j=0;j<nombre_graphes_fst2;j++) {
      while ((c!='t')&&(c!=':')&&(c!='f'));
      // on lit les etats du graphe
      while (c!='f') {
-       graphe_fst2[etat_courant]=nouvel_etat();
+       graphe_fst2[etat_courant]=new_Fst2State();
        nombre_etats_par_grf[graphe_courant]++;
        if(c=='t') graphe_fst2[etat_courant]->control=FST2_FINAL_STATE_BIT_MASK;
        if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|FST2_INITIAL_STATE_BIT_MASK);
-       imot=lire_entier_fst2(f,&ok);
-       while (ok) {
+       imot=read_int(f,&end_of_line);
+       while (!end_of_line) {
          if (imot>(*ETIQ_MAX)) (*ETIQ_MAX)=imot;
-         etarr=lire_entier_fst2(f,&ok);
+         etarr=read_int(f,&end_of_line);
          // etarr est un numero relatif; on calcule sa position reelle dans
          // le tableau des etats
          etarr=etarr+debut_graphe_fst2[graphe_courant];
 	     ajouter_transition_mat(graphe_fst2[etat_courant],imot,etarr);
-         imot=lire_entier_fst2(f,&ok);
+         imot=read_int(f,&end_of_line);
        }
        while(((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f'));
        etat_courant++;
