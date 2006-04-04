@@ -69,7 +69,6 @@ extern int nombre_graphes_fst2;
 extern int etiquette_courante;
 extern int nombre_etiquettes_de_depart;
 extern int etat_courant;
-extern void initialiser_variables_fst2();
 extern void resize(Fst2* a);
 extern void lire_etats_fst2(FILE *f);
 extern void lire_etats_fst2_avec_noms(FILE *f);
@@ -93,7 +92,6 @@ graphe_fst2=fst2->states;
 etiquette_fst2=fst2->tags;
 debut_graphe_fst2=fst2->initial_states;
 liste_des_variables=fst2->variables;
-initialiser_variables_fst2();
 nombre_etats_par_grf=fst2->number_of_states_by_graphs;
 if (noms) {
    nom_graphe=fst2->graph_names;

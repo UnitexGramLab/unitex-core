@@ -652,58 +652,6 @@ read_fst2_tags(f,fst2,NO_TAG_LIMIT);
 }
 
 
-//
-// lit les etiquettes des transitions jusqu'a l'etiquette d'indice ETIQ_MAX
-//
-/*void lire_etiquettes_fst2_under_limit(FILE *f,int ETIQ_MAX,Fst2* fst2) {
-int i;
-unichar c;
-unichar mot[10000];
-int current_tag=0;
-int k=0;
-while (((c=(unichar)u_fgetc(f))!='%')&&(c!='@'));
-while (c!='f' && k<=ETIQ_MAX) {
-  i=0;
-  k++;
-  do {
-    mot[i++]=c;
-  } while ((c=(unichar)u_fgetc(f))!='\n');
-  while (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@')) {}
-  mot[i]='\0';
-  add_tag(mot,fst2,&current_tag);
-}
-fst2->number_of_tags=current_tag;
-}*/
-
-
-//
-// initialise le graphe_fst2
-//
-void initialiser_graphe_fst2() {
-long int i;
-for (i=0;i<MAX_FST2_STATES;i++)
-  graphe_fst2[i]=NULL;
-}
-
-//
-// initialise les etiquettes
-//
-void initialiser_etiquettes() {
-long int i;
-for (i=0;i<MAX_FST2_TAGS;i++)
-  etiquette_fst2[i]=NULL;
-}
-
-//
-// initialise les variables utilisees pour charger le FST2
-//
-void initialiser_variables_fst2(){
-nombre_etats_fst2=0;
-etat_courant=0;
-initialiser_graphe_fst2();
-initialiser_etiquettes();
-}
-
 
 //
 // cree et renvoie un etat vierge
@@ -1021,7 +969,6 @@ graphe_fst2=fst2->states;
 etiquette_fst2=fst2->tags;
 debut_graphe_fst2=fst2->initial_states;
 liste_des_variables=fst2->variables;
-initialiser_variables_fst2();
 nombre_etats_par_grf=fst2->number_of_states_by_graphs;
 if (noms) {
    nom_graphe=fst2->graph_names;
@@ -1066,7 +1013,6 @@ graphe_fst2=fst2->states;
 etiquette_fst2=fst2->tags;
 debut_graphe_fst2=fst2->initial_states;
 liste_des_variables=fst2->variables;
-initialiser_variables_fst2();
 nombre_etats_par_grf=fst2->number_of_states_by_graphs;
 nom_graphe=fst2->graph_names;
 lire_etats_fst2_avec_noms_for_one_sentence(f,SENTENCE,&ETIQ_MAX,txt);
