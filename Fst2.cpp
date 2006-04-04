@@ -36,6 +36,9 @@
 /* The constant NO_TAG_LIMIT must have a negative value */
 #define NO_TAG_LIMIT -1
 
+/* The constant NO_GRAPH_NUMBER_SPECIFIED must have a value <=0 */
+#define NO_GRAPH_NUMBER_SPECIFIED -1
+
 
 Fst2State* graphe_fst2;
 Fst2Tag* etiquette_fst2;
@@ -600,9 +603,14 @@ return create_tag(input,filter,output,respect_case);
  * Reads the tags of the .fst2 file 'f'. The function assumes that the
  * current position in the file is just before the first tag line.
  * For each tag line, a tag is created and inserted in the tag array of 
- * the given fst2. The parameter 'limit' indicates that the function
+ * the given fst2.
+ * 
+ * The parameter 'limit' indicates that the function
  * may stop reading after the tag number 'limit'. NO_TAG_LIMIT indicates
- * that there is no limit. 
+ * that there is no limit. This is used to avoid loading the whole tag list
+ * when you know the highest tag number that you will need, in particular
+ * when you load just one sentence from a .fst2 that represents a text
+ * automaton. 
  */
 void read_fst2_tags(FILE *f,Fst2* fst2,int limit) {
 int i;
@@ -744,8 +752,17 @@ state->transitions=transition;
  * Reads fst2 states from the given file 'f' and stores them into
  * the given fst2. If 'read_names' is non null, graph names are
  * stored in the 'graph_names' array of the fst2.
+ * 
+ * The 'graph_number' parameter is used when you want to load only one
+ * graph. In that case, its value is the number of the graph to load. The
+ * value must be positive; the first graph is 1. If this parameter is used,
+ * the 'max_tag_number' will be used to store the higher tag number used by
+ * the specified graph, in order to avoid loading the whole tag list. These 
+ * parameters are useful for loading one sentence from a .fst2 that represents
+ * a text automaton. If the value of 'graph_number' is NO_GRAPH_NUMBER_SPECIFIED,
+ * then all the fst2 is loaded, and the 'max_tag_number' parameter is ignored.
  */
-void read_fst2_states(FILE *f,Fst2* fst2,int read_names) {
+void read_fst2_states(FILE *f,Fst2* fst2,int read_names,int graph_number,int *max_tag_number) {
 unichar c;
 int i,end_of_line,tag_number,destination_state_number,current_graph;
 int current_state=0;
@@ -767,53 +784,69 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		graph_name[tmp++]=c;
 	}
 	graph_name[tmp]='\0';
-	/*
-	 * And we save it if needed
-	 */
-	if (read_names) {
-		fst2->graph_names[current_graph]=u_strdup(graph_name);
-	}
-	/* 
-	 * We read the next char that must be 't' or ':' but not 'f', because 
-	 * empty graphs are not allowed 
-	 */
-	c=(unichar)u_fgetc(f);
-	if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c\n",c);}
-	/*
-	 * Then, we read the states of the graph, until we find a line beginning by 'f'.
-	 */
-	while (c!='f') {
-		fst2->states[current_state]=new_Fst2State();
-		fst2->number_of_states_by_graphs[current_graph]++;
+	if (graph_number==NO_GRAPH_NUMBER_SPECIFIED || graph_number==current_graph) {
+		/* If we must read the graph either because it is the one we look for
+		 * or because we must read them all, then we initialize 'max_tag_number' */ 
+    	(*max_tag_number)=0;
 		/*
-		 * We set the finality and initiality bits of the state
+		 * We save the graph name if needed
 		 */
-		set_final_state(fst2->states[current_state],(c=='t'));
-		set_initial_state(fst2->states[current_state],(relative_state==0));
-		/*
-		 * We read the tag number
-		 */
-		tag_number=read_int(f,&end_of_line);
+		if (read_names) {
+			fst2->graph_names[current_graph]=u_strdup(graph_name);
+		}
 		/* 
-		 * We read transitions made of couple of integers (tag number/state number)
-		 * until we find an end of line
+		 * We read the next char that must be 't' or ':' but not 'f', because 
+		 * empty graphs are not allowed 
 		 */
-		while (!end_of_line) {
-			/* We read the destination state number */
-			destination_state_number=read_int(f,&end_of_line);
-			if (end_of_line) {fatal_error("Missing state number in transition (graph %d, state %d)\n",current_graph,relative_state);}
-			/* We adjust the destination state number in order to make it global */
-			destination_state_number=destination_state_number+fst2->initial_states[current_graph];
-			/* We add the transition to the current state */
-			add_transition_to_state(fst2->states[current_state],tag_number,destination_state_number);
-			/* And we do not forget to read the next integer */
+		c=(unichar)u_fgetc(f);
+		if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c\n",c);}
+		/*
+		 * Then, we read the states of the graph, until we find a line beginning by 'f'.
+		 */
+		while (c!='f') {
+			fst2->states[current_state]=new_Fst2State();
+			fst2->number_of_states_by_graphs[current_graph]++;
+			/*
+			 * We set the finality and initiality bits of the state
+			 */
+			set_final_state(fst2->states[current_state],(c=='t'));
+			set_initial_state(fst2->states[current_state],(relative_state==0));
+			/*
+			 * We read the tag number
+			 */
 			tag_number=read_int(f,&end_of_line);
+			/* 
+			 * We read transitions made of couple of integers (tag number/state number)
+			 * until we find an end of line
+			 */
+			while (!end_of_line) {
+				if (tag_number>(*max_tag_number)) {
+					/* We update the highest tag number */
+					(*max_tag_number)=tag_number;
+				}
+				/* We read the destination state number */
+				destination_state_number=read_int(f,&end_of_line);
+				if (end_of_line) {fatal_error("Missing state number in transition (graph %d, state %d)\n",current_graph,relative_state);}
+				/* We adjust the destination state number in order to make it global */
+				destination_state_number=destination_state_number+fst2->initial_states[current_graph];
+				/* We add the transition to the current state */
+				add_transition_to_state(fst2->states[current_state],tag_number,destination_state_number);
+				/* And we do not forget to read the next integer */
+				tag_number=read_int(f,&end_of_line);
+			}
+			if (((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f')) {
+				fatal_error("Unexpected character in fst2: %c\n",c);
+			}
+			current_state++;
+			relative_state++;
 		}
-		if (((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f')) {
-			fatal_error("Unexpected character in fst2: %c\n",c);
-		}
-		current_state++;
-		relative_state++;
+	}
+	else {
+		/*
+		 * If we do not need to read this graph, then we just go to the 'f' that
+		 * indicates the end of the graph.
+		 */
+		while(((c=(unichar)u_fgetc(f))!='f'));
 	}
 	/* We read the space and the '\n' that follows the final 'f' */
 	u_fgetc(f);
@@ -824,228 +857,98 @@ fst2->number_of_states=current_state;
 }
 
 
-//
-// lit les etats puis les ajoute a l'automate
-// RECUPERE EN PLUS LE NOM DE CHAQUE GRAPHE
-//
-/*void lire_etats_fst2_avec_noms(FILE *f) {
-unichar c;
-int i,j,end_of_line;
-int imot,etarr,graphe_courant;
-int etat_relatif;
-unichar temp[10000];
-int tmp;
-debut_graphe_fst2=(int*)malloc((nombre_graphes_fst2+1)*sizeof(int));
-nombre_etats_par_grf=(int*)malloc((nombre_graphes_fst2+1)*sizeof(int));
-nom_graphe=(unichar**)malloc((nombre_graphes_fst2+1)*sizeof(unichar*));
-if (debut_graphe_fst2==NULL || (nom_graphe)==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction lire_etats_fst2_avec_noms\n");
-  exit(1);
-}
-for (i=0;i<nombre_graphes_fst2+1;i++) {
-  // j'ai ajoute +1 car les graphes sont numerotes de -1 a -nombre_graphes
-  debut_graphe_fst2[i]=0;
-  nombre_etats_par_grf[i]=0;
-  nom_graphe[i]=NULL;
-}
-etat_courant=0;
-// on lit tous les graphes
-for (j=0;j<nombre_graphes_fst2;j++) {
-  // on lit le -
-  u_fgetc(f);
-  // et le numero
-  graphe_courant=u_read_int(f);
-  debut_graphe_fst2[graphe_courant]=etat_courant;
-  etat_relatif=0;
-  // on lit le nom du graphe
-  tmp=0;
-  while ((c=(unichar)u_fgetc(f))!='\n')
-    temp[tmp++]=c;
-  temp[tmp]='\0';
-  nom_graphe[graphe_courant]=(unichar*)malloc(sizeof(unichar)*(tmp+1));
-  u_strcpy(nom_graphe[graphe_courant],temp);
-
-  // on se place sur "t" ou ":" ("f" serait une erreur)
-  do
-    c=(unichar)u_fgetc(f);
-  while ((c!='t')&&(c!=':')&&(c!='f'));
-  // on lit les etats du graphe
-  while (c!='f') {
-    graphe_fst2[etat_courant]=new_Fst2State();
-    nombre_etats_par_grf[graphe_courant]++;
-    if(c=='t') graphe_fst2[etat_courant]->control=1;
-    if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|FST2_INITIAL_STATE_BIT_MASK);
-    imot=read_int(f,&end_of_line);
-    while (!end_of_line) {
-      etarr=read_int(f,&end_of_line);
-      // etarr est un numero relatif; on calcule sa position reelle dans
-      // le tableau des etats
-      etarr=etarr+debut_graphe_fst2[graphe_courant];
-	  add_transition_to_state(graphe_fst2[etat_courant],imot,etarr);
-      imot=read_int(f,&end_of_line);
-	}
-    while(((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f'));
-    etat_courant++;
-    etat_relatif++;
-  }
-  // on lit l'espace et le \n apres le f
-  u_fgetc(f);
-  u_fgetc(f);
-}
-nombre_etats_fst2=etat_courant;
-}*/
-
-
-
-//
-// lit les etats puis les ajoute a l'automate
-// RECUPERE EN PLUS LE NOM DE CHAQUE GRAPHE
-//
-void lire_etats_fst2_avec_noms_for_one_sentence(FILE *f,int SENTENCE,int* ETIQ_MAX,FILE* txt) {
-unichar c;
-int i,j,end_of_line;
-int imot,etarr,graphe_courant;
-int etat_relatif;
-unichar temp[100000];
-int tmp;
-(*ETIQ_MAX)=0;
-debut_graphe_fst2=(int*)malloc((nombre_graphes_fst2+1)*sizeof(int));
-nombre_etats_par_grf=(int*)malloc((nombre_graphes_fst2+1)*sizeof(int));
-nom_graphe=(unichar**)malloc((nombre_graphes_fst2+1)*sizeof(unichar*));
-if (debut_graphe_fst2==NULL || (nom_graphe)==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction lire_etats_fst2_avec_noms\n");
-  exit(1);
-}
-for (i=0;i<nombre_graphes_fst2+1;i++) {
-  // j'ai ajoute +1 car les graphes sont numerotes de -1 a -nombre_graphes
-  debut_graphe_fst2[i]=0;
-  nombre_etats_par_grf[i]=0;
-  nom_graphe[i]=NULL;
-}
-etat_courant=0;
-// on lit tous les graphes
-for (j=0;j<nombre_graphes_fst2;j++) {
-  // on lit le -
-  u_fgetc(f);
-  // et le numero
-  graphe_courant=u_read_int(f);
-  debut_graphe_fst2[graphe_courant]=etat_courant;
-  etat_relatif=0;
-  // on lit le nom du graphe
-  tmp=0;
-  while ((c=(unichar)u_fgetc(f))!='\n')
-    temp[tmp++]=c;
-  temp[tmp]='\0';
-  if ((j+1==SENTENCE)) {
-     u_fprints(temp,txt);
-     u_fprints_char("\n",txt);
-     // on ne construit le graphe que si on est sur le bon indice
-     // on se place sur "t" ou ":" ("f" serait une erreur)
-     do
-       c=(unichar)u_fgetc(f);
-     while ((c!='t')&&(c!=':')&&(c!='f'));
-     // on lit les etats du graphe
-     while (c!='f') {
-       graphe_fst2[etat_courant]=new_Fst2State();
-       nombre_etats_par_grf[graphe_courant]++;
-       if(c=='t') graphe_fst2[etat_courant]->control=FST2_FINAL_STATE_BIT_MASK;
-       if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|FST2_INITIAL_STATE_BIT_MASK);
-       imot=read_int(f,&end_of_line);
-       while (!end_of_line) {
-         if (imot>(*ETIQ_MAX)) (*ETIQ_MAX)=imot;
-         etarr=read_int(f,&end_of_line);
-         // etarr est un numero relatif; on calcule sa position reelle dans
-         // le tableau des etats
-         etarr=etarr+debut_graphe_fst2[graphe_courant];
-	     add_transition_to_state(graphe_fst2[etat_courant],imot,etarr);
-         imot=read_int(f,&end_of_line);
-       }
-       while(((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f'));
-       etat_courant++;
-       etat_relatif++;
-     }
-  }
-  else {
-     while(((c=(unichar)u_fgetc(f))!='f'));
-  }
-  // on lit l'espace et le \n apres le f
-  u_fgetc(f);
-  u_fgetc(f);
-}
-nombre_etats_fst2=etat_courant;
+/**
+ * Reads fst2 states from the given file 'f' and stores them into
+ * the given fst2. If 'read_names' is non null, graph names are
+ * stored in the 'graph_names' array of the fst2.
+ */
+void read_fst2_states(FILE *f,Fst2* fst2,int read_names) {
+read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
 }
 
 
-
-
-
-//
-// loads an fst2 and returns its representation in a Fst2 structure
-//
-Fst2* load_fst2(char *file,int read_names) {
-FILE *f;
-Fst2* fst2=new_Fst2();
-f=u_fopen(file,U_READ);
+/**
+ * Loads a .fst2 file and returns its representation in a Fst2 structure.
+ * 'read_names' indicates if graph names must be stored.
+ * If 'graph_number' is setted to NO_GRAPH_NUMBER_SPECIFIED, all the fst2
+ * is loaded; otherwise this parameter is taken as the number of the unique
+ * graph to load. 
+ */
+Fst2* load_fst2(char* filename,int read_names,int graph_number) {
+FILE* f;
+f=u_fopen(filename,U_READ);
 if (f==NULL) {
-  fprintf(stderr,"Cannot open the file %s\n",file);
+  fprintf(stderr,"Cannot open the file %s\n",filename);
   return NULL;
 }
+Fst2* fst2=new_Fst2();
+/* We read the number of graphs contained in the fst2 */
 fst2->number_of_graphs=u_read_int(f);
 if (fst2->number_of_graphs==0) {
-   fprintf(stderr,"Graph %s is empty\n",file);
+   fprintf(stderr,"Graph %s is empty\n",filename);
    return NULL;
 }
+/*
+ * We allocates 'states' and 'tags' arrays with a big default size.
+ */
 fst2->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
+if (fst2->states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
 fst2->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-
+if (fst2->tags==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+/*
+ * The 'initial_states' and 'number_of_states_per_graphs' arrays are
+ * allocated with the correct size. We add +1 because graph numeration
+ * starts at 1.
+ */
 fst2->initial_states=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
 if (fst2->initial_states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
 fst2->number_of_states_by_graphs=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
 if (fst2->number_of_states_by_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
-read_fst2_states(f,fst2,read_names);
-read_fst2_tags(f,fst2);
+/*
+ * If needed, we allocate the 'graph_names' array. The +1 has the same motivation
+ * than above.
+ */
+if (read_names) {
+	fst2->graph_names=(unichar**)malloc((fst2->number_of_graphs+1)*sizeof(unichar*));
+	if (fst2->graph_names==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+}
+/*
+ * Then we read the states of the fst2
+ */
+int max_tag_number;
+read_fst2_states(f,fst2,read_names,graph_number,&max_tag_number);
+/*
+ * And we read the tags
+ */
+if (graph_number==NO_GRAPH_NUMBER_SPECIFIED) {
+	read_fst2_tags(f,fst2);
+} else {
+	read_fst2_tags(f,fst2,max_tag_number);
+}
 u_fclose(f);
+/*
+ * Finally, we resize the 'states' and 'tags' array at the correct size.
+ */
 resize(fst2);
 return fst2;
 }
 
 
+/**
+ * Loads a .fst2 file and returns its representation in a Fst2 structure.
+ */
+Fst2* load_fst2(char* filename,int read_names) {
+return load_fst2(filename,read_names,NO_GRAPH_NUMBER_SPECIFIED);
+}
 
-//
-// loads one sentence of an fst2 and returns its representation in an Automate_fst2 structure
-//
-Fst2* load_one_sentence_of_fst2(char *file,int SENTENCE,FILE* txt) {
-FILE *f;
-int ETIQ_MAX;
-Fst2* fst2=new_Fst2();
-f=u_fopen(file,U_READ);
-if (f==NULL) {
-  fprintf(stderr,"Cannot open the file %s\n",file);
-  return NULL;
-}
-nombre_graphes_fst2=u_read_int(f);
-if (nombre_graphes_fst2==0) {
-   fprintf(stderr,"Graph %s is empty\n",file);
-   return NULL;
-}
-fst2->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-fst2->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=fst2->states;
-etiquette_fst2=fst2->tags;
-debut_graphe_fst2=fst2->initial_states;
-liste_des_variables=fst2->variables;
-nombre_etats_par_grf=fst2->number_of_states_by_graphs;
-nom_graphe=fst2->graph_names;
-lire_etats_fst2_avec_noms_for_one_sentence(f,SENTENCE,&ETIQ_MAX,txt);
-fst2->number_of_states_by_graphs=nombre_etats_par_grf;
-read_fst2_tags(f,fst2,ETIQ_MAX);
-u_fclose(f);
-fst2->graph_names=nom_graphe;
-fst2->number_of_graphs=nombre_graphes_fst2;
-fst2->number_of_states=nombre_etats_fst2;
-fst2->initial_states=debut_graphe_fst2;
-resize(fst2);
-return fst2;
+
+/**
+ * Loads one graph from a .fst2 file that represents a text automaton,
+ * and returns its representation in a Fst2 structure. The graph name
+ * is stored because it represents the text of the sentence.
+ */
+Fst2* load_one_sentence_from_fst2(char* filename,int sentence_number) {
+return load_fst2(filename,1,sentence_number);
 }
 
 

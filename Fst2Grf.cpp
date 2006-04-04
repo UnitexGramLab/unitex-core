@@ -146,15 +146,16 @@ setBufferMode();
 
 
 
-Fst2* fst2;
 printf("Loading %s...\n",argv[1]);
-fst2=load_one_sentence_of_fst2(argv[1],SENTENCE,txt);
+Fst2* fst2=load_one_sentence_from_fst2(argv[1],SENTENCE);
 if (fst2==NULL) {
    fprintf(stderr,"Cannot load text automata file %s\n",argv[1]);
    u_fclose(f);
    u_fclose(txt);
    return 1;
 }
+u_fprints(fst2->graph_names[SENTENCE],txt);
+u_fprints_char("\n",txt);
 printf("Creating GRF...\n");
 sentence_to_grf(fst2,SENTENCE,fontname,f);
 u_fclose(f);
