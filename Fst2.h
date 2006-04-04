@@ -249,7 +249,7 @@ Fst2Transition nouvelle_transition_mat();
 Fst2* load_fst2(char*,int);
 void free_fst2(Fst2*);
 struct variable_list* get_variable(unichar*,struct variable_list*);
-Fst2* load_one_sentence_of_fst2(char*,int,FILE*,Fst2*);
+Fst2* load_one_sentence_of_fst2(char*,int,FILE*);
 void unprotect_characters_in_fst2_tags(Fst2*);
 void free_Fst2Transition(Fst2Transition);
 

@@ -148,7 +148,7 @@ setBufferMode();
 
 Fst2* fst2;
 printf("Loading %s...\n",argv[1]);
-fst2=load_one_sentence_of_fst2(argv[1],SENTENCE,txt,fst2);
+fst2=load_one_sentence_of_fst2(argv[1],SENTENCE,txt);
 if (fst2==NULL) {
    fprintf(stderr,"Cannot load text automata file %s\n",argv[1]);
    u_fclose(f);

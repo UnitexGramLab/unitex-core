@@ -33,6 +33,9 @@
 #define FST2_FINAL_STATE_BIT_MASK 1
 #define FST2_INITIAL_STATE_BIT_MASK 2
 
+/* The constant NO_TAG_LIMIT must have a negative value */
+#define NO_TAG_LIMIT -1
+
 
 Fst2State* graphe_fst2;
 Fst2Tag* etiquette_fst2;
@@ -399,72 +402,59 @@ e->codes=u_strdup(temp);
 
 
 /**
- * This function creates a tag for a variable declaration of the form
- * "$a(" or "$a)", and inserts it at the given position in the 
- * tag array of the given fst2.
+ * This function creates and returns a tag for a variable declaration of the form
+ * "$a(" or "$a)".
+ * 
+ * IMPORTANT: This function does not add the variable to the variable list of 
+ *            the enclosing fst2.
  */
-void create_variable_tag(int position,unichar* input,Fst2* fst2) {
+Fst2Tag create_variable_tag(unichar* input) {
 int length=u_strlen(input);
-Fst2Tag e=new_Fst2Tag();
+Fst2Tag tag=new_Fst2Tag();
 /*
  * We copy the variable name into the input field
  * length-1 = length - 2(ignoring '$' and '('or ')') + 1(for '\0') 
  */
-e->input=(unichar*)malloc((length-1)*sizeof(unichar));
+tag->input=(unichar*)malloc((length-1)*sizeof(unichar));
 for (int i=1;i<length;i++) {
-	e->input[i-1]=input[i];
+	tag->input[i-1]=input[i];
 }
-e->input[length-2]='\0';
+tag->input[length-2]='\0';
 /*
  * And we indicate if it is a variable start or end
  */
-if (input[length-1]=='(') {e->control=START_VAR_TAG_BIT_MASK;}
-else {e->control=END_VAR_TAG_BIT_MASK;}
-/*
- * We add this variable to the variable list of the fst2
- */
-fst2->variables=add_variable_to_list(e->input,fst2->variables);
-/*
- * And we insert the tag into the tag array  of the fst2
- */
-fst2->tags[position]=e;
+if (input[length-1]=='(') {tag->control=START_VAR_TAG_BIT_MASK;}
+else {tag->control=END_VAR_TAG_BIT_MASK;}
+return tag;
 }
 
 
 /**
- * This function creates a tag  and inserts it at the given
- * position in the tag array of the given fst2. 'input', 'contentGF' and
+ * This function creates and returns a fst2 tag. 'input', 'contentGF' and
  * 'output' and not supposed to be NULL. 'input' is not supposed to be an
  * empty string. After the execution, the field 'contentGF' of the created tag
  * can be NULL, but 'output' cannot. No output is indicated by an empty string.
  */
-void create_tag(int position,unichar* input,unichar* contentGF,unichar* output,
-                int respect_case,Fst2* fst2) {
-
-Fst2Tag tag;
+Fst2Tag create_tag(unichar* input,unichar* contentGF,unichar* output,int respect_case) {
 int L=u_strlen(input);
 if (input[0]=='$' && L>2 && (input[L-1]=='(' || input[L-1]==')')) {
    /* If we have a variable declaration like $a( or $a) */
-   create_variable_tag(position,input,fst2);
-   return;
+   return create_variable_tag(input);
 }
-tag=new_Fst2Tag();
+Fst2Tag tag=new_Fst2Tag();
 tag->input=u_strdup(input);
 /* First, we test if we have a context mark */
 if (!u_strcmp_char(input,"$[")) {
    tag->control=POSITIVE_CONTEXT_MASK;
-   fst2->tags[position]=tag;
-   return;
+   return tag;
 }
 if (!u_strcmp_char(input,"$![")) {
    tag->control=NEGATIVE_CONTEXT_MASK;
-   fst2->tags[position]=tag;
-   return;
+   return tag;
 }
 if (!u_strcmp_char(input,"$]")) {
    tag->control=CONTEXT_END_MASK;
-   fst2->tags[position]=tag;
-   return;
+   return tag;
 }
 /*
  * If we have a morphological filter, we copy it
@@ -490,8 +480,8 @@ if (respect_case) {
  * If the input is ' ', # or <E>, we do nothing
  */
 if ((input[0]==' ')||(input[0]=='#')||!u_strcmp_char(input,"<E>")) {
-  fst2->tags[position]=tag;
-  return;
+  //fst2->tags[position]=tag;
+  return tag;
 }
 /*
  * We handle inputs that start with a round bracket
@@ -505,40 +495,35 @@ if (input[0]=='{') {
   	 */
   }
   else {
-    /*
-     * Here we a lexical tag like {built,build.V} or a single '{' character
-     */
+    /* Here we a lexical tag like {built,build.V} or a single '{' character */
     if (input[1]!='\0') {
     	/* If we have not a single '{', we analyze the lexical tag */
        analyze_tag_with_round_brackets(tag);
     }
   }
-  fst2->tags[position]=tag;
-  return;
+  return tag;
 }
 if ((input[0]!='<') || (input[1]=='\0')) {
 	/*
 	 * If we have a single '<' character or an input that does not start with '<',
-	 * there is nothing special to do 
+	 * there is nothing special to do.
 	 */
-	fst2->tags[position]=tag;
-	return;
+	return tag;
 }
 /*
  * Finally, if we have an input that starts with '<' that is not a single '<',
  * we analyze the tag assuming that it is of the form <...>
  */
 analyze_tag_with_angles(tag);
-fst2->tags[position]=tag;
+return tag;
 }
 
 
 /**
- * Creates the tag for the string 'line', representing a tag line
- * in a .fst2 file like "%<V>/VERB", without an ending '\n'. The
- * tag is added to the given fst2.
+ * Creates and returns the tag for the string 'line', representing a tag line
+ * in a .fst2 file like "%<V>/VERB", without an ending '\n'.
  */
-void add_tag(unichar* line,Fst2* fst2,int *current_tag) {
+Fst2Tag create_tag(unichar* line) {
 unichar all_input[2048],output[2048];
 int i=1,j=0,k=0;
 /* First, we look if the tag must respect case */
@@ -606,40 +591,71 @@ if (all_input[i]!='\0') {
 /* If there is a morphological filter but no input ("%<<^in>>/PFX"), then
  * we say that the input is any token */
 if (input[0]=='\0') {u_strcpy_char(input,"<TOKEN>");}
-create_tag((*current_tag),input,filter,output,respect_case,fst2);
+return create_tag(input,filter,output,respect_case);
 /* $CD$ end   */
-(*current_tag)++;
 }
 
 
-
-//
-// lit les etiquettes des transitions
-//
-void lire_etiquettes_fst2(FILE *f,Fst2* fst2) {
+/**
+ * Reads the tags of the .fst2 file 'f'. The function assumes that the
+ * current position in the file is just before the first tag line.
+ * For each tag line, a tag is created and inserted in the tag array of 
+ * the given fst2. The parameter 'limit' indicates that the function
+ * may stop reading after the tag number 'limit'. NO_TAG_LIMIT indicates
+ * that there is no limit. 
+ */
+void read_fst2_tags(FILE *f,Fst2* fst2,int limit) {
 int i;
 unichar c;
-unichar mot[10000];
+unichar line[10000];
 int current_tag=0;
-while (((c=(unichar)u_fgetc(f))!='%')&&(c!='@'));
-while (c!='f') {
-  i=0;
-  do {
-    mot[i++]=c;
-  } while ((c=(unichar)u_fgetc(f))!='\n');
-  while (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@'));
-  mot[i]='\0';
-  add_tag(mot,fst2,&current_tag);
+/* If the position in the file is not correct we exit */
+if (((c=(unichar)u_fgetc(f))!='%')&&(c!='@')) {
+	fatal_error("Unexpected character in .fst2 file: %c\n",c);
 }
+/* There cannot have no tag line, because by convention, every .fst2 file
+ * must have "%<E>" as first tag. */
+while (c!='f' && (limit==NO_TAG_LIMIT || current_tag<=limit)) {
+	/* We read the line and copy it without the ending '\n' */
+	i=0;
+	do {
+		line[i++]=c;
+	} while ((c=(unichar)u_fgetc(f))!='\n');
+	/* And we read the first character of the next line */
+  	if (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@')) {
+  		/* If the character is not an expected one we exit */
+  		fatal_error("Unexpected character in .fst2 file: %c\n",c);
+  	}
+	line[i]='\0';
+	/* We create the tag and add it to the fst2 */
+	fst2->tags[current_tag]=create_tag(line);
+	/* 
+	 * IMPORTANT: if the tag is a variable declaration, we must add this variable
+	 *            to the variable list of the fst2 .
+	 */
+	if (fst2->tags[current_tag]->control & (START_VAR_TAG_BIT_MASK+END_VAR_TAG_BIT_MASK)) {
+		fst2->variables=add_variable_to_list(fst2->tags[current_tag]->input,fst2->variables);
+	}
+	/* We do not forget to increase the tag counter */
+	current_tag++;
+}
+/* Finally, we set the number of tags of the fst2 */
 fst2->number_of_tags=current_tag;
 }
 
+
+/**
+ * Reads all the tags of the .fst2 file 'f'.
+ */
+void read_fst2_tags(FILE *f,Fst2* fst2) {
+read_fst2_tags(f,fst2,NO_TAG_LIMIT);
+}
 
 
 //
 // lit les etiquettes des transitions jusqu'a l'etiquette d'indice ETIQ_MAX
 //
-void lire_etiquettes_fst2_under_limit(FILE *f,int ETIQ_MAX,Fst2* fst2) {
+/*void lire_etiquettes_fst2_under_limit(FILE *f,int ETIQ_MAX,Fst2* fst2) {
 int i;
 unichar c;
 unichar mot[10000];
@@ -657,7 +673,7 @@ while (c!='f' && k<=ETIQ_MAX) {
   add_tag(mot,fst2,&current_tag);
 }
 fst2->number_of_tags=current_tag;
-}
+}*/
 
 
 //
@@ -1016,7 +1032,7 @@ else {
    lire_etats_fst2(f);
 }
 fst2->number_of_states_by_graphs=nombre_etats_par_grf;
-lire_etiquettes_fst2(f,fst2);
+read_fst2_tags(f,fst2);
 u_fclose(f);
 fst2->number_of_graphs=nombre_graphes_fst2;
 fst2->number_of_states=nombre_etats_fst2;
@@ -1030,10 +1046,10 @@ return fst2;
 //
 // loads one sentence of an fst2 and returns its representation in an Automate_fst2 structure
 //
-Fst2* load_one_sentence_of_fst2(char *file,int SENTENCE,FILE* txt,Fst2* fst2) {
+Fst2* load_one_sentence_of_fst2(char *file,int SENTENCE,FILE* txt) {
 FILE *f;
 int ETIQ_MAX;
-Fst2* a=new_Fst2();
+Fst2* fst2=new_Fst2();
 f=u_fopen(file,U_READ);
 if (f==NULL) {
   fprintf(stderr,"Cannot open the file %s\n",file);
@@ -1044,26 +1060,25 @@ if (nombre_graphes_fst2==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
-a->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-a->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=a->states;
-etiquette_fst2=a->tags;
-debut_graphe_fst2=a->initial_states;
-liste_des_variables=a->variables;
+fst2->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
+fst2->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
+graphe_fst2=fst2->states;
+etiquette_fst2=fst2->tags;
+debut_graphe_fst2=fst2->initial_states;
+liste_des_variables=fst2->variables;
 initialiser_variables_fst2();
-nombre_etats_par_grf=a->number_of_states_by_graphs;
-nom_graphe=a->graph_names;
+nombre_etats_par_grf=fst2->number_of_states_by_graphs;
+nom_graphe=fst2->graph_names;
 lire_etats_fst2_avec_noms_for_one_sentence(f,SENTENCE,&ETIQ_MAX,txt);
-a->number_of_states_by_graphs=nombre_etats_par_grf;
-lire_etiquettes_fst2_under_limit(f,ETIQ_MAX,fst2);
+fst2->number_of_states_by_graphs=nombre_etats_par_grf;
+read_fst2_tags(f,fst2,ETIQ_MAX);
 u_fclose(f);
-a->graph_names=nom_graphe;
-a->number_of_graphs=nombre_graphes_fst2;
-a->number_of_states=nombre_etats_fst2;
-a->initial_states=debut_graphe_fst2;
-a->variables=liste_des_variables;
-resize(a);
-return a;
+fst2->graph_names=nom_graphe;
+fst2->number_of_graphs=nombre_graphes_fst2;
+fst2->number_of_states=nombre_etats_fst2;
+fst2->initial_states=debut_graphe_fst2;
+resize(fst2);
+return fst2;
 }
 
 

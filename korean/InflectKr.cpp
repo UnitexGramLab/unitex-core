@@ -73,7 +73,7 @@ extern void initialiser_variables_fst2();
 extern void resize(Fst2* a);
 extern void lire_etats_fst2(FILE *f);
 extern void lire_etats_fst2_avec_noms(FILE *f);
-extern void lire_etiquettes_fst2(FILE*,Fst2*);
+extern void read_fst2_tags(FILE*,Fst2*);
 
 static Fst2* load_fst22(char *file,int noms) {
 FILE *f;
@@ -104,7 +104,7 @@ else {
    lire_etats_fst2(f);
 }
 fst2->number_of_states_by_graphs=nombre_etats_par_grf;
-lire_etiquettes_fst2(f,fst2);
+read_fst2_tags(f,fst2);
 u_fclose(f);
 fst2->number_of_graphs=nombre_graphes_fst2;
 fst2->number_of_states=nombre_etats_fst2;
