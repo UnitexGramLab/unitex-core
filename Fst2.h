@@ -37,10 +37,6 @@
 #define MAX_FST2_STATES 500000
 
 
-
-extern int etiquette_courante;
-
-
 /**
  * This structure represents a tag of a .fst2 file.
  */
@@ -236,7 +232,7 @@ struct fst2 {
     unichar** graph_names;
     
     /* This array indicates for each graph its number of states */
-    int* number_of_states_by_graphs;
+    int* number_of_states_per_graphs;
     
     /* List of variables used in the graph. This list is initialized from
      * the $a( and $a) deaclarations found in the tags. */
@@ -245,17 +241,12 @@ struct fst2 {
 typedef struct fst2 Fst2;
 
 
-Fst2Transition new_Fst2Transition();
+
 Fst2* load_fst2(char*,int);
 Fst2* load_one_sentence_from_fst2(char*,int);
-void free_fst2(Fst2*);
+void free_Fst2(Fst2*);
 struct variable_list* get_variable(unichar*,struct variable_list*);
-void unprotect_characters_in_fst2_tags(Fst2*);
-void free_Fst2Transition(Fst2Transition);
-
-int is_final_state(Fst2State);
-void set_final_state(Fst2State,int);
 int is_initial_state(Fst2State);
-void set_initial_state(Fst2State,int);
+int is_final_state(Fst2State);
 
 #endif

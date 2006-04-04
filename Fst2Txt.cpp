@@ -151,7 +151,7 @@ else if (!strcmp(argv[4],"-replace")) {
           fprintf(stderr,"Invalid parameter %s : the mode must be -merge or -replace\n",argv[4]);
           u_fclose(f);
           u_fclose(f_out);
-          free_fst2(fst2);
+          free_Fst2(fst2);
           free_alphabet(alphabet);
           return 1;
      }
@@ -166,7 +166,7 @@ if (argc>=6) {
      fprintf(stderr,"Invalid parameter: %s\n",argv[5]);
      u_fclose(f);
      u_fclose(f_out);
-     free_fst2(fst2);
+     free_Fst2(fst2);
      free_alphabet(alphabet);
      return 1;
    }
@@ -180,7 +180,7 @@ u_fclose(f);
 u_fclose(f_out);
 remove(argv[1]);
 rename(temp,argv[1]);
-free_fst2(fst2);
+free_Fst2(fst2);
 free_alphabet(alphabet);
 free_arbre_etiquettes();
 return 0;

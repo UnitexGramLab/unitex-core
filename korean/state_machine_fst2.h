@@ -85,7 +85,7 @@ public:
 					a->tags[i]->output = (unichar *)saveTransductionTable[i];
 			delete saveTransductionTable;
 		}
-		if(a)free_fst2(a);
+		if(a)free_Fst2(a);
 
 	};
 	int isReady(){ return( a ? 1:0);};

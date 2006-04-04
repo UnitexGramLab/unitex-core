@@ -60,20 +60,20 @@ if (fst2==NULL) {
 int res=isLinearAutomaton(fst2);
 if (res!=LINEAR_AUTOMATON) {
    fprintf(stderr,"Error: the text automaton is not linear in sentence %d\n",res);
-   free_fst2(fst2);
+   free_Fst2(fst2);
    return 1;
 }
 
 FILE* f=u_fopen(argv[2],U_WRITE);
 if (f==NULL) {
    fprintf(stderr,"Cannot create %s\n",argv[2]);
-   free_fst2(fst2);
+   free_Fst2(fst2);
    return 1;
 }
 printf("Converting linear automaton into text...\n");
 convertLinearAutomaton(fst2,f);
 u_fclose(f);
-free_fst2(fst2);
+free_Fst2(fst2);
 printf("Done.\n");
 return 0;
 }

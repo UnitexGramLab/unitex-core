@@ -60,7 +60,7 @@ sprintf(temp,"# Sentence #%d\n",N);
 u_fprints_char(temp,f);
 struct string_hash* tags=new_string_hash();
 // first, we insert every tag in the string_hash
-int limite=fst2->initial_states[N]+fst2->number_of_states_by_graphs[N];
+int limite=fst2->initial_states[N]+fst2->number_of_states_per_graphs[N];
 for (int i=fst2->initial_states[N];i<limite;i++) {
    struct fst2Transition* trans=fst2->states[i]->transitions;
    while (trans!=NULL) {
@@ -79,7 +79,7 @@ for (int i=fst2->initial_states[N];i<limite;i++) {
    }
 }
 // we write the number of tags and the number of states in the MFT
-sprintf(temp,"%d %d\n",tags->N,fst2->number_of_states_by_graphs[N]);
+sprintf(temp,"%d %d\n",tags->N,fst2->number_of_states_per_graphs[N]);
 u_fprints_char(temp,f);
 unichar TMP[2000];
 for (int i=0;i<tags->N;i++) {

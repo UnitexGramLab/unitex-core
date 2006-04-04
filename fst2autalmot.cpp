@@ -500,7 +500,7 @@ tAutAlMot * fst2AutAlMot(Fst2 * A, int nb) {
 
   nb++; /* Fst2 start at 1 */
 
-  tAutAlMot * aut = initAutAlMot(A->number_of_states_by_graphs[nb]);
+  tAutAlMot * aut = initAutAlMot(A->number_of_states_per_graphs[nb]);
 
   tAlphMot * alphabet = alphabet_new();
 
@@ -571,7 +571,7 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
     int nb   = i + 1;  /* automate in fst2 start at index 1 */
     int base = A->initial_states[nb];
 
-    tAutAlMot * aut = initAutAlMot(A->number_of_states_by_graphs[nb]);
+    tAutAlMot * aut = initAutAlMot(A->number_of_states_per_graphs[nb]);
 
     aut->name = u_strdup(A->graph_names[nb]);
 
@@ -615,7 +615,7 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
 
   alphabet_delete(alphabet);
-  free_fst2(A);
+  free_Fst2(A);
 
   return res;
 }
@@ -639,7 +639,7 @@ tAutAlMot * load_grammar_automaton(char * fname) {
   int base = A->initial_states[nb];
 
 
-  tAutAlMot * aut = initAutAlMot(A->number_of_states_by_graphs[1]);
+  tAutAlMot * aut = initAutAlMot(A->number_of_states_per_graphs[1]);
 
   aut->name = u_strdup(A->graph_names[nb]);
 
@@ -683,7 +683,7 @@ tAutAlMot * load_grammar_automaton(char * fname) {
   }
 
   alphabet_delete(alphabet);
-  free_fst2(A);
+  free_Fst2(A);
 
   return aut;
 }

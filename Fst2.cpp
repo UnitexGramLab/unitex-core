@@ -40,17 +40,6 @@
 #define NO_GRAPH_NUMBER_SPECIFIED -1
 
 
-Fst2State* graphe_fst2;
-Fst2Tag* etiquette_fst2;
-int *debut_graphe_fst2;
-int *nombre_etats_par_grf;
-unichar** nom_graphe;
-struct variable_list* liste_des_variables;
-int nombre_etats_fst2;
-int nombre_graphes_fst2;
-int etat_courant;
-
-
 
 /**
  * Allocates, initializes and returns a variable list item
@@ -167,7 +156,7 @@ a->number_of_states=0;
 a->number_of_tags=0;
 a->initial_states=NULL;
 a->graph_names=NULL;
-a->number_of_states_by_graphs=NULL;
+a->number_of_states_per_graphs=NULL;
 a->variables=NULL;
 return a;
 }
@@ -177,7 +166,7 @@ return a;
  * Frees a fst2. The function assumes that if 'fst2' is not NULL, all
  * its field are neither NULL nor already freed.
  */
-void free_fst2(Fst2* fst2) {
+void free_Fst2(Fst2* fst2) {
 if (fst2==NULL) return;
 int i;
 for (i=0;i<fst2->number_of_states;i++) {
@@ -194,7 +183,7 @@ if (fst2->graph_names!=NULL) {
    free(fst2->graph_names);
 }
 free(fst2->initial_states);
-free(fst2->number_of_states_by_graphs);
+free(fst2->number_of_states_per_graphs);
 free_variable_list(fst2->variables);
 free(fst2);
 }
@@ -222,7 +211,7 @@ if (fst2->graph_names!=NULL) {
    /* We reallocate only if there is something */
    fst2->graph_names=(unichar**)realloc(fst2->graph_names,n*sizeof(unichar*));
 }
-fst2->number_of_states_by_graphs=(int*)realloc(fst2->number_of_states_by_graphs,n*sizeof(int));
+fst2->number_of_states_per_graphs=(int*)realloc(fst2->number_of_states_per_graphs,n*sizeof(int));
 }
 
 
@@ -748,6 +737,9 @@ state->transitions=transition;
 }
 
 
+void set_initial_state(fst2State*,int);
+void set_final_state(fst2State*,int);
+
 /**
  * Reads fst2 states from the given file 'f' and stores them into
  * the given fst2. If 'read_names' is non null, graph names are
@@ -805,7 +797,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		 */
 		while (c!='f') {
 			fst2->states[current_state]=new_Fst2State();
-			fst2->number_of_states_by_graphs[current_graph]++;
+			fst2->number_of_states_per_graphs[current_graph]++;
 			/*
 			 * We set the finality and initiality bits of the state
 			 */
@@ -902,8 +894,8 @@ if (fst2->tags==NULL) {fatal_error("Not enough memory in load_fst2\n");}
  */
 fst2->initial_states=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
 if (fst2->initial_states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
-fst2->number_of_states_by_graphs=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
-if (fst2->number_of_states_by_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+fst2->number_of_states_per_graphs=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
+if (fst2->number_of_states_per_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
 /*
  * If needed, we allocate the 'graph_names' array. The +1 has the same motivation
  * than above.
@@ -953,34 +945,6 @@ return load_fst2(filename,1,sentence_number);
 
 
 /**
- * This function returns 0 if the given state is not final and a non-zero value
- * if the state is final.
- */
-int is_final_state(Fst2State e) {
-if (e==NULL) {
-   fatal_error("NULL error in is_final_state\n");
-}
-return e->control&FST2_FINAL_STATE_BIT_MASK;
-}
-
-
-/**
- * This function sets the finality of the given state.
- */
-void set_final_state(Fst2State e,int finality) {
-if (e==NULL) {
-   fatal_error("NULL error in set_final_state\n");
-}
-/* First the compute the control byte without the finality bit */
-e->control=e->control & (0xFF-FST2_FINAL_STATE_BIT_MASK);
-/* And we add it if necessary*/
-if (finality) {
-	e->control=e->control | FST2_FINAL_STATE_BIT_MASK;
-}
-}
-
-
-/**
  * This function returns 0 if the given state is not initial and a non-zero value
  * if the state is final.
  */
@@ -1008,32 +972,30 @@ if (finality) {
 }
 
 
-
-void unprotect_characters_in_sequence(unichar* s) {
-int new_cursor=0;
-int old_cursor=0;
-while (s[old_cursor]!='\0') {
-   if (s[old_cursor]=='\\') {old_cursor++;}
-   if (s[old_cursor]=='\0') {
-      fprintf(stderr,"ERROR: unprotected slash at the end of a sequence in unprotect_characters_in_sequence\n");
-   }
-   s[new_cursor++]=s[old_cursor++];
+/**
+ * This function returns 0 if the given state is not final and a non-zero value
+ * if the state is final.
+ */
+int is_final_state(Fst2State e) {
+if (e==NULL) {
+   fatal_error("NULL error in is_final_state\n");
 }
-s[new_cursor]='\0';
+return e->control&FST2_FINAL_STATE_BIT_MASK;
 }
 
 
-//
-// This function unprotects characters in non NULL flechi and canonique members
-// of any tag of the given fst2
-//
-void unprotect_characters_in_fst2_tags(Fst2* fst2) {
-Fst2Tag etiq;
-for (int i=0;i<fst2->number_of_tags;i++) {
-   etiq=fst2->tags[i];
-   if (etiq!=NULL) {
-      if (etiq->inflected!=NULL) {unprotect_characters_in_sequence(etiq->inflected);}
-      if (etiq->lemma!=NULL) {unprotect_characters_in_sequence(etiq->lemma);}
-   }
+/**
+ * This function sets the finality of the given state.
+ */
+void set_final_state(Fst2State e,int finality) {
+if (e==NULL) {
+   fatal_error("NULL error in set_final_state\n");
+}
+/* First the compute the control byte without the finality bit */
+e->control=e->control & (0xFF-FST2_FINAL_STATE_BIT_MASK);
+/* And we add it if necessary*/
+if (finality) {
+	e->control=e->control | FST2_FINAL_STATE_BIT_MASK;
 }
 }
+

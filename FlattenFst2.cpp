@@ -111,7 +111,7 @@ for (int i=1;i<=grammar->number_of_graphs;i++) {
 // this function compute for the subgraph n of the grammar its subgraph list
 //
 void compute_dependences_for_subgraph(Fst2* grammar,int n,struct liste_nombres** L) {
-int limite=grammar->initial_states[n]+grammar->number_of_states_by_graphs[n];
+int limite=grammar->initial_states[n]+grammar->number_of_states_per_graphs[n];
 for (int etat=grammar->initial_states[n];etat<limite;etat++) {
    struct fst2Transition* trans=grammar->states[etat]->transitions;
    while (trans!=NULL) {
@@ -252,7 +252,7 @@ struct transition_comp* tab[1000]; // array for subgraphs
 int pos_in_tab=0;
 
 // first, we copy the original states
-int limite=grammar->initial_states[1]+grammar->number_of_states_by_graphs[1];
+int limite=grammar->initial_states[1]+grammar->number_of_states_per_graphs[1];
 for (int i=grammar->initial_states[1]; i<limite; i++) {
     new_main_graph->states[new_main_graph->current_pos]=nouvel_etat_comp();
     Etat_comp etat=new_main_graph->states[new_main_graph->current_pos];
@@ -345,7 +345,7 @@ struct transition_comp* tab[1000];
 int pos_in_tab=0;
 
 // first, we copy the original states
-int limite=grammar->initial_states[N]+grammar->number_of_states_by_graphs[N];
+int limite=grammar->initial_states[N]+grammar->number_of_states_per_graphs[N];
 for (int i=grammar->initial_states[N];i<limite;i++) {
     new_main_graph->states[new_main_graph->current_pos]=nouvel_etat_comp();
     Etat_comp etat=new_main_graph->states[new_main_graph->current_pos];
@@ -618,7 +618,7 @@ for (int i=2;i<=grammar->number_of_graphs;i++) {
 // taking into account graph renumerotation
 //
 void save_graph_to_be_kept(int N,Fst2* grammar,FILE* f) {
-int limite=grammar->initial_states[N]+grammar->number_of_states_by_graphs[N];
+int limite=grammar->initial_states[N]+grammar->number_of_states_per_graphs[N];
 char temp[1000];
 sprintf(temp,"%d ",-new_graph_number[N]);
 u_fprints_char(temp,f);

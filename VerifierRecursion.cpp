@@ -842,12 +842,12 @@ for (i=0;i<fst2->number_of_tags;i++)
 
 // on cherche les graphes qui reconnaissent <E> avec ou sans condition
 for (i=1;i<fst2->number_of_graphs+1;i++) {
-  conditions_pour_etat=(Liste_conditions*)malloc(sizeof(Liste_conditions)*fst2->number_of_states_by_graphs[i]);
+  conditions_pour_etat=(Liste_conditions*)malloc(sizeof(Liste_conditions)*fst2->number_of_states_per_graphs[i]);
   if (conditions_pour_etat==NULL) {
     fprintf(stderr,"Probleme d'allocation memoire\n");
     exit(1);
   }
-  for (j=0;j<fst2->number_of_states_by_graphs[i];j++)
+  for (j=0;j<fst2->number_of_states_per_graphs[i];j++)
     conditions_pour_etat[j]=NULL;
   verifie[i]=explorer_graphe_E(fst2->initial_states[i],fst2->initial_states[i],
   								fst2->states,fst2->tags,i,fst2->graph_names,
@@ -856,7 +856,7 @@ for (i=1;i<fst2->number_of_graphs+1;i++) {
     liberer_liste_conditions(conditions[i]);
   conditions[i]=conditions_pour_etat[0];
   conditions_pour_etat[0]=NULL;
-  for (j=1;j<fst2->number_of_states_by_graphs[i];j++)
+  for (j=1;j<fst2->number_of_states_per_graphs[i];j++)
     liberer_liste_conditions(conditions_pour_etat[j]);
   free(conditions_pour_etat);
 }
@@ -889,7 +889,7 @@ if (!ERROR) {
   printf("Looking for <E> loops\n");
   for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
     ERROR=chercher_boucle_par_E(i,fst2->initial_states,fst2->graph_names,
-    							fst2->states,fst2->tags,verifie,fst2->number_of_states_by_graphs);
+    							fst2->states,fst2->tags,verifie,fst2->number_of_states_per_graphs);
   }
 }
 nettoyer_controle(fst2->states,fst2->initial_states,NULL,fst2->number_of_graphs,
@@ -902,7 +902,7 @@ if (!ERROR) {
   }
 }
 
-free_fst2(fst2);
+free_Fst2(fst2);
 /*
 liberer_graphe_fst2(nombre_etats,nombre_etiquettes,debut_graphe,graphe,etiquette);
 for (i=1;i<=nombre_graphes;i++) {

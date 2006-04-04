@@ -446,7 +446,7 @@ struct noeud_arbre_normalization* root=new_noeud_arbre_normalization();
 unichar a[1];
 a[0]='\0';
 explorer_automate_normalization(automate,automate->initial_states[1],root,hash,a,alph);
-free_fst2(automate);
+free_Fst2(automate);
 free_string_hash_without_insert(hash);
 return root;
 }
@@ -467,7 +467,7 @@ struct noeud_arbre_normalization* root=new_noeud_arbre_normalization();
 unichar a[1];
 a[0]='\0';
 explorer_automate_normalization_string(automate,automate->initial_states[1],root,a);
-free_fst2(automate);
+free_Fst2(automate);
 return root;
 }
 

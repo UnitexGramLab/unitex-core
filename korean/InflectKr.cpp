@@ -57,58 +57,14 @@ int line=0;
 // loads an fst2 and returns its representation in an Automate_fst2 structure
 // same as load_fst2 but no message for the not exist file
 // hhuh
-extern Fst2* new_Fst2();
-extern Fst2State* graphe_fst2;
-extern Fst2Tag* etiquette_fst2;
-extern int *debut_graphe_fst2;
-extern int *nombre_etats_par_grf;
-extern unichar** nom_graphe;
-extern struct variable_list* liste_des_variables;
-extern int nombre_etats_fst2;
-extern int nombre_graphes_fst2;
-extern int etiquette_courante;
-extern int nombre_etiquettes_de_depart;
-extern int etat_courant;
-extern void resize(Fst2* a);
-extern void read_fst2_states(FILE *f,Fst2*,int);
-extern void read_fst2_tags(FILE*,Fst2*);
-
-static Fst2* load_fst22(char *file,int noms) {
+static Fst2* load_fst22(char* file,int noms) {
 FILE *f;
 f=u_fopen(file,U_READ);
 if (f==NULL) {
   return NULL;
 }
-Fst2* fst2=new_Fst2();
-nombre_graphes_fst2=u_read_int(f);
-if (nombre_graphes_fst2==0) {
-   fprintf(stderr,"Graph %s is empty\n",file);
-   return NULL;
-}
-fst2->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-fst2->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=fst2->states;
-etiquette_fst2=fst2->tags;
-debut_graphe_fst2=fst2->initial_states;
-liste_des_variables=fst2->variables;
-nombre_etats_par_grf=fst2->number_of_states_by_graphs;
-if (noms) {
-   nom_graphe=fst2->graph_names;
-   read_fst2_states(f,fst2,1);
-   fst2->graph_names=nom_graphe;
-}
-else {
-   read_fst2_states(f,fst2,0);
-}
-fst2->number_of_states_by_graphs=nombre_etats_par_grf;
-read_fst2_tags(f,fst2);
 u_fclose(f);
-fst2->number_of_graphs=nombre_graphes_fst2;
-fst2->number_of_states=nombre_etats_fst2;
-fst2->initial_states=debut_graphe_fst2;
-fst2->variables=liste_des_variables;
-resize(fst2);
-return fst2;
+return load_fst2(file,noms);
 }
 //
 //

@@ -66,13 +66,13 @@ strcat(temp,".mft");
 FILE* f=u_fopen(temp,U_WRITE);
 if (f==NULL) {
    fprintf(stderr,"Cannot create %s\n",temp);
-   free_fst2(fst2);
+   free_Fst2(fst2);
    return 1;
 }
 printf("Making %s...\n",temp);
 convert_fst2_to_mft(fst2,f);
 u_fclose(f);
-free_fst2(fst2);
+free_Fst2(fst2);
 printf("Done.\n");
 return 0;
 }

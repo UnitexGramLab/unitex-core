@@ -30,7 +30,7 @@ if (SENTENCE>automate->number_of_graphs) {
    fprintf(stderr,"Sentence number too long\n");
    return;
 }
-int nombre_etats=automate->number_of_states_by_graphs[SENTENCE];
+int nombre_etats=automate->number_of_states_per_graphs[SENTENCE];
 int* rang=(int*)malloc(sizeof(int)*nombre_etats);
 int* pos_X=(int*)malloc(sizeof(int)*nombre_etats);
 int rang_max=calculer_rang(automate,SENTENCE,rang,nombre_etats);

@@ -116,7 +116,7 @@ if (tok==NULL) {
    fprintf(stderr,"Cannot load token list %s\n",tokens);
    free_alphabet(alph);
    free_string_hash(semantic_codes);
-   free_fst2(automate);
+   free_Fst2(automate);
    return 0;
 }
 
@@ -129,7 +129,7 @@ if (indexGF == NULL) {
    free_alphabet(alph);
    free_string_hash(semantic_codes);
    free_string_hash(tok);
-   free_fst2(automate);
+   free_Fst2(automate);
    return 0;
    }
 #endif
@@ -205,7 +205,7 @@ if (info!=NULL) u_fclose(info);
 u_fclose(out);
 printf("Freeing memory...\n");
 free_DLC_tree(DLC_tree);
-free_fst2(automate);
+free_Fst2(automate);
 free_alphabet(alph);
 free_string_hash(tok);
 free_liste_nombres(tag_token_list);

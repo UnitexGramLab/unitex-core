@@ -290,7 +290,7 @@ verboseMode  = 0;
 	~CFstApp(){
 	    arretExpoDel();
 		cleanCyclePath();
-		if(a) free_fst2(a);
+		if(a) free_Fst2(a);
         if(saveSep != u_null_string) delete saveSep;
 
 		if(sep1 != u_null_string) delete sep1;

@@ -160,7 +160,7 @@ printf("Creating GRF...\n");
 sentence_to_grf(fst2,SENTENCE,fontname,f);
 u_fclose(f);
 u_fclose(txt);
-free_fst2(fst2);
+free_Fst2(fst2);
 printf("Done.\n");
 return 0;
 }

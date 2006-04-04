@@ -105,7 +105,7 @@ switch (flatten_fst2(origin,depth,temp,RTN)) {
                         break;
    default:;
 }
-free_fst2(origin);
+free_Fst2(origin);
 remove(argv[1]);
 rename(temp,argv[1]);
 return 0;

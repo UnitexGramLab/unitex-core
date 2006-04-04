@@ -30,7 +30,7 @@ Fst2Transition l;
 Fst2State etat;
 
 for (int sentence=1;sentence<fst2->number_of_graphs+1;sentence++) {
-   int n=fst2->initial_states[sentence]+fst2->number_of_states_by_graphs[sentence];
+   int n=fst2->initial_states[sentence]+fst2->number_of_states_per_graphs[sentence];
    for (int i=fst2->initial_states[sentence];i<n;i++) {
       etat=fst2->states[i];
       l=etat->transitions;

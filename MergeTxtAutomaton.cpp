@@ -62,7 +62,7 @@ void output_fst(Fst2 * A, int no, string_hash * hash, FILE * f) {
 
   int stateno = A->initial_states[no];
 
-  for (int i = 0; i < A->number_of_states_by_graphs[no]; i++) {
+  for (int i = 0; i < A->number_of_states_per_graphs[no]; i++) {
 
     Fst2State state = A->states[stateno + i];
 

@@ -1482,7 +1482,7 @@ public:
 #endif
 		if(fout){ fflush(fout); 	fclose(fout);}
 		if(fidx){ fclose(fidx);}
-		if(loadFst2) free_fst2(loadFst2);
+		if(loadFst2) free_Fst2(loadFst2);
 	}
 
 	void modeSet(int i)

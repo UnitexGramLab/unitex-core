@@ -118,7 +118,7 @@ for (int i=0;i<M->N;i++) {
       free_INF_codes(M->tab[i]->INF);
    }
    else {
-      free_fst2(M->tab[i]->fst2);
+      free_Fst2(M->tab[i]->fst2);
    }
    free(M->tab[i]);
 }

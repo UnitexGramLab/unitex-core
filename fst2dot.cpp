@@ -38,7 +38,7 @@ void fst2_output_dot(Fst2 * A, FILE * f) {
 	    "  graph [ center = true, orientation = landscape, rankdir = LR ];\n"
 	    "  node  [ shape  = circle ];\n\n", i);
 
-    for (int q = 0; q < A->number_of_states_by_graphs[i]; q++) {
+    for (int q = 0; q < A->number_of_states_per_graphs[i]; q++) {
 
       int qq = base + q;
 
