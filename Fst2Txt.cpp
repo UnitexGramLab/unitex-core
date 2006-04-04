@@ -23,7 +23,6 @@
 
 #include "unicode.h"
 #include "Fst2.h"
-#include "LiberationFst2.h"
 #include "Alphabet.h"
 #include "Liste_num.h"
 #include "UnicharTree.h"

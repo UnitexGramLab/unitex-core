@@ -26,7 +26,6 @@
 
 #include "unicode.h"
 #include "Fst2.h"
-#include "LiberationFst2.h"
 #include "VerifierRecursion.h"
 #include "Copyright.h"
 #include "Grf2Fst2_lib.h"

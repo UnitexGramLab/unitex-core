@@ -29,7 +29,6 @@
 
 #include "unicode.h"
 #include "Fst2.h"
-#include "LiberationFst2.h"
 
 struct liste_num {
   int numero;

@@ -24,7 +24,6 @@
 using namespace std;
 #include "unicode.h"
 #include "Fst2.h"
-#include "LiberationFst2.h"
 #include "Copyright.h"
 #include "FileName.h"
 #include "String_hash2.h"

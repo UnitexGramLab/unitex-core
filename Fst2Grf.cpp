@@ -27,7 +27,6 @@
 
 #include "unicode.h"
 #include "Fst2.h"
-#include "LiberationFst2.h"
 #include "Sentence_to_grf.h"
 #include "FileName.h"
 #include "Liste_nombres.h"

@@ -166,7 +166,7 @@ CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o Copyright.o CodePages.o
 
 DICO      = Dico
 DICO_OBJS = Dico.o Liste_nombres.o Copyright.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
-            Token_tree.o unicode.o Table_complex_token_hash.o Fst2.o LiberationFst2.o IOBuffer.o Error.o \
+            Token_tree.o unicode.o Table_complex_token_hash.o Fst2.o IOBuffer.o Error.o \
             CompoundWordTree.o DLC_optimization.o Flexional_codes.o Facteurs_interdits.o Fst2_tags_optimization.o \
             Grammatical_codes.o Loading_dic.o Liste_num.o LocatePattern.o Matches.o Optimized_fst2.o Pattern_transitions.o \
             Text_parsing.o TransductionVariables.o TransductionStack.o GF_lib.o LocateAsRoutine.o Context.o
@@ -204,15 +204,15 @@ FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o Copyright.o unicode.o Fst2.o Grf2
                FlattenFst2.o Liste_nombres.o Error.o FileName.o
 
 FST2GRF      = Fst2Grf
-FST2GRF_OBJS = IOBuffer.o Fst2Grf.o unicode.o Fst2.o LiberationFst2.o Sentence_to_grf.o\
+FST2GRF_OBJS = IOBuffer.o Fst2Grf.o unicode.o Fst2.o Sentence_to_grf.o\
                FileName.o Liste_nombres.o Copyright.o Error.o
 
 FST2LIST      = Fst2List
-FST2LIST_OBJS = IOBuffer.o Fst2List.o unicode.o Fst2.o LiberationFst2.o Alphabet.o Liste_num.o\
+FST2LIST_OBJS = IOBuffer.o Fst2List.o unicode.o Fst2.o Alphabet.o Liste_num.o\
                 UnicharTree.o Copyright.o FileName.o String_hash.o Error.o TransductionVariables.o
 
 FST2TXT      = Fst2Txt
-FST2TXT_OBJS = IOBuffer.o Fst2Txt.o unicode.o Fst2.o LiberationFst2.o Alphabet.o Liste_num.o UnicharTree.o\
+FST2TXT_OBJS = IOBuffer.o Fst2Txt.o unicode.o Fst2.o Alphabet.o Liste_num.o UnicharTree.o\
                Copyright.o TransductionVariables.o String_hash.o Error.o
 
 FST2UNAMBIG      = Fst2Unambig
@@ -220,7 +220,7 @@ FST2UNAMBIG_OBJS = Fst2.o Copyright.o Error.o Fst2Unambig.o IOBuffer.o LinearAut
                    unicode.o 
 
 GRF2FST2      = Grf2Fst2
-GRF2FST2_OBJS = IOBuffer.o Grf2Fst2.o Alphabet.o unicode.o Fst2.o LiberationFst2.o\
+GRF2FST2_OBJS = IOBuffer.o Grf2Fst2.o Alphabet.o unicode.o Fst2.o\
                 VerifierRecursion.o Copyright.o Grf2Fst2_lib.o Error.o FileName.o
 
 
@@ -230,7 +230,7 @@ IMPLOSEFST2_OBJS = IOBuffer.o ImploseFst2.o implose.o unicode.o fst2autalmot.o a
 
 
 INFLECT      = Inflect
-INFLECT_OBJS = IOBuffer.o Inflect.o Copyright.o unicode.o Fst2.o LiberationFst2.o Error.o
+INFLECT_OBJS = IOBuffer.o Inflect.o Copyright.o unicode.o Fst2.o Error.o
 
 LOCATE      = Locate
 LOCATE_OBJS = IOBuffer.o Locate.o Copyright.o unicode.o Alphabet.o DELA.o String_hash.o LocatePattern.o Fst2.o Text_tokens.o Liste_nombres.o\

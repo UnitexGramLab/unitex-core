@@ -836,8 +836,13 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 	else {
 		/*
 		 * If we do not need to read this graph, then we just go to the 'f' that
-		 * indicates the end of the graph.
+		 * indicates the end of the graph. However, if the 'graph_names' array
+		 * exists, we set the name of the current graph to NULL, in order to
+		 * avoid memory error during the freeing of the fst2.
 		 */
+		if (read_names) {
+			fst2->graph_names[current_graph]=NULL;
+		}
 		while(((c=(unichar)u_fgetc(f))!='f'));
 	}
 	/* We read the space and the '\n' that follows the final 'f' */
@@ -870,15 +875,15 @@ Fst2* load_fst2(char* filename,int read_names,int graph_number) {
 FILE* f;
 f=u_fopen(filename,U_READ);
 if (f==NULL) {
-  fprintf(stderr,"Cannot open the file %s\n",filename);
-  return NULL;
+	fprintf(stderr,"Cannot open the file %s\n",filename);
+	return NULL;
 }
 Fst2* fst2=new_Fst2();
 /* We read the number of graphs contained in the fst2 */
 fst2->number_of_graphs=u_read_int(f);
 if (fst2->number_of_graphs==0) {
-   fprintf(stderr,"Graph %s is empty\n",filename);
-   return NULL;
+	fprintf(stderr,"Graph %s is empty\n",filename);
+	return NULL;
 }
 /*
  * We allocates 'states' and 'tags' arrays with a big default size.

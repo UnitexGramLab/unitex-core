@@ -36,7 +36,6 @@
 #include "Token_tree.h"
 #include "Table_complex_token_hash.h"
 #include "Fst2.h"
-#include "LiberationFst2.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "LocateAsRoutine.h"
