@@ -245,7 +245,7 @@ struct fst2 {
 typedef struct fst2 Fst2;
 
 
-Fst2Transition nouvelle_transition_mat();
+Fst2Transition new_Fst2Transition();
 Fst2* load_fst2(char*,int);
 void free_fst2(Fst2*);
 struct variable_list* get_variable(unichar*,struct variable_list*);

@@ -706,98 +706,105 @@ return value;
 }
 
 
-//
-// cree et renvoie une nouvelle transition
-//
-Fst2Transition nouvelle_transition_mat() {
-Fst2Transition t;
-t=(Fst2Transition)malloc(sizeof(struct fst2Transition));
-if (t==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction nouvelle_transition_mat\n");
-  exit(1);
+/**
+ * Creates, initializes and returns a fst2 transition
+ */
+Fst2Transition new_Fst2Transition() {
+Fst2Transition transition;
+transition=(Fst2Transition)malloc(sizeof(struct fst2Transition));
+if (transition==NULL) {
+  fatal_error("Not enough memory in new_Fst2Transition\n");
 }
-t->tag_number=-1;
-t->state_number=-1;
-t->next=NULL;
-return t;
-}
-
-
-
-//
-// ajoute une transition a l'etat courant
-//
-void ajouter_transition_mat(struct fst2State *e,int etiq,int etarr)
-{
-  struct fst2Transition *ptr;
-
-  ptr=nouvelle_transition_mat();
-  ptr->next=e->transitions;
-  ptr->tag_number=etiq;
-  ptr->state_number=etarr;
-  e->transitions=ptr;
+/*
+ * There is no sense to give default values to the
+ * fields 'tag_number' and 'state_number'
+ */
+transition->next=NULL;
+return transition;
 }
 
 
-//
-// lit les etats puis les ajoute a l'automate
-//
-void lire_etats_fst2(FILE *f) {
+/**
+ * Creates and adds a transition to the given fst2 state.
+ * 
+ * NOTE: as a fst2 state is not supposed to contains duplicate 
+ *       transitions, we do not check if the transition already
+ *       exists before adding it.
+ */
+void add_transition_to_state(Fst2State state,int tag_number,int state_number) {
+Fst2Transition transition=new_Fst2Transition();
+transition->next=state->transitions;
+transition->tag_number=tag_number;
+transition->state_number=state_number;
+state->transitions=transition;
+}
+
+
+/**
+ * Reads fst2 states from the given file 'f' and stores them into
+ * the given fst2.
+ */
+void read_fst2_states(FILE *f,Fst2* fst2) {
 unichar c;
-int i,j,end_of_line;
-int imot,etarr,graphe_courant;
-int etat_relatif;
-debut_graphe_fst2=(int*)malloc((nombre_graphes_fst2+1)*sizeof(int));
-nombre_etats_par_grf=(int*)malloc((nombre_graphes_fst2+1)*sizeof(int));
-if (debut_graphe_fst2==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction lire_etats_fst2\n");
-  exit(1);
-}
-for (i=0;i<nombre_graphes_fst2+1;i++) {
-  // j'ai ajoute +1 car les graphes sont numerotes de -1 a -nombre_graphes
-  debut_graphe_fst2[i]=0;
-  nombre_etats_par_grf[i]=0;
-}
-etat_courant=0;
-// on lit tous les graphes
-for (j=0;j<nombre_graphes_fst2;j++) {
-  // on lit le -
-  u_fgetc(f);
-  // et le numero
-  graphe_courant=u_read_int(f);
-  debut_graphe_fst2[graphe_courant]=etat_courant;
-  etat_relatif=0;
-  // on saute le nom du graphe
-  while ((c=(unichar)u_fgetc(f))!='\n');
-  // on se place sur "t" ou ":" ("f" serait une erreur)
-  do
-    c=(unichar)u_fgetc(f);
-  while ((c!='t')&&(c!=':'));
-  // on lit les etats du graphe
-  while (c!='f') {
-    graphe_fst2[etat_courant]=new_Fst2State();
-    nombre_etats_par_grf[graphe_courant]++;
-    if(c=='t') graphe_fst2[etat_courant]->control=FST2_FINAL_STATE_BIT_MASK;
-    if (etat_relatif==0) graphe_fst2[etat_courant]->control=(unsigned char)((graphe_fst2[etat_courant]->control)|2);
-    imot=read_int(f,&end_of_line);
-    while (!end_of_line) {
-	  etarr=read_int(f,&end_of_line);
-      // etarr est un numero relatif; on calcule sa position reelle dans
-      // le tableau des etats
-      etarr=etarr+debut_graphe_fst2[graphe_courant];
-	  ajouter_transition_mat(graphe_fst2[etat_courant],imot,etarr);
-      imot=read_int(f,&end_of_line);
+int i,end_of_line,tag_number,destination_state_number,current_graph;
+int current_state=0;
+/* We read all the graphs that make the fst2 */
+for (i=0;i<fst2->number_of_graphs;i++) {
+	/* We ignore the minus sign that preceeds the number of the graph */
+	u_fgetc(f);
+	/* And we read the graph number */
+	current_graph=u_read_int(f);
+	/* We set the initial state of the graph */
+	fst2->initial_states[current_graph]=current_state;
+	int relative_state=0;
+	/* We ignore the graph name */
+	while ((c=(unichar)u_fgetc(f))!='\n');
+	/* We read the next char that must be 't' or ':' but not 'f', because 
+	 * empty graphs are not allowed */
+	c=(unichar)u_fgetc(f);
+	if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c\n",c);}
+	/*
+	 * Then, we read the states of the graph, until we find a line beginning by 'f'.
+	 */
+	while (c!='f') {
+		fst2->states[current_state]=new_Fst2State();
+		fst2->number_of_states_by_graphs[current_graph]++;
+		/*
+		 * We set the finality and initiality bits of the state
+		 */
+		set_final_state(fst2->states[current_state],(c=='t'));
+		set_initial_state(fst2->states[current_state],(relative_state==0));
+		/*
+		 * We read the tag number
+		 */
+		tag_number=read_int(f,&end_of_line);
+		/* 
+		 * We read transitions made of couple of integers (tag number/state number)
+		 * until we find an end of line
+		 */
+		while (!end_of_line) {
+			/* We read the destination state number */
+			destination_state_number=read_int(f,&end_of_line);
+			if (end_of_line) {fatal_error("Missing state number in transition (graph %d, state %d)\n",current_graph,relative_state);}
+			/* We adjust the destination state number in order to make it global */
+			destination_state_number=destination_state_number+fst2->initial_states[current_graph];
+			/* We add the transition to the current state */
+			add_transition_to_state(fst2->states[current_state],tag_number,destination_state_number);
+			/* And we do not forget to read the next integer */
+			tag_number=read_int(f,&end_of_line);
+		}
+		if (((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f')) {
+			fatal_error("Unexpected character in fst2: %c\n",c);
+		}
+		current_state++;
+		relative_state++;
 	}
-    while(((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f'));
-    etat_courant++;
-    etat_relatif++;
-  }
-  // on lit l'espace et le \n apres le f
-  u_fgetc(f);
-  u_fgetc(f);
-
+	/* We read the space and the '\n' that follows the final 'f' */
+	u_fgetc(f);
+	u_fgetc(f);
 }
-nombre_etats_fst2=etat_courant;
+/* Finally, we set the number of states of the fst2 */
+fst2->number_of_states=current_state;
 }
 
 
@@ -858,7 +865,7 @@ for (j=0;j<nombre_graphes_fst2;j++) {
       // etarr est un numero relatif; on calcule sa position reelle dans
       // le tableau des etats
       etarr=etarr+debut_graphe_fst2[graphe_courant];
-	  ajouter_transition_mat(graphe_fst2[etat_courant],imot,etarr);
+	  add_transition_to_state(graphe_fst2[etat_courant],imot,etarr);
       imot=read_int(f,&end_of_line);
 	}
     while(((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f'));
@@ -934,7 +941,7 @@ for (j=0;j<nombre_graphes_fst2;j++) {
          // etarr est un numero relatif; on calcule sa position reelle dans
          // le tableau des etats
          etarr=etarr+debut_graphe_fst2[graphe_courant];
-	     ajouter_transition_mat(graphe_fst2[etat_courant],imot,etarr);
+	     add_transition_to_state(graphe_fst2[etat_courant],imot,etarr);
          imot=read_int(f,&end_of_line);
        }
        while(((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f'));
@@ -967,32 +974,27 @@ if (f==NULL) {
   fprintf(stderr,"Cannot open the file %s\n",file);
   return NULL;
 }
-nombre_graphes_fst2=u_read_int(f);
-if (nombre_graphes_fst2==0) {
+fst2->number_of_graphs=u_read_int(f);
+if (fst2->number_of_graphs==0) {
    fprintf(stderr,"Graph %s is empty\n",file);
    return NULL;
 }
 fst2->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
 fst2->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-graphe_fst2=fst2->states;
-etiquette_fst2=fst2->tags;
-debut_graphe_fst2=fst2->initial_states;
-liste_des_variables=fst2->variables;
-nombre_etats_par_grf=fst2->number_of_states_by_graphs;
+
+fst2->initial_states=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
+if (fst2->initial_states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+fst2->number_of_states_by_graphs=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
+if (fst2->number_of_states_by_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+
 if (noms) {
-   nom_graphe=fst2->graph_names;
    lire_etats_fst2_avec_noms(f);
-   fst2->graph_names=nom_graphe;
 }
 else {
-   lire_etats_fst2(f);
+   read_fst2_states(f,fst2);
 }
-fst2->number_of_states_by_graphs=nombre_etats_par_grf;
 read_fst2_tags(f,fst2);
 u_fclose(f);
-fst2->number_of_graphs=nombre_graphes_fst2;
-fst2->number_of_states=nombre_etats_fst2;
-fst2->initial_states=debut_graphe_fst2;
 resize(fst2);
 return fst2;
 }
