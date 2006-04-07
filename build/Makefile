@@ -162,7 +162,8 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_to
 				Facteurs_interdits.o Flexional_codes.o Error.o Context.o
 
 CONVERT      = Convert
-CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o Copyright.o CodePages.o Error.o
+CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o Copyright.o CodePages.o Error.o\
+				HTMLCharacters.o AsciiSearchTree.o
 
 DICO      = Dico
 DICO_OBJS = Dico.o Liste_nombres.o Copyright.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \

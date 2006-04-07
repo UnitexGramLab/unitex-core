@@ -53,7 +53,7 @@ extern char* NBSP;
 
 typedef unsigned short int unichar;
 
-/* This constant must be used instead of 0xFFFF or 65536 in order
+/* This constant must be used instead of 65536 in order
  * to avoid problems if one day the type unichar becomes larger
  * than 2 bytes */
 #define MAX_NUMBER_OF_UNICODE_CHARS (1<<sizeof(unichar)*8)
@@ -82,6 +82,7 @@ int u_fputc_big_endian(unichar,FILE*);
 int u_fputc_raw_big_endian(unichar,FILE*);
 int u_fputc_utf8(unichar,FILE*);
 int u_fputc_utf8_diese(unichar c,FILE *f);
+int u_fgetc_utf8(FILE*);
 
 FILE* u_fopen(char*,char*);
 int u_fclose(FILE*);

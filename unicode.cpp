@@ -481,22 +481,27 @@ return fprintf(f,"&#%d;",c);
 
 
 
-//
-// UTF-8 version of fputc
-//
+/**
+ * This function writes a 2-bytes unicode character in the given file
+ * encoding it in UTF8. Returns EOF if an error occurs, any different value
+ * otherwise.
+ */
 int u_fputc_utf8(unichar c,FILE *f) {
-if (c=='\n') {
+/*if (c=='\n') {
   return fprintf(f,"\n");
 }
 if (c<=0x7F) {
    return fprintf(f,"%c",c);
+}*/
+if (c<=0x7F) {
+   return fputc(c,f);
 }
 unsigned char a;
 unsigned char b;
 if (c<=0x7FF) {
    a=(unsigned char) (0xC0 | (c>>6));
    b=(unsigned char) (0x80 | (c & 0x3F));
-   fputc(a,f);
+   if (fputc(a,f)==EOF) return EOF;
    return fputc(b,f);
 }
 unsigned char C;
@@ -504,9 +509,73 @@ a=(unsigned char) (0xE0 | (c>>12));
 //b=(unsigned char) (0x80 | ((c-(c&12))>>6));   //$CD:20021119 old
 b=(unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
 C=(unsigned char) (0x80 | (c&0x3F));
-fputc(a,f);
-fputc(b,f);
+if (fputc(a,f)==EOF) return EOF;
+if (fputc(b,f)==EOF) return EOF;
 return fputc(C,f);
+}
+
+
+/**
+ * Reads an UTF8 encoded character from the given file and returns its
+ * unicode number. Returns EOF if the end of file has been reached.
+ * Raises an error and returns '?' if the end of file is found while reading a
+ * compound character, or if there is an encoding error.
+ * 
+ * IMPORTANT: This function allows reading characters > 65536, so if
+ *            it is used only for 16 bits unicode, the caller
+ *            must check that the value is not greater than expected.
+ */
+int u_fgetc_utf8(FILE* f) {
+unsigned char c;
+if (!fread(&c,1,1,f)) return EOF;
+if (c<=0x7F) {
+	/* Case of a 1 byte character 0XXX XXXX */
+	return c;
+}
+/* Case of a character encoded on several bytes */
+int number_of_bytes;
+unsigned int value;
+if ((c&0xE0)==0xC0) {
+	/* 2 byte  110X XXXX*/
+	value=c&31;
+	number_of_bytes=2;
+}
+else if ((c&0xF0)==0xE0) {
+	/* 3 bytes 1110X XXXX */
+	value=c&15;
+	number_of_bytes=3;
+}
+else if ((c&0xF8)==0xF0) {
+	/* 4 bytes 1111 0XXX */
+	value=c&7;
+	number_of_bytes=4;
+}
+else if ((c&0xFC)==0xF8) {
+	/* 5 bytes 1111 10XX */
+	value=c&3;
+	number_of_bytes=5;
+}
+else if ((c&0xFE)==0xFC) {
+	/* 6 bytes 1111 110X */
+	value=c&1;
+	number_of_bytes=6;
+}
+else {
+	error("Encoding error in first byte of a unicode sequence\n");
+	return '?';
+}
+/* If there are several bytes, we read them and compute the unicode
+ * number of the character */
+for (int i=0;i<number_of_bytes-1;i++) {
+	if (!fread(&c,1,1,f)) return EOF;
+	/* Following bytes should be of the form 10XX XXXX */
+	if ((c&0xC0)!=0x80) {
+		error("Encoding error in byte %d of a %d byte unicode sequence\n",i+2,number_of_bytes);
+		return '?';
+	}
+	value=(value<<6)|(c&0x3F);
+}
+return value;
 }
 
 

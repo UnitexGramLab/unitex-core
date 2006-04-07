@@ -25,7 +25,9 @@
 
 #include <stdio.h>
 
-//------- encodings --------------
+/*
+ * Encoding types
+ */
 #define ONE_BYTE_ENCODING 0
 #define UTF8 1
 #define UTF16_LE 2
@@ -33,68 +35,55 @@
 #ifndef HGH_INSERT
 #define MBCS_KR    4
 #endif // HGH_INSERT
-//------- error codes for conversion --------------
+
+/*
+ * Error codes that may be returned by the 'convert' function
+ */
 #define CONVERSION_OK 0
 #define INPUT_FILE_NOT_IN_UTF16_LE 1
 #define INPUT_FILE_NOT_IN_UTF16_BE 2
 #define UNSUPPORTED_INPUT_ENCODING 3
+#define ERROR_IN_HTML_CHARACTER_NAME 4
 
 
-extern unichar unicode_src[0xFF];
-extern unichar unicode_dest[0xFF];
-extern unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
+/**
+ * This structure represents a one byte encoding.
+ */
+struct encoding {
+	/* The type defines if we have a one byte encoding,
+	 * a UTF-16 one, a UTF-8 one, etc. */
+	int type;
+	/* Main name of the encoding ("iso-8859-1") */
+	char* name;
+	/* Other names for this encoding ("latin1","latin-1") */
+	char** aliases;
+	/* Size of 'aliases' */
+	int number_of_aliases;
+	
+	/* The code page initialization function for this encoding.
+	 * This function is used only if the encoding type is ON_BYTE_ENCODING */
+	void (*init_function)(unichar*);
+	/*
+	 * If the encoding type is not ON_BYTE_ENCODING, we must define
+	 * an input and output function.
+	 */
+	int (*input_function)(FILE*);
+	int (*output_function)(unichar,FILE*);
+	
+	/* The usage function for this encoding */
+	void (*usage_function)(void);
+	/* This function returns 1 if the given char can be encoded with this encoding */
+	int (*can_be_encoded_function)(unichar);
+};
 
-void init_thai(unichar unicode[]);
-void init_ansi(unichar unicode[]);
-void init_grec(unichar unicode[]);
-void init_tcheque(unichar unicode[]);
-void init_windows1250(unichar unicode[]);
-void init_windows1257(unichar unicode[]);
-void init_windows1251(unichar unicode[]);
-void init_windows1254(unichar unicode[]);
-void init_windows1258(unichar unicode[]);
-void init_iso88591(unichar unicode[]);
-void init_iso885915(unichar unicode[]);
-void init_iso88592(unichar unicode[]);
-void init_iso88593(unichar unicode[]);
-void init_iso88594(unichar unicode[]);
-void init_iso88595(unichar unicode[]);
-void init_iso88597(unichar unicode[]);
-void init_iso88599(unichar unicode[]);
-void init_iso885910(unichar unicode[]);
-void init_nextstep(unichar unicode[]);
-#ifndef HGH_INSERT
-void init_windows949();    // korean wangsung code EUC-KR
-#endif // HGH_INSERT
 
+void install_all_encodings();
+int convert(FILE*,FILE*,struct encoding*,struct encoding*,int,int,int,int);
+struct encoding* get_encoding(char*);
 
+void print_encoding_main_names();
+void print_encoding_aliases();
+void print_encoding_infos(char*);
+void print_information_for_all_encodings();
 
-void init_uni2asc_code_page_array();
-
-int convert(FILE* input,FILE* output,int INPUT_ENCODING,int OUTPUT_ENCODING);
-void convert_unicode_to_ascii(FILE*,FILE*);
-void convert_ascii_to_unicode(FILE*,FILE*);
-void convert_big_to_little_endian(FILE*,FILE*,char*);
-void convert_little_to_big_endian(FILE*,FILE*);
-void convert_unicode_to_UTF_8(FILE *entree,FILE *sortie);
-
-void usage();
-void usage_LATIN();
-void usage_windows1250();
-void usage_windows1257();
-void usage_windows1251();
-void usage_windows1254();
-void usage_windows1258();
-void usage_iso88591();
-void usage_iso885915();
-void usage_iso88592();
-void usage_iso88593();
-void usage_iso88594();
-void usage_iso88595();
-void usage_iso88597();
-void usage_iso88599();
-void usage_iso885910();
-#ifndef HGH_INSERT
-void usage_windows949();    // korean wangsung code EUC-KR
-#endif // HGH_INSERT
 #endif
