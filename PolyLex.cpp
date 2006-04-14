@@ -156,7 +156,7 @@ if (!strcmp(argv[1],"GERMAN")) {
    analyse_german_compounds(alph,bin,inf,words,res,debug,new_unknown_words);
 }
 else if (!strcmp(argv[1],"NORWEGIAN")) {
-   analyse_norwegian_compounds(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords);
+   analyse_norwegian_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords);
 }
 else if (!strcmp(argv[1],"RUSSIAN")) {
   init_russian();

@@ -174,6 +174,7 @@ void analyse_compounds(Alphabet* alph,
 
 }
 
+extern unsigned char* tableau_bin;
 
 //
 // this function reads words in the word file and try analyse them
@@ -192,7 +193,7 @@ void analyse_word_list(unsigned char* bin,
   printf("Analysing russian unknown words...\n");
   int n=0;
   int words_done = 0;
-  while (next_word(words,s)) {
+  while (u_read_line(words,s)) {
     if (!analyse_word(s)) {
       // if the analysis has failed, we store the word in the new unknown word file
       u_fprints(s, new_unknown_words);

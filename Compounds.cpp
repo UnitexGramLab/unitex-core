@@ -22,17 +22,18 @@
 #include "Compounds.h"
 
 
-unsigned char* tableau_bin;
+//unsigned char* tableau_bin;
 char* tableau_correct_left_component;
 char* tableau_correct_right_component;
 FILE* debug_file;
 FILE* result_file;
 struct INF_codes* inf_codes;
 
+
 //
 // this function reads a token in a file and returns 1 on success, 0 else
 //
-int next_word(FILE* words,unichar* s) {
+/*int next_word(FILE* words,unichar* s) {
 int c;
 // we jump all the separators
 while ((c=u_fgetc(words))!=EOF && (c==' ' || c=='\n' || c=='\t'));
@@ -47,4 +48,4 @@ while (c!=EOF && c!=' ' && c!='\n' && c!='\t') {
 }
 s[i]='\0';
 return 1;
-}
+}*/
