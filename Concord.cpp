@@ -23,27 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//---------------------------------------------------------------------------
-#include "unicode.h"
-#include "Text_tokens.h"
-#include "String_hash.h"
-#include "Liste_nombres.h"
-#include "Alphabet.h"
-#include "Matches.h"
-#include "Concordance.h"
-#include "FileName.h"
 #include "Copyright.h"
-#include "LocatePattern.h"
 #include "ConcordMain.h"
 #include "IOBuffer.h"
-
-//---------------------------------------------------------------------------
-
-
-//
-//
-//  "E:\My Unitex\English\Corpus\ivanhoe_snt\concord.ind" "Courier new" 3 40 55 CL html "E:\My Unitex\English\Alphabet_sort.txt"
-//
 //---------------------------------------------------------------------------
 
 
@@ -84,13 +66,19 @@ printf("Concord tutu.ind NULL 0 0 0 NULL \"C:\\My dir\\RES.SNT\" NULL\n");
 printf("    -> produces a text file named \"C:\\My dir\\RES.SNT\"\n");
 }
 
-int main(int argc, char **argv) {
-setBufferMode();
 
+int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 if (argc!=9 && argc!=10 && argc!=11) {
-   usage();
-   return 0;
+	usage();
+	return 0;
 }
+/* We call an artificial main function located in 'ConcordMain'. This
+ * trick allows to use the functionalities of the 'Concord' program
+ * without having to launch an external process.
+ */
 return main_concord_cpp(argc,argv);
 }
-//---------------------------------------------------------------------------
