@@ -22,6 +22,13 @@
 #include "Compounds.h"
 
 
+/*
+ * 
+ * This library will be removed when PolyLex will be rewritten.
+ * 
+ */
+
+
 //unsigned char* tableau_bin;
 char* tableau_correct_left_component;
 char* tableau_correct_right_component;

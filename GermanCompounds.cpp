@@ -26,6 +26,7 @@
 
 Alphabet* german_alphabet;
 
+
 //
 // this function analyses the german compound words
 //

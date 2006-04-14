@@ -37,9 +37,9 @@ extern FILE* result_file;
 extern struct INF_codes* inf_codes;
 
 
-void get_first_valid_left_component(int,unichar*);
-void ecrire_ligne_dico_sortie(unichar*,int);
-int next_word(FILE*,unichar*);
+//void get_first_valid_left_component(int,unichar*);
+//void ecrire_ligne_dico_sortie(unichar*,int);
+//int next_word(FILE*,unichar*);
 
 #endif
 
