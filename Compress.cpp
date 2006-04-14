@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "unicode.h"
 #include "DELA.h"
 #include "DictionaryTree.h"
@@ -33,14 +32,7 @@
 #include "Minimize_tree.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
-
-//---------------------------------------------------------------------------
-
-//
-// e:\test_dico.dic
-//
-
-
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
@@ -56,149 +48,187 @@ printf("written in a .inf file.\n\n");
 }
 
 
-
-void ecrire_nombre_lignes_INF(char name[],int n)
-{
-  FILE *f;
-  int i;
-  i=2+9*2; // *2 because of unicode +2 because of FF FE at file start
-  f=fopen((char*)name,"r+b");
-  do
-    {
-      fseek(f,i,0);
-      i=i-2;
-      u_fputc((unichar)((n%10)+'0'),f);
-      n=n/10;
-    }
-  while (n);
-  fclose(f);
+/**
+ * This function writes the number of INF codes 'n' at the beginning
+ * of the file named 'name'. This file is supposed to be a UTF-16
+ * Little-Endian one, starting by a sequence made of ten zeros.
+ */
+void write_INF_file_header(char* name,int n) {
+FILE* f;
+/* First, we set the offset on the last zero */
+int offset=2+9*2; /* *2 because of Unicode and +2 because of FF FE at file start */
+/* The file must be opened as a binary one */
+f=fopen((char*)name,"r+b");
+do {
+	/* We go at the given offset */
+	fseek(f,offset,0);
+	/* And we write the appropriate digit */
+	u_fputc((unichar)((n%10)+'0'),f);
+	n=n/10;
+	/* And we update the offset (-2 because of Unicode) */
+	offset=offset-2;
+} while (n); /* We loop until there is no more digit to print */
+fclose(f);
 }
 
 
-
-
-int main(int argc, char **argv) {
+/**
+ * This program reads a .dic file and compress it into a .bin and a .inf file.
+ * First, it builds a tree with all the entries, and then, it builds a minimal
+ * transducer from this tree, using the Dominique Revuz's algorithm.
+ */
+int main(int argc, char** argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
-FILE *f;
-FILE *INF;
+if (argc!=2 && argc!=3) {
+	/* We print the synopsis if the number arguments
+	 * if not correct */
+	usage();
+	return 0;
+}
+FILE* f;
+FILE* INF_file;
 unichar s[DIC_WORD_SIZE];
-dic_entry *e;
+dic_entry* entry;
 char bin[DIC_WORD_SIZE];
 char inf[DIC_WORD_SIZE];
-struct dictionary_node* racine;
-struct string_hash* hash;
-int i=0;
+struct dictionary_node* root; /* Root of the dictionary tree */
+struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
+int line=0; /* Current line number */
 
-if (argc!=2 && argc!=3) {
-   usage();
-   return 0;
-}
 f=u_fopen(argv[1],U_READ);
 if (f==NULL) {
-   fprintf(stderr,"Cannot open %s\n",argv[1]);
-   return 1;
+	fatal_error("Cannot open %s\n",argv[1]);
 }
 int FLIP=0;
 if (argc==3) {
-   if (!strcmp(argv[2],"-flip")) {
-        FLIP=1;
-   } else {
-      fprintf(stderr,"Invalid parameter: %s\n",argv[2]);
-   }
+	/* If there is an extra parameter, we look if it is "-flip" */
+	if (!strcmp(argv[2],"-flip")) {
+		FLIP=1;
+	} else {
+		/* If not, we print a message and we raise a fatal error */
+		u_fclose(f);
+		fatal_error("Invalid parameter: %s\n",argv[2]);
+	}
 }
-
+/* We compute the name of the output .bin and .inf files */
 name_without_extension(argv[1],bin);
 strcat(bin,".bin");
 name_without_extension(argv[1],inf);
 strcat(inf,".inf");
-INF=u_fopen(inf,U_WRITE);
-if (INF==NULL) {
-   fprintf(stderr,"Cannot create %s\n",inf);
-   u_fclose(f);
-   return 1;
+INF_file=u_fopen(inf,U_WRITE);
+if (INF_file==NULL) {
+	u_fclose(f);
+	fatal_error("Cannot create %s\n",inf);
 }
-u_fprints_char("0000000000\n",INF);
-racine=new_dictionary_node();
-hash=new_string_hash();
+/* First, we print a sequence of zeros at the beginning of the .inf file
+ * in order to book some place, so that we can later come and write there
+ * the number of lines of this file. */
+u_fprints_char("0000000000\n",INF_file);
+root=new_dictionary_node();
+INF_codes=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
 printf("Compressing...\n");
+/* We read until there is no more lines in the .dic file */
 while(read_DELA_line(f,s)) {
-  if (s[0]=='\0') {
-     fprintf(stderr,"Line %d: empty line\n",i);
-  }
-  else if (s[0]=='/') {
-     // do nothing because the line is considered as a comment line
-  }
-  else {
-     e=tokenize_DELA_line(s);
-     if (FLIP) {
-        unichar* o=e->inflected;
-        e->inflected=e->lemma;
-        e->lemma=o;
-     }
-     if (e!=NULL) {
-        if (contains_unprotected_equal_sign(e->inflected)
-            || contains_unprotected_equal_sign(e->lemma)) {
-           // if the inflected form or lemma contains any unprotected = sign,
-           // we must insert the space entry and the - entry:
-           // pomme=de=terre,.N  ->  pomme de terre,pomme de terre.N
-           //                        pomme-de-terre,pomme-de-terre.N
-           unichar inf_tmp[DIC_WORD_SIZE];
-           unichar lem_tmp[DIC_WORD_SIZE];
-           u_strcpy(inf_tmp,e->inflected);
-           u_strcpy(lem_tmp,e->lemma);
-           replace_unprotected_equal_sign(e->inflected,(unichar)' ');
-           replace_unprotected_equal_sign(e->lemma,(unichar)' ');
-           // we insert pomme de terre,pomme de terre.N
-           get_compressed_line(e,tmp);
-           add_entry_to_dictionary_tree(e->inflected,tmp,racine,hash);
-           // and pomme-de-terre,pomme-de-terre.N
-           u_strcpy(e->inflected,inf_tmp);
-           u_strcpy(e->lemma,lem_tmp);
-           replace_unprotected_equal_sign(e->inflected,(unichar)'-');
-           replace_unprotected_equal_sign(e->lemma,(unichar)'-');
-           get_compressed_line(e,tmp);
-           add_entry_to_dictionary_tree(e->inflected,tmp,racine,hash);
-        }
-        else {
-           // normal case
-           unprotect_equal_signs(e->inflected);
-           unprotect_equal_signs(e->lemma);
-           get_compressed_line(e,tmp);
-           add_entry_to_dictionary_tree(e->inflected,tmp,racine,hash);
-        }
-        /* and last, but not least: don't forget to free your memory
-           or it would be impossible to compress large dictionaries */
-        free_dic_entry(e);
-     }
-  }
-  if (i%10000==0) {
-     printf("%d line%s read...       \r",i,(i>1)?"s":"");
-  }
-  i++;
-
-
+	if (s[0]=='\0') {
+		/* Empty lines should not appear in a .dic file */
+		error("Line %d: empty line\n",line);
+	}
+	else if (s[0]=='/') {
+		/* We do nothing if the line begins by a '/', because
+		 * it is considered as a comment line. */
+	}
+	else {
+		/* If we have a line, we tokenize it */
+		entry=tokenize_DELA_line(s);
+		if (FLIP) {
+			/* If the "-flip" parameter has been used, we flip
+			 * the inflected form and the lemma of the entry */
+			unichar* o=entry->inflected;
+			entry->inflected=entry->lemma;
+			entry->lemma=o;
+		}
+		if (entry!=NULL) {
+			/* If the entry is well-formed */
+			if (contains_unprotected_equal_sign(entry->inflected)
+				|| contains_unprotected_equal_sign(entry->lemma)) {
+				/* If the inflected form or lemma contains any unprotected = sign,
+				 * we must insert the space entry and the - entry:
+				 * pomme=de=terre,.N  ->  pomme de terre,pomme de terre.N
+				 *                        pomme-de-terre,pomme-de-terre.N
+				 */
+				unichar inf_tmp[DIC_WORD_SIZE];
+				unichar lem_tmp[DIC_WORD_SIZE];
+				u_strcpy(inf_tmp,entry->inflected);
+				u_strcpy(lem_tmp,entry->lemma);
+				/* We replace the unprotected = signs by spaces */
+				replace_unprotected_equal_sign(entry->inflected,(unichar)' ');
+				replace_unprotected_equal_sign(entry->lemma,(unichar)' ');
+				/* And then we unprotect the other = signs */
+				unprotect_equal_signs(entry->inflected);
+				unprotect_equal_signs(entry->lemma);
+				/* We insert "pomme de terre,pomme de terre.N" */
+				get_compressed_line(entry,tmp);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
+				/* And then we insert "pomme-de-terre,pomme-de-terre.N" */
+				u_strcpy(entry->inflected,inf_tmp);
+				u_strcpy(entry->lemma,lem_tmp);
+				/* We replace the unprotected = signs by minus */
+				replace_unprotected_equal_sign(entry->inflected,(unichar)'-');
+				replace_unprotected_equal_sign(entry->lemma,(unichar)'-');
+				/* And then we unprotect the other = signs */
+				unprotect_equal_signs(entry->inflected);
+				unprotect_equal_signs(entry->lemma);
+				get_compressed_line(entry,tmp);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
+			}
+			else {
+				/* If the entry does not contain any unprotected = sign,
+				 * we unprotect the = signs */
+				unprotect_equal_signs(entry->inflected);
+				unprotect_equal_signs(entry->lemma);
+				get_compressed_line(entry,tmp);
+				add_entry_to_dictionary_tree(entry->inflected,tmp,root,INF_codes);
+			}
+			/* and last, but not least: don't forget to free your memory
+			 * or it would be impossible to compress large dictionaries */
+			 free_dic_entry(entry);
+		}
+	}
+	/* We print something at regular intervals in order to show
+	 * that the program actually works */
+	if (line%10000==0) {
+		printf("%d line%s read...       \r",line,(line>1)?"s":"");
+	}
+	line++;
 }
 u_fclose(f);
-sauver_lignes_hash(INF,hash);
-u_fclose(INF);
-minimize_tree(racine);
+/* Now we can dump the INF codes into the .inf file */
+sauver_lignes_hash(INF_file,INF_codes);
+u_fclose(INF_file);
+/* We build a minimal transducer from the entry tree */
+minimize_tree(root);
 int n_states;
 int n_transitions;
 int bin_size;
-create_and_save_bin(racine,bin,&n_states,&n_transitions,&bin_size);
+/* And we dump it into the .bin file */
+create_and_save_bin(root,bin,&n_states,&n_transitions,&bin_size);
 printf("Binary file: %d bytes\n",bin_size);
 printf("%d line%s read            \n"
-       "%d INF entr%s created\n",
-       i,
-       (i!=1)?"s":"",
-       hash->N,
-       (hash->N!=1)?"ies":"y");
+		"%d INF entr%s created\n",
+		line,
+		(line!=1)?"s":"",
+		INF_codes->N,
+		(INF_codes->N!=1)?"ies":"y");
 printf("%d states, %d transitions\n",n_states,n_transitions);
-ecrire_nombre_lignes_INF(inf,hash->N);
-// the following line had been removed because of a slowness problem with
-// very large INF lines
-//free_string_hash(hash);
+write_INF_file_header(inf,INF_codes->N);
+/*
+ * WARNING: we do not free the 'INF_codes' structure because of a slowness
+ *          problem with very large INF lines.
+ */
 return 0;
 }
 

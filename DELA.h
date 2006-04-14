@@ -27,7 +27,7 @@
 #include "String_hash.h"
 
 // maximum size of a DELA line
-#define DIC_LINE_SIZE 2000
+#define DIC_LINE_SIZE 4096
 // maximum size of a word (word form or lemma)
 #define DIC_WORD_SIZE (DIC_LINE_SIZE/2)
 // maximum number of semantic codes (Hum,Conc,z1,...) per line
