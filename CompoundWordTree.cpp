@@ -19,11 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "LocatePattern.h"
 #include "CompoundWordTree.h"
 #include "Error.h"
-//---------------------------------------------------------------------------
+
 
 void free_DLC_tree_node(struct DLC_tree_node*);
 

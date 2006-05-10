@@ -39,6 +39,7 @@
 /* Maximum number of new lines in a text. New lines are encoded in
  * 'enter.pos' files. Those files will disappear in the futures */
 #define MAX_ENTER_CHAR 1000000
+int enter_pos[MAX_ENTER_CHAR];
 
 
 /* 
@@ -46,7 +47,7 @@
  * not invoke the setBufferMode function and that it does not print the
  * synopsis.
  */
-int main_concord_cpp(int argc, char **argv) {
+int main_Concord(int argc, char **argv) {
 if (argc!=9 && argc!=10 && argc!=11) {
 	return 0;
 }
@@ -103,7 +104,6 @@ if (tok==NULL) {
 	return 1;
 }
 FILE* f_enter=fopen(enter,"rb");
-int enter_pos[MAX_ENTER_CHAR];
 int n_enter_char;
 if (f_enter==NULL) {
 	error("Cannot open file %s\n",enter);
@@ -151,15 +151,12 @@ else {
 	free_text_tokens(tok);
 	return 1;
 }
-char f[2000];
-get_filename_path(argv[1],f);
-char program_path[2000];
-get_filename_path(argv[0],program_path);
+char working_directory[2000];
+get_filename_path(argv[1],working_directory);
 /* Once we have setted all the parameters, we call the function that
  * will actually create the concordance. */
 create_concordance(concor,text,tok,sort_mode,left_context,right_context,argv[2],
-					argv[3],f,argv[7],argv[8],n_enter_char,enter_pos,program_path,
-					thai_mode);
+					argv[3],working_directory,argv[7],argv[8],n_enter_char,enter_pos,thai_mode);
 u_fclose(concor);
 fclose(text);
 free_text_tokens(tok);

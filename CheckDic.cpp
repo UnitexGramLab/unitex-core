@@ -19,11 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "unicode.h"
 #include "FileName.h"
 #include "DELA.h"

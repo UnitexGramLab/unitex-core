@@ -37,8 +37,8 @@ int ambig_transduction_mode = IGNORE_AMBIG_TRANSDUCTIONS; // reset in Text_parsi
                                                           // according to transduction_mode
 int SEARCH_LIMITATION=-1;
 
-int start_position_last_printed_match=0; // used in ecrire_index_des_matches
-int end_position_last_printed_match=0;
+int start_position_last_printed_match=-1; // used in ecrire_index_des_matches
+int end_position_last_printed_match=-1;
 
 
 
@@ -48,7 +48,8 @@ nombre_match=0;
 nombre_output=0;
 longueur_avant=0;
 longueur_apres=0;
-end_position_last_printed_match=0;
+start_position_last_printed_match=-1;
+end_position_last_printed_match=-1;
 }
 
 
@@ -297,7 +298,7 @@ if (l->fin<pos) {
        nombre_unites_reconnues += (l->fin+1)-(l->debut);
      }
      else {
-       nombre_unites_reconnues += (l->fin+1)-end_position_last_printed_match;
+       nombre_unites_reconnues += (l->fin+1)-(end_position_last_printed_match+1);
      }
    }
    // else:

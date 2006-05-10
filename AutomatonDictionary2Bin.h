@@ -19,10 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef AutomatonDictionary2BinH
 #define AutomatonDictionary2BinH
-//---------------------------------------------------------------------------
+
 #include "unicode.h"
 #include <stdlib.h>
 

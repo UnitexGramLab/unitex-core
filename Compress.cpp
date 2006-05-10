@@ -19,7 +19,6 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,7 +32,6 @@
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"
-//---------------------------------------------------------------------------
 
 
 void usage() {

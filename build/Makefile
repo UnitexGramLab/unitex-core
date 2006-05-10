@@ -152,14 +152,16 @@ CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o unicode.o Text_tokens.o String
 				TransductionStack.o Optimized_fst2.o TransductionVariables.o Liste_num.o\
 				CompoundWordTree.o GF_lib.o DELA.o Fst2.o Grammatical_codes.o\
 				Fst2_tags_optimization.o DLC_optimization.o Pattern_transitions.o\
-				Facteurs_interdits.o Flexional_codes.o Error.o Context.o
+				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
+				Buffer.o
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_tokens.o String_hash.o Liste_nombres.o Alphabet.o Matches.o Concordance.o FileName.o\
 				Copyright.o Text_parsing.o LocatePattern.o TransductionStack.o Optimized_fst2.o TransductionVariables.o Liste_num.o\
 				CompoundWordTree.o GF_lib.o\
 				DELA.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o DLC_optimization.o Pattern_transitions.o\
-				Facteurs_interdits.o Flexional_codes.o Error.o Context.o
+				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
+				Buffer.o
 
 CONVERT      = Convert
 CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o Copyright.o CodePages.o Error.o\
@@ -265,7 +267,7 @@ REG2GRF      = Reg2Grf
 REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Copyright.o unicode.o Regular_expression.o Error.o
 
 SORTTXT      = SortTxt
-SORTTXT_OBJS = IOBuffer.o SortTxt.o Copyright.o unicode.o Error.o
+SORTTXT_OBJS = IOBuffer.o SortTxt.o Copyright.o unicode.o Error.o SortTxtMain.o
 
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Copyright.o unicode.o FileName.o Error.o
@@ -453,7 +455,7 @@ else
 ##  WINDOWS TARGETS  ##
 #######################
 #######################
-all: bin
+all: ../bin/Concord.exe
 	@echo ------------ 
 	@echo All is done.
 

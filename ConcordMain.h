@@ -22,7 +22,7 @@
 #ifndef ConcordMainH
 #define ConcordMainH
 
-int main_concord_cpp(int,char**);
+int main_Concord(int,char**);
 
 #endif
 

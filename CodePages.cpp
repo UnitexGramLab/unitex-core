@@ -18,7 +18,7 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-//---------------------------------------------------------------------------
+
 #include "unicode.h"
 #include "CodePages.h"
 #include "HTMLCharacters.h"
@@ -26,7 +26,7 @@
 #ifndef HGH_INSERT
 #include "codePageKr.h"
 #endif // HGH_INSERT
-//---------------------------------------------------------------------------
+
 
 /**
  * This library provides facilities for converting text files from

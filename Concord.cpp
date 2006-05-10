@@ -19,14 +19,12 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "Copyright.h"
 #include "ConcordMain.h"
 #include "IOBuffer.h"
-//---------------------------------------------------------------------------
 
 
 void usage() {
@@ -80,5 +78,5 @@ if (argc!=9 && argc!=10 && argc!=11) {
  * trick allows to use the functionalities of the 'Concord' program
  * without having to launch an external process.
  */
-return main_concord_cpp(argc,argv);
+return main_Concord(argc,argv);
 }

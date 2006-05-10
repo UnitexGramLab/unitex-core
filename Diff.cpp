@@ -37,14 +37,14 @@ argv[5]=strdup("40");
 argv[6]=strdup("TO");
 argv[7]=strdup("text");
 argv[8]=strdup("NULL");
-main_concord_cpp(9,argv);
+main_Concord(9,argv);
 char f[2000];
 get_filename_path(in1,f);
 strcat(f,"concord.txt");
 rename(f,out1);
 free(argv[1]);
 argv[1]=strdup(in2);
-main_concord_cpp(9,argv);
+main_Concord(9,argv);
 rename(f,out2);
 for (int i=0;i<9;i++) {
    free(argv[i]);
