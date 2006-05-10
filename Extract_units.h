@@ -28,14 +28,11 @@
 #include "Text_tokens.h"
 #include "Matches.h"
 
-#define MAX_TOKENS_BY_SENTENCE 100000
-
-extern int sentence_buffer[MAX_TOKENS_BY_SENTENCE];
 
 
 void extract_units(char,FILE*,struct text_tokens*,FILE*,FILE*);
-void read_one_sentence(int*,FILE*,struct text_tokens*,int*,int*);
-struct liste_matches* is_a_match_in_the_sentence(struct liste_matches*,int*,int,int);
+
+
 
 
 #endif

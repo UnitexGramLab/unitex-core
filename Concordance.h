@@ -42,8 +42,8 @@
 //extern int buffer[BUFFER_SIZE];
 //extern int BUFFER_LENGTH;
 //extern int N_UNITS_ALLREADY_READ;
-extern int open_bracket;
-extern int close_bracket;
+//extern int open_bracket;
+//extern int close_bracket;
 //extern int origine_courante_char;
 //extern int phrase_courante;
 

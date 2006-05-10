@@ -161,7 +161,7 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_to
 				CompoundWordTree.o GF_lib.o\
 				DELA.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o DLC_optimization.o Pattern_transitions.o\
 				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
-				Buffer.o
+				Buffer.o 
 
 CONVERT      = Convert
 CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o Copyright.o CodePages.o Error.o\
@@ -200,7 +200,7 @@ EXTRACT_OBJS = IOBuffer.o Extract.o Copyright.o LocatePattern.o Text_parsing.o T
                Liste_num.o CompoundWordTree.o  Liste_nombres.o Concordance.o \
                DELA.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o DLC_optimization.o Pattern_transitions.o\
                Facteurs_interdits.o Flexional_codes.o unicode.o Text_tokens.o FileName.o Extract_units.o Alphabet.o String_hash.o Matches.o\
-	            GF_lib.o Error.o Context.o
+	           GF_lib.o Error.o Context.o Buffer.o SortTxtMain.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o Copyright.o unicode.o Fst2.o Grf2Fst2_lib.o\
@@ -455,7 +455,7 @@ else
 ##  WINDOWS TARGETS  ##
 #######################
 #######################
-all: ../bin/Concord.exe
+all: bin
 	@echo ------------ 
 	@echo All is done.
 

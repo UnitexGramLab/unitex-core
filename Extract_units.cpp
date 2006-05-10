@@ -20,34 +20,36 @@
   */
 
 //---------------------------------------------------------------------------
-#include "Concordance.h"
 #include "Extract_units.h"
+#include "Buffer.h"
 //---------------------------------------------------------------------------
 
 
+#define MAX_TOKENS_BY_SENTENCE 100000
 
-int sentence_buffer[MAX_TOKENS_BY_SENTENCE];
+
+void read_one_sentence(struct buffer*,FILE*,struct text_tokens*,int*);
+struct liste_matches* is_a_match_in_the_sentence(struct liste_matches*,int*,int,int);
 
 void extract_units(char yes_no,FILE* text,struct text_tokens* tok,
                    FILE* concord,FILE* result) {
-int i,BUFFER_LENGTH,N_TOKENS_READ;
+int i,N_TOKENS_READ;
 int current_beginning,current_end,RESULT;
 
 struct liste_matches* l=load_match_list(concord,&i);
 current_end=-1;
 
-//int sentence=1;
-
-read_one_sentence(buffer,text,tok,&BUFFER_LENGTH,&N_TOKENS_READ);
+struct buffer* buffer=new_buffer(100000);
+read_one_sentence(buffer,text,tok,&N_TOKENS_READ);
 printf("Extracting %smatching units...\n",yes_no?"":"un");
-while (BUFFER_LENGTH!=0) {
+while (buffer->size!=0) {
    current_beginning=current_end+1;
    current_end=current_end+N_TOKENS_READ;
    l=is_a_match_in_the_sentence(l,&RESULT,current_beginning,current_end);
    if ((RESULT && yes_no) || (!RESULT && !yes_no)) {
       // if we must print this sentence, we print it
-      for (i=0;i<BUFFER_LENGTH;i++) {
-         u_fprints(tok->token[buffer[i]],result);
+      for (i=0;i<buffer->size;i++) {
+         u_fprints(tok->token[buffer->buffer[i]],result);
       }
       u_fprints_char("\n",result);
    }
@@ -56,10 +58,9 @@ while (BUFFER_LENGTH!=0) {
       // we can stop
       return;
    }
-   read_one_sentence(buffer,text,tok,&BUFFER_LENGTH,&N_TOKENS_READ);
-   //sentence++;
+   read_one_sentence(buffer,text,tok,&N_TOKENS_READ);
 }
-printf("Done.\n");
+free_buffer(buffer);
 }
 
 
@@ -69,27 +70,27 @@ printf("Done.\n");
 // BUFFER_SIZE returns the length of the sentence, in the limit of MAX_TOKENS_BY_SENTENCE
 // N_TOKENS_READ returns the length of tokens actually read (can be more than MAX_TOKENS_BY_SENTENCE)
 //
-void read_one_sentence(int buffer[],FILE* text,struct text_tokens* tok,
-                      int* BUFFER_LENGTH,int* N_TOKENS_READ) {
+void read_one_sentence(struct buffer* buffer,FILE* text,struct text_tokens* tok,
+                      /*int* BUFFER_LENGTH,*/int* N_TOKENS_READ) {
 int i=0;
 int t=-15;
 int res=-15;
 while ((res=fread(&t,sizeof(int),1,text)) && (t!=tok->SENTENCE_MARKER) && (i!=MAX_TOKENS_BY_SENTENCE)) {
-   buffer[i++]=t;
+   buffer->buffer[i++]=t;
 }
 if (i==MAX_TOKENS_BY_SENTENCE) {
    fprintf(stderr,"Sentence too long to be entirely displayed\n");
    // we show the error and we read the sentence till its end in order
    // to keep a valid sentence numerotation
    while ((1==fread(&t,sizeof(int),1,text)) && (t!=tok->SENTENCE_MARKER)) i++;
-   (*BUFFER_LENGTH)=MAX_TOKENS_BY_SENTENCE;
+   buffer->size/*(*BUFFER_LENGTH)*/=MAX_TOKENS_BY_SENTENCE;
    (*N_TOKENS_READ)=i;
    return;
 }
 if (res!=0 && t==tok->SENTENCE_MARKER && i!=MAX_TOKENS_BY_SENTENCE) {
-    buffer[i++]=t;
+    buffer->buffer[i++]=t;
 }
-(*BUFFER_LENGTH)=i;
+buffer->size/*(*BUFFER_LENGTH)*/=i;
 (*N_TOKENS_READ)=i;
 }
 

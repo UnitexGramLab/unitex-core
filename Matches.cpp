@@ -345,10 +345,12 @@ unichar output[3000];
 char is_an_output;
 u_fgetc(f);   // we jump the # char
 c=u_fgetc(f);
-switch(c) {
-  case 'I': *TRANDUCTION_MODE=IGNORE_TRANSDUCTIONS; break;
-  case 'M': *TRANDUCTION_MODE=MERGE_TRANSDUCTIONS; break;
-  case 'R': *TRANDUCTION_MODE=REPLACE_TRANSDUCTIONS; break;
+if (TRANDUCTION_MODE!=NULL) {
+	switch(c) {
+		case 'I': *TRANDUCTION_MODE=IGNORE_TRANSDUCTIONS; break;
+		case 'M': *TRANDUCTION_MODE=MERGE_TRANSDUCTIONS; break;
+		case 'R': *TRANDUCTION_MODE=REPLACE_TRANSDUCTIONS; break;
+	}
 }
 u_fgetc(f);
 while ((c=u_fgetc(f))!=EOF) {
