@@ -245,7 +245,7 @@ etat_courant=graphe_opt[numero_etat_courant];
 
 
 // if we are looking for the end of a failed negative context
-if (ctx!=NULL && ctx->contextMode==FAILED_IN_NEGATIVE_CONTEXT) {
+if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
    // then we explore all the output transitions without matching
    // anything, in order to find the context end mark
    struct liste_nombres* liste=NULL;
@@ -283,7 +283,7 @@ if (ctx!=NULL && ctx->contextMode==FAILED_IN_NEGATIVE_CONTEXT) {
                   free_list_num(*LISTE);
                }
                LISTE=ctx->list_of_matches;
-               n_matches=ctx->n_matches;
+               n_matches=ctx->number_of_matches;
                parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,
                				ctx->next,infos);
             }
@@ -538,11 +538,11 @@ while (a_meta!=NULL) {
                                                   n_matches,
                                                   ctx);
                     parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c,infos);
-                    if (c->contextMode!=NEGATIVE_CONTEXT_HAS_MATCHED) {
+                    if (c->context_mode!=NEGATIVE_CONTEXT_HAS_MATCHED) {
                        // if we have not matched anything in the negative 
                        // context, then we can bypass anything looking for 
                        // the context end mark
-                       c->contextMode=FAILED_IN_NEGATIVE_CONTEXT;
+                       c->context_mode=FAILED_IN_NEGATIVE_CONTEXT;
                        c->depth=0;
                        parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c,infos);
                     }
@@ -559,7 +559,7 @@ while (a_meta!=NULL) {
                        return;
                     }
                     //***************************************************************
-                    if (ctx->contextMode==INSIDE_POSITIVE_CONTEXT) {
+                    if (ctx->context_mode==INSIDE_POSITIVE_CONTEXT) {
                        // if we were inside a positive context
                        pos=ctx->continue_position;
                        u_strcpy(stack,ctx->stack);
@@ -571,20 +571,20 @@ while (a_meta!=NULL) {
                           free_list_num(*LISTE);
                        }
                        LISTE=ctx->list_of_matches;
-                       n_matches=ctx->n_matches;
+                       n_matches=ctx->number_of_matches;
                        parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,
                        				n_matches,ctx->next,infos);
                        break;
                     }
                     //***************************************************************
-                    if (ctx->contextMode==INSIDE_NEGATIVE_CONTEXT) {
+                    if (ctx->context_mode==INSIDE_NEGATIVE_CONTEXT) {
                        // if we have recognized a negative context
                        // we must ignore the match
-                       ctx->contextMode=NEGATIVE_CONTEXT_HAS_MATCHED;
+                       ctx->context_mode=NEGATIVE_CONTEXT_HAS_MATCHED;
                        return;
                     }
                     //***************************************************************
-                    if (ctx->contextMode==FAILED_IN_NEGATIVE_CONTEXT) {
+                    if (ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
                        fatal_error("ERROR: unexpected FAILED_IN_NEGATIVE_CONTEXT\n");
                     }
                     break;

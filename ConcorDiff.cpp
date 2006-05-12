@@ -19,11 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//---------------------------------------------------------------------------
 #include "unicode.h"
 #include "Text_tokens.h"
 #include "String_hash.h"
@@ -39,12 +37,6 @@
 
 
 
-
-//
-//
-//  "C:\D\My Unitex\French\Corpus\Deauville_snt\concord-885.ind" "C:\D\My Unitex\French\Corpus\Deauville_snt\concord-898.ind" "C:\D\My Unitex\French\Corpus\Deauville_snt\diff.html"
-//
-//---------------------------------------------------------------------------
 void usage() {
 printf("%s",COPYRIGHT);
 printf("Usage: ConcorDiff <concor1> <concor2> <out> <font> <size>\n");
@@ -59,15 +51,14 @@ printf("concordance files.\n");
 
 
 int main(int argc,char** argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
-
 if (argc!=6) {
-   usage();
-   return 0;
+	usage();
+	return 0;
 }
-
 diff(argv[1],argv[2],argv[3],argv[4],argv[5]);
-
 return 0;
 }
-//---------------------------------------------------------------------------

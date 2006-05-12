@@ -22,43 +22,55 @@
 #include "Context.h"
 #include "Error.h"
 
+
+/**
+ * Allocates, initializes and returns a new context.
+ */
 struct context* new_context(unsigned char context_mode,
-                            int continue_position,
-                            unichar* stack,
-                            int stack_pointer,
-                            struct liste_num** l,
-                            int n_matches,
-                            struct context* next) {
+							int continue_position,
+							unichar* stack,
+							int stack_pointer,
+							struct liste_num** l,
+							int n_matches,
+							struct context* next) {
 struct context* c=(struct context*)malloc(sizeof(struct context));
 if (c==NULL) {
-   fatal_error("malloc error in new_context\n");
+	fatal_error("Not enough memory in new_context\n");
 }
-c->contextMode=context_mode;
+c->context_mode=context_mode;
 c->continue_position=continue_position;
 if (stack==NULL) {
-   fatal_error("NULL stack error in new_context\n");
+	fatal_error("NULL stack error in new_context\n");
 }
 u_strcpy(c->stack,stack);
 c->stack_pointer=stack_pointer;
 c->list_of_matches=l;
-c->n_matches=n_matches;
+c->number_of_matches=n_matches;
 c->next=next;
 return c;
 }
 
 
-
-struct context* remove_context(struct context* c) {
-if (c==NULL) return NULL;
-struct context* tmp=c->next;
-free(c);
+/**
+ * Remove the first element of the given context list and returns
+ * the remaining list.
+ */
+struct context* remove_context(struct context* list) {
+if (list==NULL) {
+	return NULL;
+}
+struct context* tmp=list->next;
+free(list);
 return tmp;
 }
 
 
-void free_context_list(struct context* c) {
-while (c!=NULL) {
-   c=remove_context(c);
+/**
+ * Frees the given context list.
+ */
+void free_context_list(struct context* list) {
+while (list!=NULL) {
+	list=remove_context(list);
 }
 }
 
