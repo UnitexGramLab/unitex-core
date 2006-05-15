@@ -266,7 +266,7 @@ int check_is_valid_for_one_INF_code(unichar* t, unichar* s)
   unichar temp[MAX_DICT_LINE_LENGTH];
   u_strcpy_char(temp,"x,");
   u_strcat(temp,s);
-  struct dela_entry* d = tokenize_DELA_line(temp);
+  struct dela_entry* d = tokenize_DELAF_line(temp);
   int res = check_is_valid(t, d);
   free_dic_entry(d);
   return res;
@@ -526,7 +526,7 @@ int _max_used_dic_entries = 0;
 struct dela_entry* _all_adresses_of_dic_entries[1000];
 
 struct dela_entry* new_dic_entry (unichar* entry) {
-  struct dela_entry* d = tokenize_DELA_line(entry);
+  struct dela_entry* d = tokenize_DELAF_line(entry);
   _all_adresses_of_dic_entries[_n_used_dic_entries++] = d;
   if (_n_used_dic_entries > _max_used_dic_entries) {
     _max_used_dic_entries = _n_used_dic_entries;

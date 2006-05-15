@@ -141,7 +141,7 @@ char check_valid_left_component_for_one_INF_code_german(unichar* s) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
-struct dela_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp);
 char res=check_N_FF(d);
 free_dic_entry(d);
 return res;
@@ -170,7 +170,7 @@ char check_valid_right_component_for_one_INF_code_german(unichar* s) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
-struct dela_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp);
 char res=check_N_not_FF(d);
 free_dic_entry(d);
 return res;

@@ -141,7 +141,7 @@ while(u_read_line(f,s)) {
 	}
 	else {
 		/* If we have a line, we tokenize it */
-		entry=tokenize_DELA_line(s);
+		entry=tokenize_DELAF_line(s);
 		if (FLIP) {
 			/* If the "-flip" parameter has been used, we flip
 			 * the inflected form and the lemma of the entry */

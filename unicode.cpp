@@ -137,33 +137,60 @@ int u_strlen(const unichar *s) {
 
 
 /**
- * unicode version of strcat
- * @param dest destination string
- * @param src source string
- * @return dest
+ * Unicode version of strcat.
  */
-unichar* u_strcat (unichar *dest, unichar *src) {
-  unichar *s1 = dest;
-  const unichar *s2 = src;
-  register unichar c;
-
-  // go to the end of the string 
-  do
-    c = *s1++;
-  while ( c  !=  (unichar) '\0' );
-
-  // go to the last character of s1
-  s1 -= 2;
-
-  do
-    {
-      c = *s2++;
-      *++s1 = c;
-    }
-  while ( c  !=  (unichar) '\0' );
-
-  return dest;
+unichar* u_strcat(unichar* dest,unichar* src) {
+unichar *s1=dest;
+const unichar *s2=src;
+register unichar c;
+/* First we go at the end of the destination string */
+do {
+	c=*s1++;
+} while (c!=(unichar)'\0');
+s1-=2;
+/* And we concatenate the 'src' string */
+do {
+	c=*s2++;
+	*++s1=c;
+} while (c!=(unichar)'\0');
+return dest;
 }
+
+
+/**
+ * Unicode version of strcat that escapes characters.
+ */
+unichar* u_strcat_escape(unichar* dest,unichar* src,unichar* chars_to_escape,
+						unichar escape_char) {
+unichar *s1=dest;
+const unichar *s2=src;
+register unichar c;
+int l=u_strlen(chars_to_escape);
+/* First we go at the end of the destination string */
+do {
+	c=*s1++;
+} while (c!=(unichar)'\0');
+s1-=2;
+/* And we concatenate the 'src' string */
+do {
+	c=*s2++;
+	/* If the current 'src' character is the escape character or
+	 * a character to be escaped */
+	int we_must_escape=(c==escape_char);
+	for (int i=0;i<l && !we_must_escape;i++) {
+		if (c==chars_to_escape[i]) {
+			we_must_escape=1;
+		}
+	}
+	/* Then we write the escape character before it */
+	if (we_must_escape) {
+		*++s1=escape_char;
+	}
+	*++s1=c;
+} while (c!=(unichar)'\0');
+return dest;
+}
+
 
 
 //

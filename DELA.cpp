@@ -21,221 +21,239 @@
 
 #include "unicode.h"
 #include "DELA.h"
+#include "error.h"
 
 
-//
-// tokenizes a DELA line and returns the information in a dela_entry structure
-//
-struct dela_entry* tokenize_DELA_line(unichar *s) {
+/**
+ * Tokenizes a DELAF line and returns the information in a dela_entry structure, or
+ * NULL if there is an error in the line.
+ * 
+ * WARNING: the DELAF line is not supposed to be ended by a comment.
+ */
+struct dela_entry* tokenize_DELAF_line(unichar* line) {
 struct dela_entry* res;
-char err[1000];
+char err[DIC_LINE_SIZE];
 unichar temp[DIC_LINE_SIZE];
 int i,j;
-if (s==NULL) return NULL;
-// initialization of the result structure
+if (line==NULL) {
+	error("Internal NULL error in tokenize_DELAF_line\n");
+	return NULL;
+}
+/* Initialization of the result structure */
 res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
 if (res==NULL) {
-  fprintf(stderr,"Memory allocation error!\n");
-  return NULL;
+	fatal_error("Not enough memory in tokenize_DELA_line\n");
 }
 res->inflected=NULL;
 res->lemma=NULL;
-res->n_semantic_codes=1;   // 0 would be an error (no grammatical code)
+res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
 res->semantic_codes[0]=NULL;
 res->n_inflectional_codes=0;
 res->inflectional_codes[0]=NULL;
-
-// reading the inflected part
+/*
+ * We read the inflected part
+ */
 i=0;
 j=0;
-while (s[i]!='\0' && s[i]!=',') {
-  if (s[i]=='\\') { // case of the special char
-    i++;
-    if (s[i]=='\0') {
-      u_to_char(err,s);
-      fprintf(stderr,"***Dictionary error: incorrect line\n_%s_\n",err);
-      return NULL;
-    }
-    else if (s[i]=='=') {
-         temp[j++]='\\';
-    }
-  }
-  temp[j++]=s[i++];
+while (line[i]!='\0' && line[i]!=',') {
+	/* If there is a backslash, we must unprotect a character */
+	if (line[i]=='\\') {
+		i++;
+		/* If the backslash is at the end of line, it's an error */
+		if (line[i]=='\0') {
+			u_to_char(err,line);
+			error("***Dictionary error: incorrect line\n_%s_\n",err);
+			return NULL;
+		}
+		else if (line[i]=='=') {
+			temp[j++]='\\';
+		}
+	}
+	temp[j++]=line[i++];
 }
 temp[j]='\0';
-res->inflected=(unichar*)malloc(sizeof(unichar)*(u_strlen(temp)+1));
-if (res->inflected==NULL) {
-  fprintf(stderr,"Memory allocation error!\n");
-  return NULL;
+/* If we are at the end of line, it's an error */
+if (line[i]=='\0') {
+	u_to_char(err,line);
+	error("***Dictionary error: incorrect line\n_%s_\n",err);
+	return NULL;
 }
-u_strcpy(res->inflected,temp);
-if (s[i]=='\0') {
-  u_to_char(err,s);
-  fprintf(stderr,"***Dictionary error: incorrect line\n_%s_\n",err);
-  return NULL;
-}
-
-// reading the lemma part
+res->inflected=u_strdup(temp);
+/*
+ * We read the lemma part
+ */
 i++;
 j=0;
-while (s[i]!='\0' && s[i]!='.') {
-  if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0') {
-      u_to_char(err,s);
-      fprintf(stderr,"***Dictionary error: incorrect line\n_%s_\n",err);
-      return NULL;
-    } else if (s[i]=='=') {
-         temp[j++]='\\';
-    }
-  }
-  temp[j++]=s[i++];
+while (line[i]!='\0' && line[i]!='.') {
+	/* If there is a backslash, we must unprotect a character */
+	if (line[i]=='\\') {
+		i++;
+		/* If the backslash is at the end of line, it's an error */
+		if (line[i]=='\0') {
+			u_to_char(err,line);
+			error("***Dictionary error: incorrect line\n_%s_\n",err);
+			return NULL;
+		} else if (line[i]=='=') {
+			temp[j++]='\\';
+		}
+	}
+	temp[j++]=line[i++];
 }
 temp[j]='\0';
+/* If we are at the end of line, it's an error */
+if (line[i]=='\0') {
+	u_to_char(err,line);
+	error("***Dictionary error: incorrect line\n_%s_\n",err);
+	return NULL;
+}
 if (j==0) {
-  res->lemma=(unichar*)malloc(sizeof(unichar)*(u_strlen(res->inflected)+1));
-  if (res->lemma==NULL) {
-    fprintf(stderr,"Memory allocation error!\n");
-    return NULL;
-  }
-  u_strcpy(res->lemma,res->inflected);
+	/* If the lemma is empty like in "eat,.V:W", it is supposed to be
+	 * the same as the inflected form. */
+	res->lemma=u_strdup(res->inflected);
 }
 else {
-  res->lemma=(unichar*)malloc(sizeof(unichar)*(u_strlen(temp)+1));
-  if (res->lemma==NULL) {
-    fprintf(stderr,"Memory allocation error!\n");
-    return NULL;
-  }
-  u_strcpy(res->lemma,temp);
+	/* Otherwise, we copy it */
+	res->lemma=u_strdup(temp);
 }
-if (s[i]=='\0') {
-  u_to_char(err,s);
-  fprintf(stderr,"***Dictionary error: incorrect line\n_%s_\n",err);
-  return NULL;
-}
-// reading the grammatical code
+/*
+ * We read the grammatical code
+ */
 i++;
 j=0;
-while (s[i]!='\0' && s[i]!='+' && s[i]!='/' && s[i]!=':') {
-  if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0') {
-      u_to_char(err,s);
-      fprintf(stderr,"***Dictionary error: incorrect line\n_%s_\n",err);
-      return NULL;
-    }
-  }
-  temp[j++]=s[i++];
+while (line[i]!='\0' && line[i]!='+' && line[i]!='/' && line[i]!=':') {
+	/* If there is a backslash, we must unprotect a character */
+	if (line[i]=='\\') {
+		i++;
+		/* If the backslash is at the end of line, it's an error */
+		if (line[i]=='\0') {
+			u_to_char(err,line);
+			error("***Dictionary error: incorrect line\n_%s_\n",err);
+			return NULL;
+		}
+	}
+	temp[j++]=line[i++];
 }
 temp[j]='\0';
-res->semantic_codes[0]=(unichar*)malloc(sizeof(unichar)*(u_strlen(temp)+1));
-if (res->semantic_codes[0]==NULL) {
-  fprintf(stderr,"Memory allocation error!\n");
-  return NULL;
+res->semantic_codes[0]=u_strdup(temp);
+/*
+ * Now we read the other gramatical and semantic codes if any
+ */
+while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
+	i++;
+	j=0;
+	while (line[i]!='\0' && line[i]!='+' && line[i]!=':' && line[i]!='/') {
+		/* If there is a backslash, we must unprotect a character */
+		if (line[i]=='\\') {
+			i++;
+			/* If the backslash is at the end of line, it's an error */
+			if (line[i]=='\0') {
+				u_to_char(err,line);
+				error("***Dictionary error: incorrect line\n_%s_\n",err);
+				return NULL;
+			}
+		}
+		temp[j++]=line[i++];
+	}
+	temp[j]='\0';
+	res->semantic_codes[res->n_semantic_codes]=u_strdup(temp);
+	(res->n_semantic_codes)++;
 }
-u_strcpy(res->semantic_codes[0],temp);
-// reading the semantic codes
-while (res->n_semantic_codes<MAX_SEMANTIC_CODES && s[i]=='+') {
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
-    if (s[i]=='\\') {
-      i++;
-      if (s[i]=='\0') {
-        u_to_char(err,s);
-        fprintf(stderr,"***Dictionary error: incorrect line\n_%s_\n",err);
-        return NULL;
-      }
-    }
-    temp[j++]=s[i++];
-  }
-  temp[j]='\0';
-  res->semantic_codes[res->n_semantic_codes]=(unichar*)malloc(sizeof(unichar)*(u_strlen(temp)+1));
-  if (res->semantic_codes[res->n_semantic_codes]==NULL) {
-    fprintf(stderr,"Memory allocation error!\n");
-    return NULL;
-  }
-  u_strcpy(res->semantic_codes[res->n_semantic_codes],temp);
-  (res->n_semantic_codes)++;
-}
-// reading the flexional codes
-while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && s[i]==':') {
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!=':' && s[i]!='/') {
-    if (s[i]=='\\') {
-      i++;
-      if (s[i]=='\0') {
-        u_to_char(err,s);
-        fprintf(stderr,"***Dictionary error: incorrect line\n_%s_\n",err);
-        return NULL;
-      }
-    }
-    temp[j++]=s[i++];
-  }
-  temp[j]='\0';
-  res->inflectional_codes[res->n_inflectional_codes]=(unichar*)malloc(sizeof(unichar)*(u_strlen(temp)+1));
-  if (res->inflectional_codes[res->n_inflectional_codes]==NULL) {
-    fprintf(stderr,"Memory allocation error!\n");
-    return NULL;
-  }
-  u_strcpy(res->inflectional_codes[res->n_inflectional_codes],temp);
-  (res->n_inflectional_codes)++;
+/*
+ * Then we read the inflectional codes if any
+ */
+while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
+	i++;
+	j=0;
+	while (line[i]!='\0' && line[i]!=':' && line[i]!='/') {
+		/* If there is a backslash, we must unprotect a character */
+		if (line[i]=='\\') {
+			i++;
+			/* If the backslash is at the end of line, it's an error */
+			if (line[i]=='\0') {
+				u_to_char(err,line);
+				error("***Dictionary error: incorrect line\n_%s_\n",err);
+				return NULL;
+			}
+		}
+		temp[j++]=line[i++];
+	}
+	temp[j]='\0';
+	res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp);
+	(res->n_inflectional_codes)++;
 }
 return res;
 }
 
 
-
-//
-// this function tokenizes a tag token like {today,.ADV}
-//
-struct dela_entry* tokenize_tag_token(unichar* s) {
-if (s==NULL || s[0]!='{') {
-   return NULL;
+/**
+ * This function tokenizes a tag token like {today,.ADV} and returns the
+ * information in a dela_entry structure, or NULL if there is an error in
+ * the tag.
+ */
+struct dela_entry* tokenize_tag_token(unichar* tag) {
+if (tag==NULL || tag[0]!='{') {
+	error("Internal error in tokenize_tag_token\n");
+	return NULL;
 }
 int i=1;
-unichar temp[2000];
-while (i<2000 && s[i]!='}' && s[i]!='\0') {
-  temp[i-1]=s[i];
+/* We copy the tag content with the round brackets in a string */
+unichar temp[DIC_LINE_SIZE];
+while (i<DIC_LINE_SIZE && tag[i]!='}' && tag[i]!='\0') {
+	temp[i-1]=tag[i];
+	i++;
+}
+temp[i-1]='\0';
+/* And we tokenize it as a normal DELAF line */
+return tokenize_DELAF_line(temp);
+}
+
+
+/**
+ * This function tokenizes a tag token like {today,.ADV} into 3 strings.
+ * The given tag is supposed to be a valid one.
+ */
+void tokenize_tag_token_into_3_parts(unichar* tag,unichar* inflected,unichar* lemma,unichar* codes) {
+if (tag==NULL || tag[0]!='{') {
+	error("Internal error in tokenize_tag_token_into_3_parts\n");
+	return;
+}
+int i=1;
+/* We copy the tag content with the round brackets in a string */
+unichar temp[DIC_LINE_SIZE];
+while (i<DIC_LINE_SIZE && tag[i]!='}' && tag[i]!='\0') {
+  temp[i-1]=tag[i];
   i++;
 }
 temp[i-1]='\0';
-return tokenize_DELA_line(temp);
+/* And we tokenize it as a normal DELAF line */
+tokenize_DELA_line_into_3_parts(temp,inflected,lemma,codes);
 }
 
 
-
-//
-// this function tokenizes a tag token like {today,.ADV} into 3 strings
-//
-void tokenize_tag_token_into_3_parts(unichar* s,unichar* inflected,unichar* lemma,unichar* code_gramm) {
-if (s==NULL || s[0]!='{') {
-   return;
-}
-int i=1;
-unichar temp[2000];
-while (i<2000 && s[i]!='}' && s[i]!='\0') {
-  temp[i-1]=s[i];
-  i++;
-}
-temp[i-1]='\0';
-tokenize_DELA_line_into_3_parts(temp,inflected,lemma,code_gramm);
-}
-
-
-
-void get_code_gramm(struct dela_entry* e,unichar* res) {
+/**
+ * This function fills the string 'codes' with all the codes of the given entry.
+ * The result is ready to be concatenated with an inflected form and a lemma.
+ * Special characters '+' ':' '/' and '\' are escaped with a backslash.
+ * 
+ * Result example:
+ * 
+ * .N+blood=A\+:ms
+ */
+void get_codes(struct dela_entry* e,unichar* codes) {
 int i;
-u_strcpy_char(res,".");
-u_strcat(res,e->semantic_codes[0]);
+u_strcpy_char(codes,".");
+u_strcat(codes,e->semantic_codes[0]);
+/* We build a string that contains the characters to be escaped */
+unichar temp[4];
+u_strcpy_char(temp,"+:/");
 for (i=1;i<e->n_semantic_codes;i++) {
-    u_strcat_char(res,"+");
-    u_strcat(res,e->semantic_codes[i]);
+	u_strcat_char(codes,"+");
+	u_strcat_escape(codes,e->semantic_codes[i],temp,'\\');
 }
 for (i=0;i<e->n_inflectional_codes;i++) {
-    u_strcat_char(res,":");
-    u_strcat(res,e->inflectional_codes[i]);
+	u_strcat_char(codes,":");
+    /* The '+' character does not need to be escaped in an inflectional code */
+    u_strcat_escape(codes,e->inflectional_codes[i],temp+1,'\\');
 }
 }
 
@@ -334,7 +352,7 @@ token[j]='\0';
 void get_compressed_line(struct dela_entry* e,unichar* res) {
 unichar tmp[1000];
 unichar code_gramm[1000];
-get_code_gramm(e,code_gramm);
+get_codes(e,code_gramm);
 
 // if the 2 strings are identical, we just return the grammatical code => .N+z1:ms
 if (!u_strcmp(e->inflected,e->lemma)) {

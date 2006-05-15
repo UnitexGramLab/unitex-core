@@ -102,7 +102,7 @@ struct INF_codes {
 };
 
 
-struct dela_entry* tokenize_DELA_line(unichar*);
+struct dela_entry* tokenize_DELAF_line(unichar*);
 struct dela_entry* tokenize_tag_token(unichar*);
 void get_compressed_line(struct dela_entry*,unichar*);
 struct word_list* tokenize_compressed_info(unichar*);

@@ -52,3 +52,4 @@ while (list!=NULL) {
 	free(tmp);
 }
 }
+

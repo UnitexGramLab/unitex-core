@@ -65,6 +65,7 @@ void u_strcpy_char(unichar*, const char*);
 void u_strcpy_char_with_no_zero(unichar*, const char*);
 int u_strlen(const unichar*);
 unichar* u_strcat(unichar*,unichar*);
+unichar* u_strcat_escape(unichar*,unichar*,unichar*,unichar);
 void u_strcat_char(unichar*,char*);
 int u_strcmp(const unichar*, const unichar*);
 int u_strcmp_char(const unichar*,const char*);
