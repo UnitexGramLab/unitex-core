@@ -258,39 +258,31 @@ for (i=0;i<e->n_inflectional_codes;i++) {
 }
 
 
-
-//
-// counts the tokens of the string s; we delimit tokens by space or -
-// because this is a formal and language independent criterion
-//
+/**
+ * This function counts the tokens of the string 's'. We delimit tokens by space
+ * or '-' because this is a formal and language independent criterion.
+ */
 int get_number_of_tokens(unichar* s) {
 int n=0;
-int lettre=0;
+int previous_was_a_letter=0;
 if (s==NULL) return 0;
 int i=0;
 while (s[i]!='\0') {
-    if (s[i]==' ' || s[i]=='-') {
-        n++;
-        lettre=0;
-    }
-    else if (!lettre) {
-            n++;
-            lettre=1;
-         }
-    i++;
+	if (s[i]==' ' || s[i]=='-') {
+		n++;
+		previous_was_a_letter=0;
+	}
+	else if (!previous_was_a_letter) {
+		n++;
+		previous_was_a_letter=1;
+	}
+	i++;
 }
 return n;
 }
 
 
-//
-// returns the length of the longuest prefix common to the 2 strings
-//
-int get_longuest_prefix(unichar* inflected,unichar* lemma) {
-int i=0;
-while (inflected[i]==lemma[i] && inflected[i]!='\0') i++;
-return i;
-}
+
 
 
 void get_compressed_token(unichar* inflected,unichar* lemma,unichar* res) {

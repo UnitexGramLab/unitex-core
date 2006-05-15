@@ -1743,6 +1743,19 @@ if (i>0) {
 
 
 
+/**
+ * Returns the length of the longuest prefix common to the strings 'a' and 'b'.
+ */
+int get_longuest_prefix(unichar* a,unichar* b) {
+if (a==NULL || b==NULL) {
+	return 0;
+}
+int i=0;
+while (a[i]==b[i] && a[i]!='\0') i++;
+return i;
+}
+
+
 
 /* Olivier Blanc
  * fonction de la library C standard reecrites pour l'unicode

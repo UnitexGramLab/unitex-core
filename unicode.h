@@ -151,6 +151,7 @@ long int u_file_size(char*);
 //char make_CR();
 void u_strcpy_without_space(unichar*,unichar*);
 void remove_prefix(unichar*,unichar);
+int get_longuest_prefix(unichar*,unichar*);
 
 
 // Olivier Blanc's functions
