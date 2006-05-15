@@ -23,6 +23,10 @@
 #ifndef CopyrightH
 #define CopyrightH
 
-extern const char COPYRIGHT[];
+/*
+ * This is the copyright string that must be displayed by any
+ * Unitex program when called with no parameter.
+ */
+const char COPYRIGHT[] = "This program is part of Unitex 1.2 beta version\nCopyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>\n\n";
 
 #endif
