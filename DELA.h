@@ -82,14 +82,26 @@ struct dela_entry {
 };
 
 
-
+/**
+ * This structure is used to store all the INF codes of an .inf file.
+ */
 struct INF_codes {
-   struct word_list** tab;
-   int N;
+	/* Array containing for each line of the .inf file the reversed list of its
+	 * components. For instance, if the first line contains:
+	 * 
+	 * .N+NA+z1:fs,.N+Loc:fs
+	 * 
+	 * codes[0] will contain the following list:
+	 *
+	 *  ".N+Loc:fs"   -->   ".N+NA+z1:fs"   -->   NULL
+	 * 
+	 */
+	struct word_list** codes;
+	/* Number of lines in the .inf file */
+	int N;
 };
 
 
-int read_DELA_line(FILE*,unichar*);
 struct dela_entry* tokenize_DELA_line(unichar*);
 struct dela_entry* tokenize_tag_token(unichar*);
 void get_compressed_line(struct dela_entry*,unichar*);
@@ -112,10 +124,8 @@ void unprotect_equal_signs(unichar*);
 void free_dic_entry(struct dela_entry*);
 void tokenize_inflectional_codes(unichar*,int*,unichar**);
 int check_tag_token(unichar*);
-
 int dic_entry_contain_gram_code(struct dela_entry*,unichar*);
 int dic_entry_contain_flex_code(struct dela_entry*,unichar*);
-
 int get_INF_number(unichar*,unsigned char*,Alphabet*);
 
 #endif

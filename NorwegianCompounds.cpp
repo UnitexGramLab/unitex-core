@@ -156,7 +156,7 @@ free(infos.valid_right_component);
 void check_valid_right_component(char* valid_left_component,struct INF_codes* inf) {
 printf("Check valid right components...\n");
 for (int i=0;i<inf->N;i++) {
-   valid_left_component[i]=check_valid_right_component_for_an_INF_line(inf->tab[i]);
+   valid_left_component[i]=check_valid_right_component_for_an_INF_line(inf->codes[i]);
 }
 }
 
@@ -184,7 +184,7 @@ return 0;
 void check_valid_left_component(char* valid_right_component,struct INF_codes* inf) {
 printf("Check valid left components...\n");
 for (int i=0;i<inf->N;i++) {
-   valid_right_component[i]=check_valid_left_component_for_an_INF_line(inf->tab[i]);
+   valid_right_component[i]=check_valid_left_component_for_an_INF_line(inf->codes[i]);
 }
 }
 
@@ -743,7 +743,7 @@ if (!(c&32768)) {
 			/* If we have explored the entire original word */
 			if (get_token_number(current_component,infos->forbidden_words)==-1) {
 				/* And if we do not have forbidden word in last position */
-				struct word_list* l=infos->inf->tab[index];
+				struct word_list* l=infos->inf->codes[index];
 				/* We will look at all the INF codes of the last component in order
 				 * to produce analysis */
 				while (l!=NULL) {
@@ -841,7 +841,7 @@ if (!(c&32768)) {
 					unichar sia_code[2000];
 					unichar entry[2000];
 					unichar line[2000];
-					get_first_valid_left_component(infos->inf->tab[index],sia_code);
+					get_first_valid_left_component(infos->inf->codes[index],sia_code);
 					uncompress_entry(current_component,sia_code,entry);
 					u_strcat(dec,entry);
 					u_strcpy(line,output_dela_line);
@@ -875,7 +875,7 @@ if (!(c&32768)) {
 				/* In order to print the component in the analysis, we arbitrary
 				 * take a valid left component among all those that are available
 				 * for the current component */
-				get_first_valid_left_component(infos->inf->tab[index],sia_code);
+				get_first_valid_left_component(infos->inf->codes[index],sia_code);
 				uncompress_entry(current_component,sia_code,entry);
 				u_strcat(dec,entry);
 				u_strcpy(line,output_dela_line);

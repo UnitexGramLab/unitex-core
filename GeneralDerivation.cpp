@@ -289,7 +289,7 @@ void check_valid_INF_lines(unichar* t, bool* tableau, struct INF_codes* inf)
   u_to_char(tt, t);
   printf("Check valid %s components...\n", tt);
   for (int i=0;i<inf->N;i++) {
-    tableau[i] = check_is_valid_for_an_INF_line(t, inf->tab[i]);
+    tableau[i] = check_is_valid_for_an_INF_line(t, inf->codes[i]);
   }
 }
 
@@ -881,7 +881,7 @@ void explore_state (int adresse,
 	u_fprints_char("\n", debug_file);
       }
     
-      struct word_list* l = inf_codes->tab[index];
+      struct word_list* l = inf_codes->codes[index];
       while ( l != 0 ) {
 
 //	int one_rule_already_matched = 0; // one rule matched each entry is enough

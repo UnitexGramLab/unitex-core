@@ -60,7 +60,7 @@ if (f==NULL) {
    fprintf(stderr,"Cannot open dictionary %s\n",dico);
    return;
 }
-while (read_DELA_line(f,s)) {
+while (u_read_line(f,s)) {
   tokenize_DELA_line_into_3_parts(s,flechi,canonique,code_gramm);
   ajouter_forme_flechie(canonique,0,racine,flechi);
   ptr=get_token_list_for_sequence(flechi,alph,tok);

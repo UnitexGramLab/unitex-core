@@ -68,7 +68,7 @@ return 0;
 void check_valid_right_component_german(char* tableau_sia,struct INF_codes* inf) {
 printf("Check valid right components...\n");
 for (int i=0;i<inf->N;i++) {
-   tableau_correct_right_component[i]=check_valid_right_component_for_an_INF_line_german(inf->tab[i]);
+   tableau_correct_right_component[i]=check_valid_right_component_for_an_INF_line_german(inf->codes[i]);
 }
 }
 
@@ -81,7 +81,7 @@ for (int i=0;i<inf->N;i++) {
 void check_valid_left_component_german(char* tableau_sia,struct INF_codes* inf) {
 printf("Check valid left components...\n");
 for (int i=0;i<inf->N;i++) {
-   tableau_sia[i]=check_valid_left_component_for_an_INF_line_german(inf->tab[i]);
+   tableau_sia[i]=check_valid_left_component_for_an_INF_line_german(inf->codes[i]);
 }
 }
 
@@ -109,7 +109,7 @@ return 0;
 void get_first_sia_code_german(int n,unichar* s) {
 // we initialize s to prevent errors, but this case should never happen
 s[0]='\0';
-struct word_list* l=inf_codes->tab[n];
+struct word_list* l=inf_codes->codes[n];
 while (l!=NULL) {
    if (check_valid_left_component_for_one_INF_code_german(l->word)) {
       u_strcpy(s,l->word);
@@ -301,7 +301,7 @@ if (!(c&32768)) {
       // if we have explored the entire original word
       if (tableau_correct_right_component[index]) {
          // and if we have a valid right component
-         struct word_list* l=inf_codes->tab[index];
+         struct word_list* l=inf_codes->codes[index];
          while (l!=NULL) {
             unichar dec[500];
             u_strcpy(dec,decomposition);

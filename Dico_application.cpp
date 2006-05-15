@@ -181,7 +181,7 @@ if (contenu[string_pos]=='\0') {
          set_part_of_a_word(token_number,priority);
          set_has_been_processed(token_number,priority);
          ref=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
-         struct word_list* tmp=INF->tab[ref];
+         struct word_list* tmp=INF->codes[ref];
          while (tmp!=NULL) {
             unichar res[1000];
             uncompress_entry(entry,tmp->word,res);
@@ -306,7 +306,7 @@ if (contenu[string_pos]=='\0') {
          }
          ref=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
          unichar res[1000];
-         struct word_list* tmp=INF->tab[ref];
+         struct word_list* tmp=INF->codes[ref];
          COMPOUND_WORDS++;
          while (tmp!=NULL) {
             uncompress_entry(entry,tmp->word,res);

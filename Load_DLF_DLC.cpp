@@ -139,7 +139,7 @@ printf("Loading %s...\n",nom);
 unichar ligne[1000];
 unichar flechi[1000];
 unichar code[1000];
-while (read_DELA_line(f,ligne)) {
+while (u_read_line(f,ligne)) {
    tokenize_DELA_line_into_inflected_and_code(ligne,flechi,code);
    inserer_dans_arbre_dlf_dlc(flechi,code,racine);
 }

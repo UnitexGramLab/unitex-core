@@ -24,26 +24,6 @@
 
 
 //
-// reads a line in a unicode dictionary
-// return 1 if a line was read; 0 otherwise
-//
-int read_DELA_line(FILE *f,unichar *t) {
-int c;
-int i=0;
-while ((c=u_fgetc(f))!='\n' && c!=EOF) {
-  t[i++]=(unichar)c;
-}
-t[i]='\0';
-if (i==0 && c==EOF) {
-    return 0; 
-}
-//if (c==EOF) return 0; // EOF
-return 1;
-}
-
-
-
-//
 // tokenizes a DELA line and returns the information in a dela_entry structure
 //
 struct dela_entry* tokenize_DELA_line(unichar *s) {
@@ -570,11 +550,11 @@ if (f==NULL) {
 }
 res=(struct INF_codes*)malloc(sizeof(struct INF_codes));
 res->N=u_read_int(f);
-res->tab=(struct word_list**)malloc(sizeof(struct word_list*)*(res->N));
+res->codes=(struct word_list**)malloc(sizeof(struct word_list*)*(res->N));
 unichar s[4000];
 int i=0;
-while (read_DELA_line(f,s)) {
-  res->tab[i++]=tokenize_compressed_info(s);
+while (u_read_line(f,s)) {
+  res->codes[i++]=tokenize_compressed_info(s);
 }
 u_fclose(f);
 return res;
@@ -584,7 +564,7 @@ return res;
 void free_INF_codes(struct INF_codes* INF) {
 if (INF==NULL) return;
 for (int i=0;i<INF->N;i++) {
-  free_word_list(INF->tab[i]);
+  free_word_list(INF->codes[i]);
 }
 free(INF);
 }
@@ -645,7 +625,7 @@ if (!(n_transitions & 32768)) {
    ref=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
    pos=pos+3;
    contenu[string_pos]='\0';
-   struct word_list* tmp=inf->tab[ref];
+   struct word_list* tmp=inf->codes[ref];
    while (tmp!=NULL) {
       unichar res[1000];
       uncompress_entry(contenu,tmp->word,res);
@@ -776,7 +756,7 @@ unichar s[1000];
 unichar temp[1000];
 char err[1000];
 int i,j;
-while (read_DELA_line(f,s)) {
+while (u_read_line(f,s)) {
   if (s[0]!='\0') {
   i=0;
   while (s[i]!='\0' && s[i]!=',') {

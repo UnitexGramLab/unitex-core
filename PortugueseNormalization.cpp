@@ -159,7 +159,7 @@ while (lemmas!=NULL) {
    int n_inflectional_codes;
    unichar* inflectional_codes[100];
    tokenize_inflectional_codes(inflectional_code,&n_inflectional_codes,inflectional_codes);
-   struct word_list* tok=inflected_inf->tab[res];
+   struct word_list* tok=inflected_inf->codes[res];
    // then for each uncompressed form, we look if it matches with the inflectional code
    while (tok!=NULL) {
       unichar line[2000];
@@ -337,7 +337,7 @@ if (res==-1) {
    return 0;
 }
 (*lemmas)=NULL;
-struct word_list* tok=root_inf->tab[res];
+struct word_list* tok=root_inf->codes[res];
 while (tok!=NULL) {
    unichar line[2000];
    uncompress_entry(entry,tok->word,line);
