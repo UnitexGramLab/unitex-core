@@ -44,8 +44,8 @@ BUILD   = $(NAME)-$(VERSION)
 #
 INSTALL_COMMAND = make USE_TRE_LIBRARY=yes install
 ifeq  ($(USE_TRE_LIBRARY),yes)
-TRE_SRC = $(PWD)/../tre-0.7.2
-TRE_TGZ = $(PWD)/../tre-0.7.2.tar.gz
+TRE_SRC = tre-0.7.2
+TRE_TGZ = tre-0.7.2.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
 endif
@@ -404,7 +404,7 @@ bin: $(LIBTRE) $(BINARIES)
 
 $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library ..."
-	cd .. && (cat $(TRE_TGZ) | gunzip | tar xf -)
+	tar xfz $(TRE_TGZ)
 
 libtre: .libtre-done $(TRE_SRC)
 	@echo "Making TRE library ..."
