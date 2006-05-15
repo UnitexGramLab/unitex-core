@@ -181,13 +181,13 @@ if (contenu[string_pos]=='\0') {
          set_part_of_a_word(token_number,priority);
          set_has_been_processed(token_number,priority);
          ref=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
-         struct token_list* tmp=INF->tab[ref];
+         struct word_list* tmp=INF->tab[ref];
          while (tmp!=NULL) {
             unichar res[1000];
-            uncompress_entry(entry,tmp->token,res);
+            uncompress_entry(entry,tmp->word,res);
             u_fprints(res,DLF);
             u_fprints_char("\n",DLF);
-            tmp=tmp->suivant;
+            tmp=tmp->next;
          }
       }
    }
@@ -306,14 +306,14 @@ if (contenu[string_pos]=='\0') {
          }
          ref=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
          unichar res[1000];
-         struct token_list* tmp=INF->tab[ref];
+         struct word_list* tmp=INF->tab[ref];
          COMPOUND_WORDS++;
          while (tmp!=NULL) {
-            uncompress_entry(entry,tmp->token,res);
+            uncompress_entry(entry,tmp->word,res);
 
             u_fprints(res,DLC);
             u_fprints_char("\n",DLC);
-            tmp=tmp->suivant;
+            tmp=tmp->next;
          }
       }
    }

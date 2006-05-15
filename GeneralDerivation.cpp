@@ -31,7 +31,7 @@ Alphabet* alphabet;
 // main internal functions:
 void analyse_word_list(unsigned char*, struct INF_codes*, FILE*, FILE*, FILE*, FILE*);
 int analyse_word(unichar*);
-void explore_state(int, unichar*, int, unichar*, unichar*, int, unichar*, unichar*, struct decomposed_word_list**, int, struct rule_list*, dic_entry*);
+void explore_state(int, unichar*, int, unichar*, unichar*, int, unichar*, unichar*, struct decomposed_word_list**, int, struct rule_list*, struct dela_entry*);
 
 
 // results of decomposition are written to
@@ -69,7 +69,7 @@ struct utags UTAG;
 
 /* data and functions for rule matching */
 
-// struct pattern holds one pattern to be matched between rule and dic_entry
+// struct pattern holds one pattern to be matched between rule and dela_entry
 // e.g.: "+Hum" => { YesNo=1, type=g (grammatical, not flexional), string="Hum" }
 struct pattern {
   bool YesNo;
@@ -118,7 +118,7 @@ void parse_then_code (unichar*_code, struct change_code*);
 // parse_rules parses a rule
 struct rule_list* parse_rules (unichar*);
 // composition_rule_matches_entry decides wether rule and entry match
-bool composition_rule_matches_entry (struct pattern*, dic_entry*);
+bool composition_rule_matches_entry (struct pattern*, struct dela_entry*);
 // substring_operation changes prefix or suffix of word given a substring-rule
 void substring_operation (unichar*, unichar*);
 
@@ -128,9 +128,9 @@ void substring_operation (unichar*, unichar*);
 bool* tableau_prefix;
 bool* tableau_suffix;
 void check_valid_INF_lines(unichar*, bool*, struct INF_codes*);
-bool check_is_valid_for_an_INF_line(unichar*, struct token_list*);
+bool check_is_valid_for_an_INF_line(unichar*, struct word_list*);
 int check_is_valid_for_one_INF_code(unichar* t, unichar* s);
-int check_is_valid(unichar*, dic_entry*);
+int check_is_valid(unichar*, struct dela_entry*);
 void init_tableaux (struct INF_codes* inf) {
   tableau_prefix = (bool*)malloc(sizeof(bool)*(inf->N));
   tableau_suffix = (bool*)malloc(sizeof(bool)*(inf->N));
@@ -256,7 +256,7 @@ int analyse_word(unichar* mot)
 }
 
 
-int check_is_valid(unichar* t, dic_entry* d)
+int check_is_valid(unichar* t, struct dela_entry* d)
 {
   return dic_entry_contain_gram_code(d, t);
 }
@@ -266,19 +266,19 @@ int check_is_valid_for_one_INF_code(unichar* t, unichar* s)
   unichar temp[MAX_DICT_LINE_LENGTH];
   u_strcpy_char(temp,"x,");
   u_strcat(temp,s);
-  dic_entry* d = tokenize_DELA_line(temp);
+  struct dela_entry* d = tokenize_DELA_line(temp);
   int res = check_is_valid(t, d);
   free_dic_entry(d);
   return res;
 }
 
-bool check_is_valid_for_an_INF_line(unichar* t, struct token_list* l)
+bool check_is_valid_for_an_INF_line(unichar* t, struct word_list* l)
 {
   while ( l != 0 ) {
-    if (check_is_valid_for_one_INF_code(t, l->token)) {
+    if (check_is_valid_for_one_INF_code(t, l->word)) {
       return 1;
     }
-    l = l->suivant;
+    l = l->next;
   }
   return 0;
 }
@@ -523,10 +523,10 @@ void free_all_rule_lists ()
 
 int _n_used_dic_entries = 0;
 int _max_used_dic_entries = 0;
-dic_entry* _all_adresses_of_dic_entries[1000];
+struct dela_entry* _all_adresses_of_dic_entries[1000];
 
-dic_entry* new_dic_entry (unichar* entry) {
-  dic_entry* d = tokenize_DELA_line(entry);
+struct dela_entry* new_dic_entry (unichar* entry) {
+  struct dela_entry* d = tokenize_DELA_line(entry);
   _all_adresses_of_dic_entries[_n_used_dic_entries++] = d;
   if (_n_used_dic_entries > _max_used_dic_entries) {
     _max_used_dic_entries = _n_used_dic_entries;
@@ -727,7 +727,7 @@ struct rule_list* parse_rules (unichar* entry)
 
 
 bool composition_rule_matches_entry (struct pattern* rule,
-				     dic_entry* d)
+				     struct dela_entry* d)
 {
   int ok = 1;
   // "ok = 0;"  may be replaced by "return 0;"
@@ -791,10 +791,10 @@ bool composition_rule_matches_entry (struct pattern* rule,
 	u_strcat(tmp, d->semantic_codes[i]);
       }
     }
-    if ( d->flexional_codes != 0 ) {
-      for (int i = 0; i < d->n_flexional_codes; i++) {
+    if ( d->inflectional_codes != 0 ) {
+      for (int i = 0; i < d->n_inflectional_codes; i++) {
 	u_strcat_char(tmp, ":");
-	u_strcat(tmp, d->flexional_codes[i]);
+	u_strcat(tmp, d->inflectional_codes[i]);
       }
     }
     u_fprints(tmp, debug_file);
@@ -859,7 +859,7 @@ void explore_state (int adresse,
 		    struct decomposed_word_list** L,
 		    int n_decomp,
 		    struct rule_list* rule_list_called,
-		    dic_entry* dic_entr_called)
+		    struct dela_entry* dic_entr_called)
 {
 
   int c = tableau_bin[adresse]*256+tableau_bin[adresse+1];
@@ -881,13 +881,13 @@ void explore_state (int adresse,
 	u_fprints_char("\n", debug_file);
       }
     
-      struct token_list* l = inf_codes->tab[index];
+      struct word_list* l = inf_codes->tab[index];
       while ( l != 0 ) {
 
 //	int one_rule_already_matched = 0; // one rule matched each entry is enough
 
 	unichar entry[MAX_DICT_LINE_LENGTH];
-	uncompress_entry(current_component, l->token, entry);
+	uncompress_entry(current_component, l->word, entry);
 
 	if (DDEBUG) {
 	  u_fprints_char(": ", debug_file);
@@ -895,7 +895,7 @@ void explore_state (int adresse,
 	  u_fprints_char("\n", debug_file);
 	}
 
-	dic_entry* dic_entr = new_dic_entry(entry);
+	struct dela_entry* dic_entr = new_dic_entry(entry);
 
 	unichar lemma_prefix_new[MAX_DICT_LINE_LENGTH];
 	struct rule_list* rule_list_new = 0;
@@ -1147,7 +1147,7 @@ void explore_state (int adresse,
 // 	  free_rule_list(rule_list);
 	}
 
-	l = l->suivant;
+	l = l->next;
 
       } // end of while (token_list* l != 0)
 

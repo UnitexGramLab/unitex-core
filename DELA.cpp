@@ -44,16 +44,16 @@ return 1;
 
 
 //
-// tokenizes a DELA line and returns the information in a dic_entry structure
+// tokenizes a DELA line and returns the information in a dela_entry structure
 //
-dic_entry* tokenize_DELA_line(unichar *s) {
-dic_entry* res;
+struct dela_entry* tokenize_DELA_line(unichar *s) {
+struct dela_entry* res;
 char err[1000];
 unichar temp[DIC_LINE_SIZE];
 int i,j;
 if (s==NULL) return NULL;
 // initialization of the result structure
-res=(dic_entry*)malloc(sizeof(dic_entry));
+res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
 if (res==NULL) {
   fprintf(stderr,"Memory allocation error!\n");
   return NULL;
@@ -62,8 +62,8 @@ res->inflected=NULL;
 res->lemma=NULL;
 res->n_semantic_codes=1;   // 0 would be an error (no grammatical code)
 res->semantic_codes[0]=NULL;
-res->n_flexional_codes=0;
-res->flexional_codes[0]=NULL;
+res->n_inflectional_codes=0;
+res->inflectional_codes[0]=NULL;
 
 // reading the inflected part
 i=0;
@@ -179,7 +179,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && s[i]=='+') {
   (res->n_semantic_codes)++;
 }
 // reading the flexional codes
-while (res->n_flexional_codes<MAX_FLEXIONAL_CODES && s[i]==':') {
+while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && s[i]==':') {
   i++;
   j=0;
   while (s[i]!='\0' && s[i]!=':' && s[i]!='/') {
@@ -194,13 +194,13 @@ while (res->n_flexional_codes<MAX_FLEXIONAL_CODES && s[i]==':') {
     temp[j++]=s[i++];
   }
   temp[j]='\0';
-  res->flexional_codes[res->n_flexional_codes]=(unichar*)malloc(sizeof(unichar)*(u_strlen(temp)+1));
-  if (res->flexional_codes[res->n_flexional_codes]==NULL) {
+  res->inflectional_codes[res->n_inflectional_codes]=(unichar*)malloc(sizeof(unichar)*(u_strlen(temp)+1));
+  if (res->inflectional_codes[res->n_inflectional_codes]==NULL) {
     fprintf(stderr,"Memory allocation error!\n");
     return NULL;
   }
-  u_strcpy(res->flexional_codes[res->n_flexional_codes],temp);
-  (res->n_flexional_codes)++;
+  u_strcpy(res->inflectional_codes[res->n_inflectional_codes],temp);
+  (res->n_inflectional_codes)++;
 }
 return res;
 }
@@ -210,7 +210,7 @@ return res;
 //
 // this function tokenizes a tag token like {today,.ADV}
 //
-dic_entry* tokenize_tag_token(unichar* s) {
+struct dela_entry* tokenize_tag_token(unichar* s) {
 if (s==NULL || s[0]!='{') {
    return NULL;
 }
@@ -245,7 +245,7 @@ tokenize_DELA_line_into_3_parts(temp,inflected,lemma,code_gramm);
 
 
 
-void get_code_gramm(dic_entry* e,unichar* res) {
+void get_code_gramm(struct dela_entry* e,unichar* res) {
 int i;
 u_strcpy_char(res,".");
 u_strcat(res,e->semantic_codes[0]);
@@ -253,9 +253,9 @@ for (i=1;i<e->n_semantic_codes;i++) {
     u_strcat_char(res,"+");
     u_strcat(res,e->semantic_codes[i]);
 }
-for (i=0;i<e->n_flexional_codes;i++) {
+for (i=0;i<e->n_inflectional_codes;i++) {
     u_strcat_char(res,":");
-    u_strcat(res,e->flexional_codes[i]);
+    u_strcat(res,e->inflectional_codes[i]);
 }
 }
 
@@ -351,7 +351,7 @@ token[j]='\0';
 
 
 
-void get_compressed_line(dic_entry* e,unichar* res) {
+void get_compressed_line(struct dela_entry* e,unichar* res) {
 unichar tmp[1000];
 unichar code_gramm[1000];
 get_code_gramm(e,code_gramm);
@@ -393,26 +393,6 @@ return;
 
 
 
-struct token_list* inserer_token(unichar* token,struct token_list* l) {
-struct token_list* tmp;
-tmp=(struct token_list*)malloc(sizeof(struct token_list));
-tmp->token=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(token)));
-u_strcpy(tmp->token,token);
-tmp->suivant=l;
-return tmp;
-}
-
-
-void free_token_list(struct token_list* l) {
-struct token_list* tmp;
-while (l!=NULL) {
-  tmp=l;
-  l=l->suivant;
-  free(tmp->token);
-  free(tmp);
-}
-}
-
 
 
 //
@@ -420,8 +400,8 @@ while (l!=NULL) {
 // several single codes.
 // Example: .N,.V  =>  token 0=".N" ; token 1=".V"
 //
-struct token_list* tokenize_compressed_info(unichar* line) {
-struct token_list* res=NULL;
+struct word_list* tokenize_compressed_info(unichar* line) {
+struct word_list* res=NULL;
 unichar tmp[1000];
 int pos,i;
 pos=0;
@@ -430,7 +410,7 @@ while (line[pos]!='\0') {
    if (line[pos]==',') {
       // if we are at the end of a token
       tmp[i]='\0';
-      res=inserer_token(tmp,res);
+      res=new_word_list(tmp,res);
       i=0;
       pos++;
    }
@@ -444,7 +424,7 @@ while (line[pos]!='\0') {
    }
 }
 tmp[i]='\0';
-res=inserer_token(tmp,res);
+res=new_word_list(tmp,res);
 return res;
 }
 
@@ -590,7 +570,7 @@ if (f==NULL) {
 }
 res=(struct INF_codes*)malloc(sizeof(struct INF_codes));
 res->N=u_read_int(f);
-res->tab=(struct token_list**)malloc(sizeof(struct token_list*)*(res->N));
+res->tab=(struct word_list**)malloc(sizeof(struct word_list*)*(res->N));
 unichar s[4000];
 int i=0;
 while (read_DELA_line(f,s)) {
@@ -604,7 +584,7 @@ return res;
 void free_INF_codes(struct INF_codes* INF) {
 if (INF==NULL) return;
 for (int i=0;i<INF->N;i++) {
-  free_token_list(INF->tab[i]);
+  free_word_list(INF->tab[i]);
 }
 free(INF);
 }
@@ -665,13 +645,13 @@ if (!(n_transitions & 32768)) {
    ref=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
    pos=pos+3;
    contenu[string_pos]='\0';
-   struct token_list* tmp=inf->tab[ref];
+   struct word_list* tmp=inf->tab[ref];
    while (tmp!=NULL) {
       unichar res[1000];
-      uncompress_entry(contenu,tmp->token,res);
+      uncompress_entry(contenu,tmp->word,res);
       u_fprints(res,f);
       u_fprints_char("\n",f);
-      tmp=tmp->suivant;
+      tmp=tmp->next;
    }
 }
 else {
@@ -1382,15 +1362,15 @@ u_strcpy(s,temp);
 
 
 
-void free_dic_entry(dic_entry* d) {
+void free_dic_entry(struct dela_entry* d) {
 if (d==NULL) return;
 if (d->inflected!=NULL) free(d->inflected);
 if (d->lemma!=NULL) free(d->lemma);
 for (int i=0;i<d->n_semantic_codes;i++) {
    free(d->semantic_codes[i]);
 }
-for (int i=0;i<d->n_flexional_codes;i++) {
-   free(d->flexional_codes[i]);
+for (int i=0;i<d->n_inflectional_codes;i++) {
+   free(d->inflectional_codes[i]);
 }
 free(d);
 }
@@ -1554,7 +1534,7 @@ return 1;
 //
 // returns 1 if the entry d contains the grammatical code s
 //
-int dic_entry_contain_gram_code(dic_entry* d,unichar* s) {
+int dic_entry_contain_gram_code(struct dela_entry* d,unichar* s) {
 for (int i=0;i<d->n_semantic_codes;i++) {
    if (!u_strcmp(d->semantic_codes[i],s)) {
       return 1;
@@ -1590,9 +1570,9 @@ return 1;
 //
 // returns 1 if the entry d contains the inflectional code s
 //
-int dic_entry_contain_flex_code(dic_entry* d,unichar* s) {
-for (int i=0;i<d->n_flexional_codes;i++) {
-   if (one_flexional_codes_contains_the_other(d->flexional_codes[i],s)) {
+int dic_entry_contain_flex_code(struct dela_entry* d,unichar* s) {
+for (int i=0;i<d->n_inflectional_codes;i++) {
+   if (one_flexional_codes_contains_the_other(d->inflectional_codes[i],s)) {
       return 1;
    }
 }

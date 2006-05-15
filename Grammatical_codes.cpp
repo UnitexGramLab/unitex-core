@@ -144,7 +144,7 @@ while (!fin) {
   tmp[pos]='\0';
   t2[courant_t2]=(unichar*)malloc((u_strlen(tmp)+1)*sizeof(unichar));
   t2[courant_t2][0]='\0';
-  if (courant_t2==(MAX_FLEXIONAL_CODES-1)) {
+  if (courant_t2==(MAX_INFLECTIONAL_CODES-1)) {
     return;
   }
   u_strcpy(t2[courant_t2++],tmp);
@@ -295,7 +295,7 @@ while (!fin) {
   tmp[pos]='\0';
   t2[courant_t2]=(unichar*)malloc((u_strlen(tmp)+1)*sizeof(unichar));
   t2[courant_t2][0]='\0';
-  if (courant_t2==(MAX_FLEXIONAL_CODES-1)) {
+  if (courant_t2==(MAX_INFLECTIONAL_CODES-1)) {
      return;
   }
   u_strcpy(t2[courant_t2++],tmp);

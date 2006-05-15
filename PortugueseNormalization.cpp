@@ -159,12 +159,12 @@ while (lemmas!=NULL) {
    int n_inflectional_codes;
    unichar* inflectional_codes[100];
    tokenize_inflectional_codes(inflectional_code,&n_inflectional_codes,inflectional_codes);
-   struct token_list* tok=inflected_inf->tab[res];
+   struct word_list* tok=inflected_inf->tab[res];
    // then for each uncompressed form, we look if it matches with the inflectional code
    while (tok!=NULL) {
       unichar line[2000];
-      uncompress_entry(entry,tok->token,line);
-      dic_entry* tmp=tokenize_DELA_line(line);
+      uncompress_entry(entry,tok->word,line);
+      struct dela_entry* tmp=tokenize_DELA_line(line);
       if (compatible_portuguese_inflectional_codes(tmp,n_inflectional_codes,inflectional_codes)) {
          // if the code matches, we can produce a new line of the normalization grammar
          unichar temp_result2[4000];
@@ -184,15 +184,15 @@ while (lemmas!=NULL) {
             u_strcat_char(temp_result2,"+");
             u_strcat(temp_result2,tmp->semantic_codes[z]);
          }
-         for (int z=0;z<tmp->n_flexional_codes;z++) {
+         for (int z=0;z<tmp->n_inflectional_codes;z++) {
             u_strcat_char(temp_result2,":");
-            u_strcat(temp_result2,tmp->flexional_codes[z]);
+            u_strcat(temp_result2,tmp->inflectional_codes[z]);
          }
          u_strcat_char(temp_result2,"}");
          RESULT=RESULT+explore_portuguese_normalization_tree(temp_result,temp_result2,pronouns,norm_tree,alph);
       }
       free_dic_entry(tmp);
-      tok=tok->suivant;
+      tok=tok->next;
    }
    for (int i=0;i<n_inflectional_codes;i++) {
       free(inflectional_codes[i]);
@@ -242,11 +242,11 @@ return 1;
 // array passed in parameter
 // it returns 1 on compatibility, 0 else
 //
-int compatible_portuguese_inflectional_codes(dic_entry* entry,int n_inflectional_codes,
+int compatible_portuguese_inflectional_codes(struct dela_entry* entry,int n_inflectional_codes,
                                              unichar** inflectional_codes) {
-for (int n_dic=0;n_dic<entry->n_flexional_codes;n_dic++) {
+for (int n_dic=0;n_dic<entry->n_inflectional_codes;n_dic++) {
    for (int n=0;n<n_inflectional_codes;n++) {
-      if (are_compatible_portuguese_sub_codes(entry->flexional_codes[n_dic],inflectional_codes[n])) {
+      if (are_compatible_portuguese_sub_codes(entry->inflectional_codes[n_dic],inflectional_codes[n])) {
          return 1;
       }
    }
@@ -337,11 +337,11 @@ if (res==-1) {
    return 0;
 }
 (*lemmas)=NULL;
-struct token_list* tok=root_inf->tab[res];
+struct word_list* tok=root_inf->tab[res];
 while (tok!=NULL) {
    unichar line[2000];
-   uncompress_entry(entry,tok->token,line);
-   dic_entry* tmp=tokenize_DELA_line(line);
+   uncompress_entry(entry,tok->word,line);
+   struct dela_entry* tmp=tokenize_DELA_line(line);
    if (!u_strcmp_char(tmp->semantic_codes[0],"V")) {
       // if we have a verb lemma, then we add it to the lemma list
       struct string_list* temp;
@@ -350,7 +350,7 @@ while (tok!=NULL) {
       (*lemmas)=temp;
    }
    free_dic_entry(tmp);
-   tok=tok->suivant;
+   tok=tok->next;
 }
 return 1;
 }

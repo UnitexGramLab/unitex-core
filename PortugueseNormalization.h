@@ -41,7 +41,7 @@ int replace_match_output_by_normalization_line(struct liste_matches*,Alphabet*,u
 int tokenize_portuguese_match(unichar*,unichar*,unichar*,unichar*,unichar*);
 int get_radical_lemma(unichar*,struct string_list**,Alphabet*,unsigned char*,struct INF_codes*);
 int get_inf_number_for_token(int,unichar*,int,unichar*,Alphabet*,unsigned char*);
-int compatible_portuguese_inflectional_codes(dic_entry*,int,unichar**);
+int compatible_portuguese_inflectional_codes(struct dela_entry*,int,unichar**);
 void save_portuguese_normalization_grammar(int,struct liste_matches*,char*);
 int explore_portuguese_normalization_tree(unichar*,unichar*,struct string_list*,struct noeud_arbre_normalization*,
                                           Alphabet*);

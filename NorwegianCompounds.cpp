@@ -95,17 +95,17 @@ void explore_state(int,unichar*,int,unichar*,int,unichar*,unichar*,
 					struct word_decomposition_list**,int,struct norwegian_infos*);
 void check_valid_right_component(char*,struct INF_codes*);
 void check_valid_left_component(char*,struct INF_codes*);
-char check_valid_left_component_for_an_INF_line(struct token_list*);
+char check_valid_left_component_for_an_INF_line(struct word_list*);
 char check_valid_left_component_for_one_INF_code(unichar*);
-char check_valid_right_component_for_an_INF_line(struct token_list*);
+char check_valid_right_component_for_an_INF_line(struct word_list*);
 char check_valid_right_component_for_one_INF_code(unichar*);
-char check_Nsia(dic_entry*);
-char check_Nsie(dic_entry*);
-char check_Nsig(dic_entry*);
-char check_Asio(dic_entry*);
-char check_Asie(dic_entry*);
-char check_VW(dic_entry*);
-char check_ADV(dic_entry*);
+char check_Nsia(struct dela_entry*);
+char check_Nsie(struct dela_entry*);
+char check_Nsig(struct dela_entry*);
+char check_Asio(struct dela_entry*);
+char check_Asie(struct dela_entry*);
+char check_VW(struct dela_entry*);
+char check_ADV(struct dela_entry*);
 struct word_decomposition* new_word_decomposition();
 void free_word_decomposition(struct word_decomposition*);
 struct word_decomposition_list* new_word_decomposition_list();
@@ -165,12 +165,12 @@ for (int i=0;i<inf->N;i++) {
  * Returns 1 if at least one of the INF codes of 'INF_codes' is a valid
  * right component, 0 otherwise.
  */
-char check_valid_right_component_for_an_INF_line(struct token_list* INF_codes) {
+char check_valid_right_component_for_an_INF_line(struct word_list* INF_codes) {
 while (INF_codes!=NULL) {
-	if (check_valid_right_component_for_one_INF_code(INF_codes->token)) {
+	if (check_valid_right_component_for_one_INF_code(INF_codes->word)) {
 		return 1;
 	}
-	INF_codes=INF_codes->suivant;
+	INF_codes=INF_codes->next;
 }
 return 0;
 }
@@ -193,12 +193,12 @@ for (int i=0;i<inf->N;i++) {
  * Returns 1 if at least one of the INF codes of 'INF_codes' is a valid
  * left component, 0 otherwise.
  */
-char check_valid_left_component_for_an_INF_line(struct token_list* INF_codes) {
+char check_valid_left_component_for_an_INF_line(struct word_list* INF_codes) {
 while (INF_codes!=NULL) {
-	if (check_valid_left_component_for_one_INF_code(INF_codes->token)) {
+	if (check_valid_left_component_for_one_INF_code(INF_codes->word)) {
 		return 1;
 	}
-	INF_codes=INF_codes->suivant;
+	INF_codes=INF_codes->next;
 }
 return 0;
 }
@@ -215,7 +215,7 @@ int get_valid_left_component_type_for_one_INF_code(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 int res;
 /* Now we can test if the INF code corresponds to a valid left component */
 if (check_Nsia(d)) res=N_SIA;
@@ -238,23 +238,23 @@ return res;
  * "N:sia", "N:sie" or "N:sig", they will have the priority.
  * 'code' is a string that will contains the selected code.
  **/
-void get_first_valid_left_component(struct token_list* INF_codes,unichar* code) {
+void get_first_valid_left_component(struct word_list* INF_codes,unichar* code) {
 int tmp;
 code[0]='\0';
 while (INF_codes!=NULL) {
-	tmp=get_valid_left_component_type_for_one_INF_code(INF_codes->token);
+	tmp=get_valid_left_component_type_for_one_INF_code(INF_codes->word);
 	if (tmp==N_SIA || tmp==N_SIE || tmp==N_SIG) {
 		/* If we find an N, then we return it */
-		u_strcpy(code,INF_codes->token);
+		u_strcpy(code,INF_codes->word);
 		return;
 	}
 	if (tmp!=INVALID_LEFT_COMPONENT) {
 		/* If we find a valid left component, then we copy it,
 		 * but we do not return now, since we can find later
 		 * a N that has an higher priority */
-		u_strcpy(code,INF_codes->token);
+		u_strcpy(code,INF_codes->word);
 	}
-	INF_codes=INF_codes->suivant;
+	INF_codes=INF_codes->next;
 }
 }
 
@@ -262,7 +262,7 @@ while (INF_codes!=NULL) {
 /**
  * Returns 1 if the given dictionary entry is a "N:sia" one.
  */
-char check_Nsia(dic_entry* d) {
+char check_Nsia(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[4];
@@ -274,7 +274,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
 /**
  * Returns 1 if the given dictionary entry is a "N:sie" one.
  */
-char check_Nsie(dic_entry* d) {
+char check_Nsie(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[4];
@@ -286,7 +286,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
 /**
  * Returns 1 if the given dictionary entry is a "N:sig" one.
  */
-char check_Nsig(dic_entry* d) {
+char check_Nsig(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[4];
@@ -298,7 +298,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
 /**
  * Returns 1 if the given dictionary entry is a "A:sio" one.
  */
-char check_Asio(dic_entry* d) {
+char check_Asio(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"A");
 unichar t2[4];
@@ -310,7 +310,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
 /**
  * Returns 1 if the given dictionary entry is a "A:sie" one.
  */
-char check_Asie(dic_entry* d) {
+char check_Asie(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"A");
 unichar t2[4];
@@ -322,7 +322,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
 /**
  * Returns 1 if the given dictionary entry is a "V:W" one.
  */
-char check_VW(dic_entry* d) {
+char check_VW(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"V");
 unichar t2[2];
@@ -334,7 +334,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
 /**
  * Returns 1 if the given dictionary entry is a "ADV" one.
  */
-char check_ADV(dic_entry* d) {
+char check_ADV(struct dela_entry* d) {
 unichar t1[4];
 u_strcpy_char(t1,"ADV");
 return (char)dic_entry_contain_gram_code(d,t1);
@@ -345,7 +345,7 @@ return (char)dic_entry_contain_gram_code(d,t1);
  * Returns 1 if the given dictionary entry is a "V" one that does
  * not have the inflectional code "Y".
  */
-char check_V_but_not_Y(dic_entry* d) {
+char check_V_but_not_Y(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"V");
 unichar t2[2];
@@ -364,7 +364,7 @@ char check_valid_left_component_for_one_INF_code(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 /* Now, we can use this structured representation to check if the INF code
  * corresponds to a valid left component. */
 char res=check_Nsia(d)||check_Nsie(d)||check_Nsig(d)||check_Asio(d)||check_Asie(d)||check_VW(d)||check_ADV(d);
@@ -377,7 +377,7 @@ return res;
 /**
  * Returns 1 if the given dictionary entry is a "N" one.
  */
-char check_N(dic_entry* d) {
+char check_N(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"N");
 return dic_entry_contain_gram_code(d,t1);
@@ -394,7 +394,7 @@ char check_N_right_component(unichar* s) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[4];
@@ -416,7 +416,7 @@ char check_A_right_component(unichar* s) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 unichar t1[2];
 u_strcpy_char(t1,"A");
 unichar t2[4];
@@ -431,7 +431,7 @@ return res;
 /**
  * Returns 1 if the given dictionary entry is a ":a" one.
  */
-char check_a(dic_entry* d) {
+char check_a(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"a");
 return dic_entry_contain_flex_code(d,t1);
@@ -448,7 +448,7 @@ char check_N(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 char res=check_N(d);
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
@@ -466,7 +466,7 @@ char check_a(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 char res=check_a(d);
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
@@ -477,7 +477,7 @@ return res;
 /**
  * Returns 1 if the given dictionary entry is a "A" one.
  */
-char check_A(dic_entry* d) {
+char check_A(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"A");
 return dic_entry_contain_gram_code(d,t1);
@@ -495,7 +495,7 @@ char check_valid_right_component_for_one_INF_code(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 char res=(check_N(d)||check_A(d)/*||check_V_but_not_Y(d)*/)&&(!check_Nsie(d));
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
@@ -511,7 +511,7 @@ char verb_of_more_than_4_letters(unichar* line) {
 /* We produce an artifical dictionary entry with the given INF code,
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
-dic_entry* d=tokenize_DELA_line(line);
+struct dela_entry* d=tokenize_DELA_line(line);
 char res=check_V_but_not_Y(d) && u_strlen(d->inflected)>4;
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
@@ -743,7 +743,7 @@ if (!(c&32768)) {
 			/* If we have explored the entire original word */
 			if (get_token_number(current_component,infos->forbidden_words)==-1) {
 				/* And if we do not have forbidden word in last position */
-				struct token_list* l=infos->inf->tab[index];
+				struct word_list* l=infos->inf->tab[index];
 				/* We will look at all the INF codes of the last component in order
 				 * to produce analysis */
 				while (l!=NULL) {
@@ -757,7 +757,7 @@ if (!(c&32768)) {
 					}
 					unichar entry[2000];
 					/* We get the dictionary line that corresponds to the current INF code */
-					uncompress_entry(current_component,l->token,entry);
+					uncompress_entry(current_component,l->word,entry);
 					/* And we add it to the analysis */
 					u_strcat(dec,entry);
 					unichar inflected[2000];
@@ -791,7 +791,7 @@ if (!(c&32768)) {
 					 * that the word to analyze was in fact a simple word
 					 * in the dictionary */
 					if (verb_of_more_than_4_letters(entry)
-						|| check_valid_right_component_for_one_INF_code(l->token)
+						|| check_valid_right_component_for_one_INF_code(l->word)
 						|| number_of_components==1) {
 						/*
 						 * We set the number of components, the analysis, the actual
@@ -801,8 +801,8 @@ if (!(c&32768)) {
 						wd->n_parts=number_of_components;
 						u_strcpy(wd->decomposition,dec);
 						u_strcpy(wd->dela_line,new_dela_line);
-						wd->is_a_valid_right_N=check_N_right_component(l->token);
-						wd->is_a_valid_right_A=check_A_right_component(l->token);
+						wd->is_a_valid_right_N=check_N_right_component(l->word);
+						wd->is_a_valid_right_A=check_A_right_component(l->word);
 						/* Then we add the decomposition word structure to the list that
 						 * contains all the analysis for the word to analyze */
 						struct word_decomposition_list* wdl=new_word_decomposition_list();
@@ -811,7 +811,7 @@ if (!(c&32768)) {
 						(*L)=wdl;
 					}
 					/* We go on with the next INF code of the last component */
-					l=l->suivant;
+					l=l->next;
 				}
 			}
 			/* If are at the end of the word to analyze, we have nothing more to do */

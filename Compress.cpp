@@ -89,7 +89,7 @@ if (argc!=2 && argc!=3) {
 FILE* f;
 FILE* INF_file;
 unichar s[DIC_WORD_SIZE];
-dic_entry* entry;
+struct dela_entry* entry;
 char bin[DIC_WORD_SIZE];
 char inf[DIC_WORD_SIZE];
 struct dictionary_node* root; /* Root of the dictionary tree */

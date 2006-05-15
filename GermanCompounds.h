@@ -45,9 +45,9 @@ struct german_word_decomposition_list {
 void analyse_german_compounds(Alphabet*,unsigned char*,struct INF_codes*,FILE*,FILE*,FILE*,FILE*);
 void check_valid_right_component_german(char*,struct INF_codes*);
 void check_valid_left_component_german(char*,struct INF_codes*);
-char check_valid_left_component_for_an_INF_line_german(struct token_list*);
+char check_valid_left_component_for_an_INF_line_german(struct word_list*);
 char check_valid_left_component_for_one_INF_code_german(unichar*);
-char check_valid_right_component_for_an_INF_line_german(struct token_list*);
+char check_valid_right_component_for_an_INF_line_german(struct word_list*);
 char check_valid_right_component_for_one_INF_code_german(unichar*);
 void analyse_german_word_list(unsigned char*,struct INF_codes*,FILE*,FILE*,FILE*,FILE*);
 int analyse_german_word(unichar*);

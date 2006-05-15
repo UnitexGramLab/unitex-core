@@ -198,7 +198,7 @@ while (s[i]!='\0') {
   }
   if (tmp[0]=='{' && u_strcmp_char(tmp,"{S}") && u_strcmp_char(s,"{STOP}")) {
      // case of a token tag
-     dic_entry* TMP=tokenize_tag_token(tmp);
+     struct dela_entry* TMP=tokenize_tag_token(tmp);
      if (!u_strcmp(TMP->inflected,etiquette[e]->inflected)) {
         troisieme_cas_prime(e,etiquette,tmp,alph,tok,DLC_tree,tokenization_mode);
      }

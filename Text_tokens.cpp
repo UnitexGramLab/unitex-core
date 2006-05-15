@@ -192,7 +192,7 @@ void extract_semantic_codes_from_tokens(struct string_hash* tok,
 for (int i=0;i<tok->N;i++) {
     if (tok->tab[i][0]=='{' && u_strcmp_char(tok->tab[i],"{S}")
                             && u_strcmp_char(tok->tab[i],"{STOP}")) {
-       dic_entry* temp=tokenize_tag_token(tok->tab[i]);
+       struct dela_entry* temp=tokenize_tag_token(tok->tab[i]);
        get_hash_number(temp->semantic_codes[0],semantic_codes);
        free_dic_entry(temp);
     }

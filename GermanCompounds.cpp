@@ -49,12 +49,12 @@ free(tableau_correct_right_component);
 // return 1 if at least one of the INF codes of l is a valid
 // right component, 0 else
 //
-char check_valid_right_component_for_an_INF_line_german(struct token_list* l) {
+char check_valid_right_component_for_an_INF_line_german(struct word_list* l) {
 while (l!=NULL) {
-   if (check_valid_right_component_for_one_INF_code_german(l->token)) {
+   if (check_valid_right_component_for_one_INF_code_german(l->word)) {
       return 1;
    }
-   l=l->suivant;
+   l=l->next;
 }
 return 0;
 }
@@ -91,12 +91,12 @@ for (int i=0;i<inf->N;i++) {
 // return 1 if at least one of the INF codes of l is a valid
 // left component, 0 else
 //
-char check_valid_left_component_for_an_INF_line_german(struct token_list* l) {
+char check_valid_left_component_for_an_INF_line_german(struct word_list* l) {
 while (l!=NULL) {
-   if (check_valid_left_component_for_one_INF_code_german(l->token)) {
+   if (check_valid_left_component_for_one_INF_code_german(l->word)) {
       return 1;
    }
-   l=l->suivant;
+   l=l->next;
 }
 return 0;
 }
@@ -109,13 +109,13 @@ return 0;
 void get_first_sia_code_german(int n,unichar* s) {
 // we initialize s to prevent errors, but this case should never happen
 s[0]='\0';
-struct token_list* l=inf_codes->tab[n];
+struct word_list* l=inf_codes->tab[n];
 while (l!=NULL) {
-   if (check_valid_left_component_for_one_INF_code_german(l->token)) {
-      u_strcpy(s,l->token);
+   if (check_valid_left_component_for_one_INF_code_german(l->word)) {
+      u_strcpy(s,l->word);
       return;
    }
-   l=l->suivant;
+   l=l->next;
 }
 }
 
@@ -124,7 +124,7 @@ while (l!=NULL) {
 //
 // returns 1 if the line is a N+FF one
 //
-char check_N_FF(dic_entry* d) {
+char check_N_FF(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[3];
@@ -141,7 +141,7 @@ char check_valid_left_component_for_one_INF_code_german(unichar* s) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 char res=check_N_FF(d);
 free_dic_entry(d);
 return res;
@@ -152,7 +152,7 @@ return res;
 //
 // returns 1 if the line is a N  but not FF one
 //
-char check_N_not_FF(dic_entry* d) {
+char check_N_not_FF(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[3];
@@ -170,7 +170,7 @@ char check_valid_right_component_for_one_INF_code_german(unichar* s) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
-dic_entry* d=tokenize_DELA_line(temp);
+struct dela_entry* d=tokenize_DELA_line(temp);
 char res=check_N_not_FF(d);
 free_dic_entry(d);
 return res;
@@ -301,13 +301,13 @@ if (!(c&32768)) {
       // if we have explored the entire original word
       if (tableau_correct_right_component[index]) {
          // and if we have a valid right component
-         struct token_list* l=inf_codes->tab[index];
+         struct word_list* l=inf_codes->tab[index];
          while (l!=NULL) {
             unichar dec[500];
             u_strcpy(dec,decomposition);
             if (dec[0]!='\0') {u_strcat_char(dec," +++ ");}
             unichar entry[500];
-            uncompress_entry(current_component,l->token,entry);
+            uncompress_entry(current_component,l->word,entry);
             u_strcat(dec,entry);
             unichar inflected[500];
             unichar lemma[500];
@@ -335,7 +335,7 @@ if (!(c&32768)) {
             wd->n_parts=n_decomp;
             u_strcpy(wd->decomposition,dec);
             u_strcpy(wd->dela_line,new_dela_line);
-            if (check_valid_right_component_for_one_INF_code_german(l->token)) {
+            if (check_valid_right_component_for_one_INF_code_german(l->word)) {
                // if we got a correct right component (N-FF)
                struct german_word_decomposition_list* wdl=new_german_word_decomposition_list();
                wdl->element=wd;
@@ -344,7 +344,7 @@ if (!(c&32768)) {
             } else {
                free_german_word_decomposition(wd);
             }
-            l=l->suivant;
+            l=l->next;
          }
       }
     }

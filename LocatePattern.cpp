@@ -452,7 +452,7 @@ else {
    if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
       // anyway, such a tag is classed as verifying <MOT> and <DIC>
       c=(MOT_TOKEN_BIT_MASK|DIC_TOKEN_BIT_MASK);
-      dic_entry* temp=tokenize_tag_token(s);
+      struct dela_entry* temp=tokenize_tag_token(s);
       if (is_upper(temp->inflected[0],alph)) {
          c=(unsigned char)(c|PRE_TOKEN_BIT_MASK);
          i=0;
