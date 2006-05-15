@@ -41,20 +41,6 @@ void reverse_initial_vowels_thai(unichar*);
 int get_shift(int,int*,int);
 
 
-
-
-
-//int buffer[BUFFER_SIZE];
-//int BUFFER_LENGTH;
-//int N_UNITS_ALLREADY_READ;
-//int open_bracket=-1;
-//int close_bracket=-1;
-//int origine_courante_char=0;
-//int phrase_courante=1;
-
-
-
-
 /**
  * This function builds a concordance from a 'concord.ind' file described
  * by the 'concordance' parameter. 'text' is supposed to represent the 'text.cod'

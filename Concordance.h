@@ -32,25 +32,11 @@
 #define CENTER_RIGHT 4
 #define RIGHT_LEFT 5
 #define RIGHT_CENTER 6
-//#define BUFFER_SIZE 1000000
 #define MAX_CONTEXT_IN_UNITS 5000
-//#define MAX_HTML_CONTEXT 10000
-
-
-
-
-//extern int buffer[BUFFER_SIZE];
-//extern int BUFFER_LENGTH;
-//extern int N_UNITS_ALLREADY_READ;
-//extern int open_bracket;
-//extern int close_bracket;
-//extern int origine_courante_char;
-//extern int phrase_courante;
 
 
 void create_concordance(FILE*,FILE*,struct text_tokens*,int,int,int,char*,char*,
                         char*,char*,char*,int,int*,int);
-                        
                         
 
 #endif
