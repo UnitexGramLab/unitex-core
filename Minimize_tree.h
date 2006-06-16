@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2005 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2005 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@
 
 #define HAUTEUR_MAX 10000
 
-#define MAX_TRANS ((sizeof(void*) > 4) ? 67108864 : 4194304 )
+#define MAX_TRANS ((sizeof(void*) > 4) ? 134217728 : 4194304 )
 /* a hack to get bigger size on 64bit-architectures */
 
 struct node_list {
