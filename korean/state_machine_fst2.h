@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -295,7 +295,7 @@ cleardmem();
 
 #define LOCAL_STACK_MAX	256
 unsigned int *
-state_machine::ajouteTransValue(unichar *istr)
+ajouteTransValue(unichar *istr)
 {
 	unsigned int strSz;
 	unichar valName[16];
