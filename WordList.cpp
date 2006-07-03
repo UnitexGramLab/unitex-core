@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 #include "WordList.h"
-#include "error.h"
+#include "Error.h"
 
 
 /**

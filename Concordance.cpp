@@ -30,48 +30,50 @@
 #define TEXT_ 1
 #define GLOSSANET_ 2
 
-int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,int,int,
-								int*,int,int,int*,int,int);
+int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,
+                                int*,int*,int,int,struct conc_opt);
 void compute_token_length(int*,struct text_tokens*);
 
 void create_modified_text_file(FILE*,FILE*,struct text_tokens*,char*,int,int*);
-void write_HTML_header(FILE*,int,char*,char*);
+void write_HTML_header(FILE*,int,struct conc_opt);
 void write_HTML_end(FILE*);
 void reverse_initial_vowels_thai(unichar*);
 int get_shift(int,int*,int);
 
 
 /**
- * This function builds a concordance from a 'concord.ind' file described
- * by the 'concordance' parameter. 'text' is supposed to represent the 'text.cod'
- * file from which the concordance index was computed. 'tokens' represents the
- * associated 'tokens.txt' file. 'sort_mode' is an integer that represents the sort
- * mode to be used for creating the concordance. This parameter will be ignored
- * if the function must modify the text instead of building a concordance.
- * 'left_context' and 'right_context' specify the length of the contexts in visible
- * characters (for Thai, this number is different from the number of unicode
- * characters because of diacritics). 'fontname' and 'fontsize' are used to
- * set the font that will be used if the output is an HTML file (if not, these
- * parameters will be ignored). 'directory' represents the working directory.
- * 'result_mode' indicates the kind of output that is expected. If it value if
- * "html" or "text", the function will build an HTML or text concordance. If
- * its value is of the form "glossanet=xxx", the result will be an HTML
- * concordance designed for the GlossaNet system (http://glossa.fltr.ucl.ac.be),
- * and "xxx" will be taken as a parameter given to GlossaNet. Any other value
- * will be considered as a file name to use for producing a modified version of
- * the text. 'sort_alphabet' is the name of the "Alphabet_sort.txt" file to use
- * for sorting the lines of the concordance. This parameter will be ignored
- * if the output is a modified text file or if the sort mode is TEXT_ORDER.
- * 'n_enter_char' is the number of new lines in the text, and 'enter_pos' is
- * an array that contains the positions of these new lines. If 'thai_mode' is set
- * to a non zero value, it indicates that the concordance is a Thai one. This
- * information is used to compute correctly the context sizes.
+ * This function builds a concordance from a 'concord.ind' file
+ * described by the 'concordance' parameter. 'text' is supposed to
+ * represent the 'text.cod' file from which the concordance index was
+ * computed. 'tokens' represents the associated 'tokens.txt'
+ * file. 'option.sort_mode' is an integer that represents the sort mode to be
+ * used for creating the concordance. This parameter will be ignored
+ * if the function must modify the text instead of building a
+ * concordance.  'option.left_context' and 'option.right_context' specify the length
+ * of the contexts in visible characters (for Thai, this number is
+ * different from the number of unicode characters because of
+ * diacritics). 'option.fontname' and 'fontsize' are used to set the font
+ * that will be used if the output is an HTML file (if not, these
+ * parameters will be ignored). 'option.directory' represents the
+ * working directory.  'option.result_mode' indicates the kind of
+ * output that is expected. If it value if "html" or "text", the
+ * function will build an HTML or text concordance. If its value is of
+ * the form "glossanet=xxx", the result will be an HTML concordance
+ * designed for the GlossaNet system (http://glossa.fltr.ucl.ac.be),
+ * and "xxx" will be taken as a parameter given to GlossaNet. Any
+ * other value will be considered as a file name to use for producing
+ * a modified version of the text. 'option.sort_alphabet' is the name of the
+ * "Alphabet_sort.txt" file to use for sorting the lines of the
+ * concordance. This parameter will be ignored if the output is a
+ * modified text file or if the sort mode is TEXT_ORDER.
+ * 'n_enter_char' is the number of new lines in the text, and
+ * 'enter_pos' is an array that contains the positions of these new
+ * lines. If 'option.thai_mode' is set to a non zero value, it indicates that
+ * the concordance is a Thai one. This information is used to compute
+ * correctly the context sizes.
  */
 void create_concordance(FILE* concordance,FILE* text,struct text_tokens* tokens,
-						int sort_mode,int left_context,int right_context,
-						char* fontname,char* fontsize,
-						char* directory,char* result_mode,char* sort_alphabet,
-						int n_enter_char,int* enter_pos,int thai_mode) {
+                        int n_enter_char,int* enter_pos,struct conc_opt option) {
 FILE* out;
 FILE* f;
 char temp_file_name[2000];
@@ -86,21 +88,21 @@ int* token_length=(int*)malloc(sizeof(int)*tokens->N);
 if (token_length==NULL) {fatal_error("Not enough memory in create_concordance\n");}
 compute_token_length(token_length,tokens);
 /* Then, we see which kind of output is expected */
-script_glossanet=strstr(result_mode,"glossanet=");
+script_glossanet=strstr(option.result_mode,"glossanet=");
 if (script_glossanet!=NULL) {
 	/* If the result parameter starts with "glossanet=", then we make
 	 * start the GlossaNet script after the equal sign. */
 	script_glossanet=script_glossanet+strlen("glossanet=");
 }
-if (strcmp(result_mode,"html") && strcmp(result_mode,"text") && script_glossanet==NULL) {
+if (strcmp(option.result_mode,"html") && strcmp(option.result_mode,"text") && script_glossanet==NULL) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
-	create_modified_text_file(concordance,text,tokens,result_mode,n_enter_char,enter_pos);
+	create_modified_text_file(concordance,text,tokens,option.result_mode,n_enter_char,enter_pos);
 	return;
 }
 /* If the expected result is a concordance */
-if (!strcmp(result_mode,"html")) RES=HTML_;
-else if (!strcmp(result_mode,"text")) RES=TEXT_;
+if (!strcmp(option.result_mode,"html")) RES=HTML_;
+else if (!strcmp(option.result_mode,"text")) RES=TEXT_;
 else {
 	RES=GLOSSANET_;
 	/* The structure glossa_hash will be used to ignore duplicate lines
@@ -116,9 +118,9 @@ else {
 	close_bracket=get_token_number(r,tokens);
 }
 /* We set temporary and final file names */
-strcpy(temp_file_name,directory);
+strcpy(temp_file_name,option.working_directory);
 strcat(temp_file_name,"concord_.txt");
-strcpy(output_file_name,directory);
+strcpy(output_file_name,option.working_directory);
 if (RES==TEXT_)
 	strcat(output_file_name,"concord.txt");
 else
@@ -132,24 +134,25 @@ if (f==NULL) {
 /* First, we create a raw text concordance. 
  * NOTE: columns may have been reordered according to the sort mode. See the
  * comments of the 'create_raw_text_concordance' function for more details. */
-N_MATCHES=create_raw_text_concordance(f,concordance,text,tokens,left_context,right_context,
-										RES,n_enter_char,enter_pos,thai_mode,sort_mode,
-										token_length,open_bracket,close_bracket);
+N_MATCHES=create_raw_text_concordance(f,concordance,text,tokens,
+                                      RES,n_enter_char,enter_pos,
+                                      token_length,open_bracket,close_bracket,
+                                      option);
 u_fclose(f);
 free(token_length);
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
-if (sort_mode!=TEXT_ORDER) {
+if (option.sort_mode!=TEXT_ORDER) {
 	char** argv;
 	argv=(char**)malloc(6*sizeof(char*));
 	argv[0]=strdup(" ");
 	argv[1]=strdup(temp_file_name);
 	argv[2]=strdup("-n");
 	int i=3;
-	if (strcmp(sort_alphabet,"NULL")) {
+	if (strcmp(option.sort_alphabet,"NULL")) {
 		argv[i++]=strdup("-o");
-		argv[i++]=strdup(sort_alphabet);
+		argv[i++]=strdup(option.sort_alphabet);
 	}
-	if (thai_mode) {
+	if (option.thai_mode) {
 		argv[i++]=strdup("-thai");
 	}
 	main_SortTxt(i,argv);
@@ -180,7 +183,7 @@ if (out==NULL) {
 }
 /* If we have an HTML or a GlossaNet concordance, we must write an HTML
  * file header. */
-if (RES!=TEXT_) write_HTML_header(out,N_MATCHES,fontname,fontsize);
+if (RES!=TEXT_) write_HTML_header(out,N_MATCHES,option);
 unichar A[3000];
 unichar B[3000];
 unichar C[3000];
@@ -243,7 +246,7 @@ while ((c=u_fgetc(f))!=EOF) {
 		/*------------end GlossaNet-------------------*/
 	}
 	/* Now we will reorder the columns according to the sort mode */
-	switch(sort_mode) {
+	switch(option.sort_mode) {
 		case TEXT_ORDER: left=A; middle=B; right=C; break;
 		case LEFT_CENTER: left=A; middle=B; right=C; break;
 		case LEFT_RIGHT: left=A; right=B; middle=C; break;
@@ -272,12 +275,12 @@ while ((c=u_fgetc(f))!=EOF) {
 	}
 	/* If we can print the line */
 	if (can_print_line) {
-		if (sort_mode!=TEXT_ORDER) {
+		if (option.sort_mode!=TEXT_ORDER) {
 			/* If the concordance was sorted, the left sequence was reversed, and
 			 * then, we have to reverse it again. However, the Thai sort algorithm
 			 * requires to modify some vowels. That's why we must apply a special
 			 * procedure if we have a Thai sorted concordance. */
-			if (thai_mode) reverse_initial_vowels_thai(left);
+			if (option.thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
 			if (RES!=TEXT_) {
 				fprintf(out,"<tr><td nowrap>");
@@ -356,13 +359,13 @@ for (i=0;i<tokens->N;i++) {
 /**
  * This function writes the HTML header for an HTML or a GlossaNet concordance.
  */
-void write_HTML_header(FILE* f,int number_of_matches,char* fontname,char* fontsize) {
+void write_HTML_header(FILE* f,int number_of_matches,struct conc_opt option) {
 fprintf(f,"<html lang=en>\n");
 fprintf(f,"<head>\n");
 fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
 fprintf(f,"   <title>%d match%s</title>\n",number_of_matches,(number_of_matches>1)?"es":"");
 fprintf(f,"</head>\n");
-fprintf(f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %s\">\n",fontname,fontsize);
+fprintf(f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %s\">\n",option.fontname,option.fontsize);
 }
 
 
@@ -429,9 +432,9 @@ buffer->size=fread(buffer->buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 
 /**
  * This function fills the string 'left' with the mirror of the string of length
- * 'LEFT_CONTEXT_LENGTH' corresponding to the tokens located before the token number
+ * 'option.left_context' corresponding to the tokens located before the token number
  * 'pos'. 'token_length' is an array that gives the lengthes of the tokens.
- * 'buffer' contains the token numbers to work on. 'thai_mode' indicates by a non
+ * 'buffer' contains the token numbers to work on. 'option.thai_mode' indicates by a non
  * zero value that we deal with a Thai sequence; in that case, we must do a special
  * operation in order to count correctly displayable characters.
  * 
@@ -439,12 +442,12 @@ buffer->size=fread(buffer->buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
  * in order to preserve alignment at display time.
  */
 void extract_left_context(int pos,unichar* left,struct text_tokens* tokens,
-                          int LEFT_CONTEXT_LENGTH,int thai_mode,int* token_length,
+                          struct conc_opt option,int* token_length,
                           struct buffer* buffer) {
 int i;
 /* If there is no left context at all, we fill 'left' with spaces. */
 if (pos==0) {
-	for (i=0;i<LEFT_CONTEXT_LENGTH;i++) {
+	for (i=0;i<option.left_context;i++) {
 		left[i]=' ';
 	}
 	left[i]='\0';
@@ -452,22 +455,25 @@ if (pos==0) {
 }
 i=0;
 int count=0;
-left[LEFT_CONTEXT_LENGTH]='\0';
+left[option.left_context]='\0';
 /* We must start on the left of the match */
 pos--;
 int l=token_length[buffer->buffer[pos]]-1;
 unichar* s=tokens->token[buffer->buffer[pos]];
 /* We look for every token, until we have the correct number of displayable
  * characters. */
-while (pos>=0 && count<LEFT_CONTEXT_LENGTH) {
+while (pos>=0 && count<option.left_context) {
 	left[i]=s[l--];
-	if (!thai_mode || !u_is_to_be_ignored_thai(left[i])) {
+	if (!option.thai_mode || !u_is_to_be_ignored_thai(left[i])) {
 		/* We increase the character count only we don't have a diacritic mark */
 		count++;
 	}
 	i++;
 	if (l<0) {
 		/* If we must change of token */
+		if (option.left_context_until_eos
+                    && !u_strcmp_char(tokens->token[buffer->buffer[pos]],"{S}"))
+                  break; /* token was "{S}" */
 		pos--;
 		if (pos>=0) {
 			/* And if we can, i.e. we are not at the beginning of the text */
@@ -479,8 +485,8 @@ while (pos>=0 && count<LEFT_CONTEXT_LENGTH) {
 /* If it was not possible to get to correct number of characters because
  * the sequence was too close to the beginning of the text, we fill
  * 'left' with spaces. */ 
-if (count!=LEFT_CONTEXT_LENGTH) {
-	while (count++!=LEFT_CONTEXT_LENGTH) {
+if (count!=option.left_context) {
+	while (count++!=option.left_context) {
 		left[i++]=' ';
 	}
 }
@@ -525,38 +531,41 @@ if (output==NULL) {
 
 /**
  * This function fills the string 'right' with the string of length
- * 'RIGHT_CONTEXT_LENGTH'-'MATCH_LENGTH' corresponding to the tokens located
+ * 'option.right_context'-'match_length' corresponding to the tokens located
  * after the token number 'pos'. Note that the 'right' may be empty if the match
- * was already greater or equal to 'RIGHT_CONTEXT_LENGTH'.
+ * was already greater or equal to 'option.right_context'.
  * 
  * 'token_length' is an array that gives the lengthes of the tokens.
- * 'buffer' contains the token numbers to work on. 'thai_mode' indicates by a non
+ * 'buffer' contains the token numbers to work on. 'option.thai_mode' indicates by a non
  * zero value that we deal with a Thai sequence; in that case, we must do a special
  * operation in order to count correctly displayable characters.
  */
 void extract_right_context(int pos,unichar* right,struct text_tokens* tokens,
-                          int RIGHT_CONTEXT_LENGTH,int MATCH_LENGTH,int thai_mode,
-                          struct buffer* buffer) {
+                           int match_length,struct conc_opt option,
+                           struct buffer* buffer) {
 right[0]='\0';
-if (MATCH_LENGTH>=RIGHT_CONTEXT_LENGTH || pos+1>=buffer->size) {
+if (match_length>=option.right_context || pos+1>=buffer->size) {
    /* We return if we have allready overpassed the right context length
     * with the matched sequence, or if there is no right context because
     * we are at the end of the text. */
     return;
 }
-RIGHT_CONTEXT_LENGTH=RIGHT_CONTEXT_LENGTH-MATCH_LENGTH;
+int right_context_length=option.right_context-match_length;
 int i=0;
 int count=0;
 /* We must start after the last token of the matched sequence */
 pos++;
 int l=0;
 unichar* s=tokens->token[buffer->buffer[pos]];
-while (pos<buffer->size && count<RIGHT_CONTEXT_LENGTH) {
+while (pos<buffer->size && count<right_context_length) {
 	right[i]=s[l++];
-	if (!thai_mode || !u_is_to_be_ignored_thai(right[i])) count++;
+	if (!option.thai_mode || !u_is_to_be_ignored_thai(right[i])) count++;
 	i++;
 	if (s[l]=='\0') {
 		/* If we must change of token */
+		if (option.right_context_until_eos
+                    && !u_strcmp_char(tokens->token[buffer->buffer[pos]],"{S}"))
+                  break; /* token was "{S}" */
 		pos++;
 		if (pos<buffer->size) {
 			/* And if we can */
@@ -684,20 +693,20 @@ while (s[i]!='\0') {
  * 
  * 
  * 'text' is the "text.cod" file. 'tokens' contains the text tokens.
- * 'left_context_length' and 'right_context_length' specify the lengthes of the
+ * 'option.left_context' and 'option.right_context' specify the lengthes of the
  * contexts to extract. 'expected_result' is used to know if the output is
  * a GlossaNet concordance. 'n_enter_char' is the number of new lines in the text,
  * and 'enter_pos' is an array that contains the positions of these new lines.
- * If 'thai_mode' is set to a non zero value, it indicates that the concordance
+ * If 'option.thai_mode' is set to a non zero value, it indicates that the concordance
  * is a Thai one. This information is used to compute correctly the context sizes.
  * 
  * The function returns the number of matches actually written to the output file.
  */
 int create_raw_text_concordance(FILE* output,FILE* concordance,FILE* text,struct text_tokens* tokens,
-                                int left_context_length,int right_context_length,int expected_result,
-                                int n_enter_char,int* enter_pos,int thai_mode,
-                                int sort_mode,int* token_length,
-                                int open_bracket,int close_bracket) {
+                                int expected_result,
+                                int n_enter_char,int* enter_pos,
+                                int* token_length,int open_bracket,int close_bracket,
+                                struct conc_opt option) {
 struct liste_matches* matches;
 struct liste_matches* matches_tmp;
 unichar left[MAX_CONTEXT_IN_UNITS+1];
@@ -762,16 +771,16 @@ while (matches!=NULL) {
 		end_pos_char=end_pos_char+token_length[buffer->buffer[z]];
 	}
 	/* Now we extract the 3 parts of the concordance */
-	extract_left_context(start_pos,left,tokens,left_context_length,thai_mode,token_length,buffer);
+	extract_left_context(start_pos,left,tokens,option,token_length,buffer);
 	extract_match(start_pos,end_pos,matches->output,middle,tokens,buffer);
 	/* To compute the 3rd part (right context), we need to know the length of
 	 * the matched sequence in displayable characters. */
 	int match_length_in_displayable_chars;
-	if (thai_mode) {match_length_in_displayable_chars=u_strlen_thai_without_diacritic(middle);}
+	if (option.thai_mode) {match_length_in_displayable_chars=u_strlen_thai_without_diacritic(middle);}
 	else {match_length_in_displayable_chars=u_strlen(middle);}
 	/* Then we can compute the right context */
-	extract_right_context(end_pos,right,tokens,right_context_length,match_length_in_displayable_chars,
-							thai_mode,buffer);
+	extract_right_context(end_pos,right,tokens,match_length_in_displayable_chars,
+                              option,buffer);
 	/* If we must produce a GlossaNet concordance, we look for a URL. After the
 	 * function call, 'is_a_good_match' can be set to 0 if the match
 	 * was a part of a URL instead of a valid match. */
@@ -795,15 +804,15 @@ while (matches!=NULL) {
 	/* Now we save the concordance line to the output file, but only if
 	 * it's a valid match. */
 	if (is_a_good_match) {
-		if (sort_mode!=TEXT_ORDER) {
+		if (option.sort_mode!=TEXT_ORDER) {
 			/* If we must reverse the left context in thai mode,
 			 * we must reverse initial vowels with their following consonants. */
-			if (thai_mode) {
+			if (option.thai_mode) {
 				reverse_initial_vowels_thai(left);
 			}
 		}
 		/* We save the 3 parts of the concordance line according to the sort mode */
-		switch(sort_mode) {
+		switch(option.sort_mode) {
 			case TEXT_ORDER: u_fprints(left,output);u_fprints_char("\t",output);
 							u_fprints(middle,output);u_fprints_char("\t",output);
 							u_fprints(right,output);
@@ -953,8 +962,8 @@ return pos_in_enter_pos;
  * then the first one is arbitrarily preferred.
  */
 void create_modified_text_file(FILE* concordance,FILE* text,
-								struct text_tokens* tokens,char* output_name,
-								int n_enter_char,int* enter_pos) {
+                               struct text_tokens* tokens,char* output_name,
+                               int n_enter_char,int* enter_pos) {
 FILE* output=u_fopen(output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);

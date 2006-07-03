@@ -68,7 +68,10 @@ char text_cod[2000];
 char tokens_txt[2000];
 char enter[2000];
 /* By default, we are not dealing with a Thai concordance */
-int thai_mode=0;
+struct conc_opt option;
+option.thai_mode = 0;
+option.left_context_until_eos = 0;
+option.right_context_until_eos = 0;
 if (argc!=9) {
 	/* We look for the -thai and <snt_dir> optional parameters */
     if (strcmp(argv[9],"-thai")) {
@@ -77,7 +80,7 @@ if (argc!=9) {
     }
 	else {
 		/* If there is -thai */
-		thai_mode=1;
+		option.thai_mode=1;
 		if (argc==11) {
 			/* If there is another extra parameter, then it is the <snt_dir> parameter */
 			strcpy(snt_dir,argv[10]);
@@ -113,37 +116,39 @@ else {
 	n_enter_char=fread(&enter_pos,sizeof(int),MAX_ENTER_CHAR,f_enter);
 	fclose(f_enter);
 }
-int left_context;
-int right_context;
-if (1!=sscanf(argv[4],"%d",&left_context)) {
+if (1!=sscanf(argv[4],"%d%[s]",&option.left_context))
+	option.left_context_until_eos=1; /* "80s" means: 80 characters
+	                                    context, but stop at "{S}" */
+else if (1!=sscanf(argv[4],"%d",&option.left_context)) {
 	error("Invalid left context length %s\n",argv[4]);
 	u_fclose(concor);
 	fclose(text);
 	free_text_tokens(tok);
 	return 1;
 }
-if (1!=sscanf(argv[5],"%d",&right_context)) {
+if (1!=sscanf(argv[5],"%d%[s]",&option.right_context))
+	option.right_context_until_eos=1; /* dito */
+else if (1!=sscanf(argv[5],"%d",&option.right_context)) {
 	error("Invalid right context length %s\n",argv[5]);
 	u_fclose(concor);
 	fclose(text);
 	free_text_tokens(tok);
 	return 1;
 }
-int sort_mode;
 if (!strcmp(argv[6],"TO") || !strcmp(argv[6],"NULL"))
-	sort_mode=TEXT_ORDER;
+	option.sort_mode=TEXT_ORDER;
 else if (!strcmp(argv[6],"LC"))
-	sort_mode=LEFT_CENTER;
+	option.sort_mode=LEFT_CENTER;
 else if (!strcmp(argv[6],"LR"))
-	sort_mode=LEFT_RIGHT;
+	option.sort_mode=LEFT_RIGHT;
 else if (!strcmp(argv[6],"CL"))
-	sort_mode=CENTER_LEFT;
+	option.sort_mode=CENTER_LEFT;
 else if (!strcmp(argv[6],"CR"))
-	sort_mode=CENTER_RIGHT;
+	option.sort_mode=CENTER_RIGHT;
 else if (!strcmp(argv[6],"RL"))
-	sort_mode=RIGHT_LEFT;
+	option.sort_mode=RIGHT_LEFT;
 else if (!strcmp(argv[6],"RC"))
-	sort_mode=RIGHT_CENTER;
+	option.sort_mode=RIGHT_CENTER;
 else {
 	error("Invalid sort mode %s\n",argv[6]);
 	u_fclose(concor);
@@ -151,12 +156,18 @@ else {
 	free_text_tokens(tok);
 	return 1;
 }
-char working_directory[2000];
-get_filename_path(argv[1],working_directory);
+ if (option.left_context_until_eos)
+   fprintf(stderr,"yes\n");
+option.working_directory[0] = '\0';
+get_filename_path(argv[1],option.working_directory);
+option.fontname=argv[2];
+option.fontsize=argv[3];
+option.result_mode=argv[7];
+option.sort_alphabet=argv[8];
+
 /* Once we have setted all the parameters, we call the function that
  * will actually create the concordance. */
-create_concordance(concor,text,tok,sort_mode,left_context,right_context,argv[2],
-					argv[3],working_directory,argv[7],argv[8],n_enter_char,enter_pos,thai_mode);
+create_concordance(concor,text,tok,n_enter_char,enter_pos,option);
 u_fclose(concor);
 fclose(text);
 free_text_tokens(tok);

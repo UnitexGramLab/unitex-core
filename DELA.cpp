@@ -21,7 +21,7 @@
 
 #include "unicode.h"
 #include "DELA.h"
-#include "error.h"
+#include "Error.h"
 
 
 /**

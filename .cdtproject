@@ -49,11 +49,11 @@
 </profile>
 </item>
 <item id="org.eclipse.cdt.core.pathentry">
+<pathentry base-path="Unitex-C++" include="korean" kind="inc" path="" system="true"/>
+<pathentry base-path="Unitex-C++" include="Libtre" kind="inc" path="" system="true"/>
 <pathentry kind="src" path=""/>
 <pathentry kind="out" path=""/>
 <pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
-<pathentry base-path="Unitex-C++" include="korean" kind="inc" path="" system="true"/>
-<pathentry base-path="Unitex-C++" include="Libtre" kind="inc" path="" system="true"/>
 </item>
 <item id="org.eclipse.cdt.make.core.buildtargets">
 <buildTargets>
@@ -63,6 +63,20 @@
 <buildTarget>all</buildTarget>
 <stopOnError>false</stopOnError>
 <useDefaultCommand>true</useDefaultCommand>
+</target>
+<target name="Concord" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments></buildArguments>
+<buildTarget>all</buildTarget>
+<stopOnError>false</stopOnError>
+<useDefaultCommand>false</useDefaultCommand>
+</target>
+<target name="concord_new" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+<buildCommand>make</buildCommand>
+<buildArguments></buildArguments>
+<buildTarget>all</buildTarget>
+<stopOnError>false</stopOnError>
+<useDefaultCommand>false</useDefaultCommand>
 </target>
 </buildTargets>
 </item>
