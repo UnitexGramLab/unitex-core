@@ -47,6 +47,9 @@ int locate_pattern(char* text,char* tokens,char* fst2,char* dlf,char* dlc,char* 
                    int tokenization_mode) {
 /* $CD$ end   */
 
+pattern_compose_courant=0;
+tag_token_list=NULL;
+
 FILE* text_file;
 FILE* out;
 FILE* info;
@@ -516,6 +519,12 @@ if ((s==NULL)||(s[0]=='\0')) {
 }
 i=0;
 while ((s[i]!='\0')&&(s[i]!='+')&&(s[i]!='-')&&(s[i]!=':')) {
+    if (s[i]=='\\') {
+        i++;
+        if (s[i]=='\0') {
+            fatal_error("Unexpected backslash at end of line\n");
+        }
+    }
    i++;
 }
 // si on a un + un - ou un : on a affaire a un pattern

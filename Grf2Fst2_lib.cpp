@@ -27,7 +27,7 @@
 struct donnees_comp *donnees;
 unichar pckg_path[TAILLE_MOT_GRAND_COMP];
 int nombre_graphes_comp;
-int nombre_etiquettes_comp; /* attentation: may be confused with macro
+int nombre_etiquettes_comp; /* attention: may be confused with macro
                                NOMBRE_ETIQUETTES_COMP */
 struct noeud_g_comp *rac_graphe_comp; //racine de l'arbre des graphes
 struct noeud_comp *rac_comp; //racine de l'arbre des étiquettes
@@ -1940,9 +1940,16 @@ u_strcpy(contenu,ligne);
 contenu[i]='\0';
 j=0;
 i++; // on saute le caractere /
-while (ligne[i]!='\0')
+while (ligne[i]!='\0') {
+    if (ligne[i]=='\\') {
+        i++;
+        if (ligne[i]=='\0') {
+                fatal_error("Unexpected backslash at end of line\n");
+        }
+    }
   transduction[j++]=ligne[i++];
-transduction[j]='\0';
+}
+
 }
 
 
