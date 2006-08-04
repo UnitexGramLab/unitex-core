@@ -188,7 +188,7 @@ if (inflected[pos]=='\0') {
    u_strcpy(tmp,infos->INF_code_list->tab[node->INF_code]);
    u_strcat_char(tmp,",");
    u_strcat(tmp,infos->INF_code);
-   node->INF_code=get_hash_number(infos->INF_code,infos->INF_code_list);
+   node->INF_code=get_hash_number(tmp,infos->INF_code_list);
    return;
 }
 /* If we are not at the end of 'inflected', then we look for
