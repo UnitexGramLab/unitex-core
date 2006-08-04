@@ -63,6 +63,11 @@ struct dictionary_node {
 	 * 'offset' is used to give to this node an adress in the .BIN file
 	 */
 	int offset;
+	/*
+	 * Number of incoming transitions. It is used to know when a state can actually
+	 * be freed.
+	 */
+	int incoming;
 };
 
 
@@ -79,7 +84,6 @@ struct dictionary_node_transition {
 
 
 void free_dictionary_node(struct dictionary_node*);
-void free_dictionary_node_iterative(struct dictionary_node*);
 void free_dictionary_node_transition(struct dictionary_node_transition*);
 void add_entry_to_dictionary_tree(unichar*,unichar*,struct dictionary_node*,struct string_hash*);
 struct dictionary_node* new_dictionary_node();

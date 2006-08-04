@@ -236,15 +236,10 @@ while (i<size) {
    if (compare_nodes(base,tab_trans[i])==0) {
      // if the base trans is equivalent to the current one
      // then we must destroy the current one's destination node
-#warning this causes a segfault raised in free_liste_nbre
-#warning because of double freeing
-#warning   free_arbre_dico(tab_trans[i]->noeud);
-#warning the solution
-#warning   free_arbre_dico_non_rec(tab_trans[i]->noeud);
-#warning is better, but not perfect: there is still a memory leak!
-     free_dictionary_node_iterative(tab_trans[i]->node);
+     free_dictionary_node(tab_trans[i]->node);
      // and modify the current one's destination node
      tab_trans[i]->node=base->node;
+     (base->node->incoming)++;
    }
    else {
       base=tab_trans[i];

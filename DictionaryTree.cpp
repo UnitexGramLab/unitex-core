@@ -36,6 +36,7 @@ if (a==NULL) {
 a->single_INF_code_list=NULL;
 a->offset=-1;
 a->trans=NULL;
+a->incoming=0;
 return a;
 }
 
@@ -60,27 +61,14 @@ return t;
  */
 void free_dictionary_node(struct dictionary_node* a) {
 if (a==NULL) return;
+(a->incoming)--;
+if (a->incoming!=0) {
+	/* We don't free a state that is still pointed by someone else 
+	 * in order to avoid double freeing problems. */
+	return;
+}
 free_liste_nombres(a->single_INF_code_list);
 free_dictionary_node_transition(a->trans);
-free(a);
-}
-
-
-/**
- * Frees the dictionary node 'a', but not the nodes pointed out by
- * the transitions outgoing from 'a'.
- */
-void free_dictionary_node_iterative(struct dictionary_node* a) {
-if (a==NULL) return;
-free_liste_nombres(a->single_INF_code_list);
-struct dictionary_node_transition* t;
-struct dictionary_node_transition* tmp;
-t = a->trans;
-while (t!=NULL) {
-   tmp=t;
-   t=t->next;
-   free(tmp);
-}
 free(a);
 }
 
@@ -197,6 +185,7 @@ struct dictionary_node_transition* t=get_transition(inflected[pos],&node);
 if (t->node==NULL) {
    /* We create the node if necessary */
    t->node=new_dictionary_node();
+   (t->node->incoming)++;
 }
 add_entry_to_dictionary_tree(inflected,pos+1,t->node,infos);
 }
