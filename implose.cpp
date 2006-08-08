@@ -20,7 +20,7 @@
   */
 
 #include "autalmot_old.h"
-
+#include "utils.h"
 
 
 /* return true if t1 and t2 are the same trans or
@@ -154,7 +154,13 @@ void implose(tAutAlMot * A) {
 
 	unichar * p = u_strchr(t->suivant->etiq->gramm, ':');
 
-	if (p) { u_strcat(t->etiq->gramm, p); }
+        if (p) {
+          if ((u_strlen(p)+u_strlen(t->etiq->gramm)) > maxGramm) {
+            die("seq of gramm. codes too long: %S,%S.%S%S\n",
+                t->etiq->flechie, t->etiq->canonique, t->etiq->gramm, p);
+          }
+          u_strcat(t->etiq->gramm, p);
+        }
 
 	tTransitions * suiv = t->suivant->suivant;
 	transition_delete(t->suivant);

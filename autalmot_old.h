@@ -87,7 +87,7 @@ if (t -> etiq) {
 */
 
 #define maxMot              64
-#define maxGramm            32
+#define maxGramm           256
 #define tailleTampon     32768     /* tampon de lecture d'une ligne */ 
 #define minTailleAllouee     8
 
