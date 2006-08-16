@@ -1605,17 +1605,33 @@ Transition_comp supprimer_transitioninv_comp(Etat_comp *letats,int i,Transition_
 //
 // vire ptr si ptr pointe sur un etat a virer
 //
+// with complex graphs we got a stack overflow with this recursive function:
+//// Transition_comp vider_trans_reciproques_comp(Transition_comp ptr,Etat_comp *letats)
+//// {
+////   Transition_comp tmp;
+////   if (ptr==NULL) return NULL;
+////   if((((letats[ptr->arr]->controle)&4)==0)||(((letats[ptr->arr]->controle)&8)==0))
+////   {
+////     tmp=ptr->suivant;
+////     free_comp(ptr);
+////     return vider_trans_reciproques_comp(tmp,letats);
+////   }
+////   ptr->suivant=vider_trans_reciproques_comp(ptr->suivant,letats);
+////   return ptr;
+//// }
+// it's replaced now by an iterative one:
 Transition_comp vider_trans_reciproques_comp(Transition_comp ptr,Etat_comp *letats)
 {
-  Transition_comp tmp;
-  if (ptr==NULL) return NULL;
-  if((((letats[ptr->arr]->controle)&4)==0)||(((letats[ptr->arr]->controle)&8)==0))
-  {
-    tmp=ptr->suivant;
-    free_comp(ptr);
-    return vider_trans_reciproques_comp(tmp,letats);
-  }
-  ptr->suivant=vider_trans_reciproques_comp(ptr->suivant,letats);
+  Transition_comp tmp, tmp2;
+  for (tmp2=ptr; tmp2!=NULL; tmp2=tmp2->suivant)
+    {
+      if((((letats[ptr->arr]->controle)&4)==0)||(((letats[ptr->arr]->controle)&8)==0))
+        {
+          tmp=tmp2->suivant;
+          free_comp(tmp2);
+          return vider_trans_reciproques_comp(tmp,letats);
+        }
+    }
   return ptr;
 }
 
