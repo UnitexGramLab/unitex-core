@@ -1622,14 +1622,24 @@ Transition_comp supprimer_transitioninv_comp(Etat_comp *letats,int i,Transition_
 // it's replaced now by an iterative one:
 Transition_comp vider_trans_reciproques_comp(Transition_comp ptr,Etat_comp *letats)
 {
-  Transition_comp tmp, tmp2;
-  for (tmp2=ptr; tmp2!=NULL; tmp2=tmp2->suivant)
+  Transition_comp tmp, tmp2, tmp_old;
+  tmp=ptr;
+  while (tmp!=NULL)
     {
-      if((((letats[ptr->arr]->controle)&4)==0)||(((letats[ptr->arr]->controle)&8)==0))
+      if ((((letats[tmp->arr]->controle)&4)==0)||(((letats[tmp->arr]->controle)&8)==0))
         {
-          tmp=tmp2->suivant;
-          free_comp(tmp2);
-          return vider_trans_reciproques_comp(tmp,letats);
+          tmp2=tmp->suivant;
+          if (tmp == ptr)
+            ptr = tmp2;
+          else
+            tmp_old->suivant = tmp2;
+          free_comp(tmp);
+          tmp=tmp2;
+        }
+      else
+        {
+          tmp_old = tmp;
+          tmp=tmp->suivant;
         }
     }
   return ptr;
