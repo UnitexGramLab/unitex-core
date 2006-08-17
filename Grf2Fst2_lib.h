@@ -27,6 +27,7 @@
 #include "unicode.h"
 #include "Alphabet.h"
 #include "Error.h"
+#include "FileName.h"
 
 #define DEFAULT_TOKENIZATION 0
 #define CHAR_BY_CHAR_TOKENIZATION 1

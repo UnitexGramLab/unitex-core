@@ -30,6 +30,8 @@
 #include "IOBuffer.h"
 
 
+#define MAX_FILENAME_LENGTH 1024 /* including path */
+
 //
 // "E:\My Unitex\Greek\Corpus\31.txt" "E:\My Unitex\Greek\Graphs\31-PATRON.grf" "E:\My Unitex\Greek\Graphs\result.grf" "E:\My Unitex\Greek\Graphs\result@%.grf"
 //
@@ -37,20 +39,21 @@
 
 void usage() {
 printf("%s",COPYRIGHT);
-printf("Usage: Table2Grf <table> <graph> <result> [subgraph]\n");
-printf("       <table> : unicode text table with tabs as separator\n");
-printf("       <graph> : reference graph\n");
-printf("       <result> : name of the result main graph\n");
-printf("       [subgraph] : this optionnal parameter specify the name of the\n");
-printf("                    subgraphs\n");
-printf("Applies a reference graph to a lexicon-grammar table, producing a sub-graph\n");
-printf("for each entry of the table.\n");
+printf("Usage: Table2Grf <table> <graph> <result> [subgraph]\n"
+       "       <table> : unicode text table with tabs as separator\n"
+       "       <graph> : reference graph\n"
+       "       <result> : name of the result main graph\n"
+       "       [subgraph] : this optionnal parameter specifies the name of the\n"
+       "                    subgraphs. Use \"@%\" to insert the id (line number)\n"
+       "                    to get unique names, e.g. \"sub_@%%.grf\".\n"
+       "Applies a reference graph to a lexicon-grammar table, producing a sub-graph\n"
+       "for each entry of the table.\n");
 }
 
 
 //---------------------------------------------------------------------------
 
-void table2grf(FILE*,FILE*,FILE*,char*/*,char**/);
+void table2grf(FILE*,FILE*,FILE*,char*,char*);
 
 int main(int argc, char **argv) {
 setBufferMode();
@@ -82,7 +85,7 @@ if (result_graph==NULL) {
    u_fclose(reference_graph);
    return 1;
 }
-char subgraph[2000];
+char subgraph[MAX_FILENAME_LENGTH];
 if (argc!=5) {
    // if no subgraph name is given for the graph TUTU.grf, we
    // take TUTU_xxxx as subgraph name
@@ -95,9 +98,9 @@ if (argc!=5) {
    // if we do have a subgraph name, we just take it
    strcpy(subgraph,argv[4]);
 }
-//char chemin[1000];
-//get_filename_path(argv[3],chemin);
-table2grf(table,reference_graph,result_graph,subgraph/*,chemin*/);
+char chemin[MAX_FILENAME_LENGTH];
+get_filename_path(argv[3],chemin);
+table2grf(table,reference_graph,result_graph,subgraph,chemin);
 return 0;
 }
 
@@ -126,29 +129,29 @@ struct graphe_patron {
 
 
 void write_result_graph_header(FILE *f) {
-u_fprints_char("#Unigraph\n",f);
-u_fprints_char("SIZE 950 1328\n",f);
-u_fprints_char("FONT Times New Roman:  12\n",f);
-u_fprints_char("OFONT Times New Roman:B 12\n",f);
-u_fprints_char("BCOLOR 16777215\n",f);
-u_fprints_char("FCOLOR 0\n",f);
-u_fprints_char("ACOLOR 12632256\n",f);
-u_fprints_char("SCOLOR 16711680\n",f);
-u_fprints_char("CCOLOR 255\n",f);
-u_fprints_char("DBOXES y\n",f);
-u_fprints_char("DFRAME y\n",f);
-u_fprints_char("DDATE n\n",f);
-u_fprints_char("DFILE y\n",f);
-u_fprints_char("DDIR n\n",f);
-u_fprints_char("DRIG n\n",f);
-u_fprints_char("DRST n\n",f);
-u_fprints_char("FITS 100\n",f);
-u_fprints_char("PORIENT P\n",f);
-u_fprints_char("#\n",f);
-u_fprints_char("3\n",f);
-u_fprints_char("\"<E>\" 68 368 1 2 \n",f);
-u_fprints_char("\"\" 456 368 0 \n",f);
-u_fprints_char("\"",f);
+u_fprints_char("#Unigraph\n"
+               "SIZE 950 1328\n"
+               "FONT Times New Roman:  12\n"
+               "OFONT Times New Roman:B 12\n"
+               "BCOLOR 16777215\n"
+               "FCOLOR 0\n"
+               "ACOLOR 12632256\n"
+               "SCOLOR 16711680\n"
+               "CCOLOR 255\n"
+               "DBOXES y\n"
+               "DFRAME y\n"
+               "DDATE n\n"
+               "DFILE y\n"
+               "DDIR n\n"
+               "DRIG n\n"
+               "DRST n\n"
+               "FITS 100\n"
+               "PORIENT P\n"
+               "#\n"
+               "3\n"
+               "\"<E>\" 68 368 1 2 \n"
+               "\"\" 456 368 0 \n"
+               "\"", f);
 }
 
 
@@ -580,14 +583,15 @@ return 1;
 
 
 bool create_graph(int ligne_courante,unichar** ligne,int n_champs,struct graphe_patron* g,
-                  char* nom_resultat,/*char* chemin,*/FILE *f_coord,int graphs_printed) {
-char nom_res[1000];
-//char nom[1000];
+                  char* nom_resultat,char* chemin,FILE *f_coord,int graphs_printed) {
+
+char nom_res[MAX_FILENAME_LENGTH];
 struct graphe_patron r;
 struct graphe_patron* res;
 int i,j;
 FILE *f;
 res=&r;
+
 //determine_subgraph_name(nom_resultat,nom_res,ligne_courante);
 res->n_etats=g->n_etats;
 for (i=0;i<g->n_etats;i++) {
@@ -600,9 +604,10 @@ for (i=0;i<g->n_etats;i++) {
   }
   convertir(res->tab[i]->contenu,g->tab[i]->contenu,ligne,n_champs,ligne_courante);
 }
-// we compute the name of the subgraph
-unichar tmp[2000];
-unichar tmp2[2000];
+
+// we print the name of the subgraph
+unichar tmp[MAX_FILENAME_LENGTH];
+unichar tmp2[MAX_FILENAME_LENGTH];
 u_strcpy_char(tmp,nom_resultat);
 tmp2[0]='\0';
 convertir(tmp2,tmp,ligne,n_champs,ligne_courante);
@@ -619,18 +624,30 @@ if (graphs_printed!=0) {
 }
 u_fprints_char(":",f_coord);
 {
-char tmp3[2000];
-char tmp4[2000];
-name_without_path(nom_res,tmp3);
+char tmp3[MAX_FILENAME_LENGTH];
+char tmp4[MAX_FILENAME_LENGTH];
+get_filename_path(nom_res,tmp3);
+if ( ! strncmp(tmp3,chemin,strlen(chemin)) ) /* the subgraph is in a subdirectory
+                                                relative to the path of the result graph:
+                                                we strip the common path */
+  {
+    strcpy(tmp3,&nom_res[strlen(chemin)]);
+  }
+else /* we take the full name (including the path) */
+  strcpy(tmp3,nom_res);
+
+/* Now we have to replace '/' and '\\' in the path to ':' */
+replace_pathseparator_by_colon(tmp3);
+
+/* And finally we remove the extension ".grf" */
 name_without_extension(tmp3,tmp4);
+
 u_fprints_char(tmp4,f_coord);
 }
-//strcpy(nom,chemin);
-//strcat(nom,nom_res);
-//strcat(nom,".grf");
-f=u_fopen(/*nom*/nom_res,U_WRITE);
+
+f=u_fopen(nom_res,U_WRITE);
 if (f==NULL) {
-  fprintf(stderr,"Cannot create subgraph %s\n",/*nom*/nom_res);
+  fprintf(stderr,"Cannot create subgraph %s\n",nom_res);
   return false;
 }
 if (ligne_courante%10==0) {
@@ -661,8 +678,7 @@ return true;
 
 
 
-void table2grf(FILE* table,FILE* reference_graph,FILE* result_graph,char* subgraph/*,
-               char* chemin*/) {
+void table2grf(FILE* table,FILE* reference_graph,FILE* result_graph,char* subgraph,char* chemin) {
 int ligne_courante;
 struct graphe_patron structure;
 unichar* ligne[1000];
@@ -678,7 +694,7 @@ read_table_first_line(table,&n_champs);
 ligne_courante=1;
 graphs_printed=0;
 while (read_table_line(table,(unichar**)ligne,n_champs)) {
-  if (create_graph(ligne_courante,ligne,n_champs,&structure,subgraph,/*chemin,*/result_graph,graphs_printed))
+  if (create_graph(ligne_courante,ligne,n_champs,&structure,subgraph,chemin,result_graph,graphs_printed))
     graphs_printed++;
   ligne_courante++;
 }

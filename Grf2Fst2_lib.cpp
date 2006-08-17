@@ -1844,15 +1844,7 @@ void conformer_nom_graphe_comp(char * NOM, int courant) {
 
   // transformation de ':' en '/' resp. '\'
   // but skip path to main graph (keep windows' "C:\" etc. alive!)
-  while (*NOM)
-    {
-#ifdef _NOT_UNDER_WINDOWS
-      if (*NOM == ':') { *NOM = '/'; }
-#else
-      if (*NOM == ':') { *NOM = '\\'; }
-#endif
-      ++NOM;
-    }
+  replace_colon_by_pathseparator(NOM);
 
 }
 

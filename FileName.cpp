@@ -128,3 +128,54 @@ name_without_path(src,tmp);
 strcat(dest,tmp);
 }
 
+/**
+ * replace path separators ('/' resp. '\\') by the colon (':')
+ * @param path
+ */
+void replace_pathseparator_by_colon(char* path) {
+  while (*path)
+  {
+#ifdef _NOT_UNDER_WINDOWS
+    if (*path == '/')
+#else
+    if (*path == '\\')
+#endif
+      { *path = ':'; }
+    ++path;
+  }
+}
+
+/**
+ * replace colon (':'), the "universal" path separator
+ * by system-dependent path separators ('/' resp. '\\')
+ * @param path
+ */
+void replace_colon_by_pathseparator(char* path) {
+  while (*path)
+    {
+#ifdef _NOT_UNDER_WINDOWS
+      if (*path == ':') { *path = '/'; }
+#else
+      if (*path == ':') { *path = '\\'; }
+#endif
+      ++path;
+    }
+}
+
+// /**
+//  * replace path separators ('/' resp. '\\') by the colon (':')
+//  * @param path
+//  */
+// void replace_pathseparator_by_colon(unichar* path) {
+// unichar* ptr;
+// for (ptr=path; *ptr!='\0'; ptr++)
+//   {
+// #ifdef _NOT_UNDER_WINDOWS
+//     if (*ptr == (unichar) '/')
+// #else
+//     if (*ptr == (unichar) '\\')
+// #endif
+//       { *ptr = (unichar) ':'; }
+//   }
+// }
+

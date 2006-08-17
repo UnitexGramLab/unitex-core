@@ -38,4 +38,7 @@ void name_without_extension(const char*,char*);
 void get_filename_path(char*,char*);
 void get_snt_path(char*,char*);
 void name_without_path(char*,char*);
+void replace_pathseparator_by_colon(char*);
+//void replace_pathseparator_by_colon(unichar*);
+void replace_colon_by_pathseparator(char*);
 #endif
