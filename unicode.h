@@ -157,7 +157,7 @@ int get_longuest_prefix(unichar*,unichar*);
 // Olivier Blanc's functions
 
 int u_fgets(unichar * str, int size, FILE * f);
-int u_parse_int(unichar * str, unichar ** next = NULL);
+int u_parse_int(unichar * str, unichar ** next);
 unichar * u_strdup(const unichar * str);
 unichar * u_strdup_char(const char * str);
 

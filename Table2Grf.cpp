@@ -28,7 +28,7 @@
 #include "FileName.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
-
+#include "Error.h"
 
 #define MAX_FILENAME_LENGTH 1024 /* including path */
 
@@ -44,7 +44,7 @@ printf("Usage: Table2Grf <table> <graph> <result> [subgraph]\n"
        "       <graph> : reference graph\n"
        "       <result> : name of the result main graph\n"
        "       [subgraph] : this optionnal parameter specifies the name of the\n"
-       "                    subgraphs. Use \"@%\" to insert the id (line number)\n"
+       "                    subgraphs. Use \"@%%\" to insert the id (line number)\n"
        "                    to get unique names, e.g. \"sub_@%%.grf\".\n"
        "Applies a reference graph to a lexicon-grammar table, producing a sub-graph\n"
        "for each entry of the table.\n");
@@ -374,9 +374,17 @@ while (source[pos_in_src]!='\0') {
          if (is_in_A_Z(source[pos_in_src+1])) {
             // if we are in the @AB case
             row_number=(source[pos_in_src]-'A'+1)*(26)+(source[pos_in_src+1]-'A');
+            if (row_number > n_champs)
+              fatal_error("error: row #%d (@%c%c) not defined in table\n",
+                          row_number,source[pos_in_src],source[pos_in_src+1]);
             pos_in_src++;
          }
-         else {row_number=source[pos_in_src]-'A';}
+         else {
+           row_number=source[pos_in_src]-'A';
+           if (row_number > n_champs)
+             fatal_error("error: row #%d (@%c) not defined in table\n",
+                         row_number,source[pos_in_src]);
+         }
          pos_in_src++;
          if (!u_strcmp_char(champ[row_number],"+")) {
             if (negation) {
