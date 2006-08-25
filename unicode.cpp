@@ -1264,7 +1264,7 @@ void u_fprints_html_ascii(unichar *s, FILE *f) {
  * @param ent string of chars containing the entity (must be long enough)
  * @param c unichar to be converted
  */
-inline void unichar2htmlEnt(char* ent, unichar c) {
+void unichar2htmlEnt(char* ent, unichar c) {
   if ( c == 0 ) // ???
     ent[0] = '\0';
   else if ( c < 0x80 ) { // normal ascii char (including some controls)

@@ -99,7 +99,7 @@ void u_fprints_html(unichar*,FILE*);
 void u_fprints_html_reverse(unichar*,FILE*);
 void u_fprints_html_like(unichar*,FILE*);
 void u_fprints_html_ascii(unichar*, FILE*);
-inline void unichar2htmlEnt(char*, unichar);
+void unichar2htmlEnt(char*, unichar);
 void u_fprints_char(char*,FILE*);
 void u_to_char(char*,unichar*);
 int u_read_int(FILE*);

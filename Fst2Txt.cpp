@@ -30,6 +30,7 @@
 #include "IOBuffer.h"
 #include "TransductionVariables.h"
 #include "LocateConstants.h"
+#include "unicode.h"
 
 // commmand line for testing:
 //
@@ -360,9 +361,28 @@ void parcourir_graphe(int n_graph, // number of current graph
 Fst2State etat_courant=fst2->states[e];
 
 if (profondeur > MAX_DEPTH) {
-   fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
-   exit(1);
+  
+  fprintf(stderr,
+          "\n"
+          "Maximal stack size reached in graph %i!\n"
+          "Recognized more than %i tokens starting from:\n"
+          "  ",
+          n_graph, MAX_DEPTH);
+  int i;
+  char ent[16];
+  for (i=0; i<60; i++) {
+    unichar2htmlEnt( ent, buffer[origine_courante+i] );
+    fputs(ent,stderr);
+  }
+  fprintf(stderr,
+          "\n"
+          "Skipping match at this position, trying from next token!\n");
+  output[0] = '\0';  // clear output
+  taille_entree = 0; // reset taille_entree
+  return;
+  //  exit(1);
 }
+profondeur++;
 
 if (is_final_state(etat_courant)) {
    // if we are in a final state
@@ -422,7 +442,7 @@ if (PARSING_MODE!=NORMAL_MODE
              empiler_chaine(mot);
           }
           mot[longueur]=C;
-          parcourir_graphe(n_graph,RES->arr,pos2-(position-longueur),profondeur+1,liste_arrivee);
+          parcourir_graphe(n_graph,RES->arr,pos2-(position-longueur),profondeur,liste_arrivee);
           TMP=RES;
           RES=RES->suivant;
           free(TMP);
@@ -442,11 +462,11 @@ while (t!=NULL) {
          struct liste_num* liste=NULL;
          unichar pile_old[1000];
          u_strcpy(pile_old,pile);
-         parcourir_graphe(1,fst2->initial_states[-n_etiq],pos,profondeur+1,&liste);
+         parcourir_graphe((((unsigned)n_etiq)-1),fst2->initial_states[-n_etiq],pos,profondeur,&liste);
          while (liste!=NULL) {
            sommet=liste->sommet;
            u_strcpy(pile,liste->pile);
-           parcourir_graphe(n_graph,t->state_number,liste->n,profondeur+1,liste_arrivee);
+           parcourir_graphe(n_graph,t->state_number,liste->n,profondeur,liste_arrivee);
            struct liste_num* l_tmp=liste;
            liste=liste->suivant;
            free(l_tmp);
@@ -467,7 +487,7 @@ while (t!=NULL) {
             //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
             else pos2=pos;
             L->start=pos2;
-            parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
+            parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
             //L->start=old;
          }
          else if (etiq->control & END_VAR_TAG_BIT_MASK) {
@@ -479,7 +499,7 @@ while (t!=NULL) {
                 L->end=pos-1;
               else L->end=pos;
               // BUG: qd changement de buffer, penser au cas start dans ancien buffer et end dans nouveau
-              parcourir_graphe(n_graph,t->state_number,pos,profondeur+1,liste_arrivee);
+              parcourir_graphe(n_graph,t->state_number,pos,profondeur,liste_arrivee);
               //L->end=old;
          }
          else if (!u_strcmp_char(contenu,"<MOT>")) {
@@ -503,7 +523,7 @@ while (t!=NULL) {
                          // if we are in MERGE mode, we add to ouput the char we have read
                          empiler_chaine(mot);
                        }
-                       parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
+                       parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
                      }
               }
          }
@@ -527,7 +547,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     empiler_chaine(mot);
                  }
-                 parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
+                 parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
               }
          }
          else if (!u_strcmp_char(contenu,"<MAJ>")) {
@@ -552,7 +572,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(mot);
                    }
-                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
                  }
               }
          }
@@ -578,7 +598,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(mot);
                    }
-                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
                  }
               }
          }
@@ -604,7 +624,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(mot);
                    }
-                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
                  }
               }
          }
@@ -625,7 +645,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     empiler(C);
                  }
-                 parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur+1,liste_arrivee);
+                 parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur,liste_arrivee);
               }
               else {
                    // we consider the case of ...
@@ -637,7 +657,7 @@ while (t!=NULL) {
                             // if we are in MERGE mode, we add to ouput the ... we have read
                             empiler(C);empiler(C);empiler(C);
                          }
-                         parcourir_graphe(n_graph,t->state_number,pos2+3,profondeur+1,liste_arrivee);
+                         parcourir_graphe(n_graph,t->state_number,pos2+3,profondeur,liste_arrivee);
                       } else {
                         // we consider the . as a normal punctuation sign
                         traiter_transduction(etiq->output);
@@ -645,7 +665,7 @@ while (t!=NULL) {
                           // if we are in MERGE mode, we add to ouput the char we have read
                           empiler(C);
                         }
-                        parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur+1,liste_arrivee);
+                        parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur,liste_arrivee);
                       }
                    }
               }
@@ -654,7 +674,7 @@ while (t!=NULL) {
               // case of an empty sequence
               // in both modes MERGE and REPLACE, we process the transduction if any
               traiter_transduction(etiq->output);
-              parcourir_graphe(n_graph,t->state_number,pos,profondeur+1,liste_arrivee);
+              parcourir_graphe(n_graph,t->state_number,pos,profondeur,liste_arrivee);
          }
          else if (!u_strcmp_char(contenu,"<^>")) {
               // case of a new line sequence
@@ -666,7 +686,7 @@ while (t!=NULL) {
                     empiler(0x0a);
                  }
                  // we go on at pos+2 because \n is a two char code 0d 0a
-                 parcourir_graphe(n_graph,t->state_number,pos+2,profondeur+1,liste_arrivee);
+                 parcourir_graphe(n_graph,t->state_number,pos+2,profondeur,liste_arrivee);
               }
          }
          else if (!u_strcmp_char(contenu,"#")) {
@@ -674,7 +694,7 @@ while (t!=NULL) {
               if (buffer[pos+origine_courante]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
                 traiter_transduction(etiq->output);
-                parcourir_graphe(n_graph,t->state_number,pos,profondeur+1,liste_arrivee);
+                parcourir_graphe(n_graph,t->state_number,pos,profondeur,liste_arrivee);
               }
          }
          else if (!u_strcmp_char(contenu," ")) {
@@ -686,7 +706,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     empiler(' ');
                  }
-                parcourir_graphe(n_graph,t->state_number,pos+1,profondeur+1,liste_arrivee);
+                parcourir_graphe(n_graph,t->state_number,pos+1,profondeur,liste_arrivee);
               }
          }
          else if (!u_strcmp_char(contenu,"<L>")) {
@@ -701,7 +721,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     empiler(buffer[pos2+origine_courante]);
                  }
-                parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur+1,liste_arrivee);
+                parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur,liste_arrivee);
               }
          }
          else {
@@ -724,7 +744,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(contenu);
                    }
-                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
                  }
               }
               else {
@@ -745,7 +765,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(mot);
                    }
-                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
                  }
               }
          }
