@@ -194,8 +194,7 @@ return 0;
 ////////////////////////////////////////////////////////////////////////
 
 
-void parcourir_sous_graphe(int,int,int,struct liste_num**);
-void parcourir_initial(int,int,int);
+void parcourir_graphe(int,int,int,int,struct liste_num**);
 int ecrire_transduction();
 
 
@@ -328,7 +327,7 @@ while (origine_courante<LENGTH) {
       taille_entree=0;
       if (buffer[origine_courante]!=' ' || PARSING_MODE==CHAR_BY_CHAR_WITH_SPACE) {
          // we don't start a match on a space
-         parcourir_initial(debut,0,0);
+        parcourir_graphe(0,debut,0,0,NULL);
       }
       if (!ecrire_sortie()) {
          // if no input was read, we go on
@@ -352,21 +351,31 @@ while (origine_courante<LENGTH) {
 
 
 
-void parcourir_initial(int e,int pos,int profondeur) {
+void parcourir_graphe(int n_graph, // number of current graph
+                     int e,       // number of current state
+                     int pos,     //
+                     int profondeur,
+                     struct liste_num** liste_arrivee) {
+
 Fst2State etat_courant=fst2->states[e];
 
 if (profondeur > MAX_DEPTH) {
    fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
    exit(1);
 }
+
 if (is_final_state(etat_courant)) {
    // if we are in a final state
-   if (pos>=taille_entree/*sommet>u_strlen(output)*/) {
+  pile[sommet]='\0';
+  if (n_graph == 0) { // in main graph
+    if (pos>=taille_entree/*sommet>u_strlen(output)*/) {
       // and if the recognized input is longer than the current one, it replaces it
-      pile[sommet]='\0';
       u_strcpy(output,pile);
       taille_entree=(pos);
-   }
+    }
+  } else { // in a subgraph
+    (*liste_arrivee)=inserer_si_absent(pos,(*liste_arrivee),sommet,pile);
+  }
 }
 
 if (pos+origine_courante==LENGTH) {
@@ -413,7 +422,7 @@ if (PARSING_MODE!=NORMAL_MODE
              empiler_chaine(mot);
           }
           mot[longueur]=C;
-          parcourir_initial(RES->arr,pos2-(position-longueur),profondeur+1);
+          parcourir_graphe(n_graph,RES->arr,pos2-(position-longueur),profondeur+1,liste_arrivee);
           TMP=RES;
           RES=RES->suivant;
           free(TMP);
@@ -433,11 +442,11 @@ while (t!=NULL) {
          struct liste_num* liste=NULL;
          unichar pile_old[1000];
          u_strcpy(pile_old,pile);
-         parcourir_sous_graphe(fst2->initial_states[-n_etiq],pos,profondeur+1,&liste);
+         parcourir_graphe(1,fst2->initial_states[-n_etiq],pos,profondeur+1,&liste);
          while (liste!=NULL) {
            sommet=liste->sommet;
            u_strcpy(pile,liste->pile);
-           parcourir_initial(t->state_number,liste->n,profondeur+1);
+           parcourir_graphe(n_graph,t->state_number,liste->n,profondeur+1,liste_arrivee);
            struct liste_num* l_tmp=liste;
            liste=liste->suivant;
            free(l_tmp);
@@ -458,7 +467,7 @@ while (t!=NULL) {
             //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
             else pos2=pos;
             L->start=pos2;
-            parcourir_initial(t->state_number,pos2,profondeur+1);
+            parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
             //L->start=old;
          }
          else if (etiq->control & END_VAR_TAG_BIT_MASK) {
@@ -470,7 +479,7 @@ while (t!=NULL) {
                 L->end=pos-1;
               else L->end=pos;
               // BUG: qd changement de buffer, penser au cas start dans ancien buffer et end dans nouveau
-              parcourir_initial(t->state_number,pos,profondeur+1);
+              parcourir_graphe(n_graph,t->state_number,pos,profondeur+1,liste_arrivee);
               //L->end=old;
          }
          else if (!u_strcmp_char(contenu,"<MOT>")) {
@@ -494,7 +503,7 @@ while (t!=NULL) {
                          // if we are in MERGE mode, we add to ouput the char we have read
                          empiler_chaine(mot);
                        }
-                       parcourir_initial(t->state_number,pos2,profondeur+1);
+                       parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
                      }
               }
          }
@@ -518,7 +527,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     empiler_chaine(mot);
                  }
-                 parcourir_initial(t->state_number,pos2,profondeur+1);
+                 parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
               }
          }
          else if (!u_strcmp_char(contenu,"<MAJ>")) {
@@ -543,7 +552,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(mot);
                    }
-                   parcourir_initial(t->state_number,pos2,profondeur+1);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
                  }
               }
          }
@@ -569,7 +578,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(mot);
                    }
-                   parcourir_initial(t->state_number,pos2,profondeur+1);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
                  }
               }
          }
@@ -595,7 +604,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(mot);
                    }
-                   parcourir_initial(t->state_number,pos2,profondeur+1);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
                  }
               }
          }
@@ -616,7 +625,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     empiler(C);
                  }
-                 parcourir_initial(t->state_number,pos2+1,profondeur+1);
+                 parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur+1,liste_arrivee);
               }
               else {
                    // we consider the case of ...
@@ -628,7 +637,7 @@ while (t!=NULL) {
                             // if we are in MERGE mode, we add to ouput the ... we have read
                             empiler(C);empiler(C);empiler(C);
                          }
-                         parcourir_initial(t->state_number,pos2+3,profondeur+1);
+                         parcourir_graphe(n_graph,t->state_number,pos2+3,profondeur+1,liste_arrivee);
                       } else {
                         // we consider the . as a normal punctuation sign
                         traiter_transduction(etiq->output);
@@ -636,7 +645,7 @@ while (t!=NULL) {
                           // if we are in MERGE mode, we add to ouput the char we have read
                           empiler(C);
                         }
-                        parcourir_initial(t->state_number,pos2+1,profondeur+1);
+                        parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur+1,liste_arrivee);
                       }
                    }
               }
@@ -645,7 +654,7 @@ while (t!=NULL) {
               // case of an empty sequence
               // in both modes MERGE and REPLACE, we process the transduction if any
               traiter_transduction(etiq->output);
-              parcourir_initial(t->state_number,pos,profondeur+1);
+              parcourir_graphe(n_graph,t->state_number,pos,profondeur+1,liste_arrivee);
          }
          else if (!u_strcmp_char(contenu,"<^>")) {
               // case of a new line sequence
@@ -657,7 +666,7 @@ while (t!=NULL) {
                     empiler(0x0a);
                  }
                  // we go on at pos+2 because \n is a two char code 0d 0a
-                 parcourir_initial(t->state_number,pos+2,profondeur+1);
+                 parcourir_graphe(n_graph,t->state_number,pos+2,profondeur+1,liste_arrivee);
               }
          }
          else if (!u_strcmp_char(contenu,"#")) {
@@ -665,7 +674,7 @@ while (t!=NULL) {
               if (buffer[pos+origine_courante]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
                 traiter_transduction(etiq->output);
-                parcourir_initial(t->state_number,pos,profondeur+1);
+                parcourir_graphe(n_graph,t->state_number,pos,profondeur+1,liste_arrivee);
               }
          }
          else if (!u_strcmp_char(contenu," ")) {
@@ -677,7 +686,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     empiler(' ');
                  }
-                parcourir_initial(t->state_number,pos+1,profondeur+1);
+                parcourir_graphe(n_graph,t->state_number,pos+1,profondeur+1,liste_arrivee);
               }
          }
          else if (!u_strcmp_char(contenu,"<L>")) {
@@ -692,7 +701,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     empiler(buffer[pos2+origine_courante]);
                  }
-                parcourir_initial(t->state_number,pos2+1,profondeur+1);
+                parcourir_graphe(n_graph,t->state_number,pos2+1,profondeur+1,liste_arrivee);
               }
          }
          else {
@@ -715,7 +724,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(contenu);
                    }
-                   parcourir_initial(t->state_number,pos2,profondeur+1);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
                  }
               }
               else {
@@ -736,7 +745,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      empiler_chaine(mot);
                    }
-                   parcourir_initial(t->state_number,pos2,profondeur+1);
+                   parcourir_graphe(n_graph,t->state_number,pos2,profondeur+1,liste_arrivee);
                  }
               }
          }
@@ -748,393 +757,6 @@ while (t!=NULL) {
 
 
 
-void parcourir_sous_graphe(int e,int pos,int profondeur,struct liste_num** liste_arrivee) {
-Fst2State etat_courant=fst2->states[e];
-if (profondeur > MAX_DEPTH) {
-   fprintf(stderr,"Parsing error: there might be an infinite recursion in the grammar\n");
-   exit(1);
-}
-if (is_final_state(etat_courant)) {
-   // if we are in a final state
-   pile[sommet]='\0';
-   (*liste_arrivee)=inserer_si_absent(pos,(*liste_arrivee),sommet,pile);
-}
-
-if (pos+origine_courante==LENGTH) {
-   // if we are at the end of the text, we return
-   return;
-}
-
-int SOMMET=sommet;
-int pos2;
-
-
-// if there are some letter sequence transitions like %hello, we process them
-if (arbre_etiquettes[e]->trans!=NULL) {
-   int position=0;
-   unichar mot[1000];
-
-   if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-   /* we don't keep this line because of problems occur in sentence tokenizing
-      if the return sequence is defautly considered as a separator like space
-   else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-   */
-   else pos2=pos;
-
-if (PARSING_MODE!=NORMAL_MODE ||
-    (is_letter(buffer[pos2+origine_courante],alphabet) && (pos2+origine_courante==0 || !is_letter(buffer[pos2+origine_courante-1],alphabet)))) {
-
-   while (pos2+origine_courante<LENGTH && is_letter(buffer[pos2+origine_courante],alphabet)) {
-     mot[position++]=buffer[(pos2++)+origine_courante];
-   }
-   mot[position]='\0';
-   if (position!=0 &&
-       !(is_letter(mot[position-1],alphabet) && is_letter(buffer[pos2+origine_courante],alphabet))) {
-       // we proceed only if we have exactly read the contenu sequence
-       // in both modes MERGE and REPLACE, we process the transduction if any
-       struct liste_nombres* RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
-       struct liste_nombres* TMP;
-       int SOMMET2=sommet;
-       while (RES!=NULL) {
-          sommet=SOMMET2;
-          Fst2Tag etiq=fst2->tags[RES->etiq];
-          traiter_transduction(etiq->output);
-          int longueur=u_strlen(etiq->input);
-          unichar C=mot[longueur];
-          mot[longueur]='\0';
-          if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-             // if we are in MERGE mode, we add to ouput the char we have read
-             empiler_chaine(mot);
-          }
-          mot[longueur]=C;
-          parcourir_sous_graphe(RES->arr,pos2-(position-longueur),profondeur+1,liste_arrivee);
-          TMP=RES;
-          RES=RES->suivant;
-          free(TMP);
-       }
-   }
-}
-}
-
-struct fst2Transition* t=etat_courant->transitions;
-while (t!=NULL) {
-      sommet=SOMMET;
-      // we process the transition of the current state
-      int n_etiq=t->tag_number;
-      if (n_etiq<0) {
-         // case of a sub-graph
-         struct liste_num* liste=NULL;
-         unichar pile_old[1000];
-         u_strcpy(pile_old,pile);
-         parcourir_sous_graphe(fst2->initial_states[-n_etiq],pos,profondeur+1,&liste);
-         while (liste!=NULL) {
-           sommet=liste->sommet;
-           u_strcpy(pile,liste->pile);
-           parcourir_sous_graphe(t->state_number,liste->n,profondeur+1,liste_arrivee);
-           struct liste_num* l_tmp=liste;
-           liste=liste->suivant;
-           free(l_tmp);
-         }
-         u_strcpy(pile,pile_old);
-      }
-      else {
-         // case of a normal tag
-         Fst2Tag etiq=fst2->tags[n_etiq];
-         unichar* contenu=etiq->input;
-         if (etiq->control & START_VAR_TAG_BIT_MASK) {
-            // case of a $a( variable tag
-            //int old;
-            struct variable_list* L=get_variable(contenu,fst2->variables);
-            //old=L->start;
-            if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-            //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-            else pos2=pos;
-            L->start=pos2;
-            parcourir_sous_graphe(t->state_number,pos2,profondeur+1,liste_arrivee);
-            //L->start=old;
-         }
-         else if (etiq->control & END_VAR_TAG_BIT_MASK) {
-              // case of a $a) variable tag
-              //int old;
-              struct variable_list* L=get_variable(contenu,fst2->variables);
-              //old=L->end;
-              if (pos>0)
-                L->end=pos-1;
-              else L->end=pos;
-              // BUG: qd changement de buffer, penser au cas start dans ancien buffer et end dans nouveau
-              parcourir_sous_graphe(t->state_number,pos,profondeur+1,liste_arrivee);
-              //L->end=old;
-         }
-         else if (!u_strcmp_char(contenu,"<MOT>")) {
-              // case of transition by any sequence of letters
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-              //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-              else pos2=pos;
-              unichar mot[1000];
-              int position=0;
-              if (PARSING_MODE!=NORMAL_MODE ||
-                  (pos2+origine_courante==0 || !is_letter(buffer[pos2+origine_courante-1],alphabet))) {
-                     while (pos2+origine_courante<LENGTH && is_letter(buffer[pos2+origine_courante],alphabet)) {
-                           mot[position++]=buffer[(pos2++)+origine_courante];
-                     }
-                     mot[position]='\0';
-                     if (position!=0) {
-                       // we proceed only if we have read a letter sequence
-                       // in both modes MERGE and REPLACE, we process the transduction if any
-                       traiter_transduction(etiq->output);
-                       if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                         // if we are in MERGE mode, we add to ouput the char we have read
-                         empiler_chaine(mot);
-                       }
-                       parcourir_sous_graphe(t->state_number,pos2,profondeur+1,liste_arrivee);
-                     }
-              }
-         }
-         else if (!u_strcmp_char(contenu,"<NB>")) {
-              // case of transition by any sequence of digits
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-              //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-              else pos2=pos;
-              unichar mot[1000];
-              int position=0;
-              while (pos2+origine_courante<LENGTH && (buffer[pos2+origine_courante]>='0')
-                     && (buffer[pos2+origine_courante]<='9')) {
-                 mot[position++]=buffer[(pos2++)+origine_courante];
-              }
-              mot[position]='\0';
-              if (position!=0) {
-                 // we proceed only if we have read a letter sequence
-                 // in both modes MERGE and REPLACE, we process the transduction if any
-                 traiter_transduction(etiq->output);
-                 if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                    // if we are in MERGE mode, we add to ouput the char we have read
-                    empiler_chaine(mot);
-                 }
-                 parcourir_sous_graphe(t->state_number,pos2,profondeur+1,liste_arrivee);
-              }
-         }
-         else if (!u_strcmp_char(contenu,"<MAJ>")) {
-              // case of upper case letter sequence
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-              //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-              else pos2=pos;
-              unichar mot[1000];
-              int position=0;
-              if (PARSING_MODE!=NORMAL_MODE ||
-                  (pos2+origine_courante==0 || !is_letter(buffer[pos2+origine_courante-1],alphabet))) {
-                 while (pos2+origine_courante<LENGTH && is_upper(buffer[pos2+origine_courante],alphabet)) {
-                    mot[position++]=buffer[(pos2++)+origine_courante];
-                 }
-                 mot[position]='\0';
-                 if (position!=0 && !is_letter(buffer[pos2+origine_courante],alphabet)) {
-                   // we proceed only if we have read an upper case letter sequence
-                   // which is not followed by a lower case letter
-                   // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(etiq->output);
-                   if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                     // if we are in MERGE mode, we add to ouput the char we have read
-                     empiler_chaine(mot);
-                   }
-                   parcourir_sous_graphe(t->state_number,pos2,profondeur+1,liste_arrivee);
-                 }
-              }
-         }
-         else if (!u_strcmp_char(contenu,"<MIN>")) {
-              // case of lower case letter sequence
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-              //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-              else pos2=pos;
-              unichar mot[1000];
-              int position=0;
-              if (PARSING_MODE!=NORMAL_MODE ||
-                  (pos2+origine_courante==0 || !is_letter(buffer[pos2+origine_courante-1],alphabet))) {
-                 while (pos2+origine_courante<LENGTH && is_lower(buffer[pos2+origine_courante],alphabet)) {
-                    mot[position++]=buffer[(pos2++)+origine_courante];
-                 }
-                 mot[position]='\0';
-                 if (position!=0 && !is_letter(buffer[pos2+origine_courante],alphabet)) {
-                   // we proceed only if we have read a lower case letter sequence
-                   // which is not followed by an upper case letter
-                   // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(etiq->output);
-                   if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                     // if we are in MERGE mode, we add to ouput the char we have read
-                     empiler_chaine(mot);
-                   }
-                   parcourir_sous_graphe(t->state_number,pos2,profondeur+1,liste_arrivee);
-                 }
-              }
-         }
-         else if (!u_strcmp_char(contenu,"<PRE>")) {
-              // case of a sequence beginning by an upper case letter
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-              //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-              else pos2=pos;
-              unichar mot[1000];
-              int position=0;
-              if (PARSING_MODE!=NORMAL_MODE ||
-                  (is_upper(buffer[pos2+origine_courante],alphabet) && (pos2+origine_courante==0 || !is_letter(buffer[pos2+origine_courante-1],alphabet)))) {
-                 while (pos2+origine_courante<LENGTH && is_letter(buffer[pos2+origine_courante],alphabet)) {
-                    mot[position++]=buffer[(pos2++)+origine_courante];
-                 }
-                 mot[position]='\0';
-                 if (position!=0 && !is_letter(buffer[pos2+origine_courante],alphabet)) {
-                   // we proceed only if we have read a letter sequence
-                   // which is not followed by a letter
-                   // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(etiq->output);
-                   if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                     // if we are in MERGE mode, we add to ouput the char we have read
-                     empiler_chaine(mot);
-                   }
-                   parcourir_sous_graphe(t->state_number,pos2,profondeur+1,liste_arrivee);
-                 }
-              }
-         }
-         else if (!u_strcmp_char(contenu,"<PNC>")) {
-              // case of a punctuation sequence
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-              //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-              else pos2=pos;
-              unichar C=buffer[pos2+origine_courante];
-              if (C==';' || C=='!' || C=='?' ||
-                  C==':' || C==0xbf ||
-                  C==0xa1 || C==0x0e4f || C==0x0e5a ||
-                  C==0x0e5b || C==0x3001 || C==0x3002 ||
-                  C==0x30fb) {
-                 // in both modes MERGE and REPLACE, we process the transduction if any
-                 traiter_transduction(etiq->output);
-                 if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                    // if we are in MERGE mode, we add to ouput the char we have read
-                    empiler(C);
-                 }
-                 parcourir_sous_graphe(t->state_number,pos2+1,profondeur+1,liste_arrivee);
-              }
-              else {
-                   // we consider the case of ...
-                   // BUG: if ... appears at the end of the buffer
-                   if (C=='.') {
-                      if ((pos2+origine_courante+2)<LENGTH && buffer[pos2+origine_courante+1]=='.' && buffer[pos2+origine_courante+2]=='.') {
-                         traiter_transduction(etiq->output);
-                         if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                            // if we are in MERGE mode, we add to ouput the ... we have read
-                            empiler(C);empiler(C);empiler(C);
-                         }
-                         parcourir_sous_graphe(t->state_number,pos2+3,profondeur+1,liste_arrivee);
-                      } else {
-                        // we consider the . as a normal punctuation sign
-                        traiter_transduction(etiq->output);
-                        if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                          // if we are in MERGE mode, we add to ouput the char we have read
-                          empiler(C);
-                        }
-                        parcourir_sous_graphe(t->state_number,pos2+1,profondeur+1,liste_arrivee);
-                      }
-                   }
-              }
-         }
-         else if (!u_strcmp_char(contenu,"<E>")) {
-              // case of an empty sequence
-              // in both modes MERGE and REPLACE, we process the transduction if any
-              traiter_transduction(etiq->output);
-              parcourir_sous_graphe(t->state_number,pos,profondeur+1,liste_arrivee);
-         }
-         else if (!u_strcmp_char(contenu,"<^>")) {
-              // case of a new line sequence
-              if (buffer[pos+origine_courante]==0x0d) {
-                 // in both modes MERGE and REPLACE, we process the transduction if any
-                 traiter_transduction(etiq->output);
-                 if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                    // if we are in MERGE mode, we add to ouput the char we have read
-                    empiler(0x0a);
-                 }
-                 // we go on at pos+2 because \n is a two char code 0d 0a
-                 parcourir_sous_graphe(t->state_number,pos+2,profondeur+1,liste_arrivee);
-              }
-         }
-         else if (!u_strcmp_char(contenu,"#")) {
-              // case of a no space condition
-              if (buffer[pos+origine_courante]!=' ') {
-                // in both modes MERGE and REPLACE, we process the transduction if any
-                traiter_transduction(etiq->output);
-                parcourir_sous_graphe(t->state_number,pos,profondeur+1,liste_arrivee);
-              }
-         }
-         else if (!u_strcmp_char(contenu," ")) {
-              // case of an obligatory space
-              if (buffer[pos+origine_courante]==' ') {
-                // in both modes MERGE and REPLACE, we process the transduction if any
-                traiter_transduction(etiq->output);
-                 if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                    // if we are in MERGE mode, we add to ouput the char we have read
-                    empiler(' ');
-                 }
-                parcourir_sous_graphe(t->state_number,pos+1,profondeur+1,liste_arrivee);
-              }
-         }
-         else if (!u_strcmp_char(contenu,"<L>")) {
-              // case of a single letter
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-              //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-              else pos2=pos;
-              if (is_letter(buffer[pos2+origine_courante],alphabet)) {
-                // in both modes MERGE and REPLACE, we process the transduction if any
-                traiter_transduction(etiq->output);
-                 if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                    // if we are in MERGE mode, we add to ouput the char we have read
-                    empiler(buffer[pos2+origine_courante]);
-                 }
-                parcourir_sous_graphe(t->state_number,pos2+1,profondeur+1,liste_arrivee);
-              }
-         }
-         else {
-              // case of a normal letter sequence
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
-              //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-              else pos2=pos;
-              if (etiq->control&RESPECT_CASE_TAG_BIT_MASK) {
-                 // case of exact case match
-                 int position=0;
-                 while (pos2+origine_courante<LENGTH && buffer[pos2+origine_courante]==contenu[position]) {
-                   pos2++; position++;
-                 }
-                 if (contenu[position]=='\0' && position!=0 &&
-                     !(is_letter(contenu[position-1],alphabet) && is_letter(buffer[pos2+origine_courante],alphabet))) {
-                   // we proceed only if we have exactly read the contenu sequence
-                   // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(etiq->output);
-                   if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                     // if we are in MERGE mode, we add to ouput the char we have read
-                     empiler_chaine(contenu);
-                   }
-                   parcourir_sous_graphe(t->state_number,pos2,profondeur+1,liste_arrivee);
-                 }
-              }
-              else {
-                 // case of variable case match
-                 int position=0;
-                 unichar mot[1000];
-                 while (pos2+origine_courante<LENGTH && is_equal_or_uppercase(contenu[position],buffer[pos2+origine_courante],alphabet)) {
-                   mot[position++]=buffer[(pos2++)+origine_courante];
-                 }
-                 mot[position]='\0';
-                 if (contenu[position]=='\0' && position!=0 &&
-                     !(is_letter(contenu[position-1],alphabet) && is_letter(buffer[pos2+origine_courante],alphabet))) {
-                   // we proceed only if we have exactly read the contenu sequence
-                   // in both modes MERGE and REPLACE, we process the transduction if any
-                   traiter_transduction(etiq->output);
-                   if (MODE==MERGE /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
-                     // if we are in MERGE mode, we add to ouput the char we have read
-                     empiler_chaine(mot);
-                   }
-                   parcourir_sous_graphe(t->state_number,pos2,profondeur+1,liste_arrivee);
-                 }
-              }
-         }
-      }
-      t=t->next;
-}
-}
 
 
 
