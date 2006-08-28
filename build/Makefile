@@ -50,7 +50,7 @@ TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
 endif
 
-APPDIR = ../../App
+APPDIR = ../../../App
 
 ifeq ($(USE_TRE_LIBRARY),yes)
 #
@@ -91,7 +91,7 @@ else
 
 CC   = g++.exe
 INSTALL = move
-APPDIR = ../../App
+APPDIR = ../../../App
 DEVCPP_PATH = C:/Dev-Cpp
 
 ifeq ($(USE_TRE_LIBRARY),yes)
@@ -419,7 +419,7 @@ clean-libtre:
 	rm -f .libtre-done
 
 install: bin
-	$(INSTALL) $(PROGS) $(APPDIR)
+	$(INSTALL) $(BINARIES) $(APPDIR)
 
 
 clean: $(CLEAN-LIBTRE)
@@ -459,7 +459,7 @@ all: bin
 	@echo All is done.
 
 install: bin
-	$(INSTALL) *.exe $(APPDIR)
+	$(INSTALL) $(BINARIES) $(APPDIR)
 
 bin: $(BINARIES)
 
