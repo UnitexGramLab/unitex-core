@@ -44,6 +44,7 @@
 #define REPLACE 1
 #define BUFFER_SIZE 1000000
 #define MAX_DEPTH 300
+#define MAX_OUTPUT_LENGTH 10000
 #define NORMAL_MODE 0
 #define CHAR_BY_CHAR 1
 #define CHAR_BY_CHAR_WITH_SPACE 2
@@ -201,8 +202,8 @@ int ecrire_transduction();
 
 int origine_courante;
 int taille_entree;
-unichar output[10000];
-unichar pile[10000];
+unichar output[MAX_OUTPUT_LENGTH];
+unichar pile[MAX_OUTPUT_LENGTH];
 int sommet;
 
 
@@ -214,7 +215,10 @@ return (taille_entree);
 
 
 void empiler(unichar c) {
-pile[sommet++]=c;
+if (sommet > MAX_OUTPUT_LENGTH) {
+  fprintf(stderr,"Maximal output stack size reached: ignoring output\n");
+} else
+  pile[sommet++]=c;
 }
 
 
@@ -379,8 +383,15 @@ if (profondeur > MAX_DEPTH) {
           "Skipping match at this position, trying from next token!\n");
   output[0] = '\0';  // clear output
   taille_entree = 0; // reset taille_entree
+  pile[0] = '\0';    // clear output stack
+  sommet = 0;        // dito
+  while (*liste_arrivee!=NULL) { // free list of subgraph matches
+    struct liste_num* la_tmp=*liste_arrivee;
+    *liste_arrivee=(*liste_arrivee)->suivant;
+    free(la_tmp);
+  }
   return;
-  //  exit(1);
+  //  exit(1); // don't exit, try at next position
 }
 profondeur++;
 
@@ -460,7 +471,7 @@ while (t!=NULL) {
       if (n_etiq<0) {
          // case of a sub-graph
          struct liste_num* liste=NULL;
-         unichar pile_old[1000];
+         unichar pile_old[MAX_OUTPUT_LENGTH];
          u_strcpy(pile_old,pile);
          parcourir_graphe((((unsigned)n_etiq)-1),fst2->initial_states[-n_etiq],pos,profondeur,&liste);
          while (liste!=NULL) {
