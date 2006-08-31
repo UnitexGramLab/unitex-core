@@ -31,6 +31,7 @@
 #include "Error.h"
 
 #define MAX_FILENAME_LENGTH 1024 /* including path */
+#define MAX_LINES_IN_TABLE 1024  
 
 //
 // "E:\My Unitex\Greek\Corpus\31.txt" "E:\My Unitex\Greek\Graphs\31-PATRON.grf" "E:\My Unitex\Greek\Graphs\result.grf" "E:\My Unitex\Greek\Graphs\result@%.grf"
@@ -321,10 +322,16 @@ if (source[pos_in_src]=='@' && is_in_A_Z(source[pos_in_src+1])) {
    if (source[pos_in_src+2]=='\0' || source[pos_in_src+2]=='/') {
       // if we are in the case @A or @A/something
       row_number=source[pos_in_src+1]-'A';
+      if (row_number > n_champs)
+        fatal_error("error: row #%d (@%c) not defined in table\n",
+                    row_number,source[pos_in_src+1]);
    }
    else if (is_in_A_Z(source[pos_in_src+2]) && (source[pos_in_src+3]=='\0' || source[pos_in_src+3]=='/')) {
            // if we are in the case @AB or @AB/something
            row_number=(source[pos_in_src+1]-'A'+1)*(26)+(source[pos_in_src+2]-'A');
+           if (row_number > n_champs)
+             fatal_error("error: row #%d (@%c%c) not defined in table\n",
+                         row_number,source[pos_in_src+1],source[pos_in_src+2]);
    }
    if (row_number!=-1) {
       // if we have a valid row reference
@@ -689,7 +696,7 @@ return true;
 void table2grf(FILE* table,FILE* reference_graph,FILE* result_graph,char* subgraph,char* chemin) {
 int ligne_courante;
 struct graphe_patron structure;
-unichar* ligne[1000];
+unichar* ligne[MAX_LINES_IN_TABLE];
 int n_champs;
 int i;
 int graphs_printed;

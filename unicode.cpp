@@ -208,9 +208,20 @@ while ((dest[i++]=(unichar)((unsigned char)src[j++]))!=0);
 // unicode version of strcmp
 //
 int u_strcmp(const unichar *a, const unichar *b) {
-int i=0;
-while (a[i] && a[i]==b[i]) i++;
-return (a[i]-b[i]);
+  register const unichar *a_p = a;
+  register const unichar *b_p = b;
+  register unichar a_c;
+  register unichar b_c;
+  do
+    {
+      a_c = (unichar) *a_p++;
+      b_c = (unichar) *b_p++;
+      if (a_c == '\0')
+        return a_c - b_c;
+    }
+  while (a_c == b_c);
+
+  return a_c - b_c;
 }
 
 
@@ -218,9 +229,20 @@ return (a[i]-b[i]);
 // unicode version of strcmp
 //
 int u_strcmp_char(const unichar *a, const char *b) {
-int i=0;
-while (a[i] && a[i]==b[i]) i++;
-return (a[i]-b[i]);
+  register const unichar *a_p = a;
+  register const unsigned char *b_p = (const unsigned char *) b;
+  register unichar a_c;
+  register unsigned char b_c;
+  do
+    {
+      a_c = (unichar) *a_p++;
+      b_c = (unsigned char) *b_p++;
+      if (a_c == '\0')
+        return a_c - b_c;
+    }
+  while (a_c == b_c);
+
+  return a_c - b_c;
 }
 
 
