@@ -302,12 +302,6 @@ read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname)
 }
 
 
-static int get_longuest_prefix(unichar* inflected,unichar* lemma) {
-int i=0;
-while (inflected[i]==lemma[i] && inflected[i]!='\0') i++;
-return i;
-}
-
 
 static void  get_compressed_token(unichar* inflected,unichar* lemma,unichar* res) 
 {
