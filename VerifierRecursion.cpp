@@ -786,6 +786,7 @@ for (i=0;i<nombre_etats;i++) {
 // renvoie 1 si aucune boucle infinie n'est trouve dans le fst2 nom_fst2, 0 sinon
 //
 int pas_de_recursion(char *nom_fst2) {
+#error CANNOT WORK SINCE THIS PART IS NOT FINISHED
 /*FILE *f;
 Fst2State* graphe;
 Fst2Tag* etiquette;*/

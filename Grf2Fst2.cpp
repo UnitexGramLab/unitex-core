@@ -141,7 +141,7 @@ setBufferMode();
   temp1[l-4] = '\0';
   strcat(temp1,".fst2");
   ecrire_fichier_sortie_nb_graphes(temp1);
-  if (argc>=2 || (!strcmp(argv[2],"y"))) {
+  if (argc>=2 && (!strcmp(argv[2],"y"))) {
     if (!pas_de_recursion(temp1)) {
       return 1;
     }
