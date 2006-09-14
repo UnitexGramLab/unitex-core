@@ -795,6 +795,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		/*
 		 * Then, we read the states of the graph, until we find a line beginning by 'f'.
 		 */
+		fst2->number_of_states_per_graphs[current_graph]=0;
 		while (c!='f') {
 			fst2->states[current_state]=new_Fst2State();
 			fst2->number_of_states_per_graphs[current_graph]++;
