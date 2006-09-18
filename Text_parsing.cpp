@@ -1066,15 +1066,15 @@ return 0;
 
 
 
-int dichotomie(int a,int* t,int n) {
-int debut,milieu;
+int dichotomie(int a, int* t, int n) {
+register int debut, milieu;
 if (n==0||t==NULL) return -1;
 if (a<t[0]) return -1;
 if (a>t[n-1]) return -1;
 n=n-1;
 debut=0;
 while (debut<=n) {
-  milieu=(debut+n)/2;
+  milieu = ((debut+n) >> 1); // like /2, but faster (depends on compiler)
   if (t[milieu]==a) return milieu;
   if (t[milieu]<a) {
     debut=milieu+1;
