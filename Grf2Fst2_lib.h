@@ -238,6 +238,7 @@ void liberer_arbre_det(struct noeud_valeur_det *racine);
 Etat_fst_det nouvel_etat_mat_det();
 ensemble_det copie_det(ensemble_det e);
 void sauvegarder_etat_det(FILE *f,Etat_fst_det e);
+int determinisation(FILE*,Etat_comp*);
 void *malloc_comp(int n);
 void init_generale_comp();
 void init_arbres_comp();

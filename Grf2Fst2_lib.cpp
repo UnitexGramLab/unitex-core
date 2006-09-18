@@ -771,15 +771,27 @@ void sauvegarder_etat_det(FILE *f,Etat_fst_det e)
  u_fputc((unichar)'\n',f);
 }
 
+//
+// determinize the graph/automaton "graphe" and save it to file "fs_comp"
+//
+int determinisation(FILE* fs_comp,
+                    Etat_comp graphe[]) {
 
-int determinisation(Etat_comp graphe[]) {
+  if (graphe[0] == NULL) { // do not segfault on empty automaton
+    fprintf(stderr, "warning: resulting automaton is empty\n");
+    u_fprintf(fs_comp, ": \nf \n");
+    return 1;
+  }
+
   Transition_comp ptr;
   ensemble_det courant;
   unsigned long int q;  //etat courant ancien graphe
   int count;  //compteur pour savoir ou l'on se trouve dans notre int de 32 bits
   int compteur; //compteur pour savoir l'indice du dernier ensemble rentre dans stock;
   int num;
-  int i,file_courant=0,dernier_etat_res,sous_graphe,temp2,temp,k;
+  int i, file_courant=0, k;
+  int temp, dernier_etat_res;
+  int temp2, sous_graphe;
   struct noeud_valeur_det *racine_det;
 
   dernier_etat_res = -1;
@@ -792,97 +804,104 @@ int determinisation(Etat_comp graphe[]) {
     resultat[0]->controle = (unsigned char)(resultat[0]->controle | 1);
   init_stock_det(stock);
   temp2 = file_courant % NBRE_ET;
-  while(resultat[temp2] != NULL)
-  {
-    courant = resultat[temp2]->ens;
-    init_hachage_det(hachage);
-    compteur = 0;
-    while(courant != NULL)
+  while (resultat[temp2] != NULL)
     {
-      count = 0;
-      q = (courant->num_char*32) - 1;
-      while(count < 32)
-      {
-        q++;
-        if(((courant->valeur)&(1<<count))!=0)
+      courant = resultat[temp2]->ens;
+      init_hachage_det(hachage);
+      compteur = 0;
+      while (courant != NULL)
         {
-          ptr = graphe[q]->trans;
-          while(ptr != NULL)
-          {
-            temp = ptr->etiq;
-            if(temp < 0)
+          count = 0;
+          q = (courant->num_char*32) - 1;
+          while (count < 32)
             {
-              temp = nombre_etiquettes_comp - 1 - temp;
-              sous_graphe = 1;
-            }
-            else sous_graphe = 0;
-            if(hachage[temp] == -1)
-            {
-              hachage[temp] = compteur;
-              liberer_char_etat_det(stock[compteur]);
-              final[compteur] = 0;
-              if(sous_graphe == 0)
-                hachageinv[compteur] = temp;
-              else
-                hachageinv[compteur] = nombre_etiquettes_comp -1 - temp;
+              q++;
+              if (((courant->valeur)&(1<<count))!=0)
+                {
+                  ptr = graphe[q]->trans;
+                  while (ptr != NULL)
+                    {
+                      temp = ptr->etiq;
 
-                stock[compteur] = NULL;
-                compteur++;
-              }
-              ajouter_etat_dans_ensemble_det(ptr->arr,&stock[hachage[temp]]);
-              if(((graphe[ptr->arr]->controle) & 1 ) != 0)
-                final[hachage[temp]] = 1;    //test de finalite
-              ptr = ptr->suivant;
+                      if (temp < 0)
+                        {
+                          temp = nombre_etiquettes_comp - 1 - temp;
+                          sous_graphe = 1;
+                        }
+                      else
+                        sous_graphe = 0;
+
+                      if (hachage[temp] == -1)
+                        {
+                          hachage[temp] = compteur;
+                          liberer_char_etat_det(stock[compteur]);
+                          final[compteur] = 0;
+                          if (sous_graphe == 0)
+                            hachageinv[compteur] = temp;
+                          else
+                            {
+                              hachageinv[compteur] = nombre_etiquettes_comp - 1 - temp;
+                            }
+                          stock[compteur] = NULL;
+                          compteur++;
+                        }
+                      ajouter_etat_dans_ensemble_det(ptr->arr,&stock[hachage[temp]]);
+                      if (((graphe[ptr->arr]->controle) & 1 ) != 0)
+                        final[hachage[temp]] = 1;    //test de finalite
+                      ptr = ptr->suivant;
+                    }
+                }
+              count++;
             }
-           }
-           count++;
+          courant = courant->suivant;
         }
-        courant = courant->suivant;
-      }
-      for(i=0;i < compteur;i++)
-      {
-        num = numero_ensemble_det(stock[i],racine_det,dernier_etat_res);
-        temp = num % NBRE_ET;
-        ajouter_transition_mat_det(resultat[temp2],hachageinv[i],num);
-        if(num > dernier_etat_res)
+      for (i=0; i < compteur; i++)
         {
-          if (resultat[temp]!=NULL)
-          {
-                   /* m="Too many states in deterministic graph\n";
-		    	    m=m+"Not enough memory to continue";
-                    erreur(m.c_str());*/
-             for(k=0;k<NBRE_ET;k++)liberer_etat_det(resultat[k]);
-             liberer_arbre_det(racine_det);
-             for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++)
-                if (stock[i]!=NULL)
-                   //free_comp(stock[i]);
-                   liberer_char_etat_det(stock[i]);
-             return 0;
-           }
-           resultat[temp] = nouvel_etat_mat_det();
-           dernier_etat_res++;
-           resultat[temp]->ens = copie_det(stock[i]);
-           resultat[temp]->controle = (unsigned char)((resultat[temp]->controle) | final[i]);
+          num = numero_ensemble_det(stock[i],racine_det,dernier_etat_res);
+          temp = num % NBRE_ET;
+          ajouter_transition_mat_det(resultat[temp2],hachageinv[i],num);
+          if (num > dernier_etat_res)
+            {
+              if (resultat[temp]!=NULL)
+                {
+                  /* m="Too many states in deterministic graph\n";
+                     m=m+"Not enough memory to continue";
+                     erreur(m.c_str());*/
+                  for (k=0;k<NBRE_ET;k++)
+                    liberer_etat_det(resultat[k]);
+                  liberer_arbre_det(racine_det);
+                  for (i=0; i < NBRE_ETIQ_TRANSITION_COMP; i++) {
+                    if (stock[i]!=NULL) {
+                      //free_comp(stock[i]);
+                      liberer_char_etat_det(stock[i]);
+                    }
+                  }
+                  fprintf(stderr,"Too many states in main automaton: cannot determinize.\n");
+                  exit(1);
+                }
+              resultat[temp] = nouvel_etat_mat_det();
+              dernier_etat_res++;
+              resultat[temp]->ens = copie_det(stock[i]);
+
+              resultat[temp]->controle = (unsigned char)((resultat[temp]->controle) | final[i]);
+            }
         }
-      }
-      sauvegarder_etat_det(fs_comp,resultat[temp2]);
+      sauvegarder_etat_det(fs_comp,resultat[temp2]); // print all transitions of one state
       liberer_etat_det(resultat[temp2]);
       resultat[temp2] = NULL;
       file_courant++;
       temp2 = file_courant % NBRE_ET;
-   }
+    }
   char s[10];
   sprintf(s,"f \n");
   u_fprints_char(s,fs_comp);
   liberer_arbre_det(racine_det);
-  for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++)
-    {
-      if (stock[i]!=NULL)
-        {
-          // free_comp(stock[i]);
-          liberer_char_etat_det(stock[i]);
-        }
+  for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) {
+    if (stock[i]!=NULL) {
+      // free_comp(stock[i]);
+      liberer_char_etat_det(stock[i]);
     }
+  }
   return 1;
 }
 
@@ -2862,7 +2881,7 @@ int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
   u_fprints_char(s,fs_comp);
   u_fprints(donnees->nom_graphe[graphe_courant],fs_comp);
   u_fputc('\n',fs_comp);
-  det = determinisation(letats);
+  det = determinisation(fs_comp,letats);
   //det = 1;
   liberer_graphe_comp(letats);
   if(det == 0)

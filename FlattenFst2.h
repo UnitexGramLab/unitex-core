@@ -60,7 +60,6 @@ int flatten_sub_graph_recursively(Fst2*,int,int,int,
                                   int,int,int*,int*);
 void remove_epsilon_transitions_in_flattened_graph(struct flattened_main_graph_info*);
 void compute_reverse_transitions_of_main_graph(struct flattened_main_graph_info*);
-int determinisation_new_main_graph(FILE*,Etat_comp*);
 void save_graphs_to_keep(Fst2*,FILE*);
 void save_graph_to_be_kept(int,Fst2*,FILE*);
 void copy_tags_into_file(Fst2*,FILE*);
