@@ -101,7 +101,7 @@ switch (flatten_fst2(origin,depth,temp,RTN)) {
                         break;
    case APPROXIMATIVE_FST: printf("The resulting grammar is a finite-state approximation.\n");
                         break;
-   case EQUIVALENT_RTN: printf("The resulting grammar is an equivalent FST2.\n");
+   case EQUIVALENT_RTN: printf("The resulting grammar is an equivalent FST2 (RTN).\n");
                         break;
    default:;
 }

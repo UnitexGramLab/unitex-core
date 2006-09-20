@@ -52,12 +52,11 @@ void compute_dependences_for_subgraph(Fst2*,int,struct liste_nombres**);
 void print_dependences(Fst2*);
 void check_for_graphs_to_keep(Fst2*,int);
 int renumber_graphs_to_keep(Fst2*);
-int flatten_main_graph(Fst2*,int,struct flattened_main_graph_info*,int);
 struct flattened_main_graph_info* new_flattened_main_graph_info();
 void free_flattened_main_graph_info(struct flattened_main_graph_info*);
-int flatten_sub_graph_recursively(Fst2*,int,int,int,
-                                  struct flattened_main_graph_info* new_main_graph,
-                                  int,int,int*,int*);
+int flatten_graph(Fst2*,int,int,int,
+                  struct flattened_main_graph_info*,
+                  int,int,int*,int*);
 void remove_epsilon_transitions_in_flattened_graph(struct flattened_main_graph_info*);
 void compute_reverse_transitions_of_main_graph(struct flattened_main_graph_info*);
 void save_graphs_to_keep(Fst2*,FILE*);
