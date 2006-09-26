@@ -175,7 +175,8 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
         autalmot_minimize(A);
       
         if (suppress_limphrase(A) == -1) {
-          error("an error occured while trying to remove sentence limits in sentence %d.\n", no + 1);
+          error("an error occured while trying to remove sentence limits in sentence %d.\n", 
+                no + 1);
         }
 
         apres = eval_sentence(A, &min, &max);
