@@ -573,8 +573,8 @@ static inline bool CAN_in_CAN(const symbol_t * a, const symbol_t * b) {
   return ((a->canonic == b->canonic) && in_traits(a, b));
 }
 
-static inline bool NEG_in_CAN(const symbol_t * a, const symbol_t * b)  { return false; }
-static inline bool CODE_in_CAN(const symbol_t * a, const symbol_t * b) { return false; }
+static inline bool NEG_in_CAN(const symbol_t * /*a*/, const symbol_t * /*b*/)  { return false; }
+static inline bool CODE_in_CAN(const symbol_t * /*a*/, const symbol_t * /*b*/) { return false; }
 
 
 static inline bool CAN_in_NEG(const symbol_t * a, const symbol_t * b) {
@@ -594,7 +594,7 @@ static inline bool NEG_in_NEG(const symbol_t * a, const symbol_t * b) {
   return true;
 }
 
-static inline bool CODE_in_NEG(const symbol_t * a, const symbol_t * b) { return false; }
+static inline bool CODE_in_NEG(const symbol_t * /*a*/, const symbol_t * /*b*/) { return false; }
 
 static inline bool CAN_in_CODE(const symbol_t * a, const symbol_t * b)  { return in_traits(a, b); }
 static inline bool NEG_in_CODE(const symbol_t * a, const symbol_t * b)  { return in_traits(a, b); }
@@ -795,7 +795,7 @@ static inline symbol_t * CAN_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
 /* un symbole negatif ne peut jamais etre inclu dans un symbole ou la forme canonique est fixée */
 
-static inline symbol_t * CAN_minus_NEG(const symbol_t * a, const symbol_t * b) {
+static inline symbol_t * CAN_minus_NEG(const symbol_t * /*a*/, const symbol_t * /*b*/) {
   die("CAN minus NEG: should never happen\n");
   return NULL;
 }
@@ -803,7 +803,7 @@ static inline symbol_t * CAN_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
 /* idem pour un symbol sans forme canonique */
 
-static symbol_t * CAN_minus_CODE(const symbol_t * a, const symbol_t * b) {
+static symbol_t * CAN_minus_CODE(const symbol_t * /*a*/, const symbol_t * /*b*/) {
   die("CAN minus CODE: should never happen\n");
   return NULL;
 }
