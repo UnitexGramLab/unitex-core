@@ -44,22 +44,23 @@
 
 void usage() {
 printf("%s",COPYRIGHT);
-printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n");
-printf("      <grf> : main graph of grammar (must be an absolute path)\n");
-printf("      <pckgPath> : path of the root dir of all grammar packages\n");
-printf("      [y/n] : enable or not the loops/left-recursion detection\n");
-printf("      [ALPH] : name of the alphabet file to use for tokenizing\n");
-printf("               lexical units. If ALPH=char_by_char, lexical units\n");
-printf("               will be single letters. If this parameter is omitted,\n");
-printf("               lexical units will be sequences of any unicode letters.\n");
-printf("Compile the grammar and saves the result in a FST2 file stored\n");
-printf("in the same directory that <grf>.\n");
+printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n"
+       "      <grf> : main graph of grammar (must be an absolute path)\n"
+       "      [y/n] : enable or not the loops/left-recursion detection\n"
+       "      [ALPH] : name of the alphabet file to use for tokenizing\n"
+       "               lexical units. If ALPH=char_by_char, lexical units\n"
+       "               will be single letters. If this parameter is omitted,\n"
+       "               lexical units will be sequences of any unicode letters.\n"
+       "      <pckgPath> : path of the root dir of all grammar packages\n"
+       "Compiles the grammar <grf> and saves the result in a FST2 file\n"
+       "stored in the same directory as <grf>.\n");
 }
 
 
 
 int main(int argc,char *argv[]) {
-setBufferMode();
+
+  setBufferMode();
 
   char temp[TAILLE_MOT_GRAND_COMP];
   char temp1[TAILLE_MOT_GRAND_COMP];
@@ -119,8 +120,8 @@ setBufferMode();
     fprintf(stderr,"Cannot open file %s\n",temp);
     return 1;
    }
-   u_fprints_char("0000000000\n",fs_comp);
-   int result=compilation(temp,TOKENIZATION_MODE,alph);
+  u_fprints_char("0000000000\n",fs_comp);
+  int result=compilation(temp,TOKENIZATION_MODE,alph);
   if (result == 0)
   {
     fprintf(stderr,"Compilation has failed\n");

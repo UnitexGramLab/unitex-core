@@ -89,7 +89,7 @@ if (RTN) {
   save_graphs_to_keep(origin,res); // write the still remaining subgraphs
 }
 printf("Saving tags...\n");
-copy_tags_into_file(origin,res); // copy the terminal symbols
+write_fst2_tags(res,origin); // copy the terminal symbols to the resulting file
 u_fclose(res);
 // liberation of the dependence structures
 for (int i=1;i<=origin->number_of_graphs;i++) {
@@ -476,44 +476,4 @@ u_fprints_char("f \n",f);
 
 
 
-//
-// copy the tag list of the grammar into the file f
-//
-void copy_tags_into_file(Fst2* grammar, FILE* f) {
-for (int i=0; i<grammar->number_of_tags; i++) {
-   if (grammar->tags[i]->control & RESPECT_CASE_TAG_BIT_MASK) {
-      u_fprints_char("@",f);
-   }
-   else {
-      u_fprints_char("%",f);
-   }
-   // if the tag is a variable, print '$'
-   if (grammar->tags[i]->control & (START_VAR_TAG_BIT_MASK|END_VAR_TAG_BIT_MASK)) {
-     u_fprints_char("$",f);
-   }
-   // print the content (label) of the tag
-   u_fprints(grammar->tags[i]->input,f);
-   // if any, we add the morphological filter: <A><<^pre>>
-   if (grammar->tags[i]->contentGF!=NULL &&
-       grammar->tags[i]->contentGF[0]!='\0') {
-     u_fprints(grammar->tags[i]->contentGF,f);
-   }
-   // if any, we add transitions
-   if (grammar->tags[i]->output!=NULL &&
-       grammar->tags[i]->output[0]!='\0') {
-     u_fprints_char("/",f);
-     u_fprints(grammar->tags[i]->output,f);
-   }
-   // print closing '(' for variables
-   else if (grammar->tags[i]->control & START_VAR_TAG_BIT_MASK) {
-     u_fprints_char("(",f);
-   }
-   // or ')' resp.
-   else if (grammar->tags[i]->control & END_VAR_TAG_BIT_MASK) {
-     u_fprints_char(")",f);
-   }
-   u_fprints_char("\n",f);
-}
-u_fprints_char("f\n",f);
-}
 

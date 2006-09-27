@@ -42,22 +42,22 @@
 //---------------------------------------------------------------------------
 void usage() {
 printf("%s",COPYRIGHT);
-printf("Usage: Flatten <fst2> <type> [depth]\n");
-printf("     <fst2> : compiled grammar to flatten;\n");
-printf("     <type> : this parameter specifies the type of the resulting grammar\n");
-printf("              The 2 possibles values are:\n");
-printf("              FST : if the grammar is not a finite-state one, the program\n");
-printf("                    makes a finite-state approximation of it. The resulting\n");
-printf("                    FST2 will contain only one graph.\n");
-printf("              RTN : the grammar will be flattened according to the depth limit.\n");
-printf("                    The resulting grammar may not be finite-state.\n");
-printf("     [depth] : maximum subgraph depth to be flattened. If this parameter is\n");
-printf("               not precised, the value 10 is taken by default.\n");
-printf("\n\n");
-printf("Flattens a FST2 grammar into a finite state transducer in the limit of\n");
-printf("a recursion depth. The grammar <fst2> is replaced by its flattened equivalent.\n");
-printf("If the flattening process is complete, the resulting grammar contains only one\n");
-printf("graph.\n");
+printf("Usage: Flatten <fst2> <type> [depth]\n"
+       "     <fst2> : compiled grammar to flatten;\n"
+       "     <type> : this parameter specifies the type of the resulting grammar\n"
+       "              The 2 possibles values are:\n"
+       "              FST : if the grammar is not a finite-state one, the program\n"
+       "                    makes a finite-state approximation of it. The resulting\n"
+       "                    FST2 will contain only one graph.\n"
+       "              RTN : the grammar will be flattened according to the depth limit.\n"
+       "                    The resulting grammar may not be finite-state.\n"
+       "     [depth] : maximum subgraph depth to be flattened. If this parameter is\n"
+       "               not precised, the value 10 is taken by default.\n"
+       "\n\n"
+       "Flattens a FST2 grammar into a finite state transducer in the limit of\n"
+       "a recursion depth. The grammar <fst2> is replaced by its flattened equivalent.\n"
+       "If the flattening process is complete, the resulting grammar contains only one\n"
+       "graph.\n");
 }
 
 int main(int argc, char **argv) {

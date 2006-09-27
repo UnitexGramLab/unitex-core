@@ -587,6 +587,44 @@ return create_tag(input,filter,output,respect_case);
 /* $CD$ end   */
 }
 
+/**
+ * Stringifies and writes a tag to a file including '\n'.
+ * Opposite of "create_tag".
+ */
+void write_tag (FILE* f, Fst2Tag tag) {
+   if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
+      u_fprints_char("@",f);
+   }
+   else {
+      u_fprints_char("%",f);
+   }
+   // if the tag is a variable, print '$'
+   if (tag->control & (START_VAR_TAG_BIT_MASK|END_VAR_TAG_BIT_MASK)) {
+     u_fprints_char("$",f);
+   }
+   // print the content (label) of the tag
+   u_fprints(tag->input,f);
+   // if any, we add the morphological filter: <A><<^pre>>
+   if (tag->contentGF!=NULL &&
+       tag->contentGF[0]!='\0') {
+     u_fprints(tag->contentGF,f);
+   }
+   // if any, we add transitions
+   if (tag->output!=NULL &&
+       tag->output[0]!='\0') {
+     u_fprints_char("/",f);
+     u_fprints(tag->output,f);
+   }
+   // print closing '(' for variables
+   else if (tag->control & START_VAR_TAG_BIT_MASK) {
+     u_fprints_char("(",f);
+   }
+   // or ')' resp.
+   else if (tag->control & END_VAR_TAG_BIT_MASK) {
+     u_fprints_char(")",f);
+   }
+   u_fprints_char("\n",f);
+}
 
 /**
  * Reads the tags of the .fst2 file 'f'. The function assumes that the
@@ -650,6 +688,18 @@ read_fst2_tags(f,fst2,NO_TAG_LIMIT);
 
 
 /**
+ * Writes all the tags to the .fst2 file 'f'.
+ * (opposite of "read_fst2_tags")
+ */
+void write_fst2_tags(FILE *f,Fst2* fst2) {
+for (int i=0; i<fst2->number_of_tags; i++) {
+  write_tag(f, fst2->tags[i]);
+}
+u_fprints_char("f\n",f);
+}
+
+
+/**
  * Creates, initializes and returns a fst2 state.
  */
 Fst2State new_Fst2State() {
@@ -670,8 +720,9 @@ return state;
  * 'end_of_line' is setted to 0.
  */
 int read_int(FILE *f,int *end_of_line) {
-unichar c;
-int value,negative_number;
+register unichar c;
+register int value;
+int negative_number;
 /* We ignore spaces */
 do {
 	c=(unichar)u_fgetc(f);

@@ -241,10 +241,15 @@ struct fst2 {
 typedef struct fst2 Fst2;
 
 
-
+/* functions for loading grammars */
 Fst2* load_fst2(char*,int);
 Fst2* load_one_sentence_from_fst2(char*,int);
 void free_Fst2(Fst2*);
+
+/* functions for writing grammars */
+void write_fst2_tags(FILE*,Fst2*);
+
+
 struct variable_list* get_variable(unichar*,struct variable_list*);
 int is_initial_state(Fst2State);
 int is_final_state(Fst2State);

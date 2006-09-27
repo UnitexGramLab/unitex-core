@@ -876,7 +876,10 @@ int determinisation(FILE* fs_comp,
                       liberer_char_etat_det(stock[i]);
                     }
                   }
-                  fprintf(stderr,"Too many states in main automaton: cannot determinize.\n");
+                  fprintf(stderr,
+                          "Too many states in automaton: cannot determinize.\n"
+                          "Max. number of states per automaton/subgraph: NBRE_ET = %i\n",
+                          NBRE_ET);
                   exit(1);
                 }
               resultat[temp] = nouvel_etat_mat_det();
@@ -904,6 +907,8 @@ int determinisation(FILE* fs_comp,
   }
   return 1;
 }
+
+
 
 
 

@@ -41,7 +41,7 @@
 #define NOMBRE_TRANSITIONS_COMP 10000    // nombre max de transitions
 #define L_ASCII 256 //taille de l'alphabet
 #define TAILLE_SEQUENCE_COMP 200        // nombre de mots max dans une sequence de mots entre deux + d'une boite
-#define NBRE_ET  10000
+#define NBRE_ET  20000  /* maximal number of states per automaton/subgraph */
 #define NBRE_ETIQ_TRANSITION_COMP NOMBRE_ETIQUETTES_COMP+NOMBRE_GRAPHES_COMP
 /* NBRE_ETIQ_TRANSITION_COMP: stack size of transition table: 
    one part for etiquettes, one for subgraph transitions */

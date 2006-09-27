@@ -52,17 +52,17 @@
 
 void usage() {
 printf("%s",COPYRIGHT);
-printf("Usage: Fst2Txt <text> <fst2> <alphabet> <MODE> [-char_by_char|-char_by_char_with_space]\n");
-printf("     <text> : the unicode text file to be parsed\n");
-printf("     <fst2> : the grammar to be applied to the text\n");
-printf("     <alphabet> : the alphabet file for the current language.\n");
-printf("     <MODE> : the parsing can be done in merge mode or replace mode, using\n");
-printf("              -merge or -replace\n");
-printf("     -char_by_char : force the program to parse char by char. This\n");
-printf("                     option is useful for languages like Thai.\n");
-printf("     -char_by_char_with_space : force the program to parse char by char, allowing\n");
-printf("                     the matching of expressions beginning by spaces.\n\n");
-printf("Applies a grammar to a text. The text file is modified.\n");
+printf("Usage: Fst2Txt <text> <fst2> <alphabet> <MODE> [-char_by_char|-char_by_char_with_space]\n"
+       "     <text> : the unicode text file to be parsed\n"
+       "     <fst2> : the grammar to be applied to the text\n"
+       "     <alphabet> : the alphabet file for the current language.\n"
+       "     <MODE> : the parsing can be done in merge mode or replace mode, using\n"
+       "              -merge or -replace\n"
+       "     -char_by_char : force the program to parse char by char. This\n"
+       "                     option is useful for languages like Thai.\n"
+       "     -char_by_char_with_space : force the program to parse char by char, allowing\n"
+       "                     the matching of expressions beginning by spaces.\n\n"
+       "Applies a grammar to a text. The text file is modified.\n");
 }
 
 
