@@ -37,13 +37,11 @@
 #define NOMBRE_GRAPHES_COMP 5000        // nombre max de graphes
 #define N_CAR_MAX_COMP 300               // nombre max de caracteres d'un mot normal
 #define TAILLE_MOT_GRAND_COMP 10000       // nombre max de caracteres d'un long mot
-#define NOMBRE_ETIQUETTES_COMP 50000    // nombre max d'étiquettes
-#define NOMBRE_ETATS_COMP 100000          // nombre max d'états
 #define NOMBRE_TRANSITIONS_COMP 10000    // nombre max de transitions
 #define L_ASCII 256 //taille de l'alphabet
 #define TAILLE_SEQUENCE_COMP 200        // nombre de mots max dans une sequence de mots entre deux + d'une boite
 #define NBRE_ET  20000  /* maximal number of states per automaton/subgraph */
-#define NBRE_ETIQ_TRANSITION_COMP NOMBRE_ETIQUETTES_COMP+NOMBRE_GRAPHES_COMP
+#define NBRE_ETIQ_TRANSITION_COMP MAX_FST2_TAGS+NOMBRE_GRAPHES_COMP
 /* NBRE_ETIQ_TRANSITION_COMP: stack size of transition table: 
    one part for etiquettes, one for subgraph transitions */
 
@@ -55,7 +53,6 @@ struct char_etats_det {
   unsigned int valeur;       //   valeur du char
   struct char_etats_det *suivant;
 };
-
 typedef struct char_etats_det* ensemble_det;
 
 
@@ -68,15 +65,12 @@ struct etat_fst_det
   ensemble_det   ens;            //ensemble des etats de graphe regroupes dans cet etat
   Fst2Transition trans;     // transition_fsts partant de cet etat
 };
-
 typedef struct etat_fst_det* Etat_fst_det;
 
 
 //
 // structure d'un noeud num_char
 //
-
-
 struct noeud_num_char_det {
   int num_char;
   struct liste_branches_valeur_det *liste;
@@ -107,15 +101,12 @@ struct liste_branches_num_char_det {
 //
 // structure d'un etat
 //
-
-
 struct etat_comp
 {
   unsigned char controle;          // octet de controle
   Fst2Transition trans;         //liste des transitions
   Fst2Transition transinv;         // liste des transitions inverses
 };
-
 typedef struct etat_comp* Etat_comp;
 
 
@@ -125,7 +116,6 @@ typedef struct etat_comp* Etat_comp;
 //
 // structures servant a manipuler l'arbre des graphes
 //
-
 struct noeud_g_comp
 {
   int fin;
@@ -143,7 +133,6 @@ struct liste_feuilles_g_comp
 //
 // structures servant a manipuler l'arbre des etiquettes
 //
-
 struct noeud_comp
 {
   int fin;
@@ -162,7 +151,7 @@ struct donnees_comp
 {
   unichar nom_graphe[NOMBRE_GRAPHES_COMP][N_CAR_MAX_COMP];
   signed char statut_graphe[NOMBRE_GRAPHES_COMP];     //0=vide 1=non_vide -1=non traite
-  unichar Etiquette_comp[NOMBRE_ETIQUETTES_COMP][N_CAR_MAX_COMP];
+  unichar Etiquette_comp[MAX_FST2_TAGS][N_CAR_MAX_COMP];
   unichar chemin_alphabet[TAILLE_MOT_GRAND_COMP];
   unichar chemin_graphe_principal[TAILLE_MOT_GRAND_COMP];
 };
@@ -181,7 +170,7 @@ extern int n_malloc_comp;
 extern int n_free_comp;
 extern int compteur_char;
 extern int compteur_free_char;
-
+extern unichar pckg_path[TAILLE_MOT_GRAND_COMP];
 
 void vider_noeud_num_char_det(struct noeud_num_char_det *);
 

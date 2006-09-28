@@ -28,7 +28,7 @@ struct donnees_comp *donnees;
 unichar pckg_path[TAILLE_MOT_GRAND_COMP];
 int nombre_graphes_comp;
 int nombre_etiquettes_comp; /* attention: may be confused with macro
-                               NOMBRE_ETIQUETTES_COMP */
+                               MAX_FST2_TAGS */
 struct noeud_g_comp *rac_graphe_comp; //racine de l'arbre des graphes
 struct noeud_comp *rac_comp; //racine de l'arbre des étiquettes
 FILE *fs_comp; //fichier de sortie
@@ -950,7 +950,7 @@ void liberer_etat_graphe_comp(Etat_comp etat)
 void liberer_graphe_comp(Etat_comp graphe[])
 {
   int i;
-   for (i=0;i<NOMBRE_ETATS_COMP;i++)
+   for (i=0;i<MAX_FST2_STATES;i++)
      if (graphe[i]!=NULL)
      {
        vider_transitions_comp(graphe[i]->trans);
@@ -962,7 +962,7 @@ void liberer_graphe_comp(Etat_comp graphe[])
 
 int ajouter_etat_deliage_comp(Etat_comp letats[],int dep,int etiq,int *n_etats,int graphe_courant)
 {
-  if(((*n_etats)+1) >= NOMBRE_ETATS_COMP)
+  if(((*n_etats)+1) >= MAX_FST2_STATES)
     {
       char err[1000];
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
@@ -1880,7 +1880,7 @@ void init_locale_comp(Etat_comp *e, int n)
 {
   int i;
 
-  for(i=0;i<NOMBRE_ETATS_COMP;i++)
+  for(i=0;i<MAX_FST2_STATES;i++)
   {
 
    if(i >= n)
@@ -2380,9 +2380,9 @@ int traitement_etiquettes_comp(int *indice,unichar mot[])
   }
   else*/    //CAS NORMAL
   {
-    if(((*indice) = ajouter_etiquette_comp(mot,rac_comp,0)) >= NOMBRE_ETIQUETTES_COMP)
+    if(((*indice) = ajouter_etiquette_comp(mot,rac_comp,0)) >= MAX_FST2_TAGS)
     {
-      fprintf(stderr,"ERROR at top level: Too many tags (maximum %d)\n",NOMBRE_ETIQUETTES_COMP);
+      fprintf(stderr,"ERROR at top level: Too many tags (maximum %d)\n",MAX_FST2_TAGS);
       return -1;
       }
       u_strcpy(donnees->Etiquette_comp[(*indice)],mot);
@@ -2670,9 +2670,9 @@ int traitement_graphe_special(int courant)
     {
       temp[0]=i;
       temp[1]='\0';
-      if((indice = ajouter_etiquette_comp(temp,rac_comp,0)) >= NOMBRE_ETIQUETTES_COMP)
+      if((indice = ajouter_etiquette_comp(temp,rac_comp,0)) >= MAX_FST2_TAGS)
 	{
-	  fprintf(stderr,"ERROR at top level: Too many tags (maximum %d)\n",NOMBRE_ETIQUETTES_COMP);
+	  fprintf(stderr,"ERROR at top level: Too many tags (maximum %d)\n",MAX_FST2_TAGS);
 	  return 0;
 	}
       u_strcpy(donnees->Etiquette_comp[indice],temp);
@@ -2682,9 +2682,9 @@ int traitement_graphe_special(int courant)
   unichar diese[10];
   u_strcpy_char(diese,"#");
 
-  if((indice = ajouter_etiquette_comp(diese,rac_comp,0)) >= NOMBRE_ETIQUETTES_COMP)
+  if((indice = ajouter_etiquette_comp(diese,rac_comp,0)) >= MAX_FST2_TAGS)
     {
-      fprintf(stderr,"ERROR at top level: Too many tags (maximum %d)\n",NOMBRE_ETIQUETTES_COMP);
+      fprintf(stderr,"ERROR at top level: Too many tags (maximum %d)\n",MAX_FST2_TAGS);
       return 0;
     }
   u_strcpy(donnees->Etiquette_comp[indice],diese);
@@ -2706,7 +2706,7 @@ int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
    int n_etats_initial, n_etats_final;
    FILE *f;
    char nom[TAILLE_MOT_GRAND_COMP];
-   Etat_comp letats[NOMBRE_ETATS_COMP];
+   Etat_comp letats[MAX_FST2_STATES];
    int sortants[NOMBRE_TRANSITIONS_COMP];
    unichar ligne[TAILLE_MOT_GRAND_COMP];
    char err[1000];
@@ -2743,7 +2743,7 @@ int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
    u_fgetc(f);
    n_etats_initial=u_read_int(f);
 
-   if (n_etats_initial > NOMBRE_ETATS_COMP) //Trop de boites dans graphe
+   if (n_etats_initial > MAX_FST2_STATES) //Trop de boites dans graphe
     {
       donnees->statut_graphe[graphe_courant] = 0;
       sauvegarder_graphe_comp(letats,0,graphe_courant);
@@ -2751,10 +2751,10 @@ int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if(graphe_courant == 0)
       {
-        fprintf(stderr,"ERROR in main graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,NOMBRE_ETATS_COMP);
+        fprintf(stderr,"ERROR in main graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,MAX_FST2_STATES);
         return 0;
       }
-      fprintf(stderr,"WARNING in graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,NOMBRE_ETATS_COMP);
+      fprintf(stderr,"WARNING in graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,MAX_FST2_STATES);
       return 1;
     }
 
@@ -2788,7 +2788,7 @@ int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
           if(graphe_courant == 0) return 0;
           return 1;
         }
-        if (n_etats_final >= NOMBRE_ETATS_COMP) //Trop d'états dans l'automate
+        if (n_etats_final >= MAX_FST2_STATES) //Trop d'états dans l'automate
         {
           donnees->statut_graphe[graphe_courant] = 0;
           sauvegarder_graphe_comp(letats,0,graphe_courant);
