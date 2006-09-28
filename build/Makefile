@@ -57,7 +57,8 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 # USING TRE LIBRARY
 #
 DEFFLAGS = -D_NOT_UNDER_WINDOWS
-CFLAGS   = -Wall -W $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".." -ggdb -pg
+CFLAGS   = -Wall -W 
+override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = libtre
 CLEAN-LIBTRE   = clean-libtre
 LIBS   = -Llibtre/lib -ltre
@@ -66,7 +67,8 @@ else
 # IGNORING TRE LIBRARY
 #
 DEFFLAGS = -D_NOT_UNDER_WINDOWS -DDO_NOT_USE_TRE_LIBRARY
-CFLAGS   = -Wall -W $(DEFFLAGS) -I"../korean" -I".."
+CFLAGS   = -Wall -W 
+override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
 LIBTRE   = 
 CLEAN-LIBTRE   = 
 LIBS   =
@@ -440,6 +442,7 @@ zip: clean
 	rm -rf $(BUILD)
 
 remake: clean all
+
 
 ##########################
 ##########################
