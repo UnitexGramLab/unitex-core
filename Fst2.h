@@ -242,7 +242,7 @@ typedef struct fst2 Fst2;
 
 
 Fst2Transition new_Fst2Transition();
-
+void free_Fst2Transition(Fst2Transition);
 
 
 /* functions for loading grammars */

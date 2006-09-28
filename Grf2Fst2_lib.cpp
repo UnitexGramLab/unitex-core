@@ -626,27 +626,12 @@ void ajouter_transition_mat_det(struct etat_fst_det *e,int etiq,int etarr)
 
 
 
-//
-//liberation de transtion dans etat i
-//
-
-void liberer_transition_mat_det(Fst2Transition ptr)
-{
-  Fst2Transition ptr1;
-  while (ptr!=NULL)
-  {
-    ptr1=ptr;
-    ptr=ptr->next;
-    free_comp(ptr1);
-  }
-}
-
 
 
 void liberer_etat_det(Etat_fst_det e)
 {
   liberer_char_etat_det(e->ens);
-  liberer_transition_mat_det(e->trans);
+  free_Fst2Transition(e->trans);
   free_comp(e);
 
 }
@@ -698,8 +683,19 @@ ensemble_det copie_det(ensemble_det e) {
 }
 
 
+void store_etat_det(Etat_comp g[],int n,Etat_fst_det e) {
 
-void sauvegarder_etat_det(FILE *f,Etat_fst_det e)
+  Fst2Transition ptr;
+
+  g[n] = (Etat_comp) nouvel_etat_comp();
+  if(e->controle&1)
+    g[n]->controle = (unsigned char) 1;
+  g[n]->trans = e->trans;
+  e->trans = NULL; /* destroy old pointer to transitions to avoid double freeing */
+
+}
+
+void sauvegarder_etat_det(FILE *f,Etat_comp e)
 {
  Fst2Transition ptr;
  if(e->controle&1)
@@ -717,15 +713,14 @@ void sauvegarder_etat_det(FILE *f,Etat_fst_det e)
  u_fputc((unichar)'\n',f);
 }
 
+
 //
 // determinize the graph/automaton "graphe" and save it to file "fs_comp"
 //
-int determinisation(FILE* fs_comp,
-                    Etat_comp graphe[]) {
+int determinisation(Etat_comp graphe[]) {
 
   if (graphe[0] == NULL) { // do not segfault on empty automaton
     fprintf(stderr, "warning: resulting automaton is empty\n");
-    u_fprintf(fs_comp, ": \nf \n");
     return 1;
   }
 
@@ -734,6 +729,9 @@ int determinisation(FILE* fs_comp,
   unsigned char final[NBRE_ETIQ_TRANSITION_COMP];
   int hachage[NBRE_ETIQ_TRANSITION_COMP];
   int hachageinv[NBRE_ETIQ_TRANSITION_COMP];
+
+  Etat_comp new_graph[MAX_FST2_STATES];
+  int new_graph_state_n = 0;
 
   Fst2Transition ptr;
   ensemble_det courant;
@@ -843,15 +841,12 @@ int determinisation(FILE* fs_comp,
               resultat[temp]->controle = (unsigned char)((resultat[temp]->controle) | final[i]);
             }
         }
-      sauvegarder_etat_det(fs_comp,resultat[temp2]); // print all transitions of one state
+      store_etat_det(new_graph,new_graph_state_n++,resultat[temp2]); //!!
       liberer_etat_det(resultat[temp2]);
       resultat[temp2] = NULL;
       file_courant++;
       temp2 = file_courant % NBRE_ET;
     }
-  char s[10];
-  sprintf(s,"f \n");
-  u_fprints_char(s,fs_comp);
   liberer_arbre_det(racine_det);
   for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) {
     if (stock[i]!=NULL) {
@@ -859,9 +854,36 @@ int determinisation(FILE* fs_comp,
       liberer_char_etat_det(stock[i]);
     }
   }
+  memcpy(graphe,new_graph,(MAX_FST2_STATES*sizeof(Etat_comp)));
   return 1;
 }
 
+int minimisation(Etat_comp graphe[]) {
+  return 1;
+}
+
+int write_graph(FILE* fs_comp,
+                Etat_comp graphe[]) {
+
+  if (graphe[0] == NULL) { // do not segfault on empty automaton
+    fprintf(stderr, "warning: resulting automaton is empty\n");
+    u_fprintf(fs_comp, ": \nf \n");
+    return 1;
+  }
+  
+  /* print all states */
+  int n = 0;
+  do {
+    sauvegarder_etat_det(fs_comp,graphe[n]);
+  } while (graphe[++n] != NULL);
+
+  /* mark end of graph */
+  char s[10];
+  sprintf(s,"f \n");
+  u_fprints_char(s,fs_comp);
+  
+  return 0;
+}
 
 
 
@@ -886,31 +908,20 @@ Etat_comp nouvel_etat_comp()
   return e;
 }
 
-Fst2Transition nouvelle_transition_comp()
-{
-  Fst2Transition t;
-
-  t = new_Fst2Transition();
-  t->state_number = -1;
-  t->tag_number = 0;
-
-  return t;
-}
-
 
 void ajouter_transition_comp(Etat_comp *letats,int dep,int arr,int etiq)
 {
   Fst2Transition ptr;
 
   //transition
-  ptr = nouvelle_transition_comp();
+  ptr = new_Fst2Transition();
   ptr->state_number = arr;
   ptr->tag_number = etiq;
   ptr->next = letats[dep]->trans;
   letats[dep]->trans = ptr;
 
   //transition inverse
-  ptr = nouvelle_transition_comp();
+  ptr = new_Fst2Transition();
   ptr->state_number = dep;
   ptr->tag_number = etiq;
 
@@ -1281,7 +1292,7 @@ Fst2Transition vider_epsilon_comp(Fst2Transition ptr,Etat_comp *letats,int origi
     liste=e->trans;
     while (liste!=NULL) {
       if(mark[liste->state_number] == 0){ //if not marked
-	tmp=nouvelle_transition_comp();
+	tmp=new_Fst2Transition();
 	tmp->tag_number=liste->tag_number;
 	tmp->state_number=liste->state_number;
 	tmp->next=ptr->next;
@@ -1289,7 +1300,7 @@ Fst2Transition vider_epsilon_comp(Fst2Transition ptr,Etat_comp *letats,int origi
 	//printf("%d,%d,%d\n",origine,tmp->tag_number,tmp->state_number);
 	
 	e2=letats[liste->state_number];
-	tmp=nouvelle_transition_comp();
+	tmp=new_Fst2Transition();
 	tmp->tag_number=liste->tag_number;
 	tmp->state_number=origine;
 	tmp->next=e2->transinv;
@@ -2700,7 +2711,7 @@ int traitement_graphe_special(int courant)
 
 int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
 {
-   int i,det;
+   int i,det,min;
    //int courant;
    int traitement,lire;
    int n_etats_initial, n_etats_final;
@@ -2830,8 +2841,8 @@ int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
           fprintf(stderr,"ERROR: Main graph %s.grf has been emptied\n",err);
           return 0;
         }
-        fprintf(stderr,"WARNING: graph %s.grf has been emptied\n",err);
-        return 1;
+    fprintf(stderr,"WARNING: graph %s.grf has been emptied\n",err);
+    return 1;
    }
   donnees->statut_graphe[graphe_courant] = 1;
   char s[1000];
@@ -2839,10 +2850,13 @@ int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
   u_fprints_char(s,fs_comp);
   u_fprints(donnees->nom_graphe[graphe_courant],fs_comp);
   u_fputc('\n',fs_comp);
-  det = determinisation(fs_comp,letats);
+  det = determinisation(letats);
   //det = 1;
+  min = minimisation(letats);
+  //min = 1;
+  write_graph(fs_comp,letats);
   liberer_graphe_comp(letats);
-  if(det == 0)
+  if( (det == 0) || (min == 0) )
   {
     u_to_char(err,donnees->nom_graphe[graphe_courant]);
     if(graphe_courant == 0)

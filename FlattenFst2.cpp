@@ -84,7 +84,9 @@ u_fprints_char(TEMP,res);
 u_fprints(origin->graph_names[1],res);
 u_fprints_char("\n",res);
 printf("Determinisation...\n");
-determinisation(res,new_main_graph->states); /* determize and write the new main graph */
+determinisation(new_main_graph->states); /* determize and write the new main graph */
+minimisation(new_main_graph->states);
+write_graph(res,new_main_graph->states);
 if (RTN) {
   save_graphs_to_keep(origin,res); // write the still remaining subgraphs
 }
@@ -226,7 +228,7 @@ return N;
 struct flattened_main_graph_info* new_flattened_main_graph_info() {
 struct flattened_main_graph_info* tmp=(struct flattened_main_graph_info*)malloc(sizeof(struct flattened_main_graph_info));
 tmp->current_pos=0;
-tmp->size=100000;
+tmp->size=MAX_FST2_STATES;
 tmp->states=(Etat_comp*)malloc(tmp->size*sizeof(Etat_comp));
 return tmp;
 }

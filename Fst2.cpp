@@ -598,28 +598,28 @@ void write_tag (FILE* f, Fst2Tag tag) {
    else {
       u_fprints_char("%",f);
    }
-   // if the tag is a variable, print '$'
+   /* if the tag is a variable, print '$' */
    if (tag->control & (START_VAR_TAG_BIT_MASK|END_VAR_TAG_BIT_MASK)) {
      u_fprints_char("$",f);
    }
-   // print the content (label) of the tag
+   /* print the content (label) of the tag */
    u_fprints(tag->input,f);
-   // if any, we add the morphological filter: <A><<^pre>>
+   /* if any, we add the morphological filter: <A><<^pre>> */
    if (tag->contentGF!=NULL &&
        tag->contentGF[0]!='\0') {
      u_fprints(tag->contentGF,f);
    }
-   // if any, we add transitions
+   /* if any, we add transitions */
    if (tag->output!=NULL &&
        tag->output[0]!='\0') {
      u_fprints_char("/",f);
      u_fprints(tag->output,f);
    }
-   // print closing '(' for variables
+   /* print closing '(' for variables */
    else if (tag->control & START_VAR_TAG_BIT_MASK) {
      u_fprints_char("(",f);
    }
-   // or ')' resp.
+   /* or ')' resp. */
    else if (tag->control & END_VAR_TAG_BIT_MASK) {
      u_fprints_char(")",f);
    }
