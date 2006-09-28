@@ -37,11 +37,6 @@ int n_malloc_comp=0;
 int n_free_comp=0;
 int compteur_char=0;
 int compteur_free_char=0;
-ensemble_det stock[NBRE_ETIQ_TRANSITION_COMP];
-unsigned char final[NBRE_ETIQ_TRANSITION_COMP];
-int hachage[NBRE_ETIQ_TRANSITION_COMP];
-int hachageinv[NBRE_ETIQ_TRANSITION_COMP];
-Etat_fst_det resultat[NBRE_ET];
 
 
 
@@ -259,35 +254,6 @@ Llist_i_comp ll_i_copy(Llist_i_comp ll){
 }
 
 
-/*------------------------------------------------------*/
-
-
-
-unsigned char toupper(unsigned char c) {
-  // called from "get_sous_noeud_g_comp"
-  /* converts a filename (ascii only) to uppercase
-     Maybe this function was introduced for backward compability
-     to Unitex on DOS-based systems Win 95/98/ME and (accordingly) Intex.
-     I think it should depend on the operating system, which
-     file names point to the the same file. Unitex makes a difference
-     between different cased filenames in the graph editor (depending on Java,
-     which provides only an interface to the OS), so it should behave
-     when compiling graphs.
-     I.e.: THIS FUNCTION IS OBSOLETE!
-  */
-#ifdef _NOT_UNDER_WINDOWS
-  /* Since on Unix OSs case in filenames has always been distinctive,
-     this would be a "pragmatic" hack, but makes (for those who think
-     "case.grf" and "CASE.GRF" are the same file) graphs not
-     portable: */
-  return c;
-#endif
-  /* Beside: toupper is also defined in <ctype.h>.
-     Not very sophisticated to replace stdlib-functions.
-     (Seb., Munich) */
-  if (c>='a' && c<='z') return (unsigned char)(c-('a'-'A'));
-  return c;
-}
 
 
 
@@ -334,7 +300,7 @@ default: fprintf(stderr,"Internal error in is_letter_generic\n"); exit(1);
 // initialise le graphe
 //
 void init_graphe_mat_det(Etat_fst_det resultat[]) {
-long int i;
+register long int i;
 for (i=0;i<NBRE_ET;i++)
   resultat[i]=NULL;
 }
@@ -644,31 +610,17 @@ Etat_fst_det nouvel_etat_mat_det()
 
 
 //
-// cree et renvoie une nouvelle transition
-//
-liste_transition_det nouvelle_transition_mat_det()
-{
-  liste_transition_det t;
-  t=(liste_transition_det)malloc_comp(sizeof(struct transition_fst_det));
-  t->etiquette=-1;
-  t->arr=-1;
-  t->suivant=NULL;
-  return t;
-}
-
-
-//
 // ajoute une transition a l'etat courant
 //
 
 void ajouter_transition_mat_det(struct etat_fst_det *e,int etiq,int etarr)
 {
-  struct transition_fst_det *ptr;
+  Fst2Transition ptr;
 
-  ptr=nouvelle_transition_mat_det();
-  ptr->suivant=e->trans;
-  ptr->etiquette=etiq;
-  ptr->arr=etarr;
+  ptr=new_Fst2Transition();
+  ptr->next=e->trans;
+  ptr->tag_number=etiq;
+  ptr->state_number=etarr;
   e->trans=ptr;
 }
 
@@ -678,13 +630,13 @@ void ajouter_transition_mat_det(struct etat_fst_det *e,int etiq,int etarr)
 //liberation de transtion dans etat i
 //
 
-void liberer_transition_mat_det(struct transition_fst_det *ptr)
+void liberer_transition_mat_det(Fst2Transition ptr)
 {
-  struct transition_fst_det *ptr1;
+  Fst2Transition ptr1;
   while (ptr!=NULL)
   {
     ptr1=ptr;
-    ptr=ptr->suivant;
+    ptr=ptr->next;
     free_comp(ptr1);
   }
 }
@@ -719,7 +671,7 @@ void init_hachage_det(int h[])
 
 void init_stock_det(ensemble_det s[])
 {
-  int i;
+  register int i;
   for(i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) s[i]=NULL;
 }
 
@@ -747,15 +699,9 @@ ensemble_det copie_det(ensemble_det e) {
 
 
 
-///////////////////////////////////////////////////////////////
-////////////// AUTRES ////////////////////////////////////////
-/////////////////////////////////////////////////////////////
-
-
-
 void sauvegarder_etat_det(FILE *f,Etat_fst_det e)
 {
- struct transition_fst_det *ptr;
+ Fst2Transition ptr;
  if(e->controle&1)
    u_fputc((unichar)'t',f);
  else u_fputc((unichar)':',f);
@@ -763,9 +709,9 @@ void sauvegarder_etat_det(FILE *f,Etat_fst_det e)
  while(ptr!=NULL)
    {
      char s[1000];
-     sprintf(s," %d %d",ptr->etiquette,ptr->arr);
+     sprintf(s," %d %d",ptr->tag_number,ptr->state_number);
      u_fprints_char(s,f);
-     ptr=ptr->suivant;
+     ptr=ptr->next;
    }
  u_fputc((unichar)' ',f);
  u_fputc((unichar)'\n',f);
@@ -783,13 +729,19 @@ int determinisation(FILE* fs_comp,
     return 1;
   }
 
-  Transition_comp ptr;
+  Etat_fst_det resultat[NBRE_ET];
+  ensemble_det stock[NBRE_ETIQ_TRANSITION_COMP];
+  unsigned char final[NBRE_ETIQ_TRANSITION_COMP];
+  int hachage[NBRE_ETIQ_TRANSITION_COMP];
+  int hachageinv[NBRE_ETIQ_TRANSITION_COMP];
+
+  Fst2Transition ptr;
   ensemble_det courant;
   unsigned long int q;  //etat courant ancien graphe
   int count;  //compteur pour savoir ou l'on se trouve dans notre int de 32 bits
   int compteur; //compteur pour savoir l'indice du dernier ensemble rentre dans stock;
   int num;
-  int i, file_courant=0, k;
+  int i, file_courant, k;
   int temp, dernier_etat_res;
   int temp2, sous_graphe;
   struct noeud_valeur_det *racine_det;
@@ -800,9 +752,11 @@ int determinisation(FILE* fs_comp,
   init_resultat_det(resultat,racine_det,dernier_etat_res);
   dernier_etat_res = 0;
 
-  if ( (graphe[0]->controle) & 1)
+  if ( (graphe[0]->controle) & 1 )
     resultat[0]->controle = (unsigned char)(resultat[0]->controle | 1);
   init_stock_det(stock);
+
+  file_courant = 0;
   temp2 = file_courant % NBRE_ET;
   while (resultat[temp2] != NULL)
     {
@@ -821,7 +775,7 @@ int determinisation(FILE* fs_comp,
                   ptr = graphe[q]->trans;
                   while (ptr != NULL)
                     {
-                      temp = ptr->etiq;
+                      temp = ptr->tag_number;
 
                       if (temp < 0)
                         {
@@ -845,10 +799,10 @@ int determinisation(FILE* fs_comp,
                           stock[compteur] = NULL;
                           compteur++;
                         }
-                      ajouter_etat_dans_ensemble_det(ptr->arr,&stock[hachage[temp]]);
-                      if (((graphe[ptr->arr]->controle) & 1 ) != 0)
+                      ajouter_etat_dans_ensemble_det(ptr->state_number,&stock[hachage[temp]]);
+                      if (((graphe[ptr->state_number]->controle) & 1 ) != 0)
                         final[hachage[temp]] = 1;    //test de finalite
-                      ptr = ptr->suivant;
+                      ptr = ptr->next;
                     }
                 }
               count++;
@@ -932,14 +886,13 @@ Etat_comp nouvel_etat_comp()
   return e;
 }
 
-Transition_comp nouvelle_transition_comp()
+Fst2Transition nouvelle_transition_comp()
 {
-  Transition_comp t;
+  Fst2Transition t;
 
-  t = (Transition_comp)malloc_comp(sizeof(struct transition_comp));
-  t->arr = -1;
-  t->etiq = 0;
-  t->suivant = NULL;
+  t = new_Fst2Transition();
+  t->state_number = -1;
+  t->tag_number = 0;
 
   return t;
 }
@@ -947,21 +900,21 @@ Transition_comp nouvelle_transition_comp()
 
 void ajouter_transition_comp(Etat_comp *letats,int dep,int arr,int etiq)
 {
-  Transition_comp ptr;
+  Fst2Transition ptr;
 
   //transition
   ptr = nouvelle_transition_comp();
-  ptr->arr = arr;
-  ptr->etiq = etiq;
-  ptr->suivant = letats[dep]->trans;
+  ptr->state_number = arr;
+  ptr->tag_number = etiq;
+  ptr->next = letats[dep]->trans;
   letats[dep]->trans = ptr;
 
   //transition inverse
   ptr = nouvelle_transition_comp();
-  ptr->arr = dep;
-  ptr->etiq = etiq;
+  ptr->state_number = dep;
+  ptr->tag_number = etiq;
 
-  ptr->suivant = letats[arr]->transinv;
+  ptr->next = letats[arr]->transinv;
   letats[arr]->transinv = ptr;
 
 }
@@ -970,10 +923,10 @@ void ajouter_transition_comp(Etat_comp *letats,int dep,int arr,int etiq)
 //
 // vide la liste de transitions ptr
 //
-void vider_transitions_comp(Transition_comp ptr)
+void vider_transitions_comp(Fst2Transition ptr)
 {
   if (ptr==NULL) return;
-  vider_transitions_comp(ptr->suivant);
+  vider_transitions_comp(ptr->next);
   free_comp(ptr);
 }
 
@@ -1286,15 +1239,15 @@ void init_arbres_comp()
 //
 // enleve la transition inverse allant vers origine de la liste ptr
 //
-Transition_comp degager_transition_inverse_comp(Transition_comp ptr,int origine) {
-  Transition_comp tmp;
+Fst2Transition degager_transition_inverse_comp(Fst2Transition ptr,int origine) {
+  Fst2Transition tmp;
   if (ptr==NULL) return NULL;
-  if (((ptr->arr)==origine)&&((ptr->etiq)==EPSILON_comp)) {
-    tmp=ptr->suivant;
+  if (((ptr->state_number)==origine)&&((ptr->tag_number)==EPSILON_comp)) {
+    tmp=ptr->next;
     free_comp(ptr);
     return tmp;
   }
-  ptr->suivant=degager_transition_inverse_comp(ptr->suivant,origine);
+  ptr->next=degager_transition_inverse_comp(ptr->next,origine);
   return ptr;
 }
 
@@ -1303,20 +1256,20 @@ Transition_comp degager_transition_inverse_comp(Transition_comp ptr,int origine)
 //
 // enleve les epsilon transitions de la liste ptr
 //
-Transition_comp vider_epsilon_comp(Transition_comp ptr,Etat_comp *letats,int origine, int mark[]) {  
-  Transition_comp liste,tmp;
+Fst2Transition vider_epsilon_comp(Fst2Transition ptr,Etat_comp *letats,int origine, int mark[]) {  
+  Fst2Transition liste,tmp;
   Etat_comp e,e2;  
   if (ptr == NULL) return NULL;
-  if (ptr->etiq == EPSILON_comp) {
-    e = letats[ptr->arr];
-    mark[ptr->arr] = 1; // we mark the current state as already been a destination state
-    //printf("mark %d\n",ptr->arr);
-    //printf("%d:%d\n",origine,ptr->arr);
-    if (ptr->arr == origine) {
+  if (ptr->tag_number == EPSILON_comp) {
+    e = letats[ptr->state_number];
+    mark[ptr->state_number] = 1; // we mark the current state as already been a destination state
+    //printf("mark %d\n",ptr->state_number);
+    //printf("%d:%d\n",origine,ptr->state_number);
+    if (ptr->state_number == origine) {
       // if we have a loop by epsilon, we can ignore it, because (a|<E>)+ has
       // has already been turned into a+ | <E>
       liste=ptr;
-      ptr=ptr->suivant;
+      ptr=ptr->next;
       free(liste);
       return ptr;
     }
@@ -1327,29 +1280,29 @@ Transition_comp vider_epsilon_comp(Transition_comp ptr,Etat_comp *letats,int ori
     }    
     liste=e->trans;
     while (liste!=NULL) {
-      if(mark[liste->arr] == 0){ //if not marked
+      if(mark[liste->state_number] == 0){ //if not marked
 	tmp=nouvelle_transition_comp();
-	tmp->etiq=liste->etiq;
-	tmp->arr=liste->arr;
-	tmp->suivant=ptr->suivant;
-	ptr->suivant=tmp;
-	//printf("%d,%d,%d\n",origine,tmp->etiq,tmp->arr);
+	tmp->tag_number=liste->tag_number;
+	tmp->state_number=liste->state_number;
+	tmp->next=ptr->next;
+	ptr->next=tmp;
+	//printf("%d,%d,%d\n",origine,tmp->tag_number,tmp->state_number);
 	
-	e2=letats[liste->arr];
+	e2=letats[liste->state_number];
 	tmp=nouvelle_transition_comp();
-	tmp->etiq=liste->etiq;
-	tmp->arr=origine;
-	tmp->suivant=e2->transinv;
+	tmp->tag_number=liste->tag_number;
+	tmp->state_number=origine;
+	tmp->next=e2->transinv;
 	e2->transinv=tmp;
       }
-      liste=liste->suivant;
+      liste=liste->next;
     }
-    tmp=ptr->suivant;
+    tmp=ptr->next;
     e->transinv=degager_transition_inverse_comp(e->transinv,origine);   
     free_comp(ptr);
     return vider_epsilon_comp(tmp,letats,origine,mark);
   }
-  ptr->suivant=vider_epsilon_comp(ptr->suivant,letats,origine,mark);
+  ptr->next=vider_epsilon_comp(ptr->next,letats,origine,mark);
   return ptr;
 }
 
@@ -1382,17 +1335,17 @@ void add_closure(Llist_i_comp* closures,int q,Llist_i_comp nlist){
 
 
 Llist_i_comp get_epsilon_closure_rec(Llist_i_comp* closures,Etat_comp *letats,int q, unsigned char mark[]){
-  Transition_comp ptr;
+  Fst2Transition ptr;
 
   if(mark[q] == 0){ // si non marque
     mark[q] = 1;
     ll_i_insert_sorted(&(closures[q]),q);
     ptr = letats[q]->trans;
     while(ptr != NULL){
-      if((ptr->etiq == EPSILON_comp) && (ptr->arr != q)){
-	add_closure(closures,q,get_epsilon_closure_rec(closures,letats,ptr->arr,mark));
+      if((ptr->tag_number == EPSILON_comp) && (ptr->state_number != q)){
+	add_closure(closures,q,get_epsilon_closure_rec(closures,letats,ptr->state_number,mark));
       }
-      ptr = ptr->suivant;
+      ptr = ptr->next;
     }
   }
   return closures[q];
@@ -1421,20 +1374,20 @@ Llist_i_comp * get_epsilon_closures(Etat_comp *letats,int n){
 
 
 void remove_all_epsilon_transitions(Etat_comp *letats, int n){
-  Transition_comp ptr,res,temp;  
+  Fst2Transition ptr,res,temp;  
 
   for(int i = 0 ; i < n ; i++){ // pour chq etat
     ptr = letats[i]->trans;
     res = NULL;
     while(ptr != NULL){ //pr chq transition     
       temp = ptr;
-      ptr = ptr->suivant;
+      ptr = ptr->next;
       
-      if(temp->etiq == EPSILON_comp){ // on supprime transition
+      if(temp->tag_number == EPSILON_comp){ // on supprime transition
 	free_comp(temp); 
       }
       else{
-	temp->suivant = res;
+	temp->next = res;
 	res = temp;
       }      
     }
@@ -1444,13 +1397,13 @@ void remove_all_epsilon_transitions(Etat_comp *letats, int n){
     res = NULL;
     while(ptr != NULL){ //pr chq transition inverse
       temp = ptr;
-      ptr = ptr->suivant;
+      ptr = ptr->next;
       
-      if(temp->etiq == EPSILON_comp){ // on supprime transition inverse
+      if(temp->tag_number == EPSILON_comp){ // on supprime transition inverse
 	free_comp(temp); 
       }
       else{
-	temp->suivant = res;
+	temp->next = res;
 	res = temp;
       }      
     }
@@ -1464,7 +1417,7 @@ void remove_all_epsilon_transitions(Etat_comp *letats, int n){
 void add_transitions_according_to_epsilon_closure(Llist_i_comp *closures,Etat_comp *letats,int n){
   unsigned int i;
   struct ll_i_cell_comp *ptr;
-  Transition_comp tr;
+  Fst2Transition tr;
   Etat_comp e;
 
   for(i = 0 ; i < (unsigned int)n ; i++){ //pour chq etat
@@ -1479,8 +1432,8 @@ void add_transitions_according_to_epsilon_closure(Llist_i_comp *closures,Etat_co
 	  }
 	  tr = e->trans;
 	  while(tr != NULL){
-	    ajouter_transition_comp(letats,i,tr->arr,tr->etiq);
-	    tr = tr->suivant;
+	    ajouter_transition_comp(letats,i,tr->state_number,tr->tag_number);
+	    tr = tr->next;
 	  }
 	}
 	ptr = ptr->next;
@@ -1526,7 +1479,7 @@ void virer_epsilon_transitions_comp(Etat_comp *letats,int n){
 
 void accessibilite_comp(Etat_comp *e,int i)
 {
-  Transition_comp t;
+  Fst2Transition t;
 
   if((e[i]!=NULL) && ((e[i]->controle)&4)==0)
     {
@@ -1534,8 +1487,8 @@ void accessibilite_comp(Etat_comp *e,int i)
       t=e[i]->trans;
       while(t!=NULL)
 	{
-	  accessibilite_comp(e,t->arr);
-	  t=t->suivant;
+	  accessibilite_comp(e,t->state_number);
+	  t=t->next;
 	}
     }
 }
@@ -1547,7 +1500,7 @@ void accessibilite_comp(Etat_comp *e,int i)
 
 void co_accessibilite_comp(Etat_comp *e,int i)
 {
-  Transition_comp t;
+  Fst2Transition t;
 
   if((e[i]!=NULL) && ((e[i]->controle)&8)==0)
     {
@@ -1555,36 +1508,36 @@ void co_accessibilite_comp(Etat_comp *e,int i)
       t=e[i]->transinv;
       while(t!=NULL)
 	{
-	  co_accessibilite_comp(e,t->arr);
-	  t=t->suivant;
+	  co_accessibilite_comp(e,t->state_number);
+	  t=t->next;
 	}
     }
 }
 
 
-Transition_comp supprimer_transition_comp(Etat_comp *letats,int i,Transition_comp ptr)
+Fst2Transition supprimer_transition_comp(Etat_comp *letats,int i,Fst2Transition ptr)
 {
-  Transition_comp tmp,t,tmp2;
+  Fst2Transition tmp,t,tmp2;
   int j,etiq;
 
-  j=ptr->arr;
-  etiq=ptr->etiq;
+  j=ptr->state_number;
+  etiq=ptr->tag_number;
 
-  tmp=ptr->suivant;
+  tmp=ptr->next;
   free_comp(ptr);
 
   /* Suppression de la transition inverse correspondante */
   t=letats[j]->transinv;
   while(t!=NULL)
     {
-      if((t->arr==i) && (t->etiq==etiq))
+      if((t->state_number==i) && (t->tag_number==etiq))
 	{
 	  tmp2=t;
-	  t=t->suivant;
+	  t=t->next;
 	  free_comp(tmp2);
 	}
       else
-	t=t->suivant;
+	t=t->next;
     }
 
   return tmp;
@@ -1596,29 +1549,29 @@ Transition_comp supprimer_transition_comp(Etat_comp *letats,int i,Transition_com
 //retourne transition suivante
 //
 
-Transition_comp supprimer_transitioninv_comp(Etat_comp *letats,int i,Transition_comp ptr)
+Fst2Transition supprimer_transitioninv_comp(Etat_comp *letats,int i,Fst2Transition ptr)
 {
-  Transition_comp tmp,t,tmp2;
+  Fst2Transition tmp,t,tmp2;
   int j,etiq;
 
-  j=ptr->arr;
-  etiq=ptr->etiq;
+  j=ptr->state_number;
+  etiq=ptr->tag_number;
 
-  tmp=ptr->suivant;
+  tmp=ptr->next;
   free_comp(ptr);
 
   /* Suppression de la transition correspondante */
   t=letats[j]->trans;
   while(t!=NULL)
     {
-      if((t->arr==i) && (t->etiq==etiq))
+      if((t->state_number==i) && (t->tag_number==etiq))
 	{
 	  tmp2=t;
-	  t=t->suivant;
+	  t=t->next;
 	  free_comp(tmp2);
 	}
       else
-	t=t->suivant;
+	t=t->next;
     }
 
   return tmp;
@@ -1630,40 +1583,40 @@ Transition_comp supprimer_transitioninv_comp(Etat_comp *letats,int i,Transition_
 // vire ptr si ptr pointe sur un etat a virer
 //
 // with complex graphs we got a stack overflow with this recursive function:
-//// Transition_comp vider_trans_reciproques_comp(Transition_comp ptr,Etat_comp *letats)
+//// Fst2Transition vider_trans_reciproques_comp(Fst2Transition ptr,Etat_comp *letats)
 //// {
-////   Transition_comp tmp;
+////   Fst2Transition tmp;
 ////   if (ptr==NULL) return NULL;
-////   if((((letats[ptr->arr]->controle)&4)==0)||(((letats[ptr->arr]->controle)&8)==0))
+////   if((((letats[ptr->state_number]->controle)&4)==0)||(((letats[ptr->state_number]->controle)&8)==0))
 ////   {
-////     tmp=ptr->suivant;
+////     tmp=ptr->next;
 ////     free_comp(ptr);
 ////     return vider_trans_reciproques_comp(tmp,letats);
 ////   }
-////   ptr->suivant=vider_trans_reciproques_comp(ptr->suivant,letats);
+////   ptr->next=vider_trans_reciproques_comp(ptr->next,letats);
 ////   return ptr;
 //// }
 // it's replaced now by an iterative one:
-Transition_comp vider_trans_reciproques_comp(Transition_comp ptr,Etat_comp *letats)
+Fst2Transition vider_trans_reciproques_comp(Fst2Transition ptr,Etat_comp *letats)
 {
-  Transition_comp tmp, tmp2, tmp_old;
+  Fst2Transition tmp, tmp2, tmp_old;
   tmp=ptr;
   while (tmp!=NULL)
     {
-      if ((((letats[tmp->arr]->controle)&4)==0)||(((letats[tmp->arr]->controle)&8)==0))
+      if ((((letats[tmp->state_number]->controle)&4)==0)||(((letats[tmp->state_number]->controle)&8)==0))
         {
-          tmp2=tmp->suivant;
+          tmp2=tmp->next;
           if (tmp == ptr)
             ptr = tmp2;
           else
-            tmp_old->suivant = tmp2;
+            tmp_old->next = tmp2;
           free_comp(tmp);
           tmp=tmp2;
         }
       else
         {
           tmp_old = tmp;
-          tmp=tmp->suivant;
+          tmp=tmp->next;
         }
     }
   return ptr;
@@ -1683,11 +1636,11 @@ return ((((e->controle)&4)==0)||(((e->controle)&8)==0));
 // remplace ancien par nouveau dans les transitions sortant de l'etat e
 //
 void mettre_a_jour_sortie_comp(Etat_comp e,int ancien,int nouveau) {
-Transition_comp ptr;
+Fst2Transition ptr;
 ptr=e->trans;
  while (ptr!=NULL) {
-   if (ptr->arr==ancien) ptr->arr=nouveau;
-   ptr=ptr->suivant;
+   if (ptr->state_number==ancien) ptr->state_number=nouveau;
+   ptr=ptr->next;
  }
 }
 
@@ -1698,11 +1651,11 @@ ptr=e->trans;
 // remplace ancien par nouveau dans les transitions entrant dans l'etat e
 //
 void mettre_a_jour_entree_comp(Etat_comp e,int ancien,int nouveau) {
-Transition_comp ptr;
+Fst2Transition ptr;
 ptr=e->transinv;
  while (ptr!=NULL) {
-   if (ptr->arr==ancien) ptr->arr=nouveau;
-   ptr=ptr->suivant;
+   if (ptr->state_number==ancien) ptr->state_number=nouveau;
+   ptr=ptr->next;
  }
 }
 
@@ -1713,18 +1666,18 @@ ptr=e->transinv;
 // renumerote les transitions vers ancien en transitions vers nouveau
 //
 void renumeroter_comp(Etat_comp *liste,int ancien,int nouveau) {
-Transition_comp ptr;
+Fst2Transition ptr;
 ptr=liste[ancien]->trans;
  while (ptr!=NULL) {
-   if (ptr->arr!=ancien) mettre_a_jour_entree_comp(liste[ptr->arr],ancien,nouveau);
-   else ptr->arr=nouveau;
-   ptr=ptr->suivant;
+   if (ptr->state_number!=ancien) mettre_a_jour_entree_comp(liste[ptr->state_number],ancien,nouveau);
+   else ptr->state_number=nouveau;
+   ptr=ptr->next;
    }
 
 ptr=liste[ancien]->transinv;
  while (ptr!=NULL) {
-   mettre_a_jour_sortie_comp(liste[ptr->arr],ancien,nouveau);
-   ptr=ptr->suivant;
+   mettre_a_jour_sortie_comp(liste[ptr->state_number],ancien,nouveau);
+   ptr=ptr->next;
    }
 }
 
@@ -1881,7 +1834,7 @@ void conformer_nom_graphe_comp(char * NOM, int courant) {
 void sauvegarder_graphe_comp(Etat_comp *letats,int n_et,int n_gr)
 {
   int i;
-  Transition_comp t;
+  Fst2Transition t;
   char s[1000],s2[1000];
 
   u_to_char(s2,donnees->nom_graphe[n_gr]);
@@ -1902,10 +1855,10 @@ void sauvegarder_graphe_comp(Etat_comp *letats,int n_et,int n_gr)
 	  t=letats[i]->trans;
 	  while(t!=NULL)
 	    {
-	      if (t->etiq>=0) sprintf(s," %d %d",t->etiq,t->arr);
-	      else sprintf(s," %d %d",t->etiq,t->arr);
+	      if (t->tag_number>=0) sprintf(s," %d %d",t->tag_number,t->state_number);
+	      else sprintf(s," %d %d",t->tag_number,t->state_number);
           u_fprints_char(s,fs_comp);
-	      t=t->suivant;
+	      t=t->next;
 	    }
       sprintf(s,"\n");
       u_fprints_char(s,fs_comp);

@@ -26,6 +26,7 @@
 
 #include "unicode.h"
 #include "Alphabet.h"
+#include "Fst2.h"
 #include "Error.h"
 #include "FileName.h"
 
@@ -55,7 +56,6 @@ struct char_etats_det {
   struct char_etats_det *suivant;
 };
 
-
 typedef struct char_etats_det* ensemble_det;
 
 
@@ -64,24 +64,12 @@ typedef struct char_etats_det* ensemble_det;
 //
 struct etat_fst_det
 {
-  unsigned char controle;        // etat final ou pas
-  struct char_etats_det *ens;            //ensemble des etats de graphe regroupes dans cet etat
-  struct transition_fst_det *trans;     // transition_fsts partant de cet etat
+  unsigned char  controle;        // etat final ou pas
+  ensemble_det   ens;            //ensemble des etats de graphe regroupes dans cet etat
+  Fst2Transition trans;     // transition_fsts partant de cet etat
 };
 
 typedef struct etat_fst_det* Etat_fst_det;
-
-
-//
-// structure d'une transition
-//
-struct transition_fst_det {
-  int etiquette;                // etiquette de la transition : un entier
-  int arr;                      // etat d'arrivee de la transition
-  struct transition_fst_det *suivant;   // transition suivante
-};
-
-typedef struct transition_fst_det *liste_transition_det;
 
 
 //
@@ -124,26 +112,12 @@ struct liste_branches_num_char_det {
 struct etat_comp
 {
   unsigned char controle;          // octet de controle
-  struct transition_comp *trans;         //liste des transitions
-  struct transition_comp *transinv;         // liste des transitions inverses
+  Fst2Transition trans;         //liste des transitions
+  Fst2Transition transinv;         // liste des transitions inverses
 };
 
 typedef struct etat_comp* Etat_comp;
 
-
-
-///
-//Structure d'une transition
-//
-
-struct transition_comp
-{
-  int arr;                // etat d'arrivee
-  int etiq;   // etiquettes a deplier
-  struct transition_comp *suivant; //pointeur sur transition suivante
-};
-
-typedef struct transition_comp *Transition_comp;
 
 
 
@@ -207,12 +181,6 @@ extern int n_malloc_comp;
 extern int n_free_comp;
 extern int compteur_char;
 extern int compteur_free_char;
-extern ensemble_det stock[NBRE_ETIQ_TRANSITION_COMP];
-extern unsigned char final[NBRE_ETIQ_TRANSITION_COMP];
-extern int hachage[NBRE_ETIQ_TRANSITION_COMP];
-extern int hachageinv[NBRE_ETIQ_TRANSITION_COMP];
-extern Etat_fst_det resultat[NBRE_ET];
-extern unichar pckg_path[TAILLE_MOT_GRAND_COMP];
 
 
 void vider_noeud_num_char_det(struct noeud_num_char_det *);
@@ -223,7 +191,6 @@ void virer_epsilon_transitions_comp(Etat_comp *letats,int n);
 void eliminer_etats_comp(Etat_comp *letats,int *n_etats);
 void liberer_etat_graphe_comp(Etat_comp etat);
 Etat_comp nouvel_etat_comp();
-Transition_comp nouvelle_transition_comp();
 struct noeud_valeur_det* nouveau_noeud_valeur_det();
 void init_graphe_mat_det(Etat_fst_det resultat[]);
 void init_resultat_det(Etat_fst_det resultat[],struct noeud_valeur_det *racine,int dernier_etat_res);

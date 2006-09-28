@@ -284,8 +284,8 @@ if ((new_main_graph->size)-(new_main_graph->current_pos) < 10000) {
 /* tab contains list of all subgraphs to be incorporated */
 int resize_of_tab_step = 1024;
 int size_of_tab = resize_of_tab_step;
-struct transition_comp** tab = 
-  (transition_comp**) malloc(size_of_tab * sizeof(transition_comp));
+struct fst2Transition** tab = 
+  (struct fst2Transition**) malloc(size_of_tab * sizeof(fst2Transition));
 int pos_in_tab = 0;
 
 // first, we copy the original states
@@ -303,10 +303,10 @@ for (int i=grammar->initial_states[n_graph];i<limite;i++) {
       } else {
         // in a subgraph:
         // we add an epsilon transition pointing to the arr specified in parameter
-        struct transition_comp* temp=nouvelle_transition_comp();
-        temp->etiq=0;
-        temp->arr=arr;
-        temp->suivant=etat->trans;
+        Fst2Transition temp=new_Fst2Transition();
+        temp->tag_number=0;
+        temp->state_number=arr;
+        temp->next=etat->trans;
         etat->trans=temp;
       }
     }
@@ -314,22 +314,22 @@ for (int i=grammar->initial_states[n_graph];i<limite;i++) {
     while (l!=NULL) {
        if (RTN || ((l->tag_number>=0) || (depth<max_depth))) {
           // if we must produce a FST and if we have a subgraph call
-          struct transition_comp* temp=nouvelle_transition_comp();
-          temp->etiq=l->tag_number;
+          Fst2Transition temp=new_Fst2Transition();
+          temp->tag_number=l->tag_number;
           // to compute the arr value, we must consider the relative value
-          // of l->arr which is (l->arr)-grammar->debut_graphe_fst2[1]
+          // of l->state_number which is (l->state_number)-grammar->debut_graphe_fst2[1]
           // and add to it the starting position of the current graph
           // which is 0 for the main graph
-          temp->arr = initial_pos + (l->state_number) - grammar->initial_states[n_graph];
-          temp->suivant=etat->trans;
-          if ((temp->etiq) < 0) {
+          temp->state_number = initial_pos + (l->state_number) - grammar->initial_states[n_graph];
+          temp->next=etat->trans;
+          if ((temp->tag_number) < 0) {
              // if the transition is a reference to a sub-graph
              if (depth<max_depth) {
                 // if we must flatten:
                 // we note it in order the modify it later
                if (pos_in_tab >= size_of_tab) { // resize tab
                  size_of_tab += resize_of_tab_step;
-                 tab = (transition_comp**) realloc(tab, (size_of_tab * sizeof(transition_comp*)));
+                 tab = (fst2Transition**) realloc(tab, (size_of_tab * sizeof(fst2Transition*)));
                }
                tab[pos_in_tab++]=temp;
              }
@@ -337,7 +337,7 @@ for (int i=grammar->initial_states[n_graph];i<limite;i++) {
                 // if we have overpassed the maximum depth,
                 // we just produce a call to the subgraph taking
                 // care of the graph renumerotation
-                temp->etiq=-(new_graph_number[-(l->tag_number)]);
+                temp->tag_number=-(new_graph_number[-(l->tag_number)]);
                 (*SUBGRAPH_CALL)++;
              }
           }
@@ -358,22 +358,22 @@ for (int i=grammar->initial_states[n_graph];i<limite;i++) {
 // then, if there were some calls to subgraphs, we copy them
 for (int i=0;i<pos_in_tab;i++) {
    // we flatten recursively the subgraph
-   int starting_pos = flatten_graph(grammar,-(tab[i]->etiq),
+   int starting_pos = flatten_graph(grammar,-(tab[i]->tag_number),
                                     depth+1,max_depth,
                                     new_main_graph,
-                                    tab[i]->arr,RTN,
+                                    tab[i]->state_number,RTN,
                                     SUBGRAPH_CALL_IGNORED,SUBGRAPH_CALL);
    // and we replace the subgraph call by an epsilon transition to the initial state
    // of the flattened subgraph
-   tab[i]->etiq=0;
-   tab[i]->arr=starting_pos;
+   tab[i]->tag_number=0;
+   tab[i]->state_number=starting_pos;
 }
 
 if (n_graph == 1) { // in main graph
-  if (SUBGRAPH_CALL)
+  if (*SUBGRAPH_CALL)
     return EQUIVALENT_RTN;
   else {
-    if (SUBGRAPH_CALL_IGNORED)
+    if (*SUBGRAPH_CALL_IGNORED)
       return APPROXIMATIVE_FST;
     else
       return EQUIVALENT_FST;
@@ -396,14 +396,14 @@ void remove_epsilon_transitions_in_flattened_graph(struct flattened_main_graph_i
 // this function add a transition to a state
 //
 void add_reverse_transition_to_state(int etiq,int dest,Etat_comp e) {
-struct transition_comp* l=nouvelle_transition_comp();
-l->etiq=etiq;
-l->arr=dest;
+Fst2Transition l=new_Fst2Transition();
+l->tag_number=etiq;
+l->state_number=dest;
 if (e==NULL) {
    fprintf(stderr,"Internal problem in add_reverse_transition_to_state\n");
    exit(1);
 }
-l->suivant=e->transinv;
+l->next=e->transinv;
 e->transinv=l;
 }
 
@@ -415,10 +415,10 @@ e->transinv=l;
 //
 void compute_reverse_transitions_of_main_graph(struct flattened_main_graph_info* graph) {
 for (int i=0;i<graph->current_pos;i++) {
-   struct transition_comp* l=graph->states[i]->trans;
+   Fst2Transition l=graph->states[i]->trans;
    while (l!=NULL) {
-      add_reverse_transition_to_state(l->etiq,i,graph->states[l->arr]);
-      l=l->suivant;
+      add_reverse_transition_to_state(l->tag_number,i,graph->states[l->state_number]);
+      l=l->next;
    }
 }
 }

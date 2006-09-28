@@ -241,6 +241,10 @@ struct fst2 {
 typedef struct fst2 Fst2;
 
 
+Fst2Transition new_Fst2Transition();
+
+
+
 /* functions for loading grammars */
 Fst2* load_fst2(char*,int);
 Fst2* load_one_sentence_from_fst2(char*,int);
