@@ -23,6 +23,8 @@
 #include "Error.h"
 //---------------------------------------------------------------------------
 
+#warning There is a bug somewhere which makes Grf2Fst2 craching !!!
+
 
 
 //
