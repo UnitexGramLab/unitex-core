@@ -85,11 +85,15 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
   u_fprints_char(TEMP,res);
   u_fprints(origin->graph_names[1],res);
   u_fprints_char("\n",res);
+
+  /* determize and minimize the new main graph */
   printf("Determinisation...\n");
-  determinisation(new_main_graph->states); /* determize the new main graph */
+  determinisation(new_main_graph->states,new_main_graph->size);
   compute_reverse_transitions(new_main_graph->states,new_main_graph->size);
   minimisation(new_main_graph->states);
-  write_graph(res,new_main_graph->states); /* write the new main graph */
+
+  /* write the new main graph */
+  write_graph(res,new_main_graph->states);
   if (RTN) {
     save_graphs_to_keep(origin,res); // write the still remaining subgraphs
   }

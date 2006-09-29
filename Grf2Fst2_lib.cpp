@@ -650,14 +650,16 @@ void compute_reverse_transitions(Etat_comp* graph, int n_states) {
 ////// DETERMINISATION  //////////////////////////////////////
 /////////////////////////////////////////////////////////////
 
-void init_hachage_det(int h[])
+void init_hachage_det(int *h, int n)
 {
   // time-critical function, called often
   register int i;
   // instead of
   //    for(i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) h[i]=-1;
   // initializing only used fields saves time:
-  for (i=0; i < (nombre_etiquettes_comp+nombre_graphes_comp+1); i++)
+  //  for (i=0; i < (nombre_etiquettes_comp+nombre_graphes_comp+1); i++)
+  // even better until it is really necessary
+  for (i=0; i <= n; i++)
     h[i]=-1;
 }
 
@@ -719,11 +721,15 @@ void sauvegarder_etat_det(FILE *f,Etat_comp e)
 
 
 /**
- * determinize the graph/automaton "graphe"
+ * determinize the graph/automaton "graph",
+ * @param graph the graph to be determinized
+ * @param graph_size size of "graph",
+ * since "graph" will be changed prevents segfault
+ * @return 1 if successful, 0 if not
  */
-int determinisation(Etat_comp* graphe) {
+int determinisation(Etat_comp* graph, int graph_size) {
 
-  if (graphe[0] == NULL) { // do not segfault on empty automaton
+  if (graph[0] == NULL) { // do not segfault on empty automaton
     fprintf(stderr, "warning: resulting automaton is empty\n");
     return 1;
   }
@@ -733,6 +739,7 @@ int determinisation(Etat_comp* graphe) {
   unsigned char final[NBRE_ETIQ_TRANSITION_COMP];
   int hachage[NBRE_ETIQ_TRANSITION_COMP];
   int hachageinv[NBRE_ETIQ_TRANSITION_COMP];
+  init_hachage_det(hachage,NBRE_ETIQ_TRANSITION_COMP);
 
   int resize_of_new_graph_step = 0x2000;
   Etat_comp* new_graph = (Etat_comp*) malloc( resize_of_new_graph_step * sizeof(Etat_comp) );
@@ -741,12 +748,12 @@ int determinisation(Etat_comp* graphe) {
 
   Fst2Transition ptr;
   ensemble_det courant;
-  unsigned long int q;  //etat courant ancien graphe
+  unsigned long int q;  //etat courant ancien graph
   int count;  //compteur pour savoir ou l'on se trouve dans notre int de 32 bits
   int compteur; //compteur pour savoir l'indice du dernier ensemble rentre dans stock;
   int num;
   int i, file_courant, k;
-  int temp, dernier_etat_res;
+  int temp, max_temp, dernier_etat_res;
   int temp2, sous_graphe;
   struct noeud_valeur_det *racine_det;
 
@@ -756,7 +763,7 @@ int determinisation(Etat_comp* graphe) {
   init_resultat_det(resultat,racine_det,dernier_etat_res);
   dernier_etat_res = 0;
 
-  if ( (graphe[0]->controle) & 1 )
+  if ( (graph[0]->controle) & 1 )
     resultat[0]->controle = (unsigned char)(resultat[0]->controle | 1);
   init_stock_det(stock);
 
@@ -765,7 +772,8 @@ int determinisation(Etat_comp* graphe) {
   while (resultat[temp2] != NULL)
     {
       courant = resultat[temp2]->ens;
-      init_hachage_det(hachage);
+      init_hachage_det(hachage,max_temp);
+      max_temp = 0;
       compteur = 0;
       while (courant != NULL)
         {
@@ -776,7 +784,7 @@ int determinisation(Etat_comp* graphe) {
               q++;
               if (((courant->valeur)&(1<<count))!=0)
                 {
-                  ptr = graphe[q]->trans;
+                  ptr = graph[q]->trans;
                   while (ptr != NULL)
                     {
                       temp = ptr->tag_number;
@@ -788,6 +796,9 @@ int determinisation(Etat_comp* graphe) {
                         }
                       else
                         sous_graphe = 0;
+                      
+                      if (temp > max_temp)
+                        max_temp = temp;
 
                       if (hachage[temp] == -1)
                         {
@@ -804,7 +815,7 @@ int determinisation(Etat_comp* graphe) {
                           compteur++;
                         }
                       ajouter_etat_dans_ensemble_det(ptr->state_number,&stock[hachage[temp]]);
-                      if (((graphe[ptr->state_number]->controle) & 1 ) != 0)
+                      if (((graph[ptr->state_number]->controle) & 1 ) != 0)
                         final[hachage[temp]] = 1;    //test de finalite
                       ptr = ptr->next;
                     }
@@ -833,10 +844,9 @@ int determinisation(Etat_comp* graphe) {
                       liberer_char_etat_det(stock[i]);
                     }
                   }
-                  fprintf(stderr,
-                          "Too many states in automaton: cannot determinize.\n"
-                          "Max. number of states per automaton/subgraph: NBRE_ET = %i\n",
-                          NBRE_ET);
+                  error("Too many states in automaton: cannot determinize.\n"
+                        "Max. number of states per automaton/subgraph: NBRE_ET = %i\n",
+                        NBRE_ET);
                   exit(1);
                 }
               resultat[temp] = nouvel_etat_mat_det();
@@ -849,6 +859,11 @@ int determinisation(Etat_comp* graphe) {
       if (new_graph_state_n > n_new_graph_states)
         {
           n_new_graph_states += resize_of_new_graph_step;
+          if ( n_new_graph_states > graph_size )
+            {
+              error("Cannot determinize: to many states (>%i)",graph_size);
+              return 0;
+            }
           new_graph = (Etat_comp*) realloc(new_graph,
                                            (n_new_graph_states*sizeof(Etat_comp)));
         }
@@ -865,18 +880,20 @@ int determinisation(Etat_comp* graphe) {
     }
   }
 
-  /* Finally we copy the content of new_graph to graphe
-     freeing old content of graphe */
-  for (i=0; i<new_graph_state_n; i++)
+  /* Finally we copy the content of new_graph to graph
+     freeing old content of graph */
+  for (i=0; ((i<new_graph_state_n)
+             && (i<graph_size)); i++)
     {
-      if ( graphe[i] != NULL )
-        liberer_etat_graphe_comp(graphe[i]);
-      graphe[i] = new_graph[i];
+      if ( graph[i] != NULL )
+        liberer_etat_graphe_comp(graph[i]);
+      graph[i] = new_graph[i];
     }
-  while ( graphe[i++] != NULL )
+  while ( (i < graph_size)
+          && ( graph[i++] != NULL ) )
     {
-      liberer_etat_graphe_comp(graphe[i]);
-      graphe[i] = NULL;
+      liberer_etat_graphe_comp(graph[i]);
+      graph[i] = NULL;
     }
   
   return 1;
@@ -2603,21 +2620,27 @@ int traitement_ligne_comp(unichar ligne[],int sortants[],
 }
 
 
- //lit le contenu d'une boite
-//retourne 0 si erreur
-//retourne 1 si OK
-//retourne 2 si pas de transitions sortants de la boite
 
-int lire_ligne_comp(FILE *f, unichar ligne[],int sortants[],Etat_comp *letats,int courant)
+/**
+ * read one graph state: 
+ * - store box entry to ligne
+ * - store transitions in sortants
+ * retourne 0 si erreur
+ * retourne 1 si OK
+ * retourne 2 si pas de transitions sortants de la boite
+*/
+int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
 {
   unichar c;
-  int i,n_sortantes;
-  char err[1000];
+  int i, n_sortantes;
+  char err[TAILLE_MOT_GRAND_COMP];
 
   for(i=0;i<NOMBRE_TRANSITIONS_COMP;i++) sortants[i]=-1;
 
   i=0;
-  while (u_fgetc(f)!='"');
+  while (u_fgetc(f) != '"');  /* skip all chars including first '"' */
+
+  /* reescape the box content, store it in ligne */
   while (((c=(unichar)u_fgetc(f))!='"') && (i < TAILLE_MOT_GRAND_COMP))
     {
       ligne[i]=c;
@@ -2628,44 +2651,53 @@ int lire_ligne_comp(FILE *f, unichar ligne[],int sortants[],Etat_comp *letats,in
 	}
       i++;
     }
-  if(i >= TAILLE_MOT_GRAND_COMP)
-  {
-    u_to_char(err,donnees->nom_graphe[courant]);
-    if(courant == 0) {
-      fprintf(stderr,
-              "ERROR in main graph %s.grf: Too many characters in box. The number of characters per box should be lower than %d\n",
-              err,TAILLE_MOT_GRAND_COMP);
-    }
-    else {
-      fprintf(stderr,"WARNING in graph %s.grf: Too many characters in box. The number of characters per box should be lower than %d\n",err,TAILLE_MOT_GRAND_COMP);
-    }
-    return 0;
-  }
-  ligne[i]='\0';
-  // we read the space char after the string
-  u_fgetc(f);
-  u_read_int(f);
-  u_read_int(f);
-  n_sortantes=u_read_int(f);
 
-  if(n_sortantes >= NOMBRE_TRANSITIONS_COMP)
-  {
-    u_to_char(err,donnees->nom_graphe[courant]);
-    if(courant == 0) {
-      fprintf(stderr,"ERROR in main graph %s.grf: Too many transitions. The number of transitions per box should be lower than %d\n",err,NOMBRE_TRANSITIONS_COMP);
+  /* error: box content to long */
+  if ( i >= TAILLE_MOT_GRAND_COMP )
+    {
+      u_to_char(err,donnees->nom_graphe[courant]);
+      fprintf(stderr,
+              "ERROR in main graph %s.grf:\n"
+              "Too many characters in box. The number of characters\n"
+              "per box should be lower than %d\n",
+              err,TAILLE_MOT_GRAND_COMP);
+      return 0;
     }
-    else {
-      fprintf(stderr,"WARNING in graph %s.grf: Too many transitions. The number of transitions per box should be lower than %d\n",err,NOMBRE_TRANSITIONS_COMP);
+
+  ligne[i] = '\0'; /* box entry read */
+
+  u_fgetc(f); /* read the space char after the string */
+
+  /* skip the values (x,y) for box positioning */
+  u_read_int(f);
+  u_read_int(f);
+
+  /* read the number of transitions */
+  n_sortantes = u_read_int(f);
+
+  /* error: to many transitions */
+  if ( n_sortantes >= NOMBRE_TRANSITIONS_COMP )
+    {
+      u_to_char(err,donnees->nom_graphe[courant]);
+      fprintf(stderr,"WARNING in graph %s.grf:\n"
+              "to many transitions. The number of transitions\n"
+              "per box should be lower than %d\n",
+              err, NOMBRE_TRANSITIONS_COMP);
+      return 0;
     }
-    return 0;
-  }
+
+  /* read the transitions */
   for (i = 0 ; i < n_sortantes ; i++)
     {
-      sortants[i]=u_read_int(f);
+      sortants[i] = u_read_int(f);
     }
-  // here we read the end of line char
+
+  /* read the end of line char */
   u_fgetc(f);
-  if(n_sortantes == 0) return 2;
+
+  if (n_sortantes == 0)
+    return 2;
+
   return 1;
 }
 
@@ -2678,107 +2710,125 @@ int lire_ligne_comp(FILE *f, unichar ligne[],int sortants[],Etat_comp *letats,in
 ///////////////// COMPILER UN GRAPHE /////////////////////
 //////////////////////////////////////////////////////////
 
-int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
+int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
 {
-   int i,det,min;
-   //int courant;
-   int traitement,lire;
-   int n_etats_initial, n_etats_final;
-   FILE *f;
-   char nom[TAILLE_MOT_GRAND_COMP];
-   Etat_comp letats[MAX_FST2_STATES];
-   int sortants[NOMBRE_TRANSITIONS_COMP];
-   unichar ligne[TAILLE_MOT_GRAND_COMP];
-   char err[1000];
 
-   conformer_nom_graphe_comp(nom,graphe_courant); // DATE -> C:/Unitex/French/Graphs/Date/DATE.grf
-   printf("Compiling graph ");
-   u_prints(donnees->nom_graphe[graphe_courant]);
-   printf("\n");
-   // fprintf(stdout,"(%s)\n",nom);
+  int i;
+  //int courant;
+  int traitement,lire;
+  int n_etats_initial, n_etats_final;
+  FILE *f;
+  char nom[TAILLE_MOT_GRAND_COMP];
+  Etat_comp letats[MAX_FST2_STATES];
+  int sortants[NOMBRE_TRANSITIONS_COMP];
+  unichar ligne[TAILLE_MOT_GRAND_COMP];
+  char err[1000];
 
-   f=u_fopen(nom,U_READ);
-   if(f == NULL)      // Ouverture du fichier
-   {
-     char s[1000];
-     u_to_char(s,donnees->nom_graphe[graphe_courant]);
-     fprintf(stderr,"Cannot open the graph %s.grf\n",s);
-     fprintf(stderr,"(%s)\n",nom);
-     sauvegarder_graphe_comp(letats,0,graphe_courant);
-     donnees->statut_graphe[graphe_courant] = 0;
-     if(graphe_courant == 0) return 0;
-     return 1;
-   }
+  /* status message */
+  printf("Compiling graph ");
+  u_prints(donnees->nom_graphe[graphe_courant]);
+  printf("\n");
+  // fprintf(stdout,"(%s)\n",nom);
 
-   u_fgetc(f);
-   while(u_fgetc(f)!='#');
-   u_fgetc(f);
-   n_etats_initial=u_read_int(f);
 
-   if (n_etats_initial > MAX_FST2_STATES) //Trop de boites dans graphe
+  /* get name with path, e.g.
+   * DATE -> C:/Unitex/French/Graphs/Date/DATE.grf */
+  conformer_nom_graphe_comp(nom,graphe_courant); 
+
+
+  /* open graph file */
+  f=u_fopen(nom,U_READ);
+  if(f == NULL) /* cannot open */
+    {
+      char s[TAILLE_MOT_GRAND_COMP];
+      u_to_char(s,donnees->nom_graphe[graphe_courant]);
+      fprintf(stderr,"Cannot open the graph %s.grf\n",s);
+      fprintf(stderr,"(%s)\n",nom);
+      sauvegarder_graphe_comp(letats,0,graphe_courant);
+      donnees->statut_graphe[graphe_courant] = 0;
+      if(graphe_courant == 0) return 0;
+      return 1;
+    }
+
+  /* read header */
+  u_fgetc(f);                       /* skip BOM */
+  while( u_fgetc(f) != '#' );       /* skip header with formatting instructions */
+  u_fgetc(f);                       /* skip newline */
+  n_etats_initial = u_read_int(f);  /* read number of states */
+
+  if (n_etats_initial > MAX_FST2_STATES) //Trop de boites dans graphe
     {
       donnees->statut_graphe[graphe_courant] = 0;
       sauvegarder_graphe_comp(letats,0,graphe_courant);
       u_fclose(f);
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if(graphe_courant == 0)
-      {
-        fprintf(stderr,"ERROR in main graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,MAX_FST2_STATES);
-        return 0;
-      }
+        {
+          fprintf(stderr,"ERROR in main graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,MAX_FST2_STATES);
+          return 0;
+        }
       fprintf(stderr,"WARNING in graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,MAX_FST2_STATES);
       return 1;
     }
 
+  /* we start with every line being one state of the automaton */
   init_locale_comp(letats, n_etats_initial);
-  n_etats_final=n_etats_initial;
-  for (i=0;i<n_etats_initial;i++)
+  n_etats_final = n_etats_initial;
+
+  for (i=0; i<n_etats_initial; i++)
     {
+
+      /* read one line in file f */
       //On lit le contenu d'une boite et ses sorties (transitions)
-      lire = lire_ligne_comp(f,ligne,sortants,letats,graphe_courant);
+      lire = lire_ligne_comp(f,ligne,sortants,graphe_courant);
+
+      /* error reading line */
       if (lire == 0)
-      {
-        donnees->statut_graphe[graphe_courant] = 0;
-        sauvegarder_graphe_comp(letats,0,graphe_courant);
-        liberer_graphe_comp(letats);
-        u_fclose(f);
-        if(graphe_courant == 0)
-          return 0;
-        return 1;
-      }
+        {
+          donnees->statut_graphe[graphe_courant] = 0;
+          sauvegarder_graphe_comp(letats,0,graphe_courant);
+          liberer_graphe_comp(letats);
+          u_fclose(f);
+          if(graphe_courant == 0)
+            return 0;
+          return 1;
+        }
+
+      /* box contains transitions: process them */
       //On traite la ligne : ecriture en memoire
       if(lire == 1)
-      {
-        traitement = traitement_ligne_comp(ligne,sortants,letats,i,&n_etats_final,graphe_courant,mode,alph);
-        if((traitement == 0) || (traitement == -1))
         {
-          donnees->statut_graphe[graphe_courant] = 0;
-          sauvegarder_graphe_comp(letats,0,graphe_courant);
-          liberer_graphe_comp(letats);
-          u_fclose(f);
-          if(traitement == -1) return -1;
-          if(graphe_courant == 0) return 0;
-          return 1;
+          traitement = traitement_ligne_comp(ligne,sortants,letats,i,&n_etats_final,graphe_courant,mode,alph);
+          if((traitement == 0) || (traitement == -1))
+            {
+              donnees->statut_graphe[graphe_courant] = 0;
+              sauvegarder_graphe_comp(letats,0,graphe_courant);
+              liberer_graphe_comp(letats);
+              u_fclose(f);
+              if(traitement == -1) return -1;
+              if(graphe_courant == 0) return 0;
+              return 1;
+            }
+          if (n_etats_final >= MAX_FST2_STATES) //Trop d'états dans l'automate
+            {
+              donnees->statut_graphe[graphe_courant] = 0;
+              sauvegarder_graphe_comp(letats,0,graphe_courant);
+              liberer_graphe_comp(letats);
+              u_fclose(f);
+              u_to_char(err,donnees->nom_graphe[graphe_courant]);
+              if(graphe_courant == 0)
+                {
+                  fprintf(stderr,"ERROR in main graph %s.grf: Too many states (%d)\n",err,n_etats_final);
+                  return 0;
+                }
+              fprintf(stderr,"WARNING in graph %s.grf: Too many states (%d)\n",err,n_etats_final);
+              return 1;
+            }
         }
-        if (n_etats_final >= MAX_FST2_STATES) //Trop d'états dans l'automate
-        {
-          donnees->statut_graphe[graphe_courant] = 0;
-          sauvegarder_graphe_comp(letats,0,graphe_courant);
-          liberer_graphe_comp(letats);
-          u_fclose(f);
-          u_to_char(err,donnees->nom_graphe[graphe_courant]);
-          if(graphe_courant == 0)
-          {
-            fprintf(stderr,"ERROR in main graph %s.grf: Too many states (%d)\n",err,n_etats_final);
-            return 0;
-          }
-          fprintf(stderr,"WARNING in graph %s.grf: Too many states (%d)\n",err,n_etats_final);
-          return 1;
-        }
-      }
     }
   fflush(f);
   u_fclose(f);
+  /* end of reading file */
 
   //etat initial: bit 2 a 1
   letats[0]->controle=(unsigned char)((letats[0]->controle)|2);
@@ -2792,43 +2842,40 @@ int compiler_graphe_comp(int graphe_courant,int mode,Alphabet* alph)
   accessibilite_comp(letats,0);
   eliminer_etats_comp(letats,&n_etats_final);
   if(letats[0] == NULL)
-  {
-    donnees->statut_graphe[graphe_courant] = 0;
-    sauvegarder_graphe_comp(letats,0,graphe_courant);
-    liberer_graphe_comp(letats);
-    u_to_char(err,donnees->nom_graphe[graphe_courant]);
-    if(graphe_courant == 0)
+    {
+      donnees->statut_graphe[graphe_courant] = 0;
+      sauvegarder_graphe_comp(letats,0,graphe_courant);
+      liberer_graphe_comp(letats);
+      u_to_char(err,donnees->nom_graphe[graphe_courant]);
+      if(graphe_courant == 0)
         {
           fprintf(stderr,"ERROR: Main graph %s.grf has been emptied\n",err);
           return 0;
         }
-    fprintf(stderr,"WARNING: graph %s.grf has been emptied\n",err);
-    return 1;
-   }
+      fprintf(stderr,"WARNING: graph %s.grf has been emptied\n",err);
+      return 1;
+    }
   donnees->statut_graphe[graphe_courant] = 1;
-  char s[1000];
-  sprintf(s,"%d ",-(graphe_courant)-1);
-  u_fprints_char(s,fs_comp);
-  u_fprints(donnees->nom_graphe[graphe_courant],fs_comp);
-  u_fputc('\n',fs_comp);
-  det = determinisation(letats);
-  //det = 1;
-//   compute_reverse_transitions(letats,MAX_FST2_STATES);
-//   min = minimisation(letats);
-  min = 1;
+  u_fprintf(fs_comp,"%d %s\n",
+            (-(graphe_courant)-1),
+            donnees->nom_graphe[graphe_courant]);
+  //  Etat_comp* det = determinisation(letats,MAX_FST2_STATES);
+  int det = determinisation(letats,MAX_FST2_STATES);
+  //   compute_reverse_transitions(letats,MAX_FST2_STATES);
+  int min = minimisation(letats);
   write_graph(fs_comp,letats);
   liberer_graphe_comp(letats);
   if( (det == 0) || (min == 0) )
-  {
-    u_to_char(err,donnees->nom_graphe[graphe_courant]);
-    if(graphe_courant == 0)
     {
-      fprintf(stderr,"ERROR in main graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
+      u_to_char(err,donnees->nom_graphe[graphe_courant]);
+      if(graphe_courant == 0)
+        {
+          fprintf(stderr,"ERROR in main graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
+          return 0;
+        }
+      fprintf(stderr,"WARNING in graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
       return 0;
     }
-    fprintf(stderr,"WARNING in graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
-    return 0;
-  }
   return 1;
 }
 
