@@ -166,8 +166,6 @@ extern struct noeud_g_comp *rac_graphe_comp; //racine de l'arbre des graphes
 extern struct noeud_comp *rac_comp; //racine de l'arbre des étiquettes
 extern FILE *fs_comp; //fichier de sortie
 extern int EPSILON_comp;   // etiquette pour <E>
-extern int n_malloc_comp;
-extern int n_free_comp;
 extern int compteur_char;
 extern int compteur_free_char;
 extern unichar pckg_path[TAILLE_MOT_GRAND_COMP];
@@ -193,6 +191,7 @@ void ajouter_transition_mat_det(struct etat_fst_det *e,int etiq,int etarr);
 void liberer_arbre_det(struct noeud_valeur_det *racine);
 Etat_fst_det nouvel_etat_mat_det();
 ensemble_det copie_det(ensemble_det e);
+void compute_reverse_transitions(Etat_comp*,int);
 void sauvegarder_etat_det(FILE *f,Etat_fst_det e);
 int determinisation(Etat_comp*);
 int minimisation(Etat_comp*);
@@ -201,7 +200,6 @@ void *malloc_comp(int n);
 void init_generale_comp();
 void init_arbres_comp();
 int ouverture_fichier_sortie(char temp[]);
-void free_comp(void *ptr);
 void libere_arbres_comp();
 int compilation(char *nom_graphe_principal,int mode,Alphabet* alph);
 void sauvegarder_etiquettes_comp();

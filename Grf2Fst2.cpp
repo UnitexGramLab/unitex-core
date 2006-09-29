@@ -108,14 +108,14 @@ int main(int argc,char *argv[]) {
         TOKENIZATION_MODE=ALPHABET_TOKENIZATION;
      }
   }
-  donnees=(struct donnees_comp *) malloc_comp(sizeof(struct donnees_comp));
+  donnees=(struct donnees_comp *) malloc(sizeof(struct donnees_comp));
   init_generale_comp();
   init_arbres_comp();
   strcpy(temp,argv[1]);
 
   if(ouverture_fichier_sortie(temp) == 0)
   {
-    free_comp(donnees);
+    free(donnees);
     libere_arbres_comp();
     fprintf(stderr,"Cannot open file %s\n",temp);
     return 1;
@@ -126,7 +126,7 @@ int main(int argc,char *argv[]) {
   {
     fprintf(stderr,"Compilation has failed\n");
     libere_arbres_comp();
-    free_comp(donnees);
+    free(donnees);
     u_fclose(fs_comp);
     return 1;
   }
@@ -135,7 +135,7 @@ int main(int argc,char *argv[]) {
   }
   sauvegarder_etiquettes_comp();
   libere_arbres_comp();
-  free_comp(donnees);
+  free(donnees);
   u_fclose(fs_comp);
   strcpy(temp1,temp);
   l = strlen(temp1);
