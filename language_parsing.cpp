@@ -44,6 +44,7 @@ static keyword_t keywords[] = {
   { "inflex:", TOK_FLEX },
   { "complet:", TOK_COMPLET },
   { "complete:", TOK_COMPLET },
+  { "IGNORE", TOK_IGNORE },
   { NULL, 0 }
 };
 
@@ -142,6 +143,7 @@ pos_section_t * pos_section_new(char * name) {
   pos_section_t * res = (pos_section_t *) xmalloc(sizeof(pos_section_t));
 
   res->name = u_strdup_char(name);
+  res->ignore = false;
 
   for (int i = 0; i < PART_NUM; i++) { res->parts[i] = NULL; }
 
@@ -154,6 +156,7 @@ pos_section_t * pos_section_new(unichar * name) {
   pos_section_t * res = (pos_section_t *) xmalloc(sizeof(pos_section_t));
 
   res->name = u_strdup(name);
+  res->ignore = false;
   for (int i = 0; i < PART_NUM; i++) { res->parts[i] = NULL; }
 
   return res;
@@ -436,6 +439,10 @@ pos_section_t * parse_pos_section(FILE * f) {
 
     switch (toks->type) {
 
+    case TOK_IGNORE:
+      section->ignore = true;
+      break;
+
     case TOK_DISCR:
       partid = PART_DISCR;
       tokens_delete(toks);
@@ -466,7 +473,9 @@ pos_section_t * parse_pos_section(FILE * f) {
     case TOK_BLANK:
       switch (partid) {
       case PART_DISCR:
-	if (section->parts[PART_DISCR] != NULL) { die("only one discriminant category could be specified.\n"); }
+	if (section->parts[PART_DISCR] != NULL) {
+          die("only one discriminant category could be specified.\n");
+        }
       case PART_CAT:
 	if (check_cat_line(toks) == -1) { die("bad line format: '%S'\n", line);	}
 	break;
@@ -479,7 +488,7 @@ pos_section_t * parse_pos_section(FILE * f) {
       case PART_NUM:
 	die("no section specified. (line '%S')\n", line);
       default:
-	die("while parsing POS section: what the hell am i doing here?\n");
+	die("while parsing POS section: what am i doing here?\n");
       }
       section->parts[partid] = tokens_list_concat(section->parts[partid], toks);
       // section->parts[partid] = tokens_list_new(toks, section->parts[partid]);
@@ -518,7 +527,9 @@ language_tree_t * language_parse(FILE * f) {
   }
 
 
-  if ((toks->type != TOK_NAME) || (toks->next == NULL) || (toks->next->str == NULL)) { die("language need a name\n"); }
+  if ((toks->type != TOK_NAME) || (toks->next == NULL) || (toks->next->str == NULL)) {
+    die("language need a name\n");
+  }
 
   language_tree_t * tree = language_tree_new(toks->next->str);
 

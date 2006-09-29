@@ -50,6 +50,7 @@ static inline transition_t * trans_extract(transition_t ** trans, symbol_t * s) 
 
 
 static inline transition_t * trans_pop(transition_t ** trans) {
+
   if (*trans == NULL) { return NULL; }
 
   transition_t * res = *trans;
@@ -59,15 +60,20 @@ static inline transition_t * trans_pop(transition_t ** trans) {
 
 
 
-static int inter_state(autalmot_t * res, const autalmot_t * A, int q1, const autalmot_t * B, int q2, int ** corresp) {
+static int inter_state(autalmot_t * res, const autalmot_t * A, int q1,
+                       const autalmot_t * B, int q2, int ** corresp) {
 
   if (corresp[q1][q2] != -1) { return corresp[q1][q2]; }
 
   int q = corresp[q1][q2] = autalmot_add_state(res);
 
-  if ((A->states[q1].flags & AUT_INITIAL) && (B->states[q2].flags & AUT_INITIAL)) { autalmot_set_initial(res, q); }
+  if ((A->states[q1].flags & AUT_INITIAL) && (B->states[q2].flags & AUT_INITIAL)) {
+    autalmot_set_initial(res, q);
+  }
 
-  if ((A->states[q1].flags & AUT_TERMINAL) && (B->states[q2].flags & AUT_TERMINAL)) { autalmot_set_terminal(res, q); }
+  if ((A->states[q1].flags & AUT_TERMINAL) && (B->states[q2].flags & AUT_TERMINAL)) {
+    autalmot_set_terminal(res, q);
+  }
 
   transition_t * transA = transitions_dup(A->states[q1].trans);
   transition_t * transB = transitions_dup(B->states[q2].trans);
@@ -105,9 +111,10 @@ static int inter_state(autalmot_t * res, const autalmot_t * A, int q1, const aut
     transition_delete(transa);
   }
 
-  if (A->states[q1].defto != -1) {           // if A[q1] has une transition par défaut
+  if (A->states[q1].defto != -1) { // if A[q1] has une transition par défaut
     
-    while ((transb = trans_pop(& transB))) { // elle concorde avec toutes les trans restantes dans B[q2]
+    while ((transb = trans_pop(& transB))) {
+      // elle concorde avec toutes les trans restantes dans B[q2]
 
       to = inter_state(res, A, A->states[q1].defto, B, transb->to, corresp);
       autalmot_add_trans(res, q, transb->label, to);
@@ -116,7 +123,9 @@ static int inter_state(autalmot_t * res, const autalmot_t * A, int q1, const aut
     }
 
     if (B->states[q2].defto != -1) { // <def> trans
-      res->states[q].defto = inter_state(res, A, A->states[q1].defto, B, B->states[q2].defto, corresp);
+      res->states[q].defto = inter_state(res, A, A->states[q1].defto,
+                                         B, B->states[q2].defto,
+                                         corresp);
     }
 
   } else { transitions_delete(transB); }
@@ -164,18 +173,29 @@ autalmot_t * autalmot_intersection(const autalmot_t * A, const autalmot_t * B) {
 
 
 
-static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const autalmot_t * B, int q2, int ** corresp) {
+static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const autalmot_t * B,
+                          int q2, int ** corresp) {
 
   if (corresp[q1][q2] != -1) { return corresp[q1][q2]; }
 
   int q = corresp[q1][q2] = autalmot_add_state(res);
 
-  if ((A->states[q1].flags & AUT_INITIAL) && (B->states[q2].flags & AUT_INITIAL))   { autalmot_set_initial(res, q); }
+  if ((A->states[q1].flags & AUT_INITIAL) && (B->states[q2].flags & AUT_INITIAL)) {
+    autalmot_set_initial(res, q);
+  }
 
-  if ((A->states[q1].flags & AUT_TERMINAL) && (B->states[q2].flags & AUT_TERMINAL)) { autalmot_set_terminal(res, q); }
+  if ((A->states[q1].flags & AUT_TERMINAL) && (B->states[q2].flags & AUT_TERMINAL)) {
+    autalmot_set_terminal(res, q);
+  }
 
 
   for (transition_t * t1 = A->states[q1].trans; t1; t1 = t1->next) {
+
+    if (t1->label->POS->ignorable) { // skip ignorable tokens
+      int to = interStateAtom(res, A, t1->to, B, q2, corresp);
+      autalmot_add_trans(res, q, t1->label, to);
+      continue;
+    }
 
     bool found = false;
 

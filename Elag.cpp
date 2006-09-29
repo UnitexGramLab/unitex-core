@@ -65,7 +65,8 @@ void usage() {
 
 
 int main(int argc, char ** argv) {
-setBufferMode();
+
+  setBufferMode();
 
   char * progname   = *argv;
   char * txtauto    = NULL;
@@ -116,7 +117,8 @@ setBufferMode();
 
       } else if (strcmp(*argv, "-h") == 0) {
 
-	printf("\nusage: %s <txtauto> -l <LANG> -d <gramdir> [ -g <gramlist> ] -o <output>\n\n", progname);
+	printf("\nusage: %s <txtauto> -l <LANG> -d <gramdir> [ -g <gramlist> ] -o <output>\n\n",
+               progname);
 	return 0;
 
       }	else { die("unknow arg: '%s'\n", *argv); }
@@ -172,7 +174,3 @@ setBufferMode();
 
   return 0;
 }
-
-
-
-

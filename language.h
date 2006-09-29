@@ -58,14 +58,16 @@ typedef struct POS_t {
 
   unichar * name;
 
-  int nbflex;      // les nbflex premiers traits sont des codes de flexion 
-  int nbdiscr;     // les nbdiscr premiers traits sont des traits "discriminants" (y compris les codes flexionnels)
+  bool ignorable; // IGNORE symbol in text fsa, during elag grammar application
+
+  int nbflex;   // les nbflex premiers traits sont des codes de flexion 
+  int nbdiscr; // les nbdiscr 1ers traits sont "discriminants" (y compris les codes flexionnels)
 
   hash_str_table_t * CATs;  // categories
 
   hash_str_table_t * values;  // table on info: pour recuperer la categorie d'un trait
 
-  symbol_t * codes;           // etiquettes completes (compressées: UNSPECIFIED pour n'importe quelle valeur
+  symbol_t * codes;           // etiquettes completes (UNSPECIFIED pour n'importe quelle valeur
                               // et LOCKED pour aucune valeur)
 
   language_t * lang;          // attached language 
@@ -103,7 +105,9 @@ CAT_t * CAT_new(unichar * name);
 void CAT_delete(CAT_t * CAT);
 int CAT_add_value(CAT_t * CAT, unichar * value);
 
-static inline unichar * CAT_get_valname(CAT_t * CAT, int v) { return (unichar *) CAT->traits->tab[v]; }
+static inline unichar * CAT_get_valname(CAT_t * CAT, int v) {
+  return (unichar *) CAT->traits->tab[v];
+}
 
 void CAT_dump(CAT_t * cat, FILE * f = stderr);
 
@@ -121,9 +125,13 @@ void POS_dump(POS_t * POS, FILE * f = stderr);
 symbol_t * POS_expand(POS_t * POS);
 
 static inline CAT_t * POS_get_CAT(POS_t * POS, int idx) { return (CAT_t *) POS->CATs->tab[idx]; }
-static inline CAT_t * POS_get_CAT(POS_t * POS, unichar * name) { return (CAT_t *) hash_str_table_lookup(POS->CATs, name); }
+static inline CAT_t * POS_get_CAT(POS_t * POS, unichar * name) {
+  return (CAT_t *) hash_str_table_lookup(POS->CATs, name);
+}
 
-static inline int POS_get_CATid(POS_t * POS, unichar * name) { return hash_str_table_idx_lookup(POS->CATs, name); }
+static inline int POS_get_CATid(POS_t * POS, unichar * name) {
+  return hash_str_table_idx_lookup(POS->CATs, name);
+}
 
 static inline trait_info_t * POS_get_trait_infos(POS_t * POS, unichar * val) {
 
@@ -167,7 +175,9 @@ void language_dump(language_t * lang, FILE * f = stderr);
 void language_output(language_t * lang, FILE * f);
 
 int language_add_form(language_t * lang, const unichar * form);
-static inline unichar * language_get_form(language_t * lang, int idx) { return (unichar *) lang->forms->tab[idx]; }
+static inline unichar * language_get_form(language_t * lang, int idx) {
+  return (unichar *) lang->forms->tab[idx];
+}
 static inline unichar * language_get_form(int idx) { return (unichar *) LANG->forms->tab[idx]; }
 
 void set_current_language(language_t * lang);

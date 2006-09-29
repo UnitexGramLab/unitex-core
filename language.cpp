@@ -95,6 +95,7 @@ POS_t * POS_new(unichar * name) {
   POS_t * res = (POS_t *) xmalloc(sizeof(POS_t));
 
   res->name      = u_strdup(name);
+  res->ignorable = false;
 
   /*
   res->has_discr = 0;
@@ -291,7 +292,9 @@ void language_dump(language_t * lang, FILE * f) {
 
 POS_t * language_new_POS(language_t * lang, const unichar * name) {
 
-  if (hash_str_table_idx_lookup(lang->POSs, (unichar *) name) != -1) { die("when adding new POS: POS '%S' already exists.\n", name); }
+  if (hash_str_table_idx_lookup(lang->POSs, (unichar *) name) != -1) {
+    die("when adding new POS: POS '%S' already exists.\n", name);
+  }
 
   POS_t * POS = POS_new((unichar *) name);
 
@@ -435,6 +438,11 @@ language_t * language_load(FILE * f) {
 
     tokens_list * toklist;
 
+    if (sec->ignore) {
+      POS->ignorable = true;
+    } else {
+      POS->ignorable = false;
+    }
 
     /* flexion */
 

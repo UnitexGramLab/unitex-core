@@ -20,6 +20,7 @@
 
 SYSTEM = linux-like
 USE_TRE_LIBRARY = yes
+#USE_TRE_LIBRARY = no
 
 OBJ_DIR = build/
 BIN_DIR = ../bin/
@@ -85,6 +86,74 @@ EXTENSION =
 
 else
 
+ifeq ($(SYSTEM), mingw32)
+
+#####################
+#####################
+##  MINGW32        ##
+#####################
+#####################
+
+CC = i586-mingw32msvc-g++
+RM      = rm -f
+INSTALL = cp
+
+NAME    = unitex-src
+VERSION = $(shell date +"%Y-%m-%d")
+BUILD   = $(NAME)-$(VERSION)
+
+
+#
+# Compiling instructions for the TRE library
+#
+# (by default, the TRE library is used)
+
+INSTALL_COMMAND = make USE_TRE_LIBRARY=yes install
+
+
+
+ifeq ($(USE_TRE_LIBRARY),yes)
+
+LIBS =  ../Libtre/tre.lib
+INCS =  -I"../korean" -I".."
+#
+# Note: the -I"." inclusion is intended to deal with compilation directory problem
+#       while compiling Korean programs
+#
+CXXINCS =  -I"../korean" -I".."
+CXXFLAGS = $(CXXINCS)  -Wall
+CFLAGS = $(INCS)  -Wall
+
+else
+
+LIBS =
+INCS =  -I"../korean" -I".."
+#
+# Note: the -I"." inclusion is intended to deal with compilation directory problem
+#       while compiling Korean programs
+#
+CXXINCS =
+CXXFLAGS = $(CXXINCS)  -Wall
+CFLAGS = $(INCS)  -Wall -DDO_NOT_USE_TRE_LIBRARY
+
+endif
+
+APPDIR = ../../../App
+
+OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
+EXTENSION = .exe
+
+
+#####################
+#####################
+##  END MINGW32    ##
+#####################
+#####################
+
+
+else
+
+
 #####################
 #####################
 ##  BEGIN WINDOWS  ##
@@ -131,6 +200,7 @@ EXTENSION = .exe
 endif
 
 
+endif ## MINGW (ifeq)
 
 ##################################
 ##################################

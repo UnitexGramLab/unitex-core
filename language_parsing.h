@@ -27,7 +27,7 @@
 #include "unicode.h"
 
 enum {
-  TOK_STR = 0, TOK_ANGLE, TOK_NAME, TOK_POS, TOK_END, TOK_DISCR, TOK_FLEX, TOK_CAT, TOK_COMPLET, TOK_EQUAL, TOK_BLANK
+  TOK_STR = 0, TOK_ANGLE, TOK_NAME, TOK_POS, TOK_END, TOK_DISCR, TOK_FLEX, TOK_CAT, TOK_COMPLET, TOK_EQUAL, TOK_BLANK, TOK_IGNORE
 };
 
 
@@ -54,6 +54,7 @@ typedef struct tokens_list {
 typedef struct pos_section_t {
 
   unichar * name;
+  bool ignore;
   tokens_list * parts[PART_NUM];
   struct pos_section_t * next;
 
