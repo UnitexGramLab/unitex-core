@@ -1058,7 +1058,7 @@ return (c>=0x0D85 && c<=0x0DC6 && c!=0x0D97 && c!=0x0D98
 }
 
 
-// returns true if c is a tahi letter
+// returns true if c is a thai letter
 //
 int u_is_thai_letter(unichar c) {
 return (c>=0x0E01 && c<=0x0E39 && c!=0x0E3F) ||

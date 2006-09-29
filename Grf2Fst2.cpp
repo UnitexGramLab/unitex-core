@@ -66,6 +66,8 @@ int main(int argc,char *argv[]) {
   char temp1[TAILLE_MOT_GRAND_COMP];
   int l;
 
+  FILE *fs_comp;
+
   if(argc<2 || argc>6) {
     usage();
     return 0;
@@ -113,7 +115,7 @@ int main(int argc,char *argv[]) {
   init_arbres_comp();
   strcpy(temp,argv[1]);
 
-  if(ouverture_fichier_sortie(temp) == 0)
+  if((fs_comp = ouverture_fichier_sortie(temp)) == 0)
   {
     free(donnees);
     libere_arbres_comp();
@@ -121,7 +123,7 @@ int main(int argc,char *argv[]) {
     return 1;
    }
   u_fprints_char("0000000000\n",fs_comp);
-  int result=compilation(temp,TOKENIZATION_MODE,alph);
+  int result=compilation(temp,TOKENIZATION_MODE,alph,fs_comp);
   if (result == 0)
   {
     fprintf(stderr,"Compilation has failed\n");
@@ -133,7 +135,7 @@ int main(int argc,char *argv[]) {
   if (alph!=NULL) {
      free_alphabet(alph);
   }
-  sauvegarder_etiquettes_comp();
+  sauvegarder_etiquettes_comp(fs_comp);
   libere_arbres_comp();
   free(donnees);
   u_fclose(fs_comp);
@@ -141,7 +143,7 @@ int main(int argc,char *argv[]) {
   l = strlen(temp1);
   temp1[l-4] = '\0';
   strcat(temp1,".fst2");
-  ecrire_fichier_sortie_nb_graphes(temp1);
+  ecrire_fichier_sortie_nb_graphes(temp1,fs_comp);
   if (argc>2 && (!strcmp(argv[2],"y"))) {
     if (!pas_de_recursion(temp1)) {
       return 1;

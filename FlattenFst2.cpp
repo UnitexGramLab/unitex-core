@@ -80,11 +80,11 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
   virer_epsilon_transitions_comp(new_main_graph->states,new_main_graph->current_pos);
   eliminer_etats_comp(new_main_graph->states,&(new_main_graph->current_pos));
 
-  char TEMP[1000];
-  sprintf(TEMP,"%010d\n-1 flattened version of graph ",RTN?n_graphs_to_keep:1);
-  u_fprints_char(TEMP,res);
-  u_fprints(origin->graph_names[1],res);
-  u_fprints_char("\n",res);
+  /* print header (number of graphs) */
+  char tmpstr[256];
+  snprintf(tmpstr,256,"%010d\n",
+          (RTN?n_graphs_to_keep:1));
+  u_fprints_char(tmpstr,res);
 
   /* determize and minimize the new main graph */
   printf("Determinisation...\n");
@@ -93,7 +93,9 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
   minimisation(new_main_graph->states);
 
   /* write the new main graph */
-  write_graph(res,new_main_graph->states);
+  write_graph(res,new_main_graph->states,-1,origin->graph_names[1]);
+
+
   if (RTN) {
     save_graphs_to_keep(origin,res); // write the still remaining subgraphs
   }

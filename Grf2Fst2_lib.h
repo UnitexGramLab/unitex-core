@@ -164,7 +164,6 @@ extern int nombre_graphes_comp;
 extern int nombre_etiquettes_comp;
 extern struct noeud_g_comp *rac_graphe_comp; //racine de l'arbre des graphes
 extern struct noeud_comp *rac_comp; //racine de l'arbre des étiquettes
-extern FILE *fs_comp; //fichier de sortie
 extern int EPSILON_comp;   // etiquette pour <E>
 extern int compteur_char;
 extern int compteur_free_char;
@@ -195,15 +194,15 @@ void compute_reverse_transitions(Etat_comp*,int);
 void sauvegarder_etat_det(FILE *f,Etat_fst_det e);
 int determinisation(Etat_comp*,int);
 int minimisation(Etat_comp*);
-int write_graph(FILE*,Etat_comp*);
+int write_graph(FILE*,Etat_comp*,int,unichar*);
 void *malloc_comp(int n);
 void init_generale_comp();
 void init_arbres_comp();
-int ouverture_fichier_sortie(char temp[]);
+FILE* ouverture_fichier_sortie(char temp[]);
 void libere_arbres_comp();
-int compilation(char *nom_graphe_principal,int mode,Alphabet* alph);
-void sauvegarder_etiquettes_comp();
-void ecrire_fichier_sortie_nb_graphes(char name[]);
+int compilation(char *nom_graphe_principal,int mode,Alphabet* alph,FILE* fs_comp);
+void sauvegarder_etiquettes_comp(FILE* fs_comp);
+void ecrire_fichier_sortie_nb_graphes(char name[],FILE* fs_comp);
 
 #endif
 

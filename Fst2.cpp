@@ -591,7 +591,7 @@ return create_tag(input,filter,output,respect_case);
  * Stringifies and writes a tag to a file including '\n'.
  * Opposite of "create_tag".
  */
-void write_tag (FILE* f, Fst2Tag tag) {
+int write_tag (FILE* f, Fst2Tag tag) {
    if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
       u_fprints_char("@",f);
    }
@@ -624,6 +624,8 @@ void write_tag (FILE* f, Fst2Tag tag) {
      u_fprints_char(")",f);
    }
    u_fprints_char("\n",f);
+
+   return 1;
 }
 
 /**
@@ -691,13 +693,55 @@ read_fst2_tags(f,fst2,NO_TAG_LIMIT);
  * Writes all the tags to the .fst2 file 'f'.
  * (opposite of "read_fst2_tags")
  */
-void write_fst2_tags(FILE *f,Fst2* fst2) {
-for (int i=0; i<fst2->number_of_tags; i++) {
-  write_tag(f, fst2->tags[i]);
-}
-u_fprints_char("f\n",f);
+int write_fst2_tags(FILE *f,Fst2* fst2) {
+  for (int i=0; i<fst2->number_of_tags; i++) {
+    write_tag(f, fst2->tags[i]);
+  }
+  u_fprints_char("f\n",f);
+  return 1;
 }
 
+/**
+ * Writes one state of automaton to the .fst2 file 'f'.
+ */
+int write_fst2_state(FILE *f, Fst2State s)
+{
+  Fst2Transition ptr;
+
+  if (is_final_state(s))
+    u_fprints_char("t ",f);
+  else
+    u_fprints_char(": ",f);
+  
+  ptr=s->transitions;
+  while(ptr!=NULL)
+    {
+      u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
+      ptr=ptr->next;
+    }
+
+  u_fputc((unichar)' ',f);
+  u_fputc((unichar)'\n',f);
+
+  return 1;
+}
+
+/**
+ * Writes graph n of the grammar g to the .fst2 file 'f'.
+ */
+int write_graph (FILE *f, Fst2 *g, int n)
+{
+
+  u_fprintf(f,
+            "-1 flattened version of graph "
+            "%S\n",
+            g->graph_names[n]);
+
+  /* to be implemented */
+  fatal_error("function write_graph not fully implemented\n");
+
+  return 1;
+}
 
 /**
  * Creates, initializes and returns a fst2 state.

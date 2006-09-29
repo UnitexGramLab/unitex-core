@@ -31,7 +31,6 @@ int nombre_etiquettes_comp; /* attention: may be confused with macro
                                MAX_FST2_TAGS */
 struct noeud_g_comp *rac_graphe_comp; //racine de l'arbre des graphes
 struct noeud_comp *rac_comp; //racine de l'arbre des étiquettes
-FILE *fs_comp; //fichier de sortie
 int EPSILON_comp;   // etiquette pour <E>
 int compteur_char=0;
 int compteur_free_char=0;
@@ -633,7 +632,8 @@ void add_reverse_transition_to_state(int etiq,int dest,Etat_comp e) {
  * the corresponding reverse one
  */
 void compute_reverse_transitions(Etat_comp* graph, int n_states) {
-  for (int i=0; i<n_states; i++) {
+  register int i;
+  for (i=0; i<n_states; i++) {
     if ( graph[i] == NULL )
       break;
     Fst2Transition l = graph[i]->trans;
@@ -710,9 +710,7 @@ void sauvegarder_etat_det(FILE *f,Etat_comp e)
  ptr=e->trans;
  while(ptr!=NULL)
    {
-     char s[256];
-     sprintf(s," %d %d",ptr->tag_number,ptr->state_number);
-     u_fprints_char(s,f);
+     u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
      ptr=ptr->next;
    }
  u_fputc((unichar)' ',f);
@@ -906,6 +904,7 @@ int determinisation(Etat_comp* graph, int graph_size) {
  * calculated before!)
  */
 int minimisation(Etat_comp graphe[]) {
+  
   return 1;
 }
 
@@ -913,25 +912,29 @@ int minimisation(Etat_comp graphe[]) {
 /**
  * write the graph/automaton "graphe" to file "fs_comp"
  */
-int write_graph(FILE* fs_comp,
-                Etat_comp graphe[]) {
+int write_graph(FILE* f,
+                Etat_comp graphe[],
+                int number,
+                unichar *name) {
+
+  u_fprintf(f, "%d %S\n", number, name);
 
   if (graphe[0] == NULL) { /* do not segfault on empty automaton */
     fprintf(stderr, "warning: resulting automaton is empty\n");
-    u_fprintf(fs_comp, ": \nf \n");
+    u_fprintf(f, ": \nf \n");
     return 1;
   }
   
   /* print all states */
   int n = 0;
   do {
-    sauvegarder_etat_det(fs_comp,graphe[n]);
+    sauvegarder_etat_det(f,graphe[n]);
   } while (graphe[++n] != NULL);
 
   /* mark end of graph */
   char s[10];
   sprintf(s,"f \n");
-  u_fprints_char(s,fs_comp);
+  u_fprints_char(s,f);
   
   return 0;
 }
@@ -1877,49 +1880,6 @@ void conformer_nom_graphe_comp(char * NOM, int courant) {
 }
 
 
-//
-// Sauvegarde du graphe compile
-//
-
-
-void sauvegarder_graphe_comp(Etat_comp *letats,int n_et,int n_gr)
-{
-  int i;
-  Fst2Transition t;
-  char s[1000],s2[1000];
-
-  u_to_char(s2,donnees->nom_graphe[n_gr]);
-  sprintf(s,"%d %s\n",-n_gr-1,s2);
-  u_fprints_char(s,fs_comp);
-  if((donnees->statut_graphe[n_gr])==0 || n_et==0)
-    {
-      sprintf(s,": \nf \n");
-      u_fprints_char(s,fs_comp);
-    }
-  else
-    {
-      for(i=0;i<n_et;i++)
-	{
-	  if(((letats[i]->controle)&1)==0) sprintf(s,":");
-	  else sprintf(s,"t");
-      u_fprints_char(s,fs_comp);
-	  t=letats[i]->trans;
-	  while(t!=NULL)
-	    {
-	      if (t->tag_number>=0) sprintf(s," %d %d",t->tag_number,t->state_number);
-	      else sprintf(s," %d %d",t->tag_number,t->state_number);
-          u_fprints_char(s,fs_comp);
-	      t=t->next;
-	    }
-      sprintf(s,"\n");
-      u_fprints_char(s,fs_comp);
-	}
-      sprintf(s,"f \n");
-      u_fprints_char(s,fs_comp);
-    }
-}
-
-
 
 
 
@@ -2710,7 +2670,7 @@ int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
 ///////////////// COMPILER UN GRAPHE /////////////////////
 //////////////////////////////////////////////////////////
 
-int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
+int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs_comp)
 {
 
   int i;
@@ -2744,7 +2704,9 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
       u_to_char(s,donnees->nom_graphe[graphe_courant]);
       fprintf(stderr,"Cannot open the graph %s.grf\n",s);
       fprintf(stderr,"(%s)\n",nom);
-      sauvegarder_graphe_comp(letats,0,graphe_courant);
+      write_graph(fs_comp, letats,
+                  (-(graphe_courant)-1),
+                  donnees->nom_graphe[graphe_courant]);
       donnees->statut_graphe[graphe_courant] = 0;
       if(graphe_courant == 0) return 0;
       return 1;
@@ -2759,7 +2721,9 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
   if (n_etats_initial > MAX_FST2_STATES) //Trop de boites dans graphe
     {
       donnees->statut_graphe[graphe_courant] = 0;
-      sauvegarder_graphe_comp(letats,0,graphe_courant);
+      write_graph(fs_comp, letats,
+                  (-(graphe_courant)-1),
+                  donnees->nom_graphe[graphe_courant]);
       u_fclose(f);
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if(graphe_courant == 0)
@@ -2786,7 +2750,9 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
       if (lire == 0)
         {
           donnees->statut_graphe[graphe_courant] = 0;
-          sauvegarder_graphe_comp(letats,0,graphe_courant);
+          write_graph(fs_comp, letats,
+                      (-(graphe_courant)-1),
+                      donnees->nom_graphe[graphe_courant]);
           liberer_graphe_comp(letats);
           u_fclose(f);
           if(graphe_courant == 0)
@@ -2802,7 +2768,9 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
           if((traitement == 0) || (traitement == -1))
             {
               donnees->statut_graphe[graphe_courant] = 0;
-              sauvegarder_graphe_comp(letats,0,graphe_courant);
+              write_graph(fs_comp, letats,
+                          (-(graphe_courant)-1),
+                          donnees->nom_graphe[graphe_courant]);
               liberer_graphe_comp(letats);
               u_fclose(f);
               if(traitement == -1) return -1;
@@ -2812,7 +2780,9 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
           if (n_etats_final >= MAX_FST2_STATES) //Trop d'états dans l'automate
             {
               donnees->statut_graphe[graphe_courant] = 0;
-              sauvegarder_graphe_comp(letats,0,graphe_courant);
+              write_graph(fs_comp, letats,
+                          (-(graphe_courant)-1),
+                          donnees->nom_graphe[graphe_courant]);
               liberer_graphe_comp(letats);
               u_fclose(f);
               u_to_char(err,donnees->nom_graphe[graphe_courant]);
@@ -2844,7 +2814,10 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
   if(letats[0] == NULL)
     {
       donnees->statut_graphe[graphe_courant] = 0;
-      sauvegarder_graphe_comp(letats,0,graphe_courant);
+      write_graph(fs_comp, letats,
+                  (-(graphe_courant)-1),
+                  donnees->nom_graphe[graphe_courant]);
+
       liberer_graphe_comp(letats);
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if(graphe_courant == 0)
@@ -2856,14 +2829,14 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph)
       return 1;
     }
   donnees->statut_graphe[graphe_courant] = 1;
-  u_fprintf(fs_comp,"%d %s\n",
-            (-(graphe_courant)-1),
-            donnees->nom_graphe[graphe_courant]);
+
   //  Etat_comp* det = determinisation(letats,MAX_FST2_STATES);
   int det = determinisation(letats,MAX_FST2_STATES);
-  //   compute_reverse_transitions(letats,MAX_FST2_STATES);
+  //  compute_reverse_transitions(letats,MAX_FST2_STATES); // buggy!!!
   int min = minimisation(letats);
-  write_graph(fs_comp,letats);
+  write_graph(fs_comp, letats,
+              (-(graphe_courant)-1),
+              donnees->nom_graphe[graphe_courant]);
   liberer_graphe_comp(letats);
   if( (det == 0) || (min == 0) )
     {
@@ -2925,7 +2898,7 @@ int extraire_nom_graphe_comp(char *s1,unichar* S2)
 ///////// COMPILATION GENERALE //////////////////
 ////////////////////////////////////////////////
 
-int compilation(char *nom_graphe_principal,int mode,Alphabet* alph)
+int compilation(char *nom_graphe_principal,int mode,Alphabet* alph,FILE* fs_comp)
 {
  int compteur=0;
  int comp;
@@ -2934,7 +2907,7 @@ int compilation(char *nom_graphe_principal,int mode,Alphabet* alph)
   ajouter_graphe_comp(donnees->nom_graphe[compteur],rac_graphe_comp,0);
   do
   {
-   comp = compiler_graphe_comp(compteur,mode,alph);
+    comp = compiler_graphe_comp(compteur,mode,alph,fs_comp);
    if((comp == 0) && (compteur == 0)) return 0;
    if(comp == -1) return 0;
    compteur++;
@@ -2967,7 +2940,7 @@ void init_generale_comp()
     nombre_graphes_comp=0;
 }
 
-int ouverture_fichier_sortie(char temp[])
+FILE* ouverture_fichier_sortie(char temp[])
 {
   char temp1[TAILLE_MOT_GRAND_COMP];
   int l;
@@ -2976,13 +2949,17 @@ int ouverture_fichier_sortie(char temp[])
   l = strlen(temp1);
   temp1[l-4] = '\0';
   strcat(temp1,".fst2");
-  fs_comp = u_fopen(temp1,U_WRITE);
+  FILE* fs_comp = u_fopen(temp1,U_WRITE);
   if(fs_comp == NULL) return 0;
-  return 1;
+  return fs_comp;
 }
 
 
-void ecrire_fichier_sortie_nb_graphes(char name[])
+/**
+ * print the final number of graphes
+ * to the beginning of .fst2 file
+ */
+void ecrire_fichier_sortie_nb_graphes(char name[],FILE* fs_comp)
 {
   FILE *f;
   int i,n;
@@ -3004,7 +2981,7 @@ void ecrire_fichier_sortie_nb_graphes(char name[])
 //
 //Met dans fichier de sortie la liste des etiquettes
 //
-void sauvegarder_etiquettes_comp()
+void sauvegarder_etiquettes_comp(FILE* fs_comp)
 {
   int i;
 

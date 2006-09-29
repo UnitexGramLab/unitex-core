@@ -251,7 +251,8 @@ Fst2* load_one_sentence_from_fst2(char*,int);
 void free_Fst2(Fst2*);
 
 /* functions for writing grammars */
-void write_fst2_tags(FILE*,Fst2*);
+int write_fst2_graph(FILE*,Fst2*,int);
+int write_fst2_tags(FILE*,Fst2*);
 
 
 struct variable_list* get_variable(unichar*,struct variable_list*);
