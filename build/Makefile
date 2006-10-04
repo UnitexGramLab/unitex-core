@@ -11,6 +11,13 @@
 #
 # By default, 'make' will compile Unitex for Linux, using the TRE library
 #
+#
+# The special command
+#
+#    make SYSTEM=mingw32
+#
+# can used to generate Windows executables under Linux, using the mingw32 tools.
+#
 
 
 ################################
@@ -51,6 +58,7 @@ TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
 endif
 
+#APPDIR = where to install binaries
 APPDIR = ../../../App
 
 ifeq ($(USE_TRE_LIBRARY),yes)
@@ -94,7 +102,7 @@ ifeq ($(SYSTEM), mingw32)
 #####################
 #####################
 
-CC = i586-mingw32msvc-g++
+CC = i386-mingw32msvc-g++
 RM      = rm -f
 INSTALL = cp
 
@@ -151,6 +159,7 @@ EXTENSION = .exe
 #####################
 
 
+
 else
 
 
@@ -199,7 +208,6 @@ EXTENSION = .exe
 ###################
 endif
 
-
 endif ## MINGW (ifeq)
 
 ##################################
@@ -207,6 +215,22 @@ endif ## MINGW (ifeq)
 ##  OBJECTS NEEDED BY PROGRAMS  ##
 ##################################
 ##################################
+
+#############################################################################
+# IMPORTANT!!! DO NOT MOVE OR REMOVE THE FOLLOWING LINE #<PROG>. IT IS USED
+# TO GENERATE AUTOMATICALLY THE DEV-C++ FILES FROM THIS MAKEFILE.
+#
+# All the informations about objects files needed to compile a given program
+# must appear between the lines #<PROG> and #</PROG>. Moreover, they must
+# conform to the following rules: 
+# - the name of a program must be specified by a line like:
+# FOO = Foo
+# - the list of the objects needed by this program must be of the form:
+# FOO_OBJS = ...
+#
+#
+#<PROG>
+#############################################################################
 
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = IOBuffer.o CheckDic.o unicode.o FileName.o DELA.o Alphabet.o String_hash.o\
@@ -408,6 +432,12 @@ TXT2FST2KR_OBJS  = IOBuffer.o Txt2Fst2Kr.o bitmap.o etc.o segtype.o \
 EXTRACTCHAR  = ExtractChar
 EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segtype.o \
 		            jamoCodage.o pro_type.o unicode.o FileName.o Fst2.o Error.o
+
+#############################################################################
+# IMPORTANT!!! DO NOT MOVE OR REMOVE THE FOLLOWING LINE #</PROG>. IT IS USED
+# TO GENERATE THE DEV-C++ FILES FROM THIS MAKEFILE.
+#</PROG>
+#############################################################################
 
 
 ################################
