@@ -196,7 +196,7 @@ if (tag==NULL || tag[0]!='{') {
 	return NULL;
 }
 int i=1;
-/* We copy the tag content with the round brackets in a string */
+/* We copy the tag content without the round brackets in a string */
 unichar temp[DIC_LINE_SIZE];
 while (i<DIC_LINE_SIZE && tag[i]!='}' && tag[i]!='\0') {
 	temp[i-1]=tag[i];
@@ -268,343 +268,390 @@ int previous_was_a_letter=0;
 if (s==NULL) return 0;
 int i=0;
 while (s[i]!='\0') {
-	if (s[i]==' ' || s[i]=='-') {
-		n++;
-		previous_was_a_letter=0;
-	}
-	else if (!previous_was_a_letter) {
-		n++;
-		previous_was_a_letter=1;
-	}
-	i++;
+   if (s[i]==' ' || s[i]=='-') {
+      n++;
+      previous_was_a_letter=0;
+   }
+   else if (!previous_was_a_letter) {
+      n++;
+      previous_was_a_letter=1;
+   }
+   i++;
 }
 return n;
 }
 
 
-
-
-
-void get_compressed_token(unichar* inflected,unichar* lemma,unichar* res) {
+/**
+ * This function compares a lemma and an inflected form. If both are spaces
+ * or hyphens, it copies the lemma in 'result'. Otherwise, 'result' will
+ * contain the length of the suffix to be removed from the inflected form in
+ * order to get the longest common prefix, followed by the suffix
+ * of the lemma. For instance:
+ * 
+ * inflected="written"  lemma ="write"
+ * - longest common prefix = "writ"
+ * - 3 characters ("ten") to remove from "written" to get "writ"
+ * - we must add "e" to get the lemma
+ * => result="3e"
+ */
+void get_compressed_token(unichar* inflected,unichar* lemma,unichar* result) {
 int prefix=get_longuest_prefix(inflected,lemma);
-int a_effacer=u_strlen(inflected)-prefix;
-int l_lemma=u_strlen(lemma);
-
-
-unichar buf[10];
-
-
-
-if (l_lemma==1 && (lemma[0]==' ' || lemma[0]=='-') &&
-    u_strlen(inflected)==1 && (inflected[0]==' ' || inflected[0]=='-')) {
-    // if we have 2 separators, we write it rawly to make the INF file visible
-    // ex: "jean-pierre,jean-pierre.N" => "0-0.N" instead of "000.N"
-    res[0]=lemma[0];
-    res[1]='\0';
-    return;
+int length_of_sfx_to_remove=u_strlen(inflected)-prefix;
+int lemma_length=u_strlen(lemma);
+if (lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
+   u_strlen(inflected)==1 && (inflected[0]==' ' || inflected[0]=='-')) {
+   /* If we have 2 separators, we write the lemma one rawly in order 
+    * to make the INF file visible.
+    * Ex: "jean-pierre,jean-pierre.N" => "0-0.N" instead of "000.N" */
+   result[0]=lemma[0];
+   result[1]='\0';
+   return;
 }
-u_int_to_string(a_effacer,buf);
-u_strcpy(res,buf);
- int l_NB=u_strlen(buf);
+/* We put the length to remove at the beginning of the result */
+u_int_to_string(length_of_sfx_to_remove,result);
+int j=u_strlen(result);
 int i;
-int j=0;
-for (i=0;i<(l_lemma-prefix);i++) {
-    if ((lemma[i+prefix]>='0' && lemma[i+prefix]<='9')
-        || lemma[i+prefix]==',' || lemma[i+prefix]=='.'
-        || lemma[i+prefix]=='\\') {
-       res[j+l_NB]='\\';
-       j++;
-    }
-    res[j+l_NB]=lemma[i+prefix];
-    j++;
+for (i=0;i<(lemma_length-prefix);i++) {
+   if ((lemma[i+prefix]>='0' && lemma[i+prefix]<='9')
+       || lemma[i+prefix]==',' || lemma[i+prefix]=='.'
+       || lemma[i+prefix]=='\\') {
+      /* We need to protect the digits (used in the compression code),
+       * the lemma and the point (used as delimitors in a DELAF line and, of
+       * course, the backslash (protection character). */
+      result[j]='\\';
+      j++;
+   }
+   result[j]=lemma[i+prefix];
+   j++;
 }
-res[j+l_NB]='\0';
+result[j]='\0';
 }
 
 
-
+/**
+ * Stores in 'token' the first token found from position
+ * '*pos' in the string 's'. The position is updated.
+ */
 void get_token(unichar* s,unichar* token,int *pos) {
 if (s[*pos]==' ' || s[*pos]=='-') {
-   // case of a separator
+   /* Spaces and hyphens are considered as tokens of length 1 */
    token[0]=s[*pos];
    token[1]='\0';
    (*pos)++;
    return;
 }
+/* Otherwise, we copy characters until we find a delimitor or
+ * the end of string. */
 int j=0;
 while (s[*pos]!=' ' && s[*pos]!='-' && s[*pos]!='\0') {
-  token[j++]=s[*pos];
-  (*pos)++;
+   token[j++]=s[*pos];
+   (*pos)++;
 }
 token[j]='\0';
 }
 
 
-
-void get_compressed_line(struct dela_entry* e,unichar* res) {
-unichar tmp[1000];
-unichar code_gramm[1000];
+/**
+ * Builds the compressed line from the given DELAF entry, and
+ * stores it into the string 'result'.
+ */
+void get_compressed_line(struct dela_entry* e,unichar* result) {
+unichar code_gramm[DIC_LINE_SIZE];
+/* Anyway, we will need the grammatical/inflectional codes of the
+ * entry. */
 get_codes(e,code_gramm);
-
-// if the 2 strings are identical, we just return the grammatical code => .N+z1:ms
+/* If the 2 strings are identical, we just return the grammatical 
+ * code => .N+z1:ms */
 if (!u_strcmp(e->inflected,e->lemma)) {
-   u_strcpy(res,code_gramm);
+   u_strcpy(result,code_gramm);
    return;
 }
-// we test if the 2 strings have the same number of tokens
+/* We test if the 2 strings have the same number of tokens */
 int n_inflected=get_number_of_tokens(e->inflected);
 int n_lemma=get_number_of_tokens(e->lemma);
 if (n_inflected!=n_lemma) {
-    // if the 2 strings have not the same number of tokens
-    get_compressed_token(e->inflected,e->lemma,tmp);
-    u_strcpy_char(res,"_");
-    u_strcat(res,tmp);
-    u_strcat(res,code_gramm);
+   /* If the 2 strings have not the same number of tokens,
+    * we rawly consider them as two big tokens. However,
+    * we put the prefix "_" in order to indicate that we have 
+    * a multi-token string that must be considered as a single 
+    * token. */
+    result[0]='_';
+    /* Here we use a trick to avoid a strcpy */
+    get_compressed_token(e->inflected,e->lemma,&(result[1]));
+    u_strcat(result,code_gramm);
     return;
 }
-
-// we process now the case of 2 strings that have the same number of tokens
+/* We process now the case of 2 strings that have the same number of tokens */
 int pos_inflected=0;
 int pos_lemma=0;
-unichar tmp_inflected[1000];
-unichar tmp_lemma[1000];
-unichar tmp_compressed[1000];
-tmp[0]='\0';
+unichar tmp_inflected[DIC_WORD_SIZE];
+unichar tmp_lemma[DIC_WORD_SIZE];
+unichar tmp_compressed[DIC_WORD_SIZE];
+result[0]='\0';
 for (int i=0;i<n_inflected;i++) {
-  get_token(e->inflected,tmp_inflected,&pos_inflected);
-  get_token(e->lemma,tmp_lemma,&pos_lemma);
-  get_compressed_token(tmp_inflected,tmp_lemma,tmp_compressed);
-  u_strcat(tmp,tmp_compressed);
+   /* Tokens are compressed one by one */
+   get_token(e->inflected,tmp_inflected,&pos_inflected);
+   get_token(e->lemma,tmp_lemma,&pos_lemma);
+   get_compressed_token(tmp_inflected,tmp_lemma,tmp_compressed);
+   u_strcat(result,tmp_compressed);
 }
-u_strcat(tmp,code_gramm);
-u_strcpy(res,tmp);
+u_strcat(result,code_gramm);
 return;
 }
 
 
-
-
-
-//
-// this function takes a line of a .INF file and tokenize it into
-// several single codes.
-// Example: .N,.V  =>  token 0=".N" ; token 1=".V"
-//
+/**
+ * This function takes a line of a .INF file and tokenize it into
+ * several single codes.
+ * Example: .N,.V  =>  code 0=".N" ; code 1=".V"
+ */
 struct word_list* tokenize_compressed_info(unichar* line) {
-struct word_list* res=NULL;
-unichar tmp[1000];
+struct word_list* result=NULL;
+unichar tmp[DIC_LINE_SIZE];
 int pos,i;
 pos=0;
 i=0;
 while (line[pos]!='\0') {
    if (line[pos]==',') {
-      // if we are at the end of a token
+      /* If we are at the end of a token, we add it to the list */
       tmp[i]='\0';
-      res=new_word_list(tmp,res);
+      result=new_word_list(tmp,result);
       i=0;
       pos++;
    }
    else {
       if (line[pos]=='\\') {
-         // if we find a backslash, we take it with the following char
-         // doing like this avoids to take a protected comma for a token separator
+         /* If we find a backslash, we take it with the following char.
+          * Doing like this avoids to take a protected comma for a token separator */
          tmp[i++]=line[pos++];
       }
       tmp[i++]=line[pos++];
    }
 }
 tmp[i]='\0';
-res=new_word_list(tmp,res);
-return res;
+result=new_word_list(tmp,result);
+return result;
 }
 
 
-//
-// this function replace res by the rebuilt token
-//
-void rebuild_token(unichar* res,unichar* info) {
+/**
+ * This function takes an inflected form and its associated compression code, and
+ * it replaces 'inflected' by the lemma that is rebuilt.
+ * 
+ * Example: inflected="written"  compress_info="3e"
+ *       => inflected="write"
+ */
+void rebuild_token(unichar* inflected,unichar* compress_info) {
 int n=0;
 int i,pos=0;
-while (info[pos]>='0' && info[pos]<='9') {
-  n=n*10+(info[pos]-'0');
-  pos++;
+/* We count the number of characters to remove */
+while (compress_info[pos]>='0' && compress_info[pos]<='9') {
+   n=n*10+(compress_info[pos]-'0');
+   pos++;
 }
-i=u_strlen(res)-n;
+i=u_strlen(inflected)-n;
 if (i<0) {
+   /* This case should never happen */
    i=0;
 }
-while (info[pos]!='\0') {
-  if (info[pos]=='\\') {
-     pos++;
-  }
-  res[i++]=info[pos++];
+/* Then we append the remaining suffix */
+while (compress_info[pos]!='\0') {
+   /* If the suffix contains a protected character, we unprotect it */
+   if (compress_info[pos]=='\\') {
+      pos++;
+   }
+   inflected[i++]=compress_info[pos++];
 }
-res[i]='\0';
+inflected[i]='\0';
 }
 
 
-
-//
-// copy the string src to dest add a backslash if a comma is found
-//
+/**
+ * Copy the string 'src' to 'dest', adding a backslash if a comma or
+ * a point is found.
+ */
 void copy_inflected(unichar* dest,unichar* src) {
 int i=0;
 int j=0;
 while (src[i]!='\0') {
-  if (src[i]==',' || src[i]=='.'
-      /* commented by Sébastien Paumier
-      || src[i]==':' || src[i]=='+' 
-      || src[i]=='-' || src[i]=='/'*/) {dest[j++]='\\';}
-  dest[j++]=src[i++];
+   if (src[i]==',' || src[i]=='.') {
+      dest[j++]='\\';
+   }
+   dest[j++]=src[i++];
 }
 dest[j]='\0';
 }
 
 
-
-//
-// this function takes an entry of the BIN file and a code of the INF file
-// it returns in res the rebuilt line
-// Example: entry="mains" & info="1.N:fs"  ==>  res="mains,main.N:fs"
-//
-void uncompress_entry(unichar* entry,unichar* info,unichar* res) {
+/**
+ * This function takes an inflected form of the BIN file and a code
+ * of the INF file. It stores in 'result' the rebuilt line.
+ * 
+ * Example: entry="mains" + info="1.N:fs" ==> res="mains,main.N:fs"
+ */
+void uncompress_entry(unichar* inflected,unichar* INF_code,unichar* result) {
 int n;
 int pos,i;
-res[0]='\0';
-
-copy_inflected(res,entry);
-u_strcat_char(res,",");
-
-if (info[0]=='.') {
-   // first case: lemma is the same that entry
-   u_strcat(res,info);
+/* The rebuilt line must start by the inflected form, followed by a comma */
+copy_inflected(result,inflected);
+u_strcat_char(result,",");
+if (INF_code[0]=='.') {
+   /* First case: the lemma is the same than the inflected form
+    * "write" + ".V:W" ==> "write,.V:W" */
+   u_strcat(result,INF_code);
    return;
 }
-if (info[0]=='_') {
-   // in this case we rawly suppress chars, before adding some
+if (INF_code[0]=='_') {
+   /* In this case, we rawly suppress chars, before adding some 
+    * "Albert Einstein" + "_15Einstein.N+Npr" => "Albert Einstein,Einstein.N+Npr" */
    pos=1;
    n=0;
-   // we read the number of chars to suppress
-   while (info[pos]>='0' && info[pos]<='9') {
-      n=n*10+(info[pos]-'0');
+   /* We read the number of chars to suppress */
+   while (INF_code[pos]>='0' && INF_code[pos]<='9') {
+      n=n*10+(INF_code[pos]-'0');
       pos++;
    }
-   u_strcat(res,entry);
-   i=u_strlen(res)-n;
-   while (info[pos]!='\0') {
-     /*if (info[pos]=='\\') {
-        pos++;
-     }*/
-     res[i++]=info[pos++];
+   /* We add the inflected form */
+   u_strcat(result,inflected);
+   /* But we start copying the code at position length-n */
+   i=u_strlen(result)-n;
+   while (INF_code[pos]!='\0') {
+      /* If a char is protected in the code, it must stay protected,
+       * so there is nothing to do but a raw copy. */
+      result[i++]=INF_code[pos++];
    }
-   res[i]='\0';
+   result[i]='\0';
    return;
 }
-// last case: we have to process token by token
+/* Last case: we have to process token by token */
 int pos_entry=0;
 pos=0;
-i=u_strlen(res);
-while (info[pos]!='.') {
-  if (info[pos]==' ' || info[pos]=='-') {
-     // case of a separator
-     res[i++]=info[pos++];
-     pos_entry++;
-  }
-  else {
-     unichar tmp[10000];
-     unichar tmp_entry[10000];
-     // we read the compressed token
-     int j=0;
-     while (info[pos]!='.' && info[pos]!=' ' && info[pos]!='-') {
-        /*if (info[pos]=='\\') {
-           tmp[j++]=info[pos++];
-        }*/
-        if (info[pos]=='\\') {
-           pos++;
-           if (info[pos]!='.') tmp[j++]='\\';
-        }
-        tmp[j++]=info[pos++];
-     }
-     tmp[j]='\0';
-     // and now the entry token
-     j=0;
-     while (entry[pos_entry]!='\0' && entry[pos_entry]!=' ' && entry[pos_entry]!='-') {
-        tmp_entry[j++]=entry[pos_entry++];
-     }
-     tmp_entry[j]='\0';
-     rebuild_token(tmp_entry,tmp);
-     j=0;
-     while (tmp_entry[j]!='\0') {
-        if (tmp_entry[j]=='.' || tmp_entry[j]=='+' || tmp_entry[j]=='\\'
-            || tmp_entry[j]=='/') {
-            res[i++]='\\';
-        }
-        res[i++]=tmp_entry[j++];
-     }
-  }
+i=u_strlen(result);
+while (INF_code[pos]!='.') {
+   if (INF_code[pos]==' ' || INF_code[pos]=='-') {
+      /* In the case of a separator, we copy the one of the INF code */
+      result[i++]=INF_code[pos++];
+      pos_entry++;
+   }
+   else {
+      unichar tmp[DIC_LINE_SIZE];
+      unichar tmp_entry[DIC_LINE_SIZE];
+      /* We read the compressed token */
+      int j=0;
+      while (INF_code[pos]!='.' && INF_code[pos]!=' ' && INF_code[pos]!='-') {
+         if (INF_code[pos]=='\\') {
+            /* If we find a protected char that is not a point, we let it protected */
+            pos++;
+            if (INF_code[pos]!='.') {tmp[j++]='\\';}
+         }
+         tmp[j++]=INF_code[pos++];
+      }
+      tmp[j]='\0';
+      /* Now we read a token in the inflected form */
+      j=0;
+      while (inflected[pos_entry]!='\0' && inflected[pos_entry]!=' ' && inflected[pos_entry]!='-') {
+         tmp_entry[j++]=inflected[pos_entry++];
+      }
+      tmp_entry[j]='\0';
+      rebuild_token(tmp_entry,tmp);
+      j=0;
+      /* Once we have rebuilt the token, we protect in it the following chars: . + \ /
+       */
+      while (tmp_entry[j]!='\0') {
+         if (tmp_entry[j]=='.' || tmp_entry[j]=='+' || tmp_entry[j]=='\\'
+             || tmp_entry[j]=='/') {
+            result[i++]='\\';
+         }
+         result[i++]=tmp_entry[j++];
+      }
+   }
 }
-while (info[pos]!='\0') {
-  res[i++]=info[pos++];
+/* Finally, we append the grammatical/inflectional information at the end
+ * of the result line. */
+while (INF_code[pos]!='\0') {
+   result[i++]=INF_code[pos++];
 }
-res[i]='\0';
+result[i]='\0';
 }
 
 
-
+/**
+ * This function loads the content of an .inf file and returns 
+ * a structure containing the lines of the file tokenized into INF
+ * codes.
+ */
 struct INF_codes* load_INF_file(char* nom) {
 struct INF_codes* res;
 FILE *f=u_fopen(nom,U_READ);
 if (f==NULL) {
-   fprintf(stderr,"Cannot open %s\n",nom);
+   error("Cannot open %s\n",nom);
    return NULL;
 }
 res=(struct INF_codes*)malloc(sizeof(struct INF_codes));
+if (res==NULL) {
+   fatal_error("Not enough memory in load_INF_file\n");
+}
 res->N=u_read_int(f);
 res->codes=(struct word_list**)malloc(sizeof(struct word_list*)*(res->N));
-unichar s[4000];
+if (res->codes==NULL) {
+   fatal_error("Not enough memory in load_INF_file\n");
+}
+unichar s[DIC_LINE_SIZE*10];
 int i=0;
+/* For each line of the .inf file, we tokenize it to get the single INF codes
+ * it contains. */
 while (u_read_line(f,s)) {
-  res->codes[i++]=tokenize_compressed_info(s);
+   res->codes[i++]=tokenize_compressed_info(s);
 }
 u_fclose(f);
 return res;
 }
 
 
+/**
+ * Frees all the memory allocated for the given structure.
+ */
 void free_INF_codes(struct INF_codes* INF) {
-if (INF==NULL) return;
+if (INF==NULL) {return;}
 for (int i=0;i<INF->N;i++) {
-  free_word_list(INF->codes[i]);
+   free_word_list(INF->codes[i]);
 }
+free(INF->codes);
 free(INF);
 }
 
 
-
-unsigned char* load_BIN_file(char* nom) {
+/**
+ * Loads a .bin file into an unsigned char array that is returned.
+ * Returns NULL if an error occurs.
+ */
+unsigned char* load_BIN_file(char* name) {
 FILE* f;
-f=fopen(nom,"rb");
+/* We open the file as a binary one */
+f=fopen(name,"rb");
 unsigned char* tab;
 if (f==NULL) {
-   fprintf(stderr,"Cannot open %s\n",nom);
+   error("Cannot open %s\n",name);
    return NULL;
 }
+/* We compute the size of the file that is encoded in the 4 first bytes.
+ * This value could be used to check the integrity of the file. */
 int a,b,c,d;
 a=(unsigned char)fgetc(f);
 b=(unsigned char)fgetc(f);
 c=(unsigned char)fgetc(f);
 d=(unsigned char)fgetc(f);
-int taille=d+256*c+256*256*b+256*256*256*a;
-fclose(f);
-f=fopen(nom,"rb");
-
-tab=(unsigned char*)malloc(sizeof(unsigned char)*taille);
+int file_size=d+256*c+256*256*b+256*256*256*a;
+/* We come back to the beginning and we load rawly the file */
+fseek(f,0,SEEK_SET);
+tab=(unsigned char*)malloc(sizeof(unsigned char)*file_size);
 if (tab==NULL) {
-   fprintf(stderr,"Memory error: cannot load %s\n",nom);
+   error("Memory error: cannot load %s\n",name);
    return NULL;
 }
-if (taille!=(int)fread(tab,sizeof(char),taille,f)) {
-   fprintf(stderr,"Error while reading %s\n",nom);
+if (file_size!=(int)fread(tab,sizeof(char),file_size,f)) {
+   error("Error while reading %s\n",name);
    free(tab);
    fclose(f);
    return NULL;
@@ -614,648 +661,729 @@ return tab;
 }
 
 
-int m=0;
-
-void explore_bin_node(int pos,unichar* contenu,int string_pos,unsigned char* bin,struct INF_codes* inf,FILE *f) {
+/**
+ * This function explores all the path from the current state in the 
+ * .bin automaton and produces all the corresponding DELAF lines in the
+ * 'output' file.
+ * 'pos' is the offset in the byte arry 'bin'. 'content' is the string
+ * that contains the characters corresponding to the current position in the
+ * automaton. 'string_pos' is the current position in 'content'.
+ */
+void explore_bin_node(int pos,unichar* content,int string_pos,unsigned char* bin,
+                      struct INF_codes* inf,FILE* output) {
 int n_transitions;
 int ref;
-if (string_pos>m) {
-   m=string_pos;
-   //printf("%d\n",m);
-   /*if (m>=30) {
-      contenu[string_pos]='\0';
-      u_prints(contenu);
-      getchar();
-   }*/
-}
 n_transitions=((unsigned char)bin[pos])*256+(unsigned char)bin[pos+1];
 pos=pos+2;
 if (!(n_transitions & 32768)) {
-   // we are in a final node
+   /* If we are in a final state */
    ref=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
    pos=pos+3;
-   contenu[string_pos]='\0';
+   content[string_pos]='\0';
    struct word_list* tmp=inf->codes[ref];
+   /* We produce entries from the INF codes associated to this final state */
    while (tmp!=NULL) {
-      unichar res[1000];
-      uncompress_entry(contenu,tmp->word,res);
-      u_fprints(res,f);
-      u_fprints_char("\n",f);
+      unichar res[DIC_WORD_SIZE];
+      uncompress_entry(content,tmp->word,res);
+      u_fprints(res,output);
+      u_fprints_char("\n",output);
       tmp=tmp->next;
    }
 }
 else {
-   // if we are in a normal node, we remove the control bit to
-   // have the good number of transitions
+   /* If we are in a normal node, we remove the control bit to
+    * have the good number of transitions */
    n_transitions=n_transitions-32768;
 }
+/* Nevermind the state finality, we explore all the reachable states */
 for (int i=0;i<n_transitions;i++) {
-  contenu[string_pos]=(unichar)(((unsigned char)bin[pos])*256+(unsigned char)bin[pos+1]);
-  pos=pos+2;
-  int adr=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
-  pos=pos+3;
-  explore_bin_node(adr,contenu,string_pos+1,bin,inf,f);
+   content[string_pos]=(unichar)(((unsigned char)bin[pos])*256+(unsigned char)bin[pos+1]);
+   pos=pos+2;
+   int adr=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
+   pos=pos+3;
+   explore_bin_node(adr,content,string_pos+1,bin,inf,output);
 }
 }
 
 
-
-//
-// this function explore the automaton stored in the bin and rebuild
-// the original DELA
-//
-void rebuild_dictionary(unsigned char* bin,struct INF_codes* inf,FILE* f) {
-unichar contenu[10000];
-explore_bin_node(4,contenu,0,bin,inf,f);
+/**
+ * This function explores the automaton stored in the .bin and rebuilds
+ * the original DELAF in the 'output' file.
+ */
+void rebuild_dictionary(unsigned char* bin,struct INF_codes* inf,FILE* output) {
+unichar content[DIC_LINE_SIZE];
+/* The offset of the initial state is 4 */
+explore_bin_node(4,content,0,bin,inf,output);
 }
 
 
-
-//
-// tokenizes a DELA line into the inflected part and the remaining part
-// avons,avoir.V+z1:P1p -> "avons" and ",avoir.V+z1:P1p"
-//
-// This function is used to generate the dictionary tree for
-// constructing the text automaton 
-//
-void tokenize_DELA_line_into_inflected_and_code(unichar* s,unichar* inflected,unichar* code) {
+/**
+ * Tokenizes a DELA line into the inflected part and the remaining part
+ * "avons,avoir.V+z1:P1p" -> "avons" and ",avoir.V+z1:P1p"
+ * 
+ * If the lemma is not specified because it is identical to the inflected
+ * form, we add it:
+ * 
+ * "avoir,.V:W" -> "avoir" and ",avoir.V:W"
+ * 
+ * If a character of the inflected form is protected we unprotect it, because
+ * we keep the backslashes if we must copy the inflected form into the lemma:
+ * 
+ * "3\,14,.PI" -> "3,14" and ",3\,14.PI"
+ * 
+ * This function is used to generate the dictionary tree for
+ * constructing the text automaton.
+ */
+void tokenize_DELA_line_into_inflected_and_code(unichar* line,unichar* inflected,unichar* code) {
 int i,j;
-char err[1000];
-unichar inflected_with_backslash[1024];
+char err[DIC_LINE_SIZE];
+unichar inflected_with_backslash[DIC_WORD_SIZE];
 int y=0;
-if (s==NULL) return;
-// reading the inflected part
+if (line==NULL) return;
+/* We read the inflected form */
 i=0;
 j=0;
 y=0;
-while (s[i]!='\0' && s[i]!=',') {
-  if (s[i]=='\\') { // case of the special char 
-    inflected_with_backslash[y++]='\\';
-    i++;
-    if (s[i]=='\0') {
-      u_to_char(err,s);
-      fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-      return;
-    }
-  }
-  inflected_with_backslash[y++]=s[i];
-  inflected[j++]=s[i++];
+while (line[i]!='\0' && line[i]!=',') {
+   if (line[i]=='\\') {
+      /* We unprotect chars, keeping a protected copy in 'inflected_with_backslash' */
+      inflected_with_backslash[y++]='\\';
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   inflected_with_backslash[y++]=line[i];
+   inflected[j++]=line[i++];
 }
 inflected[j]='\0';
 inflected_with_backslash[y]='\0';
-
-if (s[i]=='\0') {
-  u_to_char(err,s);
-  fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-  return;
+if (line[i]=='\0') {
+   u_to_char(err,line);
+   error("***Dictionary error: incorrect line\n%s\n",err);
+   return;
 }
-
-// reading the lemma part
+/* We read the lemma */
 i++;
 code[0]=',';
 j=1;
-while (s[i]!='\0' && s[i]!='.') {
-  if (s[i]=='\\') {
-    code[j++]='\\';
-    i++;
-    if (s[i]=='\0') {
-      u_to_char(err,s);
-      fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-      return;
-    }
-  }
-  code[j++]=s[i++];
+while (line[i]!='\0' && line[i]!='.') {
+   if (line[i]=='\\') {
+      code[j++]='\\';
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   code[j++]=line[i++];
 }
 code[j]='\0';
 if (j==1) {
-   // if the lemma is not specified, we copy the inflected form
-  u_strcat(code,inflected_with_backslash);
+   /* If the lemma is not specified, we copy the protected inflected form */
+   u_strcat(code,inflected_with_backslash);
 }
-if (s[i]=='\0') {
-  u_to_char(err,s);
-  fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-  return;
+if (line[i]=='\0') {
+   u_to_char(err,line);
+   error("***Dictionary error: incorrect line\n%s\n",err);
+   return;
 }
-
-// reading the remaining part of the line
+/* We read the remaining part of the line */
 i++;
 j=u_strlen(code);
 code[j++]='.';
-while (s[i]!='\0') {
-  if (s[i]=='\\') {
-    code[j++]='\\';
-    i++;
-    if (s[i]=='\0') {
-      u_to_char(err,s);
-      fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-      return;
-    }
-  }
-  code[j++]=s[i++];
+while (line[i]!='\0') {
+   if (line[i]=='\\') {
+      code[j++]='\\';
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   code[j++]=line[i++];
 }
 code[j]='\0';
-
 }
 
 
-
-void extract_semantic_codes(char* nom,struct string_hash* hash) {
-FILE* f=u_fopen(nom,U_READ);
+/**
+ * This function parses a DELAF and stores all its grammatical and
+ * semantic codes into the 'hash' structure. This structure is later
+ * used in the Locate program in order to know if XXX can be such a 
+ * code when there is a pattern like "<XXX>".
+ */
+void extract_semantic_codes(char* delaf,struct string_hash* hash) {
+FILE* f=u_fopen(delaf,U_READ);
 if (f==NULL) return;
-unichar s[1000];
-unichar temp[1000];
-char err[1000];
+unichar line[DIC_LINE_SIZE];
+unichar temp[DIC_LINE_SIZE];
+char err[DIC_LINE_SIZE];
 int i,j;
-while (u_read_line(f,s)) {
-  if (s[0]!='\0') {
-  i=0;
-  while (s[i]!='\0' && s[i]!=',') {
-     if (s[i]=='\\') {
-        i++;
-        if (s[i]=='\0') {
-           u_to_char(err,s);
-	       fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-           break;
-        }
-     }
-     if (s[i]=='\0') {
-     	u_to_char(err,s);
-        fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-        break;
-     }
-     i++;
-  }
-  while (s[i]!='\0' && s[i]!='.') {
-     if (s[i]=='\\') {
-        i++;
-        if (s[i]=='\0') {
-           u_to_char(err,s);
-           fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-           break;
-        }
-     }
-     if (s[i]=='\0') {
-     	u_to_char(err,s);
-        fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-        break;
-     }
-     i++;
-  }
-  // reading the grammatical code
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!='+' && s[i]!='/' && s[i]!=':') {
-     if (s[i]=='\\') {
-        i++;
-        if (s[i]=='\0') {
-           u_to_char(err,s);
-           fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-           break;
-        }
-     }
-     temp[j++]=s[i++];
-  }
-  temp[j]='\0';
-  get_hash_number(temp,hash);
-  // reading the semantic codes
-  while (s[i]=='+') {
-     i++;
-     j=0;
-     while (s[i]!='\0' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
-        if (s[i]=='\\') {
-           i++;
-           if (s[i]=='\0') {
-              u_to_char(err,s);
-              fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-              break;
-           }
-        }
-        temp[j++]=s[i++];
-     }
-     temp[j]='\0';
-     get_hash_number(temp,hash);
-    }
-  }
+while (u_read_line(f,line)) {
+   if (line[0]!='\0') {
+      i=0;
+      /* We jump over the inflected form */
+      while (line[i]!='\0' && line[i]!=',') {
+         if (line[i]=='\\') {
+            i++;
+            if (line[i]=='\0') {
+               u_to_char(err,line); 
+               error("***Dictionary error: incorrect line\n%s\n",err);
+               break;
+            }
+         }
+         if (line[i]=='\0') {
+            u_to_char(err,line);
+            error("***Dictionary error: incorrect line\n%s\n",err);
+            break;
+         }
+         i++;
+      }
+      /* Then we jump over the lemma */
+      while (line[i]!='\0' && line[i]!='.') {
+         if (line[i]=='\\') {
+            i++;
+            if (line[i]=='\0') {
+               u_to_char(err,line);
+               error("***Dictionary error: incorrect line\n%s\n",err);
+               break;
+            }
+         }
+         if (line[i]=='\0') {
+            u_to_char(err,line);
+            error("***Dictionary error: incorrect line\n%s\n",err);
+            break;
+         }
+         i++;
+      }
+      /* And we read the first grammatical code */
+      i++;
+      j=0;
+      while (line[i]!='\0' && line[i]!='+' && line[i]!='/' && line[i]!=':') {
+         if (line[i]=='\\') {
+            i++;
+            if (line[i]=='\0') {
+               u_to_char(err,line);
+               error("***Dictionary error: incorrect line\n%s\n",err);
+               break;
+            }
+         }
+         temp[j++]=line[i++];
+      }
+      temp[j]='\0';
+      /* We store it */
+      get_hash_number(temp,hash);
+      /* And we read the optional next ones */
+      while (line[i]=='+') {
+         i++;
+         j=0;
+         while (line[i]!='\0' && line[i]!='+' && line[i]!=':' && line[i]!='/') {
+            if (line[i]=='\\') {
+               i++;
+               if (line[i]=='\0') {
+                  u_to_char(err,line);
+                  error("***Dictionary error: incorrect line\n%s\n",err);
+                  break;
+               }
+            }
+            temp[j++]=line[i++];
+         }
+         temp[j]='\0';
+         get_hash_number(temp,hash);
+      }
+   }
 }
 fclose(f);
 }
 
 
-
-void tokenize_DELA_line_into_3_parts(unichar* s,unichar* inflected,unichar* lemma,unichar* code) {
+/**
+ * This function parses a DELAF line and stores in the appropriate parameters
+ * the inflected form, the lemma and the codes. If there is no lemma, it takes
+ * the value of the inflected form. All these strings are unprotected:
+ * 
+ * "3\,14,.PI" => inflected="3,14" lemma="3,14" codes="PI"
+ */
+void tokenize_DELA_line_into_3_parts(unichar* line,unichar* inflected,unichar* lemma,unichar* codes) {
 int i,j;
-char err[1000];
-if (s==NULL) return;
-// reading the inflected part
+char err[DIC_WORD_SIZE];
+if (line==NULL) return;
+/* We read the inflected form */
 i=0;
 j=0;
-while (s[i]!='\0' && s[i]!=',') {
-  if (s[i]=='\\') { // case of the special char
-    i++;
-    if (s[i]=='\0') {
-      u_to_char(err,s);
-      fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-      return;
-    }
-  }
-  inflected[j++]=s[i++];
+while (line[i]!='\0' && line[i]!=',') {
+   if (line[i]=='\\') {
+      /* We unprotect chars */
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   inflected[j++]=line[i++];
 }
 inflected[j]='\0';
-
-if (s[i]=='\0') {
-  u_to_char(err,s);
-  fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-  return;
+if (line[i]=='\0') {
+   u_to_char(err,line);
+   error("***Dictionary error: incorrect line\n%s\n",err);
+   return;
 }
-
-// reading the lemma part
+/* We read the lemma */
 i++;
 j=0;
-while (s[i]!='\0' && s[i]!='.') {
-  if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0') {
-      u_to_char(err,s);
-      fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-      return;
-    }
-  }
-  lemma[j++]=s[i++];
+while (line[i]!='\0' && line[i]!='.') {
+   if (line[i]=='\\') {
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   lemma[j++]=line[i++];
 }
 lemma[j]='\0';
 if (j==0) {
-   // if the lemma is not specified, we copy the inflected form
+   /* If the lemma is not specified, we copy the inflected form */
    u_strcpy(lemma,inflected);
 }
-if (s[i]=='\0') {
-  u_to_char(err,s);
-  fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-  return;
+if (line[i]=='\0') {
+   u_to_char(err,line);
+   error("***Dictionary error: incorrect line\n%s\n",err);
+   return;
 }
-// reading the remaining part of the line
+/* We read the remaining part of the line */
 i++;
 j=0;
-while (s[i]!='\0') {
-  if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0') {
-       u_to_char(err,s);
-       fprintf(stderr,"***Dictionary error: incorrect line\n%s\n",err);
-       return;
-    }
-  }
-  code[j++]=s[i++];
+while (line[i]!='\0') {
+   if (line[i]=='\\') {
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   codes[j++]=line[i++];
 }
-code[j]='\0';
+codes[j]='\0';
 }
 
 
-
-void check_DELAS_line(unichar* s,FILE* out,int line,char* alphabet,
-                      struct string_hash* semantic,struct string_hash* inflectional) {
-char err[5000];
+/**
+ * This function checks the validity of a DELAS line. If there are errors,
+ * it prints error messages in the 'out' file.
+ * 
+ * NOTE 1: as a side effect, this function stores the grammatical/semantic and inflectional
+ *         codes into the 'semantic_codes' and 'inflectional_codes' structures. This is
+ *         used to build the list of all the codes that are used in the dictionary.
+ * NOTE 2: the 'alphabet' array is used to mark characters that are used in the lemmas.
+ */
+void check_DELAS_line(unichar* DELAS_line,FILE* out,int line_number,char* alphabet,
+                      struct string_hash* semantic_codes,struct string_hash* inflectional_codes) {
+#warning all printing must be rewritten with something like ufprintf(...)
+char err[DIC_LINE_SIZE];
 unichar temp[DIC_LINE_SIZE];
 int i,j;
-if (s==NULL) return;
-// reading the inflected part
+if (DELAS_line==NULL) return;
+/* We read the lemma */
 i=0;
 j=0;
-while (s[i]!='\0' && s[i]!=',') {
-  if (s[i]=='\t') {
-     sprintf(err,"Line %d: tabulation in lemma\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  if (s[i]=='\\') { // case of the special char
-    i++;
-    if (s[i]=='\0') {
-       sprintf(err,"Line %d: \\ at end of line\n",line);
-       u_fprints_char(err,out);
-       u_fprints(s,out);
-       u_fprints_char("\n",out);
-       return;
-    }
-  }
-  alphabet[s[i]]=1;
-  temp[j++]=s[i++];
+while (DELAS_line[i]!='\0' && DELAS_line[i]!=',') {
+   if (DELAS_line[i]=='\t') {
+      /* Tabulations are not allowed in lemmas */
+      sprintf(err,"Line %d: tabulation in lemma\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAS_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   if (DELAS_line[i]=='\\') {
+      /* If there is a backslash */
+      i++;
+      if (DELAS_line[i]=='\0') {
+         /* It must not appear at the end of the line */
+         sprintf(err,"Line %d: \\ at end of line\n",line_number);
+         u_fprints_char(err,out);
+         u_fprints(DELAS_line,out);
+         u_fprints_char("\n",out);
+         return;
+      }
+   }
+   alphabet[DELAS_line[i]]=1;
+   temp[j++]=DELAS_line[i++];
 }
-if (s[i]=='\0') {
-   sprintf(err,"Line %d: no comma found\n",line);
+if (DELAS_line[i]=='\0') {
+   /* The end of line must not appear after the lemma */
+   sprintf(err,"Line %d: no comma found\n",line_number);
    u_fprints_char(err,out);
-   u_fprints(s,out);
+   u_fprints(DELAS_line,out);
    u_fprints_char("\n",out);
    return;
 }
 temp[j]='\0';
 if (j==0) {
-   sprintf(err,"Line %d: empty canonical form\n",line);
+   /* A lemma cannot be empty */
+   sprintf(err,"Line %d: empty canonical form\n",line_number);
    u_fprints_char(err,out);
-   u_fprints(s,out);
+   u_fprints(DELAS_line,out);
    u_fprints_char("\n",out);
    return;
 }
-
-// reading the grammatical code
+/* Now we read the grammatical code */
 i++;
 j=0;
-while (s[i]!='\0' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
-  if (s[i]=='\t') {
-     sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0') {
-       sprintf(err,"Line %d: \\ at end of line\n",line);
-       u_fprints_char(err,out);
-       u_fprints(s,out);
-       u_fprints_char("\n",out);
-       return;
-    }
-  }
-  temp[j++]=s[i++];
+while (DELAS_line[i]!='\0' && DELAS_line[i]!='+' && DELAS_line[i]!=':' && DELAS_line[i]!='/') {
+   /* Tabulations are allowed */
+   if (DELAS_line[i]=='\t') {
+      sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAS_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   if (DELAS_line[i]=='\\') {
+      /* If there is a backslash */
+      i++;
+      if (DELAS_line[i]=='\0') {
+         /* It must not appear at the end of the line */
+         sprintf(err,"Line %d: \\ at end of line\n",line_number);
+         u_fprints_char(err,out);
+         u_fprints(DELAS_line,out);
+         u_fprints_char("\n",out);
+         return;
+      }
+   }
+   temp[j++]=DELAS_line[i++];
 }
 temp[j]='\0';
 if (j==0) {
-   sprintf(err,"Line %d: no grammatical code\n",line);
+   /* A grammatical code cannot be empty */
+   sprintf(err,"Line %d: no grammatical code\n",line_number);
    u_fprints_char(err,out);
-   u_fprints(s,out);
+   u_fprints(DELAS_line,out);
    u_fprints_char("\n",out);
    return;
 }
-get_hash_number(temp,semantic);
-// reading the semantic codes
-while (s[i]=='+') {
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
-    if (s[i]=='\t') {
-       sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line);
-       u_fprints_char(err,out);
-       u_fprints(s,out);
-        u_fprints_char("\n",out);
-       return;
-    }
-    if (s[i]=='\\') {
-      i++;
-      if (s[i]=='\0') {
-         sprintf(err,"Line %d: \\ at end of line\n",line);
+get_hash_number(temp,semantic_codes);
+/* We read the semantic codes, if any */
+while (DELAS_line[i]=='+') {
+   i++;
+   j=0;
+   while (DELAS_line[i]!='\0' && DELAS_line[i]!='+' && DELAS_line[i]!=':' && DELAS_line[i]!='/') {
+      /* Tabulations are not allowed */
+      if (DELAS_line[i]=='\t') {
+         sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line_number);
          u_fprints_char(err,out);
-         u_fprints(s,out);
+         u_fprints(DELAS_line,out);
          u_fprints_char("\n",out);
          return;
       }
-    }
-    temp[j++]=s[i++];
-  }
-  if (j==0) {
-     sprintf(err,"Line %d: empty gramatical or semantic code\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  temp[j]='\0';
-  get_hash_number(temp,semantic);
+      if (DELAS_line[i]=='\\') {
+         /* If there is a backslash */
+         i++;
+         if (DELAS_line[i]=='\0') {
+            /* It must not appear at the end of the line */
+            sprintf(err,"Line %d: \\ at end of line\n",line_number);
+            u_fprints_char(err,out);
+            u_fprints(DELAS_line,out);
+            u_fprints_char("\n",out);
+            return;
+         }
+      }
+      temp[j++]=DELAS_line[i++];
+   }
+   if (j==0) {
+      /* A grammatical or semantic code cannot be empty */
+      sprintf(err,"Line %d: empty gramatical or semantic code\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAS_line,out);
+      u_fprints_char("\n",out);
+      return;
+   } 
+   temp[j]='\0';
+   get_hash_number(temp,semantic_codes);
 }
-// reading the flexional codes
-while (s[i]==':') {
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!=':' && s[i]!='/') {
-    if (s[i]=='\t') {
-       sprintf(err,"Line %d: tabulation in inflexional code\n",line);
-       u_fprints_char(err,out);
-       u_fprints(s,out);
-        u_fprints_char("\n",out);
-       return;
-    }
-    if (s[i]=='\\') {
-      i++;
-      if (s[i]=='\0') {
-         sprintf(err,"Line %d: \\ at end of line\n",line);
+/* We read the inflectional codes, if any (it could appear even in DELAS) */
+while (DELAS_line[i]==':') {
+   i++;
+   j=0;
+   while (DELAS_line[i]!='\0' && DELAS_line[i]!=':' && DELAS_line[i]!='/') {
+      if (DELAS_line[i]=='\t') {
+         /* Tabulations are not allowed */
+         sprintf(err,"Line %d: tabulation in inflexional code\n",line_number);
          u_fprints_char(err,out);
-         u_fprints(s,out);
+         u_fprints(DELAS_line,out);
          u_fprints_char("\n",out);
          return;
       }
-    }
-    temp[j++]=s[i++];
-  }
-  if (j==0) {
-     sprintf(err,"Line %d: empty inflectional code\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  temp[j]='\0';
-  get_hash_number(temp,inflectional);
+      if (DELAS_line[i]=='\\') {
+         /* If there is a backslash */
+         i++;
+         if (DELAS_line[i]=='\0') {
+            /* It must not appear at the end of the line */
+            sprintf(err,"Line %d: \\ at end of line\n",line_number);
+            u_fprints_char(err,out);
+            u_fprints(DELAS_line,out);
+            u_fprints_char("\n",out);
+            return;
+         }
+      }
+      temp[j++]=DELAS_line[i++];
+   }
+   if (j==0) {
+      /* An inflectional code cannot be empty */
+      sprintf(err,"Line %d: empty inflectional code\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAS_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   temp[j]='\0';
+   get_hash_number(temp,inflectional_codes);
 }
 }
 
 
-
-void check_DELAF_line(unichar* s,FILE* out,int line,char* alphabet,
-                      struct string_hash* semantic,struct string_hash* inflectional) {
-char err[5000];
+/**
+ * This function checks the validity of a DELAF line. If there are errors,
+ * it prints error messages in the 'out' file.
+ * 
+ * NOTE 1: as a side effect, this function stores the grammatical/semantic and inflectional
+ *         codes into the 'semantic_codes' and 'inflectional_codes' structures. This is
+ *         used to build the list of all the codes that are used in the dictionary.
+ * NOTE 2: the 'alphabet' array is used to mark characters that are used in 
+ *         inflected forms and lemmas.
+ */
+void check_DELAF_line(unichar* DELAF_line,FILE* out,int line_number,char* alphabet,
+                      struct string_hash* semantic_codes,struct string_hash* inflectional_codes) {
+char err[DIC_LINE_SIZE];
 unichar temp[DIC_LINE_SIZE];
 int i,j;
-if (s==NULL) return;
-// reading the inflected part
+if (DELAF_line==NULL) return;
+/* We read the inflected form */
 i=0;
 j=0;
-while (s[i]!='\0' && s[i]!=',') {
-  if (s[i]=='\t') {
-     sprintf(err,"Line %d: tabulation in inflected form\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  if (s[i]=='\\') { // case of the special char
-    i++;
-    if (s[i]=='\0') {
-       sprintf(err,"Line %d: \\ at end of line\n",line);
-       u_fprints_char(err,out);
-       u_fprints(s,out);
-       u_fprints_char("\n",out);
-       return;
-    }
-  }
-  alphabet[s[i]]=1;
-  temp[j++]=s[i++];
+while (DELAF_line[i]!='\0' && DELAF_line[i]!=',') {
+   if (DELAF_line[i]=='\t') {
+      /* Tabulations are not allowed */
+      sprintf(err,"Line %d: tabulation in inflected form\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAF_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   if (DELAF_line[i]=='\\') {
+      /* If there is a backslash */
+      i++;
+      if (DELAF_line[i]=='\0') {
+         /* It must not appear at the end of the line */
+         sprintf(err,"Line %d: \\ at end of line\n",line_number);
+         u_fprints_char(err,out);
+         u_fprints(DELAF_line,out);
+         u_fprints_char("\n",out);
+         return;
+      }
+   }
+   alphabet[DELAF_line[i]]=1;
+   temp[j++]=DELAF_line[i++];
 }
-if (s[i]=='\0') {
-   sprintf(err,"Line %d: no comma found\n",line);
+if (DELAF_line[i]=='\0') {
+   /* The end of line must not appear after the inflected form */
+   sprintf(err,"Line %d: no comma found\n",line_number);
    u_fprints_char(err,out);
-   u_fprints(s,out);
+   u_fprints(DELAF_line,out);
    u_fprints_char("\n",out);
    return;
 }
 temp[j]='\0';
 if (j==0) {
-   sprintf(err,"Line %d: empty inflected form\n",line);
+   /* An inflected form cannot be empty */
+   sprintf(err,"Line %d: empty inflected form\n",line_number);
    u_fprints_char(err,out);
-   u_fprints(s,out);
+   u_fprints(DELAF_line,out);
    u_fprints_char("\n",out);
    return;
 }
-// reading the lemma part
+/* We read the lemma */
 i++;
 j=0;
-int virgule=0;
-while (s[i]!='\0' && s[i]!='.') {
-  if (s[i]=='\t') {
-     sprintf(err,"Line %d: tabulation in lemma\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  if (s[i]==',') virgule=1;
-  else if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0') {
-       sprintf(err,"Line %d: \\ at end of line\n",line);
-       u_fprints_char(err,out);
-       u_fprints(s,out);
-       u_fprints_char("\n",out);
-       return;
-    }
-  }
-  alphabet[s[i]]=1;
-  temp[j++]=s[i++];
+int comma=0;
+while (DELAF_line[i]!='\0' && DELAF_line[i]!='.') {
+   if (DELAF_line[i]=='\t') {
+      /* Tabulations are not allowed */
+      sprintf(err,"Line %d: tabulation in lemma\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAF_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   if (DELAF_line[i]==',') {
+      /* We note if there is an unprotected comma */
+      comma=1;
+   }
+   else if (DELAF_line[i]=='\\') {
+      /* If there is a backslash */
+      i++;
+      if (DELAF_line[i]=='\0') {
+         /* It must not appear at the end of the line */
+         sprintf(err,"Line %d: \\ at end of line\n",line_number);
+         u_fprints_char(err,out);
+         u_fprints(DELAF_line,out);
+         u_fprints_char("\n",out);
+         return;
+      }
+   }
+   alphabet[DELAF_line[i]]=1;
+   temp[j++]=DELAF_line[i++];
 }
 temp[j]='\0';
-if (s[i]=='\0') {
-   sprintf(err,"Line %d: no point found\n",line);
+if (DELAF_line[i]=='\0') {
+   /* The end of line must not appear after the inflected form */
+   sprintf(err,"Line %d: no point found\n",line_number);
    u_fprints_char(err,out);
-   u_fprints(s,out);
+   u_fprints(DELAF_line,out);
    u_fprints_char("\n",out);
    return;
 }
-if (virgule) {
-   sprintf(err,"Line %d: unprotected comma in lemma\n",line);
+if (comma) {
+   /* A lemma must not contain an unprotected comma */
+   sprintf(err,"Line %d: unprotected comma in lemma\n",line_number);
    u_fprints_char(err,out);
-   u_fprints(s,out);
+   u_fprints(DELAF_line,out);
    u_fprints_char("\n",out);
 }
-// reading the grammatical code
+/* NOTE: the lemma can be empty. In that case, it is considered to be the same
+ *       than the inflected form.
+ */
+
+/* We read the grammatical code */
 i++;
 j=0;
-while (s[i]!='\0' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
-  if (s[i]=='\t') {
-     sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0') {
-       sprintf(err,"Line %d: \\ at end of line\n",line);
-       u_fprints_char(err,out);
-       u_fprints(s,out);
-       u_fprints_char("\n",out);
-       return;
-    }
-  }
-  temp[j++]=s[i++];
+while (DELAF_line[i]!='\0' && DELAF_line[i]!='+' && DELAF_line[i]!=':' && DELAF_line[i]!='/') {
+   if (DELAF_line[i]=='\t') {
+      /* Tabulations are not allowed */
+      sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAF_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   if (DELAF_line[i]=='\\') {
+      i++;
+      /* If there is a backslash */
+      if (DELAF_line[i]=='\0') {
+         /* It must not appear at the end of the line */
+         sprintf(err,"Line %d: \\ at end of line\n",line_number);
+         u_fprints_char(err,out);
+         u_fprints(DELAF_line,out);
+         u_fprints_char("\n",out);
+         return;
+      }
+   }
+   temp[j++]=DELAF_line[i++];
 }
 temp[j]='\0';
 if (j==0) {
-   sprintf(err,"Line %d: no grammatical code\n",line);
+   /* The grammatical code cannot be empty */
+   sprintf(err,"Line %d: no grammatical code\n",line_number);
    u_fprints_char(err,out);
-   u_fprints(s,out);
+   u_fprints(DELAF_line,out);
    u_fprints_char("\n",out);
    return;
 }
-get_hash_number(temp,semantic);
-// reading the semantic codes
-while (s[i]=='+') {
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
-    if (s[i]=='\t') {
-     sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  if (s[i]=='\\') {
-      i++;
-      if (s[i]=='\0') {
-         sprintf(err,"Line %d: \\ at end of line\n",line);
+get_hash_number(temp,semantic_codes);
+/* We read the semantic codes */
+while (DELAF_line[i]=='+') {
+   i++;
+   j=0;
+   while (DELAF_line[i]!='\0' && DELAF_line[i]!='+' && DELAF_line[i]!=':' && DELAF_line[i]!='/') {
+      if (DELAF_line[i]=='\t') {
+         /* Tabulations are not allowed */
+         sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line_number);
          u_fprints_char(err,out);
-         u_fprints(s,out);
+         u_fprints(DELAF_line,out);
          u_fprints_char("\n",out);
          return;
       }
-    }
-    temp[j++]=s[i++];
-  }
-  if (j==0) {
-     sprintf(err,"Line %d: empty gramatical or semantic code\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  temp[j]='\0';
-  get_hash_number(temp,semantic);
+      if (DELAF_line[i]=='\\') {
+         /* If there is a backslash */
+         i++;
+         if (DELAF_line[i]=='\0') {
+            /* It must not appear at the end of the line */
+            sprintf(err,"Line %d: \\ at end of line\n",line_number);
+            u_fprints_char(err,out);
+            u_fprints(DELAF_line,out);
+            u_fprints_char("\n",out);
+            return;
+         }
+      }
+      temp[j++]=DELAF_line[i++];
+   }
+   if (j==0) {
+      /* A grammatical or semantic code cannot be empty */
+      sprintf(err,"Line %d: empty gramatical or semantic code\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAF_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   temp[j]='\0';
+   get_hash_number(temp,semantic_codes);
 }
-// reading the inflectional codes
-while (s[i]==':') {
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!=':' && s[i]!='/') {
-    if (s[i]=='\t') {
-     sprintf(err,"Line %d: tabulation in inflectional code\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  if (s[i]=='\\') {
-      i++;
-      if (s[i]=='\0') {
-         sprintf(err,"Line %d: \\ at end of line\n",line);
+/* We read the inflectional codes */
+while (DELAF_line[i]==':') {
+   i++;
+   j=0;
+   while (DELAF_line[i]!='\0' && DELAF_line[i]!=':' && DELAF_line[i]!='/') {
+      if (DELAF_line[i]=='\t') {
+         /* Tabulations are not allowed */
+         sprintf(err,"Line %d: tabulation in inflectional code\n",line_number);
          u_fprints_char(err,out);
-         u_fprints(s,out);
+         u_fprints(DELAF_line,out);
          u_fprints_char("\n",out);
          return;
       }
-    }
-    temp[j++]=s[i++];
-  }
-  if (j==0) {
-     sprintf(err,"Line %d: empty inflectional code\n",line);
-     u_fprints_char(err,out);
-     u_fprints(s,out);
-     u_fprints_char("\n",out);
-     return;
-  }
-  temp[j]='\0';
-  get_hash_number(temp,inflectional);
+      if (DELAF_line[i]=='\\') {
+         /* If there is a backslash */
+         i++;
+         if (DELAF_line[i]=='\0') {
+            /* It must not appear at the end of the line */
+            sprintf(err,"Line %d: \\ at end of line\n",line_number);
+            u_fprints_char(err,out);
+            u_fprints(DELAF_line,out);
+            u_fprints_char("\n",out);
+            return;
+         }
+      }
+      temp[j++]=DELAF_line[i++];
+   }
+   if (j==0) {
+      /* An inflectional code cannot be empty */
+      sprintf(err,"Line %d: empty inflectional code\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELAF_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   temp[j]='\0';
+   get_hash_number(temp,inflectional_codes);
 }
 }
 
 
-
-//
-// this function takes a char sequence supposed to represent a
-// gramatical, semantic or inflectional code;
-// if this code contains space, tabulation or any non-ASCII char
-// it returns 1 and stores a warning message in comment; returns 0 else
-//
+/**
+ * This function takes a char sequence supposed to represent a
+ * gramatical, semantic or inflectional code;
+ * if this code contains space, tabulation or any non-ASCII char
+ * it returns 1 and stores a warning message in 'comment'; returns 0 otherwise
+ */
 int warning_on_code(unichar* code,unichar* comment) {
 int i;
 int space=0;
@@ -1269,7 +1397,8 @@ for (i=0;i<l;i++) {
    else if (code[i]>=128) {non_ascii++;n++;}
 }
 if (space || tab || non_ascii) {
-   char temp[1000];
+   /* We build a message that indicates the number of suspect chars */
+   char temp[DIC_LINE_SIZE];
    sprintf(temp,"warning: %d suspect char%s (",n,(n>1)?"s":"");
    u_strcpy_char(comment,temp);
    if (space) {
@@ -1287,6 +1416,8 @@ if (space || tab || non_ascii) {
    comment[u_strlen(comment)-2]='\0';
    u_strcat_char(comment,"): (");
    unichar temp2[10];
+   /* We explicit the content of the code. For instance, if the code is "é t",
+    * the result will be: "E9 SPACE t" */
    for (i=0;i<l-1;i++) {
       u_char_to_hexa_or_code(code[i],temp2);
       u_strcat(comment,temp2);
@@ -1301,10 +1432,9 @@ else return 0;
 }
 
 
-
-//
-// test if the sequence contains an unprotected = sign
-//
+/**
+ * Tests if the given sequence contains an unprotected = sign
+ */
 int contains_unprotected_equal_sign(unichar* s) {
 if (s[0]=='=') {
    return 1;
@@ -1318,9 +1448,9 @@ return 0;
 }
 
 
-//
-// replaces all the unprotected = sign by the char c
-//
+/**
+ * Replaces all the unprotected = signs by the char 'c'
+ */
 void replace_unprotected_equal_sign(unichar* s,unichar c) {
 if (s[0]=='=') {
    s[0]=c;
@@ -1333,25 +1463,25 @@ for (int i=1;s[i]!='\0';i++) {
 }
 
 
-
-//
-// takes a string containing protected equal sign and unprotect them
-// ex: E\=mc2 -> E=mc2 
-//
+/**
+ * Takes a string containing protected equal signs and unprotects them
+ * ex: E\=mc2 -> E=mc2 
+ */
 void unprotect_equal_signs(unichar* s) {
-unichar temp[1000];
 int j=0;
 for (int i=0;s[i]!='\0';i++) {
+   /* There won't be segfault since s[i+1] will be \0 at worst */
    if (s[i]=='\\' && s[i+1]=='=') {
    }
-   else temp[j++]=s[i];
+   else s[j++]=s[i];
 }
-temp[j]='\0';
-u_strcpy(s,temp);
+s[j]='\0';
 }
 
 
-
+/**
+ * Frees all the memory consumed by the given dela_entry structure.
+ */
 void free_dic_entry(struct dela_entry* d) {
 if (d==NULL) return;
 if (d->inflected!=NULL) free(d->inflected);
@@ -1366,167 +1496,206 @@ free(d);
 }
 
 
+/**
+ * This function takes a string like ":F1s:F2s" and fills an array
+ * like this: array[0]="F1s",    array[1]="F2s"
+ * 
+ * Note that the length of the array is stored in '*length'.
 
-//
-// this function takes a string like ":F1s:F2s" and builds an array
-// like this: *N -> 2,   tab[0]="F1s",    tab[1]="F2s"
-//
-void tokenize_inflectional_codes(unichar* s,int* N,unichar** tab) {
+ * WARNING: this function does not consider protected chars. There could be 
+ *          problems if someone had the strange idea to use ':' as an inflectional
+ *          code letter like ":F1s:F\:s"
+ */
+void tokenize_inflectional_codes(unichar* s,int *length,unichar** array) {
 int i=0;
-(*N)=0;
+(*length)=0;
 while (s[i]==':') {
    i++;
    int j=0;
-   unichar temp[1000];
+   unichar temp[DIC_WORD_SIZE];
    while (s[i]!='\0' && s[i]!=':') {
       temp[j++]=s[i++];
    }
    temp[j]='\0';
-   tab[*N]=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(temp)));
-   u_strcpy(tab[*N],temp);
-   (*N)++;
+   array[*length]=u_strdup(temp);
+   (*length)++;
 }
 }
 
 
-
-//
-// this function tests if the tag token passed in parameter is correct
-// it returns 1 on success, 0 else
-//
+/**
+ * This function tests if the tag token passed in parameter is valid. A tag token
+ * is supposed to be like a DELAF without comment surrounded by round brackets like:
+ * 
+ *    {being,be.V:G}
+ * 
+ * It returns 1 on success. Otherwise, it prints an error message to the error output
+ * and returns 0.
+ */
 int check_tag_token(unichar* s) {
 int i,j;
 if (s==NULL || s[0]!='{' || s[u_strlen(s)-1]!='}') {
    return 0;
 }
-// reading the inflected part
+#warning we must unify all the checking functions because there are many code redundancies
+/* We read the inflected form */
 i=1;
 j=0;
+/* We must test the end of 's' because there could be problems with tags like "{.....\}" */
 while (s[i]!='\0' && s[i]!='}' && s[i]!=',') {
-  if (s[i]=='\t') {
-     fprintf(stderr,"Error: tabulation found in a tag\n");
-     return 0;
-  }
-  if (s[i]=='\\') { // case of the special char
-    i++;
-    if (s[i]=='\0' || s[i]=='}') {
-       fprintf(stderr,"Error: \\ at end of a tag\n");
-       return 0;
-    }
-  }
-  j++; i++;
+   if (s[i]=='\t') {
+      /* Tabulations are not allowed */
+      error("Error: tabulation found in a tag\n");
+      return 0;
+   }
+   if (s[i]=='\\') {
+      /* If there is a backslash */
+      i++;
+      if (s[i]=='\0') {
+         /* It must not appear at the end of the tag */
+         error("Error: \\ at end of a tag\n");
+         return 0;
+      }
+   }
+   j++;
+   i++;
 }
 if (s[i]=='\0' || s[i]=='}') {
-   fprintf(stderr,"Error: tag without comma\n");
+   /* The tag cannot end after the inflected form */
+   error("Error: tag without comma\n");
    return 0;
 }
 if (j==0) {
-   fprintf(stderr,"Error: empty inflected form in a tag\n");
+   /* The inflected form cannot be empty */
+   error("Error: empty inflected form in a tag\n");
    return 0;
 }
-// reading the lemma part
+/* We read the lemma */
 i++;
-int virgule=0;
+int comma=0;
 while (s[i]!='\0' && s[i]!='}' && s[i]!='.') {
-  if (s[i]=='\t') {
-     fprintf(stderr,"Error: tabulation found in the lemma of a tag\n");
-     return 0;
-  }
-  if (s[i]==',') virgule=1;
-  else if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0' || s[i]=='}') {
-       fprintf(stderr,"Error: \\ at end of a tag\n");
-       return 0;
-    }
-  }
-  i++;
+   if (s[i]=='\t') {
+      /* Tabulations are not allowed */
+      error("Error: tabulation found in the lemma of a tag\n");
+      return 0;
+   }
+   if (s[i]==',') {
+      /* We note if there are unprotected commas in the lemma */
+      comma=1;
+   }
+   else if (s[i]=='\\') {
+      /* If there is a backslash */
+      i++;
+      if (s[i]=='\0' || s[i]=='}') {
+         /* It must not appear at the end of the tag */
+         error("Error: \\ at end of a tag\n");
+         return 0;
+      }
+   }
+   i++;
 }
 if (s[i]=='\0' || s[i]=='}') {
-   fprintf(stderr,"Error: tag without point\n");
+   /* The tag cannot end after the lemma */
+   error("Error: tag without point\n");
    return 0;
 }
-if (virgule) {
-   fprintf(stderr,"Error: unprotected comma in the lemma of a tag\n");
+/* Note that the lemma can be empty */
+if (comma) {
+   /* The lemma cannot contain unprotected commas */
+   error("Error: unprotected comma in the lemma of a tag\n");
+   return 0;
 }
-// reading the grammatical code
+/* We read the grammatical code */
 i++;
 j=0;
 while (s[i]!='\0' && s[i]!='}' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
-  if (s[i]=='\t') {
-     fprintf(stderr,"Error: tabulation found in a gramatical or semantic code of a tag\n");
-     return 0;
-  }
-  if (s[i]=='\\') {
-    i++;
-    if (s[i]=='\0' || s[i]=='}') {
-       fprintf(stderr,"Error: \\ at end of a tag\n");
-       return 0;
-    }
-  }
-  j++; i++;
+   if (s[i]=='\t') {
+      /* Tabulations are not allowed */
+      error("Error: tabulation found in a gramatical or semantic code of a tag\n");
+      return 0;
+   }
+   if (s[i]=='\\') {
+      /* If there is a backslash */
+      i++;
+      if (s[i]=='\0' || s[i]=='}') {
+         /* It must not appear at the end of the tag */
+         error("Error: \\ at end of a tag\n");
+         return 0;
+      }
+   }
+   j++;
+   i++;
 }
 if (j==0) {
-   fprintf(stderr,"Error: tag with no grammatical code\n");
+   /* The grammatical code cannot be empty */
+   error("Error: tag with no grammatical code\n");
    return 0;
 }
-// reading the semantic codes
+/* We read the semantic codes */
 while (s[i]=='+') {
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!='}' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
-    if (s[i]=='\t') {
-     fprintf(stderr,"Error: tabulation found in a gramatical or semantic code of a tag\n");
-     return 0;
-  }
-  if (s[i]=='\\') {
-      i++;
-      if (s[i]=='\0' || s[i]=='}') {
-         fprintf(stderr,"Error: \\ at end of a tag\n");
+   i++;
+   j=0;
+   while (s[i]!='\0' && s[i]!='}' && s[i]!='+' && s[i]!=':' && s[i]!='/') {
+      if (s[i]=='\t') {
+         /* Tabulations are not allowed */
+         error("Error: tabulation found in a gramatical or semantic code of a tag\n");
          return 0;
       }
-    }
-    j++; i++;
-  }
-  if (j==0) {
-     fprintf(stderr,"Error: empty gramatical or semantic code in a tag\n");
-     return 0;
-  }
+      if (s[i]=='\\') {
+         /* If there is a backslash */
+         i++;
+         if (s[i]=='\0' || s[i]=='}') {
+            /* It must not appear at the end of the tag */
+            error("Error: \\ at end of a tag\n");
+            return 0;
+         }
+      }
+      j++;
+      i++;
+   }
+   if (j==0) {
+      /* A grammatical or semantic code cannot be empty */
+      error("Error: empty gramatical or semantic code in a tag\n");
+      return 0;
+   }
 }
-// reading the inflectional codes
+/* We read the inflectional codes */
 while (s[i]==':') {
-  i++;
-  j=0;
-  while (s[i]!='\0' && s[i]!='}' && s[i]!=':' && s[i]!='/') {
-    if (s[i]=='\t') {
-     fprintf(stderr,"Error: tabulation found in an inflectional code of a tag\n");
-     return 0;
-  }
-  if (s[i]=='\\') {
-      i++;
-      if (s[i]=='\0' || s[i]=='}') {
-         fprintf(stderr,"Error: \\ at end of a tag\n");
+   i++;
+   j=0;
+   while (s[i]!='\0' && s[i]!='}' && s[i]!=':' && s[i]!='/') {
+      if (s[i]=='\t') {
+         /* Tabulations are not allowed */
+         error("Error: tabulation found in an inflectional code of a tag\n");
          return 0;
       }
-    }
-    j++; i++;
-  }
-  if (j==0) {
-     fprintf(stderr,"Error: empty inflectional code in a tag\n");
-     return 0;
-  }
+      if (s[i]=='\\') {
+         /* If there is a backslash */
+         i++;
+         if (s[i]=='\0' || s[i]=='}') {
+            /* It must not appear at the end of the tag */
+            error("Error: \\ at end of a tag\n");
+            return 0;
+         }
+      }
+      j++;
+      i++;
+   }
+   if (j==0) {
+      error("Error: empty inflectional code in a tag\n");
+      return 0;
+   }
 }
 return 1;
 }
 
 
-
-//
-// returns 1 if the entry d contains the grammatical code s
-//
-int dic_entry_contain_gram_code(struct dela_entry* d,unichar* s) {
-for (int i=0;i<d->n_semantic_codes;i++) {
-   if (!u_strcmp(d->semantic_codes[i],s)) {
+/**
+ * Returns 1 if the given entry contains the given grammatical code; 0 otherwise.
+ */
+int dic_entry_contain_gram_code(struct dela_entry* entry,unichar* code) {
+for (int i=0;i<entry->n_semantic_codes;i++) {
+   if (!u_strcmp(entry->semantic_codes[i],code)) {
       return 1;
    }
 }
@@ -1534,87 +1703,37 @@ return 0;
 }
 
 
-
-//
-// returns 1 if the first inflectional code a contains the second b
-//
-int one_flexional_codes_contains_the_other(unichar* a,unichar* b) {
+/**
+ * Returns 1 if the inflectional code 'a' contains the inflectional code 'b';
+ * 0 otherwise.
+ */
+int one_inflectional_codes_contains_the_other(unichar* a,unichar* b) {
 int i=0;
 while (b[i]!='\0') {
    int j=0;
    while (a[j]!=b[i]) {
       if (a[j]=='\0') {
-         // if we have not found a character, we return
+         /* If we have not found a character, we return */
          return 0;
       }
       j++;
    }
-
    i++;
 }
 return 1;
 }
 
 
-
-//
-// returns 1 if the entry d contains the inflectional code s
-//
-int dic_entry_contain_flex_code(struct dela_entry* d,unichar* s) {
-for (int i=0;i<d->n_inflectional_codes;i++) {
-   if (one_flexional_codes_contains_the_other(d->inflectional_codes[i],s)) {
+/**
+ * Returns 1 if the given entry contains the given inflectional code; 0 otherwise.
+ */
+int dic_entry_contain_flex_code(struct dela_entry* entry,unichar* code) {
+for (int i=0;i<entry->n_inflectional_codes;i++) {
+   if (one_inflectional_codes_contains_the_other(entry->inflectional_codes[i],code)) {
       return 1;
    }
 }
 return 0;
 }
 
-
-
-int exploreBinDic(int pos,unichar* word,int string_pos,unsigned char* BIN,Alphabet* alph) {
-int n_transitions;
-n_transitions=((unsigned char)BIN[pos])*256+(unsigned char)BIN[pos+1];
-pos=pos+2;
-if (word[string_pos]=='\0') {
-   // if we are at the end of the word, we just check
-   // if the state is final, i.e. if the word belongs
-   // to the dictionary
-   if (!(n_transitions & 32768)) {
-      // if the state is final
-      return ((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
-   }
-   else {
-      return NOT_IN_DICTIONARY;
-   }
-}
-if ((n_transitions & 32768)) {
-   // if we are in a normal node, we remove the control bit to
-   // have the good number of transitions
-   n_transitions=n_transitions-32768;
-} else {
-  // if we are in a final node, we must jump after the reference to the INF line number
-  pos=pos+3;
-}
-for (int i=0;i<n_transitions;i++) {
-  unichar c=(unichar)(((unsigned char)BIN[pos])*256+(unsigned char)BIN[pos+1]);
-  pos=pos+2;
-  int adr=((unsigned char)BIN[pos])*256*256+((unsigned char)BIN[pos+1])*256+(unsigned char)BIN[pos+2];
-  pos=pos+3;
-  if (is_equal_or_uppercase(c,word[string_pos],alph)) {
-     int res=exploreBinDic(adr,word,string_pos+1,BIN,alph);
-     if (res!=NOT_IN_DICTIONARY) return res;
-  }
-}
-return NOT_IN_DICTIONARY;
-}
-
-
-//
-// Checks if a given word 'w' is in the dictionary 'bin'. If not,
-// the function returns NOT_IN_DICTIONARY; otherwise, the INF line
-// number of this entry is returned.
-//
-int get_INF_number(unichar *w,unsigned char* bin,Alphabet* alph) {
-return exploreBinDic(4,w,0,bin,alph);
-}
 

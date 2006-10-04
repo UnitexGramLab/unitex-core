@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2005 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -126,7 +126,6 @@ void tokenize_inflectional_codes(unichar*,int*,unichar**);
 int check_tag_token(unichar*);
 int dic_entry_contain_gram_code(struct dela_entry*,unichar*);
 int dic_entry_contain_flex_code(struct dela_entry*,unichar*);
-int get_INF_number(unichar*,unsigned char*,Alphabet*);
 
 #endif
 
