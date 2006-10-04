@@ -36,9 +36,144 @@ int compteur_char=0;
 int compteur_free_char=0;
 
 
+// to clean up??: also defined in Fst2.cpp for Fst2State
+#define FST2_FINAL_STATE_BIT_MASK 1
+#define FST2_INITIAL_STATE_BIT_MASK 2
+int is_final_state (Etat_comp e) {
+  return e->controle & FST2_FINAL_STATE_BIT_MASK;
+}
+int is_final_state (Etat_fst_det e) {
+  return e->controle & FST2_FINAL_STATE_BIT_MASK;
+}
+void set_final_state(Etat_comp e,int finality) {
+  if (e==NULL) {
+    fatal_error("NULL error in set_final_state\n");
+  }
+  /* First the compute the controle byte without the finality bit */
+  e->controle=e->controle & (0xFF-FST2_FINAL_STATE_BIT_MASK);
+  /* And we add it if necessary*/
+  if (finality) {
+    e->controle=e->controle | FST2_FINAL_STATE_BIT_MASK;
+  }
+}
+// end to clean up
 
 
-/* structure of linked list added for representing sets for epsilon closure*/
+/**
+ *  renvoie un Etat vierge
+ */
+Etat_comp nouvel_etat_comp()
+{
+  Etat_comp e;
+
+  e = (Etat_comp)malloc(sizeof(struct etat_comp));
+  e->controle = 0;
+  e->trans = NULL;
+  e->transinv = NULL;
+  return e;
+}
+
+void liberer_etat_comp(Etat_comp etat)
+{
+  if (etat!=NULL)
+  {
+    free_Fst2Transition(etat->trans);
+    free_Fst2Transition(etat->transinv);
+    free(etat);
+  }
+
+}
+
+/**
+ * Creates and adds a transition to the given state.
+ */
+void add_transition_to_etat_comp(Etat_comp state, int tag_number, int state_number) {
+  Fst2Transition transition = new_Fst2Transition();
+  transition->tag_number = tag_number;
+  transition->state_number = state_number;
+  transition->next = state->trans;
+  state->trans = transition;
+}
+
+
+/**
+ * creates a new graph_comp object
+ */
+Graph_comp new_graph_comp() {
+  Graph_comp g
+    = (Graph_comp) malloc(sizeof(struct graph_comp));
+  g->n_states = 0;
+  g->size = 0;
+  g->states = NULL;
+  resize_graph_comp(g);
+  return g;
+}
+
+
+/**
+ * resize a new graph_comp object (malloc room for more states)
+ */
+void resize_graph_comp(Graph_comp g) {
+  resize_graph_comp(g,0x2000);
+}
+void resize_graph_comp(Graph_comp g, int n) {
+  g->size += n;
+  g->states = (Etat_comp*) realloc(g->states,
+                                   ((g->size)*sizeof(Etat_comp)));
+}
+
+
+/**
+ * add a new state to a graph_comp object
+ */
+inline Etat_comp add_state(Graph_comp g) {
+  Etat_comp e = nouvel_etat_comp();
+  if ( g->size < (1+g->n_states) )
+    resize_graph_comp(g);
+  g->states[g->n_states] = e;
+  (g->n_states)++;
+  return e;
+}
+/**
+ * add a new state to a graph_comp object, write state number to n
+ */
+inline Etat_comp add_state(Graph_comp g, int* n) {
+  *n = g->n_states;
+  return add_state(g);
+}
+
+/**
+ * Move a graph_comp src to graph_comp dest.
+ *
+ * dest is free'd before copying content of src to it,
+ * src is free'd after.
+ */
+void move_graph_comp(Graph_comp dest, Graph_comp src) {
+  /* free dest !!!??? */
+//   for (register int i=0; i < dest->n_states; i++)
+//     liberer_etat_comp(dest->states[i]);
+  /* copy src -> dest */
+  dest->size = src->size;
+  dest->n_states = src->n_states;
+  dest->states = src->states;
+  /* free src */
+  src->states = NULL;
+  free(src);
+}
+
+
+/**
+ * frees a graph_comp object
+ */
+void free_graph_comp(Graph_comp g) {
+  if (g == NULL) return;
+  for (register int i=0; i < g->n_states; i++)
+    liberer_etat_comp(g->states[i]);
+  free(g);
+}
+
+
+/* structure of linked list added for representing sets for epsilon closure */
 
 // STRUCTURE
 
@@ -59,46 +194,46 @@ typedef struct linked_list_i_comp * Llist_i_comp;
 int ll_i_n_free = 0;
 int ll_i_n_malloc = 0;
 
-void util_error(char *function,char *message){
+void util_error(char *function,char *message) {
   fprintf(stderr,"%s: %s\n",function,message);
   exit(1);
 }
 
-void* ll_i_malloc(int n){
+void* ll_i_malloc(int n) {
   ll_i_n_malloc++;
   return (void *)malloc(n);
 }
 
-void ll_i_pfree(void *ptr){
-  if(ptr == NULL) return;
+void ll_i_pfree(void *ptr) {
+  if (ptr == NULL) return;
   ll_i_n_free++;
   free(ptr);
   ptr = NULL;
 }
 
-struct ll_i_cell_comp* ll_i_create_cell(unsigned int v){
+struct ll_i_cell_comp* ll_i_create_cell(unsigned int v) {
   struct ll_i_cell_comp *ptr = (struct ll_i_cell_comp*)ll_i_malloc(sizeof(struct ll_i_cell_comp));
   ptr->value = v;
   ptr->next = NULL;
   return ptr;
 }
 
-Llist_i_comp ll_i_initialize(){
+Llist_i_comp ll_i_initialize() {
   Llist_i_comp ptr = (Llist_i_comp)ll_i_malloc(sizeof(struct linked_list_i_comp));
   ptr->head = NULL;
   ptr->tail = NULL;
   return ptr;
 }
 
-void ll_i_insert_at_tail(Llist_i_comp *l,unsigned int v){
+void ll_i_insert_at_tail(Llist_i_comp *l,unsigned int v) {
   struct ll_i_cell_comp *ptr = ll_i_create_cell(v);
 
-  if(ptr == NULL) util_error("ll_i_insert_at_tail","creating cell");
-  if(*l == NULL){
+  if (ptr == NULL) util_error("ll_i_insert_at_tail","creating cell");
+  if (*l == NULL) {
     *l = ll_i_initialize();
   }
-  if(*l == NULL)  util_error("ll_i_insert_at_tail","llist initialization");
-  if((*l)->head == NULL){
+  if (*l == NULL)  util_error("ll_i_insert_at_tail","llist initialization");
+  if ((*l)->head == NULL) {
     (*l)->head = ptr;
     (*l)->tail = (*l)->head;
     return;
@@ -108,12 +243,12 @@ void ll_i_insert_at_tail(Llist_i_comp *l,unsigned int v){
 }
 
 
-int ll_i_cell_i_compare(struct ll_i_cell_comp *c1,struct ll_i_cell_comp *c2){
+int ll_i_cell_i_compare(struct ll_i_cell_comp *c1,struct ll_i_cell_comp *c2) {
   
   return (c1->value < c2->value);
 }
 
-int ll_i_cell_i_equals(struct ll_i_cell_comp *c1,struct ll_i_cell_comp *c2){  
+int ll_i_cell_i_equals(struct ll_i_cell_comp *c1,struct ll_i_cell_comp *c2) {  
   return (c1->value == c2->value);
 }
 
@@ -122,18 +257,18 @@ int ll_i_cell_i_equals(struct ll_i_cell_comp *c1,struct ll_i_cell_comp *c2){
 
 // insert dans l'ordre et pas de doublons
 
-void ll_i_insert_sorted(Llist_i_comp *l,unsigned int v){
+void ll_i_insert_sorted(Llist_i_comp *l,unsigned int v) {
   struct ll_i_cell_comp* prev, *curr,*temp;
   int is_doublon = 0;
 
   temp = ll_i_create_cell(v);
-  if(temp == NULL) util_error("ll_i_insert_sorted","creating cell");
-  if(*l == NULL){
+  if (temp == NULL) util_error("ll_i_insert_sorted","creating cell");
+  if (*l == NULL) {
     *l = ll_i_initialize();
   }
-  if(*l == NULL) util_error("ll_i_insert_sorted","llist initialization");
+  if (*l == NULL) util_error("ll_i_insert_sorted","llist initialization");
 
-  if ( (*l)->head == NULL ){
+  if ( (*l)->head == NULL ) {
     (*l)->head = temp;  
   }
   else{
@@ -143,14 +278,14 @@ void ll_i_insert_sorted(Llist_i_comp *l,unsigned int v){
     /* traverse the list until the spot
        for insertion is found */
     is_doublon = 0;
-    while (curr != NULL && ll_i_cell_i_compare(curr,temp)){
+    while (curr != NULL && ll_i_cell_i_compare(curr,temp)) {
       prev = curr;     
       curr = curr -> next;
     }    
-    if(curr != NULL && ll_i_cell_i_equals(curr,temp)) is_doublon = 1;
+    if (curr != NULL && ll_i_cell_i_equals(curr,temp)) is_doublon = 1;
     /* insert the node, temp */
-    if(!is_doublon){
-      if(prev == NULL){
+    if (!is_doublon) {
+      if (prev == NULL) {
 	temp -> next = (*l)->head;
 	(*l)->head = temp;
       }
@@ -167,42 +302,42 @@ void ll_i_insert_sorted(Llist_i_comp *l,unsigned int v){
 
 //find an element in list
 
-struct ll_i_cell_comp* ll_i_find_element(Llist_i_comp l,unsigned int elem){
+struct ll_i_cell_comp* ll_i_find_element(Llist_i_comp l,unsigned int elem) {
   struct ll_i_cell_comp *ptr;
-  if(l == NULL) return NULL;
+  if (l == NULL) return NULL;
   ptr = l->head;
-  while(ptr != NULL){
-    if(ptr->value == elem) return ptr;
+  while (ptr != NULL) {
+    if (ptr->value == elem) return ptr;
      ptr = ptr->next;
   }
   return NULL;
 }
 
-void ll_i_print(Llist_i_comp l){
+void ll_i_print(Llist_i_comp l) {
   struct ll_i_cell_comp *ptr;
 
-  if(l == NULL) {
+  if (l == NULL) {
     printf("-- NULL LLIST --\n");
     return;
   }
   ptr = l->head;
-  while(ptr != NULL){
+  while (ptr != NULL) {
     printf("%d ",ptr->value);
     ptr = ptr->next;
   }
 }
 
-void ll_i_println(Llist_i_comp l){
+void ll_i_println(Llist_i_comp l) {
   ll_i_print(l);
   printf("\n");
 }
 
 
-void ll_i_free(Llist_i_comp *l){
+void ll_i_free(Llist_i_comp *l) {
   struct ll_i_cell_comp *ptr;
 
-  if(*l != NULL){
-    while((*l)->head != NULL){
+  if (*l != NULL) {
+    while ((*l)->head != NULL) {
       ptr = (*l)->head;
       (*l)->head = (*l)->head->next;
       ll_i_pfree(ptr);
@@ -213,36 +348,36 @@ void ll_i_free(Llist_i_comp *l){
 }
 
 
-int ll_i_print_n_malloc(){
+int ll_i_print_n_malloc() {
   printf("ll_i_malloc=%d\n",ll_i_n_malloc);
   return ll_i_n_malloc;
 }
 
-int ll_i_print_n_free(){
+int ll_i_print_n_free() {
   printf("ll_i_free=%d\n",ll_i_n_free);
   return ll_i_n_free;
 }
 
 
 
-int ll_i_length(Llist_i_comp ll){
+int ll_i_length(Llist_i_comp ll) {
   struct ll_i_cell_comp *ptr;
   int i = 0;
-  if(ll == NULL) return 0;
+  if (ll == NULL) return 0;
   ptr = ll->head;
-  while(ptr != NULL){
+  while (ptr != NULL) {
     ptr = ptr->next;
     i++;
   }
   return i;
 }
 
-Llist_i_comp ll_i_copy(Llist_i_comp ll){
+Llist_i_comp ll_i_copy(Llist_i_comp ll) {
   Llist_i_comp temp = NULL;
   struct ll_i_cell_comp *ptr;
-  if(ll == NULL) return NULL;
+  if (ll == NULL) return NULL;
   ptr = ll->head;
-  while(ptr != NULL){
+  while (ptr != NULL) {
     ll_i_insert_at_tail(&temp,ptr->value);
     ptr = ptr->next;
   }
@@ -273,9 +408,9 @@ default: fprintf(stderr,"Internal error in is_letter_generic\n"); exit(1);
 // QUELQUES INITIALISATIONS                 //
 //////////////////////////////////////////////
 
-//
-// initialise le graphe
-//
+/**
+ *  initialise le graphe
+ */
 void init_graphe_mat_det(Etat_fst_det resultat[]) {
 register long int i;
 for (i=0;i<NBRE_ET;i++)
@@ -419,10 +554,9 @@ int numero_ensemble_det(ensemble_det e,struct noeud_valeur_det *node,int dernier
 ////////////////////////////////////////////////////////////////
 
 
-//
-// cree et retourne un nouveau char_etats
-//
-
+/**
+ *  cree et retourne un nouveau char_etats
+ */
 ensemble_det nouveau_char_etats_det()
 {
   ensemble_det ce;
@@ -435,14 +569,13 @@ ensemble_det nouveau_char_etats_det()
 
 
 
-//
-// ajoute un nouvel etat a un ensemble d'etats
-//
-
+/**
+ *  ajoute un nouvel etat a un ensemble d'etats
+ */
 void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
   ensemble_det ptr,ptr1,pos;
   unsigned int numero=netat/32;
-   if(*e == NULL)
+   if (*e == NULL)
    {
      *e=nouveau_char_etats_det();
      (*e)->num_char=numero;
@@ -450,12 +583,12 @@ void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
      return;
    }
    ptr=(*e);
-   if(ptr->num_char==numero)
+   if (ptr->num_char==numero)
    {
      ptr->valeur=(ptr->valeur)|(1<<(netat%32));
      return;
    }
-   if(ptr->num_char>numero)
+   if (ptr->num_char>numero)
    {
      ptr1=nouveau_char_etats_det();
      ptr1->num_char=numero;
@@ -464,7 +597,7 @@ void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
      (*e)->suivant=ptr;
      return;
    }
-   if(ptr->suivant==NULL) {
+   if (ptr->suivant==NULL) {
        ptr->suivant=nouveau_char_etats_det();
        ptr=ptr->suivant;
        ptr->num_char=numero;
@@ -475,13 +608,13 @@ void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
    ptr=ptr->suivant;
 
 
-   while(ptr!=NULL) {
-       if(ptr->num_char==numero)
+   while (ptr!=NULL) {
+       if (ptr->num_char==numero)
        {
 	   ptr->valeur=(ptr->valeur)|(1<<(netat%32));
 	   return;
 	 }
-       if(ptr->num_char>numero) {
+       if (ptr->num_char>numero) {
 	   ptr1=nouveau_char_etats_det();
 	   ptr1->num_char=numero;
 	   ptr1->valeur=1<<(netat%32);
@@ -489,7 +622,7 @@ void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
 	   pos->suivant=ptr1;
 	   return;
 	 }
-       if(ptr->suivant==NULL) {
+       if (ptr->suivant==NULL) {
 	   ptr->suivant=nouveau_char_etats_det();
 	   ptr=ptr->suivant;
 	   ptr->num_char=numero;
@@ -504,9 +637,9 @@ void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
 
 
 
-//
-// liberer un char_etats
-//
+/**
+ *  liberer un char_etats
+ */
 void liberer_char_etat_det(ensemble_det ptr) {
    ensemble_det ptr1;
    while (ptr!=NULL)
@@ -571,13 +704,12 @@ void liberer_arbre_det(struct noeud_valeur_det *racine)
 
 
 
-//
-// cree et renvoie un etat vierge
-//
+/**
+ *  cree et renvoie un etat vierge
+ */
 Etat_fst_det nouvel_etat_mat_det()
 {
-  Etat_fst_det e;
-  e = (Etat_fst_det) malloc(sizeof(Etat_fst_det));
+  Etat_fst_det e = (Etat_fst_det) malloc(sizeof(Etat_fst_det));
   e->controle = 0;
   e->trans = NULL;
   e->ens = NULL;
@@ -586,10 +718,9 @@ Etat_fst_det nouvel_etat_mat_det()
 
 
 
-//
-// ajoute une transition a l'etat courant
-//
-
+/**
+ *  ajoute une transition a l'etat courant
+ */
 void ajouter_transition_mat_det(Etat_fst_det e,int etiq,int etarr)
 {
   Fst2Transition ptr;
@@ -635,7 +766,7 @@ void compute_reverse_transitions(Etat_comp* graph, int n_states) {
   register int i;
   for (i=0; i<n_states; i++) {
     if ( graph[i] == NULL )
-      break;
+      continue;
     Fst2Transition l = graph[i]->trans;
     while (l != NULL) {
       add_reverse_transition_to_state(l->tag_number,i,graph[l->state_number]);
@@ -655,7 +786,7 @@ void init_hachage_det(int *h, int n)
   // time-critical function, called often
   register int i;
   // instead of
-  //    for(i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) h[i]=-1;
+  //    for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) h[i]=-1;
   // initializing only used fields saves time:
   //  for (i=0; i < (nombre_etiquettes_comp+nombre_graphes_comp+1); i++)
   // even better until it is really necessary
@@ -667,7 +798,7 @@ void init_hachage_det(int *h, int n)
 void init_stock_det(ensemble_det s[])
 {
   register int i;
-  for(i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) s[i]=NULL;
+  for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) s[i]=NULL;
 }
 
 
@@ -682,7 +813,7 @@ void init_resultat_det(Etat_fst_det resultat[],struct noeud_valeur_det *racine,i
 
 ensemble_det copie_det(ensemble_det e) {
   ensemble_det nouveau;
-  if(e!=NULL) {
+  if (e!=NULL) {
       nouveau=(ensemble_det)malloc(sizeof(struct char_etats_det));
       nouveau->num_char=e->num_char;
       nouveau->valeur=e->valeur;
@@ -693,22 +824,22 @@ ensemble_det copie_det(ensemble_det e) {
 }
 
 
-void store_etat_det(Etat_comp* g,int n,Etat_fst_det e) {
-  g[n] = (Etat_comp) nouvel_etat_comp();
-  if(e->controle&1)
-    g[n]->controle = (unsigned char) 1;
-  g[n]->trans = e->trans;
+void store_etat_det(Graph_comp g,Etat_fst_det e) {
+  Etat_comp ee = add_state(g);
+  if ( is_final_state(e) )
+    ee->controle = (unsigned char) (ee->controle | 1);
+  ee->trans = e->trans;
   e->trans = NULL; /* destroy old pointer to transitions to avoid double freeing */
 }
 
 void sauvegarder_etat_det(FILE *f,Etat_comp e)
 {
  Fst2Transition ptr;
- if(e->controle&1)
+ if ( is_final_state(e) )
    u_fputc((unichar)'t',f);
  else u_fputc((unichar)':',f);
  ptr=e->trans;
- while(ptr!=NULL)
+ while (ptr!=NULL)
    {
      u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
      ptr=ptr->next;
@@ -721,16 +852,17 @@ void sauvegarder_etat_det(FILE *f,Etat_comp e)
 /**
  * determinize the graph/automaton "graph",
  * @param graph the graph to be determinized
- * @param graph_size size of "graph",
- * since "graph" will be changed prevents segfault
  * @return 1 if successful, 0 if not
  */
-int determinisation(Etat_comp* graph, int graph_size) {
+int determinisation(Graph_comp graph) {
 
-  if (graph[0] == NULL) { // do not segfault on empty automaton
+  if ((graph->n_states == 0) || (graph->states[0] == NULL)) {
+    // do not segfault on empty automaton
     fprintf(stderr, "warning: resulting automaton is empty\n");
     return 1;
   }
+
+  Etat_comp *states = graph->states;
 
   Etat_fst_det resultat[NBRE_ET];
   ensemble_det stock[NBRE_ETIQ_TRANSITION_COMP];
@@ -739,10 +871,7 @@ int determinisation(Etat_comp* graph, int graph_size) {
   int hachageinv[NBRE_ETIQ_TRANSITION_COMP];
   init_hachage_det(hachage,NBRE_ETIQ_TRANSITION_COMP);
 
-  int resize_of_new_graph_step = 0x2000;
-  Etat_comp* new_graph = (Etat_comp*) malloc( resize_of_new_graph_step * sizeof(Etat_comp) );
-  int n_new_graph_states = resize_of_new_graph_step;
-  int new_graph_state_n = 0;
+  Graph_comp new_graph = new_graph_comp();
 
   Fst2Transition ptr;
   ensemble_det courant;
@@ -755,13 +884,14 @@ int determinisation(Etat_comp* graph, int graph_size) {
   int temp2, sous_graphe;
   struct noeud_valeur_det *racine_det;
 
+
   dernier_etat_res = -1;
   racine_det = nouveau_noeud_valeur_det();
   init_graphe_mat_det(resultat);
   init_resultat_det(resultat,racine_det,dernier_etat_res);
   dernier_etat_res = 0;
 
-  if ( (graph[0]->controle) & 1 )
+  if ( is_final_state(states[0]) )
     resultat[0]->controle = (unsigned char)(resultat[0]->controle | 1);
   init_stock_det(stock);
 
@@ -782,7 +912,7 @@ int determinisation(Etat_comp* graph, int graph_size) {
               q++;
               if (((courant->valeur)&(1<<count))!=0)
                 {
-                  ptr = graph[q]->trans;
+                  ptr = states[q]->trans;
                   while (ptr != NULL)
                     {
                       temp = ptr->tag_number;
@@ -813,7 +943,7 @@ int determinisation(Etat_comp* graph, int graph_size) {
                           compteur++;
                         }
                       ajouter_etat_dans_ensemble_det(ptr->state_number,&stock[hachage[temp]]);
-                      if (((graph[ptr->state_number]->controle) & 1 ) != 0)
+                      if ( is_final_state(states[ptr->state_number]) )
                         final[hachage[temp]] = 1;    //test de finalite
                       ptr = ptr->next;
                     }
@@ -854,18 +984,7 @@ int determinisation(Etat_comp* graph, int graph_size) {
               resultat[temp]->controle = (unsigned char)((resultat[temp]->controle) | final[i]);
             }
         }
-      if (new_graph_state_n > n_new_graph_states)
-        {
-          n_new_graph_states += resize_of_new_graph_step;
-          if ( n_new_graph_states > graph_size )
-            {
-              error("Cannot determinize: to many states (>%i)",graph_size);
-              return 0;
-            }
-          new_graph = (Etat_comp*) realloc(new_graph,
-                                           (n_new_graph_states*sizeof(Etat_comp)));
-        }
-      store_etat_det(new_graph,new_graph_state_n++,resultat[temp2]);
+      store_etat_det(new_graph,resultat[temp2]);
       liberer_etat_det(resultat[temp2]);
       resultat[temp2] = NULL;
       file_courant++;
@@ -880,31 +999,110 @@ int determinisation(Etat_comp* graph, int graph_size) {
 
   /* Finally we copy the content of new_graph to graph
      freeing old content of graph */
-  for (i=0; ((i<new_graph_state_n)
-             && (i<graph_size)); i++)
-    {
-      if ( graph[i] != NULL )
-        liberer_etat_graphe_comp(graph[i]);
-      graph[i] = new_graph[i];
-    }
-  while ( (i < graph_size)
-          && ( graph[i++] != NULL ) )
-    {
-      liberer_etat_graphe_comp(graph[i]);
-      graph[i] = NULL;
-    }
+  move_graph_comp(graph,new_graph);
   
   return 1;
 }
 
 
+
 /**
- * Minimize the graph/automaton "graphe"
- * (Make sure that reverse transitions of the automaton are
- * calculated before!)
+ * Reverse the graph "graph", so that all edges are inverted.
+ * "graph" is also a deterministic automaton.
+ *
+ * Because an deterministic automaton ("Graph_comp") has only one initial
+ * state, but may have many final states, reversing is complicated or
+ * must be done by introducing <E> transitions, which requires removing
+ * them in the end.
  */
-int minimisation(Etat_comp graphe[]) {
+int reverse (Graph_comp graph) {
+
+  register int i;
+
+  /* make sure that reverse transitions of the automaton are
+     calculated */
+  compute_reverse_transitions(graph->states,graph->n_states);
+
+  /* table for mapping between states of old and reversed automaton */
+  int* map_table = (int*) malloc(graph->n_states*sizeof(int));
+  for ( i = 0; i < graph->n_states; i++ )
+    map_table[i] = -1;
+
+  /* new reversed graph, state 0 as initial state */
+  Graph_comp reversed = new_graph_comp();
+  add_state(reversed);
+
+  for ( i = ((graph->n_states)-1); i >= 0; i-- )
+    {
+
+      /* create a new state if necessary */
+      if ( map_table[i] == -1 )
+        add_state(reversed,&(map_table[i]));
+      
+      Fst2Transition l = graph->states[i]->transinv;
+      for (   ; l != NULL ; l = l->next )
+        {
+          if ( map_table[(l->state_number)] == -1 )
+            add_state(reversed,&(map_table[(l->state_number)]));
+          add_transition_to_etat_comp(reversed->states[(map_table[i])],
+                                      l->tag_number,map_table[(l->state_number)]);
+#ifdef DEBUG                                                                /* DEBUG */
+          fprintf(stderr,"%i --%i--> %i\n",                                 /* DEBUG */
+                  map_table[i],l->tag_number,map_table[(l->state_number)]); /* DEBUG */
+#endif                                                                      /* DEBUG */
+        }
+
+      /* all final states have <E> connections from the initial state
+         in the reversed automaton: this requires to remove epsilon
+         transitions again; should be changed for efficiency
+         reasons */
+      if ( is_final_state(graph->states[i]) )
+          add_transition_to_etat_comp(reversed->states[0],
+                                      0,map_table[i]); 
+
+      /* initial state becomes final state */
+      if ( i == 0 ) // is_initial_state(graph->states[i])
+        set_final_state(reversed->states[(map_table[i])],1);
+
+      /* clean memory; maybe better: reuse transition structures to save malloc time !!! */
+      liberer_etat_comp(graph->states[i]);
+
+    }
+
+  /* finally: remove epsilon transitions, make the automaton
+     deterministic */
+  compute_reverse_transitions(reversed->states,reversed->n_states);
+  for (int h=0;h<reversed->n_states;h++) {
+    if (is_final_state(reversed->states[h])) {
+      // we start the co_accessibility check from every final state
+      co_accessibilite_comp(reversed->states,h);
+    }
+  }
+  accessibilite_comp(reversed->states,0);
+  virer_epsilon_transitions_comp(reversed->states,reversed->n_states);
+  eliminer_etats_comp(reversed->states,&(reversed->n_states));
+  determinisation(reversed);
+
+  /* move the reversed graph to "graph" */
+  move_graph_comp(graph,reversed);
+
+
+  return 1;
+
+}
+
+
+
+/**
+ * Minimize the graph/automaton "graphe".
+ * Uses Brzozowskis algorithm: reverse, determinize, reverse.
+ */
+int minimisation(Graph_comp graph) {
   
+  reverse(graph);
+  /* determinization is performed in reverse(Graph_comp) */
+  reverse(graph);
+
   return 1;
 }
 
@@ -912,29 +1110,30 @@ int minimisation(Etat_comp graphe[]) {
 /**
  * write the graph/automaton "graphe" to file "fs_comp"
  */
-int write_graph(FILE* f,
-                Etat_comp graphe[],
-                int number,
-                unichar *name) {
+int write_graph_comp(FILE* f,
+                     Graph_comp graph,
+                     int number,
+                     unichar *name) {
 
   u_fprintf(f, "%d %S\n", number, name);
 
-  if (graphe[0] == NULL) { /* do not segfault on empty automaton */
+  if (graph->states[0] == NULL) { /* do not segfault on empty automaton */
     fprintf(stderr, "warning: resulting automaton is empty\n");
     u_fprintf(f, ": \nf \n");
     return 1;
   }
   
   /* print all states */
-  int n = 0;
-  do {
-    sauvegarder_etat_det(f,graphe[n]);
-  } while (graphe[++n] != NULL);
+  int i;
+  for ( i=0; i < graph->n_states; i++ )
+    {
+      if ( graph->states[i] == NULL )
+        continue;
+      sauvegarder_etat_det(f,graph->states[i]);
+    }
 
   /* mark end of graph */
-  char s[10];
-  sprintf(s,"f \n");
-  u_fprints_char(s,f);
+  u_fprintf(f,"f \n");
   
   return 0;
 }
@@ -945,22 +1144,6 @@ int write_graph(FILE* f,
 /////////////////////////////////////////////////////////////////////
 ////////// MANIPULATION DE LA STRUCTURE D'ETAT /////////////////////
 ////////////////////////////////////////////////////////////////////
-
-
-//
-// renvoie un Etat vierge
-//
-
-Etat_comp nouvel_etat_comp()
-{
-  Etat_comp e;
-
-  e = (Etat_comp)malloc(sizeof(struct etat_comp));
-  e->controle = 0;
-  e->trans = NULL;
-  e->transinv = NULL;
-  return e;
-}
 
 
 void ajouter_transition_comp(Etat_comp *letats,int dep,int arr,int etiq)
@@ -985,23 +1168,13 @@ void ajouter_transition_comp(Etat_comp *letats,int dep,int arr,int etiq)
 }
 
 
-void liberer_etat_graphe_comp(Etat_comp etat)
-{
-  if (etat!=NULL)
-  {
-    free_Fst2Transition(etat->trans);
-    free_Fst2Transition(etat->transinv);
-    free(etat);
-  }
-
-}
 
 
 
-//
-// libere le graphe graphe
-//
-void liberer_graphe_comp(Etat_comp graphe[])
+/**
+ *  libere le graphe graphe
+ */
+void liberer_graphe_comp(Etat_comp* graphe)
 {
   int i;
    for (i=0;i<MAX_FST2_STATES;i++)
@@ -1016,7 +1189,7 @@ void liberer_graphe_comp(Etat_comp graphe[])
 
 int ajouter_etat_deliage_comp(Etat_comp letats[],int dep,int etiq,int *n_etats,int graphe_courant)
 {
-  if(((*n_etats)+1) >= MAX_FST2_STATES)
+  if (((*n_etats)+1) >= MAX_FST2_STATES)
     {
       char err[1000];
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
@@ -1035,10 +1208,9 @@ int ajouter_etat_deliage_comp(Etat_comp letats[],int dep,int etiq,int *n_etats,i
 /////////////////////////////////////////////////////////
 
 
-//
-// renvoie un noeud vierge
-//
-
+/**
+ *  renvoie un noeud vierge
+ */
 struct noeud_comp* nouveau_noeud_comp()
 {
   struct noeud_comp *n;
@@ -1051,10 +1223,9 @@ struct noeud_comp* nouveau_noeud_comp()
 }
 
 
-//
-// retourne le sous-noeud correspondant au char c; le cree si absent
-//
-
+/**
+ *  retourne le sous-noeud correspondant au char c; le cree si absent
+ */
 struct noeud_comp* get_sous_noeud_comp(struct noeud_comp *n,unichar c,int creer)
 {
   struct liste_feuilles_comp *ptr;
@@ -1082,19 +1253,18 @@ struct noeud_comp* get_sous_noeud_comp(struct noeud_comp *n,unichar c,int creer)
 
 
 
-//
-// ajoute une etiquette si absente de l'arbre
-//
-
+/**
+ *  ajoute une etiquette si absente de l'arbre
+ */
 int ajouter_etiquette_comp(unichar *etiq, struct noeud_comp *ptr,int i)
 {
   struct noeud_comp *ptr1;
 
   ptr1 = get_sous_noeud_comp(ptr,etiq[i],1);
   i++;
-  if(etiq[i] == '\0')
+  if (etiq[i] == '\0')
     {
-      if(ptr1->fin == -1)
+      if (ptr1->fin == -1)
 	{
 	  ptr1->fin = nombre_etiquettes_comp;
 	  nombre_etiquettes_comp++;
@@ -1106,10 +1276,9 @@ int ajouter_etiquette_comp(unichar *etiq, struct noeud_comp *ptr,int i)
 
 
 
-//
-// vide sans la detruire, une feuille de l'arbre des etiquettes
-//
-
+/**
+ *  vide sans la detruire, une feuille de l'arbre des etiquettes
+ */
 void vider_feuille_comp(struct noeud_comp *n)
 {
   struct liste_feuilles_comp *ptr;
@@ -1136,10 +1305,9 @@ void vider_feuille_comp(struct noeud_comp *n)
 
 
 
-//
-// libere l'arbre des etiquettes
-//
-
+/**
+ *  libere l'arbre des etiquettes
+ */
 void libere_etiquettes_comp()
 {
   vider_feuille_comp(rac_comp);
@@ -1153,10 +1321,9 @@ void libere_etiquettes_comp()
 /////////////////////////////////////////////////////////
 
 
-//
-// renvoie un noeud vierge
-//
-
+/**
+ *  renvoie un noeud vierge
+ */
 struct noeud_g_comp* nouveau_noeud_g_comp()
 {
   struct noeud_g_comp *n;
@@ -1169,10 +1336,9 @@ struct noeud_g_comp* nouveau_noeud_g_comp()
 }
 
 
-//
-// retourne le sous-noeud correspondant au char c; le cree si absent
-//
-
+/**
+ *  retourne le sous-noeud correspondant au char c; le cree si absent
+ */
 struct noeud_g_comp* get_sous_noeud_g_comp(struct noeud_g_comp *n,unichar c,int creer)
 {
   struct liste_feuilles_g_comp *ptr;
@@ -1199,19 +1365,18 @@ struct noeud_g_comp* get_sous_noeud_g_comp(struct noeud_g_comp *n,unichar c,int 
 }
 
 
-//
-// ajoute un nom de graphe si absent de l'arbre
-//
-
+/**
+ *  ajoute un nom de graphe si absent de l'arbre
+ */
 int ajouter_graphe_comp(unichar *etiq, struct noeud_g_comp *ptr,int i)
 {
   struct noeud_g_comp *ptr1;
 
   ptr1=get_sous_noeud_g_comp(ptr,etiq[i],1);
   i++;
-  if(etiq[i]=='\0')
+  if (etiq[i]=='\0')
     {
-      if(ptr1->fin == -1)
+      if (ptr1->fin == -1)
 	{
 	  ptr1->fin=nombre_graphes_comp;
 	  nombre_graphes_comp++;
@@ -1223,10 +1388,9 @@ int ajouter_graphe_comp(unichar *etiq, struct noeud_g_comp *ptr,int i)
 
 
 
-//
-// vide sans la detruire, une feuille de l'arbre des graphes
-//
-
+/**
+ *  vide sans la detruire, une feuille de l'arbre des graphes
+ */
 void vider_feuille_g_comp(struct noeud_g_comp *n)
 {
   struct liste_feuilles_g_comp *ptr;
@@ -1253,10 +1417,9 @@ void vider_feuille_g_comp(struct noeud_g_comp *n)
 
 
 
-//
-// libere l'arbre des graphes
-//
-
+/**
+ *  libere l'arbre des graphes
+ */
 void libere_graphes_comp()
 {
   vider_feuille_g_comp(rac_graphe_comp);
@@ -1290,9 +1453,9 @@ void init_arbres_comp()
 //////////////////////////////////////////////////////////////////
 
 
-//
-// enleve la transition inverse allant vers origine de la liste ptr
-//
+/**
+ *  enleve la transition inverse allant vers origine de la liste ptr
+ */
 Fst2Transition degager_transition_inverse_comp(Fst2Transition ptr,int origine) {
   Fst2Transition tmp;
   if (ptr==NULL) return NULL;
@@ -1307,9 +1470,9 @@ Fst2Transition degager_transition_inverse_comp(Fst2Transition ptr,int origine) {
 
 
 
-//
-// enleve les epsilon transitions de la liste ptr
-//
+/**
+ *  enleve les epsilon transitions de la liste ptr
+ */
 Fst2Transition vider_epsilon_comp(Fst2Transition ptr,Etat_comp *letats,int origine, int mark[]) {  
   Fst2Transition liste,tmp;
   Etat_comp e,e2;  
@@ -1327,14 +1490,14 @@ Fst2Transition vider_epsilon_comp(Fst2Transition ptr,Etat_comp *letats,int origi
       free(liste);
       return ptr;
     }
-    if ((e->controle)&1) {
+    if ( is_final_state(e) ) {
       // if we can reach a final state through an epsilon transition
       // then the current state must be final
       letats[origine]->controle=(unsigned char)((letats[origine]->controle)|1);
     }    
     liste=e->trans;
     while (liste!=NULL) {
-      if(mark[liste->state_number] == 0){ //if not marked
+      if (mark[liste->state_number] == 0) { //if not marked
 	tmp=new_Fst2Transition();
 	tmp->tag_number=liste->tag_number;
 	tmp->state_number=liste->state_number;
@@ -1361,11 +1524,11 @@ Fst2Transition vider_epsilon_comp(Fst2Transition ptr,Etat_comp *letats,int origi
 }
 
 
-int* new_marker(int n){
+int* new_marker(int n) {
   int *res = new int[n];
   int i = 0;
 
-  for(i = 0 ; i < n ; i++){
+  for (i = 0 ; i < n ; i++) {
     res[i] = 0;
   }
 
@@ -1373,12 +1536,12 @@ int* new_marker(int n){
 }
 
 
-void add_closure(Llist_i_comp* closures,int q,Llist_i_comp nlist){
-  if(nlist == NULL) return;
+void add_closure(Llist_i_comp* closures,int q,Llist_i_comp nlist) {
+  if (nlist == NULL) return;
 
   struct ll_i_cell_comp *ptr = nlist->head;
 
-  while(ptr != NULL){
+  while (ptr != NULL) {
     ll_i_insert_sorted(&(closures[q]),ptr->value);
     
     ptr = ptr->next;
@@ -1388,15 +1551,15 @@ void add_closure(Llist_i_comp* closures,int q,Llist_i_comp nlist){
 
 
 
-Llist_i_comp get_epsilon_closure_rec(Llist_i_comp* closures,Etat_comp *letats,int q, unsigned char mark[]){
+Llist_i_comp get_epsilon_closure_rec(Llist_i_comp* closures,Etat_comp *letats,int q, unsigned char mark[]) {
   Fst2Transition ptr;
 
-  if(mark[q] == 0){ // si non marque
+  if (mark[q] == 0) { // si non marque
     mark[q] = 1;
     ll_i_insert_sorted(&(closures[q]),q);
     ptr = letats[q]->trans;
-    while(ptr != NULL){
-      if((ptr->tag_number == EPSILON_comp) && (ptr->state_number != q)){
+    while (ptr != NULL) {
+      if ((ptr->tag_number == EPSILON_comp) && (ptr->state_number != q)) {
 	add_closure(closures,q,get_epsilon_closure_rec(closures,letats,ptr->state_number,mark));
       }
       ptr = ptr->next;
@@ -1406,19 +1569,19 @@ Llist_i_comp get_epsilon_closure_rec(Llist_i_comp* closures,Etat_comp *letats,in
 }
 
 
-Llist_i_comp * get_epsilon_closures(Etat_comp *letats,int n){
+Llist_i_comp * get_epsilon_closures(Etat_comp *letats,int n) {
   Llist_i_comp * closures = (Llist_i_comp *)malloc(n*sizeof(Llist_i_comp));
   unsigned char mark[n];
   int i;  
 
-  for(i = 0 ; i < n ; i++){
+  for (i = 0 ; i < n ; i++) {
     mark[i] = 0;
     closures[i] = NULL;    
   }
 
 
-  for(i = 0 ; i < n ; i++){ //pour chaque etat
-    if(mark[i] == 0){
+  for (i = 0 ; i < n ; i++) { //pour chaque etat
+    if (mark[i] == 0) {
       get_epsilon_closure_rec(closures,letats,i,mark);
     }
   }
@@ -1427,17 +1590,17 @@ Llist_i_comp * get_epsilon_closures(Etat_comp *letats,int n){
 }
 
 
-void remove_all_epsilon_transitions(Etat_comp *letats, int n){
+void remove_all_epsilon_transitions(Etat_comp *letats, int n) {
   Fst2Transition ptr,res,temp;  
 
-  for(int i = 0 ; i < n ; i++){ // pour chq etat
+  for (int i = 0 ; i < n ; i++) { // pour chq etat
     ptr = letats[i]->trans;
     res = NULL;
-    while(ptr != NULL){ //pr chq transition     
+    while (ptr != NULL) { //pr chq transition     
       temp = ptr;
       ptr = ptr->next;
       
-      if(temp->tag_number == EPSILON_comp){ // on supprime transition
+      if (temp->tag_number == EPSILON_comp) { // on supprime transition
 	free(temp); 
       }
       else{
@@ -1449,11 +1612,11 @@ void remove_all_epsilon_transitions(Etat_comp *letats, int n){
 
     ptr = letats[i]->transinv;
     res = NULL;
-    while(ptr != NULL){ //pr chq transition inverse
+    while (ptr != NULL) { //pr chq transition inverse
       temp = ptr;
       ptr = ptr->next;
       
-      if(temp->tag_number == EPSILON_comp){ // on supprime transition inverse
+      if (temp->tag_number == EPSILON_comp) { // on supprime transition inverse
 	free(temp); 
       }
       else{
@@ -1468,24 +1631,24 @@ void remove_all_epsilon_transitions(Etat_comp *letats, int n){
 }
 
 
-void add_transitions_according_to_epsilon_closure(Llist_i_comp *closures,Etat_comp *letats,int n){
+void add_transitions_according_to_epsilon_closure(Llist_i_comp *closures,Etat_comp *letats,int n) {
   unsigned int i;
   struct ll_i_cell_comp *ptr;
   Fst2Transition tr;
   Etat_comp e;
 
-  for(i = 0 ; i < (unsigned int)n ; i++){ //pour chq etat
+  for (i = 0 ; i < (unsigned int)n ; i++) { //pour chq etat
     Llist_i_comp clos = closures[i];
-    if(clos != NULL){
+    if (clos != NULL) {
       ptr = clos->head;     
-      while(ptr != NULL){
-	if(ptr->value != i){
+      while (ptr != NULL) {
+	if (ptr->value != i) {
 	  e = letats[ptr->value];
-	  if((e->controle) & 1) { // etat final
+	  if ( is_final_state(e) ) { // etat final
 	    letats[i]->controle = (unsigned char)(letats[i]->controle)|1; 
 	  }
 	  tr = e->trans;
-	  while(tr != NULL){
+	  while (tr != NULL) {
 	    ajouter_transition_comp(letats,i,tr->state_number,tr->tag_number);
 	    tr = tr->next;
 	  }
@@ -1497,49 +1660,40 @@ void add_transitions_according_to_epsilon_closure(Llist_i_comp *closures,Etat_co
 }
 
 
-void free_closures(Llist_i_comp *closures,int n){
+void free_closures(Llist_i_comp *closures,int n) {
   int i;
 
-  for(i = 0 ; i < n ; i++){
+  for (i = 0 ; i < n ; i++) {
     ll_i_free(&(closures[i]));
   }
 }
 
 
 
-//
-// enleve les epsilon transitions du graphe
-//
-void virer_epsilon_transitions_comp(Etat_comp *letats,int n){
+/**
+ *  enleve les epsilon transitions du graphe
+ */
+void virer_epsilon_transitions_comp(Etat_comp *letats,int n) {
   Llist_i_comp *closures = get_epsilon_closures(letats,n);
   remove_all_epsilon_transitions(letats,n);
   add_transitions_according_to_epsilon_closure(closures,letats,n);
   free_closures(closures,n);
   free(closures);
-
-
-  /*
-  //OLD VERSION
-  for (int i=0 ; i<n ; i++) {  
-    letats[i]->trans=vider_epsilon_comp(letats[i]->trans,letats,i,mark); 
-  }
-  */
 }
 
 
-//
-// Marque les etats accessibles
-//
-
+/**
+ *  Marque les etats accessibles
+ */
 void accessibilite_comp(Etat_comp *e,int i)
 {
   Fst2Transition t;
 
-  if((e[i]!=NULL) && ((e[i]->controle)&4)==0)
+  if ((e[i]!=NULL) && ((e[i]->controle)&4)==0)
     {
       e[i]->controle=(unsigned char)((e[i]->controle)|4);
       t=e[i]->trans;
-      while(t!=NULL)
+      while (t!=NULL)
 	{
 	  accessibilite_comp(e,t->state_number);
 	  t=t->next;
@@ -1548,22 +1702,21 @@ void accessibilite_comp(Etat_comp *e,int i)
 }
 
 
-//
-//Marque les etats co_accessibles
-//
-
+/**
+ * Marque les etats co_accessibles
+ */
 void co_accessibilite_comp(Etat_comp *e,int i)
 {
   Fst2Transition t;
 
-  if((e[i]!=NULL) && ((e[i]->controle)&8)==0)
+  if ( (e[i] != NULL) && (((e[i]->controle)&8) == 0) )
     {
-      e[i]->controle=(unsigned char)((e[i]->controle)|8);
-      t=e[i]->transinv;
-      while(t!=NULL)
+      e[i]->controle = (unsigned char) ((e[i]->controle)|8);
+      t = e[i]->transinv;
+      while ( t != NULL )
 	{
 	  co_accessibilite_comp(e,t->state_number);
-	  t=t->next;
+	  t = t->next;
 	}
     }
 }
@@ -1582,9 +1735,9 @@ Fst2Transition supprimer_transition_comp(Etat_comp *letats,int i,Fst2Transition 
 
   /* Suppression de la transition inverse correspondante */
   t=letats[j]->transinv;
-  while(t!=NULL)
+  while (t!=NULL)
     {
-      if((t->state_number==i) && (t->tag_number==etiq))
+      if ((t->state_number==i) && (t->tag_number==etiq))
 	{
 	  tmp2=t;
 	  t=t->next;
@@ -1616,9 +1769,9 @@ Fst2Transition supprimer_transitioninv_comp(Etat_comp *letats,int i,Fst2Transiti
 
   /* Suppression de la transition correspondante */
   t=letats[j]->trans;
-  while(t!=NULL)
+  while (t!=NULL)
     {
-      if((t->state_number==i) && (t->tag_number==etiq))
+      if ((t->state_number==i) && (t->tag_number==etiq))
 	{
 	  tmp2=t;
 	  t=t->next;
@@ -1633,15 +1786,15 @@ Fst2Transition supprimer_transitioninv_comp(Etat_comp *letats,int i,Fst2Transiti
 
 
 
-//
-// vire ptr si ptr pointe sur un etat a virer
-//
+/**
+ *  vire ptr si ptr pointe sur un etat a virer
+ */
 // with complex graphs we got a stack overflow with this recursive function:
 //// Fst2Transition vider_trans_reciproques_comp(Fst2Transition ptr,Etat_comp *letats)
 //// {
 ////   Fst2Transition tmp;
 ////   if (ptr==NULL) return NULL;
-////   if((((letats[ptr->state_number]->controle)&4)==0)||(((letats[ptr->state_number]->controle)&8)==0))
+////   if ((((letats[ptr->state_number]->controle)&4)==0)||(((letats[ptr->state_number]->controle)&8)==0))
 ////   {
 ////     tmp=ptr->next;
 ////     free(ptr);
@@ -1678,17 +1831,17 @@ Fst2Transition vider_trans_reciproques_comp(Fst2Transition ptr,Etat_comp *letats
 
 
 
-//
-// renvoie 1 si l'etat e n'est ni accessible ni coaccessible
-//
+/**
+ *  renvoie 1 si l'etat e n'est ni accessible ni coaccessible
+ */
 int est_a_virer_comp(Etat_comp e) {
 return ((((e->controle)&4)==0)||(((e->controle)&8)==0));
 }
 
 
-//
-// remplace ancien par nouveau dans les transitions sortant de l'etat e
-//
+/**
+ *  remplace ancien par nouveau dans les transitions sortant de l'etat e
+ */
 void mettre_a_jour_sortie_comp(Etat_comp e,int ancien,int nouveau) {
 Fst2Transition ptr;
 ptr=e->trans;
@@ -1701,9 +1854,9 @@ ptr=e->trans;
 
 
 
-//
-// remplace ancien par nouveau dans les transitions entrant dans l'etat e
-//
+/**
+ *  remplace ancien par nouveau dans les transitions entrant dans l'etat e
+ */
 void mettre_a_jour_entree_comp(Etat_comp e,int ancien,int nouveau) {
 Fst2Transition ptr;
 ptr=e->transinv;
@@ -1716,9 +1869,9 @@ ptr=e->transinv;
 
 
 
-//
-// renumerote les transitions vers ancien en transitions vers nouveau
-//
+/**
+ *  renumerote les transitions vers ancien en transitions vers nouveau
+ */
 void renumeroter_comp(Etat_comp *liste,int ancien,int nouveau) {
 Fst2Transition ptr;
 ptr=liste[ancien]->trans;
@@ -1738,10 +1891,9 @@ ptr=liste[ancien]->transinv;
 
 
 
-//
-// Elimine les etats non accessibles et non co_accessibles
-//
-
+/**
+ *  Elimine les etats non accessibles et non co_accessibles
+ */
 void eliminer_etats_comp(Etat_comp *letats,int *n_etats)
 {
   int i,dernier;
@@ -1761,7 +1913,7 @@ void eliminer_etats_comp(Etat_comp *letats,int *n_etats)
     while ((dernier>=0)&&est_a_virer_comp(letats[dernier]))
     {
       //free(letats[dernier]);
-      liberer_etat_graphe_comp(letats[dernier]);
+      liberer_etat_comp(letats[dernier]);
       letats[dernier]=NULL;
       dernier--;
     }
@@ -1782,7 +1934,7 @@ void eliminer_etats_comp(Etat_comp *letats,int *n_etats)
     letats[i]=letats[dernier];
     letats[dernier]=tmp;
     //free(letats[dernier]);
-    liberer_etat_graphe_comp(letats[dernier]);
+    liberer_etat_comp(letats[dernier]);
     letats[dernier]=NULL;
     dernier--;
   }
@@ -1883,18 +2035,17 @@ void conformer_nom_graphe_comp(char * NOM, int courant) {
 
 
 
-//
-// initialisation locale
-//
-
+/**
+ *  initialisation locale
+ */
 void init_locale_comp(Etat_comp *e, int n)
 {
   register int i;
 
-  for(i=0;i<MAX_FST2_STATES;i++)
+  for (i=0;i<MAX_FST2_STATES;i++)
   {
 
-   if(i >= n)
+   if (i >= n)
     e[i] = NULL;
    else
      e[i] = nouvel_etat_comp();
@@ -1904,9 +2055,9 @@ void init_locale_comp(Etat_comp *e, int n)
 
 
 
-//
-// Sépare contenu (entrée de l'automate) et transduction (sortie)
-//
+/**
+ *  Sépare contenu (entrée de l'automate) et transduction (sortie)
+ */
 void traitement_transduction_comp(unichar ligne[], unichar contenu[],unichar transduction[]) {
 int i,j;
 i=0;
@@ -1986,8 +2137,8 @@ int get_mot_comp_default(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
      (*pos)++;
      i++;
    }
-   while(u_is_letter(contenu[(*pos)-1])&& (i<N_CAR_MAX_COMP));
-  if(i>=N_CAR_MAX_COMP) return -3;
+   while (u_is_letter(contenu[(*pos)-1])&& (i<N_CAR_MAX_COMP));
+  if (i>=N_CAR_MAX_COMP) return -3;
    mot[i-1] = '\0';
    (*pos)--;
    (*pos_seq)++;
@@ -2007,8 +2158,8 @@ int get_mot_comp_alphabet(unichar contenu[],int *pos,unichar mot[],int *pos_seq,
      (*pos)++;
      i++;
    }
-   while(is_letter(contenu[(*pos)-1],alph)&& (i<N_CAR_MAX_COMP));
-  if(i>=N_CAR_MAX_COMP) return -3;
+   while (is_letter(contenu[(*pos)-1],alph)&& (i<N_CAR_MAX_COMP));
+  if (i>=N_CAR_MAX_COMP) return -3;
    mot[i-1] = '\0';
    (*pos)--;
    (*pos_seq)++;
@@ -2052,9 +2203,9 @@ int get_forme_canonique_comp(unichar contenu[],int *pos,unichar mot[],int *pos_s
      mot[i] = contenu[*pos];
      (*pos)++;
      i++;
-   }while((contenu[*pos] != '>') && (contenu[*pos] != '\0') && (i < N_CAR_MAX_COMP));
-   if(i >= N_CAR_MAX_COMP) return -3;
-   if((contenu[*pos] == '\0')) {
+   }while ((contenu[*pos] != '>') && (contenu[*pos] != '\0') && (i < N_CAR_MAX_COMP));
+   if (i >= N_CAR_MAX_COMP) return -3;
+   if ((contenu[*pos] == '\0')) {
      fprintf(stderr,"WARNING : canonical form should be ended by >\n");
    }
    mot[i] = '>';
@@ -2102,9 +2253,9 @@ int get_sequence_desambiguisee_comp(unichar contenu[],int *pos,unichar mot[],int
      mot[i] = contenu[*pos];
      (*pos)++;
      i++;
-   }while((contenu[*pos] != '}') && (contenu[*pos] != '\0') && (i < N_CAR_MAX_COMP));
-   if(i >= N_CAR_MAX_COMP) return -3;
-   if(contenu[*pos] == '\0') {
+   }while ((contenu[*pos] != '}') && (contenu[*pos] != '\0') && (i < N_CAR_MAX_COMP));
+   if (i >= N_CAR_MAX_COMP) return -3;
+   if (contenu[*pos] == '\0') {
      fprintf(stderr,"WARNING : desambiguised form should be ended by }\n");
    }
    mot[i] = '}';
@@ -2164,7 +2315,7 @@ int lire_mot_entre_guillemet_comp(unichar contenu[],int *pos,unichar mot[],
      //Cas d'une lettre
      if (is_letter_generic(contenu[*pos],mode,alph))
      {
-       if(get_mot_comp_generic(contenu,pos,mot,pos_seq,mode,alph)== -3) return -3;
+       if (get_mot_comp_generic(contenu,pos,mot,pos_seq,mode,alph)== -3) return -3;
        u_strcpy_char(temp,"@");
        u_strcat(temp,mot);
        u_strcpy(mot,temp);
@@ -2193,13 +2344,13 @@ int traitement_guillemet_comp(unichar contenu[],int *pos,
 
   (*pos)++;
   fin = 0;
-  while((fin == 0) && (contenu[*pos] != '\0') && ((*pos_seq) < TAILLE_SEQUENCE_COMP))
+  while ((fin == 0) && (contenu[*pos] != '\0') && ((*pos_seq) < TAILLE_SEQUENCE_COMP))
   {
     fin = lire_mot_entre_guillemet_comp(contenu,pos,sequence[*pos_seq],pos_seq,mode,alph);
   }
 
-  if(fin == -3) return -3;
-  if((*pos_seq) >= TAILLE_SEQUENCE_COMP)
+  if (fin == -3) return -3;
+  if ((*pos_seq) >= TAILLE_SEQUENCE_COMP)
     return -1;
   return 0;
 }
@@ -2210,9 +2361,9 @@ int traitement_guillemet_comp(unichar contenu[],int *pos,
 int get_sous_graphe_comp(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
 {
   int i = 0;
-  while((contenu[*pos] != '+') && (contenu[*pos] != '\0')&& (i < N_CAR_MAX_COMP))
+  while ((contenu[*pos] != '+') && (contenu[*pos] != '\0')&& (i < N_CAR_MAX_COMP))
   {
-    // if(contenu[*pos] == '\\') (*pos)++;
+    // if (contenu[*pos] == '\\') (*pos)++;
     /* the backslash shouldn't be used an escape character in graph
        names; under Unixes it is now obsolete: using the colon ':' as
        path separator, you don't need the construct '\/'. */
@@ -2222,7 +2373,7 @@ int get_sous_graphe_comp(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
     i++;
     (*pos)++;
   }
-  if(i >= N_CAR_MAX_COMP) return 0;
+  if (i >= N_CAR_MAX_COMP) return 0;
   mot[i] = '\0';
   //i_fprintf(stderr, "mot=%S\n", mot);
   (*pos_seq)++;
@@ -2263,7 +2414,7 @@ int lire_mot_comp(unichar contenu[],int* pos,
         // while ((l >= 0) && (seq[l] != '/') && (seq[l] != '\\')) { l--; }
         /* '/' and '\\' are already replaced by ':' in
            donnees->nom_graphe[graphe_courant] (see
-           get_sous_graph_comp) */
+           get_sous_graphe_comp) */
         while (seq[l] != ':') { l--; } // l now >= 1
 
         }
@@ -2325,19 +2476,19 @@ int lire_mot_comp(unichar contenu[],int* pos,
   if (contenu[*pos]=='\\')
     {
       (*pos)++;
-      if(contenu[*pos]!='\\')
+      if (contenu[*pos]!='\\')
         {
-          if(contenu[*pos] == '"') // Cas d'une sequence entre guillemet
+          if (contenu[*pos] == '"') // Cas d'une sequence entre guillemet
             return traitement_guillemet_comp(contenu,pos,sequence,pos_seq,graphe_courant,mode,alph);
           get_caractere_comp(contenu,pos,sequence[*pos_seq],pos_seq);
           return 0;
         }
-      if(/*(contenu[(*pos)+1] != '\0')&& */(contenu[(*pos)+1] != '\\')) // caractere despecialise
+      if (/*(contenu[(*pos)+1] != '\0')&& */(contenu[(*pos)+1] != '\\')) // caractere despecialise
         {
           get_caractere_comp(contenu,pos,sequence[*pos_seq],pos_seq);
           return 0;
         }
-      if(contenu[(*pos)+2] == '"')   //caractere " seul
+      if (contenu[(*pos)+2] == '"')   //caractere " seul
         {
           (*pos) += 2;
           get_caractere_comp(contenu,pos,sequence[*pos_seq],pos_seq);
@@ -2352,20 +2503,20 @@ int lire_mot_comp(unichar contenu[],int* pos,
   //Cas des sequences desambiguises par Unitex au preprocessing
   if (contenu[*pos]=='{')
     {
-      if(get_sequence_desambiguisee_comp(contenu,pos,sequence[*pos_seq],pos_seq)== -3) return -3;
+      if (get_sequence_desambiguisee_comp(contenu,pos,sequence[*pos_seq],pos_seq)== -3) return -3;
       return 0;
     }
 
   // cas d'un debut de <...>
-  if(contenu[*pos] == '<')
+  if (contenu[*pos] == '<')
     {
-      if(get_forme_canonique_comp(contenu,pos,sequence[*pos_seq],pos_seq) == -3) return -3;
+      if (get_forme_canonique_comp(contenu,pos,sequence[*pos_seq],pos_seq) == -3) return -3;
       return 0;
     }
 
   // cas d'une lettre
   if (is_letter_generic(contenu[*pos],mode,alph)) {
-    if(get_mot_comp_generic(contenu,pos,sequence[*pos_seq],pos_seq,mode,alph) == -3) return -3;
+    if (get_mot_comp_generic(contenu,pos,sequence[*pos_seq],pos_seq,mode,alph) == -3) return -3;
     return 0;
   }
 
@@ -2378,7 +2529,7 @@ int lire_mot_comp(unichar contenu[],int* pos,
 
 int traitement_etiquettes_comp(int *indice,unichar mot[])
 {
-  if(((*indice) = ajouter_etiquette_comp(mot,rac_comp,0)) >= MAX_FST2_TAGS)
+  if (((*indice) = ajouter_etiquette_comp(mot,rac_comp,0)) >= MAX_FST2_TAGS)
     {
       fprintf(stderr,"ERROR at top level: Too many tags (maximum %d)\n",MAX_FST2_TAGS);
       return -1;
@@ -2401,12 +2552,12 @@ int transfo_seq_carac_en_entiers(unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MA
   j=0; i=0;
   if (transduction[0]!='\0') {  //CAS DE LA TRANSDUCTION
        j = 1;
-       if(((sequence[0][0] == ':') && (sequence[0][1] != '\0')))
+       if (((sequence[0][0] == ':') && (sequence[0][1] != '\0')))
        //CAS DU SOUS-GRAPHE
        {
         /* strcpy(temp,"<E>/");
          strcat(temp,transduction);
-         if(traitement_etiquettes_comp(&indice,temp) == -1) return -1;*/
+         if (traitement_etiquettes_comp(&indice,temp) == -1) return -1;*/
          //sequence_ent[0] = indice;
          //i = 0;
          //(*trans) = 1;
@@ -2417,21 +2568,21 @@ int transfo_seq_carac_en_entiers(unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MA
           u_strcat(sequence[0],s);
           u_strcat(sequence[0],transduction);
 
-          if(traitement_etiquettes_comp(&indice,sequence[0]) == -1) return -1;
+          if (traitement_etiquettes_comp(&indice,sequence[0]) == -1) return -1;
           sequence_ent[0] = indice;
           i = 1;
        }
   }
 
-  while(i < compteur_mots)
+  while (i < compteur_mots)
   {
-     if((sequence[i][0] == ':') && (sequence[i][1] != '\0'))  //SOUS GRAPHE
+     if ((sequence[i][0] == ':') && (sequence[i][1] != '\0'))  //SOUS GRAPHE
      {
        /* inutile
         k = 1;
         do  // transfo :grf1 en grf1
           temp[k -1] = sequence[i][k++];
-        while(sequence[i][k] != '\0');
+        while (sequence[i][k] != '\0');
         temp[k -1] = '\0';
         */
         indice = ajouter_graphe_comp(sequence[i] + 1,rac_graphe_comp,0);
@@ -2442,8 +2593,8 @@ int transfo_seq_carac_en_entiers(unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MA
      {
         u_strcpy_char(s,"/<E>");
 
-        if(transduction[0]!='\0') u_strcat(sequence[i],s);
-        if(traitement_etiquettes_comp(&indice,sequence[i]) == -1) return -1;
+        if (transduction[0]!='\0') u_strcat(sequence[i],s);
+        if (traitement_etiquettes_comp(&indice,sequence[i]) == -1) return -1;
         sequence_ent[j] = indice;
      }
   i++;
@@ -2460,12 +2611,12 @@ int ecriture_transition_comp(Etat_comp letats[],int seq_ent[],int sortants[],int
   int dep;
   k=0;
 
-   while(sortants[k] != -1)
+   while (sortants[k] != -1)
    {
      dep=etat_courant;
-     for(j=0;j<longueur -1+trans;j++)
+     for (j=0;j<longueur -1+trans;j++)
      {
-       if(ajouter_etat_deliage_comp(letats,dep,seq_ent[j],n_et,graphe_courant) == 0) return 0;
+       if (ajouter_etat_deliage_comp(letats,dep,seq_ent[j],n_et,graphe_courant) == 0) return 0;
        dep=(*n_et)-1;
      }
      ajouter_transition_comp(letats,dep,sortants[k],seq_ent[longueur +trans -1]);
@@ -2490,14 +2641,14 @@ int traitement_transition_comp(Etat_comp letats[],unichar contenu[],
   unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MAX_COMP];
   int sequence_ent[TAILLE_SEQUENCE_COMP];
   char err[1000];
-  while((plus == 0) && (contenu[*pos] != '\0') && (compteur_mots < TAILLE_SEQUENCE_COMP)) {
+  while ((plus == 0) && (contenu[*pos] != '\0') && (compteur_mots < TAILLE_SEQUENCE_COMP)) {
     plus = lire_mot_comp(contenu,pos,sequence,&compteur_mots,graphe_courant,mode,alph);
   }
 
   if (plus == -2) return -1;
-  if(plus == -3) {       // Cas trop de caractères dans un mot
+  if (plus == -3) {       // Cas trop de caractères dans un mot
    u_to_char(err,donnees->nom_graphe[graphe_courant]);
-   if(graphe_courant == 0) {
+   if (graphe_courant == 0) {
       fprintf(stderr,"ERROR in main graph %s: The size of a word should be lower than %d characters\n",err,N_CAR_MAX_COMP);
     }
     else {
@@ -2505,10 +2656,10 @@ int traitement_transition_comp(Etat_comp letats[],unichar contenu[],
     }
     return 0;
   }
-  if((plus == -1) || (compteur_mots >= TAILLE_SEQUENCE_COMP) )
+  if ((plus == -1) || (compteur_mots >= TAILLE_SEQUENCE_COMP) )
   {
     u_to_char(err,donnees->nom_graphe[graphe_courant]);
-    if(graphe_courant == 0) {
+    if (graphe_courant == 0) {
       fprintf(stderr,"ERROR in main graph %s: The size of a sequence between two + should be lower than %d words\n",err,TAILLE_SEQUENCE_COMP);
     }
     else {
@@ -2557,7 +2708,7 @@ int traitement_ligne_comp(unichar ligne[],int sortants[],
   int i;
   int res;
 
-  if(sortants[0]!=-1)
+  if (sortants[0]!=-1)
   {
     i=0;
     if ((u_strlen(ligne)>2 && ligne[0]=='$' && (ligne[u_strlen(ligne)-1]=='(' || ligne[u_strlen(ligne)-1]==')'))
@@ -2570,10 +2721,10 @@ int traitement_ligne_comp(unichar ligne[],int sortants[],
         return 1;
     }
     traitement_transduction_comp(ligne,contenu,transduction);
-    while(contenu[i]!='\0')
+    while (contenu[i]!='\0')
     {
       res = traitement_transition_comp(letats,contenu,transduction,sortants,n_et,&i,etat_courant,graphe_courant,mode,alph);
-      if((res == -1) || (res == 0)) return res;
+      if ((res == -1) || (res == 0)) return res;
     }
   }
   return 1;
@@ -2595,7 +2746,7 @@ int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
   int i, n_sortantes;
   char err[TAILLE_MOT_GRAND_COMP];
 
-  for(i=0;i<NOMBRE_TRANSITIONS_COMP;i++) sortants[i]=-1;
+  for (i=0;i<NOMBRE_TRANSITIONS_COMP;i++) sortants[i]=-1;
 
   i=0;
   while (u_fgetc(f) != '"');  /* skip all chars including first '"' */
@@ -2695,38 +2846,44 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
    * DATE -> C:/Unitex/French/Graphs/Date/DATE.grf */
   conformer_nom_graphe_comp(nom,graphe_courant); 
 
+  /* hack until letats is replaced finally */
+  struct graph_comp ggraph;
+  Graph_comp graph = &ggraph;
+  graph->states = (Etat_comp*) letats; // hack : may segfault
+  graph->size = MAX_FST2_STATES;
+  graph->n_states = 0;
 
   /* open graph file */
   f=u_fopen(nom,U_READ);
-  if(f == NULL) /* cannot open */
+  if (f == NULL) /* cannot open */
     {
       char s[TAILLE_MOT_GRAND_COMP];
       u_to_char(s,donnees->nom_graphe[graphe_courant]);
       fprintf(stderr,"Cannot open the graph %s.grf\n",s);
       fprintf(stderr,"(%s)\n",nom);
-      write_graph(fs_comp, letats,
-                  (-(graphe_courant)-1),
-                  donnees->nom_graphe[graphe_courant]);
+      write_graph_comp(fs_comp, graph,
+                       (-(graphe_courant)-1),
+                       donnees->nom_graphe[graphe_courant]);
       donnees->statut_graphe[graphe_courant] = 0;
-      if(graphe_courant == 0) return 0;
+      if (graphe_courant == 0) return 0;
       return 1;
     }
 
   /* read header */
   u_fgetc(f);                       /* skip BOM */
-  while( u_fgetc(f) != '#' );       /* skip header with formatting instructions */
+  while ( u_fgetc(f) != '#' );      /* skip header with formatting instructions */
   u_fgetc(f);                       /* skip newline */
   n_etats_initial = u_read_int(f);  /* read number of states */
 
   if (n_etats_initial > MAX_FST2_STATES) //Trop de boites dans graphe
     {
       donnees->statut_graphe[graphe_courant] = 0;
-      write_graph(fs_comp, letats,
-                  (-(graphe_courant)-1),
-                  donnees->nom_graphe[graphe_courant]);
+      write_graph_comp(fs_comp, graph,
+                       (-(graphe_courant)-1),
+                       donnees->nom_graphe[graphe_courant]);
       u_fclose(f);
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
-      if(graphe_courant == 0)
+      if (graphe_courant == 0)
         {
           fprintf(stderr,"ERROR in main graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,MAX_FST2_STATES);
           return 0;
@@ -2750,43 +2907,43 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
       if (lire == 0)
         {
           donnees->statut_graphe[graphe_courant] = 0;
-          write_graph(fs_comp, letats,
-                      (-(graphe_courant)-1),
-                      donnees->nom_graphe[graphe_courant]);
+          write_graph_comp(fs_comp, graph,
+                           (-(graphe_courant)-1),
+                           donnees->nom_graphe[graphe_courant]);
           liberer_graphe_comp(letats);
           u_fclose(f);
-          if(graphe_courant == 0)
+          if (graphe_courant == 0)
             return 0;
           return 1;
         }
 
       /* box contains transitions: process them */
       //On traite la ligne : ecriture en memoire
-      if(lire == 1)
+      if (lire == 1)
         {
           traitement = traitement_ligne_comp(ligne,sortants,letats,i,&n_etats_final,graphe_courant,mode,alph);
-          if((traitement == 0) || (traitement == -1))
+          if ((traitement == 0) || (traitement == -1))
             {
               donnees->statut_graphe[graphe_courant] = 0;
-              write_graph(fs_comp, letats,
-                          (-(graphe_courant)-1),
-                          donnees->nom_graphe[graphe_courant]);
+              write_graph_comp(fs_comp, graph,
+                               (-(graphe_courant)-1),
+                               donnees->nom_graphe[graphe_courant]);
               liberer_graphe_comp(letats);
               u_fclose(f);
-              if(traitement == -1) return -1;
-              if(graphe_courant == 0) return 0;
+              if (traitement == -1) return -1;
+              if (graphe_courant == 0) return 0;
               return 1;
             }
           if (n_etats_final >= MAX_FST2_STATES) //Trop d'états dans l'automate
             {
               donnees->statut_graphe[graphe_courant] = 0;
-              write_graph(fs_comp, letats,
-                          (-(graphe_courant)-1),
-                          donnees->nom_graphe[graphe_courant]);
+              write_graph_comp(fs_comp, graph,
+                               (-(graphe_courant)-1),
+                               donnees->nom_graphe[graphe_courant]);
               liberer_graphe_comp(letats);
               u_fclose(f);
               u_to_char(err,donnees->nom_graphe[graphe_courant]);
-              if(graphe_courant == 0)
+              if (graphe_courant == 0)
                 {
                   fprintf(stderr,"ERROR in main graph %s.grf: Too many states (%d)\n",err,n_etats_final);
                   return 0;
@@ -2800,6 +2957,7 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   u_fclose(f);
   /* end of reading file */
 
+
   //etat initial: bit 2 a 1
   letats[0]->controle=(unsigned char)((letats[0]->controle)|2);
   //etat final: bit 1 a 1
@@ -2811,16 +2969,17 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   virer_epsilon_transitions_comp(letats,n_etats_final);
   accessibilite_comp(letats,0);
   eliminer_etats_comp(letats,&n_etats_final);
-  if(letats[0] == NULL)
+
+  if (letats[0] == NULL)
     {
       donnees->statut_graphe[graphe_courant] = 0;
-      write_graph(fs_comp, letats,
-                  (-(graphe_courant)-1),
-                  donnees->nom_graphe[graphe_courant]);
+      write_graph_comp(fs_comp, graph,
+                       (-(graphe_courant)-1),
+                       donnees->nom_graphe[graphe_courant]);
 
       liberer_graphe_comp(letats);
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
-      if(graphe_courant == 0)
+      if (graphe_courant == 0)
         {
           fprintf(stderr,"ERROR: Main graph %s.grf has been emptied\n",err);
           return 0;
@@ -2830,18 +2989,18 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
     }
   donnees->statut_graphe[graphe_courant] = 1;
 
-  //  Etat_comp* det = determinisation(letats,MAX_FST2_STATES);
-  int det = determinisation(letats,MAX_FST2_STATES);
-  //  compute_reverse_transitions(letats,MAX_FST2_STATES); // buggy!!!
-  int min = minimisation(letats);
-  write_graph(fs_comp, letats,
-              (-(graphe_courant)-1),
-              donnees->nom_graphe[graphe_courant]);
+  graph->n_states = n_etats_final;
+
+  int det = determinisation(graph);
+  int min = minimisation(graph);
+  write_graph_comp(fs_comp, graph,
+                   (-(graphe_courant)-1),
+                   donnees->nom_graphe[graphe_courant]);
   liberer_graphe_comp(letats);
-  if( (det == 0) || (min == 0) )
+  if ( (det == 0) || (min == 0) )
     {
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
-      if(graphe_courant == 0)
+      if (graphe_courant == 0)
         {
           fprintf(stderr,"ERROR in main graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
           return 0;
@@ -2867,7 +3026,7 @@ int extraire_nom_graphe_comp(char *s1,unichar* S2)
   i=l-5;
   temp[i+1]='\0'; //On supprime le .grf
 
-  while(i>=0 && temp[i]!='/' && temp[i]!='\\')i--;
+  while (i>=0 && temp[i]!='/' && temp[i]!='\\') i--;
 
   if (
 #ifdef _NOT_UNDER_WINDOWS
@@ -2877,8 +3036,8 @@ int extraire_nom_graphe_comp(char *s1,unichar* S2)
 #endif
       ) {
     // if we have an absolute path, we care for the slash or backslash
-    for(j=i+1;j<l;j++) s2[j-i-1]=temp[j];
-    for(j=0;j<i+1;j++) donnees->chemin_graphe_principal[j]=temp[j];
+    for (j=i+1;j<l;j++) s2[j-i-1]=temp[j];
+    for (j=0;j<i+1;j++) donnees->chemin_graphe_principal[j]=temp[j];
     donnees->chemin_graphe_principal[i+1]='\0';
     u_strcpy_char(S2,s2);
     return 1;
@@ -2903,18 +3062,19 @@ int compilation(char *nom_graphe_principal,int mode,Alphabet* alph,FILE* fs_comp
  int compteur=0;
  int comp;
 
-  if(extraire_nom_graphe_comp(nom_graphe_principal,donnees->nom_graphe[0]) == 0) return 0;
+  if (extraire_nom_graphe_comp(nom_graphe_principal,donnees->nom_graphe[0]) == 0) return 0;
+  
   ajouter_graphe_comp(donnees->nom_graphe[compteur],rac_graphe_comp,0);
   do
   {
     comp = compiler_graphe_comp(compteur,mode,alph,fs_comp);
-   if((comp == 0) && (compteur == 0)) return 0;
-   if(comp == -1) return 0;
+   if ((comp == 0) && (compteur == 0)) return 0;
+   if (comp == -1) return 0;
    compteur++;
   }
-  while((nombre_graphes_comp < NOMBRE_GRAPHES_COMP) && (compteur < nombre_graphes_comp));
+  while ((nombre_graphes_comp < NOMBRE_GRAPHES_COMP) && (compteur < nombre_graphes_comp));
 
-  if(nombre_graphes_comp >= NOMBRE_GRAPHES_COMP)
+  if (nombre_graphes_comp >= NOMBRE_GRAPHES_COMP)
   {
     fprintf(stderr,"There are too many graphs. The number of graphs should be lower than %d\n",NOMBRE_GRAPHES_COMP);
     return 0;
@@ -2932,26 +3092,12 @@ void init_generale_comp()
   nombre_graphes_comp=0;
   nombre_etiquettes_comp=0;
 
-  for(i=0;i<NOMBRE_GRAPHES_COMP;i++)
+  for (i=0;i<NOMBRE_GRAPHES_COMP;i++)
     {
       donnees->statut_graphe[i]=-1;
       donnees->nom_graphe[i][0]='\0';
     }
     nombre_graphes_comp=0;
-}
-
-FILE* ouverture_fichier_sortie(char temp[])
-{
-  char temp1[TAILLE_MOT_GRAND_COMP];
-  int l;
-
-  strcpy(temp1,temp);
-  l = strlen(temp1);
-  temp1[l-4] = '\0';
-  strcat(temp1,".fst2");
-  FILE* fs_comp = u_fopen(temp1,U_WRITE);
-  if(fs_comp == NULL) return 0;
-  return fs_comp;
 }
 
 
@@ -2963,7 +3109,7 @@ void ecrire_fichier_sortie_nb_graphes(char name[],FILE* fs_comp)
 {
   FILE *f;
   int i,n;
-  i=2+9*2; // *2 because of unicode +2 because of FF FE at file start
+  i=2+9*2; // *2 because of unicode, +2 because of FF FE at file start
   n=nombre_graphes_comp;
   f=fopen((char*)name,"r+b");
   do
@@ -2978,14 +3124,14 @@ void ecrire_fichier_sortie_nb_graphes(char name[],FILE* fs_comp)
 }
 
 
-//
-//Met dans fichier de sortie la liste des etiquettes
-//
+/**
+ * Met dans fichier de sortie la liste des etiquettes
+ */
 void sauvegarder_etiquettes_comp(FILE* fs_comp)
 {
   int i;
 
-  for(i=0;i<nombre_etiquettes_comp;i++) {
+  for (i=0;i<nombre_etiquettes_comp;i++) {
     if ((donnees->Etiquette_comp[i][0])=='@') {
       if ((donnees->Etiquette_comp[i][1])=='\0') {
         u_fprints_char("%%@\n",fs_comp);

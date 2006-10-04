@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "FileName.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
@@ -104,7 +105,7 @@ res[k]='\0';
 
 
 /*
- * adds a suffix to the file name , before the extension:
+ * adds a suffix to the file name before the extension:
  * "tutu.txt" + "-old" => "tutu-old.txt"
  **/
 void add_suffix_to_file_name(char* dest,char* src,const char* suffix) {
@@ -117,7 +118,7 @@ strcat(dest,ext);
 
 
 /*
- * adds a prefix to the file name , before the extension:
+ * adds a prefix to the file name:
  * "tutu.txt" + "old-" => "old-tutu.txt"
  **/
 void add_prefix_to_file_name(char* dest,char* src,const char* prefix) {
@@ -127,6 +128,35 @@ strcat(dest,prefix);
 name_without_path(src,tmp);
 strcat(dest,tmp);
 }
+
+/***
+ * Copy src to dest replacing suffix1 by suffix2, e.g.
+ * file.grf -> file.fst2
+ *
+ * dest must be large enough to hold the resulting string.
+ **/
+void replace_suffix_in_file_name(char* dest,const char* src,
+                                 const char* suffix1,const char* suffix2) {
+  int i, j, k;
+  j = strlen(src);
+  k = strlen(suffix1);
+  if ( k > j )
+    fatal_error("Error in %s line %s:\n"
+                "suffix \"%s\" is longer than \"%s\"\n",
+                __FILE__, __LINE__, suffix1, src);
+  for ( i=0; i<=k; i++ )
+    {
+      if ( src[(j-i)] != suffix1[(k-i)] )
+        fatal_error("Error in %s line %s:\n"
+                    "Can't replace suffix \"%s\" in \"%s\"\n",
+                    __FILE__, __LINE__, suffix1, src);
+    }
+  strncpy(dest,src,(j-i+1));
+  dest[(j-i+1)] = '\0';
+  strcat(dest,suffix2);
+}
+
+
 
 /**
  * replace path separators ('/' resp. '\\') by the colon (':')

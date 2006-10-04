@@ -109,6 +109,29 @@ struct etat_comp
 };
 typedef struct etat_comp* Etat_comp;
 
+int is_final_state (Etat_comp);
+
+
+/**
+ * Structure to hold an automaton (subgraph) when compiling and flattening.
+ *
+ * In opposite to struct fst2 (defined in Fst2.h) only one automaton
+ * (subgraph) is represented.  It uses also a different (smarter and
+ * smaller) representation of states, see Etat_comp.
+ */
+struct graph_comp {
+  Etat_comp* states;
+  int size;
+  int n_states;
+};
+typedef struct graph_comp* Graph_comp;
+Graph_comp new_graph_comp();
+void resize_graph_comp(Graph_comp);
+void resize_graph_comp(Graph_comp,int);
+void move_graph_comp(Graph_comp, Graph_comp);
+void free_graph_comp(Graph_comp);
+inline Etat_comp add_state(Graph_comp);
+inline Etat_comp add_state(Graph_comp, int*);
 
 
 
@@ -175,7 +198,8 @@ void co_accessibilite_comp(Etat_comp *e,int i);
 void accessibilite_comp(Etat_comp *e,int i);
 void virer_epsilon_transitions_comp(Etat_comp *letats,int n);
 void eliminer_etats_comp(Etat_comp *letats,int *n_etats);
-void liberer_etat_graphe_comp(Etat_comp etat);
+void liberer_etat_comp(Etat_comp etat);
+void liberer_graphe_comp(Etat_comp *etat);
 Etat_comp nouvel_etat_comp();
 struct noeud_valeur_det* nouveau_noeud_valeur_det();
 void init_graphe_mat_det(Etat_fst_det resultat[]);
@@ -192,17 +216,18 @@ Etat_fst_det nouvel_etat_mat_det();
 ensemble_det copie_det(ensemble_det e);
 void compute_reverse_transitions(Etat_comp*,int);
 void sauvegarder_etat_det(FILE *f,Etat_fst_det e);
-int determinisation(Etat_comp*,int);
-int minimisation(Etat_comp*);
-int write_graph(FILE*,Etat_comp*,int,unichar*);
+int determinisation(Graph_comp);
+int minimisation(Graph_comp);
+int write_graph_comp(FILE*,Graph_comp,int,unichar*);
 void *malloc_comp(int n);
 void init_generale_comp();
 void init_arbres_comp();
-FILE* ouverture_fichier_sortie(char temp[]);
 void libere_arbres_comp();
 int compilation(char *nom_graphe_principal,int mode,Alphabet* alph,FILE* fs_comp);
 void sauvegarder_etiquettes_comp(FILE* fs_comp);
 void ecrire_fichier_sortie_nb_graphes(char name[],FILE* fs_comp);
+
+
 
 #endif
 

@@ -40,74 +40,85 @@
 // "E:\My Unitex\French\Graphs\cEstAdjAnne.fst2" RTN 1
 //
 //---------------------------------------------------------------------------
+
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Flatten <fst2> <type> [depth]\n"
-       "     <fst2> : compiled grammar to flatten;\n"
-       "     <type> : this parameter specifies the type of the resulting grammar\n"
-       "              The 2 possibles values are:\n"
-       "              FST : if the grammar is not a finite-state one, the program\n"
-       "                    makes a finite-state approximation of it. The resulting\n"
-       "                    FST2 will contain only one graph.\n"
-       "              RTN : the grammar will be flattened according to the depth limit.\n"
-       "                    The resulting grammar may not be finite-state.\n"
-       "     [depth] : maximum subgraph depth to be flattened. If this parameter is\n"
-       "               not precised, the value 10 is taken by default.\n"
-       "\n\n"
-       "Flattens a FST2 grammar into a finite state transducer in the limit of\n"
-       "a recursion depth. The grammar <fst2> is replaced by its flattened equivalent.\n"
-       "If the flattening process is complete, the resulting grammar contains only one\n"
-       "graph.\n");
+  printf("%s",COPYRIGHT);
+  printf("Usage: Flatten <fst2> <type> [depth]\n"
+         "     <fst2> : compiled grammar to flatten;\n"
+         "     <type> : this parameter specifies the type of the resulting grammar\n"
+         "              The 2 possibles values are:\n"
+         "              FST : if the grammar is not a finite-state one, the program\n"
+         "                    makes a finite-state approximation of it. The resulting\n"
+         "                    FST2 will contain only one graph.\n"
+         "              RTN : the grammar will be flattened according to the depth limit.\n"
+         "                    The resulting grammar may not be finite-state.\n"
+         "     [depth] : maximum subgraph depth to be flattened. If this parameter is\n"
+         "               not precised, the value 10 is taken by default.\n"
+         "\n\n"
+         "Flattens a FST2 grammar into a finite state transducer in the limit of\n"
+         "a recursion depth. The grammar <fst2> is replaced by its flattened equivalent.\n"
+         "If the flattening process is complete, the resulting grammar contains only one\n"
+         "graph.\n");
 }
+
+
 
 int main(int argc, char **argv) {
-setBufferMode();
 
-if ((argc<3) || (argc>4)) {
-   usage();
-   return 0;
-}
-int RTN;
-if (!strcmp(argv[2],"RTN")) {
-   RTN=1;
-}
-else if (!strcmp(argv[2],"FST")) {
-   RTN=0;
-}
-else {
-   fprintf(stderr,"Invalid parameter: %s\n",argv[2]);
-   return 1;
-}
-int depth=10;
-if (argc==4) {
-   if (1!=sscanf(argv[3],"%d",&depth) || (depth<1)) {
+  setBufferMode();
+
+  if ((argc<3) || (argc>4)) {
+    usage();
+    return 0;
+  }
+
+  int RTN;
+  if (!strcmp(argv[2],"RTN"))
+    RTN=1;
+  else if (!strcmp(argv[2],"FST"))
+    RTN=0;
+  else {
+    fprintf(stderr,"Invalid parameter: %s\n",argv[2]);
+    return 1;
+  }
+
+  int depth=10;
+  if (argc==4) {
+    if (1!=sscanf(argv[3],"%d",&depth) || (depth<1)) {
       fprintf(stderr,"Invalid depth parameter %s\n",argv[3]);
       return 1;
-   }
-}
-printf("Loading %s...\n",argv[1]);
-Fst2* origin=load_fst2(argv[1],1);
-if (origin==NULL) {
-   fprintf(stderr,"Cannot load %s\n",argv[1]);
-   return 1;
-}
+    }
+  }
 
-char temp[2000];
-strcpy(temp,argv[1]);
-strcat(temp,".tmp.fst2");
+  printf("Loading %s...\n",argv[1]);
+  Fst2* origin=load_fst2(argv[1],1);
+  if (origin==NULL) {
+    fprintf(stderr,"Cannot load %s\n",argv[1]);
+    return 1;
+  }
 
-switch (flatten_fst2(origin,depth,temp,RTN)) {
-   case EQUIVALENT_FST: printf("The resulting grammar is an equivalent finite-state transducer.\n");
-                        break;
-   case APPROXIMATIVE_FST: printf("The resulting grammar is a finite-state approximation.\n");
-                        break;
-   case EQUIVALENT_RTN: printf("The resulting grammar is an equivalent FST2 (RTN).\n");
-                        break;
-   default:;
-}
-free_Fst2(origin);
-remove(argv[1]);
-rename(temp,argv[1]);
-return 0;
+  char *temp = (char*) malloc((strlen(argv[1])+10)*sizeof(char));
+  strcpy(temp,argv[1]);
+  strcat(temp,".tmp.fst2");
+
+  switch ( flatten_fst2(origin,depth,temp,RTN) ) {
+    case EQUIVALENT_FST:
+      printf("The resulting grammar is an equivalent finite-state transducer.\n");
+      break;
+    case APPROXIMATIVE_FST:
+      printf("The resulting grammar is a finite-state approximation.\n");
+      break;
+    case EQUIVALENT_RTN:
+      printf("The resulting grammar is an equivalent FST2 (RTN).\n");
+      break;
+    default:;
+  }
+
+  free_Fst2(origin);
+  remove(argv[1]);
+  rename(temp,argv[1]);
+  free(temp);
+
+  return 0;
 }
 //---------------------------------------------------------------------------

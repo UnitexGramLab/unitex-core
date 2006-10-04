@@ -28,6 +28,18 @@
 static struct liste_nombres** dependences;
 static int* new_graph_number;
 
+void compute_dependences(Fst2*);
+void compute_dependences_for_subgraph(Fst2*,int,struct liste_nombres**);
+void print_dependences(Fst2*);
+void check_for_graphs_to_keep(Fst2*,int);
+int renumber_graphs_to_keep(Fst2*);
+int flatten_graph(Fst2*,int,int,int,
+                  Graph_comp,
+                  int,int,int*,int*);
+void remove_epsilon_transitions_in_flattened_graph(Graph_comp);
+void save_graphs_to_keep(Fst2*,FILE*);
+void save_graph_to_be_kept(int,Fst2*,FILE*);
+void copy_tags_into_file(Fst2*,FILE*);
 
 /**
  * Flattens the grammar origin according to the depth parameter
@@ -46,18 +58,19 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
   nombre_graphes_comp = origin->number_of_graphs;
 
 
+  printf("Computing grammar dependences...\n");
   dependences = (struct liste_nombres**) malloc((1+origin->number_of_graphs)*sizeof(struct liste_nombres*));
   new_graph_number = (int*) malloc((1+origin->number_of_graphs)*sizeof(int));
-  printf("Computing grammar dependences...\n");
   compute_dependences(origin); // make dependency tree of the grammar
   check_for_graphs_to_keep(origin,depth);
   int n_graphs_to_keep = renumber_graphs_to_keep(origin);
 #ifdef DEBUG
   print_dependences(origin); // DEBUG
 #endif // DEBUG
-  printf("Flattening...\n");
+
   /* incorporate subgraphs into main graph */
-  struct flattened_main_graph_info* new_main_graph = new_flattened_main_graph_info();
+  printf("Flattening...\n");
+  Graph_comp new_main_graph = new_graph_comp();
   int SUBGRAPH_CALL_IGNORED = 0, SUBGRAPH_CALL = 0;
   int result = flatten_graph(origin,
                            1, // start with graph number 1 (main graph)
@@ -68,17 +81,24 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
                            RTN,
                            &SUBGRAPH_CALL_IGNORED,
                            &SUBGRAPH_CALL); 
+  // liberation of the dependence structures
+  for (int i=1;i<=origin->number_of_graphs;i++) {
+    free_liste_nombres(dependences[i]);
+  }
+  free(dependences);
+
+  /* clean graph, i.e. remove epsilon transitions and unreachable states */
   printf("Cleaning graph...\n");
-  compute_reverse_transitions(new_main_graph->states,new_main_graph->size);
-  for (int h=0;h<new_main_graph->current_pos;h++) {
-    if (new_main_graph->states[h]->controle & 1) {
+  compute_reverse_transitions(new_main_graph->states,new_main_graph->n_states);
+  for (int h=0;h<new_main_graph->n_states;h++) {
+    if (is_final_state(new_main_graph->states[h])) {
       // we start the co_accessibility check from every final state
       co_accessibilite_comp(new_main_graph->states,h);
     }
   }
   accessibilite_comp(new_main_graph->states,0);
-  virer_epsilon_transitions_comp(new_main_graph->states,new_main_graph->current_pos);
-  eliminer_etats_comp(new_main_graph->states,&(new_main_graph->current_pos));
+  virer_epsilon_transitions_comp(new_main_graph->states,new_main_graph->n_states);
+  eliminer_etats_comp(new_main_graph->states,&(new_main_graph->n_states));
 
   /* print header (number of graphs) */
   char tmpstr[256];
@@ -88,27 +108,26 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
 
   /* determize and minimize the new main graph */
   printf("Determinisation...\n");
-  determinisation(new_main_graph->states,new_main_graph->size);
-  compute_reverse_transitions(new_main_graph->states,new_main_graph->size);
-  minimisation(new_main_graph->states);
+  determinisation(new_main_graph);
+  printf("Minimisation...\n");
+  minimisation(new_main_graph);
 
   /* write the new main graph */
-  write_graph(res,new_main_graph->states,-1,origin->graph_names[1]);
+  printf("Writing grammar...\n");
+  write_graph_comp(res,new_main_graph,-1,origin->graph_names[1]);
+  free_graph_comp(new_main_graph);
 
 
-  if (RTN) {
+  if (RTN && (result == EQUIVALENT_RTN)) {
+    printf("Saving remaining subgraphs...\n");
     save_graphs_to_keep(origin,res); // write the still remaining subgraphs
   }
+  free(new_graph_number);
+
   printf("Saving tags...\n");
   write_fst2_tags(res,origin); // copy the terminal symbols to the resulting file
   u_fclose(res);
-  // liberation of the dependence structures
-  for (int i=1;i<=origin->number_of_graphs;i++) {
-    free_liste_nombres(dependences[i]);
-  }
-  free(dependences);
-  free(new_graph_number);
-  free_flattened_main_graph_info(new_main_graph);
+
   return result;
 }
 
@@ -231,32 +250,6 @@ return N;
 
 
 
-/**
- * creates a new flattened_main_graph_info object
- */
-struct flattened_main_graph_info* new_flattened_main_graph_info() {
-  struct flattened_main_graph_info* tmp
-    = (struct flattened_main_graph_info*) malloc(sizeof(struct flattened_main_graph_info));
-  tmp->current_pos = 0;
-  tmp->size = 0x2000;
-  tmp->states = (Etat_comp*) malloc(tmp->size*sizeof(Etat_comp));
-  return tmp;
-}
-
-
-
-/**
- * frees a flattened_main_graph_info object
- */
-void free_flattened_main_graph_info(struct flattened_main_graph_info* tmp) {
-  if (tmp==NULL) return;
-  for (int i=0;i<tmp->current_pos;i++) {
-    if (tmp->states[i]!=NULL) {
-      liberer_etat_graphe_comp(tmp->states[i]);
-    }
-  }
-  free(tmp);
-}
 
 
 
@@ -281,32 +274,30 @@ void free_flattened_main_graph_info(struct flattened_main_graph_info* tmp) {
  */
 int flatten_graph (Fst2* grammar, int n_graph,
                    int depth, int max_depth,
-                   struct flattened_main_graph_info* new_main_graph,
+                   Graph_comp new_main_graph,
                    int arr, int RTN,
                    int* SUBGRAPH_CALL_IGNORED, int* SUBGRAPH_CALL) {
 
-int initial_pos = new_main_graph->current_pos;
-if ( (new_main_graph->size - new_main_graph->current_pos) < 0x2000) {
-   // if necessary, we reallocate the states array
-   new_main_graph->size += 0x2000;
-   new_main_graph->states = (Etat_comp*)realloc(new_main_graph->states,
-                                              new_main_graph->size*sizeof(Etat_comp));
-}
+int initial_pos = new_main_graph->n_states;
 
 /* tab contains list of all subgraphs to be incorporated */
 int resize_of_tab_step = 0x400;
 int size_of_tab = resize_of_tab_step;
-struct fst2Transition** tab = 
+fst2Transition** tab = 
   (struct fst2Transition**) malloc(size_of_tab * sizeof(fst2Transition));
 int pos_in_tab = 0;
 
 // first, we copy the original states
 int limite = grammar->initial_states[n_graph]+grammar->number_of_states_per_graphs[n_graph];
+while ( new_main_graph->size < (new_main_graph->n_states + limite) ) {
+  // if necessary, resize states array
+  resize_graph_comp(new_main_graph);
+}
 for (int i=grammar->initial_states[n_graph];i<limite;i++) {
-    new_main_graph->states[new_main_graph->current_pos]=nouvel_etat_comp();
-    Etat_comp etat = new_main_graph->states[new_main_graph->current_pos];
+    new_main_graph->states[new_main_graph->n_states] = nouvel_etat_comp();
+    Etat_comp etat = new_main_graph->states[new_main_graph->n_states];
     Fst2State E = grammar->states[i];
-    (new_main_graph->current_pos)++;
+    (new_main_graph->n_states)++;
     if (is_final_state(E)) {
       // if the original state is terminal
       if (n_graph == 1) {
@@ -399,7 +390,7 @@ else // in a subgraph
 
 
 
-void remove_epsilon_transitions_in_flattened_graph(struct flattened_main_graph_info* graph) {
+void remove_epsilon_transitions_in_flattened_graph(Graph_comp graph) {
 }
 
 
