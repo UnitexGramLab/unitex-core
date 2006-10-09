@@ -102,6 +102,8 @@ void add_transition_to_etat_comp(Etat_comp state, int tag_number, int state_numb
 Graph_comp new_graph_comp() {
   Graph_comp g
     = (Graph_comp) malloc(sizeof(struct graph_comp));
+  if ( g == NULL )
+    fatal_error("Not enough memory at %s, line %s\n",__FILE__,__LINE__);
   g->n_states = 0;
   g->size = 0;
   g->states = NULL;
@@ -113,20 +115,40 @@ Graph_comp new_graph_comp() {
 /**
  * resize a new graph_comp object (malloc room for more states)
  */
-void resize_graph_comp(Graph_comp g) {
-  resize_graph_comp(g,0x2000);
+bool resize_graph_comp(Graph_comp g) {
+  return resize_graph_comp(g,0x2000);
 }
-void resize_graph_comp(Graph_comp g, int n) {
-  g->size += n;
-  g->states = (Etat_comp*) realloc(g->states,
-                                   ((g->size)*sizeof(Etat_comp)));
+/**
+ * resize a new graph_comp object by n states
+ */
+bool resize_graph_comp(Graph_comp g, int n) {
+  n += g->size;
+  return resize_graph_comp_to(g,n);
+}
+/**
+ * resize a new graph_comp object to n states
+ */
+bool resize_graph_comp_to(Graph_comp g, int n) {
+  Etat_comp* gg = (Etat_comp*) realloc(g->states,
+                                        (n*sizeof(Etat_comp)));
+  if ( gg == NULL )
+    {
+      error("Not enough memory at %s, line %s\n",__FILE__,__LINE__);
+      return false;
+    }
+  else
+    {
+      g->size = n;
+      g->states = gg;
+      return true;
+    }
 }
 
 
 /**
  * add a new state to a graph_comp object
  */
-inline Etat_comp add_state(Graph_comp g) {
+Etat_comp add_state(Graph_comp g) {
   Etat_comp e = nouvel_etat_comp();
   if ( g->size < (1+g->n_states) )
     resize_graph_comp(g);
@@ -137,7 +159,7 @@ inline Etat_comp add_state(Graph_comp g) {
 /**
  * add a new state to a graph_comp object, write state number to n
  */
-inline Etat_comp add_state(Graph_comp g, int* n) {
+Etat_comp add_state(Graph_comp g, int* n) {
   *n = g->n_states;
   return add_state(g);
 }
@@ -1146,7 +1168,7 @@ int write_graph_comp(FILE* f,
 ////////////////////////////////////////////////////////////////////
 
 
-void ajouter_transition_comp(Etat_comp *letats,int dep,int arr,int etiq)
+void ajouter_transition_comp(Etat_comp* states,int dep,int arr,int etiq)
 {
   Fst2Transition ptr;
 
@@ -1154,16 +1176,16 @@ void ajouter_transition_comp(Etat_comp *letats,int dep,int arr,int etiq)
   ptr = new_Fst2Transition();
   ptr->state_number = arr;
   ptr->tag_number = etiq;
-  ptr->next = letats[dep]->trans;
-  letats[dep]->trans = ptr;
+  ptr->next = states[dep]->trans;
+  states[dep]->trans = ptr;
 
   //transition inverse
   ptr = new_Fst2Transition();
   ptr->state_number = dep;
   ptr->tag_number = etiq;
 
-  ptr->next = letats[arr]->transinv;
-  letats[arr]->transinv = ptr;
+  ptr->next = states[arr]->transinv;
+  states[arr]->transinv = ptr;
 
 }
 
@@ -1171,35 +1193,12 @@ void ajouter_transition_comp(Etat_comp *letats,int dep,int arr,int etiq)
 
 
 
-/**
- *  libere le graphe graphe
- */
-void liberer_graphe_comp(Etat_comp* graphe)
+int ajouter_etat_deliage_comp(Graph_comp graph,int dep,int etiq,int graphe_courant)
 {
-  int i;
-   for (i=0;i<MAX_FST2_STATES;i++)
-     if (graphe[i]!=NULL)
-     {
-       free_Fst2Transition(graphe[i]->trans);
-       free_Fst2Transition(graphe[i]->transinv);
-       free(graphe[i]);
-     }
-}
-
-
-int ajouter_etat_deliage_comp(Etat_comp letats[],int dep,int etiq,int *n_etats,int graphe_courant)
-{
-  if (((*n_etats)+1) >= MAX_FST2_STATES)
-    {
-      char err[1000];
-      u_to_char(err,donnees->nom_graphe[graphe_courant]);
-      fprintf(stderr,"ERROR in graph %s.grf :Too many states\n",err);
-      return 0;
-    }
-  letats[*n_etats] = nouvel_etat_comp();
-  ajouter_transition_comp(letats,dep,*n_etats,etiq);
- (*n_etats)++;
- return 1;
+  int state_n;
+  add_state(graph,&state_n);
+  ajouter_transition_comp(graph->states,dep,state_n,etiq);
+  return 1;
 }
 
 
@@ -1631,7 +1630,7 @@ void remove_all_epsilon_transitions(Etat_comp *letats, int n) {
 }
 
 
-void add_transitions_according_to_epsilon_closure(Llist_i_comp *closures,Etat_comp *letats,int n) {
+void add_transitions_according_to_epsilon_closure(Llist_i_comp *closures,Etat_comp* states,int n) {
   unsigned int i;
   struct ll_i_cell_comp *ptr;
   Fst2Transition tr;
@@ -1643,13 +1642,13 @@ void add_transitions_according_to_epsilon_closure(Llist_i_comp *closures,Etat_co
       ptr = clos->head;     
       while (ptr != NULL) {
 	if (ptr->value != i) {
-	  e = letats[ptr->value];
+	  e = states[ptr->value];
 	  if ( is_final_state(e) ) { // etat final
-	    letats[i]->controle = (unsigned char)(letats[i]->controle)|1; 
+	    states[i]->controle = (unsigned char)(states[i]->controle)|1; 
 	  }
 	  tr = e->trans;
 	  while (tr != NULL) {
-	    ajouter_transition_comp(letats,i,tr->state_number,tr->tag_number);
+	    ajouter_transition_comp(states,i,tr->state_number,tr->tag_number);
 	    tr = tr->next;
 	  }
 	}
@@ -2035,22 +2034,6 @@ void conformer_nom_graphe_comp(char * NOM, int courant) {
 
 
 
-/**
- *  initialisation locale
- */
-void init_locale_comp(Etat_comp *e, int n)
-{
-  register int i;
-
-  for (i=0;i<MAX_FST2_STATES;i++)
-  {
-
-   if (i >= n)
-    e[i] = NULL;
-   else
-     e[i] = nouvel_etat_comp();
-  }
-}
 
 
 
@@ -2605,7 +2588,7 @@ int transfo_seq_carac_en_entiers(unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MA
 
 
 
-int ecriture_transition_comp(Etat_comp letats[],int seq_ent[],int sortants[],int *n_et,int etat_courant,int longueur,int graphe_courant,int trans)
+int ecriture_transition_comp(Graph_comp graph,int seq_ent[],int sortants[],int etat_courant,int longueur,int graphe_courant,int trans)
 {
   int k,j;
   int dep;
@@ -2616,10 +2599,10 @@ int ecriture_transition_comp(Etat_comp letats[],int seq_ent[],int sortants[],int
      dep=etat_courant;
      for (j=0;j<longueur -1+trans;j++)
      {
-       if (ajouter_etat_deliage_comp(letats,dep,seq_ent[j],n_et,graphe_courant) == 0) return 0;
-       dep=(*n_et)-1;
+       if (ajouter_etat_deliage_comp(graph,dep,seq_ent[j],graphe_courant) == 0) return 0;
+       dep = (graph->n_states - 1);
      }
-     ajouter_transition_comp(letats,dep,sortants[k],seq_ent[longueur +trans -1]);
+     ajouter_transition_comp(graph->states,dep,sortants[k],seq_ent[longueur +trans -1]);
      k++;
    }
 
@@ -2629,9 +2612,9 @@ return 1;
 
 
 
-int traitement_transition_comp(Etat_comp letats[],unichar contenu[],
+int traitement_transition_comp(Graph_comp graph,unichar contenu[],
                                unichar transduction[],int sortants[],
-                               int *n_et, int *pos, int etat_courant,
+                               int *pos, int etat_courant,
                                int graphe_courant,
                                int mode,Alphabet* alph)
 {
@@ -2668,30 +2651,30 @@ int traitement_transition_comp(Etat_comp letats[],unichar contenu[],
     return 0;
   }
   if (transfo_seq_carac_en_entiers(sequence,transduction,compteur_mots,sequence_ent,&trans) == -1) return -1;
-  if (ecriture_transition_comp(letats,sequence_ent,sortants,n_et,etat_courant,compteur_mots,graphe_courant,trans) == 0) return 0;
+  if (ecriture_transition_comp(graph,sequence_ent,sortants,etat_courant,compteur_mots,graphe_courant,trans) == 0) return 0;
   return 1;
  }
 
 
 
-void traiter_debut_fin_variable(Etat_comp letats[],unichar contenu[],unichar transduction[],int sortants[], int *n_et, int *pos, int etat_courant,int graphe_courant) {
+void traiter_debut_fin_variable(Graph_comp graph,unichar contenu[],unichar transduction[],int sortants[], int *pos, int etat_courant,int graphe_courant) {
   unichar sequence[1][N_CAR_MAX_COMP];
   int sequence_ent[1];
   int trans;
   u_strcpy(sequence[0],contenu);
   if (transfo_seq_carac_en_entiers(sequence,transduction,1,sequence_ent,&trans) == -1) return;
-  if (ecriture_transition_comp(letats,sequence_ent,sortants,n_et,etat_courant,1,graphe_courant,trans) == 0) return;
+  if (ecriture_transition_comp(graph,sequence_ent,sortants,etat_courant,1,graphe_courant,trans) == 0) return;
 }
 
 
 
-void traiter_context_mark(Etat_comp letats[],unichar contenu[],unichar transduction[],int sortants[], int *n_et, int *pos, int etat_courant,int graphe_courant) {
+void traiter_context_mark(Graph_comp graph,unichar contenu[],unichar transduction[],int sortants[], int *pos, int etat_courant,int graphe_courant) {
   unichar sequence[1][N_CAR_MAX_COMP];
   int sequence_ent[1];
   int trans;
   u_strcpy(sequence[0],contenu);
   if (transfo_seq_carac_en_entiers(sequence,transduction,1,sequence_ent,&trans) == -1) return;
-  if (ecriture_transition_comp(letats,sequence_ent,sortants,n_et,etat_courant,1,graphe_courant,trans) == 0) return;
+  if (ecriture_transition_comp(graph,sequence_ent,sortants,etat_courant,1,graphe_courant,trans) == 0) return;
 }
 
 
@@ -2699,8 +2682,8 @@ void traiter_context_mark(Etat_comp letats[],unichar contenu[],unichar transduct
 
 
 int traitement_ligne_comp(unichar ligne[],int sortants[],
-                          Etat_comp letats[],int etat_courant,
-                          int *n_et, int graphe_courant,
+                          Graph_comp graph,int etat_courant,
+                          int graphe_courant,
                           int mode,Alphabet* alph)
 {
   unichar contenu[TAILLE_MOT_GRAND_COMP];
@@ -2711,19 +2694,22 @@ int traitement_ligne_comp(unichar ligne[],int sortants[],
   if (sortants[0]!=-1)
   {
     i=0;
-    if ((u_strlen(ligne)>2 && ligne[0]=='$' && (ligne[u_strlen(ligne)-1]=='(' || ligne[u_strlen(ligne)-1]==')'))
+    if ((u_strlen(ligne)>2
+         && ligne[0]=='$'
+         && ( ligne[u_strlen(ligne)-1]=='('
+              || ligne[u_strlen(ligne)-1]==')'))
         // context marks are handled exactly as variable marks
         || (!u_strcmp_char(ligne,"$[") || !u_strcmp_char(ligne,"$![")
             || !u_strcmp_char(ligne,"$]"))) {
         u_strcpy(contenu,ligne);
         u_strcpy_char(transduction,"");
-        traiter_debut_fin_variable(letats,contenu,transduction,sortants,n_et,&i,etat_courant,graphe_courant);
+        traiter_debut_fin_variable(graph,contenu,transduction,sortants,&i,etat_courant,graphe_courant);
         return 1;
     }
     traitement_transduction_comp(ligne,contenu,transduction);
     while (contenu[i]!='\0')
     {
-      res = traitement_transition_comp(letats,contenu,transduction,sortants,n_et,&i,etat_courant,graphe_courant,mode,alph);
+      res = traitement_transition_comp(graph,contenu,transduction,sortants,&i,etat_courant,graphe_courant,mode,alph);
       if ((res == -1) || (res == 0)) return res;
     }
   }
@@ -2827,13 +2813,15 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   int i;
   //int courant;
   int traitement,lire;
-  int n_etats_initial, n_etats_final;
+  int n_etats_initial;
   FILE *f;
   char nom[TAILLE_MOT_GRAND_COMP];
-  Etat_comp letats[MAX_FST2_STATES];
   int sortants[NOMBRE_TRANSITIONS_COMP];
   unichar ligne[TAILLE_MOT_GRAND_COMP];
   char err[1000];
+
+  Graph_comp graph = new_graph_comp();
+
 
   /* status message */
   printf("Compiling graph ");
@@ -2845,13 +2833,6 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   /* get name with path, e.g.
    * DATE -> C:/Unitex/French/Graphs/Date/DATE.grf */
   conformer_nom_graphe_comp(nom,graphe_courant); 
-
-  /* hack until letats is replaced finally */
-  struct graph_comp ggraph;
-  Graph_comp graph = &ggraph;
-  graph->states = (Etat_comp*) letats; // hack : may segfault
-  graph->size = MAX_FST2_STATES;
-  graph->n_states = 0;
 
   /* open graph file */
   f=u_fopen(nom,U_READ);
@@ -2875,26 +2856,33 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   u_fgetc(f);                       /* skip newline */
   n_etats_initial = u_read_int(f);  /* read number of states */
 
-  if (n_etats_initial > MAX_FST2_STATES) //Trop de boites dans graphe
+  /* resize graph that it can hold all states */
+  if ( graph->size < n_etats_initial )
     {
-      donnees->statut_graphe[graphe_courant] = 0;
-      write_graph_comp(fs_comp, graph,
-                       (-(graphe_courant)-1),
-                       donnees->nom_graphe[graphe_courant]);
-      u_fclose(f);
-      u_to_char(err,donnees->nom_graphe[graphe_courant]);
-      if (graphe_courant == 0)
-        {
-          fprintf(stderr,"ERROR in main graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,MAX_FST2_STATES);
-          return 0;
+      if ( ! resize_graph_comp_to(graph,n_etats_initial) )
+        { /* too many states - trop de boites dans graphe */
+          donnees->statut_graphe[graphe_courant] = 0;
+          write_graph_comp(fs_comp, graph,
+                           (-(graphe_courant)-1),
+                           donnees->nom_graphe[graphe_courant]);
+          u_fclose(f);
+          u_to_char(err,donnees->nom_graphe[graphe_courant]);
+          fprintf(stderr,
+                  "ERROR in graph %s.grf: Too many boxes (%d).\n"
+                  "The number of boxes should be lower than %d\n",
+                  err,n_etats_initial,MAX_FST2_STATES);
+          if (graphe_courant == 0)
+            return 0;
+          return 1;
         }
-      fprintf(stderr,"WARNING in graph %s.grf: Too many boxes (%d). The number of boxes should be lower than %d\n",err,n_etats_initial,MAX_FST2_STATES);
-      return 1;
     }
 
   /* we start with every line being one state of the automaton */
-  init_locale_comp(letats, n_etats_initial);
-  n_etats_final = n_etats_initial;
+  for (i=0; i < n_etats_initial; i++)
+    {
+      graph->states[i] = nouvel_etat_comp();
+    }
+  graph->n_states = n_etats_initial;
 
   for (i=0; i<n_etats_initial; i++)
     {
@@ -2910,7 +2898,7 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
           write_graph_comp(fs_comp, graph,
                            (-(graphe_courant)-1),
                            donnees->nom_graphe[graphe_courant]);
-          liberer_graphe_comp(letats);
+          free_graph_comp(graph);
           u_fclose(f);
           if (graphe_courant == 0)
             return 0;
@@ -2921,34 +2909,17 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
       //On traite la ligne : ecriture en memoire
       if (lire == 1)
         {
-          traitement = traitement_ligne_comp(ligne,sortants,letats,i,&n_etats_final,graphe_courant,mode,alph);
+          traitement = traitement_ligne_comp(ligne,sortants,graph,i,graphe_courant,mode,alph);
           if ((traitement == 0) || (traitement == -1))
             {
               donnees->statut_graphe[graphe_courant] = 0;
               write_graph_comp(fs_comp, graph,
                                (-(graphe_courant)-1),
                                donnees->nom_graphe[graphe_courant]);
-              liberer_graphe_comp(letats);
+              free_graph_comp(graph);
               u_fclose(f);
               if (traitement == -1) return -1;
               if (graphe_courant == 0) return 0;
-              return 1;
-            }
-          if (n_etats_final >= MAX_FST2_STATES) //Trop d'états dans l'automate
-            {
-              donnees->statut_graphe[graphe_courant] = 0;
-              write_graph_comp(fs_comp, graph,
-                               (-(graphe_courant)-1),
-                               donnees->nom_graphe[graphe_courant]);
-              liberer_graphe_comp(letats);
-              u_fclose(f);
-              u_to_char(err,donnees->nom_graphe[graphe_courant]);
-              if (graphe_courant == 0)
-                {
-                  fprintf(stderr,"ERROR in main graph %s.grf: Too many states (%d)\n",err,n_etats_final);
-                  return 0;
-                }
-              fprintf(stderr,"WARNING in graph %s.grf: Too many states (%d)\n",err,n_etats_final);
               return 1;
             }
         }
@@ -2959,25 +2930,25 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
 
 
   //etat initial: bit 2 a 1
-  letats[0]->controle=(unsigned char)((letats[0]->controle)|2);
+  graph->states[0]->controle=(unsigned char)((graph->states[0]->controle)|2);
   //etat final: bit 1 a 1
-  letats[1]->controle=(unsigned char)((letats[1]->controle)|1);
+  graph->states[1]->controle=(unsigned char)((graph->states[1]->controle)|1);
   
 
   // ELAGAGE, SUPPRESSION DES EPSILONS TRANSITIONS
-  co_accessibilite_comp(letats,1);  
-  virer_epsilon_transitions_comp(letats,n_etats_final);
-  accessibilite_comp(letats,0);
-  eliminer_etats_comp(letats,&n_etats_final);
+  co_accessibilite_comp(graph->states,1);  
+  virer_epsilon_transitions_comp(graph->states,graph->n_states);
+  accessibilite_comp(graph->states,0);
+  eliminer_etats_comp(graph->states,&(graph->n_states));
 
-  if (letats[0] == NULL)
+  if (graph->states[0] == NULL)
     {
       donnees->statut_graphe[graphe_courant] = 0;
       write_graph_comp(fs_comp, graph,
                        (-(graphe_courant)-1),
                        donnees->nom_graphe[graphe_courant]);
 
-      liberer_graphe_comp(letats);
+      free_graph_comp(graph);
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if (graphe_courant == 0)
         {
@@ -2989,14 +2960,12 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
     }
   donnees->statut_graphe[graphe_courant] = 1;
 
-  graph->n_states = n_etats_final;
-
   int det = determinisation(graph);
   int min = minimisation(graph);
   write_graph_comp(fs_comp, graph,
                    (-(graphe_courant)-1),
                    donnees->nom_graphe[graphe_courant]);
-  liberer_graphe_comp(letats);
+  free_graph_comp(graph);
   if ( (det == 0) || (min == 0) )
     {
       u_to_char(err,donnees->nom_graphe[graphe_courant]);

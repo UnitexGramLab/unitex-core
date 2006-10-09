@@ -126,8 +126,9 @@ struct graph_comp {
 };
 typedef struct graph_comp* Graph_comp;
 Graph_comp new_graph_comp();
-void resize_graph_comp(Graph_comp);
-void resize_graph_comp(Graph_comp,int);
+bool resize_graph_comp(Graph_comp);
+bool resize_graph_comp(Graph_comp,int);
+bool resize_graph_comp_to(Graph_comp,int);
 void move_graph_comp(Graph_comp, Graph_comp);
 void free_graph_comp(Graph_comp);
 inline Etat_comp add_state(Graph_comp);

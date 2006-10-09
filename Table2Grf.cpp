@@ -532,7 +532,8 @@ while (i<g->tab[e]->n_trans) {
   if (!co_accessibilite(g,g->tab[e]->trans[i])) {
     g->tab[e]->trans[i]=g->tab[e]->trans[g->tab[e]->n_trans-1];
     g->tab[e]->n_trans--;
-  } else i++;
+  }
+  else i++;
 }
 return 1;
 }
@@ -628,8 +629,9 @@ tmp2[0]='\0';
 convertir(tmp2,tmp,ligne,n_champs,ligne_courante);
 u_to_char(nom_res,tmp2);
 if (!nettoyer_graphe(res)) {
-   // if the graph has been emptied, we return
-   return false;
+  // if the graph has been emptied, we return
+  fprintf(stderr,"%s has been emptied\n",nom_res);
+  return false;
 } 
 if (graphs_printed!=0) {
   /* print a "+" only if any subgraph already has been printed:
@@ -666,7 +668,7 @@ if (f==NULL) {
   return false;
 }
 if (ligne_courante%10==0) {
-   printf("%d table entries done...                \r",ligne_courante);
+   printf("%d table entries done...    \r",ligne_courante);
 }
 u_fprints(g->en_tete,f);
 u_fprints_char("\n",f);
