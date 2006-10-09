@@ -179,8 +179,8 @@ free(fst2->tags);
 if (fst2->graph_names!=NULL) {
   for ( i = 1;                       /* start at 1 because at pos 0
                                         there is no graph */
-        i <= fst2->number_of_graphs; /* consequently there the last
-                                        pos is number_of_graphs+1 */
+        i <= fst2->number_of_graphs; /* consequently the last pos is
+                                        number_of_graphs+1 */
         i++ )
     {
       if (fst2->graph_names[i]!=NULL) free(fst2->graph_names[i]);

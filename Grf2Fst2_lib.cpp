@@ -183,6 +183,7 @@ void move_graph_comp(Graph_comp dest, Graph_comp src) {
   dest->n_states = src->n_states;
   dest->states = src->states;
   /* free src */
+  src->states = NULL; /* make sure that the states array isn't accidentally free'd */
   free(src);
 }
 
@@ -895,7 +896,7 @@ int determinisation(Graph_comp graph) {
   unsigned char final[NBRE_ETIQ_TRANSITION_COMP];
   int hachage[NBRE_ETIQ_TRANSITION_COMP];
   int hachageinv[NBRE_ETIQ_TRANSITION_COMP];
-  init_hachage_det(hachage,NBRE_ETIQ_TRANSITION_COMP);
+  init_hachage_det(hachage,(NBRE_ETIQ_TRANSITION_COMP-1));
 
   Graph_comp new_graph = new_graph_comp();
 
@@ -910,12 +911,12 @@ int determinisation(Graph_comp graph) {
   int temp2, sous_graphe;
   struct noeud_valeur_det *racine_det;
 
-
   dernier_etat_res = -1;
   racine_det = nouveau_noeud_valeur_det();
   init_graphe_mat_det(resultat);
   init_resultat_det(resultat,racine_det,dernier_etat_res);
   dernier_etat_res = 0;
+  max_temp = NBRE_ETIQ_TRANSITION_COMP-1;
 
   if ( is_final_state(states[0]) )
     resultat[0]->controle = (unsigned char)(resultat[0]->controle | 1);
@@ -926,8 +927,8 @@ int determinisation(Graph_comp graph) {
   while (resultat[temp2] != NULL)
     {
       courant = resultat[temp2]->ens;
-      max_temp = 0;
       init_hachage_det(hachage,max_temp);
+      max_temp = 0;
       compteur = 0;
       while (courant != NULL)
         {
@@ -1090,8 +1091,11 @@ int reverse (Graph_comp graph) {
       if ( i == 0 ) // is_initial_state(graph->states[i])
         set_final_state(reversed->states[(map_table[i])],1);
 
-//       /* clean memory; maybe better: reuse transition structures to save malloc time !!! */
-//       liberer_etat_comp(graph->states[i]);
+      /* clean memory (peu-a-peu to ever have enough!) */
+      //   maybe better: reuse transition
+      //   structures to save malloc time !? */
+      liberer_etat_comp(graph->states[i]);
+      graph->states[i] = NULL;
 
     }
 
