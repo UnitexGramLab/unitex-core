@@ -171,15 +171,18 @@ Etat_comp add_state(Graph_comp g, int* n) {
  * src is free'd after.
  */
 void move_graph_comp(Graph_comp dest, Graph_comp src) {
-  /* free dest !!!??? */
-//   for (register int i=0; i < dest->n_states; i++)
-//     liberer_etat_comp(dest->states[i]);
+  /* free dest */
+  if ( dest->states != NULL )
+    {
+      for (register int i=0; i < dest->n_states; i++)
+        liberer_etat_comp(dest->states[i]);
+      free(dest->states);
+    }
   /* copy src -> dest */
   dest->size = src->size;
   dest->n_states = src->n_states;
   dest->states = src->states;
   /* free src */
-  src->states = NULL;
   free(src);
 }
 
@@ -191,6 +194,7 @@ void free_graph_comp(Graph_comp g) {
   if (g == NULL) return;
   for (register int i=0; i < g->n_states; i++)
     liberer_etat_comp(g->states[i]);
+  free(g->states);
   free(g);
 }
 
@@ -731,7 +735,7 @@ void liberer_arbre_det(struct noeud_valeur_det *racine)
  */
 Etat_fst_det nouvel_etat_mat_det()
 {
-  Etat_fst_det e = (Etat_fst_det) malloc(sizeof(Etat_fst_det));
+  Etat_fst_det e = (Etat_fst_det) malloc(sizeof(struct etat_fst_det));
   e->controle = 0;
   e->trans = NULL;
   e->ens = NULL;
@@ -922,8 +926,8 @@ int determinisation(Graph_comp graph) {
   while (resultat[temp2] != NULL)
     {
       courant = resultat[temp2]->ens;
-      init_hachage_det(hachage,max_temp);
       max_temp = 0;
+      init_hachage_det(hachage,max_temp);
       compteur = 0;
       while (courant != NULL)
         {
@@ -1086,8 +1090,8 @@ int reverse (Graph_comp graph) {
       if ( i == 0 ) // is_initial_state(graph->states[i])
         set_final_state(reversed->states[(map_table[i])],1);
 
-      /* clean memory; maybe better: reuse transition structures to save malloc time !!! */
-      liberer_etat_comp(graph->states[i]);
+//       /* clean memory; maybe better: reuse transition structures to save malloc time !!! */
+//       liberer_etat_comp(graph->states[i]);
 
     }
 
@@ -1108,6 +1112,8 @@ int reverse (Graph_comp graph) {
   /* move the reversed graph to "graph" */
   move_graph_comp(graph,reversed);
 
+  /* clean up */
+  free(map_table);
 
   return 1;
 

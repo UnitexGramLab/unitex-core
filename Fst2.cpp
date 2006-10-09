@@ -109,7 +109,7 @@ return NULL;
  * Frees a transition list
  */
 void free_Fst2Transition(Fst2Transition t) {
-struct fst2Transition* tmp;
+Fst2Transition tmp;
 while (t!=NULL) {
     tmp=t;
     t=t->next;
@@ -177,10 +177,15 @@ for (i=0;i<fst2->number_of_tags;i++)
   free_Fst2Tag(fst2->tags[i]);
 free(fst2->tags);
 if (fst2->graph_names!=NULL) {
-   for (i=0;i<fst2->number_of_graphs;i++) {
-     if (fst2->graph_names[i]!=NULL) free(fst2->graph_names[i]);
-   }
-   free(fst2->graph_names);
+  for ( i = 1;                       /* start at 1 because at pos 0
+                                        there is no graph */
+        i <= fst2->number_of_graphs; /* consequently there the last
+                                        pos is number_of_graphs+1 */
+        i++ )
+    {
+      if (fst2->graph_names[i]!=NULL) free(fst2->graph_names[i]);
+    }
+  free(fst2->graph_names);
 }
 free(fst2->initial_states);
 free(fst2->number_of_states_per_graphs);

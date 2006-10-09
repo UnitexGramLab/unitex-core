@@ -2119,12 +2119,12 @@ int calc_printf_size(char * fmt, va_list plist) {
 	break;
 
       case 'c':
-	/*c =*/ (char) va_arg(plist, int);
+	/*c = (char) */ va_arg(plist, int);
 	size++;
 	break;
 
       case 'C':
-	/*uc =*/ (unichar) va_arg(plist, int);
+	/*uc = (unichar) */ va_arg(plist, int);
 	size++;
 	break;
 

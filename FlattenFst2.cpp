@@ -353,10 +353,10 @@ for (int i=grammar->initial_states[n_graph];i<limite;i++) {
     }
 }
 
- if (n_graph == 1) { // in main graph
+ if (n_graph == 1) // in main graph
    new_main_graph->states[0]->controle
      = (unsigned char) ((new_main_graph->states[0]->controle) | 2);
-}
+
 
 // then, if there were some calls to subgraphs, we copy them
 for (int i=0;i<pos_in_tab;i++) {
@@ -371,6 +371,9 @@ for (int i=0;i<pos_in_tab;i++) {
    tab[i]->tag_number = 0;
    tab[i]->state_number = starting_pos;
 }
+
+/* clean up */
+free(tab);
 
 if (n_graph == 1) { // in main graph
   if (*SUBGRAPH_CALL)
