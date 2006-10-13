@@ -167,7 +167,7 @@ unichar tempstr[200];
 unichar naked_token[200];
 
 while (l!=NULL) {
-    struct dela_entry* foo=tokenize_DELAF_line(l->output);
+    struct dela_entry* foo=tokenize_DELAF_line(l->output,1);
     if (foo!=NULL) {
     free_dic_entry(foo);
     u_extractEntryFromConcordOutput(l->output,naked_token);

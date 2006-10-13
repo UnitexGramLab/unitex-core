@@ -164,7 +164,7 @@ while (lemmas!=NULL) {
    while (tok!=NULL) {
       unichar line[2000];
       uncompress_entry(entry,tok->word,line);
-      struct dela_entry* tmp=tokenize_DELAF_line(line);
+      struct dela_entry* tmp=tokenize_DELAF_line(line,0);
       if (compatible_portuguese_inflectional_codes(tmp,n_inflectional_codes,inflectional_codes)) {
          // if the code matches, we can produce a new line of the normalization grammar
          unichar temp_result2[4000];
@@ -341,7 +341,7 @@ struct word_list* tok=root_inf->codes[res];
 while (tok!=NULL) {
    unichar line[2000];
    uncompress_entry(entry,tok->word,line);
-   struct dela_entry* tmp=tokenize_DELAF_line(line);
+   struct dela_entry* tmp=tokenize_DELAF_line(line,0);
    if (!u_strcmp_char(tmp->semantic_codes[0],"V")) {
       // if we have a verb lemma, then we add it to the lemma list
       struct string_list* temp;

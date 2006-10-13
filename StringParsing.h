@@ -24,13 +24,47 @@
 
 #include "unicode.h"
 
-/* Here are the error codes used for string parsing */
+/** 
+ * Here are the error codes used for string parsing. Some of them like
+ * P_UNEXPECTED_COMMENT are specially designed for errors in DELA lines.
+ */
+#define P_EOS -1 /* end of string */
 #define P_OK 0
 #define P_FORBIDDEN_CHAR 1
 #define P_BACKSLASH_AT_END 2
+#define P_NULL_STRING 3
+#define P_UNEXPECTED_END_OF_LINE 4
+#define P_UNEXPECTED_COMMENT 5
+#define P_EMPTY_INFLECTED_FORM 6
+#define P_EMPTY_SEMANTIC_CODE 7
+#define P_EMPTY_INFLECTIONAL_CODE 8
 
 #define PROTECTION_CHAR '\\'
 
+/**
+ * Here we define some separator sets that will be used
+ * many times.
+ */
+#define P_EMPTY U_EMPTY
+extern unichar* P_COMMA;
+extern unichar* P_DOT;
+extern unichar* P_EQUAL;
+extern unichar* P_PLUS;
+extern unichar* P_COLON;
+extern unichar* P_SLASH;
+extern unichar* P_PLUS_COLON_SLASH;
+extern unichar* P_COLON_SLASH;
+extern unichar* P_CLOSING_ROUND_BRACKET;
+extern unichar* P_COMMA_DOT;
+extern unichar* P_PLUS_COLON_SLASH_BACKSLASH;
+extern unichar* P_COLON_SLASH_BACKSLASH;
+extern unichar* P_COMMA_DOT_BACKSLASH_DIGITS;
+extern unichar* P_DOT_PLUS_SLASH_BACKSLASH;
 
+int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars,
+                 unichar* forbidden_chars,unichar* chars_to_keep_protected);
+
+int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars);
+int escape(unichar*,unichar*,unichar*);
 
 #endif

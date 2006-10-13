@@ -102,7 +102,8 @@ struct INF_codes {
 };
 
 
-struct dela_entry* tokenize_DELAF_line(unichar*);
+struct dela_entry* tokenize_DELAF_line(unichar*,int);
+struct dela_entry* tokenize_DELAF_line(unichar*,int,int,int*);
 struct dela_entry* tokenize_tag_token(unichar*);
 void get_compressed_line(struct dela_entry*,unichar*);
 struct word_list* tokenize_compressed_info(unichar*);
@@ -125,7 +126,7 @@ void free_dic_entry(struct dela_entry*);
 void tokenize_inflectional_codes(unichar*,int*,unichar**);
 int check_tag_token(unichar*);
 int dic_entry_contain_gram_code(struct dela_entry*,unichar*);
-int dic_entry_contain_flex_code(struct dela_entry*,unichar*);
+int dic_entry_contain_inflectional_code(struct dela_entry*,unichar*);
 
 #endif
 

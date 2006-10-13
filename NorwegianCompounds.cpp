@@ -215,7 +215,7 @@ int get_valid_left_component_type_for_one_INF_code(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-struct dela_entry* d=tokenize_DELAF_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp,0);
 int res;
 /* Now we can test if the INF code corresponds to a valid left component */
 if (check_Nsia(d)) res=N_SIA;
@@ -267,7 +267,7 @@ unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[4];
 u_strcpy_char(t2,"sia");
-return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
+return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
 
@@ -279,7 +279,7 @@ unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[4];
 u_strcpy_char(t2,"sie");
-return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
+return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
 
@@ -291,7 +291,7 @@ unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[4];
 u_strcpy_char(t2,"sig");
-return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
+return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
 
@@ -303,7 +303,7 @@ unichar t1[2];
 u_strcpy_char(t1,"A");
 unichar t2[4];
 u_strcpy_char(t2,"sio");
-return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
+return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
 
@@ -315,7 +315,7 @@ unichar t1[2];
 u_strcpy_char(t1,"A");
 unichar t2[4];
 u_strcpy_char(t2,"sie");
-return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
+return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
 
@@ -327,7 +327,7 @@ unichar t1[2];
 u_strcpy_char(t1,"V");
 unichar t2[2];
 u_strcpy_char(t2,"W");
-return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_flex_code(d,t2);
+return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
 
@@ -350,7 +350,7 @@ unichar t1[2];
 u_strcpy_char(t1,"V");
 unichar t2[2];
 u_strcpy_char(t2,"Y");
-return dic_entry_contain_gram_code(d,t1) && (!dic_entry_contain_flex_code(d,t2));
+return dic_entry_contain_gram_code(d,t1) && (!dic_entry_contain_inflectional_code(d,t2));
 }
 
 
@@ -364,7 +364,7 @@ char check_valid_left_component_for_one_INF_code(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-struct dela_entry* d=tokenize_DELAF_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp,0);
 /* Now, we can use this structured representation to check if the INF code
  * corresponds to a valid left component. */
 char res=check_Nsia(d)||check_Nsie(d)||check_Nsig(d)||check_Asio(d)||check_Asie(d)||check_VW(d)||check_ADV(d);
@@ -394,12 +394,12 @@ char check_N_right_component(unichar* s) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
-struct dela_entry* d=tokenize_DELAF_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp,0);
 unichar t1[2];
 u_strcpy_char(t1,"N");
 unichar t2[4];
 u_strcpy_char(t2,"sie");
-char res=dic_entry_contain_gram_code(d,t1) && !dic_entry_contain_flex_code(d,t2);
+char res=dic_entry_contain_gram_code(d,t1) && !dic_entry_contain_inflectional_code(d,t2);
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
 return res;
@@ -416,12 +416,12 @@ char check_A_right_component(unichar* s) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
-struct dela_entry* d=tokenize_DELAF_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp,0);
 unichar t1[2];
 u_strcpy_char(t1,"A");
 unichar t2[4];
 u_strcpy_char(t2,"sie");
-char res=dic_entry_contain_gram_code(d,t1) && !dic_entry_contain_flex_code(d,t2);
+char res=dic_entry_contain_gram_code(d,t1) && !dic_entry_contain_inflectional_code(d,t2);
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
 return res;
@@ -434,7 +434,7 @@ return res;
 char check_a(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy_char(t1,"a");
-return dic_entry_contain_flex_code(d,t1);
+return dic_entry_contain_inflectional_code(d,t1);
 }
 
 
@@ -448,7 +448,7 @@ char check_N(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-struct dela_entry* d=tokenize_DELAF_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_N(d);
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
@@ -466,7 +466,7 @@ char check_a(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-struct dela_entry* d=tokenize_DELAF_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_a(d);
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
@@ -495,7 +495,7 @@ char check_valid_right_component_for_one_INF_code(unichar* INF_code) {
 unichar temp[2000];
 u_strcpy_char(temp,"x,");
 u_strcat(temp,INF_code);
-struct dela_entry* d=tokenize_DELAF_line(temp);
+struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=(check_N(d)||check_A(d)/*||check_V_but_not_Y(d)*/)&&(!check_Nsie(d));
 /* We free the artifical dictionary entry */
 free_dic_entry(d);
@@ -511,7 +511,7 @@ char verb_of_more_than_4_letters(unichar* line) {
 /* We produce an artifical dictionary entry with the given INF code,
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
-struct dela_entry* d=tokenize_DELAF_line(line);
+struct dela_entry* d=tokenize_DELAF_line(line,0);
 char res=check_V_but_not_Y(d) && u_strlen(d->inflected)>4;
 /* We free the artifical dictionary entry */
 free_dic_entry(d);

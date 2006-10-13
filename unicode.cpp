@@ -32,6 +32,14 @@ char* NBSP="&nbsp;";
 
 
 /**
+ * We define here the unicode NULL character and the unicode
+ * empty string.
+ */
+unichar U_NULL='\0';
+unichar* U_EMPTY=&U_NULL;
+
+
+/**
  * unicode version of strcpy
  * @param dest destination string
  * @param src source string

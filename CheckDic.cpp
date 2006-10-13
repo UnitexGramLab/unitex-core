@@ -44,7 +44,6 @@ printf("that contains check result informations. This file is stored in the\n");
 printf("<dela> directory.\n");
 }
 
-
 int main(int argc, char **argv) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from

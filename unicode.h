@@ -20,12 +20,12 @@
   */
 
 #ifndef UnicodeH
+#define UnicodeH
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#define UnicodeH
-
 
 //
 // these are the binary open modes for unicode text file
@@ -47,11 +47,18 @@
 #define UNICODE_BIG_ENDIAN_FILE 3
 
 
-
 //extern char CR[2048];
 extern char* NBSP;
 
 typedef unsigned short int unichar;
+
+/**
+ * We define here the unicode NULL character and the unicode
+ * empty string.
+ */
+extern unichar U_NULL;
+extern unichar* U_EMPTY;
+
 
 /* This constant must be used instead of 65536 in order
  * to avoid problems if one day the type unichar becomes larger

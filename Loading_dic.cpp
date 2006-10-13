@@ -265,6 +265,7 @@ for (int i=0;i<tok->N;i++) {
       unichar flechi[2000];
       unichar canonique[2000];
       unichar code_gramm[2000];
+      #warning we must use here tokenize_tag_token and adapt the code
       tokenize_tag_token_into_3_parts(tok->tab[i],flechi,canonique,code_gramm);
       ajouter_forme_flechie(canonique,0,racine,tok->tab[i]);
       index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);

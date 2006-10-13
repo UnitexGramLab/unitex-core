@@ -294,12 +294,9 @@ unichar* s=etiquette[e]->input;
 // first, we check if this tag can recognize some tag tokens
 struct liste_nombres* L=tag_token_list;
 while (L!=NULL) {
-   unichar inflected[1000];
-   unichar lemma[1000];
-   unichar code_gramm[1000];
-   tokenize_tag_token_into_3_parts(tok->tab[L->n],inflected,lemma,code_gramm);
-   if ((case_variants_allowed && is_equal_or_uppercase(s,inflected,alph)) ||
-       !u_strcmp(s,inflected)) {
+   struct dela_entry* entry=tokenize_tag_token(tok->tab[L->n]);
+   if ((case_variants_allowed && is_equal_or_uppercase(s,entry->inflected,alph)) ||
+       !u_strcmp(s,entry->inflected)) {
       num=L->n;
       ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
       ptr_num->n=num;
@@ -307,6 +304,7 @@ while (L!=NULL) {
       etiquette[e]->matching_tokens=ptr_num;
       etiquette[e]->number_of_matching_tokens++;
    }
+   free_dic_entry(entry);
    L=L->suivant;
 }
 if (!case_variants_allowed) {
