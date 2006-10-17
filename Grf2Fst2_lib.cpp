@@ -23,7 +23,6 @@
 #include "Grf2Fst2_lib.h"
 //---------------------------------------------------------------------------
 
-
 struct donnees_comp *donnees;
 unichar pckg_path[TAILLE_MOT_GRAND_COMP];
 int nombre_graphes_comp;
@@ -439,7 +438,7 @@ default: fprintf(stderr,"Internal error in is_letter_generic\n"); exit(1);
  *  initialise le graphe
  */
 void init_graphe_mat_det(Etat_fst_det resultat[]) {
-register long int i;
+register int i;
 for (i=0;i<NBRE_ET;i++)
   resultat[i]=NULL;
 }
@@ -587,10 +586,12 @@ int numero_ensemble_det(ensemble_det e,struct noeud_valeur_det *node,int dernier
 ensemble_det nouveau_char_etats_det()
 {
   ensemble_det ce;
-  ce=(ensemble_det)malloc(sizeof(struct char_etats_det));
-  ce->suivant=NULL;
-  ce->valeur=0;
-  ce->num_char=0xFFFF;
+  ce = (ensemble_det) malloc(sizeof(struct char_etats_det));
+  ce->suivant = NULL;
+  ce->valeur = 0;
+  ce->num_char = (unsigned int) UINT_MAX; /* UINT_MAX = 0xffff on 32-bit machines,
+                                             0xffffffff on 64-bit: defined in
+                                             <limits.h> */
   return ce;
 }
 
@@ -601,25 +602,25 @@ ensemble_det nouveau_char_etats_det()
  */
 void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
   ensemble_det ptr,ptr1,pos;
-  unsigned int numero=netat/32;
+  unsigned int numero=netat/INT_BITS;
    if (*e == NULL)
    {
      *e=nouveau_char_etats_det();
      (*e)->num_char=numero;
-     (*e)->valeur=1<<(netat%32);
+     (*e)->valeur=1<<(netat%INT_BITS);
      return;
    }
    ptr=(*e);
    if (ptr->num_char==numero)
    {
-     ptr->valeur=(ptr->valeur)|(1<<(netat%32));
+     ptr->valeur=(ptr->valeur)|(1<<(netat%INT_BITS));
      return;
    }
    if (ptr->num_char>numero)
    {
      ptr1=nouveau_char_etats_det();
      ptr1->num_char=numero;
-     ptr1->valeur=1<<(netat%32);
+     ptr1->valeur=1<<(netat%INT_BITS);
      (*e)=ptr1;
      (*e)->suivant=ptr;
      return;
@@ -628,7 +629,7 @@ void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
        ptr->suivant=nouveau_char_etats_det();
        ptr=ptr->suivant;
        ptr->num_char=numero;
-       ptr->valeur=1<<(netat%32);
+       ptr->valeur=1<<(netat%INT_BITS);
        return;
      }
    pos=ptr;
@@ -638,13 +639,13 @@ void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
    while (ptr!=NULL) {
        if (ptr->num_char==numero)
        {
-	   ptr->valeur=(ptr->valeur)|(1<<(netat%32));
+	   ptr->valeur=(ptr->valeur)|(1<<(netat%INT_BITS));
 	   return;
 	 }
        if (ptr->num_char>numero) {
 	   ptr1=nouveau_char_etats_det();
 	   ptr1->num_char=numero;
-	   ptr1->valeur=1<<(netat%32);
+	   ptr1->valeur=1<<(netat%INT_BITS);
 	   ptr1->suivant=ptr;
 	   pos->suivant=ptr1;
 	   return;
@@ -653,7 +654,7 @@ void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
 	   ptr->suivant=nouveau_char_etats_det();
 	   ptr=ptr->suivant;
 	   ptr->num_char=numero;
-	   ptr->valeur=1<<(netat%32);
+	   ptr->valeur=1<<(netat%INT_BITS);
 	   return;
 	 }
        pos=ptr;
@@ -902,8 +903,8 @@ int determinisation(Graph_comp graph) {
 
   Fst2Transition ptr;
   ensemble_det courant;
-  unsigned long int q;  //etat courant ancien graph
-  int count;  //compteur pour savoir ou l'on se trouve dans notre int de 32 bits
+  unsigned int q;  //etat courant ancien graph
+  int count;  //compteur pour savoir ou l'on se trouve dans notre int de INT_BITS bits
   int compteur; //compteur pour savoir l'indice du dernier ensemble rentre dans stock;
   int num;
   int i, file_courant, k;
@@ -933,8 +934,8 @@ int determinisation(Graph_comp graph) {
       while (courant != NULL)
         {
           count = 0;
-          q = (courant->num_char*32) - 1;
-          while (count < 32)
+          q = (courant->num_char*INT_BITS) - 1;
+          while (count < INT_BITS)
             {
               q++;
               if (((courant->valeur)&(1<<count))!=0)

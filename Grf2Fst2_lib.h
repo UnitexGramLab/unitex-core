@@ -29,6 +29,7 @@
 #include "Fst2.h"
 #include "Error.h"
 #include "FileName.h"
+#include "Limits.h"
 
 #define DEFAULT_TOKENIZATION 0
 #define CHAR_BY_CHAR_TOKENIZATION 1
