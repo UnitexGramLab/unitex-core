@@ -43,12 +43,11 @@ return t;
 }
 
 
-struct liste_chaines* new_liste_chaines(unichar* s) {
+struct liste_chaines* new_liste_chaines(struct dela_entry* entry) {
 struct liste_chaines* l;
 l=(struct liste_chaines*)malloc(sizeof(struct liste_chaines));
 l->suivant=NULL;
-l->chaine=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-u_strcpy(l->chaine,s);
+l->entry=clone_dela_entry(entry);
 return l;
 }
 
@@ -77,17 +76,18 @@ struct liste_chaines* tmp;
 while (l!=NULL) {
   tmp=l;
   l=l->suivant;
-  free(tmp->chaine);
+  free_dic_entry(tmp->entry);
   free(tmp);
 }
 }
 
 
 
-struct liste_chaines* inserer_si_absent_dans_liste_chaines(unichar* s,struct liste_chaines* l) {
-if (l==NULL) return new_liste_chaines(s);
-if (!u_strcmp(l->chaine,s)) return l;
-l->suivant=inserer_si_absent_dans_liste_chaines(s,l->suivant);
+struct liste_chaines* inserer_si_absent_dans_liste_chaines(struct dela_entry* entry,
+                                                           struct liste_chaines* l) {
+if (l==NULL) return new_liste_chaines(entry);
+if (!equal(l->entry,entry)) return l;
+l->suivant=inserer_si_absent_dans_liste_chaines(entry,l->suivant);
 return l;
 }
 
@@ -101,29 +101,29 @@ return get_trans_dlf_dlc(c,l->suivant);
 
 
 
-void inserer_dlf_dlc(int pos,unichar* flechi,unichar* code,struct noeud_dlf_dlc* n) {
-if (flechi[pos]=='\0') {
+void inserer_dlf_dlc(int pos,struct dela_entry* entry,struct noeud_dlf_dlc* n) {
+if (entry->inflected[pos]=='\0') {
    // if we are at the end of the flechi string, we must insert the code
-   n->liste=inserer_si_absent_dans_liste_chaines(code,n->liste);
+   n->liste=inserer_si_absent_dans_liste_chaines(entry,n->liste);
    return;
 }
 struct trans_dlf_dlc* trans;
-trans=get_trans_dlf_dlc(flechi[pos],n->trans);
+trans=get_trans_dlf_dlc(entry->inflected[pos],n->trans);
 if (trans==NULL) {
    // if the transition does not exist, we create it
    trans=new_trans_dlf_dlc();
-   trans->c=flechi[pos];
+   trans->c=entry->inflected[pos];
    trans->arr=new_noeud_dlf_dlc();
    trans->suivant=n->trans;
    n->trans=trans;
 }
-inserer_dlf_dlc(pos+1,flechi,code,trans->arr);
+inserer_dlf_dlc(pos+1,entry,trans->arr);
 }
 
 
 
-void inserer_dans_arbre_dlf_dlc(unichar* flechi,unichar* code,struct noeud_dlf_dlc* racine) {
-inserer_dlf_dlc(0,flechi,code,racine);
+void inserer_dans_arbre_dlf_dlc(struct dela_entry* entry,struct noeud_dlf_dlc* racine) {
+inserer_dlf_dlc(0,entry,racine);
 }
 
 
@@ -137,11 +137,10 @@ if (f==NULL) {
 }
 printf("Loading %s...\n",nom);
 unichar ligne[1000];
-unichar flechi[1000];
-unichar code[1000];
 while (u_read_line(f,ligne)) {
-   tokenize_DELA_line_into_inflected_and_code(ligne,flechi,code);
-   inserer_dans_arbre_dlf_dlc(flechi,code,racine);
+   struct dela_entry* entry=tokenize_DELAF_line(ligne,1);
+   inserer_dans_arbre_dlf_dlc(entry,racine);
+   free_dic_entry(entry);
 }
 u_fclose(f);
 }

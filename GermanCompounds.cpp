@@ -309,11 +309,8 @@ if (!(c&32768)) {
             unichar entry[500];
             uncompress_entry(current_component,l->word,entry);
             u_strcat(dec,entry);
-            unichar inflected[500];
-            unichar lemma[500];
-            unichar codes[500];
             unichar new_dela_line[500];
-            tokenize_DELA_line_into_3_parts(entry,inflected,lemma,codes);
+            struct dela_entry* tmp_entry=tokenize_DELAF_line(entry,1);
             // change case if there is a prefix
             // prefixes are downcase, nouns (=suffixes) uppercase:
             // "investitionsObjekte" -> "Investitionsobjekte"
@@ -321,16 +318,25 @@ if (!(c&32768)) {
               // capitalize dela_line
               dela_line[0] = u_toupper((unichar) dela_line[0]);
               // downcase lemma and inflected
-              inflected[0] = u_tolower((unichar) inflected[0]);
-              lemma[0] = u_tolower((unichar) lemma[0]);
+              tmp_entry->inflected[0] = u_tolower(tmp_entry->inflected[0]);
+              tmp_entry->lemma[0] = u_tolower(tmp_entry->lemma[0]);
             }
             u_strcpy(new_dela_line,dela_line);
-            u_strcat(new_dela_line,inflected);
+            u_strcat(new_dela_line,tmp_entry->inflected);
             u_strcat_char(new_dela_line,",");
             u_strcat(new_dela_line,dela_line);
-            u_strcat(new_dela_line,lemma);
+            u_strcat(new_dela_line,tmp_entry->lemma);
             u_strcat_char(new_dela_line,".");
-            u_strcat(new_dela_line,codes);
+            u_strcat(new_dela_line,tmp_entry->semantic_codes[0]);
+            int k;
+            for (k=1;k<tmp_entry->n_semantic_codes;k++) {
+               u_strcat_char(new_dela_line,"+");
+               u_strcat(new_dela_line,tmp_entry->semantic_codes[k]);
+            }
+            for (k=0;k<tmp_entry->n_inflectional_codes;k++) {
+               u_strcat_char(new_dela_line,":");
+               u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
+            }
             struct german_word_decomposition* wd=new_german_word_decomposition();
             wd->n_parts=n_decomp;
             u_strcpy(wd->decomposition,dec);

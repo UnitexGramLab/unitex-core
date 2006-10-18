@@ -38,6 +38,7 @@
 #define P_EMPTY_INFLECTED_FORM 6
 #define P_EMPTY_SEMANTIC_CODE 7
 #define P_EMPTY_INFLECTIONAL_CODE 8
+#define P_EMPTY_LEMMA 9
 
 #define PROTECTION_CHAR '\\'
 
@@ -52,6 +53,7 @@ extern unichar* P_EQUAL;
 extern unichar* P_PLUS;
 extern unichar* P_COLON;
 extern unichar* P_SLASH;
+extern unichar* P_PLUS_COLON;
 extern unichar* P_PLUS_COLON_SLASH;
 extern unichar* P_COLON_SLASH;
 extern unichar* P_CLOSING_ROUND_BRACKET;

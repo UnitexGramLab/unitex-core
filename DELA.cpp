@@ -25,6 +25,54 @@
 #include "StringParsing.h"
 
 
+
+/**
+ * Returns a copy of the given entry.
+ */
+struct dela_entry* clone_dela_entry(struct dela_entry* entry) {
+if (entry==NULL) return NULL;
+int i;
+struct dela_entry* res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
+if (res==NULL) {
+   fatal_error("Not enough memory in clone_dela_entry\n");
+}
+res->inflected=u_strdup(entry->inflected);
+res->lemma=u_strdup(entry->lemma);
+res->n_semantic_codes=entry->n_semantic_codes;
+for (i=0;i<res->n_semantic_codes;i++) {
+   res->semantic_codes[i]=u_strdup(entry->semantic_codes[i]);
+}
+res->n_inflectional_codes=entry->n_inflectional_codes;
+for (i=0;i<res->n_inflectional_codes;i++) {
+   res->inflectional_codes[i]=u_strdup(entry->inflectional_codes[i]);
+}
+return res;
+}
+
+
+/**
+ * Returns 1 if a and b are identical; 0 otherwise.
+ * a and b are supposed to be valid entries, that is to say, entries
+ * will non NULL inflected forms and lemmas.
+ */
+int equal(struct dela_entry* a,struct dela_entry* b) {
+int i;
+if (a==b) return 1;
+if (a==NULL || b==NULL) return 0;
+if (u_strcmp(a->inflected,b->inflected)) return 0;
+if (u_strcmp(a->lemma,b->lemma)) return 0;
+if (a->n_semantic_codes!=b->n_semantic_codes) return 0;
+for (i=0;i<a->n_semantic_codes;i++) {
+   if (u_strcmp(a->semantic_codes[i],b->semantic_codes[i])) return 0;
+}
+if (a->n_inflectional_codes!=b->n_inflectional_codes) return 0;
+for (i=0;i<a->n_inflectional_codes;i++) {
+   if (u_strcmp(a->inflectional_codes[i],b->inflectional_codes[i])) return 0;
+}
+return 1;
+}
+
+
 /**
  * Tokenizes a DELAF line and returns the information in a dela_entry structure, or
  * NULL if there is an error in the line. The second parameter indicates if
@@ -48,7 +96,7 @@ if (line==NULL) {
 /* Initialization of the result structure */
 res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
 if (res==NULL) {
-	fatal_error("Not enough memory in tokenize_DELA_line\n");
+	fatal_error("Not enough memory in tokenize_DELAF_line\n");
 }
 res->inflected=NULL;
 res->lemma=NULL;
@@ -195,6 +243,16 @@ return tokenize_DELAF_line(line,comments_allowed,0,NULL);
 
 
 /**
+ * Tokenizes a DELAF line and returns the information in a dela_entry structure, or
+ * NULL if there is an error in the line. Comments are allowed at the end of the
+ * line.
+ */
+struct dela_entry* tokenize_DELAF_line(unichar* line) {
+return tokenize_DELAF_line(line,1,0,NULL);
+}
+
+
+/**
  * This function tokenizes a tag token like {today,.ADV} and returns the
  * information in a dela_entry structure, or NULL if there is an error in
  * the tag.
@@ -224,26 +282,126 @@ return tokenize_DELAF_line(temp,0);
 
 
 /**
- * This function tokenizes a tag token like {today,.ADV} into 3 strings.
- * The given tag is supposed to be a valid one.
+ * Tokenizes a DELAS line and returns the information in a dela_entry structure, or
+ * NULL if there is an error in the line. If 'verbose' is NULL, the
+ * function must print messages if there is an error; otherwise, the function prints
+ * no error message and stores an error code in '*verbose'.
  */
-#warning DEPRECATED
-void tokenize_tag_token_into_3_parts(unichar* tag,unichar* inflected,unichar* lemma,unichar* codes) {
-if (tag==NULL || tag[0]!='{') {
-	error("Internal error in tokenize_tag_token_into_3_parts\n");
-	return;
-}
-int i=1;
-/* We copy the tag content with the round brackets in a string */
+struct dela_entry* tokenize_DELAS_line(unichar* line,int *verbose) {
+struct dela_entry* res;
+char err[DIC_LINE_SIZE];
 unichar temp[DIC_LINE_SIZE];
-while (i<DIC_LINE_SIZE && tag[i]!='}' && tag[i]!='\0') {
-  temp[i-1]=tag[i];
-  i++;
+int i,val;
+if (line==NULL) {
+   if (!verbose) error("Internal NULL error in tokenize_DELAS_line\n");
+   else (*verbose)=P_NULL_STRING;
+   return NULL;
 }
-temp[i-1]='\0';
-/* And we tokenize it as a normal DELAF line */
-tokenize_DELA_line_into_3_parts(temp,inflected,lemma,codes);
+/* Initialization of the result structure */
+res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
+if (res==NULL) {
+   fatal_error("Not enough memory in tokenize_DELAS_line\n");
 }
+res->inflected=NULL;
+res->lemma=NULL;
+res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
+res->semantic_codes[0]=NULL;
+res->n_inflectional_codes=0;
+res->inflectional_codes[0]=NULL;
+i=0;
+/*
+ * We read the inflected part
+ */
+val=parse_string(line,&i,temp,P_COMMA,P_EMPTY,P_EMPTY);
+if (val==P_BACKSLASH_AT_END) {
+   if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+   else (*verbose)=P_BACKSLASH_AT_END;
+   return NULL;
+}
+/* If we are at the end of line, it's an error */
+if (line[i]=='\0') {
+   if (!verbose) {
+      u_to_char(err,line);
+      error("***Dictionary error: incorrect line\n_%s_\n",err);
+   } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
+   return NULL;
+}
+/* The lemma form cannot be empty */
+if (temp[0]=='\0') {
+   if (!verbose) {
+      u_to_char(err,line);
+      error("***Dictionary error: incorrect line\n_%s_\n",err);
+   } else (*verbose)=P_EMPTY_LEMMA;
+   return NULL;
+}
+res->lemma=u_strdup(temp);
+/*
+ * We read the grammatical code
+ */
+i++;
+val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
+if (val==P_BACKSLASH_AT_END) {
+   if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+   else (*verbose)=P_BACKSLASH_AT_END;
+   return NULL;
+}
+/* The grammatical code cannot be empty */
+if (temp[0]=='\0') {
+   if (!verbose) {
+      u_to_char(err,line);
+      error("***Dictionary error: incorrect line\n_%s_\n",err);
+   } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
+   return NULL;
+}
+res->semantic_codes[0]=u_strdup(temp);
+/*
+ * Now we read the other gramatical and semantic codes if any
+ */
+while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
+   i++;
+   val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
+   if (val==P_BACKSLASH_AT_END) {
+      if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+      else (*verbose)=P_BACKSLASH_AT_END;
+      return NULL;
+   }
+   /* A grammatical or semantic code cannot be empty */
+   if (temp[0]=='\0') {
+      if (!verbose) {
+        u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n_%s_\n",err);
+      } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
+      return NULL;
+   }
+   res->semantic_codes[res->n_semantic_codes]=u_strdup(temp);
+   (res->n_semantic_codes)++;
+}
+/*
+ * Then we read the inflectional codes if any
+ */
+while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
+   i++;
+   val=parse_string(line,&i,temp,P_COLON_SLASH,P_EMPTY,P_EMPTY);
+   if (val==P_BACKSLASH_AT_END) {
+      if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+      else (*verbose)=P_BACKSLASH_AT_END;
+      return NULL;
+   }
+      /* An inflectional code cannot be empty */
+   if (temp[0]=='\0') {
+      if (!verbose) {
+        u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n_%s_\n",err);
+      } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
+      return NULL;
+   }
+   res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp);
+   (res->n_inflectional_codes)++;
+}
+return res;
+}
+
+
 
 
 /**
@@ -682,101 +840,6 @@ explore_all_paths(4,content,0,bin,inf,output);
 
 
 /**
- * Tokenizes a DELA line into the inflected part and the remaining part
- * "avons,avoir.V+z1:P1p" -> "avons" and ",avoir.V+z1:P1p"
- * 
- * If the lemma is not specified because it is identical to the inflected
- * form, we add it:
- * 
- * "avoir,.V:W" -> "avoir" and ",avoir.V:W"
- * 
- * If a character of the inflected form is protected we let it protected, because
- * we keep the backslashes if we must copy the inflected form into the lemma:
- * 
- * "3\,14,.PI" -> "3,14" and ",3\,14.PI"
- * 
- * This function is used to generate the dictionary tree for
- * constructing the text automaton.
- */
-#warning TO BE DEPRECATED
-void tokenize_DELA_line_into_inflected_and_code(unichar* line,unichar* inflected,unichar* code) {
-int i,j;
-char err[DIC_LINE_SIZE];
-unichar inflected_with_backslash[DIC_WORD_SIZE];
-int y=0;
-if (line==NULL) return;
-/* We read the inflected form */
-i=0;
-j=0;
-y=0;
-while (line[i]!='\0' && line[i]!=',') {
-   if (line[i]=='\\') {
-      /* We unprotect chars, keeping a protected copy in 'inflected_with_backslash' */
-      inflected_with_backslash[y++]='\\';
-      i++;
-      if (line[i]=='\0') {
-         u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n%s\n",err);
-         return;
-      }
-   }
-   inflected_with_backslash[y++]=line[i];
-   inflected[j++]=line[i++];
-}
-inflected[j]='\0';
-inflected_with_backslash[y]='\0';
-if (line[i]=='\0') {
-   u_to_char(err,line);
-   error("***Dictionary error: incorrect line\n%s\n",err);
-   return;
-}
-/* We read the lemma */
-i++;
-code[0]=',';
-j=1;
-while (line[i]!='\0' && line[i]!='.') {
-   if (line[i]=='\\') {
-      code[j++]='\\';
-      i++;
-      if (line[i]=='\0') {
-         u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n%s\n",err);
-         return;
-      }
-   }
-   code[j++]=line[i++];
-}
-code[j]='\0';
-if (j==1) {
-   /* If the lemma is not specified, we copy the protected inflected form */
-   u_strcat(code,inflected_with_backslash);
-}
-if (line[i]=='\0') {
-   u_to_char(err,line);
-   error("***Dictionary error: incorrect line\n%s\n",err);
-   return;
-}
-/* We read the remaining part of the line */
-i++;
-j=u_strlen(code);
-code[j++]='.';
-while (line[i]!='\0') {
-   if (line[i]=='\\') {
-      code[j++]='\\';
-      i++;
-      if (line[i]=='\0') {
-         u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n%s\n",err);
-         return;
-      }
-   }
-   code[j++]=line[i++];
-}
-code[j]='\0';
-}
-
-
-/**
  * This function parses a DELAF and stores all its grammatical and
  * semantic codes into the 'hash' structure. This structure is later
  * used in the Locate program in order to know if XXX can be such a 
@@ -801,257 +864,7 @@ return;
 
 
 /**
- * This function parses a DELAF line and stores in the appropriate parameters
- * the inflected form, the lemma and the codes. If there is no lemma, it takes
- * the value of the inflected form. All these strings are unprotected:
- * 
- * "3\,14,.PI" => inflected="3,14" lemma="3,14" codes="PI"
- */
-#warning TO BE DEPRECATED
-void tokenize_DELA_line_into_3_parts(unichar* line,unichar* inflected,unichar* lemma,unichar* codes) {
-int i,j;
-char err[DIC_WORD_SIZE];
-if (line==NULL) return;
-/* We read the inflected form */
-i=0;
-j=0;
-while (line[i]!='\0' && line[i]!=',') {
-   if (line[i]=='\\') {
-      /* We unprotect chars */
-      i++;
-      if (line[i]=='\0') {
-         u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n%s\n",err);
-         return;
-      }
-   }
-   inflected[j++]=line[i++];
-}
-inflected[j]='\0';
-if (line[i]=='\0') {
-   u_to_char(err,line);
-   error("***Dictionary error: incorrect line\n%s\n",err);
-   return;
-}
-/* We read the lemma */
-i++;
-j=0;
-while (line[i]!='\0' && line[i]!='.') {
-   if (line[i]=='\\') {
-      i++;
-      if (line[i]=='\0') {
-         u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n%s\n",err);
-         return;
-      }
-   }
-   lemma[j++]=line[i++];
-}
-lemma[j]='\0';
-if (j==0) {
-   /* If the lemma is not specified, we copy the inflected form */
-   u_strcpy(lemma,inflected);
-}
-if (line[i]=='\0') {
-   u_to_char(err,line);
-   error("***Dictionary error: incorrect line\n%s\n",err);
-   return;
-}
-/* We read the remaining part of the line */
-i++;
-j=0;
-while (line[i]!='\0') {
-   if (line[i]=='\\') {
-      i++;
-      if (line[i]=='\0') {
-         u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n%s\n",err);
-         return;
-      }
-   }
-   codes[j++]=line[i++];
-}
-codes[j]='\0';
-}
-
-
-/**
- * This function checks the validity of a DELAS line. If there are errors,
- * it prints error messages in the 'out' file.
- * 
- * NOTE 1: as a side effect, this function stores the grammatical/semantic and inflectional
- *         codes into the 'semantic_codes' and 'inflectional_codes' structures. This is
- *         used to build the list of all the codes that are used in the dictionary.
- * NOTE 2: the 'alphabet' array is used to mark characters that are used in the lemmas.
- */
-void check_DELAS_line(unichar* DELAS_line,FILE* out,int line_number,char* alphabet,
-                      struct string_hash* semantic_codes,struct string_hash* inflectional_codes) {
-#warning all printing must be rewritten with something like ufprintf(...)
-char err[DIC_LINE_SIZE];
-unichar temp[DIC_LINE_SIZE];
-int i,j;
-if (DELAS_line==NULL) return;
-/* We read the lemma */
-i=0;
-j=0;
-while (DELAS_line[i]!='\0' && DELAS_line[i]!=',') {
-   if (DELAS_line[i]=='\t') {
-      /* Tabulations are not allowed in lemmas */
-      sprintf(err,"Line %d: tabulation in lemma\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELAS_line,out);
-      u_fprints_char("\n",out);
-      return;
-   }
-   if (DELAS_line[i]=='\\') {
-      /* If there is a backslash */
-      i++;
-      if (DELAS_line[i]=='\0') {
-         /* It must not appear at the end of the line */
-         sprintf(err,"Line %d: \\ at end of line\n",line_number);
-         u_fprints_char(err,out);
-         u_fprints(DELAS_line,out);
-         u_fprints_char("\n",out);
-         return;
-      }
-   }
-   alphabet[DELAS_line[i]]=1;
-   temp[j++]=DELAS_line[i++];
-}
-if (DELAS_line[i]=='\0') {
-   /* The end of line must not appear after the lemma */
-   sprintf(err,"Line %d: no comma found\n",line_number);
-   u_fprints_char(err,out);
-   u_fprints(DELAS_line,out);
-   u_fprints_char("\n",out);
-   return;
-}
-temp[j]='\0';
-if (j==0) {
-   /* A lemma cannot be empty */
-   sprintf(err,"Line %d: empty canonical form\n",line_number);
-   u_fprints_char(err,out);
-   u_fprints(DELAS_line,out);
-   u_fprints_char("\n",out);
-   return;
-}
-/* Now we read the grammatical code */
-i++;
-j=0;
-while (DELAS_line[i]!='\0' && DELAS_line[i]!='+' && DELAS_line[i]!=':' && DELAS_line[i]!='/') {
-   /* Tabulations are allowed */
-   if (DELAS_line[i]=='\t') {
-      sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELAS_line,out);
-      u_fprints_char("\n",out);
-      return;
-   }
-   if (DELAS_line[i]=='\\') {
-      /* If there is a backslash */
-      i++;
-      if (DELAS_line[i]=='\0') {
-         /* It must not appear at the end of the line */
-         sprintf(err,"Line %d: \\ at end of line\n",line_number);
-         u_fprints_char(err,out);
-         u_fprints(DELAS_line,out);
-         u_fprints_char("\n",out);
-         return;
-      }
-   }
-   temp[j++]=DELAS_line[i++];
-}
-temp[j]='\0';
-if (j==0) {
-   /* A grammatical code cannot be empty */
-   sprintf(err,"Line %d: no grammatical code\n",line_number);
-   u_fprints_char(err,out);
-   u_fprints(DELAS_line,out);
-   u_fprints_char("\n",out);
-   return;
-}
-get_hash_number(temp,semantic_codes);
-/* We read the semantic codes, if any */
-while (DELAS_line[i]=='+') {
-   i++;
-   j=0;
-   while (DELAS_line[i]!='\0' && DELAS_line[i]!='+' && DELAS_line[i]!=':' && DELAS_line[i]!='/') {
-      /* Tabulations are not allowed */
-      if (DELAS_line[i]=='\t') {
-         sprintf(err,"Line %d: tabulation in gramatical or semantic code\n",line_number);
-         u_fprints_char(err,out);
-         u_fprints(DELAS_line,out);
-         u_fprints_char("\n",out);
-         return;
-      }
-      if (DELAS_line[i]=='\\') {
-         /* If there is a backslash */
-         i++;
-         if (DELAS_line[i]=='\0') {
-            /* It must not appear at the end of the line */
-            sprintf(err,"Line %d: \\ at end of line\n",line_number);
-            u_fprints_char(err,out);
-            u_fprints(DELAS_line,out);
-            u_fprints_char("\n",out);
-            return;
-         }
-      }
-      temp[j++]=DELAS_line[i++];
-   }
-   if (j==0) {
-      /* A grammatical or semantic code cannot be empty */
-      sprintf(err,"Line %d: empty gramatical or semantic code\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELAS_line,out);
-      u_fprints_char("\n",out);
-      return;
-   } 
-   temp[j]='\0';
-   get_hash_number(temp,semantic_codes);
-}
-/* We read the inflectional codes, if any (it could appear even in DELAS) */
-while (DELAS_line[i]==':') {
-   i++;
-   j=0;
-   while (DELAS_line[i]!='\0' && DELAS_line[i]!=':' && DELAS_line[i]!='/') {
-      if (DELAS_line[i]=='\t') {
-         /* Tabulations are not allowed */
-         sprintf(err,"Line %d: tabulation in inflexional code\n",line_number);
-         u_fprints_char(err,out);
-         u_fprints(DELAS_line,out);
-         u_fprints_char("\n",out);
-         return;
-      }
-      if (DELAS_line[i]=='\\') {
-         /* If there is a backslash */
-         i++;
-         if (DELAS_line[i]=='\0') {
-            /* It must not appear at the end of the line */
-            sprintf(err,"Line %d: \\ at end of line\n",line_number);
-            u_fprints_char(err,out);
-            u_fprints(DELAS_line,out);
-            u_fprints_char("\n",out);
-            return;
-         }
-      }
-      temp[j++]=DELAS_line[i++];
-   }
-   if (j==0) {
-      /* An inflectional code cannot be empty */
-      sprintf(err,"Line %d: empty inflectional code\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELAS_line,out);
-      u_fprints_char("\n",out);
-      return;
-   }
-   temp[j]='\0';
-   get_hash_number(temp,inflectional_codes);
-}
-}
-
-
-/**
- * This function checks the validity of a DELAF line. If there are errors,
+ * This function checks the validity of a DELAF/DELAS line. If there are errors,
  * it prints error messages in the 'out' file.
  * 
  * NOTE 1: as a side effect, this function stores the grammatical/semantic and inflectional
@@ -1060,13 +873,18 @@ while (DELAS_line[i]==':') {
  * NOTE 2: the 'alphabet' array is used to mark characters that are used in 
  *         inflected forms and lemmas.
  */
-void check_DELAF_line(unichar* DELAF_line,FILE* out,int line_number,char* alphabet,
+void check_DELA_line(unichar* DELA_line,FILE* out,int is_a_DELAF,int line_number,char* alphabet,
                       struct string_hash* semantic_codes,struct string_hash* inflectional_codes) {
 char err[DIC_LINE_SIZE];
 int i;
-if (DELAF_line==NULL) return;
+if (DELA_line==NULL) return;
 int error_code;
-struct dela_entry* entry=tokenize_DELAF_line(DELAF_line,1,0,&error_code);
+struct dela_entry* entry;
+if (is_a_DELAF) {
+   entry=tokenize_DELAF_line(DELA_line,1,0,&error_code);
+} else {
+   entry=tokenize_DELAS_line(DELA_line,&error_code);
+}
 if (entry!=NULL) {
    /* If the line is correct, we just have to note its codes and the characters 
     * that compose the inflected form and the lemma. */
@@ -1076,8 +894,11 @@ if (entry!=NULL) {
    for (i=0;i<entry->n_inflectional_codes;i++) {
       get_hash_number(entry->inflectional_codes[i],inflectional_codes);
    }
-   for (i=0;entry->inflected[i]!='\0';i++) {
-      alphabet[entry->inflected[i]]=1;
+   if (is_a_DELAF) {
+      /* There is no inflected form to examine in a DELAS line */
+      for (i=0;entry->inflected[i]!='\0';i++) {
+         alphabet[entry->inflected[i]]=1;
+      }
    }
    for (i=0;entry->lemma[i]!='\0';i++) {
       alphabet[entry->lemma[i]]=1;
@@ -1092,35 +913,42 @@ switch (error_code) {
    case P_UNEXPECTED_END_OF_LINE: {
       sprintf(err,"Line %d: unexpected end of line\n",line_number);
       u_fprints_char(err,out);
-      u_fprints(DELAF_line,out);
+      u_fprints(DELA_line,out);
       u_fprints_char("\n",out);
       return;
    }
    case P_BACKSLASH_AT_END: {
       sprintf(err,"Line %d: \\ at end of line\n",line_number);
       u_fprints_char(err,out);
-      u_fprints(DELAF_line,out);
+      u_fprints(DELA_line,out);
       u_fprints_char("\n",out);
       return;
    }
    case P_EMPTY_INFLECTED_FORM: {
       sprintf(err,"Line %d: empty inflected form\n",line_number);
       u_fprints_char(err,out);
-      u_fprints(DELAF_line,out);
+      u_fprints(DELA_line,out);
+      u_fprints_char("\n",out);
+      return;
+   }
+   case P_EMPTY_LEMMA: {
+      sprintf(err,"Line %d: empty lemma\n",line_number);
+      u_fprints_char(err,out);
+      u_fprints(DELA_line,out);
       u_fprints_char("\n",out);
       return;
    }
    case P_EMPTY_SEMANTIC_CODE: {
       sprintf(err,"Line %d: empty grammatical or semantic code\n",line_number);
       u_fprints_char(err,out);
-      u_fprints(DELAF_line,out);
+      u_fprints(DELA_line,out);
       u_fprints_char("\n",out);
       return;
    }
    case P_EMPTY_INFLECTIONAL_CODE: {
       sprintf(err,"Line %d: empty inflectional code\n",line_number);
       u_fprints_char(err,out);
-      u_fprints(DELAF_line,out);
+      u_fprints(DELA_line,out);
       u_fprints_char("\n",out);
       return;
    }
@@ -1266,34 +1094,6 @@ for (int i=0;i<d->n_inflectional_codes;i++) {
    free(d->inflectional_codes[i]);
 }
 free(d);
-}
-
-
-/**
- * This function takes a string like ":F1s:F2s" and fills an array
- * like this: array[0]="F1s",    array[1]="F2s"
- * 
- * Note that the length of the array is stored in '*length'.
-
- * WARNING: this function does not consider protected chars. There could be 
- *          problems if someone had the strange idea to use ':' as an inflectional
- *          code letter like ":F1s:F\:s"
- */
-#warning TO BE DEPRECATED
-void tokenize_inflectional_codes(unichar* s,int *length,unichar** array) {
-int i=0;
-(*length)=0;
-while (s[i]==':') {
-   i++;
-   int j=0;
-   unichar temp[DIC_WORD_SIZE];
-   while (s[i]!='\0' && s[i]!=':') {
-      temp[j++]=s[i++];
-   }
-   temp[j]='\0';
-   array[*length]=u_strdup(temp);
-   (*length)++;
-}
 }
 
 

@@ -102,9 +102,13 @@ struct INF_codes {
 };
 
 
+struct dela_entry* clone_dela_entry(struct dela_entry*);
+int equal(struct dela_entry*,struct dela_entry*);
+struct dela_entry* tokenize_DELAF_line(unichar*);
 struct dela_entry* tokenize_DELAF_line(unichar*,int);
 struct dela_entry* tokenize_DELAF_line(unichar*,int,int,int*);
 struct dela_entry* tokenize_tag_token(unichar*);
+struct dela_entry* tokenize_DELAS_line(unichar*,int*);
 void get_compressed_line(struct dela_entry*,unichar*);
 struct word_list* tokenize_compressed_info(unichar*);
 void uncompress_entry(unichar*,unichar*,unichar*);
@@ -112,18 +116,15 @@ struct INF_codes* load_INF_file(char*);
 void free_INF_codes(struct INF_codes*);
 unsigned char* load_BIN_file(char*);
 void rebuild_dictionary(unsigned char*,struct INF_codes*,FILE*);
-void tokenize_DELA_line_into_inflected_and_code(unichar*,unichar*,unichar*);
 void extract_semantic_codes(char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(unichar*,unichar*,unichar*,unichar*);
 void tokenize_tag_token_into_3_parts(unichar*,unichar*,unichar*,unichar*);
-void check_DELAS_line(unichar*,FILE*,int,char*,struct string_hash*,struct string_hash*);
-void check_DELAF_line(unichar*,FILE*,int,char*,struct string_hash*,struct string_hash*);
+void check_DELA_line(unichar*,FILE*,int,int,char*,struct string_hash*,struct string_hash*);
 int warning_on_code(unichar*,unichar*);
 int contains_unprotected_equal_sign(unichar*);
 void replace_unprotected_equal_sign(unichar*,unichar);
 void unprotect_equal_signs(unichar*);
 void free_dic_entry(struct dela_entry*);
-void tokenize_inflectional_codes(unichar*,int*,unichar**);
 int check_tag_token(unichar*);
 int dic_entry_contain_gram_code(struct dela_entry*,unichar*);
 int dic_entry_contain_inflectional_code(struct dela_entry*,unichar*);

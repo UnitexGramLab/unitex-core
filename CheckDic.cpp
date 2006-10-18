@@ -55,12 +55,12 @@ if (argc!=3) {
 }
 FILE* dic;
 FILE* out;
-int is_a_DELAS;
+int is_a_DELAF;
 if (!strcmp(argv[2],"DELAS")) {
-	is_a_DELAS=1;
+	is_a_DELAF=0;
 }
 else if (!strcmp(argv[2],"DELAF")) {
-		is_a_DELAS=0;
+		is_a_DELAF=1;
 }
 else {
 	fatal_error("Invalid dictionary type %s\n",argv[2]);
@@ -113,8 +113,7 @@ while (u_read_line(dic,line)) {
 	else {
 		/* If we have a line to check, we check it according to the
 		 * dictionary type */
-		if (is_a_DELAS) check_DELAS_line(line,out,line_number,alphabet,semantic_codes,inflectional_codes);
-		else check_DELAF_line(line,out,line_number,alphabet,semantic_codes,inflectional_codes);
+		check_DELA_line(line,out,is_a_DELAF,line_number,alphabet,semantic_codes,inflectional_codes);
 	}
 	/* At regular intervals, we display a message on the standard
 	 * output to show that the program is working */

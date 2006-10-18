@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 #include "Compounds.h"
 #include "GeneralDerivation.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
@@ -844,6 +845,82 @@ void substring_operation (unichar* affix, unichar* rule)
     affix[j] = '\0';
   }
 }
+
+
+/**
+ * This function parses a DELAF line and stores in the appropriate parameters
+ * the inflected form, the lemma and the codes. If there is no lemma, it takes
+ * the value of the inflected form. All these strings are unprotected:
+ * 
+ * "3\,14,.PI" => inflected="3,14" lemma="3,14" codes="PI"
+ */
+void tokenize_DELA_line_into_3_parts(unichar* line,unichar* inflected,unichar* lemma,unichar* codes) {
+int i,j;
+char err[DIC_WORD_SIZE];
+if (line==NULL) return;
+/* We read the inflected form */
+i=0;
+j=0;
+while (line[i]!='\0' && line[i]!=',') {
+   if (line[i]=='\\') {
+      /* We unprotect chars */
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   inflected[j++]=line[i++];
+}
+inflected[j]='\0';
+if (line[i]=='\0') {
+   u_to_char(err,line);
+   error("***Dictionary error: incorrect line\n%s\n",err);
+   return;
+}
+/* We read the lemma */
+i++;
+j=0;
+while (line[i]!='\0' && line[i]!='.') {
+   if (line[i]=='\\') {
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   lemma[j++]=line[i++];
+}
+lemma[j]='\0';
+if (j==0) {
+   /* If the lemma is not specified, we copy the inflected form */
+   u_strcpy(lemma,inflected);
+}
+if (line[i]=='\0') {
+   u_to_char(err,line);
+   error("***Dictionary error: incorrect line\n%s\n",err);
+   return;
+}
+/* We read the remaining part of the line */
+i++;
+j=0;
+while (line[i]!='\0') {
+   if (line[i]=='\\') {
+      i++;
+      if (line[i]=='\0') {
+         u_to_char(err,line);
+         error("***Dictionary error: incorrect line\n%s\n",err);
+         return;
+      }
+   }
+   codes[j++]=line[i++];
+}
+codes[j]='\0';
+}
+
+
 
 //
 // this function explores the dictionary to decompose the word mot

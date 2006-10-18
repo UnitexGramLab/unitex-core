@@ -21,6 +21,7 @@
 
 //---------------------------------------------------------------------------
 #include "Text_automaton.h"
+#include "StringParsing.h"
 //---------------------------------------------------------------------------
 
 
@@ -90,13 +91,29 @@ return trans;
 
 
 struct trans_text_automaton* inserer_trans_text_automaton(struct trans_text_automaton* trans,
-                                                          unichar* token,unichar* reste,
+                                                          unichar* token,struct dela_entry* entry,
                                                           int indice) {
 unichar tmp[2000];
+int i;
 u_strcpy_char(tmp,"{");
 u_strcat(tmp,token);
-u_strcat(tmp,reste);
-u_strcat_char(tmp,"}");
+u_strcat_char(tmp,",");
+int l=u_strlen(tmp);
+/* We protect the points, if any, in the lemma */
+l=l+escape(entry->lemma,&(tmp[l]),P_DOT);
+tmp[l++]='.';
+/* We protect the + and :, if any, in the grammatical code */
+l=l+escape(entry->semantic_codes[0],&(tmp[l]),P_PLUS_COLON);
+for (i=1;i<entry->n_semantic_codes;i++) {
+   tmp[l++]='+';
+   l=l+escape(entry->semantic_codes[i],&(tmp[l]),P_PLUS_COLON);
+}
+for (i=0;i<entry->n_inflectional_codes;i++) {
+   tmp[l++]=':';
+   l=l+escape(entry->inflectional_codes[i],&(tmp[l]),P_COLON);
+}
+tmp[l++]='}';
+tmp[l++]='\0';
 return inserer_trans_text_automaton_(trans,tmp,indice);
 }
 
@@ -114,7 +131,7 @@ if (token[pos]=='\0') {
    global[pos_global]='\0';
    while (liste!=NULL) {
       // we create all the transitions in the text automaton
-      noeud->trans=inserer_trans_text_automaton(noeud->trans,global,liste->chaine,indice_noeud_depart+deplacement);
+      noeud->trans=inserer_trans_text_automaton(noeud->trans,global,liste->entry,indice_noeud_depart+deplacement);
       liste=liste->suivant;
    }
    // we try to go on with the next token in the sentence

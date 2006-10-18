@@ -62,6 +62,6 @@ void creer_ensemble_code_gramm(int*,unichar**,unichar**,Code_flexion,
 void ajouter_element_code_gramm(unichar**,int,struct noeud_code_gramm*,
                                 Code_flexion,int,
                                 struct facteurs_interdits*,unichar*);
-void get_numeros_pattern(unichar*,unsigned char *,unichar*,int);
+void get_numeros_pattern(struct dela_entry*,unsigned char *,int);
 
 #endif

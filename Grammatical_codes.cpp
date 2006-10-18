@@ -240,8 +240,7 @@ else ajouter_element_code_gramm(s,i,sous_noeud,c,numero_pattern,f,canonique);
 
 
 
-void decouper_code_gramm_dic(unichar* s,unichar** t,
-                         unichar** t2,struct facteurs_interdits* f,int probleme) {
+void decouper_code_gramm_dic(unichar* s,unichar** t,unichar** t2) {
 int pos,i;
 int courant_t;
 int courant_t2;
@@ -374,13 +373,13 @@ return est_compatible2(c->s,d->s);
 
 
 void explorer_codes_flexion(struct liste_code_flexion* l,Code_flexion c,
-							unichar** t,unsigned char* res,
-                            unichar* canonique,int n_octet_code_gramm) {
+							       struct dela_entry* entry,unsigned char* res,
+                            int n_octet_code_gramm) {
 struct liste_code_flexion* ptr;
 int i,j,ok,k;
 ptr=l;
 while (ptr!=NULL) {
-if (comparer_canoniques(ptr->canonique,canonique))
+if (comparer_canoniques(ptr->canonique,entry->lemma))
   if (ptr->code==NULL) {
     if (ptr->f==NULL) {
        if (res==NULL) {
@@ -393,10 +392,10 @@ if (comparer_canoniques(ptr->canonique,canonique))
        ok=1;
        for (i=0;i<(ptr->f)->nbre_facteurs;i++) {
          j=0;
-         while ((t[j]!=NULL) && u_strcmp(t[j],(ptr->f)->facteur[i])) {
+         while ((j!=entry->n_semantic_codes) && u_strcmp(entry->semantic_codes[j],(ptr->f)->facteur[i])) {
             j++;
          }
-         ok=(t[j]==NULL);
+         ok=(j==entry->n_semantic_codes);
          if (!ok) break;
        }
        if (ok) {
@@ -418,10 +417,10 @@ if (comparer_canoniques(ptr->canonique,canonique))
            ok=1;
            for (i=0;i<(ptr->f)->nbre_facteurs;i++) {
              j=0;
-             while ((t[j]!=NULL) && u_strcmp(t[j],((ptr->f)->facteur[i]))) {
+             while ((j!=entry->n_semantic_codes) && u_strcmp(entry->semantic_codes[j],((ptr->f)->facteur[i]))) {
                 j++;
              }
-             ok=(t[j]==NULL);
+             ok=(j==entry->n_semantic_codes);
              if (!ok) break;
            }
          if (ok) {
@@ -438,75 +437,33 @@ if (comparer_canoniques(ptr->canonique,canonique))
 
 
 
-void trouver_numeros_pattern(struct noeud_code_gramm* n,unichar** t,int niveau,
-                             Code_flexion c,unsigned char* res,unichar* canonique,
-                             int n_octet_code_gramm) {
+void trouver_numeros_pattern(struct noeud_code_gramm* n,struct dela_entry* entry,int niveau,
+                             Code_flexion c,unsigned char* res,int n_octet_code_gramm) {
 struct noeud_code_gramm* sous_noeud;
 struct liste_code_flexion *l;
-if (t[niveau]==NULL) {
+if (niveau==entry->n_semantic_codes) {
    return;
 }
-sous_noeud=get_sous_noeud_code_gramm(n,t[niveau],0);
-if (t[niveau+1]!=NULL) {
-   trouver_numeros_pattern(n,t,niveau+1,c,res,canonique,n_octet_code_gramm);
-}
+sous_noeud=get_sous_noeud_code_gramm(n,entry->semantic_codes[niveau],0);
+trouver_numeros_pattern(n,entry,niveau+1,c,res,n_octet_code_gramm);
 if (sous_noeud!=NULL) {
    l=sous_noeud->liste;
    if (l!=NULL) {
-      explorer_codes_flexion(l,c,t,res,canonique,n_octet_code_gramm);
+      explorer_codes_flexion(l,c,entry,res,n_octet_code_gramm);
    }
-   trouver_numeros_pattern(sous_noeud,t,niveau+1,c,res,canonique,n_octet_code_gramm);
+   trouver_numeros_pattern(sous_noeud,entry,niveau+1,c,res,n_octet_code_gramm);
 }
 }
 
 
 
 
-void get_numeros_pattern(unichar* s,unsigned char* res,
-                         unichar* canonique,int n_octet_code_gramm) {
-unichar* t[MAX_FLEXIONAL_CODES_LENGTH];
-unichar* t2[MAX_FLEXIONAL_CODES_LENGTH];
-struct facteurs_interdits* f;
-Code_flexion c;
-unichar tmp[TAILLE_MOT];
-int i;
-for (i=0;i<MAX_FLEXIONAL_CODES_LENGTH;i++) {
-  t[i]=NULL;
-  t2[i]=NULL;
-}
-c=NULL;
-f=nouveaux_facteurs_interdits();
-decouper_code_gramm_dic(s,t,t2,f,0);
-if (f->nbre_facteurs==0) {
-   liberer_facteurs_interdits(f);
-   f=NULL;
-}
-if (t2[0]!=NULL) {
-   c=calculer_code_flexion(t2);
-}
-for (i=0;i<MAX_FLEXIONAL_CODES_LENGTH;i++) {
-  if (t2[i]!=NULL) {
-     free(t2[i]);
-     t2[i]=NULL;
-  }
-}
-if (f!=NULL && f->nbre_facteurs) {
-   liberer_facteurs_interdits(f);
-   f=NULL;
-   tmp[0]='\0';
-}
-if (f!=NULL) {
-   liberer_facteurs_interdits(f);
-}
-trouver_numeros_pattern(racine_code_gramm,t,0,c,res,canonique,n_octet_code_gramm);
+void get_numeros_pattern(struct dela_entry* entry,unsigned char* res,
+                         int n_octet_code_gramm) {
+Code_flexion c=calculer_code_flexion(entry);
+trouver_numeros_pattern(racine_code_gramm,entry,0,c,res,n_octet_code_gramm);
 if (c!=NULL) {
    free(c);
-}
-for (i=0;i<100;i++) {
-  if (t[i]!=NULL) {
-     free(t[i]);
-     t[i]=NULL;
-  }
 }
 }
 

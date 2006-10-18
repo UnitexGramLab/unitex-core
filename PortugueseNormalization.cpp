@@ -105,6 +105,34 @@ printf("%d normalization rules have been produced.\n",N);
 
 
 
+/**
+ * This function takes a string like ":F1s:F2s" and fills an array
+ * like this: array[0]="F1s",    array[1]="F2s"
+ * 
+ * Note that the length of the array is stored in '*length'.
+
+ * WARNING: this function does not consider protected chars. There could be 
+ *          problems if someone had the strange idea to use ':' as an inflectional
+ *          code letter like ":F1s:F\:s"
+ */
+void tokenize_inflectional_codes(unichar* s,int *length,unichar** array) {
+int i=0;
+(*length)=0;
+while (s[i]==':') {
+   i++;
+   int j=0;
+   unichar temp[DIC_WORD_SIZE];
+   while (s[i]!='\0' && s[i]!=':') {
+      temp[j++]=s[i++];
+   }
+   temp[j]='\0';
+   array[*length]=u_strdup(temp);
+   (*length)++;
+}
+}
+
+
+
 //
 // this function takes a sequence like "dir-se-ia[:C1s]" and
 // replace it by the corresponding normalization line:

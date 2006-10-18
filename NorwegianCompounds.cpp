@@ -760,9 +760,6 @@ if (!(c&32768)) {
 					uncompress_entry(current_component,l->word,entry);
 					/* And we add it to the analysis */
 					u_strcat(dec,entry);
-					unichar inflected[2000];
-					unichar lemma[2000];
-					unichar codes[2000];
 					unichar new_dela_line[2000];
 					/* We copy the current output DELA line that contains
 					 * the concatenation of the previous components */
@@ -770,20 +767,29 @@ if (!(c&32768)) {
 					/* Then we tokenize the DELA line that corresponds the current INF
 					 * code in order to obtain its lemma and grammatical/inflectional
 					 * information */
-					tokenize_DELA_line_into_3_parts(entry,inflected,lemma,codes);
+					struct dela_entry* tmp_entry=tokenize_DELAF_line(entry,1);
 					/* We concatenate the inflected form of the last component to
 					 * the output DELA line */
-					u_strcat(new_dela_line,inflected);
+					u_strcat(new_dela_line,tmp_entry->inflected);
 					/* We put the comma that separates the inflected form and the lemma */
 					u_strcat_char(new_dela_line,",");
 					/* And we build the lemma in the same way than the inflected form */
 					u_strcat(new_dela_line,output_dela_line);
-					u_strcat(new_dela_line,lemma);
+					u_strcat(new_dela_line,tmp_entry->lemma);
 					/* We put the dot that separates the the lemma and the grammatical/inflectional
 					 * information */
 					u_strcat_char(new_dela_line,".");
 					/* And finally we put the grammatical/inflectional information */
-					u_strcat(new_dela_line,codes);
+					u_strcat(new_dela_line,tmp_entry->semantic_codes[0]);
+               int k;
+               for (k=1;k<tmp_entry->n_semantic_codes;k++) {
+                  u_strcat_char(new_dela_line,"+");
+                  u_strcat(new_dela_line,tmp_entry->semantic_codes[k]);
+               }
+               for (k=0;k<tmp_entry->n_inflectional_codes;k++) {
+                  u_strcat_char(new_dela_line,":");
+                  u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
+               }
 					/*
 					 * Now we can build an analysis in the form of a word decomposition
 					 * structure, but only if the last component is a valid

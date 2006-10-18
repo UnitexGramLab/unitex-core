@@ -62,6 +62,16 @@ return c;
 }
 
 
+Code_flexion calculer_code_flexion(struct dela_entry* entry) {
+Code_flexion c;
+int i;
+c=nouveau_code_flexion();
+for (i=0;i<entry->n_inflectional_codes;i++) {
+  ajouter_code(c,entry->inflectional_codes[i]);
+}
+return c;
+}
+
 
 void ajouter_a_liste_code_flexion(struct noeud_code_gramm* n,Code_flexion c,
                                   int numero_pattern,struct facteurs_interdits* f,

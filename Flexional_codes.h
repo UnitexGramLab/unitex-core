@@ -24,6 +24,7 @@
 #define Flexional_codesH
 //---------------------------------------------------------------------------
 #include "unicode.h"
+#include "DELA.h"
 
 #define MAX_FLEXIONAL_CODES_LENGTH 400
 
@@ -36,6 +37,7 @@ typedef struct code_flexion* Code_flexion;
 
 Code_flexion nouveau_code_flexion();
 Code_flexion calculer_code_flexion(unichar**);
+Code_flexion calculer_code_flexion(struct dela_entry*);
 void ajouter_a_liste_code_flexion(struct noeud_code_gramm*,Code_flexion,
                                   int,struct facteurs_interdits*,
                                   unichar*);

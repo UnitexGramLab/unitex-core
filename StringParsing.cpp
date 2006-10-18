@@ -32,6 +32,7 @@ unichar* P_EQUAL=u_strdup_char("=");
 unichar* P_PLUS=u_strdup_char("+");
 unichar* P_COLON=u_strdup_char(":");
 unichar* P_SLASH=u_strdup_char("/");
+unichar* P_PLUS_COLON=u_strdup_char("+:");
 unichar* P_PLUS_COLON_SLASH=u_strdup_char("+:/");
 unichar* P_COLON_SLASH=u_strdup_char(":/");
 unichar* P_CLOSING_ROUND_BRACKET=u_strdup_char("}");
@@ -40,6 +41,7 @@ unichar* P_PLUS_COLON_SLASH_BACKSLASH=u_strdup_char("+:/\\");
 unichar* P_COLON_SLASH_BACKSLASH=u_strdup_char(":/\\");
 unichar* P_COMMA_DOT_BACKSLASH_DIGITS=u_strdup_char(",.\\0123456789");
 unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup_char(".+/\\");
+
 
 /**
  * Returns 1 if 'c' is in the string 'array'; 0 otherwise.

@@ -348,7 +348,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
             // 1er cas: <V>
             if ((pattern[0]!='\0')&&(flechi[0]=='\0')&&(canonique[0]=='\0')) {
                etiquette[i]->number=(*nombre_patterns);
-    		   etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
+    		      etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
                inserer_code_gramm(*nombre_patterns,pattern,NULL);
                (*nombre_patterns)++;
             } else

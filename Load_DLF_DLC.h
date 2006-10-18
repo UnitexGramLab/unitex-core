@@ -37,10 +37,9 @@ struct trans_dlf_dlc {
    struct trans_dlf_dlc* suivant;
 };
 
-#warning TO BE DEPRECATED
-/* This structure should be a list of struct dela_entry* */
+
 struct liste_chaines {
-   unichar* chaine;
+   struct dela_entry* entry;
    struct liste_chaines* suivant;
 };
 

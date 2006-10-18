@@ -21,6 +21,7 @@
 
 //---------------------------------------------------------------------------
 #include "Loading_dic.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
@@ -47,90 +48,91 @@ void load_dic_for_locate(char* dico,Alphabet* alph,struct string_hash* tok,
                          int existe_etiquette_CDIC,int existe_etiquette_SDIC,
                          struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 FILE* f;
-unichar flechi[TAILLE_MOT];
+/*unichar flechi[TAILLE_MOT];
 unichar canonique[TAILLE_MOT];
-unichar code_gramm[TAILLE_MOT];
+unichar code_gramm[TAILLE_MOT];*/
 unsigned char* code_gramm_temp;
 unichar s[4000];
 int i,j,non_nul,z;
 struct liste_nombres* ptr;
-
+return;
 f=u_fopen(dico,U_READ);
 if (f==NULL) {
    fprintf(stderr,"Cannot open dictionary %s\n",dico);
    return;
 }
 while (u_read_line(f,s)) {
-  tokenize_DELA_line_into_3_parts(s,flechi,canonique,code_gramm);
-  ajouter_forme_flechie(canonique,0,racine,flechi);
-  ptr=get_token_list_for_sequence(flechi,alph,tok);
+   struct dela_entry* entry=tokenize_DELAF_line(s,1);
+   if (entry==NULL) {
+      /* This case should never happen */
+      fatal_error("Invalid dictionary line in load_dic_for_locate");
+   }
+  ajouter_forme_flechie(entry->lemma,0,racine,entry->inflected);
+  ptr=get_token_list_for_sequence(entry->inflected,alph,tok);
   struct liste_nombres* ptr_copy = ptr; // s.n.
   while (ptr!=NULL) {
       i=ptr->n;
       index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
-      if (code_gramm[0]!='\0') {
-         if (index_code_gramm[i]==NULL) {
-            index_code_gramm[i]=nouveau_code_pattern(n_octet_code_gramm);
+      if (index_code_gramm[i]==NULL) {
+         index_code_gramm[i]=nouveau_code_pattern(n_octet_code_gramm);
+      }
+      get_numeros_pattern(entry,index_code_gramm[i],n_octet_code_gramm);
+      if (index_code_gramm[i]!=NULL) {
+         j=0;
+         non_nul=0;
+         while (j<n_octet_code_gramm) {
+           if (index_code_gramm[i][j]!=0) {
+             non_nul=1;
+             break;
+           }
+           j++;
          }
-         get_numeros_pattern(code_gramm,index_code_gramm[i],canonique,n_octet_code_gramm);
-         if (index_code_gramm[i]!=NULL) {
-            j=0;
-            non_nul=0;
-            while (j<n_octet_code_gramm) {
-              if (index_code_gramm[i][j]!=0) {
-                non_nul=1;
-                break;
-              }
-              j++;
-            }
-            if (!non_nul) {
-               free(index_code_gramm[i]);
-               index_code_gramm[i]=NULL;
-            }
+         if (!non_nul) {
+            free(index_code_gramm[i]);
+            index_code_gramm[i]=NULL;
          }
       }
       ptr=ptr->suivant;
   }
   free_liste_nombres(ptr_copy); // s.n.
-  if (!est_un_mot_simple(flechi,alph,tokenization_mode)) {
+  if (!est_un_mot_simple(entry->inflected,alph,tokenization_mode)) {
     // on est dans le cas d'un mot composé
     if (existe_etiquette_DIC || existe_etiquette_CDIC) {
        // si on a <DIC> dans le graphe, on charge betement toutes
        // les formes flechies composes
-       add_compound_word_with_no_pattern(flechi,alph,tok,DLC_tree,tokenization_mode);
+       add_compound_word_with_no_pattern(entry->inflected,alph,tok,DLC_tree,tokenization_mode);
     }
-    if (code_gramm[0]!='\0') {
-      code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
-      get_numeros_pattern(code_gramm,code_gramm_temp,canonique,n_octet_code_gramm);
-      if (code_gramm_temp!=NULL) {
+    code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
+    get_numeros_pattern(entry,code_gramm_temp,n_octet_code_gramm);
+    if (code_gramm_temp!=NULL) {
+      j=0;
+      non_nul=0;
+      while (j<n_octet_code_gramm) {
+        if (code_gramm_temp[j]!=0) {
+          non_nul=1;
+          break;
+        }
+        j++;
+      }
+      if (!non_nul) {
+         free(code_gramm_temp);
+      }
+      else {
+        // si le mot verifie au moins un pattern, on le met dans
+        // l'arbre dlc
         j=0;
-        non_nul=0;
         while (j<n_octet_code_gramm) {
-          if (code_gramm_temp[j]!=0) {
-            non_nul=1;
-            break;
-          }
+          for (z=0;z<8;z++)
+            if (code_gramm_temp[j]&(1<<z)) {
+              add_compound_word_with_pattern(entry->inflected,j*8+z,alph,tok,DLC_tree,tokenization_mode);
+            }
           j++;
         }
-        if (!non_nul) {
-           free(code_gramm_temp);
-        }
-        else {
-          // si le mot verifie au moins un pattern, on le met dans
-          // l'arbre dlc
-          j=0;
-          while (j<n_octet_code_gramm) {
-            for (z=0;z<8;z++)
-              if (code_gramm_temp[j]&(1<<z)) {
-                add_compound_word_with_pattern(flechi,j*8+z,alph,tok,DLC_tree,tokenization_mode);
-              }
-            j++;
-          }
-          free(code_gramm_temp);
-        }
+        free(code_gramm_temp);
       }
     }
   }
+  free_dic_entry(entry);
 }
 u_fclose(f);
 }
@@ -262,40 +264,37 @@ for (int i=0;i<tok->N;i++) {
       L->suivant=tag_token_list;
       tag_token_list=L;
       // and we look for the patterns it verifies
-      unichar flechi[2000];
-      unichar canonique[2000];
-      unichar code_gramm[2000];
-      #warning we must use here tokenize_tag_token and adapt the code
-      tokenize_tag_token_into_3_parts(tok->tab[i],flechi,canonique,code_gramm);
-      ajouter_forme_flechie(canonique,0,racine,tok->tab[i]);
+      struct dela_entry* entry=tokenize_tag_token(tok->tab[i]);
+      if (entry==NULL) {
+         /* This should never happen */
+         fatal_error("Invalid tag token in function check_patterns_for_tag_tokens\n");
+      }
+      ajouter_forme_flechie(entry->lemma,0,racine,tok->tab[i]);
       index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
-      if (code_gramm[0]!='\0') {
-         if (index_code_gramm[i]==NULL) {
-            index_code_gramm[i]=nouveau_code_pattern(n_octet_code_gramm);
+      if (index_code_gramm[i]==NULL) {
+         index_code_gramm[i]=nouveau_code_pattern(n_octet_code_gramm);
+      }
+      get_numeros_pattern(entry,index_code_gramm[i],n_octet_code_gramm);
+      if (index_code_gramm[i]!=NULL) {
+         int j=0;
+         int non_nul=0;
+         while (j<n_octet_code_gramm) {
+           if (index_code_gramm[i][j]!=0) {
+             non_nul=1;
+             break;
+           }
+           j++;
          }
-         get_numeros_pattern(code_gramm,index_code_gramm[i],canonique,n_octet_code_gramm);
-         if (index_code_gramm[i]!=NULL) {
-            int j=0;
-            int non_nul=0;
-            while (j<n_octet_code_gramm) {
-              if (index_code_gramm[i][j]!=0) {
-                non_nul=1;
-                break;
-              }
-              j++;
-            }
-            if (!non_nul) {
-               free(index_code_gramm[i]);
-               index_code_gramm[i]=NULL;
-            }
+         if (!non_nul) {
+            free(index_code_gramm[i]);
+            index_code_gramm[i]=NULL;
          }
       }
       
-    if ( 0 && !est_un_mot_simple(flechi,alph,tokenization_mode)) {
-    // on est dans le cas d'un mot composé
-    if (code_gramm[0]!='\0') {
+    if ( 0 && !est_un_mot_simple(entry->inflected,alph,tokenization_mode)) {
+      // on est dans le cas d'un mot composé
       unsigned char* code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
-      get_numeros_pattern(code_gramm,code_gramm_temp,canonique,n_octet_code_gramm);
+      get_numeros_pattern(entry,code_gramm_temp,n_octet_code_gramm);
       if (code_gramm_temp!=NULL) {
         int j=0;
         int non_nul=0;
@@ -316,17 +315,16 @@ for (int i=0;i<tok->N;i++) {
           while (j<n_octet_code_gramm) {
             for (int z=0;z<8;z++)
               if (code_gramm_temp[j]&(1<<z)) {
-                add_compound_word_with_pattern(flechi,j*8+z,alph,tok,DLC_tree,tokenization_mode);
+                add_compound_word_with_pattern(entry->inflected,j*8+z,alph,tok,DLC_tree,tokenization_mode);
               }
             j++;
           }
           free(code_gramm_temp);
         }
       }
-    }
   }
 
-
+   free_dic_entry(entry);
 
   }
 }
