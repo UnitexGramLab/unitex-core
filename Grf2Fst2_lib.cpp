@@ -591,7 +591,7 @@ ensemble_det nouveau_char_etats_det()
   ce->valeur = 0;
   ce->num_char = (unsigned int) UINT_MAX; /* UINT_MAX = 0xffff on 32-bit machines,
                                              0xffffffff on 64-bit: defined in
-                                             <limits.h> */
+                                             "Limits.h" */
   return ce;
 }
 

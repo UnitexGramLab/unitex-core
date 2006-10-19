@@ -24,7 +24,6 @@
 #define LimitsH
 //---------------------------------------------------------------------------
 
-#include <limits.h>
 /* import various macros, e.g.:
    INT_MAX   maximum value of an int
    LONG_MAX                      long int
@@ -33,9 +32,8 @@
 */
 
 
-#define INT_BITS ((sizeof(int) == 4) ? 32 : ( (sizeof(int) == 8) ? 64 : 32))
+#define INT_BITS ((int)(sizeof(int)*8))
 /* number of bits in an integer */
-
-
+#define UINT_MAX ((unsigned int)-1)
 
 #endif
