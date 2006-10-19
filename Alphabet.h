@@ -26,12 +26,12 @@
 
 
 struct alphabet_ {
-  unichar* t[0x10000]; // t['e']= "E{E +'}" where {E+'} stands for the unicode
+  unichar* t[0x10000]; // t['e']= "E{E+'}" where {E+'} stands for the unicode
                        // character representing the E with accent
   char t2[0x10000];
        // t2['E'] = 1 -> 'E' is an uppercase letter
        // t2['e'] = 2 -> 'e' is a lowercase letter
-       // t2['?'] = (1 & 2) -> '?' is a non variable letter (thai, chinese, ...)
+       // t2['?'] = (1 & 2) -> '?' is a non variable letter (Thai, Chinese, ...)
        // t2['?'] = 0 -> '?' is not a letter
 };
 

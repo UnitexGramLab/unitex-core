@@ -91,6 +91,7 @@ int u_fputc_raw_big_endian(unichar,FILE*);
 int u_fputc_utf8(unichar,FILE*);
 int u_fputc_utf8_diese(unichar c,FILE *f);
 int u_fgetc_utf8(FILE*);
+void u_fempty(char*);
 
 FILE* u_fopen(char*,char*);
 int u_fclose(FILE*);

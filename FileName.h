@@ -24,6 +24,8 @@
 #define FileNameH
 //---------------------------------------------------------------------------
 
+#define FILENAME_SIZE 1024
+
 #define REPLACE_FILE 0
 #define PREFIX_SRC 1
 #define SUFFIX_SRC 2

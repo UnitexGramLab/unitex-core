@@ -265,7 +265,7 @@ CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o CodePages.o Error.o\
 
 DICO      = Dico
 DICO_OBJS = Dico.o Liste_nombres.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
-            WordList.o Token_tree.o unicode.o Table_complex_token_hash.o Fst2.o IOBuffer.o Error.o \
+            WordList.o unicode.o Table_complex_token_hash.o Fst2.o IOBuffer.o Error.o \
             CompoundWordTree.o DLC_optimization.o Flexional_codes.o Facteurs_interdits.o Fst2_tags_optimization.o \
             Grammatical_codes.o Loading_dic.o Liste_num.o LocatePattern.o Matches.o Optimized_fst2.o Pattern_transitions.o \
             Text_parsing.o TransductionVariables.o TransductionStack.o GF_lib.o LocateAsRoutine.o Context.o\

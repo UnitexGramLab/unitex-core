@@ -33,14 +33,13 @@
 #include "Dico_application.h"
 #include "Liste_nombres.h"
 #include "FileName.h"
-#include "Token_tree.h"
 #include "Table_complex_token_hash.h"
 #include "Fst2.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "LocateAsRoutine.h"
 #include "Matches.h"
-
+#include "Error.h"
 
 //  This enhanced  version of dico.exe was rewritten by Alexis Neme,
 //  based on the original version written by Sebastien Paumier
@@ -216,45 +215,35 @@ return 1;
 
 
 /**
+ * This function initializes the names of the files associated to a .snt text
+ * 
+ * Example: text_snt="/tmp/myunitex/English/Corpus/foo.snt"
+ * => dlf="/tmp/myunitex/English/Corpus/foo_snt/dlf"
+ * => dlc="/tmp/myunitex/English/Corpus/foo_snt/dlc"
+ * etc.
+ * 
  * @author Alexis Neme
+ * Modified by Sébastien Paumier
  */
-int Init_OutputDic_dlf_dlc_err(char *text_snt,char  *nom_dlf,char  *nom_dlc,char  *nom_err) 
-{	// creates a blank files for appending in next stages
-
-	FILE *dico;
-	char textpath[1000];
-
-    get_snt_path(text_snt,textpath);
-	// delete  the 3 file-dicos for output (simple, compound and unknown words) of the text in the text_snt  directory
-	strcpy(nom_dlf,textpath);
-	strcat(nom_dlf,"dlf");
-	dico=u_fopen(nom_dlf,U_WRITE);
-	if (dico ==NULL) {
-	   fprintf(stderr,"Cannot create %s\n",nom_dlf);
-	   return 1;
-	}
-	u_fclose(dico);
-
-	strcpy(nom_dlc,textpath);
-	strcat(nom_dlc,"dlc");
-	dico=u_fopen(nom_dlc,U_WRITE);
-	if (dico ==NULL) {
-	   fprintf(stderr,"Cannot create %s\n",nom_dlc);
-	   return 1;
-	}
-	u_fclose(dico);
-
-	strcpy(nom_err,textpath);
-	strcat(nom_err,"err");
-	dico=u_fopen(nom_err,U_WRITE);
-	if (dico ==NULL) {
-	   fprintf(stderr,"Cannot create %s\n",nom_err);
-	   return 1;
-	}
-    u_fclose(dico); 
-	return 0;
-
+#warning move this function into a separate file
+void set_text_file_names(char* text_snt,char* name_dlf,char* name_dlc,char* name_err,
+                         char* name_text_cod,char* name_tokens) {
+char text_snt_path[FILENAME_SIZE];
+/* First, we compute the path of the _snt directory of the text */
+get_snt_path(text_snt,text_snt_path);
+/* And we use it to produce the output file names */
+strcpy(name_dlf,text_snt_path);
+strcat(name_dlf,"dlf");
+strcpy(name_dlc,text_snt_path);
+strcat(name_dlc,"dlc");
+strcpy(name_err,text_snt_path);
+strcat(name_err,"err");
+strcpy(name_text_cod,text_snt_path);
+strcat(name_text_cod,"text.cod");
+strcpy(name_tokens,text_snt_path);
+strcat(name_tokens,"tokens.txt");
 }
+
 
 void compute_stat_dic(char *text_snt, char *stat_dic_filename, int SIMPLE_WORDS, int COMPOUND_WORDS, int ERRORS)
 {
@@ -284,108 +273,91 @@ void compute_stat_dic(char *text_snt, char *stat_dic_filename, int SIMPLE_WORDS,
 
 
 
-/**
- * modified and commented by Alexis Neme
- */
+
 int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
-
-char last_processing[4] = ""  ;			// store either .fst2 or .bin
-										// on the first application : the output files(dlf,dlc) are created (U_WRITE) 
-                                   
-										// on the subsequent apply or locate  : we close them ouput file and we reopen them
-										// on the append mode  ( U_APPEND)  
-									 
-
-char nom_bin[1000];                     // DICTIONNARIE(S) .bin compiled in the bin format
-//unsigned char* bin;                     // bin is the dictionarie(s) that we submit to the processing
-char nom_inf[1000];
-//struct INF_codes* INF;                  // is the gramatical encoding associated with this dico
-
-
-
-FILE *text;                             // text is the trimed input text  after the segmentation .snt extention
-
-char text_cod[2000];                    // after the segmentation , .txt is represented by 3 files in the text_snt directory 
-char tokens_txt[2000];                  // .snt(almost identical a .txt) text.cod & tokens.txt
-struct text_tokens* tok;        
-
-char nom_dlf[1000];
-char nom_dlc[1000];
-char nom_err[1000];
-
-FILE *dlc,*dlf,*err;                    // Output files produced by the dico program (dlc= coumpounds words, dlf= simple forms, err= Unknown)
-
-Alphabet* alph;
 
 if (argc<4) {                           
    usage();
    return 0;
 }
 
+/* Names of the .bin and .inf files that compose a dictionary */
+char name_bin[FILENAME_SIZE];
+char name_inf[FILENAME_SIZE];
 
-// prepare the text dico (dlf,dlc will be  blanked then appended
-	Init_OutputDic_dlf_dlc_err(argv[1],nom_dlf, nom_dlc, nom_err);
-	dlf=u_fopen(nom_dlf,U_WRITE);
-	dlc=u_fopen(nom_dlc,U_WRITE);
-	err=u_fopen(nom_err,U_WRITE);
+/* text.cod is the file that contains the text in the form of a 
+ * token number sequence */
+char name_text_cod[FILENAME_SIZE]; 
+FILE* text_cod;
 
+/* tokens.txt is the file that contains all the distinct tokens of the text */
+char name_tokens[FILENAME_SIZE];
+struct text_tokens* tokens;        
 
-alph=load_alphabet(argv[2]);
-if (alph==NULL) {
-   fprintf(stderr,"Cannot open alphabet file %s\n",argv[2]);
+/* dlf is the output dictionary for simple words */
+char name_dlf[FILENAME_SIZE];
+FILE* dlf;
+/* dlc is the output dictionary for compound words */
+char name_dlc[FILENAME_SIZE];
+FILE* dlc;
+/* err is the output dictionary for unknown words */
+char name_err[FILENAME_SIZE];
+FILE* err;
+
+/* We set the text file names */
+set_text_file_names(argv[1],name_dlf,name_dlc,name_err,name_text_cod,name_tokens);
+/* And we create empty files in order to append things to them */
+u_fempty(name_dlf);
+u_fempty(name_dlc);
+u_fempty(name_err);
+/* We load the alphabet */
+Alphabet* alphabet=load_alphabet(argv[2]);
+if (alphabet==NULL) {
+   error("Cannot open alphabet file %s\n",argv[2]);
    return 1;
 }
-
-// load the text input as result from the  Tokenization phase (tokens.txt, text.cod)
-
-get_snt_path(argv[1],tokens_txt);
-strcat(tokens_txt,"tokens.txt");
-tok=load_text_tokens(tokens_txt);
-if (tok==NULL) {
-   free_alphabet(alph);
-   fprintf(stderr,"Cannot open token file %s\n",tokens_txt);
+/* We load the text tokens */
+tokens=load_text_tokens(name_tokens);
+if (tokens==NULL) {
+   free_alphabet(alphabet);
+   error("Cannot open token file %s\n",name_tokens);
    return 1;
 }
-
-get_snt_path(argv[1],text_cod);
-strcat(text_cod,"text.cod");
-text=fopen(text_cod,"rb");
-if (text==NULL) {
-   free_alphabet(alph);
-   free_text_tokens(tok);
-   u_fclose(dlf);
-   u_fclose(dlc);
-   u_fclose(err);
-   fprintf(stderr,"Cannot open coded text file %s\n",text_cod);
+/* We open the text.cod file for binary reading */
+text_cod=fopen(name_text_cod,"rb");
+if (text_cod==NULL) {
+   free_alphabet(alphabet);
+   free_text_tokens(tokens);
+   error("Cannot open coded text file %s\n",name_text_cod);
    return 1;
 }
-
-
 printf("Initializing...\n");
-init_dico_application(tok,dlf,dlc,err,text,alph);
-u_fclose(dlf); u_fclose(dlc); u_fclose(err);           // we open dlf,dlc, err before each processing
-dlf=dlc=err=NULL;                                      // we close all after 
+init_dico_application(tokens,dlf,dlc,err,text_cod,alphabet);
+dlf=dlc=err=NULL;
 free_text_DICO();
 
 for (int priority=1;priority<4;priority++) {
    for (int i=3;i<argc;i++) {
       // we do a loop to apply several dictionaries
-      name_without_extension(argv[i],nom_inf);
-      char C=nom_inf[strlen(nom_inf)-1];
+      name_without_extension(argv[i],name_inf);
+      char C=name_inf[strlen(name_inf)-1];
 	  if ((priority==1 && C=='-') ||  (priority==2 && C!='-' && C!='+') ||  (priority==3 && C=='+')) {
-         file_name_extension(argv[i],nom_bin);
+         file_name_extension(argv[i],name_bin);
 
 		// a Dico.bin
-		 if (!strcmp(nom_bin,".bin"))    {    
+		 if (!strcmp(name_bin,".bin"))    {    
 	         printf("Applying dico  %s...\n",argv[i]);
 	         // opening output files
-			 dlf =   u_fopen(nom_dlf,U_APPEND);
-             dlc =   u_fopen(nom_dlc,U_APPEND);  
-             err =   u_fopen(nom_err,U_WRITE);  
+			 dlf =   u_fopen(name_dlf,U_APPEND);
+             dlc =   u_fopen(name_dlc,U_APPEND);  
+             err =   u_fopen(name_err,U_WRITE);  
 			 assign_text_DICO(dlf,dlc,err);
 			 // working...
-            Launch_dico_application(argv[i],text,tok,alph,dlf,dlc,err,priority);
+            Launch_dico_application(argv[i],text_cod,tokens,alphabet,dlf,dlc,err,priority);
             // dumping and closing output files
             sauver_mots_inconnus();
         	u_fclose(dlc); u_fclose(dlf);
@@ -394,7 +366,7 @@ for (int priority=1;priority<4;priority++) {
             free_text_DICO();                   // DLF, DLC, ERR = NULL
          }  
          // a FST grammar 
-         if (!strcmp(nom_bin,".fst2"))       { 
+         if (!strcmp(name_bin,".fst2"))       { 
             printf("Applying %s...\n",argv[i]);
             /**
              * IMPORTANT!!!
@@ -404,11 +376,11 @@ for (int priority=1;priority<4;priority++) {
              */
 			LaunchLocateAsRoutine(argv,i);             // i is the rank of the fst that we need to locates patterns					
 	         // opening output files
-			 dlf =   u_fopen(nom_dlf,U_APPEND);
-             dlc =   u_fopen(nom_dlc,U_APPEND);  
-             err =   u_fopen(nom_err,U_WRITE);  
+			 dlf =   u_fopen(name_dlf,U_APPEND);
+             dlc =   u_fopen(name_dlc,U_APPEND);  
+             err =   u_fopen(name_err,U_WRITE);  
 			 assign_text_DICO(dlf,dlc,err);
-			MergeDicLocateResults(argv[1], tok, "concord.ind",  priority);
+			MergeDicLocateResults(argv[1], tokens, "concord.ind",  priority);
             // dumping and closing output files
             sauver_mots_inconnus();
         	u_fclose(dlc); u_fclose(dlf);
@@ -425,9 +397,9 @@ for (int priority=1;priority<4;priority++) {
 printf("Saving unknown words...\n");
 
 if (err == NULL ) {  	
-    dlf =  u_fopen(nom_dlf,U_APPEND);  
-	dlc =  u_fopen(nom_dlc,U_APPEND);  
-	err =  u_fopen(nom_err,U_WRITE);  
+    dlf =  u_fopen(name_dlf,U_APPEND);  
+	dlc =  u_fopen(name_dlc,U_APPEND);  
+	err =  u_fopen(name_err,U_WRITE);  
 	assign_text_DICO(dlf,dlc,err);
 } 
 
@@ -439,12 +411,12 @@ sauver_mots_inconnus();
 printf("Done.\n");
 
 free_dico_application();
-free_alphabet(alph);
-free_text_tokens(tok);
+free_alphabet(alphabet);
+free_text_tokens(tokens);
 u_fclose(dlf);
 u_fclose(dlc);
 u_fclose(err);
-fclose(text);
+fclose(text_cod);
 free_text_DICO();
 //getchar();
 return 0;

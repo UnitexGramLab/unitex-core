@@ -1786,6 +1786,18 @@ return i;
 }
 
 
+/**
+ * This function creates an empty Unicode that just contains the
+ * byte order mark. It raises a fatal error if it fails.
+ */
+void u_fempty(char* name) {
+FILE* f=u_fopen(name,U_WRITE);
+if (f==NULL) {
+   fatal_error("Cannot create empty file: %s\n",name);
+}
+u_fclose(f);
+}
+
 
 /* Olivier Blanc
  * fonction de la library C standard reecrites pour l'unicode

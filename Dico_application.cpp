@@ -39,7 +39,7 @@ struct text_tokens* TOK;
 int buffer[BUFFER_SIZE];
 int LENGTH_FOR_DICO;
 int current_start_pos;
-struct token_tree_node* token_tree_root;
+//struct token_tree_node* token_tree_root;
 struct tct_hash* tct_h;  
 unsigned char* part_of_a_word;
 unsigned char* has_been_processed;
@@ -75,9 +75,9 @@ return (has_been_processed[n/4] & ((3<<(2*(n%4)))))>>(2*(n%4));
 struct word_struct_array* create_word_struct_array(int n) {
 struct word_struct_array* res;
 res=(struct word_struct_array*)malloc(sizeof(struct word_struct_array));
-res->tab=(struct word_struct**)malloc(sizeof(struct word_struct*)*n);
+res->element=(struct word_struct**)malloc(sizeof(struct word_struct*)*n);
 for (int i=0;i<n;i++) {
-  res->tab[i]=NULL;
+  res->element[i]=NULL;
 }
 res->N=n;
 return res;
@@ -87,9 +87,9 @@ return res;
 void liberer_offset_list(struct offset_list* l) {
 struct offset_list* tmp;
 while (l!=NULL) {
-  free(l->contenu_provisoire);
+  free(l->content);
   tmp=l;
-  l=l->suivant;
+  l=l->next;
   free(tmp);
 }
 }
@@ -98,9 +98,9 @@ while (l!=NULL) {
 void liberer_word_transition(struct word_transition* t) {
 struct word_transition* tmp;
 while (t!=NULL) {
-  liberer_word_struct(t->arr);
+  liberer_word_struct(t->node);
   tmp=t;
-  t=t->suivant;
+  t=t->next;
   free(tmp);
 }
 }
@@ -116,7 +116,7 @@ free(w);
 
 void free_word_struct_array(struct word_struct_array* w) {
 for (int i=0;i<w->N;i++) {
-  liberer_word_struct(w->tab[i]);
+  liberer_word_struct(w->element[i]);
 }
 free(w);
 }
@@ -126,13 +126,13 @@ struct offset_list* inserer_offset_si_absent(int n,struct offset_list* l,unichar
 if (l==NULL) {
   l=(struct offset_list*)malloc(sizeof(struct offset_list));
   l->offset=n;
-  l->contenu_provisoire=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(contenu)));
-  u_strcpy(l->contenu_provisoire,contenu);
-  l->suivant=NULL;
+  l->content=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(contenu)));
+  u_strcpy(l->content,contenu);
+  l->next=NULL;
   return l;
 }
 if (l->offset==n) return l;
-l->suivant=inserer_offset_si_absent(n,l->suivant,contenu);
+l->next=inserer_offset_si_absent(n,l->next,contenu);
 return l;
 }
 
@@ -149,17 +149,17 @@ return res;
 struct word_transition* new_word_transition() {
 struct word_transition* res;
 res=(struct word_transition*)malloc(sizeof(struct word_transition));
-res->arr=NULL;
-res->suivant=NULL;
+res->node=NULL;
+res->next=NULL;
 return res;
 }
 
 
 void ajouter_offset_pour_token(int token_number,int offset,unichar* contenu) {
-if (word_array->tab[token_number]==NULL) {
-  word_array->tab[token_number]=new_word_struct();
+if (word_array->element[token_number]==NULL) {
+  word_array->element[token_number]=new_word_struct();
 }
-word_array->tab[token_number]->list=inserer_offset_si_absent(offset,word_array->tab[token_number]->list,contenu);
+word_array->element[token_number]->list=inserer_offset_si_absent(offset,word_array->element[token_number]->list,contenu);
 }
 
 
@@ -234,7 +234,7 @@ while (t!=NULL && t->token_number<=token) {
   if (t->token_number==token) {
      return t;
   }
-  t=t->suivant;
+  t=t->next;
 }
 return NULL;
 }
@@ -256,13 +256,13 @@ if (list->token_number==token) {
    return list;
 }
 if (list->token_number<token) {
-   list->suivant=insert_word_transition(list->suivant,res,token);
+   list->next=insert_word_transition(list->next,res,token);
    return list;
 }
 // if we are here, we must insert a new word transition in the list
 (*res)=new_word_transition();
 (*res)->token_number=token;
-(*res)->suivant=list;
+(*res)->next=list;
 return (*res);
 }
 
@@ -284,14 +284,14 @@ if (contenu[string_pos]=='\0') {
    // if we are at the end of the current token
    struct word_transition* trans;
    w->trans=insert_word_transition(w->trans,&trans,buffer[current_start_pos+deplacement]);
-   if (trans->arr==NULL) {
+   if (trans->node==NULL) {
       // if node does not exist, we create it
-      trans->arr=new_word_struct();
+      trans->node=new_word_struct();
    }
    entry[entry_pos]='\0';
    TOKEN_TAB[pos_token_tab++]=trans->token_number;
    // we add this offset to the node list
-   trans->arr->list=inserer_offset_si_absent(pos-2,trans->arr->list,entry);
+   trans->node->list=inserer_offset_si_absent(pos-2,trans->node->list,entry);
    if (!(n_transitions & 32768)) {
       // if this node is final
        TOKEN_TAB[pos_token_tab]=-1;
@@ -320,7 +320,7 @@ if (contenu[string_pos]=='\0') {
    deplacement++;
    contenu=TOK->token[buffer[current_start_pos+deplacement]];
    string_pos=0;
-   w=trans->arr;
+   w=trans->node;
 }
 
 if ((n_transitions & 32768)) {
@@ -380,7 +380,7 @@ while (current_start_pos<LENGTH_FOR_DICO) {
   }
   int token_number=buffer[current_start_pos];
   if (!WORDS_HAVE_BEEN_COUNTED) n_occur[token_number]++;
-  w=word_array->tab[token_number];
+  w=word_array->element[token_number];
   if (w!=NULL) {
      struct word_transition* trans;
      int fini=0;
@@ -393,7 +393,7 @@ while (current_start_pos<LENGTH_FOR_DICO) {
            fini=1;
         }
         else {
-          w=trans->arr;
+          w=trans->node;
           TOKEN_TAB[Z++]=buffer[current_start_pos+pos_depart];
           TOKEN_TAB[Z]=-1;
           // we count the compound words allready found
@@ -410,7 +410,7 @@ while (current_start_pos<LENGTH_FOR_DICO) {
                    COMPOUND_WORDS++;
                 }
              }
-             l=l->suivant;
+             l=l->next;
           }
           pos_depart++;
         }
@@ -418,9 +418,9 @@ while (current_start_pos<LENGTH_FOR_DICO) {
      struct offset_list* l;
      l=w->list;
      while (l!=NULL) {
-        u_strcpy(entry,l->contenu_provisoire);
+        u_strcpy(entry,l->content);
         explorer_bin_composes_tokens(l->offset,TOK->token[buffer[current_start_pos+pos_depart]],entry,0,u_strlen(entry),w,pos_depart,TOKEN_TAB,0,priority);
-        l=l->suivant;
+        l=l->next;
 
      }
   }
@@ -455,7 +455,7 @@ void init_dico_application(struct text_tokens* tok,FILE* dlf,FILE* dlc,FILE* err
 part_of_a_word=(unsigned char*)malloc(sizeof(unsigned char)*(((tok->N)/4)+1));
 has_been_processed=(unsigned char*)malloc(sizeof(unsigned char)*(((tok->N)/4)+1));
 n_occur=(int*)malloc(tok->N*sizeof(int));
-token_tree_root=new_token_tree_node();
+//token_tree_root=new_token_tree_node();
 tct_h =new_tct_hash(TCT_HASH_SIZE,TCT_HASH_BLOCK_SIZE);
 if (part_of_a_word==NULL || has_been_processed==NULL || n_occur==NULL) {
    fatal_error("Not enough memory in init_dico_application\n");
@@ -480,7 +480,7 @@ ALPH=alph;
 void free_dico_application() {
 free(part_of_a_word);
 free(has_been_processed);
-free_token_tree_node(token_tree_root);
+//free_token_tree_node(token_tree_root);
 free(n_occur);
 }
 

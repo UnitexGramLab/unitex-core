@@ -27,34 +27,94 @@
 #include "Alphabet.h"
 #include "Text_tokens.h"
 #include "DELA.h"
-#include "Token_tree.h"
 #include "Table_complex_token_hash.h"
 
 
+/**
+ * This structure is used to represent a list of offsets in the current
+ * .bin dictionary. For each offset, 'content' contains the sequence that
+ * leads to the node with this offset. For instance, if we are in the .bin 
+ * dictionary at the position 5487 corresponding to "black-eyed", we will have:
+ * 
+ * offset=5487   content="black-eyed"
+ * 
+ * This is used to cache information when looking for compound words.
+ * 'next' is the next element in the list.
+ */
 struct offset_list {
   int offset;
-  unichar* contenu_provisoire;
-  struct offset_list* suivant;
-};
-
-struct word_struct {
-  struct offset_list* list;
-  struct word_transition* trans;
+  unichar* content;
+  struct offset_list* next;
 };
 
 
+/**
+ * This structure represents a list of transitions from one tree node to another.
+ * 'token_number' is the number of the token that tags the current transition and
+ * 'node' is its destination node. 'next' is the next element in the list.
+ */
 struct word_transition {
-  int token_number;
-  struct word_struct* arr;
-  struct word_transition* suivant;
+   int token_number;
+   struct word_struct* node;
+   struct word_transition* next;
 };
 
 
+/**
+ * This structure represents a tree node. 'trans' is the list of
+ * its output branches. 'list' represent the offsets in the current
+ * .bin dictionary.
+ */
+struct word_struct {
+   struct offset_list* list;
+   struct word_transition* trans;
+};
+
+
+/**
+ * This structure is used to store information about the structure
+ * of words. element[i] is a tree that provides information about words 
+ * whose first token has the number i. N is the size of the array.
+ */
 struct word_struct_array {
-  struct word_struct** tab;
-  int N;
+   struct word_struct** element;
+   int N;
 };
 
+
+/**
+ * This structure is used to store various information needed for the
+ * application of dictionaries to a text.
+ */
+struct dico_application_info {
+   /* Info about the text files */
+   FILE* text_cod;
+   struct text_tokens* tokens;
+   FILE* dlf;
+   FILE* dlc;
+   FILE* err;
+   /* The alphabet to use */
+   Alphabet* alphabet;
+   /* The dictionary to use */
+   unsigned char* bin;
+   struct INF_codes* inf;
+   /* Information about the recognized words:
+    * - word_array is a tree that contains information about the
+    *   structure of words
+    * - part_of_a_word is an array used to know if a token is part of
+    *   a word or not
+    * - has_been_processed is an array used to know if a token has already been
+    *   processed or not, and if it is the case, we use this array to know the priority
+    *   of the dictionary that matched this token
+    * - n_occurrences is an array used to count the number of occurrences of each token
+    * - token_tree_root*/
+   struct word_struct_array* word_array;
+   unsigned char* part_of_a_word;
+   unsigned char* has_been_processed;
+   int* n_occurrences;
+   struct tct_hash* tct_h;
+   struct buffer* buffer;
+};
 
 
 #define BUFFER_SIZE 200000
@@ -69,7 +129,7 @@ extern struct INF_codes* INF;
 extern FILE* TEXT;
 extern struct text_tokens* TOK;
 extern int buffer[BUFFER_SIZE];
-extern struct token_tree_node* token_tree_root;
+//extern struct token_tree_node* token_tree_root;
 extern unsigned char* part_of_a_word;
 extern unsigned char* has_been_processed;
 extern int COMPOUND_WORDS;
