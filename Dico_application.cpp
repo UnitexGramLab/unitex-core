@@ -29,6 +29,10 @@
 
 #define DEBUG 0
 
+/*
+ * "pomme de terre" is made of 5 tokens : "pomme" SPACE "de" SPACE "terre"
+ * Here we define the maximum number of tokens in a compound.
+ */
 #define TOKENS_IN_A_COMPOUND 256
 
 /* This margin is used for compound words: when we are at less
@@ -37,23 +41,191 @@
 #define MARGIN_BEFORE_BUFFER_END 200
 
 
+void free_word_struct(struct word_struct*);
+void free_word_transition(struct word_transition*);
+void free_offset_list(struct offset_list*);
 
 
-
-
-struct word_struct_array* create_word_struct_array(int n) {
+/**
+ * Creates, initializes and returns a new word struct array with the
+ * given capacity.
+ */
+struct word_struct_array* new_word_struct_array(int n) {
 struct word_struct_array* res;
 res=(struct word_struct_array*)malloc(sizeof(struct word_struct_array));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_word_struct_array\n");
+}
 res->element=(struct word_struct**)malloc(sizeof(struct word_struct*)*n);
+if (res->element==NULL) {
+   fatal_error("Not enough memory in new_word_struct_array\n");
+}
 for (int i=0;i<n;i++) {
-  res->element[i]=NULL;
+   res->element[i]=NULL;
 }
 res->N=n;
 return res;
 }
 
 
-void liberer_offset_list(struct offset_list* l) {
+/**
+ * Frees a word struct array.
+ */
+void free_word_struct_array(struct word_struct_array* w) {
+if (w==NULL) return;
+for (int i=0;i<w->N;i++) {
+  free_word_struct(w->element[i]);
+}
+free(w);
+}
+
+
+/**
+ * Creates, initializes and returns a word struct.
+ */
+struct word_struct* new_word_struct() {
+struct word_struct* res;
+res=(struct word_struct*)malloc(sizeof(struct word_struct));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_word_struct\n");
+}
+res->list=NULL;
+res->trans=NULL;
+return res;
+}
+
+
+/**
+ * Frees a word struct.
+ */
+void free_word_struct(struct word_struct* w) {
+if (w==NULL) return;
+free_word_transition(w->trans);
+free_offset_list(w->list);
+free(w);
+}
+
+
+/**
+ * Creates, initializes and returns a word struct.
+ */
+struct word_transition* new_word_transition() {
+struct word_transition* res;
+res=(struct word_transition*)malloc(sizeof(struct word_transition));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_word_transition\n");
+}
+res->node=NULL;
+res->next=NULL;
+return res;
+}
+
+
+/**
+ * Looks for a word transition in a sorted list.
+ */
+struct word_transition* get_word_transition(struct word_transition* t,int token) {
+while (t!=NULL && t->token_number<=token) {
+   if (t->token_number==token) {
+      return t;
+   }
+   t=t->next;
+}
+return NULL;
+}
+
+
+/**
+ * Gets a word transition from a sorted list. If neccessary, the word transition is
+ * created and inserted in the list. Returns the list. The result element is stored
+ * in the 'result' parameter.
+ */
+struct word_transition* insert_word_transition(struct word_transition* list,
+                                               struct word_transition** result,
+                                               int token) {
+if (list==NULL) {
+   (*result)=new_word_transition();
+   (*result)->token_number=token;
+   return (*result);
+}
+if (list->token_number==token) {
+   (*result)=list;
+   return list;
+}
+if (list->token_number<token) {
+   list->next=insert_word_transition(list->next,result,token);
+   return list;
+}
+/* If we are here, we must insert a new word transition in the list */
+(*result)=new_word_transition();
+(*result)->token_number=token;
+(*result)->next=list;
+return (*result);
+}
+
+
+/**
+ * Frees a word transition.
+ */
+void free_word_transition(struct word_transition* t) {
+struct word_transition* tmp;
+while (t!=NULL) {
+   free_word_struct(t->node);
+   tmp=t;
+   t=t->next;
+   free(tmp);
+}
+}
+
+
+/**
+ * This function returns a struct offset_list* that contains the given offset.
+ * If the offset is not in the list, the function adds it.
+ */
+struct offset_list* get_offset(int offset,struct offset_list* l,unichar* content) {
+if (l==NULL) {
+   /* If the offset is not in the list, we add it */
+   l=(struct offset_list*)malloc(sizeof(struct offset_list));
+   if (l==NULL) {
+      fatal_error("Not enough memory in get_offset\n");
+   }
+   l->offset=offset;
+   l->content=u_strdup(content);
+   l->next=NULL;
+   return l;
+}
+/* If we have it, we return it */
+if (l->offset==offset) return l;
+/* Otherwise, we look further */
+l->next=get_offset(offset,l->next,content);
+return l;
+}
+
+
+/**
+ * This function associates an offset in the .bin to the given token.
+ * 'content' is the token as found in the dictionary. For instance, if
+ * token #45="APPLE", word_array->element[45] will contain a reference to
+ * the offset that correspond to the word "apple", and "apple" will be copied
+ * in the content associated to this offset.
+ * 
+ * Note that several offset/content pairs can be assigned to a token. For instance,
+ * the token "JACK" can be associated to both entries "Jack" (proper name)  and "jack" 
+ * (noun: electrical connection stuff, card figure, etc).
+ */
+void add_offset_for_token(struct word_struct_array* word_array,
+                          int token_number,int offset,unichar* content) {
+if (word_array->element[token_number]==NULL) {
+   word_array->element[token_number]=new_word_struct();
+}
+word_array->element[token_number]->list=get_offset(offset,word_array->element[token_number]->list,content);
+}
+
+
+/**
+ * Frees an offset list.
+ */
+void free_offset_list(struct offset_list* l) {
 struct offset_list* tmp;
 while (l!=NULL) {
   free(l->content);
@@ -61,75 +233,6 @@ while (l!=NULL) {
   l=l->next;
   free(tmp);
 }
-}
-
-
-void liberer_word_transition(struct word_transition* t) {
-struct word_transition* tmp;
-while (t!=NULL) {
-  liberer_word_struct(t->node);
-  tmp=t;
-  t=t->next;
-  free(tmp);
-}
-}
-
-
-void liberer_word_struct(struct word_struct* w) {
-if (w==NULL) return;
-liberer_word_transition(w->trans);
-liberer_offset_list(w->list);
-free(w);
-}
-
-
-void free_word_struct_array(struct word_struct_array* w) {
-for (int i=0;i<w->N;i++) {
-  liberer_word_struct(w->element[i]);
-}
-free(w);
-}
-
-
-struct offset_list* inserer_offset_si_absent(int n,struct offset_list* l,unichar* contenu) {
-if (l==NULL) {
-  l=(struct offset_list*)malloc(sizeof(struct offset_list));
-  l->offset=n;
-  l->content=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(contenu)));
-  u_strcpy(l->content,contenu);
-  l->next=NULL;
-  return l;
-}
-if (l->offset==n) return l;
-l->next=inserer_offset_si_absent(n,l->next,contenu);
-return l;
-}
-
-
-struct word_struct* new_word_struct() {
-struct word_struct* res;
-res=(struct word_struct*)malloc(sizeof(struct word_struct));
-res->list=NULL;
-res->trans=NULL;
-return res;
-}
-
-
-struct word_transition* new_word_transition() {
-struct word_transition* res;
-res=(struct word_transition*)malloc(sizeof(struct word_transition));
-res->node=NULL;
-res->next=NULL;
-return res;
-}
-
-
-void add_offset_for_token(struct word_struct_array* word_array,
-                               int token_number,int offset,unichar* contenu) {
-if (word_array->element[token_number]==NULL) {
-  word_array->element[token_number]=new_word_struct();
-}
-word_array->element[token_number]->list=inserer_offset_si_absent(offset,word_array->element[token_number]->list,contenu);
 }
 
 
@@ -156,13 +259,13 @@ if (token[pos]=='\0') {
    add_offset_for_token(info->word_array,token_number,offset-2,inflected);
    if (!(n_transitions & 32768)) {
       /* If the node is final */
-      int p=get_value(info->has_been_processed,token_number);
+      int p=get_value(info->simple_word,token_number);
       if (p==0 || p==priority) {
          /* We save the token only if it has not already been matched by
           * dictionary with a greater priority. Moreover, we indicate that
           * this token is part of a word and that it has been processed. */
          set_value(info->part_of_a_word,token_number,1);
-         set_value(info->has_been_processed,token_number,priority);
+         set_value(info->simple_word,token_number,priority);
          /* We compute the INF line number and we get the associated compressed lines */
          int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
          struct word_list* tmp=info->inf->codes[inf_number];
@@ -220,48 +323,6 @@ for (int i=0;i<info->tokens->N;i++) {
 }
 
 
-
-//
-// looks for a word transition in a sorted list
-//
-struct word_transition* get_word_transition(struct word_transition* t,int token) {
-while (t!=NULL && t->token_number<=token) {
-  if (t->token_number==token) {
-     return t;
-  }
-  t=t->next;
-}
-return NULL;
-}
-
-
-//
-// gets a word transition from a sorted list. If neccessary, the word transition is created and
-// inserted in the list. Returns the list. The result element is stored in the res parameter
-//
-struct word_transition* insert_word_transition(struct word_transition* list,struct word_transition** res,
-                                               int token) {
-if (list==NULL) {
-   (*res)=new_word_transition();
-   (*res)->token_number=token;
-   return (*res);
-}
-if (list->token_number==token) {
-   (*res)=list;
-   return list;
-}
-if (list->token_number<token) {
-   list->next=insert_word_transition(list->next,res,token);
-   return list;
-}
-// if we are here, we must insert a new word transition in the list
-(*res)=new_word_transition();
-(*res)->token_number=token;
-(*res)->next=list;
-return (*res);
-}
-
-
 /**
  * This function explores a .bin dictionary in order to find out compound words.
  * - 'offset' is the offset of the current .bin node.
@@ -279,7 +340,7 @@ return (*res);
  * - 'token_sequence' is the array that contains the number of the tokens that
  *   compose the word, ended by -1. If "grand"=token 45, "-"=token 2, 
  *   "papa"=token 324, " "=token 4 and "Joe"=token 17, we would have 
- *   'token_sequence'={45,2,324,4,17-1}
+ *   'token_sequence'={45,2,324,4,17,-1}
  * - 'current_start_pos' is the offset of the first token of the sequence in the 
  *   text buffer
  * 
@@ -307,7 +368,7 @@ if (current_token[pos_in_current_token]=='\0') {
    /* We add the current token to the token sequence */
    token_sequence[pos_token_sequence++]=trans->token_number;
    /* And we add the current offset to the node list */
-   trans->node->list=inserer_offset_si_absent(offset-2,trans->node->list,inflected);
+   trans->node->list=get_offset(offset-2,trans->node->list,inflected);
    if (!(n_transitions & 32768)) {
       /* If this node is final */
       token_sequence[pos_token_sequence]=-1;
@@ -324,10 +385,14 @@ if (current_token[pos_in_current_token]=='\0') {
          int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
          unichar line[DIC_LINE_SIZE];
          struct word_list* tmp=info->inf->codes[inf_number];
+         /* We increase the number of compound word occurrences.
+          * Note that we count occurrences and not number of entries, so that
+          * if we find "copy and paste" in the text we will count one more
+          * compound occurrence, even if this word can be a noun and a verb. */
+         info->COMPOUND_WORDS++;
          while (tmp!=NULL) {
             /* For each compressed code of the INF line, we save the corresponding
              * DELAF line in 'info->dlc' */
-            info->COMPOUND_WORDS++;
             uncompress_entry(inflected,tmp->word,line);
             u_fprints(line,info->dlc);
             u_fprints_char("\n",info->dlc);
@@ -394,8 +459,6 @@ while (current_start_pos<info->buffer->size) {
       current_start_pos=0;
    }
    int token_number=info->buffer->buffer[current_start_pos];
-   #warning deprecated line
-   //if (!WORDS_HAVE_BEEN_COUNTED) n_occur[token_number]++;
    /* We look for compound words that start with the current token */
    w=info->word_array->element[token_number];
    if (w!=NULL) {
@@ -442,20 +505,30 @@ printf("\n");
 }
 
 
-
+/**
+ * This functions dumps the unknown words into the 'err' file. As a side effect,
+ * the number of occurrences of simple and unknown words are computed.
+ */
 void save_unknown_words(struct dico_application_info* info) {
+info->SIMPLE_WORDS=0;
+info->UNKNOWN_WORDS=0;
 for (int i=0;i<info->tokens->N;i++) {
-  if (is_letter(info->tokens->token[i][0],info->alphabet)) {
-     // to be an unknown word, a token must be a word
-     if (!get_value(info->part_of_a_word,i)) {
-         info->UNKNOWN_WORDS=info->UNKNOWN_WORDS+info->n_occurrences[i];
-         u_fprints(info->tokens->token[i],info->err);
-         u_fprints_char("\n",info->err);
-     }
-     else {
-         if (get_value(info->has_been_processed,i)) info->SIMPLE_WORDS=info->SIMPLE_WORDS+info->n_occurrences[i];
-     }
-  }
+   if (is_letter(info->tokens->token[i][0],info->alphabet)) {
+      /* We examine all the tokens that are made of letters */
+      if (!get_value(info->part_of_a_word,i)) {
+         /* To be an unknown word, a token must not be a part of a word */
+          info->UNKNOWN_WORDS=info->UNKNOWN_WORDS+info->n_occurrences[i];
+          u_fprints(info->tokens->token[i],info->err);
+          u_fprints_char("\n",info->err);
+      }
+      else {
+         /* If the token is part of a word and if it is a simple word,
+          * we update the number of simple word occurrences. */
+         if (get_value(info->simple_word,i)) {
+            info->SIMPLE_WORDS=info->SIMPLE_WORDS+info->n_occurrences[i];
+         }
+      }
+   }
 }
 }
 
@@ -482,9 +555,9 @@ info->bin=NULL;
 info->inf=NULL;
 info->word_array=NULL;
 info->part_of_a_word=new_bit_array(tokens->N,ONE_BIT);
-info->has_been_processed=new_bit_array(tokens->N,TWO_BITS);
+info->simple_word=new_bit_array(tokens->N,TWO_BITS);
 info->n_occurrences=(int*)malloc(tokens->N*sizeof(int));
-if (info->part_of_a_word==NULL || info->has_been_processed==NULL || info->n_occurrences==NULL) {
+if (info->part_of_a_word==NULL || info->simple_word==NULL || info->n_occurrences==NULL) {
    fatal_error("Not enough memory in init_dico_application\n");
 }
 for (int j=0;j<tokens->N;j++) {
@@ -509,7 +582,7 @@ void free_dico_application(struct dico_application_info* info) {
 if (info==NULL) return;
 free_buffer(info->buffer);
 free_bit_array(info->part_of_a_word);
-free_bit_array(info->has_been_processed);
+free_bit_array(info->simple_word);
 free(info->n_occurrences);
 free_tct_hash(info->tct_h);
 free(info);
@@ -539,8 +612,12 @@ if (info->bin==NULL) {
    error("Cannot open %s\n",name_bin);
    return;
 }
-info->word_array=create_word_struct_array(info->tokens->N);
-/* And then we look simple and compound words */
+info->word_array=new_word_struct_array(info->tokens->N);
+/* And then we look simple and then compound words.
+ * IMPORTANT: it is crucial to look for simple words first, since
+ *            some initializations are made there that are used
+ *            when looking for compound words.
+ */
 printf("Looking for simple words...\n");
 look_for_simple_words(info,priority);
 printf("Looking for compound words...\n");
@@ -556,7 +633,6 @@ free(info->bin);
 }
 
 
-
 /**
  * @author Alexis Neme
  * Modified by Sébastien Paumier
@@ -568,13 +644,13 @@ int merge_dic_locate_results(struct dico_application_info* info,char* concord_fi
 int token_tab_coumpounds[TOKENS_IN_A_COMPOUND];
 printf("Merging dic/locate result...\n");
 /* First, we load the match list */
-FILE* f1=u_fopen(concord_filename,U_READ);
-if (f1==NULL) {
+FILE* f=u_fopen(concord_filename,U_READ);
+if (f==NULL) {
    error("Cannot open %s\n",concord_filename);
    return 0;
 }
-struct liste_matches* l=load_match_list(f1,NULL);
-u_fclose(f1);
+struct liste_matches* l=load_match_list(f,NULL);
+u_fclose(f);
 while (l!=NULL) {
    /* We test if the match is a valid dictionary entry */
    struct dela_entry* entry=tokenize_DELAF_line(l->output,1);
@@ -583,12 +659,12 @@ while (l!=NULL) {
       if(l->debut==l->fin) {  
          /* If it is a simple word */
          int token_number=get_token_number(entry->inflected,info->tokens);
-         int p=get_value(info->has_been_processed,token_number);
+         int p=get_value(info->simple_word,token_number);
          if (p==0 || p==priority) {
             /* We save the simple word only if it hasn't already been processed with
              * a greater priority */
             set_value(info->part_of_a_word,token_number,priority);             
-            set_value(info->has_been_processed,token_number,priority);
+            set_value(info->simple_word,token_number,priority);
             /* We save it to the DLF */
             u_fprints(l->output,info->dlf);
             u_fprints_char("\n",info->dlf);
@@ -622,6 +698,22 @@ while (l!=NULL) {
    l=l->suivant;
 }
 return 1;
+}
+
+
+/**
+ * This function reads the whole 'tokens.cod' file and computes the number of
+ * occurrences of each token.
+ */
+void count_token_occurrences(struct dico_application_info* info) {
+fseek(info->text_cod,0,SEEK_SET);
+int* buffer=info->buffer->buffer;
+do {
+   fill_buffer(info->buffer,info->text_cod);
+   for (int i=0;i<info->buffer->size;i++) {
+      info->n_occurrences[buffer[i]]++;
+   }
+} while (!info->buffer->end_of_file);
 }
 
 

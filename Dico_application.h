@@ -107,15 +107,15 @@ struct dico_application_info {
     *   structure of words
     * - part_of_a_word is an array used to know if a token is part of
     *   a word or not
-    * - has_been_processed is an array used to know if a token has already been
-    *   processed or not, and if it is the case, we use this array to know the priority
-    *   of the dictionary that matched this token
+    * - simple_word is an array used to know if a token has already been
+    *   matched as a simple word or not, and if it is the case, we use this array
+    *   to know the priority of the dictionary that matched this token
     * - n_occurrences is an array used to count the number of occurrences of each token
     * - tct_h is a hash table that contains the recognized compound words
     */
    struct word_struct_array* word_array;
    struct bit_array* part_of_a_word;
-   struct bit_array* has_been_processed;
+   struct bit_array* simple_word;
    int* n_occurrences;
    struct tct_hash* tct_h;
    /* Total number of simple, compound and unknown word occurrences in the text
@@ -129,10 +129,10 @@ struct dico_application_info {
 #define BUFFER_SIZE 200000
 
 
-void liberer_word_struct(struct word_struct*);
-struct dico_application_info* init_dico_application(struct text_tokens*,FILE* dlf,FILE* dlc,FILE* err,FILE* text,Alphabet* alph);
+struct dico_application_info* init_dico_application(struct text_tokens*,FILE*,FILE*,FILE*,FILE*,Alphabet*);
 void dico_application(char*,struct dico_application_info*,int);
 void free_dico_application(struct dico_application_info*);
+void count_token_occurrences(struct dico_application_info*);
 void save_unknown_words(struct dico_application_info*);
 
 /* Added by Alexis Neme: FST Functionality of Dico */

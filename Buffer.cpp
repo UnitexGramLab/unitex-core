@@ -83,7 +83,7 @@ free(buffer);
 void fill_buffer(struct buffer* buffer,int pos,FILE* f) {
 int* array=buffer->buffer;
 for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
-  // first, we copy the end of the buffer at the beginning
+  /* First, we copy the end of the buffer at the beginning */
   array[i-pos]=array[i];
 }
 int new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;

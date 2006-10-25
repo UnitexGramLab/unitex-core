@@ -109,7 +109,8 @@ printf("SortTxt program to clean these files.\n\n");
  */
 #warning move this function into a separate file
 void set_text_file_names(char* text_snt,char* name_dlf,char* name_dlc,char* name_err,
-                         char* name_text_cod,char* name_tokens,char* name_concord_ind) {
+                         char* name_text_cod,char* name_tokens,char* name_concord_ind,
+                         char* name_stat_dic_n) {
 char text_snt_path[FILENAME_SIZE];
 /* First, we compute the path of the _snt directory of the text */
 get_snt_path(text_snt,text_snt_path);
@@ -126,33 +127,28 @@ strcpy(name_tokens,text_snt_path);
 strcat(name_tokens,"tokens.txt");
 strcpy(name_concord_ind,text_snt_path);
 strcat(name_concord_ind,"concord.ind");
+strcpy(name_stat_dic_n,text_snt_path);
+strcat(name_stat_dic_n,"stat_dic.n");
 }
 
 
-void compute_stat_dic(char *text_snt, char *stat_dic_filename, int SIMPLE_WORDS, int COMPOUND_WORDS, int ERRORS)
-{
-	FILE * stat;
-	char tmp_filename[200];
-	get_snt_path(text_snt,tmp_filename);
-	strcat(tmp_filename,stat_dic_filename);
-	stat=u_fopen(tmp_filename,U_WRITE);
-	if (stat==NULL) {
-	   fprintf(stderr,"Cannot write %s\n",tmp_filename);
-	}
-	else {
-	   unichar tmp[100];
-	   u_int_to_string(SIMPLE_WORDS,tmp);
-	   u_strcat_char(tmp,"\n");
-	   u_fprints(tmp,stat);
-	   u_int_to_string(COMPOUND_WORDS,tmp);
-	   u_strcat_char(tmp,"\n");
-	   u_fprints(tmp,stat);
-	   u_int_to_string(ERRORS,tmp);
-	   u_strcat_char(tmp,"\n");
-	   u_fprints(tmp,stat);
-	   u_fclose(stat);
-	}
-
+void compute_stat_dic(char* name,struct dico_application_info* info) {
+FILE* f=u_fopen(name,U_WRITE);
+if (f==NULL) {
+   error("Cannot write stat file %s\n",name);
+   return;
+}
+unichar tmp[100];
+u_int_to_string(info->SIMPLE_WORDS,tmp);
+u_strcat_char(tmp,"\n");
+u_fprints(tmp,f);
+u_int_to_string(info->COMPOUND_WORDS,tmp);
+u_strcat_char(tmp,"\n");
+u_fprints(tmp,f);
+u_int_to_string(info->UNKNOWN_WORDS,tmp);
+u_strcat_char(tmp,"\n");
+u_fprints(tmp,f);
+u_fclose(f);
 }
 
 
@@ -184,9 +180,12 @@ char name_dlc[FILENAME_SIZE];
 char name_err[FILENAME_SIZE];
 /* concord.ind is the file produced by Locate */
 char name_concord_ind[FILENAME_SIZE];
+/* stat_dic.n is a file that contains information about the
+ * simple, compound and unknown words of a text */
+char name_stat_dic_n[FILENAME_SIZE];
 
 /* We set the text file names */
-set_text_file_names(argv[1],name_dlf,name_dlc,name_err,name_text_cod,name_tokens,name_concord_ind);
+set_text_file_names(argv[1],name_dlf,name_dlc,name_err,name_text_cod,name_tokens,name_concord_ind,name_stat_dic_n);
 /* And we create empty files in order to append things to them */
 u_fempty(name_dlf);
 u_fempty(name_dlc);
@@ -214,6 +213,8 @@ if (text_cod==NULL) {
 }
 printf("Initializing...\n");
 struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,text_cod,alphabet);
+/* First of all, we compute the number of occurrences of each token */
+count_token_occurrences(info);
 /* We all dictionaries according their priority */
 for (int priority=1;priority<4;priority++) {
    /* For a given priority, we apply all concerned dictionaries 
@@ -283,13 +284,10 @@ for (int priority=1;priority<4;priority++) {
 printf("Saving unknown words...\n");
 if (info->err == NULL ) {
 	info->err=u_fopen(name_err,U_WRITE);  
-} 
-#warning compute the number of occurrences of each token, since it is not 
-#warning done anymore if we only apply a .fst2 dictionary
+}
 save_unknown_words(info);
 /* We compute some statistics */
-//printf("computing dictionnary statistics ...\n");
-//compute_stat_dic(argv[1],"stat_dic.n", SIMPLE_WORDS, COMPOUND_WORDS, ERRORS);
+compute_stat_dic(name_stat_dic_n,info);
 printf("Done.\n");
 /* And we free remaining things */
 free_alphabet(alphabet);
@@ -300,6 +298,5 @@ if (info->err!=NULL) u_fclose(info->err);
 fclose(text_cod);
 free_dico_application(info);
 return 0;
-
 }
 
