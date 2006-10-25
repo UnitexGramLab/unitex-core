@@ -23,17 +23,23 @@
 #define BufferH
 
 
-/* This structure represents an integer buffer, with its maximum capacity and
- * its actual size. */
+/**
+ * This structure represents an integer buffer, with its maximum capacity and
+ * its actual size. The 'end_of_file' field is set to 1 when no data can be
+ * read from the input file.
+ */
 struct buffer {
 	int MAXIMUM_BUFFER_SIZE;
 	int* buffer;
 	int size;
+   int end_of_file;
 };
 
 
 struct buffer* new_buffer(int);
 void free_buffer(struct buffer*);
+void fill_buffer(struct buffer*,int,FILE*);
+void fill_buffer(struct buffer*,FILE*);
 
 #endif
 

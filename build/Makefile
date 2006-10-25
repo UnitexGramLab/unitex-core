@@ -269,7 +269,7 @@ DICO_OBJS = Dico.o Liste_nombres.o DELA.o Dico_application.o FileName.o Alphabet
             CompoundWordTree.o DLC_optimization.o Flexional_codes.o Facteurs_interdits.o Fst2_tags_optimization.o \
             Grammatical_codes.o Loading_dic.o Liste_num.o LocatePattern.o Matches.o Optimized_fst2.o Pattern_transitions.o \
             Text_parsing.o TransductionVariables.o TransductionStack.o GF_lib.o LocateAsRoutine.o Context.o\
-            StringParsing.o
+            StringParsing.o Buffer.o BitArray.o
 
 ELAG      = Elag
 ELAG_OBJS = IOBuffer.o Elag.o unicode.o elag-functions.o language.o fst_file.o aut-deter.o \
@@ -336,7 +336,7 @@ LOCATE      = Locate
 LOCATE_OBJS = IOBuffer.o Locate.o unicode.o Alphabet.o DELA.o WordList.o String_hash.o LocatePattern.o Fst2.o Text_tokens.o Liste_nombres.o\
               Grammatical_codes.o Flexional_codes.o Facteurs_interdits.o Loading_dic.o CompoundWordTree.o Fst2_tags_optimization.o \
               DLC_optimization.o Optimized_fst2.o Pattern_transitions.o Text_parsing.o Matches.o TransductionVariables.o TransductionStack.o\
-              Liste_num.o FileName.o GF_lib.o Error.o Context.o StringParsing.o
+              Liste_num.o FileName.o GF_lib.o Error.o Context.o StringParsing.o LocateAsRoutine.o
 
 MERGETEXTAUTOMATON      = MergeTextAutomaton
 MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o unicode.o String_hash.o Fst2.o\

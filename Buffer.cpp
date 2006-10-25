@@ -19,13 +19,14 @@
   *
   */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "Buffer.h"
 #include "Error.h"
 
 
 /**
- * Allocates initializes and returns a new buffer of the given capacity.
+ * Allocates, initializes and returns a new buffer of the given capacity.
  * Its size is initialized to 0.
  */
 struct buffer* new_buffer(int capacity) {
@@ -39,6 +40,7 @@ if (buffer->buffer==NULL) {
 }
 buffer->MAXIMUM_BUFFER_SIZE=capacity;
 buffer->size=0;
+buffer->end_of_file=0;
 return buffer;
 }
 
@@ -50,5 +52,51 @@ void free_buffer(struct buffer* buffer) {
 if (buffer==NULL) return;
 free(buffer->buffer);
 free(buffer);
+}
+
+
+/**
+ * This function fill the given buffer from the given file. The 'pos'
+ * parameter indicates where the current position in the buffer is. The
+ * remaining values from 'pos' to the end of the buffer will be
+ * moved at the beginning of the buffer, and then, data read from the input
+ * file will be appended. If no data can be read, the flag 'buffer->end_of_file'
+ * is set to 1.
+ * 
+ * buffer before:
+ * 0                                                  pos          buffer->MAXIMUM_BUFFER_SIZE
+ * ------------------------------------------------------------------------------
+ * |                                                   |                        |
+ * |                                                   | XXXXXXXXXXXXXXXXXXXXXX |
+ * |                                                   |                        |
+ * ------------------------------------------------------------------------------
+ *
+ * 
+ * buffer after:
+ * 0         buffer->MAXIMUM_BUFFER_SIZE-pos                       buffer->MAXIMUM_BUFFER_SIZE
+ * ------------------------------------------------------------------------------
+ * |                        |                                                   |
+ * | XXXXXXXXXXXXXXXXXXXXXX |            new data read from input file          |
+ * |                        |                                                   |
+ * ------------------------------------------------------------------------------
+ */
+void fill_buffer(struct buffer* buffer,int pos,FILE* f) {
+int* array=buffer->buffer;
+for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
+  // first, we copy the end of the buffer at the beginning
+  array[i-pos]=array[i];
+}
+int new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
+int n_int_read=fread(&(array[new_position]),sizeof(int),pos,f);
+buffer->end_of_file=(n_int_read==0);
+buffer->size=new_position+n_int_read;
+}
+
+
+/**
+ * This function fills the given buffer from the given file.
+ */
+void fill_buffer(struct buffer* buffer,FILE* f) {
+fill_buffer(buffer,buffer->MAXIMUM_BUFFER_SIZE,f);
 }
 

@@ -27,8 +27,8 @@
 #ifndef LocateAsRoutineH
 #define LocateAsRoutineH
 
-int Call_Locate_Prog(int aargc, char **aargv); 
-void LaunchLocateAsRoutine(char **argv, int fst_index) ;    // the purpose is to call locate with one Fst
+int main_Locate(int, char**); 
+void launch_locate_as_routine(char*,char*,char*);
 
 
 #endif

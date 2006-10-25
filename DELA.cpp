@@ -402,8 +402,6 @@ return res;
 }
 
 
-
-
 /**
  * This function fills the string 'codes' with all the codes of the given entry.
  * The result is ready to be concatenated with an inflected form and a lemma.

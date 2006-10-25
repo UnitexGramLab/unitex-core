@@ -38,7 +38,6 @@
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "LocateAsRoutine.h"
-#include "Matches.h"
 #include "Error.h"
 
 //  This enhanced  version of dico.exe was rewritten by Alexis Neme,
@@ -89,127 +88,10 @@ printf("This command will apply Rom_numbs-.fst2 then Dela.bin and finally\n");
 printf("numbers+.fst2\n\n");
 
 printf("\nNote: the 3 resulting files (DLF, DLC and ERR) are stored in the text\n");
-printf("directory. THEY ARE NOT SORTED. Use the SortTxt program to.\n\n");
+printf("directory. THEY ARE NOT SORTED AND MAY CONTAIN DUPLICATES. Use the\n");
+printf("SortTxt program to clean these files.\n\n");
 }
 
-/**
- * @author Alexis Neme
- */
- void   Launch_dico_application(char *nom_dico,FILE *text,struct text_tokens* tok,Alphabet* alph,
-	                            FILE*  dlf,  FILE* dlc, FILE*  err,int priority)
- { 
-  struct INF_codes* INF;
-  unsigned char* bin; 
-
-  char nom_bin[1000],nom_inf[1000];
- 	name_without_extension(nom_dico,nom_inf);
- 
-    strcpy(nom_bin,nom_inf);
-	strcat(nom_inf,".inf");
-	strcat(nom_bin,".bin");
-
-	INF=load_INF_file(nom_inf);
-	if (INF==NULL) {
-	   fprintf(stderr,"Cannot open %s\n",nom_inf);
-	}
-	else {
-	   bin=load_BIN_file(nom_bin);
-	   if (bin==NULL) {
-		  free_INF_codes(INF);
-		  fprintf(stderr,"Cannot open %s\n",nom_bin);
-		  }
-	   else {
-		  dico_application(bin,INF,text,tok,alph,dlf,dlc,err,priority);
-		  free_INF_codes(INF);
-		  free(bin);
-	   }
-	}
-} 
-
-
-
-
-/**
- * @author Alexis Neme
- */
-int	MergeDicLocateResults(char *text_snt, text_tokens* tok, char *Concord_filename, int priority)
-{	
-FILE *dlf_,*dlc_;
-char tmp_filename[2000];
-int token_tab_coumpounds[100];                  // cinquante-deux = (1347,35,582,-1) 
-
-printf("Merging dic/locate result...\n");
-
-// open dlf and dlc in append mode
-get_snt_path(text_snt, tmp_filename);
-strcat(tmp_filename,"dlf") ;
-dlf_=u_fopen(tmp_filename,U_APPEND);
-get_snt_path(text_snt, tmp_filename);
-strcat(tmp_filename,"dlc") ;
-dlc_=u_fopen(tmp_filename,U_APPEND);
-
-
-// open the concord.ind file and load matches in l
-get_snt_path(text_snt, tmp_filename);
-strcat(tmp_filename,Concord_filename) ;		
-FILE* f1=u_fopen(tmp_filename,U_READ);
-if (f1==NULL) {
-fprintf(stderr,"Cannot	open %s\n",tmp_filename);
-	return 0;
-}
-int MODE1;
-struct liste_matches* l = load_match_list(f1,&MODE1);
-u_fclose(f1);
-
-
-unichar tempstr[200];
-unichar naked_token[200];
-
-while (l!=NULL) {
-    struct dela_entry* foo=tokenize_DELAF_line(l->output,1);
-    if (foo!=NULL) {
-    free_dic_entry(foo);
-    u_extractEntryFromConcordOutput(l->output,naked_token);
-   // simple words 
-   if(l->debut == l->fin) {  
-		// case of simple forms
-      int tok_numb= get_token_number( naked_token, tok) ; // 
-      int p=token_has_been_processed(tok_numb);
-
-      if (p==0) {     // we save the token only if it hasn't been processed  the good priority
-		set_part_of_a_word(tok_numb,priority);     			
-		set_has_been_processed(tok_numb,priority);
-	  }
-	  //write the dlf									
-	  u_strcpy(tempstr, l->output);
-	  u_strcat_char(tempstr,"\n"); 
-	  u_fprints( tempstr, dlf_);
-   }
-
-  // coumpounds forms
-  if(l->debut < l->fin) 	{
-	build_complex_token_tab(naked_token,tok, token_tab_coumpounds); // sans raison = (121,1,1643,-1,priorite)		  
-	int w =  was_allready_in_tct_hash(token_tab_coumpounds,tct_h,priority);
-	  
-	if (w==0 || w==priority) {
-     for (int k=0;token_tab_coumpounds[k]!=-1;k++) {
-        // if we have matched a compound, then all its part all not unknown words
-        set_part_of_a_word(token_tab_coumpounds[k],priority);
-     }
-    } 
-	  u_strcpy(tempstr, l->output);
-	  u_strcat_char(tempstr,"\n"); 
-	  u_fprints( tempstr, dlc_);
-  } 
-  }
- l= l->suivant;
-} // while l== null
-
-u_fclose(dlf_);
-u_fclose(dlc_);
-return 1;
-
-}
 
 
 
@@ -227,7 +109,7 @@ return 1;
  */
 #warning move this function into a separate file
 void set_text_file_names(char* text_snt,char* name_dlf,char* name_dlc,char* name_err,
-                         char* name_text_cod,char* name_tokens) {
+                         char* name_text_cod,char* name_tokens,char* name_concord_ind) {
 char text_snt_path[FILENAME_SIZE];
 /* First, we compute the path of the _snt directory of the text */
 get_snt_path(text_snt,text_snt_path);
@@ -242,6 +124,8 @@ strcpy(name_text_cod,text_snt_path);
 strcat(name_text_cod,"text.cod");
 strcpy(name_tokens,text_snt_path);
 strcat(name_tokens,"tokens.txt");
+strcpy(name_concord_ind,text_snt_path);
+strcat(name_concord_ind,"concord.ind");
 }
 
 
@@ -272,22 +156,16 @@ void compute_stat_dic(char *text_snt, char *stat_dic_filename, int SIMPLE_WORDS,
 }
 
 
-
-
 int main(int argc, char **argv) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
 
-if (argc<4) {                           
+if (argc<4) {
    usage();
    return 0;
 }
-
-/* Names of the .bin and .inf files that compose a dictionary */
-char name_bin[FILENAME_SIZE];
-char name_inf[FILENAME_SIZE];
 
 /* text.cod is the file that contains the text in the form of a 
  * token number sequence */
@@ -300,16 +178,15 @@ struct text_tokens* tokens;
 
 /* dlf is the output dictionary for simple words */
 char name_dlf[FILENAME_SIZE];
-FILE* dlf;
 /* dlc is the output dictionary for compound words */
 char name_dlc[FILENAME_SIZE];
-FILE* dlc;
 /* err is the output dictionary for unknown words */
 char name_err[FILENAME_SIZE];
-FILE* err;
+/* concord.ind is the file produced by Locate */
+char name_concord_ind[FILENAME_SIZE];
 
 /* We set the text file names */
-set_text_file_names(argv[1],name_dlf,name_dlc,name_err,name_text_cod,name_tokens);
+set_text_file_names(argv[1],name_dlf,name_dlc,name_err,name_text_cod,name_tokens,name_concord_ind);
 /* And we create empty files in order to append things to them */
 u_fempty(name_dlf);
 u_fempty(name_dlc);
@@ -336,90 +213,93 @@ if (text_cod==NULL) {
    return 1;
 }
 printf("Initializing...\n");
-init_dico_application(tokens,dlf,dlc,err,text_cod,alphabet);
-dlf=dlc=err=NULL;
-free_text_DICO();
-
+struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,text_cod,alphabet);
+/* We all dictionaries according their priority */
 for (int priority=1;priority<4;priority++) {
+   /* For a given priority, we apply all concerned dictionaries 
+    * in their order on the command line */
    for (int i=3;i<argc;i++) {
-      // we do a loop to apply several dictionaries
-      name_without_extension(argv[i],name_inf);
-      char C=name_inf[strlen(name_inf)-1];
-	  if ((priority==1 && C=='-') ||  (priority==2 && C!='-' && C!='+') ||  (priority==3 && C=='+')) {
-         file_name_extension(argv[i],name_bin);
-
-		// a Dico.bin
-		 if (!strcmp(name_bin,".bin"))    {    
+      char tmp[FILENAME_SIZE];
+      name_without_extension(argv[i],tmp);
+      char priority_mark=tmp[strlen(tmp)-1];
+      if ((priority==1 && priority_mark=='-') ||  (priority==2 && priority_mark!='-' && priority_mark!='+') ||  (priority==3 && priority_mark=='+')) {
+         /* If we must must process a dictionary, we check its type */
+         file_name_extension(argv[i],tmp);
+         if (!strcmp(tmp,".bin"))    {    
+            /*
+             * If it is a .bin dictionary
+             */
 	         printf("Applying dico  %s...\n",argv[i]);
-	         // opening output files
-			 dlf =   u_fopen(name_dlf,U_APPEND);
-             dlc =   u_fopen(name_dlc,U_APPEND);  
-             err =   u_fopen(name_err,U_WRITE);  
-			 assign_text_DICO(dlf,dlc,err);
-			 // working...
-            Launch_dico_application(argv[i],text_cod,tokens,alphabet,dlf,dlc,err,priority);
-            // dumping and closing output files
-            sauver_mots_inconnus();
-        	u_fclose(dlc); u_fclose(dlf);
-            u_fclose(err); 
-            dlf=dlc=err=NULL;
-            free_text_DICO();                   // DLF, DLC, ERR = NULL
-         }  
-         // a FST grammar 
-         if (!strcmp(name_bin,".fst2"))       { 
+            /* We open output files: dictionaries in APPEND mode since we
+             * can only add entries to them, and 'err' in WRITE mode because
+             * each dictionary application may reduce this file */
+            info->dlf=u_fopen(name_dlf,U_APPEND);
+            info->dlc=u_fopen(name_dlc,U_APPEND);
+            info->err=u_fopen(name_err,U_WRITE);
+            /* Working... */
+            dico_application(argv[i],info,priority);
+            /* Dumping and closing output files */
+            save_unknown_words(info);
+        	   u_fclose(info->dlf);
+            u_fclose(info->dlc);
+            u_fclose(info->err);
+            /* We set file descriptors to NULL so that we can test if files were closed */
+            info->dlf=NULL;
+            info->dlc=NULL;
+            info->err=NULL;
+         }
+         else if (!strcmp(tmp,".fst2"))       { 
+            /*
+             * If it is a .fst2 dictionary
+             */
             printf("Applying %s...\n",argv[i]);
             /**
              * IMPORTANT!!!
-             * dlf, dlc and err must not be open while LaunchLocateAsRoutine
+             * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
-             *
              */
-			LaunchLocateAsRoutine(argv,i);             // i is the rank of the fst that we need to locates patterns					
-	         // opening output files
-			 dlf =   u_fopen(name_dlf,U_APPEND);
-             dlc =   u_fopen(name_dlc,U_APPEND);  
-             err =   u_fopen(name_err,U_WRITE);  
-			 assign_text_DICO(dlf,dlc,err);
-			MergeDicLocateResults(argv[1], tokens, "concord.ind",  priority);
+            launch_locate_as_routine(argv[1],argv[i],argv[2]);
+	         /* We open output files: dictionaries in APPEND mode since we
+             * can only add entries to them, and 'err' in WRITE mode because
+             * each dictionary application may reduce this file */
+            info->dlf=u_fopen(name_dlf,U_APPEND);
+            info->dlc=u_fopen(name_dlc,U_APPEND);
+            info->err=u_fopen(name_err,U_WRITE);
+            /* And we merge the Locate results with current dictionaries */
+            merge_dic_locate_results(info,name_concord_ind,priority);
             // dumping and closing output files
-            sauver_mots_inconnus();
-        	u_fclose(dlc); u_fclose(dlf);
-            u_fclose(err); 
-            dlf=dlc=err=NULL;
-            free_text_DICO();                   // DLF, DLC, ERR = NULL
+            save_unknown_words(info);
+        	   u_fclose(info->dlf);
+            u_fclose(info->dlc);
+            u_fclose(info->err); 
+            info->dlf=NULL;
+            info->dlc=NULL; 
+            info->err=NULL; 
          }
 	  }
    }
 }
-
-// =====  Closing stage 
-
+/* Finally, we hav to save the definitive list of unknown words */
 printf("Saving unknown words...\n");
-
-if (err == NULL ) {  	
-    dlf =  u_fopen(name_dlf,U_APPEND);  
-	dlc =  u_fopen(name_dlc,U_APPEND);  
-	err =  u_fopen(name_err,U_WRITE);  
-	assign_text_DICO(dlf,dlc,err);
+if (info->err == NULL ) {
+	info->err=u_fopen(name_err,U_WRITE);  
 } 
-
-sauver_mots_inconnus();
-
+#warning compute the number of occurrences of each token, since it is not 
+#warning done anymore if we only apply a .fst2 dictionary
+save_unknown_words(info);
+/* We compute some statistics */
 //printf("computing dictionnary statistics ...\n");
 //compute_stat_dic(argv[1],"stat_dic.n", SIMPLE_WORDS, COMPOUND_WORDS, ERRORS);
-
 printf("Done.\n");
-
-free_dico_application();
+/* And we free remaining things */
 free_alphabet(alphabet);
 free_text_tokens(tokens);
-u_fclose(dlf);
-u_fclose(dlc);
-u_fclose(err);
+if (info->dlf!=NULL) u_fclose(info->dlf);
+if (info->dlc!=NULL) u_fclose(info->dlc);
+if (info->err!=NULL) u_fclose(info->err);
 fclose(text_cod);
-free_text_DICO();
-//getchar();
+free_dico_application(info);
 return 0;
 
 }
-//---------------------------------------------------------------------------
+

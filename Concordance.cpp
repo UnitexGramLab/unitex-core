@@ -403,7 +403,7 @@ fprintf(f,"</html>\n");
  * '*current_sentence' is used to count the number of '{S}' in order to know
  * what is the current sentence number.
  */
-void block_change(int start_pos,FILE* text,struct text_tokens* tokens,int* token_length,
+void move_buffer_to_position(int start_pos,FILE* text,struct text_tokens* tokens,int* token_length,
 					struct buffer* buffer,int *n_units_already_read,
 					int *current_origin_in_chars,int *current_sentence) {
 /* Before moving in the file, buffer[0] contains the token number '*n_units_already_read'.
@@ -739,7 +739,7 @@ while (matches!=NULL) {
 	if (buffer->size==buffer->MAXIMUM_BUFFER_SIZE
 		&& ((matches->debut-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
 		/* If we must change of block... */
-		block_change(matches->debut,text,tokens,token_length,buffer,&n_units_already_read,
+		move_buffer_to_position(matches->debut,text,tokens,token_length,buffer,&n_units_already_read,
 						&current_origin_in_chars,&current_sentence);
 		/* We update the position in characters so that we know how
 		 * many characters there are before buffer[0]. We update

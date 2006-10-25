@@ -28,6 +28,8 @@
 #include "Text_tokens.h"
 #include "DELA.h"
 #include "Table_complex_token_hash.h"
+#include "Buffer.h"
+#include "BitArray.h"
 
 
 /**
@@ -93,6 +95,8 @@ struct dico_application_info {
    FILE* dlf;
    FILE* dlc;
    FILE* err;
+   /* The buffer to use to read the text.cod file */
+   struct buffer* buffer;
    /* The alphabet to use */
    Alphabet* alphabet;
    /* The dictionary to use */
@@ -107,61 +111,31 @@ struct dico_application_info {
     *   processed or not, and if it is the case, we use this array to know the priority
     *   of the dictionary that matched this token
     * - n_occurrences is an array used to count the number of occurrences of each token
-    * - token_tree_root*/
+    * - tct_h is a hash table that contains the recognized compound words
+    */
    struct word_struct_array* word_array;
-   unsigned char* part_of_a_word;
-   unsigned char* has_been_processed;
+   struct bit_array* part_of_a_word;
+   struct bit_array* has_been_processed;
    int* n_occurrences;
    struct tct_hash* tct_h;
-   struct buffer* buffer;
+   /* Total number of simple, compound and unknown word occurrences in the text
+    * WARNING: these are NOT the number of lines of the dlf, dlc and err files */
+   int SIMPLE_WORDS;
+   int COMPOUND_WORDS;
+   int UNKNOWN_WORDS;
 };
 
 
 #define BUFFER_SIZE 200000
 
-extern struct word_struct_array* word_array;
-extern FILE* DLF;
-extern FILE* DLC;
-extern FILE* ERR;
-extern Alphabet* ALPH;
-extern unsigned char* BIN;
-extern struct INF_codes* INF;
-extern FILE* TEXT;
-extern struct text_tokens* TOK;
-extern int buffer[BUFFER_SIZE];
-//extern struct token_tree_node* token_tree_root;
-extern unsigned char* part_of_a_word;
-extern unsigned char* has_been_processed;
-extern int COMPOUND_WORDS;
-extern int* n_occur;
-extern int WORDS_HAVE_BEEN_COUNTED;
-extern int ERRORS;
-extern int SIMPLE_WORDS;
-extern int CURRENT_BLOCK;
-
-extern struct tct_hash* tct_h;				// *** Alexis to access from Dico (for the FST)
 
 void liberer_word_struct(struct word_struct*);
-void dico_application(unsigned char*,struct INF_codes*,
-                             FILE*,struct text_tokens*,Alphabet*,
-                             FILE*,FILE*,FILE*,int);
-void init_dico_application(struct text_tokens*,FILE* dlf,FILE* dlc,FILE* err,FILE* text,Alphabet* alph);
-void free_dico_application();
+struct dico_application_info* init_dico_application(struct text_tokens*,FILE* dlf,FILE* dlc,FILE* err,FILE* text,Alphabet* alph);
+void dico_application(char*,struct dico_application_info*,int);
+void free_dico_application(struct dico_application_info*);
+void save_unknown_words(struct dico_application_info*);
 
-
-void sauver_mots_inconnus();
-
-// Added by Alexis Neme: FST Functionality of Dico
-
-//  coumputing the  coumpounds forms
-void set_part_of_a_word(int n,int priority);
-int is_part_of_a_word(int n) ;
-void set_has_been_processed(int n,int priority) ;
-int token_has_been_processed(int n) ;
-
-
-// Alexis - management of the Global Variable file DLF,DLC, ERR
-void assign_text_DICO (FILE* dlf,FILE* dlc,FILE* err) ;
-void free_text_DICO () ;
+/* Added by Alexis Neme: FST Functionality of Dico */
+int merge_dic_locate_results(struct dico_application_info*,char*,int);
 
 #endif

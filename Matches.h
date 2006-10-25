@@ -64,6 +64,4 @@ struct liste_matches* ecrire_index_des_matches(struct liste_matches*,int,
                                                long int*,FILE*);
 struct liste_matches* load_match_list(FILE*,int*);
 
-void  u_extractEntryFromConcordOutput(unichar *output,unichar *token_without_inf);
-
 #endif

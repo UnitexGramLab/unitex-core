@@ -401,16 +401,3 @@ free(l);
 }
 
 
-//
-// Added by Alexis Neme
-//
-void  u_extractEntryFromConcordOutput(unichar *output,unichar *token_without_inf){	
-// if output =  "exactissime,exact.A:ms:fs+super"  
-// token_without_inf =  "exactissime" (from the beginning till  ",") 
-int ix=0; 
-int output_len= u_strlen(output);    
-while(output[ix++]!=','  && ix <output_len ) ;
-ix--;               
-u_get_substring(output,0,ix,token_without_inf);
-}
-
