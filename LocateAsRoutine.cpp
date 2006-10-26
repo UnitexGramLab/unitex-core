@@ -76,7 +76,6 @@ char dlf[2000];
 char dlc[2000];
 char err[2000];
 
-
 get_snt_path(argv[1],staticSntDir);
 
 strcpy(tokens_txt,staticSntDir);
@@ -184,8 +183,8 @@ switch (argc) {
         break; 
 
     
-    case 10: // 9 arguments: 7 = dynamic, 8 = soit -thai, soit -space
-             //                           9 = soit -space, soit -thai
+    case 10: // 9 arguments: 7 = dynamic, 8 = or -thai, or -space
+             //                           9 = or -space, or -thai
     
         strcpy(dynamicSntDir, argv[7]);
         

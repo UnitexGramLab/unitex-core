@@ -26,7 +26,7 @@
 
 int diff(char*,char*,char*,char*,char*);
 void compute_concordance_differences(struct liste_matches*,struct liste_matches*,FILE*,FILE*,FILE*);
-void print_diff_matches(FILE*,FILE*,FILE*,char*,struct liste_matches*,struct liste_matches*);
+void print_diff_matches(FILE*,FILE*,FILE*,char*);
 
 #endif
 
