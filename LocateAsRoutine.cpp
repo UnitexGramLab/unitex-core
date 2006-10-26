@@ -241,17 +241,23 @@ return 1;
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-#warning this function should test if the -thai option should be passed to Locate
 void launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet) {
 char tmp[FILENAME_SIZE];
 char tmp2[FILENAME_SIZE];
 get_filename_path(alphabet,tmp);
-printf("path=%s\n",tmp);
 name_without_extension(tmp,tmp2);
-printf("name=%s\n",tmp2);
-
+/* We test if we are working on Thai, on the basis of the alphabet file */
+char path[FILENAME_SIZE];
+char lang[FILENAME_SIZE];
+get_filename_path(alphabet,path);
+path[strlen(path)-1]='\0';
+name_without_path(path,lang);
+int thai=0;
+if (!strcmp(lang,"Thai")) {
+   thai=1;
+}
 char** argv;
-argv=(char**)malloc(7*sizeof(char*));
+argv=(char**)malloc((7+thai)*sizeof(char*));
 if (argv==NULL) {
    fatal_error("Not enough memory in launch_locate_as_routine\n");
 }
@@ -265,8 +271,12 @@ argv[4]=strdup("l");
 argv[5]=strdup("m");
 /* We look for all the occurrences */
 argv[6]=strdup("all");
+/* If needed, we add the -thai option */
+if (thai) {
+   argv[7]=strdup("-thai");
+}
 /* Finally, we call the main function of Locate */
-main_Locate(7,argv);
+main_Locate(7+thai,argv);
 }
 
 

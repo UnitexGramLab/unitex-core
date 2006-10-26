@@ -24,6 +24,16 @@
 #define FileNameH
 //---------------------------------------------------------------------------
 
+
+#ifdef _NOT_UNDER_WINDOWS
+   #define PATH_SEPARATOR_CHAR '/'
+   #define PATH_SEPARATOR_STRING "/"
+#else
+   #define PATH_SEPARATOR_CHAR '\\'
+   #define PATH_SEPARATOR_STRING "\\"
+#endif
+
+
 #define FILENAME_SIZE 1024
 
 #define REPLACE_FILE 0
@@ -42,6 +52,7 @@ void get_snt_path(char*,char*);
 void name_without_path(char*,char*);
 void replace_suffix_in_file_name(char*,const char*,const char*,const char*);
 void replace_pathseparator_by_colon(char*);
-//void replace_pathseparator_by_colon(unichar*);
 void replace_colon_by_pathseparator(char*);
+char* new_file(const char*,const char*);
+
 #endif

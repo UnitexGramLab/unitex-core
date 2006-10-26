@@ -39,21 +39,18 @@
 #include "IOBuffer.h"
 #include "LocateAsRoutine.h"
 #include "Error.h"
+#include "Snt.h"
 
-//  This enhanced  version of dico.exe was rewritten by Alexis Neme,
-//  based on the original version written by Sebastien Paumier
-//  15 Novembre 2005
-//  This new version take into account not only compiled dictionnary but also
-//  local grammars representent by an FST as part of the Lexical identification stage
-//---------------------------------------------------------------------------
-//
-// "e:\my unitex\french\corpus\femme.snt" "e:\my unitex\french\alphabet.txt" e:\unitex\french\dela\DELA.bin
-//
-// THAI:
-// e:\unitex\thai\corpus\corpus.txt e:\unitex\thai\alphabet_thai.txt e:\DELA\thai\DELA.txt
-//
+/**
+ * This enhanced  version of Dico was rewritten by Alexis Neme,
+ * based on the original version written by Sébastien Paumier
+ * 15 Novembre 2005
+ * This new version take into account not only compiled dictionnary but also
+ * local grammars representent by an FST2 as part of the lexical identification
+ * stage.
+ */
 
-//---------------------------------------------------------------------------
+
 void usage() {
 printf("%s",COPYRIGHT);
 printf("Usage: Dico <text> <alphabet> <dic-fst_1> [<dic-fst_2> <dic-fst_3> ...]\n");
@@ -93,46 +90,10 @@ printf("SortTxt program to clean these files.\n\n");
 }
 
 
-
-
-
 /**
- * This function initializes the names of the files associated to a .snt text
- * 
- * Example: text_snt="/tmp/myunitex/English/Corpus/foo.snt"
- * => dlf="/tmp/myunitex/English/Corpus/foo_snt/dlf"
- * => dlc="/tmp/myunitex/English/Corpus/foo_snt/dlc"
- * etc.
- * 
- * @author Alexis Neme
- * Modified by Sébastien Paumier
+ * This function stores some statistics in 'stat_dic.n'.
  */
-#warning move this function into a separate file
-void set_text_file_names(char* text_snt,char* name_dlf,char* name_dlc,char* name_err,
-                         char* name_text_cod,char* name_tokens,char* name_concord_ind,
-                         char* name_stat_dic_n) {
-char text_snt_path[FILENAME_SIZE];
-/* First, we compute the path of the _snt directory of the text */
-get_snt_path(text_snt,text_snt_path);
-/* And we use it to produce the output file names */
-strcpy(name_dlf,text_snt_path);
-strcat(name_dlf,"dlf");
-strcpy(name_dlc,text_snt_path);
-strcat(name_dlc,"dlc");
-strcpy(name_err,text_snt_path);
-strcat(name_err,"err");
-strcpy(name_text_cod,text_snt_path);
-strcat(name_text_cod,"text.cod");
-strcpy(name_tokens,text_snt_path);
-strcat(name_tokens,"tokens.txt");
-strcpy(name_concord_ind,text_snt_path);
-strcat(name_concord_ind,"concord.ind");
-strcpy(name_stat_dic_n,text_snt_path);
-strcat(name_stat_dic_n,"stat_dic.n");
-}
-
-
-void compute_stat_dic(char* name,struct dico_application_info* info) {
+void save_statistics(char* name,struct dico_application_info* info) {
 FILE* f=u_fopen(name,U_WRITE);
 if (f==NULL) {
    error("Cannot write stat file %s\n",name);
@@ -163,33 +124,14 @@ if (argc<4) {
    return 0;
 }
 
-/* text.cod is the file that contains the text in the form of a 
- * token number sequence */
-char name_text_cod[FILENAME_SIZE]; 
+struct snt_files* snt_files=new_snt_files(argv[1]);
 FILE* text_cod;
-
-/* tokens.txt is the file that contains all the distinct tokens of the text */
-char name_tokens[FILENAME_SIZE];
 struct text_tokens* tokens;        
 
-/* dlf is the output dictionary for simple words */
-char name_dlf[FILENAME_SIZE];
-/* dlc is the output dictionary for compound words */
-char name_dlc[FILENAME_SIZE];
-/* err is the output dictionary for unknown words */
-char name_err[FILENAME_SIZE];
-/* concord.ind is the file produced by Locate */
-char name_concord_ind[FILENAME_SIZE];
-/* stat_dic.n is a file that contains information about the
- * simple, compound and unknown words of a text */
-char name_stat_dic_n[FILENAME_SIZE];
-
-/* We set the text file names */
-set_text_file_names(argv[1],name_dlf,name_dlc,name_err,name_text_cod,name_tokens,name_concord_ind,name_stat_dic_n);
 /* And we create empty files in order to append things to them */
-u_fempty(name_dlf);
-u_fempty(name_dlc);
-u_fempty(name_err);
+u_fempty(snt_files->dlf);
+u_fempty(snt_files->dlc);
+u_fempty(snt_files->err);
 /* We load the alphabet */
 Alphabet* alphabet=load_alphabet(argv[2]);
 if (alphabet==NULL) {
@@ -197,18 +139,18 @@ if (alphabet==NULL) {
    return 1;
 }
 /* We load the text tokens */
-tokens=load_text_tokens(name_tokens);
+tokens=load_text_tokens(snt_files->tokens_txt);
 if (tokens==NULL) {
    free_alphabet(alphabet);
-   error("Cannot open token file %s\n",name_tokens);
+   error("Cannot open token file %s\n",snt_files->tokens_txt);
    return 1;
 }
 /* We open the text.cod file for binary reading */
-text_cod=fopen(name_text_cod,"rb");
+text_cod=fopen(snt_files->text_cod,"rb");
 if (text_cod==NULL) {
    free_alphabet(alphabet);
    free_text_tokens(tokens);
-   error("Cannot open coded text file %s\n",name_text_cod);
+   error("Cannot open coded text file %s\n",snt_files->text_cod);
    return 1;
 }
 printf("Initializing...\n");
@@ -234,9 +176,9 @@ for (int priority=1;priority<4;priority++) {
             /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
-            info->dlf=u_fopen(name_dlf,U_APPEND);
-            info->dlc=u_fopen(name_dlc,U_APPEND);
-            info->err=u_fopen(name_err,U_WRITE);
+            info->dlf=u_fopen(snt_files->dlf,U_APPEND);
+            info->dlc=u_fopen(snt_files->dlc,U_APPEND);
+            info->err=u_fopen(snt_files->err,U_WRITE);
             /* Working... */
             dico_application(argv[i],info,priority);
             /* Dumping and closing output files */
@@ -263,11 +205,11 @@ for (int priority=1;priority<4;priority++) {
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
-            info->dlf=u_fopen(name_dlf,U_APPEND);
-            info->dlc=u_fopen(name_dlc,U_APPEND);
-            info->err=u_fopen(name_err,U_WRITE);
+            info->dlf=u_fopen(snt_files->dlf,U_APPEND);
+            info->dlc=u_fopen(snt_files->dlc,U_APPEND);
+            info->err=u_fopen(snt_files->err,U_WRITE);
             /* And we merge the Locate results with current dictionaries */
-            merge_dic_locate_results(info,name_concord_ind,priority);
+            merge_dic_locate_results(info,snt_files->concord_ind,priority);
             // dumping and closing output files
             save_unknown_words(info);
         	   u_fclose(info->dlf);
@@ -280,14 +222,14 @@ for (int priority=1;priority<4;priority++) {
 	  }
    }
 }
-/* Finally, we hav to save the definitive list of unknown words */
+/* Finally, we have to save the definitive list of unknown words */
 printf("Saving unknown words...\n");
-if (info->err == NULL ) {
-	info->err=u_fopen(name_err,U_WRITE);  
+if (info->err==NULL ) {
+	info->err=u_fopen(snt_files->err,U_WRITE);  
 }
 save_unknown_words(info);
 /* We compute some statistics */
-compute_stat_dic(name_stat_dic_n,info);
+save_statistics(snt_files->stat_dic_n,info);
 printf("Done.\n");
 /* And we free remaining things */
 free_alphabet(alphabet);
@@ -297,6 +239,7 @@ if (info->dlc!=NULL) u_fclose(info->dlc);
 if (info->err!=NULL) u_fclose(info->err);
 fclose(text_cod);
 free_dico_application(info);
+free_snt_files(snt_files);
 return 0;
 }
 

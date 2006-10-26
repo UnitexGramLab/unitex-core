@@ -34,6 +34,7 @@
 #include "Copyright.h"
 #include "LocatePattern.h"
 #include "Error.h"
+#include "Snt.h"
 
 
 /* Maximum number of new lines in a text. New lines are encoded in
@@ -61,12 +62,8 @@ if (concor==NULL) {
    error("Cannot open file %s\n",argv[1]);
    return 1;
 }
-/* We initialize the ..._snt directory with the directory where we found 'concord.ind' */
-char snt_dir[2000];
-get_filename_path(argv[1],snt_dir);
-char text_cod[2000];
-char tokens_txt[2000];
-char enter[2000];
+/* We compute the name of the files associated to the text */
+struct snt_files* snt_files=NULL;
 /* By default, we are not dealing with a Thai concordance */
 struct conc_opt option;
 option.thai_mode = 0;
@@ -76,47 +73,45 @@ if (argc!=9) {
 	/* We look for the -thai and <snt_dir> optional parameters */
     if (strcmp(argv[9],"-thai")) {
     	/* If there is an extra parameter that is not -thai, then it is the <snt_dir> parameter */
-    	strcpy(snt_dir,argv[9]);
+    	snt_files=new_snt_files_from_path(argv[9]);
     }
 	else {
 		/* If there is -thai */
 		option.thai_mode=1;
 		if (argc==11) {
 			/* If there is another extra parameter, then it is the <snt_dir> parameter */
-			strcpy(snt_dir,argv[10]);
+			snt_files=new_snt_files_from_path(argv[10]);
 		}
 	}
 }
-strcpy(text_cod,snt_dir);
-strcat(text_cod,"text.cod");
-strcpy(tokens_txt,snt_dir);
-strcat(tokens_txt,"tokens.txt");
-strcpy(enter,snt_dir);
-strcat(enter,"enter.pos");
-FILE* text=fopen(text_cod,"rb");
+if (snt_files==NULL) {
+   snt_files=new_snt_files(argv[1]);
+}
+FILE* text=fopen(snt_files->text_cod,"rb");
 if (text==NULL) {
-	error("Cannot open file %s\n",text_cod);
+	error("Cannot open file %s\n",snt_files->text_cod);
 	u_fclose(concor);
 	return 1;
 }
-struct text_tokens* tok=load_text_tokens(tokens_txt);
+struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
 if (tok==NULL) {
-	error("Cannot load text token file %s\n",tokens_txt);
+	error("Cannot load text token file %s\n",snt_files->tokens_txt);
 	u_fclose(concor);
 	fclose(text);
 	return 1;
 }
-FILE* f_enter=fopen(enter,"rb");
+FILE* f_enter=fopen(snt_files->enter_pos,"rb");
 int n_enter_char;
 if (f_enter==NULL) {
-	error("Cannot open file %s\n",enter);
+	error("Cannot open file %s\n",snt_files->enter_pos);
 	n_enter_char=0;
 }
 else {
 	n_enter_char=fread(&enter_pos,sizeof(int),MAX_ENTER_CHAR,f_enter);
 	fclose(f_enter);
 }
-if (1!=sscanf(argv[4],"%d%[s]",&option.left_context))
+char test='\0';
+if (1!=sscanf(argv[4],"%d%c",&option.left_context,&test))
 	option.left_context_until_eos=1; /* "80s" means: 80 characters
 	                                    context, but stop at "{S}" */
 else if (1!=sscanf(argv[4],"%d",&option.left_context)) {
@@ -126,7 +121,7 @@ else if (1!=sscanf(argv[4],"%d",&option.left_context)) {
 	free_text_tokens(tok);
 	return 1;
 }
-if (1!=sscanf(argv[5],"%d%[s]",&option.right_context))
+if (1!=sscanf(argv[5],"%d%c",&option.right_context,&test))
 	option.right_context_until_eos=1; /* dito */
 else if (1!=sscanf(argv[5],"%d",&option.right_context)) {
 	error("Invalid right context length %s\n",argv[5]);

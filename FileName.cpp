@@ -22,7 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include <string.h>
-
+#include <stdlib.h>
 #include "FileName.h"
 #include "Error.h"
 //---------------------------------------------------------------------------
@@ -81,7 +81,8 @@ while (l>=0 && res[l]!='/' && res[l]!='\\' && res[l]!='.') {
    l--;
 }
 if (res[l]=='.') res[l]='\0';
-strcat(res,"_snt/");
+strcat(res,"_snt");
+strcat(res,PATH_SEPARATOR_STRING);
 }
 
 
@@ -178,34 +179,51 @@ void replace_pathseparator_by_colon(char* path) {
 /**
  * replace colon (':'), the "universal" path separator
  * by system-dependent path separators ('/' resp. '\\')
- * @param path
  */
 void replace_colon_by_pathseparator(char* path) {
-  while (*path)
-    {
-#ifdef _NOT_UNDER_WINDOWS
-      if (*path == ':') { *path = '/'; }
-#else
-      if (*path == ':') { *path = '\\'; }
-#endif
-      ++path;
-    }
+while (*path) {
+   if (*path==':') {
+      *path=PATH_SEPARATOR_CHAR;
+   }
+   path++;
+}
 }
 
-// /**
-//  * replace path separators ('/' resp. '\\') by the colon (':')
-//  * @param path
-//  */
-// void replace_pathseparator_by_colon(unichar* path) {
-// unichar* ptr;
-// for (ptr=path; *ptr!='\0'; ptr++)
-//   {
-// #ifdef _NOT_UNDER_WINDOWS
-//     if (*ptr == (unichar) '/')
-// #else
-//     if (*ptr == (unichar) '\\')
-// #endif
-//       { *ptr = (unichar) ':'; }
-//   }
-// }
+
+/**
+ * This function builds and returns a new absolute file name from a path and a file name.
+ * The result is dynamically allocated and must be freed by the caller.
+ * 
+ * Example: path="/tmp/test/" name="hello.txt"
+ *       => res="/tmp/test/toto.txt"
+ */
+char* new_file(const char* path,const char* name) {
+if (path==NULL || name==NULL) {
+   fatal_error("NULL error in new_file\n");
+}
+if (path[0]=='\0') {
+   fatal_error("Empty path in new_file\n");
+}
+if (name[0]=='\0') {
+   fatal_error("Empty file name in new_file\n");
+}
+int l=strlen(path);
+/* Here we test if the path already contains a path separator char, but
+ * we are tolerant: we admit to have a wrong separator char. */
+int length_without_separator=l-((path[l-1]=='/' || path[l-1]=='\\')?1:0);
+/* We add 2: +1 for \0 and +1 for the path separator */
+char* res=(char*)malloc(sizeof(char)*(2+length_without_separator+strlen(name)));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_file\n");
+}
+/* WARNING: we don't want to modify the existing path and we want to be sure
+ * to put the correct path separator char. So, we copy the path except the 
+ * separator char, if any. */
+strncpy(res,path,length_without_separator);
+/* Then, we don't do a strcat since strncpy didn't put a '\0' at the end of 'res' */
+res[length_without_separator]=PATH_SEPARATOR_CHAR;
+/* We do the following to avoid putting a '\0' and then doing a strcat */
+strcpy(&(res[length_without_separator+1]),name);
+return res;
+}
 
