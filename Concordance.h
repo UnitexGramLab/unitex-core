@@ -34,7 +34,11 @@
 #define RIGHT_CENTER 6
 #define MAX_CONTEXT_IN_UNITS 5000
 
-
+/**
+ * This structure is used to store information about the current
+ * concordance build. It is used to avoid giving too much parameters
+ * to functions.
+ */
 struct conc_opt {
   int sort_mode;
   int left_context;
