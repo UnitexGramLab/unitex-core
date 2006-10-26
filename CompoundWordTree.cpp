@@ -549,3 +549,56 @@ int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
 tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
 return conditional_insertion_in_DLC_tree_node(token_list,0,infos->root,pattern1,pattern2);
 }
+
+
+/**
+ * This function optimizes the given compound word tree node.
+ * The pattern list is emptied and replaced by a sorted array.
+ * The transition list is also emptied and replaced by 2 sorted
+ * arrays that correspond to the 'token' and 'node' fields of the
+ * DLC_tree_transition structure.
+ */
+void optimize_DLC_node(struct DLC_tree_node* n) {
+struct liste_nombres* tmp;
+struct DLC_tree_transition* t;
+int i;
+if (n==NULL) return;
+if (n->number_of_patterns!=0) {
+   /* We allocate the array for pattern numbers and we fill it */
+   n->array_of_patterns=(int*)malloc(sizeof(int)*n->number_of_patterns);
+   i=0;
+   while (n->patterns!=NULL) {
+     n->array_of_patterns[i++]=n->patterns->n;
+     tmp=n->patterns;
+     n->patterns=n->patterns->suivant;
+     free(tmp);
+   }
+}
+if (n->number_of_transitions!=0) {
+   /* We allocate the arrays for representing (token,node) pairs of
+    * transitions and fill them */
+   n->destination_tokens=(int*)malloc(sizeof(int)*n->number_of_transitions);
+   n->destination_nodes=(struct DLC_tree_node**)malloc(sizeof(struct DLC_tree_node*)*n->number_of_transitions);
+   i=0;
+   while (n->transitions!=NULL) {
+     n->destination_tokens[i]=n->transitions->token;
+     n->destination_nodes[i]=n->transitions->node;
+     t=n->transitions;
+     n->transitions=n->transitions->next;
+     /* Recursively, we optimize the destination node */
+     optimize_DLC_node(n->destination_nodes[i]);
+     i++;
+     free(t);
+   }
+}
+}
+
+
+/**
+ * This function optimizes the given compound word tree, by replacing
+ * all transition and pattern lists by sorted arrays.
+ */
+void optimize_DLC(struct DLC_tree_info* DLC_tree) {
+optimize_DLC_node(DLC_tree->root);
+}
+

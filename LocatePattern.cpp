@@ -192,7 +192,7 @@ check_patterns_for_tag_tokens(alph,tok,n_octet_code_gramm,DLC_tree,tokenization_
 printf("Optimizing fst2 tags...\n");
 replace_pattern_tags(automate,alph,tok,DLC_tree,tokenization_mode);
 printf("Optimizing compound word dictionary...\n");
-optimize_dlc(DLC_tree);
+optimize_DLC(DLC_tree);
 free_string_hash(semantic_codes);
 init_transduction_variable_index(automate->variables);
 printf("Optimizing fst2...\n");

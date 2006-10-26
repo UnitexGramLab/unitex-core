@@ -34,23 +34,19 @@
 #define RIGHT_CENTER 6
 #define MAX_CONTEXT_IN_UNITS 5000
 
+
 struct conc_opt {
   int sort_mode;
-
   int left_context;
   int right_context;
   unsigned char left_context_until_eos;
   unsigned char right_context_until_eos;
-
   int thai_mode;
-
   char* fontname;
   char* fontsize;
-  
   char* directory;
   char* result_mode;
   char* sort_alphabet;
-
   char working_directory[2000];
 };
 

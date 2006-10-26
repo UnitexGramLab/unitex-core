@@ -42,7 +42,6 @@
 #include "Loading_dic.h"
 #include "CompoundWordTree.h"
 #include "Fst2_tags_optimization.h"
-#include "DLC_optimization.h"
 #include "Optimized_fst2.h"
 #include "Pattern_transitions.h"
 #include "Text_parsing.h"
