@@ -29,7 +29,7 @@
 #include "Fst2.h"
 #include "Text_tokens.h"
 #include "String_hash.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "String_list.h"
 
 #define EMPTY_TOKEN -4

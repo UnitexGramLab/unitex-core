@@ -439,8 +439,8 @@ if (PARSING_MODE!=NORMAL_MODE
        // we proceed only if we have exactly read the contenu sequence
        // in both modes MERGE and REPLACE, we process the transduction if any
        int SOMMET2=sommet;
-       struct liste_nombres* RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
-       struct liste_nombres* TMP;
+       struct list_int* RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
+       struct list_int* TMP;
        while (RES!=NULL) {
           sommet=SOMMET2;
           Fst2Tag etiq=fst2->tags[RES->etiq];
@@ -455,7 +455,7 @@ if (PARSING_MODE!=NORMAL_MODE
           mot[longueur]=C;
           parcourir_graphe(n_graph,RES->arr,pos2-(position-longueur),profondeur,liste_arrivee);
           TMP=RES;
-          RES=RES->suivant;
+          RES=RES->next;
           free(TMP);
        }
    }

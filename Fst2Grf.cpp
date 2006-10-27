@@ -29,7 +29,7 @@
 #include "Fst2.h"
 #include "Sentence_to_grf.h"
 #include "FileName.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 

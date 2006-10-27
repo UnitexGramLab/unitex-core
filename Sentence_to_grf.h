@@ -26,7 +26,7 @@
 
 #include "unicode.h"
 #include "Fst2.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 
 #define WIDTH_OF_A_CHAR 10
 #define NBRE_BITS_DE_DECALAGE 19
@@ -35,7 +35,7 @@ struct grf_state {
    unichar* content;
    int pos_X;
    int rang;
-   struct liste_nombres* l;
+   struct list_int* l;
 };
 
 

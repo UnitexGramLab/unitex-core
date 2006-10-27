@@ -26,10 +26,10 @@
 #include "unicode.h"
 #include "DELA.h"
 
-#define MAX_FLEXIONAL_CODES_LENGTH 400
+#define MAX_INFLECTIONAL_CODES_LENGTH 400
 
 struct code_flexion {
-  unichar s[MAX_FLEXIONAL_CODES_LENGTH];
+  unichar s[MAX_INFLECTIONAL_CODES_LENGTH];
 };
 typedef struct code_flexion* Code_flexion;
 

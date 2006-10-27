@@ -26,7 +26,7 @@
 
 #include "unicode.h"
 #include "Fst2.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "Grf2Fst2_lib.h"
 
 #define FLATTEN_ERROR 0

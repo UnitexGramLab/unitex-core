@@ -67,7 +67,7 @@ if (a->incoming!=0) {
 	 * in order to avoid double freeing problems. */
 	return;
 }
-free_liste_nombres(a->single_INF_code_list);
+free_list_int(a->single_INF_code_list);
 free_dictionary_node_transition(a->trans);
 free(a);
 }
@@ -155,22 +155,18 @@ if (inflected[pos]=='\0') {
    if (node->single_INF_code_list==NULL) {
       /* If there is no INF code in the node, then
        * we add one and we return */
-      node->single_INF_code_list=new_liste_nombres();
-      node->single_INF_code_list->n=N;
+      node->single_INF_code_list=new_list_int(N);
       node->INF_code=N;
       return;
    }
    /* If there is an INF code list in the node ...*/
-   if (appartient_a_liste(N,node->single_INF_code_list)) {
+   if (is_in_list(N,node->single_INF_code_list)) {
       /* If the INF code has allready been taken into account for this node
        * (case of duplicates), we do nothing */
       return;
    }
    /* Otherwise, we add it to the INF code list */
-   struct liste_nombres* l_tmp=new_liste_nombres();
-   l_tmp->n=N;
-   l_tmp->suivant=node->single_INF_code_list;
-   node->single_INF_code_list=l_tmp;
+   node->single_INF_code_list=head_insert(N,node->single_INF_code_list);
    /* And we update the global INF line for this node */
    unichar tmp[3000];
    u_strcpy(tmp,infos->INF_code_list->tab[node->INF_code]);

@@ -25,11 +25,11 @@
 //---------------------------------------------------------------------------
 
 
-static struct liste_nombres** dependences;
+static struct list_int** dependences;
 static int* new_graph_number;
 
 void compute_dependences(Fst2*);
-void compute_dependences_for_subgraph(Fst2*,int,struct liste_nombres**);
+void compute_dependences_for_subgraph(Fst2*,int,struct list_int**);
 void print_dependences(Fst2*);
 void check_for_graphs_to_keep(Fst2*,int);
 int renumber_graphs_to_keep(Fst2*);
@@ -59,7 +59,7 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
 
 
   printf("Computing grammar dependences...\n");
-  dependences = (struct liste_nombres**) malloc((1+origin->number_of_graphs)*sizeof(struct liste_nombres*));
+  dependences = (struct list_int**) malloc((1+origin->number_of_graphs)*sizeof(struct list_int*));
   new_graph_number = (int*) malloc((1+origin->number_of_graphs)*sizeof(int));
   compute_dependences(origin); // make dependency tree of the grammar
   check_for_graphs_to_keep(origin,depth);
@@ -83,7 +83,7 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
                            &SUBGRAPH_CALL); 
   // liberation of the dependence structures
   for (int i=1;i<=origin->number_of_graphs;i++) {
-    free_liste_nombres(dependences[i]);
+    free_list_int(dependences[i]);
   }
   free(dependences);
 
@@ -148,14 +148,14 @@ for (int i=1;i<=grammar->number_of_graphs;i++) {
 /**
  * this function compute for the subgraph n of the grammar its subgraph list
  */
-void compute_dependences_for_subgraph(Fst2* grammar,int n,struct liste_nombres** L) {
+void compute_dependences_for_subgraph(Fst2* grammar,int n,struct list_int** L) {
 int limite = grammar->initial_states[n]+grammar->number_of_states_per_graphs[n];
 for (int etat=grammar->initial_states[n];etat<limite;etat++) {
    struct fst2Transition* trans = grammar->states[etat]->transitions;
    while (trans!=NULL) {
       if (trans->tag_number<0) {
          // if we find a reference to a subgraph, we store it in the list
-         *L = inserer_dans_liste_nombres(-(trans->tag_number),*L);
+         *L = sorted_insert(-(trans->tag_number),*L);
       }
       trans = trans->next;
    }
@@ -173,12 +173,12 @@ for (int i=1;i<=grammar->number_of_graphs;i++) {
       printf("graph %d ",i);
       u_prints(grammar->graph_names[i]);
       printf(" calls:\n");
-      struct liste_nombres* l = dependences[i];
+      struct list_int* l = dependences[i];
       while (l!=NULL) {
          printf("   graph %d ",l->n);
          u_prints(grammar->graph_names[l->n]);
          printf("\n");
-         l = l->suivant;
+         l = l->next;
       }
    }
 }
@@ -194,10 +194,10 @@ void check_if_subgraphs_must_be_kept(int N,int depth,int max_depth) {
 // if we have not overpassed the maximum flattening depth,
 // we just go on
 if (depth<=max_depth) {
-   struct liste_nombres* l = dependences[N];
+   struct list_int* l = dependences[N];
    while (l!=NULL) {
       check_if_subgraphs_must_be_kept(l->n,depth+1,max_depth);
-      l = l->suivant;
+      l = l->next;
    }
 }
 // if we have reached the maximum flattening depth,
@@ -205,10 +205,10 @@ else {
    if (new_graph_number[N]==0) {
       // we look there only if we hadn't computed this graph yet
       new_graph_number[N]=1;
-      struct liste_nombres* l = dependences[N];
+      struct list_int* l = dependences[N];
       while (l!=NULL) {
          check_if_subgraphs_must_be_kept(l->n,depth+1,max_depth);
-         l = l->suivant;
+         l = l->next;
       }
    }
 }

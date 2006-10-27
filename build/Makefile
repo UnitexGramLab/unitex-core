@@ -238,33 +238,33 @@ CHECKDIC_OBJS = IOBuffer.o CheckDic.o unicode.o FileName.o DELA.o Alphabet.o Str
 
 COMPRESS      = Compress
 COMPRESS_OBJS = IOBuffer.o Compress.o unicode.o DELA.o DictionaryTree.o Alphabet.o\
-				String_hash.o AutomatonDictionary2Bin.o FileName.o Minimize_tree.o Liste_nombres.o\
+				String_hash.o AutomatonDictionary2Bin.o FileName.o Minimize_tree.o List_int.o\
 				WordList.o Error.o StringParsing.o
 
 CONCORD      = Concord
 CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o unicode.o Text_tokens.o String_hash.o\
-				Liste_nombres.o Alphabet.o Matches.o Concordance.o FileName.o\
+				List_int.o Alphabet.o Matches.o Concordance.o FileName.o\
 				Text_parsing.o LocatePattern.o Loading_dic.o\
 				TransductionStack.o Optimized_fst2.o TransductionVariables.o Liste_num.o\
 				CompoundWordTree.o GF_lib.o DELA.o WordList.o Fst2.o Grammatical_codes.o\
 				Fst2_tags_optimization.o Pattern_transitions.o\
 				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
-				Buffer.o StringParsing.o Snt.o
+				Buffer.o StringParsing.o Snt.o BitArray.o
 
 CONCORDIFF      = ConcorDiff
-CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_tokens.o String_hash.o Liste_nombres.o Alphabet.o Matches.o Concordance.o FileName.o\
+CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_tokens.o String_hash.o List_int.o Alphabet.o Matches.o Concordance.o FileName.o\
 				Text_parsing.o LocatePattern.o TransductionStack.o Optimized_fst2.o TransductionVariables.o Liste_num.o\
 				CompoundWordTree.o GF_lib.o\
 				DELA.o WordList.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
 				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
-				Buffer.o StringParsing.o Snt.o
+				Buffer.o StringParsing.o Snt.o BitArray.o
 
 CONVERT      = Convert
 CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o CodePages.o Error.o\
 				HTMLCharacters.o AsciiSearchTree.o
 
 DICO      = Dico
-DICO_OBJS = Dico.o Liste_nombres.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
+DICO_OBJS = Dico.o List_int.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
             WordList.o unicode.o Table_complex_token_hash.o Fst2.o IOBuffer.o Error.o \
             CompoundWordTree.o Flexional_codes.o Facteurs_interdits.o Fst2_tags_optimization.o \
             Grammatical_codes.o Loading_dic.o Liste_num.o LocatePattern.o Matches.o Optimized_fst2.o Pattern_transitions.o \
@@ -294,18 +294,18 @@ EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o unicode.o fst2autalmot.o autalmot_ol
 
 EXTRACT      = Extract
 EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o TransductionStack.o Optimized_fst2.o TransductionVariables.o \
-               Liste_num.o CompoundWordTree.o  Liste_nombres.o Concordance.o \
+               Liste_num.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o WordList.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
                Facteurs_interdits.o Flexional_codes.o unicode.o Text_tokens.o FileName.o Extract_units.o Alphabet.o String_hash.o Matches.o\
-	           GF_lib.o Error.o Context.o Buffer.o SortTxtMain.o StringParsing.o
+	           GF_lib.o Error.o Context.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o unicode.o Fst2.o Grf2Fst2_lib.o\
-               FlattenFst2.o Liste_nombres.o Error.o FileName.o
+               FlattenFst2.o List_int.o Error.o FileName.o
 
 FST2GRF      = Fst2Grf
 FST2GRF_OBJS = IOBuffer.o Fst2Grf.o unicode.o Fst2.o Sentence_to_grf.o\
-               FileName.o Liste_nombres.o Error.o
+               FileName.o List_int.o Error.o
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = IOBuffer.o Fst2List.o unicode.o Fst2.o Alphabet.o Liste_num.o\
@@ -333,10 +333,11 @@ INFLECT      = Inflect
 INFLECT_OBJS = IOBuffer.o Inflect.o unicode.o Fst2.o Error.o
 
 LOCATE      = Locate
-LOCATE_OBJS = IOBuffer.o Locate.o unicode.o Alphabet.o DELA.o WordList.o String_hash.o LocatePattern.o Fst2.o Text_tokens.o Liste_nombres.o\
+LOCATE_OBJS = IOBuffer.o Locate.o unicode.o Alphabet.o DELA.o WordList.o String_hash.o LocatePattern.o Fst2.o Text_tokens.o List_int.o\
               Grammatical_codes.o Flexional_codes.o Facteurs_interdits.o Loading_dic.o CompoundWordTree.o Fst2_tags_optimization.o \
               Optimized_fst2.o Pattern_transitions.o Text_parsing.o Matches.o TransductionVariables.o TransductionStack.o\
-              Liste_num.o FileName.o GF_lib.o Error.o Context.o StringParsing.o LocateAsRoutine.o
+              Liste_num.o FileName.o GF_lib.o Error.o Context.o StringParsing.o LocateAsRoutine.o\
+              BitArray.o
 
 MERGETEXTAUTOMATON      = MergeTextAutomaton
 MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o unicode.o String_hash.o Fst2.o\
@@ -357,8 +358,8 @@ RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o Optimized_fst2
                DELA.o WordList.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
                Facteurs_interdits.o Flexional_codes.o unicode.o Alphabet.o Matches.o FileName.o Normalization_transducer.o\
 	           PortugueseNormalization.o\
-               Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o Liste_nombres.o String_list.o\
-               Sentence_to_grf.o GF_lib.o Error.o Context.o StringParsing.o
+               Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o String_list.o\
+               Sentence_to_grf.o GF_lib.o Error.o Context.o StringParsing.o BitArray.o
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = IOBuffer.o Reg2Grf.o unicode.o Regular_expression.o Error.o
@@ -379,7 +380,7 @@ TOKENIZE_OBJS = IOBuffer.o Tokenize.o unicode.o Alphabet.o String_hash.o\
 
 TXT2FST2      = Txt2Fst2
 TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o unicode.o Load_DLF_DLC.o\
-                DELA.o WordList.o String_hash.o Text_automaton.o Liste_nombres.o\
+                DELA.o WordList.o String_hash.o Text_automaton.o List_int.o\
                 Normalization_transducer.o Fst2.o String_list.o FileName.o Error.o\
                 StringParsing.o
 

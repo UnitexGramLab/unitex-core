@@ -28,11 +28,12 @@
 #include "String_hash.h"
 #include "Fst2.h"
 #include "CompoundWordTree.h"
+#include "List_int.h"
 
 #define SEPARATOR_CHAR 1
 
 void replace_pattern_tags(Fst2*,Alphabet*,struct string_hash*,
-						struct DLC_tree_info*,int);
+						struct DLC_tree_info*,int,struct list_int*);
 
 
 #endif

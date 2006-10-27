@@ -439,14 +439,14 @@ return new_grf_state(temp,pos_X,rang);
 void free_grf_state(struct grf_state* g) {
 if (g==NULL) return;
 if (g->content!=NULL) free(g->content);
-free_liste_nombres(g->l);
+free_list_int(g->l);
 free(g);
 }
 
 
 
 void add_transition_to_grf_state(struct grf_state* g,int arr) {
-g->l=inserer_dans_liste_nombres(arr,g->l);
+g->l=sorted_insert(arr,g->l);
 }
 
 
@@ -460,7 +460,7 @@ free_grf_state(tab_grf_state[a_virer]);
 tab_grf_state[a_virer]=tab_grf_state[(*N)-1];
 tab_grf_state[(*N)-1]=NULL;
 for (int i=0;i<(*N)-1;i++) {
-   struct liste_nombres* l=tab_grf_state[i]->l;
+   struct list_int* l=tab_grf_state[i]->l;
    while (l!=NULL) {
       if (l->n==a_virer) {
          l->n=a_garder;
@@ -468,7 +468,7 @@ for (int i=0;i<(*N)-1;i++) {
       else if (l->n==(*N)-1) {
          l->n=a_virer;
       }
-      l=l->suivant;
+      l=l->next;
    }
 }
 (*N)--;
@@ -514,7 +514,7 @@ if (a->content==NULL) {
    else return 0;
 }
 if (u_strcmp(a->content,b->content)) return 0;
-return are_equivalent_liste_nombres(a->l,b->l);
+return equal(a->l,b->l);
 }
 
 
@@ -523,7 +523,7 @@ void save_grf_states(FILE* f,struct grf_state** tab_grf_state,int N_GRF_STATES,
                      int rang_max,char* font) {
 unichar z[100];
 int position_verticale[2000];
-struct liste_nombres* l;
+struct list_int* l;
 // we counts the number of boxes for each horizontal position
 for (int i=0;i<rang_max;i++) {
     position_verticale[i]=0;
@@ -538,7 +538,7 @@ int j=0;
 l=tab_grf_state[0]->l;
 while (l!=NULL) {
   j++;
-  l=l->suivant;
+  l=l->next;
 }
 u_int_to_string(j,z);
 u_strcat_char(z," ");
@@ -548,7 +548,7 @@ while (l!=NULL) {
   u_int_to_string(l->n,z);
   u_strcat_char(z," ");
   u_fprints(z,f);
-  l=l->suivant;
+  l=l->next;
 }
 // and the final state
 u_fprints_char("\n\"\" ",f);
@@ -574,7 +574,7 @@ for (int i=2;i<N_GRF_STATES;i++) {
    l=tab_grf_state[i]->l;
    while (l!=NULL) {
       j++;
-      l=l->suivant;
+      l=l->next;
    }
    u_int_to_string(j,z);
    u_strcat_char(z," ");
@@ -584,7 +584,7 @@ for (int i=2;i<N_GRF_STATES;i++) {
       u_int_to_string(l->n,z);
       u_strcat_char(z," ");
       u_fprints(z,f);
-      l=l->suivant;
+      l=l->next;
    }
    u_fprints_char("\n",f);
 }

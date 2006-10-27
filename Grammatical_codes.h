@@ -27,7 +27,7 @@
 #include "Flexional_codes.h"
 #include "Facteurs_interdits.h"
 #include "LocatePattern.h"
-
+#include "BitArray.h"
 
 struct liste_code_flexion {
   Code_flexion code;
@@ -62,6 +62,6 @@ void creer_ensemble_code_gramm(int*,unichar**,unichar**,Code_flexion,
 void ajouter_element_code_gramm(unichar**,int,struct noeud_code_gramm*,
                                 Code_flexion,int,
                                 struct facteurs_interdits*,unichar*);
-void get_numeros_pattern(struct dela_entry*,unsigned char *,int);
+int get_matching_patterns(struct dela_entry*,struct bit_array*);
 
 #endif

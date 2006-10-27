@@ -36,7 +36,7 @@ return c;
 
 
 int ajouter_code(Code_flexion c,unichar* s) {
-if ((u_strlen(c->s)+u_strlen(s)) > MAX_FLEXIONAL_CODES_LENGTH) {
+if ((u_strlen(c->s)+u_strlen(s)) > MAX_INFLECTIONAL_CODES_LENGTH) {
   fprintf(stderr, "Flexional code to long\n");
   return 0;
 }
@@ -53,7 +53,7 @@ Code_flexion calculer_code_flexion(unichar* t2[]) {
 Code_flexion c;
 int i;
 c=nouveau_code_flexion();
-for (i=0;i<MAX_FLEXIONAL_CODES_LENGTH;i++) {
+for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++) {
   if (t2[i]!=NULL) {
      ajouter_code(c,t2[i]);
   }

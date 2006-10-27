@@ -23,6 +23,7 @@
 #include "Loading_dic.h"
 #include "Fst2_tags_optimization.h"
 #include "LocateConstants.h"
+#include "BitArray.h"
 //---------------------------------------------------------------------------
 
 
@@ -57,16 +58,16 @@ void deuxieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
 						int tokenization_mode) {
 int num;
-struct liste_nombres* ptr_num;
-struct liste_nombres* ptr;
+struct list_int* ptr_num;
+struct list_int* ptr;
 if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_hash_number(s,tok);
-  if ((index_code_gramm[num]!=NULL)&&
-      (index_code_gramm[num][etiquette[e]->number/8]&(1<<(etiquette[e]->number%8)))) {
-      ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+  if ((matching_patterns[num]!=NULL)&&
+      get_value(matching_patterns[num],etiquette[e]->number)) {
+      ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
       ptr_num->n=num;
-      ptr_num->suivant=etiquette[e]->matching_tokens;
+      ptr_num->next=etiquette[e]->matching_tokens;
       etiquette[e]->matching_tokens=ptr_num;
       etiquette[e]->number_of_matching_tokens++;
    }
@@ -81,20 +82,20 @@ if (!est_un_token_simple(s,alph,tokenization_mode)) {
   return;
 }
 ptr=get_token_list_for_sequence(s,alph,tok);
-struct liste_nombres* ptr_copy = ptr; // s.n.
+struct list_int* ptr_copy = ptr; // s.n.
 while (ptr!=NULL) {
   num=ptr->n;
-  if ((index_code_gramm[num]!=NULL)&&
-      (index_code_gramm[num][etiquette[e]->number/8]&(1<<(etiquette[e]->number%8)))) {
-    ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+  if ((matching_patterns[num]!=NULL)&&
+      get_value(matching_patterns[num],etiquette[e]->number)) {
+    ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
     ptr_num->n=num;
-    ptr_num->suivant=etiquette[e]->matching_tokens;
+    ptr_num->next=etiquette[e]->matching_tokens;
     etiquette[e]->matching_tokens=ptr_num;
     etiquette[e]->number_of_matching_tokens++;
   }
-  ptr=ptr->suivant;
+  ptr=ptr->next;
 }
-free_liste_nombres(ptr_copy); // s.n.
+free_list_int(ptr_copy); // s.n.
 }
 
 
@@ -134,16 +135,16 @@ void troisieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
 						int tokenization_mode) {
 int num;
-struct liste_nombres* ptr_num;
-struct liste_nombres* ptr;
+struct list_int* ptr_num;
+struct list_int* ptr;
 if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_hash_number(s,tok);
-   if ((index_code_gramm[num]!=NULL)&&
-      (index_code_gramm[num][etiquette[e]->number/8]&(1<<(etiquette[e]->number%8)))) {
-      ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+   if ((matching_patterns[num]!=NULL)&&
+      get_value(matching_patterns[num],etiquette[e]->number)) {
+      ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
       ptr_num->n=num;
-      ptr_num->suivant=etiquette[e]->matching_tokens;
+      ptr_num->next=etiquette[e]->matching_tokens;
       etiquette[e]->matching_tokens=ptr_num;
       etiquette[e]->number_of_matching_tokens++;
    }
@@ -158,20 +159,20 @@ if (!est_un_token_simple(s,alph,tokenization_mode)) {
   return;
 }
 ptr=get_token_list_for_sequence(s,alph,tok);
-struct liste_nombres* ptr_copy = ptr; // s.n.
+struct list_int* ptr_copy = ptr; // s.n.
 while (ptr!=NULL) {
   num=ptr->n;
-  if ((index_code_gramm[num]!=NULL)&&
-      (index_code_gramm[num][etiquette[e]->number/8]&(1<<(etiquette[e]->number%8)))) {
-    ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+  if ((matching_patterns[num]!=NULL)&&
+      get_value(matching_patterns[num],etiquette[e]->number)) {
+    ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
     ptr_num->n=num;
-    ptr_num->suivant=etiquette[e]->matching_tokens;
+    ptr_num->next=etiquette[e]->matching_tokens;
     etiquette[e]->matching_tokens=ptr_num;
     etiquette[e]->number_of_matching_tokens++;
   }
-  ptr=ptr->suivant;
+  ptr=ptr->next;
 }
-free_liste_nombres(ptr_copy); // s.n.
+free_list_int(ptr_copy); // s.n.
 }
 
 
@@ -221,14 +222,14 @@ void quatrieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
 						int tokenization_mode) {
 int num;
-struct liste_nombres* ptr_num;
-struct liste_nombres* ptr;
+struct list_int* ptr_num;
+struct list_int* ptr;
 if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_hash_number(s,tok);
-   ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+   ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
    ptr_num->n=num;
-   ptr_num->suivant=etiquette[e]->matching_tokens;
+   ptr_num->next=etiquette[e]->matching_tokens;
    etiquette[e]->matching_tokens=ptr_num;
    etiquette[e]->number_of_matching_tokens++;
    return;
@@ -242,17 +243,17 @@ if (!est_un_token_simple(s,alph,tokenization_mode)) {
 }
 //---mot simple
 ptr=get_token_list_for_sequence(s,alph,tok);
-struct liste_nombres* ptr_copy = ptr; // s.n.
+struct list_int* ptr_copy = ptr; // s.n.
 while (ptr!=NULL) {
   num=ptr->n;
-  ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+  ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
   ptr_num->n=num;
-  ptr_num->suivant=etiquette[e]->matching_tokens;
+  ptr_num->next=etiquette[e]->matching_tokens;
   etiquette[e]->matching_tokens=ptr_num;
   etiquette[e]->number_of_matching_tokens++;
-  ptr=ptr->suivant;
+  ptr=ptr->next;
 }
-free_liste_nombres(ptr_copy); // s.n.
+free_list_int(ptr_copy); // s.n.
 }
 
 
@@ -286,26 +287,26 @@ else etiquette[e]->number=LEXICAL_TAG;
 
 void cas_normal(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
 				int case_variants_allowed,struct DLC_tree_info* DLC_tree,
-				int tokenization_mode) {
+				int tokenization_mode,struct list_int* tag_token_list) {
 int num;
-struct liste_nombres* ptr_num;
-struct liste_nombres* ptr;
+struct list_int* ptr_num;
+struct list_int* ptr;
 unichar* s=etiquette[e]->input;
 // first, we check if this tag can recognize some tag tokens
-struct liste_nombres* L=tag_token_list;
+struct list_int* L=tag_token_list;
 while (L!=NULL) {
    struct dela_entry* entry=tokenize_tag_token(tok->tab[L->n]);
    if ((case_variants_allowed && is_equal_or_uppercase(s,entry->inflected,alph)) ||
        !u_strcmp(s,entry->inflected)) {
       num=L->n;
-      ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+      ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
       ptr_num->n=num;
-      ptr_num->suivant=etiquette[e]->matching_tokens;
+      ptr_num->next=etiquette[e]->matching_tokens;
       etiquette[e]->matching_tokens=ptr_num;
       etiquette[e]->number_of_matching_tokens++;
    }
    free_dic_entry(entry);
-   L=L->suivant;
+   L=L->next;
 }
 if (!case_variants_allowed) {
    return;
@@ -317,17 +318,17 @@ if (!est_un_token_simple(s,alph,tokenization_mode)) {
    pattern_compose_courant++;
 } else {
    ptr=get_token_list_for_sequence(etiquette[e]->input,alph,tok);
-   struct liste_nombres* ptr_copy = ptr; // s.n.
+   struct list_int* ptr_copy = ptr; // s.n.
    while (ptr!=NULL) {
      num=ptr->n;
-     ptr_num=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+     ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
      ptr_num->n=num;
-     ptr_num->suivant=etiquette[e]->matching_tokens;
+     ptr_num->next=etiquette[e]->matching_tokens;
      etiquette[e]->matching_tokens=ptr_num;
      etiquette[e]->number_of_matching_tokens++;
-     ptr=ptr->suivant;
+     ptr=ptr->next;
    }
-   free_liste_nombres(ptr_copy); // s.n.
+   free_list_int(ptr_copy); // s.n.
    if (etiquette[e]->matching_tokens==NULL) {
       etiquette[e]->number=NOTHING_TAG;
    }
@@ -341,7 +342,8 @@ if (!est_un_token_simple(s,alph,tokenization_mode)) {
 
 
 void replace_pattern_tags(Fst2* automate,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
+							struct DLC_tree_info* DLC_tree,int tokenization_mode,
+                     struct list_int* tag_token_list) {
 Fst2Tag* etiquette=automate->tags;
 int i;
 //printf("************** TRAITEMENT DES ANGLES ******************\n");
@@ -373,7 +375,7 @@ for (i=0;i</*etiquette_courante*/automate->number_of_tags;i++) {
     if (etiquette[i]->control&TOKEN_TAG_BIT_MASK) {
        //printf("4");
        cas_normal(i,etiquette,alph,tok,!(etiquette[i]->control&RESPECT_CASE_TAG_BIT_MASK),
-       			DLC_tree,tokenization_mode);
+       			DLC_tree,tokenization_mode,tag_token_list);
     }
   }
 }

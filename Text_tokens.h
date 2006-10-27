@@ -23,7 +23,7 @@
 #ifndef Text_tokensH
 #define Text_tokensH
 //---------------------------------------------------------------------------
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "String_hash.h"
 #include "unicode.h"
 #include "Alphabet.h"
@@ -44,7 +44,7 @@ struct text_tokens* load_text_tokens(char*);
 struct string_hash* load_text_tokens_hash(char*);
 struct string_hash* load_text_tokens_hash(char*,int*,int*);
 void free_text_tokens(struct text_tokens*);
-struct liste_nombres* get_token_list_for_sequence(unichar*,Alphabet*,struct string_hash*);
+struct list_int* get_token_list_for_sequence(unichar*,Alphabet*,struct string_hash*);
 int get_token_number(unichar*,struct text_tokens*);
 int is_a_digit_token(unichar* s);
 void extract_semantic_codes_from_tokens(struct string_hash*,struct string_hash*);

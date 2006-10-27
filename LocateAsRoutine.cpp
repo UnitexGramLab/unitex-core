@@ -35,7 +35,7 @@
 #include "LocatePattern.h"
 #include "Fst2.h"
 #include "Text_tokens.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "Grammatical_codes.h"
 #include "Flexional_codes.h"
 #include "Facteurs_interdits.h"

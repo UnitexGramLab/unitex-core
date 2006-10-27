@@ -29,7 +29,7 @@
 #include "Alphabet.h"
 #include "String_hash.h"
 #include "Text_tokens.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "LocatePattern.h"
 #include "CompoundWordTree.h"
 #include "LocateConstants.h"
@@ -60,8 +60,7 @@ struct liste_feuilles {
 struct noeud* nouveau_noeud();
 void load_dic_for_locate(char*,Alphabet*,struct string_hash*,int,int,int,int,struct DLC_tree_info*,int);
 void ajouter_forme_flechie(unichar*,int,struct noeud*,unichar*);
-unsigned char* nouveau_code_pattern(int);
-void check_patterns_for_tag_tokens(Alphabet*,struct string_hash*,int,struct DLC_tree_info*,int);
+void check_patterns_for_tag_tokens(Alphabet*,struct string_hash*,int,struct DLC_tree_info*,int,struct list_int**);
 int est_un_mot_simple(unichar*,Alphabet*,int);
 
 extern struct noeud *racine;

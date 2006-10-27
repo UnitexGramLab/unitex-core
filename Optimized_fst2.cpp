@@ -20,7 +20,7 @@
   */
 
 //---------------------------------------------------------------------------
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "LocatePattern.h"
 #include "Optimized_fst2.h"
 #include "LocateConstants.h"
@@ -245,11 +245,11 @@ ptr->suivant=tmp;
 
 
 void ajouter_liste_de_tokens(Fst2Tag e,int n_etiq,Etat_opt *e2,int arr,int* N) {
-struct liste_nombres* l;
+struct list_int* l;
 l=e->matching_tokens;
 while (l!=NULL) {
   ajouter_token_a_liste_tokens(l->n,n_etiq,&((*e2)->liste_tokens),arr,N);
-  l=l->suivant;
+  l=l->next;
 }
 }
 

@@ -31,7 +31,7 @@
 #include "DELA.h"
 #include "String_hash.h"
 #include "Text_automaton.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "Normalization_transducer.h"
 #include "Fst2.h"
 #include "String_list.h"

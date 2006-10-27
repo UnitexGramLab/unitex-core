@@ -25,7 +25,7 @@
 #include "unicode.h"
 #include "Text_tokens.h"
 #include "String_hash.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "Alphabet.h"
 #include "Matches.h"
 #include "Concordance.h"

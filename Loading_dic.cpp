@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 #include "Loading_dic.h"
 #include "Error.h"
+#include "BitArray.h"
 //---------------------------------------------------------------------------
 
 
@@ -42,97 +43,122 @@ return 0;
 }
 
 
-
-void load_dic_for_locate(char* dico,Alphabet* alph,struct string_hash* tok,
-                         int n_octet_code_gramm,int existe_etiquette_DIC,
-                         int existe_etiquette_CDIC,int existe_etiquette_SDIC,
+/**
+ * This function loads a DLF or a DLC. It computes information about tokens
+ * that will be used during the Locate operation. For instance, if we have the
+ * following line:
+ * 
+ *   extended,.A
+ * 
+ * and if the .fst2 to be applied to the text contains the pattern <A> with,
+ * number 456, then the function will mark the "extended" token to be matched 
+ * by the pattern 456. Moreover, all case variations will be taken into account,
+ * so that the "Extended" and "EXTENDED" tokens will also be updated.
+ * 
+ * The three parameters 'is_DIC_pattern', 'is_CDIC_pattern' and 'is_SDIC_pattern'
+ * indicates if the .fst2 contains the corresponding patterns. For instance, if
+ * the pattern "<SDIC>" is used in the grammar, it means that any token that is a
+ * simple word must be marked as be matched by this pattern.
+ */
+void load_dic_for_locate(char* dic_name,Alphabet* alphabet,struct string_hash* tokens,
+                         int number_of_patterns,int is_DIC_pattern,
+                         int is_CDIC_pattern,int is_SDIC_pattern,
                          struct DLC_tree_info* DLC_tree,int tokenization_mode) {
 FILE* f;
-/*unichar flechi[TAILLE_MOT];
-unichar canonique[TAILLE_MOT];
-unichar code_gramm[TAILLE_MOT];*/
-unsigned char* code_gramm_temp;
-unichar s[4000];
-int i,j,non_nul,z;
-struct liste_nombres* ptr;
-return;
-f=u_fopen(dico,U_READ);
+unichar line[DIC_LINE_SIZE];
+f=u_fopen(dic_name,U_READ);
 if (f==NULL) {
-   fprintf(stderr,"Cannot open dictionary %s\n",dico);
+   error("Cannot open dictionary %s\n",dic_name);
    return;
 }
-while (u_read_line(f,s)) {
-   struct dela_entry* entry=tokenize_DELAF_line(s,1);
+/* We parse all the lines */
+while (u_read_line(f,line)) {
+   if (line[0]=='/') {
+      /* NOTE: DLF and DLC files are not supposed to contain comment
+       *       lines, but we test them, just in the case */
+      continue;
+   }
+   struct dela_entry* entry=tokenize_DELAF_line(line,1);
    if (entry==NULL) {
       /* This case should never happen */
-      fatal_error("Invalid dictionary line in load_dic_for_locate");
+      fatal_error("Invalid dictionary line in load_dic_for_locate\n");
    }
-  ajouter_forme_flechie(entry->lemma,0,racine,entry->inflected);
-  ptr=get_token_list_for_sequence(entry->inflected,alph,tok);
-  struct liste_nombres* ptr_copy = ptr; // s.n.
-  while (ptr!=NULL) {
-      i=ptr->n;
-      index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
-      if (index_code_gramm[i]==NULL) {
-         index_code_gramm[i]=nouveau_code_pattern(n_octet_code_gramm);
-      }
-      get_numeros_pattern(entry,index_code_gramm[i],n_octet_code_gramm);
-      if (index_code_gramm[i]!=NULL) {
-         j=0;
-         non_nul=0;
-         while (j<n_octet_code_gramm) {
-           if (index_code_gramm[i][j]!=0) {
-             non_nul=1;
-             break;
-           }
-           j++;
+   /* We add the inflected form to the list of forms associated to the lemma.
+    * This will be used to replace patterns like "<be>" by the actual list of
+    * forms that can be matched by it, for optimization reasons */
+   ajouter_forme_flechie(entry->lemma,0,racine,entry->inflected);
+   /* We get the list of all tokens that can be matched by the inflected form of this
+    * this entry, with regards to case variations (see the "extended" example above). */
+   struct list_int* ptr=get_token_list_for_sequence(entry->inflected,alphabet,tokens);
+   /* We save the list pointer to free it later */
+   struct list_int* ptr_copy=ptr;
+   /* Here, we will deal with all simple words */
+   while (ptr!=NULL) {
+      int i=ptr->n;
+      /* If the current token can be matched, then it can be recognized by the "<DIC>" pattern */
+      index_controle[i]=(unsigned char)(get_controle(tokens->tab[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      if (number_of_patterns) {
+         /* We look for matching patterns only if there are some */
+         int nothing_before=0;
+         /* Then, we get the list of all grammatical patterns that can match the entry */
+         if (matching_patterns[i]==NULL) {
+            matching_patterns[i]=new_bit_array(number_of_patterns,ONE_BIT);
+            nothing_before=1;
          }
-         if (!non_nul) {
-            free(index_code_gramm[i]);
-            index_code_gramm[i]=NULL;
+         int number_of_matching_patterns=get_matching_patterns(entry,matching_patterns[i]);
+         if (number_of_matching_patterns==0 && nothing_before) {
+            /* WARNING! This is very important to test correctly when the bit array can
+             * be emptied. For instance, let us consider the pattern "<A>" and the two dictionary
+             * lines:
+             * 
+             * extended,.A
+             * extended,extend.V:K:I1s:I2s:I3s:I1p:I2p:I3p
+             * 
+             * When processing the first line, we will see that is can be matched by 1
+             * pattern (<A>). However, the second one will be matched by 0 pattern, so if we
+             * don't take care, we will free the bit array of the "extended" token, whereas it
+             * is actually matched by a pattern. */
+            free_bit_array(matching_patterns[i]);
+            matching_patterns[i]=NULL;
          }
       }
-      ptr=ptr->suivant;
-  }
-  free_liste_nombres(ptr_copy); // s.n.
-  if (!est_un_mot_simple(entry->inflected,alph,tokenization_mode)) {
-    // on est dans le cas d'un mot composé
-    if (existe_etiquette_DIC || existe_etiquette_CDIC) {
-       // si on a <DIC> dans le graphe, on charge betement toutes
-       // les formes flechies composes
-       add_compound_word_with_no_pattern(entry->inflected,alph,tok,DLC_tree,tokenization_mode);
-    }
-    code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
-    get_numeros_pattern(entry,code_gramm_temp,n_octet_code_gramm);
-    if (code_gramm_temp!=NULL) {
-      j=0;
-      non_nul=0;
-      while (j<n_octet_code_gramm) {
-        if (code_gramm_temp[j]!=0) {
-          non_nul=1;
-          break;
-        }
-        j++;
+      ptr=ptr->next;
+   }
+   /* Finally, we free the token list */
+   free_list_int(ptr_copy);
+   if (!est_un_mot_simple(entry->inflected,alphabet,tokenization_mode)) {
+      /* If the inflected form is a compound word */
+      if (is_DIC_pattern || is_CDIC_pattern) {
+         /* If the .fst2 contains "<DIC>" and/or "<CDIC>", then we
+          * must note that all compound words can be matched by them */
+         add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,DLC_tree,tokenization_mode);
       }
-      if (!non_nul) {
-         free(code_gramm_temp);
-      }
-      else {
-        // si le mot verifie au moins un pattern, on le met dans
-        // l'arbre dlc
-        j=0;
-        while (j<n_octet_code_gramm) {
-          for (z=0;z<8;z++)
-            if (code_gramm_temp[j]&(1<<z)) {
-              add_compound_word_with_pattern(entry->inflected,j*8+z,alph,tok,DLC_tree,tokenization_mode);
+      if (number_of_patterns) {
+         /* We look for matching patterns only if there are some */
+         struct bit_array* code_gramm_temp=new_bit_array(number_of_patterns,ONE_BIT);
+         /* We look if the compound word can be matched by some patterns */
+         int number_of_matching_patterns=get_matching_patterns(entry,code_gramm_temp);
+         if (number_of_matching_patterns==0) {
+            /* No free condition here, since this is a temp variable */
+            free_bit_array(code_gramm_temp);
+         }
+         else {
+            /* If the word is matched by at least one pattern, we store it.
+             * 'k' is here for optimization in the case where we look a few patterns within
+             * a lot of possible ones (ex: number_of_patterns=245 and k=2) */
+            int k=0;
+            for (int j=0;j<number_of_patterns && k<number_of_matching_patterns;j++) {
+               if (get_value(code_gramm_temp,j)) {
+                  add_compound_word_with_pattern(entry->inflected,j,alphabet,tokens,DLC_tree,tokenization_mode);
+                  k++;
+               }
             }
-          j++;
-        }
-        free(code_gramm_temp);
+            /* We don't forget to free the temp variable */
+            free_bit_array(code_gramm_temp);
+         }
       }
-    }
-  }
-  free_dic_entry(entry);
+   }
+   free_dic_entry(entry);
 }
 u_fclose(f);
 }
@@ -238,95 +264,51 @@ else ajouter_forme_flechie(canonique,i,sous_noeud,flechi);
 
 
 
-unsigned char* nouveau_code_pattern(int n_octet_code_gramm) {
-unsigned char *c;
-int i;
-c=(unsigned char*)malloc(sizeof(unsigned char)*n_octet_code_gramm);
-for (i=0;i<n_octet_code_gramm;i++) {
-  c[i]=0;
-}
-return c;
-}
-
-
-
-//
-// this function checks for each tag token if it verifies some patterns
-//
-void check_patterns_for_tag_tokens(Alphabet* alph,struct string_hash* tok,int n_octet_code_gramm,
-									struct DLC_tree_info* DLC_tree,int tokenization_mode) {
-for (int i=0;i<tok->N;i++) {
-   if (tok->tab[i][0]=='{' && u_strcmp_char(tok->tab[i],"{S}")  && u_strcmp_char(tok->tab[i],"{STOP}")) {
-      // if the token is tag like {today,.ADV}
-      // we add its number to the tag token list
-      struct liste_nombres* L=new_liste_nombres();
-      L->n=i;
-      L->suivant=tag_token_list;
-      tag_token_list=L;
-      // and we look for the patterns it verifies
-      struct dela_entry* entry=tokenize_tag_token(tok->tab[i]);
+/**
+ * This function checks for each tag token like "{extended,extend.V:K}"
+ * if it verifies some patterns. Its behaviour is very similar to the one
+ * of the load_dic_for_locate function. However, as a side effect, this
+ * function fills 'tag_token_list' with the list of tag token numbers.
+ * This list is later used during Locate preprocessings.
+ */
+void check_patterns_for_tag_tokens(Alphabet* alphabet,struct string_hash* tokens,int number_of_patterns,
+									struct DLC_tree_info* DLC_tree,int tokenization_mode,
+                           struct list_int** tag_token_list) {
+for (int i=0;i<tokens->N;i++) {
+   if (tokens->tab[i][0]=='{' && u_strcmp_char(tokens->tab[i],"{S}")  && u_strcmp_char(tokens->tab[i],"{STOP}")) {
+      /* If the token is tag like "{today,.ADV}", we add its number to the tag token list */
+      *tag_token_list=head_insert(i,*tag_token_list);
+      /* And we look for the patterns that can match it */
+      struct dela_entry* entry=tokenize_tag_token(tokens->tab[i]);
       if (entry==NULL) {
          /* This should never happen */
          fatal_error("Invalid tag token in function check_patterns_for_tag_tokens\n");
       }
-      ajouter_forme_flechie(entry->lemma,0,racine,tok->tab[i]);
-      index_controle[i]=(unsigned char)(get_controle(tok->tab[i],alph,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
-      if (index_code_gramm[i]==NULL) {
-         index_code_gramm[i]=nouveau_code_pattern(n_octet_code_gramm);
-      }
-      get_numeros_pattern(entry,index_code_gramm[i],n_octet_code_gramm);
-      if (index_code_gramm[i]!=NULL) {
-         int j=0;
-         int non_nul=0;
-         while (j<n_octet_code_gramm) {
-           if (index_code_gramm[i][j]!=0) {
-             non_nul=1;
-             break;
-           }
-           j++;
+      /* We add the inflected form to the list of forms associated to the lemma.
+      * This will be used to replace patterns like "<be>" by the actual list of
+      * forms that can be matched by it, for optimization reasons */
+      ajouter_forme_flechie(entry->lemma,0,racine,tokens->tab[i]);
+      index_controle[i]=(unsigned char)(get_controle(tokens->tab[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      if (number_of_patterns) {
+         /* We look for matching patterns only if there are some */
+         int nothing_before=0;
+         if (matching_patterns[i]==NULL) {
+            /* WARNING! See the note about freeing this bit array in the comments
+             * of function load_dic_for_locate */
+            matching_patterns[i]=new_bit_array(number_of_patterns,ONE_BIT);
+            nothing_before=1;
          }
-         if (!non_nul) {
-            free(index_code_gramm[i]);
-            index_code_gramm[i]=NULL;
+         int number_of_matching_patterns=get_matching_patterns(entry,matching_patterns[i]);
+         if (number_of_matching_patterns==0 && nothing_before) {
+            free_bit_array(matching_patterns[i]);
+            matching_patterns[i]=NULL;
          }
       }
-      
-    if ( 0 && !est_un_mot_simple(entry->inflected,alph,tokenization_mode)) {
-      // on est dans le cas d'un mot composé
-      unsigned char* code_gramm_temp=nouveau_code_pattern(n_octet_code_gramm);
-      get_numeros_pattern(entry,code_gramm_temp,n_octet_code_gramm);
-      if (code_gramm_temp!=NULL) {
-        int j=0;
-        int non_nul=0;
-        while (j<n_octet_code_gramm) {
-          if (code_gramm_temp[j]!=0) {
-            non_nul=1;
-            break;
-          }
-          j++;
-        }
-        if (!non_nul) {
-           free(code_gramm_temp);
-        }
-        else {
-          // si le mot verifie au moins un pattern, on le met dans
-          // l'arbre dlc
-          j=0;
-          while (j<n_octet_code_gramm) {
-            for (int z=0;z<8;z++)
-              if (code_gramm_temp[j]&(1<<z)) {
-                add_compound_word_with_pattern(entry->inflected,j*8+z,alph,tok,DLC_tree,tokenization_mode);
-              }
-            j++;
-          }
-          free(code_gramm_temp);
-        }
-      }
-  }
-
-   free_dic_entry(entry);
-
-  }
+      /* At the opposite of DLC lines, a compound word tag like "{all around,.ADV}"
+       * does not need to be put in the compound word tree, since the tag is already
+       * characterized by its token number. */
+      free_dic_entry(entry);
+   }
 }
 }
 

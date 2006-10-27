@@ -850,11 +850,15 @@ unichar line[DIC_LINE_SIZE];
 int i;
 struct dela_entry* entry;
 while (u_read_line(f,line)) {
-   entry=tokenize_DELAF_line(line,1);
-   for (i=0;i<entry->n_semantic_codes;i++) {
-      get_hash_number(entry->semantic_codes[i],hash);
+   /* NOTE: DLF and DLC files are not supposed to contain comment
+    *       lines, but we test them, just in the case */
+   if (line[0]!='/') {
+      entry=tokenize_DELAF_line(line,1);
+      for (i=0;i<entry->n_semantic_codes;i++) {
+         get_hash_number(entry->semantic_codes[i],hash);
+      }
+      free_dic_entry(entry);
    }
-   free_dic_entry(entry);
 }
 fclose(f);
 return;

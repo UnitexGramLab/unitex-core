@@ -27,12 +27,21 @@
 
 
 unsigned char* index_controle;
-unsigned char** index_code_gramm;
+
+
+/**
+ * This array is used to know the patterns that can match tokens. If the
+ * token x is matched by no pattern, then matching_patterns[x]=NULL; Otherwise,
+ * matching_patterns[x] will be a bit array so that matching_patterns[x]->array[y]
+ * will be 1 if the pattern y can match the token x and 0 otherwise.
+ */
+struct bit_array** matching_patterns;
+
+
+
 int pattern_compose_courant=0;
 struct noeud_code_gramm *racine_code_gramm;
 int ESPACE;
-struct liste_nombres* tag_token_list=NULL;
-
 
 /* $CD$ begin */
 #ifdef TRE_WCHAR
@@ -48,7 +57,6 @@ int locate_pattern(char* text,char* tokens,char* fst2,char* dlf,char* dlc,char* 
 /* $CD$ end   */
 
 pattern_compose_courant=0;
-tag_token_list=NULL;
 
 FILE* text_file;
 FILE* out;
@@ -56,7 +64,7 @@ FILE* info;
 long int text_size=u_file_size(text)/4;
 text_file=fopen(text,"rb");
 if (text_file==NULL) {
-   fprintf(stderr,"Cannot load %s\n",text);
+   error("Cannot load %s\n",text);
    return 0;
 }
 char concord[1000];
@@ -70,13 +78,13 @@ strcat(concord_info,"concord.n");
 
 out=u_fopen(concord,U_WRITE);
 if (out==NULL) {
-   fprintf(stderr,"Cannot write %s\n",concord);
+   error("Cannot write %s\n",concord);
    fclose(text_file);
    return 0;
 }
 info=u_fopen(concord_info,U_WRITE);
 if (info==NULL) {
-   fprintf(stderr,"Cannot write %s\n",concord_info);
+   error("Cannot write %s\n",concord_info);
 }
 switch(output_mode) {
    case IGNORE_TRANSDUCTIONS: u_fprints_char("#I\n",out); break;
@@ -86,7 +94,7 @@ switch(output_mode) {
 printf("Loading alphabet...\n");
 Alphabet* alph=load_alphabet(alphabet);
 if (alph==NULL) {
-   fprintf(stderr,"Cannot load alphabet file %s\n",alphabet);
+   error("Cannot load alphabet file %s\n",alphabet);
    return 0;
 }
 struct string_hash* semantic_codes=new_string_hash();
@@ -95,20 +103,20 @@ extract_semantic_codes(dlc,semantic_codes);
 printf("Loading fst2...\n");
 Fst2* automate=load_fst2(fst2,1);
 if (automate==NULL) {
-   fprintf(stderr,"Cannot load grammar %s\n",fst2);
+   error("Cannot load grammar %s\n",fst2);
    free_alphabet(alph);
    free_string_hash(semantic_codes);
    return 0;
 }
 /* $CD$ begin */
 #ifdef TRE_WCHAR
-masterGF = CreateMasterGF( automate , alph );
+masterGF=CreateMasterGF(automate,alph);
 if (masterGF == NULL) {
-   fprintf(stderr,"Cannot compile filter(s)\n");
+   error("Cannot compile filter(s)\n");
    free_alphabet(alph);
    free_string_hash(semantic_codes);
    return 0;
-   }
+}
 #endif
 /* $CD$ end   */
 
@@ -116,7 +124,7 @@ if (masterGF == NULL) {
 printf("Loading token list...\n");
 struct string_hash* tok=load_text_tokens_hash(tokens,&SENTENCE_DELIMITER_INDICE,&STOP_MARKER_INDICE);
 if (tok==NULL) {
-   fprintf(stderr,"Cannot load token list %s\n",tokens);
+   error("Cannot load token list %s\n",tokens);
    free_alphabet(alph);
    free_string_hash(semantic_codes);
    free_Fst2(automate);
@@ -128,30 +136,28 @@ if (tok==NULL) {
 #ifdef TRE_WCHAR
 indexGF = CreateIndexGF( masterGF, tok );
 if (indexGF == NULL) {
-   fprintf(stderr,"Cannot optimize filter(s)\n");
+   error("Cannot optimize filter(s)\n");
    free_alphabet(alph);
    free_string_hash(semantic_codes);
    free_string_hash(tok);
    free_Fst2(automate);
    return 0;
-   }
+}
 #endif
 /* $CD$ end   */
 
 extract_semantic_codes_from_tokens(tok,semantic_codes);
 index_controle=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
 if (index_controle==NULL) {
-   fprintf(stderr,"Error: not enough memory\n");
-   exit(1);
+   fatal_error("Not enough memory in locate_pattern\n");
 }
-index_code_gramm=(unsigned char**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char*));
-if (index_code_gramm==NULL) {
-   fprintf(stderr,"Error: not enough memory\n");
-   exit(1);
+matching_patterns=(struct bit_array**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(struct bit_array*));
+if (matching_patterns==NULL) {
+   fatal_error("Not enough memory in locate_pattern\n");
 }
 for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
   index_controle[i]=0;
-  index_code_gramm[i]=NULL;
+  matching_patterns[i]=NULL;
 }
 compute_token_controls(tok,alph,err,tokenization_mode);
 int nombre_patterns=0;
@@ -165,9 +171,8 @@ numerote_tags(automate,tok,&nombre_patterns,semantic_codes,alph,&existe_etiquett
 
 // on calcule l'espace necessaire pour stocker un code grammatical
 //
-// ???? Verifier que ca marche meme si on augmente le nombre de patterns avec les composes
-//
-int n_octet_code_gramm=((nombre_patterns+1)/8)+1;
+#warning ???? Verifier que ca marche meme si on augmente le nombre de patterns avec les composes
+//int n_octet_code_gramm=((nombre_patterns+1)/8)+1;
 //
 // ????
 //
@@ -180,17 +185,18 @@ pattern_compose_courant=nombre_patterns+1;
 struct DLC_tree_info* DLC_tree=new_DLC_tree(tok->N);
 
 printf("Loading dlf...\n");
-load_dic_for_locate(dlf,alph,tok,n_octet_code_gramm,existe_etiquette_DIC,existe_etiquette_CDIC,
+load_dic_for_locate(dlf,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_etiquette_CDIC,
 				existe_etiquette_SDIC,DLC_tree,tokenization_mode);
 printf("Loading dlc...\n");
-load_dic_for_locate(dlc,alph,tok,n_octet_code_gramm,existe_etiquette_DIC,existe_etiquette_CDIC,
+load_dic_for_locate(dlc,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_etiquette_CDIC,
 				existe_etiquette_SDIC,DLC_tree,tokenization_mode);
 // we look if the tag tokens like {today,.ADV} verify some patterns
 
-check_patterns_for_tag_tokens(alph,tok,n_octet_code_gramm,DLC_tree,tokenization_mode);
+struct list_int* tag_token_list;
+check_patterns_for_tag_tokens(alph,tok,nombre_patterns,DLC_tree,tokenization_mode,&tag_token_list);
 
 printf("Optimizing fst2 tags...\n");
-replace_pattern_tags(automate,alph,tok,DLC_tree,tokenization_mode);
+replace_pattern_tags(automate,alph,tok,DLC_tree,tokenization_mode,tag_token_list);
 printf("Optimizing compound word dictionary...\n");
 optimize_DLC(DLC_tree);
 free_string_hash(semantic_codes);
@@ -211,7 +217,7 @@ free_DLC_tree(DLC_tree);
 free_Fst2(automate);
 free_alphabet(alph);
 free_string_hash(tok);
-free_liste_nombres(tag_token_list);
+free_list_int(tag_token_list);
 
 
 /* $CD$ begin */

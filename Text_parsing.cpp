@@ -20,12 +20,14 @@
   */
 
 //---------------------------------------------------------------------------
+#include <time.h>
 #include "LocatePattern.h"
 #include "Text_tokens.h"
 #include "Text_parsing.h"
 #include "Context.h"
 #include "Error.h"
-#include <time.h>
+#include "BitArray.h"
+
 
 #define DELAY CLOCKS_PER_SEC // delay between two prints (yyy% done)
 //---------------------------------------------------------------------------
@@ -248,8 +250,8 @@ etat_courant=graphe_opt[numero_etat_courant];
 if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
    // then we explore all the output transitions without matching
    // anything, in order to find the context end mark
-   struct liste_nombres* liste=NULL;
-   struct liste_nombres* tmp;
+   struct list_int* liste=NULL;
+   struct list_int* tmp;
    
    //******* subgraphs ************
    // we make the list of the states that can be reached via 
@@ -258,7 +260,7 @@ if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
    while (a_sous_graphe != NULL) {
       arr=a_sous_graphe->liste_arr;
       while (arr!=NULL) {
-         liste=inserer_dans_liste_nombres(arr->arr,liste);
+         liste=sorted_insert(arr->arr,liste);
          arr=arr->suivant;
       }
       a_sous_graphe=a_sous_graphe->suivant;
@@ -306,7 +308,7 @@ if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
                }
                else {
                   // if we have another meta, we handle it normally
-                  liste=inserer_dans_liste_nombres(arr->arr,liste);
+                  liste=sorted_insert(arr->arr,liste);
                }
             }
             arr=arr->suivant;
@@ -318,7 +320,7 @@ if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
    while (a_pattern!=NULL) {
       arr=a_pattern->liste_arr;
       while (arr!=NULL) {
-            liste=inserer_dans_liste_nombres(arr->arr,liste);
+            liste=sorted_insert(arr->arr,liste);
             arr=arr->suivant;
       }
       a_pattern=a_pattern->suivant;
@@ -328,7 +330,7 @@ if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
    while (a_pattern!=NULL) {
       arr=a_pattern->liste_arr;
       while (arr!=NULL) {
-            liste=inserer_dans_liste_nombres(arr->arr,liste);
+            liste=sorted_insert(arr->arr,liste);
             arr=arr->suivant;
       }
       a_pattern=a_pattern->suivant;
@@ -337,7 +339,7 @@ if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
    for (int k=0;k<etat_courant->nombre_de_tokens;k++) {
       arr=etat_courant->tableau_liste_arr[k];
       while (arr!=NULL) {
-            liste=inserer_dans_liste_nombres(arr->arr,liste);
+            liste=sorted_insert(arr->arr,liste);
             arr=arr->suivant;
       }
    }
@@ -345,9 +347,9 @@ if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
    tmp=liste;
    while (liste!=NULL) {
       parcourir_opt(numero_graphe_courant,liste->n,pos,profondeur,LISTE,n_matches,ctx,infos);
-      liste=liste->suivant;
+      liste=liste->next;
    }
-   free_liste_nombres(tmp);
+   free_list_int(tmp);
    return;
 }
 
@@ -988,9 +990,9 @@ while (a_pattern!=NULL) {
     if (iMasterGF == -1 || OptMatchGF(indexGF, texte[pos2+origine_courante], iMasterGF) == 0) 
 #endif
     {
-      if (index_code_gramm[texte[pos2+origine_courante]]!=NULL) {
-        if ((index_code_gramm[texte[pos2+origine_courante]][k/8]&(1<<(k%8)) && !a_pattern->negation)
-            || (!(index_code_gramm[texte[pos2+origine_courante]][k/8]&(1<<(k%8))) && a_pattern->negation)) {
+      if (matching_patterns[texte[pos2+origine_courante]]!=NULL) {
+        if ((get_value(matching_patterns[texte[pos2+origine_courante]],k) && !a_pattern->negation)
+            || (!get_value(matching_patterns[texte[pos2+origine_courante]],k) && a_pattern->negation)) {
           if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
           if (transduction_mode==MERGE_TRANSDUCTIONS) {
             if (pos2!=pos) push_char(' ');

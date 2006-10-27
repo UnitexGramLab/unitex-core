@@ -127,12 +127,12 @@ free(tok);
 
 
 
-void explorer_token_tree(int pos,unichar* sequence,Alphabet* alph,struct arbre_hash* n,struct liste_nombres** l) {
+void explorer_token_tree(int pos,unichar* sequence,Alphabet* alph,struct arbre_hash* n,struct list_int** l) {
 if (sequence[pos]=='\0') {
    // if we are at the end of the sequence
    if (n->final!=-1) {
       // if the sequence is a text token, we add its number to the list
-      (*l)=inserer_dans_liste_nombres(n->final,*l);
+      (*l)=sorted_insert(n->final,*l);
    }
    return;
 }
@@ -148,9 +148,9 @@ while (trans!=NULL) {
 
 
 
-struct liste_nombres* get_token_list_for_sequence(unichar* sequence,Alphabet* alph,
+struct list_int* get_token_list_for_sequence(unichar* sequence,Alphabet* alph,
                                                   struct string_hash* hash) {
-struct liste_nombres* l=NULL;
+struct list_int* l=NULL;
 explorer_token_tree(0,sequence,alph,hash->racine,&l);
 return l;
 }

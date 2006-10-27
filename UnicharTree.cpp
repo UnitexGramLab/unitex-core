@@ -25,11 +25,11 @@
 //---------------------------------------------------------------------------
 
 
-struct liste_nombres* new_liste_nbre() {
-struct liste_nombres* l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
+struct list_int* new_liste_nbre() {
+struct list_int* l=(struct list_int*)malloc(sizeof(struct list_int));
 l->etiq=-1;
 l->arr=-1;
-l->suivant=NULL;
+l->next=NULL;
 return l;
 }
 
@@ -51,11 +51,11 @@ return t;
 }
 
 
-void free_liste_nombres(struct liste_nombres* l) {
-struct liste_nombres* tmp;
+void free_list_int(struct list_int* l) {
+struct list_int* tmp;
 while (l!=NULL) {
       tmp=l;
-      l=l->suivant;
+      l=l->next;
       free(tmp);
 }
 }
@@ -63,7 +63,7 @@ while (l!=NULL) {
 
 void free_arbre_char(struct arbre_char* a) {
 if (a==NULL) return;
-free_liste_nombres(a->arr);
+free_list_int(a->arr);
 free_arbre_char_trans(a->trans);
 free(a);
 }
@@ -91,18 +91,18 @@ return NULL;
 
 
 
-struct liste_nombres* get_liste_nbre(int etiq,int arr,struct liste_nombres* l) {
-struct liste_nombres* tmp;
+struct list_int* get_liste_nbre(int etiq,int arr,struct list_int* l) {
+struct list_int* tmp;
 if (l==NULL) {
   // if etiq is not in the list we create it
   tmp=new_liste_nbre();
   tmp->etiq=etiq;
   tmp->arr=arr;
-  tmp->suivant=NULL;
+  tmp->next=NULL;
   return tmp;
 }
 if (l->etiq==etiq) return l;
-l->suivant=get_liste_nbre(etiq,arr,l->suivant);
+l->next=get_liste_nbre(etiq,arr,l->next);
 return l;
 }
 
@@ -135,12 +135,12 @@ explorer_arbre_char(contenu,0,etiq,arr,noeud);
 }
 
 
-struct liste_nombres* RES;
+struct list_int* RES;
 
-void ajouter_a_RES(struct liste_nombres* l) {
+void ajouter_a_RES(struct list_int* l) {
 while (l!=NULL) {
       RES=get_liste_nbre(l->etiq,l->arr,RES);
-      l=l->suivant;
+      l=l->next;
 }
 }
 
@@ -176,7 +176,7 @@ while (trans!=NULL) {
 }
 
 
-struct liste_nombres* get_matching_etiquettes(unichar* texte,
+struct list_int* get_matching_etiquettes(unichar* texte,
                                            struct arbre_char* racine,
                                            Alphabet* alphabet,int PARSING_MODE) {
 RES=NULL;

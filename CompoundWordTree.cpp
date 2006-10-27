@@ -112,7 +112,7 @@ while (transitions!=NULL) {
  */
 void free_DLC_tree_node(struct DLC_tree_node* node) {
 if (node==NULL) return;
-free_liste_nombres(node->patterns);
+free_list_int(node->patterns);
 if (node->array_of_patterns!=NULL) free(node->array_of_patterns);
 free_DLC_tree_transitions(node->transitions);
 if (node->destination_tokens!=NULL) free(node->destination_tokens);
@@ -152,7 +152,7 @@ free(DLC_tree);
 void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alph,struct string_hash* tok,
 							int tokenization_mode) {
 int i,c,n_token,j,k;
-struct liste_nombres* ptr;
+struct list_int* ptr;
 unichar m[1024];
 k=0;
 n_token=0;
@@ -216,13 +216,13 @@ while ((c=word[k])!='\0') {
                 /* Here we compute all case variants */
                 tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
                 ptr=get_token_list_for_sequence(m,alph,tok);
-                struct liste_nombres* ptr_copy = ptr; // s.n.
+                struct list_int* ptr_copy = ptr; // s.n.
                 while (ptr!=NULL) {
                   j=ptr->n;
                   tokens[n_token++]=j;
-                  ptr=ptr->suivant;
+                  ptr=ptr->next;
                 }
-                free_liste_nombres(ptr_copy); // s.n.
+                free_list_int(ptr_copy); // s.n.
                 tokens[n_token++]=END_CASE_VARIANT_LIST;
               }
             }
@@ -251,13 +251,10 @@ tokens[n_token]=END_TOKEN_LIST;
  * compound word tree node.
  */
 void add_pattern_to_DLC_tree_node(struct DLC_tree_node* node,int pattern) {
-struct liste_nombres *l,*previous;
+struct list_int *previous;
 if (node->patterns==NULL) {
   /* If the list is empty, we add the pattern */
-  l=new_liste_nombres();
-  l->n=pattern;
-  l->suivant=node->patterns;
-  node->patterns=l;
+  node->patterns=new_list_int(pattern);
   /* We update the length of the list */
   (node->number_of_patterns)++;
   return;
@@ -268,10 +265,7 @@ if (node->patterns->n==pattern)
   return;
 if (node->patterns->n>pattern) {
   /* If we must insert 'pattern' at the beginning of the list */
-  l=new_liste_nombres();
-  l->n=pattern;
-  l->suivant=node->patterns;
-  node->patterns=l;
+  node->patterns=head_insert(pattern,node->patterns);
   /* We update the length of the list */
   (node->number_of_patterns)++;
   return;
@@ -281,17 +275,14 @@ previous=node->patterns;
 int stop=0;
 /* We parse the list until we have found the pattern or the place
  * to insert the pattern */
-while (!stop && previous->suivant!=NULL) {
+while (!stop && previous->next!=NULL) {
 	/* If we find the pattern in the list, we have nothing to do */
-	if (previous->suivant->n==pattern) return;
-	else if (previous->suivant->n<pattern) previous=previous->suivant;
+	if (previous->next->n==pattern) return;
+	else if (previous->next->n<pattern) previous=previous->next;
 	else stop=1;
 }
 /* If must insert the pattern */
-l=new_liste_nombres();
-l->n=pattern;
-l->suivant=previous->suivant;
-previous->suivant=l;
+previous->next=head_insert(pattern,previous->next);
 /* We update the length of the list */
 (node->number_of_patterns)++;
 return;
@@ -462,7 +453,7 @@ associate_pattern_to_compound_word(token_list,0,DLC_tree->root,pattern,DLC_tree)
  * otherwise. 
  */
 int conditional_pattern_insertion(struct DLC_tree_node* node,int pattern1,int pattern2) {
-if (appartient_a_liste(pattern1,node->patterns)) {
+if (is_in_list(pattern1,node->patterns)) {
   add_pattern_to_DLC_tree_node(node,pattern2);
   return 1;
 }
@@ -559,7 +550,7 @@ return conditional_insertion_in_DLC_tree_node(token_list,0,infos->root,pattern1,
  * DLC_tree_transition structure.
  */
 void optimize_DLC_node(struct DLC_tree_node* n) {
-struct liste_nombres* tmp;
+struct list_int* tmp;
 struct DLC_tree_transition* t;
 int i;
 if (n==NULL) return;
@@ -570,7 +561,7 @@ if (n->number_of_patterns!=0) {
    while (n->patterns!=NULL) {
      n->array_of_patterns[i++]=n->patterns->n;
      tmp=n->patterns;
-     n->patterns=n->patterns->suivant;
+     n->patterns=n->patterns->next;
      free(tmp);
    }
 }

@@ -27,7 +27,7 @@
 #include "String_hash.h"
 #include "Fst2.h"
 #include "Text_tokens.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "Alphabet.h"
 #include "Grammatical_codes.h"
 #include "Loading_dic.h"
@@ -37,7 +37,7 @@
 #include "Text_parsing.h"
 #include "TransductionVariables.h"
 #include "LocateConstants.h"
-
+#include "BitArray.h"
 
 
 /* $CD$ begin */
@@ -52,11 +52,11 @@
 
 
 extern unsigned char* index_controle;
-extern unsigned char** index_code_gramm;
+extern struct bit_array** matching_patterns;
 extern int pattern_compose_courant;
 extern struct noeud_code_gramm *racine_code_gramm;
 extern int ESPACE;
-extern struct liste_nombres* tag_token_list;
+extern struct list_int* tag_token_list;
 
 /* $CD$ begin */
 #ifdef TRE_WCHAR

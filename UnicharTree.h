@@ -27,15 +27,15 @@
 #include "Alphabet.h"
 
 
-struct liste_nombres {
+struct list_int {
        int etiq;
        int arr;
-       struct liste_nombres* suivant;
+       struct list_int* next;
 };
 
 
 struct arbre_char {
-       struct liste_nombres* arr;
+       struct list_int* arr;
        struct arbre_char_trans* trans;
 };
 
@@ -51,7 +51,7 @@ void free_arbre_char(struct arbre_char*);
 void free_arbre_char_trans(struct arbre_char_trans*);
 void inserer_etiquette(unichar*,int,int,struct arbre_char*);
 struct arbre_char* new_arbre_char();
-struct liste_nombres* get_matching_etiquettes(unichar*,struct arbre_char*,Alphabet*,int);
+struct list_int* get_matching_etiquettes(unichar*,struct arbre_char*,Alphabet*,int);
 
 
 #endif

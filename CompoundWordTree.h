@@ -25,7 +25,7 @@
 #include "unicode.h"
 #include "Alphabet.h"
 #include "String_hash.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 
 #define NO_CASE_VARIANT_IS_ALLOWED 0
 #define ALL_CASE_VARIANTS_ARE_ALLOWED 1
@@ -74,7 +74,7 @@ struct DLC_tree_node {
 	 * 'patterns' is the list of the numbers of all the patterns that
 	 * can match the compound words corresponding to this node.
 	 */
-	struct liste_nombres* patterns;
+	struct list_int* patterns;
 	/*
 	 * 'number_of_patterns' is the length of the list 'patterns' 
 	 */

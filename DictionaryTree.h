@@ -26,7 +26,7 @@
 
 #include "unicode.h"
 #include "String_hash.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 
 
 /**
@@ -50,7 +50,7 @@ struct dictionary_node {
 	 * 'single_INF_code_list' is a list that contains the numbers of all the single
 	 * INF codes that are associated with this node.
 	 */
-	struct liste_nombres* single_INF_code_list;
+	struct list_int* single_INF_code_list;
 	/*
 	 * 'INF_code' is a value representing the final INF line number associated
 	 * with this dictionary node. This INF code correspond to the union of all

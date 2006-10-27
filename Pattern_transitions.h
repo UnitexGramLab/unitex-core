@@ -24,11 +24,11 @@
 #define Pattern_transitionsH
 //---------------------------------------------------------------------------
 
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "String_hash.h"
 
 struct pattern_transitions {
-  struct liste_nombres* l;
+  struct list_int* l;
   unsigned char* c;
   int n;
 };

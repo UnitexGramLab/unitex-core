@@ -31,7 +31,7 @@
 #include "Alphabet.h"
 #include "Text_tokens.h"
 #include "Dico_application.h"
-#include "Liste_nombres.h"
+#include "List_int.h"
 #include "FileName.h"
 #include "Table_complex_token_hash.h"
 #include "Fst2.h"

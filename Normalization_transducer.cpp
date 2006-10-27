@@ -199,7 +199,7 @@ while (trans!=NULL) {
                                            hash,tmp,alph,TEMP_LIST);
       }
       else {
-         struct liste_nombres* liste=get_token_list_for_sequence(etiq->input,alph,hash);
+         struct list_int* liste=get_token_list_for_sequence(etiq->input,alph,hash);
          while (liste!=NULL) {
            struct trans_arbre_normalization* trans_norm;
            trans_norm=get_trans_arbre_normalization(liste->n,noeud_normalization->trans);
@@ -213,8 +213,8 @@ while (trans!=NULL) {
            }
            explorer_sub_automate_normalization(automate,trans->state_number,trans_norm->arr,
                                            hash,tmp,alph,TEMP_LIST);
-           struct liste_nombres* L=liste;
-           liste=liste->suivant;
+           struct list_int* L=liste;
+           liste=liste->next;
            free(L);
          }
       }
@@ -343,7 +343,7 @@ while (trans!=NULL) {
                                            hash,tmp,alph);
       }
       else {
-         struct liste_nombres* liste=get_token_list_for_sequence(etiq->input,alph,hash);
+         struct list_int* liste=get_token_list_for_sequence(etiq->input,alph,hash);
          while (liste!=NULL) {
            struct trans_arbre_normalization* trans_norm;
            trans_norm=get_trans_arbre_normalization(liste->n,noeud_normalization->trans);
@@ -357,8 +357,8 @@ while (trans!=NULL) {
            }
            explorer_automate_normalization(automate,trans->state_number,trans_norm->arr,
                                            hash,tmp,alph);
-           struct liste_nombres* L=liste;
-           liste=liste->suivant;
+           struct list_int* L=liste;
+           liste=liste->next;
            free(L);
          }
       }

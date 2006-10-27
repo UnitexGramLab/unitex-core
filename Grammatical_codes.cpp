@@ -37,12 +37,12 @@ return n;
 
 
 void inserer_code_gramm(int numero_pattern,unichar* s,unichar* canonique) {
-unichar* t[MAX_FLEXIONAL_CODES_LENGTH];
-unichar* t2[MAX_FLEXIONAL_CODES_LENGTH];
+unichar* t[MAX_INFLECTIONAL_CODES_LENGTH];
+unichar* t2[MAX_INFLECTIONAL_CODES_LENGTH];
 struct facteurs_interdits *f;
 Code_flexion c;
 int i;
-for (i=0;i<MAX_FLEXIONAL_CODES_LENGTH;i++) {
+for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++) {
   t[i]=NULL;
   t2[i]=NULL;
 }
@@ -59,13 +59,13 @@ if (t[0]==NULL) {
 if (t2[0]!=NULL) {
   c=calculer_code_flexion(t2);
 }
-for (i=0;i<MAX_FLEXIONAL_CODES_LENGTH;i++)
+for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++)
   if (t2[i]!=NULL) {
     free(t2[i]);
     t2[i]=NULL;
   }
 ajouter_combinaisons_code_gramm(t,c,numero_pattern,f,canonique);
-for (i=0;i<MAX_FLEXIONAL_CODES_LENGTH;i++)
+for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++)
   if (t[i]!=NULL) {
     free(t[i]);
     t[i]=NULL;
@@ -158,10 +158,10 @@ while (!fin) {
 void ajouter_combinaisons_code_gramm(unichar** t,Code_flexion c,int numero_pattern,
                                      struct facteurs_interdits *f,unichar* canonique) {
 int n;
-int marque[MAX_FLEXIONAL_CODES_LENGTH];
+int marque[MAX_INFLECTIONAL_CODES_LENGTH];
 int i;
-unichar* t2[MAX_FLEXIONAL_CODES_LENGTH];
-for (i=0;i<MAX_FLEXIONAL_CODES_LENGTH;i++) {
+unichar* t2[MAX_INFLECTIONAL_CODES_LENGTH];
+for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++) {
    marque[i]=0;
    t2[i]=NULL;
 }
@@ -371,22 +371,28 @@ return est_compatible2(c->s,d->s);
 }
 
 
-
-void explorer_codes_flexion(struct liste_code_flexion* l,Code_flexion c,
-							       struct dela_entry* entry,unsigned char* res,
-                            int n_octet_code_gramm) {
+/**
+ * 
+ */
+int explorer_codes_flexion(struct liste_code_flexion* l,Code_flexion c,
+							       struct dela_entry* entry,
+                            struct bit_array* patterns
+                            /*unsigned char* res,int n_octet_code_gramm*/) {
 struct liste_code_flexion* ptr;
-int i,j,ok,k;
+int i,j,ok;
 ptr=l;
+int matching_patterns=0;
 while (ptr!=NULL) {
 if (comparer_canoniques(ptr->canonique,entry->lemma))
   if (ptr->code==NULL) {
     if (ptr->f==NULL) {
-       if (res==NULL) {
+       /*if (res==NULL) {
           res=nouveau_code_pattern(n_octet_code_gramm);
        }
        k=ptr->numero_pattern;
-       res[k/8]=(unsigned char)(res[k/8]|(1<<(k%8)));
+       res[k/8]=(unsigned char)(res[k/8]|(1<<(k%8)));*/
+       set_value(patterns,ptr->numero_pattern,1);
+       matching_patterns++;
     }
     else {
        ok=1;
@@ -399,19 +405,23 @@ if (comparer_canoniques(ptr->canonique,entry->lemma))
          if (!ok) break;
        }
        if (ok) {
-          if (res==NULL) {
+          /*if (res==NULL) {
              res=nouveau_code_pattern(n_octet_code_gramm);
           }
           k=ptr->numero_pattern;
-          res[k/8]=(unsigned char)(res[k/8]|(1<<(k%8)));
+          res[k/8]=(unsigned char)(res[k/8]|(1<<(k%8)));*/
+          set_value(patterns,ptr->numero_pattern,1);
+          matching_patterns++;
        }
     }
   }
   else if ((c!=NULL) && est_compatible(c,ptr->code)) {
          if (ptr->f==NULL) {
-            if (res==NULL) res=nouveau_code_pattern(n_octet_code_gramm);
+            /*if (res==NULL) res=nouveau_code_pattern(n_octet_code_gramm);
             k=ptr->numero_pattern;
-            res[k/8]=(unsigned char)(res[k/8]|(1<<(k%8)));
+            res[k/8]=(unsigned char)(res[k/8]|(1<<(k%8)));*/
+            set_value(patterns,ptr->numero_pattern,1);
+            matching_patterns++;
          }
          else {
            ok=1;
@@ -424,46 +434,59 @@ if (comparer_canoniques(ptr->canonique,entry->lemma))
              if (!ok) break;
            }
          if (ok) {
-           if (res==NULL) res=nouveau_code_pattern(n_octet_code_gramm);
+           /*if (res==NULL) res=nouveau_code_pattern(n_octet_code_gramm);
            k=ptr->numero_pattern;
-           res[k/8]=(unsigned char)(res[k/8]|(1<<(k%8)));
+           res[k/8]=(unsigned char)(res[k/8]|(1<<(k%8)));*/
+           set_value(patterns,ptr->numero_pattern,1);
+           matching_patterns++;
          }
          }
   	   }
   ptr=ptr->suivant;
 }
+return matching_patterns;
 }
 
 
-
-
-void trouver_numeros_pattern(struct noeud_code_gramm* n,struct dela_entry* entry,int niveau,
-                             Code_flexion c,unsigned char* res,int n_octet_code_gramm) {
+/**
+ * 
+ */
+int trouver_numeros_pattern(struct noeud_code_gramm* n,struct dela_entry* entry,int niveau,
+                             Code_flexion c,struct bit_array* patterns
+                             /*unsigned char* res,int n_octet_code_gramm*/) {
 struct noeud_code_gramm* sous_noeud;
 struct liste_code_flexion *l;
 if (niveau==entry->n_semantic_codes) {
-   return;
+   return 0;
 }
 sous_noeud=get_sous_noeud_code_gramm(n,entry->semantic_codes[niveau],0);
-trouver_numeros_pattern(n,entry,niveau+1,c,res,n_octet_code_gramm);
+int number_of_matching_patterns=trouver_numeros_pattern(n,entry,niveau+1,c,patterns/*res,n_octet_code_gramm*/);
 if (sous_noeud!=NULL) {
    l=sous_noeud->liste;
    if (l!=NULL) {
-      explorer_codes_flexion(l,c,entry,res,n_octet_code_gramm);
+      number_of_matching_patterns=number_of_matching_patterns+explorer_codes_flexion(l,c,entry,patterns/*res,n_octet_code_gramm*/);
    }
-   trouver_numeros_pattern(sous_noeud,entry,niveau+1,c,res,n_octet_code_gramm);
+   number_of_matching_patterns=number_of_matching_patterns+trouver_numeros_pattern(sous_noeud,entry,niveau+1,c,patterns/*res,n_octet_code_gramm*/);
 }
+return number_of_matching_patterns;
 }
 
 
 
-
-void get_numeros_pattern(struct dela_entry* entry,unsigned char* res,
-                         int n_octet_code_gramm) {
+/**
+ * This function computes the list of all the patterns like <A:ms> that can
+ * match the given entry. If the pattern #x can match the entry, then patterns[x]
+ * is set to 1. The function returns the number of matching patterns.
+ */
+int get_matching_patterns(struct dela_entry* entry,
+                        struct bit_array* patterns
+                        /*,unsigned char* res,
+                        int n_octet_code_gramm*/) {
 Code_flexion c=calculer_code_flexion(entry);
-trouver_numeros_pattern(racine_code_gramm,entry,0,c,res,n_octet_code_gramm);
+int n=trouver_numeros_pattern(racine_code_gramm,entry,0,c,patterns/*res,n_octet_code_gramm*/);
 if (c!=NULL) {
    free(c);
 }
+return n;
 }
 

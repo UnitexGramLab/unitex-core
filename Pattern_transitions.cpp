@@ -25,14 +25,14 @@
 
 struct pattern_transitions* tableau[500000];
 
-struct liste_nombres* convertir_liste_en_tableau(struct liste_nombres *ptr,int i) {
+struct list_int* convertir_liste_en_tableau(struct list_int *ptr,int i) {
 int octet,bit;
-struct liste_nombres* tmp;
+struct list_int* tmp;
 if (ptr==NULL) return NULL;
 octet=ptr->n/8;
 bit=ptr->n%8;
 tableau[i]->c[octet]=(unsigned char)(tableau[i]->c[octet]|(1<<bit));
-tmp=ptr->suivant;
+tmp=ptr->next;
 free(ptr);
 return convertir_liste_en_tableau(tmp,i);
 }

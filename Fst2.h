@@ -100,7 +100,7 @@ struct fst2Tag {
 	 * This field represents the list of the numbers of the tokens that this tag
 	 * can match.
 	 */
-	struct liste_nombres* matching_tokens;
+	struct list_int* matching_tokens;
 	
 	/*
 	 * 'number_of_matching_tokens' is the length of the list 'matching_tokens'. It
