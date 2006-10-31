@@ -3114,7 +3114,7 @@ void sauvegarder_etiquettes_comp(FILE* fs_comp)
   for (i=0;i<nombre_etiquettes_comp;i++) {
     if ((donnees->Etiquette_comp[i][0])=='@') {
       if ((donnees->Etiquette_comp[i][1])=='\0') {
-        u_fprints_char("%%@\n",fs_comp);
+        u_fprints_char("%@\n",fs_comp);
         }
       else {
          u_fprints(donnees->Etiquette_comp[i],fs_comp);
