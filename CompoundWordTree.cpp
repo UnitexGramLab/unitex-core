@@ -150,7 +150,7 @@ free(DLC_tree);
  * or not.
  */
 void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alph,struct string_hash* tok,
-							int tokenization_mode) {
+							int tokenization_mode,int SPACE) {
 int i,c,n_token,j,k;
 struct list_int* ptr;
 unichar m[1024];
@@ -179,7 +179,7 @@ if (tokenization_mode==CHAR_BY_CHAR_TOKENIZATION) {
 /* If we are not in character by character mode */
 while ((c=word[k])!='\0') {
   if (c==' ') {
-              j=ESPACE;
+              j=SPACE;
               /* If the text does not contain the token space,
                * then we traduce it by an empty list. */
               if (j==-1) {
@@ -429,9 +429,9 @@ while (token_list[pos]!=END_CASE_VARIANT_LIST)  {
  * for any compound word, regardless the pattern, with <DIC> or <CDIC>.
  */
 void add_compound_word_with_no_pattern(unichar* word,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
+							struct DLC_tree_info* DLC_tree,int tokenization_mode,int SPACE) {
 add_compound_word_with_pattern(word,UNDEFINED_COMPOUND_PATTERN,alph,tok,DLC_tree,
-							tokenization_mode);
+							tokenization_mode,SPACE);
 }
 
 
@@ -440,9 +440,9 @@ add_compound_word_with_pattern(word,UNDEFINED_COMPOUND_PATTERN,alph,tok,DLC_tree
  * 'pattern'.
  */
 void add_compound_word_with_pattern(unichar* word,int pattern,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,int tokenization_mode) {
+							struct DLC_tree_info* DLC_tree,int tokenization_mode,int SPACE) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
-tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
+tokenize_compound_word(word,token_list,alph,tok,tokenization_mode,SPACE);
 associate_pattern_to_compound_word(token_list,0,DLC_tree->root,pattern,DLC_tree);
 }
 
@@ -534,10 +534,12 @@ return result;
  * it inserts 'pattern2' in the pattern list associated to 'word' and returns a
  * non-zero value.
  */
+ #warning reorganize parameters
 int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,Alphabet* alph,
-						struct string_hash* tok,struct DLC_tree_info* infos,int tokenization_mode) {
+						struct string_hash* tok,struct DLC_tree_info* infos,int tokenization_mode,
+                  int SPACE,struct noeud_code_gramm* racine_code_gramm) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
-tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
+tokenize_compound_word(word,token_list,alph,tok,tokenization_mode,SPACE);
 return conditional_insertion_in_DLC_tree_node(token_list,0,infos->root,pattern1,pattern2);
 }
 

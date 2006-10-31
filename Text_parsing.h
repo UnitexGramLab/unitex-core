@@ -32,6 +32,7 @@
 #include "LocateConstants.h"
 #include "Context.h"
 #include "CompoundWordTree.h"
+#include "LocatePattern.h"
 
 /* $CD$ begin */
 #include "GF_lib.h"
@@ -66,16 +67,12 @@ extern struct string_hash* TOKENS;
 extern Fst2Tag* ETIQUETTE;
 extern int SENTENCE_DELIMITER_INDICE;
 extern int STOP_MARKER_INDICE;
-/* $CD$ begin */
-#ifdef TRE_WCHAR
-extern MasterGF_T*  masterGF;
-extern IndexGF_T*   indexGF;
-#endif
+
 /* $CD$ end   */
 
 
 void launch_locate(FILE*,Fst2*,int,struct string_hash*,FILE*,int,long int,FILE*,
-					struct DLC_tree_info*);
+					    struct locate_parameters*);
 int dichotomie(int,int*,int);
 int trouver_mot_compose_DIC(int,int,struct DLC_tree_info*);
 

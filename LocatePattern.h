@@ -38,8 +38,6 @@
 #include "TransductionVariables.h"
 #include "LocateConstants.h"
 #include "BitArray.h"
-
-
 /* $CD$ begin */
 #include "GF_lib.h"
 /* $CD$ end   */
@@ -50,26 +48,60 @@
 #define WORD_BY_WORD_TOKENIZATION 0
 #define CHAR_BY_CHAR_TOKENIZATION 1
 
-
-extern unsigned char* token_controle;
-extern struct bit_array** matching_patterns;
-extern int pattern_compose_courant;
-extern struct noeud_code_gramm *racine_code_gramm;
-extern int ESPACE;
-extern struct list_int* tag_token_list;
-
-/* $CD$ begin */
-#ifdef TRE_WCHAR
-extern MasterGF_T* masterGF;
-extern IndexGF_T*  indexGF;
-#endif
-/* $CD$ end   */
+/**
+ * This structure is used to store all the information needed
+ * during the locate operations
+ */
+struct locate_parameters {
+   /**
+    * This array is used to associate a controle byte to each token.
+    * These bytes will be used to know if a token can be matched by
+    * <MOT>, <DIC>, <MIN>, <MAJ>, etc. All the bit masks to be used
+    * are defined in LocateConstants.h with names like XXX_TOKEN_BIT_MASK
+    */
+   unsigned char* token_controle;
+   
+   /**
+    * This array is used to know the patterns that can match tokens. If the
+    * token x is matched by no pattern, then matching_patterns[x]=NULL; Otherwise,
+    * matching_patterns[x] will be a bit array so that matching_patterns[x]->array[y]
+    * will be 1 if the pattern y can match the token x and 0 otherwise.
+    */
+   struct bit_array** matching_patterns;
+   
+   /* This field is used to know the current compound pattern number */
+   int pattern_compose_courant;
+   
+   #warning missing definition
+   struct noeud_code_gramm* racine_code_gramm;
+   
+   /* Number of the space token in the text */
+   int ESPACE;
+   
+   /* Numbers of the tokens that are tags like {soon,.ADV} */
+   struct list_int* tag_token_list;
+   
+   /* $CD$ begin */
+   #ifdef TRE_WCHAR
+   /* These two fields are used to manipulate morphological filters like:
+    * 
+    * <<en$>>
+    * 
+    * 'masterGF' is a structure used to store the filters. 'indexGF' is used to
+    * store the automata associated to the filters.
+    */
+   MasterGF_T* masterGF;
+   IndexGF_T*  indexGF;
+   #endif
+   /* $CD$ end   */
+   struct DLC_tree_info* DLC_tree;
+};
 
 int locate_pattern(char*,char*,char*,char*,char*,char*,char*,int,int,char*,int);
 
-void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int);
+void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 void decouper_entre_angles(unichar*,unichar*,unichar*,unichar*,struct string_hash*,Alphabet*);
 unsigned char get_controle(unichar*,Alphabet*,struct string_hash*,int);
-void compute_token_controls(struct string_hash*,Alphabet*,char*,int);
+void compute_token_controls(struct string_hash*,Alphabet*,char*,int,struct locate_parameters*);
 
 #endif

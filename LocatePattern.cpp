@@ -26,43 +26,47 @@
 //---------------------------------------------------------------------------
 
 
-/**
- * This array is used to associate a controle byte to each token.
- * These bytes will be used to know if a token can be matched by
- * <MOT>, <DIC>, <MIN>, <MAJ>, etc. All the bit masks to be used
- * are defined in LocateConstants.h with names like XXX_TOKEN_BIT_MASK
- */
-unsigned char* token_controle;
+
+
 
 
 /**
- * This array is used to know the patterns that can match tokens. If the
- * token x is matched by no pattern, then matching_patterns[x]=NULL; Otherwise,
- * matching_patterns[x] will be a bit array so that matching_patterns[x]->array[y]
- * will be 1 if the pattern y can match the token x and 0 otherwise.
+ * Allocates, initializes and returns a new locate_paramters structure.
  */
-struct bit_array** matching_patterns;
-
-
-
-int pattern_compose_courant=0;
-struct noeud_code_gramm *racine_code_gramm;
-int ESPACE;
-
-/* $CD$ begin */
+struct locate_parameters* new_locate_parameters() {
+struct locate_parameters* p=(struct locate_parameters*)malloc(sizeof(struct locate_parameters));
+if (p==NULL) {
+   fatal_error("Not enough memory in new_locate_parameters\n");
+}
+p->token_controle=NULL;
+p->matching_patterns=NULL;
+p->pattern_compose_courant=0;
+p->racine_code_gramm=NULL;
+/* We used -1 because there may be no space in the text */
+p->ESPACE=-1;
+p->tag_token_list=NULL;
 #ifdef TRE_WCHAR
-MasterGF_T* masterGF;
-IndexGF_T*  indexGF;
+p->masterGF=NULL;
+p->indexGF=NULL;
 #endif
+p->DLC_tree=NULL;
+return p;
+}
 
-/*----------------------------------------------------------------------------*/
+
+/**
+ * Frees a locate_parameters structure.
+ */
+void free_locate_parameters(struct locate_parameters* p) {
+if (p==NULL) return;
+free(p);
+}
+
 
 int locate_pattern(char* text,char* tokens,char* fst2,char* dlf,char* dlc,char* err,
                    char* alphabet,int mode,int output_mode, char* dynamicDir,
                    int tokenization_mode) {
-/* $CD$ end   */
-
-pattern_compose_courant=0;
+struct locate_parameters* parameters=new_locate_parameters();
 
 FILE* text_file;
 FILE* out;
@@ -116,8 +120,8 @@ if (automate==NULL) {
 }
 /* $CD$ begin */
 #ifdef TRE_WCHAR
-masterGF=CreateMasterGF(automate,alph);
-if (masterGF == NULL) {
+parameters->masterGF=CreateMasterGF(automate,alph);
+if (parameters->masterGF==NULL) {
    error("Cannot compile filter(s)\n");
    free_alphabet(alph);
    free_string_hash(semantic_codes);
@@ -125,7 +129,6 @@ if (masterGF == NULL) {
 }
 #endif
 /* $CD$ end   */
-
 
 printf("Loading token list...\n");
 struct string_hash* tok=load_text_tokens_hash(tokens,&SENTENCE_DELIMITER_INDICE,&STOP_MARKER_INDICE);
@@ -137,11 +140,10 @@ if (tok==NULL) {
    return 0;
 }
 
-
 /* $CD$ begin */
 #ifdef TRE_WCHAR
-indexGF = CreateIndexGF( masterGF, tok );
-if (indexGF == NULL) {
+parameters->indexGF=CreateIndexGF(parameters->masterGF,tok);
+if (parameters->indexGF==NULL) {
    error("Cannot optimize filter(s)\n");
    free_alphabet(alph);
    free_string_hash(semantic_codes);
@@ -153,27 +155,27 @@ if (indexGF == NULL) {
 /* $CD$ end   */
 
 extract_semantic_codes_from_tokens(tok,semantic_codes);
-token_controle=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
-if (token_controle==NULL) {
+parameters->token_controle=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
+if (parameters->token_controle==NULL) {
    fatal_error("Not enough memory in locate_pattern\n");
 }
-matching_patterns=(struct bit_array**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(struct bit_array*));
-if (matching_patterns==NULL) {
+parameters->matching_patterns=(struct bit_array**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(struct bit_array*));
+if (parameters->matching_patterns==NULL) {
    fatal_error("Not enough memory in locate_pattern\n");
 }
 for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
-  token_controle[i]=0;
-  matching_patterns[i]=NULL;
+  parameters->token_controle[i]=0;
+  parameters->matching_patterns[i]=NULL;
 }
-compute_token_controls(tok,alph,err,tokenization_mode);
+compute_token_controls(tok,alph,err,tokenization_mode,parameters);
 int nombre_patterns=0;
-racine_code_gramm=nouveau_noeud_code_gramm();
+parameters->racine_code_gramm=nouveau_noeud_code_gramm();
 int existe_etiquette_DIC=0;
 int existe_etiquette_CDIC=0;
 int existe_etiquette_SDIC=0;
 printf("Computing fst2 tags...\n");
 numerote_tags(automate,tok,&nombre_patterns,semantic_codes,alph,&existe_etiquette_DIC,
-              &existe_etiquette_CDIC,&existe_etiquette_SDIC,tokenization_mode);
+              &existe_etiquette_CDIC,&existe_etiquette_SDIC,tokenization_mode,parameters);
 
 // on calcule l'espace necessaire pour stocker un code grammatical
 //
@@ -186,25 +188,24 @@ numerote_tags(automate,tok,&nombre_patterns,semantic_codes,alph,&existe_etiquett
 // on demarre la numerotation des patterns composes apres celle des patterns
 // simples
 
-pattern_compose_courant=nombre_patterns+1;
+parameters->pattern_compose_courant=nombre_patterns+1;
 
-struct DLC_tree_info* DLC_tree=new_DLC_tree(tok->N);
+parameters->DLC_tree=new_DLC_tree(tok->N);
 struct lemma_node* root=new_lemma_node();
 printf("Loading dlf...\n");
 load_dic_for_locate(dlf,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_etiquette_CDIC,
-				existe_etiquette_SDIC,DLC_tree,tokenization_mode,root);
+				existe_etiquette_SDIC,tokenization_mode,root,parameters);
 printf("Loading dlc...\n");
 load_dic_for_locate(dlc,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_etiquette_CDIC,
-				existe_etiquette_SDIC,DLC_tree,tokenization_mode,root);
+				existe_etiquette_SDIC,tokenization_mode,root,parameters);
 // we look if the tag tokens like {today,.ADV} verify some patterns
 
-struct list_int* tag_token_list;
-check_patterns_for_tag_tokens(alph,tok,nombre_patterns,DLC_tree,tokenization_mode,&tag_token_list,root);
+check_patterns_for_tag_tokens(alph,tok,nombre_patterns,tokenization_mode,root,parameters);
 
 printf("Optimizing fst2 tags...\n");
-replace_pattern_tags(automate,alph,tok,DLC_tree,tokenization_mode,tag_token_list,root);
+replace_pattern_tags(automate,alph,tok,tokenization_mode,root,parameters);
 printf("Optimizing compound word dictionary...\n");
-optimize_DLC(DLC_tree);
+optimize_DLC(parameters->DLC_tree);
 free_string_hash(semantic_codes);
 init_transduction_variable_index(automate->variables);
 printf("Optimizing fst2...\n");
@@ -213,27 +214,30 @@ printf("Optimizing patterns...\n");
 init_pattern_transitions(tok);
 convert_pattern_lists(tok);
 printf("Working...\n");
-launch_locate(text_file,automate,mode,tok,out,output_mode,text_size,info,DLC_tree);
+launch_locate(text_file,automate,mode,tok,out,output_mode,text_size,info,parameters);
 free_transduction_variable_index();
 fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
 printf("Freeing memory...\n");
-free_DLC_tree(DLC_tree);
+free_DLC_tree(parameters->DLC_tree);
 free_Fst2(automate);
 free_alphabet(alph);
 free_string_hash(tok);
-free_list_int(tag_token_list);
+free_list_int(parameters->tag_token_list);
 free_lemma_node(root);
-
+free(parameters->token_controle);
+for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
+   free_bit_array(parameters->matching_patterns[i]);
+}
+free(parameters->matching_patterns);
 /* $CD$ begin */
 #ifdef TRE_WCHAR
-FreeMasterGF( masterGF, 0 );
-FreeIndexGF( indexGF, 0 );
+FreeMasterGF(parameters->masterGF,0);
+FreeIndexGF(parameters->indexGF,0);
 #endif
 /* $CD$ end   */
-
-
+free_locate_parameters(parameters);
 printf("Done.\n");
 return 1;
 }
@@ -243,7 +247,8 @@ return 1;
 void numerote_tags(Fst2* fst2,struct string_hash* tok,int* nombre_patterns,
                    struct string_hash* semantic_codes,Alphabet* alph,
                    int* existe_etiquette_DIC,int* existe_etiquette_CDIC,
-                   int* existe_etiquette_SDIC,int tokenization_mode) {
+                   int* existe_etiquette_SDIC,int tokenization_mode,
+                   struct locate_parameters* parameters) {
 int i,j,k;
 unichar tmp[TAILLE_MOT];
 unichar flechi[TAILLE_MOT];
@@ -253,7 +258,7 @@ Fst2Tag* etiquette=fst2->tags;
 unichar t[2];
 t[0]=' ';
 t[1]='\0';
-ESPACE=get_token_number(t,tok);
+parameters->ESPACE=get_token_number(t,tok);
 for (i=0;i<fst2->number_of_tags;i++) {
   if (etiquette[i]->control&START_VAR_TAG_BIT_MASK) {
      // case of $a(
@@ -289,7 +294,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
     if (etiquette[i]->control&RESPECT_CASE_TAG_BIT_MASK) {
        // on est dans le cas @#: # doit etre considere comme un token normal
        etiquette[i]->number=get_hash_number(etiquette[i]->input,tok);
-       token_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
+       parameters->token_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
        etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
     }
     else {
@@ -361,7 +366,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
             if ((pattern[0]!='\0')&&(flechi[0]=='\0')&&(canonique[0]=='\0')) {
                etiquette[i]->number=(*nombre_patterns);
     		      etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
-               inserer_code_gramm(*nombre_patterns,pattern,NULL);
+               inserer_code_gramm(*nombre_patterns,pattern,NULL,parameters->racine_code_gramm);
                (*nombre_patterns)++;
             } else
             // 2eme cas: <manger.V>
@@ -369,7 +374,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
                etiquette[i]->number=(*nombre_patterns);
     		   etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
                etiquette[i]->control=(unsigned char)(etiquette[i]->control|LEMMA_TAG_BIT_MASK);
-               inserer_code_gramm(*nombre_patterns,pattern,canonique);
+               inserer_code_gramm(*nombre_patterns,pattern,canonique,parameters->racine_code_gramm);
                (*nombre_patterns)++;
                etiquette[i]->lemma=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
                u_strcpy(etiquette[i]->lemma,canonique);
@@ -379,7 +384,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
                etiquette[i]->number=(*nombre_patterns);
     		   etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
                etiquette[i]->control=(unsigned char)(etiquette[i]->control|LEMMA_TAG_BIT_MASK);
-               inserer_code_gramm(*nombre_patterns,pattern,canonique);
+               inserer_code_gramm(*nombre_patterns,pattern,canonique,parameters->racine_code_gramm);
                (*nombre_patterns)++;
                etiquette[i]->lemma=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
                u_strcpy(etiquette[i]->lemma,canonique);
@@ -400,11 +405,11 @@ for (i=0;i<fst2->number_of_tags;i++) {
           // si l'etiquette n'est pas dans les tokens, on l'y rajoute
           // a cause du feature B.C.
           etiquette[i]->number=get_hash_number(etiquette[i]->input,tok);
-          token_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
+          parameters->token_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
           etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
         }
       } else {
-          if (etiquette[i]->number!=ESPACE) {
+          if (etiquette[i]->number!=parameters->ESPACE) {
             etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
           }
           else {
@@ -636,10 +641,11 @@ pattern[j]='\0';
 
 
 
-void compute_token_controls(struct string_hash* tok,Alphabet* alph,char* err,int tokenization_mode) {
+void compute_token_controls(struct string_hash* tok,Alphabet* alph,char* err,int tokenization_mode,
+                            struct locate_parameters* parameters) {
 struct string_hash* ERR=load_word_list(err);
 for (int i=0;i<tok->N;i++) {
-  token_controle[i]=get_controle(tok->tab[i],alph,ERR,tokenization_mode);
+   parameters->token_controle[i]=get_controle(tok->tab[i],alph,ERR,tokenization_mode);
 }
 free_string_hash(ERR);
 }

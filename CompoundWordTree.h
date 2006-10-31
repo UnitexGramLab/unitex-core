@@ -132,10 +132,10 @@ struct DLC_tree_info {
 
 struct DLC_tree_info* new_DLC_tree(int);
 void free_DLC_tree(struct DLC_tree_info*);
-void tokenize_compound_word(unichar*,int*,Alphabet*,struct string_hash*,int);
-void add_compound_word_with_no_pattern(unichar*,Alphabet*,struct string_hash*,struct DLC_tree_info*,int);
-void add_compound_word_with_pattern(unichar*,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int);
-int conditional_insertion_in_DLC_tree(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int);
+void tokenize_compound_word(unichar*,int*,Alphabet*,struct string_hash*,int,int);
+void add_compound_word_with_no_pattern(unichar*,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int);
+void add_compound_word_with_pattern(unichar*,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int);
+int conditional_insertion_in_DLC_tree(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int,struct noeud_code_gramm*);
 void optimize_DLC(struct DLC_tree_info*);
 
 #endif

@@ -36,7 +36,8 @@ return n;
 
 
 
-void inserer_code_gramm(int numero_pattern,unichar* s,unichar* canonique) {
+void inserer_code_gramm(int numero_pattern,unichar* s,unichar* canonique,
+                        struct noeud_code_gramm* racine) {
 unichar* t[MAX_INFLECTIONAL_CODES_LENGTH];
 unichar* t2[MAX_INFLECTIONAL_CODES_LENGTH];
 struct facteurs_interdits *f;
@@ -64,7 +65,7 @@ for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++)
     free(t2[i]);
     t2[i]=NULL;
   }
-ajouter_combinaisons_code_gramm(t,c,numero_pattern,f,canonique);
+ajouter_combinaisons_code_gramm(t,c,numero_pattern,f,canonique,racine);
 for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++)
   if (t[i]!=NULL) {
     free(t[i]);
@@ -156,7 +157,8 @@ while (!fin) {
 
 
 void ajouter_combinaisons_code_gramm(unichar** t,Code_flexion c,int numero_pattern,
-                                     struct facteurs_interdits *f,unichar* canonique) {
+                                     struct facteurs_interdits *f,unichar* canonique,
+                                     struct noeud_code_gramm* racine) {
 int n;
 int marque[MAX_INFLECTIONAL_CODES_LENGTH];
 int i;
@@ -169,14 +171,15 @@ n=0;
 while (t[n]!=NULL) {
    n++;
 }
-creer_ensemble_code_gramm(marque,t,t2,c,numero_pattern,n,0,f,canonique);
+creer_ensemble_code_gramm(marque,t,t2,c,numero_pattern,n,0,f,canonique,racine);
 }
 
 
 
 void creer_ensemble_code_gramm(int* marque,unichar** t,unichar** t2,Code_flexion c,
                                int numero_pattern,int n,int compteur,
-                               struct facteurs_interdits* f,unichar* canonique) {
+                               struct facteurs_interdits* f,unichar* canonique,
+                               struct noeud_code_gramm* racine_code_gramm) {
 int i;
 if (compteur==n) {
    ajouter_element_code_gramm(t2,0,racine_code_gramm,c,numero_pattern,f,canonique);
@@ -187,7 +190,7 @@ for (i=0;i<n;i++)
      marque[i]=1;
      t2[compteur]=(unichar*)malloc((u_strlen(t[i])+1)*sizeof(unichar));
      u_strcpy(t2[compteur],t[i]);
-     creer_ensemble_code_gramm(marque,t,t2,c,numero_pattern,n,compteur+1,f,canonique);
+     creer_ensemble_code_gramm(marque,t,t2,c,numero_pattern,n,compteur+1,f,canonique,racine_code_gramm);
      if (t2[compteur]!=NULL) {
         free(t2[compteur]);
         t2[compteur]=NULL;
@@ -452,8 +455,7 @@ return matching_patterns;
  * 
  */
 int trouver_numeros_pattern(struct noeud_code_gramm* n,struct dela_entry* entry,int niveau,
-                             Code_flexion c,struct bit_array* patterns
-                             /*unsigned char* res,int n_octet_code_gramm*/) {
+                             Code_flexion c,struct bit_array* patterns) {
 struct noeud_code_gramm* sous_noeud;
 struct liste_code_flexion *l;
 if (niveau==entry->n_semantic_codes) {
@@ -479,11 +481,10 @@ return number_of_matching_patterns;
  * is set to 1. The function returns the number of matching patterns.
  */
 int get_matching_patterns(struct dela_entry* entry,
-                        struct bit_array* patterns
-                        /*,unsigned char* res,
-                        int n_octet_code_gramm*/) {
+                        struct bit_array* patterns,
+                        struct noeud_code_gramm* racine_code_gramm) {
 Code_flexion c=calculer_code_flexion(entry);
-int n=trouver_numeros_pattern(racine_code_gramm,entry,0,c,patterns/*res,n_octet_code_gramm*/);
+int n=trouver_numeros_pattern(racine_code_gramm,entry,0,c,patterns);
 if (c!=NULL) {
    free(c);
 }

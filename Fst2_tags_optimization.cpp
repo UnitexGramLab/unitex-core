@@ -44,16 +44,16 @@ static inline int est_un_token_simple(unichar* string, Alphabet* alph,int tokeni
 
 
 void deuxieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
-						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
-						int tokenization_mode) {
+						struct string_hash* tok,
+						int tokenization_mode,struct locate_parameters* parameters) {
 int num;
 struct list_int* ptr_num;
 struct list_int* ptr;
 if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_hash_number(s,tok);
-  if ((matching_patterns[num]!=NULL)&&
-      get_value(matching_patterns[num],etiquette[e]->number)) {
+  if ((parameters->matching_patterns[num]!=NULL)&&
+      get_value(parameters->matching_patterns[num],etiquette[e]->number)) {
       ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
       ptr_num->n=num;
       ptr_num->next=etiquette[e]->matching_tokens;
@@ -64,9 +64,9 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,pattern_compose_courant,alph,tok,
-  						DLC_tree,tokenization_mode)) {
-     etiquette[e]->compound_pattern=pattern_compose_courant;
+  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,parameters->pattern_compose_courant,alph,tok,
+  						parameters->DLC_tree,tokenization_mode,parameters->ESPACE,parameters->racine_code_gramm)) {
+     etiquette[e]->compound_pattern=parameters->pattern_compose_courant;
   }
   return;
 }
@@ -74,8 +74,8 @@ ptr=get_token_list_for_sequence(s,alph,tok);
 struct list_int* ptr_copy = ptr; // s.n.
 while (ptr!=NULL) {
   num=ptr->n;
-  if ((matching_patterns[num]!=NULL)&&
-      get_value(matching_patterns[num],etiquette[e]->number)) {
+  if ((parameters->matching_patterns[num]!=NULL)&&
+      get_value(parameters->matching_patterns[num],etiquette[e]->number)) {
     ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
     ptr_num->n=num;
     ptr_num->next=etiquette[e]->matching_tokens;
@@ -90,17 +90,18 @@ free_list_int(ptr_copy); // s.n.
 
 
 void deuxieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
-				struct DLC_tree_info* DLC_tree,int tokenization_mode,struct lemma_node* root) {
+				struct DLC_tree_info* DLC_tree,int tokenization_mode,struct lemma_node* root,
+            struct locate_parameters* parameters) {
 struct list_ustring* s=get_inflected_forms(etiquette[e]->lemma,root);
 if (s==NULL) {
    etiquette[e]->number=NOTHING_TAG;
    return;
 }
 while (s!=NULL) {
-   deuxieme_cas_prime(e,etiquette,s->string,alph,tok,DLC_tree,tokenization_mode);
+   deuxieme_cas_prime(e,etiquette,s->string,alph,tok,tokenization_mode,parameters);
    s=s->next;
 }
-pattern_compose_courant++;
+parameters->pattern_compose_courant++;
 if (etiquette[e]->matching_tokens==NULL) {
    etiquette[e]->number=NOTHING_TAG;
 }
@@ -111,15 +112,15 @@ else etiquette[e]->number=LEXICAL_TAG;
 
 void troisieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
-						int tokenization_mode) {
+						int tokenization_mode,struct locate_parameters* parameters) {
 int num;
 struct list_int* ptr_num;
 struct list_int* ptr;
 if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_hash_number(s,tok);
-   if ((matching_patterns[num]!=NULL)&&
-      get_value(matching_patterns[num],etiquette[e]->number)) {
+   if ((parameters->matching_patterns[num]!=NULL)&&
+      get_value(parameters->matching_patterns[num],etiquette[e]->number)) {
       ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
       ptr_num->n=num;
       ptr_num->next=etiquette[e]->matching_tokens;
@@ -130,9 +131,9 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,pattern_compose_courant,alph,tok,
-  						DLC_tree,tokenization_mode)) {
-     etiquette[e]->compound_pattern=pattern_compose_courant;
+  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,parameters->pattern_compose_courant,alph,tok,
+  						parameters->DLC_tree,tokenization_mode,parameters->ESPACE,parameters->racine_code_gramm)) {
+     etiquette[e]->compound_pattern=parameters->pattern_compose_courant;
   }
   return;
 }
@@ -140,8 +141,8 @@ ptr=get_token_list_for_sequence(s,alph,tok);
 struct list_int* ptr_copy = ptr; // s.n.
 while (ptr!=NULL) {
   num=ptr->n;
-  if ((matching_patterns[num]!=NULL)&&
-      get_value(matching_patterns[num],etiquette[e]->number)) {
+  if ((parameters->matching_patterns[num]!=NULL)&&
+      get_value(parameters->matching_patterns[num],etiquette[e]->number)) {
     ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
     ptr_num->n=num;
     ptr_num->next=etiquette[e]->matching_tokens;
@@ -156,7 +157,8 @@ free_list_int(ptr_copy); // s.n.
 
 
 void troisieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
-					struct DLC_tree_info* DLC_tree,int tokenization_mode,struct lemma_node* root) {
+					struct DLC_tree_info* DLC_tree,int tokenization_mode,struct lemma_node* root,
+               struct locate_parameters* parameters) {
 struct list_ustring* s=get_inflected_forms(etiquette[e]->lemma,root);
 if (s==NULL) {
    etiquette[e]->number=NOTHING_TAG;
@@ -167,16 +169,16 @@ while (s!=NULL) {
      // case of a token tag
      struct dela_entry* TMP=tokenize_tag_token(s->string);
      if (!u_strcmp(TMP->inflected,etiquette[e]->inflected)) {
-        troisieme_cas_prime(e,etiquette,s->string,alph,tok,DLC_tree,tokenization_mode);
+        troisieme_cas_prime(e,etiquette,s->string,alph,tok,parameters->DLC_tree,tokenization_mode,parameters);
      }
      free_dic_entry(TMP);
   }
   else if (!u_strcmp(s->string,etiquette[e]->inflected)) {
-     troisieme_cas_prime(e,etiquette,s->string,alph,tok,DLC_tree,tokenization_mode);
+     troisieme_cas_prime(e,etiquette,s->string,alph,tok,parameters->DLC_tree,tokenization_mode,parameters);
   }
   s=s->next;
 }
-pattern_compose_courant++;
+(parameters->pattern_compose_courant)++;
 if (etiquette[e]->matching_tokens==NULL) {
    etiquette[e]->number=NOTHING_TAG;
 }
@@ -187,7 +189,7 @@ else etiquette[e]->number=LEXICAL_TAG;
 
 void quatrieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* DLC_tree,
-						int tokenization_mode) {
+						int tokenization_mode,struct locate_parameters* parameters) {
 int num;
 struct list_int* ptr_num;
 struct list_int* ptr;
@@ -204,8 +206,8 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 // normal case
 //---mot compose
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-   add_compound_word_with_pattern(s,pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode);
-   etiquette[e]->compound_pattern=pattern_compose_courant;
+   add_compound_word_with_pattern(s,parameters->pattern_compose_courant,alph,tok,parameters->DLC_tree,tokenization_mode,parameters->ESPACE);
+   etiquette[e]->compound_pattern=parameters->pattern_compose_courant;
    return;
 }
 //---mot simple
@@ -226,17 +228,18 @@ free_list_int(ptr_copy); // s.n.
 
 
 void quatrieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
-					struct DLC_tree_info* DLC_tree,int tokenization_mode,struct lemma_node* root) {
+					struct DLC_tree_info* DLC_tree,int tokenization_mode,struct lemma_node* root,
+               struct locate_parameters* parameters) {
 struct list_ustring* s=get_inflected_forms(etiquette[e]->lemma,root);
 if (s==NULL) {
   etiquette[e]->number=NOTHING_TAG;
   return;
 }
 while (s!=NULL) {
-  quatrieme_cas_prime(e,etiquette,s->string,alph,tok,DLC_tree,tokenization_mode);
+  quatrieme_cas_prime(e,etiquette,s->string,alph,tok,parameters->DLC_tree,tokenization_mode,parameters);
   s=s->next;
 }
-pattern_compose_courant++;
+(parameters->pattern_compose_courant)++;
 if (etiquette[e]->matching_tokens==NULL)
   etiquette[e]->number=NOTHING_TAG;
 else etiquette[e]->number=LEXICAL_TAG;
@@ -246,7 +249,8 @@ else etiquette[e]->number=LEXICAL_TAG;
 
 void cas_normal(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* tok,
 				int case_variants_allowed,struct DLC_tree_info* DLC_tree,
-				int tokenization_mode,struct list_int* tag_token_list) {
+				int tokenization_mode,struct list_int* tag_token_list,
+            struct locate_parameters* parameters) {
 int num;
 struct list_int* ptr_num;
 struct list_int* ptr;
@@ -272,9 +276,9 @@ if (!case_variants_allowed) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-   add_compound_word_with_pattern(s,pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode);
-   etiquette[e]->compound_pattern=pattern_compose_courant;
-   pattern_compose_courant++;
+   add_compound_word_with_pattern(s,parameters->pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode,parameters->ESPACE);
+   etiquette[e]->compound_pattern=parameters->pattern_compose_courant;
+   (parameters->pattern_compose_courant)++;
 } else {
    ptr=get_token_list_for_sequence(etiquette[e]->input,alph,tok);
    struct list_int* ptr_copy = ptr; // s.n.
@@ -301,8 +305,8 @@ if (!est_un_token_simple(s,alph,tokenization_mode)) {
 
 
 void replace_pattern_tags(Fst2* automate,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,int tokenization_mode,
-                     struct list_int* tag_token_list,struct lemma_node* root) {
+							int tokenization_mode,struct lemma_node* root,
+                     struct locate_parameters* parameters) {
 Fst2Tag* etiquette=automate->tags;
 int i;
 //printf("************** TRAITEMENT DES ANGLES ******************\n");
@@ -312,19 +316,19 @@ for (i=0;i</*etiquette_courante*/automate->number_of_tags;i++) {
     // cas <manger>
     if (etiquette[i]->number==LEXICAL_TAG) {
        //printf("1");
-       quatrieme_cas(i,etiquette,alph,tok,DLC_tree,tokenization_mode,root);
+       quatrieme_cas(i,etiquette,alph,tok,parameters->DLC_tree,tokenization_mode,root,parameters);
     }
     else
     // cas <mange,manger.V>
     if ((etiquette[i]->lemma!=NULL)&&(etiquette[i]->inflected!=NULL)) {
        //printf("2");
-       troisieme_cas(i,etiquette,alph,tok,DLC_tree,tokenization_mode,root);
+       troisieme_cas(i,etiquette,alph,tok,parameters->DLC_tree,tokenization_mode,root,parameters);
     }
     else
     // cas <manger.V>
     if ((etiquette[i]->lemma!=NULL)&&(etiquette[i]->inflected==NULL)) {
        //printf("3");
-       deuxieme_cas(i,etiquette,alph,tok,DLC_tree,tokenization_mode,root);
+       deuxieme_cas(i,etiquette,alph,tok,parameters->DLC_tree,tokenization_mode,root,parameters);
     }
   }
   else {
@@ -334,7 +338,7 @@ for (i=0;i</*etiquette_courante*/automate->number_of_tags;i++) {
     if (etiquette[i]->control&TOKEN_TAG_BIT_MASK) {
        //printf("4");
        cas_normal(i,etiquette,alph,tok,!(etiquette[i]->control&RESPECT_CASE_TAG_BIT_MASK),
-       			DLC_tree,tokenization_mode,tag_token_list);
+       			parameters->DLC_tree,tokenization_mode,parameters->tag_token_list,parameters);
     }
   }
 }

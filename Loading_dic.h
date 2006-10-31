@@ -36,8 +36,8 @@
 #include "LemmaTree.h"
 
 
-void load_dic_for_locate(char*,Alphabet*,struct string_hash*,int,int,int,int,struct DLC_tree_info*,int,struct lemma_node*);
-void check_patterns_for_tag_tokens(Alphabet*,struct string_hash*,int,struct DLC_tree_info*,int,struct list_int**,struct lemma_node*);
+void load_dic_for_locate(char*,Alphabet*,struct string_hash*,int,int,int,int,int,struct lemma_node*,struct locate_parameters*);
+void check_patterns_for_tag_tokens(Alphabet*,struct string_hash*,int,int,struct lemma_node*,struct locate_parameters*);
 int is_a_simple_word(unichar*,Alphabet*,int);
 
 #endif
