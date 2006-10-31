@@ -344,10 +344,14 @@ MERGETEXTAUTOMATON      = MergeTextAutomaton
 MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o unicode.o String_hash.o Fst2.o\
                           FileName.o stack.o qsort.o grf.o Alphabet.o Error.o
 
+MULTIFLEX      = MultiFlex
+MULTIFLEX_OBJS = Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_Inflect.o MF_LangMorpho.o\
+                 MF_InflectTransd.o  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
+                 Fst2.o unicode.o Error.o IOBuffer.o
+
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = IOBuffer.o Normalize.o unicode.o FileName.o DELA.o WordList.o String_hash.o\
 				Alphabet.o Error.o StringParsing.o
-
 
 POLYLEX      = PolyLex
 POLYLEX_OBJS = IOBuffer.o PolyLex.o unicode.o Alphabet.o DELA.o WordList.o String_hash.o\
@@ -461,7 +465,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO) $(ELAG) $(ELAGC
 		$(TAGSETNORM) \
 		$(INFLECTKR) $(FST2LIST) $(SUFFORM2RAC) $(COMPRESSKR)\
 		$(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) $(TXT2FST2KR) \
-		$(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR) $(FST2UNAMBIG)
+		$(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR) $(FST2UNAMBIG) $(MULTIFLEX)
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
@@ -477,7 +481,7 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OB
 		$(TAGSETNORM_OBJS) $(CONCORDIFF_OBJS) \
 		$(COMPRESSKR_OBJS) $(FST2LIST_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
-		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(FST2UNAMBIG_OBJS)
+		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(FST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS)
 
 
 
@@ -647,6 +651,9 @@ $(BIN_DIR)$(LOCATE)$(EXTENSION): $(LOCATE_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(MERGETEXTAUTOMATON)$(EXTENSION): $(MERGETEXTAUTOMATON_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(MULTIFLEX)$(EXTENSION): $(MULTIFLEX_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(NORMALIZE)$(EXTENSION): $(NORMALIZE_OBJS)
