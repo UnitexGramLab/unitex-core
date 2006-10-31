@@ -1076,7 +1076,7 @@ int reverse (Graph_comp graph) {
                                       l->tag_number,map_table[(l->state_number)]);
 #ifdef DEBUG                                                                /* DEBUG */
           fprintf(stderr,"%i --%i--> %i\n",                                 /* DEBUG */
-                  map_table[i],l->tag_number,map_table[(l->state_number)]); /* DEBUG */
+                  map_table[i],sons->tag_number,map_table[(sons->state_number)]); /* DEBUG */
 #endif                                                                      /* DEBUG */
         }
 

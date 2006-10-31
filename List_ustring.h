@@ -20,20 +20,27 @@
   */
 
 //---------------------------------------------------------------------------
-#ifndef Fst2_tags_optimizationH
-#define Fst2_tags_optimizationH
+#ifndef List_ustringH
+#define List_ustringH
 //---------------------------------------------------------------------------
 
-#include "Alphabet.h"
-#include "String_hash.h"
-#include "Fst2.h"
-#include "CompoundWordTree.h"
-#include "List_int.h"
+#include "unicode.h"
+
+/**
+ * This is a simple structure for manipulating unicode string lists.
+ */
+struct list_ustring {
+   unichar* string;
+   struct list_ustring* next;
+};
 
 
-void replace_pattern_tags(Fst2*,Alphabet*,struct string_hash*,
-						struct DLC_tree_info*,int,struct list_int*,
-                  struct lemma_node*);
-
+struct list_ustring* new_list_ustring(unichar*);
+void free_list_ustring(struct list_ustring*);
+struct list_ustring* sorted_insert(unichar*,struct list_ustring*);
+int is_in_list(unichar*,struct list_ustring*);
+int equal(struct list_ustring*,struct list_ustring*);
+struct list_ustring* head_insert(unichar*,struct list_ustring*);
 
 #endif
+

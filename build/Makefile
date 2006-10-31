@@ -249,7 +249,7 @@ CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o unicode.o Text_tokens.o String
 				CompoundWordTree.o GF_lib.o DELA.o WordList.o Fst2.o Grammatical_codes.o\
 				Fst2_tags_optimization.o Pattern_transitions.o\
 				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
-				Buffer.o StringParsing.o Snt.o BitArray.o
+				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_ustring.o
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_tokens.o String_hash.o List_int.o Alphabet.o Matches.o Concordance.o FileName.o\
@@ -257,7 +257,7 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_to
 				CompoundWordTree.o GF_lib.o\
 				DELA.o WordList.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
 				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
-				Buffer.o StringParsing.o Snt.o BitArray.o
+				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_ustring.o
 
 CONVERT      = Convert
 CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o CodePages.o Error.o\
@@ -269,7 +269,7 @@ DICO_OBJS = Dico.o List_int.o DELA.o Dico_application.o FileName.o Alphabet.o St
             CompoundWordTree.o Flexional_codes.o Facteurs_interdits.o Fst2_tags_optimization.o \
             Grammatical_codes.o Loading_dic.o Liste_num.o LocatePattern.o Matches.o Optimized_fst2.o Pattern_transitions.o \
             Text_parsing.o TransductionVariables.o TransductionStack.o GF_lib.o LocateAsRoutine.o Context.o\
-            StringParsing.o Buffer.o BitArray.o Snt.o
+            StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_ustring.o
 
 ELAG      = Elag
 ELAG_OBJS = IOBuffer.o Elag.o unicode.o elag-functions.o language.o fst_file.o aut-deter.o \
@@ -297,7 +297,8 @@ EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o TransductionS
                Liste_num.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o WordList.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
                Facteurs_interdits.o Flexional_codes.o unicode.o Text_tokens.o FileName.o Extract_units.o Alphabet.o String_hash.o Matches.o\
-	           GF_lib.o Error.o Context.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o
+	           GF_lib.o Error.o Context.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o\
+	           LemmaTree.o List_ustring.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o unicode.o Fst2.o Grf2Fst2_lib.o\
@@ -337,7 +338,7 @@ LOCATE_OBJS = IOBuffer.o Locate.o unicode.o Alphabet.o DELA.o WordList.o String_
               Grammatical_codes.o Flexional_codes.o Facteurs_interdits.o Loading_dic.o CompoundWordTree.o Fst2_tags_optimization.o \
               Optimized_fst2.o Pattern_transitions.o Text_parsing.o Matches.o TransductionVariables.o TransductionStack.o\
               Liste_num.o FileName.o GF_lib.o Error.o Context.o StringParsing.o LocateAsRoutine.o\
-              BitArray.o
+              BitArray.o LemmaTree.o List_ustring.o
 
 MERGETEXTAUTOMATON      = MergeTextAutomaton
 MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o unicode.o String_hash.o Fst2.o\
@@ -359,7 +360,8 @@ RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o Optimized_fst2
                Facteurs_interdits.o Flexional_codes.o unicode.o Alphabet.o Matches.o FileName.o Normalization_transducer.o\
 	           PortugueseNormalization.o\
                Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o String_list.o\
-               Sentence_to_grf.o GF_lib.o Error.o Context.o StringParsing.o BitArray.o
+               Sentence_to_grf.o GF_lib.o Error.o Context.o StringParsing.o BitArray.o\
+               LemmaTree.o List_ustring.o
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = IOBuffer.o Reg2Grf.o unicode.o Regular_expression.o Error.o

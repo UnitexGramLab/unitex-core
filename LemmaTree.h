@@ -19,25 +19,40 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#ifndef Loading_dicH
-#define Loading_dicH
-//---------------------------------------------------------------------------
+#ifndef LemmaTreeH
+#define LemmaTreeH
 
 #include "unicode.h"
-#include "DELA.h"
-#include "Alphabet.h"
-#include "String_hash.h"
-#include "Text_tokens.h"
-#include "List_int.h"
-#include "LocatePattern.h"
-#include "CompoundWordTree.h"
-#include "LocateConstants.h"
-#include "LemmaTree.h"
+#include "List_ustring.h"
+
+/**
+ * These structures are used to build a tree of lemmas. For each lemma,
+ * the associated final node contains a list of all the inflected forms
+ * that correspond to this lemma. For instance, if the text simple word
+ * dictionary contains the following lines:
+ * 
+ * êtres,être.N:mp
+ * suis,être.V:P1s
+ * 
+ * then the liste "êtres", "suis" will be associated to the lemma "être".
+ */
+struct lemma_node {
+   struct list_ustring* inflected_forms;
+   unichar letter;
+   struct lemma_node_list* sons;
+};
 
 
-void load_dic_for_locate(char*,Alphabet*,struct string_hash*,int,int,int,int,struct DLC_tree_info*,int,struct lemma_node*);
-void check_patterns_for_tag_tokens(Alphabet*,struct string_hash*,int,struct DLC_tree_info*,int,struct list_int**,struct lemma_node*);
-int is_a_simple_word(unichar*,Alphabet*,int);
+struct lemma_node_list {
+  struct lemma_node* node;
+  struct lemma_node_list* next;
+};
+
+
+struct lemma_node* new_lemma_node();
+void free_lemma_node(struct lemma_node*);
+void add_inflected_form_for_lemma(unichar*,unichar*,struct lemma_node*);
+struct list_ustring* get_inflected_forms(unichar*,struct lemma_node*);
 
 #endif
+

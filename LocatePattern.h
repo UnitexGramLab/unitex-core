@@ -51,7 +51,7 @@
 #define CHAR_BY_CHAR_TOKENIZATION 1
 
 
-extern unsigned char* index_controle;
+extern unsigned char* token_controle;
 extern struct bit_array** matching_patterns;
 extern int pattern_compose_courant;
 extern struct noeud_code_gramm *racine_code_gramm;

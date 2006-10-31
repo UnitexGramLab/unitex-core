@@ -24,7 +24,7 @@
 #define LocateConstantsH
 //---------------------------------------------------------------------------
 
-// bit masks used in the control byte of each token of the text
+/* Bit masks used in the control byte of each token of the text */
 #define MOT_TOKEN_BIT_MASK 1
 #define DIC_TOKEN_BIT_MASK 2
 #define MAJ_TOKEN_BIT_MASK 4

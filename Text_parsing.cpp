@@ -483,8 +483,8 @@ pos4=pos2+1;
 // metas
 a_meta=etat_courant->liste_metas;
 if (a_meta!=NULL) {
-  k=index_controle[texte[pos2+origine_courante]];
-  k_pas_decale=index_controle[texte[pos+origine_courante]];
+  k=token_controle[texte[pos2+origine_courante]];
+  k_pas_decale=token_controle[texte[pos+origine_courante]];
 }
 while (a_meta!=NULL) {
   arr=a_meta->liste_arr;
@@ -1004,7 +1004,7 @@ while (a_pattern!=NULL) {
         }
       } else {
         // if there is no code, we can try to look for a negation
-        if (a_pattern->negation && (index_controle[texte[pos2+origine_courante]]&MOT_TOKEN_BIT_MASK)) {
+        if (a_pattern->negation && (token_controle[texte[pos2+origine_courante]]&MOT_TOKEN_BIT_MASK)) {
           if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
           if (transduction_mode==MERGE_TRANSDUCTIONS) {
             if (pos2!=pos) push_char(' ');

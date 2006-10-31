@@ -26,17 +26,25 @@
 //---------------------------------------------------------------------------
 
 
-struct noeud *racine=nouveau_noeud();
 
-int est_un_mot_simple(unichar* m,Alphabet* alph,int tokenization_mode) {
+/**
+ * Returns 1 if the given sequence can be considered as a simple word;
+ * 0 otherwise.
+ */
+#warning with such a definition, a single char that is not a letter is not a simple word:
+// 3,.DIGIT
+int is_a_simple_word(unichar* sequence,Alphabet* alphabet,int tokenization_mode) {
 int i;
 i=0;
-if (tokenization_mode==CHAR_BY_CHAR_TOKENIZATION && u_strlen(m)>1) return 0;
-
-while (m[i]!='\0' /*&& m[i]!='<' && m[i]!='>' && m[i]!='_'*/ && is_letter(m[i],alph)) {
+if (tokenization_mode==CHAR_BY_CHAR_TOKENIZATION && u_strlen(sequence)>1) {
+   /* In a char by char mode, a string longer than 1 cannot be a simple word */
+   return 0;
+}
+/* Here, we are a bit parano since '\0' is not supposed to be in the alphabet */
+while (sequence[i]!='\0' && is_letter(sequence[i],alphabet)) {
    i++;
 }
-if (m[i]=='\0') {
+if (sequence[i]=='\0') {
    return 1;
 }
 return 0;
@@ -63,7 +71,8 @@ return 0;
 void load_dic_for_locate(char* dic_name,Alphabet* alphabet,struct string_hash* tokens,
                          int number_of_patterns,int is_DIC_pattern,
                          int is_CDIC_pattern,int is_SDIC_pattern,
-                         struct DLC_tree_info* DLC_tree,int tokenization_mode) {
+                         struct DLC_tree_info* DLC_tree,int tokenization_mode,
+                         struct lemma_node* root) {
 FILE* f;
 unichar line[DIC_LINE_SIZE];
 f=u_fopen(dic_name,U_READ);
@@ -86,7 +95,7 @@ while (u_read_line(f,line)) {
    /* We add the inflected form to the list of forms associated to the lemma.
     * This will be used to replace patterns like "<be>" by the actual list of
     * forms that can be matched by it, for optimization reasons */
-   ajouter_forme_flechie(entry->lemma,0,racine,entry->inflected);
+   add_inflected_form_for_lemma(entry->inflected,entry->lemma,root);
    /* We get the list of all tokens that can be matched by the inflected form of this
     * this entry, with regards to case variations (see the "extended" example above). */
    struct list_int* ptr=get_token_list_for_sequence(entry->inflected,alphabet,tokens);
@@ -96,7 +105,7 @@ while (u_read_line(f,line)) {
    while (ptr!=NULL) {
       int i=ptr->n;
       /* If the current token can be matched, then it can be recognized by the "<DIC>" pattern */
-      index_controle[i]=(unsigned char)(get_controle(tokens->tab[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      token_controle[i]=(unsigned char)(get_controle(tokens->tab[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
          int nothing_before=0;
@@ -126,7 +135,7 @@ while (u_read_line(f,line)) {
    }
    /* Finally, we free the token list */
    free_list_int(ptr_copy);
-   if (!est_un_mot_simple(entry->inflected,alphabet,tokenization_mode)) {
+   if (!is_a_simple_word(entry->inflected,alphabet,tokenization_mode)) {
       /* If the inflected form is a compound word */
       if (is_DIC_pattern || is_CDIC_pattern) {
          /* If the .fst2 contains "<DIC>" and/or "<CDIC>", then we
@@ -164,106 +173,6 @@ u_fclose(f);
 }
 
 
-
-struct noeud* nouveau_noeud() {
-struct noeud* n;
-n=(struct noeud*)malloc(sizeof(struct noeud));
-n->controle=0;
-n->numero=-1;
-n->formes_flechies=NULL;
-n->lettre=1;
-n->l=NULL;
-return n;
-}
-
-
-
-struct noeud* get_sous_noeud(struct noeud *n,unichar c,int creer) {
-struct liste_feuilles* ptr;
-struct liste_feuilles* ptr2;
-struct noeud* res;
-ptr=n->l;
-while ((ptr!=NULL)&& (ptr->node!=NULL) && ((ptr->node)->lettre!=c)) {
-  ptr=ptr->suivant;
-}
-if (ptr==NULL) {        // si on veut juste savoir si le noeud existe
-  if (!creer) {          // et que le noeud n'existe pas, on renvoie NULL
-     return NULL;
-  }
-  res=nouveau_noeud();
-  res->lettre=c;
-  ptr2=(struct liste_feuilles*)malloc(sizeof(struct liste_feuilles));
-  ptr2->node=res;
-  ptr2->suivant=NULL;
-  if (n->l==NULL)
-    n->l=ptr2;
-  else {
-         ptr=n->l;
-         while (ptr->suivant!=NULL)
-           ptr=ptr->suivant;
-         ptr->suivant=ptr2;
-       }
-  return res;
-}
-return ptr->node;
-}
-
-
-
-void ajouter_flechi(struct noeud* n,unichar* s) {
-int i,j,l,l2,debut;
-unichar tmp[20000];
-if (n->formes_flechies==NULL) {
-  n->formes_flechies=(unichar*)malloc((u_strlen(s)+1)*sizeof(unichar));
-  u_strcpy(n->formes_flechies,s);
-  return;
-}
-tmp[0]='\0';
-u_strcpy(tmp,n->formes_flechies);
-i=0;
-j=0;
-debut=0;
-l=u_strlen(tmp);
-l2=u_strlen(s);
-while ((i<l) && (j<l2)) {
-  if (tmp[i++]==s[j]) {
-     j++;
-  }
-  else {j=0;debut=i;}
-  if ((j==l2) && (tmp[i]!=SEPARATOR_CHAR) && (tmp[i]!='\0')) {
-     j=0;
-     debut=i;
-  }
-}
-if (((i==l) && (j<l2)) || (debut!=0 && tmp[debut-1]!=SEPARATOR_CHAR)) {
-   j=0;
-}
-if (!j) {
-  char t[2];
-  sprintf(t,"%c",SEPARATOR_CHAR);
-  u_strcat_char(tmp,t);
-  u_strcat(tmp,s);
-  free(n->formes_flechies);
-  n->formes_flechies=(unichar*)malloc((u_strlen(tmp)+1)*sizeof(unichar));
-  u_strcpy(n->formes_flechies,tmp);
-}
-}
-
-
-
-void ajouter_forme_flechie(unichar* canonique,int i,struct noeud* n,unichar* flechi) {
-struct noeud* sous_noeud;
-sous_noeud=get_sous_noeud(n,canonique[i],1);
-i++;
-if (canonique[i]=='\0') {
-   sous_noeud->controle=(unsigned char)(sous_noeud->controle|1);
-   ajouter_flechi(sous_noeud,flechi);
-}
-else ajouter_forme_flechie(canonique,i,sous_noeud,flechi);
-}
-
-
-
 /**
  * This function checks for each tag token like "{extended,extend.V:K}"
  * if it verifies some patterns. Its behaviour is very similar to the one
@@ -273,7 +182,8 @@ else ajouter_forme_flechie(canonique,i,sous_noeud,flechi);
  */
 void check_patterns_for_tag_tokens(Alphabet* alphabet,struct string_hash* tokens,int number_of_patterns,
 									struct DLC_tree_info* DLC_tree,int tokenization_mode,
-                           struct list_int** tag_token_list) {
+                           struct list_int** tag_token_list,
+                           struct lemma_node* root) {
 for (int i=0;i<tokens->N;i++) {
    if (tokens->tab[i][0]=='{' && u_strcmp_char(tokens->tab[i],"{S}")  && u_strcmp_char(tokens->tab[i],"{STOP}")) {
       /* If the token is tag like "{today,.ADV}", we add its number to the tag token list */
@@ -287,8 +197,8 @@ for (int i=0;i<tokens->N;i++) {
       /* We add the inflected form to the list of forms associated to the lemma.
       * This will be used to replace patterns like "<be>" by the actual list of
       * forms that can be matched by it, for optimization reasons */
-      ajouter_forme_flechie(entry->lemma,0,racine,tokens->tab[i]);
-      index_controle[i]=(unsigned char)(get_controle(tokens->tab[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      add_inflected_form_for_lemma(tokens->tab[i],entry->lemma,root);
+      token_controle[i]=(unsigned char)(get_controle(tokens->tab[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
          int nothing_before=0;

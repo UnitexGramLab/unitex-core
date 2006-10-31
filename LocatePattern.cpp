@@ -22,11 +22,17 @@
 //---------------------------------------------------------------------------
 #include "LocatePattern.h"
 #include "Error.h"
+#include "LemmaTree.h"
 //---------------------------------------------------------------------------
 
 
-
-unsigned char* index_controle;
+/**
+ * This array is used to associate a controle byte to each token.
+ * These bytes will be used to know if a token can be matched by
+ * <MOT>, <DIC>, <MIN>, <MAJ>, etc. All the bit masks to be used
+ * are defined in LocateConstants.h with names like XXX_TOKEN_BIT_MASK
+ */
+unsigned char* token_controle;
 
 
 /**
@@ -147,8 +153,8 @@ if (indexGF == NULL) {
 /* $CD$ end   */
 
 extract_semantic_codes_from_tokens(tok,semantic_codes);
-index_controle=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
-if (index_controle==NULL) {
+token_controle=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
+if (token_controle==NULL) {
    fatal_error("Not enough memory in locate_pattern\n");
 }
 matching_patterns=(struct bit_array**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(struct bit_array*));
@@ -156,7 +162,7 @@ if (matching_patterns==NULL) {
    fatal_error("Not enough memory in locate_pattern\n");
 }
 for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
-  index_controle[i]=0;
+  token_controle[i]=0;
   matching_patterns[i]=NULL;
 }
 compute_token_controls(tok,alph,err,tokenization_mode);
@@ -183,20 +189,20 @@ numerote_tags(automate,tok,&nombre_patterns,semantic_codes,alph,&existe_etiquett
 pattern_compose_courant=nombre_patterns+1;
 
 struct DLC_tree_info* DLC_tree=new_DLC_tree(tok->N);
-
+struct lemma_node* root=new_lemma_node();
 printf("Loading dlf...\n");
 load_dic_for_locate(dlf,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_etiquette_CDIC,
-				existe_etiquette_SDIC,DLC_tree,tokenization_mode);
+				existe_etiquette_SDIC,DLC_tree,tokenization_mode,root);
 printf("Loading dlc...\n");
 load_dic_for_locate(dlc,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_etiquette_CDIC,
-				existe_etiquette_SDIC,DLC_tree,tokenization_mode);
+				existe_etiquette_SDIC,DLC_tree,tokenization_mode,root);
 // we look if the tag tokens like {today,.ADV} verify some patterns
 
 struct list_int* tag_token_list;
-check_patterns_for_tag_tokens(alph,tok,nombre_patterns,DLC_tree,tokenization_mode,&tag_token_list);
+check_patterns_for_tag_tokens(alph,tok,nombre_patterns,DLC_tree,tokenization_mode,&tag_token_list,root);
 
 printf("Optimizing fst2 tags...\n");
-replace_pattern_tags(automate,alph,tok,DLC_tree,tokenization_mode,tag_token_list);
+replace_pattern_tags(automate,alph,tok,DLC_tree,tokenization_mode,tag_token_list,root);
 printf("Optimizing compound word dictionary...\n");
 optimize_DLC(DLC_tree);
 free_string_hash(semantic_codes);
@@ -218,7 +224,7 @@ free_Fst2(automate);
 free_alphabet(alph);
 free_string_hash(tok);
 free_list_int(tag_token_list);
-
+free_lemma_node(root);
 
 /* $CD$ begin */
 #ifdef TRE_WCHAR
@@ -283,7 +289,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
     if (etiquette[i]->control&RESPECT_CASE_TAG_BIT_MASK) {
        // on est dans le cas @#: # doit etre considere comme un token normal
        etiquette[i]->number=get_hash_number(etiquette[i]->input,tok);
-       index_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
+       token_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
        etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
     }
     else {
@@ -394,7 +400,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
           // si l'etiquette n'est pas dans les tokens, on l'y rajoute
           // a cause du feature B.C.
           etiquette[i]->number=get_hash_number(etiquette[i]->input,tok);
-          index_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
+          token_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
           etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
         }
       } else {
@@ -491,7 +497,7 @@ else {
             c=(unsigned char)(c|MIN_TOKEN_BIT_MASK);
          }
       }
-      if (!est_un_mot_simple(temp->inflected,alph,tokenization_mode)) {
+      if (!is_a_simple_word(temp->inflected,alph,tokenization_mode)) {
          // if the tag is a compound word, we say that it verifies the <CDIC> pattern
          c=(unsigned char)(c|CDIC_TOKEN_BIT_MASK);
       }
@@ -633,7 +639,7 @@ pattern[j]='\0';
 void compute_token_controls(struct string_hash* tok,Alphabet* alph,char* err,int tokenization_mode) {
 struct string_hash* ERR=load_word_list(err);
 for (int i=0;i<tok->N;i++) {
-  index_controle[i]=get_controle(tok->tab[i],alph,ERR,tokenization_mode);
+  token_controle[i]=get_controle(tok->tab[i],alph,ERR,tokenization_mode);
 }
 free_string_hash(ERR);
 }
