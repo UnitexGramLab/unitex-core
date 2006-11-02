@@ -60,7 +60,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
   fst_file_in_t * txtin = fst_file_in_open(fstname, FST_TEXT);
 
-  if (txtin == NULL) { die("unable to load text '%s'\n", fstname); }
+  if (txtin == NULL) { fatal_error("unable to load text '%s'\n", fstname); }
 
 
   debug("%d sentence(s) in %s\n", txtin->nbelems, fstname);
@@ -68,7 +68,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
   fst_file_out_t * fstout = fst_file_out_open(outname, FST_TEXT);
 
-  if (fstout == NULL) { die("unable to open '%s' for writing\n", outname); }
+  if (fstout == NULL) { fatal_error("unable to open '%s' for writing\n", outname); }
 
 
   time_t debut = time(0);
@@ -126,7 +126,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
       
       if (A->nbstates < 2) {
 
-        warning("sentence %d is void?????.\n", no + 1) ;
+        error("sentence %d is void?????.\n", no + 1) ;
 
       } else {
 
@@ -147,7 +147,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
  
           if (A->nbstates < 2) { // sentence rejected by grammar
 
-            warning("sentence %d rejected.\n\n", no + 1) ;
+            error("sentence %d rejected.\n\n", no + 1) ;
             j = gramms->nbelems;  /* on arrete pour cette phrase */
             nbPhrRej++;
 
@@ -270,7 +270,7 @@ list_aut * chargeGramm(char * nomFichGramm) {
 
   FILE * fGramm = fopen(fname, "r");
 
-  if (! fGramm) { die("opening file %s\n", fname); }
+  if (! fGramm) { fatal_error("opening file %s\n", fname); }
 
   list_aut * gramms = list_aut_new();
 
@@ -282,7 +282,7 @@ list_aut * chargeGramm(char * nomFichGramm) {
 
     char * p = strchr(buf, '>');
 
-    if (p == NULL) { die("in %s: at line '%s': delimitor '>' not found\n", nomFichGramm, buf);  }
+    if (p == NULL) { fatal_error("in %s: at line '%s': delimitor '>' not found\n", nomFichGramm, buf);  }
 
     *p = 0;
 
@@ -290,7 +290,7 @@ list_aut * chargeGramm(char * nomFichGramm) {
 
     autalmot_t * A = load_grammar_automaton(buf + 1);
 
-    if (A == NULL) { die("unable to load '%s' automaton\n", buf + 1); }
+    if (A == NULL) { fatal_error("unable to load '%s' automaton\n", buf + 1); }
 
     list_aut_add(gramms, A);
   }
@@ -305,7 +305,7 @@ list_aut * chargeGramm(char * nomFichGramm) {
 
 
 
-list_aut * chargeUneGramm(char * name) { die("charhgeUneGramm: not implemented\n"); return NULL; }
+list_aut * chargeUneGramm(char * name) { fatal_error("charhgeUneGramm: not implemented\n"); return NULL; }
 
 
 

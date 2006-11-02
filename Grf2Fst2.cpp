@@ -88,7 +88,7 @@ int main(int argc,char *argv[]) {
            index=2;
         }
         else {
-           fprintf(stderr,"Extra parameter: %s\n",argv[2]);
+           error("Extra parameter: %s\n",argv[2]);
            return 1;
         }
      }
@@ -102,7 +102,7 @@ int main(int argc,char *argv[]) {
      else {
         alph=load_alphabet(argv[index]);
         if (alph==NULL) {
-           fprintf(stderr,"Cannot load alphabet file %s\n",argv[index]);
+           error("Cannot load alphabet file %s\n",argv[index]);
            return 1;
         }
         TOKENIZATION_MODE=ALPHABET_TOKENIZATION;
@@ -114,7 +114,7 @@ int main(int argc,char *argv[]) {
 
   if((fs_comp = u_fopen(fst2_file_name,U_WRITE)) == NULL)
     {
-      fprintf(stderr,"Cannot open file %s\n",fst2_file_name);
+      error("Cannot open file %s\n",fst2_file_name);
       return 1;
    }
 
@@ -127,7 +127,7 @@ int main(int argc,char *argv[]) {
   int result = compilation(argv[1],TOKENIZATION_MODE,alph,fs_comp);
   if (result == 0)
   {
-    fprintf(stderr,"Compilation has failed\n");
+    error("Compilation has failed\n");
     libere_arbres_comp();
     free(donnees);
     u_fclose(fs_comp);

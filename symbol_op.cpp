@@ -187,28 +187,28 @@ int symbol_compare(const symbol_t * a, const symbol_t * b) {
   if (a == b) { return 0; }
 
   if (a == NULL) { /* NULL == le plus petit symbole */
-    warning("symbol_compare: a == NULL\n");
+    error("symbol_compare: a == NULL\n");
     return -1;
   }
 
   if (b == NULL) {
-    warning("symbol_compare: b == NULL\n");
+    error("symbol_compare: b == NULL\n");
     return 1;
   }
 
   if (a == SYMBOL_DEF) { /* SYMBOL_DEF == deuxieme plus petit symbol */
-    warning("symbol_compare a == <def>\n");
+    error("symbol_compare a == <def>\n");
     return -1;
   }
 
   if (b == SYMBOL_DEF) {
-    warning("symbol_compare b == <def>\n");
+    error("symbol_compare b == <def>\n");
     return 1;
   }
 
 
-  if (type_order(a->type) < 0) { die("symbol_compare: invalid symbol for a (type=%d)\n", a->type); }
-  if (type_order(b->type) < 0) { die("symbol_compare: invalid symbol for b (type=%d)\n", b->type); }
+  if (type_order(a->type) < 0) { fatal_error("symbol_compare: invalid symbol for a (type=%d)\n", a->type); }
+  if (type_order(b->type) < 0) { fatal_error("symbol_compare: invalid symbol for b (type=%d)\n", b->type); }
 
   if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - type_order(a->type); }
 
@@ -380,18 +380,18 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
 
   //  debug("inter("); symbol_dump(a); errprintf(", "); symbol_dump(b); errprintf(")\n");
 
-  if (a == SYMBOL_DEF || b == SYMBOL_DEF) { die("symb inter symb: called with SYMBOL_DEF as arg\n"); }
+  if (a == SYMBOL_DEF || b == SYMBOL_DEF) { fatal_error("symb inter symb: called with SYMBOL_DEF as arg\n"); }
 
   if (a == b) { return symbol_dup(a); }
 
   if (a == NULL || b == NULL) { return NULL; }
 
 
-  if (type_order(a->type) < 0) { die("inter: invalid symbol type = '%c'\n", a->type); }
-  if (type_order(b->type) < 0) { die("inter: invalid symbol type = '%c'\n", b->type); }
+  if (type_order(a->type) < 0) { fatal_error("inter: invalid symbol type = '%c'\n", a->type); }
+  if (type_order(b->type) < 0) { fatal_error("inter: invalid symbol type = '%c'\n", b->type); }
 
 
-  if (a->type == EPSILON || b->type == EPSILON) { die("inter: epsilon\n"); }
+  if (a->type == EPSILON || b->type == EPSILON) { fatal_error("inter: epsilon\n"); }
 
   if (a->type == LEXIC) { return symbol_dup(b); }
   if (b->type == LEXIC) { return symbol_dup(a); }
@@ -424,7 +424,7 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
 
     default:
       symbol_dump(b);
-      die("internal error in symbol_inter_symbol: invalid symbol type=%d\n", b->type);
+      fatal_error("internal error in symbol_inter_symbol: invalid symbol type=%d\n", b->type);
     }
     break;
 
@@ -450,7 +450,7 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
 
     default:
       symbol_dump(b);
-      die("internal error in symbol_inter_symbol: weird symbol type=%d\n", b->type);
+      fatal_error("internal error in symbol_inter_symbol: weird symbol type=%d\n", b->type);
     }
     break;
 
@@ -477,13 +477,13 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
 
     default:
       symbol_dump(b);
-      die("internal error in symbol_inter_symbol: weird symbol type=%c\n", b->type);
+      fatal_error("internal error in symbol_inter_symbol: weird symbol type=%c\n", b->type);
     }
     break;
 
   default:
     symbol_dump(a);
-    die("internal error in symbol_inter_symbol: unexpected symbol type=%d\n", a->type);
+    fatal_error("internal error in symbol_inter_symbol: unexpected symbol type=%d\n", a->type);
   }
 
 
@@ -603,7 +603,7 @@ static inline bool CODE_in_CODE(const symbol_t * a, const symbol_t * b) { return
 
 bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
 
-  if (a == SYMBOL_DEF || b == SYMBOL_DEF) { die("in: called with SYMBOL_DEF as arg\n"); }
+  if (a == SYMBOL_DEF || b == SYMBOL_DEF) { fatal_error("in: called with SYMBOL_DEF as arg\n"); }
 
   if (a == b) { return true; }
 
@@ -611,10 +611,10 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
 
   if (a == NULL) { return true; }
 
-  if (type_order(a->type) < 0) { die("in: invalid type in a '%c'\n", a->type); }
-  if (type_order(b->type) < 0) { die("in: invalid type in b '%c'\n", b->type); }
+  if (type_order(a->type) < 0) { fatal_error("in: invalid type in a '%c'\n", a->type); }
+  if (type_order(b->type) < 0) { fatal_error("in: invalid type in b '%c'\n", b->type); }
 
-  if (a->type == EPSILON || b->type == EPSILON) { die("in: epsilon\n"); }
+  if (a->type == EPSILON || b->type == EPSILON) { fatal_error("in: epsilon\n"); }
 
   if (b->type == LEXIC) { return true; }
 
@@ -694,8 +694,6 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
     break;
 
   }
-
-  //  symbol_dump(a); fprintf(stderr, "%sin ", res ? " " :  " not "); symbol_dump(b); fprintf(stderr, "\n");
   return res;
 }
 
@@ -720,7 +718,7 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
   symbol_t * end = & res;
 
 
-  if (a->POS != b->POS) { die("minus_traits: ! POSs\n"); }
+  if (a->POS != b->POS) { fatal_error("minus_traits: ! POSs\n"); }
 
   symbol_t * templat = symbol_new(a->POS);
 
@@ -733,7 +731,7 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
     if (a->traits[idx] == b->traits[idx]) { continue; }
       
-    if (a->traits[idx] != UNSPECIFIED) { die("minus_traits: b not in a\n"); }
+    if (a->traits[idx] != UNSPECIFIED) { fatal_error("minus_traits: b not in a\n"); }
 
     /* a->traits[idx] est UNSPEC et b->traits[idx] est fixé */
 
@@ -784,7 +782,7 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
 static inline symbol_t * CAN_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
-  if (a->canonic != b->canonic) { die("CAN minus CAN: different canonical forms\n"); }
+  if (a->canonic != b->canonic) { fatal_error("CAN minus CAN: different canonical forms\n"); }
 
   symbol_t * minus = minus_traits(a, b);
   for (symbol_t * s = minus; s; s = s->next) { s->canonic = a->canonic; }
@@ -796,7 +794,7 @@ static inline symbol_t * CAN_minus_CAN(const symbol_t * a, const symbol_t * b) {
 /* un symbole negatif ne peut jamais etre inclu dans un symbole ou la forme canonique est fixée */
 
 static inline symbol_t * CAN_minus_NEG(const symbol_t * /*a*/, const symbol_t * /*b*/) {
-  die("CAN minus NEG: should never happen\n");
+  fatal_error("CAN minus NEG: should never happen\n");
   return NULL;
 }
 
@@ -804,7 +802,7 @@ static inline symbol_t * CAN_minus_NEG(const symbol_t * /*a*/, const symbol_t * 
 /* idem pour un symbol sans forme canonique */
 
 static symbol_t * CAN_minus_CODE(const symbol_t * /*a*/, const symbol_t * /*b*/) {
-  die("CAN minus CODE: should never happen\n");
+  fatal_error("CAN minus CODE: should never happen\n");
   return NULL;
 }
 
@@ -821,7 +819,7 @@ static symbol_t * CAN_minus_CODE(const symbol_t * /*a*/, const symbol_t * /*b*/)
 
 static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
-  if (canonic_in_neg(b->canonic, a)) { die("NEG minus CAN: symbols disjoint\n"); }
+  if (canonic_in_neg(b->canonic, a)) { fatal_error("NEG minus CAN: symbols disjoint\n"); }
 
   /* a minus code(b) */
 
@@ -924,7 +922,7 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
 static symbol_t * NEG_minus_CODE(const symbol_t * a, const symbol_t * b) {
 
-  warning("NEG_minus_CODE("); symbol_dump(a); errprintf(", "); symbol_dump(b); errprintf(")?\n");
+  error("NEG_minus_CODE("); symbol_dump(a); error(", "); symbol_dump(b); error(")?\n");
 
   symbol_t * res = minus_traits(a, b);
 
@@ -1071,7 +1069,7 @@ static symbol_t * LEXIC_minus_symbol(const symbol_t * b) {
   res.next = NULL;
   symbol_t * end = & res;
 
-  if (! LANG) { die("current LANGUAGE is not set!\n"); }
+  if (! LANG) { fatal_error("current LANGUAGE is not set!\n"); }
 
   for (int i = 0; i < LANG->POSs->nbelems; i++) {
 
@@ -1097,28 +1095,26 @@ static symbol_t * LEXIC_minus_symbol(const symbol_t * b) {
 
 static symbol_t * _symbol_minus_symbol(const symbol_t * a, const symbol_t * b) {
 
-  //  debug("minus("); symbol_dump(a); fprintf(stderr, ", "); symbol_dump(b); errprintf(")\n");
-
-  if (a == SYMBOL_DEF || b == SYMBOL_DEF) { die("symb minus symb: called with SYMBOL_DEF as arg\n"); }
+  if (a == SYMBOL_DEF || b == SYMBOL_DEF) { fatal_error("symb minus symb: called with SYMBOL_DEF as arg\n"); }
 
   if (a == b) { return NULL; }
 
   if (b == NULL) { return symbol_dup(a); }
 
-  if (a == NULL) { die("minus: a == NULL\n"); }
+  if (a == NULL) { fatal_error("minus: a == NULL\n"); }
 
   if (! symbol_in_symbol(b, a)) {
-    error("minus: "); symbol_dump(b); fprintf(stderr, " not in "); symbol_dump(a); endl();
-    die("minus: b not in a\n");
+    error("minus: "); symbol_dump(b); error(" not in "); symbol_dump(a); endl();
+    fatal_error("minus: b not in a\n");
   }
 
-  if (type_order(a->type) < 0) { die("minus: invalid type in a '%c'\n", a->type); }
-  if (type_order(b->type) < 0) { die("minus: invalid type in b '%c'\n", b->type); }
+  if (type_order(a->type) < 0) { fatal_error("minus: invalid type in a '%c'\n", a->type); }
+  if (type_order(b->type) < 0) { fatal_error("minus: invalid type in b '%c'\n", b->type); }
 
   if (a->type == LEXIC) {
 
     if (b->type == LEXIC) { return NULL; }
-    if (b->type == EPSILON) { die("minus: LEXIC minus EPSILON\n"); }
+    if (b->type == EPSILON) { fatal_error("minus: LEXIC minus EPSILON\n"); }
 
     return LEXIC_minus_symbol(b);
   }
@@ -1126,16 +1122,16 @@ static symbol_t * _symbol_minus_symbol(const symbol_t * a, const symbol_t * b) {
   if (a->type == EPSILON) {
     error("minus: a == EPSILON\n");
     if (b->type == EPSILON) { return NULL; }
-    die("minus: a == EPSILON\n");
+    fatal_error("minus: a == EPSILON\n");
   }
 
 
-  if (b->type == LEXIC) { die("minus: b == LEXIC\n"); }
+  if (b->type == LEXIC) { fatal_error("minus: b == LEXIC\n"); }
 
-  if (b->type == EPSILON) { die("minus: b == epsilon\n"); }
+  if (b->type == EPSILON) { fatal_error("minus: b == epsilon\n"); }
 
   
-  if (a->POS != b->POS) { die("minus: different POSs\n"); }
+  if (a->POS != b->POS) { fatal_error("minus: different POSs\n"); }
 
   symbol_t * res = NULL;
 

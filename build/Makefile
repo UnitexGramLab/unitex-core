@@ -347,7 +347,7 @@ MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o unicode.o String_hash.
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_Inflect.o MF_LangMorpho.o\
                  MF_InflectTransd.o  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
-                 Fst2.o unicode.o Error.o IOBuffer.o
+                 Fst2.o unicode.o Error.o IOBuffer.o FileName.o
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = IOBuffer.o Normalize.o unicode.o FileName.o DELA.o WordList.o String_hash.o\

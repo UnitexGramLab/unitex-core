@@ -104,7 +104,7 @@ int main(int argc, char ** argv) {
       unichar * flex = ++p;
 
       while (*p && (*p != ':')) {
-	if ((*p == '+') || (*p == '-')) { die("bad label with flex : %S\n", flex); }
+	if ((*p == '+') || (*p == '-')) { fatal_error("bad label with flex : %S\n", flex); }
 	p++;
       }
 
@@ -119,7 +119,7 @@ int main(int argc, char ** argv) {
 
   }
 
-  fprintf(stderr, "%d diff codes\n", hash->N);
+  error("%d diff codes\n", hash->N);
 
   for (int i = 0; i < hash->N; i++) {
     u_fprintf(out, "%S\n", hash->tab[i]);

@@ -23,8 +23,12 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "Error.h"
 
 #define DEFAULT_ERROR_CODE 1
+
+
+#warning we have to handle unicode strings in xxxprintf with %S
 
 
 /**
@@ -71,3 +75,10 @@ vfprintf(stderr,fmt,plist);
 va_end(plist);
 }
 
+
+/**
+ * Prints the given unicode string on the error stream.
+ */
+void error(unichar* s) {
+u_fprints(s,stderr);
+}

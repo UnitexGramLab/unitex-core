@@ -20,6 +20,8 @@
   */
 //---------------------------------------------------------------------------
 #include "GF_lib.h"
+#include "Error.h"
+
 //---------------------------------------------------------------------------
 #ifdef TRE_WCHAR
 int HASH_FILTERS_DIM = 1024;
@@ -93,8 +95,8 @@ for (i = 0; i < fst2 -> nombre_etiquettes; ++i) {
                     default:
                                 char errbuf[512];
                                 u_to_char(errbuf, filterContent);
-                                fprintf(stderr, "Morphological filter '%s' : ", errbuf);
-                                fprintf(stderr, "Invalid option(s) : '%s'\n", filterOptions);
+                                error("Morphological filter '%s' : ", errbuf);
+                                error("Invalid option(s) : '%s'\n", filterOptions);
                                 free_string_hash(hashFilters);
                                 FreeMasterGF(masterGF, i);
                                 return NULL;
@@ -122,9 +124,9 @@ for (i = 0; i < fst2 -> nombre_etiquettes; ++i) {
             if (ccode != 0) {
                 char errbuf[512];
                 u_to_char(errbuf, masterGF -> tab[i].content);
-                fprintf(stderr, "Morphological filter '%s' : ", errbuf);
+                error("Morphological filter '%s' : ", errbuf);
                 regerror(ccode, masterGF -> tab[i].preg, errbuf, 512);
-                fprintf(stderr, "Syntax error : %s\n", errbuf);
+                error("Syntax error : %s\n", errbuf);
                 free_string_hash(hashFilters);
                 FreeMasterGF(masterGF, i);
                 return NULL;
@@ -138,19 +140,7 @@ for (i = 0; i < fst2 -> nombre_etiquettes; ++i) {
         }
     
     free_string_hash(hashFilters);
-
-/*
-printf("masterGF -> tabDim=%d\n", masterGF -> tabDim);
-for (i = 0; i < masterGF -> tabDim; ++i) {
-    printf("i=%d", i); 
-    printf(" - masterGF -> tab[i].content="); u_prints(masterGF -> tab[i].content);
-    printf(" - masterGF -> tab[i].options=%s", masterGF -> tab[i].options);
-    printf("\n");
-    }
-*/
-    
     return masterGF;
-
 }
 
 /*----------------------------------------------------------------------------*/
@@ -219,30 +209,6 @@ IndexGF_T* CreateIndexGF( MasterGF_T* masterGF, struct string_hash* tok )
         indexGF -> rowDim = indexGF -> colDim = indexGF -> bitDim = 0;
         indexGF -> tab = NULL;
         }
-
-/*
-printf("indexGF -> rowDim=%d\n", indexGF -> rowDim);
-printf("indexGF -> colDim=%d\n", indexGF -> colDim);
-printf("indexGF -> bitDim=%d\n", indexGF -> bitDim);
-char c;
-int n;
-for (i =0; i < indexGF -> rowDim; ++i) {
-    n = 0;
-    for (k = 0; k < indexGF -> bitDim; ++k) 
-        if (indexGF -> tab[i][k/8] &  (1<<(k%8))) ++n;
-    if (n > 0) {
-        printf("i=%d", i);
-        printf("\t");
-        for (k = 0; k < indexGF -> bitDim; ++k) {
-            c = indexGF -> tab[i][k/8] &  (1<<(k%8)) ? '1' : '-';
-            printf("%c", c);
-            }
-        printf("\t"); u_prints(tok -> tab[i]);
-        printf("\n");
-        }
-    }
-*/
-        
     return indexGF;
 }
 

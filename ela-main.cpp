@@ -47,10 +47,10 @@ lireLigneComm(& convComm, & ligneComm, argc, argv) ;
 if (ligneComm.activee[2] && ligneComm.parametre[2]) {
    fErr = fopen(ligneComm.parametre[2], "w") ;
    if (! fErr) {
-      fprintf(stderr,"\nError: opening file %s\n", ligneComm.parametre[2]) ;
+      error("\nError: opening file %s\n", ligneComm.parametre[2]) ;
       return 0 ; } }
 else {
-      fprintf(stderr,"\nTo use Evamble, specify name of error file.\n") ;
+      error("\nTo use Evamble, specify name of error file.\n") ;
       return 0 ; }
 if (! ligneComm.activee[0] || ! ligneComm.parametre[0]) {
 	fprintf(fErr, "\nError: name of first file not found\n") ;

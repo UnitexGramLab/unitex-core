@@ -76,7 +76,7 @@ tAutAlMot * tri_topologique(tAutAlMot * A, int * dicoInverse) {
   tAutAlMot * autTrie = initAutAlMot(A->nbEtats);
 
 
-  if (A->nbEtatsInitiaux != 1 || A->initial[0]) { die("tri_topologique: bad automaton"); }
+  if (A->nbEtatsInitiaux != 1 || A->initial[0]) { fatal_error("tri_topologique: bad automaton"); }
 
   for (ancien = 0; ancien < autTrie->nbEtats; ancien++) {
 

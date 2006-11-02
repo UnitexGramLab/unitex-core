@@ -20,6 +20,7 @@
   */
 
 #include "Alphabet.h"
+#include "Error.h"
 
 
 /**
@@ -79,7 +80,7 @@ while ((c=u_fgetc(f))!=EOF) {
          lower=(unichar)u_fgetc(f);
          upper=(unichar)u_fgetc(f);
          if (lower>upper) {
-            fprintf(stderr,"Error in alphabet file: for an interval like #AZ, A must be before Z\n");
+            error("Error in alphabet file: for an interval like #AZ, A must be before Z\n");
             u_fclose(f);
             return NULL;
          }

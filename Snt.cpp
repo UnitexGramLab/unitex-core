@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Snt.h"
-#include "FileName.h"
 #include "Error.h"
 
 
@@ -37,23 +36,23 @@ struct snt_files* snt_files=(struct snt_files*)malloc(sizeof(struct snt_files));
 if (snt_files==NULL) {
 	fatal_error("Not enough memory in new_snt_files_from_path\n");
 }
-snt_files->path=strdup(path);
-snt_files->dlf=new_file(path,"dlf");
-snt_files->dlf_n=new_file(path,"dlf.n");
-snt_files->dlc=new_file(path,"dlc");
-snt_files->dlc_n=new_file(path,"dlc.n");
-snt_files->err=new_file(path,"err");
-snt_files->err_n=new_file(path,"err.n");
-snt_files->stats_n=new_file(path,"stats.n");
-snt_files->stat_dic_n=new_file(path,"stat_dic.n");
-snt_files->text_cod=new_file(path,"text.cod");
-snt_files->tokens_txt=new_file(path,"tokens.txt");
-snt_files->tok_by_alph_txt=new_file(path,"tok_by_alph.txt");
-snt_files->tok_by_freq_txt=new_file(path,"tok_by_freq.txt");
-snt_files->enter_pos=new_file(path,"enter.pos");
-snt_files->concord_ind=new_file(path,"concord.ind");
-snt_files->concord_txt=new_file(path,"concord.txt");
-snt_files->concord_html=new_file(path,"concord.html");
+strcpy(snt_files->path,path);
+new_file(path,"dlf",snt_files->dlf);
+new_file(path,"dlf.n",snt_files->dlf_n);
+new_file(path,"dlc",snt_files->dlc);
+new_file(path,"dlc.n",snt_files->dlc_n);
+new_file(path,"err",snt_files->err);
+new_file(path,"err.n",snt_files->err_n);
+new_file(path,"stats.n",snt_files->stats_n);
+new_file(path,"stat_dic.n",snt_files->stat_dic_n);
+new_file(path,"text.cod",snt_files->text_cod);
+new_file(path,"tokens.txt",snt_files->tokens_txt);
+new_file(path,"tok_by_alph.txt",snt_files->tok_by_alph_txt);
+new_file(path,"tok_by_freq.txt",snt_files->tok_by_freq_txt);
+new_file(path,"enter.pos",snt_files->enter_pos);
+new_file(path,"concord.ind",snt_files->concord_ind);
+new_file(path,"concord.txt",snt_files->concord_txt);
+new_file(path,"concord.html",snt_files->concord_html);
 return snt_files;
 }
 
@@ -74,25 +73,6 @@ return new_snt_files_from_path(path);
  */
 void free_snt_files(struct snt_files* snt_files) {
 if (snt_files==NULL) return;
-free(snt_files->path);
-free(snt_files->dlf);
-free(snt_files->dlf_n);
-free(snt_files->dlc);
-free(snt_files->dlc_n);
-free(snt_files->err);
-free(snt_files->err_n);
-free(snt_files->stats_n);
-free(snt_files->stat_dic_n);
-free(snt_files->text_cod);
-free(snt_files->tokens_txt);
-free(snt_files->tok_by_alph_txt);
-free(snt_files->tok_by_freq_txt);
-free(snt_files->enter_pos);
-free(snt_files->concord_ind);
-free(snt_files->concord_txt);
-free(snt_files->concord_html);
-
-
 free(snt_files);
 }
 

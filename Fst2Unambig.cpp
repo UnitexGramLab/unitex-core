@@ -29,6 +29,7 @@
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "LinearAutomaton2Txt.h"
+#include "Error.h"
 
 
 //---------------------------------------------------------------------------
@@ -53,20 +54,20 @@ if (argc!=3) {
 printf("Loading text automaton...\n");
 Fst2* fst2=load_fst2(argv[1],0);
 if (fst2==NULL) {
-   fprintf(stderr,"Cannot load text automaton %s\n",argv[1]);
+   error("Cannot load text automaton %s\n",argv[1]);
    return 1;
 }
 
 int res=isLinearAutomaton(fst2);
 if (res!=LINEAR_AUTOMATON) {
-   fprintf(stderr,"Error: the text automaton is not linear in sentence %d\n",res);
+   error("Error: the text automaton is not linear in sentence %d\n",res);
    free_Fst2(fst2);
    return 1;
 }
 
 FILE* f=u_fopen(argv[2],U_WRITE);
 if (f==NULL) {
-   fprintf(stderr,"Cannot create %s\n",argv[2]);
+   error("Cannot create %s\n",argv[2]);
    free_Fst2(fst2);
    return 1;
 }

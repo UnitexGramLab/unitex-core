@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2004 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@
 #include "qsort.h"
 #include "stack.h"
 #include "grf.h"
+#include "Error.h"
 
 #define MAX(x,y)  ((x > y) ? x : y)
 
@@ -165,7 +166,7 @@ grf_t * grf_load(FILE * f) {
 
     grf_header_add(header, buf);
 
-    if (u_fgets(buf, bufsize, f) == 0) { fprintf(stderr, "unexpected EOF"); free(buf); return NULL; }
+    if (u_fgets(buf, bufsize, f) == 0) { error("unexpected EOF"); free(buf); return NULL; }
 
   } while (*buf != '#');
 
@@ -198,7 +199,7 @@ grf_t * grf_load(FILE * f) {
     int len;
     unichar * p = buf;
 
-    if ((len = u_fgets(p, bufsize, f)) == 0) { fprintf(stderr, "unexpected EOF\n"); goto error; }
+    if ((len = u_fgets(p, bufsize, f)) == 0) { error("unexpected EOF\n"); goto error; }
 
     while ((len == (bufsize - 1)) && (buf[len - 1] != '\n')) {  /* make sure we read all the line */
 
@@ -212,11 +213,11 @@ grf_t * grf_load(FILE * f) {
 
     /* read label */
 
-    if (*buf != '"') { fprintf(stderr, "character '\"' expected\n"); goto error; }
+    if (*buf != '"') { error("character '\"' expected\n"); goto error; }
 
     for (p = buf + 1; *p != '"'; p++) {
       if (*p == '\\') { p++; }
-      if (*p == 0) { fprintf(stderr, "error: label doesn't end?\n"); goto error; }
+      if (*p == 0) { error("error: label doesn't end?\n"); goto error; }
     }
 
     *p = 0;
@@ -235,7 +236,7 @@ grf_t * grf_load(FILE * f) {
 
     while (*p && (! u_is_digit(*p))) { p++; }
     if (*p == 0) {
-      fprintf(stderr, "unexpected EOL (box #%d)\n", i);
+      error("unexpected EOL (box #%d)\n", i);
       goto error;
     }
     
@@ -246,7 +247,7 @@ grf_t * grf_load(FILE * f) {
 
       while (*p && (! u_is_digit(*p))) { p++; }
       if (*p == 0) {
-	fprintf(stderr, "unexpected EOL (box #%d)\n", i);
+	error("unexpected EOL (box #%d)\n", i);
 	goto error;
       }
 
@@ -277,7 +278,7 @@ grf_t * grf_load(char * fname) {
   FILE * f;
 
   if ((f = u_fopen(fname, U_READ)) == NULL) {
-    fprintf(stderr, "cannot open %s\n", fname);
+    error("cannot open %s\n", fname);
     return NULL;
   }
 
@@ -452,7 +453,7 @@ free(newnum);
 static int is_useful(grf_t * grf, char * color, char * useful, int i) {
 
   if (color[i] == BLACK) { return useful[i]; }
-  if (color[i] == GRAY)  { fprintf(stderr, "error: is_useful called on a cyclic graph.\n"); return useful[i]; }
+  if (color[i] == GRAY)  { error("error: is_useful called on a cyclic graph.\n"); return useful[i]; }
 
   color[i] = GRAY;
 
@@ -610,12 +611,12 @@ static int is_good_label(unichar * label) {
   unichar * p;
 
   if ((label == NULL)) {
-    fprintf(stderr, "error: check label: no label\n");
+    error("error: check label: no label\n");
     return 0;
   }
 
   if (*label == 0) {
-    fprintf(stderr, "error: check label: label is empty\n");
+    error("error: check label: label is empty\n");
     return 0;
   }
 
@@ -625,22 +626,22 @@ static int is_good_label(unichar * label) {
     p = label + 1;
 
     while (*p !=  ',') { // look for ','
-      if (*p == 0) { fprintf(stderr, "error: malformed label: ',' is missing.\n"); return 0; }
+      if (*p == 0) { error("error: malformed label: ',' is missing.\n"); return 0; }
       p++;
     }
     
     while (*p != '.') {
-      if (*p == 0) { fprintf(stderr, "error: malformed label: '.' is missing.\n"); return 0; }      
+      if (*p == 0) { error("error: malformed label: '.' is missing.\n"); return 0; }      
       p++;
     }
 
     while (*p != '}') {
-      if (*p == 0) { fprintf(stderr, "error: malformed label: '}' is missing.\n"); return 0; }      
+      if (*p == 0) { error("error: malformed label: '}' is missing.\n"); return 0; }      
       p++;
     }
 
     p++;
-    if (*p != 0) { fprintf(stderr, "error: malformed label: label should end with '}'.\n"); return 0; }
+    if (*p != 0) { error("error: malformed label: label should end with '}'.\n"); return 0; }
 
   } else { // no spaces
 
@@ -648,7 +649,7 @@ static int is_good_label(unichar * label) {
 
       if ((*p == ' ') || (*p == '\t') || (*p == '\n')) {
 
-	fprintf(stderr, "error: malformed label: spaces are disallowed in ??? labels.\n");
+	error("error: malformed label: spaces are disallowed in ??? labels.\n");
 	return 0;
       }
     }
@@ -668,7 +669,7 @@ int grf_check_labels(grf_t * grf) {
 
     if (! is_good_label(grf->boxes[i]->label)) {
 
-      fprintf(stderr, "bad label in box #%d\n", i);
+      error("bad label in box #%d\n", i);
       return -1;
     }
   }
@@ -704,8 +705,6 @@ void grf_calc_heights(grf_t * grf, int * heights) {
   while (! stack_empty(stack)) {
 
     int i = (int) stack_head(stack);
-
-    //    fprintf(stderr, "%d\n", i);
 
     if (heights[i] != UNDEF) { stack_pop(stack); continue; }
 
@@ -842,12 +841,6 @@ static int is_equiv(grf_t * grf, int i, int j, int * id) {
 
 static void calc_ids(grf_t * grf, int min, int max, int * ids, int * NEWID) {
 
-
-  //  fprintf(stderr, "calcids [%d .. %d], newid=%d\n", min, max, *NEWID);
-
-  //  for (int i = 0; i < grf->nb_boxes; i++) { fprintf(stderr, "ids[%d] = %d\n", i, ids[i]); }
-
-
   for (int i = min; i <= max; i++) {
 
     if (ids[i] != UNDEF) { continue; }
@@ -870,18 +863,9 @@ void grf_calc_ids(grf_t * grf, int * ids) {
 
   int* heights=(int*)malloc(sizeof(int)*grf->nb_boxes);
 
-  //  fprintf(stderr, "calc heights\n");
-
   grf_calc_heights(grf, heights);
 
-
-  //  for (int i = 0; i < grf->nb_boxes; i++) { fprintf(stderr, "height[%d] -> %d\n", i, heights[i]); }
-
-  //  fprintf(stderr, "reorder\n");
-
   grf_reorder_by_tab(grf, heights);
-
-  //  grf_dump(grf, stderr);
 
   for (int i = 0; i < grf->nb_boxes; i++) { ids[i] = UNDEF; }
 

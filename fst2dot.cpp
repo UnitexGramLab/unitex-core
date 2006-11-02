@@ -23,6 +23,8 @@
 #include "Fst2.h"
 #include "utils.h"
 #include "unicode.h"
+#include "Error.h"
+
 
 void fst2_output_dot(Fst2 * A, FILE * f) {
 
@@ -63,15 +65,17 @@ int main(int argc, char ** argv) {
   argv++, argc--;
 
   if (argc < 1) {
-    fprintf(stderr, "usage: %s <auto>\n", progname); 
-    exit(1);
+    printf("usage: %s <auto>\n", progname); 
+    return 0;
   }
 
   char * fname = *argv;
 
   Fst2 * A = load_fst2(fname, 1);
 
-  if (A == NULL) { die("cannot load %s\n", fname); }
+   if (A == NULL) {
+      fatal_error("cannot load %s\n", fname);
+   }
 
   fst2_output_dot(A, stdout);
   return 0;

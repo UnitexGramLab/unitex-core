@@ -191,13 +191,13 @@ while (*path) {
 
 
 /**
- * This function builds and returns a new absolute file name from a path and a file name.
- * The result is dynamically allocated and must be freed by the caller.
+ * This function builds a new absolute file name from a path and a file name.
+ * 'result' is supposed to be allocated.
  * 
  * Example: path="/tmp/test/" name="hello.txt"
- *       => res="/tmp/test/toto.txt"
+ *       => result="/tmp/test/toto.txt"
  */
-char* new_file(const char* path,const char* name) {
+void new_file(const char* path,const char* name,char* result) {
 if (path==NULL || name==NULL) {
    fatal_error("NULL error in new_file\n");
 }
@@ -211,19 +211,13 @@ int l=strlen(path);
 /* Here we test if the path already contains a path separator char, but
  * we are tolerant: we admit to have a wrong separator char. */
 int length_without_separator=l-((path[l-1]=='/' || path[l-1]=='\\')?1:0);
-/* We add 2: +1 for \0 and +1 for the path separator */
-char* res=(char*)malloc(sizeof(char)*(2+length_without_separator+strlen(name)));
-if (res==NULL) {
-   fatal_error("Not enough memory in new_file\n");
-}
 /* WARNING: we don't want to modify the existing path and we want to be sure
  * to put the correct path separator char. So, we copy the path except the 
  * separator char, if any. */
-strncpy(res,path,length_without_separator);
+strncpy(result,path,length_without_separator);
 /* Then, we don't do a strcat since strncpy didn't put a '\0' at the end of 'res' */
-res[length_without_separator]=PATH_SEPARATOR_CHAR;
+result[length_without_separator]=PATH_SEPARATOR_CHAR;
 /* We do the following to avoid putting a '\0' and then doing a strcat */
-strcpy(&(res[length_without_separator+1]),name);
-return res;
+strcpy(&(result[length_without_separator+1]),name);
 }
 

@@ -1,7 +1,7 @@
 /*
   * Unitex 
   *
-  * Copyright (C) 2001-2003 Universit<E9> de Marne-la-Vall<E9>e <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include "MF_Unif.h"
+#include "Error.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //Global structure describing the morphological categories of a language
@@ -93,20 +94,19 @@ int unif_instantiate(unichar* var, l_category_T* cat, unichar* val) {
   //value
   v = is_valid_val(cat,val);
   if (v == -1) {
-    fprintf(stderr,"Instantiation impossible: ");
-    u_fprints(val,stderr);
-    fprintf(stderr," is an invalid value in category ");
-    u_fprints(cat->name,stderr);
-    fprintf(stderr,".\n");
+    error("Instantiation impossible: ");
+    error(val);
+    error(" is an invalid value in category ");
+    error(cat->name);
+    error(".\n");
     return 1;    
   }
   UNIF_VARS.vars[i].val = v;
 
   //id
   if (!(UNIF_VARS.vars[i].id = (unichar*) malloc((u_strlen(var)+1)*sizeof(unichar)))) {
-    fprintf(stderr,"Memory allocation problem in function 'unif_instantiate'!\n");
-    return 1;
-  };
+     fatal_error("Not enough memory in function unif_instantiate\n");
+  }
   u_strcpy(UNIF_VARS.vars[i].id,var);
 
   UNIF_VARS.no_vars++;
@@ -133,9 +133,8 @@ int unif_instantiate_index(unichar* var, l_category_T* cat, int val) {
   UNIF_VARS.vars[i].val = val;
   //Variable's id
   if (!(UNIF_VARS.vars[i].id = (unichar*) malloc((u_strlen(var)+1)*sizeof(unichar)))) {
-    fprintf(stderr,"Memory allocation problem in function 'unif_instantiate'!\n");
-    return 1;
-  };
+     fatal_error("Not enough memory in function unif_instantiate_index\n");
+  }
   u_strcpy(UNIF_VARS.vars[i].id,var);
 
   UNIF_VARS.no_vars++;

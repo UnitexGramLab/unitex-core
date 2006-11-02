@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 #include "Grammatical_codes.h"
 #include "Flexional_codes.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
@@ -37,8 +38,8 @@ return c;
 
 int ajouter_code(Code_flexion c,unichar* s) {
 if ((u_strlen(c->s)+u_strlen(s)) > MAX_INFLECTIONAL_CODES_LENGTH) {
-  fprintf(stderr, "Flexional code to long\n");
-  return 0;
+   error("Inflectional code too long\n");
+   return 0;
 }
 if (s[0]!=':') {
    u_strcat_char(c->s,":");

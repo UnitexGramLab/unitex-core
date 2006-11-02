@@ -224,7 +224,7 @@ static autalmot_t * compileRegle(tRegle * regle) {
   debug("emonde\n");
   printtime(autalmot_emonde(res));
 
-  if (res->nbstates == 0) { warning("grammar %s forbids everything.\n", regle->nom); }
+  if (res->nbstates == 0) { error("grammar %s forbids everything.\n", regle->nom); }
 
   printf("grammar %s compiled. (%d states)\n", regle->nom, res->nbstates);
 
@@ -242,7 +242,7 @@ int compile_grammar(char * gram, char * outname) {
   debug("regle\n");
 
   autalmot_t * A;
-  if ((A = compileRegle(regle)) == NULL) { die("unable to compile rule '%s'\n", gram); return -1; }
+  if ((A = compileRegle(regle)) == NULL) { fatal_error("unable to compile rule '%s'\n", gram); return -1; }
 
   debug("after compile\n");
 
@@ -271,10 +271,10 @@ int compile_rules(char * rulesname, char * outname) {
 
   FILE * f = NULL;
   FILE * frules = fopen(rulesname, "r");
-  if (frules == NULL) { die("cannot open file '%s'\n", rulesname); }
+  if (frules == NULL) { fatal_error("cannot open file '%s'\n", rulesname); }
 
   FILE * out = fopen(outname, "w");
-  if (out == NULL) { die("cannot open file '%s'\n", outname); }
+  if (out == NULL) { fatal_error("cannot open file '%s'\n", outname); }
 
   char fstoutname[MAX_PATH]; // le nom du fichier qui contient l'automate resultat (fst2)
 
@@ -308,9 +308,9 @@ int compile_rules(char * rulesname, char * outname) {
       strcat(buf, ".fst2");
       
       tRegle * regle = newRegle(buf);
-      if (regle == NULL) { die("unable to read grammar '%s'\n", buf); }
+      if (regle == NULL) { fatal_error("unable to read grammar '%s'\n", buf); }
       
-      if ((A = compileRegle(regle)) == NULL) { die("unable to compile rule '%s'\n", buf); }
+      if ((A = compileRegle(regle)) == NULL) { fatal_error("unable to compile rule '%s'\n", buf); }
 
       deleteRegle(regle);
 
@@ -324,7 +324,7 @@ int compile_rules(char * rulesname, char * outname) {
       fclose(f);
       printf("using already exiting %s\n", buf);
       A = load_grammar_automaton(buf);      
-      if (A == NULL) { die("unable to load '%s'\n", buf); }
+      if (A == NULL) { fatal_error("unable to load '%s'\n", buf); }
     }
 
 
@@ -445,7 +445,7 @@ static bool prepareRegle(tRegle * regle) {
     switch (t->label->type) {
 
     case EXCLAM:
-      if (regle->contexte[0].G) { die("too much '!'\n", regle->nom); }
+      if (regle->contexte[0].G) { fatal_error("too much '!'\n", regle->nom); }
 
       regle->contexte[0].G = autalmot_new();
       finR1 = separeAut(regle->autLu, regle->contexte[0].G, t->to, EXCLAM);
@@ -461,7 +461,7 @@ static bool prepareRegle(tRegle * regle) {
 
 
     case EQUAL:
-      if (regle->contexte[1].G) { die("nondeterministic .fst file\n") ; }
+      if (regle->contexte[1].G) { fatal_error("nondeterministic .fst file\n") ; }
 
       for (c = 0; c < nbContraintes; c++) {
 
@@ -476,9 +476,8 @@ static bool prepareRegle(tRegle * regle) {
       break ;
 
     default :
-      debug("ohoh\n");
       symbol_dump(t->label);
-      die("in grammar: left delimitor '!' or '=' lacking\n");
+      fatal_error("in grammar: left delimitor '!' or '=' lacking\n");
     }
   }
 
@@ -486,9 +485,9 @@ static bool prepareRegle(tRegle * regle) {
   regle->autLu = NULL;
 
   if (! regle->contexte[0].G) {
-    die("in grammar '%s': symbol <!> not found.\n", regle->nom);
+    fatal_error("in grammar '%s': symbol <!> not found.\n", regle->nom);
   }
-  if (! succes) { die("prepareRegle: %s: parse error\n", regle->nom) ; }
+  if (! succes) { fatal_error("prepareRegle: %s: parse error\n", regle->nom) ; }
 
 
   char buf[MAX_PATH];
@@ -529,7 +528,7 @@ static int compteContraintes(autalmot_t * aut, int * contrainte) {
   
   for (t = aut->states[0].trans; t && ! source; t = t->next) {
     if (t->label->type == EQUAL) {
-      if (t->to == 0) { die("illegal cycle in grammar\n"); }
+      if (t->to == 0) { fatal_error("illegal cycle in grammar\n"); }
       source = t->to;
     }
   }
@@ -551,7 +550,7 @@ static int compteContraintes(autalmot_t * aut, int * contrainte) {
 
 	if (c == nbContraintes) {
 	  if (++nbContraintes >= maxContraintes) {
-            die("too many constraints with same condition\n");
+            fatal_error("too many constraints with same condition\n");
           }
 	  contrainte[c] = t->to;
 	}
@@ -559,7 +558,7 @@ static int compteContraintes(autalmot_t * aut, int * contrainte) {
     }
   }
 
-  if (nbContraintes == 0) { die("middle delimitor '=' not found\n"); }
+  if (nbContraintes == 0) { fatal_error("middle delimitor '=' not found\n"); }
 
   return nbContraintes;
 }
@@ -591,7 +590,7 @@ static int separeAut(autalmot_t * autLu, autalmot_t * r, etat depart, int delim)
   free(corresp);
 
   if (fin == NEXISTEPAS) { /* suivre n'a pas rencontre delim. */
-    die("in grammar: middle or end delimitor lacking\n");
+    fatal_error("in grammar: middle or end delimitor lacking\n");
   }
 
   /* NE PAS Verifier que toutes les transitions entrantes dans fin
@@ -637,7 +636,7 @@ static void separeCont(autalmot_t * autLu, autalmot_t * r, etat depart, etat arr
 
   trouve = suivreCont(autLu, r, depart, arrivee, corresp) ;
 
-  if (! trouve) { die("separeCont"); } /* suivreCont n'a pas rencontre arrivee. */
+  if (! trouve) { fatal_error("separeCont"); } /* suivreCont n'a pas rencontre arrivee. */
 
   free(corresp);
 }
@@ -666,7 +665,7 @@ static int suivre(autalmot_t * autLu, autalmot_t * r, etat e, int delim, int * c
 
       //      debug("delim! (at %d)\n", t->to);
 
-      if (fin != NEXISTEPAS && fin != t->to) { die("[suivre]: too much '%c' in rule, %d, %d\n", delim, fin, t->to) ; }
+      if (fin != NEXISTEPAS && fin != t->to) { fatal_error("[suivre]: too much '%c' in rule, %d, %d\n", delim, fin, t->to) ; }
       fin = t->to;
       r->states[corresp[e]].flags |= AUT_TERMINAL;    /* corresp[e] devient terminal */
 
@@ -682,7 +681,7 @@ static int suivre(autalmot_t * autLu, autalmot_t * r, etat e, int delim, int * c
 
 	if (f != NEXISTEPAS) {
 
-	  if ((fin != NEXISTEPAS) && (f != fin)) { die("suivre: too much '%C' in rule (in state %d & %d)\n", delim, fin, f); }
+	  if ((fin != NEXISTEPAS) && (f != fin)) { fatal_error("suivre: too much '%C' in rule (in state %d & %d)\n", delim, fin, f); }
 
 	  fin = f;
 
@@ -760,7 +759,7 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
 
   // if (ens > 0) { die("combinaison: enough!\n"); }
 
-  errprintf("\ncombinaison(%d)\n", ens);
+  error("\ncombinaison(%d)\n", ens);
 
   autalmot_t * a1 = autalmot_new();
   autalmot_t * a2 = autalmot_new();
@@ -785,7 +784,7 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
     }
   }
 
-  errprintf("\nI\n");
+  error("\nI\n");
 
   //  debug("U_{i in E} (Ci,1):\n"); autalmot_dump(a1);
   //  debug("U_{i not in E} (Ci,2):\n"); autalmot_dump(a2);
@@ -814,7 +813,7 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
 
   /* L(a1) =  (A*.R1 \ (U_{i in ens} (A*.Ci,1))) */
 
-  errprintf("\nII\n");
+  error("\nII\n");
 
   printtime(aut_AStar(a2));
 
@@ -838,7 +837,7 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
 
   /* L(a2) == (R2.A* \ (U_{i not in ens} (Ci,2.A*))) */
 
-  errprintf("\nIII\n");
+  error("\nIII\n");
 
   printtime(autalmot_concat(a1, a2));
 

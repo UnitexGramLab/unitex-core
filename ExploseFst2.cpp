@@ -68,13 +68,13 @@ setBufferMode();
       } else if (strcmp(*argv, "-o") == 0) {
 
 	*argv++, argc--;
-	if (argc == 0) { die("'-o' needs an additionnal argument\n"); }
+	if (argc == 0) { fatal_error("'-o' needs an additionnal argument\n"); }
 
 	outname = *argv;
 
       } else {
       
-        fprintf(stderr, "unknow argument: '%s'\n", *argv);
+        error("unknow argument: '%s'\n", *argv);
         return 1;
       }
     }
@@ -82,7 +82,9 @@ setBufferMode();
     *argv++, argc--;
   }
 
-  if (txtname == NULL) { die("no text automaton specified\n"); }
+   if (txtname == NULL) {
+      fatal_error("no text automaton specified\n");
+   }
 
   
   if (outname == NULL) {
@@ -104,11 +106,13 @@ setBufferMode();
 
   list_aut_old * txtauto = load_text_automaton(txtname);
 
-  if (txtauto == NULL) { die("unable to load '%s'\n", txtname); }
+  if (txtauto == NULL) { fatal_error("unable to load '%s'\n", txtname); }
 
   printf("explosion ....\n");
 
-  if (text_output_fst2_fname(txtauto, outname) == -1) { die("unable to explode fst in '%s'\n", outname); }
+   if (text_output_fst2_fname(txtauto, outname) == -1) {
+      fatal_error("unable to explode fst in '%s'\n", outname);
+   }
 
   printf("done. '%s' is explosed in '%s'.\n", txtname, outname);
 

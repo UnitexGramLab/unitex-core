@@ -232,7 +232,7 @@ static int * choisirEtats(int * couleur, int nbCouleurs, int nbstates) {
       }
     }
 
-    if (! trouve) { die("choisirEtats: color %d not found!\n", c); }
+    if (! trouve) { fatal_error("choisirEtats: color %d not found!\n", c); }
   }
 
   return repr;
@@ -283,7 +283,7 @@ static void compact_def_trans(autalmot_t * A) {
 
 void autalmot_minimize(autalmot_t * aut, int level) {
 
-  if (aut->nbinitials > 1) { autalmot_dump(aut); die("minimize: automate non deterministe!\n"); }
+  if (aut->nbinitials > 1) { autalmot_dump(aut); fatal_error("minimize: automate non deterministe!\n"); }
 
   if (aut->nbinitials == 0) {
     autalmot_empty(aut);

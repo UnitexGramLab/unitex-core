@@ -91,27 +91,27 @@ int main(int argc, char ** argv) {
       if (strcmp(*argv, "-o") == 0) { // output
 	
 	argv++, argc--;
-	if (argc == 0) { die("-o needs an arg\n"); }
+	if (argc == 0) { fatal_error("-o needs an arg\n"); }
 
 	output = *argv;
 
       } else if (strcmp(*argv, "-d") == 0) { // grammars directory
 
 	argv++, argc--;
-	if (argc == 0) { die("-d needs an arg\n"); }
+	if (argc == 0) { fatal_error("-d needs an arg\n"); }
 
 	grammardir = *argv;
 
       } else if (strcmp(*argv, "-l") == 0) { // file of compiled grammar names
 
 	argv++, argc--;
-	if (argc == 0) { die("-l needs an arg\n"); }
+	if (argc == 0) { fatal_error("-l needs an arg\n"); }
 	langname = *argv;
 
       } else if (strcmp(*argv, "-g") == 0) { // 1 grammar already compiled
 
 	argv++, argc--;
-	if (argc == 0) { die("-g needs an arg\n"); }
+	if (argc == 0) { fatal_error("-g needs an arg\n"); }
 
 	grammars = *argv;
 
@@ -121,7 +121,7 @@ int main(int argc, char ** argv) {
                progname);
 	return 0;
 
-      }	else { die("unknow arg: '%s'\n", *argv); }
+      }	else { fatal_error("unknow arg: '%s'\n", *argv); }
 
     }
 
@@ -129,9 +129,9 @@ int main(int argc, char ** argv) {
   }	
 
 
-  if (! langname) { die("no LANGUAGE specified\n"); }
-  if (txtauto == NULL) { die("no text automaton specified\n"); }
-  if (! grammars) { die("-g option should be used\n"); }
+  if (! langname) { fatal_error("no LANGUAGE specified\n"); }
+  if (txtauto == NULL) { fatal_error("no text automaton specified\n"); }
+  if (! grammars) { fatal_error("-g option should be used\n"); }
 
 
   printf("loading %s langage definition ...\n", langname);
@@ -165,7 +165,7 @@ int main(int argc, char ** argv) {
   if (chdir(grammardir) == -1) { error("unable to change to %s directory.\n", grammardir); }
 
   list_aut * gramm;
-  if ((gramm = chargeGramm(grammars)) == NULL) { die("unable to load grammar %s", grammars); }
+  if ((gramm = chargeGramm(grammars)) == NULL) { fatal_error("unable to load grammar %s", grammars); }
 
   printf("Grammars are loaded.\n") ;
 

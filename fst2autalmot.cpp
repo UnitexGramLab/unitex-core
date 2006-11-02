@@ -195,7 +195,7 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
   int i, j;
 
-  if (check_text_label(lex) == -1) { die("bad text label: \"%S\"\n", lex); }
+  if (check_text_label(lex) == -1) { fatal_error("bad text label: \"%S\"\n", lex); }
 
   symb->sorteSymbole = ATOME;
 
@@ -210,7 +210,7 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
       symb->flechie[j++] = lex[i++];
 
-      if (j >= maxMot) { die("inflected form '%S' is too long.\n", lex); }
+      if (j >= maxMot) { fatal_error("inflected form '%S' is too long.\n", lex); }
     }
 
     symb->flechie[j] = 0;
@@ -241,7 +241,7 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
     if (lex[0] == '\\') {
 
-      if (! lex[1] || lex[2]) { die("illegal label '%S'\n", lex); }
+      if (! lex[1] || lex[2]) { fatal_error("illegal label '%S'\n", lex); }
 
       *symb->flechie  = 0;
       symb->canonique = u_strdup(lex);
@@ -251,7 +251,7 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
     } else if (u_strchr(PONCTAB, *lex)) {
 
-      if (lex[1]) { die("illegal label text: '%S'\n", symb->flechie); }
+      if (lex[1]) { fatal_error("illegal label text: '%S'\n", symb->flechie); }
 
       *symb->flechie  = 0;
       symb->canonique = u_strdup(lex);
@@ -261,7 +261,7 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
     } else if (u_is_digit(*lex)) { /* chiffre arabe */
 
-      if (lex[1]) { die("illegal label text: '%S'\n", symb->flechie); }
+      if (lex[1]) { fatal_error("illegal label text: '%S'\n", symb->flechie); }
 
       *symb->flechie  = 0;
       symb->canonique = u_strdup(lex);
@@ -273,7 +273,7 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
       i = 0;
       while (lex[i]) {
-	if (i >= maxMot) { die("inflected form too long in '%S'.\n", lex); }
+	if (i >= maxMot) { fatal_error("inflected form too long in '%S'.\n", lex); }
 	symb->flechie[i] = lex[i];
 	i++;
       }
@@ -557,7 +557,7 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
   debug("done.\n");
 
-  if (A == NULL) { die("cannot load %s\n", fname); }
+  if (A == NULL) { fatal_error("cannot load %s\n", fname); }
 
   list_aut_old * res = (list_aut_old *) xmalloc(sizeof(list_aut_old));
 
@@ -663,9 +663,7 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
       u_strcpy(buf, A->tag_number[transitions->tag_number]->input);
 
-      //      debug("before=%S\n", buf);
       load_gramm_symbol(& symb, buf);
-      //      debug("after: "); Affiche_Symbole(&symb); fprintf(stderr, "\n");
 
       alphabet_clear(alphabet);
 
@@ -674,7 +672,6 @@ tAutAlMot * load_grammar_automaton(char * fname) {
       if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->state_number - base); }
 
       while (nbflex--) {
-	//#warning "must free canonique!!!!????"
 	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->state_number - base);
 	free(alphabet->symb[nbflex].canonique);
       }

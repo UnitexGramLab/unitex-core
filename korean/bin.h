@@ -31,6 +31,10 @@
 #include "String_hash2.h"
 #include "etc.h"
 #include "pro_type.h"
+#include "Error.h"
+
+
+
 #define TYPE_BIN_RACINE		0x8000	// racine or suffixe
 #define TYPE_BIN_LINKED		0x4000	// linked or not linked with suffixe
 #define TYPE_DECODE_CHAR	0x2000	// decode by the unite of char or syllabe
@@ -108,8 +112,8 @@ public:
 	{
 		unsigned short markUnicode = inbytes2(f);
 		if(markUnicode != 0xfeff){
-		    fprintf(stderr,"Marked 0x%x (0x%x)\n",markUnicode, proType.uniMark);
-			exitMessage("not bin file");
+		    error("Marked 0x%x (0x%x)\n",markUnicode, proType.uniMark);
+			 fatal_error("not bin file");
 		}
 		flag		= inbytes2(f);
 		size_ref	= inbytes4(f);
@@ -588,8 +592,7 @@ return 1;
 		strcat(inf,".aut");
 		bfile=u_fopen(inf,U_WRITE);
 		if (!bfile) {
-			fprintf(stderr,"Cannot create the file %s\n",inf);
-			exitMessage("");
+			fatal_error("Cannot create the file %s\n",inf);
 		}
 		int racCount = racName.size();
 		u_fprintf(bfile,"%d\n",racCount);
@@ -1161,7 +1164,7 @@ public:
 					tp->offset =loaded_map[idx]->autoffset[i];
 					tp->w = loaded_map[idx]->AUT[i];
 					nidx = SUF.put(loaded_map[idx]->AUT[i],tp);
-u_fprintf(stdout,"suffixe %S %dth image %d  array %d offset\n",
+               u_fprintf(stdout,"suffixe %S %dth image %d  array %d offset\n",
 						tp->w,idx,nidx, tp->offset);
 				}
 			}
@@ -1175,14 +1178,15 @@ u_fprintf(stdout,"suffixe %S %dth image %d  array %d offset\n",
 		offsetCommonCnt = SUF.size();
 
 		SUF_tmp = SUF.make_strPtr_table((int **)&offsetCommon);
+      if(!offsetCommon) {
+         fatal_error("mem alloc fail for offset array\n");
+      }
 		for( i = 1; i < offsetCommonCnt;i++){
 			u_fprintf(stderr,"%d %S %d",
 				i,&SUF_tmp[i][1],offsetCommon[i]->offset);
-			fprintf(stderr,"%s\n",offsetCommon[i]->bin->name);
+			error("%s\n",offsetCommon[i]->bin->name);
 				
 		}
-		if(!offsetCommon)
-			exitMessage("mem alloc fail for offset array");
 		racineCnt = 0;
 		
 		for( idx = 0; idx < loadMapCnt;idx++){

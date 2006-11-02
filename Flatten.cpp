@@ -78,14 +78,14 @@ int main(int argc, char **argv) {
   else if (!strcmp(argv[2],"FST"))
     RTN=0;
   else {
-    fprintf(stderr,"Invalid parameter: %s\n",argv[2]);
+    error("Invalid parameter: %s\n",argv[2]);
     return 1;
   }
 
   int depth=10;
   if (argc==4) {
     if (1!=sscanf(argv[3],"%d",&depth) || (depth<1)) {
-      fprintf(stderr,"Invalid depth parameter %s\n",argv[3]);
+      error("Invalid depth parameter %s\n",argv[3]);
       return 1;
     }
   }
@@ -93,8 +93,8 @@ int main(int argc, char **argv) {
   printf("Loading %s...\n",argv[1]);
   Fst2* origin=load_fst2(argv[1],1);
   if (origin==NULL) {
-    fprintf(stderr,"Cannot load %s\n",argv[1]);
-    return 1;
+     error("Cannot load %s\n",argv[1]);
+     return 1;
   }
 
   char *temp = (char*) malloc((strlen(argv[1])+10)*sizeof(char));

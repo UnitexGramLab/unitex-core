@@ -29,6 +29,7 @@
 #include "MF_FormMorpho.h"
 #include "MF_DicoMorpho.h"
 #include "MF_Util.h"
+#include "Error.h"
 
 //////////////////////////////////////////////////////////////////////////////////////
 //Global structure describing the morphological equivalences between morphological and dictinoary values
@@ -84,7 +85,7 @@ l_class_T* d_get_class_str(unichar* cl_str);
 /*                    n:Gen=neu                                                       */
 /* The function fills out D_MORPHO_EQUIV.                                             */
 /* Returns 0 on success, 1 otherwise.                                                 */
-int d_init_morpho_equiv(char* equiv_file, char *dir) {
+int d_init_morpho_equiv(char* equiv_file) {
 
   char chemin[1000];
   int l; //length of a scanned sequence
@@ -93,12 +94,8 @@ int d_init_morpho_equiv(char* equiv_file, char *dir) {
   unichar line[MAX_EQUIV_LINE];  //current line of the Equivalence file
 
   //Opening the equivalence file
-  strcpy(chemin,dir);
-  if ((strlen(chemin) != 0 ) && (dir[strlen(chemin)-1] != '/'))
-    strcat(chemin,"/");
-  strcat(chemin, equiv_file);
-  if ( !(ef = u_fopen(chemin, "r")))  {
-    fprintf(stderr,"Unable to open equivalence file %s !\n",chemin);
+  if ( !(ef = u_fopen(equiv_file, "r")))  {
+    error("Unable to open equivalence file %s !\n",chemin);
     return 1;
   }
   
@@ -154,13 +151,13 @@ int d_read_line(unichar* line, int line_no) {
   line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
 
   if (line_pos[0] != (unichar) ':') {
-    fprintf(stderr,"Bad format in \'Equivalence\' file:\n");
-    fprintf(stderr,"Line %d: a \':\' missing.\n",line_no);
+    error("Bad format in \'Equivalence\' file:\n");
+    error("Line %d: a \':\' missing.\n",line_no);
     return 1;
   }
   if (u_strlen(tmp) != 1) {
-    fprintf(stderr,"Bad format in \'Equivalence\' file:\n");
-    fprintf(stderr,"Line %d: s morphological values in a dictionary must be of one caracter.\n", line_no);
+    error("Bad format in \'Equivalence\' file:\n");
+    error("Line %d: s morphological values in a dictionary must be of one caracter.\n", line_no);
     return 1;
   }
   D_MORPHO_EQUIV.equiv[D_MORPHO_EQUIV.no_equiv].dico_feat = tmp[0];
@@ -172,19 +169,19 @@ int d_read_line(unichar* line, int line_no) {
   line_pos = line_pos + l;
   line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
   if (!u_strlen(tmp)) {
-    fprintf(stderr,"Bad format in \'Equivalence\' file:\n");
-    fprintf(stderr,"Line %d: category missing.\n",line_no);
+    error("Bad format in \'Equivalence\' file:\n");
+    error("Line %d: category missing.\n",line_no);
     return 1;
   }
   if (line_pos[0] != (unichar) '=') {
-    fprintf(stderr,"Bad format in \'Equivalence\' file:\n");
-    fprintf(stderr,"Line %d: a \'=\' missing.\n",line_no);
+    error("Bad format in \'Equivalence\' file:\n");
+    error("Line %d: a \'=\' missing.\n",line_no);
     return 1;
   }
   if (!(cat = is_valid_cat(tmp))) {
-    fprintf(stderr,"In \'Equivalence\' file:\n");
+    error("In \'Equivalence\' file:\n");
     u_fprints(tmp,stderr);
-    fprintf(stderr," is not a valid category in line %d.\n",line_no);
+    error(" is not a valid category in line %d.\n",line_no);
     return 1;    
   };
   D_MORPHO_EQUIV.equiv[D_MORPHO_EQUIV.no_equiv].cat.cat = cat;
@@ -196,21 +193,21 @@ int d_read_line(unichar* line, int line_no) {
   line_pos = line_pos + l;
   line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
   if (!u_strlen(tmp)) {
-    fprintf(stderr,"Bad format in \'Equivalence\' file\n");
-    fprintf(stderr,"Line %d: value missing.\n",line_no);
+    error("Bad format in \'Equivalence\' file\n");
+    error("Line %d: value missing.\n",line_no);
     return 1;
   }
   if ((D_MORPHO_EQUIV.equiv[D_MORPHO_EQUIV.no_equiv].cat.val = is_valid_val(cat,tmp)) == -1) {
-    fprintf(stderr,"In \'Equivalence\' file\n");
+    error("In \'Equivalence\' file\n");
     u_fprints(tmp,stderr);
-    fprintf(stderr," is not a valid value in line %d.\n",line_no);
+    error(" is not a valid value in line %d.\n",line_no);
     return 1;    
   }
   if (line_pos[0]) {
-    fprintf(stderr,"Bad format in \'Equivalence\' file\n");
-    fprintf(stderr,"Line %d: unnecessary string:",line_no);
+    error("Bad format in \'Equivalence\' file\n");
+    error("Line %d: unnecessary string:",line_no);
     u_fprints(line_pos,stderr);
-    fprintf(stderr,".:\n");
+    error(".:\n");
     return 1;
   }
 
@@ -237,74 +234,6 @@ void d_print_morpho_equiv() {
   }
 }
 
-/*
-////////////////////////////////////////////////////////////////////////////////////////
-// Initialises the set of equivalences between morphological and dictionary features. 
-// This function is temporarily done for Polish. In future it has to be repalced by   
-// a function scanning an external equivalence file for the given language.           
-void d_init_morpho_equiv_old() {
-  //Number
-  D_MORPHO_EQUIV.equiv[0].dico_feat = (unichar) 's';
-  D_MORPHO_EQUIV.equiv[0].cat.cat = &(L_CATS.cats[0]);
-  D_MORPHO_EQUIV.equiv[0].cat.val = 0;
-
-  D_MORPHO_EQUIV.equiv[1].dico_feat = (unichar) 'p';
-  D_MORPHO_EQUIV.equiv[1].cat.cat = &(L_CATS.cats[0]);
-  D_MORPHO_EQUIV.equiv[1].cat.val = 1;
-
-  //Case
-  D_MORPHO_EQUIV.equiv[2].dico_feat = (unichar) 'M';
-  D_MORPHO_EQUIV.equiv[2].cat.cat = &(L_CATS.cats[1]);
-  D_MORPHO_EQUIV.equiv[2].cat.val = 0;
-
-  D_MORPHO_EQUIV.equiv[3].dico_feat = (unichar) 'D';
-  D_MORPHO_EQUIV.equiv[3].cat.cat = &(L_CATS.cats[1]);
-  D_MORPHO_EQUIV.equiv[3].cat.val = 1;
-
-  D_MORPHO_EQUIV.equiv[4].dico_feat = (unichar) 'C';
-  D_MORPHO_EQUIV.equiv[4].cat.cat = &(L_CATS.cats[1]);
-  D_MORPHO_EQUIV.equiv[4].cat.val = 2;
-
-  D_MORPHO_EQUIV.equiv[5].dico_feat = (unichar) 'B';
-  D_MORPHO_EQUIV.equiv[5].cat.cat = &(L_CATS.cats[1]);
-  D_MORPHO_EQUIV.equiv[5].cat.val = 3;
-
-  D_MORPHO_EQUIV.equiv[6].dico_feat = (unichar) 'I';
-  D_MORPHO_EQUIV.equiv[6].cat.cat = &(L_CATS.cats[1]);
-  D_MORPHO_EQUIV.equiv[6].cat.val = 4;
-
-  D_MORPHO_EQUIV.equiv[7].dico_feat = (unichar) 'L';
-  D_MORPHO_EQUIV.equiv[7].cat.cat = &(L_CATS.cats[1]);
-  D_MORPHO_EQUIV.equiv[7].cat.val = 5;
-
-  D_MORPHO_EQUIV.equiv[8].dico_feat = (unichar) 'V';
-  D_MORPHO_EQUIV.equiv[8].cat.cat = &(L_CATS.cats[1]);
-  D_MORPHO_EQUIV.equiv[8].cat.val = 6;
-
-  //Gender
-  D_MORPHO_EQUIV.equiv[9].dico_feat = (unichar) 'o';
-  D_MORPHO_EQUIV.equiv[9].cat.cat = &(L_CATS.cats[2]);
-  D_MORPHO_EQUIV.equiv[9].cat.val = 0;
-
-  D_MORPHO_EQUIV.equiv[10].dico_feat = (unichar) 'z';
-  D_MORPHO_EQUIV.equiv[10].cat.cat = &(L_CATS.cats[2]);
-  D_MORPHO_EQUIV.equiv[10].cat.val = 1;
-
-  D_MORPHO_EQUIV.equiv[11].dico_feat = (unichar) 'r';
-  D_MORPHO_EQUIV.equiv[11].cat.cat = &(L_CATS.cats[2]);
-  D_MORPHO_EQUIV.equiv[11].cat.val = 2;
-
-  D_MORPHO_EQUIV.equiv[12].dico_feat = (unichar) 'f';
-  D_MORPHO_EQUIV.equiv[12].cat.cat = &(L_CATS.cats[2]);
-  D_MORPHO_EQUIV.equiv[12].cat.val = 3;
-
-  D_MORPHO_EQUIV.equiv[13].dico_feat = (unichar) 'n';
-  D_MORPHO_EQUIV.equiv[13].cat.cat = &(L_CATS.cats[2]);
-  D_MORPHO_EQUIV.equiv[13].cat.val = 4;
-
-  D_MORPHO_EQUIV.no_equiv = 14;
-}
-*/
 
 /**************************************************************************************/
 /* Initialises the set of equivalences between class names in a dictionary (e.g. "N") */
@@ -342,8 +271,7 @@ f_morpho_T* d_get_feat_str(unichar* feat_str) {
   f_morpho_T* feat;
   feat = (f_morpho_T*) malloc(sizeof(f_morpho_T));
   if (!feat) {
-    fprintf(stderr,"Memory allocation problem in function 'd_get_feat_str'!\n");
-    return NULL;
+    fatal_error("Not enough memory in function d_get_feat_str\n");
   }
   f_init_morpho(feat);
   for (f=0; f<u_strlen(feat_str); f++) {
@@ -372,8 +300,7 @@ unichar* d_get_str_feat(f_morpho_T* feat) {
   int c;   //index of the current character in tmp;
   tmp = (unichar*) malloc((MAX_CATS+1) * sizeof(unichar));
   if (!tmp) {
-    fprintf(stderr,"Memory allocation problem in function 'd_get_str_feat'!\n");
-    return NULL;
+    fatal_error("Not enough memory in function d_get_str_feat\n");
   }
   tmp[0] = (unichar) '\0';
   c = 0;

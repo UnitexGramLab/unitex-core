@@ -156,7 +156,7 @@ void implose(tAutAlMot * A) {
 
         if (p) {
           if ((u_strlen(p)+u_strlen(t->etiq->gramm)) > maxGramm) {
-            die("seq of gramm. codes too long: %S,%S.%S%S\n",
+            fatal_error("seq of gramm. codes too long: %S,%S.%S%S\n",
                 t->etiq->flechie, t->etiq->canonique, t->etiq->gramm, p);
           }
           u_strcat(t->etiq->gramm, p);

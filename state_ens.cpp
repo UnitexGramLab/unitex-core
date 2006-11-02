@@ -265,7 +265,7 @@ static void symbol_dev_symbol(symbol_t * a, symbol_t * b) {
 
   if (i == NULL) { /* errprintf("SYMBOL DISJOINTS!\n");*/ return; } // symbol disjoints
 
-  if (i->next) { die("symbol_developp: i->next\n"); }
+  if (i->next) { fatal_error("symbol_developp: i->next\n"); }
  
   symbol_t * aminusb = symbol_minus_symbol(a, i);
   //  errprintf("A \\ B = "); symbols_dump(aminusb); endl();
@@ -275,21 +275,21 @@ static void symbol_dev_symbol(symbol_t * a, symbol_t * b) {
 
   if (! aminusb) {
     if (symbol_compare(a, i)) {
-      error("symbol_dev_symbol: A="); symbol_dump(a); errprintf(" B="); symbol_dump(b); endl();
-      errprintf("A inter B ="); symbol_dump(i); endl();
-      errprintf("A minus B = "); symbols_dump(aminusb); endl();
-      errprintf("B minus A = "); symbols_dump(bminusa); endl();
-      die("A != I et A \\ I = null\n");
+      error("symbol_dev_symbol: A="); symbol_dump(a); error(" B="); symbol_dump(b); endl();
+      error("A inter B ="); symbol_dump(i); endl();
+      error("A minus B = "); symbols_dump(aminusb); endl();
+      error("B minus A = "); symbols_dump(bminusa); endl();
+      fatal_error("A != I et A \\ I = null\n");
     }
   }
 
   if (! bminusa) {
     if (symbol_compare(b, i)) {
-      error("symbol_dev_symbol: A="); symbol_dump(a); errprintf(" B="); symbol_dump(b); endl();
-      errprintf("A inter B ="); symbol_dump(i); endl();
-      errprintf("A minus B = "); symbols_dump(aminusb); endl();
-      errprintf("B minus A = "); symbols_dump(bminusa); endl();
-      die("B != I et B \\ I = null\n");
+      error("symbol_dev_symbol: A="); symbol_dump(a); error(" B="); symbol_dump(b); endl();
+      error("A inter B ="); symbol_dump(i); endl();
+      error("A minus B = "); symbols_dump(aminusb); endl();
+      error("B minus A = "); symbols_dump(bminusa); endl();
+      fatal_error("B != I et B \\ I = null\n");
     }
   }
 
@@ -304,7 +304,6 @@ static void symbol_dev_symbol(symbol_t * a, symbol_t * b) {
 
   replace_symbol(b, i);
 
-  //  debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 }
 
 
@@ -348,7 +347,7 @@ static void trans_flatten(transition_t * trans) {
 
   while (trans) {
 
-    if (trans->label == NULL) { die("trans_flatten: NULL labeled transition\n"); }
+    if (trans->label == NULL) { fatal_error("trans_flatten: NULL labeled transition\n"); }
 
     if (trans->label->next) {
       trans->next = _trans_new(trans->to, trans->label->next, trans->next);

@@ -30,10 +30,10 @@
 #include <ctype.h>
 
 #include "autalmot_old.h"
-
 #include "String_hash.h"
 #include "unicode.h"
 #include "utils.h"
+#include "Error.h"
 
 
 void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) ;
@@ -144,7 +144,7 @@ tAutAlMot * initAutAlMot(etat nbEtats) {
 
   if (nbEtats == 0) {
 
-    warning("automaton with no states.\n") ;
+    error("automaton with no states.\n") ;
     aut->nbEtatsInitiaux = 0 ;
 
   } else {
@@ -180,7 +180,7 @@ void initAutAlMotAlloue(tAutAlMot * aut, etat nbEtats) {
   aut->entrantesEtats = NULL ;
 
   if (nbEtats == 0) {
-    warning("Attention, automate sans etats.\n") ;
+    error("Attention, automate sans etats.\n") ;
     aut->nbEtatsInitiaux = 0 ;
   } else {
     aut->etats = (tTransitions **) xcalloc(nbEtats, sizeof(tTransitions *)) ;
@@ -394,7 +394,7 @@ void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
   
       return;
 
-    } else { die("[chargeSymbole] in file %s : illegal symbol %S\n",  nomFich, lex) ; }
+    } else { fatal_error("[chargeSymbole] in file %s : illegal symbol %S\n",  nomFich, lex) ; }
   }
 
 
@@ -416,7 +416,7 @@ void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
 
 
 	if (lex[i + 1] && ((lex[i + 1] != '}') || (lex[i + 2] != 0))) {
-	  die("[chargeSymbole] in file %s : illegal symbol %S\n", nomFich, lex) ;
+	  fatal_error("[chargeSymbole] in file %s : illegal symbol %S\n", nomFich, lex) ;
 	}
 
 	symb->sorteSymbole = SPECIAL ;
@@ -448,8 +448,8 @@ void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
 
       while (lex[i]) {
 
-	if (j >= maxMot)   { die("inflected form too long in file %s : %S.\n", nomFich, lex); }
-	if (lex[i] == '}') { die("illegal form in file %s : %S.\n", nomFich, lex); }
+	if (j >= maxMot)   { fatal_error("inflected form too long in file %s : %S.\n", nomFich, lex); }
+	if (lex[i] == '}') { fatal_error("illegal form in file %s : %S.\n", nomFich, lex); }
 
 	symb->flechie[j++] = lex[i++]; 
       }
@@ -473,7 +473,7 @@ void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
       symb->flechie[j++] = lex[i++];
 
       if (j >= maxMot) {
-	die("inflected form too long in file %s : %S.\n", nomFich, lex) ;
+	fatal_error("inflected form too long in file %s : %S.\n", nomFich, lex) ;
       }
     }
 
@@ -642,7 +642,7 @@ tAlphMotPartage * listeSymboles(tAutAlMot * Aut, BOOL * parDefaut) {
    alphabet->symb = (tSymbole **) xcalloc(tailleAllouee, sizeof(tSymbole *)) ;
 
 
-   if (! Aut->etats) { die("listeSymbole: Pas d'etats\n"); }
+   if (! Aut->etats) { fatal_error("listeSymbole: Pas d'etats\n"); }
 
 
    for (Netat = 0; Netat < Aut->nbEtats; Netat++) {
@@ -694,11 +694,11 @@ void sauvegAutAlMot(FILE * f, tAutAlMot * Aut, char * titre, int numAut, BOOL ch
    debug("sauvegAutAlMot [%d]\n", numAut);
 
    if (! Aut)
-     die("sauvegAutAlMot: aut is void");
+     fatal_error("sauvegAutAlMot: aut is void");
 
    alphabet = listeSymboles(Aut, & parDefaut) ;
 
-   if (! alphabet) { die("sauvegAutAlMot: no alphabet\n"); }
+   if (! alphabet) { fatal_error("sauvegAutAlMot: no alphabet\n"); }
 
    debug("symboles: nb=%d\n", alphabet->nbSymboles);
    for (unsigned int i = 0; i < alphabet->nbSymboles; i++) { debug("%d: {%S,%S.%S}\n", i, alphabet->symb[i]->flechie,
@@ -730,7 +730,7 @@ void sauvegAutAlMot(FILE * f, tAutAlMot * Aut, char * titre, int numAut, BOOL ch
        if (Trs->etiq) {
 	 n = numeroDansAlph(Trs->etiq, alphabet) ;
 	 if (n < 0)
-	   die("in sauvegAutAlMot: n < 0") ;
+	   fatal_error("in sauvegAutAlMot: n < 0") ;
 	 u_fprintf (f," %d %d", n, Trs->but + 1) ;
 
        } else { u_fprintf(f," %d %d", alphabet->nbSymboles, Trs->but + 1) ; }
@@ -904,7 +904,7 @@ tSymbole * copieSymbole(tSymbole * Source) {
   case ATOME:
   case INDETERMINE:
 
-    if (1 + u_strlen(Source->flechie) >= maxMot) { die("Erreur interne [copieSymbole], f.f. trop longue\n"); }
+    if (1 + u_strlen(Source->flechie) >= maxMot) { fatal_error("Erreur interne [copieSymbole], f.f. trop longue\n"); }
     u_strcpy(s->flechie, Source->flechie);
 
   /* et on continue */
@@ -912,12 +912,12 @@ tSymbole * copieSymbole(tSymbole * Source) {
   case INCOMPLET:
   case NEGATIF:
     s->canonique = u_strdup(Source->canonique);
-    if (1 + u_strlen(Source->gramm) >= maxGramm){ die("Erreur interne [copieSymbole], c.g. trop long\n"); }
+    if (1 + u_strlen(Source->gramm) >= maxGramm){ fatal_error("Erreur interne [copieSymbole], c.g. trop long\n"); }
     u_strcpy(s->gramm, Source->gramm) ;
     break;
 
   case CODE:
-    if (1 + u_strlen(Source->gramm) >= maxGramm) { die("Erreur interne [copieSymbole], c.g. trop long\n"); }
+    if (1 + u_strlen(Source->gramm) >= maxGramm) { fatal_error("Erreur interne [copieSymbole], c.g. trop long\n"); }
     u_strcpy(s->gramm, Source->gramm);
     s->canonique    = (unichar *) xmalloc(sizeof(unichar));
     s->canonique[0] = 0;
@@ -933,7 +933,7 @@ tSymbole * copieSymbole(tSymbole * Source) {
     break;
 
   default :
-    die("Erreur interne [copieSymbole], unknow sorteSymbole: %d.\n", Source->sorteSymbole);
+    fatal_error("Erreur interne [copieSymbole], unknow sorteSymbole: %d.\n", Source->sorteSymbole);
   }
 
   return s;
@@ -948,8 +948,7 @@ tSymbole * copieSymbole(tSymbole * Source) {
 void remplitSymbole(tSymbole * s, tSymbole * source) {
 
   if (! s) {
-    fprintf(stderr,"\n[remplitSymbole] Pas de place\n") ;
-    exit(27) ;
+    fatal_error(27,"\n[remplitSymbole] Pas de place\n") ;
   }
 
   if (! source)
@@ -1078,7 +1077,7 @@ void Affiche_Symbole(tSymbole * s, FILE * f) {
     break ;
 
   default :
-    die("Affiche_Symbole: unknown code %d (<%S,%S.%S>)\n", s->sorteSymbole, s->flechie, s->canonique, s->gramm);
+    fatal_error("Affiche_Symbole: unknown code %d (<%S,%S.%S>)\n", s->sorteSymbole, s->flechie, s->canonique, s->gramm);
   }
 
   i_fprintf(f, "<%S,%S.%S>", s->flechie, s->canonique, s->gramm);
@@ -1379,7 +1378,7 @@ void autalmot_dump_fst2(tAutAlMot * A, FILE * f) {
 
 	case INDETERMINE:
 	  Affiche_Symbole(t->etiq);
-	  die("ouptut_fst: symbol code INDETERMINE\n");
+	  fatal_error("ouptut_fst: symbol code INDETERMINE\n");
 	  u_sprintf(buf, "<INDETERMINE:%S,%S.%S>", t->etiq->flechie, t->etiq->canonique, t->etiq->gramm);
 	}
       }
@@ -1414,7 +1413,7 @@ void autalmot_dump_fst2_fname(tAutAlMot * A, char * fname) {
 
 void autalmot_resize(tAutAlMot * a, int size) {
 
-  if (size < (int) a->nbEtats) { die("autalmot_resize: size(=%d) < nbEtats(=%d)\n", size, a->nbEtats); }
+  if (size < (int) a->nbEtats) { fatal_error("autalmot_resize: size(=%d) < nbEtats(=%d)\n", size, a->nbEtats); }
 
   a->etats = (tTransitions **) xrealloc(a->etats, size * sizeof(tTransitions *));
   a->type  = (char *) xrealloc(a->type, size * sizeof(char));

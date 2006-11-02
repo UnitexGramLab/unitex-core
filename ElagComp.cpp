@@ -101,28 +101,28 @@ setBufferMode();
       if (strcmp(*argv, "-o") == 0) { // nom du fichier des grammaires compilee
 
 	argv++, argc--;
-	if (argc == 0) { die("-o argument needs a parameter\n"); }
+	if (argc == 0) { fatal_error("-o argument needs a parameter\n"); }
       
 	compilename = *argv;
 
       } else if (strcmp(*argv, "-d") == 0) { // rules directory
 
 	argv++, argc--;
-	if (argc == 0) { die("-d argument needs a parameter\n"); }
+	if (argc == 0) { fatal_error("-d argument needs a parameter\n"); }
 
 	ruledir = *argv;
 
       } else if (strcmp(*argv, "-r") == 0) { // rules file
 
 	argv++, argc--;
-	if (argc == 0) { die("-r argument needs a parameter\n"); }
+	if (argc == 0) { fatal_error("-r argument needs a parameter\n"); }
 
 	rules = *argv;
 
       } else if (strcmp(*argv, "-g") == 0) { // rules file
 
 	argv++, argc--;
-	if (argc == 0) { die("-g argument needs a parameter\n"); }
+	if (argc == 0) { fatal_error("-g argument needs a parameter\n"); }
 
 	grammar = *argv;
 
@@ -134,13 +134,13 @@ setBufferMode();
       } else if (strcmp(*argv, "-l") == 0) {
 
 	argv++, argc--;
-	if (argc == 0) { die("-l argument needs a parameter\n"); }
+	if (argc == 0) { fatal_error("-l argument needs a parameter\n"); }
 
 	langname = *argv;
 
       } else {
 
-	die("unknow argument: '%s'\n", *argv);
+	fatal_error("unknow argument: '%s'\n", *argv);
       }
     }
 
@@ -148,16 +148,16 @@ setBufferMode();
   }
 
 
-  if (! langname) { die("No language specified\n"); }
+  if (! langname) { fatal_error("No language specified\n"); }
 
   language_t * lang = language_load(langname);
 
   set_current_language(lang);
 
 
-  if (! rules && ! grammar) { die("you must specified a grammar or a rules file name\n"); }
+  if (! rules && ! grammar) { fatal_error("you must specified a grammar or a rules file name\n"); }
 
-  if (rules && grammar) { die("cannot handle list file and grammar in the same time.\n"); }
+  if (rules && grammar) { fatal_error("cannot handle list file and grammar in the same time.\n"); }
 
   if (rules) {
   
@@ -197,7 +197,7 @@ setBufferMode();
    int l = strlen(grammar);
    
    if (strcmp(grammar + l - 5, ".fst2") != 0) {
-     die("grammar '%s' should be a FST2 file\n");
+     fatal_error("grammar '%s' should be a FST2 file\n");
    }
 
    strcpy(buf, grammar); 

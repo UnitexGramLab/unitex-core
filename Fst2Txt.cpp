@@ -30,7 +30,7 @@
 #include "IOBuffer.h"
 #include "TransductionVariables.h"
 #include "LocateConstants.h"
-#include "unicode.h"
+#include "Error.h"
 
 // commmand line for testing:
 //
@@ -119,25 +119,25 @@ strcpy(temp,argv[1]);
 strcat(temp,".tmp");
 f=u_fopen(argv[1],U_READ);
 if (f==NULL) {
-   fprintf(stderr,"Cannot open file %s\n",argv[1]);
+   error("Cannot open file %s\n",argv[1]);
    return 1;
 }
 f_out=u_fopen(temp,U_WRITE);
 if (f_out==NULL) {
-   fprintf(stderr,"Cannot open temporary file %s\n",temp);
+   error("Cannot open temporary file %s\n",temp);
    u_fclose(f);
    return 1;
 }
 fst2=load_fst2(argv[2],1);
 if (fst2==NULL) {
-  fprintf(stderr,"Cannot load grammar %s\n",argv[2]);
+  error("Cannot load grammar %s\n",argv[2]);
   u_fclose(f);
   u_fclose(f_out);
   return 1;
 }
 alphabet=load_alphabet(argv[3]);
 if (alphabet==NULL) {
-  fprintf(stderr,"Cannot load alphabet file %s\n",argv[3]);
+  error("Cannot load alphabet file %s\n",argv[3]);
   u_fclose(f);
   u_fclose(f_out);
   return 1;
@@ -149,7 +149,7 @@ else if (!strcmp(argv[4],"-replace")) {
           MODE=REPLACE;
      }
      else {
-          fprintf(stderr,"Invalid parameter %s : the mode must be -merge or -replace\n",argv[4]);
+          error("Invalid parameter %s : the mode must be -merge or -replace\n",argv[4]);
           u_fclose(f);
           u_fclose(f_out);
           free_Fst2(fst2);
@@ -164,7 +164,7 @@ if (argc>=6) {
            PARSING_MODE=CHAR_BY_CHAR_WITH_SPACE;
    } 
    else {
-     fprintf(stderr,"Invalid parameter: %s\n",argv[5]);
+     error("Invalid parameter: %s\n",argv[5]);
      u_fclose(f);
      u_fclose(f_out);
      free_Fst2(fst2);
@@ -173,6 +173,9 @@ if (argc>=6) {
    }
 }
 arbre_etiquettes=(struct arbre_char**)malloc(sizeof(struct arbre_char*)*fst2->number_of_states);
+if (arbre_etiquettes==NULL) {
+   fatal_error("Not enough memory in main of Fst2Txt\n");
+}
 printf("Applying %s in %s mode...\n",argv[2],(MODE==MERGE)?"merge":"replace");
 pretraiter_etiquettes();
 parse_text();
@@ -216,7 +219,7 @@ return (taille_entree);
 
 void empiler(unichar c) {
 if (sommet > MAX_OUTPUT_LENGTH) {
-  fprintf(stderr,"Maximal output stack size reached: ignoring output\n");
+  error("Maximal output stack size reached: ignoring output\n");
 } else
   pile[sommet++]=c;
 }
@@ -253,7 +256,7 @@ while (s[i]!='\0') {
          if (s[i]!='$') {
             char NAME[100];
             u_to_char(NAME,name);
-            fprintf(stderr,"Error: missing closing $ after $%s\n",NAME);
+            error("Error: missing closing $ after $%s\n",NAME);
          }
          else {
              i++;
@@ -266,22 +269,22 @@ while (s[i]!='\0') {
                  if (v==NULL) {
                     char NAME[100];
                     u_to_char(NAME,name);
-                    fprintf(stderr,"Error: undefined variable $%s\n",NAME);
+                    error("Error: undefined variable $%s\n",NAME);
                  }
                  else if (v->start==-1) {
                     char NAME[100];
                     u_to_char(NAME,name);
-                    fprintf(stderr,"Error: starting position of variable $%s undefined\n",NAME);
+                    error("Error: starting position of variable $%s undefined\n",NAME);
                  }
                  else if (v->end==-1) {
                     char NAME[100];
                     u_to_char(NAME,name);
-                    fprintf(stderr,"Error: end position of variable $%s undefined\n",NAME);
+                    error("Error: end position of variable $%s undefined\n",NAME);
                  }
                  else if (v->start > v->end) {
                     char NAME[100];
                     u_to_char(NAME,name);
-                    fprintf(stderr,"Error: end position before starting position for variable $%s\n",NAME);
+                    error("Error: end position before starting position for variable $%s\n",NAME);
                  }
                  else {
                     // if the variable definition is correct
@@ -366,8 +369,7 @@ Fst2State etat_courant=fst2->states[e];
 
 if (profondeur > MAX_DEPTH) {
   
-  fprintf(stderr,
-          "\n"
+  error(  "\n"
           "Maximal stack size reached in graph %i!\n"
           "Recognized more than %i tokens starting from:\n"
           "  ",
@@ -378,9 +380,7 @@ if (profondeur > MAX_DEPTH) {
     unichar2htmlEnt( ent, buffer[origine_courante+i] );
     fputs(ent,stderr);
   }
-  fprintf(stderr,
-          "\n"
-          "Skipping match at this position, trying from next token!\n");
+  error("\nSkipping match at this position, trying from next token!\n");
   output[0] = '\0';  // clear output
   taille_entree = 0; // reset taille_entree
   pile[0] = '\0';    // clear output stack

@@ -29,6 +29,7 @@
 #include "MF_Util.h"
 #include "unicode.h"
 #include "MF_Unif.h"   //debug
+#include "Error.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //Global structure describing the morphological categories of a language
@@ -82,17 +83,9 @@ l_category_T* get_cat(unichar* val);
 /*                      adv:                                                          */
 /* Fills out L_CLASSES								      */
 /* Returns 0 if success, 1 otherwise                                                  */
-int read_language_morpho(char *lan_file, char *dir) {
-
-  char chemin[1000];
-  
-  /*Ouverture du fichier de traits flexionnels de la langue*/
-  strcpy(chemin,dir);
-  if ((strlen(chemin) != 0 ) && (dir[strlen(chemin)-1] != '/'))
-    strcat(chemin,"/");
-  strcat(chemin, lan_file);
-  if ( !(lf = u_fopen(chemin, "r")))  {
-    fprintf(stderr,"Unable to open language morphology file %s !\n",chemin);
+int read_language_morpho(char *file) {
+  if ( !(lf = u_fopen(file, "r")))  {
+    error("Unable to open language morphology file %s !\n",file);
     return 1;
   }
   
@@ -130,7 +123,7 @@ int read_cats() {
   //Current line should contain <CATEGORIES>
   
   if (feof(lf) || strcmp(word_ch,"<CATEGORIES>")) {
-    fprintf(stderr,"Language morphology file format incorrect in line %d!\n",line_no);
+    error("Language morphology file format incorrect in line %d!\n",line_no);
     return 1;
   }
   
@@ -176,14 +169,10 @@ int read_cat_line(int cat_no) {
   line_pos = line_pos + l;
   line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
   if (*line_pos != (char) ':') {
-    fprintf(stderr,"Language morphology file format incorrect: ':' missing in line %d!\n", line_no);
+    error("Language morphology file format incorrect: ':' missing in line %d!\n", line_no);
     return 1;
   }
-  if (!(cat_name = (unichar*) malloc((u_strlen(tmp)+1)*sizeof(unichar)))) {
-    fprintf(stderr,"Memory allocation problem in function 'read_cat_line'!\n");
-    return 1;
-  };
-  u_strcpy(cat_name,tmp);
+  cat_name=u_strdup(tmp);
   L_CATS.cats[cat_no].name = cat_name;
   line_pos++;   //Omit the ':' 
   
@@ -195,11 +184,7 @@ int read_cat_line(int cat_no) {
     l = u_scan_until_char(tmp,line_pos,MAX_MORPHO_NAME-1,", \t\n",1);
     line_pos = line_pos + l;
     line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
-    if (!(cat_val = (unichar*) malloc((u_strlen(tmp)+1)*sizeof(unichar)))) {
-      fprintf(stderr,"Memory allocation problem in function 'read_cat_line'!\n");
-      return 1;
-    };
-    u_strcpy(cat_val,tmp);
+    cat_val=u_strdup(tmp);
     L_CATS.cats[cat_no].values[v_cnt] = cat_val;
     v_cnt++;
     if (*line_pos == (char) '\n')
@@ -222,7 +207,7 @@ int read_classes() {
   
   //Current line should contain <CLASSES>
   if (feof(lf) || strcmp(word_ch,"<CLASSES>")) {
-    fprintf(stderr,"Language morphology file format incorrect: <CLASSES> missing in line %d!\n", line_no);
+    error("Language morphology file format incorrect: <CLASSES> missing in line %d!\n", line_no);
     return 1;
   }
 
@@ -269,11 +254,7 @@ int read_class_line(int class_no) {
   l = u_scan_until_char(tmp,line_pos,MAX_MORPHO_NAME-1,": \t",1);
   line_pos = line_pos + l;
   line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
-  if (!(class_name = (unichar*) malloc((u_strlen(tmp)+1)*sizeof(unichar)))) {
-    fprintf(stderr,"Memory allocation problem in function 'read_class_line'!\n");
-    return 1;
-  };
-  u_strcpy(class_name,tmp);
+  class_name=u_strdup(tmp);
   L_CLASSES.classes[class_no].name = class_name;
 
   //Read class' categories
@@ -296,8 +277,8 @@ int read_class_line(int class_no) {
 	if (! u_strcmp(L_CATS.cats[c].name,tmp))
 	  found = 1;
       if (!found) {
-	fprintf(stderr,"Undefined category in language morphology file: line %d!\n", line_no);
-	return 1;
+	      error("Undefined category in language morphology file: line %d!\n", line_no);
+	      return 1;
       }
       else
 	L_CLASSES.classes[class_no].cats[c_cnt].cat = &(L_CATS.cats[c-1]);
@@ -317,7 +298,7 @@ int read_class_line(int class_no) {
 	if (!u_strcmp_char(tmp,"var"))
 	  L_CLASSES.classes[class_no].cats[c_cnt].fixed = 0;
 	else {
-	  fprintf(stderr,"Undefined fixedness symbol in language morphology file: line %d!\n", line_no);
+	  error("Undefined fixedness symbol in language morphology file: line %d!\n", line_no);
 	  return 1;
       }
       c_cnt++;

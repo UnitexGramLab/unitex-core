@@ -138,7 +138,7 @@ autalmot_t * autalmot_intersection(const autalmot_t * A, const autalmot_t * B) {
   
   if ((A->nbinitials > 1) || (B->nbinitials > 1)) {
     error("a nbstates=%d & b->nbstates=%d\n", A->nbinitials, B->nbinitials);
-    die("autalmot_inter: non deterministic auto\n");
+    fatal_error("autalmot_inter: non deterministic auto\n");
   }
 
 
@@ -204,7 +204,7 @@ static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const 
       if (symbol_in_symbol(t1->label, t2->label)) {
 
 	if (found) {
-	  symbol_dump(t1->label); errprintf(" IN "); symbol_dump(t2->label); endl();
+	  symbol_dump(t1->label); error(" IN "); symbol_dump(t2->label); endl();
 	  error("interStateAtom: non deterministic automaton\n");
 	}
 
@@ -230,13 +230,13 @@ autalmot_t * interAutAtome(const autalmot_t * A, const autalmot_t * B) {
 
   if ((A->nbinitials > 1) || (B->nbinitials > 1)) {
     error("a nbstates=%d & b->nbstates=%d\n", A->nbinitials, B->nbinitials);
-    die("autalmot_interAutAtome: non deterministic auto\n");
+    fatal_error("autalmot_interAutAtome: non deterministic auto\n");
   }
 
   autalmot_t * res = autalmot_new(A->name, A->nbstates * B->nbstates);
 
   if (A->nbinitials == 0 || B->nbinitials == 0) {
-    warning("interAutAtome: auto is void\n");
+    error("interAutAtome: auto is void\n");
     return res;
   }
 

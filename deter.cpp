@@ -222,7 +222,6 @@ tAutAlMot * deterCompl(tAutAlMot * autEntree) {
 
   EI = trier(EI) ;
 
-  //  debug("Creation 1 : "); affListe(EI); fprintf(stderr, "\n");
 
   marqueEtatInitial(autSortie);
   futursEtats = ajouter(futursEtats, EI);
@@ -234,7 +233,6 @@ tAutAlMot * deterCompl(tAutAlMot * autEntree) {
   for (indFEtat = 0 ; indFEtat < lgFEtat ; indFEtat++) {
 
     etatCourant = futursEtats[indFEtat] ;
-    //    affListe(etatCourant); fprintf(stderr, "\n");
 
     if (autSortie->taille <= indFEtat) {
       autSortie->taille *= facteur;
@@ -462,7 +460,6 @@ static tBiAlph * initBiAlph(noeud * source, tAutAlMot * au, alphabet * alpha, no
   for (; source ; source = source->suiv) {
 
     source->trans = NULL;
-    //    fprintf(stderr, "[%d]\n", source->nom);
     univLocal = FALSE;
 
     for (t = au->etats[source->nom]; t; t = t->suivant) {
@@ -713,9 +710,9 @@ static void subst(tSymbole * s, tSymbole * i, alphabet * tab, tBiAlph * biAlph) 
 
   tBiAlph * dbg = biAlph;
 
-  debug("subst:"); Affiche_Symbole(s); fprintf(stderr, " = "); 
-  Affiche_Symbole(i); fprintf(stderr, " union "); alphabet_dump(tab);
-  fprintf(stderr, "\n");
+  debug("subst:"); Affiche_Symbole(s); error(" = "); 
+  Affiche_Symbole(i); error(" union "); alphabet_dump(tab);
+  error("\n");
 
   debug("avant:\n"); affBiAlph(biAlph);
 
@@ -846,14 +843,6 @@ return FE ; }
 static void ajouterTransition(tAutAlMot * autom, /*noeud * * Fe,*/  int indice, tSymbole * symbole) { /* Le parametre Fe semble inutilise */
 
   tTransitions * temp ;
-
-  /*printf("Transition de %d par %d vers %d\n", indFEtat + 1, symbole, indice + 1) ;*/
-
-  /*
-  debug("ajouter transition:");
-  fprintf(stderr, "(%d, ", indFEtat); Affiche_Symbole(symbole); fprintf(stderr, ", %d)\n", indice);
-  */
-
   temp = (tTransitions *) xcalloc(1, sizeof(struct strTransitions));
   temp->etiq = symbole;
   temp->but  = indice;

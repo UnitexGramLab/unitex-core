@@ -304,13 +304,11 @@ struct decomposed_word* new_decomposed_word()
   tmp->n_parts=0;
   tmp->decomposition[0]='\0';
   tmp->dela_line[0]='\0';
-//  fprintf(stderr, "%p created\n", tmp);
   return tmp;
 }
 
 void free_decomposed_word(struct decomposed_word* t)
 {
-//  fprintf(stderr, "%p free'd\n", t);
   free(t);
 }
 
@@ -485,7 +483,6 @@ struct rule_list* new_rule_list ()
   if (_n_used_rule_lists > _max_used_rule_lists) {
     _max_used_rule_lists = _n_used_rule_lists;
   }
-  //  fprintf(stderr, "allocated %p\n", tmp);
   return tmp;
 }
 
@@ -501,15 +498,12 @@ void free_rule_list (struct rule_list* r)
 }
 void free_rule_list2 (struct rule_list* r)
 {
-  //  fprintf(stderr, "freeing %p ", r);
   if ( r != 0) {
     if ( r->rule != 0 ) {
-      //  fprintf(stderr, "(rule %p)", r->rule);
       free_composition_rule(r->rule);
     }
     free(r);
   }
-  //fprintf(stderr, " o.k.\n");
 }
 
 void free_all_rule_lists ()
@@ -545,8 +539,8 @@ void free_all_dic_entries ()
 }
 
 void memstat () {
-  fprintf(stderr, "%d used rule_lists\n", _max_used_rule_lists);
-  fprintf(stderr, "%d used dic_entries\n", _max_used_dic_entries);
+error("%d used rule_lists\n",_max_used_rule_lists);
+error("%d used dic_entries\n",_max_used_dic_entries);
 }
 
 

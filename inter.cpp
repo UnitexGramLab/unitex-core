@@ -289,8 +289,6 @@ static void interEtat(tAutAlMot * ret, int ** numero, tAutAlMot * a, int i, tAut
 
 	    for(db = trB -> etiq -> devel ; db ; db = db -> suiv) {
 
-	      // Affiche_Symbole(da->etiquette) ; fprintf(stderr, "/") ; Affiche_Symbole(db->etiquette) ; fprintf(stderr, "...   ") ;
-
 	      if(! compSymb(da -> etiquette, db -> etiquette)) {
 		creerTrans(a, i, b, j, da->etiquette, trA->but, trB->but, ret, numero) ;
 		trouve = TRUE ;
@@ -330,9 +328,6 @@ static void interEtat(tAutAlMot * ret, int ** numero, tAutAlMot * a, int i, tAut
 	  if (trA -> etiq) {
 
 	    for(da = trA -> etiq -> devel ; da && ! trouve ; da = da -> suiv) {
-
-	      // Affiche_Symbole(da->etiquette); fprintf(stderr, "/"); Affiche_Symbole(db->etiquette); fprintf(stderr, "...   ");
-
 	      if(! compSymb(da -> etiquette, db -> etiquette))
 		trouve = TRUE ;
 	    }
@@ -436,9 +431,6 @@ static BOOL compBiAlph(tBiAlph * biAlph1, tBiAlph * biAlph2) {
 	if (! c2->devel) { error("Erreur interne [compBiAlph] 2.\n"); }
 
 	for (d2 = c2->devel ; d2 ; d2 = d2->suiv) {
-	  
-	  //  debug("inter("); Affiche_Symbole(c1->orig); Affiche_Symbole(c2->orig); fprintf(stderr, ")\n");
-
 	  if (! developpeInter(d1, d2)) {
 	    error("Erreur interne [compBiAlph] 3 :\n");
 	    Affiche_Symbole(c1->orig);
@@ -448,14 +440,6 @@ static BOOL compBiAlph(tBiAlph * biAlph1, tBiAlph * biAlph2) {
 	    die("");
 	  }
 	}
-
-	/*
-	  debug("\nAPRES: c1=\n");
-	  affBiAlph(c1);
-	  debug("c2=\n");
-	  affBiAlph(c2);
-	  fprintf(stderr, "\n");
-	*/
       }
     }
   }
@@ -476,33 +460,23 @@ BOOL developpeInter(alphabet * d1, alphabet * d2) {
   tSymbole * i;
   alphabet * tab;
 
-  /*
-  debug("developInter ****************\n");
-  debug("d1: "); alphabet_dump(d1); fprintf(stderr, "\n");
-  debug("d2: "); alphabet_dump(d2); fprintf(stderr, "\n");
-  */
-
   if (compSymb(d1->etiquette, d2->etiquette) && (d1->etiquette->sorteSymbole != ATOME || d2->etiquette->sorteSymbole != ATOME)
       && d1->etiquette->sorteSymbole != UNIVERSEL && d2->etiquette->sorteSymbole != UNIVERSEL
       && (i = inter(d1->etiquette, d2->etiquette))) {
-
-
-    //    debug("intersection="); Affiche_Symbole(i); fprintf(stderr, "\n");
 
     /* si l une des 2 est universelle, on la laisse ; s il le faut, */
     /* on la remplacera par une transition avec but par defaut      */
 
     if (compSymb(d1->etiquette, i)) { /* d1 non inclus dans d2 */
 
-      // debug("d1 in d2\n");
-
       if (! d1->etiquette->sorteSymbole) { erreurInt("developpeInter"); }
 
       tab = sauf(d1->etiquette, i);
 
       if (tab == NULL) {
-	error("error with: "); Affiche_Symbole(d1->etiquette); fprintf(stderr, " sauf "); Affiche_Symbole(i); fprintf(stderr, "\n");
-	die("developpeInter: error with sauf\n"); 
+	error("error with: "); Affiche_Symbole(d1->etiquette); error(" sauf "); Affiche_Symbole(i);
+   error("\n");
+	fatal_error("developpeInter: error with sauf\n"); 
       }
 
       remplace(d1, i, tab) ;   /* d1 est a remplacer par i et tab */
@@ -517,8 +491,9 @@ BOOL developpeInter(alphabet * d1, alphabet * d2) {
       tab = sauf(d2->etiquette, i) ;
 
       if (tab == NULL) {
-	error("error with: "); Affiche_Symbole(d2->etiquette); fprintf(stderr, " sauf "); Affiche_Symbole(i); fprintf(stderr, "\n");
-	die("developpeInter: error with sauf\n"); 
+	error("error with: "); Affiche_Symbole(d2->etiquette); error(" sauf "); Affiche_Symbole(i);
+   error("\n");
+	fatal_error("developpeInter: error with sauf\n"); 
       }
 
       remplace(d2, i, tab) ; /* d2 est a remplacer par i et tab */
@@ -526,16 +501,6 @@ BOOL developpeInter(alphabet * d1, alphabet * d2) {
 
     symbole_delete(i);
   }
-
-  /*
-  debug("res:\n");
-  debug("d1: "); alphabet_dump(d1); fprintf(stderr, "\n");
-
-  debug("d2: "); alphabet_dump(d2); fprintf(stderr, "\n");
-
-  debug("developpeInter OK **********************************\n");
-  */
-
   return TRUE ;
 }
 
@@ -741,22 +706,15 @@ static void interEtatAtome(tAutAlMot * ret, int ** numero, tAutAlMot * a, int i,
       if (trB->etiq) {
 
 	if (appartientBis(trA->etiq, trB->etiq)) {
-
-	  //	  Affiche_Symbole(trA->etiq); fprintf(stderr, " IN "); Affiche_Symbole(trB->etiq); fprintf(stderr, "\n");
-
 	  if (trouve) {
-	     Affiche_Symbole(trA->etiq); fprintf(stderr, " IN "); Affiche_Symbole(trB->etiq); fprintf(stderr, "\n");
-	     error("nondeterminist automaton\n"); }
+	     Affiche_Symbole(trA->etiq); error(" IN "); Affiche_Symbole(trB->etiq);
+	     error("\nnondeterminist automaton\n"); }
 
 	  creerTrans(a, i, b, j, trA->etiq, trA->but, trB->but, ret, numero) ;
 	  trouve = TRUE ;
 	  interEtatAtome(ret, numero, a, trA->but, b, trB->but, deja) ;
 
-	} else {
-
-	  //	  fprintf(stderr, "! "); Affiche_Symbole(trA->etiq); fprintf(stderr, " IN "); Affiche_Symbole(trB->etiq); fprintf(stderr, "\n");
 	}
-
       }
     }
 
@@ -766,7 +724,7 @@ static void interEtatAtome(tAutAlMot * ret, int ** numero, tAutAlMot * a, int i,
 
 	error("Erreur interne [interEtatAtome] 1\n");
 	Affiche_Symbole(trA->etiq);
-	fprintf(stderr, "not found from state %d\n", j);
+	error("not found from state %d\n", j);
 	exit(1);
       }
 

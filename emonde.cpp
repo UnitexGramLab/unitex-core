@@ -264,7 +264,7 @@ int EmondeAutomate(tAutAlMot * a, BOOL puits) {
   free(utile);
   free(no);
 
-  if (a->entrantesEtats) { fprintf(stderr, "EmondeAutomate laisse entrantesEtats.\n"); }
+  if (a->entrantesEtats) { error("EmondeAutomate laisse entrantesEtats.\n"); }
 
   return 1;
 } 

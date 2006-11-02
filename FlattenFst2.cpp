@@ -49,7 +49,7 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
 
   FILE* res = u_fopen(temp,U_WRITE);
   if (res==NULL) {
-    fprintf(stderr,"Cannot create %s\n",temp);
+    error("Cannot create %s\n",temp);
     return FLATTEN_ERROR;
   }
 

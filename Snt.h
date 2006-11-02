@@ -22,29 +22,31 @@
 #ifndef SntH
 #define SntH
 
+#include "FileName.h"
+
 /**
  * This structure contains all the files related to a given .snt text
  * file. In order to avoid multiple definitions, none of these files
  * should be named without a structure of this kind.
  */
 struct snt_files {
-   char* path;
-   char* dlf;
-   char* dlf_n;
-   char* dlc;
-   char* dlc_n;
-   char* err;
-   char* err_n;
-   char* stats_n;
-   char* stat_dic_n;
-   char* text_cod;
-   char* tokens_txt;
-   char* tok_by_alph_txt;
-   char* tok_by_freq_txt;
-   char* enter_pos;
-   char* concord_ind;
-   char* concord_txt;
-   char* concord_html;
+   char path[FILENAME_SIZE];
+   char dlf[FILENAME_SIZE];
+   char dlf_n[FILENAME_SIZE];
+   char dlc[FILENAME_SIZE];
+   char dlc_n[FILENAME_SIZE];
+   char err[FILENAME_SIZE];
+   char err_n[FILENAME_SIZE];
+   char stats_n[FILENAME_SIZE];
+   char stat_dic_n[FILENAME_SIZE];
+   char text_cod[FILENAME_SIZE];
+   char tokens_txt[FILENAME_SIZE];
+   char tok_by_alph_txt[FILENAME_SIZE];
+   char tok_by_freq_txt[FILENAME_SIZE];
+   char enter_pos[FILENAME_SIZE];
+   char concord_ind[FILENAME_SIZE];
+   char concord_txt[FILENAME_SIZE];
+   char concord_html[FILENAME_SIZE];
 };
 
 

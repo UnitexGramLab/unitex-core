@@ -86,7 +86,7 @@ static int fst_file_load_symbols(fst_file_in_t * fstf) {
     hash_str_table_add(fstf->symbols, ustr->str + 1, symb);
   }
 
-  if (*ustr->str == 0) { die("load_symbols: unexpected eof\n"); }
+  if (*ustr->str == 0) { fatal_error("load_symbols: unexpected eof\n"); }
 
 //  debug("%d symbols loaded.\n", fstf->symbols->nbelems);
 
@@ -188,7 +188,7 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
 
   unichar * p = ustr->str;
 
-  if (*p != '-') { die("fst_load_next: %s: bad file format\n", fstf->name); }
+  if (*p != '-') { fatal_error("fst_load_next: %s: bad file format\n", fstf->name); }
 
   p++;
   int i = u_parse_int(p, & p);
@@ -196,7 +196,7 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
   //  debug("i=%d\n", i);
 
   if (i != fstf->pos + 1) { 
-    die("fst_load: %s: parsing error with line '%S' ('-%d ...' expected)\n", fstf->name, ustr->str, fstf->pos + 1);
+    fatal_error("fst_load: %s: parsing error with line '%S' ('-%d ...' expected)\n", fstf->name, ustr->str, fstf->pos + 1);
   }
 
   p++;  // p == name
@@ -222,7 +222,7 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
 
       while (*p && ! u_is_digit(*p)) { p++; }
 
-      if (*p == 0) { die("fst_load: %S: bad file format (line='%S')\n", fstf->name, ustr->str); }
+      if (*p == 0) { fatal_error("fst_load: %S: bad file format (line='%S')\n", fstf->name, ustr->str); }
       int to = u_parse_int(p, &p);
 
       if (fstf->symbols->tab[lbl]) { /* if it is a good symbol (successfully loaded), make transition */
@@ -233,11 +233,11 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
     }
   }
 
-  if (*ustr->str == 0) { die("fst_file_read: unexpected end of file\n"); }
+  if (*ustr->str == 0) { fatal_error("fst_file_read: unexpected end of file\n"); }
 
   if (A->nbstates == 0) {
 
-    warning("fst_file_read: automaton with no state\n");
+    error("fst_file_read: automaton with no state\n");
 
   } else { autalmot_set_initial(A, 0); }
 
@@ -254,7 +254,7 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
 void fst_file_seek(fst_file_in_t * fstin, int no) {
 
   if (no < 0 || no >= fstin->nbelems) {
-    die("fst_seek(%d): only %d automat%s in file\n", no, fstin->nbelems, (no > 1) ? "a" : "on");
+    fatal_error("fst_seek(%d): only %d automat%s in file\n", no, fstin->nbelems, (no > 1) ? "a" : "on");
   }
 
   if (no < fstin->pos) {
@@ -267,7 +267,7 @@ void fst_file_seek(fst_file_in_t * fstin, int no) {
 
   while (fstin->pos < no) {
     
-    if ((len = u_fgets(buf, MAXBUF, fstin->f)) == 0) { die("fst_seek: %s: unexpected EOF\n", fstin->name); }
+    if ((len = u_fgets(buf, MAXBUF, fstin->f)) == 0) { fatal_error("fst_seek: %s: unexpected EOF\n", fstin->name); }
 
     if (buf[0] == 'f' && isspace(buf[1])) { fstin->pos++; }
 
@@ -289,7 +289,7 @@ fst_file_out_t * fst_file_out_open(char * fname, int type) {
 
   fst_file_out_t * res = (fst_file_out_t *) xmalloc(sizeof(fst_file_out_t));
 
-  if (type < 0 || type >= FST_BAD_TYPE) { die("fst_out_open: bad FST_TYPE\n"); }
+  if (type < 0 || type >= FST_BAD_TYPE) { fatal_error("fst_out_open: bad FST_TYPE\n"); }
 
   if ((res->f = u_fopen(fname, U_WRITE)) == NULL) {
     error("fst_out_open: unable to open '%s'\n", fname);
@@ -337,7 +337,7 @@ void fst_file_close(fst_file_out_t * fstout) {
   int i = 9;
   int n = fstout->nbelems;
 
-  if (n == 0) { warning("fstfile without automaton\n"); }
+  if (n == 0) { error("fstfile without automaton\n"); }
 
   while (n) {
     buf[i--] = '0' + (n % 10);
@@ -463,7 +463,7 @@ void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
     break;
 
   default:
-    die("fst_write: invalid fstf->type: %d\n", fstf->type);
+    fatal_error("fst_write: invalid fstf->type: %d\n", fstf->type);
   }
 
   u_fprintf(fstf->f, "-%d %S\n", fstf->nbelems + 1, A->name);
@@ -481,7 +481,7 @@ void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
 
     for (transition_t * t = A->states[q].trans; t; t = t->next) {
 
-      if (t->label == SYMBOL_DEF) { die("fst_file_write: symbol <def> in trans list ???\n"); }
+      if (t->label == SYMBOL_DEF) { fatal_error("fst_file_write: symbol <def> in trans list ???\n"); }
 
       symbol_to_label(t->label, label);
 
@@ -541,7 +541,7 @@ normal_output:
 
 autalmot_t * load_grammar_automaton(char * name, language_t * lang) {
 
-  if (lang == NULL) { die("load grammar: LANG is not set\n"); }
+  if (lang == NULL) { fatal_error("load grammar: LANG is not set\n"); }
 
 //  debug("load_grammar_automaton(%s)\n", name);
 

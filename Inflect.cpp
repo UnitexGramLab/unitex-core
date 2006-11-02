@@ -25,7 +25,7 @@
 #include "Fst2.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
-
+#include "Error.h"
 
 //
 // "E:\My Unitex\French\Dela\essai.dic" "E:\My Unitex\French\Dela\essaiflx.dic"  "E:\My Unitex\French\Inflection"
@@ -34,7 +34,7 @@
 #define N_FST2 3000 // maximum number of flexional transducers
 #define MAX_CHARS_IN_STACK 1000
 
-char repertoire[1000];
+char inflection_directory[1000];
 FILE *f;
 FILE *f_out;
 int line=0;
@@ -89,7 +89,7 @@ if (argc>4) {
          if (!strcmp(argv[5],"-k")) {
             REMOVE_DIGITS_FROM_GRAMM_CODE=0;
          } else {
-            fprintf(stderr,"Invalid parameter: %s\n",argv[5]);
+            error("Invalid parameter: %s\n",argv[5]);
             return 1;
          }
       }
@@ -100,26 +100,26 @@ if (argc>4) {
               if (!strcmp(argv[5],"-a")) {
                  ADD_TWO_POINTS=1;
               } else {
-                 fprintf(stderr,"Invalid parameter: %s\n",argv[5]);
+                 error("Invalid parameter: %s\n",argv[5]);
                  return 1;
               }
            }
    } else {
-     fprintf(stderr,"Invalid parameter: %s\n",argv[4]);
+     error("Invalid parameter: %s\n",argv[4]);
      return 1;
    }
 }
-strcpy(repertoire,argv[3]);
-strcat(repertoire,"/");
+strcpy(inflection_directory,argv[3]);
+strcat(inflection_directory,"/");
 f=u_fopen(argv[1],U_READ);
 f_out=u_fopen(argv[2],U_WRITE);
 if (f==NULL) {
-  fprintf(stderr,"Cannot open %s\n",argv[1]);
-  return 1;
+   error("Cannot open %s\n",argv[1]);
+   return 1;
 }
 if (f_out==NULL) {
-  fprintf(stderr,"Cannot open %s\n",argv[2]);
-  return 1;
+   error("Cannot open %s\n",argv[2]);
+   return 1;
 }
 traiter_dico();
 u_fclose(f);
@@ -166,11 +166,11 @@ while ((c=u_fgetc(f))!=',' && c!='\n' && c!=EOF && c!='/') {
     if (c=='\\') {
         c=u_fgetc(f);
         if (c=='\n') {
-            fprintf(stderr,"Line %d: '\\' at end of line\n",line);
+            error("Line %d: '\\' at end of line\n",line);
             return 1;
         }
         if (c==EOF) {
-            fprintf(stderr,"Line %d: unexpected end of file\n",line);
+            error("Line %d: unexpected end of file\n",line);
             return 1;
         }
     }
@@ -184,7 +184,7 @@ if (c=='/' && i==0) {
 if (c==EOF) return 0;
 lemme[i]='\0';
 if (c=='\n') {
-    fprintf(stderr,"Line %d: unexpected end of line\n",line);
+    error("Line %d: unexpected end of line\n",line);
     return 1;
 }
 // we read the flexional reference (N31, V2, ...)
@@ -193,11 +193,11 @@ while ((c=u_fgetc(f))!='+' && c!='/' && c!='\n' && c!=EOF) {
     if (c=='\\') {
         c=u_fgetc(f);
         if (c=='\n') {
-            fprintf(stderr,"Line %d: '\\' at end of line\n",line);
+            error("Line %d: '\\' at end of line\n",line);
             return 1;
         }
         if (c==EOF) {
-            fprintf(stderr,"Line %d: unexpected end of file\n",line);
+            error("Line %d: unexpected end of file\n",line);
             return 0;
         }
     }
@@ -206,12 +206,12 @@ while ((c=u_fgetc(f))!='+' && c!='/' && c!='\n' && c!=EOF) {
 code[i]='\0';
 if (c==EOF) fini=0;
 if (i==0) {
-    fprintf(stderr,"Line %d: missing flexional code\n",line);
+    error("Line %d: missing flexional code\n",line);
     return fini;
 }
 i=get_grammatical_code(code,code_gramm,REMOVE_DIGITS_FROM_GRAMM_CODE);
 if (i==0) {
-   fprintf(stderr,"Line %d: empty flexional transducer name\n",line);
+   error("Line %d: empty flexional transducer name\n",line);
    return fini;
 }
 if (c=='+') {
@@ -221,11 +221,11 @@ if (c=='+') {
         if (c=='\\') {
             c=u_fgetc(f);
             if (c=='\n') {
-                fprintf(stderr,"Line %d: '\\' at end of line\n",line);
+                error("Line %d: '\\' at end of line\n",line);
                 return 1;
             }
             if (c==EOF) {
-                fprintf(stderr,"Line %d: unexpected end of file\n",line);
+                error("Line %d: unexpected end of file\n",line);
                 return 0;
             }
         }
@@ -336,7 +336,7 @@ while (t!=NULL) {
 //
 void free_node(struct node* n) {
 if (n==NULL) {
-  fprintf(stderr,"Erreur dans free_node\n");
+  error("Erreur dans free_node\n");
   return;
 }
 free_transition(n->t);
@@ -383,11 +383,10 @@ if (flex[pos]=='\0') {
     } else {
         // else we load it
         if (n_fst2==N_FST2) {
-            fprintf(stderr,"Memory error: too much flexional transducers\n");
-            exit(1);
+            fatal_error("Memory error: too much flexional transducers\n");
         }
         char s[1000];
-        strcpy(s,repertoire);
+        strcpy(s,inflection_directory);
         strcat(s,flex);
         strcat(s,".fst2");
         fst2[n_fst2]=load_fst2(s,1);

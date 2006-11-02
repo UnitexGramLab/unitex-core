@@ -23,15 +23,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
 #include "unicode.h"
 #include "FileName.h"
 #include "Text_tokens.h"
 #include "Extract_units.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
-
+#include "Error.h"
 
 //---------------------------------------------------------------------------
 void usage() {
@@ -58,7 +56,7 @@ char yes_no;
 if (!strcmp(argv[1],"yes")) yes_no=1;
 else if (!strcmp(argv[1],"no")) yes_no=0;
 else {
-   fprintf(stderr,"Invalid parameter %s: must be yes or no\n",argv[1]);
+   error("Invalid parameter %s: must be yes or no\n",argv[1]);
    return 1;
 }
 
@@ -67,33 +65,33 @@ get_snt_path(argv[2],temp);
 strcat(temp,"text.cod");
 FILE* text=fopen(temp,"rb");
 if (text==NULL) {
-   fprintf(stderr,"Cannot open %s\n",temp);
+   error("Cannot open %s\n",temp);
    return 1;
 }
 get_snt_path(argv[2],temp);
 strcat(temp,"tokens.txt");
 struct text_tokens* tok=load_text_tokens(temp);
 if (tok==NULL) {
-   fprintf(stderr,"Cannot load token list %s\n",temp);
+   error("Cannot load token list %s\n",temp);
    fclose(text);
    return 1;
 }
 if (tok->SENTENCE_MARKER==-1) {
-   fprintf(stderr,"The text does not contain any sentence marker {S}\n");
+   error("The text does not contain any sentence marker {S}\n");
    fclose(text);
    free_text_tokens(tok);
    return 1;
 }
 FILE* concord=u_fopen(argv[3],U_READ);
 if (concord==NULL) {
-   fprintf(stderr,"Cannot open concordance %s\n",argv[3]);
+   error("Cannot open concordance %s\n",argv[3]);
    fclose(text);
    free_text_tokens(tok);
    return 1;
 }
 FILE* result=u_fopen(argv[4],U_WRITE);
 if (result==NULL) {
-   fprintf(stderr,"Cannot write output file %s\n",argv[4]);
+   error("Cannot write output file %s\n",argv[4]);
    fclose(text);
    u_fclose(concord);
    free_text_tokens(tok);

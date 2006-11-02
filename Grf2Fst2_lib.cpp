@@ -221,13 +221,12 @@ int ll_i_n_free = 0;
 int ll_i_n_malloc = 0;
 
 void util_error(char *function,char *message) {
-  fprintf(stderr,"%s: %s\n",function,message);
-  exit(1);
+fatal_error("%s: %s\n",function,message);
 }
 
 void* ll_i_malloc(int n) {
-  ll_i_n_malloc++;
-  return (void *)malloc(n);
+ll_i_n_malloc++;
+return (void *)malloc(n);
 }
 
 void ll_i_pfree(void *ptr) {
@@ -423,7 +422,7 @@ switch(mode) {
 case DEFAULT_TOKENIZATION: return u_is_letter(c);
 case CHAR_BY_CHAR_TOKENIZATION: return 0; // by convention
 case ALPHABET_TOKENIZATION: return is_letter(c,alph);
-default: fprintf(stderr,"Internal error in is_letter_generic\n"); exit(1);
+default: error("Internal error in is_letter_generic\n"); exit(1);
 }
 }
 
@@ -777,8 +776,7 @@ void add_reverse_transition_to_state(int etiq,int dest,Etat_comp e) {
   l->tag_number = etiq;
   l->state_number = dest;
   if (e==NULL) {
-    fprintf(stderr,"Internal problem in add_reverse_transition_to_state\n");
-    exit(1);
+     fatal_error("Internal problem in add_reverse_transition_to_state\n");
   }
   l->next = e->transinv;
   e->transinv = l;
@@ -886,7 +884,7 @@ int determinisation(Graph_comp graph) {
 
   if ((graph->n_states == 0) || (graph->states[0] == NULL)) {
     // do not segfault on empty automaton
-    fprintf(stderr, "warning: resulting automaton is empty\n");
+    error("warning: resulting automaton is empty\n");
     return 1;
   }
 
@@ -1075,7 +1073,7 @@ int reverse (Graph_comp graph) {
           add_transition_to_etat_comp(reversed->states[(map_table[i])],
                                       l->tag_number,map_table[(l->state_number)]);
 #ifdef DEBUG                                                                /* DEBUG */
-          fprintf(stderr,"%i --%i--> %i\n",                                 /* DEBUG */
+          error("%i --%i--> %i\n",                                 /* DEBUG */
                   map_table[i],sons->tag_number,map_table[(sons->state_number)]); /* DEBUG */
 #endif                                                                      /* DEBUG */
         }
@@ -1151,7 +1149,7 @@ int write_graph_comp(FILE* f,
   u_fprintf(f, "%d %S\n", number, name);
 
   if (graph->states[0] == NULL) { /* do not segfault on empty automaton */
-    fprintf(stderr, "warning: resulting automaton is empty\n");
+    error("warning: resulting automaton is empty\n");
     u_fprintf(f, ": \nf \n");
     return 1;
   }
@@ -2024,7 +2022,7 @@ void conformer_nom_graphe_comp(char * NOM, int courant) {
 
   if (abs_path_name_warning != 0)
     {
-      fprintf(stderr,
+      error(
               "Absolute path name detected (%s):\n"
               "%s\n"
               "Absolute path names are not portable!\n",
@@ -2181,7 +2179,7 @@ switch(mode) {
 case DEFAULT_TOKENIZATION: return get_mot_comp_default(contenu,pos,mot,pos_seq);
 case CHAR_BY_CHAR_TOKENIZATION: return get_mot_comp_char_by_char(contenu,pos,mot,pos_seq);
 case ALPHABET_TOKENIZATION: return get_mot_comp_alphabet(contenu,pos,mot,pos_seq,alph);
-default: fprintf(stderr,"Internal error in get_mot_comp_generic\n"); exit(1);
+default: error("Internal error in get_mot_comp_generic\n"); exit(1);
 }
 }
 
@@ -2200,7 +2198,7 @@ int get_forme_canonique_comp(unichar contenu[],int *pos,unichar mot[],int *pos_s
    }while ((contenu[*pos] != '>') && (contenu[*pos] != '\0') && (i < N_CAR_MAX_COMP));
    if (i >= N_CAR_MAX_COMP) return -3;
    if ((contenu[*pos] == '\0')) {
-     fprintf(stderr,"WARNING : canonical form should be ended by >\n");
+      error("WARNING : canonical form should be ended by >\n");
    }
    mot[i] = '>';
 
@@ -2250,7 +2248,7 @@ int get_sequence_desambiguisee_comp(unichar contenu[],int *pos,unichar mot[],int
    }while ((contenu[*pos] != '}') && (contenu[*pos] != '\0') && (i < N_CAR_MAX_COMP));
    if (i >= N_CAR_MAX_COMP) return -3;
    if (contenu[*pos] == '\0') {
-     fprintf(stderr,"WARNING : desambiguised form should be ended by }\n");
+      error("WARNING : desambiguised form should be ended by }\n");
    }
    mot[i] = '}';
    mot[i+1] = '\0';
@@ -2369,7 +2367,6 @@ int get_sous_graphe_comp(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
   }
   if (i >= N_CAR_MAX_COMP) return 0;
   mot[i] = '\0';
-  //i_fprintf(stderr, "mot=%S\n", mot);
   (*pos_seq)++;
   return 1;
 }
@@ -2433,12 +2430,10 @@ int lire_mot_comp(unichar contenu[],int* pos,
       // et on le remplace par l'appel au sous graphe
       if (get_sous_graphe_comp(contenu,pos, seq + l, pos_seq) == 0) return -3;
 
-      //  i_fprintf(stderr, "lire_mot_comp: subgraph=%S\n", seq);
-
       indice = ajouter_graphe_comp(seq + 1,rac_graphe_comp,0); // + 1 pour omettre le ':'
       if (indice >= NOMBRE_GRAPHES_COMP)
         {
-           fprintf(stderr,
+           error(
                    "ERROR at top level: Too many graphes. "
                    "The number of graphs should be lower than %d\n",
                    NOMBRE_GRAPHES_COMP);
@@ -2525,7 +2520,7 @@ int traitement_etiquettes_comp(int *indice,unichar mot[])
 {
   if (((*indice) = ajouter_etiquette_comp(mot,rac_comp,0)) >= MAX_FST2_TAGS)
     {
-      fprintf(stderr,"ERROR at top level: Too many tags (maximum %d)\n",MAX_FST2_TAGS);
+      error("ERROR at top level: Too many tags (maximum %d)\n",MAX_FST2_TAGS);
       return -1;
     }
   u_strcpy(donnees->Etiquette_comp[(*indice)],mot);
@@ -2643,10 +2638,10 @@ int traitement_transition_comp(Graph_comp graph,unichar contenu[],
   if (plus == -3) {       // Cas trop de caractères dans un mot
    u_to_char(err,donnees->nom_graphe[graphe_courant]);
    if (graphe_courant == 0) {
-      fprintf(stderr,"ERROR in main graph %s: The size of a word should be lower than %d characters\n",err,N_CAR_MAX_COMP);
+      error("ERROR in main graph %s: The size of a word should be lower than %d characters\n",err,N_CAR_MAX_COMP);
     }
     else {
-      fprintf(stderr,"WARNING in main graph %s: The size of a word should be lower than %d characters\nGraph has been emptied\n",err,N_CAR_MAX_COMP);
+      error("WARNING in main graph %s: The size of a word should be lower than %d characters\nGraph has been emptied\n",err,N_CAR_MAX_COMP);
     }
     return 0;
   }
@@ -2654,10 +2649,10 @@ int traitement_transition_comp(Graph_comp graph,unichar contenu[],
   {
     u_to_char(err,donnees->nom_graphe[graphe_courant]);
     if (graphe_courant == 0) {
-      fprintf(stderr,"ERROR in main graph %s: The size of a sequence between two + should be lower than %d words\n",err,TAILLE_SEQUENCE_COMP);
+      error("ERROR in main graph %s: The size of a sequence between two + should be lower than %d words\n",err,TAILLE_SEQUENCE_COMP);
     }
     else {
-      fprintf(stderr,"WARNING in main graph %s: The size of a sequence between two + should be lower than %d words\nGraph has been emptied\n",err,TAILLE_SEQUENCE_COMP);
+      error("WARNING in main graph %s: The size of a sequence between two + should be lower than %d words\nGraph has been emptied\n",err,TAILLE_SEQUENCE_COMP);
     }
     return 0;
   }
@@ -2764,7 +2759,7 @@ int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
   if ( i >= TAILLE_MOT_GRAND_COMP )
     {
       u_to_char(err,donnees->nom_graphe[courant]);
-      fprintf(stderr,
+      error(
               "ERROR in main graph %s.grf:\n"
               "Too many characters in box. The number of characters\n"
               "per box should be lower than %d\n",
@@ -2787,7 +2782,7 @@ int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
   if ( n_sortantes >= NOMBRE_TRANSITIONS_COMP )
     {
       u_to_char(err,donnees->nom_graphe[courant]);
-      fprintf(stderr,"WARNING in graph %s.grf:\n"
+      error("WARNING in graph %s.grf:\n"
               "to many transitions. The number of transitions\n"
               "per box should be lower than %d\n",
               err, NOMBRE_TRANSITIONS_COMP);
@@ -2851,8 +2846,8 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
     {
       char s[TAILLE_MOT_GRAND_COMP];
       u_to_char(s,donnees->nom_graphe[graphe_courant]);
-      fprintf(stderr,"Cannot open the graph %s.grf\n",s);
-      fprintf(stderr,"(%s)\n",nom);
+      error("Cannot open the graph %s.grf\n",s);
+      error("(%s)\n",nom);
       write_graph_comp(fs_comp, graph,
                        (-(graphe_courant)-1),
                        donnees->nom_graphe[graphe_courant]);
@@ -2878,7 +2873,7 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
                            donnees->nom_graphe[graphe_courant]);
           u_fclose(f);
           u_to_char(err,donnees->nom_graphe[graphe_courant]);
-          fprintf(stderr,
+          error(
                   "ERROR in graph %s.grf: Too many boxes (%d).\n"
                   "The number of boxes should be lower than %d\n",
                   err,n_etats_initial,MAX_FST2_STATES);
@@ -2963,10 +2958,10 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if (graphe_courant == 0)
         {
-          fprintf(stderr,"ERROR: Main graph %s.grf has been emptied\n",err);
+          error("ERROR: Main graph %s.grf has been emptied\n",err);
           return 0;
         }
-      fprintf(stderr,"WARNING: graph %s.grf has been emptied\n",err);
+      error("WARNING: graph %s.grf has been emptied\n",err);
       return 1;
     }
   donnees->statut_graphe[graphe_courant] = 1;
@@ -2982,10 +2977,10 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
       u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if (graphe_courant == 0)
         {
-          fprintf(stderr,"ERROR in main graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
+          error("ERROR in main graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
           return 0;
         }
-      fprintf(stderr,"WARNING in graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
+      error("WARNING in graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
       return 0;
     }
   return 1;
@@ -3056,7 +3051,7 @@ int compilation(char *nom_graphe_principal,int mode,Alphabet* alph,FILE* fs_comp
 
   if (nombre_graphes_comp >= NOMBRE_GRAPHES_COMP)
   {
-    fprintf(stderr,"There are too many graphs. The number of graphs should be lower than %d\n",NOMBRE_GRAPHES_COMP);
+    error("There are too many graphs. The number of graphs should be lower than %d\n",NOMBRE_GRAPHES_COMP);
     return 0;
   }
 

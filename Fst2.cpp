@@ -976,14 +976,14 @@ Fst2* load_fst2(char* filename,int read_names,int graph_number) {
 FILE* f;
 f=u_fopen(filename,U_READ);
 if (f==NULL) {
-	fprintf(stderr,"Cannot open the file %s\n",filename);
+	error("Cannot open the file %s\n",filename);
 	return NULL;
 }
 Fst2* fst2=new_Fst2();
 /* We read the number of graphs contained in the fst2 */
 fst2->number_of_graphs=u_read_int(f);
 if (fst2->number_of_graphs==0) {
-	fprintf(stderr,"Graph %s is empty\n",filename);
+	error("Graph %s is empty\n",filename);
 	return NULL;
 }
 /*

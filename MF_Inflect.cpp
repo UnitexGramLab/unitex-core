@@ -35,14 +35,27 @@
 #include "MF_DicoMorpho.h"
 #include "MF_DLC_inflect.h"
 #include "IOBuffer.h"
+#include "FileName.h"
+#include "Error.h"
+
 
 //Current language's alphabet
 Alphabet* alph;
 
 // Directory containing the inflection tranducers and the 'Morphology' file
-extern char repertoire[1000];
+extern char inflection_directory[1000];
 
-void usage();
+
+
+void usage() {
+printf("Usage: DlcInflect <delac> <delacf> <alpha> <dir>\n");
+printf("     <delac> : the unicode DELAC file to be inflected\n");
+printf("     <delacf> : the unicode resulting DELACF dictionary \n");
+printf("     <alpha> : the alphabet file \n");
+printf("     <dir> : the directory containing 'Morphology' file and \n");
+printf("             inflection graphs for single and compound words.\n");
+printf("\nInflects a DELAC into a DELACF.\n");
+}
 
 ///////////////////////////////////
 // Inflection of a DELAC to a DELACF
@@ -58,70 +71,52 @@ int main(int argc, char* argv[]) {
  * the graphical interface */
 setBufferMode();
    
-   
-   
-  int err;  //0 if a function completes with no error 
-  
-  if (argc != 5) {
-    usage();
-    return 1;
-  }
-  //Load morphology description
-  err = read_language_morpho("Morphology", argv[4]);
-  if (err) {
-    free_language_morpho();
-    return 1;
-  }
-  print_language_morpho();
-  
-  //Load alphabet
-  char alphabet[1000];  //Path and name of the alphabet file
-  strcpy(alphabet,argv[3]);
-  alph = load_alphabet(alphabet);  //To be done once at the beginning of the DELAC inflection
+int err;  //0 if a function completes with no error 
+if (argc!= 5) {
+   usage();
+   return 0;
+}
+//Load morphology description
+char morphology[FILENAME_SIZE];
+new_file(argv[4],"Morphology",morphology);
+err=read_language_morpho(morphology);
+if (err) {
+   free_language_morpho();
+   return 1;
+}
+print_language_morpho();
+//Load alphabet
+alph=load_alphabet(argv[3]);  //To be done once at the beginning of the DELAC inflection
   if (alph==NULL) {
-    fprintf(stderr,"Cannot open alphabet file %s\n",alphabet);
+    error("Cannot open alphabet file %s\n",argv[3]);
     free_language_morpho();
     free_alphabet(alph);    
     return 1;
   }
-  
-  //Init equivalence files
-  err = d_init_morpho_equiv("Equivalences", argv[4]);
-  if (err) {
-    free_language_morpho();
-    free_alphabet(alph);    
-    return 1;
-  }
-  d_print_morpho_equiv();
-
-  d_init_class_equiv();
-  
-  //Initialize the structure for inflection transducers
-  strcpy(repertoire,argv[4]);
-  if (strlen(repertoire) && repertoire[strlen(repertoire)-1] != '/')
-    strcat(repertoire,"/");
-  err = MU_graph_init_graphs();
-  if (err) {
-    MU_graph_free_graphs();
-    return 1;
-  }
-  
-  //DELAC inflection
-  err = DLC_inflect(argv[1],argv[2]);
-
-  MU_graph_free_graphs();
-  free_alphabet(alph);
-  free_language_morpho();
-  return 0;
+//Init equivalence files
+char equivalences[FILENAME_SIZE];
+new_file(argv[4],"Equivalences",equivalences);
+err=d_init_morpho_equiv(equivalences);
+if (err) {
+   free_language_morpho();
+   free_alphabet(alph);    
+   return 1;
+}
+d_print_morpho_equiv();
+d_init_class_equiv();
+//Initialize the structure for inflection transducers
+strcpy(inflection_directory,argv[4]);
+err=MU_graph_init_graphs();
+if (err) {
+   MU_graph_free_graphs();
+   return 1;
+}
+//DELAC inflection
+err=DLC_inflect(argv[1],argv[2]);
+MU_graph_free_graphs();
+free_alphabet(alph);
+free_language_morpho();
+return 0;
 }
 
-void usage() {
-printf("Usage: DlcInflect <delac> <delacf> <alpha> <dir>\n");
-printf("     <delac> : the unicode DELAC file to be inflected\n");
-printf("     <delacf> : the unicode resulting DELACF dictionary \n");
-printf("     <alpha> : the alphabet file \n");
-printf("     <dir> : the directory containing 'Morphology' file and \n");
-printf("             inflection graphs for single and compound words.\n");
-printf("\nInflects a DELAC into a DELACF.\n");
-}
 

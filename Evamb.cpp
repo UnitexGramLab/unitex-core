@@ -45,7 +45,7 @@
 #include "Fst2.h"
 #include "String_hash.h"
 #include "IOBuffer.h"
-
+#include "Error.h"
 
 #define MAX(a,b) (((a) < (b)) ? (b) : (a))
 
@@ -319,7 +319,10 @@ setBufferMode();
     } else if (strcmp(*argv, "-o") == 0) {
 
       argv++, argc--;
-      if (argc < 1) { usage(); die("bad args\n"); }
+      if (argc < 1) {
+         usage();
+         fatal_error("bad args\n");
+      }
       autoname = *argv;
       
     } else if (strcmp(*argv, "-exp") == 0) {
@@ -333,7 +336,7 @@ setBufferMode();
     } else if (strcmp(*argv, "-n") == 0) {
    
       argv++, argc--;
-      if (argc < 1) { usage(); die("bad args\n"); }
+      if (argc < 1) { usage(); fatal_error("bad args\n"); }
 
       no = atoi(*argv);
     }
@@ -342,14 +345,14 @@ setBufferMode();
   }
 
 
-  if (autoname == NULL) { die("no fst specified\n"); }
+  if (autoname == NULL) { fatal_error("no fst specified\n"); }
 
   debug("loading '%s' ...\n", autoname);
   list_aut_old * txtauto = load_text_automaton(autoname, explosion);
 
-  if (txtauto == NULL) { die("unable to load '%s' fst2\n", *argv); }
+  if (txtauto == NULL) { fatal_error("unable to load '%s' fst2\n", *argv); }
 
-  if (no > txtauto->nb_aut) { die("only %d sentence(s) in '%s'\n", txtauto->nb_aut, autoname); }
+  if (no > txtauto->nb_aut) { fatal_error("only %d sentence(s) in '%s'\n", txtauto->nb_aut, autoname); }
 
 
   if (no < 0) { // eval all sentences
@@ -366,7 +369,7 @@ setBufferMode();
       if (txtauto->les_aut[no]->nbEtats < 1) {
 
 	badauto++;
-	fprintf(stderr, "%d: empty automaton\n", no + 1);
+	error("%d: empty automaton\n", no + 1);
 
       } else {
       
@@ -387,7 +390,7 @@ setBufferMode();
 	if (maxlogamb < logamb) { maxlogamb = logamb; maxambno = no + 1; }
 	if (minlogamb > logamb) { minlogamb = logamb; minambno = no + 1; }
         
-        fprintf(stderr, "%d: lognp=%.2f, lmoy=%.1f, amb. rate=%.2f, (%d intr.)\n", no + 1, (double) lognp, (double) lmoy,
+        error("%d: lognp=%.2f, lmoy=%.1f, amb. rate=%.2f, (%d intr.)\n", no + 1, (double) lognp, (double) lmoy,
                (double) exp(logamb), (int) exp(lognp));
 
         cumullognp = cumullognp + lognp; cumullmoy = cumullmoy + lmoy;
@@ -398,7 +401,7 @@ setBufferMode();
     // cumullmoy = longueur moyenne du texte (en mots)
 
     if (badauto >= txtauto->nb_aut) {
-      fprintf(stderr, "no automaton ?\n");
+      error("no automaton ?\n");
     } else {
     
       printf("\n%s: average of %.2f (old) units per sentence\n", autoname, cumullognp / (txtauto->nb_aut - badauto));

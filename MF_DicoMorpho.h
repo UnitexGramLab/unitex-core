@@ -83,7 +83,6 @@ typedef struct {
 /* e.g. 's', with no precision of the relevant category. In the compound inflection   */
 /* the features may be strings, e.g. "sing", and have to refer to a category, e.g. Nb */
 /* 'equiv_file' is a file describing these equivalences for a given language          */
-/* 'dir' is the directory containing 'equiv_file'                                     */
 /* Each line of the file is of the form:                                              */
 /*      <df>:<cat>=<val>                                                              */
 /* meaning that in the morphological dictionaries of the given language the feature   */
@@ -107,7 +106,7 @@ typedef struct {
 /*                    n:Gen=neu                                                       */
 /* The function fills out D_MORPHO_EQUIV.                                             */
 /* Returns 0 on success, 1 otherwise.                                                 */
-int d_init_morpho_equiv(char* equiv_file, char *dir);
+int d_init_morpho_equiv(char* equiv_file);
 
 /**************************************************************************************/
 /* Initialises the set of equivalences between class names in a dictionary (e.g. "N") */

@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include "MF_InflectTransd.h"
 #include "Error.h"
+#include "FileName.h"
 
 ///////////////////////////////
 // GLOBAL VARIABLES
@@ -51,7 +52,7 @@ int n_fst2;
 ///////////////////////////////
 // Directory containing the inflection tranducers
 //char repertoire[1000] = "/home/agata/UNITEX1.2beta_avec_flex_comp/UNITEX1.2beta_avec_flex_comp_22062005/Polish/Inflection/";
-char repertoire[1000];
+char inflection_directory[FILENAME_SIZE];
 
 ///////////////////////////////
 // ALL FUNCTIONS IN THIS MODULE
@@ -126,7 +127,7 @@ while (t!=NULL) {
 // Free a node
 void free_node(struct node* n) {
 if (n==NULL) {
-  fprintf(stderr,"Erreur dans free_node\n");
+  error("NULL error in free_node\n");
   return;
 }
 free_transition(n->t);
@@ -162,12 +163,10 @@ if (flex[pos]=='\0') {
     else {
         // else we load it
         if (n_fst2==N_FST2) {
-            fprintf(stderr,"Memory error: too much flexional transducers\n");
-            exit(1);
+            fatal_error("Memory error: too much flexional transducers\n");
         }
-        char s[1000];
-        strcpy(s,repertoire);
-        strcat(s,flex);
+        char s[FILENAME_SIZE];
+        new_file(inflection_directory,flex,s);
         strcat(s,".fst2");
         fst2[n_fst2]=load_fst2(s,1);
         n->final=n_fst2;

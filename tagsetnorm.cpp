@@ -29,7 +29,7 @@
 #include "fst_file.h"
 #include "utils.h"
 #include "IOBuffer.h"
-
+#include "Error.h"
 
 
 
@@ -50,10 +50,10 @@ void usage() {
 void copy_file(char * dest, char * src) {
 
   FILE * in = fopen(src, "rb");
-  if (in == NULL) { die("unable to open '%s'\n", src); }
+  if (in == NULL) { fatal_error("unable to open '%s'\n", src); }
 
   FILE * out = fopen(dest, "wb");
-  if (out == NULL) { die("unable to open '%s'\n", dest); }
+  if (out == NULL) { fatal_error("unable to open '%s'\n", dest); }
 
   int c;
   while ((c = getc(in)) != EOF) { putc(c, out); }
@@ -82,7 +82,7 @@ int main(int argc, char ** argv) {
       if (strcmp(*argv, "-l") == 0) { // file of compiled grammar names
 
 	argv++, argc--;
-	if (argc == 0) { die("-l needs an arg\n"); }
+	if (argc == 0) { fatal_error("-l needs an arg\n"); }
 	langname = *argv;
 
       } else if (strcmp(*argv, "-h") == 0) {
@@ -90,15 +90,15 @@ int main(int argc, char ** argv) {
         usage();
 	return 0;
 
-      }	else { die("unknow arg: '%s'\n", *argv); }
+      }	else { fatal_error("unknow arg: '%s'\n", *argv); }
 
     }
 
     argv++, argc--;
   }	
 
-  if (! langname) { die("no tagset specified\n"); }
-  if (txtauto == NULL) { die("no text automaton specified\n"); }
+  if (! langname) { fatal_error("no tagset specified\n"); }
+  if (txtauto == NULL) { fatal_error("no text automaton specified\n"); }
 
 
   char bak[MAX_PATH];
@@ -116,11 +116,11 @@ int main(int argc, char ** argv) {
 
   fst_file_in_t * txtin = fst_file_in_open(bak, FST_TEXT);
 
-  if (txtin == NULL) { die("unable to load text '%s'\n", bak); }
+  if (txtin == NULL) { fatal_error("unable to load text '%s'\n", bak); }
 
   fst_file_out_t * txtout = fst_file_out_open(txtauto, FST_TEXT);
 
-  if (txtout == NULL) { die("unable to open '%s' for writing\n", txtauto); }
+  if (txtout == NULL) { fatal_error("unable to open '%s' for writing\n", txtauto); }
 
   autalmot_t * A;
 

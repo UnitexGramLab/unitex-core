@@ -192,8 +192,6 @@ double eval_sentence(autalmot_t * A, int * min, int * max) {
     res = res + log((double) nptab[q1]);
   }
  
-//  fprintf(stderr, "dn=%g\n", res);
-
   return res;
 }
 

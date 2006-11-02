@@ -1,7 +1,7 @@
 /*
   * Unitex 
   *
-  * Copyright (C) 2001-2003 Universit<E9> de Marne-la-Vall<E9>e <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@
 #include "MF_LangMorpho.h"
 #include "MF_Util.h"
 #include "MF_DicoMorpho.h"
+#include "Error.h"
 
 //Alphabet of the current language
 extern Alphabet* alph;
@@ -67,14 +68,14 @@ int DLC_inflect(char* DLC, char* DLCF) {
   //Open DELAC
   dlc = u_fopen(DLC, U_READ);
   if (!dlc) {
-    fprintf(stderr,"Unable to open DELAC file: '%s' !\n", DLC);
+    error("Unable to open DELAC file: '%s' !\n", DLC);
     return 1;
   }
 
   //Open DELACF
   dlcf = u_fopen(DLCF, U_WRITE);
   if (!dlc) {
-    fprintf(stderr,"Unable to open DELACF file: '%s' !\n", DLCF);
+    error("Unable to open DELACF file: '%s' !\n", DLCF);
     return 1;
   }
 
@@ -88,20 +89,16 @@ int DLC_inflect(char* DLC, char* DLCF) {
   while (l || !feof(dlc)) {  
     dlc_entry = (DLC_entry_T*) malloc(sizeof(DLC_entry_T));
     if (!dlc_entry) {
-      fprintf(stderr,"Memory allocation problem in function 'DLC_inflect'!\n");
+      fatal_error("Not enough memory in function DLC_inflect\n");
       return 1;
     }
     //Convert a DELAC entry into the internal multi-word format
     err = DLC_line2entry(dlc_line,dlc_entry);
-    if (err == -1) //Not enough memory
-      return 1;
     if (!err) {
       MU_forms = (MU_forms_T*) malloc(sizeof(MU_forms_T));
       if (!MU_forms) {
-	fprintf(stderr,"Memory allocation problem in function 'DLC_inflect'!\n");
-	return 1;
+	       fatal_error("Not enough memory in function DLC_inflect\n");
       }
-
       //Inflect the entry
       err = MU_inflect(dlc_entry->lemma, MU_forms);
 
@@ -109,7 +106,7 @@ int DLC_inflect(char* DLC, char* DLCF) {
 	int f;  //index of the current inflected form
 	//Inform the user if no form generated 
 	if (MU_forms->no_forms == 0) {
-	  fprintf(stderr,"No inflected form could be generated for ");
+	  error("No inflected form could be generated for ");
 	  DLC_print_entry(dlc_entry);
 	}
 	//Print inflected forms
@@ -154,8 +151,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   //Initalize the lemma
   entry->lemma = (MU_lemma_T*) malloc(sizeof(MU_lemma_T));
   if (!entry->lemma) { 
-    fprintf(stderr,"Memory allocation problem in function 'DLC_line2entry'!\n");
-    return -1;
+    fatal_error("Not enough memory in function DLC_line2entry\n");
   }
   entry->lemma->no_units = 0;
 
@@ -163,9 +159,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   while (line[pos] && line[pos] != (unichar) ',') {  //Each DELAC line must contain a comma
     unit = (SU_id_T*) malloc(sizeof(SU_id_T));
     if (!unit) { 
-      fprintf(stderr,"Memory allocation problem in function 'DLC_line2entry'!\n");
-      MU_delete_lemma(entry->lemma);
-      return -1;
+      fatal_error("Not enough memory in function DLC_line2entry\n");
     }
     l = DLC_scan_unit(unit,&(line[pos]));
     if (l <= 0) {
@@ -179,9 +173,9 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   }
   
   if (line[pos] != (unichar) ',') {
-    fprintf(stderr,"Comma missing in DELAC line: ");
+    error("Comma missing in DELAC line: ");
     u_fprints(line,stderr);
-    fprintf(stderr," !\n");
+    error(" !\n");
     MU_delete_lemma(entry->lemma);
     return 2;
   }
@@ -192,17 +186,15 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   l = u_scan_until_char(tmp,&(line[pos]),MAX_DLC_LINE-1,"+:)\\",1);
   pos += l;
   if (!l) {
-    fprintf(stderr,"Inflection paradigm inexistent in line: ");
+    error("Inflection paradigm inexistent in line: ");
     u_fprints(line,stderr);
-    fprintf(stderr," !\n");
+    error(" !\n");
     MU_delete_lemma(entry->lemma);
     return 2;
   }
   entry->lemma->paradigm = (char*) malloc((u_strlen(tmp)+1) * sizeof(char));
   if (!entry->lemma->paradigm)  { 
-    fprintf(stderr,"Memory allocation problem in function 'DLC_line2entry'!\n");
-    MU_delete_lemma(entry->lemma);
-    return -1;
+    fatal_error("Not enough memory in function DLC_line2entry\n");
   }
   for (int c=0; c<=u_strlen(tmp); c++) //Convert to char and copy
     entry->lemma->paradigm[c] = (char) tmp[c];
@@ -211,9 +203,9 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   l_class_T* cl;
   cl = DLC_class_para(tmp);
   if (!cl) {    
-    fprintf(stderr,"Impossible to deduce the compound's inflection class (noun, adj, etc.): ");
+    error("Impossible to deduce the compound's inflection class (noun, adj, etc.): ");
     u_fprints(line,stderr);
-    fprintf(stderr," !\n");
+    error(" !\n");
     MU_delete_lemma(entry->lemma);
     return 2;
   }
@@ -228,9 +220,9 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   pos += l;
   
   if (line[pos]) {
-    fprintf(stderr,"Bad format in DELAC line: ");
+    error("Bad format in DELAC line: ");
     u_fprints(line,stderr);
-    fprintf(stderr," !\n");
+    error(" !\n");
     MU_delete_lemma(entry->lemma);  //delete lemma
     for (int c=0; entry->codes[c]; c++)  //delete codes
       free(entry->codes[c]);  
@@ -249,12 +241,6 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
   int pos;  //index of the next caracter to be scanned
   unichar tmp[MAX_DLC_LINE];
   
-  /*
-  printf("\nIn 'DLC_scan_unit': line=");
-  u_prints(line);
-  printf("\n");
-  */
-
   pos = 0;
   //Scan a unit
   l = SU_get_unit(tmp,line,MAX_DLC_LINE-1,alph,0);  //The single word module determines what is a word and what is a separator, etc.
@@ -263,8 +249,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
   }
   u->form = (unichar*) malloc((u_strlen(tmp)+1) * sizeof(unichar));
   if (!u->form) { 
-    fprintf(stderr,"Memory allocation problem in function 'DLC_scan_unit'!\n");
-    return -2;
+    fatal_error("Not enough memory in function DLC_scan_unit\n");
   }
   u_strcpy(u->form,tmp);
   pos += l;
@@ -281,9 +266,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     //Scan the lemma if any
     u->lemma = (SU_lemma_T*) malloc(sizeof(SU_lemma_T));
     if (!u->lemma) { 
-      fprintf(stderr,"Memory allocation problem in function 'DLC_scan_unit'!\n");
-      free(u->form);
-      return -2;
+      fatal_error("Not enough memory in function DLC_scan_unit\n");
     }
     l = SU_get_unit(tmp,&(line[pos]),MAX_DLC_LINE-1,alph,0);  //The single word module determines what is a word and what is a separator, etc.
     if (l < 0) {
@@ -293,17 +276,16 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     }
     u->lemma->unit = (unichar*) malloc((u_strlen(tmp)+1) * sizeof(unichar));
     if (!u->lemma->unit) { 
-      fprintf(stderr,"Memory allocation problem in function 'DLC_scan_unit'!\n");
-      return -2;
+      fatal_error("Not enough memory in function DLC_scan_unit\n");
     }
     u_strcpy(u->lemma->unit,tmp);
     pos += l;
     
     //Scan the lemma's inflection paradigm
     if (line[pos] != (unichar) '.') {
-      fprintf(stderr,"Dot missing after a unit's lemma: ");
+      error("Dot missing after a unit's lemma: ");
       u_fprints(line,stderr);
-      fprintf(stderr," !\n");
+      error(" !\n");
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -312,19 +294,16 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     unichar u_para[MAX_DLC_LINE];
     l = u_scan_until_char(u_para,&(line[pos]),MAX_DLC_LINE-1,"+:\\",1);
     if (!l) {    
-      fprintf(stderr,"Unit's inflection paradigm non existent in DELAC line: ");
+      error("Unit's inflection paradigm non existent in DELAC line: ");
       u_fprints(line,stderr);
-      fprintf(stderr," !\n");
+      error(" !\n");
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;     
     }
     u->lemma->paradigm = (char*) malloc((u_strlen(u_para)+1) * sizeof(char));
     if (! u->lemma->paradigm) {
-      fprintf(stderr,"Memory allocation problem in function 'DLC_scan_unit'!\n");
-      free(u->form);
-      SU_delete_lemma(u->lemma);
-      return -2;
+      fatal_error("Not enough memory in function DLC_scan_unit\n");
     }
     for (int c=0; c<=u_strlen(u_para); c++)
       u->lemma->paradigm[c] = (char)u_para[c];
@@ -333,9 +312,9 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     l_class_T* cl;
     cl = DLC_class_para(u_para);
     if (!cl) {    
-      fprintf(stderr,"Impossible to deduce the unit's inflection class (noun, adj, etc.): ");
+      error("Impossible to deduce the unit's inflection class (noun, adj, etc.): ");
       u_fprints(line,stderr);
-      fprintf(stderr," !\n");
+      error(" !\n");
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -346,9 +325,9 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     //Scan the unit's inflection features
     unichar tmp[MAX_DLC_LINE];
     if (line[pos] != (unichar) ':') {
-      fprintf(stderr,"Colon missing after a unit's lemma: ");
+      error("Colon missing after a unit's lemma: ");
       u_fprints(line,stderr);
-      fprintf(stderr," !\n");
+      error(" !\n");
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -356,18 +335,18 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     pos ++;  //Omit the colon
     l = u_scan_until_char(tmp,&(line[pos]),MAX_DLC_LINE-1,")",1);
     if (l<=0) {
-      fprintf(stderr,"Inflection features missing after ':' for a unit: ");
+      error("Inflection features missing after ':' for a unit: ");
       u_fprints(line,stderr);
-      fprintf(stderr," !\n");
+      error(" !\n");
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
     }
     pos += l;
     if (line[pos] != (unichar) ')') {
-      fprintf(stderr,"')' missing after a unit's inflection features: ");
+      error("')' missing after a unit's inflection features: ");
       u_fprints(line,stderr);
-      fprintf(stderr," !\n");
+      error(" !\n");
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -375,9 +354,9 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     pos++; //Omit the ')'
     u->feat = d_get_feat_str(tmp);
     if (! u->feat) {
-      fprintf(stderr,"Incorrect inflection features in a unit: ");
+      error("Incorrect inflection features in a unit: ");
       u_fprints(line,stderr);
-      fprintf(stderr," !\n");
+      error(" !\n");
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -404,8 +383,7 @@ int DLC_scan_codes(unichar* codes[MAX_CODES],unichar* line) {
     if (l) {
       codes[c] = (unichar*) malloc((u_strlen(tmp)+1) * sizeof(unichar));
       if (!codes[c]) {
-	fprintf(stderr,"Memory allocation problem in function 'DLC_scan_codes'!\n");
-	return -2;
+	      fatal_error("Not enough memory in function DLC_scan_codes\n");
       }
       u_strcpy(codes[c],tmp);
       pos += l;
@@ -431,8 +409,7 @@ int DLC_scan_comment(unichar** comment,unichar* line) {
     if (l) {
       *comment =(unichar*) malloc((u_strlen(tmp)+1) * sizeof(unichar));
       if (!(*comment)) {
-	fprintf(stderr,"Memory allocation problem in function 'DLC_scan_comment'!\n");
-	return -2;
+	       fatal_error("Not enough memory in function DLC_scan_comment\n");
       }
       u_strcpy(*comment,tmp);
     }

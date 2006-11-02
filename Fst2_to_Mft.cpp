@@ -20,7 +20,7 @@
   */
 
 #include "Fst2_to_Mft.h"
-
+#include "Error.h"
 
 //
 // this function produces a mft file from a fst2 file
@@ -66,8 +66,8 @@ for (int i=fst2->initial_states[N];i<limite;i++) {
    while (trans!=NULL) {
       if (trans->tag_number < 0) {
          // if there is a subgraph call
-         fprintf(stderr,"Error: a subgraph call was found in the text automaton.\n");
-         fprintf(stderr,"This transition will be removed in the MFT file.\n");
+         error("Error: a subgraph call was found in the text automaton.\n");
+         error("This transition will be removed in the MFT file.\n");
          struct fst2Transition* tmp=trans->next;
          free(trans);
          trans=tmp;

@@ -1,7 +1,7 @@
 /*
   * Unitex 
   *
-  * Copyright (C) 2001-2005 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -92,8 +92,8 @@ typedef struct{
 } l_classes_T;
 
 /**************************************************************************************/
-/* Read the language file "lan_file" in directory "dir".                              */
-/* This file conains lists of all classes (nous, verb, etc.) of the language,        */
+/* Read the language file "file".                                                     */
+/* This file conains lists of all classes (nous, verb, etc.) of the language,         */
 /* with their inflection categories (number, case, gender, etc.) and values           */
 /* (e.g. sing, pl, masc, etc.).                                                       */
 /* E.g. for Polish:								      */
@@ -108,7 +108,7 @@ typedef struct{
 /*                      adv:                                                          */
 /* Fills out L_CLASSES and L_CATS.						      */
 /* Returns 0 if success, 1 otherwise                                                  */
-int read_language_morpho(char *lan_file, char *dir);
+int read_language_morpho(char *file);
 
 /**************************************************************************************/
 /* Prints to the standard output the morphological system of the language             */

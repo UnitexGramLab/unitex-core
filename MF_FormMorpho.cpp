@@ -28,6 +28,7 @@
 /********************************************************************************/
 
 #include "MF_FormMorpho.h"
+#include "Error.h"
 
 extern l_cats_T L_CATS;
 
@@ -95,16 +96,16 @@ int f_add_morpho_unichar(f_morpho_T *feat, unichar *cat, unichar* val) {
 
   c = is_valid_cat(cat);    //Checks if 'cat' is a valid category name in the current language
   if (!c) {
-    fprintf(stderr,"Invalid category: ");
+    error("Invalid category: ");
     u_fprints(cat,stderr);
-    //    fprintf(stderr,"\n");
+    //    error("\n");
     return -1;
   }
   v = is_valid_val(c,val);    //Checks if 'val' is a valid category name in the current language
   if (v == -1) {
-    fprintf(stderr,"Invalid value: ");
+    error("Invalid value: ");
     u_fprints(val,stderr);
-    //    fprintf(stderr,"\n");
+    //    error("\n");
     return -1;
   }
   return (f_add_morpho(feat,c,v));

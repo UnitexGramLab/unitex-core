@@ -36,8 +36,11 @@ int main(int argc, char ** argv) {
   tChargeurPhrases * chPhrases = constrChargeurPhrases(*argv) ;
 
   list_aut * txtauto = (list_aut *) malloc(sizeof(list_aut));
+  if (txtauto==NULL) {
+     fatal_error("Not enough memory in main of dotoutput\n");
+  }
 
-  fprintf(stderr, "trying chargePhrases for %s...\n", *argv);
+  error("trying chargePhrases for %s...\n", *argv);
 
   int nb = chargePhrases(chPhrases, txtauto);
 
@@ -46,14 +49,16 @@ int main(int argc, char ** argv) {
 
   for (int i = 0; i < nb; i++) {
 
-    fprintf(stderr, ".");
+    error(".");
 
     sprintf(buf, "%s/%s-%d.dot", outputdir, *argv, i);
-    if ((f = fopen(buf, "w")) == NULL) { die("unable to open %s for writing\n", buf); }
+    if ((f = fopen(buf, "w")) == NULL) {
+       fatal_error("unable to open %s for writing\n", buf);
+    }
     autalmot_dump_dot(txtauto->les_aut[i], f);
     fclose(f);
   }
 
-  fprintf(stderr, " done.\n");
+  error(" done.\n");
   return 0;
 }

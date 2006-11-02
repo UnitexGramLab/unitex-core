@@ -23,8 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
 #include "unicode.h"
 #include "Fst2.h"
 #include "Sentence_to_grf.h"
@@ -32,6 +30,7 @@
 #include "List_int.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
 //
 // "e:\my unitex\english\corpus\ivanhoe_snt\text.fst2" 1
@@ -68,7 +67,7 @@ setBufferMode();
 
 
   if (!sscanf(argv[2],"%d",&SENTENCE)) {
-    fprintf(stderr,"Invalid sentence number %s\n",argv[2]);
+    error("Invalid sentence number %s\n",argv[2]);
     return 1;
   }
 
@@ -97,7 +96,7 @@ setBufferMode();
        if (argv[4][0]=='-' && argv[4][1]=='f' && argv[4][2]=='=') {
           fontname=&(argv[4][3]);
        } else {
-          fprintf(stderr,"Wrong parameter: %s\n",argv[4]);
+          error("Wrong parameter: %s\n",argv[4]);
        }  
         strcat(nom_grf, argv[3]);
         strcat(nom_grf, ".grf");
@@ -122,7 +121,7 @@ setBufferMode();
           fontname=&(argv[4][3]);
        }
        else {
-          fprintf(stderr,"Wrong parameter: %s\n",argv[4]);
+          error("Wrong parameter: %s\n",argv[4]);
        }
     }
     }
@@ -132,15 +131,15 @@ setBufferMode();
 
   f = u_fopen(nom_grf,U_WRITE);
   if (f==NULL) {
-    fprintf(stderr,"Cannot write file %s\n",nom_grf);
-    return 1;
+     error("Cannot write file %s\n",nom_grf);
+     return 1;
   }
 
   txt = u_fopen(nom_txt,U_WRITE);
   if (txt==NULL) {
-    fprintf(stderr,"Cannot write file %s\n",nom_txt);
-    u_fclose(f);
-    return 1;
+     error("Cannot write file %s\n",nom_txt);
+     u_fclose(f);
+     return 1;
   }
 
 
@@ -148,7 +147,7 @@ setBufferMode();
 printf("Loading %s...\n",argv[1]);
 Fst2* fst2=load_one_sentence_from_fst2(argv[1],SENTENCE);
 if (fst2==NULL) {
-   fprintf(stderr,"Cannot load text automata file %s\n",argv[1]);
+   error("Cannot load text automata file %s\n",argv[1]);
    u_fclose(f);
    u_fclose(txt);
    return 1;

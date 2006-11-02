@@ -69,7 +69,7 @@ token_t * token_new(unichar * str) {
     /* strip ending '>' */
 
     unichar * p = u_strchr(str, '>');
-    if (p == NULL || *(p + 1) != 0) { die("bad token: '%S'\n", str); }
+    if (p == NULL || *(p + 1) != 0) { fatal_error("bad token: '%S'\n", str); }
     *p = 0;
 
     tok->type = TOK_ANGLE;
@@ -421,8 +421,8 @@ pos_section_t * parse_pos_section(FILE * f) {
     toks = tokenize(buf);
   }
 
-  if (toks->type != TOK_POS) { die("parsing error: 'POS' section expected (%S).\n", line); }
-  if (toks->next == NULL || toks->next->str == NULL) { die("POS section need a name\n"); }
+  if (toks->type != TOK_POS) { fatal_error("parsing error: 'POS' section expected (%S).\n", line); }
+  if (toks->next == NULL || toks->next->str == NULL) { fatal_error("POS section need a name\n"); }
 
   pos_section_t * section = pos_section_new(toks->next->str);
 
@@ -474,21 +474,21 @@ pos_section_t * parse_pos_section(FILE * f) {
       switch (partid) {
       case PART_DISCR:
 	if (section->parts[PART_DISCR] != NULL) {
-          die("only one discriminant category could be specified.\n");
+          fatal_error("only one discriminant category could be specified.\n");
         }
       case PART_CAT:
-	if (check_cat_line(toks) == -1) { die("bad line format: '%S'\n", line);	}
+	if (check_cat_line(toks) == -1) { fatal_error("bad line format: '%S'\n", line);	}
 	break;
       case PART_FLEX:
-	if (check_flex_line(toks) == -1) { die("bad line format: '%S'\n", line);	}
+	if (check_flex_line(toks) == -1) { fatal_error("bad line format: '%S'\n", line);	}
 	break;	
       case PART_COMP:
-	if (check_complet_line(toks) == -1) { die("bad complet line format: '%S'\n", line); }
+	if (check_complet_line(toks) == -1) { fatal_error("bad complet line format: '%S'\n", line); }
 	break;
       case PART_NUM:
-	die("no section specified. (line '%S')\n", line);
+	fatal_error("no section specified. (line '%S')\n", line);
       default:
-	die("while parsing POS section: what am i doing here?\n");
+	fatal_error("while parsing POS section: what am i doing here?\n");
       }
       section->parts[partid] = tokens_list_concat(section->parts[partid], toks);
       // section->parts[partid] = tokens_list_new(toks, section->parts[partid]);
@@ -496,12 +496,11 @@ pos_section_t * parse_pos_section(FILE * f) {
 
     default:
       tokens_dump(toks);
-      die("error while parsing POS section with line '%S'\n", line);
+      fatal_error("error while parsing POS section with line '%S'\n", line);
       break;
     }
   }
 
-  if (partid != -1) { die("unexpected EOF when parsing GENERAL section.\n"); }
 
   return section;
 }
@@ -517,7 +516,7 @@ language_tree_t * language_parse(FILE * f) {
   while (toks == NULL) {
 
     if ((u_fgets(buf, MAXBUF, f)) == 0) {
-      warning("parse language: file is empty\n");
+      error("parse language: file is empty\n");
       return NULL;
     }
 
@@ -528,7 +527,7 @@ language_tree_t * language_parse(FILE * f) {
 
 
   if ((toks->type != TOK_NAME) || (toks->next == NULL) || (toks->next->str == NULL)) {
-    die("language need a name\n");
+    fatal_error("language need a name\n");
   }
 
   language_tree_t * tree = language_tree_new(toks->next->str);

@@ -21,6 +21,7 @@
 
 //---------------------------------------------------------------------------
 #include "Grammatical_codes.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
@@ -109,7 +110,7 @@ while ((!fin)&&(s[i]!=':')) {
           i++;
        }
        else {
-          fprintf(stderr,"Error in a pattern: \\ at the end of a grammatical or semantic code\n");
+          error("Error in a pattern: \\ at the end of a grammatical or semantic code\n");
        }
     }
     else tmp[pos++]=s[i++];

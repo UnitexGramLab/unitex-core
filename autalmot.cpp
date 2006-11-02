@@ -176,7 +176,7 @@ void autalmot_resize(autalmot_t * A, int size) {
 
   if (size == 0) { size = 1; }
 
-  if (size < A->nbstates) { die("autalmot_resize: size(=%d) < nbstates(=%d)\n", size, A->nbstates); }
+  if (size < A->nbstates) { fatal_error("autalmot_resize: size(=%d) < nbstates(=%d)\n", size, A->nbstates); }
 
   A->states = (state_t *) xrealloc(A->states, size * sizeof(state_t));
 
@@ -214,7 +214,7 @@ void autalmot_add_trans(autalmot_t * A, int from, symbol_t * label, int to) {
 
 
   if (label == SYMBOL_DEF) {
-    if (A->states[from].defto != -1) { die("autalmot add trans: to much <def>\n"); }
+    if (A->states[from].defto != -1) { fatal_error("autalmot add trans: to much <def>\n"); }
     A->states[from].defto = to;
     return;
   }
@@ -222,7 +222,7 @@ void autalmot_add_trans(autalmot_t * A, int from, symbol_t * label, int to) {
 
   while (label) {
 
-    if (label == SYMBOL_DEF) { die("autalmot_add_trans called with SYMB_DEF\n"); }
+    if (label == SYMBOL_DEF) { fatal_error("autalmot_add_trans called with SYMB_DEF\n"); }
 
     A->states[from].trans = transition_new(to, label, A->states[from].trans);
     label = label->next;
@@ -289,7 +289,7 @@ void autalmot_dump(const autalmot_t * A, FILE * f) {
 
 void autalmot_dump_dot(const autalmot_t * A, FILE * f) {
 
-  if (A == NULL) { die("dot_output: A is null\n"); }
+  if (A == NULL) { fatal_error("dot_output: A is null\n"); }
 
   ustring_t * ustr = ustring_new();
 

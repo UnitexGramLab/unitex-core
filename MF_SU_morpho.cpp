@@ -34,6 +34,7 @@
 #include "MF_InflectTransd.h"
 #include "MF_DicoMorpho.h"
 #include "MF_Util.h"
+#include "Error.h"
 
 #define MAX_CHARS_IN_STACK 100
 
@@ -158,8 +159,7 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
 	//Put the form into 'forms'
 	forms->forms = (SU_f_T*)realloc(forms->forms, (forms->no_forms+1) * sizeof(SU_f_T));
 	if (!forms->forms) {
-	  fprintf(stderr,"Memory allocation problem in function 'SU_explore_state'!\n");
-	  return 1;
+	  fatal_error("Not enough memory in function SU_explore_state\n");
 	}
 	forms->forms[forms->no_forms].form=u_strdup(flechi);
 	forms->forms[forms->no_forms].features = feat[f];
@@ -192,18 +192,6 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
 // Returns 0 on success, 1 otherwise.   
 int SU_explore_tag(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* sortie,
                  Fst2* a,f_morpho_T* desired_features, SU_forms_T* forms) {
-  /*
-  unichar tmp[100];
-  u_strcpy_char(tmp,"\nTransition: ");  //debug
-  u_prints(tmp);
-  u_prints(a->etiquette[T->etiquette]->contenu);  //debug
-  u_strcpy_char(tmp,"/");  //debug
-  u_prints(tmp);
-  u_prints(a->etiquette[T->etiquette]->transduction);  //debug
-  u_strcpy_char(tmp,"\n");  //debug
-  u_prints(tmp);
-  */
-
   if (T->tag_number < 0) {
     // if we are in the case of a call to a sub-graph
     struct couple_string* L=NULL;
@@ -412,8 +400,7 @@ int SU_convert_features(f_morpho_T*** feat,unichar* feat_str) {
     no_f++;
     (*feat) = (f_morpho_T**) realloc((*feat), (no_f+1) * sizeof(f_morpho_T*));
     if (!(*feat)) {
-      fprintf(stderr,"Memory allocation problem in function 'SU_convert_features'!\n");
-      return 1;
+      fatal_error("Not enough memory in function SU_convert_features\n");
     }
     (*feat)[no_f-1] = f;
   }
@@ -516,49 +503,32 @@ SU_id_T*  SU_get_id(unichar* form, f_morpho_T* feat, SU_lemma_T* SU_lemma) {
   SU_id = (SU_id_T*) malloc(sizeof(SU_id_T));
 
   //Form
-  SU_id->form = (unichar*) malloc((u_strlen(form)+1) * sizeof(unichar));
-  if (!SU_id->form) {
-    fprintf(stderr,"Memory allocation problem in function 'SU_get_id'!\n");
-    return NULL;
-  }
-  u_strcpy(SU_id->form,form);
+  SU_id->form=u_strdup(form);
 
   if (SU_lemma) { //if not a separator
 
     //Lemma
     SU_id->lemma = (SU_lemma_T*) malloc(sizeof(SU_lemma_T));
     if (!SU_id->lemma) {
-      fprintf(stderr,"Memory allocation problem in function 'SU_get_id'!\n");
-      return NULL;
+       fatal_error("Not enough memory in function SU_get_id\n");
     }
     //Lemma form
-    SU_id->lemma->unit = (unichar*) malloc((u_strlen(SU_lemma->unit)+1) * sizeof(unichar));
-    if (!SU_id->lemma->unit) {
-      fprintf(stderr,"Memory allocation problem in function 'SU_get_id'!\n");
-      return NULL;
-    }
-    u_strcpy(SU_id->lemma->unit,SU_lemma->unit);
+    SU_id->lemma->unit=u_strdup(SU_lemma->unit);
     //Class
     SU_id->lemma->cl = SU_lemma->cl;
     //Paradigm
-    SU_id->lemma->paradigm= (char*) malloc((strlen(SU_lemma->paradigm)+1) * sizeof(char));
-    if (!SU_id->lemma->paradigm) {
-      fprintf(stderr,"Memory allocation problem in function 'SU_get_id'!\n");
-      return NULL;
-    }
-    strcpy(SU_id->lemma->paradigm,SU_lemma->paradigm);
-    
+    SU_id->lemma->paradigm=strdup(SU_lemma->paradigm);
     //Features
     f_morpho_T* fea;
     fea = (f_morpho_T*) malloc(sizeof(f_morpho_T));
     if (!fea) {
-      fprintf(stderr,"Memory allocation problem in function 'SU_get_id'!\n");
-      return NULL;
+       fatal_error("Not enough memory in function SU_get_id\n");
     }
     f_init_morpho(fea);
     int f;  //index of the current category-value pair in 'feat'
-    for (f=0; f<feat->no_cats; f++)
+    for (f=0; f<feat->no_cats; f++) {
       f_add_morpho(fea,feat->cats[f].cat,feat->cats[f].val);
+    }
 
   }
   return SU_id;

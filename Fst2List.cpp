@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2004 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@
 
 using namespace std;
 
+#include <locale.h>
 #include "unicode.h"
 #include "Fst2.h"
 #include "Alphabet.h"
@@ -31,19 +32,10 @@ using namespace std;
 #include "UnicharTree.h"
 #include "Copyright.h"
 #include "FileName.h"
-#include <locale.h>
 #include "IOBuffer.h"
-
-
-
-static void exitMessage(char *mes)
-{
-	fprintf(stderr,"ExitMessage:::%s\n",mes);
-	exit(1);
-}
+#include "Error.h"
 
 void usage() {
-      //012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
 printf("%s",COPYRIGHT);
 printf("Usage:\n");
 printf(
@@ -69,8 +61,9 @@ printf(
 " -m  : mode special for description with alphabet\r\n"\
 " -v : verbose mode  default null\r\n"\
 " -r[s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n");
-exitMessage("");
 }
+
+
 static char charBuffOut[1024];
 static char *getUtoChar(unichar *s)
 {
@@ -119,12 +112,15 @@ static int changeStrToVal(char *src)
 	if(*wp != (unichar)'=') return(1);
 	if(i > (MAX_CHANGE_SYMBOL_SIZE - 2)) {
 		printf("the name of the variable too long %s",src);
-		exitMessage("");
+		return 1;
 	}
 	changeStrTo[changeStrToIdx][i++] = (unichar)'>';	
 	changeStrTo[changeStrToIdx][i++] = (unichar)'\0';
 	ptLoc = i;
-	if(!*wp) usage();
+	if(!*wp) {
+      usage();
+      return 1;
+   }
 	for(wp++;i <MAX_CHANGE_SYMBOL_SIZE && (*wp);i++)
 		changeStrTo[changeStrToIdx][i] = (unsigned short)*wp++;
 	if(*wp != (unichar)'\0') return(1);
@@ -240,8 +236,7 @@ public:
 		    name_without_extension(tmp,ofnameOnly);
 		    file_name_extension(tmp,ofExt);
 		}
-//fprintf(stderr,"%s %s %s",ofdirName,ofExt,ofnameOnly);
-		if(ofnameOnly[0]== 0) exitMessage("ofile name not correct");
+		if(ofnameOnly[0]== 0) fatal_error("ofile name not correct");
 	}
 	void makeOfileName(char *des,char *fn,char *ext){
 	   strcpy(des,ofdirName);
@@ -323,14 +318,12 @@ verboseMode  = 0;
         int i;
         struct callIdMap *fPtr;
         fPtr = mapOfCallHead;
-//        for(i = 0;i < count;i++) fwprintf(stderr,L"0x%08x:",cmap[i].tran);
         while(fPtr){
             if(fPtr->cnt == count){
                 for(i = 0; i < count;i++)
                     if(fPtr->list[i] != cmap[i].tran) 
                         break;
                 if(i == count) {
-//fwprintf(stdout,L"existed Id %d\n",id);
                     return id;
                 }
             }
@@ -421,13 +414,13 @@ verboseMode  = 0;
 			cnode = cnode->next;
 		}
 		if(!cnode){
-		   fprintf(stderr,"%d/%d stack\n",numOfPath,curidx);
+		   error("%d/%d stack\n",numOfPath,curidx);
 		   for(i = 0;i<pathEtiQidx;i++)
-		   fprintf(stderr,"%d : (%08x:%08x) : %08x\n",
+		   error("%d : (%08x:%08x) : %08x\n",
                i,pathEtiQ[i].autoNo,pathEtiQ[i].etatNo,pathEtiQ[i].eti);
 		   
 		   CqueuePathPr(stderr,numOfPath);
-           exitMessage("eu~ak");
+           fatal_error("eu~ak\n");
         }
         if(setflag){
 		flag = cnode->flag;
@@ -459,7 +452,7 @@ verboseMode  = 0;
 		}
 		if(!*cnode){
 			*cnode = new struct cycleNodeId;
-			if(!(*cnode)) exitMessage(StrMemLack);
+			if(!(*cnode)) fatal_error(StrMemLack);
 			(*cnode)->next = 0;
 			(*cnode)->cycInfos = 0;
 			(*cnode)->index = cycNodeCnt++;
@@ -477,7 +470,7 @@ verboseMode  = 0;
 			a = &((*a)->next);
 		}
 		*a = new struct cycleNodeId::linkCycle;
-		if(!(*a)) exitMessage(StrMemLack);
+		if(!(*a)) fatal_error(StrMemLack);
 		(*a)->next = 0;
 		(*a)->cyc = pCyc;
 
@@ -524,9 +517,9 @@ verboseMode  = 0;
 		tmp->pathCnt =0;
 		tmp->next = *h;
 		*h = tmp;
-		if(!(*h)) exitMessage(StrMemLack);
+		if(!(*h)) fatal_error(StrMemLack);
 		(*h)->pathEtiQueue = new struct pathAndEti [numOfPath];
-		if(!((*h)->pathEtiQueue)) exitMessage(StrMemLack);
+		if(!((*h)->pathEtiQueue)) fatal_error(StrMemLack);
 		for( i = 0; i < numOfPath;i++){
 			(*h)->pathEtiQueue[i].etatNo = pathEtiQ[i+offset].etatNo & PATHID_MASK;
 			(*h)->pathEtiQueue[i].eti = pathEtiQ[i+offset].eti;
@@ -628,7 +621,7 @@ verboseMode  = 0;
     				}
     			    break;
     	        default:
-    	            exitMessage("illegal execution");
+    	            fatal_error("illegal execution");
     			}
     			totalLoop++;
     			return(1);
@@ -873,7 +866,7 @@ verboseMode  = 0;
 		for(i = 0; i <= a->number_of_graphs;i++)
 		{
 			if(a->states[a->initial_states[i]]->control & LOOP_NODE_MARK)
-				fprintf(stderr,"the sub-graph %s has cycle path\n",
+				error("the sub-graph %s has cycle path\n",
 				  getUtoChar(a->graph_names[i]));
 		}
 	}
@@ -903,11 +896,9 @@ verboseMode  = 0;
         
         FILE *uf =fopen(src,"r");
         if(!uf){
-         fprintf(stderr,"%s ",src);
-         exitMessage("file access error");
-         }
+           fatal_error("Cannot open file %s\n",src);
+        }
         while(fgets(fileLine,256,uf)){
-//printf("list de arret %s\n",fileLine);
             if(fileLine[0] == ' ') continue;
             for(i  = 0; (i< 128) && (fileLine[i] != ' ') 
                     &&(fileLine[i] != '.') && (fileLine[i] != 0)
@@ -996,15 +987,14 @@ void CFstApp::loadGraph(char *fname)
 	
 	a=load_fst2(fname,1);
 	if (a==NULL) {
-	  fprintf(stderr,"Cannot load graphe file %s\n",fname);
-	  exit(1);
+      fatal_error("Cannot load graphe file %s\n",fname);
 	}
 
 	for( i = 0; i < a->number_of_states;i++)
 	{	
 		strans = a->states[i]->transitions;
 		if(a->states[i]->control & 0x80){
-              exitMessage("Not vide control bit");
+              fatal_error("Not null control bit");
        }
 		a->states[i]->control &= 0x7f;	// clean for mark recusive
 		while(strans){
@@ -1110,15 +1100,18 @@ void CFstApp::getWordsFromGraph(char *fname)
         niveau_traite_mot =1;
 		exploirerSubAuto(1);	// mark loop path start nodes
 		prSubGrapheCycle();
-		if(recursiveMode == LABEL) 
-			fprintf(stderr,"warning:ignore the option -rl\r\n");
+		if (recursiveMode == LABEL) {
+         error("warning:ignore the option -rl\r\n");
+      }
 		recursiveMode = SYMBOL;
 		strcpy(tmpchar,ofnameOnly);
 		strcat(tmpchar,"autolst");
 		makeOfileName(ofNameTmp,tmpchar,".txt");
 
 		foutput = u_fopen(ofNameTmp,U_WRITE);
-		if(!foutput) exitMessage("file open fail");
+		if(!foutput) {
+         fatal_error("Cannot open file %s\n",ofNameTmp);
+      }
 		
 		listOut = 1;
 
@@ -1150,14 +1143,12 @@ void CFstApp::getWordsFromGraph(char *fname)
 				makeOfileName(ofNameTmp,0,0);
 				foutput = u_fopen(ofNameTmp,U_WRITE);
 				if(!foutput) {
-				    fprintf(stderr,"%s",ofNameTmp);
-				    fflush(stderr);
-                    exitMessage("file open fail");
-                    }
+				    fatal_error("Cannot open file %s\n",ofNameTmp);
+            }
 				listOut = 1;
 				exploirerSubAuto(1);
 				if(verboseMode){
-printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
+                printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
             ,getUtoChar(a->graph_names[1])
             ,totalPath,totalLoop, errPath);
 					if(stopPath){
@@ -1185,7 +1176,7 @@ printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
 		strcat(tmpchar,"lst");
 			makeOfileName(ofNameTmp,tmpchar,".txt");
 			if(!(listFile = fopen(ofNameTmp,"w")))
-				exitMessage("list file open error");
+				fatal_error("list file open error");
 			i = 0;
 
 			for( sui = a->states[0]->transitions;sui != 0 ; sui = sui->next){
@@ -1209,9 +1200,8 @@ printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
 				fprintf(listFile,"%s\r\n",ttpchar);
 
 
-				if(!(foutput = u_fopen(ofNameTmp,U_WRITE))){
-					fprintf(stderr,"%s",ofNameTmp);
-					exitMessage("list file open fail");
+				if (!(foutput = u_fopen(ofNameTmp,U_WRITE))){
+               fatal_error("Cannot open file %s\n",ofNameTmp);
 				}
 				listOut = 0;     // output disable
 				
@@ -1273,7 +1263,7 @@ void CFstApp::exploirerSubAuto(int startAutoNo)
 	pathEtiQidx++;
 	findCycleSubGraph(callSubId,1,a->initial_states[startAutoNo],0);
 	pathEtiQidx--;
-	if(pathEtiQidx)exitMessage("error in program");
+	if(pathEtiQidx) fatal_error("error in program");
 }
 
 //
@@ -1300,7 +1290,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 				outWordsOfGraph(pathEtiQidx);
 				pathEtiQidx--;
 		} else
-			fprintf(stderr,"warning:too many call");
+			error("Warning:too many calls\n");
 		return;
 	}
 	if(IsCyclePath(stateDepth)){
@@ -1326,7 +1316,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 			}
 
 			// ?
-			if( i == 0) exitMessage("not want state arrive");	
+			if( i == 0) fatal_error("not want state arrive");	
 
 			int tauto = CautoQueue[i].aId;
 			nEtat = CautoQueue[i].next;
@@ -1418,7 +1408,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
               pathEtiQ[pathEtiQidx].autoNo = autoStackMap[scanner].autoId;;
               pathEtiQ[pathEtiQidx].etatNo = a->initial_states[tmp]| LOOP_PATH_MARK;;
               ++pathEtiQidx;
-              if(!IsCyclePath(stateDepth)) exitMessage("recusive find fail");
+              if(!IsCyclePath(stateDepth)) fatal_error("recursive find fail");
               --pathEtiQidx;
               continue;
             }
@@ -1711,7 +1701,7 @@ void CFstApp::outWordsOfGraph(int depth)
                break;
 			case DEBUG:
 			case FULL:
-				exitMessage("???");
+				fatal_error("???");
 			}
 			markPreCtlChar = markCtlChar;
 			continue;
@@ -1756,40 +1746,34 @@ setBufferMode();
 	char *wp;
 	unichar *wp2,*wp3;
 	while(iargIndex < argc){
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 		if(*argv[iargIndex] != '-') break;
 		switch(argv[iargIndex][1]){
 		case 'f': iargIndex++;
 			switch(argv[iargIndex][0]){
 			case 's': aa.prMode = PR_SEPARATION; break;
 			case 'a': aa.prMode = PR_TOGETHER;break;
-			default: usage();
+			default: usage(); return 1;
 			}
 			break;
 		case 'o':iargIndex++; 
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 			ofilename = new char [strlen(argv[iargIndex])+1];
 			strcpy(ofilename,argv[iargIndex]);
 			break;
 		case 'l': iargIndex++;
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 			aa.outLineLimit = atoi(argv[iargIndex]);
 			break;
 		case 'i': iargIndex++;	// stop the exploitation
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 			aa.arretExpoList(argv[iargIndex]);
 			break;
 		case 'I': iargIndex++;	// stop the exploitation
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 			aa.arretExpoListFile(argv[iargIndex]);
 			break;
 		case 'p':			iargIndex++;
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 			switch(argv[iargIndex][0]){
 			case 's': aa.display_control = GRAPH; break;
 			case 'f': aa.display_control = FULL; break;
 			case 'd': aa.display_control = DEBUG; break;
-			default: usage();
+			default: usage(); return 1;
 			}
 			break;
 		case 'a':
@@ -1797,11 +1781,10 @@ setBufferMode();
 			aa.automateMode = (argv[iargIndex][1] == 't') 
 				? TRANMODE:AUTOMODE;
 			iargIndex++;
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 			switch(argv[iargIndex][0]){
 			case 's': aa.traitAuto = SINGLE; break;
 			case 'm': aa.traitAuto = MULTI; break;
-			default: usage();
+			default: usage(); return 1;
 			}
 			break;
 		case 'v':
@@ -1814,11 +1797,9 @@ setBufferMode();
 			case 's': aa.recursiveMode = SYMBOL; break;
 			case 'l': aa.recursiveMode = LABEL; break;
 			case 'x': aa.recursiveMode = STOP; break;
-			default: usage();
+			default: usage(); return 1;
 			}
 			iargIndex++;
-//fprintf(stderr,"%s\n",argv[iargIndex]);
-		
 			aa.saveEntre = new unichar[strlen(argv[iargIndex])+1];
 			wp =  argv[iargIndex];
 			wp2 = aa.saveEntre;
@@ -1826,8 +1807,9 @@ setBufferMode();
 			while(*wp){
 				if( (*wp < 0x20) ||	(*wp > 0x7e))
 				{
-					fprintf(stderr,"Warning:use a separator in ASC code\r\n");
+					error("Warning:use a separator in ASC code\r\n");
 					usage();
+               return 1;
 				}
 				if(*wp == '\\') wp++;
 				else if(*wp == ',') wp3 = wp2;
@@ -1844,14 +1826,12 @@ setBufferMode();
 				aa.entreGF = wp2;
 			break;
 		case 'c':			iargIndex++;
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 			if(!changeStrToVal(argv[iargIndex])) break;
-			usage();
+			usage(); return 1;
 		case 's':{
 			i = 0;
 			char cc= argv[iargIndex][2];
 			iargIndex++;
-//fprintf(stderr,"%s\n",argv[iargIndex]);
 			wp = argv[iargIndex];
 			wp3 = 0;
 			switch(cc){
@@ -1861,12 +1841,13 @@ setBufferMode();
 				while(*wp){
 					if( (*wp < 0x20) ||	(*wp > 0x7e))
 					{
-						fprintf(stderr,"Warning:use a separator in ASCII code\r\n");
+						error("Warning:use a separator in ASCII code\r\n");
 						usage();
+                  return 1;
 					}
 					switch(*wp){
 					case '\\':wp++;
-                          if(*wp == '\0') usage();
+                          if(*wp == '\0') {usage(); return 1;}
                           if(*wp != '"')  break;
                     case '"': wp++; continue;
 					case ',': wp3 = wp2; break;
@@ -1889,12 +1870,13 @@ setBufferMode();
 				while(*wp){
 					if( (*wp < 0x20) ||	(*wp > 0x7e))
 					{
-						fprintf(stderr,"Warning:use a separator in ASC code\r\n");
+						error("Warning:use a separator in ASC code\r\n");
 						usage();
+                  return 1;
 					}
 					if(*wp == '\\'){
                           wp++;
-                          if(*wp == '\0') usage();
+                          if(*wp == '\0') {usage(); return 1;}
                           }
                     if(*wp == '"') continue;
 					*wp2++ = (unichar)*wp++;
@@ -1912,7 +1894,7 @@ setBufferMode();
 				*wp2= 0;
 				break;
 			default:
-				usage();
+				usage(); return 1;
 			}
 			
 				
@@ -1920,12 +1902,14 @@ setBufferMode();
 		}
 			break;
 		default:
-			usage();
+			usage(); return 1;
 		}
 		iargIndex++;
 	}
-//printf("langue change %s\n",setlocale(LC_ALL,"Korean_Korea.949"));
-	if(iargIndex != (argc -1 )) usage();
+	if(iargIndex != (argc -1 )) {
+      usage();
+      return 1;
+   }
 	aa.fileNameSet(argv[iargIndex],ofilename);
 	aa.getWordsFromGraph(argv[iargIndex]);
 	if(ofilename) delete ofilename;

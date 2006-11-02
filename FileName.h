@@ -53,6 +53,6 @@ void name_without_path(char*,char*);
 void replace_suffix_in_file_name(char*,const char*,const char*,const char*);
 void replace_pathseparator_by_colon(char*);
 void replace_colon_by_pathseparator(char*);
-char* new_file(const char*,const char*);
+void new_file(const char*,const char*,char*);
 
 #endif

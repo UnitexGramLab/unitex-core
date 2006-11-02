@@ -177,7 +177,7 @@ public:
 	}
 	void insert(int no_arbre,class dicLines *head)
 	{
-		if(no_arbre >= arbreCnt) exitMessage("Invalid No of the tree");
+		if(no_arbre >= arbreCnt) fatal_error("Invalid No of the tree");
 
 	    struct arbre_string3_node *scanNode = racine[no_arbre];
 //		struct avec_sorti_tran *scanTran;
@@ -192,7 +192,7 @@ public:
 		while(head){
 			tdl = head;
 			head = head->next;
-			if(!scanNode) exitMessage("illegal seting ");
+			if(!scanNode) fatal_error("illegal setting ");
 			wp = tdl->EC_flechi;
 			unichar c;
 
@@ -215,10 +215,10 @@ printf("\n=== %x scanNode ====\n",scanNode);
 			//
 			infIdx = 0;
 			if(!tdl->EC_code_gramm)
-				exitMessage("illegal null value;information");
+				fatal_error("illegal null value;information");
 			if(tdl->EC_code_gramm && (*(tdl->EC_code_gramm) != 0))
 				infIdx = baseInf.put(tdl->EC_code_gramm);
-			if(infIdx > 0x8000) exitMessage("too many infomation");
+			if(infIdx > 0x8000) fatal_error("too many information");
 			sufIdx = 0;
 			if(!head){
 				infIdx |= 0x8000;
@@ -310,7 +310,7 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 				enCnt++; // not access noeud
 				continue;
 			}
-			if(base->offset != -1)	exitMessage("illegal information on the tree link");
+			if(base->offset != -1)	fatal_error("illegal information on the tree link");
 			
 			// 
 			//	calcule the size of a node
@@ -354,10 +354,10 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 	}
 	int sort_by_height(struct arbre_string3_node* n) 
 	{
-		if (n==NULL) exitMessage("Probleme dans sort_by_height");
+		if (n==NULL) fatal_error("Problem in sort_by_height\n");
 		
 		if (n->trans==NULL)
-			exitMessage("illegal transition"); // if the node is a leaf
+			fatal_error("illegal transition"); // if the node is a leaf
 		struct avec_sorti_tran * trans=n->trans;
 		int maxD = -1;
 		while (trans!=NULL) {
@@ -424,7 +424,7 @@ printf("\n%d node delete\n",etCnt);
 		}
 		// if the transition lists are equal
 		if ((a==NULL) && (b==NULL)) return 0;
-		exitMessage("illegal count of transitions");
+		fatal_error("illegal count of transitions");
 		return 1;
 	}
 	unsigned int *positionOfInfo;
@@ -439,7 +439,7 @@ printf("\n%d node delete\n",etCnt);
 
 
 		tmpH.cnt_auto = racName.size();
-		if(tmpH.cnt_auto != arbreCnt) exitMessage("tree count error");
+		if(tmpH.cnt_auto != arbreCnt) fatal_error("tree count error");
 		tmpH.cnt_suf = sufName.size();
 		tmpH.cnt_inf = baseInf.size();
 
@@ -447,8 +447,7 @@ printf("\n%d node delete\n",etCnt);
 		strcat(inf,".bin");
 		bfile=fopen(inf,U_WRITE);
 		if (!bfile) {
-			fprintf(stderr,"Cannot create the file %s\n",inf);
-			exitMessage("");
+			fatal_error("Cannot create the file %s\n",inf);
 		}
 		tmpH.writeAtFile(bfile);	// reserve space
 		
@@ -456,8 +455,7 @@ printf("\n%d node delete\n",etCnt);
 		strcat(inf,".aut");
 		displayfile=u_fopen(inf,U_WRITE);
 		if (!displayfile) {
-			fprintf(stderr,"Cannot create the file %s\n",inf);
-			exitMessage("");
+			fatal_error("Cannot create the file %s\n",inf);
 		}
 
 		unichar **a = racName.make_strPtr_table();
@@ -492,8 +490,7 @@ printf("\n%d node delete\n",etCnt);
 		strcat(inf,".suf");
 		displayfile=u_fopen(inf,U_WRITE);
 		if (!displayfile) {
-			fprintf(stderr,"Cannot create the file %s\n",inf);
-			exitMessage("");
+			fatal_error("Cannot create the file %s\n",inf);
 		}
 		
 		u_fprintf(displayfile,"%d\n",tmpH.cnt_suf);
@@ -516,8 +513,7 @@ printf("\n%d node delete\n",etCnt);
 		strcat(inf,".inf");
 		displayfile=u_fopen(inf,U_WRITE);
 		if (!displayfile) {
-			fprintf(stderr,"Cannot create the file %s\n",inf);
-			exitMessage("");
+			fatal_error("Cannot create the file %s\n",inf);
 		}
 
 		unichar **c = baseInf.make_strPtr_table();
@@ -545,7 +541,7 @@ printf("\n%d node delete\n",etCnt);
 			(nodes.addrMap[ i/nodes.pgEMcnt] +
 			i % nodes.pgEMcnt * sizeof(struct arbre_string3_node));
 			if(nPtr->offset == -2 ) continue;
-			if(nPtr->tcnt > 0x10000) exitMessage("too many transition");
+			if(nPtr->tcnt > 0x10000) fatal_error("too many transition");
 			outbytes2(nPtr->tcnt,bfile);
 			tmp= nPtr->trans;
 			while (tmp!=NULL) {
@@ -641,7 +637,7 @@ public:
 			head.size_str*2+
 			head.size_inf*2;
 		REF = (unsigned char *)malloc(i);
-		if(!REF) exitMessage("malloc fail");
+		if(!REF) fatal_error("malloc fail");
 		if(!fread(REF,i,1,f)) freadError(fname);
 //                debug("read bin ok size = %d\n", i);
 
@@ -702,7 +698,7 @@ public:
 //printf("Demand suffixe 0x%x",i);printf(" %s\n",getUtoChar(STR+SUF[i]));
 		}
 		if((unsigned int)&STR[refIdx] != (unsigned int)INF)
-			die("illegal size STR %d (expect %d Cnt suf 0x%d(0x%d)\n ",
+			fatal_error("illegal size STR %d (expect %d Cnt suf 0x%d(0x%d)\n ",
                         (unsigned int)(&STR[refIdx]),(unsigned int)INF,i,head.cnt_suf);
 		refIdx = 0;
         sp = (unsigned char *)INF;
@@ -720,7 +716,7 @@ public:
 			refIdx++;sp+=2;
 		}
 		if((unsigned int)&INF[refIdx] != (unsigned int)BIN)
-			die("illegal size INF %d (expected %d) %d( %d) %d\n",
+			fatal_error("illegal size INF %d (expected %d) %d( %d) %d\n",
                         (unsigned int)&INF[refIdx],(unsigned int)BIN,refIdx,i,head.cnt_inf);
 		fclose(f);
 	}
@@ -746,7 +742,7 @@ public:
 
 		tcnt = BIN[pos++] << 8;
 		tcnt |=BIN[pos++];
-		if(!tcnt) exitMessage("illegal tree");
+		if(!tcnt) fatal_error("illegal tree");
 		while(tcnt){
 			coffset = soffset;
 			c = BIN[pos++]<< 8;
@@ -826,7 +822,7 @@ public:
 		int findCnt = 0;
 		tcnt = BIN[pos++] << 8;
 		tcnt |=BIN[pos++];
-		if(!tcnt) exitMessage("illegal tree");
+		if(!tcnt) fatal_error("illegal tree");
 //	printf("addr 0x%08x::---\n",spos);	
 		for(int i = 0; i < tcnt;i++){
 			noff = soffset;
@@ -874,7 +870,7 @@ public:
 							scanNodes(npos,word,scanPosition,noff);
 						}
 					}	else {	// not find case
-						exitMessage("find zero transition");
+						fatal_error("find zero transition");
 					}
 				}
 				continue;
@@ -903,7 +899,7 @@ public:
 							scanNodes(npos,word,scanPosition+1,noff);
 						}
 					} else {
-						exitMessage("No transition found");			
+						fatal_error("No transition found");			
 					}
 				}
 			}

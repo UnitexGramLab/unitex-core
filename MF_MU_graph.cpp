@@ -1,7 +1,7 @@
 /*
   * Unitex 
   *
-  * Copyright (C) 2001-2003 Universit<E9> de Marne-la-Vall<E9>e <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -157,14 +157,19 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
     //Allocate space for a couple (epsilon,empty_set)
     forms->forms = (MU_f_T*)malloc(sizeof(MU_f_T));
     if (!forms->forms) {
-      error("Memory allocation problem in function 'MU_graph_explore_state'!\n");
-      return 1;
+      fatal_error("Not enough memory in function MU_graph_explore_state\n");
     }
     MU_f_T* f;
     f = &(forms->forms[0]);
     f->form = (unichar*) malloc(sizeof(unichar));
+    if (f->form==NULL) {
+       fatal_error("Not enough memory in function MU_graph_explore_state\n");
+    }
     f->form[0] = (unichar) '\0';
     f->features = (f_morpho_T*) malloc(sizeof(f_morpho_T));
+    if (f->features==NULL) {
+       fatal_error("Not enough memory in function MU_graph_explore_state\n");
+    }
     f->features->no_cats = 0;
     forms->no_forms++;
   }
@@ -178,8 +183,7 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
   while (t) {
     l = (MU_graph_label_T*) malloc(sizeof(MU_graph_label_T));
     if (!l) {
-      fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_state'!\n");
-      return 1;
+       fatal_error("Not enough memory in function MU_graph_explore_state\n");
     }
     q_bis = fst2[T]->states[t->state_number];  //get the arrival state
     Fst2Tag e = fst2[T]->tags[t->tag_number];  //get the transition's label
@@ -195,8 +199,7 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
     if (forms_bis.no_forms) {  //If any suffix found, add it to the list of those generated previously
       forms->forms = (MU_f_T*)realloc(forms->forms,sizeof(MU_f_T)*(forms->no_forms+forms_bis.no_forms));
       if (! forms->forms) {
-	fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_state'!\n");
-	return 1;
+	      fatal_error("Not enough memory in function MU_graph_explore_state\n");
       }
       for (mf=0; mf<forms_bis.no_forms; mf++) 
 	forms->forms[forms->no_forms+mf] = forms_bis.forms[mf];
@@ -241,8 +244,7 @@ int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* form
       for (f=0; f<forms->no_forms; f++) {
 	tmp = (unichar*) malloc((u_strlen(forms->forms[f].form)+u_strlen(l->in->unit.u.seq)+1) * sizeof(unichar));
 	if (!tmp) {
-	  fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label'!\n");
-	  return 1;
+	   fatal_error("Not enough memory in function MU_graph_explore_label\n");
 	}
 	u_strcpy(tmp,l->in->unit.u.seq);
 	u_strcat(tmp,forms->forms[f].form);
@@ -287,7 +289,7 @@ int MU_graph_explore_label(MU_graph_label_T* l,Etat_fst q_bis, MU_forms_T* forms
 // Return a number !=0 in case of errors, 0 otherwise. 
 int MU_graph_explore_label_in_var(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
-  f_morpho_T feat;   //A set of the amready treated morphological features contained in the label's input
+  f_morpho_T feat;   //A set of the already treated morphological features contained in the label's input
   feat.no_cats = 0;
   err = MU_graph_explore_label_in_var_rec(u, l_in_morpho, 0, &feat, l_out_morpho, q_bis, forms);
   return err;
@@ -322,8 +324,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
     for (mf=0; mf<forms->no_forms;mf++) {
       tmp = (unichar*) malloc((u_strlen(u->form)+u_strlen(forms->forms[mf].form)+1) * sizeof(unichar));
       if (!tmp) {
-	fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label_in_var_rec'!\n");
-	return 1;
+         fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
       }
       u_strcpy(tmp,u->form);
       u_strcat(tmp,forms->forms[mf].form);
@@ -339,8 +340,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
       SU_forms_T* SU_forms;  
       SU_forms = (SU_forms_T*) malloc(sizeof(SU_forms_T));
       if (!SU_forms) {
-	fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label_in_var_rec'!\n");
-	return 1;
+	      fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
       }
       SU_forms->no_forms = 0;
       SU_forms->forms = NULL;
@@ -348,8 +348,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
       MU_forms_T* forms_bis;  
       forms_bis = (MU_forms_T*) malloc(sizeof(MU_forms_T));
       if (!forms_bis) {
-	fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label_in_var_rec'!\n");
-	return 1;
+	      fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
       }
       forms_bis->no_forms = 0;
       forms_bis->forms = NULL;
@@ -370,8 +369,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
 	if (forms_bis->no_forms && SU_forms->no_forms) {  //Check if there is anything to concatenante
 	  forms->forms = (MU_f_T*) malloc((forms_bis->no_forms*SU_forms->no_forms) * sizeof(MU_f_T));
 	  if (!forms->forms) {
-	    fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label_in_var_rec'!\n");
-	    return 1;
+	     fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
 	  }
 	}
 	for (sf=0; sf<SU_forms->no_forms; sf++)
@@ -379,8 +377,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
 	    forms->forms[mf].form = 
 	      (unichar*) malloc((u_strlen(forms_bis->forms[mf_bis].form)+u_strlen(SU_forms->forms[sf].form)+1) * sizeof(unichar));
 	    if (!forms->forms[mf].form) {
-	      fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label_in_var_rec'!\n");
-	      return 1;
+	       fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
 	    }
 	    //Concatenate the forms
 	    u_strcpy(forms->forms[mf].form, SU_forms->forms[sf].form);
@@ -388,8 +385,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
 	    //Copy the features
 	    forms->forms[mf].features = (f_morpho_T*) malloc(sizeof(f_morpho_T));
 	    if (! forms->forms[mf].features) {
-	      fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label_in_var_rec'!\n");
-	      return 1;
+	       fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
 	    }
 	    forms->forms[mf].features->no_cats = forms_bis->forms[mf_bis].features->no_cats;
 	    for (int c=0; c<forms_bis->forms[mf_bis].features->no_cats; c++)
@@ -468,7 +464,7 @@ int MU_graph_explore_label_in_morph_const(MU_graph_category_T* c, SU_id_T* u, MU
   //Add the current label's category-value pair to the features of the single unit to be generated
   err = f_add_morpho(feat,c->cat,c->val.value);
   if (err == -1) {
-    fprintf(stderr," in graph %s.\n",MU_lemma->paradigm);
+    error(" in graph %s.\n",MU_lemma->paradigm);
     MU_delete_inflection(forms);
     return 1;
   }
@@ -577,7 +573,7 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
     //Add the the instantiated category-value pair to the features of the single unit to be generated
     err = f_add_morpho(feat,c->cat,unif_get_val_index(var));
     if (err == -1) {
-      fprintf(stderr," in graph %s.\n",MU_lemma->paradigm);
+      error(" in graph %s.\n",MU_lemma->paradigm);
       MU_delete_inflection(forms);
       return 1;
     }    
@@ -607,8 +603,7 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
       if (forms_bis.no_forms) {  //If any suffix found, add it to the list of those generated previously
 	forms->forms = (MU_f_T*)realloc(forms->forms,sizeof(MU_f_T)*(forms->no_forms+forms_bis.no_forms));
 	if (! forms->forms) {
-	  fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label_in_morph_unif'!\n");
-	  return 1;
+	   fatal_error("Not enough memory in function MU_graph_explore_label_in_morph_unif\n");
 	}
 	for (mf=0; mf<forms_bis.no_forms; mf++) 
 	  forms->forms[forms->no_forms+mf] = forms_bis.forms[mf];
@@ -680,7 +675,7 @@ int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,
 	  //If the ouput morphology in a graph is ambiguous, the final MWU's morphology is undefined
 	  err = f_add_morpho(forms->forms[f].features, feat->cats[c].cat,feat->cats[c].val);
 	  if (err == -1) {
-	    fprintf(stderr," in graph %s.\n",MU_lemma->paradigm);
+	    error(" in graph %s.\n",MU_lemma->paradigm);
 	    MU_delete_inflection(forms);
 	    return 1;
 	  }
@@ -722,7 +717,7 @@ int MU_graph_explore_label_out_morph_const(MU_graph_category_T* c, MU_graph_morp
   //Add the current label's category-value pair to the features of the single unit to be generated
   err = f_add_morpho(feat,c->cat,c->val.value);
   if (err == -1) {
-    fprintf(stderr," in graph %s.\n",MU_lemma->paradigm);
+    error(" in graph %s.\n",MU_lemma->paradigm);
     MU_delete_inflection(forms);
     return 1;
   }
@@ -758,7 +753,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
     //Add the the instantiated category-value pair to the features of the single unit to be generated
     err = f_add_morpho(feat,c->cat,unif_get_val_index(var));
     if (err == -1) {
-      fprintf(stderr," in graph %s.\n",MU_lemma->paradigm);
+      error(" in graph %s.\n",MU_lemma->paradigm);
       MU_delete_inflection(forms);
       return 1;
     }
@@ -777,9 +772,9 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
       //Add the the instantiated category-value pair to the features of the single unit to be generated
       err = f_add_morpho(feat,c->cat,val);   //e.g. 'feat' devient <Nb=pl; Case=Nom; Gen=fem>
       if (err == -1) {
-	fprintf(stderr," in graph %s.\n",MU_lemma->paradigm);
-	MU_delete_inflection(forms);
-	return 1;
+         error(" in graph %s.\n",MU_lemma->paradigm);
+	      MU_delete_inflection(forms);
+         return 1;
       }
 
       //Explore the rest of the label and the rest of the automaton 
@@ -791,8 +786,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
       if (forms_bis.no_forms) {  //If any suffix found, add it to the list of those generated previously
 	forms->forms = (MU_f_T*)realloc(forms->forms,sizeof(MU_f_T)*(forms->no_forms+forms_bis.no_forms));
 	if (! forms->forms) {
-	  fprintf(stderr,"Memory allocation problem in function 'MU_graph_explore_label_out_morph_unif'!\n");
-	  return 1;
+	  fatal_error("Not enough memory in function MU_graph_explore_label_out_morph_unif\n");
 	}
 	for (mf=0; mf<forms_bis.no_forms; mf++) 
 	  forms->forms[forms->no_forms+mf] = forms_bis.forms[mf];
@@ -875,19 +869,19 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
     pos++;  //Omit the '<'
     MU_label_in->unit.type = var;
     if (*pos != (unichar)'$') {
-      fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-      u_fprints(label,stderr);
-      fprintf(stderr," (at position %d): ",(int)(pos-label));
-      fprintf(stderr," a '$' missing after '<'.\n");
+      error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+      error(label);
+      error(" (at position %d): ",(int)(pos-label));
+      error(" a '$' missing after '<'.\n");
       return 1;      
     }
     pos++;  //Omit the '$'
     l = u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1,"0123456789");
     if (!l) {
-      fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-      u_fprints(label,stderr);
-      fprintf(stderr," (at position %d): ",(int)(pos-label));
-      fprintf(stderr," unit number missing after \'$\'.\n");
+      error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+      error(label);
+      error(" (at position %d): ",(int)(pos-label));
+      error(" unit number missing after \'$\'.\n");
       return 1;
     }
     char tmp_char[MAX_GRAPH_NODE];
@@ -900,11 +894,11 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
     
     //A ':' or a '>' must follow
     if ((*pos != (unichar) ':') && (*pos != (unichar) '>')) {
-      fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-      fprintf(stderr,"Graph label format incorrect in ");
-      u_fprints(label,stderr);
-      fprintf(stderr," (at position %d): ",(int)(pos-label));
-      fprintf(stderr,"':' or '>' missing.\n");
+      error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+      error("Graph label format incorrect in ");
+      error(label);
+      error(" (at position %d): ",(int)(pos-label));
+      error("':' or '>' missing.\n");
       return 1;
     }
 
@@ -921,10 +915,10 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
       MU_label_in->morpho = NULL;
     //Closing '>'
     if (*pos !=  (unichar)'>') {
-      fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-      u_fprints(label,stderr);
-      fprintf(stderr," (at position %d): ",(int)(pos-label));
-      fprintf(stderr,"'>' missing.\n");
+      error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+      error(label);
+      error(" (at position %d): ",(int)(pos-label));
+      error("'>' missing.\n");
       return 1;
     }
     pos++;
@@ -934,10 +928,10 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
   pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t");
 
   if (*pos != 0) {
-    fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-    u_fprints(label,stderr);
-    fprintf(stderr," (at position %d): ",(int)(pos-label));
-    fprintf(stderr," end of label expected.\n");
+    error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+    error(label);
+    error(" (at position %d): ",(int)(pos-label));
+    error(" end of label expected.\n");
     return 1;      
   }
   return err;
@@ -957,10 +951,10 @@ int MU_graph_scan_label_out(unichar* label, MU_graph_out_T* MU_label_out) {
 
   //Opening '<'
   if (*pos != (unichar) '<') {
-    fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-    u_fprints(label,stderr);
-    fprintf(stderr," (at position %d): ",(int)(pos-label));
-    fprintf(stderr," '<'  expected.\n");
+    error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+    error(label);
+    error(" (at position %d): ",(int)(pos-label));
+    error(" '<'  expected.\n");
     return 1;      
   }
   pos++;
@@ -971,17 +965,17 @@ int MU_graph_scan_label_out(unichar* label, MU_graph_out_T* MU_label_out) {
   if (!err)
     for (cv=0; cv<MU_label_out->no_cats; cv++)
       if (MU_label_out->cats[cv].type == inherit_var) {
-	fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-	u_fprints(label,stderr);
-	fprintf(stderr,": an output label may not contain a double assignment \'==\'.\n");
+	error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+	error(label);
+	error(": an output label may not contain a double assignment \'==\'.\n");
 	return 1;
       }
   //Closing '>'
   if (*pos != (unichar) '>') {
-    fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-    u_fprints(label,stderr);
-    fprintf(stderr," (at position %d): ",(int)(pos-label));
-    fprintf(stderr," '>'  expected.\n");
+    error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+    error(label);
+    error(" (at position %d): ",(int)(pos-label));
+    error(" '>'  expected.\n");
     return 1;      
   }
   return 0;
@@ -1016,11 +1010,11 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
     l = u_scan_until_char(tmp,pos,MAX_GRAPH_NODE-1," \t=",1);
     cat = is_valid_cat(tmp);
     if (!cat) { 
-      fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-      u_fprints(label,stderr);
-      fprintf(stderr," (at position %d): ",(int)(pos-label));
-      u_fprints(tmp,stderr);
-      fprintf(stderr," is not a valid category\n");
+      error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+      error(label);
+      error(" (at position %d): ",(int)(pos-label));
+      error(tmp);
+      error(" is not a valid category\n");
       return 1;
     }
     MU_graph_morpho->cats[cv].cat = cat;
@@ -1031,10 +1025,10 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
     
     //The '=' character
     if (*pos != (unichar) '=') {
-      fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-      u_fprints(label,stderr);
-      fprintf(stderr," (at position %d): ",(int)(pos-label));
-      fprintf(stderr,"\'=\' missing.\n");
+      error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+      error(label);
+      error(" (at position %d): ",(int)(pos-label));
+      error("\'=\' missing.\n");
       return 1;
     }
     pos++;
@@ -1060,10 +1054,10 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
       pos++;  //omit the '$'
       l = u_scan_until_char(tmp,pos,MAX_GRAPH_NODE-1," \t;>",1);
       if (!l) {
-	fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-	u_fprints(label,stderr);
-	fprintf(stderr," (at position %d): ",(int)(pos-label));
-	fprintf(stderr,"a variable missing after \'$\'.\n");
+	error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+	error(label);
+	error(" (at position %d): ",(int)(pos-label));
+	error("a variable missing after \'$\'.\n");
 	return 1;      
       }
       MU_graph_morpho->cats[cv].val.unif_var = (unichar*) malloc((u_strlen(tmp)+1) * sizeof(unichar));
@@ -1071,31 +1065,31 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
     }
     else {  //constant value, e.g. fem
       if (dbl_eq) {
-	fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-	u_fprints(label,stderr);
-	fprintf(stderr," (at position %d): ",(int)(pos-label));
-	fprintf(stderr,"a variable missing after \'==\'.\n");
+	error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+	error(label);
+	error(" (at position %d): ",(int)(pos-label));
+	error("a variable missing after \'==\'.\n");
 	return 1;      
       }
       MU_graph_morpho->cats[cv].type = cnst;
       l = u_scan_until_char(tmp,pos,MAX_GRAPH_NODE-1," \t;>",1);
       if (!l) {
-	fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-	u_fprints(label,stderr);
-	fprintf(stderr," (at position %d): ",(int)(pos-label));
-	u_fprints(tmp,stderr);
-	fprintf(stderr,"a value missing after \'=\'.\n");
+	error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+	error(label);
+	error(" (at position %d): ",(int)(pos-label));
+	error(tmp);
+	error("a value missing after \'=\'.\n");
 	return 1;      
       }
       val = is_valid_val(cat,tmp);
       if (val == -1) {
-	fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-	u_fprints(label,stderr);
-	fprintf(stderr," (at position %d): ",(int)(pos-label));
-	u_fprints(tmp,stderr);
-	fprintf(stderr," is not a valid value in the domain of ");
-	u_fprints(cat->name,stderr);
-	fprintf(stderr,"\n");
+	error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+	error(label);
+	error(" (at position %d): ",(int)(pos-label));
+	error(tmp);
+	error(" is not a valid value in the domain of ");
+	error(cat->name);
+	error("\n");
 	return 1;            
       }
       MU_graph_morpho->cats[cv].val.value = val;
@@ -1113,11 +1107,11 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
       done = 1;
     else { 
       if (*pos != (unichar)';') {
-	fprintf(stderr,"In graph %s label format incorrect in ",MU_lemma->paradigm);
-	u_fprints(label,stderr);
-	fprintf(stderr," (at position %d): ",(int)(pos-label));
-	u_fprints(tmp,stderr);
-	fprintf(stderr," ';' missing\n");
+	error("In graph %s label format incorrect in ",MU_lemma->paradigm);
+	error(label);
+	error(" (at position %d): ",(int)(pos-label));
+	error(tmp);
+	error(" ';' missing\n");
 	return 1;      
       }
       pos++; //Omit the ';'

@@ -1,7 +1,7 @@
 /*
   * Unitex 
   *
-  * Copyright (C) 2001-2003 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@
 #include <ctype.h>
 #include "MF_Util.h"
 #include "Alphabet.h"
+#include "Error.h"
 
 /****************************************************************/
 /* Verifier si le caractere c a un correspondant parmi les 	*/
@@ -313,21 +314,16 @@ int u_add_unitab_elem(unichar* form,unitab_t* tab) {
 
   //If the table doesn't exist
   if ((tab->n) == 1) {
-    if (!(tab->t = (unichar**) malloc(sizeof(unichar**)))) {
-      fprintf(stderr,"Memory allocation problem in function 'u_add_unitab_elem'\n");
-      return 1;
-    }
+     if (!(tab->t = (unichar**) malloc(sizeof(unichar**)))) {
+        fatal_error("Not enough memory in function u_add_unitab_elem\n");
+     }
   }
-  else
-    if (!(tab->t = (unichar**) realloc(tab->t,tab->n * sizeof(unichar*)))) {
-      fprintf(stderr,"Memory allocation problem in function 'u_add_unitab_elem'\n");
-      return 1;
-    }
-  if (!(tab->t[tab->n-1] = (unichar*) malloc((u_strlen(form)+1) * sizeof(unichar))) ) {
-    fprintf(stderr,"Memory allocation problem in function 'u_add_unitab_elem'\n");
-    return 1;
+  else {
+     if (!(tab->t = (unichar**) realloc(tab->t,tab->n * sizeof(unichar*)))) {
+        fatal_error("Not enough memory in function u_add_unitab_elem\n");
+     }
   }
-  u_strcpy(tab->t[tab->n-1],form);
+  tab->t[tab->n-1]=u_strdup(form);
   return 0;
 }
 
