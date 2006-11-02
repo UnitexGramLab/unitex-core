@@ -385,10 +385,12 @@ if (profondeur > MAX_DEPTH) {
   taille_entree = 0; // reset taille_entree
   pile[0] = '\0';    // clear output stack
   sommet = 0;        // dito
-  while (*liste_arrivee!=NULL) { // free list of subgraph matches
-    struct liste_num* la_tmp=*liste_arrivee;
-    *liste_arrivee=(*liste_arrivee)->suivant;
-    free(la_tmp);
+  if (liste_arrivee != NULL) {
+    while (*liste_arrivee != NULL) { // free list of subgraph matches
+      struct liste_num* la_tmp=*liste_arrivee;
+      *liste_arrivee=(*liste_arrivee)->suivant;
+      free(la_tmp);
+    }
   }
   return;
   //  exit(1); // don't exit, try at next position
