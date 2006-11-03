@@ -38,7 +38,7 @@
 #include "FileName.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
-
+#include "StringParsing.h"
 
 //
 // parametres de test:
@@ -193,7 +193,9 @@ fclose(f);
 printf("Saving tags...\n");
 for (int i=0;i<etiquettes->N;i++) {
   u_fprints_char("%",out);
-  u_fprints(etiquettes->tab[i],out);
+  unichar tmp[1024];
+  escape(etiquettes->tab[i],tmp,P_SLASH);
+  u_fprints(tmp,out);
   u_fprints_char("\n",out);
 }
 u_fprints_char("f\n",out);
