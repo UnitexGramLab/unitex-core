@@ -196,7 +196,7 @@ for (int i=0;i<tok->N;i++) {
        for (int j=0;j<temp->n_semantic_codes;j++) {
           get_hash_number(temp->semantic_codes[j],semantic_codes);
        }
-       free_dic_entry(temp);
+       free_dela_entry(temp);
     }
 }
 }

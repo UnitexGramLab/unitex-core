@@ -129,7 +129,7 @@ void substring_operation (unichar*, unichar*);
 bool* tableau_prefix;
 bool* tableau_suffix;
 void check_valid_INF_lines(unichar*, bool*, struct INF_codes*);
-bool check_is_valid_for_an_INF_line(unichar*, struct word_list*);
+bool check_is_valid_for_an_INF_line(unichar*, struct list_ustring*);
 int check_is_valid_for_one_INF_code(unichar* t, unichar* s);
 int check_is_valid(unichar*, struct dela_entry*);
 void init_tableaux (struct INF_codes* inf) {
@@ -269,14 +269,14 @@ int check_is_valid_for_one_INF_code(unichar* t, unichar* s)
   u_strcat(temp,s);
   struct dela_entry* d = tokenize_DELAF_line(temp,0);
   int res = check_is_valid(t, d);
-  free_dic_entry(d);
+  free_dela_entry(d);
   return res;
 }
 
-bool check_is_valid_for_an_INF_line(unichar* t, struct word_list* l)
+bool check_is_valid_for_an_INF_line(unichar* t, struct list_ustring* l)
 {
   while ( l != 0 ) {
-    if (check_is_valid_for_one_INF_code(t, l->word)) {
+    if (check_is_valid_for_one_INF_code(t, l->string)) {
       return 1;
     }
     l = l->next;
@@ -534,7 +534,7 @@ void free_all_dic_entries ()
    while (_n_used_dic_entries > 0) {
     _n_used_dic_entries--;
     if ( _all_adresses_of_dic_entries[_n_used_dic_entries] != 0 )
-      free_dic_entry(_all_adresses_of_dic_entries[_n_used_dic_entries]);
+      free_dela_entry(_all_adresses_of_dic_entries[_n_used_dic_entries]);
   }
 }
 
@@ -952,13 +952,13 @@ void explore_state (int adresse,
 	u_fprints_char("\n", debug_file);
       }
     
-      struct word_list* l = inf_codes->codes[index];
+      struct list_ustring* l = inf_codes->codes[index];
       while ( l != 0 ) {
 
 //	int one_rule_already_matched = 0; // one rule matched each entry is enough
 
 	unichar entry[MAX_DICT_LINE_LENGTH];
-	uncompress_entry(current_component, l->word, entry);
+	uncompress_entry(current_component, l->string, entry);
 
 	if (DDEBUG) {
 	  u_fprints_char(": ", debug_file);

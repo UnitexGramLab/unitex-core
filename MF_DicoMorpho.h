@@ -40,6 +40,12 @@
  * 
  */
 
+
+#define CONFIG_FILES_OK 0
+#define CONFIG_FILES_ERROR 1
+extern int config_files_status;
+
+
 //maximum length of a line in the file containing equivalences between morphological and dictionary values
 #define MAX_EQUIV_LINE 100
 //maximum number of equivalences between morphological and dictionary values

@@ -506,7 +506,7 @@ else {
          // if the tag is a compound word, we say that it verifies the <CDIC> pattern
          c=(unsigned char)(c|CDIC_TOKEN_BIT_MASK);
       }
-      free_dic_entry(temp);
+      free_dela_entry(temp);
       return c;
    }
 }

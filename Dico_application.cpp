@@ -268,11 +268,11 @@ if (token[pos]=='\0') {
          set_value(info->simple_word,token_number,priority);
          /* We compute the INF line number and we get the associated compressed lines */
          int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
-         struct word_list* tmp=info->inf->codes[inf_number];
+         struct list_ustring* tmp=info->inf->codes[inf_number];
          /* Then, we produce the DELAF line corresponding to each compressed line */
          while (tmp!=NULL) {
             unichar line[DIC_LINE_SIZE];
-            uncompress_entry(inflected,tmp->word,line);
+            uncompress_entry(inflected,tmp->string,line);
             u_fprints(line,info->dlf);
             u_fprints_char("\n",info->dlf);
             tmp=tmp->next;
@@ -384,7 +384,7 @@ if (current_token[pos_in_current_token]=='\0') {
          /* We get the INF line number */
          int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
          unichar line[DIC_LINE_SIZE];
-         struct word_list* tmp=info->inf->codes[inf_number];
+         struct list_ustring* tmp=info->inf->codes[inf_number];
          /* We increase the number of compound word occurrences.
           * Note that we count occurrences and not number of entries, so that
           * if we find "copy and paste" in the text we will count one more
@@ -393,7 +393,7 @@ if (current_token[pos_in_current_token]=='\0') {
          while (tmp!=NULL) {
             /* For each compressed code of the INF line, we save the corresponding
              * DELAF line in 'info->dlc' */
-            uncompress_entry(inflected,tmp->word,line);
+            uncompress_entry(inflected,tmp->string,line);
             u_fprints(line,info->dlc);
             u_fprints_char("\n",info->dlc);
             tmp=tmp->next;
@@ -691,7 +691,7 @@ while (l!=NULL) {
          error("Invalid match in concord.ind\n");
       }
       /* Finally, we free the entry */
-      free_dic_entry(entry);
+      free_dela_entry(entry);
    }
    /* If the match is not a valid entry, an error message has already
     * been produced by tokenize_DELAF_line, so there is nothing to do. */

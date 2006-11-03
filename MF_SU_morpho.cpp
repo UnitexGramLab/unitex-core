@@ -35,6 +35,7 @@
 #include "MF_DicoMorpho.h"
 #include "MF_Util.h"
 #include "Error.h"
+#include "List_ustring.h"
 
 #define MAX_CHARS_IN_STACK 100
 
@@ -66,6 +67,7 @@ void SU_explore_tag_recursion(Fst2Transition T,unichar* flechi,unichar* canoniqu
 			      Fst2* a,struct couple_string** LISTE,f_morpho_T* desired_features, SU_forms_T* forms);
 void shift_stack(unichar* stack,int pos);
 int SU_convert_features(f_morpho_T*** feat,unichar* feat_str);
+struct list_ustring* SU_split_raw_features(unichar*);
 int SU_feature_agreement(f_morpho_T* feat,f_morpho_T* desired_features);
 int SU_delete_inflection(SU_forms_T* forms);
 int SU_cpy_features(f_morpho_T* feat,SU_id_T* SU_id);
@@ -116,7 +118,6 @@ int SU_inflect(SU_id_T* SU_id,f_morpho_T* desired_features, SU_forms_T* forms) {
  * will receive all the produced inflected forms with their inflectional features.
  * The output DELAF lines will have to be built from 'forms'.
  */
-#warning use copy_val_str to generate the DELAF lines
 int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms) {
   int err;
   unichar inflected[MAX_CHARS_IN_STACK];
@@ -128,7 +129,7 @@ int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms) {
     return 1;
   }
   u_strcpy(inflected,lemma);
-  err = SU_explore_state(inflected,lemma,inflection_codes,fst2[T],0,NULL,forms);
+  err=SU_explore_state(inflected,lemma,inflection_codes,fst2[T],0,NULL,forms);
   return err;
 }
 
@@ -146,31 +147,53 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
 
   Fst2State e=a->states[etat_courant];
   if (e->control & 1) {  //If final state
-    f_morpho_T** feat;  //Table of sets of inflection features; necessary in case of factorisation of entries, e.g. :ms:fs
-    err = SU_convert_features(&feat,sortie);
-    if (err) 
-      return (err);
-
-    int f;  //Index of the current morphological features in the current node
-    f = 0;
-    while (feat[f]) {
-      //If the form's morphology agrees with the desired features
-      if (SU_feature_agreement(feat[f],desired_features)) {
-	//Put the form into 'forms'
-	forms->forms = (SU_f_T*)realloc(forms->forms, (forms->no_forms+1) * sizeof(SU_f_T));
-	if (!forms->forms) {
-	  fatal_error("Not enough memory in function SU_explore_state\n");
-	}
-	forms->forms[forms->no_forms].form=u_strdup(flechi);
-	forms->forms[forms->no_forms].features = feat[f];
-	forms->no_forms++;
-      }
-      else { //If undesired form delete 'feat'
-	  f_delete_morpho(feat[f]);
-	}
-      f++;
+    if (desired_features!=NULL) {
+       /* If we want to select only some inflected forms */
+       f_morpho_T** feat;  //Table of sets of inflection features; necessary in case of factorisation of entries, e.g. :ms:fs
+       err=SU_convert_features(&feat,sortie);
+       if (err) {
+          return (err);
+       }
+       int f;  //Index of the current morphological features in the current node
+       f=0;
+       while (feat[f]) {
+         //If the form's morphology agrees with the desired features
+         if (SU_feature_agreement(feat[f],desired_features)) {
+	         //Put the form into 'forms'
+	         forms->forms=(SU_f_T*)realloc(forms->forms,(forms->no_forms+1)*sizeof(SU_f_T));
+            if (!forms->forms) {
+	            fatal_error("Not enough memory in function SU_explore_state\n");
+	         }
+            forms->forms[forms->no_forms].form=u_strdup(flechi);
+            forms->forms[forms->no_forms].features = feat[f];
+            forms->no_forms++;
+         }
+         else { //If undesired form delete 'feat'
+	         f_delete_morpho(feat[f]);
+	      }
+         f++;
+       }
+       free(feat);
+    } else {
+      /* If we want all the inflected forms */
+      struct list_ustring* features=SU_split_raw_features(sortie);
+      while (features!=NULL) {
+         //Put the form into 'forms'
+         forms->forms=(SU_f_T*)realloc(forms->forms,(forms->no_forms+1)*sizeof(SU_f_T));
+         if (!forms->forms) {
+            fatal_error("Not enough memory in function SU_explore_state\n");
+         }
+         forms->forms[forms->no_forms].form=u_strdup(flechi);
+         forms->forms[forms->no_forms].raw_features=features->string;
+         
+         forms->no_forms++;
+         struct list_ustring* tmp=features->next;
+         /* WARNING: here we must not call free_list_ustring, since the associated
+          * string would also be freed */
+         free(features);
+         features=tmp;
+       }
     }
-    free(feat);
   }
   Fst2Transition t=e->transitions;
   while (t!=NULL) {
@@ -408,6 +431,16 @@ int SU_convert_features(f_morpho_T*** feat,unichar* feat_str) {
   return 0;
 }
 
+
+////////////////////////////////////////////
+// Splits a textual representation of features 'feat_str', e.g. :Ipf:Ipm
+// into a list of strings "Ipf", "Ipm"
+// Returns the list; NULL if an error occurs.
+struct list_ustring* SU_split_raw_features(unichar* feat_str) {
+return NULL;
+}
+
+
 ////////////////////////////////////////////
 // Returns 1 if the set of morphological features 'feat'
 // agrees with the set 'desired_features'.
@@ -420,7 +453,6 @@ int SU_feature_agreement(f_morpho_T* feat,f_morpho_T* desired_features) {
 if (desired_features==NULL) {
    return 1;
 }
-   
    
   int f; //Index of the current feature in 'feat'
   int df; //Index of the current feature in 'desired_feat'

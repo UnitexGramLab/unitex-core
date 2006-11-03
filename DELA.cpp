@@ -403,6 +403,24 @@ return res;
 
 
 /**
+ * This function tests if the given line is a strict DELAS line, that is to say:
+ * 1) it can be tokenized as a DELAS line
+ * 2) the lemma is only made of letters
+ * In case of success, the fucntion returns a dela_entry structure describing the
+ * line; NULL otherwise.
+ */
+struct dela_entry* is_strict_DELAS_line(unichar* line,Alphabet* alphabet) {
+struct dela_entry* res=tokenize_DELAS_line(line,NULL);
+if (res==NULL) return NULL;
+if (!is_sequence_of_letters(res->lemma,alphabet)) {
+   free_dela_entry(res);
+   return NULL;
+}
+return res;
+}
+
+
+/**
  * This function fills the string 'codes' with all the codes of the given entry.
  * The result is ready to be concatenated with an inflected form and a lemma.
  * Special characters '+' ':' '/' and '\' are escaped with a backslash.
@@ -568,13 +586,13 @@ return;
  * several single codes.
  * Example: .N,.V  =>  code 0=".N" ; code 1=".V"
  */
-struct word_list* tokenize_compressed_info(unichar* line) {
-struct word_list* result=NULL;
+struct list_ustring* tokenize_compressed_info(unichar* line) {
+struct list_ustring* result=NULL;
 unichar tmp[DIC_LINE_SIZE];
 int pos=0;
 /* Note: all protected characters must stay protected */
 while (P_EOS!=parse_string(line,&pos,tmp,P_COMMA,P_EMPTY,NULL)) {
-   result=new_word_list(tmp,result);
+   result=new_list_ustring(tmp,result);
    if (line[pos]==',') pos++;
 }
 return result;
@@ -713,7 +731,7 @@ if (res==NULL) {
    fatal_error("Not enough memory in load_INF_file\n");
 }
 res->N=u_read_int(f);
-res->codes=(struct word_list**)malloc(sizeof(struct word_list*)*(res->N));
+res->codes=(struct list_ustring**)malloc(sizeof(struct list_ustring*)*(res->N));
 if (res->codes==NULL) {
    fatal_error("Not enough memory in load_INF_file\n");
 }
@@ -735,7 +753,7 @@ return res;
 void free_INF_codes(struct INF_codes* INF) {
 if (INF==NULL) {return;}
 for (int i=0;i<INF->N;i++) {
-   free_word_list(INF->codes[i]);
+   free_list_ustring(INF->codes[i]);
 }
 free(INF->codes);
 free(INF);
@@ -800,11 +818,11 @@ if (!(n_transitions & 32768)) {
    ref=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
    pos=pos+3;
    content[string_pos]='\0';
-   struct word_list* tmp=inf->codes[ref];
+   struct list_ustring* tmp=inf->codes[ref];
    /* We produce entries from the INF codes associated to this final state */
    while (tmp!=NULL) {
       unichar res[DIC_WORD_SIZE];
-      uncompress_entry(content,tmp->word,res);
+      uncompress_entry(content,tmp->string,res);
       u_fprints(res,output);
       u_fprints_char("\n",output);
       tmp=tmp->next;
@@ -857,7 +875,7 @@ while (u_read_line(f,line)) {
       for (i=0;i<entry->n_semantic_codes;i++) {
          get_hash_number(entry->semantic_codes[i],hash);
       }
-      free_dic_entry(entry);
+      free_dela_entry(entry);
    }
 }
 fclose(f);
@@ -905,7 +923,7 @@ if (entry!=NULL) {
    for (i=0;entry->lemma[i]!='\0';i++) {
       alphabet[entry->lemma[i]]=1;
    }
-   free_dic_entry(entry);
+   free_dela_entry(entry);
    return;
 }
 /**
@@ -976,7 +994,7 @@ struct dela_entry* entry=tokenize_tag_token(s);
 if (entry==NULL) {
    return 0;
 }
-free_dic_entry(entry);
+free_dela_entry(entry);
 return 1;
 }
 
@@ -1085,7 +1103,7 @@ s[j]='\0';
 /**
  * Frees all the memory consumed by the given dela_entry structure.
  */
-void free_dic_entry(struct dela_entry* d) {
+void free_dela_entry(struct dela_entry* d) {
 if (d==NULL) return;
 if (d->inflected!=NULL) free(d->inflected);
 if (d->lemma!=NULL) free(d->lemma);

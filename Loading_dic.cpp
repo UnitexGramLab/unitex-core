@@ -167,7 +167,7 @@ while (u_read_line(f,line)) {
          }
       }
    }
-   free_dic_entry(entry);
+   free_dela_entry(entry);
 }
 u_fclose(f);
 }
@@ -216,7 +216,7 @@ for (int i=0;i<tokens->N;i++) {
       /* At the opposite of DLC lines, a compound word tag like "{all around,.ADV}"
        * does not need to be put in the compound word tree, since the tag is already
        * characterized by its token number. */
-      free_dic_entry(entry);
+      free_dela_entry(entry);
    }
 }
 }

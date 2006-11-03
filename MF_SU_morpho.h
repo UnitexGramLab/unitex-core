@@ -41,8 +41,11 @@
 //          form = "vives"
 //          features = {Gen=fem, Nb=pl}
 typedef struct {
-  unichar* form;         //e.g. "vives", or "-"
-  f_morpho_T* features;   //e.g. {Gen=fem, Nb=pl}, or {}
+   unichar* form;         //e.g. "vives", or "-"
+   union {
+      f_morpho_T* features;   //e.g. {Gen=fem, Nb=pl}, or {}
+      unichar* raw_features; // used for simple words
+   };
 } SU_f_T;
 
 /////////////////////////////////////////////////
@@ -91,6 +94,9 @@ typedef struct {
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.   
 int SU_inflect(SU_id_T* SU_id,f_morpho_T* feat, SU_forms_T* forms);
+
+/* This prototype has been added in order to deal with simple words */
+int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

@@ -171,7 +171,7 @@ while (s!=NULL) {
      if (!u_strcmp(TMP->inflected,etiquette[e]->inflected)) {
         troisieme_cas_prime(e,etiquette,s->string,alph,tok,parameters->DLC_tree,tokenization_mode,parameters);
      }
-     free_dic_entry(TMP);
+     free_dela_entry(TMP);
   }
   else if (!u_strcmp(s->string,etiquette[e]->inflected)) {
      troisieme_cas_prime(e,etiquette,s->string,alph,tok,parameters->DLC_tree,tokenization_mode,parameters);
@@ -268,7 +268,7 @@ while (L!=NULL) {
       etiquette[e]->matching_tokens=ptr_num;
       etiquette[e]->number_of_matching_tokens++;
    }
-   free_dic_entry(entry);
+   free_dela_entry(entry);
    L=L->next;
 }
 if (!case_variants_allowed) {

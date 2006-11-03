@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 #include "NorwegianCompounds.h"
 #include "Error.h"
+#include "List_ustring.h"
 //---------------------------------------------------------------------------
 
 /**
@@ -95,9 +96,9 @@ void explore_state(int,unichar*,int,unichar*,int,unichar*,unichar*,
 					struct word_decomposition_list**,int,struct norwegian_infos*);
 void check_valid_right_component(char*,struct INF_codes*);
 void check_valid_left_component(char*,struct INF_codes*);
-char check_valid_left_component_for_an_INF_line(struct word_list*);
+char check_valid_left_component_for_an_INF_line(struct list_ustring*);
 char check_valid_left_component_for_one_INF_code(unichar*);
-char check_valid_right_component_for_an_INF_line(struct word_list*);
+char check_valid_right_component_for_an_INF_line(struct list_ustring*);
 char check_valid_right_component_for_one_INF_code(unichar*);
 char check_Nsia(struct dela_entry*);
 char check_Nsie(struct dela_entry*);
@@ -165,9 +166,9 @@ for (int i=0;i<inf->N;i++) {
  * Returns 1 if at least one of the INF codes of 'INF_codes' is a valid
  * right component, 0 otherwise.
  */
-char check_valid_right_component_for_an_INF_line(struct word_list* INF_codes) {
+char check_valid_right_component_for_an_INF_line(struct list_ustring* INF_codes) {
 while (INF_codes!=NULL) {
-	if (check_valid_right_component_for_one_INF_code(INF_codes->word)) {
+	if (check_valid_right_component_for_one_INF_code(INF_codes->string)) {
 		return 1;
 	}
 	INF_codes=INF_codes->next;
@@ -193,9 +194,9 @@ for (int i=0;i<inf->N;i++) {
  * Returns 1 if at least one of the INF codes of 'INF_codes' is a valid
  * left component, 0 otherwise.
  */
-char check_valid_left_component_for_an_INF_line(struct word_list* INF_codes) {
+char check_valid_left_component_for_an_INF_line(struct list_ustring* INF_codes) {
 while (INF_codes!=NULL) {
-	if (check_valid_left_component_for_one_INF_code(INF_codes->word)) {
+	if (check_valid_left_component_for_one_INF_code(INF_codes->string)) {
 		return 1;
 	}
 	INF_codes=INF_codes->next;
@@ -227,7 +228,7 @@ else if (check_VW(d)) res=V_W;
 else if (check_ADV(d)) res=ADV;
 else res=INVALID_LEFT_COMPONENT;
 /* Finally we free the artifical dictionary entry */
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -238,21 +239,21 @@ return res;
  * "N:sia", "N:sie" or "N:sig", they will have the priority.
  * 'code' is a string that will contains the selected code.
  **/
-void get_first_valid_left_component(struct word_list* INF_codes,unichar* code) {
+void get_first_valid_left_component(struct list_ustring* INF_codes,unichar* code) {
 int tmp;
 code[0]='\0';
 while (INF_codes!=NULL) {
-	tmp=get_valid_left_component_type_for_one_INF_code(INF_codes->word);
+	tmp=get_valid_left_component_type_for_one_INF_code(INF_codes->string);
 	if (tmp==N_SIA || tmp==N_SIE || tmp==N_SIG) {
 		/* If we find an N, then we return it */
-		u_strcpy(code,INF_codes->word);
+		u_strcpy(code,INF_codes->string);
 		return;
 	}
 	if (tmp!=INVALID_LEFT_COMPONENT) {
 		/* If we find a valid left component, then we copy it,
 		 * but we do not return now, since we can find later
 		 * a N that has an higher priority */
-		u_strcpy(code,INF_codes->word);
+		u_strcpy(code,INF_codes->string);
 	}
 	INF_codes=INF_codes->next;
 }
@@ -369,7 +370,7 @@ struct dela_entry* d=tokenize_DELAF_line(temp,0);
  * corresponds to a valid left component. */
 char res=check_Nsia(d)||check_Nsie(d)||check_Nsig(d)||check_Asio(d)||check_Asie(d)||check_VW(d)||check_ADV(d);
 /* Finally, we free the artificial dictionary entry */
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -401,7 +402,7 @@ unichar t2[4];
 u_strcpy_char(t2,"sie");
 char res=dic_entry_contain_gram_code(d,t1) && !dic_entry_contain_inflectional_code(d,t2);
 /* We free the artifical dictionary entry */
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -423,7 +424,7 @@ unichar t2[4];
 u_strcpy_char(t2,"sie");
 char res=dic_entry_contain_gram_code(d,t1) && !dic_entry_contain_inflectional_code(d,t2);
 /* We free the artifical dictionary entry */
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -451,7 +452,7 @@ u_strcat(temp,INF_code);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_N(d);
 /* We free the artifical dictionary entry */
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -469,7 +470,7 @@ u_strcat(temp,INF_code);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_a(d);
 /* We free the artifical dictionary entry */
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -498,7 +499,7 @@ u_strcat(temp,INF_code);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=(check_N(d)||check_A(d)/*||check_V_but_not_Y(d)*/)&&(!check_Nsie(d));
 /* We free the artifical dictionary entry */
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -514,7 +515,7 @@ char verb_of_more_than_4_letters(unichar* line) {
 struct dela_entry* d=tokenize_DELAF_line(line,0);
 char res=check_V_but_not_Y(d) && u_strlen(d->inflected)>4;
 /* We free the artifical dictionary entry */
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -743,7 +744,7 @@ if (!(c&32768)) {
 			/* If we have explored the entire original word */
 			if (get_token_number(current_component,infos->forbidden_words)==-1) {
 				/* And if we do not have forbidden word in last position */
-				struct word_list* l=infos->inf->codes[index];
+				struct list_ustring* l=infos->inf->codes[index];
 				/* We will look at all the INF codes of the last component in order
 				 * to produce analysis */
 				while (l!=NULL) {
@@ -757,7 +758,7 @@ if (!(c&32768)) {
 					}
 					unichar entry[2000];
 					/* We get the dictionary line that corresponds to the current INF code */
-					uncompress_entry(current_component,l->word,entry);
+					uncompress_entry(current_component,l->string,entry);
 					/* And we add it to the analysis */
 					u_strcat(dec,entry);
 					unichar new_dela_line[2000];
@@ -797,7 +798,7 @@ if (!(c&32768)) {
 					 * that the word to analyze was in fact a simple word
 					 * in the dictionary */
 					if (verb_of_more_than_4_letters(entry)
-						|| check_valid_right_component_for_one_INF_code(l->word)
+						|| check_valid_right_component_for_one_INF_code(l->string)
 						|| number_of_components==1) {
 						/*
 						 * We set the number of components, the analysis, the actual
@@ -807,8 +808,8 @@ if (!(c&32768)) {
 						wd->n_parts=number_of_components;
 						u_strcpy(wd->decomposition,dec);
 						u_strcpy(wd->dela_line,new_dela_line);
-						wd->is_a_valid_right_N=check_N_right_component(l->word);
-						wd->is_a_valid_right_A=check_A_right_component(l->word);
+						wd->is_a_valid_right_N=check_N_right_component(l->string);
+						wd->is_a_valid_right_A=check_A_right_component(l->string);
 						/* Then we add the decomposition word structure to the list that
 						 * contains all the analysis for the word to analyze */
 						struct word_decomposition_list* wdl=new_word_decomposition_list();

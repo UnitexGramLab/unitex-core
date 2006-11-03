@@ -25,7 +25,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include "String_hash.h"
-#include "WordList.h"
+#include "List_ustring.h"
+#include "Alphabet.h"
 
 /* Maximum size of a DELA line */
 #define DIC_LINE_SIZE 4096
@@ -96,7 +97,7 @@ struct INF_codes {
 	 *  ".N+Loc:fs"   -->   ".N+NA+z1:fs"   -->   NULL
 	 * 
 	 */
-	struct word_list** codes;
+	struct list_ustring** codes;
 	/* Number of lines in the .inf file */
 	int N;
 };
@@ -109,8 +110,9 @@ struct dela_entry* tokenize_DELAF_line(unichar*,int);
 struct dela_entry* tokenize_DELAF_line(unichar*,int,int,int*);
 struct dela_entry* tokenize_tag_token(unichar*);
 struct dela_entry* tokenize_DELAS_line(unichar*,int*);
+struct dela_entry* is_strict_DELAS_line(unichar*,Alphabet*);
 void get_compressed_line(struct dela_entry*,unichar*);
-struct word_list* tokenize_compressed_info(unichar*);
+struct list_ustring* tokenize_compressed_info(unichar*);
 void uncompress_entry(unichar*,unichar*,unichar*);
 struct INF_codes* load_INF_file(char*);
 void free_INF_codes(struct INF_codes*);
@@ -124,10 +126,9 @@ int warning_on_code(unichar*,unichar*);
 int contains_unprotected_equal_sign(unichar*);
 void replace_unprotected_equal_sign(unichar*,unichar);
 void unprotect_equal_signs(unichar*);
-void free_dic_entry(struct dela_entry*);
+void free_dela_entry(struct dela_entry*);
 int check_tag_token(unichar*);
 int dic_entry_contain_gram_code(struct dela_entry*,unichar*);
 int dic_entry_contain_inflectional_code(struct dela_entry*,unichar*);
-
 #endif
 

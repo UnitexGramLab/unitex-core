@@ -93,7 +93,7 @@ typedef struct{
 
 /**************************************************************************************/
 /* Read the language file "file".                                                     */
-/* This file conains lists of all classes (nous, verb, etc.) of the language,         */
+/* This file conatins lists of all classes (nous, verb, etc.) of the language,         */
 /* with their inflection categories (number, case, gender, etc.) and values           */
 /* (e.g. sing, pl, masc, etc.).                                                       */
 /* E.g. for Polish:								      */

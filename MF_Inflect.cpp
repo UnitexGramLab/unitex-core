@@ -22,8 +22,6 @@
 /* Created by Agata Savary (savary@univ-tours.fr)
  * Last modification on September 12 2005
  */
-////////////////////////////////////////////////////////////////////
-// TESTING MODULE
 
 
 #include <stdio.h>
@@ -48,23 +46,17 @@ extern char inflection_directory[1000];
 
 
 void usage() {
-printf("Usage: DlcInflect <delac> <delacf> <alpha> <dir>\n");
-printf("     <delac> : the unicode DELAC file to be inflected\n");
-printf("     <delacf> : the unicode resulting DELACF dictionary \n");
+printf("Usage: MultiFlex <dela> <delaf> <alpha> <dir>\n");
+printf("     <dela> : the unicode DELAS or DELAC file to be inflected\n");
+printf("     <delaf> : the unicode resulting DELAF or DELACF dictionary \n");
 printf("     <alpha> : the alphabet file \n");
-printf("     <dir> : the directory containing 'Morphology' file and \n");
+printf("     <dir> : the directory containing 'Morphology' and 'Equivalences' files and \n");
 printf("             inflection graphs for single and compound words.\n");
-printf("\nInflects a DELAC into a DELACF.\n");
+printf("\nInflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge simple\n");
+printf("and compound words in a same dictionary.\n");
 }
 
-///////////////////////////////////
-// Inflection of a DELAC to a DELACF
-// argv[1] = path and name of the DELAC file
-// argv[2] = path and name of the DELACF file
-// argv[3] = path and name of the alphabet file
-// argv[4] = path and name of the inflection directory 
-//           containing the 'Morphology' file and the inflection transducers
-//           for simple and compound words
+
 int main(int argc, char* argv[]) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
@@ -81,12 +73,10 @@ char morphology[FILENAME_SIZE];
 new_file(argv[4],"Morphology",morphology);
 err=read_language_morpho(morphology);
 if (err) {
-   free_language_morpho();
-   return 1;
+   config_files_status=CONFIG_FILES_ERROR;
 }
-print_language_morpho();
 //Load alphabet
-alph=load_alphabet(argv[3]);  //To be done once at the beginning of the DELAC inflection
+alph=load_alphabet(argv[3]);  //To be done once at the beginning of the inflection
   if (alph==NULL) {
     error("Cannot open alphabet file %s\n",argv[3]);
     free_language_morpho();
@@ -98,11 +88,8 @@ char equivalences[FILENAME_SIZE];
 new_file(argv[4],"Equivalences",equivalences);
 err=d_init_morpho_equiv(equivalences);
 if (err) {
-   free_language_morpho();
-   free_alphabet(alph);    
-   return 1;
+   config_files_status=CONFIG_FILES_ERROR;
 }
-d_print_morpho_equiv();
 d_init_class_equiv();
 //Initialize the structure for inflection transducers
 strcpy(inflection_directory,argv[4]);
@@ -112,7 +99,7 @@ if (err) {
    return 1;
 }
 //DELAC inflection
-err=DLC_inflect(argv[1],argv[2]);
+err=inflect(argv[1],argv[2]);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();

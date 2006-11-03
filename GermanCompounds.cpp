@@ -49,9 +49,9 @@ free(tableau_correct_right_component);
 // return 1 if at least one of the INF codes of l is a valid
 // right component, 0 else
 //
-char check_valid_right_component_for_an_INF_line_german(struct word_list* l) {
+char check_valid_right_component_for_an_INF_line_german(struct list_ustring* l) {
 while (l!=NULL) {
-   if (check_valid_right_component_for_one_INF_code_german(l->word)) {
+   if (check_valid_right_component_for_one_INF_code_german(l->string)) {
       return 1;
    }
    l=l->next;
@@ -91,9 +91,9 @@ for (int i=0;i<inf->N;i++) {
 // return 1 if at least one of the INF codes of l is a valid
 // left component, 0 else
 //
-char check_valid_left_component_for_an_INF_line_german(struct word_list* l) {
+char check_valid_left_component_for_an_INF_line_german(struct list_ustring* l) {
 while (l!=NULL) {
-   if (check_valid_left_component_for_one_INF_code_german(l->word)) {
+   if (check_valid_left_component_for_one_INF_code_german(l->string)) {
       return 1;
    }
    l=l->next;
@@ -109,10 +109,10 @@ return 0;
 void get_first_sia_code_german(int n,unichar* s) {
 // we initialize s to prevent errors, but this case should never happen
 s[0]='\0';
-struct word_list* l=inf_codes->codes[n];
+struct list_ustring* l=inf_codes->codes[n];
 while (l!=NULL) {
-   if (check_valid_left_component_for_one_INF_code_german(l->word)) {
-      u_strcpy(s,l->word);
+   if (check_valid_left_component_for_one_INF_code_german(l->string)) {
+      u_strcpy(s,l->string);
       return;
    }
    l=l->next;
@@ -143,7 +143,7 @@ u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_N_FF(d);
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -172,7 +172,7 @@ u_strcpy_char(temp,"x,");
 u_strcat(temp,s);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_N_not_FF(d);
-free_dic_entry(d);
+free_dela_entry(d);
 return res;
 }
 
@@ -301,13 +301,13 @@ if (!(c&32768)) {
       // if we have explored the entire original word
       if (tableau_correct_right_component[index]) {
          // and if we have a valid right component
-         struct word_list* l=inf_codes->codes[index];
+         struct list_ustring* l=inf_codes->codes[index];
          while (l!=NULL) {
             unichar dec[500];
             u_strcpy(dec,decomposition);
             if (dec[0]!='\0') {u_strcat_char(dec," +++ ");}
             unichar entry[500];
-            uncompress_entry(current_component,l->word,entry);
+            uncompress_entry(current_component,l->string,entry);
             u_strcat(dec,entry);
             unichar new_dela_line[500];
             struct dela_entry* tmp_entry=tokenize_DELAF_line(entry,1);
@@ -341,7 +341,7 @@ if (!(c&32768)) {
             wd->n_parts=n_decomp;
             u_strcpy(wd->decomposition,dec);
             u_strcpy(wd->dela_line,new_dela_line);
-            if (check_valid_right_component_for_one_INF_code_german(l->word)) {
+            if (check_valid_right_component_for_one_INF_code_german(l->string)) {
                // if we got a correct right component (N-FF)
                struct german_word_decomposition_list* wdl=new_german_word_decomposition_list();
                wdl->element=wd;

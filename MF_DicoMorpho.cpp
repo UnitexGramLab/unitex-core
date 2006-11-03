@@ -31,6 +31,10 @@
 #include "MF_Util.h"
 #include "Error.h"
 
+
+int config_files_status=CONFIG_FILES_OK;
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 //Global structure describing the morphological equivalences between morphological and dictinoary values
 d_morpho_equiv_T D_MORPHO_EQUIV;
@@ -87,7 +91,6 @@ l_class_T* d_get_class_str(unichar* cl_str);
 /* Returns 0 on success, 1 otherwise.                                                 */
 int d_init_morpho_equiv(char* equiv_file) {
 
-  char chemin[1000];
   int l; //length of a scanned sequence
   FILE* ef; //equivalence file
   int line_no;  //number of the current line
@@ -95,7 +98,7 @@ int d_init_morpho_equiv(char* equiv_file) {
 
   //Opening the equivalence file
   if ( !(ef = u_fopen(equiv_file, "r")))  {
-    error("Unable to open equivalence file %s !\n",chemin);
+    error("Unable to open equivalence file %s !\n",equiv_file);
     return 1;
   }
   

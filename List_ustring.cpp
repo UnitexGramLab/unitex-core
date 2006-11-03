@@ -29,7 +29,7 @@
 /**
  * Allocates, initializes and returns a new string list element.
  */
-struct list_ustring* new_list_ustring(unichar* string) {
+struct list_ustring* new_list_ustring(unichar* string,struct list_ustring* following) {
 if (string==NULL) {
    fatal_error("NULL string argument in new_list_ustring\n");
 }
@@ -39,7 +39,7 @@ if (l==NULL) {
    fatal_error("Not enough memory in new_list_ustring\n");
 }
 l->string=u_strdup(string);
-l->next=NULL;
+l->next=following;
 return l;
 }
 

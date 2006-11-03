@@ -193,7 +193,7 @@ while(u_read_line(f,s)) {
 			}
 			/* and last, but not least: don't forget to free your memory
 			 * or it would be impossible to compress large dictionaries */
-			 free_dic_entry(entry);
+			 free_dela_entry(entry);
 		}
 	}
 	/* We print something at regular intervals in order to show

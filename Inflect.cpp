@@ -35,6 +35,7 @@
 #define MAX_CHARS_IN_STACK 1000
 
 char inflection_directory[1000];
+
 FILE *f;
 FILE *f_out;
 int line=0;

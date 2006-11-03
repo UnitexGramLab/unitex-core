@@ -39,12 +39,6 @@
 //Maximum number of semantic or syntactic codes
 #define MAX_CODES 20
 
-/////////////////////////////////////////////////
-//Maximum length of a DELAC line
-#define MAX_DLC_LINE 500
-//Maximum length of a DELACF line
-#define MAX_DLCF_LINE 500
-
 ////////////////////////////////////////////
 // A DELAC entry.
 typedef struct {
@@ -60,9 +54,9 @@ typedef struct {
 int DLC_line2entry(unichar* line, DLC_entry_T* entry);
 
 /////////////////////////////////////////////////////////////////////////////////
-// Inflects a DELAC into a DELACF.
+// Inflects a DELAS/DELAC into a DELAC/DELACF.
 // On error returns 1, 0 otherwise.
-int DLC_inflect(char* DLC, char* DLCF);
+int inflect(char*,char*);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry.

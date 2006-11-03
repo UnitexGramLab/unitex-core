@@ -76,7 +76,7 @@ struct liste_chaines* tmp;
 while (l!=NULL) {
   tmp=l;
   l=l->suivant;
-  free_dic_entry(tmp->entry);
+  free_dela_entry(tmp->entry);
   free(tmp);
 }
 }
@@ -140,7 +140,7 @@ unichar ligne[1000];
 while (u_read_line(f,ligne)) {
    struct dela_entry* entry=tokenize_DELAF_line(ligne,1);
    inserer_dans_arbre_dlf_dlc(entry,racine);
-   free_dic_entry(entry);
+   free_dela_entry(entry);
 }
 u_fclose(f);
 }
