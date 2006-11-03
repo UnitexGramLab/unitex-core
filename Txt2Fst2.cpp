@@ -67,8 +67,15 @@ printf("named TEXT.FST2 is stored is the text directory.\n");
 //
 int lire_sentence(int buffer[],int* N,FILE* f,int SENTENCE_MARKER) {
 int length=0;
+if (1!=fread(buffer,sizeof(int),1,f)) {
+   return 0;
+}
+if (buffer[0]!=SENTENCE_MARKER) {
+   /* If the text starts by a {S}, we don't want to stop there */
+   length=1;
+}
 while (length<MAX_TOKENS && 1==fread(buffer+length,sizeof(int),1,f) && buffer[length]!=SENTENCE_MARKER) {
-  length++;
+   length++;
 }
 if (length==0) return 0;
 *N=length;

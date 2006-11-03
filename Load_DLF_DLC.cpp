@@ -86,7 +86,7 @@ while (l!=NULL) {
 struct liste_chaines* inserer_si_absent_dans_liste_chaines(struct dela_entry* entry,
                                                            struct liste_chaines* l) {
 if (l==NULL) return new_liste_chaines(entry);
-if (!equal(l->entry,entry)) return l;
+if (equal(l->entry,entry)) return l;
 l->suivant=inserer_si_absent_dans_liste_chaines(entry,l->suivant);
 return l;
 }
