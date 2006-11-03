@@ -422,7 +422,7 @@ switch(mode) {
 case DEFAULT_TOKENIZATION: return u_is_letter(c);
 case CHAR_BY_CHAR_TOKENIZATION: return 0; // by convention
 case ALPHABET_TOKENIZATION: return is_letter(c,alph);
-default: error("Internal error in is_letter_generic\n"); exit(1);
+default: fatal_error("Internal error in is_letter_generic\n");
 }
 }
 
@@ -998,10 +998,9 @@ int determinisation(Graph_comp graph) {
                       liberer_char_etat_det(stock[i]);
                     }
                   }
-                  error("Too many states in automaton: cannot determinize.\n"
+                  fatal_error("Too many states in automaton: cannot determinize.\n"
                         "Max. number of states per automaton/subgraph: NBRE_ET = %i\n",
                         NBRE_ET);
-                  exit(1);
                 }
               resultat[temp] = nouvel_etat_mat_det();
               dernier_etat_res++;
@@ -2179,7 +2178,7 @@ switch(mode) {
 case DEFAULT_TOKENIZATION: return get_mot_comp_default(contenu,pos,mot,pos_seq);
 case CHAR_BY_CHAR_TOKENIZATION: return get_mot_comp_char_by_char(contenu,pos,mot,pos_seq);
 case ALPHABET_TOKENIZATION: return get_mot_comp_alphabet(contenu,pos,mot,pos_seq,alph);
-default: error("Internal error in get_mot_comp_generic\n"); exit(1);
+default: fatal_error("Internal error in get_mot_comp_generic\n");
 }
 }
 
