@@ -98,7 +98,7 @@ int d_init_morpho_equiv(char* equiv_file) {
 
   //Opening the equivalence file
   if ( !(ef = u_fopen(equiv_file, "r")))  {
-    error("Unable to open equivalence file %s !\n",equiv_file);
+    error("Unable to open equivalence file %s\n",equiv_file);
     return 1;
   }
   

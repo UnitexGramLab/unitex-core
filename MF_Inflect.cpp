@@ -50,10 +50,10 @@ printf("Usage: MultiFlex <dela> <delaf> <alpha> <dir>\n");
 printf("     <dela> : the unicode DELAS or DELAC file to be inflected\n");
 printf("     <delaf> : the unicode resulting DELAF or DELACF dictionary \n");
 printf("     <alpha> : the alphabet file \n");
-printf("     <dir> : the directory containing 'Morphology' and 'Equivalences' files and \n");
-printf("             inflection graphs for single and compound words.\n");
-printf("\nInflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge simple\n");
-printf("and compound words in a same dictionary.\n");
+printf("     <dir> : the directory containing 'Morphology' and 'Equivalences'\n");
+printf("              files and inflection graphs for single and compound words.\n");
+printf("\nInflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n");
+printf("simple and compound words in a same dictionary.\n");
 }
 
 

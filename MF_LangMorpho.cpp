@@ -85,7 +85,7 @@ l_category_T* get_cat(unichar* val);
 /* Returns 0 if success, 1 otherwise                                                  */
 int read_language_morpho(char *file) {
   if ( !(lf = u_fopen(file, "r")))  {
-    error("Unable to open language morphology file %s !\n",file);
+    error("Unable to open language morphology file %s\n",file);
     return 1;
   }
   

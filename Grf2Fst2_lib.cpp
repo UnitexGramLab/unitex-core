@@ -424,6 +424,7 @@ case CHAR_BY_CHAR_TOKENIZATION: return 0; // by convention
 case ALPHABET_TOKENIZATION: return is_letter(c,alph);
 default: fatal_error("Internal error in is_letter_generic\n");
 }
+return 0;
 }
 
 
@@ -2180,6 +2181,7 @@ case CHAR_BY_CHAR_TOKENIZATION: return get_mot_comp_char_by_char(contenu,pos,mot
 case ALPHABET_TOKENIZATION: return get_mot_comp_alphabet(contenu,pos,mot,pos_seq,alph);
 default: fatal_error("Internal error in get_mot_comp_generic\n");
 }
+return 0;
 }
 
 

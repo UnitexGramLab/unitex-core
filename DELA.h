@@ -130,5 +130,6 @@ void free_dela_entry(struct dela_entry*);
 int check_tag_token(unichar*);
 int dic_entry_contain_gram_code(struct dela_entry*,unichar*);
 int dic_entry_contain_inflectional_code(struct dela_entry*,unichar*);
+void get_inflection_code(unichar*,char*,unichar*);
 #endif
 

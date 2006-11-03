@@ -410,7 +410,8 @@ return res;
  * line; NULL otherwise.
  */
 struct dela_entry* is_strict_DELAS_line(unichar* line,Alphabet* alphabet) {
-struct dela_entry* res=tokenize_DELAS_line(line,NULL);
+int verbose;
+struct dela_entry* res=tokenize_DELAS_line(line,&verbose);
 if (res==NULL) return NULL;
 if (!is_sequence_of_letters(res->lemma,alphabet)) {
    free_dela_entry(res);
@@ -1164,3 +1165,47 @@ return 0;
 }
 
 
+/**
+ * This function takes a string 's' representing the first code of a DELAS/DELAC
+ * line and analyses it to determine the inflection_code and the grammatical code.
+ * There are two possible conventions:
+ * 1) The grammatical code, made of ANSI letters, is followed by an inflection code
+ *    between parenthesis like "N(NC_XXX)"
+ * 2) The grammatical code, made of ANSI letters, is followed by a suffix like "N32".
+ *    In that case, the whole string is the inflection code.
+ * 
+ * The output strings are supposed to be allocated.
+ * 
+ * Examples:
+ * 
+ *    s="N32"       => inflection_code="N32"     code_gramm="N"
+ *    s="N(NC_XXX)" => inflection_code="NC_XXX"  code_gramm="N"
+ */
+void get_inflection_code(unichar* s,char* inflection_code,unichar* code_gramm) {
+int i;
+for (i=0;(s[i]>='A' && s[i]<='Z')||(s[i]>='a' && s[i]<='z');i++);
+if (s[i]=='\0') {
+   /* If the whole string is made of ANSI letters, then the inflection and
+    * grammmatical codes are identical */
+    u_strcpy(code_gramm,s);
+    u_to_char(inflection_code,s);
+    return;
+}
+if (s[i]=='(' && s[u_strlen(s)-1]==')') {
+   /* If we are in the case "N(NC_XXX)" */
+   u_strcpy(code_gramm,s);
+   code_gramm[i]='\0';
+   int j=0;
+   i++;
+   while (s[i+1]!='\0') {
+      /* We don't want to stop at ')' since a malicious code could be "N(NC_X(X))" */
+      inflection_code[j++]=(char)s[i++];
+   }
+   inflection_code[j++]='\0';
+   return;
+}
+/* If we are in the case "N32" */
+u_to_char(inflection_code,s);
+u_strcpy(code_gramm,s);
+code_gramm[i]='\0';
+}

@@ -83,6 +83,7 @@ l = u_fgets(input_line,DIC_LINE_SIZE-1,dlc);
 if (u_strlen(input_line)>0 && input_line[u_strlen(input_line)-1]==(unichar)'\n') {
    input_line[u_strlen(input_line)-1] = (unichar)'\0';
 }
+int flag=0;
 //If a line is empty the file is not necessarily finished. 
 //If the last entry has no newline, we should noty skip this entry
 struct dela_entry* DELAS_entry;
@@ -90,50 +91,46 @@ while (l || !feof(dlc)) {
    if ((DELAS_entry=is_strict_DELAS_line(input_line,alph))!=NULL) {
       /* If we have a strict DELAS line, that is to say, one with
        * a simple word */
-      u_prints(DELAS_entry->lemma);
-      getchar();
-      
-      
-      /* If this is a simple word */
-         SU_forms_T* forms=(SU_forms_T*)malloc(sizeof(SU_forms_T));
-         if (!forms) {
-            fatal_error("Not enough memory in function DLC_inflect\n");
+      SU_forms_T* forms=(SU_forms_T*)malloc(sizeof(SU_forms_T));
+      if (!forms) {
+         fatal_error("Not enough memory in function inflect\n");
+      }
+      forms->no_forms=0;
+      forms->forms=NULL;
+      char inflection_code[1024];
+      unichar code_gramm[1024];
+      /* We take the first grammatical code, and we extract from it the name
+       * of the inflection transducer to use */
+      get_inflection_code(DELAS_entry->semantic_codes[0],inflection_code,code_gramm);
+      /* And we inflect the word */
+      err=SU_inflect(DELAS_entry->lemma,inflection_code,forms);
+      /* Then, we print its inflected forms to the output */
+      for (int i=0;i<forms->no_forms;i++) {
+         u_fprints(forms->forms[i].form,dlcf);
+         u_fprints_char(",",dlcf);
+         u_fprints(DELAS_entry->lemma,dlcf);
+         u_fprints_char(".",dlcf);
+         u_fprints(code_gramm,dlcf);
+         /* We add the semantic codes, if any */
+         for (int j=1;j<DELAS_entry->n_semantic_codes;j++) {
+            u_fprints_char("+",dlcf);
+            u_fprints(DELAS_entry->semantic_codes[j],dlcf);
          }
-         forms->no_forms=0;
-         forms->forms=NULL;
-         char inflection_code[1024];
-         u_to_char(inflection_code,DELAS_entry->semantic_codes[0]);
-         err=SU_inflect(DELAS_entry->lemma,inflection_code,forms);
-         for (int i=0;i<forms->no_forms;i++) {
-            u_fprints(forms->forms[i].form,dlcf);
-            u_fprints_char(",",dlcf);
-            u_fprints(DELAS_entry->lemma,dlcf);
-            u_fprints_char(".",dlcf);
-            u_fprints(DELAS_entry->semantic_codes[0],dlcf);
-            u_fprints_char(":",dlcf);
-            for (int j=0;j<forms->forms[i].features->no_cats;j++) {
-               f_category_T cat=forms->forms[i].features->cats[j];
-               unichar rrr[2000];
-               copy_val_str(rrr,cat.cat,cat.val);
-               u_fprints(rrr,dlcf);
-            }
-            u_fprints_char("\n",dlcf);
-         }
-      
-      
-      
+         u_fprints_char(":",dlcf);
+         u_fprints(forms->forms[i].raw_features,dlcf);
+         u_fprints_char("\n",dlcf);
+      }
       free_dela_entry(DELAS_entry);
       /* End of simple word case */
    } else {  
       /* If we have not a simple word DELAS line, we try to analyse it
        * as a compound word DELAC line */
-       
       if (config_files_status!=CONFIG_FILES_ERROR) {
          /* If this is a compound word, we process it if and only if the 
           * configuration files have been correctly loaded */
          dlc_entry=(DLC_entry_T*)malloc(sizeof(DLC_entry_T));
          if (!dlc_entry) {
-            fatal_error("Not enough memory in function DLC_inflect\n");
+            fatal_error("Not enough memory in function inflect\n");
          }
          /* Convert a DELAC entry into the internal multi-word format */
          err=DLC_line2entry(input_line,dlc_entry);
@@ -141,7 +138,7 @@ while (l || !feof(dlc)) {
             //Inflect the entry
             MU_forms=(MU_forms_T*)malloc(sizeof(MU_forms_T));
             if (!MU_forms) {
-               fatal_error("Not enough memory in function DLC_inflect\n");
+               fatal_error("Not enough memory in function inflect\n");
             }
             err=MU_inflect(dlc_entry->lemma,MU_forms);
             if (!err) {
@@ -164,6 +161,15 @@ while (l || !feof(dlc)) {
             }
             MU_delete_inflection(MU_forms);      
             DLC_delete_entry(dlc_entry);
+         }
+      } else {
+         /* We try to inflect a compound word whereas the "Morphology" and/or
+          * "Equivalences" file(s) has/have not been loaded */
+         if (!flag) {
+            /* We use a flag to print the error message only once */
+            error("WARNING: Compound words won't be inflected because configuration files\n");
+            error("         have not been correctly loaded.\n");
+            flag=1;
          }
       }
    }

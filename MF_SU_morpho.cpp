@@ -36,6 +36,7 @@
 #include "MF_Util.h"
 #include "Error.h"
 #include "List_ustring.h"
+#include "StringParsing.h"
 
 #define MAX_CHARS_IN_STACK 100
 
@@ -137,6 +138,9 @@ int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms) {
 // Explore the transducer a starting from state 'etat_courant'.
 //Conserve only the forms that agree with the 'desired_features'.
 // desired_features: morphology of the desired forms, e.g. {Gen=fem, Case=Inst}, or {} (if separator)
+//                   if 'desired_features' is NULL, it means that we want to generate all the
+//                   inflected forms of a simple word. In that case, we consider raw inflection
+//                   features like "fp" instead of structured ones like {Gen=fem, Nb=pl}
 // forms: return parameter; set of the inflected forms corresponding to the given inflection features
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
@@ -185,7 +189,6 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
          }
          forms->forms[forms->no_forms].form=u_strdup(flechi);
          forms->forms[forms->no_forms].raw_features=features->string;
-         
          forms->no_forms++;
          struct list_ustring* tmp=features->next;
          /* WARNING: here we must not call free_list_ustring, since the associated
@@ -436,8 +439,23 @@ int SU_convert_features(f_morpho_T*** feat,unichar* feat_str) {
 // Splits a textual representation of features 'feat_str', e.g. :Ipf:Ipm
 // into a list of strings "Ipf", "Ipm"
 // Returns the list; NULL if an error occurs.
-struct list_ustring* SU_split_raw_features(unichar* feat_str) {
-return NULL;
+struct list_ustring* SU_split_raw_features(unichar* features) {
+struct list_ustring* result=NULL;
+if (features==NULL || features[0]=='\0') {
+   return NULL;
+}
+int pos=0;
+if (features[0]==':') {
+   pos++;
+}
+unichar feature[1024];
+while (P_OK==parse_string(features,&pos,feature,P_COLON)) {
+   result=new_list_ustring(feature,result);
+   if (features[pos]==':') {
+      pos++;
+   }
+}
+return result;
 }
 
 

@@ -72,7 +72,6 @@ struct locate_parameters {
    /* This field is used to know the current compound pattern number */
    int pattern_compose_courant;
    
-   #warning missing definition
    struct noeud_code_gramm* racine_code_gramm;
    
    /* Number of the space token in the text */

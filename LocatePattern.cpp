@@ -27,11 +27,12 @@
 
 
 
+   #warning missing definition of racine_code_gramm
 
 
 
 /**
- * Allocates, initializes and returns a new locate_paramters structure.
+ * Allocates, initializes and returns a new locate_parameters structure.
  */
 struct locate_parameters* new_locate_parameters() {
 struct locate_parameters* p=(struct locate_parameters*)malloc(sizeof(struct locate_parameters));
