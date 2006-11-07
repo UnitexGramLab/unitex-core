@@ -25,6 +25,7 @@
 //---------------------------------------------------------------------------
 #include "unicode.h"
 #include "DELA.h"
+#include "List_ustring.h"
 
 #define MAX_INFLECTIONAL_CODES_LENGTH 400
 
@@ -39,7 +40,7 @@ Code_flexion nouveau_code_flexion();
 Code_flexion calculer_code_flexion(unichar**);
 Code_flexion calculer_code_flexion(struct dela_entry*);
 void ajouter_a_liste_code_flexion(struct noeud_code_gramm*,Code_flexion,
-                                  int,struct facteurs_interdits*,
+                                  int,struct list_ustring*,
                                   unichar*);
 
 #endif

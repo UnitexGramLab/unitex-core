@@ -25,14 +25,14 @@
 //---------------------------------------------------------------------------
 #include "unicode.h"
 #include "Flexional_codes.h"
-#include "Facteurs_interdits.h"
 #include "LocatePattern.h"
 #include "BitArray.h"
+#include "List_ustring.h"
 
 struct liste_code_flexion {
   Code_flexion code;
   int numero_pattern;
-  struct facteurs_interdits* f;
+  struct list_ustring* f;
   unichar* canonique;
   struct liste_code_flexion* suivant;
 };
@@ -53,17 +53,17 @@ struct liste_feuilles_code_gramm {
 
 struct noeud_code_gramm* nouveau_noeud_code_gramm();
 void inserer_code_gramm(int,unichar*,unichar*,struct noeud_code_gramm*);
-void decouper_code_gramm(unichar*,unichar**,unichar**,struct facteurs_interdits*);
+void decouper_code_gramm(unichar*,unichar**,unichar**,struct list_ustring**);
 void ajouter_combinaisons_code_gramm(unichar**,Code_flexion,int,
-                                     struct facteurs_interdits*,unichar*,
+                                     struct list_ustring*,unichar*,
                                      struct noeud_code_gramm*);
 void creer_ensemble_code_gramm(int*,unichar**,unichar**,Code_flexion,
                                int,int,int,
-                               struct facteurs_interdits*,unichar*,
+                               struct list_ustring*,unichar*,
                                struct noeud_code_gramm*);
 void ajouter_element_code_gramm(unichar**,int,struct noeud_code_gramm*,
                                 Code_flexion,int,
-                                struct facteurs_interdits*,unichar*);
+                                struct list_ustring*,unichar*);
 int get_matching_patterns(struct dela_entry*,struct bit_array*,struct noeud_code_gramm*);
 
 #endif

@@ -75,10 +75,9 @@ return c;
 
 
 void ajouter_a_liste_code_flexion(struct noeud_code_gramm* n,Code_flexion c,
-                                  int numero_pattern,struct facteurs_interdits* f,
+                                  int numero_pattern,struct list_ustring* f,
                                   unichar* canonique) {
 struct liste_code_flexion* l;
-int i;
 l=(struct liste_code_flexion*)malloc(sizeof(struct liste_code_flexion));
 l->numero_pattern=numero_pattern;
 l->code=NULL;
@@ -95,19 +94,13 @@ if (f==NULL) {
    l->f=NULL;
 }
 else {
-  l->f=nouveaux_facteurs_interdits();
-  (l->f)->nbre_facteurs=f->nbre_facteurs;
-  for (i=0;i<f->nbre_facteurs;i++) {
-    (l->f)->facteur[i]=(unichar*)malloc((u_strlen(f->facteur[i])+1)*sizeof(unichar));
-    u_strcpy((l->f)->facteur[i],f->facteur[i]);
-  }
+   l->f=clone(f);
 }
 if (canonique==NULL || !u_strcmp_char(canonique,"")) {
    l->canonique=NULL;
 }
 else {
-   l->canonique=(unichar*)malloc(sizeof(unichar)*(u_strlen(canonique)+1));
-   u_strcpy(l->canonique,canonique);
+   l->canonique=u_strdup(canonique);
 }
 l->suivant=n->liste;
 n->liste=l;

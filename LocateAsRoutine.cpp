@@ -38,7 +38,6 @@
 #include "List_int.h"
 #include "Grammatical_codes.h"
 #include "Flexional_codes.h"
-#include "Facteurs_interdits.h"
 #include "Loading_dic.h"
 #include "CompoundWordTree.h"
 #include "Fst2_tags_optimization.h"

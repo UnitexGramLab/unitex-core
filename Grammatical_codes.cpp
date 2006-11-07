@@ -41,7 +41,7 @@ void inserer_code_gramm(int numero_pattern,unichar* s,unichar* canonique,
                         struct noeud_code_gramm* racine) {
 unichar* t[MAX_INFLECTIONAL_CODES_LENGTH];
 unichar* t2[MAX_INFLECTIONAL_CODES_LENGTH];
-struct facteurs_interdits *f;
+struct list_ustring* f;
 Code_flexion c;
 int i;
 for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++) {
@@ -49,12 +49,8 @@ for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++) {
   t2[i]=NULL;
 }
 c=NULL;
-f=nouveaux_facteurs_interdits();
-decouper_code_gramm(s,t,t2,f);
-if (f->nbre_facteurs==0) {
-  liberer_facteurs_interdits(f);
-  f=NULL;
-}
+f=NULL;
+decouper_code_gramm(s,t,t2,&f);
 if (t[0]==NULL) {
   return;
 }
@@ -73,13 +69,15 @@ for (i=0;i<MAX_INFLECTIONAL_CODES_LENGTH;i++)
     t[i]=NULL;
   }
 if (c!=NULL) free(c);
-if (f!=NULL) liberer_facteurs_interdits(f);
+if (f!=NULL) {
+   free_list_ustring(f);
+}
 }
 
 
 
 void decouper_code_gramm(unichar* s,unichar**t,
-                         unichar** t2,struct facteurs_interdits *f) {
+                         unichar** t2,struct list_ustring** f) {
 int pos,i;
 int courant_t;
 int courant_t2;
@@ -126,7 +124,7 @@ while ((!fin)&&(s[i]!=':')) {
     u_strcpy(t[courant_t++],tmp);
   }
   else {
-    ajouter_facteur_interdit(f,tmp);
+    *f=sorted_insert(tmp,*f);
   }
   moins=(s[i]=='-');
   if (s[i]=='\0') return;
@@ -158,7 +156,7 @@ while (!fin) {
 
 
 void ajouter_combinaisons_code_gramm(unichar** t,Code_flexion c,int numero_pattern,
-                                     struct facteurs_interdits *f,unichar* canonique,
+                                     struct list_ustring* f,unichar* canonique,
                                      struct noeud_code_gramm* racine) {
 int n;
 int marque[MAX_INFLECTIONAL_CODES_LENGTH];
@@ -179,7 +177,7 @@ creer_ensemble_code_gramm(marque,t,t2,c,numero_pattern,n,0,f,canonique,racine);
 
 void creer_ensemble_code_gramm(int* marque,unichar** t,unichar** t2,Code_flexion c,
                                int numero_pattern,int n,int compteur,
-                               struct facteurs_interdits* f,unichar* canonique,
+                               struct list_ustring* f,unichar* canonique,
                                struct noeud_code_gramm* racine_code_gramm) {
 int i;
 if (compteur==n) {
@@ -231,7 +229,7 @@ return ptr->node;
 
 void ajouter_element_code_gramm(unichar** s,int i,struct noeud_code_gramm* n,
                                 Code_flexion c,int numero_pattern,
-                                struct facteurs_interdits* f,unichar* canonique) {
+                                struct list_ustring* f,unichar* canonique) {
 struct noeud_code_gramm* sous_noeud;
 sous_noeud=get_sous_noeud_code_gramm(n,s[i],1);
 i++;
@@ -383,7 +381,7 @@ int explorer_codes_flexion(struct liste_code_flexion* l,Code_flexion c,
                             struct bit_array* patterns
                             /*unsigned char* res,int n_octet_code_gramm*/) {
 struct liste_code_flexion* ptr;
-int i,j,ok;
+int j,ok;
 ptr=l;
 int matching_patterns=0;
 while (ptr!=NULL) {
@@ -400,13 +398,15 @@ if (comparer_canoniques(ptr->canonique,entry->lemma))
     }
     else {
        ok=1;
-       for (i=0;i<(ptr->f)->nbre_facteurs;i++) {
-         j=0;
-         while ((j!=entry->n_semantic_codes) && u_strcmp(entry->semantic_codes[j],(ptr->f)->facteur[i])) {
-            j++;
-         }
-         ok=(j==entry->n_semantic_codes);
-         if (!ok) break;
+       struct list_ustring* tmp=ptr->f;
+       while (tmp!=NULL) {
+          j=0;
+          while ((j!=entry->n_semantic_codes) && u_strcmp(entry->semantic_codes[j],tmp->string)) {
+             j++;
+          }
+          ok=(j==entry->n_semantic_codes);
+          if (!ok) break;
+          tmp=tmp->next;
        }
        if (ok) {
           /*if (res==NULL) {
@@ -429,13 +429,15 @@ if (comparer_canoniques(ptr->canonique,entry->lemma))
          }
          else {
            ok=1;
-           for (i=0;i<(ptr->f)->nbre_facteurs;i++) {
-             j=0;
-             while ((j!=entry->n_semantic_codes) && u_strcmp(entry->semantic_codes[j],((ptr->f)->facteur[i]))) {
-                j++;
-             }
-             ok=(j==entry->n_semantic_codes);
-             if (!ok) break;
+           struct list_ustring* tmp=ptr->f;
+           while (tmp!=NULL) {
+              j=0;
+              while ((j!=entry->n_semantic_codes) && u_strcmp(entry->semantic_codes[j],tmp->string)) {
+                 j++;
+              }
+              ok=(j==entry->n_semantic_codes);
+              if (!ok) break;
+              tmp=tmp->next;
            }
          if (ok) {
            /*if (res==NULL) res=nouveau_code_pattern(n_octet_code_gramm);

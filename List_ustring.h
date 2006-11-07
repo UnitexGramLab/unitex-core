@@ -41,6 +41,7 @@ struct list_ustring* sorted_insert(unichar*,struct list_ustring*);
 int is_in_list(unichar*,struct list_ustring*);
 int equal(struct list_ustring*,struct list_ustring*);
 struct list_ustring* head_insert(unichar*,struct list_ustring*);
+struct list_ustring* clone(struct list_ustring*);
 
 #endif
 

@@ -136,3 +136,12 @@ if (u_strcmp(a->string,b->string)) {
 return equal(a->next,b->next);
 }
 
+
+/**
+ * Returns a clone of the list.
+ */
+struct list_ustring* clone(struct list_ustring* list) {
+if (list==NULL) return NULL;
+return new_list_ustring(list->string,clone(list->next));
+}
+

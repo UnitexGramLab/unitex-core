@@ -248,7 +248,7 @@ CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o unicode.o Text_tokens.o String
 				TransductionStack.o Optimized_fst2.o TransductionVariables.o Liste_num.o\
 				CompoundWordTree.o GF_lib.o DELA.o List_ustring.o Fst2.o Grammatical_codes.o\
 				Fst2_tags_optimization.o Pattern_transitions.o\
-				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
+				Flexional_codes.o Error.o Context.o SortTxtMain.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o
 
 CONCORDIFF      = ConcorDiff
@@ -256,7 +256,7 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o unicode.o Text_to
 				Text_parsing.o LocatePattern.o TransductionStack.o Optimized_fst2.o TransductionVariables.o Liste_num.o\
 				CompoundWordTree.o GF_lib.o\
 				DELA.o List_ustring.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
-				Facteurs_interdits.o Flexional_codes.o Error.o Context.o SortTxtMain.o\
+				Flexional_codes.o Error.o Context.o SortTxtMain.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o
 
 CONVERT      = Convert
@@ -266,7 +266,7 @@ CONVERT_OBJS = IOBuffer.o Convert.o unicode.o FileName.o CodePages.o Error.o\
 DICO      = Dico
 DICO_OBJS = Dico.o List_int.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
             List_ustring.o unicode.o Table_complex_token_hash.o Fst2.o IOBuffer.o Error.o \
-            CompoundWordTree.o Flexional_codes.o Facteurs_interdits.o Fst2_tags_optimization.o \
+            CompoundWordTree.o Flexional_codes.o Fst2_tags_optimization.o \
             Grammatical_codes.o Loading_dic.o Liste_num.o LocatePattern.o Matches.o Optimized_fst2.o Pattern_transitions.o \
             Text_parsing.o TransductionVariables.o TransductionStack.o GF_lib.o LocateAsRoutine.o Context.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o
@@ -296,7 +296,7 @@ EXTRACT      = Extract
 EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o TransductionStack.o Optimized_fst2.o TransductionVariables.o \
                Liste_num.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o List_ustring.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
-               Facteurs_interdits.o Flexional_codes.o unicode.o Text_tokens.o FileName.o Extract_units.o Alphabet.o String_hash.o Matches.o\
+               Flexional_codes.o unicode.o Text_tokens.o FileName.o Extract_units.o Alphabet.o String_hash.o Matches.o\
 	           GF_lib.o Error.o Context.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o\
 	           LemmaTree.o Snt.o
 
@@ -335,7 +335,7 @@ INFLECT_OBJS = IOBuffer.o Inflect.o unicode.o Fst2.o Error.o
 
 LOCATE      = Locate
 LOCATE_OBJS = IOBuffer.o Locate.o unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o LocatePattern.o Fst2.o Text_tokens.o List_int.o\
-              Grammatical_codes.o Flexional_codes.o Facteurs_interdits.o Loading_dic.o CompoundWordTree.o Fst2_tags_optimization.o \
+              Grammatical_codes.o Flexional_codes.o Loading_dic.o CompoundWordTree.o Fst2_tags_optimization.o \
               Optimized_fst2.o Pattern_transitions.o Text_parsing.o Matches.o TransductionVariables.o TransductionStack.o\
               Liste_num.o FileName.o GF_lib.o Error.o Context.o StringParsing.o LocateAsRoutine.o\
               BitArray.o LemmaTree.o
@@ -362,7 +362,7 @@ POLYLEX_OBJS = IOBuffer.o PolyLex.o unicode.o Alphabet.o DELA.o List_ustring.o S
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o Optimized_fst2.o TransductionVariables.o Liste_num.o CompoundWordTree.o\
                DELA.o List_ustring.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
-               Facteurs_interdits.o Flexional_codes.o unicode.o Alphabet.o Matches.o FileName.o Normalization_transducer.o\
+               Flexional_codes.o unicode.o Alphabet.o Matches.o FileName.o Normalization_transducer.o\
 	           PortugueseNormalization.o\
                Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o String_list.o\
                Sentence_to_grf.o GF_lib.o Error.o Context.o StringParsing.o BitArray.o\
