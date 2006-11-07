@@ -30,8 +30,9 @@
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "Snt.h"
 
-//---------------------------------------------------------------------------
+
 void usage() {
 printf("%s",COPYRIGHT);
 printf("Usage: Extract yes/no <text> <concordance> <result>\n");
@@ -46,33 +47,31 @@ printf("units are supposed to be separated by the symbol {S}.\n");
 
 
 int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
 
 if (argc!=5) {
    usage();
    return 0;
 }
-char yes_no;
-if (!strcmp(argv[1],"yes")) yes_no=1;
-else if (!strcmp(argv[1],"no")) yes_no=0;
+char extract_matching_units;
+if (!strcmp(argv[1],"yes")) extract_matching_units=1;
+else if (!strcmp(argv[1],"no")) extract_matching_units=0;
 else {
    error("Invalid parameter %s: must be yes or no\n",argv[1]);
    return 1;
 }
-
-char temp[2000];
-get_snt_path(argv[2],temp);
-strcat(temp,"text.cod");
-FILE* text=fopen(temp,"rb");
+struct snt_files* snt_files=new_snt_files(argv[2]);
+FILE* text=fopen(snt_files->text_cod,"rb");
 if (text==NULL) {
-   error("Cannot open %s\n",temp);
+   error("Cannot open %s\n",snt_files->text_cod);
    return 1;
 }
-get_snt_path(argv[2],temp);
-strcat(temp,"tokens.txt");
-struct text_tokens* tok=load_text_tokens(temp);
+struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
 if (tok==NULL) {
-   error("Cannot load token list %s\n",temp);
+   error("Cannot load token list %s\n",snt_files->tokens_txt);
    fclose(text);
    return 1;
 }
@@ -82,6 +81,9 @@ if (tok->SENTENCE_MARKER==-1) {
    free_text_tokens(tok);
    return 1;
 }
+/* Warning: here we don't use a concordance name built from argv[2],
+ *          since the concordance file can be elsewhere and can have 
+ *          another name than "concord.ind" */
 FILE* concord=u_fopen(argv[3],U_READ);
 if (concord==NULL) {
    error("Cannot open concordance %s\n",argv[3]);
@@ -97,7 +99,8 @@ if (result==NULL) {
    free_text_tokens(tok);
    return 1;
 }
-extract_units(yes_no,text,tok,concord,result);
+free_snt_files(snt_files);
+extract_units(extract_matching_units,text,tok,concord,result);
 fclose(text);
 u_fclose(concord);
 u_fclose(result);

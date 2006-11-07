@@ -298,7 +298,7 @@ EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o TransductionS
                DELA.o List_ustring.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
                Facteurs_interdits.o Flexional_codes.o unicode.o Text_tokens.o FileName.o Extract_units.o Alphabet.o String_hash.o Matches.o\
 	           GF_lib.o Error.o Context.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o\
-	           LemmaTree.o
+	           LemmaTree.o Snt.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o unicode.o Fst2.o Grf2Fst2_lib.o\
