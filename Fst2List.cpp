@@ -223,18 +223,18 @@ public:
 	void fileNameSet(char *ifn,char *ofn)
 	{
 	    char tmp[512];
-		name_without_path(ifn,tmp);
-		name_without_extension(tmp,defaultIgnoreName);
+		remove_path(ifn,tmp);
+		remove_extension(tmp,defaultIgnoreName);
 		if(!ofn){
-		    get_filename_path(ifn,ofdirName);
-		    name_without_path(ifn,tmp);
-		    name_without_extension(tmp,ofnameOnly);
+		    get_path(ifn,ofdirName);
+		    remove_path(ifn,tmp);
+		    remove_extension(tmp,ofnameOnly);
 		    strcpy(ofExt,".txt");
 		} else {
-		    get_filename_path(ofn,ofdirName);
-  		    name_without_path(ofn,tmp);
-		    name_without_extension(tmp,ofnameOnly);
-		    file_name_extension(tmp,ofExt);
+		    get_path(ofn,ofdirName);
+  		    remove_path(ofn,tmp);
+		    remove_extension(tmp,ofnameOnly);
+		    get_extension(tmp,ofExt);
 		}
 		if(ofnameOnly[0]== 0) fatal_error("ofile name not correct");
 	}
@@ -1196,7 +1196,7 @@ void CFstApp::getWordsFromGraph(char *fname)
 				while(*wp){*dp++ = (char)(*wp&0xff);wp++;}
 				*dp++ = '\0';
 				makeOfileName(ofNameTmp,tmpchar,0);
-                name_without_path(ofNameTmp,ttpchar);
+                remove_path(ofNameTmp,ttpchar);
 				fprintf(listFile,"%s\r\n",ttpchar);
 
 

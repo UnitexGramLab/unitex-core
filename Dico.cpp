@@ -162,12 +162,12 @@ for (int priority=1;priority<4;priority++) {
    /* For a given priority, we apply all concerned dictionaries 
     * in their order on the command line */
    for (int i=3;i<argc;i++) {
-      char tmp[FILENAME_SIZE];
-      name_without_extension(argv[i],tmp);
+      char tmp[FILENAME_MAX];
+      remove_extension(argv[i],tmp);
       char priority_mark=tmp[strlen(tmp)-1];
       if ((priority==1 && priority_mark=='-') ||  (priority==2 && priority_mark!='-' && priority_mark!='+') ||  (priority==3 && priority_mark=='+')) {
          /* If we must must process a dictionary, we check its type */
-         file_name_extension(argv[i],tmp);
+         get_extension(argv[i],tmp);
          if (!strcmp(tmp,".bin"))    {    
             /*
              * If it is a .bin dictionary

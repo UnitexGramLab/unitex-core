@@ -257,7 +257,7 @@ setBufferMode();
     unichar **sTable = 0;
    
     
-    get_filename_path(argv[1],pathNameSave);
+    get_path(argv[1],pathNameSave);
     tcount = getStringTableFile(argv[1],tMem,tTable);
     mcount = getStringTableFileAvecNull(argv[2],mMem,mTable);
 

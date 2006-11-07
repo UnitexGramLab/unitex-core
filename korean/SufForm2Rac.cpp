@@ -80,15 +80,15 @@ public:
     {
         char tmp[512];
     	if(!ofn){
-    	    get_filename_path(ifn,ofdirName);
-    	    name_without_path(ifn,tmp);
-    	    name_without_extension(tmp,ofnameOnly);
+    	    get_path(ifn,ofdirName);
+    	    remove_path(ifn,tmp);
+    	    remove_extension(tmp,ofnameOnly);
     	    strcpy(ofExt,".txt");
     	} else {
-    	    get_filename_path(ofn,ofdirName);
-   		    name_without_path(ofn,tmp);
-    	    name_without_extension(tmp,ofnameOnly);
-    	    file_name_extension(tmp,ofExt);
+    	    get_path(ofn,ofdirName);
+   		    remove_path(ofn,tmp);
+    	    remove_extension(tmp,ofnameOnly);
+    	    get_extension(tmp,ofExt);
     	}
 //fprintf(stderr,"%s %s %s",ofdirName,ofExt,ofnameOnly);
     	if(ofnameOnly[0]== 0) exitMessage("ofile name not correct");
@@ -187,17 +187,17 @@ setBufferMode();
     
     if(listFileFlag){
         fileStock.ajouteFromFile(argv[iargIndex]);
-        get_filename_path(argv[iargIndex],inputFilePath);
+        get_path(argv[iargIndex],inputFilePath);
     } else {
-        get_filename_path(argv[iargIndex],inputFilePath);
-        name_without_path(argv[iargIndex],tfn);
+        get_path(argv[iargIndex],inputFilePath);
+        remove_path(argv[iargIndex],tfn);
         fileStock.ajouteList(tfn);    
     }
     struct fileListe *wpointer = fileStock.getHead();
     while(wpointer){
-        name_without_path(wpointer->filename,tfn);
+        remove_path(wpointer->filename,tfn);
 printf("[%s][%s]\n",tfn,wpointer->filename);
-        name_without_extension(tfn,ttfn);
+        remove_extension(tfn,ttfn);
 printf("[%s][%s]\n",tfn,ttfn);
         fileStock.makeOfileName(desFileName,ttfn,0);
         strcpy(tfn,inputFilePath);

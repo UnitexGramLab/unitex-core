@@ -154,7 +154,7 @@ else {
  if (option.left_context_until_eos)
    error("yes\n");
 option.working_directory[0] = '\0';
-get_filename_path(argv[1],option.working_directory);
+get_path(argv[1],option.working_directory);
 option.fontname=argv[2];
 option.fontsize=argv[3];
 option.result_mode=argv[7];

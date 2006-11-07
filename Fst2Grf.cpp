@@ -71,8 +71,8 @@ setBufferMode();
     return 1;
   }
 
-  get_filename_path(argv[1],nom_grf);
-  get_filename_path(argv[1],nom_txt);
+  get_path(argv[1],nom_grf);
+  get_path(argv[1],nom_txt);
 
   switch (argc){
   case 3:

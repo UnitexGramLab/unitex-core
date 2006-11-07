@@ -85,8 +85,8 @@ setBufferMode();
 	ifilename = argv[iargIndex];
 	if(!ofilename){
 	   ofilename = new char [strlen(ifilename)+3];
-	   file_name_extension(ifilename,extTmp);
-	   name_without_extension(ifilename,ofilename);
+	   get_extension(ifilename,extTmp);
+	   remove_extension(ifilename,ofilename);
 	   strcat(ofilename,"ex");
 	   strcat(ofilename,extTmp);
 	   

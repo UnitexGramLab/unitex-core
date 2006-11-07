@@ -125,13 +125,13 @@ char tokens_txt[2000];
 char text_cod[2000];
 char dlf[2000];
 char dlc[2000];
-get_snt_path(argv[1],tokens_txt);
+get_snt_path((const char*)argv[1],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
-get_snt_path(argv[1],text_cod);
+get_snt_path((const char*)argv[1],text_cod);
 strcat(text_cod,"text.cod");
-get_snt_path(argv[1],dlf);
+get_snt_path((const char*)argv[1],dlf);
 strcat(dlf,"dlf");
-get_snt_path(argv[1],dlc);
+get_snt_path((const char*)argv[1],dlc);
 strcat(dlc,"dlc");
 
 load_dlf_dlc(dlf,racine);
@@ -154,7 +154,7 @@ if (f==NULL) {
 }
 // on extrait le chemin du fichier texte
 char tmp[1000];
-get_snt_path(argv[1],tmp);
+get_snt_path((const char*)argv[1],tmp);
 strcat(tmp,"text.fst2");
 out=u_fopen(tmp,U_WRITE);
 if (out==NULL) {

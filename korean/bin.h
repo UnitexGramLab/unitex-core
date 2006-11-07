@@ -1507,7 +1507,7 @@ public:
 			fopenErrMessage(binfilename);
 
 		imageHead.readFromFile(inf);
-		name_without_extension(binfilename,sansExtension);
+		remove_extension(binfilename,sansExtension);
 		getAutoArray();
 		load_ref();
 		load_bin_for_change();

@@ -168,9 +168,9 @@ if (argc==3) {
 }
 
 char ext[1000];
-file_name_extension(argv[1],ext);
+get_extension(argv[1],ext);
 if (!strcmp(ext,".snt")) {
-   name_without_extension(argv[1],ext);
+   remove_extension(argv[1],ext);
    strcat(ext,".biniou");
    rename(argv[1],ext);
    f=u_fopen(ext,U_READ);
@@ -183,7 +183,7 @@ if (f==NULL) {
    fprintf(stderr,"Cannot open file %s\n",argv[1]);
    return 1;
 }
-name_without_extension(argv[1],n);
+remove_extension(argv[1],n);
 strcat(n,".snt");
 f_out=u_fopen(n,U_WRITE);
 if (f_out==NULL) {

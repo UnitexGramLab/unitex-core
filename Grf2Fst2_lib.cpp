@@ -2035,7 +2035,7 @@ void conformer_nom_graphe_comp(char * NOM, int courant) {
 
   // transformation de ':' en '/' resp. '\'
   // but skip path to main graph (keep windows' "C:\" etc. alive!)
-  replace_colon_by_pathseparator(NOM);
+  replace_colon_by_path_separator(NOM);
 
 }
 

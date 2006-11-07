@@ -22,6 +22,7 @@
 #ifndef SntH
 #define SntH
 
+#include <stdio.h>
 #include "FileName.h"
 
 /**
@@ -30,23 +31,23 @@
  * should be named without a structure of this kind.
  */
 struct snt_files {
-   char path[FILENAME_SIZE];
-   char dlf[FILENAME_SIZE];
-   char dlf_n[FILENAME_SIZE];
-   char dlc[FILENAME_SIZE];
-   char dlc_n[FILENAME_SIZE];
-   char err[FILENAME_SIZE];
-   char err_n[FILENAME_SIZE];
-   char stats_n[FILENAME_SIZE];
-   char stat_dic_n[FILENAME_SIZE];
-   char text_cod[FILENAME_SIZE];
-   char tokens_txt[FILENAME_SIZE];
-   char tok_by_alph_txt[FILENAME_SIZE];
-   char tok_by_freq_txt[FILENAME_SIZE];
-   char enter_pos[FILENAME_SIZE];
-   char concord_ind[FILENAME_SIZE];
-   char concord_txt[FILENAME_SIZE];
-   char concord_html[FILENAME_SIZE];
+   char path[FILENAME_MAX];
+   char dlf[FILENAME_MAX];
+   char dlf_n[FILENAME_MAX];
+   char dlc[FILENAME_MAX];
+   char dlc_n[FILENAME_MAX];
+   char err[FILENAME_MAX];
+   char err_n[FILENAME_MAX];
+   char stats_n[FILENAME_MAX];
+   char stat_dic_n[FILENAME_MAX];
+   char text_cod[FILENAME_MAX];
+   char tokens_txt[FILENAME_MAX];
+   char tok_by_alph_txt[FILENAME_MAX];
+   char tok_by_freq_txt[FILENAME_MAX];
+   char enter_pos[FILENAME_MAX];
+   char concord_ind[FILENAME_MAX];
+   char concord_txt[FILENAME_MAX];
+   char concord_html[FILENAME_MAX];
 };
 
 

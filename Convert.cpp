@@ -33,6 +33,13 @@
 #include "Error.h"
 
 
+#define REPLACE_FILE 0
+#define PREFIX_SRC 1
+#define SUFFIX_SRC 2
+#define PREFIX_DEST 3
+#define SUFFIX_DEST 4
+
+
 void usage() {
 printf("%s",COPYRIGHT);
 printf("Usage: Convert <src> [<dest>] <mode> [HTML OPTIONS] <text_1> [<text_2> <text_3> ...]\n");

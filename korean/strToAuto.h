@@ -766,7 +766,7 @@ public:
 	};
 	void pathNameSet(char *f)
 	{
-	  get_filename_path(f,pathNameStore);
+	  get_path(f,pathNameStore);
 	}
 	FILE *
 	openForWrite(char *f)
@@ -1950,7 +1950,7 @@ unePhraseAuto.prAuto(stderr,2);
 	void addition(char *fstna,char *infile)
 	{
 		char pathName[2048];
-		name_without_extension(infile,pathName);
+		remove_extension(infile,pathName);
 		
 		
 		loadFst2 = load_fst2(fstna,1);
@@ -1964,7 +1964,7 @@ unePhraseAuto.prAuto(stderr,2);
 	{
 	
 		char pathName[2048];
-		name_without_extension(infile,pathName);
+		remove_extension(infile,pathName);
 		
 		
 		loadFst2 = load_fst2(fstna,1);

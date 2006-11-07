@@ -213,7 +213,7 @@ int main(int argc, char ** argv) {
 
 
   char * basedir = strdup(*argv);
-  get_filename_path(*argv, basedir);
+  get_path(*argv, basedir);
 
 
   char * outname = (char *) malloc(strlen(*argv) + 5);

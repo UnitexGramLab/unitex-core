@@ -165,7 +165,7 @@ static void read_list_files(simpleL<char *> &rd,char *filename)
 		fprintf(stderr,"file %s open fail",filename);
 		exit(1);
 	}
-	get_filename_path(filename,pathName);
+	get_path(filename,pathName);
 	while(fgets(templine,256,f)){
 		sc =0;
 		while(templine[sc]){
@@ -227,7 +227,7 @@ make_compress_files(char *listFileName,int listFormFlag)
 			u_strcpy(tmp,segs[1]);
 			autoStartIndex = arbres.new_arbre((unichar *)tmp);
 		}
-		file_name_extension(fnamePtr,extension);
+		get_extension(fnamePtr,extension);
 fprintf(stdout,"\n%s load\n",fnamePtr);
         lineCnt += read_DELA_to_DICO(arbres,autoStartIndex,fnamePtr);
 		readFileCnt++;
@@ -250,9 +250,9 @@ fprintf(stdout,"\n%s load\n",fnamePtr);
 	}
 	
 	if(ofilename)
-	 name_without_extension(ofilename,templine);
+	 remove_extension(ofilename,templine);
 	else	 
-	 name_without_extension(listFileName,templine);
+	 remove_extension(listFileName,templine);
 	arbres.toBinTr(templine,suffixeMode);
 
 	if(debugfile) fclose(debugfile);

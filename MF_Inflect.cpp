@@ -69,7 +69,7 @@ if (argc!= 5) {
    return 0;
 }
 //Load morphology description
-char morphology[FILENAME_SIZE];
+char morphology[FILENAME_MAX];
 new_file(argv[4],"Morphology",morphology);
 err=read_language_morpho(morphology);
 if (err) {
@@ -84,7 +84,7 @@ alph=load_alphabet(argv[3]);  //To be done once at the beginning of the inflecti
     return 1;
   }
 //Init equivalence files
-char equivalences[FILENAME_SIZE];
+char equivalences[FILENAME_MAX];
 new_file(argv[4],"Equivalences",equivalences);
 err=d_init_morpho_equiv(equivalences);
 if (err) {

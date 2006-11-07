@@ -112,9 +112,9 @@ if (argc==3) {
 	}
 }
 /* We compute the name of the output .bin and .inf files */
-name_without_extension(argv[1],bin);
+remove_extension(argv[1],bin);
 strcat(bin,".bin");
-name_without_extension(argv[1],inf);
+remove_extension(argv[1],inf);
 strcat(inf,".inf");
 INF_file=u_fopen(inf,U_WRITE);
 if (INF_file==NULL) {

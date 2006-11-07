@@ -108,9 +108,9 @@ int main(int argc,char *argv[]) {
         TOKENIZATION_MODE=ALPHABET_TOKENIZATION;
      }
   }
-
-  char *fst2_file_name = (char*) malloc((strlen(argv[1])+2)*sizeof(char));
-  replace_suffix_in_file_name(fst2_file_name,argv[1],".grf",".fst2");
+  char fst2_file_name[FILENAME_MAX];
+  remove_extension(argv[1],fst2_file_name);
+  strcat(fst2_file_name,".fst2");
 
   if((fs_comp = u_fopen(fst2_file_name,U_WRITE)) == NULL)
     {
@@ -151,9 +151,6 @@ int main(int argc,char *argv[]) {
     }
   }
   printf("Compilation has succeeded\n");
-
-  free(fst2_file_name);
-
   return 0;
  }
 

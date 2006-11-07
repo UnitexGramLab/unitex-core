@@ -107,8 +107,8 @@ setBufferMode();
 
 	if(!ofilename){
 		ofilename = new char [strlen(ifilename)+4];
-		name_without_extension(ifilename,ofilename);
-		file_name_extension(ifilename,extension);
+		remove_extension(ifilename,ofilename);
+		get_extension(ifilename,extension);
 		strcat(ofilename,"syl");
 		strcat(ofilename,extension);
 	}

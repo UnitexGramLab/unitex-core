@@ -100,7 +100,7 @@ if (argc!=5) {
    strcpy(subgraph,argv[4]);
 }
 char chemin[MAX_FILENAME_LENGTH];
-get_filename_path(argv[3],chemin);
+get_path(argv[3],chemin);
 table2grf(table,reference_graph,result_graph,subgraph,chemin);
 return 0;
 }
@@ -643,7 +643,7 @@ u_fprints_char(":",f_coord);
 {
 char tmp3[MAX_FILENAME_LENGTH];
 char tmp4[MAX_FILENAME_LENGTH];
-get_filename_path(nom_res,tmp3);
+get_path(nom_res,tmp3);
 if ( ! strncmp(tmp3,chemin,strlen(chemin)) ) /* the subgraph is in a subdirectory
                                                 relative to the path of the result graph:
                                                 we strip the common path */
@@ -654,10 +654,10 @@ else /* we take the full name (including the path) */
   strcpy(tmp3,nom_res);
 
 /* Now we have to replace '/' and '\\' in the path to ':' */
-replace_pathseparator_by_colon(tmp3);
+replace_path_separator_by_colon(tmp3);
 
 /* And finally we remove the extension ".grf" */
-name_without_extension(tmp3,tmp4);
+remove_extension(tmp3,tmp4);
 
 u_fprints_char(tmp4,f_coord);
 }

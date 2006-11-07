@@ -20,7 +20,6 @@
   */
 
 //---------------------------------------------------------------------------
-
 #include <string.h>
 #include <stdlib.h>
 #include "FileName.h"
@@ -28,164 +27,145 @@
 //---------------------------------------------------------------------------
 
 
-void file_name_extension(const char* s, char* res) {
+/**
+ * Takes a file name and copies its extension in a given string
+ * that is supposed to be allocated. If there is no extension, the
+ * empty string is copied.
+ */
+void get_extension(const char* filename,char* extension) {
 int l;
-l=strlen(s)-1;
-while (l>=0 && s[l]!='/' && s[l]!='\\' && s[l]!='.') {
+l=strlen(filename)-1;
+while (l>=0 && filename[l]!='/' && filename[l]!='\\' && filename[l]!='.') {
    l--;
 }
-if (l==0 || s[l]!='.') {
-   // if there is no extension 
-   res[0]='\0';
+if (l==0 || filename[l]!='.') {
+   /* If there is no extension */
+   extension[0]='\0';
    return;
 }
 int i=-1;
 do {
-  i++;
-  res[i]=s[l+i];
-} while (res[i]!='\0');
-return;
+   i++;
+   extension[i]=filename[l+i];
+} while (extension[i]!='\0');
 }
 
 
-
-void name_without_extension(const char* s, char* res) {
+/**
+ * Takes a file name and copies it into 'result' without its extension,
+ * if any.
+ */
+void remove_extension(const char* filename,char* result) {
 int l;
-strcpy(res,s);
-l=strlen(res)-1;
-while (l>=0 && res[l]!='/' && res[l]!='\\' && res[l]!='.') {
+strcpy(result,filename);
+l=strlen(result)-1;
+while (l>=0 && result[l]!='/' && result[l]!='\\' && result[l]!='.') {
    l--;
 }
-if (res[l]=='.') res[l]='\0';
+if (result[l]=='.') result[l]='\0';
 }
 
 
-
-void get_filename_path(char* s,char* res) {
+/**
+ * Takes a file name and copies its path, with the separator character,
+ * into 'path'. If the file name is a relative one, then a relative path is
+ * returned.
+ */
+void get_path(const char* filename,char* path) {
 int l;
-strcpy(res,s);
-l=strlen(res)-1;
-while (l>=0 && res[l]!='/' && res[l]!='\\') {
+strcpy(path,filename);
+l=strlen(path)-1;
+while (l>=0 && path[l]!='/' && path[l]!='\\') {
    l--;
 }
-if (l>=0) res[l+1]='\0';
-else res[0]='\0';
+if (l>=0) path[l+1]='\0';
+else path[0]='\0';
 }
 
 
-void get_snt_path(char* s, char* res) {
-int l;
-strcpy(res,s);
-l=strlen(res)-1;
-while (l>=0 && res[l]!='/' && res[l]!='\\' && res[l]!='.') {
-   l--;
+/**
+ * Takes a file name, removes its extension and adds the suffix "_snt"
+ * followed by the separator character.
+ * 
+ * Example: filename="C:\English\novel.txt" => result="C:\English\novel_snt\"
+ */
+void get_snt_path(const char* filename,char* result) {
+remove_extension(filename,result);
+strcat(result,"_snt");
+strcat(result,PATH_SEPARATOR_STRING);
 }
-if (res[l]=='.') res[l]='\0';
-strcat(res,"_snt");
-strcat(res,PATH_SEPARATOR_STRING);
-}
 
 
-
-void name_without_path(char* s,char* res) {
-int l=strlen(s)-1;
-while (l>=0 && s[l]!='/' && s[l]!='\\') {
+/**
+ * Takes a file name and copi"s it without its path, if any, into 'result'.
+ * 
+ */
+void remove_path(char* filename,char* result) {
+int l=strlen(filename)-1;
+while (l>=0 && filename[l]!='/' && filename[l]!='\\') {
    l--;
 }
 if (l<0) {
-   strcpy(res,s);
+   strcpy(result,filename);
    return;
 }
 int k=0;
-for (int i=l+1;s[i]!='\0';i++) {
-   res[k++]=s[i];
+for (int i=l+1;filename[i]!='\0';i++) {
+   result[k++]=filename[i];
 }
-res[k]='\0';
+result[k]='\0';
 }
-
 
 
 /*
- * adds a suffix to the file name before the extension:
+ * Adds a suffix to the file name before the extension:
  * "tutu.txt" + "-old" => "tutu-old.txt"
  **/
 void add_suffix_to_file_name(char* dest,char* src,const char* suffix) {
 char ext[128];
-name_without_extension(src,dest);
+remove_extension(src,dest);
 strcat(dest,suffix);
-file_name_extension(src,ext);
+get_extension(src,ext);
 strcat(dest,ext);
 }
 
 
 /*
- * adds a prefix to the file name:
+ * Adds a prefix to the file name:
  * "tutu.txt" + "old-" => "old-tutu.txt"
  **/
 void add_prefix_to_file_name(char* dest,char* src,const char* prefix) {
 char tmp[1024];
-get_filename_path(src,dest);
+get_path(src,dest);
 strcat(dest,prefix);
-name_without_path(src,tmp);
+remove_path(src,tmp);
 strcat(dest,tmp);
 }
 
-/***
- * Copy src to dest replacing suffix1 by suffix2, e.g.
- * file.grf -> file.fst2
- *
- * dest must be large enough to hold the resulting string.
- **/
-void replace_suffix_in_file_name(char* dest,const char* src,
-                                 const char* suffix1,const char* suffix2) {
-  int i, j, k;
-  j = strlen(src);
-  k = strlen(suffix1);
-  if ( k > j )
-    fatal_error("Error in %s line %s:\n"
-                "suffix \"%s\" is longer than \"%s\"\n",
-                __FILE__, __LINE__, suffix1, src);
-  for ( i=0; i<=k; i++ )
-    {
-      if ( src[(j-i)] != suffix1[(k-i)] )
-        fatal_error("Error in %s line %s:\n"
-                    "Can't replace suffix \"%s\" in \"%s\"\n",
-                    __FILE__, __LINE__, suffix1, src);
-    }
-  strncpy(dest,src,(j-i+1));
-  dest[(j-i+1)] = '\0';
-  strcat(dest,suffix2);
-}
-
-
 
 /**
- * replace path separators ('/' resp. '\\') by the colon (':')
- * @param path
+ * Replaces path separators ('/' resp. '\\') by the colon (':').
  */
-void replace_pathseparator_by_colon(char* path) {
-  while (*path)
-  {
-#ifdef _NOT_UNDER_WINDOWS
-    if (*path == '/')
-#else
-    if (*path == '\\')
-#endif
-      { *path = ':'; }
-    ++path;
-  }
-}
-
-/**
- * replace colon (':'), the "universal" path separator
- * by system-dependent path separators ('/' resp. '\\')
- */
-void replace_colon_by_pathseparator(char* path) {
-while (*path) {
-   if (*path==':') {
-      *path=PATH_SEPARATOR_CHAR;
+void replace_path_separator_by_colon(char* filename) {
+while (*filename) {
+   if (*filename==PATH_SEPARATOR_CHAR) {
+      *filename = ':';
    }
-   path++;
+   filename++;
+}
+}
+
+
+/**
+ * Replaces colon (':'), the "universal" path separator
+ * by system-dependent path separators ('/' resp. '\\').
+ */
+void replace_colon_by_path_separator(char* filename) {
+while (*filename) {
+   if (*filename==':') {
+      *filename=PATH_SEPARATOR_CHAR;
+   }
+   filename++;
 }
 }
 

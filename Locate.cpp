@@ -30,7 +30,7 @@
 /* $CD$ begin */
 #include "GF_lib.h"
 /* $CD$ end   */
-
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
@@ -58,7 +58,6 @@ printf("named \"concord.n\" is also saved in the same directory.\n");
 }
 
 
-
 int main(int argc, char **argv) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
@@ -67,21 +66,21 @@ setBufferMode();
 if (argc!=7 && argc!=8 && argc!=9) {
    usage();
    #ifdef DO_NOT_USE_TRE_LIBRARY
-   fprintf(stderr,"\n\nWARNING: morphological filters are disabled\n");
+   error("\n\nWARNING: morphological filters are disabled\n");
    #else
    #ifndef TRE_WCHAR
-   fprintf(stderr,"\n\nWARNING: on this system, morphological filters will not be taken into account,\n");
-   fprintf(stderr,"         because wide characters are not supported\n");
+   error("\n\nWARNING: on this system, morphological filters will not be taken into account,\n");
+   error("         because wide characters are not supported\n");
    #endif
    #endif
    return 0;
 }
 #ifdef DO_NOT_USE_TRE_LIBRARY
-   fprintf(stderr,"WARNING: morphological filters are disabled\n");
+   error("WARNING: morphological filters are disabled\n");
 #else
 #ifndef TRE_WCHAR
-   fprintf(stderr,"WARNING: on this system, morphological filters will not be taken into account,\n");
-   fprintf(stderr,"         because wide characters are not supported\n");
+   error("WARNING: on this system, morphological filters will not be taken into account,\n");
+   error("         because wide characters are not supported\n");
 #endif
 #endif
 /* We call an artificial main function located in 'LocateAsRoutine'. This

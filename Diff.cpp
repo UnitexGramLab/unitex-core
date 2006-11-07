@@ -43,8 +43,8 @@ argv[6]=strdup("TO");
 argv[7]=strdup("text");
 argv[8]=strdup("NULL");
 main_Concord(9,argv);
-char f[FILENAME_SIZE];
-get_filename_path(in1,f);
+char f[FILENAME_MAX];
+get_path(in1,f);
 strcat(f,"concord.txt");
 rename(f,out1);
 free(argv[1]);
@@ -94,11 +94,11 @@ fprintf(f,"</table>\n</body>\n</html>\n");
  * those two concordances.
  */
 int diff(char* in1,char* in2,char* out,char* font,char* size) {
-char concor1[FILENAME_SIZE];
-char concor2[FILENAME_SIZE];
-get_filename_path(in1,concor1);
+char concor1[FILENAME_MAX];
+char concor2[FILENAME_MAX];
+get_path(in1,concor1);
 strcat(concor1,"concord-1.txt");
-get_filename_path(in2,concor2);
+get_path(in2,concor2);
 strcat(concor2,"concord-2.txt");
 /* First, we build the two concordances */
 create_text_concordances(in1,in2,concor1,concor2);

@@ -94,7 +94,7 @@ if (root_bin==NULL) {
    return 1;
 }
 char root_inf_file[2000];
-name_without_extension(argv[3],root_inf_file);
+remove_extension(argv[3],root_inf_file);
 strcat(root_inf_file,".inf");
 struct INF_codes* root_inf=load_INF_file(root_inf_file);
 if (root_bin==NULL) {
@@ -113,7 +113,7 @@ if (inflected_bin==NULL) {
    return 1;
 }
 char inflected_inf_file[2000];
-name_without_extension(argv[4],inflected_inf_file);
+remove_extension(argv[4],inflected_inf_file);
 strcat(inflected_inf_file,".inf");
 struct INF_codes* inflected_inf=load_INF_file(inflected_inf_file);
 if (inflected_inf==NULL) {

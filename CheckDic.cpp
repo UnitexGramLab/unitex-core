@@ -70,7 +70,7 @@ if (dic==NULL) {
 	fatal_error("Cannot open dictionary %s\n",argv[1]);
 }
 char output_filename[2048];
-get_filename_path(argv[1],output_filename);
+get_path(argv[1],output_filename);
 strcat(output_filename,"CHECK_DIC.TXT");
 out=u_fopen(output_filename,U_WRITE);
 if (out==NULL) {

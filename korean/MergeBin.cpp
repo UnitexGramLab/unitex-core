@@ -123,7 +123,7 @@ struct binFileList *tmp;
 	printf("Load file %s\n",fn);
     if(!(lstF = fopen(fn,"rb")))
     	fopenErrMessage(fn);	
-    get_filename_path(fn,pathName);
+    get_path(fn,pathName);
     pathLen = strlen(pathName);
     while(fgets(buff,1024,lstF)){
     	wp = buff;
@@ -216,7 +216,7 @@ printf("Load suffix %s\n",tmp->fname);
 	if(racStateCounter && (racStateCounter != 1)){
 	    char charRootName[1024];
 		relBin = racStateCounter * SIZE_ONE_TRANSITION_BIN + 2;
-		name_without_extension(oFileName,charRootName);
+		remove_extension(oFileName,charRootName);
 		unichar  *RootName = new unichar[strlen(charRootName)+1];
 		u_strcpy_char(RootName,charRootName);
 		totSuf.put((unichar *)RootName,0);
@@ -302,7 +302,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 	last = first;
 	
 	char ofilename[1024];
-	name_without_extension(ofn,ofilename);
+	remove_extension(ofn,ofilename);
 	strcat(ofilename,".mtb");
 	if(!(f = fopen(ofilename,"wb")))
 		fopenErrMessage(ofilename);
@@ -471,7 +471,7 @@ static void testLoad(char *fname)
 	class explore_bin1 tbin;
 	FILE *t = u_fopen("out.txt",U_WRITE);
 	fprintf(stdout,"result out\n");
-	name_without_extension(fname,filename);
+	remove_extension(fname,filename);
 	strcat(filename,".bin");
 	tbin.loadBin(filename);
 	tbin.exploreTree(t,PrBuff);

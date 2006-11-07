@@ -62,8 +62,8 @@ return snt_files;
  * all the files related to a given .snt text.
  */
 struct snt_files* new_snt_files(char* text_snt) {
-char path[FILENAME_SIZE];
-get_snt_path(text_snt,path);
+char path[FILENAME_MAX];
+get_snt_path((const char*)text_snt,path);
 return new_snt_files_from_path(path);
 }
 

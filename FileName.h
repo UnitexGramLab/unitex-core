@@ -25,6 +25,16 @@
 //---------------------------------------------------------------------------
 
 
+/**
+ * This library provides functions for manipulating file
+ * names. File names should be stored in arrays like:
+ * 
+ *    char filename[FILENAME_MAX];
+ * 
+ * FILENAME_MAX is a system-dependent constant that defines the maximum
+ * size of a file name. It is defined in <stdio.h>.
+ */
+
 #ifdef _NOT_UNDER_WINDOWS
    #define PATH_SEPARATOR_CHAR '/'
    #define PATH_SEPARATOR_STRING "/"
@@ -34,25 +44,15 @@
 #endif
 
 
-#define FILENAME_SIZE 1024
-
-#define REPLACE_FILE 0
-#define PREFIX_SRC 1
-#define SUFFIX_SRC 2
-#define PREFIX_DEST 3
-#define SUFFIX_DEST 4
-
-
 void add_suffix_to_file_name(char*,char*,const char*);
 void add_prefix_to_file_name(char*,char*,const char*);
-void file_name_extension(const char*,char*);
-void name_without_extension(const char*,char*);
-void get_filename_path(char*,char*);
-void get_snt_path(char*,char*);
-void name_without_path(char*,char*);
-void replace_suffix_in_file_name(char*,const char*,const char*,const char*);
-void replace_pathseparator_by_colon(char*);
-void replace_colon_by_pathseparator(char*);
+void get_extension(const char*,char*);
+void remove_extension(const char*,char*);
+void get_path(const char*,char*);
+void get_snt_path(const char*,char*);
+void remove_path(char*,char*);
+void replace_path_separator_by_colon(char*);
+void replace_colon_by_path_separator(char*);
 void new_file(const char*,const char*,char*);
 
 #endif

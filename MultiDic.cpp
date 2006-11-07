@@ -44,7 +44,7 @@ for (int priority=DELAF_HIGH_PRIORITY;priority<=DELAF_LOW_PRIORITY;priority++) {
       get_file_name_extension_ignoring_case(argv[i],extension);
       if (!strcmp(extension,"BIN")) {
          // we are dealing with a .dic dictionary
-         name_without_extension(argv[i],nom_inf);
+         remove_extension(argv[i],nom_inf);
          char C=nom_inf[strlen(nom_inf)-1];
          if ((priority==DELAF_HIGH_PRIORITY && C=='-') ||
              (priority==DELAF_NORMAL_PRIORITY && C!='-' && C!='+') ||
@@ -76,7 +76,7 @@ for (int priority=DELAF_HIGH_PRIORITY;priority<=DELAF_LOW_PRIORITY;priority++) {
       }
       else if (!strcmp(extension,"FST2")) {
          // we are dealing with a .fst2 grammar dictionary
-         name_without_extension(argv[i],nom_inf);
+         remove_extension(argv[i],nom_inf);
          char C=nom_inf[strlen(nom_inf)-1];
          if ((priority==DELAF_HIGH_PRIORITY && C=='-') ||
              (priority==DELAF_NORMAL_PRIORITY && C!='-' && C!='+') ||

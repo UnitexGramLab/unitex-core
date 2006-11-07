@@ -74,7 +74,7 @@ char dlf[2000];
 char dlc[2000];
 char err[2000];
 
-get_snt_path(argv[1],staticSntDir);
+get_snt_path((const char*)argv[1],staticSntDir);
 
 strcpy(tokens_txt,staticSntDir);
 strcat(tokens_txt,"tokens.txt");
@@ -239,16 +239,16 @@ return 1;
  * Modified by Sébastien Paumier
  */
 void launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet) {
-char tmp[FILENAME_SIZE];
-char tmp2[FILENAME_SIZE];
-get_filename_path(alphabet,tmp);
-name_without_extension(tmp,tmp2);
+char tmp[FILENAME_MAX];
+char tmp2[FILENAME_MAX];
+get_path(alphabet,tmp);
+remove_extension(tmp,tmp2);
 /* We test if we are working on Thai, on the basis of the alphabet file */
-char path[FILENAME_SIZE];
-char lang[FILENAME_SIZE];
-get_filename_path(alphabet,path);
+char path[FILENAME_MAX];
+char lang[FILENAME_MAX];
+get_path(alphabet,path);
 path[strlen(path)-1]='\0';
-name_without_path(path,lang);
+remove_path(path,lang);
 int thai=0;
 if (!strcmp(lang,"Thai")) {
    thai=1;

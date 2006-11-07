@@ -324,7 +324,7 @@ static void getListFile(char *filename)
 	FILE *lstF;
     if(!(lstF = fopen(filename,"rb")))
     	fopenErrMessage(filename);	
-    get_filename_path(filename,pathName);
+    get_path(filename,pathName);
     pathLen = strlen(pathName);
     while(fgets(buff,1024,lstF)){
     	wp = buff;
@@ -378,7 +378,7 @@ void consultationLesTokens(char *textfile,Alphabet *PtrAlphabet)
 		tokensTable);
 
 
-	get_filename_path(textfile,tmpBuff0);
+	get_path(textfile,tmpBuff0);
 	strcat(tmpBuff0,"seqMorphs.txt");
 	findFile = u_fopen(tmpBuff0,U_WRITE);
 	if(!findFile) exitMessage("Save file \"seqMorphs.txt\" open fail");

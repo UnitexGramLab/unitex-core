@@ -61,7 +61,7 @@ if (fst2==NULL) {
    return 1;
 }
 char temp[2000];
-name_without_extension(argv[1],temp);
+remove_extension(argv[1],temp);
 strcat(temp,".mft");
 FILE* f=u_fopen(temp,U_WRITE);
 if (f==NULL) {

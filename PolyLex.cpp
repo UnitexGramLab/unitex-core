@@ -83,7 +83,7 @@ if (alph==NULL) {
 char temp[1024];
 struct string_hash* forbiddenWords=NULL;
 if (!strcmp(argv[1],"NORWEGIAN")) {
-   get_filename_path(argv[3],temp);
+   get_path(argv[3],temp);
    strcat(temp,"ForbiddenWords.txt");
    forbiddenWords=load_word_list(temp);
 }

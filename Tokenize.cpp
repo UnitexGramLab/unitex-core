@@ -124,7 +124,7 @@ char text_cod[2000];
 char enter_pos[2000];
 Alphabet* alph;
 
-get_snt_path(argv[1],text_cod);
+get_snt_path((const char*)argv[1],text_cod);
 strcat(text_cod,"text.cod");
 get_snt_path(argv[1],tokens_txt);
 strcat(tokens_txt,"tokens.txt");

@@ -52,7 +52,7 @@ int n_fst2;
 ///////////////////////////////
 // Directory containing the inflection tranducers
 //char repertoire[1000] = "/home/agata/UNITEX1.2beta_avec_flex_comp/UNITEX1.2beta_avec_flex_comp_22062005/Polish/Inflection/";
-char inflection_directory[FILENAME_SIZE];
+char inflection_directory[FILENAME_MAX];
 
 ///////////////////////////////
 // ALL FUNCTIONS IN THIS MODULE
@@ -165,7 +165,7 @@ if (flex[pos]=='\0') {
         if (n_fst2==N_FST2) {
             fatal_error("Memory error: too much flexional transducers\n");
         }
-        char s[FILENAME_SIZE];
+        char s[FILENAME_MAX];
         new_file(inflection_directory,flex,s);
         strcat(s,".fst2");
         fst2[n_fst2]=load_fst2(s,1);

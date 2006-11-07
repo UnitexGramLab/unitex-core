@@ -596,8 +596,8 @@ free(info);
  * Modified by Sébastien Paumier
  */
 void dico_application(char* name_bin,struct dico_application_info* info,int priority) {
-char name_inf[FILENAME_SIZE];
-name_without_extension(name_bin,name_inf);
+char name_inf[FILENAME_MAX];
+remove_extension(name_bin,name_inf);
 strcat(name_inf,".inf");
 /* We load the .inf file */
 info->inf=load_INF_file(name_inf);

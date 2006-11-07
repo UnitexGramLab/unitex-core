@@ -277,7 +277,7 @@ setBufferMode();
 
 	cfilename = argv[argIdx];
 	if(!ofilename[0]){
-		name_without_extension(cfilename,fNameSansExt);
+		remove_extension(cfilename,fNameSansExt);
 		switch(flagRacSuf){
 		case CONTENT_RACINE:
           sprintf(ofilename,"%s.ric",fNameSansExt);break;
@@ -292,7 +292,7 @@ setBufferMode();
         }
 	} else {
 	   if(flagRacSuf == CONTENT_RACSUF){
-            name_without_extension(ofilename,fNameSansExt);
+            remove_extension(ofilename,fNameSansExt);
             sprintf(ofilename1,"%s.ric",fNameSansExt);
        }
 	}
@@ -933,8 +933,8 @@ static void outFileRac(char *ofileName)
 {
     FILE *of = u_fopen(ofileName,U_WRITE);
     char nameOfSuf[1024],temp[1024];
-    name_without_path(ofileName,temp);
-    name_without_extension(temp,nameOfSuf);
+    remove_path(ofileName,temp);
+    remove_extension(temp,nameOfSuf);
     u_fprintf(of,",,,,%s\n",nameOfSuf);
     u_fclose(of);
 }
