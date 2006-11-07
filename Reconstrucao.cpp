@@ -33,7 +33,6 @@
 #include "Matches.h"
 #include "PortugueseNormalization.h"
 #include "String_hash.h"
-#include "String_list.h"
 #include "Sentence_to_grf.h"
 #include "Fst2.h"
 #include "Normalization_transducer.h"

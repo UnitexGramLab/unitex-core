@@ -50,8 +50,7 @@ struct trans_arbre_normalization* new_trans_arbre_normalization_string(unichar* 
 struct trans_arbre_normalization* tmp;
 tmp=(struct trans_arbre_normalization*)malloc(sizeof(struct trans_arbre_normalization));
 tmp->token=-1;
-tmp->s=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-u_strcpy(tmp->s,s);
+tmp->s=u_strdup(s);
 tmp->arr=NULL;
 tmp->suivant=NULL;
 return tmp;
@@ -60,6 +59,7 @@ return tmp;
 
 void free_noeud_arbre_normalization(struct noeud_arbre_normalization* n) {
 if (n==NULL) return;
+free_list_ustring(n->liste_arrivee);
 free_trans_arbre_normalization(n->trans);
 free(n);
 }
@@ -107,8 +107,7 @@ return get_trans_arbre_normalization_string(s,t->suivant);
 struct temp_list* new_temp_list(unichar* output,struct noeud_arbre_normalization* n) {
 struct temp_list* t;
 t=(struct temp_list*)malloc(sizeof(struct temp_list));
-t->output=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(output)));
-u_strcpy(t->output,output);
+t->output=u_strdup(output);
 t->arr=n;
 t->suivant=NULL;
 return t;
@@ -296,7 +295,7 @@ Fst2State etat;
 etat=automate->states[n];
 if (is_final_state(etat)) {
    // if we are in a final state
-   noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
+   noeud_normalization->liste_arrivee=sorted_insert(output,noeud_normalization->liste_arrivee);
 }
 struct fst2Transition* trans;
 trans=etat->transitions;
@@ -379,7 +378,7 @@ Fst2State etat;
 etat=automate->states[n];
 if (is_final_state(etat)) {
    // if we are in a final state
-   noeud_normalization->liste_arrivee=insert_in_string_list(output,noeud_normalization->liste_arrivee);
+   noeud_normalization->liste_arrivee=sorted_insert(output,noeud_normalization->liste_arrivee);
 }
 struct fst2Transition* trans;
 trans=etat->transitions;
@@ -478,9 +477,9 @@ return root;
 // and returns the string list of the tags that must be produced:
 // "{de,.PREP}" and "{le,.DET}"
 //
-struct string_list* tokenize_normalization_output(unichar* s,Alphabet* alph) {
+struct list_ustring* tokenize_normalization_output(unichar* s,Alphabet* alph) {
 if (s==NULL) return NULL;
-struct string_list* result=NULL;
+struct list_ustring* result=NULL;
 unichar tmp[1000];
 int i;
 int j;
@@ -505,7 +504,7 @@ while (s[i]!='\0') {
             tmp[j+1]='\0';
             // we go on the next char
             i++;
-            result=insert_at_end_of_string_list(tmp,result);
+            result=insert_at_end_of_list(tmp,result);
          }
       }
       else
@@ -517,7 +516,7 @@ while (s[i]!='\0') {
          }
          tmp[j]='\0';
          // we don't have to go on the next char, we are allready on it
-         result=insert_at_end_of_string_list(tmp,result);
+         result=insert_at_end_of_list(tmp,result);
       }
       else {
          // case of a single non-space char like "-"
@@ -525,11 +524,9 @@ while (s[i]!='\0') {
          tmp[1]='\0';
          // we go on the next char of the string
          i++;
-         result=insert_at_end_of_string_list(tmp,result);
+         result=insert_at_end_of_list(tmp,result);
       }
    }
 }
-
-
 return result;
 }

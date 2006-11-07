@@ -162,9 +162,9 @@ turn_portuguese_sequence_to_lowercase(pronoun);
 turn_portuguese_sequence_to_lowercase(suffix);
 
 // we tokenize the pronoun
-struct string_list* pronouns=tokenize_portuguese_pronoun(pronoun);
+struct list_ustring* pronouns=tokenize_portuguese_pronoun(pronoun);
 
-struct string_list* lemmas=NULL;
+struct list_ustring* lemmas=NULL;
 // we look for the lemma in the radical form dictionary
 if (!get_radical_lemma(radical,&lemmas,alph,root_bin,root_inf)) {
    free(L->output);
@@ -180,7 +180,7 @@ int RESULT=0;
 while (lemmas!=NULL) {
    unichar entry[1000];
    // we get the inf number associated to this lemma in the inflected form dictionary
-   int res=get_inf_number_for_token(4,lemmas->s,0,entry,alph,inflected_bin);
+   int res=get_inf_number_for_token(4,lemmas->string,0,entry,alph,inflected_bin);
    if (res==-1) {
       return 0;
    }
@@ -227,20 +227,19 @@ while (lemmas!=NULL) {
    }
 
    // we go on with the next lemma
-   struct string_list* tmp;
+   struct list_ustring* tmp;
    tmp=lemmas;
-   lemmas=lemmas->suivant;
-   free_string_list_element(tmp);
+   lemmas=lemmas->next;
+   free_list_ustring_element(tmp);
 }
 
 // we clear the output in order to replace it by the normalization lines
 free(L->output);
 L->output=NULL;
 if (temp_result[0]!='\0') {
-   L->output=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(temp_result)));
-   u_strcpy(L->output,temp_result);
+   L->output=u_strdup(temp_result);
 }
-free_string_list(pronouns);
+free_list_ustring(pronouns);
 return RESULT;
 }
 
@@ -354,7 +353,7 @@ return 1;
 //
 // this function look for the lemma corresponding to the radical
 //
-int get_radical_lemma(unichar* radical,struct string_list** lemmas,Alphabet* alph,unsigned char* root_bin,
+int get_radical_lemma(unichar* radical,struct list_ustring** lemmas,Alphabet* alph,unsigned char* root_bin,
                       struct INF_codes* root_inf) {
 unichar entry[1000];
 // we must use the entry variable because of the upper/lower case:
@@ -372,10 +371,7 @@ while (tok!=NULL) {
    struct dela_entry* tmp=tokenize_DELAF_line(line,0);
    if (!u_strcmp_char(tmp->semantic_codes[0],"V")) {
       // if we have a verb lemma, then we add it to the lemma list
-      struct string_list* temp;
-      temp=new_string_list(tmp->lemma);
-      temp->suivant=(*lemmas);
-      (*lemmas)=temp;
+      (*lemmas)=new_list_ustring(tmp->lemma,*lemmas);
    }
    free_dela_entry(tmp);
    tok=tok->next;
@@ -495,7 +491,7 @@ u_fclose(f);
 // produced, and then appended to the result string.
 // It returns the number of lines produced.
 //
-int explore_portuguese_normalization_tree(unichar* result,unichar* partial_line,struct string_list* pronouns,
+int explore_portuguese_normalization_tree(unichar* result,unichar* partial_line,struct list_ustring* pronouns,
                                           struct noeud_arbre_normalization* node,Alphabet* alph) {
 int RES=0;
 if (node==NULL) {
@@ -504,24 +500,24 @@ if (node==NULL) {
 }
 if (pronouns==NULL) {
    // if we have followed all the pronoun tokens
-   struct string_list* l=node->liste_arrivee;
+   struct list_ustring* l=node->liste_arrivee;
    while (l!=NULL) {
       RES++;
       unichar temp[1000];
       u_strcpy(temp,partial_line);
-      u_strcat(temp,l->s);
+      u_strcat(temp,l->string);
       u_strcat(result,temp);
-      l=l->suivant;
+      l=l->next;
    }
    return RES;
 }
 struct trans_arbre_normalization* trans=node->trans;
 while (trans!=NULL) {
-   if (is_equal_or_uppercase(trans->s,pronouns->s,alph)) {
+   if (is_equal_or_uppercase(trans->s,pronouns->string,alph)) {
       // if the pronoun token is compatible with the tree token, according to
       // the upper/lower case variants described by the alphabet,
       // we continue the exploration of the tree
-      RES=RES+explore_portuguese_normalization_tree(result,partial_line,pronouns->suivant,trans->arr,alph);
+      RES=RES+explore_portuguese_normalization_tree(result,partial_line,pronouns->next,trans->arr,alph);
    }
    trans=trans->suivant;
 }
@@ -533,12 +529,12 @@ return RES;
 //
 // this function takes a pronoun sequence and tokenize looking at the minus signs
 //
-struct string_list* tokenize_portuguese_pronoun(unichar* pronoun) {
+struct list_ustring* tokenize_portuguese_pronoun(unichar* pronoun) {
 if (pronoun==NULL) {
    fprintf(stderr,"Internal error: NULL pronoun in tokenize_portuguese_pronoun");
    return NULL;
 }
-struct string_list* res=NULL;
+struct list_ustring* res=NULL;
 int i=0;
 unichar temp[1000];
 int j;
@@ -559,7 +555,7 @@ while (pronoun[i]!='\0') {
       // it has been done in the while
    }
    // we insert the produced string in the string list
-   res=insert_at_end_of_string_list(temp,res);
+   res=insert_at_end_of_list(temp,res);
 }
 return res;
 }

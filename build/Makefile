@@ -364,7 +364,7 @@ RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o Optimized_fst2
                DELA.o List_ustring.o Fst2.o Grammatical_codes.o Loading_dic.o Fst2_tags_optimization.o Pattern_transitions.o\
                Flexional_codes.o unicode.o Alphabet.o Matches.o FileName.o Normalization_transducer.o\
 	           PortugueseNormalization.o\
-               Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o String_list.o\
+               Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
                Sentence_to_grf.o GF_lib.o Error.o Context.o StringParsing.o BitArray.o\
                LemmaTree.o
 
@@ -388,7 +388,7 @@ TOKENIZE_OBJS = IOBuffer.o Tokenize.o unicode.o Alphabet.o String_hash.o\
 TXT2FST2      = Txt2Fst2
 TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o unicode.o Load_DLF_DLC.o\
                 DELA.o List_ustring.o String_hash.o Text_automaton.o List_int.o\
-                Normalization_transducer.o Fst2.o String_list.o FileName.o Error.o\
+                Normalization_transducer.o Fst2.o FileName.o Error.o\
                 StringParsing.o
 
 TAGSETNORM = TagsetNormFst2

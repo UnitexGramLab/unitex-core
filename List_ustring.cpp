@@ -62,6 +62,16 @@ while (head!=NULL) {
 
 
 /**
+ * Frees a unicode string list element.
+ */
+void free_list_ustring_element(struct list_ustring* element) {
+if (element==NULL) return;
+if (element->string!=NULL) free(element->string);
+free(element);
+}
+
+
+/**
  * Inserts a value in a sorted list, if not already present. The
  * element that contains the value is returned.
  * 
@@ -99,6 +109,16 @@ if (value==NULL) {
 struct list_ustring* new_head=new_list_ustring(value);
 new_head->next=old_head;
 return new_head;
+}
+
+
+/**
+ * Inserts an element at the end of a list.
+ */
+struct list_ustring* insert_at_end_of_list(unichar* s,struct list_ustring* l) {
+if (l==NULL) return new_list_ustring(s);
+l->next=insert_at_end_of_list(s,l->next);
+return l;
 }
 
 
@@ -144,4 +164,5 @@ struct list_ustring* clone(struct list_ustring* list) {
 if (list==NULL) return NULL;
 return new_list_ustring(list->string,clone(list->next));
 }
+
 

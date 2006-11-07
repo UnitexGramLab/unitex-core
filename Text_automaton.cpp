@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 #include "Text_automaton.h"
 #include "StringParsing.h"
+#include "List_ustring.h"
 //---------------------------------------------------------------------------
 
 
@@ -294,35 +295,34 @@ for (i=0;i<nombre_noeuds;i++) {
 void ajouter_chemin_automate_du_texte(int indice_de_depart,Alphabet* alph,
                                       struct noeud_text_automaton** noeud,
                                       int* nombre_noeuds,unichar* s,int indice_noeud_arrivee) {
-struct string_list* l;
-l=tokenize_normalization_output(s,alph);
+struct list_ustring* l=tokenize_normalization_output(s,alph);
 if (l==NULL) {
    // if the output to be generated have no interest, we do nothing
    return;
 }
-struct string_list* tmp;
+struct list_ustring* tmp;
 struct trans_text_automaton* TRANS;
 int noeud_courant=indice_de_depart;
 while (l!=NULL) {
-   if (l->suivant==NULL) {
+   if (l->next==NULL) {
       // if this is the last transition to create, we make it point to
       // the destination node;
-      TRANS=new_trans_text_automaton(l->s,indice_noeud_arrivee);
+      TRANS=new_trans_text_automaton(l->string,indice_noeud_arrivee);
       TRANS->suivant=noeud[noeud_courant]->trans;
       noeud[noeud_courant]->trans=TRANS;
    }
    else {
       // if this transition is not the last, we must create a new node
       noeud[*nombre_noeuds]=new_noeud_text_automaton();
-      TRANS=new_trans_text_automaton(l->s,*nombre_noeuds);
+      TRANS=new_trans_text_automaton(l->string,*nombre_noeuds);
       TRANS->suivant=noeud[noeud_courant]->trans;
       noeud[noeud_courant]->trans=TRANS;
       noeud_courant=*nombre_noeuds;
       (*nombre_noeuds)++;
    }
    tmp=l;
-   l=l->suivant;
-   free_string_list_element(tmp);
+   l=l->next;
+   free_list_ustring_element(tmp);
 }
 }
 
@@ -334,8 +334,7 @@ void explore_normalization_tree(int pos_in_buffer,int token,struct info* INFO,
                                 int* nombre_noeuds,
                                 struct noeud_arbre_normalization* norm_tree_node,
                                 int indice_de_depart,int deplacement) {
-struct string_list* liste_arrivee;
-liste_arrivee=norm_tree_node->liste_arrivee;
+struct list_ustring* liste_arrivee=norm_tree_node->liste_arrivee;
 while (liste_arrivee!=NULL) {
    // if there are outputs, we add paths in the text automaton
    /*printf("fin:");
@@ -343,10 +342,10 @@ while (liste_arrivee!=NULL) {
    getchar();*/
    ajouter_chemin_automate_du_texte(indice_de_depart,INFO->alph,noeud,
                                     nombre_noeuds,
-                                    liste_arrivee->s,
+                                    liste_arrivee->string,
                                     indice_de_depart+deplacement-1);
 
-   liste_arrivee=liste_arrivee->suivant;
+   liste_arrivee=liste_arrivee->next;
 }
 // then, we explore the transition from this node
 struct trans_arbre_normalization* trans;

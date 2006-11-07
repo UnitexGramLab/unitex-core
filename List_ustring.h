@@ -37,10 +37,12 @@ struct list_ustring {
 
 struct list_ustring* new_list_ustring(unichar*,struct list_ustring* following=NULL);
 void free_list_ustring(struct list_ustring*);
+void free_list_ustring_element(struct list_ustring*);
 struct list_ustring* sorted_insert(unichar*,struct list_ustring*);
+struct list_ustring* head_insert(unichar*,struct list_ustring*);
+struct list_ustring* insert_at_end_of_list(unichar*,struct list_ustring*);
 int is_in_list(unichar*,struct list_ustring*);
 int equal(struct list_ustring*,struct list_ustring*);
-struct list_ustring* head_insert(unichar*,struct list_ustring*);
 struct list_ustring* clone(struct list_ustring*);
 
 #endif

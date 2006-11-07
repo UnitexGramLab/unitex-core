@@ -27,7 +27,7 @@
 #include "unicode.h"
 #include "Alphabet.h"
 #include "Matches.h"
-#include "String_list.h"
+#include "List_ustring.h"
 #include "Sentence_to_grf.h"
 #include "Normalization_transducer.h"
 #include "DELA.h"
@@ -39,12 +39,12 @@ int replace_match_output_by_normalization_line(struct liste_matches*,Alphabet*,u
                                                 struct INF_codes*,unsigned char*,struct INF_codes*,
                                                 struct noeud_arbre_normalization*);
 int tokenize_portuguese_match(unichar*,unichar*,unichar*,unichar*,unichar*);
-int get_radical_lemma(unichar*,struct string_list**,Alphabet*,unsigned char*,struct INF_codes*);
+int get_radical_lemma(unichar*,struct list_ustring**,Alphabet*,unsigned char*,struct INF_codes*);
 int get_inf_number_for_token(int,unichar*,int,unichar*,Alphabet*,unsigned char*);
 int compatible_portuguese_inflectional_codes(struct dela_entry*,int,unichar**);
 void save_portuguese_normalization_grammar(int,struct liste_matches*,char*);
-int explore_portuguese_normalization_tree(unichar*,unichar*,struct string_list*,struct noeud_arbre_normalization*,
+int explore_portuguese_normalization_tree(unichar*,unichar*,struct list_ustring*,struct noeud_arbre_normalization*,
                                           Alphabet*);
-struct string_list* tokenize_portuguese_pronoun(unichar*);
+struct list_ustring* tokenize_portuguese_pronoun(unichar*);
 
 #endif

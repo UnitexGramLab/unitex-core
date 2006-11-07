@@ -30,12 +30,12 @@
 #include "Text_tokens.h"
 #include "String_hash.h"
 #include "List_int.h"
-#include "String_list.h"
+#include "List_ustring.h"
 
 #define EMPTY_TOKEN -4
 
 struct noeud_arbre_normalization {
-   struct string_list* liste_arrivee;
+   struct list_ustring* liste_arrivee;
    struct trans_arbre_normalization* trans;
 };
 
@@ -61,7 +61,7 @@ struct noeud_arbre_normalization* new_noeud_arbre_normalization();
 struct trans_arbre_normalization* new_trans_arbre_normalization(int);
 void free_noeud_arbre_normalization(struct noeud_arbre_normalization*);
 void free_trans_arbre_normalization(struct trans_arbre_normalization*);
-struct string_list* tokenize_normalization_output(unichar*,Alphabet*);
+struct list_ustring* tokenize_normalization_output(unichar*,Alphabet*);
 
 struct trans_arbre_normalization* new_trans_arbre_normalization_string(unichar*);
 struct noeud_arbre_normalization* load_normalization_transducer_string(char*);
