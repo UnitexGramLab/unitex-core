@@ -21,6 +21,7 @@
 
 //---------------------------------------------------------------------------
 #include "Sentence_to_grf.h"
+#include "StringParsing.h"
 //---------------------------------------------------------------------------
 
 
@@ -96,7 +97,8 @@ for (int i=0;i<nombre_etats;i++) {
       else {
          unichar temp[10000];
          u_strcpy_char(temp,"\"");
-         u_strcat(temp,automate->tags[get_etiquette_reelle(trans->tag_number)]->input);
+         escape(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,&temp[1],P_DOUBLE_QUOTE);
+         //u_strcat(temp,automate->tags[get_etiquette_reelle(trans->tag_number)]->input);
          u_strcat_char(temp,"\"");
          //u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,f);
          tab_grf_state[N_GRF_STATES]=new_grf_state(temp,pos_X[rang[i]],rang[i]);

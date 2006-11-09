@@ -22,16 +22,26 @@
 //---------------------------------------------------------------------------
 #include "FlattenFst2.h"
 #include "LocateConstants.h"
+#include "List_int.h"
+#include "Grf2Fst2_lib.h"
 //---------------------------------------------------------------------------
 
 
-static struct list_int** dependences;
+static struct list_int** dependencies;
+
+/**
+ * During the flatten operation, some graphs may be kept and some
+ * may not. We use the 'new_graph_number' array to know for each graph
+ * if it will be kept. new_graph_number[k]==0 means that the graph number k
+ * won't be kept; otherwise, new_graph_number[k]==i means that the graph 
+ * number k will have the number i in the flattened fst2.
+ */
 static int* new_graph_number;
 
-void compute_dependences(Fst2*);
-void compute_dependences_for_subgraph(Fst2*,int,struct list_int**);
-void print_dependences(Fst2*);
-void check_for_graphs_to_keep(Fst2*,int);
+struct list_int** compute_dependencies(Fst2*);
+void compute_dependencies_for_subgraph(Fst2*,int,struct list_int**);
+void print_dependencies(Fst2*);
+int* check_for_graphs_to_keep(Fst2*,int);
 int renumber_graphs_to_keep(Fst2*);
 int flatten_graph(Fst2*,int,int,int,
                   Graph_comp,
@@ -41,38 +51,33 @@ void save_graphs_to_keep(Fst2*,FILE*);
 void save_graph_to_be_kept(int,Fst2*,FILE*);
 void copy_tags_into_file(Fst2*,FILE*);
 
+
 /**
- * Flattens the grammar origin according to the depth parameter
- * and stores the resulting grammar in a file named temp
+ * Flattens the grammar 'origin' according to the 'depth' parameter
+ * and stores the resulting grammar in a file named 'temp'.
  */
 int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
-
-  FILE* res = u_fopen(temp,U_WRITE);
-  if (res==NULL) {
-    error("Cannot create %s\n",temp);
-    return FLATTEN_ERROR;
-  }
-
-  // set globals used in Grf2Fst2lib.cpp !!!
-  nombre_etiquettes_comp = origin->number_of_tags;
-  nombre_graphes_comp = origin->number_of_graphs;
-
-
-  printf("Computing grammar dependences...\n");
-  dependences = (struct list_int**) malloc((1+origin->number_of_graphs)*sizeof(struct list_int*));
-  new_graph_number = (int*) malloc((1+origin->number_of_graphs)*sizeof(int));
-  compute_dependences(origin); // make dependency tree of the grammar
-  check_for_graphs_to_keep(origin,depth);
-  int n_graphs_to_keep = renumber_graphs_to_keep(origin);
+FILE* res = u_fopen(temp,U_WRITE);
+if (res==NULL) {
+   error("Cannot create %s\n",temp);
+   return FLATTEN_ERROR;
+}
+/* We set globals used in Grf2Fst2lib.cpp !!! */
+nombre_etiquettes_comp = origin->number_of_tags;
+nombre_graphes_comp = origin->number_of_graphs;
+printf("Computing grammar dependencies...\n");
+/* We build the dependency tree of the grammar */
+dependencies=compute_dependencies(origin);
+new_graph_number=check_for_graphs_to_keep(origin,depth);
+int n_graphs_to_keep = renumber_graphs_to_keep(origin);
 #ifdef DEBUG
-  print_dependences(origin); // DEBUG
-#endif // DEBUG
-
-  /* incorporate subgraphs into main graph */
-  printf("Flattening...\n");
-  Graph_comp new_main_graph = new_graph_comp();
-  int SUBGRAPH_CALL_IGNORED = 0, SUBGRAPH_CALL = 0;
-  int result = flatten_graph(origin,
+  print_dependencies(origin);
+#endif
+/* We do the flattening job */
+printf("Flattening...\n");
+Graph_comp new_main_graph=new_graph_comp();
+int SUBGRAPH_CALL_IGNORED=0,SUBGRAPH_CALL=0;
+int result=flatten_graph(origin,
                            1, // start with graph number 1 (main graph)
                            0, // start with depth 0
                            depth, // maximal depth
@@ -81,81 +86,76 @@ int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
                            RTN,
                            &SUBGRAPH_CALL_IGNORED,
                            &SUBGRAPH_CALL); 
-  // liberation of the dependence structures
-  for (int i=1;i<=origin->number_of_graphs;i++) {
-    free_list_int(dependences[i]);
-  }
-  free(dependences);
-
-  /* clean graph, i.e. remove epsilon transitions and unreachable states */
-  printf("Cleaning graph...\n");
-  compute_reverse_transitions(new_main_graph->states,new_main_graph->n_states);
-  for (int h=0;h<new_main_graph->n_states;h++) {
-    if (is_final_state(new_main_graph->states[h])) {
-      // we start the co_accessibility check from every final state
+/* And we free liberation of the dependency structures */
+for (int i=1;i<=origin->number_of_graphs;i++) {
+   free_list_int(dependencies[i]);
+}
+free(dependencies);
+/* clean graph, i.e. remove epsilon transitions and unreachable states */
+printf("Cleaning graph...\n");
+compute_reverse_transitions(new_main_graph->states,new_main_graph->n_states);
+for (int h=0;h<new_main_graph->n_states;h++) {
+   if (is_final_state(new_main_graph->states[h])) {
+      /* We start the co_accessibility check from every final state */
       co_accessibilite_comp(new_main_graph->states,h);
-    }
-  }
-  accessibilite_comp(new_main_graph->states,0);
-  virer_epsilon_transitions_comp(new_main_graph->states,new_main_graph->n_states);
-  eliminer_etats_comp(new_main_graph->states,&(new_main_graph->n_states));
+   }
+}
+accessibilite_comp(new_main_graph->states,0);
+virer_epsilon_transitions_comp(new_main_graph->states,new_main_graph->n_states);
+eliminer_etats_comp(new_main_graph->states,&(new_main_graph->n_states));
+/* Print header (number of graphs) */
+char tmpstr[256];
+snprintf(tmpstr,256,"%010d\n",(RTN?n_graphs_to_keep:1));
+u_fprints_char(tmpstr,res);
+/* Determinize and minimize the new main graph */
+printf("Determinisation...\n");
+determinisation(new_main_graph);
+printf("Minimisation...\n");
+minimisation(new_main_graph);
+/* Write the new main graph */
+printf("Writing grammar...\n");
+write_graph_comp(res,new_main_graph,-1,origin->graph_names[1]);
+free_graph_comp(new_main_graph);
 
-  /* print header (number of graphs) */
-  char tmpstr[256];
-  snprintf(tmpstr,256,"%010d\n",
-          (RTN?n_graphs_to_keep:1));
-  u_fprints_char(tmpstr,res);
-
-  /* determize and minimize the new main graph */
-  printf("Determinisation...\n");
-  determinisation(new_main_graph);
-  printf("Minimisation...\n");
-  minimisation(new_main_graph);
-
-  /* write the new main graph */
-  printf("Writing grammar...\n");
-  write_graph_comp(res,new_main_graph,-1,origin->graph_names[1]);
-  free_graph_comp(new_main_graph);
-
-
-  if (RTN && (result == EQUIVALENT_RTN)) {
-    printf("Saving remaining subgraphs...\n");
-    save_graphs_to_keep(origin,res); // write the still remaining subgraphs
-  }
-  free(new_graph_number);
-
-  printf("Saving tags...\n");
-  write_fst2_tags(res,origin); // copy the terminal symbols to the resulting file
-  u_fclose(res);
-
-  return result;
+if (RTN && (result == EQUIVALENT_RTN)) {
+   printf("Saving remaining subgraphs...\n");
+   save_graphs_to_keep(origin,res); // write the still remaining subgraphs
+}
+free(new_graph_number);
+printf("Saving tags...\n");
+write_fst2_tags(res,origin); // copy the terminal symbols to the resulting file
+u_fclose(res);
+return result;
 }
 
 
-
 /**
- * this function compute for each subgraph of a grammar its subgraph list
+ * This function computes for each subgraph of a grammar its subgraph list.
  */
-void compute_dependences(Fst2* grammar) {
+struct list_int** compute_dependencies(Fst2* grammar) {
+struct list_int** dependencies=(struct list_int**)malloc(sizeof(struct list_int*)*(1+grammar->number_of_graphs));
+if (dependencies==NULL) {
+   fatal_error("Not enough memory in compute_dependencies\n");
+}
 for (int i=1;i<=grammar->number_of_graphs;i++) {
-   dependences[i]=NULL;
-   compute_dependences_for_subgraph(grammar,i,&dependences[i]);
+   dependencies[i]=NULL;
+   compute_dependencies_for_subgraph(grammar,i,&dependencies[i]);
 }
+return dependencies;
 }
-
 
 
 /**
- * this function compute for the subgraph n of the grammar its subgraph list
+ * This function computes for the subgraph 'n' of the grammar its subgraph list.
  */
-void compute_dependences_for_subgraph(Fst2* grammar,int n,struct list_int** L) {
-int limite = grammar->initial_states[n]+grammar->number_of_states_per_graphs[n];
-for (int etat=grammar->initial_states[n];etat<limite;etat++) {
-   struct fst2Transition* trans = grammar->states[etat]->transitions;
+void compute_dependencies_for_subgraph(Fst2* grammar,int n,struct list_int** L) {
+int last_state=grammar->initial_states[n]+grammar->number_of_states_per_graphs[n];
+for (int state=grammar->initial_states[n];state<last_state;state++) {
+   struct fst2Transition* trans=grammar->states[state]->transitions;
    while (trans!=NULL) {
       if (trans->tag_number<0) {
-         // if we find a reference to a subgraph, we store it in the list
-         *L = sorted_insert(-(trans->tag_number),*L);
+         /* If we find a reference to a subgraph, we store it in the list */
+         *L=sorted_insert(-(trans->tag_number),*L);
       }
       trans = trans->next;
    }
@@ -163,82 +163,85 @@ for (int etat=grammar->initial_states[n];etat<limite;etat++) {
 }
 
 
-
 /**
- * this function prints the grammar dependences. n is the number of subgraphs
+ * This function prints the grammar dependencies.
  */
-void print_dependences(Fst2* grammar) {
+void print_dependencies(Fst2* grammar) {
 for (int i=1;i<=grammar->number_of_graphs;i++) {
-   if (dependences[i]!=NULL) {
+   if (dependencies[i]!=NULL) {
       printf("graph %d ",i);
       u_prints(grammar->graph_names[i]);
       printf(" calls:\n");
-      struct list_int* l = dependences[i];
+      struct list_int* l=dependencies[i];
       while (l!=NULL) {
          printf("   graph %d ",l->n);
          u_prints(grammar->graph_names[l->n]);
          printf("\n");
-         l = l->next;
+         l=l->next;
       }
    }
 }
 }
 
 
-
 /**
- * this function checks if the subgraphs of the graph N must be kept
- * in the resulting fst2
+ * This function checks if the subgraphs of the graph 'N' must be kept
+ * in the resulting fst2. Its effect is to set new_graph_number[k] to
+ * 1 if the graph number k must be kept.
  */
 void check_if_subgraphs_must_be_kept(int N,int depth,int max_depth) {
-// if we have not overpassed the maximum flattening depth,
-// we just go on
+/* If we have not overpassed the maximum flattening depth,
+ * we just go on */
 if (depth<=max_depth) {
-   struct list_int* l = dependences[N];
+   struct list_int* l=dependencies[N];
    while (l!=NULL) {
       check_if_subgraphs_must_be_kept(l->n,depth+1,max_depth);
-      l = l->next;
+      l=l->next;
    }
 }
-// if we have reached the maximum flattening depth,
+/* If we have reached the maximum flattening depth */
 else {
    if (new_graph_number[N]==0) {
-      // we look there only if we hadn't computed this graph yet
+      /* We look there only if we hadn't computed this graph yet */
       new_graph_number[N]=1;
-      struct list_int* l = dependences[N];
+      struct list_int* l=dependencies[N];
       while (l!=NULL) {
          check_if_subgraphs_must_be_kept(l->n,depth+1,max_depth);
-         l = l->next;
+         l=l->next;
       }
    }
 }
 }
 
 
-
 /**
- * this function explores the dependences to determine the graphs which
- * will remain in the resulting fst2
+ * This function explores the dependencies to determine the graphs which
+ * will remain in the resulting fst2. It returns an array indicating for
+ * each graph if it must be kept (value=1) or not (value=0).
  */
-void check_for_graphs_to_keep(Fst2* grammar,int depth) {
-// the main graph must always be kept
+int* check_for_graphs_to_keep(Fst2* grammar,int depth) {
+int* new_graph_number=(int*)malloc((1+grammar->number_of_graphs)*sizeof(int));
+if (new_graph_number==NULL) {
+   fatal_error("Not enough memory in check_for_graphs_to_keep\n");
+}
+/* The main graph must always be kept */
 new_graph_number[1]=1;
 for (int i=2;i<=grammar->number_of_graphs;i++) {
    new_graph_number[i]=0;
 }
 check_if_subgraphs_must_be_kept(1,0,depth);
+return new_graph_number;
 }
 
 
-
 /**
- * this function renumerote the graphs to be kept: if the graph 17 must
+ * This function renumbers the graphs to be kept: if the graph 17 must
  * be renumbered to 8 then new_graph_number[17]=8.
- * 0 means that the graph won't be kept
+ * 0 means that the graph won't be kept.
  */
 int renumber_graphs_to_keep(Fst2* grammar) {
-int j = 2;
-int N = 1;
+int j=2;
+int N=1;
 for (int i=2;i<=grammar->number_of_graphs;i++) {
    if (new_graph_number[i]!=0) {
       new_graph_number[i]=j++;
@@ -249,12 +252,8 @@ return N;
 }
 
 
-
-
-
-
 /**
- * flatten the main graph:
+ * This function flattens the main graph:
  *  Build an array of states that represents the flattened
  *  version of the main graph. The return value indicates if the result is
  *  an equivalent RTN, an equivalent FST or an FST approximation.

@@ -155,7 +155,7 @@ return inserer_si_absent(s,pos+1,t->arr,hash,INSERT);
 
 
 
-int get_hash_number(unichar* s,struct string_hash* hash) {
+int get_hash_number(unichar* s,struct string_hash* hash,unichar* s2) {
 return inserer_si_absent(s,0,hash->racine,hash,1);
 }
 

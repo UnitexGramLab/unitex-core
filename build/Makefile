@@ -306,7 +306,7 @@ FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o unicode.o Fst2.o Grf2Fst2_lib.o\
 
 FST2GRF      = Fst2Grf
 FST2GRF_OBJS = IOBuffer.o Fst2Grf.o unicode.o Fst2.o Sentence_to_grf.o\
-               FileName.o List_int.o Error.o
+               FileName.o List_int.o Error.o StringParsing.o
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = IOBuffer.o Fst2List.o unicode.o Fst2.o Alphabet.o Liste_num.o\

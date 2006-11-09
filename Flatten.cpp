@@ -27,6 +27,7 @@
 #include "Fst2.h"
 #include "FlattenFst2.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
 
 void usage() {

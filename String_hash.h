@@ -49,7 +49,7 @@ struct string_hash {
 
 struct string_hash* new_string_hash();
 struct string_hash* new_string_hash_N(int);
-int get_hash_number(unichar*,struct string_hash*);
+int get_hash_number(unichar*,struct string_hash*,unichar* s2=NULL);
 int get_hash_number_without_insert(unichar*,struct string_hash*);
 void free_string_hash(struct string_hash*);
 void free_string_hash_without_insert(struct string_hash*);

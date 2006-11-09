@@ -24,10 +24,7 @@
 #define FlattenFst2H
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
 #include "Fst2.h"
-#include "List_int.h"
-#include "Grf2Fst2_lib.h"
 
 #define FLATTEN_ERROR 0
 #define EQUIVALENT_FST 1

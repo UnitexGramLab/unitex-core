@@ -32,6 +32,7 @@ unichar* P_EQUAL=u_strdup_char("=");
 unichar* P_PLUS=u_strdup_char("+");
 unichar* P_COLON=u_strdup_char(":");
 unichar* P_SLASH=u_strdup_char("/");
+unichar* P_DOUBLE_QUOTE=u_strdup_char("\"");
 unichar* P_PLUS_COLON=u_strdup_char("+:");
 unichar* P_PLUS_COLON_SLASH=u_strdup_char("+:/");
 unichar* P_COLON_SLASH=u_strdup_char(":/");
