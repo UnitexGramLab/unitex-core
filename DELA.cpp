@@ -874,7 +874,7 @@ while (u_read_line(f,line)) {
    if (line[0]!='/') {
       entry=tokenize_DELAF_line(line,1);
       for (i=0;i<entry->n_semantic_codes;i++) {
-         get_hash_number(entry->semantic_codes[i],hash);
+         get_value_index(entry->semantic_codes[i],hash);
       }
       free_dela_entry(entry);
    }
@@ -910,10 +910,10 @@ if (entry!=NULL) {
    /* If the line is correct, we just have to note its codes and the characters 
     * that compose the inflected form and the lemma. */
    for (i=0;i<entry->n_semantic_codes;i++) {
-      get_hash_number(entry->semantic_codes[i],semantic_codes);
+      get_value_index(entry->semantic_codes[i],semantic_codes);
    }
    for (i=0;i<entry->n_inflectional_codes;i++) {
-      get_hash_number(entry->inflectional_codes[i],inflectional_codes);
+      get_value_index(entry->inflectional_codes[i],inflectional_codes);
    }
    if (is_a_DELAF) {
       /* There is no inflected form to examine in a DELAS line */

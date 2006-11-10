@@ -74,12 +74,12 @@ while (L!=NULL) {
       u_strcpy_without_space(temp,L->output);
       u_strcpy(L->output,temp);
       // then we check if this sequence has allready been processed
-      int J=get_token_number(L->output,hash);
+      int J=get_value_index(L->output,hash,DONT_INSERT);
       if (J!=-1) {
          // if the sequence has allready been analyzed, we do nothing
       }
       else {
-         get_hash_number(L->output,hash);
+         get_value_index(L->output,hash);
          get_bracket_prefix(L->output,prefix);
          if (!u_strcmp_char(prefix,"FuturConditional")) {
             N=N+replace_match_output_by_normalization_line(L,alph,root_bin,root_inf,inflected_bin,

@@ -168,7 +168,7 @@ static void error_at_token_pos (char* message, int start, int length) {
       continue;
     if (i == start)
       fprintf(stderr, "<<HERE>>");
-    u_fprints_html_ascii(TOKENS->tab[texte[i]], stderr);
+    u_fprints_html_ascii(TOKENS->value[texte[i]], stderr);
     if (i == (start+length))
       fprintf(stderr, "<<END>>");
   }
@@ -605,13 +605,13 @@ while (a_meta!=NULL) {
                       }
                       break;
       case NB: {     int z=pos2;
-                     while (is_a_digit_token(TOKENS->tab[texte[z+origine_courante]])) z++;
+                     while (is_a_digit_token(TOKENS->value[texte[z+origine_courante]])) z++;
                      if (z!=pos2) {
                         if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                         if (transduction_mode==MERGE_TRANSDUCTIONS) {
                            if (pos2!=pos) push_char(' ');
                            for (int y=pos2;y<z;y++) {
-                              push_string(TOKENS->tab[texte[y+origine_courante]]);
+                              push_string(TOKENS->value[texte[y+origine_courante]]);
                            }
                         }
                         parcourir_opt(numero_graphe_courant,arr->arr,z,profondeur,LISTE,n_matches,ctx,parameters);
@@ -632,7 +632,7 @@ while (a_meta!=NULL) {
                     if (transduction_mode != IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                     if (transduction_mode == MERGE_TRANSDUCTIONS) {
                         if (pos2 != pos) push_char(' ');
-                        push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
                         }
                     parcourir_opt(numero_graphe_courant,arr->arr, pos4,profondeur,LISTE,
                     			n_matches,ctx,parameters);
@@ -664,7 +664,7 @@ while (a_meta!=NULL) {
                    if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                    if (transduction_mode==MERGE_TRANSDUCTIONS) {
                       if (pos2!=pos) push_char(' ');
-                      push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                      push_string(TOKENS->value[texte[pos2+origine_courante]]);
                    }
                    parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                    				n_matches,ctx,parameters);
@@ -681,7 +681,7 @@ while (a_meta!=NULL) {
                         unichar tmp[512];
                         tmp[0]='\0';
                         for (int x=pos2;x<=pos3;x++) {
-                           u_strcat(tmp,TOKENS->tab[texte[x+origine_courante]]);
+                           u_strcat(tmp,TOKENS->value[texte[x+origine_courante]]);
                         }
                         OK=(MatchRawGF(parameters->masterGF, tmp,iMasterGF)==0);
                      }
@@ -691,7 +691,7 @@ while (a_meta!=NULL) {
                         if (transduction_mode==MERGE_TRANSDUCTIONS) {
                            if (pos2!=pos) push_char(' ');
                            for (int x=pos2;x<=pos3;x++)
-                              push_string(TOKENS->tab[texte[x+origine_courante]]);
+                              push_string(TOKENS->value[texte[x+origine_courante]]);
                         }
                         parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
                         				n_matches,ctx,parameters);
@@ -705,7 +705,7 @@ while (a_meta!=NULL) {
                      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                      if (transduction_mode==MERGE_TRANSDUCTIONS) {
                         if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
                      }
                      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                      				n_matches,ctx,parameters);
@@ -721,7 +721,7 @@ while (a_meta!=NULL) {
                           if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                           if (transduction_mode==MERGE_TRANSDUCTIONS) {
                              if (pos2!=pos) push_char(' ');
-                             push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                             push_string(TOKENS->value[texte[pos2+origine_courante]]);
                           }
                           parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                           				n_matches,ctx,parameters);
@@ -737,7 +737,7 @@ while (a_meta!=NULL) {
                      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                      if (transduction_mode==MERGE_TRANSDUCTIONS) {
                         if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
                      }
                      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                      			n_matches,ctx,parameters);
@@ -753,7 +753,7 @@ while (a_meta!=NULL) {
                         unichar tmp[512];
                         tmp[0]='\0';
                         for (int x=pos2;x<=pos3;x++) {
-                           u_strcat(tmp,TOKENS->tab[texte[x+origine_courante]]);
+                           u_strcat(tmp,TOKENS->value[texte[x+origine_courante]]);
                         }
                         OK=(MatchRawGF(parameters->masterGF,tmp,iMasterGF)==0);
                      }
@@ -763,7 +763,7 @@ while (a_meta!=NULL) {
                         if (transduction_mode==MERGE_TRANSDUCTIONS) {
                            if (pos2!=pos) push_char(' ');
                            for (int x=pos2;x<=pos3;x++)
-                              push_string(TOKENS->tab[texte[x+origine_courante]]);
+                              push_string(TOKENS->value[texte[x+origine_courante]]);
                         }
                         parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
                         				n_matches,ctx,parameters);
@@ -778,7 +778,7 @@ while (a_meta!=NULL) {
                      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                      if (transduction_mode==MERGE_TRANSDUCTIONS) {
                         if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
                      }
                      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                      			n_matches,ctx,parameters);
@@ -795,7 +795,7 @@ while (a_meta!=NULL) {
                      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                      if (transduction_mode==MERGE_TRANSDUCTIONS) {
                         if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
                      }
                      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                      				n_matches,ctx,parameters);
@@ -807,7 +807,7 @@ while (a_meta!=NULL) {
                          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                          if (transduction_mode==MERGE_TRANSDUCTIONS) {
                              if (pos2!=pos) push_char(' ');
-                             push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                             push_string(TOKENS->value[texte[pos2+origine_courante]]);
                          }
                          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                          				n_matches,ctx,parameters);
@@ -824,7 +824,7 @@ while (a_meta!=NULL) {
                      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                      if (transduction_mode==MERGE_TRANSDUCTIONS) {
                         if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
                      }
                      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                      				n_matches,ctx,parameters);
@@ -836,7 +836,7 @@ while (a_meta!=NULL) {
                          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                          if (transduction_mode==MERGE_TRANSDUCTIONS) {
                              if (pos2!=pos) push_char(' ');
-                             push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                             push_string(TOKENS->value[texte[pos2+origine_courante]]);
                          }
                          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                          				n_matches,ctx,parameters);
@@ -853,7 +853,7 @@ while (a_meta!=NULL) {
                      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                      if (transduction_mode==MERGE_TRANSDUCTIONS) {
                         if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
                      }
                      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                      			n_matches,ctx,parameters);
@@ -865,7 +865,7 @@ while (a_meta!=NULL) {
                          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
                          if (transduction_mode==MERGE_TRANSDUCTIONS) {
                              if (pos2!=pos) push_char(' ');
-                             push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+                             push_string(TOKENS->value[texte[pos2+origine_courante]]);
                          }
                          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
                          			n_matches,ctx,parameters);
@@ -904,7 +904,7 @@ while (a_pattern!=NULL) {
           unichar tmp[512];
           tmp[0]='\0';
           for (int x=pos2;x<=pos3;x++) {
-            u_strcat(tmp,TOKENS->tab[texte[x+origine_courante]]);
+            u_strcat(tmp,TOKENS->value[texte[x+origine_courante]]);
           }
           OK=(MatchRawGF(parameters->masterGF,tmp,iMasterGF)==0);
        }
@@ -914,7 +914,7 @@ while (a_pattern!=NULL) {
           if (transduction_mode==MERGE_TRANSDUCTIONS) {
              if (pos2!=pos) push_char(' ');
              for (int x=pos2;x<=pos3;x++)
-                push_string(TOKENS->tab[texte[x+origine_courante]]);
+                push_string(TOKENS->value[texte[x+origine_courante]]);
           }
           parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
           				n_matches,ctx,parameters);
@@ -952,7 +952,7 @@ while (a_pattern!=NULL) {
         unichar tmp[512];
         tmp[0]='\0';
         for (int x=pos2;x<=pos3;x++) {
-          u_strcat(tmp,TOKENS->tab[texte[x+origine_courante]]);
+          u_strcat(tmp,TOKENS->value[texte[x+origine_courante]]);
         }
         OK=(MatchRawGF(parameters->masterGF,tmp,iMasterGF)==0);
     }
@@ -962,7 +962,7 @@ while (a_pattern!=NULL) {
         if (transduction_mode==MERGE_TRANSDUCTIONS) {
           if (pos2!=pos) push_char(' ');
           for (int x=pos2;x<=pos3;x++)
-            push_string(TOKENS->tab[texte[x+origine_courante]]);
+            push_string(TOKENS->value[texte[x+origine_courante]]);
         }
         parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
         			n_matches,ctx,parameters);
@@ -981,7 +981,7 @@ while (a_pattern!=NULL) {
           if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
           if (transduction_mode==MERGE_TRANSDUCTIONS) {
             if (pos2!=pos) push_char(' ');
-            push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+            push_string(TOKENS->value[texte[pos2+origine_courante]]);
           }
           parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
           				n_matches,ctx,parameters);
@@ -993,7 +993,7 @@ while (a_pattern!=NULL) {
           if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
           if (transduction_mode==MERGE_TRANSDUCTIONS) {
             if (pos2!=pos) push_char(' ');
-            push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+            push_string(TOKENS->value[texte[pos2+origine_courante]]);
           }
           parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
           				n_matches,ctx,parameters);
@@ -1025,7 +1025,7 @@ if (etat_courant->nombre_de_tokens!=0) {
       if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
       if (transduction_mode==MERGE_TRANSDUCTIONS) {
          if (pos2!=pos) push_char(' ');
-         push_string(TOKENS->tab[texte[pos2+origine_courante]]);
+         push_string(TOKENS->value[texte[pos2+origine_courante]]);
       }
       parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
       				n_matches,ctx,parameters);

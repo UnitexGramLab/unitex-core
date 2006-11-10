@@ -116,7 +116,7 @@ while (s[i]!='\0') {
                  else {
                     // if the variable definition is correct
                     for (int k=v->start;k<=v->end;k++)
-                      push_string(TOKENS->tab[texte[k+origine_courante]]);
+                      push_string(TOKENS->value[texte[k+origine_courante]]);
                  }
              }
          }

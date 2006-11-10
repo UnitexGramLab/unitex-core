@@ -34,13 +34,13 @@ void    w_strcpy( wchar_t*, unichar* );
 
 MasterGF_T* CreateMasterGF( Fst2* fst2 , Alphabet* alph )
 {
-    struct string_hash* hashFilters = new_string_hash_N(HASH_FILTERS_DIM);
+    struct string_hash* hashFilters = new_string_hash(HASH_FILTERS_DIM);
     Fst2Tag* fst2Labels = fst2 -> tags;
     int i, ccode;
     
     for (i = 0; i < fst2 -> number_of_tags; ++i) {
         if (fst2Labels[i] -> contentGF != NULL) {
-            fst2Labels[i] -> entryMasterGF = get_hash_number(fst2Labels[i] -> contentGF, hashFilters);
+            fst2Labels[i] -> entryMasterGF = get_value_index(fst2Labels[i] -> contentGF, hashFilters);
         }
         else
             fst2Labels[i] -> entryMasterGF = -1;
@@ -61,23 +61,23 @@ for (i = 0; i < fst2 -> nombre_etiquettes; ++i) {
         
     MasterGF_T* masterGF = (MasterGF_T *) malloc(sizeof(MasterGF_T));
     
-    if (hashFilters -> N > 0) {
+    if (hashFilters -> size > 0) {
         
         unichar filterContent[512];
         char    filterOptions[512];
         int     regBasic, /*regICase,*/ cflags;
         wchar_t warray[512];
         
-        masterGF -> tabDim = hashFilters -> N;
-        masterGF -> tab = (MasterGFTab_T *) malloc(sizeof(MasterGFTab_T) * hashFilters -> N);
+        masterGF -> tabDim = hashFilters -> size;
+        masterGF -> tab = (MasterGFTab_T *) malloc(sizeof(MasterGFTab_T) * hashFilters -> size);
         
-        for (i = 0; i < hashFilters -> N; ++i) {
+        for (i = 0; i < hashFilters -> size; ++i) {
         
             masterGF -> tab[i].content = NULL;
             masterGF -> tab[i].options = NULL;
             masterGF -> tab[i].preg = NULL;
         
-            SplitFilter(hashFilters -> tab[i], filterContent, filterOptions);
+            SplitFilter(hashFilters -> value[i], filterContent, filterOptions);
             
             masterGF -> tab[i].options = (char *) malloc(sizeof(char) * (1 + strlen(filterOptions)));
             strcpy(masterGF -> tab[i].options, filterOptions);
@@ -174,7 +174,7 @@ IndexGF_T* CreateIndexGF( MasterGF_T* masterGF, struct string_hash* tok )
     if (indexGF == NULL) return NULL;
     
     if (masterGF -> tabDim > 0) {
-        indexGF -> rowDim = tok -> N;
+        indexGF -> rowDim = tok -> size;
         indexGF -> bitDim = masterGF -> tabDim;
         indexGF -> colDim = (indexGF -> bitDim / 8) + 1;
         indexGF -> tab = (unsigned char * *) malloc(sizeof(unsigned char *) * indexGF -> rowDim);
@@ -185,10 +185,10 @@ IndexGF_T* CreateIndexGF( MasterGF_T* masterGF, struct string_hash* tok )
         
         for (i = 0; i < indexGF -> rowDim; ++i) {
             
-            if (tok -> tab[i][0] == '{')
-                ExtractInflected(tok -> tab[i], inflected);
+            if (tok -> value[i][0] == '{')
+                ExtractInflected(tok -> value[i], inflected);
             else
-                w_strcpy(inflected, tok -> tab[i]);
+                w_strcpy(inflected, tok -> value[i]);
             
             indexGF -> tab[i] = (unsigned char *) malloc(sizeof(unsigned char) * indexGF -> colDim);
             if (indexGF -> tab[i] == NULL) {

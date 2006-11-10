@@ -46,7 +46,7 @@ free(v);
 
 
 int get_transduction_variable_indice(unichar* s) {
-return get_token_number(s,transduction_variable_index);
+return get_value_index(s,transduction_variable_index,DONT_INSERT);
 }
 
 
@@ -65,7 +65,7 @@ void init_transduction_variable_index(struct variable_list* l) {
 transduction_variable_index=new_string_hash();
 int i=0;
 while (l!=NULL) {
-   get_hash_number(l->name,transduction_variable_index);
+   get_value_index(l->name,transduction_variable_index);
    tab_transduction_variable[i++]=new_transduction_variable();
    l=l->next;
 }
@@ -73,7 +73,7 @@ while (l!=NULL) {
 
 
 void free_transduction_variable_index() {
-for (int i=0;i<transduction_variable_index->N;i++) {
+for (int i=0;i<transduction_variable_index->size;i++) {
   free_transduction_variable(tab_transduction_variable[i]);
 }
 free_string_hash(transduction_variable_index);
@@ -106,9 +106,9 @@ return tab_transduction_variable[n]->end;
 
 int* create_variable_backup() {
 if (transduction_variable_index==NULL) return NULL;
-int* tab=(int*)malloc(sizeof(int)*2*(transduction_variable_index->N));
+int* tab=(int*)malloc(sizeof(int)*2*(transduction_variable_index->size));
 int j=0;
-for (int i=0;i<transduction_variable_index->N;i++) {
+for (int i=0;i<transduction_variable_index->size;i++) {
    tab[j++]=tab_transduction_variable[i]->start;
    tab[j++]=tab_transduction_variable[i]->end;
 }
@@ -126,7 +126,7 @@ if (tab==NULL) {
 	fatal_error("NULL error in install_variable_backup\n");
 }
 int j=0;
-for (int i=0;i<transduction_variable_index->N;i++) {
+for (int i=0;i<transduction_variable_index->size;i++) {
    tab_transduction_variable[i]->start=tab[j++];
    tab_transduction_variable[i]->end=tab[j++];
 }

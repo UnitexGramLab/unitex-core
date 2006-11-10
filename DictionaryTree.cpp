@@ -151,7 +151,7 @@ void add_entry_to_dictionary_tree(unichar* inflected,int pos,struct dictionary_n
 if (inflected[pos]=='\0') {
    /* If we have reached the end of 'inflected', then we are in the
     * node where the INF code must be inserted */
-   int N=get_hash_number(infos->INF_code,infos->INF_code_list);
+   int N=get_value_index(infos->INF_code,infos->INF_code_list);
    if (node->single_INF_code_list==NULL) {
       /* If there is no INF code in the node, then
        * we add one and we return */
@@ -169,10 +169,10 @@ if (inflected[pos]=='\0') {
    node->single_INF_code_list=head_insert(N,node->single_INF_code_list);
    /* And we update the global INF line for this node */
    unichar tmp[3000];
-   u_strcpy(tmp,infos->INF_code_list->tab[node->INF_code]);
+   u_strcpy(tmp,infos->INF_code_list->value[node->INF_code]);
    u_strcat_char(tmp,",");
    u_strcat(tmp,infos->INF_code);
-   node->INF_code=get_hash_number(tmp,infos->INF_code_list);
+   node->INF_code=get_value_index(tmp,infos->INF_code_list);
    return;
 }
 /* If we are not at the end of 'inflected', then we look for

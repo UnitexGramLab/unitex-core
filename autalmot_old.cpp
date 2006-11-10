@@ -1304,7 +1304,7 @@ void autalmot_dump_dot_fname(tAutAlMot * A, char * fname) {
 
 
 void output_fst2_labels(string_hash * hash, FILE * f) {
-  for (int i = 0; i < hash->N; i++) { u_fprintf(f, "%%%S\n", hash->tab[i]); }
+  for (int i = 0; i < hash->size; i++) { u_fprintf(f, "%%%S\n", hash->value[i]); }
   u_fprints_char("f\n", f);
 }
 
@@ -1382,7 +1382,7 @@ void autalmot_dump_fst2(tAutAlMot * A, FILE * f) {
 	  u_sprintf(buf, "<INDETERMINE:%S,%S.%S>", t->etiq->flechie, t->etiq->canonique, t->etiq->gramm);
 	}
       }
-      u_fprintf(f, "%d %d ", get_hash_number(buf, hash), t->but);
+      u_fprintf(f, "%d %d ", get_value_index(buf, hash), t->but);
     }
 
     u_fputc('\n', f);

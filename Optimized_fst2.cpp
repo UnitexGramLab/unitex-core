@@ -351,7 +351,7 @@ if (controle&CONTROL_TAG_BIT_MASK) {
   int k=-1;
   if (e->number==VAR_START || e->number==VAR_END) {
      // if the meta is $a( or $a)
-     k=get_token_number(e->input,transduction_variable_index);
+     k=get_value_index(e->input,transduction_variable_index,DONT_INSERT);
   }
   ajouter_meta(e->number,ptr->tag_number,&((*e2)->liste_metas),ptr->state_number,controle,k);
   return;

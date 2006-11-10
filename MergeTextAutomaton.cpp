@@ -86,7 +86,7 @@ void output_fst(Fst2 * A, int no, string_hash * hash, FILE * f) {
       u_fputc(':', f); u_fputc(' ', f);
 
       for (fst2Transition * trans = state->transitions; trans; trans = trans->next) {
-	u_fprintf(f, "%d %d ", get_hash_number(A->tags[trans->tag_number]->input, hash), trans->state_number - stateno);
+	u_fprintf(f, "%d %d ", get_value_index(A->tags[trans->tag_number]->input, hash), trans->state_number - stateno);
       }
 
       u_fputc('\n', f);
@@ -106,7 +106,7 @@ void output_grf_trans(grf_t * grf, int i, int * ids, string_hash * labels, FILE 
 
     if (u_strlen(grf->boxes[trans->to]->label)) {
 
-      int l = get_hash_number(grf->boxes[trans->to]->label, labels);
+      int l = get_value_index(grf->boxes[trans->to]->label, labels);
       u_fprintf(f, "%d %d ", l, ids[trans->to]);
     }
 
@@ -140,7 +140,7 @@ void output_grf(grf_t * grf, string_hash * labels, FILE * f) {
 
   if (! EPSILON_IN_INIT) {
 
-    u_fprintf(f, ": %d %d \n", get_hash_number(grf->boxes[GRF_BOX_INIT]->label, labels), grf->nb_boxes);
+    u_fprintf(f, ": %d %d \n", get_value_index(grf->boxes[GRF_BOX_INIT]->label, labels), grf->nb_boxes);
 
   } else { output_grf_trans(grf, GRF_BOX_INIT, ids, labels, f); }
 
@@ -171,7 +171,7 @@ void output_grf(grf_t * grf, string_hash * labels, FILE * f) {
 
 
 void output_labels(string_hash * hash, FILE * f) {
-  for (int i = 0; i < hash->N; i++) { u_fprintf(f, "%%%S\n", hash->tab[i]); }
+  for (int i = 0; i < hash->size; i++) { u_fprintf(f, "%%%S\n", hash->value[i]); }
   u_fprints_char("f\n", f);
 }
 
@@ -235,7 +235,7 @@ setBufferMode();
   
   string_hash * labels = new_string_hash();
 
-  get_hash_number(epsilon, labels);
+  get_value_index(epsilon, labels);
 
   fst_header(A, out);
 

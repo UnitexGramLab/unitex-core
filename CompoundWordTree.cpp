@@ -163,7 +163,7 @@ if (tokenization_mode==CHAR_BY_CHAR_TOKENIZATION) {
    m[1]='\0';
    while (word[i]!='\0') {
       m[0]=word[i];
-      j=get_token_number(m,tok);
+      j=get_value_index(m,tok,DONT_INSERT);
       if (j==-1) {
       	 /* If a token of a compound word is not a token of the text,
       	  * then we traduce it by an empty list. */
@@ -205,7 +205,7 @@ while ((c=word[k])!='\0') {
               if (n_token>0 && !ALL_CASE_VARIANTS_ARE_ALLOWED) {
                 /* Here we compute no case variant, we only look for the exact
                  * matching token */
-                j=get_token_number(m,tok);
+                j=get_value_index(m,tok,DONT_INSERT);
                 if (j==-1) {
                   tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
                   tokens[n_token++]=END_CASE_VARIANT_LIST;
@@ -232,7 +232,7 @@ while ((c=word[k])!='\0') {
                m[0]=(unichar)c;
                m[1]='\0';
                k++;
-               j=get_token_number(m,tok);
+               j=get_value_index(m,tok,DONT_INSERT);
                /* If the text does not contain this token,
                * then we traduce it by an empty list. */
                if (j==-1) {

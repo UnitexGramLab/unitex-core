@@ -266,9 +266,9 @@ while ((c=u_fgetc(f))!=EOF) {
 		u_strcat_char(line,"\t");
 		u_strcat(line,right);
 		/* We test if the line was already seen */
-		if (-1 == get_token_number(line,glossa_hash)) {
+		if (NO_VALUE_INDEX==get_value_index(line,glossa_hash,DONT_INSERT)) {
 			can_print_line=1;
-			get_hash_number(line,glossa_hash);
+			get_value_index(line,glossa_hash);
 		} else {
 			can_print_line=0;
 		}

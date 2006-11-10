@@ -105,7 +105,7 @@ while (u_read_line(f,line)) {
    while (ptr!=NULL) {
       int i=ptr->n;
       /* If the current token can be matched, then it can be recognized by the "<DIC>" pattern */
-      parameters->token_controle[i]=(unsigned char)(get_controle(tokens->tab[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      parameters->token_controle[i]=(unsigned char)(get_controle(tokens->value[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
          int nothing_before=0;
@@ -183,12 +183,12 @@ u_fclose(f);
 void check_patterns_for_tag_tokens(Alphabet* alphabet,struct string_hash* tokens,int number_of_patterns,
 									int tokenization_mode,
                            struct lemma_node* root,struct locate_parameters* parameters) {
-for (int i=0;i<tokens->N;i++) {
-   if (tokens->tab[i][0]=='{' && u_strcmp_char(tokens->tab[i],"{S}")  && u_strcmp_char(tokens->tab[i],"{STOP}")) {
+for (int i=0;i<tokens->size;i++) {
+   if (tokens->value[i][0]=='{' && u_strcmp_char(tokens->value[i],"{S}")  && u_strcmp_char(tokens->value[i],"{STOP}")) {
       /* If the token is tag like "{today,.ADV}", we add its number to the tag token list */
       parameters->tag_token_list=head_insert(i,parameters->tag_token_list);
       /* And we look for the patterns that can match it */
-      struct dela_entry* entry=tokenize_tag_token(tokens->tab[i]);
+      struct dela_entry* entry=tokenize_tag_token(tokens->value[i]);
       if (entry==NULL) {
          /* This should never happen */
          fatal_error("Invalid tag token in function check_patterns_for_tag_tokens\n");
@@ -196,8 +196,8 @@ for (int i=0;i<tokens->N;i++) {
       /* We add the inflected form to the list of forms associated to the lemma.
       * This will be used to replace patterns like "<be>" by the actual list of
       * forms that can be matched by it, for optimization reasons */
-      add_inflected_form_for_lemma(tokens->tab[i],entry->lemma,root);
-      parameters->token_controle[i]=(unsigned char)(get_controle(tokens->tab[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      add_inflected_form_for_lemma(tokens->value[i],entry->lemma,root);
+      parameters->token_controle[i]=(unsigned char)(get_controle(tokens->value[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
          int nothing_before=0;

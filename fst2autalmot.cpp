@@ -711,7 +711,7 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
 
   u_strcpy_char(buf, "<E>");
 
-  get_hash_number(buf, hash);
+  get_value_index(buf, hash);
 
 
   for (i = 0; i < txt->nb_aut; i++) {
@@ -779,7 +779,7 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
 	  }
 	}
 
-	u_fprintf(f, "%d %d ", get_hash_number(buf, hash), t->but);
+	u_fprintf(f, "%d %d ", get_value_index(buf, hash), t->but);
       }
 
       u_fputc('\n', f);

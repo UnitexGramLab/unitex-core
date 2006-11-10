@@ -654,7 +654,7 @@ void libereBiAlph(tBiAlph * a) {
 
 static alphabet * developpe(alphabet * d1, alphabet * d2, tBiAlph * biAlph, BOOL * modif) {
 
-  alphabet * prochain, * tab;
+  alphabet * prochain, * value;
   tSymbole * i;
 
   if (compSymb(d1->etiquette, d2->etiquette) && (d1->etiquette->sorteSymbole != ATOME || d2->etiquette->sorteSymbole != ATOME)
@@ -671,20 +671,20 @@ static alphabet * developpe(alphabet * d1, alphabet * d2, tBiAlph * biAlph, BOOL
 
       if (! d1->etiquette->sorteSymbole) erreurInt("developpe") ;
 
-      tab = sauf(d1->etiquette, i) ;
+      value = sauf(d1->etiquette, i) ;
 
       /* d1 est a remplacer par i et tab */
-      subst(copieSymbole(d1->etiquette), i, tab, biAlph);
+      subst(copieSymbole(d1->etiquette), i, value, biAlph);
     }
 
     if (compSymb(d2->etiquette, i)) {
 
       if (! d2->etiquette->sorteSymbole) erreurInt("developpe") ;
 
-      tab = sauf(d2->etiquette, i) ;
+      value = sauf(d2->etiquette, i) ;
 
       /* d2 est a remplacer par i et tab */
-      subst(copieSymbole(d2->etiquette), i, tab, biAlph) ;
+      subst(copieSymbole(d2->etiquette), i, value, biAlph) ;
     }
 
    free(i->canonique) ;
@@ -704,14 +704,14 @@ static alphabet * developpe(alphabet * d1, alphabet * d2, tBiAlph * biAlph, BOOL
  * Reutilise tab mais pas i. Libere s.
  */
 
-static void subst(tSymbole * s, tSymbole * i, alphabet * tab, tBiAlph * biAlph) {
+static void subst(tSymbole * s, tSymbole * i, alphabet * value, tBiAlph * biAlph) {
 
   alphabet * c1, * temp ;
 
   tBiAlph * dbg = biAlph;
 
   debug("subst:"); Affiche_Symbole(s); error(" = "); 
-  Affiche_Symbole(i); error(" union "); alphabet_dump(tab);
+  Affiche_Symbole(i); error(" union "); alphabet_dump(value);
   error("\n");
 
   debug("avant:\n"); affBiAlph(biAlph);
@@ -725,7 +725,7 @@ static void subst(tSymbole * s, tSymbole * i, alphabet * tab, tBiAlph * biAlph) 
 	free(c1->etiquette->canonique) ;
 	free(c1->etiquette) ;
 	c1->etiquette = copieSymbole(i) ;
-	c1->suiv = tab ;
+	c1->suiv = value ;
 
 	while (c1->suiv) { c1 = c1->suiv; }
 	c1->suiv = temp;

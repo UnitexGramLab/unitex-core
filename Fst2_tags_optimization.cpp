@@ -51,7 +51,7 @@ struct list_int* ptr_num;
 struct list_int* ptr;
 if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
-   num=get_hash_number(s,tok);
+   num=get_value_index(s,tok);
   if ((parameters->matching_patterns[num]!=NULL)&&
       get_value(parameters->matching_patterns[num],etiquette[e]->number)) {
       ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
@@ -118,7 +118,7 @@ struct list_int* ptr_num;
 struct list_int* ptr;
 if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
-   num=get_hash_number(s,tok);
+   num=get_value_index(s,tok);
    if ((parameters->matching_patterns[num]!=NULL)&&
       get_value(parameters->matching_patterns[num],etiquette[e]->number)) {
       ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
@@ -195,7 +195,7 @@ struct list_int* ptr_num;
 struct list_int* ptr;
 if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
-   num=get_hash_number(s,tok);
+   num=get_value_index(s,tok);
    ptr_num=(struct list_int*)malloc(sizeof(struct list_int));
    ptr_num->n=num;
    ptr_num->next=etiquette[e]->matching_tokens;
@@ -258,7 +258,7 @@ unichar* s=etiquette[e]->input;
 // first, we check if this tag can recognize some tag tokens
 struct list_int* L=tag_token_list;
 while (L!=NULL) {
-   struct dela_entry* entry=tokenize_tag_token(tok->tab[L->n]);
+   struct dela_entry* entry=tokenize_tag_token(tok->value[L->n]);
    if ((case_variants_allowed && is_equal_or_uppercase(s,entry->inflected,alph)) ||
        !u_strcmp(s,entry->inflected)) {
       num=L->n;

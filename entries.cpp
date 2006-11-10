@@ -93,7 +93,7 @@ int main(int argc, char ** argv) {
 
     if (*p == 0) { // pas de traits flexionnels
       u_sprintf(hashbuf, "%S\t%S", gramm, buf);
-      get_hash_number(hashbuf, hash);
+      get_value_index(hashbuf, hash);
       continue;
     }
 
@@ -113,16 +113,16 @@ int main(int argc, char ** argv) {
       *p = 0;
 
       u_sprintf(hashbuf, "%S:%S\t%S", gramm, flex, buf);
-      get_hash_number(hashbuf, hash);
+      get_value_index(hashbuf, hash);
 
     }
 
   }
 
-  error("%d diff codes\n", hash->N);
+  error("%d diff codes\n", hash->size);
 
-  for (int i = 0; i < hash->N; i++) {
-    u_fprintf(out, "%S\n", hash->tab[i]);
+  for (int i = 0; i < hash->size; i++) {
+    u_fprintf(out, "%S\n", hash->value[i]);
   }
 
   return 0;

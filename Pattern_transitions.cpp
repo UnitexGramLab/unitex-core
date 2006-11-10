@@ -43,7 +43,7 @@ void convert_pattern_lists(struct string_hash* tok) {
 int i,j;
 int n_octets;
 n_octets=100;
-for (i=0;i<tok->N;i++) {
+for (i=0;i<tok->size;i++) {
   if (tableau[i]->n) {
     tableau[i]->c=(unsigned char*)malloc(sizeof(unsigned char)*n_octets);
     for (j=0;j<n_octets;j++)
@@ -68,7 +68,7 @@ return ptr;
 
 void init_pattern_transitions(struct string_hash* tok) {
 int i;
-for (i=0;i<tok->N;i++)
+for (i=0;i<tok->size;i++)
   tableau[i]=nouveau_pattern_transitions();
 }
 

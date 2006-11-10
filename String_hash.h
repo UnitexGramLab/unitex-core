@@ -25,38 +25,73 @@
 //---------------------------------------------------------------------------
 #include "unicode.h"
 #include "Alphabet.h"
+//---------------------------------------------------------------------------
 
 
-struct arbre_hash_trans {
-  unichar c;
-  struct arbre_hash* arr;
-  struct arbre_hash_trans* suivant;
+#define ENLARGE_IF_NEEDED 0
+#define DONT_ENLARGE 1
+
+#define NO_VALUE_INDEX -1
+#define DONT_USE_VALUES -1
+
+#define INSERT_IF_NEED 0
+#define DONT_INSERT 1
+
+
+/**
+ * This is a list of transitions in the hash tree. It is tagged by a letter and it
+ * points to a tree node. 'next' is the following transition in the list.
+ */
+struct string_hash_tree_transition {
+   unichar letter;
+   struct string_hash_tree_node* node;
+   struct string_hash_tree_transition* next;
 };
 
 
-struct arbre_hash {
-  int final;
-  struct arbre_hash_trans* trans;
+/**
+ * This is a tree node with a control integer to know if it is a final one
+ * and a list of transitions. If the node is a final one, 'value_index' 
+ * contains an integer that is the index of the value in the 'value' array.
+ * It contains NO_VALUE_INDEX if the node is not final.
+ */
+struct string_hash_tree_node {
+   int value_index;
+   struct string_hash_tree_transition* trans;
 };
 
 
+/**
+ * This structure is used to manage unicode string pairs like (key,value). 
+ * We use a tree in order to associate an integer to each key, and a string
+ * array that contains the values. For instance, if we insert the pair ("abc","ABC"),
+ * the tree may give us the number 37 for "abc", and we will have value[37]="ABC".
+ * 'size' is the actual number of pairs in the structure. 'capacity' is the maximum
+ * size of the 'value' array. 'bound_policy' is used to define what to do when 'value'
+ * is full, raising an error or enlarge the array. 'root' is the root of the key tree.
+ * 
+ * Note that this structure is often used with key=value in order to have a bijection
+ * between strings and integers:
+ * - if we know the string, the key tree provides us the number
+ * - if we know the number, value[number] provides us the string
+ */
 struct string_hash {
-  int N;
-  struct arbre_hash* racine;
-  unichar** tab;
+   int size;
+   int capacity;
+   int bound_policy;
+   struct string_hash_tree_node* root;
+   unichar** value;
 };
 
 
+struct string_hash* new_string_hash(int,int);
+struct string_hash* new_string_hash(int);
 struct string_hash* new_string_hash();
-struct string_hash* new_string_hash_N(int);
-int get_hash_number(unichar*,struct string_hash*,unichar* s2=NULL);
-int get_hash_number_without_insert(unichar*,struct string_hash*);
 void free_string_hash(struct string_hash*);
-void free_string_hash_without_insert(struct string_hash*);
-void sauver_lignes_hash(FILE*,struct string_hash*);
-int get_token_number(unichar*,struct string_hash*);
-struct string_hash* load_word_list(char*);
-
-int is_in_string_hash_modulo_case(unichar*,struct string_hash*,Alphabet*);
+int get_value_index(unichar*,struct string_hash*,int,unichar*);
+int get_value_index(unichar*,struct string_hash*,int);
+int get_value_index(unichar*,struct string_hash*);
+struct string_hash* load_string_list(char*);
+void dump_values(FILE*,struct string_hash*);
 
 #endif

@@ -73,18 +73,18 @@ for (int i=fst2->initial_states[N];i<limite;i++) {
          trans=tmp;
       }
       else {
-         get_hash_number(fst2->tags[trans->tag_number]->input,tags);
+         get_value_index(fst2->tags[trans->tag_number]->input,tags);
          trans=trans->next;
       }
    }
 }
 // we write the number of tags and the number of states in the MFT
-sprintf(temp,"%d %d\n",tags->N,fst2->number_of_states_per_graphs[N]);
+sprintf(temp,"%d %d\n",tags->size,fst2->number_of_states_per_graphs[N]);
 u_fprints_char(temp,f);
 unichar TMP[2000];
-for (int i=0;i<tags->N;i++) {
+for (int i=0;i<tags->size;i++) {
    u_fprints_char("%",f);
-   unspecialize_percent_signs(tags->tab[i],TMP);
+   unspecialize_percent_signs(tags->value[i],TMP);
    u_fprints(TMP,f);
 }
 u_fprints_char("%\n",f);
@@ -100,7 +100,7 @@ for (int i=fst2->initial_states[N];i<limite;i++) {
    int debut=fst2->initial_states[N];
    int num;
    while (trans!=NULL) {
-      num=get_hash_number(fst2->tags[trans->tag_number]->input,tags);
+      num=get_value_index(fst2->tags[trans->tag_number]->input,tags);
       sprintf(temp,"%d %d ",num,(trans->state_number)-debut+1);
       u_fprints_char(temp,f);
       trans=trans->next;

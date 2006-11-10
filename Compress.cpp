@@ -205,7 +205,7 @@ while(u_read_line(f,s)) {
 }
 u_fclose(f);
 /* Now we can dump the INF codes into the .inf file */
-sauver_lignes_hash(INF_file,INF_codes);
+dump_values(INF_file,INF_codes);
 u_fclose(INF_file);
 /* We build a minimal transducer from the entry tree */
 minimize_tree(root);
@@ -219,10 +219,10 @@ printf("%d line%s read            \n"
 		"%d INF entr%s created\n",
 		line,
 		(line!=1)?"s":"",
-		INF_codes->N,
-		(INF_codes->N!=1)?"ies":"y");
+		INF_codes->size,
+		(INF_codes->size!=1)?"ies":"y");
 printf("%d states, %d transitions\n",n_states,n_transitions);
-write_INF_file_header(inf,INF_codes->N);
+write_INF_file_header(inf,INF_codes->size);
 /*
  * WARNING: we do not free the 'INF_codes' structure because of a slowness
  *          problem with very large INF lines.

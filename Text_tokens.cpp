@@ -76,10 +76,10 @@ if (f==NULL) {
 NUMBER_OF_TEXT_TOKENS=u_read_int(f)+100000; // the +100000 is used to prevent the addition
                                             // of tokens while locate preprocessing
 struct string_hash* res;
-res=new_string_hash_N(NUMBER_OF_TEXT_TOKENS);
+res=new_string_hash(NUMBER_OF_TEXT_TOKENS);
 unichar tmp[1000];
 while (u_read_line(f,tmp)) {
-  get_hash_number(tmp,res);
+  get_value_index(tmp,res);
 }
 u_fclose(f);
 return res;
@@ -98,11 +98,11 @@ if (f==NULL) {
 NUMBER_OF_TEXT_TOKENS=u_read_int(f)+100000; // the +100000 is used to prevent the addition
                                             // of tokens while locate preprocessing
 struct string_hash* res;
-res=new_string_hash_N(NUMBER_OF_TEXT_TOKENS);
+res=new_string_hash(NUMBER_OF_TEXT_TOKENS);
 unichar tmp[1000];
 int x;
 while (u_read_line(f,tmp)) {
-   x=get_hash_number(tmp,res);
+   x=get_value_index(tmp,res);
    if (!u_strcmp_char(tmp,"{S}")) {
       (*SENTENCE_MARKER)=x;
    }
@@ -127,22 +127,22 @@ free(tok);
 
 
 
-void explorer_token_tree(int pos,unichar* sequence,Alphabet* alph,struct arbre_hash* n,struct list_int** l) {
+void explorer_token_tree(int pos,unichar* sequence,Alphabet* alph,struct string_hash_tree_node* n,struct list_int** l) {
 if (sequence[pos]=='\0') {
    // if we are at the end of the sequence
-   if (n->final!=-1) {
+   if (n->value_index!=-1) {
       // if the sequence is a text token, we add its number to the list
-      (*l)=sorted_insert(n->final,*l);
+      (*l)=sorted_insert(n->value_index,*l);
    }
    return;
 }
-struct arbre_hash_trans* trans=n->trans;
+struct string_hash_tree_transition* trans=n->trans;
 while (trans!=NULL) {
-  if (is_equal_or_uppercase(sequence[pos],trans->c,alph)) {
+  if (is_equal_or_uppercase(sequence[pos],trans->letter,alph)) {
      // if we can follow the transition
-     explorer_token_tree(pos+1,sequence,alph,trans->arr,l);
+     explorer_token_tree(pos+1,sequence,alph,trans->node,l);
   }
-  trans=trans->suivant;
+  trans=trans->next;
 }
 }
 
@@ -151,7 +151,7 @@ while (trans!=NULL) {
 struct list_int* get_token_list_for_sequence(unichar* sequence,Alphabet* alph,
                                                   struct string_hash* hash) {
 struct list_int* l=NULL;
-explorer_token_tree(0,sequence,alph,hash->racine,&l);
+explorer_token_tree(0,sequence,alph,hash->root,&l);
 return l;
 }
 
@@ -189,12 +189,12 @@ return 1;
 //
 void extract_semantic_codes_from_tokens(struct string_hash* tok,
                                         struct string_hash* semantic_codes) {
-for (int i=0;i<tok->N;i++) {
-    if (tok->tab[i][0]=='{' && u_strcmp_char(tok->tab[i],"{S}")
-                            && u_strcmp_char(tok->tab[i],"{STOP}")) {
-       struct dela_entry* temp=tokenize_tag_token(tok->tab[i]);
+for (int i=0;i<tok->size;i++) {
+    if (tok->value[i][0]=='{' && u_strcmp_char(tok->value[i],"{S}")
+                            && u_strcmp_char(tok->value[i],"{STOP}")) {
+       struct dela_entry* temp=tokenize_tag_token(tok->value[i]);
        for (int j=0;j<temp->n_semantic_codes;j++) {
-          get_hash_number(temp->semantic_codes[j],semantic_codes);
+          get_value_index(temp->semantic_codes[j],semantic_codes);
        }
        free_dela_entry(temp);
     }

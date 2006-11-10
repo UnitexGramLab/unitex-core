@@ -159,14 +159,14 @@ for (int i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
  */
 u_fprints_char("-------------------------------------------------------------\n",out);
 char tmp[1000];
-sprintf(tmp,"----  %3d grammatical/semantic code%s",semantic_codes->N,(semantic_codes->N>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
+sprintf(tmp,"----  %3d grammatical/semantic code%s",semantic_codes->size,(semantic_codes->size>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
 u_fprints_char(tmp,out);
 u_fprints_char("-------------------------------------------------------------\n",out);
 unichar comment[2000];
-for (int i=0;i<semantic_codes->N;i++) {
+for (int i=0;i<semantic_codes->size;i++) {
 	/* We print the code, followed if necessary by a warning */
-	u_fprints(semantic_codes->tab[i],out);
-	if (warning_on_code(semantic_codes->tab[i],comment)) {
+	u_fprints(semantic_codes->value[i],out);
+	if (warning_on_code(semantic_codes->value[i],comment)) {
 		u_fprints_char(" ",out);
 		u_fprints(comment,out);
 	}
@@ -178,12 +178,12 @@ for (int i=0;i<semantic_codes->N;i++) {
  * or tabulations.
  */
 u_fprints_char("-----------------------------------------------------\n",out);
-sprintf(tmp,"----  %3d inflectional code%s",inflectional_codes->N,(inflectional_codes->N>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
+sprintf(tmp,"----  %3d inflectional code%s",inflectional_codes->size,(inflectional_codes->size>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
 u_fprints_char(tmp,out);
 u_fprints_char("-----------------------------------------------------\n",out);
-for (int i=0;i<inflectional_codes->N;i++) {
-	u_fprints(inflectional_codes->tab[i],out);
-	if (warning_on_code(inflectional_codes->tab[i],comment)) {
+for (int i=0;i<inflectional_codes->size;i++) {
+	u_fprints(inflectional_codes->value[i],out);
+	if (warning_on_code(inflectional_codes->value[i],comment)) {
 		u_fprints_char(" ",out);
 		u_fprints(comment,out);
 	}

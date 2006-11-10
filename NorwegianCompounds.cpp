@@ -742,7 +742,7 @@ if (!(c&32768)) {
 		/* We don't consider components with a length of 1 */
 		if (word_to_analyze[pos_in_word_to_analyze]=='\0') {
 			/* If we have explored the entire original word */
-			if (get_token_number(current_component,infos->forbidden_words)==-1) {
+			if (get_value_index(current_component,infos->forbidden_words,DONT_INSERT)==NO_VALUE_INDEX) {
 				/* And if we do not have forbidden word in last position */
 				struct list_ustring* l=infos->inf->codes[index];
 				/* We will look at all the INF codes of the last component in order
@@ -830,7 +830,7 @@ if (!(c&32768)) {
 			 * 3) explore the rest of the original word
 			 */
 			if (infos->valid_left_component[index] &&
-				(get_token_number(current_component,infos->forbidden_words)==-1)) {
+				(get_value_index(current_component,infos->forbidden_words,DONT_INSERT)==NO_VALUE_INDEX)) {
 				/* If we have a valid component, we look first if we are
 				 * in the case of a word ending by a double letter like "kupp" */
 				if (pos_in_current_component>2 &&

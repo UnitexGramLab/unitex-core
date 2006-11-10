@@ -436,17 +436,17 @@ if (automate==NULL) {
    // if the loading of the normalization transducer has failed, we return
    return NULL;
 }
-struct string_hash* hash=new_string_hash();
+struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
 // we create the token tree to speed up the consultation
 for (int i=0;i<tok->N;i++) {
-   get_hash_number_without_insert(tok->token[i],hash);
+   get_value_index(tok->token[i],hash);
 }
 struct noeud_arbre_normalization* root=new_noeud_arbre_normalization();
 unichar a[1];
 a[0]='\0';
 explorer_automate_normalization(automate,automate->initial_states[1],root,hash,a,alph);
 free_Fst2(automate);
-free_string_hash_without_insert(hash);
+free_string_hash(hash);
 return root;
 }
 

@@ -448,7 +448,7 @@ for (i=0;i<nombre_noeuds;i++) {
       while (trans!=NULL) {
          if (noeud[trans->indice_noeud_arrivee]->final==0 || noeud[trans->indice_noeud_arrivee]->final==1) {
             // we only consider the transitions that point on a node that will not be removed
-            int indice=get_hash_number(trans->chaine,etiquettes);
+            int indice=get_value_index(trans->chaine,etiquettes);
             u_int_to_string(indice,global);
 
             // the following line is used to write the tag instead of its number

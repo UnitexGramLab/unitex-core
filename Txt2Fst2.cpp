@@ -112,7 +112,7 @@ struct string_hash* etiquettes=new_string_hash();
 // the text automaton that could need this special tag
 unichar epsilon[4];
 u_strcpy_char(epsilon,"<E>");
-get_hash_number(epsilon,etiquettes);
+get_value_index(epsilon,etiquettes);
 struct noeud_dlf_dlc* racine;
 racine=new_noeud_dlf_dlc();
 struct text_tokens* tok;
@@ -197,10 +197,10 @@ while (lire_sentence(buffer,&N,f,tok->SENTENCE_MARKER)) {
 printf("%d sentence%s read\n",numero_phrase-1,(numero_phrase-1)>1?"s":"");
 fclose(f);
 printf("Saving tags...\n");
-for (int i=0;i<etiquettes->N;i++) {
+for (int i=0;i<etiquettes->size;i++) {
   u_fprints_char("%",out);
   unichar tmp[1024];
-  escape(etiquettes->tab[i],tmp,P_SLASH);
+  escape(etiquettes->value[i],tmp,P_SLASH);
   u_fprints(tmp,out);
   u_fprints_char("\n",out);
 }

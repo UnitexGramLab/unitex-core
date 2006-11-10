@@ -191,7 +191,7 @@ numerote_tags(automate,tok,&nombre_patterns,semantic_codes,alph,&existe_etiquett
 
 parameters->pattern_compose_courant=nombre_patterns+1;
 
-parameters->DLC_tree=new_DLC_tree(tok->N);
+parameters->DLC_tree=new_DLC_tree(tok->size);
 struct lemma_node* root=new_lemma_node();
 printf("Loading dlf...\n");
 load_dic_for_locate(dlf,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_etiquette_CDIC,
@@ -259,7 +259,7 @@ Fst2Tag* etiquette=fst2->tags;
 unichar t[2];
 t[0]=' ';
 t[1]='\0';
-parameters->ESPACE=get_token_number(t,tok);
+parameters->ESPACE=get_value_index(t,tok,DONT_INSERT);
 for (i=0;i<fst2->number_of_tags;i++) {
   if (etiquette[i]->control&START_VAR_TAG_BIT_MASK) {
      // case of $a(
@@ -294,8 +294,8 @@ for (i=0;i<fst2->number_of_tags;i++) {
   if (!u_strcmp_char(etiquette[i]->input,"#")) {
     if (etiquette[i]->control&RESPECT_CASE_TAG_BIT_MASK) {
        // on est dans le cas @#: # doit etre considere comme un token normal
-       etiquette[i]->number=get_hash_number(etiquette[i]->input,tok);
-       parameters->token_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
+       etiquette[i]->number=get_value_index(etiquette[i]->input,tok);
+       parameters->token_controle[tok->size]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
        etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
     }
     else {
@@ -309,7 +309,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
      etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
   }
   else  {
-      etiquette[i]->number=get_token_number(etiquette[i]->input,tok);
+      etiquette[i]->number=get_value_index(etiquette[i]->input,tok,DONT_INSERT);
       if ((etiquette[i]->number<0) && u_strcmp_char(etiquette[i]->input,"<")) {
         if (etiquette[i]->input[0]=='<') {
           if (etiquette[i]->input[1]=='!') {
@@ -405,8 +405,8 @@ for (i=0;i<fst2->number_of_tags;i++) {
         else {
           // si l'etiquette n'est pas dans les tokens, on l'y rajoute
           // a cause du feature B.C.
-          etiquette[i]->number=get_hash_number(etiquette[i]->input,tok);
-          parameters->token_controle[tok->N]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
+          etiquette[i]->number=get_value_index(etiquette[i]->input,tok);
+          parameters->token_controle[tok->size]=get_controle(etiquette[i]->input,alph,NULL,tokenization_mode);
           etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
         }
       } else {
@@ -435,7 +435,7 @@ if (is_letter(s[0],alph)) {
   c=(unsigned char)(c|MOT_TOKEN_BIT_MASK);
   // if a token is a word, we check if it is in the 'err' word list
   // in order to answer the question <!DIC>
-  if (err!=NULL && get_token_number(s,err)!=-1) {
+  if (err!=NULL && get_value_index(s,err,DONT_INSERT)!=-1) {
      c=(unsigned char)(c|NOT_DIC_TOKEN_BIT_MASK);
   }
   if (is_upper(s[0],alph)) {
@@ -519,7 +519,7 @@ return 0;
 // renvoie 1 si s est une categorie grammaticale, 0 sinon
 //
 int est_categorie_grammaticale(unichar* s,struct string_hash* semantic_codes) {
-if (get_token_number(s,semantic_codes)!=-1) {
+if (get_value_index(s,semantic_codes,DONT_INSERT)!=-1) {
    return 1;
 }
 return 0;
@@ -644,9 +644,9 @@ pattern[j]='\0';
 
 void compute_token_controls(struct string_hash* tok,Alphabet* alph,char* err,int tokenization_mode,
                             struct locate_parameters* parameters) {
-struct string_hash* ERR=load_word_list(err);
-for (int i=0;i<tok->N;i++) {
-   parameters->token_controle[i]=get_controle(tok->tab[i],alph,ERR,tokenization_mode);
+struct string_hash* ERR=load_string_list(err);
+for (int i=0;i<tok->size;i++) {
+   parameters->token_controle[i]=get_controle(tok->value[i],alph,ERR,tokenization_mode);
 }
 free_string_hash(ERR);
 }
