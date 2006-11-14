@@ -48,9 +48,8 @@ res->token=(unichar**)malloc((res->N)*sizeof(unichar*));
 unichar tmp[1000];
 res->SENTENCE_MARKER=-1;
 int i=0;
-while (u_read_line(f,tmp)) {
-  res->token[i]=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(tmp)));
-  u_strcpy(res->token[i],tmp);
+while (EOF!=u_read_line(f,tmp)) {
+  res->token[i]=u_strdup(tmp);
   if (!u_strcmp_char(tmp,"{S}")) {
      res->SENTENCE_MARKER=i;
   } else if (!u_strcmp_char(tmp," ")) {
@@ -78,8 +77,8 @@ NUMBER_OF_TEXT_TOKENS=u_read_int(f)+100000; // the +100000 is used to prevent th
 struct string_hash* res;
 res=new_string_hash(NUMBER_OF_TEXT_TOKENS);
 unichar tmp[1000];
-while (u_read_line(f,tmp)) {
-  get_value_index(tmp,res);
+while (EOF!=u_read_line(f,tmp)) {
+   get_value_index(tmp,res);
 }
 u_fclose(f);
 return res;
@@ -101,7 +100,7 @@ struct string_hash* res;
 res=new_string_hash(NUMBER_OF_TEXT_TOKENS);
 unichar tmp[1000];
 int x;
-while (u_read_line(f,tmp)) {
+while (EOF!=u_read_line(f,tmp)) {
    x=get_value_index(tmp,res);
    if (!u_strcmp_char(tmp,"{S}")) {
       (*SENTENCE_MARKER)=x;

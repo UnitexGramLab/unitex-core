@@ -644,7 +644,7 @@ pattern[j]='\0';
 
 void compute_token_controls(struct string_hash* tok,Alphabet* alph,char* err,int tokenization_mode,
                             struct locate_parameters* parameters) {
-struct string_hash* ERR=load_string_list(err);
+struct string_hash* ERR=load_key_list(err);
 for (int i=0;i<tok->size;i++) {
    parameters->token_controle[i]=get_controle(tok->value[i],alph,ERR,tokenization_mode);
 }

@@ -115,6 +115,7 @@ void u_char_to_hexa(unichar,unichar*);
 void u_char_to_hexa_or_code(unichar,unichar*);
 void u_int_to_string(int,unichar*);
 int u_read_line(FILE*,unichar*);
+int u_read_line2(FILE*,unichar*);
 int only_spaces(unichar*);
 void u_reverse_string(unichar*);
 int u_strlen_thai_without_diacritic(unichar*);

@@ -345,7 +345,7 @@ get_flexion_form(FILE *f,FILE *fout)
 	readLine[0] = 0;
 	lineCnt = 0;
 	curLineTemp = readLine;
-	while (u_read_line(f,(unichar *)readLine)){
+	while (EOF!=u_read_line(f,(unichar *)readLine)){
 		lineCnt++;
 
 

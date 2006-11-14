@@ -81,7 +81,7 @@ if (f==NULL) {
    return;
 }
 /* We parse all the lines */
-while (u_read_line(f,line)) {
+while (EOF!=u_read_line(f,line)) {
    if (line[0]=='/') {
       /* NOTE: DLF and DLC files are not supposed to contain comment
        *       lines, but we test them, just in the case */

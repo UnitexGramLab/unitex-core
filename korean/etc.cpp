@@ -382,7 +382,7 @@ loadChangeFileToTable(char *f)
 	int srcIdx;
 	unichar UtempLine[256];
 	converTableInit();
-	while(u_read_line(lf,(unichar *)UtempLine)){
+	while(EOF!=u_read_line(lf,(unichar *)UtempLine)){
 		idx = 0;
 		if(UtempLine[idx] == ' ') continue;
 		srcIdx = (int)UtempLine[idx++];

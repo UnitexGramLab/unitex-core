@@ -531,7 +531,7 @@ unichar line[10000];
 printf("Analysing norwegian unknown words...\n");
 int n=0;
 /* We read each line of the unknown word list and we try to analyze it */
-while (u_read_line(infos->unknown_word_list,line)) {
+while (EOF!=u_read_line(infos->unknown_word_list,line)) {
   if (!analyse_norwegian_word(line,infos)) {
      /* If the analysis has failed, we store the word in the
       * new unknown word file */

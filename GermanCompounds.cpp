@@ -191,7 +191,7 @@ debug_file=debug;
 result_file=result;
 printf("Analysing german unknown words...\n");
 int n=0;
-while (u_read_line(words,s)) {
+while (EOF!=u_read_line(words,s)) {
   if (!analyse_german_word(s)) {
      // if the analysis has failed, we store the word in the new unknown word file
      u_fprints(s,new_unknown_words);

@@ -66,7 +66,6 @@ extern unichar* P_DOT_PLUS_SLASH_BACKSLASH;
 
 int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars,
                  unichar* forbidden_chars,unichar* chars_to_keep_protected);
-
 int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars);
 int escape(unichar*,unichar*,unichar*);
 

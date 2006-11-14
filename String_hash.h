@@ -34,7 +34,7 @@
 #define NO_VALUE_INDEX -1
 #define DONT_USE_VALUES -1
 
-#define INSERT_IF_NEED 0
+#define INSERT_IF_NEEDED 0
 #define DONT_INSERT 1
 
 
@@ -91,7 +91,9 @@ void free_string_hash(struct string_hash*);
 int get_value_index(unichar*,struct string_hash*,int,unichar*);
 int get_value_index(unichar*,struct string_hash*,int);
 int get_value_index(unichar*,struct string_hash*);
-struct string_hash* load_string_list(char*);
+struct string_hash* load_key_list(char*);
+struct string_hash* load_key_value_list(char*,unichar);
 void dump_values(FILE*,struct string_hash*);
+int get_longest_key_index(unichar*,int*,struct string_hash*);
 
 #endif

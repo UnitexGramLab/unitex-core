@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 #include "String_hash.h"
 #include "Error.h"
+#include "StringParsing.h"
 //---------------------------------------------------------------------------
 
 
@@ -259,22 +260,102 @@ return get_value_index_(key,0,hash->root,hash,insert_policy,key);
  * In that case, the key itself will be used as value.
  */
 int get_value_index(unichar* key,struct string_hash* hash) {
-return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEED,key);
+return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
 }
 
 
 /**
  * Loads the lines of a text file info a string_hash and returns it, or NULL
  * if the file can not be opened. We arbitrary fix the limit of a line to 4096
- * characters.
+ * characters. For each line, we ignore the carridge return, if any, and we use
+ * the remaining string as key and value. An error message will be printed if
+ * an empty line is found.
  */
-struct string_hash* load_string_list(char* name) {
+struct string_hash* load_key_list(char* name) {
 FILE* f=u_fopen(name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash();
 unichar temp[4096];
-while (u_read_line(f,temp)) {
-   get_value_index(temp,hash);
+while (EOF!=u_read_line(f,temp)) {
+   if (temp[0]=='\0') {
+      error("Empty line in %s\n",name);
+   } else {
+      get_value_index(temp,hash);
+   }
+}
+u_fclose(f);
+return hash;
+}
+
+
+/**
+ * Loads the lines of a text file info a string_hash and returns it, or NULL
+ * if the file can not be opened. We arbitrary fix the limit of a line to 4096
+ * characters. Each line is splitted into a key and a value, according to a
+ * given separator character. An error message will be printed if a line does not
+ * contain the separator character, if an empty line is found, or if a line contains
+ * an empty key. In case of empty values, the empty string will be used.
+ * Note that keys and values can contain characters protected with the \ character,
+ * including protected new lines like:
+ * 
+ * 123\
+ * =ONE_TWO_THREE_NEW_LINE
+ * 
+ */
+struct string_hash* load_key_value_list(char* name,unichar separator) {
+FILE* f=u_fopen(name,U_READ);
+if (f==NULL) return NULL;
+struct string_hash* hash=new_string_hash();
+unichar temp[4096];
+unichar key[4096];
+unichar value[4096];
+/* We build a string with the separator character */
+unichar stop[2];
+stop[0]=separator;
+stop[1]='\0';
+int code;
+while (EOF!=(code=u_read_line2(f,temp))) {
+   if (code==0) {
+      error("Empty line\n");
+   }
+   else {
+      /* First, we try to read a non empty key */
+      int pos=0;
+      code=parse_string(temp,&pos,key,stop);
+      if (code==P_BACKSLASH_AT_END) {
+         error("Backslash at end of line:\n");
+         error(temp);
+         error("\n");
+      }
+      else if (temp[pos]=='\0') {
+         /* If there is no separator */
+         error("Line with no separator:\n");
+         error(temp);
+         error("\n");
+      }
+      else if (pos==0) {
+         /* If the line starts with the separator */
+         error("Line with empty key:\n");
+         error(temp);
+         error("\n");
+      }
+      else {
+         /* We jump over the separator */
+         pos++;
+         /* We initialize 'value' with the empty string in case it is not
+          * defined in the file */
+         value[0]='\0';
+         if(P_BACKSLASH_AT_END==parse_string(temp,&pos,value,P_EMPTY)) {
+            error("Backslash at end of line:\n");
+            error(temp);
+            error("\n");
+         }
+         else {
+            /* If we have a valid (key,value) pair, we insert it into the string_hash */
+            get_value_index(key,hash,INSERT_IF_NEEDED,value);
+         }
+      }
+   }
 }
 u_fclose(f);
 return hash;
@@ -296,5 +377,53 @@ for (int i=0;i<hash->size;i++) {
    u_fprints(hash->value[i],f);
    u_fprints_char("\n",f);
 }
+}
+
+
+/**
+ * This function explores the string 's' in order to find the longest prefix that is a key
+ * in the string_hash. 'pos' is the current position in 's'. 'node' is the current node
+ * in the string_hash tree.
+ */
+int get_longest_key_index_(unichar* s,int pos,int *key_length,struct string_hash_tree_node* node) {
+int index=-1;
+if (node->value_index!=NO_VALUE_INDEX) {
+   /* If we have a key, we check if its length is greater than the previous one, if any */
+   if (pos>(*key_length)) {
+      /* If the key is the longest one we have found, we update the index, but we
+       * don't return, since we must look for longer keys */
+      index=node->value_index;
+      (*key_length)=pos;
+   }
+}
+if (s[pos]=='\0') {
+   /* If there is nothing more in the string, we must return */
+   return index;
+}
+/* If we are not at the end of 's', we look for the transition to follow */
+struct string_hash_tree_transition* t=get_transition(s[pos],node->trans);
+if (t==NULL) {
+   /* If there is none, we must return */
+   return index;
+}
+/* If there is one, we look for a longer key */
+int new_index=get_longest_key_index_(s,pos+1,key_length,t->node);
+if (new_index!=NO_VALUE_INDEX) {
+   /* If we have found a key, it is necessary a longer key, so we prefer it
+    * to the previous one, if any */
+   return new_index;
+}
+return index;
+}
+
+
+/**
+ * This function looks in the string 's' for the longest prefix that is a key
+ * in the given string_hash, and returns its value index, or NO_VALUE_INDEX if
+ * no key matches. If a key is found, its length is returned in 'key_length'.
+ */
+int get_longest_key_index(unichar* s,int *key_length,struct string_hash* hash) {
+(*key_length)=0;
+return get_longest_key_index_(s,0,key_length,hash->root);
 }
 

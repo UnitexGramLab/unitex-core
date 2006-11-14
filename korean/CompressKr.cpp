@@ -273,7 +273,7 @@ read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname)
 	if(!(f=u_fopen(fname,U_READ)))	fopenErrMessage(fname);
 	cfilename = fname;
 	printf("Read File %s\n",fname);
-	while(u_read_line(f,UtempBuff)){
+	while(EOF!=u_read_line(f,UtempBuff)){
 		if( (UtempBuff[0] == '\0') ||( UtempBuff[0] == ' '))
 			continue; // comment line
 		heads = 0; u_strcpy(RLine,UtempBuff);

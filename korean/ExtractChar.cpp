@@ -99,7 +99,7 @@ setBufferMode();
 	
 	unsigned short  *wp,*wwp;
 	int ii;
-    while(u_read_line(ifile,tempBuff)){
+    while(EOF!=u_read_line(ifile,tempBuff)){
 	    wp = (unsigned short *)tempBuff;
 	    if((*wp != '\0') && (*wp != ' ')){
              for (ii = 0; *wp && (*wp != ',');ii++)

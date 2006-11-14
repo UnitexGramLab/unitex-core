@@ -85,7 +85,7 @@ struct string_hash* forbiddenWords=NULL;
 if (!strcmp(argv[1],"NORWEGIAN")) {
    get_path(argv[3],temp);
    strcat(temp,"ForbiddenWords.txt");
-   forbiddenWords=load_string_list(temp);
+   forbiddenWords=load_key_list(temp);
 }
 printf("Loading BIN file...\n");
 unsigned char* bin=load_BIN_file(argv[3]);

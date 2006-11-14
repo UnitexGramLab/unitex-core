@@ -1544,7 +1544,7 @@ public:
 		int lidx;
 		unichar *num;
 		lidx = 1;
-		while(u_read_line(lf,(unichar *)UtempBuff)){
+		while(EOF!=u_read_line(lf,(unichar *)UtempBuff)){
 			num = UtempBuff;
 			while(*num != ' '){
 				if(*num == 0) exitMessage("Illegal autolist file");
@@ -1578,7 +1578,7 @@ public:
 		}
 		SUF.put(assignUstring(u_epsilon_string),0);
 		lidx = 1;
-		while(u_read_line(lf,(unichar*)UtempBuff)){
+		while(EOF!=u_read_line(lf,(unichar*)UtempBuff)){
 			SUF_tmp[lidx].szStr = u_strlen(UtempBuff) +1;
 			SUF_tmp[lidx].name = new unichar[SUF_tmp[lidx].szStr+1];
 			u_strcpy(SUF_tmp[lidx].name,UtempBuff);
@@ -1642,7 +1642,7 @@ printf("%s %x\n",getUtoChar(SUF_tmp[i].name),save_inf_offset);
 		NINF.put(assignUstring(u_epsilon_string),(void *)save_inf_offset);
 		save_inf_offset += 4;	// length of epsilon
 		int cidx = 0;
-		while(u_read_line(lf,(unichar*)UtempBuff)){
+		while(EOF!=u_read_line(lf,(unichar*)UtempBuff)){
 			newInfTable[cidx] = makeNewINF(UtempBuff,rsFlag);
 			if(!newInfTable[cidx]) exitMessage("illegal reference value");
 			cidx++;

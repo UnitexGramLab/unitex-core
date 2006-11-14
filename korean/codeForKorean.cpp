@@ -206,7 +206,7 @@ convert_windows949kr_uni::loadHJAMap(char *f)
 	
 	loadHJAConvMap = (unichar *)malloc( sizeof(unichar)*0x10000);
 	for(idx = 0; idx < 0x10000;idx++) loadHJAConvMap[idx] = 0;
-	while(u_read_line(lf,(unichar *)UtempLine)){
+	while(EOF!=u_read_line(lf,(unichar *)UtempLine)){
 		idx = 0;
 		if(UtempLine[idx] == (unichar)' ') continue;
 		srcIdx = getValueIdx(UtempLine,idx);

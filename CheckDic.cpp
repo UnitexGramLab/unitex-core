@@ -98,7 +98,7 @@ struct string_hash* inflectional_codes=new_string_hash();
 /*
  * We read all the lines and check them.
  */
-while (u_read_line(dic,line)) {
+while (EOF!=u_read_line(dic,line)) {
 	if (line[0]=='\0') {
 		/* If we have an empty line, we print a unicode error message
 		 * into the output file */

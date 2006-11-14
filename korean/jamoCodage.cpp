@@ -140,7 +140,7 @@ jamoCodage::loadJamoMap(char *mfName)
 
 		
 		if(f){
-          if(!u_read_line(f,(unichar *)buff)) break;
+          if(EOF==u_read_line(f,(unichar *)buff)) break;
 		} else{
           if(*rp == 0) break;
           while(*rp != '\n') line[rsz++] = *rp++;

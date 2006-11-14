@@ -48,7 +48,7 @@ int current_beginning,current_end,RESULT;
 struct liste_matches* l=load_match_list(concord,&i);
 current_end=-1;
 
-struct buffer* buffer=new_buffer(MAX_TOKENS_BY_SENTENCE);
+struct buffer* buffer=new_buffer(MAX_TOKENS_BY_SENTENCE,INTEGER_BUFFER);
 read_one_sentence(buffer,snt,tokens,&N_TOKENS_READ);
 printf("Extracting %smatching units...\n",extract_matching_units?"":"un");
 while (buffer->size!=0) {
@@ -58,7 +58,7 @@ while (buffer->size!=0) {
    if ((RESULT && extract_matching_units) || (!RESULT && !extract_matching_units)) {
       /* if we must print this sentence, we print it */
       for (i=0;i<buffer->size;i++) {
-         u_fprints(tokens->token[buffer->buffer[i]],result);
+         u_fprints(tokens->token[buffer->int_buffer[i]],result);
       }
       u_fprints_char("\n",result);
    }
@@ -85,7 +85,7 @@ int i=0;
 int t=-15;
 int res=-15;
 while ((res=fread(&t,sizeof(int),1,text)) && (t!=tok->SENTENCE_MARKER) && (i!=MAX_TOKENS_BY_SENTENCE)) {
-   buffer->buffer[i++]=t;
+   buffer->int_buffer[i++]=t;
 }
 if (i==MAX_TOKENS_BY_SENTENCE) {
    error("Sentence too long to be entirely displayed\n");
@@ -97,7 +97,7 @@ if (i==MAX_TOKENS_BY_SENTENCE) {
    return;
 }
 if (res!=0 && t==tok->SENTENCE_MARKER && i!=MAX_TOKENS_BY_SENTENCE) {
-    buffer->buffer[i++]=t;
+    buffer->int_buffer[i++]=t;
 }
 buffer->size=i;
 (*N_TOKENS_READ)=i;

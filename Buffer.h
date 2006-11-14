@@ -22,21 +22,35 @@
 #ifndef BufferH
 #define BufferH
 
+#include "unicode.h"
 
 /**
- * This structure represents an integer buffer, with its maximum capacity and
+ * This enumeration describes the possible kind of buffers.
+ */
+enum buffer_type_ {
+   INTEGER_BUFFER,
+   UNICHAR_BUFFER
+};
+typedef enum buffer_type_ BufferType;
+
+/**
+ * This structure represents a buffer of integer or unichar, with its maximum capacity and
  * its actual size. The 'end_of_file' field is set to 1 when no data can be
  * read from the input file.
  */
 struct buffer {
+   BufferType type;
 	int MAXIMUM_BUFFER_SIZE;
-	int* buffer;
+   union {
+	   int* int_buffer;
+      unichar* unichar_buffer;
+   };
 	int size;
    int end_of_file;
 };
 
 
-struct buffer* new_buffer(int);
+struct buffer* new_buffer(int,BufferType);
 void free_buffer(struct buffer*);
 void fill_buffer(struct buffer*,int,FILE*);
 void fill_buffer(struct buffer*,FILE*);

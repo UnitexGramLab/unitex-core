@@ -46,6 +46,7 @@ unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup_char(".+/\\");
 
 /**
  * Returns 1 if 'c' is in the string 'array'; 0 otherwise.
+ * Note that the array must be non NULL.
  */
 int is_in_array(unichar c,unichar* array) {
 for (int i=0;array[i]!='\0';i++) {
@@ -63,7 +64,8 @@ return 0;
  * Note that forbidden chars and stop_chars will be taken into account if and only
  * if they are not protected. The intersection between 'stop_chars' and 'forbidden_chars'
  * is supposed to be empty. If not, 'stop_chars' is considered first. '*ptr' is updated.
- * If an error occurs, it returns an error code; otherwise, the substring obtained
+ * If an error occurs, a \0 is put at the end of the result and the function 
+ * returns an error code; otherwise, the substring obtained
  * is stored in 'result' and P_OK is returned.
  * If 's' is empty, the function returns P_EOS.
  * 
@@ -79,6 +81,7 @@ while (s[*ptr]!='\0') {
       /* If there is a protection character (backslash) */
       if (s[(*ptr)+1]=='\0') {
          /* It must not appear at the end of the string */
+         result[j]='\0';
          return P_BACKSLASH_AT_END;
       }
       if (chars_to_keep_protected==NULL || is_in_array(s[(*ptr)+1],chars_to_keep_protected)) {
@@ -96,6 +99,7 @@ while (s[*ptr]!='\0') {
       }
       if (is_in_array(s[*ptr],forbidden_chars)) {
          /* If it is a forbidden char, it's an error */
+         result[j]='\0';
          return P_FORBIDDEN_CHAR;
       }
       /* If it's a normal char, we copy it */

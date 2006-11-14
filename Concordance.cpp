@@ -414,19 +414,19 @@ int jump_size=((start_pos-MAX_CONTEXT_IN_UNITS)-(*n_units_already_read));
 fseek(text,(*n_units_already_read)*sizeof(int),SEEK_SET);
 /* And we read ((start_pos-MAX_CONTEXT_IN_UNITS)-*n_units_already_read) integers */
 while (jump_size!=0) {
-	buffer->size=fread(buffer->buffer,sizeof(int),(jump_size>=buffer->MAXIMUM_BUFFER_SIZE)?buffer->MAXIMUM_BUFFER_SIZE:jump_size,text);
+	buffer->size=fread(buffer->int_buffer,sizeof(int),(jump_size>=buffer->MAXIMUM_BUFFER_SIZE)?buffer->MAXIMUM_BUFFER_SIZE:jump_size,text);
 	jump_size=jump_size-buffer->size;
 	for (int i=0;i<buffer->size;i++) {
 		/* We update the current position in characters */
-		current_origin_in_chars=current_origin_in_chars+token_length[buffer->buffer[i]];
+		current_origin_in_chars=current_origin_in_chars+token_length[buffer->int_buffer[i]];
 		/* And the current sentence number */
-		if (buffer->buffer[i]==tokens->SENTENCE_MARKER) {(*current_sentence)++;}
+		if (buffer->int_buffer[i]==tokens->SENTENCE_MARKER) {(*current_sentence)++;}
 	}
 }
 /* Finally, we update '*n_units_already_read' */
 (*n_units_already_read)=start_pos-MAX_CONTEXT_IN_UNITS;
 /* And we fill the buffer with the integers that we need */
-buffer->size=fread(buffer->buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+buffer->size=fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 }
 
 
@@ -458,8 +458,8 @@ int count=0;
 left[option.left_context]='\0';
 /* We must start on the left of the match */
 pos--;
-int l=token_length[buffer->buffer[pos]]-1;
-unichar* s=tokens->token[buffer->buffer[pos]];
+int l=token_length[buffer->int_buffer[pos]]-1;
+unichar* s=tokens->token[buffer->int_buffer[pos]];
 /* We look for every token, until we have the correct number of displayable
  * characters. */
 while (pos>=0 && count<option.left_context) {
@@ -472,13 +472,13 @@ while (pos>=0 && count<option.left_context) {
 	if (l<0) {
 		/* If we must change of token */
 		if (option.left_context_until_eos
-                    && !u_strcmp_char(tokens->token[buffer->buffer[pos]],"{S}"))
+                    && !u_strcmp_char(tokens->token[buffer->int_buffer[pos]],"{S}"))
                   break; /* token was "{S}" */
 		pos--;
 		if (pos>=0) {
 			/* And if we can, i.e. we are not at the beginning of the text */
-			l=token_length[buffer->buffer[pos]]-1;
-			s=tokens->token[buffer->buffer[pos]];
+			l=token_length[buffer->int_buffer[pos]]-1;
+			s=tokens->token[buffer->int_buffer[pos]];
 		}
 	}
 }
@@ -516,7 +516,7 @@ if (output==NULL) {
 	j=0;
 	for (int i=start_pos;i<=end_pos;i++) {
 		k=0;
-		s=tokens->token[buffer->buffer[i]];
+		s=tokens->token[buffer->int_buffer[i]];
 		while (s[k]!='\0') {
 			middle[j++]=s[k++];
 		}
@@ -556,7 +556,7 @@ int count=0;
 /* We must start after the last token of the matched sequence */
 pos++;
 int l=0;
-unichar* s=tokens->token[buffer->buffer[pos]];
+unichar* s=tokens->token[buffer->int_buffer[pos]];
 while (pos<buffer->size && count<right_context_length) {
 	right[i]=s[l++];
 	if (!option.thai_mode || !u_is_to_be_ignored_thai(right[i])) count++;
@@ -564,13 +564,13 @@ while (pos<buffer->size && count<right_context_length) {
 	if (s[l]=='\0') {
 		/* If we must change of token */
 		if (option.right_context_until_eos
-                    && !u_strcmp_char(tokens->token[buffer->buffer[pos]],"{S}"))
+                    && !u_strcmp_char(tokens->token[buffer->int_buffer[pos]],"{S}"))
                   break; /* token was "{S}" */
 		pos++;
 		if (pos<buffer->size) {
 			/* And if we can */
 			l=0;
-			s=tokens->token[buffer->buffer[pos]];
+			s=tokens->token[buffer->int_buffer[pos]];
 		}
 	}
 }
@@ -612,8 +612,8 @@ int op=0;
 int cl=0;
 /* First, we look for [[ or ]] */
 while (i<buffer->size && op!=2 && cl!=2) {
-	if (buffer->buffer[i]==open_bracket) {op++;cl=0;}
-	else if (buffer->buffer[i]==close_bracket) {cl++;op=0;}
+	if (buffer->int_buffer[i]==open_bracket) {op++;cl=0;}
+	else if (buffer->int_buffer[i]==close_bracket) {cl++;op=0;}
 	else {op=0;cl=0;}
 	i++;
 }
@@ -627,11 +627,11 @@ if (op!=2) {
 	return 1;
 }
 /* We concatenate all the tokens we find before ]] */
-while (i+1<buffer->size && (buffer->buffer[i]!=close_bracket || buffer->buffer[i+1]!=close_bracket)) {
-	u_strcat(href,tokens->token[buffer->buffer[i]]);
+while (i+1<buffer->size && (buffer->int_buffer[i]!=close_bracket || buffer->int_buffer[i+1]!=close_bracket)) {
+	u_strcat(href,tokens->token[buffer->int_buffer[i]]);
 	i++;
 }
-if (buffer->buffer[i]!=close_bracket || buffer->buffer[i+1]!=close_bracket) {
+if (buffer->int_buffer[i]!=close_bracket || buffer->int_buffer[i+1]!=close_bracket) {
 	/* If we don't find ]], we empty href */
 	href[0]='\0';
 }
@@ -719,13 +719,13 @@ int start_pos,end_pos;
 int n_units_already_read=0;
 int current_origin_in_chars=0;
 /* First, we allocate a buffer to read the "text.cod" file */
-struct buffer* buffer=new_buffer(1000000);
+struct buffer* buffer=new_buffer(1000000,INTEGER_BUFFER);
 printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
 matches=load_match_list(concordance,NULL);
 /* Then we fill the buffer with the beginning of the text */
-buffer->size=fread(buffer->buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+buffer->size=fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 int start_pos_char;
 int end_pos_char;
 int current_sentence=0;
@@ -758,8 +758,8 @@ while (matches!=NULL) {
 	 * many characters there are before buffer[start_pos]. We update
 	 * the sentence number in the same way. */
 	for (int z=position_in_tokens;z<start_pos;z++) {
-		start_pos_char=start_pos_char+token_length[buffer->buffer[z]];
-		if (buffer->buffer[z]==tokens->SENTENCE_MARKER) {
+		start_pos_char=start_pos_char+token_length[buffer->int_buffer[z]];
+		if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
 			current_sentence_local++;
 		}
 	}
@@ -768,7 +768,7 @@ while (matches!=NULL) {
 	end_pos_char=start_pos_char;
 	/* We update 'end_pos_char' in the same way */
 	for (int z=start_pos;z<=end_pos;z++) {
-		end_pos_char=end_pos_char+token_length[buffer->buffer[z]];
+		end_pos_char=end_pos_char+token_length[buffer->int_buffer[z]];
 	}
 	/* Now we extract the 3 parts of the concordance */
 	extract_left_context(start_pos,left,tokens,option,token_length,buffer);
@@ -893,7 +893,7 @@ while (pos_in_enter_pos < n_enter_char) {
 	}
 }
 /* The token to print is not a new line, so we print it and return */
-u_fprints(tokens->token[buffer->buffer[offset_in_buffer]],output);
+u_fprints(tokens->token[buffer->int_buffer[offset_in_buffer]],output);
 return pos_in_enter_pos;
 }
 
@@ -913,7 +913,7 @@ fseek(text,address,SEEK_SET);
 while ((match_start-current_global_position) > buffer->MAXIMUM_BUFFER_SIZE) {
 	/* If the distance between current position and final position is larger than
 	 * the buffer size, then we read a full buffer. */
-	fread(buffer->buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+	fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 	for (address=0;address<buffer->MAXIMUM_BUFFER_SIZE;address++) {
 		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
 										n_enter_char,enter_pos,pos_in_enter_pos,
@@ -921,7 +921,7 @@ while ((match_start-current_global_position) > buffer->MAXIMUM_BUFFER_SIZE) {
 	}
 	current_global_position=current_global_position+buffer->MAXIMUM_BUFFER_SIZE;
 }
-buffer->size=fread(buffer->buffer,sizeof(int),(match_start-current_global_position),text);
+buffer->size=fread(buffer->int_buffer,sizeof(int),(match_start-current_global_position),text);
 for (address=0;address<buffer->size;address++) {
 	pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
 									n_enter_char,enter_pos,pos_in_enter_pos,
@@ -941,7 +941,7 @@ int move_to_end_of_text_with_writing(FILE* text,struct text_tokens* tokens,
 									struct buffer* buffer) {
 long int address=current_global_position*sizeof(int);
 fseek(text,address,SEEK_SET);
-while (0!=(buffer->size = fread(buffer->buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text))) {
+while (0!=(buffer->size = fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text))) {
 	for (address=0;address<buffer->size;address++) {
 		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
 										n_enter_char,enter_pos,pos_in_enter_pos,buffer);
@@ -974,7 +974,7 @@ struct liste_matches* matches;
 struct liste_matches* matches_tmp;
 int current_global_position=0;
 /* We allocate a buffer to read the tokens of the text */
-struct buffer* buffer=new_buffer(1000000);
+struct buffer* buffer=new_buffer(1000000,INTEGER_BUFFER);
 /* We load the match list */
 matches=load_match_list(concordance,NULL);
 int pos_in_enter_pos=0;

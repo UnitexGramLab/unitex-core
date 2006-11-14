@@ -137,7 +137,7 @@ if (f==NULL) {
 }
 printf("Loading %s...\n",nom);
 unichar ligne[1000];
-while (u_read_line(f,ligne)) {
+while (EOF!=u_read_line(f,ligne)) {
    struct dela_entry* entry=tokenize_DELAF_line(ligne,1);
    inserer_dans_arbre_dlf_dlc(entry,racine);
    free_dela_entry(entry);

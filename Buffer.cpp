@@ -27,16 +27,32 @@
 
 /**
  * Allocates, initializes and returns a new buffer of the given capacity.
- * Its size is initialized to 0.
+ * Its size is initialized to 0. Its type (integer or unichar) is specified by
+ * the 'type' parameter.
  */
-struct buffer* new_buffer(int capacity) {
+struct buffer* new_buffer(int capacity,BufferType type) {
 struct buffer* buffer=(struct buffer*)malloc(sizeof(struct buffer));
 if (buffer==NULL) {
 	fatal_error("Not enough memory in new_buffer\n");
 }
-buffer->buffer=(int*)malloc(sizeof(int)*capacity);
-if (buffer->buffer==NULL) {
-	fatal_error("Not enough memory in new_buffer\n");
+buffer->type=type;
+switch (type) {
+   case INTEGER_BUFFER: 
+      buffer->int_buffer=(int*)malloc(sizeof(int)*capacity);
+      if (buffer->int_buffer==NULL) {
+         fatal_error("Not enough memory in new_buffer\n");
+      }
+      break;
+   case UNICHAR_BUFFER: 
+      /* In case of a unichar buffer, we add 1 to the size in order to store a \0,
+       * even if the buffer is full. This precaution is useful in order to
+       * do string parsing in a unichar buffer, avoiding the risk of an out of
+       * bounds error */
+      buffer->unichar_buffer=(unichar*)malloc(sizeof(unichar)*(capacity+1));
+      if (buffer->unichar_buffer==NULL) {
+         fatal_error("Not enough memory in new_buffer\n");
+      }
+      break; /* Useless, except if we add something in the future... */
 }
 buffer->MAXIMUM_BUFFER_SIZE=capacity;
 buffer->size=0;
@@ -50,7 +66,10 @@ return buffer;
  */
 void free_buffer(struct buffer* buffer) {
 if (buffer==NULL) return;
-free(buffer->buffer);
+switch (buffer->type) {
+   case INTEGER_BUFFER: free(buffer->int_buffer); break;
+   case UNICHAR_BUFFER: free(buffer->unichar_buffer); break;
+}
 free(buffer);
 }
 
@@ -81,15 +100,34 @@ free(buffer);
  * ------------------------------------------------------------------------------
  */
 void fill_buffer(struct buffer* buffer,int pos,FILE* f) {
-int* array=buffer->buffer;
-for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
-  /* First, we copy the end of the buffer at the beginning */
-  array[i-pos]=array[i];
+int new_position;
+int n_element_read;
+switch (buffer->type) {
+   case INTEGER_BUFFER: {
+      int* array=buffer->int_buffer;
+      for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
+        /* First, we copy the end of the buffer at the beginning */
+        array[i-pos]=array[i];
+      }
+      new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
+      n_element_read=fread(&(array[new_position]),sizeof(int),pos,f);
+      break;
+   }
+   case UNICHAR_BUFFER: {
+      unichar* array=buffer->unichar_buffer;
+      for (int i=pos;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
+        /* First, we copy the end of the buffer at the beginning */
+        array[i-pos]=array[i];
+      }
+      new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
+      n_element_read=fread(&(array[new_position]),sizeof(unichar),pos,f);
+      /* We add an extra \0 in order for string parsing reasons */
+      array[new_position+n_element_read]='\0';
+      break;
+   }
 }
-int new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
-int n_int_read=fread(&(array[new_position]),sizeof(int),pos,f);
-buffer->end_of_file=(n_int_read==0);
-buffer->size=new_position+n_int_read;
+buffer->size=new_position+n_element_read;
+buffer->end_of_file=(n_element_read==0) || (buffer->size<buffer->MAXIMUM_BUFFER_SIZE);
 }
 
 

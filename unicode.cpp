@@ -637,21 +637,67 @@ return value;
 
 
 
-//
-// reads a line and save it in res
-//
-int u_read_line(FILE* f,unichar* res) {
+/**
+ * Reads from the file 'f' until it finds the end of line '\n' or
+ * the end of file. The characters read are written in 'line'. The
+ * function returns EOF if the current position in the file is at the
+ * end of file; otherwise, it returns the number of characters read, possibly
+ * 0 if there is an empty line.
+ */
+int u_read_line(FILE* f,unichar* line) {
 int c;
 int i=0;
 while ((c=u_fgetc(f))!=EOF && c!='\n') {
-  res[i++]=(unichar)c;
+   line[i++]=(unichar)c;
 }
 if (i==0 && c==EOF) {
-  // case of an end of file
-  return 0;
+   /* If we are at the end of file */
+   return EOF;
 }
-res[i]='\0';
-return 1;
+line[i]='\0';
+return i;
+}
+
+
+
+/**
+ * This function acts exactly as 'u_read_line' does, except that 
+ * it stops at an end of line if and only if it is not protected by
+ * a backslash. It returns the length of 'line'.
+ * Example:
+ * 
+ * abcde\
+ * ef
+ * 
+ * will lead to a string like: a b c d e \ \n e f
+ */
+int u_read_line2(FILE* f,unichar* line) {
+int pos,length;
+if (EOF==(pos=u_read_line(f,line))) {
+   /* If we are at the end of file, then we return EOF */
+   return EOF;
+}
+if (pos==0) {
+   /* If we have read an empty line, there is nothing more to do */
+   return 0;
+}
+length=pos;
+/* Otherwise, we check if the line we have just read is ended by a backslash.
+ * In that case, we add a \n to it and we read another line. */
+while (line[length-1]=='\\') {
+   /* We try to read another line. We try to store it at &(line[length]),
+    * because, if we can read such a line, we will have to replace the
+    * backslash by a \n */
+   pos=u_read_line(f,&(line[length]));
+   if (pos==EOF) {
+      /* If we cannot read another line, we return the current length */
+      return length;
+   }
+   /* Otherwise, we put a \n before the line we have just read, and we update the length */
+   line[length-1]='\n';
+   length=length+pos;
+}
+return length;
 }
 
 
