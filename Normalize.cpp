@@ -88,7 +88,6 @@ if (argc==3) {
          replacement_rules=load_key_value_list(&(argv[2][3]),'\t');
          if (replacement_rules==NULL) {
             error("Cannot load replacement rules file %s\n",&(argv[2][3]));
-            return 1;
          }
       }
       else {
@@ -110,7 +109,6 @@ if (argc==4) {
       replacement_rules=load_key_value_list(&(argv[3][3]),'\t');
       if (replacement_rules==NULL) {
          error("Cannot load replacement rules file %s\n",&(argv[3][3]));
-         return 1;
       }
    }
    else {
