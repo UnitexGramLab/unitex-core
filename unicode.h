@@ -95,6 +95,7 @@ void u_fempty(char*);
 
 FILE* u_fopen(char*,char*);
 int u_fclose(FILE*);
+int u_fread_raw(unichar*,int,FILE*);
 int u_fread(unichar*,int,FILE*);
 int u_fwrite(unichar*,int,FILE*);
 int u_is_a_unicode_file(char*);

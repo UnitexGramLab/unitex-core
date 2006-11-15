@@ -65,7 +65,7 @@ if (dst==NULL) {
 }
 unichar buffer[BUFFER_SIZE];
 int n;
-while (0!=(n=u_fread(buffer,BUFFER_SIZE,src))) {
+while (0!=(n=u_fread_raw(buffer,BUFFER_SIZE,src))) {
    u_fwrite(buffer,n,dst);
 }
 

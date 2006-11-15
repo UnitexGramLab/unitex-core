@@ -314,14 +314,14 @@ for (i=origine_courante;i<BUFFER_SIZE;i++) {
   buffer[i-origine_courante]=buffer[i];
 }
 int N=BUFFER_SIZE-origine_courante;
-int l=u_fread(buffer+N/*,sizeof(unichar)*/,origine_courante,f);
+int l=u_fread_raw(buffer+N/*,sizeof(unichar)*/,origine_courante,f);
 origine_courante=0;
 LENGTH=N+l;
 }
 
 
 void parse_text() {
-LENGTH=u_fread(buffer/*,sizeof(unichar)*/,BUFFER_SIZE,f);
+LENGTH=u_fread_raw(buffer/*,sizeof(unichar)*/,BUFFER_SIZE,f);
 origine_courante=0;
 N=2;
 int debut=fst2->initial_states[1];

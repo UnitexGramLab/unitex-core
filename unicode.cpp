@@ -458,11 +458,26 @@ return ret;
 
 //
 // reads N unichar and stores them in tab. Returns the number of unichar read
-//
-int u_fread(unichar* tab,int N,FILE* f) {
+// this function reads raw chars, since it does not convert \r\n into \n.
+#warning verify that we really want to use it instead of u_fread
+int u_fread_raw(unichar* tab,int N,FILE* f) {
 int i,c;
 for (i=0;i<N;i++) {
   c=u_fgetc_raw(f);
+  if (c==EOF) return i;
+  tab[i]=(unichar)c; 
+}
+return i;
+}
+
+
+//
+// reads N unichar and stores them in tab. Returns the number of unichar read
+// this function converts \r\n into \n.
+int u_fread(unichar* tab,int N,FILE* f) {
+int i,c;
+for (i=0;i<N;i++) {
+  c=u_fgetc_normalized_carridge_return(f);
   if (c==EOF) return i;
   tab[i]=(unichar)c; 
 }

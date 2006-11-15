@@ -44,6 +44,9 @@
 #define MARGIN_BEFORE_BUFFER_END (MAX_TAG_LENGTH+1000)
 
 
+void normalize(FILE*,FILE*,int,struct string_hash*);
+
+
 void usage() {
 printf("%s",COPYRIGHT);
 printf("Usage: Normalize <text> [-no_CR] [-f=EQUIV]\n");
@@ -56,105 +59,13 @@ printf("                of lines like: input_sequence tab output_sequence\n");
 printf("                By default, the program only replace { and } by [ and ]\n");
 printf("Turns every sequence of separator chars (space, tab, new line) into one.\n");
 printf("If a separator sequence contains a new line char, it is turned to a single new\n");
-printf("line (except with -no_CR); if not, it is turned into a single space.\n");
-printf("If your specifies replacement rules with -f, they will be applied prior\n");
+printf("line (except with -no_CR); if not, it is turned into a single space. As\n");
+printf("a side effect, new line sequences are converted into the Windows style: \\r\\n.\n");
+printf("If you specifies replacement rules with -f, they will be applied prior\n");
 printf("to the separator normalization, so you have to take care if you manipulate\n");
 printf("separators in your replacement rules.\n");
 printf("The result is stored in a file named file_name.snt.\n");
 }
-
-
-void update_position_in_file(int *length) {
-(*length)=(*length)+2;
-if (((*length)%(1024*1024))==0) {
-   int l=(*length)/(1024*1024);
-   printf("%d megabyte%s read...      \r",l,(l>1)?"s":"");
-}
-}
-
-
-void normalize__(FILE* f,FILE* f_out,int mode) {
-int c;
-/* We read the first character in order to have a character in advance */
-c=u_fgetc_normalized_carridge_return(f);
-/* We initialize the number of bytes read with 4:
- * 2 for the unicode header and 2 bytes for the first character */
-int number_of_bytes_read=4;
-while (c!=EOF) {
-   if (c==' ' || c=='\t' || c=='\n') {
-      int enter=(c=='\n');
-      if (enter) {
-         // the new line sequence is coded with 2 characters
-         update_position_in_file(&number_of_bytes_read);
-      }
-      while ((c=u_fgetc_normalized_carridge_return(f))==' ' || c=='\t' || c=='\n') {
-         update_position_in_file(&number_of_bytes_read);
-         if (c=='\n') {
-            enter=1;
-            update_position_in_file(&number_of_bytes_read);
-         }
-      }
-      update_position_in_file(&number_of_bytes_read);
-      if (enter && mode==KEEP_CARRIDGE_RETURN) u_fputc((unichar)'\n',f_out);
-         else u_fputc((unichar)' ',f_out);
-   }
-   else if (c=='{') {
-      unichar s[MAX_TAG_LENGTH+1];
-      s[0]='{';
-      int z=1;
-      while (z<(MAX_TAG_LENGTH-1) && (c=u_fgetc_normalized_carridge_return(f))!='}' && c!='{' && c!='\n') {
-         s[z++]=(unichar)c;
-         update_position_in_file(&number_of_bytes_read);
-      }
-      update_position_in_file(&number_of_bytes_read);
-      if (z==(MAX_TAG_LENGTH-1) || c!='}') {
-         // if the tag has no ending }
-         fprintf(stderr,"\nError at char %d: a tag without ending } has been found\n",(number_of_bytes_read-1)/2);
-         fprintf(stderr,"The { char was replaced by a [  char\n");
-         s[0]='[';
-         if (c=='{') {
-            c='[';
-         }
-         s[z]=(unichar)c;
-         s[z+1]='\0';
-      }
-      else if (c=='\n') {
-         // if the tag contains a return
-         fprintf(stderr,"\nError at char %d: a tag containing a new-line sequence has been found\n",(number_of_bytes_read-1)/2);
-         fprintf(stderr,"The { char was replaced by a [ char\n");
-         s[0]='[';
-         s[z]='\n';
-         s[z+1]='\0';
-      }
-      else {
-         s[z]='}';
-         s[z+1]='\0';
-         if (!u_strcmp_char(s,"{S}") || !u_strcmp_char(s,"{STOP}")) {
-            // if we have found a sentence delimiter or the STOP marker
-            // we have nothing special to do
-         } else {
-           if (!check_tag_token(s)) {
-              // if a tag is incorrect, we exit
-              fprintf(stderr,"\nError at char %d: the text contains an invalid tag\n",(number_of_bytes_read-1)/2);
-              fprintf(stderr,"The { and } chars were replaced by the [ and ] chars\n");
-              s[0]='[';
-              s[z]=']';
-           }
-         }
-      }
-      u_fprints(s,f_out);
-      c=u_fgetc_normalized_carridge_return(f);
-      update_position_in_file(&number_of_bytes_read);
-   } else {
-      u_fputc((unichar)c,f_out);
-      c=u_fgetc_normalized_carridge_return(f);
-      update_position_in_file(&number_of_bytes_read);
-   }
-}
-}
-
-
-void normalize(FILE*,FILE*,int,struct string_hash*);
 
 
 int main(int argc, char **argv) {
@@ -164,7 +75,7 @@ int main(int argc, char **argv) {
 setBufferMode();
 FILE* f;
 FILE* f_out;
-if (argc<2 && argc >4) {
+if (argc<2 || argc >4) {
    usage();
    return 0;
 }
@@ -194,6 +105,7 @@ if (argc==4) {
       error("Wrong parameter: %s\n",argv[2]);
       return 1;
    }
+   mode=REMOVE_CARRIDGE_RETURN;
    if (argv[3][0]=='-' && argv[3][1]=='f' && argv[3][2]=='=') {
       replacement_rules=load_key_value_list(&(argv[3][3]),'\t');
       if (replacement_rules==NULL) {
@@ -221,7 +133,6 @@ get_value_index(key,replacement_rules,INSERT_IF_NEEDED,value);
 u_strcpy_char(key,"}");
 u_strcpy_char(value,"]");
 get_value_index(key,replacement_rules,INSERT_IF_NEEDED,value);
-
 char tmp_file[FILENAME_MAX];
 get_extension(argv[1],tmp_file);
 if (!strcmp(tmp_file,".snt")) {
@@ -360,8 +271,39 @@ while (current_start_pos<buffer->size) {
          current_start_pos=current_start_pos+key_length;
       }
       else {
-         /* Traiter les séparateurs */
-         u_fputc(buff[current_start_pos++],output);
+         if (buff[current_start_pos]==' ' || buff[current_start_pos]=='\t'
+             || buff[current_start_pos]=='\n') {
+            /* If we have a separator, we try to read the longest separator sequence
+             * that we can read. By the way, we note if it contains a new line */
+            int new_line=0;
+            while (buff[current_start_pos]==' ' || buff[current_start_pos]=='\t'
+                   || buff[current_start_pos]=='\n') {
+               /* Note 1: no bound check is needed, since an unichar buffer is always
+                *        ended by a \0
+                * 
+                * Note 2: we don't take into account the case of a buffer ended by
+                *         separator while it's not the end of file: that would mean
+                *         that the text contains something like MARGIN_BEFORE_BUFFER_END
+                *         contiguous separators. Such a text would not be a reasonable one.
+                */
+               if (buff[current_start_pos]=='\n') {
+                  new_line=1;
+               }
+               current_start_pos++;
+            }
+            if (new_line && (carridge_return_policy==KEEP_CARRIDGE_RETURN)) {
+               /* We print a new line if the sequence contains one and if we are
+                * allowed to; otherwise, we print a space. */
+               u_fputc('\n',output);
+            }
+            else {
+               u_fputc(' ',output);
+            }
+         }
+         else {
+            /* If, finally, we have a normal character to normalize, we just print it */
+            u_fputc(buff[current_start_pos++],output);
+         }
       }
    }
 }

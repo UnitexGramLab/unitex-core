@@ -100,7 +100,7 @@ int getStringTableFile(char *f,
 	mem = new unsigned short[sizeFile];
 	if(!mem) exitMessage("mem alloc fail");
 	fseek(fptr,2,SEEK_SET);
-	if(!u_fread(mem,sizeFile-1,fptr))	exitMessage("Read Tokens fail");
+	if(!u_fread_raw(mem,sizeFile-1,fptr))	exitMessage("Read Tokens fail");
 //for(int  i = 0;i <(sizeFile -1);i++) mem[i] = u_fgetc(fptr); 
 	mem[sizeFile-1] = 0;
 //	mem[sizeFile-2] = 0;
@@ -146,7 +146,7 @@ int getStringTableFileAvecNull(char *f,
 	mem = new unsigned short[sizeFile];
 	if(!mem) exitMessage("mem alloc fail");
 	fseek(fptr,2,SEEK_SET);
-    if(!u_fread(mem,sizeFile-2,fptr))exitMessage("Read Tokens fail");
+    if(!u_fread_raw(mem,sizeFile-2,fptr))exitMessage("Read Tokens fail");
 //    for(int  i = 0;i <(sizeFile -1);i++) mem[i] = u_fgetc(fptr); 
 	mem[sizeFile-1] = 0;
 //	mem[sizeFile-2] = 0;

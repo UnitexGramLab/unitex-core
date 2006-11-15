@@ -823,7 +823,7 @@ public:
 		tokMap = new unsigned short[sizeFile];
 		if(!tokMap) exitMessage("mem alloc fail");
 		fseek(fptr,2,SEEK_SET);
-		if(!u_fread(tokMap,sizeFile-1,fptr))
+		if(!u_fread_raw(tokMap,sizeFile-1,fptr))
 			exitMessage("Read Tokens fail");
 		tokMap[sizeFile-1] = 0;
 //		tokMap[sizeFile-2] = 0;
@@ -868,7 +868,7 @@ public:
 		mophMap = new unsigned short[sizeFile];
 		if(!mophMap) exitMessage("mem alloc fail");
 		fseek(fptr,2,SEEK_SET);
-		if(!u_fread(mophMap,sizeFile-1,fptr))
+		if(!u_fread_raw(mophMap,sizeFile-1,fptr))
 			exitMessage("Read Tokens fail");
 		mophMap[sizeFile-1] = 0;
 //		mophMap[sizeFile-2] = 0;
@@ -1233,7 +1233,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		unsigned short *map = new unsigned short[readSz];
 		if(!map) exitMessage("mem alloc fail");
 		fseek(f,offset,SEEK_SET);
-		if(!u_fread(map,readSz,f)) exitMessage("Read Tokens fail");
+		if(!u_fread_raw(map,readSz,f)) exitMessage("Read Tokens fail");
 		table = new unsigned short *[cnt];
 		if(!table) exitMessage("token table mem alloc fail");
 		wp = map;

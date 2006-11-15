@@ -164,7 +164,7 @@ setBufferMode();
 	unichar *sbuff;
 	if(!buff || !obuff) exitMessage("mem alloc fail");
 	do{
-		if((rsz = u_fread(buff,SZ1M,ifile) ) ==  0) break;
+		if((rsz = u_fread_raw(buff,SZ1M,ifile) ) ==  0) break;
 		buff[rsz] = 0;
 		hanjaCnt = hangul.convHJAtoHAN(buff,hbuff);
 		if(hanjaCnt) sbuff = hbuff;

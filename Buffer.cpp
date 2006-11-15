@@ -120,7 +120,9 @@ switch (buffer->type) {
         array[i-pos]=array[i];
       }
       new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
-      n_element_read=fread(&(array[new_position]),sizeof(unichar),pos,f);
+      /* Here, we must not use a 'fread', since it would not unify \r\n 
+       * into the single \n that is used in Unitex programs */
+      n_element_read=u_fread(&(array[new_position]),pos,f);
       /* We add an extra \0 in order for string parsing reasons */
       array[new_position+n_element_read]='\0';
       break;

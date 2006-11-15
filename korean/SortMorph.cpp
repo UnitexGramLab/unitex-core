@@ -128,7 +128,7 @@ class arbre_string00 parFlechi, parCano;
 	mem = new unichar[sizeFile];
 	if(!mem) exitMessage("mem alloc fail");
 	fseek(fptr,2,SEEK_SET);
-	if(!u_fread(mem,sizeFile-1,fptr)) exitMessage("Read morpheme table fail");
+	if(!u_fread_raw(mem,sizeFile-1,fptr)) exitMessage("Read morpheme table fail");
 	mem[sizeFile-1] = 0;
     fclose(fptr);
     

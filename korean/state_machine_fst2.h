@@ -526,7 +526,7 @@ if(debugPrFlag) {
 	
 		do { 
 //			if((rsz = fread(iBuff,2,SZ64K,fi)) > 0){
-			if((rsz = u_fread(iBuff,SZ64K,fi)) > 0){
+			if((rsz = u_fread_raw(iBuff,SZ64K,fi)) > 0){
 				totalRead+= rsz;
 				osz = convStr(iBuff,rsz,oBuff);
                 u_fwrite(oBuff,osz,fo);//fwrite(oBuff,2*osz,1,fo);
