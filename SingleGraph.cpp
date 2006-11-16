@@ -137,6 +137,15 @@ set_bit_mask(&(e->control),CO_ACCESSIBILITY_BIT_MASK);
 
 
 /**
+ * Returns 1 if the state is not both accessible and
+ * co-accessible; 0 otherwise.
+ */
+int is_useless_state(SingleGraphState e) {
+return !(is_accessible_state(e) && is_co_accessible_state(e));
+}
+
+
+/**
  *  Allocates, initializes and returns a new SingleGraph state.
  */
 SingleGraphState new_SingleGraphState() {
@@ -496,3 +505,174 @@ for (int i=0;i<graph->number_of_states;i++) {
 }
 free(closures);
 }
+
+
+/**
+ *  vire ptr si ptr pointe sur un etat a virer
+ */
+// with complex graphs we got a stack overflow with this recursive function:
+//// Fst2Transition vider_trans_reciproques_comp(Fst2Transition ptr,Etat_comp *letats)
+//// {
+////   Fst2Transition tmp;
+////   if (ptr==NULL) return NULL;
+////   if ((((letats[ptr->state_number]->controle)&4)==0)||(((letats[ptr->state_number]->controle)&8)==0))
+////   {
+////     tmp=ptr->next;
+////     free(ptr);
+////     return vider_trans_reciproques_comp(tmp,letats);
+////   }
+////   ptr->next=vider_trans_reciproques_comp(ptr->next,letats);
+////   return ptr;
+//// }
+// it's replaced now by an iterative one:
+Fst2Transition remove_transitions_to_useless_states(Fst2Transition ptr,SingleGraphState *letats)
+{
+  Fst2Transition tmp, tmp2, tmp_old;
+  tmp=ptr;
+  while (tmp!=NULL)
+    {
+      if ((((letats[tmp->state_number]->control)&4)==0)||(((letats[tmp->state_number]->control)&8)==0))
+        {
+          tmp2=tmp->next;
+          if (tmp == ptr)
+            ptr = tmp2;
+          else
+            tmp_old->next = tmp2;
+          free(tmp);
+          tmp=tmp2;
+        }
+      else
+        {
+          tmp_old = tmp;
+          tmp=tmp->next;
+        }
+    }
+  return ptr;
+}
+
+
+/**
+ * Takes a list of transitions, and replaces in them 'old_state_number' by
+ * 'new_state_number'.
+ */
+void renumber_transitions(Fst2Transition list,int old_state_number,int new_state_number) {
+while (list!=NULL) {
+   if (list->state_number==old_state_number) {
+      list->state_number=new_state_number;
+   }
+   list=list->next;
+}
+}
+
+
+/**
+ * This function renumbers all the transitions that point to 'old_state_number',
+ * making them point to 'new_state_number'. Both outgoing and incoming
+ * transitions are updated, in all states that are concerned.
+ */
+void renumber_transitions(SingleGraphState* states,int old_state_number,int new_state_number) {
+/* First, we deal with the transitions that go out from 'old_state_number' */
+Fst2Transition t=states[old_state_number]->outgoing_transitions;
+while (t!=NULL) {
+   if (t->state_number!=old_state_number) {
+      /* If we have a transition of the form:
+       * 
+       * old_state_number ----> X
+       * 
+       * then we must renumber the incoming transitions of X. */
+      renumber_transitions(states[t->state_number]->reverted_incoming_transitions,
+                           old_state_number,new_state_number);
+   }
+   else {
+      /* If we have a transition like:
+       * 
+       * old_state_number ----> old_state_number
+       * 
+       * then we must replace change its destination to new_state_number. */
+      t->state_number=new_state_number;
+   }
+   t=t->next;
+}
+/* Then, we do exactly the same with incoming transitions */
+t=states[old_state_number]->reverted_incoming_transitions;
+while (t!=NULL) {
+   if (t->state_number!=old_state_number) {
+      /* If we have a transition of the form:
+       * 
+       * old_state_number <---- X
+       * 
+       * then we must renumber the outging transitions of X. */
+      renumber_transitions(states[t->state_number]->outgoing_transitions,
+                           old_state_number,new_state_number);
+   }
+   else {
+      /* If we have a transition like:
+       * 
+       * old_state_number <---- old_state_number
+       * 
+       * then we must replace change its destination to new_state_number. */
+      t->state_number=new_state_number;
+   }
+   t=t->next;
+}
+}
+
+
+/**
+ * This function removes useless states, that is to say states that are
+ * not accessible and/or not co-accessible. Note that states must have
+ * been previously marked with 'check_accessibility' and 'check_co_accessibility'.
+ * Of course, all transitions related to useless states are removed.
+ */
+void remove_useless_states(SingleGraph graph) {
+int i;
+for (i=0;i<graph->number_of_states;i++) {
+   /* For each state, we remove transitions that go to/come from a state
+    * to be removed */
+   graph->states[i]->outgoing_transitions=remove_transitions_to_useless_states(graph->states[i]->outgoing_transitions,graph->states);
+   graph->states[i]->reverted_incoming_transitions=remove_transitions_to_useless_states(graph->states[i]->reverted_incoming_transitions,graph->states);
+}
+int last_state=graph->number_of_states-1;
+i=0;
+do {
+   /* We look for the first non NULL state, starting from the end of the
+    * state array */
+   while ((last_state>=0) && (graph->states[last_state]==NULL)) {
+      last_state--;
+   }
+   /* We free all the states that we can */
+   while ((last_state>=0) && is_useless_state(graph->states[last_state])) {
+      free_SingleGraphState(graph->states[last_state]);
+      graph->states[last_state]=NULL;
+      last_state--;
+   }
+   if (last_state==-1) {
+      /* If we have removed all the states, we return */
+      graph->number_of_states=0;
+      return;
+   }
+   /* Then, we look for the first state to remove from the beginning
+    * of the state array */
+   while ((i<last_state) && !is_useless_state(graph->states[i])) {
+      i++;
+   }
+   if (i==last_state) {
+      /* If there is no more state to remove, we have finished */
+      graph->number_of_states=last_state+1;
+      return;
+   }
+   /* Otherwise, the state number 'i' is to be removed. In that case, we
+    * swap it with the state number 'last_state' which must not be removed.
+    * To do that correctly, we must update the transitions that point
+    * to 'last_state' and make them point to 'i'. */
+   renumber_transitions(graph->states,last_state,i);
+   SingleGraphState tmp=graph->states[i];
+   graph->states[i]=graph->states[last_state];
+   graph->states[last_state]=tmp;
+   free_SingleGraphState(graph->states[last_state]);
+   graph->states[last_state]=NULL;
+   last_state--;
+} while (i<last_state);
+graph->number_of_states=last_state+1;
+}
+

@@ -158,7 +158,6 @@ extern unichar pckg_path[TAILLE_MOT_GRAND_COMP];
 
 void vider_noeud_num_char_det(struct noeud_num_char_det *);
 
-void eliminer_etats_comp(SingleGraphState *letats,int *n_etats);
 void liberer_graphe_comp(SingleGraphState *etat);
 struct noeud_valeur_det* nouveau_noeud_valeur_det();
 void init_graphe_mat_det(Etat_fst_det resultat[]);

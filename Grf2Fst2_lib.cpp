@@ -724,7 +724,7 @@ int reverse (SingleGraph graph) {
   }
   check_accessibility(reversed->states,0);
   remove_epsilon_transitions(reversed);
-  eliminer_etats_comp(reversed->states,&(reversed->number_of_states));
+  remove_useless_states(reversed);
   determinisation(reversed);
 
   /* move the reversed graph to "graph" */
@@ -763,7 +763,7 @@ int write_graph_comp(FILE* f,
 
   u_fprintf(f, "%d %S\n", number, name);
 
-  if (graph->states[0] == NULL) { /* do not segfault on empty automaton */
+  if (graph->number_of_states==0) { /* do not segfault on empty automaton */
     error("warning: resulting automaton is empty\n");
     u_fprintf(f, ": \nf \n");
     return 1;
@@ -1225,58 +1225,6 @@ Fst2Transition supprimer_transitioninv_comp(SingleGraphState *letats,int i,Fst2T
 
 
 
-/**
- *  vire ptr si ptr pointe sur un etat a virer
- */
-// with complex graphs we got a stack overflow with this recursive function:
-//// Fst2Transition vider_trans_reciproques_comp(Fst2Transition ptr,Etat_comp *letats)
-//// {
-////   Fst2Transition tmp;
-////   if (ptr==NULL) return NULL;
-////   if ((((letats[ptr->state_number]->controle)&4)==0)||(((letats[ptr->state_number]->controle)&8)==0))
-////   {
-////     tmp=ptr->next;
-////     free(ptr);
-////     return vider_trans_reciproques_comp(tmp,letats);
-////   }
-////   ptr->next=vider_trans_reciproques_comp(ptr->next,letats);
-////   return ptr;
-//// }
-// it's replaced now by an iterative one:
-Fst2Transition vider_trans_reciproques_comp(Fst2Transition ptr,SingleGraphState *letats)
-{
-  Fst2Transition tmp, tmp2, tmp_old;
-  tmp=ptr;
-  while (tmp!=NULL)
-    {
-      if ((((letats[tmp->state_number]->control)&4)==0)||(((letats[tmp->state_number]->control)&8)==0))
-        {
-          tmp2=tmp->next;
-          if (tmp == ptr)
-            ptr = tmp2;
-          else
-            tmp_old->next = tmp2;
-          free(tmp);
-          tmp=tmp2;
-        }
-      else
-        {
-          tmp_old = tmp;
-          tmp=tmp->next;
-        }
-    }
-  return ptr;
-}
-
-
-
-/**
- *  renvoie 1 si l'etat e n'est ni accessible ni coaccessible
- */
-int est_a_virer_comp(SingleGraphState e) {
-return ((((e->control)&4)==0)||(((e->control)&8)==0));
-}
-
 
 /**
  *  remplace ancien par nouveau dans les transitions sortant de l'etat e
@@ -1308,78 +1256,12 @@ ptr=e->reverted_incoming_transitions;
 
 
 
-/**
- *  renumerote les transitions vers ancien en transitions vers nouveau
- */
-void renumeroter_comp(SingleGraphState *liste,int ancien,int nouveau) {
-Fst2Transition ptr;
-ptr=liste[ancien]->outgoing_transitions;
- while (ptr!=NULL) {
-   if (ptr->state_number!=ancien) mettre_a_jour_entree_comp(liste[ptr->state_number],ancien,nouveau);
-   else ptr->state_number=nouveau;
-   ptr=ptr->next;
-   }
-
-ptr=liste[ancien]->reverted_incoming_transitions;
- while (ptr!=NULL) {
-   mettre_a_jour_sortie_comp(liste[ptr->state_number],ancien,nouveau);
-   ptr=ptr->next;
-   }
-}
 
 
 
 
-/**
- *  Elimine les etats non accessibles et non co_accessibles
- */
-void eliminer_etats_comp(SingleGraphState *letats,int *n_etats)
-{
-  int i,dernier;
-  SingleGraphState tmp;
-  for (i=0;i<*n_etats;i++)
-  {
-    letats[i]->outgoing_transitions=vider_trans_reciproques_comp(letats[i]->outgoing_transitions,letats);
-    letats[i]->reverted_incoming_transitions=vider_trans_reciproques_comp(letats[i]->reverted_incoming_transitions,letats);
-  }
 
-  dernier=(*n_etats)-1;
-  i=0;
-  do
-  {
-    while ((dernier>=0)&&(letats[dernier]==NULL))
-      dernier--;
-    while ((dernier>=0)&&est_a_virer_comp(letats[dernier]))
-    {
-      //free(letats[dernier]);
-      free_SingleGraphState(letats[dernier]);
-      letats[dernier]=NULL;
-      dernier--;
-    }
-    if (dernier==-1)
-    {
-      *n_etats=0;
-      return;
-    }
-    while ((i<dernier)&&!est_a_virer_comp(letats[i]))
-      i++;
-    if (i==dernier)
-    {
-      *n_etats=dernier+1;
-      return;
-    }
-    renumeroter_comp(letats,dernier,i);
-    tmp=letats[i];
-    letats[i]=letats[dernier];
-    letats[dernier]=tmp;
-    //free(letats[dernier]);
-    free_SingleGraphState(letats[dernier]);
-    letats[dernier]=NULL;
-    dernier--;
-  }
-  while (i<dernier);
-  *n_etats=dernier+1;
-}
+
 
 
 
@@ -2360,7 +2242,7 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   check_co_accessibility(graph->states,1);  
   remove_epsilon_transitions(graph);
   check_accessibility(graph->states,0);
-  eliminer_etats_comp(graph->states,&(graph->number_of_states));
+  remove_useless_states(graph);
 
   if (graph->states[0] == NULL)
     {

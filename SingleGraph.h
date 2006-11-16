@@ -84,6 +84,7 @@ void compute_reverse_transitions(SingleGraph);
 void check_accessibility(SingleGraphState*,int);
 void check_co_accessibility(SingleGraphState*,int);
 void remove_epsilon_transitions(SingleGraph);
+void remove_useless_states(SingleGraph);
 
 #endif
 

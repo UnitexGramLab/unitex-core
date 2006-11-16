@@ -109,28 +109,31 @@ for (int h=0;h<new_fst2->number_of_states;h++) {
 }
 check_accessibility(new_fst2->states,0);
 remove_epsilon_transitions(new_fst2);
-eliminer_etats_comp(new_fst2->states,&(new_fst2->number_of_states));
-/* Print header (number of graphs) */
+remove_useless_states(new_fst2);
+/* Determinize and minimize the new main graph */
+printf("Determinization...\n");
+determinisation(new_fst2);
+printf("Minimization...\n");
+minimisation(new_fst2);
+/* Now, we can start saving the grammar, so we print the header of the .fst,
+ * which is the number of graphs it contains. */
 char tmpstr[256];
 snprintf(tmpstr,256,"%010d\n",(RTN?n_graphs_to_keep:1));
 u_fprints_char(tmpstr,res);
-/* Determinize and minimize the new main graph */
-printf("Determinisation...\n");
-determinisation(new_fst2);
-printf("Minimisation...\n");
-minimisation(new_fst2);
-/* Write the new main graph */
+/* We save the new main graph */
 printf("Writing grammar...\n");
 write_graph_comp(res,new_fst2,-1,origin->graph_names[1]);
 free_SingleGraph(new_fst2);
-
+/* Then, we save the subgraphs, if we have to */
 if (RTN && (result == EQUIVALENT_RTN)) {
    printf("Saving remaining subgraphs...\n");
-   save_graphs_to_keep(origin,res); // write the still remaining subgraphs
+   save_graphs_to_keep(origin,res);
 }
+/* We don't forget to free the new_graph_number array */
 free(new_graph_number);
+/* Finally, we save the tags */
 printf("Saving tags...\n");
-write_fst2_tags(res,origin); // copy the terminal symbols to the resulting file
+write_fst2_tags(res,origin);
 u_fclose(res);
 return result;
 }

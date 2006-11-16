@@ -928,7 +928,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 				tag_number=read_int(f,&end_of_line);
 			}
 			if (((c=(unichar)u_fgetc(f))!=':')&&(c!='t')&&(c!='f')) {
-				fatal_error("Unexpected character in fst2: %c\n",c);
+            fatal_error("Unexpected character in fst2: %c\n",c);
 			}
 			current_state++;
 			relative_state++;
@@ -947,8 +947,8 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		while(((c=(unichar)u_fgetc(f))!='f'));
 	}
 	/* We read the space and the '\n' that follows the final 'f' */
-	u_fgetc(f);
-	u_fgetc(f);
+   u_fgetc(f);
+   u_fgetc(f);
 }
 /* Finally, we set the number of states of the fst2 */
 fst2->number_of_states=current_state;
