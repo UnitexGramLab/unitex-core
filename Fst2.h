@@ -37,6 +37,7 @@
 #define MAX_FST2_STATES 500000
 
 
+
 /**
  * This structure represents a tag of a .fst2 file.
  */

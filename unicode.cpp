@@ -459,7 +459,8 @@ return ret;
 //
 // reads N unichar and stores them in tab. Returns the number of unichar read
 // this function reads raw chars, since it does not convert \r\n into \n.
-#warning verify that we really want to use it instead of u_fread
+//
+// this function will be deprecated
 int u_fread_raw(unichar* tab,int N,FILE* f) {
 int i,c;
 for (i=0;i<N;i++) {

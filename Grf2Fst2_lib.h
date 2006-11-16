@@ -18,7 +18,6 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-
 //---------------------------------------------------------------------------
 #ifndef Grf2Fst2_libH
 #define Grf2Fst2_libH
@@ -30,6 +29,7 @@
 #include "Error.h"
 #include "FileName.h"
 #include "Limits.h"
+#include "SingleGraph.h"
 
 #define DEFAULT_TOKENIZATION 0
 #define CHAR_BY_CHAR_TOKENIZATION 1
@@ -99,44 +99,6 @@ struct liste_branches_num_char_det {
 
 
 
-//
-// structure d'un etat
-//
-struct etat_comp
-{
-  unsigned char controle;          // octet de controle
-  Fst2Transition trans;         //liste des transitions
-  Fst2Transition transinv;         // liste des transitions inverses
-};
-typedef struct etat_comp* Etat_comp;
-
-int is_final_state (Etat_comp);
-
-
-/**
- * Structure to hold an automaton (subgraph) when compiling and flattening.
- *
- * In opposite to struct fst2 (defined in Fst2.h) only one automaton
- * (subgraph) is represented.  It uses also a different (smarter and
- * smaller) representation of states, see Etat_comp.
- */
-struct graph_comp {
-  Etat_comp* states;
-  int size;
-  int n_states;
-};
-typedef struct graph_comp* Graph_comp;
-Graph_comp new_graph_comp();
-bool resize_graph_comp(Graph_comp);
-bool resize_graph_comp(Graph_comp,int);
-bool resize_graph_comp_to(Graph_comp,int);
-void move_graph_comp(Graph_comp, Graph_comp);
-void free_graph_comp(Graph_comp);
-inline Etat_comp add_state(Graph_comp);
-inline Etat_comp add_state(Graph_comp, int*);
-
-
-
 
 //
 // structures servant a manipuler l'arbre des graphes
@@ -196,13 +158,8 @@ extern unichar pckg_path[TAILLE_MOT_GRAND_COMP];
 
 void vider_noeud_num_char_det(struct noeud_num_char_det *);
 
-void co_accessibilite_comp(Etat_comp *e,int i);
-void accessibilite_comp(Etat_comp *e,int i);
-void virer_epsilon_transitions_comp(Etat_comp *letats,int n);
-void eliminer_etats_comp(Etat_comp *letats,int *n_etats);
-void liberer_etat_comp(Etat_comp etat);
-void liberer_graphe_comp(Etat_comp *etat);
-Etat_comp nouvel_etat_comp();
+void eliminer_etats_comp(SingleGraphState *letats,int *n_etats);
+void liberer_graphe_comp(SingleGraphState *etat);
 struct noeud_valeur_det* nouveau_noeud_valeur_det();
 void init_graphe_mat_det(Etat_fst_det resultat[]);
 void init_resultat_det(Etat_fst_det resultat[],struct noeud_valeur_det *racine,int dernier_etat_res);
@@ -216,11 +173,10 @@ void ajouter_transition_mat_det(struct etat_fst_det *e,int etiq,int etarr);
 void liberer_arbre_det(struct noeud_valeur_det *racine);
 Etat_fst_det nouvel_etat_mat_det();
 ensemble_det copie_det(ensemble_det e);
-void compute_reverse_transitions(Etat_comp*,int);
 void sauvegarder_etat_det(FILE *f,Etat_fst_det e);
-int determinisation(Graph_comp);
-int minimisation(Graph_comp);
-int write_graph_comp(FILE*,Graph_comp,int,unichar*);
+int determinisation(SingleGraph);
+int minimisation(SingleGraph);
+int write_graph_comp(FILE*,SingleGraph,int,unichar*);
 void *malloc_comp(int n);
 void init_generale_comp();
 void init_arbres_comp();

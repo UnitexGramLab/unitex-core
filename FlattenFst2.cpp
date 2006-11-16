@@ -24,6 +24,7 @@
 #include "LocateConstants.h"
 #include "List_int.h"
 #include "Grf2Fst2_lib.h"
+#include "SingleGraph.h"
 //---------------------------------------------------------------------------
 
 
@@ -44,78 +45,84 @@ void print_dependencies(Fst2*);
 int* check_for_graphs_to_keep(Fst2*,int);
 int renumber_graphs_to_keep(Fst2*);
 int flatten_graph(Fst2*,int,int,int,
-                  Graph_comp,
+                  SingleGraph,
                   int,int,int*,int*);
-void remove_epsilon_transitions_in_flattened_graph(Graph_comp);
+void remove_epsilon_transitions_in_flattened_graph(SingleGraph);
 void save_graphs_to_keep(Fst2*,FILE*);
-void save_graph_to_be_kept(int,Fst2*,FILE*);
+void save_graph_to_keep(int,Fst2*,FILE*);
 void copy_tags_into_file(Fst2*,FILE*);
 
 
 /**
  * Flattens the grammar 'origin' according to the 'depth' parameter
- * and stores the resulting grammar in a file named 'temp'.
+ * and stores the resulting grammar in a file named 'temp'. If
+ * 'RTN' is non null, we want to get a strictly equivalent grammar,
+ * even if it is not a strict FST.
  */
 int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
-FILE* res = u_fopen(temp,U_WRITE);
+FILE* res=u_fopen(temp,U_WRITE);
 if (res==NULL) {
    error("Cannot create %s\n",temp);
    return FLATTEN_ERROR;
 }
 /* We set globals used in Grf2Fst2lib.cpp !!! */
-nombre_etiquettes_comp = origin->number_of_tags;
-nombre_graphes_comp = origin->number_of_graphs;
+nombre_etiquettes_comp=origin->number_of_tags;
+nombre_graphes_comp=origin->number_of_graphs;
 printf("Computing grammar dependencies...\n");
 /* We build the dependency tree of the grammar */
 dependencies=compute_dependencies(origin);
+/* And we use it in order to know which graphs will be kept */
 new_graph_number=check_for_graphs_to_keep(origin,depth);
-int n_graphs_to_keep = renumber_graphs_to_keep(origin);
+int n_graphs_to_keep=renumber_graphs_to_keep(origin);
 #ifdef DEBUG
   print_dependencies(origin);
 #endif
-/* We do the flattening job */
-printf("Flattening...\n");
-Graph_comp new_main_graph=new_graph_comp();
-int SUBGRAPH_CALL_IGNORED=0,SUBGRAPH_CALL=0;
-int result=flatten_graph(origin,
-                           1, // start with graph number 1 (main graph)
-                           0, // start with depth 0
-                           depth, // maximal depth
-                           new_main_graph,
-                           0,
-                           RTN,
-                           &SUBGRAPH_CALL_IGNORED,
-                           &SUBGRAPH_CALL); 
-/* And we free liberation of the dependency structures */
+/* Now we can free liberation of the dependency structures */
 for (int i=1;i<=origin->number_of_graphs;i++) {
    free_list_int(dependencies[i]);
 }
 free(dependencies);
-/* clean graph, i.e. remove epsilon transitions and unreachable states */
+printf("Flattening...\n");
+/* We create the new main graph structure */
+SingleGraph new_fst2=new_SingleGraph();
+/* And we do the flattening job */
+int SUBGRAPH_CALL_IGNORED=0;
+int SUBGRAPH_CALL=0;
+int result=flatten_graph(origin,
+                           1, /* start with graph number 1 (main graph) */
+                           0, /* start with depth 0 */
+                           depth, /* maximal depth */
+                           new_fst2,
+                           0,
+                           RTN,
+                           &SUBGRAPH_CALL_IGNORED,
+                           &SUBGRAPH_CALL); 
+/* Now, we clean the new main graph, i.e.we remove epsilon transitions
+ * and unreachable states */
 printf("Cleaning graph...\n");
-compute_reverse_transitions(new_main_graph->states,new_main_graph->n_states);
-for (int h=0;h<new_main_graph->n_states;h++) {
-   if (is_final_state(new_main_graph->states[h])) {
+compute_reverse_transitions(new_fst2);
+for (int h=0;h<new_fst2->number_of_states;h++) {
+   if (is_final_state(new_fst2->states[h])) {
       /* We start the co_accessibility check from every final state */
-      co_accessibilite_comp(new_main_graph->states,h);
+      check_co_accessibility(new_fst2->states,h);
    }
 }
-accessibilite_comp(new_main_graph->states,0);
-virer_epsilon_transitions_comp(new_main_graph->states,new_main_graph->n_states);
-eliminer_etats_comp(new_main_graph->states,&(new_main_graph->n_states));
+check_accessibility(new_fst2->states,0);
+remove_epsilon_transitions(new_fst2);
+eliminer_etats_comp(new_fst2->states,&(new_fst2->number_of_states));
 /* Print header (number of graphs) */
 char tmpstr[256];
 snprintf(tmpstr,256,"%010d\n",(RTN?n_graphs_to_keep:1));
 u_fprints_char(tmpstr,res);
 /* Determinize and minimize the new main graph */
 printf("Determinisation...\n");
-determinisation(new_main_graph);
+determinisation(new_fst2);
 printf("Minimisation...\n");
-minimisation(new_main_graph);
+minimisation(new_fst2);
 /* Write the new main graph */
 printf("Writing grammar...\n");
-write_graph_comp(res,new_main_graph,-1,origin->graph_names[1]);
-free_graph_comp(new_main_graph);
+write_graph_comp(res,new_fst2,-1,origin->graph_names[1]);
+free_SingleGraph(new_fst2);
 
 if (RTN && (result == EQUIVALENT_RTN)) {
    printf("Saving remaining subgraphs...\n");
@@ -254,7 +261,7 @@ return N;
 
 /**
  * This function flattens the main graph:
- *  Build an array of states that represents the flattened
+ *  Builds an array of states that represents the flattened
  *  version of the main graph. The return value indicates if the result is
  *  an equivalent RTN, an equivalent FST or an FST approximation.
  * Recursive function: called by itself for subgraphs.
@@ -262,187 +269,182 @@ return N;
  * @param n_graph number of actually treated graph 
  * @param depth actual depth
  * @param max_depth maximal depth until which the grammar should be flattened
- * @param new_main_graph the resulting new grammar
- * @param arr arrival states to which a subgraph (to be incorporated) leds
+ * @param new_graph the main graph of the resulting grammar (only the main graph is flattened)
+ * @param destination_state the state to which a subgraph (to be incorporated) leds
+ *        for instance, if we call a transition like X --call to graph G--> Y,
+ *        the state Y will be the destination state while flattening graph G
  * @param SUBGRAPH_CALL_IGNORED will be > 0 if there are subgraphs ignored (passed by)
  *  in the grammar, i.e. the grammar is a finite-state approximization
  * @param SUBGRAPH_CALL will be > 0 if there are still subgraphs in the grammar,
  *  i.e. the grammar is a RTN
- * @return int : returns starting position for subgraphs;
- *               type of resulting graph (RTN, FST, FST-approximation) for main graph
+ * @return int : - returns starting position for subgraphs;
+ *               - type of resulting graph (RTN, FST, FST-approximation) for main graph
  */
-int flatten_graph (Fst2* grammar, int n_graph,
-                   int depth, int max_depth,
-                   Graph_comp new_main_graph,
-                   int arr, int RTN,
-                   int* SUBGRAPH_CALL_IGNORED, int* SUBGRAPH_CALL) {
-
-int initial_pos = new_main_graph->n_states;
-
-/* tab contains list of all subgraphs to be incorporated */
-int resize_of_tab_step = 0x400;
-int size_of_tab = resize_of_tab_step;
-fst2Transition** tab = 
-  (struct fst2Transition**) malloc(size_of_tab * sizeof(fst2Transition));
-int pos_in_tab = 0;
-
-// first, we copy the original states
-int limite = grammar->initial_states[n_graph]+grammar->number_of_states_per_graphs[n_graph];
-while ( new_main_graph->size < (new_main_graph->n_states + limite) ) {
-  // if necessary, resize states array
-  resize_graph_comp(new_main_graph);
+int flatten_graph(Fst2* grammar,int n_graph,
+                  int depth,int max_depth,
+                  SingleGraph new_main_graph,
+                  int destination_state,int RTN,
+                  int *SUBGRAPH_CALL_IGNORED,int *SUBGRAPH_CALL) {
+/* The new states will be appended at the end of the old graph's state array */
+int initial_position_for_new_states=new_main_graph->number_of_states;
+/* The following array contains the of transitions that correspond
+ * to subgraph calls to be flattened. We arbitrary set its capacity to 2048 */
+int trans_to_flatten_capacity=2048;
+fst2Transition** transitions_to_flatten=(struct fst2Transition**)malloc(trans_to_flatten_capacity*sizeof(fst2Transition));
+if (transitions_to_flatten==NULL) {
+   fatal_error("Not enough memory in flatten_graph\n");
 }
-for (int i=grammar->initial_states[n_graph];i<limite;i++) {
-    new_main_graph->states[new_main_graph->n_states] = nouvel_etat_comp();
-    Etat_comp etat = new_main_graph->states[new_main_graph->n_states];
-    Fst2State E = grammar->states[i];
-    (new_main_graph->n_states)++;
-    if (is_final_state(E)) {
-      // if the original state is terminal
-      if (n_graph == 1) {
-        // in the main graph: new state must be also terminal
-       etat->controle = (unsigned char)((etat->controle) | 1);
-      } else {
-        // in a subgraph:
-        // we add an epsilon transition pointing to the arr specified in parameter
-        Fst2Transition temp = new_Fst2Transition();
-        temp->tag_number = 0;
-        temp->state_number = arr;
-        temp->next = etat->trans;
-        etat->trans = temp;
+int trans_to_flatten_size=0;
+/* First, we copy the original states into the destination graph */
+int limit=grammar->initial_states[n_graph]+grammar->number_of_states_per_graphs[n_graph];
+for (int i=grammar->initial_states[n_graph];i<limit;i++) {
+   Fst2State original_state = grammar->states[i];
+   SingleGraphState new_state=add_state(new_main_graph);
+   if (is_final_state(original_state)) {
+      /* If the original state is terminal */
+      if (n_graph==1) {
+         /* In the main graph, a new state must be also terminal */
+         set_final_state(new_state);
       }
-    }
-    struct fst2Transition* l = E->transitions;
-    while (l!=NULL) {
-       if (RTN || ((l->tag_number>=0) || (depth<max_depth))) {
-          // if we must produce a FST and if we have a subgraph call
-          Fst2Transition temp = new_Fst2Transition();
-          temp->tag_number = l->tag_number;
-          // to compute the arr value, we must consider the relative value
-          // of l->state_number which is (l->state_number)-grammar->debut_graphe_fst2[1]
-          // and add to it the starting position of the current graph
-          // which is 0 for the main graph
-          temp->state_number = initial_pos + (l->state_number) - grammar->initial_states[n_graph];
-          temp->next = etat->trans;
-          if ((temp->tag_number) < 0) {
-             // if the transition is a reference to a sub-graph
-             if (depth<max_depth) {
-                // if we must flatten:
-                // we note it in order the modify it later
-               if (pos_in_tab >= size_of_tab) { // resize tab
-                 size_of_tab += resize_of_tab_step;
-                 tab = (fst2Transition**) realloc(tab, (size_of_tab * sizeof(fst2Transition*)));
+      else {
+         /* In a subgraph, we add an epsilon transition pointing to the 
+          * destination state specified in parameter. By convention,
+          * epsilon has the tag number 0 */
+         add_outgoing_transition(new_state,0,destination_state);
+      }
+   }
+   /* Now, we deal with the transitions */
+   Fst2Transition original_transitions=original_state->transitions;
+   while (original_transitions!=NULL) {
+      if (!RTN && (original_transitions->tag_number<0) && depth>=max_depth) {
+         /* If we have a subgraph call while 1) we have overpassed the maximum
+          * depth and 2) we must produce a strict FST, then we have to ignore it.
+          * We just signal the fact by increasing a counter */
+         (*SUBGRAPH_CALL_IGNORED)++;
+      }
+      else {
+         /* Otherwise, we deal with the transition. First of all, we compute the
+          * number of its destination state in the new graph. The point is that 
+          * original_transitions->state_number is a global state number in the original
+          * fst2. So, we compute its relative number in the current graph, 
+          * which is original_transitions->state_number-grammar->initial_states[n_graph],
+          * and we add to it the starting position of the current graph.
+          */
+         int destination_state_number=initial_position_for_new_states+original_transitions->state_number-grammar->initial_states[n_graph];
+         add_outgoing_transition(new_state,original_transitions->tag_number,destination_state_number);
+         /* We get a pointer on the transition we have just created */
+         Fst2Transition temp=new_state->outgoing_transitions;
+         if ((temp->tag_number) < 0) {
+            /* If the transition is a subgraph call */
+            if (depth<max_depth) {
+               /* And if we must flatten, we note it in order the modify it later */
+               if (trans_to_flatten_size>=trans_to_flatten_capacity) {
+                  /* We resize the array if needed */
+                  trans_to_flatten_capacity=2*trans_to_flatten_capacity;
+                  transitions_to_flatten=(fst2Transition**)realloc(transitions_to_flatten,trans_to_flatten_capacity*sizeof(fst2Transition*));
+                  if (transitions_to_flatten==NULL) {
+                     fatal_error("Not enough memory in flatten_graph\n");
+                  }
                }
-               tab[pos_in_tab++]=temp;
-             }
-             else {
-                // if we have overpassed the maximum depth,
-                // we just produce a call to the subgraph taking
-                // care of the graph renumerotation
-                temp->tag_number = -(new_graph_number[-(l->tag_number)]);
-                (*SUBGRAPH_CALL)++;
-             }
-          }
-          etat->trans = temp;
-       }
-       else {
-          (*SUBGRAPH_CALL_IGNORED)++;
-       }
-       l = l->next;
-    }
-}
-
- if (n_graph == 1) // in main graph
-   new_main_graph->states[0]->controle
-     = (unsigned char) ((new_main_graph->states[0]->controle) | 2);
-
-
-// then, if there were some calls to subgraphs, we copy them
-for (int i=0;i<pos_in_tab;i++) {
-   // we flatten recursively the subgraph
-   int starting_pos = flatten_graph(grammar,-(tab[i]->tag_number),
-                                    depth+1,max_depth,
-                                    new_main_graph,
-                                    tab[i]->state_number,RTN,
-                                    SUBGRAPH_CALL_IGNORED,SUBGRAPH_CALL);
-   // and we replace the subgraph call by an epsilon transition to the initial state
-   // of the flattened subgraph
-   tab[i]->tag_number = 0;
-   tab[i]->state_number = starting_pos;
-}
-
-/* clean up */
-free(tab);
-
-if (n_graph == 1) { // in main graph
-  if (*SUBGRAPH_CALL)
-    return EQUIVALENT_RTN;
-  else {
-    if (*SUBGRAPH_CALL_IGNORED)
-      return APPROXIMATIVE_FST;
-    else
-      return EQUIVALENT_FST;
-  }
-}
-else // in a subgraph
-  return initial_pos;
-
-}
-
-
-
-
-void remove_epsilon_transitions_in_flattened_graph(Graph_comp graph) {
-}
-
-
-
-
-
-
-
-
-/**
- * this function saves each graph that have been marked to be kept
- */
-void save_graphs_to_keep(Fst2* grammar,FILE* f) {
-for (int i=2;i<=grammar->number_of_graphs;i++) {
-   if (new_graph_number[i]!=0) {
-      save_graph_to_be_kept(i,grammar,f);
+               transitions_to_flatten[trans_to_flatten_size++]=temp;
+            }
+            else {
+               /* If we have overpassed the maximum depth, we know that we can produce
+                * a subgraph call, since, if not, the condition tested above:
+                * 
+                *   (!RTN && (original_transitions->tag_number<0) && depth>=max_depth)
+                * 
+                * would have been true and we would not be here. So, we just produce
+                * a call to the subgraph taking care of the graph renumerotation. */
+               temp->tag_number=-(new_graph_number[-(original_transitions->tag_number)]);
+               (*SUBGRAPH_CALL)++;
+            }
+         }
+      }
+      /* Finally, we go on with the next transition in the list */
+      original_transitions=original_transitions->next;
    }
 }
+if (n_graph==1) {
+   /* If we are in the main graph, we say that its first state is initial */
+   set_initial_state(new_main_graph->states[0]);
+}
+/* Then, if there were some calls to subgraphs, we flatten them */
+for (int i=0;i<trans_to_flatten_size;i++) {
+   /* We flatten recursively the subgraph */
+   int starting_pos=flatten_graph(grammar,-(transitions_to_flatten[i]->tag_number),
+                                  depth+1,max_depth,
+                                  new_main_graph,
+                                  transitions_to_flatten[i]->state_number,RTN,
+                                  SUBGRAPH_CALL_IGNORED,SUBGRAPH_CALL);
+   /* And we replace the subgraph call by an epsilon transition to the initial state
+    * of the flattened subgraph */
+   transitions_to_flatten[i]->tag_number = 0;
+   transitions_to_flatten[i]->state_number = starting_pos;
+}
+/* Clean up */
+free(transitions_to_flatten);
+/* And finally... */
+if (n_graph == 1) {
+   /* If we are in the main graph */
+   if (*SUBGRAPH_CALL) {
+      /* If some subgraph calls remains, then we have an equivalent RTN */
+      return EQUIVALENT_RTN;
+   }
+   else {
+      /* Otherwise, we test if we have removed some subgraph calls */
+      if (*SUBGRAPH_CALL_IGNORED) {
+         /* In that case, we  have a FST that is just an approximation of
+          * the original grammar */
+         return APPROXIMATIVE_FST;
+      }
+      else {
+         /* If there is no subgraph call and if no subgraph call was removed,
+          * then we have a FST that is strictly equivalent to the original
+          * grammar */
+         return EQUIVALENT_FST;
+      }
+  }
+}
+/* If we are in a subgraph, we return the number of the initial state of
+ * the current graph that we have just flattened */
+return initial_position_for_new_states;
 }
 
 
-
 /**
- * this function saves a graph that had been marked to be kept,
- * taking into account renumbering of graphs
+ * This function dumps a graph that had been marked to be kept,
+ * taking into account renumbering of graphs.
  */
-void save_graph_to_be_kept(int N,Fst2* grammar,FILE* f) {
-int limite = grammar->initial_states[N]+grammar->number_of_states_per_graphs[N];
-char temp[1000];
-sprintf(temp,"%d ",-new_graph_number[N]);
+void save_graph_to_keep(int graph_number,Fst2* grammar,FILE* f) {
+int limit=grammar->initial_states[graph_number]+grammar->number_of_states_per_graphs[graph_number];
+char temp[128];
+/* We save the graph header (number+name) */
+sprintf(temp,"%d ",-new_graph_number[graph_number]);
 u_fprints_char(temp,f);
-u_fprints(grammar->graph_names[N],f);
+u_fprints(grammar->graph_names[graph_number],f);
 u_fprints_char("\n",f);
-for (int i = grammar->initial_states[N];i<limite;i++) {
+/* Then, we dump all the states */
+for (int i=grammar->initial_states[graph_number];i<limit;i++) {
+   /* We print the symbol that corresponds to the finality of the state */
    if (is_final_state(grammar->states[i])) {
       u_fprints_char("t ",f);
    }
    else {
       u_fprints_char(": ",f);
    }
-   struct fst2Transition* l = (grammar->states[i])->transitions;
-   while (l!=NULL) {
-      if (l->tag_number < 0) {
-         sprintf(temp,"%d %d ",-new_graph_number[-(l->tag_number)],(l->state_number)-grammar->initial_states[N]);
+   /* And we print all the outgoing transitions */
+   struct fst2Transition* transition=grammar->states[i]->transitions;
+   while (transition!=NULL) {
+      if (transition->tag_number < 0) {
+         /* If we have a subgraph call, we renumber it */
+         sprintf(temp,"%d %d ",-new_graph_number[-(transition->tag_number)],(transition->state_number)-grammar->initial_states[graph_number]);
       }
       else {
-         sprintf(temp,"%d %d ",l->tag_number,(l->state_number)-grammar->initial_states[N]);
+         sprintf(temp,"%d %d ",transition->tag_number,(transition->state_number)-grammar->initial_states[graph_number]);
       }
       u_fprints_char(temp,f);
-      l = l->next;
+      transition = transition->next;
    }
    u_fprints_char("\n",f);
 }
@@ -450,5 +452,15 @@ u_fprints_char("f \n",f);
 }
 
 
-
+/**
+ * This function dumps to the given file each graph of the
+ * given grammar that has been marked to be kept.
+ */
+void save_graphs_to_keep(Fst2* grammar,FILE* f) {
+for (int i=2;i<=grammar->number_of_graphs;i++) {
+   if (new_graph_number[i]!=0) {
+      save_graph_to_keep(i,grammar,f);
+   }
+}
+}
 

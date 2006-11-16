@@ -106,7 +106,7 @@ return NULL;
 
 
 /**
- * Frees a transition list
+ * Frees a transition list.
  */
 void free_Fst2Transition(Fst2Transition t) {
 Fst2Transition tmp;
@@ -119,7 +119,7 @@ while (t!=NULL) {
 
 
 /**
- * Frees a state and all its transitions
+ * Frees a state and all its transitions.
  */
 void free_Fst2State(Fst2State e) {
 free_Fst2Transition(e->transitions);
@@ -128,7 +128,7 @@ free(e);
 
 
 /**
- * Frees a tag
+ * Frees a tag.
  */
 void free_Fst2Tag(Fst2Tag e) {
 if (e->input!=NULL) free(e->input);
@@ -145,7 +145,7 @@ free(e);
 
 
 /**
- * Allocates, initializes and returns an empty automaton
+ * Allocates, initializes and returns an empty automaton.
  */
 Fst2* new_Fst2() {
 Fst2* a=(Fst2*)malloc(sizeof(Fst2));
