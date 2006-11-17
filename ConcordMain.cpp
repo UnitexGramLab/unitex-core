@@ -85,7 +85,9 @@ if (argc!=9) {
 	}
 }
 if (snt_files==NULL) {
-   snt_files=new_snt_files(argv[1]);
+   char text_snt[FILENAME_MAX];
+   get_path(argv[1],text_snt);
+   snt_files=new_snt_files_from_path(text_snt);
 }
 FILE* text=fopen(snt_files->text_cod,"rb");
 if (text==NULL) {
