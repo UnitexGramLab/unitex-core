@@ -763,11 +763,9 @@ int write_graph_comp(FILE* f,
 
   u_fprintf(f, "%d %S\n", number, name);
 
-  if (graph->number_of_states==0) { /* do not segfault on empty automaton */
-    error("warning: resulting automaton is empty\n");
-    u_fprintf(f, ": \nf \n");
-    return 1;
-  }
+  /* empty automaton */
+  if (graph->number_of_states==0)
+    u_fprintf(f, ": \n");
   
   /* print all states */
   int i;
