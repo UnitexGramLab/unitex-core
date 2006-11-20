@@ -504,15 +504,15 @@ free(control);
 
 static int check_for_acyclicity(grf_t * grf, char * color, int boxno) {
 
-  stack_type * stack = stack_new();
+  stack_type_int * stack = stack_new_int();
 
-  stack_push(stack, GRF_BOX_INIT);
+  stack_push_int(stack, GRF_BOX_INIT);
 
-  while (! stack_empty(stack)) {
+  while (! stack_empty_int(stack)) {
 
-    int i = (int) stack_head(stack);
+    int i = stack_head_int(stack);
     
-    if (color[i] == BLACK) { stack_pop(stack); continue; }
+    if (color[i] == BLACK) { stack_pop_int(stack); continue; }
     // if (color[i] == GRAY)  { return false; }
 
     color[i] = GRAY;
@@ -521,16 +521,16 @@ static int check_for_acyclicity(grf_t * grf, char * color, int boxno) {
     
     while ((trans) && (color[trans->to] == BLACK)) { trans = trans->next; }
 
-    if (trans == NULL) { color[i] = BLACK; stack_pop(stack); }
+    if (trans == NULL) { color[i] = BLACK; stack_pop_int(stack); }
 
     while (trans) {
       if (color[trans->to] == GRAY) { return false; }
-      if (color[trans->to] == WHITE) { stack_push(stack, (void *) trans->to); }
+      if (color[trans->to] == WHITE) { stack_push_int(stack,trans->to); }
       trans = trans->next;
     }
   }
 
-  stack_delete(stack);
+  stack_delete_int(stack);
 
   return 1;
 }
@@ -698,15 +698,15 @@ void grf_calc_heights(grf_t * grf, int * heights) {
   heights[GRF_BOX_FINAL] = 0;
 
 
-  stack_type * stack = stack_new();
+  stack_type_int * stack = stack_new_int();
 
-  stack_push(stack, (void *) GRF_BOX_INIT);
+  stack_push_int(stack,GRF_BOX_INIT);
 
-  while (! stack_empty(stack)) {
+  while (! stack_empty_int(stack)) {
 
-    int i = (int) stack_head(stack);
+    int i = (int) stack_head_int(stack);
 
-    if (heights[i] != UNDEF) { stack_pop(stack); continue; }
+    if (heights[i] != UNDEF) { stack_pop_int(stack); continue; }
 
 
     grf_trans * trans = grf->boxes[i]->trans;
@@ -720,20 +720,20 @@ void grf_calc_heights(grf_t * grf, int * heights) {
 
     if (trans == NULL) { // we have heights[i]
 
-      stack_pop(stack);
+      stack_pop_int(stack);
 
     } else {            // try again next time ...
 
       heights[i] = UNDEF;
 
       while (trans) {
-	if (heights[trans->to] == UNDEF) { stack_push(stack, (void *) trans->to); }
+	if (heights[trans->to] == UNDEF) { stack_push_int(stack, trans->to); }
 	trans = trans->next;
       }
     }
   }
 
-  stack_delete(stack);
+  stack_delete_int(stack);
 }
 
 

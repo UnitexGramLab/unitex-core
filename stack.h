@@ -22,6 +22,8 @@
 #ifndef _STACK_H_
 #define _STACK_H_
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "const.h"
 
 
@@ -73,6 +75,69 @@ static inline void * stack_head(stack_type * stack) {
 
 static inline void * stack_pop(stack_type * stack) {
   if (stack->head == 0) { return (void *) UNDEF; }
+  return stack->data[--stack->head];
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// WARNING!!!
+// All has been temporarily duplicated because of a gcc cast bug under AMD
+// 64 that makes impossible to cast a void* to an int.
+//
+
+typedef struct stack_type_int {
+
+  int* data;
+  int head;
+  int size;
+} stack_type_int;
+
+
+
+static inline stack_type_int * stack_new_int(int size = STACK_DEFAULT_SIZE) {
+
+  if (size == 0) { size = 1; }
+
+  stack_type_int * stack = (stack_type_int *) malloc(sizeof(stack_type_int));
+  stack->size = size;
+  stack->data = (int*) malloc(stack->size * sizeof(int));
+  stack->head = 0;
+
+  return stack;
+}
+
+static inline void stack_delete_int(stack_type_int * stack) { free(stack->data); free(stack); }
+
+static inline void stack_clear_int(stack_type_int * stack) { stack->head = 0; }
+static inline int stack_empty_int(stack_type_int * stack) { return (stack->head == 0); }
+
+static inline void stack_push_int(stack_type_int * stack, int e) {
+
+  if (stack->head == stack->size) {
+    stack->size = 2 * stack->size;
+    stack->data = (int*) realloc(stack->data, stack->size * sizeof(int));
+  }
+
+  stack->data[stack->head++] = e;
+}
+
+
+static inline int stack_head_int(stack_type_int * stack) {
+  if (stack->head == 0) {
+     fprintf(stderr,"Empty stack error in stack_head_int\n");
+     exit(1);
+  }
+  return stack->data[stack->head - 1];
+}
+
+
+static inline int stack_pop_int(stack_type_int * stack) {
+  if (stack->head == 0) {
+     fprintf(stderr,"Empty stack error in stack_head_int\n");
+     exit(1);
+  }
   return stack->data[--stack->head];
 }
 
