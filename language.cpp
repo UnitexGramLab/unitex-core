@@ -19,6 +19,7 @@
   *
   */
 
+#include "language.h"
 #include "language_parsing.h"
 #include "symbol.h"
 #include "utils.h"
@@ -137,9 +138,9 @@ void POS_delete(POS_t * POS) {
 
 int POS_new_flex(POS_t * POS, unichar * name) {
 
-  if (POS->nbflex != POS->CATs->nbelems) { fatal_error("POS_new_flex: internal error: flexs should be added first\n"); }
+  if (POS->nbflex != POS->CATs->nbelems) { die("POS_new_flex: internal error: flexs should be added first\n"); }
 
-  if (hash_str_table_idx_lookup(POS->CATs, name) != -1) { fatal_error("new flex: flex '%S' already exists\n", name); }
+  if (hash_str_table_idx_lookup(POS->CATs, name) != -1) { die("new flex: flex '%S' already exists\n", name); }
 
   CAT_t * CAT = CAT_new(name);
 
@@ -162,7 +163,7 @@ int POS_flex_add_value(POS_t * POS, int flexid, unichar * value) {
     CAT_t * cat1 = (CAT_t *) POS->CATs->tab[infos->CATid];
     CAT_t * cat2 = (CAT_t *) POS->CATs->tab[flexid];
 
-    fatal_error("add value: in POS '%S': value '%S' defined in categories '%S' and '%S'.\n", POS->name, value, cat1->name,
+    die("add value: in POS '%S': value '%S' defined in categories '%S' and '%S'.\n", POS->name, value, cat1->name,
 	cat2->name);
   }
 
@@ -178,7 +179,7 @@ int POS_flex_add_value(POS_t * POS, int flexid, unichar * value) {
 
 int POS_new_CAT(POS_t * POS, unichar * name) {
 
-  if (hash_str_table_idx_lookup(POS->CATs, name) != -1) { fatal_error("POS new CAT: category '%S' already exists\n", name); }
+  if (hash_str_table_idx_lookup(POS->CATs, name) != -1) { die("POS new CAT: category '%S' already exists\n", name); }
 
   CAT_t * CAT = CAT_new(name);
 
@@ -191,7 +192,7 @@ int POS_new_CAT(POS_t * POS, unichar * name) {
 
 int POS_CAT_add_value(POS_t * POS, int CATidx, unichar * value) {
 
-  if (hash_str_table_idx_lookup(POS->values, value) != -1) { fatal_error("add value: value '%S' already defined\n", value); }
+  if (hash_str_table_idx_lookup(POS->values, value) != -1) { die("add value: value '%S' already defined\n", value); }
 
   int idx = CAT_add_value((CAT_t *) POS->CATs->tab[CATidx], value);
 
@@ -239,24 +240,7 @@ symbol_t * POS_expand(POS_t * POS) {
 /* language */
 
 
-POS_t * language_new_POS(language_t * lang, unichar * name) {
-
-  if (hash_str_table_idx_lookup(lang->POSs, (unichar *) name) != -1) {
-    error("when adding new POS: POS '");
-    error(name);
-    error("' already exists.\n", name);
-  }
-
-  POS_t * POS = POS_new((unichar *) name);
-
-  int idx = hash_str_table_add(lang->POSs, (unichar *) name, POS);
-
-  POS->idx  = idx;
-  POS->lang = lang;
-
-  return POS;
-}
-
+POS_t * language_new_POS(language_t * lang, const unichar * name);
 
 
 language_t * language_new(unichar * name) {
@@ -268,9 +252,9 @@ language_t * language_new(unichar * name) {
   lang->forms = hash_str_table_new(128);
   lang->unknow_codes = hash_str_table_new(4);
 
-  language_new_POS(lang, (unichar*)UNKNOW_STR); // unknow idx == 0
-  language_new_POS(lang, (unichar*)PUNC_STR);   // punc idx   == 1
-  language_new_POS(lang, (unichar*)CHFA_STR);   // chfa idx   == 2
+  language_new_POS(lang, UNKNOW_STR); // unknow idx == 0
+  language_new_POS(lang, PUNC_STR);   // punc idx   == 1
+  language_new_POS(lang, CHFA_STR);   // chfa idx   == 2
 
 
   unichar empty = 0;
@@ -303,6 +287,25 @@ void language_dump(language_t * lang, FILE * f) {
   fprintf(f, "unknow codes=\n");
   hash_str_table_dump(lang->unknow_codes, NULL, f);
 }
+
+
+
+POS_t * language_new_POS(language_t * lang, const unichar * name) {
+
+  if (hash_str_table_idx_lookup(lang->POSs, (unichar *) name) != -1) {
+    die("when adding new POS: POS '%S' already exists.\n", name);
+  }
+
+  POS_t * POS = POS_new((unichar *) name);
+
+  int idx = hash_str_table_add(lang->POSs, (unichar *) name, POS);
+
+  POS->idx  = idx;
+  POS->lang = lang;
+
+  return POS;
+}
+
 
 
 static symbol_t * expand_code(symbol_t * code, symbol_t * templat, int idx) {
@@ -374,20 +377,20 @@ static symbol_t * get_full_codes(POS_t * POS, tokens_list * full_part) {
 
 	  if ((idx = hash_str_table_idx_lookup(POS->CATs, toks->str)) != -1) {
 
-	    if (idx >= POS->nbdiscr) { fatal_error("'<%S>' isn't a discriminant category.\n", toks->str); }
+	    if (idx >= POS->nbdiscr) { die("'<%S>' isn't a discriminant category.\n", toks->str); }
 
 	    symb->traits[idx] = UNSPECIFIED;
 
-	  } else { fatal_error("in POS '%S': unknow category: <%S>\n", POS->name, toks->str); }
+	  } else { die("in POS '%S': unknow category: <%S>\n", POS->name, toks->str); }
 
 
 	} else { // trait value
 
 	  trait_info_t * infos = (trait_info_t *) hash_str_table_lookup(POS->values, toks->str);
 
-	  if (infos == NULL) { fatal_error("in POS '%S': unknow value: '%S'\n", POS->name, toks->str); }
+	  if (infos == NULL) { die("in POS '%S': unknow value: '%S'\n", POS->name, toks->str); }
 
-	  if (infos->CATid >= POS->nbdiscr) { fatal_error("'%S' isn't a discriminant code.\n", toks->str); }
+	  if (infos->CATid >= POS->nbdiscr) { die("'%S' isn't a discriminant code.\n", toks->str); }
 
 	  symb->traits[infos->CATid] = infos->val;
 	}
@@ -397,7 +400,11 @@ static symbol_t * get_full_codes(POS_t * POS, tokens_list * full_part) {
     symbols_concat(end, expand_code(symb), &end);
   }
 
-  if (res.next == NULL && POS->CATs->nbelems) { error("POS '%S' contains no full labels\n", POS->name); }
+/*
+  if (res.next == NULL && POS->CATs->nbelems) {
+    warning("POS '%S' contains no full labels\n", POS->name);
+  }
+*/
 
   symbol_delete(symb);
 
@@ -422,7 +429,7 @@ language_t * language_load(FILE * f) {
 
   language_tree_t * tree = language_parse(f);
 
-  if (tree == NULL) { fatal_error("unable to load language file\n"); }
+  if (tree == NULL) { die("unable to load language file\n"); }
 
   debug("file is parsed\n");
 
@@ -487,7 +494,7 @@ language_t * language_load(FILE * f) {
 	if (toks->type != TOK_BLANK) {
 	  POS_CAT_add_value(POS, CATidx, toks->str);
 	} else {
-	  fatal_error("'_' in feature def\n");
+	  die("'_' in feature def\n");
 	}
 
 	toks = toks->next;
@@ -512,7 +519,7 @@ language_t * language_load(char * fname) {
 
   FILE * f = u_fopen(fname, U_READ);
 
-  if (f == NULL) { fatal_error("unable to open %s for reading.\n", fname); }
+  if (f == NULL) { die("unable to open %s for reading.\n", fname); }
 
   return language_load(f);
 }

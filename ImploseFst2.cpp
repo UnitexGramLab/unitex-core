@@ -141,7 +141,9 @@ void usage() {
 
 
 int main(int argc, char ** argv) {
-setBufferMode();  
+  setBufferMode();  
+
+  debug("implosfst2\n");
 
   char * txtname = NULL, * outname = NULL;
 

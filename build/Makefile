@@ -102,7 +102,7 @@ ifeq ($(SYSTEM), mingw32)
 #####################
 #####################
 
-CC = i386-mingw32msvc-g++
+CC = i586-mingw32msvc-g++
 RM      = rm -f
 INSTALL = cp
 

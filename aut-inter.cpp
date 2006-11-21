@@ -191,11 +191,16 @@ static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const 
 
   for (transition_t * t1 = A->states[q1].trans; t1; t1 = t1->next) {
 
+    //debug("process :"); symbol_dump(t1->label); endl();
+
     if (t1->label->POS->ignorable) { // skip ignorable tokens
+      //debug("skip ignorable :"); symbol_dump(t1->label); endl();
+     // debug("IGNORABLE\n");
       int to = interStateAtom(res, A, t1->to, B, q2, corresp);
       autalmot_add_trans(res, q, t1->label, to);
-      continue;
+      //continue;
     }
+
 
     bool found = false;
 

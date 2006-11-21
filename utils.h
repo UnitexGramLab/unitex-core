@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2005 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -26,12 +26,11 @@
 #include <stdarg.h>
 #include <time.h>
 #include "unicode.h"
-#include "Error.h"
 
 
 extern int dobreak;
 
-#define BREAK { if (dobreak) { error("\nBREAK:%s at line %d [%s] [type enter]\n", __FILE__, __LINE__, __FUNCTION__); getchar(); } }
+#define BREAK { if (dobreak) { fprintf(stderr, "\nBREAK:%s at line %d [%s] [type enter]\n", __FILE__, __LINE__, __FUNCTION__); getchar(); } }
 
 
 static inline int is_absolute_path(const char * path) { return ((*path == '/') || strchr(path, ':')); }
@@ -78,6 +77,28 @@ static inline char * basename(char * path) {
 
 
 
+static inline void errprintf(char * fmt, ...) {
+
+  va_list plist;
+  va_start(plist, fmt);
+  
+  i_vfprintf(stderr, fmt, plist);
+
+  va_end(plist);
+}
+
+static inline void warning(char * fmt, ...) {
+
+  va_list plist;
+  va_start(plist, fmt);
+  
+  fprintf(stderr, "warning: ");
+  i_vfprintf(stderr, fmt, plist);
+
+  va_end(plist);
+}
+
+
 static inline void debug(char * fmt, ...) {
 
   va_list plist;
@@ -90,14 +111,37 @@ static inline void debug(char * fmt, ...) {
 }
 
 
+
+static inline void error(char * fmt, ...) {
+
+  va_list plist;
+  va_start(plist, fmt);
+  
+  fprintf(stderr, "error: ");
+  i_vfprintf(stderr, fmt, plist);
+
+  va_end(plist);
+}
+
+
+static inline void die(char * fmt, ...) {
+
+  va_list plist;
+  va_start(plist, fmt);
+  
+  fprintf(stderr, "fatal error: ");
+  i_vfprintf(stderr, fmt, plist);
+
+  va_end(plist);
+  exit(1);
+}
+
 static inline void endl(FILE * f = stderr) { fprintf(f, "\n"); }
 
 static inline void * xmalloc(size_t size) {
-void * res = malloc(size);
-if (res == NULL) {
-   fatal_error("xmalloc(%d): Not Enough Memory\n", size);
-}
-return res;
+  void * res = malloc(size);
+  if (res == NULL) { die("xmalloc(%d): Not Enough Memory\n", size); }
+  return res;
 }
 
 
@@ -105,9 +149,9 @@ static inline void * xrealloc(void * ptr, size_t size) {
   void * res = realloc(ptr, size);
   if (res == NULL) {
     if (size != 0) {
-      fatal_error("xrealloc(%d, %d): Not Enough Memory\n", ptr, size);
+      die("xrealloc(%d, %d): Not Enough Memory\n", ptr, size);
     }
-    error("xrealloc called with size=0\n");
+    warning("xrealloc called with size=0\n");
   }
   return res;
 }
@@ -116,13 +160,13 @@ static inline void * xrealloc(void * ptr, size_t size) {
 
 static inline void * xcalloc(size_t nb, size_t size) {
   void * res = calloc(nb, size);
-  if (res == NULL) { fatal_error("xcalloc(%d, %d): Not Enough Memory\n", nb, size); }
+  if (res == NULL) { die("xcalloc(%d, %d): Not Enough Memory\n", nb, size); }
   return res;
 }
 
 
-#define print_time(exp) { time_t beg = time(NULL); exp; time_t end = time(NULL); error("time: %s took %d sec\n", #exp, end - beg); }
+#define print_time(exp) { time_t beg = time(NULL); exp; time_t end = time(NULL); errprintf("time: %s took %d sec\n", #exp, end - beg); }
 
-#define printtime(exp) { error("[ %s: ", #exp); time_t beg = time(NULL); exp; time_t end = time(NULL); error("%d s]\n", end - beg); }
+#define printtime(exp) { errprintf("[ %s: ", #exp); time_t beg = time(NULL); exp; time_t end = time(NULL); errprintf("%d s]\n", end - beg); }
 
 #endif

@@ -652,8 +652,8 @@ unichar c;
 unichar line[10000];
 int current_tag=0;
 /* If the position in the file is not correct we exit */
-if (((c=(unichar)u_fgetc(f))!='%')&&(c!='@')) {
-	fatal_error("Unexpected character in .fst2 file: %c\n",c);
+if (((c=(unichar)u_fgetc(f))!='%')&&(c!='@')) {//olive: n'importe quoi!
+	fatal_error("Unexpected character in .fst2 file: %c (read tag)\n",c);
 }
 /* There cannot have no tag line, because by convention, every .fst2 file
  * must have "%<E>" as first tag. */
@@ -666,7 +666,7 @@ while (c!='f' && (limit==NO_TAG_LIMIT || current_tag<=limit)) {
 	/* And we read the first character of the next line */
   	if (((c=(unichar)u_fgetc(f))!='f')&&(c!='%')&&(c!='@')) {
   		/* If the character is not an expected one we exit */
-  		fatal_error("Unexpected character in .fst2 file: %c\n",c);
+  		fatal_error("Unexpected character in .fst2 file: %c (read tag)\n",c);
   	}
 	line[i]='\0';
 	/* We create the tag and add it to the fst2 */
@@ -778,7 +778,7 @@ do {
 } while (c==' ');
 /* If 'c' is neither a digit nor a minus sign nor an end of line, we exit */
 if (((c<'0')||(c>'9'))&&(c!='-')&&(c!='\n')) {
-	fatal_error("Unexpected character in fst2: %c\n",c);
+	fatal_error("Unexpected character in fst2: %c (read int 1)\n",c);
 }
 if (c=='\n') {
   /* If we have an end of line */
@@ -791,7 +791,7 @@ if (c=='-') {
    * and we read the next character that must be a digit */
   negative_number=1;
   c=(unichar)u_fgetc(f);
-  if (c<'0' || c>'9') {fatal_error("Unexpected character in fst2: %c\n",c);}
+  if (c<'0' || c>'9') {fatal_error("Unexpected character in fst2 (read int 2): %c\n",c);}
 } else {negative_number=0;}
 /* We compute the value of the integer */
 value=c-'0';
@@ -891,7 +891,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		 * empty graphs are not allowed 
 		 */
 		c=(unichar)u_fgetc(f);
-		if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c\n",c);}
+		if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c (read state)\n",c);}
 		/*
 		 * Then, we read the states of the graph, until we find a line beginning by 'f'.
 		 */

@@ -64,6 +64,8 @@ void copy_file(char * dest, char * src) {
 int main(int argc, char ** argv) {
   setBufferMode();
 
+  debug("tagsetnorm\n");
+
   char * txtauto    = NULL;
   char * langname   = NULL;
 
@@ -126,9 +128,26 @@ int main(int argc, char ** argv) {
 
   printf("cleaning text fsa\n");
 
+
+  unichar EMPTY[] = { 'E', 'M', 'P', 'T', 'Y', 0 };
+  symbol_t * symb = symbol_unknow_new(lang, language_add_form(lang, EMPTY));
+
   int no = 0;
   while ((A = fst_file_autalmot_load_next(txtin)) != NULL) {
+    
     autalmot_emonde(A);
+
+    if (A->nbstates == 0) {
+
+      warning("Anne ! la phrase %d est vide !\n", no + 1);
+      
+      int q0 = autalmot_add_state(A, AUT_INITIAL);
+      int q1 = autalmot_add_state(A, AUT_FINAL);
+
+      autalmot_add_trans(A, q0, symb, q1);
+    }
+
+
     fst_file_write(txtout, A);
     autalmot_delete(A);
     no++;
