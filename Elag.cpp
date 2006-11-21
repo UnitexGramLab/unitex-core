@@ -45,6 +45,7 @@
 #include "elag-functions.h"
 #include "utils.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
 
 void usage() {

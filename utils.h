@@ -26,6 +26,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include "unicode.h"
+#include "Error.h"
 
 
 extern int dobreak;
@@ -112,6 +113,7 @@ static inline void debug(char * fmt, ...) {
 
 
 
+/*
 static inline void error(char * fmt, ...) {
 
   va_list plist;
@@ -122,7 +124,7 @@ static inline void error(char * fmt, ...) {
 
   va_end(plist);
 }
-
+*/
 
 static inline void die(char * fmt, ...) {
 
