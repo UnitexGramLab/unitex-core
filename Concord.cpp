@@ -50,6 +50,8 @@ printf("Usage: Concord <concor> <font> <fontsize> <l> <r> <order> <mode> <alph> 
        "            html : produces an HTML concordance file\n"
        "            text : produces a plain text concordance file\n"
        "            glossanet=<script> : produces a glossanet HTML concordance file\n"
+       "            index : produces an index of the concordance\n"
+       "            axis : produces an axis file for the concordance (cf. [Melamed '06])\n"
        "            (txt) : produces a file named (txt) which is the SNT file\n"
        "                    merged with the match results\n"
        "   <alph> : the char order file used for sorting\n"

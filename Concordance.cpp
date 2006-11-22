@@ -29,6 +29,8 @@
 #define HTML_ 0
 #define TEXT_ 1
 #define GLOSSANET_ 2
+#define INDEX_ 3
+#define AXIS_ 4
 
 int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,
                                 int*,int*,int,int,struct conc_opt);
@@ -56,7 +58,7 @@ int get_shift(int,int*,int);
  * that will be used if the output is an HTML file (if not, these
  * parameters will be ignored). 'option.directory' represents the
  * working directory.  'option.result_mode' indicates the kind of
- * output that is expected. If it value if "html" or "text", the
+ * output that is expected. If it value is "html" or "text", the
  * function will build an HTML or text concordance. If its value is of
  * the form "glossanet=xxx", the result will be an HTML concordance
  * designed for the GlossaNet system (http://glossa.fltr.ucl.ac.be),
@@ -71,6 +73,25 @@ int get_shift(int,int*,int);
  * lines. If 'option.thai_mode' is set to a non zero value, it indicates that
  * the concordance is a Thai one. This information is used to compute
  * correctly the context sizes.
+ * 
+ * 
+ * Modifications made by Patrick Watrin (pwatrin@gmail.com) allow to
+ * build index and axis files.
+ * 
+ * WHAT IS AN AXIS FILE ?
+ * ----------------------
+ * "SIMR requires axes to be formatted with one "tic mark" per line.
+ * A tic mark consists of a semantic unit (a token) and its position
+ * in the text. By convention, the position of a token is the position
+ * of its median character (I conjecture that this also works best in
+ * terms of accuracy). Thus, a token's position is always a multiple
+ * of 0.5." (http://nlp.cs.nyu.edu/GMA/docs/HOWTO-axis)
+ * 
+ * EXAMPLE :
+ * ---------
+ * 012345678901
+ * This segment
+ * 2.5  9 
  */
 void create_concordance(FILE* concordance,FILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt option) {
@@ -94,7 +115,11 @@ if (script_glossanet!=NULL) {
 	 * start the GlossaNet script after the equal sign. */
 	script_glossanet=script_glossanet+strlen("glossanet=");
 }
-if (strcmp(option.result_mode,"html") && strcmp(option.result_mode,"text") && script_glossanet==NULL) {
+if (strcmp(option.result_mode,"html") &&
+    strcmp(option.result_mode,"text") && 
+    strcmp(option.result_mode,"index") && 
+    strcmp(option.result_mode,"axis") && 
+    script_glossanet==NULL) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
 	create_modified_text_file(concordance,text,tokens,option.result_mode,n_enter_char,enter_pos);
@@ -103,6 +128,8 @@ if (strcmp(option.result_mode,"html") && strcmp(option.result_mode,"text") && sc
 /* If the expected result is a concordance */
 if (!strcmp(option.result_mode,"html")) RES=HTML_;
 else if (!strcmp(option.result_mode,"text")) RES=TEXT_;
+else if (!strcmp(option.result_mode,"index")) RES=INDEX_;
+else if (!strcmp(option.result_mode,"axis")) RES=AXIS_;
 else {
 	RES=GLOSSANET_;
 	/* The structure glossa_hash will be used to ignore duplicate lines
@@ -121,7 +148,7 @@ else {
 strcpy(temp_file_name,option.working_directory);
 strcat(temp_file_name,"concord_.txt");
 strcpy(output_file_name,option.working_directory);
-if (RES==TEXT_)
+if (RES==TEXT_ || RES==INDEX_ || RES==AXIS_)
 	strcat(output_file_name,"concord.txt");
 else
 	strcat(output_file_name,"concord.html");
@@ -171,10 +198,13 @@ if (f==NULL) {
 	error("Cannot read %s\n",temp_file_name);
 	return;
 }
-if (RES!=TEXT_) {
-	out=fopen(output_file_name,"w");
+if (RES==TEXT_ || RES==INDEX_ || RES==AXIS_) {
+   /* If we have to produce a unicode text file, we open it
+    * as a unicode one */
+   out=u_fopen(output_file_name,U_WRITE);
 } else {
-	out=u_fopen(output_file_name,U_WRITE);
+   /* Otherwise, we open it normally */
+   out=fopen(output_file_name,"w");
 }
 if (out==NULL) {
 	error("Cannot write %s\n",output_file_name);
@@ -183,7 +213,7 @@ if (out==NULL) {
 }
 /* If we have an HTML or a GlossaNet concordance, we must write an HTML
  * file header. */
-if (RES!=TEXT_) write_HTML_header(out,N_MATCHES,option);
+if (RES==HTML_ || RES==GLOSSANET_) write_HTML_header(out,N_MATCHES,option);
 unichar A[3000];
 unichar B[3000];
 unichar C[3000];
@@ -282,14 +312,14 @@ while ((c=u_fgetc(f))!=EOF) {
 			 * procedure if we have a Thai sorted concordance. */
 			if (option.thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
-			if (RES!=TEXT_) {
+			if (RES==HTML_ || RES==GLOSSANET_) {
 				fprintf(out,"<tr><td nowrap>");
 				u_fprints_html_reverse(left,out);
 			} else {u_fprints_reverse(left,out);}
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
 			 * left context. */
-			if (RES!=TEXT_) {
+			if (RES==HTML_ || RES==GLOSSANET_) {
 				fprintf(out,"<tr><td nowrap>");
 				u_fprints_html(left,out);
 			} else {u_fprints(left,out);}
@@ -322,7 +352,7 @@ while ((c=u_fgetc(f))!=EOF) {
 			u_fprints_html(right,out);
 			fprintf(out,"</td></tr>\n");
 		}
-		/* If must must produce a text concordance */
+		/* If we must produce a text concordance */
 		else if (RES==TEXT_) {
 			u_fprints_char("\t",out);
 			u_fprints(middle,out);
@@ -330,11 +360,42 @@ while ((c=u_fgetc(f))!=EOF) {
 			u_fprints(right,out);
 			u_fprints_char("\n",out);
 		}
+      /* If must must produce an index file */
+      else if (RES==INDEX_) {
+         unichar * idx = u_strtok_char(indices, " ");
+         u_fprints(idx,out);
+         u_fprints_char("\t",out);
+         u_fprints(middle,out);
+         u_fprints_char("\n",out);
+      }
+      /* If must must produce an axis file...
+         VARIABLES :
+         -----------
+         - f1: position of the first character of a token
+         - f2: position of the last character of a token
+         - len : length of a token
+            -> len = (f2+1) - f1
+         - med : position of the median character of a token
+            -> med = ((len+1)/2) + f1
+      */
+      else if (RES==AXIS_) {
+         char tmp1[100];
+         u_to_char(tmp1,indices);
+         float f1,f2,len,med;
+         sscanf(tmp1,"%f %f",&f1,&f2);
+         len=(f2+1)-f1;
+         med=((len+1)/2)+f1;
+         sprintf(tmp1,"%.1f",med);
+         u_fprintf(out,tmp1);
+         u_fprints_char("\t",out);
+         u_fprints(middle,out);
+         u_fprints_char("\n",out);
+      }
 	}
 }
 /* If we have an HTML or a GlossaNet concordance, we must write some
  * HTML closing tags. */
-if (RES!=TEXT_) write_HTML_end(out);
+if (RES==HTML_ || RES==GLOSSANET_) write_HTML_end(out);
 u_fclose(f);
 remove(temp_file_name);
 fclose(out);
@@ -1019,9 +1080,12 @@ printf("Done.\n");
  */
 int find_by_dichotomy(int a,int* t,int n) {
 int start_position,middle_position;
-if (n==0||t==NULL) {
-	error("Empty or NULL array in find_by_dichotomy\n");
+if (t==NULL) {
+	error("NULL array in find_by_dichotomy\n");
 	return 0;
+}
+if (n==0) {
+   return 0;
 }
 if (a<t[0]) return 0;
 if (a>t[n-1]) return n;
