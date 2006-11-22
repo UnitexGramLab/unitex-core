@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 
-#include "const.h"
 #include "stack.h"
 
 

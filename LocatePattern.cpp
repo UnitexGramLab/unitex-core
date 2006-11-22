@@ -199,10 +199,10 @@ load_dic_for_locate(dlf,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_eti
 printf("Loading dlc...\n");
 load_dic_for_locate(dlc,alph,tok,nombre_patterns,existe_etiquette_DIC,existe_etiquette_CDIC,
 				existe_etiquette_SDIC,tokenization_mode,root,parameters);
+
 // we look if the tag tokens like {today,.ADV} verify some patterns
 
 check_patterns_for_tag_tokens(alph,tok,nombre_patterns,tokenization_mode,root,parameters);
-
 printf("Optimizing fst2 tags...\n");
 replace_pattern_tags(automate,alph,tok,tokenization_mode,root,parameters);
 printf("Optimizing compound word dictionary...\n");
@@ -356,7 +356,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
             /* $CD$ begin */
           } else if (!u_strcmp_char(tmp,"TOKEN")) {
             etiquette[i]->number=TOKEN;
-    		etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
+            etiquette[i]->control=(unsigned char)(etiquette[i]->control|CONTROL_TAG_BIT_MASK);
             /* $CD$ end   */
 
           } else {
@@ -373,7 +373,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
             // 2eme cas: <manger.V>
             if ((flechi[0]=='\0')&&(canonique[0]!='\0')&&(pattern[0]!='\0')) {
                etiquette[i]->number=(*nombre_patterns);
-    		   etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
+               etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
                etiquette[i]->control=(unsigned char)(etiquette[i]->control|LEMMA_TAG_BIT_MASK);
                inserer_code_gramm(*nombre_patterns,pattern,canonique,parameters->racine_code_gramm);
                (*nombre_patterns)++;
@@ -383,7 +383,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
             // 3eme cas: <mange,manger.V>
             if ((flechi[0]!='\0')&&(canonique[0]!='\0')&&(pattern[0]!='\0')) {
                etiquette[i]->number=(*nombre_patterns);
-    		   etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
+               etiquette[i]->control=(unsigned char)(etiquette[i]->control|GRAMM_CODE_TAG_BIT_MASK);
                etiquette[i]->control=(unsigned char)(etiquette[i]->control|LEMMA_TAG_BIT_MASK);
                inserer_code_gramm(*nombre_patterns,pattern,canonique,parameters->racine_code_gramm);
                (*nombre_patterns)++;
@@ -398,6 +398,10 @@ for (i=0;i<fst2->number_of_tags;i++) {
                etiquette[i]->control=(unsigned char)(etiquette[i]->control|TOKEN_TAG_BIT_MASK);
                etiquette[i]->control=(unsigned char)(etiquette[i]->control|LEMMA_TAG_BIT_MASK);
                etiquette[i]->lemma=(unichar*)malloc((u_strlen(canonique)+1)*sizeof(unichar));
+               if (etiquette[i]->inflected!=NULL) {
+                  free(etiquette[i]->inflected);
+                  etiquette[i]->inflected=NULL;
+               }
                u_strcpy(etiquette[i]->lemma,canonique);
             }// si on n'est dans aucun de ces 4 cas, c'est une erreur
           }

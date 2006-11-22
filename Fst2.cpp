@@ -290,7 +290,7 @@ if (e->input[i]=='>') {
 	 * code. This problem is supposed to be resolved by a later function.
 	 */
 	e->inflected=u_strdup(temp);
-	return;
+   return;
 }
 if (e->input[i]==',') {
 	/*
@@ -591,6 +591,7 @@ if (input[0]=='\0') {u_strcpy_char(input,"<TOKEN>");}
 return create_tag(input,filter,output,respect_case);
 /* $CD$ end   */
 }
+
 
 /**
  * Stringifies and writes a tag to a file including '\n'.

@@ -26,6 +26,8 @@
 #include "BitMasks.h"
 #include "List_int.h"
 #include "BitArray.h"
+#include "HashTable.h"
+#include "FIFO.h"
 
 #define DEFAULT_STATE_ARRAY_SIZE 256
 
@@ -222,7 +224,8 @@ g->capacity=new_capacity;
 
 
 /**
- * Adds a new state to a SingleGraph.
+ * Adds a new state to a SingleGraph. The function returns 
+ * the new state.
  */
 SingleGraphState add_state(SingleGraph g) {
 SingleGraphState s=new_SingleGraphState();
@@ -266,7 +269,7 @@ free(*src);
  */
 void compute_reverse_transitions(SingleGraph graph) {
 int n_states=graph->number_of_states;
-for (int i=0; i<n_states; i++) {
+for (int i=0;i<n_states;i++) {
    if (graph->states[i]!=NULL) {
       Fst2Transition t=graph->states[i]->outgoing_transitions;
       while (t!=NULL) {
@@ -674,5 +677,246 @@ do {
    last_state--;
 } while (i<last_state);
 graph->number_of_states=last_state+1;
+}
+
+
+/**
+ * This function reverses a graph, that is to say:
+ * 1) it reverses all its transitions
+ * 2) each initial state becomes final and each final state becomes initial
+ * 
+ * Note that we assume that reversed transitions have been computed before.
+ * 
+ * The function raises a fatal error in case of NULL or empty automaton.
+ */
+void reverse(SingleGraph graph) {
+if (graph==NULL) {
+   fatal_error("NULL error in reverse\n");
+}
+if (graph->number_of_states==0) {
+   /* If the automaton is empty */
+   fatal_error("Trying to reverse an empty automaton\n");
+}
+SingleGraphState s;
+for (int i=0;i<graph->number_of_states;i++) {
+   s=graph->states[i];
+   if (s==NULL) {
+      fatal_error("Internal error in reverse\n");
+   }
+   /* As we have reversed transitions, we just have to swap
+    * incoming and outgoing transitions */
+   Fst2Transition t=s->outgoing_transitions;
+   s->outgoing_transitions=s->reverted_incoming_transitions;
+   s->reverted_incoming_transitions=t;
+   /* Then we modify the initiality and the finality of the state */
+   if (is_final_state(s) && is_initial_state(s)) {
+      /* No need to do nothing if the state has both properties */
+      continue;
+   }
+   if (is_final_state(s)) {
+      /* A final state becomes initial and non final */
+      unset_bit_mask(&(s->control),FINAL_STATE_BIT_MASK);
+      set_initial_state(s);
+   }
+   else if (is_initial_state(s)) {
+      /* An initial state becomes final and non initial */
+      unset_bit_mask(&(s->control),INITIAL_STATE_BIT_MASK);
+      set_final_state(s);
+   }
+}
+}
+
+
+/**
+ * Takes a graph and returns a sorted list that contains the number
+ * of the initial states of the graph; NULL if none is found.
+ */
+struct list_int* get_initial_states(SingleGraph graph) {
+struct list_int* initial_states=NULL;
+for (int i=0;i<graph->number_of_states;i++) {
+   if (is_initial_state(graph->states[i])) {
+      initial_states=sorted_insert(i,initial_states);
+   }
+}
+return initial_states;
+}
+
+
+/**
+ * This function looks for the given state set in the given hash table. If it
+ * find it, the corresponding state number is returned. Otherwise, we add a state
+ * to the given graph and we associate its number to the state set. This number
+ * is returned. 
+ */
+int get_state_number(SingleGraph graph,struct hash_table* hash,struct list_int* state_set) {
+int code;
+struct any* value=get_value(hash,state_set,HT_INSERT_IF_NEEDED,&code);
+if (code==HT_KEY_ALREADY_THERE) {
+   return value->_int;
+}
+value->_int=graph->number_of_states;
+add_state(graph);
+return value->_int;
+}
+
+
+/**
+ * This function looks for the given state set in the given hash table. If it
+ * find it, the corresponding state is returned. Otherwise, we add a state
+ * to the given graph and we associate its number to the state set.
+ */
+SingleGraphState get_state(SingleGraph graph,struct hash_table* hash,struct list_int* state_set) {
+return graph->states[get_state_number(graph,hash,state_set)];
+}
+
+
+/**
+ * This function returns 1 if a state of the set is final; 0 otherwise.
+ */
+int is_final_state_set(SingleGraph graph,struct list_int* state_set) {
+while (state_set!=NULL) {
+   if (is_final_state(graph->states[state_set->n])) {
+      return 1;
+   }
+   state_set=state_set->next;
+}
+return 0;
+}
+
+
+/**
+ * This function looks in 'hash' for the linked list associated to the
+ * transition's tag number. Then, it adds the transition's destination
+ * state number to this list, if not already present.
+ */
+void process_transition(Fst2Transition t,struct hash_table* hash) {
+int code;
+struct any* value=get_value(hash,t->tag_number,HT_INSERT_IF_NEEDED,&code);
+if (code==HT_KEY_ADDED) {
+   /* If there was no entry for the given tag number, then we must
+    * create its empty list */
+    value->_ptr=NULL;
+}
+/* Then, we insert the state number */
+value->_ptr=sorted_insert(t->state_number,(struct list_int*)value->_ptr);
+}
+
+
+/**
+ * This function takes a graph and determinizes it. We assume that the graph
+ * does not contain any epsilon transition. However, we make no hypothesis about
+ * its initial state(s).
+ * 
+ * Note that, after the determinization, the new reversed transitions have not been
+ * computed.
+ * 
+ * The function raises a fatal error in case of NULL or empty automaton.
+ */
+void determinize(SingleGraph graph) {
+if (graph==NULL) {
+   fatal_error("NULL error in determinize\n");
+}
+if (graph->number_of_states==0) {
+   /* If the automaton is empty */
+   fatal_error("Trying to determinize an empty automaton\n");
+}
+SingleGraph new_graph=new_SingleGraph();
+SingleGraphState state;
+Fst2Transition transition;
+/* NOTE about structures to be used:
+ * 
+ * - hash: a hash table used to associate numbers to set of states
+ * - fifo: a FIFO used to deal with the state sets to be processed
+ * - transition_hash: a hash table reinitialized for each state set. We use
+ *      it to associate to a given tag number the list of the states that can
+ *      be reached.
+ */
+struct hash_table* hash=new_hash_table((unsigned int (*)(void*))hash_list_int,(int (*)(void*, void*))equal_list_int,(void (*)(void*))free_list_int);
+struct fifo* fifo=new_fifo();
+struct hash_table* transition_hash=new_hash_table();
+/* We start by creating the initial state of the new graph and inserting it
+ * in the hash table as well as in the FIFO */
+struct list_int* current_state_set=get_initial_states(graph);
+if (current_state_set==NULL) {
+   /* If the automaton has no initial state */
+   fatal_error("Trying to determinize an automaton with no initial state\n");
+}
+state=get_state(new_graph,hash,current_state_set);
+set_initial_state(state);
+put_ptr(fifo,current_state_set);
+/* The initial state has the number 0 */
+get_state(new_graph,hash,current_state_set);
+/* And now, we loop until we have processed all the state sets */
+while (!is_empty(fifo)) {
+   current_state_set=(struct list_int*)take_ptr(fifo);
+   /* We get the state in the new graph that correspond to
+    * the current state set */
+   state=get_state(new_graph,hash,current_state_set);
+   if (is_final_state_set(graph,current_state_set)) {
+      /* If at least one of the states of the set if final,
+       * the new state must be final */
+      set_final_state(state);
+   }
+   transition=state->outgoing_transitions;
+   /* We process all the outgoing transitions */
+   while (transition!=NULL) {
+      process_transition(transition,transition_hash);
+      transition=transition->next;
+   }
+   /* Now, we look for all the pairs (tag number,destination state numbers).
+    * We use a counter 'p' in order to avoid looking in all the table if
+    * have already seen all its elements. */
+   int p=transition_hash->number_of_elements;
+   for (unsigned int i=0;i<transition_hash->capacity && p!=0;i++) {
+      struct hash_list* list=transition_hash->table[i];
+      while (list!=NULL) {
+         /* We get the number of the state that corresponds to the
+          * state set */
+         int dest_state=get_state_number(new_graph,hash,(struct list_int*)(list->value._ptr));
+         /* And we add a transition to our current state */
+         state->outgoing_transitions=add_transition(state->outgoing_transitions,list->int_key,dest_state);
+         list=list->next;
+      }
+   }
+   /* And we don't forget to clean the transition hash table for the next step */
+   clear_hash_table(transition_hash);
+}
+free_hash_table(hash);
+free_hash_table(transition_hash);
+free_fifo(fifo);
+/* Finally, we replace the old graph by the new one */
+move_SingleGraph(graph,&new_graph);
+}
+
+
+/**
+ * Minimize the given graph, using Brzozowski's algorithm: 
+ * reverse, determinize, reverse, determinize again.
+ * If 'compute_reversed_transitions' parameter is non null,
+ * then the function will first compute the reversed transitions
+ * of the graph; otherwise, it will assume that this is allready
+ * done.
+ * 
+ * Note that, after the minimization, the new reversed transitions
+ * have not been computed.
+ * 
+ * The function raises a fatal error in case of NULL or empty automaton.
+ */
+void minimize(SingleGraph graph,int compute_reversed_transitions) {
+if (graph==NULL) {
+   fatal_error("NULL error in minimize\n");
+}
+if (graph->number_of_states==0) {
+   /* If the automaton is empty */
+   fatal_error("Trying to minimize an empty automaton\n");
+}
+if (compute_reversed_transitions) {
+   compute_reverse_transitions(graph);
+}
+reverse(graph);
+determinize(graph);
+compute_reverse_transitions(graph);
+reverse(graph);
+determinize(graph);
 }
 

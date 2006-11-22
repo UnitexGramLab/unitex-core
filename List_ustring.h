@@ -35,7 +35,8 @@ struct list_ustring {
 };
 
 
-struct list_ustring* new_list_ustring(unichar*,struct list_ustring* following=NULL);
+struct list_ustring* new_list_ustring(unichar*,struct list_ustring*);
+struct list_ustring* new_list_ustring(unichar*);
 void free_list_ustring(struct list_ustring*);
 void free_list_ustring_element(struct list_ustring*);
 struct list_ustring* sorted_insert(unichar*,struct list_ustring*);

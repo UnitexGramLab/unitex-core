@@ -303,7 +303,7 @@ EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o TransductionS
 FLATTEN      = Flatten
 FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o unicode.o Fst2.o Grf2Fst2_lib.o\
                FlattenFst2.o List_int.o Error.o FileName.o SingleGraph.o\
-               BitMasks.o BitArray.o HashTable.o
+               BitMasks.o BitArray.o HashTable.o FIFO.o
 
 FST2GRF      = Fst2Grf
 FST2GRF_OBJS = IOBuffer.o Fst2Grf.o unicode.o Fst2.o Sentence_to_grf.o\
@@ -325,7 +325,7 @@ FST2UNAMBIG_OBJS = Fst2.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = IOBuffer.o Grf2Fst2.o Alphabet.o unicode.o Fst2.o\
                 VerifierRecursion.o Grf2Fst2_lib.o Error.o FileName.o SingleGraph.o\
-                BitMasks.o BitArray.o List_int.o HashTable.o
+                BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o
 
 
 IMPLOSEFST2      = ImploseFst2

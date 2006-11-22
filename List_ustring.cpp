@@ -45,6 +45,14 @@ return l;
 
 
 /**
+ * Allocates, initializes and returns a new string list element.
+ */
+struct list_ustring* new_list_ustring(unichar* string) {
+return new_list_ustring(string,NULL);
+}
+
+
+/**
  * Frees a whole unicode string list.
  */
 void free_list_ustring(struct list_ustring* head) {
@@ -82,17 +90,15 @@ struct list_ustring* sorted_insert(unichar* value,struct list_ustring* l) {
 if (value==NULL) {
    fatal_error("NULL string argument in sorted_insert\n");
 }
-struct list_ustring* tmp;
 if (l==NULL) {
-   tmp=new_list_ustring(value);
-   return tmp;
+   return new_list_ustring(value);
 }
 int res=u_strcmp(value,l->string);
-if (!res) return l;
+if (!res) {
+   return l;
+}
 if (res<0) {
-   tmp=new_list_ustring(value);
-   tmp->next=l;
-   return tmp;
+   return new_list_ustring(value,l);
 }
 l->next=sorted_insert(value,l->next);
 return l;

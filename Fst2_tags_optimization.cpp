@@ -232,8 +232,8 @@ void quatrieme_cas(int e,Fst2Tag* etiquette,Alphabet* alph,struct string_hash* t
                struct locate_parameters* parameters) {
 struct list_ustring* s=get_inflected_forms(etiquette[e]->lemma,root);
 if (s==NULL) {
-  etiquette[e]->number=NOTHING_TAG;
-  return;
+   etiquette[e]->number=NOTHING_TAG;
+   return;
 }
 while (s!=NULL) {
   quatrieme_cas_prime(e,etiquette,s->string,alph,tok,parameters->DLC_tree,tokenization_mode,parameters);
@@ -315,7 +315,6 @@ for (i=0;i</*etiquette_courante*/automate->number_of_tags;i++) {
   if (etiquette[i]->control&LEMMA_TAG_BIT_MASK) {
     // cas <manger>
     if (etiquette[i]->number==LEXICAL_TAG) {
-       //printf("1");
        quatrieme_cas(i,etiquette,alph,tok,parameters->DLC_tree,tokenization_mode,root,parameters);
     }
     else
@@ -327,7 +326,7 @@ for (i=0;i</*etiquette_courante*/automate->number_of_tags;i++) {
     else
     // cas <manger.V>
     if ((etiquette[i]->lemma!=NULL)&&(etiquette[i]->inflected==NULL)) {
-       //printf("3");
+       //printf("3\n");
        deuxieme_cas(i,etiquette,alph,tok,parameters->DLC_tree,tokenization_mode,root,parameters);
     }
   }

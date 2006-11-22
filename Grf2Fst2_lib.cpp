@@ -651,7 +651,7 @@ int determinisation(SingleGraph graph) {
  * must be done by introducing <E> transitions, which requires removing
  * them in the end.
  */
-int reverse (SingleGraph graph) {
+int reverse_ (SingleGraph graph) {
 
   register int i;
 
@@ -745,9 +745,9 @@ int reverse (SingleGraph graph) {
  */
 int minimisation(SingleGraph graph) {
   
-  reverse(graph);
+  reverse_(graph);
   /* determinization is performed in reverse(Graph_comp) */
-  reverse(graph);
+  reverse_(graph);
 
   return 1;
 }

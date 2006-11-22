@@ -516,7 +516,7 @@ if (a->content==NULL) {
    else return 0;
 }
 if (u_strcmp(a->content,b->content)) return 0;
-return equal(a->l,b->l);
+return equal_list_int(a->l,b->l);
 }
 
 

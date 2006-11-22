@@ -20,20 +20,28 @@
   */
 
 //---------------------------------------------------------------------------
-#ifndef Liste_nombresH
-#define Liste_nombresH
+#ifndef List_intH
+#define List_intH
 //---------------------------------------------------------------------------
 
-struct liste_nombres {
+
+/**
+ * This is a simple structure for manipulating int lists.
+ */
+struct list_int {
    int n;
-   struct liste_nombres* suivant;
+   struct list_int* next;
 };
 
 
-struct liste_nombres* new_liste_nombres();
-void free_liste_nombres(struct liste_nombres*);
-struct liste_nombres* inserer_dans_liste_nombres(int,struct liste_nombres*);
-int appartient_a_liste(int,struct liste_nombres*);
-int are_equivalent_liste_nombres(struct liste_nombres*,struct liste_nombres*);
+struct list_int* new_list_int(int,struct list_int*);
+struct list_int* new_list_int(int);
+void free_list_int(struct list_int*);
+struct list_int* sorted_insert(int,struct list_int*);
+int is_in_list(int,struct list_int*);
+int equal_list_int(struct list_int*,struct list_int*);
+struct list_int* head_insert(int,struct list_int*);
+unsigned int hash_list_int(struct list_int*);
 
 #endif
+

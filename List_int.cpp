@@ -20,67 +20,122 @@
   */
 
 //---------------------------------------------------------------------------
-
 #include <stdlib.h>
-
-#include "Liste_nombres.h"
+#include "List_int.h"
+#include "Error.h"
 //---------------------------------------------------------------------------
 
 
-
-struct liste_nombres* new_liste_nombres() {
-struct liste_nombres* l;
-l=(struct liste_nombres*)malloc(sizeof(struct liste_nombres));
-l->suivant=NULL;
-return l;
-}
-
-
-void free_liste_nombres(struct liste_nombres* l) {
-struct liste_nombres* tmp;
-while (l!=NULL) {
-  tmp=l;
-  l=l->suivant;
-  free(tmp);
-}
-}
-
-
-struct liste_nombres* inserer_dans_liste_nombres(int n,struct liste_nombres* l) {
-struct liste_nombres* tmp;
+/**
+ * Allocates, initializes and returns a new int list element.
+ */
+struct list_int* new_list_int(int value,struct list_int* next) {
+struct list_int* l;
+l=(struct list_int*)malloc(sizeof(struct list_int));
 if (l==NULL) {
-   tmp=new_liste_nombres();
-   tmp->n=n;
-   return tmp;
+   fatal_error("Not enough memory in new_list_int\n");
 }
-if (n==l->n) return l;
-if (n<l->n) {
-   tmp=new_liste_nombres();
-   tmp->n=n;
-   tmp->suivant=l;
-   return tmp;
-}
-l->suivant=inserer_dans_liste_nombres(n,l->suivant);
+l->n=value;
+l->next=next;
 return l;
 }
 
 
+/**
+ * Allocates, initializes and returns a new int list element.
+ */
+struct list_int* new_list_int(int value) {
+return new_list_int(value,NULL);
+}
 
-int appartient_a_liste(int n,struct liste_nombres* l) {
+
+/**
+ * Frees a whole int list.
+ */
+void free_list_int(struct list_int* head) {
+struct list_int* tmp;
+while (head!=NULL) {
+   tmp=head;
+   head=head->next;
+   free(tmp);
+}
+}
+
+
+/**
+ * Inserts a value in a sorted list, if not already present. The
+ * element that contains the value is returned.
+ * 
+ * NOTE: in the general case, a struct list_int is not supposed
+ *       to be sorted.
+ */
+struct list_int* sorted_insert(int value,struct list_int* l) {
+struct list_int* tmp;
+if (l==NULL) {
+   tmp=new_list_int(value);
+   return tmp;
+}
+if (value==l->n) return l;
+if (value<l->n) {
+   tmp=new_list_int(value);
+   tmp->next=l;
+   return tmp;
+}
+l->next=sorted_insert(value,l->next);
+return l;
+}
+
+
+/**
+ * Inserts an element at the head of the list.
+ */
+struct list_int* head_insert(int value,struct list_int* old_head) {
+struct list_int* new_head=new_list_int(value);
+new_head->next=old_head;
+return new_head;
+}
+
+
+/**
+ * Returns 1 if the given value is in the list; 0 otherwise.
+ */
+int is_in_list(int value,struct list_int* l) {
 while (l!=NULL) {
-  if (l->n==n) return 1;
-  l=l->suivant;
+  if (l->n==value) return 1;
+  l=l->next;
 }
 return 0;
 }
 
 
-
-int are_equivalent_liste_nombres(struct liste_nombres* a,struct liste_nombres* b) {
+/**
+ * Returns 1 if a is the same than b, i.e. they are
+ * both NULL or they contain the same elements in the
+ * same order.
+ */
+int equal_list_int(struct list_int* a,struct list_int* b) {
 if (a==NULL) {
    if (b==NULL) return 1;
    else return 0;
-} else if (b==NULL) {return 0;}
-if (a->n!=b->n) return 0;
-return are_equivalent_liste_nombres(a->suivant,b->suivant);
+}
+if (b==NULL) {
+   return 0;
+}
+if (a->n!=b->n) {
+   return 0;
+}
+return equal_list_int(a->next,b->next);
+}
+
+
+/**
+ * This function sums the elements of the list and returns it as an hash code.
+ */
+unsigned int hash_list_int(struct list_int* list) {
+int n=0;
+while (list!=NULL) {
+   n=n+list->n;
+   list=list->next;
+}
+return n;
 }
