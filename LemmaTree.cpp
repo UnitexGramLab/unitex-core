@@ -39,7 +39,7 @@ if (n==NULL) {
 }
 n->inflected_forms=NULL;
 /* We initialize the letter field with 1 in order to avoid
- * bas surprise in the root */
+ * bad surprise in the root */
 n->letter=1;
 n->sons=NULL;
 return n;
@@ -140,7 +140,7 @@ dest_node=get_lemma_node(node,lemma[pos],1);
 pos++;
 if (lemma[pos]=='\0') {
    /* We add the inflected form to the list */
-   node->inflected_forms=sorted_insert(inflected,node->inflected_forms);
+   dest_node->inflected_forms=sorted_insert(inflected,dest_node->inflected_forms);
 }
 else add_inflected_form_for_lemma(lemma,pos,dest_node,inflected);
 }
