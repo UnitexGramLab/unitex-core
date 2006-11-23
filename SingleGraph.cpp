@@ -971,3 +971,41 @@ reverse(graph);
 determinize(graph);
 }
 
+
+/**
+ * Saves the given graph to a .fst2 file. 'graph_number' is supposed to be
+ * a negative integer representing the graph. 'graph_name' is supposed to
+ * be the graph name without path and extension, like "Det". In some particular
+ * case, this can replaced by a string value. For instance, the graph name is
+ * replaced by the content of a sentence, when a .fst2 represents a text automaton.
+ */
+void save_graph(FILE* fst2,SingleGraph graph,int graph_number,unichar* graph_name) {
+/* We print the graph header made of its negative number and its name */
+u_fprintf(fst2,"%d %S\n", graph_number, graph_name);
+/* If we have an empty graph, we represent it by a single state with
+ * no transition. This is a pure convention in order to avoid troubles
+ * when loading .fst2 files. */
+if (graph->number_of_states==0) {
+   u_fprintf(fst2, ": \n");
+}
+/* We print all the states */
+for (int i=0;i<graph->number_of_states;i++) {
+   if (graph->states[i]==NULL) {
+      fatal_error("NULL graph state in save_graph\n");
+   }
+   if (is_final_state(graph->states[i])) {
+      u_fputc((unichar)'t',fst2);
+   } else {
+      u_fputc((unichar)':',fst2);
+   }
+   Fst2Transition ptr=graph->states[i]->outgoing_transitions;
+   while (ptr!=NULL) {
+      u_fprintf(fst2," %d %d",ptr->tag_number,ptr->state_number);
+      ptr=ptr->next;
+   }
+   u_fputc((unichar)' ',fst2);
+   u_fputc((unichar)'\n',fst2);
+}
+/* Finally, we mark the end of the graph */
+u_fprintf(fst2,"f \n");
+}

@@ -120,7 +120,7 @@ snprintf(tmpstr,256,"%010d\n",(RTN?n_graphs_to_keep:1));
 u_fprints_char(tmpstr,res);
 /* We save the new main graph */
 printf("Writing grammar...\n");
-write_graph_comp(res,new_fst2,-1,origin->graph_names[1]);
+save_graph(res,new_fst2,-1,origin->graph_names[1]);
 free_SingleGraph(new_fst2);
 /* Then, we save the subgraphs, if we have to */
 if (RTN && (result == EQUIVALENT_RTN)) {
@@ -420,7 +420,7 @@ return initial_position_for_new_states;
 
 
 /**
- * This function dumps a graph that had been marked to be kept,
+ * This function dumps a graph from a Fst2 that had been marked to be kept,
  * taking into account renumbering of graphs.
  */
 void save_graph_to_keep(int graph_number,Fst2* grammar,FILE* f,int* new_graph_number) {

@@ -66,6 +66,7 @@ typedef struct single_graph_* SingleGraph;
 
 SingleGraph new_SingleGraph();
 void free_SingleGraph(SingleGraph);
+
 int is_final_state(SingleGraphState);
 void set_final_state(SingleGraphState);
 int is_initial_state(SingleGraphState);
@@ -74,21 +75,25 @@ int is_accessible_state(SingleGraphState);
 void set_accessible_state(SingleGraphState);
 int is_co_accessible_state(SingleGraphState);
 void set_co_accessible_state(SingleGraphState);
+
 SingleGraphState new_SingleGraphState();
 void free_SingleGraphState(SingleGraphState);
 void add_outgoing_transition(SingleGraphState,int,int);
 void set_state_array_capacity(SingleGraph,int);
 SingleGraphState add_state(SingleGraph);
 void move_SingleGraph(SingleGraph,SingleGraph*);
+
 void compute_reverse_transitions(SingleGraph);
 void check_accessibility(SingleGraphState*,int);
 void check_co_accessibility(SingleGraphState*,int);
 void remove_epsilon_transitions(SingleGraph);
 void remove_useless_states(SingleGraph);
-
 void reverse(SingleGraph);
+
 void determinize(SingleGraph);
 void minimize(SingleGraph,int);
+
+void save_graph(FILE*,SingleGraph,int,unichar*);
 
 #endif
 
