@@ -746,14 +746,18 @@ return initial_states;
  * This function looks for the given state set in the given hash table. If it
  * find it, the corresponding state number is returned. Otherwise, we add a state
  * to the given graph and we associate its number to the state set. This number
- * is returned. 
+ * is returned. (*created) will be set to 1 if we need to create the state; to 0
+ * otherwise.
  */
-int get_state_number(SingleGraph graph,struct hash_table* hash,struct list_int* state_set) {
+int get_state_number(SingleGraph graph,struct hash_table* hash,struct list_int* state_set,
+                     int *created) {
 int code;
-struct any* value=get_value(hash,state_set,HT_INSERT_IF_NEEDED,&code);
+struct any* value=get_value(hash,(void*)state_set,HT_INSERT_IF_NEEDED,&code);
 if (code==HT_KEY_ALREADY_THERE) {
+   (*created)=0;
    return value->_int;
 }
+(*created)=1;
 value->_int=graph->number_of_states;
 add_state(graph);
 return value->_int;
@@ -764,9 +768,23 @@ return value->_int;
  * This function looks for the given state set in the given hash table. If it
  * find it, the corresponding state is returned. Otherwise, we add a state
  * to the given graph and we associate its number to the state set.
+ * (*created) will contain a non null value if and only if the state did
+ * not already exist.
+ */
+SingleGraphState get_state(SingleGraph graph,struct hash_table* hash,struct list_int* state_set,
+                           int *created) {
+return graph->states[get_state_number(graph,hash,state_set,created)];
+}
+
+
+/**
+ * This function looks for the given state set in the given hash table. If it
+ * find it, the corresponding state is returned. Otherwise, we add a state
+ * to the given graph and we associate its number to the state set.
  */
 SingleGraphState get_state(SingleGraph graph,struct hash_table* hash,struct list_int* state_set) {
-return graph->states[get_state_number(graph,hash,state_set)];
+int i;
+return get_state(graph,hash,state_set,&i);
 }
 
 
@@ -775,6 +793,9 @@ return graph->states[get_state_number(graph,hash,state_set)];
  */
 int is_final_state_set(SingleGraph graph,struct list_int* state_set) {
 while (state_set!=NULL) {
+   if (state_set->n<0 || state_set->n>=graph->number_of_states) {
+      fatal_error("Invalid state number %d in is_final_state_set (should be in [0;%d])\n",state_set->n,graph->number_of_states-1);
+   }
    if (is_final_state(graph->states[state_set->n])) {
       return 1;
    }
@@ -851,35 +872,65 @@ while (!is_empty(fifo)) {
    current_state_set=(struct list_int*)take_ptr(fifo);
    /* We get the state in the new graph that correspond to
     * the current state set */
-   state=get_state(new_graph,hash,current_state_set);
+   int created;
+   state=get_state(new_graph,hash,current_state_set,&created);
+   if (created) {
+      /* We assume that a state set in the FIFO actually corresponds to
+       * a state in the new graph */
+      fatal_error("Internal error in determinize's FIFO\n");
+   }
    if (is_final_state_set(graph,current_state_set)) {
       /* If at least one of the states of the set if final,
        * the new state must be final */
       set_final_state(state);
    }
-   transition=state->outgoing_transitions;
-   /* We process all the outgoing transitions */
-   while (transition!=NULL) {
-      process_transition(transition,transition_hash);
-      transition=transition->next;
+   /* We process all the outgoing transitions of all the states of the set */
+   struct list_int* tmp=current_state_set;
+   while (tmp!=NULL) {
+      transition=graph->states[tmp->n]->outgoing_transitions;
+      while (transition!=NULL) {
+         process_transition(transition,transition_hash);
+         transition=transition->next;
+      }
+      tmp=tmp->next;
    }
    /* Now, we look for all the pairs (tag number,destination state numbers).
     * We use a counter 'p' in order to avoid looking in all the table if
     * have already seen all its elements. */
-   int p=transition_hash->number_of_elements;
-   for (unsigned int i=0;i<transition_hash->capacity && p!=0;i++) {
+   int elements_to_process=transition_hash->number_of_elements;
+   for (unsigned int i=0;i<transition_hash->capacity && elements_to_process!=0;i++) {
       struct hash_list* list=transition_hash->table[i];
       while (list!=NULL) {
+         elements_to_process--;
          /* We get the number of the state that corresponds to the
           * state set */
-         int dest_state=get_state_number(new_graph,hash,(struct list_int*)(list->value._ptr));
+         int created;
+         int dest_state=get_state_number(new_graph,hash,(struct list_int*)(list->value._ptr),&created);
+         if (created) {
+            /* If the destination state has not already been processed, we add it to
+             * the FIFO */
+            put_ptr(fifo,list->value._ptr);
+         } else {
+            /* If the state set has already an equivalent in the hash table,
+             * then we can free this useless one. */
+            free_list_int((struct list_int*)list->value._ptr);
+         }
          /* And we add a transition to our current state */
          state->outgoing_transitions=add_transition(state->outgoing_transitions,list->int_key,dest_state);
+         /* Finally, we can remove the current element from the transition hash list.
+          * IMPORTANT: we must just free the hash_list cell and not its '_ptr' field because:
+          *            1) the corresponding state set was used to add a new state in the hash
+          *               table, so freeing it would destroy some content of the hash table
+          *         or 2) it was already freed
+          */
+         struct hash_list* tmp=list;
          list=list->next;
+         free(tmp);
       }
+      transition_hash->table[i]=NULL;
    }
    /* And we don't forget to clean the transition hash table for the next step */
-   clear_hash_table(transition_hash);
+   //clear_hash_table(transition_hash);
 }
 free_hash_table(hash);
 free_hash_table(transition_hash);

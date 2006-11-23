@@ -268,6 +268,7 @@ if (h->number_of_elements>=(h->ratio*h->capacity)) {
 /* Then we add the new key */
 int cell_index=h->hash(key)%h->capacity;
 h->table[cell_index]=new_hash_list(key,h->table[cell_index]);
+h->number_of_elements++;
 return &(h->table[cell_index]->value);
 }
 
@@ -349,6 +350,7 @@ if (h->number_of_elements>=(h->ratio*h->capacity)) {
 /* Then we add the new key */
 int cell_index=key%h->capacity;
 h->table[cell_index]=new_hash_list(key,h->table[cell_index]);
+h->number_of_elements++;
 return &(h->table[cell_index]->value);
 }
 

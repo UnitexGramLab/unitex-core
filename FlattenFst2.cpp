@@ -111,11 +111,9 @@ check_accessibility(new_fst2->states,0);
 remove_epsilon_transitions(new_fst2);
 remove_useless_states(new_fst2);
 /* We minimize the new main graph */
-//printf("Determinization...\n");
-//determinisation(new_fst2);
 printf("Minimization...\n");
-minimisation(new_fst2);
-/* Now, we can start saving the grammar, so we print the header of the .fst,
+minimize(new_fst2,0);
+/* Now, we can start saving the grammar, so we print the header of the .fst2,
  * which is the number of graphs it contains. */
 char tmpstr[256];
 snprintf(tmpstr,256,"%010d\n",(RTN?n_graphs_to_keep:1));
@@ -306,8 +304,10 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
    SingleGraphState new_state=add_state(new_main_graph);
    if (is_final_state(original_state)) {
       /* If the original state is terminal */
-      if (n_graph==1) {
-         /* In the main graph, a new state must be also terminal */
+      if (depth==0) {
+         /* If we are in the main graph, at the first step, i.e. not inside a
+          * recursive call to the main graph, we say that the new state must
+          * be also terminal */
          set_final_state(new_state);
       }
       else {
@@ -369,8 +369,9 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
       original_transitions=original_transitions->next;
    }
 }
-if (n_graph==1) {
-   /* If we are in the main graph, we say that its first state is initial */
+if (depth==0) {
+   /* If we are in the main graph, at the first step, i.e. not inside a
+    * recursive call to the main graph, we say that its first state is initial */
    set_initial_state(new_main_graph->states[0]);
 }
 /* Then, if there were some calls to subgraphs, we flatten them */
@@ -390,8 +391,9 @@ for (int i=0;i<trans_to_flatten_size;i++) {
 /* Clean up */
 free(transitions_to_flatten);
 /* And finally... */
-if (n_graph == 1) {
-   /* If we are in the main graph */
+if (depth==0) {
+   /* If we are in the main graph, at the first step, i.e. not inside a
+    * recursive call to the main graph */
    if (*SUBGRAPH_CALL) {
       /* If some subgraph calls remains, then we have an equivalent RTN */
       return EQUIVALENT_RTN;

@@ -86,5 +86,9 @@ void check_co_accessibility(SingleGraphState*,int);
 void remove_epsilon_transitions(SingleGraph);
 void remove_useless_states(SingleGraph);
 
+void reverse(SingleGraph);
+void determinize(SingleGraph);
+void minimize(SingleGraph,int);
+
 #endif
 
