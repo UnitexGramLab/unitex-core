@@ -663,7 +663,7 @@ while (l!=NULL) {
          if (p==0 || p==priority) {
             /* We save the simple word only if it hasn't already been processed with
              * a greater priority */
-            set_value(info->part_of_a_word,token_number,priority);             
+            set_value(info->part_of_a_word,token_number,1);             
             set_value(info->simple_word,token_number,priority);
             /* We save it to the DLF */
             u_fprints(l->output,info->dlf);
@@ -681,7 +681,7 @@ while (l!=NULL) {
             for (int k=0;token_tab_coumpounds[k]!=-1;k++) {
                /* If we have matched a compound word, then all its part all not
                 * unknown words */
-               set_value(info->part_of_a_word,token_tab_coumpounds[k],priority);
+               set_value(info->part_of_a_word,token_tab_coumpounds[k],1);
             }
             /* We save it to the DLC */
             u_fprints(l->output,info->dlc);

@@ -260,6 +260,7 @@ if (argv==NULL) {
 }
 /* If needed: just to know that the call come from here if necessary */
 argv[0]=strdup("launch_locate_as_routine");
+argv[2]=strdup(fst2);
 argv[1]=strdup(text_snt);
 argv[3]=strdup(alphabet);
 /* We work in longuest match mode */

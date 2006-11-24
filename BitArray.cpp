@@ -83,7 +83,7 @@ if (n<0 || n>=array->size_in_elements) {
 int length=(int)array->info_length;
 int divider=array->divider;
 if (value<0 || value>=(1<<length)) {
-   fatal_error("Invalid value (%d) in set_value\n",value);
+   fatal_error("Invalid value (%d) in set_value; should be in [0;%d]\n",value,(1<<length)-1);
 }
 int cleaning_mask=0xFF-(((1<<length)-1)<<((n%divider)*length));
 int value_mask=value<<((n%divider)*length);
