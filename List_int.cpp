@@ -68,14 +68,47 @@ while (head!=NULL) {
  * 
  * NOTE: in the general case, a struct list_int is not supposed
  *       to be sorted.
+ * 
+ * Time-critical function: the iterative implementation is faster!
  */
+struct list_int* sorted_insert(int value,struct list_int* l) {
+
+register struct list_int* tmp;
+struct list_int* tmp2;
+struct list_int* last = NULL;
+
+if (l==NULL)  /* empty list */
+   return new_list_int(value);
+
+for (tmp=l; tmp!=NULL; tmp=tmp->next) {
+  if (value==tmp->n) /* is in list */
+     return l;
+  if (value<tmp->n) { /* smaller than element tmp */
+    tmp2=new_list_int(value,tmp);
+    if (last==NULL) /* tmp was the first element: tmp2 will get the
+                       first */
+      l = tmp2;
+    else
+      last->next = tmp2;
+    return l;
+  }
+  last=tmp;
+} 
+/* value not found in the list and there is no bigger element in the
+   list: insert at the end of the list */
+tmp2=new_list_int(value);
+last->next = tmp2;
+return l;
+}
+/* 
 struct list_int* sorted_insert(int value,struct list_int* l) {
 struct list_int* tmp;
 if (l==NULL) {
    tmp=new_list_int(value);
    return tmp;
 }
-if (value==l->n) return l;
+if (value==l->n)
+  return l;
 if (value<l->n) {
    tmp=new_list_int(value);
    tmp->next=l;
@@ -84,6 +117,7 @@ if (value<l->n) {
 l->next=sorted_insert(value,l->next);
 return l;
 }
+*/
 
 
 /**
