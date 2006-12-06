@@ -21,6 +21,7 @@
 
 //---------------------------------------------------------------------------
 
+#include "utils.h"
 #include "Normalization_transducer.h"
 //---------------------------------------------------------------------------
 
@@ -439,6 +440,8 @@ if (automate==NULL) {
 struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
 // we create the token tree to speed up the consultation
 for (int i=0;i<tok->N;i++) {
+   //debug("%d/%d\n",i, tok->N);
+   //debug("tok=%S\n", tok->token[i]);
    get_value_index(tok->token[i],hash);
 }
 struct noeud_arbre_normalization* root=new_noeud_arbre_normalization();

@@ -563,7 +563,7 @@ void symbol_to_text_label(const symbol_t * s, ustring_t * ustr) {
   if (s == SYMBOL_DEF) { die("symb2txt: symb is <def>\n"); }
 
   if (s->type != ATOM) {
-    error("symbol2txt: symbol '"); symbol_dump(s); errprintf("' is'nt an atom.\n");
+    o_error("symbol2txt: symbol '"); symbol_dump(s); errprintf("' is'nt an atom.\n");
     die("");
   }
 
@@ -610,7 +610,7 @@ void symbol_to_implosed_text_label(const symbol_t * s, ustring_t * ustr) {
   if (s == SYMBOL_DEF) { die("symb2txt: symb is <def>\n"); }
 
   if (s->type != ATOM) {
-    error("symbol2txt: symbol '"); symbol_dump(s); errprintf("' is'nt an atom.\n");
+    o_error("symbol2txt: symbol '"); symbol_dump(s); errprintf("' is'nt an atom.\n");
     die("");
   }
 
@@ -658,7 +658,7 @@ void symbol_to_implosed_text_label(const symbol_t * s, ustring_t * ustr) {
 void symbol_to_locate_label(const symbol_t * s, ustring_t * ustr) {
 
   if (s == NULL) { die("symb2locate label: symb is null\n"); }
-  if (s == SYMBOL_DEF) { error("symb2locate: symb is <def>\n"); ustring_copy(ustr, "<def>"); return; }
+  if (s == SYMBOL_DEF) { o_error("symb2locate: symb is <def>\n"); ustring_copy(ustr, "<def>"); return; }
 
   switch (s->type) {
 
@@ -671,12 +671,12 @@ void symbol_to_locate_label(const symbol_t * s, ustring_t * ustr) {
     return;
 
   case EXCLAM:
-    error("'<!>' in concordance fst2 ???\n");
+    o_error("'<!>' in concordance fst2 ???\n");
     ustring_copy(ustr, "!");
     return;
 
   case EQUAL:
-    error("'<=>' in concordance fst2 ???\n");
+    o_error("'<=>' in concordance fst2 ???\n");
     ustring_copy(ustr, "=");
     return;
   }
@@ -965,27 +965,27 @@ inline int check_dic_entry(const unichar * label) {
 
   /* {__,__.__} */
 
-  if (*label != '{') { error("'%S': malformed DELA entry ('{' is missing)\n", label); return -1; }
+  if (*label != '{') { o_error("'%S': malformed DELA entry ('{' is missing)\n", label); return -1; }
 
   const unichar * p = label + 1;
 
   while (*p !=  ',') { // look for ','
-    if (*p == 0) { error("'%S': malformed DELA entry (',' is missing).\n", label); return -1; }
+    if (*p == 0) { o_error("'%S': malformed DELA entry (',' is missing).\n", label); return -1; }
     p++;
   }
 
   while (*p != '.') {
-    if (*p == 0) { error("'%S': malformed DELA entry ('.' is missing).\n", label); return -1; }
+    if (*p == 0) { o_error("'%S': malformed DELA entry ('.' is missing).\n", label); return -1; }
     p++;
   }
 
   while (*p != '}') {
-    if (*p == 0) { error("'%S': malformed DELA entry: '%S' ('}' is missing).\n", label); return -1; }
+    if (*p == 0) { o_error("'%S': malformed DELA entry: '%S' ('}' is missing).\n", label); return -1; }
     p++;
   }
 
   p++;
-  if (*p != 0) { error("'%S': malformed label: label should end with '}'.\n", label); return -1; }
+  if (*p != 0) { o_error("'%S': malformed label: label should end with '}'.\n", label); return -1; }
 
   return 0;
 }
@@ -1000,9 +1000,9 @@ inline int check_dic_entry(const unichar * label) {
 static inline int check_text_label(unichar * label) {
 
 
-  if ((label == NULL)) { error("check label: no label\n"); return -1; }
+  if ((label == NULL)) { o_error("check label: no label\n"); return -1; }
 
-  if (*label == 0) { error("error: check label: label is empty\n"); return -1; }
+  if (*label == 0) { o_error("error: check label: label is empty\n"); return -1; }
 
   if (*label == '{' && *(label + 1)) { return check_dic_entry(label); }
 
@@ -1033,9 +1033,11 @@ symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * bu
   POS_t * POS = language_get_POS(lang, pos);
 
   if (POS == NULL) {
-    error("'%S': unknow POS '%S'\n", label, pos);
+    o_error("'%S': unknow POS '%S'\n", label, pos);
     return NULL;
   }
+  //debug("POS=%S (%S)\n", POS->name, label);
+  //  debug("traits=%S\n", traits);
 
   symbol_t * symb = symbol_new(POS);
   symbol_t * model;
@@ -1052,8 +1054,12 @@ symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * bu
 
   for (int i = 0; i < POS->CATs->nbelems; i++) { symb->traits[i] = LOCKED; }
 
-
-  unichar * p = u_strtok_char(traits, "+");
+  unichar * p;
+  if (traits == NULL || *traits == 0) {
+   p = NULL;
+  } else {
+    p = u_strtok_char(traits, "+");
+  }
 
   while (p) {
 
@@ -1077,12 +1083,16 @@ symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * bu
 
   /* flexional codes */
 
-  p = u_strtok_char(flexs, ":");
+  if (flexs == NULL || *flexs == 0) {
+   p = NULL;
+  } else {
+    p = u_strtok_char(flexs, ":");
+  }
 
   if (p == NULL) { // no flexionnal code
 
     if (POS->codes && (symbol_match_codes(symb) == 0)) {
-      error("'%S': doesn't match with POS '%S' definition\n", label, POS->name);
+      o_error("'%S': doesn't match with POS '%S' definition\n", label, POS->name);
       goto err_symb;
     }
 
@@ -1090,25 +1100,29 @@ symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * bu
   }
 
 
+//  debug("HERE\n");
   model = symb;
   symb = NULL;
 
   while (p) {
 
+    //debug("p=%S\n", p);
     symbol_t * nouvo = symbol_dup(model);
 
     for (; *p; p++) {
 
       trait_info_t * infos = POS_get_flex_infos(POS, *p);
 
-      if (infos == NULL) { error("'%S': unknow flexionnal code '%C'\n", label, *p); goto err_model; }
+      if (infos == NULL) {
+        o_error("'%S': unknown flexionnal code '%C'\n", label, *p); goto err_model;
+      }
 
       nouvo->traits[infos->CATid] = infos->val;
     }
 
 
     if (POS->codes && (symbol_match_codes(nouvo) == 0)) {
-      error("'%S': doesn't match with POS '%S' definition\n", label, POS->name);
+      o_error("'%S': doesn't match with POS '%S' definition\n", label, POS->name);
       goto err_model;
     }
 
@@ -1139,7 +1153,7 @@ symbol_t * load_text_symbol(language_t * lang, unichar * label) {
   u_strcpy(buf, label);
 
   if (check_text_label(buf) == -1) {
-    error("bad format in text symbol: '%S'\n", label);
+    o_error("bad format in text symbol: '%S'\n", label);
     return NULL;
   }
 
@@ -1246,7 +1260,7 @@ static void fill_neglist(language_t * lang, symbol_t * s, unichar * canonic) {
     p = u_strtok_char(NULL, "!");
   }
 
-  if (s->nbnegs != nbnegs) { error("in fill_neglist: different nbnegs?\n"); }
+  if (s->nbnegs != nbnegs) { o_error("in fill_neglist: different nbnegs?\n"); }
 }
 
 
@@ -1387,14 +1401,14 @@ static symbol_t * load_gram_symbol(language_t * lang, const unichar * label, uni
       if (*attr == '@') { // flexionnal feature is locked
 	attr++;
 	if ((infos = POS_get_flex_infos(POS, *attr)) == NULL) {
-	  die("in symbol '%S': unknow flex code '%C'\n", label, *attr);
+	  die("in symbol '%S': unknown flex code '%C'\n", label, *attr);
 	}
 	nouvo->traits[infos->CATid] = LOCKED;
 	
       } else { // flexionnal code is set
 
 	if ((infos = POS_get_flex_infos(POS, *attr)) == NULL) {
-	  die("in symbol '%S': unknow flexionnal code '%C'\n", label, *attr);
+	  die("in symbol '%S': unknown flexionnal code '%C'\n", label, *attr);
 	}
 
 	nouvo->traits[infos->CATid] = infos->val;
@@ -1508,7 +1522,7 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
 
   /* unknow word  */
 
-  error("label '%S': unknow word in grammar???\n", label);
+  o_error("label '%S': unknow word in grammar???\n", label);
 
   return symbol_unknow_new(lang, idx);
 }

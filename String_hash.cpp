@@ -23,6 +23,7 @@
 #include "String_hash.h"
 #include "Error.h"
 #include "StringParsing.h"
+#include "utils.h"
 //---------------------------------------------------------------------------
 
 
@@ -181,6 +182,9 @@ if (node==NULL) {
    fatal_error("NULL error in get_value_index\n");
 }
 if (key[pos]=='\0') {
+//debug("keu[pos] = 0\n");
+//debug("node->value_index=%d\n", node->value_index);
+//debug("value=%S\n", value);
    /* If we are at the end of the key */
    if (insert_policy==DONT_INSERT) {
       /* If we just consult the string_hash with no insert, we just
@@ -196,27 +200,29 @@ if (key[pos]=='\0') {
       /* If don't uses the 'value' array, there is no limitation */
       node->value_index=hash->size;
       (hash->size)++;
-   }
-   /* Otherwise: if there is a maximum capacity */
-   if (hash->size==hash->capacity) {
-      /* We check if we have reached the end of the 'value' array */
-      if (hash->bound_policy==DONT_ENLARGE) {
+   } else {
+     /* Otherwise: if there is a maximum capacity */
+     if (hash->size==hash->capacity) {
+       /* We check if we have reached the end of the 'value' array */
+       if (hash->bound_policy==DONT_ENLARGE) {
          /* If we can't enlarge the 'value' array, we fail */
          fatal_error("Too much elements in a non extensible array in get_value_index\n");
-      }
-      /* If we can enlarge the 'value' array, we do it, doubling its capacity */
-      hash->capacity=2*hash->capacity;
-      hash->value=(unichar**)realloc(hash->value,sizeof(unichar*)*hash->capacity);
-      if (hash->value==NULL) {
+       }
+       /* If we can enlarge the 'value' array, we do it, doubling its capacity */
+       hash->capacity=2*hash->capacity;
+       hash->value=(unichar**)realloc(hash->value,sizeof(unichar*)*hash->capacity);
+       if (hash->value==NULL) {
          fatal_error("Not enough memory in get_value_index\n");
-      }
+       }
+     }
+     node->value_index=hash->size;
+     (hash->size)++;
+     /* u_strdup is supposed to return NULL if 'value' is NULL */
+     hash->value[node->value_index]=u_strdup(value);
    }
-   node->value_index=hash->size;
-   (hash->size)++;
-   /* u_strdup is supposed to return NULL if 'value' is NULL */
-   hash->value[node->value_index]=u_strdup(value);
    return node->value_index;
 }
+
 /* If we are not at the end of the key, we look for the transition to follow */
 struct string_hash_tree_transition* t=get_transition(key[pos],node->trans);
 if (t==NULL) {

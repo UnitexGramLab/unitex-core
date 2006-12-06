@@ -112,9 +112,9 @@ static inline void debug(char * fmt, ...) {
 }
 
 
-
-/*
-static inline void error(char * fmt, ...) {
+// o pour olive,i
+// permet d'affichier les caracteres unicode avec %S
+static inline void o_error(char * fmt, ...) {
 
   va_list plist;
   va_start(plist, fmt);
@@ -124,7 +124,6 @@ static inline void error(char * fmt, ...) {
 
   va_end(plist);
 }
-*/
 
 static inline void die(char * fmt, ...) {
 

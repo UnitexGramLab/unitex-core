@@ -477,13 +477,13 @@ pos_section_t * parse_pos_section(FILE * f) {
           fatal_error("only one discriminant category could be specified.\n");
         }
       case PART_CAT:
-	if (check_cat_line(toks) == -1) { fatal_error("bad line format: '%S'\n", line);	}
+	if (check_cat_line(toks) == -1) { die("bad line format: '%S'\n", line);	}
 	break;
       case PART_FLEX:
-	if (check_flex_line(toks) == -1) { fatal_error("bad line format: '%S'\n", line);	}
+	if (check_flex_line(toks) == -1) { die("bad line format: '%S'\n", line);	}
 	break;	
       case PART_COMP:
-	if (check_complet_line(toks) == -1) { fatal_error("bad complet line format: '%S'\n", line); }
+	if (check_complet_line(toks) == -1) { die("bad complet line format: '%S'\n", line); }
 	break;
       case PART_NUM:
 	fatal_error("no section specified. (line '%S')\n", line);

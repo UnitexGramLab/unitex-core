@@ -49,15 +49,18 @@ void usage() {
 
 void copy_file(char * dest, char * src) {
 
+  debug("copying %s into %s\n", src, dest);
+
   FILE * in = fopen(src, "rb");
   if (in == NULL) { fatal_error("unable to open '%s'\n", src); }
 
   FILE * out = fopen(dest, "wb");
   if (out == NULL) { fatal_error("unable to open '%s'\n", dest); }
 
-  int c;
-  while ((c = getc(in)) != EOF) { putc(c, out); }
+  int c, n = 0;
+  while ((c = getc(in)) != EOF) { putc(c, out); ++n; }
   fclose(in); fclose(out);
+  debug("%d bytes copied into '%s'", n, dest);
 }
 
 
@@ -118,7 +121,7 @@ int main(int argc, char ** argv) {
 
   fst_file_in_t * txtin = fst_file_in_open(bak, FST_TEXT);
 
-  if (txtin == NULL) { fatal_error("unable to load text '%s'\n", bak); }
+  if (txtin == NULL) { fatal_error("tagsetnorm: unable to load text '%s'\n", bak); }
 
   fst_file_out_t * txtout = fst_file_out_open(txtauto, FST_TEXT);
 

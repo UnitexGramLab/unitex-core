@@ -191,23 +191,26 @@ static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const 
 
   for (transition_t * t1 = A->states[q1].trans; t1; t1 = t1->next) {
 
-    //debug("process :"); symbol_dump(t1->label); endl();
+    debug("process :"); symbol_dump(t1->label); endl();
 
     if (t1->label->POS->ignorable) { // skip ignorable tokens
-      //debug("skip ignorable :"); symbol_dump(t1->label); endl();
-     // debug("IGNORABLE\n");
+      debug("skip ignorable :"); symbol_dump(t1->label); endl();
+      debug("IGNORABLE\n");
       int to = interStateAtom(res, A, t1->to, B, q2, corresp);
       autalmot_add_trans(res, q, t1->label, to);
       //continue;
+    debug("CONTINUE\n");
     }
-
+ 
 
     bool found = false;
 
     for (transition_t * t2 = B->states[q2].trans; t2 && ! found; t2 = t2->next) {
 
-      if (symbol_in_symbol(t1->label, t2->label)) {
+      debug("t2="); symbol_dump(t2->label); endl();
 
+      if (symbol_in_symbol(t1->label, t2->label)) {
+        debug("  symbols matches\n");
 	if (found) {
 	  symbol_dump(t1->label); error(" IN "); symbol_dump(t2->label); endl();
 	  error("interStateAtom: non deterministic automaton\n");
@@ -217,7 +220,7 @@ static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const 
 
 	int to = interStateAtom(res, A, t1->to, B, t2->to, corresp);
 	autalmot_add_trans(res, q, t1->label, to);
-      }
+      } else { debug("  DONT MATCH\n"); }
     }
 
 //#warning "should no have def trans ???"
