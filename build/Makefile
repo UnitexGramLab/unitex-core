@@ -77,7 +77,7 @@ else
 #
 DEFFLAGS = -D_NOT_UNDER_WINDOWS -DDO_NOT_USE_TRE_LIBRARY
 CFLAGS   = -Wall -W 
-override CFLAGS   += -g $(DEFFLAGS) -I"../korean" -I".."
+override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
 LIBTRE   = 
 CLEAN-LIBTRE   = 
 LIBS   =
