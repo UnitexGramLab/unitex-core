@@ -74,8 +74,8 @@ static inline void strip_extension(char * s) {
 }
 
 int main(int argc, char ** argv ) {
-setBufferMode();
 
+  setBufferMode();
 
   static char buf[1024];
 

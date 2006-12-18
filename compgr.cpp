@@ -242,7 +242,9 @@ int compile_grammar(char * gram, char * outname) {
   debug("regle\n");
 
   autalmot_t * A;
-  if ((A = compileRegle(regle)) == NULL) { fatal_error("unable to compile rule '%s'\n", gram); return -1; }
+  if ((A = compileRegle(regle)) == NULL) {
+    fatal_error("unable to compile rule '%s'\n", gram); return -1;
+  }
 
   debug("after compile\n");
 
@@ -397,7 +399,8 @@ int compile_rules(char * rulesname, char * outname) {
 
   printf("\ndone.\nElapsed time: %.0f s.\n", difftime(fin, debut));
 
-  printf("\n%d rule%s from %s compiled in %s (%d automat%s).\n", nbregles, (nbregles > 1) ? "s" : "", rulesname, outname,
+  printf("\n%d rule%s from %s compiled in %s (%d automat%s).\n",
+         nbregles, (nbregles > 1) ? "s" : "", rulesname, outname,
 	 fstno, (fstno > 1) ? "a" : "on");
 
   return 0;
@@ -413,6 +416,28 @@ static autalmot_t * make_locate_auto(tRegle * regle) {
   autalmot_t * res = autalmot_dup(regle->contexte[0].G);
   autalmot_concat(res, regle->contexte[0].D);
 
+  // add trans loop with ignorable POS
+
+  language_t * lang = get_current_language();
+  vector_t * tab = vector_new();
+
+  for (int i = 0; i < lang->POSs->nbelems; ++i) {
+    
+    POS_t * PoS = (POS_t *) lang->POSs->tab[i];
+    
+    if (PoS->ignorable) {
+      vector_add(tab, symbol_new(PoS));
+    }
+  }
+
+  //debug("ignore stuffs...\n");
+  for (int q = 1; q < res->nbstates; ++q) {
+    for (int i = 0; i < tab->nbelems; ++i) {
+      autalmot_add_trans(res, q, (symbol_t *) tab->tab[i], q);
+    }
+  }
+
+  vector_delete(tab, (release_f) symbol_delete);
   return res;
 }
 

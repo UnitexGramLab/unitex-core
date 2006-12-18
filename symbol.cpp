@@ -58,7 +58,7 @@ static inline symbol_t * _symbol_new(POS_t * POS) {
 
   if (POS->CATs->nbelems) {
 
-    symb->traits   = (char *) xmalloc(POS->CATs->nbelems  * sizeof(char));
+    symb->traits   = (char *) xmalloc(POS->CATs->nbelems * sizeof(char));
     symb->nbtraits = POS->CATs->nbelems;
 
   } else {

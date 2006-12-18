@@ -52,7 +52,9 @@ inline void vector_delete(vector_t * vec, release_f release = NULL) {
 
 inline void vector_resize(vector_t * vec, int size) {
   if (size <= 0) { size = 1; }
-  if (size < vec->nbelems) { fatal_error("vec_resize: size=%d && nbelems=%d\n", size, vec->nbelems); }
+  if (size < vec->nbelems) {
+    fatal_error("vec_resize: size=%d && nbelems=%d\n", size, vec->nbelems);
+  }
   vec->tab = (void **) xrealloc(vec->tab, size * sizeof(void *));
   vec->size = size;
 }

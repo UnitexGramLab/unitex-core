@@ -142,7 +142,7 @@ int main(int argc, char ** argv) {
 
     if (A->nbstates == 0) {
 
-      warning("Anne ! la phrase %d est vide !\n", no + 1);
+      warning("sentence %d is empty\n", no + 1);
       
       int q0 = autalmot_add_state(A, AUT_INITIAL);
       int q1 = autalmot_add_state(A, AUT_FINAL);
