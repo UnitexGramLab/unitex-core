@@ -658,7 +658,10 @@ void symbol_to_implosed_text_label(const symbol_t * s, ustring_t * ustr) {
 void symbol_to_locate_label(const symbol_t * s, ustring_t * ustr) {
 
   if (s == NULL) { die("symb2locate label: symb is null\n"); }
-  if (s == SYMBOL_DEF) { o_error("symb2locate: symb is <def>\n"); ustring_copy(ustr, "<def>"); return; }
+  if (s == SYMBOL_DEF) { 
+    o_error("symb2locate: symb is <def>\n");
+    ustring_copy(ustr, "<def>"); return; 
+  }
 
   switch (s->type) {
 

@@ -493,7 +493,8 @@ void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
 
 	  PNC_trans_write(fstf, t->to);
 
-	} else if (u_strcmp_char(label->str, "<CHFA>") == 0 || u_strcmp_char(label->str, "<NB>") == 0) {
+	} else if (u_strcmp_char(label->str, "<CHFA>") == 0 
+                   || u_strcmp_char(label->str, "<NB>") == 0) {
 
 	  CHFA_trans_write(fstf, t->to);
 

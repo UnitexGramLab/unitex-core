@@ -23,6 +23,7 @@
 
 /* Date 	: juin 98 */
 /* Auteur(s) 	: MAYER Laurent et al */
+/*                Olivier Blanc 2002-2006 */
 /* compilation des grammaires de levee d ambiguites */
 
 
