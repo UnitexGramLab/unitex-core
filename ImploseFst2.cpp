@@ -141,9 +141,10 @@ void usage() {
 
 
 int main(int argc, char ** argv) {
+
   setBufferMode();  
 
-  debug("implosfst2\n");
+  debug("implosefst2\n");
 
   char * txtname = NULL, * outname = NULL;
 
@@ -203,9 +204,15 @@ int main(int argc, char ** argv) {
 
   printf("implosion ....\n");
 
-  for (int i = 0; i < txtauto->nb_aut; i++) { implose(txtauto->les_aut[i]); }
+  for (int i = 0; i < txtauto->nb_aut; i++) {
+    //debug("%d/%d\n", i, txtauto->nb_aut);
+    implose(txtauto->les_aut[i]); 
+  }
 
-  if (text_output_fst2_fname(txtauto, outname) == -1) { fatal_error("unable to implose fst in '%s'\n", outname); }
+  if (text_output_fst2_fname(txtauto, outname) == -1) {
+    fatal_error("unable to implose fst in '%s'\n", outname);
+  }
+  list_aut_old_delete(txtauto);
 
   printf("done. '%s' implosed in '%s'.\n", txtname, outname);
 

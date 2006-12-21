@@ -67,6 +67,9 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 #
 DEFFLAGS = -D_NOT_UNDER_WINDOWS
 CFLAGS   = -Wall -W 
+ifeq ($(DEBUG), yes)
+CFLAGS += -g
+endif
 override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = libtre
 CLEAN-LIBTRE   = clean-libtre
@@ -77,6 +80,9 @@ else
 #
 DEFFLAGS = -D_NOT_UNDER_WINDOWS -DDO_NOT_USE_TRE_LIBRARY
 CFLAGS   = -Wall -W 
+ifeq ($(DEBUG), yes)
+CFLAGS += -g
+endif
 override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
 LIBTRE   = 
 CLEAN-LIBTRE   = 
@@ -285,12 +291,14 @@ ELAGCOMP_OBJS = IOBuffer.o ElagComp.o unicode.o compgr.o autalmot.o fst_file.o h
 	       Alphabet.o Error.o StringParsing.o
 
 EVAMB      = Evamb
-EVAMB_OBJS = IOBuffer.o Evamb.o unicode.o fst2autalmot.o autalmot_old.o implose.o Fst2.o String_hash.o\
-             decompte.o Alphabet.o Error.o StringParsing.o
+EVAMB_OBJS = IOBuffer.o Evamb.o unicode.o fst2autalmot.o autalmot_old.o implose.o Fst2.o\
+	     String_hash.o\
+             decompte.o Alphabet.o Error.o StringParsing.o ustring.o
 
 EXPLOSEFST2      = ExploseFst2
-EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o unicode.o fst2autalmot.o autalmot_old.o Fst2.o String_hash.o\
-                   Alphabet.o Error.o StringParsing.o
+EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o unicode.o fst2autalmot.o autalmot_old.o Fst2.o\
+		   String_hash.o\
+                   Alphabet.o Error.o StringParsing.o ustring.o
 
 EXTRACT      = Extract
 EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o TransductionStack.o Optimized_fst2.o TransductionVariables.o \
@@ -329,8 +337,9 @@ GRF2FST2_OBJS = IOBuffer.o Grf2Fst2.o Alphabet.o unicode.o Fst2.o\
 
 
 IMPLOSEFST2      = ImploseFst2
-IMPLOSEFST2_OBJS = IOBuffer.o ImploseFst2.o implose.o unicode.o fst2autalmot.o autalmot_old.o Fst2.o\
-                   String_hash.o Alphabet.o Error.o StringParsing.o
+IMPLOSEFST2_OBJS = IOBuffer.o ImploseFst2.o implose.o unicode.o fst2autalmot.o autalmot_old.o\
+		   Fst2.o\
+                   String_hash.o Alphabet.o Error.o StringParsing.o ustring.o
 
 
 INFLECT      = Inflect

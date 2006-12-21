@@ -135,13 +135,13 @@ int symbole_developp(tAlphMot * alphabet, tSymbole * symb) {
 
 
 
-static int check_dic_entry(unichar * label) {
+static int check_dic_entry(const unichar * label) {
 
   /* {__,__.__} */
 
   if (*label != '{') { error("label %S isn't a good DELA entry\n", label); return -1; }
 
-  unichar * p = label + 1;
+  const unichar * p = label + 1;
 
   while (*p !=  ',') { // look for ','
     if (*p == 0) { error("malformed DELA entry: '%S' (',' is missing).\n", label); return -1; }
@@ -169,9 +169,9 @@ static int check_dic_entry(unichar * label) {
 /* text label can be either a full DELA entry, either a punc symbol, either an unknow word
  */
 
-static int check_text_label(unichar * label) {
+static int check_text_label(const unichar * label) {
 
-  unichar * p;
+  const unichar * p;
 
   if ((label == NULL)) { error("check label: no label\n"); return -1; }
 
@@ -191,9 +191,10 @@ static int check_text_label(unichar * label) {
 
 
 
-void load_text_symbol(tSymbole * symb, unichar * lex) {
+void load_text_symbol(tSymbole * symb, const unichar * lex) {
 
-  int i, j;
+
+  //int i, j;
 
   if (check_text_label(lex) == -1) { die("bad text label: \"%S\"\n", lex); }
 
@@ -202,8 +203,7 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
   if (*lex == '{') {   // {__,__.__}
 
-    /* inflected form */
-
+#if 0
     i = 1, j = 0;
 
     while (*(lex + i) != ',') {
@@ -216,34 +216,65 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
     symb->flechie[j] = 0;
     i++;
 
-
-    /* forme canonique */
-
     for (j = i ; *(lex + j) != '.'; j++);
+
     symb->canonique = (unichar *) malloc((j + 1 - i) * sizeof(unichar));
 
     j = 0 ;
     while (*(lex + i) != '.') { symb->canonique[j++] = lex[i++]; }
 
-    symb->canonique[j] = 0;
-    i++;
-
-
-    /* traits gramma ... */
-
     j = 0;
     while (lex[i] && lex[i] != '}' && j < maxGramm - 1) { symb->gramm[j++] = lex[i++]; }
     symb->gramm[j] = 0;
 
+#endif
 
-  } else {    /* mot inconnu dans un texte ou ponctuation (pas d'accolade, pas de point, pas de virgule) */
+    unichar * buf = u_strdup(lex);
 
+    /* inflected form */
+
+    int pos;
+    for (pos = 0; buf[pos] != ','; ++pos) { }
+    buf[pos] = 0;
+
+    ustring_copy(symb->flex, buf + 1);
+    //symb->flex = ustring_new(buf + 1);
+
+
+    /* forme canonique */
+
+    ++pos;
+    unichar * can = buf + pos;
+
+    for (; buf[pos] != '.'; ++pos) {}
+    buf[pos] = 0;
+
+    free(symb->canonique);
+    symb->canonique = u_strdup(can);
+    
+
+    /* traits gramma ... */
+
+    ++pos;
+    int i = 0;
+    for (; buf[pos] != '}' && i < maxGramm -1; ++pos, ++i) {
+      symb->gramm[i] = buf[pos];
+    }
+    symb->gramm[i] = 0;
+
+
+    free(buf);
+
+  } else {
+  
+    /* mot inconnu dans un texte ou ponctuation (pas d'accolade, pas de point, pas de virgule) */
 
     if (lex[0] == '\\') {
 
       if (! lex[1] || lex[2]) { die("illegal label '%S'\n", lex); }
 
-      *symb->flechie  = 0;
+      ustring_empty(symb->flex);
+      free(symb->canonique);
       symb->canonique = u_strdup(lex);
 
       u_strcpy_char(symb->gramm, "PNC");
@@ -251,9 +282,10 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
     } else if (u_strchr(PONCTAB, *lex)) {
 
-      if (lex[1]) { die("illegal label text: '%S'\n", symb->flechie); }
+      if (lex[1]) { die("illegal label text: '%S'\n", lex); }
 
-      *symb->flechie  = 0;
+      ustring_empty(symb->flex);
+      free(symb->canonique);
       symb->canonique = u_strdup(lex);
 
       u_strcpy_char(symb->gramm, "PNC");
@@ -261,24 +293,19 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 
     } else if (u_is_digit(*lex)) { /* chiffre arabe */
 
-      if (lex[1]) { die("illegal label text: '%S'\n", symb->flechie); }
+      if (lex[1]) { die("illegal label text: '%S'\n", lex); }
 
-      *symb->flechie  = 0;
+      ustring_empty(symb->flex);
+      free(symb->canonique);
       symb->canonique = u_strdup(lex);
 
       u_strcpy_char(symb->gramm, "CHFA");
 
-
     } else { // mot inconnu
 
-      i = 0;
-      while (lex[i]) {
-	if (i >= maxMot) { die("inflected form too long in '%S' X.\n", lex); }
-	symb->flechie[i] = lex[i];
-	i++;
-      }
-      symb->flechie[i] = 0;
+      ustring_empty(symb->flex);
 
+      free(symb->canonique);
       symb->canonique    = (unichar *) xmalloc(sizeof(unichar));
       symb->canonique[0] = 0;
 
@@ -550,7 +577,7 @@ tAutAlMot * fst2AutAlMot(Fst2 * A, int nb) {
 list_aut_old * load_text_automaton(char * fname, bool developp) {
 
 
-  unichar buf[1024];
+  //unichar buf[1024];
 
   debug("load_fst2 ...\n");
   Fst2 * A = load_fst2(fname, 1);
@@ -588,15 +615,18 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
       for (struct fst2Transition * trans = A->states[qq]->transitions; trans; trans = trans->next) {
 
-	tSymbole symb;
+	//tSymbole symb;
 
-	u_strcpy(buf, A->tags[trans->tag_number]->input);
-	load_text_symbol(& symb, buf);
+        tSymbole * symb = tSymbole_new();
+
+	//u_strcpy(buf, A->tags[trans->tag_number]->input);
+	load_text_symbol(symb, A->tags[trans->tag_number]->input);
 
         if (developp) { // developp symbols
+
           alphabet_clear(alphabet);
 
-          int nbflex = symbole_developp(alphabet, & symb);
+          int nbflex = symbole_developp(alphabet, symb);
 
           if (nbflex == 0) { nouvTrans(aut, q, NULL, trans->state_number - base); }
 
@@ -604,10 +634,10 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
             nouvTrans(aut, q, alphabet->symb + nbflex, trans->state_number - base);
             free(alphabet->symb[nbflex].canonique);
           }
-        } else { nouvTrans(aut, q, & symb, trans->state_number - base); }
+
+        } else { nouvTrans(aut, q, symb, trans->state_number - base); }
         
-//#warning "WARNING: free symb.canonic ????"
-        
+        symbole_delete(symb);
       }
     }
     res->les_aut[i] = aut;
@@ -741,23 +771,24 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
 	    
 	  case ATOME:
 
-	    if (*t->etiq->flechie == 0) { // PNC, CHFA ...
+	    //if (*t->etiq->flechie == 0) { // PNC, CHFA ...
 
+            if (t->etiq->flex->len == 0) {
 	      u_sprintf(buf, "%S", t->etiq->canonique);
 
 	    } else if (*t->etiq->gramm == '?') { // unknow word
 	      
-	      u_sprintf(buf, "%S", t->etiq->flechie);
+	      u_sprintf(buf, "%S", t->etiq->flex->str);
 
 	    } else {
 
-	      u_sprintf(buf, "{%S,%S.%S}", t->etiq->flechie, t->etiq->canonique, t->etiq->gramm);
+	      u_sprintf(buf, "{%S,%S.%S}", t->etiq->flex->str, t->etiq->canonique, t->etiq->gramm);
 	    }
 	    break;
 
 	  case SPECIAL:
 	    error("SPECIAL label in text automaton???\n");
-	    u_strcpy(buf, t->etiq->flechie);
+	    u_strcpy(buf, t->etiq->flex->str);
 	    break;
 
 	  case UNIVERSEL:
@@ -778,7 +809,7 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
 
 	  case INDETERMINE:
 	    error("ouptut_fst2: symbol code is INDETERMINE\n", t->etiq->sorteSymbole);
-	    u_sprintf(buf, "<INDETERMINE:%S,%S.%S>", t->etiq->flechie, t->etiq->canonique, t->etiq->gramm);
+	    u_sprintf(buf, "<INDETERMINE:%S,%S.%S>", t->etiq->flex->str, t->etiq->canonique, t->etiq->gramm);
 	  }
 	}
 

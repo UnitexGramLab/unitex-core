@@ -42,18 +42,28 @@ static etat * copie_tab_initial(etat *tabOrig, etat nbElements) ;
 static tTransitions * * copie_tab_etats(tTransitions * *tabOrig,etat nbEtats) ;
 
 
-int dobreak = 0;
+//int dobreak = 0;
 
+tSymbole * tSymbole_new() {
+  tSymbole * res = (tSymbole *) xmalloc(sizeof(tSymbole));
+  res->sorteSymbole = UNIVERSEL;
+  res->flex = ustring_new();
+  res->canonique = NULL;
+  return res;
+}
 
 void symbole_delete(tSymbole * symb) {
   if (! symb) { return; }
-  free(symb->canonique); free(symb);
+  ustring_delete(symb->flex);
+  free(symb->canonique); 
+  free(symb);
 }
 
 
 void symbole_copy(tSymbole * dest, tSymbole * src) {
   dest->sorteSymbole = src->sorteSymbole;
-  u_strcpy(dest->flechie, src->flechie);
+  ustring_copy(dest->flex, src->flex);
+  //u_strcpy(dest->flechie, src->flechie);
   dest->canonique = u_strdup(src->canonique);
   u_strcpy(dest->gramm, src->gramm);
 }
@@ -61,12 +71,16 @@ void symbole_copy(tSymbole * dest, tSymbole * src) {
 
 tSymbole * symbole_dup(tSymbole * src) {
 
+//  debug("symbole_dup: (%d:%S,%S.%S)\n", src->sorteSymbole, src->flex->str, src->canonique, src->gramm);
+
   if (src == NULL) { return NULL; }
 
-  tSymbole * dest = (tSymbole *) xmalloc(sizeof(tSymbole));
+  //tSymbole * dest = (tSymbole *) xmalloc(sizeof(tSymbole));
+  tSymbole * dest = tSymbole_new();
 
   dest->sorteSymbole = src->sorteSymbole;
-  u_strcpy(dest->flechie, src->flechie);
+  //u_strcpy(dest->flechie, src->flechie);
+  ustring_copy(dest->flex, src->flex);
   u_strcpy(dest->gramm, src->gramm);
   dest->canonique = u_strdup(src->canonique);
 
@@ -355,14 +369,17 @@ void chargeAlphabet(FILE * fich, char * nomFich, tAlphMot * alphabet) {
 #endif
 
 
+#if 0
 void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
 
   unichar * delim ;
   unsigned int i, j ;
 
 
-  static unichar specials[] = { ' ', '\'', '©', '.', ',', '-', ':', ';', '#', '!', '=', '"', '?', '(', ')', '/', '%',
-				'>', '$', '&', '*', '+', '@', '[', ']', '|', '_', '\\', 0 };
+  static unichar specials[] = {
+    ' ', '\'', '©', '.', ',', '-', ':', ';', '#', '!', '=', '"', '?', '(', ')', '/', '%',
+    '>', '$', '&', '*', '+', '@', '[', ']', '|', '_', '\\', 0
+  };
 
   /* " '©.,-:;#!=\"?()/%>$&*+@[]|_\\" */
 
@@ -394,7 +411,7 @@ void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
   
       return;
 
-    } else { fatal_error("[chargeSymbole] in file %s : illegal symbol %S\n",  nomFich, lex) ; }
+    } else { die("[chargeSymbole] in file %s : illegal symbol %S\n",  nomFich, lex) ; }
   }
 
 
@@ -412,11 +429,12 @@ void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
 
     } else { /* Ni point, ni virgule */
 
-      if (lex[i] == '\'' || lex[i] == (unsigned char) '©' || lex[i] == '-' || lex[i] == '#' || lex[i] == '"') {
+      if (lex[i] == '\'' || lex[i] == (unsigned char) '©'
+          || lex[i] == '-' || lex[i] == '#' || lex[i] == '"') {
 
 
 	if (lex[i + 1] && ((lex[i + 1] != '}') || (lex[i + 2] != 0))) {
-	  fatal_error("[chargeSymbole] in file %s : illegal symbol %S\n", nomFich, lex) ;
+	  die("[chargeSymbole] in file %s : illegal symbol %S\n", nomFich, lex) ;
 	}
 
 	symb->sorteSymbole = SPECIAL ;
@@ -448,8 +466,8 @@ void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
 
       while (lex[i]) {
 
-	if (j >= maxMot)   { fatal_error("inflected form too long in file %s : %S.\n", nomFich, lex); }
-	if (lex[i] == '}') { fatal_error("illegal form in file %s : %S.\n", nomFich, lex); }
+	if (j >= maxMot)   { die("inflected form too long in file %s : %S.\n", nomFich, lex); }
+	if (lex[i] == '}') { die("illegal form in file %s : %S.\n", nomFich, lex); }
 
 	symb->flechie[j++] = lex[i++]; 
       }
@@ -511,6 +529,7 @@ void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) {
 
   symb->gramm[j] = 0;
 }
+#endif
 
 
 
@@ -896,16 +915,18 @@ tSymbole * copieSymbole(tSymbole * Source) {
   if (! Source) { error("Erreur interne [copieSymbole] : symbole nul.\n"); return NULL; }
 
 
-  tSymbole * s = (tSymbole *) xcalloc(1, sizeof(tSymbole));
-
+  //tSymbole * s = (tSymbole *) xcalloc(1, sizeof(tSymbole));
+  tSymbole * s = tSymbole_new();
 
   switch (s->sorteSymbole = Source->sorteSymbole) {
 
   case ATOME:
   case INDETERMINE:
-
+    ustring_concat(s->flex, Source->flex);
+    /*
     if (1 + u_strlen(Source->flechie) >= maxMot) { fatal_error("Erreur interne [copieSymbole], f.f. trop longue\n"); }
     u_strcpy(s->flechie, Source->flechie);
+    */
 
   /* et on continue */
 
@@ -921,14 +942,14 @@ tSymbole * copieSymbole(tSymbole * Source) {
     u_strcpy(s->gramm, Source->gramm);
     s->canonique    = (unichar *) xmalloc(sizeof(unichar));
     s->canonique[0] = 0;
-    s->flechie[0]   = 0;
+    //s->flechie[0]   = 0;
     break;
 
 
   case UNIVERSEL:
     s->canonique = (unichar *) xmalloc(sizeof(unichar));
     s->canonique[0] = 0;
-    s->flechie[0]   = 0;
+    //s->flechie[0]   = 0;
     s->gramm[0]     = 0;
     break;
 
@@ -941,6 +962,7 @@ tSymbole * copieSymbole(tSymbole * Source) {
 
 
 
+#if 0
 /* Renseigne les champs de s qui est deja alloue.
  * On suppose que s -> canonique n'a pas ete alloue et on l'alloue.
  */
@@ -952,14 +974,15 @@ void remplitSymbole(tSymbole * s, tSymbole * source) {
   }
 
   if (! source)
-    printf("Erreur interne [remplitSymbole].\n") ;
+    die("Erreur interne [remplitSymbole].\n") ;
 
   switch (s -> sorteSymbole = source -> sorteSymbole) {
 
   case ATOME:
   case INDETERMINE: {
-    if (1 + u_strlen(source->flechie) >= maxMot) { printf("Erreur interne [remplitSymbole]\n") ; }
-    u_strcpy(s->flechie, source->flechie) ;
+    ustring_concat(s->flex, source->flex);
+    //if (1 + u_strlen(source->flechie) >= maxMot) { printf("Erreur interne [remplitSymbole]\n") ; }
+    //u_strcpy(s->flechie, source->flechie) ;
   }
 
   /* et on continue */
@@ -983,7 +1006,8 @@ void remplitSymbole(tSymbole * s, tSymbole * source) {
     s->canonique = (unichar *) xcalloc(1, sizeof(unichar)) ;
 
     s->canonique[0] = 0 ;
-    s->flechie[0]   = 0 ;
+    //s->flechie[0]   = 0 ;
+    s->flex = ustring_new();
   }
   break ;
 
@@ -992,7 +1016,8 @@ void remplitSymbole(tSymbole * s, tSymbole * source) {
     s->canonique = (unichar *) xcalloc(1, sizeof(unichar)) ;
 
     s->canonique[0] = 0;
-    s->flechie[0]   = 0;
+    //s->flechie[0]   = 0;
+    s->flex = ustring_new();
     s->gramm[0]     = 0;
   }
   break ;
@@ -1001,6 +1026,7 @@ void remplitSymbole(tSymbole * s, tSymbole * source) {
     printf("Erreur interne [remplitSymbole], sorte %d.\n", source -> sorteSymbole) ;
   }
 }
+#endif
 
 
 
@@ -1077,10 +1103,11 @@ void Affiche_Symbole(tSymbole * s, FILE * f) {
     break ;
 
   default :
-    fatal_error("Affiche_Symbole: unknown code %d (<%S,%S.%S>)\n", s->sorteSymbole, s->flechie, s->canonique, s->gramm);
+    die("Affiche_Symbole: unknown code %d (<%S,%S.%S>)\n",
+                s->sorteSymbole, s->flex->str, s->canonique, s->gramm);
   }
 
-  i_fprintf(f, "<%S,%S.%S>", s->flechie, s->canonique, s->gramm);
+  i_fprintf(f, "<%S,%S.%S>", s->flex->str, s->canonique, s->gramm);
 
   fflush(f);
 }
@@ -1099,9 +1126,9 @@ void videAutomate(tAutAlMot * Aut) {
   for (i = 0 ; i < Aut -> nbEtats ; i ++) {
     for (t = Aut->etats[i]; t; t = s) { /* Destruction des transitions sortantes pour chaque etat */
       s = t->suivant;
-      libereEtiq(t);
+      //libereEtiq(t);
+      symbole_delete(t->etiq);
       free(t);
-      t = 0;
     }
   }
 
@@ -1151,6 +1178,14 @@ void libereAutAlMot(tAutAlMot * Aut) {
 }
 
 
+void list_aut_old_delete(list_aut_old * lst) {
+
+  for (int i = 0; i < lst->nb_aut; ++i) {
+    libereAutAlMot(lst->les_aut[i]);
+  }
+  free(lst->les_aut);
+  free(lst);
+}
 
 
 /*** entree : automate deterministe complet  ***/ 
@@ -1251,15 +1286,15 @@ void autalmot_dump_dot(tAutAlMot * A, FILE * f) {
 	switch (t->etiq->sorteSymbole) {
 
 	case ATOME:
-	  i_sprintf(buf, "<%S,%S.%S>", t->etiq->flechie, t->etiq->canonique, t->etiq->gramm);
+	  i_sprintf(buf, "<%S,%S.%S>", t->etiq->flex->str, t->etiq->canonique, t->etiq->gramm);
 	  break;
 
 	case SPECIAL:
-	  i_sprintf(buf, "SPE(%S)", t->etiq->flechie);
+	  i_sprintf(buf, "SPE(%S)", t->etiq->flex->str);
 	  break;
 
 	case UNIVERSEL:
-	  i_sprintf(buf, "UNIV(%S,%S.%S)", t->etiq->flechie, t->etiq->canonique, t->etiq->gramm);
+	  i_sprintf(buf, "UNIV(%S,%S.%S)", t->etiq->flex->str, t->etiq->canonique, t->etiq->gramm);
 	  break;
 
 	case CODE:
@@ -1344,9 +1379,9 @@ void autalmot_dump_fst2(tAutAlMot * A, FILE * f) {
 
 	  // debug("ATOME:"); Affiche_Symbole(t->etiq);
 
-	  if (*t->etiq->flechie) {
+	  if (*t->etiq->flex->str) {
 
-	    u_sprintf(buf, "{%S,%S.%S}", t->etiq->flechie, t->etiq->canonique, t->etiq->gramm);
+	    u_sprintf(buf, "{%S,%S.%S}", t->etiq->flex->str, t->etiq->canonique, t->etiq->gramm);
 
 	  } else if (u_strcmp_char(t->etiq->gramm, "PNC") == 0) {
 
@@ -1359,7 +1394,7 @@ void autalmot_dump_fst2(tAutAlMot * A, FILE * f) {
 	  break;
 
 	case SPECIAL:
-	  u_strcpy(buf, t->etiq->flechie);
+	  u_strcpy(buf, t->etiq->flex->str);
 	  break;
 
 	case INCOMPLET:
@@ -1379,7 +1414,7 @@ void autalmot_dump_fst2(tAutAlMot * A, FILE * f) {
 	case INDETERMINE:
 	  Affiche_Symbole(t->etiq);
 	  fatal_error("ouptut_fst: symbol code INDETERMINE\n");
-	  u_sprintf(buf, "<INDETERMINE:%S,%S.%S>", t->etiq->flechie, t->etiq->canonique, t->etiq->gramm);
+	  u_sprintf(buf, "<INDETERMINE:%S,%S.%S>", t->etiq->flex->str, t->etiq->canonique, t->etiq->gramm);
 	}
       }
       u_fprintf(f, "%d %d ", get_value_index(buf, hash), t->but);

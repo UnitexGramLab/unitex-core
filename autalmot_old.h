@@ -26,6 +26,7 @@
 
 #include "String_hash.h"
 #include "unicode.h"
+#include "ustring.h"
 
 #define TRUE	1
 #define FALSE 	0
@@ -73,10 +74,10 @@
 */
 
 
-#define libereEtiq(t) { \
-if ((t)->etiq) { \
-   free((t)->etiq -> canonique) ; (t)->etiq->canonique = 0 ; \
-   free((t)->etiq) ; (t)->etiq = 0 ; } }
+//#define libereEtiq(t) {
+//if ((t)->etiq) { A
+//   free((t)->etiq -> canonique) ; (t)->etiq->canonique = 0 ; 
+//   free((t)->etiq) ; (t)->etiq = 0 ; } }
 
 /*
 void libereEtiq(tTransitions * t) {
@@ -101,12 +102,14 @@ typedef int etat ;
 
 typedef struct symb {
   int sorteSymbole;
-  unichar   flechie[maxMot];   /* Forme flechie du mot */
+  //  unichar   flechie[maxMot];   /* Forme flechie du mot */
+  ustring_t * flex;
   unichar * canonique;         /* Forme canonique du mot */
   unichar   gramm[maxGramm];   /* Code grammatical */
 } tSymbole;
 
 
+tSymbole * tSymbole_new();
 
 /* Liste de transitions */
 
@@ -215,6 +218,7 @@ typedef struct list_aut_old {
   tAutAlMot ** les_aut;   /* Tableau des adresses des automates */
 } list_aut_old;
 
+void list_aut_old_delete(list_aut_old * list);
 
 tAutAlMot * initAutAlMot(etat nbEtats);
 void marqueEtatInitial(tAutAlMot * aut);

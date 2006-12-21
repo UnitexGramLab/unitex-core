@@ -44,7 +44,7 @@ bool quasi_same_trans(tTransitions * t1, tTransitions * t2) {
     return false;
   }
 
-  if (u_strcmp(t1->etiq->flechie, t2->etiq->flechie) != 0)     { return false; }
+  if (u_strcmp(t1->etiq->flex->str, t2->etiq->flex->str) != 0)     { return false; }
   if (u_strcmp(t1->etiq->canonique, t2->etiq->canonique) != 0) { return false; }
 
   unichar * p1 = t1->etiq->gramm;
@@ -83,7 +83,7 @@ int compare_trans(tTransitions * t1, tTransitions * t2) {
 
   int res;
 
-  if ((res = u_strcmp(t1->etiq->flechie, t2->etiq->flechie)) != 0)     { return res; }
+  if ((res = u_strcmp(t1->etiq->flex->str, t2->etiq->flex->str)) != 0)     { return res; }
   if ((res = u_strcmp(t1->etiq->canonique, t2->etiq->canonique)) != 0) { return res; }
 
   return u_strcmp(t1->etiq->gramm, t2->etiq->gramm);
@@ -157,7 +157,7 @@ void implose(tAutAlMot * A) {
         if (p) {
           if ((u_strlen(p)+u_strlen(t->etiq->gramm)) > maxGramm) {
             fatal_error("seq of gramm. codes too long: %S,%S.%S%S\n",
-                t->etiq->flechie, t->etiq->canonique, t->etiq->gramm, p);
+                t->etiq->flex->str, t->etiq->canonique, t->etiq->gramm, p);
           }
           u_strcat(t->etiq->gramm, p);
         }
