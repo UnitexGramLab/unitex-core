@@ -125,6 +125,7 @@ tSymbole * alphabet_add(tAlphMot * alphabet, tSymbole * symb) {
   }
 
   tSymbole * addr = alphabet->symb + alphabet->nbSymboles;
+  addr->flex = ustring_new();
   symbole_copy(addr, symb);
 
   alphabet->nbSymboles++;

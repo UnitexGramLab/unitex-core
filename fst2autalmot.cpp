@@ -114,8 +114,9 @@ int symbole_developp(tAlphMot * alphabet, tSymbole * symb) {
   for (i = 0; symb->gramm[i] != ':'; i++) { common[i] = symb->gramm[i]; }
   common[i] = 0;
 
-  tSymbole s;
-  symbole_copy(&s, symb);
+  tSymbole * s = tSymbole_new();
+
+  symbole_copy(s, symb);
 
   for (p = symb->gramm + i, n = 0; n < nbflex; n++) {
 
@@ -125,10 +126,12 @@ int symbole_developp(tAlphMot * alphabet, tSymbole * symb) {
     while (*p && *p !=  ':') { flex[k++] = *(p++); }
     flex[k] = 0;
 
-    u_sprintf(s.gramm, "%S:%S", common, flex);
+    u_sprintf(s->gramm, "%S:%S", common, flex);
 
-    alphabet_add(alphabet, & s);
+    alphabet_add(alphabet, s);
   }
+
+  symbole_delete(s);
 
   return nbflex;
 }
@@ -303,7 +306,8 @@ void load_text_symbol(tSymbole * symb, const unichar * lex) {
 
     } else { // mot inconnu
 
-      ustring_empty(symb->flex);
+      //ustring_empty(symb->flex);
+      ustring_copy(symb->flex, lex);
 
       free(symb->canonique);
       symb->canonique    = (unichar *) xmalloc(sizeof(unichar));
@@ -545,7 +549,8 @@ tAutAlMot * fst2AutAlMot(Fst2 * A, int nb) {
 
     aut->etats[q] = NULL;
 
-    for (struct fst2Transition * transitions = A->states[qq]->transitions; transitions; transitions = transitions->next) {
+    for (struct fst2Transition * transitions = A->states[qq]->transitions;
+         transitions; transitions = transitions->next) {
 
       tSymbole symb;
 
@@ -555,10 +560,11 @@ tAutAlMot * fst2AutAlMot(Fst2 * A, int nb) {
 
       int nbflex = symbole_developp(alphabet, & symb);
 
-      if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->state_number - base); }
+      if (nbflex == 0) { die("symbole_developp: nbflex=0\n"); }
 
       while (nbflex--) {
 	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->state_number - base);
+        ustring_delete(alphabet->symb[nbflex].flex);
 	free(alphabet->symb[nbflex].canonique);
       }
     }
@@ -620,7 +626,9 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
         tSymbole * symb = tSymbole_new();
 
 	//u_strcpy(buf, A->tags[trans->tag_number]->input);
+        //        debug("in=%S\n", A->tags[trans->tag_number]->input);
 	load_text_symbol(symb, A->tags[trans->tag_number]->input);
+        //debug("out=(%d:%S,%S.%S)\n", symb->sorteSymbole, symb->flex->str, symb->canonique, symb->gramm);
 
         if (developp) { // developp symbols
 
@@ -633,6 +641,9 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
           while (nbflex--) {
             nouvTrans(aut, q, alphabet->symb + nbflex, trans->state_number - base);
             free(alphabet->symb[nbflex].canonique);
+            alphabet->symb[nbflex].canonique = NULL;
+            ustring_delete(alphabet->symb[nbflex].flex);
+            alphabet->symb[nbflex].flex  = NULL;
           }
 
         } else { nouvTrans(aut, q, symb, trans->state_number - base); }

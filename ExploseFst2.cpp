@@ -44,7 +44,8 @@ void usage() {
 
 
 int main(int argc, char ** argv) {
-setBufferMode();
+
+  setBufferMode();
 
   char * txtname = NULL, * outname = NULL;
 
@@ -110,11 +111,13 @@ setBufferMode();
 
   printf("explosion ....\n");
 
-   if (text_output_fst2_fname(txtauto, outname) == -1) {
-      fatal_error("unable to explode fst in '%s'\n", outname);
-   }
+  if (text_output_fst2_fname(txtauto, outname) == -1) {
+    fatal_error("unable to explode fst in '%s'\n", outname);
+  }
+  list_aut_old_delete(txtauto);
 
   printf("done. '%s' is explosed in '%s'.\n", txtname, outname);
 
   return 0;
 }
+
