@@ -19,10 +19,8 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef List_intH
 #define List_intH
-//---------------------------------------------------------------------------
 
 
 /**
@@ -42,6 +40,8 @@ int is_in_list(int,struct list_int*);
 int equal_list_int(struct list_int*,struct list_int*);
 struct list_int* head_insert(int,struct list_int*);
 unsigned int hash_list_int(struct list_int*);
+int length(struct list_int*);
+struct list_int* sorted_merge(struct list_int*,struct list_int*);
 
 #endif
 

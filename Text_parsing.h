@@ -30,20 +30,17 @@
 #include "String_hash.h"
 #include "Liste_num.h"
 #include "LocateConstants.h"
-#include "Context.h"
 #include "CompoundWordTree.h"
 #include "LocatePattern.h"
-
-/* $CD$ begin */
-#include "GF_lib.h"
-/* $CD$ end   */
+#include "MorphologicalFilters.h"
 
 
 
 #define NBRE_ARR_MAX 50
-#define TAILLE_PILE 500 /* the maximal size of recursive calls of the
-                           function parcourir_opt =~ the maximal number
-                           of tokens to be recognized in one match */
+#define STACK_MAX 1000 /* the maximal size of recursive calls of the
+                         function parcourir_opt =~ the maximal number
+                         of tokens to be recognized in one match */
+                         
 #define MAX_MATCHES_AT_TOKEN_POS 400 /* the maximal number of matches
                                         starting from one token : this
                                         value is critical in the case
@@ -60,21 +57,15 @@ extern int GESTION_DE_L_ESPACE;
 extern int texte[BUFFER_SIZE];
 extern int LENGTH;
 extern int N_INT_ALLREADY_READ;
-extern int origine_courante;
 extern long int nombre_unites_reconnues;
-extern int* debut_graphe;
-extern struct string_hash* TOKENS;
-extern Fst2Tag* ETIQUETTE;
-extern int SENTENCE_DELIMITER_INDICE;
-extern int STOP_MARKER_INDICE;
+
 
 /* $CD$ end   */
 
 
-void launch_locate(FILE*,Fst2*,int,struct string_hash*,FILE*,int,long int,FILE*,
+void launch_locate(FILE*,int,FILE*,int,long int,FILE*,
 					    struct locate_parameters*);
-int dichotomie(int,int*,int);
-int trouver_mot_compose_DIC(int,int,struct DLC_tree_info*);
+
 
 #endif
 

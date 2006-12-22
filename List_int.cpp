@@ -19,11 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdlib.h>
 #include "List_int.h"
 #include "Error.h"
-//---------------------------------------------------------------------------
 
 
 /**
@@ -173,3 +171,33 @@ while (list!=NULL) {
 }
 return n;
 }
+
+
+/**
+ * Returns the length of the list.
+ */
+int length(struct list_int* list) {
+int n=0;
+while (list!=NULL) {
+   list=list->next;
+   n++;
+}
+return n;
+}
+
+
+/**
+ * This function returns a list that is the sorted merge of the two given lists.
+ * Duplicate elements are freed, if any.
+ */
+struct list_int* sorted_merge(struct list_int* a,struct list_int* b) {
+struct list_int* tmp;
+while (b!=NULL) {
+   a=sorted_insert(b->n,a);
+   tmp=b;
+   b=b->next;
+   free(tmp);
+}
+return a;
+}
+

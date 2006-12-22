@@ -40,7 +40,7 @@ extern int StackBase;
 void push_char(unichar);
 void push_string(unichar*);
 void push_output_string(unichar*);
-void process_transduction(unichar*);
+void process_transduction(unichar*,struct locate_parameters*);
 
 #endif
 

@@ -98,8 +98,8 @@ return v;
  */
 struct variable_list* get_variable(unichar* name,struct variable_list* v) {
 while (v!=NULL) {
-	if (!u_strcmp(name,v->name)) return v;
-	v=v->next;
+   if (!u_strcmp(name,v->name)) return v;
+   v=v->next;
 }
 return NULL;
 }
@@ -111,9 +111,9 @@ return NULL;
 void free_Fst2Transition(Fst2Transition t) {
 Fst2Transition tmp;
 while (t!=NULL) {
-    tmp=t;
-    t=t->next;
-    free(tmp);
+   tmp=t;
+   t=t->next;
+   free(tmp);
 }
 }
 
@@ -133,13 +133,10 @@ free(e);
 void free_Fst2Tag(Fst2Tag e) {
 if (e->input!=NULL) free(e->input);
 if (e->output!=NULL) free(e->output);
-if (e->inflected!=NULL) free(e->inflected);
-if (e->lemma!=NULL) free(e->lemma);
-if (e->codes!=NULL) free(e->codes);
-#warning matching_tokens should maybe be freed here
-/* $CD$ begin */
-if (e -> contentGF != NULL) free(e->contentGF);
-/* $CD$ end   */
+if (e->morphological_filter!=NULL) free(e->morphological_filter);
+if (e->pattern!=NULL) free_pattern(e->pattern);
+if (e->variable!=NULL) free(e->variable);
+free_list_int(e->matching_tokens);
 free(e);
 }
 
@@ -229,290 +226,19 @@ e=(Fst2Tag)malloc(sizeof(struct fst2Tag));
 if (e==NULL) {
   fatal_error("Not enough memory in new_Fst2Tag\n");
 }
-e->number=0;
+e->type=UNDEFINED_TAG;
 e->control=0;
 e->input=NULL;
 e->output=NULL;
-e->inflected=NULL;
-e->lemma=NULL;
-e->codes=NULL;
+e->pattern=NULL;
+e->variable=NULL;
 e->matching_tokens=NULL;
-e->number_of_matching_tokens=0;
 e->compound_pattern=NO_COMPOUND_PATTERN;
 /* $CD$ begin */
-e->contentGF = NULL;
-e->entryMasterGF = -1;
+e->morphological_filter=NULL;
+e->filter_number=-1;
 /* $CD$ end   */
 return e;
-}
-
-
-/**
- * Analyzes the input of the tag of the form "<...>" . If some fields
- * need to be filled, the function fills them.
- * 
- * Examples: <be.V:P> => lemma="be", codes="V:P"
- *           <!MOT>   => negation=true
- */
-void analyze_tag_with_angles(Fst2Tag e) {
-unichar temp[2048];
-int i,j;
-j=0;
-i=1;
-if (e->input[i]=='!') {
-  i++;
-  /* We set the negation bit if there is the negation sign '!' */
-  e->control=(char)(e->control|NEGATION_TAG_BIT_MASK);
-}
-/* Then, we look for a separator, copying what we find in 'temp' */
-while ((e->input[i]!=',')&&(e->input[i]!='.')&&(e->input[i]!='>')) {
-  temp[j++]=e->input[i++];
-}
-temp[j]='\0';
-/*
- * If we find a closing angle, we have three cases: <build>, <V> or <MOT>
- */
-if (e->input[i]=='>') {
-	/* If we have a meta symbol, we do nothing */
-	if (!u_strcmp_char(temp,"MOT")) {return;}
-	if (!u_strcmp_char(temp,"DIC")) {return;}
-	if (!u_strcmp_char(temp,"MAJ")) {return;}
-	if (!u_strcmp_char(temp,"MIN")) {return;}
-	if (!u_strcmp_char(temp,"PRE")) {return;}
-	if (!u_strcmp_char(temp,"NB")) {return;}
-	/* $CD$ begin */
-	if (!u_strcmp_char(temp,"TOKEN")) {return;}
-	/* $CD$ end   */
-	/* 
-	 * If we have a tag like <build> or <V>, we copy the content (build or V)
-	 * into the inflected field of the tag. This is a pure convention that we use 
-	 * because at this step, we cannot decide if we have a lemma or a grammatical
-	 * code. This problem is supposed to be resolved by a later function.
-	 */
-	e->inflected=u_strdup(temp);
-   return;
-}
-if (e->input[i]==',') {
-	/*
-	 * If we find a comma, we have a tag like <built,build.V> and we copy the
-	 * sequence before the comma in the inflected field.
-	 */
-  	e->inflected=u_strdup(temp);
-	i++;
-	j=0;
-	/* Then we look for the next separator */
-	while ((e->input[i]!='.')&&(e->input[i]!='>')) {
-    	temp[j++]=e->input[i++];
-	}
-	temp[j]='\0';
-	/* A closing angle is an error since tags like <built,build> are not allowed */
-	if (e->input[i]=='>') {
-		/* We try to convert the invalid tag into ASCII to print it
-		 * in the error message */
-		char err[1024];
-		u_to_char(err,e->input);
-		fatal_error("Invalid label %s\n",err);
-	}
-	/* We copy the part between the comma and the point into the lemma field */
-	e->lemma=u_strdup(temp);
-	i++;
-	j=0;
-	while (e->input[i]!='>') {
-		temp[j++]=e->input[i++];
-	}
-	temp[j]='\0';
-	/* And we copy the remaining part of the tag (without the closing angle)
-	 * into the codes field */
-	e->codes=u_strdup(temp);
-	return;
-}
-/*
- * If we find a point, we have a tag like <build.V>, so we copy the sequence
- * before the point into the lemma field.
- */
-e->lemma=u_strdup(temp);
-i++;
-j=0;
-while (e->input[i]!='>') {
-	temp[j++]=e->input[i++];
-}
-temp[j]='\0';
-/* And we copy the remaining part of the tag (without the closing angle)
- * into the codes field */
-e->codes=u_strdup(temp);
-}
-
-
-/**
- * Analyzes the input of the tag of the form "{...}", different from the
- * sentence delimiter "{S}". At the opposite of the tags of the form "<...>",
- * a tag between round brackets must be of the form "{built,build.V}".
- */
-void analyze_tag_with_round_brackets(Fst2Tag e) {
-unichar temp[2048];
-char err[2048];
-int i,j;
-j=0;
-i=1;
-/* We look for the comma */
-while ((e->input[i]!=',')&&(e->input[i]!='}')) {
-	temp[j++]=e->input[i++];
-}
-if (e->input[i]=='}') {
-	/* If we find the closing bracket, it is an error */
-	u_to_char(err,e->input);
-	fatal_error("Invalid label %s: a tag must contain a valid DELAF line like {today,today.ADV}\n",err);
-}
-temp[j]='\0';
-/* We copy the inflected form and we look for the point */
-e->inflected=u_strdup(temp);
-i++;
-if (e->input[i]=='.') {
-	/* If the lemma is an empty sequence, it means that the 
-	 * lemma is identical to the inflected form, so we copy it*/
-   e->lemma=u_strdup(e->inflected);
-}
-else {
-	j=0;
-	/* If the lemma is not empty, we copy it into temp */
-	while ((e->input[i]!='.')&&(e->input[i]!='}')) {
-		temp[j++]=e->input[i++];
-	}
-	temp[j]='\0';
-	if (e->input[i]=='}') {
-		/* If we find the closing bracket, it is an error */
-		u_to_char(err,e->input);
-		fatal_error("Invalid label %s: a tag must contain a valid DELAF line like {today,today.ADV}\n",err);
-	}
-	e->lemma=u_strdup(temp);
-}
-i++;
-j=0;
-/* Finally, we copy the remaining sequence (without the closing bracket) into
- * the lemma field */
-while (e->input[i]!='}') {
-	temp[j++]=e->input[i++];
-}
-temp[j]='\0';
-e->codes=u_strdup(temp);
-}
-
-
-/**
- * This function creates and returns a tag for a variable declaration of the form
- * "$a(" or "$a)".
- * 
- * IMPORTANT: This function does not add the variable to the variable list of 
- *            the enclosing fst2.
- */
-Fst2Tag create_variable_tag(unichar* input) {
-int length=u_strlen(input);
-Fst2Tag tag=new_Fst2Tag();
-/*
- * We copy the variable name into the input field
- * length-1 = length - 2(ignoring '$' and '('or ')') + 1(for '\0') 
- */
-tag->input=(unichar*)malloc((length-1)*sizeof(unichar));
-for (int i=1;i<length;i++) {
-	tag->input[i-1]=input[i];
-}
-tag->input[length-2]='\0';
-/*
- * And we indicate if it is a variable start or end
- */
-if (input[length-1]=='(') {tag->control=START_VAR_TAG_BIT_MASK;}
-else {tag->control=END_VAR_TAG_BIT_MASK;}
-return tag;
-}
-
-
-/**
- * This function creates and returns a fst2 tag. 'input', 'contentGF' and
- * 'output' and not supposed to be NULL. 'input' is not supposed to be an
- * empty string. After the execution, the field 'contentGF' of the created tag
- * can be NULL, but 'output' cannot. No output is indicated by an empty string.
- */
-Fst2Tag create_tag(unichar* input,unichar* contentGF,unichar* output,int respect_case) {
-int L=u_strlen(input);
-if (input[0]=='$' && L>2 && (input[L-1]=='(' || input[L-1]==')')) {
-   /* If we have a variable declaration like $a( or $a) */
-   return create_variable_tag(input);
-}
-Fst2Tag tag=new_Fst2Tag();
-tag->input=u_strdup(input);
-/* First, we test if we have a context mark */
-if (!u_strcmp_char(input,"$[")) {
-   tag->control=POSITIVE_CONTEXT_MASK;
-   return tag;
-}
-if (!u_strcmp_char(input,"$![")) {
-   tag->control=NEGATIVE_CONTEXT_MASK;
-   return tag;
-}
-if (!u_strcmp_char(input,"$]")) {
-   tag->control=CONTEXT_END_MASK;
-   return tag;
-}
-/*
- * If we have a morphological filter, we copy it
- */
-/* $CD$ begin */
-if (u_strlen(contentGF) > 0) {
-    tag->contentGF=u_strdup(contentGF);
-}
-/* $CD$ end   */
-/*
- * We copy the output, even if empty
- */
-tag->output=u_strdup(output);
-if (output[0]!=0) {
-	/* But we set the output bit only if the output is not empty */
-	tag->control=(unsigned char)(tag->control|TRANSDUCTION_TAG_BIT_MASK);
-}
-if (respect_case) {
-	/* We set the case respect bit if necessary */
-	tag->control=(unsigned char)(tag->control|RESPECT_CASE_TAG_BIT_MASK);
-}
-/*
- * If the input is ' ', # or <E>, we do nothing
- */
-if ((input[0]==' ')||(input[0]=='#')||!u_strcmp_char(input,"<E>")) {
-  //fst2->tags[position]=tag;
-  return tag;
-}
-/*
- * We handle inputs that start with a round bracket
- */
-if (input[0]=='{') {
-  if (!u_strcmp_char(input,"{S}")) {
-  	/*
-  	 * If we have the sentence delimiter {S}, we do nothing.
-  	 * IMPORTANT: the {STOP} tag MUST NOT be handled here, since
-  	 *            we do not want it to be matched
-  	 */
-  }
-  else {
-    /* Here we a lexical tag like {built,build.V} or a single '{' character */
-    if (input[1]!='\0') {
-    	/* If we have not a single '{', we analyze the lexical tag */
-       analyze_tag_with_round_brackets(tag);
-    }
-  }
-  return tag;
-}
-if ((input[0]!='<') || (input[1]=='\0')) {
-	/*
-	 * If we have a single '<' character or an input that does not start with '<',
-	 * there is nothing special to do.
-	 */
-	return tag;
-}
-/*
- * Finally, if we have an input that starts with '<' that is not a single '<',
- * we analyze the tag assuming that it is of the form <...>
- */
-analyze_tag_with_angles(tag);
-return tag;
 }
 
 
@@ -520,7 +246,7 @@ return tag;
  * Creates and returns the tag for the string 'line', representing a tag line
  * in a .fst2 file like "%<V>/VERB", without an ending '\n'.
  */
-Fst2Tag create_tag(unichar* line) {
+Fst2Tag create_tag(Fst2* fst2,unichar* line) {
 unichar all_input[2048],output[2048];
 int i=1,j=0,k=0;
 /* First, we look if the tag must respect case */
@@ -588,8 +314,32 @@ if (all_input[i]!='\0') {
 /* If there is a morphological filter but no input ("%<<^in>>/PFX"), then
  * we say that the input is any token */
 if (input[0]=='\0') {u_strcpy_char(input,"<TOKEN>");}
-return create_tag(input,filter,output,respect_case);
-/* $CD$ end   */
+Fst2Tag tag=new_Fst2Tag();
+tag->input=u_strdup(input);
+if (output[0]!='\0') {
+   tag->output=u_strdup(output);
+} else {tag->output=NULL;}
+   
+if (filter[0]!='\0') {
+   tag->morphological_filter=u_strdup(filter);
+} else {tag->morphological_filter=NULL;}
+if (respect_case) {
+   /* We set the case respect bit if necessary */
+   tag->control=(unsigned char)(tag->control|RESPECT_CASE_TAG_BIT_MASK);
+}
+/* 
+ * IMPORTANT: if the tag is a variable declaration, we must add this variable
+ *            to the variable list of the fst2 .
+ */
+#warning to be deprecated
+int length=u_strlen(input);
+if (input[0]=='$' && 
+    (input[length-1]=='(' || input[length-1]==')')) {
+   unichar* name=u_strdup(&(input[1]),length-2);
+   fst2->variables=add_variable_to_list(name,fst2->variables);
+   free(name);
+}
+return tag;
 }
 
 
@@ -597,7 +347,7 @@ return create_tag(input,filter,output,respect_case);
  * Stringifies and writes a tag to a file including '\n'.
  * Opposite of "create_tag".
  */
-int write_tag (FILE* f, Fst2Tag tag) {
+int write_tag(FILE* f,Fst2Tag tag) {
    if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
       u_fprints_char("@",f);
    }
@@ -611,15 +361,17 @@ int write_tag (FILE* f, Fst2Tag tag) {
    /* print the content (label) of the tag */
    u_fprints(tag->input,f);
    /* if any, we add the morphological filter: <A><<^pre>> */
-   if (tag->contentGF!=NULL &&
-       tag->contentGF[0]!='\0') {
-     u_fprints(tag->contentGF,f);
+   if (tag->morphological_filter!=NULL &&
+       tag->morphological_filter[0]!='\0') {
+     u_fprints(tag->morphological_filter,f);
    }
    /* if any, we add transitions */
-   if (tag->output!=NULL &&
-       tag->output[0]!='\0') {
-     u_fprints_char("/",f);
-     u_fprints(tag->output,f);
+   if (tag->output!=NULL) {
+      if (tag->output[0]=='\0') {
+         fatal_error("Invalid empty ouput in write_tag\n");
+      }
+      u_fprints_char("/",f);
+      u_fprints(tag->output,f);
    }
    /* print closing '(' for variables */
    else if (tag->control & START_VAR_TAG_BIT_MASK) {
@@ -653,7 +405,7 @@ unichar c;
 unichar line[10000];
 int current_tag=0;
 /* If the position in the file is not correct we exit */
-if (((c=(unichar)u_fgetc(f))!='%')&&(c!='@')) {//olive: n'importe quoi!
+if (((c=(unichar)u_fgetc(f))!='%')&&(c!='@')) {
 	fatal_error("Unexpected character in .fst2 file: %c (read tag)\n",c);
 }
 /* There cannot have no tag line, because by convention, every .fst2 file
@@ -671,14 +423,7 @@ while (c!='f' && (limit==NO_TAG_LIMIT || current_tag<=limit)) {
   	}
 	line[i]='\0';
 	/* We create the tag and add it to the fst2 */
-	fst2->tags[current_tag]=create_tag(line);
-	/* 
-	 * IMPORTANT: if the tag is a variable declaration, we must add this variable
-	 *            to the variable list of the fst2 .
-	 */
-	if (fst2->tags[current_tag]->control & (START_VAR_TAG_BIT_MASK+END_VAR_TAG_BIT_MASK)) {
-		fst2->variables=add_variable_to_list(fst2->tags[current_tag]->input,fst2->variables);
-	}
+	fst2->tags[current_tag]=create_tag(fst2,line);
 	/* We do not forget to increase the tag counter */
 	current_tag++;
 }
@@ -807,16 +552,14 @@ return value;
 /**
  * Creates, initializes and returns a fst2 transition
  */
-Fst2Transition new_Fst2Transition() {
+Fst2Transition new_Fst2Transition(int tag_number,int state_number) {
 Fst2Transition transition;
 transition=(Fst2Transition)malloc(sizeof(struct fst2Transition));
 if (transition==NULL) {
   fatal_error("Not enough memory in new_Fst2Transition\n");
 }
-/*
- * There is no sense to give default values to the
- * fields 'tag_number' and 'state_number'
- */
+transition->tag_number=tag_number;
+transition->state_number=state_number;
 transition->next=NULL;
 return transition;
 }
@@ -830,10 +573,8 @@ return transition;
  *       exists before adding it.
  */
 void add_transition_to_state(Fst2State state,int tag_number,int state_number) {
-Fst2Transition transition=new_Fst2Transition();
+Fst2Transition transition=new_Fst2Transition(tag_number,state_number);
 transition->next=state->transitions;
-transition->tag_number=tag_number;
-transition->state_number=state_number;
 state->transitions=transition;
 }
 

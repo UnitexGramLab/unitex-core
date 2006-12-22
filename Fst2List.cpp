@@ -1524,12 +1524,12 @@ void CFstApp::outWordsOfGraph(int depth)
 			tp = u_null_string;
 		} else {
 			Eti = a->tags[pathEtiQ[s].eti & SUB_ID_MASK]; 
-			ep = (u_strcmp((unichar *)Eti->input,u_epsilon_string)) ? 
-				(unichar *)Eti->input : u_null_string;
+			ep = (u_strcmp(Eti->input,u_epsilon_string)) ? 
+				Eti->input : u_null_string;
 
-            if((int)(Eti->output)){
-			tp = (u_strcmp((unichar *)Eti->output,u_epsilon_string)) ? 
-				(unichar *)Eti->output:u_null_string;
+            if(Eti->output!=NULL){
+			tp = (u_strcmp(Eti->output,u_epsilon_string)) ? 
+				Eti->output:u_null_string;
 				} else tp = u_null_string;
 		}
 //wprintf(L"{%d,%x,%x,%s,%s}",s,pathEtiQ[s].etatNo,pathEtiQ[s].eti,ep,tp);

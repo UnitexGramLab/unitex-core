@@ -55,6 +55,7 @@ extern unichar* P_COLON;
 extern unichar* P_SLASH;
 extern unichar* P_DOUBLE_QUOTE;
 extern unichar* P_PLUS_COLON;
+extern unichar* P_PLUS_MINUS_COLON;
 extern unichar* P_PLUS_COLON_SLASH;
 extern unichar* P_COLON_SLASH;
 extern unichar* P_CLOSING_ROUND_BRACKET;

@@ -238,7 +238,7 @@ int SU_explore_tag(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* 
   unichar etiq[MAX_CHARS_IN_STACK];
   int pos_etiq;
   u_strcpy(out,sortie);
-  if (u_strcmp_char(e->output,"<E>")) {
+  if (e->output!=NULL && u_strcmp_char(e->output,"<E>")) {
     u_strcat(out,e->output);
   }
   u_strcpy(pile,flechi);
@@ -344,7 +344,7 @@ void SU_explore_tag_recursion(Fst2Transition T,unichar* flechi,unichar* canoniqu
   unichar etiq[MAX_CHARS_IN_STACK];
   int pos_etiq;
   u_strcpy(out,sortie);
-  if (u_strcmp_char(e->output,"<E>")) {
+  if (e->output!=NULL && u_strcmp_char(e->output,"<E>")) {
     u_strcat(out,e->output);
   }
   u_strcpy(pile,flechi);

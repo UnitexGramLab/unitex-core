@@ -297,43 +297,65 @@ while (s[i]!='\0') {
  * 
  * This function is used for morphological filter regular expressions.
  */
-void replace_letter_by_letter_set(Alphabet* alphabet,unichar* dest,unichar* src) {
+void replace_letter_by_letter_set(Alphabet* a,unichar* dest,unichar* src) {
 int i=0,j=0;
 char inside_a_set=0;
 while (src[i]!='\0') {
-   if (src[i]=='\\') {
-      dest[j++]=src[i++];
-      if (src[i]=='\0') {
-         // If there is nothing after a backslash, then we stop,
-         // and the RE compiler may indicate an error 
-         dest[j]='\0';
-         return;
-      }
-      else {
-         dest[j++]=src[i++];
-      }
-   }
-   if (src[i]=='[') {
-      dest[j++]=src[i++];
-      inside_a_set=1;
-   }
-   else if (src[i]==']') {
-           dest[j++]=src[i++];
-           inside_a_set=0;
-        }
-   else if (is_lower(src[i],alphabet)) {
-           if (!inside_a_set) dest[j++]='[';
-           dest[j++]=src[i];
-           int k=0;
-           while (alphabet->t[src[i]][k]!='\0') {
-              dest[j++]=alphabet->t[src[i]][k++];
-           }
-           if (!inside_a_set) dest[j++]=']';
-           i++;
-        }
-   else dest[j++]=src[i++];
+   switch (src[i]) {
+      case '\\': 
+         if (src[i+1]=='\0') {
+             // there is nothing after a backslash, then we stop,
+             // and the RE compiler may indicate an error 
+             dest[j++] = src[i++];
+             dest[j] = src[i];
+             return;
+         }
+         if (a->t2[src[i+1]] & 2) {
+             // this is a lowercase letter in Unitex alphabet :
+             // we don't need "\" and we make expansion "[eE]"
+             ++i;
+             if (!inside_a_set) dest[j++]='[';
+             dest[j++]=src[i];
+             int k=0;
+             while (a->t[src[i]][k]!='\0') {
+                dest[j++]=a->t[src[i]][k++];
+             }
+             if (!inside_a_set) dest[j++]=']';
+             i++;
+          } else {
+             // others cases :
+             // we keep the "\" and the letter
+             dest[j++] = src[i++];
+             dest[j++] = src[i++];
+          }
+          break;
+       case '[':
+          dest[j++]=src[i++];
+          inside_a_set=1;
+          break;
+       case ']':
+          dest[j++]=src[i++];
+          inside_a_set=0;
+          break;
+       case '.': case '*': case '+': case '?': case '|': case '^': case '$':
+       case ':': case '(': case ')': case '{': case '}': case '1': case '2':
+       case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+          dest[j++]=src[i++];
+          break;
+       default:
+          if (a->t2[src[i]] & 2) {
+             if (!inside_a_set) dest[j++]='[';
+             dest[j++]=src[i];
+             int k=0;
+             while (a->t[src[i]][k]!='\0') {
+                dest[j++]=a->t[src[i]][k++];
+             }
+             if (!inside_a_set) dest[j++]=']';
+             i++;
+          }
+          else dest[j++]=src[i++];
+   }       
 }
 dest[j]='\0';
 }
-
 

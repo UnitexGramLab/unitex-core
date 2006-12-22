@@ -36,13 +36,8 @@
 #include "Fst2.h"
 #include "Text_tokens.h"
 #include "List_int.h"
-#include "Grammatical_codes.h"
-#include "Flexional_codes.h"
 #include "Loading_dic.h"
 #include "CompoundWordTree.h"
-#include "Fst2_tags_optimization.h"
-#include "Optimized_fst2.h"
-#include "Pattern_transitions.h"
 #include "Text_parsing.h"
 #include "Matches.h"
 #include "TransductionVariables.h"
@@ -50,9 +45,6 @@
 #include "Liste_num.h"
 #include "FileName.h"
 #include "Copyright.h"
-/* $CD$ begin */
-#include "GF_lib.h"
-/* $CD$ end   */
 #include "IOBuffer.h"
 #include "LocateAsRoutine.h"
 #include "Error.h"

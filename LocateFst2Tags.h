@@ -19,28 +19,21 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#ifndef Flexional_codesH
-#define Flexional_codesH
-//---------------------------------------------------------------------------
-#include "unicode.h"
-#include "DELA.h"
-#include "List_ustring.h"
+#ifndef LocateFst2TagsH
+#define LocateFst2TagsH
 
-#define MAX_INFLECTIONAL_CODES_LENGTH 400
-
-struct code_flexion {
-  unichar s[MAX_INFLECTIONAL_CODES_LENGTH];
-};
-typedef struct code_flexion* Code_flexion;
+#include "Fst2.h"
+#include "Alphabet.h"
+#include "String_hash.h"
+#include "LocatePattern.h"
+#include "LemmaTree.h"
 
 
+void process_tags(int*,
+                  struct string_hash*,
+                  int*,int*,
+                  int*,struct locate_parameters*);
 
-Code_flexion nouveau_code_flexion();
-Code_flexion calculer_code_flexion(unichar**);
-Code_flexion calculer_code_flexion(struct dela_entry*);
-void ajouter_a_liste_code_flexion(struct noeud_code_gramm*,Code_flexion,
-                                  int,struct list_ustring*,
-                                  unichar*);
+void optimize_pattern_tags(Alphabet*,int,struct lemma_node*,struct locate_parameters*);
 
 #endif

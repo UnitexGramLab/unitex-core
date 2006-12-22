@@ -19,20 +19,20 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "Loading_dic.h"
 #include "Error.h"
 #include "BitArray.h"
-//---------------------------------------------------------------------------
+#include "List_pointer.h"
+#include "PatternTree.h"
 
 
 
 /**
  * Returns 1 if the given sequence can be considered as a simple word;
  * 0 otherwise.
+ * 
+ * NOTE: with such a definition, a single char that is not a letter is not a simple word
  */
-#warning with such a definition, a single char that is not a letter is not a simple word:
-// 3,.DIGIT
 int is_a_simple_word(unichar* sequence,Alphabet* alphabet,int tokenization_mode) {
 int i;
 i=0;
@@ -68,11 +68,12 @@ return 0;
  * the pattern "<SDIC>" is used in the grammar, it means that any token that is a
  * simple word must be marked as be matched by this pattern.
  */
-void load_dic_for_locate(char* dic_name,Alphabet* alphabet,struct string_hash* tokens,
+void load_dic_for_locate(char* dic_name,Alphabet* alphabet,
                          int number_of_patterns,int is_DIC_pattern,
                          int is_CDIC_pattern,int is_SDIC_pattern,
                          int tokenization_mode,
                          struct lemma_node* root,struct locate_parameters* parameters) {
+struct string_hash* tokens=parameters->tokens;
 FILE* f;
 unichar line[DIC_LINE_SIZE];
 f=u_fopen(dic_name,U_READ);
@@ -105,30 +106,24 @@ while (EOF!=u_read_line(f,line)) {
    while (ptr!=NULL) {
       int i=ptr->n;
       /* If the current token can be matched, then it can be recognized by the "<DIC>" pattern */
-      parameters->token_controle[i]=(unsigned char)(get_controle(tokens->value[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      parameters->token_control[i]=(unsigned char)(get_control_byte(tokens->value[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
-         int nothing_before=0;
-         /* Then, we get the list of all grammatical patterns that can match the entry */
-         if (parameters->matching_patterns[i]==NULL) {
-            parameters->matching_patterns[i]=new_bit_array(number_of_patterns,ONE_BIT);
-            nothing_before=1;
-         }
-         int number_of_matching_patterns=get_matching_patterns(entry,parameters->matching_patterns[i],parameters->racine_code_gramm);
-         if (number_of_matching_patterns==0 && nothing_before) {
-            /* WARNING! This is very important to test correctly when the bit array can
-             * be emptied. For instance, let us consider the pattern "<A>" and the two dictionary
-             * lines:
-             * 
-             * extended,.A
-             * extended,extend.V:K:I1s:I2s:I3s:I1p:I2p:I3p
-             * 
-             * When processing the first line, we will see that is can be matched by 1
-             * pattern (<A>). However, the second one will be matched by 0 pattern, so if we
-             * don't take care, we will free the bit array of the "extended" token, whereas it
-             * is actually matched by a pattern. */
-            free_bit_array(parameters->matching_patterns[i]);
-            parameters->matching_patterns[i]=NULL;
+         struct list_pointer* list=get_matching_patterns(entry,parameters->pattern_tree_root);
+         if (list!=NULL) {
+            /* If we have some patterns to add */
+            if (parameters->matching_patterns[i]==NULL) {
+               /* We allocate the pattern bit array, if needed */
+               parameters->matching_patterns[i]=new_bit_array(number_of_patterns,ONE_BIT);
+            }
+            struct list_pointer* tmp=list;
+            while (tmp!=NULL) {
+               /* Then we add all the pattern numbers to the bit array */
+               set_value(parameters->matching_patterns[i],((struct constraint_list*)(tmp->pointer))->pattern_number,1);
+               tmp=tmp->next;
+            }
+            /* Finally, we free the constraint list */
+            free_list_pointer(list);
          }
       }
       ptr=ptr->next;
@@ -140,31 +135,20 @@ while (EOF!=u_read_line(f,line)) {
       if (is_DIC_pattern || is_CDIC_pattern) {
          /* If the .fst2 contains "<DIC>" and/or "<CDIC>", then we
           * must note that all compound words can be matched by them */
-         add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,parameters->DLC_tree,tokenization_mode,parameters->ESPACE);
+         add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,parameters->DLC_tree,tokenization_mode,parameters->SPACE);
       }
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
-         struct bit_array* code_gramm_temp=new_bit_array(number_of_patterns,ONE_BIT);
          /* We look if the compound word can be matched by some patterns */
-         int number_of_matching_patterns=get_matching_patterns(entry,code_gramm_temp,parameters->racine_code_gramm);
-         if (number_of_matching_patterns==0) {
-            /* No free condition here, since this is a temp variable */
-            free_bit_array(code_gramm_temp);
+         struct list_pointer* list=get_matching_patterns(entry,parameters->pattern_tree_root);
+         struct list_pointer* tmp=list;
+         while (tmp!=NULL) {
+            /* If the word is matched by at least one pattern, we store it. */
+            int pattern_number=((struct constraint_list*)(tmp->pointer))->pattern_number;
+            add_compound_word_with_pattern(entry->inflected,pattern_number,alphabet,tokens,parameters->DLC_tree,tokenization_mode,parameters->SPACE); 
+            tmp=tmp->next;
          }
-         else {
-            /* If the word is matched by at least one pattern, we store it.
-             * 'k' is here for optimization in the case where we look a few patterns within
-             * a lot of possible ones (ex: number_of_patterns=245 and k=2) */
-            int k=0;
-            for (int j=0;j<number_of_patterns && k<number_of_matching_patterns;j++) {
-               if (get_value(code_gramm_temp,j)) {
-                  add_compound_word_with_pattern(entry->inflected,j,alphabet,tokens,parameters->DLC_tree,tokenization_mode,parameters->ESPACE);
-                  k++;
-               }
-            }
-            /* We don't forget to free the temp variable */
-            free_bit_array(code_gramm_temp);
-         }
+         free_list_pointer(list);
       }
    }
    free_dela_entry(entry);
@@ -180,9 +164,10 @@ u_fclose(f);
  * function fills 'tag_token_list' with the list of tag token numbers.
  * This list is later used during Locate preprocessings.
  */
-void check_patterns_for_tag_tokens(Alphabet* alphabet,struct string_hash* tokens,int number_of_patterns,
+void check_patterns_for_tag_tokens(Alphabet* alphabet,int number_of_patterns,
 									int tokenization_mode,
                            struct lemma_node* root,struct locate_parameters* parameters) {
+struct string_hash* tokens=parameters->tokens;
 for (int i=0;i<tokens->size;i++) {
    if (tokens->value[i][0]=='{' && u_strcmp_char(tokens->value[i],"{S}")  && u_strcmp_char(tokens->value[i],"{STOP}")) {
       /* If the token is tag like "{today,.ADV}", we add its number to the tag token list */
@@ -197,20 +182,21 @@ for (int i=0;i<tokens->size;i++) {
       * This will be used to replace patterns like "<be>" by the actual list of
       * forms that can be matched by it, for optimization reasons */
       add_inflected_form_for_lemma(tokens->value[i],entry->lemma,root);
-      parameters->token_controle[i]=(unsigned char)(get_controle(tokens->value[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      parameters->token_control[i]=(unsigned char)(get_control_byte(tokens->value[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
-         int nothing_before=0;
-         if (parameters->matching_patterns[i]==NULL) {
-            /* WARNING! See the note about freeing this bit array in the comments
-             * of function load_dic_for_locate */
-            parameters->matching_patterns[i]=new_bit_array(number_of_patterns,ONE_BIT);
-            nothing_before=1;
-         }
-         int number_of_matching_patterns=get_matching_patterns(entry,parameters->matching_patterns[i],parameters->racine_code_gramm);
-         if (number_of_matching_patterns==0 && nothing_before) {
-            free_bit_array(parameters->matching_patterns[i]);
-            parameters->matching_patterns[i]=NULL;
+         struct list_pointer* list=get_matching_patterns(entry,parameters->pattern_tree_root);
+         if (list!=NULL) {
+            if (parameters->matching_patterns[i]==NULL) {
+               /* We allocate the bit array if needed */
+               parameters->matching_patterns[i]=new_bit_array(number_of_patterns,ONE_BIT);
+            }
+            struct list_pointer* tmp=list;
+            while (tmp!=NULL) {
+               set_value(parameters->matching_patterns[i],((struct constraint_list*)(tmp->pointer))->pattern_number,1);
+               tmp=tmp->next;
+            }
+            free_list_pointer(list);
          }
       }
       /* At the opposite of DLC lines, a compound word tag like "{all around,.ADV}"

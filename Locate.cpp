@@ -19,19 +19,13 @@
   *
   */
 
-//---------------------------------------------------------------------------
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "LocateAsRoutine.h"
-/* $CD$ begin */
-#include "GF_lib.h"
-/* $CD$ end   */
 #include "Error.h"
-//---------------------------------------------------------------------------
+#include "regex.h"
 
 
 void usage() {

@@ -693,6 +693,7 @@ int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,
       case unif_var:  //e.g. Case=$c1
 	err = MU_graph_explore_label_out_morph_unif(c,l_out_morpho,i_morpho+1,feat,q_bis,forms); 
 	break;
+   default:;
       }
       if (err)
 	return err;

@@ -81,7 +81,7 @@ public:
 		if(saveTransductionTable){
 			for( int i = 1; i < a->number_of_tags;i++)
 				if(saveTransductionTable[i])
-					a->tags[i]->output = (unichar *)saveTransductionTable[i];
+					a->tags[i]->output=(unichar*)saveTransductionTable[i];
 			delete saveTransductionTable;
 		}
 		if(a)free_Fst2(a);
@@ -108,13 +108,12 @@ public:
 		}	
 
 		for(i = 1; i < a->number_of_tags;i++){
-			saveTransductionTable[i] =(unichar *)a->tags[i]->output;
+			saveTransductionTable[i]=a->tags[i]->output;
 			if(a->tags[i]->output){
 //		wprintf(L" %d %s\n",i,a->etiquette[i]->transduction);
-			 a->tags[i]->output = (unichar *)
-			 ajouteTransValue((unichar*)a->tags[i]->output);
+			 a->tags[i]->output=(unichar*)ajouteTransValue(a->tags[i]->output);
 			}
-			wp =(unichar*)a->tags[i]->input;
+			wp=a->tags[i]->input;
 	 		if(*wp == '<'){
 	           if( (*(wp+1) ==  'E') && (*(wp+2) ==  '>'))
 	          	 exitMessage("do not accept the transition with null");

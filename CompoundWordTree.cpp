@@ -425,12 +425,12 @@ while (token_list[pos]!=END_CASE_VARIANT_LIST)  {
 
 /**
  * Adds a compound word to the tree 'DLC_tree' with the value
- * UNDEFINED_COMPOUND_PATTERN. This is used when the user looks
+ * COMPOUND_WORD_PATTERN. This is used when the user looks
  * for any compound word, regardless the pattern, with <DIC> or <CDIC>.
  */
 void add_compound_word_with_no_pattern(unichar* word,Alphabet* alph,struct string_hash* tok,
 							struct DLC_tree_info* DLC_tree,int tokenization_mode,int SPACE) {
-add_compound_word_with_pattern(word,UNDEFINED_COMPOUND_PATTERN,alph,tok,DLC_tree,
+add_compound_word_with_pattern(word,COMPOUND_WORD_PATTERN,alph,tok,DLC_tree,
 							tokenization_mode,SPACE);
 }
 
@@ -537,7 +537,7 @@ return result;
  #warning reorganize parameters
 int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* infos,int tokenization_mode,
-                  int SPACE,struct noeud_code_gramm* racine_code_gramm) {
+                  int SPACE) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
 tokenize_compound_word(word,token_list,alph,tok,tokenization_mode,SPACE);
 return conditional_insertion_in_DLC_tree_node(token_list,0,infos->root,pattern1,pattern2);

@@ -181,9 +181,7 @@ free(s);
  * The function returns the new head of the list.
  */
 Fst2Transition add_transition(Fst2Transition list,int tag_number,int state_number) {
-Fst2Transition transition=new_Fst2Transition();
-transition->tag_number=tag_number;
-transition->state_number=state_number;
+Fst2Transition transition=new_Fst2Transition(tag_number,state_number);
 transition->next=list;
 return transition;
 }

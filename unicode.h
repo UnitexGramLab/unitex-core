@@ -75,6 +75,7 @@ unichar* u_strcat(unichar*,unichar*);
 unichar* u_strcat_escape(unichar*,unichar*,unichar*,unichar);
 void u_strcat_char(unichar*,char*);
 int u_strcmp(const unichar*, const unichar*);
+int u_strcmp2(const unichar*, const unichar*);
 int u_strcmp_char(const unichar*,const char*);
 void u_get_substring(const unichar*,int,int,unichar*);
 int u_fgetc(FILE*);
@@ -168,8 +169,9 @@ int get_longuest_prefix(unichar*,unichar*);
 
 int u_fgets(unichar * str, int size, FILE * f);
 int u_parse_int(unichar * str, unichar ** next = NULL);
-unichar * u_strdup(const unichar * str);
-unichar * u_strdup_char(const char * str);
+unichar* u_strdup(const unichar* str);
+unichar* u_strdup(const unichar*,int);
+unichar* u_strdup_char(const char * str);
 
 void u_sprintf(unichar * str, char * fmt, ...);
 void u_vsprintf(unichar * str, char * fmt, va_list plist);
@@ -192,7 +194,13 @@ int calc_printf_size(char * fmt, va_list plist);
 // Sebastian Nagel's functions
 unichar u_toupper(unichar);
 unichar u_tolower(unichar);
+// end of Sebastian Nagel's functions
 
+unsigned int hash_unichar(unichar*);
+void sort_ustring(unichar*);
+int contains(unichar*,unichar**,int);
+int get_first_position(unichar,unichar*);
+int contains_subset(unichar*,unichar*);
 
 #endif
 

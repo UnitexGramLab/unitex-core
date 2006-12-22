@@ -19,31 +19,24 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef UnicharTreeH
 #define UnicharTreeH
-//---------------------------------------------------------------------------
+
 #include "unicode.h"
 #include "Alphabet.h"
-
-
-struct list_int {
-       int etiq;
-       int arr;
-       struct list_int* next;
-};
+#include "Fst2.h"
 
 
 struct arbre_char {
-       struct list_int* arr;
-       struct arbre_char_trans* trans;
+   Fst2Transition arr;
+   struct arbre_char_trans* trans;
 };
 
 
 struct arbre_char_trans {
-       unichar c;
-       struct arbre_char* noeud;
-       struct arbre_char_trans* suivant;
+   unichar c;
+   struct arbre_char* noeud;
+   struct arbre_char_trans* suivant;
 };
 
 
@@ -51,7 +44,7 @@ void free_arbre_char(struct arbre_char*);
 void free_arbre_char_trans(struct arbre_char_trans*);
 void inserer_etiquette(unichar*,int,int,struct arbre_char*);
 struct arbre_char* new_arbre_char();
-struct list_int* get_matching_etiquettes(unichar*,struct arbre_char*,Alphabet*,int);
+Fst2Transition get_matching_etiquettes(unichar*,struct arbre_char*,Alphabet*,int);
 
 
 #endif

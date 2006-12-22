@@ -34,6 +34,7 @@ unichar* P_COLON=u_strdup_char(":");
 unichar* P_SLASH=u_strdup_char("/");
 unichar* P_DOUBLE_QUOTE=u_strdup_char("\"");
 unichar* P_PLUS_COLON=u_strdup_char("+:");
+unichar* P_PLUS_MINUS_COLON=u_strdup_char("+-:");
 unichar* P_PLUS_COLON_SLASH=u_strdup_char("+:/");
 unichar* P_COLON_SLASH=u_strdup_char(":/");
 unichar* P_CLOSING_ROUND_BRACKET=u_strdup_char("}");

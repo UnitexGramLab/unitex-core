@@ -19,23 +19,15 @@
   *
   */
 
-//---------------------------------------------------------------------------
-
 #include "UnicharTree.h"
-//---------------------------------------------------------------------------
-
-
-struct list_int* new_liste_nbre() {
-struct list_int* l=(struct list_int*)malloc(sizeof(struct list_int));
-l->etiq=-1;
-l->arr=-1;
-l->next=NULL;
-return l;
-}
+#include "Error.h"
 
 
 struct arbre_char* new_arbre_char() {
 struct arbre_char* a=(struct arbre_char*)malloc(sizeof(struct arbre_char));
+if (a==NULL) {
+   fatal_error("Not enough memory in new_arbre_char\n");
+}
 a->arr=NULL;
 a->trans=NULL;
 return a;
@@ -51,19 +43,10 @@ return t;
 }
 
 
-void free_list_int(struct list_int* l) {
-struct list_int* tmp;
-while (l!=NULL) {
-      tmp=l;
-      l=l->next;
-      free(tmp);
-}
-}
-
 
 void free_arbre_char(struct arbre_char* a) {
 if (a==NULL) return;
-free_list_int(a->arr);
+free_Fst2Transition(a->arr);
 free_arbre_char_trans(a->trans);
 free(a);
 }
@@ -91,17 +74,15 @@ return NULL;
 
 
 
-struct list_int* get_liste_nbre(int etiq,int arr,struct list_int* l) {
-struct list_int* tmp;
+Fst2Transition get_liste_nbre(int etiq,int arr,Fst2Transition l) {
+Fst2Transition tmp;
 if (l==NULL) {
   // if etiq is not in the list we create it
-  tmp=new_liste_nbre();
-  tmp->etiq=etiq;
-  tmp->arr=arr;
+  tmp=new_Fst2Transition(etiq,arr);
   tmp->next=NULL;
   return tmp;
 }
-if (l->etiq==etiq) return l;
+if (l->tag_number==etiq) return l;
 l->next=get_liste_nbre(etiq,arr,l->next);
 return l;
 }
@@ -135,18 +116,16 @@ explorer_arbre_char(contenu,0,etiq,arr,noeud);
 }
 
 
-struct list_int* RES;
-
-void ajouter_a_RES(struct list_int* l) {
+void ajouter_a_RES(Fst2Transition l,Fst2Transition *RES) {
 while (l!=NULL) {
-      RES=get_liste_nbre(l->etiq,l->arr,RES);
+      *RES=get_liste_nbre(l->tag_number,l->state_number,*RES);
       l=l->next;
 }
 }
 
 
 void explorer_arbre(unichar* texte,int pos,struct arbre_char* noeud,Alphabet* alphabet,
-                    int PARSING_MODE,int max_pos) {
+                    int PARSING_MODE,int max_pos,Fst2Transition *result) {
 if (noeud==NULL) {
    return;
 }
@@ -157,11 +136,11 @@ if (PARSING_MODE) {
       //free_liste_nbre(RES);
       //RES=NULL;
    }
-   if (pos==max_pos) ajouter_a_RES(noeud->arr);
+   if (pos==max_pos) ajouter_a_RES(noeud->arr,result);
 } else {
    if (texte[pos]=='\0') {
      // if we are at the end of the word
-     ajouter_a_RES(noeud->arr);
+     ajouter_a_RES(noeud->arr,result);
      return;
    }
 }
@@ -169,18 +148,18 @@ struct arbre_char_trans* trans=noeud->trans;
 while (trans!=NULL) {
   if (is_equal_or_uppercase(trans->c,texte[pos],alphabet)) {
      // if the transition can be followed
-     explorer_arbre(texte,pos+1,trans->noeud,alphabet,PARSING_MODE,max_pos);
+     explorer_arbre(texte,pos+1,trans->noeud,alphabet,PARSING_MODE,max_pos,result);
   }
   trans=trans->suivant;
 }
 }
 
 
-struct list_int* get_matching_etiquettes(unichar* texte,
+Fst2Transition get_matching_etiquettes(unichar* texte,
                                            struct arbre_char* racine,
                                            Alphabet* alphabet,int PARSING_MODE) {
-RES=NULL;
-explorer_arbre(texte,0,racine,alphabet,PARSING_MODE,0);
+Fst2Transition RES=NULL;
+explorer_arbre(texte,0,racine,alphabet,PARSING_MODE,0,&RES);
 return RES;
 }
 

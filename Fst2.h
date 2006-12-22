@@ -19,7 +19,6 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef Fst2H
 #define Fst2H
 
@@ -28,6 +27,9 @@
 #include <string.h>
 #include "unicode.h"
 #include "TransductionVariables.h"
+#include "MetaSymbols.h"
+#include "Pattern.h"
+#include "List_int.h"
 
 
 /* Maximum number of tags in a .fst2 */
@@ -37,14 +39,34 @@
 #define MAX_FST2_STATES 500000
 
 
+/**
+ * Here we define the different kinds of tag.
+ */
+enum tag_type {
+   UNDEFINED_TAG, // used at initialization of a tag
+   META_TAG,      // <MOT>, <MIN>, etc.
+   PATTERN_TAG,   // <be.V>
+   PATTERN_NUMBER_TAG, // used when patterns have been numbered
+   TOKEN_LIST_TAG,  // used when the tag matches a list of tokens. This will
+                    // happen when the tag contains a single token or a pattern
+                    // with a lemma (<be.V>). In this last case, the pattern will
+                    // be replaced for optimization reasons by the exhaustive
+                    // list of tokens that can be matched
+   BEGIN_VAR_TAG, // $a(
+   END_VAR_TAG,   // $a)
+   BEGIN_POSITIVE_CONTEXT_TAG, // $[
+   BEGIN_NEGATIVE_CONTEXT_TAG, // $![
+   END_CONTEXT_TAG             // $]
+};
+
+
 
 /**
  * This structure represents a tag of a .fst2 file.
  */
 struct fst2Tag {
-	/* Field used to indicate the nature of the tag. The possible values are
-	 * described in LocateConstants.h */
-	int number;
+	/* Field used to indicate the nature of the tag */
+   enum tag_type type;
 	
 	/* This control byte is used to set information about the tag with
 	 * bit masks. The meaning of these tags can be found in LocateConstants.h
@@ -61,53 +83,48 @@ struct fst2Tag {
 	 * 
 	 * NOTE: if the input only contains a morphological filter like "<<^in>>",
 	 *       the default sequence "<TOKEN>" will be copied in the 'input' field.
-	 * 
-	 * NOTE 2: if the tag is a variable declaration like "$a(" or "$a)", this field
-	 *         only contains the name of the variable (here "a").
 	 */
 	unichar* input;
 	
-	/*
-	 * 'output' represents the input part of a tag, without the '/' separator.
-	 * If a tag contains no transduction, this field is supposed not to be NULL
-	 * but to contain an empty string just made of '\0'.
-	 */
-	unichar* output;
+   /*
+    * If a tag contains a morphological filter, it is copied into this field 
+    * at the loading of the fst2. It is setted to NULL if there is
+    * no morphological filter.
+    */
+   unichar* morphological_filter;
+
+   /*
+    * When a fst2 is used by the Locate program, all morphological filters are
+    * compiled into automata in the MorphologicalFilters library. This field is used
+    * to store the number of the morphological filter of the tag, if any. It is setted 
+    * to -1 if there is no morphological filter. These numbers are global so two tags
+    * can share the same filter number if their filters are identical (for instance
+    * "<A><<^in>>" and "<N><<^in>>/NOUN").
+    */
+   int filter_number;
 	
-	/*
-	 * When the input of a tag is of the form "<built,build.V>" or "{built,build.V:K}",
-	 * this field represents the inflected part of the input (here "built"). If this
-	 * field is not relevant for a tag, it is setted to NULL.
-	 */
-	unichar* inflected;
-	
-	/*
-	 * When the input of a tag is of the form "<build.V>", "<build>", "<built,build.V>"
-	 * or "{built,build.V:K}", this field represents the lemma part of the input (here 
-	 * "build"). If this field is not relevant for a tag, it is setted to NULL.
-	 */
-	unichar* lemma;
-	
-	/*
-	 * When the input of a tag is of the form "<build.V+t:P1s:P2s>", "<V+t:P1s:P2s>",
-	 * "<build,build.V+t:P1s:P2s>" or "{build,build.V+t:P1s:P2s}", this field
-	 * represents the sequences of grammatical, semantic and inflectional codes of 
-	 * the input (here "V+t:P1s:P2s"). If this field is not relevant for a tag,
-	 * it is setted to NULL.
-	 */
-	unichar* codes;
-	
-	/*
+   /*
+    * 'output' represents the output part of a tag, without the '/' separator, or
+    * NULL if the tag contains no output.
+    */
+   unichar* output;
+
+   /**
+    * A tag can be a meta symbol like <MOT>, a pattern
+    * or a variable. Note that a pattern is, in a first step, represented as
+    * a set of constraints (struct pattern*) and, in a second step,
+    * it is coded by a pattern number.
+    */
+    enum meta_symbol meta;
+    struct pattern* pattern;
+    int pattern_number;
+    unichar* variable;
+   
+   /*
 	 * This field represents the list of the numbers of the tokens that this tag
 	 * can match.
 	 */
 	struct list_int* matching_tokens;
-	
-	/*
-	 * 'number_of_matching_tokens' is the length of the list 'matching_tokens'. It
-	 * is cached for efficiency reasons.
-	 */
-	int number_of_matching_tokens;
 	
 	/*
 	 * If the tag can match one or several compound words, a compound pattern is
@@ -117,24 +134,6 @@ struct fst2Tag {
 	 * tokens, and compound words will be handled via a compound pattern.
 	 */
 	int compound_pattern;
-	
-	/* $CD$ begin */
-	/*
-	 * If a tag contains a morphological filter, it is copied into this field 
-	 * at the loading of the fst2. It is setted to NULL if there is
-	 * no morphological filter.
-	 */
-	unichar* contentGF;
-	/*
-	 * When a fst2 is used by the Locate program, all morphological filters are
-	 * compiled into automata in the GF_lib library. This field is used
-	 * to store the number of the morphological filter of the tag, if any. It is setted 
-	 * to -1 if there is no morphological filter. These numbers are global so two tags
-	 * can share the same filter number if their filters are identical (for instance
-	 * "<A><<^in>>" and "<N><<^in>>/NOUN").
-	 */
-	int entryMasterGF;
-	/* $CD$ end   */
 };
 typedef struct fst2Tag* Fst2Tag;
 
@@ -186,6 +185,7 @@ typedef struct fst2Transition* Fst2Transition;
  * in order to minimize library dependancies, because many programs
  * that use the Fst2 library do not use variables.
  */
+#warning to be replaced by a single sorted list of strings
 struct variable_list {
 	/* Name of the variable */
 	unichar* name;
@@ -242,16 +242,16 @@ struct fst2 {
 typedef struct fst2 Fst2;
 
 
-Fst2Transition new_Fst2Transition();
+Fst2Transition new_Fst2Transition(int,int);
 void free_Fst2Transition(Fst2Transition);
 
 
-/* functions for loading grammars */
+/* Functions for loading grammars */
 Fst2* load_fst2(char*,int);
 Fst2* load_one_sentence_from_fst2(char*,int);
 void free_Fst2(Fst2*);
 
-/* functions for writing grammars */
+/* Functions for writing grammars */
 int write_fst2_graph(FILE*,Fst2*,int);
 int write_fst2_tags(FILE*,Fst2*);
 

@@ -172,3 +172,14 @@ return new_list_ustring(list->string,clone(list->next));
 }
 
 
+/**
+ * Returns the length of the list.
+ */
+int length(struct list_ustring* list) {
+int n=0;
+while (list!=NULL) {
+   list=list->next;
+   n++;
+}
+return n;
+}

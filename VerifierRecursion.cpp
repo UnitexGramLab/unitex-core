@@ -23,9 +23,6 @@
 #include "Error.h"
 //---------------------------------------------------------------------------
 
-#warning There is a bug somewhere which makes Grf2Fst2 craching !!!
-
-
 
 //
 // si l'etiquette reconnait <E>, on met son champ controle a 1, a 0 sinon

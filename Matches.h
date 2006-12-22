@@ -19,12 +19,11 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef MatchesH
 #define MatchesH
-//---------------------------------------------------------------------------
 
 #include "unicode.h"
+#include "LocatePattern.h"
 
 
 #define LONGUEST_MATCHES 0
@@ -56,10 +55,10 @@ extern int SEARCH_LIMITATION;
 
 
 void init_matches();
-void  afficher_match_fst2(int,unichar*);
+void  afficher_match_fst2(int,unichar*,struct locate_parameters*);
 struct liste_matches* nouveau_match(unichar*);
 void free_liste_matches(struct liste_matches*);
-struct liste_matches* eliminer_shortest_match_fst2(struct liste_matches*,int,int*,unichar*);
+struct liste_matches* eliminer_shortest_match_fst2(struct liste_matches*,int,int*,unichar*,struct locate_parameters*);
 struct liste_matches* ecrire_index_des_matches(struct liste_matches*,int,
                                                long int*,FILE*);
 struct liste_matches* load_match_list(FILE*,int*);

@@ -234,6 +234,19 @@ int u_strcmp(const unichar *a, const unichar *b) {
 
 
 //
+// unicode version of strcmp that tolerates NULL arguments.
+//
+int u_strcmp2(const unichar *a, const unichar *b) {
+if (a==NULL) {
+   if (b==NULL) return 0;
+   return 1;
+}
+if (b==NULL) return -1;
+return u_strcmp(a,b);
+}
+
+
+//
 // unicode version of strcmp
 //
 int u_strcmp_char(const unichar *a, const char *b) {
@@ -1905,12 +1918,46 @@ int u_parse_int(unichar * str, unichar ** next) {
 }
 
 
-
-unichar * u_strdup(const unichar * str) {
-if (str==NULL) {return NULL;}
+/**
+ * This function returns an allocated string that is a copy of the
+ * given one.
+ */
+unichar* u_strdup(const unichar* str) {
+if (str==NULL) {
+   return NULL;
+}
 unichar* res=(unichar*)malloc((u_strlen(str)+1)*sizeof(unichar));
-if (res==NULL) {fatal_error("Not enough memory in u_strdup\n");}
+if (res==NULL) {
+   fatal_error("Not enough memory in u_strdup\n");
+}
 for (int i=0;(res[i]=str[i])!=0;i++);
+return res;
+}
+
+
+/**
+ * This function returns an allocated string that is a copy of the
+ * n first bytes of the given one.
+ */
+unichar* u_strdup(const unichar* str,int n) {
+if (str==NULL) {
+   return NULL;
+}
+if (n<=0) {
+   fatal_error("Invalid length in u_strdup\n");
+}
+int length=u_strlen(str);
+if (length<n) {
+   n=length;
+}
+unichar* res=(unichar*)malloc((n+1)*sizeof(unichar));
+if (res==NULL) {
+   fatal_error("Not enough memory in u_strdup\n");
+}
+for (int i=0;i<n;i++) {
+   res[i]=str[i];
+}
+res[n]='\0';
 return res;
 }
 
@@ -4082,3 +4129,103 @@ unichar u_tolower (unichar c) {
 }
 
 /* end of Sebastian Nagel */
+
+
+/**
+ * This function returns a hash code for a unicode string.
+ */
+unsigned int hash_unichar(unichar* s) {
+if (s==NULL) {
+   return 0;
+}
+unsigned int code=0;
+int i=0;
+while (s[i]!='\0') {
+   code=code*31+s[i];
+   i++;
+}
+return code;
+}
+
+
+/**
+ * This function sorts the character that compose the given string.
+ * We use here the selection sort.
+ */
+void sort_ustring(unichar* s) {
+if (s==NULL) {
+   fatal_error("NULL error in sort_ustring\n");
+}
+int i=0;
+while (s[i]!='\0') {
+   unichar min=s[i];
+   int min_index=i;
+   for (int j=i+1;s[j]!='\0';j++) {
+      if (min>s[j]) {
+         min=s[j];
+         min_index=j;
+      }
+   }
+   s[min_index]=s[i];
+   s[i]=min;
+   i++;
+}
+}
+
+
+/**
+ * This function returns 1 if the string s is found in the string array t;
+ * 0 otherwise.
+ */
+int contains(unichar* s,unichar** t,int size) {
+if (s==NULL) {
+   fatal_error("NULL string in contains\n");
+}
+if (t==NULL) {
+   fatal_error("NULL array in contains\n");
+}
+if (size==0) {
+   fatal_error("Empty array in contains\n");
+}
+for (int i=0;i<size;i++) {
+   if (!u_strcmp(s,t[i])) {
+      return 1;
+   }
+}
+return 0;
+}
+
+
+/**
+ * This function returns the position of the first occurrence of 'c' in the
+ * string 's' or -1 if not found.
+ */
+int get_first_position(unichar c,unichar* s) {
+if (s==NULL) {
+   fatal_error("NULL string in get_first_position\n");
+}
+for (int i=0;s[i]!='\0';i++) {
+   if (s[i]==c) return i;
+}
+return -1;
+}
+
+
+/**
+ * This function returns 1 if the given set contains the given subset;
+ * 0 otherwise.
+ */
+int contains_subset(unichar* set,unichar* subset) {
+if (set==NULL) {
+   fatal_error("NULL set in contains_subset\n");
+}
+if (subset==NULL) {
+   fatal_error("NULL subset in contains_subset\n");
+}
+for (int i=0;subset[i]!='\0';i++) {
+   if (get_first_position(subset[i],set)==-1) return 0;
+}
+return 1;
+}
+
+

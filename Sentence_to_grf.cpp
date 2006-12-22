@@ -375,6 +375,10 @@ u_fprints(z,f);
 // else, the width is the max of length(inflected), length(lemma), length(code)
 //
 int width_of_tag(Fst2Tag e) {
+return u_strlen(e->input);
+/*
+ * To modify since fst2 tags do not contain anymore such info. We must use now
+ * e->pattern instead
 if (e->input[0]!='{') {
    return u_strlen(e->input);
 }
@@ -382,7 +386,7 @@ int i=u_strlen(e->inflected);
 int j;
 if (i<(j=u_strlen(e->lemma))) i=j;
 if (i<(j=u_strlen(e->codes))) i=j;
-return i;
+return i;*/
 }
 
 

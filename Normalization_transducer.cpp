@@ -178,7 +178,7 @@ while (trans!=NULL) {
       etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
-      if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
+      if (etiq->output!=NULL && etiq->output[0]!='\0'
           && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
          u_strcat(tmp,etiq->output);
@@ -261,7 +261,7 @@ while (trans!=NULL) {
       etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
-      if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
+      if (etiq->output!=NULL && etiq->output[0]!='\0'
           && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
          u_strcat(tmp,etiq->output);
@@ -322,7 +322,7 @@ while (trans!=NULL) {
       etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
-      if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
+      if (etiq->output!=NULL && etiq->output[0]!='\0'
           && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
          u_strcat(tmp,etiq->output);
@@ -404,7 +404,7 @@ while (trans!=NULL) {
       etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat_char(tmp," ");
-      if (etiq->output!=NULL && u_strcmp_char(etiq->output,"")
+      if (etiq->output!=NULL && etiq->output[0]!='\0'
           && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
          u_strcat(tmp,etiq->output);

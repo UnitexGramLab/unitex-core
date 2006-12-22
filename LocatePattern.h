@@ -29,17 +29,17 @@
 #include "Text_tokens.h"
 #include "List_int.h"
 #include "Alphabet.h"
-#include "Grammatical_codes.h"
+#include "Pattern.h"
 #include "Loading_dic.h"
 #include "Fst2_tags_optimization.h"
-#include "Optimized_fst2.h"
+#include "OptimizedFst2.h"
 #include "Pattern_transitions.h"
 #include "Text_parsing.h"
 #include "TransductionVariables.h"
 #include "LocateConstants.h"
 #include "BitArray.h"
 /* $CD$ begin */
-#include "GF_lib.h"
+#include "MorphologicalFilters.h"
 /* $CD$ end   */
 
 
@@ -54,12 +54,12 @@
  */
 struct locate_parameters {
    /**
-    * This array is used to associate a controle byte to each token.
+    * This array is used to associate a control byte to each token.
     * These bytes will be used to know if a token can be matched by
     * <MOT>, <DIC>, <MIN>, <MAJ>, etc. All the bit masks to be used
     * are defined in LocateConstants.h with names like XXX_TOKEN_BIT_MASK
     */
-   unsigned char* token_controle;
+   unsigned char* token_control;
    
    /**
     * This array is used to know the patterns that can match tokens. If the
@@ -70,37 +70,61 @@ struct locate_parameters {
    struct bit_array** matching_patterns;
    
    /* This field is used to know the current compound pattern number */
-   int pattern_compose_courant;
+   int current_compound_pattern;
    
-   struct noeud_code_gramm* racine_code_gramm;
+   /* This field designates a tree that contains all the patterns defined
+    * in the grammar tags (ex: <machine.N+Conc>, <V-z2:Kms>, etc). It is
+    * used to associate a unique number to each pattern */
+   struct pattern_node* pattern_tree_root;
    
    /* Number of the space token in the text */
-   int ESPACE;
+   int SPACE;
+
+   /* Number of the sentence delimiter {S} in the text */
+   int SENTENCE;
+
+   /* Number of the stop token {STOP} in the text */
+   int STOP;
    
    /* Numbers of the tokens that are tags like {soon,.ADV} */
    struct list_int* tag_token_list;
    
-   /* $CD$ begin */
    #ifdef TRE_WCHAR
    /* These two fields are used to manipulate morphological filters like:
     * 
     * <<en$>>
     * 
-    * 'masterGF' is a structure used to store the filters. 'indexGF' is used to
-    * store the automata associated to the filters.
+    * 'filters' is a structure used to store the filters. 'filter_match_index' is used to
+    * know if a given token is matched by a given filter.
     */
-   MasterGF_T* masterGF;
-   IndexGF_T*  indexGF;
+   FilterSet* filters;
+   FilterMatchIndex* filter_match_index;
    #endif
-   /* $CD$ end   */
+   
+   /* The compound word tree*/
    struct DLC_tree_info* DLC_tree;
+   
+   /* Array containing optimized states equivalent to the original fst2 ones */
+   OptimizedFst2State* optimized_states;
+
+   /* The original fst2 */
+   Fst2* fst2;
+   
+   /* The tags of the original fst2, for optimization reasons */
+   Fst2Tag* tags;
+
+   /* The text tokens */
+   struct string_hash* tokens;
+   
+   /* Current origin position in the token buffer */
+   int current_origin;
 };
 
 int locate_pattern(char*,char*,char*,char*,char*,char*,char*,int,int,char*,int);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 void decouper_entre_angles(unichar*,unichar*,unichar*,unichar*,struct string_hash*,Alphabet*);
-unsigned char get_controle(unichar*,Alphabet*,struct string_hash*,int);
-void compute_token_controls(struct string_hash*,Alphabet*,char*,int,struct locate_parameters*);
+unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,int);
+void compute_token_controls(Alphabet*,char*,int,struct locate_parameters*);
 
 #endif

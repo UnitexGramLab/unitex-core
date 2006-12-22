@@ -64,9 +64,9 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,parameters->pattern_compose_courant,alph,tok,
-  						parameters->DLC_tree,tokenization_mode,parameters->ESPACE,parameters->racine_code_gramm)) {
-     etiquette[e]->compound_pattern=parameters->pattern_compose_courant;
+  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,parameters->current_compound_pattern,alph,tok,
+  						parameters->DLC_tree,tokenization_mode,parameters->SPACE,parameters->pattern_tree_root)) {
+     etiquette[e]->compound_pattern=parameters->current_compound_pattern;
   }
   return;
 }
@@ -101,7 +101,7 @@ while (s!=NULL) {
    deuxieme_cas_prime(e,etiquette,s->string,alph,tok,tokenization_mode,parameters);
    s=s->next;
 }
-parameters->pattern_compose_courant++;
+parameters->current_compound_pattern++;
 if (etiquette[e]->matching_tokens==NULL) {
    etiquette[e]->number=NOTHING_TAG;
 }
@@ -131,9 +131,9 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,parameters->pattern_compose_courant,alph,tok,
-  						parameters->DLC_tree,tokenization_mode,parameters->ESPACE,parameters->racine_code_gramm)) {
-     etiquette[e]->compound_pattern=parameters->pattern_compose_courant;
+  if (conditional_insertion_in_DLC_tree(s,etiquette[e]->number,parameters->current_compound_pattern,alph,tok,
+  						parameters->DLC_tree,tokenization_mode,parameters->SPACE,parameters->pattern_tree_root)) {
+     etiquette[e]->compound_pattern=parameters->current_compound_pattern;
   }
   return;
 }
@@ -178,7 +178,7 @@ while (s!=NULL) {
   }
   s=s->next;
 }
-(parameters->pattern_compose_courant)++;
+(parameters->current_compound_pattern)++;
 if (etiquette[e]->matching_tokens==NULL) {
    etiquette[e]->number=NOTHING_TAG;
 }
@@ -206,8 +206,8 @@ if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
 // normal case
 //---mot compose
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-   add_compound_word_with_pattern(s,parameters->pattern_compose_courant,alph,tok,parameters->DLC_tree,tokenization_mode,parameters->ESPACE);
-   etiquette[e]->compound_pattern=parameters->pattern_compose_courant;
+   add_compound_word_with_pattern(s,parameters->current_compound_pattern,alph,tok,parameters->DLC_tree,tokenization_mode,parameters->SPACE);
+   etiquette[e]->compound_pattern=parameters->current_compound_pattern;
    return;
 }
 //---mot simple
@@ -239,7 +239,7 @@ while (s!=NULL) {
   quatrieme_cas_prime(e,etiquette,s->string,alph,tok,parameters->DLC_tree,tokenization_mode,parameters);
   s=s->next;
 }
-(parameters->pattern_compose_courant)++;
+(parameters->current_compound_pattern)++;
 if (etiquette[e]->matching_tokens==NULL)
   etiquette[e]->number=NOTHING_TAG;
 else etiquette[e]->number=LEXICAL_TAG;
@@ -276,9 +276,9 @@ if (!case_variants_allowed) {
 }
 // normal case
 if (!est_un_token_simple(s,alph,tokenization_mode)) {
-   add_compound_word_with_pattern(s,parameters->pattern_compose_courant,alph,tok,DLC_tree,tokenization_mode,parameters->ESPACE);
-   etiquette[e]->compound_pattern=parameters->pattern_compose_courant;
-   (parameters->pattern_compose_courant)++;
+   add_compound_word_with_pattern(s,parameters->current_compound_pattern,alph,tok,DLC_tree,tokenization_mode,parameters->SPACE);
+   etiquette[e]->compound_pattern=parameters->current_compound_pattern;
+   (parameters->current_compound_pattern)++;
 } else {
    ptr=get_token_list_for_sequence(etiquette[e]->input,alph,tok);
    struct list_int* ptr_copy = ptr; // s.n.

@@ -19,20 +19,20 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <time.h>
 #include "Text_tokens.h"
 #include "Text_parsing.h"
-#include "Context.h"
 #include "Error.h"
 #include "BitArray.h"
 
 
 #define DELAY CLOCKS_PER_SEC // delay between two prints (yyy% done)
-//---------------------------------------------------------------------------
 
 
-void parcourir_opt(int,int,int,int,struct liste_num**,int,struct context*,struct locate_parameters*);
+void locate(int,OptimizedFst2State,int,int,struct liste_num**,int,struct list_int*,struct locate_parameters*);
+int dichotomie(int,int*,int);
+int find_compound_word(int,int,struct DLC_tree_info*,struct locate_parameters*);
+unichar* get_token_sequence(int*,struct string_hash*,int,int);
 
 
 
@@ -40,77 +40,66 @@ int GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
 int texte[BUFFER_SIZE];
 int LENGTH;
 int N_INT_ALLREADY_READ;
-int origine_courante;
 long int nombre_unites_reconnues=0;
-int* debut_graphe;
-struct string_hash* TOKENS;
-struct text_tokens* tokens;
-Fst2Tag* ETIQUETTE;
-int SENTENCE_DELIMITER_INDICE=-1;
-int STOP_MARKER_INDICE=-1;
-Fst2* current_fst2=NULL;
 
 
-void block_change(FILE* f) {
+
+
+void block_change(FILE* f,struct locate_parameters* p) {
 int i;
-for (i=origine_courante;i<BUFFER_SIZE;i++) {
+for (i=p->current_origin;i<BUFFER_SIZE;i++) {
   // first, we copy the end of the buffer at the beginning
-  texte[i-origine_courante]=texte[i];
+  texte[i-p->current_origin]=texte[i];
 }
-N_INT_ALLREADY_READ=N_INT_ALLREADY_READ+origine_courante;
-int N=BUFFER_SIZE-origine_courante;
-int l=fread(texte+N,sizeof(int),origine_courante,f);
-origine_courante=0;
+N_INT_ALLREADY_READ=N_INT_ALLREADY_READ+p->current_origin;
+int N=BUFFER_SIZE-p->current_origin;
+int l=fread(texte+N,sizeof(int),p->current_origin,f);
+p->current_origin=0;
 LENGTH=N+l;
-if (LENGTH<BUFFER_SIZE) {
-}
 }
 
 
 
-void launch_locate(FILE* f,Fst2* automate,int mode,struct string_hash* tok,FILE* out,
+void launch_locate(FILE* f,int mode,FILE* out,
                    int output_mode,long int text_size,FILE* info,
                    struct locate_parameters* parameters) {
 LENGTH=fread(texte,sizeof(int),BUFFER_SIZE,f);
 statut_match=mode;
 transduction_mode=output_mode;
 init_matches();
-if (transduction_mode != IGNORE_TRANSDUCTIONS) // there may be transducer output
+if (transduction_mode != IGNORE_TRANSDUCTIONS) { // there may be transducer output
   ambig_transduction_mode = ALLOW_AMBIG_TRANSDUCTIONS; // so we allow different output
-debut_graphe=automate->initial_states;
-int debut=debut_graphe[1];
-current_fst2=automate;
+}
+OptimizedFst2State initial_state=parameters->optimized_states[parameters->fst2->initial_states[1]];
 N_INT_ALLREADY_READ=0;
-origine_courante=0;
+parameters->current_origin=0;
 nombre_unites_reconnues=0;
-TOKENS=tok;
-ETIQUETTE=automate->tags;
 int n_read=0;
 int unite;
-clock_t startTime = clock();
+clock_t startTime=clock();
 clock_t currentTime ;
 
 unite=((text_size/100)>1000)?(text_size/100):1000;
-while (origine_courante<LENGTH && nombre_match!=SEARCH_LIMITATION) {
-   if (LENGTH==BUFFER_SIZE && origine_courante>(LENGTH-2000)) {
+while (parameters->current_origin<LENGTH && nombre_match!=SEARCH_LIMITATION) {
+   if (LENGTH==BUFFER_SIZE && parameters->current_origin>(LENGTH-2000)) {
       // if must change of block
-      block_change(f);
+      block_change(f,parameters);
    }
    if (unite!=0) {
-      n_read=((origine_courante+N_INT_ALLREADY_READ)%unite);
+      n_read=((parameters->current_origin+N_INT_ALLREADY_READ)%unite);
       if (n_read==0 && ((currentTime=clock())-startTime > DELAY) ) {
          startTime=currentTime;
-         printf("%2.0f%% done        \r",100.0*(float)(N_INT_ALLREADY_READ+origine_courante)/(float)text_size);
+         printf("%2.0f%% done        \r",100.0*(float)(N_INT_ALLREADY_READ+parameters->current_origin)/(float)text_size);
       }
    }
-   if (!(texte[origine_courante]==parameters->ESPACE && GESTION_DE_L_ESPACE==MODE_NON_MORPHO)) {
+   if (!(texte[parameters->current_origin]==parameters->SPACE && GESTION_DE_L_ESPACE==MODE_NON_MORPHO)) {
       StackBase = StackPointer = 0;
-      parcourir_opt(0,debut,0,0,NULL,0,NULL,parameters);
+      locate(0,initial_state,0,0,NULL,0,NULL,parameters);
    }
-   liste_match=ecrire_index_des_matches(liste_match,N_INT_ALLREADY_READ+origine_courante,&nombre_unites_reconnues,out);
-   origine_courante++;
+   liste_match=ecrire_index_des_matches(liste_match,N_INT_ALLREADY_READ+parameters->current_origin,&nombre_unites_reconnues,out);
+   (parameters->current_origin)++;
 }
-liste_match=ecrire_index_des_matches(liste_match,N_INT_ALLREADY_READ+origine_courante,&nombre_unites_reconnues,out);
+liste_match=ecrire_index_des_matches(liste_match,N_INT_ALLREADY_READ+parameters->current_origin,&nombre_unites_reconnues,out);
 printf("100%% done      \n\n");
 printf("%d match%s\n",nombre_match,(nombre_match==1)?"":"es");
 if ((nombre_output != nombre_match)
@@ -144,900 +133,733 @@ if (info!=NULL) {
 
 /**
  *  Prints the current context to stderr,
- *  unless it wasn't already printed.
+ *  except if it was already printed.
  *  If there are more than MAX_ERRORS errors,
  *  exit the programm by calling "fatal_error".
  */
-static void error_at_token_pos (char* message, int start, int length) {
-
-  static int n_errors;
-  static int last_start = -1;
-  static int last_length;
-
-  int i;
-
-  if (last_start == start /* && last_length == length */) {
-    return; // context already printed
-  }
-
-  fprintf(stderr, message);
-
-  fprintf(stderr, "\n  ");
-  for (i = (start-4); i <= (start+20); i++) {
-    if (i < 0)
-      continue;
-    if (i == start)
-      fprintf(stderr, "<<HERE>>");
-    u_fprints_html_ascii(TOKENS->value[texte[i]], stderr);
-    if (i == (start+length))
-      fprintf(stderr, "<<END>>");
-  }
-  if (i < (start+length))
-    fprintf(stderr, " ...");
-  fprintf(stderr, "\n");
-
-  if (++n_errors >= MAX_ERRORS)
-    fatal_error("Too many errors, giving up!\n");
-
-  last_start  = start;
-  last_length = length;
-
-}
-
-
-
-void parcourir_opt(int numero_graphe_courant,
-                   int numero_etat_courant,
-                   int pos,
-                   int profondeur,
-                   struct liste_num** LISTE,
-                   int n_matches,
-                   struct context* ctx,
-                   struct locate_parameters* parameters) {
-Etat_opt etat_courant;
-int pos2,k,pos3,pos4,k_pas_decale;
-struct liste_arrivees* arr;
-struct appel_a_sous_graphe* a_sous_graphe;
-struct appel_a_meta* a_meta;
-struct appel_a_pattern* a_pattern;
-int SOMMET=StackPointer;
-unichar* sortie;
-
-
-/* $CD$ begin */
-int iMasterGF;
-/* $CD$ end   */
-
-static int n_matches_at_token_pos; // holds the number of matches at one position in text (static!)
-if (profondeur == 0)               // reset if main graph is called first
-  n_matches_at_token_pos = 0;
-
-if ((profondeur++)>TAILLE_PILE) {
-  error_at_token_pos("\n"
-                     "Maximal stack size reached!\n"
-                     "(There may be longer matches not recognized!)",
-                     origine_courante, pos);
-  return;
-}
-
-if (n_matches_at_token_pos > MAX_MATCHES_AT_TOKEN_POS) {
-  error_at_token_pos("\n"
-                     "To many (ambiguous) matches starting from one position in text!",
-                     origine_courante, pos);
-  return;
-}
-
-
-etat_courant=graphe_opt[numero_etat_courant];
-
-
-// if we are looking for the end of a failed negative context
-if (ctx!=NULL && ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
-   // then we explore all the output transitions without matching
-   // anything, in order to find the context end mark
-   struct list_int* liste=NULL;
-   struct list_int* tmp;
-   
-   //******* subgraphs ************
-   // we make the list of the states that can be reached via 
-   // a subgraph call transition
-   a_sous_graphe=etat_courant->liste_sous_graphes;
-   while (a_sous_graphe != NULL) {
-      arr=a_sous_graphe->liste_arr;
-      while (arr!=NULL) {
-         liste=sorted_insert(arr->arr,liste);
-         arr=arr->suivant;
-      }
-      a_sous_graphe=a_sous_graphe->suivant;
-   }
-   //******* metas ************
-   a_meta=etat_courant->liste_metas;
-   while (a_meta!=NULL) {
-      arr=a_meta->liste_arr;
-      while (arr!=NULL) {
-            if (a_meta->numero_de_meta==CONTEXT_END_MARK && ctx->depth==0) {
-               // We have found a closing context mark.
-               // if we have not recognized the negative context,
-               // then we can take the match into account
-               //printf("end of fail context in state %d",numero_etat_courant); getchar();
-               pos=ctx->continue_position;
-               u_strcpy(stack,ctx->stack);
-               StackPointer=ctx->stack_pointer;
-               // if there is a matches list, 
-               // we must ignore all matches informations that have been 
-               // compute inside the context
-               if (LISTE!=NULL) {
-                  free_list_num(*LISTE);
-               }
-               LISTE=ctx->list_of_matches;
-               n_matches=ctx->number_of_matches;
-               parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,
-               				ctx->next,parameters);
-            }
-            else {
-               // we handle separately the cases of context marks, because
-               // they involve a modification of ctx->depth
-               if (a_meta->numero_de_meta==CONTEXT_END_MARK) {
-                  (ctx->depth)--;
-                  parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,
-                  				ctx,parameters);
-                  (ctx->depth)++;
-               }
-               else
-               if (a_meta->numero_de_meta==POSITIVE_CONTEXT_MARK
-                  || a_meta->numero_de_meta==NEGATIVE_CONTEXT_MARK) {
-                  (ctx->depth)++;
-                  parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,n_matches,
-                  				ctx,parameters);
-                  (ctx->depth)--;
-               }
-               else {
-                  // if we have another meta, we handle it normally
-                  liste=sorted_insert(arr->arr,liste);
-               }
-            }
-            arr=arr->suivant;
-      }
-      a_meta=a_meta->suivant;
-   }
-   //******* compound patterns ************
-   a_pattern=etat_courant->liste_patterns_composes;
-   while (a_pattern!=NULL) {
-      arr=a_pattern->liste_arr;
-      while (arr!=NULL) {
-            liste=sorted_insert(arr->arr,liste);
-            arr=arr->suivant;
-      }
-      a_pattern=a_pattern->suivant;
-   }
-   //******* simple patterns ************
-   a_pattern=etat_courant->liste_patterns;
-   while (a_pattern!=NULL) {
-      arr=a_pattern->liste_arr;
-      while (arr!=NULL) {
-            liste=sorted_insert(arr->arr,liste);
-            arr=arr->suivant;
-      }
-      a_pattern=a_pattern->suivant;
-   }
-   //******* tokens ************
-   for (int k=0;k<etat_courant->nombre_de_tokens;k++) {
-      arr=etat_courant->tableau_liste_arr[k];
-      while (arr!=NULL) {
-            liste=sorted_insert(arr->arr,liste);
-            arr=arr->suivant;
-      }
-   }
-   // finally, we explore all the states that can be reached from this state
-   tmp=liste;
-   while (liste!=NULL) {
-      parcourir_opt(numero_graphe_courant,liste->n,pos,profondeur,LISTE,n_matches,ctx,parameters);
-      liste=liste->next;
-   }
-   free_list_int(tmp);
+static void error_at_token_pos(char* message,int start,int length,struct locate_parameters* p) {
+static int n_errors;
+static int last_start=-1;
+static int last_length;
+int i;
+if (last_start==start) {
+   /* The context was already printed */
    return;
 }
+error("%s\n  ",message);
+for (i=(start-4);i<=(start+20);i++) {
+   if (i<0) {
+      continue;
+   }
+   if (i==start) {
+      error("<<HERE>>");
+   }
+   u_fprints_html_ascii(p->tokens->value[texte[i]],stderr);
+   if (i==(start+length)) {
+      error("<<END>>");
+   }
+}
+if (i<(start+length)) {
+   error(" ...");
+}
+error("\n");
+if (++n_errors>=MAX_ERRORS) {
+   fatal_error("Too many errors, giving up!\n");
+}
+last_start=start;
+last_length=length;
+}
 
-// if we are in a final state...
-if (etat_courant->controle & 1) {
-  if (ctx!=NULL) {
-     // if we have reached the final state of a graph while
-     // looking for a context, it's an error because every
-     // opened context must be closed before the end of the graph
-     char tmp[1024];
-     u_to_char(tmp,current_fst2->graph_names[numero_graphe_courant+1]);
-     fprintf(stderr,"ERROR: unclosed context in graph \"%s\"\n",tmp);
-     free_context_list(ctx);
-     return;
-  }
 
-  if (numero_graphe_courant == 0) { // in main graph : hooray, got a match!
-    n_matches_at_token_pos++;
-    if (transduction_mode == IGNORE_TRANSDUCTIONS) {
-      if (pos>0) {
-        afficher_match_fst2(pos+origine_courante+N_INT_ALLREADY_READ-1,NULL);
-      }
-      else {
-        afficher_match_fst2(pos+origine_courante+N_INT_ALLREADY_READ,NULL);
-      }
-    } else {
-      stack[SOMMET]='\0';
-      if (pos>0) {
-        afficher_match_fst2(pos+origine_courante+N_INT_ALLREADY_READ-1,stack);
-      }
-      else {
-        afficher_match_fst2(pos+origine_courante+N_INT_ALLREADY_READ,stack);
-      }
-    }
-  } else { // in a subgraph
-    if (/**last*/n_matches==(NBRE_ARR_MAX-1)) {
-      // presumably an infinite recursion
-      error_at_token_pos("\n"
-                         "Maximal number of matches per subgraph reached!",
-                         // print also name of subgraph, but how?
-                         origine_courante, pos);
+
+/**
+ * The logical XOR.
+ */
+int XOR(int a,int b) {
+return (a && !b) || (!a && b);
+}
+
+
+/**
+ * This is the core function of the Locate program.
+ */
+void locate(int graph_depth, /* 0 means that we are in the top level graph */
+            OptimizedFst2State current_state, /* current state in the grammar */
+            int pos, /* position in the token buffer, relative to the current origin */
+            int depth, /* number of nested calls to 'locate' */
+            struct liste_num** matches, /* current match list. Irrelevant if graph_depth==0 */
+            int n_matches, /* number of sequences that have matched. It may be different from
+                            * the length of the 'matches' list if a given sequence can be
+                            * matched in several ways. It is used to detect combinatory
+                            * explosions due to bad written grammars. */
+            struct list_int* ctx, /* information about the current context, if any */
+            struct locate_parameters* p /* miscellaneous parameters needed by the function */
+            ) {
+#ifdef TRE_WCHAR
+int filter_number;
+#endif
+int pos2,ctrl=0,end_of_compound;
+int token,token2;
+Fst2Transition t;
+int stack_top=StackPointer;
+unichar* output;
+/* The following static variable holds the number of matches at
+ * one position in text. */
+static int n_matches_at_token_pos;
+if (depth==0) {
+   /* We reset if this is first call to 'locate' from a given position in the text */
+   n_matches_at_token_pos=0;
+}
+if (depth>STACK_MAX) {
+   /* If there are too much recursive calls */
+   error_at_token_pos("\nMaximal stack size reached!\n"
+                      "(There may be longer matches not recognized!)",
+                      p->current_origin,pos,p);
+   return;
+}
+if (n_matches_at_token_pos>MAX_MATCHES_AT_TOKEN_POS) {
+   /* If there are too much matches from the current origin in the text */
+   error_at_token_pos("\nToo many (ambiguous) matches starting from one position in text!",
+                      p->current_origin,pos,p);
+   return;
+}
+if (current_state->control & 1) {
+   /* If we are in a final state... */
+   if (ctx!=NULL) {
+      /* If we have reached the final state of a graph while
+       * looking for a context, it's an error because every
+       * opened context must be closed before the end of the graph. */
+      char tmp[1024];
+      u_to_char(tmp,p->fst2->graph_names[graph_depth+1]);
+      error("ERROR: unclosed context in graph \"%s\"\n",tmp);
+      free_list_int(ctx);
       return;
-    }
-    else {
-      n_matches++;
-      if (ambig_transduction_mode == ALLOW_AMBIG_TRANSDUCTIONS) {
-        (*LISTE)=inserer_si_different(pos,(*LISTE),StackPointer,&stack[StackBase]);
+   }
+   /* In we are in the top level graph, we have a match */
+   if (graph_depth==0) {
+      n_matches_at_token_pos++;
+      if (transduction_mode==IGNORE_TRANSDUCTIONS) {
+         if (pos>0) {afficher_match_fst2(pos+p->current_origin+N_INT_ALLREADY_READ-1,NULL,p);}
+         else {afficher_match_fst2(pos+p->current_origin+N_INT_ALLREADY_READ,NULL,p);}
+      } else {
+         stack[stack_top]='\0';
+         if (pos>0) {afficher_match_fst2(pos+p->current_origin+N_INT_ALLREADY_READ-1,stack,p);}
+         else {afficher_match_fst2(pos+p->current_origin+N_INT_ALLREADY_READ,stack,p);}
+      }
+   }
+   else {
+      /* If we are in a subgraph */
+      if (n_matches==(NBRE_ARR_MAX-1)) {
+         /* If there are too much matches, we suspect an error in the grammar
+          * like an infinite recursion */
+         error_at_token_pos("\nMaximal number of matches per subgraph reached!",
+                            p->current_origin,pos,p);
+         return;
       }
       else {
-        (*LISTE)=inserer_si_absent(pos,(*LISTE),StackPointer,&stack[StackBase]);
+         /* If everything is fine, we add this match to the match list of the
+          * current graph level */
+         n_matches++;
+         if (ambig_transduction_mode==ALLOW_AMBIG_TRANSDUCTIONS) {
+            (*matches)=inserer_si_different(pos,(*matches),StackPointer,&stack[StackBase]);
+         } else {
+            (*matches)=inserer_si_absent(pos,(*matches),StackPointer,&stack[StackBase]);
+         }
       }
-    }
-  }
+   }
+}
+/* If we have reached the end of the token buffer, we indicate it by setting
+ * the current tokens to -1 */
+if (pos+p->current_origin>=LENGTH) {
+   token=-1;
+   token2=-1;
+} else {
+   token=texte[pos+p->current_origin];
+   if (token==p->SPACE) {pos2=pos+1;}
+      /* Now, we deal with the SPACE, if any. To do that, we use several variables:
+       * pos: current position in the token buffer, relative to the current origin
+       * pos2: position of the first non-space token from 'pos'.
+       * token2: token at pos2  or -1 if 'pos2' is outside the token buffer */
+   else {pos2=pos;}
+   if (pos2+p->current_origin>=LENGTH) {
+      token2=-1;
+   } else {
+      token2=texte[pos2+p->current_origin];
+   }
 }
 
-if (pos+origine_courante>LENGTH) return;
-
-// sous-graphes
-if ((a_sous_graphe=etat_courant->liste_sous_graphes) != NULL) {
-  // if there are subgraphs, we must process them
-
-  int* var_backup=NULL;
-  int old_StackBase;
-  old_StackBase = StackBase;
-  if (transduction_mode != IGNORE_TRANSDUCTIONS) {
-    // for better performance when ignoring outputs
-    var_backup=create_variable_backup();
-  }
-
-  do
-    { // process list of subgraphs
-      arr=a_sous_graphe->liste_arr;
-      while (arr!=NULL) {
-        struct liste_num* L = NULL;
-        StackBase = StackPointer;
-        parcourir_opt(a_sous_graphe->numero_de_graphe,
-                      debut_graphe[a_sous_graphe->numero_de_graphe],
-                      pos,profondeur,&L,0,NULL,parameters);
-        StackBase = old_StackBase;
-        if (L != NULL) { // at least one match by the called subgraph
-          do
-            { // process all matches in L
-              if (transduction_mode != IGNORE_TRANSDUCTIONS) {
-                u_strcpy(&stack[SOMMET],L->pile);
-                StackPointer = L->sommet;
-                install_variable_backup(L->variable_backup);
-              }
-              parcourir_opt(numero_graphe_courant,arr->arr,L->n,profondeur,LISTE,n_matches,
-              				ctx,parameters);
-              StackPointer=SOMMET;
-              if (numero_graphe_courant == 0) // necessary only in main graph
-                if (transduction_mode != IGNORE_TRANSDUCTIONS) {
-                	install_variable_backup(var_backup);
-                }
-              struct liste_num* l_tmp = L;
-              L = L->suivant;
-              if (transduction_mode != IGNORE_TRANSDUCTIONS) {
-              	free_variable_backup(l_tmp->variable_backup);
-              }
-              free(l_tmp);
-            }
-          while (L != NULL);
-        }
-        arr=arr->suivant;
-      } // end of while (arr!=NULL)
-    }
-  while ((a_sous_graphe=a_sous_graphe->suivant) != NULL);
-
-  // finally we have to restore the stack and other backup stuff
-  StackPointer=SOMMET;
-  StackBase=old_StackBase; // may be changed by recursive subgraph calls !
-  if (transduction_mode != IGNORE_TRANSDUCTIONS) { // for better performance (see above)
-    install_variable_backup(var_backup);
-    free_variable_backup(var_backup);
-  }
-} // end of processing subgraphs
-
-
-/////////////////////////////////////////////////
-// gestion de l'espace
-if (texte[pos+origine_courante]==parameters->ESPACE) {
-   pos2=pos+1;
-}
-else pos2=pos;
-if (pos2+origine_courante>LENGTH) return;
-pos4=pos2+1;
-
-
-
-/////////////////////////////////////////////////
-// metas
-a_meta=etat_courant->liste_metas;
-if (a_meta!=NULL) {
-  k=parameters->token_controle[texte[pos2+origine_courante]];
-  k_pas_decale=parameters->token_controle[texte[pos+origine_courante]];
-}
-while (a_meta!=NULL) {
-  arr=a_meta->liste_arr;
-  while (arr!=NULL) {
-    /* $CD$ begin */
-    iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;
-    /* $CD$ end   */
-
-    sortie=ETIQUETTE[arr->etiquette_origine]->output;
-    switch (a_meta->numero_de_meta) {
-      case SPACE_TAG:if (texte[pos+origine_courante]==parameters->ESPACE) {
-                        if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                        if (transduction_mode==MERGE_TRANSDUCTIONS) push_char(' ');
-                        parcourir_opt(numero_graphe_courant,arr->arr,pos+1,profondeur,LISTE,
-                        				n_matches,ctx,parameters);
-                        StackPointer=SOMMET;
-                      }
-                      break;
-      case DIESE: if (texte[pos+origine_courante]!=parameters->ESPACE) {
-                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,
-                     				n_matches,ctx,parameters);
-                     StackPointer=SOMMET;
+/**
+ * SUBGRAPHS
+ */
+struct opt_graph_call* graph_call_list=current_state->graph_calls;
+if (graph_call_list!=NULL) {
+   /* If there are subgraphs, we process them */
+   int* var_backup=NULL;
+   int old_StackBase;
+   old_StackBase=StackBase;
+   if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+      /* For better performance when ignoring outputs */
+      var_backup=create_variable_backup();
+   }
+   do {
+      /* For each graph call, we look all the reachable states */
+      t=graph_call_list->transition;
+      while (t!=NULL) {
+         struct liste_num* L=NULL;
+         StackBase=StackPointer;
+         locate(graph_depth+1, /* Exploration of the subgraph */
+                      p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
+                      pos,depth+1,&L,0,NULL,p);
+         StackBase=old_StackBase;
+         if (L!=NULL) {
+            /* If there is at least one match, we process the match list */
+            do  {
+               /* We restore the settings of the current graph level */
+               if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+                  u_strcpy(&stack[stack_top],L->pile);
+                  StackPointer=L->sommet;
+                  install_variable_backup(L->variable_backup);
+               }
+               /* And we continue the exploration */
+               locate(graph_depth,p->optimized_states[t->state_number],L->n,depth+1,matches,n_matches,ctx,p);
+               StackPointer=stack_top;
+               if (graph_depth==0) {
+                  /* If we are at the top graph level, we restore the variables */
+                  if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+                     install_variable_backup(var_backup);
                   }
-                  break;
-      case EPSILON: if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,
-                    			n_matches,ctx,parameters);
-                    StackPointer=SOMMET;
-                    break;
-      case POSITIVE_CONTEXT_MARK: {
-                    // We look for a positive context from the current position.
-                    stack[StackPointer]='\0';
-                    struct context* c=new_context(INSIDE_POSITIVE_CONTEXT,
-                                                  pos,
-                                                  stack,
-                                                  StackPointer,
-                                                  LISTE,
-                                                  n_matches,
-                                                  ctx);
-                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c,parameters);
-                    remove_context(c);
-                    break;
-                    }
-      case NEGATIVE_CONTEXT_MARK: {
-                    // We look for a negative context from the current position.
-                    stack[StackPointer]='\0';
-                    struct context* c=new_context(INSIDE_NEGATIVE_CONTEXT,
-                                                  pos,
-                                                  stack,
-                                                  StackPointer,
-                                                  LISTE,
-                                                  n_matches,
-                                                  ctx);
-                    parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c,parameters);
-                    if (c->context_mode!=NEGATIVE_CONTEXT_HAS_MATCHED) {
-                       // if we have not matched anything in the negative 
-                       // context, then we can bypass anything looking for 
-                       // the context end mark
-                       c->context_mode=FAILED_IN_NEGATIVE_CONTEXT;
-                       c->depth=0;
-                       parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,NULL,0,c,parameters);
-                    }
-                    remove_context(c);
-                    break;
-                    }
-      case CONTEXT_END_MARK: {
-                    // We have found a closing context mark.
-                    if (ctx==NULL) {
-                       // if there was no current opened context
-                       char tmp[1024];
-                       u_to_char(tmp,current_fst2->graph_names[numero_graphe_courant+1]);
-                       fprintf(stderr,"ERROR: unexpected closing context mark in graph \"%s\"\n",tmp);
-                       return;
-                    }
-                    //***************************************************************
-                    if (ctx->context_mode==INSIDE_POSITIVE_CONTEXT) {
-                       // if we were inside a positive context
-                       pos=ctx->continue_position;
-                       u_strcpy(stack,ctx->stack);
-                       StackPointer=ctx->stack_pointer;
-                       // if there is a matches list, 
-                       // we must ignore all matches informations that have been 
-                       // compute inside the context
-                       if (LISTE!=NULL) {
-                          free_list_num(*LISTE);
-                       }
-                       LISTE=ctx->list_of_matches;
-                       n_matches=ctx->number_of_matches;
-                       parcourir_opt(numero_graphe_courant,arr->arr,pos,profondeur,LISTE,
-                       				n_matches,ctx->next,parameters);
-                       break;
-                    }
-                    //***************************************************************
-                    if (ctx->context_mode==INSIDE_NEGATIVE_CONTEXT) {
-                       // if we have recognized a negative context
-                       // we must ignore the match
-                       ctx->context_mode=NEGATIVE_CONTEXT_HAS_MATCHED;
-                       return;
-                    }
-                    //***************************************************************
-                    if (ctx->context_mode==FAILED_IN_NEGATIVE_CONTEXT) {
-                       fatal_error("ERROR: unexpected FAILED_IN_NEGATIVE_CONTEXT\n");
-                    }
-                    break;
-                    }
-      case VAR_START: {
-                      int old=get_variable_start(a_meta->numero_de_variable);
-                      set_variable_start(a_meta->numero_de_variable,pos2);
-                      /*if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                         if (pos2!=pos) push_char(' ');
-                         
-                         // modification made by Sébastien Paumier
-                      }*/
-                      parcourir_opt(numero_graphe_courant,arr->arr,pos/*pos2*/,profondeur,LISTE,
-                      				n_matches,ctx,parameters);
-                      StackPointer=SOMMET;
-                      set_variable_start(a_meta->numero_de_variable,old);
-                      }
-                      break;
-      case VAR_END:   {
-                      int old=get_variable_end(a_meta->numero_de_variable);
-                      set_variable_end(a_meta->numero_de_variable,pos-1);
-                      /*if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                         if (pos2!=pos) push_char(' ');
-                         
-                         // modification made by Sébastien Paumier
-                      }*/
-                      parcourir_opt(numero_graphe_courant,arr->arr,pos/*pos2*/,profondeur,LISTE,
-                      				n_matches,ctx,parameters);
-                      StackPointer=SOMMET;
-                      set_variable_end(a_meta->numero_de_variable,old);
-                      }
-                      break;
-      case NB: {     int z=pos2;
-                     while (is_a_digit_token(TOKENS->value[texte[z+origine_courante]])) z++;
-                     if (z!=pos2) {
-                        if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                        if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                           if (pos2!=pos) push_char(' ');
-                           for (int y=pos2;y<z;y++) {
-                              push_string(TOKENS->value[texte[y+origine_courante]]);
-                           }
+               }
+               struct liste_num* l_tmp=L;
+               L=L->suivant;
+               if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+                  /* We free the temporary variable backup, if needed */
+              	   free_variable_backup(l_tmp->variable_backup);
+               }
+               free(l_tmp);
+            }
+          while (L!=NULL);
+        }
+        t=t->next;
+      } /* end of while (t!=NULL) */
+   } while ((graph_call_list=graph_call_list->next)!=NULL);
+   /* Finally, we have to restore the stack and other backup stuff */
+   StackPointer=stack_top;
+   StackBase=old_StackBase; /* May be changed by recursive subgraph calls */
+   if (transduction_mode!=IGNORE_TRANSDUCTIONS) { /* For better performance (see above) */
+      install_variable_backup(var_backup);
+      free_variable_backup(var_backup);
+   }
+} /* End of processing subgraphs */
+
+/**
+ * METAS
+ */
+struct opt_meta* meta_list=current_state->metas;
+if (meta_list!=NULL) {
+   /* We cache the control bytes of the pos2 token. The pos token has not interest,
+    * because it is 1) a space  or 2) equal to the pos2 one. */
+   if (token2!=-1) ctrl=p->token_control[token2];
+   else ctrl=0;
+}
+while (meta_list!=NULL) {
+   /* We process all the meta of the list */
+   t=meta_list->transition;
+   while (t!=NULL) {
+      /* We cache the output of the current tag, as well as values indicating if the
+       * current pos2 tokens matches the tag's morphological filter, if any. */
+      output=p->tags[t->tag_number]->output;
+      /* If there is no morphological filter, we act as if there was a matching one, except
+       * if we are at the end of the token buffer. With this trick, the morphofilter test
+       * will avoid overpassing the end of the token buffer. */
+      int morpho_filter_OK=(token2!=-1)?1:0;
+      #ifdef TRE_WCHAR
+      filter_number=p->tags[t->tag_number]->filter_number;
+      if (token2!=-1) {
+         morpho_filter_OK=(filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number));
+      }
+      #endif
+      int negation=meta_list->negation;
+      /* We use these variables to deal with match cases:
+       * the matching sequence is in the range [start;end[
+       * start=end means that the transition matches but that no token is read in the text,
+       * which is the case, for instance, with epsilon transitions. start=-1 means that the
+       * transition does not match. 'end' is the position for the next call
+       * to 'locate'. */
+      int start=-1;
+      int end=-1;
+      switch (meta_list->meta) {
+         
+         case META_SHARP:
+            if (token==-1 || token!=p->SPACE) {
+               /* # can match only if there is no space at the current position or
+                * if we are at the end of the token buffer. */
+               start=pos;
+               end=pos;
+            }
+            break;
+            
+         case META_SPACE:
+            if (token!=-1 && token==p->SPACE) {
+               /* The space meta can match only if there is a space at the current position.
+                * Note that we don't compare token and p->SPACE since p->SPACE can be -1 if
+                * the text contains no space. */
+               start=pos;
+               end=pos+1;
+            }
+            break;
+            
+         case META_EPSILON:
+            /* We can always match the empty word */
+            start=pos;
+            end=pos;
+            break;
+            
+         case META_MOT:
+            if (!morpho_filter_OK || token2==p->SENTENCE || token2==p->STOP) {
+               /* <MOT> and <!MOT> must NEVER match {S} and {STOP}! */
+               break;
+            }
+            if ((GESTION_DE_L_ESPACE==MODE_MORPHO) && (token2==p->SPACE) && negation) {
+               /* If we want to catch a space with <!MOT> */
+               start=pos;
+               end=pos+1;
+            }
+            else if (XOR(negation,ctrl&MOT_TOKEN_BIT_MASK)) {
+               start=pos;
+               end=pos2+1;
+            }
+            break;
+            
+         case META_DIC:
+            if (token2==-1) break;
+            if (!negation) {
+               /* If there is no negation on DIC, we can look for a compound word */
+               end_of_compound=find_compound_word(pos2,COMPOUND_WORD_PATTERN,p->DLC_tree,p);
+               if (end_of_compound!=-1) {
+                  /* If we find one, we must test if it matches the morphological filter, if any */
+                  int OK=1;
+                  #ifdef TRE_WCHAR
+                  if (filter_number==-1) OK=1;
+                  else {
+                     unichar* sequence=get_token_sequence(texte,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
+                     OK=(string_match_filter(p->filters,sequence,filter_number)==0);
+                     free(sequence);
+                  }
+                  #endif
+                  if (OK) {
+                     /* <DIC> can match two things: a sequence of tokens or a single token
+                      * As we don't want to process lists of [start,end[ ranges, we
+                      * directly handle here the case of a token sequence. */
+                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
+                     if (transduction_mode==MERGE_TRANSDUCTIONS) {
+                        if (pos2!=pos) push_char(' ');
+                        for (int x=pos2;x<=end_of_compound;x++) {
+                           push_string(p->tokens->value[texte[x+p->current_origin]]);
                         }
-                        parcourir_opt(numero_graphe_courant,arr->arr,z,profondeur,LISTE,n_matches,ctx,parameters);
-                        StackPointer=SOMMET;
                      }
+                     locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
+                     StackPointer=stack_top;
+                  }
+               }
+               /* Now, we look for a simple word */
+               if (ctrl&DIC_TOKEN_BIT_MASK && morpho_filter_OK) {
+                  start=pos;
+                  end=pos2+1;
                }
                break;
-               
-               
-      /* $CD$ begin */
-      case TOKEN:   if (texte[pos2+origine_courante]==STOP_MARKER_INDICE) {
-                       // the {STOP} tag must NEVER be matched by any pattern
-                       break;
-                    }
-#ifdef TRE_WCHAR 
-                    if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif 
-                    if (transduction_mode != IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                    if (transduction_mode == MERGE_TRANSDUCTIONS) {
-                        if (pos2 != pos) push_char(' ');
-                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                        }
-                    parcourir_opt(numero_graphe_courant,arr->arr, pos4,profondeur,LISTE,
-                    			n_matches,ctx,parameters);
-                    StackPointer = SOMMET;
-                    break;
-      /* $CD$ end   */
-      
-      
-      case MOT: 
-#ifdef TRE_WCHAR
-                if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif
-                if ((GESTION_DE_L_ESPACE==MODE_MORPHO)&&(pos2!=pos)&&(!(k_pas_decale&MOT_TOKEN_BIT_MASK))
-                    &&(a_meta->negation)) {
-                   // on est dans le cas ou on veut attraper l'espace avec <!MOT>
-                   if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                   if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                      if (pos2!=pos) push_char(' ');
-                   }
-                   parcourir_opt(numero_graphe_courant,arr->arr,pos+1,profondeur,LISTE,
-                   				n_matches,ctx,parameters);
-                   StackPointer=SOMMET;
-                }
-                else if (((k&MOT_TOKEN_BIT_MASK)&&!(a_meta->negation))
-                    ||((!(k&MOT_TOKEN_BIT_MASK))&&(a_meta->negation)&&(texte[pos2+origine_courante]!=SENTENCE_DELIMITER_INDICE)
-                    
-                             // the {STOP} tag must NEVER be matched by any pattern         
-                             &&(texte[pos2+origine_courante]!=STOP_MARKER_INDICE))) {
-                   if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                   if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                      if (pos2!=pos) push_char(' ');
-                      push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                   }
-                   parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                   				n_matches,ctx,parameters);
-                   StackPointer=SOMMET;
-                }
-                break;
-      case DIC: if (!(a_meta->negation)) {
-                  pos3=trouver_mot_compose_DIC(pos2,UNDEFINED_COMPOUND_PATTERN,parameters->DLC_tree);
-                  if (pos3!=-1) {
-                     int OK=1;
-#ifdef TRE_WCHAR
-                     if (iMasterGF == -1 ) OK=1;
-                     else {
-                        unichar tmp[512];
-                        tmp[0]='\0';
-                        for (int x=pos2;x<=pos3;x++) {
-                           u_strcat(tmp,TOKENS->value[texte[x+origine_courante]]);
-                        }
-                        OK=(MatchRawGF(parameters->masterGF, tmp,iMasterGF)==0);
-                     }
-#endif
-                     if (OK) {
-                        if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                        if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                           if (pos2!=pos) push_char(' ');
-                           for (int x=pos2;x<=pos3;x++)
-                              push_string(TOKENS->value[texte[x+origine_courante]]);
-                        }
-                        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
-                        				n_matches,ctx,parameters);
-                        StackPointer=SOMMET;
+            }
+            /* We have the meta <!DIC> */
+            if (ctrl&NOT_DIC_TOKEN_BIT_MASK && morpho_filter_OK) {
+               start=pos;
+               end=pos2+1;
+            }
+            break;
+            
+         case META_SDIC: 
+            if (morpho_filter_OK && (ctrl&DIC_TOKEN_BIT_MASK) && !(ctrl&CDIC_TOKEN_BIT_MASK)) {
+               /* We match only simple words */
+               start=pos;
+               end=pos2+1;
+            }
+            break;
+            
+         case META_CDIC:
+            if (token2==-1) break;
+            end_of_compound=find_compound_word(pos2,COMPOUND_WORD_PATTERN,p->DLC_tree,p);
+            if (end_of_compound!=-1) {
+               /* If we find a compound word */
+               int OK=1;
+               #ifdef TRE_WCHAR
+               if (filter_number==-1) OK=1;
+               else {
+                  unichar* sequence=get_token_sequence(texte,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
+                  OK=(string_match_filter(p->filters,sequence,filter_number)==0);
+                  free(sequence);
+               }
+               #endif
+               if (OK) {
+                  /* <CDIC> can match two things: a sequence of tokens or a compound
+                   * tag token like "{black-eyed,.A}". As we don't want to process lists
+                   * of [start,end[ ranges, we directly handle here the case of a
+                   * token sequence. */
+                  if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
+                  if (transduction_mode==MERGE_TRANSDUCTIONS) {
+                     if (pos2!=pos) push_char(' ');
+                     for (int x=pos2;x<=end_of_compound;x++) {
+                        push_string(p->tokens->value[texte[x+p->current_origin]]);
                      }
                   }
-                  if (k&DIC_TOKEN_BIT_MASK) {
-#ifdef TRE_WCHAR
-                     if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif
-                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                     if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                        if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                     }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                     				n_matches,ctx,parameters);
-                     StackPointer=SOMMET;
-                     break;
-                  }
-      			}
-                else { // we are in the case <!DIC>
-                       if (k&NOT_DIC_TOKEN_BIT_MASK) {
-#ifdef TRE_WCHAR
-                          if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif
-                          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                          if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                             if (pos2!=pos) push_char(' ');
-                             push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                          }
-                          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                          				n_matches,ctx,parameters);
-                          StackPointer=SOMMET;
-                       }
-                       break;
-                } break;
-      case SDIC: 
-#ifdef TRE_WCHAR
-                 if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif
-                 if ((k&DIC_TOKEN_BIT_MASK) && !(k&CDIC_TOKEN_BIT_MASK)) {
-                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                     if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                        if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                     }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                     			n_matches,ctx,parameters);
-                     StackPointer=SOMMET;
-                  }
-                  break;
-      case CDIC: pos3=trouver_mot_compose_DIC(pos2,UNDEFINED_COMPOUND_PATTERN,parameters->DLC_tree);
-                  if (pos3!=-1) {
-                     int OK=1;
-#ifdef TRE_WCHAR
-                     if (iMasterGF == -1 ) OK=1;
-                     else {
-                        unichar tmp[512];
-                        tmp[0]='\0';
-                        for (int x=pos2;x<=pos3;x++) {
-                           u_strcat(tmp,TOKENS->value[texte[x+origine_courante]]);
-                        }
-                        OK=(MatchRawGF(parameters->masterGF,tmp,iMasterGF)==0);
-                     }
-#endif
-                     if (OK) {
-                        if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                        if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                           if (pos2!=pos) push_char(' ');
-                           for (int x=pos2;x<=pos3;x++)
-                              push_string(TOKENS->value[texte[x+origine_courante]]);
-                        }
-                        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
-                        				n_matches,ctx,parameters);
-                        StackPointer=SOMMET;
-                     }
-                  }
-                  // case {aujourd'hui,.ADV}
-#ifdef TRE_WCHAR
-                  if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif
-                  if (k&CDIC_TOKEN_BIT_MASK) {
-                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                     if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                        if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                     }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                     			n_matches,ctx,parameters);
-                     StackPointer=SOMMET;
-                     break;
-                  }
-                 break;
-      case MAJ: 
-#ifdef TRE_WCHAR
-                if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif
-                if (!(a_meta->negation)) {
-                  if (k&MAJ_TOKEN_BIT_MASK) {
-                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                     if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                        if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                     }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                     				n_matches,ctx,parameters);
-                     StackPointer=SOMMET;
-                     break;
-                  }
-      			}
-                else {if ((!(k&MAJ_TOKEN_BIT_MASK))&&(k&MOT_TOKEN_BIT_MASK)) {
-                         if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                         if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                             if (pos2!=pos) push_char(' ');
-                             push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                         }
-                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                         				n_matches,ctx,parameters);
-                         StackPointer=SOMMET;
-                      }
-                      break;
-                } break;
-      case MIN: 
-#ifdef TRE_WCHAR
-                if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif
-                if (!(a_meta->negation)) {
-                  if (k&MIN_TOKEN_BIT_MASK) {
-                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                     if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                        if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                     }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                     				n_matches,ctx,parameters);
-                     StackPointer=SOMMET;
-                     break;
-                  }
-      			}
-                else {if ((!(k&MIN_TOKEN_BIT_MASK))&&(k&MOT_TOKEN_BIT_MASK)) {
-                         if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                         if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                             if (pos2!=pos) push_char(' ');
-                             push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                         }
-                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                         				n_matches,ctx,parameters);
-                         StackPointer=SOMMET;
-                      }
-                      break;
-                } break;
-      case PRE: 
-#ifdef TRE_WCHAR 
-                if (!(iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0)) break;
-#endif
-                if (!(a_meta->negation)) {
-                  if (k&PRE_TOKEN_BIT_MASK) {
-                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                     if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                        if (pos2!=pos) push_char(' ');
-                        push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                     }
-                     parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                     			n_matches,ctx,parameters);
-                     StackPointer=SOMMET;
-                     break;
-                  }
-      			}
-                else {if ((!(k&PRE_TOKEN_BIT_MASK))&&(k&MOT_TOKEN_BIT_MASK)) {
-                         if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-                         if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                             if (pos2!=pos) push_char(' ');
-                             push_string(TOKENS->value[texte[pos2+origine_courante]]);
-                         }
-                         parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-                         			n_matches,ctx,parameters);
-                         StackPointer=SOMMET;
-                      }
-                      break;
-                } break;
-    }
-    arr=arr->suivant;
-  }
-  a_meta=a_meta->suivant;
+                  locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
+                  StackPointer=stack_top;
+               }
+            }
+            /* Anyway, we could have a tag compound word like {aujourd'hui,.ADV} */
+            if (morpho_filter_OK && ctrl&CDIC_TOKEN_BIT_MASK) {
+               start=pos;
+               end=pos2+1;
+            }
+            break;
+
+         case META_MAJ:
+            if (!morpho_filter_OK) break;
+            if (!negation) {
+               if (ctrl&MAJ_TOKEN_BIT_MASK) {
+                  start=pos;
+                  end=pos2+1;
+               }
+               break;
+            }
+            if ( !(ctrl&MAJ_TOKEN_BIT_MASK) && (ctrl&MOT_TOKEN_BIT_MASK)) {
+               /* If we have <!MAJ>, the matching token must be matched by <MOT> */
+               start=pos;
+               end=pos2+1;
+            }
+            break;
+
+         case META_MIN:
+            if (!morpho_filter_OK) break;
+            if (!negation) {
+               if (ctrl&MIN_TOKEN_BIT_MASK) {
+                  start=pos;
+                  end=pos2+1;
+               }
+               break;
+            }
+            if ( !(ctrl&MIN_TOKEN_BIT_MASK) && (ctrl&MOT_TOKEN_BIT_MASK)) {
+               /* If we have <!MIN>, the matching token must be matched by <MOT> */
+               start=pos;
+               end=pos2+1;
+            }
+            break;
+ 
+         case META_PRE: 
+            if (!morpho_filter_OK) break;
+            if (!negation) {
+               if (ctrl&PRE_TOKEN_BIT_MASK) {
+                  start=pos;
+                  end=pos2+1;
+               }
+               break;
+            }
+            if ( !(ctrl&PRE_TOKEN_BIT_MASK) && (ctrl&MOT_TOKEN_BIT_MASK)) {
+               /* If we have <!PRE>, the matching token must be matched by <MOT> */
+               start=pos;
+               end=pos2+1;
+            }
+            break;
+
+      case META_NB: 
+         if (token2==-1) break;
+         { /* This block avoids visibility problem about 'z' */
+            int z=pos2;
+            while (z+p->current_origin<LENGTH && is_a_digit_token(p->tokens->value[texte[z+p->current_origin]])) z++;
+            if (z!=pos2) {
+               /* If we have found a contiguous digit sequence */
+               start=pos;
+               end=z;
+            }
+         }
+         break;
+
+      case META_TOKEN:
+         if (token2==-1 || token2==p->STOP || !morpho_filter_OK) {
+            /* The {STOP} tag must NEVER be matched by any pattern */
+            break;
+         }
+         start=pos;
+         end=pos2+1;
+         break;
+
+      } /* End of the switch */
+
+      if (start!=-1) {
+         /* If the transition has matched */
+         if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+            /* We process its output */
+            process_transduction(output,p);
+         }
+         if (transduction_mode==MERGE_TRANSDUCTIONS) {
+            /* Then, if we are in merge mode, we push the tokens that have
+             * been read to the output */
+            for (int y=start;y<end;y++) {
+               push_string(p->tokens->value[texte[y+p->current_origin]]);
+            }
+         }
+         /* Then, we continue the exploration of the grammar */
+         locate(graph_depth,p->optimized_states[t->state_number],end,depth+1,matches,n_matches,ctx,p);
+         /* Once we have finished, we restore the stack */
+         StackPointer=stack_top;
+      }
+      t=t->next;
+   }
+   meta_list=meta_list->next;
 }
+
+/**
+ * VARIABLE STARTS
+ */
+struct opt_variable* variable_list=current_state->variable_starts;
+while (variable_list!=NULL) {
+   int old=get_variable_start(variable_list->variable_number);
+   set_variable_start(variable_list->variable_number,pos);
+   locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
+   StackPointer=stack_top;
+   set_variable_start(variable_list->variable_number,old);
+   variable_list=variable_list->next;
+}
+
+/**
+ * VARIABLE ENDS
+ */
+variable_list=current_state->variable_ends;
+while (variable_list!=NULL) {
+   int old=get_variable_end(variable_list->variable_number);
+   set_variable_end(variable_list->variable_number,pos);
+   locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
+   StackPointer=stack_top;
+   set_variable_end(variable_list->variable_number,old);
+   variable_list=variable_list->next;
+}
+
+/**
+ * CONTEXTS
+ */
+struct opt_contexts* contexts=current_state->contexts;
+if (contexts!=NULL) {
+   Fst2Transition t;
+   if ((t=contexts->positive_mark)!=NULL) {
+      /* We look for a positive context from the current position */
+      struct list_int* c=new_list_int(0,ctx);
+      locate(graph_depth,p->optimized_states[t->state_number],pos,depth+1,NULL,0,c,p);
+      /* Note that there is no matches to free since matches cannot be built within a context */
+      StackPointer=stack_top;
+      if (c->n) {
+         /* If the context has matched, then we can explore all the paths
+          * that starts from the context end */
+         Fst2Transition states=contexts->reacheable_states_from_positive_context;
+         while (states!=NULL) {
+            locate(graph_depth,p->optimized_states[states->state_number],pos,depth+1,matches,n_matches,ctx,p);
+            StackPointer=stack_top;
+            states=states->next;
+         }
+      }
+      free(c);
+   }
+   if ((t=contexts->negative_mark)!=NULL) {
+      /* We look for a negative context from the current position */
+      struct list_int* c=new_list_int(0,ctx);
+      locate(graph_depth,p->optimized_states[t->state_number],pos,depth+1,NULL,0,c,p);
+      /* Note that there is no matches to free since matches cannot be built within a context */
+      StackPointer=stack_top;
+      if (!c->n) {
+         /* If the context has not matched, then we can explore all the paths
+          * that starts from the context end */
+         Fst2Transition states=contexts->reacheable_states_from_negative_context;
+         while (states!=NULL) {
+            locate(graph_depth,p->optimized_states[states->state_number],pos,depth+1,matches,n_matches,ctx,p);
+            StackPointer=stack_top;
+            states=states->next;
+         }
+      }
+      free_list_int(c);
+   }
+   if ((t=contexts->end_mark)!=NULL) {
+      /* If we have a closing context mark */
+      if (ctx==NULL) {
+         /* If there was no current opened context, it's an error */
+         char tmp[1024];
+         u_to_char(tmp,p->fst2->graph_names[graph_depth+1]);
+         error("ERROR: unexpected closing context mark in graph \"%s\"\n",tmp);
+         return;
+      }
+      /* Otherwise, we just indicate that we have found a context closing mark,
+       * and we return */
+      ctx->n=1;
+      return;
+   }
+}
+
+/**
+ * Now that we have finished with meta symbols, there can be no chance to advance
+ * in the grammar if we are at the end of the token buffer.
+ */
+if (token2==-1) {return;}
+
+
 
 /////////////////////////////////////////////////////////
 // patterns composes
 //
-a_pattern=etat_courant->liste_patterns_composes;
-while (a_pattern!=NULL) {
-  arr=a_pattern->liste_arr;
-  while (arr!=NULL) {
+struct opt_pattern* pattern_list=current_state->compound_patterns;
+while (pattern_list!=NULL) {
+  t=pattern_list->transition;
+  while (t!=NULL) {
 
     /* $CD$ begin */
 #ifdef TRE_WCHAR
-    iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;  
+    filter_number=p->tags[t->tag_number]->filter_number;  
 #endif
     /* $CD$ end   */
 
-    sortie=ETIQUETTE[arr->etiquette_origine]->output;
-    k=a_pattern->numero_de_pattern;
-    pos3=trouver_mot_compose_DIC(pos2,k,parameters->DLC_tree);
-    if (pos3!=-1 && !(a_pattern->negation)) {
+    output=p->tags[t->tag_number]->output;
+    end_of_compound=find_compound_word(pos2,pattern_list->pattern_number,p->DLC_tree,p);
+    if (end_of_compound!=-1 && !(pattern_list->negation)) {
        int OK=1;
 #ifdef TRE_WCHAR
-       if (iMasterGF == -1 ) OK=1;
+       if (filter_number == -1 ) OK=1;
        else {
           unichar tmp[512];
           tmp[0]='\0';
-          for (int x=pos2;x<=pos3;x++) {
-            u_strcat(tmp,TOKENS->value[texte[x+origine_courante]]);
+          for (int x=pos2;x<=end_of_compound;x++) {
+            u_strcat(tmp,p->tokens->value[texte[x+p->current_origin]]);
           }
-          OK=(MatchRawGF(parameters->masterGF,tmp,iMasterGF)==0);
+          OK=(string_match_filter(p->filters,tmp,filter_number)==0);
        }
 #endif
        if (OK){
-          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
+          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
           if (transduction_mode==MERGE_TRANSDUCTIONS) {
              if (pos2!=pos) push_char(' ');
-             for (int x=pos2;x<=pos3;x++)
-                push_string(TOKENS->value[texte[x+origine_courante]]);
+             for (int x=pos2;x<=end_of_compound;x++)
+                push_string(p->tokens->value[texte[x+p->current_origin]]);
           }
-          parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
-          				n_matches,ctx,parameters);
-          StackPointer=SOMMET;
+          locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,
+          				n_matches,ctx,p);
+          StackPointer=stack_top;
        }
     }
-    arr=arr->suivant;
+    t=t->next;
   }
-  a_pattern=a_pattern->suivant;
+  pattern_list=pattern_list->next;
 }
 
 
 ///////////////////////////////////////////////
 // patterns simples
 //
-a_pattern=etat_courant->liste_patterns;
-while (a_pattern!=NULL) {
-  arr=a_pattern->liste_arr;
-  while (arr!=NULL) {
+pattern_list=current_state->patterns;
+while (pattern_list!=NULL) {
+  t=pattern_list->transition;
+  while (t!=NULL) {
 
     /* $CD$ begin */
 #ifdef TRE_WCHAR
-    iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;  
+    filter_number = p->tags[t->tag_number]->filter_number;  
 #endif
     /* $CD$ end   */
-    sortie=ETIQUETTE[arr->etiquette_origine]->output;
-    k=a_pattern->numero_de_pattern;
+    output=p->tags[t->tag_number]->output;
+    ctrl=pattern_list->pattern_number;
     //---mots composes
-    pos3=trouver_mot_compose_DIC(pos2,k,parameters->DLC_tree);
-    if (pos3!=-1 && !(a_pattern->negation)) {
+    end_of_compound=find_compound_word(pos2,ctrl,p->DLC_tree,p);
+    if (end_of_compound!=-1 && !(pattern_list->negation)) {
       int OK=1;
 #ifdef TRE_WCHAR
-      if (iMasterGF == -1 ) OK=1;
+      if (filter_number == -1 ) OK=1;
       else {
         unichar tmp[512];
         tmp[0]='\0';
-        for (int x=pos2;x<=pos3;x++) {
-          u_strcat(tmp,TOKENS->value[texte[x+origine_courante]]);
+        for (int x=pos2;x<=end_of_compound;x++) {
+          u_strcat(tmp,p->tokens->value[texte[x+p->current_origin]]);
         }
-        OK=(MatchRawGF(parameters->masterGF,tmp,iMasterGF)==0);
+        OK=(string_match_filter(p->filters,tmp,filter_number)==0);
     }
 #endif
       if (OK) {
-        if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
+        if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
         if (transduction_mode==MERGE_TRANSDUCTIONS) {
           if (pos2!=pos) push_char(' ');
-          for (int x=pos2;x<=pos3;x++)
-            push_string(TOKENS->value[texte[x+origine_courante]]);
+          for (int x=pos2;x<=end_of_compound;x++)
+            push_string(p->tokens->value[texte[x+p->current_origin]]);
         }
-        parcourir_opt(numero_graphe_courant,arr->arr,pos3+1,profondeur,LISTE,
-        			n_matches,ctx,parameters);
-        StackPointer=SOMMET;
+        locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,
+        			n_matches,ctx,p);
+        StackPointer=stack_top;
       }
     }
     //---mots simples
 
 #ifdef TRE_WCHAR
-    if (iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0) 
+    if (filter_number == -1 || token_match_filter(p->filter_match_index, texte[pos2+p->current_origin], filter_number)) 
 #endif
     {
-      if (parameters->matching_patterns[texte[pos2+origine_courante]]!=NULL) {
-        if ((get_value(parameters->matching_patterns[texte[pos2+origine_courante]],k) && !a_pattern->negation)
-            || (!get_value(parameters->matching_patterns[texte[pos2+origine_courante]],k) && a_pattern->negation)) {
-          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
+      if (p->matching_patterns[texte[pos2+p->current_origin]]!=NULL) {
+        if ((get_value(p->matching_patterns[texte[pos2+p->current_origin]],ctrl) && !pattern_list->negation)
+            || (!get_value(p->matching_patterns[texte[pos2+p->current_origin]],ctrl) && pattern_list->negation)) {
+          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
           if (transduction_mode==MERGE_TRANSDUCTIONS) {
             if (pos2!=pos) push_char(' ');
-            push_string(TOKENS->value[texte[pos2+origine_courante]]);
+            push_string(p->tokens->value[token2]);
           }
-          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-          				n_matches,ctx,parameters);
-          StackPointer=SOMMET;
+          locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,
+          				n_matches,ctx,p);
+          StackPointer=stack_top;
         }
       } else {
         // if there is no code, we can try to look for a negation
-        if (a_pattern->negation && (parameters->token_controle[texte[pos2+origine_courante]]&MOT_TOKEN_BIT_MASK)) {
-          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
+        if (pattern_list->negation && (p->token_control[texte[pos2+p->current_origin]]&MOT_TOKEN_BIT_MASK)) {
+          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
           if (transduction_mode==MERGE_TRANSDUCTIONS) {
             if (pos2!=pos) push_char(' ');
-            push_string(TOKENS->value[texte[pos2+origine_courante]]);
+            push_string(p->tokens->value[token2]);
           }
-          parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-          				n_matches,ctx,parameters);
-          StackPointer=SOMMET;
+          locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,
+          				n_matches,ctx,p);
+          StackPointer=stack_top;
         }
       }
     }
-    arr=arr->suivant;
+    t=t->next;
   }
-  a_pattern=a_pattern->suivant;
+  pattern_list=pattern_list->next;
 }
 
-// tokens
-if (etat_courant->nombre_de_tokens!=0) {
-  k=dichotomie(texte[pos2+origine_courante],etat_courant->tableau_de_tokens,etat_courant->nombre_de_tokens);
-  if (k!=-1) {
-    arr=etat_courant->tableau_liste_arr[k];
-    while (arr!=NULL) {
-
-      /* $CD$ begin */
-#ifdef TRE_WCHAR
-      iMasterGF = ETIQUETTE[arr->etiquette_origine]->entryMasterGF;  
-      if (iMasterGF == -1 || OptMatchGF(parameters->indexGF, texte[pos2+origine_courante], iMasterGF) == 0) 
-#endif
-      {
-      /* $CD$ end   */
-
-      sortie=ETIQUETTE[arr->etiquette_origine]->output;
-      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(sortie);
-      if (transduction_mode==MERGE_TRANSDUCTIONS) {
-         if (pos2!=pos) push_char(' ');
-         push_string(TOKENS->value[texte[pos2+origine_courante]]);
+/**
+ * TOKENS
+ */
+if (current_state->number_of_tokens!=0) {
+   int n=dichotomie(token2,current_state->tokens,current_state->number_of_tokens);
+   if (n!=-1) {
+      t=current_state->token_transitions[n];
+      while (t!=NULL) {
+         /* $CD$ begin */
+         #ifdef TRE_WCHAR
+         filter_number=p->tags[t->tag_number]->filter_number;
+         if (filter_number == -1 || token_match_filter(p->filter_match_index,token2,filter_number)) 
+         #endif
+         {
+         /* $CD$ end   */
+            output=p->tags[t->tag_number]->output;
+            if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
+            if (transduction_mode==MERGE_TRANSDUCTIONS) {
+               if (pos2!=pos) push_char(' ');
+               push_string(p->tokens->value[token2]);
+            }
+            locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
+            StackPointer=stack_top;
+         }
+         t=t->next;
       }
-      parcourir_opt(numero_graphe_courant,arr->arr,pos4,profondeur,LISTE,
-      				n_matches,ctx,parameters);
-      StackPointer=SOMMET;
-    
-      /* $CD$ begin */
-      } // MatchGF
-      /* $CD$ end   */
-    
-      arr=arr->suivant;
-    }
-  }
+   }
 }
 }
 
@@ -1076,52 +898,70 @@ return -1;
 
 
 
-int trouver_mot_compose(int pos,struct DLC_tree_node* n,int code) {
-int position_max,p,res;
-if (n==NULL)
-  return -1;
-if (-1!=dichotomie(code,n->array_of_patterns,n->number_of_patterns))
-  position_max=pos-1;
+int find_compound_word_(int pos,struct DLC_tree_node* node,int pattern_number,struct locate_parameters* p) {
+int position_max,m,res;
+if (node==NULL) return -1;
+if (-1!=dichotomie(pattern_number,node->array_of_patterns,node->number_of_patterns))
+   position_max=pos-1;
 else position_max=-1;
-if (pos+origine_courante==LENGTH)
-  return position_max;
-res=dichotomie(texte[pos+origine_courante],n->destination_tokens,n->number_of_transitions);
-if (res==-1)
-  return position_max;
-p=trouver_mot_compose(pos+1,n->destination_nodes[res],code);
-if (p>position_max)
-  return p;
-else return position_max;
+if (pos+p->current_origin==LENGTH) return position_max;
+res=dichotomie(texte[pos+p->current_origin],node->destination_tokens,node->number_of_transitions);
+if (res==-1) return position_max;
+m=find_compound_word_(pos+1,node->destination_nodes[res],pattern_number,p);
+if (m>position_max) return m;
+return position_max;
 }
 
 
 
-int trouver_mot_compose_DIC(int pos,int code,struct DLC_tree_info* DLC_tree) {
-int position_max,p,res;
+int find_compound_word(int pos,int pattern_number,struct DLC_tree_info* DLC_tree,struct locate_parameters* p) {
+int position_max,m,res;
 struct DLC_tree_node *n;
-
-if (pos+origine_courante==LENGTH) {
+if (pos+p->current_origin==LENGTH) {
    return -1;
 }
-if ((n=DLC_tree->index[texte[pos+origine_courante]])==NULL) {
+if ((n=DLC_tree->index[texte[pos+p->current_origin]])==NULL) {
    return -1;
 }
-if (-1!=dichotomie(code,n->array_of_patterns,n->number_of_patterns)) {
+if (-1!=dichotomie(pattern_number,n->array_of_patterns,n->number_of_patterns)) {
    position_max=pos;
 }
 else position_max=-1;
 pos++;
-if (pos+origine_courante==LENGTH) {
+if (pos+p->current_origin==LENGTH) {
    return -1;
 }
-res=dichotomie(texte[pos+origine_courante],n->destination_tokens,n->number_of_transitions);
+res=dichotomie(texte[pos+p->current_origin],n->destination_tokens,n->number_of_transitions);
 if (res==-1) {
    return position_max;
 }
-p=trouver_mot_compose(pos+1,n->destination_nodes[res],code);
-if (p>position_max) {
-   return p;
+m=find_compound_word_(pos+1,n->destination_nodes[res],pattern_number,p);
+if (m>position_max) {
+   return m;
 }
-else return position_max;
+return position_max;
 }
+
+
+/**
+ * Returns a string corresponding to the tokens in the range [start;end].
+ */
+unichar* get_token_sequence(int* token_array,struct string_hash* tokens,int start,int end) {
+int i;
+int l=0;
+for (i=start;i<=end;i++) {
+   l=l+u_strlen(tokens->value[token_array[i]]);
+}
+unichar* res=(unichar*)malloc((l+1)*sizeof(unichar));
+if (res==NULL) {
+   fatal_error("Not enough memory in get_token_sequence\n");
+}
+l=0;
+for (i=start;i<=end;i++) {
+   u_strcpy(&(res[l]),tokens->value[token_array[i]]);
+   l=l+u_strlen(tokens->value[token_array[i]]);
+}
+return res;
+}
+
 

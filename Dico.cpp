@@ -195,7 +195,7 @@ for (int priority=1;priority<4;priority++) {
             /*
              * If it is a .fst2 dictionary
              */
-            printf("Applying %s...\n",argv[i]);
+            printf("Applying grammar %s...\n",argv[i]);
             /**
              * IMPORTANT!!!
              * dlf, dlc and err must not be open while launch_locate_as_routine

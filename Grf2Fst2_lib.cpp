@@ -395,12 +395,8 @@ Etat_fst_det nouvel_etat_mat_det()
  */
 void ajouter_transition_mat_det(Etat_fst_det e,int etiq,int etarr)
 {
-  Fst2Transition ptr;
-
-  ptr=new_Fst2Transition();
+  Fst2Transition ptr=new_Fst2Transition(etiq,etarr);
   ptr->next=e->trans;
-  ptr->tag_number=etiq;
-  ptr->state_number=etarr;
   e->trans=ptr;
 }
 
@@ -795,16 +791,12 @@ void ajouter_transition_comp(SingleGraphState* states,int dep,int arr,int etiq)
   Fst2Transition ptr;
 
   //transition
-  ptr = new_Fst2Transition();
-  ptr->state_number = arr;
-  ptr->tag_number = etiq;
+  ptr = new_Fst2Transition(etiq,arr);
   ptr->next = states[dep]->outgoing_transitions;
   states[dep]->outgoing_transitions = ptr;
 
   //transition inverse
-  ptr = new_Fst2Transition();
-  ptr->state_number = dep;
-  ptr->tag_number = etiq;
+  ptr = new_Fst2Transition(etiq,dep);
 
   ptr->next = states[arr]->reverted_incoming_transitions;
   states[arr]->reverted_incoming_transitions = ptr;
@@ -1119,17 +1111,13 @@ Fst2Transition vider_epsilon_comp(Fst2Transition ptr,SingleGraphState *letats,in
     liste=e->outgoing_transitions;
     while (liste!=NULL) {
       if (mark[liste->state_number] == 0) { //if not marked
-	tmp=new_Fst2Transition();
-	tmp->tag_number=liste->tag_number;
-	tmp->state_number=liste->state_number;
+	tmp=new_Fst2Transition(liste->tag_number,liste->state_number);
 	tmp->next=ptr->next;
 	ptr->next=tmp;
 	//printf("%d,%d,%d\n",origine,tmp->tag_number,tmp->state_number);
 	
 	e2=letats[liste->state_number];
-	tmp=new_Fst2Transition();
-	tmp->tag_number=liste->tag_number;
-	tmp->state_number=origine;
+	tmp=new_Fst2Transition(liste->tag_number,origine);
 	tmp->next=e2->reverted_incoming_transitions;
 	e2->reverted_incoming_transitions=tmp;
       }

@@ -32,14 +32,7 @@
 #include "LocateConstants.h"
 #include "Error.h"
 
-// commmand line for testing:
-//
-// e:\unitex\data\french\corpus\femme.snt e:\unitex\data\french\graphs\preprocessing\sentence\sentence.fst2 e:\unitex\data\french\alphabet.txt -merge
-//
-// e:\femme.txt e:\replace.fst2 e:\alphabet.txt -replace
-// e:\thai\thai_corpus.txt e:\thai\sentence.fst2 e:\thai\alphabet_thai.txt -merge -char_by_char
 
-#define N_FST2 3000 // maximum number of flexional transducers
 #define MERGE 0
 #define REPLACE 1
 #define BUFFER_SIZE 1000000
@@ -441,11 +434,11 @@ if (PARSING_MODE!=NORMAL_MODE
        // we proceed only if we have exactly read the contenu sequence
        // in both modes MERGE and REPLACE, we process the transduction if any
        int SOMMET2=sommet;
-       struct list_int* RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
-       struct list_int* TMP;
+       Fst2Transition RES=get_matching_etiquettes(mot,arbre_etiquettes[e],alphabet,PARSING_MODE);
+       Fst2Transition TMP;
        while (RES!=NULL) {
           sommet=SOMMET2;
-          Fst2Tag etiq=fst2->tags[RES->etiq];
+          Fst2Tag etiq=fst2->tags[RES->tag_number];
           traiter_transduction(etiq->output);
           int longueur=u_strlen(etiq->input);
           unichar C=mot[longueur];
@@ -455,7 +448,7 @@ if (PARSING_MODE!=NORMAL_MODE
              empiler_chaine(mot);
           }
           mot[longueur]=C;
-          parcourir_graphe(n_graph,RES->arr,pos2-(position-longueur),profondeur,liste_arrivee);
+          parcourir_graphe(n_graph,RES->state_number,pos2-(position-longueur),profondeur,liste_arrivee);
           TMP=RES;
           RES=RES->next;
           free(TMP);

@@ -19,10 +19,8 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#include "Text_parsing.h"
+//#include "Text_parsing.h"
 #include "Matches.h"
-//---------------------------------------------------------------------------
 
 
 
@@ -57,14 +55,14 @@ end_position_last_printed_match=-1;
    (struct liste_matches liste_match).
    # Changed to allow different outputs in merge/replace
    mode when the grammar is an ambiguous transducer (S.N.) */
-void afficher_match_fst2(int fin,unichar* s) {
+void afficher_match_fst2(int fin,unichar* s,struct locate_parameters* p) {
 
   int i;
   struct liste_matches *l;
 
   if (liste_match==NULL) {
     l=nouveau_match(s);
-    l->debut=origine_courante+N_INT_ALLREADY_READ;
+    l->debut=p->current_origin+N_INT_ALLREADY_READ;
     l->fin=fin;
     l->suivant=NULL;
     liste_match=l;
@@ -76,7 +74,7 @@ void afficher_match_fst2(int fin,unichar* s) {
         // places new matches in front of the list
         if (liste_match->fin<fin) { // consider only matches ending later
           // only one match per range (start and end position)
-          if (liste_match->debut==origine_courante+N_INT_ALLREADY_READ) {
+          if (liste_match->debut==p->current_origin+N_INT_ALLREADY_READ) {
             // overwrite matches starting at same position but ending earlier
             // We do this by deleting the actual head element of the list
             // and calling the function recursively.
@@ -85,12 +83,12 @@ void afficher_match_fst2(int fin,unichar* s) {
             l=liste_match;
             liste_match=liste_match->suivant;
             free(l);
-            afficher_match_fst2(fin,s);
+            afficher_match_fst2(fin,s,p);
           }
           else {
             // add shorter matches but with other start position 
             l=nouveau_match(s);
-            l->debut=origine_courante+N_INT_ALLREADY_READ;
+            l->debut=p->current_origin+N_INT_ALLREADY_READ;
             l->fin=fin;
             l->suivant=liste_match;
             liste_match=l;
@@ -100,7 +98,7 @@ void afficher_match_fst2(int fin,unichar* s) {
         // but different outputs are possible
         else if ((ambig_transduction_mode==ALLOW_AMBIG_TRANSDUCTIONS)
                  && (liste_match->fin==fin)
-                 && (liste_match->debut==origine_courante+N_INT_ALLREADY_READ)
+                 && (liste_match->debut==p->current_origin+N_INT_ALLREADY_READ)
                  && u_strcmp(liste_match->output,s)) {
           // because matches with same range and same output may not come
           // one after another, we have to look if a match with same output already exists
@@ -110,7 +108,7 @@ void afficher_match_fst2(int fin,unichar* s) {
             l=l->suivant;
           if (l==NULL) {
             l=nouveau_match(s);
-            l->debut=origine_courante+N_INT_ALLREADY_READ;
+            l->debut=p->current_origin+N_INT_ALLREADY_READ;
             l->fin=fin;
             l->suivant=liste_match;
             liste_match=l;
@@ -123,7 +121,7 @@ void afficher_match_fst2(int fin,unichar* s) {
         l=liste_match;
         while ((l!=NULL)
                // unify matches, i.e. skip matches with same range (start and end)
-               && !((l->debut==origine_courante+N_INT_ALLREADY_READ)
+               && !((l->debut==p->current_origin+N_INT_ALLREADY_READ)
                     && (l->fin==fin)
                     && (ambig_transduction_mode!=ALLOW_AMBIG_TRANSDUCTIONS
                         // for ambig. tr. allow if the output is different:
@@ -131,7 +129,7 @@ void afficher_match_fst2(int fin,unichar* s) {
           l=l->suivant;
         if (l==NULL) {
           l=nouveau_match(s);
-          l->debut=origine_courante+N_INT_ALLREADY_READ;
+          l->debut=p->current_origin+N_INT_ALLREADY_READ;
           l->fin=fin;
           l->suivant=liste_match;
           liste_match=l;
@@ -141,10 +139,10 @@ void afficher_match_fst2(int fin,unichar* s) {
       case SHORTEST_MATCHES: {
         // adds new matches to the head of the list
         i=0;
-        liste_match=eliminer_shortest_match_fst2(liste_match,fin,&i,s);
+        liste_match=eliminer_shortest_match_fst2(liste_match,fin,&i,s,p);
         if (i==0) {
           l=nouveau_match(s);
-          l->debut=origine_courante+N_INT_ALLREADY_READ;
+          l->debut=p->current_origin+N_INT_ALLREADY_READ;
           l->fin=fin;
           l->suivant=liste_match;
           liste_match=l;
@@ -178,49 +176,49 @@ struct liste_matches* nouveau_match(unichar* s) {
      3. matches with same range but different output are also accepted
  */
 struct liste_matches* eliminer_shortest_match_fst2(struct liste_matches *ptr,
-                                                   int fin,int *i,unichar* output) {
+                                                   int fin,int *i,unichar* output,
+                                                   struct locate_parameters* p) {
   struct liste_matches *l;
   if (ptr==NULL)
     return NULL;
   if ((ambig_transduction_mode==ALLOW_AMBIG_TRANSDUCTIONS)
-      && (ptr->debut==origine_courante+N_INT_ALLREADY_READ)&&(ptr->fin==fin)
+      && (ptr->debut==p->current_origin+N_INT_ALLREADY_READ)&&(ptr->fin==fin)
       && u_strcmp(ptr->output,output)) {
     // in the case of ambiguous transductions producing different output
     // we accept matches with same range
-    ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output);
+    ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output,p);
     return ptr;
   }
-  else if ((ptr->debut<=origine_courante+N_INT_ALLREADY_READ)&&(ptr->fin>=fin)) {
+  else if ((ptr->debut<=p->current_origin+N_INT_ALLREADY_READ)&&(ptr->fin>=fin)) {
     // actual match is shorter (or of equal length) than that in list
     // ==> replace match in list by actual match
     if (*i) {
       l=ptr->suivant;
       free_liste_matches(ptr);
-      return eliminer_shortest_match_fst2(l,fin,&(*i),output);
+      return eliminer_shortest_match_fst2(l,fin,&(*i),output,p);
     } else {
-      ptr->debut=origine_courante+N_INT_ALLREADY_READ;
+      ptr->debut=p->current_origin+N_INT_ALLREADY_READ;
       ptr->fin=fin;
       if (ptr->output!=NULL) free(ptr->output);
       if (output==NULL) {
         ptr->output=NULL;
       }
       else {
-        ptr->output=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(output)));
-        u_strcpy(ptr->output,output);
+        ptr->output=u_strdup(output);
       }
       (*i)=1;
-      ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output);
+      ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output,p);
       return ptr;
     }
   }
-  else if ((ptr->debut>=origine_courante+N_INT_ALLREADY_READ)&&(ptr->fin<=fin)) {
+  else if ((ptr->debut>=p->current_origin+N_INT_ALLREADY_READ)&&(ptr->fin<=fin)) {
     // actual match is longer than that in list: skip actual match
     (*i)=1;
     return ptr;
   }
   else {
     // disjunct ranges or overlapping ranges without inclusion
-    ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output);
+    ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output,p);
     return ptr;
   }
 }

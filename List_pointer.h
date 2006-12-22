@@ -19,25 +19,22 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#ifndef Loading_dicH
-#define Loading_dicH
-//---------------------------------------------------------------------------
-
-#include "unicode.h"
-#include "DELA.h"
-#include "Alphabet.h"
-#include "String_hash.h"
-#include "Text_tokens.h"
-#include "List_int.h"
-#include "LocatePattern.h"
-#include "CompoundWordTree.h"
-#include "LocateConstants.h"
-#include "LemmaTree.h"
+#ifndef List_pointerH
+#define List_pointerH
 
 
-void load_dic_for_locate(char*,Alphabet*,int,int,int,int,int,struct lemma_node*,struct locate_parameters*);
-void check_patterns_for_tag_tokens(Alphabet*,int,int,struct lemma_node*,struct locate_parameters*);
-int is_a_simple_word(unichar*,Alphabet*,int);
+/**
+ * This is a simple structure for manipulating pointer lists.
+ */
+struct list_pointer {
+   void* pointer;
+   struct list_pointer* next;
+};
+
+
+struct list_pointer* new_list_pointer(void*,struct list_pointer*);
+void free_list_pointer(struct list_pointer*,void (*)(void*));
+void free_list_pointer(struct list_pointer*);
 
 #endif
+

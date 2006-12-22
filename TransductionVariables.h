@@ -34,8 +34,11 @@
 
 
 struct transduction_variable {
-  int start;
-  int end;
+   /* Position of the first token of the sequence */
+   int start;
+   /* Position after the last token of the sequence, so that the sequence is in the
+    * range [start;end[ */
+   int end;
 };
 
 
@@ -44,6 +47,7 @@ extern struct string_hash* transduction_variable_index;
 
 void init_transduction_variable_index(struct variable_list*);
 struct transduction_variable* get_transduction_variable(unichar*);
+int get_transduction_variable_indice(unichar*);
 void free_transduction_variable_index();
 void set_variable_start(int,int);
 void set_variable_end(int,int);

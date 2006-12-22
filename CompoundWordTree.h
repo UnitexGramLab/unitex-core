@@ -35,7 +35,8 @@
 #define END_CASE_VARIANT_LIST -5
 #define END_TOKEN_LIST -1
 
-#define UNDEFINED_COMPOUND_PATTERN -555
+/* Generic pattern used to indicate that a compound word is matchable with <DIC> */
+#define COMPOUND_WORD_PATTERN -555
 
 /**
  * This structure represents a node in a compound word tree. It is used
@@ -43,7 +44,7 @@
  * in order to speed up the consultation. In fact, this tree is a token tree:
  * the branches are tagged by the numbers of the tokens that constitute 
  * compound words. In a first step, the tree is built with transition lists.
- * In a second step, thes lists are replaced by sorted arrays that 1) avoid
+ * In a second step, these lists are replaced by sorted arrays that 1) avoid
  * duplicates and 2) allow dichotomy searches to speed up the process. Each
  * node has two array: one for the token numbers ('destination_tokens') and
  * one for the nodes pointed out by the transitions ('destination_nodes'). The
@@ -135,7 +136,7 @@ void free_DLC_tree(struct DLC_tree_info*);
 void tokenize_compound_word(unichar*,int*,Alphabet*,struct string_hash*,int,int);
 void add_compound_word_with_no_pattern(unichar*,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int);
 void add_compound_word_with_pattern(unichar*,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int);
-int conditional_insertion_in_DLC_tree(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int,struct noeud_code_gramm*);
+int conditional_insertion_in_DLC_tree(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int);
 void optimize_DLC(struct DLC_tree_info*);
 
 #endif
