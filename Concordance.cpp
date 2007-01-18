@@ -169,7 +169,7 @@ u_fclose(f);
 free(token_length);
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
 if (option.sort_mode!=TEXT_ORDER) {
-	char** argv;
+   char** argv;
 	argv=(char**)malloc(6*sizeof(char*));
 	argv[0]=strdup(" ");
 	argv[1]=strdup(temp_file_name);
@@ -479,7 +479,7 @@ while (jump_size!=0) {
 	jump_size=jump_size-buffer->size;
 	for (int i=0;i<buffer->size;i++) {
 		/* We update the current position in characters */
-		current_origin_in_chars=current_origin_in_chars+token_length[buffer->int_buffer[i]];
+		(*current_origin_in_chars)=(*current_origin_in_chars)+token_length[buffer->int_buffer[i]];
 		/* And the current sentence number */
 		if (buffer->int_buffer[i]==tokens->SENTENCE_MARKER) {(*current_sentence)++;}
 	}
@@ -800,7 +800,7 @@ while (matches!=NULL) {
 	if (buffer->size==buffer->MAXIMUM_BUFFER_SIZE
 		&& ((matches->debut-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
 		/* If we must change of block... */
-		move_buffer_to_position(matches->debut,text,tokens,token_length,buffer,&n_units_already_read,
+      move_buffer_to_position(matches->debut,text,tokens,token_length,buffer,&n_units_already_read,
 						&current_origin_in_chars,&current_sentence);
 		/* We update the position in characters so that we know how
 		 * many characters there are before buffer[0]. We update
