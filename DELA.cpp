@@ -873,10 +873,12 @@ while (EOF!=u_read_line(f,line)) {
     *       lines, but we test them, just in the case */
    if (line[0]!='/') {
       entry=tokenize_DELAF_line(line,1);
-      for (i=0;i<entry->n_semantic_codes;i++) {
-         get_value_index(entry->semantic_codes[i],hash);
+      if (entry!=NULL) {
+         for (i=0;i<entry->n_semantic_codes;i++) {
+            get_value_index(entry->semantic_codes[i],hash);
+         }
+         free_dela_entry(entry);
       }
-      free_dela_entry(entry);
    }
 }
 fclose(f);

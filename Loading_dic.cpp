@@ -91,7 +91,8 @@ while (EOF!=u_read_line(f,line)) {
    struct dela_entry* entry=tokenize_DELAF_line(line,1);
    if (entry==NULL) {
       /* This case should never happen */
-      fatal_error("Invalid dictionary line in load_dic_for_locate\n");
+      error("Invalid dictionary line in load_dic_for_locate\n");
+      continue;
    }
    /* We add the inflected form to the list of forms associated to the lemma.
     * This will be used to replace patterns like "<be>" by the actual list of
