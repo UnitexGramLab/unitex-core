@@ -65,6 +65,7 @@ MU_forms_T* MU_forms;  //inflected forms of the MWU
 int err;
 unichar nl[3];  //a newline
 u_strcpy_char(nl,"\n");
+
 //Open DELAS/DELAC
 dlc = u_fopen(DLC, U_READ);
 if (!dlc) {
@@ -77,6 +78,7 @@ if (!dlcf) {
    error("Unable to open file: '%s' !\n", DLCF);
    return 1;
 }
+
 //Inflect one entry at a time
 l = u_fgets(input_line,DIC_LINE_SIZE-1,dlc);
 //Omit the final newline

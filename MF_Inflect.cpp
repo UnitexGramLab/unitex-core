@@ -62,12 +62,13 @@ int main(int argc, char* argv[]) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-   
+
 int err;  //0 if a function completes with no error 
 if (argc!= 5) {
    usage();
    return 0;
 }
+
 //Load morphology description
 char morphology[FILENAME_MAX];
 new_file(argv[4],"Morphology",morphology);

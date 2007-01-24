@@ -98,6 +98,7 @@ int MU_graph_explore_graph(MU_lemma_T* MU_l, MU_forms_T* forms) {
   //Get the initial state of the inflection tranducer
   Fst2State initial;
   initial = MU_graph_get_initial(MU_lemma->paradigm);
+
   if (!initial)
     return 1;
 
@@ -173,7 +174,6 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
     f->features->no_cats = 0;
     forms->no_forms++;
   }
-  
   //Explore each outgoing transition
   Fst2Transition t;
   MU_forms_T forms_bis;
@@ -201,8 +201,9 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
       if (! forms->forms) {
 	      fatal_error("Not enough memory in function MU_graph_explore_state\n");
       }
-      for (mf=0; mf<forms_bis.no_forms; mf++) 
-	forms->forms[forms->no_forms+mf] = forms_bis.forms[mf];
+      for (mf=0; mf<forms_bis.no_forms; mf++) {
+	     forms->forms[forms->no_forms+mf] = forms_bis.forms[mf];
+      }
       forms->no_forms += forms_bis.no_forms;
       //Free the current label
       MU_graph_free_label(l);
@@ -824,20 +825,18 @@ int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T*
     MU_label->in = (MU_graph_in_T*)malloc(sizeof(MU_graph_in_T));
     err1 = MU_graph_scan_label_in(label_in, MU_label->in);
   }
-
   //Output label
   /*
   printf("label_out = ");  //debug
   u_prints(label_out);//debug
   printf("\n");//debug
   */
-  if ((!u_strcmp_char(label_out,"<E>")) || (!u_strlen(label_out)) ) //Case of epsilon or void output
+  if (label_out==NULL || (!u_strcmp_char(label_out,"<E>")) || (!u_strlen(label_out)) ) //Case of epsilon or void output
     MU_label->out = NULL;
   else {
     MU_label->out = (MU_graph_out_T*)malloc(sizeof(MU_graph_out_T));
     err2 = MU_graph_scan_label_out(label_out, MU_label->out);
   }
-  
   return (err1 or err2);
 }
 
