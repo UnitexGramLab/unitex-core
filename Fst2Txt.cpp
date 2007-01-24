@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -484,7 +484,7 @@ while (t!=NULL) {
          // case of a normal tag
          Fst2Tag etiq=fst2->tags[n_etiq];
          unichar* contenu=etiq->input;
-         if (etiq->control & START_VAR_TAG_BIT_MASK) {
+         if (etiq->type==BEGIN_VAR_TAG) {
             // case of a $a( variable tag
             //int old;
             struct variable_list* L=get_variable(contenu,fst2->variables);
@@ -496,7 +496,7 @@ while (t!=NULL) {
             parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
             //L->start=old;
          }
-         else if (etiq->control & END_VAR_TAG_BIT_MASK) {
+         else if (etiq->type==END_VAR_TAG) {
               // case of a $a) variable tag
               //int old;
               struct variable_list* L=get_variable(contenu,fst2->variables);
@@ -797,8 +797,8 @@ free(arbre_etiquettes);
 
 int not_a_letter_sequence(Fst2Tag e) {
 // we return false only if e is a letter sequence like %hello
-if (e->control&RESPECT_CASE_TAG_BIT_MASK || e->control&START_VAR_TAG_BIT_MASK
-    || e->control&END_VAR_TAG_BIT_MASK) {
+if (e->control&RESPECT_CASE_TAG_BIT_MASK || e->type==BEGIN_VAR_TAG
+    || e->type==END_VAR_TAG) {
    // case of @hello $a( and $a)
    return 1;
 }

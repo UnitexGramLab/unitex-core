@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,6 @@
  * This is the copyright string that must be displayed by any
  * Unitex program when called with no parameter.
  */
-const char COPYRIGHT[] = "This program is part of Unitex 1.2 beta version\nCopyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>\n\n";
+const char COPYRIGHT[] = "This program is part of Unitex 2.0 beta version\nCopyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>\n\n";
 
 #endif

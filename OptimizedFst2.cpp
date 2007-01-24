@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,395 +19,673 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "List_int.h"
 #include "LocatePattern.h"
-#include "Optimized_fst2.h"
+#include "OptimizedFst2.h"
 #include "LocateConstants.h"
-//---------------------------------------------------------------------------
+#include "Error.h"
+#include "BitMasks.h"
+#include "TransductionVariables.h"
 
-struct etat_opt* graphe_opt[500000];
 
-struct etat_opt* nouveau_etat_opt() {
-struct etat_opt* e;
-e=(struct etat_opt*)malloc(sizeof(struct etat_opt));
-e->liste_sous_graphes=NULL;
-//e->liste_inter_graphes=NULL;
-e->liste_metas=NULL;
-e->liste_patterns=NULL;
-e->liste_patterns_composes=NULL;
-e->liste_tokens=NULL;
-e->tableau_de_tokens=NULL;
-e->tableau_liste_arr=NULL;
-e->nombre_de_tokens=0;
-return e;
+/**
+ * Allocates, initializes and returns a new optimized graph call.
+ */
+struct opt_graph_call* new_opt_graph_call(int graph_number) {
+struct opt_graph_call* g;
+g=(struct opt_graph_call*)malloc(sizeof(struct opt_graph_call));
+if (g==NULL) {
+   fatal_error("Not enough memory in new_opt_graph_call\n");
+}
+g->graph_number=graph_number;
+g->transition=NULL;
+g->next=NULL;
+return g;
 }
 
 
-
-struct appel_a_sous_graphe* nouvelle_liste_sous_graphes() {
-struct appel_a_sous_graphe* a;
-a=(struct appel_a_sous_graphe*)malloc(sizeof(struct appel_a_sous_graphe));
-a->numero_de_graphe=-2000;
-a->liste_arr=NULL;
-a->suivant=NULL;
-return a;
-}
-
-
-
-struct liste_arrivees* nouvelle_liste_arrivees() {
-struct liste_arrivees* l;
-l=(struct liste_arrivees*)malloc(sizeof(struct liste_arrivees));
-l->etiquette_origine=-2222;
-l->arr=-3333;
-l->suivant=NULL;
-return l;
-}
-
-
-
-void ajouter_si_pas_deja_present(struct liste_arrivees **l,int n,int etiq_origine) {
-struct liste_arrivees* ptr;
-if (*l==NULL) {
-  *l=nouvelle_liste_arrivees();
-  (*l)->arr=n;
-  (*l)->etiquette_origine=etiq_origine;
-  return;
-}
-ptr=*l;
-while (ptr->suivant!=NULL && !(ptr->arr==n && ptr->etiquette_origine==etiq_origine))
-  ptr=ptr->suivant;
-if (!(ptr->arr==n && ptr->etiquette_origine==etiq_origine)) {
-  ptr->suivant=nouvelle_liste_arrivees();
-  ptr->suivant->arr=n;
-  ptr->suivant->etiquette_origine=etiq_origine;
-  return;
+/**
+ * Frees the whole memory associate to the given graph call list.
+ */
+void free_opt_graph_call(struct opt_graph_call* list) {
+struct opt_graph_call* tmp;
+while (list!=NULL) {
+   free_Fst2Transition(list->transition);
+   tmp=list;
+   list=list->next;
+   free(tmp);
 }
 }
 
 
-
-void ajouter_sous_graphe(struct fst2Transition* trans,struct appel_a_sous_graphe** a) {
-struct appel_a_sous_graphe* ptr;
-int E;
-E=-(trans->tag_number);
-if (*a==NULL) {
-  // 1er cas: liste vide
-  *a=nouvelle_liste_sous_graphes();
-  (*a)->numero_de_graphe=E;
-  ajouter_si_pas_deja_present(&((*a)->liste_arr),trans->state_number,-2000);
-  return;
+/**
+ * This function adds a transition to the given transition list, if not
+ * already present.
+ */
+void add_transition_if_not_present(Fst2Transition *list,int tag_number,int state_number) {
+Fst2Transition ptr;
+ptr=*list;
+/* We look for a transition with the same properties */
+while (ptr!=NULL && !(ptr->state_number==state_number && ptr->tag_number==tag_number)) {
+   ptr=ptr->next;
 }
-if ((*a)->numero_de_graphe==E) {
-  // 2eme cas: mise a jour du premier element
-  ajouter_si_pas_deja_present(&((*a)->liste_arr),trans->state_number,-2000);
-  return;
+if (ptr==NULL) {
+   /* If we have not found one, we add a new transition at the head of the list */
+   ptr=new_Fst2Transition(tag_number,state_number);
+   ptr->next=*list;
+   *list=ptr;
 }
-ptr=*a;
-while (ptr->suivant!=NULL && ptr->suivant->numero_de_graphe!=E)
-  ptr=ptr->suivant;
-if (ptr->suivant==NULL) {
-  // on insere en fin de liste
-  ptr->suivant=nouvelle_liste_sous_graphes();
-  ptr->suivant->numero_de_graphe=E;
-  ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),trans->state_number,-2000);
-  return;
-}
-// on met a jour l'element
-ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),trans->state_number,-2000);
 }
 
 
-
-struct appel_a_pattern* nouvelle_liste_patterns() {
-struct appel_a_pattern* a;
-a=(struct appel_a_pattern*)malloc(sizeof(struct appel_a_pattern));
-a->numero_de_pattern=-2000;
-a->negation=0;
-a->liste_arr=NULL;
-a->suivant=NULL;
-return a;
+/**
+ * This function adds the given graph call to given graph call list.
+ */
+void add_graph_call(Fst2Transition transition,struct opt_graph_call** graph_calls) {
+int graph_number=-(transition->tag_number);
+struct opt_graph_call* ptr=*graph_calls;
+/* We look for a graph call for the same graph number */
+while (ptr!=NULL && ptr->graph_number!=graph_number) {
+   ptr=ptr->next;
+}
+if (ptr==NULL) {
+   /* If we have found none, we create one */
+   ptr=new_opt_graph_call(graph_number);
+   ptr->next=*graph_calls;
+   *graph_calls=ptr;
+}
+/* Then, we add the transition to the graph call */
+add_transition_if_not_present(&(ptr->transition),transition->tag_number,transition->state_number);
 }
 
 
-
-void ajouter_pattern(int pattern,int etiq_origine,struct appel_a_pattern** a,int arr,int controle) {
-struct appel_a_pattern* ptr;
-int negation;
-negation=controle&NEGATION_TAG_BIT_MASK;
-if (*a==NULL) {
-  // 1er cas: liste vide
-  *a=nouvelle_liste_patterns();
-  (*a)->numero_de_pattern=pattern;
-  (*a)->negation=negation;
-  ajouter_si_pas_deja_present(&((*a)->liste_arr),arr,etiq_origine);
-  return;
+/**
+ * Allocates, initializes and returns a new opt_pattern.
+ */
+struct opt_pattern* new_opt_pattern(int pattern_number,int negation) {
+struct opt_pattern* p;
+p=(struct opt_pattern*)malloc(sizeof(struct opt_pattern));
+if (p==NULL) {
+   fatal_error("Not enough memory in new_opt_pattern\n");
 }
-if ((*a)->numero_de_pattern==pattern && (*a)->negation==negation) {
-  // 2eme cas: mise a jour du premier element
-  ajouter_si_pas_deja_present(&((*a)->liste_arr),arr,etiq_origine);
-  return;
-}
-ptr=*a;
-while (ptr->suivant!=NULL && !(ptr->suivant->numero_de_pattern==pattern && (*a)->negation==negation))
-  ptr=ptr->suivant;
-if (ptr->suivant==NULL) {
-  // on insere en fin de liste
-  ptr->suivant=nouvelle_liste_patterns();
-  ptr->suivant->numero_de_pattern=pattern;
-  ptr->suivant->negation=negation;
-  ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),arr,etiq_origine);
-  return;
-}
-// on met a jour l'element
-ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),arr,etiq_origine);
+p->pattern_number=pattern_number;
+p->negation=negation;
+p->transition=NULL;
+p->next=NULL;
+return p;
 }
 
 
-
-struct liste_de_tokens* nouvelle_liste_tokens() {
-struct liste_de_tokens* l;
-l=(struct liste_de_tokens*)malloc(sizeof(struct liste_de_tokens));
-l->tok=NULL;
-l->suivant=NULL;
-return l;
+/**
+ * Frees the whole memory associated to the given optimized pattern list.
+ */
+void free_opt_pattern(struct opt_pattern* list) {
+struct opt_pattern* tmp;
+while (list!=NULL) {
+   free_Fst2Transition(list->transition);
+   tmp=list;
+   list=list->next;
+   free(tmp);
+}
 }
 
 
+/**
+ * This function adds the given pattern number to the given pattern list.
+ */
+void add_pattern(int pattern_number,Fst2Transition transition,struct opt_pattern** pattern_list,int negation) {
+struct opt_pattern* ptr=*pattern_list;
+/* We look for a pattern with the same properties */
+while (ptr!=NULL && !(ptr->pattern_number==pattern_number && ptr->negation==negation)) {
+   ptr=ptr->next;
+}
+if (ptr==NULL) {
+   /* If we have not found an equivalent pattern, we create one */
+   ptr=new_opt_pattern(pattern_number,negation);
+   ptr->next=*pattern_list;
+   *pattern_list=ptr;
+}
+/* Finally, we add the transition to the pattern */
+add_transition_if_not_present(&(ptr->transition),transition->tag_number,transition->state_number);
+}
 
-struct token* nouveau_token() {
-struct token* t;
-t=(struct token*)malloc(sizeof(struct token));
-t->numero_de_token=-2000;
-t->liste_arr=NULL;
+
+/**
+ * Allocates, initializes and returns a new optimized token.
+ */
+struct opt_token* new_opt_token(int token_number) {
+struct opt_token* t;
+t=(struct opt_token*)malloc(sizeof(struct opt_token));
+if (t==NULL) {
+   fatal_error("Not enough memory in new_opt_token\n");
+}
+t->token_number=token_number;
+t->transition=NULL;
+t->next=NULL;
 return t;
 }
 
 
-
-void ajouter_token_a_liste_tokens(int token,int n_etiq,struct liste_de_tokens** l,int arr,int* N) {
-struct liste_de_tokens *ptr;
-struct liste_de_tokens *tmp;
-if (*l==NULL) {
-  // 1er cas liste vide
-  *l=nouvelle_liste_tokens();
-  (*l)->tok=nouveau_token();
-  (*l)->tok->numero_de_token=token;
-  (*N)++;
-  ajouter_si_pas_deja_present(&((*l)->tok->liste_arr),arr,n_etiq);
-  return;
-}
-if (token<((*l)->tok->numero_de_token)) {
-  // 2eme cas: insertion en tete de liste
-  ptr=nouvelle_liste_tokens();
-  ptr->tok=nouveau_token();
-  ptr->tok->numero_de_token=token;
-  (*N)++;
-  ajouter_si_pas_deja_present(&(ptr->tok->liste_arr),arr,n_etiq);
-  ptr->suivant=*l;
-  *l=ptr;
-  return;
-}
-if (token==((*l)->tok->numero_de_token)) {
-  // 2eme cas prime : mise a jour de la tete de liste
-  ajouter_si_pas_deja_present(&((*l)->tok->liste_arr),arr,n_etiq);
-  return;
-}
-// 3eme cas: cas general
-ptr=*l;
-while (ptr->suivant!=NULL && token>ptr->suivant->tok->numero_de_token)
-  ptr=ptr->suivant;
-if (ptr->suivant==NULL) {
-  // si on insere en fin de liste
-  ptr->suivant=nouvelle_liste_tokens();
-  ptr->suivant->tok=nouveau_token();
-  ptr->suivant->tok->numero_de_token=token;
-  (*N)++;
-  ajouter_si_pas_deja_present(&(ptr->suivant->tok->liste_arr),arr,n_etiq);
-  return;
-}
-if (token==ptr->suivant->tok->numero_de_token) {
-  // si on met a jour le token
-  ajouter_si_pas_deja_present(&(ptr->suivant->tok->liste_arr),arr,n_etiq);
-  return;
-}
-// dernier cas: on insere apres ptr
-tmp=nouvelle_liste_tokens();
-tmp->tok=nouveau_token();
-tmp->tok->numero_de_token=token;
-(*N)++;
-ajouter_si_pas_deja_present(&(tmp->tok->liste_arr),arr,n_etiq);
-tmp->suivant=ptr->suivant;
-ptr->suivant=tmp;
-}
-
-
-
-void ajouter_liste_de_tokens(Fst2Tag e,int n_etiq,Etat_opt *e2,int arr,int* N) {
-struct list_int* l;
-l=e->matching_tokens;
-while (l!=NULL) {
-  ajouter_token_a_liste_tokens(l->n,n_etiq,&((*e2)->liste_tokens),arr,N);
-  l=l->next;
+/**
+ * Frees all the memory associated to the given token list.
+ */
+void free_opt_token(struct opt_token* list) {
+struct opt_token* tmp;
+while (list!=NULL) {
+   free_Fst2Transition(list->transition);
+   tmp=list;
+   list=list->next;
+   free(tmp);
 }
 }
 
 
-
-struct appel_a_meta* nouvelle_liste_metas() {
-struct appel_a_meta* a;
-a=(struct appel_a_meta*)malloc(sizeof(struct appel_a_meta));
-a->numero_de_meta=-2000;
-a->negation=0;
-a->numero_de_variable=-1;
-a->liste_arr=NULL;
-a->suivant=NULL;
-return a;
+/**
+ * This function add the given token in the given 'token_list', if not already present.
+ * '*number_of_tokens' is increased of 1 if the token was not present.
+ * 
+ * Note that this function must perform a sorted insert, since the resulting
+ * list will be supposed to be sorted at the time of converting it into an array
+ * in 'token_list_2_token_array'.
+ */
+void add_token(int token_number,Fst2Transition transition,struct opt_token** token_list,
+               int *number_of_tokens) {
+struct opt_token* ptr;
+if (*token_list==NULL) {
+   /* If the list is empty, we add the token */
+   (*token_list)=new_opt_token(token_number);
+   add_transition_if_not_present(&((*token_list)->transition),transition->tag_number,transition->state_number);
+   (*number_of_tokens)++;
+   return;
+}
+/* If we must insert before the head of the list */
+if (token_number<(*token_list)->token_number) {
+   /* If the list is empty, we add the token */
+   ptr=new_opt_token(token_number);
+   add_transition_if_not_present(&(ptr->transition),transition->tag_number,transition->state_number);
+   ptr->next=(*token_list);
+   (*token_list)=ptr;
+   (*number_of_tokens)++;
+   return;
+}
+/* If we must update the head of the list */
+if (token_number==(*token_list)->token_number) {
+   add_transition_if_not_present(&((*token_list)->transition),transition->tag_number,transition->state_number);
+   return;
+}
+/* Otherwise, we look for the exact token, or the last token that is lower than
+ * the one we look for */
+ptr=(*token_list);
+while (ptr->next!=NULL && (ptr->next->token_number<token_number)) {
+   ptr=ptr->next;
+}
+if (ptr->next==NULL || ptr->next->token_number>token_number) {
+   /* If we are at the end of list or before a greater token, then we must create the
+    * token and insert it after 'ptr'. */
+   struct opt_token* tmp=new_opt_token(token_number);
+   add_transition_if_not_present(&(tmp->transition),transition->tag_number,transition->state_number);
+   tmp->next=ptr->next;
+   ptr->next=tmp;
+   (*number_of_tokens)++;
+   return;
+}
+/* Otherwise, 'ptr->next' points on the token we look for */
+add_transition_if_not_present(&(ptr->next->transition),transition->tag_number,transition->state_number);
 }
 
 
-
-void ajouter_meta(int meta,int etiq_origine,struct appel_a_meta** a,int arr,int controle,
-                  int numero_de_variable) {
-struct appel_a_meta* ptr;
-int negation;
-negation=controle&NEGATION_TAG_BIT_MASK;
-if (*a==NULL) {
-  // 1er cas: liste vide
-  *a=nouvelle_liste_metas();
-  (*a)->numero_de_meta=meta;
-  (*a)->negation=negation;
-  (*a)->numero_de_variable=numero_de_variable;
-  ajouter_si_pas_deja_present(&((*a)->liste_arr),arr,etiq_origine);
-  return;
-}
-if ((*a)->numero_de_meta==meta && (*a)->negation==negation
-    && (*a)->numero_de_variable==numero_de_variable) {
-  // 2eme cas: mise a jour du premier element
-  ajouter_si_pas_deja_present(&((*a)->liste_arr),arr,etiq_origine);
-  return;
-}
-ptr=*a;
-while (ptr->suivant!=NULL
-       && !(ptr->suivant->numero_de_meta==meta
-            && (*a)->negation==negation
-            && (*a)->numero_de_variable==numero_de_variable))
-  ptr=ptr->suivant;
-if (ptr->suivant==NULL) {
-  // on insere en fin de liste
-  ptr->suivant=nouvelle_liste_metas();
-  ptr->suivant->numero_de_meta=meta;
-  ptr->suivant->negation=negation;
-  ptr->suivant->numero_de_variable=numero_de_variable;
-  ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),arr,etiq_origine);
-  return;
-}
-// on met a jour l'element
-ajouter_si_pas_deja_present(&(ptr->suivant->liste_arr),arr,etiq_origine);
-}
-
-
-
-void optimiser_trans(struct fst2Transition* ptr,Etat_opt* e2,Fst2Tag* etiquette) {
-Fst2Tag e;
-int controle;
-if (ptr->tag_number<0) {
-  // cas d'un sous-graphe
-  ajouter_sous_graphe(ptr,&((*e2)->liste_sous_graphes));
-  return;
-}
-e=etiquette[ptr->tag_number];
-if (e==NULL) {
-   fprintf(stderr,"Internal problem in optimiser_trans\n");
-   exit(1);
-}
-controle=e->control;
-//---pattern mot compose
-if (e->compound_pattern!=NO_COMPOUND_PATTERN) {
-  ajouter_pattern(e->compound_pattern,ptr->tag_number,&((*e2)->liste_patterns_composes),ptr->state_number,controle);
-}
-//----------------------
-if (controle&LEMMA_TAG_BIT_MASK) {
-  // liste de mots
-  ajouter_liste_de_tokens(e,ptr->tag_number,e2,ptr->state_number,&((*e2)->nombre_de_tokens));
-  return;
-}
-if ((controle&TOKEN_TAG_BIT_MASK)&&(e->number!=-1)) {
-  // mot tout seul
-  ajouter_token_a_liste_tokens(e->number,ptr->tag_number,&((*e2)->liste_tokens),ptr->state_number,&((*e2)->nombre_de_tokens));
-  if (e->matching_tokens!=NULL) {
-     ajouter_liste_de_tokens(e,ptr->tag_number,e2,ptr->state_number,&((*e2)->nombre_de_tokens));
-  }
-  return;
-}
-if ((controle&GRAMM_CODE_TAG_BIT_MASK)&&(e->number!=-1)) {
-  // pattern
-  ajouter_pattern(e->number,ptr->tag_number,&((*e2)->liste_patterns),ptr->state_number,controle);
-  return;
-}
-if (controle&CONTROL_TAG_BIT_MASK) {
-  // meta
-  int k=-1;
-  if (e->number==VAR_START || e->number==VAR_END) {
-     // if the meta is $a( or $a)
-     k=get_value_index(e->input,transduction_variable_index,DONT_INSERT);
-  }
-  ajouter_meta(e->number,ptr->tag_number,&((*e2)->liste_metas),ptr->state_number,controle,k);
-  return;
+/**
+ * This function adds all the tokens contained in the given 'token_list' into
+ * 'list' that contains all the tokens matched by an optimized state.
+ * '*number_of_tokens' is updated.
+ */
+void add_token_list(struct list_int* token_list,Fst2Transition transition,
+                    struct opt_token** list,int *number_of_tokens) {
+while (token_list!=NULL) {
+   add_token(token_list->n,transition,list,number_of_tokens);
+   token_list=token_list->next;
 }
 }
 
 
-
-void convertir_liste_tokens_en_tableau(Etat_opt *e2,int e) {
-int i;
-struct liste_de_tokens* l;
-struct liste_de_tokens* tmp;
-if ((*e2)->nombre_de_tokens==0) return;
-(*e2)->tableau_de_tokens=(int*)malloc(sizeof(int)*(*e2)->nombre_de_tokens);
-(*e2)->tableau_liste_arr=(struct liste_arrivees**)malloc(sizeof(struct liste_arrivees*)*(*e2)->nombre_de_tokens);
-i=0;
-l=(*e2)->liste_tokens;
-while (l!=NULL) {
-  (*e2)->tableau_de_tokens[i]=l->tok->numero_de_token;
-  (*e2)->tableau_liste_arr[i]=l->tok->liste_arr;
-  i++;
-  tmp=l;
-  l=l->suivant;
-  free(tmp->tok);
-  free(tmp);
+/**
+ * Allocates, initializes and returns a new optimized meta.
+ */
+struct opt_meta* new_opt_meta(enum meta_symbol meta,int negation) {
+struct opt_meta* m;
+m=(struct opt_meta*)malloc(sizeof(struct opt_meta));
+if (m==NULL) {
+   fatal_error("Not enough memory in new_opt_meta\n");
 }
-if (i!=(*e2)->nombre_de_tokens) {
-   fprintf(stderr,"Probleme interne dans la fonction convertir_liste_tokens_en_tableau\n");
-}
-(*e2)->liste_tokens=NULL;
+m->meta=meta;
+m->negation=negation;
+m->transition=NULL;
+m->next=NULL;
+return m;
 }
 
 
-
-void optimiser_etat(Fst2State e1,Etat_opt* e2,int e,Fst2Tag* etiquette) {
-struct fst2Transition* ptr;
-if (e1==NULL) {
-  *e2=NULL;
-  return;
+/**
+ * Frees all the memory associated to the given meta list.
+ */
+void free_opt_meta(struct opt_meta* list) {
+struct opt_meta* tmp;
+while (list!=NULL) {
+   free_Fst2Transition(list->transition);
+   tmp=list;
+   list=list->next;
+   free(tmp);
 }
-*e2=nouveau_etat_opt();
-(*e2)->controle=e1->control;
-ptr=e1->transitions;
+}
+
+
+/**
+ * This function adds the given meta to the given meta list.
+ */
+void add_meta(enum meta_symbol meta,Fst2Transition transition,struct opt_meta** meta_list,int negation) {
+struct opt_meta* ptr=*meta_list;
+/* We look for a meta with the same properties */
+while (ptr!=NULL && !(ptr->meta==meta && ptr->negation==negation)) {
+   ptr=ptr->next;
+}
+if (ptr==NULL) {
+   /* If we have found none, we create one */
+   ptr=new_opt_meta(meta,negation);
+   ptr->next=*meta_list;
+   *meta_list=ptr;
+}
+/* Then, we add the transition to the meta */
+add_transition_if_not_present(&(ptr->transition),transition->tag_number,transition->state_number);
+}
+
+
+/**
+ * Allocates, initializes and returns a new optimized variable.
+ */
+struct opt_variable* new_opt_variable(int variable_number,Fst2Transition transition) {
+struct opt_variable* v;
+v=(struct opt_variable*)malloc(sizeof(struct opt_variable));
+if (v==NULL) {
+   fatal_error("Not enough memory in new_opt_variable\n");
+}
+v->variable_number=variable_number;
+v->transition=NULL;
+add_transition_if_not_present(&(v->transition),transition->tag_number,transition->state_number);
+v->next=NULL;
+return v;
+}
+
+
+/**
+ * Frees all the memory associated to the given variable list.
+ */
+void free_opt_variable(struct opt_variable* list) {
+struct opt_variable* tmp;
+while (list!=NULL) {
+   free_Fst2Transition(list->transition);
+   tmp=list;
+   list=list->next;
+   free(tmp);
+}
+}
+
+
+/**
+ * This function adds the given variable to the given variable list.
+ * No tests is done to check if there is already a transition with the
+ * given variable, because it cannot happen if the grammar is deterministic.
+ */
+void add_variable(unichar* variable,Fst2Transition transition,struct opt_variable** variable_list) {
+int n=get_transduction_variable_indice(variable);
+struct opt_variable* v=new_opt_variable(n,transition);
+v->next=(*variable_list);
+(*variable_list)=v;
+}
+
+
+/**
+ * Allocates, initializes and returns a new optimized context structure.
+ */
+struct opt_contexts* new_opt_contexts() {
+struct opt_contexts* c=(struct opt_contexts*)malloc(sizeof(struct opt_contexts));
+if (c==NULL) {
+   fatal_error("Not enough memory in new_opt_contexts\n");
+}
+c->positive_mark=NULL;
+c->negative_mark=NULL;
+c->end_mark=NULL;
+c->reacheable_states_from_positive_context=NULL;
+c->reacheable_states_from_negative_context=NULL;
+return c;
+}
+
+
+/**
+ * Frees all the memory associated to the given optimized context structure.
+ */
+void free_opt_contexts(struct opt_contexts* c) {
+if (c==NULL) return;
+free_Fst2Transition(c->positive_mark);
+free_Fst2Transition(c->negative_mark);
+free_Fst2Transition(c->end_mark);
+free_Fst2Transition(c->reacheable_states_from_positive_context);
+free_Fst2Transition(c->reacheable_states_from_negative_context);
+free(c);
+}
+
+
+/**
+ * This function looks for context mark ends in the given fst2.
+ */
+void look_for_closing_context_mark(Fst2* fst2,int state,Fst2Transition *list,
+                                   struct bit_array* marker,int nesting_level) {
+if (get_value(marker,state)) {
+   /* Nothing to do if this state has already been visited */
+   return;
+}
+/* Otherwise, we mark the state */
+set_value(marker,state,1);
+/* And we look all its outgoing transitions */
+Fst2Transition ptr=fst2->states[state]->transitions;
 while (ptr!=NULL) {
-  optimiser_trans(ptr,e2,etiquette);
-  ptr=ptr->next;
+   if (ptr->tag_number>=0) {
+      /* If we have a tag, we check if it is a context mark */
+      Fst2Tag tag=fst2->tags[ptr->tag_number];
+      switch (tag->type) {
+         /* If we have a context start mark, we go on with an increased nesting level */
+         case BEGIN_POSITIVE_CONTEXT_TAG: 
+         case BEGIN_NEGATIVE_CONTEXT_TAG: look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level+1);
+                                          break;
+         /* If we have a context end mark */
+         case END_CONTEXT_TAG: if (nesting_level==0) {
+                                  /* If we are at the top nesting level, we have found a transition
+                                   * to add to our list */
+                                  add_transition_if_not_present(list,ptr->tag_number,ptr->state_number);
+                               } else {
+                                  /* Otherwisen we on with a decreased nesting level */
+                                  look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level-1);
+                               }
+                               break;
+         /* If we an another type of transition, we follow it */
+         default: look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level);
+      }
+   }
+   else {
+      /* If we have a graph call, we follow it */
+      look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level);
+   }
+   ptr=ptr->next;
 }
-convertir_liste_tokens_en_tableau(e2,e);
 }
 
 
+/**
+ * This function explores the given fst2 from the given state and looks for
+ * transition tagged by the closing context mark "$]". Such transitions are added to
+ * the given list, but only if they are at the same nesting level that the original
+ * state. For instance, if we find the following tag sequence:
+ * 
+ * <MOT> $[ <ADV> $] $]
+ * 
+ * we will stop on the second "$]", since the first corresponds to a different 
+ * context start mark than ours.
+ */
+void get_reachable_closing_context_marks(Fst2* fst2,int state,Fst2Transition *list) {
+/* we declare a bit array in order to mark states that have already been visited.
+ * Note that we could use a bit array with a smaller length, since the only states
+ * that will be explored are in the same subgraph that the one containing the
+ * given start state. */
+struct bit_array* marker=new_bit_array(fst2->number_of_states,ONE_BIT);
+look_for_closing_context_mark(fst2,state,list,marker,0);
+free_bit_array(marker);
+}
 
-void optimize_fst2(Fst2* automate) {
+
+/**
+ * Adds a positive context to the given state or raises a fatal error if
+ * there is already one, because it would mean that the fst2 is not
+ * deterministic. As a side effect, this function looks for all the closing
+ * context marks reachable from this positive context mark and stores them into
+ * 'reacheable_states_from_positive_context'. If there is no reachable context
+ * end mark, the function emit an error message and ignores this "$[" mark.
+ */
+void add_positive_context(Fst2* fst2,OptimizedFst2State state,Fst2Transition transition) {
+int created=0;
+if (state->contexts==NULL) {
+   created=1;
+   state->contexts=new_opt_contexts();
+}
+if (state->contexts->positive_mark!=NULL) {
+   fatal_error("Duplicate positive context mark\n");
+}
+state->contexts->positive_mark=new_Fst2Transition(transition->tag_number,transition->state_number);
+get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->reacheable_states_from_positive_context));
+if (state->contexts->reacheable_states_from_positive_context==NULL) {
+   error("Positive context with no end\n");
+   free_Fst2Transition(state->contexts->positive_mark);
+   state->contexts->positive_mark=NULL;
+   if (created) {
+      free(state->contexts);
+      state->contexts=NULL;
+   }
+}
+}
+
+
+/**
+ * Adds a negative context to the given state or raises a fatal error if
+ * there is already one, because it would mean that the fst2 is not
+ * deterministic. As a side effect, this function looks for all the closing
+ * context marks reachable from this negative context mark and stores them into
+ * 'reacheable_states_from_negative_context'. If there is no reachable context
+ * end mark, the function emit an error message and ignores this "$![" mark.
+ */
+void add_negative_context(Fst2* fst2,OptimizedFst2State state,Fst2Transition transition) {
+int created=0;
+if (state->contexts==NULL) {
+   created=1;
+   state->contexts=new_opt_contexts();
+}
+if (state->contexts->negative_mark!=NULL) {
+   fatal_error("Duplicate negative context mark\n");
+}
+state->contexts->negative_mark=new_Fst2Transition(transition->tag_number,transition->state_number);
+get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->reacheable_states_from_negative_context));
+if (state->contexts->reacheable_states_from_negative_context==NULL) {
+   error("Negative context with no end\n");
+   free_Fst2Transition(state->contexts->negative_mark);
+   state->contexts->negative_mark=NULL;
+   if (created) {
+      free(state->contexts);
+      state->contexts=NULL;
+   }
+}
+}
+
+
+/**
+ * Adds a context end to the given state or raises a fatal error if
+ * there is already one, because it would mean that the fst2 is not
+ * deterministic.
+ */
+void add_end_context(OptimizedFst2State state,Fst2Transition transition) {
+if (state->contexts==NULL) {
+   state->contexts=new_opt_contexts();
+}
+if (state->contexts->end_mark!=NULL) {
+   fatal_error("Duplicate end context mark\n");
+}
+state->contexts->end_mark=new_Fst2Transition(transition->tag_number,transition->state_number);
+}
+
+
+/**
+ * This function optimizes the given transition.
+ */
+void optimize_transition(Fst2* fst2,Fst2Transition transition,OptimizedFst2State state,Fst2Tag* tags) {
+if (transition->tag_number<0) {
+   /* If the transition is a graph call */
+   add_graph_call(transition,&(state->graph_calls));
+   return;
+}
+Fst2Tag tag=tags[transition->tag_number];
+if (tag==NULL) {
+   fatal_error("NULL transition tag in optimize_transition\n");
+}
+int negation=is_bit_mask_set(tag->control,NEGATION_TAG_BIT_MASK);
+/* First, we look if there is a compound pattern associated to this tag */
+if (tag->compound_pattern!=NO_COMPOUND_PATTERN) {
+   add_pattern(tag->compound_pattern,transition,&(state->compound_patterns),negation);
+}
+/* Then, we look the possible kind of transitions */
+switch (tag->type) {
+   case TOKEN_LIST_TAG: add_token_list(tag->matching_tokens,transition,&(state->token_list),&(state->number_of_tokens));
+                        return;
+   case PATTERN_NUMBER_TAG: add_pattern(tag->pattern_number,transition,&(state->patterns),negation);
+                            return;
+   case META_TAG: add_meta(tag->meta,transition,&(state->metas),negation);
+                           return;
+   case BEGIN_VAR_TAG: add_variable(tag->variable,transition,&(state->variable_starts));
+                       return;
+   case END_VAR_TAG: add_variable(tag->variable,transition,&(state->variable_ends));
+                     return;
+   case BEGIN_POSITIVE_CONTEXT_TAG: add_positive_context(fst2,state,transition); return;
+   case BEGIN_NEGATIVE_CONTEXT_TAG: add_negative_context(fst2,state,transition); return;
+   case END_CONTEXT_TAG: add_end_context(state,transition); return;
+   default: fatal_error("Unexpected transition tag type in optimize_transition\n");
+}
+}
+
+
+/**
+ * This function builds an array containing the token numbers stored
+ * in the token list of the given state. As the token list is supposed
+ * to be sorted, the array will be sorted. The function frees the token
+ * list.
+ */
+void token_list_2_token_array(OptimizedFst2State state) {
 int i;
-for (i=0;i<automate->number_of_states;i++) {
-  graphe_opt[i]=NULL;
-  optimiser_etat(automate->states[i],&graphe_opt[i],i,automate->tags);
+struct opt_token* l;
+struct opt_token* tmp;
+if (state->number_of_tokens==0) {
+   /* Nothing to do if there is no token in the list */
+   return;
 }
+state->tokens=(int*)malloc(sizeof(int)*state->number_of_tokens);
+state->token_transitions=(Fst2Transition*)malloc(sizeof(Fst2Transition)*state->number_of_tokens);
+if (state->tokens==NULL || state->token_transitions==NULL) {
+   fatal_error("Not enough memory in token_list_2_token_array\n");
 }
+i=0;
+l=state->token_list;
+while (l!=NULL) {
+   state->tokens[i]=l->token_number;
+   state->token_transitions[i]=l->transition;
+   i++;
+   tmp=l;
+   l=l->next;
+   /* We must NOT free 'tmp->transition' since it is referenced now
+    * in 'state->token_transitions[i]' */
+   free(tmp);
+}
+if (i!=state->number_of_tokens) {
+   fatal_error("Internal error in token_list_2_token_array\n");
+}
+state->token_list=NULL;
+}
+
+
+/**
+ * Allocates, initializes and returns a new optimized state.
+ */
+OptimizedFst2State new_optimized_state() {
+OptimizedFst2State state=(OptimizedFst2State)malloc(sizeof(struct optimizedFst2State));
+if (state==NULL) {
+   fatal_error("Not enough memory in new_optimized_state\n");
+}
+state->control=0;
+state->graph_calls=NULL;
+state->metas=NULL;
+state->patterns=NULL;
+state->compound_patterns=NULL;
+state->token_list=NULL;
+state->tokens=NULL;
+state->token_transitions=NULL;
+state->number_of_tokens=0;
+state->variable_starts=NULL;
+state->variable_ends=NULL;
+state->contexts=NULL;
+return state;
+}
+
+
+/**
+ * Frees the whole memory associated to the given optimized state.
+ */
+void free_optimized_state(OptimizedFst2State state) {
+if (state==NULL) return;
+free_opt_graph_call(state->graph_calls);
+free_opt_meta(state->metas);
+free_opt_pattern(state->patterns);
+free_opt_pattern(state->compound_patterns);
+free_opt_token(state->token_list);
+free_opt_variable(state->variable_starts);
+free_opt_variable(state->variable_ends);
+free_opt_contexts(state->contexts);
+if (state->tokens!=NULL) free(state->tokens);
+if (state->token_transitions!=NULL) {
+   for (int i=0;i<state->number_of_tokens;i++) {
+      free_Fst2Transition(state->token_transitions[i]);
+   }
+   free(state->token_transitions);
+}
+free(state);
+}
+
+
+/**
+ * This function looks all the transitions that outgo from the given state
+ * and returns an equivalent optimized state, or NULL if the given state
+ * was NULL.
+ */
+OptimizedFst2State optimize_state(Fst2* fst2,Fst2State state,int state_number,Fst2Tag* tags) {
+if (state==NULL) return NULL;
+OptimizedFst2State new_state=new_optimized_state();
+new_state->control=state->control;
+struct fst2Transition* ptr=state->transitions;
+while (ptr!=NULL) {
+   optimize_transition(fst2,ptr,new_state,tags);
+   ptr=ptr->next;
+}
+token_list_2_token_array(new_state);
+return new_state;
+}
+
+
+/**
+ * This function takes a fst2 and returns an array containing the corresponding
+ * optimized states.
+ */
+OptimizedFst2State* build_optimized_fst2_states(Fst2* fst2) {
+OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc(fst2->number_of_states*sizeof(OptimizedFst2State));
+if (optimized_states==NULL) {
+   fatal_error("Not enough memory in build_optimized_fst2_states\n");
+}
+for (int i=0;i<fst2->number_of_states;i++) {
+   optimized_states[i]=optimize_state(fst2,fst2->states[i],i,fst2->tags);
+}
+return optimized_states;
+}
+
+
+/**
+ * Frees the whole memory associated to the given optimized state array.
+ */
+void free_optimized_states(OptimizedFst2State* states,int size) {
+if (states==NULL) return;
+for (int i=0;i<size;i++) {
+   free_optimized_state(states[i]);
+}
+free(states);
+}
+

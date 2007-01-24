@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -38,6 +38,13 @@
 /* Maximum number of states in a .fst2 */
 #define MAX_FST2_STATES 500000
 
+/* Used when no compound pattern is defined for a given Fst2Tag */
+#define NO_COMPOUND_PATTERN -1
+
+/* These bit masks are used when a fst2 is loaded */
+#define TRANSDUCTION_TAG_BIT_MASK 1
+#define NEGATION_TAG_BIT_MASK 2
+#define RESPECT_CASE_TAG_BIT_MASK 4 /* to 1 if case variants are not allowed */
 
 /**
  * Here we define the different kinds of tag.
@@ -252,8 +259,8 @@ Fst2* load_one_sentence_from_fst2(char*,int);
 void free_Fst2(Fst2*);
 
 /* Functions for writing grammars */
-int write_fst2_graph(FILE*,Fst2*,int);
-int write_fst2_tags(FILE*,Fst2*);
+void write_fst2_graph(FILE*,Fst2*,int);
+void write_fst2_tags(FILE*,Fst2*);
 
 
 struct variable_list* get_variable(unichar*,struct variable_list*);

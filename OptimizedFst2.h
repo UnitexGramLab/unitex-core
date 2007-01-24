@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,74 +19,114 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#ifndef Optimized_fst2H
-#define Optimized_fst2H
-//---------------------------------------------------------------------------
+#ifndef OptimizedFst2H
+#define OptimizedFst2H
 
 #include "unicode.h"
 #include "Fst2.h"
 #include "TransductionVariables.h"
+#include "MetaSymbols.h"
 
 
-struct liste_arrivees {
-  int arr;
-  int etiquette_origine;
-  struct liste_arrivees* suivant;
+/**
+ * This structure defines a list of graph calls. For each call, we have the
+ * graph number and the original fst2 transition with the original tag number
+ * and the destination state.
+ */
+struct opt_graph_call {
+   int graph_number;
+   Fst2Transition transition;
+   struct opt_graph_call* next;
 };
 
-struct appel_a_sous_graphe {
-  int numero_de_graphe;
-  struct liste_arrivees* liste_arr;
-  struct appel_a_sous_graphe* suivant;
+
+/**
+ * This structure defines a list of metas. For each meta, we have the
+ * meta, the negation mark, and the original fst2 transition with the
+ * original tag number and the destination state.
+ */
+struct opt_meta {
+  enum meta_symbol meta;
+  char negation;
+  Fst2Transition transition;
+  struct opt_meta* next;
 };
 
-struct appel_a_meta {
-  int numero_de_meta;
-  int negation;
-  int numero_de_variable;
-  struct liste_arrivees* liste_arr;
-  struct appel_a_meta* suivant;
+
+/**
+ * A pattern number, its negation mark and the transition that matches it.
+ */
+struct opt_pattern {
+   int pattern_number;
+   char negation;
+   Fst2Transition transition;
+   struct opt_pattern* next;
 };
 
-struct appel_a_pattern {
-  int numero_de_pattern;
-  int negation;
-  struct liste_arrivees* liste_arr;
-  struct appel_a_pattern* suivant;
+
+/**
+ * A token number and the transition that matches it.
+ */
+struct opt_token {
+   int token_number;
+   Fst2Transition transition;
+   struct opt_token* next;
 };
 
-struct token {
-  int numero_de_token;
-  struct liste_arrivees* liste_arr;
+
+/**
+ * A variable start or end declaration.
+ */
+struct opt_variable {
+   int variable_number;
+   Fst2Transition transition;
+   struct opt_variable* next;
 };
 
-struct liste_de_tokens {
-  struct token* tok;
-  struct liste_de_tokens* suivant;
+
+/**
+ * This structure stores the information needed to deal with 
+ * the context marks $[ $![ and $]
+ * Thanks to the determinization, there can be only one transition of each kind
+ * that outgoes from a given state, so that we just have one transition to store
+ * for each of them.
+ * If the state has a transition with a positive context start mark $[, we compute
+ * one time for all where the associated context end marks are. This is useful to
+ * know where to go in the grammar when the context has been matched. The same is
+ * done for the negative context mark, if any.
+ */
+struct opt_contexts {
+   Fst2Transition positive_mark;
+   Fst2Transition negative_mark;
+   Fst2Transition end_mark;
+   Fst2Transition reacheable_states_from_positive_context;
+   Fst2Transition reacheable_states_from_negative_context;
 };
 
-struct etat_opt {
-  unsigned char controle;
-  struct appel_a_sous_graphe* liste_sous_graphes;
-  //  struct appel_a_sous_graphe* liste_inter_graphes; // act. unused
-  struct appel_a_meta* liste_metas;
-  struct appel_a_pattern* liste_patterns;
-  struct appel_a_pattern* liste_patterns_composes;
-  struct liste_de_tokens* liste_tokens;
-  int* tableau_de_tokens;
-  struct liste_arrivees** tableau_liste_arr;
-  int nombre_de_tokens;
+
+/**
+ * This structure defines an optimized state of a fst2. All transitions that outgo
+ * the original fst2 state are grouped here by kind.
+ */
+struct optimizedFst2State {
+  unsigned char control;
+  struct opt_graph_call* graph_calls;
+  struct opt_meta* metas;
+  struct opt_pattern* patterns;
+  struct opt_pattern* compound_patterns;
+  struct opt_token* token_list;
+  struct opt_variable* variable_starts;
+  struct opt_variable* variable_ends;
+  struct opt_contexts* contexts;
+  int* tokens;
+  int number_of_tokens;
+  Fst2Transition* token_transitions;
 };
 
-typedef struct etat_opt* Etat_opt;
+typedef struct optimizedFst2State* OptimizedFst2State;
 
 
-
-extern struct etat_opt* graphe_opt[500000];
-
-
-
-void optimize_fst2(Fst2*);
+OptimizedFst2State* build_optimized_fst2_states(Fst2*);
+void free_optimized_states(OptimizedFst2State*,int);
 
 #endif

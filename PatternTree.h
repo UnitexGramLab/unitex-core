@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -73,21 +73,6 @@ struct pattern_node_transition {
 
 struct pattern_node* new_pattern_node();
 void free_pattern_node(struct pattern_node*);
-/*
-void inserer_code_gramm(int,unichar*,unichar*,struct pattern_node*);
-void decouper_code_gramm(unichar*,unichar**,unichar**,struct list_ustring**);
-void ajouter_combinaisons_code_gramm(unichar**,Code_flexion,int,
-                                     struct list_ustring*,unichar*,
-                                     struct pattern_node*);
-void creer_ensemble_code_gramm(int*,unichar**,unichar**,Code_flexion,
-                               int,int,int,
-                               struct list_ustring*,unichar*,
-                               struct pattern_node*);
-void ajouter_element_code_gramm(unichar**,int,struct pattern_node*,
-                                Code_flexion,int,
-                                struct list_ustring*,unichar*);
-                                
-  */
 int add_pattern(int*,struct pattern*,struct pattern_node*);                              
 struct list_pointer* get_matching_patterns(struct dela_entry*,struct pattern_node*);
 

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -18,11 +18,11 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-//---------------------------------------------------------------------------
+
 #include "Fst2.h"
 #include "Error.h"
 #include "LocateConstants.h"
-//---------------------------------------------------------------------------
+#include "BitMasks.h"
 
 
 /*
@@ -234,10 +234,8 @@ e->pattern=NULL;
 e->variable=NULL;
 e->matching_tokens=NULL;
 e->compound_pattern=NO_COMPOUND_PATTERN;
-/* $CD$ begin */
 e->morphological_filter=NULL;
 e->filter_number=-1;
-/* $CD$ end   */
 return e;
 }
 
@@ -327,17 +325,33 @@ if (respect_case) {
    /* We set the case respect bit if necessary */
    tag->control=(unsigned char)(tag->control|RESPECT_CASE_TAG_BIT_MASK);
 }
+if (!u_strcmp_char(input,"$[")) {
+   tag->type=BEGIN_POSITIVE_CONTEXT_TAG;
+   return tag;
+}
+if (!u_strcmp_char(input,"$![")) {
+   tag->type=BEGIN_NEGATIVE_CONTEXT_TAG;
+   return tag;
+}
+if (!u_strcmp_char(input,"$]")) {
+   tag->type=END_CONTEXT_TAG;
+   return tag;
+}
 /* 
  * IMPORTANT: if the tag is a variable declaration, we must add this variable
  *            to the variable list of the fst2 .
  */
-#warning to be deprecated
 int length=u_strlen(input);
 if (input[0]=='$' && 
     (input[length-1]=='(' || input[length-1]==')')) {
-   unichar* name=u_strdup(&(input[1]),length-2);
-   fst2->variables=add_variable_to_list(name,fst2->variables);
-   free(name);
+   tag->variable=u_strdup(&(input[1]),length-2);
+   fst2->variables=add_variable_to_list(tag->variable,fst2->variables);
+   if (input[length-1]=='(') {
+      tag->type=BEGIN_VAR_TAG;
+   }
+   else {
+      tag->type=END_VAR_TAG;
+   }
 }
 return tag;
 }
@@ -347,44 +361,31 @@ return tag;
  * Stringifies and writes a tag to a file including '\n'.
  * Opposite of "create_tag".
  */
-int write_tag(FILE* f,Fst2Tag tag) {
-   if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
-      u_fprints_char("@",f);
-   }
-   else {
-      u_fprints_char("%",f);
-   }
-   /* if the tag is a variable, print '$' */
-   if (tag->control & (START_VAR_TAG_BIT_MASK|END_VAR_TAG_BIT_MASK)) {
-     u_fprints_char("$",f);
-   }
-   /* print the content (label) of the tag */
-   u_fprints(tag->input,f);
-   /* if any, we add the morphological filter: <A><<^pre>> */
-   if (tag->morphological_filter!=NULL &&
-       tag->morphological_filter[0]!='\0') {
-     u_fprints(tag->morphological_filter,f);
-   }
-   /* if any, we add transitions */
-   if (tag->output!=NULL) {
-      if (tag->output[0]=='\0') {
-         fatal_error("Invalid empty ouput in write_tag\n");
-      }
-      u_fprints_char("/",f);
-      u_fprints(tag->output,f);
-   }
-   /* print closing '(' for variables */
-   else if (tag->control & START_VAR_TAG_BIT_MASK) {
-     u_fprints_char("(",f);
-   }
-   /* or ')' resp. */
-   else if (tag->control & END_VAR_TAG_BIT_MASK) {
-     u_fprints_char(")",f);
-   }
-   u_fprints_char("\n",f);
-
-   return 1;
+void write_tag(FILE* f,Fst2Tag tag) {
+if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
+   u_fprints_char("@",f);
 }
+else {
+   u_fprints_char("%",f);
+}
+/* We print the content (label) of the tag */
+u_fprints(tag->input,f);
+/* If any, we add the morphological filter: <A><<^pre>> */
+if (tag->morphological_filter!=NULL &&
+   tag->morphological_filter[0]!='\0') {
+   u_fprints(tag->morphological_filter,f);
+}
+/* If any, we add the output */
+if (tag->output!=NULL) {
+   if (tag->output[0]=='\0') {
+      fatal_error("Invalid empty ouput in write_tag\n");
+   }
+   u_fprints_char("/",f);
+   u_fprints(tag->output,f);
+}
+u_fprints_char("\n",f);
+}
+
 
 /**
  * Reads the tags of the .fst2 file 'f'. The function assumes that the
@@ -444,55 +445,42 @@ read_fst2_tags(f,fst2,NO_TAG_LIMIT);
  * Writes all the tags to the .fst2 file 'f'.
  * (opposite of "read_fst2_tags")
  */
-int write_fst2_tags(FILE *f,Fst2* fst2) {
-  for (int i=0; i<fst2->number_of_tags; i++) {
-    write_tag(f, fst2->tags[i]);
-  }
-  u_fprints_char("f\n",f);
-  return 1;
+void write_fst2_tags(FILE* f,Fst2* fst2) {
+for (int i=0;i<fst2->number_of_tags;i++) {
+   write_tag(f,fst2->tags[i]);
+}
+u_fprints_char("f\n",f);
 }
 
 /**
  * Writes one state of automaton to the .fst2 file 'f'.
  */
-int write_fst2_state(FILE *f, Fst2State s)
-{
-  Fst2Transition ptr;
-
-  if (is_final_state(s))
-    u_fprints_char("t ",f);
-  else
-    u_fprints_char(": ",f);
-  
-  ptr=s->transitions;
-  while(ptr!=NULL)
-    {
-      u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
-      ptr=ptr->next;
-    }
-
-  u_fputc((unichar)' ',f);
-  u_fputc((unichar)'\n',f);
-
-  return 1;
+void write_fst2_state(FILE* f,Fst2State s) {
+if (is_final_state(s))
+   u_fprints_char("t ",f);
+else u_fprints_char(": ",f);
+Fst2Transition ptr=s->transitions;
+while(ptr!=NULL) {
+   u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
+   ptr=ptr->next;
 }
+u_fputc((unichar)' ',f);
+u_fputc((unichar)'\n',f);
+}
+
 
 /**
  * Writes graph n of the grammar g to the .fst2 file 'f'.
  */
-int write_graph (FILE *f, Fst2 *g, int n)
-{
-
-  u_fprintf(f,
-            "-1 flattened version of graph "
-            "%S\n",
-            g->graph_names[n]);
-
-  /* to be implemented */
-  fatal_error("function write_graph not fully implemented\n");
-
-  return 1;
+void write_graph(FILE* f,Fst2* fst2,int n) {
+u_fprintf(f,
+          "-1 flattened version of graph "
+          "%S\n",
+          fst2->graph_names[n]);
+/* to be implemented */
+fatal_error("function write_graph not fully implemented\n");
 }
+
 
 /**
  * Creates, initializes and returns a fst2 state.

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2006 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -372,8 +372,8 @@ while (meta_list!=NULL) {
        * if we are at the end of the token buffer. With this trick, the morphofilter test
        * will avoid overpassing the end of the token buffer. */
       int morpho_filter_OK=(token2!=-1)?1:0;
-      #ifdef TRE_WCHAR
       filter_number=p->tags[t->tag_number]->filter_number;
+      #ifdef TRE_WCHAR
       if (token2!=-1) {
          morpho_filter_OK=(filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number));
       }
@@ -452,8 +452,7 @@ while (meta_list!=NULL) {
                       * directly handle here the case of a token sequence. */
                      if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
                      if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                        if (pos2!=pos) push_char(' ');
-                        for (int x=pos2;x<=end_of_compound;x++) {
+                        for (int x=pos;x<=end_of_compound;x++) {
                            push_string(p->tokens->value[texte[x+p->current_origin]]);
                         }
                      }
@@ -504,8 +503,7 @@ while (meta_list!=NULL) {
                    * token sequence. */
                   if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
                   if (transduction_mode==MERGE_TRANSDUCTIONS) {
-                     if (pos2!=pos) push_char(' ');
-                     for (int x=pos2;x<=end_of_compound;x++) {
+                     for (int x=pos;x<=end_of_compound;x++) {
                         push_string(p->tokens->value[texte[x+p->current_origin]]);
                      }
                   }
@@ -705,132 +703,112 @@ if (contexts!=NULL) {
  */
 if (token2==-1) {return;}
 
-
-
-/////////////////////////////////////////////////////////
-// patterns composes
-//
+/**
+ * COMPOUND WORD PATTERNS:
+ * here, we deal with patterns that can only match compound sequences
+ */
 struct opt_pattern* pattern_list=current_state->compound_patterns;
 while (pattern_list!=NULL) {
-  t=pattern_list->transition;
-  while (t!=NULL) {
-
-    /* $CD$ begin */
-#ifdef TRE_WCHAR
-    filter_number=p->tags[t->tag_number]->filter_number;  
-#endif
-    /* $CD$ end   */
-
-    output=p->tags[t->tag_number]->output;
-    end_of_compound=find_compound_word(pos2,pattern_list->pattern_number,p->DLC_tree,p);
-    if (end_of_compound!=-1 && !(pattern_list->negation)) {
-       int OK=1;
-#ifdef TRE_WCHAR
-       if (filter_number == -1 ) OK=1;
-       else {
-          unichar tmp[512];
-          tmp[0]='\0';
-          for (int x=pos2;x<=end_of_compound;x++) {
-            u_strcat(tmp,p->tokens->value[texte[x+p->current_origin]]);
-          }
-          OK=(string_match_filter(p->filters,tmp,filter_number)==0);
-       }
-#endif
-       if (OK){
-          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-          if (transduction_mode==MERGE_TRANSDUCTIONS) {
-             if (pos2!=pos) push_char(' ');
-             for (int x=pos2;x<=end_of_compound;x++)
-                push_string(p->tokens->value[texte[x+p->current_origin]]);
-          }
-          locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,
-          				n_matches,ctx,p);
-          StackPointer=stack_top;
-       }
-    }
-    t=t->next;
-  }
-  pattern_list=pattern_list->next;
+   t=pattern_list->transition;
+   while (t!=NULL) {
+      filter_number=p->tags[t->tag_number]->filter_number;
+      output=p->tags[t->tag_number]->output;
+      end_of_compound=find_compound_word(pos2,pattern_list->pattern_number,p->DLC_tree,p);
+      if (end_of_compound!=-1 && !(pattern_list->negation)) {
+         int OK=1;
+         #ifdef TRE_WCHAR
+         if (filter_number==-1 ) OK=1;
+         else {
+            unichar* sequence=get_token_sequence(texte,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
+            OK=(string_match_filter(p->filters,sequence,filter_number)==0);
+            free(sequence);
+         }
+         #endif
+         if (OK){
+            if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
+            if (transduction_mode==MERGE_TRANSDUCTIONS) {
+               for (int x=pos;x<=end_of_compound;x++) {
+                  push_string(p->tokens->value[texte[x+p->current_origin]]);
+               }
+            }
+            locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
+            StackPointer=stack_top;
+         }
+      }
+      t=t->next;
+   }
+   pattern_list=pattern_list->next;
 }
 
-
-///////////////////////////////////////////////
-// patterns simples
-//
+/**
+ * SIMPLE WORD PATTERNS:
+ * here, we deal with patterns that can match both simple and
+ * compound words, like "<N>".
+ */ 
 pattern_list=current_state->patterns;
 while (pattern_list!=NULL) {
-  t=pattern_list->transition;
-  while (t!=NULL) {
-
-    /* $CD$ begin */
-#ifdef TRE_WCHAR
-    filter_number = p->tags[t->tag_number]->filter_number;  
-#endif
-    /* $CD$ end   */
-    output=p->tags[t->tag_number]->output;
-    ctrl=pattern_list->pattern_number;
-    //---mots composes
-    end_of_compound=find_compound_word(pos2,ctrl,p->DLC_tree,p);
-    if (end_of_compound!=-1 && !(pattern_list->negation)) {
+   t=pattern_list->transition;
+   while (t!=NULL) {
+      #ifdef TRE_WCHAR
+      filter_number=p->tags[t->tag_number]->filter_number;  
+      #endif
+      output=p->tags[t->tag_number]->output;
+      /* We try to match a compound word */
+      end_of_compound=find_compound_word(pos2,pattern_list->pattern_number,p->DLC_tree,p);
+      if (end_of_compound!=-1 && !(pattern_list->negation)) {
+         int OK=1;
+         #ifdef TRE_WCHAR
+         if (filter_number==-1) OK=1;
+         else {
+            unichar* sequence=get_token_sequence(texte,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
+            OK=(string_match_filter(p->filters,sequence,filter_number)==0);
+            free(sequence);
+         }
+         #endif
+         if (OK) {
+            if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
+            if (transduction_mode==MERGE_TRANSDUCTIONS) {
+               for (int x=pos;x<=end_of_compound;x++) {
+                  push_string(p->tokens->value[texte[x+p->current_origin]]);
+               }
+            }
+            locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
+            StackPointer=stack_top;
+         }
+      }
+      /* And now, we look for simple words */
       int OK=1;
-#ifdef TRE_WCHAR
-      if (filter_number == -1 ) OK=1;
-      else {
-        unichar tmp[512];
-        tmp[0]='\0';
-        for (int x=pos2;x<=end_of_compound;x++) {
-          u_strcat(tmp,p->tokens->value[texte[x+p->current_origin]]);
-        }
-        OK=(string_match_filter(p->filters,tmp,filter_number)==0);
-    }
-#endif
+      #ifdef TRE_WCHAR
+      OK=(filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number));
+      #endif
       if (OK) {
-        if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-        if (transduction_mode==MERGE_TRANSDUCTIONS) {
-          if (pos2!=pos) push_char(' ');
-          for (int x=pos2;x<=end_of_compound;x++)
-            push_string(p->tokens->value[texte[x+p->current_origin]]);
-        }
-        locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,
-        			n_matches,ctx,p);
-        StackPointer=stack_top;
+         if (p->matching_patterns[token2]!=NULL) {
+            if (XOR(get_value(p->matching_patterns[token2],pattern_list->pattern_number),pattern_list->negation)) {
+               if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
+               if (transduction_mode==MERGE_TRANSDUCTIONS) {
+                  if (pos2!=pos) push_char(' ');
+                  push_string(p->tokens->value[token2]);
+               }
+               locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
+               StackPointer=stack_top;
+            }
+         } else {
+            /* If the token matches no pattern, then it can match a pattern negation
+             * like <!V> */
+            if (pattern_list->negation && (p->token_control[token2] & MOT_TOKEN_BIT_MASK)) {
+               if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
+               if (transduction_mode==MERGE_TRANSDUCTIONS) {
+                  if (pos2!=pos) push_char(' ');
+                  push_string(p->tokens->value[token2]);
+               }
+               locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
+               StackPointer=stack_top;
+            }
+         }
       }
-    }
-    //---mots simples
-
-#ifdef TRE_WCHAR
-    if (filter_number == -1 || token_match_filter(p->filter_match_index, texte[pos2+p->current_origin], filter_number)) 
-#endif
-    {
-      if (p->matching_patterns[texte[pos2+p->current_origin]]!=NULL) {
-        if ((get_value(p->matching_patterns[texte[pos2+p->current_origin]],ctrl) && !pattern_list->negation)
-            || (!get_value(p->matching_patterns[texte[pos2+p->current_origin]],ctrl) && pattern_list->negation)) {
-          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-          if (transduction_mode==MERGE_TRANSDUCTIONS) {
-            if (pos2!=pos) push_char(' ');
-            push_string(p->tokens->value[token2]);
-          }
-          locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,
-          				n_matches,ctx,p);
-          StackPointer=stack_top;
-        }
-      } else {
-        // if there is no code, we can try to look for a negation
-        if (pattern_list->negation && (p->token_control[texte[pos2+p->current_origin]]&MOT_TOKEN_BIT_MASK)) {
-          if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-          if (transduction_mode==MERGE_TRANSDUCTIONS) {
-            if (pos2!=pos) push_char(' ');
-            push_string(p->tokens->value[token2]);
-          }
-          locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,
-          				n_matches,ctx,p);
-          StackPointer=stack_top;
-        }
-      }
-    }
-    t=t->next;
-  }
-  pattern_list=pattern_list->next;
+      t=t->next;
+   }
+   pattern_list=pattern_list->next;
 }
 
 /**
@@ -841,13 +819,11 @@ if (current_state->number_of_tokens!=0) {
    if (n!=-1) {
       t=current_state->token_transitions[n];
       while (t!=NULL) {
-         /* $CD$ begin */
          #ifdef TRE_WCHAR
          filter_number=p->tags[t->tag_number]->filter_number;
-         if (filter_number == -1 || token_match_filter(p->filter_match_index,token2,filter_number)) 
+         if (filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number)) 
          #endif
          {
-         /* $CD$ end   */
             output=p->tags[t->tag_number]->output;
             if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
             if (transduction_mode==MERGE_TRANSDUCTIONS) {
