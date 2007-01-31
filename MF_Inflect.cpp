@@ -104,6 +104,7 @@ err=inflect(argv[1],argv[2]);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();
+printf("Done.\n");
 return 0;
 }
 
