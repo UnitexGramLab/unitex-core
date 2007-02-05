@@ -110,7 +110,7 @@ if (f_enter==NULL) {
 }
 else {
 	n_enter_char=fread(&enter_pos,sizeof(int),MAX_ENTER_CHAR,f_enter);
-	fclose(f_enter);
+   fclose(f_enter);
 }
 char test='\0';
 if (1!=sscanf(argv[4],"%d%c",&option.left_context,&test))

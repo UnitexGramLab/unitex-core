@@ -87,7 +87,7 @@ if (t -> etiq) {
    t -> etiq = 0 ; } }
 */
 
-#define maxMot             256     /* pour anne */
+#define maxMot             4096     /* pour anne */
 #define maxGramm           256
 #define tailleTampon     32768     /* tampon de lecture d'une ligne */ 
 #define minTailleAllouee     8
