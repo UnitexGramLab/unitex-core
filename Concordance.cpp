@@ -853,11 +853,11 @@ while (matches!=NULL) {
 	char tmp_chars[100];
 	/* And we use it to compute the bounds of the matched sequence in characters
 	 * from the beginning of the text file. */
-	int shift=get_shift(n_enter_char,enter_pos,start_pos);
+	int shift=get_shift(n_enter_char,enter_pos,matches->debut);
 	start_pos_char=start_pos_char+shift;
 	/* The shift value can be different at the end of the match since new lines
 	 * can occur inside a match. */
-	shift=get_shift(n_enter_char,enter_pos,end_pos);
+	shift=get_shift(n_enter_char,enter_pos,matches->fin);
 	end_pos_char=end_pos_char+shift;
 	sprintf(tmp_chars,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence_local);
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
