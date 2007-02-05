@@ -282,12 +282,11 @@ verboseMode  = 0;
 		initCallIdMap();
 	};
 	~CFstApp(){
-	    arretExpoDel();
+	   arretExpoDel();
 		cleanCyclePath();
-		if(a) free_Fst2(a);
-        if(saveSep != u_null_string) delete saveSep;
-
-		if(sep1 != u_null_string) delete sep1;
+		free_Fst2(a);
+      if(saveSep != u_null_string) delete saveSep;
+      if(sep1 != u_null_string) delete sep1;
 		if(stopSignal != u_null_string) delete stopSignal;
 		if(saveEntre != u_null_string) delete saveEntre;
 		if(ignoreTable) delete ignoreTable;
@@ -538,8 +537,7 @@ verboseMode  = 0;
 		struct cycleNodeId::linkCycle *inf,*tnf;
 		struct cyclePathMark *tc,*cp;
 		int i;
-
-		while(cnode){
+      while(cnode){
 			tnode = cnode->next;
 			inf =  cnode->cycInfos;
 			while(inf){
@@ -561,9 +559,11 @@ verboseMode  = 0;
 		}
 		headCyc = 0;
 		cyclePathCnt = 0;
-		for (i = 0; i < a->number_of_states;i++){
-			a->states[i]->control &=0x7f;
-		}
+      if (a!=NULL) {
+		   for (i = 0; i < a->number_of_states;i++){
+			   a->states[i]->control &=0x7f;
+		   }
+      }
 	}
 	void prCycleNode()
 	{
@@ -863,7 +863,7 @@ verboseMode  = 0;
 	void prSubGrapheCycle()
 	{
 		int i;
-		for(i = 0; i <= a->number_of_graphs;i++)
+		for(i = 1; i <= a->number_of_graphs;i++)
 		{
 			if(a->states[a->initial_states[i]]->control & LOOP_NODE_MARK)
 				error("the sub-graph %s has cycle path\n",
@@ -987,7 +987,7 @@ void CFstApp::loadGraph(char *fname)
 	
 	a=load_fst2(fname,1);
 	if (a==NULL) {
-      fatal_error("Cannot load graphe file %s\n",fname);
+      fatal_error("Cannot load graph file %s\n",fname);
 	}
 
 	for( i = 0; i < a->number_of_states;i++)
@@ -1008,7 +1008,7 @@ void CFstApp::loadGraph(char *fname)
 
 	ignoreTable = new int [a->number_of_graphs+1];
     numOfIgnore = new int [a->number_of_graphs+1];
-    for( i = 0 ; i<= a->number_of_graphs;i++){
+    for( i = 1 ; i<= a->number_of_graphs;i++){
     	ignoreTable[i] = 0;
     	numOfIgnore[i] = 0;
 	}
@@ -1091,9 +1091,8 @@ void CFstApp::getWordsFromGraph(char *fname)
  	char *dp;
 	// load fst2 file
 	loadGraph(fname);
-	
-	CleanPathCounter();
-    ofNameTmp[0] = 0;
+   CleanPathCounter();
+   ofNameTmp[0] = 0;
 	switch(display_control){
 	case GRAPH:{
 		listOut = 0;
@@ -1137,7 +1136,7 @@ void CFstApp::getWordsFromGraph(char *fname)
 		switch(traitAuto){
 		case SINGLE:
 			{
-				listOut = 0;
+            listOut = 0;
 				exploirerSubAuto(1);	// mark loop path start nodes
 				prSubGrapheCycle();
 				makeOfileName(ofNameTmp,0,0);
@@ -1152,7 +1151,7 @@ void CFstApp::getWordsFromGraph(char *fname)
             ,getUtoChar(a->graph_names[1])
             ,totalPath,totalLoop, errPath);
 					if(stopPath){
-					     for(int inx = 0; inx <= a->number_of_graphs;inx++){
+					     for(int inx = 1; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
                               printf(" Sub call [%s] %d\n"
                                 ,getUtoChar(a->graph_names[inx])
@@ -1185,7 +1184,6 @@ void CFstApp::getWordsFromGraph(char *fname)
 				i++;
 			}
 			fprintf(listFile," %d\n",i);
-
 			for( sui = a->states[0]->transitions;sui != 0 ; sui = sui->next){
 				if(!(sui->tag_number & FILE_PATH_MARK)) continue;
 				cleanCyclePath();
@@ -1218,7 +1216,7 @@ printf(" the automate %s %d path, %d path stopped by cycle, %d error path \n"
                     ,totalPath,totalLoop, errPath);
 					
 					if(stopPath){
-					     for(int inx = 0; inx <= a->number_of_graphs;inx++){
+					     for(int inx = 1; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
                               printf(" sub-call[%s] %d\n",
                                   getUtoChar(a->graph_names[inx]),
@@ -1735,11 +1733,13 @@ void CFstApp::outWordsOfGraph(int depth)
 int main(int argc, char **argv) {
 setBufferMode();
     
-	CFstApp aa;
+   
+    
 	char *ofilename =0;
 	int iargIndex = 1;
 	int i;
 
+   CFstApp aa;
 
 	changeStrToIdx = 0;
 
@@ -1752,7 +1752,8 @@ setBufferMode();
 			switch(argv[iargIndex][0]){
 			case 's': aa.prMode = PR_SEPARATION; break;
 			case 'a': aa.prMode = PR_TOGETHER;break;
-			default: usage(); return 1;
+			default: usage();
+                  return 1;
 			}
 			break;
 		case 'o':iargIndex++; 
@@ -1773,7 +1774,8 @@ setBufferMode();
 			case 's': aa.display_control = GRAPH; break;
 			case 'f': aa.display_control = FULL; break;
 			case 'd': aa.display_control = DEBUG; break;
-			default: usage(); return 1;
+			default: usage();
+                  return 1;
 			}
 			break;
 		case 'a':
@@ -1784,7 +1786,8 @@ setBufferMode();
 			switch(argv[iargIndex][0]){
 			case 's': aa.traitAuto = SINGLE; break;
 			case 'm': aa.traitAuto = MULTI; break;
-			default: usage(); return 1;
+			default: usage();
+                  return 1;
 			}
 			break;
 		case 'v':
@@ -1797,7 +1800,8 @@ setBufferMode();
 			case 's': aa.recursiveMode = SYMBOL; break;
 			case 'l': aa.recursiveMode = LABEL; break;
 			case 'x': aa.recursiveMode = STOP; break;
-			default: usage(); return 1;
+			default: usage();
+                  return 1;
 			}
 			iargIndex++;
 			aa.saveEntre = new unichar[strlen(argv[iargIndex])+1];
@@ -1827,7 +1831,8 @@ setBufferMode();
 			break;
 		case 'c':			iargIndex++;
 			if(!changeStrToVal(argv[iargIndex])) break;
-			usage(); return 1;
+			usage();
+         return 1;
 		case 's':{
 			i = 0;
 			char cc= argv[iargIndex][2];
@@ -1847,7 +1852,8 @@ setBufferMode();
 					}
 					switch(*wp){
 					case '\\':wp++;
-                          if(*wp == '\0') {usage(); return 1;}
+                          if(*wp == '\0') {usage();
+                        return 1;}
                           if(*wp != '"')  break;
                     case '"': wp++; continue;
 					case ',': wp3 = wp2; break;
@@ -1876,7 +1882,8 @@ setBufferMode();
 					}
 					if(*wp == '\\'){
                           wp++;
-                          if(*wp == '\0') {usage(); return 1;}
+                          if(*wp == '\0') {usage();
+      return 1;}
                           }
                     if(*wp == '"') continue;
 					*wp2++ = (unichar)*wp++;
@@ -1894,7 +1901,8 @@ setBufferMode();
 				*wp2= 0;
 				break;
 			default:
-				usage(); return 1;
+				usage();
+      return 1;
 			}
 			
 				
@@ -1902,7 +1910,8 @@ setBufferMode();
 		}
 			break;
 		default:
-			usage(); return 1;
+			usage();
+      return 1;
 		}
 		iargIndex++;
 	}
@@ -1913,7 +1922,6 @@ setBufferMode();
 	aa.fileNameSet(argv[iargIndex],ofilename);
 	aa.getWordsFromGraph(argv[iargIndex]);
 	if(ofilename) delete ofilename;
-
 	return 0;
 }
 
