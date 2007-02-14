@@ -357,7 +357,6 @@ void parcourir_graphe(int n_graph, // number of current graph
                      int pos,     //
                      int profondeur,
                      struct liste_num** liste_arrivee) {
-
 Fst2State etat_courant=fst2->states[e];
 
 if (profondeur > MAX_DEPTH) {
@@ -418,9 +417,9 @@ if (arbre_etiquettes[e]->trans!=NULL) {
    unichar mot[1000];
    if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
    /* we don't keep this line because of problems occur in sentence tokenizing
-      if the return sequence is defautly considered as a separator like space
-   else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
-   */
+    * if the return sequence is defautly considered as a separator like space
+    else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
+    */
    else pos2=pos;
 
 if (PARSING_MODE!=NORMAL_MODE 
@@ -457,7 +456,6 @@ if (PARSING_MODE!=NORMAL_MODE
 }
 }
 
-
 struct fst2Transition* t=etat_courant->transitions;
 while (t!=NULL) {
       sommet=SOMMET;
@@ -487,9 +485,17 @@ while (t!=NULL) {
          if (etiq->type==BEGIN_VAR_TAG) {
             // case of a $a( variable tag
             //int old;
-            struct variable_list* L=get_variable(contenu,fst2->variables);
+            struct variable_list* L=get_variable(etiq->variable,fst2->variables);
+            if (L==NULL) {
+               error("Unknown variable: ");
+               error(etiq->variable);
+               fatal_error("\n");
+            }
             //old=L->start;
-            if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
+            if (buffer[pos+origine_courante]==' ' && pos+origine_courante+1<LENGTH) {
+               pos2=pos+1;
+               if (MODE==MERGE) empiler(' ');
+            }
             //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
             else pos2=pos;
             L->start=pos2;
@@ -499,7 +505,12 @@ while (t!=NULL) {
          else if (etiq->type==END_VAR_TAG) {
               // case of a $a) variable tag
               //int old;
-              struct variable_list* L=get_variable(contenu,fst2->variables);
+              struct variable_list* L=get_variable(etiq->variable,fst2->variables);
+              if (L==NULL) {
+                 error("Unknown variable: ");
+                 error(etiq->variable);
+                 fatal_error("\n");
+              }
               //old=L->end;
               if (pos>0)
                 L->end=pos-1;
@@ -510,7 +521,10 @@ while (t!=NULL) {
          }
          else if (!u_strcmp_char(contenu,"<MOT>")) {
               // case of transition by any sequence of letters
-              if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
+              if (buffer[pos+origine_courante]==' ' && pos+origine_courante+1<LENGTH) {
+                 pos2=pos+1;
+                 if (MODE==MERGE) empiler(' ');
+              }
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
               unichar mot[1000];
