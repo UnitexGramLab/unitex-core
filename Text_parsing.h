@@ -19,10 +19,8 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef Text_parsingH
 #define Text_parsingH
-//---------------------------------------------------------------------------
 
 #include "Matches.h"
 #include "Fst2.h"
@@ -35,36 +33,26 @@
 #include "MorphologicalFilters.h"
 
 
-
-#define NBRE_ARR_MAX 50
-#define STACK_MAX 1000 /* the maximal size of recursive calls of the
-                         function parcourir_opt =~ the maximal number
-                         of tokens to be recognized in one match */
+#define STACK_MAX 1000 /* The maximal size of recursive calls of the
+                          function parcourir_opt =~ the maximal number
+                          of tokens to be recognized in one match */
                          
-#define MAX_MATCHES_AT_TOKEN_POS 400 /* the maximal number of matches
+#define MAX_MATCHES_AT_TOKEN_POS 400 /* The maximal number of matches
                                         starting from one token : this
                                         value is critical in the case
                                         of bad designed grammars */
-#define BUFFER_SIZE 1000000
 
-#define MODE_MORPHO 0
-#define MODE_NON_MORPHO 1
+/* Arbitrary value used as a limit. It is similar to 'MAX_MATCHES_AT_TOKEN_POS',
+ * but it concerns each subgraph. */
+#define MAX_MATCHES_PER_SUBGRAPH 50
 
-#define MAX_ERRORS 50  /* maximal number of errors before exiting:
+#define MAX_ERRORS 50  /* Maximal number of errors before exiting:
                           needed to avoid overflow of error buffers in Java GUI */
 
-extern int GESTION_DE_L_ESPACE;
-extern int texte[BUFFER_SIZE];
-extern int LENGTH;
-extern int N_INT_ALLREADY_READ;
-extern long int nombre_unites_reconnues;
 
 
-/* $CD$ end   */
 
-
-void launch_locate(FILE*,int,FILE*,int,long int,FILE*,
-					    struct locate_parameters*);
+void launch_locate(FILE*,FILE*,long int,FILE*,struct locate_parameters*);
 
 
 #endif

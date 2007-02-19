@@ -71,7 +71,6 @@ return 0;
 void load_dic_for_locate(char* dic_name,Alphabet* alphabet,
                          int number_of_patterns,int is_DIC_pattern,
                          int is_CDIC_pattern,int is_SDIC_pattern,
-                         int tokenization_mode,
                          struct lemma_node* root,struct locate_parameters* parameters) {
 struct string_hash* tokens=parameters->tokens;
 FILE* f;
@@ -107,7 +106,7 @@ while (EOF!=u_read_line(f,line)) {
    while (ptr!=NULL) {
       int i=ptr->n;
       /* If the current token can be matched, then it can be recognized by the "<DIC>" pattern */
-      parameters->token_control[i]=(unsigned char)(get_control_byte(tokens->value[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      parameters->token_control[i]=(unsigned char)(get_control_byte(tokens->value[i],alphabet,NULL,parameters->tokenization_policy)|DIC_TOKEN_BIT_MASK);
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
          struct list_pointer* list=get_matching_patterns(entry,parameters->pattern_tree_root);
@@ -131,12 +130,12 @@ while (EOF!=u_read_line(f,line)) {
    }
    /* Finally, we free the token list */
    free_list_int(ptr_copy);
-   if (!is_a_simple_word(entry->inflected,alphabet,tokenization_mode)) {
+   if (!is_a_simple_word(entry->inflected,alphabet,parameters->tokenization_policy)) {
       /* If the inflected form is a compound word */
       if (is_DIC_pattern || is_CDIC_pattern) {
          /* If the .fst2 contains "<DIC>" and/or "<CDIC>", then we
           * must note that all compound words can be matched by them */
-         add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,parameters->DLC_tree,tokenization_mode,parameters->SPACE);
+         add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy,parameters->SPACE);
       }
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
@@ -146,7 +145,7 @@ while (EOF!=u_read_line(f,line)) {
          while (tmp!=NULL) {
             /* If the word is matched by at least one pattern, we store it. */
             int pattern_number=((struct constraint_list*)(tmp->pointer))->pattern_number;
-            add_compound_word_with_pattern(entry->inflected,pattern_number,alphabet,tokens,parameters->DLC_tree,tokenization_mode,parameters->SPACE); 
+            add_compound_word_with_pattern(entry->inflected,pattern_number,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy,parameters->SPACE); 
             tmp=tmp->next;
          }
          free_list_pointer(list);
@@ -166,8 +165,7 @@ u_fclose(f);
  * This list is later used during Locate preprocessings.
  */
 void check_patterns_for_tag_tokens(Alphabet* alphabet,int number_of_patterns,
-									int tokenization_mode,
-                           struct lemma_node* root,struct locate_parameters* parameters) {
+									struct lemma_node* root,struct locate_parameters* parameters) {
 struct string_hash* tokens=parameters->tokens;
 for (int i=0;i<tokens->size;i++) {
    if (tokens->value[i][0]=='{' && u_strcmp_char(tokens->value[i],"{S}")  && u_strcmp_char(tokens->value[i],"{STOP}")) {
@@ -183,7 +181,7 @@ for (int i=0;i<tokens->size;i++) {
       * This will be used to replace patterns like "<be>" by the actual list of
       * forms that can be matched by it, for optimization reasons */
       add_inflected_form_for_lemma(tokens->value[i],entry->lemma,root);
-      parameters->token_control[i]=(unsigned char)(get_control_byte(tokens->value[i],alphabet,NULL,tokenization_mode)|DIC_TOKEN_BIT_MASK);
+      parameters->token_control[i]=(unsigned char)(get_control_byte(tokens->value[i],alphabet,NULL,parameters->tokenization_policy)|DIC_TOKEN_BIT_MASK);
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
          struct list_pointer* list=get_matching_patterns(entry,parameters->pattern_tree_root);

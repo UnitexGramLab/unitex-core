@@ -19,10 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef LocatePatternH
 #define LocatePatternH
-//---------------------------------------------------------------------------
+
 #include "unicode.h"
 #include "String_hash.h"
 #include "Fst2.h"
@@ -41,12 +40,10 @@
 /* $CD$ begin */
 #include "MorphologicalFilters.h"
 /* $CD$ end   */
+#include "Buffer.h"
 
 
-#define TAILLE_MOT 10000
-
-#define WORD_BY_WORD_TOKENIZATION 0
-#define CHAR_BY_CHAR_TOKENIZATION 1
+#define TOKEN_BUFFER_SIZE 1000000
 
 /**
  * This structure is used to store all the information needed
@@ -116,15 +113,63 @@ struct locate_parameters {
    /* The text tokens */
    struct string_hash* tokens;
    
+   /* This value represents the absolute position of the first
+    * token in the buffer. */
+   int absolute_offset;
+   
    /* Current origin position in the token buffer */
    int current_origin;
+   
+   /* The token buffer used to parse the text. The 'buffer' array is a
+    * shortcut to the real integer array of 'token_buffer'. */
+   struct buffer* token_buffer;
+   int* buffer;
+   
+   /* Indicates if we work char by char or not */
+   TokenizationPolicy tokenization_policy;
+   
+   /* Indicates if we allow matches that start with spaces */
+   SpacePolicy space_policy;
+   
+   /* Total number of matching tokens. This value is used to compute
+    * some statistics. */
+   int matching_units;
+   
+   /* Policy for match selection */
+   MatchPolicy match_policy;
+   
+   /* Policies for handling outputs */
+   OutputPolicy output_policy;
+   AmbiguousOutputPolicy ambiguous_output_policy;
+   
+   /* The match list associated to the current Locate operation */
+   struct match_list* match_list;
+   
+   /* The total number of matches */
+   int number_of_matches;
+
+   /* The total number of outputs. It may be different from the number
+    * of matches if ambiguous outputs are allowed. */
+   int number_of_outputs;
+   
+   /* Position of the last printed match. It is used when ambiguous outputs
+    * are used. */
+   int start_position_last_printed_match;
+   int end_position_last_printed_match;
+   
+   /* Indicates the number of matches we want, or NO_MATCH_LIMIT (-1) if
+    * there is no limit. */
+   int search_limit;
+   
 };
 
-int locate_pattern(char*,char*,char*,char*,char*,char*,char*,int,int,char*,int);
+
+int locate_pattern(char*,char*,char*,char*,char*,char*,char*,
+                   MatchPolicy,OutputPolicy,char*,TokenizationPolicy,SpacePolicy,int);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 void decouper_entre_angles(unichar*,unichar*,unichar*,unichar*,struct string_hash*,Alphabet*);
 unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,int);
-void compute_token_controls(Alphabet*,char*,int,struct locate_parameters*);
+void compute_token_controls(Alphabet*,char*,struct locate_parameters*);
 
 #endif

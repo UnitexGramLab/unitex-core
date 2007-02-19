@@ -19,262 +19,256 @@
   *
   */
 
-//#include "Text_parsing.h"
 #include "Matches.h"
+#include "Error.h"
 
 
 
-struct liste_matches *liste_match=NULL;
-int nombre_match=0;
-int nombre_output=0;
-int longueur_avant=0;
-int longueur_apres=0;
-int statut_match;
-int transduction_mode;
-int ambig_transduction_mode = IGNORE_AMBIG_TRANSDUCTIONS; // reset in Text_parsing.cpp
-                                                          // according to transduction_mode
-int SEARCH_LIMITATION=-1;
-
-int start_position_last_printed_match=-1; // used in ecrire_index_des_matches
-int end_position_last_printed_match=-1;
-
-
-
-void init_matches() {
-liste_match=NULL;
-nombre_match=0;
-nombre_output=0;
-longueur_avant=0;
-longueur_apres=0;
-start_position_last_printed_match=-1;
-end_position_last_printed_match=-1;
-}
-
-
-/* Adds a match (struct liste_matches) to the global list of matches
-   (struct liste_matches liste_match).
-   # Changed to allow different outputs in merge/replace
-   mode when the grammar is an ambiguous transducer (S.N.) */
-void afficher_match_fst2(int fin,unichar* s,struct locate_parameters* p) {
-
-  int i;
-  struct liste_matches *l;
-
-  if (liste_match==NULL) {
-    l=nouveau_match(s);
-    l->debut=p->current_origin+N_INT_ALLREADY_READ;
-    l->fin=fin;
-    l->suivant=NULL;
-    liste_match=l;
-  }
-  else {
-
-    switch (statut_match) {
-      case LONGUEST_MATCHES: {
-        // places new matches in front of the list
-        if (liste_match->fin<fin) { // consider only matches ending later
-          // only one match per range (start and end position)
-          if (liste_match->debut==p->current_origin+N_INT_ALLREADY_READ) {
-            // overwrite matches starting at same position but ending earlier
-            // We do this by deleting the actual head element of the list
-            // and calling the function recursively.
-            // This works also for different outputs from ambiguous transducers,
-            // i.e. we may delete more than one match in the list "liste_match"
-            l=liste_match;
-            liste_match=liste_match->suivant;
-            free(l);
-            afficher_match_fst2(fin,s,p);
-          }
-          else {
-            // add shorter matches but with other start position 
-            l=nouveau_match(s);
-            l->debut=p->current_origin+N_INT_ALLREADY_READ;
-            l->fin=fin;
-            l->suivant=liste_match;
-            liste_match=l;
-          }
-        }
-        // for ambiguous transducers matches with same range
-        // but different outputs are possible
-        else if ((ambig_transduction_mode==ALLOW_AMBIG_TRANSDUCTIONS)
-                 && (liste_match->fin==fin)
-                 && (liste_match->debut==p->current_origin+N_INT_ALLREADY_READ)
-                 && u_strcmp(liste_match->output,s)) {
-          // because matches with same range and same output may not come
-          // one after another, we have to look if a match with same output already exists
-          l=liste_match;
-          while ((l!=NULL)
-                 && u_strcmp(l->output,s))
-            l=l->suivant;
-          if (l==NULL) {
-            l=nouveau_match(s);
-            l->debut=p->current_origin+N_INT_ALLREADY_READ;
-            l->fin=fin;
-            l->suivant=liste_match;
-            liste_match=l;
-          }
-        }
-      }
-        break;
-      case ALL_MATCHES: {
-        // appends new matches to the head of the list
-        l=liste_match;
-        while ((l!=NULL)
-               // unify matches, i.e. skip matches with same range (start and end)
-               && !((l->debut==p->current_origin+N_INT_ALLREADY_READ)
-                    && (l->fin==fin)
-                    && (ambig_transduction_mode!=ALLOW_AMBIG_TRANSDUCTIONS
-                        // for ambig. tr. allow if the output is different:
-                        || u_strcmp(l->output,s))))
-          l=l->suivant;
-        if (l==NULL) {
-          l=nouveau_match(s);
-          l->debut=p->current_origin+N_INT_ALLREADY_READ;
-          l->fin=fin;
-          l->suivant=liste_match;
-          liste_match=l;
-        }
-        break;
-      }
-      case SHORTEST_MATCHES: {
-        // adds new matches to the head of the list
-        i=0;
-        liste_match=eliminer_shortest_match_fst2(liste_match,fin,&i,s,p);
-        if (i==0) {
-          l=nouveau_match(s);
-          l->debut=p->current_origin+N_INT_ALLREADY_READ;
-          l->fin=fin;
-          l->suivant=liste_match;
-          liste_match=l;
-        }
-      }
-        break;
-    }
-  }
-}
-
-
-struct liste_matches* nouveau_match(unichar* s) {
-  struct liste_matches *l;
-  l=(struct liste_matches*)malloc(sizeof(struct liste_matches));
-  if (s==NULL) {
-    l->output=NULL;
-  } else {
-    l->output=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-    u_strcpy(l->output,s);
-  }
-  l->suivant=NULL;
-  return l;
-}
-
-
-
-/* for given actual match:
-     1. checks if there are "longer" matches in the list and eliminates them
-     2. if there is no "shorter" match in the list, adds the actual match to the list
-   # added for support of ambiguous transducers:
-     3. matches with same range but different output are also accepted
+/**
+ * Allocates, initializes and returns a new match list element.
  */
-struct liste_matches* eliminer_shortest_match_fst2(struct liste_matches *ptr,
-                                                   int fin,int *i,unichar* output,
-                                                   struct locate_parameters* p) {
-  struct liste_matches *l;
-  if (ptr==NULL)
-    return NULL;
-  if ((ambig_transduction_mode==ALLOW_AMBIG_TRANSDUCTIONS)
-      && (ptr->debut==p->current_origin+N_INT_ALLREADY_READ)&&(ptr->fin==fin)
-      && u_strcmp(ptr->output,output)) {
-    // in the case of ambiguous transductions producing different output
-    // we accept matches with same range
-    ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output,p);
-    return ptr;
-  }
-  else if ((ptr->debut<=p->current_origin+N_INT_ALLREADY_READ)&&(ptr->fin>=fin)) {
-    // actual match is shorter (or of equal length) than that in list
-    // ==> replace match in list by actual match
-    if (*i) {
-      l=ptr->suivant;
-      free_liste_matches(ptr);
-      return eliminer_shortest_match_fst2(l,fin,&(*i),output,p);
-    } else {
-      ptr->debut=p->current_origin+N_INT_ALLREADY_READ;
-      ptr->fin=fin;
-      if (ptr->output!=NULL) free(ptr->output);
-      if (output==NULL) {
-        ptr->output=NULL;
-      }
-      else {
-        ptr->output=u_strdup(output);
-      }
-      (*i)=1;
-      ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output,p);
-      return ptr;
-    }
-  }
-  else if ((ptr->debut>=p->current_origin+N_INT_ALLREADY_READ)&&(ptr->fin<=fin)) {
-    // actual match is longer than that in list: skip actual match
-    (*i)=1;
-    return ptr;
-  }
-  else {
-    // disjunct ranges or overlapping ranges without inclusion
-    ptr->suivant=eliminer_shortest_match_fst2(ptr->suivant,fin,&(*i),output,p);
-    return ptr;
-  }
+struct match_list* new_match(int start,int end,unichar* output,struct match_list* next) {
+struct match_list *l;
+l=(struct match_list*)malloc(sizeof(struct match_list));
+if (l==NULL) {
+   fatal_error("Not enough memory in new_match\n");
+}
+l->start=start;
+l->end=end;
+if (output==NULL) {
+   l->output=NULL;
+} else {
+   l->output=u_strdup(output);
+}
+l->next=next;
+return l;
 }
 
 
-/* writes the matches to the file concord.ind
-   the matches are in left-most longest order
-=> wrong results for all matches when modifying text ??
-<E>/[[ <MIN>* <PRE> <MIN>* <E>/]]
-  left-most stehen am Anfang der Liste
-*/
-struct liste_matches* ecrire_index_des_matches(struct liste_matches *l,int pos,
-                                               long int *N,FILE* fichier_match) {
-struct liste_matches *ptr;
+/**
+ * Frees a single match list element.
+ */
+void free_match_list_element(struct match_list* l) {
+if (l==NULL) return;
+if (l->output!=NULL) free(l->output);
+free(l);
+}
+
+
+/** 
+ * Adds a match to the global list of matches. The function takes into
+ * account the match policy. For instance, we don't take [2;3] into account
+ * if we are in longest match mode and if we allready have [2;5].
+ * 
+ * # Changed to allow different outputs in merge/replace
+ * mode when the grammar is an ambiguous transducer (S.N.) */
+void add_match(int end,unichar* output,struct locate_parameters* p) {
+int start=p->current_origin+p->absolute_offset;
+struct match_list *l;
+if (p->match_list==NULL) {
+   /* If the match list was empty, we always can put the match in the list */
+   p->match_list=new_match(start,end,output,NULL);
+   return;
+}
+switch (p->match_policy) {
+   case LONGEST_MATCHES:
+      /* We put new matches at the beginning of the list */
+      if (end>p->match_list->end) {
+         /* In longest match mode, we only consider matches ending
+          * later. Moreover, we allow just one match from a given
+          * start position, except if ambiguous outputs are allowed. */
+         if (p->match_list->start==start) {
+            /* We overwrite matches starting at same position but ending earlier.
+             * We do this by deleting the actual head element of the list
+             * and calling the function recursively.
+             * This works also for different outputs from ambiguous transducers,
+             * i.e. we may delete more than one match in the list. */
+            l=p->match_list;
+            p->match_list=p->match_list->next;
+            free_match_list_element(l);
+            add_match(end,output,p);
+            return;
+         }
+         /* We allow add shorter matches but with other start position.
+          * Note that, by construction, we have start>p->match_list->start,
+          * that is to say that we have two matches that overlap: ( [ ) ]
+          */
+         p->match_list=new_match(start,end,output,p->match_list);
+         return;
+      }
+      /* If we have the same start and the same end, we consider the
+       * new match only if ambiguous outputs are allowed */
+      if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS
+         && p->match_list->end==end
+         && p->match_list->start==start
+         && u_strcmp2(p->match_list->output,output)) {
+         /* Because matches with same range and same output may not come
+          * one after another, we have to look if a match with same output
+          * already exists */
+         l=p->match_list;
+         while (l!=NULL && u_strcmp2(l->output,output)) {
+            l=l->next;
+         }
+         if (l==NULL) {
+            p->match_list=new_match(start,end,output,p->match_list);
+         }
+      }
+      break;
+       
+   case ALL_MATCHES:
+      /* We put new matches at the beginning of the list */
+      l=p->match_list;
+      /* We unify identical matches, i.e. matches with same range (start and end),
+       * taking the output into account if ambiguous outputs are allowed. */
+      while (l!=NULL 
+             && !(l->start==start && l->end==end 
+                  && (p->ambiguous_output_policy!=ALLOW_AMBIGUOUS_OUTPUTS
+                      || u_strcmp2(l->output,output)))) {
+         l=l->next;
+      }
+      if (l==NULL) {
+         p->match_list=new_match(start,end,output,p->match_list);
+      }
+      break;
+
+   case SHORTEST_MATCHES:
+      /* We put the new match at the beginning of the list, but before, we
+       * test if the match we want to add may not be discarded because of
+       * a shortest match that would allready be in the list. By the way,
+       * we eliminate matches that are longer than this one, if any. */
+      int dont_add_match=0;
+      p->match_list=eliminate_longer_matches(p->match_list,start,end,output,&dont_add_match,p);
+      if (!dont_add_match) {
+         p->match_list=new_match(start,end,output,p->match_list);
+      }
+      break;
+   }
+}
+
+
+/**
+ * For given actual match:
+ * 1. checks if there are "longer" matches in the list and eliminates them
+ * 2. if there is no "shorter" match in the list, adds the actual match to the list
+ * 
+ * # added for support of ambiguous transducers:
+ * 3. matches with same range but different output are also accepted
+ * 
+ * 'dont_add_match' is set to 1 if any shorter match is found, i.e. if we
+ * won't have to insert the new match into the list; to 0 otherwise.
+ * NOTE: 'dont_add_match' is supposed to be initialized at 0 before this
+ *       funtion is called.
+ */
+struct match_list* eliminate_longer_matches(struct match_list *ptr,
+                                            int start,int end,unichar* output,
+                                            int *dont_add_match,
+                                            struct locate_parameters* p) {
+struct match_list *l;
+if (ptr==NULL) return NULL;
+if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS
+    && ptr->start==start && ptr->end==end
+    && u_strcmp2(ptr->output,output)) {
+    /* In the case of ambiguous transductions producing different outputs,
+     * we accept matches with same range */
+   ptr->next=eliminate_longer_matches(ptr->next,start,end,output,dont_add_match,p);
+   return ptr;
+}
+if (start>=ptr->start && end<=ptr->end) {
+   /* If the new match is shorter (or of equal length) than the current one
+    * in the list, we replace the match in the list by the new one */
+   if (*dont_add_match) {
+      /* If we have allready noticed that the match mustn't be added
+       * to the list, we delete the current list element */
+      l=ptr->next;
+      free_match_list_element(ptr);
+      return eliminate_longer_matches(l,start,end,output,dont_add_match,p);
+    }
+    /* If the new match is shorter than the current one in the list, then we
+     * update the current one with the value of the new match. */
+    ptr->start=start;
+    ptr->end=end;
+    if (ptr->output!=NULL) free(ptr->output);
+    ptr->output=u_strdup(output);
+    /* We note that the match does not need anymore to be added */
+    (*dont_add_match)=1;
+    ptr->next=eliminate_longer_matches(ptr->next,start,end,output,dont_add_match,p);
+    return ptr;
+}
+if (start<=ptr->start && end>=ptr->end) {
+   /* The new match is longer than the one in list => we 
+    * skip the new match */
+   (*dont_add_match)=1;
+   return ptr;
+}
+/* If we have disjunct ranges or overlapping ranges without inclusion,
+ * we examine recursively the rest of the list */
+ptr->next=eliminate_longer_matches(ptr->next,start,end,output,dont_add_match,p);
+return ptr;
+}
+
+
+/**
+ * Writes the matches to the file concord.ind. The matches are in 
+ * left-most longest order. 'current_position' represents the current
+ * position in the text. It is used to determine when we can save matches:
+ * when we are at position 246, matches that end before 246 cannot be 
+ * modifyied anymore by the shortest or longest match heuristic, so we can
+ * save them.
+ * 
+ * wrong results for all matches when modifying text ??
+ * <E>/[[ <MIN>* <PRE> <MIN>* <E>/]]
+ * left-most stehen am Anfang der Liste
+ */
+struct match_list* save_matches(struct match_list* l,int current_position,
+                                FILE* f,struct locate_parameters* p) {
+struct match_list *ptr;
 unichar tmp[100];
 if (l==NULL) return NULL;
-if (l->fin<pos) {
-   // we can save the match (necessary for SHORTEST_MATCHES: there may be no shorter match)
-   u_int_to_string(l->debut,tmp);
-   u_fprints(tmp,fichier_match);
-   u_fprints_char(" ",fichier_match);
-   u_int_to_string(l->fin,tmp);
-   u_fprints(tmp,fichier_match);
+if (l->end<current_position) {
+   /* we can save the match (necessary for SHORTEST_MATCHES: there
+    * may be no shorter match) */
+   u_int_to_string(l->start,tmp);
+   u_fprints(tmp,f);
+   u_fprints_char(" ",f);
+   u_int_to_string(l->end,tmp);
+   u_fprints(tmp,f);
    if (l->output!=NULL) {
-      // if there is an output
-      u_fprints_char(" ",fichier_match);
-      u_fprints(l->output,fichier_match);
+      /* If there is an output */
+      u_fprints_char(" ",f);
+      u_fprints(l->output,f);
    }
-   u_fprints_char("\n",fichier_match);
-
-   if (ambig_transduction_mode == ALLOW_AMBIG_TRANSDUCTIONS) {
-     nombre_output++;
-     // if we allow different output for ambiguous transducers,
-     // we have to distinguish between matches and outputs
-     // The algorithm is based on the following considerations:
-     //  - l (resp. liste_match) has all matches with same starting point in one block,
-     //    because they are inserted in one turn (Locate runs from left to right through the text)
-     //  - since we consider only matches right from actual position,
-     //    matches with same range (start and end position) always follow consecutively.
-     //  - the start and end positions of the last printed match are stored in globals
-     //  - if the range differs (start and/or end position are different),
-     //    a new match is counted
-     if (!(start_position_last_printed_match == l->debut
-           && end_position_last_printed_match == l->fin))
-       nombre_match++;
+   u_fprints_char("\n",f);
+   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
+     (p->number_of_outputs)++;
+     /* If we allow different outputs for ambiguous transducers,
+      * we have to distinguish between matches and outputs
+      * The algorithm is based on the following considerations:
+      *  - l has all matches with same starting point in one block,
+      *    because they are inserted in one turn (Locate runs from left
+      *    to right through the text)
+      *  - since we consider only matches right from actual position,
+      *    matches with same range (start and end position) always follow consecutively.
+      *  - the start and end positions of the last printed match are stored in the
+      *    Locate parameters
+      *  - if the range differs (start and/or end position are different),
+      *    a new match is counted
+      */
+      if (!(p->start_position_last_printed_match == l->start
+            && p->end_position_last_printed_match == l->end)) {
+         (p->number_of_matches)++;
+      }
+   } else {
+      /* If we don't allow ambiguous outputs, we count the matches */
+      (p->number_of_matches)++;
    }
-   else
-     nombre_match++;
    // To count the number of matched tokens this won't work: 
-   //   nombre_unites_reconnues=nombre_unites_reconnues+(l->fin+1)-(l->debut);
+   //  p->matching_units=p->matching_units+(l->end+1)-(l->start);
    // or you get ouputs like:
    //  1647 matches
    //  4101 recognized units
    //  (221.916% of the text is covered)
-   // because of overlapping matches or the option "all matches" is choosed.
-   // For options "shortest" and "longest matches" the globals for last start and end
+   // because of overlapping matches or the option "All matches" is choosed.
+   // For options "Shortest" and "Longest matches", the last start and end
    // position are sufficient to calculate the correct coverage.
    // For all matches this is not the case. Suppose you have the matches at token pos:
    //  0 1 2 3 4 5
@@ -287,17 +281,16 @@ if (l->fin<pos) {
    //   0 2 Z
    // So when processing match Z we don't know, that token 0 has been already counted.
    // I guess an bit array is needed to count correctly.
-   // But since for "longest matches" only Z, and for "shortest" only X and Y are
-   // accepted, and the option "all matches" is rarely used, I (S.N.) propose:
-   if (end_position_last_printed_match != pos-1) {
-     // initial (non-recursive) call of function:
-     // then check if match is out of range of previous matches
-     if (end_position_last_printed_match < l->debut) { // out of range
-       nombre_unites_reconnues += (l->fin+1)-(l->debut);
-     }
-     else {
-       nombre_unites_reconnues += (l->fin+1)-(end_position_last_printed_match+1);
-     }
+   // But since for "Longest matches" only Z, and for "Shortest" only X and Y are
+   // accepted, and the option "All matches" is rarely used, I (S.N.) propose:
+   if (p->end_position_last_printed_match != current_position-1) {
+      // initial (non-recursive) call of function:
+      // then check if match is out of range of previous matches
+      if (p->end_position_last_printed_match < l->start) { // out of range
+         p->matching_units += (l->end+1)-(l->start);
+      } else {
+         p->matching_units += (l->end+1)-(p->end_position_last_printed_match+1);
+      }
    }
    // else:
    //  recursive call, i.e. end position of match was already counted:
@@ -306,48 +299,50 @@ if (l->fin<pos) {
    //  when there is no match X), this will lead to an incorrect displayed
    //  coverage, lower than correct.
    else {
-     // this may make the coverage greater than correct:
-     if (start_position_last_printed_match > l->debut)
-       nombre_unites_reconnues += start_position_last_printed_match-(l->debut);
+      // this may make the coverage greater than correct:
+      if (p->start_position_last_printed_match > l->start) {
+         p->matching_units += p->start_position_last_printed_match-(l->start);
+      }
    }
-   start_position_last_printed_match = l->debut;
-   end_position_last_printed_match = l->fin;
-
-   if (nombre_match==SEARCH_LIMITATION) {
-      // if we have reached the search limitation, we free the remaining
-      // matches and return
+   p->start_position_last_printed_match=l->start;
+   p->end_position_last_printed_match=l->end;
+   if (p->number_of_matches==p->search_limit) {
+      /* If we have reached the search limitation, we free the remaining
+       * matches and return */
       while (l!=NULL) {
          ptr=l;
-         l=l->suivant;
-         free_liste_matches(ptr);
+         l=l->next;
+         free_match_list_element(ptr);
       }
       return NULL;
    }
-
-   ptr=l->suivant;
-   free_liste_matches(l);
-   return ecrire_index_des_matches(ptr,pos,N,fichier_match);
+   ptr=l->next;
+   free_match_list_element(l);
+   return save_matches(ptr,current_position,f,p);
 }
-l->suivant=ecrire_index_des_matches(l->suivant,pos,N,fichier_match);
+l->next=save_matches(l->next,current_position,f,p);
 return l;
 }
 
 
-
-struct liste_matches* load_match_list(FILE* f,int *TRANDUCTION_MODE) {
-struct liste_matches* l=NULL;
-struct liste_matches* end_of_list=l;
-int c;
-int start,end;
+/**
+ * Loads a match list. Match lists are supposed to have been 
+ * generated by the Locate program.
+ */
+struct match_list* load_match_list(FILE* f,OutputPolicy *output_policy) {
+struct match_list* l=NULL;
+struct match_list* end_of_list=NULL;
+int c,start,end;
 unichar output[3000];
 char is_an_output;
-u_fgetc(f);   // we jump the # char
+/* We jump the # char */
+u_fgetc(f);
 c=u_fgetc(f);
-if (TRANDUCTION_MODE!=NULL) {
-	switch(c) {
-		case 'I': *TRANDUCTION_MODE=IGNORE_TRANSDUCTIONS; break;
-		case 'M': *TRANDUCTION_MODE=MERGE_TRANSDUCTIONS; break;
-		case 'R': *TRANDUCTION_MODE=REPLACE_TRANSDUCTIONS; break;
+if (output_policy!=NULL) {
+   switch(c) {
+      case 'I': *output_policy=IGNORE_OUTPUTS; break;
+      case 'M': *output_policy=MERGE_OUTPUTS; break;
+      case 'R': *output_policy=REPLACE_OUTPUTS; break;
 	}
 }
 u_fgetc(f);
@@ -362,40 +357,25 @@ while ((c=u_fgetc(f))!=EOF) {
       end=end*10+(c-'0');
    } while (u_is_digit((unichar)(c=u_fgetc(f))));
    if (c==' ') {
-      // if we have an output to read
+      /* If we have an output to read */
       int i=0;
       while ((c=u_fgetc(f))!='\n') {
          output[i++]=(unichar)c;
       }
       output[i]='\0';
-      is_an_output=1;
+      is_an_output=(i!=0);
    } else {
       is_an_output=0;
    }
-   if (end_of_list==NULL) {
-      if (is_an_output)
-         l=nouveau_match(output);
-      else l=nouveau_match(NULL);
-      l->debut=start;
-      l->fin=end;
+   if (l==NULL) {
+      l=new_match(start,end,is_an_output?output:NULL,NULL);
       end_of_list=l;
    } else {
-      if (is_an_output)
-         end_of_list->suivant=nouveau_match(output);
-      else end_of_list->suivant=nouveau_match(NULL);
-      end_of_list->suivant->debut=start;
-      end_of_list->suivant->fin=end;
-      end_of_list=end_of_list->suivant;
+      end_of_list->next=new_match(start,end,is_an_output?output:NULL,NULL);
+      end_of_list=end_of_list->next;
    }
 }
 return l;
-}
-
-
-
-void free_liste_matches(struct liste_matches* l) {
-if (l->output!=NULL) free(l->output);
-free(l);
 }
 
 

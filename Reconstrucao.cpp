@@ -39,6 +39,7 @@
 #include "Text_tokens.h"
 #include "List_int.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
 
 
@@ -68,28 +69,28 @@ if (argc!=8) {
 printf("Loading alphabet...\n");
 Alphabet* alph=load_alphabet(argv[1]);
 if (alph==NULL) {
-   fprintf(stderr,"Cannot load alphabet file %s\n",argv[1]);
+   error("Cannot load alphabet file %s\n",argv[1]);
    return 1;
 }
 printf("Loading match list...\n");
 FILE* f_list=u_fopen(argv[2],U_READ);
 if (f_list==NULL) {
-   fprintf(stderr,"Cannot load match list %s\n",argv[2]);
+   error("Cannot load match list %s\n",argv[2]);
    free_alphabet(alph);
    return 1;
 }
-int TRANSDUCTION_MODE;
-struct liste_matches* list=load_match_list(f_list,&TRANSDUCTION_MODE);
+OutputPolicy output_policy;
+struct match_list* list=load_match_list(f_list,&output_policy);
 u_fclose(f_list);
-if (TRANSDUCTION_MODE==IGNORE_TRANSDUCTIONS) {
-   fprintf(stderr,"Invalid match list %s\n",argv[2]);
+if (output_policy==IGNORE_OUTPUTS) {
+   error("Invalid match list %s\n",argv[2]);
    free_alphabet(alph);
    return 1;
 }
 printf("Loading radical form dictionary...\n");
 unsigned char* root_bin=load_BIN_file(argv[3]);
 if (root_bin==NULL) {
-   fprintf(stderr,"Cannot load radical form dictionary %s\n",argv[3]);
+   error("Cannot load radical form dictionary %s\n",argv[3]);
    free_alphabet(alph);
    return 1;
 }
@@ -98,7 +99,7 @@ remove_extension(argv[3],root_inf_file);
 strcat(root_inf_file,".inf");
 struct INF_codes* root_inf=load_INF_file(root_inf_file);
 if (root_bin==NULL) {
-   fprintf(stderr,"Cannot load radical form dictionary %s\n",root_inf_file);
+   error("Cannot load radical form dictionary %s\n",root_inf_file);
    free_alphabet(alph);
    free(root_bin);
    return 1;
@@ -106,7 +107,7 @@ if (root_bin==NULL) {
 printf("Loading inflected form dictionary...\n");
 unsigned char* inflected_bin=load_BIN_file(argv[4]);
 if (inflected_bin==NULL) {
-   fprintf(stderr,"Cannot load inflected form dictionary %s\n",argv[4]);
+   error("Cannot load inflected form dictionary %s\n",argv[4]);
    free_alphabet(alph);
    free(root_bin);
    free_INF_codes(root_inf);
@@ -117,7 +118,7 @@ remove_extension(argv[4],inflected_inf_file);
 strcat(inflected_inf_file,".inf");
 struct INF_codes* inflected_inf=load_INF_file(inflected_inf_file);
 if (inflected_inf==NULL) {
-   fprintf(stderr,"Cannot load inflected form dictionary %s\n",inflected_inf_file);
+   error("Cannot load inflected form dictionary %s\n",inflected_inf_file);
    free_alphabet(alph);
    free(root_bin);
    free(inflected_bin);
@@ -127,7 +128,7 @@ if (inflected_inf==NULL) {
 printf("Loading pronoun rewriting rule grammar...\n");
 struct noeud_arbre_normalization* rewriting_rules=load_normalization_transducer_string(argv[5]);
 if (rewriting_rules==NULL) {
-   fprintf(stderr,"Cannot load pronoun rewriting grammar %s\n",argv[5]);
+   error("Cannot load pronoun rewriting grammar %s\n",argv[5]);
    free_alphabet(alph);
    free(root_bin);
    free(inflected_bin);
@@ -138,7 +139,7 @@ if (rewriting_rules==NULL) {
 printf("Loading nasal pronoun rewriting rule grammar...\n");
 struct noeud_arbre_normalization* nasal_rewriting_rules=load_normalization_transducer_string(argv[6]);
 if (rewriting_rules==NULL) {
-   fprintf(stderr,"Cannot load nasal pronoun rewriting grammar %s\n",argv[6]);
+   error("Cannot load nasal pronoun rewriting grammar %s\n",argv[6]);
    free_alphabet(alph);
    free(root_bin);
    free(inflected_bin);
@@ -162,6 +163,5 @@ free_noeud_arbre_normalization(rewriting_rules);
 free_noeud_arbre_normalization(nasal_rewriting_rules);
 return 0;
 }
-//---------------------------------------------------------------------------
 
 

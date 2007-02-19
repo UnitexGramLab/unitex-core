@@ -534,7 +534,7 @@ return result;
  * it inserts 'pattern2' in the pattern list associated to 'word' and returns a
  * non-zero value.
  */
- #warning reorganize parameters
+#warning reorganize parameters
 int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,Alphabet* alph,
 						struct string_hash* tok,struct DLC_tree_info* infos,int tokenization_mode,
                   int SPACE) {
@@ -559,6 +559,9 @@ if (n==NULL) return;
 if (n->number_of_patterns!=0) {
    /* We allocate the array for pattern numbers and we fill it */
    n->array_of_patterns=(int*)malloc(sizeof(int)*n->number_of_patterns);
+   if (n->array_of_patterns==NULL) {
+      fatal_error("Not enough memory in optimize_DLC_node\n");
+   }
    i=0;
    while (n->patterns!=NULL) {
      n->array_of_patterns[i++]=n->patterns->n;
@@ -571,7 +574,13 @@ if (n->number_of_transitions!=0) {
    /* We allocate the arrays for representing (token,node) pairs of
     * transitions and fill them */
    n->destination_tokens=(int*)malloc(sizeof(int)*n->number_of_transitions);
+   if (n->destination_tokens==NULL) {
+      fatal_error("Not enough memory in optimize_DLC_node\n");
+   }
    n->destination_nodes=(struct DLC_tree_node**)malloc(sizeof(struct DLC_tree_node*)*n->number_of_transitions);
+   if (n->destination_nodes==NULL) {
+      fatal_error("Not enough memory in optimize_DLC_node\n");
+   }
    i=0;
    while (n->transitions!=NULL) {
      n->destination_tokens[i]=n->transitions->token;

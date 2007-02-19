@@ -114,7 +114,7 @@ while (s[i]!='\0') {
                  else {
                     // if the variable definition is correct
                     for (int k=v->start;k<v->end;k++)
-                      push_string(p->tokens->value[texte[k+p->current_origin]]);
+                      push_string(p->tokens->value[p->buffer[k+p->current_origin]]);
                  }
              }
          }

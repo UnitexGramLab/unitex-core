@@ -34,6 +34,6 @@ void process_tags(int*,
                   int*,int*,
                   int*,struct locate_parameters*);
 
-void optimize_pattern_tags(Alphabet*,int,struct lemma_node*,struct locate_parameters*);
+void optimize_pattern_tags(Alphabet*,struct lemma_node*,struct locate_parameters*);
 
 #endif

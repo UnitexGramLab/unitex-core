@@ -649,14 +649,14 @@ if (f==NULL) {
    error("Cannot open %s\n",concord_filename);
    return 0;
 }
-struct liste_matches* l=load_match_list(f,NULL);
+struct match_list* l=load_match_list(f,NULL);
 u_fclose(f);
 while (l!=NULL) {
    /* We test if the match is a valid dictionary entry */
    struct dela_entry* entry=tokenize_DELAF_line(l->output,1);
    if (entry!=NULL) {
       /* If the entry is valid */
-      if(l->debut==l->fin) {  
+      if(l->start==l->end) {  
          /* If it is a simple word */
          int token_number=get_token_number(entry->inflected,info->tokens);
          int p=get_value(info->simple_word,token_number);
@@ -670,7 +670,7 @@ while (l!=NULL) {
             u_fprints_char("\n",info->dlf);
          }
       }
-      else if(l->debut<l->fin)    {
+      else if(l->start<l->end)    {
          /* If it is a compound word, we turn it into a token sequence 
           * ended by -1 */
          build_complex_token_tab(entry->inflected,info->tokens,token_tab_coumpounds);
@@ -695,7 +695,7 @@ while (l!=NULL) {
    }
    /* If the match is not a valid entry, an error message has already
     * been produced by tokenize_DELAF_line, so there is nothing to do. */
-   l=l->suivant;
+   l=l->next;
 }
 return 1;
 }

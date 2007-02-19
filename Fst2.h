@@ -192,7 +192,6 @@ typedef struct fst2Transition* Fst2Transition;
  * in order to minimize library dependancies, because many programs
  * that use the Fst2 library do not use variables.
  */
-#warning to be replaced by a single sorted list of strings
 struct variable_list {
 	/* Name of the variable */
 	unichar* name;

@@ -24,43 +24,29 @@
 
 #include "unicode.h"
 #include "LocatePattern.h"
+#include "LocateConstants.h"
 
 
-#define LONGUEST_MATCHES 0
-#define SHORTEST_MATCHES 1
-#define ALL_MATCHES 2
-#define IGNORE_TRANSDUCTIONS 0
-#define MERGE_TRANSDUCTIONS 1
-#define REPLACE_TRANSDUCTIONS 2
-#define IGNORE_AMBIG_TRANSDUCTIONS 0
-#define ALLOW_AMBIG_TRANSDUCTIONS 1
-
-struct liste_matches {
-  int debut;
-  int fin;
-  unichar* output;
-  struct liste_matches *suivant;
+/**
+ * This structure represents a match list. [start;end] is the interval
+ * that corresponds to the matched sequence. 'start' and 'end' are absolute
+ * positions in tokens. 'output' is the output associated to the match, if any; 
+ * NULL otherwise.
+ */
+struct match_list {
+   int start;
+   int end;
+   unichar* output;
+   struct match_list* next;
 };
 
 
-extern struct liste_matches *liste_match;
-extern int nombre_match;
-extern int nombre_output;
-extern int longueur_avant;
-extern int longueur_apres;
-extern int statut_match;
-extern int transduction_mode;
-extern int ambig_transduction_mode;
-extern int SEARCH_LIMITATION;
-
-
-void init_matches();
-void  afficher_match_fst2(int,unichar*,struct locate_parameters*);
-struct liste_matches* nouveau_match(unichar*);
-void free_liste_matches(struct liste_matches*);
-struct liste_matches* eliminer_shortest_match_fst2(struct liste_matches*,int,int*,unichar*,struct locate_parameters*);
-struct liste_matches* ecrire_index_des_matches(struct liste_matches*,int,
-                                               long int*,FILE*);
-struct liste_matches* load_match_list(FILE*,int*);
+struct match_list* new_match(int,int,unichar*,struct match_list*);
+void free_match_list_element(struct match_list*);
+void add_match(int,unichar*,struct locate_parameters*);
+struct match_list* eliminate_longer_matches(struct match_list*,int,int,unichar*,int*,struct locate_parameters*);
+struct match_list* save_matches(struct match_list*,int,
+                                               FILE*,struct locate_parameters*);
+struct match_list* load_match_list(FILE*,OutputPolicy*);
 
 #endif

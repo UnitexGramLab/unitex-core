@@ -365,7 +365,7 @@ LOCATE_OBJS = IOBuffer.o Locate.o unicode.o Alphabet.o DELA.o List_ustring.o Str
               Pattern.o Loading_dic.o CompoundWordTree.o LocateFst2Tags.o \
               OptimizedFst2.o Pattern_transitions.o Text_parsing.o Matches.o TransductionVariables.o TransductionStack.o\
               Liste_num.o FileName.o MorphologicalFilters.o Error.o StringParsing.o LocateAsRoutine.o\
-              BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o
+              BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o
 
 MERGETEXTAUTOMATON      = MergeTextAutomaton
 MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o unicode.o String_hash.o Fst2.o\
@@ -395,7 +395,7 @@ RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.
                Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
                Sentence_to_grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
-               Pattern_transitions.o
+               Pattern_transitions.o Buffer.o
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = IOBuffer.o Reg2Grf.o unicode.o Regular_expression.o Error.o

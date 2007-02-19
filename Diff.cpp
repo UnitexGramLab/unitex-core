@@ -105,13 +105,13 @@ create_text_concordances(in1,in2,concor1,concor2);
 /* Then, we load the two index */
 FILE* f1=u_fopen(in1,U_READ);
 if (f1==NULL) return 0;
-struct liste_matches* l1=load_match_list(f1,NULL);
+struct match_list* l1=load_match_list(f1,NULL);
 u_fclose(f1);
 FILE* f2=u_fopen(in2,U_READ);
 if (f2==NULL) {
    return 0;
 }
-struct liste_matches* l2=load_match_list(f2,NULL);
+struct match_list* l2=load_match_list(f2,NULL);
 u_fclose(f2);
 /* We open the output file */
 FILE* output=fopen(out,"w");
@@ -145,8 +145,8 @@ return 1;
  * Matches that are different but with a non empty intersection like 
  * "the blue car" and "blue car" are printed in red.
  */
-void compute_concordance_differences(struct liste_matches* list1,
-                                     struct liste_matches* list2,
+void compute_concordance_differences(struct match_list* list1,
+                                     struct match_list* list2,
                                      FILE* f1,
                                      FILE* f2,
                                      FILE* output) {
@@ -156,29 +156,29 @@ while (!(list1==NULL && list2==NULL)) {
       /* If the first list is empty, then the current match in the second list
        * must be green */
       print_diff_matches(output,NULL,f2,"green");
-      list2=list2->suivant;
+      list2=list2->next;
    }
    else if (list2==NULL) {
       /* If the second list is empty, then the current match in the first list
        * must be green */
       print_diff_matches(output,f1,NULL,"green");
-      list1=list1->suivant;
+      list1=list1->next;
    }
-   else if (list1->debut < list2->debut) {
-           if (list1->fin < list2->debut) {
+   else if (list1->start < list2->start) {
+           if (list1->end < list2->start) {
               /* list1 has no common part with list2:
                * abcd,efgh */
               print_diff_matches(output,f1,NULL,"green");
-              list1=list1->suivant;
+              list1=list1->next;
            }
            else {
               /* list1 and list2 have something in common */
-              if (list2->fin <= list1->fin) {
+              if (list2->end <= list1->end) {
                  /* list2 is included in list1:
                   * abcdef,cdef */
                  print_diff_matches(output,f1,f2,"red");
-                 list1=list1->suivant;
-                 list2=list2->suivant;
+                 list1=list1->next;
+                 list2=list2->next;
               }
               else {
                  /* list2 overlaps list1:
@@ -187,25 +187,25 @@ while (!(list1==NULL && list2==NULL)) {
                   * We consider that they are two distinct lines, and we
                   * print the first */
                  print_diff_matches(output,f1,NULL,"green");
-                 list1=list1->suivant;
+                 list1=list1->next;
               }
            }
    }
-   else if (list2->debut < list1->debut) {
-           if (list2->fin < list1->debut) {
+   else if (list2->start < list1->start) {
+           if (list2->end < list1->start) {
               /* list2 has no common part with list1:
                * abcd,efgh */
               print_diff_matches(output,NULL,f2,"green");
-              list2=list2->suivant;
+              list2=list2->next;
            }
            else {
               /* list1 and list2 have something in common */
-              if (list1->fin <= list2->fin) {
+              if (list1->end <= list2->end) {
                  /* list1 is included in list2:
                   * abcd,abcdef */
                  print_diff_matches(output,f1,f2,"red");
-                 list1=list1->suivant;
-                 list2=list2->suivant;
+                 list1=list1->next;
+                 list2=list2->next;
               }
               else {
                  /* list1 overlaps list2
@@ -213,12 +213,12 @@ while (!(list1==NULL && list2==NULL)) {
                   * We consider that they are two distinct lines, and we
                   * print the first */
                  print_diff_matches(output,NULL,f2,"green");
-                 list2=list2->suivant;
+                 list2=list2->next;
               }
            }
    }
    else {
-      if (list1->fin == list2->fin) {
+      if (list1->end == list2->end) {
          /* list1 == list2:
           * abcd,abcd */
          print_diff_matches(output,f1,f2,"blue");
@@ -227,8 +227,8 @@ while (!(list1==NULL && list2==NULL)) {
          /* abcd,abcdef or abcedf,abcd */
          print_diff_matches(output,f1,f2,"red");
       }
-      list1=list1->suivant;
-      list2=list2->suivant;
+      list1=list1->next;
+      list2=list2->next;
    }
 }
 }

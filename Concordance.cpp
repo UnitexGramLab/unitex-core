@@ -768,8 +768,8 @@ int create_raw_text_concordance(FILE* output,FILE* concordance,FILE* text,struct
                                 int n_enter_char,int* enter_pos,
                                 int* token_length,int open_bracket,int close_bracket,
                                 struct conc_opt option) {
-struct liste_matches* matches;
-struct liste_matches* matches_tmp;
+struct match_list* matches;
+struct match_list* matches_tmp;
 unichar left[MAX_CONTEXT_IN_UNITS+1];
 unichar middle[MAX_CONTEXT_IN_UNITS+1];
 unichar right[MAX_CONTEXT_IN_UNITS+1];
@@ -798,9 +798,9 @@ int position_in_tokens=0;
 printf("Constructing concordance...\n");
 while (matches!=NULL) {
 	if (buffer->size==buffer->MAXIMUM_BUFFER_SIZE
-		&& ((matches->debut-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
+		&& ((matches->start-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
 		/* If we must change of block... */
-      move_buffer_to_position(matches->debut,text,tokens,token_length,buffer,&n_units_already_read,
+      move_buffer_to_position(matches->start,text,tokens,token_length,buffer,&n_units_already_read,
 						&current_origin_in_chars,&current_sentence);
 		/* We update the position in characters so that we know how
 		 * many characters there are before buffer[0]. We update
@@ -812,8 +812,8 @@ while (matches!=NULL) {
 	/* Here, we are sure that the buffer contains all the tokens we need.
 	 * We adjust 'start_pos' and 'end_pos' so that the tokens that compose
 	 * the current match are between buffer[start_pos] and buffer[end_pos]. */
-	start_pos=matches->debut-n_units_already_read;
-	end_pos=matches->fin-n_units_already_read;
+	start_pos=matches->start-n_units_already_read;
+	end_pos=matches->end-n_units_already_read;
 	start_pos_char=position_in_chars;
 	/* We update the position in characters so that we know how
 	 * many characters there are before buffer[start_pos]. We update
@@ -853,11 +853,11 @@ while (matches!=NULL) {
 	char tmp_chars[100];
 	/* And we use it to compute the bounds of the matched sequence in characters
 	 * from the beginning of the text file. */
-	int shift=get_shift(n_enter_char,enter_pos,matches->debut);
+	int shift=get_shift(n_enter_char,enter_pos,matches->start);
 	start_pos_char=start_pos_char+shift;
 	/* The shift value can be different at the end of the match since new lines
 	 * can occur inside a match. */
-	shift=get_shift(n_enter_char,enter_pos,matches->fin);
+	shift=get_shift(n_enter_char,enter_pos,matches->end);
 	end_pos_char=end_pos_char+shift;
 	sprintf(tmp_chars,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence_local);
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
@@ -916,8 +916,8 @@ while (matches!=NULL) {
 	}
 	/* Finally, we go on the next match */
 	matches_tmp=matches;
-	matches=matches->suivant;
-	free_liste_matches(matches_tmp);
+	matches=matches->next;
+	free_match_list_element(matches_tmp);
 }
 return number_of_matches;
 }
@@ -1031,8 +1031,8 @@ if (output==NULL) {
 	fclose(text);
 	fatal_error("Cannot write file %s\n",output_name);
 }
-struct liste_matches* matches;
-struct liste_matches* matches_tmp;
+struct match_list* matches;
+struct match_list* matches_tmp;
 int current_global_position=0;
 /* We allocate a buffer to read the tokens of the text */
 struct buffer* buffer=new_buffer(1000000,INTEGER_BUFFER);
@@ -1041,16 +1041,16 @@ matches=load_match_list(concordance,NULL);
 int pos_in_enter_pos=0;
 printf("Merging outputs with text...\n");
 while (matches!=NULL) {
-	while (matches!=NULL && matches->debut<current_global_position) {
+	while (matches!=NULL && matches->start<current_global_position) {
 		/* If we must ignore this match because it is overlapping a previous
 		 * match */
 		matches_tmp=matches;
-		matches=matches->suivant;
-		free_liste_matches(matches_tmp);
+		matches=matches->next;
+		free_match_list_element(matches_tmp);
 	}
 	if (matches!=NULL) {
 		/* There, we are sure that we have a valid match to process */
-		pos_in_enter_pos=move_in_text_with_writing(matches->debut,text,tokens,
+		pos_in_enter_pos=move_in_text_with_writing(matches->start,text,tokens,
 													current_global_position,output,
 													n_enter_char,enter_pos,pos_in_enter_pos,
 													buffer);
@@ -1058,11 +1058,11 @@ while (matches!=NULL) {
 		if (matches->output!=NULL) {
 			u_fprints(matches->output,output);
 		}
-		current_global_position=matches->fin+1;
+		current_global_position=matches->end+1;
 		/* We skip to the next match of the list */
 		matches_tmp=matches;
-		matches=matches->suivant;
-		free_liste_matches(matches_tmp);
+		matches=matches->next;
+		free_match_list_element(matches_tmp);
 	}
 }
 /* Finally, we don't forget to dump all the text that may remain after the

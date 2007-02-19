@@ -31,5 +31,43 @@
 #define CDIC_TOKEN_BIT_MASK 32
 #define NOT_DIC_TOKEN_BIT_MASK 64
 
+/* This negative constant is used to indicate that we want all the matches */
+#define NO_MATCH_LIMIT -1
+
+
+/* Match policy for the Locate program */
+typedef enum {
+   LONGEST_MATCHES,
+   SHORTEST_MATCHES,
+   ALL_MATCHES
+} MatchPolicy;
+
+
+/* Here are the different output policies for the Locate program */
+typedef enum {
+   IGNORE_OUTPUTS,
+   MERGE_OUTPUTS,
+   REPLACE_OUTPUTS
+} OutputPolicy;
+
+typedef enum {
+   IGNORE_AMBIGUOUS_OUTPUTS,
+   ALLOW_AMBIGUOUS_OUTPUTS
+} AmbiguousOutputPolicy;
+
+
+/* Do we allow or not to occurrences that start with spaces ? */
+typedef enum {
+   START_WITH_SPACE,
+   DONT_START_WITH_SPACE
+} SpacePolicy;
+
+
+/* Tokenization policy */
+typedef enum {
+   WORD_BY_WORD_TOKENIZATION,
+   CHAR_BY_CHAR_TOKENIZATION
+} TokenizationPolicy;
+
 #endif
 

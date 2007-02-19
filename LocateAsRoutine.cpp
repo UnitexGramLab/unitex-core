@@ -83,43 +83,46 @@ strcat(dlc,"dlc");
 strcpy(err,staticSntDir);
 strcat(err,"err");
 
-int mode;
-int output_mode;
+MatchPolicy match_policy;
+OutputPolicy output_policy;
+
 if (!strcmp(argv[4],"s")) {
-   mode=SHORTEST_MATCHES;
+   match_policy=SHORTEST_MATCHES;
 } else if (!strcmp(argv[4],"a")) {
-          mode=ALL_MATCHES;
+          match_policy=ALL_MATCHES;
        }
   else if (!strcmp(argv[4],"l")) {
-          mode=LONGUEST_MATCHES;
+          match_policy=LONGEST_MATCHES;
        }
   else {
-     fprintf(stderr,"Invalid parameter %s\n",argv[4]);
+     error("Invalid parameter %s\n",argv[4]);
      return 1;
   }
 if (!strcmp(argv[5],"i")) {
-   output_mode=IGNORE_TRANSDUCTIONS;
+   output_policy=IGNORE_OUTPUTS;
 } else if (!strcmp(argv[5],"m")) {
-          output_mode=MERGE_TRANSDUCTIONS;
+          output_policy=MERGE_OUTPUTS;
        }
   else if (!strcmp(argv[5],"r")) {
-          output_mode=REPLACE_TRANSDUCTIONS;
+          output_policy=REPLACE_OUTPUTS;
        }
   else {
-     fprintf(stderr,"Invalid parameter %s\n",argv[5]);
+     error("Invalid parameter %s\n",argv[5]);
      return 1;
   }
+int search_limit;
 if (!strcmp(argv[6],"all")) {
-   SEARCH_LIMITATION=-1;
+   search_limit=NO_MATCH_LIMIT;
 }
 else {
-   if (!sscanf(argv[6],"%d",&SEARCH_LIMITATION)) {
-      fprintf(stderr,"Invalid parameter %s\n",argv[6]);
+   if (!sscanf(argv[6],"%d",&search_limit)) {
+      error("Invalid parameter %s\n",argv[6]);
       return 1;
    }
 }
 
-int tokenization_mode;
+TokenizationPolicy tokenization_policy;
+SpacePolicy space_policy;
 
 /* $CD$ begin */
 switch (argc) {
@@ -127,8 +130,8 @@ switch (argc) {
     case 7: // 6 arguments: pas de dynamic, pas de -thai, pas de -space
 
         strcpy(dynamicSntDir, staticSntDir);
-        tokenization_mode=WORD_BY_WORD_TOKENIZATION;
-        GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
+        tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+        space_policy=DONT_START_WITH_SPACE;
         break;
 
 
@@ -136,18 +139,18 @@ switch (argc) {
 
         if (!strcmp(argv[7], "-thai")) {
             strcpy(dynamicSntDir, staticSntDir);
-            tokenization_mode=CHAR_BY_CHAR_TOKENIZATION;
-            GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
+            tokenization_policy=CHAR_BY_CHAR_TOKENIZATION;
+            space_policy=DONT_START_WITH_SPACE;
             }
         else if (!strcmp(argv[7], "-space")) {
             strcpy(dynamicSntDir, staticSntDir);
-            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
-            GESTION_DE_L_ESPACE=MODE_MORPHO;
+            tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+            space_policy=START_WITH_SPACE;
             }
         else {
             strcpy(dynamicSntDir, argv[7]);
-            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
-            GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
+            tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+            space_policy=DONT_START_WITH_SPACE;
             }
         break; 
 
@@ -157,19 +160,19 @@ switch (argc) {
         strcpy(dynamicSntDir, argv[7]);
         
         if (strcmp(argv[8], "-thai") && strcmp(argv[8], "-space")) {
-            fprintf(stderr, "Invalid parameter %s\n", argv[8]);
+            error("Invalid parameter %s\n", argv[8]);
             return 1;
             }
         
         if (!strcmp(argv[8], "-thai"))
-            tokenization_mode=CHAR_BY_CHAR_TOKENIZATION;
+            tokenization_policy=CHAR_BY_CHAR_TOKENIZATION;
         else
-            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
+            tokenization_policy=WORD_BY_WORD_TOKENIZATION;
         
         if (!strcmp(argv[8], "-space"))
-            GESTION_DE_L_ESPACE=MODE_MORPHO;
+            space_policy=START_WITH_SPACE;
         else
-            GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
+            space_policy=DONT_START_WITH_SPACE;
         break; 
 
     
@@ -179,40 +182,40 @@ switch (argc) {
         strcpy(dynamicSntDir, argv[7]);
         
         if (strcmp(argv[8], "-thai") && strcmp(argv[8], "-space")) {
-            fprintf(stderr, "Invalid parameter %s\n", argv[8]);
+            error("Invalid parameter %s\n", argv[8]);
             return 1;
-            }
+        }
         
         if (!strcmp(argv[8], "-thai"))
-            tokenization_mode=CHAR_BY_CHAR_TOKENIZATION;
+            tokenization_policy=CHAR_BY_CHAR_TOKENIZATION;
         else
-            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
+            tokenization_policy=WORD_BY_WORD_TOKENIZATION;
         
         if (!strcmp(argv[8], "-space"))
-            GESTION_DE_L_ESPACE=MODE_MORPHO;
+            space_policy=START_WITH_SPACE;
         else
-            GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
+            space_policy=DONT_START_WITH_SPACE;
         
         if (strcmp(argv[9], "-thai") && strcmp(argv[9], "-space")) {
-            fprintf(stderr, "Invalid parameter %s\n", argv[9]);
+            error("Invalid parameter %s\n", argv[9]);
             return 1;
-            }
+        }
         
         if (!strcmp(argv[9], "-thai"))
-            tokenization_mode=CHAR_BY_CHAR_TOKENIZATION;
+            tokenization_policy=CHAR_BY_CHAR_TOKENIZATION;
         else
-            tokenization_mode=WORD_BY_WORD_TOKENIZATION;
+            tokenization_policy=WORD_BY_WORD_TOKENIZATION;
         
         if (!strcmp(argv[9], "-space"))
-            GESTION_DE_L_ESPACE=MODE_MORPHO;
+            space_policy=START_WITH_SPACE;
         else
-            GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
+            space_policy=DONT_START_WITH_SPACE;
         break;
     
     } 
 /* $CD$ end */
-int OK=locate_pattern(text_cod,tokens_txt,argv[2],dlf,dlc,err,argv[3],mode,output_mode,
-               dynamicSntDir,tokenization_mode);
+int OK=locate_pattern(text_cod,tokens_txt,argv[2],dlf,dlc,err,argv[3],match_policy,output_policy,
+               dynamicSntDir,tokenization_policy,space_policy,search_limit);
 if (OK == 1) {
     return 0;
 }

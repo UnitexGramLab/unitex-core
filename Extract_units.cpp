@@ -31,7 +31,7 @@
 
 
 void read_one_sentence(struct buffer*,FILE*,struct text_tokens*,int*);
-struct liste_matches* is_a_match_in_the_sentence(struct liste_matches*,int*,int,int);
+struct match_list* is_a_match_in_the_sentence(struct match_list*,int*,int,int);
 
 
 /**
@@ -42,10 +42,11 @@ struct liste_matches* is_a_match_in_the_sentence(struct liste_matches*,int*,int,
  */
 void extract_units(char extract_matching_units,FILE* snt,struct text_tokens* tokens,
                    FILE* concord,FILE* result) {
-int i,N_TOKENS_READ;
+int N_TOKENS_READ;
+OutputPolicy output_policy;
 int current_beginning,current_end,RESULT;
 /* We load the match list */
-struct liste_matches* l=load_match_list(concord,&i);
+struct match_list* l=load_match_list(concord,&output_policy);
 current_end=-1;
 
 struct buffer* buffer=new_buffer(MAX_TOKENS_BY_SENTENCE,INTEGER_BUFFER);
@@ -57,7 +58,7 @@ while (buffer->size!=0) {
    l=is_a_match_in_the_sentence(l,&RESULT,current_beginning,current_end);
    if ((RESULT && extract_matching_units) || (!RESULT && !extract_matching_units)) {
       /* if we must print this sentence, we print it */
-      for (i=0;i<buffer->size;i++) {
+      for (int i=0;i<buffer->size;i++) {
          u_fprints(tokens->token[buffer->int_buffer[i]],result);
       }
       u_fprints_char("\n",result);
@@ -110,16 +111,16 @@ buffer->size=i;
  * The function returns the match list where all the matches in the range
  * where removed.
  */
-struct liste_matches* is_a_match_in_the_sentence(struct liste_matches* L,int* RESULT,int beginning,int end) {
+struct match_list* is_a_match_in_the_sentence(struct match_list* L,int* RESULT,int beginning,int end) {
 if (L==NULL) {
    /* case of an empty match list */
    (*RESULT)=0;
    return NULL;
 }
-if (L->fin < beginning) {
+if (L->end < beginning) {
    fatal_error("Error in the function is_a_match_in_the_sentence\n");
 }
-if (L->debut > end) {
+if (L->start > end) {
    /* If the match starts after the end of the range, we remove nothing and return 0 */
    (*RESULT)=0;
    return L;
@@ -127,11 +128,11 @@ if (L->debut > end) {
 /* We are now in the case of a match within the range, we must return 1 */
 (*RESULT)=1;
 /* And we remove all the matches within the range */
-struct liste_matches* tmp;
-while (L!=NULL && L->debut<=end) {
+struct match_list* tmp;
+while (L!=NULL && L->start<=end) {
    tmp=L;
-   L=L->suivant;
-   free_liste_matches(tmp);
+   L=L->next;
+   free_match_list_element(tmp);
 }
 return L;
 }

@@ -25,7 +25,7 @@
 #include "Matches.h"
 
 int diff(char*,char*,char*,char*,char*);
-void compute_concordance_differences(struct liste_matches*,struct liste_matches*,FILE*,FILE*,FILE*);
+void compute_concordance_differences(struct match_list*,struct match_list*,FILE*,FILE*,FILE*);
 void print_diff_matches(FILE*,FILE*,FILE*,char*);
 
 #endif

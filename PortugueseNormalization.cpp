@@ -58,12 +58,12 @@ s[j]='\0';
 // this function builds the normalization grammar adapted to the match list
 // passed in parameter 
 //
-void build_portuguese_normalization_grammar(Alphabet* alph,struct liste_matches* list,unsigned char* root_bin,
+void build_portuguese_normalization_grammar(Alphabet* alph,struct match_list* list,unsigned char* root_bin,
                                             struct INF_codes* root_inf,unsigned char* inflected_bin,
                                             struct INF_codes* inflected_inf,char* res_grf_name,
                                             struct noeud_arbre_normalization* norm_tree,
                                             struct noeud_arbre_normalization* nasal_norm_tree) {
-struct liste_matches* L=list;
+struct match_list* L=list;
 int N=0;
 unichar temp[2000];
 unichar prefix[2000];
@@ -95,7 +95,7 @@ while (L!=NULL) {
          }
       }
    }
-   L=L->suivant;
+   L=L->next;
 }
 free_string_hash(hash);
 printf("Saving the grammar...\n");
@@ -139,7 +139,7 @@ while (s[i]==':') {
 // "dir-se-ia/{...,...V:C1s}-{se,.PRO}"
 // it returns i if i correct lines are produced, 0 else
 //
-int replace_match_output_by_normalization_line(struct liste_matches* L,Alphabet* alph,unsigned char* root_bin,
+int replace_match_output_by_normalization_line(struct match_list* L,Alphabet* alph,unsigned char* root_bin,
                                                 struct INF_codes* root_inf,unsigned char* inflected_bin,
                                                 struct INF_codes* inflected_inf,
                                                 struct noeud_arbre_normalization* norm_tree) {
@@ -431,7 +431,7 @@ return -1;
 //
 // this function saves the normalization rules into a file
 //
-void save_portuguese_normalization_grammar(int N,struct liste_matches* list,char* res_grf_name) {
+void save_portuguese_normalization_grammar(int N,struct match_list* list,char* res_grf_name) {
 char temp[2000];
 FILE* f=u_fopen(res_grf_name,U_WRITE);
 if (f==NULL) {
@@ -472,8 +472,8 @@ while (list!=NULL) {
          current_state++;
       }
    }
-   struct liste_matches* l=list;
-   list=list->suivant;
+   struct match_list* l=list;
+   list=list->next;
    if (l->output!=NULL) {
       free(l->output);
    }

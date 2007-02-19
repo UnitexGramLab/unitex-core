@@ -53,7 +53,22 @@ p->DLC_tree=NULL;
 p->optimized_states=NULL;
 p->fst2=NULL;
 p->tokens=NULL;
+p->absolute_offset=0;
 p->current_origin=-1;
+p->token_buffer=new_buffer(TOKEN_BUFFER_SIZE,INTEGER_BUFFER);
+p->buffer=p->token_buffer->int_buffer;
+p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+p->space_policy=DONT_START_WITH_SPACE;
+p->matching_units=0;
+p->match_policy=LONGEST_MATCHES;
+p->output_policy=IGNORE_OUTPUTS;
+p->ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS;
+p->match_list=NULL;
+p->number_of_matches=0;
+p->number_of_outputs=0;
+p->start_position_last_printed_match=-1;
+p->end_position_last_printed_match=-1;
+p->search_limit=0;
 return p;
 }
 
@@ -68,10 +83,15 @@ free(p);
 
 
 int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,char* err,
-                   char* alphabet,int mode,int output_mode, char* dynamicDir,
-                   int tokenization_mode) {
-struct locate_parameters* parameters=new_locate_parameters();
-
+                   char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
+                   char* dynamicDir,TokenizationPolicy tokenization_policy,
+                   SpacePolicy space_policy,int search_limit) {
+struct locate_parameters* p=new_locate_parameters();
+p->match_policy=match_policy;
+p->tokenization_policy=tokenization_policy;
+p->space_policy=space_policy;
+p->output_policy=output_policy;
+p->search_limit=search_limit;
 FILE* text_file;
 FILE* out;
 FILE* info;
@@ -100,10 +120,10 @@ info=u_fopen(concord_info,U_WRITE);
 if (info==NULL) {
    error("Cannot write %s\n",concord_info);
 }
-switch(output_mode) {
-   case IGNORE_TRANSDUCTIONS: u_fprints_char("#I\n",out); break;
-   case MERGE_TRANSDUCTIONS: u_fprints_char("#M\n",out); break;
-   case REPLACE_TRANSDUCTIONS: u_fprints_char("#R\n",out); break;
+switch(output_policy) {
+   case IGNORE_OUTPUTS: u_fprints_char("#I\n",out); break;
+   case MERGE_OUTPUTS: u_fprints_char("#M\n",out); break;
+   case REPLACE_OUTPUTS: u_fprints_char("#R\n",out); break;
 }
 printf("Loading alphabet...\n");
 Alphabet* alph=load_alphabet(alphabet);
@@ -115,17 +135,17 @@ struct string_hash* semantic_codes=new_string_hash();
 extract_semantic_codes(dlf,semantic_codes);
 extract_semantic_codes(dlc,semantic_codes);
 printf("Loading fst2...\n");
-parameters->fst2=load_fst2(fst2_name,1);
-if (parameters->fst2==NULL) {
+p->fst2=load_fst2(fst2_name,1);
+if (p->fst2==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(alph);
    free_string_hash(semantic_codes);
    return 0;
 }
-parameters->tags=parameters->fst2->tags;
+p->tags=p->fst2->tags;
 #ifdef TRE_WCHAR
-parameters->filters=new_FilterSet(parameters->fst2,alph);
-if (parameters->filters==NULL) {
+p->filters=new_FilterSet(p->fst2,alph);
+if (p->filters==NULL) {
    error("Cannot compile filter(s)\n");
    free_alphabet(alph);
    free_string_hash(semantic_codes);
@@ -134,100 +154,96 @@ if (parameters->filters==NULL) {
 #endif
 
 printf("Loading token list...\n");
-parameters->tokens=load_text_tokens_hash(tokens,&(parameters->SENTENCE),&(parameters->STOP));
-if (parameters->tokens==NULL) {
+p->tokens=load_text_tokens_hash(tokens,&(p->SENTENCE),&(p->STOP));
+if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
    free_alphabet(alph);
    free_string_hash(semantic_codes);
-   free_Fst2(parameters->fst2);
+   free_Fst2(p->fst2);
    return 0;
 }
 
 #ifdef TRE_WCHAR
-parameters->filter_match_index=new_FilterMatchIndex(parameters->filters,parameters->tokens);
-if (parameters->filter_match_index==NULL) {
+p->filter_match_index=new_FilterMatchIndex(p->filters,p->tokens);
+if (p->filter_match_index==NULL) {
    error("Cannot optimize filter(s)\n");
    free_alphabet(alph);
    free_string_hash(semantic_codes);
-   free_string_hash(parameters->tokens);
-   free_Fst2(parameters->fst2);
+   free_string_hash(p->tokens);
+   free_Fst2(p->fst2);
    return 0;
 }
 #endif
 
-extract_semantic_codes_from_tokens(parameters->tokens,semantic_codes);
-parameters->token_control=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
-if (parameters->token_control==NULL) {
+extract_semantic_codes_from_tokens(p->tokens,semantic_codes);
+p->token_control=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
+if (p->token_control==NULL) {
    fatal_error("Not enough memory in locate_pattern\n");
 }
-parameters->matching_patterns=(struct bit_array**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(struct bit_array*));
-if (parameters->matching_patterns==NULL) {
+p->matching_patterns=(struct bit_array**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(struct bit_array*));
+if (p->matching_patterns==NULL) {
    fatal_error("Not enough memory in locate_pattern\n");
 }
 for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
-  parameters->token_control[i]=0;
-  parameters->matching_patterns[i]=NULL;
+  p->token_control[i]=0;
+  p->matching_patterns[i]=NULL;
 }
-compute_token_controls(alph,err,tokenization_mode,parameters);
+compute_token_controls(alph,err,p);
 int number_of_patterns,is_DIC,is_CDIC,is_SDIC;
-parameters->pattern_tree_root=new_pattern_node();
+p->pattern_tree_root=new_pattern_node();
 printf("Computing fst2 tags...\n");
-process_tags(&number_of_patterns,semantic_codes,&is_DIC,&is_CDIC,&is_SDIC,parameters);
-parameters->current_compound_pattern=number_of_patterns;
-parameters->DLC_tree=new_DLC_tree(parameters->tokens->size);
+process_tags(&number_of_patterns,semantic_codes,&is_DIC,&is_CDIC,&is_SDIC,p);
+p->current_compound_pattern=number_of_patterns;
+p->DLC_tree=new_DLC_tree(p->tokens->size);
 struct lemma_node* root=new_lemma_node();
 printf("Loading dlf...\n");
-load_dic_for_locate(dlf,alph,number_of_patterns,is_DIC,is_CDIC,
-				is_SDIC,tokenization_mode,root,parameters);
+load_dic_for_locate(dlf,alph,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
 printf("Loading dlc...\n");
-load_dic_for_locate(dlc,alph,number_of_patterns,is_DIC,is_CDIC,
-				is_SDIC,tokenization_mode,root,parameters);
+load_dic_for_locate(dlc,alph,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
 /* We look if tag tokens like "{today,.ADV}" verify some patterns */
-check_patterns_for_tag_tokens(alph,number_of_patterns,tokenization_mode,root,parameters);
+check_patterns_for_tag_tokens(alph,number_of_patterns,root,p);
 printf("Optimizing fst2 pattern tags...\n");
-optimize_pattern_tags(alph,tokenization_mode,root,parameters);
+optimize_pattern_tags(alph,root,p);
 printf("Optimizing compound word dictionary...\n");
-optimize_DLC(parameters->DLC_tree);
+optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
-init_transduction_variable_index(parameters->fst2->variables);
+init_transduction_variable_index(p->fst2->variables);
 printf("Optimizing fst2...\n");
-parameters->optimized_states=build_optimized_fst2_states(parameters->fst2);
+p->optimized_states=build_optimized_fst2_states(p->fst2);
 #warning to replace by simple lists of integers
 printf("Optimizing patterns...\n");
-init_pattern_transitions(parameters->tokens);
-convert_pattern_lists(parameters->tokens);
+init_pattern_transitions(p->tokens);
+convert_pattern_lists(p->tokens);
 
 printf("Working...\n");
-launch_locate(text_file,mode,out,output_mode,text_size,info,parameters);
+launch_locate(text_file,out,text_size,info,p);
+free_buffer(p->token_buffer);
 free_transduction_variable_index();
 fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
 printf("Freeing memory...\n");
-free_optimized_states(parameters->optimized_states,parameters->fst2->number_of_states);
-free_DLC_tree(parameters->DLC_tree);
-free_Fst2(parameters->fst2);
+free_optimized_states(p->optimized_states,p->fst2->number_of_states);
+free_DLC_tree(p->DLC_tree);
+free_Fst2(p->fst2);
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(alph);
-free_string_hash(parameters->tokens);
-free_list_int(parameters->tag_token_list);
+free_string_hash(p->tokens);
+free_list_int(p->tag_token_list);
 free_lemma_node(root);
-free(parameters->token_control);
+free(p->token_control);
 for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
-   free_bit_array(parameters->matching_patterns[i]);
+   free_bit_array(p->matching_patterns[i]);
 }
-free(parameters->matching_patterns);
+free(p->matching_patterns);
 #ifdef TRE_WCHAR
-free_FilterSet(parameters->filters);
-free_FilterMatchIndex(parameters->filter_match_index);
+free_FilterSet(p->filters);
+free_FilterMatchIndex(p->filter_match_index);
 #endif
-free_locate_parameters(parameters);
+free_locate_parameters(p);
 printf("Done.\n");
 return 1;
 }
-
-
-
 
 
 /**
@@ -244,7 +260,9 @@ if (token==NULL || token[0]=='\0') {
 if (is_letter(token[0],alph)) {
    set_bit_mask(&c,MOT_TOKEN_BIT_MASK);
    /* If a token is a word, we check if it is in the 'err' word list
-    * in order to answer the question <!DIC> */
+    * in order to answer the question <!DIC>. We perform this test in order
+    * to avoid taking "priori" as an unknown word if the compound "a priori"
+    * is in the text. */
    if (err!=NULL && get_value_index(token,err,DONT_INSERT)!=-1) {
       set_bit_mask(&c,NOT_DIC_TOKEN_BIT_MASK);
    }
@@ -323,15 +341,16 @@ return c;
 }
 
 
-
-
-
-void compute_token_controls(Alphabet* alph,char* err,int tokenization_mode,
-                            struct locate_parameters* p) {
+/**
+ * For each token of the text, we compute its associated control byte.
+ * We use the unknown word file 'err' in order to determine if a token
+ * must be matched by <!DIC>
+ */
+void compute_token_controls(Alphabet* alph,char* err,struct locate_parameters* p) {
 struct string_hash* ERR=load_key_list(err);
 int n=p->tokens->size;
 for (int i=0;i<n;i++) {
-   p->token_control[i]=get_control_byte(p->tokens->value[i],alph,ERR,tokenization_mode);
+   p->token_control[i]=get_control_byte(p->tokens->value[i],alph,ERR,p->tokenization_policy);
 }
 free_string_hash(ERR);
 }

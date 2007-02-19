@@ -24,106 +24,91 @@
 #include "Text_parsing.h"
 #include "Error.h"
 #include "BitArray.h"
+#include "Buffer.h"
 
 
-#define DELAY CLOCKS_PER_SEC // delay between two prints (yyy% done)
+/* Delay between two prints (yyy% done) */
+#define DELAY CLOCKS_PER_SEC
 
 
 void locate(int,OptimizedFst2State,int,int,struct liste_num**,int,struct list_int*,struct locate_parameters*);
-int dichotomie(int,int*,int);
+int binary_search(int,int*,int);
 int find_compound_word(int,int,struct DLC_tree_info*,struct locate_parameters*);
 unichar* get_token_sequence(int*,struct string_hash*,int,int);
 
 
 
-int GESTION_DE_L_ESPACE=MODE_NON_MORPHO;
-int texte[BUFFER_SIZE];
-int LENGTH;
-int N_INT_ALLREADY_READ;
-long int nombre_unites_reconnues=0;
 
-
-
-
-void block_change(FILE* f,struct locate_parameters* p) {
-int i;
-for (i=p->current_origin;i<BUFFER_SIZE;i++) {
-  // first, we copy the end of the buffer at the beginning
-  texte[i-p->current_origin]=texte[i];
+/**
+ * Performs the Locate operation on the text, saving the occurrences
+ * on the fly.
+ */
+void launch_locate(FILE* f,FILE* out,
+                   long int text_size,FILE* info,
+                   struct locate_parameters* p) {
+fill_buffer(p->token_buffer,f);
+if (p->output_policy!=IGNORE_OUTPUTS) {
+   /* There may be transducer output, so we allow different output */
+   p->ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 }
-N_INT_ALLREADY_READ=N_INT_ALLREADY_READ+p->current_origin;
-int N=BUFFER_SIZE-p->current_origin;
-int l=fread(texte+N,sizeof(int),p->current_origin,f);
+OptimizedFst2State initial_state=p->optimized_states[p->fst2->initial_states[1]];
 p->current_origin=0;
-LENGTH=N+l;
-}
-
-
-
-void launch_locate(FILE* f,int mode,FILE* out,
-                   int output_mode,long int text_size,FILE* info,
-                   struct locate_parameters* parameters) {
-LENGTH=fread(texte,sizeof(int),BUFFER_SIZE,f);
-statut_match=mode;
-transduction_mode=output_mode;
-init_matches();
-if (transduction_mode != IGNORE_TRANSDUCTIONS) { // there may be transducer output
-  ambig_transduction_mode = ALLOW_AMBIG_TRANSDUCTIONS; // so we allow different output
-}
-OptimizedFst2State initial_state=parameters->optimized_states[parameters->fst2->initial_states[1]];
-N_INT_ALLREADY_READ=0;
-parameters->current_origin=0;
-nombre_unites_reconnues=0;
 int n_read=0;
 int unite;
 clock_t startTime=clock();
 clock_t currentTime ;
 
 unite=((text_size/100)>1000)?(text_size/100):1000;
-while (parameters->current_origin<LENGTH && nombre_match!=SEARCH_LIMITATION) {
-   if (LENGTH==BUFFER_SIZE && parameters->current_origin>(LENGTH-2000)) {
-      // if must change of block
-      block_change(f,parameters);
+while (p->current_origin<p->token_buffer->size
+       && p->number_of_matches!=p->search_limit) {
+   if (!p->token_buffer->end_of_file
+       && p->current_origin>(p->token_buffer->size-2000)) {
+      /* If must change of block, we update the absolute offset, and we fill the
+       * buffer. */
+      p->absolute_offset=p->absolute_offset+p->current_origin;
+      fill_buffer(p->token_buffer,p->current_origin,f);
+      p->current_origin=0;
    }
    if (unite!=0) {
-      n_read=((parameters->current_origin+N_INT_ALLREADY_READ)%unite);
+      n_read=((p->current_origin+p->absolute_offset)%unite);
       if (n_read==0 && ((currentTime=clock())-startTime > DELAY) ) {
          startTime=currentTime;
-         printf("%2.0f%% done        \r",100.0*(float)(N_INT_ALLREADY_READ+parameters->current_origin)/(float)text_size);
+         printf("%2.0f%% done        \r",100.0*(float)(p->absolute_offset+p->current_origin)/(float)text_size);
       }
    }
-   if (!(texte[parameters->current_origin]==parameters->SPACE && GESTION_DE_L_ESPACE==MODE_NON_MORPHO)) {
+   if (!(p->token_buffer->int_buffer[p->current_origin]==p->SPACE
+       && p->space_policy==DONT_START_WITH_SPACE)) {
       StackBase = StackPointer = 0;
-      locate(0,initial_state,0,0,NULL,0,NULL,parameters);
+      locate(0,initial_state,0,0,NULL,0,NULL,p);
    }
-   liste_match=ecrire_index_des_matches(liste_match,N_INT_ALLREADY_READ+parameters->current_origin,&nombre_unites_reconnues,out);
-   (parameters->current_origin)++;
+   p->match_list=save_matches(p->match_list,p->absolute_offset+p->current_origin,out,p);
+   (p->current_origin)++;
 }
-liste_match=ecrire_index_des_matches(liste_match,N_INT_ALLREADY_READ+parameters->current_origin,&nombre_unites_reconnues,out);
+p->match_list=save_matches(p->match_list,p->absolute_offset+p->current_origin,out,p);
 printf("100%% done      \n\n");
-printf("%d match%s\n",nombre_match,(nombre_match==1)?"":"es");
-if ((nombre_output != nombre_match)
-    && (nombre_output != 0))
-  printf("(%d output%s)\n",nombre_output,(nombre_output==1)?"":"s");
-printf("%ld recognized units\n",nombre_unites_reconnues);
+printf("%d match%s\n",p->number_of_matches,(p->number_of_matches==1)?"":"es");
+if ((p->number_of_outputs != p->number_of_matches)
+    && (p->number_of_outputs != 0))
+  printf("(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs==1)?"":"s");
+printf("%d recognized units\n",p->matching_units);
 if (text_size!=0) {
-   printf("(%2.3f%% of the text is covered)\n",((float)nombre_unites_reconnues*100.0)/text_size);
+   printf("(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
 }
 if (info!=NULL) {
    char tmp[3000];
    unichar unitmp[3000];
-   sprintf(tmp,"%d match%s\n",nombre_match,(nombre_match==1)?"":"es");
+   sprintf(tmp,"%d match%s\n",p->number_of_matches,(p->number_of_matches==1)?"":"es");
    u_strcpy_char(unitmp,tmp);
-   if ((nombre_output != nombre_match)
-       && (nombre_output != 0))
+   if ((p->number_of_outputs != p->number_of_matches)
+       && (p->number_of_outputs != 0))
      {
-       sprintf(tmp,"(%d output%s)\n",nombre_output,(nombre_output==1)?"":"s");
+       sprintf(tmp,"(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs==1)?"":"s");
        u_strcat_char(unitmp,tmp);
      }
-   sprintf(tmp,"%ld recognized units\n",nombre_unites_reconnues);
+   sprintf(tmp,"%d recognized units\n",p->matching_units);
    u_strcat_char(unitmp,tmp);
    if (text_size!=0) {
-      sprintf(tmp,"(%2.3f%% of the text is covered)\n",((float)nombre_unites_reconnues*100.0)/text_size);
+      sprintf(tmp,"(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
    }
    u_strcat_char(unitmp,tmp);
    u_fprints(unitmp,info);
@@ -154,7 +139,7 @@ for (i=(start-4);i<=(start+20);i++) {
    if (i==start) {
       error("<<HERE>>");
    }
-   u_fprints_html_ascii(p->tokens->value[texte[i]],stderr);
+   u_fprints_html_ascii(p->tokens->value[p->buffer[i]],stderr);
    if (i==(start+length)) {
       error("<<END>>");
    }
@@ -238,18 +223,18 @@ if (current_state->control & 1) {
    /* In we are in the top level graph, we have a match */
    if (graph_depth==0) {
       n_matches_at_token_pos++;
-      if (transduction_mode==IGNORE_TRANSDUCTIONS) {
-         if (pos>0) {afficher_match_fst2(pos+p->current_origin+N_INT_ALLREADY_READ-1,NULL,p);}
-         else {afficher_match_fst2(pos+p->current_origin+N_INT_ALLREADY_READ,NULL,p);}
+      if (p->output_policy==IGNORE_OUTPUTS) {
+         if (pos>0) {add_match(pos+p->current_origin+p->absolute_offset-1,NULL,p);}
+         else {add_match(pos+p->current_origin+p->absolute_offset,NULL,p);}
       } else {
          stack[stack_top]='\0';
-         if (pos>0) {afficher_match_fst2(pos+p->current_origin+N_INT_ALLREADY_READ-1,stack,p);}
-         else {afficher_match_fst2(pos+p->current_origin+N_INT_ALLREADY_READ,stack,p);}
+         if (pos>0) {add_match(pos+p->current_origin+p->absolute_offset-1,stack,p);}
+         else {add_match(pos+p->current_origin+p->absolute_offset,stack,p);}
       }
    }
    else {
       /* If we are in a subgraph */
-      if (n_matches==(NBRE_ARR_MAX-1)) {
+      if (n_matches==MAX_MATCHES_PER_SUBGRAPH) {
          /* If there are too much matches, we suspect an error in the grammar
           * like an infinite recursion */
          error_at_token_pos("\nMaximal number of matches per subgraph reached!",
@@ -260,7 +245,7 @@ if (current_state->control & 1) {
          /* If everything is fine, we add this match to the match list of the
           * current graph level */
          n_matches++;
-         if (ambig_transduction_mode==ALLOW_AMBIG_TRANSDUCTIONS) {
+         if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
             (*matches)=inserer_si_different(pos,(*matches),StackPointer,&stack[StackBase]);
          } else {
             (*matches)=inserer_si_absent(pos,(*matches),StackPointer,&stack[StackBase]);
@@ -270,21 +255,21 @@ if (current_state->control & 1) {
 }
 /* If we have reached the end of the token buffer, we indicate it by setting
  * the current tokens to -1 */
-if (pos+p->current_origin>=LENGTH) {
+if (pos+p->current_origin>=p->token_buffer->size) {
    token=-1;
    token2=-1;
 } else {
-   token=texte[pos+p->current_origin];
+   token=p->buffer[pos+p->current_origin];
    if (token==p->SPACE) {pos2=pos+1;}
       /* Now, we deal with the SPACE, if any. To do that, we use several variables:
        * pos: current position in the token buffer, relative to the current origin
        * pos2: position of the first non-space token from 'pos'.
        * token2: token at pos2  or -1 if 'pos2' is outside the token buffer */
    else {pos2=pos;}
-   if (pos2+p->current_origin>=LENGTH) {
+   if (pos2+p->current_origin>=p->token_buffer->size) {
       token2=-1;
    } else {
-      token2=texte[pos2+p->current_origin];
+      token2=p->buffer[pos2+p->current_origin];
    }
 }
 
@@ -297,7 +282,7 @@ if (graph_call_list!=NULL) {
    int* var_backup=NULL;
    int old_StackBase;
    old_StackBase=StackBase;
-   if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+   if (p->output_policy!=IGNORE_OUTPUTS) {
       /* For better performance when ignoring outputs */
       var_backup=create_variable_backup();
    }
@@ -315,7 +300,7 @@ if (graph_call_list!=NULL) {
             /* If there is at least one match, we process the match list */
             do  {
                /* We restore the settings of the current graph level */
-               if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+               if (p->output_policy!=IGNORE_OUTPUTS) {
                   u_strcpy(&stack[stack_top],L->pile);
                   StackPointer=L->sommet;
                   install_variable_backup(L->variable_backup);
@@ -325,13 +310,13 @@ if (graph_call_list!=NULL) {
                StackPointer=stack_top;
                if (graph_depth==0) {
                   /* If we are at the top graph level, we restore the variables */
-                  if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+                  if (p->output_policy!=IGNORE_OUTPUTS) {
                      install_variable_backup(var_backup);
                   }
                }
                struct liste_num* l_tmp=L;
                L=L->suivant;
-               if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+               if (p->output_policy!=IGNORE_OUTPUTS) {
                   /* We free the temporary variable backup, if needed */
               	   free_variable_backup(l_tmp->variable_backup);
                }
@@ -345,7 +330,7 @@ if (graph_call_list!=NULL) {
    /* Finally, we have to restore the stack and other backup stuff */
    StackPointer=stack_top;
    StackBase=old_StackBase; /* May be changed by recursive subgraph calls */
-   if (transduction_mode!=IGNORE_TRANSDUCTIONS) { /* For better performance (see above) */
+   if (p->output_policy!=IGNORE_OUTPUTS) { /* For better performance (see above) */
       install_variable_backup(var_backup);
       free_variable_backup(var_backup);
    }
@@ -419,7 +404,7 @@ while (meta_list!=NULL) {
                /* <MOT> and <!MOT> must NEVER match {S} and {STOP}! */
                break;
             }
-            if ((GESTION_DE_L_ESPACE==MODE_MORPHO) && (token2==p->SPACE) && negation) {
+            if ((p->space_policy==START_WITH_SPACE) && (token2==p->SPACE) && negation) {
                /* If we want to catch a space with <!MOT> */
                start=pos;
                end=pos+1;
@@ -441,7 +426,7 @@ while (meta_list!=NULL) {
                   #ifdef TRE_WCHAR
                   if (filter_number==-1) OK=1;
                   else {
-                     unichar* sequence=get_token_sequence(texte,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
+                     unichar* sequence=get_token_sequence(p->buffer,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
                      OK=(string_match_filter(p->filters,sequence,filter_number)==0);
                      free(sequence);
                   }
@@ -450,10 +435,10 @@ while (meta_list!=NULL) {
                      /* <DIC> can match two things: a sequence of tokens or a single token
                       * As we don't want to process lists of [start,end[ ranges, we
                       * directly handle here the case of a token sequence. */
-                     if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-                     if (transduction_mode==MERGE_TRANSDUCTIONS) {
+                     if (p->output_policy!=IGNORE_OUTPUTS) process_transduction(output,p);
+                     if (p->output_policy==MERGE_OUTPUTS) {
                         for (int x=pos;x<=end_of_compound;x++) {
-                           push_string(p->tokens->value[texte[x+p->current_origin]]);
+                           push_string(p->tokens->value[p->buffer[x+p->current_origin]]);
                         }
                      }
                      locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
@@ -491,7 +476,7 @@ while (meta_list!=NULL) {
                #ifdef TRE_WCHAR
                if (filter_number==-1) OK=1;
                else {
-                  unichar* sequence=get_token_sequence(texte,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
+                  unichar* sequence=get_token_sequence(p->buffer,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
                   OK=(string_match_filter(p->filters,sequence,filter_number)==0);
                   free(sequence);
                }
@@ -501,10 +486,10 @@ while (meta_list!=NULL) {
                    * tag token like "{black-eyed,.A}". As we don't want to process lists
                    * of [start,end[ ranges, we directly handle here the case of a
                    * token sequence. */
-                  if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-                  if (transduction_mode==MERGE_TRANSDUCTIONS) {
+                  if (p->output_policy!=IGNORE_OUTPUTS) process_transduction(output,p);
+                  if (p->output_policy==MERGE_OUTPUTS) {
                      for (int x=pos;x<=end_of_compound;x++) {
-                        push_string(p->tokens->value[texte[x+p->current_origin]]);
+                        push_string(p->tokens->value[p->buffer[x+p->current_origin]]);
                      }
                   }
                   locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
@@ -570,7 +555,10 @@ while (meta_list!=NULL) {
          if (token2==-1) break;
          { /* This block avoids visibility problem about 'z' */
             int z=pos2;
-            while (z+p->current_origin<LENGTH && is_a_digit_token(p->tokens->value[texte[z+p->current_origin]])) z++;
+            while (z+p->current_origin<p->token_buffer->size 
+                   && is_a_digit_token(p->tokens->value[p->buffer[z+p->current_origin]])) {
+               z++;
+            }
             if (z!=pos2) {
                /* If we have found a contiguous digit sequence */
                start=pos;
@@ -592,15 +580,15 @@ while (meta_list!=NULL) {
 
       if (start!=-1) {
          /* If the transition has matched */
-         if (transduction_mode!=IGNORE_TRANSDUCTIONS) {
+         if (p->output_policy!=IGNORE_OUTPUTS) {
             /* We process its output */
             process_transduction(output,p);
          }
-         if (transduction_mode==MERGE_TRANSDUCTIONS) {
+         if (p->output_policy==MERGE_OUTPUTS) {
             /* Then, if we are in merge mode, we push the tokens that have
              * been read to the output */
             for (int y=start;y<end;y++) {
-               push_string(p->tokens->value[texte[y+p->current_origin]]);
+               push_string(p->tokens->value[p->buffer[y+p->current_origin]]);
             }
          }
          /* Then, we continue the exploration of the grammar */
@@ -719,16 +707,16 @@ while (pattern_list!=NULL) {
          #ifdef TRE_WCHAR
          if (filter_number==-1 ) OK=1;
          else {
-            unichar* sequence=get_token_sequence(texte,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
+            unichar* sequence=get_token_sequence(p->buffer,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
             OK=(string_match_filter(p->filters,sequence,filter_number)==0);
             free(sequence);
          }
          #endif
          if (OK){
-            if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-            if (transduction_mode==MERGE_TRANSDUCTIONS) {
+            if (p->output_policy!=IGNORE_OUTPUTS) process_transduction(output,p);
+            if (p->output_policy==MERGE_OUTPUTS) {
                for (int x=pos;x<=end_of_compound;x++) {
-                  push_string(p->tokens->value[texte[x+p->current_origin]]);
+                  push_string(p->tokens->value[p->buffer[x+p->current_origin]]);
                }
             }
             locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
@@ -760,16 +748,16 @@ while (pattern_list!=NULL) {
          #ifdef TRE_WCHAR
          if (filter_number==-1) OK=1;
          else {
-            unichar* sequence=get_token_sequence(texte,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
+            unichar* sequence=get_token_sequence(p->buffer,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
             OK=(string_match_filter(p->filters,sequence,filter_number)==0);
             free(sequence);
          }
          #endif
          if (OK) {
-            if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-            if (transduction_mode==MERGE_TRANSDUCTIONS) {
+            if (p->output_policy!=IGNORE_OUTPUTS) process_transduction(output,p);
+            if (p->output_policy==MERGE_OUTPUTS) {
                for (int x=pos;x<=end_of_compound;x++) {
-                  push_string(p->tokens->value[texte[x+p->current_origin]]);
+                  push_string(p->tokens->value[p->buffer[x+p->current_origin]]);
                }
             }
             locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
@@ -784,8 +772,8 @@ while (pattern_list!=NULL) {
       if (OK) {
          if (p->matching_patterns[token2]!=NULL) {
             if (XOR(get_value(p->matching_patterns[token2],pattern_list->pattern_number),pattern_list->negation)) {
-               if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-               if (transduction_mode==MERGE_TRANSDUCTIONS) {
+               if (p->output_policy!=IGNORE_OUTPUTS) process_transduction(output,p);
+               if (p->output_policy==MERGE_OUTPUTS) {
                   if (pos2!=pos) push_char(' ');
                   push_string(p->tokens->value[token2]);
                }
@@ -796,8 +784,8 @@ while (pattern_list!=NULL) {
             /* If the token matches no pattern, then it can match a pattern negation
              * like <!V> */
             if (pattern_list->negation && (p->token_control[token2] & MOT_TOKEN_BIT_MASK)) {
-               if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-               if (transduction_mode==MERGE_TRANSDUCTIONS) {
+               if (p->output_policy!=IGNORE_OUTPUTS) process_transduction(output,p);
+               if (p->output_policy==MERGE_OUTPUTS) {
                   if (pos2!=pos) push_char(' ');
                   push_string(p->tokens->value[token2]);
                }
@@ -815,7 +803,7 @@ while (pattern_list!=NULL) {
  * TOKENS
  */
 if (current_state->number_of_tokens!=0) {
-   int n=dichotomie(token2,current_state->tokens,current_state->number_of_tokens);
+   int n=binary_search(token2,current_state->tokens,current_state->number_of_tokens);
    if (n!=-1) {
       t=current_state->token_transitions[n];
       while (t!=NULL) {
@@ -825,8 +813,8 @@ if (current_state->number_of_tokens!=0) {
          #endif
          {
             output=p->tags[t->tag_number]->output;
-            if (transduction_mode!=IGNORE_TRANSDUCTIONS) process_transduction(output,p);
-            if (transduction_mode==MERGE_TRANSDUCTIONS) {
+            if (p->output_policy!=IGNORE_OUTPUTS) process_transduction(output,p);
+            if (p->output_policy==MERGE_OUTPUTS) {
                if (pos2!=pos) push_char(' ');
                push_string(p->tokens->value[token2]);
             }
@@ -849,39 +837,42 @@ return 0;
 }
 
 
-
-
-int dichotomie(int a, int* t, int n) {
-register int debut, milieu;
+/**
+ * Looks for 'a' in the given array. Returns its position or -1 if not found.
+ */
+int binary_search(int a, int* t, int n) {
+register int start,middle;
 if (n==0||t==NULL) return -1;
 if (a<t[0]) return -1;
 if (a>t[n-1]) return -1;
 n=n-1;
-debut=0;
-while (debut<=n) {
-  milieu = ((debut+n) >> 1); // like /2, but faster (depends on compiler)
-  if (t[milieu]==a) return milieu;
-  if (t[milieu]<a) {
-    debut=milieu+1;
-  }
-  else {
-    n=milieu-1;
-  }
+start=0;
+while (start<=n) {
+   middle=((start+n) >> 1); // like /2, but faster (depends on compiler)
+   if (t[middle]==a) return middle;
+   if (t[middle]<a) {
+      start=middle+1;
+   } else {
+      n=middle-1;
+   }
 }
 return -1;
 }
 
 
-
-
+/**
+ * This function compares the text to the compound word tree in order to find
+ * the longest compound word thay have in common. It returns the position
+ * of the last token of the compound word, or -1 if no compound word is found.
+ */
 int find_compound_word_(int pos,struct DLC_tree_node* node,int pattern_number,struct locate_parameters* p) {
 int position_max,m,res;
 if (node==NULL) return -1;
-if (-1!=dichotomie(pattern_number,node->array_of_patterns,node->number_of_patterns))
+if (-1!=binary_search(pattern_number,node->array_of_patterns,node->number_of_patterns))
    position_max=pos-1;
 else position_max=-1;
-if (pos+p->current_origin==LENGTH) return position_max;
-res=dichotomie(texte[pos+p->current_origin],node->destination_tokens,node->number_of_transitions);
+if (pos+p->current_origin==p->token_buffer->size) return position_max;
+res=binary_search(p->buffer[pos+p->current_origin],node->destination_tokens,node->number_of_transitions);
 if (res==-1) return position_max;
 m=find_compound_word_(pos+1,node->destination_nodes[res],pattern_number,p);
 if (m>position_max) return m;
@@ -889,25 +880,30 @@ return position_max;
 }
 
 
-
+/**
+ * Looks for a compound word from the position 'pos' in the text, that matches the
+ * given pattern_number. Returns the position of the last token of the compound word
+ * or -1 if no compound word is found. In case of a compound word that is a prefix 
+ * of another, the function considers the longest one.
+ */
 int find_compound_word(int pos,int pattern_number,struct DLC_tree_info* DLC_tree,struct locate_parameters* p) {
 int position_max,m,res;
 struct DLC_tree_node *n;
-if (pos+p->current_origin==LENGTH) {
+if (pos+p->current_origin==p->token_buffer->size) {
    return -1;
 }
-if ((n=DLC_tree->index[texte[pos+p->current_origin]])==NULL) {
+if ((n=DLC_tree->index[p->buffer[pos+p->current_origin]])==NULL) {
    return -1;
 }
-if (-1!=dichotomie(pattern_number,n->array_of_patterns,n->number_of_patterns)) {
+if (-1!=binary_search(pattern_number,n->array_of_patterns,n->number_of_patterns)) {
    position_max=pos;
 }
 else position_max=-1;
 pos++;
-if (pos+p->current_origin==LENGTH) {
+if (pos+p->current_origin==p->token_buffer->size) {
    return -1;
 }
-res=dichotomie(texte[pos+p->current_origin],n->destination_tokens,n->number_of_transitions);
+res=binary_search(p->buffer[pos+p->current_origin],n->destination_tokens,n->number_of_transitions);
 if (res==-1) {
    return position_max;
 }
