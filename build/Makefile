@@ -68,7 +68,7 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 DEFFLAGS = -D_NOT_UNDER_WINDOWS
 CFLAGS   = -Wall -W 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g
+CFLAGS += 
 endif
 override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = libtre
@@ -81,7 +81,7 @@ else
 DEFFLAGS = -D_NOT_UNDER_WINDOWS -DDO_NOT_USE_TRE_LIBRARY
 CFLAGS   = -Wall -W 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g
+CFLAGS += 
 endif
 override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
 LIBTRE   = 
