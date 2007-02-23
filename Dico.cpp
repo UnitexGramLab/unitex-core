@@ -19,12 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
 #include "DELA.h"
 #include "String_hash.h"
 #include "unicode.h"
@@ -33,7 +30,7 @@
 #include "Dico_application.h"
 #include "List_int.h"
 #include "FileName.h"
-#include "Table_complex_token_hash.h"
+#include "CompoundWordHashTable.h"
 #include "Fst2.h"
 #include "Copyright.h"
 #include "IOBuffer.h"

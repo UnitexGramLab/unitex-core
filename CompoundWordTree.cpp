@@ -149,8 +149,9 @@ free(DLC_tree);
  * 'tokenization_mode' indicates if the word must be tokenized character by character
  * or not.
  */
-void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alph,struct string_hash* tok,
-							int tokenization_mode,int SPACE) {
+#warning rewrites this function using the Tokenization library
+void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alph,
+                            struct string_hash* tok,int tokenization_mode,int SPACE) {
 int i,c,n_token,j,k;
 struct list_int* ptr;
 unichar m[1024];

@@ -24,31 +24,8 @@
 #include "BitArray.h"
 #include "List_pointer.h"
 #include "PatternTree.h"
+#include "Tokenization.h"
 
-
-
-/**
- * Returns 1 if the given sequence can be considered as a simple word;
- * 0 otherwise.
- * 
- * NOTE: with such a definition, a single char that is not a letter is not a simple word
- */
-int is_a_simple_word(unichar* sequence,Alphabet* alphabet,int tokenization_mode) {
-int i;
-i=0;
-if (tokenization_mode==CHAR_BY_CHAR_TOKENIZATION && u_strlen(sequence)>1) {
-   /* In a char by char mode, a string longer than 1 cannot be a simple word */
-   return 0;
-}
-/* Here, we are a bit parano since '\0' is not supposed to be in the alphabet */
-while (sequence[i]!='\0' && is_letter(sequence[i],alphabet)) {
-   i++;
-}
-if (sequence[i]=='\0') {
-   return 1;
-}
-return 0;
-}
 
 
 /**
@@ -130,7 +107,7 @@ while (EOF!=u_read_line(f,line)) {
    }
    /* Finally, we free the token list */
    free_list_int(ptr_copy);
-   if (!is_a_simple_word(entry->inflected,alphabet,parameters->tokenization_policy)) {
+   if (!is_a_simple_word(entry->inflected,parameters->tokenization_policy,alphabet)) {
       /* If the inflected form is a compound word */
       if (is_DIC_pattern || is_CDIC_pattern) {
          /* If the .fst2 contains "<DIC>" and/or "<CDIC>", then we

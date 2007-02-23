@@ -19,20 +19,36 @@
   *
   */
 
-#include "Compounds.h"
+#ifndef TokenizationH
+#define TokenizationH
 
-
-/*
- * 
- * This library will be removed when PolyLex will be rewritten.
+/**
+ * This library provides functions for tokenizing text.
  * 
  */
 
+#include "unicode.h"
+#include "Alphabet.h"
+#include "List_ustring.h"
+#include "LocateConstants.h"
 
-char* tableau_correct_left_component;
-char* tableau_correct_right_component;
-FILE* debug_file;
-FILE* result_file;
-struct INF_codes* inf_codes;
+struct list_ustring* tokenize(unichar*,TokenizationPolicy,Alphabet*);
+struct list_ustring* tokenize_char_by_char(unichar*);
+struct list_ustring* tokenize_word_by_word(unichar*,Alphabet*);
+int is_a_simple_token(unichar*,TokenizationPolicy,Alphabet*);
+int is_a_simple_word(unichar*,TokenizationPolicy,Alphabet*);
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
 
 

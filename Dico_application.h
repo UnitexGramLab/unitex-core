@@ -19,15 +19,14 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef Dico_applicationH
 #define Dico_applicationH
-//---------------------------------------------------------------------------
+
 #include "unicode.h"
 #include "Alphabet.h"
 #include "Text_tokens.h"
 #include "DELA.h"
-#include "Table_complex_token_hash.h"
+#include "CompoundWordHashTable.h"
 #include "Buffer.h"
 #include "BitArray.h"
 
@@ -124,7 +123,6 @@ struct dico_application_info {
    int COMPOUND_WORDS;
    int UNKNOWN_WORDS;
 };
-
 
 #define BUFFER_SIZE 200000
 

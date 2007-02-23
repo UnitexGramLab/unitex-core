@@ -26,6 +26,8 @@
 #include "PatternTree.h"
 #include "LocateFst2Tags.h"
 #include "BitMasks.h"
+#include "Tokenization.h"
+
 
 
 /**
@@ -249,7 +251,7 @@ return 1;
 /**
  * Returns a control byte that represents the characteristics of the given token.
  */
-unsigned char get_control_byte(unichar* token,Alphabet* alph,struct string_hash* err,int tokenization_mode) {
+unsigned char get_control_byte(unichar* token,Alphabet* alph,struct string_hash* err,TokenizationPolicy tokenization_policy) {
 int i;
 int tmp;
 unsigned char c=0;
@@ -331,7 +333,7 @@ if (token[0]=='{' && u_strcmp_char(token,"{S}") && u_strcmp_char(token,"{STOP}")
          set_bit_mask(&c,MIN_TOKEN_BIT_MASK);
       }
    }
-   if (!is_a_simple_word(temp->inflected,alph,tokenization_mode)) {
+   if (!is_a_simple_word(temp->inflected,tokenization_policy,alph)) {
       /* If the tag is a compound word, we say that it verifies the <CDIC> pattern */
       set_bit_mask(&c,CDIC_TOKEN_BIT_MASK);
    }

@@ -169,7 +169,7 @@ int locate_pattern(char*,char*,char*,char*,char*,char*,char*,
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 void decouper_entre_angles(unichar*,unichar*,unichar*,unichar*,struct string_hash*,Alphabet*);
-unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,int);
+unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,TokenizationPolicy);
 void compute_token_controls(Alphabet*,char*,struct locate_parameters*);
 
 #endif

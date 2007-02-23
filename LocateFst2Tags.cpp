@@ -25,6 +25,7 @@
 #include "Error.h"
 #include "PatternTree.h"
 #include "Alphabet.h"
+#include "Tokenization.h"
 
 
 /**
@@ -288,15 +289,7 @@ free_dela_entry(entry);
 }
 
 
-/**
- * Returns 1 if the given string contains only one token; 0 otherwise.
- */
-int is_a_simple_token(unichar* string, Alphabet* alph,TokenizationPolicy tokenization_policy) {
-if (is_a_simple_word(string,alph,tokenization_policy) || (u_strlen(string)==1)) {
-   return 1;
-}
-return 0;
-}
+
 
 
 /**
@@ -308,7 +301,7 @@ void optimize_full_pattern_for_sequence(unichar* sequence,int i,Fst2Tag* tag,Alp
                struct locate_parameters* p) {
 /* First, we test if the given sequence corresponds or not to a single token
  * like "today". */
-if (!is_a_simple_token(sequence,alph,p->tokenization_policy)) {
+if (!is_a_simple_token(sequence,p->tokenization_policy,alph)) {
    /* If we have a sequence of several tokens like "black-eyed", we handle it
     * as a compound word. To do that, we create a compound word pattern espacially
     * to match this sequence. */

@@ -19,15 +19,14 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <time.h>
 #include "Dico_application.h"
 #include "Error.h"
 #include "Matches.h"
 #include "FileName.h"
-//---------------------------------------------------------------------------
 
 #define DEBUG 0
+
 
 /*
  * "pomme de terre" is made of 5 tokens : "pomme" SPACE "de" SPACE "terre"
@@ -228,10 +227,10 @@ word_array->element[token_number]->list=get_offset(offset,word_array->element[to
 void free_offset_list(struct offset_list* l) {
 struct offset_list* tmp;
 while (l!=NULL) {
-  free(l->content);
-  tmp=l;
-  l=l->next;
-  free(tmp);
+   if (l->content!=NULL) free(l->content);
+   tmp=l;
+   l=l->next;
+   free(tmp);
 }
 }
 
@@ -451,6 +450,7 @@ int current_start_pos=0;
 printf("First block...              \r");
 int current_block=1;
 while (current_start_pos<info->buffer->size) {
+//   printf("current pos=%d\n",current_start_pos);
    if (!info->buffer->end_of_file
        && current_start_pos>(info->buffer->size-MARGIN_BEFORE_BUFFER_END)) {
       /* If we must change of block and if we can */
@@ -563,7 +563,7 @@ if (info->part_of_a_word==NULL || info->simple_word==NULL || info->n_occurrences
 for (int j=0;j<tokens->N;j++) {
    info->n_occurrences[j]=0;
 }
-info->tct_h=new_tct_hash(TCT_HASH_SIZE,TCT_HASH_BLOCK_SIZE);
+info->tct_h=new_tct_hash();
 info->SIMPLE_WORDS=0;
 info->COMPOUND_WORDS=0;
 info->UNKNOWN_WORDS=0;
@@ -673,7 +673,7 @@ while (l!=NULL) {
       else if(l->start<l->end)    {
          /* If it is a compound word, we turn it into a token sequence 
           * ended by -1 */
-         build_complex_token_tab(entry->inflected,info->tokens,token_tab_coumpounds);
+         build_token_sequence(entry->inflected,info->tokens,token_tab_coumpounds);
          int w=was_allready_in_tct_hash(token_tab_coumpounds,info->tct_h,priority);
          if (w==0 || w==priority) {
             /* We save the compound word only if it hasn't already been processed
