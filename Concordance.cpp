@@ -789,8 +789,7 @@ matches=load_match_list(concordance,NULL);
 buffer->size=fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 int start_pos_char;
 int end_pos_char;
-int current_sentence=0;
-int current_sentence_local=0;
+int current_sentence=1;
 int position_in_chars=0;
 int position_in_tokens=0;
 /* Now we can proceed all the matches, assuming that they are sorted by starting
@@ -807,7 +806,6 @@ while (matches!=NULL) {
 		 * the sentence number in the same way. */
 		position_in_chars=current_origin_in_chars;
 		position_in_tokens=0;
-		current_sentence_local=current_sentence;
 	}
 	/* Here, we are sure that the buffer contains all the tokens we need.
 	 * We adjust 'start_pos' and 'end_pos' so that the tokens that compose
@@ -821,7 +819,7 @@ while (matches!=NULL) {
 	for (int z=position_in_tokens;z<start_pos;z++) {
 		start_pos_char=start_pos_char+token_length[buffer->int_buffer[z]];
 		if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
-			current_sentence_local++;
+			current_sentence++;
 		}
 	}
 	position_in_chars=start_pos_char;
@@ -859,7 +857,7 @@ while (matches!=NULL) {
 	 * can occur inside a match. */
 	shift=get_shift(n_enter_char,enter_pos,matches->end);
 	end_pos_char=end_pos_char+shift;
-	sprintf(tmp_chars,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence_local);
+	sprintf(tmp_chars,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence);
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
 	u_strcpy_char(positions,tmp_chars);
 	/* Now we save the concordance line to the output file, but only if
