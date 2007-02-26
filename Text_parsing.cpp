@@ -865,17 +865,33 @@ return -1;
  * the longest compound word thay have in common. It returns the position
  * of the last token of the compound word, or -1 if no compound word is found.
  */
-int find_compound_word_(int pos,struct DLC_tree_node* node,int pattern_number,struct locate_parameters* p) {
-int position_max,m,res;
-if (node==NULL) return -1;
+int find_longest_compound_word(int pos,struct DLC_tree_node* node,int pattern_number,struct locate_parameters* p) {
+if (node==NULL) {
+   fatal_error("NULL node in find_longest_compound_word\n");
+}
+int current_token=p->buffer[pos+p->current_origin];
+int position_max;
 if (-1!=binary_search(pattern_number,node->array_of_patterns,node->number_of_patterns))
    position_max=pos-1;
 else position_max=-1;
 if (pos+p->current_origin==p->token_buffer->size) return position_max;
-res=binary_search(p->buffer[pos+p->current_origin],node->destination_tokens,node->number_of_transitions);
-if (res==-1) return position_max;
-m=find_compound_word_(pos+1,node->destination_nodes[res],pattern_number,p);
-if (m>position_max) return m;
+/* As the 'node->destination_tokens' array may contain duplicates, we look for
+ * one, and then we look before and after it, in order to examine all the
+ * duplicates. */
+int position=binary_search(current_token,node->destination_tokens,node->number_of_transitions);
+if (position==-1) return position_max;
+/* We look after it... */
+for (int i=position;i<node->number_of_transitions && current_token==node->destination_tokens[i];i++) {
+   /* If we can follow a transition tagged with the good token */
+   int m=find_longest_compound_word(pos+1,node->destination_nodes[i],pattern_number,p);
+   if (m>position_max) position_max=m;
+}
+/* ...and before it */
+for (int i=position-1;i>=0 && current_token==node->destination_tokens[i];i--) {
+   /* If we can follow a transition tagged with the good token */
+   int m=find_longest_compound_word(pos+1,node->destination_nodes[i],pattern_number,p);
+   if (m>position_max) position_max=m;
+}
 return position_max;
 }
 
@@ -887,6 +903,37 @@ return position_max;
  * of another, the function considers the longest one.
  */
 int find_compound_word(int pos,int pattern_number,struct DLC_tree_info* DLC_tree,struct locate_parameters* p) {
+return find_longest_compound_word(pos,DLC_tree->root,pattern_number,p);
+}
+
+
+/**
+ * This function compares the text to the compound word tree in order to find
+ * the longest compound word thay have in common. It returns the position
+ * of the last token of the compound word, or -1 if no compound word is found.
+ */
+int find_compound_word_old_(int pos,struct DLC_tree_node* node,int pattern_number,struct locate_parameters* p) {
+int position_max,m,res;
+if (node==NULL) return -1;
+if (-1!=binary_search(pattern_number,node->array_of_patterns,node->number_of_patterns))
+   position_max=pos-1;
+else position_max=-1;
+if (pos+p->current_origin==p->token_buffer->size) return position_max;
+res=binary_search(p->buffer[pos+p->current_origin],node->destination_tokens,node->number_of_transitions);
+if (res==-1) return position_max;
+m=find_compound_word_old_(pos+1,node->destination_nodes[res],pattern_number,p);
+if (m>position_max) return m;
+return position_max;
+}
+
+
+/**
+ * Looks for a compound word from the position 'pos' in the text, that matches the
+ * given pattern_number. Returns the position of the last token of the compound word
+ * or -1 if no compound word is found. In case of a compound word that is a prefix 
+ * of another, the function considers the longest one.
+ */
+int find_compound_word_old(int pos,int pattern_number,struct DLC_tree_info* DLC_tree,struct locate_parameters* p) {
 int position_max,m,res;
 struct DLC_tree_node *n;
 if (pos+p->current_origin==p->token_buffer->size) {
@@ -907,7 +954,7 @@ res=binary_search(p->buffer[pos+p->current_origin],n->destination_tokens,n->numb
 if (res==-1) {
    return position_max;
 }
-m=find_compound_word_(pos+1,n->destination_nodes[res],pattern_number,p);
+m=find_compound_word_old_(pos+1,n->destination_nodes[res],pattern_number,p);
 if (m>position_max) {
    return m;
 }

@@ -26,6 +26,8 @@
 #include "Alphabet.h"
 #include "String_hash.h"
 #include "List_int.h"
+#include "LocateConstants.h"
+
 
 #define NO_CASE_VARIANT_IS_ALLOWED 0
 #define ALL_CASE_VARIANTS_ARE_ALLOWED 1
@@ -56,9 +58,9 @@
  * an array of structure. This is a trick to optimize dichotomy searches, because
  * testing destination_tokens[k] is quicker than testing t[k]->token.
  * 
- * For instance, if we have a transition tagged by 'the' that goes to the node 47 and another tagged 
- * by "The" that goes to the node 129, and if the text contains the tokens "the",
- * "The" and "THE" the original transition list is:
+ * For instance, if we have a transition tagged by 'the' that goes to the node 47
+ * and another tagged by "The" that goes to the node 129, and if the text
+ * contains the tokens "the", "The" and "THE" the original transition list is:
  * 
  * ("the" , 47) -> ("The" , 129) -> NULL
  * 
@@ -66,9 +68,9 @@
  * arrays:
  * 
  * destination_tokens	destination_nodes
- * THE					47,129
- * The					47,129
- * the					47
+ * THE					   47,129
+ * The					   47,129
+ * the					   47
  */
 struct DLC_tree_node {
 	/*
@@ -93,7 +95,9 @@ struct DLC_tree_node {
 	 */
 	struct DLC_tree_transition* transitions;
 	/*
-	 * 'number_of_transitions' is the length of the list 'transitions'.
+	 * WARNING: 'number_of_transitions' is NOT the length of the list
+    *          'transitions', but the size of the 'destination_tokens'
+    *          and 'destination_nodes' arrays.
 	 */
 	int number_of_transitions;
 	/*
@@ -108,11 +112,18 @@ struct DLC_tree_node {
 
 
 /**
+ * We define an IntSequence as an array containing sorted >=0 integers
+ * and ended by -1.
+ */
+typedef int* IntSequence;
+
+
+/**
  * This structure represent a list of transitions in a compound word tree.
  */
 struct DLC_tree_transition {
 	/* The number of the token */
-	int token;
+	IntSequence token_sequence;
 	/* The destination node */
 	struct DLC_tree_node* node;
 	/* The following element of the list */
@@ -133,10 +144,11 @@ struct DLC_tree_info {
 
 struct DLC_tree_info* new_DLC_tree(int);
 void free_DLC_tree(struct DLC_tree_info*);
-void tokenize_compound_word(unichar*,int*,Alphabet*,struct string_hash*,int,int);
-void add_compound_word_with_no_pattern(unichar*,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int);
-void add_compound_word_with_pattern(unichar*,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int);
-int conditional_insertion_in_DLC_tree(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,int,int);
+void tokenize_compound_word(unichar*,int*,Alphabet*,struct string_hash*,TokenizationPolicy,int);
+void add_compound_word_with_no_pattern(unichar*,Alphabet*,struct string_hash*,struct DLC_tree_info*,TokenizationPolicy,int);
+void add_compound_word_with_pattern(unichar*,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,TokenizationPolicy,int);
+int conditional_insertion_in_DLC_tree(unichar*,int,int,Alphabet*,struct string_hash*,struct DLC_tree_info*,TokenizationPolicy,int);
 void optimize_DLC(struct DLC_tree_info*);
+
 
 #endif

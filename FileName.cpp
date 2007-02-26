@@ -19,12 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <string.h>
 #include <stdlib.h>
 #include "FileName.h"
 #include "Error.h"
-//---------------------------------------------------------------------------
 
 
 /**
@@ -97,7 +95,7 @@ strcat(result,PATH_SEPARATOR_STRING);
 
 
 /**
- * Takes a file name and copi"s it without its path, if any, into 'result'.
+ * Takes a file name and copies it without its path, if any, into 'result'.
  * 
  */
 void remove_path(char* filename,char* result) {

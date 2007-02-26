@@ -540,7 +540,7 @@ return value;
 /**
  * Creates, initializes and returns a fst2 transition
  */
-Fst2Transition new_Fst2Transition(int tag_number,int state_number) {
+Fst2Transition new_Fst2Transition(int tag_number,int state_number,Fst2Transition next) {
 Fst2Transition transition;
 transition=(Fst2Transition)malloc(sizeof(struct fst2Transition));
 if (transition==NULL) {
@@ -548,8 +548,16 @@ if (transition==NULL) {
 }
 transition->tag_number=tag_number;
 transition->state_number=state_number;
-transition->next=NULL;
+transition->next=next;
 return transition;
+}
+
+
+/**
+ * Creates, initializes and returns a fst2 transition
+ */
+Fst2Transition new_Fst2Transition(int tag_number,int state_number) {
+return new_Fst2Transition(tag_number,state_number,NULL);
 }
 
 

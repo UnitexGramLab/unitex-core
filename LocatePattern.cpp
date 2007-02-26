@@ -226,7 +226,9 @@ if (info!=NULL) u_fclose(info);
 u_fclose(out);
 printf("Freeing memory...\n");
 free_optimized_states(p->optimized_states,p->fst2->number_of_states);
-free_DLC_tree(p->DLC_tree);
+/** Too long to free the DLC tree if it is big
+ * free_DLC_tree(p->DLC_tree);
+ */
 free_Fst2(p->fst2);
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(alph);

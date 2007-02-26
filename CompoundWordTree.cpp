@@ -22,9 +22,16 @@
 #include "LocatePattern.h"
 #include "CompoundWordTree.h"
 #include "Error.h"
+#include "Tokenization.h"
+
 
 
 void free_DLC_tree_node(struct DLC_tree_node*);
+void quicksort(int*,int);
+void quicksort2(int*,void**,int);
+IntSequence clone_IntSequence(IntSequence);
+int compare_IntSequence(IntSequence,IntSequence);
+
 
 /**
  * Allocates, initializes and returns a compound word tree node.
@@ -48,7 +55,6 @@ return n;
 
 /**
  * Allocates, initializes and returns a compound word tree transition.
- * The default token number is -1.
  */
 struct DLC_tree_transition* new_DLC_tree_transition() {
 struct DLC_tree_transition* t;
@@ -56,7 +62,7 @@ t=(struct DLC_tree_transition*)malloc(sizeof(struct DLC_tree_transition));
 if (t==NULL) {
 	fatal_error("Not enough memory in new_DLC_tree_transition\n");
 }
-t->token=-1;
+t->token_sequence=NULL;
 t->node=NULL;
 t->next=NULL;
 return t;
@@ -96,6 +102,7 @@ void free_DLC_tree_transitions(struct DLC_tree_transition* transitions) {
 struct DLC_tree_transition* tmp;
 while (transitions!=NULL) {
 	free_DLC_tree_node(transitions->node);
+   if (transitions->token_sequence!=NULL) free(transitions->token_sequence);
 	tmp=transitions->next;
 	free(transitions);
 	transitions=tmp;
@@ -149,98 +156,46 @@ free(DLC_tree);
  * 'tokenization_mode' indicates if the word must be tokenized character by character
  * or not.
  */
-#warning rewrites this function using the Tokenization library
-void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alph,
-                            struct string_hash* tok,int tokenization_mode,int SPACE) {
-int i,c,n_token,j,k;
+void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alphabet,
+                            struct string_hash* tok,TokenizationPolicy tokenization_mode,int SPACE) {
+
+int i,n_token,j;
+struct list_ustring* list=tokenize(word,tokenization_mode,alphabet);
+struct list_ustring* tmp;
 struct list_int* ptr;
-unichar m[1024];
-k=0;
+i=0;
 n_token=0;
-if (tokenization_mode==CHAR_BY_CHAR_TOKENIZATION) {
-   /* If we must process the dictionary character by character */
-   n_token=0;
-   i=0;
-   m[1]='\0';
-   while (word[i]!='\0') {
-      m[0]=word[i];
-      j=get_value_index(m,tok,DONT_INSERT);
-      if (j==-1) {
-      	 /* If a token of a compound word is not a token of the text,
-      	  * then we traduce it by an empty list. */
-         tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
-         tokens[n_token++]=END_CASE_VARIANT_LIST;
+while (list!=NULL) {
+   j=j=get_value_index(list->string,tok,DONT_INSERT);
+   if (j==-1) {
+      /* If a token of a compound word is not a token of the text,
+       * then we traduce it by an empty list. We don't raise an
+       * error because if there is by accident a token in a dictionary
+       * that is not in the text, it would block the Locate without
+       * necessity. */
+      tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
+      tokens[n_token++]=END_CASE_VARIANT_LIST;
+   } else if (is_letter2(list->string[0],alphabet)) {
+      /* If the current token is made of letters, we look for all
+       * its case variants. */
+      tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
+      ptr=get_token_list_for_sequence(list->string,alphabet,tok);
+      struct list_int* ptr_copy=ptr; // s.n.
+      while (ptr!=NULL) {
+         j=ptr->n;
+         tokens[n_token++]=j;
+         ptr=ptr->next;
       }
-      else tokens[n_token++]=j;
-      i++;
+      free_list_int(ptr_copy); // s.n.
+      tokens[n_token++]=END_CASE_VARIANT_LIST;
+   } else {
+      /* If we have a non letter single character, we just add its number to
+       * the token array */
+      tokens[n_token++]=j;
    }
-   tokens[n_token]=END_TOKEN_LIST;
-   return;
-}
-/* If we are not in character by character mode */
-while ((c=word[k])!='\0') {
-  if (c==' ') {
-              j=SPACE;
-              /* If the text does not contain the token space,
-               * then we traduce it by an empty list. */
-              if (j==-1) {
-                tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
-                tokens[n_token++]=END_CASE_VARIANT_LIST;
-              }
-              else tokens[n_token++]=j;
-              /* In case of several spaces, we consider them as just
-               * one space. Note that this case should not happen. */
-              while ((c=word[++k])==' ');
-            }
-    else if (is_letter((unichar)c,alph)) {
-              /* If we have a letter, then we look for a word */
-              i=0;
-              do {
-                m[i++]=(unichar)c;
-                c=word[++k];
-              }
-              while (is_letter((unichar)c,alph));
-              m[i]='\0';
-              /* The test (n_token>0) is used to allow case variants on the first
-               * token in any case. */
-              if (n_token>0 && !ALL_CASE_VARIANTS_ARE_ALLOWED) {
-                /* Here we compute no case variant, we only look for the exact
-                 * matching token */
-                j=get_value_index(m,tok,DONT_INSERT);
-                if (j==-1) {
-                  tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
-                  tokens[n_token++]=END_CASE_VARIANT_LIST;
-                }
-                else tokens[n_token++]=j;
-              }
-              else {
-                /* Here we compute all case variants */
-                tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
-                ptr=get_token_list_for_sequence(m,alph,tok);
-                struct list_int* ptr_copy = ptr; // s.n.
-                while (ptr!=NULL) {
-                  j=ptr->n;
-                  tokens[n_token++]=j;
-                  ptr=ptr->next;
-                }
-                free_list_int(ptr_copy); // s.n.
-                tokens[n_token++]=END_CASE_VARIANT_LIST;
-              }
-            }
-    		else {
-    		   /* If we have a non letter character, then we take
-    		    * it as a token. */
-               m[0]=(unichar)c;
-               m[1]='\0';
-               k++;
-               j=get_value_index(m,tok,DONT_INSERT);
-               /* If the text does not contain this token,
-               * then we traduce it by an empty list. */
-               if (j==-1) {
-                  tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
-                  tokens[n_token++]=END_CASE_VARIANT_LIST;
-               } else tokens[n_token++]=j;
-    		}
+   tmp=list;
+   list=list->next;
+   free_list_ustring_element(tmp);
 }
 /* Finally, we end the token list. */
 tokens[n_token]=END_TOKEN_LIST;
@@ -296,7 +251,7 @@ return;
  * tagged by 'token' is found. Otherwise, a transition is created, and the destination
  * node of this transition is created and returned.
  */
-struct DLC_tree_node* get_DLC_tree_node(struct DLC_tree_node* node,int token,int create_if_necessary) {
+struct DLC_tree_node* get_DLC_tree_node(struct DLC_tree_node* node,IntSequence token_sequence,int create_if_necessary) {
 struct DLC_tree_transition* l;
 if (node->transitions==NULL) {
   /* If the list is empty */
@@ -304,30 +259,30 @@ if (node->transitions==NULL) {
   if (!create_if_necessary) return NULL;
   /* Otherwise, we create a transition */
   l=new_DLC_tree_transition();
-  l->token=token;
+  l->token_sequence=clone_IntSequence(token_sequence);
   l->next=node->transitions;
   /* And we create the destination node of this transition */
   l->node=new_DLC_tree_node();
   node->transitions=l;
-  (node->number_of_transitions)++;
   /* Finally we return the created node */
   return l->node;
 }
-if (node->transitions->token==token)
-  /* If the head of the list is the one we look for, we return it */
-  return node->transitions->node;
-if (node->transitions->token>token) {
+int compare=compare_IntSequence(node->transitions->token_sequence,token_sequence);
+if (compare==0) {
+   /* If the head of the list is the one we look for, we return it */
+   return node->transitions->node;
+}
+if (compare<0) {
   /* If we must insert at the beginning of the list */
   /* We return if the function must not create the node */
   if (!create_if_necessary) return NULL;
   /* Otherwise, we create a transition */
   l=new_DLC_tree_transition();
-  l->token=token;
+  l->token_sequence=clone_IntSequence(token_sequence);
   l->next=node->transitions;
   /* And we create the destination node of this transition */
   l->node=new_DLC_tree_node();
   node->transitions=l;
-  (node->number_of_transitions)++;
   /* Finally we return the created node */
   return l->node;
 }
@@ -338,15 +293,16 @@ int stop=0;
  * to insert the node */
 while (!stop && previous->next!=NULL) {
 	/* If we find the node, we return it */
-	if (previous->next->token==token) return previous->next->node;
-	else if (previous->next->token<token) previous=previous->next;
+   compare=compare_IntSequence(previous->next->token_sequence,token_sequence);
+	if (compare==0) return previous->next->node;
+	else if (compare<0) previous=previous->next;
 	else stop=1;
 }
 /* We return if the function must not create the node */
 if (!create_if_necessary) return NULL;
 /* Otherwise, we create a transition */
 l=new_DLC_tree_transition();
-l->token=token;
+l->token_sequence=clone_IntSequence(token_sequence);
 /* And we create the destination node of this transition */
 l->node=new_DLC_tree_node();
 l->next=previous->next;
@@ -377,50 +333,36 @@ return l->node;
  */
 void associate_pattern_to_compound_word(int* token_list,int pos,struct DLC_tree_node* node,
 				int pattern,struct DLC_tree_info* DLC_tree) {
-struct DLC_tree_node* ptr;
-int next_token,first_token;
 if (token_list[pos]==END_TOKEN_LIST) {
-  /* If we are at the end of the token list, we
-   * add the pattern number to the current node */
-  add_pattern_to_DLC_tree_node(node,pattern);
-  return;
+   /* If we are at the end of the token list, we
+    * add the pattern number to the current node */
+   add_pattern_to_DLC_tree_node(node,pattern);
+   return;
 }
-first_token=(pos==0);
+int int_sequence[256];
 if (token_list[pos]!=BEGIN_CASE_VARIANT_LIST) {
-	/* If the token is a single token, then we get the corresponding node */
-	ptr=get_DLC_tree_node(node,token_list[pos],1);
-	if (first_token) {
-		/* If the token is the first of the list, then we update the
-		 * index with it */
-		DLC_tree->index[token_list[pos]]=ptr;
-	}
-	/* And we add the pattern number to this node */
-	associate_pattern_to_compound_word(token_list,pos+1,ptr,pattern,DLC_tree);
-	return;
+   /* If the token is a single token, then we put it into the token
+    * sequence */
+   int_sequence[0]=token_list[pos];
+   int_sequence[1]=-1;
+   pos++;
+} else {
+   /* If we have a token sequence, we build it */
+   int j=0;
+   do {
+      pos++;
+      int_sequence[j++]=token_list[pos];
+   } while (token_list[pos]!=END_CASE_VARIANT_LIST);
+   /* We use j-1 because the END_CASE_VARIANT_LIST value has been put
+    * at position j-1 */
+   int_sequence[j-1]=-1;
+   pos++;
+   /* And we sort it */
+   quicksort(int_sequence,j-1);
 }
-/* If we have a token list instead of a single token,
- * we look for the index of the next token, that is to say
- * to position that follows the end of the token list */
-next_token=pos;
-do {
-	next_token++;
-} while (token_list[next_token]!=END_CASE_VARIANT_LIST);
-next_token++;
-/* Then we parse the token list */
-pos++;
-while (token_list[pos]!=END_CASE_VARIANT_LIST)  {
-	/* We get the node that correspond to the single token (nested token 
-	 * lists are forbidden) */
-	ptr=get_DLC_tree_node(node,token_list[pos],1);
-	if (first_token) {
-		/* If the token is the first of the list, then we update the
-		 * index with it */
-		DLC_tree->index[token_list[pos]]=ptr;
-	}
-	/* And we add the pattern number to this node */
-	associate_pattern_to_compound_word(token_list,next_token,ptr,pattern,DLC_tree);
-	pos++;
-}
+/* Then, we look for the node that we can reach with our int sequence */
+struct DLC_tree_node* ptr=get_DLC_tree_node(node,int_sequence,1);
+associate_pattern_to_compound_word(token_list,pos,ptr,pattern,DLC_tree);
 }
 
 
@@ -430,22 +372,23 @@ while (token_list[pos]!=END_CASE_VARIANT_LIST)  {
  * for any compound word, regardless the pattern, with <DIC> or <CDIC>.
  */
 void add_compound_word_with_no_pattern(unichar* word,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,int tokenization_mode,int SPACE) {
+							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode,int SPACE) {
 add_compound_word_with_pattern(word,COMPOUND_WORD_PATTERN,alph,tok,DLC_tree,
 							tokenization_mode,SPACE);
 }
 
 
 /**
- * Adds a compound word to the tree 'DLC_tree' with the pattern number
- * 'pattern'.
+ * Adds a compound word to the tree 'DLC_tree' with the pattern
+ * number 'pattern'.
  */
 void add_compound_word_with_pattern(unichar* word,int pattern,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,int tokenization_mode,int SPACE) {
+							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode,int SPACE) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
 tokenize_compound_word(word,token_list,alph,tok,tokenization_mode,SPACE);
 associate_pattern_to_compound_word(token_list,0,DLC_tree->root,pattern,DLC_tree);
 }
+
 
 
 /**
@@ -487,42 +430,33 @@ return 0;
  */
 int conditional_insertion_in_DLC_tree_node(int* token_list,int pos,struct DLC_tree_node* node,
 										int pattern1,int pattern2) {
-struct DLC_tree_node* ptr;
-int next_token,result;
-result=0;
 if (token_list[pos]==END_TOKEN_LIST) {
-	/* If we are at the end of the token list */
-	return conditional_pattern_insertion(node,pattern1,pattern2);
+   /* If we are at the end of the token list */
+   return conditional_pattern_insertion(node,pattern1,pattern2);
 }
+int int_sequence[256];
 if (token_list[pos]!=BEGIN_CASE_VARIANT_LIST) {
-	/* If the token is a single token, we get the corresponding node,
-	 * without creating it if it does not exist */
-  ptr=get_DLC_tree_node(node,token_list[pos],0);
-  /* If the node exists, we go on recursively, otherwise we fail */
-  if (ptr!=NULL) return conditional_insertion_in_DLC_tree_node(token_list,pos+1,ptr,pattern1,pattern2);
-  else return 0;
+   /* If the token is a single token, then we put it into the token
+    * sequence */
+   int_sequence[0]=token_list[pos];
+   int_sequence[1]=-1;
+   pos++;
+} else {
+   /* If we have a token sequence, we build it */
+   int j=0;
+   do {
+      pos++;
+      int_sequence[j++]=token_list[pos];
+   } while (token_list[pos]!=END_CASE_VARIANT_LIST);
+   int_sequence[j]=-1;
+   pos++;
+   /* And we sort it */
+   quicksort(int_sequence,j);
 }
-/* If we have a token list instead of a single token,
- * we look for the index of the next token, that is to say
- * to position that follows the end of the token list */
-next_token=pos;
-do {
-	next_token++;
-} while (token_list[next_token]!=END_CASE_VARIANT_LIST);
-next_token++;
-/* Then we parse the token list */
-pos++;
-while (token_list[pos]!=END_CASE_VARIANT_LIST)  {
-	/* We get the node that correspond to the single token (nested token 
-	 * lists are forbidden). Note that we do not create the node if it does
-	 * not exist */
-	ptr=get_DLC_tree_node(node,token_list[pos],0);
-	/* If the node exist, we go on recursively. If at least one token leads
-	 * to a success, then the global result will be a success. */
-	if (ptr!=NULL) result=result+conditional_insertion_in_DLC_tree_node(token_list,next_token,ptr,pattern1,pattern2);
-	pos++;
-}
-return result;
+/* Then, we look for the node that we can reach with our int sequence */
+struct DLC_tree_node* ptr=get_DLC_tree_node(node,int_sequence,0);
+if (ptr!=NULL) return conditional_insertion_in_DLC_tree_node(token_list,pos,ptr,pattern1,pattern2);
+return 0;
 }
 
 
@@ -535,13 +469,35 @@ return result;
  * it inserts 'pattern2' in the pattern list associated to 'word' and returns a
  * non-zero value.
  */
-#warning reorganize parameters
 int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,Alphabet* alph,
-						struct string_hash* tok,struct DLC_tree_info* infos,int tokenization_mode,
+						struct string_hash* tok,struct DLC_tree_info* infos,TokenizationPolicy tokenization_mode,
                   int SPACE) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
 tokenize_compound_word(word,token_list,alph,tok,tokenization_mode,SPACE);
 return conditional_insertion_in_DLC_tree_node(token_list,0,infos->root,pattern1,pattern2);
+}
+
+
+/**
+ * This function takes a DLC tree node and returns the number
+ * of transitions that there is actually: for each outgoing
+ * transition, we count the tokens in the transition's token
+ * sequence.
+ */
+int count_actual_transitions(struct DLC_tree_node* node) {
+if (node==NULL) {
+   fatal_error("NULL error in count_actual_transitions");
+}
+int res=0;
+DLC_tree_transition* t=node->transitions;
+while (t!=NULL) {
+   int* token_sequence=t->token_sequence;
+   for (int i=0;token_sequence[i]!=-1;i++) {
+      res++;
+   }
+   t=t->next;
+}
+return res;
 }
 
 
@@ -571,7 +527,8 @@ if (n->number_of_patterns!=0) {
      free(tmp);
    }
 }
-if (n->number_of_transitions!=0) {
+n->number_of_transitions=count_actual_transitions(n);
+if (n->transitions!=NULL) {
    /* We allocate the arrays for representing (token,node) pairs of
     * transitions and fill them */
    n->destination_tokens=(int*)malloc(sizeof(int)*n->number_of_transitions);
@@ -584,15 +541,24 @@ if (n->number_of_transitions!=0) {
    }
    i=0;
    while (n->transitions!=NULL) {
-     n->destination_tokens[i]=n->transitions->token;
-     n->destination_nodes[i]=n->transitions->node;
+     /* Recursively, we optimize the destination node */
+     optimize_DLC_node(n->transitions->node);
+     int* token_sequence=n->transitions->token_sequence;
+     for (int j=0;token_sequence[j]!=-1;j++) {
+        n->destination_nodes[i]=n->transitions->node;
+        n->destination_tokens[i]=token_sequence[j];
+        i++;
+     }
      t=n->transitions;
      n->transitions=n->transitions->next;
-     /* Recursively, we optimize the destination node */
-     optimize_DLC_node(n->destination_nodes[i]);
-     i++;
+     /* WARNING: don't call free_DLC_tree_transitions(t), because it would
+      *          free the destination node that is still used. */
+     free(t->token_sequence);
      free(t);
    }
+   /* Finally, we sort the n->destination_nodes and n->destination_tokens
+    * arrays according to the tokens' numbers. */
+   quicksort2(n->destination_tokens,(void**)(n->destination_nodes),n->number_of_transitions);
 }
 }
 
@@ -603,5 +569,145 @@ if (n->number_of_transitions!=0) {
  */
 void optimize_DLC(struct DLC_tree_info* DLC_tree) {
 optimize_DLC_node(DLC_tree->root);
+}
+
+
+/**
+ * Builds a quicksort partition of the given array.
+ */
+int partition(int start,int end,int* array) {
+int pivot;
+int tmp;
+int i=start-1;
+/* Final pivot index */
+int j=end+1;
+pivot=array[(start+end)/2];
+while (true) {
+   do j--;
+   while ((j>(start-1)) && array[j]>pivot);
+   do i++;
+   while ((i<end+1) && array[i]<pivot);
+   if (i<j) {
+      tmp=array[i];
+      array[i]=array[j];
+      array[j]=tmp;
+   } else return j;
+}
+}
+
+
+/**
+ * Sorts the given int array.
+ */
+void quicksort(int start,int end,int* array) {
+int p;
+if (start<end) {
+   p=partition(start,end,array);
+   quicksort(start,p,array);
+   quicksort(p+1,end,array);
+}
+}
+
+
+/**
+ * Sorts the given int array.
+ */
+void quicksort(int* array,int size) {
+quicksort(0,size-1,array);
+}
+
+
+/**
+ * Builds a quicksort partition of the given arrays.
+ */
+int partition2(int start,int end,int* array1,void** array2) {
+int pivot;
+int tmp;
+int i=start-1;
+/* Final pivot index */
+int j=end+1;
+pivot=array1[(start+end)/2];
+void* tmp2;
+while (true) {
+   do j--;
+   while ((j>(start-1)) && array1[j]>pivot);
+   do i++;
+   while ((i<end+1) && array1[i]<pivot);
+   if (i<j) {
+      /* We perform the pivot test on the first array, bu we
+       * apply the element permutations to both. */
+      tmp=array1[i];
+      array1[i]=array1[j];
+      array1[j]=tmp;
+      tmp2=array2[i];
+      array2[i]=array2[j];
+      array2[j]=tmp2;
+   } else return j;
+}
+}
+
+
+/**
+ * Sorts the given int arrays.
+ */
+void quicksort2(int start,int end,int* array1,void** array2) {
+int p;
+if (start<end) {
+   p=partition2(start,end,array1,array2);
+   quicksort2(start,p,array1,array2);
+   quicksort2(p+1,end,array1,array2);
+}
+}
+
+
+/**
+ * Sorts the given int arrays. The sort is done according to the values of
+ * 'array1', but the element permutations are done on both arrays.
+ */
+void quicksort2(int* array1,void** array2,int size) {
+quicksort2(0,size-1,array1,array2);
+}
+
+
+/**
+ * Allocates and returns a copy of the given IntSequence.
+ */
+IntSequence clone_IntSequence(IntSequence src) {
+if (src==NULL) return NULL;
+int l;
+for (l=0;src[l]!=-1;l++);
+IntSequence dst=(IntSequence)malloc((l+1)*sizeof(int));
+if (dst==NULL) {
+   fatal_error("Not enough memory in clone_IntSequence\n");
+}
+l=0;
+while ((dst[l]=src[l])!=-1) l++;
+return dst;
+}
+
+
+/**
+ * Compares two IntSequence according to the lexicographic order
+ * and returns:
+ * - 0 if a==b
+ * - a value <0 if a<b
+ * - a value >0 if a>b
+ * 
+ * Raises a fatal error if a sequence is NULL.
+ */
+int compare_IntSequence(IntSequence a,IntSequence b) {
+if (a==NULL || b==NULL) {
+   fatal_error("NULL error in compare_IntSequence\n");
+}
+register const int *a_p = a;
+register const int *b_p = b;
+register int a_c;
+register int b_c;
+do {
+   a_c=(int)*a_p++;
+   b_c=(int)*b_p++;
+   if (a_c==-1) return a_c-b_c;
+} while (a_c==b_c);
+return a_c - b_c;
 }
 

@@ -25,7 +25,7 @@
 #include "List_pointer.h"
 #include "PatternTree.h"
 #include "Tokenization.h"
-
+#include "FileName.h"
 
 
 /**
@@ -58,7 +58,14 @@ if (f==NULL) {
    return;
 }
 /* We parse all the lines */
+int lines=0;
+char name[FILENAME_MAX];
+remove_path(dic_name,name);
 while (EOF!=u_read_line(f,line)) {
+   lines++;
+   if (lines%10000==0) {
+      printf("%s: %d lines loaded...                          \r",name,lines);
+   }
    if (line[0]=='/') {
       /* NOTE: DLF and DLC files are not supposed to contain comment
        *       lines, but we test them, just in the case */
@@ -129,6 +136,9 @@ while (EOF!=u_read_line(f,line)) {
       }
    }
    free_dela_entry(entry);
+}
+if (lines>10000) {
+   printf("\n");
 }
 u_fclose(f);
 }

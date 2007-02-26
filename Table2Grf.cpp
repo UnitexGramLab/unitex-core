@@ -30,7 +30,6 @@
 #include "IOBuffer.h"
 #include "Error.h"
 
-#define MAX_FILENAME_LENGTH 1024 /* including path */
 #define MAX_LINES_IN_TABLE 1024  
 
 //
@@ -86,7 +85,7 @@ if (result_graph==NULL) {
    u_fclose(reference_graph);
    return 1;
 }
-char subgraph[MAX_FILENAME_LENGTH];
+char subgraph[FILENAME_MAX];
 if (argc!=5) {
    // if no subgraph name is given for the graph TUTU.grf, we
    // take TUTU_xxxx as subgraph name
@@ -99,7 +98,7 @@ if (argc!=5) {
    // if we do have a subgraph name, we just take it
    strcpy(subgraph,argv[4]);
 }
-char chemin[MAX_FILENAME_LENGTH];
+char chemin[FILENAME_MAX];
 get_path(argv[3],chemin);
 table2grf(table,reference_graph,result_graph,subgraph,chemin);
 return 0;
@@ -601,7 +600,7 @@ return 1;
 bool create_graph(int ligne_courante,unichar** ligne,int n_champs,struct graphe_patron* g,
                   char* nom_resultat,char* chemin,FILE *f_coord,int graphs_printed) {
 
-char nom_res[MAX_FILENAME_LENGTH];
+char nom_res[FILENAME_MAX];
 struct graphe_patron r;
 struct graphe_patron* res;
 int i,j;
@@ -622,8 +621,8 @@ for (i=0;i<g->n_etats;i++) {
 }
 
 // we print the name of the subgraph
-unichar tmp[MAX_FILENAME_LENGTH];
-unichar tmp2[MAX_FILENAME_LENGTH];
+unichar tmp[FILENAME_MAX];
+unichar tmp2[FILENAME_MAX];
 u_strcpy_char(tmp,nom_resultat);
 tmp2[0]='\0';
 convertir(tmp2,tmp,ligne,n_champs,ligne_courante);
@@ -641,8 +640,8 @@ if (graphs_printed!=0) {
 }
 u_fprints_char(":",f_coord);
 {
-char tmp3[MAX_FILENAME_LENGTH];
-char tmp4[MAX_FILENAME_LENGTH];
+char tmp3[FILENAME_MAX];
+char tmp4[FILENAME_MAX];
 get_path(nom_res,tmp3);
 if ( ! strncmp(tmp3,chemin,strlen(chemin)) ) /* the subgraph is in a subdirectory
                                                 relative to the path of the result graph:

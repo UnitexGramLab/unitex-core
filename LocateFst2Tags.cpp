@@ -245,7 +245,7 @@ if (is_bit_mask_set(tag[i]->control,RESPECT_CASE_TAG_BIT_MASK)) {
    return;
 }
 /* Here, we have to get all the case variants of the token. */
-tag[i]->matching_tokens=sorted_merge(get_token_list_for_sequence(opt_token,alph,p->tokens),tag[i]->matching_tokens);
+tag[i]->matching_tokens=destructive_sorted_merge(get_token_list_for_sequence(opt_token,alph,p->tokens),tag[i]->matching_tokens);
 }
 
 

@@ -190,7 +190,7 @@ return n;
  * This function returns a list that is the sorted merge of the two given lists.
  * Duplicate elements are freed, if any.
  */
-struct list_int* sorted_merge(struct list_int* a,struct list_int* b) {
+struct list_int* destructive_sorted_merge(struct list_int* a,struct list_int* b) {
 struct list_int* tmp;
 while (b!=NULL) {
    a=sorted_insert(b->n,a);
@@ -200,4 +200,20 @@ while (b!=NULL) {
 }
 return a;
 }
+
+
+/**
+ * This function puts in 'a' the merge of 'a' and 'b'. The merge result 
+ * is returned. 'b' is not modified.
+ */
+struct list_int* sorted_merge(struct list_int* a,struct list_int* b) {
+struct list_int* tmp;
+while (b!=NULL) {
+   a=sorted_insert(b->n,a);
+   tmp=b;
+   b=b->next;
+}
+return a;
+}
+
 

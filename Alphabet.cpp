@@ -176,6 +176,19 @@ return is_upper(c,alphabet)||is_lower(c,alphabet);
 
 
 /**
+ * Returns 1 if 'c' is a letter; 0 otherwise. If alphabet is non NULL,
+ * it is used to determine which characters are letters; otherwise, the
+ * 'u_is_letter' function is used.
+ */
+int is_letter2(unichar c,Alphabet* alphabet) {
+if (alphabet==NULL) {
+   return u_is_letter(c);
+}
+return is_letter(c,alphabet);
+}
+
+
+/**
  * Returns 1 if the string 's' is only made of letters,
  * according to the given alphabet, 0 otherwise.
  */

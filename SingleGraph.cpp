@@ -509,46 +509,28 @@ free(closures);
 
 
 /**
- *  vire ptr si ptr pointe sur un etat a virer
+ * Takes a list of transitions and removes those that point to useless states.
  */
-// with complex graphs we got a stack overflow with this recursive function:
-//// Fst2Transition vider_trans_reciproques_comp(Fst2Transition ptr,Etat_comp *letats)
-//// {
-////   Fst2Transition tmp;
-////   if (ptr==NULL) return NULL;
-////   if ((((letats[ptr->state_number]->controle)&4)==0)||(((letats[ptr->state_number]->controle)&8)==0))
-////   {
-////     tmp=ptr->next;
-////     free(ptr);
-////     return vider_trans_reciproques_comp(tmp,letats);
-////   }
-////   ptr->next=vider_trans_reciproques_comp(ptr->next,letats);
-////   return ptr;
-//// }
-// it's replaced now by an iterative one:
-Fst2Transition remove_transitions_to_useless_states(Fst2Transition ptr,SingleGraphState *letats)
-{
-  Fst2Transition tmp, tmp2, tmp_old;
-  tmp=ptr;
-  while (tmp!=NULL)
-    {
-      if ((((letats[tmp->state_number]->control)&4)==0)||(((letats[tmp->state_number]->control)&8)==0))
-        {
-          tmp2=tmp->next;
-          if (tmp == ptr)
-            ptr = tmp2;
-          else
-            tmp_old->next = tmp2;
-          free(tmp);
-          tmp=tmp2;
-        }
-      else
-        {
-          tmp_old = tmp;
-          tmp=tmp->next;
-        }
-    }
-  return ptr;
+Fst2Transition remove_transitions_to_useless_states(Fst2Transition transitions,
+                                                    SingleGraphState* states) {
+Fst2Transition tmp,tmp2,tmp_old;
+tmp=transitions;
+while (tmp!=NULL) {
+   if ((((states[tmp->state_number]->control)&4)==0)||(((states[tmp->state_number]->control)&8)==0)) {
+      tmp2=tmp->next;
+      if (tmp==transitions) {
+         transitions=tmp2;
+      } else {
+         tmp_old->next=tmp2;
+      }
+      free(tmp);
+      tmp=tmp2;
+   } else {
+      tmp_old=tmp;
+      tmp=tmp->next;
+   }
+}
+return transitions;
 }
 
 
@@ -928,7 +910,7 @@ while (!is_empty(fifo)) {
       transition_hash->table[i]=NULL;
    }
    /* And we don't forget to clean the transition hash table for the next step */
-   //clear_hash_table(transition_hash);
+   clear_hash_table(transition_hash);
 }
 free_hash_table(hash);
 free_hash_table(transition_hash);

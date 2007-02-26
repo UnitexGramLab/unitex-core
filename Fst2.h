@@ -248,6 +248,7 @@ struct fst2 {
 typedef struct fst2 Fst2;
 
 
+Fst2Transition new_Fst2Transition(int,int,Fst2Transition);
 Fst2Transition new_Fst2Transition(int,int);
 void free_Fst2Transition(Fst2Transition);
 

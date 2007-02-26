@@ -41,6 +41,7 @@ int equal_list_int(struct list_int*,struct list_int*);
 struct list_int* head_insert(int,struct list_int*);
 unsigned int hash_list_int(struct list_int*);
 int length(struct list_int*);
+struct list_int* destructive_sorted_merge(struct list_int*,struct list_int*);
 struct list_int* sorted_merge(struct list_int*,struct list_int*);
 
 #endif
