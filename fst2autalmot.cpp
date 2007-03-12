@@ -199,7 +199,7 @@ void load_text_symbol(tSymbole * symb, const unichar * lex) {
 
   //int i, j;
 
-  if (check_text_label(lex) == -1) { die("bad text label: \"%S\"\n", lex); }
+  if (check_text_label(lex) == -1) { fatal_error("bad text label: \"%S\"\n", lex); }
 
   symb->sorteSymbole = ATOME;
 
@@ -213,7 +213,7 @@ void load_text_symbol(tSymbole * symb, const unichar * lex) {
 
       symb->flechie[j++] = lex[i++];
 
-      if (j >= maxMot) { die("inflected form '%S' is too long Z.\n", lex); }
+      if (j >= maxMot) { fatal_error("inflected form '%S' is too long Z.\n", lex); }
     }
 
     symb->flechie[j] = 0;
@@ -274,35 +274,35 @@ void load_text_symbol(tSymbole * symb, const unichar * lex) {
 
     if (lex[0] == '\\') {
 
-      if (! lex[1] || lex[2]) { die("illegal label '%S'\n", lex); }
+      if (! lex[1] || lex[2]) { fatal_error("illegal label '%S'\n", lex); }
 
       ustring_empty(symb->flex);
       free(symb->canonique);
       symb->canonique = u_strdup(lex);
 
-      u_strcpy_char(symb->gramm, "PNC");
+      u_strcpy(symb->gramm, "PNC");
 
 
     } else if (u_strchr(PONCTAB, *lex)) {
 
-      if (lex[1]) { die("illegal label text: '%S'\n", lex); }
+      if (lex[1]) { fatal_error("illegal label text: '%S'\n", lex); }
 
       ustring_empty(symb->flex);
       free(symb->canonique);
       symb->canonique = u_strdup(lex);
 
-      u_strcpy_char(symb->gramm, "PNC");
+      u_strcpy(symb->gramm, "PNC");
 
 
     } else if (u_is_digit(*lex)) { /* chiffre arabe */
 
-      if (lex[1]) { die("illegal label text: '%S'\n", lex); }
+      if (lex[1]) { fatal_error("illegal label text: '%S'\n", lex); }
 
       ustring_empty(symb->flex);
       free(symb->canonique);
       symb->canonique = u_strdup(lex);
 
-      u_strcpy_char(symb->gramm, "CHFA");
+      u_strcpy(symb->gramm, "CHFA");
 
     } else { // mot inconnu
 
@@ -334,17 +334,17 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
 
   if (*lex == '{') {   /* dictionnary entry */
 
-    if (u_strcmp_char(lex, "{S}") == 0) {
+    if (u_strcmp(lex, "{S}") == 0) {
       
       symb->sorteSymbole = ATOME;
       *symb->flechie     = 0;
       symb->canonique    = lex;
-      u_strcpy_char(symb->gramm, "PNC");
+      u_strcpy(symb->gramm, "PNC");
       return;
     }
 
 
-    if (check_dic_entry(lex) == -1) { die("bad label grammar '%S'\n", lex); }
+    if (check_dic_entry(lex) == -1) { fatal_error("bad label grammar '%S'\n", lex); }
 
     symb->sorteSymbole = ATOME;
 
@@ -354,7 +354,7 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
 
     while (lex[i] != ',') {
 
-      if (j >= maxMot) { die("inflected form too long in '%S'\n", lex); }
+      if (j >= maxMot) { fatal_error("inflected form too long in '%S'\n", lex); }
 
       symb->flechie[j++] = lex[i++];
     }
@@ -390,11 +390,11 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
       symb->sorteSymbole = ATOME;
       *symb->flechie  = 0;
       symb->canonique = lex;
-      u_strcpy_char(symb->gramm, "PNC");
+      u_strcpy(symb->gramm, "PNC");
       return;
     }
 
-    if (u_strcmp_char(lex, "<def>") == 0) { /* special <def> label */
+    if (u_strcmp(lex, "<def>") == 0) { /* special <def> label */
       symb->sorteSymbole = SPECIAL;
       symb->canonique    = lex;
       u_strcpy(symb->flechie, lex);
@@ -402,10 +402,10 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
       return;
     }
 
-    if (u_strcmp_char(lex, "<.>") == 0) { /* UNIVERSEL label */
+    if (u_strcmp(lex, "<.>") == 0) { /* UNIVERSEL label */
 
       symb->sorteSymbole = UNIVERSEL;
-      symb->canonique    = u_strdup_char("");
+      symb->canonique    = u_strdup("");
       symb->flechie[0]   = 0;
       symb->gramm[0]     = 0;
       free(lex);
@@ -433,7 +433,7 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
 
     while ((*p != '>') && (i < maxGramm - 1)) {
 
-      if (*p == 0) { die("missing closing '>' in label: '%S'\n", _lex); }
+      if (*p == 0) { fatal_error("missing closing '>' in label: '%S'\n", _lex); }
 
       symb->gramm[i++] = *(p++);
     }
@@ -453,7 +453,7 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
 
   if ((*lex == '!') || (*lex == '=')) { /* special rule's symbols */
 
-    if (lex[1]) { die("bad grammar label: '%S'\n", lex); }
+    if (lex[1]) { fatal_error("bad grammar label: '%S'\n", lex); }
 
     symb->sorteSymbole = ATOME;
     symb->canonique    = (unichar *) xmalloc(sizeof(unichar));
@@ -476,30 +476,30 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
 
   if (*lex == '\\') {
 
-    if (! lex[1] || lex[2]) { die("illegal label '%S'\n", *lex); }
+    if (! lex[1] || lex[2]) { fatal_error("illegal label '%S'\n", *lex); }
 
     symb->canonique = lex;
-    u_strcpy_char(symb->gramm, "PNC");    
+    u_strcpy(symb->gramm, "PNC");    
     return;
   }
 
 
   if (u_strchr(PONCTAB, *lex)) {     /* ponctuation */
 
-    if (lex[1]) { die("bad grammar label: '%S'\n", lex); }
+    if (lex[1]) { fatal_error("bad grammar label: '%S'\n", lex); }
 
     symb->canonique = lex;
-    u_strcpy_char(symb->gramm, "PNC");
+    u_strcpy(symb->gramm, "PNC");
     return;
   }
 
  
   if (u_is_digit(*lex)) { // chiffre arabe
 
-    if (lex[1]) { die("illegal label text: '%S'\n", lex); }
+    if (lex[1]) { fatal_error("illegal label text: '%S'\n", lex); }
 
     symb->canonique = lex;
-    u_strcpy_char(symb->gramm, "CHFA");
+    u_strcpy(symb->gramm, "CHFA");
     return;
   }
 
@@ -508,7 +508,7 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
 
   i = 0;
   while (lex[i]) {
-    if (i >= maxMot) { die("inflected form too long: %S Y.\n", lex); }
+    if (i >= maxMot) { fatal_error("inflected form too long: %S Y.\n", lex); }
     symb->flechie[i] = lex[i];
     i++;
   }
@@ -560,7 +560,7 @@ tAutAlMot * fst2AutAlMot(Fst2 * A, int nb) {
 
       int nbflex = symbole_developp(alphabet, & symb);
 
-      if (nbflex == 0) { die("symbole_developp: nbflex=0\n"); }
+      if (nbflex == 0) { fatal_error("symbole_developp: nbflex=0\n"); }
 
       while (nbflex--) {
 	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->state_number - base);
@@ -585,12 +585,9 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
   //unichar buf[1024];
 
-  debug("load_fst2 ...\n");
+  u_printf("Loading text automaton...\n");
   Fst2 * A = load_fst2(fname, 1);
-
-  debug("done.\n");
-
-  if (A == NULL) { die("cannot load %s\n", fname); }
+  if (A == NULL) { fatal_error("cannot load %s\n", fname); }
 
   list_aut_old * res = (list_aut_old *) xmalloc(sizeof(list_aut_old));
 
@@ -672,7 +669,7 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
   Fst2 * A = load_fst2(fname, 1);
 
-  if (A == NULL) { die("cannot load %s\n", fname); }
+  if (A == NULL) { fatal_error("cannot load %s\n", fname); }
 
   if (A->number_of_graphs != 1) { error("%d graphs in grammar %s\n", A->number_of_graphs, fname); }
 
@@ -704,9 +701,7 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
       u_strcpy(buf, A->tag_number[transitions->tag_number]->input);
 
-      //      debug("before=%S\n", buf);
       load_gramm_symbol(& symb, buf);
-      //      debug("after: "); Affiche_Symbole(&symb); fprintf(stderr, "\n");
 
       alphabet_clear(alphabet);
 
@@ -735,7 +730,7 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 void text_output_fst2(list_aut_old * txt, FILE * f) {
 
   unichar buf[1024];
-  u_strcpy_char(buf, "0000000000");
+  u_strcpy(buf, "0000000000");
 
   int i = 9;
   int n = txt->nb_aut;
@@ -753,7 +748,7 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
 
   /* add epsilon before all other labels */
 
-  u_strcpy_char(buf, "<E>");
+  u_strcpy(buf, "<E>");
 
   get_value_index(buf, hash);
 
@@ -774,7 +769,7 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
 	if (t->etiq == NULL) {
 
 	  error("<def> trans on a txt automaton???\n");
-	  u_strcpy_char(buf, "<def>");
+	  u_strcpy(buf, "<def>");
 
 	} else {
 
@@ -830,11 +825,9 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
       u_fputc('\n', f);
     }
 
-    u_fprints_char("f \n", f);
+    u_fprintf(f,"f \n");
   }
-  
   output_fst2_labels(hash, f);
-
   free_string_hash(hash);
 }
 

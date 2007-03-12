@@ -49,7 +49,7 @@ void deuxieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 int num;
 struct list_int* ptr_num;
 struct list_int* ptr;
-if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
+if (s[0]=='{' && u_strcmp(s,"{S}") && u_strcmp(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_value_index(s,tok);
   if ((parameters->matching_patterns[num]!=NULL)&&
@@ -116,7 +116,7 @@ void troisieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 int num;
 struct list_int* ptr_num;
 struct list_int* ptr;
-if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
+if (s[0]=='{' && u_strcmp(s,"{S}") && u_strcmp(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_value_index(s,tok);
    if ((parameters->matching_patterns[num]!=NULL)&&
@@ -165,7 +165,7 @@ if (s==NULL) {
    return;
 }
 while (s!=NULL) {
-  if (s->string[0]=='{' && u_strcmp_char(s->string,"{S}") && u_strcmp_char(s->string,"{STOP}")) {
+  if (s->string[0]=='{' && u_strcmp(s->string,"{S}") && u_strcmp(s->string,"{STOP}")) {
      // case of a token tag
      struct dela_entry* TMP=tokenize_tag_token(s->string);
      if (!u_strcmp(TMP->inflected,etiquette[e]->inflected)) {
@@ -193,7 +193,7 @@ void quatrieme_cas_prime(int e,Fst2Tag* etiquette,unichar* s,Alphabet* alph,
 int num;
 struct list_int* ptr_num;
 struct list_int* ptr;
-if (s[0]=='{' && u_strcmp_char(s,"{S}") && u_strcmp_char(s,"{STOP}")) {
+if (s[0]=='{' && u_strcmp(s,"{S}") && u_strcmp(s,"{STOP}")) {
    // case of a tag like {today,.ADV}
    num=get_value_index(s,tok);
    ptr_num=(struct list_int*)malloc(sizeof(struct list_int));

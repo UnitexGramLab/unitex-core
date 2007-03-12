@@ -37,7 +37,7 @@
 #ifndef DO_NOT_USE_TRE_LIBRARY
 #include "regex.h"
 #ifdef TRE_WCHAR
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "String_hash.h"
 #include "Fst2.h"

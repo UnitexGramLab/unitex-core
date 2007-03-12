@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "Unicode.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "LocateAsRoutine.h"
@@ -29,26 +30,26 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Locate <text> <fst2> <alphabet> <sla> <imr> <n> [<dynamicSntDir>] [-thai] [-space]\n");
-printf("     <text>: the text file\n");
-printf("     <fst2> : the grammar to be applied\n");
-printf("     <alphabet> : the language alphabet file\n");
-printf("     <sla> : defines the matching mode: s=shortest matches\n");
-printf("                                        l=longuest matches\n");
-printf("                                        a=all matches\n");
-printf("     <imr> : defines the transduction mode: i=ignore outputs\n");
-printf("                                            m=merge outputs\n");
-printf("                                            r=replace outputs\n");
-printf("     <n> : defines the search limitation:\n");
-printf("                                        all=compute all matches\n");
-printf("                                        N=stop after N matches\n");
-printf("     [<dynamicSntDir>] : optional dynamic Snt Objects directory ((back)slash terminated)\n");
-printf("     [-thai] : option to use to work on thai\n");
-printf("     [-space] : enables morphological use of space\n");
-printf("\nApplies a grammar to a text, and saves the matching sequence index in a\n");
-printf("file named \"concord.ind\" stored in the text directory. A result info file\n");
-printf("named \"concord.n\" is also saved in the same directory.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Locate <text> <fst2> <alphabet> <sla> <imr> <n> [<dynamicSntDir>] [-thai] [-space]\n");
+u_printf("     <text>: the text file\n");
+u_printf("     <fst2> : the grammar to be applied\n");
+u_printf("     <alphabet> : the language alphabet file\n");
+u_printf("     <sla> : defines the matching mode: s=shortest matches\n");
+u_printf("                                        l=longuest matches\n");
+u_printf("                                        a=all matches\n");
+u_printf("     <imr> : defines the transduction mode: i=ignore outputs\n");
+u_printf("                                            m=merge outputs\n");
+u_printf("                                            r=replace outputs\n");
+u_printf("     <n> : defines the search limitation:\n");
+u_printf("                                        all=compute all matches\n");
+u_printf("                                        N=stop after N matches\n");
+u_printf("     [<dynamicSntDir>] : optional dynamic Snt Objects directory ((back)slash terminated)\n");
+u_printf("     [-thai] : option to use to work on thai\n");
+u_printf("     [-space] : enables morphological use of space\n");
+u_printf("\nApplies a grammar to a text, and saves the matching sequence index in a\n");
+u_printf("file named \"concord.ind\" stored in the text directory. A result info file\n");
+u_printf("named \"concord.n\" is also saved in the same directory.\n");
 }
 
 

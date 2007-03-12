@@ -24,7 +24,7 @@
 #define Loading_dicH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "DELA.h"
 #include "Alphabet.h"
 #include "String_hash.h"

@@ -54,13 +54,13 @@ for (int priority=DELAF_HIGH_PRIORITY;priority<=DELAF_LOW_PRIORITY;priority++) {
              strcat(nom_inf,".inf");
              INF=load_INF_file(nom_inf);
              if (INF==NULL) {
-                fprintf(stderr,"Cannot load %s\n",nom_inf);
+                error("Cannot load %s\n",nom_inf);
              }
              else {
                 bin=load_BIN_file(argv[i]);
                 if (bin==NULL) {
                    free_INF_codes(INF);
-                   fprintf(stderr,"Cannot load %s\n",argv[i]);
+                   error("Cannot load %s\n",argv[i]);
                 }
                 else {
                    // the dictionary has been loaded correctly
@@ -85,7 +85,7 @@ for (int priority=DELAF_HIGH_PRIORITY;priority<=DELAF_LOW_PRIORITY;priority++) {
              printf("Loading %s...\n%s",argv[i],CR);
              fst2=load_fst2(argv[i],0);
              if (fst2==NULL) {
-                fprintf(stderr,"Cannot load %s\n",argv[i]);
+                error("Cannot load %s\n",argv[i]);
              }
              else {
                 // the dictionary has been loaded correctly
@@ -99,7 +99,7 @@ for (int priority=DELAF_HIGH_PRIORITY;priority<=DELAF_LOW_PRIORITY;priority++) {
       }
       else if (priority==1) {
          // it's not necessary to print this error message more than once
-         fprintf(stderr,"Bad dictionary extension: %s\n",argv[i]);
+         error("Bad dictionary extension: %s\n",argv[i]);
       }
    }
 }

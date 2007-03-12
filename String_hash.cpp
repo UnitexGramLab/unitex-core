@@ -19,12 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "String_hash.h"
 #include "Error.h"
 #include "StringParsing.h"
 #include "utils.h"
-//---------------------------------------------------------------------------
 
 
 #define DEFAULT_STRING_HASH_SIZE 4096
@@ -282,7 +280,7 @@ FILE* f=u_fopen(name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash();
 unichar temp[4096];
-while (EOF!=u_read_line(f,temp)) {
+while (EOF!=u_fgets(temp,f)) {
    if (temp[0]=='\0') {
       error("Empty line in %s\n",name);
    } else {
@@ -295,7 +293,7 @@ return hash;
 
 
 /**
- * Loads the lines of a text file info a string_hash and returns it, or NULL
+ * Loads the lines of a text file into a string_hash and returns it, or NULL
  * if the file can not be opened. We arbitrary fix the limit of a line to 4096
  * characters. Each line is splitted into a key and a value, according to a
  * given separator character. An error message will be printed if a line does not
@@ -320,7 +318,7 @@ unichar stop[2];
 stop[0]=separator;
 stop[1]='\0';
 int code;
-while (EOF!=(code=u_read_line2(f,temp))) {
+while (EOF!=(code=u_fgets2(temp,f))) {
    if (code==0) {
       error("Empty line\n");
    }
@@ -329,21 +327,15 @@ while (EOF!=(code=u_read_line2(f,temp))) {
       int pos=0;
       code=parse_string(temp,&pos,key,stop);
       if (code==P_BACKSLASH_AT_END) {
-         error("Backslash at end of line:\n");
-         error(temp);
-         error("\n");
+         error("Backslash at end of line:%S\n\n",temp);
       }
       else if (temp[pos]=='\0') {
          /* If there is no separator */
-         error("Line with no separator:\n");
-         error(temp);
-         error("\n");
+         error("Line with no separator:\n%S\n",temp);
       }
       else if (pos==0) {
          /* If the line starts with the separator */
-         error("Line with empty key:\n");
-         error(temp);
-         error("\n");
+         error("Line with empty key:\n%S\n",temp);
       }
       else {
          /* We jump over the separator */
@@ -352,9 +344,7 @@ while (EOF!=(code=u_read_line2(f,temp))) {
           * defined in the file */
          value[0]='\0';
          if(P_BACKSLASH_AT_END==parse_string(temp,&pos,value,P_EMPTY)) {
-            error("Backslash at end of line:\n");
-            error(temp);
-            error("\n");
+            error("Backslash at end of line:\n%S\n",temp);
          }
          else {
             /* If we have a valid (key,value) pair, we insert it into the string_hash */
@@ -380,8 +370,7 @@ if (hash->value==NULL) {
    fatal_error("No values to dump in dump_values\n");
 }
 for (int i=0;i<hash->size;i++) {
-   u_fprints(hash->value[i],f);
-   u_fprints_char("\n",f);
+   u_fprintf(f,"%S\n",hash->value[i]);
 }
 }
 

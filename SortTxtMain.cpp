@@ -19,13 +19,14 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
+#include "Error.h"
+#include "Thai.h"
 
 
 #define DEFAULT 0
@@ -82,7 +83,7 @@ int ligne=1;
 int priorite;
 FILE* f=u_fopen(name,U_READ);
 if (f==NULL) {
-   fprintf(stderr,"Cannot open file %s\n",name);
+   error("Cannot open file %s\n",name);
    return;
 }
 priorite=0;
@@ -90,7 +91,7 @@ while ((c=u_fgetc(f))!=EOF) {
       if (c!='\n') {
          // we ignore the \n char
          if (char_tab[(unichar)c]!=0) {
-            fprintf(stderr,"Error in %s: char 0x%x appears several times\n",name,c);
+            error("Error in %s: char 0x%x appears several times\n",name,c);
          }
          else {
               char_tab[(unichar)c]=ligne;
@@ -117,7 +118,7 @@ for (int i=2;i<n;i++) {
     }
     else if (!strcmp(p[i],"-o") || !strcmp(p[i],"-O")) {
        if (i==n-1) {
-          fprintf(stderr,"Missing char order file name after -o\n");
+          error("Missing char order file name after -o\n");
           return;
        }
        i++;
@@ -125,7 +126,7 @@ for (int i=2;i<n;i++) {
     }
     else if (!strcmp(p[i],"-l") || !strcmp(p[i],"-L")) {
        if (i==n-1) {
-          fprintf(stderr,"Missing file name after -l\n");
+          error("Missing file name after -l\n");
           return;
        }
        i++;
@@ -133,7 +134,7 @@ for (int i=2;i<n;i++) {
     }
     else if (!strcmp(p[i],"-r") || !strcmp(p[i],"-R")) REVERSE=-1;
     else if (!strcmp(p[i],"-thai")) langue=THAI;
-    else fprintf(stderr,"Invalid parameter: %s\n",p[i]);
+    else error("Invalid parameter: %s\n",p[i]);
 }
 }
 
@@ -152,12 +153,12 @@ strcpy(new_name,argv[1]);
 strcat(new_name,".new");
 f=u_fopen(argv[1],U_READ);
 if (f==NULL) {
-   fprintf(stderr,"Cannot open file %s\n",argv[1]);
+   error("Cannot open file %s\n",argv[1]);
    return 1;
 }
 f_out=u_fopen(new_name,U_WRITE);
 if (f_out==NULL) {
-   fprintf(stderr,"Cannot open temporary file %s\n",new_name);
+   error("Cannot open temporary file %s\n",new_name);
    u_fclose(f);
    return 1;
 }
@@ -169,13 +170,10 @@ switch (langue) {
 if (line_number[0]!='\0') {
    FILE* F=u_fopen(line_number,U_WRITE);
    if (F==NULL) {
-      fprintf(stderr,"Cannot write %s\n",line_number);
+      error("Cannot write %s\n",line_number);
    }
    else {
-      unichar tmp[100];
-      u_int_to_string(resulting_line_number,tmp);
-      u_fprints(tmp,F);
-      u_fprints_char("\n",F);
+      u_fprintf(F,"%d\n",resulting_line_number);
       u_fclose(F);
    }
 }
@@ -231,9 +229,9 @@ return (char_cmp(a[i],b[i]));
 // exploring the tree
 //
 void sort() {
-printf("Loading text...\n");
+u_printf("Loading text...\n");
 while (read_line());
-printf("%d lines read\n",line);
+u_printf("%d lines read\n",line);
 save();
 }
 
@@ -243,9 +241,9 @@ save();
 // exploring the tree
 //
 void sort_thai() {
-printf("Loading text...\n");
+u_printf("Loading text...\n");
 while (read_line_thai());
-printf("%d lines read\n",line);
+u_printf("%d lines read\n",line);
 save();
 }
 
@@ -271,7 +269,7 @@ if (i==0) {
    return fini;
 }
 if (i==10000) {
-   fprintf(stderr,"Line %d: line too long\n",line);
+   error("Line %d: line too long\n",line);
    return fini;
 }
 insert(ligne);
@@ -296,7 +294,7 @@ get_node(ligne,0,root);
 //
 void save() {
 unichar s[5000];
-printf("Sorting and saving...\n");
+u_printf("Sorting and saving...\n");
 explore_node(root,s,0,0);
 }
 
@@ -499,22 +497,20 @@ if (COMPTEUR>COMPTEUR_MAX) {
    COMPTEUR_MAX=COMPTEUR;
 }
 if (n==NULL) {
-   fprintf(stderr,"Internal error in explore_node\n");
-   exit(1);
+   fatal_error("Internal error in explore_node\n");
 }
 if (n->couple!=NULL) {
    z++;
    couple=n->couple;
    while (couple!=NULL) {
-     for (i=0;i<couple->n;i++) {
-       u_fprints(couple->chaine,f_out);
-       u_fputc('\n',f_out);
-       resulting_line_number++;
-     }
-     tmp=couple;
-     couple=couple->suivant;
-     free(tmp->chaine);
-     free(tmp);
+      for (i=0;i<couple->n;i++) {
+         u_fprintf(f_out,"%S\n",couple->chaine);
+         resulting_line_number++;
+      }
+      tmp=couple;
+      couple=couple->suivant;
+      free(tmp->chaine);
+      free(tmp);
    }
    n->couple=NULL;
 }
@@ -525,8 +521,7 @@ while (t!=NULL && N<N_NODES) {
       t=t->suivant;
 }
 if (N==N_NODES) {
-   fprintf(stderr,"Internal error in explore_node: more than %d nodes\n",N_NODES);
-   exit(1);
+   fatal_error("Internal error in explore_node: more than %d nodes\n",N_NODES);
 }
 quicksort(tab,0,N-1);
 ////////////////
@@ -611,10 +606,10 @@ unichar ligne_thai[10000];
 void convert_thai(unichar* src,unichar* dest) {
 int i=0,j=0;;
 while (src[i]!='\0') {
-      if (u_is_diacritic_thai(src[i])) {
+      if (is_Thai_diacritic(src[i])) {
          i++;
       }
-      else if (u_is_vowel_thai(src[i])) {
+      else if (is_Thai_initial_vowel(src[i])) {
            dest[j]=src[i+1];
            dest[j+1]=src[i];
            i++;
@@ -671,7 +666,7 @@ if (i==0) {
    return fini;
 }
 if (i==10000) {
-   fprintf(stderr,"Line %d: line too long\n",line);
+   error("Line %d: line too long\n",line);
    return fini;
 }
 convert_thai(ligne,ligne_thai);

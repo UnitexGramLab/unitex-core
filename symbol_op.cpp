@@ -423,7 +423,6 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
       break;
 
     default:
-      symbol_dump(b);
       fatal_error("internal error in symbol_inter_symbol: invalid symbol type=%d\n", b->type);
     }
     break;
@@ -449,7 +448,6 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
       break;
 
     default:
-      symbol_dump(b);
       fatal_error("internal error in symbol_inter_symbol: weird symbol type=%d\n", b->type);
     }
     break;
@@ -476,18 +474,13 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
       break;
 
     default:
-      symbol_dump(b);
       fatal_error("internal error in symbol_inter_symbol: weird symbol type=%c\n", b->type);
     }
     break;
 
   default:
-    symbol_dump(a);
     fatal_error("internal error in symbol_inter_symbol: unexpected symbol type=%d\n", a->type);
   }
-
-
-//  symbol_dump(a); errprintf(" inter "); symbol_dump(b); errprintf(" = "); symbols_dump(res); endl(); endl();
 
   return res;
 }
@@ -922,8 +915,6 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
 static symbol_t * NEG_minus_CODE(const symbol_t * a, const symbol_t * b) {
 
-  error("NEG_minus_CODE("); symbol_dump(a); error(", "); symbol_dump(b); error(")?\n");
-
   symbol_t * res = minus_traits(a, b);
 
   for (symbol_t * s = res; s; s = s->next) {
@@ -1104,7 +1095,6 @@ static symbol_t * _symbol_minus_symbol(const symbol_t * a, const symbol_t * b) {
   if (a == NULL) { fatal_error("minus: a == NULL\n"); }
 
   if (! symbol_in_symbol(b, a)) {
-    error("minus: "); symbol_dump(b); error(" not in "); symbol_dump(a); endl();
     fatal_error("minus: b not in a\n");
   }
 

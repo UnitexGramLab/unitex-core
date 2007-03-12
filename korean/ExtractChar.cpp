@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 using namespace std;
-#include "unicode.h"
+#include "Unicode.h"
 #include "etc.h"
 #include "jamoCodage.h"
 #include "FileName.h"
@@ -33,13 +33,13 @@ using namespace std;
 
 void usage(int flag)
 {
-printf("%s",COPYRIGHT);
-printf("Usage:\n");
-printf(
+u_printf("%S",COPYRIGHT);
+u_printf("Usage:\n");
+u_printf(
 "ExtractChar [-o outFile] [-c SS=0xxxx]* file.fs2 inputfile\n"\
 " -o outFile : if this option not exist, save paths at \"file\"lst.txt\n"\
 " -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \n");
-if(flag) exitMessage("");
+if(flag) exit(1);
 exit(0);
 }
 
@@ -71,7 +71,7 @@ setBufferMode();
 			ofilename = argv[iargIndex];
 			break;
 		case 'c':iargIndex++;
-		    u_strcpy_char(tempBuff,argv[iargIndex]);
+		    u_strcpy(tempBuff,argv[iargIndex]);
 			if(!changeStrToVal((unsigned short*)tempBuff)) break;
 		default:
 			usage(1);
@@ -99,7 +99,7 @@ setBufferMode();
 	
 	unsigned short  *wp,*wwp;
 	int ii;
-    while(EOF!=u_read_line(ifile,tempBuff)){
+    while(EOF!=u_fgets(tempBuff,ifile)){
 	    wp = (unsigned short *)tempBuff;
 	    if((*wp != '\0') && (*wp != ' ')){
              for (ii = 0; *wp && (*wp != ',');ii++)

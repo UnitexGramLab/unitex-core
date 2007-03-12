@@ -21,7 +21,7 @@
 
 /* T comme template ? */
 
-#include "unicode.h"
+#include "Unicode.h"
 
 #define T_INITIAL   (1)
 #define T_FINAL     (2)

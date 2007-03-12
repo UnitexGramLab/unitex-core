@@ -22,7 +22,7 @@
 #ifndef OptimizedFst2H
 #define OptimizedFst2H
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "TransductionVariables.h"
 #include "MetaSymbols.h"

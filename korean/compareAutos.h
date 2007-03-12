@@ -70,7 +70,7 @@ public:
 		pathEtiQidx++;
 		findCycleSubGraph(Motif_Automate->initial_states[curAuto],0,0);
 		pathEtiQidx--;
-		if(pathEtiQidx)exitMessage("error in program");
+		if(pathEtiQidx) fatal_error("error in program\n");
 	}
 	void findCycleSubGraph(int autoNo, int pos,int depth)
 	{
@@ -96,7 +96,7 @@ public:
 				}
 			}
 			// ?
-			if( i == 0) exitMessage("not want state arrive");	
+			if( i == 0) fatal_error("not want state arrive\n");	
 
 			curAuto = CautoQueue[i].aId;
 			nEtat = CautoQueue[i].next;

@@ -213,31 +213,12 @@ void * hash_str_table_lookup(hash_str_table_t * table, unichar * key) {
 #define MAXBUF 1024
 
 
-static void _table_dump(hash_str_table_t * table, hash_tree_t * tree, unichar * buf, int pos,
-			void (*dump)(void * data, FILE * f), FILE * f) {
 
-  if (tree->no != -1) {
-
-    buf[pos] = 0;
-    i_fprintf(f, "> %S: ", buf);
-
-    if (dump) { dump(table->tab[tree->no], f); } 
-
-    fprintf(f, "\n");
-  }
-
-  for (struct hash_trans_t * trans = tree->trans; trans; trans = trans->next) {
-    buf[pos] = trans->c;
-    _table_dump(table, trans->to, buf, pos + 1, dump, f);
-  }
-}
-
-
-void hash_str_table_dump(hash_str_table_t * table, void (*dump)(void * data, FILE * f), FILE * f) {
+/*void hash_str_table_dump(hash_str_table_t * table, void (*dump)(void * data, FILE * f), FILE * f) {
 
   unichar buf[MAXBUF];
 
   fprintf(f, "table: nbelems=%d\n", table->nbelems);
 
   _table_dump(table, table->root, buf, 0, dump, f);
-}
+}*/

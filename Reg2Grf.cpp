@@ -19,41 +19,33 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "Regular_expression.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
-
+#include "Error.h"
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Reg2Grf <file>\n");
-printf("     <file> : unicode text file where the regular expression is stored.\n");
-printf("              We must use a file, because we cannot give Unicode\n");
-printf("              parameters on a command line.\n\n");
-printf("Converts the regular expression into a graph, named REGEXP.GRF\n");
-printf("and stored in the same directory that <file>. You can use the following\n");
-printf("operators:\n");
-printf(" A+B          matches either the expression A or B\n");
-printf(" A.B or A B   matches the concatenation of A and B\n");
-printf(" A*           matches 0 more more times the expression A\n");
-printf(" (A)          matches the expression A\n");
-printf("If you want to match any character of ( ) * + .\n");
-printf("you must use the \\ char: \\* will match the char *\n");   
-printf("\nExample: \"(le+la) (<A:s>+<E>) <N:s>\"\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Reg2Grf <file>\n");
+u_printf("     <file> : unicode text file where the regular expression is stored.\n");
+u_printf("              We must use a file, because we cannot give Unicode\n");
+u_printf("              parameters on a command line.\n\n");
+u_printf("Converts the regular expression into a graph, named REGEXP.GRF\n");
+u_printf("and stored in the same directory that <file>. You can use the following\n");
+u_printf("operators:\n");
+u_printf(" A+B          matches either the expression A or B\n");
+u_printf(" A.B or A B   matches the concatenation of A and B\n");
+u_printf(" A*           matches 0 more more times the expression A\n");
+u_printf(" (A)          matches the expression A\n");
+u_printf("If you want to match any character of ( ) * + .\n");
+u_printf("you must use the \\ char: \\* will match the char *\n");   
+u_printf("\nExample: \"(le+la) (<A:s>+<E>) <N:s>\"\n");
 }
-
-//
-// test parameter
-//
-// "e:\my unitex\french\regexp.txt"
-//
 
 
 int main(int argc, char **argv) {
@@ -65,8 +57,7 @@ if (argc!=2) {
 }
 FILE* f=u_fopen(argv[1],U_READ);
 if (f==NULL) {
-   fprintf(stderr,"Cannot open file %s\n",argv[1]);
-   return 1;
+   fatal_error("Cannot open file %s\n",argv[1]);
 }
 // we read the regular expression in the file
 unichar exp[1000];
@@ -90,10 +81,9 @@ if (i==0) {
 }
 
 if (!reg2grf(exp,nom_grf)) {
-   fprintf(stderr,"Error in the regular expression\n");
-   return 1;
+   fatal_error("Error in the regular expression\n");
 }
-printf("Expression converted.\n");
+u_printf("Expression converted.\n");
 return 0;
 }
 //---------------------------------------------------------------------------

@@ -23,7 +23,7 @@
 #ifndef KoreanH
 #define KoreanH
 
-#include "unicode.h"
+#include "Unicode.h"
 
 #define MAX_LETTERS_IN_A_SYLLAB 5
 

@@ -24,7 +24,7 @@
 #define Text_automatonH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Text_tokens.h"
 #include "Alphabet.h"
 #include "Load_DLF_DLC.h"

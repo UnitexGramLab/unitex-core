@@ -311,7 +311,7 @@ if (all_input[i]!='\0') {
 }
 /* If there is a morphological filter but no input ("%<<^in>>/PFX"), then
  * we say that the input is any token */
-if (input[0]=='\0') {u_strcpy_char(input,"<TOKEN>");}
+if (input[0]=='\0') {u_strcpy(input,"<TOKEN>");}
 Fst2Tag tag=new_Fst2Tag();
 tag->input=u_strdup(input);
 if (output[0]!='\0') {
@@ -325,15 +325,15 @@ if (respect_case) {
    /* We set the case respect bit if necessary */
    tag->control=(unsigned char)(tag->control|RESPECT_CASE_TAG_BIT_MASK);
 }
-if (!u_strcmp_char(input,"$[")) {
+if (!u_strcmp(input,"$[")) {
    tag->type=BEGIN_POSITIVE_CONTEXT_TAG;
    return tag;
 }
-if (!u_strcmp_char(input,"$![")) {
+if (!u_strcmp(input,"$![")) {
    tag->type=BEGIN_NEGATIVE_CONTEXT_TAG;
    return tag;
 }
-if (!u_strcmp_char(input,"$]")) {
+if (!u_strcmp(input,"$]")) {
    tag->type=END_CONTEXT_TAG;
    return tag;
 }
@@ -363,27 +363,26 @@ return tag;
  */
 void write_tag(FILE* f,Fst2Tag tag) {
 if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
-   u_fprints_char("@",f);
+   u_fprintf(f,"@");
 }
 else {
-   u_fprints_char("%",f);
+   u_fprintf(f,"%");
 }
 /* We print the content (label) of the tag */
-u_fprints(tag->input,f);
+u_fprintf(f,"%S",tag->input);
 /* If any, we add the morphological filter: <A><<^pre>> */
 if (tag->morphological_filter!=NULL &&
    tag->morphological_filter[0]!='\0') {
-   u_fprints(tag->morphological_filter,f);
+   u_fprintf(f,"%S",tag->morphological_filter);
 }
 /* If any, we add the output */
 if (tag->output!=NULL) {
    if (tag->output[0]=='\0') {
       fatal_error("Invalid empty ouput in write_tag\n");
    }
-   u_fprints_char("/",f);
-   u_fprints(tag->output,f);
+   u_fprintf(f,"/%S",tag->output);
 }
-u_fprints_char("\n",f);
+u_fprintf(f,"\n");
 }
 
 
@@ -449,7 +448,7 @@ void write_fst2_tags(FILE* f,Fst2* fst2) {
 for (int i=0;i<fst2->number_of_tags;i++) {
    write_tag(f,fst2->tags[i]);
 }
-u_fprints_char("f\n",f);
+u_fprintf(f,"f\n");
 }
 
 /**
@@ -457,8 +456,8 @@ u_fprints_char("f\n",f);
  */
 void write_fst2_state(FILE* f,Fst2State s) {
 if (is_final_state(s))
-   u_fprints_char("t ",f);
-else u_fprints_char(": ",f);
+   u_fprintf(f,"t ");
+else u_fprintf(f,": ");
 Fst2Transition ptr=s->transitions;
 while(ptr!=NULL) {
    u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
@@ -598,22 +597,18 @@ int i,end_of_line,tag_number,destination_state_number,current_graph;
 int current_state=0;
 /* We read all the graphs that make the fst2 */
 for (i=0;i<fst2->number_of_graphs;i++) {
-	/* We ignore the minus sign that preceeds the number of the graph */
-	u_fgetc(f);
-	/* And we read the graph number */
-	current_graph=u_read_int(f);
+	/* We read the graph number and the space after it */
+   u_fscanf(f,"%d ",&current_graph);
+   /* And we make it positive */
+   current_graph=current_graph*(-1);
 	/* We set the initial state of the graph */
 	fst2->initial_states[current_graph]=current_state;
 	int relative_state=0;
 	/*
 	 * We read the graph name
 	 */
-	int tmp=0;
 	unichar graph_name[10000];
-	while ((c=(unichar)u_fgetc(f))!='\n') {
-		graph_name[tmp++]=c;
-	}
-	graph_name[tmp]='\0';
+   u_fgets(graph_name,f);
 	if (graph_number==NO_GRAPH_NUMBER_SPECIFIED || graph_number==current_graph) {
 		/* If we must read the graph either because it is the one we look for
 		 * or because we must read them all, then we initialize 'max_tag_number' */ 
@@ -719,7 +714,7 @@ if (f==NULL) {
 }
 Fst2* fst2=new_Fst2();
 /* We read the number of graphs contained in the fst2 */
-fst2->number_of_graphs=u_read_int(f);
+u_fscanf(f,"%d\n",&(fst2->number_of_graphs));
 if (fst2->number_of_graphs==0) {
 	error("Graph %s is empty\n",filename);
 	return NULL;

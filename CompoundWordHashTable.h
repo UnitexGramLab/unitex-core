@@ -19,62 +19,60 @@
   *
   */
 
-//---------------------------------------------------------------------------
-// Filename: Table_complex_token_hash.h
-// We store complex tokens in this table so 
-//  we can can find them 
-//     By Alexis Neme
-//
-//
+#ifndef CompoundWordHashTableH
+#define CompoundWordHashTableH
 
-#ifndef			TableComplexTokenHashH
-#define			TableComplexTokenHashH
-//---------------------------------------------------------------------------
-
-#include		"unicode.h"
-
-
-
-#define			TCT_HASH_SIZE 401 
-#define			TCT_HASH_BLOCK_SIZE  512
+/**
+ * 
+ * This library provides functions for manipulating compound words seen as
+ * token sequences. Such compound words are stored into a hash table.
+ * 
+ * Author: Alexis Neme
+ * Modified by: Sébastien Paumier
+ */
+ 
+#include "Unicode.h"
 
 
-//
-//
-// 
-struct tct_hash_block {              //  codification : i.e. "navio de guerra (574,1,5,1,575,-1,cod-priority)	
-								    // (cod_tok1,cod_tok2, ..., cod_tokN,-1,information)*
-    unsigned int	len ;			// -1 =the end of the complex token	
-	unsigned int	N_blocks;		//alloc N*TT_HASH_BLOCK_SIZE
-	int				*complex_tokens	;   	        
+#define TCT_HASH_SIZE 100000 
+#define TCT_DEFAULT_HASH_BLOCK_SIZE 512
+
+
+/**
+ * This structure represents a cell of a hash table. It is made of a token
+ * array with a size of 'size'. 'length' represents
+ * the number of cells that are actually used in this token array.
+ * 'token_array' contains integer sequences that represent compound word.
+ * Each sequence is ended by -1 followed by the priority of the compound word.
+ * For instance, if a block contains sequences for the compound words
+ * "black box" and "black humor", respectively with priorities 2 and 3, the
+ * token array may be:
+ * 
+ * (40,2,13,-1,2,40,2,125,-1,3)
+ */
+struct tct_hash_block {
+   int length;
+   int size;
+   int* token_array;
 };
 
-//
-//
-//
+
+/**
+ * This structure represents a hash table containing compound words.
+ */
 struct tct_hash {
-   unsigned int				tct_hash_size;
-   unsigned int				tct_hash_block_size;
-   int						tct_last_token_cod;
-   struct tct_hash_block**	tct_hash_blocks ;
-   int **					tct_tab;             // token´s codes
+   /* The size of the table, i.e. the size of the 'hash_blocks' array */
+   int size;
+   
+   /* The array of hash blocks */
+   struct tct_hash_block**	hash_blocks;
 };
 
 
-
-struct			tct_hash* new_tct_hash(int tct_hash_size,int tct_hash_block_size);  
-void			new_tct_hash_blocks(struct tct_hash *th,int tct_hash_size, int tct_hash_size_block);
-void			free_tct_hash(struct tct_hash *);
-unsigned int	tct_hash(int *token_tab, const int tct_hashsize);
-
-
-
-int				add_tct_token(int *token_tab, struct tct_hash *tct_h,int priority);
-int				was_allready_in_tct_hash(int *token_tab, struct tct_hash *tct_h, int priority);
-unichar			*get_text_token(int token_number ,struct text_tokens* tok);
-void			save_lines_tct_hash(struct tct_hash *);
-
-void            build_complex_token_tab(unichar *compound_form,struct text_tokens *tok, int *token_tab_coumpounds);			
-void	        print_lines_tct_hash( struct text_tokens* tok, struct tct_hash *tct_h);
+struct tct_hash* new_tct_hash();  
+struct tct_hash* new_tct_hash(int,int);  
+void free_tct_hash(struct tct_hash*);
+int was_allready_in_tct_hash(int*,struct tct_hash*,int);
+void build_token_sequence(unichar*,struct text_tokens*,int*);
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef MU_morphoH
 #define MU_morphoH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "MF_FormMorpho.h"
 #include "MF_SU_morpho.h"
 

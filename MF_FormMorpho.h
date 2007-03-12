@@ -30,7 +30,7 @@
 #ifndef FormMorphoH
 #define FormMorphoH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "MF_LangMorpho.h"
 
 // Structure for a category-value couple, e.g. Gen=fem

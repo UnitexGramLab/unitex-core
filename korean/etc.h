@@ -18,15 +18,11 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-//
-//
-//
-//#include <stdio.h>
-//#include <stdlib.h>
+
 #ifndef KR_ETC_H
 #define KR_ETC_H
+
 extern int uniToInt(unichar *);
-extern void exitMessage(char *mes);
 extern void fopenErrMessage(char *m);
 extern void freadError(char *m);
 extern int utoi(unichar *ws);

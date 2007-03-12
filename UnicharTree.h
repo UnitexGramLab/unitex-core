@@ -22,7 +22,7 @@
 #ifndef UnicharTreeH
 #define UnicharTreeH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "Fst2.h"
 

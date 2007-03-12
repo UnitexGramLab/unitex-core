@@ -19,11 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "FileName.h"
 #include "Text_tokens.h"
 #include "Extract_units.h"
@@ -34,15 +33,15 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Extract yes/no <text> <concordance> <result>\n");
-printf("       yes/no : yes tells the program extract all matching units\n");
-printf("                no extracts unmatching units\n");
-printf("       <text> : the .snt text to extract from the units\n");
-printf("       <concordance> : the .ind file that describes the concordance\n");
-printf("       <result> : the text file where the units will be stored\n");
-printf("\nExtract all the units that contain (or not) any part of a utterance. The\n");
-printf("units are supposed to be separated by the symbol {S}.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Extract yes/no <text> <concordance> <result>\n");
+u_printf("       yes/no : yes tells the program extract all matching units\n");
+u_printf("                no extracts unmatching units\n");
+u_printf("       <text> : the .snt text to extract from the units\n");
+u_printf("       <concordance> : the .ind file that describes the concordance\n");
+u_printf("       <result> : the text file where the units will be stored\n");
+u_printf("\nExtract all the units that contain (or not) any part of a utterance. The\n");
+u_printf("units are supposed to be separated by the symbol {S}.\n");
 }
 
 
@@ -105,7 +104,7 @@ fclose(text);
 u_fclose(concord);
 u_fclose(result);
 free_text_tokens(tok);
-printf("Done.\n");
+u_printf("Done.\n");
 return 0;
 }
-//---------------------------------------------------------------------------
+

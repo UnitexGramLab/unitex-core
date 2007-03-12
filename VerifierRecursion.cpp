@@ -38,14 +38,12 @@ else e->control=0;
 // affiche la suite de graphes qui aboutit a la recursion par le graphe e
 //
 void afficher_liste_graphes_inverse(Liste_num l,int e,unichar **nom_graphe) {
-char temp[2000];
-u_to_char(temp,nom_graphe[l->numero]);
 if (l->numero==e) {
-  fprintf(stderr,"ERROR: %s",temp);
+  error("ERROR: %S",nom_graphe[l->numero]);
   return;
 }
 afficher_liste_graphes_inverse(l->suivant,e,nom_graphe);
-fprintf(stderr," calls %s that",temp);
+error(" calls %S that",nom_graphe[l->numero]);
 }
 
 
@@ -56,8 +54,7 @@ void inserer_en_tete(Liste_num *l,int n) {
 Liste_num tmp;
 tmp=(Liste_num)malloc(sizeof(struct liste_num));
 if (tmp==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction inserer_en_tete\n");
-  exit(1);
+  fatal_error("Probleme d'allocation memoire dans la fonction inserer_en_tete\n");
 }
 tmp->numero=n;
 tmp->suivant=*l;
@@ -182,9 +179,7 @@ int ret;
 if (appartient_a_liste(e,l)) {
     // on retombe sur un graphe deja visite
     afficher_liste_graphes_inverse(l,e,nom_graphe);
-    char temp[2000];
-    u_to_char(temp,nom_graphe[e]);
-    fprintf(stderr," recalls the graph %s\n",temp);
+    error(" recalls the graph %S\n",nom_graphe[e]);
     return 1;
   }
 inserer_en_tete(&l,e);
@@ -239,7 +234,7 @@ int chercher_boucle_par_E(int e,int* debut_graphe,unichar** nom_graphe,Fst2State
 int i,debut;
 debut=debut_graphe[e];
 if (debut<0) {
-  fprintf(stderr,"Problem in the function chercher_boucle_par_E: debut_graphe[%d] not refreshed\n",e);
+  error("Problem in the function chercher_boucle_par_E: debut_graphe[%d] not refreshed\n",e);
   return 0;
 }
 // on remet les controles comme apres le chargement
@@ -252,9 +247,7 @@ for (i=0;i<nombre_etats_par_grf[e];i++) {
 //--------------------
 for (i=0;i<nombre_etats_par_grf[e];i++)
   if (chercher_boucle_par_E_dans_etat(graphe[debut+i],graphe,etiquette,verifie)) {
-    char temp[2000];
-    u_to_char(temp,nom_graphe[e]);
-    fprintf(stderr,"ERROR: <E> loop in the graph %s\n",temp);
+    error("ERROR: <E> loop in the graph %S\n",nom_graphe[e]);
     return 1;
   }
 return 0;
@@ -335,16 +328,14 @@ precedent->suivant=NULL;
 //
 void afficher_condition(Condition c,unichar** nom_graphe) {
 if (c==NULL) {
-  printf("\n");
+  u_printf("\n");
   return;
 }
 while (c!=NULL) {
-  char temp[2000];
-  u_to_char(temp,nom_graphe[c->numero]);
-  printf("(%d,%s) ",c->numero,temp);
+  u_printf("(%d,%S) ",c->numero,nom_graphe[c->numero]);
   c=c->suivant;
 }
-printf("\n");
+u_printf("\n");
 }
 
 
@@ -354,7 +345,7 @@ printf("\n");
 void afficher_liste_conditions(Liste_conditions l,unichar** nom_graphe) {
 int i=0;
 while (l!=NULL) {
-  printf("%d) ",i++);
+  u_printf("%d) ",i++);
   afficher_condition(l->cond,nom_graphe);
   l=l->suivant;
 }
@@ -623,7 +614,7 @@ Liste_conditions resoudre_liste_conditions(Liste_conditions l,Fst2State graphe[]
 Liste_conditions tmp;
 if (l==NULL) return NULL;
 if (l->cond==NULL) {
-  fprintf(stderr,"Erreur interne dans resoudre_liste_conditions\n");
+  error("Erreur interne dans resoudre_liste_conditions\n");
   return NULL;
 }
 l->cond=resoudre_simple_condition(l->cond,graphe,debut_graphe,modification,reconnait_E);
@@ -650,7 +641,7 @@ void resoudre_conditions_du_graphe(int indice,Liste_conditions conditions[],
                                    int *modification,unichar** nom_graphe) {
 int reconnait_E;
 if (conditions[indice]==NULL) {
-  fprintf(stderr,"Probleme interne avec le graphe %d\n",indice);
+  error("Probleme interne avec le graphe %d\n",indice);
   return;
 }
 
@@ -725,21 +716,19 @@ Liste_conditions l;
 Condition c;
 Liste_num liste;
 int ERROR=0;
-char temp[2000];
- u_to_char(temp,nom_graphe[indice]);
 
 if (graphe[debut_graphe[indice]]->control&128)
   // si le graphe n'a pas de probleme
   return 0;
 if (graphe[debut_graphe[indice]]->control&32) {
-  fprintf(stderr,"WARNING: the graph %s recognizes <E>\n",temp);
-  return 0;
+   error("WARNING: the graph %S recognizes <E>\n",nom_graphe[indice]);
+   return 0;
 }
 
 if (appartient_a_liste(indice,liste_deja_vus)) {
-  afficher_liste_graphes_inverse(liste_deja_vus,indice,nom_graphe);
-  fprintf(stderr," calls again %s\n",temp);
-  return 1;
+   afficher_liste_graphes_inverse(liste_deja_vus,indice,nom_graphe);
+   error(" calls again %S\n",nom_graphe[indice]);
+   return 1;
 }
 l=conditions[indice];
 liste=(Liste_num)malloc(sizeof(struct liste_num));
@@ -803,30 +792,11 @@ if (fst2==NULL) {
 	fatal_error("Cannot load graph %s\n",nom_fst2);
 }
 
-printf("Recursion detection started\n");
-/*f=u_fopen(nom_fst2,U_READ);
-if (f==NULL) {
-  fprintf(stderr,"Cannot open the graph %s\n",nom_fst2);
-  return 0;
-}
-graphe=(Fst2State*)malloc(sizeof(Fst2State)*MAX_FST2_STATES);
-etiquette=(Fst2Tag*)malloc(sizeof(Fst2Tag)*MAX_FST2_TAGS);
-if (graphe==NULL || etiquette==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
-  exit(1);
-}
-charger_graphe_fst2(f,graphe,etiquette,&nombre_graphes,&nombre_etats,
-                         &nombre_etiquettes,&debut_graphe,&nom_graphe,1,&nombre_etats_par_grf);
-
-u_fclose(f);
-*/
-
-//---------------------------------
+u_printf("Recursion detection started\n");
 verifie=(int*)malloc(sizeof(int)*(fst2->number_of_graphs+1));
 conditions=(Liste_conditions*)malloc(sizeof(Liste_conditions)*(fst2->number_of_graphs+1));
 if (verifie==NULL || conditions==NULL) {
-  fprintf(stderr,"Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
-  exit(1);
+   fatal_error("Probleme d'allocation memoire dans la fonction pas_de_recursion\n");
 }
 for (i=0;i<fst2->number_of_graphs+1;i++) {
   verifie[i]=OK;
@@ -838,8 +808,7 @@ for (i=0;i<fst2->number_of_tags;i++)
 for (i=1;i<fst2->number_of_graphs+1;i++) {
   conditions_pour_etat=(Liste_conditions*)malloc(sizeof(Liste_conditions)*fst2->number_of_states_per_graphs[i]);
   if (conditions_pour_etat==NULL) {
-    fprintf(stderr,"Probleme d'allocation memoire\n");
-    exit(1);
+    fatal_error("Probleme d'allocation memoire\n");
   }
   for (j=0;j<fst2->number_of_states_per_graphs[i];j++)
     conditions_pour_etat[j]=NULL;
@@ -856,20 +825,18 @@ for (i=1;i<fst2->number_of_graphs+1;i++) {
 }
 
 
-printf("Resolving <E> conditions\n");
+u_printf("Resolving <E> conditions\n");
 i=1;
 while (i) resoudre_conditions(conditions,fst2->number_of_graphs,
 							fst2->states,fst2->initial_states,&i,
 							fst2->graph_names);
 if (fst2->states[fst2->initial_states[1]]->control&32) {
-  // si le graphe principal reconnait <E>
-  char temp[2000];
-  u_to_char(temp,fst2->graph_names[1]);
-  fprintf(stderr,"ERROR: the main graph %s recognizes <E>\n",temp);
-  ERROR=1;
+   // si le graphe principal reconnait <E>
+   error("ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
+   ERROR=1;
 }
 if (!ERROR) {
-  printf("Checking <E> dependancies\n");
+  u_printf("Checking <E> dependancies\n");
   for (i=1;(!ERROR) && i<fst2->number_of_graphs+1;i++) {
     ERROR=ERROR|check_problemes_du_graphe(i,fst2->states,fst2->initial_states,
     									conditions,NULL,fst2->graph_names);
@@ -878,7 +845,7 @@ if (!ERROR) {
 nettoyer_controle(fst2->states,fst2->initial_states,verifie,fst2->number_of_graphs,
 					fst2->number_of_states);
 if (!ERROR) {
-  printf("Looking for <E> loops\n");
+  u_printf("Looking for <E> loops\n");
   for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
     ERROR=chercher_boucle_par_E(i,fst2->initial_states,fst2->graph_names,
     							fst2->states,fst2->tags,verifie,fst2->number_of_states_per_graphs);
@@ -887,7 +854,7 @@ if (!ERROR) {
 nettoyer_controle(fst2->states,fst2->initial_states,NULL,fst2->number_of_graphs,
 					fst2->number_of_states);
 if (!ERROR) {
-  printf("Looking for infinite recursions\n");
+  u_printf("Looking for infinite recursions\n");
   for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
     ERROR=chercher_recursion(i,NULL,fst2->initial_states,fst2->graph_names,
     						fst2->states,fst2->tags,verifie);
@@ -907,7 +874,7 @@ free(conditions);
 free(nombre_etats_par_grf);
 free(graphe);
 free(etiquette);*/
-printf("Recursion detection completed\n");
+u_printf("Recursion detection completed\n");
 if (ERROR) return RECURSION;
 else return AUCUNE_RECURSION;
 }

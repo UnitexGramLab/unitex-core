@@ -212,7 +212,6 @@ static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const 
       if (symbol_in_symbol(t1->label, t2->label)) {
         //debug("  symbols matches\n");
 	if (found) {
-	  symbol_dump(t1->label); error(" IN "); symbol_dump(t2->label); endl();
 	  error("interStateAtom: non deterministic automaton\n");
 	}
 

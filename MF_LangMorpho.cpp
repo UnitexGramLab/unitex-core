@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include "MF_LangMorpho.h"
 #include "MF_Util.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "MF_Unif.h"   //debug
 #include "Error.h"
 
@@ -292,10 +292,10 @@ int read_class_line(int class_no) {
       l = u_scan_until_char(tmp,line_pos,MAX_MORPHO_NAME-1,"> \t",1);
       line_pos = line_pos + l;
       line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
-      if (!u_strcmp_char(tmp,"fixed"))
+      if (!u_strcmp(tmp,"fixed"))
 	L_CLASSES.classes[class_no].cats[c_cnt].fixed = 1;
       else
-	if (!u_strcmp_char(tmp,"var"))
+	if (!u_strcmp(tmp,"var"))
 	  L_CLASSES.classes[class_no].cats[c_cnt].fixed = 0;
 	else {
 	  error("Undefined fixedness symbol in language morphology file: line %d!\n", line_no);
@@ -321,63 +321,42 @@ int read_class_line(int class_no) {
 /* as defined by L_CLASSES.       		    			              */
 /* Returns 0 on success, 1 otherwise.                                                 */
 int print_language_morpho() {
-  unichar tmp[MAX_LANG_MORPHO_LINE];
-  int c,v, cl;
-
-  //Print categories
-  u_strcpy_char(tmp, "<CATEGORIES>\n");
-  u_prints(tmp);
-  for (c=0; c<L_CATS.no_cats; c++) {
-    //Print category
-    u_prints(L_CATS.cats[c].name);
-    u_strcpy_char(tmp,":");
-    u_prints(tmp);
-    //Print values
-    for (v=0; v<L_CATS.cats[c].no_values; v++) {
-      u_prints(L_CATS.cats[c].values[v]);
+int c,v, cl;
+//Print categories
+u_printf("<CATEGORIES>\n");
+for (c=0; c<L_CATS.no_cats; c++) {
+   //Print category
+   u_printf("%S:",L_CATS.cats[c].name);
+   //Print values
+   for (v=0; v<L_CATS.cats[c].no_values; v++) {
+      u_printf("%S",L_CATS.cats[c].values[v]);
       if (v != L_CATS.cats[c].no_values-1) {
-	u_strcpy_char(tmp,",");
-	u_prints(tmp);
+         u_printf(",");
       }
-    }
-    u_strcpy_char(tmp,"\n");
-    u_prints(tmp);
-  }
+   }
+   u_printf("\n");
+}
 
-  //Print classes
-  u_strcpy_char(tmp, "<CLASSES>\n");
-  u_prints(tmp);
-  for (cl=0; cl<L_CLASSES.no_classes; cl++) {
-    //print class
-    u_prints(L_CLASSES.classes[cl].name);
-    u_strcpy_char(tmp,":");
-    u_prints(tmp);
-    //print relevant categories
-    for (c=0; c<L_CLASSES.classes[cl].no_cats; c++) {
-      u_strcpy_char(tmp,"(");
-      u_prints(tmp);
+//Print classes
+u_printf("<CLASSES>\n");
+for (cl=0; cl<L_CLASSES.no_classes; cl++) {
+   //print class
+   u_printf("%S:",L_CLASSES.classes[cl].name);
+   //print relevant categories
+   for (c=0; c<L_CLASSES.classes[cl].no_cats; c++) {
       //print category
-      u_prints(L_CLASSES.classes[cl].cats[c].cat->name);
-      u_strcpy_char(tmp,",<");
-      u_prints(tmp);
+      u_printf("(%S,<",L_CLASSES.classes[cl].cats[c].cat->name);
       //print fixedness
-      if (L_CLASSES.classes[cl].cats[c].fixed)
-	u_strcpy_char(tmp,"fixed");
-      else
-	u_strcpy_char(tmp,"var");
-      u_prints(tmp);
-      u_strcpy_char(tmp,">)");
-      u_prints(tmp);
-
+      if (L_CLASSES.classes[cl].cats[c].fixed) u_printf("fixed");
+      else u_printf("var");
+      u_printf(">)");
       if (c != L_CLASSES.classes[cl].no_cats-1) {
-	u_strcpy_char(tmp,",");
-	u_prints(tmp);
+         u_printf(",");
       }	
-    }
-    u_strcpy_char(tmp,"\n");
-    u_prints(tmp);
-  }
-  return 0;
+   }
+   u_printf("\n");
+}
+return 0;
 }
 
 

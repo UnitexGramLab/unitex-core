@@ -54,7 +54,7 @@ for (i=0;s[i]!='\0';i++)
 
 void push_output_string(unichar* s,struct locate_parameters* p) {
 int i=0;
-if (s==NULL || !u_strcmp_char(s,"<E>")) {
+if (s==NULL || !u_strcmp(s,"<E>")) {
   // we do nothing if the transduction is <E>
   return;
 }
@@ -70,9 +70,7 @@ while (s[i]!='\0') {
          name[L]='\0';
          if (s[i]!='$') {
             if (DISPLAY_VARIABLE_ERRORS) {
-               char NAME[100];
-               u_to_char(NAME,name);
-               error("Error: missing closing $ after $%s\n",NAME);
+               error("Error: missing closing $ after $%S\n",name);
             }
          }
          else {
@@ -85,30 +83,22 @@ while (s[i]!='\0') {
                  struct transduction_variable* v=get_transduction_variable(name);
                  if (v==NULL) {
                     if (DISPLAY_VARIABLE_ERRORS) {
-                       char NAME[100];
-                       u_to_char(NAME,name);
-                       error("Error: undefined variable $%s\n",NAME);
+                       error("Error: undefined variable $%S\n",name);
                     }
                  }
                  else if (v->start==-1) {
                     if (DISPLAY_VARIABLE_ERRORS) {
-                       char NAME[100];
-                       u_to_char(NAME,name);
-                       error("Error: starting position of variable $%s undefined\n",NAME);
+                       error("Error: starting position of variable $%S undefined\n",name);
                     }
                  }
                  else if (v->end==-1) {
                     if (DISPLAY_VARIABLE_ERRORS) {
-                       char NAME[100];
-                       u_to_char(NAME,name);
-                       error("Error: end position of variable $%s undefined\n",NAME);
+                       error("Error: end position of variable $%S undefined\n",name);
                     }
                  }
                  else if (v->start > v->end) {
                     if (DISPLAY_VARIABLE_ERRORS) {
-                       char NAME[100];
-                       u_to_char(NAME,name);
-                       error("Error: end position before starting position for variable $%s\n",NAME);
+                       error("Error: end position before starting position for variable $%S\n",name);
                     }
                  }
                  else {

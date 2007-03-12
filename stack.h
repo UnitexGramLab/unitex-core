@@ -24,8 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "const.h"
-
+#include "Error.h"
 
 #define STACK_DEFAULT_SIZE  64
 
@@ -66,16 +65,20 @@ static inline void stack_push(stack_type * stack, void * e) {
   stack->data[stack->head++] = e;
 }
 
-
+/*
 static inline void * stack_head(stack_type * stack) {
-  if (stack->head == 0) { return (void *) UNDEF; }
+  if (stack->head == 0) {
+    return (void *) UNDEF; 
+  }
   return stack->data[stack->head - 1];
-}
+}*/
 
 
 static inline void * stack_pop(stack_type * stack) {
-  if (stack->head == 0) { return (void *) UNDEF; }
-  return stack->data[--stack->head];
+if (stack->head==0) {
+   fatal_error("Cannot pop an empty stack\n");
+}
+return stack->data[--stack->head];
 }
 
 
@@ -126,8 +129,7 @@ static inline void stack_push_int(stack_type_int * stack, int e) {
 
 static inline int stack_head_int(stack_type_int * stack) {
   if (stack->head == 0) {
-     fprintf(stderr,"Empty stack error in stack_head_int\n");
-     exit(1);
+     fatal_error("Empty stack error in stack_head_int\n");
   }
   return stack->data[stack->head - 1];
 }
@@ -135,8 +137,7 @@ static inline int stack_head_int(stack_type_int * stack) {
 
 static inline int stack_pop_int(stack_type_int * stack) {
   if (stack->head == 0) {
-     fprintf(stderr,"Empty stack error in stack_head_int\n");
-     exit(1);
+     fatal_error("Empty stack error in stack_head_int\n");
   }
   return stack->data[--stack->head];
 }

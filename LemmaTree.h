@@ -22,7 +22,7 @@
 #ifndef LemmaTreeH
 #define LemmaTreeH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "List_ustring.h"
 
 /**

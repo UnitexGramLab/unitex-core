@@ -19,10 +19,8 @@
   *
   */
 
-//---------------------------------------------------------------------------
-
 #include "Load_DLF_DLC.h"
-//---------------------------------------------------------------------------
+#include "Error.h"
 
 
 struct noeud_dlf_dlc* new_noeud_dlf_dlc() {
@@ -132,12 +130,12 @@ void load_dlf_dlc(char* nom,struct noeud_dlf_dlc* racine) {
 FILE* f;
 f=u_fopen(nom,U_READ);
 if (f==NULL) {
-   fprintf(stderr,"Cannot load dictionary %s\n",nom);
+   error("Cannot load dictionary %s\n",nom);
    return;
 }
-printf("Loading %s...\n",nom);
+u_printf("Loading %s...\n",nom);
 unichar ligne[1000];
-while (EOF!=u_read_line(f,ligne)) {
+while (EOF!=u_fgets(ligne,f)) {
    struct dela_entry* entry=tokenize_DELAF_line(ligne,1);
    inserer_dans_arbre_dlf_dlc(entry,racine);
    free_dela_entry(entry);

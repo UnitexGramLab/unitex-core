@@ -30,7 +30,7 @@
 #ifndef SU_morphoH
 #define SU_morphoH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "MF_FormMorpho.h"
 

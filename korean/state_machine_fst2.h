@@ -19,19 +19,23 @@
   *
   */
 
-//
-//
-//	state macheine used by fst2
-//
 #ifndef STATE_MACHINE_FST2_H
 #define STATE_MACHINE_FST2_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "bitmap.h"
 #include "etc.h"
+#include "Error.h"
+
+//
+//
+// state macheine used by fst2
+//
+
 
 #define SZ64K	64*1024
 #define CNT_SZ_MAX_ARRAY	256
@@ -98,7 +102,7 @@ public:
 		unichar *wp;
 
 		a=load_fst2(mapfilename,1);
-		if (a==NULL) exitMessage("");
+		if (a==NULL) exit(1);
 		outSize = sz;
 		outCnt = 0;
 	
@@ -116,7 +120,7 @@ public:
 			wp=a->tags[i]->input;
 	 		if(*wp == '<'){
 	           if( (*(wp+1) ==  'E') && (*(wp+2) ==  '>'))
-	          	 exitMessage("do not accept the transition with null");
+	          	 fatal_error("do not accept the transition with null\n");
 		       if((*(wp+1) == '!') && (*(wp+2) ==  '>') )
                  continue;  		
 		       if((*(wp+1) == '#') && (*(wp+2) == '>') )
@@ -124,8 +128,7 @@ public:
                else if(findChangeStr(wp,&wt)){
 				    *wp=(unichar)wt;
 		       } else {
-				     fprintf(stderr,"un define %s\n",getUtoChar(a->tags[i]->input));
-				     exitMessage("");
+				     fatal_error("un define %s\n",getUtoChar(a->tags[i]->input));
 		       }
 	         }
 		//
@@ -219,7 +222,7 @@ case CMD_DIV:;
 		case CMD_INIT:cleardmem();controlFlag = FLOW_CONTROL_INIT; break;
 		case CMD_FINI:cleardmem();controlFlag = FLOW_CONTROL_FINI; break;
 		default:
-			exitMessage("syntax error");
+			fatal_error("syntax error\n");
 		}
 if(debugPrFlag){
 switch(map->op){
@@ -244,9 +247,8 @@ case CMD_DIV:;
 		}
 		if(outCnt == CNT_SZ_MAX_ARRAY){
 			outCnt = CNT_SZ_MAX_ARRAY;
-			fprintf(stderr,"warning buffer full");
+			error("warning buffer full");
 		}
-//if(debugPrFlag) fwprintf(stderr,L"%c %x",(unichar)(dmemArray[0] & 0xffff),dmemArray[0]);
 	};
 
 void curSMvalue(unichar cval)
@@ -275,7 +277,6 @@ void curSMvalue(unichar cval)
 	if(nextArr){
 	    controlFlag = 0;
 		traiteAct(cmdPtr);
-//if(debugPrFlag) fprintf(stderr,"0x%x :: %x->%x\n",cval,curEtat,cT->arr);
 
 		if(controlFlag & FLOW_CONTROL_INIT){
 			curSMvalue(cval);
@@ -286,7 +287,6 @@ void curSMvalue(unichar cval)
 		curEtat = nextArr;
 		return;
 	}
-// if(debugPrFlag) fprintf(stderr,"warning 0x%x: cur%x\n",cval,curEtat);
 cleardmem();
 }
 
@@ -318,27 +318,26 @@ do {
 		if((*sp == (unichar)' ') || (*sp == (unichar)'\t')) continue;
 		saveCmdLine[i++] = *sp++;
 		if(i < 64 ) continue;
-		//fprintf(stderr,"too long line %s",istr);
-		exitMessage("");
+		fatal_error("too long line %s\n",istr);
 	}
 	if(!*sp &&(!i) ) break;
 	if(*sp) sp++;
 	saveCmdLine[i]= '\0';
 
 	wp = saveCmdLine;
-	if(!u_strcmp_char(wp,"INIT")){
+	if(!u_strcmp(wp,"INIT")){
 		tcmd = new struct cmdInst;
 		tcmd->op = CMD_INIT;
 		tcmd->next = 0;
-	}else if(!u_strcmp_char(wp,"COUT")){
+	}else if(!u_strcmp(wp,"COUT")){
 		tcmd = new struct cmdInst;
 		tcmd->op = CMD_COUT;
 		tcmd->next = 0;
-	}else if(!u_strcmp_char(wp,"FINI")){
+	}else if(!u_strcmp(wp,"FINI")){
 		tcmd = new struct cmdInst;
 		tcmd->op = CMD_FINI;
 		tcmd->next = 0;
-	}else if(!u_strcmp_char(wp,"<E>")){
+	}else if(!u_strcmp(wp,"<E>")){
 		tcmd = 0;
 	}else if(!*wp){
 		tcmd = 0;	
@@ -350,15 +349,15 @@ do {
 				strSz = 0;
 				wp++;
 				while(*wp != '%'){
-					if(!*wp) exitMessage("syntax error");
+					if(!*wp) fatal_error("syntax error\n");
 					valName[strSz++] = *wp++;
-					if(strSz == 16) exitMessage("Too long name");
+					if(strSz == 16) fatal_error("Too long name\n");
 				}
 				wp++;
 				valName[strSz] = '\0';
-				if(!strSz) exitMessage("synTax error");
+				if(!strSz) fatal_error("synTax error\n");
 
-				if(u_strcmp_char(valName,"ret")){
+				if(u_strcmp(valName,"ret")){
 					ss = &HeadVari;
 					i = 1;
 					while(*ss){
@@ -384,7 +383,7 @@ do {
 			case '=':
 				lstack[lstackIdx++] = MARK_CMD | *wp++; break;
 			case ',':
-				exitMessage("syntax error");
+				fatal_error("syntax error\n");
 			case '\0':
 				tcmd = new 	struct cmdInst ;
 				tcmd->src = (unsigned int *)lstack[0];
@@ -395,14 +394,14 @@ do {
 					case (unichar)'-': tcmd->op = CMD_MIN;break;
 					case (unichar)'*': tcmd->op = CMD_MUL;break;
 					case (unichar)'/': tcmd->op = CMD_DIV;break;
-					default: exitMessage("syntax error");
+					default: fatal_error("syntax error\n");
 					}
 					tcmd->op2 = (unsigned int *) lstack[4];
 				} else if(lstackIdx == 3){
 					tcmd->op = CMD_ADD;
 					tcmd->op2 = &Null_intValue;
 				} else {
-					exitMessage("syntax error");
+					fatal_error("syntax error\n");
 				}
 			
 	
@@ -411,7 +410,7 @@ do {
 			case (unichar)' ':
 			case (unichar)'\t': wp++; break;
 			default:
-				if(lstackIdx < 2) exitMessage("syntax error");
+				if(lstackIdx < 2) fatal_error("syntax error\n");
 				wp = uascToNum(wp,&sum);
 
 				for(ii=0;(ii< smemIdx) && (ii<CNT_SZ_MAX_ARRAY);ii++)
@@ -419,10 +418,10 @@ do {
                          break;
 				if(ii == smemIdx) // registe new constant variable
 					smemArray[smemIdx++] = sum;
-				if(smemIdx >= CNT_SZ_MAX_ARRAY) exitMessage("too many constant");
+				if(smemIdx >= CNT_SZ_MAX_ARRAY) fatal_error("too many constants\n");
 				lstack[lstackIdx++] = (unsigned int)&smemArray[ii];
 			}
-			if(lstackIdx >5) exitMessage("too much operation");
+			if(lstackIdx >5) fatal_error("too much operations\n");
 		} while(endFlag);
 	}
 	if(tcmd){	// ajoute cmd link
@@ -528,11 +527,11 @@ if(debugPrFlag) {
 			if((rsz = u_fread_raw(iBuff,SZ64K,fi)) > 0){
 				totalRead+= rsz;
 				osz = convStr(iBuff,rsz,oBuff);
-                u_fwrite(oBuff,osz,fo);//fwrite(oBuff,2*osz,1,fo);
+                u_fwrite_raw(oBuff,osz,fo);//fwrite(oBuff,2*osz,1,fo);
 			}
-			printf("\rTotal  %d(0x%08x) byte read",totalRead*2,totalRead*2);
-		}while(rsz == SZ64K);
-		printf("\n");
+			u_printf("\rTotal  %d byte read",totalRead*2);
+		} while(rsz == SZ64K);
+		u_printf("\n");
 		fclose(fi);
 		fclose(fo);
 		return(totalRead);

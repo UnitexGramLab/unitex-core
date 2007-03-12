@@ -67,7 +67,7 @@ if (res==NULL) {
 /* We set globals used in Grf2Fst2lib.cpp !!! */
 nombre_etiquettes_comp=origin->number_of_tags;
 nombre_graphes_comp=origin->number_of_graphs;
-printf("Computing grammar dependencies...\n");
+u_printf("Computing grammar dependencies...\n");
 /* We build the dependency tree of the grammar */
 dependencies=compute_dependencies(origin);
 /* And we use it in order to know which graphs will be kept */
@@ -81,7 +81,7 @@ for (int i=1;i<=origin->number_of_graphs;i++) {
    free_list_int(dependencies[i]);
 }
 free(dependencies);
-printf("Flattening...\n");
+u_printf("Flattening...\n");
 /* We create the new main graph structure */
 SingleGraph new_fst2=new_SingleGraph();
 /* And we do the flattening job */
@@ -99,7 +99,7 @@ int result=flatten_graph(origin,
                            new_graph_number); 
 /* Now, we clean the new main graph, i.e.we remove epsilon transitions
  * and unreachable states */
-printf("Cleaning graph...\n");
+u_printf("Cleaning graph...\n");
 compute_reverse_transitions(new_fst2);
 for (int h=0;h<new_fst2->number_of_states;h++) {
    if (is_final_state(new_fst2->states[h])) {
@@ -111,26 +111,24 @@ check_accessibility(new_fst2->states,0);
 remove_epsilon_transitions(new_fst2);
 remove_useless_states(new_fst2);
 /* We minimize the new main graph */
-printf("Minimization...\n");
+u_printf("Minimization...\n");
 minimize(new_fst2,0);
 /* Now, we can start saving the grammar, so we print the header of the .fst2,
  * which is the number of graphs it contains. */
-char tmpstr[256];
-snprintf(tmpstr,256,"%010d\n",(RTN?n_graphs_to_keep:1));
-u_fprints_char(tmpstr,res);
+u_fprintf(res,"%010d\n",(RTN?n_graphs_to_keep:1));
 /* We save the new main graph */
-printf("Writing grammar...\n");
+u_printf("Writing grammar...\n");
 save_graph(res,new_fst2,-1,origin->graph_names[1]);
 free_SingleGraph(new_fst2);
 /* Then, we save the subgraphs, if we have to */
 if (RTN && (result == EQUIVALENT_RTN)) {
-   printf("Saving remaining subgraphs...\n");
+   u_printf("Saving remaining subgraphs...\n");
    save_graphs_to_keep(origin,res,new_graph_number);
 }
 /* We don't forget to free the new_graph_number array */
 free(new_graph_number);
 /* Finally, we save the tags */
-printf("Saving tags...\n");
+u_printf("Saving tags...\n");
 write_fst2_tags(res,origin);
 u_fclose(res);
 return result;
@@ -177,14 +175,10 @@ for (int state=grammar->initial_states[n];state<last_state;state++) {
 void print_dependencies(Fst2* grammar) {
 for (int i=1;i<=grammar->number_of_graphs;i++) {
    if (dependencies[i]!=NULL) {
-      printf("graph %d ",i);
-      u_prints(grammar->graph_names[i]);
-      printf(" calls:\n");
+      u_printf("graph %d %S calls:\n",i,grammar->graph_names[i]);
       struct list_int* l=dependencies[i];
       while (l!=NULL) {
-         printf("   graph %d ",l->n);
-         u_prints(grammar->graph_names[l->n]);
-         printf("\n");
+         u_printf("   graph %d %S\n",l->n,grammar->graph_names[l->n]);
          l=l->next;
       }
    }
@@ -425,37 +419,33 @@ return initial_position_for_new_states;
  */
 void save_graph_to_keep(int graph_number,Fst2* grammar,FILE* f,int* new_graph_number) {
 int limit=grammar->initial_states[graph_number]+grammar->number_of_states_per_graphs[graph_number];
-char temp[128];
 /* We save the graph header (number+name) */
-sprintf(temp,"%d ",-new_graph_number[graph_number]);
-u_fprints_char(temp,f);
-u_fprints(grammar->graph_names[graph_number],f);
-u_fprints_char("\n",f);
+u_fprintf(f,"%d ",-new_graph_number[graph_number]);
+u_fprintf(f,"%S\n",grammar->graph_names[graph_number]);
 /* Then, we dump all the states */
 for (int i=grammar->initial_states[graph_number];i<limit;i++) {
    /* We print the symbol that corresponds to the finality of the state */
    if (is_final_state(grammar->states[i])) {
-      u_fprints_char("t ",f);
+      u_fprintf(f,"t ");
    }
    else {
-      u_fprints_char(": ",f);
+      u_fprintf(f,": ");
    }
    /* And we print all the outgoing transitions */
    struct fst2Transition* transition=grammar->states[i]->transitions;
    while (transition!=NULL) {
       if (transition->tag_number < 0) {
          /* If we have a subgraph call, we renumber it */
-         sprintf(temp,"%d %d ",-new_graph_number[-(transition->tag_number)],(transition->state_number)-grammar->initial_states[graph_number]);
+         u_fprintf(f,"%d %d ",-new_graph_number[-(transition->tag_number)],(transition->state_number)-grammar->initial_states[graph_number]);
       }
       else {
-         sprintf(temp,"%d %d ",transition->tag_number,(transition->state_number)-grammar->initial_states[graph_number]);
+         u_fprintf(f,"%d %d ",transition->tag_number,(transition->state_number)-grammar->initial_states[graph_number]);
       }
-      u_fprints_char(temp,f);
       transition = transition->next;
    }
-   u_fprints_char("\n",f);
+   u_fprintf(f,"\n");
 }
-u_fprints_char("f \n",f);
+u_fprintf(f,"f \n");
 }
 
 

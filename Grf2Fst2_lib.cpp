@@ -1052,7 +1052,7 @@ void init_arbres_comp()
   rac_comp = NULL;
   rac_comp = nouveau_noeud_comp();
   unichar s[10];
-  u_strcpy_char(s,"<E>");
+  u_strcpy(s,"<E>");
   EPSILON_comp = ajouter_etiquette_comp(s,rac_comp,0);
   u_strcpy(donnees->Etiquette_comp[EPSILON_comp],s);
   rac_graphe_comp = NULL;
@@ -1314,7 +1314,7 @@ void conformer_nom_graphe_comp(char * NOM, int courant) {
     }
 
   u_strcat(nom,donnees->nom_graphe[courant]);
-  u_strcat_char(nom,".grf");
+  u_strcat(nom,".grf");
 
   u_to_char(NOM,nom); /* file name is now in iso-8859-1,
                          unicode characters not in iso-8859-1 are deleted */
@@ -1552,7 +1552,7 @@ int get_sequence_desambiguisee_comp(unichar contenu[],int *pos,unichar mot[],int
    }
    mot[i] = '}';
    mot[i+1] = '\0';
-   if (!u_strcmp_char(mot,"{STOP}")) {
+   if (!u_strcmp(mot,"{STOP}")) {
       // if the graph contains the forbidden tag {STOP}, then
       // we raise a fatal error
       fatal_error("ERROR: a graph contains the forbidden tag {STOP}\n");
@@ -1583,7 +1583,7 @@ int lire_mot_entre_guillemet_comp(unichar contenu[],int *pos,unichar mot[],
           // if we have $\\\"$ we must return the $"$ character
           (*pos)=(*pos)+2;
           get_caractere_comp(contenu,pos,mot,pos_seq);
-          u_strcpy_char(temp,"@");
+          u_strcpy(temp,"@");
           u_strcat(temp,mot);
           u_strcpy(mot,temp);
           return 0;
@@ -1597,7 +1597,7 @@ int lire_mot_entre_guillemet_comp(unichar contenu[],int *pos,unichar mot[],
        else {
           // if we have $\x$ we must return the $x$ character
           get_caractere_comp(contenu,pos,mot,pos_seq);
-          u_strcpy_char(temp,"@");
+          u_strcpy(temp,"@");
           u_strcat(temp,mot);
           u_strcpy(mot,temp);
           return 0;
@@ -1608,7 +1608,7 @@ int lire_mot_entre_guillemet_comp(unichar contenu[],int *pos,unichar mot[],
      if (is_letter_generic(contenu[*pos],mode,alph))
      {
        if (get_mot_comp_generic(contenu,pos,mot,pos_seq,mode,alph)== -3) return -3;
-       u_strcpy_char(temp,"@");
+       u_strcpy(temp,"@");
        u_strcat(temp,mot);
        u_strcpy(mot,temp);
        return 0;
@@ -1617,7 +1617,7 @@ int lire_mot_entre_guillemet_comp(unichar contenu[],int *pos,unichar mot[],
 
        // cas general d'un caractere seul
        get_caractere_comp(contenu,pos,mot,pos_seq);
-       u_strcpy_char(temp,"@");
+       u_strcpy(temp,"@");
        u_strcat(temp,mot);
        u_strcpy(mot,temp);
        return 0;
@@ -1853,7 +1853,7 @@ int transfo_seq_carac_en_entiers(unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MA
        }
        else
        {
-          u_strcpy_char(s,"/");
+          u_strcpy(s,"/");
           u_strcat(sequence[0],s);
           u_strcat(sequence[0],transduction);
 
@@ -1880,7 +1880,7 @@ int transfo_seq_carac_en_entiers(unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MA
      }
      else
      {
-        u_strcpy_char(s,"/<E>");
+        u_strcpy(s,"/<E>");
 
         if (transduction[0]!='\0') u_strcat(sequence[i],s);
         if (traitement_etiquettes_comp(&indice,sequence[i]) == -1) return -1;
@@ -1917,6 +1917,7 @@ return 1;
 
 
 
+unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MAX_COMP];
 
 int traitement_transition_comp(SingleGraph graph,unichar contenu[],
                                unichar transduction[],int sortants[],
@@ -1927,32 +1928,28 @@ int traitement_transition_comp(SingleGraph graph,unichar contenu[],
   int compteur_mots = 0;
   int plus = 0;
   int trans;
-  unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MAX_COMP];
   int sequence_ent[TAILLE_SEQUENCE_COMP];
-  char err[1000];
   while ((plus == 0) && (contenu[*pos] != '\0') && (compteur_mots < TAILLE_SEQUENCE_COMP)) {
     plus = lire_mot_comp(contenu,pos,sequence,&compteur_mots,graphe_courant,mode,alph);
   }
 
   if (plus == -2) return -1;
   if (plus == -3) {       // Cas trop de caractères dans un mot
-   u_to_char(err,donnees->nom_graphe[graphe_courant]);
    if (graphe_courant == 0) {
-      error("ERROR in main graph %s: The size of a word should be lower than %d characters\n",err,N_CAR_MAX_COMP);
+      error("ERROR in main graph %S: The size of a word should be lower than %d characters\n",donnees->nom_graphe[graphe_courant],N_CAR_MAX_COMP);
     }
     else {
-      error("WARNING in main graph %s: The size of a word should be lower than %d characters\nGraph has been emptied\n",err,N_CAR_MAX_COMP);
+      error("WARNING in main graph %S: The size of a word should be lower than %d characters\nGraph has been emptied\n",donnees->nom_graphe[graphe_courant],N_CAR_MAX_COMP);
     }
     return 0;
   }
   if ((plus == -1) || (compteur_mots >= TAILLE_SEQUENCE_COMP) )
   {
-    u_to_char(err,donnees->nom_graphe[graphe_courant]);
     if (graphe_courant == 0) {
-      error("ERROR in main graph %s: The size of a sequence between two + should be lower than %d words\n",err,TAILLE_SEQUENCE_COMP);
+      error("ERROR in main graph %S: The size of a sequence between two + should be lower than %d words\n",donnees->nom_graphe[graphe_courant],TAILLE_SEQUENCE_COMP);
     }
     else {
-      error("WARNING in main graph %s: The size of a sequence between two + should be lower than %d words\nGraph has been emptied\n",err,TAILLE_SEQUENCE_COMP);
+      error("WARNING in main graph %S: The size of a sequence between two + should be lower than %d words\nGraph has been emptied\n",donnees->nom_graphe[graphe_courant],TAILLE_SEQUENCE_COMP);
     }
     return 0;
   }
@@ -2005,10 +2002,10 @@ int traitement_ligne_comp(unichar ligne[],int sortants[],
          && ( ligne[u_strlen(ligne)-1]=='('
               || ligne[u_strlen(ligne)-1]==')'))
         // context marks are handled exactly as variable marks
-        || (!u_strcmp_char(ligne,"$[") || !u_strcmp_char(ligne,"$![")
-            || !u_strcmp_char(ligne,"$]"))) {
+        || (!u_strcmp(ligne,"$[") || !u_strcmp(ligne,"$![")
+            || !u_strcmp(ligne,"$]"))) {
         u_strcpy(contenu,ligne);
-        u_strcpy_char(transduction,"");
+        u_strcpy(transduction,"");
         traiter_debut_fin_variable(graph,contenu,transduction,sortants,&i,etat_courant,graphe_courant);
         return 1;
     }
@@ -2036,7 +2033,6 @@ int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
 {
   unichar c;
   int i, n_sortantes;
-  char err[TAILLE_MOT_GRAND_COMP];
 
   for (i=0;i<NOMBRE_TRANSITIONS_COMP;i++) sortants[i]=-1;
 
@@ -2058,41 +2054,33 @@ int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
   /* error: box content to long */
   if ( i >= TAILLE_MOT_GRAND_COMP )
     {
-      u_to_char(err,donnees->nom_graphe[courant]);
       error(
-              "ERROR in main graph %s.grf:\n"
+              "ERROR in main graph %S.grf:\n"
               "Too many characters in box. The number of characters\n"
               "per box should be lower than %d\n",
-              err,TAILLE_MOT_GRAND_COMP);
+              donnees->nom_graphe[courant],TAILLE_MOT_GRAND_COMP);
       return 0;
     }
 
   ligne[i] = '\0'; /* box entry read */
 
-  u_fgetc(f); /* read the space char after the string */
-
-  /* skip the values (x,y) for box positioning */
-  u_read_int(f);
-  u_read_int(f);
-
-  /* read the number of transitions */
-  n_sortantes = u_read_int(f);
+  /* 3 %d because we skip the X and Y coordinates and then we read the number
+   * of outgoing transitions */
+  u_fscanf(f,"%d%d%d",&n_sortantes,&n_sortantes,&n_sortantes);
 
   /* error: to many transitions */
   if ( n_sortantes >= NOMBRE_TRANSITIONS_COMP )
     {
-      u_to_char(err,donnees->nom_graphe[courant]);
-      error("WARNING in graph %s.grf:\n"
+      error("WARNING in graph %S.grf:\n"
               "to many transitions. The number of transitions\n"
               "per box should be lower than %d\n",
-              err, NOMBRE_TRANSITIONS_COMP);
+              donnees->nom_graphe[courant], NOMBRE_TRANSITIONS_COMP);
       return 0;
     }
 
   /* read the transitions */
-  for (i = 0 ; i < n_sortantes ; i++)
-    {
-      sortants[i] = u_read_int(f);
+  for (i = 0 ; i < n_sortantes ; i++) {
+      u_fscanf(f,"%d",&sortants[i]);
     }
 
   /* read the end of line char */
@@ -2115,7 +2103,6 @@ int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
 
 int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs_comp)
 {
-
   int i;
   //int courant;
   int traitement,lire;
@@ -2124,16 +2111,13 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   char nom[TAILLE_MOT_GRAND_COMP];
   int sortants[NOMBRE_TRANSITIONS_COMP];
   unichar ligne[TAILLE_MOT_GRAND_COMP];
-  char err[1000];
+  //char err[1000];
 
   SingleGraph graph = new_SingleGraph();
 
 
   /* status message */
-  printf("Compiling graph ");
-  u_prints(donnees->nom_graphe[graphe_courant]);
-  printf("\n");
-  // fprintf(stdout,"(%s)\n",nom);
+  u_printf("Compiling graph %S\n",donnees->nom_graphe[graphe_courant]);
 
 
   /* get name with path, e.g.
@@ -2144,9 +2128,7 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   f=u_fopen(nom,U_READ);
   if (f == NULL) /* cannot open */
     {
-      char s[TAILLE_MOT_GRAND_COMP];
-      u_to_char(s,donnees->nom_graphe[graphe_courant]);
-      error("Cannot open the graph %s.grf\n",s);
+      error("Cannot open the graph %S.grf\n",donnees->nom_graphe[graphe_courant]);
       error("(%s)\n",nom);
       write_graph_comp(fs_comp, graph,
                        (-(graphe_courant)-1),
@@ -2159,8 +2141,8 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   /* read header */
   u_fgetc(f);                       /* skip BOM */
   while ( u_fgetc(f) != '#' );      /* skip header with formatting instructions */
-  u_fgetc(f);                       /* skip newline */
-  n_etats_initial = u_read_int(f);  /* read number of states */
+  /* Skip the newline and the number of states */
+  u_fscanf(f,"%d\n",&n_etats_initial);
 
   /* If necessary, we resize the graph that it can hold all the states */
   if (graph->capacity<n_etats_initial) {
@@ -2179,7 +2161,7 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
       /* read one line in file f */
       //On lit le contenu d'une boite et ses sorties (transitions)
       lire = lire_ligne_comp(f,ligne,sortants,graphe_courant);
-
+      
       /* error reading line */
       if (lire == 0)
         {
@@ -2193,7 +2175,6 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
             return 0;
           return 1;
         }
-
       /* box contains transitions: process them */
       //On traite la ligne : ecriture en memoire
       if (lire == 1)
@@ -2238,13 +2219,12 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
                        donnees->nom_graphe[graphe_courant]);
 
       free_SingleGraph(graph);
-      u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if (graphe_courant == 0)
         {
-          error("ERROR: Main graph %s.grf has been emptied\n",err);
+          error("ERROR: Main graph %S.grf has been emptied\n",donnees->nom_graphe[graphe_courant]);
           return 0;
         }
-      error("WARNING: graph %s.grf has been emptied\n",err);
+      error("WARNING: graph %S.grf has been emptied\n",donnees->nom_graphe[graphe_courant]);
       return 1;
     }
   donnees->statut_graphe[graphe_courant] = 1;
@@ -2257,13 +2237,12 @@ int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs
   free_SingleGraph(graph);
   if ( (det == 0) || (min == 0) )
     {
-      u_to_char(err,donnees->nom_graphe[graphe_courant]);
       if (graphe_courant == 0)
         {
-          error("ERROR in main graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
+          error("ERROR in main graph %S.grf: Tore error. Please, contact Unitex programmers\n",donnees->nom_graphe[graphe_courant]);
           return 0;
         }
-      error("WARNING in graph %s.grf: Tore error. Please, contact Unitex programmers\n",err);
+      error("WARNING in graph %S.grf: Tore error. Please, contact Unitex programmers\n",donnees->nom_graphe[graphe_courant]);
       return 0;
     }
   return 1;
@@ -2297,7 +2276,7 @@ int extraire_nom_graphe_comp(char *s1,unichar* S2)
     for (j=i+1;j<l;j++) s2[j-i-1]=temp[j];
     for (j=0;j<i+1;j++) donnees->chemin_graphe_principal[j]=temp[j];
     donnees->chemin_graphe_principal[i+1]='\0';
-    u_strcpy_char(S2,s2);
+    u_strcpy(S2,s2);
     return 1;
   }
   else {
@@ -2305,7 +2284,7 @@ int extraire_nom_graphe_comp(char *s1,unichar* S2)
     // we don't need to modify S2
     // and we put an an empty path
     donnees->chemin_graphe_principal[0]='\0';
-    u_strcpy_char(S2,temp);
+    u_strcpy(S2,temp);
     return 1;
   }
 }
@@ -2392,20 +2371,17 @@ void sauvegarder_etiquettes_comp(FILE* fs_comp)
   for (i=0;i<nombre_etiquettes_comp;i++) {
     if ((donnees->Etiquette_comp[i][0])=='@') {
       if ((donnees->Etiquette_comp[i][1])=='\0') {
-        u_fprints_char("%@\n",fs_comp);
+        u_fprintf(fs_comp,"%%@\n");
         }
       else {
-         u_fprints(donnees->Etiquette_comp[i],fs_comp);
-         u_fputc('\n',fs_comp);
+         u_fprintf(fs_comp,"%S\n",donnees->Etiquette_comp[i]);
       }
     }
     else {
-      u_fputc('%',fs_comp);
-      u_fprints(donnees->Etiquette_comp[i],fs_comp);
-      u_fputc('\n',fs_comp);
+      u_fprintf(fs_comp,"%%%S\n",donnees->Etiquette_comp[i]);
     }
   }
-  u_fprints_char("f\n",fs_comp);
+  u_fprintf(fs_comp,"f\n");
 }
 
 

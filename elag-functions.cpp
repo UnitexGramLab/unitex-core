@@ -33,14 +33,13 @@
 
 
 #include "utils.h"
-#include "const.h"
 #include "autalmot.h"
 #include "list_aut.h"
 #include "elag-functions.h"
 #include "fst_file.h"
-#include "evaluation.h"
 
 
+double eval_sentence(autalmot_t * A, int * min = NULL, int * max = NULL);
 static void add_limphrase(autalmot_t * A);
 static int suppress_limphrase(autalmot_t * A);
 
@@ -55,7 +54,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
   symbol_t * unloadable = symbol_unknow_new(LANG, language_add_form(LANG, _unloadable));
   symbol_t * rejected   = symbol_unknow_new(LANG, language_add_form(LANG, _rejected));
   
-  printf("\n* leve ambiguite(%s): %d grammar%s.\n", fstname, gramms->nbelems,
+  u_printf("\n* leve ambiguite(%s): %d grammar%s.\n", fstname, gramms->nbelems,
          gramms->nbelems > 1 ?  "s" : "");
 
   fst_file_in_t * txtin = fst_file_in_open(fstname, FST_TEXT);
@@ -63,7 +62,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
   if (txtin == NULL) { fatal_error("unable to load text '%s'\n", fstname); }
 
 
-  debug("%d sentence(s) in %s\n", txtin->nbelems, fstname);
+  error("%d sentence(s) in %s\n", txtin->nbelems, fstname);
 
 
   fst_file_out_t * fstout = fst_file_out_open(outname, FST_TEXT);
@@ -73,7 +72,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
   time_t debut = time(0);
 
-  printf("\nprocessing ...\n");
+  u_printf("\nprocessing ...\n");
 
   int no = 0;       // numero de la phrase courante
   int nbPhrRej = 0; // nombre de phrases rejetées
@@ -91,7 +90,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
     autalmot_t * orig = autalmot_dup(A);
 
-    if (no % 100 == 0) { printf("sentence %d/%d ...\r", no + 1, txtin->nbelems); }
+    if (no % 100 == 0) { u_printf("sentence %d/%d ...\r", no + 1, txtin->nbelems); }
 
     autalmot_determinize(A);
     autalmot_emonde(A);
@@ -193,7 +192,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
     no++;
   }
 
-  printf("\n");
+  u_printf("\n");
 
   fst_file_close(txtin);
   fst_file_close(fstout);
@@ -201,55 +200,42 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
   time_t fin = time(0);
 
-  printf("\n*** done. result in '%s'\n", outname);
-  printf("\nElapsed time: %.0f s.\n", difftime(fin, debut));
-
-
-  printf("Text. Before: %.1f, after: %.1f units per sentence. ", cumulavant / no, cumulapres / no);
-
+  u_printf("\n*** done. result in '%s'\n", outname);
+  u_printf("\nElapsed time: %.0f s.\n",difftime(fin, debut));
+  u_printf("Text. Before: %.1f, after: %.1f units per sentence. ", cumulavant / no, cumulapres / no);
   if (cumulavant > 0.0) {
     
     if (cumulapres / cumulavant > 0.01) {
-
-      printf("Residual: %.0f %%.\n", 100.0 * cumulapres / cumulavant);
-
+       u_printf("Residual: %.0f%%.\n",100.0 * cumulapres / cumulavant);
     } else {
-
-      printf("Residual: %.1f %%.\n", 100.0 * cumulapres / cumulavant);
+      u_printf("Residual: %.1f%%.\n",100.0 * cumulapres / cumulavant);
     }
   }
 
 
   /* nouveau decompte */
 
-  printf("\n****************\n\n");
+  u_printf("\n****************\n\n");
 
   double logITo = cumulavant; // logITo pour log(nbre d'Interpretation du Texte d'origine)
   double logITe = cumulapres; // logITe pour log(nbre d'Interpretation du Texte élagué)
   double ambrateo = exp(logITo/lgavant);
   double ambratee = exp(logITe/lgapres);
 
-  printf("before grammar application:\n");
-  printf("log(|Int(Torig)|) = %.1f (%.0f interpretations, %.1f interp. per sentence)\n",
+  u_printf("before grammar application:\n");
+  u_printf("log(|Int(Torig)|) = %.1f (%.0f interpretations, %.1f interp. per sentence)\n",
          logITo, exp(logITo), exp(logITo/(double) no));
-  printf("corpus length = %.1f (%.1f lexems per sentence)\n"
-         "average ambiguity rate: %.3f\n",
+  u_printf("corpus length = %.1f (%.1f lexems per sentence)\naverage ambiguity rate: %.3f\n",
          lgavant, lgavant / (double) no, ambrateo);
-
-  printf("\nafter grammar application:\n");
-  printf("log(|Int(Telag)|) = %.1f (%.0f interpretations, %.1f interp. per sentence)\n",
+  u_printf("\nafter grammar application:\n");
+  u_printf("log(|Int(Telag)|) = %.1f (%.0f interpretations, %.1f interp. per sentence)\n",
          logITe, exp(logITe), exp(logITe/(double) no));
-  printf("corpus length = %.1f (%.1f lexems per sentence)\n"
+  u_printf("corpus length = %.1f (%.1f lexems per sentence)\n"
          "average ambiguity rate: %.3f\n", lgapres, lgavant / (double) no, ambratee);
-
-  printf("\nResidual: %.2f %%.\n", (ambratee / ambrateo) * 100.);
-
-  printf("(Other residual: %.5f %% of residual ambig.)\n", exp(logITe - logITo) * (double) 100.);
-  
-  printf("\n%d sentences, %d not successfully loaded and %d rejected by elag grammars.\n\n",
+  u_printf("\nResidual: %.2f %%.\n", (ambratee / ambrateo) * 100.);
+  u_printf("(Other residual: %.5f %% of residual ambig.)\n", exp(logITe - logITo) * (double) 100.);
+  u_printf("\n%d sentences, %d not successfully loaded and %d rejected by elag grammars.\n\n",
          no, nb_unloadable, nbPhrRej);
-
-
   symbol_delete(unloadable);
   symbol_delete(rejected);
 }
@@ -286,7 +272,7 @@ list_aut * chargeGramm(char * nomFichGramm) {
 
     *p = 0;
 
-    debug("\nLecture de %s...\n", buf + 1);
+    error("\nReading %s...\n", buf + 1);
 
     autalmot_t * A = load_grammar_automaton(buf + 1);
 
@@ -295,7 +281,7 @@ list_aut * chargeGramm(char * nomFichGramm) {
     list_aut_add(gramms, A);
   }
 
-  debug("%d gramm(s) loaded\n", gramms->nbelems);
+  error("%d gramm(s) loaded\n", gramms->nbelems);
 
   return gramms;
 }
@@ -379,14 +365,14 @@ int suppress_limphrase(autalmot_t * A) {
 
     error("suppress_limphrase: bad automaton\n");
 
-    debug("nbetats=%d, nbinitiaux=%d, initial[0]=%d, etats[0]=%d, etats[0]->suivant=%d, type[last]=%d\n",
+    error("nbetats=%d, nbinitiaux=%d, initial[0]=%d, etats[0]=%d, etats[0]->suivant=%d, type[last]=%d\n",
           A->nbstates, A->nbinitials, A->initials[0], A->states[0].trans,
           A->states[0].trans ? A->states[0].trans->next : (void *) -1,  A->states[A->nbstates - 1].flags);
     return -1;
   }
 
-  if (u_strcmp_char(language_get_form(A->states[0].trans->label->canonic), "{S}") != 0) {
-    error("suppress_limphrase: no sentence limit found: "); symbol_dump(A->states[0].trans->label); endl();
+  if (u_strcmp(language_get_form(A->states[0].trans->label->canonic), "{S}") != 0) {
+    error("suppress_limphrase: no sentence limit found\n");
     return -1;
   }
 
@@ -437,27 +423,3 @@ int suppress_limphrase(autalmot_t * A) {
 
 
 
-
-
-
-
-/* Charge une seule grammaire deja compilee
- */
-/*
-list_aut * chargeUneGramm(char * nomFichGramm) {
-
-  list_aut * gramm ;
-  static char nomComplet[maxNomFich] ;
-
-  sprintf(nomComplet, "%s.elg", nomFichGramm);
-
-  gramm = (list_aut *) xcalloc(1, sizeof(list_aut)) ;
-
-  gramm->les_aut = (tAutAlMot **) xcalloc(1, sizeof(tAutAlMot *)) ;
-
-  gramm->nb_aut = 1 ;
-  printf("\nLecture de %s...\n", nomComplet) ;
-  gramm->les_aut[0] = chargeAutGramm(nomComplet) ;
-  return gramm ;
-}
-*/

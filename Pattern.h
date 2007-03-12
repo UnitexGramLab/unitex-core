@@ -22,7 +22,7 @@
 #ifndef PatternH
 #define PatternH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "List_ustring.h"
 #include "String_hash.h"
 

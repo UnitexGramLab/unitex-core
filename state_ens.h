@@ -69,7 +69,6 @@ typedef struct state_ens_tab_t {
 stateid_t * stateid_new(autalmot_t * A, int no, stateid_t * next = NULL);
 void stateid_delete(stateid_t * id);
 
-void stateid_dump(stateid_t * id, FILE * f = stderr);
 
 state_ens_t * state_ens_new();
 void state_ens_delete(state_ens_t * l);
@@ -78,16 +77,12 @@ bool state_ens_equals(state_ens_t * l1, state_ens_t * l2);
 
 void state_ens_developp(state_ens_t * ens);
 
-void state_ens_dump(state_ens_t * ens, FILE * f = stderr);
 
 
 TRANS_t * TRANS_new(symbol_t * s, TRANS_t * next = NULL);
 void TRANS_delete(TRANS_t * T);
 void TRANSs_delete(TRANS_t * T);
 TRANS_t * TRANS_lookup(TRANS_t * T, symbol_t * label);
-
-void TRANS_dump(TRANS_t * t, FILE * f = stderr);
-void TRANSs_dump(TRANS_t * T, FILE * f = stderr);
 
 state_ens_tab_t * state_ens_tab_new(int size = 16);
 void state_ens_tab_delete(state_ens_tab_t * tab);

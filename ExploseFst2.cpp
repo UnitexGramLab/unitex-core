@@ -19,6 +19,7 @@
   *
   */
 
+#include "Unicode.h"
 #include "Copyright.h"
 #include "autalmot_old.h"
 #include "fst2autalmot.h"
@@ -27,8 +28,8 @@
 
 
 void usage() {
-  printf("%s", COPYRIGHT);
-  printf("Usage: ExploseFst2 <txtauto> -o <out>\n"
+u_printf("%S", COPYRIGHT);
+u_printf("Usage: ExploseFst2 <txtauto> -o <out>\n"
          "\n"
          "where :\n"
          " <txtauto>     : input text automaton FST2 file,\n"
@@ -103,20 +104,20 @@ int main(int argc, char ** argv) {
   }
 
 
-  printf("loading '%s'\n", txtname);
+  u_printf("loading '%s'\n", txtname);
 
   list_aut_old * txtauto = load_text_automaton(txtname);
 
   if (txtauto == NULL) { fatal_error("unable to load '%s'\n", txtname); }
 
-  printf("explosion ....\n");
+  u_printf("explosion ....\n");
 
   if (text_output_fst2_fname(txtauto, outname) == -1) {
     fatal_error("unable to explode fst in '%s'\n", outname);
   }
   list_aut_old_delete(txtauto);
 
-  printf("done. '%s' is explosed in '%s'.\n", txtname, outname);
+  u_printf("done. '%s' is explosed in '%s'.\n", txtname, outname);
 
   return 0;
 }

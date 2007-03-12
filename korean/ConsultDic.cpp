@@ -25,7 +25,7 @@ using namespace std;
 #include "utils.h"
 #include <locale.h>
 #include <stdlib.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "Copyright.h"
 #include "FileName.h"
 #include "Alphabet.h"
@@ -59,14 +59,14 @@ struct savePassingData aLine[4096];
 static void 
 usage(int flag)
 {
-printf("%s",COPYRIGHT);
-printf(
+u_printf("%S",COPYRIGHT);
+u_printf(
 "\nConsultDic [-d dicfile] [-l diclistfile] [-a alphabetfile] textTokenfile"\
 "\n diclistfile : list of dictionaries to be applied"\
 "\n divide a word to rac+ suf+ form"\
 "\n output file : seqMorphs.txt"\
 );
-if(flag) exitMessage("");
+if(flag) exit(1);
 exit(0);
 }
 
@@ -120,7 +120,7 @@ convertInfosToGrf(int index)
 	while(*infos != '.'){
 		if(!(*infos))  {
 //                  die("bad infos canon: %S\n", info_cano);
-                exitMessage("illegal info pas de .");
+                fatal_error("illegal info pas de .\n");
                 }
 		*wp++ = *infos++;
 	}
@@ -131,7 +131,7 @@ convertInfosToGrf(int index)
 		if(!(*infos)) {
 //                  die("bad infos orig : %S\n", info_org);
 
-                exitMessage("illegal info");
+                fatal_error("illegal info\n");
                 }
 		*wp++ = *infos++;
 	}
@@ -182,7 +182,7 @@ static void saveAsequnceMorpheme(int &saveCnt)
 	*iPtr++ = '}';
 	saveCnt++;
 	*iPtr=0;
-	u_fwrite(workBuff,(iPtr-workBuff),findFile);
+	u_fwrite_raw(workBuff,(iPtr-workBuff),findFile);
 	save_flechi[0]= 0;
 	save_cano[0]= 0;
 	save_org[0]= 0;
@@ -221,7 +221,7 @@ static int actForFinal(unichar *cc,int depth,int infoT,int suf,int sdepth)
 
 	int lastSign = 0;
 	for( index = 0; index < sdepth;index++){
-		if(aLine[index].info == 0) exitMessage("illegal info value");
+		if(aLine[index].info == 0) fatal_error("illegal info value\n");
 		wp = aLine[index].info;
 		if((wp[0] == '.') &&
 			(wp[1] == '.') &&
@@ -237,8 +237,7 @@ static int actForFinal(unichar *cc,int depth,int infoT,int suf,int sdepth)
                      ajouteBack(); break;
              case -1:
              default: 
-                   fprintf(stderr,"%s::%d::+1",getUtoChar(aLine[index].info),lastSign);
-                   exitMessage("Inacceptable format");
+                   fatal_error("%s::%d::+1\nInacceptable format\n",getUtoChar(aLine[index].info),lastSign);
              }
              lastSign = 1;
              break;
@@ -248,8 +247,7 @@ static int actForFinal(unichar *cc,int depth,int infoT,int suf,int sdepth)
              case  0: ajouteBack(); break;
              case  1:
              default: 
-                   fprintf(stderr,"%s::%d::-1",getUtoChar(aLine[index].info),lastSign);
-                   exitMessage("Inacceptable format");
+                   fatal_error("%s::%d::-1\nInacceptable format\n",getUtoChar(aLine[index].info),lastSign);
              }// call next item and concation with info	
      	   lastSign = -1;
      	   break;
@@ -262,8 +260,7 @@ static int actForFinal(unichar *cc,int depth,int infoT,int suf,int sdepth)
                       ajouteForward();
                       break;
              default: 
-                   fprintf(stderr,"%s::%d",getUtoChar(aLine[index].info),lastSign);
-                   exitMessage("Inacceptable format");
+                   fatal_error("%s::%d\nInacceptable format\n",getUtoChar(aLine[index].info),lastSign);
              }// call next item and concation with info	
            lastSign = 0;
 		}
@@ -274,7 +271,7 @@ static int actForFinal(unichar *cc,int depth,int infoT,int suf,int sdepth)
 	    u_fputc(closeSymbol,findFile);
 //		fwrite(&closeSymbol,2,1,findFile);
 	else
-		exitMessage("Illegal dictionary value");
+		fatal_error("Illegal dictionary value\n");
 	findCnt++;
 	return(0);
 }
@@ -381,28 +378,28 @@ void consultationLesTokens(char *textfile,Alphabet *PtrAlphabet)
 	get_path(textfile,tmpBuff0);
 	strcat(tmpBuff0,"seqMorphs.txt");
 	findFile = u_fopen(tmpBuff0,U_WRITE);
-	if(!findFile) exitMessage("Save file \"seqMorphs.txt\" open fail");
+	if(!findFile) fatal_error("Save file \"seqMorphs.txt\" open fail\n");
 
 	int wordCnt = 0;
 
 	strFileHeadLine(findFile,tokensCnt);
     tmp = headFiles;	    
 	while(tmp){
-	  printf("load dictionnaire %s\n",tmp->fname);
+	  u_printf("load dictionnaire %s\n",tmp->fname);
       tmp= tmp->next;                
     }
 		
 	int sidx;
 	for(wordCnt = 0; wordCnt<tokensCnt;wordCnt++){
 
-		if(!(wordCnt % 10000)) printf("\rread token %d",wordCnt);
+		if(!(wordCnt % 10000)) u_printf("\rread token %d",wordCnt);
 		sidx = 0;
 	    tmp = headFiles;	    
 		while(tmp){
         	findCnt = 0;
             tmp->dic.searchMotAtTree(tokensTable[wordCnt],0);
             if (findCnt) {
-               u_prints(tokensTable[wordCnt]);
+               u_printf("%S",tokensTable[wordCnt]);
             }         
             if(findCnt) findWordCnt++;
     	    tmp= tmp->next;                

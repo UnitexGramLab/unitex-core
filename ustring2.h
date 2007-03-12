@@ -22,7 +22,7 @@
 #ifndef _USTRING_HH_
 #define _USTRING_HH_
 
-#include "unicode.h"
+#include "Unicode.h"
 
 struct ustring : basic_string<unichar> {
 };

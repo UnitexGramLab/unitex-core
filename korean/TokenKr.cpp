@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "etc.h"
 #include "segtype.h" // define type of segment
 #include "segment.h"

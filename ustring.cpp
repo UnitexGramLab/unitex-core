@@ -130,7 +130,7 @@ void ustring_printf(ustring_t * ustr, char * fmt, ...) {
   va_list plist;
   va_start(plist, fmt);
 
-  int size = calc_printf_size(fmt, plist);
+  int size = u_sprintf(NULL,fmt,plist);
 
   ustring_resize(ustr, size + 1);
   
@@ -149,7 +149,7 @@ void ustring_concatf(ustring_t * ustr, char * fmt, ...) {
   va_list plist;
   va_start(plist, fmt);
 
-  int size = calc_printf_size(fmt, plist) + ustr->len;
+  int size = u_sprintf(NULL,fmt,plist) + ustr->len;
 
   ustring_resize(ustr, size + 1);
 

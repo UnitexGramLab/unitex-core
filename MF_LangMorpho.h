@@ -28,7 +28,7 @@
 #ifndef LangMorphoH
 #define LangMorphoH
 
-#include "unicode.h"
+#include "Unicode.h"
 
 /**
  * 

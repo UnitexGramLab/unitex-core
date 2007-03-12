@@ -24,7 +24,7 @@
 #define DictionaryTreeH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "String_hash.h"
 #include "List_int.h"
 

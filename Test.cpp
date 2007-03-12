@@ -25,49 +25,25 @@
 #include "IOBuffer.h"
 #include "Pattern.h"
 #include "PatternTree.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "String_hash.h"
 #include "DELA.h"
 #include "List_pointer.h"
-
+#include "StringParsing.h"
+#include "Copyright.h"
+#include "Error.h"
 
 /**
  * This program is designed for test purpose only.
  */
-
 int main(int argc,char *argv[]) {
 setBufferMode();
 
-struct string_hash* h=new_string_hash();
-get_value_index(u_strdup_char("N"),h);
-get_value_index(u_strdup_char("A"),h);
-get_value_index(u_strdup_char("z3"),h);
-
-struct pattern* p1=build_pattern(u_strdup_char("dirty.-A:ms:sf:bga:msf"),h);
-struct pattern* p2=build_pattern(u_strdup_char("N"),h);
-struct pattern* p3=build_pattern(u_strdup_char("N+z3:ms:fs"),h);
-
-struct pattern_node* root=new_pattern_node();
-int n=0;
-printf("p1=%d\n",add_pattern(&n,p1,root));
-printf("p2=%d\n",add_pattern(&n,p2,root));
-printf("p3=%d\n",add_pattern(&n,p3,root));
-
-
-struct dela_entry* l2=tokenize_DELAF_line(u_strdup_char("dirty,.N+z3:sKm"));
-struct list_pointer* result=get_matching_patterns(l2,root);
-while (result!=NULL) {
-   printf("Le pattern %d matche\n",((struct constraint_list*)(result->pointer))->pattern_number);
-   result=result->next;
-}
-unichar* ss=u_strdup_char("<u!MOT>");
-int negative_tag=(ss[1]=='!')?1:0;
-unichar* tt=u_strdup(&(ss[1+negative_tag]),u_strlen(ss)-2-negative_tag);
-printf("toto=");
-u_prints(tt);
-printf("\n");
-free_pattern_node(root);
-printf("Done\n");
+char tmp[256];
+int a,b,c;
+strcpy(tmp," 11\t \n22\n\n45:");
+int res=sscanf(tmp,"%d\n%d\n%d:",&a,&b,&c);
+u_printf("res=%d:\na=%d\nb=%d\nc=%d\n",res,a,b,c);
 return 0;
 }
 

@@ -19,41 +19,43 @@
   *
   */
 
-#ifndef BufferH
-#define BufferH
-
-#include "Unicode.h"
+#include "Thai.h"
 
 /**
- * This enumeration describes the possible kind of buffers.
+ * Returns a non-zero if 'c' is a Thai diacritic.
  */
-enum buffer_type_ {
-   INTEGER_BUFFER,
-   UNICHAR_BUFFER
-};
-typedef enum buffer_type_ BufferType;
+int is_Thai_diacritic(unichar c) {
+return (c>=0x0e47 && c<=0x0e4c);
+}
+
 
 /**
- * This structure represents a buffer of integer or unichar, with its maximum capacity and
- * its actual size. The 'end_of_file' field is set to 1 when no data can be
- * read from the input file.
+ * Returns a non-zero value if 'c' is a Thai initial vowel.
  */
-struct buffer {
-   BufferType type;
-	int MAXIMUM_BUFFER_SIZE;
-   union {
-	   int* int_buffer;
-      unichar* unichar_buffer;
-   };
-	int size;
-   int end_of_file;
-};
+int is_Thai_initial_vowel(unichar c) {
+return (c>=0x0e40 && c<=0x0e44);
+}
 
 
-struct buffer* new_buffer(int,BufferType);
-void free_buffer(struct buffer*);
-void fill_buffer(struct buffer*,int,FILE*);
-void fill_buffer(struct buffer*,FILE*);
+/**
+ * Returns a non-zero value if 'c' is a Thai diacritic that must be
+ * ignored for counting displayable characters in a Thai string.
+ */
+int is_Thai_skipable(unichar c) {
+return (c==0x0e31 || (c>=0x0e34 && c<=0x0e3a) || (c>=0x0e47 && c<=0x0e4e));
+}
 
-#endif
 
+/**
+ * Returns the number of displayable characters of the given string,
+ * ignoring diacritic signs.
+ */
+int u_strlen_Thai(unichar* s) {
+int n=0;
+int i=0;
+while (s[i]!='\0') {
+   if (!is_Thai_skipable(s[i])) n++;
+   i++;
+}
+return n;
+}

@@ -51,7 +51,7 @@ current_end=-1;
 
 struct buffer* buffer=new_buffer(MAX_TOKENS_BY_SENTENCE,INTEGER_BUFFER);
 read_one_sentence(buffer,snt,tokens,&N_TOKENS_READ);
-printf("Extracting %smatching units...\n",extract_matching_units?"":"un");
+u_printf("Extracting %smatching units...\n",extract_matching_units?"":"un");
 while (buffer->size!=0) {
    current_beginning=current_end+1;
    current_end=current_end+N_TOKENS_READ;
@@ -59,9 +59,9 @@ while (buffer->size!=0) {
    if ((RESULT && extract_matching_units) || (!RESULT && !extract_matching_units)) {
       /* if we must print this sentence, we print it */
       for (int i=0;i<buffer->size;i++) {
-         u_fprints(tokens->token[buffer->int_buffer[i]],result);
+         u_fprintf(result,"%S",tokens->token[buffer->int_buffer[i]]);
       }
-      u_fprints_char("\n",result);
+      u_fprintf(result,"\n");
    }
    if (l==NULL && extract_matching_units) {
       /* If there is no more match and if we must extract the matching units,

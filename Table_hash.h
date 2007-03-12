@@ -29,7 +29,7 @@
 #define			TableHashH
 //---------------------------------------------------------------------------
 
-#include		"unicode.h"
+#include		"Unicode.h"
 
 
 

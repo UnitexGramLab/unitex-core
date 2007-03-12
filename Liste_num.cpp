@@ -71,15 +71,8 @@ if ((l->n==n)                       // length is the same
   l->variable_backup=create_variable_backup();
   return l;
 }
-//  if (!(u_strcmp(l->pile,pile))) {
-//    printf(">> not different\n");
-//    u_fprints_utf8(l->pile,stdout);
-//    printf("\n");
-//    u_fprints_utf8(pile,stdout);
-//    printf("\n");
-//  }
+
 l->suivant=inserer_si_different(n,l->suivant,sommet,pile);
-// printf("yes\n"); 
 return l;
 }
 

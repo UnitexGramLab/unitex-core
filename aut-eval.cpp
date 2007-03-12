@@ -27,55 +27,6 @@
 
 
 
-static long denombrer(autalmot_t *  A, int q1, int q2, int * min, int * max) {
-
-  debug("denombrer(%d,%d)\n", q1, q2);
-
-  if (q1 == q2) { debug("!!!!!!!!!!!!!!!!!!!!\n"); *min = 0; *max = 0; return 1; }
-  
-  long res = 0;
-  *min = 1000000;
-  *max = 0;
-
-  for (transition_t * t = A->states[q1].trans; t; t = t->next) {
-   
-    int lmin, lmax;
-    res = res + denombrer(A, t->to, q2, & lmin, & lmax);
-
-    if ((lmin + 1) < *min) { *min = lmin + 1; }
-    if ((lmax + 1) > *max) { *max = lmax + 1; }
-  }
-
-  return res;
-}
-
-/*
-static long denombrer(autalmot_t *  A, int q1, int q2, int * min, int * max, int * ln1tab, int * ln2tab, int * nptab) {
-
-  debug("denombrer(%d,%d)\n", q1, q2);
-
-  if (q1 == q2) { debug("!!!!!!!!!!!!!!!!!!!!\n"); *min = 0; *max = 0; return 1; }
-  
-  if (nptab[q1] != -1) {
-    *min = ln1tab[q1]; *MAX = ln2tab[q1]; return nptab[q1];
-  }
-  
-  long res = 0;
-  *min = 1000000;
-  *max = 0;
-
-  for (transition_t * t = A->states[q1].trans; t; t = t->next) {
-   
-    int lmin, lmax;
-    res = res + denombrer(A, t->to, q2, & lmin, & lmax);
-
-    if ((lmin + 1) < *min) { *min = lmin + 1; }
-    if ((lmax + 1) > *max) { *max = lmax + 1; }
-  }
-
-  return res;
-}
-*/
 
 static void denombrer(autalmot_t *  A, int q1, int q2, int * mintab, int * maxtab, int * nptab) {
 

@@ -66,7 +66,7 @@ return 0;
 // N+FF
 //
 void check_valid_right_component_german(char* tableau_sia,struct INF_codes* inf) {
-printf("Check valid right components...\n");
+u_printf("Check valid right components...\n");
 for (int i=0;i<inf->N;i++) {
    tableau_correct_right_component[i]=check_valid_right_component_for_an_INF_line_german(inf->codes[i]);
 }
@@ -79,7 +79,7 @@ for (int i=0;i<inf->N;i++) {
 // N but not FF
 //
 void check_valid_left_component_german(char* tableau_sia,struct INF_codes* inf) {
-printf("Check valid left components...\n");
+u_printf("Check valid left components...\n");
 for (int i=0;i<inf->N;i++) {
    tableau_sia[i]=check_valid_left_component_for_an_INF_line_german(inf->codes[i]);
 }
@@ -126,9 +126,9 @@ while (l!=NULL) {
 //
 char check_N_FF(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"N");
+u_strcpy(t1,"N");
 unichar t2[3];
-u_strcpy_char(t2,"FF");
+u_strcpy(t2,"FF");
 return (char)(dic_entry_contain_gram_code(d,t1) && dic_entry_contain_gram_code(d,t2));
 }
 
@@ -139,7 +139,7 @@ return (char)(dic_entry_contain_gram_code(d,t1) && dic_entry_contain_gram_code(d
 //
 char check_valid_left_component_for_one_INF_code_german(unichar* s) {
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,s);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_N_FF(d);
@@ -154,9 +154,9 @@ return res;
 //
 char check_N_not_FF(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"N");
+u_strcpy(t1,"N");
 unichar t2[3];
-u_strcpy_char(t2,"FF");
+u_strcpy(t2,"FF");
 return (char)(dic_entry_contain_gram_code(d,t1) && !(dic_entry_contain_gram_code(d,t2)));
 }
 
@@ -168,7 +168,7 @@ return (char)(dic_entry_contain_gram_code(d,t1) && !(dic_entry_contain_gram_code
 //
 char check_valid_right_component_for_one_INF_code_german(unichar* s) {
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,s);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_N_not_FF(d);
@@ -189,16 +189,15 @@ unichar s[1000];
 tableau_bin=bin;
 debug_file=debug;
 result_file=result;
-printf("Analysing german unknown words...\n");
+u_printf("Analysing german unknown words...\n");
 int n=0;
-while (EOF!=u_read_line(words,s)) {
+while (EOF!=u_fgets(s,words)) {
   if (!analyse_german_word(s)) {
      // if the analysis has failed, we store the word in the new unknown word file
-     u_fprints(s,new_unknown_words);
-     u_fprints_char("\n",new_unknown_words);
+     u_fprintf(new_unknown_words,"%S\n",s);
   } else {n++;}
 }
-printf("%d words decomposed as compound words\n",n);
+u_printf("%d words decomposed as compound words\n",n);
 }
 
 
@@ -220,18 +219,10 @@ if (l==NULL) {
 }
 struct german_word_decomposition_list* tmp=l;
 while (tmp!=NULL) {
-   {
-      {
-         if (debug_file!=NULL) {
-            u_fprints(mot,debug_file);
-            u_fprints_char(" = ",debug_file);
-            u_fprints(tmp->element->decomposition,debug_file);
-            u_fprints_char("\n",debug_file);
-         }
-         u_fprints(tmp->element->dela_line,result_file);
-         u_fprints_char("\n",result_file);
-      }
+   if (debug_file!=NULL) {
+      u_fprintf(debug_file,"%S = %S\n",mot,tmp->element->decomposition);
    }
+   u_fprintf(result_file,"%S\n",tmp->element->dela_line);
    tmp=tmp->suivant;
 }
 if (l!=NULL) {
@@ -305,7 +296,7 @@ if (!(c&32768)) {
          while (l!=NULL) {
             unichar dec[500];
             u_strcpy(dec,decomposition);
-            if (dec[0]!='\0') {u_strcat_char(dec," +++ ");}
+            if (dec[0]!='\0') {u_strcat(dec," +++ ");}
             unichar entry[500];
             uncompress_entry(current_component,l->string,entry);
             u_strcat(dec,entry);
@@ -323,18 +314,18 @@ if (!(c&32768)) {
             }
             u_strcpy(new_dela_line,dela_line);
             u_strcat(new_dela_line,tmp_entry->inflected);
-            u_strcat_char(new_dela_line,",");
+            u_strcat(new_dela_line,",");
             u_strcat(new_dela_line,dela_line);
             u_strcat(new_dela_line,tmp_entry->lemma);
-            u_strcat_char(new_dela_line,".");
+            u_strcat(new_dela_line,".");
             u_strcat(new_dela_line,tmp_entry->semantic_codes[0]);
             int k;
             for (k=1;k<tmp_entry->n_semantic_codes;k++) {
-               u_strcat_char(new_dela_line,"+");
+               u_strcat(new_dela_line,"+");
                u_strcat(new_dela_line,tmp_entry->semantic_codes[k]);
             }
             for (k=0;k<tmp_entry->n_inflectional_codes;k++) {
-               u_strcat_char(new_dela_line,":");
+               u_strcat(new_dela_line,":");
                u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
             }
             struct german_word_decomposition* wd=new_german_word_decomposition();
@@ -362,7 +353,7 @@ if (!(c&32768)) {
          unichar dec[2000];
          unichar line[500];
          u_strcpy(dec,decomposition);
-         if (dec[0]!='\0') {u_strcat_char(dec," +++ ");}
+         if (dec[0]!='\0') {u_strcat(dec," +++ ");}
          unichar sia_code[500];
          unichar entry[500];
          get_first_sia_code_german(index,sia_code);

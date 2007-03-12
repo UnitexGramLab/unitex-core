@@ -20,7 +20,7 @@
   */
 
 #include "Diff.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "FileName.h"
 #include "ConcordMain.h"
 #include "Concordance.h"
@@ -62,21 +62,21 @@ free(argv);
  * Printing the header of the HTML file.
  */
 void print_diff_HTML_header(FILE* f,char* font,char* size) {
-fprintf(f,"<html>\n");
-fprintf(f,"<head>\n");
-fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
-fprintf(f,"   <style type=\"text/css\">\n");
-fprintf(f,"   a.blue {color:blue; text-decoration:underline;}\n");
-fprintf(f,"   a.red {color:red; text-decoration:underline;}\n");
-fprintf(f,"   a.green {color:green; text-decoration:underline;}\n");
-fprintf(f,"   </style>\n");
-fprintf(f,"</head>\n");
-fprintf(f,"<body>\n");
-fprintf(f,"<h4>\n");
-fprintf(f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
-fprintf(f,"<font color=\"red\">Red:</font> similar but different sequences<br>\n");
-fprintf(f,"<font color=\"green\">Green:</font> sequences that occur in only one of the two concordances<br>\n");
-fprintf(f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-size: %s\">\n",font,size);
+u_fprintf(UTF8,f,"<html>\n");
+u_fprintf(UTF8,f,"<head>\n");
+u_fprintf(UTF8,f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
+u_fprintf(UTF8,f,"   <style type=\"text/css\">\n");
+u_fprintf(UTF8,f,"   a.blue {color:blue; text-decoration:underline;}\n");
+u_fprintf(UTF8,f,"   a.red {color:red; text-decoration:underline;}\n");
+u_fprintf(UTF8,f,"   a.green {color:green; text-decoration:underline;}\n");
+u_fprintf(UTF8,f,"   </style>\n");
+u_fprintf(UTF8,f,"</head>\n");
+u_fprintf(UTF8,f,"<body>\n");
+u_fprintf(UTF8,f,"<h4>\n");
+u_fprintf(UTF8,f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
+u_fprintf(UTF8,f,"<font color=\"red\">Red:</font> similar but different sequences<br>\n");
+u_fprintf(UTF8,f,"<font color=\"green\">Green:</font> sequences that occur in only one of the two concordances<br>\n");
+u_fprintf(UTF8,f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-size: %s\">\n",font,size);
 }
 
 
@@ -84,7 +84,7 @@ fprintf(f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-s
  * Printing the closing tags of the HTML file.
  */
 void print_diff_HTML_end(FILE* f) {
-fprintf(f,"</table>\n</body>\n</html>\n");
+u_fprintf(UTF8,f,"</table>\n</body>\n</html>\n");
 }
 
 
@@ -267,26 +267,28 @@ unichar left[MAX_CONTEXT_IN_UNITS];
 unichar middle[MAX_CONTEXT_IN_UNITS];
 unichar right[MAX_CONTEXT_IN_UNITS];
 /* We print the line from the first file, if needed */
-fprintf(output,"<tr><td width=\"450\"><font color=\"%s\">",color);
+u_fprintf(UTF8,output,"<tr><td width=\"450\"><font color=\"%s\">",color);
 if (f1!=NULL) {
    read_concordance_line(f1,left,middle,right);
-   u_fprints_html(left,output);
+   u_fprintf(UTF8,output,"%HS<u>%HS</u>%HS",left,middle,right);
+   /*u_fprints_html(left,output);
    fprintf(output,"<u>");
    u_fprints_html(middle,output);
    fprintf(output,"</u>");
-   u_fprints_html(right,output);
+   u_fprints_html(right,output);*/
 }
-fprintf(output,"</font></td>");
-fprintf(output,"<td width=\"450\"><font color=\"%s\">",color);
+u_fprintf(UTF8,output,"</font></td>");
+u_fprintf(UTF8,output,"<td width=\"450\"><font color=\"%s\">",color);
 /* We print the line from the second file, if needed */
 if (f2!=NULL) {
    read_concordance_line(f2,left,middle,right);
-   u_fprints_html(left,output);
+   u_fprintf(UTF8,output,"%HS<u>%HS</u>%HS",left,middle,right);
+   /*u_fprints_html(left,output);
    fprintf(output,"<u>");
    u_fprints_html(middle,output);
    fprintf(output,"</u>");
-   u_fprints_html(right,output);
+   u_fprints_html(right,output);*/
 }
-fprintf(output,"</font></td></tr>\n");
+u_fprintf(UTF8,output,"</font></td></tr>\n");
 }
 

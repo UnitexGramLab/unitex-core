@@ -23,10 +23,19 @@
 #ifndef CopyrightH
 #define CopyrightH
 
+#include "Unicode.h"
+
 /*
  * This is the copyright string that must be displayed by any
  * Unitex program when called with no parameter.
  */
-const char COPYRIGHT[] = "This program is part of Unitex 2.0 beta version\nCopyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>\n\n";
+static unichar COPYRIGHT[256];
+
+static int init_copyright() {
+u_sprintf(COPYRIGHT,"This program is part of Unitex 2.0%C version\nCopyright %C 2001-2007 Universit%C de Marne-la-Vall%Ce <unitex@univ-mlv.fr>\n\n",0x3B2,0xA9,0xE9,0xE9);
+return 0;
+}
+
+static int foo=init_copyright();
 
 #endif

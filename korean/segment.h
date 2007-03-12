@@ -139,7 +139,7 @@ public:
 		case  SYM_CHAR:
 			break;
 		default:
-			exitMessage("Segment Type Error\n");
+			fatal_error("Segment Type Error\n");
 		}
 		if(saveTmps_cnt >= MAX_SAVETMPS_CNT){
 			fwrite(saveTmps,sizeof(struct tmplettre)*
@@ -380,7 +380,7 @@ public:
     		if(fseek(writeFile,alignedHeadSize +
     			segmentCount 
     			* CElementOfSegmentSZ,SEEK_SET))
-    			exitMessage("fseek fail"); 
+    			fatal_error("fseek fail\n");
     	}	
     	for( i = 0;i <NUM_OF_GROUP_SEG;i++){
     		nodeInfo.setptrForAddNode(i);
@@ -393,10 +393,10 @@ public:
     	startFileOffset = lastFileOffset;
     	currentOfileIndex++;
     
-    printf("read %d charcters\n",startFileOffset);
+    u_printf("read %d characters\n",startFileOffset);
 #ifdef TIME_DEBUG
     	time(&svt1);
-    	printf("Time for save token to file		: %d sec\n",svt1 - svt0);
+    	u_printf("Time for save token to file		: %d sec\n",svt1 - svt0);
 #endif //TIME_DEBUG
 #endif
     	return(startFileOffset);
@@ -455,7 +455,7 @@ segmentation::getSegments(unichar *wp)
 		case 0x0d:	// sequence [line feed]+[new line]
 			currentOffset++;
 			c = *(++wp);
-			if(c != '\n') exitMessage("illegal text format");
+			if(c != '\n') fatal_error("illegal text format\n");
 			typeChar = SYM_CHAR;
 			saveFlag = 1;
 			break;
@@ -472,7 +472,7 @@ segmentation::getSegments(unichar *wp)
 			break;
 		case L'{':	// specical sequence
 			if(index){
-			saveTmps[saveTmps_cnt++] = 	segments.insertWordAndInc(swp,index);
+			saveTmps[saveTmps_cnt++] = segments.insertWordAndInc(swp,index);
 //			saveTmps[saveTmps_cnt++] = lastOffset;
 			if(saveTmps_cnt >= MAX_SAVETMPS_CNT){
 				fwrite(saveTmps,sizeof(int)*
@@ -581,7 +581,7 @@ segmentation::segmentFile(char *ifile_name, char *ofile_name,int MaxBufferSize)
 	
 #ifdef TIME_DEBUG
 		time(&svt1);
-		printf("\nTime for unicode file construction : %d sec\n",
+		u_printf("\nTime for unicode file construction : %d sec\n",
 			svt1 - svt0);
 #endif // TIME_DEBUG
 	maxUnitSize = 0x400000;
@@ -590,7 +590,7 @@ segmentation::segmentFile(char *ifile_name, char *ofile_name,int MaxBufferSize)
 	segmentCount = 0;
 	mot_buff = new unichar[maxUnitSize];
 	if(!mot_buff)
-		exitMessage("mem alloc faile");
+		fatal_error("mem alloc fail\n");
 	while(load_file_to_mem(mot_buff)){
 		getSegments(mot_buff);
 	};

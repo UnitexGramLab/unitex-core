@@ -22,9 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "Unicode.h"
 #include "Copyright.h"
-#include "const.h"
 #include "autalmot.h"
 #include "fst_file.h"
 #include "utils.h"
@@ -34,8 +33,8 @@
 
 
 void usage() {
-  printf("%s", COPYRIGHT);
-  printf("Usage: TagsetNormFst2 -l <tagset> <txtauto>\n"
+u_printf("%S", COPYRIGHT);
+u_printf("Usage: TagsetNormFst2 -l <tagset> <txtauto>\n"
          "\n"
          "with:\n"
          "<tagset>  : tagset description file\n"
@@ -49,7 +48,7 @@ void usage() {
 
 void copy_file(char * dest, char * src) {
 
-  debug("copying %s into %s\n", src, dest);
+  //debug("copying %s into %s\n", src, dest);
 
   FILE * in = fopen(src, "rb");
   if (in == NULL) { fatal_error("unable to open '%s'\n", src); }
@@ -60,14 +59,14 @@ void copy_file(char * dest, char * src) {
   int c, n = 0;
   while ((c = getc(in)) != EOF) { putc(c, out); ++n; }
   fclose(in); fclose(out);
-  debug("%d bytes copied into '%s'", n, dest);
+  //printf("%d bytes copied into '%s'", n, dest);
 }
 
 
 int main(int argc, char ** argv) {
   setBufferMode();
 
-  debug("tagsetnorm\n");
+  //debug("tagsetnorm\n");
 
   char * txtauto    = NULL;
   char * langname   = NULL;
@@ -111,10 +110,10 @@ int main(int argc, char ** argv) {
   strcpy(bak, txtauto);
   strcat(bak, ".bak");
 
-  printf("copying %s to %s ...\n", txtauto, bak);
+  u_printf("copying %s to %s ...\n", txtauto, bak);
   copy_file(bak, txtauto);
 
-  printf("loading %s langage definition ...\n", langname);
+  u_printf("loading %s langage definition ...\n", langname);
 
   language_t * lang = language_load(langname);
   set_current_language(lang);
@@ -129,7 +128,7 @@ int main(int argc, char ** argv) {
 
   autalmot_t * A;
 
-  printf("cleaning text fsa\n");
+  u_printf("cleaning text fsa\n");
 
 
   unichar EMPTY[] = { 'E', 'M', 'P', 'T', 'Y', 0 };
@@ -142,7 +141,7 @@ int main(int argc, char ** argv) {
 
     if (A->nbstates == 0) {
 
-      warning("sentence %d is empty\n", no + 1);
+      error("sentence %d is empty\n", no + 1);
       
       int q0 = autalmot_add_state(A, AUT_INITIAL);
       int q1 = autalmot_add_state(A, AUT_FINAL);
@@ -154,9 +153,9 @@ int main(int argc, char ** argv) {
     fst_file_write(txtout, A);
     autalmot_delete(A);
     no++;
-    if (no % 100 == 0) { printf("sentence %d/%d ...      \r", no, txtin->nbelems); }
+    if (no % 100 == 0) { u_printf("sentence %d/%d ...      \r", no, txtin->nbelems); }
   }
-  printf("sentence %d/%d.\ndone. text automaton is normalised.\n", txtin->nbelems, txtin->nbelems);
+  u_printf("sentence %d/%d.\ndone. text automaton is normalised.\n", txtin->nbelems, txtin->nbelems);
 
   fst_file_close(txtin);
   fst_file_close(txtout);

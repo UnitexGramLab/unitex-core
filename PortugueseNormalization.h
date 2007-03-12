@@ -24,7 +24,7 @@
 #define PortugueseNormalizationH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "Matches.h"
 #include "List_ustring.h"

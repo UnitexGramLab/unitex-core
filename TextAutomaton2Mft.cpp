@@ -19,30 +19,25 @@
   *
   */
 
-//--------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "FileName.h"
 #include "Fst2.h"
 #include "Copyright.h"
 #include "Fst2_to_Mft.h"
 #include "String_hash.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
-//
-// "c:\unitex-visiteur\english\corpus\ivanhoe_snt\text.fst2"
-//
 
-//---------------------------------------------------------------------------
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: TextAutomaton2Mft <fst2>\n");
-printf("     <fst2> : fst2 file representing the text automaton to\n");
-printf("              convert to a unicode .mft file.\n\n");
-printf("Converts a Unitex text automaton into a Unicode Intex one.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: TextAutomaton2Mft <fst2>\n");
+u_printf("     <fst2> : fst2 file representing the text automaton to\n");
+u_printf("              convert to a unicode .mft file.\n\n");
+u_printf("Converts a Unitex text automaton into a Unicode Intex one.\n");
 }
 
 
@@ -54,10 +49,10 @@ if (argc!=2) {
    usage();
    return 0;
 }
-printf("Loading text automaton...\n");
+u_printf("Loading text automaton...\n");
 Fst2* fst2=load_fst2(argv[1],0);
 if (fst2==NULL) {
-   fprintf(stderr,"Cannot load text automaton %s\n",argv[1]);
+   fatal_error("Cannot load text automaton %s\n",argv[1]);
    return 1;
 }
 char temp[2000];
@@ -65,15 +60,15 @@ remove_extension(argv[1],temp);
 strcat(temp,".mft");
 FILE* f=u_fopen(temp,U_WRITE);
 if (f==NULL) {
-   fprintf(stderr,"Cannot create %s\n",temp);
+   error("Cannot create %s\n",temp);
    free_Fst2(fst2);
    return 1;
 }
-printf("Making %s...\n",temp);
+u_printf("Making %s...\n",temp);
 convert_fst2_to_mft(fst2,f);
 u_fclose(f);
 free_Fst2(fst2);
-printf("Done.\n");
+u_printf("Done.\n");
 return 0;
 }
 

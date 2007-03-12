@@ -43,19 +43,20 @@ if (f==NULL) {
 }
 struct text_tokens* res;
 res=new_text_tokens();
-res->N=u_read_int(f);
+//res->N=u_read_int(f);
+u_fscanf(f,"%d\n",&(res->N));
 res->token=(unichar**)malloc((res->N)*sizeof(unichar*));
 unichar tmp[1000];
 res->SENTENCE_MARKER=-1;
 int i=0;
-while (EOF!=u_read_line(f,tmp)) {
+while (EOF!=u_fgets(tmp,f)) {
   res->token[i]=u_strdup(tmp);
-  if (!u_strcmp_char(tmp,"{S}")) {
+  if (!u_strcmp(tmp,"{S}")) {
      res->SENTENCE_MARKER=i;
-  } else if (!u_strcmp_char(tmp," ")) {
+  } else if (!u_strcmp(tmp," ")) {
             (res->SPACE)=i;
          }
-    else if (!u_strcmp_char(tmp,"{STOP}")) {
+    else if (!u_strcmp(tmp,"{STOP}")) {
             (res->STOP_MARKER)=i;
          }
   i++;
@@ -72,12 +73,13 @@ f=u_fopen(nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
-NUMBER_OF_TEXT_TOKENS=u_read_int(f)+100000; // the +100000 is used to prevent the addition
+u_fscanf(f,"%d\n",&NUMBER_OF_TEXT_TOKENS);
+NUMBER_OF_TEXT_TOKENS=NUMBER_OF_TEXT_TOKENS+100000; // the +100000 is used to prevent the addition
                                             // of tokens while locate preprocessing
 struct string_hash* res;
 res=new_string_hash(NUMBER_OF_TEXT_TOKENS);
 unichar tmp[1000];
-while (EOF!=u_read_line(f,tmp)) {
+while (EOF!=u_fgets(tmp,f)) {
    get_value_index(tmp,res);
 }
 u_fclose(f);
@@ -94,18 +96,19 @@ if (f==NULL) {
    return NULL;
 }
 (*SENTENCE_MARKER)=-1;
-NUMBER_OF_TEXT_TOKENS=u_read_int(f)+100000; // the +100000 is used to prevent the addition
+u_fscanf(f,"%d\n",&NUMBER_OF_TEXT_TOKENS);
+NUMBER_OF_TEXT_TOKENS=NUMBER_OF_TEXT_TOKENS+100000; // the +100000 is used to prevent the addition
                                             // of tokens while locate preprocessing
 struct string_hash* res;
 res=new_string_hash(NUMBER_OF_TEXT_TOKENS);
 unichar tmp[1000];
 int x;
-while (EOF!=u_read_line(f,tmp)) {
+while (EOF!=u_fgets(tmp,f)) {
    x=get_value_index(tmp,res);
-   if (!u_strcmp_char(tmp,"{S}")) {
+   if (!u_strcmp(tmp,"{S}")) {
       (*SENTENCE_MARKER)=x;
    }
-   else if (!u_strcmp_char(tmp,"{STOP}")) {
+   else if (!u_strcmp(tmp,"{STOP}")) {
       (*STOP_MARKER)=x;
    }
 }
@@ -189,8 +192,8 @@ return 1;
 void extract_semantic_codes_from_tokens(struct string_hash* tok,
                                         struct string_hash* semantic_codes) {
 for (int i=0;i<tok->size;i++) {
-    if (tok->value[i][0]=='{' && u_strcmp_char(tok->value[i],"{S}")
-                            && u_strcmp_char(tok->value[i],"{STOP}")) {
+    if (tok->value[i][0]=='{' && u_strcmp(tok->value[i],"{S}")
+                            && u_strcmp(tok->value[i],"{STOP}")) {
        struct dela_entry* temp=tokenize_tag_token(tok->value[i]);
        for (int j=0;j<temp->n_semantic_codes;j++) {
           get_value_index(temp->semantic_codes[j],semantic_codes);

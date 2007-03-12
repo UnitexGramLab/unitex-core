@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "TransductionVariables.h"
 #include "MetaSymbols.h"
 #include "Pattern.h"

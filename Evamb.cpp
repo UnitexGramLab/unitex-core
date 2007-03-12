@@ -36,6 +36,7 @@
 
 
 #include <math.h>
+#include "Unicode.h"
 #include "Copyright.h"
 #include "utils.h"
 #include "autalmot_old.h"
@@ -275,8 +276,8 @@ double evamb(tAutAlMot * A, int * min, int * max) {
 
 
 void usage() {
-  printf("%s", COPYRIGHT);
-  printf("usage: Evamb [ -imp | -exp ] [-o] <fstname> [ -n <sentenceno> ]\n"
+u_printf("%S", COPYRIGHT);
+u_printf("usage: Evamb [ -imp | -exp ] [-o] <fstname> [ -n <sentenceno> ]\n"
          "\n"
          "where :\n"
          " <fstname>     :   text automaton FST2 file\n"
@@ -298,7 +299,7 @@ setBufferMode();
 
   argv++, argc--;
 
-  if (argc == 0) { usage(); return 0; }
+if (argc == 0) { usage(); return 0; }
 
 
   char * autoname = NULL;
@@ -347,7 +348,7 @@ setBufferMode();
 
   if (autoname == NULL) { fatal_error("no fst specified\n"); }
 
-  debug("loading '%s' ...\n", autoname);
+  u_printf("Loading '%s' ...\n", autoname);
   list_aut_old * txtauto = load_text_automaton(autoname, explosion);
 
   if (txtauto == NULL) { fatal_error("unable to load '%s' fst2\n", *argv); }
@@ -389,10 +390,8 @@ setBufferMode();
 	if (minlognp > lognp)   { minlognp = lognp; minnpno = no + 1; }
 	if (maxlogamb < logamb) { maxlogamb = logamb; maxambno = no + 1; }
 	if (minlogamb > logamb) { minlogamb = logamb; minambno = no + 1; }
-        
-        error("%d: lognp=%.2f, lmoy=%.1f, amb. rate=%.2f, (%d intr.)\n", no + 1, (double) lognp, (double) lmoy,
+        u_printf("%d: lognp=%.2f, lmoy=%.1f, amb. rate=%.2f, (%d intr.)\n", no + 1, (double) lognp, (double) lmoy,
                (double) exp(logamb), (int) exp(lognp));
-
         cumullognp = cumullognp + lognp; cumullmoy = cumullmoy + lmoy;
       }
     }
@@ -403,14 +402,12 @@ setBufferMode();
     if (badauto >= txtauto->nb_aut) {
       error("no automaton ?\n");
     } else {
-    
-      printf("\n%s: average of %.2f (old) units per sentence\n", autoname, cumullognp / (txtauto->nb_aut - badauto));
-      printf("\n%s: lognp = %.2f, lmoy = %.1f, amb. rate = %.3f\n\n", autoname, cumullognp, cumullmoy, exp(cumullognp/cumullmoy));
-
-      printf("min lognp: %.2f (sentence %d)\n", minlognp, minnpno);
-      printf("max lognp: %.2f (sentence %d)\n", maxlognp, maxnpno);
-      printf("min amb. rate: %.2f (sentence %d)\n", exp(minlogamb), minambno);
-      printf("max amb. rate: %.2f (sentence %d)\n", exp(maxlogamb), maxambno);
+      u_printf("\n%s: average of %.2f (old) units per sentence\n", autoname, cumullognp / (txtauto->nb_aut - badauto));
+      u_printf("\n%s: lognp = %.2f, lmoy = %.1f, amb. rate = %.3f\n\n", autoname, cumullognp, cumullmoy, exp(cumullognp/cumullmoy));
+      u_printf("min lognp: %.2f (sentence %d)\n", minlognp, minnpno);
+      u_printf("max lognp: %.2f (sentence %d)\n", maxlognp, maxnpno);
+      u_printf("min amb. rate: %.2f (sentence %d)\n", exp(minlogamb), minambno);
+      u_printf("max amb. rate: %.2f (sentence %d)\n", exp(maxlogamb), maxambno);
     }
 
   } else { // eval one sentence
@@ -419,7 +416,7 @@ setBufferMode();
     double lognp = evamb(txtauto->les_aut[no - 1], & min, & max);
     double lmoy = (double) (min + max) / (double) 2;
     
-    printf("%s: sentence %d: lognp=%.2f, lmoy=%.1f, amb. rate=%.3f, (%d intr.)\n", autoname, no, (double) lognp, (double) lmoy,
+    u_printf("%s: sentence %d: lognp=%.2f, lmoy=%.1f, amb. rate=%.3f, (%d intr.)\n", autoname, no, (double) lognp, (double) lmoy,
            (double) exp(lognp / lmoy), (int) exp(lognp));
   }
 

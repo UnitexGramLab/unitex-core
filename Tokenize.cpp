@@ -19,12 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "String_hash.h"
 #include "FileName.h"
@@ -32,8 +30,8 @@
 #include "DELA.h"
 #include "Table_hash.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
-//---------------------------------------------------------------------------
 
 #define NORMAL 0
 #define CHAR_BY_CHAR 1
@@ -54,26 +52,21 @@ int DIGITS_TOTAL=0;
 int DIFFERENT_DIGITS=0;
 
 
-//
-// "c:\unitex-visiteur\french\corpus\80jours.snt" "c:\unitex-visiteur\french\alphabet.txt"
-//
-
-
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Tokenize <text> <alphabet> [-char_by_char]\n");
-printf("     <text> : any unicode text file\n");
-printf("     <alphabet> : the alphabet file\n");
-printf("     [-char_by_char] : with this option, the program do a char by char\n");
-printf("     tokenization (except for the tags {S}, {STOP} or like {today,.ADV}). This\n");
-printf("     mode may be used for languages like Thai.\n\n");
-printf("Tokenizes the text. The token list is stored into a TOKENS.TXT file and\n");
-printf("the coded text is stored into a TEXT.COD file.\n");
-printf("The program also produces 4 files named tok_by_freq.txt, tok_by_alph.txt,\n");
-printf("stats.n and enter.pos. They contain the token list sorted by frequence and by\n");
-printf("alphabetical order and stats.n contains some statistics. The file enter.pos\n");
-printf("contains the position in tokens of all the carridge return sequences. All\n");
-printf("files are saved in the text_snt directory.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Tokenize <text> <alphabet> [-char_by_char]\n");
+u_printf("     <text> : any unicode text file\n");
+u_printf("     <alphabet> : the alphabet file\n");
+u_printf("     [-char_by_char] : with this option, the program do a char by char\n");
+u_printf("     tokenization (except for the tags {S}, {STOP} or like {today,.ADV}). This\n");
+u_printf("     mode may be used for languages like Thai.\n\n");
+u_printf("Tokenizes the text. The token list is stored into a TOKENS.TXT file and\n");
+u_printf("the coded text is stored into a TEXT.COD file.\n");
+u_printf("The program also produces 4 files named tok_by_freq.txt, tok_by_alph.txt,\n");
+u_printf("stats.n and enter.pos. They contain the token list sorted by frequence and by\n");
+u_printf("alphabetical order and stats.n contains some statistics. The file enter.pos\n");
+u_printf("contains the position in tokens of all the carridge return sequences. All\n");
+u_printf("files are saved in the text_snt directory.\n");
 }
 
 
@@ -132,7 +125,7 @@ get_snt_path(argv[1],enter_pos);
 strcat(enter_pos,"enter.pos");
 text=u_fopen(argv[1],U_READ);
 if (text==NULL) {
-   fprintf(stderr,"Cannot open text file %s\n",argv[1]);
+   error("Cannot open text file %s\n",argv[1]);
    return 1;
 }
 MODE=NORMAL;
@@ -140,18 +133,18 @@ if (argc==4) {
    if (!strcmp(argv[3],"-char_by_char"))
       MODE=CHAR_BY_CHAR;
    else {
-      fprintf(stderr,"Invalid parameter %s\n",argv[3]);
+      error("Invalid parameter %s\n",argv[3]);
    }
 }
 alph=load_alphabet(argv[2]);
 if (alph==NULL) {
-   fprintf(stderr,"Cannot load alphabet file %s\n",argv[2]);
+   error("Cannot load alphabet file %s\n",argv[2]);
    u_fclose(text);
    return 1;
 }
 out=fopen(text_cod,"wb");
 if (out==NULL) {
-   fprintf(stderr,"Cannot create file %s\n",text_cod);
+   error("Cannot create file %s\n",text_cod);
    u_fclose(text);
    if (alph!=NULL) {
       free_alphabet(alph);
@@ -160,7 +153,7 @@ if (out==NULL) {
 }
 enter=fopen(enter_pos,"wb");
 if (enter==NULL) {
-   fprintf(stderr,"Cannot create file %s\n",enter_pos);
+   error("Cannot create file %s\n",enter_pos);
    u_fclose(text);
    fclose(out);
    if (alph!=NULL) {
@@ -170,7 +163,7 @@ if (enter==NULL) {
 }
 tokens=u_fopen(tokens_txt,U_WRITE);
 if (tokens==NULL) {
-   fprintf(stderr,"Cannot create file %s\n",tokens_txt);
+   error("Cannot create file %s\n",tokens_txt);
    u_fclose(text);
    fclose(out);
    fclose(enter);
@@ -179,20 +172,20 @@ if (tokens==NULL) {
    }
    return 1;
 }
-u_fprints_char("0000000000\n",tokens);
+u_fprintf(tokens,"0000000000\n");
 
 struct table_hash *h_table;
 h_table = new_table_hash(HASH_SIZE, HASH_BLOCK_SIZE);
 
 init_n_occur();
-printf("Tokenizing text...\n");
+u_printf("Tokenizing text...\n");
 if (MODE==NORMAL) {
    normal_tokenization(text,out,tokens,alph,h_table);
 }
 else {
    char_by_char_tokenization(text,out,tokens,alph,h_table);
 }
-printf("\nDone.\n");
+u_printf("\nDone.\n");
 sauver_enter_pos(enter);
 fclose(enter);
 u_fclose(text);
@@ -205,7 +198,7 @@ get_snt_path(argv[1],tokens_txt);
 strcat(tokens_txt,"stats.n");
 tokens=u_fopen(tokens_txt,U_WRITE);
 if (tokens==NULL) {
-   fprintf(stderr,"Cannot write %s\n",tokens_txt);
+   error("Cannot write %s\n",tokens_txt);
 }
 else {
    compute_statistics(tokens,h_table,alph);
@@ -216,7 +209,7 @@ get_snt_path(argv[1],tokens_txt);
 strcat(tokens_txt,"tok_by_freq.txt");
 tokens=u_fopen(tokens_txt,U_WRITE);
 if (tokens==NULL) {
-   fprintf(stderr,"Cannot write %s\n",tokens_txt);
+   error("Cannot write %s\n",tokens_txt);
 }
 else {
    sort_and_save_by_frequence(tokens,h_table);
@@ -227,7 +220,7 @@ get_snt_path(argv[1],tokens_txt);
 strcat(tokens_txt,"tok_by_alph.txt");
 tokens=u_fopen(tokens_txt,U_WRITE);
 if (tokens==NULL) {
-   fprintf(stderr,"Cannot write %s\n",tokens_txt);
+   error("Cannot write %s\n",tokens_txt);
 }
 else {
    sort_and_save_by_alph_order(tokens,h_table);
@@ -265,7 +258,7 @@ while (c!=EOF) {
    if ((COUNT/(1024*512))!=current_megabyte) {
       current_megabyte++;
       int z=(COUNT/(1024*512));
-      printf("%d megabyte%s read...       \r",z,(z>1)?"s":"");
+      u_printf("%d megabyte%s read...       \r",z,(z>1)?"s":"");
    }
    if (c==' ' || c==0x0d || c==0x0a) {
       ENTER=0;
@@ -285,8 +278,7 @@ while (c!=EOF) {
       }
 	  
       if (n==1000000) {
-         fprintf(stderr,"Array overflow\n");
-         exit(1);
+         fatal_error("Array overflow\n");
       }
       n_occur[n]++;
       if (ENTER==1) {
@@ -306,24 +298,21 @@ while (c!=EOF) {
      }
      if (z==(MAX_TAG_LENGTH-1) || c!='}') {
         // if the tag has no ending }
-        fprintf(stderr,"Error: a tag without ending } has been found\n");
-        exit(1);
+        fatal_error("Error: a tag without ending } has been found\n");
      }
      if (c=='\n') {
         // if the tag contains a return
-        fprintf(stderr,"Error: a tag containing a new-line sequence has been found\n");
-        exit(1);
+        fatal_error("Error: a tag containing a new-line sequence has been found\n");
      }
      s[z]='}';
      s[z+1]='\0';
-     if (!u_strcmp_char(s,"{S}")) {
+     if (!u_strcmp(s,"{S}")) {
         // if we have found a sentence delimiter
         SENTENCES++;
      } else {
-        if (u_strcmp_char(s,"{STOP}") && !check_tag_token(s)) {
+        if (u_strcmp(s,"{STOP}") && !check_tag_token(s)) {
            // if a tag is incorrect, we exit
-           fprintf(stderr,"The text contains an invalid tag. Unitex cannot process it.");
-           exit(1);
+           fatal_error("The text contains an invalid tag. Unitex cannot process it.");
         }
      }
      
@@ -332,16 +321,14 @@ while (c!=EOF) {
            unichar* tmp = (unichar*) malloc(sizeof(unichar)*(1+u_strlen(s)));
            if (tmp == NULL)
            {
-             fprintf(stderr, "Not enough memory, exiting!\n");
-             exit(1);
+             fatal_error("Not enough memory, exiting!\n");
            }
            h_table->tab[n]=tmp;
            u_strcpy(h_table->tab[n],s); 
      }
      
      if (n==1000000) {
-        fprintf(stderr,"Array overflow\n");
-        exit(1);
+        fatal_error("Array overflow\n");
      }
      n_occur[n]++;
      TOKENS_TOTAL++;
@@ -360,8 +347,7 @@ while (c!=EOF) {
 		 }
          
          if (n==1000000) {
-            fprintf(stderr,"Array overflow\n");
-            exit(1);
+            fatal_error("Array overflow\n");
          }
          n_occur[n]++;
          TOKENS_TOTAL++;
@@ -376,25 +362,22 @@ while (c!=EOF) {
            COUNT++;
          }
          if (n==(MAX_TAG_LENGTH-1)) {
-            fprintf(stderr,"Token too long at position %d\n",COUNT);
+            error("Token too long at position %d\n",COUNT);
          }
          s[n]='\0';
 
          if ((n = find_token_numb(s,h_table)) == -1 ) {
            n = add_token(s, h_table);
            unichar* tmp = (unichar*) malloc(sizeof(unichar)*(1+u_strlen(s)));
-           if (tmp == NULL)
-           {
-             fprintf(stderr, "Not enough memory, exiting!\n");
-             exit(1);
+           if (tmp == NULL) {
+             fatal_error("Not enough memory, exiting!\n");
            }
            h_table->tab[n]=tmp;
            u_strcpy(h_table->tab[n],s); 			 
          }
 
          if (n==1000000) {
-            fprintf(stderr,"Array overflow\n");
-            exit(1);
+            fatal_error("Array overflow\n");
          }
          n_occur[n]++;
          TOKENS_TOTAL++;
@@ -404,8 +387,7 @@ while (c!=EOF) {
    }
 }
 for (n=0;n<h_table->last_token_cod;n++) {
-  u_fprints(h_table->tab[n],tokens);
-  u_fprints_char("\n",tokens);
+   u_fprintf(tokens,"%S\n",h_table->tab[n]);
 }
 }
 
@@ -423,7 +405,7 @@ while (c!=EOF) {
    COUNT++;
    if ((COUNT/(1024*512))!=current_megabyte) {
       current_megabyte++;
-      printf("%d megabytes read...         \r",(COUNT/(1024*512)));
+      u_printf("%d megabytes read...         \r",(COUNT/(1024*512)));
    }
    if (c==' ' || c==0x0d || c==0x0a) {
       ENTER=0;
@@ -443,8 +425,7 @@ while (c!=EOF) {
       }
 
       if (n==1000000) {
-            fprintf(stderr,"Array overflow\n");
-            exit(1);
+            fatal_error("Array overflow\n");
          }
       if (ENTER==1) {
          if (n_enter_char<MAX_ENTER_CHAR) {
@@ -464,24 +445,21 @@ while (c!=EOF) {
      }
      if (z==(MAX_TAG_LENGTH-1) || c!='}') {
         // if the tag has no ending }
-        fprintf(stderr,"Error: a tag without ending } has been found\n");
-        exit(1);
+        fatal_error("Error: a tag without ending } has been found\n");
      }
      if (c=='\n') {
         // if the tag contains a return
-        fprintf(stderr,"Error: a tag containing a new-line sequence has been found\n");
-        exit(1);
+        fatal_error("Error: a tag containing a new-line sequence has been found\n");
      }
      s[z]='}';
      s[z+1]='\0';
-     if (!u_strcmp_char(s,"{S}")) {
+     if (!u_strcmp(s,"{S}")) {
         // if we have found a sentence delimiter
         SENTENCES++;
      } else {
-        if (u_strcmp_char(s,"{STOP}") && !check_tag_token(s)) {
+        if (u_strcmp(s,"{STOP}") && !check_tag_token(s)) {
            // if a tag is incorrect, we exit
-           fprintf(stderr,"The text contains an invalid tag. Unitex cannot process it.");
-           exit(1);
+           fatal_error("The text contains an invalid tag. Unitex cannot process it.");
         }
      }
 
@@ -492,8 +470,7 @@ while (c!=EOF) {
       }
 
      if (n==1000000) {
-        fprintf(stderr,"Array overflow\n");
-        exit(1);
+        fatal_error("Array overflow\n");
      }
      n_occur[n]++;
      TOKENS_TOTAL++;
@@ -511,8 +488,7 @@ while (c!=EOF) {
       }
 
       if (n==1000000) {
-           fprintf(stderr,"Array overflow\n");
-           exit(1);
+           fatal_error("Array overflow\n");
         }
         n_occur[n]++;
       TOKENS_TOTAL++;
@@ -523,8 +499,7 @@ while (c!=EOF) {
    }
 }
 for (n=0;n<h_table->last_token_cod;n++) {
-  u_fprints(h_table->tab[n],tokens);
-  u_fprints_char("\n",tokens);
+   u_fprintf(tokens,"%S\n",h_table->tab[n],tokens);
 }
 }
 
@@ -607,28 +582,18 @@ if (debut<fin) {
 
 
 void sort_and_save_by_frequence(FILE *f,struct table_hash* h_table) {
-unichar tmp[100];
 quicksort_by_frequence(0,h_table->last_token_cod - 1,h_table);
 for (int i=0;i<h_table->last_token_cod;i++) {
-   u_int_to_string(n_occur[i],tmp);
-   u_fprints(tmp,f);
-   u_fprints_char("\t",f);
-   u_fprints(h_table->tab[i],f);
-   u_fprints_char("\n",f);
+   u_fprintf(f,"%d\t%S\n",n_occur[i],h_table->tab[i]);
 }
 }
 
 
 
 void sort_and_save_by_alph_order(FILE *f,struct table_hash* h_table) {
-unichar tmp[100];
 quicksort_by_alph_order(0,h_table->last_token_cod-1,h_table);
 for (int i=0;i<h_table->last_token_cod;i++) {
-   u_int_to_string(n_occur[i],tmp);
-   u_fprints(h_table->tab[i],f);
-   u_fprints_char("\t",f);
-   u_fprints(tmp,f);
-   u_fprints_char("\n",f);
+   u_fprintf(f,"%S\t%d\n",h_table->tab[i],n_occur[i]);
 }
 }
 
@@ -641,12 +606,7 @@ for (int i=0;i<h_table->last_token_cod;i++) {
    }
    if (is_letter(h_table->tab[i][0],alph)) DIFFERENT_WORDS++;
 }
-char tmp[3000];
-unichar unitmp[3000];
-sprintf(tmp,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%s, %d (%d) digit%s",SENTENCES,(SENTENCES>1)?"s":"",TOKENS_TOTAL,h_table->last_token_cod,(TOKENS_TOTAL>1)?"s":"",WORDS_TOTAL,DIFFERENT_WORDS,(WORDS_TOTAL>1)?"s":"",DIGITS_TOTAL,DIFFERENT_DIGITS,(DIGITS_TOTAL>1)?"s":"");
-u_strcpy_char(unitmp,tmp);
-u_strcat_char(unitmp,"\n");
-u_fprints(unitmp,f);
+u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%s, %d (%d) digit%s\n",SENTENCES,(SENTENCES>1)?"s":"",TOKENS_TOTAL,h_table->last_token_cod,(TOKENS_TOTAL>1)?"s":"",WORDS_TOTAL,DIFFERENT_WORDS,(WORDS_TOTAL>1)?"s":"",DIGITS_TOTAL,DIFFERENT_DIGITS,(DIGITS_TOTAL>1)?"s":"");
 }
 
 

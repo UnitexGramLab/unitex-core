@@ -87,6 +87,31 @@ return 0;
 
 
 /**
+ * This function sorts the character that compose the given string.
+ * We use here the selection sort.
+ */
+void sort_ustring(unichar* s) {
+if (s==NULL) {
+   fatal_error("NULL error in sort_ustring\n");
+}
+int i=0;
+while (s[i]!='\0') {
+   unichar min=s[i];
+   int min_index=i;
+   for (int j=i+1;s[j]!='\0';j++) {
+      if (min>s[j]) {
+         min=s[j];
+         min_index=j;
+      }
+   }
+   s[min_index]=s[i];
+   s[i]=min;
+   i++;
+}
+}
+
+
+/**
  * This function takes a pattern structure and a string that represents
  * grammatical/semantical/inflectional codes constraints like
  * "V-z3:P3s:I3s". It adds the corresponding information to the

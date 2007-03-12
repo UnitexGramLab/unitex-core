@@ -24,7 +24,7 @@
 #include <string.h>
 #include "DELA.h"
 #include "String_hash.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "Text_tokens.h"
 #include "Dico_application.h"
@@ -49,41 +49,41 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Dico <text> <alphabet> <dic-fst_1> [<dic-fst_2> <dic-fst_3> ...]\n");
-printf("     <text>      : the text file\n");
-printf("     <alphabet>  : the alphabet file\n");
-printf("     <dic-fst_i> : name of dictionary or local grammar to be applied\n\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Dico <text> <alphabet> <dic-fst_1> [<dic-fst_2> <dic-fst_3> ...]\n");
+u_printf("     <text>      : the text file\n");
+u_printf("     <alphabet>  : the alphabet file\n");
+u_printf("     <dic-fst_i> : name of dictionary or local grammar to be applied\n\n");
 
-printf("Applies dictionaries and/or local grammars to the text and produces \n");
-printf("3 files, saved in the text directory. These files are:\n\n");
-printf(" DLF : simple entry dictionary\n");
-printf(" DLC : compound entry dictionary\n");
-printf(" ERR : unrecognized simple words\n\n");
+u_printf("Applies dictionaries and/or local grammars to the text and produces \n");
+u_printf("3 files, saved in the text directory. These files are:\n\n");
+u_printf(" DLF : simple entry dictionary\n");
+u_printf(" DLC : compound entry dictionary\n");
+u_printf(" ERR : unrecognized simple words\n\n");
 
-printf("There are 3 levels of priority. If the dictionary name ends with \"-\",\n");
-printf("it will be applied with the maximum priority. If the suffix\n");
-printf("is \"+\", the priority is minimal. If there is no suffix, the priority\n");
-printf("is normal. Any lexical unit identified in a previous stage will be ignored\n");
-printf("in the subsequent stages. \n\n");
+u_printf("There are 3 levels of priority. If the dictionary name ends with \"-\",\n");
+u_printf("it will be applied with the maximum priority. If the suffix\n");
+u_printf("is \"+\", the priority is minimal. If there is no suffix, the priority\n");
+u_printf("is normal. Any lexical unit identified in a previous stage will be ignored\n");
+u_printf("in the subsequent stages. \n\n");
 
-printf("The local grammars are represented by finite state transducers(.fst2).\n");
-printf("These grammars will be applied in MERGE mode.\n");
-printf("The grammar output shall respect the file format of both DLF and DLC. \n\n");
+u_printf("The local grammars are represented by finite state transducers(.fst2).\n");
+u_printf("These grammars will be applied in MERGE mode.\n");
+u_printf("The grammar output shall respect the file format of both DLF and DLC. \n\n");
 
-printf("The numbers of simple, compound and unknown forms are saved\n");
-printf("in a file named stat_dic.n which is created in the text directory.\n");
+u_printf("The numbers of simple, compound and unknown forms are saved\n");
+u_printf("in a file named stat_dic.n which is created in the text directory.\n");
 
-printf("\nExamples:\n");
-printf(" - Dico \"c:\\tutu.snt\" \"c:\\Alphabet.txt\" Dela.bin MyFilter-.bin\n");
-printf("This command will apply first MyFilter-.bin and then Dela.bin.\n");
-printf(" - Dico \"c:\\tutu.snt\" \"c:\\Alphabet.txt\" Dela.bin Rom_numbs-.fst2 numbers+.fst2\n");
-printf("This command will apply Rom_numbs-.fst2 then Dela.bin and finally\n");
-printf("numbers+.fst2\n\n");
+u_printf("\nExamples:\n");
+u_printf(" - Dico \"c:\\tutu.snt\" \"c:\\Alphabet.txt\" Dela.bin MyFilter-.bin\n");
+u_printf("This command will apply first MyFilter-.bin and then Dela.bin.\n");
+u_printf(" - Dico \"c:\\tutu.snt\" \"c:\\Alphabet.txt\" Dela.bin Rom_numbs-.fst2 numbers+.fst2\n");
+u_printf("This command will apply Rom_numbs-.fst2 then Dela.bin and finally\n");
+u_printf("numbers+.fst2\n\n");
 
-printf("\nNote: the 3 resulting files (DLF, DLC and ERR) are stored in the text\n");
-printf("directory. THEY ARE NOT SORTED AND MAY CONTAIN DUPLICATES. Use the\n");
-printf("SortTxt program to clean these files.\n\n");
+u_printf("\nNote: the 3 resulting files (DLF, DLC and ERR) are stored in the text\n");
+u_printf("directory. THEY ARE NOT SORTED AND MAY CONTAIN DUPLICATES. Use the\n");
+u_printf("SortTxt program to clean these files.\n\n");
 }
 
 
@@ -96,16 +96,7 @@ if (f==NULL) {
    error("Cannot write stat file %s\n",name);
    return;
 }
-unichar tmp[100];
-u_int_to_string(info->SIMPLE_WORDS,tmp);
-u_strcat_char(tmp,"\n");
-u_fprints(tmp,f);
-u_int_to_string(info->COMPOUND_WORDS,tmp);
-u_strcat_char(tmp,"\n");
-u_fprints(tmp,f);
-u_int_to_string(info->UNKNOWN_WORDS,tmp);
-u_strcat_char(tmp,"\n");
-u_fprints(tmp,f);
+u_fprintf(f,"%d\n%d\n%d\n",info->SIMPLE_WORDS,info->COMPOUND_WORDS,info->UNKNOWN_WORDS);
 u_fclose(f);
 }
 
@@ -126,9 +117,15 @@ FILE* text_cod;
 struct text_tokens* tokens;        
 
 /* And we create empty files in order to append things to them */
-u_fempty(snt_files->dlf);
-u_fempty(snt_files->dlc);
-u_fempty(snt_files->err);
+if (!u_fempty(snt_files->dlf)) {
+   fatal_error("Cannot create %s\n",snt_files->dlf);
+}
+if (!u_fempty(snt_files->dlc)) {
+   fatal_error("Cannot create %s\n",snt_files->dlc);
+}
+if (!u_fempty(snt_files->err)) {
+   fatal_error("Cannot create %s\n",snt_files->err);
+}
 /* We load the alphabet */
 Alphabet* alphabet=load_alphabet(argv[2]);
 if (alphabet==NULL) {
@@ -150,7 +147,7 @@ if (text_cod==NULL) {
    error("Cannot open coded text file %s\n",snt_files->text_cod);
    return 1;
 }
-printf("Initializing...\n");
+u_printf("Initializing...\n");
 struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,text_cod,alphabet);
 /* First of all, we compute the number of occurrences of each token */
 count_token_occurrences(info);
@@ -169,7 +166,7 @@ for (int priority=1;priority<4;priority++) {
             /*
              * If it is a .bin dictionary
              */
-	         printf("Applying dico  %s...\n",argv[i]);
+	         u_printf("Applying dico  %s...\n",argv[i]);
             /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
@@ -192,7 +189,7 @@ for (int priority=1;priority<4;priority++) {
             /*
              * If it is a .fst2 dictionary
              */
-            printf("Applying grammar %s...\n",argv[i]);
+            u_printf("Applying grammar %s...\n",argv[i]);
             /**
              * IMPORTANT!!!
              * dlf, dlc and err must not be open while launch_locate_as_routine
@@ -220,14 +217,14 @@ for (int priority=1;priority<4;priority++) {
    }
 }
 /* Finally, we have to save the definitive list of unknown words */
-printf("Saving unknown words...\n");
+u_printf("Saving unknown words...\n");
 if (info->err==NULL ) {
 	info->err=u_fopen(snt_files->err,U_WRITE);  
 }
 save_unknown_words(info);
 /* We compute some statistics */
 save_statistics(snt_files->stat_dic_n,info);
-printf("Done.\n");
+u_printf("Done.\n");
 /* And we free remaining things */
 free_alphabet(alphabet);
 free_text_tokens(tokens);
@@ -239,4 +236,5 @@ free_dico_application(info);
 free_snt_files(snt_files);
 return 0;
 }
+
 

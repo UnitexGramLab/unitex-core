@@ -20,11 +20,13 @@
   */
 
 #include <stdlib.h>
-
 using namespace std;
-#include "unicode.h"
+#include "Unicode.h"
 #include "etc.h"
 #include "pro_type.h"
+#include "Error.h"
+
+
 class pro_associ proType;
 	unsigned int LEintRead4(unsigned char *a){
 		unsigned int ret  = 0;
@@ -45,7 +47,7 @@ class pro_associ proType;
 		outbin[0]= (unsigned char)((0x0000ff00 & v) >>  8);
 		outbin[1]= (unsigned char)(0x000000ff & v);
 		if(!fwrite(outbin,2,1,f)) 
-			exitMessage("bin write error");
+			fatal_error("bin write error\n");
 		return(2);
 	}
 	int LEoutbytes3(unsigned int v,FILE *f)
@@ -55,7 +57,7 @@ class pro_associ proType;
 		outbin[1] = (unsigned char)((0x0000ff00 & v) >>  8);
 		outbin[2] = (unsigned char) (0x000000ff & v);
 		if(!fwrite(outbin,3,1,f)) 
-			exitMessage("bin write error");
+			fatal_error("bin write error\n");
 		return(3);
 	}
 	int LEoutbytes4(unsigned int v,FILE *f)
@@ -66,7 +68,7 @@ class pro_associ proType;
 		outbin[2] = (unsigned char)((0x0000ff00 & v) >>  8);
 		outbin[3] = (unsigned char) (0x000000ff & v);
 		if(!fwrite(outbin,4,1,f)) 
-			exitMessage("bin write error");
+			fatal_error("bin write error\n");
 		return(4);
 	}
 	unichar LEinbytes2(FILE *f)
@@ -104,20 +106,20 @@ class pro_associ proType;
 	int GEoutbytes2(unichar v,FILE *f)
 	{
 		if(!fwrite(&v,2,1,f)) 
-			exitMessage("bin write error");
+			fatal_error("bin write error\n");
 		return(2);
 	}
 	int GEoutbytes3(unsigned int v,FILE *f)
 	{
 		unsigned int k = (v << 8 ) & 0xffffff00;
 		if(!fwrite(&k,3,1,f)) 
-			exitMessage("bin write error");
+			fatal_error("bin write error\n");
 		return(3);
 	}
 	int GEoutbytes4(unsigned int v,FILE *f)
 	{
 		if(!fwrite(&v,4,1,f)) 
-			exitMessage("bin write error");
+			fatal_error("bin write error\n");
 		return(4);
 	}
 	unichar GEinbytes2(FILE *f)

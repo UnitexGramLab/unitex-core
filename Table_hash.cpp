@@ -23,11 +23,10 @@
 //     Filename: Table_hash.cpp
 //     By Alexis Neme
 //---------------------------------------------------------------------------
+
 #include "Table_hash.h"
-
-//---------------------------------------------------------------------------
-
-#include "unicode.h"
+#include "Unicode.h"
+#include "Error.h"
 
 
 
@@ -43,18 +42,16 @@ struct hash_block *hb;
 
 		hb = (struct hash_block *) malloc(sizeof(struct hash_block ));
 		if (hb==NULL) {
-		   fprintf(stderr,"Not enough memory in new_hash_block\n");
-		   exit(1);
-		};
+		   fatal_error("Not enough memory in new_hash_block\n");
+		}
 
 		hb->tokens = (unichar *) malloc(hash_block_size * sizeof(unichar));
 		if (hb->tokens ==NULL) {
-		   fprintf(stderr,"Not enough memory in new_hash_block\n");
-		   exit(1);
-		};
+		   fatal_error("Not enough memory in new_hash_block\n");
+		}
 
 		hb->tokens[0] = '\0';
-		u_strcat_char( hb->tokens,";");
+		u_strcat( hb->tokens,";");
 		hb->N = 1;						// allocate one block only
 		th->tab_hash_blocks[i] = hb;
 		 
@@ -64,14 +61,13 @@ struct hash_block *hb;
 //
 //
 //
-struct table_hash*		new_table_hash(int hash_size,int hash_block_size) {
+struct table_hash* new_table_hash(int hash_size,int hash_block_size) {
       struct table_hash *th;
 
       th = (struct table_hash *) malloc(sizeof(struct table_hash));
       if (th==NULL) {
-       fprintf(stderr,"Not enough memory in new_table_hash for table_hash \n");
-       exit(1);
-	  };
+       fatal_error("Not enough memory in new_table_hash for table_hash\n");
+	  }
 
 	  th->hash_size			= hash_size;
 	  th->hash_block_size	= hash_block_size;
@@ -82,11 +78,10 @@ struct table_hash*		new_table_hash(int hash_size,int hash_block_size) {
 
 	  new_hash_blocks(th,hash_size,hash_block_size);
  	  
-	  th->tab			= (unichar**) malloc( 1000000 * sizeof(unichar *) ) ;
+	  th->tab=(unichar**) malloc( 1000000 * sizeof(unichar *) ) ;
       if (th->tab ==  NULL) {
-       fprintf(stderr,"Not enough memory in new_table_hash for tab \n");
-       exit(1);
-	  };
+       fatal_error("Not enough memory in new_table_hash for tab\n");
+	  }
 
       return(th);      
 }
@@ -99,14 +94,14 @@ struct table_hash*		new_table_hash(int hash_size,int hash_block_size) {
 void	free_table_hash(struct table_hash *t_hash){
 	
 	if (t_hash==NULL) {
-		fprintf(stderr,"Call to free_table_hash on NULL pointer\n");
+		error("Call to free_table_hash on NULL pointer\n");
      return;
-	};
+	}
 
 	for ( int i = 0; i< HASH_SIZE;i++) {
 		free(t_hash->tab_hash_blocks[i]->tokens);
 		free(t_hash->tab_hash_blocks[i]);
-	} ;
+	}
 
     free(t_hash->tab_hash_blocks);
 
@@ -142,11 +137,10 @@ unsigned int	hash(unichar *s, const int hashsize){
 //
 void	save_lines_table_hash(FILE * f, struct table_hash *th){
 	
-	u_fprints_char("Table Hash\n",f);
+	u_fprintf(f,"Table Hash\n");
     for ( int i = 0 ; i < HASH_SIZE ; i++) {		      
         u_fprintf(f,"%d- ",i); 
-		u_fprints(th->tab_hash_blocks[i]->tokens,f); 	
-		u_fprints_char("\n",f);
+		u_fprintf(f,"%S\n",th->tab_hash_blocks[i]->tokens); 	
 	};
 };
 
@@ -163,8 +157,7 @@ unichar *realloc_hash_block(struct hash_block *hb, const int hash_block_size) {
 	unichar *new_block = (unichar *) malloc(( N_block * hash_block_size) * sizeof(unichar ));
 
 	if ( new_block == NULL ) {
-		fprintf(stderr,"Not enough memory in realloc_hash_block\n");
-		exit(1);
+		fatal_error("Not enough memory in realloc_hash_block\n");
 	};
 
     u_strcpy(new_block,old_block);
@@ -186,8 +179,6 @@ int		add_token(unichar *s, struct table_hash *th){
                                               "token:token_cod;" =
                                               max. token length +
                                               12 */
-	unichar u_token_cod[10] ; 
-
 	h = hash(s, th->hash_size);
 
 	struct hash_block  *hb = th->tab_hash_blocks[h] ;
@@ -201,16 +192,9 @@ int		add_token(unichar *s, struct table_hash *th){
         /* prohibit a buffer overflow! */
         if ((u_strlen(s)+1) > (STR_BUFFER_SIZE-12)) // 1024-12 for ";" and ":" and u_token_cod
           {
-            u_fprints_html_ascii(s, stderr);
-            fprintf(stderr, "Error: token to long to be stored in hash, exiting!\n");
-            exit(1);
+            fatal_error("Error: token to long to be stored in hash:\n%S\n",s);
           }
-	u_int_to_string(last_cod, u_token_cod);  
-	u_strcpy(u_dest,s);
-	u_strcat_char(u_dest,":");
-	u_strcat(u_dest,u_token_cod);
-	u_strcat_char(u_dest,";");
-
+         u_sprintf(u_dest,"%S:%d;",s,last_cod);
 	// test for block reallocation
         int l_tok = u_strlen( hb->tokens);
 	while ( (l_tok + u_strlen(u_dest) + 5)  > (N_block_h * h_block_size)  ) {
@@ -222,7 +206,7 @@ int		add_token(unichar *s, struct table_hash *th){
 	th->last_token_cod++; 
     return(last_cod);
 
-};
+}
 
 //
 //
@@ -232,45 +216,27 @@ int		add_token(unichar *s, struct table_hash *th){
 int find_token_numb(unichar *s, struct table_hash *th){
 	
   int h;
-  struct hash_block *hb; 
   unichar str[STR_BUFFER_SIZE] ;  
 
   h = hash(s, th->hash_size);
-  hb = th->tab_hash_blocks[h] ;
-  if (hb==NULL) {
-    printf("aaaaaaaaaaaaaaps   h=%d  s=",h);
-    u_prints(s);
-    getchar();
-  }
 
   unichar *toks = th->tab_hash_blocks[h]->tokens ;
-  if (toks==NULL) {
-    printf("oooooooooops");
-    getchar();
-  }
 
   /* prohibit a buffer overflow! */
   if ((u_strlen(s)+1) > (STR_BUFFER_SIZE-2)) // 1024-2 for ";" and ":"
     {
-      u_fprints_html_ascii(s, stderr);
-      fprintf(stderr, "Error: token to long to be stored in hash, exiting!\n");
-      exit(1);
+      fatal_error("Error: token too long to be stored in hash:\n%S\n",s);
     }
 
-  u_strcpy_char(str,";");
-  u_strcat(str,s);
-  u_strcat_char(str,":");				// str == ";token:"
+  u_sprintf(str,";%S:",s); // str == ";token:"
     
   // find str in toks
   int offset_tok = u_strstr(toks,str) ;
   if  (offset_tok != - 1) {
     // get the token_cod
     int offset_token_code = offset_tok + u_strlen(str);
-    int tok_cod = 0;
-    while (u_is_digit(toks[offset_token_code]) )  {
-      tok_cod = int( tok_cod * 10 + (toks[offset_token_code]-'0')) ;
-      offset_token_code++;
-    }  
+    int tok_cod=0;
+    u_sscanf(&(toks[offset_token_code]),"%d",&tok_cod);
     return(tok_cod);					// found			  
   }
 

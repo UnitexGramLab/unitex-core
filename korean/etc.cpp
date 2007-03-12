@@ -21,11 +21,12 @@
 
 #include <stdlib.h>
 using namespace std;
-#include "unicode.h"
+#include "Unicode.h"
 #include "etc.h"
+#include "Error.h"
 
 //
-//  cahnge wide char string to int
+//  change wide char string to int
 //
 unichar u_null_string[]= {(unichar)'\0'};
 unichar u_epsilon_string[] = {(unichar)'<',(unichar)'E',(unichar)'>',(unichar)'\0'};
@@ -53,30 +54,22 @@ int uniToInt(unichar *orgin)
 		} else if((*w >= 'A' ) && (*w <= 'F')){
 			s = s * base + (*w - 'A' +10);
 		} else {
-			u_fprintf(stdout,"%S is not correct decimal value %d ",orgin,base);
-			exitMessage("");
+			fatal_error("%S is not correct decimal value %d ",orgin,base);
 		}
 		w++;
 	}
 //	u_fprintf(stdout,"%s %x\n",orgin,s);
 	return(s);
 }
-void exitMessage(char *mes)
-{
-	fprintf(stderr,"%s\n",mes);
 
-//fprintf(stderr,"return");getchar();getchar();
 
-	exit(1);
+
+void fopenErrMessage(char* m){
+fatal_error("%s: file open error\n",m);
 }
 
-void fopenErrMessage(char *m){
-fprintf(stderr,"%s",m);
-exitMessage(" file open error");
-}
-void freadError(char *m){
-fprintf(stderr,"%s",m);
-exitMessage(" file read error");
+void freadError(char* m){
+fatal_error("%s: file read error\n",m);
 }
 
 int utoi(unichar *ws)
@@ -98,9 +91,9 @@ int getStringTableFile(char *f,
 	fseek(fptr,0,SEEK_END);	
 	int sizeFile =ftell(fptr)/2;
 	mem = new unsigned short[sizeFile];
-	if(!mem) exitMessage("mem alloc fail");
+	if(!mem) fatal_error("mem alloc fail\n");
 	fseek(fptr,2,SEEK_SET);
-	if(!u_fread_raw(mem,sizeFile-1,fptr))	exitMessage("Read Tokens fail");
+	if(!u_fread_raw(mem,sizeFile-1,fptr)) fatal_error("Read Tokens fail\n");
 //for(int  i = 0;i <(sizeFile -1);i++) mem[i] = u_fgetc(fptr); 
 	mem[sizeFile-1] = 0;
 //	mem[sizeFile-2] = 0;
@@ -119,13 +112,13 @@ loadStrTable(unichar *wp,unichar **&table,int &table_sz)
 	if(*wp == '\n') wp++;
 
 	table = new unichar *[table_sz];
-	if(!table) exitMessage("token table mem alloc fail");
+	if(!table) fatal_error("token table mem alloc fail\n");
 	unichar *curoffset = wp;
 	int index  = 0;
 	while(*wp ) {
 		if(*wp == 0x0a){
 			*wp++ = 0;
-			if(*curoffset == 0) exitMessage("Format Error");
+			if(*curoffset == 0) fatal_error("Format Error\n");
 			table[index++] = curoffset;
 			curoffset = wp;
 		} else  if(*wp == 0x0d) {
@@ -133,7 +126,7 @@ loadStrTable(unichar *wp,unichar **&table,int &table_sz)
 		} else
 			wp++;			
 	};
-	if( index != table_sz) exitMessage("illegal table size");
+	if( index != table_sz) fatal_error("illegal table size\n");
 }
 int getStringTableFileAvecNull(char *f,
 	unsigned short *&mem,unichar **&table)
@@ -144,9 +137,9 @@ int getStringTableFileAvecNull(char *f,
 	fseek(fptr,0,SEEK_END);	
 	int sizeFile =ftell(fptr)/2;
 	mem = new unsigned short[sizeFile];
-	if(!mem) exitMessage("mem alloc fail");
+	if(!mem) fatal_error("mem alloc fail\n");
 	fseek(fptr,2,SEEK_SET);
-    if(!u_fread_raw(mem,sizeFile-2,fptr))exitMessage("Read Tokens fail");
+    if(!u_fread_raw(mem,sizeFile-2,fptr)) fatal_error("Read Tokens fail\n");
 //    for(int  i = 0;i <(sizeFile -1);i++) mem[i] = u_fgetc(fptr); 
 	mem[sizeFile-1] = 0;
 //	mem[sizeFile-2] = 0;
@@ -165,7 +158,7 @@ loadStrTableAvecNull(unichar *wp,unichar **&table,int &table_sz)
 	if(*wp == '\n') wp++;
 
 	table = new unichar *[table_sz];
-	if(!table) exitMessage("token table mem alloc fail");
+	if(!table) fatal_error("token table mem alloc fail\n");
 	unichar *curoffset = wp;
 	int index  = 0;
 	while(*wp ) {
@@ -182,21 +175,17 @@ loadStrTableAvecNull(unichar *wp,unichar **&table,int &table_sz)
 	 table[index++] = curoffset;
 	}
 	if( index != table_sz)  {
-             fprintf(stderr," index (%d %d)\n",index,table_sz);
-             exitMessage("illegal table size");
+             fatal_error(" index (%d %d)\nillegal table size\n",index,table_sz);
         }
 }
 //
 //	write the number of element of string table 
 //
-void strFileHeadLine(FILE *f,int sz)
-{
-
-      unichar tmp[100];
-      u_int_to_string(sz,tmp);
-      u_fprints(tmp,f);
-      u_fprints_char("\n",f);
+#warning a degager!
+void strFileHeadLine(FILE* f,int sz) {
+u_fprintf(f,"%d\n",sz);
 }
+
 void fillIntAtArray(int v,unichar *A,int cdepth)
 {
 	int s = v/10;
@@ -245,7 +234,7 @@ unichar get4HexVal(unichar *l)
 		else if(  ( c >= 'A' ) && (c <='9'))
 			su = su * 16 +  c- 'A'+10;
 		else
-			exitMessage("illegal value in conv map");
+			fatal_error("illegal value in conv map\n");
 	}
 	return(su);
 };
@@ -257,7 +246,7 @@ unichar getValueIdx(unichar *s,int &idx)
 			idx += 4;
 			return(get4HexVal(s));
 		}
-		exitMessage("illegal value");
+		fatal_error("illegal value\n");
 	}
 	return(s[idx++]);
 }
@@ -311,7 +300,7 @@ int findChangeStr(unichar *v,unichar *des)
 		}
 		if(	!changeStrTo[i][j] && (!*wp)){
 			*des = changeStrTo[i][0];
-if(debugPrFlag) printf("change str %s to %d\n",getUtoChar(v),*des);
+if(debugPrFlag) u_printf("change str %s to %d\n",getUtoChar(v),*des);
 			return(1);
 		}
 	}
@@ -339,12 +328,10 @@ int changeStrToVal(unichar *src)
 	changeStrTo[changeStrToIdx][i++] = '>';	
 	changeStrTo[changeStrToIdx][i++] = '\0';
 	if(i == 16) {
-		fprintf(stderr,"the name \"%s\"of the variable too long "
-        ,getUtoChar(src));
-		exitMessage("");
+		fatal_error("the name \"%s\"of the variable too long\n",getUtoChar(src));
 	}
 if(debugPrFlag){
-	printf("%s --> %d",getUtoChar(&changeStrTo[changeStrToIdx][1]),
+	u_printf("%s --> %d",getUtoChar(&changeStrTo[changeStrToIdx][1]),
 	changeStrTo[changeStrToIdx][0]);
 }
 	changeStrToIdx++;
@@ -358,12 +345,10 @@ int setStrToVal(unichar *str,unichar v)
 			changeStrTo[changeStrToIdx][i+1] = str[i];
 		changeStrTo[changeStrToIdx][i+1] = '\0';
 		if(i == 16) {
-			fprintf(stderr,"The name of the variable too long %s"
-            ,getUtoChar(str));
-			exitMessage("");
+			fatal_error("The name of the variable too long %s\n",getUtoChar(str));
 		}
 if(debugPrFlag){
-	printf("%s --> %d",getUtoChar(&changeStrTo[changeStrToIdx][1]),
+	u_printf("%s --> %d",getUtoChar(&changeStrTo[changeStrToIdx][1]),
 	changeStrTo[changeStrToIdx][0]);
 }
 		changeStrToIdx++;
@@ -382,7 +367,7 @@ loadChangeFileToTable(char *f)
 	int srcIdx;
 	unichar UtempLine[256];
 	converTableInit();
-	while(EOF!=u_read_line(lf,(unichar *)UtempLine)){
+	while(EOF!=u_fgets(UtempLine,lf)){
 		idx = 0;
 		if(UtempLine[idx] == ' ') continue;
 		srcIdx = (int)UtempLine[idx++];

@@ -293,7 +293,7 @@ void u_tri_a(void *T, int *cnt, int len)
       if (j == *cnt)  // Fin du tableau
 	{
 	  *cnt = i+1;
-	  u_strcpy_char(TAB + (*cnt)*len,"");
+	  u_strcpy(TAB + (*cnt)*len,"");
 	}
       else
 	{
@@ -330,11 +330,10 @@ int u_add_unitab_elem(unichar* form,unitab_t* tab) {
 ///////////////////////////////////////////////////////////////////////////
 // Print the contents of a table of unicode strings to the standard output.
 void u_print_unitab(unitab_t tab) {
-  int i;
-  fprintf(stdout,"\n");
-  for (i=0; i<tab.n; i++) {
-    u_fprints(tab.t[i],stdout);
-    u_fprints_char(" ",stdout);    
-  }
-  fprintf(stdout,"\n");
+int i;
+u_printf("\n");
+for (i=0; i<tab.n; i++) {
+   u_printf("%S ",tab.t[i]);    
+}
+u_printf("\n");
 }

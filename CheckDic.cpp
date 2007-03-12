@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "FileName.h"
 #include "DELA.h"
 #include "String_hash.h"
@@ -33,15 +33,15 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: CheckDic <dela> <type>\n");
-printf("     <dela> : name of the unicode text dictionary (must be a full path)\n");
-printf("     <type> : dictionary type. Two values are possible:\n");
-printf("              DELAS : check any non inflected dictionary\n");
-printf("              DELAF : check any inflected dictionary\n");
-printf("\nChecks the format of <dela> and produces a file named CHECK_DIC.TXT\n");
-printf("that contains check result informations. This file is stored in the\n");
-printf("<dela> directory.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: CheckDic <dela> <type>\n");
+u_printf("     <dela> : name of the unicode text dictionary (must be a full path)\n");
+u_printf("     <type> : dictionary type. Two values are possible:\n");
+u_printf("              DELAS : check any non inflected dictionary\n");
+u_printf("              DELAF : check any inflected dictionary\n");
+u_printf("\nChecks the format of <dela> and produces a file named CHECK_DIC.TXT\n");
+u_printf("that contains check result informations. This file is stored in the\n");
+u_printf("<dela> directory.\n");
 }
 
 int main(int argc, char **argv) {
@@ -77,7 +77,7 @@ if (out==NULL) {
 	u_fclose(dic);
 	fatal_error("Cannot create %s\n",output_filename);
 }
-printf("Checking %s...\n",argv[1]);
+u_printf("Checking %s...\n",argv[1]);
 unichar line[10000];
 int line_number=1;
 /*
@@ -98,13 +98,11 @@ struct string_hash* inflectional_codes=new_string_hash();
 /*
  * We read all the lines and check them.
  */
-while (EOF!=u_read_line(dic,line)) {
+while (EOF!=u_fgets(line,dic)) {
 	if (line[0]=='\0') {
 		/* If we have an empty line, we print a unicode error message
 		 * into the output file */
-		char temp[1000];
-		sprintf(temp,"Line %d: empty line\n",line_number);
-		u_fprints_char(temp,out);
+		u_fprintf(out,"Line %d: empty line\n",line_number);
 	}
 	else if (line[0]=='/') {
 		/* If a line starts with '/', it is a commment line, so
@@ -118,11 +116,11 @@ while (EOF!=u_read_line(dic,line)) {
 	/* At regular intervals, we display a message on the standard
 	 * output to show that the program is working */
 	if (line_number%10000==0) {
-		printf("%d lines read...\r",line_number);
+		u_printf("%d lines read...\r",line_number);
 	}
 	line_number++;
 }
-printf("%d lines read\n",line_number-1);
+u_printf("%d lines read\n",line_number-1);
 u_fclose(dic);
 /*
  * Once we have checked all the lines, we print some informations
@@ -133,9 +131,9 @@ u_fclose(dic);
  * to detect different characters that are graphically identical
  * like 'A' (upper of latin 'a' or upper of greek alpha ?).
  */
-u_fprints_char("-----------------------------------\n",out);
-u_fprints_char("----  All chars used in forms  ----\n",out);
-u_fprints_char("-----------------------------------\n",out);
+u_fprintf(out,"-----------------------------------\n");
+u_fprintf(out,"----  All chars used in forms  ----\n");
+u_fprintf(out,"-----------------------------------\n");
 unichar r[4];
 unichar r2[7];
 r[1]=' ';
@@ -145,11 +143,7 @@ r2[5]='\n';
 r2[6]='\0';
 for (int i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
 	if (alphabet[i]) {
-		r[0]=(unichar)i;
-		u_char_to_hexa((unichar)i,r2);
-		r2[4]=')';
-		u_fprints(r,out);
-		u_fprints(r2,out);
+      u_fprintf(out,"%C (%04X)\n",i,i);
 	}
 }
 /*
@@ -157,40 +151,35 @@ for (int i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
  * dictionary. If a code contains a non ASCII character, a space or a tabulation,
  * we print a warning.
  */
-u_fprints_char("-------------------------------------------------------------\n",out);
-char tmp[1000];
-sprintf(tmp,"----  %3d grammatical/semantic code%s",semantic_codes->size,(semantic_codes->size>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
-u_fprints_char(tmp,out);
-u_fprints_char("-------------------------------------------------------------\n",out);
+u_fprintf(out,"-------------------------------------------------------------\n");
+u_fprintf(out,"----  %3d grammatical/semantic code%s",semantic_codes->size,(semantic_codes->size>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
+u_fprintf(out,"-------------------------------------------------------------\n");
 unichar comment[2000];
 for (int i=0;i<semantic_codes->size;i++) {
 	/* We print the code, followed if necessary by a warning */
-	u_fprints(semantic_codes->value[i],out);
+	u_fprintf(out,"%S",semantic_codes->value[i]);
 	if (warning_on_code(semantic_codes->value[i],comment)) {
-		u_fprints_char(" ",out);
-		u_fprints(comment,out);
+		u_fprintf(out," %S",comment);
 	}
-	u_fprints_char("\n",out);
+	u_fprintf(out,"\n");
 }
 /*
  * Finally, we print the list of inflectional codes,
  * with warnings in the case of non ASCII letters, spaces
  * or tabulations.
  */
-u_fprints_char("-----------------------------------------------------\n",out);
-sprintf(tmp,"----  %3d inflectional code%s",inflectional_codes->size,(inflectional_codes->size>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
-u_fprints_char(tmp,out);
-u_fprints_char("-----------------------------------------------------\n",out);
+u_fprintf(out,"-----------------------------------------------------\n");
+u_fprintf(out,"----  %3d inflectional code%s",inflectional_codes->size,(inflectional_codes->size>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
+u_fprintf(out,"-----------------------------------------------------\n");
 for (int i=0;i<inflectional_codes->size;i++) {
-	u_fprints(inflectional_codes->value[i],out);
+	u_fprintf(out,"%S",inflectional_codes->value[i]);
 	if (warning_on_code(inflectional_codes->value[i],comment)) {
-		u_fprints_char(" ",out);
-		u_fprints(comment,out);
+		u_fprintf(out," %S",comment);
 	}
-	u_fprints_char("\n",out);
+	u_fprintf(out,"\n");
 }
 u_fclose(out);
-printf("Done.\n");
+u_printf("Done.\n");
 return 0;
 }
 

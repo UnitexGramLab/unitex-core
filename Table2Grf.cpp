@@ -19,12 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "FileName.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
@@ -32,14 +30,10 @@
 
 #define MAX_LINES_IN_TABLE 1024  
 
-//
-// "E:\My Unitex\Greek\Corpus\31.txt" "E:\My Unitex\Greek\Graphs\31-PATRON.grf" "E:\My Unitex\Greek\Graphs\result.grf" "E:\My Unitex\Greek\Graphs\result@%.grf"
-//
-
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Table2Grf <table> <graph> <result> [subgraph]\n"
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Table2Grf <table> <graph> <result> [subgraph]\n"
        "       <table> : unicode text table with tabs as separator\n"
        "       <graph> : reference graph\n"
        "       <result> : name of the result main graph\n"
@@ -51,9 +45,8 @@ printf("Usage: Table2Grf <table> <graph> <result> [subgraph]\n"
 }
 
 
-//---------------------------------------------------------------------------
-
 void table2grf(FILE*,FILE*,FILE*,char*,char*);
+
 
 int main(int argc, char **argv) {
 setBufferMode();
@@ -64,23 +57,22 @@ if (argc<4 || argc>5) {
 }
 FILE* table=u_fopen(argv[1],U_READ);
 if (table==NULL) {
-   fprintf(stderr,"Cannot open table %s\n",argv[1]);
-   return 1;
+   fatal_error("Cannot open table %s\n",argv[1]);
 }
 FILE* reference_graph=u_fopen(argv[2],U_READ);
 if (reference_graph==NULL) {
-   fprintf(stderr,"Cannot open reference graph %s\n",argv[2]);
+   error("Cannot open reference graph %s\n",argv[2]);
    u_fclose(table);
    return 1;
 }
 if ((strlen(argv[3])-4)<=0) {
-   fprintf(stderr,"Error in result graph name %s\n",argv[3]);
+   error("Error in result graph name %s\n",argv[3]);
    u_fclose(table);
    return 1;
 }
 FILE* result_graph=u_fopen(argv[3],U_WRITE);
 if (result_graph==NULL) {
-   fprintf(stderr,"Cannot create result graph %s\n",argv[3]);
+   error("Cannot create result graph %s\n",argv[3]);
    u_fclose(table);
    u_fclose(reference_graph);
    return 1;
@@ -129,7 +121,7 @@ struct graphe_patron {
 
 
 void write_result_graph_header(FILE *f) {
-u_fprints_char("#Unigraph\n"
+u_fprintf(f,"#Unigraph\n"
                "SIZE 950 1328\n"
                "FONT Times New Roman:  12\n"
                "OFONT Times New Roman:B 12\n"
@@ -151,7 +143,7 @@ u_fprints_char("#Unigraph\n"
                "3\n"
                "\"<E>\" 68 368 1 2 \n"
                "\"\" 456 368 0 \n"
-               "\"", f);
+               "\"");
 }
 
 
@@ -182,12 +174,14 @@ while ((c=u_fgetc(f))!='"') {
 }
 e->contenu[i]='\0';
 // we read the space after the "
-u_fgetc(f);
+/*u_fgetc(f);
 e->x=u_read_int(f);
 e->y=u_read_int(f);
-e->n_trans=u_read_int(f);
+e->n_trans=u_read_int(f);*/
+u_fscanf(f,"%d%d%d",&(e->x),&(e->y),&(e->n_trans));
 for (i=0;i<e->n_trans;i++) {
-  e->trans[i]=u_read_int(f);
+  //e->trans[i]=u_read_int(f);
+  u_fscanf(f,"%d",&(e->trans[i]));
 }
 // we read the \n at the end of line
 u_fgetc(f);
@@ -205,9 +199,10 @@ while ((c=u_fgetc(f))!='#')
 g->en_tete[i]='#';
 g->en_tete[i+1]='\0';
 // we read th \n after the #
-u_fgetc(f);
-// the read the number of states
-g->n_etats=u_read_int(f);
+//u_fgetc(f);
+// we read the number of states
+//g->n_etats=u_read_int(f);
+u_fscanf(f,"%d\n",&(g->n_etats));
 // we read the lines of the graph
 for (i=0;i<g->n_etats;i++) {
   g->tab[i]=nouvel_etat();
@@ -303,7 +298,6 @@ return (n>='A') && (n<='Z');
 //
 void convertir(unichar* dest,unichar* source,unichar** champ,int n_champs,int ligne_courante) {
 int pos_in_dest;
-char tmp[5];
 unichar line_number[5];
 int row_number;
 int negation=0;
@@ -334,19 +328,18 @@ if (source[pos_in_src]=='@' && is_in_A_Z(source[pos_in_src+1])) {
    }
    if (row_number!=-1) {
       // if we have a valid row reference
-      if ((!negation && !u_strcmp_char(champ[row_number],"-"))
-          || (negation && !u_strcmp_char(champ[row_number],"+"))) {
+      if ((!negation && !u_strcmp(champ[row_number],"-"))
+          || (negation && !u_strcmp(champ[row_number],"+"))) {
          // and if this reference points on a -,
          // then we must remove this state
-         u_strcpy_char(dest,"");
+         u_strcpy(dest,"");
          return;
       }
    }
 }
 
 // then, we can focus on the general case
-sprintf(tmp,"%04d",ligne_courante);
-u_strcpy_char(line_number,tmp);
+u_sprintf(line_number,"%04d",ligne_courante);
 
 pos_in_src=0;
 pos_in_dest=0;
@@ -381,18 +374,18 @@ while (source[pos_in_src]!='\0') {
             // if we are in the @AB case
             row_number=(source[pos_in_src]-'A'+1)*(26)+(source[pos_in_src+1]-'A');
             if (row_number > n_champs)
-              fatal_error("error: row #%d (@%c%c) not defined in table\n",
+              fatal_error("Error: row #%d (@%c%c) not defined in table\n",
                           row_number,source[pos_in_src],source[pos_in_src+1]);
             pos_in_src++;
          }
          else {
            row_number=source[pos_in_src]-'A';
            if (row_number > n_champs)
-             fatal_error("error: row #%d (@%c) not defined in table\n",
+             fatal_error("Error: row #%d (@%c) not defined in table\n",
                          row_number,source[pos_in_src]);
          }
          pos_in_src++;
-         if (!u_strcmp_char(champ[row_number],"+")) {
+         if (!u_strcmp(champ[row_number],"+")) {
             if (negation) {
                // if we have a - sign, we do nothing
             }
@@ -403,7 +396,7 @@ while (source[pos_in_src]!='\0') {
                dest[pos_in_dest++]='>';
             }
          }
-         else if (!u_strcmp_char(champ[row_number],"-")) {
+         else if (!u_strcmp(champ[row_number],"-")) {
             if (!negation) {
                // if we have a - sign, we do nothing
             }
@@ -448,77 +441,6 @@ dest[pos_in_dest]='\0';
 
 
 
-//
-// deprecated
-//
-void convertir_old(unichar* dest,unichar* source,unichar** champ,int n_champs,int ligne_courante) {
-int pos;
-int i;
-unichar s[3000];
-unichar tmp[20];
-unichar num[3];
-int numero;
-int negation;
-int plus;
-
-u_int_to_string(ligne_courante,tmp);
-u_strcpy(s,source);
-u_strcpy(dest,s);
-
-// on suppose que si on a une reference a une colonne +/-, elle est
-// seule dans une boite
-
-while ((pos=position(s,'@'))!=-1) {
-  // we check if a ! sign preceed the @ sign
-  if (pos>0 && s[pos-1]=='!') negation=1;
-  else negation=0;
-
-  if (s[pos+1]=='%') {
-     // cas de @% qui doit être remplacé par le numéro de ligne courant
-    if (negation==0) dest[pos]='\0';
-    else dest[pos-1]='\0';
-    u_strcat(dest,tmp);
-    i=pos+u_strlen(tmp);
-    pos=pos+2;
-    while (s[pos]!='\0')
-      dest[i++]=s[pos++];
-    dest[i]='\0';
-  }
-  else {
-    i=0;
-    while (s[pos+1+i]>='A' && s[pos+1+i]<='Z') {
-      num[i]=s[pos+1+i];
-      i++;
-    }
-    if (i==0) {
-       fprintf(stderr,"Error in the reference graph:\n");
-       fprintf(stderr,"the @ sign must be followed by %% or by one or two letters within [A-Z]\n");
-       exit(1);
-    }
-    num[i]='\0';
-    numero=get_num(num);
-    if (negation==0) dest[pos]='\0';
-    else dest[pos-1]='\0';
-    if (!u_strcmp_char(champ[numero],"+") || !u_strcmp_char(champ[numero],"-")) {
-      // si on a une reference + ou -
-      plus=(!u_strcmp_char(champ[numero],"+"));
-      if ((plus && !negation)||(!plus && negation))
-        u_strcpy_char(dest,"<E>");
-      else u_strcpy_char(dest,"");
-      return;
-    }
-    u_strcat(dest,champ[numero]);
-    pos=pos+i+1;
-    i=u_strlen(dest);
-    while (s[pos]!='\0') {
-      dest[i++]=s[pos++];
-    }
-    dest[i]='\0';
-  }
-  u_strcpy(s,dest);
-}
-}
-
 
 
 int co_accessibilite(struct graphe_patron* g,int e) {
@@ -544,8 +466,7 @@ int i,n_etats,etat_courant,j;
 int *t;
 
 if (G->tab[0]->contenu==NULL) {
-   printf("internal error in nettoyer_graphe: NULL for initial state content\n");
-   exit(1);
+   fatal_error("internal error in nettoyer_graphe: NULL for initial state content\n");
 }
 if (G->tab[0]->contenu[0]=='\0') {
    // if the initial state is empty, we must remove the whole graph
@@ -623,22 +544,21 @@ for (i=0;i<g->n_etats;i++) {
 // we print the name of the subgraph
 unichar tmp[FILENAME_MAX];
 unichar tmp2[FILENAME_MAX];
-u_strcpy_char(tmp,nom_resultat);
+u_strcpy(tmp,nom_resultat);
 tmp2[0]='\0';
 convertir(tmp2,tmp,ligne,n_champs,ligne_courante);
-u_to_char(nom_res,tmp2);
 if (!nettoyer_graphe(res)) {
   // if the graph has been emptied, we return
-  fprintf(stderr,"%s has been emptied\n",nom_res);
+  error("%S has been emptied\n",tmp2);
   return false;
 } 
 if (graphs_printed!=0) {
   /* print a "+" only if any subgraph already has been printed:
    *  - not in first line (ligne_courante==0)
    *  - not if only empty subgraphs have occured since */
-  u_fprints_char("+",f_coord);
+  u_fprintf(f_coord,"+");
 }
-u_fprints_char(":",f_coord);
+u_fprintf(f_coord,":");
 {
 char tmp3[FILENAME_MAX];
 char tmp4[FILENAME_MAX];
@@ -658,34 +578,26 @@ replace_path_separator_by_colon(tmp3);
 /* And finally we remove the extension ".grf" */
 remove_extension(tmp3,tmp4);
 
-u_fprints_char(tmp4,f_coord);
+u_fprintf(f_coord,"%s",tmp4);
 }
 
 f=u_fopen(nom_res,U_WRITE);
 if (f==NULL) {
-  fprintf(stderr,"Cannot create subgraph %s\n",nom_res);
+  error("Cannot create subgraph %s\n",nom_res);
   return false;
 }
 if (ligne_courante%10==0) {
-   printf("%d table entries done...    \r",ligne_courante);
+   u_printf("%d table entries done...    \r",ligne_courante);
 }
-u_fprints(g->en_tete,f);
-u_fprints_char("\n",f);
-unichar et[10];
-u_int_to_string(res->n_etats,et);
-u_fprints(et,f);
-u_fprints_char("\n",f);
-char temp[1000];
+u_fprintf(f,"%S\n",g->en_tete);
+u_fprintf(f,"%d\n",res->n_etats);
 for (i=0;i<res->n_etats;i++) {
-  u_fprints_char("\"",f);
-  u_fprints(res->tab[i]->contenu,f);
-  sprintf(temp,"\" %d %d %d",res->tab[i]->x,res->tab[i]->y,res->tab[i]->n_trans);
-  u_fprints_char(temp,f);
+  u_fprintf(f,"\"%S",res->tab[i]->contenu);
+  u_fprintf(f,"\" %d %d %d",res->tab[i]->x,res->tab[i]->y,res->tab[i]->n_trans);
   for (j=0;j<res->tab[i]->n_trans;j++) {
-     sprintf(temp," %d",res->tab[i]->trans[j]);
-     u_fprints_char(temp,f);
+     u_fprintf(f," %d",res->tab[i]->trans[j]);
   }
-  u_fprints_char(" \n",f);
+  u_fprintf(f," \n");
   free(res->tab[i]);
 }
 fclose(f);
@@ -702,10 +614,10 @@ int n_champs;
 int i;
 int graphs_printed;
 write_result_graph_header(result_graph);
-printf("Loading reference graph...\n");
+u_printf("Loading reference graph...\n");
 charger_graphe_patron(reference_graph,&structure);
 u_fclose(reference_graph);
-printf("Reading lexicon-grammar table...\n");
+u_printf("Reading lexicon-grammar table...\n");
 read_table_first_line(table,&n_champs);
 ligne_courante=1;
 graphs_printed=0;
@@ -718,8 +630,8 @@ u_fclose(table);
 for (i=0;i<structure.n_etats;i++) {
   free(structure.tab[i]);
 }
-u_fprints_char("\" 216 368 1 1 \n",result_graph);
+u_fprintf(result_graph,"\" 216 368 1 1 \n");
 u_fclose(result_graph);
-printf("Done.                                             \n");
+u_printf("Done.                                             \n");
 }
 

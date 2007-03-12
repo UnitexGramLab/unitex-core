@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "DELA.h"
 #include "DictionaryTree.h"
 #include "String_hash.h"
@@ -35,14 +35,14 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Compress <dictionary> [-flip]\n");
-printf("   <dictionary> : any unicode DELAF or DELACF dictionary\n");
-printf("   -flip : this optional parameter specifies that the inflected and lemma\n");
-printf("           forms must be swapped\n\n");
-printf("Compresses a dictionary into an finite state automaton. This automaton\n");
-printf("is stored is a .bin file, and the associated flexional codes are\n");
-printf("written in a .inf file.\n\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Compress <dictionary> [-flip]\n");
+u_printf("   <dictionary> : any unicode DELAF or DELACF dictionary\n");
+u_printf("   -flip : this optional parameter specifies that the inflected and lemma\n");
+u_printf("           forms must be swapped\n\n");
+u_printf("Compresses a dictionary into an finite state automaton. This automaton\n");
+u_printf("is stored is a .bin file, and the associated flexional codes are\n");
+u_printf("written in a .inf file.\n\n");
 }
 
 
@@ -124,13 +124,13 @@ if (INF_file==NULL) {
 /* First, we print a sequence of zeros at the beginning of the .inf file
  * in order to book some place, so that we can later come and write there
  * the number of lines of this file. */
-u_fprints_char("0000000000\n",INF_file);
+u_fprintf(INF_file,"0000000000\n");
 root=new_dictionary_node();
 INF_codes=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
-printf("Compressing...\n");
+u_printf("Compressing...\n");
 /* We read until there is no more lines in the .dic file */
-while(EOF!=u_read_line(f,s)) {
+while(EOF!=u_fgets(s,f)) {
 	if (s[0]=='\0') {
 		/* Empty lines should not appear in a .dic file */
 		error("Line %d: empty line\n",line);
@@ -199,7 +199,7 @@ while(EOF!=u_read_line(f,s)) {
 	/* We print something at regular intervals in order to show
 	 * that the program actually works */
 	if (line%10000==0) {
-		printf("%d line%s read...       \r",line,(line>1)?"s":"");
+		u_printf("%d line%s read...       \r",line,(line>1)?"s":"");
 	}
 	line++;
 }
@@ -214,14 +214,14 @@ int n_transitions;
 int bin_size;
 /* And we dump it into the .bin file */
 create_and_save_bin(root,bin,&n_states,&n_transitions,&bin_size);
-printf("Binary file: %d bytes\n",bin_size);
-printf("%d line%s read            \n"
-		"%d INF entr%s created\n",
-		line,
-		(line!=1)?"s":"",
-		INF_codes->size,
-		(INF_codes->size!=1)?"ies":"y");
-printf("%d states, %d transitions\n",n_states,n_transitions);
+u_printf("Binary file: %d bytes\n",bin_size);
+u_printf("%d line%s read            \n"
+         "%d INF entr%s created\n",
+         line,
+         (line!=1)?"s":"",
+         INF_codes->size,
+         (INF_codes->size!=1)?"ies":"y");
+u_printf("%d states, %d transitions\n",n_states,n_transitions);
 write_INF_file_header(inf,INF_codes->size);
 /*
  * WARNING: we do not free the 'INF_codes' structure because of a slowness

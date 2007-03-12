@@ -23,7 +23,7 @@
 #ifndef Load_DLF_DLCH
 #define Load_DLF_DLCH
 //---------------------------------------------------------------------------
-#include "unicode.h"
+#include "Unicode.h"
 #include "DELA.h"
 
 struct noeud_dlf_dlc {

@@ -24,7 +24,7 @@
 #ifndef _AUTALMOT_H_
 #define _AUTALMOT_H_
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "symbol.h"
 
 //#define TRUE	1
@@ -54,9 +54,6 @@ typedef struct transition_t {
 transition_t * transition_new(int to, symbol_t * label, transition_t * next = NULL);
 void transition_delete(transition_t * trans);
 void transitions_delete(transition_t * trans);
-
-void transition_dump(transition_t * t, FILE * f = stderr);
-void transitions_dump(transition_t * t, FILE * f = stderr);
 
 void transitions_concat(transition_t ** t1, transition_t * t2);
 
@@ -113,7 +110,7 @@ static inline void autalmot_resize(autalmot_t * A) { autalmot_resize(A, A->nbsta
 
 
 inline void autalmot_set_name(autalmot_t * A, unichar * name) { free(A->name); A->name = u_strdup(name); }
-inline void autalmot_set_name(autalmot_t * A, char * name) { free(A->name); A->name = u_strdup_char(name); }
+inline void autalmot_set_name(autalmot_t * A, char * name) { free(A->name); A->name = u_strdup(name); }
 
 void autalmot_set_initial(autalmot_t * A, int state);
 static inline void autalmot_set_final(autalmot_t * A, int state);
@@ -126,13 +123,6 @@ void autalmot_add_trans(autalmot_t * A, int from, symbol_t * label, int to);
 
 
 autalmot_t * load_grammar_automaton(char * name, language_t * lang = LANG);
-
-
-
-void autalmot_dump(const autalmot_t * A, FILE * f = stderr);
-
-void autalmot_dump_dot(const autalmot_t * A, FILE * f = stderr);
-void autalmot_dump_dot_fname(const autalmot_t * A, char * fname);
 
 // type == TEXT | GRAM | LOCATE
 

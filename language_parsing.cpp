@@ -55,7 +55,7 @@ token_t * token_new(unichar * str) {
   token_t * tok = (token_t *) xmalloc(sizeof(token_t));
 
   for (keyword_t * key = keywords; key->str; key++) {
-    if (u_strcmp_char(str, key->str) == 0) {
+    if (u_strcmp(str, key->str) == 0) {
       tok->type = key->val;
       tok->str  = NULL;
       tok->next = NULL;
@@ -142,7 +142,7 @@ pos_section_t * pos_section_new(char * name) {
 
   pos_section_t * res = (pos_section_t *) xmalloc(sizeof(pos_section_t));
 
-  res->name = u_strdup_char(name);
+  res->name = u_strdup(name);
   res->ignore = false;
 
   for (int i = 0; i < PART_NUM; i++) { res->parts[i] = NULL; }
@@ -190,99 +190,6 @@ void language_tree_delete(language_tree_t * tree) {
   pos_sections_delete(tree->pos_secs);
   free(tree);
 }
-
-
-
-
-
-
-
-
-
-void token_dump(token_t * tok, FILE * f) {
-  switch (tok->type) {
-  case TOK_STR:
-    i_fprintf(f, "'%S'", tok->str);
-    break;
-  case TOK_ANGLE:
-    i_fprintf(f, "<%S>", tok->str);
-    break;
-  case TOK_NAME:
-    fprintf(f, "NAME");
-    break;
-  case TOK_POS:
-    fprintf(f, "POS");
-    break;
-  case TOK_END:
-    fprintf(f, "END");
-    break;
-  case TOK_DISCR:
-    fprintf(f, "DISCR");
-    break;
-  case TOK_FLEX:
-    fprintf(f, "FLEX");
-    break;
-  case TOK_CAT:
-    fprintf(f, "CAT");
-    break;
-  case TOK_COMPLET:
-    fprintf(f, "COMPLET");
-    break;
-  case TOK_EQUAL:
-    fprintf(f, "=");
-    break;
-  case TOK_BLANK:
-    fprintf(f, "_");
-    break;
-  default:
-    fprintf(f, "WIERD????");
-    break;
-  }
-}
-
-void tokens_dump(token_t * tok, FILE * f) {
-  fprintf(f, "(");
-  while (tok) {
-    token_dump(tok, f);
-    fprintf(f, ", ");
-    tok = tok->next;
-  }
-  fprintf(f, ")");
-}
-
-void tokens_list_dump(tokens_list * tlist, FILE * f) {
-  while (tlist) {
-    fprintf(f, "> ");
-    tokens_dump(tlist->tokens, f);
-    fprintf(f, "\n");
-    tlist = tlist->next;
-  }
-}
-
-void pos_section_dump(pos_section_t * sec, FILE * f) {
-  i_fprintf(f, "name=%S\n", sec->name);
-  fprintf(f, "\nflex:\n");
-  tokens_list_dump(sec->parts[PART_FLEX], f);
-  fprintf(f, "\ndiscr:\n");
-  tokens_list_dump(sec->parts[PART_DISCR], f);
-  fprintf(f, "\ncat:\n");
-  tokens_list_dump(sec->parts[PART_CAT], f);
-  fprintf(f, "\ncomplet:\n");
-  tokens_list_dump(sec->parts[PART_COMP], f);
-}
-
-
-void language_tree_dump(language_tree_t * tree, FILE * f) {
-  i_fprintf(f, "name=%S\n", tree->name);
-  for (pos_section_t * sec = tree->pos_secs; sec; sec = sec->next) {
-    fprintf(f, "\nPOS:\n");
-    pos_section_dump(sec, f);
-  }
-}
-
-
-
-
 
 
 
@@ -413,7 +320,7 @@ pos_section_t * parse_pos_section(FILE * f) {
 
   while (toks == NULL) {
 
-    if (u_fgets(line, MAXBUF, f) == 0) { return NULL; }
+    if (u_fgets(line, MAXBUF, f) == EOF) { return NULL; }
 
     line_cleanup(line);
 
@@ -429,7 +336,7 @@ pos_section_t * parse_pos_section(FILE * f) {
   tokens_delete(toks);
 
   int partid = PART_NUM;
-  while (partid != -1 && u_fgets(line, MAXBUF, f)) {
+  while (partid != -1 && u_fgets(line, MAXBUF, f)>0) {
 
     line_cleanup(line);
     u_strcpy(buf, line);
@@ -477,13 +384,13 @@ pos_section_t * parse_pos_section(FILE * f) {
           fatal_error("only one discriminant category could be specified.\n");
         }
       case PART_CAT:
-	if (check_cat_line(toks) == -1) { die("bad line format: '%S'\n", line);	}
+	if (check_cat_line(toks) == -1) { fatal_error("bad line format: '%S'\n", line);	}
 	break;
       case PART_FLEX:
-	if (check_flex_line(toks) == -1) { die("bad line format: '%S'\n", line);	}
+	if (check_flex_line(toks) == -1) { fatal_error("bad line format: '%S'\n", line);	}
 	break;	
       case PART_COMP:
-	if (check_complet_line(toks) == -1) { die("bad complet line format: '%S'\n", line); }
+	if (check_complet_line(toks) == -1) { fatal_error("bad complet line format: '%S'\n", line); }
 	break;
       case PART_NUM:
 	fatal_error("no section specified. (line '%S')\n", line);
@@ -495,7 +402,6 @@ pos_section_t * parse_pos_section(FILE * f) {
       break;
 
     default:
-      tokens_dump(toks);
       fatal_error("error while parsing POS section with line '%S'\n", line);
       break;
     }
@@ -515,7 +421,7 @@ language_tree_t * language_parse(FILE * f) {
 
   while (toks == NULL) {
 
-    if ((u_fgets(buf, MAXBUF, f)) == 0) {
+    if ((u_fgets(buf, MAXBUF, f)) == EOF) {
       error("parse language: file is empty\n");
       return NULL;
     }
@@ -542,7 +448,7 @@ language_tree_t * language_parse(FILE * f) {
 
   tokens_delete(toks);
 
-  printf("%d POS definitions loaded.\n", nb);
+  u_printf("%d POS definitions loaded.\n", nb);
 
   return tree;
 }

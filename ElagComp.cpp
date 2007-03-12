@@ -37,6 +37,7 @@
 
 #endif
 
+#include "Unicode.h"
 #include "Copyright.h"
 #include "language.h"
 #include "autalmot.h"
@@ -47,8 +48,8 @@
 
 
 void usage() {
-  printf("%s", COPYRIGHT);
-  printf("Usage: ElagComp [ -r <ruleslist> | -g <grammar> ] -l <LANG> [ -o <output> ] [ -d <rulesdir> ]\n"
+u_printf("%S", COPYRIGHT);
+u_printf("Usage: ElagComp [ -r <ruleslist> | -g <grammar> ] -l <LANG> [ -o <output> ] [ -d <rulesdir> ]\n"
          "\n"
          "with :\n"
          "<ruleslist>     :     Elag grammars list file,\n"
@@ -166,7 +167,7 @@ int main(int argc, char ** argv ) {
       rules   = basename(rules);
     }
 
-    debug("changing to %s directory\n", ruledir);
+    error("changing to %s directory\n", ruledir);
     if (chdir(ruledir) == -1) { error("unable to change to %s directory.\n", ruledir); }
 
     if (compilename == NULL) {
@@ -184,15 +185,15 @@ int main(int argc, char ** argv ) {
 
 
     if (compile_rules(rules, compilename) == -1) {
-      error("An error occured\n");
+      error("An error occurred\n");
       return 1;
     }
 
-    printf("\nElag grammars are compiled in %s.\n", compilename);
+    u_printf("\nElag grammars are compiled in %s.\n", compilename);
   
   } else { // compile one grammar
   
-   printf("Compiling %s ...\n", grammar);
+   u_printf("Compiling %s ...\n", grammar);
  
    int l = strlen(grammar);
    
@@ -209,11 +210,8 @@ int main(int argc, char ** argv ) {
      return 1;
    }
 
-   printf("Elag grammar is compiled into %s.\n", buf);
+   u_printf("Elag grammar is compiled into %s.\n", buf);
   }
-
-  fflush(stdout);
-
   return 0 ;
 }
 

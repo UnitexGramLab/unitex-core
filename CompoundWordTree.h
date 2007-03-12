@@ -22,7 +22,7 @@
 #ifndef CompoundWordTreeH
 #define CompoundWordTreeH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "String_hash.h"
 #include "List_int.h"

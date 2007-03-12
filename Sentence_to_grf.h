@@ -24,7 +24,7 @@
 #define Sentence_to_grfH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "List_int.h"
 

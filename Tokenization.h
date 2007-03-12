@@ -27,7 +27,7 @@
  * 
  */
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "List_ustring.h"
 #include "LocateConstants.h"

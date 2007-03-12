@@ -19,13 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "DELA.h"
 #include "FileName.h"
@@ -44,17 +41,17 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Reconstrucao <alph> <list> <root> <dic> <pro> <nasalpro> <res>\n");
-printf("   <alph> : the alphabet file to use\n");
-printf("   <list> : the match list that describes the forms to be normalized. This\n");
-printf("            list must have been computed in MERGE or REPLACE mode.\n");
-printf("   <root> : the .bin dictionary containing the radical forms\n");
-printf("   <dic> : the .bin dictionary containing the complete forms\n");
-printf("   <pro> : the .fst2 grammar describing pronoun rewriting rules\n");
-printf("   <nasalpro> : the .fst2 grammar describing nasal pronoun rewriting rules\n");
-printf("   <res> :  the name of the .grf graph to be generated\n\n");
-printf("Takes a list of multi-part verbs and creates an apropriate normalization\ngrammar.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Reconstrucao <alph> <list> <root> <dic> <pro> <nasalpro> <res>\n");
+u_printf("   <alph> : the alphabet file to use\n");
+u_printf("   <list> : the match list that describes the forms to be normalized. This\n");
+u_printf("            list must have been computed in MERGE or REPLACE mode.\n");
+u_printf("   <root> : the .bin dictionary containing the radical forms\n");
+u_printf("   <dic> : the .bin dictionary containing the complete forms\n");
+u_printf("   <pro> : the .fst2 grammar describing pronoun rewriting rules\n");
+u_printf("   <nasalpro> : the .fst2 grammar describing nasal pronoun rewriting rules\n");
+u_printf("   <res> :  the name of the .grf graph to be generated\n\n");
+u_printf("Takes a list of multi-part verbs and creates an apropriate normalization\ngrammar.\n");
 }
 
 
@@ -66,13 +63,13 @@ if (argc!=8) {
    usage();
    return 0;
 }
-printf("Loading alphabet...\n");
+u_printf("Loading alphabet...\n");
 Alphabet* alph=load_alphabet(argv[1]);
 if (alph==NULL) {
-   error("Cannot load alphabet file %s\n",argv[1]);
+   fatal_error("Cannot load alphabet file %s\n",argv[1]);
    return 1;
 }
-printf("Loading match list...\n");
+u_printf("Loading match list...\n");
 FILE* f_list=u_fopen(argv[2],U_READ);
 if (f_list==NULL) {
    error("Cannot load match list %s\n",argv[2]);
@@ -87,7 +84,7 @@ if (output_policy==IGNORE_OUTPUTS) {
    free_alphabet(alph);
    return 1;
 }
-printf("Loading radical form dictionary...\n");
+u_printf("Loading radical form dictionary...\n");
 unsigned char* root_bin=load_BIN_file(argv[3]);
 if (root_bin==NULL) {
    error("Cannot load radical form dictionary %s\n",argv[3]);
@@ -104,7 +101,7 @@ if (root_bin==NULL) {
    free(root_bin);
    return 1;
 }
-printf("Loading inflected form dictionary...\n");
+u_printf("Loading inflected form dictionary...\n");
 unsigned char* inflected_bin=load_BIN_file(argv[4]);
 if (inflected_bin==NULL) {
    error("Cannot load inflected form dictionary %s\n",argv[4]);
@@ -125,7 +122,7 @@ if (inflected_inf==NULL) {
    free_INF_codes(root_inf);
    return 1;
 }
-printf("Loading pronoun rewriting rule grammar...\n");
+u_printf("Loading pronoun rewriting rule grammar...\n");
 struct noeud_arbre_normalization* rewriting_rules=load_normalization_transducer_string(argv[5]);
 if (rewriting_rules==NULL) {
    error("Cannot load pronoun rewriting grammar %s\n",argv[5]);
@@ -136,7 +133,7 @@ if (rewriting_rules==NULL) {
    free_INF_codes(inflected_inf);
    return 1;
 }
-printf("Loading nasal pronoun rewriting rule grammar...\n");
+u_printf("Loading nasal pronoun rewriting rule grammar...\n");
 struct noeud_arbre_normalization* nasal_rewriting_rules=load_normalization_transducer_string(argv[6]);
 if (rewriting_rules==NULL) {
    error("Cannot load nasal pronoun rewriting grammar %s\n",argv[6]);
@@ -150,7 +147,7 @@ if (rewriting_rules==NULL) {
 }
 
 
-printf("Constructing normalization grammar...\n");
+u_printf("Constructing normalization grammar...\n");
 build_portuguese_normalization_grammar(alph,list,root_bin,root_inf,inflected_bin,inflected_inf,argv[7],
                                        rewriting_rules,nasal_rewriting_rules);
 

@@ -50,8 +50,8 @@ static int fst_file_load_symbols(fst_file_in_t * fstf) {
   int i = 0, len;
   while (i < fstf->nbelems) {
 
-    if ((len = u_fgets(buf, MAXBUF, fstf->f)) == 0) {
-      o_error("load_fst_symbols: %s: unexpected EOF\n", fstf->name); return -1;
+    if ((len = u_fgets(buf, MAXBUF, fstf->f)) == EOF) {
+      error("load_fst_symbols: %s: unexpected EOF\n", fstf->name); return -1;
     }
 
     if (buf[0] == 'f' && isspace(buf[1])) { i++; }
@@ -69,7 +69,7 @@ static int fst_file_load_symbols(fst_file_in_t * fstf) {
   while (ustring_readline(ustr, fstf->f) && ustr->str[0] != 'f') {
 
     if (ustr->str[0] != '%' && ustr->str[0] != '@') {
-      o_error("load_fst_symbols: %s: bad symbol line: '%S'\n", fstf->name, ustr->str);
+      error("load_fst_symbols: %s: bad symbol line: '%S'\n", fstf->name, ustr->str);
       return -1;
     }
 
@@ -79,7 +79,7 @@ static int fst_file_load_symbols(fst_file_in_t * fstf) {
 
     symbol_t * symb = load_symbol(fstf->lang, ustr->str + 1);
 
-    if (symb == NULL) { o_error("fst_load_symbols: unable to load '%S'\n", ustr->str + 1); }
+    if (symb == NULL) { error("fst_load_symbols: unable to load '%S'\n", ustr->str + 1); }
 
     //    debug("'%S'\t->\t", ustr->str + 1); symbols_dump(symb); endl();
 
@@ -106,19 +106,19 @@ fst_file_in_t * fst_file_in_open(char * fname, int type, language_t * lang) {
   fstf->name = strdup(fname);
 
   if ((fstf->f = u_fopen(fname, U_READ)) == NULL) {
-    o_error("fst_file_open: unable to open '%s' for reading\n", fname);
+    error("fst_file_open: unable to open '%s' for reading\n", fname);
     goto error_fstf;
   }
 
   unichar buf[MAXBUF];
 
-  if (u_fgets(buf, MAXBUF, fstf->f) == 0) {
-    o_error("fst_file_open: '%s' is empty\n", fname);
+  if (u_fgets(buf, MAXBUF, fstf->f) == EOF) {
+    error("fst_file_open: '%s' is empty\n", fname);
     goto error_f;
   }
 
   if (! u_is_digit(*buf)) {
-    o_error("fst_file_open: %s: bad file format\n", fname);
+    error("fst_file_open: %s: bad file format\n", fname);
     goto error_f;
   } 
 
@@ -128,7 +128,7 @@ fst_file_in_t * fst_file_in_open(char * fname, int type, language_t * lang) {
 
 
   if (type != FST_TEXT && type != FST_GRAMMAR) {
-    o_error("fst_file_in_open: bad fst_type=%d\n", type);
+    error("fst_file_in_open: bad fst_type=%d\n", type);
     goto error_f;
   }
 
@@ -138,7 +138,7 @@ fst_file_in_t * fst_file_in_open(char * fname, int type, language_t * lang) {
 
   fstf->symbols = hash_str_table_new(64);
   if (fst_file_load_symbols(fstf) == -1) {
-    o_error("fst_file_open: %s: cannot load symbols\n", fstf->name);
+    error("fst_file_open: %s: cannot load symbols\n", fstf->name);
     goto error_symbols;
   }
 
@@ -196,7 +196,7 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
   //  debug("i=%d\n", i);
 
   if (i != fstf->pos + 1) { 
-    die("fst_load: %s: parsing error with line '%S' ('-%d ...' expected)\n", fstf->name, ustr->str, fstf->pos + 1);
+    fatal_error("fst_load: %s: parsing error with line '%S' ('-%d ...' expected)\n", fstf->name, ustr->str, fstf->pos + 1);
   }
 
   p++;  // p == name
@@ -237,7 +237,7 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
 
   if (A->nbstates == 0) {
 
-    o_error("fst_file_read: automaton with no state\n");
+    error("fst_file_read: automaton with no state\n");
 
   } else { autalmot_set_initial(A, 0); }
 
@@ -267,7 +267,7 @@ void fst_file_seek(fst_file_in_t * fstin, int no) {
 
   while (fstin->pos < no) {
     
-    if ((len = u_fgets(buf, MAXBUF, fstin->f)) == 0) { fatal_error("fst_seek: %s: unexpected EOF\n", fstin->name); }
+    if ((len = u_fgets(buf, MAXBUF, fstin->f)) == EOF) { fatal_error("fst_seek: %s: unexpected EOF\n", fstin->name); }
 
     if (buf[0] == 'f' && isspace(buf[1])) { fstin->pos++; }
 
@@ -292,14 +292,14 @@ fst_file_out_t * fst_file_out_open(char * fname, int type) {
   if (type < 0 || type >= FST_BAD_TYPE) { fatal_error("fst_out_open: bad FST_TYPE\n"); }
 
   if ((res->f = u_fopen(fname, U_WRITE)) == NULL) {
-    o_error("fst_out_open: unable to open '%s'\n", fname);
+    error("fst_out_open: unable to open '%s'\n", fname);
     free(res);
     return NULL;
   }
 
   res->fstart = ftell(res->f);
 
-  u_fprints_char("0000000000\n", res->f);
+  u_fprintf(res->f,"0000000000\n");
 
   res->name    = strdup(fname);
   res->type    = type;
@@ -332,12 +332,12 @@ void fst_file_close(fst_file_out_t * fstout) {
   fseek(fstout->f, fstout->fstart, SEEK_SET);
 
   unichar buf[16];
-  u_strcpy_char(buf, "0000000000");
+  u_strcpy(buf, "0000000000");
 
   int i = 9;
   int n = fstout->nbelems;
 
-  if (n == 0) { o_error("fstfile without automaton\n"); }
+  if (n == 0) { error("fstfile without automaton\n"); }
 
   while (n) {
     buf[i--] = '0' + (n % 10);
@@ -378,16 +378,6 @@ void PNC_trans_write(fst_file_out_t * fstf, int to) {
     }
   }
 
-/*
-  u_strcpy_char(label, "{S}");
-
-  if ((idx = hash_str_table_idx_lookup(fstf->labels, label)) == -1) {
-    idx = hash_str_table_add(fstf->labels, label, u_strdup(label));
-  }
-
-  u_fprintf(fstf->f, "%d %d ", idx, to);
-*/
-  
 }
 
 
@@ -418,7 +408,7 @@ void LEXIC_trans_write(fst_file_out_t * fstf, int to) {
   unichar label[8];
   int idx;
 
-  u_strcpy_char(label, "<MOT>");
+  u_strcpy(label, "<MOT>");
 
   if ((idx = hash_str_table_idx_lookup(fstf->labels, label)) == -1) {
     idx = hash_str_table_add(fstf->labels, label, u_strdup(label));
@@ -426,7 +416,7 @@ void LEXIC_trans_write(fst_file_out_t * fstf, int to) {
 
   u_fprintf(fstf->f, "%d %d ", idx, to);
 
-  u_strcpy_char(label, "<!MOT>");
+  u_strcpy(label, "<!MOT>");
 
   if ((idx = hash_str_table_idx_lookup(fstf->labels, label)) == -1) {
     idx = hash_str_table_add(fstf->labels, label, u_strdup(label));
@@ -489,16 +479,16 @@ void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
 
       if (fstf->type == FST_LOCATE) {
 
-	if (u_strcmp_char(label->str, "<PNC>") == 0) {
+	if (u_strcmp(label->str, "<PNC>") == 0) {
 
 	  PNC_trans_write(fstf, t->to);
 
-	} else if (u_strcmp_char(label->str, "<CHFA>") == 0 
-                   || u_strcmp_char(label->str, "<NB>") == 0) {
+	} else if (u_strcmp(label->str, "<CHFA>") == 0 
+                   || u_strcmp(label->str, "<NB>") == 0) {
 
 	  CHFA_trans_write(fstf, t->to);
 
-	} else if (u_strcmp_char(label->str, "<.>") == 0) {
+	} else if (u_strcmp(label->str, "<.>") == 0) {
 
 	  LEXIC_trans_write(fstf, t->to);
 
@@ -519,7 +509,7 @@ normal_output:
 
     if (A->states[q].defto != -1) {
 
-      if (fstf->type != FST_GRAMMAR) { o_error("<def> label in text|locate automaton???\n"); }
+      if (fstf->type != FST_GRAMMAR) { error("<def> label in text|locate automaton???\n"); }
 
       if ((idx = hash_str_table_idx_lookup(fstf->labels, deflabel)) == -1) {
 	idx = hash_str_table_add(fstf->labels, deflabel, u_strdup(deflabel));
@@ -531,7 +521,7 @@ normal_output:
     u_fputc('\n', fstf->f);
   }
 
-  u_fprints_char("f \n", fstf->f);
+  u_fprintf(fstf->f,"f \n");
 
   ustring_delete(label);
 
@@ -551,7 +541,7 @@ autalmot_t * load_grammar_automaton(char * name, language_t * lang) {
 //  debug("fstin=%d\n", fstin);
 
   if (fstin == NULL) {
-    o_error("unable to open '%s'\n", name);
+    error("unable to open '%s'\n", name);
     return NULL; 
   }
 

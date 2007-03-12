@@ -24,7 +24,7 @@
 #define List_ustringH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 
 /**
  * This is a simple structure for manipulating unicode string lists.

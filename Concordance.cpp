@@ -20,11 +20,14 @@
   */
   
 #include "Concordance.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "Matches.h"
 #include "SortTxtMain.h"
 #include "Error.h"
 #include "Buffer.h"
+#include "StringParsing.h"
+#include "Thai.h"
+
 
 #define HTML_ 0
 #define TEXT_ 1
@@ -290,11 +293,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	int can_print_line=1;
 	if (RES==GLOSSANET_) {
 		unichar line[4000];
-		u_strcpy(line,left);
-		u_strcat_char(line,"\t");
-		u_strcat(line,middle);
-		u_strcat_char(line,"\t");
-		u_strcat(line,right);
+      u_sprintf(line,"%S\t%S\t%S",left,middle,right);
 		/* We test if the line was already seen */
 		if (NO_VALUE_INDEX==get_value_index(line,glossa_hash,DONT_INSERT)) {
 			can_print_line=1;
@@ -313,16 +312,18 @@ while ((c=u_fgetc(f))!=EOF) {
 			if (option.thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
 			if (RES==HTML_ || RES==GLOSSANET_) {
-				fprintf(out,"<tr><td nowrap>");
-				u_fprints_html_reverse(left,out);
-			} else {u_fprints_reverse(left,out);}
+				//fprintf(out,"<tr><td nowrap>");
+				//u_fprints_html_reverse(left,out);
+            u_fprintf(UTF8,out,"<tr><td nowrap>%HR",left);
+			} else {u_fprintf(out,"%R",left);}
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
 			 * left context. */
 			if (RES==HTML_ || RES==GLOSSANET_) {
-				fprintf(out,"<tr><td nowrap>");
-				u_fprints_html(left,out);
-			} else {u_fprints(left,out);}
+				//fprintf(out,"<tr><td nowrap>");
+				//u_fprints_html(left,out);
+            u_fprintf(UTF8,out,"<tr><td nowrap>%HS",left);
+			} else {u_fprintf(out,"%S",left);}
 		}
 		/* If we must produce an HTML concordance, then we surround the
 		 * located sequence by HTML tags in order to make it an hyperlink.
@@ -331,42 +332,37 @@ while ((c=u_fgetc(f))!=EOF) {
 		 * tokens) and Z is the number of the sentence that contains the
 		 * sequence. */
 		if (RES==HTML_) {
-			char tmp[100];
-			u_to_char(tmp,indices);
-			fprintf(out,"<a href=\"%s\">",tmp);
-			u_fprints_html(middle,out);
-			fprintf(out,"</a>");
-			u_fprints_html(right,out);
-			fprintf(out,"%s</td></tr>\n",NBSP);
+			//char tmp[100];
+			//u_to_char(tmp,indices);
+			u_fprintf(UTF8,out,"<a href=\"%S\">%HS</a>%HS&nbsp;</td></tr>\n",indices,middle,right);
+			//u_fprints_html(middle,out);
+			//fprintf(out,"</a>");
+			//u_fprints_html(right,out);
+			//fprintf(out,"&nbsp;</td></tr>\n");
 		}
 		/* If we must produce a GlossaNet concordance, we turn the sequence
 		 * into an URL, using the given GlossaNet script. */
 		else if (RES==GLOSSANET_) {
-			fprintf(out,"<A HREF=\"%s?rec=",script_glossanet);
-			u_fprints_html(middle,out);
-			fprintf(out,"&adr=");
-			u_fprints_html(href,out);
-			fprintf(out,"\" style=\"color: rgb(0,0,128)\">");
-			u_fprints_html(middle,out);
-			fprintf(out,"</A>");
-			u_fprints_html(right,out);
-			fprintf(out,"</td></tr>\n");
+			u_fprintf(UTF8,out,"<A HREF=\"%s?rec=%HS&adr=%HS",script_glossanet,middle,href);
+			//u_fprints_html(middle,out);
+			//fprintf(out,"&adr=");
+			//u_fprints_html(href,out);
+			//fprintf(out,"\" style=\"color: rgb(0,0,128)\">");
+         u_fprintf(UTF8,out,"\" style=\"color: rgb(0,0,128)\">%HS</A>%HS</td></tr>\n",middle,right);
+			//u_fprints_html(middle,out);
+			//fprintf(out,"</A>");
+			//u_fprints_html(right,out);
+			//fprintf(out,"</td></tr>\n");
 		}
 		/* If we must produce a text concordance */
 		else if (RES==TEXT_) {
-			u_fprints_char("\t",out);
-			u_fprints(middle,out);
-			u_fprints_char("\t",out);
-			u_fprints(right,out);
-			u_fprints_char("\n",out);
+			u_fprintf(out,"\t%S\t%S\n",middle,right);
 		}
       /* If must must produce an index file */
       else if (RES==INDEX_) {
-         unichar * idx = u_strtok_char(indices, " ");
-         u_fprints(idx,out);
-         u_fprints_char("\t",out);
-         u_fprints(middle,out);
-         u_fprints_char("\n",out);
+         unichar idx[128];
+         parse_string(indices,idx,P_SPACE);
+         u_fprintf(out,"%S\t%S\n",idx,middle);
       }
       /* If must must produce an axis file...
          VARIABLES :
@@ -385,11 +381,7 @@ while ((c=u_fgetc(f))!=EOF) {
          sscanf(tmp1,"%f %f",&f1,&f2);
          len=(f2+1)-f1;
          med=((len+1)/2)+f1;
-         sprintf(tmp1,"%.1f",med);
-         u_fprintf(out,tmp1);
-         u_fprints_char("\t",out);
-         u_fprints(middle,out);
-         u_fprints_char("\n",out);
+         u_fprintf(out,"%.1f\t%S\n",med,middle);
       }
 	}
 }
@@ -421,12 +413,12 @@ for (i=0;i<tokens->N;i++) {
  * This function writes the HTML header for an HTML or a GlossaNet concordance.
  */
 void write_HTML_header(FILE* f,int number_of_matches,struct conc_opt option) {
-fprintf(f,"<html lang=en>\n");
-fprintf(f,"<head>\n");
-fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
-fprintf(f,"   <title>%d match%s</title>\n",number_of_matches,(number_of_matches>1)?"es":"");
-fprintf(f,"</head>\n");
-fprintf(f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %s\">\n",option.fontname,option.fontsize);
+u_fprintf(UTF8,f,"<html lang=en>\n");
+u_fprintf(UTF8,f,"<head>\n");
+u_fprintf(UTF8,f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
+u_fprintf(UTF8,f,"   <title>%d match%s</title>\n",number_of_matches,(number_of_matches>1)?"es":"");
+u_fprintf(UTF8,f,"</head>\n");
+u_fprintf(UTF8,f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %s\">\n",option.fontname,option.fontsize);
 }
 
 
@@ -434,8 +426,8 @@ fprintf(f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\
  * This function write the HTML closing tags for an HTML or a GlossaNet concordance.
  */
 void write_HTML_end(FILE* f) {
-fprintf(f,"</table></body>\n");
-fprintf(f,"</html>\n");
+u_fprintf(UTF8,f,"</table></body>\n");
+u_fprintf(UTF8,f,"</html>\n");
 }
 
 
@@ -492,7 +484,7 @@ buffer->size=fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,te
 
 
 /**
- * This function fills the string 'left' with the mirror of the string of length
+ * This function fills the string 'left' with the string of length
  * 'option.left_context' corresponding to the tokens located before the token number
  * 'pos'. 'token_length' is an array that gives the lengthes of the tokens.
  * 'buffer' contains the token numbers to work on. 'option.thai_mode' indicates by a non
@@ -525,7 +517,7 @@ unichar* s=tokens->token[buffer->int_buffer[pos]];
  * characters. */
 while (pos>=0 && count<option.left_context) {
 	left[i]=s[l--];
-	if (!option.thai_mode || !u_is_to_be_ignored_thai(left[i])) {
+	if (!option.thai_mode || !is_Thai_skipable(left[i])) {
 		/* We increase the character count only we don't have a diacritic mark */
 		count++;
 	}
@@ -533,7 +525,7 @@ while (pos>=0 && count<option.left_context) {
 	if (l<0) {
 		/* If we must change of token */
 		if (option.left_context_until_eos
-                    && !u_strcmp_char(tokens->token[buffer->int_buffer[pos]],"{S}"))
+                    && !u_strcmp(tokens->token[buffer->int_buffer[pos]],"{S}"))
                   break; /* token was "{S}" */
 		pos--;
 		if (pos>=0) {
@@ -552,10 +544,10 @@ if (count!=option.left_context) {
 	}
 }
 left[i]='\0';
-/* Finally, we reverse the string because we want the mirror of the left context.
+/* Finally, we reverse the string because we want the left context and not its mirror.
  * Note that we cannot fill the buffer from the end because of Thai diacritics that
  * can make the length of left in characters greater than 'LEFT_CONTEXT_LENGTH'. */
-u_reverse_string(left);
+mirror(left);
 }
 
 
@@ -620,12 +612,12 @@ int l=0;
 unichar* s=tokens->token[buffer->int_buffer[pos]];
 while (pos<buffer->size && count<right_context_length) {
 	right[i]=s[l++];
-	if (!option.thai_mode || !u_is_to_be_ignored_thai(right[i])) count++;
+	if (!option.thai_mode || !is_Thai_skipable(right[i])) count++;
 	i++;
 	if (s[l]=='\0') {
 		/* If we must change of token */
 		if (option.right_context_until_eos
-                    && !u_strcmp_char(tokens->token[buffer->int_buffer[pos]],"{S}"))
+                    && !u_strcmp(tokens->token[buffer->int_buffer[pos]],"{S}"))
                   break; /* token was "{S}" */
 		pos++;
 		if (pos<buffer->size) {
@@ -721,7 +713,7 @@ void reverse_initial_vowels_thai(unichar* s) {
 int i=0;
 unichar c;
 while (s[i]!='\0') {
-	if (u_is_vowel_thai(s[i]) && s[i+1]!='\0') {
+	if (is_Thai_initial_vowel(s[i]) && s[i+1]!='\0') {
 		c=s[i+1];
 		s[i+1]=s[i];
 		s[i]=c;
@@ -781,7 +773,7 @@ int n_units_already_read=0;
 int current_origin_in_chars=0;
 /* First, we allocate a buffer to read the "text.cod" file */
 struct buffer* buffer=new_buffer(1000000,INTEGER_BUFFER);
-printf("Loading concordance index...\n");
+u_printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
 matches=load_match_list(concordance,NULL);
@@ -794,7 +786,7 @@ int position_in_chars=0;
 int position_in_tokens=0;
 /* Now we can proceed all the matches, assuming that they are sorted by starting
  * position */
-printf("Constructing concordance...\n");
+u_printf("Constructing concordance...\n");
 while (matches!=NULL) {
 	if (buffer->size==buffer->MAXIMUM_BUFFER_SIZE
 		&& ((matches->start-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
@@ -835,7 +827,7 @@ while (matches!=NULL) {
 	/* To compute the 3rd part (right context), we need to know the length of
 	 * the matched sequence in displayable characters. */
 	int match_length_in_displayable_chars;
-	if (option.thai_mode) {match_length_in_displayable_chars=u_strlen_thai_without_diacritic(middle);}
+	if (option.thai_mode) {match_length_in_displayable_chars=u_strlen_Thai(middle);}
 	else {match_length_in_displayable_chars=u_strlen(middle);}
 	/* Then we can compute the right context */
 	extract_right_context(end_pos,right,tokens,match_length_in_displayable_chars,
@@ -848,7 +840,6 @@ while (matches!=NULL) {
 	}
 	/* We compute the shift due to the new lines that count for 2 characters */
 	unichar positions[100];
-	char tmp_chars[100];
 	/* And we use it to compute the bounds of the matched sequence in characters
 	 * from the beginning of the text file. */
 	int shift=get_shift(n_enter_char,enter_pos,matches->start);
@@ -857,9 +848,8 @@ while (matches!=NULL) {
 	 * can occur inside a match. */
 	shift=get_shift(n_enter_char,enter_pos,matches->end);
 	end_pos_char=end_pos_char+shift;
-	sprintf(tmp_chars,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence);
-	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
-	u_strcpy_char(positions,tmp_chars);
+   /* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
+	u_sprintf(positions,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence);
 	/* Now we save the concordance line to the output file, but only if
 	 * it's a valid match. */
 	if (is_a_good_match) {
@@ -872,43 +862,21 @@ while (matches!=NULL) {
 		}
 		/* We save the 3 parts of the concordance line according to the sort mode */
 		switch(option.sort_mode) {
-			case TEXT_ORDER: u_fprints(left,output);u_fprints_char("\t",output);
-							u_fprints(middle,output);u_fprints_char("\t",output);
-							u_fprints(right,output);
-							break;
-			case LEFT_CENTER: u_fprints_reverse(left,output);u_fprints_char("\t",output);
-							u_fprints(middle,output);u_fprints_char("\t",output);
-							u_fprints(right,output);
-							break;
-			case LEFT_RIGHT: u_fprints_reverse(left,output);u_fprints_char("\t",output);
-							u_fprints(right,output);u_fprints_char("\t",output);
-							u_fprints(middle,output);
-							break;
-			case CENTER_LEFT: u_fprints(middle,output);u_fprints_char("\t",output);
-							u_fprints_reverse(left,output);u_fprints_char("\t",output);
-							u_fprints(right,output);
-							break;
-			case CENTER_RIGHT: u_fprints(middle,output);u_fprints_char("\t",output);
-							u_fprints(right,output);u_fprints_char("\t",output);
-							u_fprints_reverse(left,output);
-							break;
-			case RIGHT_LEFT: u_fprints(right,output);u_fprints_char("\t",output);
-							u_fprints_reverse(left,output);u_fprints_char("\t",output);
-							u_fprints(middle,output);
-							break;
-			case RIGHT_CENTER: u_fprints(right,output);u_fprints_char("\t",output);
-							u_fprints(middle,output);u_fprints_char("\t",output);
-							u_fprints_reverse(left,output);
-							break;
+			case TEXT_ORDER:   u_fprintf(output,"%S\t%S\t%S",left,middle,right); break;
+			case LEFT_CENTER:  u_fprintf(output,"%R\t%S\t%S",left,middle,right); break;
+			case LEFT_RIGHT:   u_fprintf(output,"%R\t%S\t%S",left,right,middle); break;
+			case CENTER_LEFT:  u_fprintf(output,"%S\t%R\t%S",middle,left,right); break;
+			case CENTER_RIGHT: u_fprintf(output,"%S\t%S\t%R",middle,right,left);	break;
+			case RIGHT_LEFT:   u_fprintf(output,"%S\t%R\t%S",right,left,middle); break;
+			case RIGHT_CENTER: u_fprintf(output,"%S\t%S\t%R",right,middle,left);	break;
 		}
 		/* And we add the position information */
-		u_fprints(positions,output);
+		u_fprintf(output,"%S",positions);
 		/* And the GlossaNet URL if needed */
 		if (expected_result==GLOSSANET_) {
-			u_fprints_char("\t",output);
-			u_fprints(href,output);
+			u_fprintf(output,"\t%S",href);
 		}
-		u_fprints_char("\n",output);
+		u_fprintf(output,"\n");
 		/* We increase the number of matches actually written to the output */
 		number_of_matches++;
 	}
@@ -952,7 +920,7 @@ while (pos_in_enter_pos < n_enter_char) {
 	}
 }
 /* The token to print is not a new line, so we print it and return */
-u_fprints(tokens->token[buffer->int_buffer[offset_in_buffer]],output);
+u_fprintf(output,"%S",tokens->token[buffer->int_buffer[offset_in_buffer]]);
 return pos_in_enter_pos;
 }
 
@@ -1037,7 +1005,7 @@ struct buffer* buffer=new_buffer(1000000,INTEGER_BUFFER);
 /* We load the match list */
 matches=load_match_list(concordance,NULL);
 int pos_in_enter_pos=0;
-printf("Merging outputs with text...\n");
+u_printf("Merging outputs with text...\n");
 while (matches!=NULL) {
 	while (matches!=NULL && matches->start<current_global_position) {
 		/* If we must ignore this match because it is overlapping a previous
@@ -1054,7 +1022,7 @@ while (matches!=NULL) {
 													buffer);
 		/* Now, we are sure that the buffer contains all we want */
 		if (matches->output!=NULL) {
-			u_fprints(matches->output,output);
+			u_fprintf(output,"%S",matches->output);
 		}
 		current_global_position=matches->end+1;
 		/* We skip to the next match of the list */
@@ -1068,7 +1036,7 @@ while (matches!=NULL) {
 move_to_end_of_text_with_writing(text,tokens,current_global_position,output,
 								n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 free_buffer(buffer);
-printf("Done.\n");
+u_printf("Done.\n");
 }
 
 

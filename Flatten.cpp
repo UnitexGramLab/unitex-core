@@ -19,10 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Unicode.h"
 #include "Copyright.h"
 #include "Fst2.h"
 #include "FlattenFst2.h"
@@ -31,8 +31,8 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Flatten <fst2> <type> [depth]\n"
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Flatten <fst2> <type> [depth]\n"
        "     <fst2> : compiled grammar to flatten;\n"
        "     <type> : this parameter specifies the type of the resulting grammar\n"
        "              The 2 possibles values are:\n"
@@ -79,7 +79,7 @@ if (argc==4) {
       return 1;
    }
 }
-printf("Loading %s...\n",argv[1]);
+u_printf("Loading %s...\n",argv[1]);
 Fst2* origin=load_fst2(argv[1],1);
 if (origin==NULL) {
    error("Cannot load %s\n",argv[1]);
@@ -90,13 +90,13 @@ strcpy(temp,argv[1]);
 strcat(temp,".tmp.fst2");
 switch (flatten_fst2(origin,depth,temp,RTN)) {
    case EQUIVALENT_FST:
-      printf("The resulting grammar is an equivalent finite-state transducer.\n");
+      u_printf("The resulting grammar is an equivalent finite-state transducer.\n");
       break;
    case APPROXIMATIVE_FST:
-      printf("The resulting grammar is a finite-state approximation.\n");
+      u_printf("The resulting grammar is a finite-state approximation.\n");
       break;
    case EQUIVALENT_RTN:
-      printf("The resulting grammar is an equivalent FST2 (RTN).\n");
+      u_printf("The resulting grammar is an equivalent FST2 (RTN).\n");
       break;
    default:;
 }

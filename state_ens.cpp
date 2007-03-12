@@ -37,7 +37,6 @@ inline stateid_t * stateid_new(autalmot_t * A, int no, stateid_t * next) {
 
 inline void stateid_delete(stateid_t * id) { free(id); }
 
-void stateid_dump(stateid_t * id, FILE * f) { i_fprintf(f, "[%S:%d]", id->A->name, id->no); }
 
 
 
@@ -125,18 +124,6 @@ bool state_ens_equals(state_ens_t * E1, state_ens_t * E2) {
 
 
 
-void state_ens_dump(state_ens_t * ens, FILE * f) {
-
-  fprintf(f, "(size=%d) { ", ens->size);
-
-  for (stateid_t * id = ens->first; id; id = id->next) {
-    stateid_dump(id);
-    if (id->next) { fprintf(f, ", "); }
-  }
-
-  fprintf(f, " }");
-}
-
 
 TRANS_t * TRANS_new(symbol_t * s, TRANS_t * next) {
   TRANS_t * T = (TRANS_t *) xmalloc(sizeof(TRANS_t));
@@ -168,18 +155,6 @@ TRANS_t * TRANS_lookup(TRANS_t * T, symbol_t * s) {
     T = T->next;
   }
   return T;
-}
-
-
-void TRANS_dump(TRANS_t * t, FILE * f) {
-  fprintf(f, "("); symbol_dump(t->label, f); fprintf(f, ", "); state_ens_dump(t->to, f); fprintf(f, ")");
-}
-
-
-void TRANSs_dump(TRANS_t * T, FILE * f) {
-  fprintf(f, "{ ");
-  while (T) { TRANS_dump(T, f); fprintf(f, ", "); T = T->next; }
-  fprintf(f, "}");
 }
 
 
@@ -275,20 +250,12 @@ static void symbol_dev_symbol(symbol_t * a, symbol_t * b) {
 
   if (! aminusb) {
     if (symbol_compare(a, i)) {
-      error("symbol_dev_symbol: A="); symbol_dump(a); error(" B="); symbol_dump(b); endl();
-      error("A inter B ="); symbol_dump(i); endl();
-      error("A minus B = "); symbols_dump(aminusb); endl();
-      error("B minus A = "); symbols_dump(bminusa); endl();
       fatal_error("A != I et A \\ I = null\n");
     }
   }
 
   if (! bminusa) {
     if (symbol_compare(b, i)) {
-      error("symbol_dev_symbol: A="); symbol_dump(a); error(" B="); symbol_dump(b); endl();
-      error("A inter B ="); symbol_dump(i); endl();
-      error("A minus B = "); symbols_dump(aminusb); endl();
-      error("B minus A = "); symbols_dump(bminusa); endl();
       fatal_error("B != I et B \\ I = null\n");
     }
   }

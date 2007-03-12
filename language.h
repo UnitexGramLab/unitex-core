@@ -109,7 +109,6 @@ static inline unichar * CAT_get_valname(CAT_t * CAT, int v) {
   return (unichar *) CAT->traits->tab[v];
 }
 
-void CAT_dump(CAT_t * cat, FILE * f = stderr);
 
 
 POS_t * POS_new(unichar * name);
@@ -119,7 +118,6 @@ void POS_delete(POS_t * POS);
 int POS_new_CAT(POS_t * POS, unichar * name);
 int POS_CAT_add_value(POS_t * POS, int CATidx, unichar * value);
 
-void POS_dump(POS_t * POS, FILE * f = stderr);
 
 
 symbol_t * POS_expand(POS_t * POS);
@@ -168,11 +166,6 @@ static inline POS_t * language_get_POS(language_t * lang, const unichar * posnam
 
 
 
-
-void val_info_dump(trait_info_t * infos, FILE * f = stderr);
-void language_dump(language_t * lang, FILE * f = stderr);
-
-void language_output(language_t * lang, FILE * f);
 
 int language_add_form(language_t * lang, const unichar * form);
 static inline unichar * language_get_form(language_t * lang, int idx) {

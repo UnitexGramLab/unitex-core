@@ -238,12 +238,12 @@ int SU_explore_tag(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* 
   unichar etiq[MAX_CHARS_IN_STACK];
   int pos_etiq;
   u_strcpy(out,sortie);
-  if (e->output!=NULL && u_strcmp_char(e->output,"<E>")) {
+  if (e->output!=NULL && u_strcmp(e->output,"<E>")) {
     u_strcat(out,e->output);
   }
   u_strcpy(pile,flechi);
   u_strcpy(etiq,e->input);
-  if (u_strcmp_char(etiq,"<E>")) {
+  if (u_strcmp(etiq,"<E>")) {
     // if the tag is not <E>, we process it
     for (pos_etiq=0;etiq[pos_etiq]!='\0';) {
       switch (etiq[pos_etiq]) {
@@ -314,17 +314,10 @@ int SU_explore_state_recursion(unichar* flechi,unichar* canonique,unichar* sorti
 // Returns 0 on success, 1 otherwise.   
 void SU_explore_tag_recursion(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* sortie,
                  Fst2* a,struct couple_string** LISTE,f_morpho_T* desired_features, SU_forms_T* forms) {
-  unichar tmp[100];
-  u_strcpy_char(tmp,"\nTransition: ");  //debug
-  u_prints(tmp);
-  u_prints(a->tags[T->tag_number]->input);  //debug
-  u_strcpy_char(tmp,"/");  //debug
-  u_prints(tmp);
-  u_prints(a->tags[T->tag_number]->output);  //debug
-  u_strcpy_char(tmp,"\n");  //debug
-  u_prints(tmp);
+u_printf("\nTransition: ");  //debug
+u_printf("%S/%S\n",a->tags[T->tag_number]->input,a->tags[T->tag_number]->output);  //debug
 
-  if (T->tag_number < 0) {
+if (T->tag_number < 0) {
     // if we are in the case of a call to a sub-graph
     struct couple_string* L=NULL;
     struct couple_string* temp;
@@ -344,12 +337,12 @@ void SU_explore_tag_recursion(Fst2Transition T,unichar* flechi,unichar* canoniqu
   unichar etiq[MAX_CHARS_IN_STACK];
   int pos_etiq;
   u_strcpy(out,sortie);
-  if (e->output!=NULL && u_strcmp_char(e->output,"<E>")) {
+  if (e->output!=NULL && u_strcmp(e->output,"<E>")) {
     u_strcat(out,e->output);
   }
   u_strcpy(pile,flechi);
   u_strcpy(etiq,e->input);
-  if (u_strcmp_char(etiq,"<E>")) {
+  if (u_strcmp(etiq,"<E>")) {
     // if the tag is not <E>, we process it
     for (pos_etiq=0;etiq[pos_etiq]!='\0';) {
       switch (etiq[pos_etiq]) {
@@ -476,11 +469,6 @@ if (desired_features==NULL) {
   int df; //Index of the current feature in 'desired_feat'
   int found; //Has the current feature's category been found in 'desired_features'
 
-  //  fprintf(stderr,"feat = ");//Debugging
-  //f_print_morpho(feat);
-  //fprintf(stderr,"and desired_features = ");//Debugging
-  //f_print_morpho(desired_features);
-
   //Each category-value pair of the 'desired_features' has to be present in 'feat'
   for (df=0; df<desired_features->no_cats; df++) {
     found = 0;
@@ -490,18 +478,15 @@ if (desired_features==NULL) {
 	found = 1;
 	//If the same category then the value has to be the same
 	if (desired_features->cats[df].val != feat->cats[f].val) {
-	//fprintf(stderr,"don't agree\n");//Debugging
 	return 0;
 	}
       }
       f++;
     }
     if (!found) {
-      //fprintf(stderr,"don't agree\n");//Debugging
       return 0;
     }
   }
-  //fprintf(stderr,"agree\n");//Debugging
   return 1;
 }
 
@@ -677,12 +662,9 @@ int SU_delete_id(SU_id_T* id) {
 ////////////////////////////////////////////
 // Prints a form and its inflection features.
 int SU_print_f(SU_f_T* f) {
-  unichar tmp[4];
-  u_prints(f->form);
-  u_strcpy_char(tmp," : ");
-  u_prints(tmp);
-  f_print_morpho(f->features);
-  return 0;
+u_printf("%S : ",f->form);
+f_print_morpho(f->features);
+return 0;
 }
 
 ////////////////////////////////////////////
@@ -697,17 +679,10 @@ int SU_print_forms(SU_forms_T* F) {
 ////////////////////////////////////////////
 // Prints a lemma and its info.
 int SU_print_lemma(SU_lemma_T* l) {
-  unichar tmp[4];
-
-  u_prints(l->unit);  //lemma
-  u_strcpy_char(tmp,":");
-  u_prints(tmp);
-  u_prints(l->cl->name); //class
-  u_strcpy_char(tmp,":");
-  u_prints(tmp);
-  printf("%s",l->paradigm);    //inflection paradigm
-  u_prints(tmp);
-  return 0;
+u_printf("%S:",l->unit);  //lemma
+u_printf("%S:",l->cl->name); //class
+u_printf("%s",l->paradigm);    //inflection paradigm
+return 0;
 }
 
 ////////////////////////////////////////////
@@ -716,7 +691,7 @@ int SU_print_lemma(SU_lemma_T* l) {
 int SU_init_lemma(SU_lemma_T* l, char* word, char* cl, char* para) {
   //lemma
   l->unit = (unichar*) malloc((strlen(word)+1)*sizeof(unichar));
-  u_strcpy_char(l->unit,word);
+  u_strcpy(l->unit,word);
   //class
   if (!strcmp(cl,"noun"))
     l->cl = &(L_CLASSES.classes[0]);

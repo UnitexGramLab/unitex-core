@@ -52,10 +52,6 @@ int alphabet_add(alphabet_t * alph, symbol_t * s) {
   return hash_str_table_add(alph->hash, alph->ustr, s);
 }
 
-void alphabet_dump(alphabet_t * alph, FILE * f) {
-  hash_str_table_dump(alph->hash, NULL, f);
-}
-
 
 alphabet_t * alphabet_from_autalmot(autalmot_t * A) {
 

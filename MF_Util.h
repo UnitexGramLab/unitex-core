@@ -34,7 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "unicode.h"
+#include "Unicode.h"
 
 
 #define MAX_STR_LEN 2000  //Maximum length of strings treated by this library

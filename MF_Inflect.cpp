@@ -27,13 +27,14 @@
 #include <stdio.h>
 #include <string.h>
 #include "MF_LangMorpho.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "MF_MU_graph.h"
 #include "Alphabet.h"
 #include "MF_DicoMorpho.h"
 #include "MF_DLC_inflect.h"
 #include "IOBuffer.h"
 #include "FileName.h"
+#include "Copyright.h"
 #include "Error.h"
 
 
@@ -46,14 +47,15 @@ extern char inflection_directory[1000];
 
 
 void usage() {
-printf("Usage: MultiFlex <dela> <delaf> <alpha> <dir>\n");
-printf("     <dela> : the unicode DELAS or DELAC file to be inflected\n");
-printf("     <delaf> : the unicode resulting DELAF or DELACF dictionary \n");
-printf("     <alpha> : the alphabet file \n");
-printf("     <dir> : the directory containing 'Morphology' and 'Equivalences'\n");
-printf("              files and inflection graphs for single and compound words.\n");
-printf("\nInflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n");
-printf("simple and compound words in a same dictionary.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: MultiFlex <dela> <delaf> <alpha> <dir>\n");
+u_printf("     <dela> : the unicode DELAS or DELAC file to be inflected\n");
+u_printf("     <delaf> : the unicode resulting DELAF or DELACF dictionary \n");
+u_printf("     <alpha> : the alphabet file \n");
+u_printf("     <dir> : the directory containing 'Morphology' and 'Equivalences'\n");
+u_printf("              files and inflection graphs for single and compound words.\n");
+u_printf("\nInflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n");
+u_printf("simple and compound words in a same dictionary.\n");
 }
 
 
@@ -104,7 +106,7 @@ err=inflect(argv[1],argv[2]);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();
-printf("Done.\n");
+u_printf("Done.\n");
 return 0;
 }
 

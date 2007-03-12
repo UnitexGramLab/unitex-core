@@ -27,9 +27,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 
+#warning a degager!
 struct liste_num {
   int numero;
   struct liste_num* suivant;

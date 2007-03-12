@@ -37,9 +37,8 @@
 #include <dir.h>
 #endif
 
-
+#include "Unicode.h"
 #include "Copyright.h"
-#include "const.h"
 #include "autalmot.h"
 #include "list_aut.h"
 #include "elag-functions.h"
@@ -49,8 +48,8 @@
 
 
 void usage() {
-  printf("%s", COPYRIGHT);
-  printf("Usage: Elag <txtauto> -l <LANG> -g <rules> -o <output> [-d <dir>]\n"
+u_printf("%S", COPYRIGHT);
+u_printf("Usage: Elag <txtauto> -l <LANG> -g <rules> -o <output> [-d <dir>]\n"
          "\n"
          "whith:\n"
          "<txtauto>       :    input text automaton FST2 file,\n"
@@ -117,7 +116,7 @@ int main(int argc, char ** argv) {
 
       } else if (strcmp(*argv, "-h") == 0) {
 
-	printf("\nusage: %s <txtauto> -l <LANG> -d <gramdir> [ -g <gramlist> ] -o <output>\n\n",
+	u_printf("\nusage: %s <txtauto> -l <LANG> -d <gramdir> [ -g <gramlist> ] -o <output>\n\n",
                progname);
 	return 0;
 
@@ -134,7 +133,7 @@ int main(int argc, char ** argv) {
   if (! grammars) { fatal_error("-g option should be used\n"); }
 
 
-  printf("loading %s langage definition ...\n", langname);
+  u_printf("loading %s langage definition ...\n", langname);
 
   language_t * lang = language_load(langname);
   set_current_language(lang);
@@ -160,14 +159,14 @@ int main(int argc, char ** argv) {
     grammars   = basename(grammars);
   }
 
-  debug("changing to %s directory\n", grammardir);
+  error("changing to %s directory\n", grammardir);
 
   if (chdir(grammardir) == -1) { error("unable to change to %s directory.\n", grammardir); }
 
   list_aut * gramm;
   if ((gramm = chargeGramm(grammars)) == NULL) { fatal_error("unable to load grammar %s", grammars); }
 
-  printf("Grammars are loaded.\n") ;
+  u_printf("Grammars are loaded.\n") ;
 
   
   leve_ambiguite(txtauto, gramm, output);

@@ -290,7 +290,7 @@ public:
 		unichar *suff,
 		unichar *info,int no_arbre)
 	{
-		if(no_arbre >= arbreCnt)exitMessage("error : bad request tree Id");
+		if(no_arbre >= arbreCnt) fatal_error("error : bad request tree Id\n");
 		
 		cArbreIdx = no_arbre;
 		scaningBuff = contenu;
@@ -305,7 +305,7 @@ public:
 
 		ccbuf[0] = 0;
 		u_strcat(ccbuf,suff);
-		u_strcat_char(ccbuf,".");
+		u_strcat(ccbuf,".");
 		u_strcat(ccbuf,info);
 		unsigned int N= baseInf.put(ccbuf);
 
@@ -315,7 +315,6 @@ public:
 			   if((*tarr)->n > N) break;
 		   tarr = &((*tarr)->suivant);
 		}
-//   u_fprintf(stdout,"%S ++ <%S>\n",compressed,tmp);
 		struct simple_link* l_tmp=
 			(struct simple_link *)malloc(sizeof(struct simple_link));
 		l_tmp->n = N;
@@ -331,7 +330,7 @@ public:
 		unichar *info,int no_arbre,
 		struct arbre_dico_with_depth *st_node)
 	{
-		if(no_arbre >= arbreCnt) exitMessage("error in tree");
+		if(no_arbre >= arbreCnt) fatal_error("error in tree\n");
 		cArbreIdx = no_arbre;
 		scaningBuff = contenu;
 		
@@ -347,11 +346,11 @@ public:
 		} 
 		ccbuf[0] = 0;
 		if(suff && (*suff != 0) ){
-			if(u_strcmp_char(suff,"null"))
+			if(u_strcmp(suff,"null"))
 				sufName.put(suff);
 			u_strcat(ccbuf,suff);
 		}
-		u_strcat_char(ccbuf,".");
+		u_strcat(ccbuf,".");
 		u_strcat(ccbuf,info);
 		unsigned int N= baseInf.put(ccbuf);
 
@@ -361,7 +360,6 @@ public:
 			   if((*tarr)->n > N) break;
 		   tarr = &((*tarr)->suivant);
 		}
-//   u_fprintf(stdout,"%S ++ <%S>\n",compressed,tmp);
 		struct simple_link* l_tmp=
 			(struct simple_link *)malloc(sizeof(struct simple_link));
 		l_tmp->n = N;
@@ -376,7 +374,7 @@ public:
 			explore_leaf(0,racine[idx],ppr);
 			return;
 		}
-		exitMessage("illegal auto index demand");
+		fatal_error("illegal auto index demand\n");
 	}
 	unsigned int cbuff[1024];
 	void explore_leaf(int depth,struct arbre_dico_with_depth* noeud,release_f ppr)
@@ -416,7 +414,7 @@ public:
 		int infoNodeCnt = 0;	// a node which has informations
 		int noInfoNodeCnt =0;	// a node without informations
 
-		fprintf(stdout,"total %d node ==>",nodes.counter);
+		u_printf("total %d node ==>",nodes.counter);
 		for( i = 0;  i < arbreCnt;i++)
 			explore_for_access_check(racine[i]);
 		taille_de_sauve = 0;
@@ -429,7 +427,7 @@ public:
 				continue;
 			}
 			if(base->offset != -1)
-				exitMessage("illegal information on the tree link");
+				fatal_error("illegal information on the tree link\n");
 			// 
 			//	calcule the size of a node
 			//
@@ -442,16 +440,14 @@ public:
 				noInfoNodeCnt++;
 			taille_de_sauve += base->n_trans*5 + 2;
 		}
-		fprintf(stdout,"%d node delete\n",enCnt);
-		fprintf(stdout,"node with info %d, node without info %d\n",
-			infoNodeCnt,noInfoNodeCnt);
-		fprintf(stdout,"size of tree is 0x%08x(%d)\n",
-			taille_de_sauve,taille_de_sauve);
+		u_printf("%d node delete\n",enCnt);
+		u_printf("node with info %d, node without info %d\n",infoNodeCnt,noInfoNodeCnt);
+		u_printf("size of tree is 0x%08x(%d)\n",taille_de_sauve,taille_de_sauve);
 	}
 
 	void minimize_tree() {
 		int i;
-		printf("Minimizing...                      \n");
+		u_printf("Minimizing...                      \n");
 		//
 		//
 		//init_tab_by_hauteur();
@@ -475,11 +471,14 @@ public:
 //			printf("%2.0f%% completed...    %s",z,CR);
 //		}
 		mfusionner(H);
-		printf("Minimization done.                     \n");
+		u_printf("Minimization done.                     \n");
 	}
+   
+   
+   
 	int sort_by_height(struct arbre_dico_with_depth* n) 
 	{
-		if (n==NULL) exitMessage("Probleme in tree sort_by_height");
+		if (n==NULL) fatal_error("NULL error in sort_by_height\n");
 		if (n->trans==NULL) return(0); // if the node is a leaf
 		struct arbre_dico_trans_with_depth * trans=n->trans;
 		int maxD = -1;
@@ -494,7 +493,7 @@ public:
 	{
 		struct arbre_dico_with_depth* base;
 		unsigned int i;
-		fprintf(stdout,"fill hash number for information\n");
+		u_printf("Fill hash number for information\n");
 		for( i = 0; i < nodes.counter ;i++){
 			base = (struct arbre_dico_with_depth*)
 			(nodes.addrMap[ i/nodes.pgEMcnt] +
@@ -511,10 +510,10 @@ public:
 		int i,j;
 		int totTrans = transitions.counter;
 		int eleCnt = transitions.pgEMcnt;
-fprintf(stdout,"total transition %d \n\n",totTrans);
+      u_printf("total transition %d \n\n",totTrans);
 		for(int depIdx = 0; depIdx < size; depIdx++)
 		{
-fprintf(stdout,"\rtraiting the %08d depth nodes",depIdx);
+         u_printf("\rtraiting the %d depth nodes",depIdx);
 
 			for( i = 0; i < totTrans - 1;i++){
 				base = (struct arbre_dico_trans_with_depth*)(
@@ -534,14 +533,14 @@ fprintf(stdout,"\rtraiting the %08d depth nodes",depIdx);
 				} // loop for compared trans
 			} // loop for pivot trans
 		}	
-fprintf(stdout,"%d transition delete\n",etCnt);
+      u_printf("%d transition delete\n",etCnt);
 		check_exist_sur_path();
 	}
 	int 
 	compare_nodes(struct arbre_dico_trans_with_depth* a,
 		struct arbre_dico_trans_with_depth* b) {
 		if (a==NULL || b==NULL || a->noeud==NULL || b->noeud==NULL) 
-		exitMessage("Probleme dans compares_nodes\n");
+		fatal_error("Probleme dans compares_nodes\n");
 // then, the hash numbers
 if (a->noeud->arr!=NULL && b->noeud->arr==NULL) return -1;
 if (a->noeud->arr==NULL && b->noeud->arr!=NULL) return 1;
@@ -609,7 +608,7 @@ return 1;
 		strcpy(inf,fname);
 		strcat(inf,".bin");
 		bfile = fopen(inf,U_WRITE);	// for distingue
-		if(!bfile) exitMessage("binary file open error");
+		if(!bfile) fatal_error("binary file open error\n");
 
 		tmpH.size_bin = taille_de_sauve;
 		tmpH.flag |= (racOrSuf) ? 0: TYPE_BIN_RACINE;
@@ -628,7 +627,7 @@ return 1;
 			(nodes.addrMap[ i/nodes.pgEMcnt] +
 			i % nodes.pgEMcnt * sizeof(struct arbre_dico_with_depth));
 			if(base->offset == -2 ) continue;
-			if(base->n_trans > 0x8000) exitMessage("too many transition");
+			if(base->n_trans > 0x8000) fatal_error("Too many transitions\n");
 				outbytes2(
 				(base->arr==NULL) ?(unichar)(base->n_trans|0x8000)
 						:(unichar)base->n_trans
@@ -707,7 +706,7 @@ public:
 			head.size_ref+
 			head.size_inf*2;
 		BIN = (unsigned char *)malloc(i);
-		if(!BIN) exitMessage("malloc fail");
+		if(!BIN) fatal_error("malloc fail\n");
 		if(!fread(BIN,i,1,f))
 			freadError(fname);
 		margin_offset = head.size_bin;
@@ -751,7 +750,7 @@ public:
 			while(INF[offsetStr]) offsetStr++;
 			offsetStr++;
 			sufoffset[i] = 0;
-			u_fprintf(stdout,"%d %S\n",i,SUF[i]);
+			u_printf("%d %S\n",i,SUF[i]);
 		}
 
 		wp = (unsigned char *)REF;
@@ -760,7 +759,7 @@ public:
 		sz |= *wp++;
 
 		if(sz != head.cnt_auto)
-			exitMessage("illegal bin");
+			fatal_error("illegal bin\n");
 		int infIdx;
 		for(i = 1; i <= sz;i++){
 			wp++; // flag skip
@@ -771,9 +770,9 @@ public:
 			infIdx		 |= *wp++ << 8;
 			infIdx		 |= *wp++;
 			if(u_strcmp(&INF[infIdx],AUT[i])){
-				exitMessage("illegal value in the bin");
+				fatal_error("illegal value in the bin\n");
 			}
-u_fprintf(stdout,"%S start offset is %d\n",AUT[i],autoffset[i]);
+         u_printf("%S start offset is %d\n",AUT[i],autoffset[i]);
 		}
 		fclose(f);
 	}
@@ -851,7 +850,7 @@ u_fprintf(stdout,"%S start offset is %d\n",AUT[i],autoffset[i]);
 		}
 		
 	} while(pos < head.size_ref);
-	if(pos != head.size_ref) exitMessage("ah");
+	if(pos != head.size_ref) fatal_error("ah\n");
 	}
 	void setfunc(actDansBin a, actDansBin b)
 	{
@@ -871,7 +870,7 @@ u_fprintf(stdout,"%S start offset is %d\n",AUT[i],autoffset[i]);
 	{
 		int n_transitions;
 		
-		if(pos >= margin_offset) exitMessage("illeagl bin value");
+		if(pos >= margin_offset) fatal_error("illegal bin value\n");
 		n_transitions=BIN[pos++] << 8;
 		n_transitions |=BIN[pos++];
 		if(n_transitions & 0x8000){
@@ -899,7 +898,7 @@ u_fprintf(stdout,"%S start offset is %d\n",AUT[i],autoffset[i]);
 		scanRef = &REF[refidx];
 		int cnt = (*scanRef++ << 8);
 		cnt |=  *scanRef++;
-		if(!cnt) exitMessage("illegal refernec value");
+		if(!cnt) fatal_error("illegal reference value\n");
 		for(index = 0 ; index < cnt;index++){
 			sdepth  = depth;
 			flag    = *scanRef++;
@@ -1164,7 +1163,7 @@ public:
 					tp->offset =loaded_map[idx]->autoffset[i];
 					tp->w = loaded_map[idx]->AUT[i];
 					nidx = SUF.put(loaded_map[idx]->AUT[i],tp);
-               u_fprintf(stdout,"suffixe %S %dth image %d  array %d offset\n",
+               u_printf("suffixe %S %dth image %d  array %d offset\n",
 						tp->w,idx,nidx, tp->offset);
 				}
 			}
@@ -1182,7 +1181,7 @@ public:
          fatal_error("mem alloc fail for offset array\n");
       }
 		for( i = 1; i < offsetCommonCnt;i++){
-			u_fprintf(stderr,"%d %S %d",
+			error("%d %S %d",
 				i,&SUF_tmp[i][1],offsetCommon[i]->offset);
 			error("%s\n",offsetCommon[i]->bin->name);
 				
@@ -1192,20 +1191,20 @@ public:
 		for( idx = 0; idx < loadMapCnt;idx++){
 #ifdef DDDDDDD
 			for( i = 1;i <= loaded_map[idx]->head.cnt_suf;i++){
-				if(!u_strcmp_char(loaded_map[idx]->SUF[i],"null"))
-					exitMessage("nom de suffixe violation, do not use 'null'");
+				if(!u_strcmp(loaded_map[idx]->SUF[i],"null"))
+					fatal_error("nom de suffixe violation, do not use 'null'\n");
 				nidx =SUF.check(loaded_map[idx]->SUF[i]); 
 				if( nidx == -1){
-					fprintf(stderr,"%s:",getUtoChar(loaded_map[idx]->SUF[i]));
-					exitMessage("not solved suffixe link existe");
+					error("%s: ",getUtoChar(loaded_map[idx]->SUF[i]));
+					fatal_error("not solved suffixe link existe");
 				}
-				if(nidx == 0) exitMessage("kki ak");
+				if(nidx == 0) fatal_error("kki ak\n");
 
 				loaded_map[idx]->sufoffset[i] = nidx;
 
 				offsetCommon[nidx] = new struct sufptr;
 				tp= (struct sufptr *)SUF.getCheckValue();
-				if(!tp) exitMessage("illegal value of the suffix pointer ");
+				if(!tp) fatal_error("illegal value of the suffix pointer\n");
 				offsetCommon[nidx]->bin = tp->bin;
 				offsetCommon[nidx]->offset = tp->offset;
 				offsetCommon[nidx]->w = tp->w;
@@ -1235,7 +1234,7 @@ public:
 		while(wp < (unsigned char *)bp->INF){
 			sz  = *wp++ << 8;
 			sz |= *wp++;
-			if(!sz) exitMessage("illegal reference value");
+			if(!sz) fatal_error("illegal reference value\n");
 			for( i = 0; i < sz; i++){
 				flag = *wp;
 				if(flag & INF_NOABS_SUF){
@@ -1243,13 +1242,12 @@ public:
 					sufIdx  = (wp[0] << 16);
 					sufIdx |= (wp[1] << 8);
 					sufIdx |= wp[2];
-fprintf(stderr,"%s",getUtoChar((unichar *)&bp->INF[sufIdx]));
+               error("%s",getUtoChar((unichar *)&bp->INF[sufIdx]));
 					sufIdx = SUF.check(&bp->INF[sufIdx]);
 					if(!sufIdx ||(sufIdx == -1)){
-						fprintf(stderr,"%s",getUtoChar((unichar *)&bp->INF[sufIdx]));
-						exitMessage("");
+						fatal_error("%s\n",getUtoChar((unichar *)&bp->INF[sufIdx]));
 					}
-fprintf(stderr,"%d\n",sufIdx);
+               error("%d\n",sufIdx);
 					*wp++ = (sufIdx >> 16 ) & 0xff;
 					*wp++ = (sufIdx >>  8 ) & 0xff;
 					*wp++ =  sufIdx & 0xff;
@@ -1389,12 +1387,12 @@ public:
 
 		SUF_tmp = SUF.make_strPtr_table((int **)&offsetCommon);
 		for( i = 1; i < offsetCommonCnt;i++){
-			fprintf(stderr,"%d %s %x %x\n",i
+			error("%d %s %d %d\n",i
                      ,getUtoChar(&SUF_tmp[i][1])
             , (unsigned int)offsetCommon[i]->bin,offsetCommon[i]->offset);
 		}
 		if(!offsetCommon)
-			exitMessage("mem alloc fail for offset array");
+			fatal_error("mem alloc fail for offset array\n");
 		racineCnt = 0;
 		
 		int nidx;
@@ -1402,15 +1400,13 @@ public:
 			for( i = 1;i <= loaded_map[idx]->head.cnt_suf;i++){
 				nidx =SUF.check(loaded_map[idx]->SUF[i]); 
 				if( nidx == -1){
-					fprintf(stderr,"%s:"
-                    ,getUtoChar(loaded_map[idx]->SUF[i]));
-					exitMessage("not solved suffixe link existe");
+					fatal_error("%s: not solved suffixe link existe\n",getUtoChar(loaded_map[idx]->SUF[i]));
 				}
-				if(nidx == 0) exitMessage("kki ak");
+				if(nidx == 0) fatal_error("kki ak\n");
 				loaded_map[idx]->sufoffset[i] = nidx;
 				offsetCommon[nidx] = new struct sufptr;
 				tp= (struct sufptr *)SUF.getCheckValue();
-				if(!tp) exitMessage("illegal value of the suffix pointer ");
+				if(!tp) fatal_error("illegal value of the suffix pointer\n");
 				offsetCommon[nidx]->bin		= tp->bin;
 				offsetCommon[nidx]->offset  = tp->offset;
 				offsetCommon[nidx]->w		= tp->w;
@@ -1419,7 +1415,7 @@ public:
 				AUT[racineCnt++] = loaded_map[idx];
 		}
 		if(offsetCommon[0])	// null value
-			exitMessage("illegal value");
+			fatal_error("illegal value\n");
 		int unsolved_suffixe = 0;
 		for( i = 1; i < offsetCommonCnt;i++){
 			if(!offsetCommon[i]) unsolved_suffixe++;
@@ -1529,7 +1525,7 @@ public:
 		strcat(openfilename,".aut");
 		if(!(lf = u_fopen(openfilename,U_READ)))
 			fopenErrMessage(openfilename);
-		u_read_line(lf,(unichar*)UtempBuff);
+		u_fgets(UtempBuff,lf);
 		imageHead.cnt_auto = utoi(UtempBuff);
 		AUT_tmp = new struct 
 			union_bin_file::simpleTmp[imageHead.cnt_auto +1]; 
@@ -1544,10 +1540,10 @@ public:
 		int lidx;
 		unichar *num;
 		lidx = 1;
-		while(EOF!=u_read_line(lf,(unichar *)UtempBuff)){
+		while(EOF!=u_fgets(UtempBuff,lf)){
 			num = UtempBuff;
 			while(*num != ' '){
-				if(*num == 0) exitMessage("Illegal autolist file");
+				if(*num == 0) fatal_error("Illegal autolist file\n");
 				num++;
 			}
 			*num++ = 0;
@@ -1559,14 +1555,14 @@ public:
 			lidx++;
 		}
 		if((lidx-1) != imageHead.cnt_auto) 
-			exitMessage("suffix count is mismatch");
+			fatal_error("suffix count is mismatch\n");
 		
 		fclose(lf);
 		strcpy(openfilename,sansExtension);
 		strcat(openfilename,".suf");
 		if(!(lf = u_fopen(openfilename,U_READ)))
 			fopenErrMessage(openfilename);
-		u_read_line(lf,(unichar*)UtempBuff);
+		u_fgets(UtempBuff,lf);
 		imageHead.cnt_suf = utoi(UtempBuff);
 		SUF_tmp = 
 			new struct union_bin_file::simpleTmp[imageHead.cnt_suf+1]; 
@@ -1578,7 +1574,7 @@ public:
 		}
 		SUF.put(assignUstring(u_epsilon_string),0);
 		lidx = 1;
-		while(EOF!=u_read_line(lf,(unichar*)UtempBuff)){
+		while(EOF!=u_fgets(UtempBuff,lf)){
 			SUF_tmp[lidx].szStr = u_strlen(UtempBuff) +1;
 			SUF_tmp[lidx].name = new unichar[SUF_tmp[lidx].szStr+1];
 			u_strcpy(SUF_tmp[lidx].name,UtempBuff);
@@ -1587,7 +1583,7 @@ public:
 			lidx++;
 		}
 		if((lidx - 1 ) != imageHead.cnt_suf) 
-			exitMessage("suffix count is mismatch");
+			fatal_error("suffix count is mismatch\n");
 		fclose(lf);
 	}
 #define DECALAGE_NEW_BIN	5
@@ -1611,7 +1607,7 @@ public:
 			flag  = INF_IGNO_INF;
 			sufIdx = AUT_tmp[i].offset + DECALAGE_NEW_BIN;
 			if(sufIdx > 0x1000000)
-				exitMessage("too big suffixe reference");
+				fatal_error("too big suffixe reference\n");
 			infIdx = save_inf_offset;
 			fwrite(&flag,1,1,inf);
 			outbytes3(sufIdx,inf);
@@ -1619,12 +1615,12 @@ public:
 			outbytes3(infIdx,inf);
 			save_ref_offset +=3;
 			save_inf_offset += AUT_tmp[i].szStr;
-printf("%s %x\n",getUtoChar(AUT_tmp[i].name),save_inf_offset);
+         u_printf("%s %d\n",getUtoChar(AUT_tmp[i].name),save_inf_offset);
 		}
 		for( i = 1; i <= imageHead.cnt_suf;i++){
 			SUF.put(SUF_tmp[i].name,(void *)save_inf_offset);
 			save_inf_offset += SUF_tmp[i].szStr;
-printf("%s %x\n",getUtoChar(SUF_tmp[i].name),save_inf_offset);
+         u_printf("%s %d\n",getUtoChar(SUF_tmp[i].name),save_inf_offset);
 		}
 
 		char fname_sans_extension[1024];
@@ -1634,21 +1630,22 @@ printf("%s %x\n",getUtoChar(SUF_tmp[i].name),save_inf_offset);
 		strcat(fname_sans_extension,".inf");
 		if(!(lf = u_fopen(fname_sans_extension,U_READ)))
 			fopenErrMessage(fname_sans_extension);
-		int rdInfCnt =u_read_int(lf);
+		int rdInfCnt;// =u_read_int(lf);
+      u_fscanf(lf,"%d\n",&rdInfCnt);
 		newInfTable = new int[rdInfCnt];
-		if(!newInfTable) exitMessage("mem alloc fail for inf");
+		if(!newInfTable) fatal_error("mem alloc fail for inf\n");
 		unichar UtempBuff[4096];
 
 		NINF.put(assignUstring(u_epsilon_string),(void *)save_inf_offset);
 		save_inf_offset += 4;	// length of epsilon
 		int cidx = 0;
-		while(EOF!=u_read_line(lf,(unichar*)UtempBuff)){
+		while(EOF!=u_fgets(UtempBuff,lf)){
 			newInfTable[cidx] = makeNewINF(UtempBuff,rsFlag);
-			if(!newInfTable[cidx]) exitMessage("illegal reference value");
+			if(!newInfTable[cidx]) fatal_error("illegal reference value\n");
 			cidx++;
 		}
 		fclose(lf);
-		if(cidx != rdInfCnt) exitMessage("not match read count");
+		if(cidx != rdInfCnt) fatal_error("not match read count\n");
 
 		imageHead.size_ref = save_ref_offset;
 		imageHead.size_inf = save_inf_offset;
@@ -1680,7 +1677,7 @@ printf("%s %x\n",getUtoChar(SUF_tmp[i].name),save_inf_offset);
 		sPtr = info;
 		saveT = 1;
 		index = 0;
-printf("%s=>", getUtoChar(in));
+      u_printf("%s=>", getUtoChar(in));
 		while(saveT){
 			switch(info[index] = in[index]){
 			case '<': openF = 1;
@@ -1696,14 +1693,13 @@ printf("%s=>", getUtoChar(in));
 				}
 			case 0:
 //				tmpBuff[sindex] = 0;
-//				if(segcnt !=3 ) exitMessage("illegal INF format");
+//				if(segcnt !=3 ) fatal_error("illegal INF format\n");
 				if(!info[index]) saveT = 0;
 				else info[index] = 0;
 				iPtr = sPtr;
 				while(*iPtr != '.'){
 					if(!*iPtr){
-						fprintf(stderr,":%s:",getUtoChar(in));
-						exitMessage("illegal INF format");
+						fatal_error(":%s: illegal INF format\n",getUtoChar(in));
 					}
 					iPtr++;
 				}
@@ -1727,7 +1723,7 @@ printf("%s=>", getUtoChar(in));
 //					} else {
 //						p->flag |= INF_NOABS_SUF;
 //						tidx = SUF.check(lsegs[0]);
-//						if(tidx == -1) exitMessage("illegal suffixe value");
+//						if(tidx == -1) fatal_error("illegal suffixe value\n");
 //						p->sufIdx = (int)SUF.getCheckValue();
 //					}
 //				}
@@ -1747,16 +1743,14 @@ printf("%s=>", getUtoChar(in));
 								+ sPtr[sc] - '0';
 							sc++;
 						}
-					} else if (!u_strcmp_char(sPtr,"null")){
+					} else if (!u_strcmp(sPtr,"null")){
 						p->flag |= INF_IGNO_SUF;
 
 					} else {
 						p->flag |= INF_NOABS_SUF;
 						tidx = SUF.check(sPtr);
 						if(tidx == -1){
-							fprintf(stderr,":%s",getUtoChar(in));
-                            fprintf(stderr,":%s",getUtoChar(sPtr));
-							exitMessage("illegal suffixe value");
+							fatal_error(":%s :%s illegal suffixe value\n",getUtoChar(in),getUtoChar(sPtr));
 						}
 						p->sufIdx = (unsigned int)SUF.getCheckValue();
 					}
@@ -1770,8 +1764,8 @@ printf("%s=>", getUtoChar(in));
 					p->infIdx =(unsigned int)NINF.getCheckValue();
 				}
 				links.put(p);
-printf("<%s",getUtoChar(sPtr));printf("|%s:%x,%x,%x>",getUtoChar(iPtr)
-,p->flag,p->sufIdx,p->infIdx);
+            u_printf("<%s",getUtoChar(sPtr));
+            u_printf("|%s:%d,%d,%d>",getUtoChar(iPtr),p->flag,p->sufIdx,p->infIdx);
 				if(saveT){
 					sPtr = &info[index+1];
 				}
@@ -1786,7 +1780,7 @@ printf("<%s",getUtoChar(sPtr));printf("|%s:%x,%x,%x>",getUtoChar(iPtr)
 //				if(!openF) {
 //					tmpBuff[sindex++] = 0;
 //					lsegs[segcnt++] = &tmpBuff[sindex];
-//					if(segcnt >= 4) exitMessage("too many inf");
+//					if(segcnt >= 4) fatal_error("too many inf\n");
 //					break;					
 //				}
 //			default:
@@ -1794,7 +1788,7 @@ printf("<%s",getUtoChar(sPtr));printf("|%s:%x,%x,%x>",getUtoChar(iPtr)
 			}
 			index++;
 		};
-printf("\n");
+      u_printf("\n");
 		int retval;
 		int retPos = save_ref_offset;
 		retval = retPos;
@@ -1805,7 +1799,7 @@ printf("\n");
 		while((p = links.getNext())){
 			fwrite(&p->flag,1,1,inf);
 			outbytes3(p->sufIdx,inf);
-			if(p->infIdx > 0x1000000) exitMessage("too big inf index");
+			if(p->infIdx > 0x1000000) fatal_error("too big inf index\n");
 			outbytes3(p->infIdx,inf);
 			delete p;
 			retPos+=7;
@@ -1885,7 +1879,7 @@ printf("\n");
 		for(i = 0; i < sz;i++)
 		{
 			if(s[i] != inf_offset)
-				exitMessage("illegal offset value");
+				fatal_error("illegal offset value\n");
 			for(j = 1; strTable[i][j];j++)
 				outbytes2(strTable[i][j],inf);
 			outbytes2(0,inf);
@@ -1893,7 +1887,7 @@ printf("\n");
 		}
 		NINF.release_value();
 		if(	imageHead.size_inf != inf_offset)
-			exitMessage("the size of saved information is mismatch");
+			fatal_error("the size of saved information is mismatch\n");
 	}
 };
 

@@ -33,19 +33,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "unicode.h"
+#include <locale.h>
+#include "Unicode.h"
 #include "etc.h"
 #include "String_hash2.h"
 #include "strToAuto.h"
 #include "Copyright.h"
-#include <locale.h>
 #include "IOBuffer.h"
 
 
 
 static void usage(int flag) {
-printf("%s",COPYRIGHT);
-printf(
+u_printf("%S",COPYRIGHT);
+u_printf(
 "Txt2Fst2Kr [[-e #sentence -p[m/a]]|[-c]|[-m/a fst2file] file\n"\
 "Txt2Fst2Kr :  get a fst2 for the 'number'th sentence\n"\
 "e : extract a automata with the form of fst2\n"\
@@ -59,8 +59,6 @@ printf(
 );
 exit(flag);
 }
-//static unsigned short lineOutPut[4096];
-
 
 
 int main(int argc,char **argv) {

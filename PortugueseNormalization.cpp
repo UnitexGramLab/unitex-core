@@ -19,10 +19,8 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "PortugueseNormalization.h"
-//---------------------------------------------------------------------------
-
+#include "Error.h"
 
 //
 // this function takes a string like "[aaa]bbb" and put aaa in the
@@ -50,6 +48,21 @@ while (s[i]!='\0') {
    s[j++]=s[i++];
 }
 s[j]='\0';
+}
+
+
+//
+// this function copies src into dest ignoring spaces
+//
+void u_strcpy_without_space(unichar* dest,unichar* src) {
+int i=0;
+int j=0;
+do {
+   if (src[i]!=' ') {
+      dest[j++]=src[i];
+   }
+   i++;
+} while (src[i-1]!='\0');
 }
 
 
@@ -81,26 +94,24 @@ while (L!=NULL) {
       else {
          get_value_index(L->output,hash);
          get_bracket_prefix(L->output,prefix);
-         if (!u_strcmp_char(prefix,"FuturConditional")) {
+         if (!u_strcmp(prefix,"FuturConditional")) {
             N=N+replace_match_output_by_normalization_line(L,alph,root_bin,root_inf,inflected_bin,
                                                            inflected_inf,norm_tree);
          }
-         else if (!u_strcmp_char(prefix,"NasalSuffix")) {
+         else if (!u_strcmp(prefix,"NasalSuffix")) {
            //      N=N+replace_match_output_by_normalization_line_nasal(L,alph,nasal_norm_tree);
          }
          else if (prefix[0]!='\0') {
-                 char s[1000];
-                 u_to_char(s,prefix);
-                 fprintf(stderr,"Unknown normalization code: %s\n",s);
+                 error("Unknown normalization code: %S\n",prefix);
          }
       }
    }
    L=L->next;
 }
 free_string_hash(hash);
-printf("Saving the grammar...\n");
+u_printf("Saving the grammar...\n");
 save_portuguese_normalization_grammar(N,list,res_grf_name);
-printf("%d normalization rules have been produced.\n",N);
+u_printf("%d normalization rules have been produced.\n",N);
 }
 
 
@@ -196,27 +207,27 @@ while (lemmas!=NULL) {
       if (compatible_portuguese_inflectional_codes(tmp,n_inflectional_codes,inflectional_codes)) {
          // if the code matches, we can produce a new line of the normalization grammar
          unichar temp_result2[4000];
-         u_strcpy_char(temp_result2,"@");
+         u_strcpy(temp_result2,"@");
          u_strcat(temp_result2,radical);
-         u_strcat_char(temp_result2,"-");
+         u_strcat(temp_result2,"-");
          u_strcat(temp_result2,pronoun);
-         u_strcat_char(temp_result2,"-");
+         u_strcat(temp_result2,"-");
          u_strcat(temp_result2,suffix);
-         u_strcat_char(temp_result2,"/{");
+         u_strcat(temp_result2,"/{");
          u_strcat(temp_result2,tmp->lemma);
-         u_strcat_char(temp_result2,",");
+         u_strcat(temp_result2,",");
          u_strcat(temp_result2,tmp->inflected);
-         u_strcat_char(temp_result2,".");
+         u_strcat(temp_result2,".");
          u_strcat(temp_result2,tmp->semantic_codes[0]);
          for (int z=1;z<tmp->n_semantic_codes;z++) {
-            u_strcat_char(temp_result2,"+");
+            u_strcat(temp_result2,"+");
             u_strcat(temp_result2,tmp->semantic_codes[z]);
          }
          for (int z=0;z<tmp->n_inflectional_codes;z++) {
-            u_strcat_char(temp_result2,":");
+            u_strcat(temp_result2,":");
             u_strcat(temp_result2,tmp->inflectional_codes[z]);
          }
-         u_strcat_char(temp_result2,"}");
+         u_strcat(temp_result2,"}");
          RESULT=RESULT+explore_portuguese_normalization_tree(temp_result,temp_result2,pronouns,norm_tree,alph);
       }
       free_dela_entry(tmp);
@@ -369,7 +380,7 @@ while (tok!=NULL) {
    unichar line[2000];
    uncompress_entry(entry,tok->string,line);
    struct dela_entry* tmp=tokenize_DELAF_line(line,0);
-   if (!u_strcmp_char(tmp->semantic_codes[0],"V")) {
+   if (!u_strcmp(tmp->semantic_codes[0],"V")) {
       // if we have a verb lemma, then we add it to the lemma list
       (*lemmas)=new_list_ustring(tmp->lemma,*lemmas);
    }
@@ -432,22 +443,19 @@ return -1;
 // this function saves the normalization rules into a file
 //
 void save_portuguese_normalization_grammar(int N,struct match_list* list,char* res_grf_name) {
-char temp[2000];
 FILE* f=u_fopen(res_grf_name,U_WRITE);
 if (f==NULL) {
-   fprintf(stderr,"Cannot create file %s\n",res_grf_name);
+   error("Cannot create file %s\n",res_grf_name);
    return;
 }
 // we write the file header and the initial and final states
 write_grf_header(800,100+50*N,N+2,NULL,f);
-u_fprints_char("\"<E>\" 50 100 ",f);
-sprintf(temp,"%d ",N);
-u_fprints_char(temp,f);
+u_fprintf(f,"\"<E>\" 50 100 ",f);
+u_fprintf(f,"%d ",N);
 for (int i=2;i<2+N;i++) {
-   sprintf(temp,"%d ",i);
-   u_fprints_char(temp,f);
+   u_fprintf(f,"%d ",i);
 }
-u_fprints_char("\n\"\" 600 100 0 \n",f);
+u_fprintf(f,"\n\"\" 600 100 0 \n");
 // and then, we save the normalization rules
 int current_state=2;
 while (list!=NULL) {
@@ -464,11 +472,9 @@ while (list!=NULL) {
             s[j++]=list->output[i++];
          }
          s[j]='\0';
-         u_fprints_char("\"",f);
-         u_fprints(s,f);
-         u_fprints_char("\" 200 ",f);
-         sprintf(temp,"%d 1 1 \n",50*(current_state-1));
-         u_fprints_char(temp,f);
+         u_fprintf(f,"\"%S",s);
+         u_fprintf(f,"\" 200 ");
+         u_fprintf(f,"%d 1 1 \n",50*(current_state-1));
          current_state++;
       }
    }
@@ -495,7 +501,7 @@ int explore_portuguese_normalization_tree(unichar* result,unichar* partial_line,
                                           struct noeud_arbre_normalization* node,Alphabet* alph) {
 int RES=0;
 if (node==NULL) {
-   fprintf(stderr,"Internal error: NULL node in explore_portuguese_normalization_tree\n");
+   error("Internal error: NULL node in explore_portuguese_normalization_tree\n");
    return 0;
 }
 if (pronouns==NULL) {
@@ -531,7 +537,7 @@ return RES;
 //
 struct list_ustring* tokenize_portuguese_pronoun(unichar* pronoun) {
 if (pronoun==NULL) {
-   fprintf(stderr,"Internal error: NULL pronoun in tokenize_portuguese_pronoun");
+   error("Internal error: NULL pronoun in tokenize_portuguese_pronoun");
    return NULL;
 }
 struct list_ustring* res=NULL;
@@ -541,7 +547,7 @@ int j;
 while (pronoun[i]!='\0') {
    if (pronoun[i]=='-') {
       // if have a minus sign, we produce a minus string
-      u_strcpy_char(temp,"-");
+      u_strcpy(temp,"-");
       // and we go on
       i++;
    } else {

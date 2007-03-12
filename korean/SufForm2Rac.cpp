@@ -19,18 +19,16 @@
   *
   */
 
-//---------------------------------------------------------------------------
-
 #include <stdlib.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "etc.h"
 #include "Copyright.h"
 #include "FileName.h"
 #include "IOBuffer.h"
-
-
+#include "Error.h"
 
 using namespace std;
+
 //
 // change the format which is get from graph to format of list form
 //
@@ -41,9 +39,9 @@ static unichar flechi[1024];
 static void usage(int flag)
 {
       //012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
-    printf("%s",COPYRIGHT);
-    printf("Usage:\r\n");
-    printf(
+    u_printf("%s",COPYRIGHT);
+    u_printf("Usage:\r\n");
+    u_printf(
     "SufForm2Rac [-m converTable] [-l] [-o ofilename] fname "\
     " fname : name of the input file name with extension \".fst2\"\r\n"\
     " -l : input file is liste of input files \r\n"\
@@ -90,8 +88,7 @@ public:
     	    remove_extension(tmp,ofnameOnly);
     	    get_extension(tmp,ofExt);
     	}
-//fprintf(stderr,"%s %s %s",ofdirName,ofExt,ofnameOnly);
-    	if(ofnameOnly[0]== 0) exitMessage("ofile name not correct");
+    	if(ofnameOnly[0]== 0) fatal_error("ofile name not correct\n");
     }
     void makeOfileName(char *des,char *fn,char *ext)
     {
@@ -132,9 +129,9 @@ public:
                 wp++;
             }
             *wp = 0;
-            if(wp == line) exitMessage("list file format error");
+            if(wp == line) fatal_error("list file format error\n");
             ajouteList(line);
-printf("line[%s]\n",line);
+            u_printf("line[%s]\n",line);
         }
         fclose(f);
     }
@@ -163,7 +160,6 @@ setBufferMode();
 
     converTableInit();
     while(iargIndex < argc-1){
-//	 fprintf(stderr,"%s\n",argv[iargIndex]);
     	if(*argv[iargIndex] != '-') break;
     	switch(argv[iargIndex][1]){
     	case 'm': iargIndex++;
@@ -196,18 +192,18 @@ setBufferMode();
     struct fileListe *wpointer = fileStock.getHead();
     while(wpointer){
         remove_path(wpointer->filename,tfn);
-printf("[%s][%s]\n",tfn,wpointer->filename);
+        u_printf("[%s][%s]\n",tfn,wpointer->filename);
         remove_extension(tfn,ttfn);
-printf("[%s][%s]\n",tfn,ttfn);
+        u_printf("[%s][%s]\n",tfn,ttfn);
         fileStock.makeOfileName(desFileName,ttfn,0);
         strcpy(tfn,inputFilePath);
-printf("[%s][%s]\n",tfn,desFileName);
+        u_printf("[%s][%s]\n",tfn,desFileName);
         strcat(tfn,wpointer->filename);
-printf("[%s][%s]\n",tfn,desFileName);
+        u_printf("[%s][%s]\n",tfn,desFileName);
         changeFile(tfn,desFileName);
         wpointer = wpointer->next;
     }
-  fprintf(stdout,"Done\n");
+  u_printf("Done\n");
   return 0;
      
 }
@@ -232,7 +228,7 @@ FILE *ifile,*ofile;
   if(!(ifile = u_fopen(ifname,U_READ)))
     fopenErrMessage(ifname);
   if(!(ofile = u_fopen(ofname,U_WRITE)))
-    exitMessage(ofname);
+    fatal_error("Cannot open %s\n",ofname);
 //printf("%s %s\n",ifname,ofname);
   while((c = u_fgetc(ifile)) != EOF){
     switch(c){
@@ -241,7 +237,7 @@ FILE *ifile,*ofile;
            saveOrg[index][offset] = 0;
          index++;
          offset = 0;
-           if(index >= 2) exitMessage("format error");
+           if(index >= 2) fatal_error("format error\n");
            break;
          }
          switch(countComma){
@@ -255,7 +251,7 @@ FILE *ifile,*ofile;
          case 2:
                   break;
          default:
-                  exitMessage("format error");
+                  fatal_error("format error\n");
          }
           countComma++;
         break;

@@ -24,7 +24,7 @@
 #define Regular_expressionH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 
 
 #define N_ETATS_REG 10000

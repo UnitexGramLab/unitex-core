@@ -299,8 +299,6 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 		for( i = 0;  i < arbreCnt;i++){
 			explore_for_access_check(racine[i]);
 		}
-//		fprintf(stdout,"pr path\n");
-//		prTree();
 		taille_de_sauve = 0;
 		for( i = 0; i < (int)nodes.counter ;i++){
 			base = (struct arbre_string3_node*)
@@ -326,16 +324,16 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 			base->offset = taille_de_sauve;
 			taille_de_sauve += base->tcnt*7 + 2;
 		}
-		printf("before compressing, %d nodes,",nodes.counter);
-		printf("after %d nodes(%d deleted nodes )\n",nodes.counter-enCnt,enCnt);
-		printf("trans with info %d, trans without info %d\n",
+		u_printf("before compressing, %d nodes,",nodes.counter);
+		u_printf("after %d nodes(%d deleted nodes )\n",nodes.counter-enCnt,enCnt);
+		u_printf("trans with info %d, trans without info %d\n",
 			infoTranCnt,noInfoTranCnt);
-		printf("size of tree is 0x%08x(%d) bytes\n",taille_de_sauve,taille_de_sauve);
+		u_printf("size of tree is 0x%08x(%d) bytes\n",taille_de_sauve,taille_de_sauve);
 	}
 
 	void minimize_tree() {
 		int i;
-		printf("Minimizing...                      \n");
+		u_printf("Minimizing...                      \n");
 		//
 		//
 		//init_tab_by_hauteur();
@@ -350,14 +348,14 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 		}
 		H = t;
 		mfusionner(H);
-		printf("Minimization done.                     \n");
+		u_printf("Minimization done.                     \n");
 	}
 	int sort_by_height(struct arbre_string3_node* n) 
 	{
 		if (n==NULL) fatal_error("Problem in sort_by_height\n");
 		
 		if (n->trans==NULL)
-			fatal_error("illegal transition"); // if the node is a leaf
+			fatal_error("illegal transition\n"); // if the node is a leaf
 		struct avec_sorti_tran * trans=n->trans;
 		int maxD = -1;
 		while (trans!=NULL) {
@@ -377,13 +375,13 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 		int i,j;
 		int totTrans = avecTrans.counter;
 		int eleCnt = avecTrans.pgEMcnt;
-printf("total transition %d \n\n",totTrans);
+      u_printf("total transition %d \n\n",totTrans);
 		for(int depIdx = 1; depIdx < size; depIdx++)
 		{
-printf("\r:the %08d depth nodes",depIdx);
+         u_printf("\r:the %d depth nodes",depIdx);
 
 			for( i = 0; i < totTrans - 1;i++){
-if(!( i % 1000)) printf("\r:the %08d depth nodes at %d",depIdx,i );
+            if(!( i % 1000)) u_printf("\r:the %d depth nodes at %d",depIdx,i );
 				base = (struct avec_sorti_tran*)(
 					avecTrans.addrMap[i/eleCnt] +
 				(i % eleCnt) * sizeof(struct avec_sorti_tran));
@@ -407,7 +405,7 @@ if(!( i % 1000)) printf("\r:the %08d depth nodes at %d",depIdx,i );
 
 			} // loop for pivot trans
 		}	
-printf("\n%d node delete\n",etCnt);
+      u_printf("\n%d node delete\n",etCnt);
 		check_exist_sur_path();
 	}
 	int 
@@ -424,7 +422,7 @@ printf("\n%d node delete\n",etCnt);
 		}
 		// if the transition lists are equal
 		if ((a==NULL) && (b==NULL)) return 0;
-		fatal_error("illegal count of transitions");
+		fatal_error("illegal count of transitions\n");
 		return 1;
 	}
 	unsigned int *positionOfInfo;
@@ -439,7 +437,7 @@ printf("\n%d node delete\n",etCnt);
 
 
 		tmpH.cnt_auto = racName.size();
-		if(tmpH.cnt_auto != arbreCnt) fatal_error("tree count error");
+		if(tmpH.cnt_auto != arbreCnt) fatal_error("tree count error\n");
 		tmpH.cnt_suf = sufName.size();
 		tmpH.cnt_inf = baseInf.size();
 
@@ -541,7 +539,7 @@ printf("\n%d node delete\n",etCnt);
 			(nodes.addrMap[ i/nodes.pgEMcnt] +
 			i % nodes.pgEMcnt * sizeof(struct arbre_string3_node));
 			if(nPtr->offset == -2 ) continue;
-			if(nPtr->tcnt > 0x10000) fatal_error("too many transition");
+			if(nPtr->tcnt > 0x10000) fatal_error("too many transitions\n");
 			outbytes2(nPtr->tcnt,bfile);
 			tmp= nPtr->trans;
 			while (tmp!=NULL) {
@@ -637,7 +635,7 @@ public:
 			head.size_str*2+
 			head.size_inf*2;
 		REF = (unsigned char *)malloc(i);
-		if(!REF) fatal_error("malloc fail");
+		if(!REF) fatal_error("malloc fail\n");
 		if(!fread(REF,i,1,f)) freadError(fname);
 //                debug("read bin ok size = %d\n", i);
 
@@ -676,7 +674,7 @@ public:
                                STR[refIdx] = v;
                                refIdx++;
 			}
-			printf("Initial state %d %s at 0x%x\n",i
+			u_printf("Initial state %d %s at %d\n",i
                ,getUtoChar(STR+AUT[i]),autoffset[i]);
 			refIdx++;sp+=2;
 		}
@@ -698,7 +696,7 @@ public:
 //printf("Demand suffixe 0x%x",i);printf(" %s\n",getUtoChar(STR+SUF[i]));
 		}
 		if((unsigned int)&STR[refIdx] != (unsigned int)INF)
-			fatal_error("illegal size STR %d (expect %d Cnt suf 0x%d(0x%d)\n ",
+			fatal_error("illegal size STR %d (expect %d Cnt suf %d(%d)\n ",
                         (unsigned int)(&STR[refIdx]),(unsigned int)INF,i,head.cnt_suf);
 		refIdx = 0;
         sp = (unsigned char *)INF;
@@ -742,7 +740,7 @@ public:
 
 		tcnt = BIN[pos++] << 8;
 		tcnt |=BIN[pos++];
-		if(!tcnt) fatal_error("illegal tree");
+		if(!tcnt) fatal_error("illegal tree\n");
 		while(tcnt){
 			coffset = soffset;
 			c = BIN[pos++]<< 8;
@@ -750,44 +748,25 @@ public:
 			info = BIN[pos++]<< 8;
 			info |= BIN[pos++];
 			if(c){
-			    u_sprintf(ttemp_buff,"<%c,%dx",c,info);
-			    u_strcpy(&buff[coffset],ttemp_buff);
-				coffset += u_strlen(ttemp_buff);
-//u_sprintf(&buff[coffset],"<%c,%dx",c,info);
+            coffset=coffset+u_sprintf(&buff[coffset],"<%c,%dx",c,info);
 			} else {
-			   u_sprintf(ttemp_buff,"< ,%d",info);
-			    u_strcpy(&buff[coffset],ttemp_buff);
-				coffset += u_strlen(ttemp_buff);
-//				coffset += u_sprintf(&buff[coffset],"< ,%d",info);
+			   coffset=coffset+u_sprintf(&buff[coffset],"< ,%d",info);
 				}
 			npos  = BIN[pos++]<< 16;
 			npos |= BIN[pos++]<< 8;
 			npos |= BIN[pos++];
 			if(info & 0x7fff){
-				u_sprintf(ttemp_buff,"(%S),",INF + infoffset[info & 0x7fff]);
-			    u_strcpy(&buff[coffset],ttemp_buff);
-				coffset += u_strlen(ttemp_buff);
-//				coffset += u_sprintf(&buff[coffset],
-//				"(%S),",INF + infoffset[info & 0x7fff]);
+				coffset=coffset+u_sprintf(&buff[coffset],"(%S),",INF + infoffset[info & 0x7fff]);
 			}
 			if(info & 0x8000){
 				if(!npos){
-				u_sprintf(ttemp_buff,",T>\n");
-			    u_strcpy(&buff[coffset],ttemp_buff);
-				coffset += u_strlen(ttemp_buff);
-//    					u_sprintf(&buff[coffset],",T>\n");
+				   coffset=coffset+u_sprintf(&buff[coffset],",T>\n");
 				} else {
-				u_sprintf(ttemp_buff,",%s>\n",STR+SUF[npos]);
-			    u_strcpy(&buff[coffset],ttemp_buff);
-				coffset += u_strlen(ttemp_buff);
-//    					u_sprintf(&buff[coffset],",%s>\n",STR+SUF[npos]);
+               coffset=coffset+u_sprintf(&buff[coffset],",%s>\n",STR+SUF[npos]);
 				}
 				u_fprintf(f,"%S",buff);
 			} else {
-				u_sprintf(ttemp_buff,",0x%x>",npos);
-			    u_strcpy(&buff[coffset],ttemp_buff);
-				coffset += u_strlen(ttemp_buff);
-//				coffset += u_sprintf(&buff[coffset],L",0x%x>",npos);
+				 coffset=coffset+u_sprintf(&buff[coffset],",0x%x>",npos);
 				explore_state(npos,f,buff,coffset);
 			}
 			--tcnt;
@@ -822,7 +801,7 @@ public:
 		int findCnt = 0;
 		tcnt = BIN[pos++] << 8;
 		tcnt |=BIN[pos++];
-		if(!tcnt) fatal_error("illegal tree");
+		if(!tcnt) fatal_error("illegal tree\n");
 //	printf("addr 0x%08x::---\n",spos);	
 		for(int i = 0; i < tcnt;i++){
 			noff = soffset;
@@ -870,7 +849,7 @@ public:
 							scanNodes(npos,word,scanPosition,noff);
 						}
 					}	else {	// not find case
-						fatal_error("find zero transition");
+						fatal_error("find zero transition\n");
 					}
 				}
 				continue;
@@ -899,7 +878,7 @@ public:
 							scanNodes(npos,word,scanPosition+1,noff);
 						}
 					} else {
-						fatal_error("No transition found");			
+						fatal_error("No transition found\n");			
 					}
 				}
 			}

@@ -24,11 +24,9 @@
 #include <stdarg.h>
 
 #include "Error.h"
+#include "Unicode.h"
 
 #define DEFAULT_ERROR_CODE 1
-
-
-#warning we have to handle unicode strings in xxxprintf with %S
 
 
 /**
@@ -43,11 +41,11 @@ exit(error_code);
  * Prints the given message and
  * exits the program with the given exit code.
  */
-void fatal_error(int error_code,char* fmt,...) {
-va_list plist;
-va_start(plist,fmt);
-vfprintf(stderr,fmt,plist);
-va_end(plist);
+void fatal_error(int error_code,char* format,...) {
+va_list list;
+va_start(list,format);
+u_vfprintf(STDERR_ENC,stderr,format,list);
+va_end(list);
 fatal_error(error_code);
 }
 
@@ -56,11 +54,11 @@ fatal_error(error_code);
  * Prints the given message and
  * exits the program with the default exit code.
  */
-void fatal_error(char* fmt,...) {
-va_list plist;
-va_start(plist,fmt);
-vfprintf(stderr,fmt,plist);
-va_end(plist);
+void fatal_error(char* format,...) {
+va_list list;
+va_start(list,format);
+u_vfprintf(STDERR_ENC,stderr,format,list);
+va_end(list);
 fatal_error(DEFAULT_ERROR_CODE);
 }
 
@@ -68,17 +66,11 @@ fatal_error(DEFAULT_ERROR_CODE);
 /**
  * Prints the given message on the error stream.
  */
-void error(char* fmt,...) {
-va_list plist;
-va_start(plist,fmt);
-vfprintf(stderr,fmt,plist);
-va_end(plist);
+void error(char* format,...) {
+va_list list;
+va_start(list,format);
+u_vfprintf(STDERR_ENC,stderr,format,list);
+va_end(list);
 }
 
 
-/**
- * Prints the given unicode string on the error stream.
- */
-void error(unichar* s) {
-u_fprints(s,stderr);
-}

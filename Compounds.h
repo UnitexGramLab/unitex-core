@@ -22,7 +22,7 @@
 #ifndef CompoundsH
 #define CompoundsH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "DELA.h"
 #include "String_hash.h"

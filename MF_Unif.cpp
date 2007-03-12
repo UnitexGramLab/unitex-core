@@ -54,25 +54,15 @@ int unif_init_vars() {
 ////////////////////////////////////////////
 // Prints the set of instantiations. 
 int unif_print_vars() {
-  int v;
-  unichar tmp[100];
-  int i;
-
-  u_strcpy_char(tmp, "INSTANTIATION VARIABLES:\n");
-  u_prints(tmp);
-  for (v=0; v<UNIF_VARS.no_vars; v++) {
-    u_prints(UNIF_VARS.vars[v].id);
-    u_strcpy_char(tmp, ":");
-    u_prints(tmp);
-    u_prints(UNIF_VARS.vars[v].cat->name);
-    u_strcpy_char(tmp, "=");
-    u_prints(tmp);
-    i = UNIF_VARS.vars[v].val;
-    u_prints(UNIF_VARS.vars[v].cat->values[i]);
-    u_strcpy_char(tmp, "\n");
-    u_prints(tmp);
-  }
-  return 0;
+int v;
+int i;
+u_printf("INSTANTIATION VARIABLES:\n");
+for (v=0;v<UNIF_VARS.no_vars;v++) {
+    u_printf("%S:%S=",UNIF_VARS.vars[v].id,UNIF_VARS.vars[v].cat->name);
+    i=UNIF_VARS.vars[v].val;
+    u_printf("%S\n",UNIF_VARS.vars[v].cat->values[i]);
+}
+return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -94,11 +84,7 @@ int unif_instantiate(unichar* var, l_category_T* cat, unichar* val) {
   //value
   v = is_valid_val(cat,val);
   if (v == -1) {
-    error("Instantiation impossible: ");
-    error(val);
-    error(" is an invalid value in category ");
-    error(cat->name);
-    error(".\n");
+    error("Instantiation impossible: %S is an invalid value in category %S.\n",val,cat->name);
     return 1;    
   }
   UNIF_VARS.vars[i].val = v;

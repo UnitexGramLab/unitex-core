@@ -19,12 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "VerifierRecursion.h"
 #include "Copyright.h"
@@ -34,18 +32,9 @@
 #include "FileName.h"
 
 
-
-//---------------------------------------------------------------------------
-
-
-/////////////////////////////////////////////////////////////
-/////////PROGRAMME PRINCIPAL ////////////////////////////////
-/////////////////////////////////////////////////////////////
-
-
 void usage() {
-  printf("%s",COPYRIGHT);
-  printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n"
+u_printf("%S",COPYRIGHT);
+u_printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n"
          "      <grf> : main graph of grammar (must be an absolute path)\n"
          "      [y/n] : enable or not the loops/left-recursion detection\n"
          "      [ALPH] : name of the alphabet file to use for tokenizing\n"
@@ -73,7 +62,7 @@ int main(int argc,char *argv[]) {
   pckg_path[0] = '\0';
   if(argc >= 4){
     if(!strcmp(argv[argc - 2],"-d")){      
-      u_strcpy_char(pckg_path,argv[argc - 1]);
+      u_strcpy(pckg_path,argv[argc - 1]);
     }
     argc -= 2;
   }
@@ -122,7 +111,7 @@ int main(int argc,char *argv[]) {
   init_generale_comp();
   init_arbres_comp();
 
-  u_fprints_char("0000000000\n",fs_comp);
+  u_fprintf(fs_comp,"0000000000\n");
 
   int result = compilation(argv[1],TOKENIZATION_MODE,alph,fs_comp);
   if (result == 0)
@@ -150,7 +139,7 @@ int main(int argc,char *argv[]) {
       return 1;
     }
   }
-  printf("Compilation has succeeded\n");
+  u_printf("Compilation has succeeded\n");
   return 0;
  }
 

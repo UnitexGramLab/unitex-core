@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 #include "List_int.h"
 #include "String_hash.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "DELA.h"
 

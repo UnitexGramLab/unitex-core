@@ -134,6 +134,17 @@ free(t);
 }
 
 
+//
+// returns 1 if the string contains only spaces, 0 else
+//
+int only_spaces(unichar* s) {
+int i=0;
+while (s[i]!='\0') {
+  if (s[i]!=' ') return 0;
+  i++;
+}
+return 1;
+}
 
 void explorer_automate_normalization(Fst2*,int,
                                      struct noeud_arbre_normalization*,
@@ -177,13 +188,13 @@ while (trans!=NULL) {
       Fst2Tag etiq;
       etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
-      u_strcat_char(tmp," ");
+      u_strcat(tmp," ");
       if (etiq->output!=NULL && etiq->output[0]!='\0'
-          && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
+          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
          u_strcat(tmp,etiq->output);
       }
-      if (!u_strcmp_char(etiq->input,"<E>")) {
+      if (!u_strcmp(etiq->input,"<E>")) {
          // case of an epsilon-transition
            struct trans_arbre_normalization* trans_norm;
            trans_norm=get_trans_arbre_normalization(EMPTY_TOKEN,noeud_normalization->trans);
@@ -260,9 +271,9 @@ while (trans!=NULL) {
       Fst2Tag etiq;
       etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
-      u_strcat_char(tmp," ");
+      u_strcat(tmp," ");
       if (etiq->output!=NULL && etiq->output[0]!='\0'
-          && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
+          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
          u_strcat(tmp,etiq->output);
       }
@@ -321,13 +332,13 @@ while (trans!=NULL) {
       Fst2Tag etiq;
       etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
-      u_strcat_char(tmp," ");
+      u_strcat(tmp," ");
       if (etiq->output!=NULL && etiq->output[0]!='\0'
-          && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
+          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
          u_strcat(tmp,etiq->output);
       }
-      if (!u_strcmp_char(etiq->input,"<E>")) {
+      if (!u_strcmp(etiq->input,"<E>")) {
          // case of an epsilon-transition
          struct trans_arbre_normalization* trans_norm;
          trans_norm=get_trans_arbre_normalization(EMPTY_TOKEN,noeud_normalization->trans);
@@ -403,9 +414,9 @@ while (trans!=NULL) {
       Fst2Tag etiq;
       etiq=automate->tags[trans->tag_number];
       u_strcpy(tmp,output);
-      u_strcat_char(tmp," ");
+      u_strcat(tmp," ");
       if (etiq->output!=NULL && etiq->output[0]!='\0'
-          && u_strcmp_char(etiq->output,"<E>") && !only_spaces(etiq->output)) {
+          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
          // we append the output if it exists and is not epsilon
          u_strcat(tmp,etiq->output);
       }

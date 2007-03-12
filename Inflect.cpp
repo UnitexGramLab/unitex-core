@@ -19,17 +19,12 @@
   *
   */
 
-//---------------------------------------------------------------------------
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"
 
-//
-// "E:\My Unitex\French\Dela\essai.dic" "E:\My Unitex\French\Dela\essaiflx.dic"  "E:\My Unitex\French\Inflection"
-//
 
 #define N_FST2 3000 // maximum number of flexional transducers
 #define MAX_CHARS_IN_STACK 1000
@@ -58,19 +53,19 @@ void explore_state(unichar*,unichar*,unichar*,Fst2*,int,unichar*,unichar*);
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Inflect <delas> <result> <dir> [-a] [-k] \n");
-printf("     <delas> : the unicode delas file to be inflected\n");
-printf("     <result> : the unicode resulting dictionary \n");
-printf("     <dir> : the inflectional graphs directory.\n");
-printf("     -a : this optional parameter indicates that a ':'\n");
-printf("          character must be inserted if the produced\n");
-printf("          flexional information sequence does not begin\n");
-printf("          by this character.\n");
-printf("     -k : this optional parameter indicates that\n");
-printf("          flexional grammar names must not be reduced\n");
-printf("          by removing digits (N32 is not turned to N)\n");
-printf("\nInflects a DELAS.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Inflect <delas> <result> <dir> [-a] [-k] \n");
+u_printf("     <delas> : the unicode delas file to be inflected\n");
+u_printf("     <result> : the unicode resulting dictionary \n");
+u_printf("     <dir> : the inflectional graphs directory.\n");
+u_printf("     -a : this optional parameter indicates that a ':'\n");
+u_printf("          character must be inserted if the produced\n");
+u_printf("          flexional information sequence does not begin\n");
+u_printf("          by this character.\n");
+u_printf("     -k : this optional parameter indicates that\n");
+u_printf("          flexional grammar names must not be reduced\n");
+u_printf("          by removing digits (N32 is not turned to N)\n");
+u_printf("\nInflects a DELAS.\n");
 }
 
 
@@ -125,7 +120,7 @@ if (f_out==NULL) {
 traiter_dico();
 u_fclose(f);
 u_fclose(f_out);
-printf("Done.\n");
+u_printf("Done.\n");
 return 0;
 }
 
@@ -144,7 +139,7 @@ if (REMOVE) {
    res[i]='\0';
 } else {
    // we don't modify the code
-   u_strcpy_char(res,code);
+   u_strcpy(res,code);
    i=u_strlen(res);
 }
 return i;
@@ -477,12 +472,12 @@ unichar pile[MAX_CHARS_IN_STACK];
 unichar etiq[MAX_CHARS_IN_STACK];
 int pos_etiq;
 u_strcpy(out,sortie);
-if (e->output!=NULL && u_strcmp_char(e->output,"<E>")) {
+if (e->output!=NULL && u_strcmp(e->output,"<E>")) {
    u_strcat(out,e->output);
 }
 u_strcpy(pile,flechi);
 u_strcpy(etiq,e->input);
-if (u_strcmp_char(etiq,"<E>")) {
+if (u_strcmp(etiq,"<E>")) {
     // if the tag is not <E>, we process it
     for (pos_etiq=0;etiq[pos_etiq]!='\0';) {
         switch (etiq[pos_etiq]) {
@@ -530,17 +525,11 @@ void explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
 Fst2State e=a->states[etat_courant];
 if (is_final_state(e)) {
     // if we are in a final state, we save the computed things
-    u_fprints(flechi,f_out);
-    u_fprints_char(",",f_out);
-    u_fprints(canonique,f_out);
-    u_fprints_char(".",f_out);
-    u_fprints(code_gramm,f_out);
+    u_fprintf(f_out,"%S,%S.%S",flechi,canonique,code_gramm);
     if (ADD_TWO_POINTS && sortie[0]!='\0' && sortie[0]!=':') {
-       u_fprints_char(":",f_out);
+       u_fprintf(f_out,":");
     }
-    u_fprints(sortie,f_out);
-    u_fprints(comment,f_out);
-    u_fprints_char("\n",f_out);
+    u_fprintf(f_out,"%S%S\n",sortie,comment);
 }
 struct fst2Transition* t=e->transitions;
 while (t!=NULL) {
@@ -576,12 +565,12 @@ unichar pile[MAX_CHARS_IN_STACK];
 unichar etiq[MAX_CHARS_IN_STACK];
 int pos_etiq;
 u_strcpy(out,sortie);
-if (e->output!=NULL && u_strcmp_char(e->output,"<E>")) {
+if (e->output!=NULL && u_strcmp(e->output,"<E>")) {
    u_strcat(out,e->output);
 }
 u_strcpy(pile,flechi);
 u_strcpy(etiq,e->input);
-if (u_strcmp_char(etiq,"<E>")) {
+if (u_strcmp(etiq,"<E>")) {
     // if the tag is not <E>, we process it
     for (pos_etiq=0;etiq[pos_etiq]!='\0';) {
         switch (etiq[pos_etiq]) {

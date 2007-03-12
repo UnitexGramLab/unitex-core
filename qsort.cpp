@@ -41,10 +41,6 @@ static inline void swap(char * a, char * b, int size) {
 void qsort(void * tab, int nb, int size,
            int (*compare)(void * a, void * b, void * data), void * data) {
 
-
-  //  fprintf(stderr, "qsort nb=%d size=%d\n", nb, size);
-
-
   stack_type * stack = stack_new();
 
   char * lo = (char *) tab;
@@ -63,13 +59,9 @@ void qsort(void * tab, int nb, int size,
     hi = (char *) stack_pop(stack);
     lo = (char *) stack_pop(stack);
 
-    //    fprintf(stderr, "lo=%d, hi=%d\n", (lo - (char *) tab) / 4, (hi - (char *) tab) / 4);
-
     if (lo >= hi) { continue; }
 
     mid = lo + size * (((hi - lo) / size) / 2);
-
-    //    fprintf(stderr, "mid=%d\n", (mid - (char *) tab) / 4);
 
     if (compare(mid, lo, data) < 0) {
       swap(mid, lo, size);
@@ -84,24 +76,15 @@ void qsort(void * tab, int nb, int size,
       }
     }
 
-
-    //    fprintf(stderr, "*lo=%d, *mid=%d, *hi=%d\n", *lo, *mid, *hi);
-
     memcpy(pivot, mid, size);
 
     char * left  = lo + size;
     char * right = hi - size;
 
-
-    //    fprintf(stderr, "left=%d, right=%d\n", (left - (char *) tab) / 4, (right - (char *) tab) / 4);
-
     while (left <= right) {
 
       while (compare(left, pivot, data)  < 0) { left  = left  + size; }
       while (compare(pivot, right, data) < 0) { right = right - size; }
-
-      //      fprintf(stderr, "left=%d - %d, right=%d - %d\n", (left - (char *) tab) /4, *left, (right - (char *) tab) / 4, *right);
-
       if (left <= right) {
 
 	if (left != right) { swap(left, right, size); }

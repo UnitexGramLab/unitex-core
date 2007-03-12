@@ -61,10 +61,10 @@ if (f==NULL) {
 int lines=0;
 char name[FILENAME_MAX];
 remove_path(dic_name,name);
-while (EOF!=u_read_line(f,line)) {
+while (EOF!=u_fgets(line,f)) {
    lines++;
    if (lines%10000==0) {
-      printf("%s: %d lines loaded...                          \r",name,lines);
+      u_printf("%s: %d lines loaded...                          \r",name,lines);
    }
    if (line[0]=='/') {
       /* NOTE: DLF and DLC files are not supposed to contain comment
@@ -138,7 +138,7 @@ while (EOF!=u_read_line(f,line)) {
    free_dela_entry(entry);
 }
 if (lines>10000) {
-   printf("\n");
+   u_printf("\n");
 }
 u_fclose(f);
 }
@@ -155,7 +155,7 @@ void check_patterns_for_tag_tokens(Alphabet* alphabet,int number_of_patterns,
 									struct lemma_node* root,struct locate_parameters* parameters) {
 struct string_hash* tokens=parameters->tokens;
 for (int i=0;i<tokens->size;i++) {
-   if (tokens->value[i][0]=='{' && u_strcmp_char(tokens->value[i],"{S}")  && u_strcmp_char(tokens->value[i],"{STOP}")) {
+   if (tokens->value[i][0]=='{' && u_strcmp(tokens->value[i],"{S}")  && u_strcmp(tokens->value[i],"{STOP}")) {
       /* If the token is tag like "{today,.ADV}", we add its number to the tag token list */
       parameters->tag_token_list=head_insert(i,parameters->tag_token_list);
       /* And we look for the patterns that can match it */

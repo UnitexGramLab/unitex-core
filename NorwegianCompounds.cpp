@@ -155,7 +155,7 @@ free(infos.valid_right_component);
  * one of the following grammatical codes: "N", "A" or "V".
  */
 void check_valid_right_component(char* valid_left_component,struct INF_codes* inf) {
-printf("Check valid right components...\n");
+u_printf("Check valid right components...\n");
 for (int i=0;i<inf->N;i++) {
    valid_left_component[i]=check_valid_right_component_for_an_INF_line(inf->codes[i]);
 }
@@ -183,7 +183,7 @@ return 0;
  * one of the following codes: "N:sia", "A:sio", "V:W" or "ADV".
  */
 void check_valid_left_component(char* valid_right_component,struct INF_codes* inf) {
-printf("Check valid left components...\n");
+u_printf("Check valid left components...\n");
 for (int i=0;i<inf->N;i++) {
    valid_right_component[i]=check_valid_left_component_for_an_INF_line(inf->codes[i]);
 }
@@ -214,7 +214,7 @@ int get_valid_left_component_type_for_one_INF_code(unichar* INF_code) {
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,INF_code);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 int res;
@@ -265,9 +265,9 @@ while (INF_codes!=NULL) {
  */
 char check_Nsia(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"N");
+u_strcpy(t1,"N");
 unichar t2[4];
-u_strcpy_char(t2,"sia");
+u_strcpy(t2,"sia");
 return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
@@ -277,9 +277,9 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
  */
 char check_Nsie(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"N");
+u_strcpy(t1,"N");
 unichar t2[4];
-u_strcpy_char(t2,"sie");
+u_strcpy(t2,"sie");
 return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
@@ -289,9 +289,9 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
  */
 char check_Nsig(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"N");
+u_strcpy(t1,"N");
 unichar t2[4];
-u_strcpy_char(t2,"sig");
+u_strcpy(t2,"sig");
 return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
@@ -301,9 +301,9 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
  */
 char check_Asio(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"A");
+u_strcpy(t1,"A");
 unichar t2[4];
-u_strcpy_char(t2,"sio");
+u_strcpy(t2,"sio");
 return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
@@ -313,9 +313,9 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
  */
 char check_Asie(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"A");
+u_strcpy(t1,"A");
 unichar t2[4];
-u_strcpy_char(t2,"sie");
+u_strcpy(t2,"sie");
 return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
@@ -325,9 +325,9 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
  */
 char check_VW(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"V");
+u_strcpy(t1,"V");
 unichar t2[2];
-u_strcpy_char(t2,"W");
+u_strcpy(t2,"W");
 return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(d,t2);
 }
 
@@ -337,7 +337,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
  */
 char check_ADV(struct dela_entry* d) {
 unichar t1[4];
-u_strcpy_char(t1,"ADV");
+u_strcpy(t1,"ADV");
 return (char)dic_entry_contain_gram_code(d,t1);
 }
 
@@ -348,9 +348,9 @@ return (char)dic_entry_contain_gram_code(d,t1);
  */
 char check_V_but_not_Y(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"V");
+u_strcpy(t1,"V");
 unichar t2[2];
-u_strcpy_char(t2,"Y");
+u_strcpy(t2,"Y");
 return dic_entry_contain_gram_code(d,t1) && (!dic_entry_contain_inflectional_code(d,t2));
 }
 
@@ -363,7 +363,7 @@ char check_valid_left_component_for_one_INF_code(unichar* INF_code) {
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,INF_code);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 /* Now, we can use this structured representation to check if the INF code
@@ -380,7 +380,7 @@ return res;
  */
 char check_N(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"N");
+u_strcpy(t1,"N");
 return dic_entry_contain_gram_code(d,t1);
 }
 
@@ -393,13 +393,13 @@ char check_N_right_component(unichar* s) {
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,s);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 unichar t1[2];
-u_strcpy_char(t1,"N");
+u_strcpy(t1,"N");
 unichar t2[4];
-u_strcpy_char(t2,"sie");
+u_strcpy(t2,"sie");
 char res=dic_entry_contain_gram_code(d,t1) && !dic_entry_contain_inflectional_code(d,t2);
 /* We free the artifical dictionary entry */
 free_dela_entry(d);
@@ -415,13 +415,13 @@ char check_A_right_component(unichar* s) {
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,s);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 unichar t1[2];
-u_strcpy_char(t1,"A");
+u_strcpy(t1,"A");
 unichar t2[4];
-u_strcpy_char(t2,"sie");
+u_strcpy(t2,"sie");
 char res=dic_entry_contain_gram_code(d,t1) && !dic_entry_contain_inflectional_code(d,t2);
 /* We free the artifical dictionary entry */
 free_dela_entry(d);
@@ -434,7 +434,7 @@ return res;
  */
 char check_a(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"a");
+u_strcpy(t1,"a");
 return dic_entry_contain_inflectional_code(d,t1);
 }
 
@@ -447,7 +447,7 @@ char check_N(unichar* INF_code) {
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,INF_code);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_N(d);
@@ -465,7 +465,7 @@ char check_a(unichar* INF_code) {
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,INF_code);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=check_a(d);
@@ -480,7 +480,7 @@ return res;
  */
 char check_A(struct dela_entry* d) {
 unichar t1[2];
-u_strcpy_char(t1,"A");
+u_strcpy(t1,"A");
 return dic_entry_contain_gram_code(d,t1);
 }
 
@@ -494,7 +494,7 @@ char check_valid_right_component_for_one_INF_code(unichar* INF_code) {
  * and then, we tokenize it in order to get grammatical and inflectional
  * codes in a structured way. */
 unichar temp[2000];
-u_strcpy_char(temp,"x,");
+u_strcpy(temp,"x,");
 u_strcat(temp,INF_code);
 struct dela_entry* d=tokenize_DELAF_line(temp,0);
 char res=(check_N(d)||check_A(d)/*||check_V_but_not_Y(d)*/)&&(!check_Nsie(d));
@@ -528,21 +528,20 @@ return res;
  */
 void analyse_norwegian_unknown_words(struct norwegian_infos* infos) {
 unichar line[10000];
-printf("Analysing norwegian unknown words...\n");
+u_printf("Analysing norwegian unknown words...\n");
 int n=0;
 /* We read each line of the unknown word list and we try to analyze it */
-while (EOF!=u_read_line(infos->unknown_word_list,line)) {
+while (EOF!=u_fgets(line,infos->unknown_word_list)) {
   if (!analyse_norwegian_word(line,infos)) {
      /* If the analysis has failed, we store the word in the
       * new unknown word file */
-     u_fprints(line,infos->new_unknown_word_list);
-     u_fprints_char("\n",infos->new_unknown_word_list);
+     u_fprintf(infos->new_unknown_word_list,"%S\n",line);
   } else {
   		/* Otherwise, we increase the number of analyzed words */
   		n++;
   	}
 }
-printf("%d words decomposed as compound words\n",n);
+u_printf("%d words decomposed as compound words\n",n);
 }
 
 
@@ -623,13 +622,9 @@ while (tmp!=NULL) {
 		 * we don't produce a x<A> or x<V> analysis when a x<N> exists */
 		if (OK) {
 			if (infos->info_output!=NULL) {
-				u_fprints(word,infos->info_output);
-				u_fprints_char(" = ",infos->info_output);
-				u_fprints(tmp->element->decomposition,infos->info_output);
-				u_fprints_char("\n",infos->info_output);
+				u_fprintf(infos->info_output,"%S = %S\n",word,tmp->element->decomposition);
 			}
-			u_fprints(tmp->element->dela_line,infos->output);
-			u_fprints_char("\n",infos->output);
+			u_fprintf(infos->output,"%S\n",tmp->element->dela_line);
 		}
 	}
 	tmp=tmp->next;
@@ -754,7 +749,7 @@ if (!(c&32768)) {
 						/* If we have already something in the analysis (i.e. if
 						 * we have not a simple word), we insert the concatenation
 						 * mark before the entry to come */
-						u_strcat_char(dec," +++ ");
+						u_strcat(dec," +++ ");
 					}
 					unichar entry[2000];
 					/* We get the dictionary line that corresponds to the current INF code */
@@ -773,22 +768,22 @@ if (!(c&32768)) {
 					 * the output DELA line */
 					u_strcat(new_dela_line,tmp_entry->inflected);
 					/* We put the comma that separates the inflected form and the lemma */
-					u_strcat_char(new_dela_line,",");
+					u_strcat(new_dela_line,",");
 					/* And we build the lemma in the same way than the inflected form */
 					u_strcat(new_dela_line,output_dela_line);
 					u_strcat(new_dela_line,tmp_entry->lemma);
 					/* We put the dot that separates the the lemma and the grammatical/inflectional
 					 * information */
-					u_strcat_char(new_dela_line,".");
+					u_strcat(new_dela_line,".");
 					/* And finally we put the grammatical/inflectional information */
 					u_strcat(new_dela_line,tmp_entry->semantic_codes[0]);
                int k;
                for (k=1;k<tmp_entry->n_semantic_codes;k++) {
-                  u_strcat_char(new_dela_line,"+");
+                  u_strcat(new_dela_line,"+");
                   u_strcat(new_dela_line,tmp_entry->semantic_codes[k]);
                }
                for (k=0;k<tmp_entry->n_inflectional_codes;k++) {
-                  u_strcat_char(new_dela_line,":");
+                  u_strcat(new_dela_line,":");
                   u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
                }
 					/*
@@ -840,7 +835,7 @@ if (!(c&32768)) {
 					unichar dec[2000];
 					u_strcpy(dec,analysis);
 					if (dec[0]!='\0') {
-						u_strcat_char(dec," +++ ");
+						u_strcat(dec," +++ ");
 					}
 					/* In order to print the component in the analysis, we arbitrary
 					 * take a valid left component among all those that are available
@@ -875,7 +870,7 @@ if (!(c&32768)) {
 				u_strcpy(dec,analysis);
 				if (dec[0]!='\0') {
 					/* We add the "+++" mark if the current component is not the first one */
-					u_strcat_char(dec," +++ ");
+					u_strcat(dec," +++ ");
 				}
 				unichar sia_code[2000];
 				unichar entry[2000];

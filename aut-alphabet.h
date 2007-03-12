@@ -43,9 +43,6 @@ int alphabet_add(alphabet_t * alph, symbol_t * s);
 int alphabet_lookup(alphabet_t * alph, symbol_t * s);
 
 
-void alphabet_dump(alphabet_t * alph, FILE * f = stderr);
-
-
 inline int alphabet_size(alphabet_t * alph) { return alph->hash->nbelems; }
 
 inline symbol_t * alphabet_get(alphabet_t * alph, int idx) { return (symbol_t *) alph->hash->tab[idx]; }

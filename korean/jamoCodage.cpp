@@ -21,11 +21,12 @@
 
 
 #include <stdlib.h>
-
-using namespace std;
-#include "unicode.h"
+#include "Unicode.h"
 #include "jamoCodage.h"
 #include "etc.h"
+#include "Error.h"
+
+using namespace std;
 
 
 char *defaultSylToJamoMap = ""\
@@ -116,7 +117,7 @@ jamoCodage::loadJamoMap(char *mfName)
 	int i;
 	int svFlag;
 	char line[256];
-	unsigned short  buff[256];
+	unichar buff[256];
 
 	int rsz;
 	char *rp;
@@ -131,7 +132,7 @@ jamoCodage::loadJamoMap(char *mfName)
 	if(!mfName){ rp = defaultSylToJamoMap;roffset = 0;}
 	else {
 		f = u_fopen(mfName,U_READ);
-		if(!f) exitMessage(0);
+		if(!f) fatal_error("Cannot open %s\n",mfName);
 	}
 	jamoSize = 0;
 	int jamoOffset = 0;
@@ -140,7 +141,7 @@ jamoCodage::loadJamoMap(char *mfName)
 
 		
 		if(f){
-          if(EOF==u_read_line(f,(unichar *)buff)) break;
+          if(EOF==u_fgets(buff,f)) break;
 		} else{
           if(*rp == 0) break;
           while(*rp != '\n') line[rsz++] = *rp++;
@@ -149,7 +150,6 @@ jamoCodage::loadJamoMap(char *mfName)
           mbcsToUniStr((unsigned char *)line,(unichar *)buff);
         }
          
-//printf(":::%s",line); u_fprintf(stderr,"L::%s\n",buff);
         segCnt = 0;
         svFlag = 1;
         swp = buff;
@@ -168,7 +168,6 @@ jamoCodage::loadJamoMap(char *mfName)
                swp++;
              }
          }
-//for(i = 0; i < segCnt;i++) u_fprintf(stderr,"[%d:%S]",i,segPtr[i]);u_fprintf(stderr,"%d\n",segCnt); 
 		if(!segCnt) continue;
 		JamoCnt = 0;
 		wp = segPtr[0];
@@ -191,23 +190,23 @@ jamoCodage::loadJamoMap(char *mfName)
 				sylMark = orderTableJamo[0xff][0];
 			}
 			continue;
-		} else if(!u_strcmp_char(wp,"Initial_Consonants")){
+		} else if(!u_strcmp(wp,"Initial_Consonants")){
 			jamoOffset = 0;
 			continue;
-		} else if(!u_strcmp_char(wp,"Vowels")){
+		} else if(!u_strcmp(wp,"Vowels")){
 			if( jamoOffset != 19)
-                     exitMessage("table error");
+                     fatal_error("table error\n");
 			continue;
-		} else if(!u_strcmp_char(wp,"Final_Consonants")){
-			if( jamoOffset != 40) exitMessage("table error");
+		} else if(!u_strcmp(wp,"Final_Consonants")){
+			if( jamoOffset != 40) fatal_error("table error\n");
 			continue;
-		} else if(!u_strcmp_char(wp,"FCNULL")){
+		} else if(!u_strcmp(wp,"FCNULL")){
 			orderTableJamo[jamoOffset] = new unichar[8];
 				for(int i = 0; i < 8;i++)orderTableJamo[jamoOffset][i] = 0;
 			jamoOffset++;
 			continue;
 		}
-		if(segCnt < 2) exitMessage("Line format :error");
+		if(segCnt < 2) fatal_error("Line format :error\n");
 		wp = segPtr[1];
 		        
 		if(wp[1] == '\0') 
@@ -338,7 +337,7 @@ void jamoCodage::jamoMapOut()
 				}
 				if(j == cntBasicJamo){
 					basicJamo[cntBasicJamo++] = orderTableJamo[i][2];
-					if(cntBasicJamo == 127) exitMessage("too long Jamos");
+					if(cntBasicJamo == 127) fatal_error("too long Jamos\n");
 				}
 			}
 		}

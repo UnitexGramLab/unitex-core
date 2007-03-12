@@ -22,7 +22,7 @@
 #ifndef AlphabetH
 #define AlphabetH
 
-#include "unicode.h"
+#include "Unicode.h"
 
 
 struct alphabet_ {

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ConcordMain.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "Text_tokens.h"
 #include "String_hash.h"
 #include "List_int.h"
@@ -174,7 +174,7 @@ create_concordance(concor,text,tok,n_enter_char,enter_pos,option);
 u_fclose(concor);
 fclose(text);
 free_text_tokens(tok);
-printf("Done.\n");
+u_printf("Done.\n");
 return 0;
 }
 

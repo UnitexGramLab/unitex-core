@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "Text_tokens.h"
 #include "String_hash.h"
 #include "List_int.h"
@@ -38,15 +38,15 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: ConcorDiff <concor1> <concor2> <out> <font> <size>\n");
-printf("   <concor1> : the first concord.ind file\n");
-printf("   <concor2> : the second concord.ind file\n");
-printf("   <out> : the result HTML file\n");
-printf("   <font> : name of font\n");
-printf("   <size> : size of font\n");
-printf("\nProduces an HTML file that shows differences between input\n");
-printf("concordance files.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: ConcorDiff <concor1> <concor2> <out> <font> <size>\n");
+u_printf("   <concor1> : the first concord.ind file\n");
+u_printf("   <concor2> : the second concord.ind file\n");
+u_printf("   <out> : the result HTML file\n");
+u_printf("   <font> : name of font\n");
+u_printf("   <size> : size of font\n");
+u_printf("\nProduces an HTML file that shows differences between input\n");
+u_printf("concordance files.\n");
 }
 
 

@@ -439,5 +439,3 @@ int is_HTML_control_character(unichar c) {
 return c=='<' || c=='>' || c=='&' || c=='\'';
 }
 
-
-

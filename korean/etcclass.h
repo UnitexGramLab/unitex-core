@@ -90,9 +90,9 @@ public:
 	readTablesFromFile(FILE *fin)
 	{
 		tableLoaded = new T[total];
-		if(!tableLoaded) exitMessage("mem alloc fail for table");
+		if(!tableLoaded) fatal_error("mem alloc fail for table\n");
 		if(!fread(tableLoaded,sizeof(T)*total,1,fin))
-			exitMessage("table read error");
+			fatal_error("table read error\n");
 	}
 
 };
@@ -108,7 +108,7 @@ public:
 		for(int i = 0; i < 0x21;i++){
 		    ctl_Uchar_name_string[i] = (unsigned short *)malloc(
                   (strlen(ctl_Bchar_name_string[i])+1)*2);
-		    u_strcpy_char(ctl_Uchar_name_string[i],ctl_Bchar_name_string[i]);
+		    u_strcpy(ctl_Uchar_name_string[i],ctl_Bchar_name_string[i]);
 			nameOfCtlChars.put(ctl_Uchar_name_string[i]);
 		}
 	};

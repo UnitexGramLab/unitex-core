@@ -72,34 +72,6 @@ transition_t * transitions_dup(const transition_t * trans) {
 }
 
 
-/*
-void autalmot_trans_in_delete(autalmot_t * A) {
-  if (A->trans_in == NULL) { return; }
-
-  for (int i = 0; i < A->nb_states; i++) { transitions_delete(A->trans_in[i]); }
-
-  free(A->trans_in);
-
-  A->trans_in = NULL;
-}
-*/
-
-
-void transition_dump(transition_t * t, FILE * f) {
-  fprintf(f, "("); symbols_dump(t->label); fprintf(f, ", %d)", t->to);
-}
-
-void transitions_dump(transition_t * t, FILE * f) {
-  fprintf(f, "{ ");
-  while (t) {
-    transition_dump(t, f);
-    fprintf(f, ", ");
-    t = t->next;
-  }
-  fprintf(f, "}");
-}
-
-
 autalmot_t * autalmot_new(unichar * name, int size) {
 
   autalmot_t * A = (autalmot_t *) xmalloc(sizeof(autalmot_t));
@@ -260,80 +232,8 @@ void autalmot_unset_initial(autalmot_t * A, int q) {
 
 
 
-void autalmot_dump(const autalmot_t * A, FILE * f) {
-
-  i_fprintf(f, "[%S] -- nbstates = %d, %d initials : ", A->name, A->nbstates, A->nbinitials);
-
-  for (int i = 0; i < A->nbinitials; i++) { fprintf(f, "%d, ", A->initials[i]); }
-  endl(f);
-
-  for (int q = 0; q < A->nbstates; q++) {
-
-//    debug("q=%d\n", q);
-
-    fprintf(f, "%d [%c%c]:, ", q, (A->states[q].flags & AUT_INITIAL) ? 'I' : ' ',
-	    (A->states[q].flags & AUT_FINAL) ? 'F' : ' ');
-
-    for (transition_t * t = A->states[q].trans; t; t = t->next) {
-//      debug("trans=%d -- ", t); transition_dump(t); endl();
-      fprintf(f, "("); symbol_dump(t->label, f); fprintf(f, ", %d) ", t->to);
-    }
-
-    if (A->states[q].defto != -1) { fprintf(f, "(<def>, %d) ", A->states[q].defto); }
-
-    fprintf(f, "\n");
-  }
-}
 
 
-
-void autalmot_dump_dot(const autalmot_t * A, FILE * f) {
-
-  if (A == NULL) { fatal_error("dot_output: A is null\n"); }
-
-  ustring_t * ustr = ustring_new();
-
-  fprintf(f,
-	  "# AutalMot output\n\n"
-	  "digraph G {\n\n"
-	  "  graph [ center = true, orientation = landscape, rankdir = LR ];\n"
-	  "  node  [ shape  = circle ];\n");
-
-  for (int q = 0; q < A->nbstates; q++) {
-
-    fprintf(f, "\n  %d [ label=\"%d\" ", q, q);
-    if (A->states[q].flags & AUT_TERMINAL) { fprintf(f, "shape=\"doublecircle\" "); }
-    fprintf(f, "];\n");
-
-    for (transition_t * t = A->states[q].trans; t; t = t->next) {
-      symbol_to_str(t->label, ustr);
-      i_fprintf(f, "  %d -> %d [ label=\"%S\" ];\n", q, t->to, ustr->str);
-    }
-
-    if (A->states[q].defto != -1) {
-      i_fprintf(f, "  %d -> %d [ label=\"<def>\" ];\n", q, A->states[q].defto);
-    }
-  }
-
-  fprintf(f, "}\n");
-
-  ustring_delete(ustr);
-}
-
-
-
-void autalmot_dump_dot_fname(const autalmot_t * A, char * fname) {
-
-  FILE * f = fopen(fname, "w");
-
-  if (f == NULL) {
-    error("autalmot_dot_output: cannot open '%s' for writing\n", fname);
-    return;
-  }
-
-  autalmot_dump_dot(A, f);
-  fclose(f);
-}
 
 
 void autalmot_output_fst2(const autalmot_t * A, char * name, int type) {

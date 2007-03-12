@@ -19,9 +19,7 @@
   *
   */
 
-//---------------------------------------------------------------------------
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "Alphabet.h"
 #include "Liste_num.h"
@@ -44,8 +42,8 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Fst2Txt <text> <fst2> <alphabet> <MODE> [-char_by_char|-char_by_char_with_space]\n"
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Fst2Txt <text> <fst2> <alphabet> <MODE> [-char_by_char|-char_by_char_with_space]\n"
        "     <text> : the unicode text file to be parsed\n"
        "     <fst2> : the grammar to be applied to the text\n"
        "     <alphabet> : the alphabet file for the current language.\n"
@@ -77,7 +75,7 @@ void update_position_in_file() {
 N=N+2;
 if ((N%(1024*1024))==0) {
    int l=N/(1024*1024);
-   printf("%d megabyte%s read...            \r",l,(l>1)?"s":"");
+   u_printf("%d megabyte%s read...            \r",l,(l>1)?"s":"");
 }
 }
 
@@ -88,7 +86,7 @@ for (int i=0;i<z;i++) {
    N=N+2;
    if ((N%(1024*1024))==0) {
       int l=N/(1024*1024);
-      printf("%d megabyte%s read...         \r",l,(l>1)?"s":"");
+      u_printf("%d megabyte%s read...         \r",l,(l>1)?"s":"");
    }
 }
 }
@@ -169,10 +167,10 @@ arbre_etiquettes=(struct arbre_char**)malloc(sizeof(struct arbre_char*)*fst2->nu
 if (arbre_etiquettes==NULL) {
    fatal_error("Not enough memory in main of Fst2Txt\n");
 }
-printf("Applying %s in %s mode...\n",argv[2],(MODE==MERGE)?"merge":"replace");
+u_printf("Applying %s in %s mode...\n",argv[2],(MODE==MERGE)?"merge":"replace");
 pretraiter_etiquettes();
 parse_text();
-printf("\n");
+u_printf("\n");
 u_fclose(f);
 u_fclose(f_out);
 remove(argv[1]);
@@ -205,7 +203,7 @@ int sommet;
 
 
 int ecrire_sortie() {
-u_fprints(output,f_out);
+u_fprintf(f_out,"%S",output);
 return (taille_entree);
 }
 
@@ -232,7 +230,7 @@ for (i=0;s[i]!='\0';i++)
 
 void empiler_output_chaine(unichar s[]) {
 int i=0;
-if (!u_strcmp_char(s,"<E>")) {
+if (!u_strcmp(s,"<E>")) {
   // we do nothing if the transduction is <E>
   return;
 }
@@ -247,9 +245,7 @@ while (s[i]!='\0') {
          }
          name[L]='\0';
          if (s[i]!='$') {
-            char NAME[100];
-            u_to_char(NAME,name);
-            error("Error: missing closing $ after $%s\n",NAME);
+            error("Error: missing closing $ after $%S\n",name);
          }
          else {
              i++;
@@ -260,24 +256,16 @@ while (s[i]!='\0') {
              else {
                  struct variable_list* v=get_variable(name,fst2->variables);
                  if (v==NULL) {
-                    char NAME[100];
-                    u_to_char(NAME,name);
-                    error("Error: undefined variable $%s\n",NAME);
+                    error("Error: undefined variable $%S\n",name);
                  }
                  else if (v->start==-1) {
-                    char NAME[100];
-                    u_to_char(NAME,name);
-                    error("Error: starting position of variable $%s undefined\n",NAME);
+                    error("Error: starting position of variable $%S undefined\n",name);
                  }
                  else if (v->end==-1) {
-                    char NAME[100];
-                    u_to_char(NAME,name);
-                    error("Error: end position of variable $%s undefined\n",NAME);
+                    error("Error: end position of variable $%S undefined\n",name);
                  }
                  else if (v->start > v->end) {
-                    char NAME[100];
-                    u_to_char(NAME,name);
-                    error("Error: end position before starting position for variable $%s\n",NAME);
+                    error("Error: end position before starting position for variable $%S\n",name);
                  }
                  else {
                     // if the variable definition is correct
@@ -307,6 +295,7 @@ for (i=origine_courante;i<BUFFER_SIZE;i++) {
   buffer[i-origine_courante]=buffer[i];
 }
 int N=BUFFER_SIZE-origine_courante;
+#warning shouldnt we use u_fread ?
 int l=u_fread_raw(buffer+N/*,sizeof(unichar)*/,origine_courante,f);
 origine_courante=0;
 LENGTH=N+l;
@@ -314,6 +303,7 @@ LENGTH=N+l;
 
 
 void parse_text() {
+#warning shouldnt we use u_fread ?
 LENGTH=u_fread_raw(buffer/*,sizeof(unichar)*/,BUFFER_SIZE,f);
 origine_courante=0;
 N=2;
@@ -366,11 +356,8 @@ if (profondeur > MAX_DEPTH) {
           "Recognized more than %i tokens starting from:\n"
           "  ",
           n_graph, MAX_DEPTH);
-  int i;
-  char ent[16];
-  for (i=0; i<60; i++) {
-    unichar2htmlEnt( ent, buffer[origine_courante+i] );
-    fputs(ent,stderr);
+  for (int i=0; i<60; i++) {
+    error("%S",buffer[origine_courante+i]);
   }
   error("\nSkipping match at this position, trying from next token!\n");
   output[0] = '\0';  // clear output
@@ -487,9 +474,7 @@ while (t!=NULL) {
             //int old;
             struct variable_list* L=get_variable(etiq->variable,fst2->variables);
             if (L==NULL) {
-               error("Unknown variable: ");
-               error(etiq->variable);
-               fatal_error("\n");
+               fatal_error("Unknown variable: %S\n",etiq->variable);
             }
             //old=L->start;
             if (buffer[pos+origine_courante]==' ' && pos+origine_courante+1<LENGTH) {
@@ -507,9 +492,7 @@ while (t!=NULL) {
               //int old;
               struct variable_list* L=get_variable(etiq->variable,fst2->variables);
               if (L==NULL) {
-                 error("Unknown variable: ");
-                 error(etiq->variable);
-                 fatal_error("\n");
+                 fatal_error("Unknown variable: %S\n",etiq->variable);
               }
               //old=L->end;
               if (pos>0)
@@ -519,7 +502,7 @@ while (t!=NULL) {
               parcourir_graphe(n_graph,t->state_number,pos,profondeur,liste_arrivee);
               //L->end=old;
          }
-         else if (!u_strcmp_char(contenu,"<MOT>")) {
+         else if (!u_strcmp(contenu,"<MOT>")) {
               // case of transition by any sequence of letters
               if (buffer[pos+origine_courante]==' ' && pos+origine_courante+1<LENGTH) {
                  pos2=pos+1;
@@ -547,7 +530,7 @@ while (t!=NULL) {
                      }
               }
          }
-         else if (!u_strcmp_char(contenu,"<NB>")) {
+         else if (!u_strcmp(contenu,"<NB>")) {
               // case of transition by any sequence of digits
               if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -570,7 +553,7 @@ while (t!=NULL) {
                  parcourir_graphe(n_graph,t->state_number,pos2,profondeur,liste_arrivee);
               }
          }
-         else if (!u_strcmp_char(contenu,"<MAJ>")) {
+         else if (!u_strcmp(contenu,"<MAJ>")) {
               // case of upper case letter sequence
               if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -596,7 +579,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if (!u_strcmp_char(contenu,"<MIN>")) {
+         else if (!u_strcmp(contenu,"<MIN>")) {
               // case of lower case letter sequence
               if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -622,7 +605,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if (!u_strcmp_char(contenu,"<PRE>")) {
+         else if (!u_strcmp(contenu,"<PRE>")) {
               // case of a sequence beginning by an upper case letter
               if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -648,7 +631,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if (!u_strcmp_char(contenu,"<PNC>")) {
+         else if (!u_strcmp(contenu,"<PNC>")) {
               // case of a punctuation sequence
               if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -690,13 +673,13 @@ while (t!=NULL) {
                    }
               }
          }
-         else if (!u_strcmp_char(contenu,"<E>")) {
+         else if (!u_strcmp(contenu,"<E>")) {
               // case of an empty sequence
               // in both modes MERGE and REPLACE, we process the transduction if any
               traiter_transduction(etiq->output);
               parcourir_graphe(n_graph,t->state_number,pos,profondeur,liste_arrivee);
          }
-         else if (!u_strcmp_char(contenu,"<^>")) {
+         else if (!u_strcmp(contenu,"<^>")) {
               // case of a new line sequence
               if (buffer[pos+origine_courante]==0x0d) {
                  // in both modes MERGE and REPLACE, we process the transduction if any
@@ -709,7 +692,7 @@ while (t!=NULL) {
                  parcourir_graphe(n_graph,t->state_number,pos+2,profondeur,liste_arrivee);
               }
          }
-         else if (!u_strcmp_char(contenu,"#")) {
+         else if (!u_strcmp(contenu,"#")) {
               // case of a no space condition
               if (buffer[pos+origine_courante]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
@@ -717,7 +700,7 @@ while (t!=NULL) {
                 parcourir_graphe(n_graph,t->state_number,pos,profondeur,liste_arrivee);
               }
          }
-         else if (!u_strcmp_char(contenu," ")) {
+         else if (!u_strcmp(contenu," ")) {
               // case of an obligatory space
               if (buffer[pos+origine_courante]==' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
@@ -729,7 +712,7 @@ while (t!=NULL) {
                 parcourir_graphe(n_graph,t->state_number,pos+1,profondeur,liste_arrivee);
               }
          }
-         else if (!u_strcmp_char(contenu,"<L>")) {
+         else if (!u_strcmp(contenu,"<L>")) {
               // case of a single letter
               if (buffer[pos+origine_courante]==' ') {pos2=pos+1;if (MODE==MERGE) empiler(' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -818,16 +801,16 @@ if (e->control&RESPECT_CASE_TAG_BIT_MASK || e->type==BEGIN_VAR_TAG
 }
 unichar* s=e->input;
 if (!is_letter(s[0],alphabet)) return 1;
-if (!u_strcmp_char(s,"<E>") ||
-    !u_strcmp_char(s,"<MOT>") ||
-    !u_strcmp_char(s,"<MAJ>") ||
-    !u_strcmp_char(s,"<MIN>") ||
-    !u_strcmp_char(s,"<PRE>") ||
-    !u_strcmp_char(s,"<PNC>") ||
-    !u_strcmp_char(s,"<L>") ||
-    !u_strcmp_char(s,"<^>") ||
-    !u_strcmp_char(s,"#") ||
-    !u_strcmp_char(s," ")) {
+if (!u_strcmp(s,"<E>") ||
+    !u_strcmp(s,"<MOT>") ||
+    !u_strcmp(s,"<MAJ>") ||
+    !u_strcmp(s,"<MIN>") ||
+    !u_strcmp(s,"<PRE>") ||
+    !u_strcmp(s,"<PNC>") ||
+    !u_strcmp(s,"<L>") ||
+    !u_strcmp(s,"<^>") ||
+    !u_strcmp(s,"#") ||
+    !u_strcmp(s," ")) {
     return 1;
 }
 return 0;

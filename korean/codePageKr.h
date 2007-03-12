@@ -184,7 +184,7 @@ public:
 		else if(  ( c >= (unichar)'A' ) && (c <=(unichar)'9'))
 			su = su * 16 +  c- (unichar)'A'+10;
 		else
-			exitMessage("illegal value in conv map");
+			fatal_error("illegal value in conv map\n");
 	}
 	return(su);
 };
@@ -196,7 +196,7 @@ wchar_t getValueIdx(wchar_t *s,int &idx)
 			idx += 4;
 			return(get4HexVal(s));
 		}
-		exitMessage("illegal value");
+		fatal_error("illegal value\n");
 	}
 	return(s[idx++]);
 }
@@ -210,7 +210,7 @@ wchar_t getValueIdx(wchar_t *s,int &idx)
     	
     	loadHJAConvMap = (wchar_t *)malloc( sizeof(wchar_t)*0x10000);
     	for(idx = 0; idx < 0x10000;idx++) loadHJAConvMap[idx] = 0;
-    	while(EOF!=u_read_line(lf,(unichar *)UtempLine)){
+    	while(EOF!=u_fgets((unichar *)UtempLine,lf)){
     		idx = 0;
     		if(UtempLine[idx] == (unichar)' ') continue;
     		srcIdx = getValueIdx(UtempLine,idx);
@@ -232,7 +232,7 @@ wchar_t getValueIdx(wchar_t *s,int &idx)
                     continue;
                     }
             }
-            exitMessage("illegal value in HanMap");
+            fatal_error("illegal value in HanMap\n");
     	}
     
 	};
@@ -240,14 +240,7 @@ wchar_t getValueIdx(wchar_t *s,int &idx)
     {
 	 free(loadHJAConvMap);
 	};
-	void exitMessage(char *mes)
-{
-	fprintf(stderr,"%s\n",mes);
-
-//fprintf(stderr,"return");getchar();getchar();
-
-	exit(1);
-}
+   
 };
 #endif //CODE_PAGE_KR
 

@@ -23,9 +23,11 @@
 /**
  * This function put the standard output stream in unbufferized mode, so
  * that if a graphical interface listen to this stream, it will be 
- * synchronous.
+ * synchronous. We also put the standard input stream in the same
+ * mode, in order to apply our own scanf functions.
  */
 void setBufferMode() {
+setvbuf(stdin,NULL,_IONBF,0);
 setvbuf(stdout,NULL,_IONBF,0);
 }
 

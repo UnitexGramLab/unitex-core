@@ -87,12 +87,9 @@ void MU_delete_id(MU_id_T* id){
 ////////////////////////////////////////////
 // Prints a form and its inflection features.
 int MU_print_f(MU_f_T* f) {
-  unichar tmp[4];
-  u_prints(f->form);
-  u_strcpy_char(tmp," : ");
-  u_prints(tmp);
-  f_print_morpho(f->features);
-  return 0;
+u_printf("%S : ",f->form);
+f_print_morpho(f->features);
+return 0;
 }
 
 ////////////////////////////////////////////
@@ -107,35 +104,23 @@ int MU_print_forms(MU_forms_T* F) {
 ////////////////////////////////////////////
 // Prints a lemma and its info.
 int MU_print_lemma(MU_lemma_T* l) {
-  unichar tmp[30];
-
-  u_strcpy_char(tmp,"-----------------\n");
-  u_prints(tmp);
-  u_strcpy_char(tmp,"MULTI-WORD LEMMA:\n");
-  u_prints(tmp);
-  u_strcpy_char(tmp,"Units:\n");
-  u_prints(tmp);
+  u_printf("-----------------\n");
+  u_printf("MULTI-WORD LEMMA:\n");
+  u_printf("Units:\n");
   int u;
   for (u=0; u<l->no_units; u++) {
-    u_prints(l->units[u]->form);      
+    u_printf("%S",l->units[u]->form);      
     if (l->units[u]->lemma) {
-      u_strcpy_char(tmp,":");
-      u_prints(tmp);
+      u_printf(":");
       SU_print_lemma(l->units[u]->lemma);
     }
     else {
-      u_strcpy_char(tmp,"\n");
-      u_prints(tmp);
+      u_printf("\n");
     }
   }
-  u_strcpy_char(tmp,"Class: ");
-  u_prints(tmp);
-  u_prints(l->cl->name);
-  u_strcpy_char(tmp,"\nParadigm: ");
-  u_prints(tmp);
-  printf("%s",l->paradigm);
-  u_strcpy_char(tmp,"-----------------\n");
-  u_prints(tmp);
+  u_printf("Class: %S\n",l->cl->name);
+  u_printf("Paradigm: %s\n",l->paradigm);
+  u_printf("-----------------\n");
   return 0;
 }
 

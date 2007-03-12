@@ -22,7 +22,7 @@
 #ifndef MatchesH
 #define MatchesH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "LocatePattern.h"
 #include "LocateConstants.h"
 

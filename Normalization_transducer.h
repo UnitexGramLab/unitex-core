@@ -24,7 +24,7 @@
 #define Normalization_transducerH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "Fst2.h"
 #include "Text_tokens.h"

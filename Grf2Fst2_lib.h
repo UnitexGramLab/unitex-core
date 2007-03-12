@@ -23,7 +23,7 @@
 #define Grf2Fst2_libH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "Fst2.h"
 #include "Error.h"
@@ -36,7 +36,7 @@
 #define ALPHABET_TOKENIZATION 2
 
 #define NOMBRE_GRAPHES_COMP 5000        // nombre max de graphes
-#define N_CAR_MAX_COMP 300               // nombre max de caracteres d'un mot normal
+#define N_CAR_MAX_COMP 4000               // nombre max de caracteres d'un mot normal
 #define TAILLE_MOT_GRAND_COMP 10000       // nombre max de caracteres d'un long mot
 #define NOMBRE_TRANSITIONS_COMP 10000    // nombre max de transitions
 #define L_ASCII 256 //taille de l'alphabet

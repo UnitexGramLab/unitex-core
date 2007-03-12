@@ -22,7 +22,7 @@
 #ifndef AutomatonDictionary2BinH
 #define AutomatonDictionary2BinH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include <stdlib.h>
 
 

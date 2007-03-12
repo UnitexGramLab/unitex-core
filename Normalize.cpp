@@ -19,13 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "FileName.h"
 #include "Copyright.h"
 #include "DELA.h"
@@ -34,6 +31,7 @@
 #include "Error.h"
 #include "Buffer.h"
 #include "StringParsing.h"
+
 
 #define MAX_TAG_LENGTH 4000
 #define KEEP_CARRIDGE_RETURN 0
@@ -48,23 +46,23 @@ void normalize(FILE*,FILE*,int,struct string_hash*);
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Normalize <text> [-no_CR] [-f=EQUIV]\n");
-printf("     <text>   : text file to be normalized\n");
-printf("     -no_CR   : this optional parameter indicates that every separator\n");
-printf("                sequence will be turned into a single space\n\n");
-printf("     -f=EQUIV : this optional parameter specifies a configuration file\n");
-printf("                EQUIV that contains replacement instructions in the form\n");
-printf("                of lines like: input_sequence tab output_sequence\n");
-printf("                By default, the program only replace { and } by [ and ]\n");
-printf("Turns every sequence of separator chars (space, tab, new line) into one.\n");
-printf("If a separator sequence contains a new line char, it is turned to a single new\n");
-printf("line (except with -no_CR); if not, it is turned into a single space. As\n");
-printf("a side effect, new line sequences are converted into the Windows style: \\r\\n.\n");
-printf("If you specifies replacement rules with -f, they will be applied prior\n");
-printf("to the separator normalization, so you have to take care if you manipulate\n");
-printf("separators in your replacement rules.\n");
-printf("The result is stored in a file named file_name.snt.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Normalize <text> [-no_CR] [-f=EQUIV]\n");
+u_printf("     <text>   : text file to be normalized\n");
+u_printf("     -no_CR   : this optional parameter indicates that every separator\n");
+u_printf("                sequence will be turned into a single space\n\n");
+u_printf("     -f=EQUIV : this optional parameter specifies a configuration file\n");
+u_printf("                EQUIV that contains replacement instructions in the form\n");
+u_printf("                of lines like: input_sequence tab output_sequence\n");
+u_printf("                By default, the program only replace { and } by [ and ]\n");
+u_printf("Turns every sequence of separator chars (space, tab, new line) into one.\n");
+u_printf("If a separator sequence contains a new line char, it is turned to a single new\n");
+u_printf("line (except with -no_CR); if not, it is turned into a single space. As\n");
+u_printf("a side effect, new line sequences are converted into the Windows style: \\r\\n.\n");
+u_printf("If you specifies replacement rules with -f, they will be applied prior\n");
+u_printf("to the separator normalization, so you have to take care if you manipulate\n");
+u_printf("separators in your replacement rules.\n");
+u_printf("The result is stored in a file named file_name.snt.\n");
 }
 
 
@@ -125,11 +123,11 @@ if (replacement_rules==NULL) {
  * we are sure to have rules for { and } */
 unichar key[2];
 unichar value[2];
-u_strcpy_char(key,"{");
-u_strcpy_char(value,"[");
+u_strcpy(key,"{");
+u_strcpy(value,"[");
 get_value_index(key,replacement_rules,INSERT_IF_NEEDED,value);
-u_strcpy_char(key,"}");
-u_strcpy_char(value,"]");
+u_strcpy(key,"}");
+u_strcpy(value,"]");
 get_value_index(key,replacement_rules,INSERT_IF_NEEDED,value);
 char tmp_file[FILENAME_MAX];
 get_extension(argv[1],tmp_file);
@@ -160,9 +158,9 @@ if (f_out==NULL) {
    u_fclose(f);
    return 1;
 }
-printf("Normalizing %s...\n",argv[1]);
+u_printf("Normalizing %s...\n",argv[1]);
 normalize(f,f_out,mode,replacement_rules);
-printf("\n");
+u_printf("\n");
 u_fclose(f);
 u_fclose(f_out);
 free_string_hash(replacement_rules);
@@ -212,13 +210,13 @@ close_bracket[1]='\0';
 /* First, we fill the buffer */
 fill_buffer(buffer,input);
 int current_start_pos=0;
-printf("First block...              \r");
+u_printf("First block...              \r");
 int current_block=1;
 while (current_start_pos<buffer->size) {
    if (!buffer->end_of_file
        && current_start_pos>(buffer->size-MARGIN_BEFORE_BUFFER_END)) {
       /* If we must change of block and if we can */
-      printf("Block %d...              \r",++current_block);
+      u_printf("Block %d...              \r",++current_block);
       fill_buffer(buffer,current_start_pos,input);
       current_start_pos=0;
    }
@@ -236,7 +234,7 @@ while (current_start_pos<buffer->size) {
           * a backslash at the end of the buffer, or if we have reached the end
           * of the buffer, we assume that the initial
           * { was not a tag beginning, so we print the substitute of { */
-         u_fprints(replacements->value[get_value_index(open_bracket,replacements)],output);
+         u_fprintf(output,"%S",replacements->value[get_value_index(open_bracket,replacements)]);
          /* And we rewind the current position after the { */
          current_start_pos=old_position+1;
       }
@@ -244,16 +242,16 @@ while (current_start_pos<buffer->size) {
          /* If we have read a sequence like {....}, we assume that there won't be
           * a buffer overflow if we add the } */
          u_strcat(tmp,close_bracket);
-         if (!u_strcmp_char(tmp,"{S}") || !u_strcmp_char(tmp,"{STOP}") || check_tag_token(tmp)) {
+         if (!u_strcmp(tmp,"{S}") || !u_strcmp(tmp,"{STOP}") || check_tag_token(tmp)) {
             /* If this is a special tag or a valid tag token, we just print
              * it to the output */
-            u_fprints(tmp,output);
+            u_fprintf(output,"%S",tmp);
             current_start_pos++;
          }
          else {
             /* If we have a non valid tag token, we print the equivalent of {
              * and we rewind the current position after the { */
-            u_fprints(replacements->value[get_value_index(open_bracket,replacements)],output);
+            u_fprintf(output,"%S",replacements->value[get_value_index(open_bracket,replacements)]);
             current_start_pos=old_position+1;
          }
       }
@@ -265,7 +263,7 @@ while (current_start_pos<buffer->size) {
       int index=get_longest_key_index(&buff[current_start_pos],&key_length,replacements);
       if (index!=NO_VALUE_INDEX) {
          /* If there is something to replace */
-         u_fprints(replacements->value[index],output);
+         u_fprintf(output,"%S",replacements->value[index]);
          current_start_pos=current_start_pos+key_length;
       }
       else {

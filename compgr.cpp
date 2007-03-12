@@ -173,7 +173,7 @@ static autalmot_t * compileRegle(tRegle * regle) {
 
   int c, p, ens ;
 
-  printf("Compiling %s ... (%d contextes)\n", regle->nom, regle->nbContextes);
+  u_printf("Compiling %s ... (%d contextes)\n", regle->nom, regle->nbContextes);
 
   for (c = 0; c < regle->nbContextes; c++) {
 
@@ -217,17 +217,17 @@ static autalmot_t * compileRegle(tRegle * regle) {
     printtime(autalmot_minimize(res));
   }
 
-  debug("compileRegle: out of combis (%d states)\n", res->nbstates);
+  error("compileRegle: out of combis (%d states)\n", res->nbstates);
 
-  debug("compl\n");
+  error("compl\n");
   printtime(autalmot_complementation(res));
 
-  debug("emonde\n");
+  error("emonde\n");
   printtime(autalmot_emonde(res));
 
   if (res->nbstates == 0) { error("grammar %s forbids everything.\n", regle->nom); }
 
-  printf("grammar %s compiled. (%d states)\n", regle->nom, res->nbstates);
+  u_printf("grammar %s compiled. (%d states)\n", regle->nom, res->nbstates);
 
   return res;
 }
@@ -240,23 +240,23 @@ int compile_grammar(char * gram, char * outname) {
   tRegle * regle = newRegle(gram);
   if (regle == NULL) { error("unable to read grammar '%s'\n", gram); return -1; }
 
-  debug("regle\n");
+  error("regle\n");
 
   autalmot_t * A;
   if ((A = compileRegle(regle)) == NULL) {
     fatal_error("unable to compile rule '%s'\n", gram); return -1;
   }
 
-  debug("after compile\n");
+  error("after compile\n");
 
   deleteRegle(regle);
 
-  debug("after delete\n");
+  error("after delete\n");
 
   autalmot_output_fst2(A, outname, FST_GRAMMAR);
   autalmot_delete(A);
 
-  debug("endofcompile\n");
+  error("endofcompile\n");
 
   return 0;
 }
@@ -270,7 +270,7 @@ int compile_grammar(char * gram, char * outname) {
 
 int compile_rules(char * rulesname, char * outname) {
 
-  printf("Compilation of %s\n", rulesname);
+  u_printf("Compilation of %s\n", rulesname);
 
   FILE * f = NULL;
   FILE * frules = fopen(rulesname, "r");
@@ -298,7 +298,7 @@ int compile_rules(char * rulesname, char * outname) {
     chomp(buf);
     if (*buf == 0) { continue; }
 
-    printf("\n\n%s ...\n", buf);
+    u_printf("\n\n%s ...\n", buf);
 
     strip_extension(buf);
     strcat(buf, ".elg");
@@ -306,7 +306,7 @@ int compile_rules(char * rulesname, char * outname) {
     if ((f = fopen(buf, "r")) == NULL) { // .elg doesn't exist, making one
 
       strip_extension(buf);
-      printf("precompiling %s.fst2\n", buf);
+      u_printf("precompiling %s.fst2\n", buf);
 
       strcat(buf, ".fst2");
       
@@ -325,7 +325,7 @@ int compile_rules(char * rulesname, char * outname) {
       */
     } else {
       fclose(f);
-      printf("using already exiting %s\n", buf);
+      u_printf("using already exiting %s\n", buf);
       A = load_grammar_automaton(buf);      
       if (A == NULL) { fatal_error("unable to load '%s'\n", buf); }
     }
@@ -333,7 +333,7 @@ int compile_rules(char * rulesname, char * outname) {
 
     if (A->nbstates == 0) { error("grammar %s forbids everything!\n", buf); }
  
-    debug("regroupe\n");
+    error("regroupe\n");
 
     printtime(if (res) {
 
@@ -345,7 +345,7 @@ int compile_rules(char * rulesname, char * outname) {
 
     } else { res = A; });
 
-    debug("regroupe done (nbstates = %d)\n", res->nbstates);
+    error("regroupe done (nbstates = %d)\n", res->nbstates);
 
     fprintf(out, "\t%s\n", buf);
     nbregles++;
@@ -358,7 +358,7 @@ int compile_rules(char * rulesname, char * outname) {
       sprintf(fstoutname, "%s-%d.elg", outname, fstno++);
       fprintf(out, "<%s>\n", fstoutname);
 
-      printf("splitting big grammar in '%s' (%d states)\n", fstoutname, res->nbstates);
+      u_printf("splitting big grammar in '%s' (%d states)\n", fstoutname, res->nbstates);
 
       ustring_printf(ustr, "%s: compiled elag grammar", fstoutname);
       free(res->name);
@@ -378,7 +378,7 @@ int compile_rules(char * rulesname, char * outname) {
     sprintf(fstoutname, "%s-%d.elg", outname, fstno++);
     fprintf(out, "<%s>\n", fstoutname);
 
-    printf("outputing grammar in '%s'(%d states)\n", fstoutname, res->nbstates);
+    u_printf("outputing grammar in '%s'(%d states)\n", fstoutname, res->nbstates);
 
     autalmot_minimize(res, 1);
 
@@ -398,12 +398,10 @@ int compile_rules(char * rulesname, char * outname) {
 
   ustring_delete(ustr);
 
-  printf("\ndone.\nElapsed time: %.0f s.\n", difftime(fin, debut));
+  u_printf("\ndone.\nElapsed time: %.0f s.\n", difftime(fin, debut));
 
-  printf("\n%d rule%s from %s compiled in %s (%d automat%s).\n",
-         nbregles, (nbregles > 1) ? "s" : "", rulesname, outname,
-	 fstno, (fstno > 1) ? "a" : "on");
-
+  u_printf("\n%d rule%s from %s compiled in %s (%d automat%s).\n",
+         nbregles, (nbregles > 1) ? "s" : "", rulesname, outname, fstno, (fstno > 1) ? "a" : "on");
   return 0;
 }
 
@@ -449,7 +447,7 @@ static autalmot_t * make_locate_auto(tRegle * regle) {
 
 static bool prepareRegle(tRegle * regle) {
 
-  debug("PrepareRegle(%s)\n", regle->nom);
+  error("PrepareRegle(%s)\n", regle->nom);
 
   int finR1, finR2, finC2, nbContraintes, c;
   /* Etats buts des transitions etiquetees par les '=' medians des contraintes. */
@@ -502,7 +500,6 @@ static bool prepareRegle(tRegle * regle) {
       break ;
 
     default :
-      symbol_dump(t->label);
       fatal_error("in grammar: left delimitor '!' or '=' lacking\n");
     }
   }
@@ -527,7 +524,7 @@ static bool prepareRegle(tRegle * regle) {
   autalmot_output_fst2(locate, buf, FST_LOCATE);
   autalmot_delete(locate);
 
-  debug("end of prepare\n");
+  error("end of prepare\n");
 
   return succes;
 }
@@ -877,7 +874,7 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
 
   printtime(autalmot_minimize(a1));
 
-  debug("end of combi(%d)\n\n", ens);
+  error("end of combi(%d)\n\n", ens);
 
 //  autalmot_dump(a1);
 

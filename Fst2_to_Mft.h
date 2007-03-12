@@ -24,7 +24,7 @@
 #define Fst2_to_MftH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "String_hash.h"
 

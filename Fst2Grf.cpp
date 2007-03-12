@@ -19,11 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "Sentence_to_grf.h"
 #include "FileName.h"
@@ -32,21 +31,18 @@
 #include "IOBuffer.h"
 #include "Error.h"
 
-//
-// "e:\my unitex\english\corpus\ivanhoe_snt\text.fst2" 1
-//
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Fst2Grf <text automata> <sentence> [<output>] [-f=<font>]\n");
-printf("     <text automata> :  the FST2 file that contains the text automata.\n");
-printf("     <sentence> :       the number of the sentence to be converted.\n");
-printf("     <output> :         name GRF file as <output>.grf and the TXT one as <output>.txt (default cursentence)\n"); 
-printf("     -f=<font> :        use the font <font> in the output .grf (Times new Roman by default).\n\n"); 
-printf("Converts a sentence automaton into a GRF file that can be viewed. The\n");
-printf("resulting file, named cursentence.grf, is stored in the same directory\n");
-printf("that <text automata>. The text of the sentence is saved in the same\n");
-printf("directory, in a file named cursentence.txt.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Fst2Grf <text automata> <sentence> [<output>] [-f=<font>]\n");
+u_printf("     <text automata> :  the FST2 file that contains the text automata.\n");
+u_printf("     <sentence> :       the number of the sentence to be converted.\n");
+u_printf("     <output> :         name GRF file as <output>.grf and the TXT one as <output>.txt (default cursentence)\n"); 
+u_printf("     -f=<font> :        use the font <font> in the output .grf (Times new Roman by default).\n\n"); 
+u_printf("Converts a sentence automaton into a GRF file that can be viewed. The\n");
+u_printf("resulting file, named cursentence.grf, is stored in the same directory\n");
+u_printf("that <text automata>. The text of the sentence is saved in the same\n");
+u_printf("directory, in a file named cursentence.txt.\n");
 }
 
 
@@ -144,7 +140,7 @@ setBufferMode();
 
 
 
-printf("Loading %s...\n",argv[1]);
+u_printf("Loading %s...\n",argv[1]);
 Fst2* fst2=load_one_sentence_from_fst2(argv[1],SENTENCE);
 if (fst2==NULL) {
    error("Cannot load text automata file %s\n",argv[1]);
@@ -152,14 +148,13 @@ if (fst2==NULL) {
    u_fclose(txt);
    return 1;
 }
-u_fprints(fst2->graph_names[SENTENCE],txt);
-u_fprints_char("\n",txt);
-printf("Creating GRF...\n");
+u_fprintf(txt,"%S\n",fst2->graph_names[SENTENCE]);
+u_printf("Creating GRF...\n");
 sentence_to_grf(fst2,SENTENCE,fontname,f);
 u_fclose(f);
 u_fclose(txt);
 free_Fst2(fst2);
-printf("Done.\n");
+u_printf("Done.\n");
 return 0;
 }
-//---------------------------------------------------------------------------
+

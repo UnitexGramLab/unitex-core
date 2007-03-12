@@ -145,12 +145,6 @@ static int compTrans(tTransCol * t1, tTransCol * t2) {
 
 
 
-static inline void afficheSorties(tTransCol * sorties, FILE * f = stderr) {
-  for (; sorties; sorties = sorties->suivant) { fprintf(f, " %d>%d", sorties->etiquette, sorties->couleurBut) ; }
-  fprintf(f, "\n") ;
-}
-
-
 /* initialise le tableau de couleurs: partitionne les etats finaux des etats non finaux
  * La couleur de l etat 0 est 0.
  */
@@ -283,7 +277,7 @@ static void compact_def_trans(autalmot_t * A) {
 
 void autalmot_minimize(autalmot_t * aut, int level) {
 
-  if (aut->nbinitials > 1) { autalmot_dump(aut); fatal_error("minimize: automate non deterministe!\n"); }
+  if (aut->nbinitials > 1) { fatal_error("minimize: automate non deterministe!\n"); }
 
   if (aut->nbinitials == 0) {
     autalmot_empty(aut);

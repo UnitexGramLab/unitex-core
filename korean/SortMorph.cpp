@@ -26,7 +26,7 @@
 //     tokens file, morphems of a word file,  sequence de morpheme file 
 
 #include <stdio.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "Copyright.h"
 #include "FileName.h"
 #include "String_hash2.h"
@@ -35,12 +35,10 @@
 
 
 
-static void usage(int flag)
-{
-      //012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
-printf("%s",COPYRIGHT);
-printf("Usage:\r\n");
-printf(
+static void usage(int flag) {
+u_printf("%S",COPYRIGHT);
+u_printf("Usage:\r\n");
+u_printf(
 "SortMorp tfile mfile mcfile\r\n"\
 " tfile : name of lists of tokens file\r\n"\
 " sqfile : name of lists of sequences of morphemes in a word\r\n"\
@@ -126,9 +124,9 @@ class arbre_string00 parFlechi, parCano;
 	int sizeFile =ftell(fptr);
 	sizeFile /= 2;
 	mem = new unichar[sizeFile];
-	if(!mem) exitMessage("mem alloc fail");
+	if(!mem) fatal_error("mem alloc fail\n");
 	fseek(fptr,2,SEEK_SET);
-	if(!u_fread_raw(mem,sizeFile-1,fptr)) exitMessage("Read morpheme table fail");
+	if(!u_fread_raw(mem,sizeFile-1,fptr)) fatal_error("Read morpheme table fail\n");
 	mem[sizeFile-1] = 0;
     fclose(fptr);
     
@@ -139,18 +137,18 @@ class arbre_string00 parFlechi, parCano;
 
 	table = new struct locdefi *[count];
 	freqtable = new int[count];
-	if(!table) exitMessage("morphems table mem alloc fail");
+	if(!table) fatal_error("morphems table mem alloc fail\n");
 	unichar *curoffset = wp;
 	int index  = 0;
 	while(*wp) {
 	    if(*wp != L'{'){
 	      if(*wp == '<'){
                  curoffset = wp;
-	             while(*wp != L'>'){if(!*wp) exitMessage("illegal format 1");wp++;}
+	             while(*wp != L'>'){if(!*wp) fatal_error("illegal format 1\n");wp++;}
 	             wp++;
 	             *wp++ = 0;
                  while((*wp == L' ' ) || (*wp == '\t'))
-                  {if(!*wp) exitMessage("illegal format 2");wp++;}
+                  {if(!*wp) fatal_error("illegal format 2\n");wp++;}
 
 	             while((*wp == L'\r') && (*wp == L'\n')) wp++;
 	             
@@ -170,26 +168,26 @@ class arbre_string00 parFlechi, parCano;
           } else if ((*wp == L'\r') || (*wp == L'\n')) {
                wp++;continue;
                }
-          exitMessage("illegal format 3");
+          fatal_error("illegal format 3\n");
         }
 	    wp++;
 	    table[index] = new struct locdefi;
         curoffset = wp;
-	    while(*wp != L','){if(!*wp) exitMessage("illegal format");wp++;}
+	    while(*wp != L','){if(!*wp) fatal_error("illegal format\n");wp++;}
 	    *wp++ = 0;
 	    table[index]->fl = curoffset;
 	    
         curoffset = wp;	    
-	    while(*wp != L'.'){if(!*wp) exitMessage("illegal format");wp++;}
+	    while(*wp != L'.'){if(!*wp) fatal_error("illegal format\n");wp++;}
 	    *wp++ = 0;
 	    table[index]->ca = curoffset;
 	    
 	    curoffset = wp;        
-	    while(*wp != L'}'){if(!*wp) exitMessage("illegal format");wp++;}
+	    while(*wp != L'}'){if(!*wp) fatal_error("illegal format\n");wp++;}
 	    *wp++ = 0;
 	    table[index]->inf = curoffset;
 	    while((*wp == L' ' ) || (*wp == '\t'))
-          {if(!*wp) exitMessage("illegal format");wp++;}
+          {if(!*wp) fatal_error("illegal format\n");wp++;}
 	    
 	    curoffset = wp;
 	    for(tcount = 0;(*wp >= L'0') && (*wp <= '9') ;wp++)
@@ -198,12 +196,9 @@ class arbre_string00 parFlechi, parCano;
         while((*wp == L'\r') || (*wp == L'\n')) wp++;
         parFlechi.put(table[index]->fl,(void *)index);
         parCano.put(table[index]->ca,(void *)index);
-//              u_fprintf(stderr,"%S,%S.%S\t%d\n",table[index]->fl, table[index]->ca,
-//               table[index]->inf, freqtable[index]);
         index++;
 		
 	};
-//	if( index != count) exitMessage("illegal table size");
 
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"morph_by_flei.txt");

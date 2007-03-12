@@ -22,7 +22,7 @@
 #ifndef LocatePatternH
 #define LocatePatternH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "String_hash.h"
 #include "Fst2.h"
 #include "Text_tokens.h"

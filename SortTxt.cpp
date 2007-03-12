@@ -19,28 +19,28 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Unicode.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "SortTxtMain.h"
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: SortTxt <text file> [OPTIONS]\n");
-printf("     <text file> : any unicode text file\n\n");
-printf("The options can be a combinaison of the following:\n");
-printf("     -y : remove duplicates\n");
-printf("     -n : do not remove duplicates\n");
-printf("     -r : reverse the sort order\n");
-printf("     -o <char order> : use a file describing the char order for sorting\n");
-printf("     -l <file> : saves the resulting number of lines in <file>\n");
-printf("     -thai : sort thai text\n\n");
-printf("By default, the sort is done according the Unicode char order, removing\n");
-printf("the duplicates.\n\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: SortTxt <text file> [OPTIONS]\n");
+u_printf("     <text file> : any unicode text file\n\n");
+u_printf("The options can be a combinaison of the following:\n");
+u_printf("     -y : remove duplicates\n");
+u_printf("     -n : do not remove duplicates\n");
+u_printf("     -r : reverse the sort order\n");
+u_printf("     -o <char order> : use a file describing the char order for sorting\n");
+u_printf("     -l <file> : saves the resulting number of lines in <file>\n");
+u_printf("     -thai : sort thai text\n\n");
+u_printf("By default, the sort is done according the Unicode char order, removing\n");
+u_printf("the duplicates.\n\n");
 }
 
 

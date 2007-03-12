@@ -96,15 +96,13 @@ int f_add_morpho_unichar(f_morpho_T *feat, unichar *cat, unichar* val) {
 
   c = is_valid_cat(cat);    //Checks if 'cat' is a valid category name in the current language
   if (!c) {
-    error("Invalid category: ");
-    u_fprints(cat,stderr);
+    error("Invalid category: %S",cat);
     //    error("\n");
     return -1;
   }
   v = is_valid_val(c,val);    //Checks if 'val' is a valid category name in the current language
   if (v == -1) {
-    error("Invalid value: ");
-    u_fprints(val,stderr);
+    error("Invalid value: %S",val);
     //    error("\n");
     return -1;
   }
@@ -148,25 +146,18 @@ int f_get_value(f_morpho_T *feat, l_category_T* cat) {
 // Prints the contents of a form's morphology.
 // Returns 0.
 int f_print_morpho(f_morpho_T *feat) {
-  int c; //category index in feat
-  int i; //index of the current value in the domain of the current category
-  unichar tmp[3];
-  u_strcpy_char(tmp,"{");
-  u_prints(tmp);
-  for (c=0; c<feat->no_cats; c++) {
-    u_prints(feat->cats[c].cat->name);    //Print the category
-    u_strcpy_char(tmp,"=");
-    u_prints(tmp);
-    i = feat->cats[c].val;
-    u_prints(feat->cats[c].cat->values[i]);    //Print the value
-    if (c<feat->no_cats-1)  {
-      u_strcpy_char(tmp,";");
-      u_prints(tmp);    
-    }
-  }
-  u_strcpy_char(tmp,"}\n");
-  u_prints(tmp);    
-  return 0;
-
+int c; //category index in feat
+int i; //index of the current value in the domain of the current category
+u_printf("{");
+for (c=0; c<feat->no_cats; c++) {
+   u_printf("%S=",feat->cats[c].cat->name);    //Print the category
+   i=feat->cats[c].val;
+   u_printf("%S",feat->cats[c].cat->values[i]);    //Print the value
+   if (c<feat->no_cats-1)  {
+      u_printf(";");    
+   }
+}
+u_printf("}\n");
+return 0;
 }
 

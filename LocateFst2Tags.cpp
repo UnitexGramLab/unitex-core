@@ -67,19 +67,19 @@ for (int i=0;i<fst2->number_of_tags;i++) {
       tag[i]->type=END_VAR_TAG;
       tag[i]->variable=u_strdup(&(tag[i]->input[1]),length-2);
    }
-   else if (!u_strcmp_char(tag[i]->input,"$[")) {
+   else if (!u_strcmp(tag[i]->input,"$[")) {
       /* If we have a positive context start */
       tag[i]->type=BEGIN_POSITIVE_CONTEXT_TAG;
    }
-   else if (!u_strcmp_char(tag[i]->input,"$![")) {
+   else if (!u_strcmp(tag[i]->input,"$![")) {
       /* If we have a negative context start */
       tag[i]->type=BEGIN_NEGATIVE_CONTEXT_TAG;
    }
-   else if (!u_strcmp_char(tag[i]->input,"$]")) {
+   else if (!u_strcmp(tag[i]->input,"$]")) {
       /* If we have a context end */
       tag[i]->type=END_CONTEXT_TAG;
    }
-   else if (!u_strcmp_char(tag[i]->input,"#")) {
+   else if (!u_strcmp(tag[i]->input,"#")) {
       /* If we have a #, we must check if it is the meta one that
        * forbids space or the "#" token */
       if (is_bit_mask_set(tag[i]->control,RESPECT_CASE_TAG_BIT_MASK)) {
@@ -93,7 +93,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
          tag[i]->meta=META_SHARP;
       }
    }
-   else if (!u_strcmp_char(tag[i]->input,"<E>")) {
+   else if (!u_strcmp(tag[i]->input,"<E>")) {
       /* If we have a transition tagged by the empty word epsilon */
       tag[i]->type=META_TAG;
       tag[i]->meta=META_EPSILON;
@@ -134,11 +134,11 @@ for (int i=0;i<fst2->number_of_tags;i++) {
              * extract the content without < > and ! if any.*/
             unichar* content=u_strdup(&(tag[i]->input[1+negative_tag]),length-2-negative_tag);
             /* And we test all the possible metas */
-            if (!u_strcmp_char(content,"MOT")) {
+            if (!u_strcmp(content,"MOT")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_MOT;
             }
-            else if (!u_strcmp_char(content,"DIC")) {
+            else if (!u_strcmp(content,"DIC")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_DIC;
                if (!negative_tag) {
@@ -152,36 +152,36 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                   (*is_DIC)=1;
                }
             }
-            else if (!u_strcmp_char(content,"CDIC")) {
+            else if (!u_strcmp(content,"CDIC")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_CDIC;
                (*is_CDIC)=1;
             }
-            else if (!u_strcmp_char(content,"SDIC")) {
+            else if (!u_strcmp(content,"SDIC")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_SDIC;
                (*is_SDIC)=1;
             }
-            else if (!u_strcmp_char(content,"MAJ")) {
+            else if (!u_strcmp(content,"MAJ")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_MAJ;
             }
-            else if (!u_strcmp_char(content,"MIN")) {
+            else if (!u_strcmp(content,"MIN")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_MIN;
             }
-            else if (!u_strcmp_char(content,"PRE")) {
+            else if (!u_strcmp(content,"PRE")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_PRE;
             }
-            else if (!u_strcmp_char(content,"NB")) {
+            else if (!u_strcmp(content,"NB")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_NB;
                if (negative_tag) {
                   error("Negative mark will be ignored in <!NB>\n");
                }
             }
-            else if (!u_strcmp_char(content,"TOKEN")) {
+            else if (!u_strcmp(content,"TOKEN")) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_TOKEN;
             }
@@ -347,7 +347,7 @@ tag[i]->type=TOKEN_LIST_TAG;
  * the text dictionaries and while checking all the tag tokens of the text. */
 struct list_ustring* inflected_forms=get_inflected_forms(tag[i]->pattern->lemma,root);
 while (inflected_forms!=NULL) {
-   if (inflected_forms->string[0]=='{' && u_strcmp_char(inflected_forms->string,"{")) {
+   if (inflected_forms->string[0]=='{' && u_strcmp(inflected_forms->string,"{")) {
       /* We can have a tag token like "{today,.ADV}" */
       optimize_full_pattern_for_tag(inflected_forms->string,i,tag,alph,root,p);
    } else {

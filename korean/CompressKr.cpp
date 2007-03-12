@@ -18,11 +18,10 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */ 
-//---------------------------------------------------------------------------
-#include <stdlib.h>
 
+#include <stdlib.h>
 using namespace std;
-#include "unicode.h"
+#include "Unicode.h"
 #include "FileName.h"
 #include "Copyright.h"
 #include "bin.h"
@@ -30,20 +29,21 @@ using namespace std;
 #include "formation_dic_line.h"
 #include "bin3.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
 
 void usage(int flag) {
-printf("%s",COPYRIGHT);
-printf("Usage: CompressKr [-s] [-g] [-o ofilename] [-l] <dictionary>\n");
-printf("  -s  : suffixes dictionnary, indicate the type of dictionnary, Suffixe or Racine\n");
-printf("  -g  : dicitionary from the graph\n");
-printf("  -l  : <dictionnary> file has list of dictionnarys \n");
-printf("   <dictionary> : any unicode DELAF or DELACF dictionary\n");
-printf("  -o  : set output file\n");
-printf("Compresses a dictionary into an finite state automaton. This automaton\n");
-printf("is stored is a .bin file,  the associated flexional codes are\n");
-printf("written in a .inf file and the list of automates at .aut file\n\n");
-if(flag) exitMessage("");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: CompressKr [-s] [-g] [-o ofilename] [-l] <dictionary>\n");
+u_printf("  -s  : suffixes dictionnary, indicate the type of dictionnary, Suffixe or Racine\n");
+u_printf("  -g  : dicitionary from the graph\n");
+u_printf("  -l  : <dictionnary> file has list of dictionnarys \n");
+u_printf("   <dictionary> : any unicode DELAF or DELACF dictionary\n");
+u_printf("  -o  : set output file\n");
+u_printf("Compresses a dictionary into an finite state automaton. This automaton\n");
+u_printf("is stored is a .bin file,  the associated flexional codes are\n");
+u_printf("written in a .inf file and the list of automates at .aut file\n\n");
+if(flag) exit(1);
 }
 
 static void 
@@ -99,9 +99,9 @@ static 	char templine[512];
 
 static void lineErrMess(int lineCnt,char *msg)
 {
-	fprintf(stderr,"%s file at line %d\n",cfilename,lineCnt);
-	u_fprintf(stderr,"<<%S>>\nhas syntax error",UtempBuff);
-	exitMessage(msg);
+	error("%s file at line %d\n",cfilename,lineCnt);
+	error("<<%S>>\nhas syntax error",UtempBuff);
+	fatal_error("%s\n",msg);
 }
 
 static void make_compress_files(char *listFilename,int flag);
@@ -162,8 +162,7 @@ static void read_list_files(simpleL<char *> &rd,char *filename)
 	FILE *f=fopen(filename,"r");
 	
 	if(!f) {
-		fprintf(stderr,"file %s open fail",filename);
-		exit(1);
+		fatal_error("file %s open fail\n",filename);
 	}
 	get_path(filename,pathName);
 	while(fgets(templine,256,f)){
@@ -211,7 +210,7 @@ make_compress_files(char *listFileName,int listFormFlag)
 	}
 	readFiles.reset();
 	if(!suffixeMode){	// racine
-		u_strcpy_char(segs[0],listFileName);
+		u_strcpy(segs[0],listFileName);
 		getFileName(segs[1],segs[0]);
 		tmp = new unichar[u_strlen(segs[1])+1];
 		u_strcpy(tmp,segs[1]);
@@ -221,24 +220,24 @@ make_compress_files(char *listFileName,int listFormFlag)
 	int readFileCnt=0;
 	while( (fnamePtr = readFiles.getNext())){
 		if(suffixeMode){	// suffixe
-			u_strcpy_char(segs[0],fnamePtr);
+			u_strcpy(segs[0],fnamePtr);
 			getFileName(segs[1],segs[0]);
 			tmp = new unichar[u_strlen(segs[1])+1];
 			u_strcpy(tmp,segs[1]);
 			autoStartIndex = arbres.new_arbre((unichar *)tmp);
 		}
 		get_extension(fnamePtr,extension);
-fprintf(stdout,"\n%s load\n",fnamePtr);
+      u_printf("\n%s load\n",fnamePtr);
         lineCnt += read_DELA_to_DICO(arbres,autoStartIndex,fnamePtr);
 		readFileCnt++;
 	}
 	if(readFileCnt > 1)
-	     fprintf(stdout,"\ntotal read is %d line\n",lineCnt);
+	     u_printf("\ntotal read is %d line\n",lineCnt);
 	//
 	//	minimize tree
 	//
 	//
-	printf("Compressing... \n\n");
+	u_printf("Compressing... \n\n");
 	arbres.minimize_tree();
 
 	if(debugfile) {
@@ -272,8 +271,8 @@ read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname)
 	unichar RLine[2048];
 	if(!(f=u_fopen(fname,U_READ)))	fopenErrMessage(fname);
 	cfilename = fname;
-	printf("Read File %s\n",fname);
-	while(EOF!=u_read_line(f,UtempBuff)){
+	u_printf("Read File %s\n",fname);
+	while(EOF!=u_fgets(UtempBuff,f)){
 		if( (UtempBuff[0] == '\0') ||( UtempBuff[0] == ' '))
 			continue; // comment line
 		heads = 0; u_strcpy(RLine,UtempBuff);
@@ -292,10 +291,9 @@ read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname)
 		
 		flineCnt++;
 		if(!(flineCnt % 1000))
-			fprintf(stdout,"\r%d line read",flineCnt);
+			u_printf("\r%d line read",flineCnt);
 	}
-	fprintf(stdout,"\n");
-	fprintf(stdout,"\r%s: %d line read\n",fname,flineCnt);
+	u_printf("\n%s: %d line read\n",fname,flineCnt);
 
 	fclose(f);
 	return(flineCnt);
@@ -308,12 +306,6 @@ static void  get_compressed_token(unichar* inflected,unichar* lemma,unichar* res
 int prefix=get_longuest_prefix(inflected,lemma);
 int a_effacer=u_strlen(inflected)-prefix;
 int l_lemma=u_strlen(lemma);
-
-
-unichar buf[10];
-
-
-
 if (l_lemma==1 && ((lemma[0]==' ') || (lemma[0]== '-')) &&
     u_strlen(inflected)==1 && (inflected[0]==' ' || inflected[0]=='-')) {
     // if we have 2 separators, we write it rawly to make the INF file visible
@@ -322,9 +314,7 @@ if (l_lemma==1 && ((lemma[0]==' ') || (lemma[0]== '-')) &&
     res[1]='\0';
     return;
 }
-u_int_to_string(a_effacer,buf);
-u_strcpy(res,buf);
- int l_NB=u_strlen(buf);
+int l_NB=u_sprintf(res,"%d",a_effacer);
 int i;
 int j=0;
 for (i=0;i<(l_lemma-prefix);i++) {
@@ -395,8 +385,7 @@ tokenize_entrees_Kr(int lineCnt,unsigned short *iline,class dicLines *&head)
 
 if(debugfile){
 for( i = 0; i <  MAX_NUM_ENTREE_COMP_LINE;i++)
-u_fprintf(debugfile,"%S,", sPtr[i]);
-u_fprintf(debugfile,"\n");
+u_fprintf(debugfile,"%S,\n", sPtr[i]);
 }
 					if(*sPtr[4] == '-'){// control for suffixe 
 						sPtr[4]++;
@@ -415,7 +404,7 @@ u_fprintf(debugfile,"\n");
                     // flechi,origin,canonique,info,suff
 if(debugfile){
 for( i = 0; i <  MAX_NUM_ENTREE_COMP_LINE;i++)
-u_fprintf(debugfile,"%S,", sPtr[i]);u_fprintf(debugfile,"\n");
+u_fprintf(debugfile,"%S,\n", sPtr[i]);
 }
 					tail->makeInfField((unichar*)sPtr[0],
                               (unichar*)sPtr[1],

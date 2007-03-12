@@ -97,12 +97,15 @@ p->search_limit=search_limit;
 FILE* text_file;
 FILE* out;
 FILE* info;
-long int text_size=u_file_size(text)/4;
 text_file=fopen(text,"rb");
 if (text_file==NULL) {
    error("Cannot load %s\n",text);
    return 0;
 }
+fseek(text_file,0,SEEK_END);
+long int text_size=ftell(text_file);
+fseek(text_file,0,SEEK_SET);
+
 char concord[1000];
 char concord_info[1000];
 
@@ -123,11 +126,11 @@ if (info==NULL) {
    error("Cannot write %s\n",concord_info);
 }
 switch(output_policy) {
-   case IGNORE_OUTPUTS: u_fprints_char("#I\n",out); break;
-   case MERGE_OUTPUTS: u_fprints_char("#M\n",out); break;
-   case REPLACE_OUTPUTS: u_fprints_char("#R\n",out); break;
+   case IGNORE_OUTPUTS: u_fprintf(out,"#I\n"); break;
+   case MERGE_OUTPUTS: u_fprintf(out,"#M\n"); break;
+   case REPLACE_OUTPUTS: u_fprintf(out,"#R\n"); break;
 }
-printf("Loading alphabet...\n");
+u_printf("Loading alphabet...\n");
 Alphabet* alph=load_alphabet(alphabet);
 if (alph==NULL) {
    error("Cannot load alphabet file %s\n",alphabet);
@@ -136,7 +139,7 @@ if (alph==NULL) {
 struct string_hash* semantic_codes=new_string_hash();
 extract_semantic_codes(dlf,semantic_codes);
 extract_semantic_codes(dlc,semantic_codes);
-printf("Loading fst2...\n");
+u_printf("Loading fst2...\n");
 p->fst2=load_fst2(fst2_name,1);
 if (p->fst2==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
@@ -155,7 +158,7 @@ if (p->filters==NULL) {
 }
 #endif
 
-printf("Loading token list...\n");
+u_printf("Loading token list...\n");
 p->tokens=load_text_tokens_hash(tokens,&(p->SENTENCE),&(p->STOP));
 if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
@@ -193,38 +196,38 @@ for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
 compute_token_controls(alph,err,p);
 int number_of_patterns,is_DIC,is_CDIC,is_SDIC;
 p->pattern_tree_root=new_pattern_node();
-printf("Computing fst2 tags...\n");
+u_printf("Computing fst2 tags...\n");
 process_tags(&number_of_patterns,semantic_codes,&is_DIC,&is_CDIC,&is_SDIC,p);
 p->current_compound_pattern=number_of_patterns;
 p->DLC_tree=new_DLC_tree(p->tokens->size);
 struct lemma_node* root=new_lemma_node();
-printf("Loading dlf...\n");
+u_printf("Loading dlf...\n");
 load_dic_for_locate(dlf,alph,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
-printf("Loading dlc...\n");
+u_printf("Loading dlc...\n");
 load_dic_for_locate(dlc,alph,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
 /* We look if tag tokens like "{today,.ADV}" verify some patterns */
 check_patterns_for_tag_tokens(alph,number_of_patterns,root,p);
-printf("Optimizing fst2 pattern tags...\n");
+u_printf("Optimizing fst2 pattern tags...\n");
 optimize_pattern_tags(alph,root,p);
-printf("Optimizing compound word dictionary...\n");
+u_printf("Optimizing compound word dictionary...\n");
 optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
 init_transduction_variable_index(p->fst2->variables);
-printf("Optimizing fst2...\n");
+u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->fst2);
 #warning to replace by simple lists of integers
-printf("Optimizing patterns...\n");
+u_printf("Optimizing patterns...\n");
 init_pattern_transitions(p->tokens);
 convert_pattern_lists(p->tokens);
 
-printf("Working...\n");
+u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
 free_buffer(p->token_buffer);
 free_transduction_variable_index();
 fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
-printf("Freeing memory...\n");
+u_printf("Freeing memory...\n");
 free_optimized_states(p->optimized_states,p->fst2->number_of_states);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
@@ -245,7 +248,7 @@ free_FilterSet(p->filters);
 free_FilterMatchIndex(p->filter_match_index);
 #endif
 free_locate_parameters(p);
-printf("Done.\n");
+u_printf("Done.\n");
 return 1;
 }
 
@@ -302,7 +305,7 @@ if (is_letter(token[0],alph)) {
 }
 /* If the token doesn't start with a letter, we start with 
  * checking if it is a tag like {today,.ADV} */
-if (token[0]=='{' && u_strcmp_char(token,"{S}") && u_strcmp_char(token,"{STOP}")) {
+if (token[0]=='{' && u_strcmp(token,"{S}") && u_strcmp(token,"{STOP}")) {
    /* Anyway, such a tag is classed as verifying <MOT> and <DIC> */
    set_bit_mask(&c,MOT_TOKEN_BIT_MASK|DIC_TOKEN_BIT_MASK);
    struct dela_entry* temp=tokenize_tag_token(token);

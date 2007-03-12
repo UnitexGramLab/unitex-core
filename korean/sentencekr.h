@@ -39,7 +39,6 @@ class sentenceKr {
 	pageHandle nodes;
 	pageHandle transitions;
 	pageHandle stack;
-	struct sentence_stack *stack_head;
 	struct sentence_stack *stack_tail;
 	FILE *senF;
 public:
@@ -54,7 +53,7 @@ public:
 			sizeof(struct sentence_stack)*4096
 			,sizeof(struct sentenc_stack));
 
-		stack_head = stack_tail = getStackPage();
+		stack_tail = getStackPage();
 	};
 	~sentenceKr(){};
 	struct sentence_stack *getStackPage()

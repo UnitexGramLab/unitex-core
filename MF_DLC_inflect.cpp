@@ -29,7 +29,7 @@
 /********************************************************************************/
 
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "MF_DLC_inflect.h"
 #include "MF_SU_morpho.h"
 #include "MF_LangMorpho.h"
@@ -63,8 +63,6 @@ int l;  //length of the line scanned
 DLC_entry_T* dlc_entry;
 MU_forms_T* MU_forms;  //inflected forms of the MWU
 int err;
-unichar nl[3];  //a newline
-u_strcpy_char(nl,"\n");
 
 //Open DELAS/DELAC
 dlc = u_fopen(DLC, U_READ);
@@ -108,19 +106,13 @@ while (l || !feof(dlc)) {
       err=SU_inflect(DELAS_entry->lemma,inflection_code,forms);
       /* Then, we print its inflected forms to the output */
       for (int i=0;i<forms->no_forms;i++) {
-         u_fprints(forms->forms[i].form,dlcf);
-         u_fprints_char(",",dlcf);
-         u_fprints(DELAS_entry->lemma,dlcf);
-         u_fprints_char(".",dlcf);
-         u_fprints(code_gramm,dlcf);
+         u_fprintf(dlcf,"%S,%S.%S",forms->forms[i].form,DELAS_entry->lemma,code_gramm);
          /* We add the semantic codes, if any */
          for (int j=1;j<DELAS_entry->n_semantic_codes;j++) {
-            u_fprints_char("+",dlcf);
-            u_fprints(DELAS_entry->semantic_codes[j],dlcf);
+            u_fprintf(dlcf,"+%S",DELAS_entry->semantic_codes[j]);
          }
-         u_fprints_char(":",dlcf);
-         u_fprints(forms->forms[i].raw_features,dlcf);
-         u_fprints_char("\n",dlcf);
+         #warning que faire si pas de raw_feature ?
+         u_fprintf(dlcf,":%S\n",forms->forms[i].raw_features);
       }
       free_dela_entry(DELAS_entry);
       /* End of simple word case */
@@ -156,8 +148,7 @@ while (l || !feof(dlc)) {
 	               err=DLC_format_form(output_line,DIC_LINE_SIZE-1,MU_forms->forms[f],dlc_entry);
                   if (!err) {
                      //Print one inflected form at a time to the DELACF file
-                     u_fprints(output_line,dlcf);
-                     u_fprints(nl,dlcf);
+                     u_fprintf(dlcf,"%S\n",output_line);
                   }
                }
             }
@@ -226,9 +217,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   }
   
   if (line[pos] != (unichar) ',') {
-    error("Comma missing in DELAC line: ");
-    u_fprints(line,stderr);
-    error(" !\n");
+    error("Comma missing in DELAC line:\n%S\n",line);
     MU_delete_lemma(entry->lemma);
     return 2;
   }
@@ -239,9 +228,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   l = u_scan_until_char(tmp,&(line[pos]),DIC_LINE_SIZE-1,"+:)\\",1);
   pos += l;
   if (!l) {
-    error("Inflection paradigm inexistent in line: ");
-    u_fprints(line,stderr);
-    error(" !\n");
+    error("Inflection paradigm inexistent in line:\n%S\n",line);
     MU_delete_lemma(entry->lemma);
     return 2;
   }
@@ -256,9 +243,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   l_class_T* cl;
   cl = DLC_class_para(tmp);
   if (!cl) {    
-    error("Impossible to deduce the compound's inflection class (noun, adj, etc.): ");
-    u_fprints(line,stderr);
-    error(" !\n");
+    error("Impossible to deduce the compound's inflection class (noun, adj, etc.):\n%S\n",line);
     MU_delete_lemma(entry->lemma);
     return 2;
   }
@@ -273,9 +258,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   pos += l;
   
   if (line[pos]) {
-    error("Bad format in DELAC line: ");
-    u_fprints(line,stderr);
-    error(" !\n");
+    error("Bad format in DELAC line:\n%S\n",line);
     MU_delete_lemma(entry->lemma);  //delete lemma
     for (int c=0; entry->codes[c]; c++)  //delete codes
       free(entry->codes[c]);  
@@ -328,9 +311,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     
     //Scan the lemma's inflection paradigm
     if (line[pos] != (unichar) '.') {
-      error("Dot missing after a unit's lemma: ");
-      error(line);
-      error(" !\n");
+      error("Dot missing after a unit's lemma:\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -339,9 +320,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     unichar u_para[DIC_LINE_SIZE];
     l = u_scan_until_char(u_para,&(line[pos]),DIC_LINE_SIZE-1,"+:\\",1);
     if (!l) {    
-      error("Unit's inflection paradigm non existent in DELAC line: ");
-      error(line);
-      error(" !\n");
+      error("Unit's inflection paradigm non existent in DELAC line:\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;     
@@ -357,9 +336,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     l_class_T* cl;
     cl = DLC_class_para(u_para);
     if (!cl) {    
-      error("Impossible to deduce the unit's inflection class (noun, adj, etc.): ");
-      error(line);
-      error(" !\n");
+      error("Impossible to deduce the unit's inflection class (noun, adj, etc.):\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -370,9 +347,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     //Scan the unit's inflection features
     unichar tmp[DIC_LINE_SIZE];
     if (line[pos] != (unichar) ':') {
-      error("Colon missing after a unit's lemma: ");
-      error(line);
-      error(" !\n");
+      error("Colon missing after a unit's lemma:\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -380,18 +355,14 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     pos ++;  //Omit the colon
     l = u_scan_until_char(tmp,&(line[pos]),DIC_LINE_SIZE-1,")",1);
     if (l<=0) {
-      error("Inflection features missing after ':' for a unit: ");
-      error(line);
-      error(" !\n");
+      error("Inflection features missing after ':' for a unit:\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
     }
     pos += l;
     if (line[pos] != (unichar) ')') {
-      error("')' missing after a unit's inflection features: ");
-      error(line);
-      error(" !\n");
+      error("')' missing after a unit's inflection features:\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -399,9 +370,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     pos++; //Omit the ')'
     u->feat = d_get_feat_str(tmp);
     if (! u->feat) {
-      error("Incorrect inflection features in a unit: ");
-      error(line);
-      error(" !\n");
+      error("Incorrect inflection features in a unit:\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
       return -1;
@@ -473,68 +442,47 @@ l_class_T* DLC_class_para(unichar* para) {
 // Prints a DELAC entry into a DELAC file..
 // If entry void or entry's lemma void returns 1, 0 otherwise.
 int DLC_print_entry(DLC_entry_T* entry) {
-  unichar line[DIC_LINE_SIZE];
-  u_strcpy_char(line,"");
-  
-  if (!entry || !entry->lemma) 
-    return 1;  
+if (!entry || !entry->lemma) return 1;
 
-  //Print  units
-  for (int u=0; u<entry->lemma->no_units; u++) 
-    DLC_print_unit(entry->lemma->units[u]);
+//Print  units
+for (int u=0; u<entry->lemma->no_units; u++) {
+  DLC_print_unit(entry->lemma->units[u]);
+}
 
-  //Print paradigm
-  u_strcat_char(line,",");
-  u_strcat_char(line,entry->lemma->paradigm);
-  
-  //Concat codes
-  for (int c=0; entry->codes[c]; c++) {
-    u_strcat_char(line,"+");
-    u_strcat(line,entry->codes[c]);
-  }
+//Print paradigm
+u_printf(",%s",entry->lemma->paradigm);
 
-  //Concat comment
-  if (entry->comment) {
-    u_strcat_char(line,"/");
-    u_strcat(line,entry->comment);
-  }
+//Concat codes
+for (int c=0; entry->codes[c]; c++) {
+   u_printf("+%S",entry->codes[c]);
+}
 
-  u_strcat_char(line,"\n");
-
-  //Print line
-  u_prints(line);
-  
-  return 0;
+//Concat comment
+if (entry->comment) {
+   u_printf("/%S",entry->comment);
+}
+u_printf("\n");
+return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints single unit into a DELAC file.
 // If 'unit' void returns 1, if memory allocation problem returns -1, 0 otherwise.
 int DLC_print_unit(SU_id_T* unit) {
-  unichar unit_str[DIC_LINE_SIZE];
-  u_strcpy_char(unit_str,"");
-  if (!unit)
-    return 1;
-  
-  u_strcat(unit_str,unit->form);
-  if (unit->lemma) {
-    u_strcat_char(unit_str,"(");
-    u_strcat(unit_str,unit->lemma->unit);
-    u_strcat_char(unit_str,".");
-    u_strcat_char(unit_str,unit->lemma->paradigm);
-    if (unit->feat) {
-      u_strcat_char(unit_str,":");
+if (unit==NULL) return 1;
+u_printf("%S",unit->form);
+if (unit->lemma) {
+   u_printf("(%S.%s",unit->lemma->unit,unit->lemma->paradigm);
+   if (unit->feat) {
       unichar* tmp;
-      tmp = d_get_str_feat(unit->feat);
-      if (!tmp)
-	return -1;
-      u_strcat(unit_str,tmp);
+      tmp=d_get_str_feat(unit->feat);
+      if (tmp==NULL) return -1;
+      u_printf(":%S",tmp);
       free(tmp);
-    }
-    u_strcat_char(unit_str,")");      
-  }
-  u_prints(unit_str);
-  return 0;
+   }
+   u_printf(")");      
+}
+return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -553,9 +501,8 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
 
   //Comma
   l++; 
-  if (l >= max)
-    return 1;
-  u_strcat_char(entry,",");
+  if (l >= max) return 1;
+  u_strcat(entry,",");
 
   //Lemma
   int u;  //index of the current unit in the lemma of the MW form
@@ -568,24 +515,21 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
 
   //Full stop
   l++; 
-  if (l >= max)
-    return 1;
-  u_strcat_char(entry,".");
+  if (l >= max) return 1;
+  u_strcat(entry,".");
 
   //Inflection paradigm
   l = l + strlen(dlc_entry->lemma->paradigm);
-  if (l >= max)
-    return 1;
-  u_strcat_char(entry,dlc_entry->lemma->paradigm);
+  if (l >= max) return 1;
+  u_strcat(entry,dlc_entry->lemma->paradigm);
 
   //Semantic codes
   int c;  //index of the current semantic code
   for (c=0; dlc_entry->codes[c]; c++)
     l = l + u_strlen(dlc_entry->codes[c]) + 1;
-  if (l >= max)
-    return 1;
+  if (l >= max) return 1;
   for (c=0; dlc_entry->codes[c]; c++) {
-    u_strcat_char(entry,"+");
+    u_strcat(entry,"+");
     u_strcat(entry,dlc_entry->codes[c]);
   }
 
@@ -594,9 +538,8 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
   if (f.features && f.features->no_cats > 0) {
     feat = d_get_str_feat(f.features);
     l = l + u_strlen(feat) + 1;  //Place for a ':' and all features
-    if (l >= max)
-      return 1;
-    u_strcat_char(entry,":");
+    if (l >= max) return 1;
+    u_strcat(entry,":");
     u_strcat(entry,feat);
     free(feat);
   }
@@ -604,9 +547,8 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
   //Comment
   if (dlc_entry->comment && u_strlen(dlc_entry->comment)) {
     l = l + u_strlen(dlc_entry->comment);//Place for a '/' and the comment
-    if (l >= max)
-      return 1;
-    u_strcat_char(entry,"/");
+    if (l >= max) return 1;
+    u_strcat(entry,"/");
     u_strcat(entry,dlc_entry->comment);    
   }
   return 0;

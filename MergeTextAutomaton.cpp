@@ -21,14 +21,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "unicode.h"
+#include "Unicode.h"
 #include "String_hash.h"
 #include "Fst2.h"
 #include "FileName.h"
 #include "Copyright.h"
 #include "grf.h"
 #include "IOBuffer.h"
+#include "Error.h"
 
 
 // also defined in grf.cpp
@@ -43,11 +43,11 @@ static unichar epsilon[] = { '<', 'E', '>', 0 };
 #endif
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: MergeTextAutomaton <text fst2>\n");
-printf("     <text fst2> : text automaton to be rebuilt\n\n");
-printf("Rebuilds the text automaton taking into account the sentence graphs that have\n");
-printf("been manually modified. The text automaton is modified.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: MergeTextAutomaton <text fst2>\n");
+u_printf("     <text fst2> : text automaton to be rebuilt\n\n");
+u_printf("Rebuilds the text automaton taking into account the sentence graphs that have\n");
+u_printf("been manually modified. The text automaton is modified.\n");
 }
 
 
@@ -78,22 +78,16 @@ void output_fst(Fst2 * A, int no, string_hash * hash, FILE * f) {
     Fst2State state = A->states[stateno + i];
 
     if (is_final_state(state)) {
-
-      u_fprints_char("t\n", f);
-
+       u_fprintf(f,"t\n");
     } else {
-
-      u_fputc(':', f); u_fputc(' ', f);
-
+      u_fprintf(f,": ");
       for (fst2Transition * trans = state->transitions; trans; trans = trans->next) {
-	u_fprintf(f, "%d %d ", get_value_index(A->tags[trans->tag_number]->input, hash), trans->state_number - stateno);
+         u_fprintf(f, "%d %d ", get_value_index(A->tags[trans->tag_number]->input, hash), trans->state_number - stateno);
       }
-
       u_fputc('\n', f);
     }
   }
-
-  u_fprints_char("f \n", f);
+  u_fprintf(f,"f \n");
 }
 
 
@@ -148,7 +142,7 @@ void output_grf(grf_t * grf, string_hash * labels, FILE * f) {
 
   /* final box */
 
-  u_fprints_char("t\n", f);
+  u_fprintf(f,"t\n");
 
 
   int i = 2;
@@ -164,7 +158,7 @@ void output_grf(grf_t * grf, string_hash * labels, FILE * f) {
 
   if (! EPSILON_IN_INIT) { output_grf_trans(grf, GRF_BOX_INIT, ids, labels, f); }
 
-  u_fprints_char("f \n", f);
+  u_fprintf(f,"f \n");
   free(ids);
 }
 
@@ -172,7 +166,7 @@ void output_grf(grf_t * grf, string_hash * labels, FILE * f) {
 
 void output_labels(string_hash * hash, FILE * f) {
   for (int i = 0; i < hash->size; i++) { u_fprintf(f, "%%%S\n", hash->value[i]); }
-  u_fprints_char("f\n", f);
+  u_fprintf(f,"f\n");
 }
 
 
@@ -181,12 +175,12 @@ void output_labels(string_hash * hash, FILE * f) {
 int clean_grf(grf_t * grf) {
 
   if (! grf_is_acyclic(grf)) {
-    fprintf(stderr, "grf isn't an acyclic graph.\n");
+    error("grf isn't an acyclic graph.\n");
     return -1;
   }
 
   if (grf_check_labels(grf) == -1) {
-    fprintf(stderr, "bad label in grf.\n");
+    error("bad label in grf.\n");
     return -1;
   }
 
@@ -194,7 +188,7 @@ int clean_grf(grf_t * grf) {
   grf_cleanup(grf);
 
   if (grf->nb_boxes == 0) {
-    fprintf(stderr, "error: final state isn't accessible.\n");
+    error("error: final state isn't accessible.\n");
     return -1;
   }
 
@@ -212,13 +206,12 @@ setBufferMode();
   }
   argv++;
 
-   printf("Loading %s...\n", *argv);
+   u_printf("Loading %s...\n", *argv);
 
   Fst2 * A = load_fst2(*argv, 1);
  
   if (A == NULL) {
-    fprintf(stderr, "Unable to load %s automaton\n", *argv);
-    exit(1);
+    fatal_error("Unable to load %s automaton\n", *argv);
   }
 
   char * basedir = strdup(*argv);
@@ -229,8 +222,7 @@ setBufferMode();
 
   FILE * out;
   if ((out = u_fopen(outname, U_WRITE)) == NULL) {
-    fprintf(stderr, "Unable to open %s for writting\n", outname);
-    exit(1);
+    fatal_error("Unable to open %s for writting\n", outname);
   }
   
   string_hash * labels = new_string_hash();
@@ -242,7 +234,7 @@ setBufferMode();
   for (int i = 1; i <= A->number_of_graphs; i++) {
 
     if ((i % 100) == 0) {
-      printf("%d/%d sentences rebuilt...\n", i, A->number_of_graphs);
+      u_printf("%d/%d sentences rebuilt...\n", i, A->number_of_graphs);
     }
 
     char grfname[MAX_PATH];
@@ -257,11 +249,11 @@ setBufferMode();
 
       if ((grf = grf_load(f)) == NULL) {
 
-	fprintf(stderr, "Unable to load '%s'.\n", grfname);
+	error("Unable to load '%s'.\n", grfname);
 
       } else if (clean_grf(grf) == -1) {
 
-	fprintf(stderr, "%s is a bad grf file.\n", grfname);
+	error("%s is a bad grf file.\n", grfname);
 	grf_delete(grf);
 	grf = NULL;
       }
@@ -285,7 +277,7 @@ setBufferMode();
 
   output_labels(labels, out);
 
-  printf("Text automaton rebuilt.\n");
+  u_printf("Text automaton rebuilt.\n");
   fflush(out);
   u_fclose(out);
 
@@ -297,7 +289,7 @@ setBufferMode();
   rename(*argv, outname);
   sprintf(outname, "%s.new", *argv);
   rename(outname, *argv);
-  printf("\nYou can find a backup of the original \"%s\" file in \"%s.bck\".\n", *argv, *argv);
+  u_printf("\nYou can find a backup of the original \"%s\" file in \"%s.bck\".\n", *argv, *argv);
 }
 
 

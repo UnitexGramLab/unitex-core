@@ -101,12 +101,12 @@ switch (p->match_policy) {
       if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS
          && p->match_list->end==end
          && p->match_list->start==start
-         && u_strcmp2(p->match_list->output,output)) {
+         && u_strcmp(p->match_list->output,output)) {
          /* Because matches with same range and same output may not come
           * one after another, we have to look if a match with same output
           * already exists */
          l=p->match_list;
-         while (l!=NULL && u_strcmp2(l->output,output)) {
+         while (l!=NULL && u_strcmp(l->output,output)) {
             l=l->next;
          }
          if (l==NULL) {
@@ -123,7 +123,7 @@ switch (p->match_policy) {
       while (l!=NULL 
              && !(l->start==start && l->end==end 
                   && (p->ambiguous_output_policy!=ALLOW_AMBIGUOUS_OUTPUTS
-                      || u_strcmp2(l->output,output)))) {
+                      || u_strcmp(l->output,output)))) {
          l=l->next;
       }
       if (l==NULL) {
@@ -167,7 +167,7 @@ struct match_list *l;
 if (ptr==NULL) return NULL;
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS
     && ptr->start==start && ptr->end==end
-    && u_strcmp2(ptr->output,output)) {
+    && u_strcmp(ptr->output,output)) {
     /* In the case of ambiguous transductions producing different outputs,
      * we accept matches with same range */
    ptr->next=eliminate_longer_matches(ptr->next,start,end,output,dont_add_match,p);
@@ -222,22 +222,16 @@ return ptr;
 struct match_list* save_matches(struct match_list* l,int current_position,
                                 FILE* f,struct locate_parameters* p) {
 struct match_list *ptr;
-unichar tmp[100];
 if (l==NULL) return NULL;
 if (l->end<current_position) {
    /* we can save the match (necessary for SHORTEST_MATCHES: there
     * may be no shorter match) */
-   u_int_to_string(l->start,tmp);
-   u_fprints(tmp,f);
-   u_fprints_char(" ",f);
-   u_int_to_string(l->end,tmp);
-   u_fprints(tmp,f);
+   u_fprintf(f,"%d %d",l->start,l->end);
    if (l->output!=NULL) {
       /* If there is an output */
-      u_fprints_char(" ",f);
-      u_fprints(l->output,f);
+      u_fprintf(f," %S",l->output);
    }
-   u_fprints_char("\n",f);
+   u_fprintf(f,"\n");
    if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
      (p->number_of_outputs)++;
      /* If we allow different outputs for ambiguous transducers,
@@ -335,9 +329,8 @@ struct match_list* end_of_list=NULL;
 int c,start,end;
 unichar output[3000];
 char is_an_output;
-/* We jump the # char */
-u_fgetc(f);
-c=u_fgetc(f);
+/* We read the header */
+u_fscanf(f,"#%C\n",&c);
 if (output_policy!=NULL) {
    switch(c) {
       case 'I': *output_policy=IGNORE_OUTPUTS; break;
@@ -345,17 +338,9 @@ if (output_policy!=NULL) {
       case 'R': *output_policy=REPLACE_OUTPUTS; break;
 	}
 }
-u_fgetc(f);
-while ((c=u_fgetc(f))!=EOF) {
-   start=0;
-   do {
-      start=start*10+(c-'0');
-   } while (u_is_digit((unichar)(c=u_fgetc(f))));
+while (2==u_fscanf(f,"%d%d",&start,&end)) {
+   /* We look if there is an output or not, i.e. a space or a new line */
    c=u_fgetc(f);
-   end=0;
-   do {
-      end=end*10+(c-'0');
-   } while (u_is_digit((unichar)(c=u_fgetc(f))));
    if (c==' ') {
       /* If we have an output to read */
       int i=0;

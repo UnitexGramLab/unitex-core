@@ -22,7 +22,7 @@
 #ifndef HTMLCharactersH
 #define HTMLCharactersH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "AsciiSearchTree.h"
 
 #define UNKNOWN_CHARACTER -1

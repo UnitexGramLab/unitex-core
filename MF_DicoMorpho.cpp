@@ -183,8 +183,7 @@ int d_read_line(unichar* line, int line_no) {
   }
   if (!(cat = is_valid_cat(tmp))) {
     error("In \'Equivalence\' file:\n");
-    u_fprints(tmp,stderr);
-    error(" is not a valid category in line %d.\n",line_no);
+    error("%S is not a valid category in line %d.\n",tmp,line_no);
     return 1;    
   };
   D_MORPHO_EQUIV.equiv[D_MORPHO_EQUIV.no_equiv].cat.cat = cat;
@@ -202,15 +201,12 @@ int d_read_line(unichar* line, int line_no) {
   }
   if ((D_MORPHO_EQUIV.equiv[D_MORPHO_EQUIV.no_equiv].cat.val = is_valid_val(cat,tmp)) == -1) {
     error("In \'Equivalence\' file\n");
-    u_fprints(tmp,stderr);
-    error(" is not a valid value in line %d.\n",line_no);
+    error("%S is not a valid value in line %d.\n",tmp,line_no);
     return 1;    
   }
   if (line_pos[0]) {
     error("Bad format in \'Equivalence\' file\n");
-    error("Line %d: unnecessary string:",line_no);
-    u_fprints(line_pos,stderr);
-    error(".:\n");
+    error("Line %d: unnecessary string:%S.:\n",line_no,line_pos);
     return 1;
   }
 
@@ -222,19 +218,15 @@ int d_read_line(unichar* line, int line_no) {
 /* Prints to the standard output the equivalences between dictionary qnd morphology   */
 /* features.                                                                          */
 void d_print_morpho_equiv() {
-  int e;  //index of the current equivalence
-  unichar tmp[MAX_MORPHO_NAME+1];
-
-  for (e=0; e<D_MORPHO_EQUIV.no_equiv; e++) {
-    u_fputc(D_MORPHO_EQUIV.equiv[e].dico_feat,stdout);
-    u_fputc((unichar)':',stdout);
-    copy_cat_str(tmp,D_MORPHO_EQUIV.equiv[e].cat.cat);
-    u_prints(tmp);
-    u_fputc((unichar)'=',stdout);
-    copy_val_str(tmp,D_MORPHO_EQUIV.equiv[e].cat.cat,D_MORPHO_EQUIV.equiv[e].cat.val);
-    u_prints(tmp);
-    u_fputc((unichar)'\n',stdout);
-  }
+int e;  //index of the current equivalence
+unichar tmp[MAX_MORPHO_NAME+1];
+for (e=0; e<D_MORPHO_EQUIV.no_equiv; e++) {
+   u_printf("%C:",D_MORPHO_EQUIV.equiv[e].dico_feat);
+   copy_cat_str(tmp,D_MORPHO_EQUIV.equiv[e].cat.cat);
+   u_printf("%S=",tmp);
+   copy_val_str(tmp,D_MORPHO_EQUIV.equiv[e].cat.cat,D_MORPHO_EQUIV.equiv[e].cat.val);
+   u_printf("%S\n",tmp);
+}
 }
 
 
@@ -245,17 +237,17 @@ void d_print_morpho_equiv() {
 /* a function scanning an external equivalence file for the given language.           */
 void d_init_class_equiv() {
   //Noun
-  u_strcpy_char(D_CLASS_EQUIV.equiv[0].dico_class,"N");
+  u_strcpy(D_CLASS_EQUIV.equiv[0].dico_class,"N");
   D_CLASS_EQUIV.equiv[0].cl = &(L_CLASSES.classes[0]);
-  u_strcpy_char(D_CLASS_EQUIV.equiv[1].dico_class,"NC");
+  u_strcpy(D_CLASS_EQUIV.equiv[1].dico_class,"NC");
   D_CLASS_EQUIV.equiv[1].cl = &(L_CLASSES.classes[0]);
 
   //Adjectif
-  u_strcpy_char(D_CLASS_EQUIV.equiv[2].dico_class,"A");
+  u_strcpy(D_CLASS_EQUIV.equiv[2].dico_class,"A");
   D_CLASS_EQUIV.equiv[2].cl = &(L_CLASSES.classes[1]);
 
   //Adverb
-  u_strcpy_char(D_CLASS_EQUIV.equiv[3].dico_class,"ADV");
+  u_strcpy(D_CLASS_EQUIV.equiv[3].dico_class,"ADV");
   D_CLASS_EQUIV.equiv[3].cl = &(L_CLASSES.classes[2]);
 
   D_CLASS_EQUIV.no_equiv = 4;

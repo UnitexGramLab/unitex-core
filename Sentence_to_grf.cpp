@@ -19,16 +19,15 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "Sentence_to_grf.h"
 #include "StringParsing.h"
-//---------------------------------------------------------------------------
+#include "Error.h"
 
 
 void sentence_to_grf(Fst2* automate,int SENTENCE,char* font,FILE* f) {
 if (SENTENCE>automate->number_of_graphs) {
    // if the index is out of bound
-   fprintf(stderr,"Sentence number too long\n");
+   error("Sentence number too long\n");
    return;
 }
 int nombre_etats=automate->number_of_states_per_graphs[SENTENCE];
@@ -90,17 +89,15 @@ for (int i=0;i<nombre_etats;i++) {
    while (trans!=NULL) {
       // we put the value in the 2 upper bytes
       // normal line:
-      if (!u_strcmp_char(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,"\"")) {
+      if (!u_strcmp(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,"\"")) {
          //u_fprints_char("\\\"",f);
          tab_grf_state[N_GRF_STATES]=new_grf_state("\"\\\"\"",pos_X[rang[i]],rang[i]);
       }
       else {
          unichar temp[10000];
-         u_strcpy_char(temp,"\"");
+         u_strcpy(temp,"\"");
          escape(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,&temp[1],P_DOUBLE_QUOTE);
-         //u_strcat(temp,automate->tags[get_etiquette_reelle(trans->tag_number)]->input);
-         u_strcat_char(temp,"\"");
-         //u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,f);
+         u_strcat(temp,"\"");
          tab_grf_state[N_GRF_STATES]=new_grf_state(temp,pos_X[rang[i]],rang[i]);
       }
       j=0;
@@ -135,7 +132,6 @@ save_grf_states(f,tab_grf_state,N_GRF_STATES,rang_max,font);
 void convertir_transitions_en_etats_old(Fst2* automate,int SENTENCE,
                                     int nombre_etats,int* rang,FILE* f,int N,int rang_max,
                                     int width_max,int* pos_X,char* font) {
-unichar z[100];
 int position_verticale[2000];
 int debut=automate->initial_states[SENTENCE];
 struct fst2Transition* trans;
@@ -151,64 +147,43 @@ for (int i=0;i<nombre_etats;i++) {
    }
 }
 write_grf_header(width_max+300,800,N,font,f);
-u_fprints_char("\"<E>\" 50 100 ",f);
+u_fprintf(f,"\"<E>\" 50 100 ");
 trans=automate->states[debut]->transitions;
 // we save the initial state
 int j=0;
 while (trans!=NULL) {
-  j++;
-  trans=trans->next;
+   j++;
+   trans=trans->next;
 }
-u_int_to_string(j,z);
-u_strcat_char(z," ");
-u_fprints(z,f);
+u_fprintf(f,"%d ",j);
 trans=automate->states[debut]->transitions;
 while (trans!=NULL) {
-  j=get_numero_de_la_transition(trans->tag_number);
-  u_int_to_string(j,z);
-  u_strcat_char(z," ");
-  u_fprints(z,f);
-  trans=trans->next;
+   j=get_numero_de_la_transition(trans->tag_number);
+   u_fprintf(f,"%d ",j);
+   trans=trans->next;
 }
 // and the final state
-u_fprints_char("\n\"\" ",f);
-u_int_to_string((width_max+100),z);
-u_strcat_char(z," 100 0 \n");
-u_fprints(z,f);
+u_fprintf(f,"\n\"\" %d 100 0 \n",(width_max+100));
 
 // then, we save all others states
 for (int i=0;i<nombre_etats;i++) {
    trans=automate->states[i+debut]->transitions;
    while (trans!=NULL) {
       // we put the value in the 2 upper bytes
-      u_fprints_char("\"",f);
+      u_fprintf(f,"\"");
       // normal line:
-      if (!u_strcmp_char(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,"\"")) {
-         u_fprints_char("\\\"",f);
+      if (!u_strcmp(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,"\"")) {
+         u_fprintf(f,"\\\"");
       }
       else {
-           u_fprints(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,f);
+           u_fprintf(f,"%S",automate->tags[get_etiquette_reelle(trans->tag_number)]->input);
       }
-      /*if (automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu[0]!='{') {
-         u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->contenu,f);
-      } else {
-         u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->flechi,f);
-         u_fprints_char("+",f);
-         u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->canonique,f);
-         u_fprints_char("/",f);
-         u_fprints(automate->etiquette[get_etiquette_reelle(trans->etiquette)]->infos_gramm,f);
-      }*/
-      u_fprints_char("\" ",f);
+      u_fprintf(f,"\" ");
       // we compute the x coordinate of the box
-      u_int_to_string(pos_X[rang[i]],z);
-      u_strcat_char(z," ");
-      u_fprints(z,f);
+      u_fprintf(f,"%d ",pos_X[rang[i]]);
       // and the y one
       j=100-(50*(rang[i]%2))+100*(--position_verticale[rang[i]]);
-      //position_verticale[rang[i]];
-      u_int_to_string(j,z);
-      u_strcat_char(z," ");
-      u_fprints(z,f);
+      u_fprintf(f,"%d ",j);
       j=0;
       struct fst2Transition* TMP=automate->states[trans->state_number]->transitions;
       while (TMP!=NULL) {
@@ -217,20 +192,16 @@ for (int i=0;i<nombre_etats;i++) {
       }
       if (j==0) {
          // if we arrive on the final state
-         u_fprints_char("1 1 \n",f);
+         u_fprintf(f,"1 1 \n");
       } else {
-         u_int_to_string(j,z);
-         u_strcat_char(z," ");
-         u_fprints(z,f);
+         u_fprintf(f,"%d ",j);
          TMP=automate->states[trans->state_number]->transitions;
          while (TMP!=NULL) {
             j=get_numero_de_la_transition(TMP->tag_number);
-            u_int_to_string(j,z);
-            u_strcat_char(z," ");
-            u_fprints(z,f);
+            u_fprintf(f,"%d ",j);
             TMP=TMP->next;
          }
-         u_fprints_char("\n",f);
+         u_fprintf(f,"\n");
       }
       trans=trans->next;
    }
@@ -325,46 +296,32 @@ while (trans!=NULL) {
 
 
 void write_grf_header(int width,int height,int N,char* font,FILE* f) {
-unichar z[10];
-u_fprints_char("#Unigraph\n",f);
-u_fprints_char("SIZE ",f);
-u_int_to_string(width,z);
-u_strcat_char(z," ");
-u_fprints(z,f);
-u_int_to_string(height,z);
-u_strcat_char(z,"\n");
-u_fprints(z,f);
+u_fprintf(f,"#Unigraph\n");
+u_fprintf(f,"SIZE %d %d\n",width,height);
 if (font==NULL) {
-   u_fprints_char("FONT Times New Roman:  10\n",f);
-   u_fprints_char("OFONT Times New Roman:B 10\n",f);
+   u_fprintf(f,"FONT Times New Roman:  10\n");
+   u_fprintf(f,"OFONT Times New Roman:B 10\n");
 }
 else {
-   u_fprints_char("FONT ",f);
-   u_fprints_char(font,f);
-   u_fprints_char(":  10\n",f);
-   u_fprints_char("OFONT ",f);
-   u_fprints_char(font,f);
-   u_fprints_char(":B 10\n",f);
+   u_fprintf(f,"FONT %s:  10\n",font);
+   u_fprintf(f,"OFONT %s:B 10\n",font);
 }
-
-u_fprints_char("BCOLOR 16777215\n",f);
-u_fprints_char("FCOLOR 0\n",f);
-u_fprints_char("ACOLOR 12632256\n",f);
-u_fprints_char("SCOLOR 16711680\n",f);
-u_fprints_char("CCOLOR 255\n",f);
-u_fprints_char("DBOXES y\n",f);
-u_fprints_char("DFRAME y\n",f);
-u_fprints_char("DDATE y\n",f);
-u_fprints_char("DFILE y\n",f);
-u_fprints_char("DDIR y\n",f);
-u_fprints_char("DRIG n\n",f);
-u_fprints_char("DRST n\n",f);
-u_fprints_char("FITS 100\n",f);
-u_fprints_char("PORIENT L\n",f);
-u_fprints_char("#\n",f);
-u_int_to_string(N,z);
-u_strcat_char(z,"\n");
-u_fprints(z,f);
+u_fprintf(f,"BCOLOR 16777215\n");
+u_fprintf(f,"FCOLOR 0\n");
+u_fprintf(f,"ACOLOR 12632256\n");
+u_fprintf(f,"SCOLOR 16711680\n");
+u_fprintf(f,"CCOLOR 255\n");
+u_fprintf(f,"DBOXES y\n");
+u_fprintf(f,"DFRAME y\n");
+u_fprintf(f,"DDATE y\n");
+u_fprintf(f,"DFILE y\n");
+u_fprintf(f,"DDIR y\n");
+u_fprintf(f,"DRIG n\n");
+u_fprintf(f,"DRST n\n");
+u_fprintf(f,"FITS 100\n");
+u_fprintf(f,"PORIENT L\n");
+u_fprintf(f,"#\n");
+u_fprintf(f,"%d\n",N);
 }
 
 
@@ -436,7 +393,7 @@ return g;
 
 struct grf_state* new_grf_state(char* content,int pos_X,int rang) {
 unichar temp[10000];
-u_strcpy_char(temp,content);
+u_strcpy(temp,content);
 return new_grf_state(temp,pos_X,rang);
 }
 
@@ -527,7 +484,6 @@ return equal_list_int(a->l,b->l);
 
 void save_grf_states(FILE* f,struct grf_state** tab_grf_state,int N_GRF_STATES,
                      int rang_max,char* font) {
-unichar z[100];
 int position_verticale[2000];
 struct list_int* l;
 // we counts the number of boxes for each horizontal position
@@ -538,60 +494,44 @@ for (int i=0;i<N_GRF_STATES;i++) {
    position_verticale[tab_grf_state[i]->rang]++;
 }
 write_grf_header(tab_grf_state[1]->pos_X+300,800,N_GRF_STATES,font,f);
-u_fprints_char("\"<E>\" 50 100 ",f);
+u_fprintf(f,"\"<E>\" 50 100 ");
 // we save the initial state
 int j=0;
 l=tab_grf_state[0]->l;
 while (l!=NULL) {
-  j++;
-  l=l->next;
+   j++;
+   l=l->next;
 }
-u_int_to_string(j,z);
-u_strcat_char(z," ");
-u_fprints(z,f);
+u_fprintf(f,"%d ",j);
 l=tab_grf_state[0]->l;
 while (l!=NULL) {
-  u_int_to_string(l->n,z);
-  u_strcat_char(z," ");
-  u_fprints(z,f);
-  l=l->next;
+   u_fprintf(f,"%d ",l->n);
+   l=l->next;
 }
 // and the final state
-u_fprints_char("\n\"\" ",f);
-u_int_to_string(tab_grf_state[1]->pos_X,z);
-u_strcat_char(z," 100 0 \n");
-u_fprints(z,f);
+u_fprintf(f,"\n\"\" ");
+u_fprintf(f,"%d 100 0 \n",tab_grf_state[1]->pos_X);
 
 // then, we save all others states
 for (int i=2;i<N_GRF_STATES;i++) {
-   u_fprints(tab_grf_state[i]->content,f);
-   u_fprints_char(" ",f);
+   u_fprintf(f,"%S ",tab_grf_state[i]->content);
    // we compute the x coordinate of the box
-   u_int_to_string(tab_grf_state[i]->pos_X,z);
-   u_strcat_char(z," ");
-   u_fprints(z,f);
+   u_fprintf(f,"%d ",tab_grf_state[i]->pos_X);
    // and the y one
    j=100-(50*(tab_grf_state[i]->rang%2))+100*(--position_verticale[tab_grf_state[i]->rang]);
-   //position_verticale[rang[i]];
-   u_int_to_string(j,z);
-   u_strcat_char(z," ");
-   u_fprints(z,f);
+   u_fprintf(f,"%d ",j);
    j=0;
    l=tab_grf_state[i]->l;
    while (l!=NULL) {
       j++;
       l=l->next;
    }
-   u_int_to_string(j,z);
-   u_strcat_char(z," ");
-   u_fprints(z,f);
+   u_fprintf(f,"%d ",j);
    l=tab_grf_state[i]->l;
    while (l!=NULL) {
-      u_int_to_string(l->n,z);
-      u_strcat_char(z," ");
-      u_fprints(z,f);
+      u_fprintf(f,"%d ",l->n);
       l=l->next;
    }
-   u_fprints_char("\n",f);
+   u_fprintf(f,"\n");
 }
 }

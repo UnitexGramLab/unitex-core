@@ -23,7 +23,7 @@ using namespace std;
 #include <locale.h>
 #include <stdlib.h>
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "FileName.h"
 #include "etc.h"
 #include "bitmap.h"
@@ -40,15 +40,14 @@ using namespace std;
 
 static void usage(int flag)
 {
-printf("%s",COPYRIGHT);
-printf("Jamo2Syl  [-m mapfile][-c Str=0xNNNN]* [-o outfile] transducter.fst2 input_file\n");
-printf("-m : encodage file\n");
-printf("-c : change pre-define value in transducter with '<' et '>' <Str> to hexdemal value\n");
-printf("-o : name of output file\n");
-printf("   : default outfile name \"input_fileSyl.ext\"\n");
-printf("transducter.fst2 : decoder \n");
+u_printf("%S",COPYRIGHT);
+u_printf("Jamo2Syl  [-m mapfile][-c Str=0xNNNN]* [-o outfile] transducter.fst2 input_file\n");
+u_printf("-m : encodage file\n");
+u_printf("-c : change pre-define value in transducter with '<' et '>' <Str> to hexdemal value\n");
+u_printf("-o : name of output file\n");
+u_printf("   : default outfile name \"input_fileSyl.ext\"\n");
+u_printf("transducter.fst2 : decoder \n");
 exit(flag);
-
 }
 
 
@@ -114,9 +113,7 @@ setBufferMode();
 	}
 	 
 	if(!(ofile = u_fopen(ofilename,U_WRITE))) { 
-		printf("Can't open %s file for output"
-			,ofilename);
-		exitMessage("");
+		fatal_error("Can't open %s file for output\n",ofilename);
 	}
 	trans.convFile(ifilename,ofilename);
 

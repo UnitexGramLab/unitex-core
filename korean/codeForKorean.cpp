@@ -20,9 +20,10 @@
   */ 
 
 #include <stdlib.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "codeForKorean.h"
 #include "etc.h"
+#include "Error.h"
 
 using namespace std;
 
@@ -113,14 +114,8 @@ void convert_windows949kr_uni::UniToMbcsStr(unichar *up,unsigned char *mbcs)
             }
     }
 }
-//
-//    ascii hexdecimal ascii hexdecimal
-//
-void convert_windows949kr_uni::loadFromFile(char *fname)
-{
-    FILE *lf = fopen(fname,"rb");
-    fclose(lf);
-}
+
+
 void convert_windows949kr_uni::strToMapKr()
 {
     unichar *wp; 
@@ -128,9 +123,6 @@ void convert_windows949kr_uni::strToMapKr()
     unsigned char page, off;
     int i;
     wp = orgUniMbcsMap;
-//        fprintf(stderr,"text %x",map);
-//      while(*map) {
-//    printf("%x,%x",*map++,*map++);//  }
     for( i = 0 ; i < 128 ;i++)
             mbcsUni949Table[i] = i;
     for( i = 128; i < 128 * 256; i++)
@@ -143,8 +135,6 @@ void convert_windows949kr_uni::strToMapKr()
             uniMbcs949Table[i*2 + 1] = '?';       
     }
     while(*wp){
-    // first column mbcs
-//printf("%x %x] ",*wp,*(wp+1));
       if(*wp & 0x8000){
           page = (*wp & 0xff00 ) >> 8;
           off = *wp & 0xff;
@@ -206,18 +196,18 @@ convert_windows949kr_uni::loadHJAMap(char *f)
 	
 	loadHJAConvMap = (unichar *)malloc( sizeof(unichar)*0x10000);
 	for(idx = 0; idx < 0x10000;idx++) loadHJAConvMap[idx] = 0;
-	while(EOF!=u_read_line(lf,(unichar *)UtempLine)){
+	while(EOF!=u_fgets(UtempLine,lf)){
 		idx = 0;
 		if(UtempLine[idx] == (unichar)' ') continue;
 		srcIdx = getValueIdx(UtempLine,idx);
 		if( (( check_range_character(srcIdx) & TYPE_MASK) != HJA_SYL) || 
 			((UtempLine[idx] != (unichar)' ') && 
 			 (UtempLine[idx] != '\t')) )
-			exitMessage("illegal value in HanMap");
+			fatal_error("illegal value in HanMap\n");
 		idx++;
 		desIdx = getValueIdx(UtempLine,idx);
 		if((check_range_character(desIdx) & TYPE_MASK) != HAN_SYL) 
-			exitMessage("illegal value in HanMap");
+			fatal_error("illegal value in HanMap\n");
 		
 		loadHJAConvMap[srcIdx] = desIdx;
 

@@ -19,7 +19,7 @@
   *
   */
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "CodePages.h"
 #include "HTMLCharacters.h"
 #include "Error.h"
@@ -804,247 +804,247 @@ for (i=0;i<256;i++) {
 
 
 void usage_windows_1252() {
-printf("Microsoft Windows Codepage 1252 - Latin I (Western Europe & USA)\n");
-printf("  Supported Languages :\n");
-printf("    Afrikaans\n");
-printf("    Basque\n");
-printf("    Catalan\n");
-printf("    Danish\n");
-printf("    Dutch\n");
-printf("    English\n");
-printf("    Faroese\n");
-printf("    Finnish\n");
-printf("    French\n");
-printf("    Galician\n");
-printf("    German\n");
-printf("    Icelandic\n");
-printf("    Indonesian\n");
-printf("    Italian\n");
-printf("    Malay\n");
-printf("    Norwegian\n");
-printf("    Portuguese\n");
-printf("    Spanish\n");
-printf("    Swahili\n");
-printf("    Swedish\n");
+u_printf("Microsoft Windows Codepage 1252 - Latin I (Western Europe & USA)\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Afrikaans\n");
+u_printf("    Basque\n");
+u_printf("    Catalan\n");
+u_printf("    Danish\n");
+u_printf("    Dutch\n");
+u_printf("    English\n");
+u_printf("    Faroese\n");
+u_printf("    Finnish\n");
+u_printf("    French\n");
+u_printf("    Galician\n");
+u_printf("    German\n");
+u_printf("    Icelandic\n");
+u_printf("    Indonesian\n");
+u_printf("    Italian\n");
+u_printf("    Malay\n");
+u_printf("    Norwegian\n");
+u_printf("    Portuguese\n");
+u_printf("    Spanish\n");
+u_printf("    Swahili\n");
+u_printf("    Swedish\n");
 }
 
 
 void usage_NeXTSTEP() {
-printf("NeXTSTEP code page\n");
+u_printf("NeXTSTEP code page\n");
 }
 
 
 void usage_windows_874() {
-printf("Microsoft Windows Codepage 874 - Thai\n");
+u_printf("Microsoft Windows Codepage 874 - Thai\n");
 }
 
 
 void usage_windows_1253() {
-printf("Microsoft Windows Codepage 1253 - Greek\n");
+u_printf("Microsoft Windows Codepage 1253 - Greek\n");
 }
 
 
 void usage_windows_1250() {
-printf("Microsoft Windows Codepage 1250 - Central Europe\n");
-printf("  Supported Languages :\n");
-printf("    Albanian\n");
-printf("    Croatian\n");
-printf("    Czech\n");
-printf("    Hungarian\n");
-printf("    Polish\n");
-printf("    Romanian\n");
-printf("    Serbian (Latin)\n");
-printf("    Slovak\n");
-printf("    Slovenian\n");
+u_printf("Microsoft Windows Codepage 1250 - Central Europe\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Albanian\n");
+u_printf("    Croatian\n");
+u_printf("    Czech\n");
+u_printf("    Hungarian\n");
+u_printf("    Polish\n");
+u_printf("    Romanian\n");
+u_printf("    Serbian (Latin)\n");
+u_printf("    Slovak\n");
+u_printf("    Slovenian\n");
 }
 
 
 void usage_windows_1257() {
-printf("Microsoft Windows Codepage 1257 - Baltic\n");
-printf("  Supported Languages :\n");
-printf("    Estonian\n");
-printf("    Latvian\n");
-printf("    Lithuanian\n");
+u_printf("Microsoft Windows Codepage 1257 - Baltic\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Estonian\n");
+u_printf("    Latvian\n");
+u_printf("    Lithuanian\n");
 }
 
 
 void usage_windows_1251() {
-printf("Microsoft Windows Codepage 1251 - Cyrillic\n");
-printf("  Supported Languages :\n");
-printf("    Azeri (Cyrillic)\n");
-printf("    Belarusian\n");
-printf("    Bulgarian\n");
-printf("    FYRO Macedonian\n");
-printf("    Kazakh\n");
-printf("    Kyrgyz\n");
-printf("    Mongolian\n");
-printf("    Russian\n");
-printf("    Serbian (Cyrillic)\n");
-printf("    Tatar\n");
-printf("    Ukrainian\n");
-printf("    Uzbek (Cyrillic)\n");
+u_printf("Microsoft Windows Codepage 1251 - Cyrillic\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Azeri (Cyrillic)\n");
+u_printf("    Belarusian\n");
+u_printf("    Bulgarian\n");
+u_printf("    FYRO Macedonian\n");
+u_printf("    Kazakh\n");
+u_printf("    Kyrgyz\n");
+u_printf("    Mongolian\n");
+u_printf("    Russian\n");
+u_printf("    Serbian (Cyrillic)\n");
+u_printf("    Tatar\n");
+u_printf("    Ukrainian\n");
+u_printf("    Uzbek (Cyrillic)\n");
 }
 
 
 void usage_windows_1254() {
-printf("Microsoft Windows Codepage 1254 - Turkish\n");
-printf("  Supported Languages :\n");
-printf("    Azeri (Latin)\n");
-printf("    Turkish\n");
-printf("    Uzbek (Latin)\n");
+u_printf("Microsoft Windows Codepage 1254 - Turkish\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Azeri (Latin)\n");
+u_printf("    Turkish\n");
+u_printf("    Uzbek (Latin)\n");
 }
 
 
 void usage_windows_1258() {
-printf("Microsoft Windows Codepage 1258 - Viet\n");
-printf("  Supported Languages :\n");
-printf("    Vietnamese\n");
+u_printf("Microsoft Windows Codepage 1258 - Viet\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Vietnamese\n");
 }
 
 
 void usage_iso_8859_1() {
-printf("ISO Character Set 8859-1  - Latin 1 (Western Europe & USA)\n");
-printf("  Supported Languages :\n");
-printf("    Afrikaans\n");
-printf("    Albanian\n");
-printf("    Basque\n");
-printf("    Catalan\n");
-printf("    Danish\n");
-printf("    Dutch\n");
-printf("    English\n");
-printf("    Faroese\n");
-printf("    Finnish\n");
-printf("    French\n");
-printf("    German\n");
-printf("    Icelandic\n");
-printf("    Irish\n");
-printf("    Italian\n");
-printf("    Norwegian\n");
-printf("    Portuguese\n");
-printf("    Rhaeto-Romanic\n");
-printf("    Scottish\n");
-printf("    Spanish\n");
-printf("    Swahili\n");
-printf("    Swedish\n");
+u_printf("ISO Character Set 8859-1  - Latin 1 (Western Europe & USA)\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Afrikaans\n");
+u_printf("    Albanian\n");
+u_printf("    Basque\n");
+u_printf("    Catalan\n");
+u_printf("    Danish\n");
+u_printf("    Dutch\n");
+u_printf("    English\n");
+u_printf("    Faroese\n");
+u_printf("    Finnish\n");
+u_printf("    French\n");
+u_printf("    German\n");
+u_printf("    Icelandic\n");
+u_printf("    Irish\n");
+u_printf("    Italian\n");
+u_printf("    Norwegian\n");
+u_printf("    Portuguese\n");
+u_printf("    Rhaeto-Romanic\n");
+u_printf("    Scottish\n");
+u_printf("    Spanish\n");
+u_printf("    Swahili\n");
+u_printf("    Swedish\n");
 }
 
 
 void usage_iso_8859_15() {
-printf("ISO Character Set 8859-15 - Latin 9 (Western Europe & USA)\n");
-printf("  Supported Languages :\n");
-printf("    idem iso-8859-1 with the Euro sign and forgotten French and Finnish letters\n");
+u_printf("ISO Character Set 8859-15 - Latin 9 (Western Europe & USA)\n");
+u_printf("  Supported Languages :\n");
+u_printf("    idem iso-8859-1 with the Euro sign and forgotten French and Finnish letters\n");
 }
 
 
 void usage_iso_8859_2() {
-printf("ISO Character Set 8859-2  - Latin 2 (Central & Eastern Europe)\n");
-printf("  Supported Languages :\n");
-printf("    Albanian\n");
-printf("    Croatian\n");
-printf("    Czech\n");
-printf("    English\n");
-printf("    German\n");
-printf("    Hungarian\n");
-printf("    Polish\n");
-printf("    Romanian\n");
-printf("    Serbian (Latin)\n");
-printf("    Slovak\n");
-printf("    Slovenian\n");
+u_printf("ISO Character Set 8859-2  - Latin 2 (Central & Eastern Europe)\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Albanian\n");
+u_printf("    Croatian\n");
+u_printf("    Czech\n");
+u_printf("    English\n");
+u_printf("    German\n");
+u_printf("    Hungarian\n");
+u_printf("    Polish\n");
+u_printf("    Romanian\n");
+u_printf("    Serbian (Latin)\n");
+u_printf("    Slovak\n");
+u_printf("    Slovenian\n");
 }
 
 
 void usage_iso_8859_3() {
-printf("ISO Character Set 8859-3  - Latin 3 (South Europe)\n");
-printf("  Supported Languages :\n");
-printf("    Afrikaans\n");
-printf("    Catalan\n");
-printf("    Dutch\n");
-printf("    English\n");
-printf("    Esperanto\n");
-printf("    Galician\n");
-printf("    German\n");
-printf("    Italian\n");
-printf("    Maltese\n");
+u_printf("ISO Character Set 8859-3  - Latin 3 (South Europe)\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Afrikaans\n");
+u_printf("    Catalan\n");
+u_printf("    Dutch\n");
+u_printf("    English\n");
+u_printf("    Esperanto\n");
+u_printf("    Galician\n");
+u_printf("    German\n");
+u_printf("    Italian\n");
+u_printf("    Maltese\n");
 }
 
 
 void usage_iso_8859_4() {
-printf("ISO Character Set 8859-4  - Latin 4 (Northern Europe)\n");
-printf("  Supported Languages :\n");
-printf("    Danish\n");
-printf("    English\n");
-printf("    Estonian\n");
-printf("    Finnish\n");
-printf("    German\n");
-printf("    Greenlandic\n");
-printf("    Lappish\n");
-printf("    Latvian\n");
-printf("    Lithuanian\n");
-printf("    Norwegian\n");
-printf("    Swedish\n");
+u_printf("ISO Character Set 8859-4  - Latin 4 (Northern Europe)\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Danish\n");
+u_printf("    English\n");
+u_printf("    Estonian\n");
+u_printf("    Finnish\n");
+u_printf("    German\n");
+u_printf("    Greenlandic\n");
+u_printf("    Lappish\n");
+u_printf("    Latvian\n");
+u_printf("    Lithuanian\n");
+u_printf("    Norwegian\n");
+u_printf("    Swedish\n");
 }
 
 
 void usage_iso_8859_5() {
-printf("ISO Character Set 8859-5  - Cyrillic\n");
-printf("  Supported Languages :\n");
-printf("    Bulgarian\n");
-printf("    Byelorussian\n");
-printf("    English\n");
-printf("    Macedonian\n");
-printf("    Russian\n");
-printf("    Serbian\n");
-printf("    Ukrainian\n");
+u_printf("ISO Character Set 8859-5  - Cyrillic\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Bulgarian\n");
+u_printf("    Byelorussian\n");
+u_printf("    English\n");
+u_printf("    Macedonian\n");
+u_printf("    Russian\n");
+u_printf("    Serbian\n");
+u_printf("    Ukrainian\n");
 }
 
 
 void usage_iso_8859_7() {
-printf("ISO Character Set 8859-7  - Greek\n");
-printf("  Supported Languages :\n");
-printf("    Greek modern monotonic\n");
+u_printf("ISO Character Set 8859-7  - Greek\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Greek modern monotonic\n");
 }
 
 
 void usage_iso_8859_9() {
-printf("ISO Character Set 8859-9  - Latin 5 (Turkish)\n");
-printf("  Supported Languages :\n");
-printf("    Danish\n");
-printf("    Dutch\n");
-printf("    English\n");
-printf("    Finnish\n");
-printf("    French\n");
-printf("    German\n");
-printf("    Irish\n");
-printf("    Italian\n");
-printf("    Norwegian\n");
-printf("    Portuguese\n");
-printf("    Spanish\n");
-printf("    Swedish\n");
-printf("    Turkish\n");
+u_printf("ISO Character Set 8859-9  - Latin 5 (Turkish)\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Danish\n");
+u_printf("    Dutch\n");
+u_printf("    English\n");
+u_printf("    Finnish\n");
+u_printf("    French\n");
+u_printf("    German\n");
+u_printf("    Irish\n");
+u_printf("    Italian\n");
+u_printf("    Norwegian\n");
+u_printf("    Portuguese\n");
+u_printf("    Spanish\n");
+u_printf("    Swedish\n");
+u_printf("    Turkish\n");
 }
 
 
 void usage_iso_8859_10() {
-printf("ISO Character Set 8859-10 - Latin 6 (Nordic)\n");
-printf("  Supported Languages :\n");
-printf("    Danish\n");
-printf("    English\n");
-printf("    Estonian\n");
-printf("    Finnish\n");
-printf("    German\n");
-printf("    German\n");
-printf("    Inuit (Greenlandic Eskimo)\n");
-printf("    Lappish (non-Skolt Sami)\n");
-printf("    Latvian\n");
-printf("    Lithuanian\n");
-printf("    Norwegian\n");
-printf("    Swedish\n");
+u_printf("ISO Character Set 8859-10 - Latin 6 (Nordic)\n");
+u_printf("  Supported Languages :\n");
+u_printf("    Danish\n");
+u_printf("    English\n");
+u_printf("    Estonian\n");
+u_printf("    Finnish\n");
+u_printf("    German\n");
+u_printf("    German\n");
+u_printf("    Inuit (Greenlandic Eskimo)\n");
+u_printf("    Lappish (non-Skolt Sami)\n");
+u_printf("    Latvian\n");
+u_printf("    Lithuanian\n");
+u_printf("    Norwegian\n");
+u_printf("    Swedish\n");
 }
 
 #ifndef HGH_INSERT
 convert_windows949kr_uni uniKoran949;
 void usage_windows_949() {
-printf("Microsoft Windows Codepage 949 - Korean\n");
+u_printf("Microsoft Windows Codepage 949 - Korean\n");
 }
 
 
@@ -1079,23 +1079,23 @@ return fputc(uniKoran949.uniMbcs949Table[c*2+1]&0xFF,f);
 
 
 void usage_utf8() {
-printf("UTF8: universal multi-bytes encoding with a variable code length\n");
+u_printf("UTF8: universal multi-bytes encoding with a variable code length\n");
 }
 
 
 void usage_utf16_le() {
-printf("UTF16 Little-Endian: universal 2-bytes encoding\n");
-printf("This encoding requires that the 2 first bytes of a file are FF FE\n");
-printf("Bytes are encoded in the little endian order, that is to say lower\n");
-printf("byte first.\n");
+u_printf("UTF16 Little-Endian: universal 2-bytes encoding\n");
+u_printf("This encoding requires that the 2 first bytes of a file are FF FE\n");
+u_printf("Bytes are encoded in the little endian order, that is to say lower\n");
+u_printf("byte first.\n");
 }
 
 
 void usage_utf16_be() {
-printf("UTF16 Big-Endian: universal 2-bytes encoding\n");
-printf("This encoding requires that the 2 first bytes of a file are FE FF\n");
-printf("Bytes are encoded in the big endian order, that is to say higher\n");
-printf("byte first.\n");
+u_printf("UTF16 Big-Endian: universal 2-bytes encoding\n");
+u_printf("This encoding requires that the 2 first bytes of a file are FE FF\n");
+u_printf("Bytes are encoded in the big endian order, that is to say higher\n");
+u_printf("byte first.\n");
 }
 
 
@@ -1244,7 +1244,7 @@ switch(input_encoding->type) {
 			return INPUT_FILE_NOT_IN_UTF16_LE;
 		}
 		break;
-	case UTF16_BE: tmp=u_fgetc_big_endian(input); 
+	case UTF16_BE: tmp=u_fgetc_UTF16BE(input); 
 		if (tmp!=U_BYTE_ORDER_MARK) {
 			return INPUT_FILE_NOT_IN_UTF16_BE;
 		}
@@ -1259,7 +1259,7 @@ switch(input_encoding->type) {
  */
 switch(output_encoding->type) {
 	case UTF16_LE: u_fputc((unichar)U_BYTE_ORDER_MARK,output); break;
-	case UTF16_BE: u_fputc_big_endian((unichar)U_BYTE_ORDER_MARK,output); break;
+	case UTF16_BE: u_fputc_UTF16BE((unichar)U_BYTE_ORDER_MARK,output); break;
 	case ONE_BYTE_ENCODING: output_encoding->init_function(unicode_dest);
 							init_uni2asc_code_page_array();
 							break;
@@ -1566,11 +1566,11 @@ void install_all_encodings() {
  * First we install UTF encodings.
  */
 char* aliases_utf8[2]={"utf-8",NULL};
-install_multi_bytes_encoding("utf8",UTF8,u_fgetc_utf8,u_fputc_utf8,usage_utf8,aliases_utf8);
+install_multi_bytes_encoding("utf8",UTF8,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8,aliases_utf8);
 char* aliases_utf16_le[4]={"utf-16-le","utf16le","little-endian",NULL};
-install_multi_bytes_encoding("utf16-le",UTF16_LE,u_fgetc_raw,u_fputc_raw,usage_utf16_le,aliases_utf16_le);
+install_multi_bytes_encoding("utf16-le",UTF16_LE,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le,aliases_utf16_le);
 char* aliases_utf16_be[4]={"utf-16-be","utf16be","big-endian",NULL};
-install_multi_bytes_encoding("utf16-be",UTF16_BE,u_fgetc_raw_big_endian,u_fputc_raw_big_endian,usage_utf16_be,aliases_utf16_be);
+install_multi_bytes_encoding("utf16-be",UTF16_BE,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be,aliases_utf16_be);
 /*
  * ISO encodings
  */
@@ -1635,7 +1635,7 @@ install_one_byte_encoding("nextstep",init_NeXTSTEP,usage_NeXTSTEP,aliases_NeXTST
  */
 void print_encoding_main_names() {
 for (int i=0;i<number_of_encodings;i++) {
-	printf("%s\n",encodings[i]->name);
+	u_printf("%s\n",encodings[i]->name);
 }
 }
 
@@ -1647,7 +1647,7 @@ for (int i=0;i<number_of_encodings;i++) {
 void print_encoding_aliases() {
 for (int i=0;i<number_of_encodings;i++) {
 	for (int j=0;j<encodings[i]->number_of_aliases;j++) {
-		printf("%s\n",encodings[i]->aliases[j]);
+		u_printf("%s\n",encodings[i]->aliases[j]);
 	}
 }
 }
@@ -1657,13 +1657,13 @@ for (int i=0;i<number_of_encodings;i++) {
  * Prints all the information about the given encoding.
  */
 void print_encoding_infos(struct encoding* encoding) {
-printf("Main name = %s\n",encoding->name);
+u_printf("Main name = %s\n",encoding->name);
 if (encoding->number_of_aliases>0) {
-	printf("Alias%s =",(encoding->number_of_aliases==1)?"":"es");
+	u_printf("Alias%s =",(encoding->number_of_aliases==1)?"":"es");
 	for (int i=0;i<encoding->number_of_aliases;i++) {
-		printf(" %s",encoding->aliases[i]);
+		u_printf(" %s",encoding->aliases[i]);
 	}
-	printf("\n");
+	u_printf("\n");
 }
 encoding->usage_function();
 }
@@ -1690,7 +1690,7 @@ print_encoding_infos(encoding);
 void print_information_for_all_encodings() {
 for (int i=0;i<number_of_encodings;i++) {
 	print_encoding_infos(encodings[i]);
-	printf("\n");
+	u_printf("\n");
 }
 }
 

@@ -72,8 +72,7 @@ public:
 		struct double_link_state* a;
 		a=(struct double_link_state*)nodes.get();
 		if(!a) {
-			fprintf(stderr,"malloc fail to hash tree");
-			exit(99);
+			fatal_error("malloc fail to hash tree");
 		}
 		a->parent = 0;
 		a->c = 0;
@@ -89,8 +88,7 @@ public:
 		struct double_link_trans* a;
 		a=(struct double_link_trans*)trans.get();
 		if(!a){
-			fprintf(stderr,"malloc fail to hash tree");
-			exit(99);
+			fatal_error("malloc fail to hash tree");
 		}
 		a->arr=NULL;
 		a->suivant=NULL;
@@ -105,8 +103,7 @@ public:
 	struct double_link_state* 
 	insert(unsigned short* s,int pos,struct double_link_state* noeud) {
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
 		if (!s[pos]) return(noeud);
 
@@ -135,10 +132,8 @@ public:
 		modeExplore = 1;
 		struct double_link_state* noeud = insert(s,0,racine);
 		if(noeud->final == -1)	noeud->final=N++;
-		if(N < limit) 	return noeud->final;
-		fprintf(stderr,"Too many hash element");
-		exit(80);
-		return(-1);
+		if(N >= limit) fatal_error("Too many hash element");
+      return noeud->final;
 	}
 	int putWithNum(unsigned short* s,int n) {
 		modeExplore = 1;
@@ -148,13 +143,8 @@ public:
 			terminal_noeuds.insertAtTable(noeud);
 			N++;
 		} 
-//		else if( noeud->final != n) 
-//			exitMessage("Double value");
-		if(N < limit) 	
-			return noeud->final;
-		fprintf(stderr,"Too many hash element");
-		exit(80);
-		return(-1);
+		if(N >= limit) fatal_error("Too many hash elements\n");
+      return noeud->final;
 	}
 
 	int check(unsigned short* s)
@@ -174,7 +164,7 @@ public:
 
 		int tableSz = nodes.getSize();
 		Ttable = new struct double_link_state *[N];
-		if(!Ttable) exitMessage("mem alloc fail for terminal nodes");
+		if(!Ttable) fatal_error("mem alloc fail for terminal nodes\n");
 		struct double_link_state *base;
 		for( i = 0; i < tableSz;i++){
 			base = (struct double_link_state *)nodes.getAddr(i);
@@ -188,7 +178,7 @@ public:
 	{
 		int pos;
 		struct double_link_state *csp;
-		if(num > N) exitMessage("illegal terminal index");
+		if(num > N) fatal_error("illegal terminal index\n");
 		pos = CBUFF_SIZE - 1;
 		cbuff[pos] = 0;
 		csp = Ttable[num];
@@ -242,7 +232,7 @@ public:
 		FILE *sf = tabOfile;
 		tabOfile = 0;
 		tab = (unsigned short **)malloc(N*sizeof(unsigned short *));
-		if(!tab) exitMessage("memory alloc fail");
+		if(!tab) fatal_error("memory alloc fail\n");
 		explore_to_get(racine,1);
 		tabOfile = sf;
 		return(tab);
@@ -341,18 +331,12 @@ public:
 		struct double_link_state* noeud) 
 	{
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
 		if (!cur){
 			if(noeud->final == -1)	noeud->final=N++;
-			if(N < limit)
-				return noeud->final;
-
-			{
-				fprintf(stderr,"Too many hash element");
-				exit(1);
-			}
+			if(N >= limit) fatal_error("Too many hash element"); 
+         return noeud->final;
 		}
 
 		struct double_link_trans  **t= &noeud->trans;
@@ -395,7 +379,7 @@ public:
 	tableLoadFromFile(FILE *a,int cnt,int szOfLoad)
 	{
 		unsigned char *map = new unsigned char [szOfLoad];
-		if(!fread(map,szOfLoad,1,a)) exitMessage("read error");
+		if(!fread(map,szOfLoad,1,a)) fatal_error("read error\n");
 		Ttable  = new struct double_link_state*[cnt];
 		struct double_link_state* noeud;
 		unsigned short *wp = (unsigned short *)map;
@@ -405,13 +389,13 @@ public:
 		while(wp < end) {
 			if(*wp == 0x0a){
 				*wp++ = 0;
-				if(*curoffset == 0) exitMessage("Format Error");
+				if(*curoffset == 0) fatal_error("Format Error\n");
 				noeud = insert(curoffset,0,racine);
 				if(noeud->final == -1){
 					Ttable[N] = noeud;
 					noeud->final=N++;
 				}
-				else exitMessage("illegal value");	
+				else fatal_error("illegal value\n");
 			
 				curoffset = wp;
 			} else  if(*wp == 0x0d) {
@@ -419,7 +403,7 @@ public:
 			} else
 				wp++;			
 		};
-		if( N != cnt) exitMessage("illegal table size");
+		if( N != cnt) fatal_error("illegal table size\n");
 		delete map;
 	}
 };

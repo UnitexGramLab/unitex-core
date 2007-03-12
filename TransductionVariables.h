@@ -24,7 +24,7 @@
 #define TransductionVariablesH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "String_hash.h"
 

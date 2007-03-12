@@ -18,6 +18,7 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
+  
 //
 //	construction a automate from th sequence of words
 //
@@ -371,7 +372,7 @@ void controlStack(TypeChar curChar)
 }
 struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 {
-//	if(*iString != entreOpen) exitMessage("bad string for the construction text auto");
+//	if(*iString != entreOpen) fatal_error("bad string for the construction text auto\n");
 	curScanP = iString;
 //	curScanP++;
 
@@ -394,15 +395,13 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 		if(*curScanP ==  escapeChar){
 			curScanP++;
 			if(!*curScanP) 
-				exitMessage("bad escape character");
+				fatal_error("bad escape character\n");
 		}
 		saveTokenP[saveIdx++] = *curScanP;
 		curScanP++;
 	}
 	controlStack(entreClose);
-	if(cStackIdx) exitMessage("bad string format");
-//	prAuto(stderr);
-//	setIndexNumber(init);
+	if(cStackIdx) fatal_error("bad string format\n");
 	return(init);
 }
     void setIndexNumber(struct text_etat_fst2 *s)
@@ -416,9 +415,8 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
     		lp = (struct text_etat_fst2 *)nodes.getAddr(i);
     		lp->index = 0xcacacaca;
     	}
-    //	fprintf(stderr,"===>%08x\n",totEtat);
     	lp = (struct text_etat_fst2 *)nodes.getAddr(0);	
-    	if(s != lp) exitMessage("what");
+    	if(s != lp) fatal_error("what\n");
     	autoEtatNumber = 0;
     	s->index = 0xfcfcfcfc;
     	autoEtatNumber++;
@@ -471,7 +469,7 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 #ifdef DEBUG
 			prAuto(debugf,0);
 #endif
-			exitMessage("illegal etat count");
+			fatal_error("illegal etat count\n");
 		}
 		fwrite(&autoEtatNumber,4,1,f);	// number of state in a automate
 		for(i = 0; i < totEtat; i++){
@@ -486,24 +484,24 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 //					fwrite(&tcnt,sizeof(int),1,f);
 //					continue;
 //				} else
-//					exitMessage("illegal state");
+//					fatal_error("illegal state\n");
 //			}			
 			while(s){++tcnt;s = s->next;};
 			fwrite(&tcnt,sizeof(int),1,f);
 #ifdef PRDEBUG
-fprintf(stderr,"%08x:%08x:%4d",i,lp->index,tcnt);
+error("%d:%d:%d",i,lp->index,tcnt);
 #endif // PRDEBUG
 			s = lp->trans;
 			while(s){
 #ifdef PRDEBUG
-fprintf(stderr,"<%08x:%08x>",s->arr->index,s->eti.noEtiq);
+error("<%d:%d>",s->arr->index,s->eti.noEtiq);
 #endif // PRDEBUG
 				fwrite(&s->eti,sizeof(text_eti_fst2),1,f);
 				fwrite(&s->arr->index,sizeof(int),1,f);
 				s = s->next;
 			};
 #ifdef PRDEBUG
-fprintf(stderr,"\n");
+error("\n");
 #endif // PRDEBUG
 		}
 		
@@ -518,7 +516,7 @@ fprintf(stderr,"\n");
     	s->index = 0;
     	a = s->trans;
 		while(a){
-			if(!a->arr) exitMessage("illegal");
+			if(!a->arr) fatal_error("illegal\n");
 			if(a->arr->index) cleanIndex(a->arr);
 			a = a->next;
 		}
@@ -583,7 +581,7 @@ fprintf(stderr,"\n");
     	while(*Ptrans){
     		if(((*Ptrans)->eti.noEtiq == epsilonIndex) 
     			&& ((*Ptrans)->arr->trans)){
-    				if((*Ptrans)->arr == base) exitMessage("what is cycle???");
+    				if((*Ptrans)->arr == base) fatal_error("what is cycle???\n");
     				strans = (*Ptrans)->arr->trans;
     				while(strans){
     					insBr(&strans->eti,base,strans->arr);
@@ -781,8 +779,8 @@ public:
 	void write_head()
 	{
 		fseek(phraseAutoMap,0,0);
-                u_fputc_raw(0xfeff,phraseAutoMap);
-                u_fputc_raw(0xfffe,phraseAutoMap);
+                u_fputc_UTF16LE_raw(0xfeff,phraseAutoMap);
+                u_fputc_UTF16LE_raw(0xfffe,phraseAutoMap);
                 unsigned char b[4];
                 unsigned int i= head.count_of_sentences;
                 b[0] = i & 0xff;i = i >> 8;
@@ -796,8 +794,8 @@ public:
 	void read_head()
 	{
 		fseek(phraseAutoMap,0,0);
-               unichar a = u_fgetc_raw(phraseAutoMap);
-                a =u_fgetc_raw(phraseAutoMap);
+               unichar a = u_fgetc_UTF16LE_raw(phraseAutoMap);
+                a =u_fgetc_UTF16LE_raw(phraseAutoMap);
                 
                 unsigned char b[4];
                 fread(b,4,1,phraseAutoMap);
@@ -816,15 +814,15 @@ public:
 		FILE *fptr;
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"tokens.txt");
-		printf("load Tokens file\n");
+		u_printf("load Tokens file\n");
 		if((fptr = u_fopen(ftemp,U_READ)) ==0 )	fopenErrMessage(f);
 		fseek(fptr,0,SEEK_END);	
 		int sizeFile =ftell(fptr)/2;
 		tokMap = new unsigned short[sizeFile];
-		if(!tokMap) exitMessage("mem alloc fail");
+		if(!tokMap) fatal_error("mem alloc fail\n");
 		fseek(fptr,2,SEEK_SET);
 		if(!u_fread_raw(tokMap,sizeFile-1,fptr))
-			exitMessage("Read Tokens fail");
+			fatal_error("Read Tokens fail\n");
 		tokMap[sizeFile-1] = 0;
 //		tokMap[sizeFile-2] = 0;
 		loadStrTableFile(tokMap,tokTable,tokTableSz,1);
@@ -843,10 +841,10 @@ public:
 		fseek(fptr,0,SEEK_END);	
 		int sizeFile =ftell(fptr);
 		tokMap = new unsigned char[sizeFile];
-		if(!tokMap) exitMessage("mem alloc fail");
+		if(!tokMap) fatal_error("mem alloc fail\n");
 		fseek(fptr,2,SEEK_SET);
 		if(!fread(tokMap,sizeFile-2,1,fptr))
-			exitMessage("Read Tokens fail");
+			fatal_error("Read Tokens fail\n");
 		tokMap[sizeFile-1] = 0;
 		tokMap[sizeFile-2] = 0;
 		loadStrStructFile((unsigned short *)tokMap,tokenStruct);
@@ -866,10 +864,10 @@ public:
 		fseek(fptr,0,SEEK_END);	
 		int sizeFile =ftell(fptr)/2;
 		mophMap = new unsigned short[sizeFile];
-		if(!mophMap) exitMessage("mem alloc fail");
+		if(!mophMap) fatal_error("mem alloc fail\n");
 		fseek(fptr,2,SEEK_SET);
 		if(!u_fread_raw(mophMap,sizeFile-1,fptr))
-			exitMessage("Read Tokens fail");
+			fatal_error("Read Tokens fail\n");
 		mophMap[sizeFile-1] = 0;
 //		mophMap[sizeFile-2] = 0;
 		loadStrTableFile(mophMap,mophTable,mophTableSz,1);		
@@ -886,7 +884,7 @@ public:
 		if(*wp == '\n') wp++;
 
 		table = new unsigned short *[table_sz];
-		if(!table) exitMessage("token table mem alloc fail");
+		if(!table) fatal_error("token table mem alloc fail\n");
 		unsigned short *curoffset = wp;
 		int index  = 0;
 		while(*wp ) {
@@ -902,7 +900,7 @@ public:
 			} else
 				wp++;			
 		};
-		if( index != table_sz) exitMessage("illegal table size");
+		if( index != table_sz) fatal_error("illegal table size\n");
 	}
 	
 	void
@@ -919,7 +917,7 @@ public:
 		while(*wp ) {
 			if(*wp == 0x0a){
 				*wp++ = 0;
-				if(*curoffset == 0) exitMessage("Format Error");
+				if(*curoffset == 0) fatal_error("Format Error\n");
 				strStr.put(curoffset);
 			} else  if(*wp == 0x0d) {
 				*wp++ = 0;
@@ -927,7 +925,7 @@ public:
 				wp++;			
 		};
 		if(table_sz != strStr.size())
-			exitMessage("illegal token table size");
+			fatal_error("illegal token table size\n");
 	}
 	void saveMorphems()
 	{
@@ -955,7 +953,7 @@ public:
 		head.cnt_of_morpheme = sz;
         int i;
 		morStructTable = new struct morpheme_struct [sz];
-		if(!morStructTable)exitMessage("mem alloc fail");
+		if(!morStructTable) fatal_error("mem alloc fail\n");
 		flechi.put(u_epsilon_string);
 		canon.put(u_epsilon_string);
 		info.put(u_epsilon_string);
@@ -998,7 +996,7 @@ public:
 			case '.':
 				*wp++ = '\0';
 //				if(!*sp) illegal_format(&m[i][1]);
-//				if(!u_strcmp(sp,(unsigned short *)L"i<E")) exitMessage("");
+//				if(!u_strcmp(sp,(unsigned short *)L"i<E")) exit(1);
 				tmpEti[count_eti] =info.put(sp);
 #ifdef DEBUG
 u_fprintf(debugf,"<%S:%d>",sp,tmpEti[count_eti]);
@@ -1016,9 +1014,6 @@ u_fprintf(debugf,"<%S:%d>",sp,tmpEti[count_eti]);
 		morStructTable[i].idx_i = infoArr.put(tmpEti);
 #ifdef DEBUGG
 for(int kk  = 0; kk<count_eti;kk++) fprintf(debugf,"%04\n",tmpEti[kk]);
-//		fprintf(stderr,"%d :: %x %x %x\n",i,morStructTable[i].idx_f,
-//			morStructTable[i].idx_c,
-//			morStructTable[i].idx_i);
 #endif
 		}
 		fwrite(morStructTable,sizeof(struct morpheme_struct)*sz,1,f);
@@ -1112,9 +1107,8 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
                     fprintf(debugf,"%s\n",getUtoChar(tokTable[base->org]));
 #endif
 				} else {
-				    fprintf(stderr,"%d %s %s\n",base->org,getUtoChar(dp)
-                        ,getUtoChar(tokTable[base->org]));
-					exitMessage("illegal");
+				    error("%d %s %s\n",base->org,getUtoChar(dp),getUtoChar(tokTable[base->org]));
+					fatal_error("illegal\n");
 				}
 			}
 			variation_ecriture.releaseTable();
@@ -1157,8 +1151,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 
 	void illegal_format(unsigned short *m)
 	{
-		fprintf(stderr,"%s is Illegal format\n",getUtoChar(m));
-		exitMessage("");
+		fatal_error("%s is Illegal format\n",getUtoChar(m));
 	}
 	void sortArray(unsigned short *a,int sz)
 	{
@@ -1183,7 +1176,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 
 		fseek(phraseAutoMap,head.offset_morp_struct,SEEK_SET);
 		morStructTable = new struct morpheme_struct[head.cnt_of_morpheme];
-		if(!morStructTable) exitMessage("mem alloc fail");
+		if(!morStructTable) fatal_error("mem alloc fail\n");
 		fread(morStructTable,sizeof(struct morpheme_struct)*
 			head.cnt_of_morpheme,1,phraseAutoMap);
 
@@ -1231,11 +1224,11 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		register unsigned short *wp;
                 int readSz= iSz/2;
 		unsigned short *map = new unsigned short[readSz];
-		if(!map) exitMessage("mem alloc fail");
+		if(!map) fatal_error("mem alloc fail\n");
 		fseek(f,offset,SEEK_SET);
-		if(!u_fread_raw(map,readSz,f)) exitMessage("Read Tokens fail");
+		if(!u_fread_raw(map,readSz,f)) fatal_error("Read Tokens fail\n");
 		table = new unsigned short *[cnt];
-		if(!table) exitMessage("token table mem alloc fail");
+		if(!table) fatal_error("token table mem alloc fail\n");
 		wp = map;
 		unsigned short *curoffset = wp;
 		int index  = 0;
@@ -1243,7 +1236,6 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		while(wp < end) {
 			if(*wp == 0x0a){
 				*wp++ = 0;
-//				if(*curoffset == 0) exitMessage("Format Error");
 				table[index++] = curoffset;
 				curoffset = wp;
 			} else  if(*wp == 0x0d) {
@@ -1251,7 +1243,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 			} else
 				wp++;			
 		};
-		if( index != cnt) exitMessage("illegal table size");
+		if( index != cnt) fatal_error("illegal table size\n");
 		return(map);
 	}
 	void 
@@ -1265,7 +1257,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 
 		fseek(phraseAutoMap,head.offset_morp_struct,SEEK_SET);
 		morStructTable = new struct morpheme_struct[head.cnt_of_morpheme];
-		if(!morStructTable) exitMessage("mem alloc fail");
+		if(!morStructTable) fatal_error("mem alloc fail\n");
 		if(!fread(morStructTable,sizeof(struct morpheme_struct)*
 			head.cnt_of_morpheme,1,phraseAutoMap))
 			freadError(ftemp);
@@ -1292,9 +1284,9 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 	{
 		register unsigned short *wp;
 		unsigned char *map = new unsigned char[sz];
-		if(!map) exitMessage("mem alloc fail");
+		if(!map) fatal_error("mem alloc fail\n");
 		fseek(f,offset,SEEK_SET);
-		if(!fread(map,sz,1,f)) exitMessage("Read Tokens fail");
+		if(!fread(map,sz,1,f)) fatal_error("Read Tokens fail\n");
 		wp = (unsigned short *)map;
 		unsigned short *curoffset = wp;
 		unsigned short *end = (unsigned short *)(map + sz);
@@ -1302,7 +1294,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		while(wp < end) {
 			if(*wp == 0x0a){
 				*wp++ = 0;
-				if(*curoffset == 0) exitMessage("Format Error");
+				if(*curoffset == 0) fatal_error("Format Error\n");
 				table.put(curoffset);
 				cnt ++;
 				curoffset = wp;
@@ -1311,7 +1303,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 			} else
 				wp++;			
 		};
-		if( table.size() != cnt) exitMessage("illegal table size");
+		if( table.size() != cnt) fatal_error("illegal table size\n");
 		delete map;
 	}
 
@@ -1329,7 +1321,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 	    unsigned short sc;
 		
 		switch(type){
-		case TE_NEW_TOKEN: exitMessage("Illegal value exist in the text automate");
+		case TE_NEW_TOKEN: fatal_error("Illegal value exist in the text automaton\n");
 		case TE_SEGMENT:
 			sp = tokTable[index];
 			break;
@@ -1396,7 +1388,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 			sp = ctl_Uchar_name_string[index];
 			break;
 		default:
-			exitMessage("illegal type of morpheme");
+			fatal_error("illegal type of morpheme\n");
 		}
 		return(sp);
 	}
@@ -1509,7 +1501,7 @@ public:
 	
 	while(fread(&idx,sizeof(int),1,fidx))
 	{
-		if(idx > unePhraseAuto.tokTableSz) exitMessage("Illegal index of token");
+		if(idx > unePhraseAuto.tokTableSz) fatal_error("Illegal index of token\n");
 		fread(&offset,sizeof(int),1,fidx);
 		if(idx == unePhraseAuto.phraseMark){
 			if(numberOfPhrase == demandNumberOfSentence){
@@ -1529,7 +1521,7 @@ public:
 					segOfPhrase[segOfPhraseIdx-1],
 					segOfPhrase[segOfPhraseIdx]);
 				if(segOfPhraseIdx >= MAX_NO_ELEMENT_PHASE){
-					fprintf(stderr,"the %d sentence excede the number of elements",segOfPhraseIdx);
+					error("the %d sentence excede the number of elements",segOfPhraseIdx);
 				}
 				segOfPhraseIdx++;
 			}
@@ -1572,7 +1564,7 @@ public:
 		}
 		break;
 	default:
-		printf("error in programm!!!");
+		error("error in programm!!!\n");
 	}
 	u_fprintf(fout,"0000000001\n");
 //unePhraseAuto.prAuto(fdebug);
@@ -1678,7 +1670,7 @@ public:
 		fseek(readFile,off_automate,SEEK_SET);
 		int offset = off_automate;
 		if(!fread(&cnt_etat,4,1,readFile))
-			exitMessage("read error");
+			fatal_error("read error\n");
 		offset += 4;
 		int i,j;
 		int *tab = new int[cnt_etat];
@@ -1686,7 +1678,7 @@ public:
 		{
 			tab[i] = offset;
 			if(!fread(&tran_cnt,4,1,readFile))
-				exitMessage("read error");
+				fatal_error("read error\n");
 			offset += 4 + tran_cnt * 12;
 			fseek(readFile,offset,SEEK_SET);
 		}
@@ -1697,7 +1689,7 @@ public:
 		u_fprintf(fout,"0000000001\n");
 		u_fprintf(fout,"-1 ");
 		wp = (unsigned int *)autoMap;
-		if((int)*wp++ != cnt_etat) exitMessage("mem error");
+		if((int)*wp++ != cnt_etat) fatal_error("mem error\n");
 
     	// get orgin sentence 
         for(i = 0; i < cnt_etat;i++)
@@ -1710,7 +1702,7 @@ public:
 			case TE_SYMBOL_NUM:
 			case TE_SYMBOL_GRA:
 			   tt[0] = *wp & 0xffff; 
-			   u_fputc_raw(tt[0],fout);
+			   u_fputc_UTF16LE_raw(tt[0],fout);
 			   break;			
 			case TE_SEGMENT:
 				u_fprintf(fout,"%S",unePhraseAuto.tokTable[*wp&MASK_OF_INDEX]);
@@ -1743,7 +1735,7 @@ public:
 				else 
                     u_fprintf(fout,"%d ",getNewEtiq((struct text_eti_fst2 *)wp));
 				if( (k = find_index_array(tab,cnt_etat,wp[2])) < 0) 
-					exitMessage("illegl vaule at array index");
+					fatal_error("illegal value at array index\n");
 				u_fprintf(fout,"%d ",k);
 				wp += 3;
 			}
@@ -1756,20 +1748,12 @@ public:
 		u_fprintf(fout,"f \n");
 	}
 
-//	void prTokens()
-//	{
-//		u_fprintf(fout,"<E>");
-//		for(int i = 0; i < token_table_sz;i++)
-//			u_fprintf(fout,L"%%s\n",token_table[i]);
-//	}
 	int getNewEtiq(struct text_eti_fst2 *et)
 	{
 		unsigned short *wp =
 			unePhraseAuto.getEtiquetteStr(et);
  
 		int no = fst2etiStr.put(wp);
-//		u_fprintf(stderr,L"%d %d==>%d:<%s>\n"
-//			,et->noEtiq,et->offset,no,wp);
 		return(no);
 	}
 	void prStrList(FILE *f)
@@ -1800,7 +1784,7 @@ public:
 		if((fidx = fopen(ft,"rb")) ==0 ) fopenErrMessage(ft);
 		unePhraseAuto.loadTokensMap(f);
 		if(unePhraseAuto.phraseMark < 0)
-		exitMessage(" Sentence mark not exist!");
+		fatal_error(" Sentence mark not exist!\n");
 		unePhraseAuto.loadSousTokensMap(f);
 		fout = unePhraseAuto.openForWrite(f);
 
@@ -1818,7 +1802,7 @@ public:
 		int textIndexCount = 0;
 		while(fread(&idx,sizeof(int),1,fidx))
 		{
-			if(idx > unePhraseAuto.tokTableSz) exitMessage("Illegal index of token");
+			if(idx > unePhraseAuto.tokTableSz) fatal_error("Illegal index of token\n");
 			if(idx == unePhraseAuto.phraseMark){
 			    segOfPhrase[segOfPhraseIdx] = unePhraseAuto.newEtat();
 				teti.noEtiq = idx | TE_SEGMENT;
@@ -1830,7 +1814,7 @@ public:
 				savePhrase();
 
 				if(!(numberOfPhrase % 100) ) 
-					printf("\r %08dth sentence handling",numberOfPhrase);
+					u_printf("\r %dth sentence handling",numberOfPhrase);
 				unePhraseAuto.resetMem();
 				segOfPhraseIdx = 0;
 				segOfPhrase[segOfPhraseIdx++] = unePhraseAuto.newEtat();
@@ -1842,8 +1826,7 @@ public:
 				unePhraseAuto.insBr(&teti,segOfPhrase[segOfPhraseIdx-1],
 					segOfPhrase[segOfPhraseIdx]);
 				if(segOfPhraseIdx > MAX_NO_ELEMENT_PHASE){
-					fprintf(stderr,"the %d sentence excede the number of elements",numberOfPhrase);
-					exitMessage("");
+					fatal_error("the %d sentence excede the number of elements\n",numberOfPhrase);
 				}
 				segOfPhraseIdx++;
 			}
@@ -1853,8 +1836,7 @@ public:
 			numberOfPhrase++;
 			savePhrase();
 			if(!(numberOfPhrase % 100) ) 
-				fprintf(stderr,"\r %08dth sentence handling"
-				,numberOfPhrase);
+				error("\r %08dth sentence handling",numberOfPhrase);
 
 			unePhraseAuto.resetMem();
 			segOfPhraseIdx = 0;
@@ -1892,11 +1874,11 @@ unePhraseAuto.prAuto(stderr,0);
 				if(*tchar == '\t'){ // mix with ideogramms
 					tchar++;
 					while(*tchar != '\t'){
-						if(!*tchar) exitMessage("Illegal morphemes line");
+						if(!*tchar) fatal_error("Illegal morphemes line\n");
 						*wp++ = *tchar++;
 					}
 					*wp++ = 0;
-					if(!tempArr[0]) exitMessage("illegal variation form");
+					if(!tempArr[0]) fatal_error("illegal variation form\n");
 					j = unePhraseAuto.variation_table_add(segOrg,tempArr);
 
 					segOfPhrase[i]->trans->eti.noEtiq = j | TE_TOKEN_VAR;
@@ -1922,7 +1904,7 @@ unePhraseAuto.prAuto(stderr,0);
 					if((*tchar == '<') && *(tchar+1) != 0){
 						int ll = int (unePhraseAuto.checkName(tchar)& 0xffff);
 						if( ll == -1)
-							exitMessage("illegal control character");
+							fatal_error("illegal control character\n");
 						segOfPhrase[i]->trans->eti.noEtiq = ll | TE_SYMBOL_CTL;
 					} else { // control character
 						segOfPhrase[i]->trans->eti.noEtiq = *tchar | TE_SYMBOL_GRA;
@@ -1979,8 +1961,8 @@ unePhraseAuto.prAuto(stderr,2);
 		int lineNum = utoi(*loadFst2->graph_names);
 		
 		if( (lineNum < 1 ) || (lineNum > unePhraseAuto.head.count_of_sentences)){
-			fprintf(stderr,"%s ",getUtoChar(loadFst2->graph_names));
-			exitMessage("Illegal sentence number");
+			error("%s ",getUtoChar(loadFst2->graph_names));
+			fatal_error("Illegal sentence number\n");
 		}
 		int off_automate =unePhraseAuto.sentenceInit.tableLoaded[lineNum-1];
 		int cnt_etat;
@@ -1990,19 +1972,19 @@ unePhraseAuto.prAuto(stderr,2);
 		fseek(readFile,off_automate,SEEK_SET);
 		int offset = off_automate;
 		if(!fread(&cnt_etat,4,1,readFile))
-			exitMessage("read error");
+			fatal_error("read error\n");
 		offset += 4;
 		if(cnt_etat != loadFst2->number_of_states)
 		{
-			fprintf(stderr,"%d < %d", cnt_etat,loadFst2->number_of_states);
-			exitMessage("Count of state not match");
+			error("%d < %d\n", cnt_etat,loadFst2->number_of_states);
+			fatal_error("Count of state not match\n");
 		}
 		int i,j,k;
 		int cnt_trans;
 		Fst2Transition *t;
 		unsigned int *wp;
 		unsigned int *mapTrans  = new unsigned int [1024 * 3];
-		if(!maptrans) exitMessage("Mem alloc fail");
+		if(!maptrans) fatal_error("Mem alloc fail\n");
 		for(i = 0; i < cnt_etat;i++)
 		{
 			t = loadFst2->states[i]->transitions;

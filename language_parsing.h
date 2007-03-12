@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 
-#include "unicode.h"
+#include "Unicode.h"
 
 enum {
   TOK_STR = 0, TOK_ANGLE, TOK_NAME, TOK_POS, TOK_END, TOK_DISCR, TOK_FLEX, TOK_CAT, TOK_COMPLET, TOK_EQUAL, TOK_BLANK, TOK_IGNORE
@@ -66,14 +66,6 @@ typedef struct language_tree_t {
   pos_section_t * pos_secs;
 } language_tree_t;
 
-
-
-
-void token_dump(token_t * tok, FILE * f = stderr);
-void tokens_dump(token_t * toks, FILE * f = stderr);
-void tokens_list_dump(tokens_list * tlist, FILE * f = stderr);
-void pos_section_dump(pos_section_t * sec, FILE * f = stderr);
-void language_tree_dump(language_tree_t * tree, FILE * f = stderr);
 
 
 language_tree_t * language_parse(FILE * f);

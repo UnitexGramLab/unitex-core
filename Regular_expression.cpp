@@ -19,10 +19,8 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "Regular_expression.h"
-//---------------------------------------------------------------------------
-
+#include "Error.h"
 
 int reg2grf(unichar* s,char* nom_grf) {
 int i;
@@ -31,44 +29,43 @@ int e2;
 FILE* fichier_reg;
 Etat_reg tab_reg[N_ETATS_REG];
 int etat_courant_reg;
-
 if (s[0]=='\0') {
-  fprintf(stderr,"You must specify a non empty regular expression\n");
-  return 0;
+   error("You must specify a non empty regular expression\n");
+   return 0;
 }
 fichier_reg=u_fopen(nom_grf,U_WRITE);
 if (fichier_reg==NULL) {
-  fprintf(stderr,"Cannot open the output file for the regular expression\n");
-  return 0;
+   error("Cannot open the output file for the regular expression\n");
+   return 0;
 }
 etat_courant_reg=2;
 for (i=0;i<N_ETATS_REG;i++)
   tab_reg[i]=NULL;
 unichar z[10];
-u_strcpy_char(z,"<E>");
+u_strcpy(z,"<E>");
 tab_reg[0]=nouvel_etat_reg(z);
-u_strcpy_char(z,"");
+u_strcpy(z,"");
 tab_reg[1]=nouvel_etat_reg(z);
 
-u_fprints_char("#Unigraph\n",fichier_reg);
-u_fprints_char("SIZE 1313 950\n",fichier_reg);
-u_fprints_char("FONT Times New Roman:  12\n",fichier_reg);
-u_fprints_char("OFONT Times New Roman:B 12\n",fichier_reg);
-u_fprints_char("BCOLOR 16777215\n",fichier_reg);
-u_fprints_char("FCOLOR 0\n",fichier_reg);
-u_fprints_char("ACOLOR 12632256\n",fichier_reg);
-u_fprints_char("SCOLOR 16711680\n",fichier_reg);
-u_fprints_char("CCOLOR 255\n",fichier_reg);
-u_fprints_char("DBOXES y\n",fichier_reg);
-u_fprints_char("DFRAME y\n",fichier_reg);
-u_fprints_char("DDATE y\n",fichier_reg);
-u_fprints_char("DFILE y\n",fichier_reg);
-u_fprints_char("DDIR y\n",fichier_reg);
-u_fprints_char("DRIG n\n",fichier_reg);
-u_fprints_char("DRST n\n",fichier_reg);
-u_fprints_char("FITS 100\n",fichier_reg);
-u_fprints_char("PORIENT L\n",fichier_reg);
-u_fprints_char("#\n",fichier_reg);
+u_fprintf(fichier_reg,"#Unigraph\n");
+u_fprintf(fichier_reg,"SIZE 1313 950\n");
+u_fprintf(fichier_reg,"FONT Times New Roman:  12\n");
+u_fprintf(fichier_reg,"OFONT Times New Roman:B 12\n");
+u_fprintf(fichier_reg,"BCOLOR 16777215\n");
+u_fprintf(fichier_reg,"FCOLOR 0\n");
+u_fprintf(fichier_reg,"ACOLOR 12632256\n");
+u_fprintf(fichier_reg,"SCOLOR 16711680\n");
+u_fprintf(fichier_reg,"CCOLOR 255\n");
+u_fprintf(fichier_reg,"DBOXES y\n");
+u_fprintf(fichier_reg,"DFRAME y\n");
+u_fprintf(fichier_reg,"DDATE y\n");
+u_fprintf(fichier_reg,"DFILE y\n");
+u_fprintf(fichier_reg,"DDIR y\n");
+u_fprintf(fichier_reg,"DRIG n\n");
+u_fprintf(fichier_reg,"DRST n\n");
+u_fprintf(fichier_reg,"FITS 100\n");
+u_fprintf(fichier_reg,"PORIENT L\n");
+u_fprintf(fichier_reg,"#\n");
 
 if (!reg_2_grf(s,&e1,&e2,tab_reg,&etat_courant_reg)) {
   u_fclose(fichier_reg);
@@ -119,7 +116,7 @@ tab_reg[e1]->nombre_trans++;
 //
 // convertit l'expression reguliere s en un graphe equivalent
 //
-int reg_2_grf(unichar s[],int *initial,int *final,Etat_reg tab_reg[],int* etat_courant_reg) {
+int reg_2_grf(unichar* s,int *initial,int *final,Etat_reg tab_reg[],int* etat_courant_reg) {
 int niveau,i,j;
 unichar e1[1000];
 unichar e2[1000];
@@ -129,18 +126,13 @@ int etat3;
 int etat4;
 int a,b;
 
-/*printf("expression=|");
-u_prints(s);
-printf("|");
-getchar(); */
-
-remove_prefix(s,(unichar)' ');
+/* We skip the spaces, if any */
+while (*s==' ') s++;
 
 if ((s[0]=='\0')||(s[0]==')')||(s[0]=='+')||(s[0]=='.')||(s[0]=='*')) {
   // en cas d'erreur...
   return 0;
 }
-
 if (s[0]=='(') {
   // si l'expression commence par une parenthese...
   niveau=1;
@@ -159,7 +151,9 @@ if (s[0]=='(') {
         i++;
         e1[k++]=s[i];
       } while ((s[i]!='>')&&(s[i]!='\0'));
-      if (s[i]=='\0') return 0;
+      if (s[i]=='\0') {
+         return 0;
+      }
 
       /* $CD$ begin */
       if ( (u_strlen(s)-1 - i) > 2 && s[i+1] == '<' && s[i+2] == '<' ) {
@@ -167,7 +161,9 @@ if (s[0]=='(') {
             i++;
             e1[k++] = s[i];
             } while (s[i] != '>' && s[i] != '\0');
-        if (s[i] == '\0' || s[i+1] == '\0' || s[i+1] != '>') return 0;
+        if (s[i] == '\0' || s[i+1] == '\0' || s[i+1] != '>') {
+           return 0;
+        }
         i++;
         e1[k++] = s[i];
         }
@@ -182,7 +178,6 @@ if (s[0]=='(') {
       if (s[i]=='\0') return 0;
     }
     else if (s[i]=='"') {
-      printf("ici\n");
       do {
         i++;
         e1[k++]=s[i];
@@ -279,7 +274,7 @@ else {
   etat2=etat1;
 }
 if (s[i]==')') {
-   fprintf(stderr,"Unexpected closing parenthesis\n");
+   error("Unexpected closing parenthesis\n");
    return 0;
 }
 
@@ -292,7 +287,7 @@ if (s[i]=='*') {
   relier_reg(etat2,etat1,tab_reg);
   a=(*etat_courant_reg)++;
   unichar z[10];
-  u_strcpy_char(z,"<E>");
+  u_strcpy(z,"<E>");
   tab_reg[a]=nouvel_etat_reg(z);
   b=(*etat_courant_reg)++;
   tab_reg[b]=nouvel_etat_reg(z);
@@ -357,7 +352,7 @@ switch (s[i]) {
                 return 0;
               a=(*etat_courant_reg)++;
               unichar z[10];
-              u_strcpy_char(z,"<E>");
+              u_strcpy(z,"<E>");
               tab_reg[a]=nouvel_etat_reg(z);
               b=(*etat_courant_reg)++;
               tab_reg[b]=nouvel_etat_reg(z);
@@ -410,30 +405,20 @@ void sauver_etats_reg(FILE* fichier_reg,Etat_reg tab_reg[],int etat_courant_reg)
 int i;
 struct liste_transitions_reg *l;
 struct liste_transitions_reg *tmp;
-unichar z[10000];
-u_int_to_string(etat_courant_reg,z);
-u_strcat_char(z,"\n");
-u_fprints(z,fichier_reg);
+u_fprintf(fichier_reg,"%d\n",etat_courant_reg);
 
 for (i=0;i<etat_courant_reg;i++) {
-  u_strcpy_char(z,"\"");
   unichar temp[1000];
   convert_to_grf_format(temp,tab_reg[i]->contenu);
-  u_strcat(z,temp);
-  u_strcat_char(z,"\" 100 100 ");
-  u_fprints(z,fichier_reg);
-  u_int_to_string(tab_reg[i]->nombre_trans,z);
-  u_fprints(z,fichier_reg);
+  u_fprintf(fichier_reg,"\"%S\" 100 100 %d",temp,tab_reg[i]->nombre_trans);
 
   l=tab_reg[i]->l;
   while (l!=NULL) {
     tmp=l->suivant;
-    u_fprints_char(" ",fichier_reg);
-    u_int_to_string(l->numero,z);
-    u_fprints(z,fichier_reg);
+    u_fprintf(fichier_reg," %d",l->numero);
     l=tmp;
   }
-  u_fprints_char(" \n",fichier_reg);
+  u_fprintf(fichier_reg," \n");
 }
 }
 

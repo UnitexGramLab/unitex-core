@@ -26,35 +26,25 @@
  * Here we define some separator sets that will be used
  * many times.
  */
-unichar* P_COMMA=u_strdup_char(",");
-unichar* P_DOT=u_strdup_char(".");
-unichar* P_EQUAL=u_strdup_char("=");
-unichar* P_PLUS=u_strdup_char("+");
-unichar* P_COLON=u_strdup_char(":");
-unichar* P_SLASH=u_strdup_char("/");
-unichar* P_DOUBLE_QUOTE=u_strdup_char("\"");
-unichar* P_PLUS_COLON=u_strdup_char("+:");
-unichar* P_PLUS_MINUS_COLON=u_strdup_char("+-:");
-unichar* P_PLUS_COLON_SLASH=u_strdup_char("+:/");
-unichar* P_COLON_SLASH=u_strdup_char(":/");
-unichar* P_CLOSING_ROUND_BRACKET=u_strdup_char("}");
-unichar* P_COMMA_DOT=u_strdup_char(",.");
-unichar* P_PLUS_COLON_SLASH_BACKSLASH=u_strdup_char("+:/\\");
-unichar* P_COLON_SLASH_BACKSLASH=u_strdup_char(":/\\");
-unichar* P_COMMA_DOT_BACKSLASH_DIGITS=u_strdup_char(",.\\0123456789");
-unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup_char(".+/\\");
+unichar* P_SPACE=u_strdup(" ");
+unichar* P_COMMA=u_strdup(",");
+unichar* P_DOT=u_strdup(".");
+unichar* P_EQUAL=u_strdup("=");
+unichar* P_PLUS=u_strdup("+");
+unichar* P_COLON=u_strdup(":");
+unichar* P_SLASH=u_strdup("/");
+unichar* P_DOUBLE_QUOTE=u_strdup("\"");
+unichar* P_PLUS_COLON=u_strdup("+:");
+unichar* P_PLUS_MINUS_COLON=u_strdup("+-:");
+unichar* P_PLUS_COLON_SLASH=u_strdup("+:/");
+unichar* P_COLON_SLASH=u_strdup(":/");
+unichar* P_CLOSING_ROUND_BRACKET=u_strdup("}");
+unichar* P_COMMA_DOT=u_strdup(",.");
+unichar* P_PLUS_COLON_SLASH_BACKSLASH=u_strdup("+:/\\");
+unichar* P_COLON_SLASH_BACKSLASH=u_strdup(":/\\");
+unichar* P_COMMA_DOT_BACKSLASH_DIGITS=u_strdup(",.\\0123456789");
+unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup(".+/\\");
 
-
-/**
- * Returns 1 if 'c' is in the string 'array'; 0 otherwise.
- * Note that the array must be non NULL.
- */
-int is_in_array(unichar c,unichar* array) {
-for (int i=0;array[i]!='\0';i++) {
-   if (c==array[i]) return 1;
-}
-return 0;
-}
 
 
 /**
@@ -64,11 +54,14 @@ return 0;
  * char. If it has the value NULL, it means that all protected chars must stay protected.
  * Note that forbidden chars and stop_chars will be taken into account if and only
  * if they are not protected. The intersection between 'stop_chars' and 'forbidden_chars'
- * is supposed to be empty. If not, 'stop_chars' is considered first. '*ptr' is updated.
+ * is supposed to be empty. If not, 'stop_chars' is considered first.
  * If an error occurs, a \0 is put at the end of the result and the function 
  * returns an error code; otherwise, the substring obtained
  * is stored in 'result' and P_OK is returned.
  * If 's' is empty, the function returns P_EOS.
+ * Note that '*ptr' is updated and points to the stop character (delimiter or '\0').
+ * It is the responsability of the caller to increase the position if we are not
+ * at the end of the input string.
  * 
  * Example: parse("E\=\mc\2 is a formula",result," ","m","2") will produce the
  *          result = "E=mc\2"
@@ -85,7 +78,7 @@ while (s[*ptr]!='\0') {
          result[j]='\0';
          return P_BACKSLASH_AT_END;
       }
-      if (chars_to_keep_protected==NULL || is_in_array(s[(*ptr)+1],chars_to_keep_protected)) {
+      if (chars_to_keep_protected==NULL || u_strchr(chars_to_keep_protected,s[(*ptr)+1])) {
          /* If the character must keep its backslash */
          result[j++]=PROTECTION_CHAR;
       }
@@ -93,12 +86,12 @@ while (s[*ptr]!='\0') {
       (*ptr)=(*ptr)+2;
    } else {
       /* If we have an unprotected character */
-      if (is_in_array(s[*ptr],stop_chars)) {
+      if (u_strchr(stop_chars,s[*ptr])) {
          /* If it is a stop char, we have finished */
          result[j]='\0';
          return P_OK;
       }
-      if (is_in_array(s[*ptr],forbidden_chars)) {
+      if (u_strchr(forbidden_chars,s[*ptr])) {
          /* If it is a forbidden char, it's an error */
          result[j]='\0';
          return P_FORBIDDEN_CHAR;
@@ -125,6 +118,43 @@ return parse_string(s,ptr,result,stop_chars,P_EMPTY,P_EMPTY);
 
 
 /**
+ * Parses the string 's' from '*ptr' until it finds '\0' or a character that is in 
+ * 'stop_chars'. '*ptr' is updated. All protected characters will be unprotected.
+ * If an error occurs, it returns an error code; otherwise, the substring obtained
+ * is stored in 'result' and P_OK is returned.
+ */
+int parse_string(unichar* s,int *ptr,unichar* result,char* stop_chars) {
+unichar* tmp=u_strdup(stop_chars);
+int value=parse_string(s,ptr,result,tmp,P_EMPTY,P_EMPTY);
+free(tmp);
+return value;
+}
+
+
+/**
+ * This function do the same as above, except that it starts from the
+ * beginning of the string. It can be used for one-shot tokenization.
+ */
+int parse_string(unichar* s,unichar* result,unichar* stop_chars) {
+int ptr=0;
+return parse_string(s,&ptr,result,stop_chars,P_EMPTY,P_EMPTY);
+}
+
+
+/**
+ * This function do the same as above, except that it starts from the
+ * beginning of the string. It can be used for one-shot tokenization.
+ */
+int parse_string(unichar* s,unichar* result,char* stop_chars) {
+unichar* tmp=u_strdup(stop_chars);
+int ptr=0;
+int value=parse_string(s,&ptr,result,tmp,P_EMPTY,P_EMPTY);
+free(tmp);
+return value;
+}
+
+
+/**
  * This function copies 's' into 'result', escaping the chars in
  * 'chars_to_escape'. Protected chars are not taken into account.
  * 
@@ -141,7 +171,7 @@ return parse_string(s,ptr,result,stop_chars,P_EMPTY,P_EMPTY);
 int escape(unichar* s,unichar* result,unichar* chars_to_escape) {
 int j=0;
 for (int i=0;s[i]!='\0';i++) {
-   if (is_in_array(s[i],chars_to_escape)) {
+   if (u_strchr(chars_to_escape,s[i])) {
       result[j++]=PROTECTION_CHAR;
    } else if (s[i]==PROTECTION_CHAR) {
       i++;

@@ -22,7 +22,7 @@
 #ifndef PatternTreeH
 #define PatternTreeH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "List_ustring.h"
 #include "Pattern.h"
 #include "DELA.h"

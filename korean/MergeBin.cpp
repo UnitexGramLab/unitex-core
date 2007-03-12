@@ -23,7 +23,7 @@
 
 using namespace std;
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "etc.h"
 //#include "String_hash2.h"
 #include "bin.h"
@@ -36,8 +36,8 @@ using namespace std;
 
 static void usage(int flag)
 {
-printf("%s",COPYRIGHT);
-printf(
+u_printf("%S",COPYRIGHT);
+u_printf(
 "MergeBin [-d] [-l lfilename] -o ofilename f0 f1 ... fn ] ] \n"\
 "         : merge files which has the extension .bin \n"\
 "  -d : debugMode set. all paths out to the file \"out.txt\"\n"\
@@ -110,7 +110,7 @@ getOneFile(char *fn)
 	} else {
         tailFile = headFiles= tmp;
   	}
-  	printf("Load file name :: <%s>\n",fn);
+  	u_printf("Load file name :: <%s>\n",fn);
 	fileListCounter++;
 }
 static void getListFile(char *fn)
@@ -120,7 +120,7 @@ static void getListFile(char *fn)
 	int pathLen;
 struct binFileList *tmp;
 	FILE *lstF;
-	printf("Load file %s\n",fn);
+	u_printf("Load file %s\n",fn);
     if(!(lstF = fopen(fn,"rb")))
     	fopenErrMessage(fn);	
     get_path(fn,pathName);
@@ -169,13 +169,13 @@ load_bins(char *oFileName)
     rtail = stail = 0;
 	tmp = headFiles;	
 	while(tmp){
-printf("%s\n",tmp->fname);
+      u_printf("%s\n",tmp->fname);
 		tmp->image.loadBin(tmp->fname);
 		tmp->newSufId = 0;
 		
 		if(tmp->image.isRacine()){
 			racStateCounter++;
-printf("is racine %s\n",tmp->fname);
+         u_printf("is racine %s\n",tmp->fname);
   			if(rhead){	
                 rtail->next = tmp; 
                 rtail = rtail->next;
@@ -185,7 +185,7 @@ printf("is racine %s\n",tmp->fname);
             tmp = tmp->next;
 			rtail->next = 0;
 		} else {
-printf("Load suffix %s\n",tmp->fname);
+         u_printf("Load suffix %s\n",tmp->fname);
   			if(shead){	
                 stail->next = tmp;
                 stail = stail->next;
@@ -199,7 +199,7 @@ printf("Load suffix %s\n",tmp->fname);
 	
 	headFiles = rhead;
 	rtail->next = shead;
-	if(!headFiles)	exitMessage("null file read");
+	if(!headFiles)	fatal_error("null file read\n");
 	//
 	//	calcule the decalage by add dummy node for racines
 	//  in the image of the bin
@@ -218,7 +218,7 @@ printf("Load suffix %s\n",tmp->fname);
 		relBin = racStateCounter * SIZE_ONE_TRANSITION_BIN + 2;
 		remove_extension(oFileName,charRootName);
 		unichar  *RootName = new unichar[strlen(charRootName)+1];
-		u_strcpy_char(RootName,charRootName);
+		u_strcpy(RootName,charRootName);
 		totSuf.put((unichar *)RootName,0);
 	}
 
@@ -228,21 +228,19 @@ printf("Load suffix %s\n",tmp->fname);
 		tmp->relocateBinOffset = 0;
 		
 		for( i = 0; i <tmp->image.head.cnt_auto;i++){
-		  printf("Initial state %s located at 0x%x"
+		  u_printf("Initial state %s located at %d"
              ,getUtoChar(tmp->image.STR + tmp->image.AUT[i])
              ,tmp->image.autoffset[i]);
 			tmp->image.autoffset[i] += relBin;
-            printf("relocated at 0x%x\n",tmp->image.autoffset[i]);
+            u_printf("relocated at %d\n",tmp->image.autoffset[i]);
 			nidx = totSuf.check(tmp->image.STR + tmp->image.AUT[i]);
 			if(nidx != -1){
-				printf("at %s file,symbol %s "
+				fatal_error("at %s file,symbol %s:\ndupliate initial state name\n"
                  ,tmp->image.name
 				 ,getUtoChar(tmp->image.STR + tmp->image.AUT[i]));
-				exitMessage("dupliate initial state name");
 			}
 			if(!nidx){
-				fprintf(stderr,"at %s file,symbol",tmp->image.name);
-				exitMessage("null initial state name");
+				fatal_error("at %s file,symbol\nnull initial state name\n",tmp->image.name);
 			}
 			nidx = totSuf.put(tmp->image.STR + tmp->image.AUT[i],
 				  (void *)(tmp->image.autoffset[i]));
@@ -268,13 +266,13 @@ printf("Load suffix %s\n",tmp->fname);
 			if(!nidx || nidx == -1){
 				nidx = unresolSuf.put(tmp->image.STR + tmp->image.SUF[i]);
 				unresolveSufCnt++;
-				printf("the suffix, %s is not located\n",
+				u_printf("the suffix, %s is not located\n",
 				  getUtoChar(tmp->image.STR + tmp->image.SUF[i]));
 				tmp->newSufId[i] = nidx;
 			} else {
 				nidx = (int)totSuf.getCheckValue();
 				tmp->image.sufoffset[i] = nidx;	
-	            printf("the suffix, %s is set %x\n",
+	            u_printf("the suffix, %s is set %d\n",
 				  getUtoChar(tmp->image.STR + tmp->image.SUF[i]),nidx);
 			}
 		}
@@ -327,7 +325,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 	
 	for(i = 0; i < newHead.cnt_auto;i++)
 	{
-	  printf("%s 0x%x\n",getUtoChar(a[i]+1),offsetMap[i]);
+	  u_printf("%s %d\n",getUtoChar(a[i]+1),offsetMap[i]);
 		outbytes3((unsigned int)offsetMap[i],f);		// offset of postition of state
 	}
 	
@@ -367,7 +365,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 	while(last){
 		last->relocateInfCnt  = cntInf;
 		if(offsetStrSave != last->relocateInfOffset)
-			exitMessage("illegal value");
+			fatal_error("illegal value\n");
 		INF = last->image.INF;
         sp = (unsigned char *)INF;
 		for( i = 0; i < last->image.head.size_inf;i++){	// swap data
@@ -407,7 +405,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 	last = first;
 	while(last){
 		if(offsetStrSave != last->relocateBinOffset)
-			exitMessage("illegal value");
+			fatal_error("illegal value\n");
 		offsetStrSave += last->image.head.size_bin;
 		wp = last->image.BIN;
 		limitBin = wp + last->image.head.size_bin;
@@ -415,7 +413,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 			trCnt  = *wp++ << 8;
 			trCnt |= *wp++ ;
 			if(!trCnt)
-				exitMessage("illegal bin value");
+				fatal_error("illegal bin value\n");
 			while(trCnt){
 				wp+= 2;	
 				info   = wp[0] << 8 ;
@@ -435,7 +433,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 							info &= 0x7fff;
 						} else {
 							if(!last->newSufId)
-								exitMessage("suffix array a illegal value");
+								fatal_error("suffix array a illegal value\n");
 							sufid = last->newSufId[sufid];
 						}
 					}
@@ -450,11 +448,11 @@ mergeFiles(char *ofn,struct binFileList *first)
 				trCnt--; 
 			}
 		} while(wp < limitBin);
-		if(wp != limitBin) exitMessage("size not match");
+		if(wp != limitBin) fatal_error("size not match\n");
 
 		
 		if(fwrite(last->image.BIN,last->image.head.size_bin,1,f) != 1)
-			exitMessage("write fail");
+			fatal_error("write fail\n");
 		last = last->next;
 	}
 
@@ -470,7 +468,7 @@ static void testLoad(char *fname)
 {
 	class explore_bin1 tbin;
 	FILE *t = u_fopen("out.txt",U_WRITE);
-	fprintf(stdout,"result out\n");
+	u_printf("result out\n");
 	remove_extension(fname,filename);
 	strcat(filename,".bin");
 	tbin.loadBin(filename);
@@ -518,7 +516,7 @@ setBufferMode();
        	}
 		iargIndex++;
 	}
-	if(!fileListCounter)exitMessage("null file read");
+	if(!fileListCounter) fatal_error("null file read\n");
 //printf("%d",fileListCounter);
 
 	if(!nameOfoutput){
@@ -542,7 +540,7 @@ setBufferMode();
 	if(dMode)	testLoad(argv[iargIndex]);
 #endif
 	if(nameOfoutput) delete nameOfoutput;
-	printf("Done !...\n");
+	u_printf("Done.\n");
 
 	return(0);
 }

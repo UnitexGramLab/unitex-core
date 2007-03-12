@@ -22,7 +22,7 @@
 #ifndef Dico_applicationH
 #define Dico_applicationH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Alphabet.h"
 #include "Text_tokens.h"
 #include "DELA.h"

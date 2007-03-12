@@ -57,7 +57,6 @@ int n_read=0;
 int unite;
 clock_t startTime=clock();
 clock_t currentTime ;
-
 unite=((text_size/100)>1000)?(text_size/100):1000;
 while (p->current_origin<p->token_buffer->size
        && p->number_of_matches!=p->search_limit) {
@@ -73,7 +72,7 @@ while (p->current_origin<p->token_buffer->size
       n_read=((p->current_origin+p->absolute_offset)%unite);
       if (n_read==0 && ((currentTime=clock())-startTime > DELAY) ) {
          startTime=currentTime;
-         printf("%2.0f%% done        \r",100.0*(float)(p->absolute_offset+p->current_origin)/(float)text_size);
+         u_printf("%2.0f%% done        \r",100.0*(float)(p->absolute_offset+p->current_origin)/(float)text_size);
       }
    }
    if (!(p->token_buffer->int_buffer[p->current_origin]==p->SPACE
@@ -85,33 +84,26 @@ while (p->current_origin<p->token_buffer->size
    (p->current_origin)++;
 }
 p->match_list=save_matches(p->match_list,p->absolute_offset+p->current_origin,out,p);
-printf("100%% done      \n\n");
-printf("%d match%s\n",p->number_of_matches,(p->number_of_matches==1)?"":"es");
+u_printf("100%% done      \n\n");
+u_printf("%d match%s\n",p->number_of_matches,(p->number_of_matches==1)?"":"es");
 if ((p->number_of_outputs != p->number_of_matches)
     && (p->number_of_outputs != 0))
-  printf("(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs==1)?"":"s");
-printf("%d recognized units\n",p->matching_units);
+  u_printf("(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs==1)?"":"s");
+u_printf("%d recognized units\n",p->matching_units);
 if (text_size!=0) {
-   printf("(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
+   u_printf("(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
 }
 if (info!=NULL) {
-   char tmp[3000];
-   unichar unitmp[3000];
-   sprintf(tmp,"%d match%s\n",p->number_of_matches,(p->number_of_matches==1)?"":"es");
-   u_strcpy_char(unitmp,tmp);
+   u_fprintf(info,"%d match%s\n",p->number_of_matches,(p->number_of_matches==1)?"":"es");
    if ((p->number_of_outputs != p->number_of_matches)
        && (p->number_of_outputs != 0))
      {
-       sprintf(tmp,"(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs==1)?"":"s");
-       u_strcat_char(unitmp,tmp);
+       u_fprintf(info,"(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs==1)?"":"s");
      }
-   sprintf(tmp,"%d recognized units\n",p->matching_units);
-   u_strcat_char(unitmp,tmp);
+   u_fprintf(info,"%d recognized units\n",p->matching_units);
    if (text_size!=0) {
-      sprintf(tmp,"(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
+      u_fprintf(info,"(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
    }
-   u_strcat_char(unitmp,tmp);
-   u_fprints(unitmp,info);
 }
 }
 
@@ -139,7 +131,7 @@ for (i=(start-4);i<=(start+20);i++) {
    if (i==start) {
       error("<<HERE>>");
    }
-   u_fprints_html_ascii(p->tokens->value[p->buffer[i]],stderr);
+   error("%S",p->tokens->value[p->buffer[i]]);
    if (i==(start+length)) {
       error("<<END>>");
    }
@@ -214,9 +206,7 @@ if (current_state->control & 1) {
       /* If we have reached the final state of a graph while
        * looking for a context, it's an error because every
        * opened context must be closed before the end of the graph. */
-      char tmp[1024];
-      u_to_char(tmp,p->fst2->graph_names[graph_depth+1]);
-      error("ERROR: unclosed context in graph \"%s\"\n",tmp);
+      error("ERROR: unclosed context in graph \"%S\"\n",p->fst2->graph_names[graph_depth+1]);
       free_list_int(ctx);
       return;
    }
@@ -673,9 +663,7 @@ if (contexts!=NULL) {
       /* If we have a closing context mark */
       if (ctx==NULL) {
          /* If there was no current opened context, it's an error */
-         char tmp[1024];
-         u_to_char(tmp,p->fst2->graph_names[graph_depth+1]);
-         error("ERROR: unexpected closing context mark in graph \"%s\"\n",tmp);
+         error("ERROR: unexpected closing context mark in graph \"%S\"\n",p->fst2->graph_names[graph_depth+1]);
          return;
       }
       /* Otherwise, we just indicate that we have found a context closing mark,

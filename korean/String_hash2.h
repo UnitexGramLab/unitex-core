@@ -20,8 +20,13 @@
   */
 #ifndef String_hash2H
 #define String_hash2H
-#include "unicode.h"
+
+#include "Unicode.h"
 #include "FileName.h"
+#include "Error.h"
+
+
+
 #define BIN_TYPE_SUFFIXE 1
 #define BIN_TYPE_RACINE	0
 
@@ -119,7 +124,6 @@ public:
 //} d;
 
 typedef void (*release_f)(void * arg0,void *arg1,void *arg2);
-extern void exitMessage(char *);
 
 typedef void (*release_ff)(void * arg0);
 
@@ -172,8 +176,7 @@ public:
 		struct arbre_hash0* a;
 		a=(struct arbre_hash0*)malloc(sizeof(struct arbre_hash0));
 		if(!a) {
-			fprintf(stderr,"malloc fail to hash tree");
-			exit(99);
+			fatal_error("malloc fail to hash tree\n");
 		}
 		a->final=-1;
 		a->trans=NULL;
@@ -187,8 +190,7 @@ public:
 		a=(struct arbre_hash_trans0*)
 			malloc(sizeof(struct arbre_hash_trans0));
 		if(!a){
-			fprintf(stderr,"malloc fail to hash tree");
-			exit(99);
+			fatal_error("malloc fail to hash tree\n");
 		}
 		a->c='\0';
 		a->arr=NULL;
@@ -221,8 +223,7 @@ public:
 	struct arbre_hash0* insert(unichar* s,int pos,
 		struct arbre_hash0* noeud) {
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
 		if (!s[pos]) return(noeud);
 
@@ -250,10 +251,8 @@ public:
 		struct arbre_hash0* noeud = insert(s,0,racine);
 		if(noeud->final == -1)	
 			noeud->final=N++;
-		if(N < limit) 	return noeud->final;
-		fprintf(stderr,"Too many hash element");
-		exit(80);
-		return(-1);
+		if(N >= limit)	fatal_error("Too many hash elements\n");
+      return noeud->final;
 	}
 
 	int check(unichar* s)
@@ -291,7 +290,7 @@ public:
 		FILE *sf = tabOfile;
 		tabOfile = 0;
 		tab = (unichar **)malloc(N*sizeof(unichar *));
-		if(!tab) exitMessage("memory alloc fail");
+		if(!tab) fatal_error("memory alloc fail\n");
 		explore_to_get(racine,1);
 		tabOfile = sf;
 		return(tab);
@@ -380,8 +379,7 @@ public:
 	int insertLink(struct simple_link *cur,
 		struct arbre_hash0* noeud) {
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
 		if (!cur){
 			if(noeud->final == -1)	noeud->final=N++;
@@ -389,8 +387,7 @@ public:
 				return noeud->final;
 
 			{
-				fprintf(stderr,"Too many hash element");
-				exit(1);
+				fatal_error("Too many hash elements\n");
 			}
 		}
 
@@ -463,8 +460,7 @@ public:
 		struct arbre_hash00* a;
 		a=(struct arbre_hash00*)malloc(sizeof(struct arbre_hash00));
 		if(!a) {
-			fprintf(stderr,"malloc fail to hash tree");
-			exit(99);
+			fatal_error("malloc fail to hash tree\n");
 		}
 		a->final= -1;
 		a->value = 0;
@@ -479,8 +475,7 @@ public:
 		a=(struct arbre_hash_trans00*)
 			malloc(sizeof(struct arbre_hash_trans00));
 		if(!a){
-			fprintf(stderr,"malloc fail to hash tree");
-			exit(99);
+			fatal_error("malloc fail to hash tree\n");
 		}
 		a->c='\0';
 		a->arr=NULL;
@@ -513,8 +508,7 @@ public:
 	struct arbre_hash00* insert(unichar* s,int pos,
 		struct arbre_hash00* noeud) {
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
 		if (!s[pos]) return(noeud);
 
@@ -544,10 +538,8 @@ public:
 			noeud->final=N++;
 			noeud->value = (unsigned int)value;
 		}
-		if(N < limit) 	return noeud->final;
-		fprintf(stderr,"Too many hash element");
-		exit(80);
-		return(-1);
+		if(N >= limit)	fatal_error("Too many hash elements\n");
+      return noeud->final;
 	}
 
 	int check(unichar* s)
@@ -573,9 +565,7 @@ public:
 		}
 		noeud->value++;
 		if(N < limit) 	return noeud->final;
-		fprintf(stderr,"Too many hash element");
-		exit(80);
-		return(1);
+		fatal_error("Too many hash elements\n");
 	}
      int insertWord(unichar *s)
      {
@@ -586,10 +576,8 @@ public:
 			noeud->value = 0;
 		}
 		noeud->value++;
-		if(N < limit) 	return noeud->final;
-		fprintf(stderr,"Too many hash element");
-		exit(80);
-		return(1);
+		if(N >= limit)	fatal_error("Too many hash elements\n");
+      return noeud->final;
      }
 	//
 	//	must used after check
@@ -673,6 +661,7 @@ public:
 	{
 		tab = (unichar **)malloc(N*sizeof(unichar *));
 		value_tab = (int *)malloc(N*sizeof(int *));
+      #warning tests sur malloc
 		(*v) = value_tab;
 		explore_to_get(racine,1);
 		return(tab);
@@ -711,14 +700,12 @@ public:
 	int insertLink(struct simple_link *cur,
 		struct arbre_hash00* noeud) {
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
 		if (!cur){
 			if(noeud->final == -1)	noeud->final=N++;
 			if(N < limit)	return noeud->final;
-			fprintf(stderr,"Too many hash element\n");
-			exit(1);
+			fatal_error("Too many hash elements\n");
 		}
 
 		struct arbre_hash_trans00  **t= &noeud->trans;
@@ -791,8 +778,7 @@ public:
 		struct arbre_hash02* a;
 		a=(struct arbre_hash02*)malloc(sizeof(struct arbre_hash02));
 		if(!a) {
-			fprintf(stderr,"malloc fail to hash tree");
-			exit(99);
+			fatal_error("malloc fail to hash tree\n");
 		}
 		a->final= -1;
 		a->value = 0;
@@ -807,8 +793,7 @@ public:
 		a=(struct arbre_hash_trans02*)
 			malloc(sizeof(struct arbre_hash_trans02));
 		if(!a){
-			fprintf(stderr,"malloc fail to hash tree");
-			exit(99);
+			fatal_error("malloc fail to hash tree\n");
 		}
 		a->c='\0';
 		a->arr=NULL;
@@ -841,8 +826,7 @@ public:
 	struct arbre_hash02* insert(unsigned int* s,int pos,
 		struct arbre_hash02* noeud) {
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
 		if (!s[pos]){
             if (pos > sequenceMaxDepth ) sequenceMaxDepth = pos;
@@ -876,9 +860,7 @@ public:
 			noeud->value = (unsigned int)value;
 		}
 		if(N < limit) 	return noeud->final;
-		fprintf(stderr,"Too many hash element");
-		exit(80);
-		return(-1);
+		fatal_error("Too many hash elements\n");
 	}
 
 	int find(unsigned int* s,int depth)
@@ -892,10 +874,9 @@ public:
 	struct arbre_hash02* scanAvecDepth(unsigned int* s,int pos,
 		struct arbre_hash02* noeud,int depth) {
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
-		if(noeud->final) printf("find %x\n",noeud->final);
+		if(noeud->final) u_printf("find %d\n",noeud->final);
 		if (!depth) return((struct arbre_hash02*)-1);
 
 		struct arbre_hash_trans02  **t= &noeud->trans;
@@ -923,9 +904,7 @@ public:
 		}
 		noeud->value++;
 		if(N < limit) 	return noeud->final;
-		fprintf(stderr,"Too many hash element");
-		exit(80);
-		return(1);
+		fatal_error("Too many hash elements\n");
 	}
 	//
 	//	must used after check
@@ -989,6 +968,7 @@ public:
 	{
 		tab = (unichar **)malloc(N*sizeof(unichar *));
 		value_tab = (int *)malloc(N*sizeof(int *));
+      #warning tests sur malloc
 		(*v) = value_tab;
 		explore_to_get(racine,1);
 		return(tab);
@@ -1027,14 +1007,12 @@ public:
 	int insertLink(struct simple_link *cur,
 		struct arbre_hash02* noeud) {
 		if (noeud==NULL) {
-		  fprintf(stderr,"Erreur dans fonction inserer\n");
-		   exit(-1);
+		  fatal_error("Erreur dans fonction inserer\n");
 		}
 		if (!cur){
 			if(noeud->final == -1)	noeud->final=N++;
 			if(N < limit)	return noeud->final;
-			fprintf(stderr,"Too many hash element\n");
-			exit(1);
+			fatal_error("Too many hash elements\n");
 		}
 
 		struct arbre_hash_trans02  **t= &noeud->trans;
@@ -1142,7 +1120,7 @@ public:
 		t->next = 0;
 		t->pageNum = pgCnt++;
 		t->pageAddr = (unsigned char *)malloc(pgSize);
-		if(!t->pageAddr) exitMessage("mem alloc for pagehandle fail");
+		if(!t->pageAddr) fatal_error("mem alloc for pagehandle fail\n");
 		if(!curr){
 			head = tail = curr = t;
 		} else {
@@ -1153,7 +1131,7 @@ public:
 		if(assignedCount){
 			assignedCount += pgEMcnt;
 			if(assignedCount > 0x7fffffff)
-				exitMessage("too big");
+				fatal_error("too big\n");
 		}
 		return(pageHandle::get());
 	};
@@ -1236,7 +1214,7 @@ public:
 			fwrite(wp->pageAddr,pgESize * wp->cnt,1,f);
 			wp = wp->next;
 		}
-		if(sum != counter) exitMessage("illegal counter at page handler");
+		if(sum != counter) fatal_error("illegal counter at page handler\n");
 		return(counter);
 	}
 };

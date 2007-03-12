@@ -19,13 +19,12 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdlib.h>
 
 using namespace std;
 
 #include <locale.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "Alphabet.h"
 #include "Liste_num.h"
@@ -36,9 +35,9 @@ using namespace std;
 #include "Error.h"
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage:\n");
-printf(
+u_printf("%S",COPYRIGHT);
+u_printf("Usage:\n");
+u_printf(
 "Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-f s/a][-s[0s] \"Str\"] [-r[s/l] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"\
 " fname : name of the input file name with extension \".fst2\"\r\n"\
 " -o outFile : if this option not exist, save paths at \"file\"lst.txt\r\n"\
@@ -111,7 +110,7 @@ static int changeStrToVal(char *src)
 	}
 	if(*wp != (unichar)'=') return(1);
 	if(i > (MAX_CHANGE_SYMBOL_SIZE - 2)) {
-		printf("the name of the variable too long %s",src);
+		u_printf("the name of the variable too long %s",src);
 		return 1;
 	}
 	changeStrTo[changeStrToIdx][i++] = (unichar)'>';	
@@ -128,7 +127,7 @@ static int changeStrToVal(char *src)
 	uascToNum(&changeStrTo[changeStrToIdx][ptLoc],&i);
 	changeStrTo[changeStrToIdx][0] = (unsigned short)i;
 
-	printf("Change symbol %s --> %x\n",
+	u_printf("Change symbol %s --> %x\n",
         getUtoChar(&changeStrTo[changeStrToIdx][1]),
 		changeStrTo[changeStrToIdx][0]);
 	changeStrToIdx++;
@@ -341,7 +340,6 @@ verboseMode  = 0;
         } else {
                 mapOfCallTail = mapOfCallHead = fPtr;
         }
-//fwprintf(stdout,L"get Id %d\n",id);
         return id;
     }
     void initCallIdMap()
@@ -403,7 +401,6 @@ verboseMode  = 0;
 		int searchEtat = pathEtiQ[curidx].etatNo & PATHID_MASK;
 		int searchEtatAuto = pathEtiQ[curidx].autoNo;
 		int searchEti = pathEtiQ[curidx].eti;
-//fwprintf(stdout,L"demande %08x,%08x::",searchEtatAuto,searchEtat);		
 		while(cnode){
 		    if(
               (searchEtatAuto ==  cnode->autoNo) &&
@@ -427,7 +424,7 @@ verboseMode  = 0;
 			cnode->flag = 1;
 		}
 		}
-//fwprintf(stdout,L"out %d\n",cnode->index);	 
+      #warning beurk!!!
 		u_sprintf(aa,"Loc%d",cnode->index);
 		return((unichar *)aa);
 		
@@ -742,7 +739,7 @@ verboseMode  = 0;
 		ePtrCnt = tPtrCnt = 0;
 	
 		if(outLineLimit <= numberOfOutLine ){
-            printf("End by line limit %d\r\n", numberOfOutLine);
+            error("End by line limit %d\r\n", numberOfOutLine);
             exit(0);
        }
 
@@ -781,8 +778,8 @@ verboseMode  = 0;
 //        unichar *wwp;
 		Fst2Tag Eti;		
 		while(h){
-		    if((foutput == stderr) || (foutput == stdout))
-              fprintf(foutput,"C%d%s",h->index,getUtoChar(entreGO));
+		    if(foutput==stderr) error("C%d%s",h->index,getUtoChar(entreGO));
+          else if(foutput==stdout) u_printf("C%d%s",h->index,getUtoChar(entreGO));
             else
              u_fprintf(foutput,"C%d%S",h->index,entreGO);
 			ePtrCnt = tPtrCnt = 0;
@@ -880,14 +877,14 @@ verboseMode  = 0;
     	char *cp = src;
     	unichar *wp;
     	if(arretSubListIdx == MAX_IGONRE_SOUS_GRAPHE) {
-    		printf("too many igored sub-graph name igore%s\n",src);
+    		u_printf("too many igored sub-graph name igore%s\n",src);
     		return;
     	}
     	wp =new unichar [strlen(src)+1];
     	arretSubList[arretSubListIdx++] = wp;
     	while(*cp) *wp++ = (unichar)(*cp++ & 0xff);
     	*wp = (unichar)'\0';
-    if(verboseMode) printf("IGNORE %s\n",getUtoChar(arretSubList[arretSubListIdx-1]));
+    if(verboseMode) u_printf("IGNORE %s\n",getUtoChar(arretSubList[arretSubListIdx-1]));
     }
     char fileLine[1024];
      void arretExpoListFile(char *src)
@@ -908,13 +905,13 @@ verboseMode  = 0;
             EBuff[i++] = 0;
             
         	if(arretSubListIdx == MAX_IGONRE_SOUS_GRAPHE) {
-        		printf("too many igored sub-graph name igore%s\n",src);
+        		u_printf("too many igored sub-graph name igore%s\n",src);
         		return;
         	}
         	arretSubList[arretSubListIdx] = new unichar [i];
         	for(i = 0;EBuff[i];i++) arretSubList[arretSubListIdx][i] = EBuff[i];
         	arretSubList[arretSubListIdx][i] = 0;
-        	if(verboseMode) printf("IGNORE %s\n",getUtoChar(arretSubList[arretSubListIdx]));
+        	if(verboseMode) u_printf("IGNORE %s\n",getUtoChar(arretSubList[arretSubListIdx]));
     		arretSubListIdx++;
         }
         fclose(uf);
@@ -928,45 +925,34 @@ verboseMode  = 0;
     //
 //
 //
-void prAutoStack(int depStack)
-{
+void prAutoStack(int depStack) {
     int i;
     FILE *ff = stdout;
-    if((ff == stderr) || (ff == stdout))
-        fprintf(ff,"===== AutoQueue\n");
-    else
-        u_fprintf(ff,"===== AutoQueue\n");
+    if (ff==stderr) error("===== AutoQueue\n");
+    else if (ff==stdout) u_printf("===== AutoQueue\n");
+    else u_fprintf(ff,"===== AutoQueue\n");
     for( i = 0; i <= CautoDepth;i++){
-        if((ff == stderr) || (ff == stdout))
-            fprintf(ff,"%d :: %d :: %d\n",i,CautoQueue[i].aId,CautoQueue[i].next);
-        else
-            u_fprintf(ff,"%d :: %d :: %d\n",i,CautoQueue[i].aId,CautoQueue[i].next);
+        if (ff==stderr) error("%d :: %d :: %d\n",i,CautoQueue[i].aId,CautoQueue[i].next);
+        else if (ff==stdout) u_printf("%d :: %d :: %d\n",i,CautoQueue[i].aId,CautoQueue[i].next);
+        else u_fprintf(ff,"%d :: %d :: %d\n",i,CautoQueue[i].aId,CautoQueue[i].next);
     }
-    if((ff == stderr) || (ff == stdout))
-        fprintf(ff,"===== etatQueue\n");
-    else
-        u_fprintf(ff,"===== etatQueue\n");
+    if (ff==stderr) error("===== etatQueue\n");
+    else if (ff==stdout) u_printf("===== etatQueue\n");
+    else u_fprintf(ff,"===== etatQueue\n");
     for(i = 0;i < pathEtiQidx;i++){
-    if((ff == stderr) || (ff == stdout))
-        fprintf(ff,"%d (%d ::%d)%d\n",i,pathEtiQ[i].autoNo,
-            pathEtiQ[i].etatNo,pathEtiQ[i].eti);
-    else
-        u_fprintf(ff,"%d (%d ::%d)%d\n",i,pathEtiQ[i].autoNo,
-            pathEtiQ[i].etatNo,pathEtiQ[i].eti);
+       if (ff==stderr) error("%d (%d ::%d)%d\n",i,pathEtiQ[i].autoNo,pathEtiQ[i].etatNo,pathEtiQ[i].eti);
+       else if (ff==stdout) u_printf("%d (%d ::%d)%d\n",i,pathEtiQ[i].autoNo,pathEtiQ[i].etatNo,pathEtiQ[i].eti);
+       else u_fprintf(ff,"%d (%d ::%d)%d\n",i,pathEtiQ[i].autoNo,pathEtiQ[i].etatNo,pathEtiQ[i].eti);
     }
-    if((ff == stderr) || (ff == stdout))
-        fprintf(ff,"===== AutoStack\n");
-    else
-        u_fprintf(ff,"===== AutoStack\n");
+    if (ff==stderr) error("===== AutoStack\n");
+    else if (ff==stdout) u_printf("===== AutoStack\n");
+    else u_fprintf(ff,"===== AutoStack\n");
     struct fst2Transition *k;
     for(i = 0;i < depStack;i++){
       k = autoStackMap[i].tran;
-      if((ff == stderr) || (ff == stdout))
-       fprintf(ff,"%d %d(%d ::%d)\n"
-            ,i,autoStackMap[i].autoId,k->state_number,k->tag_number);
-      else
-       u_fprintf(ff,"%d %d(%d ::%d)\n"
-            ,i,autoStackMap[i].autoId,k->state_number,k->tag_number);
+      if (ff==stderr) error("%d %d(%d ::%d)\n",i,autoStackMap[i].autoId,k->state_number,k->tag_number);
+      else if (ff==stdout) u_printf("%d %d(%d ::%d)\n",i,autoStackMap[i].autoId,k->state_number,k->tag_number);
+      else u_fprintf(ff,"%d %d(%d ::%d)\n",i,autoStackMap[i].autoId,k->state_number,k->tag_number);
     }
         
 }
@@ -1021,11 +1007,11 @@ void CFstApp::loadGraph(char *fname)
 					break;
 			}
 			if( j > a->number_of_graphs){
-				printf("Warning : Not exist the sub-graph %s\n",
+				u_printf("Warning : Not exist the sub-graph %s\n",
 					getUtoChar(arretSubList[i]));
 				continue;
 			}
-			printf("%s %x graphe ignore the exploitation\n",
+			u_printf("%s %d graphe ignore the exploitation\n",
                      getUtoChar(a->graph_names[j]),j);
 			ignoreTable[j] = 1;
 		}
@@ -1072,7 +1058,7 @@ void CFstApp::loadGraph(char *fname)
 			}
 			wp = (unichar *)a->tags[i]->input;
 			if(u_strcmp(wp,temp)){
-			   printf("%0xth index, %s==>%s\n",i,
+			   u_printf("%dth index, %s==>%s\n",i,
                         getUtoChar(wp),getUtoChar(temp));
             for(j = 0; temp[j];j++) *wp++ = temp[j];
 			*wp=0;
@@ -1147,13 +1133,13 @@ void CFstApp::getWordsFromGraph(char *fname)
 				listOut = 1;
 				exploirerSubAuto(1);
 				if(verboseMode){
-                printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
+                u_printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
             ,getUtoChar(a->graph_names[1])
             ,totalPath,totalLoop, errPath);
 					if(stopPath){
 					     for(int inx = 1; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
-                              printf(" Sub call [%s] %d\n"
+                              u_printf(" Sub call [%s] %d\n"
                                 ,getUtoChar(a->graph_names[inx])
                                 ,numOfIgnore[inx]);
                                numOfIgnore[inx] = 0;
@@ -1211,14 +1197,14 @@ void CFstApp::getWordsFromGraph(char *fname)
 				
 				if(recursiveMode == SYMBOL)	prOutCycle();
                 if(verboseMode){
-printf(" the automate %s %d path, %d path stopped by cycle, %d error path \n"
+            u_printf(" the automate %s %d path, %d path stopped by cycle, %d error path \n"
                     ,getUtoChar(a->graph_names[sui->tag_number & SUB_ID_MASK])
                     ,totalPath,totalLoop, errPath);
 					
 					if(stopPath){
 					     for(int inx = 1; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
-                              printf(" sub-call[%s] %d\n",
+                              u_printf(" sub-call[%s] %d\n",
                                   getUtoChar(a->graph_names[inx]),
                                   numOfIgnore[inx]);
                               numOfIgnore[inx] = 0;
@@ -1438,6 +1424,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 //
 //	for debugging, display all stack
 //
+#warning f peut etre la sortie d erreur!
 void CFstApp::CqueuePathPr(FILE *f,int depth)
 {
 	int pidx = -1;
@@ -1567,15 +1554,11 @@ void CFstApp::outWordsOfGraph(int depth)
 
 				}
 				if(pathEtiQ[s].etatNo & STOP_PATH_MARK){
-//fwprintf(stdout,L"<%d:%d>",pathEtiQidx,s);
 				    sp = getLabelNumber(depth,indicateFirstUsed,s,0);
-//fwprintf(foutput,L"[%d]",indicateFirstUsed);
 					outOneWord(sp);
 					break;
 				}
-//fwprintf(stdout,L"<%d:%d>",pathEtiQidx,s);
 				sp = getLabelNumber(s,indicateFirstUsed,s,1);
-//fwprintf(foutput,L"[%d]",indicateFirstUsed);
 				if(!indicateFirstUsed){	// first print out
 					outOneWord(sp);
 				}	else {

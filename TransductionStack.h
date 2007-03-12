@@ -26,7 +26,7 @@
 
 #define STACK_SIZE 10000
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "Text_parsing.h"
 #include "TransductionVariables.h"
 

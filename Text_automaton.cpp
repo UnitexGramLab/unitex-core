@@ -96,9 +96,9 @@ struct trans_text_automaton* inserer_trans_text_automaton(struct trans_text_auto
                                                           int indice) {
 unichar tmp[2000];
 int i;
-u_strcpy_char(tmp,"{");
+u_strcpy(tmp,"{");
 u_strcat(tmp,token);
-u_strcat_char(tmp,",");
+u_strcat(tmp,",");
 int l=u_strlen(tmp);
 /* We protect the points, if any, in the lemma */
 l=l+escape(entry->lemma,&(tmp[l]),P_DOT);
@@ -428,20 +428,17 @@ for (i=0;i<nombre_noeuds;i++) {
       noeud[i]->numero=numero++;
    }
 }
-u_fprints_char("-",out);
-u_int_to_string(numero_phrase,global);
-u_fprints(global,out);
-u_fprints_char(" ",out);
+u_fprintf(out,"-%d ",numero_phrase);
 for (int z=0;z<length;z++) {
-  u_fprints(tok->token[buffer[z]],out);
+   u_fprintf(out,"%S",tok->token[buffer[z]]);
 }
-u_fprints_char("\n",out);
+u_fprintf(out,"\n");
 for (i=0;i<nombre_noeuds;i++) {
    if (noeud[i]->final==0 || noeud[i]->final==1) {
       if (noeud[i]->final==0) {
-         u_fprints_char(": ",out);
+         u_fprintf(out,": ");
       } else {
-         u_fprints_char("t ",out);
+         u_fprintf(out,"t ");
       }
       struct trans_text_automaton* trans;
       trans=noeud[i]->trans;
@@ -449,23 +446,18 @@ for (i=0;i<nombre_noeuds;i++) {
          if (noeud[trans->indice_noeud_arrivee]->final==0 || noeud[trans->indice_noeud_arrivee]->final==1) {
             // we only consider the transitions that point on a node that will not be removed
             int indice=get_value_index(trans->chaine,etiquettes);
-            u_int_to_string(indice,global);
 
             // the following line is used to write the tag instead of its number
             //u_strcpy(global,trans->chaine);
 
-            u_strcat_char(global," ");
-            u_fprints(global,out);
-            u_int_to_string(noeud[trans->indice_noeud_arrivee]->numero,global);
-            u_strcat_char(global," ");
-            u_fprints(global,out);
+            u_fprintf(out,"%d %d ",indice,noeud[trans->indice_noeud_arrivee]->numero);
          }
          trans=trans->suivant;
       }
-      u_fprints_char("\n",out);
+      u_fprintf(out,"\n");
    }
 }
-u_fprints_char("f \n",out);
+u_fprintf(out,"f \n");
 
 for (i=0;i<nombre_noeuds;i++) {
   free_noeud_text_automaton(noeud[i]);

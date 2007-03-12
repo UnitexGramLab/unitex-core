@@ -171,8 +171,8 @@ return get_pattern_node(node,grammatical_nodes->next);
  * 0 otherwise. The fucntion assumes that both parameters are non NULL.
  */
 int pattern_equals_to_constraints(struct pattern* pattern,struct constraint_list* constraints) {
-if (u_strcmp2(pattern->inflected,constraints->inflected)) return 0;
-if (u_strcmp2(pattern->lemma,constraints->lemma)) return 0;
+if (u_strcmp(pattern->inflected,constraints->inflected)) return 0;
+if (u_strcmp(pattern->lemma,constraints->lemma)) return 0;
 if (!equal(pattern->forbidden_codes,constraints->forbidden_codes)) return 0;
 if (!equal(pattern->inflectional_codes,constraints->inflectional_codes)) return 0;
 return 1;
@@ -223,6 +223,47 @@ if (constraints->pattern_number==UNDEFINED_PATTERN) {
    (*pattern_number)++;
 }
 return constraints->pattern_number;
+}
+
+
+/**
+ * This function returns 1 if the string s is found in the string array t;
+ * 0 otherwise.
+ */
+int contains(unichar* s,unichar** t,int size) {
+if (s==NULL) {
+   fatal_error("NULL string in contains\n");
+}
+if (t==NULL) {
+   fatal_error("NULL array in contains\n");
+}
+if (size==0) {
+   fatal_error("Empty array in contains\n");
+}
+for (int i=0;i<size;i++) {
+   if (!u_strcmp(s,t[i])) {
+      return 1;
+   }
+}
+return 0;
+}
+
+
+/**
+ * This function returns 1 if the given set contains the given subset;
+ * 0 otherwise.
+ */
+int contains_subset(unichar* set,unichar* subset) {
+if (set==NULL) {
+   fatal_error("NULL set in contains_subset\n");
+}
+if (subset==NULL) {
+   fatal_error("NULL subset in contains_subset\n");
+}
+for (int i=0;subset[i]!='\0';i++) {
+   if (u_strchr(set,subset[i])==NULL) return 0;
+}
+return 1;
 }
 
 

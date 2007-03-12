@@ -19,7 +19,7 @@
   *
   */
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "DELA.h"
 #include "Error.h"
 #include "StringParsing.h"
@@ -85,7 +85,6 @@ return 1;
 struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,int keep_equal_signs,
                                        int *verbose) {
 struct dela_entry* res;
-char err[DIC_LINE_SIZE];
 unichar temp[DIC_LINE_SIZE];
 int i,val;
 if (line==NULL) {
@@ -110,23 +109,21 @@ i=0;
  */
 val=parse_string(line,&i,temp,P_COMMA,P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
-   if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+   if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
    return NULL;
 }
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
    if (!verbose) {
-      u_to_char(err,line);
-      error("***Dictionary error: incorrect line\n_%s_\n",err);
+      error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
    return NULL;
 }
 /* The inflected form cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
-      u_to_char(err,line);
-      error("***Dictionary error: incorrect line\n_%s_\n",err);
+      error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_INFLECTED_FORM;
    return NULL;
 }
@@ -137,15 +134,14 @@ res->inflected=u_strdup(temp);
 i++;
 val=parse_string(line,&i,temp,P_DOT,P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
-   if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+   if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
    return NULL;
 }
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
    if (!verbose) {
-      u_to_char(err,line);
-      error("***Dictionary error: incorrect line\n_%s_\n",err);
+      error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
    return NULL;
 }
@@ -164,15 +160,14 @@ else {
 i++;
 val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
-   if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+   if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
    return NULL;
 }
 /* The grammatical code cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
-      u_to_char(err,line);
-      error("***Dictionary error: incorrect line\n_%s_\n",err);
+      error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
    return NULL;
 }
@@ -184,15 +179,14 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
 	i++;
    val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
-      if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+      if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
       return NULL;
    }
    /* A grammatical or semantic code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
-        u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n_%s_\n",err);
+         error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
       return NULL;
    }
@@ -206,15 +200,14 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
 	i++;
    val=parse_string(line,&i,temp,P_COLON_SLASH,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
-      if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+      if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
       return NULL;
    }
       /* An inflectional code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
-        u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n_%s_\n",err);
+         error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
       return NULL;
    }
@@ -223,7 +216,7 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
 }
 /* Finally we check if there is a comment */
 if (line[i]=='/' && !comments_allowed) {
-   if (!verbose) error("***Dictionary error: unexpected comment at end of entry\n_%s_\n",err);
+   if (!verbose) error("***Dictionary error: unexpected comment at end of entry\n_%S_\n",line);
       else (*verbose)=P_UNEXPECTED_COMMENT;
       return NULL;
 }
@@ -289,7 +282,6 @@ return tokenize_DELAF_line(temp,0);
  */
 struct dela_entry* tokenize_DELAS_line(unichar* line,int *verbose) {
 struct dela_entry* res;
-char err[DIC_LINE_SIZE];
 unichar temp[DIC_LINE_SIZE];
 int i,val;
 if (line==NULL) {
@@ -314,23 +306,21 @@ i=0;
  */
 val=parse_string(line,&i,temp,P_COMMA,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
-   if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+   if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
    return NULL;
 }
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
    if (!verbose) {
-      u_to_char(err,line);
-      error("***Dictionary error: incorrect line\n_%s_\n",err);
+      error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
    return NULL;
 }
 /* The lemma form cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
-      u_to_char(err,line);
-      error("***Dictionary error: incorrect line\n_%s_\n",err);
+      error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_LEMMA;
    return NULL;
 }
@@ -341,15 +331,14 @@ res->lemma=u_strdup(temp);
 i++;
 val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
-   if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+   if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
    return NULL;
 }
 /* The grammatical code cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
-      u_to_char(err,line);
-      error("***Dictionary error: incorrect line\n_%s_\n",err);
+      error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
    return NULL;
 }
@@ -361,15 +350,14 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
    i++;
    val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
-      if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+      if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
       return NULL;
    }
    /* A grammatical or semantic code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
-        u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n_%s_\n",err);
+         error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
       return NULL;
    }
@@ -383,15 +371,14 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    i++;
    val=parse_string(line,&i,temp,P_COLON_SLASH,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
-      if (!verbose) error("***Dictionary error: incorrect line\n_%s_\n",err);
+      if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
       return NULL;
    }
       /* An inflectional code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
-        u_to_char(err,line);
-         error("***Dictionary error: incorrect line\n_%s_\n",err);
+         error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
       return NULL;
    }
@@ -501,8 +488,7 @@ if (lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
    return;
 }
 /* We put the length to remove at the beginning of the result */
-u_int_to_string(length_of_sfx_to_remove,result);
-int j=u_strlen(result);
+int j=u_sprintf(result,"%d",length_of_sfx_to_remove);
 /* We need to protect the digits (used in the compression code),
  * the lemma and the point (used as delimitors in a DELAF line and, of
  * course, the backslash (protection character). */
@@ -639,7 +625,7 @@ int n;
 int pos,i;
 /* The rebuilt line must start by the inflected form, followed by a comma */
 escape(inflected,result,P_COMMA_DOT);
-u_strcat_char(result,",");
+u_strcat(result,",");
 if (INF_code[0]=='.') {
    /* First case: the lemma is the same than the inflected form
     * "write" + ".V:W" ==> "write,.V:W" */
@@ -720,18 +706,20 @@ result[i]='\0';
  * a structure containing the lines of the file tokenized into INF
  * codes.
  */
-struct INF_codes* load_INF_file(char* nom) {
+struct INF_codes* load_INF_file(char* name) {
 struct INF_codes* res;
-FILE *f=u_fopen(nom,U_READ);
+FILE *f=u_fopen(name,U_READ);
 if (f==NULL) {
-   error("Cannot open %s\n",nom);
+   error("Cannot open %s\n",name);
    return NULL;
 }
 res=(struct INF_codes*)malloc(sizeof(struct INF_codes));
 if (res==NULL) {
    fatal_error("Not enough memory in load_INF_file\n");
 }
-res->N=u_read_int(f);
+if (1!=u_fscanf(f,"%d\n",&(res->N))) {
+   fatal_error("Invalid INF file: %s\n",name);
+}
 res->codes=(struct list_ustring**)malloc(sizeof(struct list_ustring*)*(res->N));
 if (res->codes==NULL) {
    fatal_error("Not enough memory in load_INF_file\n");
@@ -740,7 +728,7 @@ unichar s[DIC_LINE_SIZE*10];
 int i=0;
 /* For each line of the .inf file, we tokenize it to get the single INF codes
  * it contains. */
-while (EOF!=u_read_line(f,s)) {
+while (EOF!=u_fgets(s,f)) {
    res->codes[i++]=tokenize_compressed_info(s);
 }
 u_fclose(f);
@@ -824,8 +812,7 @@ if (!(n_transitions & 32768)) {
    while (tmp!=NULL) {
       unichar res[DIC_WORD_SIZE];
       uncompress_entry(content,tmp->string,res);
-      u_fprints(res,output);
-      u_fprints_char("\n",output);
+      u_fprintf(output,"%S\n",res);
       tmp=tmp->next;
    }
 }
@@ -868,7 +855,7 @@ if (f==NULL) return;
 unichar line[DIC_LINE_SIZE];
 int i;
 struct dela_entry* entry;
-while (EOF!=u_read_line(f,line)) {
+while (EOF!=u_fgets(line,f)) {
    /* NOTE: DLF and DLC files are not supposed to contain comment
     *       lines, but we test them, just in the case */
    if (line[0]!='/') {
@@ -898,7 +885,6 @@ return;
  */
 void check_DELA_line(unichar* DELA_line,FILE* out,int is_a_DELAF,int line_number,char* alphabet,
                       struct string_hash* semantic_codes,struct string_hash* inflectional_codes) {
-char err[DIC_LINE_SIZE];
 int i;
 if (DELA_line==NULL) return;
 int error_code;
@@ -934,45 +920,27 @@ if (entry!=NULL) {
  */
 switch (error_code) {
    case P_UNEXPECTED_END_OF_LINE: {
-      sprintf(err,"Line %d: unexpected end of line\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELA_line,out);
-      u_fprints_char("\n",out);
+      u_fprintf(out,"Line %d: unexpected end of line\n%S\n",line_number,DELA_line);
       return;
    }
    case P_BACKSLASH_AT_END: {
-      sprintf(err,"Line %d: \\ at end of line\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELA_line,out);
-      u_fprints_char("\n",out);
+      u_fprintf(out,"Line %d: \\ at end of line\n%S\n",line_number,DELA_line);
       return;
    }
    case P_EMPTY_INFLECTED_FORM: {
-      sprintf(err,"Line %d: empty inflected form\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELA_line,out);
-      u_fprints_char("\n",out);
+      u_fprintf(out,"Line %d: empty inflected form\n%S\n",line_number,DELA_line);
       return;
    }
    case P_EMPTY_LEMMA: {
-      sprintf(err,"Line %d: empty lemma\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELA_line,out);
-      u_fprints_char("\n",out);
+      u_fprintf(out,"Line %d: empty lemma\n%S\n",line_number,DELA_line);
       return;
    }
    case P_EMPTY_SEMANTIC_CODE: {
-      sprintf(err,"Line %d: empty grammatical or semantic code\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELA_line,out);
-      u_fprints_char("\n",out);
+      u_fprintf(out,"Line %d: empty grammatical or semantic code\n%S\n",line_number,DELA_line);
       return;
    }
    case P_EMPTY_INFLECTIONAL_CODE: {
-      sprintf(err,"Line %d: empty inflectional code\n",line_number);
-      u_fprints_char(err,out);
-      u_fprints(DELA_line,out);
-      u_fprints_char("\n",out);
+      u_fprintf(out,"Line %d: empty inflectional code\n%S\n",line_number,DELA_line);
       return;
    }
 }
@@ -1022,37 +990,43 @@ for (i=0;i<l;i++) {
 }
 if (space || tab || non_ascii) {
    /* We build a message that indicates the number of suspect chars */
-   char temp[DIC_LINE_SIZE];
-   sprintf(temp,"warning: %d suspect char%s (",n,(n>1)?"s":"");
-   u_strcpy_char(comment,temp);
+   unichar temp[DIC_LINE_SIZE];
+   u_sprintf(temp,"warning: %d suspect char%s (",n,(n>1)?"s":"");
+   u_strcpy(comment,temp);
    if (space) {
-      sprintf(temp,"%d space%s, ",space,(space>1)?"s":"");
-      u_strcat_char(comment,temp);
+      u_sprintf(temp,"%d space%s, ",space,(space>1)?"s":"");
+      u_strcat(comment,temp);
    }
    if (tab) {
-      sprintf(temp,"%d tabulation%s, ",tab,(tab>1)?"s":"");
-      u_strcat_char(comment,temp);
+      u_sprintf(temp,"%d tabulation%s, ",tab,(tab>1)?"s":"");
+      u_strcat(comment,temp);
    }
    if (non_ascii) {
-      sprintf(temp,"%d non ASCII char%s, ",non_ascii,(non_ascii>1)?"s":"");
-      u_strcat_char(comment,temp);
+      u_sprintf(temp,"%d non ASCII char%s, ",non_ascii,(non_ascii>1)?"s":"");
+      u_strcat(comment,temp);
    }
    comment[u_strlen(comment)-2]='\0';
-   u_strcat_char(comment,"): (");
+   u_strcat(comment,"): (");
    unichar temp2[10];
    /* We explicit the content of the code. For instance, if the code is "é t",
     * the result will be: "E9 SPACE t" */
    for (i=0;i<l-1;i++) {
-      u_char_to_hexa_or_code(code[i],temp2);
+      if (code[i]==' ') u_sprintf(temp2,"SPACE");
+      else if (code[i]=='\t') u_sprintf(temp2,"TABULATION");
+      else if (code[i]<=128) u_sprintf(temp2,"%c",code[i]);
+      else u_sprintf(temp2,"%04X",code[i]);
       u_strcat(comment,temp2);
-      u_strcat_char(comment," ");
+      u_strcat(comment," ");
    }
-   u_char_to_hexa_or_code(code[l-1],temp2);
+   if (code[l-1]==' ') u_sprintf(temp2,"SPACE");
+   else if (code[l-1]=='\t') u_sprintf(temp2,"TABULATION");
+   else if (code[l-1]<=128) u_sprintf(temp2,"%c",code[l-1]);
+   else u_sprintf(temp2,"%04X",code[l-1]);
    u_strcat(comment,temp2);
-   u_strcat_char(comment,")");
+   u_strcat(comment,")");
    return 1;
 }
-else return 0;
+return 0;
 }
 
 

@@ -79,6 +79,4 @@ inline int hash_str_table_idx_lookup(hash_str_table_t * T, ustring_t * k) { retu
 inline void * hash_str_table_lookup(hash_str_table_t * table, ustring_t * k) { return hash_str_table_lookup(table, k->str); }
 
 
-void hash_str_table_dump(hash_str_table_t * table, void (*dump)(void * data, FILE * f) = NULL, FILE * f = stderr);
-
 #endif

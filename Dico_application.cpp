@@ -272,8 +272,7 @@ if (token[pos]=='\0') {
          while (tmp!=NULL) {
             unichar line[DIC_LINE_SIZE];
             uncompress_entry(inflected,tmp->string,line);
-            u_fprints(line,info->dlf);
-            u_fprints_char("\n",info->dlf);
+            u_fprintf(info->dlf,"%S\n",line);
             tmp=tmp->next;
          }
       }
@@ -393,8 +392,7 @@ if (current_token[pos_in_current_token]=='\0') {
             /* For each compressed code of the INF line, we save the corresponding
              * DELAF line in 'info->dlc' */
             uncompress_entry(inflected,tmp->string,line);
-            u_fprints(line,info->dlc);
-            u_fprints_char("\n",info->dlc);
+            u_fprintf(info->dlc,"%S\n",line);
             tmp=tmp->next;
          }
       }
@@ -447,14 +445,13 @@ struct word_struct* w;
 fseek(info->text_cod,0,SEEK_SET);
 fill_buffer(info->buffer,info->text_cod);
 int current_start_pos=0;
-printf("First block...              \r");
+u_printf("First block...              \r");
 int current_block=1;
 while (current_start_pos<info->buffer->size) {
-//   printf("current pos=%d\n",current_start_pos);
    if (!info->buffer->end_of_file
        && current_start_pos>(info->buffer->size-MARGIN_BEFORE_BUFFER_END)) {
       /* If we must change of block and if we can */
-      printf("Block %d...              \r",++current_block);
+      u_printf("Block %d...              \r",++current_block);
       fill_buffer(info->buffer,current_start_pos,info->text_cod);
       current_start_pos=0;
    }
@@ -501,7 +498,7 @@ while (current_start_pos<info->buffer->size) {
    }
    current_start_pos++;
 }
-printf("\n");
+u_printf("\n");
 }
 
 
@@ -518,8 +515,7 @@ for (int i=0;i<info->tokens->N;i++) {
       if (!get_value(info->part_of_a_word,i)) {
          /* To be an unknown word, a token must not be a part of a word */
           info->UNKNOWN_WORDS=info->UNKNOWN_WORDS+info->n_occurrences[i];
-          u_fprints(info->tokens->token[i],info->err);
-          u_fprints_char("\n",info->err);
+          u_fprintf(info->err,"%S\n",info->tokens->token[i]);
       }
       else {
          /* If the token is part of a word and if it is a simple word,
@@ -618,15 +614,17 @@ info->word_array=new_word_struct_array(info->tokens->N);
  *            some initializations are made there that are used
  *            when looking for compound words.
  */
-printf("Looking for simple words...\n");
+u_printf("Looking for simple words...\n");
 look_for_simple_words(info,priority);
-printf("Looking for compound words...\n");
+u_printf("Looking for compound words...\n");
 /* We measure the elapsed time */
 clock_t startTime=clock();
 look_for_compound_words(info,priority);
 clock_t endTime = clock();
 double  elapsedTime = (double) (endTime - startTime);
-if (DEBUG) printf("%2.8f seconds\n", elapsedTime);
+if (DEBUG) {
+   u_printf("%2.8f seconds\n",elapsedTime);
+}
 free_word_struct_array(info->word_array);
 free_INF_codes(info->inf);
 free(info->bin);
@@ -642,7 +640,7 @@ int merge_dic_locate_results(struct dico_application_info* info,char* concord_fi
 /* This array is used to represent a compound word at a token sequence ended by -1.
  * Example: cinquante-deux could be represented by (1347,35,582,-1) */
 int token_tab_coumpounds[TOKENS_IN_A_COMPOUND];
-printf("Merging dic/locate result...\n");
+u_printf("Merging dic/locate result...\n");
 /* First, we load the match list */
 FILE* f=u_fopen(concord_filename,U_READ);
 if (f==NULL) {
@@ -666,8 +664,7 @@ while (l!=NULL) {
             set_value(info->part_of_a_word,token_number,1);             
             set_value(info->simple_word,token_number,priority);
             /* We save it to the DLF */
-            u_fprints(l->output,info->dlf);
-            u_fprints_char("\n",info->dlf);
+            u_fprintf(info->dlf,"%S\n",l->output);
          }
       }
       else if(l->start<l->end)    {
@@ -684,8 +681,7 @@ while (l!=NULL) {
                set_value(info->part_of_a_word,token_tab_coumpounds[k],1);
             }
             /* We save it to the DLC */
-            u_fprints(l->output,info->dlc);
-            u_fprints_char("\n",info->dlc);
+            u_fprintf(info->dlc,"%S\n",l->output);
          }
       } else {
          error("Invalid match in concord.ind\n");

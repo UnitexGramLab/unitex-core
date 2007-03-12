@@ -19,14 +19,11 @@
   *
   */
 
-//--------------------------------------------------------------
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "Copyright.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "CodePages.h"
 #include "FileName.h"
 #include "IOBuffer.h"
@@ -41,39 +38,39 @@
 
 
 void usage() {
-printf("%s",COPYRIGHT);
-printf("Usage: Convert <src> [<dest>] <mode> [HTML OPTIONS] <text_1> [<text_2> <text_3> ...]\n");
-printf(" <src> : encoding of the text file to be converted\n");
-printf("<dest> : optional encoding of the destination text file. The default value \n");
-printf("         is LITTLE-ENDIAN\n");
-printf("<mode> : this parameter specifies how the source/destination files\n");
-printf("         must be named. The possible values are:\n");
-printf("   -r : sources files will be replaced by destination files\n");
-printf("   -ps=PFX : source files will be renamed with the prefix PFX\n");
-printf("   -pd=PFX : destination files will be named with the prefix PFX\n");
-printf("   -ss=SFX : source files will be renamed with the suffix SFX\n");
-printf("   -sd=SFX : destination files will be named with the suffix SFX\n");
-printf("<text_i> : text file to be converted\n");
-printf("\n");
-printf("Optional HTML OPTIONS can be a combination of the followings:\n");
-printf("   -dnc (Decode Normal Chars): things like '&eacute;' '&#120;' and '&#xF8;'\n");
-printf("        will be decoded as the one equivalent unicode character, except if\n");
-printf("        it represents an HTML control character\n");
-printf("   -dcc (Decode Control Chars): '&lt;' '&gt;' '&amp;' and '&quot;'\n");
-printf("        will be decoded as '<' '>' '&' and the quote (the same for their\n");
-printf("        decimal and hexadecimal representations)\n");
-printf("   -eac (Encode All Chars): every character that is not supported by the\n");
-printf("        output encoding will be coded as a string like '&#457;'\n");
-printf("   -ecc (Encode Control Chars): '<' '>' '&' and the quote will be encoded\n");
-printf("         by '&lt;' '&gt;' '&amp;' and '&quot;'\n");
-printf("All the HTML options are deactivated by default.\n");
-printf("\n");
-printf("Converts a text file into another encoding.\n");
-printf("You can also launch the program with only one parameter:\n\n");
-printf("'-main-names' to get the list of the encoding main names\n");
-printf("'-aliases' to get the list of the encoding aliases\n");
-printf("'-all-infos' to display all the information about all the encodings\n");
-printf("'XXX' to get information about the encoding XXX\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Convert <src> [<dest>] <mode> [HTML OPTIONS] <text_1> [<text_2> <text_3> ...]\n");
+u_printf(" <src> : encoding of the text file to be converted\n");
+u_printf("<dest> : optional encoding of the destination text file. The default value \n");
+u_printf("         is LITTLE-ENDIAN\n");
+u_printf("<mode> : this parameter specifies how the source/destination files\n");
+u_printf("         must be named. The possible values are:\n");
+u_printf("   -r : sources files will be replaced by destination files\n");
+u_printf("   -ps=PFX : source files will be renamed with the prefix PFX\n");
+u_printf("   -pd=PFX : destination files will be named with the prefix PFX\n");
+u_printf("   -ss=SFX : source files will be renamed with the suffix SFX\n");
+u_printf("   -sd=SFX : destination files will be named with the suffix SFX\n");
+u_printf("<text_i> : text file to be converted\n");
+u_printf("\n");
+u_printf("Optional HTML OPTIONS can be a combination of the followings:\n");
+u_printf("   -dnc (Decode Normal Chars): things like '&eacute;' '&#120;' and '&#xF8;'\n");
+u_printf("        will be decoded as the one equivalent unicode character, except if\n");
+u_printf("        it represents an HTML control character\n");
+u_printf("   -dcc (Decode Control Chars): '&lt;' '&gt;' '&amp;' and '&quot;'\n");
+u_printf("        will be decoded as '<' '>' '&' and the quote (the same for their\n");
+u_printf("        decimal and hexadecimal representations)\n");
+u_printf("   -eac (Encode All Chars): every character that is not supported by the\n");
+u_printf("        output encoding will be coded as a string like '&#457;'\n");
+u_printf("   -ecc (Encode Control Chars): '<' '>' '&' and the quote will be encoded\n");
+u_printf("         by '&lt;' '&gt;' '&amp;' and '&quot;'\n");
+u_printf("All the HTML options are deactivated by default.\n");
+u_printf("\n");
+u_printf("Converts a text file into another encoding.\n");
+u_printf("You can also launch the program with only one parameter:\n\n");
+u_printf("'-main-names' to get the list of the encoding main names\n");
+u_printf("'-aliases' to get the list of the encoding aliases\n");
+u_printf("'-all-infos' to display all the information about all the encodings\n");
+u_printf("'XXX' to get information about the encoding XXX\n");
 }
 
 
@@ -108,7 +105,7 @@ if (argc<3) {
 	if (!strcmp(argv[1],"-all-infos")) {
 		/* We do not print the copyright message since this list
 		 * can be read by another program. */
-		printf("%s",COPYRIGHT);
+		u_printf("%S",COPYRIGHT);
 		print_information_for_all_encodings();
 		return 0;
 	}
@@ -293,7 +290,7 @@ for (int i=param;i<argc;i++) {
 		fclose(input);
 		fclose(output);
 		switch(error_code) {
-			case CONVERSION_OK: printf("%s converted\n",argv[i]);
+			case CONVERSION_OK: u_printf("%s converted\n",argv[i]);
 								if (output_mode==REPLACE_FILE) {
 									/* If we must replace the input file */
 									remove(argv[i]);

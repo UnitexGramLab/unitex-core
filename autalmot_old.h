@@ -25,7 +25,7 @@
 #define __autalmot_h
 
 #include "String_hash.h"
-#include "unicode.h"
+#include "Unicode.h"
 #include "ustring.h"
 
 #define TRUE	1
@@ -229,7 +229,6 @@ BOOL verifInit(tAutAlMot * a);
 void nouvTrans(tAutAlMot * a, etat source, tSymbole * s, etat but);
 tAlphMotPartage * listeSymboles(tAutAlMot * Aut, BOOL * parDefaut);
 void libereAlphabet(tAlphMotPartage * alphabet);
-void sauvegAutAlMot(FILE * f, tAutAlMot * Aut, char * titre, int Naut, BOOL chevrons) ;
 int numeroDansAlph(tSymbole * Etiq, tAlphMotPartage * alphabet) ;
 tAutAlMot * copieAutomate(tAutAlMot * autOrig);
 tTransitions * copie_file_transition(tTransitions * transOrig);
@@ -237,12 +236,10 @@ int compSymb(tSymbole * s1, tSymbole * s2) ;
 tSymbole * copieSymbole(tSymbole * Source) ;
 void remplitSymbole(tSymbole * destination, tSymbole * source) ;
 void sauvegSymbole(FILE * f, tSymbole * s, BOOL chevrons) ;
-void Affiche_Symbole(tSymbole * s, FILE * f = stderr);
 void videAutomate(tAutAlMot * Aut) ;
 void libereAutAlMot(tAutAlMot * Aut) ;
 void libereEntrantesEtats(tAutAlMot * a) ;
 void complementation(tAutAlMot * entAut) ;
-void diagnostic(tAutAlMot * aut, char * nom, etat maxEtats) ;
 
 
 void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich);
@@ -259,15 +256,6 @@ tAlphMot * alphabet_new(int size = 64);
 void alphabet_delete(tAlphMot * alpha);
 void alphabet_clear(tAlphMot * alpha);
 tSymbole * alphabet_add(tAlphMot * alphabet, tSymbole * symb);
-
-
-void autalmot_dump_plain(tAutAlMot * A, FILE * f = stderr);
-
-void autalmot_dump_dot(tAutAlMot * A, FILE * f = stderr);
-void autalmot_dump_dot_fname(tAutAlMot * A, char * fname);
-
-void autalmot_dump_fst2(tAutAlMot * A, FILE * f);
-void autalmot_dump_fst2_fname(tAutAlMot * A, char * fname);
 
 void output_fst2_labels(string_hash * hash, FILE * f);
 

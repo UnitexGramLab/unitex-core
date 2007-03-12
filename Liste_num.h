@@ -24,7 +24,7 @@
 #define Liste_numH
 //---------------------------------------------------------------------------
 
-#include "unicode.h"
+#include "Unicode.h"
 
 struct liste_num {
        int n;

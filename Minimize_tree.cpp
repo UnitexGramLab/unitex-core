@@ -21,7 +21,7 @@
 
 #include "Minimize_tree.h"
 #include <stdio.h>
-#include "unicode.h"
+#include "Unicode.h"
 #include "Error.h"
 #include "DictionaryTree.h"
 
@@ -63,7 +63,7 @@ void merge(int,struct dictionary_node_transition**);
  * Dominique Revuz's algorithm.
  */
 void minimize_tree(struct dictionary_node* root) {
-printf("Minimizing...                      \n");
+u_printf("Minimizing...                      \n");
 struct transition_list** transitions_by_height;
 struct dictionary_node_transition** transitions;
 init_minimize_arrays(&transitions_by_height,&transitions);
@@ -75,9 +75,9 @@ for (unsigned int k=0;k<=H;k++) {
    merge(size,transitions);
    z=100.0*(float)(k)/(float)H;
    if (z>100.0) z=100.0;
-   printf("%2.0f%% completed...    \r",z);
+   u_printf("%2.0f%% completed...    \r",z);
 }
-printf("Minimization done.                     \n");
+u_printf("Minimization done.                     \n");
 free_minimize_arrays(transitions_by_height,transitions);
 }
 
@@ -91,7 +91,7 @@ free_minimize_arrays(transitions_by_height,transitions);
  */
 int compare_nodes(struct dictionary_node_transition* a,struct dictionary_node_transition* b) {
 if (a==NULL || b==NULL || a->node==NULL || b->node==NULL) {
-   fatal_error("Probleme dans compare_nodes\n");
+   fatal_error("Internal error in compare_nodes\n");
 }
 /* If the nodes have not the same INF codes, they are different */
 if (a->node->single_INF_code_list!=NULL && b->node->single_INF_code_list==NULL) return -1;

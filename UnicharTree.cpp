@@ -91,7 +91,7 @@ return l;
 
 void explorer_arbre_char(unichar* contenu,int pos,int etiq,int arr,struct arbre_char* noeud) {
 if (noeud==NULL) {
-   fprintf(stderr,"Erreur dans fonction explorer_arbre_char\n");
+   error("Erreur dans fonction explorer_arbre_char\n");
    return;
 }
 if (contenu[pos]=='\0') {

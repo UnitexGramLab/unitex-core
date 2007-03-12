@@ -27,7 +27,6 @@
 #ifndef _COMPGR_H_
 #define _COMPGR_H_
 
-#include "const.h"
 #include "autalmot.h"
 
 

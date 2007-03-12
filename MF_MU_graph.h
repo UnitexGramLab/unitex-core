@@ -31,7 +31,7 @@
 #ifndef MU_graphH
 #define MU_graphH
 
-#include "unicode.h"
+#include "Unicode.h"
 #include "MF_LangMorpho.h"
 #include "MF_MU_morpho.h"
 

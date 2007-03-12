@@ -22,7 +22,7 @@
 #include <stdlib.h>
 
 using namespace std;
-#include "unicode.h"
+#include "Unicode.h"
 #include "Fst2.h"
 #include "Copyright.h"
 #include "FileName.h"
@@ -128,20 +128,20 @@ static int curEtiCnt;
 int grapheTraiteMode;
 
 void usage(int flag) {
-printf("%s",COPYRIGHT);
-printf("Usage: InflectKr -d d_dir -v v_dir [-o ofile] <dictionnary>\n");
-printf("     <delas> : the unicode delas file to be inflected\n");
-printf("    -v v_dir : the directory of inflectional graphs.\n");
-printf("    -d d_dir : the directory of graphs of the derivation.\n");
-printf("    -o ofile : the inflected result file name  \n");
-printf("             : the default output file name is <delas>IF  \n");
-printf("    -c SS=0xNNNN : change a sting to character \n");
-printf("    -m 0xNNNN : skipMark value set\n");
-printf("    -x file   : load a file to change a character to sting\n");
-printf("    -r : the content is racines\n");
-printf("    -s : the content is suffixs\n");
-printf("\nInflects a korean DELAS.\n");
-if(flag) exitMessage("");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: InflectKr -d d_dir -v v_dir [-o ofile] <dictionnary>\n");
+u_printf("     <delas> : the unicode delas file to be inflected\n");
+u_printf("    -v v_dir : the directory of inflectional graphs.\n");
+u_printf("    -d d_dir : the directory of graphs of the derivation.\n");
+u_printf("    -o ofile : the inflected result file name  \n");
+u_printf("             : the default output file name is <delas>IF  \n");
+u_printf("    -c SS=0xNNNN : change a sting to character \n");
+u_printf("    -m 0xNNNN : skipMark value set\n");
+u_printf("    -x file   : load a file to change a character to sting\n");
+u_printf("    -r : the content is racines\n");
+u_printf("    -s : the content is suffixs\n");
+u_printf("\nInflects a korean DELAS.\n");
+if(flag) exit(1);
 exit(0);
 }
 static char *cfilename;
@@ -149,9 +149,8 @@ static unichar *curLineTemp;
 static int lineCnt;
 static void lineErrMess()
 {
-	fprintf(stderr,"%s file at line %d\n",cfilename,lineCnt);
-	u_fprintf(stdout,"Line <<%S>>\nhas syntax error",curLineTemp);
-	exitMessage("");
+	error("%s file at line %d\n",cfilename,lineCnt);
+	fatal_error("Line <<%S>>\nhas syntax error",curLineTemp);
 }
 
 static Fst2* Ptr_cAuto;
@@ -165,8 +164,7 @@ void cleanData()
 
 static void fst_err()
 {
-	u_fprintf(stdout,"%S fst2 file error",curFstName);
-	exitMessage("");
+	fatal_error("%S fst2 file error\n",curFstName);
 }
 
 class arbre_string0 suffixeAuto;
@@ -232,7 +230,7 @@ setBufferMode();
 			   argIdx++;
 
 			   tt = new unichar[strlen(argv[argIdx])+1];
-			   u_strcpy_char((unichar *)tt,argv[argIdx]);
+			   u_strcpy((unichar *)tt,argv[argIdx]);
 			   changeStrToVal(tt);
 			   break;
 			case 'd':
@@ -249,7 +247,7 @@ setBufferMode();
 			case 'm':
 				argIdx++;
 			   tt = new unichar[strlen(argv[argIdx])+1];
-			   u_strcpy_char((unichar *)tt,argv[argIdx]);
+			   u_strcpy((unichar *)tt,argv[argIdx]);
 				skipMark = (unichar)(uniToInt(tt) & 0xffff);
                break;
 			case 'r':
@@ -272,8 +270,6 @@ setBufferMode();
 		argIdx++;
 	}
 	if(!dervRep || !flexRep) usage(1);
-//printf("%s\r\n",argv[argIdx]);
-//printf("%s\r\n",argv[argIdx]);
 
 	cfilename = argv[argIdx];
 	if(!ofilename[0]){
@@ -288,7 +284,7 @@ setBufferMode();
             sprintf(ofilename1,"%s.ric",fNameSansExt);
             break;
 		default:
-		   exitMessage("Error");
+		   fatal_error("Error");
         }
 	} else {
 	   if(flagRacSuf == CONTENT_RACSUF){
@@ -298,13 +294,13 @@ setBufferMode();
 	}
 	f=u_fopen(argv[argIdx],U_READ);
 	if (f==NULL) {
-		fprintf(stderr,"Cannot open %s\n",argv[argIdx]);
+		error("Cannot open %s\n",argv[argIdx]);
 		return 1;
 	}
  	f_out=u_fopen(ofilename,U_WRITE);
 	if (f_out==NULL) {
-		fprintf(stderr,"Cannot open %s\n",ofilename);
-		 return 1;
+		error("Cannot open %s\n",ofilename);
+		return 1;
 	}
 	//
 	//
@@ -321,7 +317,7 @@ setBufferMode();
 	notTraiteSuff.explore_tout_leaf((release_f )prSuffixeString0);
 
 
-	printf("Done.\n");
+	u_printf("Done.\n");
 	return 0;
 
 }
@@ -345,7 +341,7 @@ get_flexion_form(FILE *f,FILE *fout)
 	readLine[0] = 0;
 	lineCnt = 0;
 	curLineTemp = readLine;
-	while (EOF!=u_read_line(f,(unichar *)readLine)){
+	while (EOF!=u_fgets(readLine,f)){
 		lineCnt++;
 
 
@@ -442,12 +438,12 @@ trait_renouvelle_lign(FILE *f,unichar *readLine)
 	unichar workLine[MAX_LINE_NUMBER];
 
 	segCnt = 0;
-	if(readLine[0] != ';') exitMessage("line error");
+	if(readLine[0] != ';') fatal_error("line error\n");
 	do {
 		switch(readLine[scanIdx]){
 		case ',':
 			if(segCnt >= 4){
-				u_fprintf(stdout,"error: line %d:%S is illegal\n",lineCnt,readLine);
+				u_printf("error: line %d:%S is illegal\n",lineCnt,readLine);
 				return;		
 			}
 			workLine[saveIdx++] = '\0';
@@ -460,16 +456,14 @@ trait_renouvelle_lign(FILE *f,unichar *readLine)
 
 				if((segCnt != 4) || !workLine[segs[0]] || 
 				!workLine[segs[2]]) {
-					u_fprintf(stdout,"%d:%S line syntax error\n",lineCnt,readLine);
-					exitMessage("");
+					fatal_error("%d:%S line syntax error\n",lineCnt,readLine);
 				}
 				if(serialElementCnt){
 					unichar c = workLine[segs[0]];
 					if( (workLine[segs[2]] != c) ||
 						((workLine[segs[1]] != 0) && (workLine[1] != c)) ||
 						(workLine[segs[3]] != c))
-					u_fprintf(stdout,"%d:%S line syntax error\n",lineCnt,readLine);
-					exitMessage("");
+					fatal_error("%d:%S line syntax error\n",lineCnt,readLine);
 				}
 				get_forms_variant(workLine,segs,tail_chaine);
 				if(readLine[scanIdx] != '\0')
@@ -494,14 +488,14 @@ trait_renouvelle_lign(FILE *f,unichar *readLine)
 		case '\\':
 			workLine[saveIdx++] = readLine[scanIdx++];
 			if(!readLine[scanIdx]){
-				u_fprintf(stdout,"error: line %d:%S is illegal\n",lineCnt,readLine);
+				error("error: line %d:%S is illegal\n",lineCnt,readLine);
 				return;		
 			}
 		default:
 			workLine[saveIdx++]=readLine[scanIdx];
 		}
 		if(scanIdx > MAX_LINE_NUMBER){
-			u_fprintf(stdout,"error: line %d:%S is illegal",lineCnt,readLine);
+			error("error: line %d:%S is illegal",lineCnt,readLine);
 			return;		
 		}
 	} while (readLine[scanIdx++]);
@@ -522,9 +516,9 @@ get_forms_variant(unichar *workLine,int *segIndex,class dicElements *ele)
 	unichar workLine1[MAX_LINE_NUMBER];
 if(debugFlag){
 for ( lineIdx = 0; lineIdx < 4;lineIdx++) {
-   u_fprintf(stdout,"==%S",&workLine[segIndex[lineIdx]]);
+   u_printf("==%S",&workLine[segIndex[lineIdx]]);
 }
-u_fprintf(stdout,"\n");
+u_printf("\n");
 }
 	
 	// find derivation information
@@ -560,7 +554,7 @@ u_fprintf(stdout,"\n");
 				&& (workLine[scanIdx] !='\0'));
 		}
 		if(scanIdx > MAX_LINE_NUMBER) {
-			u_fprintf(stdout,"error: line %d:%S is illegal",lineCnt,workLine);
+			error("error: line %d:%S is illegal",lineCnt,workLine);
 			return 0;
 		}
 	} while(workLine[scanIdx]);
@@ -590,15 +584,13 @@ u_fprintf(stdout,"\n");
 		for( scanIdx = 0; scanIdx < cmds.size() ;scanIdx++){
 			wp = cmds.getNext();
 			if(!wp){
-				u_fprintf(stdout,"Warning: line %d:%S is illegal",lineCnt,workLine);
-				exitMessage("");
+				fatal_error("Warning: line %d:%S is illegal\n",lineCnt,workLine);
 			}
 			if((fstAuto = dev.loadfst2name(dervRep,wp))
 				!= (struct fst2 *)0 ){
 				inflect_kr(fstAuto,orgWord->EC_canonique,DERIVATION_MODE);
 			}else {
-				printf("%s ",repertoire);
-				exitMessage("error: derivation file not exist");
+				fatal_error("error: derivation file not exist\n");
 			}
 		}
 	}
@@ -730,13 +722,13 @@ static void traiteEttiques()
 	for(int i = 0; i < curEtiCnt;i++){
 		et=Ptr_cAuto->tags[etiQueue[i]];
 if(debugFlag)
-	u_fprintf(stdout,"%S %S\n",et->output,et->input);
+	u_printf("%S %S\n",et->output,et->input);
 		//
 		//	gether informations
 		//
 		if (et->output && 
             *(et->output) && 
-                u_strcmp_char(et->output,"<E>")) {
+                u_strcmp(et->output,"<E>")) {
 				// if we are in a final state, we save the computed things
 			wp = 0;
 			while(et->output[wp]){
@@ -759,7 +751,7 @@ if(debugFlag)
 		
 		}
 		if(et->input[0] == '<'){
-		  if(!u_strcmp_char(et->input,"<$>")){ 
+		  if(!u_strcmp(et->input,"<$>")){ 
 			// copy org to working stack
 			swp = orgWord->EC_canonique;
 			while(*swp)  FF[FIdx++] = *swp++;
@@ -771,7 +763,7 @@ if(debugFlag)
  		    }
             while(*swp) OF[OIdx++] = *swp++;
             continue;
-		  } else if (!u_strcmp_char(et->input,"<E>")) {
+		  } else if (!u_strcmp(et->input,"<E>")) {
 		     continue;
 		  } else if (findChangeStr((unichar*)et->input,temp)) {
 				FF[FIdx++] = temp[0];
@@ -791,8 +783,7 @@ if(debugFlag)
 			switch (et->input[wp]) {
 			case '[':
 			      if(skipMark == -1 ){
-                       exitMessage("skipMark is not defined");
-                        usage(1);
+                       fatal_error("skipMark is not defined\n");
                   } 
                   while((FIdx != 0) &&(Fpile[FpileIdx++] = FF[--FIdx])
 					!= skipMark);
@@ -822,8 +813,7 @@ if(debugFlag)
                break;
 			case 'X':	// delete a sylable
 		        if(skipMark == -1 ){
-                    exitMessage("skipMark is not defined");
-                    usage(1);
+                    fatal_error("skipMark is not defined\n");
                 } 
                   Ctmp = OF[OIdx-1];
                   if(u_is_CJK_Unified_Ideographs(Ctmp)
@@ -843,7 +833,7 @@ if(debugFlag)
                if(OpileIdx != 0) OpileIdx--; 
                break;
 			case ']':
-			    if(skipMark == -1 )exitMessage("skipMark is not defined");
+			    if(skipMark == -1 ) fatal_error("skipMark is not defined\n");
 				if(FpileIdx == 0) break;
 				--FpileIdx;
 				if(OpileIdx == 0) break;
@@ -862,7 +852,7 @@ if(debugFlag)
 		       FF[FIdx++] = et->input[wp];
 		       OF[OIdx++] = et->input[wp];
 			}
-if(debugFlag){ FF[FIdx] = 0;  u_fprintf(stdout,"%S >>>>\n",FF);}
+if(debugFlag){ FF[FIdx] = 0;  u_printf("%S >>>>\n",FF);}
 		}
 	} // parcours
 	FF[FIdx] = 0;
@@ -871,7 +861,7 @@ if(debugFlag){ FF[FIdx] = 0;  u_fprintf(stdout,"%S >>>>\n",FF);}
 	InF[ip] = 0;
 	
 	class dicLines *wWord = new class  dicLines;
-	if(!wWord) exitMessage("mem alloc fail");
+	if(!wWord) fatal_error("mem alloc fail\n");
 	switch(grapheTraiteMode){
     case FLEXION_MODE: // copy a orginal word before handling
           wWord->set(FF,orgWord->EC_canonique,
@@ -892,7 +882,7 @@ if(debugFlag){ FF[FIdx] = 0;  u_fprintf(stdout,"%S >>>>\n",FF);}
                      ,OF,u_null_string,u_null_string);
  	    }
     
- 	    if((SuF[0] == '\0') || !u_strcmp_char((unichar*)SuF,"<E>"))
+ 	    if((SuF[0] == '\0') || !u_strcmp((unichar*)SuF,"<E>"))
  	    wWord->set(u_null_string,FF,u_null_string,tempBuff,
                   orgWord->EC_code);
  	    else 

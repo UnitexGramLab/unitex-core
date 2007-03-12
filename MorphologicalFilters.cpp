@@ -86,9 +86,7 @@ if (filters->size>0) {
                regBasic=1;
                break;
             default:
-               char errbuf[512];
-               u_to_char(errbuf,filterContent);
-               error("Morphological filter '%s' : ",errbuf);
+               error("Morphological filter '%S' : ",filterContent);
                error("Invalid option(s) : '%s'\n",filterOptions);
                free_string_hash(filters);
                free_FilterSet(filter_set,i);
@@ -116,9 +114,8 @@ if (filters->size>0) {
       /* Then, we build the regular expression matcher associated to our filter */
       ccode=regwcomp(filter_set->filter[i].matcher,warray,cflags);
       if (ccode!=0) {
+         error("Morphological filter '%S' : ",filter_set->filter[i].content);
          char errbuf[512];
-         u_to_char(errbuf,filter_set->filter[i].content);
-         error("Morphological filter '%s' : ",errbuf);
          regerror(ccode,filter_set->filter[i].matcher,errbuf,512);
          error("Syntax error : %s\n",errbuf);
          free_string_hash(filters);
@@ -191,8 +188,8 @@ if (filters->size>0) {
    /* Then, we look all the tokens */
    for (i=0;i<tokens->size;i++) {
       current_token=tokens->value[i];
-      if (current_token[0]=='{' && u_strcmp_char(current_token,"{S}")
-          && u_strcmp_char(current_token,"{STOP}")) {
+      if (current_token[0]=='{' && u_strcmp(current_token,"{S}")
+          && u_strcmp(current_token,"{STOP}")) {
          /* If we have a tag token like "{today,.ADV}", we extract its inflected form */
          w_extract_inflected(current_token,inflected);
       } else {

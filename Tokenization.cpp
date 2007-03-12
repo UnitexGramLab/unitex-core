@@ -21,7 +21,7 @@
 
 #include "Tokenization.h"
 #include "Error.h"
-#include "unicode.h"
+#include "Unicode.h"
 
 
 /**
