@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include "Unicode.h"
 #include "Fst2.h"
-#include "VerifierRecursion.h"
+#include "GrfCheck.h"
 #include "Copyright.h"
 #include "Grf2Fst2_lib.h"
 #include "Alphabet.h"
@@ -60,16 +60,17 @@ int main(int argc,char *argv[]) {
   }
   int TOKENIZATION_MODE=DEFAULT_TOKENIZATION;
   pckg_path[0] = '\0';
-  if(argc >= 4){
+  if(argc >= 6) {
     if(!strcmp(argv[argc - 2],"-d")){      
       u_strcpy(pckg_path,argv[argc - 1]);
+      argc -= 2;
     }
-    argc -= 2;
   }
-  
+  int check_recursion=0;
   int index=0;
   if (argc>=3) {
      if (!strcmp(argv[2],"y") || !strcmp(argv[2],"n")) {
+        if (!strcmp(argv[2],"y")) check_recursion=1;
         if (argc==4) {index=3;}
      }
      else {
@@ -128,13 +129,12 @@ int main(int argc,char *argv[]) {
   }
 
   sauvegarder_etiquettes_comp(fs_comp);
-
   libere_arbres_comp();
   free(donnees);
   u_fclose(fs_comp);
   ecrire_fichier_sortie_nb_graphes(fst2_file_name,fs_comp);
-  if (argc>2 && (!strcmp(argv[2],"y"))) {
-    if (!pas_de_recursion(fst2_file_name)) {
+  if (check_recursion) {
+    if (!grf_OK(fst2_file_name)) {
       free(fst2_file_name);
       return 1;
     }

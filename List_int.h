@@ -43,6 +43,9 @@ unsigned int hash_list_int(struct list_int*);
 int length(struct list_int*);
 struct list_int* destructive_sorted_merge(struct list_int*,struct list_int*);
 struct list_int* sorted_merge(struct list_int*,struct list_int*);
+void delete_head(struct list_int**);
+void delete_tail(struct list_int**);
+struct list_int* clone(struct list_int*);
 
 #endif
 

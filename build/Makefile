@@ -346,7 +346,7 @@ FST2UNAMBIG_OBJS = Fst2.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o
 
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = IOBuffer.o Grf2Fst2.o Alphabet.o Unicode.o Fst2.o\
-                VerifierRecursion.o Grf2Fst2_lib.o Error.o FileName.o SingleGraph.o\
+                GrfCheck.o Grf2Fst2_lib.o Error.o FileName.o SingleGraph.o\
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o\
                 List_ustring.o String_hash.o StringParsing.o
 

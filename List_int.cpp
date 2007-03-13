@@ -217,3 +217,42 @@ return a;
 }
 
 
+/**
+ * This function removes the head of the given list.
+ */
+void delete_head(struct list_int* *l) {
+if (*l==NULL) return;
+struct list_int* tmp=*l;
+*l=(*l)->next;
+free(tmp);
+}
+
+
+/**
+ * This function removes the tail of the given list.
+ */
+void delete_tail(struct list_int* *l) {
+struct list_int* previous;
+if ((*l)==NULL) return;
+if ((*l)->next==NULL) {
+  free(*l);
+  *l=NULL;
+  return;
+}
+previous=*l;
+while (previous->next->next!=NULL) {
+   previous=previous->next;
+}
+free(previous->next);
+previous->next=NULL;
+}
+
+
+/**
+ * Returns a copy of the given list.
+ */
+struct list_int* clone(struct list_int* l) {
+if (l==NULL) return NULL;
+return new_list_int(l->n,clone(l->next));
+}
+
