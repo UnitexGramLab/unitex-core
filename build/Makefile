@@ -387,7 +387,8 @@ NORMALIZE_OBJS = IOBuffer.o Normalize.o Unicode.o FileName.o DELA.o List_ustring
 POLYLEX      = PolyLex
 POLYLEX_OBJS = IOBuffer.o PolyLex.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o\
 				NorwegianCompounds.o GermanCompounds.o Compounds.o FileName.o\
-				RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o
+				RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o\
+				DutchCompounds.o
 
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.o TransductionVariables.o Liste_num.o CompoundWordTree.o\

@@ -27,6 +27,7 @@
 #include "Alphabet.h"
 #include "DELA.h"
 #include "String_hash.h"
+#include "DutchCompounds.h"
 #include "NorwegianCompounds.h"
 #include "GermanCompounds.h"
 #include "FileName.h"
@@ -40,6 +41,7 @@ void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: PolyLex <lang> <alph> <dic> <list> <out> [<info>]\n");
 u_printf("     <lang> : language to work on. Possible values are:\n");
+u_printf("              DUTCH\n");
 u_printf("              GERMAN\n");
 u_printf("              NORWEGIAN\n");
 u_printf("              RUSSIAN\n");
@@ -144,7 +146,10 @@ if (argc==7) {
    }
 }
 
-if (!strcmp(argv[1],"GERMAN")) {
+if (!strcmp(argv[1],"DUTCH")) {
+   analyse_dutch_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words);
+}
+else if (!strcmp(argv[1],"GERMAN")) {
    analyse_german_compounds(alph,bin,inf,words,res,debug,new_unknown_words);
 }
 else if (!strcmp(argv[1],"NORWEGIAN")) {
