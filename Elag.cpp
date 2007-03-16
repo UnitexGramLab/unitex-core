@@ -46,7 +46,6 @@
 #include "IOBuffer.h"
 #include "Error.h"
 
-
 void usage() {
 u_printf("%S", COPYRIGHT);
 u_printf("Usage: Elag <txtauto> -l <LANG> -g <rules> -o <output> [-d <dir>]\n"
@@ -139,7 +138,7 @@ int main(int argc, char ** argv) {
   set_current_language(lang);
 
 
-  char buf[MAX_PATH];
+  char buf[FILENAME_MAX];
 
   if (output == NULL) {
 
