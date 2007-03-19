@@ -410,11 +410,6 @@ SORTTXT_OBJS = IOBuffer.o SortTxt.o Unicode.o Error.o SortTxtMain.o Thai.o
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Unicode.o FileName.o Error.o
 
-TEXTAUTOMATON2MFT      = TextAutomaton2Mft
-TEXTAUTOMATON2MFT_OBJS = IOBuffer.o TextAutomaton2Mft.o Unicode.o FileName.o Fst2.o\
-                         Fst2_to_Mft.o String_hash.o Alphabet.o Error.o StringParsing.o\
-                         Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o
-
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\
 				FileName.o DELA.o List_ustring.o Table_hash.o Error.o StringParsing.o
@@ -501,7 +496,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO) $(ELAG) $(ELAGC
 		$(EXTRACT) $(FLATTEN) $(FST2GRF) \
 		$(FST2TXT) $(GRF2FST2) $(INFLECT) $(LOCATE) $(MERGETEXTAUTOMATON)\
 		$(NORMALIZE) $(POLYLEX) $(RECONSTRUCAO) \
-		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TEXTAUTOMATON2MFT) $(TOKENIZE)\
+		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TOKENIZE)\
 		$(TXT2FST2) $(IMPLOSEFST2) \
 		$(EXPLOSEFST2) $(LOADFST) $(EVAMB) $(CONVERT) \
 		$(TAGSETNORM) \
@@ -517,7 +512,7 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OB
 		$(FST2TXT_OBJS) $(GRF2FST2_OBJS) \
 		$(INFLECT_OBJS) $(LANG_OBJS) $(LOCATE_OBJS) $(MERGETEXTAUTOMATON_OBJS)\
 		$(NORMALIZE_OBJS) $(POLYLEX_OBJS) $(RECONSTRUCAO_OBJS) \
-		$(REG2GRF_OBJS) $(SORTTXT_OBJS) $(TABLE2GRF_OBJS) $(TEXTAUTOMATON2MFT_OBJS)\
+		$(REG2GRF_OBJS) $(SORTTXT_OBJS) $(TABLE2GRF_OBJS)\
 		$(TOKENIZE_OBJS) $(TXT2FST2_OBJS) \
 		$(IMPLOSEFST2_OBJS) $(LOADFST_OBJS) $(EVAMB_OBJS) $(CONVERT_OBJS) $(SPELLCHECK_OBJS) \
 		$(TAGSETNORM_OBJS) $(CONCORDIFF_OBJS) \
@@ -716,9 +711,6 @@ $(BIN_DIR)$(SORTTXT)$(EXTENSION): $(SORTTXT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TABLE2GRF)$(EXTENSION): $(TABLE2GRF_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(TEXTAUTOMATON2MFT)$(EXTENSION): $(TEXTAUTOMATON2MFT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TOKENIZE)$(EXTENSION): $(TOKENIZE_OBJS)

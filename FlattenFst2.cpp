@@ -19,13 +19,11 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "FlattenFst2.h"
 #include "LocateConstants.h"
 #include "List_int.h"
 #include "Grf2Fst2_lib.h"
 #include "SingleGraph.h"
-//---------------------------------------------------------------------------
 
 
 static struct list_int** dependencies;

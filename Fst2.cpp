@@ -128,32 +128,6 @@ free(fst2);
 
 
 /**
- * Readjusts the size of the arrays, because arrays have a
- * big default size.
- */
-void resize(Fst2* fst2) {
-#warning replace resize by calls to realloc with size*2
-/*
- * NOTE: there were +1 on fst2->number_of_states and fst2->number_of_tags,
- *       but I removed them because it seemed to be unnecessary.
- *       S. Paumier
- */
-fst2->states=(Fst2State*)realloc(fst2->states,fst2->number_of_states*sizeof(Fst2State));
-fst2->tags=(Fst2Tag*)realloc(fst2->tags,fst2->number_of_tags*sizeof(Fst2Tag));
-/*
- * We add +1 because we start the graph numerotation at 1 
- */
-int n=fst2->number_of_graphs+1;
-fst2->initial_states=(int*)realloc(fst2->initial_states,n*sizeof(int));
-if (fst2->graph_names!=NULL) {
-   /* We reallocate only if there is something */
-   fst2->graph_names=(unichar**)realloc(fst2->graph_names,n*sizeof(unichar*));
-}
-fst2->number_of_states_per_graphs=(int*)realloc(fst2->number_of_states_per_graphs,n*sizeof(int));
-}
-
-
-/**
  * Allocates, initializes and returns a new tag
  */
 Fst2Tag new_Fst2Tag() {
@@ -336,10 +310,16 @@ u_fprintf(f,"\n");
  * automaton. 
  */
 void read_fst2_tags(FILE *f,Fst2* fst2,int limit) {
+int SIZE=2;
 int i;
 unichar c;
 unichar line[10000];
 int current_tag=0;
+/* First, we allocate the tag array */
+fst2->tags=(Fst2Tag*)malloc(SIZE*sizeof(Fst2Tag));
+if (fst2->tags==NULL) {
+   fatal_error("Not enough memory in read_fst2_tags\n");
+}
 /* If the position in the file is not correct we exit */
 if (((c=(unichar)u_fgetc(f))!='%')&&(c!='@')) {
 	fatal_error("Unexpected character in .fst2 file: %c (read tag)\n",c);
@@ -362,9 +342,22 @@ while (c!='f' && (limit==NO_TAG_LIMIT || current_tag<=limit)) {
 	fst2->tags[current_tag]=create_tag(fst2,line);
 	/* We do not forget to increase the tag counter */
 	current_tag++;
+   if (current_tag==SIZE) {
+      /* If necessary, we double the size of the array */
+      SIZE=SIZE*2;
+      fst2->tags=(Fst2Tag*)realloc(fst2->tags,SIZE*sizeof(Fst2Tag));
+      if (fst2->tags==NULL) {
+         fatal_error("Not enough memory in read_fst2_tags\n");
+      }
+   }
 }
 /* Finally, we set the number of tags of the fst2 */
 fst2->number_of_tags=current_tag;
+/* And we resize the array to the exact size */
+fst2->tags=(Fst2Tag*)realloc(fst2->tags,current_tag*sizeof(Fst2Tag));
+if (fst2->tags==NULL) {
+   fatal_error("Not enough memory in read_fst2_tags\n");
+}
 }
 
 
@@ -528,9 +521,14 @@ void set_final_state(fst2State*,int);
  * then all the fst2 is loaded, and the 'max_tag_number' parameter is ignored.
  */
 void read_fst2_states(FILE *f,Fst2* fst2,int read_names,int graph_number,int *max_tag_number) {
+int SIZE=256;
 unichar c;
 int i,end_of_line,tag_number,destination_state_number,current_graph;
 int current_state=0;
+fst2->states=(Fst2State*)malloc(SIZE*sizeof(Fst2State));
+if (fst2->states==NULL) {
+   fatal_error("Not enough memory in read_fst2_states\n");
+}
 /* We read all the graphs that make the fst2 */
 for (i=0;i<fst2->number_of_graphs;i++) {
 	/* We read the graph number and the space after it */
@@ -600,6 +598,14 @@ for (i=0;i<fst2->number_of_graphs;i++) {
             fatal_error("Unexpected character in fst2: %c\n",c);
 			}
 			current_state++;
+         if (current_state==SIZE) {
+            /* If necessary, we double the size of the state array */
+            SIZE=SIZE*2;
+            fst2->states=(Fst2State*)realloc(fst2->states,SIZE*sizeof(Fst2State));
+            if (fst2->states==NULL) {
+               fatal_error("Not enough memory in read_fst2_states\n");
+            }
+         }
 			relative_state++;
 		}
 	}
@@ -619,8 +625,13 @@ for (i=0;i<fst2->number_of_graphs;i++) {
    u_fgetc(f);
    u_fgetc(f);
 }
-/* Finally, we set the number of states of the fst2 */
+/* Finally, we set the number of states of the fst2, and we resize the state array
+ * to the exact size */
 fst2->number_of_states=current_state;
+fst2->states=(Fst2State*)realloc(fst2->states,current_state*sizeof(Fst2State));
+if (fst2->states==NULL) {
+   fatal_error("Not enough memory in read_fst2_states\n");
+}
 }
 
 
@@ -656,13 +667,6 @@ if (fst2->number_of_graphs==0) {
 	return NULL;
 }
 /*
- * We allocates 'states' and 'tags' arrays with a big default size.
- */
-fst2->states=(Fst2State*)malloc(MAX_FST2_STATES*sizeof(Fst2State));
-if (fst2->states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
-fst2->tags=(Fst2Tag*)malloc(MAX_FST2_TAGS*sizeof(Fst2Tag));
-if (fst2->tags==NULL) {fatal_error("Not enough memory in load_fst2\n");}
-/*
  * The 'initial_states' and 'number_of_states_per_graphs' arrays are
  * allocated with the correct size. We add +1 because graph numeration
  * starts at 1.
@@ -693,10 +697,6 @@ if (graph_number==NO_GRAPH_NUMBER_SPECIFIED) {
 	read_fst2_tags(f,fst2,max_tag_number);
 }
 u_fclose(f);
-/*
- * Finally, we resize the 'states' and 'tags' array at the correct size.
- */
-resize(fst2);
 return fst2;
 }
 

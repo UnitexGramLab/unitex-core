@@ -30,7 +30,6 @@
 #include "Alphabet.h"
 #include "Pattern.h"
 #include "Loading_dic.h"
-#include "Fst2_tags_optimization.h"
 #include "OptimizedFst2.h"
 #include "Pattern_transitions.h"
 #include "Text_parsing.h"
