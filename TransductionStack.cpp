@@ -22,102 +22,108 @@
 #include "TransductionStack.h"
 #include "Error.h"
 
+
 int DISPLAY_VARIABLE_ERRORS=0;
-unichar stack[STACK_SIZE];
-int StackPointer; // index pointing to the end of the stack "stack"
-int StackBase;    // intermediate start position of stack, used in subgraph calls
-
-
-void push_char(unichar c) {
-stack[StackPointer++]=c;
-}
 
 
 
-//
-// this function return true is c can be a part of a variable name
-//
+/**
+ * This function returns a non zero value if c can be a part of a variable name;
+ * 0 otherwise.
+ */
 int is_variable_char(unichar c) {
 return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_');
 }
 
 
-void push_string(unichar* s) {
+/**
+ * Pushes the given character.
+ */
+void push_char(struct stack_unichar* s,unichar c) {
+push(s,c);
+}
+
+
+/**
+ * Pushes the given string to the output, if not NULL.
+ */
+void push_string(struct stack_unichar* stack,unichar* s) {
 int i;
 if (s==NULL) {
-  return;
+   return;
 }
-for (i=0;s[i]!='\0';i++)
-  push_char(s[i]);
+for (i=0;s[i]!='\0';i++) {
+   push_char(stack,s[i]);
+}
 }
 
 
-void push_output_string(unichar* s,struct locate_parameters* p) {
+/**
+ * This function processes the given output string.
+ */
+void process_output(unichar* s,struct locate_parameters* p) {
 int i=0;
 if (s==NULL || !u_strcmp(s,"<E>")) {
-  // we do nothing if the transduction is <E>
-  return;
+   /* We do nothing if the output is <E> */
+   return;
 }
 while (s[i]!='\0') {
-      if (s[i]=='$') {
-         // case of a variable name
-         unichar name[100];
-         int L=0;
-         i++;
-         while (is_variable_char(s[i])) {
-           name[L++]=s[i++];
-         }
-         name[L]='\0';
-         if (s[i]!='$') {
-            if (DISPLAY_VARIABLE_ERRORS) {
-               error("Error: missing closing $ after $%S\n",name);
-            }
-         }
-         else {
-             i++;
-             if (L==0) {
-                // case of $$ in order to print a $
-                push_char('$');
-             }
-             else {
-                 struct transduction_variable* v=get_transduction_variable(p->variables,name);
-                 if (v==NULL) {
-                    if (DISPLAY_VARIABLE_ERRORS) {
-                       error("Error: undefined variable $%S\n",name);
-                    }
-                 }
-                 else if (v->start==-1) {
-                    if (DISPLAY_VARIABLE_ERRORS) {
-                       error("Error: starting position of variable $%S undefined\n",name);
-                    }
-                 }
-                 else if (v->end==-1) {
-                    if (DISPLAY_VARIABLE_ERRORS) {
-                       error("Error: end position of variable $%S undefined\n",name);
-                    }
-                 }
-                 else if (v->start > v->end) {
-                    if (DISPLAY_VARIABLE_ERRORS) {
-                       error("Error: end position before starting position for variable $%S\n",name);
-                    }
-                 }
-                 else {
-                    // if the variable definition is correct
-                    for (int k=v->start;k<v->end;k++)
-                      push_string(p->tokens->value[p->buffer[k+p->current_origin]]);
-                 }
-             }
-         }
+   if (s[i]=='$') {
+      /* Case of a variable name */
+      unichar name[100];
+      int l=0;
+      i++;
+      while (is_variable_char(s[i])) {
+         name[l++]=s[i++];
       }
-      else {
-         push_char(s[i]);
-         i++;
+      name[l]='\0';
+      if (s[i]!='$') {
+         if (DISPLAY_VARIABLE_ERRORS) {
+            error("Error: missing closing $ after $%S\n",name);
+         }
+         continue;
       }
+      i++;
+      if (l==0) {
+         /* Case of $$ in order to print a $ */
+         push_char(p->stack,'$');
+         continue;
+      }
+      struct transduction_variable* v=get_transduction_variable(p->variables,name);
+      if (v==NULL) {
+         if (DISPLAY_VARIABLE_ERRORS) {
+            error("Error: undefined variable $%S\n",name);
+         }
+         continue;
+      }
+      if (v->start==-1) {
+         if (DISPLAY_VARIABLE_ERRORS) {
+            error("Error: starting position of variable $%S undefined\n",name);
+         }
+         continue;
+      }
+      if (v->end==-1) {
+         if (DISPLAY_VARIABLE_ERRORS) {
+            error("Error: end position of variable $%S undefined\n",name);
+         }
+         continue;
+      }
+      if (v->start>v->end) {
+         if (DISPLAY_VARIABLE_ERRORS) {
+            error("Error: end position before starting position for variable $%S\n",name);
+         }
+         continue;
+      }
+      /* If the variable definition is correct */
+      for (int k=v->start;k<v->end;k++) {
+         push_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]]);
+      }
+   }
+   else {
+      /* If we have a normal character */
+      push_char(p->stack,s[i]);
+      i++;
+   }
 }
 }
 
-
-
-void process_transduction(unichar* s,struct locate_parameters* p) {
-push_output_string(s,p);
-}

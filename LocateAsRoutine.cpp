@@ -42,7 +42,7 @@
 #include "Matches.h"
 #include "TransductionVariables.h"
 #include "TransductionStack.h"
-#include "Liste_num.h"
+#include "ParsingInfo.h"
 #include "FileName.h"
 #include "Copyright.h"
 #include "IOBuffer.h"

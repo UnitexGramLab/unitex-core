@@ -27,7 +27,6 @@ using namespace std;
 #include "Unicode.h"
 #include "Fst2.h"
 #include "Alphabet.h"
-#include "Liste_num.h"
 #include "UnicharTree.h"
 #include "Copyright.h"
 #include "FileName.h"

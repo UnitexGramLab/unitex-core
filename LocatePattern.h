@@ -41,7 +41,7 @@
 #include "MorphologicalFilters.h"
 /* $CD$ end   */
 #include "Buffer.h"
-
+#include "Stack_unichar.h"
 
 #define TOKEN_BUFFER_SIZE 1000000
 
@@ -163,6 +163,12 @@ struct locate_parameters {
    
    /* The transduction variables of the fst2 */
    Variables* variables;
+   
+   /* This is the stack used to process outputs.*/
+   struct stack_unichar* stack;
+   /* This field is used to remember where the current stack base is for
+    * the current subgraph. */
+   int stack_base;
 };
 
 

@@ -72,6 +72,7 @@ p->start_position_last_printed_match=-1;
 p->end_position_last_printed_match=-1;
 p->search_limit=0;
 p->variables=NULL;
+p->stack=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
 return p;
 }
 
@@ -230,6 +231,7 @@ if (info!=NULL) u_fclose(info);
 u_fclose(out);
 u_printf("Freeing memory...\n");
 free_optimized_states(p->optimized_states,p->fst2->number_of_states);
+free_stack_unichar(p->stack);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
  */

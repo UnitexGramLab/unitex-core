@@ -114,13 +114,16 @@ return v->variables[n].end;
 int* create_variable_backup(Variables* v) {
 if (v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
-int* tab=(int*)malloc(sizeof(int)*2*l);
+int* backup=(int*)malloc(sizeof(int)*2*l);
+if (backup==NULL) {
+   fatal_error("Not enough memory in create_variable_backup\n");
+}
 int j=0;
 for (int i=0;i<l;i++) {
-   tab[j++]=v->variables[i].start;
-   tab[j++]=v->variables[i].end;
+   backup[j++]=v->variables[i].start;
+   backup[j++]=v->variables[i].end;
 }
-return tab;
+return backup;
 }
 
 

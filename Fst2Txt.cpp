@@ -22,7 +22,7 @@
 #include "Unicode.h"
 #include "Fst2.h"
 #include "Alphabet.h"
-#include "Liste_num.h"
+#include "ParsingInfo.h"
 #include "UnicharTree.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
@@ -191,7 +191,7 @@ return 0;
 ////////////////////////////////////////////////////////////////////////
 
 
-void parcourir_graphe(int,int,int,int,struct liste_num**);
+void parcourir_graphe(int,int,int,int,struct parsing_info**);
 int ecrire_transduction();
 
 
@@ -349,7 +349,7 @@ void parcourir_graphe(int n_graph, // number of current graph
                      int e,       // number of current state
                      int pos,     //
                      int profondeur,
-                     struct liste_num** liste_arrivee) {
+                     struct parsing_info** liste_arrivee) {
 Fst2State etat_courant=fst2->states[e];
 
 if (profondeur > MAX_DEPTH) {
@@ -369,8 +369,8 @@ if (profondeur > MAX_DEPTH) {
   sommet = 0;        // dito
   if (liste_arrivee != NULL) {
     while (*liste_arrivee != NULL) { // free list of subgraph matches
-      struct liste_num* la_tmp=*liste_arrivee;
-      *liste_arrivee=(*liste_arrivee)->suivant;
+      struct parsing_info* la_tmp=*liste_arrivee;
+      *liste_arrivee=(*liste_arrivee)->next;
       free(la_tmp);
     }
   }
@@ -389,7 +389,7 @@ if (is_final_state(etat_courant)) {
       taille_entree=(pos);
     }
   } else { // in a subgraph
-    (*liste_arrivee)=inserer_si_absent(pos,(*liste_arrivee),sommet,pile,variables);
+    (*liste_arrivee)=insert_if_absent(pos,(*liste_arrivee),sommet,pile,variables);
   }
 }
 
@@ -453,16 +453,16 @@ while (t!=NULL) {
       int n_etiq=t->tag_number;
       if (n_etiq<0) {
          // case of a sub-graph
-         struct liste_num* liste=NULL;
+         struct parsing_info* liste=NULL;
          unichar pile_old[MAX_OUTPUT_LENGTH];
          u_strcpy(pile_old,pile);
          parcourir_graphe((((unsigned)n_etiq)-1),fst2->initial_states[-n_etiq],pos,profondeur,&liste);
          while (liste!=NULL) {
-           sommet=liste->sommet;
-           u_strcpy(pile,liste->pile);
+           sommet=liste->stack_pointer;
+           u_strcpy(pile,liste->stack);
            parcourir_graphe(n_graph,t->state_number,liste->position,profondeur,liste_arrivee);
-           struct liste_num* l_tmp=liste;
-           liste=liste->suivant;
+           struct parsing_info* l_tmp=liste;
+           liste=liste->next;
            free(l_tmp);
          }
          u_strcpy(pile,pile_old);

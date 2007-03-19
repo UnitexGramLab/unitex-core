@@ -19,28 +19,20 @@
   *
   */
 
-//-----------------------------------------
 #ifndef TransductionStackH
 #define TransductionStackH
-//---------------------------------------------------------------------------
 
-#define STACK_SIZE 10000
+#define TRANSDUCTION_STACK_SIZE 10000
 
 #include "Unicode.h"
-#include "Text_parsing.h"
+#include "LocatePattern.h"
 #include "TransductionVariables.h"
 
 
-
-extern int DISPLAY_VARIABLE_ERRORS;
-extern unichar stack[STACK_SIZE];
-extern int StackPointer;
-extern int StackBase;
-
-void push_char(unichar);
-void push_string(unichar*);
-void push_output_string(unichar*);
-void process_transduction(unichar*,struct locate_parameters*);
+void push_char(struct stack_unichar*,unichar);
+void push_string(struct stack_unichar*,unichar*);
+void push_output_string(struct stack_unichar*,unichar*);
+void process_output(unichar*,struct locate_parameters*);
 
 #endif
 

@@ -26,7 +26,7 @@
 #include "Fst2.h"
 #include "TransductionStack.h"
 #include "String_hash.h"
-#include "Liste_num.h"
+#include "ParsingInfo.h"
 #include "LocateConstants.h"
 #include "CompoundWordTree.h"
 #include "LocatePattern.h"
