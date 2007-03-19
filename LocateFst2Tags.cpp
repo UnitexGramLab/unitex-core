@@ -54,32 +54,13 @@ t[1]='\0';
 parameters->SPACE=get_value_index(t,tokens,DONT_INSERT);
 /* Then, we test all the tags */
 for (int i=0;i<fst2->number_of_tags;i++) {
+   if (tag[i]->type!=UNDEFINED_TAG) {
+      /* We don't need to process again things like variables and contexts
+       * that have allready been processed at the time of loading the fst2 */
+      continue;
+   }
    int length=u_strlen(tag[i]->input);
-   if (tag[i]->input[0]=='$' && tag[i]->input[length-1]=='(') {
-      /* If the tag is a variable start like $a(, we must add it
-       * the variable list of the fst2. */
-      tag[i]->type=BEGIN_VAR_TAG;
-      tag[i]->variable=u_strdup(&(tag[i]->input[1]),length-2);
-   }
-   else if (tag[i]->input[0]=='$' && tag[i]->input[length-1]==')') {
-      /* If the tag is a variable end like $a), we must add it
-       * the variable list of the fst2. */
-      tag[i]->type=END_VAR_TAG;
-      tag[i]->variable=u_strdup(&(tag[i]->input[1]),length-2);
-   }
-   else if (!u_strcmp(tag[i]->input,"$[")) {
-      /* If we have a positive context start */
-      tag[i]->type=BEGIN_POSITIVE_CONTEXT_TAG;
-   }
-   else if (!u_strcmp(tag[i]->input,"$![")) {
-      /* If we have a negative context start */
-      tag[i]->type=BEGIN_NEGATIVE_CONTEXT_TAG;
-   }
-   else if (!u_strcmp(tag[i]->input,"$]")) {
-      /* If we have a context end */
-      tag[i]->type=END_CONTEXT_TAG;
-   }
-   else if (!u_strcmp(tag[i]->input,"#")) {
+   if (!u_strcmp(tag[i]->input,"#")) {
       /* If we have a #, we must check if it is the meta one that
        * forbids space or the "#" token */
       if (is_bit_mask_set(tag[i]->control,RESPECT_CASE_TAG_BIT_MASK)) {

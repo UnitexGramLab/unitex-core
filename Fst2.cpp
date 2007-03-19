@@ -42,70 +42,6 @@
 
 
 /**
- * Allocates, initializes and returns a variable list item
- */
-struct variable_list* new_variable_list(unichar* name) {
-struct variable_list* v;
-v=(struct variable_list*)malloc(sizeof(struct variable_list));
-if (v==NULL) {
-	fatal_error("Not enough memory in new_variable_list\n");
-}
-v->name=u_strdup(name);
-v->start=-1;
-v->end=-1;
-v->next=NULL;
-return v;
-}
-
-
-/**
- * Frees one variable list item
- */
-void free_variable(struct variable_list* v) {
-if (v->name!=NULL) free(v->name);
-free(v);
-}
-
-
-/**
- * Frees a variable list
- */
-void free_variable_list(struct variable_list* l) {
-struct variable_list* tmp;
-while (l!=NULL) {
-	tmp=l;
-	l=l->next;
-	free_variable(tmp);
-}
-}
-
-
-/**
- * Adds a variable at the end of the list, if it is not already in the list.
- * The function returns the list, modified or not.
- */
-struct variable_list* add_variable_to_list(unichar* name,struct variable_list* v) {
-if (v==NULL) return new_variable_list(name);
-if (!u_strcmp(v->name,name)) return v;
-v->next=add_variable_to_list(name,v->next);
-return v;
-}
-
-
-/**
- * This function returns the variable list item corresponding to 'name'.
- * If it is not in the list, NULL is returned.
- */
-struct variable_list* get_variable(unichar* name,struct variable_list* v) {
-while (v!=NULL) {
-   if (!u_strcmp(name,v->name)) return v;
-   v=v->next;
-}
-return NULL;
-}
-
-
-/**
  * Frees a transition list.
  */
 void free_Fst2Transition(Fst2Transition t) {
@@ -186,7 +122,7 @@ if (fst2->graph_names!=NULL) {
 }
 free(fst2->initial_states);
 free(fst2->number_of_states_per_graphs);
-free_variable_list(fst2->variables);
+free_list_ustring(fst2->variables);
 free(fst2);
 }
 
@@ -345,7 +281,7 @@ int length=u_strlen(input);
 if (input[0]=='$' && 
     (input[length-1]=='(' || input[length-1]==')')) {
    tag->variable=u_strdup(&(input[1]),length-2);
-   fst2->variables=add_variable_to_list(tag->variable,fst2->variables);
+   fst2->variables=sorted_insert(tag->variable,fst2->variables);
    if (input[length-1]=='(') {
       tag->type=BEGIN_VAR_TAG;
    }
@@ -837,4 +773,25 @@ if (finality) {
 	e->control=e->control | FST2_FINAL_STATE_BIT_MASK;
 }
 }
+
+
+/**
+ * This function adds a transition to the given transition list, if not
+ * already present.
+ */
+void add_transition_if_not_present(Fst2Transition *list,int tag_number,int state_number) {
+Fst2Transition ptr;
+ptr=*list;
+/* We look for a transition with the same properties */
+while (ptr!=NULL && !(ptr->state_number==state_number && ptr->tag_number==tag_number)) {
+   ptr=ptr->next;
+}
+if (ptr==NULL) {
+   /* If we have not found one, we add a new transition at the head of the list */
+   ptr=new_Fst2Transition(tag_number,state_number);
+   ptr->next=*list;
+   *list=ptr;
+}
+}
+
 

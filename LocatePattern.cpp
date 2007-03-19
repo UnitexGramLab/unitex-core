@@ -71,6 +71,7 @@ p->number_of_outputs=0;
 p->start_position_last_printed_match=-1;
 p->end_position_last_printed_match=-1;
 p->search_limit=0;
+p->variables=NULL;
 return p;
 }
 
@@ -212,9 +213,9 @@ optimize_pattern_tags(alph,root,p);
 u_printf("Optimizing compound word dictionary...\n");
 optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
-init_transduction_variable_index(p->fst2->variables);
+p->variables=new_Variables(p->fst2->variables);
 u_printf("Optimizing fst2...\n");
-p->optimized_states=build_optimized_fst2_states(p->fst2);
+p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
 #warning to replace by simple lists of integers
 u_printf("Optimizing patterns...\n");
 init_pattern_transitions(p->tokens);
@@ -223,7 +224,7 @@ convert_pattern_lists(p->tokens);
 u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
 free_buffer(p->token_buffer);
-free_transduction_variable_index();
+free_Variables(p->variables);
 fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);

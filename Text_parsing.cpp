@@ -236,9 +236,9 @@ if (current_state->control & 1) {
           * current graph level */
          n_matches++;
          if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-            (*matches)=inserer_si_different(pos,(*matches),StackPointer,&stack[StackBase]);
+            (*matches)=inserer_si_different(pos,(*matches),StackPointer,&stack[StackBase],p->variables);
          } else {
-            (*matches)=inserer_si_absent(pos,(*matches),StackPointer,&stack[StackBase]);
+            (*matches)=inserer_si_absent(pos,(*matches),StackPointer,&stack[StackBase],p->variables);
          }
       }
    }
@@ -274,7 +274,7 @@ if (graph_call_list!=NULL) {
    old_StackBase=StackBase;
    if (p->output_policy!=IGNORE_OUTPUTS) {
       /* For better performance when ignoring outputs */
-      var_backup=create_variable_backup();
+      var_backup=create_variable_backup(p->variables);
    }
    do {
       /* For each graph call, we look all the reachable states */
@@ -293,15 +293,15 @@ if (graph_call_list!=NULL) {
                if (p->output_policy!=IGNORE_OUTPUTS) {
                   u_strcpy(&stack[stack_top],L->pile);
                   StackPointer=L->sommet;
-                  install_variable_backup(L->variable_backup);
+                  install_variable_backup(p->variables,L->variable_backup);
                }
                /* And we continue the exploration */
-               locate(graph_depth,p->optimized_states[t->state_number],L->n,depth+1,matches,n_matches,ctx,p);
+               locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p);
                StackPointer=stack_top;
                if (graph_depth==0) {
                   /* If we are at the top graph level, we restore the variables */
                   if (p->output_policy!=IGNORE_OUTPUTS) {
-                     install_variable_backup(var_backup);
+                     install_variable_backup(p->variables,var_backup);
                   }
                }
                struct liste_num* l_tmp=L;
@@ -321,7 +321,7 @@ if (graph_call_list!=NULL) {
    StackPointer=stack_top;
    StackBase=old_StackBase; /* May be changed by recursive subgraph calls */
    if (p->output_policy!=IGNORE_OUTPUTS) { /* For better performance (see above) */
-      install_variable_backup(var_backup);
+      install_variable_backup(p->variables,var_backup);
       free_variable_backup(var_backup);
    }
 } /* End of processing subgraphs */
@@ -596,11 +596,11 @@ while (meta_list!=NULL) {
  */
 struct opt_variable* variable_list=current_state->variable_starts;
 while (variable_list!=NULL) {
-   int old=get_variable_start(variable_list->variable_number);
-   set_variable_start(variable_list->variable_number,pos);
+   int old=get_variable_start(p->variables,variable_list->variable_number);
+   set_variable_start(p->variables,variable_list->variable_number,pos);
    locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
    StackPointer=stack_top;
-   set_variable_start(variable_list->variable_number,old);
+   set_variable_start(p->variables,variable_list->variable_number,old);
    variable_list=variable_list->next;
 }
 
@@ -609,11 +609,11 @@ while (variable_list!=NULL) {
  */
 variable_list=current_state->variable_ends;
 while (variable_list!=NULL) {
-   int old=get_variable_end(variable_list->variable_number);
-   set_variable_end(variable_list->variable_number,pos);
+   int old=get_variable_end(p->variables,variable_list->variable_number);
+   set_variable_end(p->variables,variable_list->variable_number,pos);
    locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
    StackPointer=stack_top;
-   set_variable_end(variable_list->variable_number,old);
+   set_variable_end(p->variables,variable_list->variable_number,old);
    variable_list=variable_list->next;
 }
 

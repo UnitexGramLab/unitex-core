@@ -19,25 +19,12 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#ifndef Liste_numH
-#define Liste_numH
-//---------------------------------------------------------------------------
+#ifndef ContextsH
+#define ContextsH
 
-#include "Unicode.h"
-#include "TransductionVariables.h"
+#include "Fst2.h"
 
-struct liste_num {
-       int position;
-       int sommet;
-       int* variable_backup;
-       struct liste_num* suivant;
-       unichar pile[3000];
-};
+void get_reachable_closing_context_marks(Fst2*,int,Fst2Transition*);
 
-struct liste_num* new_liste_num(int,int,Variables*);
-struct liste_num* inserer_si_absent(int,struct liste_num*,int,unichar*,Variables*);
-struct liste_num* inserer_si_different(int,struct liste_num*,int,unichar*,Variables*);
-void free_list_num(struct liste_num*);
 
 #endif

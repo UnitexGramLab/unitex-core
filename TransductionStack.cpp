@@ -80,7 +80,7 @@ while (s[i]!='\0') {
                 push_char('$');
              }
              else {
-                 struct transduction_variable* v=get_transduction_variable(name);
+                 struct transduction_variable* v=get_transduction_variable(p->variables,name);
                  if (v==NULL) {
                     if (DISPLAY_VARIABLE_ERRORS) {
                        error("Error: undefined variable $%S\n",name);

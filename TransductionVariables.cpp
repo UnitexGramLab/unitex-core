@@ -19,116 +19,131 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "TransductionVariables.h"
 #include "Error.h"
-//---------------------------------------------------------------------------
 
 
-struct transduction_variable* tab_transduction_variable[N_MAX_TRANSDUCTION_VARIABLES];
-struct string_hash* transduction_variable_index=NULL;
-
-
-struct transduction_variable* new_transduction_variable() {
-struct transduction_variable* v;
-v=(struct transduction_variable*)malloc(sizeof(struct transduction_variable));
-v->start=-1;
-v->end=-1;
+/**
+ * Allocates and returns a structure representing the variables
+ * whose names are in 'list'. The variable ranges are initialized with [-1;-1[
+ */
+Variables* new_Variables(struct list_ustring* list) {
+Variables* v=(Variables*)malloc(sizeof(Variables));
+if (v==NULL) {
+   fatal_error("Not enough memory in new_Variables\n");
+}
+v->variable_index=new_string_hash(DONT_USE_VALUES);
+int l=0;
+while (list!=NULL) {
+   get_value_index(list->string,v->variable_index);
+   l++;
+   list=list->next;
+}
+v->variables=(struct transduction_variable*)malloc(l*sizeof(struct transduction_variable));
+if (v->variables==NULL) {
+   fatal_error("Not enough memory in new_Variables\n");
+}
+for (int i=0;i<l;i++) {
+   v->variables[i].start=-1;
+   v->variables[i].end=-1;
+}
 return v;
 }
 
 
-
-void free_transduction_variable(struct transduction_variable* v) {
+/**
+ * Frees the memory associated to the given variables.
+ */
+void free_Variables(Variables* v) {
+if (v==NULL) return;
+free_string_hash(v->variable_index);
+free(v->variables);
 free(v);
 }
 
 
-
-int get_transduction_variable_indice(unichar* s) {
-return get_value_index(s,transduction_variable_index,DONT_INSERT);
-}
-
-
-
-struct transduction_variable* get_transduction_variable(unichar* s) {
-int n=get_transduction_variable_indice(s);
+/**
+ * Returns a pointer on the range of the variable whose name is 'name',
+ * or NULL if the variable in not in the given variable set.
+ */
+struct transduction_variable* get_transduction_variable(Variables* v,unichar* name) {
+int n=get_value_index(name,v->variable_index,DONT_INSERT);
 if (n==-1) {
    return NULL;
 }
-return tab_transduction_variable[n];
+return &(v->variables[n]);
 }
 
 
-
-void init_transduction_variable_index(struct variable_list* l) {
-transduction_variable_index=new_string_hash();
-int i=0;
-while (l!=NULL) {
-   get_value_index(l->name,transduction_variable_index);
-   tab_transduction_variable[i++]=new_transduction_variable();
-   l=l->next;
-}
+/**
+ * Sets the start value of the variable #n.
+ */
+void set_variable_start(Variables* v,int n,int value) {
+v->variables[n].start=value;
 }
 
 
-void free_transduction_variable_index() {
-for (int i=0;i<transduction_variable_index->size;i++) {
-  free_transduction_variable(tab_transduction_variable[i]);
-}
-free_string_hash(transduction_variable_index);
-}
-
-
-
-void set_variable_start(int n,int pos) {
-tab_transduction_variable[n]->start=pos;
+/**
+ * Sets the end value of the variable #n.
+ */
+void set_variable_end(Variables* v,int n,int value) {
+v->variables[n].end=value;
 }
 
 
-
-void set_variable_end(int n,int pos) {
-tab_transduction_variable[n]->end=pos;
+/**
+ * Returns the start value of the variable #n.
+ */
+int get_variable_start(Variables* v,int n) {
+return v->variables[n].start;
 }
 
 
-
-int get_variable_start(int n) {
-return tab_transduction_variable[n]->start;
+/**
+ * Returns the end value of the variable #n.
+ */
+int get_variable_end(Variables* v,int n) {
+return v->variables[n].end;
 }
 
 
-
-int get_variable_end(int n) {
-return tab_transduction_variable[n]->end;
-}
-
-
-int* create_variable_backup() {
-if (transduction_variable_index==NULL) return NULL;
-int* tab=(int*)malloc(sizeof(int)*2*(transduction_variable_index->size));
+/**
+ * Allocates, initializes and returns an integer array that is a copy of
+ * the variable ranges.
+ */
+int* create_variable_backup(Variables* v) {
+if (v->variable_index==NULL) return NULL;
+int l=v->variable_index->size;
+int* tab=(int*)malloc(sizeof(int)*2*l);
 int j=0;
-for (int i=0;i<transduction_variable_index->size;i++) {
-   tab[j++]=tab_transduction_variable[i]->start;
-   tab[j++]=tab_transduction_variable[i]->end;
+for (int i=0;i<l;i++) {
+   tab[j++]=v->variables[i].start;
+   tab[j++]=v->variables[i].end;
 }
 return tab;
 }
 
 
-void free_variable_backup(int* tab) {
-if (tab!=NULL) free(tab);
+/**
+ * Frees the given variable backup.
+ */
+void free_variable_backup(int* backup) {
+if (backup!=NULL) free(backup);
 }
 
 
-void install_variable_backup(int* tab) {
-if (tab==NULL) {
+/**
+ * Sets the variable ranges with the values of the given backup.
+ */
+void install_variable_backup(Variables* v,int* backup) {
+if (backup==NULL) {
 	fatal_error("NULL error in install_variable_backup\n");
 }
 int j=0;
-for (int i=0;i<transduction_variable_index->size;i++) {
-   tab_transduction_variable[i]->start=tab[j++];
-   tab_transduction_variable[i]->end=tab[j++];
+int l=v->variable_index->size;
+for (int i=0;i<l;i++) {
+   v->variables[i].start=backup[j++];
+   v->variables[i].end=backup[j++];
 }
 }
 

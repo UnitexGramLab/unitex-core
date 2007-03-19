@@ -126,7 +126,7 @@ struct optimizedFst2State {
 typedef struct optimizedFst2State* OptimizedFst2State;
 
 
-OptimizedFst2State* build_optimized_fst2_states(Fst2*);
+OptimizedFst2State* build_optimized_fst2_states(Variables*,Fst2*);
 void free_optimized_states(OptimizedFst2State*,int);
 
 #endif

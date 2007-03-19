@@ -25,7 +25,8 @@
 #include "LocateConstants.h"
 #include "Error.h"
 #include "BitMasks.h"
-#include "TransductionVariables.h"
+#include "String_hash.h"
+#include "Contexts.h"
 
 
 /**
@@ -54,26 +55,6 @@ while (list!=NULL) {
    tmp=list;
    list=list->next;
    free(tmp);
-}
-}
-
-
-/**
- * This function adds a transition to the given transition list, if not
- * already present.
- */
-void add_transition_if_not_present(Fst2Transition *list,int tag_number,int state_number) {
-Fst2Transition ptr;
-ptr=*list;
-/* We look for a transition with the same properties */
-while (ptr!=NULL && !(ptr->state_number==state_number && ptr->tag_number==tag_number)) {
-   ptr=ptr->next;
-}
-if (ptr==NULL) {
-   /* If we have not found one, we add a new transition at the head of the list */
-   ptr=new_Fst2Transition(tag_number,state_number);
-   ptr->next=*list;
-   *list=ptr;
 }
 }
 
@@ -335,8 +316,8 @@ while (list!=NULL) {
  * No tests is done to check if there is already a transition with the
  * given variable, because it cannot happen if the grammar is deterministic.
  */
-void add_variable(unichar* variable,Fst2Transition transition,struct opt_variable** variable_list) {
-int n=get_transduction_variable_indice(variable);
+void add_variable(Variables* var,unichar* variable,Fst2Transition transition,struct opt_variable** variable_list) {
+int n=get_value_index(variable,var->variable_index,DONT_INSERT);
 struct opt_variable* v=new_opt_variable(n,transition);
 v->next=(*variable_list);
 (*variable_list)=v;
@@ -374,71 +355,6 @@ free(c);
 }
 
 
-/**
- * This function looks for context mark ends in the given fst2.
- */
-void look_for_closing_context_mark(Fst2* fst2,int state,Fst2Transition *list,
-                                   struct bit_array* marker,int nesting_level) {
-if (get_value(marker,state)) {
-   /* Nothing to do if this state has already been visited */
-   return;
-}
-/* Otherwise, we mark the state */
-set_value(marker,state,1);
-/* And we look all its outgoing transitions */
-Fst2Transition ptr=fst2->states[state]->transitions;
-while (ptr!=NULL) {
-   if (ptr->tag_number>=0) {
-      /* If we have a tag, we check if it is a context mark */
-      Fst2Tag tag=fst2->tags[ptr->tag_number];
-      switch (tag->type) {
-         /* If we have a context start mark, we go on with an increased nesting level */
-         case BEGIN_POSITIVE_CONTEXT_TAG: 
-         case BEGIN_NEGATIVE_CONTEXT_TAG: look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level+1);
-                                          break;
-         /* If we have a context end mark */
-         case END_CONTEXT_TAG: if (nesting_level==0) {
-                                  /* If we are at the top nesting level, we have found a transition
-                                   * to add to our list */
-                                  add_transition_if_not_present(list,ptr->tag_number,ptr->state_number);
-                               } else {
-                                  /* Otherwisen we on with a decreased nesting level */
-                                  look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level-1);
-                               }
-                               break;
-         /* If we an another type of transition, we follow it */
-         default: look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level);
-      }
-   }
-   else {
-      /* If we have a graph call, we follow it */
-      look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level);
-   }
-   ptr=ptr->next;
-}
-}
-
-
-/**
- * This function explores the given fst2 from the given state and looks for
- * transition tagged by the closing context mark "$]". Such transitions are added to
- * the given list, but only if they are at the same nesting level that the original
- * state. For instance, if we find the following tag sequence:
- * 
- * <MOT> $[ <ADV> $] $]
- * 
- * we will stop on the second "$]", since the first corresponds to a different 
- * context start mark than ours.
- */
-void get_reachable_closing_context_marks(Fst2* fst2,int state,Fst2Transition *list) {
-/* we declare a bit array in order to mark states that have already been visited.
- * Note that we could use a bit array with a smaller length, since the only states
- * that will be explored are in the same subgraph that the one containing the
- * given start state. */
-struct bit_array* marker=new_bit_array(fst2->number_of_states,ONE_BIT);
-look_for_closing_context_mark(fst2,state,list,marker,0);
-free_bit_array(marker);
-}
 
 
 /**
@@ -522,7 +438,7 @@ state->contexts->end_mark=new_Fst2Transition(transition->tag_number,transition->
 /**
  * This function optimizes the given transition.
  */
-void optimize_transition(Fst2* fst2,Fst2Transition transition,OptimizedFst2State state,Fst2Tag* tags) {
+void optimize_transition(Variables* v,Fst2* fst2,Fst2Transition transition,OptimizedFst2State state,Fst2Tag* tags) {
 if (transition->tag_number<0) {
    /* If the transition is a graph call */
    add_graph_call(transition,&(state->graph_calls));
@@ -545,9 +461,9 @@ switch (tag->type) {
                             return;
    case META_TAG: add_meta(tag->meta,transition,&(state->metas),negation);
                            return;
-   case BEGIN_VAR_TAG: add_variable(tag->variable,transition,&(state->variable_starts));
+   case BEGIN_VAR_TAG: add_variable(v,tag->variable,transition,&(state->variable_starts));
                        return;
-   case END_VAR_TAG: add_variable(tag->variable,transition,&(state->variable_ends));
+   case END_VAR_TAG: add_variable(v,tag->variable,transition,&(state->variable_ends));
                      return;
    case BEGIN_POSITIVE_CONTEXT_TAG: add_positive_context(fst2,state,transition); return;
    case BEGIN_NEGATIVE_CONTEXT_TAG: add_negative_context(fst2,state,transition); return;
@@ -648,13 +564,13 @@ free(state);
  * and returns an equivalent optimized state, or NULL if the given state
  * was NULL.
  */
-OptimizedFst2State optimize_state(Fst2* fst2,Fst2State state,int state_number,Fst2Tag* tags) {
+OptimizedFst2State optimize_state(Variables* v,Fst2* fst2,Fst2State state,int state_number,Fst2Tag* tags) {
 if (state==NULL) return NULL;
 OptimizedFst2State new_state=new_optimized_state();
 new_state->control=state->control;
 struct fst2Transition* ptr=state->transitions;
 while (ptr!=NULL) {
-   optimize_transition(fst2,ptr,new_state,tags);
+   optimize_transition(v,fst2,ptr,new_state,tags);
    ptr=ptr->next;
 }
 token_list_2_token_array(new_state);
@@ -666,13 +582,13 @@ return new_state;
  * This function takes a fst2 and returns an array containing the corresponding
  * optimized states.
  */
-OptimizedFst2State* build_optimized_fst2_states(Fst2* fst2) {
+OptimizedFst2State* build_optimized_fst2_states(Variables* v,Fst2* fst2) {
 OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc(fst2->number_of_states*sizeof(OptimizedFst2State));
 if (optimized_states==NULL) {
    fatal_error("Not enough memory in build_optimized_fst2_states\n");
 }
 for (int i=0;i<fst2->number_of_states;i++) {
-   optimized_states[i]=optimize_state(fst2,fst2->states[i],i,fst2->tags);
+   optimized_states[i]=optimize_state(v,fst2,fst2->states[i],i,fst2->tags);
 }
 return optimized_states;
 }

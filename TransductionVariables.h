@@ -19,20 +19,30 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef TransductionVariablesH
 #define TransductionVariablesH
-//---------------------------------------------------------------------------
 
 #include "Unicode.h"
 #include "Fst2.h"
 #include "String_hash.h"
+#include "List_ustring.h"
 
 
-#define N_MAX_TRANSDUCTION_VARIABLES 1000
+/**
+ * This structure is used to associates ranges to variable names.
+ */
+typedef struct {
+   /* For a given variable A, this array gives an index a to be used in
+    * the 'variables' array */
+   struct string_hash* variable_index;
+   /* variables[a] gives the range associated to the variable #a */
+   struct transduction_variable* variables;
+} Variables;
 
 
-
+/**
+ * This structure defines the range of a variable in the text tokens.
+ */
 struct transduction_variable {
    /* Position of the first token of the sequence */
    int start;
@@ -42,21 +52,17 @@ struct transduction_variable {
 };
 
 
-extern struct transduction_variable* tab_transduction_variable[N_MAX_TRANSDUCTION_VARIABLES];
-extern struct string_hash* transduction_variable_index;
 
-void init_transduction_variable_index(struct variable_list*);
-struct transduction_variable* get_transduction_variable(unichar*);
-int get_transduction_variable_indice(unichar*);
-void free_transduction_variable_index();
-void set_variable_start(int,int);
-void set_variable_end(int,int);
-int get_variable_start(int);
-int get_variable_end(int);
+Variables* new_Variables(struct list_ustring*);
+void free_Variables(Variables*);
+struct transduction_variable* get_transduction_variable(Variables*,unichar*);
+void set_variable_start(Variables*,int,int);
+void set_variable_end(Variables*,int,int);
+int get_variable_start(Variables*,int);
+int get_variable_end(Variables*,int);
 
-
-int* create_variable_backup();
+int* create_variable_backup(Variables*);
 void free_variable_backup(int*);
-void install_variable_backup(int*);
+void install_variable_backup(Variables*,int*);
 
 #endif

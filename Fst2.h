@@ -46,6 +46,30 @@
 #define NEGATION_TAG_BIT_MASK 2
 #define RESPECT_CASE_TAG_BIT_MASK 4 /* to 1 if case variants are not allowed */
 
+
+
+/*
+ * This structure represents a transition list in a fst2
+ */
+struct fst2Transition {
+   /* Number of the transition tag */
+   int tag_number;
+   
+   /*
+    * Number of the state pointed by the transition. Note that this
+    * number is ABSOLUTE. For instance, if the subgraph number 3 starts
+    * at the state number 45, the 6th state of this subgraph will have the
+    * number 45+6=51.
+    * 
+    */
+   int state_number;
+   
+   /* Next transition of the list */
+   struct fst2Transition* next;
+};
+typedef struct fst2Transition* Fst2Transition;
+
+
 /**
  * Here we define the different kinds of tag.
  */
@@ -126,7 +150,7 @@ struct fst2Tag {
     struct pattern* pattern;
     int pattern_number;
     unichar* variable;
-   
+    
    /*
 	 * This field represents the list of the numbers of the tokens that this tag
 	 * can match.
@@ -163,53 +187,6 @@ typedef struct fst2State* Fst2State;
 
 
 /*
- * This structure represents a transition list in a fst2
- */
-struct fst2Transition {
-	/* Number of the transition tag */
-	int tag_number;
-	
-	/*
-	 * Number of the state pointed by the transition. Note that this
-	 * number is ABSOLUTE. For instance, if the subgraph number 3 starts
-	 * at the state number 45, the 6th state of this subgraph will have the
-	 * number 45+6=51.
-	 * 
-	 */
-	int state_number;
-	
-	/* Next transition of the list */
-	struct fst2Transition* next;
-};
-typedef struct fst2Transition* Fst2Transition;
-
-
-/*
- * This structure represents a list of graph variables corresponding to
- * declarations like $a( or $a)
- * 
- * This structure is declared here instead of in TransductionVariables, 
- * in order to minimize library dependancies, because many programs
- * that use the Fst2 library do not use variables.
- */
-struct variable_list {
-	/* Name of the variable */
-	unichar* name;
-	
-	/* Starting position of the variable in the text, -1 if the starting position
-	 * of the variable has not been defined */
-	int start;
-	
-	/* Ending position of the variable in the text, -1 if the ending position
-	 * of the variable has not been defined */
-	int end;
-	
-	/* Next variable in the list */
-	struct variable_list* next;
-};
-
-
-/*
  * This structure represent a fst2. 
  */
 struct fst2 {
@@ -243,7 +220,7 @@ struct fst2 {
     
     /* List of variables used in the graph. This list is initialized from
      * the $a( and $a) deaclarations found in the tags. */
-    struct variable_list* variables;
+    struct list_ustring* variables;
 };
 typedef struct fst2 Fst2;
 
@@ -251,7 +228,7 @@ typedef struct fst2 Fst2;
 Fst2Transition new_Fst2Transition(int,int,Fst2Transition);
 Fst2Transition new_Fst2Transition(int,int);
 void free_Fst2Transition(Fst2Transition);
-
+void add_transition_if_not_present(Fst2Transition*,int,int);
 
 /* Functions for loading grammars */
 Fst2* load_fst2(char*,int);
@@ -263,7 +240,6 @@ void write_fst2_graph(FILE*,Fst2*,int);
 void write_fst2_tags(FILE*,Fst2*);
 
 
-struct variable_list* get_variable(unichar*,struct variable_list*);
 int is_initial_state(Fst2State);
 int is_final_state(Fst2State);
 

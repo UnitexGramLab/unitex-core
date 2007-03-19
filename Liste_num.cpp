@@ -25,33 +25,33 @@
 #include "TransductionVariables.h"
 //---------------------------------------------------------------------------
 
-struct liste_num* new_liste_num(int n,int sommet,unichar pile[]) {
+struct liste_num* new_liste_num(int n,int sommet,unichar pile[],Variables* v) {
 struct liste_num* l;
 l=(struct liste_num*)malloc(sizeof(struct liste_num));
-l->n=n;
+l->position=n;
 l->suivant=NULL;
 l->sommet=sommet;
 u_strcpy(l->pile,pile);
-l->variable_backup=create_variable_backup();
+l->variable_backup=create_variable_backup(v);
 return l;
 }
 
 
 /* inserts an element to list_num l only if there is no element with
    same n (same end position of match) */
-/* may be optimized: Locate with "ignore matches" does not need
+/* may be optimized: Locate with "Ignore outputs" does not need
    sommet nor pile */
 struct liste_num* inserer_si_absent(int n,struct liste_num* l,int sommet,
-                                    unichar* pile) {
-if (l==NULL) return new_liste_num(n,sommet,pile);
-if (l->n==n) {
+                                    unichar* pile,Variables* v) {
+if (l==NULL) return new_liste_num(n,sommet,pile,v);
+if (l->position==n) {
   l->sommet=sommet;
   u_strcpy(l->pile,pile);
   free_variable_backup(l->variable_backup);
-  l->variable_backup=create_variable_backup();
+  l->variable_backup=create_variable_backup(v);
   return l;
 }
-l->suivant=inserer_si_absent(n,l->suivant,sommet,pile);
+l->suivant=inserer_si_absent(n,l->suivant,sommet,pile,v);
 return l;
 }
 
@@ -59,20 +59,20 @@ return l;
 /* inserts an element to list_num l only if there is no element with
    same n _and_ same pile */
 struct liste_num* inserer_si_different(int n,struct liste_num* l,int sommet,
-                                       unichar* pile) {
+                                       unichar* pile,Variables* v) {
 if (l==NULL)
-  return new_liste_num(n,sommet,pile);
-if ((l->n==n)                       // length is the same
+  return new_liste_num(n,sommet,pile,v);
+if ((l->position==n)                       // length is the same
     && !(u_strcmp(l->pile,pile))) { // stack content, too
   // overwrite liste_num entry
   l->sommet=sommet;
   u_strcpy(l->pile,pile);
   free_variable_backup(l->variable_backup);
-  l->variable_backup=create_variable_backup();
+  l->variable_backup=create_variable_backup(v);
   return l;
 }
 
-l->suivant=inserer_si_different(n,l->suivant,sommet,pile);
+l->suivant=inserer_si_different(n,l->suivant,sommet,pile,v);
 return l;
 }
 

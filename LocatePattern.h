@@ -161,6 +161,8 @@ struct locate_parameters {
     * there is no limit. */
    int search_limit;
    
+   /* The transduction variables of the fst2 */
+   Variables* variables;
 };
 
 
