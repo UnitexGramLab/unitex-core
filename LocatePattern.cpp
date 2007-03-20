@@ -217,11 +217,6 @@ free_string_hash(semantic_codes);
 p->variables=new_Variables(p->fst2->variables);
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
-#warning to replace by simple lists of integers
-u_printf("Optimizing patterns...\n");
-init_pattern_transitions(p->tokens);
-convert_pattern_lists(p->tokens);
-
 u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
 free_buffer(p->token_buffer);

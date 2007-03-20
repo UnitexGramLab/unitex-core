@@ -184,17 +184,25 @@ return n;
  * file. In this last case, an error message will be printed to indicate
  * that the file is not a UTF16 one.
  * 
- * 'MODE' should be U_READ, U_WRITE or U_APPEND
+ * 'MODE' should be U_READ, U_WRITE, U_APPEND or U_MODIFY
  */
 FILE* u_fopen(Encoding encoding,char* name,char* MODE) {
 FILE* f;
-if (!strcmp(MODE,U_APPEND)) {
-   /* If we are in APPEND mode, we check first if the file allready exists */
+if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
+   /* If we are in APPEND or MODIFY mode, we check first if the file allready exists */
    f=fopen(name,U_READ);
    if (f!=NULL) {
       /* If the file exists, we close it and reopen it in APPEND mode */
       fclose(f);
-      return fopen(name,U_APPEND);
+      f=fopen(name,MODE);
+      if (!strcmp(MODE,U_MODIFY)) {
+         /* If we are in MODIFY mode, we must set the cursor at the beginning of the
+          * file, i.e. after the byte order mark, if any. */
+         if (encoding==UTF16_LE || encoding==UTF16_BE) {
+            fseek(f,2,0);
+         }
+      }
+      return f;
    }
    /* If the file does not exists, we are in WRITE mode */
    f=fopen(name,U_WRITE);

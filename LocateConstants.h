@@ -65,8 +65,13 @@ typedef enum {
 
 /* Tokenization policy */
 typedef enum {
+   /* Word by word tokenization, where letters are defined by an alphabet */
    WORD_BY_WORD_TOKENIZATION,
-   CHAR_BY_CHAR_TOKENIZATION
+   /* Character by character tokenization */
+   CHAR_BY_CHAR_TOKENIZATION,
+   /* Word by word tokenization, where letters are defined by the 'u_is_letter'
+    * function of the Unicode library */
+   DEFAULT_TOKENIZATION
 } TokenizationPolicy;
 
 #endif

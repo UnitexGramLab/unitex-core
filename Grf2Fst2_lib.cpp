@@ -19,2369 +19,930 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "Grf2Fst2_lib.h"
-#include "BitMasks.h"
-//---------------------------------------------------------------------------
+#include "FIFO.h"
+#include "Error.h"
+#include "FileName.h"
 
 
-/*
- * This constant is declared here instead of in the .h because
- * we don't want people to write tests like (e->control & FINAL_STATE_BIT_MASK)
- * We prefer writing: is_final_state(e)
- */
-#define FINAL_STATE_BIT_MASK 1
+/* Maximum length for the content of a grf box */
+#define MAX_GRF_BOX_CONTENT 10000
 
+/* Maximum number of token in a box line */
+#define MAX_TOKENS_IN_A_SEQUENCE 4096
 
+/* Maximum number of graphs in a grammar */
+#define MAX_NUMBER_OF_GRAPHS 10000
 
-struct donnees_comp *donnees;
-unichar pckg_path[TAILLE_MOT_GRAND_COMP];
-int nombre_graphes_comp;
-int nombre_etiquettes_comp; /* attention: may be confused with macro
-                               MAX_FST2_TAGS */
-struct noeud_g_comp *rac_graphe_comp; //racine de l'arbre des graphes
-struct noeud_comp *rac_comp; //racine de l'arbre des étiquettes
-int EPSILON_comp;   // etiquette pour <E>
-int compteur_char=0;
-int compteur_free_char=0;
-
-
+#define NON_PROCESSED_GRAPH 0
+#define EMPTY_GRAPH 1
+#define NON_EMPTY_GRAPH 2
 
 /**
- * Tests if a state is final.
+ * Allocates, initializes and returns a compilation information structure.
  */
-int is_final_state(Etat_fst_det e) {
-return is_bit_mask_set(e->controle,FINAL_STATE_BIT_MASK);
+struct compilation_info* new_compilation_info() {
+struct compilation_info* infos=(struct compilation_info*)malloc(sizeof(struct compilation_info));
+if (infos==NULL) {
+   fatal_error("Not enough memory in new_compilation_info\n");
+}
+infos->main_graph_path[0]='\0';
+infos->repository[0]='\0';
+infos->graph_names=new_string_hash(256);
+/* As the graph numbers start at 1, we insert the empty string at position 0 */
+get_value_index(U_EMPTY,infos->graph_names);
+infos->tags=new_string_hash(256);
+/* We insert <E> in the tags in order to ensure that its number is 0 */
+unichar E[4];
+u_strcpy(E,"<E>");
+get_value_index(E,infos->tags);
+infos->nombre_graphes_comp=0;
+infos->tokenization_policy=DEFAULT_TOKENIZATION;
+infos->alphabet=NULL;
+infos->fst2=NULL;
+return infos;
 }
 
 
+/**
+ * Frees the memory associate to the given information.
+ */
+void free_compilation_info(struct compilation_info* infos) {
+if (infos==NULL) return;
+free_string_hash(infos->graph_names);
+free_string_hash(infos->tags);
+free(infos);
+}
 
 
-
-
-
-
-int is_letter_generic(unichar c,int mode,Alphabet* alph) {
-switch(mode) {
+/**
+ * Returns 1 if the given character is a letter, according to the
+ * tokenization policy; 0 otherwise.
+ */
+int is_letter_generic(unichar c,struct compilation_info* infos) {
+switch(infos->tokenization_policy) {
 case DEFAULT_TOKENIZATION: return u_is_letter(c);
-case CHAR_BY_CHAR_TOKENIZATION: return 0; // by convention
-case ALPHABET_TOKENIZATION: return is_letter(c,alph);
+case CHAR_BY_CHAR_TOKENIZATION: return 0; /* By convention */
+case WORD_BY_WORD_TOKENIZATION: return is_letter(c,infos->alphabet);
 default: fatal_error("Internal error in is_letter_generic\n");
 }
 return 0;
 }
 
 
-
-
-///////////////////////////////////////////////
-// QUELQUES INITIALISATIONS                 //
-//////////////////////////////////////////////
-
 /**
- *  initialise le graphe
+ * Writes the given state into the given file.
  */
-void init_graphe_mat_det(Etat_fst_det resultat[]) {
-register int i;
-for (i=0;i<NBRE_ET;i++)
-  resultat[i]=NULL;
-}
-
-///////////////////////////////////////////////////////////////
-//////   GESTION DU BI-ARBRE DES ENSEMBLES  ///////////////////
-/////////////////////////////////////////////////////////////
-
-
-struct noeud_num_char_det* nouveau_noeud_num_char_det()
-{
-  struct noeud_num_char_det *n;
-  n=(struct noeud_num_char_det*)malloc(sizeof(struct noeud_num_char_det));
-  n->num_char=-1;
-  n->liste=NULL;
-  return n;
-}
-
-
-struct noeud_valeur_det* nouveau_noeud_valeur_det()
-{
-  struct noeud_valeur_det *n;
-  n = (struct noeud_valeur_det*)malloc(sizeof(struct noeud_valeur_det));
-  n->valeur = -1;
-  n->indice = -1;
-  n->liste = NULL;
-  return n;
-}
-
-
-
-struct liste_branches_num_char_det* nouvelle_liste_branches_num_char_det()
-{
-  struct liste_branches_num_char_det *l;
-  l=(struct liste_branches_num_char_det*)malloc(sizeof(struct liste_branches_num_char_det));
-  l->n=NULL;
-  l->suivant=NULL;
-  return l;
-}
-
-
-
-struct liste_branches_valeur_det* nouvelle_liste_branches_valeur_det()
-{
-  struct liste_branches_valeur_det *l;
-  l=(struct liste_branches_valeur_det*)malloc(sizeof(struct liste_branches_valeur_det));
-  l->n=NULL;
-  l->suivant=NULL;
-  return l;
-}
-
-
-
-
-struct noeud_num_char_det* get_sous_noeud_num_char_det(int num_char,struct noeud_valeur_det *v)
-{
-  struct liste_branches_num_char_det *l;
-
-  if (v->liste==NULL)
-  {
-    l=nouvelle_liste_branches_num_char_det();
-    l->n=nouveau_noeud_num_char_det();
-    (l->n)->num_char=num_char;
-    v->liste=l;
-    return l->n;
-  }
-  l=v->liste;
-  while (l!=NULL)
-  {
-   if ((l->n)->num_char==num_char)
-     return l->n;
-   else l=l->suivant;
-  }
-  l=nouvelle_liste_branches_num_char_det();
-  l->n=nouveau_noeud_num_char_det();
-  (l->n)->num_char=num_char;
-  l->suivant=v->liste;
-  v->liste=l;
-  return l->n;
-}
-
-
-struct noeud_valeur_det* get_sous_noeud_valeur_det(int valeur,struct noeud_num_char_det *nc)
-{
-  struct liste_branches_valeur_det *l;
-   if (nc->liste==NULL)
-   {
-     l=nouvelle_liste_branches_valeur_det();
-     l->n=nouveau_noeud_valeur_det();
-     (l->n)->valeur=valeur;
-     nc->liste=l;
-     return l->n;
-   }
-  l=nc->liste;
-  while (l!=NULL)
-  {
-    if ((l->n)->valeur==valeur)
-      return l->n;
-    else l=l->suivant;
-  }
-  l=nouvelle_liste_branches_valeur_det();
-  l->n=nouveau_noeud_valeur_det();
-  (l->n)->valeur=valeur;
-  l->suivant=nc->liste;
-  nc->liste=l;
-  return l->n;
-}
-
-
-
-//
-// recherche un ensemble dans l'arbre des ensembles
-// s'il le trouve retourne son numero
-// s'il ne le trouve pas l'ajoute a l'arbre, retourne dernier_etat_res+1;
-//
-
-int numero_ensemble_det(ensemble_det e,struct noeud_valeur_det *node,int dernier_etat_res)
-{
-  struct noeud_num_char_det *nc;
-  struct noeud_valeur_det *v;
-  if (e==NULL)
-  {
-    if (node->indice != -1) return node->indice;
-    else
-    {
-      return (node->indice = dernier_etat_res+1);
-    }
-  }
-  nc=get_sous_noeud_num_char_det(e->num_char,node);
-  v=get_sous_noeud_valeur_det(e->valeur,nc);
-  return numero_ensemble_det(e->suivant,v,dernier_etat_res);
-}
-
-
-
-
-//////////////////////////////////////////////////////////////////
-/////// MANIPULATION DES ENSEMBLES D'ETATS //////////////////////
-////////////////////////////////////////////////////////////////
-
-
-/**
- *  cree et retourne un nouveau char_etats
- */
-ensemble_det nouveau_char_etats_det()
-{
-  ensemble_det ce;
-  ce = (ensemble_det) malloc(sizeof(struct char_etats_det));
-  ce->suivant = NULL;
-  ce->valeur = 0;
-  ce->num_char = (unsigned int) UINT_MAX; /* UINT_MAX = 0xffff on 32-bit machines,
-                                             0xffffffff on 64-bit: defined in
-                                             "Limits.h" */
-  return ce;
-}
-
-
-
-/**
- *  ajoute un nouvel etat a un ensemble d'etats
- */
-void ajouter_etat_dans_ensemble_det(int netat,ensemble_det *e) {
-  ensemble_det ptr,ptr1,pos;
-  unsigned int numero=netat/INT_BITS;
-   if (*e == NULL)
-   {
-     *e=nouveau_char_etats_det();
-     (*e)->num_char=numero;
-     (*e)->valeur=1<<(netat%INT_BITS);
-     return;
-   }
-   ptr=(*e);
-   if (ptr->num_char==numero)
-   {
-     ptr->valeur=(ptr->valeur)|(1<<(netat%INT_BITS));
-     return;
-   }
-   if (ptr->num_char>numero)
-   {
-     ptr1=nouveau_char_etats_det();
-     ptr1->num_char=numero;
-     ptr1->valeur=1<<(netat%INT_BITS);
-     (*e)=ptr1;
-     (*e)->suivant=ptr;
-     return;
-   }
-   if (ptr->suivant==NULL) {
-       ptr->suivant=nouveau_char_etats_det();
-       ptr=ptr->suivant;
-       ptr->num_char=numero;
-       ptr->valeur=1<<(netat%INT_BITS);
-       return;
-     }
-   pos=ptr;
-   ptr=ptr->suivant;
-
-
-   while (ptr!=NULL) {
-       if (ptr->num_char==numero)
-       {
-	   ptr->valeur=(ptr->valeur)|(1<<(netat%INT_BITS));
-	   return;
-	 }
-       if (ptr->num_char>numero) {
-	   ptr1=nouveau_char_etats_det();
-	   ptr1->num_char=numero;
-	   ptr1->valeur=1<<(netat%INT_BITS);
-	   ptr1->suivant=ptr;
-	   pos->suivant=ptr1;
-	   return;
-	 }
-       if (ptr->suivant==NULL) {
-	   ptr->suivant=nouveau_char_etats_det();
-	   ptr=ptr->suivant;
-	   ptr->num_char=numero;
-	   ptr->valeur=1<<(netat%INT_BITS);
-	   return;
-	 }
-       pos=ptr;
-       ptr=ptr->suivant;
-     }
-}
-
-
-
-
-/**
- *  liberer un char_etats
- */
-void liberer_char_etat_det(ensemble_det ptr) {
-   ensemble_det ptr1;
-   while (ptr!=NULL)
-   {
-     ptr1=ptr;
-     ptr=ptr->suivant;
-     free(ptr1);
-   }
-}
-
-
-
-
-
-
-////////////////////////////////////////////////////
-///  GESTION DE L'AUTOMATE (GRAPHE FST)          ///
-///////////////////////////////////////////////////
-
-
-
-void vider_noeud_valeur_det(struct noeud_valeur_det *v)
-{
-  struct liste_branches_num_char_det *old;
-  struct liste_branches_num_char_det *ptr;
-
-  ptr=v->liste;
-   while (ptr!=NULL)
-   {
-     old=ptr;
-     ptr=ptr->suivant;
-     vider_noeud_num_char_det(old->n);
-     free(old->n);
-     free(old);
-   }
-}
-
-
-
-void vider_noeud_num_char_det(struct noeud_num_char_det *nc) {
-struct liste_branches_valeur_det *old;
-struct liste_branches_valeur_det *ptr;
-ptr=nc->liste;
- while (ptr!=NULL) {
-   old=ptr;
-   ptr=ptr->suivant;
-   vider_noeud_valeur_det(old->n);
-   free(old->n);
-   free(old);
- }
-}
-
-
-
-
-void liberer_arbre_det(struct noeud_valeur_det *racine)
-{
-  vider_noeud_valeur_det(racine);
-  free(racine);
-}
-
-
-
-
-/**
- *  cree et renvoie un etat vierge
- */
-Etat_fst_det nouvel_etat_mat_det()
-{
-  Etat_fst_det e = (Etat_fst_det) malloc(sizeof(struct etat_fst_det));
-  e->controle = 0;
-  e->trans = NULL;
-  e->ens = NULL;
-  return e;
-}
-
-
-
-/**
- *  ajoute une transition a l'etat courant
- */
-void ajouter_transition_mat_det(Etat_fst_det e,int etiq,int etarr)
-{
-  Fst2Transition ptr=new_Fst2Transition(etiq,etarr);
-  ptr->next=e->trans;
-  e->trans=ptr;
-}
-
-
-void liberer_etat_det(Etat_fst_det e)
-{
-  liberer_char_etat_det(e->ens);
-  free_Fst2Transition(e->trans);
-  free(e);
-}
-
-
-
-///////////////////////////////////////////////////////////////
-////// DETERMINISATION  //////////////////////////////////////
-/////////////////////////////////////////////////////////////
-
-void init_hachage_det(int *h, int n)
-{
-  // time-critical function, called often
-  register int i;
-  // instead of
-  //    for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) h[i]=-1;
-  // initializing only used fields saves time:
-  //  for (i=0; i < (nombre_etiquettes_comp+nombre_graphes_comp+1); i++)
-  // even better until it is really necessary
-  for (i=0; i <= n; i++)
-    h[i]=-1;
-}
-
-
-void init_stock_det(ensemble_det s[])
-{
-  register int i;
-  for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) s[i]=NULL;
-}
-
-
-
-void init_resultat_det(Etat_fst_det resultat[],struct noeud_valeur_det *racine,int dernier_etat_res)
-{
-  resultat[0] = nouvel_etat_mat_det();
-  ajouter_etat_dans_ensemble_det(0,&(resultat[0]->ens));
-  numero_ensemble_det(resultat[0]->ens,racine,dernier_etat_res);
-}
-
-
-ensemble_det copie_det(ensemble_det e) {
-  ensemble_det nouveau;
-  if (e!=NULL) {
-      nouveau=(ensemble_det)malloc(sizeof(struct char_etats_det));
-      nouveau->num_char=e->num_char;
-      nouveau->valeur=e->valeur;
-      nouveau->suivant=copie_det(e->suivant);
-      return nouveau;
-    }
-  return NULL;
-}
-
-
-void store_etat_det(SingleGraph g,Etat_fst_det e) {
-  SingleGraphState ee = add_state(g);
-  if ( is_final_state(e) )
-    ee->control = (unsigned char) (ee->control | 1);
-  ee->outgoing_transitions = e->trans;
-  e->trans = NULL; /* destroy old pointer to transitions to avoid double freeing */
-}
-
-void sauvegarder_etat_det(FILE *f,SingleGraphState e)
-{
- Fst2Transition ptr;
- if ( is_final_state(e) )
-   u_fputc((unichar)'t',f);
- else u_fputc((unichar)':',f);
- ptr=e->outgoing_transitions;
- while (ptr!=NULL)
-   {
-     u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
-     ptr=ptr->next;
-   }
- u_fputc((unichar)' ',f);
- u_fputc((unichar)'\n',f);
-}
-
-
-/**
- * determinize the graph/automaton "graph",
- * @param graph the graph to be determinized
- * @return 1 if successful, 0 if not
- */
-int determinisation(SingleGraph graph) {
-
-  if ((graph->number_of_states == 0) || (graph->states[0] == NULL)) {
-    // do not segfault on empty automaton
-    error("warning: resulting automaton is empty\n");
-    return 1;
-  }
-
-  SingleGraphState *states = graph->states;
-
-  Etat_fst_det resultat[NBRE_ET];
-  ensemble_det stock[NBRE_ETIQ_TRANSITION_COMP];
-  unsigned char final[NBRE_ETIQ_TRANSITION_COMP];
-  int hachage[NBRE_ETIQ_TRANSITION_COMP];
-  int hachageinv[NBRE_ETIQ_TRANSITION_COMP];
-  init_hachage_det(hachage,(NBRE_ETIQ_TRANSITION_COMP-1));
-
-  SingleGraph new_graph = new_SingleGraph();
-
-  Fst2Transition ptr;
-  ensemble_det courant;
-  unsigned int q;  //etat courant ancien graph
-  int count;  //compteur pour savoir ou l'on se trouve dans notre int de INT_BITS bits
-  int compteur; //compteur pour savoir l'indice du dernier ensemble rentre dans stock;
-  int num;
-  int i, file_courant, k;
-  int temp, max_temp, dernier_etat_res;
-  int temp2, sous_graphe;
-  struct noeud_valeur_det *racine_det;
-
-  dernier_etat_res = -1;
-  racine_det = nouveau_noeud_valeur_det();
-  init_graphe_mat_det(resultat);
-  init_resultat_det(resultat,racine_det,dernier_etat_res);
-  dernier_etat_res = 0;
-  max_temp = NBRE_ETIQ_TRANSITION_COMP-1;
-
-  if ( is_final_state(states[0]) )
-    resultat[0]->controle = (unsigned char)(resultat[0]->controle | 1);
-  init_stock_det(stock);
-
-  file_courant = 0;
-  temp2 = file_courant % NBRE_ET;
-  while (resultat[temp2] != NULL)
-    {
-      courant = resultat[temp2]->ens;
-      init_hachage_det(hachage,max_temp);
-      max_temp = 0;
-      compteur = 0;
-      while (courant != NULL)
-        {
-          count = 0;
-          q = (courant->num_char*INT_BITS) - 1;
-          while (count < INT_BITS)
-            {
-              q++;
-              if (((courant->valeur)&(1<<count))!=0)
-                {
-                  ptr = states[q]->outgoing_transitions;
-                  while (ptr != NULL)
-                    {
-                      temp = ptr->tag_number;
-
-                      if (temp < 0)
-                        {
-                          temp = nombre_etiquettes_comp - 1 - temp;
-                          sous_graphe = 1;
-                        }
-                      else
-                        sous_graphe = 0;
-                      
-                      if (temp > max_temp)
-                        max_temp = temp;
-
-                      if (hachage[temp] == -1)
-                        {
-                          hachage[temp] = compteur;
-                          liberer_char_etat_det(stock[compteur]);
-                          final[compteur] = 0;
-                          if (sous_graphe == 0)
-                            hachageinv[compteur] = temp;
-                          else
-                            {
-                              hachageinv[compteur] = nombre_etiquettes_comp - 1 - temp;
-                            }
-                          stock[compteur] = NULL;
-                          compteur++;
-                        }
-                      ajouter_etat_dans_ensemble_det(ptr->state_number,&stock[hachage[temp]]);
-                      if ( is_final_state(states[ptr->state_number]) )
-                        final[hachage[temp]] = 1;    //test de finalite
-                      ptr = ptr->next;
-                    }
-                }
-              count++;
-            }
-          courant = courant->suivant;
-        }
-      for (i=0; i < compteur; i++)
-        {
-          num = numero_ensemble_det(stock[i],racine_det,dernier_etat_res);
-          temp = num % NBRE_ET;
-          ajouter_transition_mat_det(resultat[temp2],hachageinv[i],num);
-          if (num > dernier_etat_res)
-            {
-              if (resultat[temp]!=NULL)
-                {
-                  /* m="Too many states in deterministic graph\n";
-                     m=m+"Not enough memory to continue";
-                     erreur(m.c_str());*/
-                  for (k=0;k<NBRE_ET;k++)
-                    liberer_etat_det(resultat[k]);
-                  liberer_arbre_det(racine_det);
-                  for (i=0; i < NBRE_ETIQ_TRANSITION_COMP; i++) {
-                    if (stock[i]!=NULL) {
-                      liberer_char_etat_det(stock[i]);
-                    }
-                  }
-                  fatal_error("Too many states in automaton: cannot determinize.\n"
-                        "Max. number of states per automaton/subgraph: NBRE_ET = %i\n",
-                        NBRE_ET);
-                }
-              resultat[temp] = nouvel_etat_mat_det();
-              dernier_etat_res++;
-              resultat[temp]->ens = copie_det(stock[i]);
-
-              resultat[temp]->controle = (unsigned char)((resultat[temp]->controle) | final[i]);
-            }
-        }
-      store_etat_det(new_graph,resultat[temp2]);
-      liberer_etat_det(resultat[temp2]);
-      resultat[temp2] = NULL;
-      file_courant++;
-      temp2 = file_courant % NBRE_ET;
-    }
-  liberer_arbre_det(racine_det);
-  for (i=0;i < NBRE_ETIQ_TRANSITION_COMP;i++) {
-    if (stock[i]!=NULL) {
-      liberer_char_etat_det(stock[i]);
-    }
-  }
-
-  /* Finally we copy the content of new_graph to graph
-     freeing old content of graph */
-  move_SingleGraph(graph,&new_graph);
-  
-  return 1;
-}
-
-
-
-/**
- * Reverse the graph "graph", so that all edges are inverted.
- * "graph" is also a deterministic automaton.
- *
- * Because an deterministic automaton ("Graph_comp") has only one initial
- * state, but may have many final states, reversing is complicated or
- * must be done by introducing <E> transitions, which requires removing
- * them in the end.
- */
-int reverse_ (SingleGraph graph) {
-
-  register int i;
-
-  /* make sure that reverse transitions of the automaton are
-     calculated */
-  compute_reverse_transitions(graph);
-
-  /* table for mapping between states of old and reversed automaton */
-  int* map_table = (int*) malloc(graph->number_of_states*sizeof(int));
-  for ( i = 0; i < graph->number_of_states; i++ )
-    map_table[i] = -1;
-
-  /* new reversed graph, state 0 as initial state */
-  SingleGraph reversed = new_SingleGraph();
-  add_state(reversed);
-
-  for ( i = ((graph->number_of_states)-1); i >= 0; i-- )
-    {
-
-      /* create a new state if necessary */
-      if ( map_table[i] == -1 ) {
-         add_state(reversed);
-         /* We note the number of the state we have just added */
-         map_table[i]=reversed->number_of_states-1;
-      }
-      Fst2Transition l = graph->states[i]->reverted_incoming_transitions;
-      for (   ; l != NULL ; l = l->next )
-        {
-          if ( map_table[(l->state_number)] == -1 ) {
-             add_state(reversed);
-             /* We note the number of the state we have just added */
-             map_table[(l->state_number)]=reversed->number_of_states-1;
-          }
-          add_outgoing_transition(reversed->states[(map_table[i])],
-                                      l->tag_number,map_table[(l->state_number)]);
-#ifdef DEBUG                                                                /* DEBUG */
-          error("%i --%i--> %i\n",                                 /* DEBUG */
-                  map_table[i],sons->tag_number,map_table[(sons->state_number)]); /* DEBUG */
-#endif                                                                      /* DEBUG */
-        }
-
-      /* all final states have <E> connections from the initial state
-         in the reversed automaton: this requires to remove epsilon
-         transitions again; should be changed for efficiency
-         reasons */
-      if ( is_final_state(graph->states[i]) )
-          add_outgoing_transition(reversed->states[0],
-                                      0,map_table[i]); 
-
-      /* initial state becomes final state */
-      if ( i == 0 ) // is_initial_state(graph->states[i])
-        set_final_state(reversed->states[(map_table[i])]);
-
-      /* clean memory (peu-a-peu to ever have enough!) */
-      //   maybe better: reuse transition
-      //   structures to save malloc time !? */
-      free_SingleGraphState(graph->states[i]);
-      graph->states[i] = NULL;
-
-    }
-
-  /* finally: remove epsilon transitions, make the automaton
-     deterministic */
-  compute_reverse_transitions(reversed);
-  for (int h=0;h<reversed->number_of_states;h++) {
-    if (is_final_state(reversed->states[h])) {
-      // we start the co_accessibility check from every final state
-      check_co_accessibility(reversed->states,h);
-    }
-  }
-  check_accessibility(reversed->states,0);
-  remove_epsilon_transitions(reversed);
-  remove_useless_states(reversed);
-  determinisation(reversed);
-
-  /* move the reversed graph to "graph" */
-  move_SingleGraph(graph,&reversed);
-
-  /* clean up */
-  free(map_table);
-
-  return 1;
-
-}
-
-
-
-/**
- * Minimize the graph/automaton "graphe".
- * Uses Brzozowskis algorithm: reverse, determinize, reverse.
- */
-int minimisation(SingleGraph graph) {
-  
-  reverse_(graph);
-  /* determinization is performed in reverse(Graph_comp) */
-  reverse_(graph);
-
-  return 1;
-}
-
-
-/**
- * write the graph/automaton "graphe" to file "fs_comp"
- */
-int write_graph_comp(FILE* f,
-                     SingleGraph graph,
-                     int number,
-                     unichar *name) {
-
-  u_fprintf(f, "%d %S\n", number, name);
-
-  /* empty automaton */
-  if (graph->number_of_states==0)
-    u_fprintf(f, ": \n");
-  
-  /* print all states */
-  int i;
-  for ( i=0; i < graph->number_of_states; i++ )
-    {
-      if ( graph->states[i] == NULL )
-        continue;
-      sauvegarder_etat_det(f,graph->states[i]);
-    }
-
-  /* mark end of graph */
-  u_fprintf(f,"f \n");
-  
-  return 0;
-}
-
-
-
-
-/////////////////////////////////////////////////////////////////////
-////////// MANIPULATION DE LA STRUCTURE D'ETAT /////////////////////
-////////////////////////////////////////////////////////////////////
-
-
-void ajouter_transition_comp(SingleGraphState* states,int dep,int arr,int etiq)
-{
-  Fst2Transition ptr;
-
-  //transition
-  ptr = new_Fst2Transition(etiq,arr);
-  ptr->next = states[dep]->outgoing_transitions;
-  states[dep]->outgoing_transitions = ptr;
-
-  //transition inverse
-  ptr = new_Fst2Transition(etiq,dep);
-
-  ptr->next = states[arr]->reverted_incoming_transitions;
-  states[arr]->reverted_incoming_transitions = ptr;
-
-}
-
-
-
-
-
-int ajouter_etat_deliage_comp(SingleGraph graph,int dep,int etiq,int graphe_courant)
-{
-  add_state(graph);
-  int state_n=graph->number_of_states-1;
-  ajouter_transition_comp(graph->states,dep,state_n,etiq);
-  return 1;
-}
-
-
-////////////////////////////////////////////////////////////
-///// MANIPULATION DE L'ARBRE DES ETIQUETTES /////////////////////////
-/////////////////////////////////////////////////////////
-
-
-/**
- *  renvoie un noeud vierge
- */
-struct noeud_comp* nouveau_noeud_comp()
-{
-  struct noeud_comp *n;
-
-  n = (struct noeud_comp*)malloc(sizeof(struct noeud_comp));
-  n->fin = -1;
-  n->lettre = 1;
-  n->l = NULL;
-  return n;
-}
-
-
-/**
- *  retourne le sous-noeud correspondant au char c; le cree si absent
- */
-struct noeud_comp* get_sous_noeud_comp(struct noeud_comp *n,unichar c,int creer)
-{
-  struct liste_feuilles_comp *ptr;
-  struct liste_feuilles_comp *ptr2;
-  struct noeud_comp* res;
-
-  ptr = n->l;
-  while ((ptr != NULL) && ((ptr->node)->lettre != c))
-    ptr = ptr->suivant;
-  if (ptr == NULL)
-    {        // si on veut juste savoir si le noeud existe
-      if (!creer)           // et que le noeud n'existe pas, on renvoie NULL
-	return NULL;
-      res = nouveau_noeud_comp();
-      res->lettre = c;
-      ptr2 = (struct liste_feuilles_comp*)malloc(sizeof(struct liste_feuilles_comp));
-      ptr2->node = res;
-      ptr2->suivant = n->l;
-      n->l = ptr2;
-
-      return res;
-    }
-  return ptr->node;
-}
-
-
-
-/**
- *  ajoute une etiquette si absente de l'arbre
- */
-int ajouter_etiquette_comp(unichar *etiq, struct noeud_comp *ptr,int i)
-{
-  struct noeud_comp *ptr1;
-
-  ptr1 = get_sous_noeud_comp(ptr,etiq[i],1);
-  i++;
-  if (etiq[i] == '\0')
-    {
-      if (ptr1->fin == -1)
-	{
-	  ptr1->fin = nombre_etiquettes_comp;
-	  nombre_etiquettes_comp++;
-	}
-      return (ptr1->fin);
-    }
-  return ajouter_etiquette_comp(etiq,ptr1,i);
-}
-
-
-
-/**
- *  vide sans la detruire, une feuille de l'arbre des etiquettes
- */
-void vider_feuille_comp(struct noeud_comp *n)
-{
-  struct liste_feuilles_comp *ptr;
-  struct liste_feuilles_comp *ptr2;
-
-  ptr = n->l;
-  if (ptr != NULL)
-    {
-      ptr2 = ptr->suivant;
-      vider_feuille_comp(ptr->node);
-      free(ptr->node);
-      free(ptr);
-      while (ptr2 != NULL)
-	{
-	  ptr = ptr2;
-	  ptr2 = ptr->suivant;
-	  vider_feuille_comp(ptr->node);
-	  free(ptr->node);
-	  free(ptr);
-	}
-    }
-}
-
-
-
-
-/**
- *  libere l'arbre des etiquettes
- */
-void libere_etiquettes_comp()
-{
-  vider_feuille_comp(rac_comp);
-  free(rac_comp);
-}
-
-
-
-////////////////////////////////////////////////////////////
-///// MANIPULATION DES ARBRES DES GRAPHES /////////////////////////
-/////////////////////////////////////////////////////////
-
-
-/**
- *  renvoie un noeud vierge
- */
-struct noeud_g_comp* nouveau_noeud_g_comp()
-{
-  struct noeud_g_comp *n;
-  n = (struct noeud_g_comp*)malloc(sizeof(struct noeud_g_comp));
-  n->fin = -1;
-  n->lettre = 1;
-  n->l = NULL;
-
-  return n;
-}
-
-
-/**
- *  retourne le sous-noeud correspondant au char c; le cree si absent
- */
-struct noeud_g_comp* get_sous_noeud_g_comp(struct noeud_g_comp *n,unichar c,int creer)
-{
-  struct liste_feuilles_g_comp *ptr;
-  struct liste_feuilles_g_comp *ptr2;
-  struct noeud_g_comp* res;
-
-  ptr=n->l;
-  //  while ((ptr != NULL) && (toupper((ptr->node)->lettre) != toupper(c))) // see "toupper" above
-  while ((ptr != NULL) && ((ptr->node)->lettre != c))
-    ptr = ptr->suivant;
-  if (ptr == NULL)
-    {        // si on veut juste savoir si le noeud existe
-      if (!creer)           // et que le noeud n'existe pas, on renvoie NULL
-	return NULL;
-      res=nouveau_noeud_g_comp();
-      res->lettre = c;
-      ptr2=(struct liste_feuilles_g_comp*)malloc(sizeof(struct liste_feuilles_g_comp));
-      ptr2->node = res;
-      ptr2->suivant = n->l;
-      n->l = ptr2;
-      return res;
-    }
-  return ptr->node;
-}
-
-
-/**
- *  ajoute un nom de graphe si absent de l'arbre
- */
-int ajouter_graphe_comp(unichar *etiq, struct noeud_g_comp *ptr,int i)
-{
-  struct noeud_g_comp *ptr1;
-
-  ptr1=get_sous_noeud_g_comp(ptr,etiq[i],1);
-  i++;
-  if (etiq[i]=='\0')
-    {
-      if (ptr1->fin == -1)
-	{
-	  ptr1->fin=nombre_graphes_comp;
-	  nombre_graphes_comp++;
-	}
-      return (ptr1->fin);
-    }
-  return ajouter_graphe_comp(etiq,ptr1,i);
-}
-
-
-
-/**
- *  vide sans la detruire, une feuille de l'arbre des graphes
- */
-void vider_feuille_g_comp(struct noeud_g_comp *n)
-{
-  struct liste_feuilles_g_comp *ptr;
-  struct liste_feuilles_g_comp *ptr2;
-
-  ptr=n->l;
-  if (ptr != NULL)
-    {
-      ptr2=ptr->suivant;
-      vider_feuille_g_comp(ptr->node);
-      free(ptr->node);
-      free(ptr);
-      while (ptr2 != NULL)
-	{
-	  ptr=ptr2;
-	  ptr2=ptr->suivant;
-	  vider_feuille_g_comp(ptr->node);
-	  free(ptr->node);
-	  free(ptr);
-	}
-    }
-}
-
-
-
-
-/**
- *  libere l'arbre des graphes
- */
-void libere_graphes_comp()
-{
-  vider_feuille_g_comp(rac_graphe_comp);
-  free(rac_graphe_comp);
-}
-
-
-void libere_arbres_comp()
-{
-  libere_graphes_comp();
-  libere_etiquettes_comp();
-}
-
-
-void init_arbres_comp()
-{
-  rac_comp = NULL;
-  rac_comp = nouveau_noeud_comp();
-  unichar s[10];
-  u_strcpy(s,"<E>");
-  EPSILON_comp = ajouter_etiquette_comp(s,rac_comp,0);
-  u_strcpy(donnees->Etiquette_comp[EPSILON_comp],s);
-  rac_graphe_comp = NULL;
-  rac_graphe_comp = nouveau_noeud_g_comp();
-
-}
-
-
-///////////////////////////////////////////////////////////////////
-/////// FONCTIONS CONCERNANT LE NETTOYAGE DU GRAPHE //////////////
-//////////////////////////////////////////////////////////////////
-
-
-/**
- *  enleve la transition inverse allant vers origine de la liste ptr
- */
-Fst2Transition degager_transition_inverse_comp(Fst2Transition ptr,int origine) {
-  Fst2Transition tmp;
-  if (ptr==NULL) return NULL;
-  if (((ptr->state_number)==origine)&&((ptr->tag_number)==EPSILON_comp)) {
-    tmp=ptr->next;
-    free(ptr);
-    return tmp;
-  }
-  ptr->next=degager_transition_inverse_comp(ptr->next,origine);
-  return ptr;
-}
-
-
-
-/**
- *  enleve les epsilon transitions de la liste ptr
- */
-Fst2Transition vider_epsilon_comp(Fst2Transition ptr,SingleGraphState *letats,int origine, int mark[]) {  
-  Fst2Transition liste,tmp;
-  SingleGraphState e,e2;  
-  if (ptr == NULL) return NULL;
-  if (ptr->tag_number == EPSILON_comp) {
-    e = letats[ptr->state_number];
-    mark[ptr->state_number] = 1; // we mark the current state as already been a destination state
-    //printf("mark %d\n",ptr->state_number);
-    //printf("%d:%d\n",origine,ptr->state_number);
-    if (ptr->state_number == origine) {
-      // if we have a loop by epsilon, we can ignore it, because (a|<E>)+ has
-      // has already been turned into a+ | <E>
-      liste=ptr;
-      ptr=ptr->next;
-      free(liste);
-      return ptr;
-    }
-    if ( is_final_state(e) ) {
-      // if we can reach a final state through an epsilon transition
-      // then the current state must be final
-      letats[origine]->control=(unsigned char)((letats[origine]->control)|1);
-    }    
-    liste=e->outgoing_transitions;
-    while (liste!=NULL) {
-      if (mark[liste->state_number] == 0) { //if not marked
-	tmp=new_Fst2Transition(liste->tag_number,liste->state_number);
-	tmp->next=ptr->next;
-	ptr->next=tmp;
-	//printf("%d,%d,%d\n",origine,tmp->tag_number,tmp->state_number);
-	
-	e2=letats[liste->state_number];
-	tmp=new_Fst2Transition(liste->tag_number,origine);
-	tmp->next=e2->reverted_incoming_transitions;
-	e2->reverted_incoming_transitions=tmp;
-      }
-      liste=liste->next;
-    }
-    tmp=ptr->next;
-    e->reverted_incoming_transitions=degager_transition_inverse_comp(e->reverted_incoming_transitions,origine);   
-    free(ptr);
-    return vider_epsilon_comp(tmp,letats,origine,mark);
-  }
-  ptr->next=vider_epsilon_comp(ptr->next,letats,origine,mark);
-  return ptr;
-}
-
-
-int* new_marker(int n) {
-  int *res = new int[n];
-  int i = 0;
-
-  for (i = 0 ; i < n ; i++) {
-    res[i] = 0;
-  }
-
-  return res;
-}
-
-
-
-
-Fst2Transition supprimer_transition_comp(SingleGraphState *letats,int i,Fst2Transition ptr)
-{
-  Fst2Transition tmp,t,tmp2;
-  int j,etiq;
-
-  j=ptr->state_number;
-  etiq=ptr->tag_number;
-
-  tmp=ptr->next;
-  free(ptr);
-
-  /* Suppression de la transition inverse correspondante */
-  t=letats[j]->reverted_incoming_transitions;
-  while (t!=NULL)
-    {
-      if ((t->state_number==i) && (t->tag_number==etiq))
-	{
-	  tmp2=t;
-	  t=t->next;
-	  free(tmp2);
-	}
-      else
-	t=t->next;
-    }
-
-  return tmp;
-}
-
-
-//
-//Supprime une transition inverse + transition correspondante
-//retourne transition suivante
-//
-
-Fst2Transition supprimer_transitioninv_comp(SingleGraphState *letats,int i,Fst2Transition ptr)
-{
-  Fst2Transition tmp,t,tmp2;
-  int j,etiq;
-
-  j=ptr->state_number;
-  etiq=ptr->tag_number;
-
-  tmp=ptr->next;
-  free(ptr);
-
-  /* Suppression de la transition correspondante */
-  t=letats[j]->outgoing_transitions;
-  while (t!=NULL)
-    {
-      if ((t->state_number==i) && (t->tag_number==etiq))
-	{
-	  tmp2=t;
-	  t=t->next;
-	  free(tmp2);
-	}
-      else
-	t=t->next;
-    }
-
-  return tmp;
-}
-
-
-
-
-/**
- *  remplace ancien par nouveau dans les transitions sortant de l'etat e
- */
-void mettre_a_jour_sortie_comp(SingleGraphState e,int ancien,int nouveau) {
+void write_state(FILE* f,SingleGraphState s) {
 Fst2Transition ptr;
-ptr=e->outgoing_transitions;
- while (ptr!=NULL) {
-   if (ptr->state_number==ancien) ptr->state_number=nouveau;
+if (is_final_state(s)) u_fputc('t',f);
+else u_fputc(':',f);
+ptr=s->outgoing_transitions;
+while (ptr!=NULL) {
+   u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
    ptr=ptr->next;
- }
 }
-
-
+u_fprintf(f," \n");
+}
 
 
 /**
- *  remplace ancien par nouveau dans les transitions entrant dans l'etat e
+ * Writes the states and transitions of of the given graph #n into the given file.
  */
-void mettre_a_jour_entree_comp(SingleGraphState e,int ancien,int nouveau) {
-Fst2Transition ptr;
-ptr=e->reverted_incoming_transitions;
- while (ptr!=NULL) {
-   if (ptr->state_number==ancien) ptr->state_number=nouveau;
-   ptr=ptr->next;
- }
+void write_graph(FILE* f,SingleGraph graph,int n,unichar* name) {
+u_fprintf(f,"%d %S\n",n,name);
+/* By convention, the empty automaton is represented by an initial state with no 
+ * transition */
+if (graph->number_of_states==0) u_fprintf(f, ": \n");
+/* Otherwisen we print all the states */
+for (int i=0;i<graph->number_of_states;i++) {
+   if (graph->states[i]==NULL) {
+      fatal_error("NULL state error in write_graph\n");
+   }
+   write_state(f,graph->states[i]);
+}
+/* We mark the end of the graph */
+u_fprintf(f,"f \n");
 }
 
 
+/**
+ * Creates a new state and relies it to the origin state.
+ */
+void create_intermediate_state(SingleGraph graph,int origin_state,int tag_number) {
+add_state(graph);
+int dest_state=graph->number_of_states-1;
+add_outgoing_transition(graph->states[origin_state],tag_number,dest_state);
+}
 
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////
-////////////////// FONCTIONS GENERALES/////////////////////////
-///////////////////////////////////////////////////////////////
 
 #ifndef _NOT_UNDER_WINDOWS
-static int test4abs_windows_path_name(unichar* name) {
-  if ( ((name[0] >= 'A' && name[0] <= 'Z') // A-Z
-        ||
-        (name[0] >= 'a' && name[0] <= 'z')) // a-z
-       && (name[1] == ':')
-       && ( (name[2] == '\\')
-            || (name[2] == ':') )
-       )
-    return 1;
-  return 0;
+/**
+ * This function returns 1 if the given file name is an absolute
+ * Windows-style one like "C:\tmp\foo.grf" or "C::tmp:foo.grf"
+ */
+int test4abs_windows_path_name(unichar* name) {
+if (((name[0] >= 'A' && name[0] <= 'Z') ||
+     (name[0] >= 'a' && name[0] <= 'z'))
+    && (name[1] == ':') && ((name[2] == '\\') || (name[2] == ':'))) {
+   return 1;
+}
+return 0;
 }
 #endif
 
-void conformer_nom_graphe_comp(char * NOM, int courant) {
 
-  unichar nom[N_CAR_MAX_COMP];
-  int offset;
-  int abs_path_name_warning = 0; // 1 windows, 2 unix
-
-  nom[0] = '\0'; // necessary if we have an absolute path name
-
-  if (donnees->nom_graphe[courant][0] == ':')
-    { /* the graph is located in the directory <pckg_path>.  If
-         pckg_path is not defined, an (absolute) path is tried
-         starting with '/' resp. '\\'. This enables absolute path
-         names under Unixes. */
-
-      u_strcpy(nom,pckg_path);
-      offset = u_strlen(pckg_path);
-
-      if (pckg_path[0] == '\0')
-        abs_path_name_warning = 2;
-
-    }
-
-#ifndef _NOT_UNDER_WINDOWS
-  else if ( test4abs_windows_path_name(donnees->nom_graphe[courant]) )
-    { // we have an absolute windows path name ("c:\" but now "C::" )
-
-      offset = 2; // "c::path:graph" -> "c:\path\graph.grf"
-      abs_path_name_warning = 1;
-
-    }
-#endif
-
-  else
-    { // subgraph located relative to calling graph:
-      //  relative path already calculated in lire_mot_comp
-
-
-      // we add the path of the main graph in front of the path of the subgraph
-      u_strcpy(nom,donnees->chemin_graphe_principal);
-
-      offset = u_strlen(donnees->chemin_graphe_principal);
-
-    }
-
-  u_strcat(nom,donnees->nom_graphe[courant]);
-  u_strcat(nom,".grf");
-
-  u_to_char(NOM,nom); /* file name is now in iso-8859-1,
-                         unicode characters not in iso-8859-1 are deleted */
-
-  if (abs_path_name_warning != 0)
-    {
-      error(
-              "Absolute path name detected (%s):\n"
-              "%s\n"
-              "Absolute path names are not portable!\n",
-              ((abs_path_name_warning == 1) ? "windows" :
-               "unix: forgot to specify lib dir by -d <dir>?"),
-              NOM);
-    }
-
-  NOM += offset;
-
-  // transformation de ':' en '/' resp. '\'
-  // but skip path to main graph (keep windows' "C:\" etc. alive!)
-  replace_colon_by_path_separator(NOM);
-
+/**
+ * Computes the absolute path of the graph #n, taking into account references
+ * to the graph repository, if any.
+ */
+void get_absolute_name(char* name,int n,struct compilation_info* infos) {
+unichar temp[FILENAME_MAX];
+int offset;
+int abs_path_name_warning=0; // 1 windows, 2 unix
+temp[0]='\0'; // necessary if we have an absolute path name
+if (infos->graph_names->value[n][0]==':') {
+   /* If the graph is located in the repository, then we must test if 
+    * the repository is defined. If not, an absolute path is tried
+    * starting with '/' resp. '\\'. This enables absolute path names
+    * under Unixes. */
+   u_strcpy(temp,infos->repository);
+   offset=strlen(infos->repository);
+   if (infos->repository[0]=='\0') {
+      abs_path_name_warning=2;
+   }
 }
-
-
-
-
-
-
-
+#ifndef _NOT_UNDER_WINDOWS
+else if (test4abs_windows_path_name(infos->graph_names->value[n])) {
+   /* We have an absolute windows path name ("C:\" but now "C::" ), so we will
+    * start ':' replacements after the first ':' of "C:\...", since we want
+    * "C:\path\graph" and not "C\\path\graph" */
+   offset=2;
+   abs_path_name_warning=1;
+}
+#endif
+else { 
+   /* If the graph path is relative to its calling graph, then we have just
+    * to concatenate it with the main graph path. For instance, if the main
+    * graph is "/tmp/ABC.grf" and if the sugraph call is "my_dir/DEF", then
+    * the absolute path will be "/tmp/my_dir/DEF.grf" */
+   u_strcpy(temp,infos->main_graph_path);
+   offset=u_strlen(infos->main_graph_path);
+}
+u_strcat(temp,infos->graph_names->value[n]);
+u_strcat(temp,".grf");
+/* Finally, we turn the file name into ISO-8859-1 */
+u_to_char(name,temp);
+if (abs_path_name_warning!=0) {
+   error("Absolute path name detected (%s):\n"
+         "%s\n"
+         "Absolute path names are not portable!\n",
+         ((abs_path_name_warning==1) ? "Windows" :
+         "Unix: forgot to specify repository by -d <dir>?"),
+         name);
+}
+/* Finally, we turn all the ':' into the system separator ('/' or '\'),
+ * but we must ignore the ':' in "C:\...", so we start the 
+ * replacement after a shift offset */
+name=name+offset;
+replace_colon_by_path_separator(name);
+}
 
 
 /**
- *  Sépare contenu (entrée de l'automate) et transduction (sortie)
+ * Takes a grf box content and splits it into an input and an output.
+ * Note that the output can be empty.
  */
-void traitement_transduction_comp(unichar ligne[], unichar contenu[],unichar transduction[]) {
-int i,j;
-i=0;
-//u_prints(ligne);
-//getchar();
-while (ligne[i]!='\0' && ligne[i]!='/') {
-  if (ligne[i]=='\\') {
-    // si on a un backslash et qu'on n'avait pas un backslash avant
-    if (ligne[i+1]=='"' && (i==0 || (i>0 && ligne[i-1]!='\\'))) {
-      // si on a un backslash-guillemet on cherche le prochain
-      i=i+2;
-      while (ligne[i]!='\0' && ligne[i]!='"') {
-        //printf("XXXX ligne[%d]=%c",i,ligne[i]);
-        //getchar();
-        if (ligne[i]=='\\' && ligne[i+1]!='"') i++;
-        i++;
+void split_input_output(unichar* box_content,unichar* input,unichar* output) {
+int i=0;
+while (box_content[i]!='\0' && box_content[i]!='/') {
+   if (box_content[i]=='\\') {
+      /* If we have a backslash with no backslash before */
+      if (box_content[i+1]=='"' && (i==0 || (i>0 && box_content[i-1]!='\\'))) {
+         /* If we have a \" we look for the next one */
+         i=i+2;
+         while (box_content[i]!='\0' && box_content[i]!='"') {
+            if (box_content[i]=='\\' && box_content[i+1]!='"') i++;
+            i++;
+         }
+      } else {
+         /* If we have a normal backslash, we must jump after the protected character */
+         i=i+2;
       }
-    }
-    else {
-       // we are in the case of a backslash, we must jump after the character
-       i=i+2;
-    }
-  }
-  else {
-       //if (ligne[i]!='\0') i++;
-       i++;
-  }
-}
-contenu[0]='\0';
-transduction[0]='\0';
-if (ligne[i]=='\0') {
-  // si pas de transduction...
-  u_strcpy(contenu,ligne);
-  return;
-}
-u_strcpy(contenu,ligne);
-contenu[i]='\0';
-j=0;
-i++; // on saute le caractere /
-do
-  {
-    if (ligne[i]=='\\') {
+   } else {
       i++;
-      if (ligne[i]=='\0') {
+   }
+}
+u_strcpy(input,box_content);
+output[0]='\0';
+/* If there is no output, we can return */
+if (box_content[i]=='\0') {
+   return;
+}
+/* Otherwise, we set the end of the input and we ignore the / */
+input[i]='\0';
+i++;
+int j=0;
+do {
+   if (box_content[i]=='\\') {
+      /* We may have to unprotect some characters */
+      i++;
+      if (box_content[i]=='\0') {
         fatal_error("Unexpected backslash at end of line\n");
       }
-    }
-    transduction[j] = ligne[i];
-    j++;
- }
- while (ligne[i++] != '\0'); /* make sure that the closing '\0' is also copied to transduction */
-
-}
-
-
-
-void get_caractere_comp(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
-{
-   mot[0] = contenu[*pos];
-   mot[1] = '\0';
-   (*pos)++;
-   (*pos_seq)++;
-}
-
-
-
-
-// retourne -3 si pas bon
-// retourne 1 sinon
-int get_mot_comp_default(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
-{
-   int i;
-   i=0;
-   do
-   {
-     mot[i] = contenu[*pos];
-     (*pos)++;
-     i++;
    }
-   while (u_is_letter(contenu[(*pos)-1])&& (i<N_CAR_MAX_COMP));
-  if (i>=N_CAR_MAX_COMP) return -3;
-   mot[i-1] = '\0';
-   (*pos)--;
-   (*pos_seq)++;
-   return 1;
+   output[j] = box_content[i];
+   j++;
+} while (box_content[i++]!='\0');
 }
 
 
-// retourne -3 si pas bon
-// retourne 1 sinon
-int get_mot_comp_alphabet(unichar contenu[],int *pos,unichar mot[],int *pos_seq,Alphabet* alph)
-{
-   int i;
-   i=0;
-   do
-   {
-     mot[i] = contenu[*pos];
-     (*pos)++;
-     i++;
+/**
+ * Gets one character from the input.
+ */
+void get_character(unichar* input,int *pos,unichar* dest) {
+dest[0]=input[*pos];
+dest[1]='\0';
+(*pos)++;
+}
+
+
+/**
+ * Gets a word from the input according to the default tokenization.
+ */
+void get_default_tokenization_word(unichar* input,int *pos,unichar* dest) {
+int i=0;
+do {
+   dest[i++]=input[(*pos)++];
+} while (u_is_letter(input[(*pos)-1]) && i<MAX_GRF_BOX_CONTENT);
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Word too long in get_default_tokenization_word\n");
+}
+dest[i-1]='\0';
+(*pos)--;
+}
+
+
+/**
+ * Gets a word from the input according to an alphabet tokenization.
+ */
+void get_alphabet_tokenization_word(unichar* input,int *pos,unichar* dest,Alphabet* alph) {
+int i=0;
+do {
+   dest[i++]=input[(*pos)++];
+} while (is_letter(input[(*pos)-1],alph) && i<MAX_GRF_BOX_CONTENT);
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Word too long in get_alphabet_tokenization_word\n");
+}
+dest[i-1]='\0';
+(*pos)--;
+}
+
+
+/**
+ * Gets a letter sequence from the input.
+ */
+void get_letter_sequence(unichar* input,int *pos,unichar* dest,struct compilation_info* infos) {
+switch(infos->tokenization_policy) {
+case DEFAULT_TOKENIZATION: get_default_tokenization_word(input,pos,dest); return;
+case CHAR_BY_CHAR_TOKENIZATION: get_character(input,pos,dest); return;
+case WORD_BY_WORD_TOKENIZATION: get_alphabet_tokenization_word(input,pos,dest,infos->alphabet); return;
+default: fatal_error("Internal error in get_letter_sequence\n");
+}
+}
+
+
+/**
+ * Gets an angle bracket sequence from the input.
+ */
+void get_angle_bracket_sequence(unichar* input,int *pos,unichar* dest) {
+int i=0;
+do {
+   dest[i++]=input[(*pos)++];
+} while (input[*pos]!='>' && input[*pos]!='\0' && i<MAX_GRF_BOX_CONTENT);
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Angle bracket sequence too long in get_angle_bracket_sequence\n");
+}
+if (input[*pos]=='\0') {
+   fatal_error("Missing > at the end of an angle bracket sequence\n");
+}
+dest[i]='>';
+/* Now, we will deal with the morphological filter, if any */
+if (input[(*pos)+1] == '>') {
+   /* If the <...> sequence was in fact a morphological filter, we
+    * catch the second > */
+   dest[++i]=input[++(*pos)];
+}
+else if (input[(*pos)+1]=='<' && input[(*pos)+2]=='<') {
+   /* Otherwise, if we have a morphological filter */
+   do {
+      dest[++i]=input[++(*pos)];
+   } while (input[*pos]!='>' && input[*pos]!='\0');
+   if (input[*pos]=='\0' || input[(*pos)+1]!='>') {
+      /* If we don't have a second > after the first > */
+      fatal_error("Missing > at the end of a morphological filter\n");
    }
-   while (is_letter(contenu[(*pos)-1],alph)&& (i<N_CAR_MAX_COMP));
-  if (i>=N_CAR_MAX_COMP) return -3;
-   mot[i-1] = '\0';
-   (*pos)--;
-   (*pos_seq)++;
-   return 1;
-}
-
-
-
-// retourne -3 si pas bon
-// retourne 1 sinon
-int get_mot_comp_char_by_char(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
-{
-   mot[0]=contenu[*pos];
-   mot[1]='\0';
+   dest[++i]=input[++(*pos)];
+} else {
+   /* If there was no morphological filter, we return */
+   dest[i+1]='\0';
    (*pos)++;
-   (*pos_seq)++;
-   return 1;
+   return;
+}
+/* If there is a '_' after a morphological filter, we catch the _x_ sequence */
+if (input[(*pos)+1]=='_') {
+   dest[++i]=input[++(*pos)];
+   do {
+      dest[++i]=input[++(*pos)];
+   } while (input[*pos]!='_' && input[*pos]!='\0');
+   if (input[*pos]=='\0') {
+      fatal_error("Missing _ at the end of a morphological filter\n");
+   }
+}
+dest[i+1]='\0';
+(*pos)++;
 }
 
 
-int get_mot_comp_generic(unichar contenu[],int *pos,unichar mot[],int *pos_seq,
-                         int mode,Alphabet* alph)
-{
-switch(mode) {
-case DEFAULT_TOKENIZATION: return get_mot_comp_default(contenu,pos,mot,pos_seq);
-case CHAR_BY_CHAR_TOKENIZATION: return get_mot_comp_char_by_char(contenu,pos,mot,pos_seq);
-case ALPHABET_TOKENIZATION: return get_mot_comp_alphabet(contenu,pos,mot,pos_seq,alph);
-default: fatal_error("Internal error in get_mot_comp_generic\n");
+/**
+ * Gets a round bracket sequence from the input.
+ */
+void get_round_bracket_sequence(unichar* input,int *pos,unichar* dest) {
+int i=0;
+do {
+   dest[i++]=input[(*pos)++];
+} while ((input[*pos]!='}' || input[(*pos)-1]=='\\') && input[*pos]!='\0' && i<MAX_GRF_BOX_CONTENT);
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Round bracket sequence too long in get_round_bracket_sequence\n");
 }
+if (input[*pos]=='\0') {
+   fatal_error("Missing } in round bracket sequence\n");
+}
+dest[i] = '}';
+dest[i+1] = '\0';
+if (!u_strcmp(dest,"{STOP}")) {
+   /* If the graph contains the forbidden tag {STOP} */
+   fatal_error("ERROR: a graph contains the forbidden tag {STOP}\n");
+}
+(*pos)++;
+}
+
+
+/**
+ * This function assumes that the current position in the input is
+ * inside a double quoted sequence and it gets a token. All tokens
+ * that will be read here will be prefixed with '@' in order to
+ * indicate that they don't tolerate case variations.
+ * Returns 1 if the end of the double quoted sequence is found; 0 otherwise.
+ */
+int get_double_quoted_token(unichar* input,int *pos,unichar* dest,struct compilation_info* infos) {
+dest[0]='@';
+/* If we have a backslash */
+if (input[*pos]=='\\') {
+   (*pos)++;
+   if (input[(*pos)]=='\\' && input[(*pos)+1]=='\\' && input[(*pos)+2]=='"') {
+      /* If we have \\\" we must return the " character */
+      (*pos)=(*pos)+3;
+      u_strcpy(dest,"@\"");
+      return 0;
+   }
+   if (input[*pos] == '"') {
+      /* If we have \" in the grf, it means that we have the final " of the sequence */
+      (*pos)++;
+      return 1;
+   }
+   /* If we have \x we must get the x character */
+   get_character(input,pos,&(dest[1]));
+   return 0;
+}
+/* If we have a letter */
+if (is_letter_generic(input[*pos],infos)) {
+   get_letter_sequence(input,pos,&(dest[1]),infos);
+   return 0;
+}
+/* If we have a non letter character */
+get_character(input,pos,&(dest[1]));
 return 0;
 }
 
 
+/**
+ * This function reads a sequence between double quotes from  the input.
+ */
+void get_double_quoted_sequence(unichar* input,int *pos,
+                                struct fifo* tokens,
+                                struct compilation_info* infos) {
+(*pos)++;
+int finished=0;
+unichar tmp[MAX_GRF_BOX_CONTENT];
+while (!finished && input[*pos]!='\0') {
+   finished=get_double_quoted_token(input,pos,tmp,infos);
+   put_ptr(tokens,u_strdup(tmp));
+}
+}
 
-int get_forme_canonique_comp(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
-{
-   int i;
 
-   i=0;
-   do
-   {
-     mot[i] = contenu[*pos];
-     (*pos)++;
-     i++;
-   }while ((contenu[*pos] != '>') && (contenu[*pos] != '\0') && (i < N_CAR_MAX_COMP));
-   if (i >= N_CAR_MAX_COMP) return -3;
-   if ((contenu[*pos] == '\0')) {
-      error("WARNING : canonical form should be ended by >\n");
+/**
+ * This function considers the given input from the given position
+ * and copies everything to 'dest' until it finds a '+' or the end of string.
+ * All '/' and '\' are turned into ':'.
+ */
+void get_subgraph_call(unichar* input,int *pos,unichar* dest) {
+int i=0;
+while (input[*pos]!='+' && input[*pos]!='\0' && i<MAX_GRF_BOX_CONTENT) {
+   dest[i]=input[*pos];
+   if (dest[i]=='/' || dest[i]=='\\') {
+      dest[i]=':';
    }
-   mot[i] = '>';
-
-    /* $CD$ begin */
-    if (contenu[(*pos)+1] == '>') {
-        mot[++i] = contenu[++(*pos)];
-        }
-    else if ( (u_strlen(contenu)-1 - (*pos)) > 2 &&
-              contenu[(*pos)+1] == '<' && contenu[(*pos)+2] == '<'
-            ) {
-            do {
-                mot[++i] = contenu[++(*pos)];
-                } while (contenu[*pos] != '>' && contenu[*pos] != '\0');
-            if (contenu[*pos] == '\0' || contenu[(*pos)+1] == '\0' || contenu[(*pos)+1] != '>')
-                return -3;
-            mot[++i] = contenu[++(*pos)];
-            }
-
-    if (contenu[(*pos)+1] == '_') {
-        mot[++i] = contenu[++(*pos)];
-        do {
-            mot[++i] = contenu[++(*pos)];
-            } while (contenu[*pos] != '_' && contenu[*pos] != '\0');
-        }
-    /* $CD$ end   */
-
-   mot[i+1] = '\0';
+   i++;
    (*pos)++;
-   (*pos_seq)++;
-   return 1;
-
+}
+if (i==MAX_GRF_BOX_CONTENT) {
+   fatal_error("Graph call too long in get_subgraph_call\n");
+}
+dest[i]='\0';
 }
 
 
-
-
-int get_sequence_desambiguisee_comp(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
-{
-   int i;
-
-   i=0;
-   do
-   {
-     mot[i] = contenu[*pos];
-     (*pos)++;
-     i++;
-   }while ((contenu[*pos] != '}') && (contenu[*pos] != '\0') && (i < N_CAR_MAX_COMP));
-   if (i >= N_CAR_MAX_COMP) return -3;
-   if (contenu[*pos] == '\0') {
-      error("WARNING : desambiguised form should be ended by }\n");
+/**
+ * Takes the given input and tries to read a token from '*pos'.
+ * Returns 1 if a '+' was found after the token that has been read; 0 otherwise.
+ */
+int process_box_line_token(unichar* input,int *pos,
+                           struct fifo* tokens,
+                           int n,struct compilation_info* infos) {
+if (input[*pos]=='\0') {
+   fatal_error("Empty string in process_box_line_token\n");
+}
+unichar token[MAX_GRF_BOX_CONTENT];
+if (input[*pos]==':') {
+   /* If we have a subgraph call */
+   token[0]=':';
+   int l;
+   if (input[(*pos)+1]!= ':') {
+      /* If the subgraph is not in the repository, we copy the path
+       * of the current graph */
+      u_strcpy(&(token[1]),infos->graph_names->value[n]);
+      /* And we remove the current graph name */
+      l=u_strlen(token);
+      while (token[l]!=':') {
+         l--;
+      }
    }
-   mot[i] = '}';
-   mot[i+1] = '\0';
-   if (!u_strcmp(mot,"{STOP}")) {
-      // if the graph contains the forbidden tag {STOP}, then
-      // we raise a fatal error
-      fatal_error("ERROR: a graph contains the forbidden tag {STOP}\n");
+   #ifndef _NOT_UNDER_WINDOWS
+   else if (test4abs_windows_path_name(&(input[*pos]))) {
+      /* If the subgraph has an absolute path */
+      l=0;
    }
+   #endif
+   else {
+      /* If the subgraph is in the repository */
+      l=0;
+      /* We keep the (second) colon in front of the graph name,
+       * i.e. we don't change the name. This indicates that the path of
+       * the main graph won't be prefixed in get_absolute_name. */
+   }
+   /* Now that we have the path prefix, we can add the subgraph call */
+   get_subgraph_call(input,pos,&(token[l]));
+   put_ptr(tokens,u_strdup(token));
+   /* We add this graph name to the graph names, if not allready present */
+   get_value_index(token+1,infos->graph_names);
+   return 0;
+}
+/* If we have found a '+' */
+if (input[*pos]=='+') {
    (*pos)++;
-   (*pos_seq)++;
    return 1;
 }
-
-
-
-
-
-
-int lire_mot_entre_guillemet_comp(unichar contenu[],int *pos,unichar mot[],
-                                  int *pos_seq,int mode,Alphabet* alph)
-{
-
-
-  unichar temp[N_CAR_MAX_COMP];
-
-  mot[0]='\0';
-
-    // cas du backslash
-     if (contenu[*pos]=='\\') {
-       (*pos)++;
-       if (contenu[(*pos)]=='\\' && contenu[(*pos)+1]=='\\' && contenu[(*pos)+2]=='"') {
-          // if we have $\\\"$ we must return the $"$ character
-          (*pos)=(*pos)+2;
-          get_caractere_comp(contenu,pos,mot,pos_seq);
-          u_strcpy(temp,"@");
-          u_strcat(temp,mot);
-          u_strcpy(mot,temp);
-          return 0;
-       }
-       else if (contenu[*pos] == '"') {
-               // if we have $\"$ in the grf, not preceeded by $\\$,
-               // it means that we have the final $"$ of the sequence
-               (*pos)++;
-               return 1;
-            }
-       else {
-          // if we have $\x$ we must return the $x$ character
-          get_caractere_comp(contenu,pos,mot,pos_seq);
-          u_strcpy(temp,"@");
-          u_strcat(temp,mot);
-          u_strcpy(mot,temp);
-          return 0;
-       }
-
-     }
-     //Cas d'une lettre
-     if (is_letter_generic(contenu[*pos],mode,alph))
-     {
-       if (get_mot_comp_generic(contenu,pos,mot,pos_seq,mode,alph)== -3) return -3;
-       u_strcpy(temp,"@");
-       u_strcat(temp,mot);
-       u_strcpy(mot,temp);
-       return 0;
-     }
-
-
-       // cas general d'un caractere seul
-       get_caractere_comp(contenu,pos,mot,pos_seq);
-       u_strcpy(temp,"@");
-       u_strcat(temp,mot);
-       u_strcpy(mot,temp);
-       return 0;
-
+/* If we have a space, we skip it */
+if (input[*pos]==' ') {
+   (*pos)++;
+   return 0;
 }
-
-
-
-
-int traitement_guillemet_comp(unichar contenu[],int *pos,
-                unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MAX_COMP],
-                int *pos_seq,int graphe_courant,
-                int mode,Alphabet* alph)
-{
-  int fin;
-
-  (*pos)++;
-  fin = 0;
-  while ((fin == 0) && (contenu[*pos] != '\0') && ((*pos_seq) < TAILLE_SEQUENCE_COMP))
-  {
-    fin = lire_mot_entre_guillemet_comp(contenu,pos,sequence[*pos_seq],pos_seq,mode,alph);
-  }
-
-  if (fin == -3) return -3;
-  if ((*pos_seq) >= TAILLE_SEQUENCE_COMP)
-    return -1;
-  return 0;
-}
-
-
-
-
-int get_sous_graphe_comp(unichar contenu[],int *pos,unichar mot[],int *pos_seq)
-{
-  int i = 0;
-  while ((contenu[*pos] != '+') && (contenu[*pos] != '\0')&& (i < N_CAR_MAX_COMP))
-  {
-    // if (contenu[*pos] == '\\') (*pos)++;
-    /* the backslash shouldn't be used an escape character in graph
-       names; under Unixes it is now obsolete: using the colon ':' as
-       path separator, you don't need the construct '\/'. */
-    mot[i]=contenu[*pos];
-    // on normalise les separateurs de repertoires en ':'
-    if (mot[i] == '/' || mot[i] == '\\') { mot[i] = ':'; }
-    i++;
-    (*pos)++;
-  }
-  if (i >= N_CAR_MAX_COMP) return 0;
-  mot[i] = '\0';
-  (*pos_seq)++;
-  return 1;
-}
-
-
-
-
-//
-// lit un mot et retourne 0 ou 1 si OK, 1 si PLUS, -1 si sequence trop longue,
-// -2 si trop de graphes, -3 si mot trop long
-int lire_mot_comp(unichar contenu[],int* pos,
-                  unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MAX_COMP],
-                  int *pos_seq,int graphe_courant,
-                  int mode,Alphabet* alph)
-{
-  int indice;
-
-  sequence[*pos_seq][0]='\0';
-
-  //Sous-graphe
-  if (contenu[*pos]==':')
-    {
-
-      int l;
-      unichar * seq = sequence[*pos_seq];
-      seq[0] = ':';
-
-      if (contenu[(*pos) + 1] != ':')
-        { //cas d'un sous-graphe dans repertoire courant ou un de ses sous-repertoires
-
-        // on recopie le chemin  relatif du graphe courant
-        u_strcpy(seq + 1, donnees->nom_graphe[graphe_courant]);
-
-        // on supprime le nom du graphe courant
-        l = u_strlen(seq);
-        // while ((l >= 0) && (seq[l] != '/') && (seq[l] != '\\')) { l--; }
-        /* '/' and '\\' are already replaced by ':' in
-           donnees->nom_graphe[graphe_courant] (see
-           get_sous_graphe_comp) */
-        while (seq[l] != ':') { l--; } // l now >= 1
-
-        }
-
-#ifndef _NOT_UNDER_WINDOWS
-      else if ( test4abs_windows_path_name((contenu+(*pos))) )
-        {
-          l = 0;
-        }
-#endif
-
-      else
-        { //cas d'un graphe se trouvant dans le repertoire <pckg_path> ou un de ses sous-repertoires
-        l = 0;
-        /* we keep the (second) colon in front of the graph name,
-           i.e. we don't change the name. This indicates, that the path of
-           the main graph won't be prefixed in
-           conformer_nom_graphe_comp. */
-
-        }
-
-      // et on le remplace par l'appel au sous graphe
-      if (get_sous_graphe_comp(contenu,pos, seq + l, pos_seq) == 0) return -3;
-
-      indice = ajouter_graphe_comp(seq + 1,rac_graphe_comp,0); // + 1 pour omettre le ':'
-      if (indice >= NOMBRE_GRAPHES_COMP)
-        {
-           error(
-                   "ERROR at top level: Too many graphes. "
-                   "The number of graphs should be lower than %d\n",
-                   NOMBRE_GRAPHES_COMP);
-          return -2;
-        }
-      if (donnees->statut_graphe[indice] == -1)
-        {
-          u_strcpy(donnees->nom_graphe[indice], seq + 1);
-        }
-
+/* If we have a backslask */
+if (input[*pos]=='\\') {
+   (*pos)++;
+   if (input[*pos]!='\\') {
+      if (input[*pos] == '"') {
+         /* If we have a sequence between double quotes */
+         get_double_quoted_sequence(input,pos,tokens,infos);
+         return 0;
+      }
+      /* If we have \x where x is not a \ neither a " */
+      get_character(input,pos,token);
+      put_ptr(tokens,u_strdup(token));
       return 0;
-    }
-
-  // le +
-  if (contenu[*pos]=='+')
-    {
-      (*pos)++;
-      return 1;
-    }
-
-  //espace
-  if (contenu[*pos]==' ')
-    {
-      (*pos)++;
-      return 0;
-    }
-
-  //Back-slash
-  if (contenu[*pos]=='\\')
-    {
-      (*pos)++;
-      if (contenu[*pos]!='\\')
-        {
-          if (contenu[*pos] == '"') // Cas d'une sequence entre guillemet
-            return traitement_guillemet_comp(contenu,pos,sequence,pos_seq,graphe_courant,mode,alph);
-          get_caractere_comp(contenu,pos,sequence[*pos_seq],pos_seq);
-          return 0;
-        }
-      if (/*(contenu[(*pos)+1] != '\0')&& */(contenu[(*pos)+1] != '\\')) // caractere despecialise
-        {
-          get_caractere_comp(contenu,pos,sequence[*pos_seq],pos_seq);
-          return 0;
-        }
-      if (contenu[(*pos)+2] == '"')   //caractere " seul
-        {
-          (*pos) += 2;
-          get_caractere_comp(contenu,pos,sequence[*pos_seq],pos_seq);
-          return 0;
-        }
-      get_caractere_comp(contenu,pos,sequence[*pos_seq],pos_seq);
-      return 0;
-    }
-
-
-
-  //Cas des sequences desambiguises par Unitex au preprocessing
-  if (contenu[*pos]=='{')
-    {
-      if (get_sequence_desambiguisee_comp(contenu,pos,sequence[*pos_seq],pos_seq)== -3) return -3;
-      return 0;
-    }
-
-  // cas d'un debut de <...>
-  if (contenu[*pos] == '<')
-    {
-      if (get_forme_canonique_comp(contenu,pos,sequence[*pos_seq],pos_seq) == -3) return -3;
-      return 0;
-    }
-
-  // cas d'une lettre
-  if (is_letter_generic(contenu[*pos],mode,alph)) {
-    if (get_mot_comp_generic(contenu,pos,sequence[*pos_seq],pos_seq,mode,alph) == -3) return -3;
-    return 0;
-  }
-
-
-  // par defaut
-  get_caractere_comp(contenu,pos,sequence[*pos_seq],pos_seq);
-  return 0;
-}
-
-
-int traitement_etiquettes_comp(int *indice,unichar mot[])
-{
-  if (((*indice) = ajouter_etiquette_comp(mot,rac_comp,0)) >= MAX_FST2_TAGS)
-    {
-      error("ERROR at top level: Too many tags (maximum %d)\n",MAX_FST2_TAGS);
-      return -1;
-    }
-  u_strcpy(donnees->Etiquette_comp[(*indice)],mot);
-
-  return 1;
-}
-
-
-
-//Transfo de la sequence en sequence d'entiers (negatif si graphe, positif si etiquette normale
-
-int transfo_seq_carac_en_entiers(unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MAX_COMP],unichar transduction[],int compteur_mots,int sequence_ent[],int *trans)
-{
- int i,j,indice;
- unichar s[100];
-
- (*trans) = 0;
-  j=0; i=0;
-  if (transduction[0]!='\0') {  //CAS DE LA TRANSDUCTION
-       j = 1;
-       if (((sequence[0][0] == ':') && (sequence[0][1] != '\0')))
-       //CAS DU SOUS-GRAPHE
-       {
-        /* strcpy(temp,"<E>/");
-         strcat(temp,transduction);
-         if (traitement_etiquettes_comp(&indice,temp) == -1) return -1;*/
-         //sequence_ent[0] = indice;
-         //i = 0;
-         //(*trans) = 1;
-       }
-       else
-       {
-          u_strcpy(s,"/");
-          u_strcat(sequence[0],s);
-          u_strcat(sequence[0],transduction);
-
-          if (traitement_etiquettes_comp(&indice,sequence[0]) == -1) return -1;
-          sequence_ent[0] = indice;
-          i = 1;
-       }
-  }
-
-  while (i < compteur_mots)
-  {
-     if ((sequence[i][0] == ':') && (sequence[i][1] != '\0'))  //SOUS GRAPHE
-     {
-       /* inutile
-        k = 1;
-        do  // transfo :grf1 en grf1
-          temp[k -1] = sequence[i][k++];
-        while (sequence[i][k] != '\0');
-        temp[k -1] = '\0';
-        */
-        indice = ajouter_graphe_comp(sequence[i] + 1,rac_graphe_comp,0);
-        indice = - indice -1;
-        sequence_ent[j] = indice;
-     }
-     else
-     {
-        u_strcpy(s,"/<E>");
-
-        if (transduction[0]!='\0') u_strcat(sequence[i],s);
-        if (traitement_etiquettes_comp(&indice,sequence[i]) == -1) return -1;
-        sequence_ent[j] = indice;
-     }
-  i++;
-  j++;
-  }
-  return 1;
-}
-
-
-
-int ecriture_transition_comp(SingleGraph graph,int seq_ent[],int sortants[],int etat_courant,int longueur,int graphe_courant,int trans)
-{
-  int k,j;
-  int dep;
-  k=0;
-
-   while (sortants[k] != -1)
-   {
-     dep=etat_courant;
-     for (j=0;j<longueur -1+trans;j++)
-     {
-       if (ajouter_etat_deliage_comp(graph,dep,seq_ent[j],graphe_courant) == 0) return 0;
-       dep = (graph->number_of_states - 1);
-     }
-     ajouter_transition_comp(graph->states,dep,sortants[k],seq_ent[longueur +trans -1]);
-     k++;
    }
+   /* If we have \\ in the box input */
+   if (input[(*pos)+1] != '\\') {
+      /* If we have just a character to unprotect */
+      get_character(input,pos,token);
+      put_ptr(tokens,u_strdup(token));
+      return 0;
+   }
+   /* If we have \\\" it means that we want to print a " */
+   if (input[(*pos)+2] == '"') {
+      (*pos)=(*pos)+2;
+      get_character(input,pos,token);
+      put_ptr(tokens,u_strdup(token));
+      return 0;
+   }
+   /* If we have \\\x in means that we want to print \x */
+   get_character(input,pos,token);
+   put_ptr(tokens,u_strdup(token));
+   return 0;
+}
+/* If we have a round bracket */
+if (input[*pos]=='{') {
+   get_round_bracket_sequence(input,pos,token);
+   put_ptr(tokens,u_strdup(token));
+   return 0;
+}
+/* If we have an angle bracket */
+if (input[*pos]=='<') {
+   get_angle_bracket_sequence(input,pos,token);
+   put_ptr(tokens,u_strdup(token));
+   return 0;
+}
+/* If we have a letter */
+if (is_letter_generic(input[*pos],infos)) {
+   get_letter_sequence(input,pos,token,infos);
+   put_ptr(tokens,u_strdup(token));
+   return 0;
+}
+/* If we have a character that is not a letter */
+get_character(input,pos,token);
+put_ptr(tokens,u_strdup(token));
+return 0;
+}
 
+
+/**
+ * Takes a token sequence and turns it into an integer sequence.
+ */
+void token_sequence_2_integer_sequence(struct fifo* u_tokens,unichar* output,
+                                int* i_tokens,struct compilation_info* infos,
+                                int *n_tokens) {
+if (u_tokens==NULL) {
+   fatal_error("NULL error in token_sequence_2_integer_sequence\n");
+}
+if (is_empty(u_tokens)) {
+   fatal_error("Empty FIFO in token_sequence_2_integer_sequence\n");
+}
+*n_tokens=0;
+unichar* token=(unichar*)take_ptr(u_tokens);
+unichar tmp[MAX_GRF_BOX_CONTENT];
+int is_an_output=(output!=NULL && output[0]!='\0');
+if (token[0]==':' && token[0]!='\0') {
+   /* If we have a subgraph call */
+   if (is_an_output) {
+      error("WARNING: ignoring output associated to subgraph call\n");
+   }
+   if (!is_empty(u_tokens)) {
+      fatal_error("Unexpected token after subgraph call in token_sequence_2_integer_sequence\n");
+   }
+   i_tokens[(*n_tokens)++]=-get_value_index(&(token[1]),infos->graph_names);
+   free(token);
+   return;
+}
+if (is_an_output) {
+   /* If there is an output, we associate it to the first token */
+   u_sprintf(tmp,"%S/%S",token,output);
+   i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
+} else {
+   i_tokens[(*n_tokens)++]=get_value_index(token,infos->tags);
+}
+free(token);
+
+/* Then, we process the rest of the tokens */
+while (!is_empty(u_tokens)) {
+   token=(unichar*)take_ptr(u_tokens);                                 
+   if (token[0]==':' && token[0]!='\0') {
+      fatal_error("Unexpected subgraph call in token_sequence_2_integer_sequence\n");
+   }
+   u_sprintf(tmp,"%S%s",token,is_an_output?"/<E>":"");
+   i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
+   free(token);
+}
+}
+
+
+/**
+ * This function takes a tag number sequence and a list of reachable states
+ * and it creates pathes from the current state to each of the reachable states,
+ * introducing at new intermediate states as needed.
+ */
+void write_transitions(SingleGraph graph,int* tag_numbers,struct list_int* transitions,
+                      int current_state,int n_tag_numbers,int n,int trans) {
+int tmp_state;
+while (transitions!=NULL) {
+   tmp_state=current_state;
+   for (int j=0;j<n_tag_numbers-1;j++) {
+      /* If we are not on the last tag number, then we must introduce a new
+       * intermediate state */
+      create_intermediate_state(graph,tmp_state,tag_numbers[j]);
+      tmp_state=graph->number_of_states-1;
+   }
+   /* Finally, we rely the state we are to the reachable state */
+   add_outgoing_transition(graph->states[tmp_state],tag_numbers[n_tag_numbers-1],transitions->n);
+   /* And we go again with the next reachable state */
+   transitions=transitions->next;
+}
+}
+
+
+/**
+ * This function takes the input and the output that correspond to one box in the graph #n 
+ * and it adds the necessary states and transitions to
+ * the given SingleGraph. '*pos' represents the current position in the input string.
+ * For instance, if the current state corresponds to the box
+ * content "abc+d e f/foo", this function will be called twice: one with
+ * "abc+d e f/foo" and one with "d e f/foo" (more exactly, it's '*pos' that will
+ * be 0 for the first call and 4 for the second call).
+ */
+void process_box_line(SingleGraph graph,unichar* input,unichar* output,struct list_int* transitions,
+                     int *pos,int state,int n,struct compilation_info* infos) {
+int result=0;
+struct fifo* sequence=new_fifo();
+while (result==0 && input[*pos]!='\0') {
+   result=process_box_line_token(input,pos,sequence,n,infos);
+}
+int sequence_ent[MAX_TOKENS_IN_A_SEQUENCE];
+int n_tokens;
+token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens);
+free_fifo(sequence);
+write_transitions(graph,sequence_ent,transitions,state,n_tokens,n,0);
+}
+
+
+/**
+ * If we have a variable or context mark, we store it in the tags, if not allready
+ * present, and we write the corresponding transitions.
+ */
+void process_variable_or_context(SingleGraph graph,unichar* input,
+                                struct list_int* transitions,
+                                int state,int n,
+                                struct compilation_info* infos) {
+struct fifo* tmp=new_fifo();
+put_ptr(tmp,u_strdup(input));
+int token[1];
+int i;
+token_sequence_2_integer_sequence(tmp,NULL,token,infos,&i);
+free_fifo(tmp);
+write_transitions(graph,token,transitions,state,1,n,0);
+}
+
+
+/**
+ * Processes the given grf state of the graph #n.
+ */
+void process_grf_state(unichar* box_content,struct list_int* transitions,
+                      SingleGraph graph,int current_state,
+                      int n,struct compilation_info* infos) {
+unichar input[MAX_GRF_BOX_CONTENT];
+unichar output[MAX_GRF_BOX_CONTENT];
+if (transitions==NULL) {
+   /* If the state has not outoing transition, it will be discarded when the
+    * graph is cleaned, so it's not necessary to process it. */
+   return;
+}
+int length=u_strlen(box_content);
+if ((length>2 && box_content[0]=='$' && 
+       (box_content[length-1]=='('
+        || box_content[length-1]==')'))
+        || (!u_strcmp(box_content,"$[") || !u_strcmp(box_content,"$![")
+        || !u_strcmp(box_content,"$]"))) {
+   /* If we have a variable or context mark */
+   u_strcpy(input,box_content);
+   u_strcpy(output,"");
+   process_variable_or_context(graph,input,transitions,current_state,n,infos);
+   return;
+}
+/* Otherwise, we deal with the output of the box, if any */
+split_input_output(box_content,input,output);
+/* And we process the box input */
+int pos=0;
+while (input[pos]!='\0') {
+   process_box_line(graph,input,output,transitions,&pos,current_state,n,infos);
+}
+}
+
+
+/**
+ * Reads one line of the graph #n. The box content is stored into 'box_content' and
+ * the outgoing transitions are stored into 'transitions'.
+ * It returns 0 if the box is too large; 1 otherwise.
+ */
+int read_grf_line(FILE* f,unichar* box_content,struct list_int* *transitions,int n,struct compilation_info* infos) {
+*transitions=NULL;
+unichar c;
+int n_sortantes;
+int i=0;
+/* We skip chars until we have read the '"' that starts the line */
+while (u_fgetc(f)!='"');
+/* Then we copy the box content, escaping the '"'found in it */
+while (((c=(unichar)u_fgetc(f))!='"') && (i<MAX_GRF_BOX_CONTENT)) {
+   box_content[i]=c;
+   if ((box_content[i]=='\\') && (i<MAX_GRF_BOX_CONTENT)) {
+	   i++;
+	   box_content[i]=(unichar)u_fgetc(f);
+	}
+   i++;
+}
+/* If the box content is too long */
+if (i>=MAX_GRF_BOX_CONTENT) {
+   error("ERROR in graph %S.grf:\n"
+         "Too many characters in box. The number of characters\n"
+         "per box should be lower than %d\n",
+         infos->graph_names->value[n],MAX_GRF_BOX_CONTENT);
+   return 0;
+}
+box_content[i]='\0';
+/* 3 %d because we skip the X and Y coordinates and then we read the number
+ * of outgoing transitions */
+u_fscanf(f,"%d%d%d",&n_sortantes,&n_sortantes,&n_sortantes);
+/* Now, we read the transitions */
+int j;
+for (i=0;i<n_sortantes;i++) {
+   u_fscanf(f,"%d",&j);
+   *transitions=head_insert(j,*transitions);
+}
+/* Finally, we read the end of line character */
+u_fgetc(f);
 return 1;
 }
 
 
-
-unichar sequence[TAILLE_SEQUENCE_COMP][N_CAR_MAX_COMP];
-
-int traitement_transition_comp(SingleGraph graph,unichar contenu[],
-                               unichar transduction[],int sortants[],
-                               int *pos, int etat_courant,
-                               int graphe_courant,
-                               int mode,Alphabet* alph)
-{
-  int compteur_mots = 0;
-  int plus = 0;
-  int trans;
-  int sequence_ent[TAILLE_SEQUENCE_COMP];
-  while ((plus == 0) && (contenu[*pos] != '\0') && (compteur_mots < TAILLE_SEQUENCE_COMP)) {
-    plus = lire_mot_comp(contenu,pos,sequence,&compteur_mots,graphe_courant,mode,alph);
-  }
-
-  if (plus == -2) return -1;
-  if (plus == -3) {       // Cas trop de caractères dans un mot
-   if (graphe_courant == 0) {
-      error("ERROR in main graph %S: The size of a word should be lower than %d characters\n",donnees->nom_graphe[graphe_courant],N_CAR_MAX_COMP);
-    }
-    else {
-      error("WARNING in main graph %S: The size of a word should be lower than %d characters\nGraph has been emptied\n",donnees->nom_graphe[graphe_courant],N_CAR_MAX_COMP);
-    }
-    return 0;
-  }
-  if ((plus == -1) || (compteur_mots >= TAILLE_SEQUENCE_COMP) )
-  {
-    if (graphe_courant == 0) {
-      error("ERROR in main graph %S: The size of a sequence between two + should be lower than %d words\n",donnees->nom_graphe[graphe_courant],TAILLE_SEQUENCE_COMP);
-    }
-    else {
-      error("WARNING in main graph %S: The size of a sequence between two + should be lower than %d words\nGraph has been emptied\n",donnees->nom_graphe[graphe_courant],TAILLE_SEQUENCE_COMP);
-    }
-    return 0;
-  }
-  if (transfo_seq_carac_en_entiers(sequence,transduction,compteur_mots,sequence_ent,&trans) == -1) return -1;
-  if (ecriture_transition_comp(graph,sequence_ent,sortants,etat_courant,compteur_mots,graphe_courant,trans) == 0) return 0;
-  return 1;
- }
-
-
-
-void traiter_debut_fin_variable(SingleGraph graph,unichar contenu[],unichar transduction[],int sortants[], int *pos, int etat_courant,int graphe_courant) {
-  unichar sequence[1][N_CAR_MAX_COMP];
-  int sequence_ent[1];
-  int trans;
-  u_strcpy(sequence[0],contenu);
-  if (transfo_seq_carac_en_entiers(sequence,transduction,1,sequence_ent,&trans) == -1) return;
-  if (ecriture_transition_comp(graph,sequence_ent,sortants,etat_courant,1,graphe_courant,trans) == 0) return;
-}
-
-
-
-void traiter_context_mark(SingleGraph graph,unichar contenu[],unichar transduction[],int sortants[], int *pos, int etat_courant,int graphe_courant) {
-  unichar sequence[1][N_CAR_MAX_COMP];
-  int sequence_ent[1];
-  int trans;
-  u_strcpy(sequence[0],contenu);
-  if (transfo_seq_carac_en_entiers(sequence,transduction,1,sequence_ent,&trans) == -1) return;
-  if (ecriture_transition_comp(graph,sequence_ent,sortants,etat_courant,1,graphe_courant,trans) == 0) return;
-}
-
-
-
-
-
-int traitement_ligne_comp(unichar ligne[],int sortants[],
-                          SingleGraph graph,int etat_courant,
-                          int graphe_courant,
-                          int mode,Alphabet* alph)
-{
-  unichar contenu[TAILLE_MOT_GRAND_COMP];
-  unichar transduction[TAILLE_MOT_GRAND_COMP];
-  int i;
-  int res;
-
-  if (sortants[0]!=-1)
-  {
-    i=0;
-    if ((u_strlen(ligne)>2
-         && ligne[0]=='$'
-         && ( ligne[u_strlen(ligne)-1]=='('
-              || ligne[u_strlen(ligne)-1]==')'))
-        // context marks are handled exactly as variable marks
-        || (!u_strcmp(ligne,"$[") || !u_strcmp(ligne,"$![")
-            || !u_strcmp(ligne,"$]"))) {
-        u_strcpy(contenu,ligne);
-        u_strcpy(transduction,"");
-        traiter_debut_fin_variable(graph,contenu,transduction,sortants,&i,etat_courant,graphe_courant);
-        return 1;
-    }
-    traitement_transduction_comp(ligne,contenu,transduction);
-    while (contenu[i]!='\0')
-    {
-      res = traitement_transition_comp(graph,contenu,transduction,sortants,&i,etat_courant,graphe_courant,mode,alph);
-      if ((res == -1) || (res == 0)) return res;
-    }
-  }
-  return 1;
-}
-
-
-
 /**
- * read one graph state: 
- * - store box entry to ligne
- * - store transitions in sortants
- * retourne 0 si erreur
- * retourne 1 si OK
- * retourne 2 si pas de transitions sortants de la boite
-*/
-int lire_ligne_comp(FILE *f, unichar *ligne, int *sortants, int courant)
-{
-  unichar c;
-  int i, n_sortantes;
-
-  for (i=0;i<NOMBRE_TRANSITIONS_COMP;i++) sortants[i]=-1;
-
-  i=0;
-  while (u_fgetc(f) != '"');  /* skip all chars including first '"' */
-
-  /* reescape the box content, store it in ligne */
-  while (((c=(unichar)u_fgetc(f))!='"') && (i < TAILLE_MOT_GRAND_COMP))
-    {
-      ligne[i]=c;
-      if ((ligne[i]=='\\') && (i < TAILLE_MOT_GRAND_COMP))
-	{
-	  i++;
-	  ligne[i]=(unichar)u_fgetc(f);
-	}
-      i++;
-    }
-
-  /* error: box content to long */
-  if ( i >= TAILLE_MOT_GRAND_COMP )
-    {
-      error(
-              "ERROR in main graph %S.grf:\n"
-              "Too many characters in box. The number of characters\n"
-              "per box should be lower than %d\n",
-              donnees->nom_graphe[courant],TAILLE_MOT_GRAND_COMP);
-      return 0;
-    }
-
-  ligne[i] = '\0'; /* box entry read */
-
-  /* 3 %d because we skip the X and Y coordinates and then we read the number
-   * of outgoing transitions */
-  u_fscanf(f,"%d%d%d",&n_sortantes,&n_sortantes,&n_sortantes);
-
-  /* error: to many transitions */
-  if ( n_sortantes >= NOMBRE_TRANSITIONS_COMP )
-    {
-      error("WARNING in graph %S.grf:\n"
-              "to many transitions. The number of transitions\n"
-              "per box should be lower than %d\n",
-              donnees->nom_graphe[courant], NOMBRE_TRANSITIONS_COMP);
-      return 0;
-    }
-
-  /* read the transitions */
-  for (i = 0 ; i < n_sortantes ; i++) {
-      u_fscanf(f,"%d",&sortants[i]);
-    }
-
-  /* read the end of line char */
-  u_fgetc(f);
-
-  if (n_sortantes == 0)
-    return 2;
-
-  return 1;
+ * This function compiles the graph number #n and saves its states into the
+ * output .fst2.
+ */
+int compile_grf(int n,struct compilation_info* infos) {
+int i;
+int n_states;
+char name[FILENAME_MAX];
+struct list_int* transitions;
+unichar ligne[MAX_GRF_BOX_CONTENT];
+SingleGraph graph=new_SingleGraph();
+u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
+/* We get the absolute path of the graph */
+get_absolute_name(name,n,infos); 
+FILE* f=u_fopen(name,U_READ);
+if (f==NULL) {
+   error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
+   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+   if (n==0) return 0;
+   return 1;
 }
-
-
-
-
-
-
-//////////////////////////////////////////////////////////
-///////////////// COMPILER UN GRAPHE /////////////////////
-//////////////////////////////////////////////////////////
-
-int compiler_graphe_comp (int graphe_courant, int mode, Alphabet* alph, FILE* fs_comp)
-{
-  int i;
-  //int courant;
-  int traitement,lire;
-  int n_etats_initial;
-  FILE *f;
-  char nom[TAILLE_MOT_GRAND_COMP];
-  int sortants[NOMBRE_TRANSITIONS_COMP];
-  unichar ligne[TAILLE_MOT_GRAND_COMP];
-  //char err[1000];
-
-  SingleGraph graph = new_SingleGraph();
-
-
-  /* status message */
-  u_printf("Compiling graph %S\n",donnees->nom_graphe[graphe_courant]);
-
-
-  /* get name with path, e.g.
-   * DATE -> C:/Unitex/French/Graphs/Date/DATE.grf */
-  conformer_nom_graphe_comp(nom,graphe_courant); 
-
-  /* open graph file */
-  f=u_fopen(nom,U_READ);
-  if (f == NULL) /* cannot open */
-    {
-      error("Cannot open the graph %S.grf\n",donnees->nom_graphe[graphe_courant]);
-      error("(%s)\n",nom);
-      write_graph_comp(fs_comp, graph,
-                       (-(graphe_courant)-1),
-                       donnees->nom_graphe[graphe_courant]);
-      donnees->statut_graphe[graphe_courant] = 0;
-      if (graphe_courant == 0) return 0;
-      return 1;
-    }
-
-  /* read header */
-  u_fgetc(f);                       /* skip BOM */
-  while ( u_fgetc(f) != '#' );      /* skip header with formatting instructions */
-  /* Skip the newline and the number of states */
-  u_fscanf(f,"%d\n",&n_etats_initial);
-
-  /* If necessary, we resize the graph that it can hold all the states */
-  if (graph->capacity<n_etats_initial) {
-     set_state_array_capacity(graph,n_etats_initial);
-  }
-  /* we start with every line being one state of the automaton */
-  for (i=0; i < n_etats_initial; i++)
-    {
-      graph->states[i] = new_SingleGraphState();
-    }
-  graph->number_of_states = n_etats_initial;
-
-  for (i=0; i<n_etats_initial; i++)
-    {
-
-      /* read one line in file f */
-      //On lit le contenu d'une boite et ses sorties (transitions)
-      lire = lire_ligne_comp(f,ligne,sortants,graphe_courant);
-      
-      /* error reading line */
-      if (lire == 0)
-        {
-          donnees->statut_graphe[graphe_courant] = 0;
-          write_graph_comp(fs_comp, graph,
-                           (-(graphe_courant)-1),
-                           donnees->nom_graphe[graphe_courant]);
-          free_SingleGraph(graph);
-          u_fclose(f);
-          if (graphe_courant == 0)
-            return 0;
-          return 1;
-        }
-      /* box contains transitions: process them */
-      //On traite la ligne : ecriture en memoire
-      if (lire == 1)
-        {
-          traitement = traitement_ligne_comp(ligne,sortants,graph,i,graphe_courant,mode,alph);
-          if ((traitement == 0) || (traitement == -1))
-            {
-              donnees->statut_graphe[graphe_courant] = 0;
-              write_graph_comp(fs_comp, graph,
-                               (-(graphe_courant)-1),
-                               donnees->nom_graphe[graphe_courant]);
-              free_SingleGraph(graph);
-              u_fclose(f);
-              if (traitement == -1) return -1;
-              if (graphe_courant == 0) return 0;
-              return 1;
-            }
-        }
-    }
-  fflush(f);
-  u_fclose(f);
-  /* end of reading file */
-
-
-  //etat initial: bit 2 a 1
-  graph->states[0]->control=(unsigned char)((graph->states[0]->control)|2);
-  //etat final: bit 1 a 1
-  graph->states[1]->control=(unsigned char)((graph->states[1]->control)|1);
-  
-
-  // ELAGAGE, SUPPRESSION DES EPSILONS TRANSITIONS
-  check_co_accessibility(graph->states,1);  
-  remove_epsilon_transitions(graph);
-  check_accessibility(graph->states,0);
-  remove_useless_states(graph);
-
-  if (graph->states[0] == NULL)
-    {
-      donnees->statut_graphe[graphe_courant] = 0;
-      write_graph_comp(fs_comp, graph,
-                       (-(graphe_courant)-1),
-                       donnees->nom_graphe[graphe_courant]);
-
+/* If we can open the .grf file, we start with skipping the header. We skip 
+ * the first '#' and then we look for the second. */
+u_fgetc(f);
+int c;
+while ((c=u_fgetc(f))!=EOF && c!='#');
+if (c==EOF) {
+   error("Invalid graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
+   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+   if (n==0) return 0;
+   return 1;
+}
+/* Skip the newline and the number of states */
+u_fscanf(f,"%d\n",&n_states);
+/* If necessary, we resize the graph that it can hold all the states */
+if (graph->capacity<n_states) {
+   set_state_array_capacity(graph,n_states);
+}
+/* Now, every line represents a state of the automaton */
+for (i=0;i<n_states;i++) {
+   graph->states[i]=new_SingleGraphState();
+}
+graph->number_of_states=n_states;
+for (i=0;i<n_states;i++) {
+   /* We read one line and we process it */
+   int result=read_grf_line(f,ligne,&transitions,n,infos);
+   if (result==0) {
+      /* In case of error, we dump the graph and return */
+      write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
       free_SingleGraph(graph);
-      if (graphe_courant == 0)
-        {
-          error("ERROR: Main graph %S.grf has been emptied\n",donnees->nom_graphe[graphe_courant]);
-          return 0;
-        }
-      error("WARNING: graph %S.grf has been emptied\n",donnees->nom_graphe[graphe_courant]);
+      u_fclose(f);
+      if (n==0) return 0;
       return 1;
-    }
-  donnees->statut_graphe[graphe_courant] = 1;
-
-  int det = determinisation(graph);
-  int min = minimisation(graph);
-  write_graph_comp(fs_comp, graph,
-                   (-(graphe_courant)-1),
-                   donnees->nom_graphe[graphe_courant]);
-  free_SingleGraph(graph);
-  if ( (det == 0) || (min == 0) )
-    {
-      if (graphe_courant == 0)
-        {
-          error("ERROR in main graph %S.grf: Tore error. Please, contact Unitex programmers\n",donnees->nom_graphe[graphe_courant]);
-          return 0;
-        }
-      error("WARNING in graph %S.grf: Tore error. Please, contact Unitex programmers\n",donnees->nom_graphe[graphe_courant]);
+   }
+   /* We process the box */
+   process_grf_state(ligne,transitions,graph,i,n,infos);
+   free_list_int(transitions);
+}
+u_fclose(f);
+/* Once we have loaded the graph, we process it. */
+set_initial_state(graph->states[0]);
+set_final_state(graph->states[1]);
+compute_reverse_transitions(graph);
+check_co_accessibility(graph->states,1);  
+remove_epsilon_transitions(graph);
+check_accessibility(graph->states,0);
+remove_useless_states(graph);
+if (graph->states[0]==NULL) {
+   /* If the graph has been emptied */
+   write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+   free_SingleGraph(graph);
+   if (n==0) {
+      error("ERROR: Main graph %S.grf has been emptied\n",infos->graph_names->value[n]);
       return 0;
-    }
-  return 1;
+   }
+   error("WARNING: graph %S.grf has been emptied\n",infos->graph_names->value[n]);
+   return 1;
 }
-
-
-// Extraction du nom du graphe et du chemin des graphes
-// ex: E:/Unitex/French/date.grf -> date   et  E:/Unitex/French/
-
-int extraire_nom_graphe_comp(char *s1,unichar* S2)
-{
-  char s2[TAILLE_MOT_GRAND_COMP];
-  char temp[TAILLE_MOT_GRAND_COMP];
-  int l,i,j;
-
-  strcpy(temp,s1);
-  l=strlen(temp);
-  i=l-5;
-  temp[i+1]='\0'; //On supprime le .grf
-
-  while (i>=0 && temp[i]!='/' && temp[i]!='\\') i--;
-
-  if (
-#ifdef _NOT_UNDER_WINDOWS
-      temp[i]=='/'
-#else
-      temp[i]=='\\'
-#endif
-      ) {
-    // if we have an absolute path, we care for the slash or backslash
-    for (j=i+1;j<l;j++) s2[j-i-1]=temp[j];
-    for (j=0;j<i+1;j++) donnees->chemin_graphe_principal[j]=temp[j];
-    donnees->chemin_graphe_principal[i+1]='\0';
-    u_strcpy(S2,s2);
-    return 1;
-  }
-  else {
-    // if there is no path
-    // we don't need to modify S2
-    // and we put an an empty path
-    donnees->chemin_graphe_principal[0]='\0';
-    u_strcpy(S2,temp);
-    return 1;
-  }
-}
-
-
-/////////////////////////////////////////////////
-///////// COMPILATION GENERALE //////////////////
-////////////////////////////////////////////////
-
-int compilation(char *nom_graphe_principal,int mode,Alphabet* alph,FILE* fs_comp)
-{
- int compteur=0;
- int comp;
-
-  if (extraire_nom_graphe_comp(nom_graphe_principal,donnees->nom_graphe[0]) == 0) return 0;
-  
-  ajouter_graphe_comp(donnees->nom_graphe[compteur],rac_graphe_comp,0);
-  do
-  {
-    comp = compiler_graphe_comp(compteur,mode,alph,fs_comp);
-   if ((comp == 0) && (compteur == 0)) return 0;
-   if (comp == -1) return 0;
-   compteur++;
-  }
-  while ((nombre_graphes_comp < NOMBRE_GRAPHES_COMP) && (compteur < nombre_graphes_comp));
-
-  if (nombre_graphes_comp >= NOMBRE_GRAPHES_COMP)
-  {
-    error("There are too many graphs. The number of graphs should be lower than %d\n",NOMBRE_GRAPHES_COMP);
-    return 0;
-  }
-
-  return 1;
-}
-
-//Initialisation generale
-
-void init_generale_comp()
-{
-  int i;
-
-  nombre_graphes_comp=0;
-  nombre_etiquettes_comp=0;
-
-  for (i=0;i<NOMBRE_GRAPHES_COMP;i++)
-    {
-      donnees->statut_graphe[i]=-1;
-      donnees->nom_graphe[i][0]='\0';
-    }
-    nombre_graphes_comp=0;
+/* Now, we minimize the automaton assuming that reversed transitions are still there */
+minimize(graph,0);
+/* And we save it */
+write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+free_SingleGraph(graph);
+return 1;
 }
 
 
 /**
- * print the final number of graphes
- * to the beginning of .fst2 file
+ * This function takes the main graph name as given to the program and
+ * computes its path and its name without path and extension. Then, the
+ * name without path and extension is added to the graph names string_hash.
+ * 
+ * Examples:
+ * 
+ *    "E:\Unitex\French\date.grf" => "E:\Unitex\French\" and "date"
+ *    "/tmp/foo.grf" => "/tmp/" and "foo"
+ * 
  */
-void ecrire_fichier_sortie_nb_graphes(char name[],FILE* fs_comp)
-{
-  FILE *f;
-  int i,n;
-  i=2+9*2; // *2 because of unicode, +2 because of FF FE at file start
-  n=nombre_graphes_comp;
-  f=fopen((char*)name,"r+b");
-  do
-    {
-      fseek(f,i,0);
-      i=i-2;
-      u_fputc((unichar)((n%10)+'0'),f);
-      n=n/10;
-    }
-  while (n);
-  fclose(f);
+void extract_path_and_main_graph(char* main_graph,struct compilation_info* infos) {
+char temp[FILENAME_MAX];
+char temp2[FILENAME_MAX];
+unichar temp3[FILENAME_MAX];
+/* First, we copy the main graph path */
+get_path(main_graph,temp);
+u_strcpy(infos->main_graph_path,temp);
+/* Then, we get the name of the main graph without its path and extension */
+remove_path(main_graph,temp);
+remove_extension(temp,temp2);
+u_strcpy(temp3,temp2);
+/* And we insert it into the graph names string_hash */
+get_value_index(temp3,infos->graph_names);
 }
 
 
 /**
- * Met dans fichier de sortie la liste des etiquettes
+ * This is the main function that takes a main graph and compiles it.
+ * It returns 1 in case of success; 0 otherwise.
  */
-void sauvegarder_etiquettes_comp(FILE* fs_comp)
-{
-  int i;
+int compile_grf(char* main_graph,struct compilation_info* infos) {
+int current_graph=1;
+int result;
+extract_path_and_main_graph(main_graph,infos);
+do {
+   result=compile_grf(current_graph,infos);
+   if (result==0 && current_graph==1) {
+      /* If the main graph has been emptied, then the compilation has failed */
+      return 0;
+   }
+   if (result==-1) return 0;
+   current_graph++;
+} while (current_graph<infos->graph_names->size);
+return 1;
+}
 
-  for (i=0;i<nombre_etiquettes_comp;i++) {
-    if ((donnees->Etiquette_comp[i][0])=='@') {
-      if ((donnees->Etiquette_comp[i][1])=='\0') {
-        u_fprintf(fs_comp,"%%@\n");
-        }
-      else {
-         u_fprintf(fs_comp,"%S\n",donnees->Etiquette_comp[i]);
+
+/**
+ * Prints the final number of graphs at the beginning of the .fst2 file.
+ * This is safer to use this function instead of a raw fseek, since the fseek
+ * must be at +2 if and only if we are in UTF16. If the encoding changes, the
+ * fseek may also change (for instance, we would have +0 for UTF8). So, it is
+ * safer to let the U_MODIFY mode do the job.
+ */
+void write_number_of_graphs(char* name,int n) {
+FILE* f=u_fopen(name,U_MODIFY);
+/* And we print the number of graphs on 10 digits */
+u_fprintf(f,"%010d",n);
+u_fclose(f);
+}
+
+
+/**
+ * Dumps into the given fst2 the tags contained in the given string_hash.
+ */
+void write_tags(FILE* fst2,struct string_hash* tags) {
+int n_tags=tags->size;
+for (int i=0;i<n_tags;i++) {
+   if (tags->value[i][0]=='@') {
+      /* During the construction of the tags, only strict-case tags are
+       * prefixed with '@'. Tags that tolerate case variations are not
+       * prefixed with '%' */
+      if (tags->value[i][1]=='\0') {
+         u_fprintf(fst2,"%%@\n");
+      } else {
+         u_fprintf(fst2,"%S\n",tags->value[i]);
       }
-    }
-    else {
-      u_fprintf(fs_comp,"%%%S\n",donnees->Etiquette_comp[i]);
-    }
-  }
-  u_fprintf(fs_comp,"f\n");
+   } else {
+      u_fprintf(fst2,"%%%S\n",tags->value[i]);
+   }
+}
+u_fprintf(fst2,"f\n");
 }
 
 

@@ -47,6 +47,8 @@
 #define U_READ "rb"
 #define U_WRITE "wb"
 #define U_APPEND "ab"
+#define U_MODIFY "r+b"
+
 
 /* This caracter is used as the first one of a unicode text file... */
 #define U_BYTE_ORDER_MARK 0xFEFF

@@ -24,6 +24,7 @@
 #include "List_int.h"
 #include "Grf2Fst2_lib.h"
 #include "SingleGraph.h"
+#include "Error.h"
 
 
 static struct list_int** dependencies;
@@ -62,9 +63,6 @@ if (res==NULL) {
    error("Cannot create %s\n",temp);
    return FLATTEN_ERROR;
 }
-/* We set globals used in Grf2Fst2lib.cpp !!! */
-nombre_etiquettes_comp=origin->number_of_tags;
-nombre_graphes_comp=origin->number_of_graphs;
 u_printf("Computing grammar dependencies...\n");
 /* We build the dependency tree of the grammar */
 dependencies=compute_dependencies(origin);

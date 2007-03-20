@@ -40,6 +40,7 @@ return alphabet;
  * Frees a given 'Alphabet*' structure
  */
 void free_alphabet(Alphabet* alphabet) {
+if (alphabet==NULL) return;
 free(alphabet);
 }
 

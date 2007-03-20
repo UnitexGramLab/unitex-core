@@ -31,7 +31,6 @@
 #include "Pattern.h"
 #include "Loading_dic.h"
 #include "OptimizedFst2.h"
-#include "Pattern_transitions.h"
 #include "Text_parsing.h"
 #include "TransductionVariables.h"
 #include "LocateConstants.h"

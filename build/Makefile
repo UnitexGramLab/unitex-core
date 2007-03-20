@@ -258,8 +258,7 @@ CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o Unicode.o Text_tokens.o String
 				Text_parsing.o LocatePattern.o Loading_dic.o\
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o\
-				LocateFst2Tags.o Pattern_transitions.o\
-				Error.o SortTxtMain.o\
+				LocateFst2Tags.o Error.o SortTxtMain.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o\
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
 				Stack_unichar.o
@@ -269,7 +268,7 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o Unicode.o Text_to
 				Alphabet.o Matches.o Concordance.o FileName.o\
 				Text_parsing.o LocatePattern.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o\
-				DELA.o List_ustring.o Fst2.o Pattern.o Loading_dic.o LocateFst2Tags.o Pattern_transitions.o\
+				DELA.o List_ustring.o Fst2.o Pattern.o Loading_dic.o LocateFst2Tags.o\
 				Error.o SortTxtMain.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o
@@ -282,7 +281,7 @@ DICO      = Dico
 DICO_OBJS = Dico.o List_int.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
             List_ustring.o Unicode.o CompoundWordHashTable.o Fst2.o IOBuffer.o Error.o \
             CompoundWordTree.o\
-            Pattern.o Loading_dic.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o Pattern_transitions.o \
+            Pattern.o Loading_dic.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o \
             Text_parsing.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o LocateAsRoutine.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o
@@ -313,7 +312,7 @@ EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o Unicode.o fst2autalmot.o autalmot_ol
 EXTRACT      = Extract
 EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
-               DELA.o List_ustring.o Fst2.o Pattern.o Loading_dic.o Pattern_transitions.o\
+               DELA.o List_ustring.o Fst2.o Pattern.o Loading_dic.o \
                Unicode.o Text_tokens.o FileName.o Extract_units.o Alphabet.o String_hash.o Matches.o\
 	            MorphologicalFilters.o Error.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o\
 	            LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
@@ -365,7 +364,7 @@ LOCATE      = Locate
 LOCATE_OBJS = IOBuffer.o Locate.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
               LocatePattern.o Fst2.o Text_tokens.o List_int.o\
               Pattern.o Loading_dic.o CompoundWordTree.o LocateFst2Tags.o \
-              OptimizedFst2.o Pattern_transitions.o Text_parsing.o Matches.o TransductionVariables.o TransductionStack.o\
+              OptimizedFst2.o Text_parsing.o Matches.o TransductionVariables.o TransductionStack.o\
               ParsingInfo.o FileName.o MorphologicalFilters.o Error.o StringParsing.o LocateAsRoutine.o\
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
               Tokenization.o Contexts.o Stack_unichar.o
@@ -399,7 +398,7 @@ RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.
                Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
                Sentence_to_grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
-               Pattern_transitions.o Buffer.o Tokenization.o Contexts.o Stack_unichar.o
+               Buffer.o Tokenization.o Contexts.o Stack_unichar.o
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Unicode.o Regular_expression.o Error.o

@@ -42,6 +42,9 @@ u_printf("the automaton is not linear, the process is aborted.\n");
 
 
 int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
 
 if (argc!=3) {
@@ -54,14 +57,12 @@ if (fst2==NULL) {
    error("Cannot load text automaton %s\n",argv[1]);
    return 1;
 }
-
 int res=isLinearAutomaton(fst2);
 if (res!=LINEAR_AUTOMATON) {
    error("Error: the text automaton is not linear in sentence %d\n",res);
    free_Fst2(fst2);
    return 1;
 }
-
 FILE* f=u_fopen(argv[2],U_WRITE);
 if (f==NULL) {
    error("Cannot create %s\n",argv[2]);

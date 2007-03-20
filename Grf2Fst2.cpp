@@ -30,6 +30,8 @@
 #include "Alphabet.h"
 #include "IOBuffer.h"
 #include "FileName.h"
+#include "LocateConstants.h"
+#include "Error.h"
 
 
 void usage() {
@@ -49,99 +51,75 @@ u_printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n"
 
 
 int main(int argc,char *argv[]) {
-
-  setBufferMode();
-
-  FILE *fs_comp;
-
-  if(argc<2 || argc>6) {
-    usage();
-    return 0;
-  }
-  int TOKENIZATION_MODE=DEFAULT_TOKENIZATION;
-  pckg_path[0] = '\0';
-  if(argc >= 6) {
-    if(!strcmp(argv[argc - 2],"-d")){      
-      u_strcpy(pckg_path,argv[argc - 1]);
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
+if(argc<2 || argc>6) {
+   usage();
+   return 0;
+}
+struct compilation_info* infos=new_compilation_info();
+if(argc>=6) {
+   if(!strcmp(argv[argc-2],"-d")){      
+      strcpy(infos->repository,argv[argc-1]);
       argc -= 2;
-    }
+   }
+}
+int check_recursion=0;
+int index=0;
+if (argc>=3) {
+   if (!strcmp(argv[2],"y") || !strcmp(argv[2],"n")) {
+      if (!strcmp(argv[2],"y")) check_recursion=1;
+      if (argc==4) {index=3;}
+   }
+   else {
+      if (argc==3) {
+         index=2;
+      } else {
+         error("Extra parameter: %s\n",argv[2]);
+         return 1;
+      }
   }
-  int check_recursion=0;
-  int index=0;
-  if (argc>=3) {
-     if (!strcmp(argv[2],"y") || !strcmp(argv[2],"n")) {
-        if (!strcmp(argv[2],"y")) check_recursion=1;
-        if (argc==4) {index=3;}
-     }
-     else {
-        if (argc==3) {
-           index=2;
-        }
-        else {
-           error("Extra parameter: %s\n",argv[2]);
-           return 1;
-        }
-     }
-  }
-
-  Alphabet* alph=NULL;
-  if (index!=0) {
-     if (!strcmp(argv[index],"char_by_char")) {
-        TOKENIZATION_MODE=CHAR_BY_CHAR_TOKENIZATION;
-     }
-     else {
-        alph=load_alphabet(argv[index]);
-        if (alph==NULL) {
-           error("Cannot load alphabet file %s\n",argv[index]);
-           return 1;
-        }
-        TOKENIZATION_MODE=ALPHABET_TOKENIZATION;
-     }
-  }
-  char fst2_file_name[FILENAME_MAX];
-  remove_extension(argv[1],fst2_file_name);
-  strcat(fst2_file_name,".fst2");
-
-  if((fs_comp = u_fopen(fst2_file_name,U_WRITE)) == NULL)
-    {
-      error("Cannot open file %s\n",fst2_file_name);
+}
+if (index!=0) {
+   if (!strcmp(argv[index],"char_by_char")) {
+      infos->tokenization_policy=CHAR_BY_CHAR_TOKENIZATION;
+   } else {
+      infos->alphabet=load_alphabet(argv[index]);
+      if (infos->alphabet==NULL) {
+         error("Cannot load alphabet file %s\n",argv[index]);
+         return 1;
+      }
+      infos->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+   }
+}
+char fst2_file_name[FILENAME_MAX];
+remove_extension(argv[1],fst2_file_name);
+strcat(fst2_file_name,".fst2");
+if ((infos->fst2=u_fopen(fst2_file_name,U_WRITE))==NULL) {
+   error("Cannot open file %s\n",fst2_file_name);
+   return 1;
+}
+u_fprintf(infos->fst2,"0000000000\n");
+int result=compile_grf(argv[1],infos);
+if (result==0) {
+   error("Compilation has failed\n");
+   free_compilation_info(infos);
+   u_fclose(infos->fst2);
+   return 1;
+}
+free_alphabet(infos->alphabet);
+write_tags(infos->fst2,infos->tags);
+u_fclose(infos->fst2);
+write_number_of_graphs(fst2_file_name,infos->graph_names->size-1);
+if (check_recursion) {
+   if (!grf_OK(fst2_file_name)) {
       return 1;
    }
-
-  donnees=(struct donnees_comp *) malloc(sizeof(struct donnees_comp));
-  init_generale_comp();
-  init_arbres_comp();
-
-  u_fprintf(fs_comp,"0000000000\n");
-
-  int result = compilation(argv[1],TOKENIZATION_MODE,alph,fs_comp);
-  if (result == 0)
-  {
-    error("Compilation has failed\n");
-    libere_arbres_comp();
-    free(donnees);
-    u_fclose(fs_comp);
-    return 1;
-  }
-
-  if (alph!=NULL) {
-     free_alphabet(alph);
-  }
-
-  sauvegarder_etiquettes_comp(fs_comp);
-  libere_arbres_comp();
-  free(donnees);
-  u_fclose(fs_comp);
-  ecrire_fichier_sortie_nb_graphes(fst2_file_name,fs_comp);
-  if (check_recursion) {
-    if (!grf_OK(fst2_file_name)) {
-      free(fst2_file_name);
-      return 1;
-    }
-  }
-  u_printf("Compilation has succeeded\n");
-  return 0;
- }
-
-
+}
+free_compilation_info(infos);
+u_printf("Compilation has succeeded\n");
+return 0;
+}
 
