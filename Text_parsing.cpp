@@ -77,7 +77,8 @@ while (p->current_origin<p->token_buffer->size
    }
    if (!(p->token_buffer->int_buffer[p->current_origin]==p->SPACE
        && p->space_policy==DONT_START_WITH_SPACE)) {
-      p->stack_base = p->stack->stack_pointer = 0;
+      p->stack_base=-1;
+      p->stack->stack_pointer=-1;
       locate(0,initial_state,0,0,NULL,0,NULL,p);
    }
    p->match_list=save_matches(p->match_list,p->absolute_offset+p->current_origin,out,p);
@@ -217,7 +218,7 @@ if (current_state->control & 1) {
          if (pos>0) {add_match(pos+p->current_origin+p->absolute_offset-1,NULL,p);}
          else {add_match(pos+p->current_origin+p->absolute_offset,NULL,p);}
       } else {
-         p->stack->stack[stack_top]='\0';
+         p->stack->stack[stack_top+1]='\0';
          if (pos>0) {add_match(pos+p->current_origin+p->absolute_offset-1,p->stack->stack,p);}
          else {add_match(pos+p->current_origin+p->absolute_offset,p->stack->stack,p);}
       }
