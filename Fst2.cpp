@@ -276,7 +276,7 @@ if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
    u_fprintf(f,"@");
 }
 else {
-   u_fprintf(f,"%");
+   u_fprintf(f,"%%");
 }
 /* We print the content (label) of the tag */
 u_fprintf(f,"%S",tag->input);
