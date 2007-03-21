@@ -60,11 +60,13 @@ if(argc<2 || argc>6) {
    return 0;
 }
 struct compilation_info* infos=new_compilation_info();
-if(argc>=6) {
-   if(!strcmp(argv[argc-2],"-d")){      
-      strcpy(infos->repository,argv[argc-1]);
-      argc -= 2;
-   }
+if(argc>=4) {
+  /* If the penultimate arg is "-d" the library package path is given,
+     [y/n] and [ALPH] are not obligatory! */
+  if(!strcmp(argv[argc-2],"-d")){      
+    strcpy(infos->repository,argv[argc-1]);
+    argc -= 2;
+  }
 }
 int check_recursion=0;
 int index=0;

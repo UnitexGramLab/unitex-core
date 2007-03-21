@@ -593,7 +593,7 @@ if (is_empty(u_tokens)) {
 unichar* token=(unichar*)take_ptr(u_tokens);
 unichar tmp[MAX_GRF_BOX_CONTENT];
 int is_an_output=(output!=NULL && output[0]!='\0');
-if (token[0]==':' && token[0]!='\0') {
+if (token[0]==':' && token[1]!='\0') {
    /* If we have a subgraph call */
    if (is_an_output) {
       error("WARNING: ignoring output associated to subgraph call\n");
@@ -617,9 +617,11 @@ free(token);
 /* Then, we process the rest of the tokens */
 while (!is_empty(u_tokens)) {
    token=(unichar*)take_ptr(u_tokens);                                 
-   if (token[0]==':' && token[0]!='\0') {
+   /* no error, but subgraph in the repository:
+   if (token[0]==':' && token[1]!='\0') {
       fatal_error("Unexpected subgraph call in token_sequence_2_integer_sequence\n");
    }
+   */
    u_sprintf(tmp,"%S%s",token,is_an_output?"/<E>":"");
    i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
    free(token);
