@@ -36,7 +36,6 @@
 #include "Fst2.h"
 #include "Text_tokens.h"
 #include "List_int.h"
-#include "Loading_dic.h"
 #include "CompoundWordTree.h"
 #include "Text_parsing.h"
 #include "Matches.h"

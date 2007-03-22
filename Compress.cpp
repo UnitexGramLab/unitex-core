@@ -28,7 +28,6 @@
 #include "String_hash.h"
 #include "AutomatonDictionary2Bin.h"
 #include "FileName.h"
-#include "Minimize_tree.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"

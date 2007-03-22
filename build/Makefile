@@ -249,13 +249,13 @@ CHECKDIC_OBJS = IOBuffer.o CheckDic.o Unicode.o FileName.o DELA.o Alphabet.o Str
 
 COMPRESS      = Compress
 COMPRESS_OBJS = IOBuffer.o Compress.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
-				String_hash.o AutomatonDictionary2Bin.o FileName.o Minimize_tree.o List_int.o\
+				String_hash.o AutomatonDictionary2Bin.o FileName.o List_int.o\
 				List_ustring.o Error.o StringParsing.o
 
 CONCORD      = Concord
 CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o Unicode.o Text_tokens.o String_hash.o\
 				List_int.o Alphabet.o Matches.o Concordance.o FileName.o\
-				Text_parsing.o LocatePattern.o Loading_dic.o\
+				Text_parsing.o LocatePattern.o\
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o\
 				LocateFst2Tags.o Error.o SortTxtMain.o\
@@ -268,7 +268,7 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o Unicode.o Text_to
 				Alphabet.o Matches.o Concordance.o FileName.o\
 				Text_parsing.o LocatePattern.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o\
-				DELA.o List_ustring.o Fst2.o Pattern.o Loading_dic.o LocateFst2Tags.o\
+				DELA.o List_ustring.o Fst2.o Pattern.o LocateFst2Tags.o\
 				Error.o SortTxtMain.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o
@@ -278,10 +278,10 @@ CONVERT_OBJS = IOBuffer.o Convert.o Unicode.o FileName.o CodePages.o Error.o\
 				HTMLCharacters.o AsciiSearchTree.o
 
 DICO      = Dico
-DICO_OBJS = Dico.o List_int.o DELA.o Dico_application.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
+DICO_OBJS = Dico.o List_int.o DELA.o ApplyDic.o FileName.o Alphabet.o String_hash.o Text_tokens.o \
             List_ustring.o Unicode.o CompoundWordHashTable.o Fst2.o IOBuffer.o Error.o \
             CompoundWordTree.o\
-            Pattern.o Loading_dic.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o \
+            Pattern.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o \
             Text_parsing.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o LocateAsRoutine.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o
@@ -312,8 +312,8 @@ EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o Unicode.o fst2autalmot.o autalmot_ol
 EXTRACT      = Extract
 EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
-               DELA.o List_ustring.o Fst2.o Pattern.o Loading_dic.o \
-               Unicode.o Text_tokens.o FileName.o Extract_units.o Alphabet.o String_hash.o Matches.o\
+               DELA.o List_ustring.o Fst2.o Pattern.o \
+               Unicode.o Text_tokens.o FileName.o ExtractUnits.o Alphabet.o String_hash.o Matches.o\
 	            MorphologicalFilters.o Error.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o\
 	            LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
 	            Tokenization.o Thai.o Contexts.o Stack_unichar.o
@@ -331,13 +331,14 @@ FST2GRF_OBJS = IOBuffer.o Fst2Grf.o Unicode.o Fst2.o Sentence_to_grf.o\
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = IOBuffer.o Fst2List.o Unicode.o Fst2.o Alphabet.o\
-                UnicharTree.o FileName.o String_hash.o Error.o TransductionVariables.o\
+                FileName.o String_hash.o Error.o TransductionVariables.o\
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o
 
 FST2TXT      = Fst2Txt
-FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o UnicharTree.o\
+FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
                TransductionVariables.o String_hash.o Error.o StringParsing.o\
-               Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o
+               Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
+               Fst2Txt_TokenTree.o Buffer.o
 
 FST2UNAMBIG      = Fst2Unambig
 FST2UNAMBIG_OBJS = Fst2.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o\
@@ -363,7 +364,7 @@ INFLECT_OBJS = IOBuffer.o Inflect.o Unicode.o Fst2.o Error.o Pattern.o List_ustr
 LOCATE      = Locate
 LOCATE_OBJS = IOBuffer.o Locate.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
               LocatePattern.o Fst2.o Text_tokens.o List_int.o\
-              Pattern.o Loading_dic.o CompoundWordTree.o LocateFst2Tags.o \
+              Pattern.o CompoundWordTree.o LocateFst2Tags.o \
               OptimizedFst2.o Text_parsing.o Matches.o TransductionVariables.o TransductionStack.o\
               ParsingInfo.o FileName.o MorphologicalFilters.o Error.o StringParsing.o LocateAsRoutine.o\
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
@@ -392,7 +393,7 @@ POLYLEX_OBJS = IOBuffer.o PolyLex.o Unicode.o Alphabet.o DELA.o List_ustring.o S
 
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o CompoundWordTree.o\
-               DELA.o List_ustring.o Fst2.o Pattern.o Loading_dic.o\
+               DELA.o List_ustring.o Fst2.o Pattern.o \
                Unicode.o Alphabet.o Matches.o FileName.o Normalization_transducer.o\
 	            PortugueseNormalization.o\
                Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\

@@ -27,7 +27,7 @@
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "Text_tokens.h"
-#include "Dico_application.h"
+#include "ApplyDic.h"
 #include "List_int.h"
 #include "FileName.h"
 #include "CompoundWordHashTable.h"

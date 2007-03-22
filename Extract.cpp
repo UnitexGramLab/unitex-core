@@ -25,7 +25,7 @@
 #include "Unicode.h"
 #include "FileName.h"
 #include "Text_tokens.h"
-#include "Extract_units.h"
+#include "ExtractUnits.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"
