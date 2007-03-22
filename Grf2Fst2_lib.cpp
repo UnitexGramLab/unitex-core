@@ -617,11 +617,9 @@ free(token);
 /* Then, we process the rest of the tokens */
 while (!is_empty(u_tokens)) {
    token=(unichar*)take_ptr(u_tokens);                                 
-   /* no error, but subgraph in the repository:
    if (token[0]==':' && token[1]!='\0') {
       fatal_error("Unexpected subgraph call in token_sequence_2_integer_sequence\n");
    }
-   */
    u_sprintf(tmp,"%S%s",token,is_an_output?"/<E>":"");
    i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
    free(token);
