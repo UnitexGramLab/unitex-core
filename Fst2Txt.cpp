@@ -230,7 +230,6 @@ void parcourir_graphe(int,int,int,int,struct parsing_info**,struct fst2txt_param
 int ecrire_transduction();
 
 
-int origine_courante;
 int taille_entree;
 unichar output[MAX_OUTPUT_LENGTH];
 unichar pile[MAX_OUTPUT_LENGTH];
@@ -306,7 +305,7 @@ while (s[i]!='\0') {
                  else {
                     // if the variable definition is correct
                     for (int k=v->start;k<=v->end;k++)
-                      empiler(p->buffer[k+origine_courante]);
+                      empiler(p->buffer[k+p->current_origin]);
                  }
              }
          }
@@ -481,6 +480,7 @@ while (t!=NULL) {
          // case of a sub-graph
          struct parsing_info* liste=NULL;
          unichar pile_old[MAX_OUTPUT_LENGTH];
+         pile[sommet]='\0';
          u_strcpy(pile_old,pile);
          parcourir_graphe((((unsigned)n_etiq)-1),p->fst2->initial_states[-n_etiq],pos,profondeur,&liste,p);
          while (liste!=NULL) {
