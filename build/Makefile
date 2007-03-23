@@ -325,9 +325,10 @@ FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
                String_hash.o StringParsing.o
 
 FST2GRF      = Fst2Grf
-FST2GRF_OBJS = IOBuffer.o Fst2Grf.o Unicode.o Fst2.o Sentence_to_grf.o\
+FST2GRF_OBJS = IOBuffer.o Fst2Grf.o Unicode.o Fst2.o Sentence2Grf.o\
                FileName.o List_int.o Error.o StringParsing.o Pattern.o\
-               List_ustring.o String_hash.o BitMasks.o BitArray.o
+               List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o\
+               Alphabet.o 
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = IOBuffer.o Fst2List.o Unicode.o Fst2.o Alphabet.o\

@@ -596,7 +596,7 @@ int is_an_output=(output!=NULL && output[0]!='\0');
 if (token[0]==':' && token[1]!='\0') {
    /* If we have a subgraph call */
    if (is_an_output) {
-      error("WARNING: ignoring output associated to subgraph call\n");
+      error("WARNING: ignoring output associated to subgraph call %S\n",token);
    }
    if (!is_empty(u_tokens)) {
       fatal_error("Unexpected token after subgraph call in token_sequence_2_integer_sequence\n");

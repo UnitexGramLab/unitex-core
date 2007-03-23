@@ -24,7 +24,7 @@
 #include <string.h>
 #include "Unicode.h"
 #include "Fst2.h"
-#include "Sentence_to_grf.h"
+#include "Sentence2Grf.h"
 #include "FileName.h"
 #include "List_int.h"
 #include "Copyright.h"
@@ -48,98 +48,67 @@ u_printf("directory, in a file named cursentence.txt.\n");
 
 
 int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
 
-  if (argc < 3 || argc > 5) {
-    usage();
-    return 0;
-  }
-
-  int SENTENCE;
-  char nom_grf[2000];
-  char nom_txt[2000];
-  char* fontname=NULL;
-  FILE * txt, * f;
-
-
-  if (!sscanf(argv[2],"%d",&SENTENCE)) {
-    error("Invalid sentence number %s\n",argv[2]);
-    return 1;
-  }
-
-  get_path(argv[1],nom_grf);
-  get_path(argv[1],nom_txt);
-
-  switch (argc){
-  case 3:
-    strcat(nom_grf,"cursentence.grf");
-    strcat(nom_txt,"cursentence.txt");
-    break;
-  case 4:
-    if (argv[3][0]=='-' && argv[3][1]=='f' && argv[3][2]=='=') {
-       fontname=&(argv[3][3]);
-       strcat(nom_grf,"cursentence.grf");
-       strcat(nom_txt,"cursentence.txt");
-    } else {
-        strcat(nom_grf, argv[3]);
-        strcat(nom_grf, ".grf");
-
-        strcat(nom_txt, argv[3]);
-        strcat(nom_txt, ".txt");
-    }
-    break; 
-  case 5:
-       if (argv[4][0]=='-' && argv[4][1]=='f' && argv[4][2]=='=') {
-          fontname=&(argv[4][3]);
-       } else {
-          error("Wrong parameter: %s\n",argv[4]);
-       }  
-        strcat(nom_grf, argv[3]);
-        strcat(nom_grf, ".grf");
-    
-        strcat(nom_txt, argv[3]);
-        strcat(nom_txt, ".txt");
-        break;
-  }
-#ifdef OLD
-  } else {
-    if (argv[3][0]=='-' && argv[3][1]=='f' && argv[3][2]=='=') {
-       fontname=&(argv[3][3]);
-    }
-    else {
-    strcat(nom_grf, argv[3]);
-    strcat(nom_grf, ".grf");
-
-    strcat(nom_txt, argv[3]);
-    strcat(nom_txt, ".txt");
-    if (argc==5) {
-       if (argv[4][0]=='-' && argv[4][1]=='f' && argv[4][2]=='=') {
-          fontname=&(argv[4][3]);
-       }
-       else {
-          error("Wrong parameter: %s\n",argv[4]);
-       }
-    }
-    }
-  }
-#endif
-
-
-  f = u_fopen(nom_grf,U_WRITE);
-  if (f==NULL) {
-     error("Cannot write file %s\n",nom_grf);
-     return 1;
-  }
-
-  txt = u_fopen(nom_txt,U_WRITE);
-  if (txt==NULL) {
-     error("Cannot write file %s\n",nom_txt);
-     u_fclose(f);
-     return 1;
-  }
-
-
-
+if (argc<3 || argc>5) {
+   usage();
+   return 0;
+}
+int SENTENCE;
+char grf_name[FILENAME_MAX];
+char txt_name[FILENAME_MAX];
+char* fontname=NULL;
+if (!sscanf(argv[2],"%d",&SENTENCE)) {
+   error("Invalid sentence number %s\n",argv[2]);
+   return 1;
+}
+get_path(argv[1],grf_name);
+get_path(argv[1],txt_name);
+switch (argc){
+   case 3:
+      strcat(grf_name,"cursentence.grf");
+      strcat(txt_name,"cursentence.txt");
+      break;
+      
+   case 4:
+      if (argv[3][0]=='-' && argv[3][1]=='f' && argv[3][2]=='=') {
+         fontname=&(argv[3][3]);
+         strcat(grf_name,"cursentence.grf");
+         strcat(txt_name,"cursentence.txt");
+      } else {
+         strcat(grf_name,argv[3]);
+         strcat(grf_name,".grf");
+         strcat(txt_name,argv[3]);
+         strcat(txt_name,".txt");
+      }
+      break; 
+      
+   case 5:
+      if (argv[4][0]=='-' && argv[4][1]=='f' && argv[4][2]=='=') {
+         fontname=&(argv[4][3]);
+      } else {
+         error("Wrong parameter: %s\n",argv[4]);
+      }  
+      strcat(grf_name,argv[3]);
+      strcat(grf_name,".grf");
+      strcat(txt_name,argv[3]);
+      strcat(txt_name,".txt");
+      break;
+}
+FILE* f=u_fopen(grf_name,U_WRITE);
+if (f==NULL) {
+   error("Cannot file %s\n",grf_name);
+   return 1;
+}
+FILE* txt=u_fopen(txt_name,U_WRITE);
+if (txt==NULL) {
+   error("Cannot file %s\n",txt_name);
+   u_fclose(f);
+   return 1;
+}
 u_printf("Loading %s...\n",argv[1]);
 Fst2* fst2=load_one_sentence_from_fst2(argv[1],SENTENCE);
 if (fst2==NULL) {
@@ -149,10 +118,10 @@ if (fst2==NULL) {
    return 1;
 }
 u_fprintf(txt,"%S\n",fst2->graph_names[SENTENCE]);
+u_fclose(txt);
 u_printf("Creating GRF...\n");
 sentence_to_grf(fst2,SENTENCE,fontname,f);
 u_fclose(f);
-u_fclose(txt);
 free_Fst2(fst2);
 u_printf("Done.\n");
 return 0;
