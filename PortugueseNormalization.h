@@ -28,22 +28,22 @@
 #include "Alphabet.h"
 #include "Matches.h"
 #include "List_ustring.h"
-#include "Sentence_to_grf.h"
-#include "Normalization_transducer.h"
+#include "Sentence2Grf.h"
+#include "NormalizationFst2.h"
 #include "DELA.h"
 
 void build_portuguese_normalization_grammar(Alphabet*,struct match_list*,unsigned char*,
                                             struct INF_codes*,unsigned char*,struct INF_codes*,
-                                            char*,struct noeud_arbre_normalization*, struct noeud_arbre_normalization* nasal_norm_tree);
+                                            char*,struct normalization_tree*, struct normalization_tree* nasal_norm_tree);
 int replace_match_output_by_normalization_line(struct match_list*,Alphabet*,unsigned char*,
                                                 struct INF_codes*,unsigned char*,struct INF_codes*,
-                                                struct noeud_arbre_normalization*);
+                                                struct normalization_tree*);
 int tokenize_portuguese_match(unichar*,unichar*,unichar*,unichar*,unichar*);
 int get_radical_lemma(unichar*,struct list_ustring**,Alphabet*,unsigned char*,struct INF_codes*);
 int get_inf_number_for_token(int,unichar*,int,unichar*,Alphabet*,unsigned char*);
 int compatible_portuguese_inflectional_codes(struct dela_entry*,int,unichar**);
 void save_portuguese_normalization_grammar(int,struct match_list*,char*);
-int explore_portuguese_normalization_tree(unichar*,unichar*,struct list_ustring*,struct noeud_arbre_normalization*,
+int explore_portuguese_normalization_tree(unichar*,unichar*,struct list_ustring*,struct normalization_tree*,
                                           Alphabet*);
 struct list_ustring* tokenize_portuguese_pronoun(unichar*);
 

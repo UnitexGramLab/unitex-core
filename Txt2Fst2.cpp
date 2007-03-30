@@ -25,18 +25,19 @@
 #include "Text_tokens.h"
 #include "Alphabet.h"
 #include "Unicode.h"
-#include "Load_DLF_DLC.h"
+#include "DELA_tree.h"
 #include "DELA.h"
 #include "String_hash.h"
 #include "Text_automaton.h"
 #include "List_int.h"
-#include "Normalization_transducer.h"
+#include "NormalizationFst2.h"
 #include "Fst2.h"
 #include "FileName.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "StringParsing.h"
 #include "Error.h"
+#include "Grf2Fst2_lib.h"
 
 
 void usage() {
@@ -48,25 +49,34 @@ u_printf("     [-clean] : cleans each sentence automaton, keeping best paths.\n"
 u_printf("     [norm] : the fst2 grammar used to normalize the text automaton.\n\n");
 u_printf("Constructs the text automaton. If the sentences of the text were delimited\n");
 u_printf("with the special tag {S}, the program produces one automaton per sentence.\n");
-u_printf("If not, the text is turned into %d token long automata. The result file\n",MAX_TOKENS);
+u_printf("If not, the text is turned into %d token long automata. The result file\n",MAX_TOKENS_IN_SENTENCE);
 u_printf("named TEXT.FST2 is stored is the text directory.\n");
 }
 
 
 
-//
-// this function try to read a sentence in the file
-//
-int lire_sentence(int buffer[],int* N,FILE* f,int SENTENCE_MARKER) {
-int length=0;
+/**
+ * This function tries to read a sentence from the given file.
+ * It stops when it finds the EOF, a "{S}" or when MAX_TOKENS_IN_SENTENCE
+ * tokens have been read. All the tokens that compose the sentence are stored
+ * into 'buffer', except the "{S}", if any. The number of these tokens is stored
+ * in '*N'.
+ * 
+ * The function returns 1 if a sentence was read; 0 otherwise.
+ */
+int read_sentence(int* buffer,int *N,FILE* f,int SENTENCE_MARKER) {
 if (1!=fread(buffer,sizeof(int),1,f)) {
+   /* If we are at the end of the file */
    return 0;
 }
-if (buffer[0]!=SENTENCE_MARKER) {
+int length;
+if (buffer[0]==SENTENCE_MARKER) {
    /* If the text starts by a {S}, we don't want to stop there */
+   length=0;
+} else {
    length=1;
 }
-while (length<MAX_TOKENS && 1==fread(buffer+length,sizeof(int),1,f) && buffer[length]!=SENTENCE_MARKER) {
+while (length<MAX_TOKENS_IN_SENTENCE && 1==fread(buffer+length,sizeof(int),1,f) && buffer[length]!=SENTENCE_MARKER) {
    length++;
 }
 if (length==0) return 0;
@@ -94,111 +104,102 @@ fclose(f);
 
 
 int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
 
 if (argc<3 || argc>5) {
    usage();
    return 0;
 }
-struct string_hash* etiquettes=new_string_hash();
-// we insert in any case the epsilon in preview of future operations on
-// the text automaton that could need this special tag
+struct string_hash* tags=new_string_hash();
+/* We insert in any case the epsilon tag in preview of future operations on
+ * the text automaton that could need this special tag */
 unichar epsilon[4];
 u_strcpy(epsilon,"<E>");
-get_value_index(epsilon,etiquettes);
-struct noeud_dlf_dlc* racine;
-racine=new_noeud_dlf_dlc();
-struct text_tokens* tok;
-Alphabet* alph;
-int buffer[MAX_TOKENS];
-int debut,N;
-FILE* f;
-FILE* out;
-char tokens_txt[2000];
-char text_cod[2000];
-char dlf[2000];
-char dlc[2000];
-get_snt_path((const char*)argv[1],tokens_txt);
+get_value_index(epsilon,tags);
+struct DELA_tree* tree=new_DELA_tree();
+int buffer[MAX_TOKENS_IN_SENTENCE];
+char tokens_txt[FILENAME_MAX];
+char text_cod[FILENAME_MAX];
+char dlf[FILENAME_MAX];
+char dlc[FILENAME_MAX];
+get_snt_path(argv[1],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
-get_snt_path((const char*)argv[1],text_cod);
+get_snt_path(argv[1],text_cod);
 strcat(text_cod,"text.cod");
-get_snt_path((const char*)argv[1],dlf);
+get_snt_path(argv[1],dlf);
 strcat(dlf,"dlf");
-get_snt_path((const char*)argv[1],dlc);
+get_snt_path(argv[1],dlc);
 strcat(dlc,"dlc");
-
-load_dlf_dlc(dlf,racine);
-load_dlf_dlc(dlc,racine);
-alph=load_alphabet(argv[2]);
+load_DELA(dlf,tree);
+load_DELA(dlc,tree);
+Alphabet* alph=load_alphabet(argv[2]);
 if (alph==NULL) {
    fatal_error("Cannot open %s\n",argv[2]);
 }
-tok=load_text_tokens(tokens_txt);
-if (tok==NULL) {
+struct text_tokens* tokens=load_text_tokens(tokens_txt);
+if (tokens==NULL) {
    fatal_error("Cannot open %s\n",tokens_txt);
 }
-
-f=fopen(text_cod,"rb");
+FILE* f=fopen(text_cod,"rb");
 if (f==NULL) {
    fatal_error("Cannot open %s\n",text_cod);
 }
-// on extrait le chemin du fichier texte
-char tmp[1000];
+char tmp[FILENAME_MAX];
 get_snt_path((const char*)argv[1],tmp);
 strcat(tmp,"text.fst2");
-out=u_fopen(tmp,U_WRITE);
+FILE* out=u_fopen(tmp,U_WRITE);
 if (out==NULL) {
    u_fclose(f);
    fatal_error("Cannot create %s\n",tmp);
 }
 int CLEAN=0;
-struct noeud_arbre_normalization* normalization_tree=NULL;
-
+struct normalization_tree* normalization_tree=NULL;
 if (argc==5) {
-   // if there are optional parameters
+   /* If there are optional parameters */
    if (!strcmp(argv[3],"-clean")) {
-      // if the clean parameter is set
       CLEAN=1;
    } else {
       error("Invalid parameter %s\n",argv[3]);
    }
-   normalization_tree=load_normalization_transducer(argv[4],alph,tok);
+   normalization_tree=load_normalization_fst2(argv[4],alph,tokens);
 }
 else
 if (argc==4) {
    if (!strcmp(argv[3],"-clean")) {
-      // if the clean parameter is set
       CLEAN=1;
    } else {
-         normalization_tree=load_normalization_transducer(argv[3],alph,tok);
+      normalization_tree=load_normalization_fst2(argv[3],alph,tokens);
    }
 }
-debut=0;
-int numero_phrase=1;
+int sentence_number=1;
+int N;
+/* We reserve the space for printing the number of sentence automata */
 u_fprintf(out,"0000000000\n");
 u_printf("Constructing text automaton...\n");
-while (lire_sentence(buffer,&N,f,tok->SENTENCE_MARKER)) {
-   construire_text_automaton(buffer,N,tok,racine,etiquettes,alph,out,numero_phrase,debut,debut+N-1,CLEAN,normalization_tree);
-   if (numero_phrase%100==0) u_printf("%d sentences read...        \r",numero_phrase);
-   numero_phrase++;
-   debut=debut+N+1;
+while (read_sentence(buffer,&N,f,tokens->SENTENCE_MARKER)) {
+   build_sentence_automaton(buffer,N,tokens,tree,tags,alph,out,sentence_number,CLEAN,normalization_tree);
+   if (sentence_number%100==0) u_printf("%d sentences read...        \r",sentence_number);
+   sentence_number++;
 }
-u_printf("%d sentence%s read\n",numero_phrase-1,(numero_phrase-1)>1?"s":"");
+u_printf("%d sentence%s read\n",sentence_number-1,(sentence_number-1)>1?"s":"");
 fclose(f);
 u_printf("Saving tags...\n");
-for (int i=0;i<etiquettes->size;i++) {
-  unichar tmp[1024];
-  escape(etiquettes->value[i],tmp,P_SLASH);
-  u_fprintf(out,"%%%S\n",tmp);
+for (int i=0;i<tags->size;i++) {
+   unichar tmp[1024];
+   escape(tags->value[i],tmp,P_SLASH);
+   u_fprintf(out,"%%%S\n",tmp);
 }
 u_fprintf(out,"f\n");
 u_fclose(out);
-ecrire_fichier_sortie_nombre_de_phrases_graphes(tmp,numero_phrase-1);
-free_noeud_dlf_dlc(racine);
-free_text_tokens(tok);
+write_number_of_graphs(tmp,sentence_number-1);
+free_DELA_tree(tree);
+free_text_tokens(tokens);
 free_alphabet(alph);
-free_string_hash(etiquettes);
-free_noeud_arbre_normalization(normalization_tree);
+free_string_hash(tags);
+free_normalization_tree(normalization_tree);
 return 0;
 }
 

@@ -74,8 +74,8 @@ do {
 void build_portuguese_normalization_grammar(Alphabet* alph,struct match_list* list,unsigned char* root_bin,
                                             struct INF_codes* root_inf,unsigned char* inflected_bin,
                                             struct INF_codes* inflected_inf,char* res_grf_name,
-                                            struct noeud_arbre_normalization* norm_tree,
-                                            struct noeud_arbre_normalization* nasal_norm_tree) {
+                                            struct normalization_tree* norm_tree,
+                                            struct normalization_tree* nasal_norm_tree) {
 struct match_list* L=list;
 int N=0;
 unichar temp[2000];
@@ -153,7 +153,7 @@ while (s[i]==':') {
 int replace_match_output_by_normalization_line(struct match_list* L,Alphabet* alph,unsigned char* root_bin,
                                                 struct INF_codes* root_inf,unsigned char* inflected_bin,
                                                 struct INF_codes* inflected_inf,
-                                                struct noeud_arbre_normalization* norm_tree) {
+                                                struct normalization_tree* norm_tree) {
 if (L->output==NULL) {
    return 0;
 }
@@ -498,7 +498,7 @@ u_fclose(f);
 // It returns the number of lines produced.
 //
 int explore_portuguese_normalization_tree(unichar* result,unichar* partial_line,struct list_ustring* pronouns,
-                                          struct noeud_arbre_normalization* node,Alphabet* alph) {
+                                          struct normalization_tree* node,Alphabet* alph) {
 int RES=0;
 if (node==NULL) {
    error("Internal error: NULL node in explore_portuguese_normalization_tree\n");
@@ -506,7 +506,7 @@ if (node==NULL) {
 }
 if (pronouns==NULL) {
    // if we have followed all the pronoun tokens
-   struct list_ustring* l=node->liste_arrivee;
+   struct list_ustring* l=node->outputs;
    while (l!=NULL) {
       RES++;
       unichar temp[1000];
@@ -517,15 +517,15 @@ if (pronouns==NULL) {
    }
    return RES;
 }
-struct trans_arbre_normalization* trans=node->trans;
+struct normalization_tree_transition* trans=node->trans;
 while (trans!=NULL) {
    if (is_equal_or_uppercase(trans->s,pronouns->string,alph)) {
       // if the pronoun token is compatible with the tree token, according to
       // the upper/lower case variants described by the alphabet,
       // we continue the exploration of the tree
-      RES=RES+explore_portuguese_normalization_tree(result,partial_line,pronouns->next,trans->arr,alph);
+      RES=RES+explore_portuguese_normalization_tree(result,partial_line,pronouns->next,trans->node,alph);
    }
-   trans=trans->suivant;
+   trans=trans->next;
 }
 return RES;
 }

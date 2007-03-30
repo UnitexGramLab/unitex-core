@@ -298,7 +298,8 @@ while (c!=EOF) {
      }
      if (z==(MAX_TAG_LENGTH-1) || c!='}') {
         // if the tag has no ending }
-        fatal_error("Error: a tag without ending } has been found\n");
+        s[z]='\0';
+        fatal_error("Error: a tag without ending } has been found:\n%S\n",s);
      }
      if (c=='\n') {
         // if the tag contains a return

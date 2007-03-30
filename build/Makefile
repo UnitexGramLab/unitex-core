@@ -395,10 +395,10 @@ POLYLEX_OBJS = IOBuffer.o PolyLex.o Unicode.o Alphabet.o DELA.o List_ustring.o S
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o CompoundWordTree.o\
                DELA.o List_ustring.o Fst2.o Pattern.o \
-               Unicode.o Alphabet.o Matches.o FileName.o Normalization_transducer.o\
+               Unicode.o Alphabet.o Matches.o FileName.o NormalizationFst2.o\
 	            PortugueseNormalization.o\
                Text_parsing.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
-               Sentence_to_grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
+               Sentence2Grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
                Buffer.o Tokenization.o Contexts.o Stack_unichar.o
 
@@ -416,10 +416,11 @@ TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\
 				FileName.o DELA.o List_ustring.o Table_hash.o Error.o StringParsing.o
 
 TXT2FST2      = Txt2Fst2
-TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o Load_DLF_DLC.o\
+TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o DELA_tree.o\
                 DELA.o List_ustring.o String_hash.o Text_automaton.o List_int.o\
-                Normalization_transducer.o Fst2.o FileName.o Error.o\
-                StringParsing.o Pattern.o BitMasks.o 
+                NormalizationFst2.o Fst2.o FileName.o Error.o\
+                StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
+                FIFO.o BitArray.o HashTable.o
 
 TAGSETNORM = TagsetNormFst2
 TAGSETNORM_OBJS = IOBuffer.o tagsetnorm.o Unicode.o autalmot.o fst_file.o ustring.o \
@@ -491,7 +492,7 @@ EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segt
 ################################
 ################################
 
-PROGS__ = $(TEST)
+PROGS__ = $(TEST) 
 
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO) $(ELAG) $(ELAGCOMP)\
 		$(EXTRACT) $(FLATTEN) $(FST2GRF) \
@@ -503,7 +504,8 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO) $(ELAG) $(ELAGC
 		$(TAGSETNORM) \
 		$(INFLECTKR) $(FST2LIST) $(SUFFORM2RAC) $(COMPRESSKR)\
 		$(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) $(TXT2FST2KR) \
-		$(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR) $(FST2UNAMBIG) $(MULTIFLEX)
+		$(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR) $(FST2UNAMBIG) $(MULTIFLEX) 
+		
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
@@ -520,7 +522,7 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OB
 		$(COMPRESSKR_OBJS) $(FST2LIST_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
 		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(FST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS) \
-		$(TEST_OBJS)
+		$(TEST_OBJS) $(FSTLOCATE_OBJS)
 
 
 ###########################

@@ -19,19 +19,18 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef Text_automatonH
 #define Text_automatonH
-//---------------------------------------------------------------------------
+
 
 #include "Unicode.h"
 #include "Text_tokens.h"
 #include "Alphabet.h"
-#include "Load_DLF_DLC.h"
+#include "DELA_tree.h"
 #include "String_hash.h"
-#include "Normalization_transducer.h"
+#include "NormalizationFst2.h"
 
-#define MAX_TOKENS 2000
+#define MAX_TOKENS_IN_SENTENCE 4 //2000
 
 
 struct trans_text_automaton {
@@ -58,11 +57,11 @@ struct info {
 };
 
 
-int count_non_space_tokens(int*,int,int,int);
-void construire_text_automaton(int*,int,struct text_tokens*,
-                               struct noeud_dlf_dlc*,struct string_hash*,
-                               Alphabet*,FILE*,int,int,int,int,
-                               struct noeud_arbre_normalization*);
+int count_non_space_tokens(int*,int,int);
+void build_sentence_automaton(int*,int,struct text_tokens*,
+                               struct DELA_tree*,struct string_hash*,
+                               Alphabet*,FILE*,int,int,
+                               struct normalization_tree*);
 
 
 #endif

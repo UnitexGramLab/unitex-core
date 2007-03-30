@@ -67,12 +67,16 @@ free(n);
 }
 
 
-int count_non_space_tokens(int buffer[],int length,int SPACE,int SENTENCE_MARKER) {
+/**
+ * This function returns the number of space tokens that are in the
+ * given buffer.
+ */
+int count_non_space_tokens(int buffer[],int length,int SPACE) {
 int n=0;
-for (int i=0;i<length && buffer[i]!=SENTENCE_MARKER;i++) {
-    if (buffer[i]!=SPACE) {
-       n++;
-    }
+for (int i=0;i<length;i++) {
+   if (buffer[i]!=SPACE) {
+      n++;
+   }
 }
 return n;
 }
@@ -120,20 +124,23 @@ return inserer_trans_text_automaton_(trans,tmp,indice);
 
 
 
-void explore_dictionary_tree(int pos,unichar* token,unichar* global,int pos_global,struct noeud_dlf_dlc* n,
+void explore_dictionary_tree(int pos,unichar* token,unichar* global,int pos_global,
+                             struct string_hash_tree_node* n,struct DELA_tree* tree,
                              struct info* INFO,struct noeud_text_automaton* noeud,int deplacement,
                              int indice_noeud_depart,int* is_not_unknown_token,int token_courant) {
 if (token[pos]=='\0') {
-   struct liste_chaines* liste=n->liste;
-   if (deplacement==1 && liste!=NULL) {
+   if (deplacement==1 && n->value_index!=-1) {
       // if we are on the first token, then it is not an unknown one
       (*is_not_unknown_token)=1;
    }
+   if (n->value_index==-1) return;
+   struct dela_entry_list* liste=tree->dela_entries[n->value_index];
+   if (liste==NULL) return;
    global[pos_global]='\0';
    while (liste!=NULL) {
       // we create all the transitions in the text automaton
       noeud->trans=inserer_trans_text_automaton(noeud->trans,global,liste->entry,indice_noeud_depart+deplacement);
-      liste=liste->suivant;
+      liste=liste->next;
    }
    // we try to go on with the next token in the sentence
    if (token_courant<INFO->length_max-1) {
@@ -144,12 +151,13 @@ if (token[pos]=='\0') {
          deplacement++;
       }
       token_courant++;
-      explore_dictionary_tree(0,INFO->tok->token[INFO->buffer[token_courant]],global,pos_global,n,INFO,noeud,
+      explore_dictionary_tree(0,INFO->tok->token[INFO->buffer[token_courant]],global,pos_global,tree->inflected_forms->root,
+                              tree,INFO,noeud,
                               deplacement,indice_noeud_depart,is_not_unknown_token,token_courant);
    }
    return;
 }
-struct trans_dlf_dlc* trans;
+struct string_hash_tree_transition* trans;
 trans=n->trans;
 if (token[pos]==',' || token[pos]=='.' || token[pos]=='/' || 
     token[pos]=='+' || token[pos]=='-' || token[pos]==':') {
@@ -157,10 +165,10 @@ if (token[pos]==',' || token[pos]=='.' || token[pos]=='/' ||
 }
 global[pos_global]=token[pos];
 while (trans!=NULL) {
-  if (is_equal_or_uppercase(trans->c,token[pos],INFO->alph)) {
-     explore_dictionary_tree(pos+1,token,global,pos_global+1,trans->arr,INFO,noeud,deplacement,indice_noeud_depart,is_not_unknown_token,token_courant);
+  if (is_equal_or_uppercase(trans->letter,token[pos],INFO->alph)) {
+     explore_dictionary_tree(pos+1,token,global,pos_global+1,trans->node,tree,INFO,noeud,deplacement,indice_noeud_depart,is_not_unknown_token,token_courant);
   }
-  trans=trans->suivant;
+  trans=trans->next;
 }
 }
 
@@ -332,14 +340,11 @@ while (l!=NULL) {
 void explore_normalization_tree(int pos_in_buffer,int token,struct info* INFO,
                                 struct noeud_text_automaton** noeud,
                                 int* nombre_noeuds,
-                                struct noeud_arbre_normalization* norm_tree_node,
+                                struct normalization_tree* norm_tree_node,
                                 int indice_de_depart,int deplacement) {
-struct list_ustring* liste_arrivee=norm_tree_node->liste_arrivee;
+struct list_ustring* liste_arrivee=norm_tree_node->outputs;
 while (liste_arrivee!=NULL) {
    // if there are outputs, we add paths in the text automaton
-   /*printf("fin:");
-   u_prints(liste_arrivee->s);
-   getchar();*/
    ajouter_chemin_automate_du_texte(indice_de_depart,INFO->alph,noeud,
                                     nombre_noeuds,
                                     liste_arrivee->string,
@@ -348,92 +353,88 @@ while (liste_arrivee!=NULL) {
    liste_arrivee=liste_arrivee->next;
 }
 // then, we explore the transition from this node
-struct trans_arbre_normalization* trans;
+struct normalization_tree_transition* trans;
 trans=norm_tree_node->trans;
 while (trans!=NULL) {
-   if (trans->token==EMPTY_TOKEN) {
-      //printf("coucou");
-      //getchar();
-   }
-   if (trans->token==token || trans->token==EMPTY_TOKEN /*case of an epsilon-transition*/) {
+   if (trans->token==token) {
       // if we have a transition for the current token
       int i=0;
-      if (token!=INFO->SPACE && trans->token!=EMPTY_TOKEN) {
+      if (token!=INFO->SPACE) {
          // we must ignore spaces to count the node position in the node array
          i=1;
       }
-      int shift=(trans->token!=EMPTY_TOKEN)?1:0;
-      explore_normalization_tree(pos_in_buffer+shift,INFO->buffer[pos_in_buffer+shift],
-                                 INFO,noeud,nombre_noeuds,trans->arr,
+      explore_normalization_tree(pos_in_buffer+1,INFO->buffer[pos_in_buffer+1],
+                                 INFO,noeud,nombre_noeuds,trans->node,
                                  indice_de_depart,deplacement+i);
       // as there can be only one matching transition, we exit the while
       trans=NULL;
    }
    else {
-      trans=trans->suivant;
+      trans=trans->next;
    }
 }
 }
 
 
-
-
-
-void construire_text_automaton(int buffer[],int length,struct text_tokens* tok,
-                               struct noeud_dlf_dlc* racine,struct string_hash* etiquettes,
-                               Alphabet* alph,FILE* out,int numero_phrase,
-                               int offset_start,int offset_end,int we_must_clean,
-                               struct noeud_arbre_normalization* norm_tree) {
-struct noeud_text_automaton* noeud[2*MAX_TOKENS];
+/**
+ * This function builds the sentence automaton that correspond to the
+ * given token buffer. It saves it into the given file.
+ */
+void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
+                               struct DELA_tree* DELA_tree,struct string_hash* tags,
+                               Alphabet* alph,FILE* out,int sentence_number,
+                               int we_must_clean,
+                               struct normalization_tree* norm_tree) {
+struct noeud_text_automaton* noeud[2*MAX_TOKENS_IN_SENTENCE];
 int i;
-// the +1 is for the final node
-int nombre_noeuds=1+count_non_space_tokens(buffer,length,tok->SPACE,tok->SENTENCE_MARKER);
-for (i=0;i<nombre_noeuds;i++) {
-  noeud[i]=new_noeud_text_automaton();
+/* We add +1 for the final node */
+int n_nodes=1+count_non_space_tokens(buffer,length,tokens->SPACE);
+for (i=0;i<n_nodes;i++) {
+   noeud[i]=new_noeud_text_automaton();
 }
-noeud[nombre_noeuds-1]->final=1;
+noeud[n_nodes-1]->final=1;
 struct info INFO;
-INFO.tok=tok;
+INFO.tok=tokens;
 INFO.buffer=buffer;
 INFO.alph=alph;
-INFO.SPACE=tok->SPACE;
+INFO.SPACE=tokens->SPACE;
 INFO.length_max=length;
 int noeud_courant=0;
 int is_not_unknown_token;
 unichar global[2000];
 
 for (i=0;i<length;i++) {
-  if (buffer[i]!=tok->SPACE && buffer[i]!=tok->SENTENCE_MARKER) {
+  if (buffer[i]!=tokens->SPACE && buffer[i]!=tokens->SENTENCE_MARKER) {
      // we try to produce every transition from the current token
      is_not_unknown_token=0;
-     explore_dictionary_tree(0,tok->token[buffer[i]],global,0,racine,&INFO,noeud[noeud_courant],1,noeud_courant,&is_not_unknown_token,i);
+     explore_dictionary_tree(0,tokens->token[buffer[i]],global,0,DELA_tree->inflected_forms->root,DELA_tree,&INFO,noeud[noeud_courant],1,noeud_courant,&is_not_unknown_token,i);
      if (norm_tree!=NULL) {
         // if there is a normalization tree, we explore it
-        explore_normalization_tree(i,buffer[i],&INFO,noeud,&nombre_noeuds,norm_tree,noeud_courant,1);
+        explore_normalization_tree(i,buffer[i],&INFO,noeud,&n_nodes,norm_tree,noeud_courant,1);
      }
      if (!is_not_unknown_token) {
         // if the token was not matched in the dictionary, we put it as an unknown trans
-        noeud[noeud_courant]->trans=inserer_trans_text_automaton_(noeud[noeud_courant]->trans,tok->token[buffer[i]],noeud_courant+1);
+        noeud[noeud_courant]->trans=inserer_trans_text_automaton_(noeud[noeud_courant]->trans,tokens->token[buffer[i]],noeud_courant+1);
      }
      noeud_courant++;
   }
 }
 if (we_must_clean) {
-   keep_best_paths(nombre_noeuds,noeud);
+   keep_best_paths(n_nodes,noeud);
 }
 
 int numero=0;
-for (i=0;i<nombre_noeuds;i++) {
+for (i=0;i<n_nodes;i++) {
    if (noeud[i]->final==0 || noeud[i]->final==1) {
       noeud[i]->numero=numero++;
    }
 }
-u_fprintf(out,"-%d ",numero_phrase);
+u_fprintf(out,"-%d ",sentence_number);
 for (int z=0;z<length;z++) {
-   u_fprintf(out,"%S",tok->token[buffer[z]]);
+   u_fprintf(out,"%S",tokens->token[buffer[z]]);
 }
 u_fprintf(out,"\n");
-for (i=0;i<nombre_noeuds;i++) {
+for (i=0;i<n_nodes;i++) {
    if (noeud[i]->final==0 || noeud[i]->final==1) {
       if (noeud[i]->final==0) {
          u_fprintf(out,": ");
@@ -445,7 +446,7 @@ for (i=0;i<nombre_noeuds;i++) {
       while (trans!=NULL) {
          if (noeud[trans->indice_noeud_arrivee]->final==0 || noeud[trans->indice_noeud_arrivee]->final==1) {
             // we only consider the transitions that point on a node that will not be removed
-            int indice=get_value_index(trans->chaine,etiquettes);
+            int indice=get_value_index(trans->chaine,tags);
 
             // the following line is used to write the tag instead of its number
             //u_strcpy(global,trans->chaine);
@@ -459,7 +460,7 @@ for (i=0;i<nombre_noeuds;i++) {
 }
 u_fprintf(out,"f \n");
 
-for (i=0;i<nombre_noeuds;i++) {
+for (i=0;i<n_nodes;i++) {
   free_noeud_text_automaton(noeud[i]);
 }
 }

@@ -19,283 +19,247 @@
   *
   */
 
-#include "Sentence_to_grf.h"
+#include "Sentence2Grf.h"
 #include "StringParsing.h"
 #include "Error.h"
+#include "BitArray.h"
+#include "DELA.h"
 
 
-void sentence_to_grf(Fst2* automate,int SENTENCE,char* font,FILE* f) {
-if (SENTENCE>automate->number_of_graphs) {
-   // if the index is out of bound
-   error("Sentence number too long\n");
+/* This is an approximation of the average width in pixels of a
+ * character */
+#define WIDTH_OF_A_CHAR 10
+
+
+int compute_state_ranks(Fst2*,int,int*);
+int get_max_width_for_ranks(Fst2*,int,int*,int*,int);
+void fst2_transitions_to_grf_states(Fst2*,int,int*,FILE*,int,int,int*,char*);
+struct grf_state* new_grf_state(char*,int,int);
+struct grf_state* new_grf_state(unichar*,int,int);
+void free_grf_state(struct grf_state*);
+void add_transition_to_grf_state(struct grf_state*,int);
+void write_grf_header(int,int,int,char*,FILE*);
+void save_grf_states(FILE*,struct grf_state**,int,int,char* font);
+
+
+
+/**
+ * This function takes a .fst2 that represents a text automaton and
+ * it build in 'f' the .grf that corresponds to the given sentence.
+ * 
+ * WARNING: a sentence automaton is supposed to have the following properties:
+ *           1) being acyclic 
+ *           2) being minimal
+ *           2) having no outgoing transition from the final state
+ */
+void sentence_to_grf(Fst2* fst2,int SENTENCE,char* font,FILE* f) {
+if (SENTENCE>fst2->number_of_graphs) {
+   /* If the index is out of bound */
+   error("Sentence number too large\n");
    return;
 }
-int nombre_etats=automate->number_of_states_per_graphs[SENTENCE];
-int* rang=(int*)malloc(sizeof(int)*nombre_etats);
-int* pos_X=(int*)malloc(sizeof(int)*nombre_etats);
-int rang_max=calculer_rang(automate,SENTENCE,rang,nombre_etats);
-int width_max=calculer_largeur_max_pour_chaque_rang(automate,SENTENCE,pos_X,nombre_etats,rang);
-int nombre_etats_res=numeroter_etiquettes_sur_octets_forts(automate,SENTENCE,nombre_etats);
-convertir_transitions_en_etats(automate,SENTENCE,nombre_etats,rang,f,nombre_etats_res,rang_max,width_max,pos_X,font);
-free(rang);
+/* The rank array will be used to store the rank of each state */
+int* rank=(int*)malloc(sizeof(int)*fst2->number_of_states_per_graphs[SENTENCE]);
+if (rank==NULL) {
+   fatal_error("Not enough memory in sentence_to_grf\n");
+}
+int maximum_rank=compute_state_ranks(fst2,SENTENCE,rank);
+/* The pos_X array will be used to store the X coordinate of the grf
+ * boxes that correspond to a given rank. We add +1 to the maximum rank,
+ * because the rank has been computed on the fst2 states and the
+ * X positions concerns fst2 transitions. */
+int* pos_X=(int*)malloc(sizeof(int)*(maximum_rank+1));
+if (pos_X==NULL) {
+   fatal_error("Not enough memory in sentence_to_grf\n");
+}
+int width_max=get_max_width_for_ranks(fst2,SENTENCE,pos_X,rank,maximum_rank);
+fst2_transitions_to_grf_states(fst2,SENTENCE,rank,f,maximum_rank,width_max,pos_X,font);
+free(rank);
 free(pos_X);
 }
 
 
 
-int numeroter_etiquettes_sur_octets_forts(Fst2* automate,int SENTENCE,int nombre_etats) {
-int debut=automate->initial_states[SENTENCE];
-int N=2;
-for (int i=0;i<nombre_etats;i++) {
-   struct fst2Transition* trans=automate->states[i+debut]->transitions;
+/**
+ * This function computes for each state of the fst2 the number of transitions
+ * that have been declared before it. These values will be used to know which number
+ * must be associated to a given transition of a given state. For instance, if we have
+ * the following automaton:
+ * 
+ * state 0: (4 1) 
+ * state 1: (5 2) (6 2)
+ * state 2: (7 3) 
+ * state 3: (8 4) (9 5) 
+ * state 4: (10 6) (11 7) (12 8) 
+ * state 5: (13 9) 
+ * ...
+ * 
+ * we will have the following array:
+ * 
+ * state 0: 0
+ * state 1: 1
+ * state 2: 3
+ * state 3: 4
+ * state 4: 6
+ * state 5: 9
+ * ...
+ * 
+ * Note that the array has an extra cell at its end. We use it to store the
+ * total number of transitions in the automaton.
+ */
+int* get_n_transitions_before_state(Fst2* fst2,int n) {
+int max=fst2->number_of_states_per_graphs[n];
+int* n_transitions_par_state=(int*)malloc((1+max)*sizeof(int));
+if (n_transitions_par_state==NULL) {
+   fatal_error("Not enough memory in get_n_transitions_par_state\n");
+}
+int initial_state=fst2->initial_states[n];
+Fst2Transition trans;
+n_transitions_par_state[0]=0;
+for (int i=0;i<max;i++) {
+   n_transitions_par_state[i+1]=n_transitions_par_state[i];
+   trans=fst2->states[i+initial_state]->transitions;
    while (trans!=NULL) {
-      // we put the value in the 2 upper bytes
-      trans->tag_number=(int)(trans->tag_number | (N<<NBRE_BITS_DE_DECALAGE));
-      N++;
+      n_transitions_par_state[i+1]++;
       trans=trans->next;
    }
 }
-return N;
+return n_transitions_par_state;
 }
 
 
-
-void convertir_transitions_en_etats(Fst2* automate,int SENTENCE,
-                                    int nombre_etats,int* rang,FILE* f,int N,int rang_max,
+/**
+ * This function creates the grf states that correspond to the given fst2
+ * and saves them to the given file.
+ */
+void fst2_transitions_to_grf_states(Fst2* fst2,int SENTENCE,
+                                    int* rank,FILE* f,int maximum_rank,
                                     int width_max,int* pos_X,char* font) {
+int n_states=fst2->number_of_states_per_graphs[SENTENCE];
+int* n_transitions_before_state=get_n_transitions_before_state(fst2,SENTENCE);
 int N_GRF_STATES=2;
-int MAX_STATES=10000;
-int debut=automate->initial_states[SENTENCE];
+int MAX_STATES=2+n_transitions_before_state[n_states];
+int initial_state=fst2->initial_states[SENTENCE];
 struct fst2Transition* trans;
-struct grf_state* tab_grf_state[MAX_STATES];
-for (int i=0;i<MAX_STATES;i++) {
-   tab_grf_state[i]=NULL;
+struct grf_state** grf_states=(struct grf_state**)malloc(MAX_STATES*sizeof(struct grf_state));
+if (grf_states==NULL) {
+   fatal_error("Not enough memory in fst2_transitions_to_grf_states\n");
 }
-tab_grf_state[0]=new_grf_state("\"<E>\"",50,0);
-// we process the initial state
-int j;
-trans=automate->states[debut]->transitions;
+/* We create initial state and set its transitions. We start at 2 because
+ * 0 and 1 are respectively reserved for the initial and the final states. */
+grf_states[0]=new_grf_state("\"<E>\"",50,0);
+int j=2;
+trans=fst2->states[initial_state]->transitions;
 while (trans!=NULL) {
-  j=get_numero_de_la_transition(trans->tag_number);
-  add_transition_to_grf_state(tab_grf_state[0],j);
-  trans=trans->next;
+   add_transition_to_grf_state(grf_states[0],j++);
+   trans=trans->next;
 }
-// and the final state
-tab_grf_state[1]=new_grf_state("\"\"",(width_max+100),10000);
-
-// then, we save all others states
-for (int i=0;i<nombre_etats;i++) {
-   trans=automate->states[i+debut]->transitions;
+/* We create the final state */
+grf_states[1]=new_grf_state("\"\"",(width_max+100),maximum_rank);
+/* Then, we save all the other grf states */
+unichar content[10000];
+for (int i=0;i<n_states;i++) {
+   trans=fst2->states[i+initial_state]->transitions;
    while (trans!=NULL) {
-      // we put the value in the 2 upper bytes
-      // normal line:
-      if (!u_strcmp(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,"\"")) {
-         //u_fprints_char("\\\"",f);
-         tab_grf_state[N_GRF_STATES]=new_grf_state("\"\\\"\"",pos_X[rang[i]],rang[i]);
-      }
-      else {
-         unichar temp[10000];
-         u_strcpy(temp,"\"");
-         escape(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,&temp[1],P_DOUBLE_QUOTE);
-         u_strcat(temp,"\"");
-         tab_grf_state[N_GRF_STATES]=new_grf_state(temp,pos_X[rang[i]],rang[i]);
-      }
-      j=0;
-      struct fst2Transition* TMP=automate->states[trans->state_number]->transitions;
-      while (TMP!=NULL) {
-         j++;
-         TMP=TMP->next;
-      }
-      if (j==0) {
-         // if we arrive on the final state
-         add_transition_to_grf_state(tab_grf_state[N_GRF_STATES],1);
+      if (!u_strcmp(fst2->tags[trans->tag_number]->input,"\"")) {
+         /* If the box content is a double quote, we must protect it in a special
+          * way since both \ and "  are special characters in grf files. */
+         u_strcpy(content,"\"\\\\\\\"\"");
       } else {
-         TMP=automate->states[trans->state_number]->transitions;
-         while (TMP!=NULL) {
-            j=get_numero_de_la_transition(TMP->tag_number);
-            add_transition_to_grf_state(tab_grf_state[N_GRF_STATES],j);
-            TMP=TMP->next;
+         /* Otherwise, we put the content between double quotes */
+         content[0]='"';
+         escape(fst2->tags[trans->tag_number]->input,&content[1],P_DOUBLE_QUOTE);
+         u_strcat(content,"\"");
+      }
+      grf_states[N_GRF_STATES]=new_grf_state(content,pos_X[rank[i]],rank[i]);
+      /* Now that we have created the grf state, we set its outgoing transitions */
+      if (fst2->states[trans->state_number]->transitions==NULL) {
+         /* If the current fst2 transition points on the final state, 
+          * we must put a transition for the current grf state to the
+          * grf final state */
+         add_transition_to_grf_state(grf_states[N_GRF_STATES],1);
+      } else {
+         /* Otherwise, we create transitions */
+         struct fst2Transition* tmp=fst2->states[trans->state_number]->transitions;
+         /* +2 because of the grf states 0 and 1 that are reserved */
+         int j=2+n_transitions_before_state[trans->state_number];
+         while (tmp!=NULL) {
+            add_transition_to_grf_state(grf_states[N_GRF_STATES],j++);
+            tmp=tmp->next;
          }
       }
       N_GRF_STATES++;
       trans=trans->next;
    }
 }
-// now, we look for duplicate states
-remove_duplicates_grf_states(tab_grf_state,&N_GRF_STATES);
-// and we save the grf
-save_grf_states(f,tab_grf_state,N_GRF_STATES,rang_max,font);
+free(n_transitions_before_state);
+/* And we save the grf */
+save_grf_states(f,grf_states,N_GRF_STATES,maximum_rank,font);
+/* Finally, we perform cleaning */
+for (int i=0;i<N_GRF_STATES;i++) {
+   free_grf_state(grf_states[i]);
+}
+free(grf_states);
 }
 
 
-
-void convertir_transitions_en_etats_old(Fst2* automate,int SENTENCE,
-                                    int nombre_etats,int* rang,FILE* f,int N,int rang_max,
-                                    int width_max,int* pos_X,char* font) {
-int position_verticale[2000];
-int debut=automate->initial_states[SENTENCE];
-struct fst2Transition* trans;
-// we counts the number of boxes for each horizontal position
-for (int i=0;i<rang_max;i++) {
-    position_verticale[i]=0;
-}
-for (int i=0;i<nombre_etats;i++) {
-   trans=automate->states[i+debut]->transitions;
-   while (trans!=NULL) {
-      position_verticale[rang[i]]++;
-      trans=trans->next;
-   }
-}
-write_grf_header(width_max+300,800,N,font,f);
-u_fprintf(f,"\"<E>\" 50 100 ");
-trans=automate->states[debut]->transitions;
-// we save the initial state
-int j=0;
+/**
+ * This function takes a state A whose current rank is X. Then, for
+ * each outgoing transitions A-->B, it tests if X+1>rank(B). If it
+ * is the case, then we increase the rank of B and we mark B as updated.
+ * Finally, we explore recursively all the states that have been updated.
+ */
+void explore_states_for_ranks(int current_state,int initial_state,Fst2* fst2,
+                        int* rank,struct bit_array* modified,int* maximum_rank) {
+struct fst2Transition* trans=fst2->states[current_state]->transitions;
+int current_rank=rank[current_state-initial_state];
 while (trans!=NULL) {
-   j++;
-   trans=trans->next;
-}
-u_fprintf(f,"%d ",j);
-trans=automate->states[debut]->transitions;
-while (trans!=NULL) {
-   j=get_numero_de_la_transition(trans->tag_number);
-   u_fprintf(f,"%d ",j);
-   trans=trans->next;
-}
-// and the final state
-u_fprintf(f,"\n\"\" %d 100 0 \n",(width_max+100));
-
-// then, we save all others states
-for (int i=0;i<nombre_etats;i++) {
-   trans=automate->states[i+debut]->transitions;
-   while (trans!=NULL) {
-      // we put the value in the 2 upper bytes
-      u_fprintf(f,"\"");
-      // normal line:
-      if (!u_strcmp(automate->tags[get_etiquette_reelle(trans->tag_number)]->input,"\"")) {
-         u_fprintf(f,"\\\"");
+   if (current_rank+1>rank[trans->state_number-initial_state]) {
+      /* If we must increase the rank of the destination state */
+      rank[trans->state_number-initial_state]=current_rank+1;
+      if ((current_rank+1)>(*maximum_rank)) {
+         (*maximum_rank)=current_rank+1;
       }
-      else {
-           u_fprintf(f,"%S",automate->tags[get_etiquette_reelle(trans->tag_number)]->input);
-      }
-      u_fprintf(f,"\" ");
-      // we compute the x coordinate of the box
-      u_fprintf(f,"%d ",pos_X[rang[i]]);
-      // and the y one
-      j=100-(50*(rang[i]%2))+100*(--position_verticale[rang[i]]);
-      u_fprintf(f,"%d ",j);
-      j=0;
-      struct fst2Transition* TMP=automate->states[trans->state_number]->transitions;
-      while (TMP!=NULL) {
-         j++;
-         TMP=TMP->next;
-      }
-      if (j==0) {
-         // if we arrive on the final state
-         u_fprintf(f,"1 1 \n");
-      } else {
-         u_fprintf(f,"%d ",j);
-         TMP=automate->states[trans->state_number]->transitions;
-         while (TMP!=NULL) {
-            j=get_numero_de_la_transition(TMP->tag_number);
-            u_fprintf(f,"%d ",j);
-            TMP=TMP->next;
-         }
-         u_fprintf(f,"\n");
-      }
-      trans=trans->next;
-   }
-}
-}
-
-
-
-int get_etiquette_reelle(int etiquette) {
-return (etiquette & ((1<<NBRE_BITS_DE_DECALAGE) -1));
-}
-
-
-
-int get_numero_de_la_transition(int etiquette) {
-return (etiquette >> NBRE_BITS_DE_DECALAGE);
-}
-
-
-
-int calculer_rang(Fst2* automate,int SENTENCE,int* rang,int nombre_etats) {
-char modif[3000];
-int RANG=0;
-for (int i=0;i<nombre_etats;i++) {
-   rang[i]=0;
-   modif[i]=0;
-}
-explorer_rang_etat(automate->initial_states[SENTENCE],automate->initial_states[SENTENCE],
-                   automate,rang,modif,&RANG);
-return RANG;
-}
-
-
-
-void explorer_rang_etat(int etat_courant,int debut,Fst2* automate,
-                        int* rang,char* modif,int* RANG) {
-struct fst2Transition* trans=automate->states[etat_courant]->transitions;
-int RANG_COURANT=rang[etat_courant-debut];
-while (trans!=NULL) {
-   if (RANG_COURANT+1>rang[trans->state_number-debut]) {
-      // if we must increase the path length
-      rang[trans->state_number-debut]=RANG_COURANT+1;
-      if ((RANG_COURANT+1)> (*RANG)) {
-         (*RANG)=RANG_COURANT+1;
-      }
-      modif[(trans->state_number)-debut]=1;
+      set_value(modified,(trans->state_number)-initial_state,1);
    }
    trans=trans->next;
 }
-// then, we process all the nodes we have modified
-trans=automate->states[etat_courant]->transitions;
+/* Then, we process all the states we have modified */
+trans=fst2->states[current_state]->transitions;
 while (trans!=NULL) {
-   if (modif[trans->state_number-debut]==1) {
-      // if we must increase the path length
-      explorer_rang_etat(trans->state_number,debut,automate,rang,modif,RANG);
-      modif[(trans->state_number)-debut]=0;
+   if (get_value(modified,trans->state_number-initial_state)) {
+      explore_states_for_ranks(trans->state_number,initial_state,fst2,rank,modified,maximum_rank);
+      /* After we have processed the state, we remove the modification mark */
+      set_value(modified,(trans->state_number)-initial_state,0);
    }
    trans=trans->next;
 }
 }
 
 
-
-void explorer_position_horizontale_etat(int etat_courant,int debut,Fst2* automate,
-                                        int* pos_X,char* modif,int* WIDTH) {
-struct fst2Transition* trans=automate->states[etat_courant]->transitions;
-int POS_COURANTE=pos_X[etat_courant-debut];
-while (trans!=NULL) {
-   int VAL=POS_COURANTE+(WIDTH_OF_A_CHAR*(width_of_tag(automate->tags[trans->tag_number])));
-   if (VAL>pos_X[(trans->state_number)-debut]) {
-      // if we must increase the path length
-      pos_X[(trans->state_number)-debut]=VAL;
-      if (VAL > (*WIDTH)) {
-         (*WIDTH)=VAL;
-      }
-      modif[(trans->state_number)-debut]=1;
-   }
-   trans=trans->next;
+/**
+ * Computes the rank of each state of a sentence automaton.
+ * All ranks are stored into the 'rank' array, and the
+ * maximum rank is returned.
+ */
+int compute_state_ranks(Fst2* fst2,int SENTENCE,int* rank) {
+int n_states=fst2->number_of_states_per_graphs[SENTENCE];
+int maximum_rank=0;
+for (int i=0;i<n_states;i++) {
+   rank[i]=0;
 }
-// then, we process all the nodes we have modified
-trans=automate->states[etat_courant]->transitions;
-while (trans!=NULL) {
-   if (modif[(trans->state_number)-debut]==1) {
-      // if we must increase the path length
-      explorer_position_horizontale_etat(trans->state_number,debut,automate,pos_X,modif,WIDTH);
-      modif[(trans->state_number)-debut]=0;
-   }
-   trans=trans->next;
-}
+struct bit_array* modified=new_bit_array(n_states,ONE_BIT);
+explore_states_for_ranks(fst2->initial_states[SENTENCE],fst2->initial_states[SENTENCE],
+                         fst2,rank,modified,&maximum_rank);
+free_bit_array(modified);
+return maximum_rank;
 }
 
 
-
-void write_grf_header(int width,int height,int N,char* font,FILE* f) {
+/**
+ * Prints the header of the grf to the given file.
+ */
+void write_grf_header(int width,int height,int n_states,char* font,FILE* f) {
 u_fprintf(f,"#Unigraph\n");
 u_fprintf(f,"SIZE %d %d\n",width,height);
 if (font==NULL) {
@@ -321,84 +285,110 @@ u_fprintf(f,"DRST n\n");
 u_fprintf(f,"FITS 100\n");
 u_fprintf(f,"PORIENT L\n");
 u_fprintf(f,"#\n");
-u_fprintf(f,"%d\n",N);
+u_fprintf(f,"%d\n",n_states);
 }
 
 
-
-//
-// this function computes the width of the box for the tag s in the sentence GRF
-// if s is a not a tag, we return its length
-// else, the width is the max of length(inflected), length(lemma), length(code)
-//
+/**
+ * This is a raw approximation of the width of a tag.
+ */
 int width_of_tag(Fst2Tag e) {
-return u_strlen(e->input);
-/*
- * To modify since fst2 tags do not contain anymore such info. We must use now
- * e->pattern instead
-if (e->input[0]!='{') {
+if (e->input[0]!='{' || !u_strcmp(e->input,"{S}")) {
+   /* Note that the {S} should not appear in a sentence automaton */
    return u_strlen(e->input);
 }
-int i=u_strlen(e->inflected);
-int j;
-if (i<(j=u_strlen(e->lemma))) i=j;
-if (i<(j=u_strlen(e->codes))) i=j;
-return i;*/
+/* If the tag is a tag token like {today,.ADV}, we take the maximum
+ * of the lengths of the inflected form, the lemma and the codes */
+struct dela_entry* entry=tokenize_tag_token(e->input);
+int width=u_strlen(entry->inflected);
+int tmp=u_strlen(entry->lemma);
+if (tmp>width) width=tmp;
+tmp=u_strlen(entry->semantic_codes[0]);
+for (int i=1;i<entry->n_semantic_codes;i++) {
+   tmp=tmp+1+u_strlen(entry->semantic_codes[i]);
+}
+for (int i=0;i<entry->n_inflectional_codes;i++) {
+   tmp=tmp+1+u_strlen(entry->inflectional_codes[i]);
+}
+if (tmp>width) width=tmp;
+free_dela_entry(entry);
+return width;
 }
 
 
-
-int calculer_largeur_max_pour_chaque_rang(Fst2* automate,int SENTENCE,
-                                          int* pos_X,int nombre_etats,int* rang) {
+/**
+ * Computes the maximum width in characters associated to each rank and
+ * returns the maximum width. These values will be used to generate
+ * the X coordinates of the grf boxes so that the graph will be readable.
+ * The function returns the X position of the last rank boxes.
+ */
+int get_max_width_for_ranks(Fst2* fst2,int SENTENCE,int* pos_X,int* rank,
+                            int maximum_rank) {
+int n_states=fst2->number_of_states_per_graphs[SENTENCE];
 int i;
 struct fst2Transition* trans;
-for (i=0;i<nombre_etats;i++) {
+for (i=0;i<=maximum_rank;i++) {
    pos_X[i]=0;
 }
-int debut=automate->initial_states[SENTENCE];
-// first, we compute the maximum length for this column
-for (i=0;i<nombre_etats;i++) {
-   trans=automate->states[i+debut]->transitions;
+int initial_state=fst2->initial_states[SENTENCE];
+/* First, we compute the maximum width for the boxes of each rank */
+for (i=0;i<n_states;i++) {
+   trans=fst2->states[i+initial_state]->transitions;
    while (trans!=NULL) {
-      int VAL=(WIDTH_OF_A_CHAR*(5+width_of_tag(automate->tags[trans->tag_number])));
-      if (pos_X[rang[i]+1]<VAL) {
-         pos_X[rang[i]+1]=VAL;
+      int v=(WIDTH_OF_A_CHAR*(5+width_of_tag(fst2->tags[trans->tag_number])));
+      if (pos_X[rank[i]+1]<v) {
+         pos_X[rank[i]+1]=v;
       }
       trans=trans->next;
    }
 }
-// then, we compute the position
+/* Now that we have the width for each rank, we compute the absolute X
+ * for each rank. We arbitrary set a distance of 100 pixels between boxes 
+ * of consecutive ranks. */
 int tmp=100;
-for (i=0;i<nombre_etats;i++) {
+for (i=0;i<=maximum_rank;i++) {
    pos_X[i]=tmp+pos_X[i];
    tmp=pos_X[i];
 }
-return pos_X[nombre_etats-1];
+return pos_X[maximum_rank];
 }
 
 
-
-
-struct grf_state* new_grf_state(unichar* content,int pos_X,int rang) {
+/**
+ * Allocates, initializes and returns a new grf state.
+ */
+struct grf_state* new_grf_state(unichar* content,int pos_X,int rank) {
 struct grf_state* g=(struct grf_state*)malloc(sizeof(struct grf_state));
-g->content=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(content)));
-u_strcpy(g->content,content);
+if (g==NULL) {
+   fatal_error("Not enough memory in new_grf_state\n");
+}
+g->content=u_strdup(content);
 g->pos_X=pos_X;
-g->rang=rang;
+g->rank=rank;
 g->l=NULL;
 return g;
 }
 
 
-
-struct grf_state* new_grf_state(char* content,int pos_X,int rang) {
-unichar temp[10000];
-u_strcpy(temp,content);
-return new_grf_state(temp,pos_X,rang);
+/**
+ * The same than the previous one, but with a char* parameter.
+ */
+struct grf_state* new_grf_state(char* content,int pos_X,int rank) {
+struct grf_state* g=(struct grf_state*)malloc(sizeof(struct grf_state));
+if (g==NULL) {
+   fatal_error("Not enough memory in new_grf_state\n");
+}
+g->content=u_strdup(content);
+g->pos_X=pos_X;
+g->rank=rank;
+g->l=NULL;
+return g;
 }
 
 
-
+/**
+ * Frees the memory associated the given grf state.
+ */
 void free_grf_state(struct grf_state* g) {
 if (g==NULL) return;
 if (g->content!=NULL) free(g->content);
@@ -407,97 +397,32 @@ free(g);
 }
 
 
-
-void add_transition_to_grf_state(struct grf_state* g,int arr) {
-g->l=sorted_insert(arr,g->l);
+/**
+ * Adds a transition to the given grf state, if not allready present.
+ */
+void add_transition_to_grf_state(struct grf_state* state,int dest_state) {
+state->l=sorted_insert(dest_state,state->l);
 }
 
 
-
-void remove_grf_state(struct grf_state** tab_grf_state,int a_garder,int a_virer,int *N) {
-// we keep the right most position
-if (tab_grf_state[a_garder]->pos_X < tab_grf_state[a_virer]->pos_X) {
-   tab_grf_state[a_garder]->pos_X=tab_grf_state[a_virer]->pos_X;
-}
-free_grf_state(tab_grf_state[a_virer]);
-tab_grf_state[a_virer]=tab_grf_state[(*N)-1];
-tab_grf_state[(*N)-1]=NULL;
-for (int i=0;i<(*N)-1;i++) {
-   struct list_int* l=tab_grf_state[i]->l;
-   while (l!=NULL) {
-      if (l->n==a_virer) {
-         l->n=a_garder;
-      }
-      else if (l->n==(*N)-1) {
-         l->n=a_virer;
-      }
-      l=l->next;
-   }
-}
-(*N)--;
-}
-
-
-//
-// this function takes an array of grf_state and remove duplicate states
-// returns 1 if modification occurred, 0 else
-//
-int actually_remove_duplicate_grf_states(struct grf_state** tab_grf_state,int *N) {
-for (int i=0;i<(*N);i++) {
-   for (int j=i+1;j<(*N);j++) {
-      if (are_equivalent_grf_states(tab_grf_state[i],tab_grf_state[j])) {
-         remove_grf_state(tab_grf_state,i,j,N);
-         return 1;
-      }
-   }
-}
-return 0;
-}
-
-
-//
-// this function takes an array of grf_state and remove duplicate states
-//
-void remove_duplicates_grf_states(struct grf_state** tab_grf_state,int *N) {
-while (actually_remove_duplicate_grf_states(tab_grf_state,N));
-}
-
-
-
-//
-// returns 1 if the grf_state are equivalent, 0 else
-//
-int are_equivalent_grf_states(struct grf_state* a,struct grf_state* b) {
-if (a==NULL) {
-   if (b==NULL) return 1;
-   else return 0;
-}
-if (a->content==NULL) {
-   if (b->content==NULL) return 1;
-   else return 0;
-}
-if (u_strcmp(a->content,b->content)) return 0;
-return equal_list_int(a->l,b->l);
-}
-
-
-
+/**
+ * Saves the given grf states to the given file.
+ */
 void save_grf_states(FILE* f,struct grf_state** tab_grf_state,int N_GRF_STATES,
-                     int rang_max,char* font) {
-int position_verticale[2000];
-struct list_int* l;
-// we counts the number of boxes for each horizontal position
-for (int i=0;i<rang_max;i++) {
-    position_verticale[i]=0;
+                     int maximum_rank,char* font) {
+/* We count the number of boxes for each rank */
+int pos_Y[maximum_rank+1];
+for (int i=0;i<maximum_rank;i++) {
+    pos_Y[i]=0;
 }
 for (int i=0;i<N_GRF_STATES;i++) {
-   position_verticale[tab_grf_state[i]->rang]++;
+   pos_Y[tab_grf_state[i]->rank]++;
 }
+/* We print the grf header and the initial state */
 write_grf_header(tab_grf_state[1]->pos_X+300,800,N_GRF_STATES,font,f);
 u_fprintf(f,"\"<E>\" 50 100 ");
-// we save the initial state
 int j=0;
-l=tab_grf_state[0]->l;
+struct list_int* l=tab_grf_state[0]->l;
 while (l!=NULL) {
    j++;
    l=l->next;
@@ -508,18 +433,18 @@ while (l!=NULL) {
    u_fprintf(f,"%d ",l->n);
    l=l->next;
 }
-// and the final state
+/* We print the final state */
 u_fprintf(f,"\n\"\" ");
 u_fprintf(f,"%d 100 0 \n",tab_grf_state[1]->pos_X);
-
-// then, we save all others states
+/* Then, we save all others states */
 for (int i=2;i<N_GRF_STATES;i++) {
    u_fprintf(f,"%S ",tab_grf_state[i]->content);
-   // we compute the x coordinate of the box
+   /* We compute the X coordinate of the box... */
    u_fprintf(f,"%d ",tab_grf_state[i]->pos_X);
-   // and the y one
-   j=100-(50*(tab_grf_state[i]->rang%2))+100*(--position_verticale[tab_grf_state[i]->rang]);
+   /* ...and the Y one */
+   j=100-(50*(tab_grf_state[i]->rank%2))+100*(--pos_Y[tab_grf_state[i]->rank]);
    u_fprintf(f,"%d ",j);
+   /* Then we save the transitions */
    j=0;
    l=tab_grf_state[i]->l;
    while (l!=NULL) {
@@ -535,3 +460,4 @@ for (int i=2;i<N_GRF_STATES;i++) {
    u_fprintf(f,"\n");
 }
 }
+

@@ -19,43 +19,30 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef Sentence_to_grfH
 #define Sentence_to_grfH
-//---------------------------------------------------------------------------
+
 
 #include "Unicode.h"
 #include "Fst2.h"
 #include "List_int.h"
 
-#define WIDTH_OF_A_CHAR 10
-#define NBRE_BITS_DE_DECALAGE 19
 
+/**
+ * This structure represents a box of a grf file. For the moment, the Y position
+ * is not there because it is not used.
+ */
 struct grf_state {
    unichar* content;
    int pos_X;
-   int rang;
+   int rank;
    struct list_int* l;
 };
 
 
-struct grf_state* new_grf_state(char*,int,int);
-struct grf_state* new_grf_state(unichar*,int,int);
-void free_grf_state(struct grf_state*);
-void add_transition_to_grf_state(struct grf_state*,int);
-void remove_duplicates_grf_states(struct grf_state**,int*);
-int are_equivalent_grf_states(struct grf_state*,struct grf_state*);
-void save_grf_states(FILE*,struct grf_state**,int,int,char* font);
 
 void sentence_to_grf(Fst2*,int,char*,FILE*);
-void write_grf_header(int,int,int,char*,FILE*);
-int calculer_rang(Fst2*,int,int*,int);
-void explorer_rang_etat(int,int,Fst2*,int*,char*,int*);
-int numeroter_etiquettes_sur_octets_forts(Fst2*,int,int);
-int get_etiquette_reelle(int);
-int get_numero_de_la_transition(int);
-void convertir_transitions_en_etats(Fst2*,int,int,int*,FILE*,int,int,int,int*,char*);
 int width_of_tag(Fst2Tag);
-int calculer_largeur_max_pour_chaque_rang(Fst2*,int,int*,int,int*);
+void write_grf_header(int,int,int,char*,FILE*);
 
 #endif

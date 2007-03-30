@@ -41,9 +41,7 @@ f=u_fopen(nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
-struct text_tokens* res;
-res=new_text_tokens();
-//res->N=u_read_int(f);
+struct text_tokens* res=new_text_tokens();
 u_fscanf(f,"%d\n",&(res->N));
 res->token=(unichar**)malloc((res->N)*sizeof(unichar*));
 unichar tmp[1000];

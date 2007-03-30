@@ -30,9 +30,9 @@
 #include "Matches.h"
 #include "PortugueseNormalization.h"
 #include "String_hash.h"
-#include "Sentence_to_grf.h"
+#include "Sentence2Grf.h"
 #include "Fst2.h"
-#include "Normalization_transducer.h"
+#include "NormalizationFst2.h"
 #include "Text_tokens.h"
 #include "List_int.h"
 #include "IOBuffer.h"
@@ -123,7 +123,7 @@ if (inflected_inf==NULL) {
    return 1;
 }
 u_printf("Loading pronoun rewriting rule grammar...\n");
-struct noeud_arbre_normalization* rewriting_rules=load_normalization_transducer_string(argv[5]);
+struct normalization_tree* rewriting_rules=load_normalization_transducer_string(argv[5]);
 if (rewriting_rules==NULL) {
    error("Cannot load pronoun rewriting grammar %s\n",argv[5]);
    free_alphabet(alph);
@@ -134,7 +134,7 @@ if (rewriting_rules==NULL) {
    return 1;
 }
 u_printf("Loading nasal pronoun rewriting rule grammar...\n");
-struct noeud_arbre_normalization* nasal_rewriting_rules=load_normalization_transducer_string(argv[6]);
+struct normalization_tree* nasal_rewriting_rules=load_normalization_transducer_string(argv[6]);
 if (rewriting_rules==NULL) {
    error("Cannot load nasal pronoun rewriting grammar %s\n",argv[6]);
    free_alphabet(alph);
@@ -142,7 +142,7 @@ if (rewriting_rules==NULL) {
    free(inflected_bin);
    free_INF_codes(root_inf);
    free_INF_codes(inflected_inf);
-   free_noeud_arbre_normalization(rewriting_rules);
+   free_normalization_tree(rewriting_rules);
    return 1;
 }
 
@@ -156,8 +156,8 @@ free(root_bin);
 free_INF_codes(root_inf);
 free(inflected_bin);
 free_INF_codes(inflected_inf);
-free_noeud_arbre_normalization(rewriting_rules);
-free_noeud_arbre_normalization(nasal_rewriting_rules);
+free_normalization_tree(rewriting_rules);
+free_normalization_tree(nasal_rewriting_rules);
 return 0;
 }
 
