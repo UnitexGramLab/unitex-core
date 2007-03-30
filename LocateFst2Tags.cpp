@@ -255,7 +255,7 @@ if (pattern->type==LEMMA_AND_CODE_PATTERN || pattern->type==FULL_PATTERN) {
     * codes, then it has been put in the pattern tree, and so, this pattern
     * was tried on the current tag token in the 'check_patterns_for_tag_tokens'
     * function. Then, we just have to test if the tag token matches this pattern. */
-   if (p->matching_patterns==NULL ||
+   if (p->matching_patterns==NULL || p->matching_patterns[token_number]==NULL ||
        0==get_value(p->matching_patterns[token_number],tag[i]->pattern_number)) {
       /* If the tag token does not match the pattern */
       free_dela_entry(entry);
