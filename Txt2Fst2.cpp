@@ -28,8 +28,7 @@
 #include "DELA_tree.h"
 #include "DELA.h"
 #include "String_hash.h"
-#include "Text_automaton.h"
-#include "List_int.h"
+#include "TextAutomaton.h"
 #include "NormalizationFst2.h"
 #include "Fst2.h"
 #include "FileName.h"
@@ -38,6 +37,7 @@
 #include "StringParsing.h"
 #include "Error.h"
 #include "Grf2Fst2_lib.h"
+
 
 
 void usage() {
@@ -83,24 +83,6 @@ if (length==0) return 0;
 *N=length;
 return 1;
 }
-
-
-
-void ecrire_fichier_sortie_nombre_de_phrases_graphes(char name[],int n) {
-FILE *f;
-int i;
-i=2+9*2; // *2 because of unicode +2 because of FF FE at file start
-f=fopen((char*)name,"r+b");
-do {
-  fseek(f,i,0);
-  i=i-2;
-  u_fputc((unichar)((n%10)+'0'),f);
-  n=n/10;
-}
-while (n);
-fclose(f);
-}
-
 
 
 int main(int argc, char **argv) {

@@ -1185,3 +1185,33 @@ u_to_char(inflection_code,s);
 u_strcpy(code_gramm,s);
 code_gramm[i]='\0';
 }
+
+
+/**
+ * This function takes a DELAF entry and builds from it a tag of
+ * the form "{AM,be.V:P1s}". 'tag' is supposed to be large enough.
+ * If 'token' is not NULL, it is used as the inflected form.
+ */
+void build_tag(struct dela_entry* entry,unichar* token,unichar* tag) {
+int i;
+tag[0]='{';
+/* We protect the comma, if any, in the inflected form */
+int l=1+escape(((token!=NULL)?token:entry->inflected),&(tag[1]),P_COMMA);
+tag[l++]=',';
+/* We protect the points, if any, in the lemma */
+l=l+escape(entry->lemma,&(tag[l]),P_DOT);
+tag[l++]='.';
+/* We protect the + and :, if any, in the grammatical code */
+l=l+escape(entry->semantic_codes[0],&(tag[l]),P_PLUS_COLON);
+for (i=1;i<entry->n_semantic_codes;i++) {
+   tag[l++]='+';
+   l=l+escape(entry->semantic_codes[i],&(tag[l]),P_PLUS_COLON);
+}
+for (i=0;i<entry->n_inflectional_codes;i++) {
+   tag[l++]=':';
+   l=l+escape(entry->inflectional_codes[i],&(tag[l]),P_COLON);
+}
+tag[l++]='}';
+tag[l++]='\0';
+}
+

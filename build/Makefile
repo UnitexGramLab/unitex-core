@@ -417,7 +417,7 @@ TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\
 
 TXT2FST2      = Txt2Fst2
 TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o DELA_tree.o\
-                DELA.o List_ustring.o String_hash.o Text_automaton.o List_int.o\
+                DELA.o List_ustring.o String_hash.o TextAutomaton.o List_int.o\
                 NormalizationFst2.o Fst2.o FileName.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
                 FIFO.o BitArray.o HashTable.o

@@ -18,12 +18,19 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-//---------------------------------------------------------------------------
+
 #ifndef SingleGraphH
 #define SingleGraphH
-//---------------------------------------------------------------------------
+
 
 #include "Fst2.h"
+
+/* Here are bit masks that can be used to mark states. Note that lower
+ * bit masks are reserved. */
+#define MARK1_BIT_MASK 16
+#define MARK2_BIT_MASK 32
+#define MARK3_BIT_MASK 64
+#define MARK4_BIT_MASK 128
 
 
 /** 

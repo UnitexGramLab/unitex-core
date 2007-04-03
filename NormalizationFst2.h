@@ -19,10 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef Normalization_transducerH
 #define Normalization_transducerH
-//---------------------------------------------------------------------------
+
 
 #include "Unicode.h"
 #include "Alphabet.h"
@@ -34,37 +33,40 @@
 
 #define EMPTY_TOKEN -4
 
-struct noeud_arbre_normalization {
-   struct list_ustring* liste_arrivee;
-   struct trans_arbre_normalization* trans;
-};
 
-struct trans_arbre_normalization {
-   int token;
-   unichar* s;
-   struct noeud_arbre_normalization* arr;
-   struct trans_arbre_normalization* suivant;
-};
-
-
-struct temp_list {
-   unichar* output;
-   struct noeud_arbre_normalization* arr;
-   struct temp_list* suivant;
+/**
+ * This structure represents a node in a normalization tree.
+ * Each node is associated to a list of outputs to be produced when
+ * the token sequence corresponding the path to this node is found.
+ */
+struct normalization_tree {
+   struct list_ustring* outputs;
+   struct normalization_tree_transition* trans;
 };
 
 
+/**
+ * This structure represents a list of transitions in a normalization tree.
+ * Note that the transitions can be tagged either by token numbers or strings.
+ */
+struct normalization_tree_transition {
+   union {
+      int token;
+      unichar* s;
+   };
+   struct normalization_tree* node;
+   struct normalization_tree_transition* next;
+};
 
 
-struct noeud_arbre_normalization* load_normalization_transducer(char*,Alphabet*,struct text_tokens*);
-struct noeud_arbre_normalization* new_noeud_arbre_normalization();
-struct trans_arbre_normalization* new_trans_arbre_normalization(int);
-void free_noeud_arbre_normalization(struct noeud_arbre_normalization*);
-void free_trans_arbre_normalization(struct trans_arbre_normalization*);
+
+
+struct normalization_tree* load_normalization_fst2(char*,Alphabet*,struct text_tokens*);
+struct normalization_tree* new_normalization_tree();
+void free_normalization_tree(struct normalization_tree*);
 struct list_ustring* tokenize_normalization_output(unichar*,Alphabet*);
 
-struct trans_arbre_normalization* new_trans_arbre_normalization_string(unichar*);
-struct noeud_arbre_normalization* load_normalization_transducer_string(char*);
-
+struct normalization_tree_transition* new_trans_arbre_normalization_string(unichar*);
+struct normalization_tree* load_normalization_transducer_string(char*);
 
 #endif
