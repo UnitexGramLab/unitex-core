@@ -19,8 +19,8 @@
   *
   */
 
-#ifndef Text_automatonH
-#define Text_automatonH
+#ifndef TextAutomatonH
+#define TextAutomatonH
 
 
 #include "Unicode.h"
@@ -30,38 +30,14 @@
 #include "String_hash.h"
 #include "NormalizationFst2.h"
 
-#define MAX_TOKENS_IN_SENTENCE 4 //2000
+
+#define MAX_TOKENS_IN_SENTENCE 2000
 
 
-struct trans_text_automaton {
-  unichar* chaine;
-  int indice_noeud_arrivee;
-  struct trans_text_automaton* suivant;
-};
-
-
-struct noeud_text_automaton {
-  int numero;
-  char final;
-  char controle;
-  struct trans_text_automaton* trans;
-};
-
-
-struct info {
-  struct text_tokens* tok;
-  int* buffer;
-  Alphabet* alph;
-  int SPACE;
-  int length_max;
-};
-
-
-int count_non_space_tokens(int*,int,int);
 void build_sentence_automaton(int*,int,struct text_tokens*,
-                               struct DELA_tree*,struct string_hash*,
-                               Alphabet*,FILE*,int,int,
-                               struct normalization_tree*);
+                              struct DELA_tree*,struct string_hash*,
+                              Alphabet*,FILE*,int,int,
+                              struct normalization_tree*);
 
 
 #endif

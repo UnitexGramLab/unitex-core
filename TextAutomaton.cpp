@@ -19,59 +19,34 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#include "Text_automaton.h"
+#include "TextAutomaton.h"
 #include "StringParsing.h"
 #include "List_ustring.h"
-//---------------------------------------------------------------------------
+#include "Error.h"
+#include "SingleGraph.h"
+#include "DELA.h"
+#include "NormalizationFst2.h"
+#include "BitMasks.h"
 
 
+/**
+ * This is an internal structure only used to give a set of parameters to some functions.
+ */
+struct info {
+   struct text_tokens* tok;
+   int* buffer;
+   Alphabet* alph;
+   int SPACE;
+   int length_max;
+};
 
-struct noeud_text_automaton* new_noeud_text_automaton() {
-struct noeud_text_automaton* n;
-n=(struct noeud_text_automaton*)malloc(sizeof(struct noeud_text_automaton));
-n->numero=-1;
-n->final=0;
-n->controle=0;
-n->trans=NULL;
-return n;
-}
-
-
-struct trans_text_automaton* new_trans_text_automaton(unichar* s,int indice) {
-struct trans_text_automaton* t;
-t=(struct trans_text_automaton*)malloc(sizeof(struct trans_text_automaton));
-t->chaine=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-u_strcpy(t->chaine,s);
-t->indice_noeud_arrivee=indice;
-t->suivant=NULL;
-return t;
-}
-
-
-void free_trans_text_automaton(struct trans_text_automaton* t) {
-struct trans_text_automaton* tmp;
-while (t!=NULL) {
-  tmp=t;
-  t=t->suivant;
-  free(tmp->chaine);
-  free(tmp);
-}
-}
-
-
-void free_noeud_text_automaton(struct noeud_text_automaton* n) {
-if (n==NULL) return;
-free_trans_text_automaton(n->trans);
-free(n);
-}
 
 
 /**
  * This function returns the number of space tokens that are in the
  * given buffer.
  */
-int count_non_space_tokens(int buffer[],int length,int SPACE) {
+int count_non_space_tokens(int* buffer,int length,int SPACE) {
 int n=0;
 for (int i=0;i<length;i++) {
    if (buffer[i]!=SPACE) {
@@ -82,251 +57,202 @@ return n;
 }
  
 
-struct trans_text_automaton* inserer_trans_text_automaton_(struct trans_text_automaton* trans,unichar* s,int indice) {
-if (trans==NULL) {
-   return new_trans_text_automaton(s,indice);
-}
-if (!u_strcmp(s,trans->chaine) && trans->indice_noeud_arrivee==indice) {
-   return trans;
-}
-trans->suivant=inserer_trans_text_automaton_(trans->suivant,s,indice);
-return trans;
-}
-
-
-
-struct trans_text_automaton* inserer_trans_text_automaton(struct trans_text_automaton* trans,
-                                                          unichar* token,struct dela_entry* entry,
-                                                          int indice) {
-unichar tmp[2000];
-int i;
-u_strcpy(tmp,"{");
-u_strcat(tmp,token);
-u_strcat(tmp,",");
-int l=u_strlen(tmp);
-/* We protect the points, if any, in the lemma */
-l=l+escape(entry->lemma,&(tmp[l]),P_DOT);
-tmp[l++]='.';
-/* We protect the + and :, if any, in the grammatical code */
-l=l+escape(entry->semantic_codes[0],&(tmp[l]),P_PLUS_COLON);
-for (i=1;i<entry->n_semantic_codes;i++) {
-   tmp[l++]='+';
-   l=l+escape(entry->semantic_codes[i],&(tmp[l]),P_PLUS_COLON);
-}
-for (i=0;i<entry->n_inflectional_codes;i++) {
-   tmp[l++]=':';
-   l=l+escape(entry->inflectional_codes[i],&(tmp[l]),P_COLON);
-}
-tmp[l++]='}';
-tmp[l++]='\0';
-return inserer_trans_text_automaton_(trans,tmp,indice);
-}
-
-
-
-void explore_dictionary_tree(int pos,unichar* token,unichar* global,int pos_global,
+/**
+ * This function explores in parallel a text token 'token' and the dictionary tree
+ * 'tree'. 'n' is the current node in this tree. 'pos' is the current position in 
+ * 'token'. 'inflected' is the inflected form as in the text, i.e. with the same case.
+ * It's not the same than 'token' because it can be a composed inflected form. 
+ * 'pos_inflected' is the current position in this string. 'state' is the current
+ * state in the sentence automaton we are building, so, if we find transitions to
+ * add, we will add them from it. 'shift' represents the number of non space tokens
+ * in 'inflected' and 'start_node_index' represents the index of the current
+ * state. We use it to guess the number of the state that must be pointed out
+ * by transitions. For instance, if the first state is 6 and if we have to add
+ * a transition tagged with the inflected form "black-eyed", we know that the state
+ * to reach will be 6+3=9. We also use 'shift' to know if we are dealing with the first
+ * token of the inflected form. This is useful to determine if the first token is
+ * an unknown token or not. 'current_token_index' is the position of the current token
+ * in the token buffer. 'tmp_tags' represents the tags of the current graph.
+ */
+void explore_dictionary_tree(int pos,unichar* token,unichar* inflected,int pos_inflected,
                              struct string_hash_tree_node* n,struct DELA_tree* tree,
-                             struct info* INFO,struct noeud_text_automaton* noeud,int deplacement,
-                             int indice_noeud_depart,int* is_not_unknown_token,int token_courant) {
+                             struct info* INFO,SingleGraphState state,int shift,
+                             int start_state_index,int *is_not_unknown_token,
+                             int current_token_index,struct string_hash* tmp_tags) {
 if (token[pos]=='\0') {
-   if (deplacement==1 && n->value_index!=-1) {
-      // if we are on the first token, then it is not an unknown one
+   if (shift==1 && n->value_index!=-1) {
+      /* If we are on the first token and if there are some DELA entries for it, 
+       * then it is not an unknown one */
       (*is_not_unknown_token)=1;
    }
-   if (n->value_index==-1) return;
-   struct dela_entry_list* liste=tree->dela_entries[n->value_index];
-   if (liste==NULL) return;
-   global[pos_global]='\0';
-   while (liste!=NULL) {
-      // we create all the transitions in the text automaton
-      noeud->trans=inserer_trans_text_automaton(noeud->trans,global,liste->entry,indice_noeud_depart+deplacement);
-      liste=liste->next;
+   struct dela_entry_list* list=NULL;
+   if (n->value_index!=-1) list=tree->dela_entries[n->value_index];
+   inflected[pos_inflected]='\0';
+   while (list!=NULL) {
+      /* If there are DELA entries for the current inflectedf form,
+       * we add the corresponding transitions to the automaton */
+      unichar tag[4096];
+      build_tag(list->entry,inflected,tag);
+      add_outgoing_transition(state,get_value_index(tag,tmp_tags),start_state_index+shift);
+      list=list->next;
    }
-   // we try to go on with the next token in the sentence
-   if (token_courant<INFO->length_max-1) {
-      // but only if we are not at the end of the sentence
-      if (INFO->buffer[token_courant]!=INFO->SPACE) {
-         // the nodes do not take into acccount spaces
-         // so, if we have read a space, we do nothing; else, we can move one node right
-         deplacement++;
+   /* We try to go on with the next token in the sentence */
+   if (current_token_index<INFO->length_max-1) {
+      /* but only if we are not at the end of the sentence */
+      if (INFO->buffer[current_token_index]!=INFO->SPACE) {
+         /* The states do not take spaces into acccount, so, if we have read
+          * a space, we do nothing; otherwise, we can move one state right */
+         shift++;
       }
-      token_courant++;
-      explore_dictionary_tree(0,INFO->tok->token[INFO->buffer[token_courant]],global,pos_global,tree->inflected_forms->root,
-                              tree,INFO,noeud,
-                              deplacement,indice_noeud_depart,is_not_unknown_token,token_courant);
+      current_token_index++;
+      explore_dictionary_tree(0,INFO->tok->token[INFO->buffer[current_token_index]],
+                              inflected,pos_inflected,n,tree,INFO,state,shift,
+                              start_state_index,is_not_unknown_token,current_token_index,tmp_tags);
    }
    return;
 }
-struct string_hash_tree_transition* trans;
-trans=n->trans;
-if (token[pos]==',' || token[pos]=='.' || token[pos]=='/' || 
-    token[pos]=='+' || token[pos]=='-' || token[pos]==':') {
-   global[pos_global++]='\\';
-}
-global[pos_global]=token[pos];
+struct string_hash_tree_transition* trans=n->trans;
+inflected[pos_inflected]=token[pos];
 while (trans!=NULL) {
-  if (is_equal_or_uppercase(trans->letter,token[pos],INFO->alph)) {
-     explore_dictionary_tree(pos+1,token,global,pos_global+1,trans->node,tree,INFO,noeud,deplacement,indice_noeud_depart,is_not_unknown_token,token_courant);
-  }
-  trans=trans->next;
+   if (is_equal_or_uppercase(trans->letter,token[pos],INFO->alph)) {
+      /* For each transition, we follow it if its letter matches the
+       * token one */
+      explore_dictionary_tree(pos+1,token,inflected,pos_inflected+1,trans->node,tree,INFO,state,
+                              shift,start_state_index,is_not_unknown_token,current_token_index,
+                              tmp_tags);
+   }
+   trans=trans->next;
 }
 }
 
 
-
-void compute_best_path_to_node(int n,struct noeud_text_automaton** noeud) {
-struct trans_text_automaton* trans;
-int N;
-N=noeud[n]->numero;
-trans=noeud[n]->trans;
+/**
+ * This function explores the given graph, trying to find for each state the path with
+ * the lowest number of unknown tokens made of letters that leads to it. These
+ * numbers of tokens are stored in 'weight'.
+ */
+void compute_best_paths(int state,SingleGraph graph,int* weight,struct string_hash* tmp_tags) {
+int w;
+w=weight[state];
+Fst2Transition trans=graph->states[state]->outgoing_transitions;
 while (trans!=NULL) {
-  if (trans->chaine[0]!='{' && u_is_letter(trans->chaine[0])) {
-     // if the transition is an untagged one
-     if ((N+1) < noeud[trans->indice_noeud_arrivee]->numero) {
-        // if we have a better way than the existing one,
-        // we keep it
-        noeud[trans->indice_noeud_arrivee]->numero=N+1;
-        // and we mark the destination node as modified
-        noeud[trans->indice_noeud_arrivee]->controle=(char)(noeud[trans->indice_noeud_arrivee]->controle | 1);
-     }
-  } else {
-     // if we are following a tagged transition
-     if (N < noeud[trans->indice_noeud_arrivee]->numero) {
-        // if we have a better way than the existing one,
-        // we keep it
-        noeud[trans->indice_noeud_arrivee]->numero=N;
-        // and we mark the destination node as modified
-        noeud[trans->indice_noeud_arrivee]->controle=(char)(noeud[trans->indice_noeud_arrivee]->controle | 1);
-     }
-  }
-  trans=trans->suivant;
+   unichar* tmp=tmp_tags->value[trans->tag_number];
+   int w_tmp=w;
+   if (tmp[0]!='{' && u_is_letter(tmp[0])) {
+      /* If the transition is tagged by an unknown token made of letters */
+      w_tmp=w_tmp+1;
+   }
+   if (w_tmp < weight[trans->state_number]) {
+      /* If we have a better path than the existing one, we keep it */
+      weight[trans->state_number]=w_tmp;
+      /* and we mark the destination state as modified */
+      set_bit_mask(&(graph->states[trans->state_number]->control),MARK1_BIT_MASK);
+   }
+   trans=trans->next;
 }
-trans=noeud[n]->trans;
+trans=graph->states[state]->outgoing_transitions;
 while (trans!=NULL) {
-  if (noeud[trans->indice_noeud_arrivee]->controle & 1) {
-     // if the node was modified, we reset its control value
-     noeud[trans->indice_noeud_arrivee]->controle=(char)(noeud[trans->indice_noeud_arrivee]->controle-1);
-     // and we explore it recursively
-     compute_best_path_to_node(trans->indice_noeud_arrivee,noeud);
-  }
-  trans=trans->suivant;
+   if (is_bit_mask_set(graph->states[trans->state_number]->control,MARK1_BIT_MASK)) {
+      /* If the state was modified, we reset its control value */
+      unset_bit_mask(&(graph->states[trans->state_number]->control),MARK1_BIT_MASK);
+      /* and we explore it recursively */
+      compute_best_paths(trans->state_number,graph,weight,tmp_tags);
+   }
+   trans=trans->next;
 }
 }
 
 
-
-struct trans_text_automaton* remove_bad_path_transitions(int N,struct trans_text_automaton* trans,struct noeud_text_automaton** noeud) {
+/**
+ * Before this function is called, for each state i, weight[i] must have been
+ * set with the minimal weight of the state #i, that is to say the minimal number
+ * of transitions tagged with unknown tokens made of letters to follow to reach
+ * this state. Then, this function takes a list of transitions and removes all
+ * those that reach a state #x with a weight > weight[x].
+ */
+Fst2Transition remove_bad_path_transitions(int min_weight,Fst2Transition trans,
+                                           SingleGraph graph,int* weight,
+                                           struct string_hash* tmp_tags) {
 if (trans==NULL) return NULL;
-if ((trans->chaine[0]!='{' && u_is_letter(trans->chaine[0]) && noeud[trans->indice_noeud_arrivee]->numero < (N+1))
-    || (trans->chaine[0]=='{' && noeud[trans->indice_noeud_arrivee]->numero < N )) {
-   // if we have an untagged transition to remove
-   struct trans_text_automaton* tmp=trans->suivant;
-   free(trans->chaine);
+unichar* s=tmp_tags->value[trans->tag_number];
+if ((s[0]!='{' && u_is_letter(s[0]) && weight[trans->state_number] < (min_weight+1))
+    || (s[0]=='{' && weight[trans->state_number] < min_weight )) {
+   /* If we have to remove the transition */
+   Fst2Transition tmp=trans->next;
    free(trans);
-   return remove_bad_path_transitions(N,tmp,noeud);
+   return remove_bad_path_transitions(min_weight,tmp,graph,weight,tmp_tags);
 }
-trans->suivant=remove_bad_path_transitions(N,trans->suivant,noeud);
+trans->next=remove_bad_path_transitions(min_weight,trans->next,graph,weight,tmp_tags);
 return trans;
 }
 
 
-void check_if_node_is_accessible(int n,struct noeud_text_automaton** noeud) {
-if (noeud[n]->controle & 2) {
-   // if we have allready marked this node, we return
-   return;
-}
-noeud[n]->controle=(char)(noeud[n]->controle | 2);
-struct trans_text_automaton* trans;
-trans=noeud[n]->trans;
-while (trans!=NULL) {
-  check_if_node_is_accessible(trans->indice_noeud_arrivee,noeud);
-  trans=trans->suivant;
-}
-}
-
-
-
-int check_if_node_is_coaccessible(int n,struct noeud_text_automaton** noeud) {
-if (noeud[n]->controle & 8) {
-   // if we have allready visited this node, we return
-   return noeud[n]->controle & 4;
-}
-noeud[n]->controle=(char)(noeud[n]->controle | 8);
-if (noeud[n]->final==1) {
-   // if we are in the final state
-   noeud[n]->controle=(char)(noeud[n]->controle | 4);
-   return 1;
-}
-int is_coaccessible=0;
-struct trans_text_automaton* trans;
-trans=noeud[n]->trans;
-while (trans!=NULL) {
-  is_coaccessible=is_coaccessible+check_if_node_is_coaccessible(trans->indice_noeud_arrivee,noeud);
-  trans=trans->suivant;
-}
-if (is_coaccessible) {
-   // if there is any possibility to reach the final node, then the
-   // current node is co-accessible
-   noeud[n]->controle=(char)(noeud[n]->controle | 4);
-   return 1;
-}
-return 0;
-}
-
-
-
-void keep_best_paths(int nombre_noeuds,struct noeud_text_automaton** noeud) {
+/**
+ * This function applies the following heuristic to remove paths:
+ * if there are several paths to go from A to B, then we will keep those
+ * that are tagged with the smallest number of unknown token made of letters.
+ * For instance, if we have the 2 concurrent paths:
+ * 
+ *   Aujourd ' {hui,huir.V:Kms}
+ *   {Aujourd'hui,aujourd'hui.ADV+z1}
+ * 
+ * we will remove the first one because it contains 1 unkown token made of letters
+ * ("Aujourd") while the second contains none.
+ */
+void keep_best_paths(SingleGraph graph,struct string_hash* tmp_tags) {
 int i;
-// we initialize the initial node with 0 untagged transition
-noeud[0]->numero=0;
-// and all other nodes with a large value
-for (i=1;i<nombre_noeuds;i++) {
-  noeud[i]->numero=1000000;
+int* weight=(int*)malloc(sizeof(int)*graph->number_of_states);
+if (weight==NULL) {
+   fatal_error("Not enough memory in keep_best_paths\n");
 }
-compute_best_path_to_node(0,noeud);
-for (i=0;i<nombre_noeuds;i++) {
-  noeud[i]->trans=remove_bad_path_transitions(noeud[i]->numero,noeud[i]->trans,noeud);
+/* We initialize the initial state with 0 untagged transition */
+weight[0]=0;
+/* and all other states with a value that is larger that the
+ * longest possible path. As the automaton is acyclic, the longest
+ * path cannot be greater than the number of states */
+for (i=1;i<graph->number_of_states;i++) {
+   weight[i]=graph->number_of_states;
 }
-check_if_node_is_accessible(0,noeud);
-check_if_node_is_coaccessible(0,noeud);
+compute_best_paths(0,graph,weight,tmp_tags);
+for (i=0;i<graph->number_of_states;i++) {
+   graph->states[i]->outgoing_transitions=remove_bad_path_transitions(weight[i],
+                                              graph->states[i]->outgoing_transitions,graph,weight,
+                                              tmp_tags);
+}
+free(weight);
+}
 
-for (i=0;i<nombre_noeuds;i++) {
-  if (!((noeud[i]->controle & 2) && (noeud[i]->controle & 4))) {
-     // if a node is not both accessible and co-accessible, we mark
-     // it as a removed one
-     noeud[i]->final=-1;
-  }
-}
-}
 
-
-void ajouter_chemin_automate_du_texte(int indice_de_depart,Alphabet* alph,
-                                      struct noeud_text_automaton** noeud,
-                                      int* nombre_noeuds,unichar* s,int indice_noeud_arrivee) {
+/**
+ * This function takes an output sequence 's' and adds all the corresponding
+ * transitions in the given graph. For instance, if we have to add a path
+ * from the state 4 to 7 corresponding to the sequence "{de,.PREP} {le,.PRO:ms}",
+ * we will create a new intermediate state, for instance 19, and add two transitions:
+ * 
+ *   4 -- {de,.PREP} ----> 19
+ *  19 -- {le,.PRO:ms} --> 7
+ */
+void add_path_to_sentence_automaton(int start_state_index,Alphabet* alph,
+                                    SingleGraph graph,struct string_hash* tmp_tags,
+                                    unichar* s,int destination_state_index) {
 struct list_ustring* l=tokenize_normalization_output(s,alph);
 if (l==NULL) {
-   // if the output to be generated have no interest, we do nothing
+   /* If the output to be generated have no interest, we do nothing */
    return;
 }
 struct list_ustring* tmp;
-struct trans_text_automaton* TRANS;
-int noeud_courant=indice_de_depart;
+int current_state=start_state_index;
 while (l!=NULL) {
    if (l->next==NULL) {
-      // if this is the last transition to create, we make it point to
-      // the destination node;
-      TRANS=new_trans_text_automaton(l->string,indice_noeud_arrivee);
-      TRANS->suivant=noeud[noeud_courant]->trans;
-      noeud[noeud_courant]->trans=TRANS;
+      /* If this is the last transition to create, we make it point to the
+       * destination state */
+      add_outgoing_transition(graph->states[current_state],get_value_index(l->string,tmp_tags),destination_state_index);
    }
    else {
-      // if this transition is not the last, we must create a new node
-      noeud[*nombre_noeuds]=new_noeud_text_automaton();
-      TRANS=new_trans_text_automaton(l->string,*nombre_noeuds);
-      TRANS->suivant=noeud[noeud_courant]->trans;
-      noeud[noeud_courant]->trans=TRANS;
-      noeud_courant=*nombre_noeuds;
-      (*nombre_noeuds)++;
+      /* If this transition is not the last one, we must create a new state */
+      add_outgoing_transition(graph->states[current_state],get_value_index(l->string,tmp_tags),graph->number_of_states);
+      current_state=graph->number_of_states;
+      add_state(graph);
    }
    tmp=l;
    l=l->next;
@@ -335,38 +261,44 @@ while (l!=NULL) {
 }
 
 
-
-
+/**
+ * This function explores in parallel the text and the normalization tree.
+ * If a sequence matches, then we add the transitions corresponding to the
+ * normalized sequences. For instance, if we have a rule of the form:
+ * 
+ * j' => {je,.PRO:1s}
+ * 
+ * we will add a transition by "{je,.PRO:1s}" if we find "j'" in the text. This
+ * is not the same than the exploration of the dictionary since here we ignore
+ * the text sequence ("j'" is not taken into account for building the tag).
+ */
 void explore_normalization_tree(int pos_in_buffer,int token,struct info* INFO,
-                                struct noeud_text_automaton** noeud,
-                                int* nombre_noeuds,
+                                SingleGraph graph,struct string_hash* tmp_tags,
                                 struct normalization_tree* norm_tree_node,
-                                int indice_de_depart,int deplacement) {
-struct list_ustring* liste_arrivee=norm_tree_node->outputs;
-while (liste_arrivee!=NULL) {
-   // if there are outputs, we add paths in the text automaton
-   ajouter_chemin_automate_du_texte(indice_de_depart,INFO->alph,noeud,
-                                    nombre_noeuds,
-                                    liste_arrivee->string,
-                                    indice_de_depart+deplacement-1);
-
-   liste_arrivee=liste_arrivee->next;
+                                int first_state_index,int shift) {
+struct list_ustring* outputs=norm_tree_node->outputs;
+while (outputs!=NULL) {
+   /* If there are outputs, we add paths in the text automaton */
+   add_path_to_sentence_automaton(first_state_index,INFO->alph,graph,tmp_tags,
+                                  outputs->string,first_state_index+shift-1);
+   outputs=outputs->next;
 }
-// then, we explore the transition from this node
-struct normalization_tree_transition* trans;
-trans=norm_tree_node->trans;
+/* Then, we explore the transitions from this node. Note that transitions
+ * are tagged with token numbers that are unique. So, at most one transition
+ * can match. */
+struct normalization_tree_transition* trans=norm_tree_node->trans;
 while (trans!=NULL) {
    if (trans->token==token) {
-      // if we have a transition for the current token
+      /* If we have a transition for the current token */
       int i=0;
       if (token!=INFO->SPACE) {
-         // we must ignore spaces to count the node position in the node array
+         /* We must ignore spaces to get the correct state index */
          i=1;
       }
       explore_normalization_tree(pos_in_buffer+1,INFO->buffer[pos_in_buffer+1],
-                                 INFO,noeud,nombre_noeuds,trans->node,
-                                 indice_de_depart,deplacement+i);
-      // as there can be only one matching transition, we exit the while
+                                 INFO,graph,tmp_tags,trans->node,
+                                 first_state_index,shift+i);
+      /* As there can be only one matching transition, we exit the while */
       trans=NULL;
    }
    else {
@@ -385,82 +317,77 @@ void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
                                Alphabet* alph,FILE* out,int sentence_number,
                                int we_must_clean,
                                struct normalization_tree* norm_tree) {
-struct noeud_text_automaton* noeud[2*MAX_TOKENS_IN_SENTENCE];
+/* We declare the graph that will represent the sentence as well as
+ * a temporary string_hash that will be used to store the tags of this
+ * graph. We don't put tags directly in the main tags, because a tag can
+ * be introduced and then removed by cleaning */
+SingleGraph graph=new_SingleGraph();
+struct string_hash* tmp_tags=new_string_hash(32);
 int i;
 /* We add +1 for the final node */
 int n_nodes=1+count_non_space_tokens(buffer,length,tokens->SPACE);
 for (i=0;i<n_nodes;i++) {
-   noeud[i]=new_noeud_text_automaton();
+   add_state(graph);
 }
-noeud[n_nodes-1]->final=1;
+set_initial_state(graph->states[0]);
+set_final_state(graph->states[n_nodes-1]);
 struct info INFO;
 INFO.tok=tokens;
 INFO.buffer=buffer;
 INFO.alph=alph;
 INFO.SPACE=tokens->SPACE;
 INFO.length_max=length;
-int noeud_courant=0;
+int current_state=0;
 int is_not_unknown_token;
-unichar global[2000];
-
+unichar inflected[4096];
 for (i=0;i<length;i++) {
-  if (buffer[i]!=tokens->SPACE && buffer[i]!=tokens->SENTENCE_MARKER) {
-     // we try to produce every transition from the current token
-     is_not_unknown_token=0;
-     explore_dictionary_tree(0,tokens->token[buffer[i]],global,0,DELA_tree->inflected_forms->root,DELA_tree,&INFO,noeud[noeud_courant],1,noeud_courant,&is_not_unknown_token,i);
-     if (norm_tree!=NULL) {
-        // if there is a normalization tree, we explore it
-        explore_normalization_tree(i,buffer[i],&INFO,noeud,&n_nodes,norm_tree,noeud_courant,1);
-     }
-     if (!is_not_unknown_token) {
-        // if the token was not matched in the dictionary, we put it as an unknown trans
-        noeud[noeud_courant]->trans=inserer_trans_text_automaton_(noeud[noeud_courant]->trans,tokens->token[buffer[i]],noeud_courant+1);
-     }
-     noeud_courant++;
-  }
-}
-if (we_must_clean) {
-   keep_best_paths(n_nodes,noeud);
-}
-
-int numero=0;
-for (i=0;i<n_nodes;i++) {
-   if (noeud[i]->final==0 || noeud[i]->final==1) {
-      noeud[i]->numero=numero++;
+   if (buffer[i]!=tokens->SPACE && buffer[i]!=tokens->SENTENCE_MARKER) {
+      /* We try to produce every transition from the current token */
+      is_not_unknown_token=0;
+      explore_dictionary_tree(0,tokens->token[buffer[i]],inflected,0,DELA_tree->inflected_forms->root,DELA_tree,&INFO,graph->states[current_state],1,
+                              current_state,&is_not_unknown_token,i,tmp_tags);
+      if (norm_tree!=NULL) {
+         /* If there is a normalization tree, we explore it */
+         explore_normalization_tree(i,buffer[i],&INFO,graph,tmp_tags,norm_tree,current_state,1);
+      }
+      if (!is_not_unknown_token) {
+         /* If the token was not matched in the dictionary, we put it as an unknown one */
+         int tag_number=get_value_index(tokens->token[buffer[i]],tmp_tags);
+         add_outgoing_transition(graph->states[current_state],tag_number,current_state+1);
+      }
+      current_state++;
    }
 }
+if (we_must_clean) {
+   /* If necessary, we apply the "good paths" heuristic */
+   keep_best_paths(graph,tmp_tags);
+}
+/* We minimize the sentence automaton. It will remove the unused states and may
+ * factorize suffixes introduced during the application of the normalization tree. */
+minimize(graph,1);
+/* Finally, we save the sentence automaton */
 u_fprintf(out,"-%d ",sentence_number);
 for (int z=0;z<length;z++) {
    u_fprintf(out,"%S",tokens->token[buffer[z]]);
 }
 u_fprintf(out,"\n");
-for (i=0;i<n_nodes;i++) {
-   if (noeud[i]->final==0 || noeud[i]->final==1) {
-      if (noeud[i]->final==0) {
-         u_fprintf(out,": ");
-      } else {
-         u_fprintf(out,"t ");
-      }
-      struct trans_text_automaton* trans;
-      trans=noeud[i]->trans;
-      while (trans!=NULL) {
-         if (noeud[trans->indice_noeud_arrivee]->final==0 || noeud[trans->indice_noeud_arrivee]->final==1) {
-            // we only consider the transitions that point on a node that will not be removed
-            int indice=get_value_index(trans->chaine,tags);
-
-            // the following line is used to write the tag instead of its number
-            //u_strcpy(global,trans->chaine);
-
-            u_fprintf(out,"%d %d ",indice,noeud[trans->indice_noeud_arrivee]->numero);
-         }
-         trans=trans->suivant;
-      }
-      u_fprintf(out,"\n");
+for (i=0;i<graph->number_of_states;i++) {
+   if (is_final_state(graph->states[i])) {
+      u_fprintf(out,"t ");
+   } else {
+      u_fprintf(out,": ");
    }
+   Fst2Transition trans=graph->states[i]->outgoing_transitions;
+   while (trans!=NULL) {
+      /* For each tag of the graph that is actually used, we put it in the main
+       * tags and we use this index in the fst2 transition */
+      u_fprintf(out,"%d %d ",get_value_index(tmp_tags->value[trans->tag_number],tags),trans->state_number);
+      trans=trans->next;
+   }
+   u_fprintf(out,"\n");
 }
 u_fprintf(out,"f \n");
+free_SingleGraph(graph);
+free_string_hash(tmp_tags);
+}
 
-for (i=0;i<n_nodes;i++) {
-  free_noeud_text_automaton(noeud[i]);
-}
-}

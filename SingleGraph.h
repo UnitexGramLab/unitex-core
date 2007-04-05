@@ -100,7 +100,7 @@ void reverse(SingleGraph);
 void determinize(SingleGraph);
 void minimize(SingleGraph,int);
 
-void save_graph(FILE*,SingleGraph,int,unichar*);
+void save_fst2_subgraph(FILE*,SingleGraph,int,unichar*);
 
 #endif
 

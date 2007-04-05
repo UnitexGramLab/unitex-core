@@ -959,7 +959,7 @@ determinize(graph);
  * case, this can replaced by a string value. For instance, the graph name is
  * replaced by the content of a sentence, when a .fst2 represents a text automaton.
  */
-void save_graph(FILE* fst2,SingleGraph graph,int graph_number,unichar* graph_name) {
+void save_fst2_subgraph(FILE* fst2,SingleGraph graph,int graph_number,unichar* graph_name) {
 /* We print the graph header made of its negative number and its name */
 u_fprintf(fst2,"%d %S\n", graph_number, graph_name);
 /* If we have an empty graph, we represent it by a single state with

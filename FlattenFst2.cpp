@@ -114,7 +114,7 @@ minimize(new_fst2,0);
 u_fprintf(res,"%010d\n",(RTN?n_graphs_to_keep:1));
 /* We save the new main graph */
 u_printf("Writing grammar...\n");
-save_graph(res,new_fst2,-1,origin->graph_names[1]);
+save_fst2_subgraph(res,new_fst2,-1,origin->graph_names[1]);
 free_SingleGraph(new_fst2);
 /* Then, we save the subgraphs, if we have to */
 if (RTN && (result == EQUIVALENT_RTN)) {

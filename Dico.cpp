@@ -150,6 +150,7 @@ if (text_cod==NULL) {
 u_printf("Initializing...\n");
 struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,text_cod,alphabet);
 /* First of all, we compute the number of occurrences of each token */
+u_printf("Counting tokens...\n");
 count_token_occurrences(info);
 /* We all dictionaries according their priority */
 for (int priority=1;priority<4;priority++) {
@@ -204,7 +205,7 @@ for (int priority=1;priority<4;priority++) {
             info->err=u_fopen(snt_files->err,U_WRITE);
             /* And we merge the Locate results with current dictionaries */
             merge_dic_locate_results(info,snt_files->concord_ind,priority);
-            // dumping and closing output files
+            /* We dump and close output files */
             save_unknown_words(info);
         	   u_fclose(info->dlf);
             u_fclose(info->dlc);

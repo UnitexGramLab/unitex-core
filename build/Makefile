@@ -403,7 +403,8 @@ RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.
                Buffer.o Tokenization.o Contexts.o Stack_unichar.o
 
 REG2GRF      = Reg2Grf
-REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Unicode.o Regular_expression.o Error.o
+REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Unicode.o RegularExpressions.o Error.o FileName.o\
+					List_int.o Stack_int.o
 
 SORTTXT      = SortTxt
 SORTTXT_OBJS = IOBuffer.o SortTxt.o Unicode.o Error.o SortTxtMain.o Thai.o

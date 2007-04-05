@@ -181,7 +181,6 @@ loadStrTableAvecNull(unichar *wp,unichar **&table,int &table_sz)
 //
 //	write the number of element of string table 
 //
-#warning a degager!
 void strFileHeadLine(FILE* f,int sz) {
 u_fprintf(f,"%d\n",sz);
 }
