@@ -95,6 +95,10 @@ for (int i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
  */
 struct string_hash* semantic_codes=new_string_hash();
 struct string_hash* inflectional_codes=new_string_hash();
+struct string_hash* simple_lemmas=new_string_hash(DONT_USE_VALUES);
+struct string_hash* compound_lemmas=new_string_hash(DONT_USE_VALUES);
+int n_simple_entries=0;
+int n_compound_entries=0;
 /*
  * We read all the lines and check them.
  */
@@ -111,7 +115,8 @@ while (EOF!=u_fgets(line,dic)) {
 	else {
 		/* If we have a line to check, we check it according to the
 		 * dictionary type */
-		check_DELA_line(line,out,is_a_DELAF,line_number,alphabet,semantic_codes,inflectional_codes);
+		check_DELA_line(line,out,is_a_DELAF,line_number,alphabet,semantic_codes,inflectional_codes,
+                      simple_lemmas,compound_lemmas,&n_simple_entries,&n_compound_entries);
 	}
 	/* At regular intervals, we display a message on the standard
 	 * output to show that the program is working */
@@ -125,8 +130,19 @@ u_fclose(dic);
 /*
  * Once we have checked all the lines, we print some informations
  * in the output file.
- * 
- * First, we print the list of the characters that are used, with
+ */
+u_fprintf(out,"-----------------------------------\n");
+u_fprintf(out,"-------------  Stats  -------------\n");
+u_fprintf(out,"-----------------------------------\n");
+u_fprintf(out,"File: %s\n",argv[1]);
+u_fprintf(out,"Type: %s\n",is_a_DELAF?"DELAF":"DELAS");
+u_fprintf(out,"%d line%s read\n",line_number-1,(line_number-1>1)?"s":"");
+u_fprintf(out,"%d simple entr%s ",n_simple_entries,(n_simple_entries>1)?"ies":"y");
+u_fprintf(out,"for %d distinct lemma%s\n",simple_lemmas->size,(simple_lemmas->size>1)?"s":"");
+u_fprintf(out,"%d compound entr%s ",n_compound_entries,(n_compound_entries>1)?"ies":"y");
+u_fprintf(out,"for %d distinct lemma%s\n",compound_lemmas->size,(compound_lemmas->size>1)?"s":"");
+/**
+ * We print the list of the characters that are used, with
  * their unicode numbers shown in hexadecimal. This can be useful
  * to detect different characters that are graphically identical
  * like 'A' (upper of latin 'a' or upper of greek alpha ?).
@@ -180,6 +196,7 @@ for (int i=0;i<inflectional_codes->size;i++) {
 }
 u_fclose(out);
 u_printf("Done.\n");
+/* Note that we don't free anything since it would only waste time */
 return 0;
 }
 

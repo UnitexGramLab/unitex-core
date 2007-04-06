@@ -884,7 +884,9 @@ return;
  *         inflected forms and lemmas.
  */
 void check_DELA_line(unichar* DELA_line,FILE* out,int is_a_DELAF,int line_number,char* alphabet,
-                      struct string_hash* semantic_codes,struct string_hash* inflectional_codes) {
+                     struct string_hash* semantic_codes,struct string_hash* inflectional_codes,
+                     struct string_hash* simple_lemmas,struct string_hash* compound_lemmas,
+                     int *n_simple_entries,int *n_compound_entries) {
 int i;
 if (DELA_line==NULL) return;
 int error_code;
@@ -902,6 +904,14 @@ if (entry!=NULL) {
    }
    for (i=0;i<entry->n_inflectional_codes;i++) {
       get_value_index(entry->inflectional_codes[i],inflectional_codes);
+   }
+   int simple_entry=u_is_word((is_a_DELAF)?entry->inflected:entry->lemma);
+   if (simple_entry) {
+      (*n_simple_entries)++;
+      get_value_index(entry->lemma,simple_lemmas);
+   } else {
+      (*n_compound_entries)++;
+      get_value_index(entry->lemma,compound_lemmas);
    }
    if (is_a_DELAF) {
       /* There is no inflected form to examine in a DELAS line */

@@ -2409,6 +2409,20 @@ return (tab_is_letter[c/8]&(1<<(c%8)));
 
 
 /**
+ * This function returns 1 if the given string is only made of letters.
+ */
+int u_is_word(unichar* s) {
+if (s==NULL) {
+   fatal_error("NULL error in is_word\n");
+}
+for (int i=0;s[i]!='\0';i++) {
+   if (!u_is_letter(s[i])) return 0;
+}
+return 1;
+}
+
+
+/**
  * Reads an integer from the string 'str'. If 'next' is not NULL,
  * it will contains a pointer to the first character that follows the
  * integer.

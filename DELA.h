@@ -121,7 +121,8 @@ void rebuild_dictionary(unsigned char*,struct INF_codes*,FILE*);
 void extract_semantic_codes(char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(unichar*,unichar*,unichar*,unichar*);
 void tokenize_tag_token_into_3_parts(unichar*,unichar*,unichar*,unichar*);
-void check_DELA_line(unichar*,FILE*,int,int,char*,struct string_hash*,struct string_hash*);
+void check_DELA_line(unichar*,FILE*,int,int,char*,struct string_hash*,struct string_hash*,
+                     struct string_hash*,struct string_hash*,int*,int*);
 int warning_on_code(unichar*,unichar*);
 int contains_unprotected_equal_sign(unichar*);
 void replace_unprotected_equal_sign(unichar*,unichar);
