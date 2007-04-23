@@ -28,7 +28,7 @@
 
 
 void analyse_dutch_unknown_words(Alphabet*,unsigned char*,struct INF_codes*,FILE*,
-									FILE*,FILE*,FILE*);
+									FILE*,FILE*,FILE*,struct string_hash*);
 
 
 #endif

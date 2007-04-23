@@ -76,7 +76,7 @@ if (alph==NULL) {
 }
 char temp[1024];
 struct string_hash* forbiddenWords=NULL;
-if (!strcmp(argv[1],"NORWEGIAN")) {
+if (!strcmp(argv[1],"DUTCH") || !strcmp(argv[1],"NORWEGIAN")) {
    get_path(argv[3],temp);
    strcat(temp,"ForbiddenWords.txt");
    forbiddenWords=load_key_list(temp);
@@ -147,7 +147,7 @@ if (argc==7) {
 }
 
 if (!strcmp(argv[1],"DUTCH")) {
-   analyse_dutch_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words);
+   analyse_dutch_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords);
 }
 else if (!strcmp(argv[1],"GERMAN")) {
    analyse_german_compounds(alph,bin,inf,words,res,debug,new_unknown_words);

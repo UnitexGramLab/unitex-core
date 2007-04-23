@@ -180,9 +180,6 @@ if (node==NULL) {
    fatal_error("NULL error in get_value_index\n");
 }
 if (key[pos]=='\0') {
-//debug("keu[pos] = 0\n");
-//debug("node->value_index=%d\n", node->value_index);
-//debug("value=%S\n", value);
    /* If we are at the end of the key */
    if (insert_policy==DONT_INSERT) {
       /* If we just consult the string_hash with no insert, we just
@@ -278,7 +275,7 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
 struct string_hash* load_key_list(char* name) {
 FILE* f=u_fopen(name,U_READ);
 if (f==NULL) return NULL;
-struct string_hash* hash=new_string_hash();
+struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
 unichar temp[4096];
 while (EOF!=u_fgets(temp,f)) {
    if (temp[0]=='\0') {

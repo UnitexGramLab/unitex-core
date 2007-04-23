@@ -51,6 +51,8 @@ struct dutch_infos {
 	/* The file where to write words that cannot be analyzed as
 	 * compound words */
 	FILE* new_unknown_word_list;
+   /* The words that cannot appear in a decomposition, like single letters */
+   struct string_hash* forbidden_words;
 	/* These arrays indicates for each INF code if it can be
 	 * viewed as a valid code for a left/right component of a
 	 * compound word. */
@@ -96,13 +98,14 @@ void free_word_decomposition_list_dutch(struct word_decomposition_list*);
  */
 void analyse_dutch_unknown_words(Alphabet* alphabet,unsigned char* bin,struct INF_codes* inf,
 								FILE* unknown_word_list,FILE* output,FILE* info_output,
-								FILE* new_unknown_word_list) {
+								FILE* new_unknown_word_list,struct string_hash* forbidden_words) {
 /* We create a structure that will contain all settings */
 struct dutch_infos infos;
 infos.alphabet=alphabet;
 infos.bin=bin;
 infos.inf=inf;
 infos.unknown_word_list=unknown_word_list;
+infos.forbidden_words=forbidden_words;
 infos.output=output;
 infos.info_output=info_output;
 infos.new_unknown_word_list=new_unknown_word_list;
@@ -505,8 +508,8 @@ if (!(c&32768)) {
 	index=infos->bin[offset+2]*256*256+infos->bin[offset+3]*256+infos->bin[offset+4];
 	/* We can set the end of our current component */
 	current_component[pos_in_current_component]='\0';
-	/* We do not consider words of length 1 */
-	if (pos_in_current_component>1) {
+	/* We do not consider forbidden words */
+   if (infos->forbidden_words==NULL || NO_VALUE_INDEX==get_value_index(current_component,infos->forbidden_words,DONT_INSERT)) {
 		/* We don't consider components with a length of 1 */
 		if (word_to_analyze[pos_in_word_to_analyze]=='\0') {
 			/* If we have explored the entire original word */
@@ -633,7 +636,7 @@ if (!(c&32768)) {
 				u_strcpy(dec,analysis);
 				if (dec[0]!='\0') {
 					/* We add the "+++" mark if the current component is not the first one */
-					u_strcat(dec," +++");
+					u_strcat(dec," +++ ");
 				}
 				unichar sia_code[2000];
 				unichar entry[2000];
