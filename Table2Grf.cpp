@@ -521,7 +521,6 @@ return 1;
 bool create_graph(int ligne_courante,unichar** ligne,int n_champs,struct graphe_patron* g,
                   char* nom_resultat,char* chemin,FILE *f_coord,int graphs_printed) {
 
-char nom_res[FILENAME_MAX];
 struct graphe_patron r;
 struct graphe_patron* res;
 int i,j;
@@ -529,6 +528,7 @@ FILE *f;
 res=&r;
 
 //determine_subgraph_name(nom_resultat,nom_res,ligne_courante);
+
 res->n_etats=g->n_etats;
 for (i=0;i<g->n_etats;i++) {
   res->tab[i]=nouvel_etat();
@@ -543,13 +543,15 @@ for (i=0;i<g->n_etats;i++) {
 
 // we print the name of the subgraph
 unichar tmp[FILENAME_MAX];
-unichar tmp2[FILENAME_MAX];
+unichar current_graph[FILENAME_MAX];
+char current_graph_char[FILENAME_MAX];
 u_strcpy(tmp,nom_resultat);
-tmp2[0]='\0';
-convertir(tmp2,tmp,ligne,n_champs,ligne_courante);
+current_graph[0]='\0';
+convertir(current_graph,tmp,ligne,n_champs,ligne_courante);
+u_to_char(current_graph_char,current_graph);
 if (!nettoyer_graphe(res)) {
   // if the graph has been emptied, we return
-  error("%S has been emptied\n",tmp2);
+  error("%S has been emptied\n",current_graph);
   return false;
 } 
 if (graphs_printed!=0) {
@@ -562,28 +564,27 @@ u_fprintf(f_coord,":");
 {
 char tmp3[FILENAME_MAX];
 char tmp4[FILENAME_MAX];
-get_path(nom_res,tmp3);
+get_path(current_graph_char,tmp3);
 if ( ! strncmp(tmp3,chemin,strlen(chemin)) ) /* the subgraph is in a subdirectory
                                                 relative to the path of the result graph:
                                                 we strip the common path */
   {
-    strcpy(tmp3,&nom_res[strlen(chemin)]);
+    strcpy(tmp3,&current_graph_char[strlen(chemin)]);
   }
 else /* we take the full name (including the path) */
-  strcpy(tmp3,nom_res);
+  strcpy(tmp3,current_graph_char);
 
 /* Now we have to replace '/' and '\\' in the path to ':' */
 replace_path_separator_by_colon(tmp3);
 
 /* And finally we remove the extension ".grf" */
 remove_extension(tmp3,tmp4);
-
 u_fprintf(f_coord,"%s",tmp4);
 }
 
-f=u_fopen(nom_res,U_WRITE);
+f=u_fopen(current_graph_char,U_WRITE);
 if (f==NULL) {
-  error("Cannot create subgraph %s\n",nom_res);
+  error("Cannot create subgraph %s\n",current_graph_char);
   return false;
 }
 if (ligne_courante%10==0) {
