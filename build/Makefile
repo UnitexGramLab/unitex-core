@@ -358,10 +358,6 @@ IMPLOSEFST2_OBJS = IOBuffer.o ImploseFst2.o implose.o Unicode.o fst2autalmot.o a
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
                    List_int.o ustring.o BitMasks.o
 
-INFLECT      = Inflect
-INFLECT_OBJS = IOBuffer.o Inflect.o Unicode.o Fst2.o Error.o Pattern.o List_ustring.o\
-					String_hash.o StringParsing.o List_int.o BitMasks.o BitArray.o
-
 LOCATE      = Locate
 LOCATE_OBJS = IOBuffer.o Locate.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
               LocatePattern.o Fst2.o Text_tokens.o List_int.o\
