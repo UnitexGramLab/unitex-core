@@ -433,10 +433,8 @@ void get_double_quoted_sequence(unichar* input,int *pos,
                                 struct fifo* tokens,
                                 struct compilation_info* infos) {
 (*pos)++;
-int finished=0;
 unichar tmp[MAX_GRF_BOX_CONTENT];
-while (!finished && input[*pos]!='\0') {
-   finished=get_double_quoted_token(input,pos,tmp,infos);
+while (!get_double_quoted_token(input,pos,tmp,infos) && input[*pos]!='\0') {
    put_ptr(tokens,u_strdup(tmp));
 }
 }
