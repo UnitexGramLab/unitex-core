@@ -236,10 +236,11 @@ if (current_state->control & 1) {
          /* If everything is fine, we add this match to the match list of the
           * current graph level */
          n_matches++;
+         p->stack->stack[stack_top+1]='\0';
          if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-            (*matches)=insert_if_different(pos,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base]),p->variables);
+            (*matches)=insert_if_different(pos,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables);
          } else {
-            (*matches)=insert_if_absent(pos,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base]),p->variables);
+            (*matches)=insert_if_absent(pos,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables);
          }
       }
    }
@@ -292,7 +293,7 @@ if (graph_call_list!=NULL) {
             do  {
                /* We restore the settings of the current graph level */
                if (p->output_policy!=IGNORE_OUTPUTS) {
-                  u_strcpy(&(p->stack->stack[stack_top]),L->stack);
+                  u_strcpy(&(p->stack->stack[stack_top+1]),L->stack);
                   p->stack->stack_pointer=L->stack_pointer;
                   install_variable_backup(p->variables,L->variable_backup);
                }
