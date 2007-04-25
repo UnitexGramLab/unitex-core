@@ -279,10 +279,10 @@ int compile_rules(char * rulesname, char * outname) {
   FILE * out = fopen(outname, "w");
   if (out == NULL) { fatal_error("cannot open file '%s'\n", outname); }
 
-  char fstoutname[MAX_PATH]; // le nom du fichier qui contient l'automate resultat (fst2)
+  char fstoutname[FILENAME_MAX]; // le nom du fichier qui contient l'automate resultat (fst2)
 
   int nbregles = 0;
-  char buf[MAX_PATH];
+  char buf[FILENAME_MAX];
 
   time_t debut = time(0);
 
@@ -293,7 +293,7 @@ int compile_rules(char * rulesname, char * outname) {
 
 
 
-  while (fgets(buf, MAX_PATH, frules)) {
+  while (fgets(buf, FILENAME_MAX, frules)) {
 
     chomp(buf);
     if (*buf == 0) { continue; }
@@ -513,7 +513,7 @@ static bool prepareRegle(tRegle * regle) {
   if (! succes) { fatal_error("prepareRegle: %s: parse error\n", regle->nom) ; }
 
 
-  char buf[MAX_PATH];
+  char buf[FILENAME_MAX];
   strcpy(buf, regle->nom);
   strcpy(buf + strlen(buf) - 5, "-conc.fst2");
 

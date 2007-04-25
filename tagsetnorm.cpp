@@ -105,7 +105,7 @@ int main(int argc, char ** argv) {
   if (txtauto == NULL) { fatal_error("no text automaton specified\n"); }
 
 
-  char bak[MAX_PATH];
+  char bak[FILENAME_MAX];
 
   strcpy(bak, txtauto);
   strcat(bak, ".bak");

@@ -260,9 +260,9 @@ list_aut * chargeGramm(char * nomFichGramm) {
 
   list_aut * gramms = list_aut_new();
 
-  char buf[MAX_PATH];
+  char buf[FILENAME_MAX];
 
-  while (fgets(buf, MAX_PATH, fGramm) != NULL) {
+  while (fgets(buf, FILENAME_MAX, fGramm) != NULL) {
 
     if (*buf != '<') { continue; }
 
