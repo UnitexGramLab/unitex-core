@@ -232,7 +232,7 @@ return 1;
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-void launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet) {
+void launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet,OutputPolicy output_policy) {
 char tmp[FILENAME_MAX];
 char tmp2[FILENAME_MAX];
 get_path(alphabet,tmp);
@@ -259,8 +259,12 @@ argv[1]=strdup(text_snt);
 argv[3]=strdup(alphabet);
 /* We work in longuest match mode */
 argv[4]=strdup("l");
-/* And in merge mode */
-argv[5]=strdup("m");
+/* We set the output policy */
+switch (output_policy) {
+   case MERGE_OUTPUTS: argv[5]=strdup("m"); break;
+   case REPLACE_OUTPUTS: argv[5]=strdup("r"); break;
+   default: argv[5]=strdup("i"); break;
+}
 /* We look for all the occurrences */
 argv[6]=strdup("all");
 /* If needed, we add the -thai option */

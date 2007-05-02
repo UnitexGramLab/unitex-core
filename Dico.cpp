@@ -37,6 +37,8 @@
 #include "LocateAsRoutine.h"
 #include "Error.h"
 #include "Snt.h"
+#include "LocateConstants.h"
+
 
 /**
  * This enhanced  version of Dico was rewritten by Alexis Neme,
@@ -162,8 +164,9 @@ for (int priority=1;priority<4;priority++) {
       char priority_mark=tmp[strlen(tmp)-1];
       if ((priority==1 && priority_mark=='-') ||  (priority==2 && priority_mark!='-' && priority_mark!='+') ||  (priority==3 && priority_mark=='+')) {
          /* If we must must process a dictionary, we check its type */
-         get_extension(argv[i],tmp);
-         if (!strcmp(tmp,".bin"))    {    
+         char tmp2[FILENAME_MAX];
+         get_extension(argv[i],tmp2);
+         if (!strcmp(tmp2,".bin"))    {    
             /*
              * If it is a .bin dictionary
              */
@@ -186,17 +189,22 @@ for (int priority=1;priority<4;priority++) {
             info->dlc=NULL;
             info->err=NULL;
          }
-         else if (!strcmp(tmp,".fst2"))       { 
+         else if (!strcmp(tmp2,".fst2"))       { 
             /*
              * If it is a .fst2 dictionary
              */
+            int l=strlen(tmp)-((priority==2)?1:2);
+            OutputPolicy policy=MERGE_OUTPUTS;
+            if (l>0 && (tmp[l]=='r' || tmp[l]=='R') && tmp[l-1]=='-') {
+               policy=REPLACE_OUTPUTS;
+            }
             u_printf("Applying grammar %s...\n",argv[i]);
             /**
              * IMPORTANT!!!
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            launch_locate_as_routine(argv[1],argv[i],argv[2]);
+            launch_locate_as_routine(argv[1],argv[i],argv[2],policy);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

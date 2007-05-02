@@ -20,7 +20,7 @@
   */
 
 #include <time.h>
-#include "Dico_application.h"
+#include "ApplyDic.h"
 #include "Error.h"
 #include "Matches.h"
 #include "FileName.h"
@@ -657,14 +657,18 @@ while (l!=NULL) {
       if(l->start==l->end) {  
          /* If it is a simple word */
          int token_number=get_token_number(entry->inflected,info->tokens);
-         int p=get_value(info->simple_word,token_number);
-         if (p==0 || p==priority) {
-            /* We save the simple word only if it hasn't already been processed with
-             * a greater priority */
-            set_value(info->part_of_a_word,token_number,1);             
-            set_value(info->simple_word,token_number,priority);
-            /* We save it to the DLF */
-            u_fprintf(info->dlf,"%S\n",l->output);
+         if (token_number!=-1) {
+            /* If we find in the dictionary a token that is not in the text,
+             * we fail, doing nothing */
+            int p=get_value(info->simple_word,token_number);
+            if (p==0 || p==priority) {
+               /* We save the simple word only if it hasn't already been processed with
+                * a greater priority */
+               set_value(info->part_of_a_word,token_number,1);             
+               set_value(info->simple_word,token_number,priority);
+               /* We save it to the DLF */
+               u_fprintf(info->dlf,"%S\n",l->output);
+            }
          }
       }
       else if(l->start<l->end)    {

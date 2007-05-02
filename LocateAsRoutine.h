@@ -27,8 +27,10 @@
 #ifndef LocateAsRoutineH
 #define LocateAsRoutineH
 
+#include "LocateConstants.h"
+
 int main_Locate(int, char**); 
-void launch_locate_as_routine(char*,char*,char*);
+void launch_locate_as_routine(char*,char*,char*,OutputPolicy);
 
 
 #endif
