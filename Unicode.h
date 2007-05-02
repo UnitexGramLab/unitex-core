@@ -200,6 +200,7 @@ int u_strcmp(const unichar*,const char*);
 unichar* u_strdup(const unichar*);
 unichar* u_strdup(const unichar*,int);
 unichar* u_strdup(const char*);
+unichar* u_strchr(const unichar*,unichar,int);
 unichar* u_strchr(const unichar*,unichar);
 char* u_strchr(char*,unichar);
 unichar* u_strpbrk(const unichar*,unichar*);

@@ -76,7 +76,6 @@ if (!dlcf) {
    error("Unable to open file: '%s' !\n", DLCF);
    return 1;
 }
-
 //Inflect one entry at a time
 l = u_fgets(input_line,DIC_LINE_SIZE-1,dlc);
 //Omit the final newline
@@ -85,9 +84,10 @@ if (u_strlen(input_line)>0 && input_line[u_strlen(input_line)-1]==(unichar)'\n')
 }
 int flag=0;
 //If a line is empty the file is not necessarily finished. 
-//If the last entry has no newline, we should noty skip this entry
+//If the last entry has no newline, we should not skip this entry
 struct dela_entry* DELAS_entry;
-while (l || !feof(dlc)) {
+int semitic;
+while (l!=EOF) {
    if ((DELAS_entry=is_strict_DELAS_line(input_line,alph))!=NULL) {
       /* If we have a strict DELAS line, that is to say, one with
        * a simple word */
@@ -101,9 +101,9 @@ while (l || !feof(dlc)) {
       unichar code_gramm[1024];
       /* We take the first grammatical code, and we extract from it the name
        * of the inflection transducer to use */
-      get_inflection_code(DELAS_entry->semantic_codes[0],inflection_code,code_gramm);
+      get_inflection_code(DELAS_entry->semantic_codes[0],inflection_code,code_gramm,&semitic);
       /* And we inflect the word */
-      err=SU_inflect(DELAS_entry->lemma,inflection_code,forms);
+      err=SU_inflect(DELAS_entry->lemma,inflection_code,forms,semitic);
       /* Then, we print its inflected forms to the output */
       for (int i=0;i<forms->no_forms;i++) {
          u_fprintf(dlcf,"%S,%S.%S",forms->forms[i].form,DELAS_entry->lemma,code_gramm);

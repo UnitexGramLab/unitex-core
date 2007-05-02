@@ -665,8 +665,6 @@ static int inflect_kr(Fst2*fstAuto,unichar* flex,int modeflex)
 
 
 
-void explore_state_recursion(unichar*,unichar*,unichar*,Fst2*,int,struct couple_string**,unichar*);
-
 //
 // Shifts all the stack from the position pos
 //

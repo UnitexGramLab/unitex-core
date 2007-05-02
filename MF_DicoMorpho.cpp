@@ -91,7 +91,6 @@ l_class_T* d_get_class_str(unichar* cl_str);
 /* Returns 0 on success, 1 otherwise.                                                 */
 int d_init_morpho_equiv(char* equiv_file) {
 
-  int l; //length of a scanned sequence
   FILE* ef; //equivalence file
   int line_no;  //number of the current line
   unichar line[MAX_EQUIV_LINE];  //current line of the Equivalence file
@@ -108,27 +107,20 @@ int d_init_morpho_equiv(char* equiv_file) {
   line_no = 0;
 
   //Omit the first line (language name)
-  if (! feof(ef)) {
-    u_fgets(line,MAX_EQUIV_LINE-1,ef);
+  if (u_fgets(line,MAX_EQUIV_LINE-1,ef)!=EOF) {
     line_no++;
+  } else {
+   return 1;
   }
 
-  //Scan the following line
-  l = u_fgets(line,MAX_LANG_MORPHO_LINE-1,ef);
-  if (line[u_strlen(line)-1] == (unichar) '\n') { //delete the final newline
-    line[u_strlen(line)-1] = (unichar) '\0';
-    l--;
-  }
-  while (l || !feof(ef)) {
+  while (u_fgets(line,MAX_EQUIV_LINE-1,ef)!=EOF) {
     line_no++;
-    if (l)
-      if (d_read_line(line,line_no))
-	return 1;
-    l = u_fgets(line,MAX_LANG_MORPHO_LINE-1,ef);
-    if (line[u_strlen(line)-1] == (unichar) '\n') { //delete the final newline
-      line[u_strlen(line)-1] = (unichar) '\0';
-      l--;
+    int l=u_strlen(line);
+    if (l>0 && line[l-1]=='\n') {
+       /* If necessary, we remove the final \n */
+       line[l-1]='\0';
     }
+    if (line[0]!='\0' && d_read_line(line,line_no)) return 1;
   }
   return 0;
 }

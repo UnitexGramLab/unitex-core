@@ -20,9 +20,7 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on July 11 2005
  */
-//---------------------------------------------------------------------------
 
 /********************************************************************************/
 /********************************************************************************/
@@ -48,25 +46,28 @@ extern l_classes_T L_CLASSES;
 // Table of inflection tranducers
 extern Fst2* fst2[N_FST2];
 
-//////////////////////////////
-struct couple_string {
-   unichar flechi[MAX_CHARS_IN_STACK];
-   unichar out[MAX_CHARS_IN_STACK];
-   struct couple_string* suivant;
+/**
+ * This structure represents a list of inflection information. It is used
+ * to get up information from a subgraph exploration.
+ */
+struct inflect_infos {
+   unichar* inflected;
+   unichar* output;
+   unichar* semitic;
+   struct inflect_infos* next;
 };
 
 //////////////////////////////
 int SU_inflect(SU_id_T* SU_id,f_morpho_T* desired_features, SU_forms_T* forms);
 int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
-		     Fst2* a,int etat_courant, f_morpho_T* desired_features, SU_forms_T* forms);
-int SU_explore_tag(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* sortie,
-		   Fst2* a,f_morpho_T* desired_features, SU_forms_T* forms);
+		               Fst2* a,int etat_courant, f_morpho_T* desired_features, SU_forms_T* forms,unichar*);
 int SU_explore_state_recursion(unichar* flechi,unichar* canonique,unichar* sortie,
-                   Fst2* a,int etat_courant,struct couple_string** L,
-		   f_morpho_T* desired_features, SU_forms_T* forms);
-void SU_explore_tag_recursion(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* sortie,
-			      Fst2* a,struct couple_string** LISTE,f_morpho_T* desired_features, SU_forms_T* forms);
+                   Fst2* a,int etat_courant,struct inflect_infos** L,
+		             f_morpho_T* desired_features, SU_forms_T* forms,unichar*);
+void SU_explore_tag(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* sortie,
+			           Fst2* a,struct inflect_infos** LISTE,f_morpho_T* desired_features, SU_forms_T* forms,unichar*);
 void shift_stack(unichar* stack,int pos);
+void shift_stack_left(unichar* stack,int pos);
 int SU_convert_features(f_morpho_T*** feat,unichar* feat_str);
 struct list_ustring* SU_split_raw_features(unichar*);
 int SU_feature_agreement(f_morpho_T* feat,f_morpho_T* desired_features);
@@ -95,19 +96,29 @@ int SU_delete_lemma(SU_lemma_T* l);
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 //        this structure is supposed to be allocated
+//
+// semitic: if not NULL, it means that we are inflecting a semitic word. In that case,
+//          the stack is not initialized with the lemma but with the empty string. The lemma
+//          is supposed to represent a consonantic skeleton like "ktb". The inflection fst2's paths
+//          contains references to the consonants of this skeleton in the form of number from 1 to n
+//          For instance, if we have the path "li1a2u3na", we will have the inflected form
+//          "likatubna"
+//
 // Returns 0 on success, 1 otherwise.   
-int SU_inflect(SU_id_T* SU_id,f_morpho_T* desired_features, SU_forms_T* forms) {
+int SU_inflect(SU_id_T* SU_id,f_morpho_T* desired_features, SU_forms_T* forms,int semitic) {
   int err;
-  unichar flechi[MAX_CHARS_IN_STACK];
-  unichar sortie[MAX_CHARS_IN_STACK];
-  sortie[0]='\0';
+  unichar inflected[MAX_CHARS_IN_STACK];
+  unichar inflection_codes[MAX_CHARS_IN_STACK];
+  unichar semitic_[MAX_CHARS_IN_STACK];
+  inflection_codes[0]='\0';
+  semitic_[0]='\0';
   int T=get_transducer(SU_id->lemma->paradigm);
   if (fst2[T]==NULL) {
     // if the automaton has not been loaded
     return 1;
   }
-  u_strcpy(flechi,SU_id->lemma->unit);
-  err = SU_explore_state(flechi,SU_id->lemma->unit,sortie,fst2[T],0,desired_features,forms);
+  u_strcpy(inflected,semitic?U_EMPTY:SU_id->lemma->unit);
+  err = SU_explore_state(inflected,SU_id->lemma->unit,inflection_codes,fst2[T],0,desired_features,forms,semitic?semitic_:NULL);
   return err;
 }
 
@@ -119,24 +130,26 @@ int SU_inflect(SU_id_T* SU_id,f_morpho_T* desired_features, SU_forms_T* forms) {
  * will receive all the produced inflected forms with their inflectional features.
  * The output DELAF lines will have to be built from 'forms'.
  */
-int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms) {
+int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms,int semitic) {
   int err;
   unichar inflected[MAX_CHARS_IN_STACK];
   unichar inflection_codes[MAX_CHARS_IN_STACK];
+  unichar semitic_[MAX_CHARS_IN_STACK];
   inflection_codes[0]='\0';
+  semitic_[0]='\0';
   int T=get_transducer(inflection_code);
   if (fst2[T]==NULL) {
     // if the automaton has not been loaded
     return 1;
   }
-  u_strcpy(inflected,lemma);
-  err=SU_explore_state(inflected,lemma,inflection_codes,fst2[T],0,NULL,forms);
+  u_strcpy(inflected,semitic?U_EMPTY:lemma);
+  err=SU_explore_state(inflected,lemma,inflection_codes,fst2[T],0,NULL,forms,semitic?semitic_:NULL);
   return err;
 }
 
 ////////////////////////////////////////////
-// Explore the transducer a starting from state 'etat_courant'.
-//Conserve only the forms that agree with the 'desired_features'.
+// Explores the transducer a starting from state 'etat_courant'.
+// Conserves only the forms that agree with the 'desired_features'.
 // desired_features: morphology of the desired forms, e.g. {Gen=fem, Case=Inst}, or {} (if separator)
 //                   if 'desired_features' is NULL, it means that we want to generate all the
 //                   inflected forms of a simple word. In that case, we consider raw inflection
@@ -146,9 +159,9 @@ int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms) {
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.   
 int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
-                   Fst2* a,int etat_courant, f_morpho_T* desired_features, SU_forms_T* forms) {
+                   Fst2* a,int etat_courant, f_morpho_T* desired_features, SU_forms_T* forms,
+                   unichar* semitic) {
   int err;
-
   Fst2State e=a->states[etat_courant];
   if (e->control & 1) {  //If final state
     if (desired_features!=NULL) {
@@ -172,12 +185,22 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
             forms->forms[forms->no_forms].features = feat[f];
             forms->no_forms++;
          }
-         else { //If undesired form delete 'feat'
+         else { // If undesired form delete 'feat'
 	         f_delete_morpho(feat[f]);
 	      }
          f++;
        }
        free(feat);
+    } else if (semitic!=NULL) {
+      /* If we are in semitic mode, we don't try to split the output into
+       * several inflection codes */
+         forms->forms=(SU_f_T*)realloc(forms->forms,(forms->no_forms+1)*sizeof(SU_f_T));
+         if (!forms->forms) {
+            fatal_error("Not enough memory in function SU_explore_state\n");
+         }
+         forms->forms[forms->no_forms].form=u_strdup(flechi);
+         forms->forms[forms->no_forms].raw_features=u_strdup(sortie);
+         forms->no_forms++;
     } else {
       /* If we want all the inflected forms */
       struct list_ustring* features=SU_split_raw_features(sortie);
@@ -200,80 +223,38 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
   }
   Fst2Transition t=e->transitions;
   while (t!=NULL) {
-    err = SU_explore_tag(t,flechi,canonique,sortie,a,desired_features,forms);
-    if (err)
-      return err;
+    SU_explore_tag(t,flechi,canonique,sortie,a,NULL,desired_features,forms,semitic);
     t=t->next;
   }
   return 0;
 }
 
-////////////////////////////////////////////
-// Explore the tag of the transition T
-// Conserve only the forms that agree with the 'desired_features'.
-// desired_features: morphology of the desired forms, e.g. {Gen=fem, Case=Inst}, or {} (if separator)
-// forms: return parameter; set of the inflected forms corresponding to the given inflection features
-//        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
-//        or   (1,{["-",{}]})
-// Returns 0 on success, 1 otherwise.   
-int SU_explore_tag(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* sortie,
-                 Fst2* a,f_morpho_T* desired_features, SU_forms_T* forms) {
-  if (T->tag_number < 0) {
-    // if we are in the case of a call to a sub-graph
-    struct couple_string* L=NULL;
-    struct couple_string* temp;
-    SU_explore_state_recursion(flechi,canonique,sortie,a,a->initial_states[-(T->tag_number)],&L,desired_features,forms);
-    while (L!=NULL) {
-      SU_explore_state(L->flechi,canonique,L->out,a,T->state_number,desired_features,forms);
-      temp=L;
-      L=L->suivant;
-      free(temp);
-    }
-    return 0;
-  }
-  Fst2Tag e=a->tags[T->tag_number];
-  int pos=u_strlen(flechi);
-  unichar out[MAX_CHARS_IN_STACK];
-  unichar pile[MAX_CHARS_IN_STACK];
-  unichar etiq[MAX_CHARS_IN_STACK];
-  int pos_etiq;
-  u_strcpy(out,sortie);
-  if (e->output!=NULL && u_strcmp(e->output,"<E>")) {
-    u_strcat(out,e->output);
-  }
-  u_strcpy(pile,flechi);
-  u_strcpy(etiq,e->input);
-  if (u_strcmp(etiq,"<E>")) {
-    // if the tag is not <E>, we process it
-    for (pos_etiq=0;etiq[pos_etiq]!='\0';) {
-      switch (etiq[pos_etiq]) {
-      case (unichar) 'L':   {
-	if (pos!=0) {
-	  // if the stack is not empty, we decrease the
-	  // stack pointer
-	  pos--;
-	}
-	pos_etiq++;
-      };break;
-      case (unichar) 'R':   {
-	pos++;
-	pos_etiq++;
-      };break;
-      case (unichar) 'C':   {
-	shift_stack(pile,pos);
-	pos=pos++;
-	pos_etiq++;
-      };break;
-      default:    {
-	pile[pos++]=etiq[pos_etiq++];
-      };break;
-      }
-    }
-  }
-  // then, we go the next state
-  pile[pos]=(unichar)'\0';
-  SU_explore_state(pile,canonique,out,a,T->state_number,desired_features,forms);
-  return 0;
+
+/**
+ * Allocates, initializes and returns a new inflect_infos structue.
+ */
+struct inflect_infos* new_inflect_infos() {
+struct inflect_infos* i=(struct inflect_infos*)malloc(sizeof(struct inflect_infos));
+if (i==NULL) {
+   fatal_error("Not enough memory in new_inflect_infos\n");
+}
+i->inflected=NULL;
+i->output=NULL;
+i->semitic=NULL;
+i->next=NULL;
+return i;
+}
+
+
+/**
+ * Frees the given single list cell.
+ */
+void free_inflect_infos(struct inflect_infos* i) {
+if (i==NULL) return;
+if (i->inflected!=NULL) free(i->inflected);
+if (i->output!=NULL) free(i->output);
+if (i->semitic!=NULL) free(i->semitic);
+free(i);
 }
 
 ////////////////////////////////////////////
@@ -284,94 +265,161 @@ int SU_explore_tag(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* 
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.   
-int SU_explore_state_recursion(unichar* flechi,unichar* canonique,unichar* sortie,
-                   Fst2* a,int etat_courant,struct couple_string** L,
-                   f_morpho_T* desired_features, SU_forms_T* forms) {
-  Fst2State e=a->states[etat_courant];
+int SU_explore_state_recursion(unichar* inflected,unichar* lemma,unichar* output,
+                   Fst2* a,int current_state,struct inflect_infos** L,
+                   f_morpho_T* desired_features, SU_forms_T* forms,unichar* semitic) {
+  Fst2State e=a->states[current_state];
   if (e->control & 1) {
     // if we are in a final state, we save the computed things
-    struct couple_string* res=(struct couple_string*)malloc(sizeof(struct couple_string));
-    u_strcpy(res->flechi,flechi);
-    u_strcpy(res->out,sortie);
-    res->suivant=(*L);
+    struct inflect_infos* res=new_inflect_infos();
+    res->inflected=u_strdup(inflected);
+    res->output=u_strdup(output);
+    res->semitic=u_strdup(semitic);
+    res->next=(*L);
     (*L)=res;
   }
   Fst2Transition t=e->transitions;
   while (t!=NULL) {
-    SU_explore_tag_recursion(t,flechi,canonique,sortie,a,L,desired_features,forms);
+    SU_explore_tag(t,inflected,lemma,output,a,L,desired_features,forms,semitic);
     t=t->next;
   }
   return 0;
 }
 
 ////////////////////////////////////////////
-// explore the tag of the transition T
-// Conserve only the forms that agree with the 'desired_features'.
+// Explores the tag of the transition T
+//
 // desired_features: morphology of the desired forms, e.g. {Gen=fem, Case=Inst}, or {} (if separator)
 // forms: return parameter; set of the inflected forms corresponding to the given inflection features
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.   
-void SU_explore_tag_recursion(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* sortie,
-                 Fst2* a,struct couple_string** LISTE,f_morpho_T* desired_features, SU_forms_T* forms) {
-u_printf("\nTransition: ");  //debug
-u_printf("%S/%S\n",a->tags[T->tag_number]->input,a->tags[T->tag_number]->output);  //debug
-
+void SU_explore_tag(Fst2Transition T,unichar* inflected,unichar* lemma,unichar* output,
+                 Fst2* a,struct inflect_infos** LIST,f_morpho_T* desired_features, SU_forms_T* forms,
+                 unichar* semitic) {
 if (T->tag_number < 0) {
-    // if we are in the case of a call to a sub-graph
-    struct couple_string* L=NULL;
-    struct couple_string* temp;
-    SU_explore_state_recursion(flechi,canonique,sortie,a,a->initial_states[-(T->tag_number)],&L,desired_features,forms);
-    while (L!=NULL) {
-      SU_explore_state_recursion(L->flechi,canonique,L->out,a,T->state_number,LISTE,desired_features,forms);
-      temp=L;
-      L=L->suivant;
-      free(temp);
-    }
-    return;
-  }
-  Fst2Tag e=a->tags[T->tag_number];
-  int pos=u_strlen(flechi);
-  unichar out[MAX_CHARS_IN_STACK];
-  unichar pile[MAX_CHARS_IN_STACK];
-  unichar etiq[MAX_CHARS_IN_STACK];
-  int pos_etiq;
-  u_strcpy(out,sortie);
-  if (e->output!=NULL && u_strcmp(e->output,"<E>")) {
-    u_strcat(out,e->output);
-  }
-  u_strcpy(pile,flechi);
-  u_strcpy(etiq,e->input);
-  if (u_strcmp(etiq,"<E>")) {
-    // if the tag is not <E>, we process it
-    for (pos_etiq=0;etiq[pos_etiq]!='\0';) {
-      switch (etiq[pos_etiq]) {
-      case 'L':   {
-	if (pos!=0) {
-	  // if the stack is not empty, we decrease the
-	  // stack pointer
-	  pos--;
-	}
-	pos_etiq++;
-      };break;
-      case 'R':   {
-	pos++;
-	pos_etiq++;
-      };break;
-      case 'C':   {
-	shift_stack(pile,pos);
-	pos=pos++;
-	pos_etiq++;
-      };break;
-      default:    {
-	pile[pos++]=etiq[pos_etiq++];
-      };break;
+   /* If we are in the case of a call to a sub-graph */
+   struct inflect_infos* L=NULL;
+   struct inflect_infos* temp;
+   SU_explore_state_recursion(inflected,lemma,output,a,a->initial_states[-(T->tag_number)],&L,desired_features,forms,semitic);
+   while (L!=NULL) {
+      if (LIST==NULL) {
+         SU_explore_state(L->inflected,lemma,L->output,a,T->state_number,desired_features,forms,L->semitic);
       }
-    }
-  }
-  // then, we go the next state
-  pile[pos]='\0';
-  SU_explore_state_recursion(pile,canonique,out,a,T->state_number,LISTE,desired_features,forms);
+      else {
+         SU_explore_state_recursion(L->inflected,lemma,L->output,a,T->state_number,LIST,desired_features,forms,L->semitic);
+      }
+      temp=L;
+      L=L->next;
+      free_inflect_infos(temp);
+   }
+   return;
+}
+Fst2Tag t=a->tags[T->tag_number];
+int pos=u_strlen(inflected);
+unichar out[MAX_CHARS_IN_STACK];
+unichar stack[MAX_CHARS_IN_STACK];
+unichar tag[MAX_CHARS_IN_STACK];
+unichar semitic2[MAX_CHARS_IN_STACK];
+u_strcpy(out,output);
+if (semitic!=NULL) u_strcpy(semitic2,semitic);
+int pos_out=u_strlen(out);
+u_strcpy(stack,inflected);
+u_strcpy(tag,t->input);
+if (u_strcmp(tag,"<E>")) {
+   /* If the tag is not <E>, we process it */
+   for (int pos_tag=0;tag[pos_tag]!='\0';) {
+      switch (tag[pos_tag]) {
+         /* Left move operator */
+         case 'L':   {
+            if (pos!=0) {
+               /* If the stack is not empty, we decrease the stack pointer */
+	            pos--;
+	         }
+            pos_tag++;
+            break;
+         }
+         
+         /* Right move operator */
+         case 'R': {
+            pos++;
+            pos_tag++;
+            break;
+         }
+         
+         /* Right copy operator */
+         case 'C': {
+            shift_stack(stack,pos);
+            pos=pos++;
+            pos_tag++;
+            break;
+         }
+         
+         /* Left copy operator */
+         case 'D': {
+            shift_stack_left(stack,pos);
+            pos--;
+            pos_tag++;
+            break;
+         }
+         
+         /* If we have a digit between 1 and 9, we consider it as a reference to a root
+          * consonant, but only if we are in semitic mode */
+         case '1':
+         case '2':
+         case '3':
+         case '4':
+         case '5':
+         case '6':
+         case '7':
+         case '8':
+         case '9': if (semitic!=NULL) {
+            int i=tag[pos_tag++]-'1';
+            if (i>=u_strlen(lemma)) {
+               error("Reference in %S.fst2 to consonant #%C for skeleton \"%S\"\n",a->graph_names[1],tag[pos_tag-1],lemma);
+               return;
+            }
+            stack[pos++]=lemma[i];
+            out[pos_out++]=lemma[i];
+            break;
+         }
+      
+         /* Default push operator */
+         default: {
+            stack[pos++]=tag[pos_tag];
+            if (semitic!=NULL) {
+               out[pos_out++]=tag[pos_tag];
+            }
+            pos_tag++;
+            break;
+         }
+      }
+   }
+}
+out[pos_out]='\0';
+/* We process the output, if any and not NULL */
+if (t->output!=NULL && u_strcmp(t->output,"<E>")) {
+   if (semitic!=NULL) {
+      /* If we are in semitic mode, we append the output to the current one, stored in 'semitic' */
+      u_strcat(semitic2,t->output);
+      /* Then, we test if the new output contains an unprotected '}' or if it is "{" */
+      if (!u_strcmp(semitic2,"{") || u_strchr(semitic2,'}',1)!=NULL) {
+         /* In that case, we must append the current output to the global one */
+         u_strcat(out,semitic2);
+         semitic2[0]='\0';
+      }
+   } else {
+      /* If we are in normal mode, we just append the tag's output to the global one */
+      u_strcat(out,t->output);
+   }
+}
+/* Then, we go the next state */
+stack[pos]='\0';
+if (LIST==NULL) {
+   SU_explore_state(stack,lemma,out,a,T->state_number,desired_features,forms,semitic?semitic2:NULL);
+} else {
+   SU_explore_state_recursion(stack,lemma,out,a,T->state_number,LIST,desired_features,forms,semitic?semitic2:NULL);
+}
 }
 
 ////////////////////////////////////////////
@@ -385,6 +433,21 @@ void shift_stack(unichar* stack,int pos) {
     stack[i]=stack[i-1];
   }
 }
+
+
+//
+// Shifts all the stack to the left from the position pos
+//
+void shift_stack_left(unichar* stack,int pos) {
+if (pos==0) {
+   // this case should never happen
+   return;
+}
+for (int i=pos-1;i<MAX_CHARS_IN_STACK;i++) {
+   stack[i]=stack[i+1];
+}
+}
+
 
 
 ////////////////////////////////////////////

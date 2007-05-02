@@ -42,7 +42,7 @@
 Alphabet* alph;
 
 // Directory containing the inflection tranducers and the 'Morphology' file
-extern char inflection_directory[1000];
+extern char inflection_directory[FILENAME_MAX];
 
 
 

@@ -93,10 +93,10 @@ typedef struct {
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.   
-int SU_inflect(SU_id_T* SU_id,f_morpho_T* feat, SU_forms_T* forms);
+int SU_inflect(SU_id_T* SU_id,f_morpho_T* feat, SU_forms_T* forms,int);
 
 /* This prototype has been added in order to deal with simple words */
-int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms);
+int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms,int);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

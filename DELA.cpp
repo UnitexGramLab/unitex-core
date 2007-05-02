@@ -1160,6 +1160,8 @@ return 0;
  * 2) The grammatical code, made of ANSI letters, is followed by a suffix like "N32".
  *    In that case, the whole string is the inflection code.
  * 
+ * Moreover, if the code starts with a '$' we set the '*semitic' parameter to 1.
+ * 
  * The output strings are supposed to be allocated.
  * 
  * Examples:
@@ -1167,19 +1169,25 @@ return 0;
  *    s="N32"       => inflection_code="N32"     code_gramm="N"
  *    s="N(NC_XXX)" => inflection_code="NC_XXX"  code_gramm="N"
  */
-void get_inflection_code(unichar* s,char* inflection_code,unichar* code_gramm) {
-int i;
-for (i=0;(s[i]>='A' && s[i]<='Z')||(s[i]>='a' && s[i]<='z');i++);
+void get_inflection_code(unichar* s,char* inflection_code,unichar* code_gramm,int *semitic) {
+int i=0;
+if (s[0]=='$') {
+   i++;
+   (*semitic)=1;
+} else {
+   (*semitic)=0;
+}
+for (;(s[i]>='A' && s[i]<='Z')||(s[i]>='a' && s[i]<='z');i++);
 if (s[i]=='\0') {
    /* If the whole string is made of ANSI letters, then the inflection and
     * grammmatical codes are identical */
-    u_strcpy(code_gramm,s);
-    u_to_char(inflection_code,s);
+    u_strcpy(code_gramm,&(s[*semitic]));
+    u_to_char(inflection_code,&(s[*semitic]));
     return;
 }
 if (s[i]=='(' && s[u_strlen(s)-1]==')') {
    /* If we are in the case "N(NC_XXX)" */
-   u_strcpy(code_gramm,s);
+   u_strcpy(code_gramm,&(s[*semitic]));
    code_gramm[i]='\0';
    int j=0;
    i++;
@@ -1191,8 +1199,8 @@ if (s[i]=='(' && s[u_strlen(s)-1]==')') {
    return;
 }
 /* If we are in the case "N32" */
-u_to_char(inflection_code,s);
-u_strcpy(code_gramm,s);
+u_to_char(inflection_code,&(s[*semitic]));
+u_strcpy(code_gramm,&(s[*semitic]));
 code_gramm[i]='\0';
 }
 

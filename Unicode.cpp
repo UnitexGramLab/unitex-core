@@ -1846,19 +1846,40 @@ return res;
 /**
  * Unicode version of strchr.
  * This function returns a pointer on the first occurrence of 'c' in 's', or
- * NULL if not found.
+ * NULL if not found. If 'unprotected' is not null, the function looks for the
+ * first unprotected occurrence of 'c'; otherwise, it looks for the first
+ * occurrence, protected by a backslash or not.
  * 
  * Author: Olivier Blanc
+ * Modified by Sébastien Paumier
  */
-unichar* u_strchr(const unichar* s,unichar c) {
+unichar* u_strchr(const unichar* s,unichar c,int unprotected) {
 if (s==NULL) return NULL;
 while (*s) {
+   if (*s=='\\' && unprotected) {
+      /* If we are looking for an unprotected character, we skip any
+       * protected character */
+      s++;
+      if (*s=='\0') return NULL;
+   }
    if (*s==c) {
       return (unichar*)s;
    }
    s++;
 }
 return NULL;
+}
+
+
+/**
+ * Unicode version of strchr.
+ * This function returns a pointer on the first occurrence of 'c' in 's', or
+ * NULL if not found.
+ * 
+ * Author: Olivier Blanc
+ */
+unichar* u_strchr(const unichar* s,unichar c) {
+return u_strchr(s,c,0);
 }
 
 
