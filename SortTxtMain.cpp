@@ -32,109 +32,181 @@
 #define DEFAULT 0
 #define THAI 1
 
+/* Maximum length of a line in the text file to be sorted */
+#define LINE_LENGTH 10000
 
-FILE* f;
-FILE* f_out;
-char VIRER_DOUBLONS=1;
-int REVERSE=1;
-int line=0;
-struct node* root;
-int char_tab[0xFFFF];
-int char_priorite[0xFFFF];
-int langue=DEFAULT;
-char line_number[5000];
-int resulting_line_number=0;
+
+
+/**
+ * This structure defines a list of couples (string,int). The integer
+ * represents the number of occurrences of the string, so that the list
+ * 
+ * a -> a -> a -> b -> c -> c
+ * 
+ * will be represented by:
+ * 
+ * (a,3) -> (b,1) -> (c,2)
+ */
+struct couple {
+   unichar* s;
+   int n;
+   struct couple* next;
+};
+
+/**
+ * This represents a node of the sort tree. Each node contains a list of strings,
+ * represented with the 'couple' structure'.
+ */
+struct sort_tree_node {
+   struct couple* couples;
+   struct sort_tree_transition* transitions;
+};
+
+/**
+ * This is a transition in the sort tree, tagged with a unichar.
+ */
+struct sort_tree_transition {
+   unichar c;
+   struct sort_tree_node* node;
+   struct sort_tree_transition* next;
+};
 
 
 void sort();
 void sort_thai();
 int read_line();
 int read_line_thai();
-void insert(unichar*);
 void save();
-void init_tree();
-struct node* new_node();
-void free_node(struct node*);
-void free_transition(struct transition*);
-void get_node(unichar*,int,struct node*);
-void explore_node(struct node*,unichar*,int,int);
-void quicksort(struct transition**,int,int);
+struct sort_tree_node* new_sort_tree_node();
+void free_sort_tree_node(struct sort_tree_node*);
+void free_transition(struct sort_tree_transition*);
+void free_couple(struct couple*);
+void get_node(unichar*,int,struct sort_tree_node*);
+void explore_node(struct sort_tree_node*);
+void quicksort(struct sort_tree_transition**,int,int);
 int char_cmp(unichar,unichar);
 int strcmp2(unichar*,unichar*);
-struct couple_final* inserer_chaine_thai(unichar*,struct couple_final*);
+struct couple* insert_string_thai(unichar*,struct couple*);
+
+
+FILE* f;
+FILE* f_out;
+char REMOVE_DUPLICATES=1;
+int REVERSE=1;
+int number_of_lines=0;
+struct sort_tree_node* root=new_sort_tree_node();
+
+/* The following array gives for each character its class number, i.e.
+ * 0 if it's not a letter or the number of the line it appears in the
+ * char order file. */
+int class_numbers[0x10000];
+
+/* This array gives for each character its canonical character, i.e. the first
+ * character of its class, or itself if it is not a letter. */
+unichar canonical[0x10000];
+
+/* For a char that is a letter, this array indicates its position in its
+ * class. This information will be used for comparing characters of the
+ * same class. For instance, if we have the following char order file: 
+ * 
+ * Aaà
+ * Bb
+ * Ccç
+ * ...
+ * 
+ * we will have class_numbers['c']=3, canonical['c']='C' and priority['c']=2
+ */
+int priority[0x10000];
+
+/* This array will be used to sort transitions that outgo from a node */
+struct sort_tree_transition* transitions[0x10000];
+
+int mode=DEFAULT;
+char line_number[LINE_LENGTH];
+int resulting_line_number=0;
 
 
 
-void init_char_tab() {
-for (int i=0;i<0xFFFF;i++) {
-  char_tab[i]=0;
-  char_priorite[i]=0;
+
+/**
+ * This function initializes the arrays used to determine the char order.
+ */
+void init_char_arrays() {
+for (int i=0;i<0x10000;i++) {
+   class_numbers[i]=0;
+   canonical[i]=i;
+   priority[i]=0;
 }
 }
 
 
-
-//
-// this function try to read the file name
-//
+/**
+ * This function reads the given char order file.
+ */
 void read_char_order(char* name) {
 int c;
-int ligne=1;
-int priorite;
+int current_line=1;
 FILE* f=u_fopen(name,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",name);
    return;
 }
-priorite=0;
+unichar current_canonical='\0';
+int current_priority=0;
 while ((c=u_fgetc(f))!=EOF) {
-      if (c!='\n') {
-         // we ignore the \n char
-         if (char_tab[(unichar)c]!=0) {
-            error("Error in %s: char 0x%x appears several times\n",name,c);
-         }
-         else {
-              char_tab[(unichar)c]=ligne;
-              if (priorite==0) priorite=(unichar)c;
-              char_priorite[(unichar)c]=priorite;
-         }
+   if (c!='\n') {
+      /* we ignore the \n char */
+      if (class_numbers[(unichar)c]!=0) {
+         error("Error in %s: char 0x%x appears several times\n",name,c);
       } else {
-        ligne++;
-        priorite=0;
+         class_numbers[(unichar)c]=current_line;
+         if (current_canonical=='\0') {
+            current_canonical=(unichar)c;
+         }
+         canonical[(unichar)c]=current_canonical;
+         priority[(unichar)c]=++current_priority;
       }
+   } else {
+     current_line++;
+     current_canonical='\0';
+     current_priority=0;
+   }
 }
 u_fclose(f);
 }
 
 
-
-void traiter_parametres(int n,char **p) {
+/**
+ * This function analyses the parameters of the SortTxt program.
+ * It sets some global variables.
+ */
+void parse_parameters(int n,char **p) {
 for (int i=2;i<n;i++) {
-    if (!strcmp(p[i],"-y") || !strcmp(p[i],"-Y")) {
-       VIRER_DOUBLONS=1;
-       }
-    else if (!strcmp(p[i],"-n") || !strcmp(p[i],"-N")) {
-       VIRER_DOUBLONS=0;
-    }
-    else if (!strcmp(p[i],"-o") || !strcmp(p[i],"-O")) {
-       if (i==n-1) {
-          error("Missing char order file name after -o\n");
-          return;
-       }
-       i++;
-       read_char_order(p[i]);
-    }
-    else if (!strcmp(p[i],"-l") || !strcmp(p[i],"-L")) {
-       if (i==n-1) {
-          error("Missing file name after -l\n");
-          return;
-       }
-       i++;
-       strcpy(line_number,p[i]);
-    }
-    else if (!strcmp(p[i],"-r") || !strcmp(p[i],"-R")) REVERSE=-1;
-    else if (!strcmp(p[i],"-thai")) langue=THAI;
-    else error("Invalid parameter: %s\n",p[i]);
+   if (!strcmp(p[i],"-y") || !strcmp(p[i],"-Y")) {
+      REMOVE_DUPLICATES=1;
+   }
+   else if (!strcmp(p[i],"-n") || !strcmp(p[i],"-N")) {
+      REMOVE_DUPLICATES=0;
+   }
+   else if (!strcmp(p[i],"-o") || !strcmp(p[i],"-O")) {
+      if (i==n-1) {
+         error("Missing char order file name after -o\n");
+         return;
+      }
+      i++;
+      read_char_order(p[i]);
+   }
+   else if (!strcmp(p[i],"-l") || !strcmp(p[i],"-L")) {
+      if (i==n-1) {
+         error("Missing file name after -l\n");
+         return;
+      }
+      i++;
+      strcpy(line_number,p[i]);
+   }
+   else if (!strcmp(p[i],"-r") || !strcmp(p[i],"-R")) REVERSE=-1;
+   else if (!strcmp(p[i],"-thai")) mode=THAI;
+   else error("Invalid parameter: %s\n",p[i]);
 }
 }
 
@@ -145,10 +217,10 @@ for (int i=2;i<n;i++) {
  * synopsis.
  */
 int main_SortTxt(int argc, char **argv) {
-char new_name[1000];
-init_char_tab();
+char new_name[FILENAME_MAX];
+init_char_arrays();
 line_number[0]='\0';
-traiter_parametres(argc,argv);
+parse_parameters(argc,argv);
 strcpy(new_name,argv[1]);
 strcat(new_name,".new");
 f=u_fopen(argv[1],U_READ);
@@ -162,10 +234,9 @@ if (f_out==NULL) {
    u_fclose(f);
    return 1;
 }
-init_tree();
-switch (langue) {
-       case DEFAULT: sort(); break;
-       case THAI: sort_thai(); break;
+switch (mode) {
+   case DEFAULT: sort(); break;
+   case THAI: sort_thai(); break;
 }
 if (line_number[0]!='\0') {
    FILE* F=u_fopen(line_number,U_WRITE);
@@ -177,44 +248,47 @@ if (line_number[0]!='\0') {
       u_fclose(F);
    }
 }
+/* We don't have to free the sort tree since it's done while dumping it into
+ * the sorted file */
 u_fclose(f);
 u_fclose(f_out);
 remove(argv[1]);
 rename(new_name,argv[1]);
+u_printf("Done.\n");
 return 0;
 }
-//---------------------------------------------------------------------------
 
 
-
-//
-// returns 0 if a==b, -i if a<b and +i if a>b
-//
+/**
+ * Returns 0 if a==b, -i if a<b and +i if a>b, according 1) to
+ * the char order file and 2) to the fact that the sort is ascending
+ * or descending.
+ */
 int char_cmp(unichar a,unichar b) {
-if (char_tab[a])
-   if (char_tab[b]) {
-      if (char_tab[a]==char_tab[b]) {
-         return (a-b);
+if (class_numbers[a]) {
+   if (class_numbers[b]) {
+      if (class_numbers[a]==class_numbers[b]) {
+         return (priority[a]-priority[b]);
       }
-      else return REVERSE*(char_tab[a]-char_tab[b]);
+      else return REVERSE*(class_numbers[a]-class_numbers[b]);
    }
    else {
-        return REVERSE;
+      return REVERSE;
    }
-else
-    if (char_tab[b]) {
-       return -1*REVERSE;
-    }
-    else {
-         return REVERSE*(a-b);
-    }
+} else {
+   if (class_numbers[b]) {
+      return -1*REVERSE;
+   }
+   else {
+      return REVERSE*(a-b);
+   }
+}
 }
 
 
-
-//
-// do a unicode char to char comparison, according to the char_cmp function order
-//
+/**
+ * Does a unicode char to char comparison, according to the char_cmp function order.
+ */
 int strcmp2(unichar* a,unichar* b) {
 int i=0;
 while (a[i] && a[i]==b[i]) i++;
@@ -222,337 +296,282 @@ return (char_cmp(a[i],b[i]));
 }
 
 
-
-
-//
-// reads all the line and put them in a sorted tree, then saves them
-// exploring the tree
-//
+/**
+ * Reads all the line and puts them in a sorted tree, then saves them
+ * exploring the tree.
+ */
 void sort() {
 u_printf("Loading text...\n");
 while (read_line());
-u_printf("%d lines read\n",line);
+u_printf("%d lines read\n",number_of_lines);
 save();
 }
 
 
-//
-// reads all the line and put them in a sorted tree, then saves them
-// exploring the tree
-//
+/**
+ * Reads all the Thai lines and put them in a sorted tree, then saves them
+ * exploring the tree.
+ */
 void sort_thai() {
 u_printf("Loading text...\n");
 while (read_line_thai());
-u_printf("%d lines read\n",line);
+u_printf("%d lines read\n",number_of_lines);
 save();
 }
 
 
-
-unichar ligne[10000];
-
-//
-// reads and processes a line of the text file
-//
+/**
+ * Reads and processes a line of the text file.
+ * Returns 0 if the end of file has been reached; 1 otherwise.
+ */
 int read_line() {
+unichar line[LINE_LENGTH];
 int c;
-int i;
-int fini=1;
-i=0;
-while ((c=u_fgetc(f))!='\n' && c!=EOF && i<10000)
-      ligne[i++]=(unichar)c;
-ligne[i]='\0';
-if (c==EOF) fini=0;
-else line++;
+int ret=1;
+int i=0;
+while ((c=u_fgetc(f))!='\n' && c!=EOF && i<LINE_LENGTH) {
+   line[i++]=(unichar)c;
+}
+line[i]='\0';
+if (c==EOF) ret=0;
+else number_of_lines++;
 if (i==0) {
-   // we ignore the empty line
-   return fini;
+   /* We ignore the empty line */
+   return ret;
 }
-if (i==10000) {
-   error("Line %d: line too long\n",line);
-   return fini;
+if (i==LINE_LENGTH) {
+   /* Too long lines are not taken into account */
+   error("Line %d: line too long\n",number_of_lines);
+   return ret;
 }
-insert(ligne);
-return fini;
-}
-
-
-
-
-//
-// insert the line in the tree
-//
-void insert(unichar* ligne) {
-get_node(ligne,0,root);
+get_node(line,0,root);
+return ret;
 }
 
 
-
-
-//
-// save the lines
-//
+/**
+ * Saves the lines.
+ */
 void save() {
-unichar s[5000];
 u_printf("Sorting and saving...\n");
-explore_node(root,s,0,0);
+explore_node(root);
 }
 
 
-
-
-
-
-
-
-
-///////////////////////////////////////////////////
-
-
-
-struct couple_final {
-       unichar* chaine;
-       int n;
-       struct couple_final* suivant;
-};
-
-
-struct node {
-    struct couple_final* couple;
-    struct transition* t;
-};
-
-struct transition {
-    unichar c;
-    struct node* n;
-    struct transition* suivant;
-};
-
-
-
-struct node* new_node() {
-struct node* n=(struct node*)malloc(sizeof(struct node));
-n->couple=NULL;
-n->t=NULL;
+/**
+ * Initializes, allocates and returns a new sort tree node.
+ */
+struct sort_tree_node* new_sort_tree_node() {
+struct sort_tree_node* n=(struct sort_tree_node*)malloc(sizeof(struct sort_tree_node));
+if (n==NULL) {
+   fatal_error("Not enough memory in new_sort_tree_node\n");
+}
+n->couples=NULL;
+n->transitions=NULL;
 return n;
 }
 
 
-struct transition* new_transition() {
-struct transition* t=(struct transition*)malloc(sizeof(struct transition));
-t->n=NULL;
-t->suivant=NULL;
-return t;
-}
-
-
-
-void init_tree() {
-root=new_node();
-}
-
-
-void free_couple(struct couple_final* c) {
-struct couple_final* tmp;
-while (c!=NULL) {
-  if (c->chaine!=NULL) free(c->chaine);
-  tmp=c;
-  c=c->suivant;
-  free(tmp);
-}
-}
-
-
-void free_transitions(struct transition* t) {
-struct transition* tmp;
-while (t!=NULL) {
-   free_node(t->n);
-   tmp=t;
-   t=t->suivant;
-   free(tmp);
-}
-}
-
-//
-// free the node n
-//
-void free_node(struct node* n) {
+/**
+ * Frees all the memory associated to the node n.
+ */
+void free_sort_tree_node(struct sort_tree_node* n) {
 if (n==NULL) {
   return;
 }
-free_couple(n->couple);
+free_couple(n->couples);
 free(n);
 }
 
 
-//
-// free the transducer tree memory
-//
-void free_transducer_tree() {
-free_node(root);
+/**
+ * Initializes, allocates and returns a new sort tree transition.
+ */
+struct sort_tree_transition* new_sort_tree_transition() {
+struct sort_tree_transition* t=(struct sort_tree_transition*)malloc(sizeof(struct sort_tree_transition));
+if (t==NULL) {
+   fatal_error("Not enough memory in new_sort_tree_transition\n");
+}
+t->node=NULL;
+t->next=NULL;
+return t;
 }
 
 
-
-//
-// looks for a transition by the char c
-// insert it at its sorted place if it does not exists
-//
-struct transition* get_transition(unichar c,struct transition* t,struct node** n) {
-struct transition* tmp;
-if (char_tab[c]!=0) c=(unichar)char_priorite[c];
-
+/**
+ * Frees all the memory associated to the given transition list.
+ */
+void free_sort_tree_transition(struct sort_tree_transition* t) {
+struct sort_tree_transition* tmp;
 while (t!=NULL) {
-      if (t->c==c) return t;
-      t=t->suivant;
+   free_sort_tree_node(t->node);
+   tmp=t;
+   t=t->next;
+   free(tmp);
 }
-tmp=new_transition();
-tmp->c=c;
-tmp->suivant=(*n)->t;
-tmp->n=NULL;
-(*n)->t=tmp;
-return tmp;
 }
 
 
-//
-// returns a new couple_final with the string chaine 
-//
-struct couple_final* new_couple_final(unichar* chaine) {
-struct couple_final* c;
-c=(struct couple_final*)malloc(sizeof(struct couple_final));
-c->suivant=NULL;
+/**
+ * Allocates, initializes and returns a new couple.
+ */
+struct couple* new_couple(unichar* s) {
+struct couple* c=(struct couple*)malloc(sizeof(struct couple));
+if (c==NULL) {
+   fatal_error("Not enough memory in new_couple\n");
+}
+c->next=NULL;
 c->n=1;
-c->chaine=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(chaine)));
-u_strcpy(c->chaine,chaine);
+c->s=u_strdup(s);
 return c;
 }
 
 
-
-//
-// insert the string chaine in the node n final list
-//
-struct couple_final* inserer_chaine(unichar* chaine,struct couple_final* couple) {
-struct couple_final* tmp;
-
-if (couple==NULL || REVERSE*strcmp2(chaine,couple->chaine)<0) {
-  // if we are at the end of the list, or if we have to insert
-  tmp=new_couple_final(chaine);
-  tmp->suivant=couple;
-  return tmp;
+/**
+ * Frees all the memory associated to the given couple list.
+ */
+void free_couple(struct couple* c) {
+struct couple* tmp;
+while (c!=NULL) {
+   if (c->s!=NULL) free(c->s);
+   tmp=c;
+   c=c->next;
+   free(tmp);
+}
 }
 
-if (!strcmp2(chaine,couple->chaine)) {
-   // if chaine is allready in the list
-   if (!VIRER_DOUBLONS) (couple->n)++;
+
+/**
+ * Looks for a transition tagged with the character class of c. Inserts it if
+ * absent.
+ */
+struct sort_tree_transition* get_transition(unichar c,struct sort_tree_transition** t) {
+struct sort_tree_transition* tmp;
+if (class_numbers[c]!=0) {
+   c=(unichar)canonical[c];
+}
+tmp=*t;
+while (tmp!=NULL) {
+   if (tmp->c==c) return tmp;
+   tmp=tmp->next;
+}
+tmp=new_sort_tree_transition();
+tmp->c=c;
+tmp->next=(*t);
+tmp->node=NULL;
+(*t)=tmp;
+return tmp;
+}
+
+
+/**
+ * Inserts the given string in the given couple list.
+ */
+struct couple* insert_string(unichar* s,struct couple* couple) {
+struct couple* tmp;
+if (couple==NULL || REVERSE*strcmp2(s,couple->s)<0) {
+   /* If we are at the end of the list, or if we have to insert */
+   tmp=new_couple(s);
+   tmp->next=couple;
+   return tmp;
+}
+if (!strcmp2(s,couple->s)) {
+   /* If the string is allready in the list */
+   if (!REMOVE_DUPLICATES) (couple->n)++;
    return couple;
 }
-
-// if we have to explore the tail of the list
-couple->suivant=inserer_chaine(chaine,couple->suivant);
+/* If we have to explore the tail of the list */
+couple->next=insert_string(s,couple->next);
 return couple;
 }
 
 
-//
-// this function look for the path to 'chaine', creating it if necessary
-// the current node is n, and pos is the position in the flex string
-//
-void get_node(unichar* chaine,int pos,struct node* n) {
-if (chaine[pos]=='\0') {
-    // we are at the final node for chaine
-    n->couple=inserer_chaine(chaine,n->couple);
-    return;
+/**
+ * This function looks for the path to 'line', creating it if necessary
+ * the current node is n, and pos is the position in the 'line' string.
+ * Note that the branches of the tree are not tagged with letters but with
+ * letter classes, so that "lé" and "le" correspond to the same node.
+ */
+void get_node(unichar* line,int pos,struct sort_tree_node* n) {
+if (line[pos]=='\0') {
+   /* We are at the final node for 'line' */
+   n->couples=insert_string(line,n->couples);
+   return;
 }
-// if we are not at the end of the string chaine
-struct transition* trans=get_transition(chaine[pos],n->t,&n);
-if (trans->n==NULL) {
-    trans->n=new_node();
+/* If we are not at the end of the string */
+struct sort_tree_transition* trans=get_transition(line[pos],&(n->transitions));
+if (trans->node==NULL) {
+   trans->node=new_sort_tree_node();
 }
-get_node(chaine,pos+1,trans->n);
+get_node(line,pos+1,trans->node);
 }
 
 
-
-int z=0;
-
-
-
-#define N_NODES 2000
-
-struct transition* tab[N_NODES];
-int COMPTEUR_MAX=0;
-
-//
-// explore the node n, and then free it
-//
-void explore_node(struct node* n,unichar s[],int pos,int COMPTEUR) {
+/**
+ * Explores the node n, dumps the corresponding lines to the output file,
+ * and then frees the node. 'pos' is the current position in the string 's'.
+ */
+void explore_node(struct sort_tree_node* n) {
 int i,N;
-struct transition* t;
-struct couple_final* couple;
-struct couple_final* tmp;
-struct transition *tab_temp;
-if (COMPTEUR>COMPTEUR_MAX) {
-   COMPTEUR_MAX=COMPTEUR;
-}
+struct sort_tree_transition* t;
+struct couple* couple;
+struct couple* tmp;
 if (n==NULL) {
    fatal_error("Internal error in explore_node\n");
 }
-if (n->couple!=NULL) {
-   z++;
-   couple=n->couple;
+if (n->couples!=NULL) {
+   /* If the node is a final one, we print the corresponding lines */
+   couple=n->couples;
    while (couple!=NULL) {
       for (i=0;i<couple->n;i++) {
-         u_fprintf(f_out,"%S\n",couple->chaine);
+         u_fprintf(f_out,"%S\n",couple->s);
          resulting_line_number++;
       }
       tmp=couple;
-      couple=couple->suivant;
-      free(tmp->chaine);
+      couple=couple->next;
+      free(tmp->s);
       free(tmp);
    }
-   n->couple=NULL;
+   n->couples=NULL;
 }
-t=n->t;
+/* We convert the transition list into a sorted array */
+t=n->transitions;
 N=0;
-while (t!=NULL && N<N_NODES) {
-      tab[N++]=t;
-      t=t->suivant;
+while (t!=NULL && N<0x10000) {
+   transitions[N++]=t;
+   t=t->next;
 }
-if (N==N_NODES) {
-   fatal_error("Internal error in explore_node: more than %d nodes\n",N_NODES);
+if (N==0x10000) {
+   fatal_error("Internal error in explore_node: more than 0x10000 nodes\n");
 }
-quicksort(tab,0,N-1);
-////////////////
-// after sorting, we copy the result into a temporary array
-tab_temp=(struct transition*)malloc(N*sizeof(struct transition));
-for (int i=0;i<N;i++) {
-   tab_temp[i].c=tab[i]->c;
-   tab_temp[i].n=tab[i]->n;
+if (N>1) quicksort(transitions,0,N-1);
+/* After sorting, we copy the result into the transitions of n */
+for (int i=0;i<N-1;i++) {
+   transitions[i]->next=transitions[i+1];
 }
-////////////////
-for (int i=0;i<N;i++) {
-  //printf("pos = %d     N=%d\n",pos,N);
-  s[pos]=tab_temp[i].c;
-  explore_node(tab_temp[i].n,s,pos+1,COMPTEUR+1);
+if (N>0) {
+   transitions[N-1]->next=NULL;
+   n->transitions=transitions[0];
 }
-free(tab_temp);
-free_node(n);
+/* Finally, we explore the outgoing transitions */
+t=n->transitions;
+while (t!=NULL) {
+   explore_node(t->node);
+   t=t->next;
+}
+/* And we free the node */
+free_sort_tree_node(n);
 }
 
 
-
-
-
-//
-// on partitionne le tableau t
-//
-int partition_pour_quicksort(struct transition** t,int m, int n) {
+/**
+ * Partitions the given array for quicksort.
+ */
+int partition(struct sort_tree_transition** t,int m, int n) {
 unichar pivot;
-struct transition* tmp;
-int i = m-1;
-int j = n+1;         // indice final du pivot
+struct sort_tree_transition* tmp;
+int i=m-1;
+int j=n+1;         /* Final index of the pivot */
 pivot=t[(m+n)/2]->c;
 while (true) {
   do j--;
@@ -567,136 +586,114 @@ while (true) {
 }
 }
 
-//
-// trie la liste de transition de t
-//
-void quicksort(struct transition** t,int m,int n) {
+
+/**
+ * Quicksorts the given sort tree transition array.
+ */
+void quicksort(struct sort_tree_transition** t,int m,int n) {
 int p;
 if (m<n) {
-  p=partition_pour_quicksort(t,m,n);
-  quicksort(t,m,p);
-  quicksort(t,p+1,n);
+   p=partition(t,m,n);
+   quicksort(t,m,p);
+   quicksort(t,p+1,n);
 }
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////
-//                       THAI SORT
-
-
-unichar ligne_thai[10000];
-
-
-
-//
-// convert the string src into a string with no diacritic sign and
-// in which initial vowels and following consons have been reversed
-//
+/**
+ * Converts the string 'src' into a string with no diacritic sign and
+ * in which initial vowels and following consons have been swapped.
+ */
 void convert_thai(unichar* src,unichar* dest) {
-int i=0,j=0;;
+int i=0,j=0;
 while (src[i]!='\0') {
-      if (is_Thai_diacritic(src[i])) {
-         i++;
-      }
-      else if (is_Thai_initial_vowel(src[i])) {
-           dest[j]=src[i+1];
-           dest[j+1]=src[i];
-           i++;
-           i++;
-           j++;
-           j++;
-      }
-      else {
-           dest[j++]=src[i++];
-      }
+   if (is_Thai_diacritic(src[i])) {
+      i++;
+   }
+   else if (is_Thai_initial_vowel(src[i])) {
+      dest[j]=src[i+1];
+      dest[j+1]=src[i];
+      i=i+2;
+      j=j+2;
+   } else {
+      dest[j++]=src[i++];
+   }
 }
 dest[j]='\0';
 }
 
 
+/**
+ * This function look for the path to 'line', creating it if necessary
+ * the current node is n, and pos is the position in the 'line' string.
+ * Note that the branches of the tree are not tagged with letters but with
+ * letter classes, so that "lé" and "le" correspond to the same node.
+ * When the final node is reached, we insert the real Thai string with diacritic
+ * signs in the correct position.
+ */
 
-//
-// this function look for the path to 'chaine', creating it if necessary
-// the current node is n, and pos is the position in the flex string
-//
-void get_node_thai(unichar* chaine,int pos,struct node* n,unichar* real_string) {
-if (chaine[pos]=='\0') {
-    // we are at the final node for chaine
-    n->couple=inserer_chaine_thai(real_string,n->couple);
-    return;
+void get_node_thai(unichar* line,int pos,struct sort_tree_node* n,unichar* real_string) {
+if (line[pos]=='\0') {
+   /* We are at the final node for 'line' */
+   n->couples=insert_string_thai(real_string,n->couples);
+   return;
 }
-// if we are not at the end of the string chaine
-struct transition* trans=get_transition(chaine[pos],n->t,&n);
-if (trans->n==NULL) {
-    trans->n=new_node();
+/* If we are not at the end of the string 'line' */
+struct sort_tree_transition* trans=get_transition(line[pos],&(n->transitions));
+if (trans->node==NULL) {
+   trans->node=new_sort_tree_node();
 }
-get_node_thai(chaine,pos+1,trans->n,real_string);
+get_node_thai(line,pos+1,trans->node,real_string);
 }
 
 
-
-
-
-//
-// reads and processes a line of the text file
-//
+/**
+ * Reads and processes a line of the Thai text file.
+ */
 int read_line_thai() {
+unichar line[LINE_LENGTH];
+unichar thai_line[LINE_LENGTH];
 int c;
-int i;
-int fini=1;
-i=0;
-while ((c=u_fgetc(f))!='\n' && c!=EOF && i<10000)
-      ligne[i++]=(unichar)c;
-ligne[i]='\0';
-if (c==EOF) fini=0;
-else line++;
+int ret=1;
+int i=0;
+while ((c=u_fgetc(f))!='\n' && c!=EOF && i<LINE_LENGTH) {
+   line[i++]=(unichar)c;
+}
+line[i]='\0';
+if (c==EOF) ret=0;
+else number_of_lines++;
 if (i==0) {
-   // we ignore the empty line
-   return fini;
+   /* We ignore the empty line */
+   return ret;
 }
-if (i==10000) {
-   error("Line %d: line too long\n",line);
-   return fini;
+if (i==LINE_LENGTH) {
+   error("Line %d: line too long\n",number_of_lines);
+   return ret;
 }
-convert_thai(ligne,ligne_thai);
-get_node_thai(ligne_thai,0,root,ligne);
-return fini;
-}
-
-
-
-//
-// insert the string chaine in the node n final list
-//
-struct couple_final* inserer_chaine_thai(unichar* chaine,struct couple_final* couple) {
-struct couple_final* tmp;
-
-if (couple==NULL || REVERSE*u_strcmp(chaine,couple->chaine)<0) {
-  // if we are at the end of the list, or if we have to insert
-  tmp=new_couple_final(chaine);
-  tmp->suivant=couple;
-  return tmp;
+convert_thai(line,thai_line);
+get_node_thai(thai_line,0,root,line);
+return ret;
 }
 
-if (!u_strcmp(chaine,couple->chaine)) {
-   // if chaine is allready in the list
-   if (!VIRER_DOUBLONS) (couple->n)++;
+
+/**
+ * Inserts the given string in the given couple list.
+ */
+struct couple* insert_string_thai(unichar* line,struct couple* couple) {
+struct couple* tmp;
+if (couple==NULL || REVERSE*u_strcmp(line,couple->s)<0) {
+   /* If we are at the end of the list, or if we have to insert */
+   tmp=new_couple(line);
+   tmp->next=couple;
+   return tmp;
+}
+if (!u_strcmp(line,couple->s)) {
+   /* If 'line' is allready in the list */
+   if (!REMOVE_DUPLICATES) (couple->n)++;
    return couple;
 }
-
-// if we have to explore the tail of the list
-couple->suivant=inserer_chaine_thai(chaine,couple->suivant);
+/* If we have to explore the tail of the list */
+couple->next=insert_string_thai(line,couple->next);
 return couple;
 }
 

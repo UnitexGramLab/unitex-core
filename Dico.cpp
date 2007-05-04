@@ -70,7 +70,9 @@ u_printf("is normal. Any lexical unit identified in a previous stage will be ign
 u_printf("in the subsequent stages. \n\n");
 
 u_printf("The local grammars are represented by finite state transducers(.fst2).\n");
-u_printf("These grammars will be applied in MERGE mode.\n");
+u_printf("These grammars will be applied in MERGE mode, except if a .fst2 ends\n");
+u_printf("with -r. In that case, it will be applied in REPLACE mode.\n");
+u_printf("Note that -r can be combined with - or + priority marks (-r- and -r+)\n\n");
 u_printf("The grammar output shall respect the file format of both DLF and DLC. \n\n");
 
 u_printf("The numbers of simple, compound and unknown forms are saved\n");

@@ -440,7 +440,7 @@ int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
     return 1;
 
   //Generate the desired inflected forms of the single unit
-  err = SU_inflect(u,&old_feat, SU_forms,NULL);
+  err = SU_inflect(u,&old_feat, SU_forms,0);
   return err;
 }
 

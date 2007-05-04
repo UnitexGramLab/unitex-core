@@ -57,7 +57,9 @@ u_printf("Takes a list of multi-part verbs and creates an apropriate normalizati
 
 
 int main(int argc, char **argv) {
-setBufferMode();
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */setBufferMode();
 
 if (argc!=8) {
    usage();
@@ -91,7 +93,7 @@ if (root_bin==NULL) {
    free_alphabet(alph);
    return 1;
 }
-char root_inf_file[2000];
+char root_inf_file[FILENAME_MAX];
 remove_extension(argv[3],root_inf_file);
 strcat(root_inf_file,".inf");
 struct INF_codes* root_inf=load_INF_file(root_inf_file);
@@ -110,7 +112,7 @@ if (inflected_bin==NULL) {
    free_INF_codes(root_inf);
    return 1;
 }
-char inflected_inf_file[2000];
+char inflected_inf_file[FILENAME_MAX];
 remove_extension(argv[4],inflected_inf_file);
 strcat(inflected_inf_file,".inf");
 struct INF_codes* inflected_inf=load_INF_file(inflected_inf_file);
@@ -145,12 +147,9 @@ if (rewriting_rules==NULL) {
    free_normalization_tree(rewriting_rules);
    return 1;
 }
-
-
 u_printf("Constructing normalization grammar...\n");
 build_portuguese_normalization_grammar(alph,list,root_bin,root_inf,inflected_bin,inflected_inf,argv[7],
                                        rewriting_rules,nasal_rewriting_rules);
-
 free_alphabet(alph);
 free(root_bin);
 free_INF_codes(root_inf);
