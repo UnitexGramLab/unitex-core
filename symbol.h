@@ -136,6 +136,10 @@ void symbol_copy(symbol_t * dest, symbol_t * src);
 
 bool symbol_equals(symbol_t * a, symbol_t * b);
 
+void symbol_dump_all(const symbol_t * symb, FILE * f = stderr);
+
+void symbol_dump(const symbol_t * symb, FILE * f = stderr);
+void symbols_dump(const symbol_t * symb, FILE * f = stderr);
 
 void symbol_to_str(const symbol_t * s, ustring_t * ustr);
 void symbol_to_grammar_label(const symbol_t * s, ustring_t * ustr);

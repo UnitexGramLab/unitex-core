@@ -194,10 +194,9 @@ static int check_text_label(const unichar * label) {
 
 
 
-void load_text_symbol(tSymbole * symb, const unichar * lex) {
+void load_text_symbol(tSymbole * symb, unichar * lex) {
 
-
-  //int i, j;
+  int i, j;
 
   if (check_text_label(lex) == -1) { fatal_error("bad text label: \"%S\"\n", lex); }
 
@@ -206,78 +205,48 @@ void load_text_symbol(tSymbole * symb, const unichar * lex) {
 
   if (*lex == '{') {   // {__,__.__}
 
-#if 0
+    /* inflected form */
+
     i = 1, j = 0;
 
     while (*(lex + i) != ',') {
 
       symb->flechie[j++] = lex[i++];
 
-      if (j >= maxMot) { fatal_error("inflected form '%S' is too long Z.\n", lex); }
+      if (j >= maxMot) { fatal_error("inflected form '%S' is too long.\n", lex); }
     }
 
     symb->flechie[j] = 0;
     i++;
 
-    for (j = i ; *(lex + j) != '.'; j++);
 
+    /* forme canonique */
+
+    for (j = i ; *(lex + j) != '.'; j++);
     symb->canonique = (unichar *) malloc((j + 1 - i) * sizeof(unichar));
 
     j = 0 ;
     while (*(lex + i) != '.') { symb->canonique[j++] = lex[i++]; }
 
+    symb->canonique[j] = 0;
+    i++;
+
+
+    /* traits gramma ... */
+
     j = 0;
     while (lex[i] && lex[i] != '}' && j < maxGramm - 1) { symb->gramm[j++] = lex[i++]; }
     symb->gramm[j] = 0;
 
-#endif
 
-    unichar * buf = u_strdup(lex);
+  } else {    /* mot inconnu dans un texte ou ponctuation (pas d'accolade, pas de point, pas de virgule) */
 
-    /* inflected form */
-
-    int pos;
-    for (pos = 0; buf[pos] != ','; ++pos) { }
-    buf[pos] = 0;
-
-    ustring_copy(symb->flex, buf + 1);
-    //symb->flex = ustring_new(buf + 1);
-
-
-    /* forme canonique */
-
-    ++pos;
-    unichar * can = buf + pos;
-
-    for (; buf[pos] != '.'; ++pos) {}
-    buf[pos] = 0;
-
-    free(symb->canonique);
-    symb->canonique = u_strdup(can);
-    
-
-    /* traits gramma ... */
-
-    ++pos;
-    int i = 0;
-    for (; buf[pos] != '}' && i < maxGramm -1; ++pos, ++i) {
-      symb->gramm[i] = buf[pos];
-    }
-    symb->gramm[i] = 0;
-
-
-    free(buf);
-
-  } else {
-  
-    /* mot inconnu dans un texte ou ponctuation (pas d'accolade, pas de point, pas de virgule) */
 
     if (lex[0] == '\\') {
 
       if (! lex[1] || lex[2]) { fatal_error("illegal label '%S'\n", lex); }
 
-      ustring_empty(symb->flex);
-      free(symb->canonique);
+      *symb->flechie  = 0;
       symb->canonique = u_strdup(lex);
 
       u_strcpy(symb->gramm, "PNC");
@@ -285,10 +254,9 @@ void load_text_symbol(tSymbole * symb, const unichar * lex) {
 
     } else if (u_strchr(PONCTAB, *lex)) {
 
-      if (lex[1]) { fatal_error("illegal label text: '%S'\n", lex); }
+      if (lex[1]) { fatal_error("illegal label text: '%S'\n", symb->flechie); }
 
-      ustring_empty(symb->flex);
-      free(symb->canonique);
+      *symb->flechie  = 0;
       symb->canonique = u_strdup(lex);
 
       u_strcpy(symb->gramm, "PNC");
@@ -296,20 +264,24 @@ void load_text_symbol(tSymbole * symb, const unichar * lex) {
 
     } else if (u_is_digit(*lex)) { /* chiffre arabe */
 
-      if (lex[1]) { fatal_error("illegal label text: '%S'\n", lex); }
+      if (lex[1]) { fatal_error("illegal label text: '%S'\n", symb->flechie); }
 
-      ustring_empty(symb->flex);
-      free(symb->canonique);
+      *symb->flechie  = 0;
       symb->canonique = u_strdup(lex);
 
       u_strcpy(symb->gramm, "CHFA");
 
+
     } else { // mot inconnu
 
-      //ustring_empty(symb->flex);
-      ustring_copy(symb->flex, lex);
+      i = 0;
+      while (lex[i]) {
+   if (i >= maxMot) { fatal_error("inflected form too long in '%S'.\n", lex); }
+   symb->flechie[i] = lex[i];
+   i++;
+      }
+      symb->flechie[i] = 0;
 
-      free(symb->canonique);
       symb->canonique    = (unichar *) xmalloc(sizeof(unichar));
       symb->canonique[0] = 0;
 

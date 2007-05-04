@@ -136,7 +136,6 @@ int main(int argc, char ** argv) {
 
   int no = 0;
   while ((A = fst_file_autalmot_load_next(txtin)) != NULL) {
-    
     autalmot_emonde(A);
 
     if (A->nbstates == 0) {
@@ -148,7 +147,6 @@ int main(int argc, char ** argv) {
 
       autalmot_add_trans(A, q0, symb, q1);
     }
-
 
     fst_file_write(txtout, A);
     autalmot_delete(A);

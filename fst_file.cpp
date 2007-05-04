@@ -464,51 +464,32 @@ void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
 
   for (int q = 0; q < A->nbstates; q++) {
 
-    //    debug("q=%d\n", q);
-
     u_fputc((A->states[q].flags & AUT_TERMINAL) ? 't' : ':', fstf->f);
     u_fputc(' ', fstf->f);
 
     for (transition_t * t = A->states[q].trans; t; t = t->next) {
-
       if (t->label == SYMBOL_DEF) { fatal_error("fst_file_write: symbol <def> in trans list ???\n"); }
-
-      symbol_to_label(t->label, label);
-
-      // debug("label=%S ", label->str); symbol_dump(t->label); endl();
+      symbol_to_label(t->label,label);
 
       if (fstf->type == FST_LOCATE) {
-
-	if (u_strcmp(label->str, "<PNC>") == 0) {
-
-	  PNC_trans_write(fstf, t->to);
-
-	} else if (u_strcmp(label->str, "<CHFA>") == 0 
-                   || u_strcmp(label->str, "<NB>") == 0) {
-
-	  CHFA_trans_write(fstf, t->to);
-
-	} else if (u_strcmp(label->str, "<.>") == 0) {
-
-	  LEXIC_trans_write(fstf, t->to);
-
-	} else { goto normal_output; }
-
+         if (u_strcmp(label->str, "<PNC>") == 0) {
+            PNC_trans_write(fstf, t->to);
+         } else if (u_strcmp(label->str, "<CHFA>") == 0 || u_strcmp(label->str, "<NB>") == 0) {
+            CHFA_trans_write(fstf, t->to);
+         } else if (u_strcmp(label->str, "<.>") == 0) {
+            LEXIC_trans_write(fstf, t->to);
+         } else {
+            goto normal_output;
+         }
       } else {
-
-
-normal_output:
-
-	if ((idx = hash_str_table_idx_lookup(fstf->labels, label->str)) == -1) {
-	  idx = hash_str_table_add(fstf->labels, label->str, u_strdup(label->str));
-	}
-
-	u_fprintf(fstf->f, "%d %d ", idx, t->to);
+         normal_output:
+         if ((idx = hash_str_table_idx_lookup(fstf->labels, label->str)) == -1) {
+            idx = hash_str_table_add(fstf->labels, label->str, u_strdup(label->str));
+         }
+         u_fprintf(fstf->f, "%d %d ", idx, t->to);
       }
-    }
-
-    if (A->states[q].defto != -1) {
-
+   }
+   if (A->states[q].defto != -1) {
       if (fstf->type != FST_GRAMMAR) { error("<def> label in text|locate automaton???\n"); }
 
       if ((idx = hash_str_table_idx_lookup(fstf->labels, deflabel)) == -1) {

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2004 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,115 @@
   *
   */
 
+
 #include "autalmot.h"
 #include "symbol_op.h"
 #include "stack.h"
 #include "fst_file.h"
 #include "utils.h"
+#include "Copyright.h"
+#include "IOBuffer.h"
+#include "Error.h"
+
+
+
+static void add_limphrase(autalmot_t *);
+void print_match(stack_type * stack, FILE * f);
+static void locate(autalmot_t * sentence, int q1, autalmot_t * pattern, int q2,
+                   int * nbm, stack_type * stack, FILE * f);
+int autalmot_locate_pattern(autalmot_t * sentence, autalmot_t * pattern, FILE * f);
+
+
+
+
+void usage() {
+u_printf("%S",COPYRIGHT);   
+u_printf("Usage: FstLocate <txt> -p pattern -l LANG\n");
+}
+
+int main(int argc, char ** argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
+
+if (argc!=6) {
+   usage();
+   return 0;
+}
+char* txtname=NULL;
+char* langname=NULL;
+char* patternname=NULL;
+argv++;
+argc--;
+while (argc) {
+   if (**argv != '-') {
+      txtname=*argv;
+   } else {
+      if (strcmp(*argv,"-h")==0) {
+         usage();
+         return 0;
+      } else if (strcmp(*argv, "-p") == 0) {
+         *argv++;
+         argc--;
+         if (argc==0) {
+            fatal_error("-p needs an additionnal argument\n"); 
+         }
+         patternname=(*argv);
+      } else if (strcmp(*argv, "-l")==0) {
+         argv++;
+         argc--;
+         if (argc==0) {
+            fatal_error("-l needs an additionnal argument\n");
+         }
+         langname=(*argv);
+      } else {
+         fatal_error("Unknown argument '%s'\n", *argv);
+      }
+   }
+   *argv++;
+   argc--;
+}
+if (txtname==NULL) {
+   fatal_error("No text automaton specified\n");
+}
+if (langname==NULL) {
+   fatal_error("no text language specified\n");
+}
+if (patternname==NULL) {
+   fatal_error("no pattern specified\n");
+}
+u_printf("Loading %s langage definition ...\n", langname);
+language_t* lang=language_load(langname);
+set_current_language(lang);
+fst_file_in_t* txtin=fst_file_in_open(txtname,FST_TEXT);
+if (txtin==NULL) {
+   fatal_error("Unable to load text '%s'\n", txtname);
+}
+u_printf("%d sentence(s) in %s\n", txtin->nbelems, txtname);
+autalmot_t* pattern=load_grammar_automaton(patternname);
+if (pattern==NULL) {
+   fatal_error("Unable to load '%s' automaton\n", patternname);
+}
+autalmot_t* A;
+int no=0;
+int totalmatches=0;
+while ((A=fst_file_autalmot_load_next(txtin)) != NULL) {
+   if (no==4) break;
+   u_printf("Sentence %d:\n",no+1);
+   if (A->nbstates < 2) {
+      error("Sentence %d is empty\n",no+1);
+   } else {
+      add_limphrase(A); 
+      totalmatches=totalmatches+autalmot_locate_pattern(A,pattern,stdout);
+   }
+   autalmot_delete(A);
+   no++;
+}
+u_printf("%d sentence%s processed -- %d matching sequence%s.\n",no,(no>1)?"s":"",totalmatches,(totalmatches>1)?"s":"");
+return 0;
+}
+
 
 static void add_limphrase(autalmot_t * A) {
 
@@ -95,99 +199,10 @@ int autalmot_locate_pattern(autalmot_t * sentence, autalmot_t * pattern, FILE * 
     locate(sentence, i, pattern, 0, & nbmatches, stack, f); 
   }
   
-  printf("%d matches\n", nbmatches);
+  u_printf("%d matches\n", nbmatches);
 
   stack_delete(stack);
   
   return nbmatches;
-}
-
-
-
-void usage() {
-  printf("usage: bla txt -p pattern -l LANG\n");
-}
-
-int main(int argc, char ** argv) {
-  
-
-  char * txtname = NULL, * langname = NULL, * patternname = NULL;
-
-  argv++, argc--;
-
-  if (argc == 0) { usage(); return 0; }
-
-  while (argc) {
-
-    if (**argv != '-') {
-
-      txtname = *argv;
-
-    } else {
-
-      if (strcmp(*argv, "-h") == 0) {
-
-	usage();
-        return 0;
-
-      } else if (strcmp(*argv, "-p") == 0) {
-
-	*argv++, argc--;
-	if (argc == 0) { die("'-p' needs an additionnal argument\n"); }
-
-	patternname = *argv;
-      
-      } else if (strcmp(*argv, "-l") == 0) { 
-
-	argv++, argc--;
-	if (argc == 0) { die("-l needs an arg\n"); }
-	langname = *argv;
-      
-      } else { die("unknow argument '%s'\n", *argv); }  
-    }
-
-    *argv++, argc--;
-  }
-
-  if (txtname == NULL) { die("no text automaton specified\n"); }
-  if (langname == NULL) { die("no text language specified\n"); }
-  if (patternname == NULL) { die("no pattern specified\n"); }
-
-
-  printf("loading %s langage definition ...\n", langname);
-
-  language_t * lang = language_load(langname);
-  set_current_language(lang);
-
-
-  fst_file_in_t * txtin = fst_file_in_open(txtname, FST_TEXT);
-  if (txtin == NULL) { die("unable to load text '%s'\n", txtname); }
-  debug("%d sentence(s) in %s\n", txtin->nbelems, txtname);
-    
-  autalmot_t * pattern = load_grammar_automaton(patternname);
-
-  if (pattern == NULL) { die("unable to load '%s' automaton\n", patternname); }
-
-  autalmot_t * A;
-  int no = 0;
-  int totalmatches = 0;
-  
-  while ((A = fst_file_autalmot_load_next(txtin)) != NULL) {
-    
-    printf("sentence %d:\n", no + 1);
-    if (A->nbstates < 2) {
-      error("sentence %d is void\n", no + 1);
-    } else {
-
-      add_limphrase(A); 
-      totalmatches = totalmatches + autalmot_locate_pattern(A, pattern, stdout);
-    }
-    autalmot_delete(A);
-    no++;
-  }
-
-  printf("%d sentences proceed -- %d matching sequences.\n", no, totalmatches);
-
-  return 0;
 }
 
