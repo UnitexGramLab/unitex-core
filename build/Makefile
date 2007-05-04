@@ -341,7 +341,7 @@ FST2LIST_OBJS = IOBuffer.o Fst2List.o Unicode.o Fst2.o Alphabet.o\
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o
 
 FSTLOCATE      = FstLocate
-FSTLOCATE_OBJS = FstLocate.o autalmot.o symbol_op.o stack.o fst_file.o Error.o symbol.o unicode.o ustring.o\
+FSTLOCATE_OBJS = FstLocate.o autalmot.o symbol_op.o stack.o fst_file.o Error.o symbol.o Unicode.o ustring.o\
                  hash_str_table.o language.o language_parsing.o IOBuffer.o
 
 FST2TXT      = Fst2Txt
@@ -511,7 +511,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO) $(ELAG) $(ELAGC
 		$(INFLECTKR) $(FST2LIST) $(SUFFORM2RAC) $(COMPRESSKR)\
 		$(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) $(TXT2FST2KR) \
 		$(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR) $(FST2UNAMBIG) $(MULTIFLEX) \
-		$(EXPORTDIC) $(FSTLOCATE)
+		$(EXPORTDIC)
 		
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
