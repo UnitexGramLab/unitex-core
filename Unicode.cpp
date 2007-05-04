@@ -242,9 +242,10 @@ if (!strcmp(MODE,U_READ)) {
    }
    return f;
 }
-/* If the file is opened in WRITE mode, we insert the 0xFEFF unicode char */
+/* If the file is opened in WRITE mode, we may insert the 0xFEFF unicode char */
 if (!strcmp(MODE,U_WRITE)) {
-   u_fputc(U_BYTE_ORDER_MARK,f);
+   if (encoding==UTF16_LE) u_fputc(U_BYTE_ORDER_MARK,f);
+   else if (encoding==UTF16_BE) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
 }
 return f;
 }
