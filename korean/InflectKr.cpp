@@ -25,7 +25,7 @@ using namespace std;
 #include "Unicode.h"
 #include "Fst2.h"
 #include "Copyright.h"
-#include "FileName.h"
+#include "File.h"
 #include "String_hash2.h"
 #include <locale.h>
 #include "etc.h"

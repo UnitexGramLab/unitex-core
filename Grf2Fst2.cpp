@@ -29,7 +29,7 @@
 #include "Grf2Fst2_lib.h"
 #include "Alphabet.h"
 #include "IOBuffer.h"
-#include "FileName.h"
+#include "File.h"
 #include "LocateConstants.h"
 #include "Error.h"
 

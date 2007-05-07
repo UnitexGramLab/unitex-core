@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Unicode.h"
-#include "FileName.h"
+#include "File.h"
 #include "DELA.h"
 #include "String_hash.h"
 #include "Copyright.h"

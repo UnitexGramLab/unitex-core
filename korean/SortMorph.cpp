@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include "Unicode.h"
 #include "Copyright.h"
-#include "FileName.h"
+#include "File.h"
 #include "String_hash2.h"
 #include "etc.h"
 #include "IOBuffer.h"

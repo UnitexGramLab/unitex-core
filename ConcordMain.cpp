@@ -30,7 +30,7 @@
 #include "Alphabet.h"
 #include "Matches.h"
 #include "Concordance.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "LocatePattern.h"
 #include "Error.h"

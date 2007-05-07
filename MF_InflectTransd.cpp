@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include "MF_InflectTransd.h"
 #include "Error.h"
-#include "FileName.h"
+#include "File.h"
 
 ///////////////////////////////
 // GLOBAL VARIABLES

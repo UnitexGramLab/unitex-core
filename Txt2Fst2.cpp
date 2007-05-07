@@ -31,7 +31,7 @@
 #include "TextAutomaton.h"
 #include "NormalizationFst2.h"
 #include "Fst2.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "StringParsing.h"

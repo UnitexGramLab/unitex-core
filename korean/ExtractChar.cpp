@@ -24,7 +24,7 @@ using namespace std;
 #include "Unicode.h"
 #include "etc.h"
 #include "jamoCodage.h"
-#include "FileName.h"
+#include "File.h"
 #include "state_machine_fst2.h"
 #include "Copyright.h"
 #include "IOBuffer.h"

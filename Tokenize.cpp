@@ -25,7 +25,7 @@
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "String_hash.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "DELA.h"
 #include "Table_hash.h"

@@ -28,7 +28,7 @@ using namespace std;
 #include "Fst2.h"
 #include "Alphabet.h"
 #include "Copyright.h"
-#include "FileName.h"
+#include "File.h"
 #include "IOBuffer.h"
 #include "Error.h"
 

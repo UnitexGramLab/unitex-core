@@ -21,7 +21,7 @@
 
 #include "Diff.h"
 #include "Unicode.h"
-#include "FileName.h"
+#include "File.h"
 #include "ConcordMain.h"
 #include "Concordance.h"
 

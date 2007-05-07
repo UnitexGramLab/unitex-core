@@ -25,7 +25,7 @@
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "DELA.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "Matches.h"
 #include "PortugueseNormalization.h"

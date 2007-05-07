@@ -29,7 +29,7 @@
 #include "Text_tokens.h"
 #include "ApplyDic.h"
 #include "List_int.h"
-#include "FileName.h"
+#include "File.h"
 #include "CompoundWordHashTable.h"
 #include "Fst2.h"
 #include "Copyright.h"

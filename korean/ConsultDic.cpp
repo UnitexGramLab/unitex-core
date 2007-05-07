@@ -27,7 +27,7 @@ using namespace std;
 #include <stdlib.h>
 #include "Unicode.h"
 #include "Copyright.h"
-#include "FileName.h"
+#include "File.h"
 #include "Alphabet.h"
 #include "etc.h"
 #include "bin.h"

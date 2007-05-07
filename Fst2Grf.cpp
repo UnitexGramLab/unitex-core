@@ -25,7 +25,7 @@
 #include "Unicode.h"
 #include "Fst2.h"
 #include "Sentence2Grf.h"
-#include "FileName.h"
+#include "File.h"
 #include "List_int.h"
 #include "Copyright.h"
 #include "IOBuffer.h"

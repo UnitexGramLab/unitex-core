@@ -23,7 +23,7 @@
 #include "ApplyDic.h"
 #include "Error.h"
 #include "Matches.h"
-#include "FileName.h"
+#include "File.h"
 
 #define DEBUG 0
 

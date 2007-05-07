@@ -24,7 +24,7 @@ using namespace std;
 #include <stdlib.h>
 
 #include "Unicode.h"
-#include "FileName.h"
+#include "File.h"
 #include "etc.h"
 #include "bitmap.h"
 #include "Copyright.h"

@@ -22,7 +22,7 @@
 #include "Grf2Fst2_lib.h"
 #include "FIFO.h"
 #include "Error.h"
-#include "FileName.h"
+#include "File.h"
 
 
 /* Maximum length for the content of a grf box */

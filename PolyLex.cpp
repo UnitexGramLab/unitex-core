@@ -30,7 +30,7 @@
 #include "DutchCompounds.h"
 #include "NorwegianCompounds.h"
 #include "GermanCompounds.h"
-#include "FileName.h"
+#include "File.h"
 #include "GeneralDerivation.h"
 #include "RussianCompounds.h"
 #include "IOBuffer.h"

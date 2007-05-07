@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 #include "Unicode.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "jamoCodage.h"
 #include "etc.h"

@@ -33,7 +33,7 @@
 #include "MF_DicoMorpho.h"
 #include "MF_DLC_inflect.h"
 #include "IOBuffer.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "Error.h"
 

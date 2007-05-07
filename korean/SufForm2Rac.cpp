@@ -23,7 +23,7 @@
 #include "Unicode.h"
 #include "etc.h"
 #include "Copyright.h"
-#include "FileName.h"
+#include "File.h"
 #include "IOBuffer.h"
 #include "Error.h"
 

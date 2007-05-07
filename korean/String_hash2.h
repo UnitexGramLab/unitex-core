@@ -22,7 +22,7 @@
 #define String_hash2H
 
 #include "Unicode.h"
-#include "FileName.h"
+#include "File.h"
 #include "Error.h"
 
 

@@ -22,7 +22,7 @@
 #include <stdlib.h>
 using namespace std;
 #include "Unicode.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "bin.h"
 #include "etc.h"

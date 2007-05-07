@@ -27,7 +27,7 @@
 #include "DictionaryTree.h"
 #include "String_hash.h"
 #include "AutomatonDictionary2Bin.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"

@@ -25,7 +25,7 @@
 #include "Copyright.h"
 #include "Unicode.h"
 #include "CodePages.h"
-#include "FileName.h"
+#include "File.h"
 #include "IOBuffer.h"
 #include "Error.h"
 

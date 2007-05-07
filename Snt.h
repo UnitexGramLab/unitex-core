@@ -23,7 +23,7 @@
 #define SntH
 
 #include <stdio.h>
-#include "FileName.h"
+#include "File.h"
 
 /**
  * This structure contains all the files related to a given .snt text

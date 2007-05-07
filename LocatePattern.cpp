@@ -27,7 +27,7 @@
 #include "LocateFst2Tags.h"
 #include "BitMasks.h"
 #include "Tokenization.h"
-#include "FileName.h"
+#include "File.h"
 
 
 void load_dic_for_locate(char*,Alphabet*,int,int,int,int,struct lemma_node*,struct locate_parameters*);

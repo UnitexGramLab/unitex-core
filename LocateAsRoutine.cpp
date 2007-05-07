@@ -42,7 +42,7 @@
 #include "TransductionVariables.h"
 #include "TransductionStack.h"
 #include "ParsingInfo.h"
-#include "FileName.h"
+#include "File.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "LocateAsRoutine.h"
