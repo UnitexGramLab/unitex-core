@@ -215,8 +215,9 @@ for (i=0;i<g->n_etats;i++) {
 void read_table_first_line(FILE *f,int *n) {
 int c;
 (*n)=0;
-while ((c=u_fgetc(f))!='\n')
-  if (c=='\t') (*n)++;
+while ((c=u_fgetc(f))!='\n') {
+   if (c=='\t') (*n)++;
+}
 (*n)++;
 }
 
@@ -315,15 +316,15 @@ if (source[pos_in_src]=='@' && is_in_A_Z(source[pos_in_src+1])) {
    if (source[pos_in_src+2]=='\0' || source[pos_in_src+2]=='/') {
       // if we are in the case @A or @A/something
       row_number=source[pos_in_src+1]-'A';
-      if (row_number > n_champs)
-        fatal_error("error: row #%d (@%c) not defined in table\n",
+      if (row_number >= n_champs)
+        fatal_error("Error in parameterized graph: row #%d (@%C) not defined in table\n",
                     row_number,source[pos_in_src+1]);
    }
    else if (is_in_A_Z(source[pos_in_src+2]) && (source[pos_in_src+3]=='\0' || source[pos_in_src+3]=='/')) {
            // if we are in the case @AB or @AB/something
            row_number=(source[pos_in_src+1]-'A'+1)*(26)+(source[pos_in_src+2]-'A');
-           if (row_number > n_champs)
-             fatal_error("error: row #%d (@%c%c) not defined in table\n",
+           if (row_number >= n_champs)
+             fatal_error("Error in parameterized graph: row #%d (@%C%C) not defined in table\n",
                          row_number,source[pos_in_src+1],source[pos_in_src+2]);
    }
    if (row_number!=-1) {
@@ -526,7 +527,6 @@ struct graphe_patron* res;
 int i,j;
 FILE *f;
 res=&r;
-
 //determine_subgraph_name(nom_resultat,nom_res,ligne_courante);
 
 res->n_etats=g->n_etats;
@@ -623,9 +623,10 @@ read_table_first_line(table,&n_champs);
 ligne_courante=1;
 graphs_printed=0;
 while (read_table_line(table,(unichar**)ligne,n_champs)) {
-  if (create_graph(ligne_courante,ligne,n_champs,&structure,subgraph,chemin,result_graph,graphs_printed))
-    graphs_printed++;
-  ligne_courante++;
+   if (create_graph(ligne_courante,ligne,n_champs,&structure,subgraph,chemin,result_graph,graphs_printed)) {
+      graphs_printed++;
+   }
+   ligne_courante++;
 }
 u_fclose(table);
 for (i=0;i<structure.n_etats;i++) {
