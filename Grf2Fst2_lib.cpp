@@ -503,7 +503,7 @@ if (input[*pos]==':') {
    /* Now that we have the path prefix, we can add the subgraph call */
    get_subgraph_call(input,pos,&(token[l]));
    put_ptr(tokens,u_strdup(token));
-   /* We add this graph name to the graph names, if not allready present */
+   /* We add this graph name to the graph names, if not already present */
    get_value_index(token+1,infos->graph_names);
    return 0;
 }
@@ -674,7 +674,7 @@ write_transitions(graph,sequence_ent,transitions,state,n_tokens,n,0);
 
 
 /**
- * If we have a variable or context mark, we store it in the tags, if not allready
+ * If we have a variable or context mark, we store it in the tags, if not already
  * present, and we write the corresponding transitions.
  */
 void process_variable_or_context(SingleGraph graph,unichar* input,

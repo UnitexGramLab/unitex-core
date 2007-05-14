@@ -26,7 +26,7 @@ alphabet_t * alphabet_new() {
 
   alphabet_t * alph = (alphabet_t *) xmalloc(sizeof(alphabet_t));
 
-  alph->ustr = ustring_new();
+  alph->ustr = new_Ustring();
   alph->hash  = hash_str_table_new();
 
   return alph;
@@ -34,7 +34,7 @@ alphabet_t * alphabet_new() {
 
 void alphabet_delete(alphabet_t * alph) {
 
-  ustring_delete(alph->ustr);
+  free_Ustring(alph->ustr);
   hash_str_table_delete(alph->hash);
 
   free(alph);

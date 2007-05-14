@@ -122,7 +122,7 @@ int autalmot_add_state(autalmot_t * A, int flags = 0);
 void autalmot_add_trans(autalmot_t * A, int from, symbol_t * label, int to);
 
 
-autalmot_t * load_grammar_automaton(char * name, language_t * lang = LANG);
+autalmot_t * load_grammar_automaton(char * name, language_t * lang = LANGUAGE);
 
 // type == TEXT | GRAM | LOCATE
 

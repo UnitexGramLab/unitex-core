@@ -19,147 +19,119 @@
   *
   */
 
-#include "UnicharTree.h"
+#include "Fst2Txt_TokenTree.h"
 #include "Error.h"
 
 
-struct arbre_char* new_arbre_char() {
-struct arbre_char* a=(struct arbre_char*)malloc(sizeof(struct arbre_char));
-if (a==NULL) {
-   fatal_error("Not enough memory in new_arbre_char\n");
-}
-a->arr=NULL;
-a->trans=NULL;
-return a;
-}
 
-
-struct arbre_char_trans* new_arbre_char_trans(unichar c,struct arbre_char_trans* suivant) {
-struct arbre_char_trans* t=(struct arbre_char_trans*)malloc(sizeof(struct arbre_char_trans));
-t->c=c;
-t->noeud=NULL;
-t->suivant=suivant;
+/**
+ * Allocates, initializes and returns a new token tree.
+ */
+struct fst2txt_token_tree* new_fst2txt_token_tree() {
+struct fst2txt_token_tree* t=(struct fst2txt_token_tree*)malloc(sizeof(struct fst2txt_token_tree));
+if (t==NULL) {
+   fatal_error("Not enough memory in new_fst2txt_token_tree\n");
+}
+t->hash=new_string_hash(DONT_USE_VALUES);
+/* We set a small default capacity since there will be one structure of
+ * this kind for each state of the fst2 */
+t->capacity=2;
+t->size=0;
+t->transition_array=(Fst2Transition*)malloc(t->capacity*sizeof(Fst2Transition));
+if (t->transition_array==NULL) {
+   fatal_error("Not enough memory in new_fst2txt_token_tree\n");
+}
 return t;
 }
 
 
-
-void free_arbre_char(struct arbre_char* a) {
-if (a==NULL) return;
-free_Fst2Transition(a->arr);
-free_arbre_char_trans(a->trans);
-free(a);
+/**
+ * Frees all the memory asociated to the given token tree structure.
+ */
+void free_fst2txt_token_tree(struct fst2txt_token_tree* t) {
+if (t==NULL) return;
+free_string_hash(t->hash);
+for (int i=0;i<t->size;i++) {
+   free_Fst2Transition(t->transition_array[i]);
+}
+free(t->transition_array);
+free(t);
 }
 
 
-void free_arbre_char_trans(struct arbre_char_trans* t) {
-struct arbre_char_trans* tmp;
-while (t!=NULL) {
-      free_arbre_char(t->noeud);
-      tmp=t;
-      t=t->suivant;
-      free(tmp);
-}
-}
-
-
-
-struct arbre_char_trans* get_transition(unichar c,struct arbre_char_trans* t) {
-while (t!=NULL) {
-      if (t->c==c) return t;
-      t=t->suivant;
-}
-return NULL;
-}
-
-
-
-Fst2Transition get_liste_nbre(int etiq,int arr,Fst2Transition l) {
-Fst2Transition tmp;
-if (l==NULL) {
-  // if etiq is not in the list we create it
-  tmp=new_Fst2Transition(etiq,arr);
-  tmp->next=NULL;
-  return tmp;
-}
-if (l->tag_number==etiq) return l;
-l->next=get_liste_nbre(etiq,arr,l->next);
-return l;
-}
-
-
-
-void explorer_arbre_char(unichar* contenu,int pos,int etiq,int arr,struct arbre_char* noeud) {
-if (noeud==NULL) {
-   error("Erreur dans fonction explorer_arbre_char\n");
-   return;
-}
-if (contenu[pos]=='\0') {
-   // if we are at the end of the word
-   // we must have a list because %a and %a/A would give two path for entry a
-   noeud->arr=get_liste_nbre(etiq,arr,noeud->arr);
-   return;
-}
-struct arbre_char_trans* t=get_transition(contenu[pos],noeud->trans);
-if (t==NULL) {
-  noeud->trans=new_arbre_char_trans(contenu[pos],noeud->trans);
-  noeud->trans->noeud=new_arbre_char();
-  t=noeud->trans;
-}
-explorer_arbre_char(contenu,pos+1,etiq,arr,t->noeud);
-}
-
-
-
-void inserer_etiquette(unichar* contenu,int etiq,int arr,struct arbre_char* noeud) {
-explorer_arbre_char(contenu,0,etiq,arr,noeud);
-}
-
-
-void ajouter_a_RES(Fst2Transition l,Fst2Transition *RES) {
-while (l!=NULL) {
-      *RES=get_liste_nbre(l->tag_number,l->state_number,*RES);
-      l=l->next;
+/**
+ * Adds all the transitions of 'src' to '*dest', if not already present.
+ */
+void add_transitions(Fst2Transition src,Fst2Transition *dest) {
+while (src!=NULL) {
+   add_transition_if_not_present(dest,src->tag_number,src->state_number);
+   src=src->next;
 }
 }
 
 
-void explorer_arbre(unichar* texte,int pos,struct arbre_char* noeud,Alphabet* alphabet,
-                    int PARSING_MODE,int max_pos,Fst2Transition *result) {
-if (noeud==NULL) {
-   return;
-}
-if (PARSING_MODE) {
-   // if we are in thai mode, we consider each possibility
-   if (noeud->arr!=NULL && pos>max_pos) {
-      max_pos=pos;
-      //free_liste_nbre(RES);
-      //RES=NULL;
+/**
+ * This function adds the given token to the given token tree, if not already
+ * present. Then, it adds the given transition to its transition list. 
+ */
+void add_tag(unichar* token,int tag_number,int dest_state,struct fst2txt_token_tree* tree) {
+int n=get_value_index(token,tree->hash);
+if (n==tree->size) {
+   /* If we have to create a new transition list because the token was not already in
+    * the tree. */
+   if (tree->size==tree->capacity) {
+      /* If necessary, we double the size of the transition array */
+      tree->capacity=2*tree->capacity;
+      tree->transition_array=(Fst2Transition*)realloc(tree->transition_array,tree->capacity*sizeof(Fst2Transition));
+      if (tree->transition_array==NULL) {
+         fatal_error("Not enough memory in add_tag\n");
+      }
    }
-   if (pos==max_pos) ajouter_a_RES(noeud->arr,result);
-} else {
-   if (texte[pos]=='\0') {
-     // if we are at the end of the word
-     ajouter_a_RES(noeud->arr,result);
-     return;
-   }
+   (tree->size)++;
+   /* We don't forget to initialize the new transition list */
+   tree->transition_array[n]=NULL;
 }
-struct arbre_char_trans* trans=noeud->trans;
+/* We add the new transition, assuming that it is not already in the list, becauses
+ * it would mean that the fst2 is not deterministic. */
+tree->transition_array[n]=new_Fst2Transition(tag_number,dest_state,tree->transition_array[n]);
+}
+
+
+/**
+ * This function explores a token tree, comparing it with the given token in order to
+ * find out the tokens that match the text token, and then, to add to corresponding
+ * transition to the result.
+ */
+void explore_token_tree(unichar* token,int pos,struct string_hash_tree_node* node,Alphabet* alphabet,
+                        int max_pos,Fst2Transition *result,struct fst2txt_token_tree* tree) {
+if (node==NULL) {
+   return;
+}
+if (token[pos]=='\0' && node->value_index!=-1) {
+   /* If we are at the end of the word and if there is an associated
+    * transition list */
+   add_transitions(tree->transition_array[node->value_index],result);
+   return;
+}
+struct string_hash_tree_transition* trans=node->trans;
 while (trans!=NULL) {
-  if (is_equal_or_uppercase(trans->c,texte[pos],alphabet)) {
-     // if the transition can be followed
-     explorer_arbre(texte,pos+1,trans->noeud,alphabet,PARSING_MODE,max_pos,result);
-  }
-  trans=trans->suivant;
+   if (is_equal_or_uppercase(trans->letter,token[pos],alphabet)) {
+      /* If the transition can be followed */
+      explore_token_tree(token,pos+1,trans->node,alphabet,max_pos,result,tree);
+   }
+   trans=trans->next;
 }
 }
 
 
-Fst2Transition get_matching_etiquettes(unichar* texte,
-                                           struct arbre_char* racine,
-                                           Alphabet* alphabet,int PARSING_MODE) {
-Fst2Transition RES=NULL;
-explorer_arbre(texte,0,racine,alphabet,PARSING_MODE,0,&RES);
-return RES;
+/**
+ * This function takes a token and a token tree. It returns the list of transitions
+ * that can be matched by this token tree.
+ */
+Fst2Transition get_matching_tags(unichar* token,struct fst2txt_token_tree* tree,
+                                 Alphabet* alphabet) {
+Fst2Transition list=NULL;
+explore_token_tree(token,0,tree->hash->root,alphabet,0,&list,tree);
+return list;
 }
 

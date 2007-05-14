@@ -22,8 +22,8 @@
 #ifndef _FST_FILE_H_
 #define _FST_FILE_H_
 
-#include "language.h"
-#include "hash_str_table.h"
+#include "LanguageDefinition.h"
+#include "String_hash.h"
 #include "autalmot.h"
 
 
@@ -33,20 +33,33 @@
 enum { FST_TEXT = 0, FST_TEXT_IMPLOSED, FST_GRAMMAR, FST_LOCATE, FST_BAD_TYPE };
 
 
+/**
+ * This structure is used to load a .fst2
+ */
 typedef struct fst_file_in_t {
+   /* File name */
+   char* name;
+   
+   /* The file itself */
+   FILE* f;
+   
+   /* The language definition for the fst2's language */
+   language_t * lang;
+   
+   /* The kind of .fst2 (text, grammar,...) */
+   int type;
+   
+   /* Offset for the first automaton (after headers) */
+   int pos0;
+   
+   /* The number of automata contained in the .fst2 */
+   int nb_automata;
+   
+   /* */
+   int pos;
 
-  char * name;
-  FILE * f;
-
-  language_t * lang;
-  int type;  /* TEXT | GRAMMAR */
-  int pos0;  /* offset for the first automaton (after headers) */
-
-  int nbelems;
-  int pos;
-
-  hash_str_table_t * symbols; /* table on symbole_t * */
-
+   /* */
+   struct string_hash_ptr* symbols; /* table on symbole_t * */
 } fst_file_in_t;
 
 
@@ -62,12 +75,12 @@ typedef struct fst_file_out_t {
 
   int nbelems;
 
-  hash_str_table_t * labels; // table on unichar *
+  struct string_hash* labels; // table on unichar *
 
 } fst_file_out_t;
 
 
-fst_file_in_t * fst_file_in_open(char * fname, int type, language_t * lang = LANG);
+fst_file_in_t * load_fst_file(char * fname, int type, language_t * lang = LANGUAGE);
 void fst_file_close(fst_file_in_t * fstf);
 
 void fst_file_seek(fst_file_in_t * fstin, int pos);

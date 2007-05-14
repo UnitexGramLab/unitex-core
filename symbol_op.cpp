@@ -31,7 +31,7 @@
 
 
 static inline void traits_copy(symbol_t * dest, const symbol_t * src) {
-  for (int i = 0; i < src->nbtraits; i++) { dest->traits[i] = src->traits[i]; }
+  for (int i = 0; i < src->nb_features; i++) { dest->feature[i] = src->feature[i]; }
 }
 
 /* orders the symbol's types
@@ -85,14 +85,14 @@ static inline symbol_t * symbols_clean(symbol_t * symbols) {
 
   while (symbols && (symbol_type(symbols) == -1)) {
     res = symbols->next;
-    symbol_delete(symbols);
+    free_symbol(symbols);
     symbols = res;
   }
 
   for (symbol_t * s = res; s; s = s->next) {
     while (s->next && (symbol_type(s->next) == -1)) {
       symbol_t * next = s->next->next;
-      symbol_delete(s->next);
+      free_symbol(s->next);
       s->next = next;
     }
   }
@@ -159,19 +159,19 @@ static void negs_inter_negs(symbol_t * res, const symbol_t * a, const symbol_t *
 
 static inline int compare_traits(const symbol_t * a, const symbol_t * b) {
 
-  int min = MIN(a->nbtraits, b->nbtraits);
+  int min = MIN(a->nb_features, b->nb_features);
 
   int i;
   for (i = 0; i < min; i++) {
-    if (a->traits[i] != b->traits[i]) { return b->traits[i] - a->traits[i]; }
+    if (a->feature[i] != b->feature[i]) { return b->feature[i] - a->feature[i]; }
   }
 
-  for (; i < a->nbtraits; i++) {
-    if (a->traits[i] != UNSPECIFIED) { return UNSPECIFIED - a->traits[i]; }
+  for (; i < a->nb_features; i++) {
+    if (a->feature[i] != UNSPECIFIED) { return UNSPECIFIED - a->feature[i]; }
   }
 
-  for (; i < b->nbtraits; i++) {
-    if (b->traits[i] != UNSPECIFIED) { return b->traits[i] - UNSPECIFIED; }
+  for (; i < b->nb_features; i++) {
+    if (b->feature[i] != UNSPECIFIED) { return b->feature[i] - UNSPECIFIED; }
   }
 
   return 0;
@@ -256,41 +256,41 @@ static symbol_t * inter_traits(const symbol_t * a, const symbol_t * b) {
 
   /* make sure a is not smaller than b */
 
-  if (a->nbtraits < b->nbtraits) {
+  if (a->nb_features < b->nb_features) {
     const symbol_t * tmp = a;
     a = b;
     b = tmp;
   }
 
-  symbol_t * res = symbol_new(a->POS);
+  symbol_t * res = new_symbol_POS(a->POS);
 
   int i;
-  for (i = 0; i < b->nbtraits; i++) {
+  for (i = 0; i < b->nb_features; i++) {
 
-    switch (a->traits[i]) {
+    switch (a->feature[i]) {
 
     case UNSPECIFIED:
-      res->traits[i] = b->traits[i];
+      res->feature[i] = b->feature[i];
       break;
 
     case LOCKED:
-      if (b->traits[i] > 0) { goto null; }
-      res->traits[i] = LOCKED;
+      if (b->feature[i] > 0) { goto null; }
+      res->feature[i] = LOCKED;
       break;
 
     default:
-      if (b->traits[i] != a->traits[i] && b->traits[i] != UNSPECIFIED) { goto null; }
-      res->traits[i] = a->traits[i];
+      if (b->feature[i] != a->feature[i] && b->feature[i] != UNSPECIFIED) { goto null; }
+      res->feature[i] = a->feature[i];
       break;
     }
   }
 
-  for (; i < a->nbtraits; i++) { res->traits[i] = a->traits[i]; }
+  for (; i < a->nb_features; i++) { res->feature[i] = a->feature[i]; }
 
   return res;
 
 null:
-  symbol_delete(res);
+  free_symbol(res);
   return NULL;
 }
 
@@ -382,7 +382,7 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
 
   if (a == SYMBOL_DEF || b == SYMBOL_DEF) { fatal_error("symb inter symb: called with SYMBOL_DEF as arg\n"); }
 
-  if (a == b) { return symbol_dup(a); }
+  if (a == b) { return dup_symbol(a); }
 
   if (a == NULL || b == NULL) { return NULL; }
 
@@ -393,8 +393,8 @@ symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
 
   if (a->type == EPSILON || b->type == EPSILON) { fatal_error("inter: epsilon\n"); }
 
-  if (a->type == LEXIC) { return symbol_dup(b); }
-  if (b->type == LEXIC) { return symbol_dup(a); }
+  if (a->type == LEXIC) { return dup_symbol(b); }
+  if (b->type == LEXIC) { return dup_symbol(a); }
 
   if (a->POS != b->POS) { return NULL; }
 
@@ -522,7 +522,7 @@ symbol_t * symbols_inter_symbols(const symbol_t * A, const symbol_t * B) {
 
     symbol_t * tmp = symbol_inter_symbols(A, B);
 
-    symbols_concat(end, tmp, & end);
+    concat_symbols(end, tmp, & end);
 
     A = A->next;
   }
@@ -542,20 +542,20 @@ static bool in_traits(const symbol_t * a, const symbol_t * b) {
 
   if (a->POS != b->POS) { return false; }
 
-  int min = MIN(a->nbtraits, b->nbtraits);
+  int min = MIN(a->nb_features, b->nb_features);
 
   int i;
   for (i = 0; i < min; i++) {
-    switch (b->traits[i]) {
+    switch (b->feature[i]) {
     case UNSPECIFIED:
       break;
     default:
-      if (a->traits[i] != b->traits[i]) { return false; }
+      if (a->feature[i] != b->feature[i]) { return false; }
    }
   }
 
-  for (; i < b->nbtraits; i++) { // if there is some traits left for b they should be UNSPEC
-    if (b->traits[i] != UNSPECIFIED) { return false; }
+  for (; i < b->nb_features; i++) { // if there is some traits left for b they should be UNSPEC
+    if (b->feature[i] != UNSPECIFIED) { return false; }
   }
 
   return true;
@@ -713,18 +713,18 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
   if (a->POS != b->POS) { fatal_error("minus_traits: ! POSs\n"); }
 
-  symbol_t * templat = symbol_new(a->POS);
+  symbol_t * templat = new_symbol_POS(a->POS);
 
   int idx;
-  for (idx = 0; idx < a->nbtraits; idx++) { templat->traits[idx] = a->traits[idx]; }
+  for (idx = 0; idx < a->nb_features; idx++) { templat->feature[idx] = a->feature[idx]; }
 
-  int min = MIN(a->nbtraits, b->nbtraits);
+  int min = MIN(a->nb_features, b->nb_features);
 
   for (idx = 0; idx < min; idx++) {
 
-    if (a->traits[idx] == b->traits[idx]) { continue; }
+    if (a->feature[idx] == b->feature[idx]) { continue; }
       
-    if (a->traits[idx] != UNSPECIFIED) { fatal_error("minus_traits: b not in a\n"); }
+    if (a->feature[idx] != UNSPECIFIED) { fatal_error("minus_traits: b not in a\n"); }
 
     /* a->traits[idx] est UNSPEC et b->traits[idx] est fixé */
 
@@ -732,42 +732,42 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
     // debug("minus_trait: differs in '%S'\n", CAT->name);
 
-    for (int v = -1; v < CAT->traits->nbelems; v++) { /* on ajoute pour chaque valeur fixée != b->traits[idx] */
+    for (int v = -1; v < CAT->values->size; v++) { /* on ajoute pour chaque valeur fixée != b->traits[idx] */
 
-      if (v == UNSPECIFIED || v == b->traits[idx]) { continue; }
+      if (v == UNSPECIFIED || v == b->feature[idx]) { continue; }
 
-      templat->traits[idx] = v;
+      templat->feature[idx] = v;
 
-      symbols_concat(end, symbol_dup(templat), & end);
+      concat_symbols(end, dup_symbol(templat), & end);
     }
     
     /* on fixe la valeur a b->traits[idx] et on continue */
 
-    templat->traits[idx] = b->traits[idx];
+    templat->feature[idx] = b->feature[idx];
   }
 
 
-  for (; idx < b->nbtraits; idx++) { // si il reste des traits pour b
+  for (; idx < b->nb_features; idx++) { // si il reste des traits pour b
       
-    if (b->traits[idx] != UNSPECIFIED) { // a->traits[idx] == UNSPEC
+    if (b->feature[idx] != UNSPECIFIED) { // a->traits[idx] == UNSPEC
 
       CAT_t * CAT = POS_get_CAT(a->POS, idx);
 
-      for (int v = -1; v < CAT->traits->nbelems; v++) { /* on ajoute pour chaque valeur fixée != b->traits[idx] */
+      for (int v = -1; v < CAT->values->size; v++) { /* on ajoute pour chaque valeur fixée != b->traits[idx] */
 
-	if (v == UNSPECIFIED || v == b->traits[idx]) { continue; }
+	if (v == UNSPECIFIED || v == b->feature[idx]) { continue; }
 
-	templat->traits[idx] = v;
-	symbols_concat(end, symbol_dup(templat), & end);
+	templat->feature[idx] = v;
+	concat_symbols(end, dup_symbol(templat), & end);
       }
     
       /* on fixe la valeur a b->traits[idx] et on continue */
 	
-      templat->traits[idx] = b->traits[idx];
+      templat->feature[idx] = b->feature[idx];
     }
   }
 
-  symbol_delete(templat);
+  free_symbol(templat);
 
   return res.next;
 }
@@ -829,7 +829,7 @@ static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
   /* (code(b) minus b) inter a */
 
-  s = symbol_new(b->POS);
+  s = new_symbol_POS(b->POS);
   traits_copy(s, b);
 
   /* insert b->canonic in neglist */
@@ -892,7 +892,7 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
        * => (canonic(form) inter code(b)) in (a minus b)
        */
 
-      symbol_t * nouvo = symbol_new(b->POS);
+      symbol_t * nouvo = new_symbol_POS(b->POS);
       traits_copy(nouvo, b);
       nouvo->canonic = b->negs[i];
       nouvo->next = res;
@@ -933,7 +933,7 @@ static symbol_t * CODE_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
   /* code(b) minus b ... */
 
-  symbol_t * res = symbol_new(b->POS);
+  symbol_t * res = new_symbol_POS(b->POS);
 
   traits_copy(res, b);
   res->negative = true;
@@ -961,7 +961,7 @@ static symbol_t * CODE_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
   for (int i = 0; i < b->nbnegs; i++) {
 
-    symbol_t * nouvo = symbol_new(b->POS);
+    symbol_t * nouvo = new_symbol_POS(b->POS);
     traits_copy(nouvo, b);
 
     nouvo->canonic = b->negs[i];
@@ -996,9 +996,9 @@ static symbol_t * POS_minus_symbol(const symbol_t * a) {
   POS_t * POS = a->POS;
 
   if (POS->codes == NULL) {
-    symbol_t * s = symbol_new(POS);
+    symbol_t * s = new_symbol_POS(POS);
     symbol_t * res = symbol_minus_symbol(s, a);
-    symbol_delete(s);
+    free_symbol(s);
     return res;
   }
 
@@ -1015,13 +1015,13 @@ static symbol_t * POS_minus_symbol(const symbol_t * a) {
     if (inter) {
 
       found = true;
-      symbols_concat(end, symbol_minus_symbol(code, inter), & end);
+      concat_symbols(end, symbol_minus_symbol(code, inter), & end);
 
-      symbol_delete(inter);
+      free_symbol(inter);
 
     } else {
 
-      end->next = symbol_dup(code);
+      end->next = dup_symbol(code);
       end = end->next;
     }
   }
@@ -1060,19 +1060,19 @@ static symbol_t * LEXIC_minus_symbol(const symbol_t * b) {
   res.next = NULL;
   symbol_t * end = & res;
 
-  if (! LANG) { fatal_error("current LANGUAGE is not set!\n"); }
+  if (! LANGUAGE) { fatal_error("current LANGUAGE is not set!\n"); }
 
-  for (int i = 0; i < LANG->POSs->nbelems; i++) {
+  for (int i = 0; i < LANGUAGE->POSs->size; i++) {
 
-    POS_t * POS = (POS_t *) LANG->POSs->tab[i];
+    POS_t * POS = (POS_t *) LANGUAGE->POSs->value[i];
 
     if (POS == b->POS) { continue; }
 
     //    symbols_concat(end, POS_expand(POS), & end);
-    symbols_concat(end, symbol_new(POS), & end);
+    concat_symbols(end, new_symbol_POS(POS), & end);
   }
 
-  symbols_concat(end, POS_minus_symbol(b)); // POS minus b
+  concat_symbols(end, POS_minus_symbol(b)); // POS minus b
 
   return res.next;
 }
@@ -1090,7 +1090,7 @@ static symbol_t * _symbol_minus_symbol(const symbol_t * a, const symbol_t * b) {
 
   if (a == b) { return NULL; }
 
-  if (b == NULL) { return symbol_dup(a); }
+  if (b == NULL) { return dup_symbol(a); }
 
   if (a == NULL) { fatal_error("minus: a == NULL\n"); }
 
@@ -1216,11 +1216,11 @@ symbol_t * symbol_minus_symbol(const symbol_t * a, const symbol_t * b) {
 
     symbol_t * i = symbol_inter_symbol(a, b);
 
-    if (i == NULL) { return symbol_dup(a); }
+    if (i == NULL) { return dup_symbol(a); }
 
     symbol_t * res = _symbol_minus_symbol(a, i);
 
-    symbol_delete(i);
+    free_symbol(i);
 
     return res;
   }
@@ -1234,7 +1234,7 @@ symbol_t * symbol_minus_symbol(const symbol_t * a, const symbol_t * b) {
 
 symbol_t * symbol_minus_symbols(const symbol_t * a, const symbol_t * B) {
 
-  symbol_t * res = symbol_dup(a);
+  symbol_t * res = dup_symbol(a);
 
   while (res && B) {
 
@@ -1243,7 +1243,7 @@ symbol_t * symbol_minus_symbols(const symbol_t * a, const symbol_t * B) {
 
     res = symbols_inter_symbols(tmp, minus);
 
-    symbols_delete(tmp); symbols_delete(minus);
+    free_symbols(tmp); free_symbols(minus);
     B = B->next;
   }
 
@@ -1259,7 +1259,7 @@ symbol_t * symbols_minus_symbols(const symbol_t * A, const symbol_t * B) {
 
   while (A) {
     symbol_t * minus = symbol_minus_symbols(A, B);
-    symbols_concat(end, minus, & end);
+    concat_symbols(end, minus, & end);
     A = A->next;
   }
 
@@ -1275,7 +1275,7 @@ symbol_t * symbols_minus_symbol(const symbol_t * A, const symbol_t * b) {
 
   while (A) {
     symbol_t * minus = symbol_minus_symbol(A, b);
-    symbols_concat(end, minus, & end);
+    concat_symbols(end, minus, & end);
     A = A->next;
   }
 
@@ -1290,9 +1290,9 @@ symbol_t * minus_symbol(const symbol_t * b) { return LEXIC_minus_symbol(b); }
 
 symbol_t * minus_symbols(const symbol_t * b) {
 
-  symbol_t * LEX = symbol_LEXIC_new();
+  symbol_t * LEX = new_symbol(LEXIC);
   symbol_t * res = symbol_minus_symbols(LEX, b);
 
-  symbol_delete(LEX);
+  free_symbol(LEX);
   return res;
 }

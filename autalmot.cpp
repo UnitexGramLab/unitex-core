@@ -29,7 +29,7 @@ transition_t * transition_new(int to, symbol_t * label, transition_t * next) {
   transition_t * trans = (transition_t *) xmalloc(sizeof(transition_t));
 
   trans->to    = to;
-  trans->label = symbol_dup(label);
+  trans->label = dup_symbol(label);
   trans->next  = next;
 
   return trans;
@@ -37,7 +37,7 @@ transition_t * transition_new(int to, symbol_t * label, transition_t * next) {
 
 
 void transition_delete(transition_t * trans) {
-  symbol_delete(trans->label);
+  free_symbol(trans->label);
   free(trans);
 }
 

@@ -90,11 +90,11 @@ static inline void strip_extension(char * s) {
 
 static inline void AStar_aut(autalmot_t * A) {
 
-  symbol_t * UNIV = symbol_LEXIC_new();
+  symbol_t * UNIV = new_symbol(LEXIC);
 
   for (int i = 0; i < A->nbinitials; i++) { autalmot_add_trans(A, A->initials[i], UNIV, A->initials[i]); }
 
-  symbol_delete(UNIV);
+  free_symbol(UNIV);
 }
 
 
@@ -104,7 +104,7 @@ static inline void AStar_aut(autalmot_t * A) {
 
 static inline void aut_AStar(autalmot_t * A) {
 
-  symbol_t * UNIV = symbol_LEXIC_new();
+  symbol_t * UNIV = new_symbol(LEXIC);
 
   for (int i = 0; i < A->nbstates; i++) {
 
@@ -120,7 +120,7 @@ static inline void aut_AStar(autalmot_t * A) {
     }
   }
 
-  symbol_delete(UNIV);
+  free_symbol(UNIV);
 }
 
 
@@ -288,7 +288,7 @@ int compile_rules(char * rulesname, char * outname) {
 
   autalmot_t * res = NULL, * A;
   int fstno = 0;
-  ustring_t * ustr = ustring_new();
+  Ustring * ustr = new_Ustring();
 
 
 
@@ -360,7 +360,7 @@ int compile_rules(char * rulesname, char * outname) {
 
       u_printf("splitting big grammar in '%s' (%d states)\n", fstoutname, res->nbstates);
 
-      ustring_printf(ustr, "%s: compiled elag grammar", fstoutname);
+      u_sprintf(ustr, "%s: compiled elag grammar", fstoutname);
       free(res->name);
       res->name = u_strdup(ustr->str);
 
@@ -382,7 +382,7 @@ int compile_rules(char * rulesname, char * outname) {
 
     autalmot_minimize(res, 1);
 
-    ustring_printf(ustr, "%s: compiled elag grammar", fstoutname);
+    u_sprintf(ustr, "%s: compiled elag grammar", fstoutname);
     free(res->name);
     res->name = u_strdup(ustr->str);
 
@@ -396,7 +396,7 @@ int compile_rules(char * rulesname, char * outname) {
   fclose(frules);
   fclose(out);
 
-  ustring_delete(ustr);
+  free_Ustring(ustr);
 
   u_printf("\ndone.\nElapsed time: %.0f s.\n", difftime(fin, debut));
 
@@ -420,12 +420,12 @@ static autalmot_t * make_locate_auto(tRegle * regle) {
   language_t * lang = get_current_language();
   vector_t * tab = vector_new();
 
-  for (int i = 0; i < lang->POSs->nbelems; ++i) {
+  for (int i = 0; i < lang->POSs->size; ++i) {
     
-    POS_t * PoS = (POS_t *) lang->POSs->tab[i];
+    POS_t * PoS = (POS_t *) lang->POSs->value[i];
     
     if (PoS->ignorable) {
-      vector_add(tab, symbol_new(PoS));
+      vector_add(tab, new_symbol_POS(PoS));
     }
   }
 
@@ -436,7 +436,7 @@ static autalmot_t * make_locate_auto(tRegle * regle) {
     }
   }
 
-  vector_delete(tab, (release_f) symbol_delete);
+  vector_delete(tab, (release_f) free_symbol);
   return res;
 }
 

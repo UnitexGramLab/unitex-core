@@ -177,7 +177,7 @@ free(s);
 
 /**
  * Adds a transition to a transition list. No test
- * is performs to check whether the transition allready exists. 
+ * is performs to check whether the transition already exists. 
  * The function returns the new head of the list.
  */
 Fst2Transition add_transition(Fst2Transition list,int tag_number,int state_number) {
@@ -189,7 +189,7 @@ return transition;
 
 /**
  * Creates and adds an outgoing transition to the given state. No test
- * is performs to check whether the transition allready exists.
+ * is performs to check whether the transition already exists.
  * Note that it is the responsability to the caller to deal with
  * the corresponding reverted incoming transition, if needed.
  */
@@ -201,7 +201,7 @@ state->outgoing_transitions=add_transition(state->outgoing_transitions,
 
 /**
  * Creates and adds an incoming transition to the given state. No test
- * is performs to check whether the transition allready exists.
+ * is performs to check whether the transition already exists.
  */
 void add_incoming_transition(SingleGraphState state,int tag_number,int state_number) {
 state->reverted_incoming_transitions=add_transition(state->reverted_incoming_transitions,
@@ -288,7 +288,7 @@ if (states[state_number]==NULL) {
    fatal_error("Internal NULL error in check_accessibility\n");
 }
 if (is_accessible_state(states[state_number])) {
-   /* There is nothing to do if the state has allready been processed */
+   /* There is nothing to do if the state has already been processed */
    return;
 }
 /* Otherwise, we mark it */
@@ -312,7 +312,7 @@ if (states[state_number]==NULL) {
    fatal_error("Internal NULL error in check_co_accessibility\n");
 }
 if (is_co_accessible_state(states[state_number])) {
-   /* There is nothing to do if the state has allready been processed */
+   /* There is nothing to do if the state has already been processed */
    return;
 }
 /* Otherwise, we mark it */
@@ -348,7 +348,7 @@ while (closure_to_add!=NULL) {
 struct list_int* get_epsilon_closure(struct list_int** closures,SingleGraphState* states,
                                      int state_number,struct bit_array* mark) {
 if (!get_value(mark,state_number)) {
-   /* If the state has not allready been processed, we start by marking it */
+   /* If the state has not already been processed, we start by marking it */
    set_value(mark,state_number,1);
    /* A state is in its own closure */
    closures[state_number]=sorted_insert(state_number,closures[state_number]);
@@ -382,14 +382,14 @@ if (closures==NULL) {
  * is not a real property for a state, like being final or accessible. */
 struct bit_array* mark=new_bit_array(graph->number_of_states,ONE_BIT);
 int i;
-/* First, we initialize the closures. Note that 'mark' was allready initialized
+/* First, we initialize the closures. Note that 'mark' was already initialized
  * when it was created */
 for (i=0;i<graph->number_of_states;i++) {
    closures[i]=NULL;    
 }
 /* Then, for each state, we compute the epsilon closure */
 for (i=0;i<graph->number_of_states;i++) {
-   /* If the state was not allready processed, we compute its epsilon closure */
+   /* If the state was not already processed, we compute its epsilon closure */
    if (!get_value(mark,i)) {
       get_epsilon_closure(closures,graph->states,i,mark);
    }
@@ -925,7 +925,7 @@ move_SingleGraph(graph,&new_graph);
  * reverse, determinize, reverse, determinize again.
  * If 'compute_reversed_transitions' parameter is non null,
  * then the function will first compute the reversed transitions
- * of the graph; otherwise, it will assume that this is allready
+ * of the graph; otherwise, it will assume that this is already
  * done.
  * 
  * Note that, after the minimization, the new reversed transitions

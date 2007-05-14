@@ -29,11 +29,13 @@
 #include "utils.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "File.h"
+#include "LanguageDefinition.h"
 
 
 
 void usage() {
-u_printf("%S", COPYRIGHT);
+u_printf("%S",COPYRIGHT);
 u_printf("Usage: TagsetNormFst2 -l <tagset> <txtauto>\n"
          "\n"
          "with:\n"
@@ -46,79 +48,59 @@ u_printf("Usage: TagsetNormFst2 -l <tagset> <txtauto>\n"
 }
 
 
-void copy_file(char * dest, char * src) {
-
-  //debug("copying %s into %s\n", src, dest);
-
-  FILE * in = fopen(src, "rb");
-  if (in == NULL) { fatal_error("unable to open '%s'\n", src); }
-
-  FILE * out = fopen(dest, "wb");
-  if (out == NULL) { fatal_error("unable to open '%s'\n", dest); }
-
-  int c, n = 0;
-  while ((c = getc(in)) != EOF) { putc(c, out); ++n; }
-  fclose(in); fclose(out);
-  //printf("%d bytes copied into '%s'", n, dest);
-}
-
 
 int main(int argc, char ** argv) {
-  setBufferMode();
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-  //debug("tagsetnorm\n");
-
-  char * txtauto    = NULL;
-  char * langname   = NULL;
-
-  argv++, argc--;
-
-  if (argc == 0) { usage(); return 0; }
-  
-  while (argc) {
-
-    if (**argv != '-') { // text automaton
-      
-      txtauto = *argv;
-
-    } else {
-
-      if (strcmp(*argv, "-l") == 0) { // file of compiled grammar names
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-l needs an arg\n"); }
-	langname = *argv;
-
-      } else if (strcmp(*argv, "-h") == 0) {
-
-        usage();
-	return 0;
-
-      }	else { fatal_error("unknow arg: '%s'\n", *argv); }
-
-    }
-
-    argv++, argc--;
-  }	
-
-  if (! langname) { fatal_error("no tagset specified\n"); }
-  if (txtauto == NULL) { fatal_error("no text automaton specified\n"); }
-
-
-  char bak[FILENAME_MAX];
-
-  strcpy(bak, txtauto);
-  strcat(bak, ".bak");
-
-  u_printf("copying %s to %s ...\n", txtauto, bak);
-  copy_file(bak, txtauto);
-
-  u_printf("loading %s langage definition ...\n", langname);
-
-  language_t * lang = language_load(langname);
-  set_current_language(lang);
-
-  fst_file_in_t * txtin = fst_file_in_open(bak, FST_TEXT);
+char* txtauto=NULL;
+char* langname=NULL;
+argv++;
+argc--;
+if (argc==0) {
+   usage();
+   return 0;
+}
+while (argc) {
+   if (**argv!='-') {
+      /* Text automaton */
+      txtauto=(*argv);
+   } else {
+      if (!strcmp(*argv, "-l")) {
+         /* Tagset file */
+         argv++;
+         argc--;
+         if (argc==0) {
+            fatal_error("-l needs an argument\n");
+         }
+         langname=(*argv);
+      } else if (!strcmp(*argv,"-h")) {
+         usage();
+         return 0;
+      } else {
+         fatal_error("Unknown argument: '%s'\n",*argv);
+      }
+   }
+   argv++;
+   argc--;
+}	
+if (!langname) {
+   fatal_error("No tagset specified\n");
+}
+if (txtauto==NULL) {
+   fatal_error("No text automaton specified\n");
+}
+char bak[FILENAME_MAX];
+strcpy(bak,txtauto);
+strcat(bak,".bak");
+u_printf("Copying %s to %s ...\n",txtauto,bak);
+copy_file(bak, txtauto);
+u_printf("Loading tagset...\n");
+language_t* tagset=load_language_definition(langname);
+set_current_language(tagset);
+fst_file_in_t* txtin=load_fst_file(bak,FST_TEXT);
 
   if (txtin == NULL) { fatal_error("tagsetnorm: unable to load text '%s'\n", bak); }
 
@@ -132,7 +114,7 @@ int main(int argc, char ** argv) {
 
 
   unichar EMPTY[] = { 'E', 'M', 'P', 'T', 'Y', 0 };
-  symbol_t * symb = symbol_unknow_new(lang, language_add_form(lang, EMPTY));
+  symbol_t * symb = new_symbol_UNKNOWN(tagset, language_add_form(tagset, EMPTY));
 
   int no = 0;
   while ((A = fst_file_autalmot_load_next(txtin)) != NULL) {
@@ -151,9 +133,9 @@ int main(int argc, char ** argv) {
     fst_file_write(txtout, A);
     autalmot_delete(A);
     no++;
-    if (no % 100 == 0) { u_printf("sentence %d/%d ...      \r", no, txtin->nbelems); }
+    if (no % 100 == 0) { u_printf("sentence %d/%d ...      \r", no, txtin->nb_automata); }
   }
-  u_printf("sentence %d/%d.\ndone. text automaton is normalised.\n", txtin->nbelems, txtin->nbelems);
+  u_printf("sentence %d/%d.\ndone. text automaton is normalised.\n", txtin->nb_automata, txtin->nb_automata);
 
   fst_file_close(txtin);
   fst_file_close(txtout);

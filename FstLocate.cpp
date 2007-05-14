@@ -98,13 +98,13 @@ if (patternname==NULL) {
    fatal_error("no pattern specified\n");
 }
 u_printf("Loading %s langage definition ...\n", langname);
-language_t* lang=language_load(langname);
+language_t* lang=load_language_definition(langname);
 set_current_language(lang);
-fst_file_in_t* txtin=fst_file_in_open(txtname,FST_TEXT);
+fst_file_in_t* txtin=load_fst_file(txtname,FST_TEXT);
 if (txtin==NULL) {
    fatal_error("Unable to load text '%s'\n", txtname);
 }
-u_printf("%d sentence(s) in %s\n", txtin->nbelems, txtname);
+u_printf("%d sentence(s) in %s\n", txtin->nb_automata, txtname);
 autalmot_t* pattern=load_grammar_automaton(patternname);
 if (pattern==NULL) {
    fatal_error("Unable to load '%s' automaton\n", patternname);
@@ -133,9 +133,9 @@ static void add_limphrase(autalmot_t * A) {
 
   static unichar S[] = { '{', 'S', '}', 0 };
 
-  int idx = language_add_form(LANG, S);
+  int idx = language_add_form(LANGUAGE, S);
 
-  symbol_t * LIM = symbol_PUNC_new(LANG, idx);
+  symbol_t * LIM = new_symbol_PUNC(LANGUAGE, idx);
 
   int initBis   = autalmot_add_state(A);
   int nouvFinal = autalmot_add_state(A, AUT_TERMINAL);
@@ -156,7 +156,7 @@ static void add_limphrase(autalmot_t * A) {
     }
   }
 
-  symbol_delete(LIM);
+  free_symbol(LIM);
 }
 
 void print_match(stack_type * stack, FILE * f) {

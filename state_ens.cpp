@@ -210,11 +210,11 @@ static inline void replace_symbol(symbol_t * a, symbol_t * b) {
 
   symbol_t * next = a->next;
 
-  symbol_empty(a);
-  symbol_copy(a, b);
-  symbol_delete(b);
+  empty_symbol(a);
+  copy_symbol(a, b);
+  free_symbol(b);
 
-  symbols_concat(a, next);
+  concat_symbols(a, next);
 }
 
 
@@ -261,13 +261,13 @@ static void symbol_dev_symbol(symbol_t * a, symbol_t * b) {
   }
 
 
-  symbol_t * nouvo = symbol_dup(i);
+  symbol_t * nouvo = dup_symbol(i);
 
-  symbols_concat(nouvo, aminusb);
+  concat_symbols(nouvo, aminusb);
 
   replace_symbol(a, nouvo);
 
-  symbols_concat(i, bminusa);
+  concat_symbols(i, bminusa);
 
   replace_symbol(b, i);
 

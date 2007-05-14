@@ -21,137 +21,203 @@
 
 #include "utils.h"
 #include "ustring.h"
+#include "Error.h"
 
 #define MAXBUF 1024
 
 
-ustring_t * ustring_new(const unichar * str) {
-
-  unichar empty[] = { 0 };
-  ustring_t * res = (ustring_t *) xmalloc(sizeof(ustring_t));
-
-  if (str == NULL) { str = empty; }
-
-  res->len = u_strlen(str);
-  res->size = res->len + 1;
-
-  res->str = (unichar *) xmalloc(res->size * sizeof(unichar));
-
-  for (int i = 0; i < res->size; i++) { res->str[i] = str[i]; }
-
-  return res;
+/**
+ * Allocates, initializes and returns a Ustring representing the given string.
+ */
+Ustring* new_Ustring(const unichar* str) {
+Ustring* res=(Ustring*)malloc(sizeof(Ustring));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_Ustring\n");
 }
-
-ustring_t * ustring_new(int size) {
-
-  ustring_t * res = (ustring_t *) xmalloc(sizeof(ustring_t));
-
-  if (size <= 0) { size = 1; }
-
-  res->len  = 0;
-  res->size = size;
-
-  res->str = (unichar *) xmalloc(res->size * sizeof(unichar));
-
-  res->str[0] = 0;
-
-  return res;
+if (str==NULL) {
+   str=U_EMPTY;
+}
+res->len=u_strlen(str);
+res->size=res->len+1;
+res->str=(unichar*)malloc(res->size*sizeof(unichar));
+if (res->str==NULL) {
+   fatal_error("Not enough memory in new_Ustring\n");
+}
+for (int i=0;i<res->size;i++) {
+   res->str[i]=str[i];
+}
+return res;
 }
 
 
-void ustring_delete(ustring_t * ustr) {
-  free(ustr->str);
-  free(ustr);
+/**
+ * Allocates, initializes and returns a Ustring representing the empty string.
+ */
+Ustring* new_Ustring() {
+return new_Ustring((unichar*)NULL);
 }
 
 
-void ustring_resize(ustring_t * ustr, int size) {
-
-  if (size < 1) { size = 1; }
-
-  ustr->str = (unichar *) xrealloc(ustr->str, size * sizeof(unichar));
-
-  if (size < ustr->len) {
-    ustr->len = size - 1;
-    ustr->str[ustr->len] = 0;
-  }
-
-  ustr->size = size;
+/**
+ * Allocates, initializes and returns a Ustring representing the empty string.
+ * The internal buffer is set to the given size.
+ */
+Ustring* new_Ustring(int size) {
+Ustring* res=(Ustring*)malloc(sizeof(Ustring));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_Ustring\n");
+}
+if (size<=0) {
+   size=1;
+}
+res->len=0;
+res->size=size;
+res->str=(unichar*)malloc(res->size*sizeof(unichar));
+if (res->str==NULL) {
+   fatal_error("Not enough memory in new_Ustring\n");
+}
+res->str[0]='\0';
+return res;
 }
 
 
-void ustring_concat(ustring_t * ustr, const unichar * str, int strlen) {
-
-  if (str == NULL || *str == 0 || strlen == 0) { return; }
-
-  int newlen = ustr->len + strlen;
-
-  if (ustr->size < newlen + 1) { ustring_resize(ustr, newlen + 1); }
-
-  for (int i = 0; i < strlen; i++) { ustr->str[ustr->len + i] = str[i]; }
-  ustr->str[newlen] = 0;
-  ustr->len = newlen;
+/**
+ * Frees all the memory associated to the given Ustring.
+ */
+void free_Ustring(Ustring* ustr) {
+if (ustr==NULL) return;
+if (ustr->str!=NULL) free(ustr->str);
+free(ustr);
 }
 
 
-void ustring_concat(ustring_t * ustr, const char * str, int strlen) {
-
-  if (str == NULL || *str == 0 || strlen == 0) { return; }
-
-  int newlen = ustr->len + strlen;
-
-  if (ustr->size < newlen + 1) { ustring_resize(ustr, newlen + 1); }
-
-  for (int i = 0; i < strlen; i++) { ustr->str[ustr->len + i] = str[i]; }
-  ustr->str[newlen] = 0;
-  ustr->len = newlen;
+/**
+ * Resizes th internal buffer of the given Ustring to the given size.
+ * If the size is reduced, then the internal buffer will be truncated
+ * with a '\0' put at size-1. Note that you cannot set a size<1.
+ */
+void resize(Ustring* ustr,int size) {
+if (size<1) {
+   size=1;
+}
+ustr->str=(unichar*)realloc(ustr->str,size*sizeof(unichar));
+if (ustr->str==NULL) {
+   fatal_error("Not enough memory in resize\n");
+}
+if (size<ustr->len) {
+   /* If we truncate the string */
+   ustr->len=size-1;
+   ustr->str[ustr->len]='\0';
+}
+ustr->size=size;
 }
 
 
-int ustring_readline(ustring_t * ustr, FILE * f) {
-
-  unichar buf[MAXBUF];
-  int len = 0;
-
-  ustring_empty(ustr);
-
-  do {
-    len = u_fgets(buf, MAXBUF, f);
-    ustring_concat(ustr, buf, len);
-  } while ((len == MAXBUF - 1) && (buf[len - 1] != '\n'));  /* long line ... */
-
-  return ustr->len;
+/**
+ * Concatenates the given unicode string to the given Ustring. 
+ * 'length' is the number of chars of 'str' to be copied.
+ */
+void u_strcat(Ustring* ustr,const unichar* str,int length) {
+if (str==NULL || str[0]=='\0' || length==0) {
+   /* If there is nothing to concatenate */
+   return;
+}
+int newlen=ustr->len+length;
+if (ustr->size<newlen+1) {
+   /* If necessary, we enlarge the internal buffer */
+   resize(ustr,newlen+1);
+}
+for (int i=0;i<length;i++) {
+   ustr->str[ustr->len+i]=str[i];
+}
+ustr->str[newlen]='\0';
+ustr->len=newlen;
 }
 
 
-
-void ustring_printf(ustring_t * ustr, char * fmt, ...) {
-
-  va_list plist;
-  va_start(plist, fmt);
-  int size = u_vsprintf(NULL,fmt,plist);
-  ustring_resize(ustr, size + 1);
-  va_start(plist, fmt);
-  u_vsprintf(ustr->str, fmt, plist);
-  ustr->len = u_strlen(ustr->str);
-  if (size != ustr->len) { error("ustring_printf: strlen=%d (expected %d)\n", ustr->len, size); }
+/**
+ * Concatenates the given string to the given Ustring. 
+ * 'length' is the number of chars of 'str' to be copied.
+ */
+void u_strcat(Ustring* ustr,const char* str,int length) {
+if (str==NULL || str[0]=='\0' || length==0) {
+   /* If there is nothing to concatenate */
+   return;
+}
+int newlen=ustr->len+length;
+if (ustr->size<newlen+1) {
+   /* If necessary, we enlarge the internal buffer */
+   resize(ustr,newlen+1);
+}
+for (int i=0;i<length;i++) {
+   ustr->str[ustr->len+i]=str[i];
+}
+ustr->str[newlen]='\0';
+ustr->len=newlen;
 }
 
 
-void ustring_concatf(ustring_t * ustr, char * fmt, ...) {
-
-  va_list plist;
-  va_start(plist, fmt);
-
-  int size = u_vsprintf(NULL,fmt,plist) + ustr->len;
-
-  ustring_resize(ustr, size + 1);
-
-  va_start(plist, fmt);
-
-  u_vsprintf(ustr->str + ustr->len, fmt, plist);
-
-  ustr->len = u_strlen(ustr->str);
-
-  if (size != ustr->len) { error("ustring_concatf: strlen=%d (expected %d)\n", ustr->len, size); }
+/**
+ * This function performs a safe read line from the given file.
+ * The line content is copied into the given Ustring, whose previous
+ * content is lost. The length the line read is returned.
+ */
+int readline(Ustring* ustr,Encoding encoding,FILE* f) {
+unichar buf[MAXBUF];
+int len=0;
+empty(ustr);
+do {
+   len=u_fgets(encoding,buf,MAXBUF,f);
+   u_strcat(ustr,buf,len);
+} while ((len==MAXBUF-1) && buf[len-1]!='\n'); /* If we are not at the end of the line... */
+return ustr->len;
 }
+
+
+/**
+ * This function performs a safe read line from the given file.
+ * The line content is copied into the given Ustring, whose previous
+ * content is lost. The length the line read is returned. This function
+ * assumes that the file is UTF16-LE encoded.
+ */
+int readline(Ustring* ustr,FILE* f) {
+return readline(ustr,UTF16_LE,f);
+}
+
+
+/**
+ * The same as u_sprintf, but into a Ustring, whose previous
+ * content is lost.
+ */
+void u_sprintf(Ustring* ustr,char* fmt,...) {
+va_list plist;
+va_start(plist,fmt);
+int size=u_vsprintf(NULL,fmt,plist);
+resize(ustr,size+1);
+va_start(plist,fmt);
+u_vsprintf(ustr->str,fmt,plist);
+ustr->len=u_strlen(ustr->str);
+if (size!=ustr->len) {
+   error("u_sprintf: strlen=%d (expected %d)\n",ustr->len,size);
+}
+}
+
+
+/**
+ * The same as u_sprintf above, except that the printed string
+ * is appended at the end of the given Ustring instead of replacing
+ * its previous content.
+ */
+void u_strcatf(Ustring* ustr,char* fmt,...) {
+va_list plist;
+va_start(plist,fmt);
+int size=u_vsprintf(NULL,fmt,plist)+ustr->len;
+resize(ustr,size+1);
+va_start(plist,fmt);
+u_vsprintf(ustr->str+ustr->len,fmt,plist);
+ustr->len=u_strlen(ustr->str);
+if (size!=ustr->len) {
+   error("u_strcatf: strlen=%d (expected %d)\n",ustr->len,size);
+}
+}
+

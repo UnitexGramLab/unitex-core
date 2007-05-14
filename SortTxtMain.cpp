@@ -476,7 +476,7 @@ if (couple==NULL || REVERSE*strcmp2(s,couple->s)<0) {
    return tmp;
 }
 if (!strcmp2(s,couple->s)) {
-   /* If the string is allready in the list */
+   /* If the string is already in the list */
    if (!REMOVE_DUPLICATES) (couple->n)++;
    return couple;
 }
@@ -688,7 +688,7 @@ if (couple==NULL || REVERSE*u_strcmp(line,couple->s)<0) {
    return tmp;
 }
 if (!u_strcmp(line,couple->s)) {
-   /* If 'line' is allready in the list */
+   /* If 'line' is already in the list */
    if (!REMOVE_DUPLICATES) (couple->n)++;
    return couple;
 }

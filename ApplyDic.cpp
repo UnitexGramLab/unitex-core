@@ -371,7 +371,7 @@ if (current_token[pos_in_current_token]=='\0') {
       /* If this node is final */
       token_sequence[pos_token_sequence]=-1;
       /* We look if the compound word has already been matched */
-      int w=was_allready_in_tct_hash(token_sequence,info->tct_h,priority);
+      int w=was_already_in_tct_hash(token_sequence,info->tct_h,priority);
       if (w==0 || w==priority) {
          /* If the compound has not already been matched by a dictionary
           * with a greater priority */
@@ -675,7 +675,7 @@ while (l!=NULL) {
          /* If it is a compound word, we turn it into a token sequence 
           * ended by -1 */
          build_token_sequence(entry->inflected,info->tokens,token_tab_coumpounds);
-         int w=was_allready_in_tct_hash(token_tab_coumpounds,info->tct_h,priority);
+         int w=was_already_in_tct_hash(token_tab_coumpounds,info->tct_h,priority);
          if (w==0 || w==priority) {
             /* We save the compound word only if it hasn't already been processed
              * with a greater priority */

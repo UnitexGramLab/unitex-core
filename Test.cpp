@@ -39,11 +39,22 @@
 int main(int argc,char *argv[]) {
 setBufferMode();
 
-char tmp[256];
-int a,b,c;
-strcpy(tmp," 11\t \n22\n\n45:");
-int res=sscanf(tmp,"%d\n%d\n%d:",&a,&b,&c);
-u_printf("res=%d:\na=%d\nb=%d\nc=%d\n",res,a,b,c);
+struct string_hash_ptr* hash=new_string_hash_ptr(2);
+char* a=strdup("aaaaa");
+char* b=strdup("bbbbb");
+char* c=strdup("ccccc");
+u_printf("index=%d\n",get_value_index(u_strdup("AAA"),hash,INSERT_IF_NEEDED,a));
+u_printf("index=%d\n",get_value_index(u_strdup("BBB"),hash,INSERT_IF_NEEDED,b));
+u_printf("index=%d\n",get_value_index(u_strdup("CCC"),hash,DONT_INSERT,c));
+
+u_printf("size=%d  capacity=%d\n",hash->hash->size,hash->capacity);
+
+u_printf("index=%d\n",get_value_index(u_strdup("AAA"),hash,INSERT_IF_NEEDED,a));
+u_printf("index=%d\n",get_value_index(u_strdup("BBB"),hash,INSERT_IF_NEEDED,b));
+u_printf("index=%d\n",get_value_index(u_strdup("CCC"),hash,DONT_INSERT,c));
+
+u_printf("size=%d  capacity=%d\n",hash->hash->size,hash->capacity);
+
 return 0;
 }
 

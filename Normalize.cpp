@@ -132,7 +132,7 @@ get_value_index(key,replacement_rules,INSERT_IF_NEEDED,value);
 char tmp_file[FILENAME_MAX];
 get_extension(argv[1],tmp_file);
 if (!strcmp(tmp_file,".snt")) {
-   /* If the file to process has allready the .snt extension, we temporary rename it to
+   /* If the file to process has already the .snt extension, we temporary rename it to
     * .snt.normalizing */
    strcpy(tmp_file,argv[1]);
    strcat(tmp_file,".normalizing");

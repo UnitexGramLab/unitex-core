@@ -58,7 +58,7 @@ free(l);
 /** 
  * Adds a match to the global list of matches. The function takes into
  * account the match policy. For instance, we don't take [2;3] into account
- * if we are in longest match mode and if we allready have [2;5].
+ * if we are in longest match mode and if we already have [2;5].
  * 
  * # Changed to allow different outputs in merge/replace
  * mode when the grammar is an ambiguous transducer (S.N.) */
@@ -134,7 +134,7 @@ switch (p->match_policy) {
    case SHORTEST_MATCHES:
       /* We put the new match at the beginning of the list, but before, we
        * test if the match we want to add may not be discarded because of
-       * a shortest match that would allready be in the list. By the way,
+       * a shortest match that would already be in the list. By the way,
        * we eliminate matches that are longer than this one, if any. */
       int dont_add_match=0;
       p->match_list=eliminate_longer_matches(p->match_list,start,end,output,&dont_add_match,p);
@@ -177,7 +177,7 @@ if (start>=ptr->start && end<=ptr->end) {
    /* If the new match is shorter (or of equal length) than the current one
     * in the list, we replace the match in the list by the new one */
    if (*dont_add_match) {
-      /* If we have allready noticed that the match mustn't be added
+      /* If we have already noticed that the match mustn't be added
        * to the list, we delete the current list element */
       l=ptr->next;
       free_match_list_element(ptr);

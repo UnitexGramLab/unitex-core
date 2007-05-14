@@ -39,7 +39,7 @@
 
 #include "Unicode.h"
 #include "Copyright.h"
-#include "language.h"
+#include "LanguageDefinition.h"
 #include "autalmot.h"
 #include "compgr.h"
 #include "utils.h"
@@ -151,7 +151,7 @@ int main(int argc, char ** argv ) {
 
   if (! langname) { fatal_error("No language specified\n"); }
 
-  language_t * lang = language_load(langname);
+  language_t * lang = load_language_definition(langname);
 
   set_current_language(lang);
 

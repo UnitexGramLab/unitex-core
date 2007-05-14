@@ -19,79 +19,166 @@
   *
   */
 
-#ifndef _USTRING_H_
-#define _USTRING_H_
+#ifndef Ustring_H
+#define Ustring_H
 
 #include "Unicode.h"
-
-typedef struct ustring_t {
-
-  unichar * str;
-  int size;
-  int len;
-
-} ustring_t;
-
-ustring_t * ustring_new(const unichar * str = NULL);
-ustring_t * ustring_new(int size);
-void ustring_delete(ustring_t * ustr);
-
-static inline void ustring_empty(ustring_t * ustr);
-
-void ustring_resize(ustring_t * ustr, int size);
-
-static inline void ustring_copy(ustring_t * ustr, const unichar * str);
-static inline void ustring_copy(ustring_t * dest, const ustring_t * src);
-static inline void ustring_copy(ustring_t * ustr, const char * str);
-
-void ustring_concat(ustring_t * ustr, const unichar * str, int strlen);
-static inline void ustring_concat(ustring_t * ustr, const unichar * str);
-static inline void ustring_concat(ustring_t * a, const ustring_t * b);
-
-void ustring_concat(ustring_t * ustr, const char * str, int strlen);
-static inline void ustring_concat(ustring_t * ustr, const char * str);
-
-static inline void ustring_chomp_nl(ustring_t * ustr);
-
-void ustring_concatf(ustring_t * ustr, char * fmt, ...);
-void ustring_printf(ustring_t * ustr, char * fmt, ...);
+#include "Error.h"
 
 
-/* read a complete line from f */
+/**
+ * This library provides functions for safely manipulating
+ * unicode strings.
+ * 
+ * Author: Olivier Blanc
+ * Modified by Sébastien Paumier
+ */
 
-int ustring_readline(ustring_t * ustr, FILE * f);
+/**
+ * Here is the type we use for manipulating safe strings.
+ */
+typedef struct {
+   /* The unichar buffer */
+   unichar* str;
+   
+   /* Its maximum capacity */
+   int size;
+   
+   /* The actual length of the string being represented */
+   int len;
+} Ustring;
 
 
 
+Ustring* new_Ustring(const unichar*);
+Ustring* new_Ustring();
+Ustring* new_Ustring(int);
+void free_Ustring(Ustring * ustr);
 
-/* inline implementations */
+static inline void empty(Ustring * ustr);
+void resize(Ustring * ustr, int size);
 
-static inline void ustring_empty(ustring_t * ustr) { ustr->str[0] = 0; ustr->len = 0; }
+void u_strcat(Ustring*,const unichar*,int);
+void u_strcat(Ustring*,const char*,int);
+static inline void u_strcat(Ustring*,const Ustring*);
+static inline void u_strcat(Ustring*,const unichar*);
+static inline void u_strcat(Ustring*,const char*);
 
-static inline void ustring_concat(ustring_t * ustr, const unichar * str) { ustring_concat(ustr, str, u_strlen(str)); }
-static inline void ustring_concat(ustring_t * a, const ustring_t * b)    { ustring_concat(a, b->str, b->len); }
+static inline void u_strcpy(Ustring*,const Ustring*);
+static inline void u_strcpy(Ustring*,const unichar*);
+static inline void u_strcpy(Ustring*,const char*);
 
-static inline void ustring_copy(ustring_t * ustr, const unichar * str) {
-  ustring_empty(ustr);
-  ustring_concat(ustr, str);
+static inline void chomp_new_line(Ustring*);
+
+void u_sprintf(Ustring*,char*,...);
+void u_strcatf(Ustring*,char*,...);
+
+int readline(Ustring*,Encoding,FILE*);
+int readline(Ustring*,FILE*);
+
+
+
+
+/* Inline implementations */
+
+/**
+ * Empties the given Ustring.
+ */
+static inline void empty(Ustring* ustr) {
+if (ustr==NULL) {
+   fatal_error("Cannot empty a NULL Ustring\n");
+}
+ustr->str[0]=0;
+ustr->len=0;
 }
 
-static inline void ustring_concat(ustring_t * ustr, const char * str) { ustring_concat(ustr, str, strlen(str)); }
 
-static inline void ustring_copy(ustring_t * dest, const ustring_t * src) {
-  ustring_empty(dest);
-  ustring_concat(dest, src);
+/**
+ * Concatenates the given unicode string to the given Ustring. 
+ */
+static inline void u_strcat(Ustring* ustr,const unichar* str) {
+if (ustr==NULL) {
+   fatal_error("NULL Ustring error in u_strcat\n");
+}
+if (str==NULL || str[0]=='\0') return;
+u_strcat(ustr,str,u_strlen(str));
 }
 
 
-static inline void ustring_copy(ustring_t * ustr, const char * str) {
-  ustring_empty(ustr);
-  ustring_concat(ustr, str);
+/**
+ * Concatenates the given Utring to the given Ustring. 
+ */
+static inline void u_strcat(Ustring* a,const Ustring* b) {
+if (a==NULL || b==NULL) {
+   fatal_error("NULL Ustring error in u_strcat\n");
+}
+if (b->str==NULL || b->str[0]=='\0') return;
+u_strcat(a,b->str,b->len);
 }
 
 
-static inline void ustring_chomp_nl(ustring_t * ustr) {
-  if (ustr->str[ustr->len - 1] == '\n') { ustr->len--; ustr->str[ustr->len] = 0; }
+/**
+ * Concatenates the given string to the given Ustring. 
+ */
+static inline void u_strcat(Ustring* ustr,const char* str) {
+if (ustr==NULL) {
+   fatal_error("NULL Ustring error in u_strcat\n");
+}
+if (str==NULL || str[0]=='\0') return;
+u_strcat(ustr,(char*)str,strlen(str));
+}
+
+
+/**
+ * Copies 'src' content in to the given Ustring, whose previous content
+ * is lost.
+ */
+static inline void u_strcpy(Ustring* dest,const unichar* src) {
+if (dest==NULL) {
+   fatal_error("NULL Ustring error in u_strcpy\n");
+}
+empty(dest);
+u_strcat(dest,src);
+}
+
+
+/**
+ * Copies 'src' content in to the given Ustring, whose previous content
+ * is lost.
+ */
+static inline void u_strcpy(Ustring* dest,const Ustring* src) {
+if (dest==NULL || src==NULL) {
+   fatal_error("NULL Ustring error in u_strcpy\n");
+}
+empty(dest);
+u_strcat(dest,src);
+}
+
+
+/**
+ * Copies 'src' content in to the given Ustring, whose previous content
+ * is lost.
+ */
+static inline void u_strcpy(Ustring* dest, const char* src) {
+if (dest==NULL) {
+   fatal_error("NULL Ustring error in u_strcpy\n");
+}
+empty(dest);
+u_strcat(dest,src);
+}
+
+
+/**
+ * Removes the '\n' at the end of the given Ustring, if any.
+ */
+static inline void chomp_new_line(Ustring* ustr) {
+if (ustr==NULL) {
+   fatal_error("NULL Ustring error in chomp_new_line\n");
+}
+if (ustr->len>0 && ustr->str[ustr->len-1]=='\n') {
+   ustr->len--;
+   ustr->str[ustr->len]='\0';
+}
 }
 
 #endif

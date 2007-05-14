@@ -189,7 +189,7 @@ return n;
 FILE* u_fopen(Encoding encoding,char* name,char* MODE) {
 FILE* f;
 if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
-   /* If we are in APPEND or MODIFY mode, we check first if the file allready exists */
+   /* If we are in APPEND or MODIFY mode, we check first if the file already exists */
    f=fopen(name,U_READ);
    if (f!=NULL) {
       /* If the file exists, we close it and reopen it in APPEND mode */
@@ -932,7 +932,7 @@ while (*format) {
          }
          
          /* If we have %n, we must store the number of characters that have
-          * allready been printed into the given int*. */
+          * already been printed into the given int*. */
          case 'n': {
             int *res=va_arg(list,int*);
             *res=n_printed;
@@ -1035,9 +1035,9 @@ return n;
  * It also supports:
  * - %C for printing a unicode character
  * - %S for printing a unicode string
- * - %HS for printing a unicode string in HTML (see ize)
+ * - %HS for printing a unicode string in HTML (see htmlize)
  * - %R for printing the reversed of a unicode string
- * - %HR for printing the reversed of a unicode string in HTML (see ize)
+ * - %HR for printing the reversed of a unicode string in HTML (see htmlize)
  * 
  * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
@@ -1130,7 +1130,7 @@ while (*format) {
          }
          
          /* If we have %n, we must store the number of characters that have
-          * allready been printed into the given int*. */
+          * already been printed into the given int*. */
          case 'n': {
             int *res=va_arg(list,int*);
             *res=n_printed;
@@ -1267,7 +1267,7 @@ while (*format) {
          /* If the EOF occurs before the first conversion, we return EOF */
          return EOF;
       }
-      /* Otherwise, we return the number of variables that have allready been read */
+      /* Otherwise, we return the number of variables that have already been read */
       return n_variables;
    }
    /* Then we deal with the separators. If the current format char is a separator,
@@ -1303,7 +1303,7 @@ while (*format) {
          /* If the EOF occurs before the first conversion, we return EOF */
          return EOF;
       }
-      /* Otherwise, we return the number of variables that have allready been read */
+      /* Otherwise, we return the number of variables that have already been read */
       return n_variables;
    }
    if (*format=='%') {
@@ -1495,7 +1495,7 @@ while (*format) {
             /* If the EOF occurs before the first conversion, we return EOF */
             return EOF;
          }
-         /* Otherwise, we return the number of variables that have allready been read */
+         /* Otherwise, we return the number of variables that have already been read */
          return n_variables;
       }
    } else {

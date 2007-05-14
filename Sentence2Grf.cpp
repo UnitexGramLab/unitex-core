@@ -398,7 +398,7 @@ free(g);
 
 
 /**
- * Adds a transition to the given grf state, if not allready present.
+ * Adds a transition to the given grf state, if not already present.
  */
 void add_transition_to_grf_state(struct grf_state* state,int dest_state) {
 state->l=sorted_insert(dest_state,state->l);

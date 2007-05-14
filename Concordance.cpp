@@ -598,7 +598,7 @@ void extract_right_context(int pos,unichar* right,struct text_tokens* tokens,
                            struct buffer* buffer) {
 right[0]='\0';
 if (match_length>=option.right_context || pos+1>=buffer->size) {
-   /* We return if we have allready overpassed the right context length
+   /* We return if we have already overpassed the right context length
     * with the matched sequence, or if there is no right context because
     * we are at the end of the text. */
     return;

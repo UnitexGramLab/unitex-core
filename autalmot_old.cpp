@@ -47,14 +47,14 @@ static tTransitions * * copie_tab_etats(tTransitions * *tabOrig,etat nbEtats) ;
 tSymbole * tSymbole_new() {
   tSymbole * res = (tSymbole *) xmalloc(sizeof(tSymbole));
   res->sorteSymbole = UNIVERSEL;
-  res->flex = ustring_new();
+  res->flex = new_Ustring();
   res->canonique = NULL;
   return res;
 }
 
 void symbole_delete(tSymbole * symb) {
   if (! symb) { return; }
-  ustring_delete(symb->flex);
+  free_Ustring(symb->flex);
   free(symb->canonique); 
   free(symb);
 }
@@ -62,7 +62,7 @@ void symbole_delete(tSymbole * symb) {
 
 void symbole_copy(tSymbole * dest, tSymbole * src) {
   dest->sorteSymbole = src->sorteSymbole;
-  ustring_copy(dest->flex, src->flex);
+  u_strcpy(dest->flex, src->flex);
   //u_strcpy(dest->flechie, src->flechie);
   dest->canonique = u_strdup(src->canonique);
   u_strcpy(dest->gramm, src->gramm);
@@ -80,7 +80,7 @@ tSymbole * symbole_dup(tSymbole * src) {
 
   dest->sorteSymbole = src->sorteSymbole;
   //u_strcpy(dest->flechie, src->flechie);
-  ustring_copy(dest->flex, src->flex);
+  u_strcpy(dest->flex, src->flex);
   u_strcpy(dest->gramm, src->gramm);
   dest->canonique = u_strdup(src->canonique);
 
@@ -125,7 +125,7 @@ tSymbole * alphabet_add(tAlphMot * alphabet, tSymbole * symb) {
   }
 
   tSymbole * addr = alphabet->symb + alphabet->nbSymboles;
-  addr->flex = ustring_new();
+  addr->flex = new_Ustring();
   symbole_copy(addr, symb);
 
   alphabet->nbSymboles++;
@@ -390,7 +390,7 @@ tSymbole * copieSymbole(tSymbole * Source) {
 
   case ATOME:
   case INDETERMINE:
-    ustring_concat(s->flex, Source->flex);
+    u_strcat(s->flex, Source->flex);
     /*
     if (1 + u_strlen(Source->flechie) >= maxMot) { fatal_error("Erreur interne [copieSymbole], f.f. trop longue\n"); }
     u_strcpy(s->flechie, Source->flechie);

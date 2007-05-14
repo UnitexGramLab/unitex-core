@@ -51,25 +51,25 @@
 
 static symbol_t * LEXIC_minus_transitions(transition_t * trans) {
 
-  symbol_t * TAB[LANG->POSs->nbelems];
+  symbol_t * TAB[LANGUAGE->POSs->size];
 
   int i;
-  for (i = 0; i < LANG->POSs->nbelems; i++) {
-    TAB[i] = symbol_new((POS_t *) LANG->POSs->tab[i]);
+  for (i = 0; i < LANGUAGE->POSs->size; i++) {
+    TAB[i] = new_symbol_POS((POS_t *) LANGUAGE->POSs->value[i]);
   }
 
   while (trans) {
 
     if (trans->label->type == LEXIC) {
-      for (i = 0; i < LANG->POSs->nbelems; i++) {
-	symbols_delete(TAB[i]);
+      for (i = 0; i < LANGUAGE->POSs->size; i++) {
+	free_symbols(TAB[i]);
       }
       return NULL;
     }
 
-    symbol_t * minus = symbols_minus_symbol(TAB[trans->label->POS->idx], trans->label);
-    symbols_delete(TAB[trans->label->POS->idx]);
-    TAB[trans->label->POS->idx] = minus;
+    symbol_t * minus = symbols_minus_symbol(TAB[trans->label->POS->index], trans->label);
+    free_symbols(TAB[trans->label->POS->index]);
+    TAB[trans->label->POS->index] = minus;
 
     trans = trans->next;
   }
@@ -78,8 +78,8 @@ static symbol_t * LEXIC_minus_transitions(transition_t * trans) {
   res.next = NULL;
   symbol_t * end = & res;
 
-  for (i = 0; i < LANG->POSs->nbelems; i++) {
-    symbols_concat(end, TAB[i], & end);
+  for (i = 0; i < LANGUAGE->POSs->size; i++) {
+    concat_symbols(end, TAB[i], & end);
   }
 
   return res.next;
@@ -101,7 +101,7 @@ void autalmot_complementation2(autalmot_t * A) {
       symbol_t * s = LEXIC_minus_transitions(A->states[q].trans);
       if (s) {
 	autalmot_add_trans(A, q, s, nouvo);
-	symbols_delete(s);
+	free_symbols(s);
 	// A->states[q].defto = nouvo;
       }
     }

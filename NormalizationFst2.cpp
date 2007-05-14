@@ -19,75 +19,92 @@
   *
   */
 
-//---------------------------------------------------------------------------
-
-#include "utils.h"
-#include "Normalization_transducer.h"
-//---------------------------------------------------------------------------
+#include "NormalizationFst2.h"
+#include "Error.h"
 
 
-struct noeud_arbre_normalization* new_noeud_arbre_normalization() {
-struct noeud_arbre_normalization* tmp;
-tmp=(struct noeud_arbre_normalization*)malloc(sizeof(struct noeud_arbre_normalization));
-tmp->liste_arrivee=NULL;
-tmp->trans=NULL;
-return tmp;
+/**
+ * This structure represents a list of pairs (output,normalization tree node).
+ * It is used during the exploration of the normalization fst2. It must not
+ * be visible from the outside.
+ */
+struct norm_info {
+   unichar* output;
+   struct normalization_tree* node;
+   struct norm_info* next;
+};
+
+
+void free_normalization_tree_transition(struct normalization_tree_transition*);
+
+
+
+/**
+ * Allocates, initializes and returns a new normalization tree node.
+ */
+struct normalization_tree* new_normalization_tree() {
+struct normalization_tree* n=(struct normalization_tree*)malloc(sizeof(struct normalization_tree));
+if (n==NULL) {
+   fatal_error("Not enough memory in new_normalization_tree\n");
+}
+n->outputs=NULL;
+n->trans=NULL;
+return n;
 }
 
 
-struct trans_arbre_normalization* new_trans_arbre_normalization(int token) {
-struct trans_arbre_normalization* tmp;
-tmp=(struct trans_arbre_normalization*)malloc(sizeof(struct trans_arbre_normalization));
+/**
+ * Allocates, initializes and returns a new normalization tree transition.
+ */
+struct normalization_tree_transition* new_normalization_tree_transition(int token,
+                                                    struct normalization_tree* dest_node,
+                                                    struct normalization_tree_transition* next) {
+struct normalization_tree_transition* tmp;
+tmp=(struct normalization_tree_transition*)malloc(sizeof(struct normalization_tree_transition));
+if (tmp==NULL) {
+   fatal_error("Not enough memory in new_normalization_tree_transition\n");
+}
 tmp->token=token;
-tmp->s=NULL;
-tmp->arr=NULL;
-tmp->suivant=NULL;
+tmp->node=dest_node;
+tmp->next=next;
 return tmp;
 }
 
 
-
-struct trans_arbre_normalization* new_trans_arbre_normalization_string(unichar* s) {
-struct trans_arbre_normalization* tmp;
-tmp=(struct trans_arbre_normalization*)malloc(sizeof(struct trans_arbre_normalization));
-tmp->token=-1;
-tmp->s=u_strdup(s);
-tmp->arr=NULL;
-tmp->suivant=NULL;
-return tmp;
-}
-
-
-void free_noeud_arbre_normalization(struct noeud_arbre_normalization* n) {
+/**
+ * Frees all the memory associated to the given normalization tree.
+ * Note that it assumes that transitions are tagged with token numbers.
+ */
+void free_normalization_tree(struct normalization_tree* n) {
 if (n==NULL) return;
-free_list_ustring(n->liste_arrivee);
-free_trans_arbre_normalization(n->trans);
+free_list_ustring(n->outputs);
+free_normalization_tree_transition(n->trans);
 free(n);
 }
 
 
-void free_trans_arbre_normalization(struct trans_arbre_normalization* t) {
-struct trans_arbre_normalization* tmp;
+/**
+ * Frees all the memory associated to the given normalization tree transition.
+ * Note that it assumes that transitions are tagged with token numbers.
+ */
+void free_normalization_tree_transition(struct normalization_tree_transition* t) {
+struct normalization_tree_transition* tmp;
 while (t!=NULL) {
-  tmp=t;
-  if (tmp->s!=NULL) {
-     free(tmp->s);
-  }
-  free_noeud_arbre_normalization(tmp->arr);
-  t=t->suivant;
-  free(tmp);
+   free_normalization_tree(t->node);
+   tmp=t;
+   t=t->next;
+   free(tmp);
 }
 }
 
 
-
-//
-// this function looks for a transition by a token represented by an int
-//
-struct trans_arbre_normalization* get_trans_arbre_normalization(int n,struct trans_arbre_normalization* t) {
+/**
+ * This function looks for a transition tagged with the given token number.
+ */
+struct normalization_tree_transition* get_transition(int token,struct normalization_tree_transition* t) {
 if (t==NULL) return NULL;
-if (t->token==n) return t;
-return get_trans_arbre_normalization(n,t->suivant);
+if (t->token==token) return t;
+return get_transition(token,t->next);
 }
 
 
@@ -95,138 +112,137 @@ return get_trans_arbre_normalization(n,t->suivant);
 //
 // this function looks for a transition by a token represented by a string
 //
-struct trans_arbre_normalization* get_trans_arbre_normalization_string(unichar* s,struct trans_arbre_normalization* t) {
+struct normalization_tree_transition* get_trans_arbre_normalization_string(unichar* s,struct normalization_tree_transition* t) {
 if (t==NULL) return NULL;
 if (!u_strcmp(t->s,s)) {
    return t;
 }
-return get_trans_arbre_normalization_string(s,t->suivant);
+return get_trans_arbre_normalization_string(s,t->next);
 }
 
 
-
-struct temp_list* new_temp_list(unichar* output,struct noeud_arbre_normalization* n) {
-struct temp_list* t;
-t=(struct temp_list*)malloc(sizeof(struct temp_list));
+/**
+ * Allocates, initializes and returns a new norm_info structure.
+ */
+struct norm_info* new_norm_info(unichar* output,struct normalization_tree* n) {
+struct norm_info* t=(struct norm_info*)malloc(sizeof(struct norm_info));
+if (t==NULL) {
+   fatal_error("Not enough memory in new_norm_info\n");
+}
 t->output=u_strdup(output);
-t->arr=n;
-t->suivant=NULL;
+t->node=n;
+t->next=NULL;
 return t;
 }
 
 
-
-struct temp_list* inserer_dans_temp_list(unichar* output,
-                                         struct noeud_arbre_normalization* n,
-                                         struct temp_list* l) {
-if (l==NULL) return new_temp_list(output,n);
-if (l->arr==n && !u_strcmp(l->output,output)) return l;
-l->suivant=inserer_dans_temp_list(output,n,l->suivant);
+/**
+ * Inserts the given (output,node) couple in the given list, if not
+ * already present.
+ */
+struct norm_info* insert_in_norm_info_list(unichar* output,
+                                           struct normalization_tree* n,
+                                           struct norm_info* l) {
+if (l==NULL) return new_norm_info(output,n);
+if (l->node==n && !u_strcmp(l->output,output)) return l;
+l->next=insert_in_norm_info_list(output,n,l->next);
 return l;
 }
 
 
-
-void free_temp_list(struct temp_list* t) {
+/**
+ * Frees all the memory associated to the given norm_info list.
+ */
+void free_norm_info(struct norm_info* t) {
 if (t==NULL) return;
 if (t->output!=NULL) free(t->output);
 free(t);
 }
 
 
-//
-// returns 1 if the string contains only spaces, 0 else
-//
+/**
+ * Returns 1 if the string only contains spaces; 0 otherwise.
+ */
 int only_spaces(unichar* s) {
 int i=0;
 while (s[i]!='\0') {
-  if (s[i]!=' ') return 0;
-  i++;
+   if (s[i]!=' ') return 0;
+   i++;
 }
 return 1;
 }
 
-void explorer_automate_normalization(Fst2*,int,
-                                     struct noeud_arbre_normalization*,
-                                     struct string_hash*,unichar*,
-                                     Alphabet*);
 
-
-//
-// this function explores a sub-graph, considering tokens as int
-//
-void explorer_sub_automate_normalization(Fst2* automate,int n,
-                                     struct noeud_arbre_normalization* noeud_normalization,
-                                     struct string_hash* hash,unichar* output,
-                                     Alphabet* alph,struct temp_list** TEMP_LIST) {
-Fst2State etat;
-etat=automate->states[n];
-if (is_final_state(etat)) {
-   // if we are in a final state
-   (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
+/**
+ * This function explore the normalization grammar to construct
+ * the normalization tree. If the 'list' parameter is NULL, then we
+ * are in the main call to the main graph; otherwise, we are within
+ * a subgraph.
+ */
+void explore_normalization_fst2(Fst2* fst2,int current_state,
+                                struct normalization_tree* node,
+                                struct string_hash* tokens,unichar* output,
+                                Alphabet* alph,struct norm_info** list) {
+Fst2State state=fst2->states[current_state];
+if (is_final_state(state)) {
+   /* If we are in a final state, we behave differently if we are in a subgraph
+    * or in the main call to the main graph. */
+   if (list!=NULL) {
+      (*list)=insert_in_norm_info_list(output,node,(*list));
+   }
+   else {
+      node->outputs=sorted_insert(output,node->outputs);
+   }
 }
-struct fst2Transition* trans;
-trans=etat->transitions;
-unichar tmp[1000];
+Fst2Transition trans=state->transitions;
+unichar tmp[1024];
 while (trans!=NULL) {
    if (trans->tag_number<0) {
-      // case of a sub-graph
-      struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
-                                        hash,output,alph,&TMP);
-      while (TMP!=NULL) {
-         // we continue to explore the current automaton
-         explorer_sub_automate_normalization(automate,trans->state_number,TMP->arr,
-                                        hash,TMP->output,alph,TEMP_LIST);
-         struct temp_list* z=TMP;
-         TMP=TMP->suivant;
-         free_temp_list(z);
+      /* Case of a subgraph call */
+      struct norm_info* tmp_list=NULL;
+      explore_normalization_fst2(fst2,fst2->initial_states[-(trans->tag_number)],node,
+                                        tokens,output,alph,&tmp_list);
+      while (tmp_list!=NULL) {
+         /* We continue to explore the current graph */
+         explore_normalization_fst2(fst2,trans->state_number,tmp_list->node,
+                                        tokens,tmp_list->output,alph,list);
+         struct norm_info* z=tmp_list;
+         tmp_list=tmp_list->next;
+         free_norm_info(z);
       }
    }
    else {
-      // normal transition
-      Fst2Tag etiq;
-      etiq=automate->tags[trans->tag_number];
+      /* If we have a normal transition */
+      Fst2Tag tag=fst2->tags[trans->tag_number];
       u_strcpy(tmp,output);
       u_strcat(tmp," ");
-      if (etiq->output!=NULL && etiq->output[0]!='\0'
-          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
-         // we append the output if it exists and is not epsilon
-         u_strcat(tmp,etiq->output);
+      if (tag->output!=NULL && tag->output[0]!='\0' && u_strcmp(tag->output,"<E>") && !only_spaces(tag->output)) {
+         /* We append the output if it exists and is not epsilon */
+         u_strcat(tmp,tag->output);
       }
-      if (!u_strcmp(etiq->input,"<E>")) {
-         // case of an epsilon-transition
-           struct trans_arbre_normalization* trans_norm;
-           trans_norm=get_trans_arbre_normalization(EMPTY_TOKEN,noeud_normalization->trans);
-           if (trans_norm==NULL) {
-              // if the transition does not exist in the tree, we create it
-              trans_norm=new_trans_arbre_normalization(EMPTY_TOKEN);
-              // we also create the destination node
-              trans_norm->arr=new_noeud_arbre_normalization();
-              trans_norm->suivant=noeud_normalization->trans;
-              noeud_normalization->trans=trans_norm;
-           }
-           explorer_sub_automate_normalization(automate,trans->state_number,trans_norm->arr,
-                                           hash,tmp,alph,TEMP_LIST);
-      }
-      else {
-         struct list_int* liste=get_token_list_for_sequence(etiq->input,alph,hash);
-         while (liste!=NULL) {
-           struct trans_arbre_normalization* trans_norm;
-           trans_norm=get_trans_arbre_normalization(liste->n,noeud_normalization->trans);
-           if (trans_norm==NULL) {
-              // if the transition does not exist in the tree, we create it
-              trans_norm=new_trans_arbre_normalization(liste->n);
-              // we also create the destination node
-              trans_norm->arr=new_noeud_arbre_normalization();
-              trans_norm->suivant=noeud_normalization->trans;
-              noeud_normalization->trans=trans_norm;
-           }
-           explorer_sub_automate_normalization(automate,trans->state_number,trans_norm->arr,
-                                           hash,tmp,alph,TEMP_LIST);
-           struct list_int* L=liste;
-           liste=liste->next;
-           free(L);
+      if (!u_strcmp(tag->input,"<E>")) {
+         /* If we have an epsilon transition, we go on in the fst2, but
+          * we don't move in the normalization tree */
+         explore_normalization_fst2(fst2,trans->state_number,node,tokens,tmp,alph,list);
+      } else {
+         /* If we have a normal transition, we explore all the tokens that match it */
+         struct list_int* l=get_token_list_for_sequence(tag->input,alph,tokens);
+         while (l!=NULL) {
+            /* Then, we add a branch in the normalization tree for 
+             * each token. Note that it may introduce combinatory explosions
+             * if the the fst2 matches large sequences */
+            struct normalization_tree_transition* trans_norm;
+            trans_norm=get_transition(l->n,node->trans);
+            if (trans_norm==NULL) {
+               /* If the transition does not exist in the tree, we create it */
+               trans_norm=new_normalization_tree_transition(l->n,new_normalization_tree(),node->trans);
+               node->trans=trans_norm;
+            }
+            explore_normalization_fst2(fst2,trans->state_number,trans_norm->node,
+                                           tokens,tmp,alph,list);
+            struct list_int* L=l;
+            l=l->next;
+            free(L);
          }
       }
    }
@@ -235,254 +251,28 @@ while (trans!=NULL) {
 }
 
 
-
-//
-// this function explores a sub-graph, considering tokens as strings
-//
-void explorer_sub_automate_normalization_string(Fst2* automate,int n,
-                                     struct noeud_arbre_normalization* noeud_normalization,
-                                     unichar* output,struct temp_list** TEMP_LIST) {
-Fst2State etat;
-etat=automate->states[n];
-if (is_final_state(etat)) {
-   // if we are in a final state
-   (*TEMP_LIST)=inserer_dans_temp_list(output,noeud_normalization,(*TEMP_LIST));
-}
-struct fst2Transition* trans;
-trans=etat->transitions;
-unichar tmp[1000];
-while (trans!=NULL) {
-   if (trans->tag_number<0) {
-      // case of a sub-graph
-      struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization_string(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
-                                        output,&TMP);
-      while (TMP!=NULL) {
-         // we continue to explore the current automaton
-         explorer_sub_automate_normalization_string(automate,trans->state_number,TMP->arr,
-                                        TMP->output,TEMP_LIST);
-         struct temp_list* z=TMP;
-         TMP=TMP->suivant;
-         free_temp_list(z);
-      }
-   }
-   else {
-      // normal transition
-      Fst2Tag etiq;
-      etiq=automate->tags[trans->tag_number];
-      u_strcpy(tmp,output);
-      u_strcat(tmp," ");
-      if (etiq->output!=NULL && etiq->output[0]!='\0'
-          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
-         // we append the output if it exists and is not epsilon
-         u_strcat(tmp,etiq->output);
-      }
-      struct trans_arbre_normalization* trans_norm;
-      trans_norm=get_trans_arbre_normalization_string(etiq->input,noeud_normalization->trans);
-      if (trans_norm==NULL) {
-         // if the transition does not exist in the tree, we create it
-         trans_norm=new_trans_arbre_normalization_string(etiq->input);
-         // we also create the destination node
-         trans_norm->arr=new_noeud_arbre_normalization();
-         trans_norm->suivant=noeud_normalization->trans;
-         noeud_normalization->trans=trans_norm;
-      }
-      explorer_sub_automate_normalization_string(automate,trans->state_number,trans_norm->arr,
-                                        tmp,TEMP_LIST);
-   }
-   trans=trans->next;
-}
-}
-
-
-
-//
-// this function explore the normalization grammar to construct the token tree
-//
-void explorer_automate_normalization(Fst2* automate,int n,
-                                     struct noeud_arbre_normalization* noeud_normalization,
-                                     struct string_hash* hash,unichar* output,
-                                     Alphabet* alph) {
-Fst2State etat;
-etat=automate->states[n];
-if (is_final_state(etat)) {
-   // if we are in a final state
-   noeud_normalization->liste_arrivee=sorted_insert(output,noeud_normalization->liste_arrivee);
-}
-struct fst2Transition* trans;
-trans=etat->transitions;
-unichar tmp[1000];
-while (trans!=NULL) {
-   if (trans->tag_number<0) {
-      // case of a sub-graph
-      struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
-                                        hash,output,alph,&TMP);
-      while (TMP!=NULL) {
-         // we continue to explore the current automaton
-         explorer_automate_normalization(automate,trans->state_number,TMP->arr,
-                                        hash,TMP->output,alph);
-         struct temp_list* z=TMP;
-         TMP=TMP->suivant;
-         free_temp_list(z);
-      }
-   }
-   else {
-      // normal transition
-      Fst2Tag etiq;
-      etiq=automate->tags[trans->tag_number];
-      u_strcpy(tmp,output);
-      u_strcat(tmp," ");
-      if (etiq->output!=NULL && etiq->output[0]!='\0'
-          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
-         // we append the output if it exists and is not epsilon
-         u_strcat(tmp,etiq->output);
-      }
-      if (!u_strcmp(etiq->input,"<E>")) {
-         // case of an epsilon-transition
-         struct trans_arbre_normalization* trans_norm;
-         trans_norm=get_trans_arbre_normalization(EMPTY_TOKEN,noeud_normalization->trans);
-         if (trans_norm==NULL) {
-            // if the transition does not exist in the tree, we create it
-            trans_norm=new_trans_arbre_normalization(EMPTY_TOKEN);
-            // we also create the destination node
-            trans_norm->arr=new_noeud_arbre_normalization();
-            trans_norm->suivant=noeud_normalization->trans;
-            noeud_normalization->trans=trans_norm;
-         }
-         explorer_automate_normalization(automate,trans->state_number,trans_norm->arr,
-                                           hash,tmp,alph);
-      }
-      else {
-         struct list_int* liste=get_token_list_for_sequence(etiq->input,alph,hash);
-         while (liste!=NULL) {
-           struct trans_arbre_normalization* trans_norm;
-           trans_norm=get_trans_arbre_normalization(liste->n,noeud_normalization->trans);
-           if (trans_norm==NULL) {
-              // if the transition does not exist in the tree, we create it
-              trans_norm=new_trans_arbre_normalization(liste->n);
-              // we also create the destination node
-              trans_norm->arr=new_noeud_arbre_normalization();
-              trans_norm->suivant=noeud_normalization->trans;
-              noeud_normalization->trans=trans_norm;
-           }
-           explorer_automate_normalization(automate,trans->state_number,trans_norm->arr,
-                                           hash,tmp,alph);
-           struct list_int* L=liste;
-           liste=liste->next;
-           free(L);
-         }
-      }
-   }
-   trans=trans->next;
-}
-}
-
-
-
-//
-// this function explore the normalization grammar to construct the token tree
-//
-void explorer_automate_normalization_string(Fst2* automate,int n,
-                                     struct noeud_arbre_normalization* noeud_normalization,
-                                     unichar* output) {
-Fst2State etat;
-etat=automate->states[n];
-if (is_final_state(etat)) {
-   // if we are in a final state
-   noeud_normalization->liste_arrivee=sorted_insert(output,noeud_normalization->liste_arrivee);
-}
-struct fst2Transition* trans;
-trans=etat->transitions;
-unichar tmp[1000];
-while (trans!=NULL) {
-   if (trans->tag_number<0) {
-      // case of a sub-graph
-      struct temp_list* TMP=NULL;
-      explorer_sub_automate_normalization_string(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
-                                        output,&TMP);
-      while (TMP!=NULL) {
-         // we continue to explore the current automaton
-         explorer_automate_normalization_string(automate,trans->state_number,TMP->arr,TMP->output);
-         struct temp_list* z=TMP;
-         TMP=TMP->suivant;
-         free_temp_list(z);
-      }
-   }
-   else {
-      // normal transition
-      Fst2Tag etiq;
-      etiq=automate->tags[trans->tag_number];
-      u_strcpy(tmp,output);
-      u_strcat(tmp," ");
-      if (etiq->output!=NULL && etiq->output[0]!='\0'
-          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
-         // we append the output if it exists and is not epsilon
-         u_strcat(tmp,etiq->output);
-      }
-      struct trans_arbre_normalization* trans_norm;
-      trans_norm=get_trans_arbre_normalization_string(etiq->input,noeud_normalization->trans);
-      if (trans_norm==NULL) {
-         // if the transition does not exist in the tree, we create it
-         trans_norm=new_trans_arbre_normalization_string(etiq->input);
-         // we also create the destination node
-         trans_norm->arr=new_noeud_arbre_normalization();
-         trans_norm->suivant=noeud_normalization->trans;
-         noeud_normalization->trans=trans_norm;
-      }
-      explorer_automate_normalization_string(automate,trans->state_number,trans_norm->arr,tmp);
-   }
-   trans=trans->next;
-}
-}
-
-
-
-//
-// this function constructs a token tree from a normalization grammar
-// tokens are represented by integers
-//
-struct noeud_arbre_normalization* load_normalization_transducer(char* nom,Alphabet* alph,struct text_tokens* tok) {
-Fst2* automate=load_fst2(nom,0);
-if (automate==NULL) {
-   // if the loading of the normalization transducer has failed, we return
+/**
+ * This function constructs and returns a token tree from a normalization grammar.
+ * Tokens are represented by integers.
+ */
+struct normalization_tree* load_normalization_fst2(char* grammar,Alphabet* alph,struct text_tokens* tok) {
+Fst2* fst2=load_fst2(grammar,0);
+if (fst2==NULL) {
    return NULL;
 }
 struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
-// we create the token tree to speed up the consultation
+/* We create the token tree to speed up the consultation */
 for (int i=0;i<tok->N;i++) {
-   //debug("%d/%d\n",i, tok->N);
-   //debug("tok=%S\n", tok->token[i]);
    get_value_index(tok->token[i],hash);
 }
-struct noeud_arbre_normalization* root=new_noeud_arbre_normalization();
-unichar a[1];
-a[0]='\0';
-explorer_automate_normalization(automate,automate->initial_states[1],root,hash,a,alph);
-free_Fst2(automate);
+struct normalization_tree* root=new_normalization_tree();
+explore_normalization_fst2(fst2,fst2->initial_states[1],root,hash,U_EMPTY,alph,NULL);
+free_Fst2(fst2);
 free_string_hash(hash);
 return root;
 }
 
 
-
-//
-// this function constructs a token tree from a normalization grammar
-// tokens are represented by strings
-//
-struct noeud_arbre_normalization* load_normalization_transducer_string(char* nom) {
-Fst2* automate=load_fst2(nom,0);
-if (automate==NULL) {
-   // if the loading of the normalization transducer has failed, we return
-   return NULL;
-}
-struct noeud_arbre_normalization* root=new_noeud_arbre_normalization();
-unichar a[1];
-a[0]='\0';
-explorer_automate_normalization_string(automate,automate->initial_states[1],root,a);
-free_Fst2(automate);
-return root;
-}
 
 
 
@@ -529,7 +319,7 @@ while (s[i]!='\0') {
             tmp[j++]=s[i++];
          }
          tmp[j]='\0';
-         // we don't have to go on the next char, we are allready on it
+         // we don't have to go on the next char, we are already on it
          result=insert_at_end_of_list(tmp,result);
       }
       else {
@@ -544,3 +334,159 @@ while (s[i]!='\0') {
 }
 return result;
 }
+
+
+//---------------- _string -----------------------------
+
+
+struct normalization_tree_transition* new_trans_arbre_normalization_string(unichar* s) {
+struct normalization_tree_transition* tmp;
+tmp=(struct normalization_tree_transition*)malloc(sizeof(struct normalization_tree_transition));
+tmp->s=u_strdup(s);
+tmp->node=NULL;
+tmp->next=NULL;
+return tmp;
+}
+
+
+
+
+
+//
+// this function explores a sub-graph, considering tokens as strings
+//
+void explorer_sub_automate_normalization_string(Fst2* automate,int n,
+                                     struct normalization_tree* noeud_normalization,
+                                     unichar* output,struct norm_info** TEMP_LIST) {
+Fst2State etat;
+etat=automate->states[n];
+if (is_final_state(etat)) {
+   // if we are in a final state
+   (*TEMP_LIST)=insert_in_norm_info_list(output,noeud_normalization,(*TEMP_LIST));
+}
+struct fst2Transition* trans;
+trans=etat->transitions;
+unichar tmp[1000];
+while (trans!=NULL) {
+   if (trans->tag_number<0) {
+      // case of a sub-graph
+      struct norm_info* TMP=NULL;
+      explorer_sub_automate_normalization_string(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
+                                        output,&TMP);
+      while (TMP!=NULL) {
+         // we continue to explore the current automaton
+         explorer_sub_automate_normalization_string(automate,trans->state_number,TMP->node,
+                                        TMP->output,TEMP_LIST);
+         struct norm_info* z=TMP;
+         TMP=TMP->next;
+         free_norm_info(z);
+      }
+   }
+   else {
+      // normal transition
+      Fst2Tag etiq;
+      etiq=automate->tags[trans->tag_number];
+      u_strcpy(tmp,output);
+      u_strcat(tmp," ");
+      if (etiq->output!=NULL && u_strcmp(etiq->output,"")
+          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
+         // we append the output if it exists and is not epsilon
+         u_strcat(tmp,etiq->output);
+      }
+      struct normalization_tree_transition* trans_norm;
+      trans_norm=get_trans_arbre_normalization_string(etiq->input,noeud_normalization->trans);
+      if (trans_norm==NULL) {
+         // if the transition does not exist in the tree, we create it
+         trans_norm=new_trans_arbre_normalization_string(etiq->input);
+         // we also create the destination node
+         trans_norm->node=new_normalization_tree();
+         trans_norm->next=noeud_normalization->trans;
+         noeud_normalization->trans=trans_norm;
+      }
+      explorer_sub_automate_normalization_string(automate,trans->state_number,trans_norm->node,
+                                        tmp,TEMP_LIST);
+   }
+   trans=trans->next;
+}
+}
+
+
+
+//
+// this function explore the normalization grammar to construct the token tree
+//
+void explorer_automate_normalization_string(Fst2* automate,int n,
+                                     struct normalization_tree* noeud_normalization,
+                                     unichar* output) {
+Fst2State etat;
+etat=automate->states[n];
+if (is_final_state(etat)) {
+   // if we are in a final state
+   noeud_normalization->outputs=sorted_insert(output,noeud_normalization->outputs);
+}
+struct fst2Transition* trans;
+trans=etat->transitions;
+unichar tmp[1000];
+while (trans!=NULL) {
+   if (trans->tag_number<0) {
+      // case of a sub-graph
+      struct norm_info* TMP=NULL;
+      explorer_sub_automate_normalization_string(automate,automate->initial_states[-(trans->tag_number)],noeud_normalization,
+                                        output,&TMP);
+      while (TMP!=NULL) {
+         // we continue to explore the current automaton
+         explorer_automate_normalization_string(automate,trans->state_number,TMP->node,TMP->output);
+         struct norm_info* z=TMP;
+         TMP=TMP->next;
+         free_norm_info(z);
+      }
+   }
+   else {
+      // normal transition
+      Fst2Tag etiq;
+      etiq=automate->tags[trans->tag_number];
+      u_strcpy(tmp,output);
+      u_strcat(tmp," ");
+      if (etiq->output!=NULL && u_strcmp(etiq->output,"")
+          && u_strcmp(etiq->output,"<E>") && !only_spaces(etiq->output)) {
+         // we append the output if it exists and is not epsilon
+         u_strcat(tmp,etiq->output);
+      }
+      struct normalization_tree_transition* trans_norm;
+      trans_norm=get_trans_arbre_normalization_string(etiq->input,noeud_normalization->trans);
+      if (trans_norm==NULL) {
+         // if the transition does not exist in the tree, we create it
+         trans_norm=new_trans_arbre_normalization_string(etiq->input);
+         // we also create the destination node
+         trans_norm->node=new_normalization_tree();
+         trans_norm->next=noeud_normalization->trans;
+         noeud_normalization->trans=trans_norm;
+      }
+      explorer_automate_normalization_string(automate,trans->state_number,trans_norm->node,tmp);
+   }
+   trans=trans->next;
+}
+}
+
+
+
+
+//
+// this function constructs a token tree from a normalization grammar
+// tokens are represented by strings
+//
+struct normalization_tree* load_normalization_transducer_string(char* nom) {
+Fst2* automate=load_fst2(nom,0);
+if (automate==NULL) {
+   // if the loading of the normalization transducer has failed, we return
+   return NULL;
+}
+struct normalization_tree* root=new_normalization_tree();
+unichar a[1];
+a[0]='\0';
+explorer_automate_normalization_string(automate,automate->initial_states[1],root,a);
+free_Fst2(automate);
+return root;
+}
+
+

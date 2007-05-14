@@ -29,7 +29,7 @@
 
 
 typedef struct alphabet_t {
-  ustring_t * ustr;
+  Ustring * ustr;
   hash_str_table_t * hash;
   // bool shared; // symbols partagés?
 } alphabet_t;

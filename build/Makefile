@@ -287,15 +287,15 @@ DICO_OBJS = Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o 
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o
 
 ELAG      = Elag
-ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o language.o fst_file.o aut-deter.o \
+ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o LanguageDefinition.o fst_file.o aut-deter.o \
             aut-minim.o aut-emonde.o aut-concat.o autalmot.o \
-            symbol.o hash_str_table.o String_hash.o language_parsing.o ustring.o \
+            symbol.o hash_str_table.o String_hash.o Tagset.o ustring.o \
 	   		state_ens.o aut-alphabet.o symbol_op.o Error.o\
             aut-topo.o aut-inter.o aut-eval.o Alphabet.o StringParsing.o
 
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o compgr.o autalmot.o fst_file.o hash_str_table.o String_hash.o\
-               symbol.o ustring.o aut-deter.o aut-inter.o state_ens.o symbol_op.o language.o language_parsing.o \
+               symbol.o ustring.o aut-deter.o aut-inter.o state_ens.o symbol_op.o LanguageDefinition.o Tagset.o \
 	       aut-minim.o aut-alphabet.o aut-emonde.o aut-concat.o aut-union.o aut-complement.o\
 	       Alphabet.o Error.o StringParsing.o
 
@@ -342,7 +342,7 @@ FST2LIST_OBJS = IOBuffer.o Fst2List.o Unicode.o Fst2.o Alphabet.o\
 
 FSTLOCATE      = FstLocate
 FSTLOCATE_OBJS = FstLocate.o autalmot.o symbol_op.o stack.o fst_file.o Error.o symbol.o Unicode.o ustring.o\
-                 hash_str_table.o language.o language_parsing.o IOBuffer.o
+                 hash_str_table.o LanguageDefinition.o Tagset.o IOBuffer.o
 
 FST2TXT      = Fst2Txt
 FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
@@ -430,8 +430,8 @@ TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o DELA_tr
 
 TAGSETNORM = TagsetNormFst2
 TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o autalmot.o fst_file.o ustring.o \
-					hash_str_table.o symbol.o language.o language_parsing.o aut-emonde.o\
-					Error.o File.o
+					String_hash.o symbol.o LanguageDefinition.o Tagset.o aut-emonde.o\
+					Error.o File.o StringParsing.o
 
 ######################
 ## Korean programs  ##

@@ -56,7 +56,7 @@ parameters->SPACE=get_value_index(t,tokens,DONT_INSERT);
 for (int i=0;i<fst2->number_of_tags;i++) {
    if (tag[i]->type!=UNDEFINED_TAG) {
       /* We don't need to process again things like variables and contexts
-       * that have allready been processed at the time of loading the fst2 */
+       * that have already been processed at the time of loading the fst2 */
       continue;
    }
    int length=u_strlen(tag[i]->input);

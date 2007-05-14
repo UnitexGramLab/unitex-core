@@ -19,349 +19,237 @@
   *
   */
 
-//
-// Filename: Table_complex_token_hash.cpp
-// By Alexis Neme
-//---------------------------------------------------------------------------
-#include "Table_complex_token_hash.h"
+#include "CompoundWordHashTable.h"
 #include "Error.h"
 #include "Text_tokens.h"
-//---------------------------------------------------------------------------
+#include "Tokenization.h"
+#include "List_ustring.h"
+#include "LocateConstants.h"
 
-#define DEBUG 0
 
-//
-//
-//
-void	new_tct_hash_blocks(struct tct_hash *tct_h,int tct_hash_size, int tct_hash_block_size) {
-	
-struct tct_hash_block *hb;
 
-	for ( int i = 0; i< tct_hash_size;i++) {
+/**
+ * This function initializes the blocks of the given hash table.
+ */
+void initialize_hash_blocks(struct tct_hash* hash_table,int block_size) {
+struct tct_hash_block* block;
+int size=hash_table->size;
+for (int i=0;i<size;i++) {
+   block=(struct tct_hash_block*)malloc(sizeof(struct tct_hash_block));
+   if (block==NULL) {
+      fatal_error("Not enough memory in new_hash_block\n");
+   }
+   block->size=block_size;
+   block->token_array=(int*)malloc(block_size*sizeof(int));
+   if (block->token_array==NULL) {
+      fatal_error("Not enough memory in new_hash_block\n");
+   }
+   block->length=0;
+   hash_table->hash_blocks[i]=block;
+}
+}
 
-		hb = (struct tct_hash_block *) malloc(sizeof(struct tct_hash_block ));
-		if (hb==NULL) {
-		   fatal_error("Not enough memory in new_hash_block\n");
-		};
 
-		hb->complex_tokens = (int *) malloc(tct_hash_block_size * sizeof(int));
-		if (hb->complex_tokens==NULL) {
-		   fatal_error("Not enough memory in new_hash_block\n");
-		}
+/**
+ * Allocates, initializes and returns a new hash table.
+ * 'size' is the number of entry in the hash table.
+ */
+struct tct_hash* new_tct_hash(int size,int tct_hash_block_size) {
+struct tct_hash* hash_table;
+hash_table=(struct tct_hash*)malloc(sizeof(struct tct_hash));
+if (hash_table==NULL) {
+   fatal_error("Not enough memory in new_tct_hash\n");
+}
+hash_table->size=size;
+hash_table->hash_blocks=(struct tct_hash_block**)malloc(size*sizeof(struct tct_hash_block*));
+if (hash_table->hash_blocks==NULL) {
+   fatal_error("Not enough memory in new_tct_hash\n");
+}
+/* We initialize the block array */
+initialize_hash_blocks(hash_table,tct_hash_block_size);
+return hash_table;
+}
 
-		hb->N_blocks = 1;			// allocate one block only
-		hb->len = 0;
-		tct_h->tct_hash_blocks[i] = hb;
-		 
-		}
-};
 
-//
-//
-//
-struct tct_hash*		new_tct_hash(int tct_hash_size,int tct_hash_block_size) {
-      struct tct_hash *tct_h;
+/**
+ * Allocates, initializes and returns a new hash table, using the default
+ * sizs.
+ */
+struct tct_hash* new_tct_hash() {
+return new_tct_hash(TCT_HASH_SIZE,TCT_DEFAULT_HASH_BLOCK_SIZE);
+}
 
-      tct_h = (struct tct_hash *) malloc(sizeof(struct tct_hash));
-      if (tct_h==NULL) {
-       fatal_error("Not enough memory in new_tct_hash for table_hash\n");
-	  }
 
-	  tct_h->tct_hash_size			= tct_hash_size;
-	  tct_h->tct_hash_block_size	= tct_hash_block_size;
-      tct_h->tct_last_token_cod	= 0 ;
+/**
+ * Frees all the memory associated to the given table.
+ */
+void free_tct_hash(struct tct_hash* hash_table){
+if (hash_table==NULL) return;
+for (int j=0;j<hash_table->size;j++) {
+  free(hash_table->hash_blocks[j]->token_array);
+  free(hash_table->hash_blocks[j]);
+}
+free(hash_table->hash_blocks);
+free(hash_table);
+}
 
-	  tct_h->tct_hash_blocks	= (struct tct_hash_block **) 
-		                        malloc( tct_hash_size * sizeof(struct tct_hash_block *)) ;
 
-	  new_tct_hash_blocks(tct_h,tct_hash_size,tct_hash_block_size);
- 	  
-	  tct_h->tct_tab			= (int **) malloc( 1000000 * sizeof(int *) ) ;
-      if (tct_h->tct_tab ==  NULL) {
-       fatal_error("Not enough memory in new_tct_hash for tab\n");
-	  };
+/**
+ * Returns 1+the length in token of the compound word coded by
+ * the given token array.
+ * Example: tct_length(574,1,5,1,575,-1) is 6 (we count the -1)
+ */
+int tct_length(int* token_sequence) {
+int i;
+for (i=0;token_sequence[i]!=-1;i++);
+return i+1; 
+}
 
-      return(tct_h);      
+
+/**
+ * Returns the hash code associated to the given token sequence.
+ * For convenience reasons, the code is given modulo the size
+ * of the hash table.
+ */
+int tct_hash(int* token_sequence,int hash_table_size){
+unsigned long int hash_code=0;
+for (int i=0;token_sequence[i]!=-1;i++) {
+   hash_code=hash_code+(token_sequence[i]<<i)+1357;
+}
+return abs(hash_code)%hash_table_size;
 }
 
 
 
-//
-//
-//
-void	free_tct_hash(struct tct_hash *tct_hash){
-	int i; 
-	unsigned int j;
 
-	if (tct_hash==NULL) {
-		fprintf(stderr,"Call to free_tct_hash on NULL pointer\n");
-     return;
-	};
 
-	for ( j= 0; j< tct_hash->tct_hash_size;j++) {
-		free(tct_hash->tct_hash_blocks[j]->complex_tokens);
-		free(tct_hash->tct_hash_blocks[j]);
-	} ;
-
-    free(tct_hash->tct_hash_blocks);
-
-	for(i= 0; i<tct_hash->tct_last_token_cod; i++) {
-		  free( tct_hash->tct_tab[i]);
-    };
-
-    free(tct_hash->tct_tab);    
-	free(tct_hash)  ;           
-
-};
-
-//
-//          TCT_length(574,1,5,1,575,-1) is 6 we count the -1
-//
-
-int tct_length(int *token_tab) {
-    int i;
-	for (i = 0 ; *(token_tab+i) !=-1; i++ ) ;
-    return(++i); 
+/**
+ * Resizes the token array of the given block so that the token array can
+ * contain 'new_number_of_elements' elements. The function doubles the size
+ * of the array as many times as needed. If the array has already a sufficient
+ * capacity, the function does nothing.
+ */
+void realloc_tct_hash_block(struct tct_hash_block* block,int new_number_of_elements) {
+int factor=1;
+while (block->size*factor < new_number_of_elements) {
+   factor=factor*2;
 }
-
-//
-//
-//
-unsigned int	tct_hash(int *token_tab, const int hashsize){
-
-    long unsigned int hashVal;
-	hashVal = 0;
-    //int i = 0 ; 
-	for (int i = 0 ; *token_tab !=-1; i++ ) {
-           hashVal += (*token_tab <<i)  + 1357 ;
-		   token_tab++;
-	} ;
-    //int x = abs(hashVal) % hashsize ;
-    return (abs(hashVal) % hashsize );
+block->size=block->size*factor;
+if (factor==1) return;
+block->token_array=(int*)realloc(block->token_array,block->size*sizeof(int));
+if (block->token_array==NULL) {
+   fatal_error("Not enough memory in realloc_tct_hash_block\n");
+}
 }
 
 
-
-//
-//
-//
-void	save_lines_tct_hash( struct tct_hash *tct_h){
-	unsigned int i,j,k;
-	printf("Table tct Hash\n");
-    for (  i = 0 ; i < tct_h->tct_hash_size ; i++) {		      
-        // Print the Block i
-
-		j = 0;
-		if (tct_h->tct_hash_blocks[i]->len == 0) continue;
-		printf(">>>>>>>>>>>>>>>>>>>>>>>>BLOCK: %d <<<<<<<<<<<<<<<<<<<<<<<<<\n ",i); 
-          
-     	  printf(">>>> ");
-         // print a complex token 
-		 while(j< tct_h->tct_hash_blocks[i]->len) {
-		    k = j;
-			printf("(");
-          // print a  token of the complex token
-		  while (tct_h->tct_hash_blocks[i]->complex_tokens[k] != -1 && k< tct_h->tct_hash_blocks[i]->len) {
-			printf("%d,", tct_h->tct_hash_blocks[i]->complex_tokens[k]);
-            
-			k++;
-		  }; // j
-		    printf("%d,", tct_h->tct_hash_blocks[i]->complex_tokens[k]);
-		    k++;
-		  printf("%d)", tct_h->tct_hash_blocks[i]->complex_tokens[k]);
-		  k++;
-		  printf("\n");
-		  j =  k ;
-		 } // 
-	};// i
-};
-
-//
-// copy the h-block in a longer block alocating one more hash_block_size of memory 
-//
-int *realloc_tct_hash_block(struct tct_hash_block *tct_hb, const int tct_hash_block_size) {
-    
-
-    unsigned int N_block	= tct_hb->N_blocks ;
-	int *old_block			= tct_hb->complex_tokens;
-
-	N_block++;
-	int *new_block		= (int *) 
-						  malloc(( N_block * tct_hash_block_size) * sizeof(int ));
-
-	if ( new_block == NULL ) {
-		fatal_error("Not enough memory in realloc_ttc_hash_block\n");
-	};
-//    Copy  the old block in the new one 
-     for(unsigned int i=0; i< tct_hb->len;i++) 
-	     new_block[i] = tct_hb->complex_tokens[i];
-
-
-	tct_hb->N_blocks	= N_block ;
-	tct_hb->complex_tokens = new_block;
-
-	free(old_block);
-	return(new_block);
+/**
+ * Adds a token sequence ended by -1 to the given hash table.
+ * An integer representing the given priority is added after the -1 in
+ * the token sequence stored in the hash table.
+ * 
+ * Example: (574,1,5,1,575,-1) 2 => the (574,1,5,1,575,-1,2) array will be stored
+ */
+void add_tct_token_sequence(int* token_seq,struct tct_hash* hash_table,int priority) {
+int hash_code=tct_hash(token_seq,hash_table->size);
+struct tct_hash_block* block=hash_table->hash_blocks[hash_code];
+int old_length=block->length;
+/* We compute the number of integers required to encode the given token
+ * sequence. We add 1 because of the priority. */
+int size=tct_length(token_seq)+1;
+/* We enlarge the token array if needed */
+realloc_tct_hash_block(block,size+block->length);
+/* Then we copy the token sequence at the end of the block's token array */
+int i;
+int* tokens=block->token_array;
+for (i=0;token_seq[i]!=-1;i++) {
+   tokens[old_length+i]=token_seq[i];
+}
+/* We add the ending -1 and the priority */
+tokens[old_length+i]=-1;
+i++;
+tokens[old_length+i]=priority;
+i++;
+/* Finally, we update the length of the block's token array */
+block->length=block->length+i;
 }
 
-	
-//
-//		Add a complex_token to  tct_hash and return the the priority 9 the nex integer
-//      (574,1,5,1,575,-1,2) "navio de guerra" 2
-int		add_tct_token(int *token_tab, struct tct_hash *tct_h,int priority){
 
-	int h;
-
-	h = tct_hash(token_tab, tct_h->tct_hash_size);
-
-	struct tct_hash_block  *hb = tct_h->tct_hash_blocks[h] ;
-
-    int N_block_h		= hb->N_blocks ; 
-	int *toks			= hb->complex_tokens;
-	int h_block_size	= tct_h->tct_hash_block_size;
-    int tct_len			= tct_h->tct_hash_blocks[h]->len;
-	//int last_cod		= tct_h->tct_last_token_cod;
-	
-
-// test for block reallocation
-//  A complex token may be  12 tokens length
-	if( (tct_len  + 15)  > (N_block_h * h_block_size)  ) {
-		if (DEBUG) {	
-            printf("realloc ...%d \n", h);
-            printf("\n");
-        }
-		toks = realloc_tct_hash_block(hb, h_block_size) ;
-	};
-	int i;
-    for (i = 0 ; *(token_tab+i) !=-1; i++ ) {
-		toks[tct_len+i] = *(token_tab+i);
-    }
-	toks[tct_len+i] = -1;
-	i++;
-     
-	toks[tct_len + i] = priority;
-    i++; 
-    tct_h->tct_hash_blocks[h]->len +=i; 
-
-
-
-    return(0);
-
-};
-
-//
-//
-//  find the offset of the  integer´s subsequence token_tab  in hb 
-//
-int tct_match(struct tct_hash_block *hb, int *token_tab){
-
+/**
+ * Looks for the given token sequence inside the token array of the
+ * given block. Returns -1 if the sequence is not found; the offset
+ * of its first token otherwise.
+ */
+int tct_match(struct tct_hash_block* block,int* token_sequence) {
 int i=0;
 int j=0;
-int len_hb = hb->len;
-int l_b = tct_length(token_tab);
-int* a;
-a = hb->complex_tokens; 
-  while (i < len_hb) {
-    j=0;
-	while ( i< len_hb && a[i+j] == token_tab[j] ) {
-		if ( token_tab[j] ==-1 ) return(i); 
-		if (j == l_b ) return(i);
-		j++;         
-	}  
-	i++;  
-  } 
-  return(-1);
+int block_length=block->length;
+int* tokens=block->token_array; 
+while (i<block_length) {
+   j=0;
+   while (i+j<block_length && tokens[i+j]==token_sequence[j]) {
+      if (token_sequence[j]==-1) return i; 
+      j++;
+   }
+   /* If the current sequence in the token array has not matched,
+    * we look for the next sequence. The -2 is there because we want
+    * to put 'i' on the first cell after the -1 and priority of the previous
+    * token sequence. We increase 'i' of 1 so that i-2 is always >=0 */
+   i=i+1;
+   do {
+      i++;
+   } while (i<block_length && tokens[i-2]!=-1);
+} 
+return -1;
 }
 
 
-
-int		was_allready_in_tct_hash(int *token_tab, struct tct_hash *tct_h, int priority){
-	
-	int h;
-    struct tct_hash_block *hb; 
-
-	h = tct_hash(token_tab, tct_h->tct_hash_size);
-	hb = tct_h->tct_hash_blocks[h] ;
-    int *toks = tct_h->tct_hash_blocks[h]->complex_tokens ;
-    	  
-	// find token_tab in block
-   int offset_tok = tct_match(tct_h->tct_hash_blocks[h],token_tab) ;
-	if  (offset_tok != - 1) {
-		 // get the token_cod
-		 int offset_token_code = offset_tok + tct_length(token_tab);
-
-
-		return(toks[offset_token_code]);					// found			  
-	}
-
-    return(add_tct_token(token_tab,tct_h,priority)); // not found
-
-
+/**
+ * Looks for the given token sequence in the hash table. Returns 0 if the
+ * compound word is not found; its priority (1, 2 or 3) otherwise.
+ */
+int was_already_in_tct_hash(int* token_sequence,struct tct_hash* hash_table,int priority){
+int hash_code=tct_hash(token_sequence,hash_table->size);
+struct tct_hash_block* block=hash_table->hash_blocks[hash_code];
+/* We look for the token sequence in the token array of the correct block */
+int offset=tct_match(block,token_sequence);
+if (offset!=-1) {
+   /* If the token sequence is present, we look for its priority */
+   int offset_priority=offset+tct_length(token_sequence);
+   return block->token_array[offset_priority];
+}
+/* Otherwise, we add the token sequence to the hash table */
+add_tct_token_sequence(token_sequence,hash_table,priority);
+return 0;
 }
 
-void   build_complex_token_tab(unichar *compound_word,struct text_tokens *tok, int *token_tab_coumpounds)			
-// build the token_tab_coumpounds cod based on the simple forms  
-// the compound form  "sans raison" will have token_tab_coumpounds (121,1,1643,-1,priority)		  
-{
- int i,pdebut,pfin,k_tab;
- int l=u_strlen(compound_word);
- unichar simple_form[100]; 
 
-     i=pdebut=pfin=0; k_tab=0;
-     while (i<l) 
-     { if (u_is_letter(compound_word[i]) ) {
-		 pfin++;
-		}
-	   else {
-			u_get_substring(compound_word,pdebut,pfin,simple_form);
-		    token_tab_coumpounds[k_tab++] = get_token_number(simple_form,tok);          
-            u_get_substring(compound_word,pfin,pfin+1,simple_form);             // one separator 
-            token_tab_coumpounds[k_tab++] = get_token_number(simple_form,tok); 
-
-			pdebut=++pfin;
-	   }
-	 i++;
-	 }
-	 u_get_substring(compound_word,pdebut,pfin,simple_form);
-	 token_tab_coumpounds[k_tab++] = get_token_number(simple_form,tok); 
-     token_tab_coumpounds[k_tab++] = -1;          
+/**
+ * This function takes a compound word and tokenizes it according to
+ * the given text tokens. The result is an integer sequence that is
+ * stored in 'token_sequence'. Each integer represents a token number,
+ * and the sequence is ended by -1.
+ * 
+ * Example: "sans raison" may be turned into (121,1,1643,-1)
+ * 
+ * WARNING: every token of the compound word is supposed to be present
+ *          in the given text tokens.
+ */
+void build_token_sequence(unichar* compound_word,struct text_tokens* tokens,int* token_sequence) {
+struct list_ustring* list=tokenize(compound_word,WORD_BY_WORD_TOKENIZATION,NULL);
+struct list_ustring* tmp;
+int i=0;
+while (list!=NULL) {
+   token_sequence[i]=get_token_number(list->string,tokens);
+   if (token_sequence[i]==-1) {
+      fatal_error("Unknown token in build_token_sequence\n");
+   }
+   i++;
+   tmp=list;
+   list=list->next;
+   free_list_ustring_element(tmp);
 }
-
-void	print_lines_tct_hash( struct text_tokens* tok, struct tct_hash *tct_h){
-	unsigned int i,j,k;
-   unichar mot[100]; 
-	int token_numb;
-	printf("Table tct Hash\n");
-
-    for (  i = 0 ; i < tct_h->tct_hash_size ; i++) {		      
-        // Print the Block i
-
-		j = 0;
-		if (tct_h->tct_hash_blocks[i]->len == 0) continue;
-		printf(">>>>>>>>>>>>>>>>>>>>>>>>BLOCK: %d <<<<<<<<<<<<<<<<<<<<<<<<<\n ",i); 
-          
-     	  printf(">>>> ");
-         // print a complex token 
-		 while(j< tct_h->tct_hash_blocks[i]->len) {
-		    k = j;
-			printf("(");
-          // print a  token of the complex token
-		  while (tct_h->tct_hash_blocks[i]->complex_tokens[k] != -1 && k< tct_h->tct_hash_blocks[i]->len) {
-            token_numb = tct_h->tct_hash_blocks[i]->complex_tokens[k] ;
-			printf("%d-",token_numb );
-            u_strcpy(mot,get_text_token(token_numb,tok)); 
-            u_prints(mot);
-			printf(", " ); 
-			k++;
-		  }; // j
-		    printf("%d,", tct_h->tct_hash_blocks[i]->complex_tokens[k]);
-		    k++;
-		  printf("%d)", tct_h->tct_hash_blocks[i]->complex_tokens[k]);
-		  k++;
-		  printf("\n");
-		  j =  k ;
-		 } // 
-	};// i
+/* We put the final -1 */
+token_sequence[i]=-1;
 }
-
 

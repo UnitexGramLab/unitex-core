@@ -49,7 +49,7 @@ u_printf("     <alph> : alphabet file of the language\n");
 u_printf("     <dic> : dictionary .BIN to use\n");
 u_printf("     <list> : text file containing the words to be analysed\n");
 u_printf("     <out> : dictionary .DIC where the resulting lines will be stored. If\n");
-u_printf("             this file allready exists, the lines are added at the end of it.\n");
+u_printf("             this file already exists, the lines are added at the end of it.\n");
 u_printf("     [<info>] : if this optional parameter is precised, it is taken as\n");
 u_printf("                the name of a file which will contain information about\n");
 u_printf("                the analysis\n");

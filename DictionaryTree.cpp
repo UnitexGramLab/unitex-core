@@ -159,7 +159,7 @@ if (inflected[pos]=='\0') {
    }
    /* If there is an INF code list in the node ...*/
    if (is_in_list(N,node->single_INF_code_list)) {
-      /* If the INF code has allready been taken into account for this node
+      /* If the INF code has already been taken into account for this node
        * (case of duplicates), we do nothing */
       return;
    }
@@ -352,7 +352,7 @@ for (int i=0;i<MAXIMUM_HEIGHT;i++) {
    free_transition_list(transitions_by_height[i]);
 }
 free(transitions_by_height);
-/* The 'transitions' array is supposed to be allready cleaned */
+/* The 'transitions' array is supposed to be already cleaned */
 free(transitions);
 }
 

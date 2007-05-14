@@ -171,7 +171,7 @@ return NULL;
  * Returns the index value associated to the given key in the given string_hash.
  * 'pos' is the current position the key and 'node' is the current node in the 
  * string_hash_tree. If 'insert_if_needed' is non null, the key will be added
- * in the string_hash if not allready present. Otherwise, the function will
+ * in the string_hash if not already present. Otherwise, the function will
  * return NO_VALUE_INDEX if the key is not in the string_hash.
  */
 int get_value_index_(unichar* key,int pos,struct string_hash_tree_node* node,
@@ -187,7 +187,7 @@ if (key[pos]=='\0') {
       return node->value_index;
    }
    if (node->value_index!=NO_VALUE_INDEX) {
-      /* If the key allready exists, we return its value index */
+      /* If the key already exists, we return its value index */
       return node->value_index;
    }
    /* Here, we have to build a new value index */
@@ -240,7 +240,7 @@ return get_value_index_(key,pos+1,t->node,hash,insert_policy,value);
 /**
  * Returns the index value associated to the given key. If the given string_hash
  * tolerates values, 'value' will be associated to the given key if the key is
- * not allready present in the string_hash.
+ * not already present in the string_hash.
  */
 int get_value_index(unichar* key,struct string_hash* hash,int insert_policy,unichar* value) {
 return get_value_index_(key,0,hash->root,hash,insert_policy,value);
@@ -417,5 +417,113 @@ return index;
 int get_longest_key_index(unichar* s,int *key_length,struct string_hash* hash) {
 (*key_length)=0;
 return get_longest_key_index_(s,0,key_length,hash->root);
+}
+
+
+
+/**
+ * Returns a new string_hash_ptr object with the given capacity.
+ * All such objects use values. If not, the normal string_hash should be
+ * used. The 'value' array will be enlarged if needed.
+ */
+struct string_hash_ptr* new_string_hash_ptr(int capacity) {
+struct string_hash_ptr* s=(struct string_hash_ptr*)malloc(sizeof(struct string_hash_ptr));
+if (s==NULL) {
+   fatal_error("Not enough memory in new_string_hash_ptr\n");
+}
+/* We don't use the unichar* values of the normal string hash */
+s->hash=new_string_hash(DONT_USE_VALUES);
+s->capacity=capacity;
+s->size=0;
+s->value=(void**)malloc(capacity*sizeof(void*));
+if (s->value==NULL) {
+   fatal_error("Not enough memory in new_string_hash\n");
+}
+return s;
+}
+
+
+/**
+ * Returns a new string_hash_ptr object with the default capacity.
+ * All such objects use values. If not, the normal string_hash should be
+ * used. The 'value' array will be enlarged if needed.
+ */
+struct string_hash_ptr* new_string_hash_ptr() {
+return new_string_hash_ptr(DEFAULT_CAPACITY);
+}
+
+
+/**
+ * This function frees the given string_hash_ptr, using 'free_' to free the
+ * elements of the 'value' array.
+ */
+void free_string_hash_ptr(struct string_hash_ptr* s,void (*free_)(void*)) {
+if (s==NULL) return;
+/* We free the 'value' array */
+for (int i=0;i<s->hash->size;i++) {
+   free_(s->value[i]);
+}
+free(s->value);
+free_string_hash(s->hash);
+free(s);
+}
+
+
+/**
+ * Returns the index value associated to the given key.
+ */
+int get_value_index(unichar* key,struct string_hash_ptr* hash,int insert_policy) {
+return get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
+}
+
+
+/**
+ * Returns the index value associated to the given key, inserting it if needed.
+ */
+int get_value_index(unichar* key,struct string_hash_ptr* hash) {
+return get_value_index_(key,0,hash->hash->root,hash->hash,INSERT_IF_NEEDED,NULL);
+}
+
+
+/**
+ * Returns the index value associated to the given key. 'value' will be associated to
+ * the given key if the key is not already present in the string_hash_ptr.
+ */
+int get_value_index(unichar* key,struct string_hash_ptr* hash,int insert_policy,void* value) {
+int size=hash->hash->size;
+int index=get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
+if (index==-1) {
+   /* If the key was neither found nor inserted, we return -1 */
+   return -1;
+}
+if (hash->hash->size!=size) {
+   hash->size=hash->hash->size;
+   /* If the key was inserted, we add the corresponding value into the 'value' array */
+   /* Otherwise: if there is a maximum capacity */
+   if (hash->hash->size==hash->capacity) {
+      /* We enlarge the 'value' array, doubling its capacity */
+      hash->capacity=2*hash->capacity;
+      hash->value=(void**)realloc(hash->value,sizeof(void*)*hash->capacity);
+      if (hash->value==NULL) {
+         fatal_error("Not enough memory in get_value_index\n");
+      }
+   }
+   hash->value[index]=value;
+}
+return index;
+}
+
+
+/**
+ * Returns the value associated to the given key, or NULL if not found in the
+ * given string_hash_ptr.
+ * 
+ * WARNING: NULL is also returned if it has been associated to the key, so
+ *          it's not possible to distinguish the cases (key,NULL) and key not found.
+ */
+void* get_value(unichar* key,struct string_hash_ptr* hash) {
+int index=get_value_index(key,hash->hash,DONT_INSERT);
+if (index==-1) return NULL;
+return hash->value[index];
 }
 

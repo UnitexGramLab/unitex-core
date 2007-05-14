@@ -23,17 +23,22 @@
 #define _SYMBOL_H_
 
 #include "ustring.h"
-#include "language.h"
+#include "LanguageDefinition.h"
 
-struct language_t;
 struct POS_t;
+struct language_t;
 
-extern struct language_t * LANG;
+extern language_t* LANGUAGE;
 
 
 extern unichar PUNC_TAB[];
 
-
+/**
+ * These constants are used to attribute special values to features.
+ * LOCKED means that the feature value is not relevant, like tense for
+ * nouns. UNSPECIFIED means that the feature can take any possible value.
+ * It is used when a symbol is specified with a category like "<gender>"
+ */
 #define LOCKED      (-1)
 #define UNSPECIFIED  (0)
 
@@ -42,38 +47,45 @@ extern unichar PUNC_TAB[];
 
 #define SYMBOL_DEF  ((symbol_t *) -1)
 
-/* symbol types: 
+
+/**
+ * The following enumeration defines the different kinds of symbols that
+ * can appear in ELAG grammars.
  *
- * LEXIC :     toutes les parties du discours (y compris 'PNC', 'CHFA', et '?') mais pas epsilon
- * epsilon :   ne devrait jamais apparaitre normalement ?
- * CODE :      tous les traits discriminant sont fixes, concorde avec un code de la POS (si elle en contient)
- *             pas de forme canonique
- * ATOM :      CODE + 1 forme canonique (forme flechie optionnelle)
- * CODE_NEG :  CODE + ens de negation de formes canonique
- * INC :       au moins un trait discriminant est UNSPECIFIED, concorde avec un code ...  pas de forme canoniqe
- * INC_CAN :   INC + forme canonique
- * INC_NEG :   INCOMPLET plus ensemble de negation de formes canoniques
+ * LEXIC :     every POS (including 'PNC', 'CHFA', and '?') but not epsilon
+ * epsilon :   this should never appear
+ * CODE :      POS category code
+ *             +all discriminative categories have been set, if any
+ *             +no lemma
+ * ATOM :      the same as CODE, but with the lemma, and an optional inflected form
+ * CODE_NEG :  the same as CODE with a set of forbidden lemmas
+ * INC :       POS category code
+ *             +at least one discriminative category has not been set
+ *             +no lemma
+ * INC_CAN :   the same as INC but with a lemma
+ * INC_NEG :   the same as INC with a set of forbidden lemmas
+ * 
+ * Note that discriminative categories must combine with the correct corresponding POS
+ * category code. If not, the symbol is not valid.
  *
- * Les traits discriminants de tous les symbole doivent concorder avec au moins un code de la POS
- * correspondante (si elle en contient), dans le cas contraire le symbole est invalide.
- *
- * SPECIALS symbols:
- * EXCLAM | EQUAL : pour parser les grammaires de disambiguisation lors de leur compilation.
+ * Special symbols:
+ * EXCLAM and EQUAL : used to parse ELAG grammars before compiling them
  */
-
 enum {
-
-  LEXIC = 'L', EPSILON = 'e',
-  ATOM = 'a', CODE_NEG = 'N', CODE = 'C',
-  INC_CAN = 'c', INC_NEG = 'n', INC = 'I',
-
-  /* specials symbols */
-
-  EXCLAM = '!', EQUAL = '='
+   LEXIC='L',
+   EPSILON='e',
+   ATOM='a',
+   CODE_NEG='N',
+   CODE='C',
+   INC_CAN='c',
+   INC_NEG='n',
+   INC='I',
+   EXCLAM='!',
+   EQUAL='='
 };
 
 
-#define SYMB_CODE_MASK (0xffffff00)
+#define SYMB_CODE_MASK (0xFFFFFF00)
 
 #define SYMB_CODE  (1 << 8)   // 0 == code ncomplet
 #define SYMB_CAN   (2 << 8)
@@ -81,22 +93,39 @@ enum {
 #define SYMB_SPEC  (8 << 8)
 
 
+/**
+ * This structure defines a list of symbols used an ELAG grammar.
+ */
 typedef struct symbol_t {
+   /* The symbol type, see the enumeration above */
+   int type;
+   
+   /* Is the lemma a negative one ? */
+   bool negative;
+   
+   /* */
+   union {
+      int form;
+      int nbnegs;
+   };
+   
+   /* */
+   union {
+      int canonic;
+      int* negs;
+   };
 
-  int type;
+   /* The POS of the symbol */
+   POS_t* POS;
 
-  bool negative;
+   /* The 'feature' array is used to know if the feature #i has been set or not */
+   char* feature;
+   
+   /* Size of 'feature' */
+   int  nb_features;
 
-  union { int form;    int nbnegs; };
-  union { int canonic; int * negs; };
-
-  POS_t * POS;
-
-  char * traits;
-  int  nbtraits;   // for dynamical add of new traits ...
-
-  struct symbol_t * next;
-
+   /* The next symbol in the list */
+   struct symbol_t* next;
 } symbol_t;
 
 
@@ -118,21 +147,20 @@ typedef struct symbol_t {
 } symbol_t;
 */
 
-symbol_t * symbol_new(unichar * label);
-symbol_t * symbol_new(POS_t * templat);
+symbol_t* new_symbol(char);
+symbol_t* new_symbol_POS(POS_t*);
 
-symbol_t * symbol_unknow_new(language_t * lang, int idx);
+symbol_t * new_symbol_UNKNOWN(language_t * lang, int idx);
 
-symbol_t * symbol_LEXIC_new();
 
-symbol_t * symbol_dup(const symbol_t * symb);
-symbol_t * symbols_dup(const symbol_t * symbs);
+symbol_t * dup_symbol(const symbol_t * symb);
+symbol_t * dup_symbols(const symbol_t * symbs);
 
-void symbol_delete(symbol_t * symb);
-void symbols_delete(symbol_t * symb);
+void free_symbol(symbol_t * symb);
+void free_symbols(symbol_t * symb);
 
-void symbol_empty(symbol_t * symb);
-void symbol_copy(symbol_t * dest, symbol_t * src);
+void empty_symbol(symbol_t * symb);
+void copy_symbol(symbol_t * dest, symbol_t * src);
 
 bool symbol_equals(symbol_t * a, symbol_t * b);
 
@@ -141,11 +169,11 @@ void symbol_dump_all(const symbol_t * symb, FILE * f = stderr);
 void symbol_dump(const symbol_t * symb, FILE * f = stderr);
 void symbols_dump(const symbol_t * symb, FILE * f = stderr);
 
-void symbol_to_str(const symbol_t * s, ustring_t * ustr);
-void symbol_to_grammar_label(const symbol_t * s, ustring_t * ustr);
-void symbol_to_text_label(const symbol_t * s, ustring_t * ustr);
-void symbol_to_implosed_text_label(const symbol_t * s, ustring_t * ustr);
-void symbol_to_locate_label(const symbol_t * s, ustring_t * ustr);
+void symbol_to_str(const symbol_t * s, Ustring * ustr);
+void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr);
+void symbol_to_text_label(const symbol_t * s, Ustring * ustr);
+void symbol_to_implosed_text_label(const symbol_t * s, Ustring * ustr);
+void symbol_to_locate_label(const symbol_t * s, Ustring * ustr);
 
 symbol_t * load_text_symbol(language_t * lang, unichar * label);
 symbol_t * load_grammar_symbol(language_t * lang, unichar * label);
@@ -155,19 +183,16 @@ int check_dic_entry(const unichar * label);
 symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * buf, bool warnmissing = true);
 
 inline symbol_t * load_dic_entry(const unichar * label, unichar * buf, bool warnmissing = true) {
-  return load_dic_entry(LANG, label, buf, warnmissing);
+  return load_dic_entry(LANGUAGE, label, buf, warnmissing);
 }
 
 
 
-void symbols_concat(symbol_t * a, symbol_t * b, symbol_t ** end = NULL);
+void concat_symbols(symbol_t * a, symbol_t * b, symbol_t ** end = NULL);
 
 int symbol_type(symbol_t * symb);
 
-symbol_t * symbol_epsilon_new();
-symbol_t * symbol_UNIV_new();
-
-symbol_t * symbol_PUNC_new(language_t * lang, int idx);
-symbol_t * symbol_PUNC_new(int punc);
+symbol_t * new_symbol_PUNC(language_t * lang, int idx);
+symbol_t * new_symbol_PUNC(int punc);
 
 #endif

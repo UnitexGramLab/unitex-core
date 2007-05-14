@@ -134,7 +134,7 @@ int main(int argc, char ** argv) {
 
   u_printf("loading %s langage definition ...\n", langname);
 
-  language_t * lang = language_load(langname);
+  language_t * lang = load_language_definition(langname);
   set_current_language(lang);
 
 

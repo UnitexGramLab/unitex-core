@@ -530,14 +530,14 @@ tAutAlMot * fst2AutAlMot(Fst2 * A, int nb) {
 
       alphabet_clear(alphabet);
 
-      int nbflex = symbole_developp(alphabet, & symb);
+      int nb_inflect = symbole_developp(alphabet, & symb);
 
-      if (nbflex == 0) { fatal_error("symbole_developp: nbflex=0\n"); }
+      if (nb_inflect == 0) { fatal_error("symbole_developp: nbflex=0\n"); }
 
-      while (nbflex--) {
-	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->state_number - base);
-        ustring_delete(alphabet->symb[nbflex].flex);
-	free(alphabet->symb[nbflex].canonique);
+      while (nb_inflect--) {
+	nouvTrans(aut, q, alphabet->symb + nb_inflect, transitions->state_number - base);
+        free_Ustring(alphabet->symb[nb_inflect].flex);
+	free(alphabet->symb[nb_inflect].canonique);
       }
     }
   }
@@ -611,7 +611,7 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
             nouvTrans(aut, q, alphabet->symb + nbflex, trans->state_number - base);
             free(alphabet->symb[nbflex].canonique);
             alphabet->symb[nbflex].canonique = NULL;
-            ustring_delete(alphabet->symb[nbflex].flex);
+            free_Ustring(alphabet->symb[nbflex].flex);
             alphabet->symb[nbflex].flex  = NULL;
           }
 
@@ -677,14 +677,14 @@ tAutAlMot * load_grammar_automaton(char * fname) {
 
       alphabet_clear(alphabet);
 
-      int nbflex = symbole_developp(alphabet, & symb);
+      int nb_inflect = symbole_developp(alphabet, & symb);
 
-      if (nbflex == 0) { nouvTrans(aut, q, NULL, transitions->state_number - base); }
+      if (nb_inflect == 0) { nouvTrans(aut, q, NULL, transitions->state_number - base); }
 
-      while (nbflex--) {
+      while (nb_inflect--) {
 	//#warning "must free canonique!!!!????"
-	nouvTrans(aut, q, alphabet->symb + nbflex, transitions->state_number - base);
-	free(alphabet->symb[nbflex].canonique);
+	nouvTrans(aut, q, alphabet->symb + nb_inflect, transitions->state_number - base);
+	free(alphabet->symb[nb_inflect].canonique);
       }
 
     }

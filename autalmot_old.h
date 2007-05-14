@@ -103,7 +103,7 @@ typedef int etat ;
 typedef struct symb {
   int sorteSymbole;
   unichar   flechie[maxMot];   /* Forme flechie du mot */
-  ustring_t * flex;
+  Ustring * flex;
   unichar * canonique;         /* Forme canonique du mot */
   unichar   gramm[maxGramm];   /* Code grammatical */
 } tSymbole;

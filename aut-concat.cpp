@@ -31,7 +31,7 @@ static symbol_t * symbols_from_transs(transition_t * trans) {
   symbol_t * end = & res;
 
   while (trans) {
-    symbols_concat(end, symbols_dup(trans->label), & end);
+    concat_symbols(end, dup_symbols(trans->label), & end);
     trans = trans->next;
   }
 
@@ -48,8 +48,8 @@ void developp_deftrans(autalmot_t * A, int q) {
 
   autalmot_add_trans(A, q, defdev, A->states[q].defto);
 
-  symbols_delete(tsymbs);
-  symbols_delete(defdev);
+  free_symbols(tsymbs);
+  free_symbols(defdev);
 }
 
 

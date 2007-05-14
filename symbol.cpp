@@ -41,338 +41,290 @@ unichar PUNC_TAB[] = {
 };
 
 
-/* symbol_new without call for symbol_type: avoid infinite loop
+/**
+ * Allocates, initializes and returns a new symbol_t corresponding to the
+ * given type.
  */
+symbol_t* new_symbol(char type) {
+symbol_t* symbol=(symbol_t*)malloc(sizeof(symbol_t));
+if (symbol==NULL) {
+   fatal_error("Not enough memory in new_symbol\n");
+}
+symbol->type=type;
+symbol->negative=false;
+symbol->form=0;
+symbol->canonic=0;
+symbol->POS=NULL;
+symbol->feature=NULL;
+symbol->nb_features=0;
+symbol->next=NULL;
+return symbol;
+}
 
-static inline symbol_t * _symbol_new(POS_t * POS) {
-
-  symbol_t * symb = (symbol_t *) xmalloc(sizeof(symbol_t));
-
-  symb->type = INC;
-
-  symb->negative = false;
-  symb->form     = 0;
-  symb->canonic  = 0;
-
-  symb->POS = POS;
-
-  if (POS->CATs->nbelems) {
-
-    symb->traits   = (char *) xmalloc(POS->CATs->nbelems  * sizeof(char));
-    symb->nbtraits = POS->CATs->nbelems;
-
-  } else {
-
-    symb->traits   = NULL;
-    symb->nbtraits = 0;
-  }
-
-  int i;
-
-  for (i = 0; i < POS->CATs->nbelems; i++)  { symb->traits[i] = UNSPECIFIED; }
-
-  symb->next = NULL;
-
-  /* symbol_type(symb); don't call symbol_type here */
-
-  return symb;
+/**
+ * Allocates, initializes and returns a new symbol_t corresponding to the
+ * given POS description. The difference with 'new_symbol' is that this one
+ * does not call 'symbol_type', in order to avoid infinite loops.
+ */
+symbol_t* new_symbol_POS_no_type(POS_t* POS) {
+symbol_t* symbol=new_symbol(INC);
+symbol->POS=POS;
+if (POS->CATs->size!=0) {
+   symbol->feature=(char*)malloc(POS->CATs->size*sizeof(char));
+   if (symbol->feature==NULL) {
+      fatal_error("Not enough memory in new_symbol_no_type\n");
+   }
+   symbol->nb_features=POS->CATs->size;
+} else {
+   symbol->feature=NULL;
+   symbol->nb_features=0;
+}
+/* We say that the features have not been initialized yet */
+for (int i=0;i< POS->CATs->size;i++) {
+   symbol->feature[i]=UNSPECIFIED;
+}
+symbol->next=NULL;
+return symbol;
 }
 
 
-symbol_t * symbol_new(POS_t * POS) {
-  symbol_t * res = _symbol_new(POS);
-  symbol_type(res);
-  return res;
+/**
+ * Allocates, initializes and returns a new symbol_t corresponding to the
+ * given POS description.
+ */
+symbol_t* new_symbol_POS(POS_t* POS) {
+symbol_t* s=new_symbol_POS_no_type(POS);
+symbol_type(s);
+return s;
 }
 
 
-
-symbol_t * symbol_EXCLAM_new() {
-
-  symbol_t * symb = (symbol_t *) xmalloc(sizeof(symbol_t));
-
-  symb->type = EXCLAM;
-
-  symb->negative = false;
-  symb->form     = 0;
-  symb->canonic  = 0;
-
-  symb->POS = NULL;
-
-  symb->traits   = NULL;
-  symb->nbtraits = 0;
-  symb->next     = NULL;
-
-  return symb;
+/**
+ * Allocates, initializes and returns a new symbol_t corresponding to the
+ * <PNC> tag in ELAG grammars.
+ */
+symbol_t* new_symbol_PUNC(language_t* language,int canonic) {
+POS_t* POS=language_get_POS(language,PUNC_STR);
+symbol_t* symbol=new_symbol_POS(POS);
+symbol->type=ATOM; 
+symbol->negative=false;
+symbol->form=0;
+symbol->canonic=canonic;
+return symbol;
 }
 
 
-symbol_t * symbol_EQUAL_new() {
-
-  symbol_t * symb = (symbol_t *) xmalloc(sizeof(symbol_t));
-
-  symb->type    = EQUAL;
-
-  symb->negative = false;
-  symb->form    = 0;
-  symb->canonic = 0;
-
-  symb->POS = NULL;
-
-  symb->traits   = NULL;
-  symb->nbtraits = 0;
-  symb->next     = NULL;
-
-  return symb;
-}
-
-symbol_t * symbol_LEXIC_new() {
-
-  symbol_t * symb = (symbol_t *) xmalloc(sizeof(symbol_t));
-
-  symb->type    = LEXIC;
-
-  symb->negative = false;
-  symb->form     = 0;
-  symb->canonic  = 0;
-
-  symb->POS = NULL;
-
-  symb->traits   = NULL;
-  symb->nbtraits = 0;
-  symb->next     = NULL;
-
-  return symb;
+/**
+ * Allocates, initializes and returns a new symbol_t corresponding to the
+ * <PNC> tag in ELAG grammars.
+ */
+symbol_t* new_symbol_PUNC(int punc) {
+return new_symbol_PUNC(LANGUAGE,punc);
 }
 
 
-symbol_t * symbol_epsilon_new() {
-
-  symbol_t * symb = (symbol_t *) xmalloc(sizeof(symbol_t));
-
-  symb->type    = EPSILON;
-
-  symb->negative = false;
-  symb->form    = 0;
-  symb->canonic = 0;
-
-  symb->POS = NULL;
-
-  symb->traits   = NULL;
-  symb->nbtraits = 0;
-  symb->next     = NULL;
-
-  return symb;
+/**
+ * Allocates, initializes and returns a new symbol_t corresponding to the
+ * <NB> tag in ELAG grammars.
+ */
+symbol_t* new_symbol_CHFA(language_t* language,int canonic) {
+POS_t* POS=language_get_POS(language,CHFA_STR);
+symbol_t* symbol=new_symbol_POS(POS);
+symbol->type=ATOM;
+symbol->negative=false;
+symbol->form=0;
+symbol->canonic=canonic;
+return symbol;
 }
 
 
-symbol_t * symbol_PUNC_new(language_t * lang, int canonic) {
-
-  POS_t * POS = language_get_POS(lang, PUNC_STR);
-
-  symbol_t * symb = symbol_new(POS);
-
-  symb->type = ATOM; 
-
-  symb->negative = false;
-  symb->form    = 0;
-  symb->canonic = canonic;
-
-  return symb;
+/**
+ * Allocates, initializes and returns a new symbol_t corresponding to the
+ * <?> tag in ELAG grammars.
+ */
+symbol_t* new_symbol_UNKNOWN(language_t* language,int form) {
+POS_t* POS=language_get_POS(language,UNKNOWN_STR);
+symbol_t* symbol=new_symbol_POS(POS);
+symbol->type=ATOM;
+symbol->negative=false;
+symbol->form=0;
+symbol->canonic=form;
+return symbol;
 }
 
 
-symbol_t * symbol_PUNC_new(int punc) { return symbol_PUNC_new(LANG, punc); }
-
-
-symbol_t * symbol_CHFA_new(language_t * lang, int canonic) {
-
-  POS_t * POS = language_get_POS(lang, CHFA_STR);
-
-  symbol_t * symb = symbol_new(POS);
-
-  symb->type = ATOM;
-
-  symb->negative = false;
-  symb->form    = 0;
-  symb->canonic = canonic;
-
-  return symb;
+/**
+ * Reinitializes the fields of the given symbol_t.
+ */
+void empty_symbol(symbol_t* symbol) {
+if (symbol->feature!=NULL) free(symbol->feature);
+if (symbol->negative) free(symbol->negs);
+symbol->type=-1;
+symbol->negative=false;
+symbol->form=0;
+symbol->canonic=0;
+symbol->POS=NULL;
+symbol->feature=NULL;
+symbol->nb_features=0;
+symbol->next=NULL;
 }
 
 
-
-symbol_t * symbol_unknow_new(language_t * lang, int form) {
-
-  POS_t * POS = language_get_POS(lang, UNKNOW_STR);
-
-  symbol_t * symb = symbol_new(POS);
-
-  symb->type = ATOM;
-
-  symb->negative = false;
-  symb->form    = 0;
-  symb->canonic = form;
-
-  return symb;
+/**
+ * Copies the symbol 'src' into 'dest'. Note that the content of 'dest' will be
+ * overwritten, so that you should call 'empty_symbol' on it before.
+ * 
+ * WARNING: the POS field of 'src' is just copied and NOT duplicated, so that if
+ *          'src->POS' is freed, 'dest->POS' will be undefined.
+ */
+void copy_symbol(symbol_t* dest,symbol_t* src) {
+int i;
+dest->type=src->type;
+if ((dest->negative=src->negative)==true) {
+   dest->nbnegs=src->nbnegs;
+   dest->negs=(int*)malloc(dest->nbnegs*sizeof(int));
+   if (dest->negs==NULL) {
+      fatal_error("Not enough memory in copy_symbol\n");
+   }
+   for (i=0;i<dest->nbnegs;i++) {
+      dest->negs[i]=src->negs[i];
+   }
+} else {
+   dest->form=src->form;
+   dest->canonic=src->canonic;
+}
+dest->POS=src->POS;
+dest->feature=(char*)malloc(src->nb_features*sizeof(char));
+if (dest->feature==NULL) {
+   fatal_error("Not enough memory in copy_symbol\n");
+}
+for (i=0;i<src->nb_features;i++) {
+   dest->feature[i]=src->feature[i];
+}
+dest->nb_features=src->nb_features;
+dest->next=src->next;
 }
 
 
-
-void symbol_empty(symbol_t * symb) {
-
-  free(symb->traits);
-  if (symb->negative) { free(symb->negs); }
-
-  symb->type = -1;
-
-  symb->negative = false;
-  symb->form    = 0;
-  symb->canonic = 0;
-
-  symb->POS = NULL;
-  symb->traits = NULL;
-  symb->nbtraits = 0;
-  symb->next = NULL;
+/**
+ * Allocates, initializes and returns a duplicate of the given symbol.
+ * Note that it is not the same than allocating a new symbol and using
+ * 'copy_symbol', because here, we really duplicate all the fields, even 'POS'.
+ */
+symbol_t* dup_symbol(const symbol_t* symbol) {
+if (symbol==SYMBOL_DEF) {
+   fatal_error("Internal error: invalid function call 'dup_symbol(SYMBOL_DEF)'\n");
+}
+if (symbol==NULL) return NULL;
+symbol_t* res=NULL;
+int i;
+switch (symbol->type) {
+   case LEXIC:
+      res=new_symbol(LEXIC);
+      break;
+   case EPSILON:
+      res=new_symbol(EPSILON);
+      break;
+   case ATOM:
+   case INC_CAN: 
+   case CODE:
+   case INC:
+   case INC_NEG:
+   case CODE_NEG:
+      res=new_symbol_POS(symbol->POS);
+      res->type=symbol->type;
+      if (!symbol->negative) {
+         res->form=symbol->form;
+         res->canonic=symbol->canonic;
+      } else {
+         res->negative=true;
+         res->nbnegs=symbol->nbnegs;
+         res->negs=(int*)malloc(res->nbnegs*sizeof(int));
+         if (res->negs==NULL) {
+            fatal_error("Not enough memory in dup_symbol\n");
+         }
+         for (i=0;i<res->nbnegs;i++) {
+            res->negs[i]=symbol->negs[i];
+         }
+      }
+      /* The 'feature' array has been initialized in 'new_symbol_POS' */
+      for (i=0;i<symbol->nb_features;i++) {
+         res->feature[i]=symbol->feature[i];
+      }
+      break;
+   case EXCLAM:
+      res=new_symbol(EXCLAM);
+      break;
+   case EQUAL:
+      res=new_symbol(EQUAL);
+      break;
+   default: fatal_error("dup_symbol: unknown symbol type: '%c'\n",symbol->type);
+}
+return res;
 }
 
 
-void symbol_copy(symbol_t * dest, symbol_t * src) {
-
-  int i;
-
-  symbol_empty(dest);
-
-  dest->type = src->type;
-
-  if ((dest->negative = src->negative) == true) {
-
-    dest->nbnegs = src->nbnegs;
-    dest->negs   = (int *) xmalloc(dest->nbnegs * sizeof(int));
-    for (i = 0; i < dest->nbnegs; i++) { dest->negs[i] = src->negs[i]; }
-
-  } else {
-
-    dest->form    = src->form;
-    dest->canonic = src->canonic;
-  }
-
-  dest->POS = src->POS;
-
-  dest->traits = (char *) xmalloc(src->nbtraits * sizeof(char));
-  for (i = 0; i < src->nbtraits; i++) { dest->traits[i] = src->traits[i]; }
-  dest->nbtraits = src->nbtraits;
-
-  dest->next = src->next;  
+/**
+ * Returns a duplicate of the given symbol list. Note that
+ * the new list is the mirror of the original one.
+ */
+symbol_t* dup_symbols(const symbol_t* symbols) {
+symbol_t* res=NULL;
+while (symbols!=NULL) {
+   symbol_t* next=res;
+   res=dup_symbol(symbols);
+   res->next=next;
+   symbols=symbols->next;
+}
+return res;
 }
 
 
-symbol_t * symbol_dup(const symbol_t * symb) {
-
-  if (symb == SYMBOL_DEF) { fatal_error("symbol_dup(SYMB_DEF) ??? not sure???\n"); }
-
-  if (symb == NULL) { return NULL; }
-
-  symbol_t * res = NULL;
-  int i;
-
-  switch (symb->type) {
-
-  case LEXIC:
-    res = symbol_LEXIC_new();
-    break;
-
-  case EPSILON:
-    res = symbol_epsilon_new();
-    break;
-
-  case ATOM:
-  case INC_CAN: 
-  case CODE:
-  case INC:
-  case INC_NEG:
-  case CODE_NEG:
-
-    res = symbol_new(symb->POS);
-    res->type    = symb->type;
-
-    if (! symb->negative) {
-      res->form    = symb->form;
-      res->canonic = symb->canonic;
-    } else {
-      res->negative = true;
-      res->nbnegs   = symb->nbnegs;
-      res->negs = (int *) xmalloc(res->nbnegs * sizeof(int));
-      for (i = 0; i < res->nbnegs; i++) { res->negs[i] = symb->negs[i]; }
-    }
-    for (i = 0; i < symb->nbtraits; i++) { res->traits[i] = symb->traits[i]; }
-    break;
-
-  case EXCLAM:
-    res = symbol_EXCLAM_new();
-    break;
-
-  case EQUAL:
-    res = symbol_EQUAL_new();
-    break;
-
-  default:
-    fatal_error("symbol_dup: unknow symbol type: '%c'\n", symb->type);
-  }
-
-  return res;
+/**
+ * Frees the memory associated to the given symbol, except
+ * its 'POS' field, because it is supposed to be freed when
+ * the field 'string_hash_ptr* POSs' of language_t is freed.
+ */
+void free_symbol(symbol_t* symbol) {
+if (symbol==NULL || symbol==SYMBOL_DEF) return;
+if (symbol->negative) free(symbol->negs);
+if (symbol->feature!=NULL) free(symbol->feature);
+free(symbol);
 }
 
 
-
-symbol_t * symbols_dup(const symbol_t * symbs) {
-
-  symbol_t * res = NULL;
-
-  while (symbs) {
-    symbol_t * next = res;
-    res = symbol_dup(symbs);
-    res->next = next;
-    symbs = symbs->next;
-  }
-  return res;
+/**
+ * Frees the memory associated to the given symbol list, except
+ * their 'POS' fields (see 'free_symbol').
+ */
+void free_symbols(symbol_t* symbols) {
+while (symbols!=NULL && symbols!=SYMBOL_DEF) {
+   symbol_t* next=symbols->next;
+   free_symbol(symbols);
+   symbols=next;
+}
 }
 
 
-void symbol_delete(symbol_t * symb) {
-
-  if (symb == NULL || symb == SYMBOL_DEF) { return; }
-
-  if (symb->negative) { free(symb->negs); }
-  free(symb->traits);
-
-  free(symb);
+/**
+ * Appends the symbol 'b' at the end of the list 'a'. If 'end' is not NULL,
+ * then the function copies in it the address of the last element of the new
+ * list.
+ */
+void concat_symbols(symbol_t* a,symbol_t* b,symbol_t** end) {
+if (a==NULL) {
+   fatal_error("NULL 'a' in concat_symbols\n");
 }
-
-
-void symbols_delete(symbol_t * symb) {
-
-  while (symb && symb != SYMBOL_DEF) {
-    symbol_t * next = symb->next;
-    symbol_delete(symb);
-    symb = next;
-  }
+while (a->next!=NULL) {
+   a=a->next;
 }
-
-
-
-void symbols_concat(symbol_t * a, symbol_t * b, symbol_t ** end) {
-
-  if (a == NULL) { fatal_error("symbol_concat: a == NULL\n"); }
-
-  while (a->next) { a = a->next; }
-
-  a->next = b;
-
-  if (end) {
-    while (a->next) { a = a->next; }
-    *end = a;
-  }
+a->next=b;
+if (end) {
+   while (a->next!=NULL) {
+      a=a->next;
+   }
+   (*end)=a;
+}
 }
 
 
@@ -393,15 +345,15 @@ static int symbol_match_codes(symbol_t * s, symbol_t * pcode = NULL) {
 
     bool ok = true;
 
-    for (int i = 0; ok && i < s->POS->nbdiscr; i++) {
+    for (int i = 0; ok && i < s->POS->nb_discr; i++) {
 
-      switch (code->traits[i]) {
+      switch (code->feature[i]) {
 
       case UNSPECIFIED:
 	fatal_error("match_codes: in POS '%S': code with UNSPEC discr code\n", s->POS->name);
 
       default:
-	if ((s->traits[i] != UNSPECIFIED) && (s->traits[i] != code->traits[i])) { ok = false; }
+	if ((s->feature[i] != UNSPECIFIED) && (s->feature[i] != code->feature[i])) { ok = false; }
 	break;
       }
     }
@@ -412,12 +364,12 @@ static int symbol_match_codes(symbol_t * s, symbol_t * pcode = NULL) {
 
 	if (count == 0) { // copy first matching code in pcode
 
-	  for (int i = 0; i < s->POS->nbdiscr; i++) { pcode->traits[i] = code->traits[i]; }
+	  for (int i = 0; i < s->POS->nb_discr; i++) { pcode->feature[i] = code->feature[i]; }
 
 	} else { // set to UNSPEC features which divergent
 
-	  for (int i = 0; i < s->POS->nbdiscr; i++) {
-	    if (pcode->traits[i] != code->traits[i]) { pcode->traits[i] = UNSPECIFIED; }
+	  for (int i = 0; i < s->POS->nb_discr; i++) {
+	    if (pcode->feature[i] != code->feature[i]) { pcode->feature[i] = UNSPECIFIED; }
 	  }
 	}
       }
@@ -451,39 +403,39 @@ int symbol_type(symbol_t * symb) {
 
   if (symb->POS->codes) {
 
-    symbol_t * mcode = _symbol_new(symb->POS);
+    symbol_t * mcode = new_symbol_POS_no_type(symb->POS);
 
     int count = symbol_match_codes(symb, mcode);
 
     if (count == 0) { // symbol doesn't match any POS code -> invalid
       symb->type = -1;
-      symbol_delete(mcode);
+      free_symbol(mcode);
       return symb->type;
     }
 
     if (count == 1) { // it's a code we set discr values to matching code's one
 
       symb->type = CODE;
-      for (int i = 0; i < symb->POS->nbdiscr; i++) { symb->traits[i] = mcode->traits[i]; }
+      for (int i = 0; i < symb->POS->nb_discr; i++) { symb->feature[i] = mcode->feature[i]; }
 
     } else { // we try to lock some traits wich are same value on all matching codes
 
       symb->type = INC;
-      for (int i = 0; i < symb->POS->nbdiscr; i++) {
-	if (symb->traits[i] == UNSPECIFIED) { symb->traits[i] = mcode->traits[i]; }
+      for (int i = 0; i < symb->POS->nb_discr; i++) {
+	if (symb->feature[i] == UNSPECIFIED) { symb->feature[i] = mcode->feature[i]; }
       }      
     }
 
-    symbol_delete(mcode);
+    free_symbol(mcode);
   }
 
 
   if (symb->type == INC) { // if all discr traits are fixed, it's a code
 
     int i;
-    for (i = 0; i < symb->POS->nbdiscr; i++) { if (symb->traits[i] == UNSPECIFIED) { break; } }
+    for (i = 0; i < symb->POS->nb_discr; i++) { if (symb->feature[i] == UNSPECIFIED) { break; } }
 
-    if (i == symb->POS->nbdiscr) { symb->type = CODE; }
+    if (i == symb->POS->nb_discr) { symb->type = CODE; }
   }
 
 
@@ -518,7 +470,7 @@ void symbol_dump_all(const symbol_t * symb, FILE * f) {
   static const unichar locked[] = { 'l', 'o', 'c', 'k', 'e', 'd', 0 };
 
   int i;
-  language_t * lang = symb->POS ? symb->POS->lang : LANG;
+  language_t * lang = symb->POS ? symb->POS->language : LANGUAGE;
 
   u_fprintf(f, "<%c:", symb->type);
 
@@ -535,16 +487,16 @@ void symbol_dump_all(const symbol_t * symb, FILE * f) {
 
     u_fprintf(f, ".%S", symb->POS->name);
 
-    for (i = symb->POS->nbflex; i < symb->POS->CATs->nbelems; i++) {
+    for (i = symb->POS->nb_inflect; i < symb->POS->CATs->size; i++) {
       CAT_t * CAT = POS_get_CAT(symb->POS,i);
-      u_fprintf(f, "+%S=%S", CAT->name, (symb->traits[i] < 0) ? locked : (unichar *) CAT->traits->tab[symb->traits[i]]);
+      u_fprintf(f, "+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[symb->feature[i]]);
     }
 
     u_fprintf(f, ":");
 
-    for (i = 0; i < symb->POS->nbflex; i++) {
+    for (i = 0; i < symb->POS->nb_inflect; i++) {
       CAT_t * CAT = POS_get_CAT(symb->POS,i);
-      u_fprintf(f, "+%S=%S", CAT->name, (symb->traits[i] < 0) ? locked : (unichar *) CAT->traits->tab[symb->traits[i]]);
+      u_fprintf(f, "+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[symb->feature[i]]);
     }
 
   } else {
@@ -556,7 +508,7 @@ void symbol_dump_all(const symbol_t * symb, FILE * f) {
 
 
 
-void symbol_to_text_label(const symbol_t * s, ustring_t * ustr) {
+void symbol_to_text_label(const symbol_t * s, Ustring * ustr) {
 
   if (s == NULL) { fatal_error("symbol 2 text label: symb is null\n"); }
 
@@ -566,40 +518,40 @@ void symbol_to_text_label(const symbol_t * s, ustring_t * ustr) {
     error("symbol2txt: symbol '"); symbol_dump(s); fatal_error("' is'nt an atom.\n");
   }
 
-  language_t * lang = s->POS->lang;
-  if ((u_strcmp(s->POS->name, UNKNOW_STR) == 0) || (u_strcmp(s->POS->name, PUNC_STR) == 0) || (u_strcmp(s->POS->name, CHFA_STR) == 0)) {
-    ustring_copy(ustr, language_get_form(lang, s->canonic));
+  language_t * lang = s->POS->language;
+  if ((u_strcmp(s->POS->name, UNKNOWN_STR) == 0) || (u_strcmp(s->POS->name, PUNC_STR) == 0) || (u_strcmp(s->POS->name, CHFA_STR) == 0)) {
+    u_strcpy(ustr, language_get_form(lang, s->canonic));
     return;
   }
-  ustring_printf(ustr, "{%S,%S.%S", language_get_form(lang, s->form),language_get_form(lang, s->canonic),s->POS->name);
+  u_sprintf(ustr, "{%S,%S.%S", language_get_form(lang, s->form),language_get_form(lang, s->canonic),s->POS->name);
   int i;
   CAT_t * CAT;
 
-  for (i = s->POS->nbflex; i < s->nbtraits; i++) {
-    if (s->traits[i] > 0) {
+  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
+    if (s->feature[i] > 0) {
       CAT = POS_get_CAT(s->POS, i);
-      ustring_concatf(ustr, "+%S", CAT_get_valname(CAT, s->traits[i]));
+      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
     }
   }
 
 
   bool colons = false;
 
-  for (i = 0; i < s->POS->nbflex; i++) {
+  for (i = 0; i < s->POS->nb_inflect; i++) {
 
     CAT = POS_get_CAT(s->POS, i);
 
-    if (s->traits[i] > 0) {
-      if (colons == false) { ustring_concat(ustr, ":"); colons = true; }
-      ustring_concat(ustr, CAT_get_valname(CAT, s->traits[i]));
+    if (s->feature[i] > 0) {
+      if (colons == false) { u_strcat(ustr, ":"); colons = true; }
+      u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
     }
   }
 
-  ustring_concat(ustr, "}");
+  u_strcat(ustr, "}");
 }
 
 
-void symbol_to_implosed_text_label(const symbol_t * s, ustring_t * ustr) {
+void symbol_to_implosed_text_label(const symbol_t * s, Ustring * ustr) {
 
   if (s == NULL) { fatal_error("symbol to text label: symb is null\n"); }
 
@@ -609,22 +561,22 @@ void symbol_to_implosed_text_label(const symbol_t * s, ustring_t * ustr) {
     error("symbol2txt: symbol '"); symbol_dump(s); fatal_error("' is'nt an atom.\n");
   }
 
-  language_t * lang = s->POS->lang;
+  language_t * lang = s->POS->language;
 
-  if ((u_strcmp(s->POS->name, UNKNOW_STR) == 0) || (u_strcmp(s->POS->name, PUNC_STR) == 0) || (u_strcmp(s->POS->name, CHFA_STR) == 0)) {
-    ustring_copy(ustr, language_get_form(lang, s->canonic));
+  if ((u_strcmp(s->POS->name, UNKNOWN_STR) == 0) || (u_strcmp(s->POS->name, PUNC_STR) == 0) || (u_strcmp(s->POS->name, CHFA_STR) == 0)) {
+    u_strcpy(ustr, language_get_form(lang, s->canonic));
     return;
   }
 
-  ustring_printf(ustr, "{%S,%S.%S", language_get_form(lang, s->form), language_get_form(lang, s->canonic), s->POS->name);
+  u_sprintf(ustr, "{%S,%S.%S", language_get_form(lang, s->form), language_get_form(lang, s->canonic), s->POS->name);
 
   int i;
   CAT_t * CAT;
 
-  for (i = s->POS->nbflex; i < s->nbtraits; i++) {
-    if (s->traits[i] > 0) {
+  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
+    if (s->feature[i] > 0) {
       CAT = POS_get_CAT(s->POS, i);
-      ustring_concatf(ustr, "+%S", CAT_get_valname(CAT, s->traits[i]));
+      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
     }
   }
 
@@ -633,263 +585,263 @@ void symbol_to_implosed_text_label(const symbol_t * s, ustring_t * ustr) {
 
     bool colons = false;
 
-    for (i = 0; i < s->POS->nbflex; i++) {
+    for (i = 0; i < s->POS->nb_inflect; i++) {
 
-      if (s->traits[i] > 0) {
+      if (s->feature[i] > 0) {
 
 	CAT = POS_get_CAT(s->POS, i);
 
-	if (colons == false) { ustring_concat(ustr, ":"); colons = true; }
-	ustring_concat(ustr, CAT_get_valname(CAT, s->traits[i]));
+	if (colons == false) { u_strcat(ustr, ":"); colons = true; }
+	u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
       }
     }
   }
 
-  ustring_concat(ustr, "}");
+  u_strcat(ustr, "}");
 }
 
 
 
-void symbol_to_locate_label(const symbol_t * s, ustring_t * ustr) {
+void symbol_to_locate_label(const symbol_t * s, Ustring * ustr) {
 
   if (s == NULL) { fatal_error("symb2locate label: symb is null\n"); }
-  if (s == SYMBOL_DEF) { error("symb2locate: symb is <def>\n"); ustring_copy(ustr, "<def>"); return; }
+  if (s == SYMBOL_DEF) { error("symb2locate: symb is <def>\n"); u_strcpy(ustr, "<def>"); return; }
 
   switch (s->type) {
 
   case LEXIC:
-    ustring_copy(ustr, "<.>");
+    u_strcpy(ustr, "<.>");
     return;
 
   case EPSILON:
-    ustring_copy(ustr, "<E>");
+    u_strcpy(ustr, "<E>");
     return;
 
   case EXCLAM:
     error("'<!>' in concordance fst2 ???\n");
-    ustring_copy(ustr, "!");
+    u_strcpy(ustr, "!");
     return;
 
   case EQUAL:
     error("'<=>' in concordance fst2 ???\n");
-    ustring_copy(ustr, "=");
+    u_strcpy(ustr, "=");
     return;
   }
 
-  language_t * lang = s->POS->lang;
+  language_t * lang = s->POS->language;
 
-  if ((u_strcmp(s->POS->name, UNKNOW_STR) == 0)) { // unknow word
-    ustring_copy(ustr, "<MOT>");
+  if ((u_strcmp(s->POS->name, UNKNOWN_STR) == 0)) { // unknown word
+    u_strcpy(ustr, "<MOT>");
     return;
   } else if ((u_strcmp(s->POS->name, PUNC_STR) == 0) || (u_strcmp(s->POS->name, CHFA_STR) == 0)) {
     if (s->canonic) {
       //      debug("CHFA(%S) : canonic=%S\n", s->POS->name, s->canonic);
-      ustring_copy(ustr, language_get_form(lang, s->canonic));
+      u_strcpy(ustr, language_get_form(lang, s->canonic));
       return;
     }
   }
 
 
   if (! s->negative && s->canonic) {
-    ustring_printf(ustr, "<%S.%S", language_get_form(lang, s->canonic), s->POS->name);
+    u_sprintf(ustr, "<%S.%S", language_get_form(lang, s->canonic), s->POS->name);
   } else {
-    ustring_printf(ustr, "<%S", s->POS->name);
+    u_sprintf(ustr, "<%S", s->POS->name);
   }
 
   int i;
   CAT_t * CAT;
 
-  for (i = s->POS->nbflex; i < s->nbtraits; i++) {
+  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
 
-    if (s->traits[i] > 0) {
+    if (s->feature[i] > 0) {
       CAT = POS_get_CAT(s->POS, i);
-      ustring_concatf(ustr, "+%S", CAT_get_valname(CAT, s->traits[i]));
+      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
     }
   }
 
 
   bool colons = false;
 
-  for (i = 0; i < s->POS->nbflex; i++) {
+  for (i = 0; i < s->POS->nb_inflect; i++) {
 
     CAT = POS_get_CAT(s->POS, i);
 
-    if (s->traits[i] > 0) {
+    if (s->feature[i] > 0) {
 
-      if (colons == false) { ustring_concat(ustr, ":"); colons = true; }
-      ustring_concat(ustr, CAT_get_valname(CAT, s->traits[i]));
+      if (colons == false) { u_strcat(ustr, ":"); colons = true; }
+      u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
 
     }
   }
 
-  ustring_concat(ustr, ">");
+  u_strcat(ustr, ">");
 }
 
 
 
-void symbol_to_grammar_label(const symbol_t * s, ustring_t * ustr) {
+void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
 
   //  debug("symbtogrammlabel\n"); symbol_dump(s); endl();
   
   if (s == NULL) { fatal_error("symb2grammar label: symb is null\n"); }
-  if (s == SYMBOL_DEF) { ustring_copy(ustr, "<def>"); return; }
+  if (s == SYMBOL_DEF) { u_strcpy(ustr, "<def>"); return; }
 
   switch (s->type) {
   case LEXIC:
-    ustring_copy(ustr, "<.>");
+    u_strcpy(ustr, "<.>");
     return;
   case EPSILON:
-    ustring_copy(ustr, "<E>");
+    u_strcpy(ustr, "<E>");
     return;
   case EXCLAM:
-    ustring_copy(ustr, "<!>");
+    u_strcpy(ustr, "<!>");
     return;
   case EQUAL:
-    ustring_copy(ustr, "<=>");
+    u_strcpy(ustr, "<=>");
     return;
   }
 
 
-  language_t * lang = s->POS->lang;
+  language_t * lang = s->POS->language;
 
   if (s->negative) {
 
-    ustring_copy(ustr, "<");
+    u_strcpy(ustr, "<");
     for (int i = 0; i < s->nbnegs; i++) {
-      ustring_concatf(ustr, "!%S", language_get_form(lang, s->negs[i]));
+      u_strcatf(ustr, "!%S", language_get_form(lang, s->negs[i]));
     }
-    ustring_concatf(ustr, ".%S", s->POS->name);
+    u_strcatf(ustr, ".%S", s->POS->name);
 
   } else if (s->canonic) {
 
-    ustring_printf(ustr, "<%S.%S", language_get_form(lang, s->canonic), s->POS->name);
+    u_sprintf(ustr, "<%S.%S", language_get_form(lang, s->canonic), s->POS->name);
 
   } else {    
 
-    ustring_printf(ustr, "<%S", s->POS->name);
+    u_sprintf(ustr, "<%S", s->POS->name);
   }
 
   int i;
   CAT_t * CAT;
 
-  for (i = s->POS->nbflex; i < s->nbtraits; i++) {
+  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
 
-    if (s->traits[i] > 0) {
+    if (s->feature[i] > 0) {
 
       CAT = POS_get_CAT(s->POS, i);
-      ustring_concatf(ustr, "+%S", CAT_get_valname(CAT, s->traits[i]));
+      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
 
-    } else if (s->traits[i] == LOCKED) {
+    } else if (s->feature[i] == LOCKED) {
       /* Pour specifier que l'attribut est bloque on l'ecrit !attrname 
        * ex : !discr
        */
       CAT = POS_get_CAT(s->POS, i);
-      ustring_concatf(ustr, "!%S", CAT->name);
+      u_strcatf(ustr, "!%S", CAT->name);
     }
   }
 
 
   bool colons = false;
 
-  for (i = 0; i < s->POS->nbflex; i++) {
+  for (i = 0; i < s->POS->nb_inflect; i++) {
 
     CAT = POS_get_CAT(s->POS, i);
 
-    if (s->traits[i] > 0) {
+    if (s->feature[i] > 0) {
 
-      if (colons == false) { ustring_concat(ustr, ":"); colons = true; }
-      ustring_concat(ustr, CAT_get_valname(CAT, s->traits[i]));
+      if (colons == false) { u_strcat(ustr, ":"); colons = true; }
+      u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
 
-    } else if (s->traits[i] == LOCKED) {
+    } else if (s->feature[i] == LOCKED) {
 
       /* pour specifier que le code de flexion est bloquer on l'ecrit @valeur
        * ex: @m signifie la meme chose que @f puisque m et f sont dans la meme categorie genres
        */
 
-      if (colons == false) { ustring_concat(ustr, ":"); colons = true; }
-      ustring_concatf(ustr, "@%S", CAT_get_valname(CAT, 1));
+      if (colons == false) { u_strcat(ustr, ":"); colons = true; }
+      u_strcatf(ustr, "@%S", CAT_get_valname(CAT, 1));
     }
   }
 
-  ustring_concat(ustr, ">");
+  u_strcat(ustr, ">");
 }
 
 
 
-void symbol_to_str(const symbol_t * s, ustring_t * ustr) {
+void symbol_to_str(const symbol_t * s, Ustring * ustr) {
 
-  if (s == NULL) { ustring_copy(ustr, "nil"); return; }
-  if (s == SYMBOL_DEF) { ustring_copy(ustr, "<def>"); return; }
+  if (s == NULL) { u_strcpy(ustr, "nil"); return; }
+  if (s == SYMBOL_DEF) { u_strcpy(ustr, "<def>"); return; }
 
   switch (s->type) {
   case LEXIC:
-    ustring_copy(ustr, "<.>");
+    u_strcpy(ustr, "<.>");
     return;
   case EPSILON:
-    ustring_copy(ustr, "<E>");
+    u_strcpy(ustr, "<E>");
     return;
   case EXCLAM:
-    ustring_copy(ustr, "<!>");
+    u_strcpy(ustr, "<!>");
     return;
   case EQUAL:
-    ustring_copy(ustr, "<=>");
+    u_strcpy(ustr, "<=>");
     return;
   }
 
-  language_t * lang = s->POS->lang;
+  language_t * lang = s->POS->language;
 
-  ustring_printf(ustr, "<%c:", s->type);
+  u_sprintf(ustr, "<%c:", s->type);
 
   if (s->negative) {
 
     for (int i = 0; i < s->nbnegs; i++) {
-      ustring_concatf(ustr, "!%S(%d)", language_get_form(lang, s->negs[i]), s->negs[i]);
+      u_strcatf(ustr, "!%S(%d)", language_get_form(lang, s->negs[i]), s->negs[i]);
       //ustring_concatf(ustr, "!%S", language_get_form(lang, s->negs[i]));
     }
 
   } else {
 
-    if (s->form)    { ustring_concatf(ustr, "%S,", language_get_form(lang, s->form)); }
-    if (s->canonic) { ustring_concatf(ustr, "%S", language_get_form(lang, s->canonic)); }
+    if (s->form)    { u_strcatf(ustr, "%S,", language_get_form(lang, s->form)); }
+    if (s->canonic) { u_strcatf(ustr, "%S", language_get_form(lang, s->canonic)); }
   }
 
-  ustring_concatf(ustr, ".%S", s->POS->name);
+  u_strcatf(ustr, ".%S", s->POS->name);
 
   int i;
   CAT_t * CAT;
 
-  for (i = s->POS->nbflex; i < s->nbtraits; i++) {
-    if (s->traits[i] > 0) {
+  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
+    if (s->feature[i] > 0) {
       CAT = POS_get_CAT(s->POS, i);
-      ustring_concatf(ustr, "+%S", CAT_get_valname(CAT, s->traits[i]));
-    } else if (s->traits[i] == LOCKED) {
+      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
+    } else if (s->feature[i] == LOCKED) {
       CAT = POS_get_CAT(s->POS, i);
-      ustring_concatf(ustr, "!%S", CAT->name);
+      u_strcatf(ustr, "!%S", CAT->name);
     }
   }
 
-  ustring_concat(ustr, ":");
+  u_strcat(ustr, ":");
 
-  for (i = 0; i < s->POS->nbflex; i++) {
+  for (i = 0; i < s->POS->nb_inflect; i++) {
 
     CAT = POS_get_CAT(s->POS, i);
 
-    if (s->traits[i] > 0) {
-      ustring_concat(ustr, CAT_get_valname(CAT, s->traits[i]));
-    } else if (s->traits[i] == LOCKED) {
-      ustring_concatf(ustr, "!{%S}", CAT->name);
+    if (s->feature[i] > 0) {
+      u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
+    } else if (s->feature[i] == LOCKED) {
+      u_strcatf(ustr, "!{%S}", CAT->name);
     }
   }  
 
-  ustring_concat(ustr, ">");
+  u_strcat(ustr, ">");
 }
 
 
 void symbol_dump(const symbol_t * s, FILE * f) {
-  ustring_t * ustr = ustring_new();
+  Ustring * ustr = new_Ustring();
   symbol_to_str(s, ustr);
   u_fprintf(f, "%S", ustr->str);
-  ustring_delete(ustr);
+  free_Ustring(ustr);
 }
 
 
@@ -1065,7 +1017,7 @@ symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * bu
     return NULL;
   }
 
-  symbol_t * symb = symbol_new(POS);
+  symbol_t * symb = new_symbol_POS(POS);
   symbol_t * model;
 
   symb->type = ATOM;
@@ -1078,24 +1030,24 @@ symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * bu
 
   // we lock all featuress which are not explicitly set
 
-  for (int i = 0; i < POS->CATs->nbelems; i++) { symb->traits[i] = LOCKED; }
+  for (int i = 0; i < POS->CATs->size; i++) { symb->feature[i] = LOCKED; }
 
 
   unichar * p = u_strtok_char(traits, "+");
 
   while (p) {
 
-    trait_info_t * info = POS_get_trait_infos(POS, p);
+    feature_info_t * info = POS_get_trait_infos(POS, p);
 
     if (info) {
 
-      symb->traits[info->CATid] = info->val;
+      symb->feature[info->CATid] = info->val;
 
     } else if (warnmissing) {
 
-      if (hash_str_table_idx_lookup(lang->unknow_codes, p) == -1) {
-	error("in symbol '%S': unknow value '%S', will not be taken into account\n", label, p);
-	hash_str_table_add(lang->unknow_codes, p, NULL);
+      if (get_value_index(p,lang->unknown_codes,DONT_INSERT) == -1) {
+	      error("in symbol '%S': unknow value '%S', will not be taken into account\n", label, p);
+	      get_value_index(p,lang->unknown_codes,INSERT_IF_NEEDED,NULL);
       }
     }
 
@@ -1123,15 +1075,15 @@ symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * bu
 
   while (p) {
 
-    symbol_t * nouvo = symbol_dup(model);
+    symbol_t * nouvo = dup_symbol(model);
 
     for (; *p; p++) {
 
-      trait_info_t * infos = POS_get_flex_infos(POS, *p);
+      feature_info_t * infos = POS_get_flex_infos(POS, *p);
 
       if (infos == NULL) { error("'%S': unknow flexionnal code '%C'\n", label, *p); goto err_model; }
 
-      nouvo->traits[infos->CATid] = infos->val;
+      nouvo->feature[infos->CATid] = infos->val;
     }
 
 
@@ -1146,15 +1098,15 @@ symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * bu
     p = u_strtok_char(NULL, ":");
   }
 
-  symbol_delete(model);
+  free_symbol(model);
   
   return symb;
 
 err_model:
-  symbol_delete(model);
+  free_symbol(model);
 
 err_symb:
-  symbols_delete(symb);
+  free_symbols(symb);
 
   return NULL;
 }
@@ -1172,7 +1124,7 @@ symbol_t * load_text_symbol(language_t * lang, unichar * label) {
   }
 
   if (u_strcmp(label, "<E>") == 0) {
-    return symbol_epsilon_new();
+    return new_symbol(EPSILON);
   }
 
   if (u_strcmp(label, "<def>") == 0) { fatal_error("<def> trans in text automaton!\n"); }
@@ -1190,18 +1142,18 @@ symbol_t * load_text_symbol(language_t * lang, unichar * label) {
 
     if (buf[1] && buf[0] != '\\') { fatal_error("bad text symbol '%S' (ponctuation too long)\n", label); }
 
-    return symbol_PUNC_new(lang, idx);
+    return new_symbol_PUNC(lang, idx);
 
   } else if (u_is_digit(*buf)) {     /* chiffre arabe */
 
     for (unichar * p = buf; *p; p ++) { if (! u_is_digit(*p)) { fatal_error("bad symbol : '%S' (mixed nums and chars)\n", label); } }
 
-    return symbol_CHFA_new(lang, idx);
+    return new_symbol_CHFA(lang, idx);
   }
 
   /* unknow word  */
 
-  return symbol_unknow_new(lang, idx);
+  return new_symbol_UNKNOWN(lang, idx);
 }
 
 
@@ -1214,13 +1166,13 @@ symbol_t * LEXIC_minus_POS(POS_t * POS) {
   res.next = NULL;
   symbol_t * end = & res;
 
-  for (int i = 0; i < LANG->POSs->nbelems; i++) {
+  for (int i = 0; i < LANGUAGE->POSs->size; i++) {
 
-    POS_t * POS2 = (POS_t *) LANG->POSs->tab[i];
+    POS_t * POS2 = (POS_t *) LANGUAGE->POSs->value[i];
 
     if (POS2 == POS) { continue; }
 
-    symbols_concat(end, symbol_new(POS2), & end);
+    concat_symbols(end, new_symbol_POS(POS2), & end);
   }
 
   return res.next;
@@ -1325,7 +1277,7 @@ static symbol_t * load_gram_symbol(language_t * lang, const unichar * label, uni
   if (POS == NULL) { fatal_error("in symbol '%S': unknow part of speech '%S'\n", label, pos); }
 
 
-  symbol_t * symb = symbol_new(POS);
+  symbol_t * symb = new_symbol_POS(POS);
 
   if (canonic && *canonic) {
 
@@ -1356,17 +1308,17 @@ static symbol_t * load_gram_symbol(language_t * lang, const unichar * label, uni
 
     if (type == '+') { // attribute is set
 
-      trait_info_t * info = POS_get_trait_infos(POS, attr);
+      feature_info_t * info = POS_get_trait_infos(POS, attr);
 
       if (info) {
 
-	symb->traits[info->CATid] = info->val;
+	symb->feature[info->CATid] = info->val;
 
       } else {
 
-	if (hash_str_table_idx_lookup(lang->unknow_codes, attr) == -1) {
+	if (get_value_index(attr,lang->unknown_codes,DONT_INSERT) == -1) {
 	  error("in symbol '%S': unknow attribute '%S', will not be taken into account\n", label, attr);
-	  hash_str_table_add(lang->unknow_codes, attr, NULL);
+	  get_value_index(attr,lang->unknown_codes,INSERT_IF_NEEDED,NULL);
 	}
       }
 
@@ -1374,9 +1326,9 @@ static symbol_t * load_gram_symbol(language_t * lang, const unichar * label, uni
 
       int idx = POS_get_CATid(POS, attr);
       if (idx == -1) { fatal_error("in symbol '%S': unknow feature '%S'\n", label, attr); }
-      if (idx < POS->nbflex) { fatal_error("in symbol '%S': '%S' is a flexionnal feature!\n", label, attr); }
-      if (symb->traits[idx] != UNSPECIFIED) { fatal_error("in symbol '%S': '%S' cannot be locked and set\n", label, attr); }
-      symb->traits[idx] = LOCKED;
+      if (idx < POS->nb_inflect) { fatal_error("in symbol '%S': '%S' is a flexionnal feature!\n", label, attr); }
+      if (symb->feature[idx] != UNSPECIFIED) { fatal_error("in symbol '%S': '%S' cannot be locked and set\n", label, attr); }
+      symb->feature[idx] = LOCKED;
     }
 
     attr = p + 1;
@@ -1406,18 +1358,18 @@ static symbol_t * load_gram_symbol(language_t * lang, const unichar * label, uni
       *p = 0;
     }
 
-    symbol_t * nouvo = symbol_dup(model);
+    symbol_t * nouvo = dup_symbol(model);
 
     for (; *attr; attr++) {
 
-      trait_info_t * infos;
+      feature_info_t * infos;
 
       if (*attr == '@') { // flexionnal feature is locked
 	attr++;
 	if ((infos = POS_get_flex_infos(POS, *attr)) == NULL) {
 	  fatal_error("in symbol '%S': unknow flex code '%C'\n", label, *attr);
 	}
-	nouvo->traits[infos->CATid] = LOCKED;
+	nouvo->feature[infos->CATid] = LOCKED;
 	
       } else { // flexionnal code is set
 
@@ -1425,7 +1377,7 @@ static symbol_t * load_gram_symbol(language_t * lang, const unichar * label, uni
 	  fatal_error("in symbol '%S': unknow flexionnal code '%C'\n", label, *attr);
 	}
 
-	nouvo->traits[infos->CATid] = infos->val;
+	nouvo->feature[infos->CATid] = infos->val;
       }
     }
 
@@ -1437,7 +1389,7 @@ static symbol_t * load_gram_symbol(language_t * lang, const unichar * label, uni
     attr = p + 1;
   }
 
-  symbol_delete(model);
+  free_symbol(model);
 
   return symb;
 }
@@ -1453,7 +1405,7 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
 
   if (*buf == '{' && buf[1]) {   /*  dictionnary entry ( {__,__.__} ) */
 
-    if (u_strcmp(buf, "{S}") == 0) { return symbol_PUNC_new(lang, language_add_form(lang, buf)); } // limite de phrase
+    if (u_strcmp(buf, "{S}") == 0) { return new_symbol_PUNC(lang, language_add_form(lang, buf)); } // limite de phrase
 
     error("'%S': DELAS entry in Elag grammar????\n", label);
 
@@ -1469,11 +1421,11 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
 
     /* EPSILON */
 
-    if (u_strcmp(buf, "<E>") == 0) { return symbol_epsilon_new(); }
+    if (u_strcmp(buf, "<E>") == 0) { return new_symbol(EPSILON); }
 
     /* UNIVERSEL */
 
-    if (u_strcmp(buf, "<.>") == 0) { return symbol_LEXIC_new(); }
+    if (u_strcmp(buf, "<.>") == 0) { return new_symbol(LEXIC); }
 
 
     /* special def label */
@@ -1483,12 +1435,12 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
 
     /* special EXCLAM symbol */
 
-    if (u_strcmp(buf, "<!>") == 0) { return symbol_EXCLAM_new(); }
+    if (u_strcmp(buf, "<!>") == 0) { return new_symbol(EXCLAM); }
 
 
     /* special EQUAL symbol */
 
-    if (u_strcmp(buf, "<=>") == 0) { return symbol_EQUAL_new(); }
+    if (u_strcmp(buf, "<=>") == 0) { return new_symbol(EQUAL); }
 
 
     /* etiquette incomplete */
@@ -1500,12 +1452,12 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
 
   /* special EXCLAM symbol */
 
-  if (*buf == '!' && buf[1] == 0) { return symbol_EXCLAM_new(); }
+  if (*buf == '!' && buf[1] == 0) { return new_symbol(EXCLAM); }
 
 
   /* special EQUAL symbol */
 
-  if (*buf == '=' && buf[1] == 0) { return symbol_EQUAL_new(); }
+  if (*buf == '=' && buf[1] == 0) { return new_symbol(EQUAL); }
 
 
 
@@ -1518,7 +1470,7 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
     if (*buf == '\\' && (! buf[1] || buf[2])) { fatal_error("bad PUNC symbol '%S'\n", label); }
     if (buf[1] && buf[0] != '\\') { fatal_error("bad symbol '%S' (PONC too long)\n", label); }
 
-    return symbol_PUNC_new(lang, idx);
+    return new_symbol_PUNC(lang, idx);
   }
 
 
@@ -1530,7 +1482,7 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
       if (! u_is_digit(*p)) { fatal_error("bad symbol : '%S' (mixed nums and chars)\n", label); }
     }
 
-    return symbol_CHFA_new(lang, idx);
+    return new_symbol_CHFA(lang, idx);
   }
 
 
@@ -1538,7 +1490,7 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
 
   error("label '%S': unknow word in grammar???\n", label);
 
-  return symbol_unknow_new(lang, idx);
+  return new_symbol_UNKNOWN(lang, idx);
 }
 
 
@@ -1546,19 +1498,19 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
 #if 0
 static bool symbol_equals_traits(symbol_t * a, symbol_t * b) {
 
-  if (b->nbtraits < a->nbtraits) {
+  if (b->nb_features < a->nb_features) {
     symbol_t * tmp = a;
     a = b;
     b = tmp;
   }
 
   int i;
-  for (i = 0; i < a->nbtraits; i++) {
-    if (a->traits[i] != b->traits[i]) { return false; }
+  for (i = 0; i < a->nb_features; i++) {
+    if (a->values[i] != b->values[i]) { return false; }
   }
 
-  for (; i < b->nbtraits; i++) {
-    if (b->traits[i] != UNSPECIFIED) { return false; }
+  for (; i < b->nb_features; i++) {
+    if (b->values[i] != UNSPECIFIED) { return false; }
   }
   return true;
 }

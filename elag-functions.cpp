@@ -51,18 +51,18 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
   static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
   static unichar _rejected[]   = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
 
-  symbol_t * unloadable = symbol_unknow_new(LANG, language_add_form(LANG, _unloadable));
-  symbol_t * rejected   = symbol_unknow_new(LANG, language_add_form(LANG, _rejected));
+  symbol_t * unloadable = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE, _unloadable));
+  symbol_t * rejected   = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE, _rejected));
   
   u_printf("\n* leve ambiguite(%s): %d grammar%s.\n", fstname, gramms->nbelems,
          gramms->nbelems > 1 ?  "s" : "");
 
-  fst_file_in_t * txtin = fst_file_in_open(fstname, FST_TEXT);
+  fst_file_in_t * txtin = load_fst_file(fstname, FST_TEXT);
 
   if (txtin == NULL) { fatal_error("unable to load text '%s'\n", fstname); }
 
 
-  error("%d sentence(s) in %s\n", txtin->nbelems, fstname);
+  error("%d sentence(s) in %s\n", txtin->nb_automata, fstname);
 
 
   fst_file_out_t * fstout = fst_file_out_open(outname, FST_TEXT);
@@ -90,7 +90,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
     autalmot_t * orig = autalmot_dup(A);
 
-    if (no % 100 == 0) { u_printf("sentence %d/%d ...\r", no + 1, txtin->nbelems); }
+    if (no % 100 == 0) { u_printf("sentence %d/%d ...\r", no + 1, txtin->nb_automata); }
 
     autalmot_determinize(A);
     autalmot_emonde(A);
@@ -236,8 +236,8 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
   u_printf("(Other residual: %.5f %% of residual ambig.)\n", exp(logITe - logITo) * (double) 100.);
   u_printf("\n%d sentences, %d not successfully loaded and %d rejected by elag grammars.\n\n",
          no, nb_unloadable, nbPhrRej);
-  symbol_delete(unloadable);
-  symbol_delete(rejected);
+  free_symbol(unloadable);
+  free_symbol(rejected);
 }
 
 
@@ -308,9 +308,9 @@ static void add_limphrase(autalmot_t * A) {
 
   static unichar S[] = { '{', 'S', '}', 0 };
 
-  int idx = language_add_form(LANG, S);
+  int idx = language_add_form(LANGUAGE, S);
 
-  symbol_t * LIM = symbol_PUNC_new(LANG, idx);
+  symbol_t * LIM = new_symbol_PUNC(LANGUAGE, idx);
 
   int initBis   = autalmot_add_state(A);
   int nouvFinal = autalmot_add_state(A, AUT_TERMINAL);
@@ -331,7 +331,7 @@ static void add_limphrase(autalmot_t * A) {
     }
   }
 
-  symbol_delete(LIM);
+  free_symbol(LIM);
 }
 
 

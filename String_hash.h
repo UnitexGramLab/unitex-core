@@ -35,6 +35,7 @@
 #define INSERT_IF_NEEDED 0
 #define DONT_INSERT 1
 
+#define DEFAULT_CAPACITY 16
 
 /**
  * This is a list of transitions in the hash tree. It is tagged by a letter and it
@@ -82,6 +83,21 @@ struct string_hash {
 };
 
 
+/**
+ * This structure is used to manage string hashs in which the values are not
+ * unichar* but void*.
+ */
+struct string_hash_ptr {
+   struct string_hash* hash;
+   /* We use our own capacity, because the string_hash's one will be set to
+    * DONT_USE_VALUES. We also use our own size field, in order to keep the
+    * same behavior (hash->size) than with normal string_hash. */
+   int capacity;
+   int size;
+   void** value;
+};
+
+
 struct string_hash* new_string_hash(int,int);
 struct string_hash* new_string_hash(int);
 struct string_hash* new_string_hash();
@@ -94,4 +110,12 @@ struct string_hash* load_key_value_list(char*,unichar);
 void dump_values(FILE*,struct string_hash*);
 int get_longest_key_index(unichar*,int*,struct string_hash*);
 
+
+struct string_hash_ptr* new_string_hash_ptr(int);
+struct string_hash_ptr* new_string_hash_ptr();
+void free_string_hash_ptr(struct string_hash_ptr*,void (*)(void*));
+int get_value_index(unichar*,struct string_hash_ptr*,int);
+int get_value_index(unichar*,struct string_hash_ptr*);
+int get_value_index(unichar*,struct string_hash_ptr*,int,void*);
+void* get_value(unichar*,struct string_hash_ptr*);
 #endif

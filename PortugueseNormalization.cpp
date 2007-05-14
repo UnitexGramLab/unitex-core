@@ -86,10 +86,10 @@ while (L!=NULL) {
       // first, we normalize the sequences by removing all spaces
       u_strcpy_without_space(temp,L->output);
       u_strcpy(L->output,temp);
-      // then we check if this sequence has allready been processed
+      // then we check if this sequence has already been processed
       int J=get_value_index(L->output,hash,DONT_INSERT);
       if (J!=-1) {
-         // if the sequence has allready been analyzed, we do nothing
+         // if the sequence has already been analyzed, we do nothing
       }
       else {
          get_value_index(L->output,hash);

@@ -19,126 +19,132 @@
   *
   */
 
-#include "Load_DLF_DLC.h"
+#include "DELA_tree.h"
 #include "Error.h"
 
 
-struct noeud_dlf_dlc* new_noeud_dlf_dlc() {
-struct noeud_dlf_dlc* n;
-n=(struct noeud_dlf_dlc*)malloc(sizeof(struct noeud_dlf_dlc));
-n->liste=NULL;
-n->trans=NULL;
-return n;
+void free_dela_entry_list(struct dela_entry_list*);
+
+
+/**
+ * Allocates, initializes and returns a new DELA tree.
+ */
+struct DELA_tree* new_DELA_tree() {
+struct DELA_tree* tree;
+tree=(struct DELA_tree*)malloc(sizeof(struct DELA_tree));
+if (tree==NULL) {
+   fatal_error("Not enough memory in new_DELA_tree\n");
+}
+tree->inflected_forms=new_string_hash(DONT_USE_VALUES);
+tree->size=0;
+tree->capacity=256;
+tree->dela_entries=(struct dela_entry_list**)malloc(tree->capacity*sizeof(struct dela_entry_list*));
+return tree;
 }
 
 
-struct trans_dlf_dlc* new_trans_dlf_dlc() {
-struct trans_dlf_dlc* t;
-t=(struct trans_dlf_dlc*)malloc(sizeof(struct trans_dlf_dlc));
-t->arr=NULL;
-t->suivant=NULL;
-return t;
+/**
+ * Frees all the memory associated to the given DELA tree.
+ */
+void free_DELA_tree(struct DELA_tree* tree) {
+if (tree==NULL) return;
+free_string_hash(tree->inflected_forms);
+for (int i=0;i<tree->size;i++) {
+   free_dela_entry_list(tree->dela_entries[i]);
+}
+free(tree->dela_entries);
+free(tree);
 }
 
 
-struct liste_chaines* new_liste_chaines(struct dela_entry* entry) {
-struct liste_chaines* l;
-l=(struct liste_chaines*)malloc(sizeof(struct liste_chaines));
-l->suivant=NULL;
-l->entry=clone_dela_entry(entry);
+/**
+ * Allocates, initializes and returns a new DELA entry. The 'clone' parameter
+ * indicates whether the given entry must be cloned or not. If not, the function
+ * only copies the pointed address.
+ */
+struct dela_entry_list* new_dela_entry_list(struct dela_entry* entry,int clone) {
+struct dela_entry_list* l;
+l=(struct dela_entry_list*)malloc(sizeof(struct dela_entry_list));
+if (l==NULL) {
+   fatal_error("Not enough memory in new_dela_entry_list\n");
+}
+l->next=NULL;
+if (clone) l->entry=clone_dela_entry(entry);
+else l->entry=entry;
 return l;
 }
 
 
-void free_noeud_dlf_dlc(struct noeud_dlf_dlc* n) {
-if (n==NULL) return;
-free_liste_chaines(n->liste);
-free_trans_dlf_dlc(n->trans);
-free(n);
-}
-
-
-void free_trans_dlf_dlc(struct trans_dlf_dlc* t) {
-struct trans_dlf_dlc* tmp;
-while (t!=NULL) {
-  tmp=t;
-  t=t->suivant;
-  free_noeud_dlf_dlc(tmp->arr);
-  free(tmp);
-}
-}
-
-
-void free_liste_chaines(struct liste_chaines* l) {
-struct liste_chaines* tmp;
+/**
+ * Frees all the memory associated to the given DELA entry list.
+ */
+void free_dela_entry_list(struct dela_entry_list* l) {
+struct dela_entry_list* tmp;
 while (l!=NULL) {
-  tmp=l;
-  l=l->suivant;
-  free_dela_entry(tmp->entry);
-  free(tmp);
+   tmp=l;
+   l=l->next;
+   free_dela_entry(tmp->entry);
+   free(tmp);
 }
 }
 
 
-
-struct liste_chaines* inserer_si_absent_dans_liste_chaines(struct dela_entry* entry,
-                                                           struct liste_chaines* l) {
-if (l==NULL) return new_liste_chaines(entry);
-if (equal(l->entry,entry)) return l;
-l->suivant=inserer_si_absent_dans_liste_chaines(entry,l->suivant);
+/**
+ * Inserts the given entry in the given entry list, if not already present.
+ * If the entry is already present, then it is freed.
+ */
+struct dela_entry_list* insert_if_not_present(struct dela_entry* entry,
+                                              struct dela_entry_list* l) {
+if (l==NULL) return new_dela_entry_list(entry,0);
+if (equal(l->entry,entry)) {
+   free_dela_entry(entry);
+   return l;
+}
+l->next=insert_if_not_present(entry,l->next);
 return l;
 }
 
 
-
-struct trans_dlf_dlc* get_trans_dlf_dlc(unichar c,struct trans_dlf_dlc* l) {
-if (l==NULL) return NULL;
-if (l->c==c) return l;
-return get_trans_dlf_dlc(c,l->suivant);
+/**
+ * Adds the given DELA entry to the given tree. If the entry is already
+ * present in the tree, then it is freed. Otherwise, it is put in the tree
+ * so that IT MUST NOT BE FREED!
+ */
+void add_entry(struct DELA_tree* tree,struct dela_entry* entry) {
+int n=get_value_index(entry->inflected,tree->inflected_forms);
+if (n==tree->size) {
+   /* If there was no entry list for the given inflected form */
+   if (n==tree->capacity) {
+      /* If we must double the array capacity */
+      tree->capacity=2*tree->capacity;
+      tree->dela_entries=(struct dela_entry_list**)realloc(tree->dela_entries,tree->capacity*sizeof(struct dela_entry_list*));
+      if (tree->dela_entries==NULL) {
+         fatal_error("Not enough memory in add_entry\n");
+      }
+   }
+   tree->dela_entries[n]=NULL;
+   (tree->size)++;
+}
+tree->dela_entries[n]=insert_if_not_present(entry,tree->dela_entries[n]);
 }
 
 
-
-void inserer_dlf_dlc(int pos,struct dela_entry* entry,struct noeud_dlf_dlc* n) {
-if (entry->inflected[pos]=='\0') {
-   // if we are at the end of the flechi string, we must insert the code
-   n->liste=inserer_si_absent_dans_liste_chaines(entry,n->liste);
-   return;
-}
-struct trans_dlf_dlc* trans;
-trans=get_trans_dlf_dlc(entry->inflected[pos],n->trans);
-if (trans==NULL) {
-   // if the transition does not exist, we create it
-   trans=new_trans_dlf_dlc();
-   trans->c=entry->inflected[pos];
-   trans->arr=new_noeud_dlf_dlc();
-   trans->suivant=n->trans;
-   n->trans=trans;
-}
-inserer_dlf_dlc(pos+1,entry,trans->arr);
-}
-
-
-
-void inserer_dans_arbre_dlf_dlc(struct dela_entry* entry,struct noeud_dlf_dlc* racine) {
-inserer_dlf_dlc(0,entry,racine);
-}
-
-
-
-void load_dlf_dlc(char* nom,struct noeud_dlf_dlc* racine) {
-FILE* f;
-f=u_fopen(nom,U_READ);
+/**
+ * Loads the given DELA into the given DELA tree.
+ */
+void load_DELA(char* name,struct DELA_tree* tree) {
+FILE* f=u_fopen(name,U_READ);
 if (f==NULL) {
-   error("Cannot load dictionary %s\n",nom);
+   error("Cannot load dictionary %s\n",name);
    return;
 }
-u_printf("Loading %s...\n",nom);
-unichar ligne[1000];
-while (EOF!=u_fgets(ligne,f)) {
-   struct dela_entry* entry=tokenize_DELAF_line(ligne,1);
-   inserer_dans_arbre_dlf_dlc(entry,racine);
-   free_dela_entry(entry);
+u_printf("Loading %s...\n",name);
+unichar line[4096];
+while (EOF!=u_fgets(line,f)) {
+   struct dela_entry* entry=tokenize_DELAF_line(line,1);
+   add_entry(tree,entry);
+   /* We don't need to free the entry, since it's done (if needed)
+    * in the insertion function */
 }
 u_fclose(f);
 }

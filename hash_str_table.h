@@ -71,12 +71,12 @@ void * hash_str_table_lookup(hash_str_table_t * table, unichar * key);
 
 
 
-inline int hash_str_table_add(hash_str_table_t * table, ustring_t * key, void * value) {
+inline int hash_str_table_add(hash_str_table_t * table, Ustring * key, void * value) {
   return hash_str_table_add(table, key->str, value);
 }
 
-inline int hash_str_table_idx_lookup(hash_str_table_t * T, ustring_t * k) { return hash_str_table_idx_lookup(T, k->str); }
-inline void * hash_str_table_lookup(hash_str_table_t * table, ustring_t * k) { return hash_str_table_lookup(table, k->str); }
+inline int hash_str_table_idx_lookup(hash_str_table_t * T, Ustring * k) { return hash_str_table_idx_lookup(T, k->str); }
+inline void * hash_str_table_lookup(hash_str_table_t * table, Ustring * k) { return hash_str_table_lookup(table, k->str); }
 
 
 #endif

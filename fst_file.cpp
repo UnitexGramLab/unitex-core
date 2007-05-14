@@ -32,132 +32,108 @@
 #define MAXBUF  1024
 
 
-static int fst_file_load_symbols(fst_file_in_t * fstf) {
-
-  //  debug("load_symbols\n");
-
-  hash_str_table_empty(fstf->symbols);
-
-  long fpos = ftell(fstf->f);
-
-  rewind(fstf->f);
-
-
-  /* go to labels section */
-  
-  unichar buf[MAXBUF];
-
-  int i = 0, len;
-  while (i < fstf->nbelems) {
-
-    if ((len = u_fgets(buf, MAXBUF, fstf->f)) == EOF) {
-      error("load_fst_symbols: %s: unexpected EOF\n", fstf->name); return -1;
-    }
-
-    if (buf[0] == 'f' && isspace(buf[1])) { i++; }
-
-    while ((len == MAXBUF - 1) && (buf[len - 1] != '\n')) { len = u_fgets(buf, MAXBUF, fstf->f); } // read end of line
-  }
-
-
-  symbol_t * (*load_symbol)(language_t * lang, unichar * lbl);
-  load_symbol = (fstf->type == FST_TEXT) ? load_text_symbol : load_grammar_symbol;
-
-
-  ustring_t * ustr = ustring_new(64);
-
-  while (ustring_readline(ustr, fstf->f) && ustr->str[0] != 'f') {
-
-    if (ustr->str[0] != '%' && ustr->str[0] != '@') {
-      error("load_fst_symbols: %s: bad symbol line: '%S'\n", fstf->name, ustr->str);
+/**
+ * Loads the tags of the given .fst2 file. Returns 0 in case of success; -1 otherwise.
+ * Note that the position in the file is unchanged after a call to this function.
+ */
+int load_fst_tags(fst_file_in_t* fst) {
+//hash_str_table_empty(fstf->symbols);
+/* We backup the position in the file, and we come back at the
+ * beginning of the file */
+long fpos=ftell(fst->f);
+rewind(fst->f);
+/* Now, we go to the tags section, skipping all the automata */
+unichar buf[MAXBUF];
+int i=0;
+int len;
+while (i<fst->nb_automata) {
+   if ((len=u_fgets(buf,MAXBUF,fst->f))==EOF) {
+      error("load_fst_tags: %s: unexpected EOF\n",fst->name);
       return -1;
-    }
-
-    ustring_chomp_nl(ustr);
-
-    // debug("symb '%S':\n", ustr->str + 1);
-
-    symbol_t * symb = load_symbol(fstf->lang, ustr->str + 1);
-
-    if (symb == NULL) { error("fst_load_symbols: unable to load '%S'\n", ustr->str + 1); }
-
-    //    debug("'%S'\t->\t", ustr->str + 1); symbols_dump(symb); endl();
-
-    hash_str_table_add(fstf->symbols, ustr->str + 1, symb);
-  }
-
-  if (*ustr->str == 0) { fatal_error("load_symbols: unexpected eof\n"); }
-
-//  debug("%d symbols loaded.\n", fstf->symbols->nbelems);
-
-  ustring_delete(ustr);
-
-  fseek(fstf->f, fpos, SEEK_SET);
-
-  return 0;
+   }
+   if (buf[0]=='f' && isspace(buf[1])) {
+      i++;
+   }
+   /* If we have read the beginning of a long line, we skip the rest of the line */
+   while ((len==MAXBUF-1) && (buf[len-1]!='\n')) {
+      len=u_fgets(buf,MAXBUF,fst->f);
+   }
+}
+/* We set the tag loading function, depending on the kind of .fst2 we have */
+symbol_t* (*load_symbol)(language_t*,unichar*);
+load_symbol=(fst->type==FST_TEXT)?load_text_symbol:load_grammar_symbol;
+Ustring* ustr=new_Ustring(64);
+while (readline(ustr,fst->f) && ustr->str[0]!='f') {
+   if (ustr->str[0]!='%' && ustr->str[0]!='@') {
+      error("load_fst_tags: %s: bad symbol line: '%S'\n",fst->name,ustr->str);
+      return -1;
+   }
+   chomp_new_line(ustr);
+   /* +1 because we ignore the % or @ at the beginning of the line */
+   symbol_t* symbol=load_symbol(fst->lang,ustr->str+1);
+   if (symbol==NULL) {
+      error("load_fst_tags: unable to load '%S'\n",ustr->str+1);
+   }
+   /* We add this symbol to the symbols of the .fst2 */
+   get_value_index(ustr->str+1,fst->symbols,INSERT_IF_NEEDED,symbol);
+}
+if (*ustr->str==0) {
+   fatal_error("load_fst_tags: unexpected EOF\n");
+}
+free_Ustring(ustr);
+/* We set back the position in the file */
+fseek(fst->f,fpos,SEEK_SET);
+return 0;
 }
 
 
+/**
+ * Loads a .fst2 file with the given name and type, according to the
+ * given language description.
+ */
+fst_file_in_t* load_fst_file(char* fname,int type,language_t* language) {
+fst_file_in_t* fstf=(fst_file_in_t*)malloc(sizeof(fst_file_in_t));
+if (fstf==NULL) {
+   fatal_error("Not enough memory in load_fst_file\n");
+}
+fstf->name=strdup(fname);
+if ((fstf->f=u_fopen(fname,U_READ))==NULL) {
+   error("load_fst_file: unable to open '%s' for reading\n",fname);
+   goto error_fstf;
+}
+unichar buf[MAXBUF];
+if (u_fgets(buf,MAXBUF,fstf->f)==EOF) {
+   error("load_fst_file: '%s' is empty\n",fname);
+   goto error_f;
+}
+if (!u_is_digit(*buf)) {
+   error("load_fst_file: %s: bad file format\n",fname);
+   goto error_f;
+} 
+fstf->nb_automata=u_parse_int(buf);
+if (type!=FST_TEXT && type!=FST_GRAMMAR) {
+   error("load_fst_file: bad fst_type=%d\n",type);
+   goto error_f;
+}
+fstf->lang=language;
+fstf->type=type;
+fstf->pos0=ftell(fstf->f);
+fstf->symbols=new_string_hash_ptr(64);
+if (load_fst_tags(fstf)==-1) {
+   error("load_fst_file: %s: cannot load symbols\n",fstf->name);
+   goto error_symbols;
+}
+fstf->pos=0;
+return fstf;
+/* If an error occurs */
+error_symbols: free_string_hash_ptr(fstf->symbols,(void(*)(void*))free_symbols);
 
-fst_file_in_t * fst_file_in_open(char * fname, int type, language_t * lang) {
+error_f: fclose(fstf->f);
 
-  fst_file_in_t * fstf = (fst_file_in_t *) xmalloc(sizeof(fst_file_in_t));
+error_fstf: free(fstf->name);
 
-  fstf->name = strdup(fname);
-
-  if ((fstf->f = u_fopen(fname, U_READ)) == NULL) {
-    error("fst_file_open: unable to open '%s' for reading\n", fname);
-    goto error_fstf;
-  }
-
-  unichar buf[MAXBUF];
-
-  if (u_fgets(buf, MAXBUF, fstf->f) == EOF) {
-    error("fst_file_open: '%s' is empty\n", fname);
-    goto error_f;
-  }
-
-  if (! u_is_digit(*buf)) {
-    error("fst_file_open: %s: bad file format\n", fname);
-    goto error_f;
-  } 
-
-  fstf->nbelems = u_parse_int(buf);
-
-  // debug("fst_in_open: %s: %d autos\n", fstf->name, fstf->nbelems);
-
-
-  if (type != FST_TEXT && type != FST_GRAMMAR) {
-    error("fst_file_in_open: bad fst_type=%d\n", type);
-    goto error_f;
-  }
-
-  fstf->lang = lang;
-  fstf->type = type;
-  fstf->pos0 = ftell(fstf->f);
-
-  fstf->symbols = hash_str_table_new(64);
-  if (fst_file_load_symbols(fstf) == -1) {
-    error("fst_file_open: %s: cannot load symbols\n", fstf->name);
-    goto error_symbols;
-  }
-
-  fstf->pos = 0;
-
-  return fstf;
-
-
-error_symbols:
-  hash_str_table_delete(fstf->symbols);
-
-error_f:
-  fclose(fstf->f);
-
-error_fstf:
-  free(fstf->name);
-  free(fstf);
-
-  return NULL;
+free(fstf);
+return NULL;
 }
 
 
@@ -165,7 +141,7 @@ void fst_file_close(fst_file_in_t * fstf) {
 
   free(fstf->name);
   fclose(fstf->f);
-  hash_str_table_delete(fstf->symbols, (release_f) symbols_delete);
+  free_string_hash_ptr(fstf->symbols,(void(*)(void*))free_symbols);
 
   free(fstf);
 }
@@ -177,12 +153,12 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
 
 //  debug("autalmot_load_next\n");
 
-  if (fstf->pos >= fstf->nbelems) { return NULL; }
+  if (fstf->pos >= fstf->nb_automata) { return NULL; }
 
-  ustring_t * ustr = ustring_new();
+  Ustring * ustr = new_Ustring();
 
-  ustring_readline(ustr, fstf->f);
-  ustring_chomp_nl(ustr);
+  readline(ustr, fstf->f);
+  chomp_new_line(ustr);
 
   // debug("line=%S\n", ustr->str);
 
@@ -205,9 +181,9 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
 
   autalmot_t * A = autalmot_new(p);
 
-  while (ustring_readline(ustr, fstf->f) && *ustr->str != 'f') { /* read states */
+  while (readline(ustr, fstf->f) && *ustr->str != 'f') { /* read states */
 
-    ustring_chomp_nl(ustr);
+    chomp_new_line(ustr);
     p = ustr->str;
 
     int i = autalmot_add_state(A, (*p == 't') ? AUT_FINAL : 0);
@@ -225,8 +201,8 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
       if (*p == 0) { fatal_error("fst_load: %S: bad file format (line='%S')\n", fstf->name, ustr->str); }
       int to = u_parse_int(p, &p);
 
-      if (fstf->symbols->tab[lbl]) { /* if it is a good symbol (successfully loaded), make transition */
-	autalmot_add_trans(A, i, (symbol_t *) fstf->symbols->tab[lbl], to);
+      if (fstf->symbols->value[lbl]!=NULL) { /* if it is a good symbol (successfully loaded), make transition */
+	      autalmot_add_trans(A, i, (symbol_t *) fstf->symbols->value[lbl], to);
       }
 
       while (*p && ! u_is_digit(*p)) { p++; }      
@@ -245,7 +221,7 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
 
   fstf->pos++;
 
-  ustring_delete(ustr);
+  free_Ustring(ustr);
 
   return A;
 }
@@ -253,8 +229,8 @@ autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
 
 void fst_file_seek(fst_file_in_t * fstin, int no) {
 
-  if (no < 0 || no >= fstin->nbelems) {
-    fatal_error("fst_seek(%d): only %d automat%s in file\n", no, fstin->nbelems, (no > 1) ? "a" : "on");
+  if (no < 0 || no >= fstin->nb_automata) {
+    fatal_error("fst_seek(%d): only %d automat%s in file\n", no, fstin->nb_automata, (no > 1) ? "a" : "on");
   }
 
   if (no < fstin->pos) {
@@ -304,12 +280,12 @@ fst_file_out_t * fst_file_out_open(char * fname, int type) {
   res->name    = strdup(fname);
   res->type    = type;
   res->nbelems = 0;
-  res->labels  = hash_str_table_new(16);
+  res->labels=new_string_hash(16);
 
   /* add <E> */
 
   unichar epsilon[] = { '<', 'E', '>', 0 };
-  hash_str_table_add(res->labels, epsilon, u_strdup(epsilon));
+  get_value_index(epsilon,res->labels);
 
   return res;
 }
@@ -317,7 +293,7 @@ fst_file_out_t * fst_file_out_open(char * fname, int type) {
 
 
 void output_labels(fst_file_out_t * fstout) {
-  for (int i = 0; i < fstout->labels->nbelems; i++) { u_fprintf(fstout->f, "%%%S\n", fstout->labels->tab[i]); }
+  for (int i = 0; i < fstout->labels->size; i++) { u_fprintf(fstout->f, "%%%S\n", fstout->labels->value[i]); }
   u_fprintf(fstout->f, "f\n");
 }
 
@@ -350,7 +326,7 @@ void fst_file_close(fst_file_out_t * fstout) {
 
   fclose(fstout->f);
 
-  hash_str_table_delete(fstout->labels, (release_f) free);
+  free_string_hash(fstout->labels);
   free(fstout->name);
 
   free(fstout);
@@ -370,10 +346,7 @@ void PNC_trans_write(fst_file_out_t * fstf, int to) {
     if (*pnc != '{') {
       label[0] = *pnc;
 
-      if ((idx = hash_str_table_idx_lookup(fstf->labels, label)) == -1) {
-	idx = hash_str_table_add(fstf->labels, label, u_strdup(label));
-      }
-
+      idx=get_value_index(label,fstf->labels);
       u_fprintf(fstf->f, "%d %d ", idx, to);
     }
   }
@@ -393,9 +366,7 @@ void CHFA_trans_write(fst_file_out_t * fstf, int to) {
 
     label[0] = C;
 
-    if ((idx = hash_str_table_idx_lookup(fstf->labels, label)) == -1) {
-      idx = hash_str_table_add(fstf->labels, label, u_strdup(label));
-    }
+    idx=get_value_index(label,fstf->labels);
 
     u_fprintf(fstf->f, "%d %d ", idx, to);
   }
@@ -410,17 +381,13 @@ void LEXIC_trans_write(fst_file_out_t * fstf, int to) {
 
   u_strcpy(label, "<MOT>");
 
-  if ((idx = hash_str_table_idx_lookup(fstf->labels, label)) == -1) {
-    idx = hash_str_table_add(fstf->labels, label, u_strdup(label));
-  }
+  idx=get_value_index(label,fstf->labels);
 
   u_fprintf(fstf->f, "%d %d ", idx, to);
 
   u_strcpy(label, "<!MOT>");
 
-  if ((idx = hash_str_table_idx_lookup(fstf->labels, label)) == -1) {
-    idx = hash_str_table_add(fstf->labels, label, u_strdup(label));
-  }
+  idx=get_value_index(label,fstf->labels);
 
   u_fprintf(fstf->f, "%d %d ", idx, to);
 }
@@ -429,10 +396,10 @@ void LEXIC_trans_write(fst_file_out_t * fstf, int to) {
 
 void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
 
-  ustring_t * label = ustring_new();
+  Ustring * label = new_Ustring();
 
 
-  void (*symbol_to_label)(const symbol_t *, ustring_t *) = NULL;
+  void (*symbol_to_label)(const symbol_t *, Ustring *) = NULL;
   
   switch (fstf->type) {
 
@@ -483,19 +450,13 @@ void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
          }
       } else {
          normal_output:
-         if ((idx = hash_str_table_idx_lookup(fstf->labels, label->str)) == -1) {
-            idx = hash_str_table_add(fstf->labels, label->str, u_strdup(label->str));
-         }
+         idx=get_value_index(label->str,fstf->labels);
          u_fprintf(fstf->f, "%d %d ", idx, t->to);
       }
    }
    if (A->states[q].defto != -1) {
       if (fstf->type != FST_GRAMMAR) { error("<def> label in text|locate automaton???\n"); }
-
-      if ((idx = hash_str_table_idx_lookup(fstf->labels, deflabel)) == -1) {
-	idx = hash_str_table_add(fstf->labels, deflabel, u_strdup(deflabel));
-      }
-
+      idx=get_value_index(deflabel,fstf->labels);
       u_fprintf(fstf->f, "%d %d ", idx, A->states[q].defto);
     }
 
@@ -504,7 +465,7 @@ void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
 
   u_fprintf(fstf->f,"f \n");
 
-  ustring_delete(label);
+  free_Ustring(label);
 
   fstf->nbelems++;
 }
@@ -517,7 +478,7 @@ autalmot_t * load_grammar_automaton(char * name, language_t * lang) {
 
 //  debug("load_grammar_automaton(%s)\n", name);
 
-  fst_file_in_t * fstin = fst_file_in_open(name, FST_GRAMMAR, lang);
+  fst_file_in_t * fstin = load_fst_file(name, FST_GRAMMAR, lang);
 
 //  debug("fstin=%d\n", fstin);
 
