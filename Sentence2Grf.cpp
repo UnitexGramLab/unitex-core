@@ -39,7 +39,7 @@ struct grf_state* new_grf_state(unichar*,int,int);
 void free_grf_state(struct grf_state*);
 void add_transition_to_grf_state(struct grf_state*,int);
 void write_grf_header(int,int,int,char*,FILE*);
-void save_grf_states(FILE*,struct grf_state**,int,int,char* font);
+void save_grf_states(FILE*,struct grf_state**,int,int,char* font,int);
 
 
 
@@ -129,6 +129,24 @@ return n_transitions_par_state;
 
 
 /**
+ * This function takes the array computed by 'get_n_transitions_before_state'
+ * and returns the maximum difference of number of transition between
+ * neighbor states. This value represents the maximum number of transitions
+ * that outgo from a state of the fst2. We will use this value to determine
+ * the height of the resulting graph.
+ */
+int get_maximum_difference(int* t,int size) {
+int m=0;
+for (int i=1;i<size;i++) {
+   if ((t[i]-t[i-1])>m) {
+      m=t[i]-t[i-1];
+   }
+}
+return m;
+}
+
+
+/**
  * This function creates the grf states that correspond to the given fst2
  * and saves them to the given file.
  */
@@ -137,6 +155,7 @@ void fst2_transitions_to_grf_states(Fst2* fst2,int SENTENCE,
                                     int width_max,int* pos_X,char* font) {
 int n_states=fst2->number_of_states_per_graphs[SENTENCE];
 int* n_transitions_before_state=get_n_transitions_before_state(fst2,SENTENCE);
+int max_transitions=get_maximum_difference(n_transitions_before_state,n_states);
 int N_GRF_STATES=2;
 int MAX_STATES=2+n_transitions_before_state[n_states];
 int initial_state=fst2->initial_states[SENTENCE];
@@ -194,7 +213,7 @@ for (int i=0;i<n_states;i++) {
 }
 free(n_transitions_before_state);
 /* And we save the grf */
-save_grf_states(f,grf_states,N_GRF_STATES,maximum_rank,font);
+save_grf_states(f,grf_states,N_GRF_STATES,maximum_rank,font,max_transitions);
 /* Finally, we perform cleaning */
 for (int i=0;i<N_GRF_STATES;i++) {
    free_grf_state(grf_states[i]);
@@ -409,7 +428,7 @@ state->l=sorted_insert(dest_state,state->l);
  * Saves the given grf states to the given file.
  */
 void save_grf_states(FILE* f,struct grf_state** tab_grf_state,int N_GRF_STATES,
-                     int maximum_rank,char* font) {
+                     int maximum_rank,char* font,int height_indication) {
 /* We count the number of boxes for each rank */
 int pos_Y[maximum_rank+1];
 for (int i=0;i<maximum_rank;i++) {
@@ -419,7 +438,7 @@ for (int i=0;i<N_GRF_STATES;i++) {
    pos_Y[tab_grf_state[i]->rank]++;
 }
 /* We print the grf header and the initial state */
-write_grf_header(tab_grf_state[1]->pos_X+300,800,N_GRF_STATES,font,f);
+write_grf_header(tab_grf_state[1]->pos_X+300,200+height_indication*100,N_GRF_STATES,font,f);
 u_fprintf(f,"\"<E>\" 50 100 ");
 int j=0;
 struct list_int* l=tab_grf_state[0]->l;
