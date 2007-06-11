@@ -26,6 +26,7 @@
 #include "Fst2.h"
 #include "TransductionVariables.h"
 #include "MetaSymbols.h"
+#include "Transitions.h"
 
 
 /**
@@ -35,7 +36,7 @@
  */
 struct opt_graph_call {
    int graph_number;
-   Fst2Transition transition;
+   Transition* transition;
    struct opt_graph_call* next;
 };
 
@@ -48,7 +49,7 @@ struct opt_graph_call {
 struct opt_meta {
   enum meta_symbol meta;
   char negation;
-  Fst2Transition transition;
+  Transition* transition;
   struct opt_meta* next;
 };
 
@@ -59,7 +60,7 @@ struct opt_meta {
 struct opt_pattern {
    int pattern_number;
    char negation;
-   Fst2Transition transition;
+   Transition* transition;
    struct opt_pattern* next;
 };
 
@@ -69,7 +70,7 @@ struct opt_pattern {
  */
 struct opt_token {
    int token_number;
-   Fst2Transition transition;
+   Transition* transition;
    struct opt_token* next;
 };
 
@@ -79,7 +80,7 @@ struct opt_token {
  */
 struct opt_variable {
    int variable_number;
-   Fst2Transition transition;
+   Transition* transition;
    struct opt_variable* next;
 };
 
@@ -87,20 +88,24 @@ struct opt_variable {
 /**
  * This structure stores the information needed to deal with 
  * the context marks $[ $![ and $]
- * Thanks to the determinization, there can be only one transition of each kind
- * that outgoes from a given state, so that we just have one transition to store
- * for each of them.
  * If the state has a transition with a positive context start mark $[, we compute
  * one time for all where the associated context end marks are. This is useful to
  * know where to go in the grammar when the context has been matched. The same is
  * done for the negative context mark, if any.
  */
 struct opt_contexts {
-   Fst2Transition positive_mark;
-   Fst2Transition negative_mark;
-   Fst2Transition end_mark;
-   Fst2Transition reacheable_states_from_positive_context;
-   Fst2Transition reacheable_states_from_negative_context;
+   /* This is an array used to store both the positive context start marks and
+    * their associated ending context marks.
+    * 
+    * positive_mark[i] will contain the context transition and positive_mark[i+1] will
+    * contain the context end transitions. */
+   Transition** positive_mark;
+   /* Number of element of the previous array */
+    int size_positive;
+   /* The same as for positive context marks */
+   Transition** negative_mark;
+   int size_negative;
+   Transition* end_mark;
 };
 
 
@@ -120,7 +125,7 @@ struct optimizedFst2State {
   struct opt_contexts* contexts;
   int* tokens;
   int number_of_tokens;
-  Fst2Transition* token_transitions;
+  Transition** token_transitions;
 };
 
 typedef struct optimizedFst2State* OptimizedFst2State;

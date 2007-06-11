@@ -25,6 +25,7 @@
 #include "Error.h"
 #include "BitArray.h"
 #include "Buffer.h"
+#include "Transitions.h"
 
 
 /* Delay between two prints (yyy% done) */
@@ -178,7 +179,7 @@ int filter_number;
 #endif
 int pos2,ctrl=0,end_of_compound;
 int token,token2;
-Fst2Transition t;
+Transition* t;
 int stack_top=p->stack->stack_pointer;
 unichar* output;
 /* The following static variable holds the number of matches at
@@ -624,8 +625,9 @@ while (variable_list!=NULL) {
  */
 struct opt_contexts* contexts=current_state->contexts;
 if (contexts!=NULL) {
-   Fst2Transition t;
-   if ((t=contexts->positive_mark)!=NULL) {
+   Transition* t;
+   for (int n_ctxt=0;n_ctxt<contexts->size_positive;n_ctxt=n_ctxt+2) {
+      t=contexts->positive_mark[n_ctxt];
       /* We look for a positive context from the current position */
       struct list_int* c=new_list_int(0,ctx);
       locate(graph_depth,p->optimized_states[t->state_number],pos,depth+1,NULL,0,c,p);
@@ -634,7 +636,7 @@ if (contexts!=NULL) {
       if (c->n) {
          /* If the context has matched, then we can explore all the paths
           * that starts from the context end */
-         Fst2Transition states=contexts->reacheable_states_from_positive_context;
+         Transition* states=contexts->positive_mark[n_ctxt+1];
          while (states!=NULL) {
             locate(graph_depth,p->optimized_states[states->state_number],pos,depth+1,matches,n_matches,ctx,p);
             p->stack->stack_pointer=stack_top;
@@ -643,7 +645,8 @@ if (contexts!=NULL) {
       }
       free(c);
    }
-   if ((t=contexts->negative_mark)!=NULL) {
+   for (int n_ctxt=0;n_ctxt<contexts->size_negative;n_ctxt=n_ctxt+2) {
+      t=contexts->negative_mark[n_ctxt];
       /* We look for a negative context from the current position */
       struct list_int* c=new_list_int(0,ctx);
       locate(graph_depth,p->optimized_states[t->state_number],pos,depth+1,NULL,0,c,p);
@@ -652,7 +655,7 @@ if (contexts!=NULL) {
       if (!c->n) {
          /* If the context has not matched, then we can explore all the paths
           * that starts from the context end */
-         Fst2Transition states=contexts->reacheable_states_from_negative_context;
+         Transition* states=contexts->negative_mark[n_ctxt+1];
          while (states!=NULL) {
             locate(graph_depth,p->optimized_states[states->state_number],pos,depth+1,matches,n_matches,ctx,p);
             p->stack->stack_pointer=stack_top;

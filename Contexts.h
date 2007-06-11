@@ -23,8 +23,9 @@
 #define ContextsH
 
 #include "Fst2.h"
+#include "Transitions.h"
 
-void get_reachable_closing_context_marks(Fst2*,int,Fst2Transition*);
+void get_reachable_closing_context_marks(Fst2*,int,Transition**);
 
 
 #endif

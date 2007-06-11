@@ -27,7 +27,7 @@
 /**
  * This function looks for context mark ends in the given fst2.
  */
-void look_for_closing_context_mark(Fst2* fst2,int state,Fst2Transition *list,
+void look_for_closing_context_mark(Fst2* fst2,int state,Transition** list,
                                    struct bit_array* marker,int nesting_level) {
 if (get_value(marker,state)) {
    /* Nothing to do if this state has already been visited */
@@ -36,7 +36,7 @@ if (get_value(marker,state)) {
 /* Otherwise, we mark the state */
 set_value(marker,state,1);
 /* And we look all its outgoing transitions */
-Fst2Transition ptr=fst2->states[state]->transitions;
+Transition* ptr=fst2->states[state]->transitions;
 while (ptr!=NULL) {
    if (ptr->tag_number>=0) {
       /* If we have a tag, we check if it is a context mark */
@@ -80,12 +80,13 @@ while (ptr!=NULL) {
  * we will stop on the second "$]", since the first corresponds to a different 
  * context start mark than ours.
  */
-void get_reachable_closing_context_marks(Fst2* fst2,int state,Fst2Transition *list) {
+void get_reachable_closing_context_marks(Fst2* fst2,int state,Transition** list) {
 /* we declare a bit array in order to mark states that have already been visited.
  * Note that we could use a bit array with a smaller length, since the only states
  * that will be explored are in the same subgraph that the one containing the
  * given start state. */
 struct bit_array* marker=new_bit_array(fst2->number_of_states,ONE_BIT);
+(*list)=NULL;
 look_for_closing_context_mark(fst2,state,list,marker,0);
 free_bit_array(marker);
 }

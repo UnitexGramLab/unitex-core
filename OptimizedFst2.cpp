@@ -51,7 +51,7 @@ return g;
 void free_opt_graph_call(struct opt_graph_call* list) {
 struct opt_graph_call* tmp;
 while (list!=NULL) {
-   free_Fst2Transition(list->transition);
+   free_Transition(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -62,7 +62,7 @@ while (list!=NULL) {
 /**
  * This function adds the given graph call to given graph call list.
  */
-void add_graph_call(Fst2Transition transition,struct opt_graph_call** graph_calls) {
+void add_graph_call(Transition* transition,struct opt_graph_call** graph_calls) {
 int graph_number=-(transition->tag_number);
 struct opt_graph_call* ptr=*graph_calls;
 /* We look for a graph call for the same graph number */
@@ -103,7 +103,7 @@ return p;
 void free_opt_pattern(struct opt_pattern* list) {
 struct opt_pattern* tmp;
 while (list!=NULL) {
-   free_Fst2Transition(list->transition);
+   free_Transition(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -114,7 +114,7 @@ while (list!=NULL) {
 /**
  * This function adds the given pattern number to the given pattern list.
  */
-void add_pattern(int pattern_number,Fst2Transition transition,struct opt_pattern** pattern_list,int negation) {
+void add_pattern(int pattern_number,Transition* transition,struct opt_pattern** pattern_list,int negation) {
 struct opt_pattern* ptr=*pattern_list;
 /* We look for a pattern with the same properties */
 while (ptr!=NULL && !(ptr->pattern_number==pattern_number && ptr->negation==negation)) {
@@ -153,7 +153,7 @@ return t;
 void free_opt_token(struct opt_token* list) {
 struct opt_token* tmp;
 while (list!=NULL) {
-   free_Fst2Transition(list->transition);
+   free_Transition(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -169,7 +169,7 @@ while (list!=NULL) {
  * list will be supposed to be sorted at the time of converting it into an array
  * in 'token_list_2_token_array'.
  */
-void add_token(int token_number,Fst2Transition transition,struct opt_token** token_list,
+void add_token(int token_number,Transition* transition,struct opt_token** token_list,
                int *number_of_tokens) {
 struct opt_token* ptr;
 if (*token_list==NULL) {
@@ -220,7 +220,7 @@ add_transition_if_not_present(&(ptr->next->transition),transition->tag_number,tr
  * 'list' that contains all the tokens matched by an optimized state.
  * '*number_of_tokens' is updated.
  */
-void add_token_list(struct list_int* token_list,Fst2Transition transition,
+void add_token_list(struct list_int* token_list,Transition* transition,
                     struct opt_token** list,int *number_of_tokens) {
 while (token_list!=NULL) {
    add_token(token_list->n,transition,list,number_of_tokens);
@@ -252,7 +252,7 @@ return m;
 void free_opt_meta(struct opt_meta* list) {
 struct opt_meta* tmp;
 while (list!=NULL) {
-   free_Fst2Transition(list->transition);
+   free_Transition(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -263,7 +263,7 @@ while (list!=NULL) {
 /**
  * This function adds the given meta to the given meta list.
  */
-void add_meta(enum meta_symbol meta,Fst2Transition transition,struct opt_meta** meta_list,int negation) {
+void add_meta(enum meta_symbol meta,Transition* transition,struct opt_meta** meta_list,int negation) {
 struct opt_meta* ptr=*meta_list;
 /* We look for a meta with the same properties */
 while (ptr!=NULL && !(ptr->meta==meta && ptr->negation==negation)) {
@@ -283,7 +283,7 @@ add_transition_if_not_present(&(ptr->transition),transition->tag_number,transiti
 /**
  * Allocates, initializes and returns a new optimized variable.
  */
-struct opt_variable* new_opt_variable(int variable_number,Fst2Transition transition) {
+struct opt_variable* new_opt_variable(int variable_number,Transition* transition) {
 struct opt_variable* v;
 v=(struct opt_variable*)malloc(sizeof(struct opt_variable));
 if (v==NULL) {
@@ -303,7 +303,7 @@ return v;
 void free_opt_variable(struct opt_variable* list) {
 struct opt_variable* tmp;
 while (list!=NULL) {
-   free_Fst2Transition(list->transition);
+   free_Transition(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -316,7 +316,7 @@ while (list!=NULL) {
  * No tests is done to check if there is already a transition with the
  * given variable, because it cannot happen if the grammar is deterministic.
  */
-void add_variable(Variables* var,unichar* variable,Fst2Transition transition,struct opt_variable** variable_list) {
+void add_variable(Variables* var,unichar* variable,Transition* transition,struct opt_variable** variable_list) {
 int n=get_value_index(variable,var->variable_index,DONT_INSERT);
 struct opt_variable* v=new_opt_variable(n,transition);
 v->next=(*variable_list);
@@ -333,10 +333,10 @@ if (c==NULL) {
    fatal_error("Not enough memory in new_opt_contexts\n");
 }
 c->positive_mark=NULL;
+c->size_positive=0;
 c->negative_mark=NULL;
+c->size_negative=0;
 c->end_mark=NULL;
-c->reacheable_states_from_positive_context=NULL;
-c->reacheable_states_from_negative_context=NULL;
 return c;
 }
 
@@ -346,11 +346,15 @@ return c;
  */
 void free_opt_contexts(struct opt_contexts* c) {
 if (c==NULL) return;
-free_Fst2Transition(c->positive_mark);
-free_Fst2Transition(c->negative_mark);
-free_Fst2Transition(c->end_mark);
-free_Fst2Transition(c->reacheable_states_from_positive_context);
-free_Fst2Transition(c->reacheable_states_from_negative_context);
+for (int i=0;i<c->size_positive;i++) {
+   free_Transition(c->positive_mark[i]);
+}
+if (c->positive_mark!=NULL) free(c->positive_mark);
+for (int i=0;i<c->size_negative;i++) {
+   free_Transition(c->negative_mark[i]);
+}
+if (c->negative_mark!=NULL) free(c->negative_mark);
+free_Transition(c->end_mark);
 free(c);
 }
 
@@ -363,9 +367,9 @@ free(c);
  * deterministic. As a side effect, this function looks for all the closing
  * context marks reachable from this positive context mark and stores them into
  * 'reacheable_states_from_positive_context'. If there is no reachable context
- * end mark, the function emit an error message and ignores this "$[" mark.
+ * end mark, the function emit an error message and ignores this "$[" transition.
  */
-void add_positive_context(Fst2* fst2,OptimizedFst2State state,Fst2Transition transition) {
+void add_positive_context(Fst2* fst2,OptimizedFst2State state,Transition* transition) {
 int created=0;
 if (state->contexts==NULL) {
    created=1;
@@ -374,12 +378,18 @@ if (state->contexts==NULL) {
 if (state->contexts->positive_mark!=NULL) {
    fatal_error("Duplicate positive context mark\n");
 }
-state->contexts->positive_mark=new_Fst2Transition(transition->tag_number,transition->state_number);
-get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->reacheable_states_from_positive_context));
-if (state->contexts->reacheable_states_from_positive_context==NULL) {
+int n=state->contexts->size_positive;
+state->contexts->size_positive=state->contexts->size_positive+2;
+state->contexts->positive_mark=(Transition**)realloc(state->contexts->positive_mark,state->contexts->size_positive*sizeof(Transition*));
+state->contexts->positive_mark[n]=new_Transition(transition->tag_number,transition->state_number);
+get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->positive_mark[n+1]));
+if (state->contexts->positive_mark[n+1]==NULL) {
    error("Positive context with no end\n");
-   free_Fst2Transition(state->contexts->positive_mark);
-   state->contexts->positive_mark=NULL;
+   free_Transition(state->contexts->positive_mark[n]);
+   if (n==0) {
+      free(state->contexts->positive_mark);
+      state->contexts->positive_mark=NULL;
+   }
    if (created) {
       free(state->contexts);
       state->contexts=NULL;
@@ -394,23 +404,26 @@ if (state->contexts->reacheable_states_from_positive_context==NULL) {
  * deterministic. As a side effect, this function looks for all the closing
  * context marks reachable from this negative context mark and stores them into
  * 'reacheable_states_from_negative_context'. If there is no reachable context
- * end mark, the function emit an error message and ignores this "$![" mark.
+ * end mark, the function emit an error message and ignores this "$![" transition.
  */
-void add_negative_context(Fst2* fst2,OptimizedFst2State state,Fst2Transition transition) {
+void add_negative_context(Fst2* fst2,OptimizedFst2State state,Transition* transition) {
 int created=0;
 if (state->contexts==NULL) {
    created=1;
    state->contexts=new_opt_contexts();
 }
-if (state->contexts->negative_mark!=NULL) {
-   fatal_error("Duplicate negative context mark\n");
-}
-state->contexts->negative_mark=new_Fst2Transition(transition->tag_number,transition->state_number);
-get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->reacheable_states_from_negative_context));
-if (state->contexts->reacheable_states_from_negative_context==NULL) {
+int n=state->contexts->size_negative;
+state->contexts->size_negative=state->contexts->size_negative+2;
+state->contexts->negative_mark=(Transition**)realloc(state->contexts->negative_mark,state->contexts->size_negative*sizeof(Transition*));
+state->contexts->negative_mark[n]=new_Transition(transition->tag_number,transition->state_number);
+get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->negative_mark[n+1]));
+if (state->contexts->negative_mark[n+1]==NULL) {
    error("Negative context with no end\n");
-   free_Fst2Transition(state->contexts->negative_mark);
-   state->contexts->negative_mark=NULL;
+   free_Transition(state->contexts->negative_mark[n]);
+   if (n==0) {
+      free(state->contexts->negative_mark);
+      state->contexts->negative_mark=NULL;
+   }
    if (created) {
       free(state->contexts);
       state->contexts=NULL;
@@ -424,21 +437,21 @@ if (state->contexts->reacheable_states_from_negative_context==NULL) {
  * there is already one, because it would mean that the fst2 is not
  * deterministic.
  */
-void add_end_context(OptimizedFst2State state,Fst2Transition transition) {
+void add_end_context(OptimizedFst2State state,Transition* transition) {
 if (state->contexts==NULL) {
    state->contexts=new_opt_contexts();
 }
 if (state->contexts->end_mark!=NULL) {
    fatal_error("Duplicate end context mark\n");
 }
-state->contexts->end_mark=new_Fst2Transition(transition->tag_number,transition->state_number);
+state->contexts->end_mark=new_Transition(transition->tag_number,transition->state_number);
 }
 
 
 /**
  * This function optimizes the given transition.
  */
-void optimize_transition(Variables* v,Fst2* fst2,Fst2Transition transition,OptimizedFst2State state,Fst2Tag* tags) {
+void optimize_transition(Variables* v,Fst2* fst2,Transition* transition,OptimizedFst2State state,Fst2Tag* tags) {
 if (transition->tag_number<0) {
    /* If the transition is a graph call */
    add_graph_call(transition,&(state->graph_calls));
@@ -488,7 +501,7 @@ if (state->number_of_tokens==0) {
    return;
 }
 state->tokens=(int*)malloc(sizeof(int)*state->number_of_tokens);
-state->token_transitions=(Fst2Transition*)malloc(sizeof(Fst2Transition)*state->number_of_tokens);
+state->token_transitions=(Transition**)malloc(sizeof(Transition*)*state->number_of_tokens);
 if (state->tokens==NULL || state->token_transitions==NULL) {
    fatal_error("Not enough memory in token_list_2_token_array\n");
 }
@@ -551,7 +564,7 @@ free_opt_contexts(state->contexts);
 if (state->tokens!=NULL) free(state->tokens);
 if (state->token_transitions!=NULL) {
    for (int i=0;i<state->number_of_tokens;i++) {
-      free_Fst2Transition(state->token_transitions[i]);
+      free_Transition(state->token_transitions[i]);
    }
    free(state->token_transitions);
 }
@@ -568,7 +581,7 @@ OptimizedFst2State optimize_state(Variables* v,Fst2* fst2,Fst2State state,int st
 if (state==NULL) return NULL;
 OptimizedFst2State new_state=new_optimized_state();
 new_state->control=state->control;
-struct fst2Transition* ptr=state->transitions;
+Transition* ptr=state->transitions;
 while (ptr!=NULL) {
    optimize_transition(v,fst2,ptr,new_state,tags);
    ptr=ptr->next;
