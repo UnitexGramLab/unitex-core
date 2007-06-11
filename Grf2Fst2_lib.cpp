@@ -23,6 +23,7 @@
 #include "FIFO.h"
 #include "Error.h"
 #include "File.h"
+#include "Transitions.h"
 
 
 /* Maximum length for the content of a grf box */
@@ -37,6 +38,29 @@
 #define NON_PROCESSED_GRAPH 0
 #define EMPTY_GRAPH 1
 #define NON_EMPTY_GRAPH 2
+
+
+/**
+ * This counter is used to identify each context start mark $[ or $![ with
+ * a unique number in order to make them different. This is used to
+ * avoid merging distinct context start marks during the determinization.
+ * For instance, let us consider the two following paths from the initial state:
+ * 
+ * ------> $![ ---> <N:s> ---> $] ---> <N:p>
+ *    |--> $![ ---> <N:p> ---> $] ---> <N:s>
+ * 
+ * The first path recoqnizes a noun at plural that cannot be at singular, and 
+ * the second recoqnizes a noun at singular that cannot be at plural. However,
+ * if the determinization merges the two $![ marks, we will have:
+ * 
+ * ------> $![ ---> <N:s> ---> $] ---> <N:p>
+ *              |-> <N:p> ---> $] ---> <N:s>
+ * 
+ * With such a negative context, we will fail in both singular and plural
+ * cases, and the behavior of the grammar will not be the expected one.
+ */
+int CONTEXT_COUNTER=0;
+
 
 /**
  * Allocates, initializes and returns a compilation information structure.
@@ -94,10 +118,9 @@ return 0;
  * Writes the given state into the given file.
  */
 void write_state(FILE* f,SingleGraphState s) {
-Fst2Transition ptr;
 if (is_final_state(s)) u_fputc('t',f);
 else u_fputc(':',f);
-ptr=s->outgoing_transitions;
+Transition* ptr=s->outgoing_transitions;
 while (ptr!=NULL) {
    u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
    ptr=ptr->next;
@@ -712,6 +735,11 @@ if ((length>2 && box_content[0]=='$' &&
         || !u_strcmp(box_content,"$]"))) {
    /* If we have a variable or context mark */
    u_strcpy(input,box_content);
+   if (box_content[1]=='!' || box_content[1]=='[') {
+      /* If we have a context start mark, we adds a unique number to it
+       * (see declaration of CONTEXT_COUNTER) */
+      u_sprintf(input,"%s%d",(box_content[1]=='!')?"$![":"$[",CONTEXT_COUNTER++);
+   }
    u_strcpy(output,"");
    process_variable_or_context(graph,input,transitions,current_state,n,infos);
    return;
