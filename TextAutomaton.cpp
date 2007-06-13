@@ -27,6 +27,7 @@
 #include "DELA.h"
 #include "NormalizationFst2.h"
 #include "BitMasks.h"
+#include "Transitions.h"
 
 
 /**
@@ -134,7 +135,7 @@ while (trans!=NULL) {
 void compute_best_paths(int state,SingleGraph graph,int* weight,struct string_hash* tmp_tags) {
 int w;
 w=weight[state];
-Fst2Transition trans=graph->states[state]->outgoing_transitions;
+Transition* trans=graph->states[state]->outgoing_transitions;
 while (trans!=NULL) {
    unichar* tmp=tmp_tags->value[trans->tag_number];
    int w_tmp=w;
@@ -170,15 +171,15 @@ while (trans!=NULL) {
  * this state. Then, this function takes a list of transitions and removes all
  * those that reach a state #x with a weight > weight[x].
  */
-Fst2Transition remove_bad_path_transitions(int min_weight,Fst2Transition trans,
-                                           SingleGraph graph,int* weight,
-                                           struct string_hash* tmp_tags) {
+Transition* remove_bad_path_transitions(int min_weight,Transition* trans,
+                                        SingleGraph graph,int* weight,
+                                        struct string_hash* tmp_tags) {
 if (trans==NULL) return NULL;
 unichar* s=tmp_tags->value[trans->tag_number];
 if ((s[0]!='{' && u_is_letter(s[0]) && weight[trans->state_number] < (min_weight+1))
-    || (s[0]=='{' && weight[trans->state_number] < min_weight )) {
+    || (weight[trans->state_number] < min_weight )) {
    /* If we have to remove the transition */
-   Fst2Transition tmp=trans->next;
+   Transition* tmp=trans->next;
    free(trans);
    return remove_bad_path_transitions(min_weight,tmp,graph,weight,tmp_tags);
 }
@@ -323,6 +324,7 @@ void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
  * be introduced and then removed by cleaning */
 SingleGraph graph=new_SingleGraph();
 struct string_hash* tmp_tags=new_string_hash(32);
+get_value_index(tags->value[0],tmp_tags);
 int i;
 /* We add +1 for the final node */
 int n_nodes=1+count_non_space_tokens(buffer,length,tokens->SPACE);
@@ -377,7 +379,7 @@ for (i=0;i<graph->number_of_states;i++) {
    } else {
       u_fprintf(out,": ");
    }
-   Fst2Transition trans=graph->states[i]->outgoing_transitions;
+   Transition* trans=graph->states[i]->outgoing_transitions;
    while (trans!=NULL) {
       /* For each tag of the graph that is actually used, we put it in the main
        * tags and we use this index in the fst2 transition */
