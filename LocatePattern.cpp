@@ -110,7 +110,7 @@ if (text_file==NULL) {
    return 0;
 }
 fseek(text_file,0,SEEK_END);
-long int text_size=ftell(text_file);
+long int text_size=ftell(text_file)/sizeof(int);
 fseek(text_file,0,SEEK_SET);
 
 char concord[1000];
