@@ -31,6 +31,7 @@ using namespace std;
 #include "etc.h"
 #include "formation_dic_line.h"
 #include "IOBuffer.h"
+#include "Transitions.h"
 
 
 
@@ -901,7 +902,7 @@ void explore_state(int etat_courant)
 			traiteEttiques();
 		}
 	}
-	struct fst2Transition* t=e->transitions;
+	Transition* t=e->transitions;
 	while (t!=NULL) {
 		if (t->tag_number < 0) {
 			save_auto = auto_courant;

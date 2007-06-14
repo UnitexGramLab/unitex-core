@@ -26,7 +26,7 @@
 
 
 
-inline stateid_t * stateid_new(autalmot_t * A, int no, stateid_t * next) {
+inline stateid_t * stateid_new(Fst2Automaton * A, int no, stateid_t * next) {
   stateid_t * id = (stateid_t *) xmalloc(sizeof(stateid_t));
   id->A    = A;
   id->no   = no;
@@ -78,7 +78,7 @@ state_ens_t * state_ens_dup(const state_ens_t * ens) {
 }
 
 
-void state_ens_add(state_ens_t * E, autalmot_t * A, int no) {
+void state_ens_add(state_ens_t * E, Fst2Automaton * A, int no) {
 
   if (E->size == 0) {
     E->first = stateid_new(A, no, NULL);

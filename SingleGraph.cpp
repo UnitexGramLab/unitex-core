@@ -21,6 +21,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <limits.h>
 #include "SingleGraph.h"
 #include "Error.h"
 #include "BitMasks.h"
@@ -45,8 +47,9 @@
 
 /**
  * Allocates, initializes and returns a new SingleGraph.
+ * 'size' specifies the initial size of the state array.
  */
-SingleGraph new_SingleGraph() {
+SingleGraph new_SingleGraph(int size,TagType type) {
 SingleGraph g =(SingleGraph)malloc(sizeof(struct single_graph_));
 if (g==NULL) {
    fatal_error("Not enough memory in new_SingleGraph\n");
@@ -54,19 +57,48 @@ if (g==NULL) {
 g->number_of_states=0;
 g->capacity=0;
 g->states=NULL;
-set_state_array_capacity(g,DEFAULT_STATE_ARRAY_SIZE);
+set_state_array_capacity(g,size);
+g->tag_type=type;
 return g;
+}
+
+
+/**
+ * Allocates, initializes and returns a new SingleGraph.
+ */
+SingleGraph new_SingleGraph(int size) {
+return new_SingleGraph(size,INT_TAGS);
+}
+
+
+/**
+ * Allocates, initializes and returns a new SingleGraph.
+ */
+SingleGraph new_SingleGraph(TagType type) {
+return new_SingleGraph(DEFAULT_STATE_ARRAY_SIZE,type);
+}
+
+
+/**
+ * Allocates, initializes and returns a new SingleGraph.
+ */
+SingleGraph new_SingleGraph() {
+return new_SingleGraph(DEFAULT_STATE_ARRAY_SIZE);
 }
 
 
 /**
  * Frees a SingleGraph
  */
-void free_SingleGraph(SingleGraph g) {
+void free_SingleGraph(SingleGraph g,void(*free_tag)(void*)) {
 if (g==NULL) return;
+if (g->tag_type!=PTR_TAGS && free_tag!=NULL) {
+   error("Unexpected free function in free_SingleGraph\n");
+   free_tag=NULL;
+}
 if (g->states!=NULL) {
    for (int i=0;i<g->number_of_states;i++) {
-      free_SingleGraphState(g->states[i]);
+      free_SingleGraphState(g->states[i],free_tag);
    }
    free(g->states);
 }
@@ -91,6 +123,14 @@ set_bit_mask(&(e->control),FINAL_STATE_BIT_MASK);
 
 
 /**
+ * Marks a SingleGraph state as non final.
+ */
+void unset_final_state(SingleGraphState e) {
+unset_bit_mask(&(e->control),FINAL_STATE_BIT_MASK);
+}
+
+
+/**
  * Tests if a SingleGraph state is initial.
  */
 int is_initial_state(SingleGraphState e) {
@@ -103,6 +143,14 @@ return is_bit_mask_set(e->control,INITIAL_STATE_BIT_MASK);
  */
 void set_initial_state(SingleGraphState e) {
 set_bit_mask(&(e->control),INITIAL_STATE_BIT_MASK);
+}
+
+
+/**
+ * Marks a SingleGraph state as non initial.
+ */
+void unset_initial_state(SingleGraphState e) {
+unset_bit_mask(&(e->control),INITIAL_STATE_BIT_MASK);
 }
 
 
@@ -159,6 +207,7 @@ if (s==NULL) {
 s->control=0;
 s->outgoing_transitions=NULL;
 s->reverted_incoming_transitions=NULL;
+s->default_state=-1;
 return s;
 }
 
@@ -167,23 +216,13 @@ return s;
  * Frees a SingleGraph state and all its transitions. The states
  * pointed by its transitions are not modified.
  */
-void free_SingleGraphState(SingleGraphState s) {
+void free_SingleGraphState(SingleGraphState s,void (*free_tag)(void*)) {
 if (s==NULL) return;
-free_Fst2Transition(s->outgoing_transitions);
-free_Fst2Transition(s->reverted_incoming_transitions);
+free_Transition(s->outgoing_transitions,free_tag);
+/* We don't use free_tag on the reverted transitions, because there
+ * would be double free problems */
+free_Transition(s->reverted_incoming_transitions);
 free(s);
-}
-
-
-/**
- * Adds a transition to a transition list. No test
- * is performs to check whether the transition already exists. 
- * The function returns the new head of the list.
- */
-Fst2Transition add_transition(Fst2Transition list,int tag_number,int state_number) {
-Fst2Transition transition=new_Fst2Transition(tag_number,state_number);
-transition->next=list;
-return transition;
 }
 
 
@@ -194,18 +233,29 @@ return transition;
  * the corresponding reverted incoming transition, if needed.
  */
 void add_outgoing_transition(SingleGraphState state,int tag_number,int state_number) {
-state->outgoing_transitions=add_transition(state->outgoing_transitions,
-                                           tag_number,state_number);
+state->outgoing_transitions=new_Transition(tag_number,state_number,state->outgoing_transitions);
 }
 
 
 /**
- * Creates and adds an incoming transition to the given state. No test
+ * Creates and adds an outgoing transition to the given state. No test
  * is performs to check whether the transition already exists.
+ * Note that it is the responsability to the caller to deal with
+ * the corresponding reverted incoming transition, if needed.
+ */
+void add_outgoing_transition(SingleGraphState state,void* label,int state_number) {
+state->outgoing_transitions=new_Transition(label,state_number,state->outgoing_transitions);
+}
+
+
+/**
+ * Creates and adds an incoming transition into the given state. No test
+ * is performs to check whether the transition already exists.
+ * Note that it is the responsability to the caller to deal with
+ * the corresponding reverted incoming transition, if needed.
  */
 void add_incoming_transition(SingleGraphState state,int tag_number,int state_number) {
-state->reverted_incoming_transitions=add_transition(state->reverted_incoming_transitions,
-                                                    tag_number,state_number);
+state->reverted_incoming_transitions=new_Transition(tag_number,state_number,state->reverted_incoming_transitions);
 }
 
 
@@ -213,6 +263,7 @@ state->reverted_incoming_transitions=add_transition(state->reverted_incoming_tra
  * Resize the state array of a SingleGraph.
  */
 void set_state_array_capacity(SingleGraph g,int new_capacity) {
+if (g->states==NULL && new_capacity==0) return;
 g->states=(SingleGraphState*)realloc(g->states,new_capacity*sizeof(SingleGraphState));
 if (g->states==NULL) {
   fatal_error("Not enough memory in set_state_array_capacity\n");
@@ -238,16 +289,20 @@ return s;
 
 
 /**
- * Move a SingleGraph src to the SingleGraph dest.
+ * Moves a SingleGraph src to the SingleGraph dest.
  *
  * dest is freed before copying content of src to it,
  * src is freed and nulled after.
  */
-void move_SingleGraph(SingleGraph dest,SingleGraph *src) {
+void move_SingleGraph(SingleGraph dest,SingleGraph *src,void (*free_tag)(void*)) {
 /* We free dest */
+if (dest->tag_type!=PTR_TAGS && free_tag!=NULL) {
+   error("Unexpected free function in move_SingleGraph\n");
+   free_tag=NULL;
+}
 if (dest->states!=NULL) {
    for (int i=0;i<dest->number_of_states;i++) {
-      free_SingleGraphState(dest->states[i]);
+      free_SingleGraphState(dest->states[i],free_tag);
    }
    free(dest->states);
 }
@@ -269,9 +324,12 @@ void compute_reverse_transitions(SingleGraph graph) {
 int n_states=graph->number_of_states;
 for (int i=0;i<n_states;i++) {
    if (graph->states[i]!=NULL) {
-      Fst2Transition t=graph->states[i]->outgoing_transitions;
+      Transition* t=graph->states[i]->outgoing_transitions;
       while (t!=NULL) {
-         add_incoming_transition(graph->states[t->state_number],t->tag_number,i);
+         Transition* tmp=clone_transition(t);
+         tmp->state_number=i;
+         tmp->next=graph->states[t->state_number]->reverted_incoming_transitions;
+         graph->states[t->state_number]->reverted_incoming_transitions=tmp;
          t=t->next;
       }
    }
@@ -293,7 +351,7 @@ if (is_accessible_state(states[state_number])) {
 }
 /* Otherwise, we mark it */
 set_accessible_state(states[state_number]);
-Fst2Transition t=states[state_number]->outgoing_transitions;
+Transition* t=states[state_number]->outgoing_transitions;
 /* And we explore the states that are reachable from the current one */
 while (t!=NULL) {
    check_accessibility(states,t->state_number);
@@ -318,7 +376,7 @@ if (is_co_accessible_state(states[state_number])) {
 /* Otherwise, we mark it */
 set_co_accessible_state(states[state_number]);
 /* And we explore the states that point to the current one */
-Fst2Transition t=states[state_number]->reverted_incoming_transitions;
+Transition* t=states[state_number]->reverted_incoming_transitions;
 while (t!=NULL) {
    check_co_accessibility(states,t->state_number);
    t=t->next;
@@ -352,7 +410,7 @@ if (!get_value(mark,state_number)) {
    set_value(mark,state_number,1);
    /* A state is in its own closure */
    closures[state_number]=sorted_insert(state_number,closures[state_number]);
-   Fst2Transition t=states[state_number]->outgoing_transitions;
+   Transition* t=states[state_number]->outgoing_transitions;
    while (t!= NULL) {
       if ((t->tag_number==0) && (t->state_number!=state_number)) {
          /* If the transition is tagged by epsilon and if it doesn't
@@ -407,7 +465,9 @@ return closures;
  * to preserve the graph language.
  */
 void delete_epsilon_transitions(SingleGraph graph) {
-Fst2Transition ptr,non_epsilon_transitions,temp;
+Transition* ptr;
+Transition* non_epsilon_transitions;
+Transition* temp;
 for (int i=0;i<graph->number_of_states;i++) {
    /* For each state, we look all the outgoing transitions */
    ptr=graph->states[i]->outgoing_transitions;
@@ -467,7 +527,7 @@ for (int i=0;i<graph->number_of_states;i++) {
          }
          /* And we add to the current state all the transitions that outgo
           * from the reachable one */
-         Fst2Transition tr=e->outgoing_transitions;
+         Transition* tr=e->outgoing_transitions;
          while (tr!=NULL) {
             add_outgoing_transition(graph->states[i],tr->tag_number,tr->state_number);
             add_incoming_transition(graph->states[tr->state_number],tr->tag_number,i);
@@ -511,9 +571,11 @@ free(closures);
 /**
  * Takes a list of transitions and removes those that point to useless states.
  */
-Fst2Transition remove_transitions_to_useless_states(Fst2Transition transitions,
+Transition* remove_transitions_to_useless_states(Transition* transitions,
                                                     SingleGraphState* states) {
-Fst2Transition tmp,tmp2,tmp_old;
+Transition* tmp;
+Transition* tmp2;
+Transition* tmp_old;
 tmp=transitions;
 while (tmp!=NULL) {
    if ((((states[tmp->state_number]->control)&4)==0)||(((states[tmp->state_number]->control)&8)==0)) {
@@ -535,27 +597,13 @@ return transitions;
 
 
 /**
- * Takes a list of transitions, and replaces in them 'old_state_number' by
- * 'new_state_number'.
- */
-void renumber_transitions(Fst2Transition list,int old_state_number,int new_state_number) {
-while (list!=NULL) {
-   if (list->state_number==old_state_number) {
-      list->state_number=new_state_number;
-   }
-   list=list->next;
-}
-}
-
-
-/**
  * This function renumbers all the transitions that point to 'old_state_number',
  * making them point to 'new_state_number'. Both outgoing and incoming
  * transitions are updated, in all states that are concerned.
  */
 void renumber_transitions(SingleGraphState* states,int old_state_number,int new_state_number) {
 /* First, we deal with the transitions that go out from 'old_state_number' */
-Fst2Transition t=states[old_state_number]->outgoing_transitions;
+Transition* t=states[old_state_number]->outgoing_transitions;
 while (t!=NULL) {
    if (t->state_number!=old_state_number) {
       /* If we have a transition of the form:
@@ -661,6 +709,30 @@ graph->number_of_states=last_state+1;
 
 
 /**
+ * This function removes useless states, that is to say states that are
+ * not accessible and/or not co-accessible. All the related transitions are
+ * also removed.
+ * No epsilon removal is done.
+ */
+void trim(SingleGraph graph) {
+compute_reverse_transitions(graph);
+for (int h=0;h<graph->number_of_states;h++) {
+   if (is_final_state(graph->states[h])) {
+      /* We start the co_accessibility check from every final state */
+      check_co_accessibility(graph->states,h);
+   }
+}
+for (int h=0;h<graph->number_of_states;h++) {
+   if (is_initial_state(graph->states[h])) {
+      /* We start the accessibility check from every initial state */
+      check_accessibility(graph->states,h);
+   }
+}
+remove_useless_states(graph);
+}
+
+
+/**
  * This function reverses a graph, that is to say:
  * 1) it reverses all its transitions
  * 2) each initial state becomes final and each final state becomes initial
@@ -685,7 +757,7 @@ for (int i=0;i<graph->number_of_states;i++) {
    }
    /* As we have reversed transitions, we just have to swap
     * incoming and outgoing transitions */
-   Fst2Transition t=s->outgoing_transitions;
+   Transition* t=s->outgoing_transitions;
    s->outgoing_transitions=s->reverted_incoming_transitions;
    s->reverted_incoming_transitions=t;
    /* Then we modify the initiality and the finality of the state */
@@ -704,6 +776,26 @@ for (int i=0;i<graph->number_of_states;i++) {
       set_final_state(s);
    }
 }
+}
+
+
+/**
+ * Returns a copy of the given automaton.
+ */
+SingleGraph clone(SingleGraph src) {
+if (src==NULL) return NULL;
+SingleGraph dest=new_SingleGraph(src->number_of_states);
+SingleGraphState src_state;
+SingleGraphState dest_state;
+for (int i=0;i<src->number_of_states;i++) {
+   src_state=src->states[i];
+   dest_state=add_state(dest);
+   dest_state->default_state=src_state->default_state;
+   if (is_initial_state(src_state)) set_initial_state(dest_state);
+   if (is_final_state(src_state)) set_final_state(dest_state);
+   dest_state->outgoing_transitions=clone_transition_list(src_state->outgoing_transitions);
+}
+return dest;
 }
 
 
@@ -790,7 +882,7 @@ return 0;
  * transition's tag number. Then, it adds the transition's destination
  * state number to this list, if not already present.
  */
-void process_transition(Fst2Transition t,struct hash_table* hash) {
+void process_transition(Transition* t,struct hash_table* hash) {
 int code;
 struct any* value=get_value(hash,t->tag_number,HT_INSERT_IF_NEEDED,&code);
 if (code==HT_KEY_ADDED) {
@@ -823,7 +915,7 @@ if (graph->number_of_states==0) {
 }
 SingleGraph new_graph=new_SingleGraph();
 SingleGraphState state;
-Fst2Transition transition;
+Transition* transition;
 /* NOTE about structures to be used:
  * 
  * - hash: a hash table used to associate numbers to set of states
@@ -896,7 +988,7 @@ while (!is_empty(fifo)) {
             free_list_int((struct list_int*)list->value._ptr);
          }
          /* And we add a transition to our current state */
-         state->outgoing_transitions=add_transition(state->outgoing_transitions,list->int_key,dest_state);
+         state->outgoing_transitions=new_Transition(list->int_key,dest_state,state->outgoing_transitions);
          /* Finally, we can remove the current element from the transition hash list.
           * IMPORTANT: we must just free the hash_list cell and not its '_ptr' field because:
           *            1) the corresponding state set was used to add a new state in the hash
@@ -931,7 +1023,9 @@ move_SingleGraph(graph,&new_graph);
  * Note that, after the minimization, the new reversed transitions
  * have not been computed.
  * 
- * The function raises a fatal error in case of NULL or empty automaton.
+ * The function raises a fatal error in case of NULL or empty automaton,
+ * or if the automaton is emptied during the minimization, for example if
+ * it has no final state.
  */
 void minimize(SingleGraph graph,int compute_reversed_transitions) {
 if (graph==NULL) {
@@ -956,7 +1050,7 @@ determinize(graph);
  * Saves the given graph to a .fst2 file. 'graph_number' is supposed to be
  * a negative integer representing the graph. 'graph_name' is supposed to
  * be the graph name without path and extension, like "Det". In some particular
- * case, this can replaced by a string value. For instance, the graph name is
+ * case, this can be replaced by a string value. For instance, the graph name is
  * replaced by the content of a sentence, when a .fst2 represents a text automaton.
  */
 void save_fst2_subgraph(FILE* fst2,SingleGraph graph,int graph_number,unichar* graph_name) {
@@ -978,7 +1072,7 @@ for (int i=0;i<graph->number_of_states;i++) {
    } else {
       u_fputc((unichar)':',fst2);
    }
-   Fst2Transition ptr=graph->states[i]->outgoing_transitions;
+   Transition* ptr=graph->states[i]->outgoing_transitions;
    while (ptr!=NULL) {
       u_fprintf(fst2," %d %d",ptr->tag_number,ptr->state_number);
       ptr=ptr->next;
@@ -989,3 +1083,234 @@ for (int i=0;i<graph->number_of_states;i++) {
 /* Finally, we mark the end of the graph */
 u_fprintf(fst2,"f \n");
 }
+
+
+/**
+ * This function does a topological sort on the given automaton.
+ * After the sort, we are sure that for each transition from
+ * a state #x to a state #y, we have x<y. Note that the given automaton
+ * must be an acyclic automaton.
+ */
+void topological_sort(SingleGraph graph) {
+/* First, we compute for each state its number of incoming transitions */
+int* incoming=(int*)malloc(graph->number_of_states*sizeof(int));
+if (incoming==NULL) {
+   fatal_error("Not enough memory in topological_sort\n");
+}
+int i;
+for (i=0;i<graph->number_of_states;i++) {
+   incoming[i]=0;
+}
+for (i=0;i<graph->number_of_states;i++) {
+   for (Transition* t=graph->states[i]->outgoing_transitions;t!=NULL;t=t->next) {
+      incoming[t->state_number]++;
+   }
+   if (graph->states[i]->default_state!=-1) {
+      incoming[graph->states[i]->default_state]++;
+   }
+}
+/* Then we allocate an array used to know that the state #x will
+ * be renumber into the state #y */
+int* renumber=(int*)malloc(graph->number_of_states*sizeof(int));
+if (renumber==NULL) {
+   fatal_error("Not enough memory in topological_sort\n");
+}
+int q;
+for (q=0;q<graph->number_of_states;q++) {
+   int old=0;
+   /* At each step #q of the algorithm, we look for the first state with no
+    * incoming transition, and we renumber as the new state #q */
+   while (incoming[old]!=0) {
+      old++;
+   }
+   renumber[old]=q;
+   incoming[old]=-1;
+   /* Then we decrease the number of incoming transitions of the
+    * states that can directly be reached from the current one */
+   for (Transition* t=graph->states[old]->outgoing_transitions;t!=NULL;t=t->next) {
+      incoming[t->state_number]--;
+   }
+}
+/* Finally, we create an array with the new states, renumbering
+ * their transitions' destination state numbers */
+SingleGraphState* new_states=(SingleGraphState*)malloc(graph->number_of_states*sizeof(SingleGraphState));
+if (new_states==NULL) {
+   fatal_error("Not enough memory in topological_sort\n");
+}
+for (q=0;q<graph->number_of_states;q++) {
+   new_states[q]=new_SingleGraphState();
+}
+for (q=0;q<graph->number_of_states;q++) {
+   new_states[renumber[q]]->outgoing_transitions=graph->states[q]->outgoing_transitions;
+   /* We set to NULL in order to have a clean free later */
+   graph->states[q]->outgoing_transitions=NULL;
+   for (Transition* t=new_states[renumber[q]]->outgoing_transitions;t!=NULL;t=t->next) {
+      t->state_number=renumber[t->state_number];
+   }
+   int default_state=graph->states[q]->default_state;
+   new_states[renumber[q]]->default_state=(default_state==-1)?-1:renumber[default_state];
+   new_states[renumber[q]]->control=graph->states[q]->control;
+}
+/* We free the previous state array */
+for (q=0;q<graph->number_of_states;q++) {
+   free_SingleGraphState(graph->states[q]);
+}
+free(graph->states);
+graph->states=new_states;
+}
+
+
+/**
+ * This function takes a .fst2 and return the automaton corresponding to its
+ * subgraph #n. Note that the resulting automaton considers state numbers
+ * from 0 to n_states-1 and not global state numbers as in a Fst2 structure.
+ */
+SingleGraph get_subgraph(Fst2* fst2,int n) {
+if (n<=0 || n>fst2->number_of_graphs) {
+   fatal_error("Invalid subgraph number %d in get_subgraph: should be in [1;%d]\n",n,fst2->number_of_graphs);
+}
+SingleGraph graph=new_SingleGraph(fst2->number_of_states_per_graphs[n]);
+int initial_state=fst2->initial_states[n];
+int max_states=fst2->number_of_states_per_graphs[n]+initial_state;
+for (int i=initial_state;i<max_states;i++) {
+   SingleGraphState state=add_state(graph);
+   if (i==initial_state) {
+      set_initial_state(state);
+   }
+   if (is_final_state(fst2->states[i])) {
+      set_final_state(state);
+   }
+   Transition* t=fst2->states[i]->transitions;
+   while (t!=NULL) {
+      add_outgoing_transition(state,t->tag_number,t->state_number-initial_state);
+      t=t->next;
+   }
+}
+return graph;
+}
+
+
+/**
+ * This function computes the number of paths between the states q1 and q2.
+ * After its execution:
+ * min_path_length[q1] will contain the length of the shortest path from q1 to q2
+ * max_path_length[q1] will contain the length of the longest path from q1 to q2
+ * number_of_paths[q1] will contain the number of paths to go from q1 to q2
+ */
+void count_paths(SingleGraph graph,int q1,int q2,int* min_path_length,int* max_path_length,
+                 int* number_of_paths) {
+if (q1==q2) {
+   min_path_length[q1]=0;
+   max_path_length[q1]=0;
+   number_of_paths[q1]=1;
+}
+if (number_of_paths[q1]!=-1) {
+   /* If we have already counted paths from the state q1, we don't
+    * need to do it again */
+   return;
+}
+number_of_paths[q1]=0;
+min_path_length[q1]=INT_MAX;
+max_path_length[q1]=0;
+for (Transition* t=graph->states[q1]->outgoing_transitions;t!=NULL;t=t->next) {
+   count_paths(graph,t->state_number,q2,min_path_length,max_path_length,number_of_paths);
+   number_of_paths[q1]=number_of_paths[q1]+number_of_paths[t->state_number];
+   /* We use +1 because we must count the transition from q1 to t->state_number */
+   if ((min_path_length[t->state_number]+1)<min_path_length[q1]) {
+      min_path_length[q1]=min_path_length[t->state_number]+1;
+   }
+   if ((max_path_length[t->state_number]+1)>max_path_length[q1]) {
+      max_path_length[q1]=max_path_length[t->state_number]+1;
+   }
+}
+}
+
+
+/**
+ * This function takes an acylic automaton that is supposed to represent
+ * a sentence automaton and it returns an estimation of its
+ * ambiguity rate, that represents the average number of hypothesis for
+ * each word of the sentence. The lengths of the shortest and longest paths
+ * are respectively stored into '*min' and '*max'.
+ */
+double evaluate_ambiguity(SingleGraph graph,int *min,int *max) {
+/* If min and or max are NULL */
+int dumbmax;
+int dumbmin;
+if (max==NULL) {
+   max=&dumbmax;
+}
+if (min==NULL) {
+   min=&dumbmin;
+}
+topological_sort(graph);
+/* We create and initialize a matrix to know, for each couple of state
+ * (x,y) if there is a direct transition from x to y. */
+struct bit_array* direct[graph->number_of_states];
+for (int i=0;i<graph->number_of_states;i++) {
+   direct[i]=new_bit_array(graph->number_of_states,ONE_BIT);
+}
+int q;
+for (q=0;q<graph->number_of_states;q++) {
+   for (Transition* t=graph->states[q]->outgoing_transitions;t!=NULL;t=t->next) {
+      set_value(direct[q],t->state_number,1);
+   }
+   if (graph->states[q]->default_state!=-1) {
+      set_value(direct[q],graph->states[q]->default_state,1);
+   }
+}
+/* Now, we look for factorizing states, i.e. states so that
+ * every path of the automaton cross them */
+char factorizing[graph->number_of_states];
+for (q=0;q<graph->number_of_states;q++) {
+   factorizing[q]=1;
+}
+for (int i=0;i<graph->number_of_states;i++) {
+   for (int j=1;j<graph->number_of_states;j++) {
+      if (get_value(direct[i],j)) {
+         for (int k=i+1;k<j;k++) {
+            /* We can do this only because we have performed a
+             * topological sort before */
+            factorizing[k]=0;
+         }
+      }
+   }
+}
+/* We can free the matrix */
+for (int i=0;i<graph->number_of_states;i++) {
+   free_bit_array(direct[i]);
+}
+/* Now, we will count the number of paths between all the couple
+ * of states q_i and q_i+1, where q_i is the factorizing state #i. 
+ * We do that because the combinatory explosion makes impossible to
+ * count directly the number of paths of the whole automaton. */
+double ambiguity_rate=0;
+*max=0;
+*min=0;
+int min_path_length[graph->number_of_states];
+int max_path_length[graph->number_of_states];
+int number_of_paths[graph->number_of_states];
+for (int i=0;i<graph->number_of_states;i++) {
+   min_path_length[i]=-1;
+   max_path_length[i]=-1;
+   number_of_paths[i]=-1;
+}
+int q1,q2;
+/* By definition, the initial state #0 is a factorizing one */
+q2=0;
+while (q2<graph->number_of_states-1) {
+   q1=q2;
+   q2++;
+   while (q2<graph->number_of_states-1 && !factorizing[q2]) {
+      q2++;
+   }
+   number_of_paths[q1]=-1;
+   count_paths(graph,q1,q2,min_path_length,max_path_length,number_of_paths);
+   *max=(*max)+max_path_length[q1];
+   *min=(*min)+min_path_length[q1];
+   ambiguity_rate=ambiguity_rate+log((double)number_of_paths[q1]);
+}
+return ambiguity_rate;
+}
+
+

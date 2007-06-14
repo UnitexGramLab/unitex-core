@@ -22,7 +22,7 @@
 #include "GrfCheck.h"
 #include "Error.h"
 #include "BitMasks.h"
-
+#include "Transitions.h"
 
 int look_for_recursion(int,struct list_int*,Fst2*,int*);
 
@@ -179,7 +179,7 @@ int graph_matches_E(int initial_state,int current_state,Fst2State* states,Fst2Ta
                       int current_graph,unichar** graph_names,
                       ConditionList conditions_for_states[],
                       ConditionList *graph_conditions) {
-Fst2Transition l;
+Transition* l;
 Fst2State s;
 int ret_value=0;
 int ret;
@@ -439,7 +439,7 @@ for (i=0;i<fst2->number_of_states;i++) {
  * Returns 1 if the given state has already been visited; 0 otherwise.
  */
 int look_for_E_loop_in_state(int state_number,Fst2* fst2,int* graphs_matching_E) {
-Fst2Transition l;
+Transition* l;
 Fst2State e=fst2->states[state_number];
 if (is_bit_mask_set(e->control,TMP_LOOP_MARK)) {
    /* If we have already visited this state */
@@ -504,7 +504,7 @@ if (is_bit_mask_set(s->control,TMP_LOOP_MARK|VISITED_MARK)) {
    return 0;
 }
 set_bit_mask(&(s->control),TMP_LOOP_MARK|VISITED_MARK);
-Fst2Transition list=s->transitions;
+Transition* list=s->transitions;
 while (list!=NULL) {
    if (list->tag_number<0) {
       /* If we have a subgraph call */

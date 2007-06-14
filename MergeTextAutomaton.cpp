@@ -29,6 +29,7 @@
 #include "grf.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "Transitions.h"
 
 
 // also defined in grf.cpp
@@ -81,7 +82,7 @@ void output_fst(Fst2 * A, int no, string_hash * hash, FILE * f) {
        u_fprintf(f,"t\n");
     } else {
       u_fprintf(f,": ");
-      for (fst2Transition * trans = state->transitions; trans; trans = trans->next) {
+      for (Transition * trans = state->transitions; trans; trans = trans->next) {
          u_fprintf(f, "%d %d ", get_value_index(A->tags[trans->tag_number]->input, hash), trans->state_number - stateno);
       }
       u_fputc('\n', f);

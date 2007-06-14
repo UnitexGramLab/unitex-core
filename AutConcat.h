@@ -19,23 +19,12 @@
   *
   */
 
-#ifndef __LIST_AUT_H_
-#define __LIST_AUT_H_
+#ifndef AutConcatH
+#define AutConcatH
 
+#include "SingleGraph.h"
+#include "String_hash.h"
 
-#include "autalmot.h"
-#include "vector.h"
-
-/* Structure de liste d'automates */
-
-typedef vector_t list_aut;
-
-
-
-inline list_aut * list_aut_new(int size = 16) { return vector_new(size); }
-
-inline void list_aut_delete(list_aut * l) { vector_delete(l, (release_f) free_Fst2Automaton); }
-
-inline int list_aut_add(list_aut * l, Fst2Automaton * A) { return vector_add(l, (void *) A); }
+void concat(SingleGraph,SingleGraph,struct string_hash_ptr*);
 
 #endif

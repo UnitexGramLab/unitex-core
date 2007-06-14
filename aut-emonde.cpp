@@ -29,7 +29,7 @@
 
 
 
-static void fill_intrans(autalmot_t * A, transition_t ** intrans) {
+static void fill_intrans(Fst2Automaton * A, transition_t ** intrans) {
 
   int q;
   for (q = 0; q < A->nbstates; q++) { intrans[q] = NULL; }
@@ -63,7 +63,7 @@ static void mark_coaccessibles(transition_t ** T, int q, int * access) {
 
 /* marque les etats accessibles depuis q */
 
-static void mark_accessibles(autalmot_t * A, int q, int * access) {
+static void mark_accessibles(Fst2Automaton * A, int q, int * access) {
 
   //  debug("%d is accessible\n", q);
 
@@ -106,7 +106,7 @@ static transition_t * trans_clean(transition_t * trans, int * access) {
 
 
 
-void autalmot_emonde(autalmot_t * A) {
+void autalmot_emonde(Fst2Automaton * A) {
 
   transition_t ** intrans = (transition_t **) xmalloc(A->nbstates * sizeof(transition_t *));
   fill_intrans(A, intrans);

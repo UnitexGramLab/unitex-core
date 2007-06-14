@@ -25,6 +25,7 @@
 #include "Grf2Fst2_lib.h"
 #include "SingleGraph.h"
 #include "Error.h"
+#include "Transitions.h"
 
 
 static struct list_int** dependencies;
@@ -153,7 +154,7 @@ return dependencies;
 void compute_dependencies_for_subgraph(Fst2* grammar,int n,struct list_int** L) {
 int last_state=grammar->initial_states[n]+grammar->number_of_states_per_graphs[n];
 for (int state=grammar->initial_states[n];state<last_state;state++) {
-   struct fst2Transition* trans=grammar->states[state]->transitions;
+   Transition* trans=grammar->states[state]->transitions;
    while (trans!=NULL) {
       if (trans->tag_number<0) {
          /* If we find a reference to a subgraph, we store it in the list */
@@ -282,7 +283,7 @@ int initial_position_for_new_states=new_main_graph->number_of_states;
 /* The following array contains the of transitions that correspond
  * to subgraph calls to be flattened. We arbitrary set its capacity to 2048 */
 int trans_to_flatten_capacity=2048;
-fst2Transition** transitions_to_flatten=(struct fst2Transition**)malloc(trans_to_flatten_capacity*sizeof(fst2Transition));
+Transition** transitions_to_flatten=(Transition**)malloc(trans_to_flatten_capacity*sizeof(Transition*));
 if (transitions_to_flatten==NULL) {
    fatal_error("Not enough memory in flatten_graph\n");
 }
@@ -308,7 +309,7 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
       }
    }
    /* Now, we deal with the transitions */
-   Fst2Transition original_transitions=original_state->transitions;
+   Transition* original_transitions=original_state->transitions;
    while (original_transitions!=NULL) {
       if (!RTN && (original_transitions->tag_number<0) && depth>=max_depth) {
          /* If we have a subgraph call while 1) we have overpassed the maximum
@@ -327,7 +328,7 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
          int destination_state_number=initial_position_for_new_states+original_transitions->state_number-grammar->initial_states[n_graph];
          add_outgoing_transition(new_state,original_transitions->tag_number,destination_state_number);
          /* We get a pointer on the transition we have just created */
-         Fst2Transition temp=new_state->outgoing_transitions;
+         Transition* temp=new_state->outgoing_transitions;
          if ((temp->tag_number) < 0) {
             /* If the transition is a subgraph call */
             if (depth<max_depth) {
@@ -335,7 +336,7 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
                if (trans_to_flatten_size>=trans_to_flatten_capacity) {
                   /* We resize the array if needed */
                   trans_to_flatten_capacity=2*trans_to_flatten_capacity;
-                  transitions_to_flatten=(fst2Transition**)realloc(transitions_to_flatten,trans_to_flatten_capacity*sizeof(fst2Transition*));
+                  transitions_to_flatten=(Transition**)realloc(transitions_to_flatten,trans_to_flatten_capacity*sizeof(Transition*));
                   if (transitions_to_flatten==NULL) {
                      fatal_error("Not enough memory in flatten_graph\n");
                   }
@@ -428,7 +429,7 @@ for (int i=grammar->initial_states[graph_number];i<limit;i++) {
       u_fprintf(f,": ");
    }
    /* And we print all the outgoing transitions */
-   struct fst2Transition* transition=grammar->states[i]->transitions;
+   Transition* transition=grammar->states[i]->transitions;
    while (transition!=NULL) {
       if (transition->tag_number < 0) {
          /* If we have a subgraph call, we renumber it */

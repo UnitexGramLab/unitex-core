@@ -25,6 +25,8 @@
 #include "utils.h"
 #include "symbol.h"
 #include "symbol_op.h"
+#include "StringParsing.h"
+#include "List_int.h"
 
 #define MAXBUF 1024
 
@@ -53,13 +55,14 @@ if (symbol==NULL) {
 symbol->type=type;
 symbol->negative=false;
 symbol->form=0;
-symbol->canonic=0;
+symbol->lemma=0;
 symbol->POS=NULL;
 symbol->feature=NULL;
 symbol->nb_features=0;
 symbol->next=NULL;
 return symbol;
 }
+
 
 /**
  * Allocates, initializes and returns a new symbol_t corresponding to the
@@ -94,7 +97,7 @@ return symbol;
  */
 symbol_t* new_symbol_POS(POS_t* POS) {
 symbol_t* s=new_symbol_POS_no_type(POS);
-symbol_type(s);
+type_symbol(s);
 return s;
 }
 
@@ -109,7 +112,7 @@ symbol_t* symbol=new_symbol_POS(POS);
 symbol->type=ATOM; 
 symbol->negative=false;
 symbol->form=0;
-symbol->canonic=canonic;
+symbol->lemma=canonic;
 return symbol;
 }
 
@@ -133,7 +136,7 @@ symbol_t* symbol=new_symbol_POS(POS);
 symbol->type=ATOM;
 symbol->negative=false;
 symbol->form=0;
-symbol->canonic=canonic;
+symbol->lemma=canonic;
 return symbol;
 }
 
@@ -148,7 +151,7 @@ symbol_t* symbol=new_symbol_POS(POS);
 symbol->type=ATOM;
 symbol->negative=false;
 symbol->form=0;
-symbol->canonic=form;
+symbol->lemma=form;
 return symbol;
 }
 
@@ -162,7 +165,7 @@ if (symbol->negative) free(symbol->negs);
 symbol->type=-1;
 symbol->negative=false;
 symbol->form=0;
-symbol->canonic=0;
+symbol->lemma=0;
 symbol->POS=NULL;
 symbol->feature=NULL;
 symbol->nb_features=0;
@@ -191,7 +194,7 @@ if ((dest->negative=src->negative)==true) {
    }
 } else {
    dest->form=src->form;
-   dest->canonic=src->canonic;
+   dest->lemma=src->lemma;
 }
 dest->POS=src->POS;
 dest->feature=(char*)malloc(src->nb_features*sizeof(char));
@@ -235,7 +238,7 @@ switch (symbol->type) {
       res->type=symbol->type;
       if (!symbol->negative) {
          res->form=symbol->form;
-         res->canonic=symbol->canonic;
+         res->lemma=symbol->lemma;
       } else {
          res->negative=true;
          res->nbnegs=symbol->nbnegs;
@@ -328,139 +331,153 @@ if (end) {
 }
 
 
-
-
-/* return how many codes in POS match with s
- * for each features whose value are the same in each matching code
- * set it in pcode (if non null)
+/**
+ * Returns how many codes in POS match with 's'. For instance, if we have the French
+ * tag "<V:s>", it can match all the following codes:
+ * 
+ * C <pers> s
+ * F <pers> s
+ * I <pers> s
+ * J <pers> s
+ * P <pers> s
+ * S <pers> s
+ * T <pers> s
+ * X 1 s   # eussé dussé puissé fussé
+ * Y 2 s
+ * K <gender> s
+ * 
+ * If 'matching_code' is not NULL, we copy the first matching code in it. If
+ * there are several matching codes, we set the common values and we set to
+ * UNSPECIFIED the divergent values. In our example, we would have:
+ * 
+ * tense=UNSPECIFIED pers=UNSPECIFIED gender=UNSPECIFIED number='s'
  */
-
-
-static int symbol_match_codes(symbol_t * s, symbol_t * pcode = NULL) {
-
-  int count = 0;
-
-
-  for (symbol_t * code = s->POS->codes; code; code = code->next) {
-
-    bool ok = true;
-
-    for (int i = 0; ok && i < s->POS->nb_discr; i++) {
-
+int symbol_match_codes(symbol_t* s,symbol_t* matching_code) {
+int count=0;
+/* We look at every complete code for s's POS */
+for (symbol_t* code=s->POS->codes;code!=NULL;code=code->next) {
+   bool ok=true;
+   for (int i=0;ok && i<s->POS->nb_discr;i++) {
       switch (code->feature[i]) {
-
-      case UNSPECIFIED:
-	fatal_error("match_codes: in POS '%S': code with UNSPEC discr code\n", s->POS->name);
-
-      default:
-	if ((s->feature[i] != UNSPECIFIED) && (s->feature[i] != code->feature[i])) { ok = false; }
-	break;
+         case UNSPECIFIED: {
+            /* This should never happen */
+            fatal_error("symbol_match_codes: in POS '%S': code with UNSPECIFIED discriminative feature\n",s->POS->name);
+         }
+         default: 
+            if (s->feature[i]!=UNSPECIFIED && s->feature[i]!=code->feature[i]) {
+               /* If a feature is set with different values in the current code
+                * and in s, then s can match this code */
+               ok=false;
+            }
+         break;
       }
-    }
-
-    if (ok) {
-
-      if (pcode) {
-
-	if (count == 0) { // copy first matching code in pcode
-
-	  for (int i = 0; i < s->POS->nb_discr; i++) { pcode->feature[i] = code->feature[i]; }
-
-	} else { // set to UNSPEC features which divergent
-
-	  for (int i = 0; i < s->POS->nb_discr; i++) {
-	    if (pcode->feature[i] != code->feature[i]) { pcode->feature[i] = UNSPECIFIED; }
-	  }
-	}
+   }
+   if (ok) {
+      /* If s can match the current code */
+      if (matching_code!=NULL) {
+         if (count==0) {
+            /* We copy the first matching code's features in 'matching_code' */
+            for (int i=0;i<s->POS->nb_discr;i++) {
+               matching_code->feature[i]=code->feature[i];
+            }
+         } else {
+            /* If there are more than one matching code, we set to
+             * UNSPECiFIED the features that are divergent */
+            for (int i=0;i<s->POS->nb_discr;i++) {
+               if (matching_code->feature[i]!=code->feature[i]) {
+                  matching_code->feature[i]=UNSPECIFIED;
+               }
+            }
+         }
       }
-
-      /*
-      debug("match_codes:\n");
-      symbol_dump(s); fprintf(stderr, " matches with "); symbol_dump(code); fprintf(stderr, "\n");
-      */
       count++;
-    }
-  }
-
-  return count;
+   }
+}
+return count;
 }
 
 
-/*
- * set the symbol type:
- * * if canonic starts with '!' it's NEGATIF (should probably split NEG into NEG_INC and NEG_CODE)
- * * if its traits matches with only one full label, then its a CODE or ATOM (depending if it contains a canonic form)
- *   and we lock all discriminant traits which are set to UNSPECIFIED.
- * * if it doesn't match any then it is an invalid symbol
- * * if all discr traits are fixed then it is also a code (or atom)
- * * else it is an INCOMPLET code.
+/**
+ * This function takes a symbol and compares it to the valid symbols that are
+ * possible for the symbol's POS. For instance, if an adjective must be defined
+ * with a number and a gender, then the symbol corresponding to "<A:m>" will
+ * be typed as an incomplete one. The function returns -1 if the symbol is
+ * not a correct one; otherwise, the type of the symbol is returned (see
+ * the enum SymbolType).
+ * 
+ * If the lemma form was a negative list, then the symbol type will be 
+ * INC_NEG or CODE_NEG.
+ * If the feature values match with only one full code, then its a CODE or ATOM
+ * (depending if it contains a lemma).
+ * If it doesn't match any code then it is an invalid symbol.
+ * If all discriminative features are fixed then it is also a CODE (or ATOM).
+ * Otherwise, it is an incomplete code (INC).
  */
-
-
-int symbol_type(symbol_t * symb) {
-
-  symb->type = INC;
-
-  if (symb->POS->codes) {
-
-    symbol_t * mcode = new_symbol_POS_no_type(symb->POS);
-
-    int count = symbol_match_codes(symb, mcode);
-
-    if (count == 0) { // symbol doesn't match any POS code -> invalid
-      symb->type = -1;
-      free_symbol(mcode);
-      return symb->type;
-    }
-
-    if (count == 1) { // it's a code we set discr values to matching code's one
-
-      symb->type = CODE;
-      for (int i = 0; i < symb->POS->nb_discr; i++) { symb->feature[i] = mcode->feature[i]; }
-
-    } else { // we try to lock some traits wich are same value on all matching codes
-
-      symb->type = INC;
-      for (int i = 0; i < symb->POS->nb_discr; i++) {
-	if (symb->feature[i] == UNSPECIFIED) { symb->feature[i] = mcode->feature[i]; }
-      }      
-    }
-
-    free_symbol(mcode);
-  }
-
-
-  if (symb->type == INC) { // if all discr traits are fixed, it's a code
-
-    int i;
-    for (i = 0; i < symb->POS->nb_discr; i++) { if (symb->feature[i] == UNSPECIFIED) { break; } }
-
-    if (i == symb->POS->nb_discr) { symb->type = CODE; }
-  }
-
-
-  /* look for canonical */
-
-  if (symb->type == INC) {
-
-    if (symb->negative) {
-      symb->type = INC_NEG;
-    } else if (symb->canonic) {
-      symb->type = INC_CAN;
-    }
-
-    return symb->type;
-  }
-
-  /* type == code */
-
-  if (symb->negative) {
-    symb->type = CODE_NEG;
-  } else if (symb->canonic) {
-    symb->type = ATOM;
-  }
-
-  return symb->type;
+int type_symbol(symbol_t* symbol) {
+/* By default, a symbol is incomplete */
+symbol->type=INC;
+if (symbol->POS->codes!=NULL) {
+   /* If there are feature combinations to look at */
+   symbol_t* matching_code=new_symbol_POS_no_type(symbol->POS);
+   int count=symbol_match_codes(symbol,matching_code);
+   if (count==0) {
+      /* If the symbol doesn't match any POS code, then it's an invalid one */
+      symbol->type=-1;
+      free_symbol(matching_code);
+      return symbol->type;
+   }
+   if (count==1) {
+      /* If the symbol corresponds to one code, we set its discriminative
+       * features as the matching code's one, so that the symbol is no more
+       * an INC but a CODE */
+      symbol->type=CODE;
+      for (int i=0;i<symbol->POS->nb_discr;i++) {
+         symbol->feature[i]=matching_code->feature[i];
+      }
+   } else {
+      /* If the symbol matches more than one code, we try to lock some features
+       * that have same values on all matching codes. Moreover, the symbol is still
+       * an incomplete one. */
+      for (int i=0;i<symbol->POS->nb_discr;i++) {
+         if (symbol->feature[i]==UNSPECIFIED) {
+            symbol->feature[i]=matching_code->feature[i];
+         }
+      }
+   }
+   free_symbol(matching_code);
+}
+if (symbol->type==INC) {
+   /* If the symbol is not yet marked as a CODE, we check if some discriminative
+    * features remain UNSPECIFIED, because if (count>1) above, we may have set
+    * some feature values. */
+   int i;
+   for (i=0;i<symbol->POS->nb_discr;i++) {
+      if (symbol->feature[i]==UNSPECIFIED) {
+         break;
+      }
+   }
+   if (i==symbol->POS->nb_discr) {
+      /* If we find that all dicriminative features have been set, then
+       * we promote the symbol to CODE */
+      symbol->type=CODE;
+   }
+}
+/* Now we look for a lemma, firstly in the case of an INC symbol... */
+if (symbol->type==INC) {
+   if (symbol->negative) {
+      symbol->type=INC_NEG;
+   } else if (symbol->lemma) {
+      symbol->type=INC_CAN;
+   }
+   return symbol->type;
+}
+/* ...and then for a CODE symbol */
+if (symbol->negative) {
+   symbol->type=CODE_NEG;
+} else if (symbol->lemma) {
+   symbol->type=ATOM;
+}
+return symbol->type;
 }
 
 
@@ -479,7 +496,7 @@ void symbol_dump_all(const symbol_t * symb, FILE * f) {
       u_fprintf(f, "!%S", language_get_form(lang, symb->negs[i]));
     }
   } else {
-    u_fprintf(f, "%S,%S", language_get_form(lang, symb->form), language_get_form(lang, symb->canonic));
+    u_fprintf(f, "%S,%S", language_get_form(lang, symb->form), language_get_form(lang, symb->lemma));
   }
 
 
@@ -507,174 +524,120 @@ void symbol_dump_all(const symbol_t * symb, FILE * f) {
 }
 
 
-
-void symbol_to_text_label(const symbol_t * s, Ustring * ustr) {
-
-  if (s == NULL) { fatal_error("symbol 2 text label: symb is null\n"); }
-
-  if (s == SYMBOL_DEF) { fatal_error("symb2txt: symb is <def>\n"); }
-
-  if (s->type != ATOM) {
-    error("symbol2txt: symbol '"); symbol_dump(s); fatal_error("' is'nt an atom.\n");
-  }
-
-  language_t * lang = s->POS->language;
-  if ((u_strcmp(s->POS->name, UNKNOWN_STR) == 0) || (u_strcmp(s->POS->name, PUNC_STR) == 0) || (u_strcmp(s->POS->name, CHFA_STR) == 0)) {
-    u_strcpy(ustr, language_get_form(lang, s->canonic));
-    return;
-  }
-  u_sprintf(ustr, "{%S,%S.%S", language_get_form(lang, s->form),language_get_form(lang, s->canonic),s->POS->name);
-  int i;
-  CAT_t * CAT;
-
-  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
-    if (s->feature[i] > 0) {
-      CAT = POS_get_CAT(s->POS, i);
-      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
-    }
-  }
-
-
-  bool colons = false;
-
-  for (i = 0; i < s->POS->nb_inflect; i++) {
-
-    CAT = POS_get_CAT(s->POS, i);
-
-    if (s->feature[i] > 0) {
-      if (colons == false) { u_strcat(ustr, ":"); colons = true; }
-      u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
-    }
-  }
-
-  u_strcat(ustr, "}");
+/**
+ * This function converts a the given symbol into a text .fst2 tag.
+ */
+void symbol_to_text_label(const symbol_t* s,Ustring* ustr) {
+if (s==NULL) {
+   fatal_error("NULL error in symbol_to_text_label\n");
 }
-
-
-void symbol_to_implosed_text_label(const symbol_t * s, Ustring * ustr) {
-
-  if (s == NULL) { fatal_error("symbol to text label: symb is null\n"); }
-
-  if (s == SYMBOL_DEF) { fatal_error("symb2txt: symb is <def>\n"); }
-
-  if (s->type != ATOM) {
-    error("symbol2txt: symbol '"); symbol_dump(s); fatal_error("' is'nt an atom.\n");
-  }
-
-  language_t * lang = s->POS->language;
-
-  if ((u_strcmp(s->POS->name, UNKNOWN_STR) == 0) || (u_strcmp(s->POS->name, PUNC_STR) == 0) || (u_strcmp(s->POS->name, CHFA_STR) == 0)) {
-    u_strcpy(ustr, language_get_form(lang, s->canonic));
-    return;
-  }
-
-  u_sprintf(ustr, "{%S,%S.%S", language_get_form(lang, s->form), language_get_form(lang, s->canonic), s->POS->name);
-
-  int i;
-  CAT_t * CAT;
-
-  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
-    if (s->feature[i] > 0) {
-      CAT = POS_get_CAT(s->POS, i);
-      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
-    }
-  }
-
-
-  for (; s; s = s->next) {
-
-    bool colons = false;
-
-    for (i = 0; i < s->POS->nb_inflect; i++) {
-
-      if (s->feature[i] > 0) {
-
-	CAT = POS_get_CAT(s->POS, i);
-
-	if (colons == false) { u_strcat(ustr, ":"); colons = true; }
-	u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
+if (s==SYMBOL_DEF) {
+   fatal_error("Unexpected <def> symbol in symbol_to_text_label\n");
+}
+if (s->type!=ATOM) {
+   error("symbol_to_text_label: symbol '");
+   symbol_dump(s);
+   fatal_error("' is'nt an atom.\n");
+}
+language_t* language=s->POS->language;
+if (!u_strcmp(s->POS->name,UNKNOWN_STR) || !u_strcmp(s->POS->name,PUNC_STR) 
+   || !u_strcmp(s->POS->name,CHFA_STR)) {
+   /* If the symbol is an unknown word, a digit sequence or a punctuation mark */
+   u_strcpy(ustr,language_get_form(language,s->lemma));
+   return;
+}
+u_sprintf(ustr,"{%S,%S.%S",language_get_form(language,s->form),language_get_form(language,s->lemma),s->POS->name);
+int i;
+/* We concatenate the semantic features like "+hum+z1" */
+CAT_t* CAT;
+for (i=s->POS->nb_inflect;i<s->nb_features;i++) {
+   if (s->feature[i]>0) {
+      CAT=POS_get_CAT(s->POS,i);
+      u_strcatf(ustr,"+%S",CAT_get_valname(CAT,s->feature[i]));
+   }
+}
+/* Then we deal with the inflectional features */
+bool colons=false;
+for (i=0;i<s->POS->nb_inflect;i++) {
+   CAT=POS_get_CAT(s->POS,i);
+   if (s->feature[i]>0) {
+      if (colons==false) {
+         u_strcat(ustr,":");
+         colons=true;
       }
-    }
-  }
-
-  u_strcat(ustr, "}");
+      u_strcat(ustr,CAT_get_valname(CAT,s->feature[i]));
+   }
+}
+u_strcat(ustr,"}");
 }
 
 
-
-void symbol_to_locate_label(const symbol_t * s, Ustring * ustr) {
-
-  if (s == NULL) { fatal_error("symb2locate label: symb is null\n"); }
-  if (s == SYMBOL_DEF) { error("symb2locate: symb is <def>\n"); u_strcpy(ustr, "<def>"); return; }
-
-  switch (s->type) {
-
-  case LEXIC:
-    u_strcpy(ustr, "<.>");
-    return;
-
-  case EPSILON:
-    u_strcpy(ustr, "<E>");
-    return;
-
-  case EXCLAM:
-    error("'<!>' in concordance fst2 ???\n");
-    u_strcpy(ustr, "!");
-    return;
-
-  case EQUAL:
-    error("'<=>' in concordance fst2 ???\n");
-    u_strcpy(ustr, "=");
-    return;
-  }
-
-  language_t * lang = s->POS->language;
-
-  if ((u_strcmp(s->POS->name, UNKNOWN_STR) == 0)) { // unknown word
-    u_strcpy(ustr, "<MOT>");
-    return;
-  } else if ((u_strcmp(s->POS->name, PUNC_STR) == 0) || (u_strcmp(s->POS->name, CHFA_STR) == 0)) {
-    if (s->canonic) {
-      //      debug("CHFA(%S) : canonic=%S\n", s->POS->name, s->canonic);
-      u_strcpy(ustr, language_get_form(lang, s->canonic));
+/**
+ * This function converts a the given symbol into a .fst2 grammar tag one.
+ */
+void symbol_to_locate_label(const symbol_t* s,Ustring * ustr) {
+if (s==NULL) {
+   fatal_error("NULL error in symbol_to_locate_label\n");
+}
+if (s==SYMBOL_DEF) {
+   fatal_error("Unexpected default transition in symbol_to_locate_label\n");
+}
+/* First, we deal with special tags */
+switch (s->type) {
+   case LEXIC:
+      /* We copy a special tag that will be rewritten later */
+      u_strcpy(ustr,"<.>");
       return;
-    }
-  }
 
+   case EPSILON:
+      u_strcpy(ustr,"<E>");
+      return;
 
-  if (! s->negative && s->canonic) {
-    u_sprintf(ustr, "<%S.%S", language_get_form(lang, s->canonic), s->POS->name);
-  } else {
-    u_sprintf(ustr, "<%S", s->POS->name);
-  }
+   case EXCLAM:
+      fatal_error("Unexpected <!> tag in symbol_to_locate_label\n");
 
-  int i;
-  CAT_t * CAT;
-
-  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
-
-    if (s->feature[i] > 0) {
-      CAT = POS_get_CAT(s->POS, i);
-      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
-    }
-  }
-
-
-  bool colons = false;
-
-  for (i = 0; i < s->POS->nb_inflect; i++) {
-
-    CAT = POS_get_CAT(s->POS, i);
-
-    if (s->feature[i] > 0) {
-
-      if (colons == false) { u_strcat(ustr, ":"); colons = true; }
-      u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
-
-    }
-  }
-
-  u_strcat(ustr, ">");
+   case EQUAL:
+      fatal_error("Unexpected <=> tag in symbol_to_locate_label\n");
+}
+language_t* lang=s->POS->language;
+if (!u_strcmp(s->POS->name,UNKNOWN_STR)) {
+   /* If we have an unknown POS */
+   u_strcpy(ustr, "<MOT>");
+   return;
+}
+if (!u_strcmp(s->POS->name,PUNC_STR) || !u_strcmp(s->POS->name,CHFA_STR)) {
+   /* If we have a punctuation or a digit sequence */
+   if (s->lemma!=0) {
+      u_strcpy(ustr,language_get_form(lang,s->lemma));
+      return;
+   }
+   fatal_error("Unexpected null lemma in symbol_to_locate_label\n");
+}
+if (!s->negative && s->lemma!=0) {
+   u_sprintf(ustr,"<%S.%S",language_get_form(lang,s->lemma),s->POS->name);
+} else {
+   u_sprintf(ustr,"<%S",s->POS->name);
+}
+int i;
+CAT_t* CAT;
+for (i=s->POS->nb_inflect;i<s->nb_features;i++) {
+   if (s->feature[i]>0) {
+      CAT=POS_get_CAT(s->POS,i);
+      u_strcatf(ustr,"+%S",CAT_get_valname(CAT,s->feature[i]));
+   }
+}
+bool colons=false;
+for (i=0;i<s->POS->nb_inflect;i++) {
+   CAT=POS_get_CAT(s->POS,i);
+   if (s->feature[i]>0) {
+      if (colons==false) {
+         u_strcat(ustr,":");
+         colons=true;
+      }
+      u_strcat(ustr,CAT_get_valname(CAT,s->feature[i]));
+   }
+}
+u_strcat(ustr,">");
 }
 
 
@@ -712,9 +675,9 @@ void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
     }
     u_strcatf(ustr, ".%S", s->POS->name);
 
-  } else if (s->canonic) {
+  } else if (s->lemma) {
 
-    u_sprintf(ustr, "<%S.%S", language_get_form(lang, s->canonic), s->POS->name);
+    u_sprintf(ustr, "<%S.%S", language_get_form(lang, s->lemma), s->POS->name);
 
   } else {    
 
@@ -802,7 +765,7 @@ void symbol_to_str(const symbol_t * s, Ustring * ustr) {
   } else {
 
     if (s->form)    { u_strcatf(ustr, "%S,", language_get_form(lang, s->form)); }
-    if (s->canonic) { u_strcatf(ustr, "%S", language_get_form(lang, s->canonic)); }
+    if (s->lemma) { u_strcatf(ustr, "%S", language_get_form(lang, s->lemma)); }
   }
 
   u_strcatf(ustr, ".%S", s->POS->name);
@@ -852,601 +815,388 @@ void symbols_dump(const symbol_t * s, FILE * f) {
   u_fprintf(f, ")");
 }
 
-/* extract different label parts
- * at least pos should be non null
+
+
+
+/**
+ * This function checks whether the given string is a valid DELAF tag token or not.
  */
-
-
-// form,can.POS [ +traits:flex ]
-// can.POS [ +traits:flex ]
-// POS [ +traits:flex ]
-// POS
-
-
-static inline void split_dic_label(unichar * label, unichar ** form, unichar ** canonic, unichar ** pos,
-				   unichar ** traits, unichar ** flex) {
-
-  unichar * p = label;
-  unichar * q;
-
-  if ((q = u_strchr(p, ',')) != NULL) {
-    *q = 0;
-    *form = p;
-    p = q + 1;
-
-  } else { *form = NULL; }
-
-
-  if ((q = u_strchr(p, '.')) != NULL) {
-    *q = 0;
-    *canonic = p;
-    p = q + 1;
-
-  } else { *canonic = NULL; }
-
-
-  *pos = p;
-
-  if ((q = u_strchr(p, '+')) != NULL) {
-
-    *q = 0;
-    *traits = q + 1;
-    p = q + 1;
-
-  } else { *traits = NULL; }
-
-
-  if ((q = u_strchr(p, ':')) != NULL) {
-
-    *q = 0;
-    *flex = q + 1;
-
-  } else { *flex = NULL; }
-
+static inline int check_text_label(unichar* label) {
+if (label==NULL) {
+   error("NULL error in check_text_label\n");
+   return -1;
+}
+if (label[0]=='\0') {
+   error("check_text_label called with an empty label\n");
+   return -1;
+}
+if (label[0]=='{' && label[1]!='\0') {
+   /* If we have something that looks like a tag token of the form {__,__.__} */
+   return (check_tag_token(label)==1)?0:-1;
+}
+return 0;
 }
 
 
-
-
-inline int check_dic_entry(const unichar * label) {
-
-  /* {__,__.__} */
-
-  if (*label != '{') { error("'%S': malformed DELA entry ('{' is missing)\n", label); return -1; }
-
-  const unichar * p = label + 1;
-
-  while (*p !=  ',') { // look for ','
-    if (*p == 0) { error("'%S': malformed DELA entry (',' is missing).\n", label); return -1; }
-    p++;
-  }
-
-  while (*p != '.') {
-    if (*p == 0) { error("'%S': malformed DELA entry ('.' is missing).\n", label); return -1; }
-    p++;
-  }
-
-  while (*p != '}') {
-    if (*p == 0) { error("'%S': malformed DELA entry: '%S' ('}' is missing).\n", label); return -1; }
-    p++;
-  }
-
-  p++;
-  if (*p != 0) { error("'%S': malformed label: label should end with '}'.\n", label); return -1; }
-
-  return 0;
-}
-
-
-
-
-
-/* text label can be either a full DELA entry, either a punc symbol, either an unknow word
+/**
+ * Loads a tag that is DELAF entry of the form {form,canonic.POS[+traits]*[:flex]*}.
+ * 'tag' is the string representing the original tag and 'entry' is a structure
+ * representing the entry after tokenization. The function returns a list of symbols
+ * for all inflectional codes. For instance, if we have the tag "{rouge,.A:ms:fs}",
+ * we will load it as two symbols corresponding to "{rouge,.A:ms}" and "{rouge,.A:fs}".
  */
-
-static inline int check_text_label(unichar * label) {
-
-
-  if ((label == NULL)) { error("check label: no label\n"); return -1; }
-
-  if (*label == 0) { error("error: check label: label is empty\n"); return -1; }
-
-  if (*label == '{' && *(label + 1)) { return check_dic_entry(label); }
-
-
-  /* no spaces */
-
-  // DON'T check for spaces ! (cause errors in GREEK)
-  //for (unichar * p = label; *p; p++) { if (isspace(*p)) { error("malformed label: '%S'.\n", label); return -1; } }
-
-  return 0;
+symbol_t* load_dic_entry(language_t* language,const unichar* tag,struct dela_entry* entry) {
+int i;
+POS_t* POS=language_get_POS(language,entry->semantic_codes[0]);
+if (POS==NULL) {
+   if (get_value_index(entry->semantic_codes[0],language->unknown_codes,DONT_INSERT)==-1) {
+      error("'%S': unknown POS '%S'\n",tag,entry->semantic_codes[0]);
+      get_value_index(entry->semantic_codes[0],language->unknown_codes,INSERT_IF_NEEDED,NULL);
+   }
+   return NULL;
 }
-
-
-
-
-#warning replace parsing functions with StringParsing functions
-unichar * u_strtok_char(unichar * str, char * delim) {
-
-  static unichar * next = NULL;
-  unichar * p;
-
-  if (str == NULL) { str = next; }
-
-  if (str == NULL) { return NULL; }
-
-  while (u_strchr(delim,*str)) { str++; }  // skip all delims at the begining of str
-
-  if (*str == 0) { next = NULL; return NULL; }
-
-  /* we have a token (begin at str) */
-
-  p = str;
-
-  while (*p) {
-    if (u_strchr(delim,*p)) {
-      *p = 0;
-      p++;
-      next = (*p == 0) ? NULL : p;
-      return str;
-    }
-    p++;
-  } 
-
-  next = NULL;
-  return str;
+symbol_t* symbol=new_symbol_POS(POS);
+symbol_t* model;
+symbol->type=ATOM;
+symbol->form=language_add_form(language,entry->inflected);
+symbol->lemma=language_add_form(language,entry->lemma);
+/* We lock all the features that are not explicitly set in the tag */
+for (i=0;i<POS->CATs->size;i++) {
+   symbol->feature[i]=LOCKED;
 }
-
-
-
-/* load a label of the form {form,canonic.POS[+traits]*[:flex]*}
- * buf is a writeable copy of label
- */
-symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * buf, bool warnmissing) {
-
-  buf[u_strlen(buf) - 1] = 0; // chomp trailing '}'
-
-  unichar * form, * canonic, * pos, * traits, * flexs;
-
-  split_dic_label(buf + 1, & form, & canonic, & pos, & traits, & flexs);
-
-  POS_t * POS = language_get_POS(lang, pos);
-
-  if (POS == NULL) {
-    error("'%S': unknow POS '%S'\n", label, pos);
-    return NULL;
-  }
-
-  symbol_t * symb = new_symbol_POS(POS);
-  symbol_t * model;
-
-  symb->type = ATOM;
-
-  symb->form    = language_add_form(lang, form);
-  symb->canonic = *canonic ? language_add_form(lang, canonic) : symb->form;
-
-
-  /* additionnal traits ... */
-
-  // we lock all featuress which are not explicitly set
-
-  for (int i = 0; i < POS->CATs->size; i++) { symb->feature[i] = LOCKED; }
-
-
-  unichar * p = u_strtok_char(traits, "+");
-
-  while (p) {
-
-    feature_info_t * info = POS_get_trait_infos(POS, p);
-
-    if (info) {
-
-      symb->feature[info->CATid] = info->val;
-
-    } else if (warnmissing) {
-
-      if (get_value_index(p,lang->unknown_codes,DONT_INSERT) == -1) {
-	      error("in symbol '%S': unknow value '%S', will not be taken into account\n", label, p);
-	      get_value_index(p,lang->unknown_codes,INSERT_IF_NEEDED,NULL);
+/* We consider the semantic feature like +hum+z1 */
+for (i=1;i<entry->n_semantic_codes;i++) {
+   feature_info_t* info=POS_get_semantic_feature_infos(POS,entry->semantic_codes[i]);
+   if (info!=NULL) {
+      symbol->feature[info->CATid]=info->val;
+   } else {
+      if (get_value_index(entry->semantic_codes[i],language->unknown_codes,DONT_INSERT)==-1) {
+	      error("Unknown semantic value '%S', will not be taken into account\n",entry->semantic_codes[i]);
+	      get_value_index(entry->semantic_codes[i],language->unknown_codes,INSERT_IF_NEEDED,NULL);
       }
-    }
-
-    p = u_strtok_char(NULL, "+");
-  }
-
-
-  /* flexional codes */
-
-  p = u_strtok_char(flexs, ":");
-
-  if (p == NULL) { // no flexionnal code
-
-    if (POS->codes && (symbol_match_codes(symb) == 0)) {
-      error("'%S': doesn't match with POS '%S' definition\n", label, POS->name);
+   }
+}
+/* Then we look at the inflectional codes */
+if (entry->n_inflectional_codes==0) {
+   /* If there is no inflectional code */
+   if (POS->codes!=0 && !symbol_match_codes(symbol,NULL)) {
+      error("'%S': doesn't match with POS '%S' definition\n",tag,POS->name);
       goto err_symb;
-    }
-
-    return symb;
-  }
-
-
-  model = symb;
-  symb = NULL;
-
-  while (p) {
-
-    symbol_t * nouvo = dup_symbol(model);
-
-    for (; *p; p++) {
-
-      feature_info_t * infos = POS_get_flex_infos(POS, *p);
-
-      if (infos == NULL) { error("'%S': unknow flexionnal code '%C'\n", label, *p); goto err_model; }
-
-      nouvo->feature[infos->CATid] = infos->val;
-    }
-
-
-    if (POS->codes && (symbol_match_codes(nouvo) == 0)) {
-      error("'%S': doesn't match with POS '%S' definition\n", label, POS->name);
+   }
+   return symbol;
+}
+model=symbol;
+symbol=NULL;
+for (i=0;i<entry->n_inflectional_codes;i++) {
+   symbol_t* tmp=dup_symbol(model);
+   unichar* p=entry->inflectional_codes[i];
+   for (;*p!='\0';p++) {
+      feature_info_t* infos=POS_get_inflect_feature_infos(POS,*p);
+      if (infos==NULL) {
+         error("'%S': unknown inflectional code '%C'\n",tag,*p);
+         goto err_model;
+      }
+      tmp->feature[infos->CATid]=infos->val;
+   }
+   if (POS->codes!=0 && !symbol_match_codes(tmp,NULL)) {
+      error("'%S': doesn't match with POS '%S' definition\n",tag,POS->name);
       goto err_model;
-    }
+   }
+   tmp->next=symbol;
+   symbol=tmp;
+}
+free_symbol(model);
+return symbol;
 
-    nouvo->next = symb;
-    symb = nouvo;
+err_model: free_symbol(model);
 
-    p = u_strtok_char(NULL, ":");
-  }
-
-  free_symbol(model);
-  
-  return symb;
-
-err_model:
-  free_symbol(model);
-
-err_symb:
-  free_symbols(symb);
-
-  return NULL;
+err_symb: free_symbols(symbol);
+return NULL;
 }
 
 
-
-symbol_t * load_text_symbol(language_t * lang, unichar * label) {
-
-  unichar buf[u_strlen(label) + 1];
-  u_strcpy(buf, label);
-
-  if (check_text_label(buf) == -1) {
-    error("bad format in text symbol: '%S'\n", label);
-    return NULL;
-  }
-
-  if (u_strcmp(label, "<E>") == 0) {
-    return new_symbol(EPSILON);
-  }
-
-  if (u_strcmp(label, "<def>") == 0) { fatal_error("<def> trans in text automaton!\n"); }
-
-  if (*buf == '{' && buf[1]) {   /*  dictionnary entry ( {__,__.__} ) */
-    return load_dic_entry(lang, label, buf);
-  }
-
-
-  /* mot inconnu dans un texte ou ponctuation */
-
-  int idx = language_add_form(lang, buf);
-
-  if (u_strchr(PUNC_TAB, *buf)) {          /* ponctuation */
-
-    if (buf[1] && buf[0] != '\\') { fatal_error("bad text symbol '%S' (ponctuation too long)\n", label); }
-
-    return new_symbol_PUNC(lang, idx);
-
-  } else if (u_is_digit(*buf)) {     /* chiffre arabe */
-
-    for (unichar * p = buf; *p; p ++) { if (! u_is_digit(*p)) { fatal_error("bad symbol : '%S' (mixed nums and chars)\n", label); } }
-
-    return new_symbol_CHFA(lang, idx);
-  }
-
-  /* unknow word  */
-
-  return new_symbol_UNKNOWN(lang, idx);
-}
-
-
-/* LEXIC_minus_POS: in this file because we need it in load_gramm_symbol fonction
+/**
+ * Loads a tag from a text .fst2 and returns the associated symbol or NULL
+ * if the tag is not valid.
  */
-
-symbol_t * LEXIC_minus_POS(POS_t * POS) {
-
-  symbol_t res;
-  res.next = NULL;
-  symbol_t * end = & res;
-
-  for (int i = 0; i < LANGUAGE->POSs->size; i++) {
-
-    POS_t * POS2 = (POS_t *) LANGUAGE->POSs->value[i];
-
-    if (POS2 == POS) { continue; }
-
-    concat_symbols(end, new_symbol_POS(POS2), & end);
-  }
-
-  return res.next;
+symbol_t* load_text_symbol(language_t* language,unichar* tag) {
+if (tag==NULL) {
+   error("NULL error in load_text_symbol\n");
+   return NULL;
 }
-
-
-
-
-static void fill_neglist(language_t * lang, symbol_t * s, unichar * canonic) {
-
-  unichar * p;
-  int nbnegs;
-  for (p = canonic, nbnegs = 0; *p; p++) { if (*p == '!') { nbnegs++; } }
-
-
-  s->negs = (int *) xmalloc(nbnegs * sizeof(int));
-  s->nbnegs = 0;
-
-  p = u_strtok_char(canonic, "!");
-
-  while (p) {
-
-    assert(s->nbnegs < nbnegs);
-
-    int idx = language_add_form(lang, p);
-    
-    /* bubble sort */
-
-    int pos = s->nbnegs; /* pos for (bubble) position (not part of speech here) */
-    s->negs[pos] = idx;
-
-    while (pos && (s->negs[pos - 1] > s->negs[pos])) {
-      int tmp = s->negs[pos - 1];
-      s->negs[pos - 1] = s->negs[pos];
-      s->negs[pos] = tmp;
-      pos--;
-    }
-
-    if (pos && (s->negs[pos - 1] == s->negs[pos])) { // bubble expulsion (doublon in neg list)
-
-      error("bubble expulsion (%S)\n", p);
-
-      while (pos < s->nbnegs) {
-	int tmp = s->negs[pos + 1];
-	s->negs[pos + 1] = s->negs[pos];
-	s->negs[pos] = tmp;
-	pos++;
+if (tag[0]=='\0') {
+   error("load_text_symbol called with an empty tag\n");
+   return NULL;
+}
+if (!u_strcmp(tag,"<E>")) {
+   return new_symbol(EPSILON);
+}
+if (!u_strcmp(tag,"<def>")) {
+   fatal_error("Unexpected '<def>' tag in text automaton\n");
+}
+if (tag[0]=='{' && tag[1]!='\0') {
+   /*  If we have something that looks like a dictionary entry of the form {__,__.__} */
+   struct dela_entry* entry=tokenize_tag_token(tag);
+   if (entry==NULL) {
+      fatal_error("Cannot load invalid tag '%S'\n",tag);
+   }
+   symbol_t* result=load_dic_entry(language,tag,entry);
+   free_dela_entry(entry);
+   return result;
+}
+/* If the tag is not a DELAF entry, then it may be an unknown word or
+ * a punctuation mark */
+int index=language_add_form(language,tag);
+if (u_strchr(PUNC_TAB,tag[0])) {
+   /* If the tag looks like a punctuation mark */
+   if (tag[1]!='\0' && tag[0]!='\\') {
+      fatal_error("Bad text symbol '%S' (ponctuation too long)\n",tag);
+   }
+   return new_symbol_PUNC(language,index);
+}
+/* If we have a digit sequence */
+if (u_is_digit(tag[0])) {
+   for (int i=0;tag[i]!='\0';i++) {
+      if (!u_is_digit(tag[i])) {
+         fatal_error("Bad symbol : '%S' (mixed digits and characters)\n",tag);
       }
-    } else { s->nbnegs++; }
-
-    p = u_strtok_char(NULL, "!");
-  }
-
-  if (s->nbnegs != nbnegs) { error("in fill_neglist: different nbnegs?\n"); }
+   }
+   return new_symbol_CHFA(language, index);
+}
+/* If we have an unknown word  */
+return new_symbol_UNKNOWN(language,index);
 }
 
 
-/* load a symbol which has the generic form '<canonic.POS+trait:flex>'
- * called from load_grammar_symbol only
+/**
+ * This function returns a list that contains symbols for all POS except
+ * the given one. It is used when there is a negative tag like <!A>.
  */
-
-static symbol_t * load_gram_symbol(language_t * lang, const unichar * label, unichar * buf) {
-
-  /* etiquette incomplete */
-
-  int len = u_strlen(buf);
-  if (buf[len - 1] != '>') { fatal_error("bad grammar symbol: '%S'\n", label); }
-
-  buf[len - 1] = 0; // chomp trailing '>'
-
-  unichar * p;
-  unichar * canonic, * pos;
-
-  if ((p = u_strchr(buf, '.')) != NULL) { //form canonic or negative form is present
-    canonic = buf + 1;
-    *p = 0;
-    pos = p + 1;
-
-  } else { canonic = NULL; pos = buf + 1; }
+symbol_t* LEXIC_minus_POS(POS_t* POS) {
+symbol_t res;
+res.next=NULL;
+symbol_t* end=&res;
+for (int i=0;i<LANGUAGE->POSs->size;i++) {
+   POS_t* POS2=(POS_t*)LANGUAGE->POSs->value[i];
+   if (POS2==POS) {
+      continue;
+   }
+   concat_symbols(end,new_symbol_POS(POS2),&end);
+}
+return res.next;
+}
 
 
-  if (*pos == '!') { // negation d'un code grammatical (ex: <!PNC>)
-
-    POS_t * POS = language_get_POS(lang, pos + 1);
-
-    if (POS == NULL) { fatal_error("in symbol '%S': unknow part of speech '%S'\n", label, pos + 1); }
-
-    return LEXIC_minus_POS(POS);
-  }
-
-  
-  unichar next;
-
-  if ((p = u_strpbrk(pos, "+!:")) != NULL) { // additionnals features or flexional codes
-    next = *p;
-    *p   = 0;
-  } else { next = 0; } // POS only
-
-
-  POS_t * POS = language_get_POS(lang, pos);
-
-  if (POS == NULL) { fatal_error("in symbol '%S': unknow part of speech '%S'\n", label, pos); }
-
-
-  symbol_t * symb = new_symbol_POS(POS);
-
-  if (canonic && *canonic) {
-
-    if (*canonic != '!') {
-
-      symb->canonic = language_add_form(lang, canonic); 
-
-    } else { // negative symbol
-
-      symb->negative = true;
-      fill_neglist(lang, symb, canonic);
-    }
-  }
+/**
+ * This function takes a string that represent a negative lemma list like
+ * "!man!woman". It adds into the given symbol their indices in the language's
+ * forms. Note that the array will be sorted.
+ */
+void fill_negative_lemma_list(language_t* language,symbol_t* s,unichar* lemma) {
+struct list_int* list=NULL;
+/* We take a buffer large enough */
+unichar tmp[u_strlen(lemma)];
+int position=0;
+while (lemma[position]!='\0') {
+   if (lemma[position]!='!') {
+      fatal_error("Malformed negative lemma list: '%S'\n",lemma);
+   }
+   /* We skip the ! */
+   position++;
+   if (P_OK!=parse_string(lemma,&position,tmp,P_EXCLAMATION)) {
+      fatal_error("Malformed negative lemma list: '%S'\n",lemma);
+   }
+   int index=language_add_form(language,tmp);
+   list=sorted_insert(index,list);
+}
+s->negs=dump(list,&(s->nbnegs));
+free_list_int(list);
+}
 
 
-  /* additionnal traits ... */
-
-  unichar type = next;
-  unichar * attr = p + 1;
-
-  while ((type == '+') || (type == '!')) {
-
-    if ((p = u_strpbrk(attr, "+!:")) != NULL) { // c'est pas termine
-      next = *p;
-      *p   = 0;
-    } else { next = 0; }
-
-
-    if (type == '+') { // attribute is set
-
-      feature_info_t * info = POS_get_trait_infos(POS, attr);
-
-      if (info) {
-
-	symb->feature[info->CATid] = info->val;
-
+/**
+ * Loads a grammar symbol which has the generic form '<canonic.POS+trait:flex>'.
+ * The function returns a list of symbols for all inflectional codes. For
+ * instance, if we have the tag "<A:@m@s:fs>", we will load it as two
+ * symbols corresponding to "<A:@m@s>" and "<A:fs>".
+ */
+symbol_t* load_gram_symbol(language_t* language,const unichar* tag) {
+int length=u_strlen(tag);
+if (tag[0]!='<' || tag[length-1]!='>') {
+   fatal_error("Bad grammar symbol: '%S'\n",tag);
+}
+/* We copy the content of the label without the angles */
+unichar* buffer=u_strdup(&(tag[1]),length-2);
+unichar lemma[length-2];
+unichar tmp[length-2];
+int position=0;
+/* We look for a dot in the tag */
+if (P_OK!=parse_string(buffer,&position,lemma,P_DOT)) {
+   fatal_error("Bad grammar symbol: '%S'\n",tag);
+}
+if (buffer[position]!='.') {
+   /* If we haven't found one, it means that the tag has no lemma*/
+   lemma[0]='\0';
+   position=0;
+} else {
+   /* We skip the dot */
+   position++;
+}
+if (buffer[position]=='!') {
+   /* If we have the negation of a grammatical code like <!PNC> */
+   if (position!=0) {
+      error("Unexpected lemma in negative grammar tag '%S': lemma will be ignored\n",tag,lemma);
+   }
+   /* We assume that the whole code after the ! is a grammatical code. If not (i.e. <!N+z1>),
+    * it will wrongly be taken as one code and it won't be found in the valid POS */
+   POS_t* POS=language_get_POS(language,&(buffer[position+1]));
+   if (POS==NULL) {
+      fatal_error("In symbol '%S': unknown part of speech '%S'\n",tag,buffer[position+1]);
+   }
+   free(buffer);
+   return LEXIC_minus_POS(POS);
+}
+/* We look for the end of the POS in the tag */
+if (P_OK!=parse_string(buffer,&position,tmp,"+!:")) {
+   fatal_error("Bad grammar symbol: '%S'\n",tag);
+}
+POS_t* POS=language_get_POS(language,tmp);
+if (POS==NULL) {
+   fatal_error("In symbol '%S': unknown part of speech '%S'\n",tag,tmp);
+}
+symbol_t* symbol=new_symbol_POS(POS);
+if (lemma[0]!='\0') {
+   /* If the lemma is not empty */
+   if (lemma[0]!='!') {
+      /* And if it's not a negative lemma */
+      symbol->lemma=language_add_form(language,lemma); 
+   } else {
+      /* If we have a negative lemma list like in <!man!woman.N>*/
+      symbol->negative=true;
+      fill_negative_lemma_list(language,symbol,lemma);
+   }
+}
+/* Now, we deal with the additional semantic features, if any */
+while (buffer[position]=='+' || buffer[position]=='!') {
+   /* We skip the delimiter, but we keep it */
+   unichar type=buffer[position];
+   position++;
+   /* We look for the end of the feature in the tag */
+   if (P_OK!=parse_string(buffer,&position,tmp,"+!:")) {
+      fatal_error("Bad grammar symbol: '%S'\n",tag);
+   }
+   if (type=='+') {
+      /* If we have to set a semantic feature */
+      feature_info_t* info=POS_get_semantic_feature_infos(POS,tmp);
+      if (info!=NULL) {
+	      symbol->feature[info->CATid]=info->val;
       } else {
-
-	if (get_value_index(attr,lang->unknown_codes,DONT_INSERT) == -1) {
-	  error("in symbol '%S': unknow attribute '%S', will not be taken into account\n", label, attr);
-	  get_value_index(attr,lang->unknown_codes,INSERT_IF_NEEDED,NULL);
-	}
+         if (get_value_index(tmp,language->unknown_codes,DONT_INSERT)==-1) {
+            /* If we haven't already encountered this unknown code, we can print
+             * an error message */
+            error("in symbol '%S': unknow attribute '%S', will not be taken into account\n",tag,tmp);
+            get_value_index(tmp,language->unknown_codes,INSERT_IF_NEEDED,NULL);
+         }
       }
-
-    } else { // feature is locked (type == '!')
-
-      int idx = POS_get_CATid(POS, attr);
-      if (idx == -1) { fatal_error("in symbol '%S': unknow feature '%S'\n", label, attr); }
-      if (idx < POS->nb_inflect) { fatal_error("in symbol '%S': '%S' is a flexionnal feature!\n", label, attr); }
-      if (symb->feature[idx] != UNSPECIFIED) { fatal_error("in symbol '%S': '%S' cannot be locked and set\n", label, attr); }
-      symb->feature[idx] = LOCKED;
-    }
-
-    attr = p + 1;
-    type = next;
-  }
-
-
-  /* flexional codes */
-
-  if (type == 0) { // no flexionnal code
-    if (symbol_type(symb) == -1) { fatal_error("'%S' is not a valid\n", label); }
-    return symb;
-  }
-
-
-  assert(type == ':');
-  assert(p);
-
-  symbol_t * model = symb;
-  symb = NULL;
-
-  while (p) { // still flex code sequence
-
-    // debug("attr=%S\n", attr);
-
-    if ((p = u_strchr(attr, ':')) != NULL) { // c'est pas termine
-      *p = 0;
-    }
-
-    symbol_t * nouvo = dup_symbol(model);
-
-    for (; *attr; attr++) {
-
-      feature_info_t * infos;
-
-      if (*attr == '@') { // flexionnal feature is locked
-	attr++;
-	if ((infos = POS_get_flex_infos(POS, *attr)) == NULL) {
-	  fatal_error("in symbol '%S': unknow flex code '%C'\n", label, *attr);
-	}
-	nouvo->feature[infos->CATid] = LOCKED;
-	
-      } else { // flexionnal code is set
-
-	if ((infos = POS_get_flex_infos(POS, *attr)) == NULL) {
-	  fatal_error("in symbol '%S': unknow flexionnal code '%C'\n", label, *attr);
-	}
-
-	nouvo->feature[infos->CATid] = infos->val;
+   } else {
+      /* If we have to lock a semantic feature */
+      int index=POS_get_CATid(POS,tmp);
+      if (index==-1) {
+         fatal_error("In symbol '%S': unknown feature '%S'\n",tag,tmp);
       }
-    }
-
-    if (symbol_type(nouvo) == -1) { fatal_error("'%S' is not a valid symbol\n", label); }
-
-    nouvo->next = symb;
-    symb = nouvo;
-
-    attr = p + 1;
-  }
-
-  free_symbol(model);
-
-  return symb;
+      if (index<POS->nb_inflect) {
+         fatal_error("In symbol '%S': '%S' is an inflectional feature!\n",tag,tmp);
+      }
+      if (symbol->feature[index]!=UNSPECIFIED) {
+         fatal_error("In symbol '%S': '%S' cannot be both locked and set\n",tag,tmp);
+      }
+      symbol->feature[index]=LOCKED;
+   }
+}
+/* Now we look at the inflectional codes, if any */
+if (buffer[position]=='\0') {
+   /* If there are no inflectional codes */
+   if (type_symbol(symbol)==-1) {
+      fatal_error("'%S' is not a valid tag\n",tag);
+   }
+   free(buffer);
+   return symbol;
+}
+symbol_t* model=symbol;
+symbol=NULL;
+while (buffer[position]!='\0') {
+   /* If there is an inflectional code to read, we look for its end. To
+    * do that, we must skip the : */
+   position++;
+   if (P_OK!=parse_string(buffer,&position,tmp,P_COLON)) {
+      fatal_error("Bad grammar symbol: '%S'\n",tag);
+   }
+   symbol_t* tmp_symbol=dup_symbol(model);
+   unichar* attr=tmp;
+   for (;*attr!='\0';attr++) {
+      feature_info_t* infos;
+      if (*attr=='@') {
+         /* If the inflectional feature is locked */
+         attr++;
+         if ((infos=POS_get_inflect_feature_infos(POS,*attr))==NULL) {
+            fatal_error("In symbol '%S': unknown inflectional code '%C'\n",tag,*attr);
+         }
+         tmp_symbol->feature[infos->CATid]=LOCKED;
+      } else {
+         /* If we have to set the inflectional feature */
+         if ((infos=POS_get_inflect_feature_infos(POS,*attr))==NULL) {
+            fatal_error("In symbol '%S': unknown inflectional code '%C'\n",tag,*attr);
+         }
+         tmp_symbol->feature[infos->CATid]=infos->val;
+      }
+   }
+   if (type_symbol(tmp_symbol)==-1) {
+      fatal_error("'%S' is not a valid tag\n",tag);
+   }
+   tmp_symbol->next=symbol;
+   symbol=tmp_symbol;
+}
+free_symbol(model);
+free(buffer);
+return symbol;
 }
 
 
-/* load a symbol from an Elag grammar label
+/**
+ * Loads a symbol from an Elag grammar tag.
  */
-
-symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
-
-  unichar buf[u_strlen(label) + 1];
-  u_strcpy(buf, label);
-
-  if (*buf == '{' && buf[1]) {   /*  dictionnary entry ( {__,__.__} ) */
-
-    if (u_strcmp(buf, "{S}") == 0) { return new_symbol_PUNC(lang, language_add_form(lang, buf)); } // limite de phrase
-
-    error("'%S': DELAS entry in Elag grammar????\n", label);
-
-    if (check_dic_entry(buf) == -1) { fatal_error("bad grammar label '%S'\n", label); }
-
-    return load_dic_entry(lang, label, buf);
-  }
-
-
-  /* mot inconnu dans un texte ou ponctuation */
-
-  if (*buf == '<' && *(buf + 1)) { // etiquette
-
-    /* EPSILON */
-
-    if (u_strcmp(buf, "<E>") == 0) { return new_symbol(EPSILON); }
-
-    /* UNIVERSEL */
-
-    if (u_strcmp(buf, "<.>") == 0) { return new_symbol(LEXIC); }
-
-
-    /* special def label */
-
-    if (u_strcmp(buf, "<def>") == 0) { return SYMBOL_DEF; }
-
-
-    /* special EXCLAM symbol */
-
-    if (u_strcmp(buf, "<!>") == 0) { return new_symbol(EXCLAM); }
-
-
-    /* special EQUAL symbol */
-
-    if (u_strcmp(buf, "<=>") == 0) { return new_symbol(EQUAL); }
-
-
-    /* etiquette incomplete */
-
-    return load_gram_symbol(lang, label, buf);
-  }
+symbol_t* load_grammar_symbol(language_t* language,unichar* tag) {
+unichar buf[u_strlen(tag)+1];
+u_strcpy(buf,tag);
+if (tag[0]=='{' && tag[1]!='\0') {
+   /* If we have something like a dictionary entry of the form {__,__.__} */
+   if (!u_strcmp(tag,"{S}")) {
+      /* First we check if it is not a sentence delimiter */
+      return new_symbol_PUNC(language,language_add_form(language,tag));
+   }
+   /* If it is really a dictionary entry, it shouldn't be there */
+   error("'%S': DELAF entry should not appear in Elag grammar\n",tag);
+   struct dela_entry* entry=tokenize_tag_token(tag);
+   /*if (check_dic_entry(buf)==-1) {
+      fatal_error("bad grammar label '%S'\n",tag);
+   }*/
+   if (entry==NULL) {
+      fatal_error("Cannot use invalid tag '%S' in an ELAG grammar\n",tag);
+   }
+   symbol_t* result=load_dic_entry(language,tag,entry);
+   free_dela_entry(entry);
+   return result;
+}
+if (tag[0]=='<' && tag[1]!='\0') {
+   /* If we have a tag like <xxxx>, we test if it's a special symbol */
+   if (!u_strcmp(tag,"<E>")) return new_symbol(EPSILON);
+   if (!u_strcmp(tag,"<.>")) return new_symbol(LEXIC);
+   if (!u_strcmp(tag,"<def>")) return SYMBOL_DEF;
+   if (!u_strcmp(tag,"<!>")) return new_symbol(EXCLAM);
+   if (!u_strcmp(tag,"<=>")) return new_symbol(EQUAL);
+   /* Otherwise, we try to read a tag like <PRO:1s> */
+   return load_gram_symbol(language,tag);
+}
 
 
 
@@ -1463,14 +1213,14 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
 
   /* ponctuation */
 
-  int idx = language_add_form(lang, buf);
+  int idx = language_add_form(language, buf);
 
   if (u_strchr(PUNC_TAB, *buf)) {
 
-    if (*buf == '\\' && (! buf[1] || buf[2])) { fatal_error("bad PUNC symbol '%S'\n", label); }
-    if (buf[1] && buf[0] != '\\') { fatal_error("bad symbol '%S' (PONC too long)\n", label); }
+    if (*buf == '\\' && (! buf[1] || buf[2])) { fatal_error("bad PUNC symbol '%S'\n", tag); }
+    if (buf[1] && buf[0] != '\\') { fatal_error("bad symbol '%S' (PONC too long)\n", tag); }
 
-    return new_symbol_PUNC(lang, idx);
+    return new_symbol_PUNC(language, idx);
   }
 
 
@@ -1479,18 +1229,18 @@ symbol_t * load_grammar_symbol(language_t * lang, unichar * label) {
   if (u_is_digit(*buf)) {
 
     for (unichar * p = buf; *p; p ++) {
-      if (! u_is_digit(*p)) { fatal_error("bad symbol : '%S' (mixed nums and chars)\n", label); }
+      if (! u_is_digit(*p)) { fatal_error("bad symbol : '%S' (mixed nums and chars)\n", tag); }
     }
 
-    return new_symbol_CHFA(lang, idx);
+    return new_symbol_CHFA(language, idx);
   }
 
 
   /* unknow word  */
 
-  error("label '%S': unknow word in grammar???\n", label);
+  error("label '%S': unknow word in grammar???\n", tag);
 
-  return new_symbol_UNKNOWN(lang, idx);
+  return new_symbol_UNKNOWN(language, idx);
 }
 
 
@@ -1524,11 +1274,11 @@ bool symbol_equals(symbol_t * a, symbol_t * b) {
 
   if ((a->type != b->type) || (a->POS != b->POS)) { return false; }
 
-  if (a->canonic) {
+  if (a->lemma) {
 
-    if ((! b->canonic) || u_strcmp(a->canonic, b->canonic)) { return false; }
+    if ((! b->lemma) || u_strcmp(a->lemma, b->lemma)) { return false; }
 
-  } else if (b->canonic) { return false; }
+  } else if (b->lemma) { return false; }
 
   return symbol_equals_traits(a, b);
 }

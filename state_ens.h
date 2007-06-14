@@ -27,7 +27,7 @@
 
 
 typedef struct stateid_t {
-  autalmot_t * A;
+  Fst2Automaton * A;
   int no;
   struct stateid_t * next;
 } stateid_t;
@@ -66,13 +66,13 @@ typedef struct state_ens_tab_t {
 } state_ens_tab_t;
 
 
-stateid_t * stateid_new(autalmot_t * A, int no, stateid_t * next = NULL);
+stateid_t * stateid_new(Fst2Automaton * A, int no, stateid_t * next = NULL);
 void stateid_delete(stateid_t * id);
 
 
 state_ens_t * state_ens_new();
 void state_ens_delete(state_ens_t * l);
-void state_ens_add(state_ens_t * l, autalmot_t * A, int no);
+void state_ens_add(state_ens_t * l, Fst2Automaton * A, int no);
 bool state_ens_equals(state_ens_t * l1, state_ens_t * l2);
 
 void state_ens_developp(state_ens_t * ens);
@@ -96,6 +96,6 @@ void STATE_delete(STATE_t * Q);
 void trans_developp(transition_t * t1, transition_t * t2);
 void trans_developp(transition_t * t1);
 
-void developp_deftrans(autalmot_t * A, int q);
+void developp_deftrans(Fst2Automaton * A, int q);
 
 #endif

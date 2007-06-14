@@ -53,7 +53,7 @@ int alphabet_add(alphabet_t * alph, symbol_t * s) {
 }
 
 
-alphabet_t * alphabet_from_autalmot(autalmot_t * A) {
+alphabet_t * alphabet_from_autalmot(Fst2Automaton * A) {
 
   alphabet_t * alph = alphabet_new();
   bool transdef = false;

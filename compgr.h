@@ -30,25 +30,38 @@
 #include "autalmot.h"
 
 
-#define maxRegles 16
-#define maxContraintes 8
+#define ELAG_MAX_CONSTRAINTS 8
+#define ELAG_UNDEFINED (-1)
 
-#define NEXISTEPAS - 1
 
+/**
+ * ....
+ */
 typedef struct {
-  autalmot_t * G, * D;
-} tContexte;
+  Fst2Automaton* left;
+  Fst2Automaton* right;
+} elContext;
 
+
+/**
+ * This structure defines a single ELAG rule.
+ */
 typedef struct {
-  char * nom;
-  autalmot_t * autLu;      /* Automate lu dans un fichier */
-//  autalmot_t * compilee;
-  int nbContextes;        /* nombre de contextes, au moins 1 */
-  tContexte * contexte;   /* liste des contextes */  
-} tRegle;
+   /* Name of the .fst2 file that contains this rule */
+   char* name;
+   
+   /* The automaton that corresponds to the rule */
+   Fst2Automaton* automaton;      /* Automate lu dans un fichier */
+   
+   /* Number of contexts, at least 1 */
+   int nbContexts;
+   
+   /* Array of the contexts */
+   elContext* contexts;
+} elRule;
 
 
-int compile_grammar(char * gram, char * output);
+int compile_elag_grammar(char*,char*);
 int compile_rules(char * rulesname, char * outname);
 
 #endif

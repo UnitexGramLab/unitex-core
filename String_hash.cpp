@@ -527,3 +527,26 @@ if (index==-1) return NULL;
 return hash->value[index];
 }
 
+
+/**
+ * Adds a value in the value array without associating it with a unicode string.
+ * Returns the index of this value.
+ */
+int add_value(void* value,struct string_hash_ptr* hash) {
+if (hash->capacity==DONT_USE_VALUES) {
+   fatal_error("Value array doesn't exist in add_value\n");
+}
+(hash->hash->size)++;
+hash->size=hash->hash->size;
+int index=hash->size;
+if (hash->hash->size==hash->capacity) {
+   /* We enlarge the 'value' array, doubling its capacity */
+   hash->capacity=2*hash->capacity;
+   hash->value=(void**)realloc(hash->value,sizeof(void*)*hash->capacity);
+   if (hash->value==NULL) {
+      fatal_error("Not enough memory in add_value\n");
+   }
+}
+hash->value[index]=value;
+return index;
+}

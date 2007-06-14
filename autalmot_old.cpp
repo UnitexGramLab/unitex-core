@@ -37,9 +37,9 @@
 
 
 void chargeSymbole(tSymbole * symb, unichar * lex, char * nomFich) ;
-static char * copie_tab_sorte(char *tabOrig,etat nbEtats) ;
-static etat * copie_tab_initial(etat *tabOrig, etat nbElements) ;
-static tTransitions * * copie_tab_etats(tTransitions * *tabOrig,etat nbEtats) ;
+static char * copie_tab_sorte(char *tabOrig,int nbEtats) ;
+static int * copie_tab_initial(int *tabOrig, int nbElements) ;
+static tTransitions * * copie_tab_etats(tTransitions * *tabOrig,int nbEtats) ;
 
 
 //int dobreak = 0;
@@ -148,7 +148,7 @@ void transition_delete(tTransitions * t) {
  * l'unique etat initial est 0, sauf s'il n'y a pas d'etats.
  */
 
-tAutAlMot * initAutAlMot(etat nbEtats) {
+tAutAlMot * initAutAlMot(int nbEtats) {
 
   tAutAlMot * aut = (tAutAlMot *) xcalloc(1, sizeof(tAutAlMot));
 
@@ -179,7 +179,7 @@ tAutAlMot * initAutAlMot(etat nbEtats) {
 
 void marqueEtatInitial(tAutAlMot * aut) {
   aut->nbEtatsInitiaux = 1;
-  aut->initial = (etat *) xcalloc(1, sizeof(etat));
+  aut->initial = (int *) xcalloc(1, sizeof(int));
   aut->initial[0] = 0;
   //  aut->type[0] |= AUT_INITIAL; 
 }
@@ -187,7 +187,7 @@ void marqueEtatInitial(tAutAlMot * aut) {
 
 /* Initialise un automate deja alloue. L'unique etat initial est 0. */
 
-void initAutAlMotAlloue(tAutAlMot * aut, etat nbEtats) {
+void initAutAlMotAlloue(tAutAlMot * aut, int nbEtats) {
 
   aut->name           = NULL;
   aut->nbEtats        = nbEtats ; 
@@ -211,7 +211,7 @@ void initAutAlMotAlloue(tAutAlMot * aut, etat nbEtats) {
  * Il n'y a pas de partage de memoire entre s et l'etiquette de la transition.
  */
 
-void nouvTrans(tAutAlMot * a, etat source, tSymbole * s, etat but) {
+void nouvTrans(tAutAlMot * a, int source, tSymbole * s, int but) {
 
   tTransitions * t = (tTransitions *) xmalloc(sizeof(tTransitions)) ;
 
@@ -261,9 +261,9 @@ tAutAlMot * copieAutomate(tAutAlMot * autOrig) {
  * sortie : nouveau tableau de pointeur sur structure tTransition
  */ 
 
-static tTransitions ** copie_tab_etats(tTransitions ** tabOrig, etat nbEtats) { 
+static tTransitions ** copie_tab_etats(tTransitions ** tabOrig, int nbEtats) { 
 
-  etat i; 
+  int i; 
   tTransitions ** tabNouv; 
 
   tabNouv = (tTransitions **) xcalloc(1, sizeof(tTransitions *) * nbEtats); 
@@ -304,9 +304,9 @@ tTransitions * copie_file_transition(tTransitions * transOrig) {
 /*** entree : tableau de sorte des etats de taille nbEtats ***/ 
 /*** sortie : nouveau tableau de sorte des etats de taille nbEtats   ***/ 
 
-static char * copie_tab_sorte(char *tabOrig,etat nbEtats) { 
+static char * copie_tab_sorte(char *tabOrig,int nbEtats) { 
 
-  etat i; 
+  int i; 
   char *nouvTab; 
 
   nouvTab = (char*) xcalloc(1, sizeof(char)*nbEtats);
@@ -322,14 +322,14 @@ static char * copie_tab_sorte(char *tabOrig,etat nbEtats) {
 /*** entree : tableau des  etats initiaux ***/ 
 /*** sortie : nouveau tableau des etats initiaux    ***/ 
 
-static etat * copie_tab_initial(etat *tabOrig, etat nbElements) {
-  etat i ; 
-  etat * nouvTab ; 
+static int * copie_tab_initial(int *tabOrig, int nbElements) {
+  int i ; 
+  int * nouvTab ; 
 
   if (nbElements != 1)
     u_printf("Automate avec %d etats initiaux.\n", nbElements) ;
 
-  nouvTab = (etat *) xcalloc(1,  sizeof(etat) * nbElements) ; 
+  nouvTab = (int *) xcalloc(1,  sizeof(int) * nbElements) ; 
 
   for(i = 0 ; i < nbElements ; i ++) 
     nouvTab[i] = tabOrig[i] ; 
@@ -437,7 +437,7 @@ tSymbole * copieSymbole(tSymbole * Source) {
 
 void videAutomate(tAutAlMot * Aut) {
 
-  etat i ;
+  int i ;
   tTransitions * t, * s ;       /* Transition courante et suivante */
 
   for (i = 0 ; i < Aut -> nbEtats ; i ++) {
@@ -469,7 +469,7 @@ void videAutomate(tAutAlMot * Aut) {
 
 void libereEntrantesEtats(tAutAlMot * a) {
 
-  etat i ;
+  int i ;
   tTransitions * pt, * temp ;
 
   for (i = 0; i < a->nbEtats; i ++) {
@@ -511,7 +511,7 @@ void list_aut_old_delete(list_aut_old * lst) {
 
 void complementation(tAutAlMot * entAut) {
 
-  etat i ; 
+  int i ; 
   for (i = 0 ; i < entAut -> nbEtats ; i ++)
     if (final(entAut, i)) /* etat terminal */
       rendreNonFinal(entAut, i);

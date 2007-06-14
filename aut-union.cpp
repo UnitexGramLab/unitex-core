@@ -29,7 +29,7 @@ static inline transition_t * _trans_rewrite(transition_t * trans, int * corresp)
 }
 
 
-autalmot_t * autalmot_union(autalmot_t * A, autalmot_t * B) {
+Fst2Automaton * autalmot_union(Fst2Automaton * A, Fst2Automaton * B) {
 
   autalmot_resize(A, A->nbstates + B->nbstates);
 
@@ -46,7 +46,7 @@ autalmot_t * autalmot_union(autalmot_t * A, autalmot_t * B) {
 
   free(corresp);
 
-  autalmot_delete(B);
+  free_Fst2Automaton(B);
 
   return A;
 }

@@ -19,32 +19,36 @@
   *
   */
 
-#ifndef UnicharTreeH
-#define UnicharTreeH
+#ifndef Fst2Txt_TokenTreeH
+#define Fst2Txt_TokenTreeH
 
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "Fst2.h"
+#include "Transitions.h"
 
 
-struct arbre_char {
-   Fst2Transition arr;
-   struct arbre_char_trans* trans;
+/**
+ * This structure is used to associate lists of transitions with tokens.
+ * The string_hash is used to associate an index 'n' to a token 't' and
+ * then 'transition_array[n]' contains the transitions associated to 't'.
+ * 'capacity' is the maximum size of the array and 'size' is its actual
+ * size.
+ */
+struct fst2txt_token_tree {
+   struct string_hash* hash;
+   Transition** transition_array;
+   int capacity;
+   int size;
 };
 
 
-struct arbre_char_trans {
-   unichar c;
-   struct arbre_char* noeud;
-   struct arbre_char_trans* suivant;
-};
 
+struct fst2txt_token_tree* new_fst2txt_token_tree();
+void free_fst2txt_token_tree(struct fst2txt_token_tree*);
 
-void free_arbre_char(struct arbre_char*);
-void free_arbre_char_trans(struct arbre_char_trans*);
-void inserer_etiquette(unichar*,int,int,struct arbre_char*);
-struct arbre_char* new_arbre_char();
-Fst2Transition get_matching_etiquettes(unichar*,struct arbre_char*,Alphabet*,int);
+void add_tag(unichar*,int,int,struct fst2txt_token_tree*);
+Transition* get_matching_tags(unichar*,struct fst2txt_token_tree*,Alphabet*);
 
 
 #endif

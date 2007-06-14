@@ -35,7 +35,7 @@ typedef struct alphabet_t {
 } alphabet_t;
 
 alphabet_t * alphabet_new();
-alphabet_t * alphabet_from_autalmot(autalmot_t * A);
+alphabet_t * alphabet_from_autalmot(Fst2Automaton * A);
 
 void alphabet_delete(alphabet_t * alph);
 

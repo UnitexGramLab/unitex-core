@@ -26,6 +26,9 @@
 
 #include "Unicode.h"
 #include "symbol.h"
+#include "SingleGraph.h"
+#include "String_hash.h"
+
 
 //#define TRUE	1
 //#define FALSE 	0
@@ -39,8 +42,6 @@
 //#define initial(A, q)  (A->states[q].flags & AUT_INITIAL)
 //#define final(A, q)  (A->states[q].flags & AUT_FINAL)
 
-
-typedef int etat;
 
 
 /* Liste de transitions */
@@ -69,95 +70,94 @@ typedef struct state_t {
 } state_t;
 
 
+/**
+ * This structure defines an automaton of .fst2, ready to be used
+ * for by ELAG programs.
+ */
+typedef struct {
+   /* The name of the automaton. For a text .fst2, it will
+    * be the original sentence. For a grammar, it will be the
+    * name of the subgraph. */
+   unichar* name;
 
-typedef struct autalmot_t {
+   /* The automaton itself */
+   SingleGraph automaton;
+   
+   /* The symbols that tag the transitions of the automaton */
+   struct string_hash_ptr* symbols;
 
-  unichar * name;
+
 
   int nbstates;
-
   state_t * states;   /* tableau des etats */
   int size;           /* taille du tableau */
-
-
   /* Tableau des etats initiaux. initial[0],
    * initial[1], etc. contiennent les numeros des etats initiaux.
    */
-
   int * initials;
   int   nbinitials;
-
-
-  /* Donne pour chaque etat la liste des transitions entrantes.
-   * A remplir seulement en cas de besoin. Si entrantesEtats est rempli,
-   * sa taille est egale a nbEtats ; sinon, entrantesEtats = PN.
-   */
-
-  //  transition_t ** trans_in;
-
-} autalmot_t;
+} Fst2Automaton;
 
 
 
-autalmot_t * autalmot_new(unichar * name = NULL, int size = 8);
-void autalmot_delete(autalmot_t * A);
+Fst2Automaton* new_Fst2Automaton(unichar* name=NULL,int size=8);
+void free_Fst2Automaton(Fst2Automaton*);
 
-void autalmot_empty(autalmot_t * A);
-autalmot_t * autalmot_dup(const autalmot_t * A);
+void autalmot_empty(Fst2Automaton * A);
+Fst2Automaton * autalmot_dup(const Fst2Automaton * A);
 
-void autalmot_resize(autalmot_t * A, int size);
-static inline void autalmot_resize(autalmot_t * A) { autalmot_resize(A, A->nbstates); }
-
-
-inline void autalmot_set_name(autalmot_t * A, unichar * name) { free(A->name); A->name = u_strdup(name); }
-inline void autalmot_set_name(autalmot_t * A, char * name) { free(A->name); A->name = u_strdup(name); }
-
-void autalmot_set_initial(autalmot_t * A, int state);
-static inline void autalmot_set_final(autalmot_t * A, int state);
-
-void autalmot_unset_initial(autalmot_t * A, int q);
+void autalmot_resize(Fst2Automaton * A, int size);
+static inline void autalmot_resize(Fst2Automaton * A) { autalmot_resize(A, A->nbstates); }
 
 
-int autalmot_add_state(autalmot_t * A, int flags = 0);
-void autalmot_add_trans(autalmot_t * A, int from, symbol_t * label, int to);
+inline void autalmot_set_name(Fst2Automaton * A, unichar * name) { free(A->name); A->name = u_strdup(name); }
+inline void autalmot_set_name(Fst2Automaton * A, char * name) { free(A->name); A->name = u_strdup(name); }
+
+void autalmot_set_initial(Fst2Automaton * A, int state);
+static inline void autalmot_set_final(Fst2Automaton * A, int state);
+
+void autalmot_unset_initial(Fst2Automaton * A, int q);
 
 
-autalmot_t * load_grammar_automaton(char * name, language_t * lang = LANGUAGE);
+int autalmot_add_state(Fst2Automaton * A, int flags = 0);
+void add_transition(Fst2Automaton * A, int from, symbol_t * label, int to);
+void add_transition(SingleGraph,struct string_hash_ptr*,int,symbol_t*,int);
+
+Fst2Automaton * load_elag_grammar_automaton(char * name, language_t * lang = LANGUAGE);
 
 // type == TEXT | GRAM | LOCATE
 
-void autalmot_output_fst2(const autalmot_t * A, char * name, int type);
+void save_automaton(const Fst2Automaton * A, char * name, int type);
 
 
 
 
-void autalmot_determinize(autalmot_t * A);
+void autalmot_determinize(Fst2Automaton * A);
 
-autalmot_t * autalmot_intersection(const autalmot_t * A, const autalmot_t * B);
+Fst2Automaton * autalmot_intersection(const Fst2Automaton * A, const Fst2Automaton * B);
 
-autalmot_t * interAutAtome(const autalmot_t * A, const autalmot_t * B);
+Fst2Automaton * interAutAtome(const Fst2Automaton * A, const Fst2Automaton * B);
 
-void autalmot_tri_topo(autalmot_t * A);
+void autalmot_tri_topo(Fst2Automaton * A);
 
 /* TODO */
 
-autalmot_t * autalmot_union(autalmot_t * A, autalmot_t * B);
-void autalmot_concat(autalmot_t * A, autalmot_t * B);
-void autalmot_minimize(autalmot_t * A, int level = 0);
-void autalmot_complementation(autalmot_t * A);
-void autalmot_emonde(autalmot_t * A);
+Fst2Automaton * autalmot_union(Fst2Automaton * A, Fst2Automaton * B);
+void autalmot_minimize(Fst2Automaton * A, int level = 0);
+void autalmot_complementation(Fst2Automaton * A);
+void autalmot_emonde(Fst2Automaton * A);
 
 
 // inline implementations
 
-static inline void autalmot_set_final(autalmot_t * A, int q)    { A->states[q].flags |= AUT_FINAL; }
-static inline void autalmot_set_terminal(autalmot_t * A, int q) { A->states[q].flags |= AUT_FINAL; }
+static inline void autalmot_set_final(Fst2Automaton * A, int q)    { A->states[q].flags |= AUT_FINAL; }
+static inline void autalmot_set_terminal(Fst2Automaton * A, int q) { A->states[q].flags |= AUT_FINAL; }
 
-static inline void autalmot_unset_final(autalmot_t * A, int q)    { A->states[q].flags &= ~(AUT_FINAL); }
-static inline void autalmot_unset_terminal(autalmot_t * A, int q) { A->states[q].flags &= ~(AUT_FINAL); }
+static inline void autalmot_unset_final(Fst2Automaton * A, int q)    { A->states[q].flags &= ~(AUT_FINAL); }
+static inline void autalmot_unset_terminal(Fst2Automaton * A, int q) { A->states[q].flags &= ~(AUT_FINAL); }
 
-inline int autalmot_is_final(autalmot_t * A, int q)    { return A->states[q].flags & AUT_TERMINAL; }
-inline int autalmot_is_terminal(autalmot_t * A, int q) { return A->states[q].flags & AUT_TERMINAL; }
-inline int autalmot_is_initial(autalmot_t * A, int q)  { return A->states[q].flags & AUT_INITIAL;  }
+inline int autalmot_is_final(Fst2Automaton * A, int q)    { return A->states[q].flags & AUT_TERMINAL; }
+inline int autalmot_is_terminal(Fst2Automaton * A, int q) { return A->states[q].flags & AUT_TERMINAL; }
+inline int autalmot_is_initial(Fst2Automaton * A, int q)  { return A->states[q].flags & AUT_INITIAL;  }
 
 #endif

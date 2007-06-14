@@ -42,7 +42,7 @@
 tAutAlMot * tri_topologique(tAutAlMot * A, int * dicoInverse) {
 
   int * dico ;
-  etat i, nouveau, ancien ;
+  int i, nouveau, ancien ;
   tTransitions * T;
 
   int * entrants = (int *) xmalloc(A->nbEtats * sizeof(int)) ;
@@ -115,11 +115,11 @@ void tri_topologique(tAutAlMot * A) {
   free(A->entrantesEtats);
   A->entrantesEtats = NULL;
 
-  etat tmptaille = A->taille;
+  int tmptaille = A->taille;
   A->taille      = tri->taille;
   tri->taille    = tmptaille;
 
-  etat * tmpinit = A->initial;
+  int * tmpinit = A->initial;
   A->initial     = tri->initial;
   tri->initial   = tmpinit;
 

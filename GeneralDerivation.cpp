@@ -118,7 +118,7 @@ void parse_condition (unichar*, pattern*);
 void parse_then_code (unichar*_code, struct change_code*);
 // parse_rules parses a rule
 struct rule_list* parse_rules (unichar*);
-// composition_rule_matches_entry decides wether rule and entry match
+// composition_rule_matches_entry decides whether rule and entry match
 int composition_rule_matches_entry (struct pattern*, struct dela_entry*);
 // substring_operation changes prefix or suffix of word given a substring-rule
 void substring_operation (unichar*, unichar*);

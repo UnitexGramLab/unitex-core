@@ -23,7 +23,7 @@
 #define _IMPLOSE_H_
 
 #include "autalmot_old.h"
+#include <stdio.h>
 
 void implose(tAutAlMot * A);
-
 #endif

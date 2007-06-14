@@ -23,7 +23,7 @@
 #include "autalmot.h"
 
 
-void autalmot_tri_topo(autalmot_t * A) {
+void autalmot_tri_topo(Fst2Automaton * A) {
 
   int * entrants = (int *) xmalloc(A->nbstates * sizeof(int));
 

@@ -31,6 +31,7 @@
 #include "Error.h"
 #include "File.h"
 #include "LanguageDefinition.h"
+#include "SingleGraph.h"
 
 
 
@@ -42,8 +43,10 @@ u_printf("Usage: TagsetNormFst2 -l <tagset> <txtauto>\n"
          "<tagset>  : tagset description file\n"
          "<txtauto> : text automaton to normalize\n"
          "\n"
-         "Normalize the specified text automaton according to the tagset description file,\n"
-         "discarding undeclared dictionary codes and incoherent lexical entries.\n"
+         "Normalize the specified text automaton according to the tagset description\n"
+         "file, discarding undeclared dictionary codes and incoherent lexical entries.\n"
+         "Inflectional features are unfactorized so that '{rouge,.A:fs:ms}' will be\n"
+         "divided into the 2 tags '{rouge,.A:fs}' and '{rouge,.A:ms}'.\n"
          "The text automaton is modified.\n");
 }
 
@@ -96,51 +99,45 @@ char bak[FILENAME_MAX];
 strcpy(bak,txtauto);
 strcat(bak,".bak");
 u_printf("Copying %s to %s ...\n",txtauto,bak);
-copy_file(bak, txtauto);
+copy_file(bak,txtauto);
 u_printf("Loading tagset...\n");
-language_t* tagset=load_language_definition(langname);
-set_current_language(tagset);
-fst_file_in_t* txtin=load_fst_file(bak,FST_TEXT);
-
-  if (txtin == NULL) { fatal_error("tagsetnorm: unable to load text '%s'\n", bak); }
-
-  fst_file_out_t * txtout = fst_file_out_open(txtauto, FST_TEXT);
-
-  if (txtout == NULL) { fatal_error("unable to open '%s' for writing\n", txtauto); }
-
-  autalmot_t * A;
-
-  u_printf("cleaning text fsa\n");
-
-
-  unichar EMPTY[] = { 'E', 'M', 'P', 'T', 'Y', 0 };
-  symbol_t * symb = new_symbol_UNKNOWN(tagset, language_add_form(tagset, EMPTY));
-
-  int no = 0;
-  while ((A = fst_file_autalmot_load_next(txtin)) != NULL) {
-    autalmot_emonde(A);
-
-    if (A->nbstates == 0) {
-
-      error("sentence %d is empty\n", no + 1);
-      
-      int q0 = autalmot_add_state(A, AUT_INITIAL);
-      int q1 = autalmot_add_state(A, AUT_FINAL);
-
-      autalmot_add_trans(A, q0, symb, q1);
-    }
-
-    fst_file_write(txtout, A);
-    autalmot_delete(A);
-    no++;
-    if (no % 100 == 0) { u_printf("sentence %d/%d ...      \r", no, txtin->nb_automata); }
-  }
-  u_printf("sentence %d/%d.\ndone. text automaton is normalised.\n", txtin->nb_automata, txtin->nb_automata);
-
-  fst_file_close(txtin);
-  fst_file_close(txtout);
-
-  return 0;
+language_t* language=load_language_definition(langname);
+set_current_language(language);
+fst_file_in_t* txtin=load_fst_file(bak,FST_TEXT,LANGUAGE);
+if (txtin==NULL) {
+   fatal_error("Unable to load text automaton '%s'\n",bak);
+}
+fst_file_out_t* txtout=fst_file_out_open(txtauto,FST_TEXT);
+if (txtout==NULL) {
+   fatal_error("Unable to open '%s' for writing\n",txtauto);
+}
+Fst2Automaton* A;
+u_printf("Cleaning text automaton...\n");
+int current_sentence=0;
+while ((A=load_automaton(txtin))!=NULL) {
+   trim(A->automaton);
+   if (A->automaton->number_of_states!=0) {
+      minimize(A->automaton,1);
+   }
+   if (A->automaton->number_of_states==0) {
+      error("Sentence %d is empty\n",current_sentence+1);
+      SingleGraphState initial=add_state(A->automaton);
+      set_initial_state(initial);
+      SingleGraphState final=add_state(A->automaton);
+      set_final_state(final);
+      add_outgoing_transition(initial,-1,1);
+   }
+   fst_file_write(txtout,A);
+   free_Fst2Automaton(A);
+   current_sentence++;
+   if (current_sentence%100==0) {
+      u_printf("Sentence %d/%d ...      \r",current_sentence,txtin->nb_automata);
+   }
+}
+u_printf("Sentence %d/%d.\nDone: text automaton is normalized.\n",txtin->nb_automata,txtin->nb_automata);
+fst_file_close_in(txtin);
+fst_file_close_out(txtout);
+return 0;
 }
 
 

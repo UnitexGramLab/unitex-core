@@ -383,20 +383,17 @@ for (tokens_list* list=code_list;list!=NULL;list=list->next) {
    }
    concat_symbols(end,expand_code(symbol),&end);
 }
-/*
-  if (res.next == NULL && POS->CATs->nbelems) {
-    error("Warning: POS '%S' contains no full labels\n", POS->name);
-  }
-*/
 free_symbol(symbol);
 return res.next;
 }
 
 
-
-
-int language_add_form(language_t * lang, const unichar * form) {
-return get_value_index((unichar*)form,lang->forms);
+/**
+ * Adds the given form the the language's forms and returns its
+ * index.
+ */
+int language_add_form(language_t* language,const unichar* form) {
+return get_value_index((unichar*)form,language->forms);
 }
 
 
@@ -430,7 +427,7 @@ for (pos_section_t* section=tagset->pos_sections;section!=NULL;section=section->
          toks=toks->next;
       }
    }
-   /* Discriminatory part of the POS description
+   /* Discriminative part of the POS description
     * 
     * If there is a discriminatory category, we put it in front of the category part,
     * so its index will always be 0 */

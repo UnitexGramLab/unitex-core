@@ -31,6 +31,8 @@ using namespace std;
 #include "File.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "Transitions.h"
+
 
 void usage() {
 u_printf("%S",COPYRIGHT);
@@ -298,12 +300,12 @@ verboseMode  = 0;
     //
 
     struct callStackMapSt {
-     Fst2Transition tran;
+     Transition* tran;
      int autoId;
     } *autoStackMap;
     struct callIdMap {
         int cnt;
-        Fst2Transition *list;
+        Transition** list;
         struct callIdMap *next;
     } *mapOfCallHead,*mapOfCallTail;
     
@@ -329,7 +331,7 @@ verboseMode  = 0;
         fPtr = new struct callIdMap;
         fPtr->cnt = count;
         fPtr->next = 0;
-        fPtr->list = new Fst2Transition [count];
+        fPtr->list = new Transition*[count];
         for(i = 0; i < count;i++) fPtr->list[i] = cmap[i].tran;
     
         if(mapOfCallTail){
@@ -945,7 +947,7 @@ void prAutoStack(int depStack) {
     if (ff==stderr) error("===== AutoStack\n");
     else if (ff==stdout) u_printf("===== AutoStack\n");
     else u_fprintf(ff,"===== AutoStack\n");
-    struct fst2Transition *k;
+    Transition *k;
     for(i = 0;i < depStack;i++){
       k = autoStackMap[i].tran;
       if (ff==stderr) error("%d %d(%d ::%d)\n",i,autoStackMap[i].autoId,k->state_number,k->tag_number);
@@ -967,7 +969,7 @@ void prAutoStackOnly()
 void CFstApp::loadGraph(char *fname)
 {
 	int i,j;
-	struct fst2Transition *strans;
+	Transition *strans;
 	
 	a=load_fst2(fname,1);
 	if (a==NULL) {
@@ -1154,7 +1156,7 @@ void CFstApp::getWordsFromGraph(char *fname)
 			{
 			FILE *listFile;
 			unichar *wp;
-			struct fst2Transition *sui;
+			Transition *sui;
 		strcpy(tmpchar,ofnameOnly);
 		strcat(tmpchar,"lst");
 			makeOfileName(ofNameTmp,tmpchar,".txt");
@@ -1224,7 +1226,7 @@ void CFstApp::getWordsFromGraph(char *fname)
 //
 void CFstApp::exploirerSubAuto(int startAutoNo)
 {
-    struct fst2Transition startCallTr;
+    Transition startCallTr;
 //if(listOut) prCycleNode();
     startCallTr.tag_number  = startAutoNo |FILE_PATH_MARK;
     startCallTr.state_number        = 0;   
@@ -1327,7 +1329,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 			}
 		}
 	}
-	for(struct fst2Transition *sui = a->states[stateNo]->transitions;
+	for(Transition *sui = a->states[stateNo]->transitions;
 	sui != 0 ; sui = sui->next){
 
 		if(sui->tag_number & STOP_PATH_MARK){

@@ -19,28 +19,48 @@
   *
   */
 
-#ifndef _LANG_PARSE_H_
-#define _LANG_PARSE_H_
+#ifndef TagsetH
+#define TagsetH
+
+/**
+ * This library provides tools for loading tagset definition files.
+ * 
+ * Author: Olivier Blanc
+ */
 
 #include <stdio.h>
-
 #include "Unicode.h"
 
+
+/**
+ * Here are the possible token types.
+ */
 enum {
-  TOK_STR = 0, TOK_ANGLE, TOK_NAME, TOK_POS, TOK_END, TOK_DISCR, TOK_FLEX, TOK_CAT, TOK_COMPLET, TOK_EQUAL, TOK_BLANK, TOK_IGNORE
+  TOK_STR=0, TOK_ANGLE, TOK_NAME, TOK_POS, TOK_END, TOK_DISCR, TOK_FLEX, TOK_CAT, TOK_COMPLET, TOK_EQUAL, TOK_BLANK, TOK_IGNORE
 };
 
 
+/**
+ * This structure defines a token list.
+ */
 typedef struct token_t {
-  int type;
-  unichar * str;
-  token_t * next;
+   /* Type of the token */
+   int type;
+   
+   /* Token's content */
+   unichar* str;
+   
+   /* Next token in the list */
+   token_t* next;
 } token_t;
 
 
+/**
+ * This is a list of token lists.
+ */
 typedef struct tokens_list {
-  token_t * tokens;
-  struct tokens_list * next;
+   token_t* tokens;
+   struct tokens_list* next;
 } tokens_list;
 
 
@@ -51,26 +71,40 @@ typedef struct tokens_list {
 #define PART_COMP  3
 #define PART_NUM   4
 
+
+/**
+ * This structure describes a POS definition list.
+ */
 typedef struct pos_section_t {
-
-  unichar * name;
-  bool ignore;
-  tokens_list * parts[PART_NUM];
-  struct pos_section_t * next;
-
+   /* POS name like "N" or "ADV" */
+   unichar * name;
+   
+   /* This field indicates whether this POS can be ignored or not during elag operations */
+   bool ignore;
+   
+   /* This array gives for each POS definition part the lines it contains, in the form
+    * of token lists. */
+   tokens_list* parts[PART_NUM];
+   
+   /* The next POS definition */
+   struct pos_section_t * next;
 } pos_section_t;
 
 
-typedef struct language_tree_t {
-  unichar   * name;
-  pos_section_t * pos_secs;
-} language_tree_t;
+/**
+ * This structure is used to load the content of the tagset definition file.
+ */
+typedef struct tagset_t {
+   /* Language name */
+   unichar* name;
+   
+   /* POSs defined in the tagset file */
+   pos_section_t* pos_sections;
+} tagset_t;
 
 
 
-language_tree_t * language_parse(FILE * f);
-language_tree_t * language_parse(char * fname);
-
-void language_tree_delete(language_tree_t * tree);
+tagset_t* load_tagset(FILE*);
+void free_tagset_t(tagset_t*);
 
 #endif

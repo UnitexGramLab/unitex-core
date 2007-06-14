@@ -95,8 +95,6 @@ if (t -> etiq) {
 
 typedef int BOOL ;
 
-typedef int etat ;
-
 
 /* Symbole de l'alphabet d'etiquettes lexicales */
 
@@ -114,7 +112,7 @@ tSymbole * tSymbole_new();
 /* Liste de transitions */
 
 typedef struct strTransitions {
-  etat but ;             /* Etat but de la transition (etat source s'il s'agit d'une liste de transitions entrantes) */
+  int but ;             /* Etat but de la transition (etat source s'il s'agit d'une liste de transitions entrantes) */
   tSymbole * etiq ;      /* Etiquette de la transition */
   struct strTransitions * suivant ;
 } tTransitions ;
@@ -148,7 +146,7 @@ typedef struct {
    * dans les fichiers de dechargement, de 1 a nbEtats.
    */
 
-  etat nbEtats;
+  int nbEtats;
 
 
   /* Donne pour chaque etat la liste des transitions sortantes */
@@ -175,14 +173,14 @@ typedef struct {
 
   /* Taille du tableau etats et du tableau sorte */
 
-  etat taille;
+  int taille;
 
 
   /* Tableau des etats initiaux. initial[0],
    * initial[1], etc. contiennent les numeros des etats initiaux.
   */
 
-  etat * initial;
+  int * initial;
 
 
   /* taille de initial */
@@ -195,7 +193,7 @@ typedef struct {
 #if 0
 typedef struct {
 
-  etat nbEtats;
+  int nbEtats;
 
   tTransitions ** etats;
 
@@ -203,9 +201,9 @@ typedef struct {
 
   char * type;
 
-  etat taille;
+  int taille;
 
-  etat * initial;
+  int * initial;
 
   unsigned int nbEtatsInitiaux;
 
@@ -220,13 +218,13 @@ typedef struct list_aut_old {
 
 void list_aut_old_delete(list_aut_old * list);
 
-tAutAlMot * initAutAlMot(etat nbEtats);
+tAutAlMot * initAutAlMot(int nbEtats);
 void marqueEtatInitial(tAutAlMot * aut);
-void initAutAlMotAlloue(tAutAlMot * aut, etat nbEtats);
+void initAutAlMotAlloue(tAutAlMot * aut, int nbEtats);
 tAutAlMot * chargeAutAlMot(FILE * fich, char * nomFich, tAlphMot * alphabetLu);
 void chargeAlphabet(FILE * fich, char * nomFich, tAlphMot * alphabet);
 BOOL verifInit(tAutAlMot * a);
-void nouvTrans(tAutAlMot * a, etat source, tSymbole * s, etat but);
+void nouvTrans(tAutAlMot * a, int source, tSymbole * s, int but);
 tAlphMotPartage * listeSymboles(tAutAlMot * Aut, BOOL * parDefaut);
 void libereAlphabet(tAlphMotPartage * alphabet);
 int numeroDansAlph(tSymbole * Etiq, tAlphMotPartage * alphabet) ;

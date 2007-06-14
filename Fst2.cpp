@@ -42,23 +42,10 @@
 
 
 /**
- * Frees a transition list.
- */
-void free_Fst2Transition(Fst2Transition t) {
-Fst2Transition tmp;
-while (t!=NULL) {
-   tmp=t;
-   t=t->next;
-   free(tmp);
-}
-}
-
-
-/**
  * Frees a state and all its transitions.
  */
 void free_Fst2State(Fst2State e) {
-free_Fst2Transition(e->transitions);
+free_Transition(e->transitions);
 free(e);
 }
 
@@ -235,11 +222,13 @@ if (respect_case) {
    /* We set the case respect bit if necessary */
    tag->control=(unsigned char)(tag->control|RESPECT_CASE_TAG_BIT_MASK);
 }
-if (!u_strcmp(input,"$[")) {
+/* We ignore the numbers in the context start marks that are of
+ * the form $[45 or $![12 */
+if (input[0]=='$' && input[1]=='[') {
    tag->type=BEGIN_POSITIVE_CONTEXT_TAG;
    return tag;
 }
-if (!u_strcmp(input,"$![")) {
+if (input[0]=='$' && input[1]=='!' && input[2]=='[') {
    tag->type=BEGIN_NEGATIVE_CONTEXT_TAG;
    return tag;
 }
@@ -387,7 +376,7 @@ void write_fst2_state(FILE* f,Fst2State s) {
 if (is_final_state(s))
    u_fprintf(f,"t ");
 else u_fprintf(f,": ");
-Fst2Transition ptr=s->transitions;
+Transition* ptr=s->transitions;
 while(ptr!=NULL) {
    u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
    ptr=ptr->next;
@@ -466,30 +455,6 @@ return value;
 
 
 /**
- * Creates, initializes and returns a fst2 transition
- */
-Fst2Transition new_Fst2Transition(int tag_number,int state_number,Fst2Transition next) {
-Fst2Transition transition;
-transition=(Fst2Transition)malloc(sizeof(struct fst2Transition));
-if (transition==NULL) {
-  fatal_error("Not enough memory in new_Fst2Transition\n");
-}
-transition->tag_number=tag_number;
-transition->state_number=state_number;
-transition->next=next;
-return transition;
-}
-
-
-/**
- * Creates, initializes and returns a fst2 transition
- */
-Fst2Transition new_Fst2Transition(int tag_number,int state_number) {
-return new_Fst2Transition(tag_number,state_number,NULL);
-}
-
-
-/**
  * Creates and adds a transition to the given fst2 state.
  * 
  * NOTE: as a fst2 state is not supposed to contains duplicate 
@@ -497,9 +462,7 @@ return new_Fst2Transition(tag_number,state_number,NULL);
  *       exists before adding it.
  */
 void add_transition_to_state(Fst2State state,int tag_number,int state_number) {
-Fst2Transition transition=new_Fst2Transition(tag_number,state_number);
-transition->next=state->transitions;
-state->transitions=transition;
+state->transitions=new_Transition(tag_number,state_number,state->transitions);
 }
 
 
@@ -771,26 +734,6 @@ e->control=e->control & (0xFF-FST2_FINAL_STATE_BIT_MASK);
 /* And we add it if necessary*/
 if (finality) {
 	e->control=e->control | FST2_FINAL_STATE_BIT_MASK;
-}
-}
-
-
-/**
- * This function adds a transition to the given transition list, if not
- * already present.
- */
-void add_transition_if_not_present(Fst2Transition *list,int tag_number,int state_number) {
-Fst2Transition ptr;
-ptr=*list;
-/* We look for a transition with the same properties */
-while (ptr!=NULL && !(ptr->state_number==state_number && ptr->tag_number==tag_number)) {
-   ptr=ptr->next;
-}
-if (ptr==NULL) {
-   /* If we have not found one, we add a new transition at the head of the list */
-   ptr=new_Fst2Transition(tag_number,state_number);
-   ptr->next=*list;
-   *list=ptr;
 }
 }
 

@@ -37,7 +37,7 @@ t->hash=new_string_hash(DONT_USE_VALUES);
  * this kind for each state of the fst2 */
 t->capacity=2;
 t->size=0;
-t->transition_array=(Fst2Transition*)malloc(t->capacity*sizeof(Fst2Transition));
+t->transition_array=(Transition**)malloc(t->capacity*sizeof(Transition*));
 if (t->transition_array==NULL) {
    fatal_error("Not enough memory in new_fst2txt_token_tree\n");
 }
@@ -52,21 +52,10 @@ void free_fst2txt_token_tree(struct fst2txt_token_tree* t) {
 if (t==NULL) return;
 free_string_hash(t->hash);
 for (int i=0;i<t->size;i++) {
-   free_Fst2Transition(t->transition_array[i]);
+   free_Transition(t->transition_array[i]);
 }
 free(t->transition_array);
 free(t);
-}
-
-
-/**
- * Adds all the transitions of 'src' to '*dest', if not already present.
- */
-void add_transitions(Fst2Transition src,Fst2Transition *dest) {
-while (src!=NULL) {
-   add_transition_if_not_present(dest,src->tag_number,src->state_number);
-   src=src->next;
-}
 }
 
 
@@ -82,7 +71,7 @@ if (n==tree->size) {
    if (tree->size==tree->capacity) {
       /* If necessary, we double the size of the transition array */
       tree->capacity=2*tree->capacity;
-      tree->transition_array=(Fst2Transition*)realloc(tree->transition_array,tree->capacity*sizeof(Fst2Transition));
+      tree->transition_array=(Transition**)realloc(tree->transition_array,tree->capacity*sizeof(Transition*));
       if (tree->transition_array==NULL) {
          fatal_error("Not enough memory in add_tag\n");
       }
@@ -93,7 +82,7 @@ if (n==tree->size) {
 }
 /* We add the new transition, assuming that it is not already in the list, becauses
  * it would mean that the fst2 is not deterministic. */
-tree->transition_array[n]=new_Fst2Transition(tag_number,dest_state,tree->transition_array[n]);
+tree->transition_array[n]=new_Transition(tag_number,dest_state,tree->transition_array[n]);
 }
 
 
@@ -103,14 +92,14 @@ tree->transition_array[n]=new_Fst2Transition(tag_number,dest_state,tree->transit
  * transition to the result.
  */
 void explore_token_tree(unichar* token,int pos,struct string_hash_tree_node* node,Alphabet* alphabet,
-                        int max_pos,Fst2Transition *result,struct fst2txt_token_tree* tree) {
+                        int max_pos,Transition** result,struct fst2txt_token_tree* tree) {
 if (node==NULL) {
    return;
 }
 if (token[pos]=='\0' && node->value_index!=-1) {
    /* If we are at the end of the word and if there is an associated
     * transition list */
-   add_transitions(tree->transition_array[node->value_index],result);
+   add_transitions_int(tree->transition_array[node->value_index],result);
    return;
 }
 struct string_hash_tree_transition* trans=node->trans;
@@ -128,9 +117,9 @@ while (trans!=NULL) {
  * This function takes a token and a token tree. It returns the list of transitions
  * that can be matched by this token tree.
  */
-Fst2Transition get_matching_tags(unichar* token,struct fst2txt_token_tree* tree,
+Transition* get_matching_tags(unichar* token,struct fst2txt_token_tree* tree,
                                  Alphabet* alphabet) {
-Fst2Transition list=NULL;
+Transition* list=NULL;
 explore_token_tree(token,0,tree->hash->root,alphabet,0,&list,tree);
 return list;
 }

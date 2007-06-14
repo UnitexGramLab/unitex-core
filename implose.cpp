@@ -21,6 +21,10 @@
 
 #include "autalmot_old.h"
 #include "utils.h"
+#include "implose.h"
+#include "DELA.h"
+#include "List_pointer.h"
+#include "String_hash.h"
 
 
 /* return true if t1 and t2 are the same trans or
@@ -141,7 +145,7 @@ tTransitions * sort_trans(tTransitions * trans) {
 
 void implose(tAutAlMot * A) {
 
-  etat e;
+  int e;
 
   for (e = 0; e < A->nbEtats; e++) {
 
@@ -171,3 +175,5 @@ void implose(tAutAlMot * A) {
     }
   }
 }
+
+

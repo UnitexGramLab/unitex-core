@@ -22,6 +22,7 @@
 #include "utils.h"
 #include "fst_file.h"
 #include "autalmot.h"
+#include "Error.h"
 
 
 transition_t * transition_new(int to, symbol_t * label, transition_t * next) {
@@ -72,7 +73,10 @@ transition_t * transitions_dup(const transition_t * trans) {
 }
 
 
-autalmot_t * autalmot_new(unichar * name, int size) {
+/*
+ * DEPRECATED
+ * 
+ * autalmot_t * autalmot_new(unichar * name, int size) {
 
   autalmot_t * A = (autalmot_t *) xmalloc(sizeof(autalmot_t));
 
@@ -97,24 +101,42 @@ autalmot_t * autalmot_new(unichar * name, int size) {
 
   return A;
 }
-
-
-void autalmot_delete(autalmot_t * A) {
-  
-  free(A->name);
-
-  for (int i = 0; i < A->nbstates; i++) { transitions_delete(A->states[i].trans); }
-  free(A->states);
-
-  free(A->initials);
-
-  free(A);
+*/
+/**
+ * Allocates, initializes and return a new .fst2 automaton. If size<0,
+ * the automaton field is set to NULL.
+ */
+Fst2Automaton* new_Fst2Automaton(unichar* name,int size) {
+Fst2Automaton* aut=(Fst2Automaton*)malloc(sizeof(Fst2Automaton));
+if (aut==NULL) {
+   fatal_error("Not enough memory in new_Fst2Automaton\n");
+}
+aut->name=u_strdup(name);
+aut->symbols=NULL;
+if (size>=0) {
+   aut->automaton=new_SingleGraph(size);
+} else {
+   aut->automaton=NULL;
+}
+return aut;
 }
 
 
-autalmot_t * autalmot_dup(const autalmot_t * src) {
+/**
+ * Frees all the memory associated to the given automaton, except
+ * the symbols.
+ */
+void free_Fst2Automaton(Fst2Automaton* A) {
+if (A==NULL) return;
+if (A->name!=NULL) free(A->name);
+free_SingleGraph(A->automaton);
+free(A);
+}
 
-  autalmot_t * res = autalmot_new(src->name, src->nbstates);
+
+Fst2Automaton * autalmot_dup(const Fst2Automaton * src) {
+
+  Fst2Automaton * res = new_Fst2Automaton(src->name, src->nbstates);
 
   for (int q = 0; q < src->nbstates; q++) {
     autalmot_add_state(res, src->states[q].flags);
@@ -133,7 +155,7 @@ autalmot_t * autalmot_dup(const autalmot_t * src) {
 }
 
 
-void autalmot_empty(autalmot_t * A) {
+void autalmot_empty(Fst2Automaton * A) {
 
   free(A->name);
   A->name = NULL;
@@ -144,7 +166,7 @@ void autalmot_empty(autalmot_t * A) {
 }
 
 
-void autalmot_resize(autalmot_t * A, int size) {
+void autalmot_resize(Fst2Automaton * A, int size) {
 
   if (size == 0) { size = 1; }
 
@@ -163,7 +185,7 @@ void autalmot_resize(autalmot_t * A, int size) {
 
 
 
-int autalmot_add_state(autalmot_t * A, int flags) {
+int autalmot_add_state(Fst2Automaton * A, int flags) {
 
   if (A->nbstates >= A->size) { autalmot_resize(A, A->size * 2); }
 
@@ -182,7 +204,7 @@ int autalmot_add_state(autalmot_t * A, int flags) {
 
 
 
-void autalmot_add_trans(autalmot_t * A, int from, symbol_t * label, int to) {
+void add_transition(Fst2Automaton * A, int from, symbol_t * label, int to) {
 
 
   if (label == SYMBOL_DEF) {
@@ -202,9 +224,37 @@ void autalmot_add_trans(autalmot_t * A, int from, symbol_t * label, int to) {
 }
 
 
+/**
+ * Adds a transition to 'automaton'.
+ */
+void add_transition(SingleGraph automaton,struct string_hash_ptr* symbols,int from,
+                    symbol_t* label,int to) {
+if (label==SYMBOL_DEF) {
+   if (automaton->states[from]->default_state!=-1) {
+      fatal_error("add_transition: more than one default transition\n");
+   }
+   automaton->states[from]->default_state=to;
+   return;
+}
+while (label!=NULL) {
+   if (label==SYMBOL_DEF) {
+      fatal_error("add_transition: unexpected default transition\n");
+   }
+   /* We build a string representation of the symbol to avoid
+    * duplicates in the value array */
+   Ustring* u=new_Ustring();
+   symbol_to_str(label,u);
+   int n=get_value_index(u->str,symbols,INSERT_IF_NEEDED,label);
+   free_Ustring(u);
+   add_outgoing_transition(automaton->states[from],n,to);
+   label=label->next;
+}
+}
 
 
-void autalmot_set_initial(autalmot_t * A, int q) {
+
+
+void autalmot_set_initial(Fst2Automaton * A, int q) {
 
   A->states[q].flags |= AUT_INITIAL;
 
@@ -217,7 +267,7 @@ void autalmot_set_initial(autalmot_t * A, int q) {
 }
 
 
-void autalmot_unset_initial(autalmot_t * A, int q) {
+void autalmot_unset_initial(Fst2Automaton * A, int q) {
 
   A->states[q].flags &= ~(AUT_INITIAL);
 
@@ -229,19 +279,17 @@ void autalmot_unset_initial(autalmot_t * A, int q) {
 }
 
 
-
-
-
-
-
-
-
-void autalmot_output_fst2(const autalmot_t * A, char * name, int type) {
-
-  fst_file_out_t * fstf = fst_file_out_open(name, type);
-
-  if (fstf == NULL) { error("unable to open '%s'\n", name); return; }
-
-  fst_file_write(fstf, A);
-  fst_file_close(fstf);
+/**
+ * This function saves the given fst2 automaton into a file
+ * with the given name. 'type' indicates the kind of automaton
+ * (text fst, elag grammar, ...).
+ */
+void save_automaton(const Fst2Automaton* A,char* name,int type) {
+fst_file_out_t* fstf=fst_file_out_open(name,type);
+if (fstf==NULL) {
+   error("Unable to open '%s'\n",name);
+   return;
+}
+fst_file_write(fstf,A);
+fst_file_close_out(fstf);
 }

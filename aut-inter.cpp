@@ -60,8 +60,8 @@ static inline transition_t * trans_pop(transition_t ** trans) {
 
 
 
-static int inter_state(autalmot_t * res, const autalmot_t * A, int q1,
-                       const autalmot_t * B, int q2, int ** corresp) {
+static int inter_state(Fst2Automaton * res, const Fst2Automaton * A, int q1,
+                       const Fst2Automaton * B, int q2, int ** corresp) {
 
   if (corresp[q1][q2] != -1) { return corresp[q1][q2]; }
 
@@ -94,7 +94,7 @@ static int inter_state(autalmot_t * res, const autalmot_t * A, int q1,
 
       to = inter_state(res, A, transa->to, B, transb->to, corresp);
 
-      autalmot_add_trans(res, q, transa->label, to);
+      add_transition(res, q, transa->label, to);
 
       transition_delete(transb);
 
@@ -104,7 +104,7 @@ static int inter_state(autalmot_t * res, const autalmot_t * A, int q1,
 
 	to = inter_state(res, A, transa->to, B, B->states[q2].defto, corresp);
 
-	autalmot_add_trans(res, q, transa->label, to);
+	add_transition(res, q, transa->label, to);
       }
     }
 
@@ -117,7 +117,7 @@ static int inter_state(autalmot_t * res, const autalmot_t * A, int q1,
       // elle concorde avec toutes les trans restantes dans B[q2]
 
       to = inter_state(res, A, A->states[q1].defto, B, transb->to, corresp);
-      autalmot_add_trans(res, q, transb->label, to);
+      add_transition(res, q, transb->label, to);
 
       transition_delete(transb);
     }
@@ -134,7 +134,7 @@ static int inter_state(autalmot_t * res, const autalmot_t * A, int q1,
 }
 
 
-autalmot_t * autalmot_intersection(const autalmot_t * A, const autalmot_t * B) {
+Fst2Automaton * autalmot_intersection(const Fst2Automaton * A, const Fst2Automaton * B) {
   
   if ((A->nbinitials > 1) || (B->nbinitials > 1)) {
     error("a nbstates=%d & b->nbstates=%d\n", A->nbinitials, B->nbinitials);
@@ -142,7 +142,7 @@ autalmot_t * autalmot_intersection(const autalmot_t * A, const autalmot_t * B) {
   }
 
 
-  autalmot_t * res = autalmot_new(A->name ? A->name : B->name, A->nbstates * B->nbstates);
+  Fst2Automaton * res = new_Fst2Automaton(A->name ? A->name : B->name, A->nbstates * B->nbstates);
 
   if (A->nbinitials == 0 || B->nbinitials == 0) {
     //    warning("aut-inter: auto is void\n");
@@ -173,7 +173,7 @@ autalmot_t * autalmot_intersection(const autalmot_t * A, const autalmot_t * B) {
 
 
 
-static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const autalmot_t * B,
+static int interStateAtom(Fst2Automaton * res, const Fst2Automaton * A, int q1, const Fst2Automaton * B,
                           int q2, int ** corresp) {
 
   if (corresp[q1][q2] != -1) { return corresp[q1][q2]; }
@@ -197,7 +197,7 @@ static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const 
       //debug("skip ignorable :"); symbol_dump(t1->label); endl();
       //debug("IGNORABLE\n");
       int to = interStateAtom(res, A, t1->to, B, q2, corresp);
-      autalmot_add_trans(res, q, t1->label, to);
+      add_transition(res, q, t1->label, to);
       continue;
       //debug("CONTINUE\n");
     }
@@ -218,14 +218,14 @@ static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const 
 	found = true;
 
 	int to = interStateAtom(res, A, t1->to, B, t2->to, corresp);
-	autalmot_add_trans(res, q, t1->label, to);
+	add_transition(res, q, t1->label, to);
       } //else { debug("  DONT MATCH\n"); }
     }
 
 //#warning "should no have def trans ???"
     if (! found && B->states[q2].defto != -1) {   
       int to = interStateAtom(res, A, t1->to, B, B->states[q2].defto, corresp);
-      autalmot_add_trans(res, q, t1->label, to);
+      add_transition(res, q, t1->label, to);
     }
   }
 
@@ -233,14 +233,14 @@ static int interStateAtom(autalmot_t * res, const autalmot_t * A, int q1, const 
 }
 
 
-autalmot_t * interAutAtome(const autalmot_t * A, const autalmot_t * B) {
+Fst2Automaton * interAutAtome(const Fst2Automaton * A, const Fst2Automaton * B) {
 
   if ((A->nbinitials > 1) || (B->nbinitials > 1)) {
     error("a nbstates=%d & b->nbstates=%d\n", A->nbinitials, B->nbinitials);
     fatal_error("autalmot_interAutAtome: non deterministic auto\n");
   }
 
-  autalmot_t * res = autalmot_new(A->name, A->nbstates * B->nbstates);
+  Fst2Automaton * res = new_Fst2Automaton(A->name, A->nbstates * B->nbstates);
 
   if (A->nbinitials == 0 || B->nbinitials == 0) {
     error("interAutAtome: auto is void\n");

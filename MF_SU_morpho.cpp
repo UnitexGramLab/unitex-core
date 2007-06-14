@@ -35,6 +35,7 @@
 #include "Error.h"
 #include "List_ustring.h"
 #include "StringParsing.h"
+#include "Transitions.h"
 
 #define MAX_CHARS_IN_STACK 100
 
@@ -64,7 +65,7 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
 int SU_explore_state_recursion(unichar* flechi,unichar* canonique,unichar* sortie,
                    Fst2* a,int etat_courant,struct inflect_infos** L,
 		             f_morpho_T* desired_features, SU_forms_T* forms,unichar*);
-void SU_explore_tag(Fst2Transition T,unichar* flechi,unichar* canonique,unichar* sortie,
+void SU_explore_tag(Transition* T,unichar* flechi,unichar* canonique,unichar* sortie,
 			           Fst2* a,struct inflect_infos** LISTE,f_morpho_T* desired_features, SU_forms_T* forms,unichar*);
 void shift_stack(unichar* stack,int pos);
 void shift_stack_left(unichar* stack,int pos);
@@ -221,7 +222,7 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
        }
     }
   }
-  Fst2Transition t=e->transitions;
+  Transition* t=e->transitions;
   while (t!=NULL) {
     SU_explore_tag(t,flechi,canonique,sortie,a,NULL,desired_features,forms,semitic);
     t=t->next;
@@ -278,7 +279,7 @@ int SU_explore_state_recursion(unichar* inflected,unichar* lemma,unichar* output
     res->next=(*L);
     (*L)=res;
   }
-  Fst2Transition t=e->transitions;
+  Transition* t=e->transitions;
   while (t!=NULL) {
     SU_explore_tag(t,inflected,lemma,output,a,L,desired_features,forms,semitic);
     t=t->next;
@@ -294,7 +295,7 @@ int SU_explore_state_recursion(unichar* inflected,unichar* lemma,unichar* output
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.   
-void SU_explore_tag(Fst2Transition T,unichar* inflected,unichar* lemma,unichar* output,
+void SU_explore_tag(Transition* T,unichar* inflected,unichar* lemma,unichar* output,
                  Fst2* a,struct inflect_infos** LIST,f_morpho_T* desired_features, SU_forms_T* forms,
                  unichar* semitic) {
 if (T->tag_number < 0) {

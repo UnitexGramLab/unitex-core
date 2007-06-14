@@ -118,4 +118,5 @@ int get_value_index(unichar*,struct string_hash_ptr*,int);
 int get_value_index(unichar*,struct string_hash_ptr*);
 int get_value_index(unichar*,struct string_hash_ptr*,int,void*);
 void* get_value(unichar*,struct string_hash_ptr*);
+int add_value(void*,struct string_hash_ptr*);
 #endif

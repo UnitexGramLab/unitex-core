@@ -28,7 +28,7 @@
 
 
 
-static void denombrer(autalmot_t *  A, int q1, int q2, int * mintab, int * maxtab, int * nptab) {
+static void denombrer(Fst2Automaton *  A, int q1, int q2, int * mintab, int * maxtab, int * nptab) {
 
   //  debug("denombrer(%d,%d)\n", q1, q2);
 
@@ -55,7 +55,7 @@ static void denombrer(autalmot_t *  A, int q1, int q2, int * mintab, int * maxta
   }
 }
 
-double eval_sentence(autalmot_t * A, int * min, int * max) {
+double eval_sentence(Fst2Automaton * A, int * min, int * max) {
 
   int _dumbmax, _dumbmin;
 
@@ -149,7 +149,7 @@ double eval_sentence(autalmot_t * A, int * min, int * max) {
 
 
 
-static void denombrer2(autalmot_t * A, int q, int * tab) {
+static void denombrer2(Fst2Automaton * A, int q, int * tab) {
 
   if (tab[q] > -1) { return; }
 
@@ -161,7 +161,7 @@ static void denombrer2(autalmot_t * A, int q, int * tab) {
 }
 
 
-double eval_sentence2(autalmot_t * A) {
+double eval_sentence2(Fst2Automaton * A) {
 
   int res = 0;
   int tab[A->nbstates];

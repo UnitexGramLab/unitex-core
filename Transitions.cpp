@@ -1,0 +1,220 @@
+ /*
+  * Unitex
+  *
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  * 
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+  *
+  */
+
+#include <string.h>
+#include "Transitions.h"
+#include "Error.h"
+
+
+/**
+ * Creates, initializes and returns a transition tagged by an integer.
+ */
+Transition* new_Transition(int tag_number,int state_number,Transition* next) {
+Transition* transition;
+transition=(Transition*)malloc(sizeof(Transition));
+if (transition==NULL) {
+  fatal_error("Not enough memory in new_Transition\n");
+}
+transition->tag_number=tag_number;
+transition->state_number=state_number;
+transition->next=next;
+return transition;
+}
+
+
+/**
+ * Creates, initializes and returns a transition tagged by an integer.
+ */
+Transition* new_Transition(int tag_number,int state_number) {
+return new_Transition(tag_number,state_number,NULL);
+}
+
+
+/**
+ * Creates, initializes and returns a transition tagged by a pointer.
+ */
+Transition* new_Transition(void* label,int state_number,Transition* next) {
+Transition* transition;
+transition=(Transition*)malloc(sizeof(Transition));
+if (transition==NULL) {
+  fatal_error("Not enough memory in new_Transition\n");
+}
+transition->label=label;
+transition->state_number=state_number;
+transition->next=next;
+return transition;
+}
+
+
+/**
+ * Creates, initializes and returns a transition tagged by a pointer.
+ */
+Transition* new_Transition(void* label,int state_number) {
+return new_Transition(label,state_number,NULL);
+}
+
+
+/**
+ * Frees a transition list.
+ */
+void free_Transition(Transition* t,void(*free_tag)(void*)) {
+Transition* tmp;
+while (t!=NULL) {
+   tmp=t;
+   t=t->next;
+   if (free_tag!=NULL) {
+      free_tag(tmp->label);
+   }
+   free(tmp);
+}
+}
+
+
+/**
+ * Frees a transition list.
+ */
+void free_Transition(Transition* t) {
+free_Transition(t,NULL);
+}
+
+
+/**
+ * This function adds a transition to the given transition list, if not
+ * already present.
+ */
+void add_transition_if_not_present(Transition** list,int tag_number,int state_number) {
+Transition* ptr;
+ptr=*list;
+/* We look for a transition with the same properties */
+while (ptr!=NULL && !(ptr->state_number==state_number && ptr->tag_number==tag_number)) {
+   ptr=ptr->next;
+}
+if (ptr==NULL) {
+   /* If we have not found one, we add a new transition at the head of the list */
+   *list=new_Transition(tag_number,state_number,*list);
+}
+}
+
+
+/**
+ * This function adds a transition to the given transition list, if not
+ * already present.
+ */
+void add_transition_if_not_present(Transition** list,void* label,int state_number) {
+Transition* ptr;
+ptr=*list;
+/* We look for a transition with the same properties */
+while (ptr!=NULL && !(ptr->state_number==state_number && ptr->label==label)) {
+   ptr=ptr->next;
+}
+if (ptr==NULL) {
+   /* If we have not found one, we add a new transition at the head of the list */
+   *list=new_Transition(label,state_number,*list);
+}
+}
+
+
+/**
+ * Returns a clone of the given transition, whatever it's tagged by
+ * an integer or a pointer.
+ */
+Transition* clone_transition(Transition* t) {
+Transition* transition;
+transition=(Transition*)malloc(sizeof(Transition));
+if (transition==NULL) {
+  fatal_error("Not enough memory in clone_transition\n");
+}
+memcpy(transition,t,sizeof(Transition));
+return transition;
+}
+
+
+/**
+ * Clones the given transition list. If 'renumber' is not NULL, it
+ * is used to renumber destination states on the fly.
+ */
+Transition* clone_transition_list(Transition* list,int* renumber) {
+if (list==NULL) return NULL;
+Transition* result=clone_transition(list);
+result->next=NULL;
+if (renumber!=NULL) {
+   result->state_number=renumber[result->state_number];
+}
+list=list->next;
+Transition* tmp=result;
+while (list!=NULL) {
+   tmp->next=clone_transition(list);
+   tmp->next->next=NULL;
+   if (renumber!=NULL) {
+      tmp->next->state_number=renumber[tmp->next->state_number];
+   }
+   list=list->next;
+   tmp=tmp->next;
+}
+return result;
+}
+
+
+/**
+ * Concatenates 'src' at the end of 'dest'. 'dest' is modified.
+ */
+void concat(Transition** dest,Transition* src) {
+while ((*dest)!=NULL) {
+   dest=&(*dest)->next;
+}
+*dest=src;
+}
+
+
+/**
+ * Takes a list of transitions, and replaces in them 'old_state_number' by
+ * 'new_state_number'.
+ */
+void renumber_transitions(Transition* list,int old_state_number,int new_state_number) {
+while (list!=NULL) {
+   if (list->state_number==old_state_number) {
+      list->state_number=new_state_number;
+   }
+   list=list->next;
+}
+}
+
+
+/**
+ * Adds all the transitions of 'src' to '*dest', if not already present.
+ */
+void add_transitions_int(Transition* src,Transition** dest) {
+while (src!=NULL) {
+   add_transition_if_not_present(dest,src->tag_number,src->state_number);
+   src=src->next;
+}
+}
+
+
+/**
+ * Adds all the transitions of 'src' to '*dest', if not already present.
+ */
+void add_transitions_ptr(Transition* src,Transition** dest) {
+while (src!=NULL) {
+   add_transition_if_not_present(dest,src->label,src->state_number);
+   src=src->next;
+}
+}

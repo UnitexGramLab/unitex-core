@@ -54,6 +54,7 @@ extern unichar* P_EQUAL;
 extern unichar* P_PLUS;
 extern unichar* P_COLON;
 extern unichar* P_SLASH;
+extern unichar* P_EXCLAMATION;
 extern unichar* P_DOUBLE_QUOTE;
 extern unichar* P_PLUS_COLON;
 extern unichar* P_PLUS_MINUS_COLON;

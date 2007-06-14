@@ -66,7 +66,7 @@
  * inflected =           "M. Phileas Fogg"
  * lemma =               "Phileas Fogg"
  * n_semantic_codes:     2
- * semantic_codes[0] = "N"  * semantic_codes[1] = "PR"
+ * semantic_codes[0] = "N"   semantic_codes[1] = "PR"
  * n_inflectional_codes: 1
  * inflectional_codes[0] = "ms"
  */
@@ -133,5 +133,8 @@ int dic_entry_contain_gram_code(struct dela_entry*,unichar*);
 int dic_entry_contain_inflectional_code(struct dela_entry*,unichar*);
 void get_inflection_code(unichar*,char*,unichar*,int*);
 void build_tag(struct dela_entry*,unichar*,unichar*);
+int same_semantic_codes(struct dela_entry*,struct dela_entry*);
+void merge_inflectional_codes(struct dela_entry*,struct dela_entry*);
+
 #endif
 

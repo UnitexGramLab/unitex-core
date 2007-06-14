@@ -70,7 +70,6 @@ if (argc!= 5) {
    usage();
    return 0;
 }
-
 //Load morphology description
 char morphology[FILENAME_MAX];
 new_file(argv[4],"Morphology",morphology);
@@ -80,12 +79,12 @@ if (err) {
 }
 //Load alphabet
 alph=load_alphabet(argv[3]);  //To be done once at the beginning of the inflection
-  if (alph==NULL) {
-    error("Cannot open alphabet file %s\n",argv[3]);
-    free_language_morpho();
-    free_alphabet(alph);    
-    return 1;
-  }
+if (alph==NULL) {
+   error("Cannot open alphabet file %s\n",argv[3]);
+   free_language_morpho();
+   free_alphabet(alph);    
+   return 1;
+}
 //Init equivalence files
 char equivalences[FILENAME_MAX];
 new_file(argv[4],"Equivalences",equivalences);

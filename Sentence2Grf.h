@@ -36,6 +36,7 @@ struct grf_state {
    unichar* content;
    int pos_X;
    int rank;
+   /* The transition list is supposed to be sorted by increasing order */
    struct list_int* l;
 };
 

@@ -31,11 +31,11 @@
 
 
 
-static void add_limphrase(autalmot_t *);
+static void add_limphrase(Fst2Automaton *);
 void print_match(stack_type * stack, FILE * f);
-static void locate(autalmot_t * sentence, int q1, autalmot_t * pattern, int q2,
+static void locate(Fst2Automaton * sentence, int q1, Fst2Automaton * pattern, int q2,
                    int * nbm, stack_type * stack, FILE * f);
-int autalmot_locate_pattern(autalmot_t * sentence, autalmot_t * pattern, FILE * f);
+int autalmot_locate_pattern(Fst2Automaton * sentence, Fst2Automaton * pattern, FILE * f);
 
 
 
@@ -105,14 +105,14 @@ if (txtin==NULL) {
    fatal_error("Unable to load text '%s'\n", txtname);
 }
 u_printf("%d sentence(s) in %s\n", txtin->nb_automata, txtname);
-autalmot_t* pattern=load_grammar_automaton(patternname);
+Fst2Automaton* pattern=load_elag_grammar_automaton(patternname);
 if (pattern==NULL) {
    fatal_error("Unable to load '%s' automaton\n", patternname);
 }
-autalmot_t* A;
+Fst2Automaton* A;
 int no=0;
 int totalmatches=0;
-while ((A=fst_file_autalmot_load_next(txtin)) != NULL) {
+while ((A=load_automaton(txtin)) != NULL) {
    if (no==4) break;
    u_printf("Sentence %d:\n",no+1);
    if (A->nbstates < 2) {
@@ -121,7 +121,7 @@ while ((A=fst_file_autalmot_load_next(txtin)) != NULL) {
       add_limphrase(A); 
       totalmatches=totalmatches+autalmot_locate_pattern(A,pattern,stdout);
    }
-   autalmot_delete(A);
+   free_Fst2Automaton(A);
    no++;
 }
 u_printf("%d sentence%s processed -- %d matching sequence%s.\n",no,(no>1)?"s":"",totalmatches,(totalmatches>1)?"s":"");
@@ -129,7 +129,7 @@ return 0;
 }
 
 
-static void add_limphrase(autalmot_t * A) {
+static void add_limphrase(Fst2Automaton * A) {
 
   static unichar S[] = { '{', 'S', '}', 0 };
 
@@ -146,12 +146,12 @@ static void add_limphrase(autalmot_t * A) {
   A->states[initBis].flags = A->states[A->initials[0]].flags & ~(AUT_INITIAL);
   A->states[A->initials[0]].flags = AUT_INITIAL;
 
-  autalmot_add_trans(A, A->initials[0], LIM, initBis);
+  add_transition(A, A->initials[0], LIM, initBis);
 
 
   for (int q = 1; q < A->nbstates - 2; q++) {
     if (autalmot_is_final(A, q)) {
-      autalmot_add_trans(A, q, LIM, nouvFinal);
+      add_transition(A, q, LIM, nouvFinal);
       autalmot_unset_terminal(A, q);
     }
   }
@@ -168,7 +168,7 @@ void print_match(stack_type * stack, FILE * f) {
 }
 
 
-static void locate(autalmot_t * sentence, int q1, autalmot_t * pattern, int q2,
+static void locate(Fst2Automaton * sentence, int q1, Fst2Automaton * pattern, int q2,
                    int * nbm, stack_type * stack, FILE * f) {
 
   transition_t * t1, * t2;
@@ -190,7 +190,7 @@ static void locate(autalmot_t * sentence, int q1, autalmot_t * pattern, int q2,
 
 
 
-int autalmot_locate_pattern(autalmot_t * sentence, autalmot_t * pattern, FILE * f) {
+int autalmot_locate_pattern(Fst2Automaton * sentence, Fst2Automaton * pattern, FILE * f) {
 
   int nbmatches = 0;
   stack_type * stack = stack_new();

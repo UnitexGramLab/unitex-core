@@ -33,6 +33,7 @@ unichar* P_EQUAL=u_strdup("=");
 unichar* P_PLUS=u_strdup("+");
 unichar* P_COLON=u_strdup(":");
 unichar* P_SLASH=u_strdup("/");
+unichar* P_EXCLAMATION=u_strdup("!");
 unichar* P_DOUBLE_QUOTE=u_strdup("\"");
 unichar* P_PLUS_COLON=u_strdup("+:");
 unichar* P_PLUS_MINUS_COLON=u_strdup("+-:");

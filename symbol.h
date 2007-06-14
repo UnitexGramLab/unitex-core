@@ -24,6 +24,7 @@
 
 #include "ustring.h"
 #include "LanguageDefinition.h"
+#include "DELA.h"
 
 struct POS_t;
 struct language_t;
@@ -44,7 +45,8 @@ extern unichar PUNC_TAB[];
 
 
 //#warning "TODO: change SYMBOL_DEF to symb->type."
-
+/* This special symbol is used to represent the default transition
+ * used in the complementation algorithm. */
 #define SYMBOL_DEF  ((symbol_t *) -1)
 
 
@@ -71,7 +73,7 @@ extern unichar PUNC_TAB[];
  * Special symbols:
  * EXCLAM and EQUAL : used to parse ELAG grammars before compiling them
  */
-enum {
+typedef enum {
    LEXIC='L',
    EPSILON='e',
    ATOM='a',
@@ -82,7 +84,7 @@ enum {
    INC='I',
    EXCLAM='!',
    EQUAL='='
-};
+} SymbolType;
 
 
 #define SYMB_CODE_MASK (0xFFFFFF00)
@@ -103,15 +105,18 @@ typedef struct symbol_t {
    /* Is the lemma a negative one ? */
    bool negative;
    
-   /* */
+   /* If the tag contains a negative lemma, then 'nbnegs' will be
+    * the size of the 'negs' array. */
    union {
       int form;
       int nbnegs;
    };
    
-   /* */
+   /* If the tag contains a lemma, then 'lemma' contains its index in
+    * the language's forms; otherwise, 'negs' will contain the indices of 
+    * all the negative lemmas, by increasing order. */
    union {
-      int canonic;
+      int lemma;
       int* negs;
    };
 
@@ -129,23 +134,6 @@ typedef struct symbol_t {
 } symbol_t;
 
 
-/*
-typedef struct symbol_t {
-
-  int type;
-
-  unichar * form;
-  unichar * canonic;
-
-  POS_t * POS;
-
-  char * traits;
-  int nbtraits;   // for dynamical add of new traits ...
-
-  struct symbol_t * next;
-
-} symbol_t;
-*/
 
 symbol_t* new_symbol(char);
 symbol_t* new_symbol_POS(POS_t*);
@@ -172,27 +160,23 @@ void symbols_dump(const symbol_t * symb, FILE * f = stderr);
 void symbol_to_str(const symbol_t * s, Ustring * ustr);
 void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr);
 void symbol_to_text_label(const symbol_t * s, Ustring * ustr);
-void symbol_to_implosed_text_label(const symbol_t * s, Ustring * ustr);
+//void symbol_to_implosed_text_label(const symbol_t * s, Ustring * ustr);
 void symbol_to_locate_label(const symbol_t * s, Ustring * ustr);
 
-symbol_t * load_text_symbol(language_t * lang, unichar * label);
-symbol_t * load_grammar_symbol(language_t * lang, unichar * label);
+symbol_t* load_text_symbol(language_t*,unichar*);
+symbol_t* load_grammar_symbol(language_t*,unichar*);
 
 
 int check_dic_entry(const unichar * label);
-symbol_t * load_dic_entry(language_t * lang, const unichar * label, unichar * buf, bool warnmissing = true);
-
-inline symbol_t * load_dic_entry(const unichar * label, unichar * buf, bool warnmissing = true) {
-  return load_dic_entry(LANGUAGE, label, buf, warnmissing);
-}
-
-
+symbol_t* load_dic_entry(language_t*,const unichar*,struct dela_entry*);
 
 void concat_symbols(symbol_t * a, symbol_t * b, symbol_t ** end = NULL);
 
-int symbol_type(symbol_t * symb);
+int type_symbol(symbol_t * symb);
 
 symbol_t * new_symbol_PUNC(language_t * lang, int idx);
 symbol_t * new_symbol_PUNC(int punc);
+
+
 
 #endif

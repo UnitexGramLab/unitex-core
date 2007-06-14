@@ -107,8 +107,7 @@ typedef struct POS_t {
     * Y 2 <nombre>
     * K <genre> <nombre>
     */
-   symbol_t* codes;           // etiquettes completes (UNSPECIFIED pour n'importe quelle valeur
-                              // et LOCKED pour aucune valeur)
+   symbol_t* codes;
 
    /* The language definition this POS belongs to */
    language_t* language;
@@ -144,7 +143,9 @@ typedef struct language_t {
    /* Hashtable containing all the inflected forms and lemmas */
    struct string_hash* forms;
    
-   /* Hashtable used to store codes that are not defined in the language's legal tagset */
+   /* Hashtable used to store codes that are not defined in the
+    * language's legal tagset. This is useful for not printing the
+    * same error messages several times. */
    struct string_hash_ptr* unknown_codes;
 } language_t;
 
@@ -190,24 +191,34 @@ static inline int POS_get_CATid(POS_t* POS,unichar* name) {
 return get_value_index(name,POS->CATs,DONT_INSERT);
 }
 
-static inline feature_info_t * POS_get_trait_infos(POS_t * POS, unichar * val) {
-
-  feature_info_t * infos = (feature_info_t *) get_value(val,POS->values);
-
-  if (infos == NULL || infos->type != 'c') { return NULL; }
-
-  return infos;
+/**
+ * This function returns the description of the given semantic feature,
+ * if any.
+ */
+static inline feature_info_t* POS_get_semantic_feature_infos(POS_t* POS,unichar* name) {
+feature_info_t* infos=(feature_info_t*)get_value(name,POS->values);
+if (infos==NULL || infos->type!='c') {
+   /* If there is no corresponding feature or if it's an inflectional feature */
+   return NULL;
+}
+return infos;
 }
 
-static inline feature_info_t * POS_get_flex_infos(POS_t * POS, unichar val) {
 
-  unichar buf[2];
-  buf[0] = val; buf[1] = 0;
-  feature_info_t * infos = (feature_info_t *) get_value(buf,POS->values);
-
-  if (infos == NULL || infos->type != 'f') { return NULL; }
-
-  return infos;
+/**
+ * This function returns the description of the given inflectional feature,
+ * if any.
+ */
+static inline feature_info_t* POS_get_inflect_feature_infos(POS_t* POS,unichar name) {
+unichar tmp[2];
+tmp[0]=name;
+tmp[1]='\0';
+feature_info_t* infos=(feature_info_t*)get_value(tmp,POS->values);
+if (infos==NULL || infos->type!='f') {
+   /* If there is no corresponding feature or if it's not an inflectional feature */
+   return NULL;
+}
+return infos;
 }
 
 

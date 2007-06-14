@@ -256,3 +256,55 @@ if (l==NULL) return NULL;
 return new_list_int(l->n,clone(l->next));
 }
 
+
+/**
+ * Allocates, initializes and returns an integer array that contains
+ * the elements of the given list. '*size' is set to the size of this
+ * array. Note that passing an empty list will return NULL.
+ */
+int* dump(struct list_int* list,int *size) {
+*size=0;
+if (list==NULL) return NULL;
+struct list_int* tmp=list;
+/* We count the number of elements */
+while (tmp!=NULL) {
+   (*size)++;
+   tmp=tmp->next;
+}
+int* result=(int*)malloc((*size)*sizeof(int));
+if (result==NULL) {
+   fatal_error("Not enough memmory in dump\n");
+}
+tmp=list;
+for (int i=0;i<(*size);i++) {
+   result[i]=tmp->n;
+   tmp=tmp->next;
+}
+return result;
+}
+
+
+/**
+ * Tries to remove the first occurrence of the value 'n' in
+ * the given list. Returns 1 if the element was there; 0 otherwise.
+ */
+int remove(int n,struct list_int** l) {
+struct list_int* tmp;
+if (*l==NULL) return 0;
+if ((*l)->n==n) {
+   tmp=*l;
+   *l=(*l)->next;
+   free(tmp);
+   return 1;
+}
+tmp=*l;
+while (tmp->next!=NULL && tmp->next->n!=n) {
+   tmp=tmp->next;
+}
+if (tmp->next==NULL) return 0;
+struct list_int* tmp2=tmp->next;
+tmp->next=tmp2->next;
+free(tmp2);
+return 1;
+}
+

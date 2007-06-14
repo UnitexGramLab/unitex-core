@@ -448,8 +448,8 @@ if (p->token_tree[e]->transition_array!=NULL) {
        // we proceed only if we have exactly read the contenu sequence
        // in both modes MERGE and REPLACE, we process the transduction if any
        int SOMMET2=sommet;
-       Fst2Transition RES=get_matching_tags(token,p->token_tree[e],p->alphabet);
-       Fst2Transition TMP;
+       Transition* RES=get_matching_tags(token,p->token_tree[e],p->alphabet);
+       Transition* TMP;
        while (RES!=NULL) {
           sommet=SOMMET2;
           Fst2Tag etiq=p->fst2->tags[RES->tag_number];
@@ -471,7 +471,7 @@ if (p->token_tree[e]->transition_array!=NULL) {
 }
 }
 
-struct fst2Transition* t=etat_courant->transitions;
+Transition* t=etat_courant->transitions;
 while (t!=NULL) {
       sommet=SOMMET;
       // we process the transition of the current state
@@ -837,8 +837,8 @@ return 0;
 
 
 
-struct fst2Transition* add_tag_to_token_tree(struct fst2txt_token_tree* tree,struct fst2Transition* trans,
-                                             struct fst2txt_parameters* p) {
+Transition* add_tag_to_token_tree(struct fst2txt_token_tree* tree,Transition* trans,
+                                  struct fst2txt_parameters* p) {
 // case 1: empty transition
 if (trans==NULL) return NULL;
 // case 2: transition by something else that a sequence of letter like %hello
@@ -847,7 +847,7 @@ if (trans->tag_number<0 || not_a_letter_sequence(p->fst2->tags[trans->tag_number
    trans->next=add_tag_to_token_tree(tree,trans->next,p);
    return trans;
 }
-struct fst2Transition* tmp=add_tag_to_token_tree(tree,trans->next,p);
+Transition* tmp=add_tag_to_token_tree(tree,trans->next,p);
 add_tag(p->fst2->tags[trans->tag_number]->input,trans->tag_number,trans->state_number,tree);
 return tmp;
 }

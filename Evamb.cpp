@@ -18,408 +18,146 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-
-#ifdef __GNUC__  // gcc (i.e. UNIX)
-
-#include <unistd.h>
-
-#elif  defined(__VISUALC__)
-
-//  #ifdef __VISUALC__  // visual studio
-
-#include <DIRECT.H>
-
-#else    // Borldand
-
-#include <dir.h>
-#endif
-
-
 #include <math.h>
+#include <limits.h>
 #include "Unicode.h"
 #include "Copyright.h"
-#include "utils.h"
-#include "autalmot_old.h"
-#include "decompte.h"
-#include "fst2autalmot.h"
-#include "implose.h"
 #include "Fst2.h"
 #include "String_hash.h"
 #include "IOBuffer.h"
 #include "Error.h"
-
-#define MAX(a,b) (((a) < (b)) ? (b) : (a))
-
-static void denombrer(tAutAlMot * A, int q, int * tab) {
-
-  if (tab[q] > -1) { return; }
-
-  tab[q] = 0;
-  for (tTransitions * t = A->etats[q]; t; t = t->suivant) {
-    denombrer(A, t->but, tab);
-    tab[q] = tab[q] + tab[t->but];
-  }
-
-  if (final(A, q)) { tab[q] = tab[q] + 1; }
-}
-
-
-
-/**
- * explosion combinatoire
- * le nombre de sequences sur certaines phrases est trop grand pour rentrer dans un entier 
- *
- * deprected
- */
-
-/*static int denombrer(tAutAlMot * A) {
-  int res = 0;
-
-  int tab[A->nbEtats];
-
-  for (int i = 0; i < A->nbEtats; i++) { tab[i] = -1; }
-
-  for (int i = 0; i < A->nbEtatsInitiaux; i++) {
-    denombrer(A, A->initial[i], tab);
-    res = res + tab[A->initial[i]];
-  }
-
-  return res;
-}*/
-
-
-
-
-static long denombrer(tAutAlMot *  A, int q1, int q2) {
-
- long res = 0;
-
-  for (tTransitions * t = A->etats[q1]; t; t = t->suivant) {
-    if (t->but == q2) {
-      res++;
-    } else {
-      res = res + denombrer(A, t->but, q2);
-    }
-  }
-
-  return res;
-}
-
-
-
-double eval_sentence(tAutAlMot * A) {
-
-  tri_topologique(A);
-
-
-  /* recherche du plus grand saut */
-
-  int maxdirect = 0;
-
-  int q;
-  for (q = 0; q < A->nbEtats; q++) {
-    for (tTransitions * t = A->etats[q]; t; t = t->suivant) {
-      maxdirect = MAX(maxdirect, t->but - q);
-    }
-  }
-
-
-  /* construction de la matrice directe */
-
-  int direct[A->nbEtats][maxdirect + 1];
-
-  for (q = 0; q < A->nbEtats; q++) {
-
-    for (int i = 0; i < maxdirect + 1; i++) { direct[q][i] = 0; }
-
-    for (tTransitions * t = A->etats[q]; t; t = t->suivant) { direct[q][t->but - q] = 1; }
-  }
-
-  /* noeuds factorisants */
-
-  bool factorisants[A->nbEtats];
-
-  for (q = 0; q < A->nbEtats; q++) { factorisants[q] = true; }
-
-  for (int i = 0; i < A->nbEtats; i++) {
-    for (int j = 2; j <= maxdirect; j++) {
-      if (direct[i][j]) {
-	for (int k = i + 1; k < i + j; k++) { factorisants[k] = false; }
-      }
-    }
-  }
-
-  
-  /* denombrement */
-
-  double res = 0;
-
-  int q1, q2;
-
-  q2 = 0;
-  while (q2 < A->nbEtats - 1) {
-    q1 = q2;
-    q2++;
-    while (! factorisants[q2]) { q2++; }
-    int dn = denombrer(A, q1, q2);
-    res = res + log((double) dn);
-  }
-  
-  return res;
-}
-
-
-
-/*
- * retourne le nombre de sequences entre 2 etats (q1 et q2) de A
- * mets dans min la long de la sequence la plus courte ...
- */
-
-
-long evamb(tAutAlMot * A, int q1, int q2, int * min, int * max) {
-
-  if (q1 == q2) { *min = 0; *max = 0; return 1; }
-  
-  long res = 0;
-  *min = 1000000;
-  *max = 0;
-
-  for (tTransitions * t = A->etats[q1]; t; t = t->suivant) {
-   
-    int lmin, lmax;
-    res = res + evamb(A, t->but, q2, & lmin, & lmax);
-
-    if ((lmin + 1) < *min) { *min = lmin + 1; }
-    if ((lmax + 1) > *max) { *max = lmax + 1; }
-  }
-
-  return res;
-}
-
-
-
-/*
- * calcule le logarithme du nombre de chemins dans l'automate,
- * mets dans min la longueur du chemin le plus court et dans
- * max celle du chemin le plus long
- */
-
-
-double evamb(tAutAlMot * A, int * min, int * max) {
-
-  tri_topologique(A);
-
-
-  /* recherche du plus grand saut */
-
-  int maxdirect = 0;
-
-  int q;
-  for (q = 0; q < A->nbEtats; q++) {
-    for (tTransitions * t = A->etats[q]; t; t = t->suivant) {
-      maxdirect = MAX(maxdirect, t->but - q);
-    }
-  }
-
-
-  /* construction de la matrice directe */
-
-  int direct[A->nbEtats][maxdirect + 1];
-
-  for (q = 0; q < A->nbEtats; q++) {
-
-    for (int i = 0; i < maxdirect + 1; i++) { direct[q][i] = 0; }
-
-    for (tTransitions * t = A->etats[q]; t; t = t->suivant) { direct[q][t->but - q] = 1; }
-  }
-
-  /* noeuds factorisants */
-
-  bool factorisants[A->nbEtats];
-
-  for (q = 0; q < A->nbEtats; q++) { factorisants[q] = true; }
-
-  for (int i = 0; i < A->nbEtats; i++) {
-    for (int j = 2; j <= maxdirect; j++) {
-      if (direct[i][j]) {
-	for (int k = i + 1; k < i + j; k++) { factorisants[k] = false; }
-      }
-    }
-  }
-
-  
-  /* denombrement */
-
-  *min = 0, *max = 0;
-  double res = 0;
-
-  int q1, q2;
-
-  q2 = 0;
-  while (q2 < A->nbEtats - 1) {
-    q1 = q2;
-    q2++;
-    while (! factorisants[q2]) { q2++; }
-    //    int dn = denombrer(A, q1, q2);
-    int lmin, lmax;
-    long dn = evamb(A, q1, q2, &lmin, &lmax);
-    *max = *max + lmax; *min = *min + lmin;
-    res = res + log((double) dn);
-  }
-  
-  return res;
-}
-
-
-
-
+#include "SingleGraph.h"
 
 
 void usage() {
-u_printf("%S", COPYRIGHT);
-u_printf("usage: Evamb [ -imp | -exp ] [-o] <fstname> [ -n <sentenceno> ]\n"
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Evamb [-o] <fstname> [-n <#sentence>]\n"
          "\n"
-         "where :\n"
-         " <fstname>     :   text automaton FST2 file\n"
-         " <sentenceno>  :   sentence number\n"
-         " -imp          :   implose automaton first\n"
-         " -exp          :   explose automaton first\n"
+         "<fstname>   : text automaton FST2 file\n"
+         "<#sentence> : sentence number\n"
          "\n"
-         "Give average lexical ambiguity rate of the whole text automaton, or the sentence specified by <sentenceno>.\n"
-         "If '-imp' is set, the computation is performed on the implosed form of the automaton, i.e. not considering\n"
-         "flexional ambiguities.\n"
-         "Reciprocally, if '-exp' is set, the factorized labels are considering as several times ambiguous.\n"
+         "Prints the average lexical ambiguity rate of the whole text automaton, or of the\n"
+         "sentence specified by <#sentence>. This value represents the average number of\n"
+         "hypothesis per word of the sentence. Note that the result won't be the same\n"
+         "whether the automaton tags are imploded or not.\n"
          "The text automaton is not modified.\n");
 }
 
 
 
-int main(int argc, char ** argv) {
+int main(int argc,char** argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
 
-  argv++, argc--;
-
-if (argc == 0) { usage(); return 0; }
-
-
-  char * autoname = NULL;
-  bool implosion = false, explosion = false;
-  int no = -1;
-
-
-  while (argc) {
-
-    if (**argv != '-') { // fst filename
-      autoname = *argv;
-    
-    } else if (strcmp(*argv, "-h") == 0) {
-    
-        usage();
-        return 0;
-    
-    } else if (strcmp(*argv, "-o") == 0) {
-
-      argv++, argc--;
-      if (argc < 1) {
-         usage();
-         fatal_error("bad args\n");
+argv++;
+argc--;
+if (argc==0) {
+   usage();
+   return 0;
+}
+char* fst_name=NULL;
+int sentence_number=-1;
+while (argc!=0) {
+   if (**argv!='-') {
+      fst_name=*argv;
+   } else if (!strcmp(*argv,"-h")) {
+      usage();
+      return 0;
+   } else if (!strcmp(*argv,"-o")) {
+      argv++;
+      argc--;
+      if (argc<1) {
+         fatal_error("-o needs an argument\n");
       }
-      autoname = *argv;
-      
-    } else if (strcmp(*argv, "-exp") == 0) {
-
-      explosion = true;
-
-    } else if (strcmp(*argv, "-imp") == 0) {
-
-      implosion = true;
-    
-    } else if (strcmp(*argv, "-n") == 0) {
-   
-      argv++, argc--;
-      if (argc < 1) { usage(); fatal_error("bad args\n"); }
-
-      no = atoi(*argv);
-    }
-
-    argv++, argc--;
-  }
-
-
-  if (autoname == NULL) { fatal_error("no fst specified\n"); }
-
-  u_printf("Loading '%s' ...\n", autoname);
-  list_aut_old * txtauto = load_text_automaton(autoname, explosion);
-
-  if (txtauto == NULL) { fatal_error("unable to load '%s' fst2\n", *argv); }
-
-  if (no > txtauto->nb_aut) { fatal_error("only %d sentence(s) in '%s'\n", txtauto->nb_aut, autoname); }
-
-
-  if (no < 0) { // eval all sentences
-
-    double cumullognp = 0., cumullmoy = 0.;
-    int badauto  = 0;
-
-    double maxlognp  = 0., minlognp  = 1000000.;
-    double maxlogamb = 0., minlogamb = 1000000.;
-    int maxnpno = -1, minnpno = -1, maxambno = -1, minambno = -1;
-
-    for (no = 0; no < txtauto->nb_aut; no++) {
-
-      if (txtauto->les_aut[no]->nbEtats < 1) {
-
-	badauto++;
-	error("%d: empty automaton\n", no + 1);
-
+      fst_name=*argv;
+   } else if (!strcmp(*argv,"-n")) {
+      argv++;
+      argc--;
+      if (argc<1) {
+         fatal_error("-n needs an argument\n");
+      }
+      sentence_number=atoi(*argv);
+   }
+   argv++;
+   argc--;
+}
+if (fst_name==NULL) {
+   fatal_error("No text automaton specified\n");
+}
+u_printf("Loading '%s'...\n",fst_name);
+Fst2* fst2=load_fst2(fst_name,0);
+if (fst2==NULL) {
+   fatal_error("Unable to load '%s' fst2\n",fst_name);
+}
+if (sentence_number==0 || sentence_number>fst2->number_of_graphs) {
+   fatal_error("Invalid sentence number %d: should be in [1;%d]\n",sentence_number,fst2->number_of_graphs);
+}
+if (sentence_number<0) {
+   /* If we have to evaluate the ambiguity rate of the whole automaton */
+   double lognp_total=0.0;
+   double lmoy_total=0.0;
+   double maxlogamb=0.0;
+   double minlogamb=(double)INT_MAX;
+   /* This is the number of bad automata in the text .fst2 */
+   int n_bad_automata=0;
+   int maxambno=-1;
+   int minambno=-1;
+   for (sentence_number=1;sentence_number<=fst2->number_of_graphs;sentence_number++) {
+      SingleGraph graph=get_subgraph(fst2,sentence_number);
+      if (graph->number_of_states==0 || graph->states[0]->outgoing_transitions==NULL) {
+         n_bad_automata++;
+         error("Sentence %d: empty automaton\n",sentence_number);
       } else {
-      
-        if (implosion) { implose(txtauto->les_aut[no]); }
-      
-        double lognp;       // log du nombre de chemins dans l'automate
-        int lmin, lmax;     // longueur minimum/maximum de la phrase
-        double lmoy;        // approx. de la longueur moyenne de la phrase (lmin + lmax) / 2
-        double logamb;  // log du taux d'ambiguité lexicale :  ambrate = exp(log(np)/lmoy)
-
-        lognp = evamb(txtauto->les_aut[no], & lmin, & lmax);
-        lmoy  = (double) (lmin + lmax) / (double) 2;
-
-        logamb = lognp / lmoy;
-
-	if (maxlognp < lognp)   { maxlognp = lognp; maxnpno = no + 1; }
-	if (minlognp > lognp)   { minlognp = lognp; minnpno = no + 1; }
-	if (maxlogamb < logamb) { maxlogamb = logamb; maxambno = no + 1; }
-	if (minlogamb > logamb) { minlogamb = logamb; minambno = no + 1; }
-        u_printf("%d: lognp=%.2f, lmoy=%.1f, amb. rate=%.2f, (%d intr.)\n", no + 1, (double) lognp, (double) lmoy,
-               (double) exp(logamb), (int) exp(lognp));
-        cumullognp = cumullognp + lognp; cumullmoy = cumullmoy + lmoy;
+         /* log(number of paths) */
+         double lognp;
+         /* minimum/maximum path length */
+         int lmin,lmax;
+         /* Approximation of the sentence length */
+         double lmoy;
+         /* log(ambiguity rate) */
+         double logamb;
+         lognp=evaluate_ambiguity(graph,&lmin,&lmax);
+         lmoy=(double)(lmin+lmax)/2.0;
+         logamb=lognp/lmoy;
+         if (maxlogamb<logamb) {
+            maxlogamb=logamb;
+            maxambno=sentence_number;
+         }
+         if (minlogamb>logamb) {
+            minlogamb=logamb;
+            minambno=sentence_number;
+         }
+         u_printf("Sentence %d            \r",sentence_number);
+         lognp_total=lognp_total+lognp;
+         lmoy_total=lmoy_total+lmoy;
       }
-    }
-
-    // cumullognp = log du nbre d'interpretations du texte
-    // cumullmoy = longueur moyenne du texte (en mots)
-
-    if (badauto >= txtauto->nb_aut) {
-      error("no automaton ?\n");
-    } else {
-      u_printf("\n%s: average of %.2f (old) units per sentence\n", autoname, cumullognp / (txtauto->nb_aut - badauto));
-      u_printf("\n%s: lognp = %.2f, lmoy = %.1f, amb. rate = %.3f\n\n", autoname, cumullognp, cumullmoy, exp(cumullognp/cumullmoy));
-      u_printf("min lognp: %.2f (sentence %d)\n", minlognp, minnpno);
-      u_printf("max lognp: %.2f (sentence %d)\n", maxlognp, maxnpno);
-      u_printf("min amb. rate: %.2f (sentence %d)\n", exp(minlogamb), minambno);
-      u_printf("max amb. rate: %.2f (sentence %d)\n", exp(maxlogamb), maxambno);
-    }
-
-  } else { // eval one sentence
-
-    int min, max;
-    double lognp = evamb(txtauto->les_aut[no - 1], & min, & max);
-    double lmoy = (double) (min + max) / (double) 2;
-    
-    u_printf("%s: sentence %d: lognp=%.2f, lmoy=%.1f, amb. rate=%.3f, (%d intr.)\n", autoname, no, (double) lognp, (double) lmoy,
-           (double) exp(lognp / lmoy), (int) exp(lognp));
-  }
-
-  return 0;
+      free_SingleGraph(graph);
+   }
+   if (n_bad_automata>=fst2->number_of_graphs) {
+      error("No stats to print because no non-empty sentence automata were found.\n");
+   } else {
+      u_printf("%d/%d sentence%s taken into account\n",fst2->number_of_graphs-n_bad_automata,fst2->number_of_graphs,(fst2->number_of_graphs>1)?"s":"");
+      u_printf("Average ambiguity rate=%.3f\n",exp(lognp_total/lmoy_total));
+      u_printf("Minimum ambiguity rate=%.3f (sentence %d)\n",exp(minlogamb),minambno);
+      u_printf("Maximum ambiguity rate=%.3f (sentence %d)\n",exp(maxlogamb),maxambno);
+   }
+} else {
+   /* If we have to evaluate the ambiguity rate of a single sentence automaton */
+   SingleGraph graph=get_subgraph(fst2,sentence_number);
+   if (graph->number_of_states==0) {
+      error("Sentence %d: empty automaton\n",sentence_number);
+   } else {
+      int min;
+      int max;
+      double lognp=evaluate_ambiguity(graph,&min,&max);
+      double lmoy=(double)(min+max)/2.0;
+      u_printf("Sentence %d: ambiguity rate=%.3f\n",sentence_number,exp(lognp/lmoy));
+   }
+   free_SingleGraph(graph);
+}
+free_Fst2(fst2);
+return 0;
 }
 

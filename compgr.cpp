@@ -32,14 +32,13 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-
-
 #include "autalmot.h"
 #include "fst_file.h"
 #include "list_aut.h"
 #include "compgr.h"
-
 #include "utils.h"
+#include "File.h"
+#include "AutConcat.h"
 
 
 
@@ -49,14 +48,13 @@
 
 
 
-static bool prepareRegle(tRegle * regle) ;
-static int compteContraintes(autalmot_t * aut, etat * contrainte) ;
-static autalmot_t * compileRegle(tRegle * regle);
-static int separeAut(autalmot_t * autLu, autalmot_t * r, etat depart, int symbtype) ;
-static void separeCont(autalmot_t * autLu, autalmot_t * r, etat depart, etat arrivee) ;
-static int suivre(autalmot_t * autLu, autalmot_t * r, etat e, int delim, int * corresp) ;
-static bool suivreCont(autalmot_t * autLu, autalmot_t * r, etat depart, etat arrivee, int * corresp) ;
-static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1, autalmot_t * R2Aetoile) ;
+void split_elag_rule(elRule*) ;
+static int count_constraints(Fst2Automaton * aut, int * contrainte) ;
+static Fst2Automaton * compile_elag_rule(elRule * regle);
+int get_sub_automaton(Fst2Automaton*,Fst2Automaton*,int,int,int);
+int get_sub_automaton(Fst2Automaton*,SingleGraph,int,SymbolType,int*) ;
+int get_left_constraint_part(Fst2Automaton*,SingleGraph,int,int,int*);
+static Fst2Automaton * combinaison(elRule * regle, int ens, Fst2Automaton * AetoileR1, Fst2Automaton * R2Aetoile) ;
 
 
 
@@ -82,134 +80,133 @@ static inline void strip_extension(char * s) {
 }
 
 
-
-
-/* sortie: L(aut) = A* . L(aut)
- * si A est vide alors le resultat est vide: A* . empty = empty
+/**
+ * Modify the given automaton so that it starts by a loop that can
+ * recognize anything. If A is empty, it remains empty.
  */
-
-static inline void AStar_aut(autalmot_t * A) {
-
-  symbol_t * UNIV = new_symbol(LEXIC);
-
-  for (int i = 0; i < A->nbinitials; i++) { autalmot_add_trans(A, A->initials[i], UNIV, A->initials[i]); }
-
-  free_symbol(UNIV);
+void prefix_with_everything(Fst2Automaton* A) {
+symbol_t* anything=new_symbol(LEXIC);
+unichar tmp[4]={'<','.','>','\0'};
+int size=A->symbols->size;
+int index=get_value_index(tmp,A->symbols,INSERT_IF_NEEDED,anything);
+struct list_int* list=get_initial_states(A->automaton);
+while (list!=NULL) {
+   add_outgoing_transition(A->automaton->states[list->n],index,list->n);
+   list=list->next;
+}
+free_list_int(list);
+if (index!=size) {
+   /* If the symbol was already there, we can free it */
+   free_symbol(anything);
+}
 }
 
 
-
-/* sortie: L(aut) = L(aut) . A*
+/**
+ * Modify the given automaton so that it ends by a loop that can
+ * recognize anything. If A is empty, it remains empty.
  */
+void suffix_with_everything(Fst2Automaton* A) {
+symbol_t* anything=new_symbol(LEXIC);
+unichar tmp[4]={'<','.','>','\0'};
+int size=A->symbols->size;
+int index=get_value_index(tmp,A->symbols,INSERT_IF_NEEDED,anything);
+/* WARNING commentaire à virer
+ * for (int i=0;i<A->automaton->number_of_states;i++) {
+   if (is_final(A->automaton->states[i])) {
 
-static inline void aut_AStar(autalmot_t * A) {
-
-  symbol_t * UNIV = new_symbol(LEXIC);
-
-  for (int i = 0; i < A->nbstates; i++) {
-
-    if (A->states[i].flags & AUT_TERMINAL) {
-
-      /* on detruit les transitions sortantes */
+      // on detruit les transitions sortantes 
 
       transitions_delete(A->states[i].trans);
       A->states[i].trans = NULL;
 
-      /* remplace par un boucle */
-      autalmot_add_trans(A, i, UNIV, i);
+      // remplace par un boucle 
+      add_transition(A, i, UNIV, i);
     }
-  }
-
-  free_symbol(UNIV);
+  }*/
+if (index!=size) {
+   /* If the symbol was already there, we can free it */
+   free_symbol(anything);
+}
 }
 
 
 
 
-
-static tRegle * newRegle(char * fname) {
-
-  tRegle * regle = (tRegle *) xmalloc(sizeof(tRegle));
-
-  regle->autLu = NULL;
-  regle->nbContextes = 0;
-  regle->contexte =  NULL;
-
-  regle->nom = strdup(fname);
-
-  if ((regle->autLu = load_grammar_automaton(regle->nom)) == NULL) {
-    error("cannot load '%s' automaton.\n", fname);
-    free(regle->nom);
-    free(regle);
-    return NULL;
-  }
-
-  prepareRegle(regle);
-
-  return regle;
+/**
+ * Allocates, initializes and returns a new Elag rule from the given .fst2.
+ * Returns NULL in case of error at loading the rule.
+ */
+elRule* new_elRule(char* fst2) {
+elRule* rule=(elRule*)malloc(sizeof(elRule));
+if (rule==NULL) {
+   fatal_error("Not enough memory in new_elRule\n");
+}
+rule->automaton=NULL;
+rule->nbContexts=0;
+rule->contexts=NULL;
+rule->name=strdup(fst2);
+if ((rule->automaton=load_elag_grammar_automaton(rule->name))==NULL) {
+   error("Cannot load '%s' automaton.\n", fst2);
+   free(rule->name);
+   free(rule);
+   return NULL;
+}
+split_elag_rule(rule);
+return rule;
 }
 
 
 
-static void deleteRegle(tRegle * regle) {
+static void deleteRegle(elRule * regle) {
 
-  free(regle->nom);
+  free(regle->name);
 
-  for (int i = 0; i < regle->nbContextes; i++) {
-    autalmot_delete(regle->contexte[i].D);
-    autalmot_delete(regle->contexte[i].G);
+  for (int i = 0; i < regle->nbContexts; i++) {
+    free_Fst2Automaton(regle->contexts[i].right);
+    free_Fst2Automaton(regle->contexts[i].left);
   }
 
-  free(regle->contexte);
+  free(regle->contexts);
 
   free(regle);
 }
 
 
+/**
+ * 
+ */
+Fst2Automaton* compile_elag_rule(elRule* rule) {
+int p,ens;
+u_printf("Compiling %s... (%d context%s)\n",rule->name,rule->nbContexts,(rule->nbContexts>1)?"s":"");
+for (int c=0;c<rule->nbContexts;c++) {
+   determinize(rule->contexts[c].left->automaton);
+   trim(rule->contexts[c].left->automaton);
+   determinize(rule->contexts[c].right->automaton);
+   trim(rule->contexts[c].right->automaton);
+   /*autalmot_determinize(rule->contexts[c].left);
+   autalmot_emonde(rule->contexts[c].left);
+   autalmot_determinize(rule->contexts[c].right);
+   autalmot_emonde(rule->contexts[c].right);*/
+}
+/* We build A*.R1 */
+prefix_with_everything(rule->contexts[0].left);
+minimize(rule->contexts[0].left->automaton,1);
+Fst2Automaton* AstarR1=rule->contexts[0].left;
+/* and R2.A* */
+suffix_with_everything(rule->contexts[0].right);
+minimize(rule->contexts[0].right->automaton,1);
+
+  Fst2Automaton * R2Aetoile = rule->contexts[0].right;
 
 
+  p = (int) pow(2, rule->nbContexts - 1);
 
-static autalmot_t * compileRegle(tRegle * regle) {
-
-  int c, p, ens ;
-
-  u_printf("Compiling %s ... (%d contextes)\n", regle->nom, regle->nbContextes);
-
-  for (c = 0; c < regle->nbContextes; c++) {
-
-    autalmot_determinize(regle->contexte[c].G);
-    autalmot_emonde(regle->contexte[c].G);
-
-    autalmot_determinize(regle->contexte[c].D);
-    autalmot_emonde(regle->contexte[c].D);
-  }
-
-
-  /* Construction de A*R1 : */
-
-  AStar_aut(regle->contexte[0].G);
-  autalmot_determinize(regle->contexte[0].G);
-  autalmot_minimize(regle->contexte[0].G);
-
-  autalmot_t * AetoileR1 = regle->contexte[0].G;
-
-
-  /* Construction de R2A* : */
-
-  aut_AStar(regle->contexte[0].D);
-  autalmot_determinize(regle->contexte[0].D);
-  autalmot_minimize(regle->contexte[0].D);
-
-  autalmot_t * R2Aetoile = regle->contexte[0].D;
-
-
-  p = (int) pow(2, regle->nbContextes - 1);
-
-  autalmot_t * res = autalmot_new();
+  Fst2Automaton * res = new_Fst2Automaton();
 
   for (ens = 0 ; ens < p ; ens++) {
 
-    autalmot_t * a1 = combinaison(regle, ens, AetoileR1, R2Aetoile);
+    Fst2Automaton * a1 = combinaison(rule, ens, AstarR1, R2Aetoile);
 
     res = autalmot_union(res, a1);
 
@@ -225,40 +222,36 @@ static autalmot_t * compileRegle(tRegle * regle) {
   error("emonde\n");
   printtime(autalmot_emonde(res));
 
-  if (res->nbstates == 0) { error("grammar %s forbids everything.\n", regle->nom); }
+  if (res->nbstates == 0) { error("grammar %s forbids everything.\n", rule->name); }
 
-  u_printf("grammar %s compiled. (%d states)\n", regle->nom, res->nbstates);
+  u_printf("grammar %s compiled. (%d states)\n", rule->name, res->nbstates);
 
   return res;
 }
 
 
 
-
-int compile_grammar(char * gram, char * outname) {
-
-  tRegle * regle = newRegle(gram);
-  if (regle == NULL) { error("unable to read grammar '%s'\n", gram); return -1; }
-
-  error("regle\n");
-
-  autalmot_t * A;
-  if ((A = compileRegle(regle)) == NULL) {
-    fatal_error("unable to compile rule '%s'\n", gram); return -1;
-  }
-
-  error("after compile\n");
-
-  deleteRegle(regle);
-
-  error("after delete\n");
-
-  autalmot_output_fst2(A, outname, FST_GRAMMAR);
-  autalmot_delete(A);
-
-  error("endofcompile\n");
-
-  return 0;
+/**
+ * Compiles the given .fst2 grammar into the given .elg file.
+ * Returns 0 in case of success; -1 otherwise.
+ */
+int compile_elag_grammar(char* grammar,char* elg_file) {
+elRule* rule=new_elRule(grammar);
+if (rule==NULL) {
+   error("Unable to read grammar '%s'\n",grammar);
+   return -1;
+}
+Fst2Automaton* A=compile_elag_rule(rule);
+if (A==NULL) {
+   fatal_error("Unable to compile rule '%s'\n",grammar);
+}
+error("after compile\n");
+deleteRegle(rule);
+error("after delete\n");
+save_automaton(A, elg_file,FST_GRAMMAR);
+free_Fst2Automaton(A);
+error("endofcompile\n");
+return 0;
 }
 
 
@@ -286,7 +279,7 @@ int compile_rules(char * rulesname, char * outname) {
 
   time_t debut = time(0);
 
-  autalmot_t * res = NULL, * A;
+  Fst2Automaton * res = NULL, * A;
   int fstno = 0;
   Ustring * ustr = new_Ustring();
 
@@ -310,10 +303,10 @@ int compile_rules(char * rulesname, char * outname) {
 
       strcat(buf, ".fst2");
       
-      tRegle * regle = newRegle(buf);
+      elRule * regle = new_elRule(buf);
       if (regle == NULL) { fatal_error("unable to read grammar '%s'\n", buf); }
       
-      if ((A = compileRegle(regle)) == NULL) { fatal_error("unable to compile rule '%s'\n", buf); }
+      if ((A = compile_elag_rule(regle)) == NULL) { fatal_error("unable to compile rule '%s'\n", buf); }
 
       deleteRegle(regle);
 
@@ -326,7 +319,7 @@ int compile_rules(char * rulesname, char * outname) {
     } else {
       fclose(f);
       u_printf("using already exiting %s\n", buf);
-      A = load_grammar_automaton(buf);      
+      A = load_elag_grammar_automaton(buf);      
       if (A == NULL) { fatal_error("unable to load '%s'\n", buf); }
     }
 
@@ -337,10 +330,10 @@ int compile_rules(char * rulesname, char * outname) {
 
     printtime(if (res) {
 
-      autalmot_t * tmp = res;
+      Fst2Automaton * tmp = res;
       res = autalmot_intersection(tmp, A);
-      autalmot_delete(tmp);
-      autalmot_delete(A);
+      free_Fst2Automaton(tmp);
+      free_Fst2Automaton(A);
       autalmot_emonde(res);
 
     } else { res = A; });
@@ -364,9 +357,9 @@ int compile_rules(char * rulesname, char * outname) {
       free(res->name);
       res->name = u_strdup(ustr->str);
 
-      autalmot_output_fst2(res, fstoutname, FST_GRAMMAR);
+      save_automaton(res, fstoutname, FST_GRAMMAR);
 
-      autalmot_delete(res);
+      free_Fst2Automaton(res);
       res = NULL;
     }
   }
@@ -386,9 +379,9 @@ int compile_rules(char * rulesname, char * outname) {
     free(res->name);
     res->name = u_strdup(ustr->str);
 
-    autalmot_output_fst2(res, fstoutname, FST_GRAMMAR);
+    save_automaton(res, fstoutname, FST_GRAMMAR);
 
-    autalmot_delete(res);
+    free_Fst2Automaton(res);
   }
 
   time_t fin = time(0);
@@ -406,362 +399,327 @@ int compile_rules(char * rulesname, char * outname) {
 }
 
 
-
-/* make autalmot for pattern matching of context ...
+/**
+ * This function builds and returns an automaton for pattern
+ * matching of the rule's context.
  */
-
-static autalmot_t * make_locate_auto(tRegle * regle) {
-
-  autalmot_t * res = autalmot_dup(regle->contexte[0].G);
-  autalmot_concat(res, regle->contexte[0].D);
-
-  // add trans loop with ignorable POS
-
-  language_t * lang = get_current_language();
-  vector_t * tab = vector_new();
-
-  for (int i = 0; i < lang->POSs->size; ++i) {
-    
-    POS_t * PoS = (POS_t *) lang->POSs->value[i];
-    
-    if (PoS->ignorable) {
-      vector_add(tab, new_symbol_POS(PoS));
-    }
-  }
-
-  //debug("ignore stuffs...\n");
-  for (int q = 1; q < res->nbstates; ++q) {
-    for (int i = 0; i < tab->nbelems; ++i) {
-      autalmot_add_trans(res, q, (symbol_t *) tab->tab[i], q);
-    }
-  }
-
-  vector_delete(tab, (release_f) free_symbol);
-  return res;
-}
-
-
-
-/* Reconnait les 4 parties d'une regle
- */
-
-static bool prepareRegle(tRegle * regle) {
-
-  error("PrepareRegle(%s)\n", regle->nom);
-
-  int finR1, finR2, finC2, nbContraintes, c;
-  /* Etats buts des transitions etiquetees par les '=' medians des contraintes. */
-  int contrainte[maxContraintes];
-  bool succes = true;
-
-  nbContraintes = compteContraintes(regle->autLu, contrainte);
-
-  regle->nbContextes = nbContraintes + 1;
-  regle->contexte    = (tContexte *) xmalloc(regle->nbContextes * sizeof(tContexte));
-
-  for (c = 0; c < regle->nbContextes; c++) { regle->contexte[c].G  = regle->contexte[c].D = NULL; }
-
-  finR1 = finR2 = finC2 = NEXISTEPAS ;
-
-
-  for (transition_t * t = regle->autLu->states[0].trans; t ; t = t->next) {
-
-    switch (t->label->type) {
-
-    case EXCLAM:
-      if (regle->contexte[0].G) { fatal_error("too much '!'\n", regle->nom); }
-
-      regle->contexte[0].G = autalmot_new();
-      finR1 = separeAut(regle->autLu, regle->contexte[0].G, t->to, EXCLAM);
-
-      regle->contexte[0].D = autalmot_new();
-      finR2 = separeAut(regle->autLu, regle->contexte[0].D, finR1, EXCLAM);
-
-      if (finR1 == NEXISTEPAS || finR2 == NEXISTEPAS
-          || ! (regle->autLu->states[finR2].flags & AUT_FINAL)) {
-	succes = false;
+Fst2Automaton* make_locate_automaton(elRule* rule) {
+Fst2Automaton* res=new_Fst2Automaton(rule->contexts[0].left->name);
+res->symbols=rule->contexts[0].left->symbols;
+res->automaton=clone(rule->contexts[0].left->automaton);
+/* We concatenate the left and right contexts */
+concat(res->automaton,rule->contexts[0].right->automaton,res->symbols);
+/* Then we add loops with ignorable POS on each state */
+language_t* lang=get_current_language();
+struct list_int* list=NULL;
+for (int i=0;i<lang->POSs->size;i++) {
+   POS_t* PoS=(POS_t*)lang->POSs->value[i];
+   if (PoS->ignorable) {
+      /* If we have a POS that can be ignored, we build
+       * the corresponding tag like <XXX> and we add it to
+       * the symbols of the grammar */
+      unichar temp[1024];
+      u_sprintf(temp,"<%S>",PoS->name);
+      int size=res->symbols->size;
+      symbol_t* s=new_symbol_POS(PoS);
+      int n=get_value_index(temp,res->symbols,INSERT_IF_NEEDED,s);
+      if (n!=size) {
+         /* If the symbol was already there, we free it */
+         free_symbols(s);
       }
-      break;
+      list=sorted_insert(n,list);
+   }
+}
+for (int q=1;q<res->automaton->number_of_states;q++) {
+   struct list_int* l=list;
+   while (l!=NULL) {
+      add_outgoing_transition(res->automaton->states[q],l->n,q);
+      l=l->next;
+   }
+}
+free_list_int(list);
+return res;
+}
 
 
-    case EQUAL:
-      if (regle->contexte[1].G) { fatal_error("nondeterministic .fst file\n") ; }
 
-      for (c = 0; c < nbContraintes; c++) {
+/**
+ * This function analyzes the given Elag rule automaton to find
+ * where the rule and constraint parts are. As a side effect, it builds
+ * a fst2 grammar ("foo.fst2" => "foo-conc.fst2") that can be used by
+ * the Locate program to match the <!> .... <!> .... <!> part of the rule.
+ */
+void split_elag_rule(elRule* rule) {
+int c;
+/* This array contains the numbers of the states that are pointed to by
+ * middle '<=>' of the constraints */
+int constraints[ELAG_MAX_CONSTRAINTS];
+int nbConstraints=count_constraints(rule->automaton,constraints);
+/* +1 because we have to count the <!> .... <!> .... <!> part of the rule */
+rule->nbContexts=nbConstraints+1;
+rule->contexts=(elContext*)malloc(rule->nbContexts*sizeof(elContext));
+if (rule->contexts==NULL) {
+   fatal_error("Not enough memory in split_elag_rule\n");
+}
+for (c=0;c<rule->nbContexts;c++) {
+   rule->contexts[c].left=NULL;
+   rule->contexts[c].right=NULL;
+}
+int endR1=ELAG_UNDEFINED;
+int endR2=ELAG_UNDEFINED;
+int endC2=ELAG_UNDEFINED;
+for (Transition* t=rule->automaton->automaton->states[0]->outgoing_transitions;t!=NULL;t=t->next) {
+   symbol_t* symbol=(symbol_t*)rule->automaton->symbols->value[t->tag_number];
+   switch (symbol->type) {
+      /* We split the unique <!> .... <!> .... <!> part */
+      case EXCLAM:
+         if (rule->contexts[0].left!=NULL) {
+            fatal_error("Too much '<!>' tags\n",rule->name);
+         }
+         rule->contexts[0].left=new_Fst2Automaton();
+         /* We look for the end of the first part of the rule */
+         endR1=get_sub_automaton(rule->automaton,rule->contexts[0].left,t->state_number,0,EXCLAM);
+         rule->contexts[0].right=new_Fst2Automaton();
+         endR2=get_sub_automaton(rule->automaton,rule->contexts[0].right,endR1,0,EXCLAM);
+         if (endR1==ELAG_UNDEFINED || endR2==ELAG_UNDEFINED
+             || !is_final_state(rule->automaton->automaton->states[endR2])) {
+            fatal_error("split_elag_rule: %s: parse error in <!> part\n",rule->name);
+         }
+         break;
 
-	regle->contexte[c + 1].G = autalmot_new();
-	separeCont(regle->autLu, regle->contexte[c + 1].G, t->to, contrainte[c]);
+      /* We split the nbConstraints <=> .... <=> .... <=> parts */
+      case EQUAL:
+         if (rule->contexts[1].left!=NULL) {
+            fatal_error("Non deterministic .fst2 file\n");
+         }
+         for (c=0;c<nbConstraints;c++) {
+            rule->contexts[c+1].left=new_Fst2Automaton();
+            get_sub_automaton(rule->automaton,rule->contexts[c+1].left,t->state_number,1,constraints[c]);
+            rule->contexts[c+1].right=new_Fst2Automaton();
+            endC2=get_sub_automaton(rule->automaton,rule->contexts[c+1].right,constraints[c],0,EQUAL);
+            if (endC2==ELAG_UNDEFINED || !is_final_state(rule->automaton->automaton->states[endC2])) {
+               fatal_error("split_elag_rule: %s: parse error in <=> part\n",rule->name);
+            }
+         }
+         break;
+         
+      default: fatal_error("Left delimitor '<!>' or '<=>' missing\n");
+   }
+}
+free_Fst2Automaton(rule->automaton);
+rule->automaton=NULL;
+if (rule->contexts[0].left==NULL) {
+   fatal_error("In grammar '%s': symbol '<!>' not found.\n",rule->name);
+}
+char buf[FILENAME_MAX];
+remove_extension(rule->name,buf);
+strcat(buf,"-conc.fst2");
+/* We create the.fst2 to be used by Locate */
+Fst2Automaton* locate=make_locate_automaton(rule);
+save_automaton(locate,buf,FST_LOCATE);
+free_Fst2Automaton(locate);
+}
 
-	regle->contexte[c + 1].D = autalmot_new();
-	finC2 = separeAut(regle->autLu, regle->contexte[c + 1].D, contrainte[c], EQUAL) ;
 
-	if (finC2 == NEXISTEPAS || ! autalmot_is_final(regle->autLu, finC2)) { succes = false ; }
+/**
+ * An Elag constraints is of the form: <=> .... <=> .... <=>
+ * This function looks for states that are pointed to by middle '<=>' transitions.
+ * It places their numbers into 'constraints' and it returns the size of this
+ * array, i.e. the number of constraints expressed by this Elag rule.
+ */
+int count_constraints(Fst2Automaton* aut,int* constraints) {
+int source=0;
+int e;
+Transition* t;
+int c;
+int nbConstraints=0;
+symbol_t* symbol;
+SingleGraph automaton=aut->automaton;
+for (t=automaton->states[0]->outgoing_transitions;t!=NULL && source==0;t=t->next) {
+   symbol=(symbol_t*)aut->symbols->value[t->tag_number];
+   if (symbol->type==EQUAL) {
+      if (t->state_number==0) {
+         fatal_error("Illegal cycle in grammar\n");
       }
-      break ;
-
-    default :
-      fatal_error("in grammar: left delimitor '!' or '=' lacking\n");
-    }
-  }
-
-  autalmot_delete(regle->autLu);
-  regle->autLu = NULL;
-
-  if (! regle->contexte[0].G) {
-    fatal_error("in grammar '%s': symbol <!> not found.\n", regle->nom);
-  }
-  if (! succes) { fatal_error("prepareRegle: %s: parse error\n", regle->nom) ; }
-
-
-  char buf[FILENAME_MAX];
-  strcpy(buf, regle->nom);
-  strcpy(buf + strlen(buf) - 5, "-conc.fst2");
-
-  /* make concordance auto for Locate */
-
-  autalmot_t * locate = make_locate_auto(regle);
-
-  autalmot_output_fst2(locate, buf, FST_LOCATE);
-  autalmot_delete(locate);
-
-  error("end of prepare\n");
-
-  return succes;
+      source=t->tag_number;
+   }
 }
-
-
-
-
-
-
-
-
-/* Compte les contraintes dans aut.
- * Place dans "contrainte" les etats buts des transitions
- * etiquetees par les '=' medians des contraintes.
- * Verifie que toutes les transitions entrant dans ces etats
- * sont etiquetees par '='.
- */
-
-static int compteContraintes(autalmot_t * aut, int * contrainte) {
-
-  int source = 0, e;
-  transition_t * t;
-  int c, nbContraintes = 0;
-  
-  for (t = aut->states[0].trans; t && ! source; t = t->next) {
-    if (t->label->type == EQUAL) {
-      if (t->to == 0) { fatal_error("illegal cycle in grammar\n"); }
-      source = t->to;
-    }
-  }
-
-
-  if (! source) { // no contraint
-    return 0;
-  }
-
-  for (e = 1; e < aut->nbstates; e++) {
-
-    for (t = aut->states[e].trans; t; t = t->next) {
-
-      if (t->to != source && t->label->type == EQUAL && ! autalmot_is_final(aut, t->to)) {
-
-	for (c = 0; c < nbContraintes; c++) {
-	  if (contrainte[c] == t->to) { break; }
-	}
-
-	if (c == nbContraintes) {
-	  if (++nbContraintes >= maxContraintes) {
-            fatal_error("too many constraints with same condition\n");
-          }
-	  contrainte[c] = t->to;
-	}
+if (source==0) {
+   /* If there are no contraints */
+   return 0;
+}
+/* We look for '<=>' transitions, but only from the state 1, because
+ * from state 0, we would take into account all the '<=>' that begin rules. */
+for (e=1;e<automaton->number_of_states;e++) {
+   for (t=automaton->states[e]->outgoing_transitions;t!=NULL;t=t->next) {
+      symbol=(symbol_t*)aut->symbols->value[t->tag_number];
+      if (t->state_number!=source && symbol->type==EQUAL && !is_final_state(automaton->states[t->state_number])) {
+         /* We don't take into account '<=>' transitions that go to final states because
+          * they are not middle '<=>' transitions. */
+         for (c=0;c<nbConstraints;c++) {
+            if (constraints[c]==t->state_number) {
+               /* We stop if the constraint is already in the list */
+               break;
+            }
+         }
+         if (c==nbConstraints) {
+	         if (++nbConstraints>=ELAG_MAX_CONSTRAINTS) {
+               fatal_error("Too many constraints with same condition\n");
+            }
+	         constraints[c]=t->state_number;
+	      }
       }
-    }
-  }
-
-  if (nbContraintes == 0) { fatal_error("middle delimitor '=' not found\n"); }
-
-  return nbContraintes;
+   }
+}
+if (nbConstraints==0) {
+   fatal_error("Middle delimitor '<=>' not found\n");
+}
+return nbConstraints;
 }
 
 
-
-/* Copie autLu dans r depuis depart jusqu a delim. 
- * Ne copie pas les transitions etiquetees par delim.
- * Preconditions : autLu a une transition etiquetee delim et dont le but est depart.
- * Renvoie l'etat but des transitions etiquetees par delim.
+/**
+ * This function copies into 'aut_dest' the sub-automaton of 'aut_src' that
+ * starts at the state #start and that ends at:
+ * 
+ * - the state #z pointed by transitions, if left_constraint_part=1;
+ * - the state pointed by transitions tagged with the 'z' symbol otherwise.
+ * 
+ * Note that these transitions are not copied. The function returns the number of 
+ * the ending state.
+ * 
+ * 'aut_dest' is supposed to have been allocated and to be empty.
  */
-
-static int separeAut(autalmot_t * autLu, autalmot_t * r, etat depart, int delim) {
-
-  int * corresp;                /* et non unsigned int, car NEXISTEPAS < 0 */
-  int fin = NEXISTEPAS;         /* Etat but des transitions etiquetees par delim. */
-  int e;                        /* Etat de autLu. */
-
-  autalmot_empty(r);
-  autalmot_resize(r, autLu->nbstates);
-  autalmot_add_state(r, AUT_INITIAL);
-
-  corresp = (int *) xmalloc(autLu->nbstates * sizeof(int));
-
-  for (e = 0; e < autLu->nbstates ; e++) { corresp[e] = NEXISTEPAS; }
-
-  corresp[depart] = 0;
-  fin = suivre(autLu, r, depart, delim, corresp);
-  free(corresp);
-
-  if (fin == NEXISTEPAS) { /* suivre n'a pas rencontre delim. */
-    fatal_error("in grammar: middle or end delimitor lacking\n");
-  }
-
-  /* NE PAS Verifier que toutes les transitions entrantes dans fin
-   * sont etiquetees par delim.
-   * (ce n'est pas necessaire a la correction de la grammaire)
-   */
-
-  /*
-  if (! autalmot_is_final(autLu, fin))
-    for (e = 0; e < autLu->nbstates; e++)
-      for (t = autLu->states[e].trans; t; t = t->next)
-	if (t->to == fin && t->label->type != delim)
-	  die("\nInternal error [separeAut], '%d'\n", delim);
-  */
-  return fin;
+int get_sub_automaton(Fst2Automaton* aut_src,Fst2Automaton* aut_dest,int start,
+                      int left_constraint_part,int z) {
+/* 'aut_dest' and 'aut_src' share the same symbols */
+aut_dest->symbols=aut_src->symbols;
+SingleGraph automaton=aut_dest->automaton;
+/* We create the initial state of the sub-automaton */
+SingleGraphState state=add_state(automaton);
+set_initial_state(state);
+/* We use this array to renumber states */
+int* renumber=(int*)malloc(aut_src->automaton->number_of_states*sizeof(int));
+if (renumber==NULL) {
+   fatal_error("Not enough memory in get_sub_automaton\n");
+}
+for (int e=0;e<aut_src->automaton->number_of_states;e++) {
+   renumber[e]=ELAG_UNDEFINED;
+}
+int end=ELAG_UNDEFINED;
+renumber[start]=0;
+if (left_constraint_part) {
+   end=get_left_constraint_part(aut_src,automaton,start,z,renumber);
+} else {
+   end=get_sub_automaton(aut_src,automaton,start,(SymbolType)z,renumber);
+}
+free(renumber);
+if (left_constraint_part) {
+   if (!end) {
+      /* This should never happen */
+      fatal_error("Internal error in get_sub_automaton\n");
+   }
+} else if (end==ELAG_UNDEFINED) {
+   /* If we have not found the delimitor */
+   fatal_error("In grammar: middle or end delimitor missing\n");
+}
+return end;
 }
 
 
-/* Copie autLu dans r depuis depart jusqu a arrivee
- * Ne copie pas les transitions etiquetees par '='.
- * Preconditions : dans autLu, une transition etiquetee '=' entre dans
- * depart et une autre dans arrivee ; depart est dans la partie gauche
- * d'une contrainte et arrivee dans la partie droite d'une contrainte.
+/**
+ * This function copies into 'aut_dest' the sub-automaton of 'aut_src' that
+ * starts at the state #current_state and that ends at the state #z pointed
+ * by transitions tagged with the given symbol. Note that these transitions are not copied.
+ * The function returns z if such a state is found, ELAG_UNDEFINED otherwise.
+ * The 'renumber' array is updated each time a new state is copied into 'aut_dest'.
  */
-
-static void separeCont(autalmot_t * autLu, autalmot_t * r, etat depart, etat arrivee) {
-
-  int * corresp ;   /* et non unsigned int, car NEXISTEPAS < 0 */
-  etat e ;   /* Etat de autLu. */
-  bool trouve ;
-
-
-  autalmot_empty(r);
-  autalmot_resize(r, autLu->nbstates);
-
-  autalmot_add_state(r, AUT_INITIAL);
-
-  corresp = (int *) xcalloc(autLu->nbstates, sizeof(int)) ;
-
-  for (e = 0; e < autLu->nbstates; e++) { corresp[e] = NEXISTEPAS; }
-
-  corresp[depart] = 0 ;
-
-  trouve = suivreCont(autLu, r, depart, arrivee, corresp) ;
-
-  if (! trouve) { fatal_error("separeCont"); } /* suivreCont n'a pas rencontre arrivee. */
-
-  free(corresp);
-}
-
-
-
-/* Copie autLu dans r depuis l'etat e de autLu jusqu'a delim. 
- * corresp donne pour chaque etat de autLu son equiv. dans r. 
- * Ne copie pas les transitions etiquetees par delim. 
- * Rend l'etat but des transitions etiquetees par delim 
- * s'il est rencontre. Rend NEXISTEPAS s'il n'est pas rencontre.
- */
-
-
-static int suivre(autalmot_t * autLu, autalmot_t * r, etat e, int delim, int * corresp) {
-
-  transition_t * t;
-  int f, fin = NEXISTEPAS;
-
-  //  debug("suivre(%d,'%c')\n", e, delim);
-
-
-  for (t = autLu->states[e].trans; t; t = t->next) {
-
-    if (t->label->type == delim) { /* on a trouve delim */
-
-      //      debug("delim! (at %d)\n", t->to);
-
-      if (fin != NEXISTEPAS && fin != t->to) { fatal_error("[suivre]: too much '%c' in rule, %d, %d\n", delim, fin, t->to) ; }
-      fin = t->to;
-      r->states[corresp[e]].flags |= AUT_TERMINAL;    /* corresp[e] devient terminal */
-
-    } else { /* transition normale, on va la copier */
-
-      if (corresp[t->to] == NEXISTEPAS) {   /* nouvel etat */
-
-	corresp[t->to] = autalmot_add_state(r);
-
-	autalmot_add_trans(r, corresp[e], t->label, corresp[t->to]);
-
-	f = suivre(autLu, r, t->to, delim, corresp);
-
-	if (f != NEXISTEPAS) {
-
-	  if ((fin != NEXISTEPAS) && (f != fin)) { fatal_error("suivre: too much '%C' in rule (in state %d & %d)\n", delim, fin, f); }
-
-	  fin = f;
-
-	}
-
-      } else { autalmot_add_trans(r, corresp[e], t->label, corresp[t->to]); }
-    }
-  }
-
-  /* Si toutes les transitions sortant de e entrent dans des etats deja
-   * explores auparavant, on peut avoir une activation de suivre qui
-   * ne rencontre pas le delimiteur de fin. Dans ce cas, fin == NEXISTEPAS.
-   */
-
-  return fin;
-}
-
-
-/* Copie autLu dans r depuis l etat depart de autLu jusqu a arrivee. */
-/* corresp donne pour chaque etat de autLu son equiv. dans r. */
-/* Ne copie pas les transitions etiquetees par '='. */
-
-static bool suivreCont(autalmot_t * autLu, autalmot_t * r, etat depart, etat arrivee, int * corresp) {
-
-  bool trouve = false;
-  transition_t * t;
-
-  for (t = autLu->states[depart].trans; t; t = t->next) {
-
-    if (t->label->type == '=') {
-
-      if (t->to == arrivee && ! (autalmot_is_final(r, corresp[depart]))) {
-	trouve = true;
-	autalmot_set_final(r, corresp[depart]);    /* corresp[e] devient terminal */
+int get_sub_automaton(Fst2Automaton* aut_src,SingleGraph aut_dest,int current_state,SymbolType delim,int* renumber) {
+int f;
+int end=ELAG_UNDEFINED;
+SingleGraph src=aut_src->automaton;
+for (Transition* t=src->states[current_state]->outgoing_transitions;t!=NULL;t=t->next) {
+   symbol_t* symbol=(symbol_t*)aut_src->symbols->value[t->tag_number];
+   if (symbol->type==delim) {
+      /* If we have found a transition tagged by the delimitor  */
+      if (end!=ELAG_UNDEFINED && end!=t->state_number) {
+         /* For a given rule part, all the delimitors all supposed to
+          * point on the same state */
+         fatal_error("get_sub_automaton: too much '<%c>' delimitors in rule\n",delim);
       }
+      end=t->state_number;
+      /* We set final the corresponding state in 'aut_dest' */
+      set_final_state(aut_dest->states[renumber[current_state]]);
+    } else {
+      /* If we have a normal transition, we just copy it */
+      if (renumber[t->state_number]==ELAG_UNDEFINED) {
+         /* If we have to create a new state */
+         renumber[t->state_number]=aut_dest->number_of_states;
+         add_state(aut_dest);
+         SingleGraphState state=aut_dest->states[renumber[current_state]];
+         add_outgoing_transition(state,t->tag_number,renumber[t->state_number]);
+         /* We copy recursively this part of 'aut_src' that we don't yet know */
+         f=get_sub_automaton(aut_src,aut_dest,t->state_number,delim,renumber);
+         if (f!=ELAG_UNDEFINED) {
+            if (end!=ELAG_UNDEFINED && f!=end) {
+               fatal_error("get_sub_automaton: too much '<%c>' delimitors in rule\n",delim);
+            }
+            end=f;
+         }
+      } else {
+         /* If the state already exists, we just add a transition, because
+          * there is no need to explore again the state. */
+         SingleGraphState state=aut_dest->states[renumber[current_state]];
+         add_outgoing_transition(state,t->tag_number,renumber[t->state_number]);
+      }
+   }
+}
+return end;
+}
 
 
-    } else {                   /* transition normale, on va la copier */
-
-      if (corresp[t->to] == NEXISTEPAS) {   /* nouvel etat */
-
-	corresp[t->to] = autalmot_add_state(r);
-
-	autalmot_add_trans(r, corresp[depart], t->label, corresp[t->to]);
-
-	if (suivreCont(autLu, r, t->to, arrivee, corresp)) { trouve = true; }
-
-      } else { autalmot_add_trans(r, corresp[depart], t->label, corresp[t->to]); }
-    }
-  }
-
+/**
+ * This function copies into 'aut_dest' the sub-automaton of 'aut_src' that
+ * starts at the state #current_state and that ends at the state #final.
+ * Note that <=> transitions leading to the state #final are not copied.
+ * The function returns 1 if the state #final is found, 0 otherwise.
+ * The 'renumber' array is updated each time a new state is copied into 'aut_dest'.
+ */
+int get_left_constraint_part(Fst2Automaton* aut_src,SingleGraph aut_dest,int current_state,
+                             int final,int* renumber) {
+int found=0;
+for (Transition* t=aut_src->automaton->states[current_state]->outgoing_transitions;t!=NULL;t=t->next) {
+   symbol_t* symbol=(symbol_t*)aut_src->symbols->value[t->tag_number];
+   if (symbol->type==EQUAL) {
+      /* If we find a <=> transition */
+      if (t->state_number==final && !is_final_state(aut_dest->states[renumber[current_state]])) {
+         /* If we find the final state for the first time */
+         found=1;
+         set_final_state(aut_dest->states[renumber[current_state]]);
+      }
+   } else {
+      /* If we have a normal transition */
+      if (renumber[t->state_number]==ELAG_UNDEFINED) {
+         /* If we have to create a new state */
+         renumber[t->state_number]=aut_dest->number_of_states;
+         add_state(aut_dest);
+         SingleGraphState state=aut_dest->states[renumber[current_state]];
+         add_outgoing_transition(state,t->tag_number,renumber[t->state_number]);
+         if (get_left_constraint_part(aut_src,aut_dest,t->state_number,final,renumber)) {
+            found=1;
+         }
+      } else {
+         SingleGraphState state=aut_dest->states[renumber[current_state]];
+         add_outgoing_transition(state,t->tag_number,renumber[t->state_number]);
+      }
+   }
+}
   /* Si toutes les transitions sortant de e entrent dans des etats deja
    * explores auparavant, on peut avoir une activation de suivreCont qui
    * ne rencontre pas arrivee. Dans ce cas, trouve == false.
    */
 
-  return trouve;
+  return found;
 }
 
 
@@ -778,29 +736,29 @@ static bool suivreCont(autalmot_t * autLu, autalmot_t * r, etat depart, etat arr
  */
 
 
-static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1, autalmot_t * R2Aetoile) {
+static Fst2Automaton * combinaison(elRule * regle, int ens, Fst2Automaton * AetoileR1, Fst2Automaton * R2Aetoile) {
 
   // if (ens > 0) { die("combinaison: enough!\n"); }
 
   error("\ncombinaison(%d)\n", ens);
 
-  autalmot_t * a1 = autalmot_new();
-  autalmot_t * a2 = autalmot_new();
+  Fst2Automaton * a1 = new_Fst2Automaton();
+  Fst2Automaton * a2 = new_Fst2Automaton();
 
   int c, dpc; /* dpc = pow(2, c - 1) */
 
-  for (c = 1, dpc = 1; c < regle->nbContextes; c++, dpc = dpc << 1) {
+  for (c = 1, dpc = 1; c < regle->nbContexts; c++, dpc = dpc << 1) {
 
     if (dpc & ens) {    /* le c-ieme bit de ens vaut 1 */
 
-      a1 = autalmot_union(a1, autalmot_dup(regle->contexte[c].G));
+      a1 = autalmot_union(a1, autalmot_dup(regle->contexts[c].left));
 
       autalmot_determinize(a1);
       autalmot_minimize(a1);
 
     } else {    /* le c-ieme bit de ens vaut 0 */
 
-      a2 = autalmot_union(a2, autalmot_dup(regle->contexte[c].D));
+      a2 = autalmot_union(a2, autalmot_dup(regle->contexts[c].right));
 
       autalmot_determinize(a2);
       autalmot_minimize(a2);
@@ -815,7 +773,7 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
   /* L(a1) = U_{i in I} R1_i
    * L(a2) = U_{i not in I} R2_i */
 
-  printtime(AStar_aut(a1));
+  printtime(prefix_with_everything(a1));
   
   printtime(autalmot_determinize(a1));
 
@@ -825,10 +783,10 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
 
   printtime(autalmot_emonde(a1));
 
-  autalmot_t * tmp = a1;
+  Fst2Automaton * tmp = a1;
   printtime(a1 = autalmot_intersection(a1, AetoileR1));
 
-  printtime(autalmot_delete(tmp));
+  printtime(free_Fst2Automaton(tmp));
 
   printtime(autalmot_emonde(a1));
 
@@ -838,7 +796,7 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
 
   error("\nII\n");
 
-  printtime(aut_AStar(a2));
+  printtime(suffix_with_everything(a2));
 
   printtime(autalmot_determinize(a2));
 
@@ -850,7 +808,7 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
 
   tmp = a2;
   printtime(a2 = autalmot_intersection(a2, R2Aetoile));
-  autalmot_delete(tmp);
+  free_Fst2Automaton(tmp);
 
 
   /* autalmot_determinize(a2) ; */
@@ -862,9 +820,9 @@ static autalmot_t * combinaison(tRegle * regle, int ens, autalmot_t * AetoileR1,
 
   error("\nIII\n");
 
-  printtime(autalmot_concat(a1, a2));
+  concat(a1->automaton,a2->automaton,a1->symbols);
 
-  autalmot_delete(a2);
+  free_Fst2Automaton(a2);
 
   printtime(autalmot_emonde(a1));
 

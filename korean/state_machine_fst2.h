@@ -30,6 +30,8 @@
 #include "bitmap.h"
 #include "etc.h"
 #include "Error.h"
+#include "Transitions.h"
+
 
 //
 //
@@ -253,7 +255,7 @@ case CMD_DIV:;
 
 void curSMvalue(unichar cval)
 {
-	struct fst2Transition *cT = a->states[curEtat]->transitions;
+	Transition *cT = a->states[curEtat]->transitions;
 	struct cmdInst *cmdPtr;
 	unichar *wp;
 	int nextArr = 0;

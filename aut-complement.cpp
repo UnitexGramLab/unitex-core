@@ -87,7 +87,7 @@ static symbol_t * LEXIC_minus_transitions(transition_t * trans) {
 
 #define autalmot_complementation2 autalmot_complementation
 
-void autalmot_complementation2(autalmot_t * A) {
+void autalmot_complementation2(Fst2Automaton * A) {
 
   int nouvo = autalmot_add_state(A, 0); // dont make it TERMMINAL because flags will be reversed below
   A->states[nouvo].defto = nouvo;
@@ -100,7 +100,7 @@ void autalmot_complementation2(autalmot_t * A) {
     if (A->states[q].defto == -1) {
       symbol_t * s = LEXIC_minus_transitions(A->states[q].trans);
       if (s) {
-	autalmot_add_trans(A, q, s, nouvo);
+	add_transition(A, q, s, nouvo);
 	free_symbols(s);
 	// A->states[q].defto = nouvo;
       }
@@ -109,7 +109,7 @@ void autalmot_complementation2(autalmot_t * A) {
 }
 
 
-void autalmot_complementation1(autalmot_t * A) {
+void autalmot_complementation1(Fst2Automaton * A) {
 
   int nouvo = autalmot_add_state(A, 0); // dont make it TERMMINAL because flags will be reversed below
   A->states[nouvo].defto = nouvo;

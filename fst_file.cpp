@@ -37,7 +37,6 @@
  * Note that the position in the file is unchanged after a call to this function.
  */
 int load_fst_tags(fst_file_in_t* fst) {
-//hash_str_table_empty(fstf->symbols);
 /* We backup the position in the file, and we come back at the
  * beginning of the file */
 long fpos=ftell(fst->f);
@@ -62,6 +61,22 @@ while (i<fst->nb_automata) {
 /* We set the tag loading function, depending on the kind of .fst2 we have */
 symbol_t* (*load_symbol)(language_t*,unichar*);
 load_symbol=(fst->type==FST_TEXT)?load_text_symbol:load_grammar_symbol;
+void (*symbol_to_tag)(const symbol_t*,Ustring*)=NULL;
+/* We also set the symbol to tag function if we are loading a text
+ * automaton */
+int size=16;
+int n_tags=0;
+switch (fst->type) {
+   case FST_TEXT:
+      symbol_to_tag=symbol_to_text_label;
+      fst->renumber=(int*)malloc(size*sizeof(int));
+      if (fst->renumber==NULL) {
+         fatal_error("Not enough memory in load_fst_tags\n");
+      }
+      break;
+
+   default: symbol_to_tag=NULL;
+}
 Ustring* ustr=new_Ustring(64);
 while (readline(ustr,fst->f) && ustr->str[0]!='f') {
    if (ustr->str[0]!='%' && ustr->str[0]!='@') {
@@ -70,12 +85,35 @@ while (readline(ustr,fst->f) && ustr->str[0]!='f') {
    }
    chomp_new_line(ustr);
    /* +1 because we ignore the % or @ at the beginning of the line */
-   symbol_t* symbol=load_symbol(fst->lang,ustr->str+1);
-   if (symbol==NULL) {
-      error("load_fst_tags: unable to load '%S'\n",ustr->str+1);
+   symbol_t* symbol=load_symbol(fst->language,ustr->str+1);
+   /* If 'symbol' is NULL, then an error message has already
+    * been printed. Moreover, we want to associate NULL to the
+    * string, so that we don't exit the function. Whatever it is,
+    * we add the symbol to the symbols of the .fst2 */
+   int index;
+   if (symbol!=NULL && symbol_to_tag!=NULL && u_strcmp(ustr->str+1,"<E>")) {
+      /* We convert the symbol into a string in order to avoid
+       * duplicates after the normalization. For instance,
+       * "N+z2:ms" and "N+z3:ms" would become equivalent if "z2" and
+       * "z3" are optional codes. */
+      symbol_to_tag(symbol,ustr);
+      index=get_value_index(ustr->str,fst->symbols,INSERT_IF_NEEDED,symbol);
    }
-   /* We add this symbol to the symbols of the .fst2 */
-   get_value_index(ustr->str+1,fst->symbols,INSERT_IF_NEEDED,symbol);
+   else {
+      index=get_value_index(ustr->str+1,fst->symbols,INSERT_IF_NEEDED,symbol);
+   }
+   if (n_tags==size && fst->renumber!=NULL) {
+      /* If necessary, we double the size of the renumbering array */
+      size=size*2;
+      fst->renumber=(int*)realloc(fst->renumber,size*sizeof(int));
+      if (fst->renumber==NULL) {
+         fatal_error("Not enough memory in load_fst_tags\n");
+      }
+   }
+   if (fst->renumber!=NULL) {
+      /* If there is a renumbering array, we fill it */
+      fst->renumber[n_tags++]=index;
+   }
 }
 if (*ustr->str==0) {
    fatal_error("load_fst_tags: unexpected EOF\n");
@@ -115,10 +153,11 @@ if (type!=FST_TEXT && type!=FST_GRAMMAR) {
    error("load_fst_file: bad fst_type=%d\n",type);
    goto error_f;
 }
-fstf->lang=language;
+fstf->language=language;
 fstf->type=type;
 fstf->pos0=ftell(fstf->f);
 fstf->symbols=new_string_hash_ptr(64);
+fstf->renumber=NULL;
 if (load_fst_tags(fstf)==-1) {
    error("load_fst_file: %s: cannot load symbols\n",fstf->name);
    goto error_symbols;
@@ -137,199 +176,211 @@ return NULL;
 }
 
 
-void fst_file_close(fst_file_in_t * fstf) {
-
-  free(fstf->name);
-  fclose(fstf->f);
-  free_string_hash_ptr(fstf->symbols,(void(*)(void*))free_symbols);
-
-  free(fstf);
+/**
+ * Closes the given file and frees the memory associated to the structure.
+ */
+void fst_file_close_in(fst_file_in_t* fstf) {
+if (fstf==NULL) return;
+if (fstf->name!=NULL) free(fstf->name);
+u_fclose(fstf->f);
+free_string_hash_ptr(fstf->symbols,(void(*)(void*))free_symbols);
+if (fstf->renumber!=NULL) free(fstf->renumber);
+free(fstf);
 }
 
 
-
-
-autalmot_t * fst_file_autalmot_load_next(fst_file_in_t * fstf) {
-
-//  debug("autalmot_load_next\n");
-
-  if (fstf->pos >= fstf->nb_automata) { return NULL; }
-
-  Ustring * ustr = new_Ustring();
-
-  readline(ustr, fstf->f);
-  chomp_new_line(ustr);
-
-  // debug("line=%S\n", ustr->str);
-
-  unichar * p = ustr->str;
-
-  if (*p != '-') { fatal_error("fst_load_next: %s: bad file format\n", fstf->name); }
-
-  p++;
-  int i = u_parse_int(p, & p);
-
-  //  debug("i=%d\n", i);
-
-  if (i != fstf->pos + 1) { 
-    fatal_error("fst_load: %s: parsing error with line '%S' ('-%d ...' expected)\n", fstf->name, ustr->str, fstf->pos + 1);
-  }
-
-  p++;  // p == name
-
-//  debug("name=%S\n", p);
-
-  autalmot_t * A = autalmot_new(p);
-
-  while (readline(ustr, fstf->f) && *ustr->str != 'f') { /* read states */
-
-    chomp_new_line(ustr);
-    p = ustr->str;
-
-    int i = autalmot_add_state(A, (*p == 't') ? AUT_FINAL : 0);
-
-  //  debug("i=%d\n", i);
-
-    while (*p && ! u_is_digit(*p)) { p++; }
-
-    while (*p) { /* new trans */
-
-      int lbl = u_parse_int(p, &p);
-
-      while (*p && ! u_is_digit(*p)) { p++; }
-
-      if (*p == 0) { fatal_error("fst_load: %S: bad file format (line='%S')\n", fstf->name, ustr->str); }
-      int to = u_parse_int(p, &p);
-
-      if (fstf->symbols->value[lbl]!=NULL) { /* if it is a good symbol (successfully loaded), make transition */
-	      autalmot_add_trans(A, i, (symbol_t *) fstf->symbols->value[lbl], to);
+/**
+ * Loads and returns an automaton from the given .fst2.
+ * Returns NULL if there is no more automaton to load.
+ */
+Fst2Automaton* load_automaton(fst_file_in_t* fstf) {
+if (fstf->pos>=fstf->nb_automata) {
+   return NULL;
+}
+Ustring* ustr=new_Ustring();
+readline(ustr,fstf->f);
+chomp_new_line(ustr);
+unichar* p=ustr->str;
+if (p[0]!='-') {
+   fatal_error("load_automaton: %s: bad file format\n",fstf->name);
+}
+p++;
+int i=u_parse_int(p,&p);
+if (i!=fstf->pos+1) {
+   /* We make sure that the automaton number is what it should be */
+   fatal_error("load_automaton: %s: parsing error with line '%S' ('-%d ...' expected)\n",fstf->name,ustr->str,fstf->pos+1);
+}
+/* Now p points on the automaton name */
+p++;
+Fst2Automaton* A=new_Fst2Automaton(p);
+A->symbols=fstf->symbols;
+while (readline(ustr,fstf->f) && ustr->str[0]!='f') {
+   /* If there is a state to read */
+   chomp_new_line(ustr);
+   p=ustr->str;
+   SingleGraphState state=add_state(A->automaton);
+   if (*p=='t') {
+      /* If necessary, we set the state final */
+      set_final_state(state);
+   }
+   /* We puts p on the first digit */
+   while (*p!='\0' && !u_is_digit(*p)) {
+      p++;
+   }
+   while (*p!='\0') {
+      /* If there is a transition to read */
+      int tag_number=u_parse_int(p,&p);
+      if (fstf->renumber!=NULL) {
+         tag_number=fstf->renumber[tag_number];
       }
-
-      while (*p && ! u_is_digit(*p)) { p++; }      
-    }
-  }
-
-  if (*ustr->str == 0) { fatal_error("fst_file_read: unexpected end of file\n"); }
-
-  if (A->nbstates == 0) {
-
-    error("fst_file_read: automaton with no state\n");
-
-  } else { autalmot_set_initial(A, 0); }
-
-//  debug("%d states\n", A->nbstates);
-
-  fstf->pos++;
-
-  free_Ustring(ustr);
-
-  return A;
+      while (*p!='\0' && !u_is_digit(*p)) {
+         p++;
+      }
+      if (*p=='\0') {
+         fatal_error("load_automaton: %S: bad file format (line='%S')\n",fstf->name,ustr->str);
+      }
+      int state_number=u_parse_int(p,&p);
+      symbol_t* tmp=(symbol_t*)fstf->symbols->value[tag_number];
+      if (tmp!=NULL) {
+         /* If it is a good symbol (successfully loaded), we add transition(s) */
+         if (fstf->type!=FST_TEXT) {
+            add_outgoing_transition(state,tag_number,state_number);
+         } else {
+            /* In a text automaton, we add one transition per element of
+             * the symbol list. For instance, if we have:
+             * 
+             * tmp = "{domestique,.N:fs}" => "{domestique,.N:ms}" => NULL
+             * 
+             * then we add two transitions. */
+            Ustring* form=new_Ustring();
+            while (tmp!=NULL) {
+               /* We convert the current symbol into a string */
+               symbol_to_text_label(tmp,form);
+               /* We associate the single form to the correponding symbol.
+                * Note that if we don't duplicate the symbol, there will
+                * be problems when freeing the string_hash_ptr 'fstf->symbols'. */
+               int n=get_value_index(form->str,fstf->symbols,INSERT_IF_NEEDED,dup_symbol(tmp));
+               /* And we add a transition for this symbol */
+               add_outgoing_transition(state,n,state_number);
+               tmp=tmp->next;
+            }
+            free_Ustring(form);
+         }
+      }
+      while (*p!='\0' && !u_is_digit(*p)) {
+         p++;
+      }
+   }
+}
+if (*ustr->str=='\0') {
+   fatal_error("load_automaton: unexpected end of file\n");
+}
+if (A->automaton->number_of_states==0) {
+   error("load_automaton: automaton with no state\n");
+} else {
+   set_initial_state(A->automaton->states[0]);
+}
+fstf->pos++;
+free_Ustring(ustr);
+return A;
 }
 
 
-void fst_file_seek(fst_file_in_t * fstin, int no) {
-
-  if (no < 0 || no >= fstin->nb_automata) {
-    fatal_error("fst_seek(%d): only %d automat%s in file\n", no, fstin->nb_automata, (no > 1) ? "a" : "on");
-  }
-
-  if (no < fstin->pos) {
-    fseek(fstin->f, fstin->pos0, SEEK_SET);
-    fstin->pos = 0;
-  }
-
-  unichar buf[MAXBUF];
-  int len;
-
-  while (fstin->pos < no) {
-    
-    if ((len = u_fgets(buf, MAXBUF, fstin->f)) == EOF) { fatal_error("fst_seek: %s: unexpected EOF\n", fstin->name); }
-
-    if (buf[0] == 'f' && isspace(buf[1])) { fstin->pos++; }
-
-    while ((len == MAXBUF - 1) && (buf[len - 1] != '\n')) { len = u_fgets(buf, MAXBUF, fstin->f); } // read end of line
-  }
+/**
+ * This function sets the position in the given .fst2 immediately
+ * before the nth automaton. For instance, if we have n=2, the
+ * file position will be set at the beginning of the line "-2 .....".
+ */
+void fst_file_seek(fst_file_in_t* fstin,int n) {
+if (n<=0 || n>fstin->nb_automata) {
+   fatal_error("fst_file_seek(%d): automaton number should be in [1;%d]\n",n,fstin->nb_automata);
+}
+/* If necessary, we return at the beginning of the file */
+if (n<fstin->pos) {
+   fseek(fstin->f,fstin->pos0,SEEK_SET);
+   fstin->pos=0;
+}
+unichar buf[MAXBUF];
+int len;
+while (fstin->pos<n-1) {
+   if ((len=u_fgets(buf,MAXBUF,fstin->f))==EOF) {
+      fatal_error("fst_file_seek: %s: unexpected EOF\n",fstin->name);
+   }
+   if (buf[0]=='f' && isspace(buf[1])) {
+      fstin->pos++;
+   }
+   /* In case of a long line, we read the rest of the line */
+   while ((len==MAXBUF-1) && (buf[len-1] !='\n')) {
+      len=u_fgets(buf,MAXBUF,fstin->f);
+   }
+}
 }
 
 
-autalmot_t * fst_file_autalmot_load(fst_file_in_t * fstin, int no) {
-
-  fst_file_seek(fstin, no);
-
-  return fst_file_autalmot_load_next(fstin);
+/**
+ * Loads and returns the automaton #n in the given .fst2 file.
+ * Note that n must be in [1;number of automata].
+ */
+Fst2Automaton* fst_file_autalmot_load(fst_file_in_t* fstin,int n) {
+fst_file_seek(fstin,n);
+return load_automaton(fstin);
 }
 
 
-
-fst_file_out_t * fst_file_out_open(char * fname, int type) {
-
-  fst_file_out_t * res = (fst_file_out_t *) xmalloc(sizeof(fst_file_out_t));
-
-  if (type < 0 || type >= FST_BAD_TYPE) { fatal_error("fst_out_open: bad FST_TYPE\n"); }
-
-  if ((res->f = u_fopen(fname, U_WRITE)) == NULL) {
-    error("fst_out_open: unable to open '%s'\n", fname);
-    free(res);
-    return NULL;
-  }
-
-  res->fstart = ftell(res->f);
-
-  u_fprintf(res->f,"0000000000\n");
-
-  res->name    = strdup(fname);
-  res->type    = type;
-  res->nbelems = 0;
-  res->labels=new_string_hash(16);
-
-  /* add <E> */
-
-  unichar epsilon[] = { '<', 'E', '>', 0 };
-  get_value_index(epsilon,res->labels);
-
-  return res;
+/**
+ * Opens a .fst2 file in output mode and returns the associated fst_file_out_t
+ * structure, or NULL in case of error.
+ */
+fst_file_out_t* fst_file_out_open(char* fname,int type) {
+fst_file_out_t* res=(fst_file_out_t*)malloc(sizeof(fst_file_out_t));
+if (res==NULL) {
+   fatal_error("Not enough memory in fst_file_out_open\n");
+}
+if (type<0 || type>=FST_BAD_TYPE) {
+   fatal_error("fst_file_out_open: bad FST_TYPE\n");
+}
+if ((res->f=u_fopen(fname,U_WRITE))==NULL) {
+   error("fst_out_open: unable to open '%s'\n",fname);
+   free(res);
+   return NULL;
+}
+res->fstart=ftell(res->f);
+u_fprintf(res->f,"0000000000\n");
+res->name=strdup(fname);
+res->type=type;
+res->nb_automata=0;
+res->labels=new_string_hash(16);
+/* We add <E> to the tags in order to be sure that this special tag will have #0 */
+unichar epsilon[]={'<','E','>',0};
+get_value_index(epsilon,res->labels);
+return res;
 }
 
 
-
-void output_labels(fst_file_out_t * fstout) {
-  for (int i = 0; i < fstout->labels->size; i++) { u_fprintf(fstout->f, "%%%S\n", fstout->labels->value[i]); }
-  u_fprintf(fstout->f, "f\n");
+/**
+ * Writes the fst's labels.
+ */
+void write_fst_tags(fst_file_out_t* fstout) {
+for (int i=0;i<fstout->labels->size;i++) {
+   u_fprintf(fstout->f,"%%%S\n",fstout->labels->value[i]);
+}
+u_fprintf(fstout->f,"f\n");
 }
 
 
-void fst_file_close(fst_file_out_t * fstout) {
-
-  /* output labels */
-  output_labels(fstout);
-
-  /* writing header */
-
-  fseek(fstout->f, fstout->fstart, SEEK_SET);
-
-  unichar buf[16];
-  u_strcpy(buf, "0000000000");
-
-  int i = 9;
-  int n = fstout->nbelems;
-
-  if (n == 0) { error("fstfile without automaton\n"); }
-
-  while (n) {
-    buf[i--] = '0' + (n % 10);
-    n = n / 10;
-  }
-    
-  u_fprintf(fstout->f, "%S\n", buf);
-
-  /* close all */
-
-  fclose(fstout->f);
-
-  free_string_hash(fstout->labels);
-  free(fstout->name);
-
-  free(fstout);
+/**
+ * Saves the labels of the given .fst2, closes the file
+ * and frees the associated memory.
+ */
+void fst_file_close_out(fst_file_out_t* fstout) {
+write_fst_tags(fstout);
+fseek(fstout->f,fstout->fstart,SEEK_SET);
+/* We print the number of automata on 10 digits */
+u_fprintf(fstout->f,"%010d",fstout->nb_automata);
+u_fclose(fstout->f);
+free_string_hash(fstout->labels);
+if (fstout->name!=NULL) free(fstout->name);
+free(fstout);
 }
 
 
@@ -393,107 +444,96 @@ void LEXIC_trans_write(fst_file_out_t * fstf, int to) {
 }
 
 
+/**
+ * Saves the given automaton into the given .fst2 file.
+ */
+void fst_file_write(fst_file_out_t* fstf,const Fst2Automaton* A) {
+Ustring* tag=new_Ustring();
+void (*symbol_to_tag)(const symbol_t*,Ustring*)=NULL;
+switch (fstf->type) {
+   case FST_TEXT:
+      symbol_to_tag=symbol_to_text_label;
+      break;
 
-void fst_file_write(fst_file_out_t * fstf, const autalmot_t * A) {
-
-  Ustring * label = new_Ustring();
-
-
-  void (*symbol_to_label)(const symbol_t *, Ustring *) = NULL;
-  
-  switch (fstf->type) {
-
-  case FST_TEXT:
-    symbol_to_label = symbol_to_text_label;
-    break;
-
-  case FST_TEXT_IMPLOSED:
-    symbol_to_label = symbol_to_implosed_text_label;
-    break;
-
-  case FST_GRAMMAR:
-    symbol_to_label = symbol_to_grammar_label;
-    break;
+   case FST_GRAMMAR:
+      symbol_to_tag=symbol_to_grammar_label;
+      break;
 
   case FST_LOCATE:
-    symbol_to_label = symbol_to_locate_label;
-    break;
+      symbol_to_tag=symbol_to_locate_label;
+      break;
 
   default:
-    fatal_error("fst_write: invalid fstf->type: %d\n", fstf->type);
-  }
-
-  u_fprintf(fstf->f, "-%d %S\n", fstf->nbelems + 1, A->name);
-
-  int idx;
-
-  unichar deflabel[] = { '<', 'd', 'e', 'f', '>', 0 };
-
-  for (int q = 0; q < A->nbstates; q++) {
-
-    u_fputc((A->states[q].flags & AUT_TERMINAL) ? 't' : ':', fstf->f);
-    u_fputc(' ', fstf->f);
-
-    for (transition_t * t = A->states[q].trans; t; t = t->next) {
-      if (t->label == SYMBOL_DEF) { fatal_error("fst_file_write: symbol <def> in trans list ???\n"); }
-      symbol_to_label(t->label,label);
-
-      if (fstf->type == FST_LOCATE) {
-         if (u_strcmp(label->str, "<PNC>") == 0) {
-            PNC_trans_write(fstf, t->to);
-         } else if (u_strcmp(label->str, "<CHFA>") == 0 || u_strcmp(label->str, "<NB>") == 0) {
-            CHFA_trans_write(fstf, t->to);
-         } else if (u_strcmp(label->str, "<.>") == 0) {
-            LEXIC_trans_write(fstf, t->to);
+      fatal_error("fst_file_write: invalid fstf->type: %d\n",fstf->type);
+}
+/* We save the graph number and name */
+u_fprintf(fstf->f,"-%d %S\n",fstf->nb_automata+1,A->name);
+int index;
+unichar deflabel[]={'<','d','e','f','>',0};
+for (int q=0;q<A->automaton->number_of_states;q++) {
+   SingleGraphState state=A->automaton->states[q];
+   u_fprintf(fstf->f,"%C ",is_final_state(state)?'t':':');
+   for (Transition* t=state->outgoing_transitions;t!=NULL;t=t->next) {
+      if (t->tag_number==-1) {
+         /* If we are in the case of an "EMPTY" transition created because
+          * the automaton was emptied as trim time */
+         u_strcpy(tag,"EMPTY");
+      } else {
+         symbol_t* symbol=(symbol_t*)A->symbols->value[t->tag_number];
+         symbol_to_tag(symbol,tag);
+      }
+      if (fstf->type==FST_LOCATE) {
+         /* If we are saving a Locate .fst2, we have to perform
+          * some special things */
+         if (u_strcmp(tag->str, "<PNC>") == 0) {
+            PNC_trans_write(fstf, t->state_number);
+         } else if (u_strcmp(tag->str, "<CHFA>") == 0 || u_strcmp(tag->str, "<NB>") == 0) {
+            CHFA_trans_write(fstf, t->state_number);
+         } else if (u_strcmp(tag->str, "<.>") == 0) {
+            LEXIC_trans_write(fstf, t->state_number);
          } else {
             goto normal_output;
          }
       } else {
+         /* If we have a normal transition to print */
          normal_output:
-         idx=get_value_index(label->str,fstf->labels);
-         u_fprintf(fstf->f, "%d %d ", idx, t->to);
+         index=get_value_index(tag->str,fstf->labels);
+         u_fprintf(fstf->f,"%d %d ",index,t->state_number);
       }
    }
-   if (A->states[q].defto != -1) {
-      if (fstf->type != FST_GRAMMAR) { error("<def> label in text|locate automaton???\n"); }
-      idx=get_value_index(deflabel,fstf->labels);
-      u_fprintf(fstf->f, "%d %d ", idx, A->states[q].defto);
-    }
-
-    u_fputc('\n', fstf->f);
-  }
-
-  u_fprintf(fstf->f,"f \n");
-
-  free_Ustring(label);
-
-  fstf->nbelems++;
+   if (state->default_state!=-1) {
+      if (fstf->type!=FST_GRAMMAR) {
+         error("Unexpected <def> label in text/locate automaton\n");
+      }
+      index=get_value_index(deflabel,fstf->labels);
+      u_fprintf(fstf->f,"%d %d ",index,state->default_state);
+   }
+   u_fputc('\n',fstf->f);
+}
+u_fprintf(fstf->f,"f \n");
+free_Ustring(tag);
+fstf->nb_automata++;
 }
 
 
-
-autalmot_t * load_grammar_automaton(char * name, language_t * lang) {
-
-  if (lang == NULL) { fatal_error("load grammar: LANG is not set\n"); }
-
-//  debug("load_grammar_automaton(%s)\n", name);
-
-  fst_file_in_t * fstin = load_fst_file(name, FST_GRAMMAR, lang);
-
-//  debug("fstin=%d\n", fstin);
-
-  if (fstin == NULL) {
-    error("unable to open '%s'\n", name);
-    return NULL; 
-  }
-
-  autalmot_t * A = fst_file_autalmot_load(fstin, 0);
-
-//  debug("auto loaded.\n");
-
-  fst_file_close(fstin);
-
-//  debug("out\n");
-
-  return A;
+/**
+ * Loads and returns the first automaton of the given .fst2 file.
+ */
+Fst2Automaton* load_elag_grammar_automaton(char* fst2,language_t* language) {
+if (language==NULL) {
+   fatal_error("NULL language error in load_elag_grammar_automaton\n");
+}
+fst_file_in_t* fstin=load_fst_file(fst2,FST_GRAMMAR,language);
+if (fstin==NULL) {
+   error("Unable to open '%s'\n", fst2);
+   return NULL; 
+}
+if (fstin->nb_automata!=1) {
+   fatal_error("Elag grammar '%s' is not supposed to contain more than 1 automaton\n");
+}
+Fst2Automaton* A=fst_file_autalmot_load(fstin,1);
+/* As we use the symbols of fstin in A, we must not free them here */
+fstin->symbols=NULL;
+fst_file_close_in(fstin);
+return A;
 }

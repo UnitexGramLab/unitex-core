@@ -37,11 +37,11 @@
 #include "list_aut.h"
 #include "elag-functions.h"
 #include "fst_file.h"
+#include "AutConcat.h"
 
-
-double eval_sentence(autalmot_t * A, int * min = NULL, int * max = NULL);
-static void add_limphrase(autalmot_t * A);
-static int suppress_limphrase(autalmot_t * A);
+double eval_sentence(Fst2Automaton * A, int * min = NULL, int * max = NULL);
+static void add_limphrase(Fst2Automaton * A);
+static int suppress_limphrase(Fst2Automaton * A);
 
 
 //void leve_ambiguite(char * nom_fic_phrases, list_aut * gramm, char * nomSortie) {
@@ -57,7 +57,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
   u_printf("\n* leve ambiguite(%s): %d grammar%s.\n", fstname, gramms->nbelems,
          gramms->nbelems > 1 ?  "s" : "");
 
-  fst_file_in_t * txtin = load_fst_file(fstname, FST_TEXT);
+  fst_file_in_t * txtin = load_fst_file(fstname,FST_TEXT,LANGUAGE);
 
   if (txtin == NULL) { fatal_error("unable to load text '%s'\n", fstname); }
 
@@ -78,17 +78,17 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
   int nbPhrRej = 0; // nombre de phrases rejetées
   int nb_unloadable = 0; // nombre de phrases qui n'ont pas pu etre chargees
 
-  autalmot_t * A;
+  Fst2Automaton * A;
 
   double avant, apres;
   double cumulavant = 0.0, cumulapres = 0.0;
   double lgavant = 0., lgapres = 0.; // longueur moyenne du texte (en mots)
 
-  while ((A = fst_file_autalmot_load_next(txtin)) != NULL) {
+  while ((A = load_automaton(txtin)) != NULL) {
 
     int isrej = 0;
 
-    autalmot_t * orig = autalmot_dup(A);
+    Fst2Automaton * orig = autalmot_dup(A);
 
     if (no % 100 == 0) { u_printf("sentence %d/%d ...\r", no + 1, txtin->nb_automata); }
 
@@ -100,8 +100,8 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
       error("sentence %d is empty.\n", no + 1);
 
-      autalmot_delete(A);
-      A = autalmot_new();
+      free_Fst2Automaton(A);
+      A = new_Fst2Automaton();
       autalmot_add_state(A);
       autalmot_add_state(A, AUT_TERMINAL);
  
@@ -110,7 +110,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
         symbol_t * s = symbol_unknow_new(LANG, idx);
       */
       
-      autalmot_add_trans(A, 0, unloadable, 1);
+      add_transition(A, 0, unloadable, 1);
       nb_unloadable++;
 
     } else {
@@ -131,7 +131,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
         for (int j = 0; j < gramms->nbelems; j++) {
 
-          autalmot_t * temp = interAutAtome(A, (autalmot_t *) gramms->tab[j]);
+          Fst2Automaton * temp = interAutAtome(A, (Fst2Automaton *) gramms->tab[j]);
           
           //debug("avant emonde\n");
           
@@ -139,7 +139,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
           
           //debug("apres emonde\n");
   
-          autalmot_delete(A);
+          free_Fst2Automaton(A);
           A = temp;
 
           //debug("un peu plus loin ...\n");
@@ -150,8 +150,8 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
             j = gramms->nbelems;  /* on arrete pour cette phrase */
             nbPhrRej++;
 
-	    autalmot_delete(A);
-	    A = autalmot_new();
+	    free_Fst2Automaton(A);
+	    A = new_Fst2Automaton();
 	    autalmot_add_state(A);
 	    autalmot_add_state(A, AUT_TERMINAL);
 
@@ -159,8 +159,8 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 	    int idx = language_add_form(LANG, rejected);
 	    symbol_t * s = symbol_unknow_new(LANG, idx);
             */
-	    autalmot_add_trans(A, 0, rejected, 1);
-            autalmot_concat(A, orig);
+	    add_transition(A, 0, rejected, 1);
+            concat(A->automaton,orig->automaton,A->symbols);
             isrej = 1;
           }
         }
@@ -186,16 +186,16 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
     fst_file_write(fstout, A);
 
-    autalmot_delete(A);
-    autalmot_delete(orig);
+    free_Fst2Automaton(A);
+    free_Fst2Automaton(orig);
 
     no++;
   }
 
   u_printf("\n");
 
-  fst_file_close(txtin);
-  fst_file_close(fstout);
+  fst_file_close_in(txtin);
+  fst_file_close_out(fstout);
 
 
   time_t fin = time(0);
@@ -274,7 +274,7 @@ list_aut * chargeGramm(char * nomFichGramm) {
 
     error("\nReading %s...\n", buf + 1);
 
-    autalmot_t * A = load_grammar_automaton(buf + 1);
+    Fst2Automaton * A = load_elag_grammar_automaton(buf + 1);
 
     if (A == NULL) { fatal_error("unable to load '%s' automaton\n", buf + 1); }
 
@@ -304,7 +304,7 @@ list_aut * chargeUneGramm(char * name) { fatal_error("charhgeUneGramm: not imple
  * Postcondition : la taille est egale au nombre d'etats.
  */
  
-static void add_limphrase(autalmot_t * A) {
+static void add_limphrase(Fst2Automaton * A) {
 
   static unichar S[] = { '{', 'S', '}', 0 };
 
@@ -321,12 +321,12 @@ static void add_limphrase(autalmot_t * A) {
   A->states[initBis].flags = A->states[A->initials[0]].flags & ~(AUT_INITIAL);
   A->states[A->initials[0]].flags = AUT_INITIAL;
 
-  autalmot_add_trans(A, A->initials[0], LIM, initBis);
+  add_transition(A, A->initials[0], LIM, initBis);
 
 
   for (int q = 1; q < A->nbstates - 2; q++) {
     if (autalmot_is_final(A, q)) {
-      autalmot_add_trans(A, q, LIM, nouvFinal);
+      add_transition(A, q, LIM, nouvFinal);
       autalmot_unset_terminal(A, q);
     }
   }
@@ -350,7 +350,7 @@ static void add_limphrase(autalmot_t * A) {
  */
 
 
-int suppress_limphrase(autalmot_t * A) {
+int suppress_limphrase(Fst2Automaton * A) {
 
 
   if (A->initials[0] != 0 || ! autalmot_is_final(A, A->nbstates - 1)
@@ -371,7 +371,7 @@ int suppress_limphrase(autalmot_t * A) {
     return -1;
   }
 
-  if (u_strcmp(language_get_form(A->states[0].trans->label->canonic), "{S}") != 0) {
+  if (u_strcmp(language_get_form(A->states[0].trans->label->lemma), "{S}") != 0) {
     error("suppress_limphrase: no sentence limit found\n");
     return -1;
   }

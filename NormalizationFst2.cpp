@@ -21,6 +21,7 @@
 
 #include "NormalizationFst2.h"
 #include "Error.h"
+#include "Transitions.h"
 
 
 /**
@@ -194,7 +195,7 @@ if (is_final_state(state)) {
       node->outputs=sorted_insert(output,node->outputs);
    }
 }
-Fst2Transition trans=state->transitions;
+Transition* trans=state->transitions;
 unichar tmp[1024];
 while (trans!=NULL) {
    if (trans->tag_number<0) {
@@ -364,7 +365,7 @@ if (is_final_state(etat)) {
    // if we are in a final state
    (*TEMP_LIST)=insert_in_norm_info_list(output,noeud_normalization,(*TEMP_LIST));
 }
-struct fst2Transition* trans;
+Transition* trans;
 trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {
@@ -424,7 +425,7 @@ if (is_final_state(etat)) {
    // if we are in a final state
    noeud_normalization->outputs=sorted_insert(output,noeud_normalization->outputs);
 }
-struct fst2Transition* trans;
+Transition* trans;
 trans=etat->transitions;
 unichar tmp[1000];
 while (trans!=NULL) {

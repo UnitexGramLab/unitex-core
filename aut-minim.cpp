@@ -100,7 +100,7 @@ static void insereTri(tTransCol * nouveau, tTransCol ** liste, int e) {
  * les numeros de symboles.
  */
 
-static tTransCol ** triTrans(autalmot_t * aut, alphabet_t * alph) {
+static tTransCol ** triTrans(Fst2Automaton * aut, alphabet_t * alph) {
 
   tTransCol ** sorties = (tTransCol **) xmalloc(aut->nbstates * sizeof(tTransCol *));
 
@@ -149,7 +149,7 @@ static int compTrans(tTransCol * t1, tTransCol * t2) {
  * La couleur de l etat 0 est 0.
  */
 
-static int * initCouleur(autalmot_t * aut, int * nbCouleurs) {
+static int * initCouleur(Fst2Automaton * aut, int * nbCouleurs) {
 
   int * couleur = (int *) xcalloc(aut->nbstates, sizeof(int)) ;
 
@@ -189,7 +189,7 @@ static void colore(tTransCol ** sorties, int * couleur, int nbstates) {
  * etats de la meme couleur c dont les nuances sont deja connues.
  */
 
-static int trouveNuance(etat e, tTransCol ** sorties, int * couleur, int * nuance, int * nbNuances) {
+static int trouveNuance(int e, tTransCol ** sorties, int * couleur, int * nuance, int * nbNuances) {
 
   for (int f = couleur[e]; f < e; f++) {
     if (couleur[f] == couleur[e]) {
@@ -212,7 +212,7 @@ static int trouveNuance(etat e, tTransCol ** sorties, int * couleur, int * nuanc
 
 static int * choisirEtats(int * couleur, int nbCouleurs, int nbstates) {
 
-  int * repr = (etat *) xmalloc(nbCouleurs * sizeof(etat)) ;
+  int * repr = (int *) xmalloc(nbCouleurs * sizeof(int)) ;
 
   for (int c = 0; c < nbCouleurs; c++) {
 
@@ -257,7 +257,7 @@ static transition_t * clean_trans(transition_t * trans, int to) {
 
 /* suppress transition which take same way than the <def> one */
 
-static void compact_def_trans(autalmot_t * A) {
+static void compact_def_trans(Fst2Automaton * A) {
 //  debug("compact <def> trans\n");
 
   for (int q = 0; q < A->nbstates; q++) {
@@ -275,7 +275,7 @@ static void compact_def_trans(autalmot_t * A) {
  */
 
 
-void autalmot_minimize(autalmot_t * aut, int level) {
+void autalmot_minimize(Fst2Automaton * aut, int level) {
 
   if (aut->nbinitials > 1) { fatal_error("minimize: automate non deterministe!\n"); }
 

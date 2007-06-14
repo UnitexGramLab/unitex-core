@@ -1233,3 +1233,31 @@ tag[l++]='}';
 tag[l++]='\0';
 }
 
+
+/**
+ * Returns 1 if a and b have exactly the same semantic codes; 0
+ * otherwise. a and b are supposed to be non NULL.
+ */
+int same_semantic_codes(struct dela_entry* a,struct dela_entry* b) {
+if (a->n_semantic_codes!=b->n_semantic_codes) return 0;
+for (int i=0;i<b->n_semantic_codes;i++) {
+   if (!dic_entry_contain_gram_code(a,b->semantic_codes[i])) return 0;
+}
+return 1;
+}
+
+
+/**
+ * Adds to dst all the inflectional codes of src, it not already present.
+ * Both are supposed to be non NULL.
+ */
+void merge_inflectional_codes(struct dela_entry* dst,struct dela_entry* src) {
+for (int i=0;i<src->n_inflectional_codes;i++) {
+   if (!dic_entry_contain_inflectional_code(dst,src->inflectional_codes[i])) {
+      /* If necessary, we add the code */
+      dst->inflectional_codes[dst->n_inflectional_codes]=u_strdup(src->inflectional_codes[i]);
+      dst->n_inflectional_codes++;
+   }
+}
+}
+

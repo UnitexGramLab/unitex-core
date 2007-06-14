@@ -28,13 +28,13 @@
 
 
 
-void autalmot_determinize(autalmot_t * A) {
+void autalmot_determinize(Fst2Automaton * A) {
 
   //  debug("entering determinize: aut = \n");
   //  autalmot_dump(A);
   //  autalmot_output_fst2(A, "deter-in.fst2", FST_GRAMMAR);
 
-  autalmot_t * res = autalmot_new();
+  Fst2Automaton * res = new_Fst2Automaton();
 
   state_ens_tab_t * TAB = state_ens_tab_new();
 
@@ -69,7 +69,7 @@ void autalmot_determinize(autalmot_t * A) {
 	idx = state_ens_tab_add(TAB, T->to);
       }
 
-      autalmot_add_trans(res, q, T->label, idx);
+      add_transition(res, q, T->label, idx);
     }
 
 
@@ -81,7 +81,7 @@ void autalmot_determinize(autalmot_t * A) {
 	idx = state_ens_tab_add(TAB, Q->transdef);
       }
 
-      autalmot_add_trans(res, q, SYMBOL_DEF, idx);      
+      add_transition(res, q, SYMBOL_DEF, idx);      
     }
 
     STATE_delete(Q);

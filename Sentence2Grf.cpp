@@ -24,6 +24,7 @@
 #include "Error.h"
 #include "BitArray.h"
 #include "DELA.h"
+#include "Transitions.h"
 
 
 /* This is an approximation of the average width in pixels of a
@@ -114,7 +115,7 @@ if (n_transitions_par_state==NULL) {
    fatal_error("Not enough memory in get_n_transitions_par_state\n");
 }
 int initial_state=fst2->initial_states[n];
-Fst2Transition trans;
+Transition* trans;
 n_transitions_par_state[0]=0;
 for (int i=0;i<max;i++) {
    n_transitions_par_state[i+1]=n_transitions_par_state[i];
@@ -147,6 +148,48 @@ return m;
 
 
 /**
+ * This function removes the duplicates grf states, if any. We
+ * consider that states are equal when they have the same content
+ * and transition list. When we remove a state, the one we keep
+ * keeps the coordinates of the rightmost state of the two.
+ */
+void remove_duplicate_grf_states(struct grf_state** states,int *N) {
+int j;
+/* 2 because the initial and final states are not concerned */
+for (int i=2;i<*N;i++) {
+   j=i+1;
+   /* We look for a state that is equal to states[i] */
+   while (j<*N) {
+      if (!u_strcmp(states[i]->content,states[j]->content) &&
+          equal_list_int(states[i]->l,states[j]->l)) {
+         /* If we have such a state */
+         if (states[i]->pos_X<states[j]->pos_X) {
+            /* We take the rightmost coordinates */
+            states[i]->pos_X=states[j]->pos_X;
+            states[i]->rank=states[j]->rank;
+         }
+         /* Then we free the state #j and we swap it with the last one */
+         free_grf_state(states[j]);
+         states[j]=states[*N-1];
+         /* We decrease the number of states */
+         (*N)--;
+         /* And we renumber all transitions to j into transitions to i */
+         for (int k=0;k<*N;k++) {
+            if (remove(j,&(states[k]->l))) {
+               states[k]->l=sorted_insert(i,states[k]->l);
+            }
+            if (remove(*N,&(states[k]->l))) {
+               states[k]->l=sorted_insert(j,states[k]->l);
+            }
+         }
+      }
+      j++;
+   }
+}
+}
+
+
+/**
  * This function creates the grf states that correspond to the given fst2
  * and saves them to the given file.
  */
@@ -159,7 +202,7 @@ int max_transitions=get_maximum_difference(n_transitions_before_state,n_states);
 int N_GRF_STATES=2;
 int MAX_STATES=2+n_transitions_before_state[n_states];
 int initial_state=fst2->initial_states[SENTENCE];
-struct fst2Transition* trans;
+Transition* trans;
 struct grf_state** grf_states=(struct grf_state**)malloc(MAX_STATES*sizeof(struct grf_state));
 if (grf_states==NULL) {
    fatal_error("Not enough memory in fst2_transitions_to_grf_states\n");
@@ -199,7 +242,7 @@ for (int i=0;i<n_states;i++) {
          add_transition_to_grf_state(grf_states[N_GRF_STATES],1);
       } else {
          /* Otherwise, we create transitions */
-         struct fst2Transition* tmp=fst2->states[trans->state_number]->transitions;
+         Transition* tmp=fst2->states[trans->state_number]->transitions;
          /* +2 because of the grf states 0 and 1 that are reserved */
          int j=2+n_transitions_before_state[trans->state_number];
          while (tmp!=NULL) {
@@ -212,6 +255,7 @@ for (int i=0;i<n_states;i++) {
    }
 }
 free(n_transitions_before_state);
+remove_duplicate_grf_states(grf_states,&N_GRF_STATES);
 /* And we save the grf */
 save_grf_states(f,grf_states,N_GRF_STATES,maximum_rank,font,max_transitions);
 /* Finally, we perform cleaning */
@@ -230,7 +274,7 @@ free(grf_states);
  */
 void explore_states_for_ranks(int current_state,int initial_state,Fst2* fst2,
                         int* rank,struct bit_array* modified,int* maximum_rank) {
-struct fst2Transition* trans=fst2->states[current_state]->transitions;
+Transition* trans=fst2->states[current_state]->transitions;
 int current_rank=rank[current_state-initial_state];
 while (trans!=NULL) {
    if (current_rank+1>rank[trans->state_number-initial_state]) {
@@ -345,7 +389,7 @@ int get_max_width_for_ranks(Fst2* fst2,int SENTENCE,int* pos_X,int* rank,
                             int maximum_rank) {
 int n_states=fst2->number_of_states_per_graphs[SENTENCE];
 int i;
-struct fst2Transition* trans;
+Transition* trans;
 for (i=0;i<=maximum_rank;i++) {
    pos_X[i]=0;
 }

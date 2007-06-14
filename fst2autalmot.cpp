@@ -23,7 +23,8 @@
 #include "String_hash.h"
 #include "fst2autalmot.h"
 #include "utils.h"
-
+#include "DELA.h"
+#include "Transitions.h"
 
 
 static unichar PONCTAB[] = {
@@ -137,10 +138,10 @@ int symbole_developp(tAlphMot * alphabet, tSymbole * symb) {
 }
 
 
-
+/*
 static int check_dic_entry(const unichar * label) {
 
-  /* {__,__.__} */
+  // {__,__.__} 
 
   if (*label != '{') { error("label %S isn't a good DELA entry\n", label); return -1; }
 
@@ -165,7 +166,7 @@ static int check_dic_entry(const unichar * label) {
   if (*p != 0) { error("malformed label: '%S': label should end with '}'.\n", label); return -1; }
 
   return 0;
-}
+}*/
 
 
 
@@ -173,15 +174,15 @@ static int check_dic_entry(const unichar * label) {
  */
 
 static int check_text_label(const unichar * label) {
-
-  const unichar * p;
-
-  if ((label == NULL)) { error("check label: no label\n"); return -1; }
+const unichar * p;
+if (label==NULL) {error("check label: no label\n"); return -1; }
 
   if (*label == 0) { error("error: check label: label is empty\n"); return -1; }
 
-  if (*label == '{') { return check_dic_entry(label); }
-
+if (label[0]=='{' && label[1]!='\0') {
+   /* If we have something that looks like a tag token of the form {__,__.__} */
+   return (check_tag_token((unichar*)label)==1)?0:-1;
+}
   /* no spaces */
 
   for (p = label; *p; p++) {
@@ -588,7 +589,7 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
       aut->etats[q] = NULL;
 
-      for (struct fst2Transition * trans = A->states[qq]->transitions; trans; trans = trans->next) {
+      for (Transition * trans = A->states[qq]->transitions; trans; trans = trans->next) {
 
 	//tSymbole symb;
 
@@ -634,7 +635,7 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
 
 #if 0
 
-tAutAlMot * load_grammar_automaton(char * fname) {
+tAutAlMot * load_elag_grammar_automaton(char * fname) {
 
 
   unichar buf[1024];
@@ -731,7 +732,7 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
 
     u_fprintf(f, "-%d %S\n", i + 1, A->name);
 
-    for (etat q = 0; q < A->nbEtats; q++) {
+    for (int q = 0; q < A->nbEtats; q++) {
 
       u_fputc((A->type[q] & AUT_TERMINAL) ? 't' : ':', f);
       u_fputc(' ', f);

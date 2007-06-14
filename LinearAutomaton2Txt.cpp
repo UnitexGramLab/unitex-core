@@ -21,6 +21,7 @@
 
 #include "LinearAutomaton2Txt.h"
 #include "Error.h"
+#include "Transitions.h"
 
 
 /**
@@ -32,7 +33,7 @@ int isLinearAutomaton(Fst2* fst2) {
 if (fst2==NULL) {
    fatal_error("NULL error in isLinearAutomaton\n");
 }
-Fst2Transition l;
+Transition* l;
 Fst2State state;
 for (int sentence=1;sentence<fst2->number_of_graphs+1;sentence++) {
    int n=fst2->initial_states[sentence]+fst2->number_of_states_per_graphs[sentence];
@@ -68,7 +69,7 @@ int convertLinearAutomaton(Fst2* fst2,FILE* f) {
 if (fst2==NULL) {
    fatal_error("NULL error in convertLinearAutomaton\n");
 }
-Fst2Transition l;
+Transition* l;
 Fst2State state;
 for (int sentence=1;sentence<fst2->number_of_graphs+1;sentence++) {
    state=fst2->states[fst2->initial_states[sentence]];

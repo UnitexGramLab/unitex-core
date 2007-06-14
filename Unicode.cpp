@@ -1814,7 +1814,7 @@ return res;
  */
 unichar* u_strdup(const unichar* str,int n) {
 if (str==NULL) return NULL;
-if (n<=0) {fatal_error("Invalid length in u_strdup\n");}
+if (n<0) {fatal_error("Invalid length in u_strdup\n");}
 int length=u_strlen(str);
 if (length<n) {
    n=length;

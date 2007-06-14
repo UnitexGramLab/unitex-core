@@ -43,23 +43,25 @@
 #include "autalmot.h"
 #include "compgr.h"
 #include "utils.h"
+#include "File.h"
 #include "IOBuffer.h"
 
 
 
 void usage() {
-u_printf("%S", COPYRIGHT);
-u_printf("Usage: ElagComp [ -r <ruleslist> | -g <grammar> ] -l <LANG> [ -o <output> ] [ -d <rulesdir> ]\n"
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: ElagComp [-r <rlist>|-g <grammar>] -l <lang> [-o <output>] [-d <rdir>]\n"
          "\n"
-         "with :\n"
-         "<ruleslist>     :     Elag grammars list file,\n"
-         "<LANG>          :     Elag language description file,\n"
-         "<output>        :     (optional) file where the resulting compiled grammar is stored\n"
-         "                      the default name is same as <rulelist> except for the .rul extension,\n"
-         "<rulesdir>      :     (optional) directory where Elag grammars are located.\n"
+         "<rlist>   : Elag .fst2 grammar list file\n"
+         "<grammar> : Elag .fst2 grammar\n"
+         "<lang>    : Elag language description file\n"
+         "<output>  : (optional) file where the resulting compiled grammar is stored.\n"
+         "            The default name is same as <rlist> except for the .rul extension\n"
+         "<rdir>    : (optional) directory where Elag grammars are located\n"
          "\n"
-         "ElagComp compile one Elag grammar specified by <grammar> or all the grammars specified in the <ruleslist> file.\n"
-         "The result is stored into the file <output> for later use by the Elag text disambiguation program.\n\n");
+         "ElagComp compiles one Elag grammar specified by <grammar> or all the grammars\n"
+         "specified in the <rlist> file. The result is stored into the file <output>\n"
+         "for later use by the Elag text disambiguation program.\n");
 }
 
 
@@ -74,95 +76,89 @@ static inline void strip_extension(char * s) {
   }
 }
 
-int main(int argc, char ** argv ) {
-
-  setBufferMode();
-
-  static char buf[1024];
-
-  char * compilename = NULL;
-  char * ruledir     = NULL;
-  char * rules       = NULL;
-  char * langname    = NULL;
-  char * grammar     = NULL;
-
-  if (argc == 1) { usage(); return 0; }
-
-  argv++, argc--;
 
 
-  while (argc) {
+int main(int argc,char** argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-    if (**argv != '-') {
-
-      rules = *argv;
-
-    } else {
-
-      if (strcmp(*argv, "-o") == 0) { // nom du fichier des grammaires compilee
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-o argument needs a parameter\n"); }
-      
-	compilename = *argv;
-
-      } else if (strcmp(*argv, "-d") == 0) { // rules directory
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-d argument needs a parameter\n"); }
-
-	ruledir = *argv;
-
-      } else if (strcmp(*argv, "-r") == 0) { // rules file
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-r argument needs a parameter\n"); }
-
-	rules = *argv;
-
-      } else if (strcmp(*argv, "-g") == 0) { // rules file
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-g argument needs a parameter\n"); }
-
-	grammar = *argv;
-
-      } else if (strcmp(*argv, "-h") == 0) {
-
-	usage();
-	return 0;
-
-      } else if (strcmp(*argv, "-l") == 0) {
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-l argument needs a parameter\n"); }
-
-	langname = *argv;
-
+char buf[FILENAME_MAX];
+char* compilename=NULL;
+char* ruledir=NULL;
+char* rules=NULL;
+char* langname=NULL;
+char* grammar=NULL;
+if (argc==1) {
+   usage();
+   return 0;
+}
+argv++;
+argc--;
+while (argc!=0) {
+   if (*argv[0]!='-') {
+      rules=*argv;
+   } else {
+      if (!strcmp(*argv,"-o")) {
+         argv++;
+         argc--;
+         if (argc==0) {
+            fatal_error("-o argument needs a parameter\n");
+         }
+         compilename=*argv;
+      } else if (!strcmp(*argv,"-d")) {
+         argv++;
+         argc--;
+         if (argc==0) {
+            fatal_error("-d argument needs a parameter\n");
+         }
+         ruledir=*argv;
+      } else if (!strcmp(*argv,"-r")) {
+         argv++;
+         argc--;
+         if (argc==0) {
+            fatal_error("-r argument needs a parameter\n");
+         }
+         rules=*argv;
+      } else if (!strcmp(*argv,"-g")) {
+         argv++;
+         argc--;
+         if (argc==0) {
+            fatal_error("-g argument needs a parameter\n");
+         }
+         grammar=*argv;
+      } else if (!strcmp(*argv,"-h")) {
+         usage();
+         return 0;
+      } else if (!strcmp(*argv,"-l")) {
+         argv++;
+         argc--;
+         if (argc==0) {
+            fatal_error("-l argument needs a parameter\n");
+         }
+         langname=*argv;
       } else {
-
-	fatal_error("unknow argument: '%s'\n", *argv);
+         fatal_error("Unknown argument: '%s'\n",*argv);
       }
-    }
-
-    argv++, argc--;
-  }
-
-
-  if (! langname) { fatal_error("No language specified\n"); }
-
-  language_t * lang = load_language_definition(langname);
-
-  set_current_language(lang);
-
-
-  if (! rules && ! grammar) { fatal_error("you must specified a grammar or a rules file name\n"); }
-
-  if (rules && grammar) { fatal_error("cannot handle list file and grammar in the same time.\n"); }
-
-  if (rules) {
-  
-    if (ruledir == NULL) {
+   }
+   argv++;
+   argc--;
+}
+if (langname==NULL) {
+   fatal_error("No language definition file specified\n");
+}
+language_t* language=load_language_definition(langname);
+set_current_language(language);
+if (rules==NULL && grammar==NULL) {
+   fatal_error("You must specified a grammar or a rule file name\n");
+}
+if (rules!=NULL && grammar!=NULL) {
+   fatal_error("Cannot handle both a rule file and a grammar\n");
+}
+if (rules!=NULL) {
+   /* If we work with a rule list */
+   if (ruledir==NULL) {
       ruledir = dirname(strdup(rules));
       rules   = basename(rules);
     }
@@ -191,27 +187,22 @@ int main(int argc, char ** argv ) {
 
     u_printf("\nElag grammars are compiled in %s.\n", compilename);
   
-  } else { // compile one grammar
-  
-   u_printf("Compiling %s ...\n", grammar);
- 
-   int l = strlen(grammar);
-   
-   if (strcmp(grammar + l - 5, ".fst2") != 0) {
-     fatal_error("grammar '%s' should be a FST2 file\n");
+} else {
+   /* If we must compile a single grammar */
+   u_printf("Compiling %s...\n",grammar);
+   char elg_file[FILENAME_MAX];
+   get_extension(grammar,elg_file);
+   if (strcmp(elg_file,".fst2")) {
+     fatal_error("Grammar '%s' should be a .fst2 file\n");
    }
-
-   strcpy(buf, grammar); 
-   strip_extension(buf);
-   strcat(buf, ".elg");
-
-   if (compile_grammar(grammar, buf) == -1) {
-     error("An error occured while compiling %s\n", grammar);
+   remove_extension(grammar,elg_file);
+   strcat(elg_file,".elg");
+   if (compile_elag_grammar(grammar,elg_file)==-1) {
+     error("An error occured while compiling %s\n",grammar);
      return 1;
    }
-
-   u_printf("Elag grammar is compiled into %s.\n", buf);
-  }
-  return 0 ;
+   u_printf("Elag grammar is compiled into %s.\n",elg_file);
+}
+return 0;
 }
 

@@ -43,6 +43,7 @@ u_printf("     <out> : name of the TAGML2 output dictionary\n");
 u_printf("\nExports the given French DELA into a UTF8 TAGML2 dictionary.\n");
 }
 
+
 int main(int argc, char **argv) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from

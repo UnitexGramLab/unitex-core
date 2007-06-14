@@ -30,6 +30,7 @@
 #include "MetaSymbols.h"
 #include "Pattern.h"
 #include "List_int.h"
+#include "Transitions.h"
 
 
 /* Maximum number of tags in a .fst2 */
@@ -46,28 +47,6 @@
 #define NEGATION_TAG_BIT_MASK 2
 #define RESPECT_CASE_TAG_BIT_MASK 4 /* to 1 if case variants are not allowed */
 
-
-
-/*
- * This structure represents a transition list in a fst2
- */
-struct fst2Transition {
-   /* Number of the transition tag */
-   int tag_number;
-   
-   /*
-    * Number of the state pointed by the transition. Note that this
-    * number is ABSOLUTE. For instance, if the subgraph number 3 starts
-    * at the state number 45, the 6th state of this subgraph will have the
-    * number 45+6=51.
-    * 
-    */
-   int state_number;
-   
-   /* Next transition of the list */
-   struct fst2Transition* next;
-};
-typedef struct fst2Transition* Fst2Transition;
 
 
 /**
@@ -181,7 +160,7 @@ struct fst2State {
 	unsigned char control;
 	
 	/* Transitions outgoing from this state */
-	struct fst2Transition* transitions;
+	Transition* transitions;
 };
 typedef struct fst2State* Fst2State;
 
@@ -225,11 +204,6 @@ struct fst2 {
 typedef struct fst2 Fst2;
 
 
-Fst2Transition new_Fst2Transition(int,int,Fst2Transition);
-Fst2Transition new_Fst2Transition(int,int);
-void free_Fst2Transition(Fst2Transition);
-void add_transition_if_not_present(Fst2Transition*,int,int);
-
 /* Functions for loading grammars */
 Fst2* load_fst2(char*,int);
 Fst2* load_one_sentence_from_fst2(char*,int);
@@ -242,5 +216,6 @@ void write_fst2_tags(FILE*,Fst2*);
 
 int is_initial_state(Fst2State);
 int is_final_state(Fst2State);
+
 
 #endif

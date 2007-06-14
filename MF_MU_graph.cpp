@@ -27,8 +27,6 @@
 /********************************************************************************/
 /********************************************************************************/
 
-//#include <stdlib.h>
-
 #include "MF_MU_graph.h"
 #include "Fst2.h"
 #include "MF_Util.h"
@@ -36,6 +34,8 @@
 #include "MF_Unif.h"
 #include "MF_InflectTransd.h"
 #include "Error.h"
+#include "Transitions.h"
+
 ////////////////////////////////////////////
 // GLOBAL VARIABLES
 
@@ -175,7 +175,7 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
     forms->no_forms++;
   }
   //Explore each outgoing transition
-  Fst2Transition t;
+  Transition* t;
   MU_forms_T forms_bis;
   int mf;  //index of a sigle MU form
   
