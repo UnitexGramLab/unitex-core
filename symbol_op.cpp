@@ -34,70 +34,64 @@ static inline void traits_copy(symbol_t * dest, const symbol_t * src) {
   for (int i = 0; i < src->nb_features; i++) { dest->feature[i] = src->feature[i]; }
 }
 
-/* orders the symbol's types
+
+/**
+ * We set an order on symbol's types
  */
-
-
-static char * make_TYPE_ORDER(char * TAB) {
-
-  //  debug("make_TYPE_ORDER\n");
-
-  for (int i = 0; i < 256; i++) { TAB[i] = -1; }
-
-  TAB[LEXIC]     =  0;
-  TAB[EPSILON]   =  1;
-
-  TAB[ATOM]      =  2;
-  TAB[CODE_NEG]  =  3;
-  TAB[CODE]      =  4;
-
-  TAB[INC_CAN]   =  5;
-  TAB[INC_NEG]   =  6;
-  TAB[INC]       =  7;
-
-  TAB[EXCLAM]    = -2;
-  TAB[EQUAL]     = -2;
-
-  return TAB;
+static char* make_TYPE_ORDER(char* t) {
+for (int i=0;i<256;i++) {
+   t[i]=-1;
+}
+t[LEXIC]=0;
+t[EPSILON]=1;
+t[ATOM]=2;
+t[CODE_NEG]=3;
+t[CODE]=4;
+t[INC_CAN]=5;
+t[INC_NEG]=6;
+t[INC]=7;
+t[EXCLAM]=-2;
+t[EQUAL]=-2;
+return t;
 }
 
 
-static char  _TYPE_ORDER_[256];
-static char * TYPE_ORDER = make_TYPE_ORDER(_TYPE_ORDER_);
+static char _TYPE_ORDER_[256];
+static char* TYPE_ORDER=make_TYPE_ORDER(_TYPE_ORDER_);
 
+/**
+ * Returns the order value corresponding to the given symbol's type.
+ */
 static inline int type_order(int type) {
-
-  if (type < 0 || type > 255) { // out of bounds
-    return -5;
-  }
-
-  return TYPE_ORDER[type];
+if (type < 0 || type > 255) {
+   /* If the type is out of bounds */
+   return -5;
+}
+return TYPE_ORDER[type];
 }
 
 
-/* set symbols types
- * && strip invalid symbols from the list
+/**
+ * This function takes a list of symbols and types
+ * all of them, discarding the invalid ones, if any.
  */
-
-static inline symbol_t * symbols_clean(symbol_t * symbols) {
-
-  symbol_t * res = symbols;
-
-  while (symbols && (type_symbol(symbols) == -1)) {
-    res = symbols->next;
-    free_symbol(symbols);
-    symbols = res;
-  }
-
-  for (symbol_t * s = res; s; s = s->next) {
-    while (s->next && (type_symbol(s->next) == -1)) {
-      symbol_t * next = s->next->next;
+symbol_t* type_and_clean_symbols(symbol_t* symbols) {
+symbol_t* res=symbols;
+/* We look for the first valid symbol of the list */
+while (res!=NULL && (type_symbol(res)==-1)) {
+   symbols=res;
+   res=res->next;
+   free_symbol(symbols);
+}
+/* Then, we type and clean the rest of the list */
+for (symbol_t* s=res;s!=NULL;s=s->next) {
+   while (s->next!=NULL && (type_symbol(s->next)==-1)) {
+      symbol_t* next=s->next->next;
       free_symbol(s->next);
-      s->next = next;
-    }
-  }
-
-  return res;
+      s->next=next;
+   }
+}
+return res;
 }
 
 
@@ -110,45 +104,49 @@ static inline bool canonic_in_neg(int canonic, const symbol_t * s) {
 
 
 
-/* intersection of 2 negation lists (avoid duplication) */
-
-
-static void negs_inter_negs(symbol_t * res, const symbol_t * a, const symbol_t * b) {
-
-  int max = a->nbnegs + b->nbnegs;
-
-  res->nbnegs = 0;
-  res->negs   = (int *) xmalloc(max * sizeof(int));
-
-  int c1 = 0, c2 = 0;
-
-  while ((c1 < a->nbnegs) && (c2 < b->nbnegs)) {
-
-    if (a->negs[c1] == b->negs[c2]) {
-
-      res->negs[res->nbnegs] = a->negs[c1];
-      res->nbnegs++; c1++; c2++;
-
-    } else if (a->negs[c1] < b->negs[c2]) {
-
-      res->negs[res->nbnegs] = a->negs[c1];
-      res->nbnegs++; c1++;
-
-    } else {
-      res->negs[res->nbnegs] = b->negs[c2];
-      res->nbnegs++; c2++;
-    }
-  }
-
-  while (c1 < a->nbnegs) {
-    res->negs[res->nbnegs] = a->negs[c1];
-    res->nbnegs++; c1++;
-  }
-
-  while (c2 < b->nbnegs) {
-    res->negs[res->nbnegs] = b->negs[c2];
-    res->nbnegs++; c2++;
-  }
+/**
+ * This function takes two symbols a and b of the form <!seat!ball.N:fs>
+ * and it res's forbidden lemmas with those that belong to a or b's ones.
+ * 
+ * <!seat!ball.N:fs> inter <!chair!ball.N:fs> => <!seat!ball!chair>
+ */
+void negs_union_negs(symbol_t* res,const symbol_t* a,const symbol_t* b) {
+int max_negs=a->nbnegs+b->nbnegs;
+res->nbnegs=0;
+res->negs=(int*)malloc(max_negs*sizeof(int));
+if (res->negs==NULL) {
+   fatal_error("Not enough memory in negs_union_negs\n");
+}
+int c1=0;
+int c2=0;
+while (c1<a->nbnegs && c2<b->nbnegs) {
+   if (a->negs[c1]==b->negs[c2]) {
+      res->negs[res->nbnegs]=a->negs[c1];
+      (res->nbnegs)++;
+      c1++;
+      c2++;
+   } else if (a->negs[c1]<b->negs[c2]) {
+      res->negs[res->nbnegs]=a->negs[c1];
+      (res->nbnegs)++;
+      c1++;
+   } else {
+      res->negs[res->nbnegs]=b->negs[c2];
+      (res->nbnegs)++;
+      c2++;
+   }
+}
+while (c1<a->nbnegs) {
+   /* If some forbidden lemmas remain in a */
+   res->negs[res->nbnegs]=a->negs[c1];
+   (res->nbnegs)++;
+   c1++;
+}
+while (c2<b->nbnegs) {
+   /* If some forbidden lemmas remain in b */
+   res->negs[res->nbnegs]=b->negs[c2];
+   (res->nbnegs)++;
+   c2++;
+}
 }
 
 
@@ -178,39 +176,38 @@ static inline int compare_traits(const symbol_t * a, const symbol_t * b) {
 }
 
 
-int symbol_compare(const symbol_t * a, const symbol_t * b) {
-
-  int cmp;
-
-  //  debug("compare("); symbol_dump(a); errprintf(","); symbol_dump(b); errprintf(")\n");
-
-  if (a == b) { return 0; }
-
-  if (a == NULL) { /* NULL == le plus petit symbole */
-    error("symbol_compare: a == NULL\n");
-    return -1;
-  }
-
-  if (b == NULL) {
-    error("symbol_compare: b == NULL\n");
-    return 1;
-  }
-
-  if (a == SYMBOL_DEF) { /* SYMBOL_DEF == deuxieme plus petit symbol */
-    error("symbol_compare a == <def>\n");
-    return -1;
-  }
-
-  if (b == SYMBOL_DEF) {
-    error("symbol_compare b == <def>\n");
-    return 1;
-  }
-
-
-  if (type_order(a->type) < 0) { fatal_error("symbol_compare: invalid symbol for a (type=%d)\n", a->type); }
-  if (type_order(b->type) < 0) { fatal_error("symbol_compare: invalid symbol for b (type=%d)\n", b->type); }
-
-  if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - type_order(a->type); }
+/**
+ * Compares the symbols a and b and returns:
+ *  0 if a==b 
+ * <0 if a<b
+ * >0 if a>b
+ */
+int symbol_compare(const symbol_t* a,const symbol_t* b) {
+int cmp;
+if (a==NULL) {
+   error("NULL 'a' error in symbol_compare\n");
+   return -1;
+}
+if (b==NULL) {
+   error("NULL 'b' error in symbol_compare\n");
+   return 1;
+}
+if (a==SYMBOL_DEF) {
+   error("<def> 'a' error in symbol_compare\n");
+   return -1;
+}
+if (b==SYMBOL_DEF) {
+   error("<def> 'b' error in symbol_compare\n");
+   return 1;
+}
+if (a==b) {
+   return 0;
+}
+if (type_order(a->type)<0) {
+   fatal_error("symbol_compare: invalid symbol for a (type=%d)\n",a->type);
+}
+if (type_order(b->type) < 0) { fatal_error("symbol_compare: invalid symbol for b (type=%d)\n", b->type); }
+if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - type_order(a->type); }
 
   /* same type */
 
@@ -249,240 +246,241 @@ int symbol_compare(const symbol_t * a, const symbol_t * b) {
 
 /* compute traits intersection  */
 
-static symbol_t * inter_traits(const symbol_t * a, const symbol_t * b) {
-
-  if (a->POS != b->POS) { return NULL; }
-
-
-  /* make sure a is not smaller than b */
-
-  if (a->nb_features < b->nb_features) {
-    const symbol_t * tmp = a;
-    a = b;
-    b = tmp;
-  }
-
-  symbol_t * res = new_symbol_POS(a->POS);
-
-  int i;
-  for (i = 0; i < b->nb_features; i++) {
-
-    switch (a->feature[i]) {
-
-    case UNSPECIFIED:
-      res->feature[i] = b->feature[i];
-      break;
-
-    case LOCKED:
-      if (b->feature[i] > 0) { goto null; }
-      res->feature[i] = LOCKED;
-      break;
-
-    default:
-      if (b->feature[i] != a->feature[i] && b->feature[i] != UNSPECIFIED) { goto null; }
-      res->feature[i] = a->feature[i];
-      break;
-    }
-  }
-
-  for (; i < a->nb_features; i++) { res->feature[i] = a->feature[i]; }
-
-  return res;
+/**
+ * Returns a symbol containing the intersection of a and b's features.
+ */
+symbol_t* inter_features(const symbol_t* a,const symbol_t* b) {
+if (a->POS!=b->POS) {return NULL;}
+/* We make sure that a's number of features is greater than b's */
+if (a->nb_features<b->nb_features) {
+   const symbol_t* tmp=a;
+   a=b;
+   b=tmp;
+}
+symbol_t* res=new_symbol_POS(a->POS);
+int i;
+for (i=0;i<b->nb_features;i++) {
+   switch (a->feature[i]) {
+      case UNSPECIFIED: res->feature[i]=b->feature[i]; break;
+      
+      case LOCKED: 
+         if (b->feature[i]>0) {
+            /* If a feature is set in b while locked in a, then
+             * the symbols a and b are not compatible */
+            goto null;
+         }
+         res->feature[i]=LOCKED;
+         break;
+         
+      default:
+         if (b->feature[i]!=a->feature[i] && b->feature[i]!=UNSPECIFIED) {
+            /* If a feature is set with different values in a and b, then
+             * a inter b is empty. */
+            goto null;
+         }
+         res->feature[i]=a->feature[i];
+         break;
+   }
+}
+for (;i<a->nb_features;i++) {
+   /* If a puts a constraint on a feature that is not in b, then this
+    * feature must appear in the intersection */
+   res->feature[i]=a->feature[i];
+}
+return res;
 
 null:
-  free_symbol(res);
-  return NULL;
+free_symbol(res);
+return NULL;
 }
 
 
-static symbol_t * CAN_inter_CAN(const symbol_t * a, const symbol_t * b) {
-
-  if (a->form != b->form) { return NULL; }
-  if (a->lemma != b->lemma) { return NULL; }
-
-  symbol_t * res = inter_traits(a, b);
-
-  if (res == NULL) { return NULL; }
-
-  res->form    = a->form;
-  res->lemma = a->lemma;
-
-  return symbols_clean(res);
+/**
+ * Returns the intersection of a and b where a and b are both of the
+ * form <tables,table.N:ms>
+ */
+symbol_t* CAN_inter_CAN(const symbol_t* a,const symbol_t* b) {
+if (a->form!=b->form) {return NULL;}
+if (a->lemma!=b->lemma) {return NULL;}
+/* If the inflected forms and lemmas are compatible, we look
+ * at the features */
+symbol_t* res=inter_features(a,b);
+if (res==NULL) {return NULL;}
+res->form=a->form;
+res->lemma=a->lemma;
+/* We don't forget to type the symbol */
+return type_and_clean_symbols(res);
 }
 
 
-static symbol_t * CAN_inter_NEG(const symbol_t * a, const symbol_t * b) {
-
-  if (canonic_in_neg(a->lemma, b)) { return NULL; }
-
-  symbol_t * res = inter_traits(a, b);
-
-  if (res == NULL) { return NULL; }
-
-  res->form    = a->form; 
-  res->lemma = a->lemma;
-
-  return symbols_clean(res);
+/**
+ * Returns the intersection of a and b where a and b are respectively
+ * of the form <tables,table.N:ms> and <!seat!ball.N:fs>
+ */
+symbol_t* CAN_inter_NEG(const symbol_t* a,const symbol_t* b) {
+if (canonic_in_neg(a->lemma,b)) {
+   /* If a's lemma belongs to b's forbidden ones, we fail */
+   return NULL;
+}
+symbol_t* res=inter_features(a,b);
+if (res==NULL) {return NULL;}
+res->form=a->form; 
+res->lemma=a->lemma;
+return type_and_clean_symbols(res);
 }
 
 
-static symbol_t * CAN_inter_CODE(const symbol_t * a, const symbol_t * b) {
-
-  symbol_t * res = inter_traits(a, b);
-
-  if (res == NULL) { return NULL; }
-
-  res->form    = a->form; 
-  res->lemma = a->lemma;
-
-  return symbols_clean(res);
+/**
+ * Returns the intersection of a and b where a and b are respectively
+ * of the form <tables,table.N:ms> and <N:fs>
+ */
+symbol_t* CAN_inter_CODE(const symbol_t* a,const symbol_t* b) {
+symbol_t* res=inter_features(a,b);
+if (res==NULL) {return NULL;}
+res->form=a->form; 
+res->lemma=a->lemma;
+return type_and_clean_symbols(res);
 }
 
 
-static symbol_t * NEG_inter_NEG(const symbol_t * a, const symbol_t * b) {
-
-  symbol_t * res = inter_traits(a, b);
-
-  if (res == NULL) { return NULL; }
-
-  res->negative = true;
-  negs_inter_negs(res, a, b);
-
-  return symbols_clean(res);
+/**
+ * Returns the intersection of a and b where a and b are both of the
+ * form <!seat!ball.N:fs>
+ * 
+ * <!seat!ball.N:s> inter <!chair!ball.N:m> => <!seat!ball!chair.N:ms>
+ */
+static symbol_t* NEG_inter_NEG(const symbol_t* a,const symbol_t* b) {
+symbol_t* res=inter_features(a,b);
+if (res==NULL) {return NULL;}
+res->negative=true;
+/* We compute in the union of a and b's forbidden lemmas */
+negs_union_negs(res,a,b);
+return type_and_clean_symbols(res);
 }
 
 
-static symbol_t * NEG_inter_CODE(const symbol_t * a, const symbol_t * b) {
-
-  symbol_t * res = inter_traits(a, b);
-
-  if (res == NULL) { return NULL; }
-
-  res->negative = true;
-  res->nbnegs = a->nbnegs;
-  res->negs = (int *) xmalloc(res->nbnegs * sizeof(int));
-  for (int i = 0; i < res->nbnegs; i++) { res->negs[i] = a->negs[i]; }
-
-  return symbols_clean(res);
+/**
+ * Returns the intersection of a and b where a and b are respectively
+ * of the form <!seat!ball.N:s> and <N:f>
+ */
+symbol_t* NEG_inter_CODE(const symbol_t* a,const symbol_t* b) {
+symbol_t* res=inter_features(a,b);
+if (res==NULL) {return NULL;}
+res->negative=true;
+res->nbnegs=a->nbnegs;
+res->negs=(int*)malloc(res->nbnegs*sizeof(int));
+if (res->negs==NULL) {
+   fatal_error("Not enough memory in NEG_inter_CODE\n");
+}
+for (int i=0;i< res->nbnegs;i++) {
+   res->negs[i]=a->negs[i];
+}
+return type_and_clean_symbols(res);
 }
 
 
-
-static inline symbol_t * CODE_inter_CODE(const symbol_t * a, const symbol_t * b) {
-  symbol_t * res = inter_traits(a, b);
-  return symbols_clean(res);
+/**
+ * Returns the intersection of a and b where a and b are both of the
+ * form <N:fs>
+ * 
+ * <V:Ks> inter <V:Kf> => <V:Kfs>
+ */
+symbol_t* CODE_inter_CODE(const symbol_t* a,const symbol_t* b) {
+symbol_t* res=inter_features(a,b);
+return type_and_clean_symbols(res);
 }
 
 
+/**
+ * Returns a symbol representing the intersection of the two given
+ * symbols, or NULL if the intersection is empty.
+ */
+symbol_t* symbol_inter_symbol(const symbol_t* a,const symbol_t* b) {
+if (a==SYMBOL_DEF || b==SYMBOL_DEF) {
+   fatal_error("symbol_inter_symbol: called with SYMBOL_DEF as arg\n");
+}
+if (a==b) {
+   /* Full intersection */
+   return dup_symbol(a);
+}
+if (a==NULL || b==NULL) {
+   /* Empty intersection */
+   return NULL;
+}
+if (type_order(a->type)<0) {
+   fatal_error("symbol_inter_symbol: invalid symbol type = '%c'\n",a->type);
+}
+if (type_order(b->type)<0) {
+   fatal_error("symbol_inter_symbol: invalid symbol type = '%c'\n",b->type);
+}
+if (a->type==EPSILON || b->type==EPSILON) {
+   fatal_error("epsilon error in symbol_inter_symbol\n");
+}
+if (a->type==LEXIC) {
+   /* b included in a */
+   return dup_symbol(b);
+}
+if (b->type==LEXIC) {
+   /* a included in b */
+   return dup_symbol(a);
+}
+if (a->POS!=b->POS) {
+   /* Symbols with distinct POS have an empty intersection */
+   return NULL;
+}
+symbol_t* res=NULL;
+switch (a->type) {
+   case ATOM:
+   case INC_CAN:
+      switch (b->type) {
+         case ATOM:
+         case INC_CAN: res=CAN_inter_CAN(a,b); break;
+         
+         case CODE_NEG:
+         case INC_NEG: res=CAN_inter_NEG(a,b); break;
+         
+         case CODE:
+         case INC: res=CAN_inter_CODE(a,b); break;
+         
+         default: fatal_error("Internal error in symbol_inter_symbol: invalid symbol type=%d\n",b->type);
+       }
+       break;
 
-
-symbol_t * symbol_inter_symbol(const symbol_t * a, const symbol_t * b) {
-
-  //  debug("inter("); symbol_dump(a); errprintf(", "); symbol_dump(b); errprintf(")\n");
-
-  if (a == SYMBOL_DEF || b == SYMBOL_DEF) { fatal_error("symb inter symb: called with SYMBOL_DEF as arg\n"); }
-
-  if (a == b) { return dup_symbol(a); }
-
-  if (a == NULL || b == NULL) { return NULL; }
-
-
-  if (type_order(a->type) < 0) { fatal_error("inter: invalid symbol type = '%c'\n", a->type); }
-  if (type_order(b->type) < 0) { fatal_error("inter: invalid symbol type = '%c'\n", b->type); }
-
-
-  if (a->type == EPSILON || b->type == EPSILON) { fatal_error("inter: epsilon\n"); }
-
-  if (a->type == LEXIC) { return dup_symbol(b); }
-  if (b->type == LEXIC) { return dup_symbol(a); }
-
-  if (a->POS != b->POS) { return NULL; }
-
-  symbol_t * res = NULL;
-
-  switch (a->type) {
-
-  case ATOM:
-  case INC_CAN:
-
-    switch (b->type) {
-
-    case ATOM:
-    case INC_CAN:
-      res = CAN_inter_CAN(a, b);
+   case CODE_NEG:
+   case INC_NEG:
+      switch (b->type) {
+         case ATOM:
+         case INC_CAN: res=CAN_inter_NEG(b,a); break;
+         
+         case CODE_NEG:
+         case INC_NEG: res=NEG_inter_NEG(a,b); break;
+         
+         case CODE:
+         case INC: res=NEG_inter_CODE(a,b); break;
+         
+         default: fatal_error("Internal error in symbol_inter_symbol: weird symbol type=%d\n",b->type);
+      }
+      break;
+   
+   case CODE:
+   case INC:
+      switch (b->type) {
+         case ATOM:
+         case INC_CAN: res=CAN_inter_CODE(b,a); break;
+         
+         case CODE_NEG:
+         case INC_NEG: res=NEG_inter_CODE(b,a); break;
+         
+         case INC:
+         case CODE: res=CODE_inter_CODE(a,b); break;
+         
+         default: fatal_error("Internal error in symbol_inter_symbol: weird symbol type=%c\n",b->type);
+      }
       break;
 
-    case CODE_NEG:
-    case INC_NEG:
-      res = CAN_inter_NEG(a, b);
-      break;
-
-    case CODE:
-    case INC:
-      res = CAN_inter_CODE(a, b);
-      break;
-
-    default:
-      fatal_error("internal error in symbol_inter_symbol: invalid symbol type=%d\n", b->type);
-    }
-    break;
-
-
-  case CODE_NEG:
-  case INC_NEG:
-    switch (b->type) {
-
-    case ATOM:
-    case INC_CAN:
-      res = CAN_inter_NEG(b, a);
-      break;
-
-    case CODE_NEG:
-    case INC_NEG:
-      res = NEG_inter_NEG(a, b);
-      break;
-
-    case CODE:
-    case INC:
-      res = NEG_inter_CODE(a, b);
-      break;
-
-    default:
-      fatal_error("internal error in symbol_inter_symbol: weird symbol type=%d\n", b->type);
-    }
-    break;
-
-
-  case CODE:
-  case INC:
-
-    switch (b->type) {
-
-    case ATOM:
-    case INC_CAN:
-      res = CAN_inter_CODE(b, a);
-      break;
-
-    case CODE_NEG:
-    case INC_NEG:
-      res = NEG_inter_CODE(b, a);
-      break;
-
-    case INC:
-    case CODE:
-      res = CODE_inter_CODE(a, b);
-      break;
-
-    default:
-      fatal_error("internal error in symbol_inter_symbol: weird symbol type=%c\n", b->type);
-    }
-    break;
-
-  default:
-    fatal_error("internal error in symbol_inter_symbol: unexpected symbol type=%d\n", a->type);
-  }
-
-  return res;
+   default: fatal_error("Internal error in symbol_inter_symbol: unexpected symbol type=%d\n",a->type);
+}
+return res;
 }
 
 
@@ -780,7 +778,7 @@ static inline symbol_t * CAN_minus_CAN(const symbol_t * a, const symbol_t * b) {
   symbol_t * minus = minus_traits(a, b);
   for (symbol_t * s = minus; s; s = s->next) { s->lemma = a->lemma; }
 
-  return symbols_clean(minus);
+  return type_and_clean_symbols(minus);
 }
 
 
@@ -855,7 +853,7 @@ static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
   s->next = minus;
 
-  return symbols_clean(s);
+  return type_and_clean_symbols(s);
 }
 
 
@@ -902,7 +900,7 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
   //  debug(" res = "); symbols_dump(res); endl();
 
-  return symbols_clean(res);
+  return type_and_clean_symbols(res);
 }
 
 
@@ -924,7 +922,7 @@ static symbol_t * NEG_minus_CODE(const symbol_t * a, const symbol_t * b) {
     for (int i = 0; i < s->nbnegs; i++) { s->negs[i]  = a->negs[i]; }
   }
 
-  return symbols_clean(res);
+  return type_and_clean_symbols(res);
 }
 
 
@@ -945,7 +943,7 @@ static symbol_t * CODE_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
   res->next = minus_traits(a, b);
 
-  return symbols_clean(res);
+  return type_and_clean_symbols(res);
 }
 
 
@@ -970,12 +968,12 @@ static symbol_t * CODE_minus_NEG(const symbol_t * a, const symbol_t * b) {
     res = nouvo;
   }
 
-  return symbols_clean(res);
+  return type_and_clean_symbols(res);
 }
 
 
 
-static inline symbol_t * CODE_minus_CODE(const symbol_t * a, const symbol_t * b) { return symbols_clean(minus_traits(a, b));  }
+static inline symbol_t * CODE_minus_CODE(const symbol_t * a, const symbol_t * b) { return type_and_clean_symbols(minus_traits(a, b));  }
 /*
  debug("CODE_minus_CODE("); symbol_dump(a); errprintf(", "); symbol_dump(b); errprintf(")\n");
 

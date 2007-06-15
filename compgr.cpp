@@ -39,6 +39,7 @@
 #include "utils.h"
 #include "File.h"
 #include "AutConcat.h"
+#include "AutDeterminization.h"
 
 
 
@@ -85,20 +86,12 @@ static inline void strip_extension(char * s) {
  * recognize anything. If A is empty, it remains empty.
  */
 void prefix_with_everything(Fst2Automaton* A) {
-symbol_t* anything=new_symbol(LEXIC);
-unichar tmp[4]={'<','.','>','\0'};
-int size=A->symbols->size;
-int index=get_value_index(tmp,A->symbols,INSERT_IF_NEEDED,anything);
 struct list_int* list=get_initial_states(A->automaton);
 while (list!=NULL) {
-   add_outgoing_transition(A->automaton->states[list->n],index,list->n);
+   add_outgoing_transition(A->automaton->states[list->n],new_symbol(LEXIC),list->n);
    list=list->next;
 }
 free_list_int(list);
-if (index!=size) {
-   /* If the symbol was already there, we can free it */
-   free_symbol(anything);
-}
 }
 
 
@@ -107,27 +100,16 @@ if (index!=size) {
  * recognize anything. If A is empty, it remains empty.
  */
 void suffix_with_everything(Fst2Automaton* A) {
-symbol_t* anything=new_symbol(LEXIC);
-unichar tmp[4]={'<','.','>','\0'};
-int size=A->symbols->size;
-int index=get_value_index(tmp,A->symbols,INSERT_IF_NEEDED,anything);
-/* WARNING commentaire à virer
- * for (int i=0;i<A->automaton->number_of_states;i++) {
-   if (is_final(A->automaton->states[i])) {
-
-      // on detruit les transitions sortantes 
-
-      transitions_delete(A->states[i].trans);
-      A->states[i].trans = NULL;
-
-      // remplace par un boucle 
-      add_transition(A, i, UNIV, i);
+for (int i=0;i<A->automaton->number_of_states;i++) {
+   if (is_final_state(A->automaton->states[i])) {
+      /* If we have reached a final state, we don't need to keep
+       * its transitions, since the Kleene star transition will
+       * include them. We use NULL since we don't want to NULL the
+       * symbols that tag transitions, because these symbols can be shared */
+      free_Transition(A->automaton->states[i]->outgoing_transitions,NULL);
+      add_outgoing_transition(A->automaton->states[i],new_symbol(LEXIC),i);
     }
-  }*/
-if (index!=size) {
-   /* If the symbol was already there, we can free it */
-   free_symbol(anything);
-}
+  }
 }
 
 
@@ -174,30 +156,52 @@ static void deleteRegle(elRule * regle) {
 
 
 /**
+ * This function takes an automaton with transitions tagged with integers
+ * that are indices in the symbols->value array, and it replaces them
+ * with transitions tagged with the corresponding symbols.
+ */
+void convert_transitions_to_elag_ones(SingleGraph g,struct string_hash_ptr* symbols) {
+Transition* t;
+for (int i=0;i<g->number_of_states;i++) {
+   t=g->states[i]->outgoing_transitions;
+   while (t!=NULL) {
+      /* I'm not sure: dup_symbol or dup_symbols ? */
+      t->label=dup_symbol((symbol_t*)symbols->value[t->tag_number]);
+      t=t->next;
+   }
+}
+}
+
+
+/**
  * 
  */
 Fst2Automaton* compile_elag_rule(elRule* rule) {
 int p,ens;
 u_printf("Compiling %s... (%d context%s)\n",rule->name,rule->nbContexts,(rule->nbContexts>1)?"s":"");
+/* Now, we will convert the automaton into the Elag format, i.e. with
+ * transitions tagged with symbol_t* and not integers */
 for (int c=0;c<rule->nbContexts;c++) {
-   determinize(rule->contexts[c].left->automaton);
-   trim(rule->contexts[c].left->automaton);
-   determinize(rule->contexts[c].right->automaton);
-   trim(rule->contexts[c].right->automaton);
-   /*autalmot_determinize(rule->contexts[c].left);
-   autalmot_emonde(rule->contexts[c].left);
-   autalmot_determinize(rule->contexts[c].right);
-   autalmot_emonde(rule->contexts[c].right);*/
+   convert_transitions_to_elag_ones(rule->contexts[c].left->automaton,rule->automaton->symbols);
+   elag_determinize(rule->contexts[c].left);
+   elag_trim(rule->contexts[c].left);
+   convert_transitions_to_elag_ones(rule->contexts[c].right->automaton,rule->automaton->symbols);
+   elag_determinize(rule->contexts[c].right);
+   elag_trim(rule->contexts[c].right);
 }
 /* We build A*.R1 */
 prefix_with_everything(rule->contexts[0].left);
-minimize(rule->contexts[0].left->automaton,1);
+elag_determinize(rule->contexts[0].left);
+elag_minimize(rule->contexts[0].left);
 Fst2Automaton* AstarR1=rule->contexts[0].left;
 /* and R2.A* */
 suffix_with_everything(rule->contexts[0].right);
-minimize(rule->contexts[0].right->automaton,1);
+elag_determinize(rule->contexts[0].right);
+elag_minimize(rule->contexts[0].right);
 
-  Fst2Automaton * R2Aetoile = rule->contexts[0].right;
+
+
+Fst2Automaton * R2Aetoile = rule->contexts[0].right;
 
 
   p = (int) pow(2, rule->nbContexts - 1);
@@ -210,8 +214,8 @@ minimize(rule->contexts[0].right->automaton,1);
 
     res = autalmot_union(res, a1);
 
-    printtime(autalmot_determinize(res));
-    printtime(autalmot_minimize(res));
+    printtime(elag_determinize(res));
+    printtime(elag_minimize(res));
   }
 
   error("compileRegle: out of combis (%d states)\n", res->nbstates);
@@ -220,7 +224,7 @@ minimize(rule->contexts[0].right->automaton,1);
   printtime(autalmot_complementation(res));
 
   error("emonde\n");
-  printtime(autalmot_emonde(res));
+  printtime(elag_trim(res));
 
   if (res->nbstates == 0) { error("grammar %s forbids everything.\n", rule->name); }
 
@@ -248,7 +252,7 @@ if (A==NULL) {
 error("after compile\n");
 deleteRegle(rule);
 error("after delete\n");
-save_automaton(A, elg_file,FST_GRAMMAR);
+save_automaton(A,elg_file,FST_GRAMMAR);
 free_Fst2Automaton(A);
 error("endofcompile\n");
 return 0;
@@ -334,7 +338,7 @@ int compile_rules(char * rulesname, char * outname) {
       res = autalmot_intersection(tmp, A);
       free_Fst2Automaton(tmp);
       free_Fst2Automaton(A);
-      autalmot_emonde(res);
+      elag_trim(res);
 
     } else { res = A; });
 
@@ -346,7 +350,7 @@ int compile_rules(char * rulesname, char * outname) {
 
     if (res->nbstates > MAX_GRAM_SIZE) {
 
-      autalmot_minimize(res, 1);
+      elag_minimize(res, 1);
 
       sprintf(fstoutname, "%s-%d.elg", outname, fstno++);
       fprintf(out, "<%s>\n", fstoutname);
@@ -373,7 +377,7 @@ int compile_rules(char * rulesname, char * outname) {
 
     u_printf("outputing grammar in '%s'(%d states)\n", fstoutname, res->nbstates);
 
-    autalmot_minimize(res, 1);
+    elag_minimize(res, 1);
 
     u_sprintf(ustr, "%s: compiled elag grammar", fstoutname);
     free(res->name);
@@ -408,7 +412,7 @@ Fst2Automaton* res=new_Fst2Automaton(rule->contexts[0].left->name);
 res->symbols=rule->contexts[0].left->symbols;
 res->automaton=clone(rule->contexts[0].left->automaton);
 /* We concatenate the left and right contexts */
-concat(res->automaton,rule->contexts[0].right->automaton,res->symbols);
+elag_concat(res->automaton,rule->contexts[0].right->automaton,res->symbols);
 /* Then we add loops with ignorable POS on each state */
 language_t* lang=get_current_language();
 struct list_int* list=NULL;
@@ -753,15 +757,15 @@ static Fst2Automaton * combinaison(elRule * regle, int ens, Fst2Automaton * Aeto
 
       a1 = autalmot_union(a1, autalmot_dup(regle->contexts[c].left));
 
-      autalmot_determinize(a1);
-      autalmot_minimize(a1);
+      elag_determinize(a1);
+      elag_minimize(a1);
 
     } else {    /* le c-ieme bit de ens vaut 0 */
 
       a2 = autalmot_union(a2, autalmot_dup(regle->contexts[c].right));
 
-      autalmot_determinize(a2);
-      autalmot_minimize(a2);
+      elag_determinize(a2);
+      elag_minimize(a2);
     }
   }
 
@@ -775,22 +779,22 @@ static Fst2Automaton * combinaison(elRule * regle, int ens, Fst2Automaton * Aeto
 
   printtime(prefix_with_everything(a1));
   
-  printtime(autalmot_determinize(a1));
+  printtime(elag_determinize(a1));
 
-  printtime(autalmot_minimize(a1));
+  printtime(elag_minimize(a1));
 
   printtime(autalmot_complementation(a1));
 
-  printtime(autalmot_emonde(a1));
+  printtime(elag_trim(a1));
 
   Fst2Automaton * tmp = a1;
   printtime(a1 = autalmot_intersection(a1, AetoileR1));
 
   printtime(free_Fst2Automaton(tmp));
 
-  printtime(autalmot_emonde(a1));
+  printtime(elag_trim(a1));
 
-  printtime(autalmot_minimize(a1));  /* emonder a3 ? */
+  printtime(elag_minimize(a1));  /* emonder a3 ? */
 
   /* L(a1) =  (A*.R1 \ (U_{i in ens} (A*.Ci,1))) */
 
@@ -798,13 +802,13 @@ static Fst2Automaton * combinaison(elRule * regle, int ens, Fst2Automaton * Aeto
 
   printtime(suffix_with_everything(a2));
 
-  printtime(autalmot_determinize(a2));
+  printtime(elag_determinize(a2));
 
-  printtime(autalmot_minimize(a2));
+  printtime(elag_minimize(a2));
     
   printtime(autalmot_complementation(a2));
 
-  printtime(autalmot_emonde(a2));
+  printtime(elag_trim(a2));
 
   tmp = a2;
   printtime(a2 = autalmot_intersection(a2, R2Aetoile));
@@ -813,24 +817,24 @@ static Fst2Automaton * combinaison(elRule * regle, int ens, Fst2Automaton * Aeto
 
   /* autalmot_determinize(a2) ; */
 
-  printtime(autalmot_emonde(a2));
-  printtime(autalmot_minimize(a2));
+  printtime(elag_trim(a2));
+  printtime(elag_minimize(a2));
 
   /* L(a2) == (R2.A* \ (U_{i not in ens} (Ci,2.A*))) */
 
   error("\nIII\n");
 
-  concat(a1->automaton,a2->automaton,a1->symbols);
+  elag_concat(a1->automaton,a2->automaton,a1->symbols);
 
   free_Fst2Automaton(a2);
 
-  printtime(autalmot_emonde(a1));
+  printtime(elag_trim(a1));
 
-  printtime(autalmot_determinize(a1));
+  printtime(elag_determinize(a1));
 
-  printtime(autalmot_emonde(a1));  /* utile quand tous les etats sont inutiles */
+  printtime(elag_trim(a1));  /* utile quand tous les etats sont inutiles */
 
-  printtime(autalmot_minimize(a1));
+  printtime(elag_minimize(a1));
 
   error("end of combi(%d)\n\n", ens);
 

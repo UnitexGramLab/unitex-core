@@ -275,7 +275,7 @@ static void compact_def_trans(Fst2Automaton * A) {
  */
 
 
-void autalmot_minimize(Fst2Automaton * aut, int level) {
+void elag_minimize(Fst2Automaton * aut, int level) {
 
   if (aut->nbinitials > 1) { fatal_error("minimize: automate non deterministe!\n"); }
 

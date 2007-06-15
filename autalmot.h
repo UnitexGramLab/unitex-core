@@ -130,10 +130,6 @@ Fst2Automaton * load_elag_grammar_automaton(char * name, language_t * lang = LAN
 void save_automaton(const Fst2Automaton * A, char * name, int type);
 
 
-
-
-void autalmot_determinize(Fst2Automaton * A);
-
 Fst2Automaton * autalmot_intersection(const Fst2Automaton * A, const Fst2Automaton * B);
 
 Fst2Automaton * interAutAtome(const Fst2Automaton * A, const Fst2Automaton * B);
@@ -143,9 +139,9 @@ void autalmot_tri_topo(Fst2Automaton * A);
 /* TODO */
 
 Fst2Automaton * autalmot_union(Fst2Automaton * A, Fst2Automaton * B);
-void autalmot_minimize(Fst2Automaton * A, int level = 0);
+void elag_minimize(Fst2Automaton * A, int level = 0);
 void autalmot_complementation(Fst2Automaton * A);
-void autalmot_emonde(Fst2Automaton * A);
+void elag_trim(Fst2Automaton * A);
 
 
 // inline implementations

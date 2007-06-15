@@ -500,15 +500,15 @@ void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
 }
 
 
-tAutAlMot * fst2AutAlMot(Fst2 * A, int nb) {
+tAutAlMot * fst2AutAlMot(Fst2 * automaton, int nb) {
 
   nb++; /* Fst2 start at 1 */
 
-  tAutAlMot * aut = initAutAlMot(A->number_of_states_per_graphs[nb]);
+  tAutAlMot * aut = initAutAlMot(automaton->number_of_states_per_graphs[nb]);
 
   tAlphMot * alphabet = alphabet_new();
 
-  int base = A->initial_states[nb];
+  int base = automaton->initial_states[nb];
 
   for (int q = 0; q < (int) aut->nbEtats; q++) {
 
@@ -517,17 +517,17 @@ tAutAlMot * fst2AutAlMot(Fst2 * A, int nb) {
     aut->type[q] = 0;
 
 
-    if (is_final_state(A->states[qq]->control))  { aut->type[q] |= AUT_FINAL;   }
-    if (A->states[qq]->control & FST2_INITIAL_STATE_BIT_MASK)  { aut->type[q] |= AUT_INITIAL; }
+    if (is_final_state(automaton->states[qq]->control))  { aut->type[q] |= AUT_FINAL;   }
+    if (automaton->states[qq]->control & FST2_INITIAL_STATE_BIT_MASK)  { aut->type[q] |= AUT_INITIAL; }
 
     aut->etats[q] = NULL;
 
-    for (struct fst2Transition * transitions = A->states[qq]->transitions;
+    for (struct fst2Transition * transitions = automaton->states[qq]->transitions;
          transitions; transitions = transitions->next) {
 
       tSymbole symb;
 
-      load_text_symbol(& symb, A->tag_number[transitions->tag_number]->input);
+      load_text_symbol(& symb, automaton->tag_number[transitions->tag_number]->input);
 
       alphabet_clear(alphabet);
 
@@ -640,19 +640,19 @@ tAutAlMot * load_elag_grammar_automaton(char * fname) {
 
   unichar buf[1024];
 
-  Fst2 * A = load_fst2(fname, 1);
+  Fst2 * automaton = load_fst2(fname, 1);
 
-  if (A == NULL) { fatal_error("cannot load %s\n", fname); }
+  if (automaton == NULL) { fatal_error("cannot load %s\n", fname); }
 
-  if (A->number_of_graphs != 1) { error("%d graphs in grammar %s\n", A->number_of_graphs, fname); }
+  if (automaton->number_of_graphs != 1) { error("%d graphs in grammar %s\n", automaton->number_of_graphs, fname); }
 
   int nb   = 1;  /* automate in fst2 start at index 1 */
-  int base = A->initial_states[nb];
+  int base = automaton->initial_states[nb];
 
 
-  tAutAlMot * aut = initAutAlMot(A->number_of_states_per_graphs[1]);
+  tAutAlMot * aut = initAutAlMot(automaton->number_of_states_per_graphs[1]);
 
-  aut->name = u_strdup(A->graph_names[nb]);
+  aut->name = u_strdup(automaton->graph_names[nb]);
 
   tAlphMot * alphabet = alphabet_new();
 
@@ -663,16 +663,16 @@ tAutAlMot * load_elag_grammar_automaton(char * fname) {
 
     aut->type[q] = 0;
 
-    if (is_final_state(A->states[qq])) { aut->type[q] |= AUT_TERMINAL; }
-    if (A->states[qq]->control & FST2_INITIAL_STATE_BIT_MASK) { aut->type[q] |= AUT_INITIAL;  }
+    if (is_final_state(automaton->states[qq])) { aut->type[q] |= AUT_TERMINAL; }
+    if (automaton->states[qq]->control & FST2_INITIAL_STATE_BIT_MASK) { aut->type[q] |= AUT_INITIAL;  }
 
     aut->etats[q] = NULL;
 
-    for (struct fst2Transition * transitions = A->states[qq]->transitions; transitions; transitions = transitions->next) {
+    for (struct fst2Transition * transitions = automaton->states[qq]->transitions; transitions; transitions = transitions->next) {
 
       tSymbole symb;
 
-      u_strcpy(buf, A->tag_number[transitions->tag_number]->input);
+      u_strcpy(buf, automaton->tag_number[transitions->tag_number]->input);
 
       load_gramm_symbol(& symb, buf);
 
@@ -692,7 +692,7 @@ tAutAlMot * load_elag_grammar_automaton(char * fname) {
   }
 
   alphabet_delete(alphabet);
-  free_Fst2(A);
+  free_Fst2(automaton);
 
   return aut;
 }

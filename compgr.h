@@ -51,7 +51,7 @@ typedef struct {
    char* name;
    
    /* The automaton that corresponds to the rule */
-   Fst2Automaton* automaton;      /* Automate lu dans un fichier */
+   Fst2Automaton* automaton;
    
    /* Number of contexts, at least 1 */
    int nbContexts;

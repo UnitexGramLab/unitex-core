@@ -58,7 +58,7 @@ int v;
 int i;
 u_printf("INSTANTIATION VARIABLES:\n");
 for (v=0;v<UNIF_VARS.no_vars;v++) {
-    u_printf("%S:%S=",UNIF_VARS.vars[v].id,UNIF_VARS.vars[v].cat->name);
+    u_printf("%S:%S=",UNIF_VARS.vars[v].original_state_set,UNIF_VARS.vars[v].cat->name);
     i=UNIF_VARS.vars[v].val;
     u_printf("%S\n",UNIF_VARS.vars[v].cat->values[i]);
 }
@@ -90,10 +90,10 @@ int unif_instantiate(unichar* var, l_category_T* cat, unichar* val) {
   UNIF_VARS.vars[i].val = v;
 
   //id
-  if (!(UNIF_VARS.vars[i].id = (unichar*) malloc((u_strlen(var)+1)*sizeof(unichar)))) {
+  if (!(UNIF_VARS.vars[i].original_state_set = (unichar*) malloc((u_strlen(var)+1)*sizeof(unichar)))) {
      fatal_error("Not enough memory in function unif_instantiate\n");
   }
-  u_strcpy(UNIF_VARS.vars[i].id,var);
+  u_strcpy(UNIF_VARS.vars[i].original_state_set,var);
 
   UNIF_VARS.no_vars++;
   return 0;
@@ -118,10 +118,10 @@ int unif_instantiate_index(unichar* var, l_category_T* cat, int val) {
   //Value
   UNIF_VARS.vars[i].val = val;
   //Variable's id
-  if (!(UNIF_VARS.vars[i].id = (unichar*) malloc((u_strlen(var)+1)*sizeof(unichar)))) {
+  if (!(UNIF_VARS.vars[i].original_state_set = (unichar*) malloc((u_strlen(var)+1)*sizeof(unichar)))) {
      fatal_error("Not enough memory in function unif_instantiate_index\n");
   }
-  u_strcpy(UNIF_VARS.vars[i].id,var);
+  u_strcpy(UNIF_VARS.vars[i].original_state_set,var);
 
   UNIF_VARS.no_vars++;
   return 0;
@@ -135,7 +135,7 @@ int unif_desinstantiate(unichar* var) {
 
   found = 0;
   for (v=0; v<UNIF_VARS.no_vars && (!found); v++)
-    if (!u_strcmp(var,UNIF_VARS.vars[v].id))
+    if (!u_strcmp(var,UNIF_VARS.vars[v].original_state_set))
       found = 1;
   if (found) { //v points to the variable following the one we want to eliminate
     for (w=v; w<UNIF_VARS.no_vars;w++)
@@ -150,7 +150,7 @@ int unif_desinstantiate(unichar* var) {
 int unif_instantiated(unichar* var) {
   int v;
   for (v=0; v<UNIF_VARS.no_vars; v++)
-    if (!u_strcmp(var,UNIF_VARS.vars[v].id))
+    if (!u_strcmp(var,UNIF_VARS.vars[v].original_state_set))
       return 1;
   return 0;
   }
@@ -161,7 +161,7 @@ int unif_instantiated(unichar* var) {
 int unif_get_val_index(unichar* var) {
   int v;
   for (v=0; v<UNIF_VARS.no_vars; v++)
-    if (!u_strcmp(var,UNIF_VARS.vars[v].id)) 
+    if (!u_strcmp(var,UNIF_VARS.vars[v].original_state_set)) 
       return UNIF_VARS.vars[v].val;
   return -1;
   }
@@ -172,7 +172,7 @@ int unif_get_val_index(unichar* var) {
 unichar* unif_get_val(unichar* var) {
   int v,i;
   for (v=0; v<UNIF_VARS.no_vars; v++)
-    if (!u_strcmp(var,UNIF_VARS.vars[v].id)) { 
+    if (!u_strcmp(var,UNIF_VARS.vars[v].original_state_set)) { 
       i = UNIF_VARS.vars[v].val;
       return UNIF_VARS.vars[v].cat->values[i];
   }
@@ -185,7 +185,7 @@ unichar* unif_get_val(unichar* var) {
 l_category_T* unif_get_cat(unichar* var) {
   int v;
   for (v=0; v<UNIF_VARS.no_vars; v++)
-    if (!u_strcmp(var,UNIF_VARS.vars[v].id)) 
+    if (!u_strcmp(var,UNIF_VARS.vars[v].original_state_set)) 
       return UNIF_VARS.vars[v].cat;
   return NULL;
   }
@@ -195,6 +195,6 @@ l_category_T* unif_get_cat(unichar* var) {
 int unif_free_vars() {
   int v;
   for (v=0; v<UNIF_VARS.no_vars; v++)
-    free(UNIF_VARS.vars[v].id);
+    free(UNIF_VARS.vars[v].original_state_set);
   return 0;
 }

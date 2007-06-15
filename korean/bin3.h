@@ -263,7 +263,7 @@ printf("\n=== %x scanNode ====\n",scanNode);
 	{
 		int t = 0;
 		int cur;
-		struct avec_sorti_tran  *tt= noeud->trans;
+		struct avec_sorti_tran  *tt= noeud->transitions;
 		while(tt){
 			if(tt->c){
 			cur  = swprintf(&prTreeBuff[prdepth],

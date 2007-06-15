@@ -79,7 +79,7 @@ public:
 	// construction sentence auto
 	struct sentence_tran *insert(int word,int eti,int pos)
 	{
-		struct sentence_tran **t = &curNode->trans;
+		struct sentence_tran **t = &curNode->transitions;
 		while(*t) t = &t->next;
 		*t = (struct sentence_tran *)transition.get();
 	};

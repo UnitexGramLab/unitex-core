@@ -92,7 +92,7 @@ tSymbole * symbole_dup(tSymbole * src) {
 
 void initAlphabet(tAlphMot * alphabet, int nb) {  
   alphabet->symb       = (tSymbole *) xmalloc(nb * sizeof(tSymbole));
-  alphabet->tabsize    = nb;
+  alphabet->size    = nb;
   alphabet->nbSymboles = 0;
 }
 
@@ -101,7 +101,7 @@ void initAlphabet(tAlphMot * alphabet, int nb) {
 tAlphMot * alphabet_new(int size) {
   tAlphMot * alphabet  = (tAlphMot *) xmalloc(sizeof(tAlphMot));
   alphabet->symb       = (tSymbole *) xmalloc(size * sizeof(tSymbole));
-  alphabet->tabsize    = size;
+  alphabet->size    = size;
   alphabet->nbSymboles = 0;
   return alphabet;
 }
@@ -119,9 +119,9 @@ void alphabet_clear(tAlphMot * alpha) {
 
 tSymbole * alphabet_add(tAlphMot * alphabet, tSymbole * symb) {
 
-  while (alphabet->nbSymboles >= alphabet->tabsize) {
-    alphabet->tabsize = alphabet->tabsize * 2;
-    alphabet->symb    = (tSymbole *) xrealloc(alphabet->symb, alphabet->tabsize * sizeof(tSymbole));
+  while (alphabet->nbSymboles >= alphabet->size) {
+    alphabet->size = alphabet->size * 2;
+    alphabet->symb    = (tSymbole *) xrealloc(alphabet->symb, alphabet->size * sizeof(tSymbole));
   }
 
   tSymbole * addr = alphabet->symb + alphabet->nbSymboles;

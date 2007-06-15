@@ -271,7 +271,7 @@ public:
 			a_token_out(sort_token,cbuff);
 			fwprintf(sort_token,L"\t\t%d\n",noeud->value);
 		}
-		struct arbre_hash_trans00  **t= &noeud->trans;
+		struct arbre_hash_trans00  **t= &noeud->transitions;
 		while(*t){
 			cbuff[pos] = (*t)->c;
 			explore_leaf((*t)->arr,pos+1);

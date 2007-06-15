@@ -38,6 +38,8 @@
 #include "elag-functions.h"
 #include "fst_file.h"
 #include "AutConcat.h"
+#include "AutDeterminization.h"
+
 
 double eval_sentence(Fst2Automaton * A, int * min = NULL, int * max = NULL);
 static void add_limphrase(Fst2Automaton * A);
@@ -92,9 +94,9 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
     if (no % 100 == 0) { u_printf("sentence %d/%d ...\r", no + 1, txtin->nb_automata); }
 
-    autalmot_determinize(A);
-    autalmot_emonde(A);
-    autalmot_minimize(A);
+    elag_determinize(A);
+    elag_trim(A);
+    elag_minimize(A);
 
     if (A->nbstates < 2) {
 
@@ -135,7 +137,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
           
           //debug("avant emonde\n");
           
-          autalmot_emonde(temp);
+          elag_trim(temp);
           
           //debug("apres emonde\n");
   
@@ -160,7 +162,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 	    symbol_t * s = symbol_unknow_new(LANG, idx);
             */
 	    add_transition(A, 0, rejected, 1);
-            concat(A->automaton,orig->automaton,A->symbols);
+            elag_concat(A->automaton,orig->automaton,A->symbols);
             isrej = 1;
           }
         }
@@ -169,9 +171,9 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
       if (! isrej) {
 
-        autalmot_determinize(A);
-        autalmot_emonde(A);
-        autalmot_minimize(A);
+        elag_determinize(A);
+        elag_trim(A);
+        elag_minimize(A);
       
         if (suppress_limphrase(A) == -1) {
           error("an error occured while trying to remove sentence limits in sentence %d.\n", 

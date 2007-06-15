@@ -124,7 +124,7 @@ typedef struct strTransitions {
 typedef struct {
   tSymbole * symb ;
   unsigned int nbSymboles ;
-  unsigned int tabsize;
+  unsigned int size;
 } tAlphMot ;
 
 

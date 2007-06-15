@@ -19,16 +19,15 @@
   *
   */
 
-#ifndef AutConcatH
-#define AutConcatH
+#ifndef AutDeterminizationH
+#define AutDeterminizationH
 
-#include "SingleGraph.h"
-#include "String_hash.h"
+#include "autalmot.h"
 
 /**
- * This library provides a function for concatenating automata.
+ * This library provides a function for determinizing ELAG automata.
  */
 
-void elag_concat(SingleGraph,SingleGraph,struct string_hash_ptr*);
+void elag_determinize(Fst2Automaton*);
 
 #endif

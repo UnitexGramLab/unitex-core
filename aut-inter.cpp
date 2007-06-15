@@ -23,7 +23,7 @@
 #include "symbol.h"
 #include "symbol_op.h"
 #include "autalmot.h"
-#include "state_ens.h"
+#include "ElagStateSet.h"
 
 static inline transition_t * trans_extract(transition_t ** trans, symbol_t * s) {
 
@@ -78,7 +78,7 @@ static int inter_state(Fst2Automaton * res, const Fst2Automaton * A, int q1,
   transition_t * transA = transitions_dup(A->states[q1].trans);
   transition_t * transB = transitions_dup(B->states[q2].trans);
 
-  trans_developp(transA, transB);
+/* ZZZ  expand_transitions(transA,transB);*/
 
   int to;
   transition_t * transa;

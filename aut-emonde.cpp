@@ -106,7 +106,7 @@ static transition_t * trans_clean(transition_t * trans, int * access) {
 
 
 
-void autalmot_emonde(Fst2Automaton * A) {
+void elag_trim(Fst2Automaton * A) {
 
   transition_t ** intrans = (transition_t **) xmalloc(A->nbstates * sizeof(transition_t *));
   fill_intrans(A, intrans);
