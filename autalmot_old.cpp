@@ -107,7 +107,7 @@ tAlphMot * alphabet_new(int size) {
 }
 
 
-void alphabet_delete(tAlphMot * alpha) {
+void free_SymbolAlphabet(tAlphMot * alpha) {
   free(alpha->symb);
   free(alpha);
 }

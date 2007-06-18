@@ -251,7 +251,7 @@ tSymbole * symbole_dup(tSymbole * src);
 void transition_delete(tTransitions * t);
 
 tAlphMot * alphabet_new(int size = 64);
-void alphabet_delete(tAlphMot * alpha);
+void free_SymbolAlphabet(tAlphMot * alpha);
 void alphabet_clear(tAlphMot * alpha);
 tSymbole * add_symbol(tAlphMot * alphabet, tSymbole * symb);
 

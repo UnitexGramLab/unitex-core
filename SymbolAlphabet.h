@@ -19,32 +19,39 @@
   *
   */
 
-#ifndef _ALPHABET_H_
-#define _ALPHABET_H_
+#ifndef SymbolAlphabetH
+#define SymbolAlphabetH
 
-#include "hash_str_table.h"
 #include "symbol.h"
 #include "ustring.h"
-#include "autalmot.h"
+#include "String_hash.h"
+#include "SingleGraph.h"
 
 
-typedef struct alphabet_t {
-  Ustring * ustr;
-  hash_str_table_t * hash;
-  // bool shared; // symbols partagés?
-} alphabet_t;
-
-alphabet_t * alphabet_new();
-alphabet_t * alphabet_from_autalmot(Fst2Automaton * A);
-
-void alphabet_delete(alphabet_t * alph);
-
-int alphabet_add(alphabet_t * alph, symbol_t * s);
-int alphabet_lookup(alphabet_t * alph, symbol_t * s);
+/**
+ * This library is used to manage an alphabet made of Elag symbols.
+ * 
+ */
 
 
-inline int alphabet_size(alphabet_t * alph) { return alph->hash->nbelems; }
+/**
+ * This structure is used to manage the alphabet of an Elag
+ * grammar, where the alphabet elements are symbols.
+ */
+typedef struct {
+   /* This is a string for internal use */
+   Ustring* ustr;
+   /* Structure containing all the symbols */
+   struct string_hash_ptr* symbols;
+} SymbolAlphabet;
 
-inline symbol_t * alphabet_get(alphabet_t * alph, int idx) { return (symbol_t *) alph->hash->tab[idx]; }
+
+
+SymbolAlphabet* new_SymbolAlphabet();
+void free_SymbolAlphabet(SymbolAlphabet*);
+SymbolAlphabet* build_symbol_alphabet(SingleGraph);
+int add_symbol(SymbolAlphabet*,symbol_t*);
+int alphabet_lookup(SymbolAlphabet*,symbol_t*);
+
 
 #endif

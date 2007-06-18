@@ -543,7 +543,7 @@ tAutAlMot * fst2AutAlMot(Fst2 * automaton, int nb) {
     }
   }
 
-  alphabet_delete(alphabet);
+  free_SymbolAlphabet(alphabet);
 
   return aut;
 }
@@ -625,7 +625,7 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
   }
 
 
-  alphabet_delete(alphabet);
+  free_SymbolAlphabet(alphabet);
   free_Fst2(A);
 
   return res;
@@ -691,7 +691,7 @@ tAutAlMot * load_elag_grammar_automaton(char * fname) {
     }
   }
 
-  alphabet_delete(alphabet);
+  free_SymbolAlphabet(alphabet);
   free_Fst2(automaton);
 
   return aut;

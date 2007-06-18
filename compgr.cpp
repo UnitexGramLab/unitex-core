@@ -40,6 +40,7 @@
 #include "File.h"
 #include "AutConcat.h"
 #include "AutDeterminization.h"
+#include "AutMinimization.h"
 
 
 
@@ -350,7 +351,7 @@ int compile_rules(char * rulesname, char * outname) {
 
     if (res->nbstates > MAX_GRAM_SIZE) {
 
-      elag_minimize(res, 1);
+      elag_minimize(res,1);
 
       sprintf(fstoutname, "%s-%d.elg", outname, fstno++);
       fprintf(out, "<%s>\n", fstoutname);
@@ -377,7 +378,7 @@ int compile_rules(char * rulesname, char * outname) {
 
     u_printf("outputing grammar in '%s'(%d states)\n", fstoutname, res->nbstates);
 
-    elag_minimize(res, 1);
+    elag_minimize(res,1);
 
     u_sprintf(ustr, "%s: compiled elag grammar", fstoutname);
     free(res->name);

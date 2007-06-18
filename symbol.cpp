@@ -730,73 +730,69 @@ void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
 }
 
 
-
-void symbol_to_str(const symbol_t * s, Ustring * ustr) {
-
-  if (s == NULL) { u_strcpy(ustr, "nil"); return; }
-  if (s == SYMBOL_DEF) { u_strcpy(ustr, "<def>"); return; }
-
-  switch (s->type) {
-  case LEXIC:
-    u_strcpy(ustr, "<.>");
-    return;
-  case EPSILON:
-    u_strcpy(ustr, "<E>");
-    return;
-  case EXCLAM:
-    u_strcpy(ustr, "<!>");
-    return;
-  case EQUAL:
-    u_strcpy(ustr, "<=>");
-    return;
-  }
-
-  language_t * lang = s->POS->language;
-
-  u_sprintf(ustr, "<%c:", s->type);
-
-  if (s->negative) {
-
-    for (int i = 0; i < s->nbnegs; i++) {
-      u_strcatf(ustr, "!%S(%d)", language_get_form(lang, s->negs[i]), s->negs[i]);
-      //ustring_concatf(ustr, "!%S", language_get_form(lang, s->negs[i]));
-    }
-
-  } else {
-
-    if (s->form)    { u_strcatf(ustr, "%S,", language_get_form(lang, s->form)); }
-    if (s->lemma) { u_strcatf(ustr, "%S", language_get_form(lang, s->lemma)); }
-  }
-
-  u_strcatf(ustr, ".%S", s->POS->name);
-
-  int i;
-  CAT_t * CAT;
-
-  for (i = s->POS->nb_inflect; i < s->nb_features; i++) {
-    if (s->feature[i] > 0) {
-      CAT = POS_get_CAT(s->POS, i);
-      u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
-    } else if (s->feature[i] == LOCKED) {
-      CAT = POS_get_CAT(s->POS, i);
-      u_strcatf(ustr, "!%S", CAT->name);
-    }
-  }
-
-  u_strcat(ustr, ":");
-
-  for (i = 0; i < s->POS->nb_inflect; i++) {
-
-    CAT = POS_get_CAT(s->POS, i);
-
-    if (s->feature[i] > 0) {
-      u_strcat(ustr, CAT_get_valname(CAT, s->feature[i]));
-    } else if (s->feature[i] == LOCKED) {
-      u_strcatf(ustr, "!{%S}", CAT->name);
-    }
-  }  
-
-  u_strcat(ustr, ">");
+/**
+ * Builds a representation of the given symbol.
+ */
+void symbol_to_str(const symbol_t* s,Ustring* ustr) {
+/* First, we deal with special symbols */
+if (s==NULL) {
+   u_strcpy(ustr,"nil");
+   return;
+}
+if (s==SYMBOL_DEF) {
+   u_strcpy(ustr,"<def>");
+   return;
+}
+switch (s->type) {
+   case LEXIC: u_strcpy(ustr,"<.>"); return;
+   case EPSILON: u_strcpy(ustr,"<E>"); return;
+   case EXCLAM: u_strcpy(ustr,"<!>"); return;
+   case EQUAL: u_strcpy(ustr,"<=>"); return;
+}
+/* Then, we process other symbols */
+language_t* lang=s->POS->language;
+u_sprintf(ustr,"<%c:",s->type);
+if (s->negative) {
+   /* If the symbol is a negative one, we print the
+    * list of forbidden lemmas */
+   for (int i=0;i<s->nbnegs;i++) {
+      u_strcatf(ustr,"!%S(%d)",language_get_form(lang,s->negs[i]),s->negs[i]);
+   }
+} else {
+   /* If the symbol is positive one, we may have to print
+    * an inflected form and/or a lemma */
+   if (s->form) {
+      u_strcatf(ustr,"%S,",language_get_form(lang,s->form));
+   }
+   if (s->lemma) {
+      u_strcatf(ustr,"%S",language_get_form(lang,s->lemma));
+   }
+}
+/* Anyway we print the POS code */
+u_strcatf(ustr,".%S",s->POS->name);
+int i;
+CAT_t* CAT;
+/* Then we deal with the semantic codes like z1 */
+for (i=s->POS->nb_inflect;i<s->nb_features;i++) {
+   if (s->feature[i]>0) {
+      CAT=POS_get_CAT(s->POS,i);
+      u_strcatf(ustr,"+%S",CAT_get_valname(CAT,s->feature[i]));
+   } else if (s->feature[i]==LOCKED) {
+      CAT=POS_get_CAT(s->POS,i);
+      u_strcatf(ustr,"!%S",CAT->name);
+   }
+}
+/* Then we deal with the inflectional codes */
+u_strcat(ustr,":");
+for (i=0;i<s->POS->nb_inflect;i++) {
+   CAT=POS_get_CAT(s->POS,i);
+   if (s->feature[i]>0) {
+      u_strcat(ustr,CAT_get_valname(CAT,s->feature[i]));
+   } else if (s->feature[i]==LOCKED) {
+      u_strcatf(ustr,"!{%S}",CAT->name);
+   }
+}  
+u_strcat(ustr,">");
 }
 
 

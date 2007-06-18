@@ -39,6 +39,7 @@
 #include "fst_file.h"
 #include "AutConcat.h"
 #include "AutDeterminization.h"
+#include "AutMinimization.h"
 
 
 double eval_sentence(Fst2Automaton * A, int * min = NULL, int * max = NULL);

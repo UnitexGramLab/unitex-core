@@ -19,55 +19,73 @@
   *
   */
 
-#include "utils.h"
-#include "aut-alphabet.h"
+#include "SymbolAlphabet.h"
+#include "Error.h"
 
-alphabet_t * alphabet_new() {
 
-  alphabet_t * alph = (alphabet_t *) xmalloc(sizeof(alphabet_t));
-
-  alph->ustr = new_Ustring();
-  alph->hash  = hash_str_table_new();
-
-  return alph;
+/**
+ * Allocates, initializes and returns a new symbol alphabet.
+ */
+SymbolAlphabet* new_SymbolAlphabet() {
+SymbolAlphabet* alph=(SymbolAlphabet*)malloc(sizeof(SymbolAlphabet));
+if (alph==NULL) {
+   fatal_error("Not enough memory in new_SymbolAlphabet\n");
 }
-
-void alphabet_delete(alphabet_t * alph) {
-
-  free_Ustring(alph->ustr);
-  hash_str_table_delete(alph->hash);
-
-  free(alph);
+alph->ustr=new_Ustring();
+alph->symbols=new_string_hash_ptr();
+return alph;
 }
 
 
-int alphabet_lookup(alphabet_t * alph, symbol_t * s) {
-  symbol_to_str(s, alph->ustr);
-  return hash_str_table_idx_lookup(alph->hash, alph->ustr);
+/**
+ * Frees the memory associated to the given symbol alphabet.
+ * Note that symbols are not freed since they are shared
+ * with the original grammar they come from.
+ */
+void free_SymbolAlphabet(SymbolAlphabet* alph) {
+if (alph==NULL) return;
+free_Ustring(alph->ustr);
+free_string_hash_ptr(alph->symbols,NULL);
+free(alph);
 }
 
 
-int alphabet_add(alphabet_t * alph, symbol_t * s) {
-  symbol_to_str(s, alph->ustr);
-  return hash_str_table_add(alph->hash, alph->ustr, s);
+/**
+ * Tests if the given symbol belongs to the given symbol alphabet.
+ * Returns the index of the symbol or -1 if not found.
+ */
+int alphabet_lookup(SymbolAlphabet* alph,symbol_t* s) {
+symbol_to_str(s,alph->ustr);
+return get_value_index(alph->ustr->str,alph->symbols,DONT_INSERT);
 }
 
 
-alphabet_t * alphabet_from_autalmot(Fst2Automaton * A) {
+/**
+ * Adds the given symbol to the given symbol alphabet.
+ * Returns the index of the symbol in the alphabet's table.
+ * Note that if 's' refers to a symbol list, only the first
+ * symbol pointed by 's' will be taken into account.
+ */
+int add_symbol(SymbolAlphabet* alph,symbol_t* s) {
+symbol_to_str(s,alph->ustr);
+return get_value_index(alph->ustr->str,alph->symbols,INSERT_IF_NEEDED,s);
+}
 
-  alphabet_t * alph = alphabet_new();
-  bool transdef = false;
 
-  for (int i = 0; i < A->nbstates; i++) {
-
-    for (transition_t * t = A->states[i].trans; t; t = t->next) {
-      alphabet_add(alph, t->label);
-    }
-
-    if (!transdef && A->states[i].defto != -1) {
-      transdef = true;
-      alphabet_add(alph, SYMBOL_DEF);
-    }
-  }
-  return alph;
+/**
+ * Builds the symbol alphabet corresponding to the given automaton.
+ */
+SymbolAlphabet* build_symbol_alphabet(SingleGraph A) {
+SymbolAlphabet* alph=new_SymbolAlphabet();
+bool transdef=false;
+for (int i=0;i<A->number_of_states;i++) {
+   for (Transition* t=A->states[i]->outgoing_transitions;t!=NULL;t=t->next) {
+      add_symbol(alph,(symbol_t*)t->label);
+   }
+   if (!transdef && A->states[i]->default_state!=-1) {
+      transdef=true;
+      add_symbol(alph,SYMBOL_DEF);
+   }
+}
+return alph;
 }
