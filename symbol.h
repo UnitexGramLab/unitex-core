@@ -144,8 +144,8 @@ symbol_t * new_symbol_UNKNOWN(language_t * lang, int idx);
 symbol_t * dup_symbol(const symbol_t * symb);
 symbol_t * dup_symbols(const symbol_t * symbs);
 
-void free_symbol(symbol_t * symb);
-void free_symbols(symbol_t * symb);
+void free_symbol(symbol_t*);
+void free_symbols(symbol_t*);
 
 void empty_symbol(symbol_t * symb);
 void copy_symbol(symbol_t * dest, symbol_t * src);

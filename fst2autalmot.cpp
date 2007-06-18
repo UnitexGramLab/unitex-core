@@ -104,7 +104,7 @@ int symbole_developp(tAlphMot * alphabet, tSymbole * symb) {
   int nbflex = compte_flex(symb->gramm);
 
   if (nbflex < 2) {
-    alphabet_add(alphabet, symb);
+    add_symbol(alphabet, symb);
     return 1;
   }
 
@@ -129,7 +129,7 @@ int symbole_developp(tAlphMot * alphabet, tSymbole * symb) {
 
     u_sprintf(s->gramm, "%S:%S", common, flex);
 
-    alphabet_add(alphabet, s);
+    add_symbol(alphabet, s);
   }
 
   symbole_delete(s);
@@ -506,7 +506,7 @@ tAutAlMot * fst2AutAlMot(Fst2 * automaton, int nb) {
 
   tAutAlMot * aut = initAutAlMot(automaton->number_of_states_per_graphs[nb]);
 
-  tAlphMot * alphabet = alphabet_new();
+  tAlphMot * alphabet = new_SymbolAlphabet();
 
   int base = automaton->initial_states[nb];
 
@@ -654,7 +654,7 @@ tAutAlMot * load_elag_grammar_automaton(char * fname) {
 
   aut->name = u_strdup(automaton->graph_names[nb]);
 
-  tAlphMot * alphabet = alphabet_new();
+  tAlphMot * alphabet = new_SymbolAlphabet();
 
 
   for (int q = 0; q < (int) aut->nbEtats; q++) {

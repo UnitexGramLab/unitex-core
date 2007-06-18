@@ -253,7 +253,7 @@ void transition_delete(tTransitions * t);
 tAlphMot * alphabet_new(int size = 64);
 void alphabet_delete(tAlphMot * alpha);
 void alphabet_clear(tAlphMot * alpha);
-tSymbole * alphabet_add(tAlphMot * alphabet, tSymbole * symb);
+tSymbole * add_symbol(tAlphMot * alphabet, tSymbole * symb);
 
 void output_fst2_labels(string_hash * hash, FILE * f);
 

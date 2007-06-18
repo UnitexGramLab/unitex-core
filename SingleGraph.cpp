@@ -332,6 +332,13 @@ for (int i=0;i<n_states;i++) {
          graph->states[t->state_number]->reverted_incoming_transitions=tmp;
          t=t->next;
       }
+      if (graph->states[i]->default_state!=-1) {
+         /* If there is a default transition from i to q, we
+          * must add a reverse transition from q to i. As we
+          * we only need the information that i and q and linked, we
+          * can arbitrarily tag this transition with 0. */
+         add_incoming_transition(graph->states[graph->states[i]->default_state],0,i);
+      }
    }
 }
 }
@@ -356,6 +363,11 @@ Transition* t=states[state_number]->outgoing_transitions;
 while (t!=NULL) {
    check_accessibility(states,t->state_number);
    t=t->next;
+}
+int q;
+if ((q=states[state_number]->default_state)!=-1) {
+   /* If there is a default transition, we explore it */
+   check_accessibility(states,q);
 }
 }
 

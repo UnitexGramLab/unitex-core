@@ -454,14 +454,16 @@ return new_string_hash_ptr(DEFAULT_CAPACITY);
 
 
 /**
- * This function frees the given string_hash_ptr, using 'free_' to free the
- * elements of the 'value' array.
+ * This function frees the given string_hash_ptr, using 'free_' (if not NULL)
+ * to free the elements of the 'value' array.
  */
 void free_string_hash_ptr(struct string_hash_ptr* s,void (*free_)(void*)) {
 if (s==NULL) return;
-/* We free the 'value' array */
-for (int i=0;i<s->hash->size;i++) {
-   free_(s->value[i]);
+/* If necessary, we free the 'value' array */
+if (free_!=NULL) { 
+   for (int i=0;i<s->hash->size;i++) {
+      free_(s->value[i]);
+   }
 }
 free(s->value);
 free_string_hash(s->hash);

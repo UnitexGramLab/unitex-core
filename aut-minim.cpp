@@ -36,7 +36,7 @@ Que pasa, ya no compila ?????
 #include <stdlib.h>
 
 #include "autalmot.h"
-#include "aut-alphabet.h"
+#include "SymbolAlphabet.h"
 #include "utils.h"
 
 
@@ -100,7 +100,7 @@ static void insereTri(tTransCol * nouveau, tTransCol ** liste, int e) {
  * les numeros de symboles.
  */
 
-static tTransCol ** triTrans(Fst2Automaton * aut, alphabet_t * alph) {
+static tTransCol ** triTrans(Fst2Automaton * aut, SymbolAlphabet * alph) {
 
   tTransCol ** sorties = (tTransCol **) xmalloc(aut->nbstates * sizeof(tTransCol *));
 
@@ -233,39 +233,36 @@ static int * choisirEtats(int * couleur, int nbCouleurs, int nbstates) {
 }
 
 
-/* suppress from trans transitions whose dest is to */
-
-static transition_t * clean_trans(transition_t * trans, int to) {
-
-  while (trans && trans->to == to) {
-    transition_t * next = trans->next;
-    transition_delete(trans);
-    trans = next;
-  }
-
-  for (transition_t * t = trans; t; t = t->next) {
-    while (t->next && t->next->to == to) {
-      transition_t * next = t->next->next;
-      transition_delete(t->next);
-      t->next = next;
-    }
-  }
-
-  return trans;
+/**
+ * Removes all transitions whose destination state is n.
+ */
+Transition* clean_transitions(Transition* trans, int n) {
+while (trans!=NULL && trans->state_number==n) {
+   Transition* next=trans->next;
+   free_Transition(trans,(void (*)(void*))free_symbol);
+   trans=next;
+}
+for (Transition* t=trans;t!=NULL;t=t->next) {
+   while (t->next!=NULL && t->next->state_number==n) {
+      Transition* next=t->next->next;
+      free_Transition(t->next,(void (*)(void*))free_symbol);
+      t->next=next;
+   }
+}
+return trans;
 }
 
 
-/* suppress transition which take same way than the <def> one */
-
-static void compact_def_trans(Fst2Automaton * A) {
-//  debug("compact <def> trans\n");
-
-  for (int q = 0; q < A->nbstates; q++) {
-
-    if (A->states[q].defto != -1) {
-      A->states[q].trans = clean_trans(A->states[q].trans, A->states[q].defto);
-    }
-  }
+/**
+ * This function removes transitions that take the same way than the
+ * default ones.
+ */
+void compact_default_transitions(SingleGraph g) {
+for (int q=0;q<g->number_of_states;q++) {
+   if (g->states[q]->default_state!=-1) {
+      g->states[q]->outgoing_transitions=clean_transitions(g->states[q]->outgoing_transitions,g->states[q]->default_state);
+   }
+}
 }
 
 
@@ -274,24 +271,28 @@ static void compact_def_trans(Fst2Automaton * A) {
  * aut doit etre deterministe
  */
 
+/**
+ * This function minimizes the given automaton. Note
+ * that it must be deterministic.
+ */
+void elag_minimize(Fst2Automaton* A,int level) {
+SingleGraph automaton=A->automaton;
+struct list_int* initials=get_initial_states(automaton);
+if (initials==NULL) {
+   fatal_error("Cannot minimize an automaton with no initial state\n");
+}
+if (initials->next!=NULL) {
+   fatal_error("Non-deterministic automaton in elag_minimize\n");
+}
+free_list_int(initials);
+if (level>0) {
+   /* If necessary, we remove transitions that are included in the
+    * default ones */
+   compact_default_transitions(automaton);
+}
+SymbolAlphabet* alph=build_symbol_alphabet(automaton);
 
-void elag_minimize(Fst2Automaton * aut, int level) {
-
-  if (aut->nbinitials > 1) { fatal_error("minimize: automate non deterministe!\n"); }
-
-  if (aut->nbinitials == 0) {
-    autalmot_empty(aut);
-    return;
-  }
-
-  if (level > 0) { compact_def_trans(aut); }
-
-  //  debug("mimimize:\n"); autalmot_dump(aut);
-
-
-  alphabet_t * alph = alphabet_from_autalmot(aut);
-
-  tTransCol ** sorties = triTrans(aut, alph);
+  tTransCol ** sorties = triTrans(A, alph);
 
   alphabet_delete(alph);
 
@@ -300,8 +301,8 @@ void elag_minimize(Fst2Automaton * aut, int level) {
 
   int nbCouleurs, nbNuances;
 
-  int * couleur = (int *) xcalloc(aut->nbstates, sizeof(int));
-  int * nuance  = initCouleur(aut, & nbNuances);
+  int * couleur = (int *) xcalloc(A->nbstates, sizeof(int));
+  int * nuance  = initCouleur(A, & nbNuances);
 
 
   do {
@@ -310,24 +311,24 @@ void elag_minimize(Fst2Automaton * aut, int level) {
 
     int e;
 
-    for (e = 0; e < aut->nbstates; e++) {
+    for (e = 0; e < A->nbstates; e++) {
       couleur[e] = nuance[e];
       //      debug("couleur[%d] = %d\n", e, couleur[e]);
     }
 
     nbCouleurs = nbNuances;
     nbNuances = 0;
-    colore(sorties, couleur, aut->nbstates);
+    colore(sorties, couleur, A->nbstates);
 
-    for (e = 0 ; e < aut->nbstates ; e++) { nuance[e] = trouveNuance(e, sorties, couleur, nuance, & nbNuances); }
+    for (e = 0 ; e < A->nbstates ; e++) { nuance[e] = trouveNuance(e, sorties, couleur, nuance, & nbNuances); }
 
   } while (nbCouleurs != nbNuances);
 
   //  debug("out: nbcolor=%d, nbnuances=%d\n", nbCouleurs, nbNuances);
 
-  int * repr = choisirEtats(couleur, nbCouleurs, aut->nbstates);
+  int * repr = choisirEtats(couleur, nbCouleurs, A->nbstates);
 
-  for (int i = 0; i < aut->nbstates; i++) { transCols_delete(sorties[i]); }
+  for (int i = 0; i < A->nbstates; i++) { transCols_delete(sorties[i]); }
   free(sorties);
   free(nuance);
 
@@ -337,27 +338,27 @@ void elag_minimize(Fst2Automaton * aut, int level) {
 
   for (int c = 0; c < nbCouleurs; c++) {
 
-    nouvo[c].trans = aut->states[repr[c]].trans;
-    aut->states[repr[c]].trans = NULL;
+    nouvo[c].trans = A->states[repr[c]].trans;
+    A->states[repr[c]].trans = NULL;
 
     for (transition_t * t1 = nouvo[c].trans; t1; t1 = t1->next) { t1->to = couleur[t1->to]; }
 
-    nouvo[c].flags = aut->states[repr[c]].flags;
-    nouvo[c].defto = aut->states[repr[c]].defto;
+    nouvo[c].flags = A->states[repr[c]].flags;
+    nouvo[c].defto = A->states[repr[c]].defto;
   }
 
   /* free old states */
-  for (int i = 0; i < aut->nbstates; i++) {
-    transitions_delete(aut->states[i].trans);
+  for (int i = 0; i < A->nbstates; i++) {
+    transitions_delete(A->states[i].trans);
   }
-  free(aut->states);
+  free(A->states);
 
   /* replace it */
 
-  aut->states = nouvo;
-  aut->size = aut->nbstates = nbCouleurs;
+  A->states = nouvo;
+  A->size = A->nbstates = nbCouleurs;
 
-  aut->initials[0] = couleur[aut->initials[0]];
+  A->initials[0] = couleur[A->initials[0]];
 
   free(couleur);
   free(repr);

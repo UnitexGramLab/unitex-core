@@ -49,13 +49,13 @@
 
 
 
-void split_elag_rule(elRule*) ;
-static int count_constraints(Fst2Automaton * aut, int * contrainte) ;
-static Fst2Automaton * compile_elag_rule(elRule * regle);
+void split_elag_rule(elRule*);
+int count_constraints(Fst2Automaton*,int*);
+Fst2Automaton* compile_elag_rule(elRule*);
 int get_sub_automaton(Fst2Automaton*,Fst2Automaton*,int,int,int);
-int get_sub_automaton(Fst2Automaton*,SingleGraph,int,SymbolType,int*) ;
+int get_sub_automaton(Fst2Automaton*,SingleGraph,int,SymbolType,int*);
 int get_left_constraint_part(Fst2Automaton*,SingleGraph,int,int,int*);
-static Fst2Automaton * combinaison(elRule * regle, int ens, Fst2Automaton * AetoileR1, Fst2Automaton * R2Aetoile) ;
+static Fst2Automaton * combinaison(elRule*,int,Fst2Automaton*,Fst2Automaton*);
 
 
 
@@ -184,10 +184,10 @@ u_printf("Compiling %s... (%d context%s)\n",rule->name,rule->nbContexts,(rule->n
 for (int c=0;c<rule->nbContexts;c++) {
    convert_transitions_to_elag_ones(rule->contexts[c].left->automaton,rule->automaton->symbols);
    elag_determinize(rule->contexts[c].left);
-   elag_trim(rule->contexts[c].left);
+   trim(rule->contexts[c].left->automaton);
    convert_transitions_to_elag_ones(rule->contexts[c].right->automaton,rule->automaton->symbols);
    elag_determinize(rule->contexts[c].right);
-   elag_trim(rule->contexts[c].right);
+   trim(rule->contexts[c].right->automaton);
 }
 /* We build A*.R1 */
 prefix_with_everything(rule->contexts[0].left);

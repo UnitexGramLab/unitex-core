@@ -117,7 +117,7 @@ void alphabet_clear(tAlphMot * alpha) {
 }
 
 
-tSymbole * alphabet_add(tAlphMot * alphabet, tSymbole * symb) {
+tSymbole * add_symbol(tAlphMot * alphabet, tSymbole * symb) {
 
   while (alphabet->nbSymboles >= alphabet->size) {
     alphabet->size = alphabet->size * 2;

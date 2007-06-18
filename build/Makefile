@@ -290,7 +290,7 @@ ELAG      = Elag
 ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o LanguageDefinition.o fst_file.o AutDeterminization.o \
             aut-minim.o aut-emonde.o AutConcat.o autalmot.o \
             symbol.o hash_str_table.o String_hash.o Tagset.o ustring.o \
-	   		ElagStateSet.o aut-alphabet.o symbol_op.o Error.o\
+   		   ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o\
             aut-topo.o aut-inter.o aut-eval.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
             BitMasks.o FIFO.o Transitions.o
@@ -298,7 +298,7 @@ ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o LanguageDefinition.o fs
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o compgr.o autalmot.o fst_file.o hash_str_table.o String_hash.o\
                symbol.o ustring.o AutDeterminization.o aut-inter.o ElagStateSet.o symbol_op.o LanguageDefinition.o Tagset.o \
-	            aut-minim.o aut-alphabet.o aut-emonde.o AutConcat.o aut-union.o aut-complement.o\
+	            aut-minim.o SymbolAlphabet.o aut-emonde.o AutConcat.o aut-union.o aut-complement.o\
 	            Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o\
 	            SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o\
 	            Transitions.o
