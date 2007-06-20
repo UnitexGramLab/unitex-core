@@ -298,7 +298,7 @@ ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o LanguageDefinition.o fs
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o compgr.o autalmot.o fst_file.o hash_str_table.o String_hash.o\
                symbol.o ustring.o AutDeterminization.o aut-inter.o ElagStateSet.o symbol_op.o LanguageDefinition.o Tagset.o \
-	            AutMinimization.o SymbolAlphabet.o aut-emonde.o AutConcat.o aut-union.o aut-complement.o\
+	            AutMinimization.o SymbolAlphabet.o aut-emonde.o AutConcat.o AutComplementation.o\
 	            Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o\
 	            SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o\
 	            Transitions.o

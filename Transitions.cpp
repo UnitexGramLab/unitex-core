@@ -199,6 +199,18 @@ while (list!=NULL) {
 
 
 /**
+ * Increases all the destination states of the given transitions
+ * with 'shift'.
+ */
+Transition* shift_destination_states(Transition* trans,int shift) {
+for (Transition* t=trans;t!=NULL;t=t->next) {
+   t->state_number=t->state_number+shift;
+}
+return trans;
+}
+
+
+/**
  * Adds all the transitions of 'src' to '*dest', if not already present.
  */
 void add_transitions_int(Transition* src,Transition** dest) {

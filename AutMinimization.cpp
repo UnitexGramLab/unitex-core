@@ -19,217 +19,212 @@
   *
   */
 
-/* Nom : minim.c
- * Fonction : minimisation d'automates
- *              dans le projet de levee d'ambiguites d'une phrase.
- * Auteur : Eric Laporte
- */
-
-/*
-Es imperdonable no ense~nar la musica espa~nola a tus compa~neros de despacho !!!
-Ven a visitar a Teresa.
-Que pasa, ya no compila ?????
-*/
-
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "autalmot.h"
 #include "SymbolAlphabet.h"
-#include "utils.h"
+#include "AutMinimization.h"
 
 
-struct tTransCol {
-  int etiquette;
-  int but;
-  int couleurBut;
-  struct tTransCol * suivant;
-};
-
-typedef struct tTransCol tTransCol;
-
-
-tTransCol * transCol_new(int etiq, int but, int color, tTransCol * next = NULL) {
-
-  tTransCol * res = (tTransCol *) xmalloc(sizeof(tTransCol));
-
-  res->etiquette  = etiq ;
-  res->but        = but;
-  res->couleurBut = color;
-  res->suivant    = next;
-
-  return res;
-}
-
-
-void transCols_delete(tTransCol * trans) {
-  while (trans) { tTransCol * next = trans->suivant; free(trans); trans = next; }
-}
-
-
-/* insere un nouvel element dans une liste triee.
- * Le nouvel element est distinct de tous les autres.
+/**
+ * This structure defines a collection of transitions to be
+ * used by the minimization algorithm. It's an internal data
+ * structure that must not be visible outside this library.
  */
+typedef struct TransitionCollection_ {
+   int tag_number;
+   int state_number;
+   /* This color indication is used to identify state partitions */
+   int destination_color;
+   struct TransitionCollection_* next;
+} TransitionCollection;
 
-static void insereTri(tTransCol * nouveau, tTransCol ** liste, int e) {
 
-  tTransCol * t, * prec = NULL;
 
-  for (t = liste[e]; t; t = t->suivant) {
-    if (nouveau->etiquette < t->etiquette) {
-      nouveau->suivant = t;
-      if (prec)
-	prec->suivant = nouveau;
-      else liste[e] = nouveau;
-      return;
-    } else { prec = t ; }
-  }
-
-  nouveau->suivant = NULL ;
-
-  if (prec) {
-    prec->suivant = nouveau ;
-  } else {
-    liste[e] = nouveau ;
-  }
+/**
+ * Allocates, initializes and returns a new transition.
+ */
+TransitionCollection* new_TransitionCollection(int tag_number,int state_number,
+                                               int destination_color,
+                                               TransitionCollection* next=NULL) {
+TransitionCollection* res=(TransitionCollection*)malloc(sizeof(TransitionCollection));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_TransitionCollection\n");
+}
+res->tag_number=tag_number ;
+res->state_number=state_number;
+res->destination_color=destination_color;
+res->next=next;
+return res;
 }
 
 
-/* Construit les listes de transitions sortantes, triees et avec
- * les numeros de symboles.
+/**
+ * Frees the memory associated to the given transition list.
  */
-
-static tTransCol ** triTrans(Fst2Automaton * aut, SymbolAlphabet * alph) {
-
-  tTransCol ** sorties = (tTransCol **) xmalloc(aut->nbstates * sizeof(tTransCol *));
-
-  for (int e = 0; e < aut->nbstates; e++) {
-
-    sorties[e] = NULL;
-
-    for (transition_t * t = aut->states[e].trans; t; t = t->next) {
-
-      tTransCol * temp = transCol_new(alphabet_lookup(alph, t->label), t->to, 0);
-      insereTri(temp, sorties, e);
-    }
-
-    if (aut->states[e].defto != -1) { // transition par defaut
-      tTransCol * temp = transCol_new(alphabet_lookup(alph, SYMBOL_DEF), aut->states[e].defto, 0);
-      insereTri(temp, sorties, e);
-    }
-  }
-
-  return sorties;
+void free_TransitionCollection(TransitionCollection* trans) {
+while (trans!=NULL) {
+   TransitionCollection* next=trans->next;
+   free(trans);
+   trans=next;
+}
 }
 
 
-
-
-/* Compare t1 et t2. Renvoie 0 si elles sont identiques
- * et un autre entier si elles sont differentes.
+/**
+ * Inserts the given element at the correct place in the transition
+ * list of state #s. The sort is done by increasing tag numbers.
+ * Note that the element is supposed not to be in the list before, what
+ * should be true if the input automaton was a deterministic one.
  */
-
-static int compTrans(tTransCol * t1, tTransCol * t2) {
-
-  while (t1 && t2) {
-
-    if ((t1->etiquette != t2->etiquette) || (t1->couleurBut != t2->couleurBut)) { return 1; }
-
-    t1 = t1->suivant;
-    t2 = t2->suivant;
-  }
-  
-  return t1 != t2; /* (== NULL) */
-}
-
-
-
-/* initialise le tableau de couleurs: partitionne les etats finaux des etats non finaux
- * La couleur de l etat 0 est 0.
- */
-
-static int * initCouleur(Fst2Automaton * aut, int * nbCouleurs) {
-
-  int * couleur = (int *) xcalloc(aut->nbstates, sizeof(int)) ;
-
-  bool bicolore = false;
-
-  if (autalmot_is_final(aut, 0)) {
-    for (int e = 0; e < aut->nbstates ; e ++) {
-      couleur[e] = autalmot_is_final(aut, e) ? 0 : (bicolore = true, 1); /* 0 si terminal, 1 sinon*/
-    }
-  } else {
-    for (int e = 0; e < aut->nbstates; e++) {
-      couleur[e] = autalmot_is_final(aut, e) ? (bicolore = true, 1) : 0;   /* 1 si terminal, 0 sinon */
-    }
-  }
-
-  *nbCouleurs = (bicolore ? 2 : 1);
-  return couleur;
-}
-
-
-
-/* Colore les listes de transitions en donnant
- * les bonnes couleurs aux etats buts de "sorties".
- */
-
-static void colore(tTransCol ** sorties, int * couleur, int nbstates) {
-  for (int e = 0; e < nbstates; e++) {
-    for (tTransCol * t = sorties[e]; t; t = t->suivant) {  t->couleurBut = couleur[t->but]; }
-  }
-}
-
-
-
-
-/* Renvoie la nuance de l'etat e. Met a jour nbNuances s'il s'agit
- * d'une nouvelle nuance. Les comparaisons se font avec les autres 
- * etats de la meme couleur c dont les nuances sont deja connues.
- */
-
-static int trouveNuance(int e, tTransCol ** sorties, int * couleur, int * nuance, int * nbNuances) {
-
-  for (int f = couleur[e]; f < e; f++) {
-    if (couleur[f] == couleur[e]) {
-      if (compTrans(sorties[e], sorties[f]) == 0) { return nuance[f]; }
-    }
-  }
-
-  /* nouvelle nuance */
-
-  (*nbNuances)++;
-  return (*nbNuances) - 1;
-}
-
-
-
-
-/* Pour chaque couleur, choisir parmi les etats un representant
- * canonique. Le numero du representant est >= au numero de la couleur
- */
-
-static int * choisirEtats(int * couleur, int nbCouleurs, int nbstates) {
-
-  int * repr = (int *) xmalloc(nbCouleurs * sizeof(int)) ;
-
-  for (int c = 0; c < nbCouleurs; c++) {
-
-    bool trouve = false;
-
-    for (int e = c; ! trouve && e < nbstates; e++) {
-
-      if (couleur[e] == c) {
-	repr[c] = e;
-	trouve = true;
+void sorted_insert(TransitionCollection* element,TransitionCollection **list,int s) {
+TransitionCollection* t;
+TransitionCollection* previous=NULL;
+for (t=list[s];t!=NULL;t=t->next) {
+   if (element->tag_number<t->tag_number) {
+      /* If we have to insert the element before the end of the list */
+      element->next=t;
+      if (previous!=NULL) {
+         previous->next=element;
+      } else {
+         list[s]=element;
       }
-    }
+      return;
+   }
+   previous=t;
+}
+/* If the element must be inserted at the end of the list */
+element->next=NULL;
+if (previous) {
+   previous->next=element;
+} else {
+   list[s]=element;
+}
+}
 
-    if (! trouve) { fatal_error("choisirEtats: color %d not found!\n", c); }
-  }
 
-  return repr;
+/**
+ * For each state, builds the sorted list of outgoing transitions.
+ */
+TransitionCollection** build_transition_collections(SingleGraph A,SymbolAlphabet* alph) {
+TransitionCollection** trans=(TransitionCollection**)malloc(A->number_of_states*sizeof(TransitionCollection*));
+if (trans==NULL) {
+   fatal_error("Not enough memory in build_transition_collections\n");
+}
+for (int e=0;e<A->number_of_states;e++) {
+   trans[e]=NULL;
+   for (Transition* t=A->states[e]->outgoing_transitions;t!=NULL;t=t->next) {
+      TransitionCollection* temp=new_TransitionCollection(alphabet_lookup(alph,(symbol_t*)t->label),t->state_number,0);
+      sorted_insert(temp,trans,e);
+   }
+   if (A->states[e]->default_state!=-1) {
+      /* If there is a default transition */
+      TransitionCollection* temp=new_TransitionCollection(alphabet_lookup(alph,SYMBOL_DEF),A->states[e]->default_state,0);
+      sorted_insert(temp,trans,e);
+   }
+}
+return trans;
+}
+
+
+/**
+ * Returns 0 if the given transitions list are identical; any non null
+ * value otherwise.
+ */
+int compare_transitions(TransitionCollection* t1,TransitionCollection* t2) {
+while (t1!=NULL && t2!=NULL) {
+   if ((t1->tag_number!=t2->tag_number) || (t1->destination_color!=t2->destination_color)) {
+      return 1;
+   }
+   t1=t1->next;
+   t2=t2->next;
+}
+return (t1!=t2);
+}
+
+
+/**
+ * Allocates, initializes and returns an array that associates
+ * a color (0 or 1) to each state of 'A', making sure that the
+ * state #0 will be colored with 0. '*nbColors' will be set to
+ * the number of colors that have been used (1 if all states
+ * have the same finality; 2 otherwise).
+ */
+int* init_colors(SingleGraph A,int *nbColors) {
+int* color=(int*)calloc(A->number_of_states,sizeof(int));
+if (color==NULL) {
+   fatal_error("Not enough memory in init_colors\n");
+}
+/* bicolor will indicate if all states are of the same color (finality) or
+ * not */
+bool bicolor=false;
+if (is_final_state(A->states[0])) {
+   /* We distinguish two cases (initial state final or not), just
+    * to ensure that the color of the initial state #0 will be 0 */
+   for (int e=0;e<A->number_of_states;e++) {
+      color[e]=is_final_state(A->states[e])?0:(bicolor=true,1);
+   }
+} else {
+   for (int e=0;e<A->number_of_states;e++) {
+      color[e]=is_final_state(A->states[e])?(bicolor=true,1):0;
+   }
+}
+(*nbColors)=(bicolor?2:1);
+return color;
+}
+
+
+/**
+ * Updates the color of the transitions' destination states.
+ */
+void update_colors(TransitionCollection** transitions,int* colors,int nbStates) {
+for (int s=0;s<nbStates;s++) {
+   for (TransitionCollection* t=transitions[s];t!=NULL;t=t->next) {
+      t->destination_color=colors[t->state_number];
+   }
+}
+}
+
+
+/**
+ * Returns the shade of the state #s, updating '*nbShades' if this is
+ * a new shade. The state #s is compared with all the states of the
+ * same color. Note that the states with the same color than 's' are
+ * supposed to be in the range [color(s);s].
+ */
+int get_shade(int s,TransitionCollection** trans,int* color,int* shade,int *nbShades) {
+for (int i=color[s];i<s;i++) {
+   if (color[i]==color[s]) {
+      if (compare_transitions(trans[s],trans[i])==0) {
+         return shade[i];
+      }
+   }
+}
+/* If we have to create a new shade */
+(*nbShades)++;
+return (*nbShades)-1;
+}
+
+
+/**
+ * For each color, a state of this color is chosen to represent the color.
+ * The chosen number is >= its color number.
+ */
+int* choose_states(int* color,int nbColors,int nbStates) {
+int* chosen=(int*)malloc(nbColors*sizeof(int));
+if (chosen==NULL) {
+   fatal_error("Not enough memory in choose_states\n");
+}
+for (int c=0;c<nbColors;c++) {
+   bool found=false;
+   for (int s=c;!found && s<nbStates;s++) {
+      if (color[s]==c) {
+         chosen[c]=s;
+         found=true;
+      }
+   }
+   if (!found) {
+      fatal_error("choose_states: color %d not found!\n",c);
+   }
+}
+return chosen;
 }
 
 
@@ -266,17 +261,12 @@ for (int q=0;q<g->number_of_states;q++) {
 }
 
 
-
-/* minimise aut
- * aut doit etre deterministe
- */
-
 /**
  * This function minimizes the given automaton. Note
- * that it must be deterministic.
+ * that it must be deterministic. For more information,
+ * see comments in this library's .h file.
  */
-void elag_minimize(Fst2Automaton* A,int level) {
-SingleGraph automaton=A->automaton;
+void elag_minimize(SingleGraph automaton,struct string_hash_ptr* symbols,int level) {
 struct list_int* initials=get_initial_states(automaton);
 if (initials==NULL) {
    fatal_error("Cannot minimize an automaton with no initial state\n");
@@ -291,79 +281,59 @@ if (level>0) {
    compact_default_transitions(automaton);
 }
 SymbolAlphabet* alph=build_symbol_alphabet(automaton);
-
-  tTransCol ** sorties = triTrans(A, alph);
-
-  alphabet_delete(alph);
-
-
-  /* couleur[e] <= e */
-
-  int nbCouleurs, nbNuances;
-
-  int * couleur = (int *) xcalloc(A->nbstates, sizeof(int));
-  int * nuance  = initCouleur(A, & nbNuances);
-
-
-  do {
-
-    //    debug("nbcolor=%d, nbnuances=%d\n", nbCouleurs, nbNuances);
-
-    int e;
-
-    for (e = 0; e < A->nbstates; e++) {
-      couleur[e] = nuance[e];
-      //      debug("couleur[%d] = %d\n", e, couleur[e]);
-    }
-
-    nbCouleurs = nbNuances;
-    nbNuances = 0;
-    colore(sorties, couleur, A->nbstates);
-
-    for (e = 0 ; e < A->nbstates ; e++) { nuance[e] = trouveNuance(e, sorties, couleur, nuance, & nbNuances); }
-
-  } while (nbCouleurs != nbNuances);
-
-  //  debug("out: nbcolor=%d, nbnuances=%d\n", nbCouleurs, nbNuances);
-
-  int * repr = choisirEtats(couleur, nbCouleurs, A->nbstates);
-
-  for (int i = 0; i < A->nbstates; i++) { transCols_delete(sorties[i]); }
-  free(sorties);
-  free(nuance);
-
-  /* on remplit le resultat  */
-
-  state_t * nouvo = (state_t *) xmalloc(nbCouleurs * sizeof(state_t));
-
-  for (int c = 0; c < nbCouleurs; c++) {
-
-    nouvo[c].trans = A->states[repr[c]].trans;
-    A->states[repr[c]].trans = NULL;
-
-    for (transition_t * t1 = nouvo[c].trans; t1; t1 = t1->next) { t1->to = couleur[t1->to]; }
-
-    nouvo[c].flags = A->states[repr[c]].flags;
-    nouvo[c].defto = A->states[repr[c]].defto;
-  }
-
-  /* free old states */
-  for (int i = 0; i < A->nbstates; i++) {
-    transitions_delete(A->states[i].trans);
-  }
-  free(A->states);
-
-  /* replace it */
-
-  A->states = nouvo;
-  A->size = A->nbstates = nbCouleurs;
-
-  A->initials[0] = couleur[A->initials[0]];
-
-  free(couleur);
-  free(repr);
-
-
-  //  debug("out of mimimize:\n"); autalmot_dump(aut);
+TransitionCollection** transitions=build_transition_collections(automaton,alph);
+/* Now that we have numbered transitions, we don't need the symbol
+ * alphabet anymore */
+free_SymbolAlphabet(alph);
+int nbColors;
+int nbShades;
+int* color=(int*)calloc(automaton->number_of_states,sizeof(int));
+if (color==NULL) {
+   fatal_error("Not enough memory in elag_minimize\n");
+}
+int* shade=init_colors(automaton,&nbShades);
+do {
+   int s;
+   /* We copy the shades into the color array */
+   for (s=0;s<automaton->number_of_states;s++) {
+      color[s]=shade[s];
+   }
+   nbColors=nbShades;
+   nbShades=0;
+   /* We update the colors of the transitions' destination states */
+   update_colors(transitions,color,automaton->number_of_states);
+   /* Now, for each state #s, we look for its shade, comparing it with
+    * all the states #i so that i<s */
+   for (s=0;s<automaton->number_of_states;s++) {
+      shade[s]=get_shade(s,transitions,color,shade,&nbShades);
+   }
+   /* We stop when no more shades have been introduced */
+} while (nbColors!=nbShades);
+int* chosen=choose_states(color,nbColors,automaton->number_of_states);
+for (int i=0;i<automaton->number_of_states;i++) {
+   free_TransitionCollection(transitions[i]);
+}
+free(transitions);
+free(shade);
+/* We allocate the resulting automaton */
+SingleGraph result=new_SingleGraph(nbColors,PTR_TAGS);
+for (int c=0;c<nbColors;c++) {
+   SingleGraphState state=add_state(result);
+   SingleGraphState original=automaton->states[chosen[c]];
+   /* We set the initiality and finality of the state */
+   state->control=original->control;
+   state->outgoing_transitions=original->outgoing_transitions;
+   original->outgoing_transitions=NULL;
+   /* We renumber the transitions' destination states */
+   for (Transition* t1=state->outgoing_transitions;t1!=NULL;t1=t1->next) {
+      t1->state_number=color[t1->state_number];
+   }
+   state->default_state=original->default_state;
+}
+/* Now we have to replace the old automaton by the new one */
+move_SingleGraph(automaton,&result,NULL);
+/* And we don't need these arrays anymore */
+free(color);
+free(chosen);
 }
 

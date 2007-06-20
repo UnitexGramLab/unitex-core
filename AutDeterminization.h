@@ -22,12 +22,12 @@
 #ifndef AutDeterminizationH
 #define AutDeterminizationH
 
-#include "autalmot.h"
+#include "SingleGraph.h"
 
 /**
  * This library provides a function for determinizing ELAG automata.
  */
 
-void elag_determinize(Fst2Automaton*);
+void elag_determinize(SingleGraph);
 
 #endif

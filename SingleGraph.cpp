@@ -1326,3 +1326,24 @@ return ambiguity_rate;
 }
 
 
+/**
+ * Replaces A by the union of the two given automata. B is freed.
+ * Note that the result may not be deterministic.
+ */
+void build_union(SingleGraph A,SingleGraph B) {
+set_state_array_capacity(A,A->number_of_states+B->number_of_states);
+int shift=A->number_of_states;
+int q;
+for (q=0;q<B->number_of_states;q++) {
+   SingleGraphState state=add_state(A);
+   state->control=B->states[q]->control;
+}
+for (q=0;q<B->number_of_states;q++) {
+   A->states[shift+q]->outgoing_transitions=shift_destination_states(B->states[q]->outgoing_transitions,shift);
+   B->states[q]->outgoing_transitions=NULL;
+   int def=B->states[q]->default_state;
+   A->states[shift+q]->default_state=(def!=-1)?(shift+def):-1;
+}
+/* We free B */
+free_SingleGraph(B,NULL);
+}

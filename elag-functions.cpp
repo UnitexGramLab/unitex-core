@@ -95,9 +95,9 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
     if (no % 100 == 0) { u_printf("sentence %d/%d ...\r", no + 1, txtin->nb_automata); }
 
-    elag_determinize(A);
+    /* ZZZ elag_determinize(A);
     elag_trim(A);
-    elag_minimize(A);
+    elag_minimize(A); */
 
     if (A->nbstates < 2) {
 
@@ -172,9 +172,9 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
       if (! isrej) {
 
-        elag_determinize(A);
+        /* ZZZ elag_determinize(A);
         elag_trim(A);
-        elag_minimize(A);
+        elag_minimize(A); */
       
         if (suppress_limphrase(A) == -1) {
           error("an error occured while trying to remove sentence limits in sentence %d.\n", 

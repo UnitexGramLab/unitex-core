@@ -117,6 +117,7 @@ void trim(SingleGraph);
 void determinize(SingleGraph);
 void minimize(SingleGraph,int);
 void topological_sort(SingleGraph);
+void build_union(SingleGraph,SingleGraph);
 
 SingleGraph get_subgraph(Fst2*,int);
 void save_fst2_subgraph(FILE*,SingleGraph,int,unichar*);

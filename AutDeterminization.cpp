@@ -19,100 +19,50 @@
   *
   */
 
-#include <assert.h>
-
-#include "autalmot.h"
-#include "utils.h"
-#include "state_ens.h"
-#include "fst_file.h"
+#include "ElagStateSet.h"
 
 
-
-void autalmot_determinize(Fst2Automaton * A) {
-
-  //  debug("entering determinize: aut = \n");
-  //  autalmot_dump(A);
-  //  autalmot_output_fst2(A, "deter-in.fst2", FST_GRAMMAR);
-
-  Fst2Automaton * res = new_Fst2Automaton();
-
-  state_ens_tab_t * TAB = state_ens_tab_new();
-
-  state_ens_t * inits  = state_ens_new();
-  int i;
-  for (i = 0; i < A->nbinitials; i++) {
-    state_ens_add(inits, A, A->initials[i]);
-  }
-
-  //  debug("inits = "); state_ens_dump(inits); endl();
- 
-  state_ens_tab_add(TAB, inits);
-
-  state_ens_delete(inits);
-
-  for (int curr = 0; curr < TAB->nbelems; curr++) {
-
-    //  debug("curr = %d tabsize=%d ens=", curr, TAB->nbelems); state_ens_dump(TAB->tab[curr]); endl();
-
-    STATE_t * Q = STATE_new(TAB->tab[curr]);
-
-    int q = autalmot_add_state(res, Q->flags);
-
-
-    for (TRANS_t * T = Q->trans; T; T = T->next) {
-
-      //      debug("new trans:\n"); TRANS_dump(T); endl();
-
-      int idx = state_ens_tab_lookup(TAB, T->to);
-
-      if (idx == -1) { // new state
-	idx = state_ens_tab_add(TAB, T->to);
+/**
+ * Determinizes an automaton with transitions tagged with Elag symbols.
+ * The given automaton is modified.
+ */
+void elag_determinize(SingleGraph A) {
+SingleGraph res=new_SingleGraph();
+state_set_array* ARRAY=new_state_set_array();
+state_set* initial_states=new_state_set();
+struct list_int* l=get_initial_states(A);
+while (l!=NULL) {
+   state_set_add(initial_states,A,l->n);
+   l=l->next;
+}
+free_list_int(l);
+state_set_array_add(ARRAY,initial_states);
+free_state_set(initial_states);
+for (int current_state_set=0;current_state_set<ARRAY->size;current_state_set++) {
+   STATE_t* Q=new_STATE_t(ARRAY->state_sets[current_state_set]);
+   SingleGraphState q=add_state(res);
+   if (Q->flags & AUT_INITIAL) set_initial_state(q);
+   if (Q->flags & AUT_TERMINAL) set_final_state(q);
+   for (TRANS_t* T=Q->transitions;T!=NULL;T=T->next) {
+      int index=state_set_array_lookup(ARRAY,T->destination);
+      if (index==-1) {
+         /* If we have to create a new state in the result automaton */
+         index=state_set_array_add(ARRAY,T->destination);
       }
-
-      add_transition(res, q, T->label, idx);
-    }
-
-
-    if (Q->transdef->size) {
-
-      int idx = state_ens_tab_lookup(TAB, Q->transdef);
-
-      if (idx == -1) { // new state
-	idx = state_ens_tab_add(TAB, Q->transdef);
+      add_outgoing_transition(q,T->label,index);
+   }
+   if (Q->default_transition!=NULL && Q->default_transition->size) {
+      /* We deal with the default transition, if any */
+      int index=state_set_array_lookup(ARRAY,Q->default_transition);
+      if (index==-1) {
+         /* If we have to create a new state in the result automaton */
+         index=state_set_array_add(ARRAY,Q->default_transition);
       }
-
-      add_transition(res, q, SYMBOL_DEF, idx);      
-    }
-
-    STATE_delete(Q);
-  }
-
-  // done with determinization ???
-
-  state_ens_tab_delete(TAB);
-
-
-  /* empty A */
-
-  for (i = 0; i < A->nbstates; i++) { transitions_delete(A->states[i].trans); }
-  free(A->states);
-
-  free(A->initials);
-
-
-  /* copy res */
-
-  A->states   = res->states;
-  A->nbstates = res->nbstates;
-  A->size     = res->size;
-
-  A->initials   = res->initials;
-  A->nbinitials = res->nbinitials;
-  free(res);
-
-  for (i = A->nbinitials; i > 1; i--) { autalmot_unset_initial(A, A->initials[i-1]); }
-
-  assert(A->nbinitials == 1 && A->initials[0] == 0);
-
-  //  debug("out of determinize, aut = \n");  autalmot_dump(A);
+      add_outgoing_transition(q,SYMBOL_DEF,index);
+   }
+   free_STATE_t(Q);
+}
+free_state_set_array(ARRAY);
+/* Now, we empty A's automaton and replace it by res */
+move_SingleGraph(A,&res,NULL);
 }

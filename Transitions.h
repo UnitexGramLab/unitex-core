@@ -77,6 +77,7 @@ Transition* clone_transition(Transition*);
 Transition* clone_transition_list(Transition*,int* renumber=NULL);
 void concat(Transition**,Transition*);
 void renumber_transitions(Transition*,int,int);
+Transition* shift_destination_states(Transition*,int);
 void add_transitions_int(Transition*,Transition**);
 void add_transitions_ptr(Transition*,Transition**);
 #endif

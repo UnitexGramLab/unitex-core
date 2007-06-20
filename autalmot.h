@@ -138,8 +138,6 @@ void autalmot_tri_topo(Fst2Automaton * A);
 
 /* TODO */
 
-Fst2Automaton * autalmot_union(Fst2Automaton * A, Fst2Automaton * B);
-void autalmot_complementation(Fst2Automaton * A);
 void elag_trim(Fst2Automaton * A);
 
 

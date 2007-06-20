@@ -19,25 +19,15 @@
   *
   */
 
-#ifndef AutMinimizationH
-#define AutMinimizationH
+#ifndef AutComplementationH
+#define AutComplementationH
 
 #include "SingleGraph.h"
-#include "String_hash.h"
-
 
 /**
- * This library provides a function for minimizing ELAG automata.
- * The minimization algorithm that is used is the one described
- * as "Algorithm 3.6" in the famous Dragon book from Aho, Sethi
- * and Ullman. This idea of this algorithm is to take a deterministic
- * automaton and to find out which states can be merged.
- * The color flavor of this implementation is dued to Eric Laporte.
- * 
- * Author: Eric Laporte
- * Cleaned and commented by Sébastien Paumier
+ * This library provides a function for complementing ELAG automata.
  */
 
-void elag_minimize(SingleGraph,struct string_hash_ptr*,int level=0);
+void elag_complementation(SingleGraph);
 
 #endif

@@ -1173,10 +1173,11 @@ switch (b->type) {
 return res;
 }
 
+
 /**
  * Takes any 2 single symbols a and b and returns a-b.
  */
-symbol_t * symbol_minus_symbol(const symbol_t* a,const symbol_t* b) {
+symbol_t* symbol_minus_symbol(const symbol_t* a,const symbol_t* b) {
 if (!symbol_in_symbol(b,a)) {
    /* If b is not fully included in a, we must a inter b */
    symbol_t* i=symbol_inter_symbol(a,b);
@@ -1230,19 +1231,22 @@ symbol_t * symbols_minus_symbols(const symbol_t * A, const symbol_t * B) {
 }
 
 
-symbol_t * symbols_minus_symbol(const symbol_t * A, const symbol_t * b) {
-
-  symbol_t res;
-  res.next = NULL;
-  symbol_t * end = & res;
-
-  while (A) {
-    symbol_t * minus = symbol_minus_symbol(A, b);
-    concat_symbols(end, minus, & end);
-    A = A->next;
-  }
-
-  return res.next;
+/**
+ * This function takes a symbol list 'list' and a symbol 's'. It returns
+ * a list that contains all the elements of 'list' minus 's'. For instance,
+ * If we have 'list'=<A:ms>,<A:mp>,<A:fs>,<A:fp> and 's'=<A:s>,
+ * we will return the list <A:mp>,<A:fp>.
+ */
+symbol_t* symbols_minus_symbol(const symbol_t* list,const symbol_t* s) {
+symbol_t res;
+res.next=NULL;
+symbol_t* end=&res;
+while (list!=NULL) {
+   symbol_t* minus=symbol_minus_symbol(list,s);
+   concat_symbols(end,minus,&end);
+   list=list->next;
+}
+return res.next;
 }
 
 

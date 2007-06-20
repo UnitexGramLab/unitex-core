@@ -21,515 +21,527 @@
 
 #include "utils.h"
 #include "symbol_op.h"
-#include "state_ens.h"
+#include "Error.h"
+#include "ElagStateSet.h"
 
 
 
-
-inline stateid_t * stateid_new(Fst2Automaton * A, int no, stateid_t * next) {
-  stateid_t * id = (stateid_t *) xmalloc(sizeof(stateid_t));
-  id->A    = A;
-  id->no   = no;
-  id->next = next;
-  return id;
-}
-
-
-inline void stateid_delete(stateid_t * id) { free(id); }
-
-
-
-
-state_ens_t * state_ens_new() {
-
-  state_ens_t * res = (state_ens_t *) xmalloc(sizeof(state_ens_t));
-
-  res->first = NULL;
-  res->size  = 0;
-
-  return res;
-}
-
-
-void state_ens_delete(state_ens_t * ens) {
-
-  while (ens->first) {
-    stateid_t * next = ens->first->next;
-    stateid_delete(ens->first);
-    ens->first = next;
-  }
-
-  free(ens);
-}
-
-
-state_ens_t * state_ens_dup(const state_ens_t * ens) {
-
-  if (ens == NULL) { return NULL; }
-
-  state_ens_t * res = state_ens_new();
-
-  for (stateid_t * id = ens->first; id; id = id->next) {
-    state_ens_add(res, id->A, id->no);
-  }
-
-
-  return res;
-}
-
-
-void state_ens_add(state_ens_t * E, Fst2Automaton * A, int no) {
-
-  if (E->size == 0) {
-    E->first = stateid_new(A, no, NULL);
-    E->size++;
-    return;
-  }
-
-  if (no == E->first->no) { return; }
-
-  if (no < E->first->no) {
-
-    E->first = stateid_new(A, no, E->first);
-
-  } else {
-
-    stateid_t * id;
-    for (id = E->first; id->next && (id->next->no < no); id = id->next);
-
-    if (id->next && (id->next->no == no)) { return; }
-
-    id->next = stateid_new(A, no, id->next);
-  }
-
-  E->size++;
-
-}
-
-
-bool state_ens_equals(state_ens_t * E1, state_ens_t * E2) {
-
-  if (E1 == E2) { return true; }
-
-  if (E1->size  != E2->size) { return false; }
-
-  stateid_t * id1, * id2;
-
-  for (id1 = E1->first, id2 = E2->first; id1 && id2; id1 = id1->next, id2 = id2->next) {
-    if ((id1->A != id2->A) || (id1->no != id2->no)) { return false; }
-  }
-
-  return (id1 == id2); // == NULL
-}
-
-
-
-
-TRANS_t * TRANS_new(symbol_t * s, TRANS_t * next) {
-  TRANS_t * T = (TRANS_t *) xmalloc(sizeof(TRANS_t));
-  T->label = s;
-  T->to = state_ens_new();
-  T->next = next;
-  return T;
-}
-
-
-void TRANS_delete(TRANS_t * T) {
-  state_ens_delete(T->to);
-  free(T);
-}
-
-void TRANSs_delete(TRANS_t * T) {
-  while (T) {
-    TRANS_t * tmp = T->next;
-    TRANS_delete(T);
-    T = tmp;
-  }
-}
-
-
-TRANS_t * TRANS_lookup(TRANS_t * T, symbol_t * s) {
-
-  while (T) {
-    if (symbol_compare(T->label, s) == 0) { break; }
-    T = T->next;
-  }
-  return T;
-}
-
-
-state_ens_tab_t * state_ens_tab_new(int size) {
-
-  state_ens_tab_t * res = (state_ens_tab_t *) xmalloc(sizeof(state_ens_tab_t));
-
-  if (size <= 0) { size = 1; }
-
-  res->tab = (state_ens_t **) xmalloc(sizeof(state_ens_t *) * size);
-  res->tabsize = size;
-  res->nbelems = 0;
-
-  return res;
-}
-
-
-void state_ens_tab_delete(state_ens_tab_t * tab) {
-
-  for (int i = 0; i < tab->nbelems; i++) { state_ens_delete(tab->tab[i]); }
-  free(tab->tab);
-  free(tab);
-}
-
-
-int state_ens_tab_add(state_ens_tab_t * tab, state_ens_t * E) {
-
-  while (tab->nbelems >= tab->tabsize) {
-    tab->tabsize = tab->tabsize * 2;
-    tab->tab     = (state_ens_t **) xrealloc(tab->tab, tab->tabsize * sizeof(state_ens_t *));
-  }
-
-  tab->tab[tab->nbelems++] = state_ens_dup(E);
-  return tab->nbelems - 1;
-}
-
-
-int state_ens_tab_lookup(state_ens_tab_t * tab, state_ens_t * E) {
-
-  for (int i = 0; i < tab->nbelems; i++) {
-    if (state_ens_equals(tab->tab[i], E)) { return i; }
-  }
-  return -1;
-}
-
-
-
-
-/* devoloppementd des symboles et transitions */
-
-
-static inline void replace_symbol(symbol_t * a, symbol_t * b) {
-
-  symbol_t * next = a->next;
-
-  empty_symbol(a);
-  copy_symbol(a, b);
-  free_symbol(b);
-
-  concat_symbols(a, next);
-}
-
-
-
-/* compare a et b et les developpe si necessaire
- * quand on developpe un symbole on le remplace par une suite de symboles
- * 2 a 2 disjoints dont l'union constitue le symbole d'origine
+/**
+ * Allocates, initializes and returns a new state id.
  */
-
-
-static void symbol_dev_symbol(symbol_t * a, symbol_t * b) {
-
-  //  debug("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-  //  debug("symbol_dev_symbol: too much check\n");
-
-  //  errprintf("A= '"); symbol_dump(a); errprintf("' B = '"); symbol_dump(b); errprintf("'\n");
-
-  if (symbol_compare(a, b) == 0) { /*errprintf("SYMBOLS EQUALS!\n"); */ return; }
-
-  symbol_t * i = symbol_inter_symbol(a, b);
-
-  //  errprintf("I = '"); symbol_dump(i); errprintf("'\n");
-
-  if (i == NULL) { /* errprintf("SYMBOL DISJOINTS!\n");*/ return; } // symbol disjoints
-
-  if (i->next) { fatal_error("symbol_developp: i->next\n"); }
- 
-  symbol_t * aminusb = symbol_minus_symbol(a, i);
-  //  errprintf("A \\ B = "); symbols_dump(aminusb); endl();
-
-  symbol_t * bminusa = symbol_minus_symbol(b, i);
-  //  errprintf("B \\ A = "); symbols_dump(bminusa); endl();
-
-  if (! aminusb) {
-    if (symbol_compare(a, i)) {
-      fatal_error("A != I et A \\ I = null\n");
-    }
-  }
-
-  if (! bminusa) {
-    if (symbol_compare(b, i)) {
-      fatal_error("B != I et B \\ I = null\n");
-    }
-  }
-
-
-  symbol_t * nouvo = dup_symbol(i);
-
-  concat_symbols(nouvo, aminusb);
-
-  replace_symbol(a, nouvo);
-
-  concat_symbols(i, bminusa);
-
-  replace_symbol(b, i);
-
+state_id* new_state_id(SingleGraph A, int n,state_id* next) {
+state_id* id=(state_id*)malloc(sizeof(state_id));
+if (id==NULL) {
+   fatal_error("Not enough memory in new_state_id\n");
+}
+id->automaton=A;
+id->state_number=n;
+id->next=next;
+return id;
 }
 
 
-static inline void symbol_dev_symbols(symbol_t * a, symbol_t * b) {
-  while (b) {
-    symbol_dev_symbol(a, b);
-    b = b->next;
-  }
+/**
+ * Frees the given single state_id.
+ */
+void free_state_id(state_id* id) {
+if (id==NULL) return;
+free(id);
 }
 
 
-static inline void symbols_developp(symbol_t * a, symbol_t * b) {
-  while (a) {
-    symbol_dev_symbols(a, b);
-    a = a->next;
-  }
+/**
+ * Allocates, initializes and returns a new state set.
+ */
+state_set* new_state_set() {
+state_set* res=(state_set*)malloc(sizeof(state_set));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_state_set\n");
+}
+res->state_list=NULL;
+res->size=0;
+return res;
 }
 
 
-static inline void symbols_developp(symbol_t * a) {
-  if (a == NULL) { return; }
-  while (a->next) { symbol_dev_symbols(a, a->next); a = a->next; }
+/**
+ * Frees the given state set.
+ */
+void free_state_set(state_set* s) {
+if (s==NULL) return;
+while (s->state_list!=NULL) {
+   state_id* next=s->state_list->next;
+   free_state_id(s->state_list);
+   s->state_list=next;
+}
+free(s);
 }
 
 
-/* like transition_new but don't dup symbol */
-
-static transition_t * _trans_new(int to, symbol_t * label, transition_t * next) {
-
-  transition_t * trans = (transition_t *) xmalloc(sizeof(transition_t));
-
-  trans->to    = to;
-  trans->label = label;
-  trans->next  = next;
-
-  return trans;
+/**
+ * Returns a copy of the given state set.
+ */
+state_set* clone_state_set(const state_set* s) {
+if (s==NULL) return NULL;
+state_set* res=new_state_set();
+for (state_id* id=s->state_list;id!=NULL;id=id->next) {
+   state_set_add(res,id->automaton,id->state_number);
+}
+return res;
 }
 
 
-static void trans_flatten(transition_t * trans) {
-
-  while (trans) {
-
-    if (trans->label == NULL) { fatal_error("trans_flatten: NULL labeled transition\n"); }
-
-    if (trans->label->next) {
-      trans->next = _trans_new(trans->to, trans->label->next, trans->next);
-      trans->label->next = NULL;
-    }
-
-    trans = trans->next;
-  }
+/**
+ * Adds the given state to the given state set.
+ */
+void state_set_add(state_set* S,SingleGraph A,int state_number) {
+/* If the state set was empty */
+if (S->size==0) {
+   S->state_list=new_state_id(A,state_number,NULL);
+   S->size++;
+   return;
+}
+/* If the state number is the first of the list, nothing to do */
+if (state_number==S->state_list->state_number) {
+   return;
+}
+/* If we must insert the state at the first position */
+if (state_number<S->state_list->state_number) {
+   S->state_list=new_state_id(A,state_number,S->state_list);
+} else {
+   state_id* id;
+   for (id=S->state_list;id->next!=NULL && (id->next->state_number<state_number);id=id->next);
+   if (id->next!=NULL && (id->next->state_number==state_number)) {
+      /* If the state is already in the set, nothing to do */
+      return;
+   }
+   id->next=new_state_id(A,state_number,id->next);
+}
+S->size++;
 }
 
 
-/* lookup for a transition labeled s */
-
-static inline transition_t * trans_lookup(transition_t * trans, symbol_t * s) {
-
-  while (trans) {
-    if (symbol_compare(trans->label, s) == 0) { break; }
-  }
-  return trans;
+/**
+ * Tests if the two given state sets are identical.
+ */
+bool state_set_equals(state_set* S1,state_set* S2) {
+if (S1==NULL || S2==NULL) {
+   fatal_error("NULL error in state_set_equals\n");
+}
+if (S1==S2) {
+   return true;
+}
+if (S1->size!=S2->size) {
+   return false;
+}
+state_id* id1;
+state_id* id2;
+for (id1=S1->state_list,id2=S2->state_list;id1!=NULL && id2!=NULL;id1=id1->next,id2=id2->next) {
+   if ((id1->automaton!=id2->automaton) || (id1->state_number!=id2->state_number)) {
+      return false;
+   }
+}
+return (id1==id2);
 }
 
 
-/*inline*/ void trans_developp(transition_t * _t1, transition_t * _t2) {
+/**
+ * Allocates, initializes and returns a new TRANS_t.
+ */
+TRANS_t* new_TRANS_t(symbol_t* s,TRANS_t* next) {
+TRANS_t* T=(TRANS_t*)malloc(sizeof(TRANS_t));
+if (T==NULL) {
+   fatal_error("Not enough memory in new_TRANS_t\n");
+}
+T->label=s;
+T->destination=new_state_set();
+T->next=next;
+return T;
+}
 
-  for (transition_t * t1 = _t1; t1; t1 = t1->next) {
-    for (transition_t * t2 = _t2; t2; t2 = t2->next) {
-      //      debug("DEVEL "); symbol_dump(t1->label); errprintf("x"); symbol_dump(t2->label); endl();
-      symbols_developp(t1->label, t2->label);
-    }
-  }
 
-  trans_flatten(_t1);
-  trans_flatten(_t2);
+/**
+ * Frees the memory associated to the given single transition.
+ * Note that we don't free the symbol that tags it since
+ * it is shared with other objects.
+ */
+void free_TRANS_t(TRANS_t* T) {
+if (T==NULL) return;
+free_state_set(T->destination);
+free(T);
+}
+
+
+/**
+ * Frees the memory associated to the given transition list.
+ */
+void free_TRANS_t_list(TRANS_t* T) {
+while (T!=NULL) {
+   TRANS_t* tmp=T->next;
+    free_TRANS_t(T);
+    T=tmp;
+}
+}
+
+
+/**
+ * This function looks if the given symbol tags a transition
+ * of the given transition list. It returns the transition
+ * or NULL if not found.
+ */
+TRANS_t* TRANS_t_lookup(TRANS_t* T,symbol_t* s) {
+while (T!=NULL) {
+   if (symbol_compare(T->label,s)==0) {
+      break;
+   }
+   T=T->next;
+}
+return T;
+}
+
+
+/**
+ * Allocates, initializes and returns a state set array of the given capacity.
+ */
+state_set_array* new_state_set_array(int capacity) {
+state_set_array* s=(state_set_array*)malloc(sizeof(state_set_array));
+if (s==NULL) {
+   fatal_error("Not enough memory in new_state_set_array\n");
+}
+if (capacity<=0) {
+   capacity=1;
+}
+s->state_sets=(state_set**)malloc(sizeof(state_set*)*capacity);
+if (s->state_sets==NULL) {
+   fatal_error("Not enough memory in new_state_set_array\n");
+}
+s->capacity=capacity;
+s->size=0;
+return s;
+}
+
+
+/**
+ * Frees all the memory associated to the given state set array.
+ */
+void free_state_set_array(state_set_array* s) {
+if (s==NULL) return;
+for (int i=0;i<s->size;i++) {
+   free_state_set(s->state_sets[i]);
+}
+free(s->state_sets);
+free(s);
+}
+
+
+/**
+ * Adds a copy of the given state set to the given state set array.
+ * The function returns the index of the state set.
+ */
+int state_set_array_add(state_set_array* ARRAY,state_set* s) {
+if (ARRAY->size==ARRAY->capacity) {
+   /* If necessary, we enlarge the array doubling its capacity */
+   ARRAY->capacity=ARRAY->capacity*2;
+   ARRAY->state_sets=(state_set**)realloc(ARRAY->state_sets,ARRAY->capacity*sizeof(state_set*));
+   if (ARRAY->state_sets==NULL) {
+      fatal_error("Not enough memory in state_set_array_add\n");
+   }
+}
+ARRAY->state_sets[ARRAY->size++]=clone_state_set(s);
+return ARRAY->size-1;
+}
+
+
+/**
+ * This function tests if the given state set belongs to the given
+ * state set array. It returns its index, or -1 if not found.
+ */
+int state_set_array_lookup(state_set_array* ARRAY,state_set* s) {
+for (int i=0;i<ARRAY->size;i++) {
+   if (state_set_equals(ARRAY->state_sets[i],s)) {
+      return i;
+   }
+}
+return -1;
+}
+
+
+/**
+ * Replaces the first symbol of the symbol list a with the symbol list b.
+ */
+void replace_symbol(symbol_t* a,symbol_t* b) {
+symbol_t* next=a->next;
+empty_symbol(a);
+copy_symbol(a,b);
+free_symbol(b);
+concat_symbols(a,next);
+}
+
+
+/**
+ * Compares the symbols a and b, expanding them if necessary.
+ * When a symbol is expanded, it is replaced by a list of distinct
+ * symbols, so that the union of these symbols is equivalent to the
+ * original symbol.
+ */
+void compare_and_expand_symbol_with_symbol(symbol_t* a, symbol_t* b) {
+if (symbol_compare(a,b)==0) {
+   /* Nothing to do if the symbols are identical */
+   return;
+}
+symbol_t* i=symbol_inter_symbol(a,b);
+if (i==NULL) {
+   /* Nothing to do if the intersection is empty */
+   return;
+}
+if (i->next!=NULL) {
+   fatal_error("compare_and_expand_symbol_with_symbol: i->next not NULL\n");
+}
+symbol_t* aminusb=symbol_minus_symbol(a,i);
+symbol_t* bminusa=symbol_minus_symbol(b,i);
+if (aminusb==NULL) {
+   if (symbol_compare(a,i)) {
+      fatal_error("compare_and_expand_symbol_with_symbol: A!=I and A\\I=null\n");
+   }
+}
+if (bminusa==NULL) {
+   if (symbol_compare(b,i)) {
+      fatal_error("compare_and_expand_symbol_with_symbol: B!=I and B\\I=null\n");
+   }
+}
+symbol_t* copy_of_i=dup_symbol(i);
+/* We replace a with (a^b) v (a-b) */
+concat_symbols(copy_of_i,aminusb);
+replace_symbol(a,copy_of_i);
+/* We replace b with (a^b) v (b-a) */
+concat_symbols(i,bminusa);
+replace_symbol(b,i);
+}
+
+
+/**
+ * Compares the symbol a with the symbol list b. Then, for
+ * each pair (a,b[i]), it compares the two symbols, expanding them
+ * if necessary.
+ */
+void compare_and_expand_symbol_with_symbols(symbol_t * a, symbol_t * b) {
+while (b!=NULL) {
+   compare_and_expand_symbol_with_symbol(a,b);
+   b=b->next;
+}
+}
+
+
+/**
+ * Compares each symbol of a with each one of b, expanding
+ * them if necessary.
+ */
+void expand_symbols(symbol_t* a,symbol_t* b) {
+while (a!=NULL) {
+   compare_and_expand_symbol_with_symbols(a,b);
+   a=a->next;
+}
+}
+
+
+/**
+ * This function takes a symbol list and compares each element with
+ * its follower. Then, it expands them if necessary.
+ */
+void expand_symbols(symbol_t* s) {
+if (s==NULL) {
+   return;
+}
+while (s->next!=NULL) {
+   compare_and_expand_symbol_with_symbols(s,s->next);
+   s=s->next;
+}
+}
+
+
+/**
+ * This function takes a transition list, where each transition
+ * can be tagged with a symbol list, and it modifies it so that 
+ * we will have exactly one transition per symbol.
+ */
+void flatten_transition(Transition* trans) {
+while (trans!=NULL) {
+   if (trans->label==NULL) {
+      fatal_error("flatten_transition: NULL tagged transition\n");
+   }
+   symbol_t* symbol=(symbol_t*)trans->label;
+   if (symbol->next!=NULL) {
+      trans->next=new_Transition(symbol->next,trans->state_number,trans->next);
+      symbol->next=NULL;
+   }
+   trans=trans->next;
+}
+}
+
+
+/**
+ * This function looks if the given symbol tags a transition
+ * of the given transition list. It returns the transition
+ * or NULL if not found.
+ */
+Transition* Transition_lookup(Transition* trans,symbol_t* s) {
+while (trans!=NULL) {
+   if (symbol_compare((symbol_t*)trans->label,s)==0) {
+      break;
+   }
+}
+return trans;
+}
+
+
+/**
+ * Expands the two given transition lists.
+ */
+void expand_transitions(Transition* _t1,Transition* _t2) {
+for (Transition* t1=_t1;t1!=NULL;t1=t1->next) {
+   for (Transition* t2=_t2;t2!=NULL;t2=t2->next) {
+      expand_symbols((symbol_t*)(t1->label),(symbol_t*)(t2->label));
+   }
+}
+flatten_transition(_t1);
+flatten_transition(_t2);
 }
 
 
 
-
-void trans_developp(transition_t * trans) {
-
-  transition_t * t1, * t2;
-
-  //  debug("trans_developp("); transitions_dump(trans); errprintf(")\n");
-
-  for (t1 = trans; t1; t1 = t1->next) { symbols_developp(t1->label); }
-
-  for (t1 = trans; t1; t1 = t1->next) {
-    for (t2 = t1->next; t2; t2 = t2->next) {
-      symbols_developp(t1->label, t2->label);
-    }
-  }
-
-  trans_flatten(trans);
+/**
+ * Expands the given transition list, so that all its symbols
+ * with have empty intersection between them.
+ */
+void expand_transitions(Transition* trans) {
+Transition* t1;
+Transition* t2;
+for (t1=trans;t1!=NULL;t1=t1->next) {
+   expand_symbols((symbol_t*)t1->label);
+}
+for (t1=trans;t1!=NULL;t1=t1->next) {
+   for (t2=t1->next;t2!=NULL;t2=t2->next) {
+      expand_symbols((symbol_t*)(t1->label),(symbol_t*)(t2->label));
+   }
+}
+flatten_transition(trans);
 }
 
 
-
-void trans_developp(state_t * q1, state_t * q2) {
-
-  //  debug("DEVEL %d   %d +++++++\n", q1, q2);
-
-  trans_developp(q1->trans, q2->trans);
-
-  if (q1->defto != -1) { // q1 a une transition par defaut
-
-    /* pour chaque symbole s en partance de q2 mais pas de q1
-     * on rajoute la transition (q1, s, q1->defto)
-     */
-
-    for (transition_t * t = q2->trans; t; t = t->next) {
-      if (trans_lookup(q1->trans, t->label) == NULL) {
-	q1->trans = transition_new(q1->defto, t->label, q1->trans);
+/**
+ * This function takes two states and expands their transitions, including
+ * the default ones, if any.
+ */
+void expand_transitions(SingleGraphState q1,SingleGraphState q2) {
+expand_transitions(q1->outgoing_transitions,q2->outgoing_transitions);
+if (q1->default_state!=-1) {
+   /* If q1 has a default transition, then for each
+    * symbol s that tags a transition from q2 but not from 
+    * q1, we add a transition q1 --s--> q1's default state */
+   for (Transition* t=q2->outgoing_transitions;t!=NULL;t=t->next) {
+      if (Transition_lookup(q1->outgoing_transitions,(symbol_t*)t->label)==NULL) {
+         add_outgoing_transition(q1,t->label,q1->default_state);
       }
-    }
-  }
-
-  if (q2->defto != -1) { // q2 a une transition par defaut
-
-    /* idem
-     */
-
-    for (transition_t * t = q1->trans; t; t = t->next) {
-      if (trans_lookup(q2->trans, t->label) == NULL) {
-	q2->trans = transition_new(q2->defto, t->label, q2->trans);
+   }
+}
+if (q2->default_state!=-1) {
+   /* If q2 has a default transition, the same as above */
+   for (Transition* t=q1->outgoing_transitions;t!=NULL;t=t->next) {
+      if (Transition_lookup(q2->outgoing_transitions,(symbol_t*)t->label)==NULL) {
+         add_outgoing_transition(q2,t->label,q2->default_state);
       }
+   }
+}
+}
+
+
+/**
+ * Expands all the transitions in the original states that belong
+ * to state set of the given new state.
+ */
+void expand_transitions(STATE_t* Q) {
+for (state_id* id=Q->original_state_set->state_list;id!=NULL;id=id->next) {
+   /* First, we expand the transitions of the original states of Q */
+   SingleGraphState q=id->automaton->states[id->state_number];
+   expand_transitions(q->outgoing_transitions);
+}
+for (state_id* id1=Q->original_state_set->state_list;id1!=NULL;id1=id1->next) {
+   for (state_id* id2=id1->next;id2!=NULL;id2=id2->next) {
+      SingleGraphState q1=id1->automaton->states[id1->state_number];
+      SingleGraphState q2=id2->automaton->states[id2->state_number];
+      expand_transitions(q1,q2);
     }
   }
 }
 
 
-// STATE
-
-
-static void trans_developp(STATE_t * Q) {
-
-  /* developpe les transitions */
-
-  for (stateid_t * id = Q->id->first; id; id = id->next) {
-    state_t * q = id->A->states + id->no;
-
-    //    errprintf("\n<<<<<<<<<<<<<<<<<<< q=%d\n", id->no);
-    //    debug("trans_devel : "); transitions_dump(q->trans); endl(); endl();
-
-    trans_developp(q->trans);
-
-    //    debug("after devel: "); transitions_dump(q->trans); endl(); endl();
-    //    errprintf(">>>>>>>>>>>>>>>>>>>>\n\n\n");
-  }
-
-  for (stateid_t * id1 = Q->id->first; id1; id1 = id1->next) {
-    for (stateid_t * id2 = id1->next; id2; id2 = id2->next) {
-
-      //      debug("DEVEL %dx%d\n", id1->no, id2->no);
-
-      state_t * q1 = id1->A->states + id1->no;
-      state_t * q2 = id2->A->states + id2->no;
-
-      trans_developp(q1, q2);
-    }
-  }
-  /* tous les symboles sont developpes */  
-}
-
-
-
-
-
-/* les transitions doivent etre developpees */
-
-static void make_TRANS(STATE_t * Q) {
-
-  //  debug("make_TRANS\n");
-
-  for (stateid_t * id = Q->id->first; id; id = id->next) {
-
-    //    debug("id=%d\n", id->no);
-
-    state_t * q = id->A->states + id->no;
-
-    if (q->defto != -1) { state_ens_add(Q->transdef, id->A, q->defto); }
-
-    for (transition_t * t = q->trans; t; t = t->next) {
-
-      TRANS_t * T;
-      if ((T = TRANS_lookup(Q->trans, t->label)) == NULL) { // new symbol
-	//	debug("new symmbol: "); symbols_dump(t->label); endl();
-	T = TRANS_new(t->label, Q->trans);
-	Q->trans = T;
+/**
+ * This function builds the transitions field of
+ * the given STATE_t. Note that transitions must have been
+ * expanded before doing this.
+ */
+void build_TRANS_t(STATE_t* Q) {
+for (state_id* id=Q->original_state_set->state_list;id!=NULL;id=id->next) {
+   /* We examine each state of the state set */
+   SingleGraphState q=id->automaton->states[id->state_number];
+   if (q->default_state!=-1) {
+      state_set_add(Q->default_transition,id->automaton,q->default_state);
+   }
+   for (Transition* t=q->outgoing_transitions;t!=NULL;t=t->next) {
+      TRANS_t* T;
+      if ((T=TRANS_t_lookup(Q->transitions,(symbol_t*)t->label))==NULL) {
+         /* If we have to create a new symbol */
+         T=new_TRANS_t((symbol_t*)t->label,Q->transitions);
+         Q->transitions=T;
       }
-
-      state_ens_add(T->to, id->A, t->to);
-    }
-  }
+      state_set_add(T->destination,id->automaton,t->state_number);
+   }
+}
 }
 
 
-
-
-STATE_t * STATE_new(state_ens_t * ens) {
-
-  //  debug("STATE_new("); state_ens_dump(id); errprintf(")\n");
-
-  STATE_t * res = (STATE_t *) xmalloc(sizeof(STATE_t));
-
-  res->id = state_ens_dup(ens);
-
-  res->trans = NULL;
-  res->transdef = state_ens_new();
-
-  /* flags stuffs
-   * tous les etats sont initiaux => Q est initial
-   * un des etats est terminal    => Q est terminal
-   */
-
-  res->flags = AUT_INITIAL;
-
-  for (stateid_t * id = res->id->first; id; id = id->next) {
-    if (!(id->A->states[id->no].flags & AUT_INITIAL)) { res->flags &= ~(AUT_INITIAL); }
-    if (id->A->states[id->no].flags & AUT_TERMINAL)   { res->flags |= AUT_TERMINAL;   }
-  }
-
-
-  /* developpe les transitions dans l'automate original */
-
-  /*
-  debug("before trans_devel :\n");
-  for (stateid_t * id = res->id->first; id; id = id->next) {
-    debug("%d: ", id->no); transitions_dump(id->A->states[id->no].trans); endl();
-  }
-  */
-  trans_developp(res);
-
-  /*
-  debug("after trans_devel :\n");
-  for (stateid_t * id = res->id->first; id; id = id->next) {
-    debug("%d: ", id->no); transitions_dump(id->A->states[id->no].trans); endl();
-  }
-  */
-
-  make_TRANS(res);
-
-  /*
-  debug("after make_TRANS:\n");
-  TRANSs_dump(res->trans); endl();
-  */
-
-  return res;
+/**
+ * Allocates, initializes and returns a new STATE_t from the
+ * given state set.
+ */
+STATE_t* new_STATE_t(state_set* s) {
+STATE_t* res=(STATE_t *)malloc(sizeof(STATE_t));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_STATE_t\n");
+}
+res->original_state_set=clone_state_set(s);
+res->transitions=NULL;
+res->default_transition=new_state_set();
+/* Flags stuffs:
+ * are states are initial ones => Q is an initial one
+ * one state is a final one    => Q is a final one
+ */
+res->flags=AUT_INITIAL;
+for (state_id* id=res->original_state_set->state_list;id!=NULL;id=id->next) {
+   if (!is_initial_state(id->automaton->states[id->state_number])) {
+      res->flags&=~(AUT_INITIAL);
+   }
+   if (is_final_state(id->automaton->states[id->state_number])) {
+      res->flags|=AUT_TERMINAL;
+   }
+}
+/* We expand the transitions of the original automaton */
+expand_transitions(res);
+/* And we build the transitions of our STATE_t */
+build_TRANS_t(res);
+return res;
 }
 
 
-void STATE_delete(STATE_t * Q) {
-  state_ens_delete(Q->id);
-  TRANSs_delete(Q->trans);
-  state_ens_delete(Q->transdef);
-  free(Q);
+/**
+ * Frees all the memory associated to the given STATE_t.
+ */
+void free_STATE_t(STATE_t* Q) {
+if (Q==NULL) return;
+free_state_set(Q->original_state_set);
+free_TRANS_t_list(Q->transitions);
+free_state_set(Q->default_transition);
+free(Q);
 }
 
 

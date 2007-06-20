@@ -19,83 +19,103 @@
   *
   */
 
-#ifndef _STATE_ENS_H_
-#define _STATE_ENS_H_
+#ifndef ElagStateSetH
+#define ElagStateSetH
 
 #include "symbol.h"
 #include "autalmot.h"
 
-
-typedef struct stateid_t {
-  Fst2Automaton * A;
-  int no;
-  struct stateid_t * next;
-} stateid_t;
+/**
+ * This library is designed to manipulate set of ELAG grammars' states
+ * and transitions during algorithms like determinization.
+ */
 
 
-typedef struct state_ens_t {
-  stateid_t * first;
-  int size;
-} state_ens_t;
+
+/**
+ * This structure represents a list of states. Each state
+ * is characterized by the automaton it belongs to and its
+ * state number in this automaton.
+ */
+typedef struct state_id_ {
+   SingleGraph automaton;
+   int state_number;
+   struct state_id_* next;
+} state_id;
 
 
-typedef struct TRANS_t {
-  symbol_t    * label;  /* label est partagé */
-  state_ens_t * to;
-  TRANS_t     * next;
+/**
+ * This structure represents a state set.
+ */
+typedef struct {
+   /* The list of states that is supposed to be sorted by
+    * increasing state numbers */
+   state_id* state_list;
+   /* The size of this list */
+   int size;
+} state_set;
+
+
+/**
+ * During the determinization, this structure represents a
+ * transition list in the new automaton. It is tagged with a symbol_t*
+ * and it points to a state set.
+ */
+typedef struct TRANS_t_ {
+  symbol_t* label;
+  state_set* destination;
+  struct TRANS_t_* next;
 } TRANS_t;
 
 
-typedef struct STATE_t {
-  state_ens_t * id;
-  int flags;
-  TRANS_t * trans;
-  state_ens_t * transdef; // transition par defaut
+/**
+ * During the determinization, this structure represents a state
+ * of the new automaton that corresponds to a state set in the
+ * original automaton.
+ */
+typedef struct {
+   state_set* original_state_set;
+   int flags;
+   TRANS_t* transitions;
+   state_set* default_transition;
 } STATE_t;
 
 
-
-/* tableau d'ensemble d'états
- * == automate sur un ensemble d'etats
+/**
+ * This structure represents an array containing state sets.
  */
-
-typedef struct state_ens_tab_t {
-  state_ens_t ** tab;
-  int tabsize;
-  int nbelems;
-} state_ens_tab_t;
-
-
-stateid_t * stateid_new(Fst2Automaton * A, int no, stateid_t * next = NULL);
-void stateid_delete(stateid_t * id);
-
-
-state_ens_t * state_ens_new();
-void state_ens_delete(state_ens_t * l);
-void state_ens_add(state_ens_t * l, Fst2Automaton * A, int no);
-bool state_ens_equals(state_ens_t * l1, state_ens_t * l2);
-
-void state_ens_developp(state_ens_t * ens);
+typedef struct {
+   state_set** state_sets;
+   /* The number of state sets in the array */
+   int size;
+   /* The maximum size of the array */
+   int capacity;
+} state_set_array;
 
 
 
-TRANS_t * TRANS_new(symbol_t * s, TRANS_t * next = NULL);
-void TRANS_delete(TRANS_t * T);
-void TRANSs_delete(TRANS_t * T);
-TRANS_t * TRANS_lookup(TRANS_t * T, symbol_t * label);
 
-state_ens_tab_t * state_ens_tab_new(int size = 16);
-void state_ens_tab_delete(state_ens_tab_t * tab);
-int state_ens_tab_add(state_ens_tab_t * t, state_ens_t * l);
-int state_ens_tab_lookup(state_ens_tab_t * tab, state_ens_t * l);
+state_id* new_state_id(SingleGraph,int,state_id* next=NULL);
+void free_state_id(state_id*);
 
+state_set* new_state_set();
+void free_state_set(state_set*);
+void state_set_add(state_set*,SingleGraph,int);
+bool state_set_equals(state_set*,state_set*);
 
-STATE_t * STATE_new(state_ens_t * ens);
-void STATE_delete(STATE_t * Q);
+TRANS_t* new_TRANS_t(symbol_t*,TRANS_t* next=NULL);
+void free_TRANS_t(TRANS_t*);
+void free_TRANS_t_list(TRANS_t*);
+TRANS_t* TRANS_t_lookup(TRANS_t*,symbol_t*);
 
-void trans_developp(transition_t * t1, transition_t * t2);
-void trans_developp(transition_t * t1);
+state_set_array* new_state_set_array(int capacity=16);
+void free_state_set_array(state_set_array*);
+int state_set_array_add(state_set_array*,state_set*);
+int state_set_array_lookup(state_set_array*,state_set*);
 
-void developp_deftrans(Fst2Automaton * A, int q);
+STATE_t* new_STATE_t(state_set*);
+void free_STATE_t(STATE_t*);
+
+void flatten_transition(Transition*);
 
 #endif

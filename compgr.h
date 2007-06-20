@@ -38,8 +38,8 @@
  * ....
  */
 typedef struct {
-  Fst2Automaton* left;
-  Fst2Automaton* right;
+   SingleGraph left;
+   SingleGraph right;
 } elContext;
 
 

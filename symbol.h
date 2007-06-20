@@ -99,7 +99,9 @@ typedef enum {
  * This structure defines a list of symbols used an ELAG grammar.
  */
 typedef struct symbol_t {
-   /* The symbol type, see the enumeration above */
+   /* The symbol type, see the enumeration above. We use an integer
+    * here instead of a SymbolType, because it would raise many compilation
+    * warnings about enumeration values not handled in switches. */
    int type;
    
    /* Is the lemma a negative one ? */
