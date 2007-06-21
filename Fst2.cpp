@@ -45,7 +45,7 @@
  * Frees a state and all its transitions.
  */
 void free_Fst2State(Fst2State e) {
-free_Transition(e->transitions);
+free_Transition_list(e->transitions);
 free(e);
 }
 

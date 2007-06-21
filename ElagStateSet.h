@@ -117,5 +117,6 @@ STATE_t* new_STATE_t(state_set*);
 void free_STATE_t(STATE_t*);
 
 void flatten_transition(Transition*);
+void expand_transitions(Transition*,Transition*);
 
 #endif

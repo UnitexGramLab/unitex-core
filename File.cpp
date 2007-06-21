@@ -21,7 +21,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "FileName.h"
+#include "File.h"
 #include "Error.h"
 
 
@@ -50,17 +50,25 @@ do {
 
 
 /**
+ * Takes a file name and removes its extension, if any.
+ */
+void remove_extension(char* filename) {
+int l;
+l=strlen(filename)-1;
+while (l>=0 && filename[l]!='/' && filename[l]!='\\' && filename[l]!='.') {
+   l--;
+}
+if (filename[l]=='.') filename[l]='\0';
+}
+
+
+/**
  * Takes a file name and copies it into 'result' without its extension,
  * if any.
  */
 void remove_extension(const char* filename,char* result) {
-int l;
 strcpy(result,filename);
-l=strlen(result)-1;
-while (l>=0 && result[l]!='/' && result[l]!='\\' && result[l]!='.') {
-   l--;
-}
-if (result[l]=='.') result[l]='\0';
+remove_extension(result);
 }
 
 
@@ -96,7 +104,6 @@ strcat(result,PATH_SEPARATOR_STRING);
 
 /**
  * Takes a file name and copies it without its path, if any, into 'result'.
- * 
  */
 void remove_path(char* filename,char* result) {
 int l=strlen(filename)-1;
@@ -112,6 +119,17 @@ for (int i=l+1;filename[i]!='\0';i++) {
    result[k++]=filename[i];
 }
 result[k]='\0';
+}
+
+
+/**
+ * Takes a file name and copies it without its path and extension, if
+ * any, into 'result'.
+ */
+void remove_path_and_extension(char* filename,char* result) {
+char temp[FILENAME_MAX];
+remove_path(filename,temp);
+remove_extension(temp,result);
 }
 
 
@@ -199,3 +217,26 @@ result[length_without_separator]=PATH_SEPARATOR_CHAR;
 strcpy(&(result[length_without_separator+1]),name);
 }
 
+
+/**
+ * This function copies the file 'src' into 'dest'.
+ * Author: Olivier Blanc
+ * Modified by Sébastien Paumier
+ */
+void copy_file(char* dest,char* src) {
+FILE* input=fopen(src,"rb");
+if (input==NULL) {
+   fatal_error("Unable to open '%s'\n",src);
+}
+FILE* output=fopen(dest,"wb");
+if (output==NULL) {
+   fatal_error("Unable to open '%s'\n",dest);
+}
+char buffer[4096];
+int n;
+while ((n=fread(buffer,sizeof(char),4096,input))>0) {
+   fwrite(buffer,sizeof(char),n,output);
+}
+fclose(input);
+fclose(output);
+}

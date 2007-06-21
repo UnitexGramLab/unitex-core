@@ -24,7 +24,7 @@
 
 
 /**
- * This library provides functions for manipulating file
+ * This library provides functions for manipulating files and file
  * names. File names should be stored in arrays like:
  * 
  *    char filename[FILENAME_MAX];
@@ -45,12 +45,15 @@
 void add_suffix_to_file_name(char*,char*,const char*);
 void add_prefix_to_file_name(char*,char*,const char*);
 void get_extension(const char*,char*);
+void remove_extension(char*);
 void remove_extension(const char*,char*);
 void get_path(const char*,char*);
 void get_snt_path(const char*,char*);
 void remove_path(char*,char*);
+void remove_path_and_extension(char*,char*);
 void replace_path_separator_by_colon(char*);
 void replace_colon_by_path_separator(char*);
 void new_file(const char*,const char*,char*);
+void copy_file(char*,char*);
 
 #endif

@@ -83,7 +83,7 @@ for (q=0;q<B->number_of_states;q++) {
    add_state(A);
 }
 for (q=0;q<B->number_of_states;q++) {
-   A->states[renumber[q]]->outgoing_transitions=clone_transition_list(B->states[q]->outgoing_transitions,renumber);
+   A->states[renumber[q]]->outgoing_transitions=clone_transition_list(B->states[q]->outgoing_transitions,renumber,NULL);
    A->states[renumber[q]]->default_state=(B->states[q]->default_state!=-1)?renumber[B->states[q]->default_state]:-1;
    if (is_final_state(B->states[q])) {
       set_final_state(A->states[renumber[q]]);
@@ -104,7 +104,7 @@ for (q=0;q<oldnb;q++) {
       unset_final_state(A->states[q]);
       explicit_default_transition(A,q,symbols);
       for (struct list_int* tmp=initials;tmp!=NULL;tmp=tmp->next) {
-         concat(&(A->states[q]->outgoing_transitions),clone_transition_list(A->states[renumber[tmp->n]]->outgoing_transitions));
+         concat(&(A->states[q]->outgoing_transitions),clone_transition_list(A->states[renumber[tmp->n]]->outgoing_transitions,NULL,NULL));
          if (is_final_state(A->states[renumber[tmp->n]])) {
             set_final_state(A->states[q]);
          }

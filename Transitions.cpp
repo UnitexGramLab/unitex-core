@@ -75,12 +75,12 @@ return new_Transition(label,state_number,NULL);
 /**
  * Frees a transition list.
  */
-void free_Transition(Transition* t,void(*free_tag)(void*)) {
+void free_Transition_list(Transition* t,void(*free_tag)(void*)) {
 Transition* tmp;
 while (t!=NULL) {
    tmp=t;
    t=t->next;
-   if (free_tag!=NULL) {
+   if (free_tag!=NULL && tmp->label!=NULL) {
       free_tag(tmp->label);
    }
    free(tmp);
@@ -91,8 +91,20 @@ while (t!=NULL) {
 /**
  * Frees a transition list.
  */
-void free_Transition(Transition* t) {
-free_Transition(t,NULL);
+void free_Transition_list(Transition* t) {
+free_Transition_list(t,NULL);
+}
+
+
+/**
+ * Frees a single transition.
+ */
+void free_Transition(Transition* t,void(*free_tag)(void*)) {
+if (t==NULL) return;
+if (free_tag!=NULL && t->label!=NULL) {
+   free_tag(t->label);
+}
+free(t);
 }
 
 
@@ -134,26 +146,35 @@ if (ptr==NULL) {
 
 /**
  * Returns a clone of the given transition, whatever it's tagged by
- * an integer or a pointer.
+ * an integer or a pointer. If 'clone_tag_label' is not NULL,
+ * this function is used to duplicate t's pointer label.
  */
-Transition* clone_transition(Transition* t) {
+Transition* clone_transition(Transition* t,void*(*clone_tag_label)(void*)) {
 Transition* transition;
 transition=(Transition*)malloc(sizeof(Transition));
 if (transition==NULL) {
   fatal_error("Not enough memory in clone_transition\n");
 }
-memcpy(transition,t,sizeof(Transition));
+if (clone_tag_label==NULL) {
+   memcpy(transition,t,sizeof(Transition));
+} else {
+   transition->label=clone_tag_label(t->label);
+   transition->state_number=t->state_number;
+   transition->next=t->next;
+}
 return transition;
 }
 
 
 /**
  * Clones the given transition list. If 'renumber' is not NULL, it
- * is used to renumber destination states on the fly.
+ * is used to renumber destination states on the fly. If 
+ * 'clone_tag_label' is not NULL, it is used to clone the pointer
+ * labels. If NULL, transitions are rawly copied with a memcpy.
  */
-Transition* clone_transition_list(Transition* list,int* renumber) {
+Transition* clone_transition_list(Transition* list,int* renumber,void*(*clone_tag_label)(void*)) {
 if (list==NULL) return NULL;
-Transition* result=clone_transition(list);
+Transition* result=clone_transition(list,clone_tag_label);
 result->next=NULL;
 if (renumber!=NULL) {
    result->state_number=renumber[result->state_number];
@@ -161,7 +182,7 @@ if (renumber!=NULL) {
 list=list->next;
 Transition* tmp=result;
 while (list!=NULL) {
-   tmp->next=clone_transition(list);
+   tmp->next=clone_transition(list,clone_tag_label);
    tmp->next->next=NULL;
    if (renumber!=NULL) {
       tmp->next->state_number=renumber[tmp->next->state_number];

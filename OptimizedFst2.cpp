@@ -51,7 +51,7 @@ return g;
 void free_opt_graph_call(struct opt_graph_call* list) {
 struct opt_graph_call* tmp;
 while (list!=NULL) {
-   free_Transition(list->transition);
+   free_Transition_list(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -103,7 +103,7 @@ return p;
 void free_opt_pattern(struct opt_pattern* list) {
 struct opt_pattern* tmp;
 while (list!=NULL) {
-   free_Transition(list->transition);
+   free_Transition_list(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -153,7 +153,7 @@ return t;
 void free_opt_token(struct opt_token* list) {
 struct opt_token* tmp;
 while (list!=NULL) {
-   free_Transition(list->transition);
+   free_Transition_list(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -252,7 +252,7 @@ return m;
 void free_opt_meta(struct opt_meta* list) {
 struct opt_meta* tmp;
 while (list!=NULL) {
-   free_Transition(list->transition);
+   free_Transition_list(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -303,7 +303,7 @@ return v;
 void free_opt_variable(struct opt_variable* list) {
 struct opt_variable* tmp;
 while (list!=NULL) {
-   free_Transition(list->transition);
+   free_Transition_list(list->transition);
    tmp=list;
    list=list->next;
    free(tmp);
@@ -347,14 +347,14 @@ return c;
 void free_opt_contexts(struct opt_contexts* c) {
 if (c==NULL) return;
 for (int i=0;i<c->size_positive;i++) {
-   free_Transition(c->positive_mark[i]);
+   free_Transition_list(c->positive_mark[i]);
 }
 if (c->positive_mark!=NULL) free(c->positive_mark);
 for (int i=0;i<c->size_negative;i++) {
-   free_Transition(c->negative_mark[i]);
+   free_Transition_list(c->negative_mark[i]);
 }
 if (c->negative_mark!=NULL) free(c->negative_mark);
-free_Transition(c->end_mark);
+free_Transition_list(c->end_mark);
 free(c);
 }
 
@@ -385,7 +385,7 @@ state->contexts->positive_mark[n]=new_Transition(transition->tag_number,transiti
 get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->positive_mark[n+1]));
 if (state->contexts->positive_mark[n+1]==NULL) {
    error("Positive context with no end\n");
-   free_Transition(state->contexts->positive_mark[n]);
+   free_Transition_list(state->contexts->positive_mark[n]);
    if (n==0) {
       free(state->contexts->positive_mark);
       state->contexts->positive_mark=NULL;
@@ -419,7 +419,7 @@ state->contexts->negative_mark[n]=new_Transition(transition->tag_number,transiti
 get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->negative_mark[n+1]));
 if (state->contexts->negative_mark[n+1]==NULL) {
    error("Negative context with no end\n");
-   free_Transition(state->contexts->negative_mark[n]);
+   free_Transition_list(state->contexts->negative_mark[n]);
    if (n==0) {
       free(state->contexts->negative_mark);
       state->contexts->negative_mark=NULL;
@@ -564,7 +564,7 @@ free_opt_contexts(state->contexts);
 if (state->tokens!=NULL) free(state->tokens);
 if (state->token_transitions!=NULL) {
    for (int i=0;i<state->number_of_tokens;i++) {
-      free_Transition(state->token_transitions[i]);
+      free_Transition_list(state->token_transitions[i]);
    }
    free(state->token_transitions);
 }

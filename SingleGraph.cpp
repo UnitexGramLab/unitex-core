@@ -218,10 +218,10 @@ return s;
  */
 void free_SingleGraphState(SingleGraphState s,void (*free_tag)(void*)) {
 if (s==NULL) return;
-free_Transition(s->outgoing_transitions,free_tag);
+free_Transition_list(s->outgoing_transitions,free_tag);
 /* We don't use free_tag on the reverted transitions, because there
  * would be double free problems */
-free_Transition(s->reverted_incoming_transitions);
+free_Transition_list(s->reverted_incoming_transitions);
 free(s);
 }
 
@@ -273,6 +273,14 @@ g->capacity=new_capacity;
 
 
 /**
+ * Resizes g's state array to its exact number of states.
+ */
+void resize(SingleGraph g) {
+set_state_array_capacity(g,g->number_of_states);
+}
+
+
+/**
  * Adds a new state to a SingleGraph. The function returns 
  * the new state.
  */
@@ -280,6 +288,9 @@ SingleGraphState add_state(SingleGraph g) {
 SingleGraphState s=new_SingleGraphState();
 if (g->capacity==g->number_of_states) {
    /* If necessary, we resize the state array, doubling its capacity */
+   if (g->capacity==0) {
+      g->capacity=1;
+   }
    set_state_array_capacity(g,2*(g->capacity));
 }
 g->states[g->number_of_states]=s;
@@ -326,7 +337,7 @@ for (int i=0;i<n_states;i++) {
    if (graph->states[i]!=NULL) {
       Transition* t=graph->states[i]->outgoing_transitions;
       while (t!=NULL) {
-         Transition* tmp=clone_transition(t);
+         Transition* tmp=clone_transition(t,NULL);
          tmp->state_number=i;
          tmp->next=graph->states[t->state_number]->reverted_incoming_transitions;
          graph->states[t->state_number]->reverted_incoming_transitions=tmp;
@@ -794,9 +805,9 @@ for (int i=0;i<graph->number_of_states;i++) {
 /**
  * Returns a copy of the given automaton.
  */
-SingleGraph clone(SingleGraph src) {
+SingleGraph clone(SingleGraph src,void*(*clone_tag_label)(void*)) {
 if (src==NULL) return NULL;
-SingleGraph dest=new_SingleGraph(src->number_of_states);
+SingleGraph dest=new_SingleGraph(src->number_of_states,src->tag_type);
 SingleGraphState src_state;
 SingleGraphState dest_state;
 for (int i=0;i<src->number_of_states;i++) {
@@ -805,7 +816,7 @@ for (int i=0;i<src->number_of_states;i++) {
    dest_state->default_state=src_state->default_state;
    if (is_initial_state(src_state)) set_initial_state(dest_state);
    if (is_final_state(src_state)) set_final_state(dest_state);
-   dest_state->outgoing_transitions=clone_transition_list(src_state->outgoing_transitions);
+   dest_state->outgoing_transitions=clone_transition_list(src_state->outgoing_transitions,NULL,clone_tag_label);
 }
 return dest;
 }
@@ -823,6 +834,20 @@ for (int i=0;i<graph->number_of_states;i++) {
    }
 }
 return initial_states;
+}
+
+
+/**
+ * Returns the number of the single initial state of the given graph, or
+ * -1 if there is none
+ * -2 if there are more than one
+ */
+int get_initial_state(SingleGraph A) {
+struct list_int* l=get_initial_states(A);
+if (l==NULL) return -1;
+int n=(l->next!=NULL)?-2:l->n;
+free_list_int(l);
+return n;
 }
 
 

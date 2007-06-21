@@ -234,13 +234,13 @@ return chosen;
 Transition* clean_transitions(Transition* trans, int n) {
 while (trans!=NULL && trans->state_number==n) {
    Transition* next=trans->next;
-   free_Transition(trans,(void (*)(void*))free_symbol);
+   free_Transition_list(trans,(void (*)(void*))free_symbol);
    trans=next;
 }
 for (Transition* t=trans;t!=NULL;t=t->next) {
    while (t->next!=NULL && t->next->state_number==n) {
       Transition* next=t->next->next;
-      free_Transition(t->next,(void (*)(void*))free_symbol);
+      free_Transition_list(t->next,(void (*)(void*))free_symbol);
       t->next=next;
    }
 }

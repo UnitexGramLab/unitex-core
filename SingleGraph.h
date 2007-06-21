@@ -101,7 +101,9 @@ void free_SingleGraphState(SingleGraphState,void (*free_tag)(void*)=NULL);
 void add_outgoing_transition(SingleGraphState,int,int);
 void add_outgoing_transition(SingleGraphState,void*,int);
 struct list_int* get_initial_states(SingleGraph);
+int get_initial_state(SingleGraph);
 void set_state_array_capacity(SingleGraph,int);
+void resize(SingleGraph);
 SingleGraphState add_state(SingleGraph);
 void move_SingleGraph(SingleGraph,SingleGraph*,void (*free_tag)(void*)=NULL);
 
@@ -111,7 +113,7 @@ void check_co_accessibility(SingleGraphState*,int);
 void remove_epsilon_transitions(SingleGraph);
 void remove_useless_states(SingleGraph);
 void reverse(SingleGraph);
-SingleGraph clone(SingleGraph);
+SingleGraph clone(SingleGraph,void*(*clone_tag_label)(void*)=NULL);
 
 void trim(SingleGraph);
 void determinize(SingleGraph);

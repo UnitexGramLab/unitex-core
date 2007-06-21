@@ -287,17 +287,18 @@ DICO_OBJS = Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o 
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o
 
 ELAG      = Elag
-ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o LanguageDefinition.o fst_file.o AutDeterminization.o \
+ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o fst_file.o AutDeterminization.o \
             AutMinimization.o aut-emonde.o AutConcat.o autalmot.o \
             symbol.o hash_str_table.o String_hash.o Tagset.o ustring.o \
-   		   ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o\
-            aut-topo.o aut-inter.o aut-eval.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
+   		   ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o LanguageDefinition.o\
+            aut-topo.o AutIntersection.o aut-eval.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
             BitMasks.o FIFO.o Transitions.o
  
 ELAGCOMP      = ElagComp
-ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o compgr.o autalmot.o fst_file.o hash_str_table.o String_hash.o\
-               symbol.o ustring.o AutDeterminization.o aut-inter.o ElagStateSet.o symbol_op.o LanguageDefinition.o Tagset.o \
+ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o ElagRulesCompilation.o autalmot.o\
+               fst_file.o hash_str_table.o String_hash.o\
+               symbol.o ustring.o AutDeterminization.o AutIntersection.o ElagStateSet.o symbol_op.o LanguageDefinition.o Tagset.o \
 	            AutMinimization.o SymbolAlphabet.o aut-emonde.o AutConcat.o AutComplementation.o\
 	            Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o\
 	            SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o\

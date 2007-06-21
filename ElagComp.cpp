@@ -23,25 +23,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __GNUC__  // gcc (i.e. UNIX)
-
+#ifdef __GNUC__ 
 #include <unistd.h>
-
 #elif defined(__VISUALC__)
-
 #include <DIRECT.H>
-
-#else    // Borldand
-
+#else
 #include <dir.h>
-
 #endif
 
 #include "Unicode.h"
 #include "Copyright.h"
 #include "LanguageDefinition.h"
 #include "autalmot.h"
-#include "compgr.h"
+#include "ElagRulesCompilation.h"
 #include "utils.h"
 #include "File.h"
 #include "IOBuffer.h"
@@ -84,7 +78,6 @@ int main(int argc,char** argv) {
  * the graphical interface */
 setBufferMode();
 
-char buf[FILENAME_MAX];
 char* compilename=NULL;
 char* ruledir=NULL;
 char* rules=NULL;
@@ -158,35 +151,27 @@ if (rules!=NULL && grammar!=NULL) {
 }
 if (rules!=NULL) {
    /* If we work with a rule list */
+   char directory[FILENAME_MAX];
+   char rule_file_name[FILENAME_MAX];
    if (ruledir==NULL) {
-      ruledir = dirname(strdup(rules));
-      rules   = basename(rules);
-    }
-
-    error("changing to %s directory\n", ruledir);
-    if (chdir(ruledir) == -1) { error("unable to change to %s directory.\n", ruledir); }
-
-    if (compilename == NULL) {
-
-      int l = strlen(rules);
-
-      if (strcmp(rules + l - 4, ".lst") == 0) {
-        strcpy(buf, rules);
-        strcpy(buf + l - 4, ".rul");
-      } else {
-        sprintf(buf, "%s.rul", rules);
-      }
-      compilename = buf;
-    }
-
-
-    if (compile_rules(rules, compilename) == -1) {
+      get_path(rules,directory);
+      ruledir=directory;
+      remove_path_and_extension(rules,rule_file_name);
+      rules=rule_file_name;
+   }
+   if (chdir(ruledir)==-1) {
+      fatal_error("Unable to change to %s directory\n",ruledir);
+   }
+   char output_name[FILENAME_MAX];
+   if (compilename==NULL) {
+      sprintf(output_name,"%s.rul",rules);
+      compilename=output_name;
+   }
+   if (compile_elag_rules(rules,compilename)==-1) {
       error("An error occurred\n");
       return 1;
-    }
-
-    u_printf("\nElag grammars are compiled in %s.\n", compilename);
-  
+   }
+   u_printf("\nElag grammars are compiled in %s.\n",compilename);
 } else {
    /* If we must compile a single grammar */
    u_printf("Compiling %s...\n",grammar);

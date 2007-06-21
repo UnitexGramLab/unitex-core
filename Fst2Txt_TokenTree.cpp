@@ -52,7 +52,7 @@ void free_fst2txt_token_tree(struct fst2txt_token_tree* t) {
 if (t==NULL) return;
 free_string_hash(t->hash);
 for (int i=0;i<t->size;i++) {
-   free_Transition(t->transition_array[i]);
+   free_Transition_list(t->transition_array[i]);
 }
 free(t->transition_array);
 free(t);
