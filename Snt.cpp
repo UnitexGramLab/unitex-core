@@ -53,6 +53,7 @@ new_file(path,"enter.pos",snt_files->enter_pos);
 new_file(path,"concord.ind",snt_files->concord_ind);
 new_file(path,"concord.txt",snt_files->concord_txt);
 new_file(path,"concord.html",snt_files->concord_html);
+new_file(path,"freq",snt_files->freq);
 return snt_files;
 }
 

@@ -48,6 +48,7 @@ struct snt_files {
    char concord_ind[FILENAME_MAX];
    char concord_txt[FILENAME_MAX];
    char concord_html[FILENAME_MAX];
+   char freq[FILENAME_MAX];
 };
 
 

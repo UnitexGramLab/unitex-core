@@ -66,7 +66,7 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 # USING TRE LIBRARY
 #
 DEFFLAGS = -D_NOT_UNDER_WINDOWS
-CFLAGS   = -Wall -W 
+CFLAGS   = -Wall -W -g -O0
 ifeq ($(DEBUG), yes)
 CFLAGS += 
 endif
@@ -335,6 +335,18 @@ FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
                BitMasks.o BitArray.o HashTable.o FIFO.o Pattern.o List_ustring.o\
                String_hash.o StringParsing.o Transitions.o
 
+FREQ         = Freq
+FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.o                \
+				List_int.o Alphabet.o Matches.o Frequency.o File.o                               \
+				Text_parsing.o LocatePattern.o                                                   \
+				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o        \
+				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o \
+				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
+				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
+				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
+				Stack_unichar.o Transitions.o
+
+
 FST2GRF      = Fst2Grf
 FST2GRF_OBJS = IOBuffer.o Fst2Grf.o Unicode.o Fst2.o Sentence2Grf.o\
                File.o List_int.o Error.o StringParsing.o Pattern.o\
@@ -513,7 +525,7 @@ EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segt
 PROGS__ = $(TEST) 
 
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
-		$(EXTRACT) $(FLATTEN) $(FST2GRF) \
+		$(EXTRACT) $(FLATTEN) $(FREQ) $(FST2GRF) \
 		$(FST2TXT) $(GRF2FST2) $(INFLECT) $(LOCATE) $(MERGETEXTAUTOMATON)\
 		$(NORMALIZE) $(POLYLEX) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TOKENIZE)\
@@ -529,7 +541,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
 OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OBJS)\
-		$(ELAGCOMP_OBJS) \
+		$(ELAGCOMP_OBJS) $(FREQ_OBJS) \
 		$(EXPLOSEFST2_OBJS) $(EXTRACT_OBJS) $(FLATTEN_OBJS) $(FST2GRF_OBJS)\
 		$(FST2TXT_OBJS) $(GRF2FST2_OBJS) \
 		$(INFLECT_OBJS) $(LANG_OBJS) $(LOCATE_OBJS) $(MERGETEXTAUTOMATON_OBJS)\
@@ -688,6 +700,9 @@ $(BIN_DIR)$(EXTRACT)$(EXTENSION): $(EXTRACT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FLATTEN)$(EXTENSION): $(FLATTEN_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(FREQ)$(EXTENSION): $(FREQ_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2GRF)$(EXTENSION): $(FST2GRF_OBJS)
