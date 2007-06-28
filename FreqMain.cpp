@@ -23,6 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <getopt.h>
+#include <errno.h>
+#include <limits.h>
 #include "FreqMain.h"
 #include "Unicode.h"
 #include "Text_tokens.h"
@@ -48,50 +52,95 @@ int enter_pos[MAX_ENTER_CHAR];
  * not invoke the setBufferMode function and that it does not print the
  * usage.
  */
-int main_Freq(int argc, char **argv) {
 
-if (argc!=2 && argc!=3 && argc!=4) {
-	return 0;
+#define STRINGINT(_string, _int) { \
+  char *_tmp; \
+  long _number = strtol (_string, &_tmp, 0); \
+  errno = 0; \
+  if ((errno != 0 && _number == 0) || _string == _tmp || \
+      (errno == ERANGE && (_number == LONG_MAX || _number == LONG_MIN))) \
+    { \
+      u_fprintf (stderr,"`%s' out of range", _string);; \
+      exit (EXIT_FAILURE); \
+    } \
+  else \
+  _int = (int) _number; \
 }
 
+
+int main_Freq(int argc, char **argv) {
+
+char ch;
+int option_index = 0;
+
+
+const struct option longopts[] =
+    {
+{"threshold", required_argument, NULL, 't'},
+{"thai",no_argument, NULL, 'h'},
+{"words-only", no_argument, NULL, 'o'},
+{"context-width", required_argument, NULL, 'w'},
+{NULL, 0, NULL, 0}
+    };
 struct freq_opt option;
 option.thai_mode = 0;    /* By default, we are not dealing with Thai */
 option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
 option.token_limit = 10; /* By default, the context limit is +/-10 tokens */
+option.threshold = 2;    /* By default, frequency limit for displaying tokens is 2 */
 
-if (argc!=2) {
-	/* We look for -thai */
-    if (! strcmp(argv[2],"-thai")) {
+while ((ch = getopt_long(argc, argv, "t:how:", longopts, &option_index)) != -1) {
+	switch (ch) {
+	
+	case 't':
+		STRINGINT(optarg, option.threshold);
+		if (option.threshold < 0) {
+			u_printf("threshold must be a positive value");
+			exit (EXIT_FAILURE);
+		}
+		break;
+	
+	case 'h':
 		option.thai_mode=1;
-	}
-    else if (! strcmp(argv[2],"-wordsonly")) {
+		break;
+	
+	case 'o':
 		option.words_only=1;
+		break;
+	
+	case 'w':
+		STRINGINT(optarg, option.token_limit);
+		if (option.token_limit < 1) {
+			u_printf("context width must be >= 1\n\n");
+			exit (EXIT_FAILURE);
+		}
+		break;
+	
+	default:
+		exit (EXIT_FAILURE);
+	
+	}
+}
+
+
+char text_snt[FILENAME_MAX];
+get_path ( argv[1], text_snt );
+
+if (optind < argc) {
+	if (strlen (argv[optind]) > FILENAME_MAX) {
+		u_fprintf(stderr, "`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
+		exit (EXIT_FAILURE);
 	}
 	else {
-		u_printf( "Invalid option %s\n\n", argv[2] );
-		return 1;
-	}
-
-	if (argc!=3) {
-		/* We look for -thai */
-	    if (! strcmp(argv[3],"-thai")) {
-			option.thai_mode=1;
-		}
-	    else if (! strcmp(argv[3],"-wordsonly")) {
-			option.words_only=1;
-		}
-		else {
-			u_printf( "Invalid option %s\n\n", argv[3] );
-			return 1;
-		}
-	}
+		get_path ( argv[1], text_snt );
+    }
+}
+else { /* If only version was requested then exit now */
+	u_fprintf(stderr, "no snt directory specified");
+	exit(EXIT_FAILURE);
 }
 
 /* open snt files we're going to need */
 struct snt_files* snt_files=NULL;
-
-char text_snt[FILENAME_MAX];
-get_path ( argv[1], text_snt );
 snt_files = new_snt_files_from_path(text_snt);
 
 FILE* freq=u_fopen(snt_files->freq,U_WRITE); // the output file

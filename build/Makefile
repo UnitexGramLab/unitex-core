@@ -73,7 +73,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = libtre
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre
+LIBS   = -Llibtre/lib -ltre -lJudy
 else
 #
 # IGNORING TRE LIBRARY
@@ -86,7 +86,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
 LIBTRE   = 
 CLEAN-LIBTRE   = 
-LIBS   =
+LIBS   = -lJudy
 endif
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -344,7 +344,7 @@ FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.
 				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
-				Stack_unichar.o Transitions.o
+				Stack_unichar.o Transitions.o Buffer_ng.o
 
 
 FST2GRF      = Fst2Grf
