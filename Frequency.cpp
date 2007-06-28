@@ -19,7 +19,7 @@
   *
   */
   
-#include<Judy.h>
+#include <Judy.h>
 
 #include "Frequency.h"
 #include "Unicode.h"
@@ -35,6 +35,7 @@
 	- threshold            ok
 	- order by frequency
 	- limit context width  ok
+	- words only           ok
 
 */
 
@@ -77,9 +78,14 @@ void create_freqtable( FILE *freq,
 		cod = (unsigned*)buffer_set_mid(buf,first_token *RECORDLENGTH);
 
 		/* count tokens to the left of the central token set */
-		for (i=0,p=cod; i < option.token_limit; p--) {
+		for (i=0,p=cod-1; i < option.token_limit; p--) {
 			if ( ((byte*)p)<buf->beg ) {
-				// TODO: do we need anything done here?
+				/* 
+				 * TODO: do we need anything done here? two cases: 
+				 *       either the buffer is too small or the token is 
+				 *       too close to the beginning of the file.
+				 */
+
 				break;
 			}
 			
@@ -90,7 +96,12 @@ void create_freqtable( FILE *freq,
 		/* count tokens to the right of the central token set */
 		for (i=0,p=cod+(last_token-first_token)+1; i < option.token_limit; p++) {
 			if ( ((byte*)p) >= buf->end ) {
-				// TODO: do we need anything done here?
+				/* 
+				 * TODO: do we need anything done here? two cases: 
+				 *       either the buffer is too small or the token is 
+				 *       too close to the end of the file. 
+				 */ 
+
 				break;	
 			}
 
@@ -105,9 +116,12 @@ void create_freqtable( FILE *freq,
 	u_printf("Token\tOccurrences\n"
 			 "-------------------\n");
 
-	for (i=0; i<tok->N ; i++) { 
+
+	for (i=0; i<tok->N; i++) { 
 		if (freqs[i] >= option.threshold) {
-			u_printf("%S\t%d\n",tok->token[i], freqs[i] ); 
+			if ( (option.words_only && u_is_word(tok->token[i])) || (! option.words_only) ) {
+				u_printf("%S\t%d\n",tok->token[i], freqs[i] ); 
+			}
 		}
 	}
 

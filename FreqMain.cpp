@@ -123,15 +123,13 @@ while ((ch = getopt_long(argc, argv, "t:how:", longopts, &option_index)) != -1) 
 
 
 char text_snt[FILENAME_MAX];
-get_path ( argv[1], text_snt );
-
 if (optind < argc) {
 	if (strlen (argv[optind]) > FILENAME_MAX) {
 		u_fprintf(stderr, "`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
 		exit (EXIT_FAILURE);
 	}
 	else {
-		get_path ( argv[1], text_snt );
+		get_path ( argv[optind], text_snt );
     }
 }
 else { /* If only version was requested then exit now */
