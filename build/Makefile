@@ -38,7 +38,7 @@ ifeq ($(SYSTEM),linux-like)
 ##  BEGIN LINUX  ##
 ###################
 ###################
-CC = g++
+CC = gcc
 RM      = rm -f
 INSTALL = cp
 NAME    = unitex-src
@@ -66,14 +66,14 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 # USING TRE LIBRARY
 #
 DEFFLAGS = -D_NOT_UNDER_WINDOWS
-CFLAGS   = -Wall -W -g -O0
+CFLAGS   = -Wall -W 
 ifeq ($(DEBUG), yes)
-CFLAGS += 
+CFLAGS += -g -O0 
 endif
 override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = libtre
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre -lJudy
+LIBS   = -Llibtre/lib -ltre -lJudy -lstdc++
 else
 #
 # IGNORING TRE LIBRARY
@@ -81,12 +81,12 @@ else
 DEFFLAGS = -D_NOT_UNDER_WINDOWS -DDO_NOT_USE_TRE_LIBRARY
 CFLAGS   = -Wall -W 
 ifeq ($(DEBUG), yes)
-CFLAGS += 
+CFLAGS += -g -O0 
 endif
 override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
 LIBTRE   = 
 CLEAN-LIBTRE   = 
-LIBS   = -lJudy
+LIBS   = -lJudy -lstdc++
 endif
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
