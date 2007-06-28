@@ -88,9 +88,10 @@ void create_freqtable( FILE *freq,
 
 				break;
 			}
-			
-			freqs[*p]++;
-			i++;
+			if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {	
+				freqs[*p]++;
+				i++;
+			}
 		}
 		
 		/* count tokens to the right of the central token set */
@@ -104,9 +105,10 @@ void create_freqtable( FILE *freq,
 
 				break;	
 			}
-
-			freqs[*p]++;
-			i++;
+			if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {
+				freqs[*p]++;
+				i++;
+			}
 		}
 
 		u_fgets(indbuf, INDBUFSIZE-1, ind);
@@ -119,9 +121,7 @@ void create_freqtable( FILE *freq,
 
 	for (i=0; i<tok->N; i++) { 
 		if (freqs[i] >= option.threshold) {
-			if ( (option.words_only && u_is_word(tok->token[i])) || (! option.words_only) ) {
-				u_printf("%S\t%d\n",tok->token[i], freqs[i] ); 
-			}
+			u_printf("%S\t%d\n",tok->token[i], freqs[i] ); 
 		}
 	}
 
