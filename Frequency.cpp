@@ -52,10 +52,12 @@ void create_freqtable( FILE *freq,
 	unichar indbuf[INDBUFSIZE];
 	int first_token, last_token;
 	unsigned *cod;
-	unsigned *freqs;
 
-	freqs=(unsigned *)malloc( sizeof(unsigned)*tok->N );
-	memset(freqs, 0, sizeof(unsigned)* tok->N);
+	Pvoid_t freqs=(Pvoid_t)NULL; // judy array
+	Word_t  j;                   //      index
+	Pvoid_t f;                   //      iterator
+
+
 
 	/* First, we allocate a buffer and read the "text.cod" file */
 	fseek(text,0,SEEK_END); 
@@ -89,7 +91,8 @@ void create_freqtable( FILE *freq,
 				break;
 			}
 			if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {	
-				freqs[*p]++;
+				JLI(f,freqs,*p);
+				(*(unsigned*)f)++;
 				i++;
 			}
 		}
@@ -106,10 +109,13 @@ void create_freqtable( FILE *freq,
 				break;	
 			}
 			if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {
-				freqs[*p]++;
+				JLI(f,freqs,*p);
+				(*(unsigned*)f)++;
 				i++;
 			}
 		}
+
+		
 
 		u_fgets(indbuf, INDBUFSIZE-1, ind);
 	}
@@ -118,14 +124,14 @@ void create_freqtable( FILE *freq,
 	u_printf("Token\tOccurrences\n"
 			 "-------------------\n");
 
-
-	for (i=0; i<tok->N; i++) { 
-		if (freqs[i] >= option.threshold) {
-			u_printf("%S\t%d\n",tok->token[i], freqs[i] ); 
+	j=0;
+	JLF(f, freqs, j);
+	while (f) {
+		if ((*(unsigned*)f) >= option.threshold) {
+			u_printf("%S\t%d\n",tok->token[j], *(unsigned*)f ); 
 		}
+    	JLN(f, freqs, j);
 	}
-
-	free(freqs);
 
 }
 
