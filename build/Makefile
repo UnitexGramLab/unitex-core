@@ -32,6 +32,16 @@ USE_TRE_LIBRARY = yes
 OBJ_DIR = build/
 BIN_DIR = ../bin/
 
+
+#
+# everything judy
+# 
+
+LIBJUDY = Judy
+JUDY_SRC = Judy-1.0.3
+JUDY_TGZ = ../Judy-1.0.3.tar.gz
+CLEAN-JUDY   = clean-Judy
+
 ifeq ($(SYSTEM),linux-like)
 ###################
 ###################
@@ -44,16 +54,6 @@ INSTALL = cp
 NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
-
-#
-# everything judy
-# 
-
-LIBJUDY = Judy
-JUDY_SRC = Judy-1.0.3
-JUDY_TGZ = ../Judy-1.0.3.tar.gz
-CLEAN-JUDY   = clean-Judy
-
 
 #
 # Compiling instructions for the TRE library
@@ -138,20 +138,21 @@ INSTALL_COMMAND = make USE_TRE_LIBRARY=yes install
 
 ifeq ($(USE_TRE_LIBRARY),yes)
 
-LIBS =  ../Libtre/tre.lib
-INCS =  -I"../korean" -I".."
+LIBS =  ../Libtre/tre.lib -L../$(JUDY_SRC)-win32/lib -lJudy
+#../$(JUDY_SRC)-win32/lib/Judy.lib 
+INCS =  -I"../korean" -I".." -I"../$(JUDY_SRC)-win32/include"
 #
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
 #
-CXXINCS =  -I"../korean" -I".."
+CXXINCS =  -I"../korean" -I".." -I"../$(JUDY_SRC)-win32/include"
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
 else
 
-LIBS =
-INCS =  -I"../korean" -I".."
+LIBS =  ../$(JUDY_SRC)-win32/lib/Judy.lib 
+INCS =  -I"../korean" -I".." -I"../" -I"../$(JUDY_SRC)-win32/include"
 #
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
@@ -164,7 +165,7 @@ endif
 
 APPDIR = ../../../App
 
-OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
+OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS) 
 EXTENSION = .exe
 
 
@@ -633,7 +634,7 @@ $(JUDY_SRC): $(JUDY_TGZ)
 Judy: .Judy-done $(JUDY_SRC)
 	@echo "Making Judy ..."
 	chmod +x $(JUDY_SRC)/configure
-	cd $(JUDY_SRC) && ./configure --enable-32-bit --disable-shared --enable-static && make
+	cd $(JUDY_SRC) && ./configure --disable-shared --enable-static && make
 	mkdir -p Judy/lib Judy/include
 	#cd $(JUDY_SRC)/src/obj/.libs && ar rcs libJudy.a *.o
 	cp $(JUDY_SRC)/src/obj/.libs/libJudy.a  Judy/lib/libJudy.a
