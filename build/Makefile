@@ -46,6 +46,16 @@ VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
 #
+# everything judy
+# 
+
+LIBJUDY = Judy
+JUDY_SRC = Judy-1.0.3
+JUDY_TGZ = ../Judy-1.0.3.tar.gz
+CLEAN-JUDY   = clean-Judy
+
+
+#
 # Compiling instructions for the TRE library
 #
 # (by default, the TRE library is used)
@@ -70,10 +80,10 @@ CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
 endif
-override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".."
+override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".." -IJudy/include
 LIBTRE   = libtre
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre -lJudy 
+LIBS   = -Llibtre/lib -ltre -LJudy/lib -lJudy 
 else
 #
 # IGNORING TRE LIBRARY
@@ -83,10 +93,10 @@ CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
 endif
-override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
+override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".." -I../Judy
 LIBTRE   = 
 CLEAN-LIBTRE   = 
-LIBS   = -lJudy 
+LIBS   = -LJudy/lib -lJudy
 endif
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -574,7 +584,7 @@ all: bin
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
 
-bin: $(LIBTRE) $(BINARIES)
+bin: $(LIBTRE) $(LIBJUDY) $(BINARIES)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -600,11 +610,33 @@ clean-libtre:
 	rm -rf $(TRE_SRC)
 	rm -f .libtre-done
 
+
+$(JUDY_SRC): $(JUDY_TGZ)
+	@echo "unpacking TRE library ..."
+	tar xf $(JUDY_TGZ)
+
+.Judy-done:
+	touch .Judy-done
+
+Judy: .Judy-done $(JUDY_SRC)
+	@echo "Making Judy ..."
+	chmod +x $(JUDY_SRC)/configure
+	cd $(JUDY_SRC) && ./configure --enable-32-bit --disable-shared --enable-static && make
+	mkdir -p Judy/lib Judy/include
+	#cd $(JUDY_SRC)/src/obj/.libs && ar rcs libJudy.a *.o
+	cp $(JUDY_SRC)/src/obj/.libs/libJudy.a  Judy/lib/libJudy.a
+	cp $(JUDY_SRC)/src/Judy.h Judy/include/Judy.h
+
+clean-Judy:
+	rm -rf Judy 
+	rm -rf $(JUDY_SRC)
+	rm -f .Judy-done
+
 install: bin
 	$(INSTALL) $(BINARIES) $(APPDIR)
 
 
-clean: $(CLEAN-LIBTRE)
+clean: $(CLEAN-LIBTRE) $(CLEAN-JUDY)
 	rm -f $(OBJS) $(PROGS) *~ korean/*.o korean/*~
 
 dist: clean
