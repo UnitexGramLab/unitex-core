@@ -257,6 +257,17 @@ CHECKDIC      = CheckDic
 CHECKDIC_OBJS = IOBuffer.o CheckDic.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
 				List_ustring.o Error.o StringParsing.o
 
+COLLOC         = Colloc
+COLLOC_OBJS    = IOBuffer.o Colloc.o CollocMain.o Unicode.o Text_tokens.o String_hash.o          \
+				List_int.o Alphabet.o Matches.o Frequency.o File.o                               \
+				Text_parsing.o LocatePattern.o                                                   \
+				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o        \
+				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o \
+				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
+				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
+				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
+				Stack_unichar.o Transitions.o Buffer_ng.o
+
 COMPRESS      = Compress
 COMPRESS_OBJS = IOBuffer.o Compress.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
 				String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
@@ -355,6 +366,7 @@ FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
 				Stack_unichar.o Transitions.o Buffer_ng.o
+
 
 
 FST2GRF      = Fst2Grf
@@ -534,7 +546,7 @@ EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segt
 
 PROGS__ = $(TEST) 
 
-PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
+PROGS = $(CHECKDIC) $(COLLOC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(EXTRACT) $(FLATTEN) $(FREQ) $(FST2GRF) \
 		$(FST2TXT) $(GRF2FST2) $(INFLECT) $(LOCATE) $(MERGETEXTAUTOMATON)\
 		$(NORMALIZE) $(POLYLEX) $(RECONSTRUCAO) \
@@ -550,7 +562,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
-OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OBJS)\
+OBJS  = $(CHECKDIC_OBJS) $(COLLOC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OBJS)\
 		$(ELAGCOMP_OBJS) $(FREQ_OBJS) \
 		$(EXPLOSEFST2_OBJS) $(EXTRACT_OBJS) $(FLATTEN_OBJS) $(FST2GRF_OBJS)\
 		$(FST2TXT_OBJS) $(GRF2FST2_OBJS) \
@@ -696,6 +708,9 @@ $(BIN_DIR)$(TEST)$(EXTENSION): $(TEST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CHECKDIC)$(EXTENSION): $(CHECKDIC_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(COLLOC)$(EXTENSION): $(COLLOC_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(COMPRESS)$(EXTENSION): $(COMPRESS_OBJS)
