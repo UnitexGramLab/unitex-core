@@ -37,7 +37,7 @@
 #include "StringParsing.h"
 #include "Transitions.h"
 
-#define MAX_CHARS_IN_STACK 100
+#define MAX_CHARS_IN_STACK 4096
 
 //////////////////////////////
 //Description of all classes in the current language 
