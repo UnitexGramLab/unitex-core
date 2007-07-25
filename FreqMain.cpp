@@ -74,29 +74,26 @@ char ch;
 int option_index = 0;
 
 
-const struct option longopts[] =
-    {
-{"threshold", required_argument, NULL, 't'},
-{"thai",no_argument, NULL, 'h'},
-{"words-only", no_argument, NULL, 'o'},
-{"context-width", required_argument, NULL, 'w'},
-{NULL, 0, NULL, 0}
-    };
+const struct option longopts[] = {
+	{"threshold", required_argument, NULL, 't'},
+	{"thai",no_argument, NULL, 'h'},
+	{"words-only", no_argument, NULL, 'o'},
+	{"context-width", required_argument, NULL, 'w'},
+	{"sentence-only", no_argument, NULL, 's'},
+	{NULL, 0, NULL, 0}
+};
 struct freq_opt option;
 option.thai_mode = 0;    /* By default, we are not dealing with Thai */
 option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
 option.token_limit = 10; /* By default, the context limit is +/-10 tokens */
 option.threshold = 2;    /* By default, frequency limit for displaying tokens is 2 */
+option.sentence_only=0;  /* By default, we go beyond sentence limits when counting frequencies */
 
-while ((ch = getopt_long(argc, argv, "t:how:", longopts, &option_index)) != -1) {
+while ((ch = getopt_long(argc, argv, "t:how:s", longopts, &option_index)) != -1) {
 	switch (ch) {
 	
 	case 't':
 		STRINGINT(optarg, option.threshold);
-		if (option.threshold < 0) {
-			u_printf("threshold must be a positive value");
-			exit (EXIT_FAILURE);
-		}
 		break;
 	
 	case 'h':
@@ -113,6 +110,10 @@ while ((ch = getopt_long(argc, argv, "t:how:", longopts, &option_index)) != -1) 
 			u_printf("context width must be >= 1\n\n");
 			exit (EXIT_FAILURE);
 		}
+		break;
+
+	case 's': 
+		option.sentence_only=1;
 		break;
 	
 	default:

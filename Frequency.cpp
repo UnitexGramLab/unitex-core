@@ -42,7 +42,7 @@
 void create_freqtable( FILE *freq,              
                        FILE *text,              
                        FILE *ind,               
-	                   struct text_tokens *tok, 
+                       struct text_tokens *tok, 
                        struct freq_opt option   ) {
 
 #define INDBUFSIZE 1024
@@ -56,8 +56,6 @@ void create_freqtable( FILE *freq,
 	Pvoid_t freqs=(Pvoid_t)NULL; // judy array
 	Word_t  j;                   //      index
 	Pvoid_t f;                   //      iterator
-
-
 
 	/* First, we allocate a buffer and read the "text.cod" file */
 	fseek(text,0,SEEK_END); 
@@ -81,7 +79,7 @@ void create_freqtable( FILE *freq,
 
 		/* count tokens to the left of the central token set */
 		for (i=0,p=cod-1; i < option.token_limit; p--) {
-			if ( ((byte*)p)<buf->beg ) {
+			if ( ((byte*)p) <  buf->beg ) {
 				/* 
 				 * TODO: do we need anything done here? two cases: 
 				 *       either the buffer is too small or the token is 
@@ -90,6 +88,9 @@ void create_freqtable( FILE *freq,
 
 				break;
 			}
+			if ( option.sentence_only && *p == tok->SENTENCE_MARKER ) {
+				break;
+			} 
 			if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {	
 				JLI(f,freqs,*p);
 				(*(unsigned*)f)++;
@@ -108,14 +109,15 @@ void create_freqtable( FILE *freq,
 
 				break;	
 			}
+			if ( option.sentence_only && *p == tok->SENTENCE_MARKER ) {
+				break;
+			} 
 			if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {
 				JLI(f,freqs,*p);
 				(*(unsigned*)f)++;
 				i++;
 			}
 		}
-
-		
 
 		u_fgets(indbuf, INDBUFSIZE-1, ind);
 	}
@@ -130,7 +132,7 @@ void create_freqtable( FILE *freq,
 		if ((*(unsigned*)f) >= option.threshold) {
 			u_printf("%S\t%d\n",tok->token[j], *(unsigned*)f ); 
 		}
-    	JLN(f, freqs, j);
+		JLN(f, freqs, j);
 	}
 
 }
