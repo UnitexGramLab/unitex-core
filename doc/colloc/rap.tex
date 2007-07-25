@@ -1,0 +1,114 @@
+
+\documentclass[a4paper,12pt,oneside]{article}
+
+\usepackage{amsmath}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}
+\usepackage[left=3.5cm,top=3cm,right=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{subfigure}
+\usepackage{graphicx}
+
+\setlength{\parskip}{8pt plus 8pt minus 8pt}
+\setlength{\itemsep}{12pt}
+
+\usepackage{color,hyperref,colortbl}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.3}
+\definecolor{gray}{rgb}{0.8,0.8,0.8}
+\hypersetup{colorlinks,
+            linkcolor=darkblue,urlcolor=darkblue,
+            anchorcolor=darkblue,citecolor=darkblue}
+
+\bibliographystyle{plain}
+
+\title{Implementation of Collocation Extraction in Unitex}
+\author{B. Burak Arslan}
+\date{\today}
+
+\begin{document}
+\maketitle
+\section{Introduction}
+Collocations (aka compound words and also multi-word expressions), as put
+in\cite{smadja93} are ``recurrent combinations of words that co-occur more often
+than expected by chance and that correspond to arbitrary word usages''. While
+this purely statistical definition is correct, it overlooks most of the other
+properties of collocations thus needs further refinement depending on the
+application.
+
+According to \cite{SeretanWehrli2006ACL}, collocations should rather be defined
+as: ``co-occurrence of two or more lexical items as realizations of structural
+elements within a given syntactic pattern'' or ``a sequence of two or more
+consecutive words, that has characteristics of a syntactic and semantic unit''.
+
+Study of the collocations in the pre-computing era showed that collocations have
+particular statistical distributions. Most present challenges to second language
+speakers, as most of the collocations can't be translated directly to a target
+language\footnote{e.g. think about the direct translation of the collocation
+``dead serious'' to any other language you know}
+
+Collocations are language dependent and can only be learned by observing their
+occurrence in language use; they are otherwise not
+predictable\cite{seretan2003}. Part of what is termed as \emph{Multi Word
+Expressions}, uses of collocation extraction systems are exposed in detail in
+\cite{sag02multiword}.
+
+One of the main challenges in collocation extraction is the fact that the
+collocations vary wildly in form. This suggests not only that collocations may
+appear under very different forms, but also one single collocation may have many
+forms depending on its context. For example, the collocation ``to make a
+decision'' may appear as ``\textit{the decisions} he \textit{made}'', or ``he
+\textit{made an} important \textit{decision}'', or ``he is about \textit{to make
+a decision}''.
+
+That's why a series of operations that exploit different characteristics of
+collocations must be applied to the corpora in order to obtain most accurate
+results.
+
+\section{Extraction of collocations in Unitex}
+We can say that, roughly, a hybrid collocation extraction system operates in two
+steps: Firstly, collocation candidates are extracted. Those are then fed to a
+system that apply various statistical tests to the distributions of the given
+collocations. The initial results may be combined or eliminated. This results in
+a list of multi-word collocations.
+
+\subsection{Extracting collocation candidates}
+There are two possible approaches to this problem: 
+
+\begin{description}
+\item[Deep parsing:] Apply syntactic analysis to the text (using a deep parser
+like Fips\cite{fips2007}) and extract collocation candidates basing on syntactic
+relations between words \cite{SeretanWehrli2006ACL}. This is a relatively
+complicated approach that requires a full-blown grammar and its parser for the
+target language.
+
+\item[Shallow Parsing:] Treat the text as a linear string of words, and for a
+given word, count all the occurences of other words in the vicinity of the given
+word. 
+
+But, before making relatively complex operations on raw text, it is always a
+good idea to apply a few normalizations to the text. So, operations like marking
+sentence boundaries, lemmatization, POS-tagging etc. simplifies greatly the
+lives of processess that may follow\cite{smadja93}. These operations are called
+\emph{shallow parsing} operations, because they don't analyze the structure of
+the whole sentence.
+
+While this approach is simpler to adopt, because of combinatorial explosion it
+is likely to cause, it is desirable to restrain the definition of the
+``neighborhood of a word'' to a small number. Smadja, in \cite{smadja93} states
+that 5 is a reasonable limit while Seretan and Wehrli argue, in
+\cite{SeretanWehrli2006ACL}, that this limit is too low. 
+
+Buth both seemingly agree that all words that make up a collocation reside in
+the same sentence.
+
+\end{description}
+
+\subsection{Statistical Tests}
+
+
+\bibliography{rap.bib}
+
+\end{document}
+
+
+
