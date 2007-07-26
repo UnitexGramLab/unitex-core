@@ -47,12 +47,6 @@
 #define MAX_ENTER_CHAR 1000000
 int enter_pos[MAX_ENTER_CHAR];
 
-/* 
- * This function behaves in the same way as an int main(), except that it does
- * not invoke the setBufferMode function and that it does not print the
- * usage.
- */
-
 #define STRINGINT(_string, _int) { \
   char *_tmp; \
   long _number = strtol (_string, &_tmp, 0); \
@@ -67,19 +61,57 @@ int enter_pos[MAX_ENTER_CHAR];
   _int = (int) _number; \
 }
 
+void usage(int header) {
+
+	if (header) {
+		u_printf("%S",COPYRIGHT);
+		u_printf(
+			"Creates the frequency table of words that were in the vicinity of the given word (in the .ind file)\n\n"
+		);
+	}
+
+	u_printf(
+		"Usage:\n"
+		"     Freq [OPTIONS] [snt_directory]\n"
+		"\n"
+		"Parameters:\n"
+		"     -?, --help                  Shows this message\n"
+		"     -t, --threshold=LIMIT       Words with values below LIMIT won't be displayed.\n"
+        "                                 Default: 2\n"
+		"     -h, --thai                  Thai mode on\n"
+		"     -o, --words-only            Tokens that are not words are ignored.\n"
+		"     -w, --context-width=SIZE    The size of the window the frequency values are\n" 
+        "                                 computed for. Default: 10\n"
+		"     -s, --sentence-only         When counting tokens, don't go beyond sentence\n" 
+        "                                 boundaries\n"
+        "     -c, --combination-length=N  Treat N-word combinations of all words that are\n"
+        "                                 within context as one single token. (Which is\n" 
+        "                                 different from N-grams as the words don't need\n"
+        "                                 to follow each other.\n" 
+        "                                 --== Not implemented yet ==--\n"
+		"\n"
+		"\n"
+	); 
+}
+
+/* 
+ * This function behaves in the same way as an int main(), except that it does
+ * not invoke the setBufferMode function.
+ */
 
 int main_Freq(int argc, char **argv) {
 
 char ch;
 int option_index = 0;
 
-
 const struct option longopts[] = {
-	{"threshold", required_argument, NULL, 't'},
-	{"thai",no_argument, NULL, 'h'},
-	{"words-only", no_argument, NULL, 'o'},
-	{"context-width", required_argument, NULL, 'w'},
-	{"sentence-only", no_argument, NULL, 's'},
+	{"help",               no_argument,       NULL, '?'},
+	{"threshold",          required_argument, NULL, 't'},
+	{"thai",               no_argument,       NULL, 'h'},
+	{"words-only",         no_argument,       NULL, 'o'},
+	{"context-width",      required_argument, NULL, 'w'},
+	{"sentence-only",      no_argument,       NULL, 's'},
+	{"combination-length", required_argument, NULL, 'c'},
 	{NULL, 0, NULL, 0}
 };
 struct freq_opt option;
@@ -88,10 +120,17 @@ option.words_only = 0;   /* By default, we are not restricting ourselves only to
 option.token_limit = 10; /* By default, the context limit is +/-10 tokens */
 option.threshold = 2;    /* By default, frequency limit for displaying tokens is 2 */
 option.sentence_only=0;  /* By default, we go beyond sentence limits when counting frequencies */
+option.clength=1;        /* clength short for combination length. 
+                          * By default, we look for simple words (and not MWEs). */
 
-while ((ch = getopt_long(argc, argv, "t:how:s", longopts, &option_index)) != -1) {
+while ((ch = getopt_long(argc, argv, "?t:how:sc:", longopts, &option_index)) != -1) {
 	switch (ch) {
-	
+
+	case '?':
+		usage(1);
+		exit(EXIT_SUCCESS);
+		break;	
+
 	case 't':
 		STRINGINT(optarg, option.threshold);
 		break;
@@ -107,7 +146,7 @@ while ((ch = getopt_long(argc, argv, "t:how:s", longopts, &option_index)) != -1)
 	case 'w':
 		STRINGINT(optarg, option.token_limit);
 		if (option.token_limit < 1) {
-			u_printf("context width must be >= 1\n\n");
+			u_printf("context width must be > 0\n\n");
 			exit (EXIT_FAILURE);
 		}
 		break;
@@ -116,6 +155,14 @@ while ((ch = getopt_long(argc, argv, "t:how:s", longopts, &option_index)) != -1)
 		option.sentence_only=1;
 		break;
 	
+	case 'c':
+		STRINGINT(optarg, option.clength);
+		if (option.clength < 1) {
+			u_printf("combination length must be > 0\n\n");
+			exit (EXIT_FAILURE);
+		}
+		break;
+
 	default:
 		exit (EXIT_FAILURE);
 	
@@ -133,8 +180,9 @@ if (optind < argc) {
 		get_path ( argv[optind], text_snt );
     }
 }
-else { /* If only version was requested then exit now */
-	u_fprintf(stderr, "no snt directory specified");
+else { 
+	usage(1);
+	u_fprintf(stderr, "Error: no snt directory specified\n\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -144,20 +192,20 @@ snt_files = new_snt_files_from_path(text_snt);
 
 FILE* freq=u_fopen(snt_files->freq,U_WRITE); // the output file
 if (freq==NULL) {
-   error("Cannot open file %s\n",argv[1]);
-   return 1;
+	error("Error: Cannot open file %s\n",argv[1]);
+	return 1;
 }
 
 FILE* text=fopen(snt_files->text_cod,"rb");
 if (text==NULL) {
-	error("Cannot open file %s\n",snt_files->text_cod);
+	error("Error: Cannot open file %s\n",snt_files->text_cod);
 	u_fclose(freq);
 	return 1;
 }
 
 FILE* ind=u_fopen(snt_files->concord_ind,"rb");
 if (ind==NULL) {
-	error("Cannot open file %s\n",snt_files->concord_ind);
+	error("Error: Cannot open file %s\n",snt_files->concord_ind);
 	u_fclose(freq);
 	fclose(text);
 	return 1;
@@ -165,7 +213,7 @@ if (ind==NULL) {
 
 struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
 if (tok==NULL) {
-	error("Cannot load text token file %s\n",snt_files->tokens_txt);
+	error("Error: Cannot load text token file %s\n",snt_files->tokens_txt);
 	u_fclose(freq);
 	u_fclose(ind);
 	fclose(text);
@@ -175,7 +223,7 @@ if (tok==NULL) {
 FILE* f_enter=fopen(snt_files->enter_pos,"rb");
 int n_enter_char;
 if (f_enter==NULL) {
-	error("Cannot open file %s\n",snt_files->enter_pos);
+	error("Error: Cannot open file %s\n",snt_files->enter_pos);
 	n_enter_char=0;
 }
 else {

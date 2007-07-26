@@ -36,6 +36,7 @@ struct freq_opt {
 	int token_limit;
 	unsigned threshold;
 	int sentence_only;
+	int clength;
 };
 
 void create_freqtable(FILE*,FILE*,FILE*,struct text_tokens*, struct freq_opt);
