@@ -150,7 +150,7 @@ byte *buffer_next( buffer_ng *b, size_t n, size_t s ) {
 	if (b->cpos+n+s > b->beg+b->fill) {
 
 		if (b->fpos + (b->cpos-b->beg) + n + s > b->fsize) { // beyond the end of file
-			b->cpos = b->beg-1; // so that the buffer is re-read by a buffer_move with d<0
+			b->cpos = b->beg; // so that the buffer is re-read by a buffer_move with d<0
 			fseek(b->file, 0, SEEK_END);
 			b->fpos=ftell(b->file)+1;
 			return 0;
@@ -183,6 +183,7 @@ byte *buffer_next( buffer_ng *b, size_t n, size_t s ) {
 byte *buffer_prev( buffer_ng *b, size_t n, size_t s ) {
 	byte *p;
 	int t;
+	int e=0;
 
 	if ( s > b->size ) return 0;
 
@@ -190,18 +191,33 @@ byte *buffer_prev( buffer_ng *b, size_t n, size_t s ) {
 
 	if ( b->cpos-((int)n) < b->beg ) {
 
-		if ( (((int)b->fpos) -((int)n)) <0) {    // beyond the beginning of file
+		if ( ((int)b->fpos)+ ((b->cpos-b->beg) -((int)n)) <0) {    // beyond the beginning of file
 			b->cpos = b->end+1;           // so that the buffer is re-read by a buffer_move with d>0
 			fseek(b->file, 0, SEEK_SET);
 			return 0;
 		}
 
-		b->fill=fread( (void *)b->beg, 1, t, b->file ) + (b->size-t);
-		b->fpos=ftell(b->file)- b->fill;
-		if (! b->fill) return 0;
+		p=b->beg;
+		//t = min( min( b->size-(b->cpos-b->beg), b->fpos ), b->size );
+		t = min( min( b->size-(b->cpos-b->beg), b->fpos ), b->size );
+		
+		while (p < b->cpos) {
+			*(p+t) =*p;
+			p++;
+			e++;
+		}
+
+		fseek(b->file,-t, SEEK_CUR );
+		fread( (void *)b->beg, 1, t, b->file );
+
+		b->fill=t+e;
+		b->fpos=ftell(b->file) -t;
+		fseek(b->file,b->fpos,SEEK_SET);
+		b->cpos=b->beg+b->fill-s;
+
 	}
 	else {
-		b->cpos+=n;
+		b->cpos-=n;
 	}
 
 	return b->cpos;
