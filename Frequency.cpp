@@ -29,15 +29,13 @@
 #include "Buffer_ng.h"
 #include "StringParsing.h"
 #include "Thai.h"
+#include "Stack_int.h"
 
 /* todo: 
-	- buffer               ok
-	- threshold            ok
 	- order by frequency
-	- limit context width  ok
-	- words only           ok
-
 */
+
+struct stack_int *stack;
 
 void create_freqtable( FILE *freq,              
                        FILE *text,              
@@ -53,8 +51,10 @@ void create_freqtable( FILE *freq,
 	int first_token, last_token;
 	unsigned *cod;
 
+	Pvoid_t keys=(Pvoid_t)NULL;
 	Pvoid_t freqs=(Pvoid_t)NULL; // judy array
 	Word_t  j;                   //      index
+	Word_t  l=option.clength;    //      key length
 	Pvoid_t f;                   //      iterator
 
 	/* First, we allocate a buffer and read the "text.cod" file */
@@ -73,21 +73,20 @@ void create_freqtable( FILE *freq,
 	unsigned *p;
 	int i;
 
+	stack=new_stack_int(option.clength);
+
 	while (! feof(ind) ) {
 		u_sscanf(indbuf,"%d %d",&first_token, &last_token);
 		cod = (unsigned*)buffer_set_mid(buf,first_token *RECORDLENGTH);
 
+
+
 		/* count tokens to the left of the central token set */
 		for (i=0,p=cod-1; i < option.token_limit; p--) {
 			if ( ((byte*)p) <  buf->beg ) {
-				/* 
-				 * TODO: do we need anything done here? two cases: 
-				 *       either the buffer is too small or the token is 
-				 *       too close to the beginning of the file.
-				 */
-
 				break;
 			}
+
 			if ( option.sentence_only && *p == tok->SENTENCE_MARKER ) {
 				break;
 			} 
@@ -101,14 +100,9 @@ void create_freqtable( FILE *freq,
 		/* count tokens to the right of the central token set */
 		for (i=0,p=cod+(last_token-first_token)+1; i < option.token_limit; p++) {
 			if ( ((byte*)p) >= buf->end ) {
-				/* 
-				 * TODO: do we need anything done here? two cases: 
-				 *       either the buffer is too small or the token is 
-				 *       too close to the end of the file. 
-				 */ 
-
 				break;	
 			}
+
 			if ( option.sentence_only && *p == tok->SENTENCE_MARKER ) {
 				break;
 			} 
