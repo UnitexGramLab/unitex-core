@@ -48,7 +48,8 @@ ifeq ($(SYSTEM),linux-like)
 ##  BEGIN LINUX  ##
 ###################
 ###################
-CC = g++
+CC      = g++ 
+#CC      = gcc -x c 
 RM      = rm -f
 INSTALL = cp
 NAME    = unitex-src
@@ -261,7 +262,7 @@ CHECKDIC_OBJS = IOBuffer.o CheckDic.o Unicode.o File.o DELA.o Alphabet.o String_
 COLLOC         = Colloc
 COLLOC_OBJS    = IOBuffer.o Colloc.o CollocMain.o Unicode.o Text_tokens.o String_hash.o          \
 				List_int.o Alphabet.o Matches.o Frequency.o File.o                               \
-				Text_parsing.o LocatePattern.o                                                   \
+				Text_parsing.o LocatePattern.o Stack_int.o                                       \
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o        \
 				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o \
 				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
@@ -360,7 +361,7 @@ FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
 FREQ         = Freq
 FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.o                \
 				List_int.o Alphabet.o Matches.o Frequency.o File.o                               \
-				Text_parsing.o LocatePattern.o                                                   \
+				Text_parsing.o LocatePattern.o Stack_int.o                                       \
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o        \
 				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o \
 				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
