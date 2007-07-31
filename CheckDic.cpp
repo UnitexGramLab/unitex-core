@@ -49,6 +49,8 @@ int main(int argc, char **argv) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
+int i;
+
 if (argc!=3) {
    usage();
    return 0;
@@ -171,7 +173,7 @@ u_fprintf(out,"-------------------------------------------------------------\n")
 u_fprintf(out,"----  %3d grammatical/semantic code%s",semantic_codes->size,(semantic_codes->size>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
 u_fprintf(out,"-------------------------------------------------------------\n");
 unichar comment[2000];
-for (int i=0;i<semantic_codes->size;i++) {
+for (i=0;i<semantic_codes->size;i++) {
 	/* We print the code, followed if necessary by a warning */
 	u_fprintf(out,"%S",semantic_codes->value[i]);
 	if (warning_on_code(semantic_codes->value[i],comment)) {
@@ -187,7 +189,9 @@ for (int i=0;i<semantic_codes->size;i++) {
 u_fprintf(out,"-----------------------------------------------------\n");
 u_fprintf(out,"----  %3d inflectional code%s",inflectional_codes->size,(inflectional_codes->size>1)?"s used in dictionary  ----\n":" used in dictionary  -----\n");
 u_fprintf(out,"-----------------------------------------------------\n");
-for (int i=0;i<inflectional_codes->size;i++) {
+
+
+for (i=0;i<inflectional_codes->size;i++) {
 	u_fprintf(out,"%S",inflectional_codes->value[i]);
 	if (warning_on_code(inflectional_codes->value[i],comment)) {
 		u_fprintf(out," %S",comment);

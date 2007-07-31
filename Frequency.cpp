@@ -33,6 +33,7 @@
 
 /* todo: 
 	- order by frequency
+	- count the frequency on 
 */
 
 struct stack_int *stack;
@@ -79,36 +80,34 @@ void create_freqtable( FILE *freq,
 		u_sscanf(indbuf,"%d %d",&first_token, &last_token);
 		cod = (unsigned*)buffer_set_mid(buf,first_token *RECORDLENGTH);
 
-
-
 		/* count tokens to the left of the central token set */
-		for (i=0,p=cod-1; i < option.token_limit; p--) {
-			if ( ((byte*)p) <  buf->beg ) {
+		for (i=0,p=cod-1; i < option.token_limit; p=(unsigned*)buffer_prev(buf,RECORDLENGTH,RECORDLENGTH) )  {
+			if (! p ) {
 				break;
 			}
-
-			if ( option.sentence_only && *p == tok->SENTENCE_MARKER ) {
+			if ( option.sentence_only && *p == (unsigned)tok->SENTENCE_MARKER ) {
 				break;
 			} 
 			if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {	
 				JLI(f,freqs,*p);
 				(*(unsigned*)f)++;
+				u_printf("i %d: %d\n", *p, (*(unsigned*)f) );
 				i++;
 			}
 		}
 		
 		/* count tokens to the right of the central token set */
-		for (i=0,p=cod+(last_token-first_token)+1; i < option.token_limit; p++) {
-			if ( ((byte*)p) >= buf->end ) {
+		for (i=0,p=cod+(last_token-first_token)+1; i < option.token_limit; p=(unsigned*)buffer_next(buf,RECORDLENGTH,RECORDLENGTH) ) {
+			if (! p ) {
 				break;	
 			}
-
-			if ( option.sentence_only && *p == tok->SENTENCE_MARKER ) {
+			if ( option.sentence_only && *p == (unsigned)tok->SENTENCE_MARKER ) {
 				break;
 			} 
 			if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {
 				JLI(f,freqs,*p);
 				(*(unsigned*)f)++;
+				u_printf("i %d: %d\n", *p, (*(unsigned*)f) );
 				i++;
 			}
 		}

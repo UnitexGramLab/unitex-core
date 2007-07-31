@@ -1,5 +1,28 @@
 
+ /*
+  * Unitex
+  *
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  * 
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+  *
+  */
+
 #include "Buffer_ng.h"
+
+#define byte unsigned char
 
 #define min( A, B ) ( (A)>(B)? (B) : (A) )
 #define max( A, B ) ( (A)>(B)? (A) : (B) )
@@ -55,31 +78,29 @@ int main(int argc, char **argv) {
 
 #endif
 
-
-
-
 int buffer_init ( buffer_ng *b, size_t size, FILE *file ) {
 
-	if (!b) return 1;
+	size_t pos;
+
+	if (! b    ) return 1;
+
+	if (! file ) return 1;
+	pos = ftell (file);
+	fseek(file, 0, SEEK_END);
+	b->fsize = ftell(file);
+	fseek (file, pos, SEEK_SET);	
+	if ( ferror(file) ) return 1;
 
 	b->beg    = (byte *)malloc(size+1);
+	if (! b->beg ) return 1;
+
 	b->end    = b->beg + size;
 	*(b->end) = 0;
 	b->cpos   = b->end-1;
 	b->size   = size;
 	b->fill   = 0;
-	b->file   = file;
-
-	size_t pos = ftell (file);
-	fseek(file, 0, SEEK_END);
-	b->fsize = ftell(file);
-	fseek (file, pos, SEEK_SET);	
-	
+	b->file   = file;	
 	b->fpos   = pos;
-
-	if (! b->file    ) return 1;
-	if (ferror(file) ) return 1;
-	if (! b->beg     ) return 1;
 
 	return 0;
 }
@@ -116,7 +137,9 @@ byte *buffer_set( buffer_ng *b, size_t p, size_t s ) {
 	if ( s > b->size ) return 0;
 
 	if ( (p < b->fpos) || (b->beg + (p-b->fpos+s) >= b->end) ) {
-		fseek(b->file, p, SEEK_SET); // implicit clearerr() according to man ferror
+		clearerr(b->file);
+		fseek(b->file, p, SEEK_SET); 
+		clearerr(b->file);
 
 		b->fill=fread( (void *) b->beg, 1, b->size, b->file );
 				
@@ -152,9 +175,17 @@ byte *buffer_next( buffer_ng *b, size_t n, size_t s ) {
 		if (b->fpos + (b->cpos-b->beg) + n + s > b->fsize) { // beyond the end of file
 			b->cpos = b->beg; // so that the buffer is re-read by a buffer_move with d<0
 			fseek(b->file, 0, SEEK_END);
+#ifdef BUFFER_NG_TEST
+			printf("!!");
+#endif
 			b->fpos=ftell(b->file)+1;
 			return 0;
 		}
+#ifdef BUFFER_NG_TEST
+		else {
+			printf("! ");
+		}
+#endif
 
 		p=b->cpos+n;
 		int t = min(b->size - ( b->end -(b->cpos+n) ), b->size);
@@ -173,6 +204,11 @@ byte *buffer_next( buffer_ng *b, size_t n, size_t s ) {
 	}
 	else {
 		b->cpos+=n;
+
+#ifdef BUFFER_NG_TEST
+		printf("  ");
+#endif
+
 	}
 
 //	if ( b->cpos+s > b->beg + b->fill ) return 0;

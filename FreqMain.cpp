@@ -72,13 +72,14 @@ void usage(int header) {
 
 	u_printf(
 		"Usage:\n"
-		"     Freq [OPTIONS] [snt_directory]\n"
+		"     Freq [OPTIONS] <snt_directory>\n"
 		"\n"
 		"Parameters:\n"
 		"     -?, --help                  Shows this message\n"
 		"     -t, --threshold=LIMIT       Words with values below LIMIT won't be displayed.\n"
         "                                 Default: 2\n"
-		"     -h, --thai                  Thai mode on\n"
+		"     -h, --thai                  Thai mode on\n" 
+		"                                 --== Doesn't yet have any effect ==--\n"
 		"     -o, --words-only            Tokens that are not words are ignored.\n"
 		"     -w, --context-width=SIZE    The size of the window the frequency values are\n" 
         "                                 computed for. Default: 10\n"
