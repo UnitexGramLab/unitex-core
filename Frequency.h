@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,9 @@
 #define FrequencyH
 
 #include "Text_tokens.h"
+#include <Judy.h>
 
+typedef Pvoid_t judy;
 
 /**
  * This structure is used to store information about the current
@@ -31,7 +33,7 @@
  * to functions.
  */
 struct freq_opt {
-	int thai_mode;
+	int automata;
 	int words_only;
 	int token_limit;
 	unsigned threshold;
@@ -39,7 +41,12 @@ struct freq_opt {
 	int clength;
 };
 
-void create_freqtable(FILE*,FILE*,FILE*,struct text_tokens*, struct freq_opt);
+int print_freqtable(struct snt_files *snt, struct freq_opt);
+judy create_freqtable( FILE *text,              
+                       FILE *ind,
+                       FILE *fst2,            
+                       struct text_tokens *tok, 
+                       struct freq_opt option   );
 
 
 #endif

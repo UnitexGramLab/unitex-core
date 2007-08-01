@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -46,6 +46,7 @@ new_file(path,"err.n",snt_files->err_n);
 new_file(path,"stats.n",snt_files->stats_n);
 new_file(path,"stat_dic.n",snt_files->stat_dic_n);
 new_file(path,"text.cod",snt_files->text_cod);
+new_file(path,"text.fst2",snt_files->text_fst2);
 new_file(path,"tokens.txt",snt_files->tokens_txt);
 new_file(path,"tok_by_alph.txt",snt_files->tok_by_alph_txt);
 new_file(path,"tok_by_freq.txt",snt_files->tok_by_freq_txt);
@@ -53,7 +54,6 @@ new_file(path,"enter.pos",snt_files->enter_pos);
 new_file(path,"concord.ind",snt_files->concord_ind);
 new_file(path,"concord.txt",snt_files->concord_txt);
 new_file(path,"concord.html",snt_files->concord_html);
-new_file(path,"freq",snt_files->freq);
 return snt_files;
 }
 

@@ -27,14 +27,14 @@
 #include <getopt.h>
 #include <errno.h>
 #include <limits.h>
-#include "FreqMain.h"
+
+#include "Collocation.h"
+
 #include "Unicode.h"
 #include "Text_tokens.h"
 #include "String_hash.h"
-#include "List_int.h"
 #include "Alphabet.h"
 #include "Matches.h"
-#include "Frequency.h"
 #include "File.h"
 #include "Copyright.h"
 #include "LocatePattern.h"
@@ -45,7 +45,7 @@
 /* Maximum number of new lines in a text. New lines are encoded in
  * 'enter.pos' files. Those files will disappear in the futures */
 #define MAX_ENTER_CHAR 1000000
-int enter_pos[MAX_ENTER_CHAR];
+static int enter_pos[MAX_ENTER_CHAR];
 
 /* 
  * This function behaves in the same way as an int main(), except that it does
@@ -68,7 +68,7 @@ int enter_pos[MAX_ENTER_CHAR];
 }
 
 
-int main_Freq(int argc, char **argv) {
+int main_Colloc(int argc, char **argv) {
 
 char ch;
 int option_index = 0;
@@ -76,43 +76,17 @@ int option_index = 0;
 
 const struct option longopts[] =
     {
-{"threshold", required_argument, NULL, 't'},
-{"thai",no_argument, NULL, 'h'},
-{"words-only", no_argument, NULL, 'o'},
-{"context-width", required_argument, NULL, 'w'},
+{"words-only", no_argument, NULL, 'w'},
 {NULL, 0, NULL, 0}
     };
-struct freq_opt option;
-option.thai_mode = 0;    /* By default, we are not dealing with Thai */
+struct colloc_opt option;
 option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
-option.token_limit = 10; /* By default, the context limit is +/-10 tokens */
-option.threshold = 2;    /* By default, frequency limit for displaying tokens is 2 */
 
-while ((ch = getopt_long(argc, argv, "t:how:", longopts, &option_index)) != -1) {
+while ((ch = getopt_long(argc, argv, "w", longopts, &option_index)) != -1) {
 	switch (ch) {
 	
-	case 't':
-		STRINGINT(optarg, option.threshold);
-		if (option.threshold < 0) {
-			u_printf("threshold must be a positive value");
-			exit (EXIT_FAILURE);
-		}
-		break;
-	
-	case 'h':
-		option.thai_mode=1;
-		break;
-	
-	case 'o':
-		option.words_only=1;
-		break;
-	
 	case 'w':
-		STRINGINT(optarg, option.token_limit);
-		if (option.token_limit < 1) {
-			u_printf("context width must be >= 1\n\n");
-			exit (EXIT_FAILURE);
-		}
+		option.words_only=1;
 		break;
 	
 	default:
@@ -141,57 +115,6 @@ else { /* If only version was requested then exit now */
 struct snt_files* snt_files=NULL;
 snt_files = new_snt_files_from_path(text_snt);
 
-FILE* freq=u_fopen(snt_files->freq,U_WRITE); // the output file
-if (freq==NULL) {
-   error("Cannot open file %s\n",argv[1]);
-   return 1;
-}
-
-FILE* text=fopen(snt_files->text_cod,"rb");
-if (text==NULL) {
-	error("Cannot open file %s\n",snt_files->text_cod);
-	u_fclose(freq);
-	return 1;
-}
-
-FILE* ind=u_fopen(snt_files->concord_ind,"rb");
-if (ind==NULL) {
-	error("Cannot open file %s\n",snt_files->concord_ind);
-	u_fclose(freq);
-	fclose(text);
-	return 1;
-}
-
-struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
-if (tok==NULL) {
-	error("Cannot load text token file %s\n",snt_files->tokens_txt);
-	u_fclose(freq);
-	u_fclose(ind);
-	fclose(text);
-	return 1;
-}
-
-FILE* f_enter=fopen(snt_files->enter_pos,"rb");
-int n_enter_char;
-if (f_enter==NULL) {
-	error("Cannot open file %s\n",snt_files->enter_pos);
-	n_enter_char=0;
-}
-else {
-	n_enter_char=fread(&enter_pos,sizeof(int),MAX_ENTER_CHAR,f_enter);
-	fclose(f_enter);
-}
-
-/*
- * Once we've parsed all the arguments, we call the function to create the 
- * frequency table 
- */
-
-create_freqtable(freq,text,ind,tok,option);
-u_fclose(freq);
-fclose(text);
-u_fclose(ind);
-free_text_tokens(tok);
 u_printf("Done.\n");
 
 return 0;

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,7 @@ struct snt_files {
    char stats_n[FILENAME_MAX];
    char stat_dic_n[FILENAME_MAX];
    char text_cod[FILENAME_MAX];
+   char text_fst2[FILENAME_MAX];
    char tokens_txt[FILENAME_MAX];
    char tok_by_alph_txt[FILENAME_MAX];
    char tok_by_freq_txt[FILENAME_MAX];
@@ -48,7 +49,6 @@ struct snt_files {
    char concord_ind[FILENAME_MAX];
    char concord_txt[FILENAME_MAX];
    char concord_html[FILENAME_MAX];
-   char freq[FILENAME_MAX];
 };
 
 

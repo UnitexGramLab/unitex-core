@@ -41,12 +41,6 @@
 #include "Error.h"
 #include "Snt.h"
 
-
-/* Maximum number of new lines in a text. New lines are encoded in
- * 'enter.pos' files. Those files will disappear in the futures */
-#define MAX_ENTER_CHAR 1000000
-int enter_pos[MAX_ENTER_CHAR];
-
 #define STRINGINT(_string, _int) { \
   char *_tmp; \
   long _number = strtol (_string, &_tmp, 0); \
@@ -78,8 +72,7 @@ void usage(int header) {
 		"     -?, --help                  Shows this message\n"
 		"     -t, --threshold=LIMIT       Words with values below LIMIT won't be displayed.\n"
         "                                 Default: 2\n"
-		"     -h, --thai                  Thai mode on\n" 
-		"                                 --== Doesn't yet have any effect ==--\n"
+		"     -a, --text-automata         Work on text automata instead of linear text\n"
 		"     -o, --words-only            Tokens that are not words are ignored.\n"
 		"     -w, --context-width=SIZE    The size of the window the frequency values are\n" 
         "                                 computed for. Default: 10\n"
@@ -108,7 +101,7 @@ int option_index = 0;
 const struct option longopts[] = {
 	{"help",               no_argument,       NULL, '?'},
 	{"threshold",          required_argument, NULL, 't'},
-	{"thai",               no_argument,       NULL, 'h'},
+	{"text-automata",      no_argument,       NULL, 'a'},
 	{"words-only",         no_argument,       NULL, 'o'},
 	{"context-width",      required_argument, NULL, 'w'},
 	{"sentence-only",      no_argument,       NULL, 's'},
@@ -116,7 +109,7 @@ const struct option longopts[] = {
 	{NULL, 0, NULL, 0}
 };
 struct freq_opt option;
-option.thai_mode = 0;    /* By default, we are not dealing with Thai */
+option.automata = 0;     /* By default, we work on surface string */
 option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
 option.token_limit = 10; /* By default, the context limit is +/-10 tokens */
 option.threshold = 2;    /* By default, frequency limit for displaying tokens is 2 */
@@ -136,8 +129,8 @@ while ((ch = getopt_long(argc, argv, "?t:how:sc:", longopts, &option_index)) != 
 		STRINGINT(optarg, option.threshold);
 		break;
 	
-	case 'h':
-		option.thai_mode=1;
+	case 'a':
+		option.automata=1;
 		break;
 	
 	case 'o':
@@ -187,61 +180,11 @@ else {
 	exit(EXIT_FAILURE);
 }
 
-/* open snt files we're going to need */
 struct snt_files* snt_files=NULL;
 snt_files = new_snt_files_from_path(text_snt);
 
-FILE* freq=u_fopen(snt_files->freq,U_WRITE); // the output file
-if (freq==NULL) {
-	error("Error: Cannot open file %s\n",argv[1]);
-	return 1;
-}
+print_freqtable(snt_files,option);
 
-FILE* text=fopen(snt_files->text_cod,"rb");
-if (text==NULL) {
-	error("Error: Cannot open file %s\n",snt_files->text_cod);
-	u_fclose(freq);
-	return 1;
-}
-
-FILE* ind=u_fopen(snt_files->concord_ind,"rb");
-if (ind==NULL) {
-	error("Error: Cannot open file %s\n",snt_files->concord_ind);
-	u_fclose(freq);
-	fclose(text);
-	return 1;
-}
-
-struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
-if (tok==NULL) {
-	error("Error: Cannot load text token file %s\n",snt_files->tokens_txt);
-	u_fclose(freq);
-	u_fclose(ind);
-	fclose(text);
-	return 1;
-}
-
-FILE* f_enter=fopen(snt_files->enter_pos,"rb");
-int n_enter_char;
-if (f_enter==NULL) {
-	error("Error: Cannot open file %s\n",snt_files->enter_pos);
-	n_enter_char=0;
-}
-else {
-	n_enter_char=fread(&enter_pos,sizeof(int),MAX_ENTER_CHAR,f_enter);
-	fclose(f_enter);
-}
-
-/*
- * Once we've parsed all the arguments, we call the function to create the 
- * frequency table 
- */
-
-create_freqtable(freq,text,ind,tok,option);
-u_fclose(freq);
-fclose(text);
-u_fclose(ind);
-free_text_tokens(tok);
 u_printf("Done.\n");
 
 return 0;

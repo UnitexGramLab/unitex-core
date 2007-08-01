@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -615,19 +615,42 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
  * is loaded; otherwise this parameter is taken as the number of the unique
  * graph to load. 
  */
+
+#define GRAPH_IS_EMPTY 1
+#define FILE_POINTER_NULL 2
+
 Fst2* load_fst2(char* filename,int read_names,int graph_number) {
+
 FILE* f;
 f=u_fopen(filename,U_READ);
+Fst2* fst2;
 if (f==NULL) {
 	error("Cannot open the file %s\n",filename);
 	return NULL;
 }
-Fst2* fst2=new_Fst2();
+
+int ret=load_fst2_from_file(f,read_names, &fst2, graph_number);
+
+switch (ret) {
+case GRAPH_IS_EMPTY:
+	error("Graph %s is empty\n",filename);
+	return NULL;
+}
+
+return fst2;
+
+}
+
+int load_fst2_from_file(FILE *f,int read_names,Fst2** retval, int graph_number) {
+
+if (! f) return 2;
+
+Fst2 *fst2=new_Fst2();
+
 /* We read the number of graphs contained in the fst2 */
 u_fscanf(f,"%d\n",&(fst2->number_of_graphs));
 if (fst2->number_of_graphs==0) {
-	error("Graph %s is empty\n",filename);
-	return NULL;
+	return GRAPH_IS_EMPTY;
 }
 /*
  * The 'initial_states' and 'number_of_states_per_graphs' arrays are
@@ -660,7 +683,8 @@ if (graph_number==NO_GRAPH_NUMBER_SPECIFIED) {
 	read_fst2_tags(f,fst2,max_tag_number);
 }
 u_fclose(f);
-return fst2;
+*retval=fst2;
+return 0;
 }
 
 
@@ -669,6 +693,12 @@ return fst2;
  */
 Fst2* load_fst2(char* filename,int read_names) {
 return load_fst2(filename,read_names,NO_GRAPH_NUMBER_SPECIFIED);
+}
+
+int load_fst2_from_file(FILE *f,int read_names, Fst2 **fst2) {
+	
+	return load_fst2_from_file(f,read_names,fst2,NO_GRAPH_NUMBER_SPECIFIED);
+
 }
 
 

@@ -30,14 +30,11 @@
  * freq build. It is used to avoid giving too much parameters
  * to functions.
  */
-struct freq_opt {
-	int thai_mode;
+struct colloc_opt {
 	int words_only;
-	int token_limit;
-	int threshold;
 };
 
-void create_freqtable(FILE*,FILE*,FILE*,struct text_tokens*, struct freq_opt);
+
 
 
 #endif

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -206,6 +206,10 @@ typedef struct fst2 Fst2;
 
 /* Functions for loading grammars */
 Fst2* load_fst2(char*,int);
+
+int   load_fst2_from_file(FILE*,int,Fst2 **);
+int   load_fst2_from_file(FILE*,int,Fst2 **, int);
+
 Fst2* load_one_sentence_from_fst2(char*,int);
 void free_Fst2(Fst2*);
 
