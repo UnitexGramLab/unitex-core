@@ -120,25 +120,25 @@ int print_freqtable(struct snt_files *snt, struct freq_opt option) {
 
 judy create_freqtable( FILE *text,              
                        FILE *ind,
-                       FILE *fst2,            
+                       FILE *ffst2,            
                        struct text_tokens *tok, 
                        struct freq_opt option   ) {
 
 #define INDBUFSIZE 1024
 #define RECORDLENGTH 4
 
-	int text_size;
-	unichar indbuf[INDBUFSIZE];
-	int first_token, last_token;
-	unsigned *cod;
-
 	Pvoid_t keys=(Pvoid_t)NULL;
 	Pvoid_t freqs=(Pvoid_t)NULL; // judy array
-	Word_t  j;                   //      index
+	Word_t  ji;                  //      index
 	Word_t  l=option.clength;    //      key length
 	Pvoid_t f;                   //      iterator
 
 	if (option.automata == 0) {
+		int text_size;
+		unichar indbuf[INDBUFSIZE];
+		int first_token, last_token;
+		unsigned *cod;
+
 		/* First, we allocate a buffer and read the "text.cod" file */
 		fseek(text,0,SEEK_END); 
 		text_size=ftell(text)/RECORDLENGTH;
@@ -197,9 +197,45 @@ judy create_freqtable( FILE *text,
 		}
 	}
 	else {
-		// load_fst2()
+		Fst2 *sfst2;
+		Fst2State state;
+		Transition *tran;
+		int i,j,next_state;
+		int ret;
+		
+		ret=load_fst2_from_file(ffst2,0,&sfst2);
+		if ( ret ) {
+			u_fprintf(stderr,"Error %d in %s:%d. Fst2 file could not be loaded.\n",ret, __FILE__,__LINE__);
+			return 0;
+		}
+
+		for (i=1; i<=sfst2->number_of_graphs; i++) { // for every sentence
+			j = sfst2->initial_states[i];
+			state = sfst2->states[j];
+			tran = state->transitions;
+
+			while (state) {
+				if (tran) {
+					state=sfst2->states[tran->state_number];
+					if (tran->next) u_printf( "[ " );
+					u_printf( "%S ", sfst2->tags[tran->tag_number]->input );
+
+					while (tran->next) {
+						tran=tran->next;
+						u_printf( " | %S", sfst2->tags[tran->tag_number]->input );
+						if (! tran->next) u_printf( " ] " );
+					}
+
+					tran=state->transitions;
+				}
+				else {
+					state=0;
+					u_printf( "\n" );
+				}
+			}
+		}
 	}
-	
+
 	return freqs;
 	
 }

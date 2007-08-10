@@ -72,7 +72,8 @@ void usage(int header) {
 		"     -?, --help                  Shows this message\n"
 		"     -t, --threshold=LIMIT       Words with values below LIMIT won't be displayed.\n"
         "                                 Default: 2\n"
-		"     -a, --text-automata         Work on text automata instead of linear text\n"
+		"     -a, --text-automata         Work on text automata instead of linear text.\n"
+		"                                 (Which should be used for Thai) Implies -s.\n"
 		"     -o, --words-only            Tokens that are not words are ignored.\n"
 		"     -w, --context-width=SIZE    The size of the window the frequency values are\n" 
         "                                 computed for. Default: 10\n"
@@ -117,7 +118,7 @@ option.sentence_only=0;  /* By default, we go beyond sentence limits when counti
 option.clength=1;        /* clength short for combination length. 
                           * By default, we look for simple words (and not MWEs). */
 
-while ((ch = getopt_long(argc, argv, "?t:how:sc:", longopts, &option_index)) != -1) {
+while ((ch = getopt_long(argc, argv, "?t:aow:sc:", longopts, &option_index)) != -1) {
 	switch (ch) {
 
 	case '?':

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -24,17 +24,13 @@
 #include <string.h>
 #include "Unicode.h"
 #include "Copyright.h"
-#include "FreqMain.h"
+#include "CollocMain.h"
 #include "IOBuffer.h"
 
 
 void usage(int argc, char ** argv) {
 	u_printf("%S",COPYRIGHT);
-	u_printf(
-		"Creates the frequency table of words that were in the vicinity of the given word (in the ind file)\n"
-		"Usage:\n"
-		"\t%s <snt> [-thai] [-wordsonly]\n\n", argv[0]
-	);
+	u_printf("Nothing yet\n");
 }
 
 int main(int argc, char **argv) {
@@ -50,6 +46,6 @@ int main(int argc, char **argv) {
 	 * trick allows to use the functionalities of the 'Concord' program
 	 * without having to launch an external process.
 	 */
-	return main_Freq(argc,argv);
+	return main_Colloc(argc,argv);
 }
 

@@ -98,7 +98,7 @@ switch (flatten_fst2(origin,depth,temp,RTN)) {
    case EQUIVALENT_RTN:
       u_printf("The resulting grammar is an equivalent FST2 (RTN).\n");
       break;
-   default:;
+   default:; // FIXME: What if the execution reaches here, just in case ?
 }
 free_Fst2(origin);
 remove(argv[1]);
