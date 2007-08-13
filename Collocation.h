@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,23 +19,17 @@
   *
   */
 
-#ifndef FrequencyH
-#define FrequencyH
-
-#include "Text_tokens.h"
-
+#ifndef CollocationH
+#define CollocationH
 
 /**
- * This structure is used to store information about the current
- * freq build. It is used to avoid giving too much parameters
+ * This structure is used to store information about the given
+ * Colloc arguments. It is used to avoid giving too much parameters
  * to functions.
  */
-struct colloc_opt {
+typedef struct {
 	int words_only;
-};
-
-
-
+} colloc_opt;
 
 #endif
 

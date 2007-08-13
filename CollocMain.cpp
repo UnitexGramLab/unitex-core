@@ -41,18 +41,6 @@
 #include "Error.h"
 #include "Snt.h"
 
-
-/* Maximum number of new lines in a text. New lines are encoded in
- * 'enter.pos' files. Those files will disappear in the futures */
-#define MAX_ENTER_CHAR 1000000
-static int enter_pos[MAX_ENTER_CHAR];
-
-/* 
- * This function behaves in the same way as an int main(), except that it does
- * not invoke the setBufferMode function and that it does not print the
- * usage.
- */
-
 #define STRINGINT(_string, _int) { \
   char *_tmp; \
   long _number = strtol (_string, &_tmp, 0); \
@@ -67,56 +55,56 @@ static int enter_pos[MAX_ENTER_CHAR];
   _int = (int) _number; \
 }
 
+/* 
+ * This function behaves in the same way as an int main(), except that it does
+ * not invoke the setBufferMode function and that it does not print the
+ * usage.
+ */
 
 int main_Colloc(int argc, char **argv) {
 
-char ch;
-int option_index = 0;
-
-
-const struct option longopts[] =
-    {
-{"words-only", no_argument, NULL, 'w'},
-{NULL, 0, NULL, 0}
+	char ch;
+	int option_index = 0;
+	
+	
+	const struct option longopts[] = {
+		{"words-only", no_argument, NULL, 'w'},
+		{NULL, 0, NULL, 0}
     };
-struct colloc_opt option;
-option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
-
-while ((ch = getopt_long(argc, argv, "w", longopts, &option_index)) != -1) {
-	switch (ch) {
+    
+	colloc_opt option;
+	option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
 	
-	case 'w':
-		option.words_only=1;
-		break;
-	
-	default:
-		exit (EXIT_FAILURE);
-	
+	while ((ch = getopt_long(argc, argv, "w", longopts, &option_index)) != -1) {
+		switch (ch) {
+		
+		case 'w':
+			option.words_only=1;
+			break;
+		
+		default:
+			exit (EXIT_FAILURE);
+		
+		}
 	}
-}
-
-
-char text_snt[FILENAME_MAX];
-if (optind < argc) {
-	if (strlen (argv[optind]) > FILENAME_MAX) {
-		u_fprintf(stderr, "`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
-		exit (EXIT_FAILURE);
+	
+	char text_snt[FILENAME_MAX];
+	if (optind < argc) {
+		if (strlen (argv[optind]) > FILENAME_MAX) {
+			u_fprintf(stderr, "`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
+			exit (EXIT_FAILURE);
+		}
+		else {
+			get_path ( argv[optind], text_snt );
+	    }
 	}
-	else {
-		get_path ( argv[optind], text_snt );
-    }
-}
-else { /* If only version was requested then exit now */
-	u_fprintf(stderr, "no snt directory specified");
-	exit(EXIT_FAILURE);
-}
-
-/* open snt files we're going to need */
-struct snt_files* snt_files=NULL;
-snt_files = new_snt_files_from_path(text_snt);
-
-u_printf("Done.\n");
-
-return 0;
+	else { 
+		u_fprintf(stderr, "no snt directory specified");
+		exit(EXIT_FAILURE);
+	}
+	
+	u_printf("Nothing done.\n");
+	
+	return 0;
 }
 

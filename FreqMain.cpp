@@ -96,98 +96,100 @@ void usage(int header) {
 
 int main_Freq(int argc, char **argv) {
 
-char ch;
-int option_index = 0;
-
-const struct option longopts[] = {
-	{"help",               no_argument,       NULL, '?'},
-	{"threshold",          required_argument, NULL, 't'},
-	{"text-automata",      no_argument,       NULL, 'a'},
-	{"words-only",         no_argument,       NULL, 'o'},
-	{"context-width",      required_argument, NULL, 'w'},
-	{"sentence-only",      no_argument,       NULL, 's'},
-	{"combination-length", required_argument, NULL, 'c'},
-	{NULL, 0, NULL, 0}
-};
-struct freq_opt option;
-option.automata = 0;     /* By default, we work on surface string */
-option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
-option.token_limit = 10; /* By default, the context limit is +/-10 tokens */
-option.threshold = 2;    /* By default, frequency limit for displaying tokens is 2 */
-option.sentence_only=0;  /* By default, we go beyond sentence limits when counting frequencies */
-option.clength=1;        /* clength short for combination length. 
-                          * By default, we look for simple words (and not MWEs). */
-
-while ((ch = getopt_long(argc, argv, "?t:aow:sc:", longopts, &option_index)) != -1) {
-	switch (ch) {
-
-	case '?':
+	char ch;
+	int option_index = 0;
+	
+	const struct option longopts[] = {
+		{"help",               no_argument,       NULL, '?'},
+		{"threshold",          required_argument, NULL, 't'},
+		{"text-automata",      no_argument,       NULL, 'a'},
+		{"words-only",         no_argument,       NULL, 'o'},
+		{"context-width",      required_argument, NULL, 'w'},
+		{"sentence-only",      no_argument,       NULL, 's'},
+		{"combination-length", required_argument, NULL, 'c'},
+		{NULL, 0, NULL, 0}
+	};
+	freq_opt option;
+	option.automata = 0;     /* By default, we work on surface string */
+	option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
+	option.token_limit = 10; /* By default, the context limit is +/-10 tokens */
+	option.threshold = 2;    /* By default, frequency limit for displaying tokens is 2 */
+	option.sentence_only=0;  /* By default, we go beyond sentence limits when counting frequencies */
+	option.clength=1;        /* clength short for combination length. 
+	                          * By default, we look for simple words (and not MWEs). */
+	
+	while ((ch = getopt_long(argc, argv, "?t:aow:sc:", longopts, &option_index)) != -1) {
+		switch (ch) {
+	
+		case '?':
+			usage(1);
+			exit(EXIT_SUCCESS);
+			break;	
+	
+		case 't':
+			STRINGINT(optarg, option.threshold);
+			break;
+		
+		case 'a':
+			option.automata=1;
+			break;
+		
+		case 'o':
+			option.words_only=1;
+			break;
+		
+		case 'w':
+			STRINGINT(optarg, option.token_limit);
+			if (option.token_limit < 1) {
+				u_printf("context width must be > 0\n\n");
+				exit (EXIT_FAILURE);
+			}
+			break;
+	
+		case 's': 
+			option.sentence_only=1;
+			break;
+		
+		case 'c':
+			STRINGINT(optarg, option.clength);
+			if (option.clength < 1) {
+				u_printf("combination length must be > 0\n\n");
+				exit (EXIT_FAILURE);
+			}
+			break;
+	
+		default:
+			exit (EXIT_FAILURE);
+		
+		}
+	}
+	
+	
+	char text_snt[FILENAME_MAX];
+	if (optind < argc) {
+		if (strlen (argv[optind]) > FILENAME_MAX) {
+			u_fprintf(stderr, "`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
+			exit (EXIT_FAILURE);
+		}
+		else {
+			get_path ( argv[optind], text_snt );
+	    }
+	}
+	else { 
 		usage(1);
-		exit(EXIT_SUCCESS);
-		break;	
-
-	case 't':
-		STRINGINT(optarg, option.threshold);
-		break;
-	
-	case 'a':
-		option.automata=1;
-		break;
-	
-	case 'o':
-		option.words_only=1;
-		break;
-	
-	case 'w':
-		STRINGINT(optarg, option.token_limit);
-		if (option.token_limit < 1) {
-			u_printf("context width must be > 0\n\n");
-			exit (EXIT_FAILURE);
-		}
-		break;
-
-	case 's': 
-		option.sentence_only=1;
-		break;
-	
-	case 'c':
-		STRINGINT(optarg, option.clength);
-		if (option.clength < 1) {
-			u_printf("combination length must be > 0\n\n");
-			exit (EXIT_FAILURE);
-		}
-		break;
-
-	default:
-		exit (EXIT_FAILURE);
-	
+		u_fprintf(stderr, "Error: no snt directory specified\n\n");
+		exit(EXIT_FAILURE);
 	}
-}
-
-
-char text_snt[FILENAME_MAX];
-if (optind < argc) {
-	if (strlen (argv[optind]) > FILENAME_MAX) {
-		u_fprintf(stderr, "`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
-		exit (EXIT_FAILURE);
-	}
-	else {
-		get_path ( argv[optind], text_snt );
-    }
-}
-else { 
-	usage(1);
-	u_fprintf(stderr, "Error: no snt directory specified\n\n");
-	exit(EXIT_FAILURE);
-}
-
-struct snt_files* snt_files=NULL;
-snt_files = new_snt_files_from_path(text_snt);
-
-print_freqtable(snt_files,option);
-
-u_printf("Done.\n");
-
-return 0;
+	
+	struct snt_files* snt_files=NULL;
+	snt_files = new_snt_files_from_path(text_snt);
+	judy freqtable;
+	
+	freqtable=create_freqtable(snt_files, option);
+	print_freqtable(freqtable, option.threshold);
+	
+	u_printf("Done.\n");
+	
+	return 0;
 }
 

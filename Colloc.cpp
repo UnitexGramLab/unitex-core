@@ -27,21 +27,12 @@
 #include "CollocMain.h"
 #include "IOBuffer.h"
 
-
-void usage(int argc, char ** argv) {
-	u_printf("%S",COPYRIGHT);
-	u_printf("Nothing yet\n");
-}
-
 int main(int argc, char **argv) {
 	/* Every Unitex program must start by this instruction,
 	 * in order to avoid display problems when called from
 	 * the graphical interface */
 	setBufferMode();
-	if (argc!=2 && argc!=3 && argc!=4) {
-		usage(argc, argv);
-		return 0;
-	}
+
 	/* We call an artificial main function located in 'ConcordMain'. This
 	 * trick allows to use the functionalities of the 'Concord' program
 	 * without having to launch an external process.

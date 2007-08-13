@@ -32,21 +32,23 @@ typedef Pvoid_t judy;
  * freq build. It is used to avoid giving too much parameters
  * to functions.
  */
-struct freq_opt {
+typedef struct {
 	int automata;
 	int words_only;
 	int token_limit;
 	unsigned threshold;
 	int sentence_only;
 	int clength;
-};
+} freq_opt;
 
-int print_freqtable(struct snt_files *snt, struct freq_opt);
-judy create_freqtable( FILE *text,              
-                       FILE *ind,
-                       FILE *fst2,            
-                       struct text_tokens *tok, 
-                       struct freq_opt option   );
+typedef struct {
+	unsigned freq;
+	int      token;
+	unichar* text;	
+} freq_entry;
+
+int print_freqtable(judy freqs, unsigned threshold );
+judy create_freqtable( struct snt_files *snt, freq_opt option );
 
 
 #endif
