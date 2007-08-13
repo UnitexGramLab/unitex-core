@@ -38,7 +38,7 @@ static int enter_pos[MAX_ENTER_CHAR];
 
 /* todo: 
 	- order by frequency
-	- count the frequency on 
+	- count the frequency on text automata
 */
 
 struct stack_int *stack;
@@ -93,36 +93,36 @@ int print_freqtable(struct snt_files *snt, struct freq_opt option) {
 	if (freqs == NULL) {
 		u_fprintf(stderr,"There was a fatal problem while computing frequencies\n");
 		return 1;
-	}	
+	}
 	else {
 		/* show the results */
-		u_printf("Token\tOccurrences\n"
-				 "-------------------\n");
-	
+		u_fprintf(stderr,"Frequency\tToken\n"
+				         "---------------------\n");
+
 		Word_t j=0;
 		Pvoid_t f;
-		
+
 		JLF(f, freqs, j);
 		while (f) {
 			if ((*(unsigned*)f) >= option.threshold) {
-				u_printf("%S\t%d\n",tok->token[j], *(unsigned*)f ); 
+				u_printf("%d\t%S\n", *(unsigned*)f,tok->token[j] ); 
 			}
 			JLN(f, freqs, j);
 		}
-		
+
 		free_text_tokens(tok);
 
 	}
-	
+
 	return 0;
-} 
+}
 
 
-judy create_freqtable( FILE *text,              
-                       FILE *ind,
-                       FILE *ffst2,            
-                       struct text_tokens *tok, 
-                       struct freq_opt option   ) {
+judy create_freqtable( FILE *text
+                      ,FILE *ind
+                      ,FILE *ffst2
+                      ,struct text_tokens *tok
+                      ,struct freq_opt option  ) {
 
 #define INDBUFSIZE 1024
 #define RECORDLENGTH 4
@@ -159,36 +159,35 @@ judy create_freqtable( FILE *text,
 	
 		while (! feof(ind) ) {
 			u_sscanf(indbuf,"%d %d",&first_token, &last_token);
+			u_printf("%d %d\n", first_token, last_token);
 			cod = (unsigned*)buffer_set_mid(buf,first_token *RECORDLENGTH);
 	
 			/* count tokens to the left of the central token set */
 			for (i=0,p=cod-1; i < option.token_limit; p=(unsigned*)buffer_prev(buf,RECORDLENGTH,RECORDLENGTH) ) {
-				if (! p ) {
+				if (! p ) { // end of file
 					break;
 				}
-				if ( option.sentence_only && *p == (unsigned)tok->SENTENCE_MARKER ) {
+				if ( option.sentence_only && *p == (unsigned)tok->SENTENCE_MARKER ) { // end of sentence
 					break;
 				} 
 				if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {	
 					JLI(f,freqs,*p);
 					(*(unsigned*)f)++;
-					u_printf("i %d: %d\n", *p, (*(unsigned*)f) );
 					i++;
 				}
 			}
 			
 			/* count tokens to the right of the central token set */
 			for (i=0,p=cod+(last_token-first_token)+1; i < option.token_limit; p=(unsigned*)buffer_next(buf,RECORDLENGTH,RECORDLENGTH) ) {
-				if (! p ) {
+				if (! p ) { // end of file
 					break;	
 				}
-				if ( option.sentence_only && *p == (unsigned)tok->SENTENCE_MARKER ) {
+				if ( option.sentence_only && *p == (unsigned)tok->SENTENCE_MARKER ) { // end of sentence
 					break;
 				} 
 				if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {
 					JLI(f,freqs,*p);
 					(*(unsigned*)f)++;
-					u_printf("i %d: %d\n", *p, (*(unsigned*)f) );
 					i++;
 				}
 			}
@@ -214,11 +213,12 @@ judy create_freqtable( FILE *text,
 			state = sfst2->states[j];
 			tran = state->transitions;
 
-			while (state) {
+			while (state) { // FIXME: we need a way to associate states with token ids.
 				if (tran) {
 					state=sfst2->states[tran->state_number];
 					if (tran->next) u_printf( "[ " );
-					u_printf( "%S ", sfst2->tags[tran->tag_number]->input );
+					if (tran->state_number == 2263) 
+						u_printf( "%S ", sfst2->tags[tran->tag_number]->input );
 
 					while (tran->next) {
 						tran=tran->next;
