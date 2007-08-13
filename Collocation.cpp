@@ -1,3 +1,4 @@
+
  /*
   * Unitex
   *
@@ -20,9 +21,67 @@
   */
 
 
+#include <Judy.h>
+
 #include "Collocation.h"
-#include "Unicode.h"
 #include "Buffer_ng.h"
+#include "Unicode.h"
+#include "Error.h"
+#include "Fst2.h"
+
+typedef Pvoid_t judy;
+
+judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
+
+	Fst2 *sfst2=NULL;
+	Fst2State state;
+	Transition *tran=NULL;
+	judy retval;
+
+	int i,j;
+	int ret;
 
 
+	FILE* ffst2=NULL;
+	ffst2=u_fopen(snt->text_fst2,"rb");
+	if (! ffst2) {
+		error("Error: Cannot open file %s\n",snt->text_fst2);
+		return NULL;
+	}
+	
+	ret=load_fst2_from_file(ffst2,0,&sfst2);
+	if ( ret ) {
+		u_fprintf(stderr,"Error %d in %s:%d. Fst2 file could not be loaded.\n",ret, __FILE__,__LINE__);
+		return 0;
+	}
+
+	for (i=1; i<=sfst2->number_of_graphs; i++) { // for every sentence
+		j = sfst2->initial_states[i];
+		state = sfst2->states[j];
+		tran = state->transitions;
+
+		while (state) { 
+			if (tran) {
+				state=sfst2->states[tran->state_number];
+				if (tran->next) u_printf( "[ " );
+				u_printf( "%S ", sfst2->tags[tran->tag_number]->input );
+
+				while (tran->next) {
+					tran=tran->next;
+					u_printf( " | %S", sfst2->tags[tran->tag_number]->input );
+					if (! tran->next) u_printf( " ] " );
+				}
+
+				tran=state->transitions;
+			}
+			else {
+				state=0;
+				u_printf( "\n" );
+			}
+		}
+	}
+
+	return retval;
+	
+}
 

@@ -18,7 +18,10 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-  
+
+#include <Judy.h>
+typedef Pvoid_t judy;
+
 #include "Frequency.h"
 #include "Unicode.h"
 #include "Matches.h"

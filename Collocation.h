@@ -31,5 +31,9 @@ typedef struct {
 	int words_only;
 } colloc_opt;
 
+#include "Snt.h"
+
+Pvoid_t colloc_candidates( struct snt_files *, colloc_opt option);
+
 #endif
 

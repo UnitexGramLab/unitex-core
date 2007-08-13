@@ -27,38 +27,41 @@
 #include <getopt.h>
 #include <errno.h>
 #include <limits.h>
-
-#include "Collocation.h"
-
+#include "CollocMain.h"
 #include "Unicode.h"
 #include "Text_tokens.h"
 #include "String_hash.h"
+#include "List_int.h"
 #include "Alphabet.h"
 #include "Matches.h"
+#include "Collocation.h"
 #include "File.h"
 #include "Copyright.h"
 #include "LocatePattern.h"
 #include "Error.h"
 #include "Snt.h"
 
-#define STRINGINT(_string, _int) { \
-  char *_tmp; \
-  long _number = strtol (_string, &_tmp, 0); \
-  errno = 0; \
-  if ((errno != 0 && _number == 0) || _string == _tmp || \
-      (errno == ERANGE && (_number == LONG_MAX || _number == LONG_MIN))) \
-    { \
-      u_fprintf (stderr,"`%s' out of range", _string);; \
-      exit (EXIT_FAILURE); \
-    } \
-  else \
-  _int = (int) _number; \
+typedef Pvoid_t judy;
+
+static void usage(int header) {
+
+	if (header) {
+		u_printf("%S",COPYRIGHT);
+		u_printf(
+			"Purpose"
+		);
+	}
+
+	u_printf(
+		"Usage:\n"
+		"\n"
+		"\n"
+	); 
 }
 
 /* 
  * This function behaves in the same way as an int main(), except that it does
- * not invoke the setBufferMode function and that it does not print the
- * usage.
+ * not invoke the setBufferMode function.
  */
 
 int main_Colloc(int argc, char **argv) {
@@ -66,19 +69,22 @@ int main_Colloc(int argc, char **argv) {
 	char ch;
 	int option_index = 0;
 	
-	
 	const struct option longopts[] = {
-		{"words-only", no_argument, NULL, 'w'},
+		{"words-only",         no_argument,       NULL, 'o'},
 		{NULL, 0, NULL, 0}
-    };
-    
+	};
 	colloc_opt option;
 	option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
 	
-	while ((ch = getopt_long(argc, argv, "w", longopts, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "?o", longopts, &option_index)) != -1) {
 		switch (ch) {
-		
-		case 'w':
+	
+		case '?':
+			usage(1);
+			exit(EXIT_SUCCESS);
+			break;	
+	
+		case 'o':
 			option.words_only=1;
 			break;
 		
@@ -87,6 +93,7 @@ int main_Colloc(int argc, char **argv) {
 		
 		}
 	}
+	
 	
 	char text_snt[FILENAME_MAX];
 	if (optind < argc) {
@@ -99,11 +106,19 @@ int main_Colloc(int argc, char **argv) {
 	    }
 	}
 	else { 
-		u_fprintf(stderr, "no snt directory specified");
+		usage(1);
+		u_fprintf(stderr, "Error: no snt directory specified\n\n");
 		exit(EXIT_FAILURE);
 	}
 	
-	u_printf("Nothing done.\n");
+	struct snt_files* snt_files=NULL;
+	snt_files = new_snt_files_from_path(text_snt);
+
+	judy candidates;
+	
+	candidates=colloc_candidates(snt_files, option);
+	
+	u_printf("Done.\n");
 	
 	return 0;
 }

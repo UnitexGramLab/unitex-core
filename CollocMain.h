@@ -22,6 +22,8 @@
 #ifndef FreqMainH
 #define FreqMainH
 
+#include <Judy.h>
+
 int main_Colloc(int argc, char** argv);
 
 #endif

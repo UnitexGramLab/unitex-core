@@ -22,16 +22,15 @@
 #ifndef FrequencyH
 #define FrequencyH
 
-#include "Text_tokens.h"
 #include <Judy.h>
-
-typedef Pvoid_t judy;
+#include "Text_tokens.h"
 
 /**
  * This structure is used to store information about the current
  * freq build. It is used to avoid giving too much parameters
  * to functions.
  */
+
 typedef struct {
 	int automata;
 	int words_only;
@@ -47,8 +46,8 @@ typedef struct {
 	unichar* text;	
 } freq_entry;
 
-int print_freqtable(judy freqs, unsigned threshold );
-judy create_freqtable( struct snt_files *snt, freq_opt option );
+Pvoid_t create_freqtable( struct snt_files *snt, freq_opt option );
+int print_freqtable(Pvoid_t freqs, unsigned threshold );
 
 
 #endif

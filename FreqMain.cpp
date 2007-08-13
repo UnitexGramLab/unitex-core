@@ -41,6 +41,8 @@
 #include "Error.h"
 #include "Snt.h"
 
+typedef Pvoid_t judy;
+
 #define STRINGINT(_string, _int) { \
   char *_tmp; \
   long _number = strtol (_string, &_tmp, 0); \
@@ -55,7 +57,7 @@
   _int = (int) _number; \
 }
 
-void usage(int header) {
+static void usage(int header) {
 
 	if (header) {
 		u_printf("%S",COPYRIGHT);
