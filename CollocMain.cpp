@@ -48,7 +48,10 @@ static void usage(int header) {
 	if (header) {
 		u_printf("%S",COPYRIGHT);
 		u_printf(
-			"Purpose"
+			"Tries to extract multi word expressions using several stochastic and/or deterministic algorithms.\n"
+			"\n"
+			"Works on the normalized text automata.\n"
+			"\n"
 		);
 	}
 
