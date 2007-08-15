@@ -23,6 +23,7 @@
 
 #include <Judy.h>
 
+#include "custom_malloc.h"
 #include "Collocation.h"
 #include "Buffer_ng.h"
 #include "Unicode.h"
@@ -38,10 +39,13 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 	Fst2 *sfst2=NULL;
 	Fst2State state;
 	Transition *tran=NULL;
-	judy retval;
-	unichar *input, *c, *d, key[KEYLENGTH];
+	judy retval=NULL;
 
-	int i,j,l;
+	Pvoid_t   PValue;                   // Judy array element pointer.
+
+	unichar *input, *c, *d, key[KEYLENGTH], *fkey;
+
+	int i,j,l,index=0;
 	int ret;
 
 	FILE* ffst2=NULL;
@@ -85,6 +89,7 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 							else {
 								memcpy(key, c, sizeof(unichar) * l); 
 								key[l]=0;
+								fkey=key;
 							}
 						}
 						else {
@@ -94,13 +99,17 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 						}
 					}
 					else {
-						d=0;
+						l=u_strlen(input);
+						fkey=input;
 					}
 					
-					u_printf( "%S ", ( d ? key : input ) );
+					JHSI( PValue, retval, fkey, sizeof(unichar) * (l+1) ); 
+					if (! (*((int*)PValue)) ) *((int*)PValue)=++index;
+					
+//					u_printf( "%S ", fkey );
 					tran=tran->next;
 				}
-				u_printf( "\n" );
+//				u_printf( "\n" );
 
 				tran=state->transitions;
 			}
@@ -108,8 +117,24 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 				state=0;
 			}
 		}
-		u_printf("\n");
+//		u_printf("\n");
 	}
+
+//u_printf("%d\n", index); exit(0);
+
+	Pvoid_t iter     = NULL;  // JudyHS iterator
+	Pvoid_t Index2   = NULL;  // JudyHS key: line
+	Word_t Length2   =    0;  // length of key: start at 0
+	Pvoid_t PValue2;          // pointer to value
+	Word_t IterBytes;         // size of iterator
+
+	JHSIF(PValue2, retval, iter, Index2, Length2);
+	while (PValue2)	{
+		u_printf("%8d: %S\n", *((int*)PValue2), (unichar *)Index2 );
+
+		JHSIN(PValue2, retval, iter, Index2, Length2);
+	}
+
 
 	return retval;
 

@@ -34,7 +34,10 @@ BIN_DIR = ../bin/
 
 
 #
-# everything judy
+# everything judy: 
+#
+# Note: This variant of Judy is obtained by:
+#       svn co http://svn.pugscode.org/pugs/third-party/judy/Judy-1.0.3 -r 10611
 # 
 
 LIBJUDY = Judy
@@ -626,7 +629,6 @@ clean-libtre:
 
 
 $(JUDY_SRC): $(JUDY_TGZ)
-	@echo "unpacking TRE library ..."
 	tar xf $(JUDY_TGZ)
 
 .Judy-done:

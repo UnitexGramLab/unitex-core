@@ -33,14 +33,7 @@ typedef Pvoid_t judy;
 #include "Stack_int.h"
 #include "Snt.h"
 #include "Text_tokens.h"
-
-#define custom_malloc( T, S, V )                                      \
-	(V) = (T *)malloc(sizeof(T) * (S));                               \
-	if (! (V)) {                                                      \
-		u_printf("Memory allocation error in %s:%d, exiting...\n\n"); \
-		exit(1);                                                      \
-	} else (void)0 
-
+#include "custom_malloc.h"
 
 static freq_entry *new_freq_entry( unsigned freq, int token, unichar *text ) {
 	freq_entry *retval;
