@@ -40,22 +40,9 @@
 #include "LocatePattern.h"
 #include "Error.h"
 #include "Snt.h"
+#include "defines.h"
 
 typedef Pvoid_t judy;
-
-#define STRINGINT(_string, _int) { \
-  char *_tmp; \
-  long _number = strtol (_string, &_tmp, 0); \
-  errno = 0; \
-  if ((errno != 0 && _number == 0) || _string == _tmp || \
-      (errno == ERANGE && (_number == LONG_MAX || _number == LONG_MIN))) \
-    { \
-      u_fprintf (stderr,"`%s' out of range", _string);; \
-      exit (EXIT_FAILURE); \
-    } \
-  else \
-  _int = (int) _number; \
-}
 
 static void usage(int header) {
 
@@ -111,14 +98,15 @@ int main_Freq(int argc, char **argv) {
 		{"combination-length", required_argument, NULL, 'c'},
 		{NULL, 0, NULL, 0}
 	};
+
 	freq_opt option;
-	option.automata = 0;     /* By default, we work on surface string */
-	option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
-	option.token_limit = 10; /* By default, the context limit is +/-10 tokens */
-	option.threshold = 2;    /* By default, frequency limit for displaying tokens is 2 */
-	option.sentence_only=0;  /* By default, we go beyond sentence limits when counting frequencies */
-	option.clength=1;        /* clength short for combination length. 
-	                          * By default, we look for simple words (and not MWEs). */
+	option.automata      =  0; /* By default, we work on surface string */
+	option.words_only    =  0; /* By default, we are not restricting ourselves only to word tokens */
+	option.token_limit   = 10; /* By default, the context limit is +/-10 tokens */
+	option.threshold     =  2; /* By default, frequency limit for displaying tokens is 2 */
+	option.sentence_only =  0; /* By default, we go beyond sentence limits when counting frequencies */
+	option.clength       =  1; /* clength short for combination length. 
+	                            * By default, we look for simple words (and not MWEs). */
 	
 	while ((ch = getopt_long(argc, argv, "?t:aow:sc:", longopts, &option_index)) != -1) {
 		switch (ch) {

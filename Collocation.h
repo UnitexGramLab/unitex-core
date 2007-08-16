@@ -28,7 +28,9 @@
  * to functions.
  */
 typedef struct {
-	int words_only;
+	int clength;
+	int lwidth;
+	int wonly;
 } colloc_opt;
 
 #include "Snt.h"

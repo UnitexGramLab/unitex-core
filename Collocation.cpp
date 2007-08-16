@@ -2,7 +2,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -29,10 +29,11 @@
 
 #include <Judy.h>
 
-#include "custom_malloc.h"
 #include "Collocation.h"
 #include "Buffer_ng.h"
+#include "Stack_int.h"
 #include "Unicode.h"
+#include "defines.h"
 #include "Error.h"
 #include "Fst2.h"
 
@@ -44,6 +45,8 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 	Fst2State state;
 	Transition *tran=NULL;
 	judy retval=NULL;
+
+	struct stack_int *stack=new_stack_int(option.clength);
 
 	unichar *input, *c, *d;
 
@@ -63,20 +66,21 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 		return 0;
 	}
 
-	Pvoid_t  sentence=NULL;
-	Pvoid_t  sentenceI;
-	Word_t   sentenceK;  
-	Word_t   sentenceAL;
+	Pvoid_t  sentence   = NULL;
+	Pvoid_t  sentenceI  = NULL;
+	Word_t   sentenceK  = 0;
+	int      sentenceAL = 0;
 
-	PPvoid_t nodes=NULL;
-	Pvoid_t  nodesI;  // iterator
-	Pvoid_t  nodesK;  // key
-	Pvoid_t  nodesS;  // state
-	Word_t   nodesSL; // state length
-	Word_t   nodesKL; // keylength
-	Word_t   nodesAL; // arraylength
+	PPvoid_t nodes   = NULL; // this array is contained in another judy array. that's why it's declared
+	                         // as PPvoid_t (which is just a void**) and used by dereferencing once.
+	Pvoid_t  nodesI  = NULL; // iterator (ie pointer to an element, as in c++ map's iterator->second)
+	Pvoid_t  nodesK  = NULL; // key      (   pointer to an element's key, as in c++ map's iterator->first)
+	Pvoid_t  nodesS  = NULL; // state of the current iteration. should be NULLified everytime a new
+	                         // iteration is attempted.
+	Word_t   nodesSL = 0;    // state length. is filled when the state is destroyed, so not of much use.
+	Word_t   nodesKL = 0;    // keylength
+	int      nodesAL = 0;    // arraylength. is filled when the array is destroyed, so not of much use.
 	
-
 	for (i=1; i<=sfst2->number_of_graphs; i++) { // for every sentence
 		j = sfst2->initial_states[i];
 		state = sfst2->states[j];
@@ -84,14 +88,14 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 		sentenceK=0;
 
-		while (state) { 
+		while (state) { // here we try to group transitions that  common step.
 			if (tran) {
 				state=sfst2->states[tran->state_number];
 				JLI(sentenceI, sentence, sentenceK );
 				sentenceK++;
 				nodes=(PPvoid_t)sentenceI;
 
-				while (tran) {
+				while (tran) { 
 					input=sfst2->tags[tran->tag_number]->input;
 					if (input[0]=='{') {
 						c=u_strchr( input, ',' )+1;
@@ -134,15 +138,14 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 			}
 		}
 
-
 		sentenceK=0;
 		JLF(sentenceI, sentence, sentenceK);
 		while (sentenceI) {
 			u_printf("%9lu: ", sentenceK);
 
 			nodes=(PPvoid_t)sentenceI;
-			nodesKL=0;
-			nodesS=NULL;
+			nodesKL = 0;
+			nodesS  = NULL;
 
 			JHSIF(nodesI, *nodes, nodesS, nodesK, nodesKL);
 			while (nodesI)	{
@@ -150,45 +153,26 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 				JHSIN(nodesI, *nodes, nodesS, nodesK, nodesKL);
 			}
+	        JHSFI(nodesSL, nodesS);
 			u_printf("\n");
 
 			JLN(sentenceI, sentence, sentenceK);
 		}
 
-		// freeing loop
+		// loop that frees the judy array
 		sentenceK=0;
-//		u_printf ("freed ");
 		JLF(sentenceI, sentence, sentenceK);
 		while (sentenceI) {
 			nodes=(PPvoid_t)sentenceI;
 			JHSFA( nodesAL, *nodes);
-//			u_printf("%lu ", nodesAL);
 			
 			JLN(sentenceI, sentence, sentenceK);
 		}
 		JLFA( sentenceAL, sentence );
-//		u_printf("%lu bytes.\n", sentenceAL);
 
-		u_printf(" - -- --- ==== ===== ==== --- -- - \n");
-		if (i>3) break;
 	}
 
-//u_printf("%d\n", index); exit(0);
-
-/*
-	Pvoid_t iter     = NULL;  // JudyHS iterator
-	Pvoid_t Index2   = NULL;  // JudyHS key: line
-	Word_t Length2   =    0;  // length of key: start at 0
-	Pvoid_t PValue2;          // pointer to value
-	Word_t IterBytes;         // size of iterator
-
-	JHSIF(PValue2, retval, iter, Index2, Length2);
-	while (PValue2)	{
-		u_printf("%8d: %S\n", *((int*)PValue2), (unichar *)Index2 );
-
-		JHSIN(PValue2, retval, iter, Index2, Length2);
-	}
-*/
+	free_stack_int(stack);
 
 	return retval;
 

@@ -30,16 +30,12 @@
 #include "CollocMain.h"
 #include "Unicode.h"
 #include "Text_tokens.h"
-#include "String_hash.h"
-#include "List_int.h"
 #include "Alphabet.h"
-#include "Matches.h"
 #include "Collocation.h"
-#include "File.h"
 #include "Copyright.h"
-#include "LocatePattern.h"
 #include "Error.h"
 #include "Snt.h"
+#include "defines.h"
 
 typedef Pvoid_t judy;
 
@@ -48,16 +44,22 @@ static void usage(int header) {
 	if (header) {
 		u_printf("%S",COPYRIGHT);
 		u_printf(
-			"Tries to extract multi word expressions using several stochastic and/or deterministic algorithms.\n"
-			"\n"
-			"Works on the normalized text automata.\n"
+			"Tries to extract multi word expressions using several stochastic"
+				"and/or deterministic algorithms. It works on the normalized text automata.\n"
 			"\n"
 		);
 	}
 
 	u_printf(
-		"Usage:\n"
+		"Usage: Colloc [OPTIONS] <snt directory>\n"
 		"\n"
+		"Parameters:\n"
+		"     -?, --help                  Shows this message                                  \n"    
+		"     -w, --words-only            Ignores non-word states.                    / n \\  \n"          
+		"     -c, --combination-length    The length of word combinations. The p in C |   |   \n"
+		"                                 Not yet implemented                         \\ p /  \n" 
+		"     -l, --linear-width          The limit in which the token combinations are formed.\n"
+		"                                 Not yet implemented\n"
 		"\n"
 	); 
 }
@@ -73,13 +75,19 @@ int main_Colloc(int argc, char **argv) {
 	int option_index = 0;
 	
 	const struct option longopts[] = {
-		{"words-only",         no_argument,       NULL, 'o'},
-		{NULL, 0, NULL, 0}
+		 {               "help",       no_argument, NULL, '?' }
+		,{         "words-only",       no_argument, NULL, 'w' }
+		,{ "combination-length", required_argument, NULL, 'c' }
+		,{       "linear-width", required_argument, NULL, 'l' }
+		,{NULL, 0, NULL, 0}
 	};
+
 	colloc_opt option;
-	option.words_only = 0;   /* By default, we are not restricting ourselves only to word tokens */
+	option.wonly   = 0; 
+	option.clength = 0; 
+	option.lwidth  = 0; 
 	
-	while ((ch = getopt_long(argc, argv, "?o", longopts, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "?wc:l:", longopts, &option_index)) != -1) {
 		switch (ch) {
 	
 		case '?':
@@ -87,8 +95,25 @@ int main_Colloc(int argc, char **argv) {
 			exit(EXIT_SUCCESS);
 			break;	
 	
-		case 'o':
-			option.words_only=1;
+		case 'w':
+			option.wonly=1;
+			break;
+
+		case 'c':
+			STRINGINT(optarg, option.clength);
+			if (option.clength <= 0) {
+				u_printf("combination length must be > 0\n\n");
+				exit (EXIT_FAILURE);
+			}
+
+			break;
+
+		case 'l':
+			STRINGINT(optarg, option.lwidth);
+			if (option.lwidth <= 0) {
+				u_printf("linear context width must be > 0\n\n");
+				exit (EXIT_FAILURE);
+			}
 			break;
 		
 		default:

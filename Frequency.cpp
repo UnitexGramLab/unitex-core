@@ -33,7 +33,7 @@ typedef Pvoid_t judy;
 #include "Stack_int.h"
 #include "Snt.h"
 #include "Text_tokens.h"
-#include "custom_malloc.h"
+#include "defines.h"
 
 static freq_entry *new_freq_entry( unsigned freq, int token, unichar *text ) {
 	freq_entry *retval;
