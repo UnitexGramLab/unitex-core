@@ -32,8 +32,6 @@
 
 typedef Pvoid_t judy;
 
-#define KEYLENGTH 256
-
 judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
@@ -41,11 +39,9 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 	Transition *tran=NULL;
 	judy retval=NULL;
 
-	Pvoid_t   PValue;                   // Judy array element pointer.
+	unichar *input, *c, *d;
 
-	unichar *input, *c, *d, key[KEYLENGTH], *fkey;
-
-	int i,j,l,index=0;
+	int i,j,index=0;
 	int ret;
 
 	FILE* ffst2=NULL;
@@ -61,6 +57,10 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 		return 0;
 	}
 
+	Pvoid_t sentence=NULL;
+	Pvoid_t sentenceI;
+	Word_t  sentenceK;  
+
 	for (i=1; i<=sfst2->number_of_graphs; i++) { // for every sentence
 		j = sfst2->initial_states[i];
 		state = sfst2->states[j];
@@ -69,6 +69,12 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 		while (state) { 
 			if (tran) {
 				state=sfst2->states[tran->state_number];
+
+				JLI(sentenceI, sentence, (Word_t)tran->state_number);
+				PPvoid_t nodes=(PPvoid_t)sentenceI;
+				Pvoid_t  nodesI;  // iterator
+				Pvoid_t  nodesK;  // key
+				Word_t   nodesKL; // keylength
 
 				while (tran) {
 					input=sfst2->tags[tran->tag_number]->input;
@@ -80,17 +86,9 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 						d=u_strchr(     c, '}' );						
 
 						if (d) {
-							l=d-c;
-							if ( l >= KEYLENGTH ) {
-								u_printf( "key string too long in %s, state %d transition %d: %S\n",
-								          snt->text_fst2, tran->state_number, tran->tag_number, input );
-								exit(1);
-							}
-							else {
-								memcpy(key, c, sizeof(unichar) * l); 
-								key[l]=0;
-								fkey=key;
-							}
+							nodesKL=d-c; nodesKL++; nodesKL*=sizeof(unichar);
+							nodesK=(Pvoid_t)c;
+							*d=0;
 						}
 						else {
 							u_printf ( "format error in %s, state %d transition %d: %S\n", 
@@ -99,17 +97,20 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 						}
 					}
 					else {
-						l=u_strlen(input);
-						fkey=input;
+						nodesKL=u_strlen(input)*sizeof(unichar);
+						nodesK=(Pvoid_t)input;
 					}
-					
-					JHSI( PValue, retval, fkey, sizeof(unichar) * (l+1) ); 
-					if (! (*((int*)PValue)) ) *((int*)PValue)=++index;
-					
-//					u_printf( "%S ", fkey );
+
+					JHSI( nodesI, *nodes , nodesK, nodesKL );
+					if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;
+
+					if (d) { // fixing the above null termination
+						*d='}';
+						d=NULL;
+					}					
+
 					tran=tran->next;
 				}
-//				u_printf( "\n" );
 
 				tran=state->transitions;
 			}
@@ -117,11 +118,11 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 				state=0;
 			}
 		}
-//		u_printf("\n");
 	}
 
 //u_printf("%d\n", index); exit(0);
 
+/*
 	Pvoid_t iter     = NULL;  // JudyHS iterator
 	Pvoid_t Index2   = NULL;  // JudyHS key: line
 	Word_t Length2   =    0;  // length of key: start at 0
@@ -134,7 +135,7 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 		JHSIN(PValue2, retval, iter, Index2, Length2);
 	}
-
+*/
 
 	return retval;
 
