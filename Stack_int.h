@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -37,9 +37,9 @@ struct stack_int {
 
 struct stack_int* new_stack_int(int);
 void free_stack_int(struct stack_int*);
-int is_empty(struct stack_int*);
-int is_full(struct stack_int*);
-void push(struct stack_int*,int);
-int pop(struct stack_int*);
+int stacki_is_empty(struct stack_int*);
+int stacki_is_full(struct stack_int*);
+void stacki_push(struct stack_int*,int);
+int stacki_pop(struct stack_int*);
 
 #endif

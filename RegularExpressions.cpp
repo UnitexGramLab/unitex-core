@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,406 +19,749 @@
   *
   */
 
-#include "Regular_expression.h"
+#include "RegularExpressions.h"
+#include "List_int.h"
+#include "Stack_int.h"
 #include "Error.h"
 
-int reg2grf(unichar* s,char* nom_grf) {
-int i;
-int e1;
-int e2;
-FILE* fichier_reg;
-Etat_reg tab_reg[N_ETATS_REG];
-int etat_courant_reg;
-if (s[0]=='\0') {
+
+#define MAX_REG2GRF_STATES 10000
+
+/**
+ * This structure defines a grf state built from a regular expression.
+ * It is very simple since we don't take care to the grf boxes positions.
+ */
+struct reg2grf_state {
+   unichar* content;
+   struct list_int* transitions;
+};
+
+
+/**
+ * This structure represents the things needed during the compilation
+ * of the regular expression. It contains the array of the states being
+ * created.
+ */
+struct reg2grf_info {
+   struct reg2grf_state states[MAX_REG2GRF_STATES];
+   int n_states;
+};
+
+
+
+int reg_2_grf(unichar*,int*,int*,struct reg2grf_info*);
+void save_states(FILE*,struct reg2grf_info*);
+
+
+
+/**
+ * Allocates, initializes and returns a new reg2grf_info structure.
+ */
+struct reg2grf_info* new_reg2grf_info() {
+struct reg2grf_info* info=(struct reg2grf_info*)malloc(sizeof(struct reg2grf_info));
+if (info==NULL) {
+   fatal_error("Not enough memory in new_reg2grf_info\n");
+}
+info->n_states=0;
+return info;
+}
+
+
+/**
+ * Frees all the memory associated to the given reg2grf_info structure.
+ */
+void free_reg2grf_info(struct reg2grf_info* info) {
+if (info==NULL) return;
+for (int i=0;i<info->n_states;i++) {
+   if (info->states[i].content!=NULL) free(info->states[i].content);
+   free_list_int(info->states[i].transitions);
+}
+free(info);
+}
+
+
+/**
+ * Creates and adds a new state with the given content. The
+ * function returns the index of the new state.
+ * 
+ * WARNING: note that the content is not duplicated, so you
+ *          need to provide a persistent pointer to the function,
+ *          for instance, by calling it with u_strdup(...)
+ */
+int add_state(struct reg2grf_info* info,unichar* s) {
+int i=(info->n_states)++;
+info->states[i].content=s;
+info->states[i].transitions=NULL;
+return i;
+}
+
+
+/**
+ * Adds a transition from the src state to the dest one.
+ */
+void add_transition(int src,int dest,struct reg2grf_info* info) {
+info->states[src].transitions=sorted_insert(dest,info->states[src].transitions);
+}
+
+
+/**
+ * This function takes a unicode string representing a regular expression and
+ * compiles it into a .grf file. It returns 1 in case of success; 0 otherwise.
+ */
+int reg2grf(unichar* regexp,char* name_grf) {
+if (regexp[0]=='\0') {
    error("You must specify a non empty regular expression\n");
    return 0;
 }
-fichier_reg=u_fopen(nom_grf,U_WRITE);
-if (fichier_reg==NULL) {
+FILE* out=u_fopen(name_grf,U_WRITE);
+if (out==NULL) {
    error("Cannot open the output file for the regular expression\n");
    return 0;
 }
-etat_courant_reg=2;
-for (i=0;i<N_ETATS_REG;i++)
-  tab_reg[i]=NULL;
-unichar z[10];
-u_strcpy(z,"<E>");
-tab_reg[0]=nouvel_etat_reg(z);
-u_strcpy(z,"");
-tab_reg[1]=nouvel_etat_reg(z);
+struct reg2grf_info* INFO=new_reg2grf_info();
+/* We create the initial and final states that must have numbers 0 and 1 */
+add_state(INFO,u_strdup("<E>"));
+add_state(INFO,u_strdup(""));
+/* We print the grf header */
+u_fprintf(out,"#Unigraph\n");
+u_fprintf(out,"SIZE 1313 950\n");
+u_fprintf(out,"FONT Times New Roman:  12\n");
+u_fprintf(out,"OFONT Times New Roman:B 12\n");
+u_fprintf(out,"BCOLOR 16777215\n");
+u_fprintf(out,"FCOLOR 0\n");
+u_fprintf(out,"ACOLOR 12632256\n");
+u_fprintf(out,"SCOLOR 16711680\n");
+u_fprintf(out,"CCOLOR 255\n");
+u_fprintf(out,"DBOXES y\n");
+u_fprintf(out,"DFRAME y\n");
+u_fprintf(out,"DDATE y\n");
+u_fprintf(out,"DFILE y\n");
+u_fprintf(out,"DDIR y\n");
+u_fprintf(out,"DRIG n\n");
+u_fprintf(out,"DRST n\n");
+u_fprintf(out,"FITS 100\n");
+u_fprintf(out,"PORIENT L\n");
+u_fprintf(out,"#\n");
 
-u_fprintf(fichier_reg,"#Unigraph\n");
-u_fprintf(fichier_reg,"SIZE 1313 950\n");
-u_fprintf(fichier_reg,"FONT Times New Roman:  12\n");
-u_fprintf(fichier_reg,"OFONT Times New Roman:B 12\n");
-u_fprintf(fichier_reg,"BCOLOR 16777215\n");
-u_fprintf(fichier_reg,"FCOLOR 0\n");
-u_fprintf(fichier_reg,"ACOLOR 12632256\n");
-u_fprintf(fichier_reg,"SCOLOR 16711680\n");
-u_fprintf(fichier_reg,"CCOLOR 255\n");
-u_fprintf(fichier_reg,"DBOXES y\n");
-u_fprintf(fichier_reg,"DFRAME y\n");
-u_fprintf(fichier_reg,"DDATE y\n");
-u_fprintf(fichier_reg,"DFILE y\n");
-u_fprintf(fichier_reg,"DDIR y\n");
-u_fprintf(fichier_reg,"DRIG n\n");
-u_fprintf(fichier_reg,"DRST n\n");
-u_fprintf(fichier_reg,"FITS 100\n");
-u_fprintf(fichier_reg,"PORIENT L\n");
-u_fprintf(fichier_reg,"#\n");
-
-if (!reg_2_grf(s,&e1,&e2,tab_reg,&etat_courant_reg)) {
-  u_fclose(fichier_reg);
-  remove(nom_grf);
-  //liberer_etats_reg(tab_reg);
-  return 0;
+int input_state;
+int output_state;
+int result=reg_2_grf(regexp,&input_state,&output_state,INFO);
+if (result!=1) {
+   u_fclose(out);
+   remove(name_grf);
+   free_reg2grf_info(INFO);
+   if (result==0) {
+      error("Syntax error in regular expression\n");
+   }
+   return 0;
 }
-relier_reg(0,e1,tab_reg);
-relier_reg(e2,1,tab_reg);
-sauver_etats_reg(fichier_reg,tab_reg,etat_courant_reg);
-//liberer_etats_reg(tab_reg);
-u_fclose(fichier_reg);
+/* If the compilation has successed, we must link the resulting automaton piece
+ * to the grf's initial and final states */
+add_transition(0,input_state,INFO);
+add_transition(output_state,1,INFO);
+save_states(out,INFO);
+free_reg2grf_info(INFO);
+u_fclose(out);
 return 1;
 }
 
 
-
-
-//
-// cree un nouvel etat
-//
-Etat_reg nouvel_etat_reg(unichar s[]) {
-Etat_reg e;
-e=(Etat_reg)malloc(sizeof(struct etat_reg));
-e->contenu=(unichar*)malloc((u_strlen(s)+1)*sizeof(unichar));
-u_strcpy(e->contenu,s);
-e->l=NULL;
-e->nombre_trans=0;
-return e;
-}
-
-
-
-//
-// relie l'etat e1 a l'etat e2
-//
-void relier_reg(int e1,int e2,Etat_reg tab_reg[]) {
-struct liste_transitions_reg *l;
-l=(struct liste_transitions_reg*)malloc(sizeof(struct liste_transitions_reg));
-l->numero=e2;
-l->suivant=tab_reg[e1]->l;
-tab_reg[e1]->l=l;
-tab_reg[e1]->nombre_trans++;
-}
-
-
-
-//
-// convertit l'expression reguliere s en un graphe equivalent
-//
-int reg_2_grf(unichar* s,int *initial,int *final,Etat_reg tab_reg[],int* etat_courant_reg) {
-int niveau,i,j;
-unichar e1[1000];
-unichar e2[1000];
-int etat1;
-int etat2;
-int etat3;
-int etat4;
-int a,b;
-
-/* We skip the spaces, if any */
-while (*s==' ') s++;
-
-if ((s[0]=='\0')||(s[0]==')')||(s[0]=='+')||(s[0]=='.')||(s[0]=='*')) {
-  // en cas d'erreur...
-  return 0;
-}
-if (s[0]=='(') {
-  // si l'expression commence par une parenthese...
-  niveau=1;
-  i=1;
-  int k=0;
-  while (s[i] &&  !((s[i-1]==')')&&(niveau==0))) {
-    e1[k++]=s[i];
-    if (s[i]=='\\') {
-      i++;
-      e1[k++]=s[i];
-    }
-    if (s[i]=='(') niveau++;
-    if (s[i]==')' && s[i-1]!='\\') niveau--;
-    if (s[i]=='<') {
-      do {
-        i++;
-        e1[k++]=s[i];
-      } while ((s[i]!='>')&&(s[i]!='\0'));
-      if (s[i]=='\0') {
-         return 0;
-      }
-
-      /* $CD$ begin */
-      if ( (u_strlen(s)-1 - i) > 2 && s[i+1] == '<' && s[i+2] == '<' ) {
-        do {
-            i++;
-            e1[k++] = s[i];
-            } while (s[i] != '>' && s[i] != '\0');
-        if (s[i] == '\0' || s[i+1] == '\0' || s[i+1] != '>') {
-           return 0;
-        }
-        i++;
-        e1[k++] = s[i];
-        }
-      /* $CD$ end   */
-
-    }
-    else if (s[i]=='{') {
-      do {
-        i++;
-        e1[k++]=s[i];
-      } while ((s[i]!='}')&&(s[i]!='\0'));
-      if (s[i]=='\0') return 0;
-    }
-    else if (s[i]=='"') {
-      do {
-        i++;
-        e1[k++]=s[i];
-      } while ((s[i]!='"') && (s[i]!='\0'));
-      if (s[i]=='\0') return 0;
-    }
-    i++;
-  }
-  if (!((s[i-1]==')')&&(niveau==0))) {
-    //erreur
-    return 0;
-  }
-  e1[k-1]='\0';
-  /*printf("Cas ():  e1=|");
-  u_prints(e1);
-  printf("|\n");*/
-  if (!reg_2_grf(e1,&etat1,&etat2,tab_reg,etat_courant_reg))
-    return 0;
-}
-else {
-  i=0;
-  int k=0;
-  while ((s[i]!='+') && (s[i]!='.') && (s[i]!='*') && (s[i]!='\0') && (s[i]!='(') && (s[i]!=')') && (s[i]!=' ') && (!(s[i]=='<' && i>0)) && (!(s[i]=='{' && i>0))) {
-    e1[k]=s[i];
-    if (s[i]=='\\') {
-      // si on lit un \ alors on lit le caractere suivant
-      i++;
-      if (s[i]=='"') {
-         // case of \" that must be coded in GRF by \\\"
-         e1[k+1]='\\';k=k+2;
-      }
-      else if (s[i]=='<') {
-         // case of character < that must be coded in GRF by \<
-         k++;
-      }
-      e1[k]=s[i];
-    }
-    else if (s[i]=='<') {
-      // si on lit un pattern...
-      e1[k]='<';
-      i++;
-      k++;
-      while (s[i]!='>') {
-        e1[k]=s[i];
-        i++;
-        k++;
-      }
-      e1[k]=s[i];
-
-      /* $CD$ begin */
-      if ( (u_strlen(s)-1 - i) > 2 && s[i+1] == '<' && s[i+2] == '<' ) {
-        ++k;
-        do {
-            i++;
-            e1[k++] = s[i];
-            } while (s[i] != '>' && s[i] != '\0');
-        if (s[i] == '\0' || s[i+1] == '\0' || s[i+1] != '>') return 0;
-        i++;
-        e1[k] = s[i];
-        }
-      /* $CD$ end   */
-
-    }
-    else if (s[i]=='"') {
-      // si on lit un pattern...
-      e1[k]='"';
-      i++;
-      k++;
-      while (s[i]!='"') {
-        e1[k]=s[i];
-        i++;
-        k++;
-      }
-      e1[k]='"';
-    }
-    else if (s[i]=='{') {
-      // si on lit un pattern...
-      e1[k]='{';
-      i++;
-      k++;
-      while (s[i]!='}') {
-        e1[k]=s[i];
-        i++;
-        k++;
-      }
-      e1[k]=s[i];
-    }
-    i++;
-    k++;
-  }
-  e1[k]='\0';
-  etat1=(*etat_courant_reg)++;
-  tab_reg[etat1]=nouvel_etat_reg(e1);
-  etat2=etat1;
-}
-if (s[i]==')') {
-   error("Unexpected closing parenthesis\n");
-   return 0;
-}
-
-if (s[i]=='\0') {
-  *initial=etat1;
-  *final=etat2;
-  return 1;
-}
-if (s[i]=='*') {
-  relier_reg(etat2,etat1,tab_reg);
-  a=(*etat_courant_reg)++;
-  unichar z[10];
-  u_strcpy(z,"<E>");
-  tab_reg[a]=nouvel_etat_reg(z);
-  b=(*etat_courant_reg)++;
-  tab_reg[b]=nouvel_etat_reg(z);
-  relier_reg(a,etat1,tab_reg);
-  relier_reg(etat2,b,tab_reg);
-  relier_reg(a,b,tab_reg);
-  *initial=a;
-  *final=b;
-  etat1=a;
-  etat2=b;
-  i++;
-}
-if (s[i]=='\0') {
-  *initial=etat1;
-  *final=etat2;
-  return 1;
-}
-switch (s[i]) {
-  case '.': {
-              i++;
-              j=0;
-              while (s[i]!='\0')
-                e2[j++]=s[i++];
-              e2[j]='\0';
-              if (!reg_2_grf(e2,&etat3,&etat4,tab_reg,etat_courant_reg))
-                return 0;
-              relier_reg(etat2,etat3,tab_reg);
-              *initial=etat1;
-              *final=etat4;
-              return 1;
-            }
-  case ' ': {
-              i++;
-              j=0;
-              while (s[i]!='\0')
-                e2[j++]=s[i++];
-              e2[j]='\0';
-              if (j!=0) {
-                 if (!reg_2_grf(e2,&etat3,&etat4,tab_reg,etat_courant_reg))
-                    return 0;
-                 relier_reg(etat2,etat3,tab_reg);
-                 *initial=etat1;
-                 *final=etat4;
-                 return 1;
-              } else {
-                 // if we are in the case of a single space as e2
-                 *initial=etat1;
-                 *final=etat2;
-                 return 1;
-              }
-            }
-  case '+': {
-              i++;
-              j=0;
-              while (s[i]!='\0')
-                e2[j++]=s[i++];
-              e2[j]='\0';
-              /*printf("+ le e2 lu est _");
-              u_prints(e2);
-              printf("_\n");*/
-              if (!reg_2_grf(e2,&etat3,&etat4,tab_reg,etat_courant_reg))
-                return 0;
-              a=(*etat_courant_reg)++;
-              unichar z[10];
-              u_strcpy(z,"<E>");
-              tab_reg[a]=nouvel_etat_reg(z);
-              b=(*etat_courant_reg)++;
-              tab_reg[b]=nouvel_etat_reg(z);
-              relier_reg(a,etat1,tab_reg);
-              relier_reg(etat2,b,tab_reg);
-              relier_reg(a,etat3,tab_reg);
-              relier_reg(etat4,b,tab_reg);
-              *initial=a;
-              *final=b;
-              return 1;
-            }
-  default: {
-              j=0;
-              while (s[i]!='\0')
-                e2[j++]=s[i++];
-              e2[j]='\0';
-              if (!reg_2_grf(e2,&etat3,&etat4,tab_reg,etat_courant_reg))
-                return 0;
-              relier_reg(etat2,etat3,tab_reg);
-              *initial=etat1;
-              *final=etat4;
-              return 1;
-           }
-}
-}
-
-
-
-//
-// this function copy src into dest converting special chars to grf format
-//
+/**
+ * This function copy src into dest converting special chars to grf format
+ */
 void convert_to_grf_format(unichar* dest,unichar* src) {
 int i=0;
 int j=0;
 while (src[i]!='\0') {
-  if (src[i]=='"') {
-     dest[j++]='\\';
-  }
-  dest[j++]=src[i++];
+   if (src[i]=='"') {
+      if (i>0 && src[i-1]=='\\') {
+         /* If the double quote was a protected one, we must add one
+          * more protection \ to save it into the grf */
+         dest[j++]='\\';
+      }
+      dest[j++]='\\';
+   }
+   dest[j++]=src[i++];
 }
 dest[j]='\0';
 }
 
 
-
-//
-// sauvegarde le graphe tab_reg
-//
-void sauver_etats_reg(FILE* fichier_reg,Etat_reg tab_reg[],int etat_courant_reg) {
-int i;
-struct liste_transitions_reg *l;
-struct liste_transitions_reg *tmp;
-u_fprintf(fichier_reg,"%d\n",etat_courant_reg);
-
-for (i=0;i<etat_courant_reg;i++) {
-  unichar temp[1000];
-  convert_to_grf_format(temp,tab_reg[i]->contenu);
-  u_fprintf(fichier_reg,"\"%S\" 100 100 %d",temp,tab_reg[i]->nombre_trans);
-
-  l=tab_reg[i]->l;
-  while (l!=NULL) {
-    tmp=l->suivant;
-    u_fprintf(fichier_reg," %d",l->numero);
-    l=tmp;
-  }
-  u_fprintf(fichier_reg," \n");
+/**
+ * Saves the given states in the given grf file.
+ */
+void save_states(FILE* f,struct reg2grf_info* info) {
+unichar temp[4096];
+struct list_int* transitions;
+/* We print the number of states */
+u_fprintf(f,"%d\n",info->n_states);
+for (int i=0;i<info->n_states;i++) {
+   convert_to_grf_format(temp,info->states[i].content);
+   /* Each grf line starts with the content between double quotes
+    * followed by the number of outgoing transitions */
+   u_fprintf(f,"\"%S\" 100 100 %d",temp,length(info->states[i].transitions));
+   transitions=info->states[i].transitions;
+   /* Then we print all the outgoing transitions */
+   while (transitions!=NULL) {
+      u_fprintf(f," %d",transitions->n);
+      transitions=transitions->next;
+   }
+   /* And we mark the end of line with a space before it for
+    * backward compatibility reasons */
+   u_fprintf(f," \n");
 }
+}
+
+
+/**
+ * This function takes an input string that is supposed to start with a "
+ * and it reads it until a non protected " is found. All characters read
+ * are copied into 'token'. Characters are not unspecialized.
+ * The function returns 1 in case of success or 0 if the end of string
+ * is found.
+ */
+int read_double_quoted_sequence(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+token[(*pos_in_token)++]=input[(*pos)++];
+while (input[*pos]!='\0' && input[*pos]!='"') {
+   if (input[*pos]=='\\') {
+      /* If there is a \ a copy it and we take the next character */
+      token[(*pos_in_token)++]=input[(*pos)++];
+      if (input[*pos]=='\0') return 0;
+   }
+   token[(*pos_in_token)++]=input[(*pos)++];
+}
+if (input[*pos]=='\0') {
+   error("Unterminated double quoted sequence\n");
+   return 0;
+}
+token[(*pos_in_token)++]=input[(*pos)++];
+return 1;
+}
+
+
+/**
+ * This function takes an input string that is supposed to start with a <
+ * and it reads it until a non protected > is found. If the input is of the
+ * form <<...>> we also read the second >. Note that it is not necessary to
+ * read in one pass a sequence of the form <...><<...>> since no difference
+ * will be made with reading it in two pass, because all the elements
+ * of a token are concatenated. All characters read
+ * are copied into 'token'. Characters are not unspecialized.
+ * The function returns 1 in case of success or 0 if the end of string
+ * is found.
+ */
+int read_angle_bracketed_sequence(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+token[(*pos_in_token)++]=input[(*pos)++];
+int tmp=(*pos_in_token);
+while (input[*pos]!='\0' && input[*pos]!='>') {
+   if (input[*pos]=='\\') {
+      /* If there is a \ a copy it and we take the next character */
+      token[(*pos_in_token)++]=input[(*pos)++];
+      if (input[*pos]=='\0') return 0;
+   }
+   token[(*pos_in_token)++]=input[(*pos)++];
+}
+if (input[*pos]=='\0') return 0;
+token[(*pos_in_token)++]=input[(*pos)++];
+/* Now, we have read a sequence of the form <...> and we test if it was of the form
+ * <<...> because in that case, we will try to read a second > */
+if (token[tmp]=='<') {
+   if ((token[(*pos_in_token)++]=input[(*pos)++])!='>') {
+      error("Morphological filter with no >> at end\n");
+      return 0;
+   }
+   return 1;
+}
+return 1;
+}
+
+
+/**
+ * This function reads a token from the regular expression and
+ * copies it into 'token'. The function returns 1 in case of success; 0
+ * otherwise.
+ */
+int read_token(unichar* input,int *pos,unichar* token) {
+if (input[*pos]=='\0') {
+   fatal_error("read_token should not have been called with an empty input\n");
+}
+int i=0;
+while (input[*pos]!='\0' && input[*pos]!='+' && input[*pos]!='.' && input[*pos]!='(' && input[*pos]!=')' && input[*pos]!='*') {
+   if (input[*pos]=='\\') {
+      /* If we find a \ we despecialize the next character if it is an operator of
+       * the grammar */
+      (*pos)++;
+      if (input[*pos]=='\0') {
+         error("Backslash at end of input in read_token\n");
+         return 0;
+      }
+      if (input[*pos]!='+' && input[*pos]!='.' && input[*pos]!='(' && input[*pos]!=')' && input[*pos]!='*') {
+         token[i++]='\\';
+      }
+      token[i++]=input[(*pos)++];
+      continue;
+   }
+   if (input[*pos]=='"') {
+      /* If there is a " we try to read a sequence between double quotes */
+      if (!read_double_quoted_sequence(input,pos,token,&i)) {
+         return 0;
+      }
+      continue;
+   }
+   if (input[*pos]=='<') {
+      /* If there is a < we try to read a pattern of the form <....> */
+      if (!read_angle_bracketed_sequence(input,pos,token,&i)) {
+         return 0;
+      }
+      continue;
+   }
+   /* Otherwise, if we have a single character */
+   token[i++]=input[(*pos)++];
+}
+token[i]='\0';
+return 1;
+}
+
+
+/**
+ * This function takes a regular expression and builds the corresponding
+ * Thompson automaton. To do that, we use the following grammar:
+ * 
+ * S -> E \0
+ * E -> E + E
+ * E -> E . E
+ * E -> (E)
+ * E -> E*
+ * E -> token
+ * 
+ * with priority(*) > priority(.) > priority(+)
+ * 
+ * Note that the token notion used here is different from the one
+ * used in "text tokens". For instance, if we have the following expression:
+ * 
+ * <DET>.(very <A>+<E>).<N> of <<es$>>
+ * 
+ * tokens will be "<DET>", "very <A>", "<E>" and "<N> of <<es$>>"
+ * 
+ * We use two integer stacks: one for the LR analyzer that contains the item automaton
+ * states number and another that contains, for each piece of automaton being built, the
+ * numbers of the input and output states of this piece.
+ * The function returns 1 in case of success; 0 in case of a syntax error in the
+ * expression and 2 in case of a malformed token.
+ */
+int reg_2_grf(unichar* regexp,int *input_state,int *output_state,struct reg2grf_info* info) {
+/* T represents the transitions tagged with the non terminal E in the LR table */
+int T[11]={1,-1,7,-1,8,9,-1,-1,-1,-1,-1};
+struct stack_int* stack=new_stack_int(1024);
+struct stack_int* couples=new_stack_int(1024);
+int value=-1;
+int pos=0;
+unichar token[REG_EXP_MAX_LENGTH];
+/* We initialize the LR analyze stack */
+stacki_push(stack,0);
+while (value==-1) {
+   int state=stack->stack[stack->stack_pointer];
+   switch (state) {
+      /* state 0 */
+      case 0: {
+         switch(regexp[pos]) {
+            case '+':
+            case ')':
+            case '*':
+            case '.':
+            case '\0': {
+               /* Failure */
+               value=0; break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,3);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 1 */
+      case 1: {
+         switch(regexp[pos]) {
+            case '\0': {
+               /* If we accept the sequence, then we return the input and output
+                * state numbers of the automaton */
+               *output_state=stacki_pop(couples);
+               *input_state=stacki_pop(couples);
+               value=1;
+               break;
+            }
+            case '+': {
+               pos++;
+               stacki_push(stack,4);
+               break;
+            }
+            case '.': {
+               pos++;
+               stacki_push(stack,5);
+               break;
+            }
+            case '*': {
+               pos++;
+               stacki_push(stack,6);
+               break;
+            }
+            case '(':
+            case ')':
+            default: {
+               /* Failure */
+               value=0; break;
+            }
+         }
+         break;
+      }
+      /* state 2 */
+      case 2: {
+         switch(regexp[pos]) {
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            case '\0':
+            case '+':
+            case '.':
+            case ')':
+            case '*': {
+               /* Failure */
+               value=0; break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,3);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 3 */
+      case 3: {
+         switch(regexp[pos]) {
+            case '\0':
+            case '+':
+            case '.':
+            case ')':
+            case '*': {
+               /* If we must reduce with the rule E -> T,
+                * there is nothing to pop/push in the couple stack, but
+                * we pop 1 right member */
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=T[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+               break;
+            }
+            case '(':
+            default: {
+               /* Failure */
+               value=0; break;
+            }
+         }
+         break;
+      }
+      /* state 4 */
+      case 4: {
+         switch(regexp[pos]) {
+            case '\0':
+            case '+':
+            case '.':
+            case ')':
+            case '*': {
+               /* Failure */
+               value=0; break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,3);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 5 */
+      case 5: {
+         switch(regexp[pos]) {
+            case '\0':
+            case '+':
+            case '.':
+            case ')':
+            case '*': {
+               /* Failure */
+               value=0; break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,3);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 6 */
+      case 6: {
+         switch(regexp[pos]) {
+            case '\0':
+            case '+':
+            case '.':
+            case ')':
+            case '*': {
+               /* If we must reduce with the rule rule E -> E*,
+                * we pop 2 right members */
+               stacki_pop(stack);
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=T[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+               /* We pop the automaton A ->.....-> B */
+               int B=stacki_pop(couples);
+               int A=stacki_pop(couples);
+               /* Then we create 2 empty states */
+               int input=add_state(info,u_strdup("<E>"));
+               int output=add_state(info,u_strdup("<E>"));
+               /* We rely them to A and B */
+               add_transition(input,A,info);
+               add_transition(B,output,info);
+               /* We create a loop relying B to A */
+               add_transition(B,A,info);
+               /* And we rely input to output since the Kleene star matches the
+                * empty word */
+               add_transition(input,output,info);
+               /* Finally we push the automaton input ->.....-> output */
+               stacki_push(couples,input);
+               stacki_push(couples,output);
+               break;
+            }
+            case '(':
+            default: {
+               /* Failure */
+               value=0; break;
+            }
+         }
+         break;
+      }
+      /* state 7 */
+      case 7: {
+         switch(regexp[pos]) {
+            case '+': {
+               pos++;
+               stacki_push(stack,4);
+               break;
+            }
+            case '.': {
+               pos++;
+               stacki_push(stack,5);
+               break;
+            }
+            case ')': {
+               pos++;
+               stacki_push(stack,10);
+               break;
+            }
+            case '*': {
+               pos++;
+               stacki_push(stack,6);
+               break;
+            }
+            case '\0':
+            case '(':
+            default: {
+               /* Failure */
+               value=0; break;
+            }
+         }
+         break;
+      }
+      /* state 8 */
+      case 8: {
+         switch(regexp[pos]) {
+            case '\0':
+            case '+':
+            case ')': {
+               /* If we must reduce with the rule E -> E+E,
+                * we pop 3 right members */
+               stacki_pop(stack);
+               stacki_pop(stack);
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=T[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+               /* We pop 2 automata A ->.....-> B and C ->.....-> D */
+               int D=stacki_pop(couples);
+               int C=stacki_pop(couples);
+               int B=stacki_pop(couples);
+               int A=stacki_pop(couples);
+               /* Then we create 2 empty states */
+               int input=add_state(info,u_strdup("<E>"));
+               int output=add_state(info,u_strdup("<E>"));
+               /* We rely input to A and C */
+               add_transition(input,A,info);
+               add_transition(input,C,info);
+               /* We rely B and D to output */
+               add_transition(B,output,info);
+               add_transition(D,output,info);
+               /* Finally we push the automaton input ->.....-> output */
+               stacki_push(couples,input);
+               stacki_push(couples,output);
+               break;
+            }
+            case '.': {
+               pos++;
+               stacki_push(stack,5);
+               break;
+            }
+            case '*': {
+               pos++;
+               stacki_push(stack,6);
+               break;
+            }
+            case '(':
+            default: {
+               /* Failure */
+               value=0; break;
+            }
+         }
+         break;
+      }
+      /* state 9 */
+      case 9: {
+         switch(regexp[pos]) {
+            case '\0':
+            case '+':
+            case '.':
+            case ')': {
+               /* If we must reduce with the rule E -> E.E,
+                * we pop 3 right members */
+               stacki_pop(stack);
+               stacki_pop(stack);
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=T[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+               /* We pop 2 automata A ->.....-> B and C ->.....-> D */
+               int D=stacki_pop(couples);
+               int C=stacki_pop(couples);
+               int B=stacki_pop(couples);
+               int A=stacki_pop(couples);
+               /* We rely B to C */
+               add_transition(B,C,info);
+               /* And we push the automaton A ->.....-> D */
+               stacki_push(couples,A);
+               stacki_push(couples,D);
+               break;
+            }
+            case '*': {
+               pos++;
+               stacki_push(stack,6);
+               break;
+            }
+            case '(':
+            default: {
+               /* Failure */
+               value=0; break;
+            }
+         }
+         break;
+      }
+      /* state 10 */
+      case 10: {
+         switch(regexp[pos]) {
+            case '\0':
+            case '+':
+            case '.':
+            case '*':
+            case ')': {
+               /* If we must reduce with the rule E -> (E),
+                * we pop 3 right members */
+               stacki_pop(stack);
+               stacki_pop(stack);
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=T[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+               /* And we have nothing else to do */
+               break;
+            }
+            case '(':
+            default: {
+               /* Failure */
+               value=0; break;
+            }
+         }
+         break;
+      }
+   }
+}
+free_stack_int(stack);
+free_stack_int(couples);
+return value;
 }
 

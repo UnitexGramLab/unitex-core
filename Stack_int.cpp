@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Universitï¿½ de Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -54,7 +54,7 @@ free(stack);
 /**
  * Returns a non zero value if the stack is empty; 0 otherwise.
  */
-int is_empty(struct stack_int* stack) {
+int stacki_is_empty(struct stack_int* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in is_empty\n");
 }
@@ -65,7 +65,7 @@ return (stack->stack_pointer==-1);
 /**
  * Returns a non zero value if the stack is full; 0 otherwise.
  */
-int is_full(struct stack_int* stack) {
+int stacki_is_full(struct stack_int* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in is_full\n");
 }
@@ -76,8 +76,8 @@ return (stack->stack_pointer==stack->capacity-1);
 /**
  * Pushes the given character on the given stack.
  */
-void push(struct stack_int* stack,int n) {
-if (is_full(stack)) {
+void stacki_push(struct stack_int* stack,int n) {
+if (stacki_is_full(stack)) {
    fatal_error("Cannot push on a full stack\n");
 }
 stack->stack[++(stack->stack_pointer)]=n;
@@ -87,8 +87,8 @@ stack->stack[++(stack->stack_pointer)]=n;
 /**
  * Pops and returns the top element of the stack.
  */
-int pop(struct stack_int* stack) {
-if (is_empty(stack)) {
+int stacki_pop(struct stack_int* stack) {
+if (stacki_is_empty(stack)) {
    fatal_error("Cannot pop an empty stack\n");
 }
 return stack->stack[(stack->stack_pointer)--];

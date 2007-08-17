@@ -39,6 +39,52 @@
 
 typedef Pvoid_t judy;
 
+void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1) {
+	Pvoid_t arrayI=NULL;
+
+	if (! stacki_is_full((struct stack_int*)stack) ) {
+/*		JLF(arrayI, array, arrayK);
+		while (arrayI) {
+			stacki_push( stack, *(Word_t*)arrayI);
+			comb_l2( arrayK+1, stack, array );
+			stacki_pop( stack );
+			JLN(arrayI, array, arrayK);
+		}
+		*/
+	}
+	else {
+		int i=0;
+		for (i=0; i<stack->capacity; i++) {
+			u_printf("%d ", stack->stack[i]);
+		}
+		u_printf("\n");
+	}	
+}
+
+void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array ) {
+	Pvoid_t arrayI=NULL;
+
+	if (! stacki_is_full((struct stack_int*)stack) ) {
+		JLF(arrayI, array, arrayK);
+		while (arrayI) {
+			stacki_push( stack, *(Word_t*)arrayI);
+			comb_l1( arrayK+1, stack, array );
+			stacki_pop( stack );
+			JLN(arrayI, array, arrayK);
+		}
+	}
+	else {
+		int i=0;
+		struct stack_int *stack_l2=new_stack_int(stack->capacity);
+		
+		for (i=0; i<stack->capacity; i++) {
+			u_printf("%d ", stack->stack[i]);
+		}
+		
+		free_stack_int(stack_l2);
+	}
+}
+
 judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
@@ -88,7 +134,7 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 		sentenceK=0;
 
-		while (state) { // here we try to group transitions that  common step.
+		while (state) { // here we try to group transitions whose terminal states are the same.
 			if (tran) {
 				state=sfst2->states[tran->state_number];
 				JLI(sentenceI, sentence, sentenceK );
@@ -138,6 +184,10 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 			}
 		}
 
+
+		comb_l1( 0, stack, sentence );
+
+/*
 		sentenceK=0;
 		JLF(sentenceI, sentence, sentenceK);
 		while (sentenceI) {
@@ -158,7 +208,7 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 			JLN(sentenceI, sentence, sentenceK);
 		}
-
+*/
 		// loop that frees the judy array
 		sentenceK=0;
 		JLF(sentenceI, sentence, sentenceK);

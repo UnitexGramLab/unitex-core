@@ -39,6 +39,10 @@
 
 typedef Pvoid_t judy;
 
+#define DEFAULT_WONLY   0
+#define DEFAULT_CLENGTH 2
+#define DEFAULT_LWIDTH  0
+
 static void usage(int header) {
 
 	if (header) {
@@ -57,11 +61,11 @@ static void usage(int header) {
 		"     -?, --help                  Shows this message                                  \n"    
 		"     -w, --words-only            Ignores non-word states.                    / n \\  \n"          
 		"     -c, --combination-length    The length of word combinations. The p in C |   |   \n"
-		"                                 Not yet implemented                         \\ p /  \n" 
+		"                                 Defaults to %2d.                             \\ p /  \n" 
 		"     -l, --linear-width          The limit in which the token combinations are formed.\n"
 		"                                 Not yet implemented\n"
 		"\n"
-	); 
+	,DEFAULT_CLENGTH); 
 }
 
 /* 
@@ -83,9 +87,9 @@ int main_Colloc(int argc, char **argv) {
 	};
 
 	colloc_opt option;
-	option.wonly   = 0; 
-	option.clength = 0; 
-	option.lwidth  = 0; 
+	option.wonly   = DEFAULT_WONLY; 
+	option.clength = DEFAULT_CLENGTH; 
+	option.lwidth  = DEFAULT_LWIDTH; 
 	
 	while ((ch = getopt_long(argc, argv, "?wc:l:", longopts, &option_index)) != -1) {
 		switch (ch) {
