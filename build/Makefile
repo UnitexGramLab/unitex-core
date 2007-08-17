@@ -43,7 +43,7 @@ BIN_DIR = ../bin/
 LIBJUDY = Judy
 JUDY_SRC = Judy-1.0.3
 JUDY_TGZ = ../Judy-1.0.3.tar.gz
-CLEAN-JUDY   = clean-Judy
+CLEAN-JUDY = clean-Judy
 
 ifeq ($(SYSTEM),linux-like)
 ###################

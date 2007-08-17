@@ -39,47 +39,58 @@
 
 typedef Pvoid_t judy;
 
-void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1) {
-	Pvoid_t arrayI=NULL;
+static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1) {
+	PPvoid_t nodes   = NULL; // this array is contained in another judy array. that's why it's declared
+	                         // as PPvoid_t (which is just a void**) and used by dereferencing once.
+	Pvoid_t  nodesI  = NULL; // iterator (ie pointer to an element, as in c++ map's iterator->second)
+	Pvoid_t  nodesK  = NULL; // key      (   pointer to an element's key, as in c++ map's iterator->first)
+	Pvoid_t  nodesS  = NULL; // state of the current iteration. should be NULLified everytime a new
+	                         // iteration is attempted.
+	Word_t   nodesSL = 0;    // state length. is filled when the state is destroyed, so not of much use.
+	Word_t   nodesKL = 0;    // keylength
+	Word_t   nodesAL = 0;    // arraylength. is filled when the array is destroyed, so not of much use.
 
 	if (! stacki_is_full((struct stack_int*)stack) ) {
-/*		JLF(arrayI, array, arrayK);
-		while (arrayI) {
-			stacki_push( stack, *(Word_t*)arrayI);
-			comb_l2( arrayK+1, stack, array );
+		nodes = (PPvoid_t)stack_l1->stack[start];
+		nodesKL = 0;
+		nodesS  = NULL;
+
+		JHSIF(nodesI, *nodes, nodesS, nodesK, nodesKL);
+		while (nodesI)	{
+			stacki_push( stack, (Word_t)nodesK);
+			comb_l2( start+1, stack, stack_l1);
 			stacki_pop( stack );
-			JLN(arrayI, array, arrayK);
+
+			JHSIN(nodesI, *nodes, nodesS, nodesK, nodesKL);
 		}
-		*/
+        JHSFI(nodesSL, nodesS);
 	}
-	else {
-		int i=0;
+	else { // devami buradan...
+/*		int i=0;
 		for (i=0; i<stack->capacity; i++) {
-			u_printf("%d ", stack->stack[i]);
+			u_printf( "%S ", (unichar *)stack->stack[i] ); 	
 		}
 		u_printf("\n");
-	}	
+*/	}	
 }
 
-void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array ) {
+static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array ) {
 	Pvoid_t arrayI=NULL;
 
 	if (! stacki_is_full((struct stack_int*)stack) ) {
 		JLF(arrayI, array, arrayK);
 		while (arrayI) {
-			stacki_push( stack, *(Word_t*)arrayI);
-			comb_l1( arrayK+1, stack, array );
+			stacki_push( stack, (Word_t)arrayI);
+			comb_l1  ( arrayK+1, stack, array );
 			stacki_pop( stack );
 			JLN(arrayI, array, arrayK);
 		}
 	}
 	else {
-		int i=0;
 		struct stack_int *stack_l2=new_stack_int(stack->capacity);
-		
-		for (i=0; i<stack->capacity; i++) {
-			u_printf("%d ", stack->stack[i]);
-		}
+		int i;
+
+		comb_l2(0, stack_l2, stack);
 		
 		free_stack_int(stack_l2);
 	}
@@ -125,7 +136,7 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 	                         // iteration is attempted.
 	Word_t   nodesSL = 0;    // state length. is filled when the state is destroyed, so not of much use.
 	Word_t   nodesKL = 0;    // keylength
-	int      nodesAL = 0;    // arraylength. is filled when the array is destroyed, so not of much use.
+	Word_t   nodesAL = 0;    // arraylength. is filled when the array is destroyed, so not of much use.
 	
 	for (i=1; i<=sfst2->number_of_graphs; i++) { // for every sentence
 		j = sfst2->initial_states[i];
