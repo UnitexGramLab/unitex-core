@@ -90,7 +90,7 @@ if (token[pos]=='\0') {
    if (n->value_index!=-1) list=tree->dela_entries[n->value_index];
    inflected[pos_inflected]='\0';
    while (list!=NULL) {
-      /* If there are DELA entries for the current inflectedf form,
+      /* If there are DELA entries for the current inflected form,
        * we add the corresponding transitions to the automaton */
       unichar tag[4096];
       build_tag(list->entry,inflected,tag);
