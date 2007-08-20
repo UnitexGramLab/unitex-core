@@ -38,9 +38,17 @@
 #include "Collocation.h"
 #include "Text_tokens.h"
 
-#define DEFAULT_WONLY   1
+#ifndef DEFAULT_WONLY
+#define DEFAULT_WONLY   0
+#endif
+
+#ifndef DEFAULT_CLENGTH 
 #define DEFAULT_CLENGTH 2
+#endif
+
+#ifndef DEFAULT_LWIDTH  
 #define DEFAULT_LWIDTH  0
+#endif
 
 static void usage(int header) {
 

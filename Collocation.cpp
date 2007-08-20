@@ -39,6 +39,53 @@
 
 #define KEYLENGTH 1024
 
+typedef struct {
+	unichar can[32];    // canonical form
+	unichar gscode[32]; // grammatical or semantic code
+	unichar infl[32];   // inflectional information
+} tag_t;
+
+static void parse_tag_string ( tag_t *tag, unichar *str ) {
+	unichar *p=str, *q=str;
+	size_t len;
+	if (tag) {
+		while (*p) {
+			if ( *p == ',' ) {
+				if ( *(p+1) == '.' ) {
+					len=p-q;
+					tag->can[len]=0;
+					len*=sizeof(unichar);
+					memcpy( tag->can, q, len );
+				}
+				q=p+1;
+			}
+			if ( *p == '.' ) {
+				len=p-q;
+				tag->can[len]=0;
+				len*=sizeof(unichar);
+				memcpy( tag->can, q, len );
+				q=p+1;
+			}
+			if ( *p == ':' ) {
+				len=p-q;
+				tag->gscode[len]=0;
+				len*=sizeof(unichar);
+				memcpy( tag->gscode, q, len );
+				q=p+1;
+			}
+			if ( *p == '}' ) {
+				len=p-q;
+				tag->infl[len]=0;
+				len*=sizeof(unichar);
+				memcpy( tag->infl, q, len );
+				q=p+1;
+			}
+
+			p++;
+		}
+	}
+}
+
 static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1, PPvoid_t retval) {
 	if (! stacki_is_full((struct stack_int*)stack) ) {
 		PPvoid_t nodes   = (PPvoid_t)stack_l1->stack[start]; // this array is contained in another judy array.
@@ -120,7 +167,7 @@ int colloc_print(Pvoid_t array, unsigned threshold) {
 		Word_t   arrayAL = 0;
 
 		u_fprintf(stderr,"Frequency\tCollocation\n"
-		                 "---------------------\n");
+		                 "---------------------------\n");
 
 		JHSIF(arrayI, array, arrayS, arrayK, arrayKL);
 		while (arrayI)	{
@@ -209,11 +256,14 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 				while (tran) { 
 					input=sfst2->tags[tran->tag_number]->input;
 					if (input[0]=='{') {
+						tag_t tag;
+						parse_tag_string( &tag, input+1 );
+
 						c=u_strchr( input, ',' )+1;
 						d=u_strchr(     c, '.' );
 
-						if (c == d) c =input +1;
-						d=u_strchr(     c, '}' );						
+						if ( c == d ) c =input +1;
+						d=u_strchr(     c, '}' );
 
 						if (d) {
 							nodesKL=d-c; nodesKL++; nodesKL*=sizeof(unichar);
