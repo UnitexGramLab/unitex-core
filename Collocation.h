@@ -35,7 +35,8 @@ typedef struct {
 
 #include "Snt.h"
 
-Pvoid_t colloc_candidates( struct snt_files *, colloc_opt option);
+int     colloc_print(Pvoid_t array, unsigned threshold);
+Pvoid_t colloc_generate_candidates( struct snt_files *, colloc_opt option );
 
 #endif
 

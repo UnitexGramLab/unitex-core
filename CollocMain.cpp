@@ -20,26 +20,25 @@
   *
   */
   
+#include <errno.h>
 #include <stdio.h>
+#include <getopt.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <getopt.h>
-#include <errno.h>
-#include <limits.h>
-#include "CollocMain.h"
-#include "Unicode.h"
-#include "Text_tokens.h"
-#include "Alphabet.h"
-#include "Collocation.h"
-#include "Copyright.h"
-#include "Error.h"
+
 #include "Snt.h"
+#include "Error.h"
+#include "Unicode.h"
 #include "defines.h"
+#include "Alphabet.h"
+#include "Copyright.h"
+#include "CollocMain.h"
+#include "Collocation.h"
+#include "Text_tokens.h"
 
-typedef Pvoid_t judy;
-
-#define DEFAULT_WONLY   0
+#define DEFAULT_WONLY   1
 #define DEFAULT_CLENGTH 2
 #define DEFAULT_LWIDTH  0
 
@@ -48,8 +47,8 @@ static void usage(int header) {
 	if (header) {
 		u_printf("%S",COPYRIGHT);
 		u_printf(
-			"Tries to extract multi word expressions using several stochastic"
-				"and/or deterministic algorithms. It works on the normalized text automata.\n"
+			"Contains implementations of algorithms determined to extract collocations. "
+			"It works on the normalized text automata.\n"
 			"\n"
 		);
 	}
@@ -58,12 +57,13 @@ static void usage(int header) {
 		"Usage: Colloc [OPTIONS] <snt directory>\n"
 		"\n"
 		"Parameters:\n"
-		"     -?, --help                  Shows this message                                  \n"    
-		"     -w, --words-only            Ignores non-word states.                    / n \\  \n"          
-		"     -c, --combination-length    The length of word combinations. The p in C |   |   \n"
-		"                                 Defaults to %2d.                             \\ p /  \n" 
-		"     -l, --linear-width          The limit in which the token combinations are formed.\n"
-		"                                 Not yet implemented\n"
+		"     -?, --help                    Shows this message\n"    
+		"     -s, --strip-tag=TAG1,TAG2,... TODO: POS tags to strip from the collocation candidates.\n"
+		"         --strip-punctuations      TODO: Strip punctuations like , . ! etc.\n"
+		"     -w, --words-only              Ignores non-word states.                    / n \\ \n"          
+		"     -c, --combination-length      The length of word combinations. The p in C |   |  \n"
+		"                                   Defaults to %2d.                            \\ p /\n" 
+		"     -l, --linear-width            TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
 		"\n"
 	,DEFAULT_CLENGTH); 
 }
@@ -146,9 +146,10 @@ int main_Colloc(int argc, char **argv) {
 	struct snt_files* snt_files=NULL;
 	snt_files = new_snt_files_from_path(text_snt);
 
-	judy candidates;
+	Pvoid_t candidates=NULL;
 	
-	candidates=colloc_candidates(snt_files, option);
+	candidates=colloc_generate_candidates(snt_files, option);
+	colloc_print(candidates, 2);
 	
 	u_printf("Done.\n");
 	

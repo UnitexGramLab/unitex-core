@@ -169,7 +169,7 @@ Pvoid_t create_freqtable( struct snt_files *snt, freq_opt option ) {
 				if ( option.sentence_only && *p == (unsigned)tok->SENTENCE_MARKER ) { // end of sentence
 					break;
 				} 
-				if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {	
+				if ( (! option.words_only) || (option.words_only && u_is_word(tok->token[*p])) ) {	
 					JLI(freqsI,freqs,*p); freq=(freq_entry**)(freqsI);
 					if (! *freq ) { 
 						(*freq)=new_freq_entry(0,*p,tok->token[*p]);
@@ -190,7 +190,7 @@ Pvoid_t create_freqtable( struct snt_files *snt, freq_opt option ) {
 				if ( option.sentence_only && *p == (unsigned)tok->SENTENCE_MARKER ) { // end of sentence
 					break;
 				} 
-				if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {
+				if ( (! option.words_only) || (option.words_only && u_is_word(tok->token[*p])) ) {	
 					JLI(freqsI,freqs,*p); freq=(freq_entry**)(freqsI);
 					if (! *freq ) {
 						(*freq)=new_freq_entry(0,*p,tok->token[*p]);

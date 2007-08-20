@@ -25,6 +25,7 @@
  *         This File contains the collocation extraction api implementation.
  */
 
+#include <time.h>
 
 #include <Judy.h>
 
@@ -69,7 +70,7 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 		Word_t   retvalKL = 0;
 		
 		for (i=0; i<stack->capacity; i++) {
-			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[i] ); // FIXME: need u_snprintf, this may overflow. 	
+			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[i] ); // FIXME: need u_snprintf, this may overflow.
 		}
 		retvalK  = key; 
 		retvalKL = pkey-key+1; retvalKL*=sizeof(unichar);
@@ -80,9 +81,10 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 }
 
 static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, PPvoid_t retval ) {
-	Pvoid_t arrayI=NULL;
 
 	if (! stacki_is_full((struct stack_int*)stack) ) {
+		Pvoid_t arrayI=NULL;
+
 		JLF(arrayI, array, arrayK);
 		while (arrayI) {
 			stacki_push( stack, (Word_t)arrayI);
@@ -100,10 +102,10 @@ static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, PPvo
 	}
 }
 
-int colloc_print_candidates(Pvoid_t array, unsigned threshold) {
+int colloc_print(Pvoid_t array, unsigned threshold) {
 
 	if (! array ) {
-		u_fprintf(stderr,"There was a fatal problem while computing frequencies\n");
+		u_fprintf(stderr,"%s() in %s:%d was passed a null pointer.\n", __FUNCTION__, __FILE__, __LINE__ );
 		return 1;
 	}
 	else {
@@ -117,7 +119,7 @@ int colloc_print_candidates(Pvoid_t array, unsigned threshold) {
 		Word_t   arrayKL = 0;
 		Word_t   arrayAL = 0;
 
-		u_fprintf(stderr,"Frequency\tToken\n"
+		u_fprintf(stderr,"Frequency\tCollocation\n"
 		                 "---------------------\n");
 
 		JHSIF(arrayI, array, arrayS, arrayK, arrayKL);
@@ -135,18 +137,18 @@ int colloc_print_candidates(Pvoid_t array, unsigned threshold) {
 	return 0;
 }
 
-Pvoid_t colloc_candidates( struct snt_files *snt, colloc_opt option ) {
+Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
 	Fst2State state;
 	Transition *tran=NULL;
 	Pvoid_t retval=NULL;
 
-	struct stack_int *stack=new_stack_int(option.clength);
+	struct stack_int *stack=new_stack_int(2); // start by generating combinations of 2. we'll then try to combine them.
 
 	unichar *input, *c, *d;
 
-	int i,j,index=0;
+	int i,j,index=0,prev_i;
 	int ret;
 
 	FILE* ffst2=NULL;
@@ -177,7 +179,10 @@ Pvoid_t colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 	Word_t   nodesAL = 0;
 
 	u_fprintf(stderr,"Generating collocation candidates...\n");
-		
+	time_t ptime=0,ctime,stime;
+
+	ctime=time(&stime);
+
 	for (i=1; i<=sfst2->number_of_graphs; i++) { // for every sentence
 		j = sfst2->initial_states[i];
 		state = sfst2->states[j];
@@ -185,9 +190,16 @@ Pvoid_t colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 		sentenceK=0;
 
-		u_fprintf(stderr,"Sentence %d/%d\r",i,sfst2->number_of_graphs);
+		if ( (time(&ctime)-ptime) ) {
+			u_fprintf(stderr,"Sentence %8d/%d, %4.3f sentences per second, still ~%8.3f seconds to go.\r",
+			               i, sfst2->number_of_graphs, ((float)i) / (ctime-stime) , 
+			               (ctime-stime) * (sfst2->number_of_graphs -i) / ((float)i)
+			         );
+			ptime=ctime;
+			prev_i=i;
+		}
 
-		while (state) { // here we try to group transitions whose terminal states are the same.
+		while (state) { // here we try to group transitions whose terminal states are the same. FIXME: need confirmation :-)
 			if (tran) {
 				state=sfst2->states[tran->state_number];
 				JLI(sentenceI, sentence, sentenceK );
@@ -209,8 +221,8 @@ Pvoid_t colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 							*d=0;
 						}
 						else {
-							u_printf ( "format error in %s, state %d transition %d: %S\n", 
-							           snt->text_fst2, tran->state_number, tran->tag_number, input );
+							u_fprintf (stderr, "format error in %s, state %d transition %d: %S\n", 
+							                   snt->text_fst2, tran->state_number, tran->tag_number, input );
 							exit(1);
 						}
 					}
@@ -219,8 +231,10 @@ Pvoid_t colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 						nodesK=(Pvoid_t)input;
 					}
 
-					JHSI( nodesI, *nodes , nodesK, nodesKL );
-					if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;
+					if ( (! option.wonly) || (option.wonly && u_is_word((unichar *)nodesK)) ) { // FIXME: u_isword not working as expected, need something more elaborate in order to do the filtering here. 
+						JHSI( nodesI, *nodes , nodesK, nodesKL );
+						if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;
+					}
 
 					if (d) { // fixing the above null termination
 						*d='}';
@@ -250,10 +264,11 @@ Pvoid_t colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 		JLFA( sentenceAL, sentence );
 	}
 
+	u_fprintf(stderr, "Sentence %9d/%d, %4.3f sentences per second.                                     \n",
+	                  i-1, sfst2->number_of_graphs, ((float)i-1) / (time(&ctime)-stime)
+	         );
+
 	free_stack_int(stack);
-
-	colloc_print_candidates(retval, 2);
-
 	return retval;
 
 }
