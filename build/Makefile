@@ -613,7 +613,7 @@ bin: $(LIBTRE) $(LIBJUDY) $(BINARIES)
 
 $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library ..."
-	tar xfz $(TRE_TGZ)
+	tar xzf $(TRE_TGZ)
 
 libtre: .libtre-done $(TRE_SRC)
 	@echo "Making TRE library ..."
@@ -630,7 +630,7 @@ clean-libtre:
 
 
 $(JUDY_SRC): $(JUDY_TGZ)
-	tar xf $(JUDY_TGZ)
+	tar xzf $(JUDY_TGZ)
 
 .Judy-done:
 	touch .Judy-done
