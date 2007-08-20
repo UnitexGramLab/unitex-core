@@ -19,8 +19,12 @@
   *
   */
 
+/*
+ * Author: Burak Arslan (arslan@univ-mlv.fr, plq@gsulinux.org)
+ *         This File contains the Freq api implementation.
+ */
+
 #include <Judy.h>
-typedef Pvoid_t judy;
 
 #include "Frequency.h"
 #include "Unicode.h"
@@ -60,7 +64,7 @@ static void free_freq_entry( freq_entry **freq ) {
 	}
 }
 
-int print_freqtable(judy freqs, unsigned threshold) {
+int print_freqtable(Pvoid_t freqs, unsigned threshold) {
 	
 	if (! freqs ) {
 		u_fprintf(stderr,"There was a fatal problem while computing frequencies\n");
@@ -80,7 +84,7 @@ int print_freqtable(judy freqs, unsigned threshold) {
 		JLF(f, freqs, j); freq=(freq_entry**)(f);
 		while (freq) {
 			if ((*freq)->freq >= threshold) {
-				u_printf("%d\t%S\n", (*freq)->freq, (*freq)->text ); 
+				u_printf("%9d\t%S\n", (*freq)->freq, (*freq)->text ); 
 			}
 			JLN(f, freqs, j); freq=(freq_entry**)(f);
 		}
@@ -90,7 +94,7 @@ int print_freqtable(judy freqs, unsigned threshold) {
 }
 
 
-judy create_freqtable( struct snt_files *snt, freq_opt option ) {
+Pvoid_t create_freqtable( struct snt_files *snt, freq_opt option ) {
 
 #define INDBUFSIZE 1024
 #define RECORDLENGTH 4
@@ -127,8 +131,8 @@ judy create_freqtable( struct snt_files *snt, freq_opt option ) {
 		return NULL;
 	}
 
-	judy freqs=(Pvoid_t)NULL; // judy array
-	Pvoid_t f;                //      iterator
+	Pvoid_t freqs=(Pvoid_t)NULL; // judy array
+	Pvoid_t freqsI;              //      iterator
 
 	if ( option.automata == 0 ) {
 		int text_size;
@@ -166,7 +170,7 @@ judy create_freqtable( struct snt_files *snt, freq_opt option ) {
 					break;
 				} 
 				if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {	
-					JLI(f,freqs,*p); freq=(freq_entry**)(f);
+					JLI(freqsI,freqs,*p); freq=(freq_entry**)(freqsI);
 					if (! *freq ) { 
 						(*freq)=new_freq_entry(0,*p,tok->token[*p]);
 					}
@@ -187,7 +191,7 @@ judy create_freqtable( struct snt_files *snt, freq_opt option ) {
 					break;
 				} 
 				if ( (option.words_only && u_is_word(tok->token[*p])) || (! option.words_only) ) {
-					JLI(f,freqs,*p); freq=(freq_entry**)(f);
+					JLI(freqsI,freqs,*p); freq=(freq_entry**)(freqsI);
 					if (! *freq ) {
 						(*freq)=new_freq_entry(0,*p,tok->token[*p]);
 					}

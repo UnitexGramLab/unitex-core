@@ -38,7 +38,8 @@ BIN_DIR = ../bin/
 #
 # Note: This variant of Judy is obtained by:
 #       svn co http://svn.pugscode.org/pugs/third-party/judy/Judy-1.0.3 -r 10611
-# 
+#       later revisions seem to have their build system modified to fit better into that of PUGS.
+#
 
 LIBJUDY = Judy
 JUDY_SRC = Judy-1.0.3

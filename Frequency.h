@@ -25,6 +25,12 @@
 #include <Judy.h>
 #include "Text_tokens.h"
 
+/*
+ * Author: Burak Arslan (arslan@univ-mlv.fr, plq@gsulinux.org)
+ *         This File contains the freq api functions and data structures.
+ */
+
+
 /**
  * This structure is used to store information about the current
  * freq build. It is used to avoid giving too much parameters

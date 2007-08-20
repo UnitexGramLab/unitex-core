@@ -19,6 +19,11 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
+
+/*
+ * Author: Burak Arslan (arslan@univ-mlv.fr, plq@gsulinux.org)
+ *         This File contains the real main function of Freq executable.
+ */
   
 #include <stdio.h>
 #include <stdlib.h>

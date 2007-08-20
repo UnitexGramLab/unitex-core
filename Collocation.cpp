@@ -22,8 +22,7 @@
 
 /*
  * Author: Burak Arslan (arslan@univ-mlv.fr, plq@gsulinux.org)
- *         This File contains the collocation extraction api functions.
- * 
+ *         This File contains the collocation extraction api implementation.
  */
 
 
@@ -37,71 +36,111 @@
 #include "Error.h"
 #include "Fst2.h"
 
-typedef Pvoid_t judy;
+#define KEYLENGTH 1024
 
-static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1) {
-	PPvoid_t nodes   = NULL; // this array is contained in another judy array. that's why it's declared
-	                         // as PPvoid_t (which is just a void**) and used by dereferencing once.
-	Pvoid_t  nodesI  = NULL; // iterator (ie pointer to an element, as in c++ map's iterator->second)
-	Pvoid_t  nodesK  = NULL; // key      (   pointer to an element's key, as in c++ map's iterator->first)
-	Pvoid_t  nodesS  = NULL; // state of the current iteration. should be NULLified everytime a new
-	                         // iteration is attempted.
-	Word_t   nodesSL = 0;    // state length. is filled when the state is destroyed, so not of much use.
-	Word_t   nodesKL = 0;    // keylength
-	Word_t   nodesAL = 0;    // arraylength. is filled when the array is destroyed, so not of much use.
-
+static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1, PPvoid_t retval) {
 	if (! stacki_is_full((struct stack_int*)stack) ) {
-		nodes = (PPvoid_t)stack_l1->stack[start];
-		nodesKL = 0;
-		nodesS  = NULL;
+		PPvoid_t nodes   = (PPvoid_t)stack_l1->stack[start]; // this array is contained in another judy array.
+		                         // that's why it's declared as PPvoid_t (which is just a void**) and used 
+                                 // always like *nodes.
+		Pvoid_t  nodesI  = NULL; // iterator (ie pointer to an element, as in c++ map's iterator->second)
+		Pvoid_t  nodesK  = NULL; // key      (   pointer to an element's key, as in c++ map's iterator->first)
+		Pvoid_t  nodesS  = NULL; // state of the current iteration. should be NULLified everytime a new
+		                         // iteration is attempted.
+		Word_t   nodesSL = 0;    // state length. is filled when the state is destroyed, so not of much use.
+		Word_t   nodesKL = 0;    // keylength
+		Word_t   nodesAL = 0;    // arraylength. is filled when the array is destroyed, so not of much use.
 
 		JHSIF(nodesI, *nodes, nodesS, nodesK, nodesKL);
 		while (nodesI)	{
 			stacki_push( stack, (Word_t)nodesK);
-			comb_l2( start+1, stack, stack_l1);
+			comb_l2( start+1, stack, stack_l1, retval);
 			stacki_pop( stack );
 
 			JHSIN(nodesI, *nodes, nodesS, nodesK, nodesKL);
 		}
         JHSFI(nodesSL, nodesS);
 	}
-	else { // devami buradan...
-/*		int i=0;
+	else { 
+		int i=0;
+		unichar key[KEYLENGTH], *pkey=key;
+		Pvoid_t  retvalI  = NULL;
+		Pvoid_t  retvalK  = NULL;
+		Word_t   retvalKL = 0;
+		
 		for (i=0; i<stack->capacity; i++) {
-			u_printf( "%S ", (unichar *)stack->stack[i] ); 	
+			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[i] ); // FIXME: need u_snprintf, this may overflow. 	
 		}
-		u_printf("\n");
-*/	}	
+		retvalK  = key; 
+		retvalKL = pkey-key+1; retvalKL*=sizeof(unichar);
+		
+		JHSI( retvalI, *retval , retvalK, retvalKL );
+		(*((Word_t *)retvalI))++;
+	}		
 }
 
-static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array ) {
+static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, PPvoid_t retval ) {
 	Pvoid_t arrayI=NULL;
 
 	if (! stacki_is_full((struct stack_int*)stack) ) {
 		JLF(arrayI, array, arrayK);
 		while (arrayI) {
 			stacki_push( stack, (Word_t)arrayI);
-			comb_l1  ( arrayK+1, stack, array );
+			comb_l1  ( arrayK+1, stack, array, retval);
 			stacki_pop( stack );
 			JLN(arrayI, array, arrayK);
 		}
 	}
 	else {
 		struct stack_int *stack_l2=new_stack_int(stack->capacity);
-		int i;
 
-		comb_l2(0, stack_l2, stack);
+		comb_l2(0, stack_l2, stack, retval);
 		
 		free_stack_int(stack_l2);
 	}
 }
 
-judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
+int colloc_print_candidates(Pvoid_t array, unsigned threshold) {
+
+	if (! array ) {
+		u_fprintf(stderr,"There was a fatal problem while computing frequencies\n");
+		return 1;
+	}
+	else {
+		/* show the results.
+		 * one can pipe the output to "sort -n" to get a sorted list.
+		 */
+		Pvoid_t  arrayI  = NULL;
+		Pvoid_t  arrayK  = NULL;
+		Pvoid_t  arrayS  = NULL;		                        
+		Word_t   arraySL = 0;
+		Word_t   arrayKL = 0;
+		Word_t   arrayAL = 0;
+
+		u_fprintf(stderr,"Frequency\tToken\n"
+		                 "---------------------\n");
+
+		JHSIF(arrayI, array, arrayS, arrayK, arrayKL);
+		while (arrayI)	{
+			if ( (*((Word_t*)arrayI)) >= threshold ) {
+				u_printf("%9d\t%S\n", *((Word_t*)arrayI), (unichar*)arrayK );
+			}
+
+			JHSIN(arrayI, array, arrayS, arrayK, arrayKL);
+		}
+        JHSFI(arraySL, arrayS);
+
+	}
+
+	return 0;
+}
+
+Pvoid_t colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
 	Fst2State state;
 	Transition *tran=NULL;
-	judy retval=NULL;
+	Pvoid_t retval=NULL;
 
 	struct stack_int *stack=new_stack_int(option.clength);
 
@@ -117,6 +156,7 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 		return NULL;
 	}
 	
+	u_printf("Loading %s ...\n", snt->text_fst2);
 	ret=load_fst2_from_file(ffst2,0,&sfst2);
 	if ( ret ) {
 		u_fprintf(stderr,"Error %d in %s:%d. Fst2 file could not be loaded.\n", ret, __FILE__,__LINE__);
@@ -128,22 +168,24 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 	Word_t   sentenceK  = 0;
 	int      sentenceAL = 0;
 
-	PPvoid_t nodes   = NULL; // this array is contained in another judy array. that's why it's declared
-	                         // as PPvoid_t (which is just a void**) and used by dereferencing once.
-	Pvoid_t  nodesI  = NULL; // iterator (ie pointer to an element, as in c++ map's iterator->second)
-	Pvoid_t  nodesK  = NULL; // key      (   pointer to an element's key, as in c++ map's iterator->first)
-	Pvoid_t  nodesS  = NULL; // state of the current iteration. should be NULLified everytime a new
-	                         // iteration is attempted.
-	Word_t   nodesSL = 0;    // state length. is filled when the state is destroyed, so not of much use.
-	Word_t   nodesKL = 0;    // keylength
-	Word_t   nodesAL = 0;    // arraylength. is filled when the array is destroyed, so not of much use.
-	
+	PPvoid_t nodes   = NULL;
+	Pvoid_t  nodesI  = NULL;
+	Pvoid_t  nodesK  = NULL;
+	Pvoid_t  nodesS  = NULL;
+	Word_t   nodesSL = 0;
+	Word_t   nodesKL = 0;
+	Word_t   nodesAL = 0;
+
+	u_fprintf(stderr,"Generating collocation candidates...\n");
+		
 	for (i=1; i<=sfst2->number_of_graphs; i++) { // for every sentence
 		j = sfst2->initial_states[i];
 		state = sfst2->states[j];
 		tran = state->transitions;
 
 		sentenceK=0;
+
+		u_fprintf(stderr,"Sentence %d/%d\r",i,sfst2->number_of_graphs);
 
 		while (state) { // here we try to group transitions whose terminal states are the same.
 			if (tran) {
@@ -195,45 +237,22 @@ judy colloc_candidates( struct snt_files *snt, colloc_opt option ) {
 			}
 		}
 
-
-		comb_l1( 0, stack, sentence );
-
-/*
-		sentenceK=0;
-		JLF(sentenceI, sentence, sentenceK);
-		while (sentenceI) {
-			u_printf("%9lu: ", sentenceK);
-
-			nodes=(PPvoid_t)sentenceI;
-			nodesKL = 0;
-			nodesS  = NULL;
-
-			JHSIF(nodesI, *nodes, nodesS, nodesK, nodesKL);
-			while (nodesI)	{
-				u_printf("%S ", (unichar *)nodesK );
-
-				JHSIN(nodesI, *nodes, nodesS, nodesK, nodesKL);
-			}
-	        JHSFI(nodesSL, nodesS);
-			u_printf("\n");
-
-			JLN(sentenceI, sentence, sentenceK);
-		}
-*/
+		comb_l1( 0, stack, sentence, &retval );
 		// loop that frees the judy array
 		sentenceK=0;
 		JLF(sentenceI, sentence, sentenceK);
 		while (sentenceI) {
 			nodes=(PPvoid_t)sentenceI;
 			JHSFA( nodesAL, *nodes);
-			
+
 			JLN(sentenceI, sentence, sentenceK);
 		}
 		JLFA( sentenceAL, sentence );
-
 	}
 
 	free_stack_int(stack);
+
+	colloc_print_candidates(retval, 2);
 
 	return retval;
 

@@ -19,6 +19,10 @@
   *
   */
 
+/*
+ * Author: Burak Arslan (arslan@univ-mlv.fr, plq@gsulinux.org)
+ */
+
 #ifndef FreqMainH
 #define FreqMainH
 
