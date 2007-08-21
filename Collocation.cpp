@@ -32,7 +32,6 @@
 #include "Collocation.h"
 #include "Buffer_ng.h"
 #include "Stack_int.h"
-#include "Unicode.h"
 #include "defines.h"
 #include "Error.h"
 #include "Fst2.h"
@@ -44,6 +43,8 @@ typedef struct {
 	unichar gscode[32]; // grammatical or semantic code
 	unichar infl[32];   // inflectional information
 } tag_t;
+
+static unsigned cnum=0;
 
 static void parse_tag_string ( tag_t *tag, unichar *str ) {
 	unichar *p=str, *q=str;
@@ -116,14 +117,17 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 		Pvoid_t  retvalK  = NULL;
 		Word_t   retvalKL = 0;
 		
-		for (i=0; i<stack->capacity; i++) {
-			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[i] ); // FIXME: need u_snprintf, this may overflow.
-		}
-		retvalK  = key; 
-		retvalKL = pkey-key+1; retvalKL*=sizeof(unichar);
+		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) {
+			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
+			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
+
+			retvalK  = key; 
+			retvalKL = pkey-key+1; retvalKL*=sizeof(unichar);
 		
-		JHSI( retvalI, *retval , retvalK, retvalKL );
-		(*((Word_t *)retvalI))++;
+			JHSI( retvalI, *retval , retvalK, retvalKL );
+			(*((Word_t *)retvalI))++;
+			cnum++;
+		}
 	}		
 }
 
@@ -183,7 +187,7 @@ int colloc_print(Pvoid_t array, unsigned threshold) {
 
 	return 0;
 }
-
+#define KEYLENGTH 256
 Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
@@ -192,8 +196,9 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	Pvoid_t retval=NULL;
 
 	struct stack_int *stack=new_stack_int(2); // start by generating combinations of 2. we'll then try to combine them.
+                                              // if this changes, comb_l2 should be adjusted accordingly.
 
-	unichar *input, *c, *d;
+	unichar *input, *c, *d,key[KEYLENGTH];
 
 	int i,j,index=0,prev_i;
 	int ret;
@@ -238,8 +243,8 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		sentenceK=0;
 
 		if ( (time(&ctime)-ptime) ) {
-			u_fprintf(stderr,"Sentence %8d/%d, %4.3f sentences per second, still ~%8.3f seconds to go.\r",
-			               i, sfst2->number_of_graphs, ((float)i) / (ctime-stime) , 
+			u_fprintf(stderr,"Sentence %8d/%d, %4.3f sentences/s, %8d combinations so far. still ~%8.3f seconds to go.\r",
+			               i, sfst2->number_of_graphs, ((float)i) / (ctime-stime) , cnum,
 			               (ctime-stime) * (sfst2->number_of_graphs -i) / ((float)i)
 			         );
 			ptime=ctime;
@@ -259,16 +264,27 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 						tag_t tag;
 						parse_tag_string( &tag, input+1 );
 
-						c=u_strchr( input, ',' )+1;
+						c=u_strchr( input, ',' ) + 1;
 						d=u_strchr(     c, '.' );
 
-						if ( c == d ) c =input +1;
+						if ( c == d ) c=input+1;
 						d=u_strchr(     c, '}' );
-
+						
 						if (d) {
-							nodesKL=d-c; nodesKL++; nodesKL*=sizeof(unichar);
-							nodesK=(Pvoid_t)c;
-							*d=0;
+							nodesKL=0;
+							while (c!=d) {
+								if (*c != ',') key[nodesKL++] = *c;
+
+								if (nodesKL==KEYLENGTH) {
+									u_fprintf( stderr, "strange memory error in %s:%d. bailing out.\n", __FILE__, __LINE__ );
+									exit(1);
+								}
+								c++;
+							}
+							key[nodesKL++]=0;
+							nodesKL*=sizeof(unichar);
+
+							nodesK=(Pvoid_t)key;
 						}
 						else {
 							u_fprintf (stderr, "format error in %s, state %d transition %d: %S\n", 
@@ -277,19 +293,21 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 						}
 					}
 					else {
-						nodesKL=(u_strlen(input)+1)*sizeof(unichar);
-						nodesK=(Pvoid_t)input;
+						if ( (    *input == ','  || *input == '.' || *input == '?' || *input == '!' 
+					           || *input == '\'' || *input == '_' || *input == '-' || *input == ':' 
+						       || *input == ')'  || *input == '(' || *input == '"') && option.spunc) { 
+							nodesK=NULL;
+						}
+						else {
+							nodesKL=(u_strlen(input)+1)*sizeof(unichar);
+							nodesK=(Pvoid_t)input;
+						}
 					}
 
-					if ( (! option.wonly) || (option.wonly && u_is_word((unichar *)nodesK)) ) { // FIXME: u_isword not working as expected, need something more elaborate in order to do the filtering here. 
+					if (nodesK) {
 						JHSI( nodesI, *nodes , nodesK, nodesKL );
 						if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;
 					}
-
-					if (d) { // fixing the above null termination
-						*d='}';
-						d=NULL;
-					}					
 
 					tran=tran->next;
 				}
@@ -314,7 +332,7 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		JLFA( sentenceAL, sentence );
 	}
 
-	u_fprintf(stderr, "Sentence %9d/%d, %4.3f sentences per second.                                     \n",
+	u_fprintf(stderr, "Sentence %9d/%d, %4.3f sentences per second.                                               \n",
 	                  i-1, sfst2->number_of_graphs, ((float)i-1) / (time(&ctime)-stime)
 	         );
 

@@ -22,15 +22,19 @@
 #ifndef CollocationH
 #define CollocationH
 
+#include "Unicode.h"
+
 /**
  * This structure is used to store information about the given
  * Colloc arguments. It is used to avoid giving too much parameters
  * to functions.
  */
+
 typedef struct {
 	int clength;
 	int lwidth;
-	int wonly;
+	int spunc;
+	unichar **spos;
 } colloc_opt;
 
 #include "Snt.h"

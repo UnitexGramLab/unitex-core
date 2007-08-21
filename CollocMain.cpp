@@ -38,10 +38,6 @@
 #include "Collocation.h"
 #include "Text_tokens.h"
 
-#ifndef DEFAULT_WONLY
-#define DEFAULT_WONLY   0
-#endif
-
 #ifndef DEFAULT_CLENGTH 
 #define DEFAULT_CLENGTH 2
 #endif
@@ -65,13 +61,14 @@ static void usage(int header) {
 		"Usage: Colloc [OPTIONS] <snt directory>\n"
 		"\n"
 		"Parameters:\n"
-		"     -?, --help                    Shows this message\n"    
-		"     -s, --strip-tag=TAG1,TAG2,... TODO: POS tags to strip from the collocation candidates.\n"
-		"         --strip-punctuations      TODO: Strip punctuations like , . ! etc.\n"
-		"     -w, --words-only              Ignores non-word states.                    / n \\ \n"          
-		"     -c, --combination-length      The length of word combinations. The p in C |   |  \n"
-		"                                   Defaults to %2d.                            \\ p /\n" 
+		"     -?, --help                    Shows this message\n"
+		"     -c, --combination-length      The length of word combinations. The p in C(n,p)\n"
 		"     -l, --linear-width            TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
+		"                                   Mostly like the n in C(n,p).\n"
+		"     -p, --strip-punctuations      TODO: Strip punctuations like , . ! etc.\n"
+		"     -t, --strip-tag=TAG1,TAG2,... TODO: POS tags to strip from the collocation candidates.\n"
+		"     -w, --words-only              Ignores non-word states.\n"
+		"                                   Defaults to %2d.\n"
 		"\n"
 	,DEFAULT_CLENGTH); 
 }
@@ -86,20 +83,22 @@ int main_Colloc(int argc, char **argv) {
 	char ch;
 	int option_index = 0;
 	
-	const struct option longopts[] = {
-		 {               "help",       no_argument, NULL, '?' }
-		,{         "words-only",       no_argument, NULL, 'w' }
-		,{ "combination-length", required_argument, NULL, 'c' }
-		,{       "linear-width", required_argument, NULL, 'l' }
+	const struct option longopts[] = { 
+		 {                  "help",       no_argument, NULL, '?' }
+		,{    "combination-length", required_argument, NULL, 'c' }
+		,{          "linear-width", required_argument, NULL, 'l' } 
+		,{            "strip-tags", required_argument, NULL, 't' }
+		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }
+		
 		,{NULL, 0, NULL, 0}
 	};
 
 	colloc_opt option;
-	option.wonly   = DEFAULT_WONLY; 
 	option.clength = DEFAULT_CLENGTH; 
 	option.lwidth  = DEFAULT_LWIDTH; 
+	option.spunc   = 1;
 	
-	while ((ch = getopt_long(argc, argv, "?wc:l:", longopts, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "?c:l:t:p", longopts, &option_index)) != -1) {
 		switch (ch) {
 	
 		case '?':
@@ -107,10 +106,6 @@ int main_Colloc(int argc, char **argv) {
 			exit(EXIT_SUCCESS);
 			break;	
 	
-		case 'w':
-			option.wonly=1;
-			break;
-
 		case 'c':
 			STRINGINT(optarg, option.clength);
 			if (option.clength <= 0) {
@@ -127,6 +122,61 @@ int main_Colloc(int argc, char **argv) {
 				exit (EXIT_FAILURE);
 			}
 			break;
+
+		case 't': {
+			char *p=optarg, *q=optarg;
+			int len;
+			int size=1;
+
+			while (1) {
+				if ( *p==',' || *p==0 ) {
+					len = p-q;
+					if (len) {
+						size++;
+					}
+					q=p+1;
+				}
+
+				if (! *p) break;
+				p++;
+			}
+			
+			custom_malloc( unichar*, size, option.spos );
+
+			p=optarg;
+			q=optarg;
+			size=0;
+			while (1) {
+				if ( *p==',') {
+					len = p-q;
+					if (len) {
+						custom_malloc( unichar, (len+1), option.spos[size] );
+						*p=0; u_sprintf( option.spos[size], "%s", q ); *p=',';
+						size++;
+					}
+					q=p+1;
+				}
+
+				if (! *p) {
+					len = p-q;
+					if (len) {
+						custom_malloc( unichar, (len+1), option.spos[size] );
+						u_sprintf( option.spos[size], "%s", q );
+						size++;
+					}
+					break;
+				}
+				p++;
+			}
+
+			option.spos[size]=0;
+			break;
+			
+		}
+		case 'p': {
+			option.spunc=1;
+			break;
+		}
 		
 		default:
 			exit (EXIT_FAILURE);
