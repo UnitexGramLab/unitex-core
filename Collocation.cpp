@@ -44,11 +44,13 @@ typedef struct {
 	unichar infl[32];   // inflectional information
 } tag_t;
 
-static unsigned cnum=0;
+static Word_t cnum=0,cnumu=0;
 
 static void parse_tag_string ( tag_t *tag, unichar *str ) {
 	unichar *p=str, *q=str;
 	size_t len;
+	Word_t state=1;
+
 	if (tag) {
 		while (*p) {
 			if ( *p == ',' ) {
@@ -67,11 +69,15 @@ static void parse_tag_string ( tag_t *tag, unichar *str ) {
 				memcpy( tag->can, q, len );
 				q=p+1;
 			}
-			if ( *p == ':' ) {
+			if ( *p == '+' && state) {
 				len=p-q;
 				tag->gscode[len]=0;
 				len*=sizeof(unichar);
 				memcpy( tag->gscode, q, len );
+				q=p+1;
+				state=0;
+			}
+			if ( *p == ':' ) {
 				q=p+1;
 			}
 			if ( *p == '}' ) {
@@ -89,16 +95,8 @@ static void parse_tag_string ( tag_t *tag, unichar *str ) {
 
 static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1, PPvoid_t retval) {
 	if (! stacki_is_full((struct stack_int*)stack) ) {
-		PPvoid_t nodes   = (PPvoid_t)stack_l1->stack[start]; // this array is contained in another judy array.
-		                         // that's why it's declared as PPvoid_t (which is just a void**) and used 
-                                 // always like *nodes.
-		Pvoid_t  nodesI  = NULL; // iterator (ie pointer to an element, as in c++ map's iterator->second)
-		Pvoid_t  nodesK  = NULL; // key      (   pointer to an element's key, as in c++ map's iterator->first)
-		Pvoid_t  nodesS  = NULL; // state of the current iteration. should be NULLified everytime a new
-		                         // iteration is attempted.
-		Word_t   nodesSL = 0;    // state length. is filled when the state is destroyed, so not of much use.
-		Word_t   nodesKL = 0;    // keylength
-		Word_t   nodesAL = 0;    // arraylength. is filled when the array is destroyed, so not of much use.
+		PPvoid_t nodes=(PPvoid_t)stack_l1->stack[start]; 
+		JUDYHSH(nodes);
 
 		JHSIF(nodesI, *nodes, nodesS, nodesK, nodesKL);
 		while (nodesI)	{
@@ -113,11 +111,9 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 	else { 
 		int i=0;
 		unichar key[KEYLENGTH], *pkey=key;
-		Pvoid_t  retvalI  = NULL;
-		Pvoid_t  retvalK  = NULL;
-		Word_t   retvalKL = 0;
-		
-		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) {
+		JUDYHSH(retval);
+
+		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) { // ignore duplicates
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 
@@ -125,6 +121,7 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 			retvalKL = pkey-key+1; retvalKL*=sizeof(unichar);
 		
 			JHSI( retvalI, *retval , retvalK, retvalKL );
+			if (!(*((Word_t *)retvalI))) cnumu++;
 			(*((Word_t *)retvalI))++;
 			cnum++;
 		}
@@ -163,12 +160,7 @@ int colloc_print(Pvoid_t array, unsigned threshold) {
 		/* show the results.
 		 * one can pipe the output to "sort -n" to get a sorted list.
 		 */
-		Pvoid_t  arrayI  = NULL;
-		Pvoid_t  arrayK  = NULL;
-		Pvoid_t  arrayS  = NULL;		                        
-		Word_t   arraySL = 0;
-		Word_t   arrayKL = 0;
-		Word_t   arrayAL = 0;
+		JUDYHSH(array);		
 
 		u_fprintf(stderr,"Frequency\tCollocation\n"
 		                 "---------------------------\n");
@@ -187,7 +179,7 @@ int colloc_print(Pvoid_t array, unsigned threshold) {
 
 	return 0;
 }
-#define KEYLENGTH 256
+
 Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
@@ -196,7 +188,7 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	Pvoid_t retval=NULL;
 
 	struct stack_int *stack=new_stack_int(2); // start by generating combinations of 2. we'll then try to combine them.
-                                              // if this changes, comb_l2 should be adjusted accordingly.
+	                                          // if this changes, comb_l2 should be adjusted accordingly.
 
 	unichar *input, *c, *d,key[KEYLENGTH];
 
@@ -213,22 +205,15 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	u_printf("Loading %s ...\n", snt->text_fst2);
 	ret=load_fst2_from_file(ffst2,0,&sfst2);
 	if ( ret ) {
-		u_fprintf(stderr,"Error %d in %s:%d. Fst2 file could not be loaded.\n", ret, __FILE__,__LINE__);
+		u_fprintf(stderr,"Error %d in %s:%d. Fst2 file could not be loaded.\n", ret, __FILE__, __LINE__);
 		return 0;
 	}
 
-	Pvoid_t  sentence   = NULL;
-	Pvoid_t  sentenceI  = NULL;
-	Word_t   sentenceK  = 0;
-	int      sentenceAL = 0;
+	Pvoid_t sentence=NULL;
+	JUDYLH(sentence);
 
-	PPvoid_t nodes   = NULL;
-	Pvoid_t  nodesI  = NULL;
-	Pvoid_t  nodesK  = NULL;
-	Pvoid_t  nodesS  = NULL;
-	Word_t   nodesSL = 0;
-	Word_t   nodesKL = 0;
-	Word_t   nodesAL = 0;
+	PPvoid_t nodes=NULL;
+	JUDYHSH(nodes);
 
 	u_fprintf(stderr,"Generating collocation candidates...\n");
 	time_t ptime=0,ctime,stime;
@@ -260,42 +245,60 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 				while (tran) { 
 					input=sfst2->tags[tran->tag_number]->input;
+					unichar str[100];
+					u_sprintf(str, "{ET,et.CONJC}");
+
+					if (! u_strcmp( str, input )) {
+						u_printf( "sebo bunu okuyosan topsun olm top ehehe\n" );
+					}
+
 					if (input[0]=='{') {
 						tag_t tag;
 						parse_tag_string( &tag, input+1 );
 
-						c=u_strchr( input, ',' ) + 1;
-						d=u_strchr(     c, '.' );
 
-						if ( c == d ) c=input+1;
-						d=u_strchr(     c, '}' );
-						
-						if (d) {
-							nodesKL=0;
-							while (c!=d) {
-								if (*c != ',') key[nodesKL++] = *c;
-
-								if (nodesKL==KEYLENGTH) {
-									u_fprintf( stderr, "strange memory error in %s:%d. bailing out.\n", __FILE__, __LINE__ );
-									exit(1);
-								}
-								c++;
-							}
-							key[nodesKL++]=0;
-							nodesKL*=sizeof(unichar);
-
-							nodesK=(Pvoid_t)key;
+						unichar **spos = option.spos;
+						while( *spos ) { 
+							if (! u_strcmp( *spos, tag.gscode ) ) break;
+							spos++;
+						}
+						if ( *spos ) {
+							nodesK=NULL;
 						}
 						else {
-							u_fprintf (stderr, "format error in %s, state %d transition %d: %S\n", 
-							                   snt->text_fst2, tran->state_number, tran->tag_number, input );
-							exit(1);
+							c=u_strchr( input, ',' ) + 1;
+							d=u_strchr(     c, '.' );
+
+							if ( c == d ) c=input+1;
+							d=u_strchr(     c, '}' );
+
+							if (d) {
+								nodesKL=0;
+								while (c!=d) {
+									if (*c != ',') key[nodesKL++] = *c;
+
+									if (nodesKL==KEYLENGTH) {
+										u_fprintf( stderr, "Node key is too long in %s:%d. bailing out.\n", __FILE__, __LINE__ );
+										exit(1);
+									}
+									c++;
+								}
+								key[nodesKL++]=0;
+								nodesKL*=sizeof(unichar);
+
+								nodesK=(Pvoid_t)key;
+							}
+							else {
+								u_fprintf( stderr, "format error in %s, state %d transition %d: %S\n",
+								                   snt->text_fst2, tran->state_number, tran->tag_number, input );
+								exit(1);
+							}
 						}
 					}
 					else {
-						if ( (    *input == ','  || *input == '.' || *input == '?' || *input == '!' 
-					           || *input == '\'' || *input == '_' || *input == '-' || *input == ':' 
-						       || *input == ')'  || *input == '(' || *input == '"') && option.spunc) { 
+						if ( (   *input == ','  || *input == '.' || *input == '?' || *input == '!' 
+					          || *input == '\'' || *input == '_' || *input == '-' || *input == ':' 
+						      || *input == ')'  || *input == '(' || *input == '"') && option.spunc) { // FIXME: do we have a list of punctuations which seem to differ from language to language?
 							nodesK=NULL;
 						}
 						else {
@@ -305,7 +308,7 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 					}
 
 					if (nodesK) {
-						JHSI( nodesI, *nodes , nodesK, nodesKL );
+						JHSI( nodesI, *nodes, nodesK, nodesKL );
 						if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;
 					}
 
@@ -320,6 +323,7 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		}
 
 		comb_l1( 0, stack, sentence, &retval );
+
 		// loop that frees the judy array
 		sentenceK=0;
 		JLF(sentenceI, sentence, sentenceK);
@@ -332,8 +336,8 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		JLFA( sentenceAL, sentence );
 	}
 
-	u_fprintf(stderr, "Sentence %9d/%d, %4.3f sentences per second.                                               \n",
-	                  i-1, sfst2->number_of_graphs, ((float)i-1) / (time(&ctime)-stime)
+	u_fprintf(stderr, "Sentence %9d/%d, %4.3f sentences per second, %d combinations processed, of which %d unique.       \n",
+	                  i-1, sfst2->number_of_graphs, ((float)i-1) / (time(&ctime)-stime), cnum, cnumu
 	         );
 
 	free_stack_int(stack);

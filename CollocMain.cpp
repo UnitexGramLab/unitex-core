@@ -97,6 +97,7 @@ int main_Colloc(int argc, char **argv) {
 	option.clength = DEFAULT_CLENGTH; 
 	option.lwidth  = DEFAULT_LWIDTH; 
 	option.spunc   = 1;
+	option.spos    = NULL;
 	
 	while ((ch = getopt_long(argc, argv, "?c:l:t:p", longopts, &option_index)) != -1) {
 		switch (ch) {
