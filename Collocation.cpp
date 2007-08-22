@@ -50,6 +50,7 @@ static void parse_tag_string ( tag_t *tag, unichar *str ) {
 	unichar *p=str, *q=str;
 	size_t len;
 	Word_t state=1;
+	Word_t col=0;
 
 	if (tag) {
 		while (*p) {
@@ -76,15 +77,25 @@ static void parse_tag_string ( tag_t *tag, unichar *str ) {
 				memcpy( tag->gscode, q, len );
 				q=p+1;
 				state=0;
+				col=1;
 			}
 			if ( *p == ':' ) {
 				q=p+1;
+				col=1;
 			}
 			if ( *p == '}' ) {
 				len=p-q;
-				tag->infl[len]=0;
-				len*=sizeof(unichar);
-				memcpy( tag->infl, q, len );
+				if (col) {
+					tag->infl[len]=0;
+					len*=sizeof(unichar);
+					memcpy( tag->infl, q, len );
+				}
+				else {
+					tag->gscode[len]=0;
+					len*=sizeof(unichar);
+					memcpy( tag->gscode, q, len );
+					*tag->infl = 0;
+				}
 				q=p+1;
 			}
 
@@ -245,12 +256,6 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 				while (tran) { 
 					input=sfst2->tags[tran->tag_number]->input;
-					unichar str[100];
-					u_sprintf(str, "{ET,et.CONJC}");
-
-					if (! u_strcmp( str, input )) {
-						u_printf( "sebo bunu okuyosan topsun olm top ehehe\n" );
-					}
 
 					if (input[0]=='{') {
 						tag_t tag;
