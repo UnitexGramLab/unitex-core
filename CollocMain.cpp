@@ -66,7 +66,10 @@ static void usage(int header) {
 		"     -l, --linear-width=LEN        TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
 		"                                   This the n in C(n,p).\n"
 		"     -p, --no-strip-punctuations      Strip punctuations like , . ! etc.\n"
-		"     -t, --strip-tag=TAG1,TAG2,... POS tags to strip from the collocation candidates.\n"
+		"     -t, --strip-tags              POS tags to strip from the collocation candidates.\n"
+		"               =TAG1,TAG2,...\n"
+		"     -w, --strip-words             Words to strip from the collocation candidates.\n"
+		"               =WORD1,WORD2,...    Uses canonical form of the words.\n"
 		"\n"
 	); 
 }
@@ -87,6 +90,7 @@ int main_Colloc(int argc, char **argv) {
 		,{          "linear-width", required_argument, NULL, 'l' } 
 		,{            "strip-tags", required_argument, NULL, 't' }
 		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }	
+		,{           "strip-words", required_argument, NULL, 'w' }
 		,{NULL, 0, NULL, 0}
 	};
 
@@ -95,8 +99,10 @@ int main_Colloc(int argc, char **argv) {
 	option.lwidth  = DEFAULT_LWIDTH; 
 	option.spunc   = 1;
 	option.spos    = NULL;
+	option.swords  = NULL;
 	
-	while ((ch = getopt_long(argc, argv, "?c:l:t:p", longopts, &option_index)) != -1) {
+
+	while ((ch = getopt_long(argc, argv, "?c:l:t:pw:", longopts, &option_index)) != -1) {
 		switch (ch) {
 	
 		case '?':
@@ -171,6 +177,58 @@ int main_Colloc(int argc, char **argv) {
 			break;
 			
 		}
+
+		case 'w': {
+			char *p=optarg, *q=optarg;
+			int len;
+			int size=1;
+
+			while (1) {
+				if ( *p==',' || *p==0 ) {
+					len = p-q;
+					if (len) {
+						size++;
+					}
+					q=p+1;
+				}
+
+				if (! *p) break;
+				p++;
+			}
+			
+			custom_malloc( unichar*, size, option.swords );
+
+			p=optarg;
+			q=optarg;
+			size=0;
+			while (1) {
+				if ( *p==',') {
+					len = p-q;
+					if (len) {
+						custom_malloc( unichar, (len+1), option.swords[size] );
+						*p=0; u_sprintf( option.swords[size], "%s", q ); *p=',';
+						size++;
+					}
+					q=p+1;
+				}
+
+				if (! *p) {
+					len = p-q;
+					if (len) {
+						custom_malloc( unichar, (len+1), option.swords[size] );
+						u_sprintf( option.swords[size], "%s", q );
+						size++;
+					}
+					break;
+				}
+				p++;
+			}
+
+			option.swords[size]=0;
+			break;
+			
+		}
+
 		case 'p': {
 			option.spunc=1;
 			break;

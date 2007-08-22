@@ -270,7 +270,16 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 							if (! u_strcmp( *spos, tag.gscode[0] ) ) break;
 							spos++;
 						}
-						if ( *spos ) {
+
+						unichar **sword = option.swords;
+						if (! *spos) {
+							while( *sword ) { 
+								if (! u_strcmp( *sword, tag.can ) ) break;
+								sword++;
+							}
+						}
+
+						if ( *sword || *spos ) {
 							nodesK=NULL;
 						}
 						else {
@@ -310,8 +319,19 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 							nodesK=NULL;
 						}
 						else {
-							nodesKL=(u_strlen(input)+1)*sizeof(unichar);
-							nodesK=(Pvoid_t)input;
+							unichar **sword = option.swords;
+							while( *sword ) { 
+								if (! u_strcmp( *sword, input ) ) break;
+								sword++;
+							}
+
+							if ( *sword ) {
+								nodesK=NULL;
+							}
+							else {
+								nodesKL=(u_strlen(input)+1)*sizeof(unichar);
+								nodesK=(Pvoid_t)input;
+							}
 						}
 					}
 

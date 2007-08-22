@@ -35,6 +35,7 @@ typedef struct {
 	int lwidth;
 	int spunc;
 	unichar **spos;
+	unichar **swords;
 } colloc_opt;
 
 #include "Snt.h"
