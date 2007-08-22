@@ -51,7 +51,7 @@ static void usage(int header) {
 	if (header) {
 		u_printf("%S",COPYRIGHT);
 		u_printf(
-			"Contains implementations of algorithms determined to extract collocations. "
+			"This is a tool that is aimed to be used to extract collocations. "
 			"It works on the normalized text automata.\n"
 			"\n"
 		);
@@ -62,15 +62,13 @@ static void usage(int header) {
 		"\n"
 		"Parameters:\n"
 		"     -?, --help                    Shows this message\n"
-		"     -c, --combination-length      TODO: The length of word combinations. The p in C(n,p)\n"
-		"     -l, --linear-width            TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
+		"     -c, --combination-length=LEN  TODO: The length of word combinations. The p in C(n,p)\n"
+		"     -l, --linear-width=LEN        TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
 		"                                   This the n in C(n,p).\n"
-		"     -p, --strip-punctuations      Strip punctuations like , . ! etc.\n"
+		"     -p, --no-strip-punctuations      Strip punctuations like , . ! etc.\n"
 		"     -t, --strip-tag=TAG1,TAG2,... POS tags to strip from the collocation candidates.\n"
-		"     -w, --words-only              Ignores non-word states.\n"
-		"                                   Defaults to %2d.\n"
 		"\n"
-	,DEFAULT_CLENGTH); 
+	); 
 }
 
 /* 
