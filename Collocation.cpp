@@ -40,21 +40,20 @@
 
 typedef struct {
 	unichar can[32];    // canonical form
-	unichar gscode[32]; // grammatical or semantic code
+	unichar gscode[32][32]; // grammatical or semantic code
 	unichar infl[32];   // inflectional information
 } tag_t;
 
 static Word_t cnum=0,cnumu=0;
 
-static void parse_tag_string ( tag_t *tag, unichar *str ) {
+static void parse_tag_string ( tag_t *tag, unichar *str ) { // TODO: do boundary checks.
 	unichar *p=str, *q=str;
 	size_t len;
-	Word_t state=1;
-	Word_t col=0;
+	Word_t col=0,free=1,s=0;
 
 	if (tag) {
 		while (*p) {
-			if ( *p == ',' ) {
+			if ( *p == ',' && free ) {
 				if ( *(p+1) == '.' ) {
 					len=p-q;
 					tag->can[len]=0;
@@ -63,40 +62,44 @@ static void parse_tag_string ( tag_t *tag, unichar *str ) {
 				}
 				q=p+1;
 			}
-			if ( *p == '.' ) {
+			if ( *p == '.' && free ) {
 				len=p-q;
 				tag->can[len]=0;
 				len*=sizeof(unichar);
 				memcpy( tag->can, q, len );
 				q=p+1;
 			}
-			if ( *p == '+' && state) {
+			if ( (*p == '+' || *p == ':') && free ) {
 				len=p-q;
-				tag->gscode[len]=0;
+				tag->gscode[s][len]=0;
 				len*=sizeof(unichar);
-				memcpy( tag->gscode, q, len );
+				memcpy( tag->gscode[s], q, len );
 				q=p+1;
-				state=0;
+
 				col=1;
+				s++;
 			}
-			if ( *p == ':' ) {
-				q=p+1;
-				col=1;
-			}
-			if ( *p == '}' ) {
+			if ( *p == '}' && free ) {
 				len=p-q;
+	
 				if (col) {
 					tag->infl[len]=0;
 					len*=sizeof(unichar);
 					memcpy( tag->infl, q, len );
 				}
 				else {
-					tag->gscode[len]=0;
+					tag->gscode[s][len]=0;
 					len*=sizeof(unichar);
-					memcpy( tag->gscode, q, len );
+					memcpy( tag->gscode[s], q, len );
 					*tag->infl = 0;
 				}
 				q=p+1;
+			}
+			if ( *p == '\\' ) {
+				free=0;
+			}
+			else {
+				free=1;
 			}
 
 			p++;
@@ -264,7 +267,7 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 						unichar **spos = option.spos;
 						while( *spos ) { 
-							if (! u_strcmp( *spos, tag.gscode ) ) break;
+							if (! u_strcmp( *spos, tag.gscode[0] ) ) break;
 							spos++;
 						}
 						if ( *spos ) {

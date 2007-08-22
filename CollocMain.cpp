@@ -86,8 +86,7 @@ int main_Colloc(int argc, char **argv) {
 		,{    "combination-length", required_argument, NULL, 'c' }
 		,{          "linear-width", required_argument, NULL, 'l' } 
 		,{            "strip-tags", required_argument, NULL, 't' }
-		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }
-		
+		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }	
 		,{NULL, 0, NULL, 0}
 	};
 
