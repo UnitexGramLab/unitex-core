@@ -76,7 +76,7 @@ void parse_text(struct fst2txt_parameters*);
 
 
 #define BUFFER_SIZE 1000000
-#define MAX_DEPTH 300
+#define MAX_DEPTH 3000
 #define MAX_OUTPUT_LENGTH 10000
 
 

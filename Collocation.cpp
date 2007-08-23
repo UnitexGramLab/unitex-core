@@ -170,24 +170,26 @@ int colloc_print(Pvoid_t array, unsigned threshold) {
 		u_fprintf(stderr,"%s() in %s:%d was passed a null pointer.\n", __FUNCTION__, __FILE__, __LINE__ );
 		return 1;
 	}
-	else {
-		/* show the results.
-		 * one can pipe the output to "sort -n" to get a sorted list.
-		 */
-		JUDYHSH(array);		
-
+	else { /* one can pipe this output to "sort -n" to get a sorted list. */
+		JUDYHSH(array);
+		Word_t thrash=0;
 		u_fprintf(stderr,"Frequency\tCollocation\n"
 		                 "---------------------------\n");
 
 		JHSIF(arrayI, array, arrayS, arrayK, arrayKL);
 		while (arrayI)	{
-			if ( (*((Word_t*)arrayI)) >= threshold ) {
+			if ( (*((Word_t*)arrayI)) > threshold ) {\
 				u_printf("%9d\t%S\n", *((Word_t*)arrayI), (unichar*)arrayK );
+			}
+			else { 
+				thrash++;
 			}
 
 			JHSIN(arrayI, array, arrayS, arrayK, arrayKL);
 		}
         JHSFI(arraySL, arrayS);
+
+		u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
 
 	}
 
@@ -266,20 +268,24 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 
 						unichar **spos = option.spos;
-						while( *spos ) { 
-							if (! u_strcmp( *spos, tag.gscode[0] ) ) break;
-							spos++;
+						if (spos) {
+							while( *spos ) { 
+								if (! u_strcmp( *spos, tag.gscode[0] ) ) break; // TODO: should compare other labels as well
+								spos++;
+							}
 						}
 
 						unichar **sword = option.swords;
 						if (! *spos) {
-							while( *sword ) { 
-								if (! u_strcmp( *sword, tag.can ) ) break;
-								sword++;
+							if (sword) {
+								while( *sword ) { 
+									if (! u_strcmp( *sword, tag.can ) ) break;
+									sword++;
+								}
 							}
 						}
 
-						if ( *sword || *spos ) {
+						if ( (sword && *sword) || (spos && *spos) ) {
 							nodesK=NULL;
 						}
 						else {
@@ -320,12 +326,14 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 						}
 						else {
 							unichar **sword = option.swords;
-							while( *sword ) { 
-								if (! u_strcmp( *sword, input ) ) break;
-								sword++;
+							if (sword) {
+								while( *sword ) { 
+									if (! u_strcmp( *sword, input ) ) break;
+									sword++;
+								}
 							}
 
-							if ( *sword ) {
+							if ( sword && *sword ) {
 								nodesK=NULL;
 							}
 							else {

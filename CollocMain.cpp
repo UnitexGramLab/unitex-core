@@ -63,9 +63,11 @@ static void usage(int header) {
 		"Parameters:\n"
 		"     -?, --help                    Shows this message\n"
 		"     -c, --combination-length=LEN  TODO: The length of word combinations. The p in C(n,p)\n"
+		"     -h, --threshold               Frequency threshold for printing the results.\n"
 		"     -l, --linear-width=LEN        TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
 		"                                   This the n in C(n,p).\n"
-		"     -p, --no-strip-punctuations      Strip punctuations like , . ! etc.\n"
+		"     -p, --no-strip-punctuations   Strip punctuations like , . ! etc.\n"
+		"     -q, --quiet                   TODO: Dont print anything except the results.\n"
 		"     -t, --strip-tags              POS tags to strip from the collocation candidates.\n"
 		"               =TAG1,TAG2,...\n"
 		"     -w, --strip-words             Words to strip from the collocation candidates.\n"
@@ -91,10 +93,12 @@ int main_Colloc(int argc, char **argv) {
 		,{            "strip-tags", required_argument, NULL, 't' }
 		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }	
 		,{           "strip-words", required_argument, NULL, 'w' }
+		,{             "threshold", required_argument, NULL, 'h' }
 		,{NULL, 0, NULL, 0}
 	};
 
 	colloc_opt option;
+	Word_t threshold=2;
 	option.clength = DEFAULT_CLENGTH; 
 	option.lwidth  = DEFAULT_LWIDTH; 
 	option.spunc   = 1;
@@ -102,7 +106,7 @@ int main_Colloc(int argc, char **argv) {
 	option.swords  = NULL;
 	
 
-	while ((ch = getopt_long(argc, argv, "?c:l:t:pw:", longopts, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "?c:l:t:pw:h:", longopts, &option_index)) != -1) {
 		switch (ch) {
 	
 		case '?':
@@ -123,6 +127,14 @@ int main_Colloc(int argc, char **argv) {
 			STRINGINT(optarg, option.lwidth);
 			if (option.lwidth <= 0) {
 				u_printf("linear context width must be > 0\n\n");
+				exit (EXIT_FAILURE);
+			}
+			break;
+
+		case 'h':
+			STRINGINT(optarg, threshold);
+			if (threshold < 0) {
+				u_printf("threshold width must be >= 0\n\n");
 				exit (EXIT_FAILURE);
 			}
 			break;
@@ -263,7 +275,7 @@ int main_Colloc(int argc, char **argv) {
 	Pvoid_t candidates=NULL;
 	
 	candidates=colloc_generate_candidates(snt_files, option);
-	colloc_print(candidates, 2);
+	colloc_print(candidates, threshold);
 	
 	u_printf("Done.\n");
 	
