@@ -127,16 +127,25 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 		unichar key[KEYLENGTH], *pkey=key;
 		JUDYHSH(retval);
 
-		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) { // ignore duplicates
+		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) { 
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 
 			retvalK  = key; 
 			retvalKL = pkey-key+1; retvalKL*=sizeof(unichar);
-		
-			JHSI( retvalI, *retval , retvalK, retvalKL );
-			if (!(*((Word_t *)retvalI))) cnumu++;
-			(*((Word_t *)retvalI))++;
+
+			JHSG( retvalI, *retval , retvalK, retvalKL );
+
+			if (! retvalI) { 
+				pkey =key;
+				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
+				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
+				JHSI( retvalI, *retval , retvalK, retvalKL );
+			}
+
+            if (!(*((Word_t *)retvalI))) cnumu++;
+			(*((Word_t *)retvalI))++;		
+
 			cnum++;
 		}
 	}		
