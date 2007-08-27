@@ -28,10 +28,6 @@
 #include <Judy.h>
 #include <time.h>
 
-#ifdef BDB
-#include <db.h>
-#endif
-
 #include "Collocation.h"
 #include "Buffer_ng.h"
 #include "Stack_int.h"
@@ -40,12 +36,6 @@
 #include "Fst2.h"
 
 #define KEYLENGTH 1024
-
-#ifdef BDB
-#define retval_t DB**
-#else
-#define retval_t PPvoid_t
-#endif
 
 // TODO: a function to free the collocation candidates frequency table
 
@@ -118,7 +108,7 @@ static void parse_tag_string ( tag_t *tag, unichar *str ) { // TODO: do boundary
 	}
 }
 
-static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1, retval_t retval) {
+static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1, Parray_t retval) {
 	if (! stacki_is_full((struct stack_int*)stack) ) {
 		PPvoid_t nodes=(PPvoid_t)stack_l1->stack[start]; 
 		JUDYHSH(nodes);
@@ -138,9 +128,11 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 		unichar key[KEYLENGTH], *pkey=key;
 
 #ifdef BDB
-		DBT dkey, data;
+		DBT retvalK, retvalD;
 		Word_t value=0;
 		int ret;
+#define retvalI (retvalD.data)
+
 #else
 		JUDYHSH(retval);
 #endif
@@ -150,13 +142,13 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 
 #ifdef BDB
 			/* Zero out the DBTs before using them. */
-			memset( &dkey, 0, sizeof(DBT) );
-			dkey.data = key;
-			dkey.size = pkey-key+1; dkey.size*=sizeof(unichar);
+			memset( &retvalK, 0, sizeof(DBT) );
+			retvalK.data = key;
+			retvalK.size = pkey-key+1; retvalK.size*=sizeof(unichar);
 
-			memset( &data, 0, sizeof(DBT) );
-			data.data = &value;
-			data.size = sizeof(value);
+			memset( &retvalD, 0, sizeof(DBT) );
+			retvalD.data = &value;
+			retvalD.size = sizeof(value);
 
 			if (ret) {
 #else
@@ -171,35 +163,35 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
 #ifdef BDB
-				ret = (*retval)->get(*retval, NULL, &dkey, &data, 0);
+				ret = (*retval)->get(*retval, NULL, &retvalK, &retvalD, 0);
 				if (ret) {
-					memset( &data, 0, sizeof(DBT) );
+					memset( &retvalD, 0, sizeof(DBT) );
 					value=0;
-					data.data = &value;
-					data.size = sizeof(value);
+					retvalD.data = &value;
+					retvalD.size = sizeof(value);
 
-					(*retval)->put(*retval, NULL, &dkey, &data, 0);
+					(*retval)->put(*retval, NULL, &retvalK, &retvalD, 0);
 				}
 #else
 				JHSI( retvalI, *retval, retvalK, retvalKL );
 #endif
 			}
 
-#ifdef BDB
-			if (! value) cnumu++;
-			value++;
-			
-			(*retval)->put( *retval, NULL, &dkey, &data, 0 );
-#else
             if (!(*((Word_t *)retvalI))) cnumu++;
 			(*((Word_t *)retvalI))++;
+
+#ifdef BDB
+			(*retval)->put( *retval, NULL, &retvalK, &retvalD, 0 );
+
+#undef retvalI
 #endif
 
+			cnum++;
 		}
 	}		
 }
 
-static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, retval_t retval ) {
+static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, Parray_t retval ) {
 
 	if (! stacki_is_full((struct stack_int*)stack) ) {
 		Pvoid_t arrayI=NULL;
@@ -221,30 +213,67 @@ static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, retv
 	}
 }
 
-int colloc_print(Pvoid_t array, unsigned threshold) {
+int colloc_print(array_t array, unsigned threshold) {
 
 	if (! array ) {
 		u_fprintf(stderr,"%s() in %s:%d was passed a null pointer.\n", __FUNCTION__, __FILE__, __LINE__ );
 		return 1;
 	}
 	else { /* one can pipe this output to "sort -n" to get a sorted list. */
+#ifdef BDB
+		DBC *arrayC; // database cursor
+		DBT arrayKey, arrayData;
+		int ret;
+//		memset(&arrayKey, 0, sizeof(arrayKey));
+
+		arrayKey.flags=0;
+		arrayData.flags=0;
+#define arrayI (arrayData.data)
+#define arrayK (arrayKey.data)
+
+#else
 		JUDYHSH(array);
+#endif
+
 		Word_t thrash=0;
 		u_fprintf(stderr,"Frequency\tCollocation\n"
 		                 "---------------------------\n");
+#ifdef BDB
+		array->cursor( array, NULL, &arrayC, 0);
 
+		/* Iterate over the database, retrieving each record in turn. */
+		while ((ret = arrayC->get(arrayC, &arrayKey, &arrayData, DB_NEXT)) == 0) {
+#else
 		JHSIF(arrayI, array, arrayS, arrayK, arrayKL);
 		while (arrayI)	{
-			if ( (*((Word_t*)arrayI)) > threshold ) {\
+#endif
+
+			if ( (*((Word_t*)arrayI)) > threshold ) {
 				u_printf("%9d\t%S\n", *((Word_t*)arrayI), (unichar*)arrayK );
 			}
 			else { 
 				thrash++;
 			}
-
+#ifndef BDB
 			JHSIN(arrayI, array, arrayS, arrayK, arrayKL);
+#endif
 		}
+
+#ifdef BDB
+		if (ret != DB_NOTFOUND) {
+			u_printf("There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); 
+			exit(1);
+		}
+
+		/* Cursors must be closed */
+		if (arrayC) arrayC->close(arrayC);
+#undef arrayK 
+#undef arrayI
+
+#else
         JHSFI(arraySL, arrayS);
+
+#endif
 
 		u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
 
@@ -253,7 +282,7 @@ int colloc_print(Pvoid_t array, unsigned threshold) {
 	return 0;
 }
 
-Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
+array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
 	Fst2State state;

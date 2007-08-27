@@ -40,8 +40,17 @@ typedef struct {
 
 #include "Snt.h"
 
-int     colloc_print(Pvoid_t array, unsigned threshold);
-Pvoid_t colloc_generate_candidates( struct snt_files *, colloc_opt option );
+#ifdef BDB
+#include <db.h>
+#define Parray_t DB**
+#define array_t DB*
+#else
+#define Parray_t PPvoid_t
+#define array_t Pvoid_t
+#endif
+
+int     colloc_print(array_t array, unsigned threshold);
+array_t colloc_generate_candidates( struct snt_files *, colloc_opt option );
 
 #endif
 

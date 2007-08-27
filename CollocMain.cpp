@@ -272,7 +272,7 @@ int main_Colloc(int argc, char **argv) {
 	struct snt_files* snt_files=NULL;
 	snt_files = new_snt_files_from_path(text_snt);
 
-	Pvoid_t candidates=NULL;
+	array_t candidates=NULL;
 	
 	candidates=colloc_generate_candidates(snt_files, option);
 	colloc_print(candidates, threshold);
