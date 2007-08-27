@@ -80,7 +80,7 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 #
 # USING TRE LIBRARY
 #
-DEFFLAGS = -D_NOT_UNDER_WINDOWS
+DEFFLAGS = -D_NOT_UNDER_WINDOWS -DBDB
 CFLAGS   = -Wall -W 
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
@@ -88,7 +88,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".." -IJudy/include
 LIBTRE   = libtre
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre -LJudy/lib -lJudy 
+LIBS   = -Llibtre/lib -ltre -LJudy/lib -lJudy -ldb
 else
 #
 # IGNORING TRE LIBRARY
@@ -101,7 +101,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".." -I../Judy
 LIBTRE   = 
 CLEAN-LIBTRE   = 
-LIBS   = -LJudy/lib -lJudy
+LIBS   = -LJudy/lib -lJudy -ldb
 endif
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)

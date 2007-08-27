@@ -25,10 +25,7 @@ int main(int argc, char **argv) {
 
     open_flags =
       DB_CREATE     |  /* Create the environment if it does not exist */
-//      DB_INIT_LOCK  |  /* Initialize the locking subsystem */
-//      DB_INIT_LOG   |  /* Initialize the logging subsystem */
       DB_INIT_MPOOL |  /* Initialize the memory pool (in-memory cache) */
-//      DB_INIT_TXN   |  /* Initialize the transactions */
       DB_PRIVATE;      /* Region files are not backed by the filesystem. 
                         * Instead, they are backed by heap memory.  */
 

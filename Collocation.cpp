@@ -25,9 +25,12 @@
  *         This File contains the collocation extraction api implementation.
  */
 
+#include <Judy.h>
 #include <time.h>
 
-#include <Judy.h>
+#ifdef BDB
+#include <db.h>
+#endif
 
 #include "Collocation.h"
 #include "Buffer_ng.h"
@@ -37,6 +40,14 @@
 #include "Fst2.h"
 
 #define KEYLENGTH 1024
+
+#ifdef BDB
+#define retval_t DB**
+#else
+#define retval_t PPvoid_t
+#endif
+
+// TODO: a function to free the collocation candidates frequency table
 
 typedef struct {
 	unichar can[32];    // canonical form
@@ -107,7 +118,7 @@ static void parse_tag_string ( tag_t *tag, unichar *str ) { // TODO: do boundary
 	}
 }
 
-static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1, PPvoid_t retval) {
+static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *stack_l1, retval_t retval) {
 	if (! stacki_is_full((struct stack_int*)stack) ) {
 		PPvoid_t nodes=(PPvoid_t)stack_l1->stack[start]; 
 		JUDYHSH(nodes);
@@ -125,33 +136,70 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 	else { 
 		int i=0;
 		unichar key[KEYLENGTH], *pkey=key;
-		JUDYHSH(retval);
 
+#ifdef BDB
+		DBT dkey, data;
+		Word_t value=0;
+		int ret;
+#else
+		JUDYHSH(retval);
+#endif
 		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) { 
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 
+#ifdef BDB
+			/* Zero out the DBTs before using them. */
+			memset( &dkey, 0, sizeof(DBT) );
+			dkey.data = key;
+			dkey.size = pkey-key+1; dkey.size*=sizeof(unichar);
+
+			memset( &data, 0, sizeof(DBT) );
+			data.data = &value;
+			data.size = sizeof(value);
+
+			if (ret) {
+#else
 			retvalK  = key; 
 			retvalKL = pkey-key+1; retvalKL*=sizeof(unichar);
 
 			JHSG( retvalI, *retval , retvalK, retvalKL );
 
 			if (! retvalI) { 
+#endif
 				pkey =key;
 				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
-				JHSI( retvalI, *retval , retvalK, retvalKL );
+#ifdef BDB
+				ret = (*retval)->get(*retval, NULL, &dkey, &data, 0);
+				if (ret) {
+					memset( &data, 0, sizeof(DBT) );
+					value=0;
+					data.data = &value;
+					data.size = sizeof(value);
+
+					(*retval)->put(*retval, NULL, &dkey, &data, 0);
+				}
+#else
+				JHSI( retvalI, *retval, retvalK, retvalKL );
+#endif
 			}
 
+#ifdef BDB
+			if (! value) cnumu++;
+			value++;
+			
+			(*retval)->put( *retval, NULL, &dkey, &data, 0 );
+#else
             if (!(*((Word_t *)retvalI))) cnumu++;
-			(*((Word_t *)retvalI))++;		
+			(*((Word_t *)retvalI))++;
+#endif
 
-			cnum++;
 		}
 	}		
 }
 
-static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, PPvoid_t retval ) {
+static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, retval_t retval ) {
 
 	if (! stacki_is_full((struct stack_int*)stack) ) {
 		Pvoid_t arrayI=NULL;
@@ -210,15 +258,137 @@ Pvoid_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	Fst2 *sfst2=NULL;
 	Fst2State state;
 	Transition *tran=NULL;
-	Pvoid_t retval=NULL;
 
 	struct stack_int *stack=new_stack_int(2); // start by generating combinations of 2. we'll then try to combine them.
 	                                          // if this changes, comb_l2 should be adjusted accordingly.
-
 	unichar *input, *c, *d,key[KEYLENGTH];
 
 	int i,j,index=0,prev_i;
 	int ret;
+
+#ifdef BDB
+    /* Initialize our handles */
+    DB *retval = NULL;
+    DB_ENV *retvalE = NULL;
+    DB_MPOOLFILE *retvalPF = NULL;
+
+    int ret_t; 
+    const char *db_name = "in_mem_db";
+    u_int32_t open_flags;
+
+    /* Create the environment */
+    ret = db_env_create(&retvalE, 0);
+    if (ret != 0) {
+        u_fprintf(stderr, "Error creating environment handle: %s\n", db_strerror(ret));
+		exit(1);
+    }
+
+    open_flags =
+      DB_CREATE     |  /* Create the environment if it does not exist */
+      DB_INIT_MPOOL |  /* Initialize the memory pool (in-memory cache) */
+      DB_PRIVATE;      /* Region files are not backed by the filesystem. 
+                        * Instead, they are backed by heap memory.  */
+
+    /* Specify in-memory logging */
+    ret = retvalE->set_flags(retvalE, DB_LOG_INMEMORY, 1);
+    if (ret != 0) {
+		u_fprintf(stderr, "Error setting log subsystem to in-memory: %s\n", db_strerror(ret));
+		exit(1);
+    }
+    /* 
+     * Specify the size of the in-memory log buffer. 
+     */
+    ret = retvalE->set_lg_bsize(retvalE, 5 * 1024 * 1024); 
+    if (ret != 0) {
+		u_fprintf(stderr, "Error increasing the log buffer size: %s\n", db_strerror(ret));
+		exit(1);
+    }
+
+    /* 
+     * Specify the size of the in-memory cache. 
+     */
+    ret = retvalE->set_cachesize(retvalE, 0, 256 * 1024 * 1024, 1); // TODO: this has to be determined dynamically.
+    if (ret != 0) {
+		u_fprintf( stderr, "Error increasing the cache size: %s\n", db_strerror(ret) );
+		exit(1);
+    }
+
+    /* 
+     * Now actually open the environment. Notice that the environment home
+     * directory is NULL. This is required for an in-memory only
+     * application. 
+     */
+    ret = retvalE->open(retvalE, NULL, open_flags, 0);
+    if (ret != 0) {
+        u_fprintf(stderr, "Error opening environment: %s\n", db_strerror(ret));
+    }
+
+
+   /* Initialize the DB handle */
+    ret = db_create(&retval, retvalE, 0);
+    if (ret != 0) {
+		retvalE->err(retvalE, ret, "Attempt to create db handle failed.");
+		exit(1);
+    }
+
+
+    /* 
+     * Set the database open flags. Autocommit is used because we are 
+     * transactional. 
+     */
+    open_flags = DB_CREATE;// | DB_AUTO_COMMIT;
+    ret = retval->open(retval,         /* Pointer to the database */
+             NULL,        /* Txn pointer */
+             NULL,        /* File name -- Must be NULL for inmemory! */
+             db_name,     /* Logical db name */
+             DB_HASH,    /* Database type (using btree) */
+             open_flags,  /* Open flags */
+             0);          /* File mode. Using defaults */
+
+    if (ret != 0) {
+		retvalE->err(retvalE, ret, "Attempt to open db failed");
+		exit(1);
+    }
+
+#if 0
+    /* Configure the cache file */
+    mpf = retval->get_mpf(retval);
+    ret = mpf->set_flags(mpf, DB_MPOOL_NOFILE, 1);
+
+    if (ret != 0) {
+        retvalE->err(retvalE, ret, "Attempt failed to configure for no backing of temp files");
+		exit(1);
+    }
+#endif 
+
+	u_printf("the bdb in-memory database was opened successfully.\n");
+
+#if 0
+    /* Close our database handle, if it was opened. */
+    if (retval != NULL) {
+        ret_t = retval->close(retval, 0);
+        if (ret_t != 0) {
+            fprintf(stderr, "%s database close failed.\n",
+                db_strerror(ret_t));
+            ret = ret_t;
+        }
+    }
+
+    /* Close our environment, if it was opened. */
+    if (retvalE != NULL) {
+        ret_t = retvalE->close(retvalE, 0);
+        if (ret_t != 0) {
+            fprintf(stderr, "environment close failed: %s\n",
+                db_strerror(ret_t));
+                ret = ret_t;
+        }
+    }
+#endif
+
+
+#else
+	Pvoid_t retval=NULL;
+#endif
 
 	FILE* ffst2=NULL;
 	ffst2=u_fopen(snt->text_fst2,"rb");
