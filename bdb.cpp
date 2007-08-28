@@ -67,13 +67,12 @@ int main(int argc, char **argv) {
      */
     open_flags = DB_CREATE | DB_TRUNCATE;// | DB_AUTO_COMMIT;
     ret = dbp->open(dbp,         /* Pointer to the database */
-             NULL,        /* Txn pointer */
-//	         NULL,
-             "/var/tmp/oha",        /* File name -- Must be NULL for inmemory! */
-             db_name,     /* Logical db name */
-             DB_HASH,    /* Database type (using btree) */
-             open_flags,  /* Open flags */
-             0);          /* File mode. Using defaults */
+             NULL,               /* Txn pointer */
+             "/var/tmp/oha",     /* File name -- Must be NULL for inmemory! */
+             db_name,            /* Logical db name */
+             DB_HASH,            /* Database type (using btree) */
+             open_flags,         /* Open flags */
+             0);                 /* File mode. Using defaults */
 
     if (ret != 0) {
          envp->err(envp, ret, "Attempt to open db failed");

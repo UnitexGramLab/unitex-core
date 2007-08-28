@@ -38,14 +38,6 @@
 #include "Collocation.h"
 #include "Text_tokens.h"
 
-#ifndef DEFAULT_CLENGTH 
-#define DEFAULT_CLENGTH 2
-#endif
-
-#ifndef DEFAULT_LWIDTH  
-#define DEFAULT_LWIDTH  0
-#endif
-
 static void usage(int header) {
 
 	if (header) {
@@ -64,6 +56,10 @@ static void usage(int header) {
 		"     -?, --help                    Shows this message\n"
 		"     -c, --combination-length=LEN  TODO: The length of word combinations. The p in C(n,p)\n"
 		"     -h, --threshold               Frequency threshold for printing the results.\n"
+		"     -m, --compact=PERIOD          Compact the array every PERIOD sentences. This means to\n"
+		"                                   prune all the combinations that are below half the\n" 
+		"                                   threshold. This is a simple heuristic to let Colloc parse\n"
+		"                                   GIANT corpora.\n"
 		"     -l, --linear-width=LEN        TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
 		"                                   This the n in C(n,p).\n"
 		"     -p, --no-strip-punctuations   Strip punctuations like , . ! etc.\n"
@@ -93,6 +89,7 @@ int main_Colloc(int argc, char **argv) {
 		 {                  "help",       no_argument, NULL, '?' }
 		,{    "combination-length", required_argument, NULL, 'c' }
 		,{             "threshold", required_argument, NULL, 'h' }
+		,{               "compact", required_argument, NULL, 'm' }
 		,{          "linear-width", required_argument, NULL, 'l' } 
 		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }	
 		,{                 "quiet",       no_argument, NULL, 'q' }	
@@ -103,16 +100,17 @@ int main_Colloc(int argc, char **argv) {
 	};
 
 	colloc_opt option;
-	Word_t threshold = 2;
-	option.clength   = DEFAULT_CLENGTH; 
-	option.lwidth    = DEFAULT_LWIDTH; 
+	option.clength   = 2; 
+	option.lwidth    = 0;
 	option.spunc     = 1;
 	option.spos      = NULL;
 	option.swords    = NULL;
 	option.rstart    = 0;
 	option.rend      = 0;
+	option.threshold = 2;
+	option.compact   = 0;
 
-	while ((ch = getopt_long(argc, argv, "?c:l:t:pw:h:", longopts, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "?c:l:t:pw:h:r:m:", longopts, &option_index)) != -1) {
 		switch (ch) {
 	
 		case '?':
@@ -122,8 +120,8 @@ int main_Colloc(int argc, char **argv) {
 	
 		case 'c':
 			STRINGINT(optarg, option.clength);
-			if (option.clength <= 0) {
-				u_printf("combination length must be > 0\n\n");
+			if (option.clength <= 2) {
+				u_printf("combination length must be > 2\n\n");
 				exit (EXIT_FAILURE);
 			}
 			break;
@@ -137,8 +135,8 @@ int main_Colloc(int argc, char **argv) {
 			break;
 
 		case 'h':
-			STRINGINT(optarg, threshold);
-			if (threshold < 0) {
+			STRINGINT(optarg, option.threshold);
+			if (option.threshold < 0) {
 				u_printf("threshold width must be >= 0\n\n");
 				exit (EXIT_FAILURE);
 			}
@@ -265,11 +263,6 @@ int main_Colloc(int argc, char **argv) {
 				exit(EXIT_FAILURE);
 			}
 
-			STRINGINT(optarg, tmp);
-			if (tmp < 0) {
-				u_printf("range values must be > 0\n\n");
-				exit (EXIT_FAILURE);
-			}
 			option.rstart=tmp;
 
 			STRINGINT(p, tmp);
@@ -281,14 +274,24 @@ int main_Colloc(int argc, char **argv) {
 			
 			break;
 		}
+		case 'm': {
+			int tmp;
+			STRINGINT(optarg, tmp);
+			if (tmp < 0) {
+				u_printf("compact period must be > 0\n\n");
+				exit (EXIT_FAILURE);
+			}
+			option.compact=tmp;
+
+			break;
+		}
 
 		default:
 			exit (EXIT_FAILURE);
 		
 		}
 	}
-	
-	
+		
 	char text_snt[FILENAME_MAX];
 	if (optind < argc) {
 		if (strlen (argv[optind]) > FILENAME_MAX) {
@@ -311,7 +314,7 @@ int main_Colloc(int argc, char **argv) {
 	array_t candidates=NULL;
 	
 	candidates=colloc_generate_candidates(snt_files, option);
-	colloc_print(candidates, threshold);
+	colloc_print(candidates, option.threshold);
 	
 	u_printf("Done.\n");
 	

@@ -50,7 +50,7 @@ typedef struct {
 	unichar infl[32];       // inflectional information
 } tag_t;
 
-static Word_t cnum=0,cnumu=0;
+static Word_t cnum=0,cnumu=0,thrash=0;
 
 static void parse_tag_string ( tag_t *tag, unichar *str ) { // TODO: do boundary checks.
 	unichar *p=str, *q=str;
@@ -242,7 +242,6 @@ int colloc_print(array_t array, unsigned threshold) {
 		JUDYHSH(array);
 #endif
 
-		Word_t thrash=0;
 		u_fprintf(stderr,"Frequency\tCollocation\n"
 		                 "---------------------------\n");
 #ifdef BDB
@@ -288,6 +287,76 @@ int colloc_print(array_t array, unsigned threshold) {
 
 	return 0;
 }
+
+int colloc_compact(array_t array, unsigned threshold) {
+
+	if (! array ) {
+		u_fprintf(stderr,"%s() in %s:%d was passed a null pointer.\n", __FUNCTION__, __FILE__, __LINE__ );
+		return 1;
+	}
+	else { /* one can pipe this output to "sort -n" to get a sorted list. */
+#ifdef BDB
+		DBC *arrayC; // database cursor
+		DBT arrayKey, arrayData;
+		int ret;
+
+		arrayKey.flags=0;
+		arrayData.flags=0;
+#define arrayI (arrayData.data)
+#define arrayK (arrayKey.data)
+
+#else
+		JUDYHSH(array);
+#endif
+
+#ifdef BDB
+		array->cursor( array, NULL, &arrayC, 0);
+
+		/* Iterate over the database, retrieving each record in turn. */
+		while ((ret = arrayC->get(arrayC, &arrayKey, &arrayData, DB_NEXT)) == 0) {
+#else
+		JHSIF(arrayI, array, arrayS, arrayK, arrayKL);
+		while (arrayI)	{
+#endif
+
+			if ( (*((Word_t*)arrayI)) <= threshold ) {
+				thrash++;
+#ifdef BDB
+			    array->del(array, NULL, &arrayKey, 0);
+#else
+				JHSD(arrayR, array, arrayK, arrayKL);
+#endif
+
+			}
+#ifndef BDB
+			JHSIN(arrayI, array, arrayS, arrayK, arrayKL);
+#endif
+		}
+
+#ifdef BDB
+		if (ret != DB_NOTFOUND) {
+			u_printf("There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); 
+			exit(1);
+		}
+
+		/* Cursors must be closed */
+		if (arrayC) arrayC->close(arrayC);
+#undef arrayK 
+#undef arrayI
+
+#else
+        JHSFI(arraySL, arrayS);
+
+#endif
+
+		u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
+
+	}
+
+	return 0;
+}
+
+
 
 array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
@@ -569,6 +638,13 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 			JLN(sentenceI, sentence, sentenceK);
 		}
 		JLFA( sentenceAL, sentence );
+
+		if (option.compact) {
+			if (! (i % option.compact) ) {
+				u_fprintf (stderr, "\ncompacting...                                                                     \n");
+				colloc_compact( retval, option.threshold/2 );
+			}
+		}
 	}
 
 	u_fprintf(stderr, "Sentence %9d/%d, %4.3f sentences per second, %d combinations processed, of which %d unique.       \n",
@@ -605,3 +681,4 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
         }
     }
 #endif
+

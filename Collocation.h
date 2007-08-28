@@ -38,6 +38,8 @@ typedef struct {
 	unsigned rend;
 	unichar **spos;
 	unichar **swords;
+	int threshold;
+	int compact;
 } colloc_opt;
 
 #include "Snt.h"
