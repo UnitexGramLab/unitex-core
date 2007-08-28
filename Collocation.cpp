@@ -25,6 +25,11 @@
  *         This File contains the collocation extraction api implementation.
  */
 
+/*
+ * tip: think that the code is confusing with all those ifdefs around? try
+ *      gcc -E Collocation.cpp [ -DBDB ] | less -S  
+ */
+
 #include <Judy.h>
 #include <time.h>
 
@@ -295,6 +300,9 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	int i,j,index=0,prev_i;
 	int ret;
 
+    /*
+	 * array initialization
+	 */
 #ifdef BDB
     /* Initialize our handles */
     DB *retval = NULL;
@@ -302,14 +310,15 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
     DB_MPOOLFILE *retvalPF = NULL;
 
     int ret_t; 
-    const char *db_name = "in_mem_db";
+    const char *db_name = "db";
     u_int32_t open_flags;
 
-    /* Create the environment */
+/* Create the environment */
     ret = db_env_create(&retvalE, 0);
     if (ret != 0) {
-        u_fprintf(stderr, "Error creating environment handle: %s\n", db_strerror(ret));
-		exit(1);
+        fprintf(stderr, "Error creating environment handle: %s\n",
+            db_strerror(ret));
+        exit(1);
     }
 
     open_flags =
@@ -318,28 +327,14 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
       DB_PRIVATE;      /* Region files are not backed by the filesystem. 
                         * Instead, they are backed by heap memory.  */
 
-    /* Specify in-memory logging */
-    ret = retvalE->set_flags(retvalE, DB_LOG_INMEMORY, 1);
-    if (ret != 0) {
-		u_fprintf(stderr, "Error setting log subsystem to in-memory: %s\n", db_strerror(ret));
-		exit(1);
-    }
-    /* 
-     * Specify the size of the in-memory log buffer. 
-     */
-    ret = retvalE->set_lg_bsize(retvalE, 5 * 1024 * 1024); 
-    if (ret != 0) {
-		u_fprintf(stderr, "Error increasing the log buffer size: %s\n", db_strerror(ret));
-		exit(1);
-    }
-
     /* 
      * Specify the size of the in-memory cache. 
      */
-    ret = retvalE->set_cachesize(retvalE, 0, 256 * 1024 * 1024, 1); // TODO: this has to be determined dynamically.
+    ret = retvalE->set_cachesize(retvalE, 0, 256 * 1024 * 1024, 1);
     if (ret != 0) {
-		u_fprintf( stderr, "Error increasing the cache size: %s\n", db_strerror(ret) );
-		exit(1);
+        fprintf(stderr, "Error increasing the cache size: %s\n",
+            db_strerror(ret));
+        exit(1);
     }
 
     /* 
@@ -349,15 +344,18 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
      */
     ret = retvalE->open(retvalE, NULL, open_flags, 0);
     if (ret != 0) {
-        u_fprintf(stderr, "Error opening environment: %s\n", db_strerror(ret));
+        fprintf(stderr, "Error opening environment: %s\n",
+            db_strerror(ret));
+        exit(1);
     }
 
 
    /* Initialize the DB handle */
     ret = db_create(&retval, retvalE, 0);
     if (ret != 0) {
-		retvalE->err(retvalE, ret, "Attempt to create db handle failed.");
-		exit(1);
+         retvalE->err(retvalE, ret,
+                "Attempt to create db handle failed.");
+        exit(1);
     }
 
 
@@ -365,58 +363,26 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
      * Set the database open flags. Autocommit is used because we are 
      * transactional. 
      */
-    open_flags = DB_CREATE;// | DB_AUTO_COMMIT;
+    open_flags = DB_CREATE | DB_TRUNCATE;
     ret = retval->open(retval,         /* Pointer to the database */
              NULL,        /* Txn pointer */
-             NULL,        /* File name -- Must be NULL for inmemory! */
+             "/var/tmp/oha",        /* File name -- Must be NULL for inmemory! */
              db_name,     /* Logical db name */
              DB_HASH,    /* Database type (using btree) */
              open_flags,  /* Open flags */
              0);          /* File mode. Using defaults */
 
     if (ret != 0) {
-		retvalE->err(retvalE, ret, "Attempt to open db failed");
-		exit(1);
+         retvalE->err(retvalE, ret,
+                "Attempt to open db failed.");
+        exit(1);
     }
 
-#if 0
-    /* Configure the cache file */
-    mpf = retval->get_mpf(retval);
-    ret = mpf->set_flags(mpf, DB_MPOOL_NOFILE, 1);
-
-    if (ret != 0) {
-        retvalE->err(retvalE, ret, "Attempt failed to configure for no backing of temp files");
-		exit(1);
-    }
-#endif 
-
-	u_printf("the bdb in-memory database was opened successfully.\n");
-
-#if 0
-    /* Close our database handle, if it was opened. */
-    if (retval != NULL) {
-        ret_t = retval->close(retval, 0);
-        if (ret_t != 0) {
-            fprintf(stderr, "%s database close failed.\n",
-                db_strerror(ret_t));
-            ret = ret_t;
-        }
-    }
-
-    /* Close our environment, if it was opened. */
-    if (retvalE != NULL) {
-        ret_t = retvalE->close(retvalE, 0);
-        if (ret_t != 0) {
-            fprintf(stderr, "environment close failed: %s\n",
-                db_strerror(ret_t));
-                ret = ret_t;
-        }
-    }
-#endif
-
+	u_printf("Colloc using the bdb backend.\n");
 
 #else
 	Pvoid_t retval=NULL;
+	u_printf("Colloc using the Judy backend.\n");
 #endif
 
 	FILE* ffst2=NULL;
@@ -452,8 +418,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		sentenceK=0;
 
 		if ( (time(&ctime)-ptime) ) {
-			u_fprintf(stderr,"Sentence %8d/%d, %4.3f sentences/s, %8d combinations so far. still ~%8.3f seconds to go.\r",
-			               i, sfst2->number_of_graphs, ((float)i) / (ctime-stime) , cnum,
+			u_fprintf(stderr,"Snt %8d/%d, %4.3f snt/s, %8d/%8d comb. so far. still ~%8.3f sec. to go. \r",
+			               i, sfst2->number_of_graphs, ((float)(i-prev_i)) / ((float)(ctime-ptime)) , cnum, cnumu,
 			               (ctime-stime) * (sfst2->number_of_graphs -i) / ((float)i)
 			         );
 			ptime=ctime;
@@ -589,3 +555,26 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 }
 
+
+
+#if 0
+    /* Close our database handle, if it was opened. */
+    if (retval != NULL) {
+        ret_t = retval->close(retval, 0);
+        if (ret_t != 0) {
+            fprintf(stderr, "%s database close failed.\n",
+                db_strerror(ret_t));
+            ret = ret_t;
+        }
+    }
+
+    /* Close our environment, if it was opened. */
+    if (retvalE != NULL) {
+        ret_t = retvalE->close(retvalE, 0);
+        if (ret_t != 0) {
+            fprintf(stderr, "environment close failed: %s\n",
+                db_strerror(ret_t));
+                ret = ret_t;
+        }
+    }
+#endif

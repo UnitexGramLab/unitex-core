@@ -29,27 +29,10 @@ int main(int argc, char **argv) {
       DB_PRIVATE;      /* Region files are not backed by the filesystem. 
                         * Instead, they are backed by heap memory.  */
 
-    /* Specify in-memory logging */
-    ret = envp->set_flags(envp, DB_LOG_INMEMORY, 1);
-    if (ret != 0) {
-        fprintf(stderr, "Error setting log subsystem to in-memory: %s\n",
-            db_strerror(ret));
-        goto err;
-    }
-    /* 
-     * Specify the size of the in-memory log buffer. 
-     */
-    ret = envp->set_lg_bsize(envp, 10 * 1024 * 1024);
-    if (ret != 0) {
-        fprintf(stderr, "Error increasing the log buffer size: %s\n",
-            db_strerror(ret));
-        goto err;
-    }
-
     /* 
      * Specify the size of the in-memory cache. 
      */
-    ret = envp->set_cachesize(envp, 0, 10 * 1024 * 1024, 1);
+    ret = envp->set_cachesize(envp, 0, 1 * 1024 * 1024, 1);
     if (ret != 0) {
         fprintf(stderr, "Error increasing the cache size: %s\n",
             db_strerror(ret));
@@ -61,7 +44,7 @@ int main(int argc, char **argv) {
      * directory is NULL. This is required for an in-memory only
      * application. 
      */
-    ret = envp->open(envp, NULL, open_flags, 0);
+    ret = envp->open(envp, "/var/tmp", open_flags, 0);
     if (ret != 0) {
         fprintf(stderr, "Error opening environment: %s\n",
             db_strerror(ret));
@@ -82,10 +65,11 @@ int main(int argc, char **argv) {
      * Set the database open flags. Autocommit is used because we are 
      * transactional. 
      */
-    open_flags = DB_CREATE;// | DB_AUTO_COMMIT;
+    open_flags = DB_CREATE | DB_TRUNCATE;// | DB_AUTO_COMMIT;
     ret = dbp->open(dbp,         /* Pointer to the database */
              NULL,        /* Txn pointer */
-             NULL,        /* File name -- Must be NULL for inmemory! */
+//	         NULL,
+             "/var/tmp/oha",        /* File name -- Must be NULL for inmemory! */
              db_name,     /* Logical db name */
              DB_HASH,    /* Database type (using btree) */
              open_flags,  /* Open flags */
@@ -96,25 +80,13 @@ int main(int argc, char **argv) {
         goto err;
     }
 
-#if 0
-    /* Configure the cache file */
-    mpf = dbp->get_mpf(dbp);
-    ret = mpf->set_flags(mpf, DB_MPOOL_NOFILE, 1);
-
-    if (ret != 0) {
-         envp->err(envp, ret,
-            "Attempt failed to configure for no backing of temp files.");
-        goto err;
-    }
-#endif 
-
 	printf("the database was opened successfully\nSizeof DB: %d\n", sizeof(DB));
 
 	char *description = "Grocery bill.";
 	char *mescription = "Mrocery bill.";
 	DBT key, data;
-	float money;
-	money = 122.45;
+	unsigned money;
+	money = 0;
 
 	/* Zero out the DBTs before using them. */
 	memset(&key, 0, sizeof(DBT));
@@ -145,7 +117,6 @@ int main(int argc, char **argv) {
 	ret = dbp->get(dbp, NULL, &key, &data, 0);
 	if (ret) {
          envp->err(envp, ret, "Attempt to get from db failed");
-        goto err;
 	}
 	printf("%8.2f - %s\n",*((float*)key.data),(char *)data.data);
 
@@ -154,9 +125,15 @@ int main(int argc, char **argv) {
 	ret = dbp->get(dbp, NULL, &key, &data, 0);
 	if (ret) {
          envp->err(envp, ret, "Attempt to get from db failed");
-        goto err;
 	}
 	printf("%8.2f - %s\n",*((float*)key.data),(char *)data.data);
+	money=0;
+	while(++money) {
+	 	ret = dbp->put(dbp, NULL, &key, &data, 0);
+		printf("%4d\n",money);
+	}
+
+
 
 err:
     /* Close our database handle, if it was opened. */
