@@ -34,6 +34,8 @@ typedef struct {
 	int clength;
 	int lwidth;
 	int spunc;
+	unsigned rstart;
+	unsigned rend;
 	unichar **spos;
 	unichar **swords;
 } colloc_opt;

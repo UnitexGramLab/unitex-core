@@ -49,7 +49,7 @@
 static void usage(int header) {
 
 	if (header) {
-		u_printf("%S",COPYRIGHT);
+		u_printf("%S", COPYRIGHT);
 		u_printf(
 			"This is a tool that is aimed to be used to extract collocations. "
 			"It works on the normalized text automata.\n"
@@ -68,6 +68,9 @@ static void usage(int header) {
 		"                                   This the n in C(n,p).\n"
 		"     -p, --no-strip-punctuations   Strip punctuations like , . ! etc.\n"
 		"     -q, --quiet                   TODO: Dont print anything except the results.\n"
+		"     -r, --range=<range>           Limit number of sentences to process, to get around memory\n"
+		"                                   limitations. <range> is two positive integers with a comma\n"
+        "                                   between. Example: --range=4500,8000\n"
 		"     -t, --strip-tags              POS tags to strip from the collocation candidates.\n"
 		"               =TAG1,TAG2,...\n"
 		"     -w, --strip-words             Words to strip from the collocation candidates.\n"
@@ -89,22 +92,25 @@ int main_Colloc(int argc, char **argv) {
 	const struct option longopts[] = { 
 		 {                  "help",       no_argument, NULL, '?' }
 		,{    "combination-length", required_argument, NULL, 'c' }
-		,{          "linear-width", required_argument, NULL, 'l' } 
-		,{            "strip-tags", required_argument, NULL, 't' }
-		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }	
-		,{           "strip-words", required_argument, NULL, 'w' }
 		,{             "threshold", required_argument, NULL, 'h' }
+		,{          "linear-width", required_argument, NULL, 'l' } 
+		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }	
+		,{                 "quiet",       no_argument, NULL, 'q' }	
+		,{                 "range", required_argument, NULL, 'r' }
+		,{            "strip-tags", required_argument, NULL, 't' }
+		,{           "strip-words", required_argument, NULL, 'w' }
 		,{NULL, 0, NULL, 0}
 	};
 
 	colloc_opt option;
-	Word_t threshold=2;
-	option.clength = DEFAULT_CLENGTH; 
-	option.lwidth  = DEFAULT_LWIDTH; 
-	option.spunc   = 1;
-	option.spos    = NULL;
-	option.swords  = NULL;
-	
+	Word_t threshold = 2;
+	option.clength   = DEFAULT_CLENGTH; 
+	option.lwidth    = DEFAULT_LWIDTH; 
+	option.spunc     = 1;
+	option.spos      = NULL;
+	option.swords    = NULL;
+	option.rstart    = 0;
+	option.rend      = 0;
 
 	while ((ch = getopt_long(argc, argv, "?c:l:t:pw:h:", longopts, &option_index)) != -1) {
 		switch (ch) {
@@ -120,7 +126,6 @@ int main_Colloc(int argc, char **argv) {
 				u_printf("combination length must be > 0\n\n");
 				exit (EXIT_FAILURE);
 			}
-
 			break;
 
 		case 'l':
@@ -241,11 +246,42 @@ int main_Colloc(int argc, char **argv) {
 			
 		}
 
-		case 'p': {
+		case 'p': 
 			option.spunc=1;
 			break;
+
+		case 'r': {
+			char *p;
+			int tmp;
+
+			p=u_strchr(optarg, ',');
+			if (p) {
+				*p=0; 
+				p++;
+			}
+			else {
+				usage(1);
+				u_printf("Invalid argument to --range (-r)\n");
+				exit(EXIT_FAILURE);
+			}
+
+			STRINGINT(optarg, tmp);
+			if (tmp < 0) {
+				u_printf("range values must be > 0\n\n");
+				exit (EXIT_FAILURE);
+			}
+			option.rstart=tmp;
+
+			STRINGINT(p, tmp);
+			if (tmp <= 0) {
+				u_printf("range values must be > 0\n\n");
+				exit (EXIT_FAILURE);
+			}
+			option.rend=tmp;
+			
+			break;
 		}
-		
+
 		default:
 			exit (EXIT_FAILURE);
 		

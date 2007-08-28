@@ -45,9 +45,9 @@
 // TODO: a function to free the collocation candidates frequency table
 
 typedef struct {
-	unichar can[32];    // canonical form
+	unichar can[32];        // canonical form
 	unichar gscode[32][32]; // grammatical or semantic code
-	unichar infl[32];   // inflectional information
+	unichar infl[32];       // inflectional information
 } tag_t;
 
 static Word_t cnum=0,cnumu=0;
@@ -141,6 +141,8 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 #else
 		JUDYHSH(retval);
 #endif
+
+		// concats here may still cause problems in case of merging 2+ sessions of computation output. must merge with care.
 		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) { 
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
@@ -364,13 +366,13 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
      * transactional. 
      */
     open_flags = DB_CREATE | DB_TRUNCATE;
-    ret = retval->open(retval,         /* Pointer to the database */
-             NULL,        /* Txn pointer */
-             "/var/tmp/oha",        /* File name -- Must be NULL for inmemory! */
-             db_name,     /* Logical db name */
-             DB_HASH,    /* Database type (using btree) */
-             open_flags,  /* Open flags */
-             0);          /* File mode. Using defaults */
+    ret = retval->open(retval, /* Pointer to the database */
+             NULL,             /* Txn pointer */
+             "/var/tmp/oha",   /* File name -- Must be NULL for inmemory! */
+             db_name,          /* Logical db name */
+             DB_HASH,          /* Database type (using btree) */
+             open_flags,       /* Open flags */
+             0);               /* File mode. Using defaults */
 
     if (ret != 0) {
          retvalE->err(retvalE, ret,
@@ -385,6 +387,11 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	u_printf("Colloc using the Judy backend.\n");
 #endif
 
+	if (option.rstart > option.rend) {
+		error("option.rstart > option.rend. \n");
+		return NULL;
+	}
+
 	FILE* ffst2=NULL;
 	ffst2=u_fopen(snt->text_fst2,"rb");
 	if (! ffst2) {
@@ -392,7 +399,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		return NULL;
 	}
 	
-	u_printf("Loading %s ...\n", snt->text_fst2);
+	u_fprintf(stderr,"Loading %s ...\n", snt->text_fst2);
 	ret=load_fst2_from_file(ffst2,0,&sfst2);
 	if ( ret ) {
 		u_fprintf(stderr,"Error %d in %s:%d. Fst2 file could not be loaded.\n", ret, __FILE__, __LINE__);
@@ -408,9 +415,25 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	u_fprintf(stderr,"Generating collocation candidates...\n");
 	time_t ptime=0,ctime,stime;
 
-	ctime=time(&stime);
+	unsigned start, end;
 
-	for (i=1; i<=sfst2->number_of_graphs; i++) { // for every sentence
+	ctime=time(&stime);
+	if (option.rstart) {
+		start = option.rstart;
+		if (option.rend > sfst2->number_of_graphs ) {
+			end = sfst2->number_of_graphs;
+		}
+		else {
+			end = option.rend;
+		}
+	}
+	else {
+		start = 1;
+		end   = sfst2->number_of_graphs;
+	}
+
+	
+	for (i=start; i<=end; i++) { // for every sentence
 		j = sfst2->initial_states[i];
 		state = sfst2->states[j];
 		tran = state->transitions;
@@ -420,13 +443,14 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		if ( (time(&ctime)-ptime) ) {
 			u_fprintf(stderr,"Snt %8d/%d, %4.3f snt/s, %8d/%8d comb. so far. still ~%8.3f sec. to go. \r",
 			               i, sfst2->number_of_graphs, ((float)(i-prev_i)) / ((float)(ctime-ptime)) , cnum, cnumu,
-			               (ctime-stime) * (sfst2->number_of_graphs -i) / ((float)i)
+			               (ctime-stime) * (end -i) / ((float)i)
 			         );
 			ptime=ctime;
 			prev_i=i;
 		}
 
-		while (state) { // here we try to group transitions whose terminal states are the same. FIXME: need confirmation :-)
+
+		while (state) { // here we try to group transitions whose terminal states are the same. FIXME: need confirmation about this.
 			if (tran) {
 				state=sfst2->states[tran->state_number];
 				JLI(sentenceI, sentence, sentenceK );
@@ -495,7 +519,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 					else {
 						if ( (   *input == ','  || *input == '.' || *input == '?' || *input == '!' 
 					          || *input == '\'' || *input == '_' || *input == '-' || *input == ':' 
-						      || *input == ')'  || *input == '(' || *input == '"') && option.spunc) { // FIXME: do we have a list of punctuations which seem to differ from language to language?
+						      || *input == ')'  || *input == '(' || *input == '"' || *input == ';'
+						      || *input == '%'  || *input == '/' ) && option.spunc) { // FIXME: do we have a list of punctuations? they differ from language to language.
 							nodesK=NULL;
 						}
 						else {
@@ -558,6 +583,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 
 #if 0
+	// this code needs to go to the free_array function
+
     /* Close our database handle, if it was opened. */
     if (retval != NULL) {
         ret_t = retval->close(retval, 0);
