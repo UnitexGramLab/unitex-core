@@ -25,8 +25,13 @@
  *         This File contains the collocation extraction api implementation.
  */
 
+/*
+ * Is tested with BDB 4.6.19. may not work with older versions.
+ */
+
 #include <Judy.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "Collocation.h"
 #include "Buffer_ng.h"
@@ -461,7 +466,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
     /* 
      * Specify the size of the in-memory cache. 
      */
-    ret = retvalE->set_cachesize(retvalE, 0, 128 * 1024 * 1024, 1);
+    ret = retvalE->set_cachesize(retvalE, 0, 2048 * 1024 * 1024, 1);
     if (ret != 0) {
         u_fprintf(stderr, "Error increasing the cache size: %s\n", db_strerror(ret));
         exit(1);
