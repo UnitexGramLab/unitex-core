@@ -41,8 +41,7 @@
 #include "Fst2.h"
 
 #define KEYLENGTH 1024
-
-// TODO: a function to free the collocation candidates frequency table
+#define TMPPREFIX "/var/tmp/Colloc_"
 
 typedef struct {
 	unichar can[32];        // canonical form
@@ -60,14 +59,16 @@ void colloc_free( Parray_t array ) {
 
     /* Close our database handle, if it was opened. */
     if (array && *array) {
-		arrayE=(*array)->get_env(*array);
+		arrayE = (*array)->get_env(*array);
         ret_t = (*array)->close(*array, 0);
         if (ret_t) {
             u_fprintf(stderr, "%s database close failed.\n", db_strerror(ret_t));
             ret = ret_t;
         }
+		char filename[32];
+		sprintf(filename, "%s%d", TMPPREFIX, getpid() );
 
-        ret_t = (*array)->remove(*array, 0);
+		ret_t = arrayE->dbremove(arrayE,NULL,filename, NULL, 0);
         if (ret_t) {
             u_fprintf(stderr, "%s database remove failed.\n", db_strerror(ret_t));
             ret = ret_t;
@@ -76,7 +77,7 @@ void colloc_free( Parray_t array ) {
 
     /* Close our environment, if it was opened. */
     if (arrayE) {
-        ret_t = retvalE->close(retvalE, 0);
+        ret_t = arrayE->close(arrayE, 0);
         if (ret_t) {
             u_fprintf(stderr, "environment close failed: %s\n", db_strerror(ret_t));
             ret = ret_t;
@@ -90,6 +91,7 @@ void colloc_free( Parray_t array ) {
 	
 #endif
 
+	*array=NULL;
 
 }
 
@@ -297,7 +299,7 @@ int colloc_print(array_t array, colloc_opt option) {
 		while (arrayI)	{
 #endif
 
-			if ( (*((Word_t*)arrayI)) > threshold ) {
+			if ( (*((Word_t*)arrayI)) > option.threshold ) {
 				u_printf("%9d\t%S\n", *((Word_t*)arrayI), (unichar*)arrayK );
 			}
 			else { 
@@ -324,14 +326,14 @@ int colloc_print(array_t array, colloc_opt option) {
 
 #endif
 
-		if (! option.quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
+		if (! option.quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, option.threshold);
 
 	}
 
 	return 0;
 }
 
-int colloc_compact(array_t array, unsigned threshold) {
+int colloc_compact(array_t array, unsigned threshold, int quiet) {
 
 	if (! array ) {
 		u_fprintf(stderr,"%s() in %s:%d was passed a null pointer.\n", __FUNCTION__, __FILE__, __LINE__ );
@@ -392,7 +394,7 @@ int colloc_compact(array_t array, unsigned threshold) {
 
 #endif
 
-		if (! option.quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
+		if (! quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
 
 	}
 
@@ -475,7 +477,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
      */
 
 	char filename[32];
-	sprintf(filename, "/var/tmp/Colloc_%d", getpid() );
+	sprintf(filename, "%s%d", TMPPREFIX, getpid() );
     open_flags = DB_CREATE | DB_TRUNCATE;
     ret = retval->open(retval, /* Pointer to the database */
              NULL,             /* Txn pointer */
@@ -689,7 +691,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		if (option.compact) {
 			if (! (i % option.compact) ) {
 				if (! option.quiet) u_fprintf (stderr, "\ncompacting...                                                                     \n");
-				colloc_compact( retval, option.threshold/2 );
+				colloc_compact( retval, option.threshold/2, option.quiet );
 			}
 		}
 	}

@@ -54,7 +54,7 @@ typedef struct {
 #define array_t Pvoid_t
 #endif
 
-void    colloc_free (array_t array);
+void    colloc_free (Parray_t array);
 int     colloc_print(array_t array, colloc_opt option);
 array_t colloc_generate_candidates( struct snt_files *, colloc_opt option );
 

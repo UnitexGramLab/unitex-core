@@ -328,7 +328,7 @@ int main_Colloc(int argc, char **argv) {
 	candidates=colloc_generate_candidates(snt_files, option);
 	colloc_print(candidates, option);
 	if (! option.quiet) u_printf("freeing resources...\n");
-	colloc_free(candidates);
+	colloc_free(&candidates);
 	
 	u_fprintf(stderr,"Done.\n");
 	
