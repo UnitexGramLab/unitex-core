@@ -40,6 +40,7 @@ typedef struct {
 	unichar **swords;
 	int threshold;
 	int compact;
+	int quiet;
 } colloc_opt;
 
 #include "Snt.h"
@@ -53,7 +54,8 @@ typedef struct {
 #define array_t Pvoid_t
 #endif
 
-int     colloc_print(array_t array, unsigned threshold);
+void    colloc_free (array_t array);
+int     colloc_print(array_t array, colloc_opt option);
 array_t colloc_generate_candidates( struct snt_files *, colloc_opt option );
 
 #endif

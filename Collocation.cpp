@@ -52,6 +52,47 @@ typedef struct {
 
 static Word_t cnum=0,cnumu=0,thrash=0;
 
+void colloc_free( Parray_t array ) {
+#ifdef BDB
+	int ret, ret_t;
+	DB_ENV *arrayE=NULL;
+
+
+    /* Close our database handle, if it was opened. */
+    if (array && *array) {
+		arrayE=(*array)->get_env(*array);
+        ret_t = (*array)->close(*array, 0);
+        if (ret_t) {
+            u_fprintf(stderr, "%s database close failed.\n", db_strerror(ret_t));
+            ret = ret_t;
+        }
+
+        ret_t = (*array)->remove(*array, 0);
+        if (ret_t) {
+            u_fprintf(stderr, "%s database remove failed.\n", db_strerror(ret_t));
+            ret = ret_t;
+        }
+    }
+
+    /* Close our environment, if it was opened. */
+    if (arrayE) {
+        ret_t = retvalE->close(retvalE, 0);
+        if (ret_t) {
+            u_fprintf(stderr, "environment close failed: %s\n", db_strerror(ret_t));
+            ret = ret_t;
+        }
+    }
+
+#else
+	JUDYHSH(array);
+
+	JHSFA(arrayAL,*array);
+	
+#endif
+
+
+}
+
 static void parse_tag_string ( tag_t *tag, unichar *str ) { // TODO: do boundary checks.
 	unichar *p=str, *q=str;
 	size_t len;
@@ -220,7 +261,7 @@ static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, Parr
 	}
 }
 
-int colloc_print(array_t array, unsigned threshold) {
+int colloc_print(array_t array, colloc_opt option) {
 
 	if (! array ) {
 		u_fprintf(stderr,"%s() in %s:%d was passed a null pointer.\n", __FUNCTION__, __FILE__, __LINE__ );
@@ -242,8 +283,10 @@ int colloc_print(array_t array, unsigned threshold) {
 		JUDYHSH(array);
 #endif
 
-		u_fprintf(stderr,"Frequency\tCollocation\n"
-		                 "---------------------------\n");
+		if (! option.quiet) {
+			u_fprintf(stderr,"Frequency\tCollocation\n"
+			                 "---------------------------\n");
+		}
 #ifdef BDB
 		array->cursor( array, NULL, &arrayC, 0);
 
@@ -281,7 +324,7 @@ int colloc_print(array_t array, unsigned threshold) {
 
 #endif
 
-		u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
+		if (! option.quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
 
 	}
 
@@ -349,7 +392,7 @@ int colloc_compact(array_t array, unsigned threshold) {
 
 #endif
 
-		u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
+		if (! option.quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
 
 	}
 
@@ -387,8 +430,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 /* Create the environment */
     ret = db_env_create(&retvalE, 0);
     if (ret != 0) {
-        fprintf(stderr, "Error creating environment handle: %s\n",
-            db_strerror(ret));
+        u_fprintf(stderr, "Error creating environment handle: %s\n", db_strerror(ret));
         exit(1);
     }
 
@@ -403,8 +445,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
      */
     ret = retvalE->set_cachesize(retvalE, 0, 256 * 1024 * 1024, 1);
     if (ret != 0) {
-        fprintf(stderr, "Error increasing the cache size: %s\n",
-            db_strerror(ret));
+        u_fprintf(stderr, "Error increasing the cache size: %s\n", db_strerror(ret));
         exit(1);
     }
 
@@ -415,8 +456,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
      */
     ret = retvalE->open(retvalE, NULL, open_flags, 0);
     if (ret != 0) {
-        fprintf(stderr, "Error opening environment: %s\n",
-            db_strerror(ret));
+        u_fprintf(stderr, "Error opening environment: %s\n", db_strerror(ret));
         exit(1);
     }
 
@@ -431,13 +471,15 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 
     /* 
-     * Set the database open flags. Autocommit is used because we are 
-     * transactional. 
+     * Set the database open flags. 
      */
+
+	char filename[32];
+	sprintf(filename, "/var/tmp/Colloc_%d", getpid() );
     open_flags = DB_CREATE | DB_TRUNCATE;
     ret = retval->open(retval, /* Pointer to the database */
              NULL,             /* Txn pointer */
-             "/var/tmp/oha",   /* File name -- Must be NULL for inmemory! */
+             filename,         /* File name -- Must be NULL for inmemory! */
              db_name,          /* Logical db name */
              DB_HASH,          /* Database type (using btree) */
              open_flags,       /* Open flags */
@@ -449,15 +491,15 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
         exit(1);
     }
 
-	u_printf("Colloc using the bdb backend.\n");
+	if (! option.quiet) u_fprintf(stderr, "Colloc is using the bdb backend.\n");
 
 #else
 	Pvoid_t retval=NULL;
-	u_printf("Colloc using the Judy backend.\n");
+	if (! option.quiet) u_fprintf(stderr, "Colloc is using the Judy backend.\n");
 #endif
 
 	if (option.rstart > option.rend) {
-		error("option.rstart > option.rend. \n");
+		error("Error: option.rstart > option.rend. \n");
 		return NULL;
 	}
 
@@ -468,7 +510,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		return NULL;
 	}
 	
-	u_fprintf(stderr,"Loading %s ...\n", snt->text_fst2);
+	if (! option.quiet) u_fprintf(stderr,"Loading %s ...\n", snt->text_fst2);
 	ret=load_fst2_from_file(ffst2,0,&sfst2);
 	if ( ret ) {
 		u_fprintf(stderr,"Error %d in %s:%d. Fst2 file could not be loaded.\n", ret, __FILE__, __LINE__);
@@ -481,7 +523,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	PPvoid_t nodes=NULL;
 	JUDYHSH(nodes);
 
-	u_fprintf(stderr,"Generating collocation candidates...\n");
+	if (! option.quiet) u_fprintf(stderr,"Generating collocation candidates...\n");
 	time_t ptime=0,ctime,stime;
 
 	unsigned start, end;
@@ -508,8 +550,13 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		tran = state->transitions;
 
 		sentenceK=0;
+	
+		if (i==4914) {
+			u_printf("ibibique\n");
+		}
 
-		if ( (time(&ctime)-ptime) ) {
+
+		if ( (time(&ctime)-ptime) && (! option.quiet) ) {
 			u_fprintf(stderr,"Snt %8d/%d, %4.3f snt/s, %8d/%8d comb. so far. still ~%8.3f sec. to go. \r",
 			               i, sfst2->number_of_graphs, ((float)(i-prev_i)) / ((float)(ctime-ptime)) , cnum, cnumu,
 			               (ctime-stime) * (end -i) / ((float)i)
@@ -641,44 +688,22 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 		if (option.compact) {
 			if (! (i % option.compact) ) {
-				u_fprintf (stderr, "\ncompacting...                                                                     \n");
+				if (! option.quiet) u_fprintf (stderr, "\ncompacting...                                                                     \n");
 				colloc_compact( retval, option.threshold/2 );
 			}
 		}
 	}
 
-	u_fprintf(stderr, "Sentence %9d/%d, %4.3f sentences per second, %d combinations processed, of which %d unique.       \n",
-	                  i-1, sfst2->number_of_graphs, ((float)i-1) / (time(&ctime)-stime), cnum, cnumu
-	         );
+	if (! option.quiet) {
+		u_fprintf(stderr, "Sentence %9d/%d, %4.3f sentences per second, %d combinations processed, of which %d unique.       \n",
+		                  i-1, sfst2->number_of_graphs, ((float)i-1) / (time(&ctime)-stime), cnum, cnumu
+		         );
+	}
 
 	free_stack_int(stack);
 	return retval;
-
 }
 
 
 
-#if 0
-	// this code needs to go to the free_array function
-
-    /* Close our database handle, if it was opened. */
-    if (retval != NULL) {
-        ret_t = retval->close(retval, 0);
-        if (ret_t != 0) {
-            fprintf(stderr, "%s database close failed.\n",
-                db_strerror(ret_t));
-            ret = ret_t;
-        }
-    }
-
-    /* Close our environment, if it was opened. */
-    if (retvalE != NULL) {
-        ret_t = retvalE->close(retvalE, 0);
-        if (ret_t != 0) {
-            fprintf(stderr, "environment close failed: %s\n",
-                db_strerror(ret_t));
-                ret = ret_t;
-        }
-    }
-#endif
 

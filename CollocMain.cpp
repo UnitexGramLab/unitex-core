@@ -63,7 +63,7 @@ static void usage(int header) {
 		"     -l, --linear-width=LEN        TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
 		"                                   This the n in C(n,p).\n"
 		"     -p, --no-strip-punctuations   Strip punctuations like , . ! etc.\n"
-		"     -q, --quiet                   TODO: Dont print anything except the results.\n"
+		"     -q, --quiet                   Dont print anything except the results and errors.\n"
 		"     -r, --range=<range>           Limit number of sentences to process, to get around memory\n"
 		"                                   limitations. <range> is two positive integers with a comma\n"
         "                                   between. Example: --range=4500,8000\n"
@@ -109,6 +109,7 @@ int main_Colloc(int argc, char **argv) {
 	option.rend      = 0;
 	option.threshold = 2;
 	option.compact   = 0;
+	option.quiet     = 0;
 
 	while ((ch = getopt_long(argc, argv, "?c:l:t:pw:h:r:m:", longopts, &option_index)) != -1) {
 		switch (ch) {
@@ -248,6 +249,10 @@ int main_Colloc(int argc, char **argv) {
 			option.spunc=1;
 			break;
 
+		case 'q': 
+			option.quiet=1;
+			break;
+
 		case 'r': {
 			char *p;
 			int tmp;
@@ -259,17 +264,24 @@ int main_Colloc(int argc, char **argv) {
 			}
 			else {
 				usage(1);
-				u_printf("Invalid argument to --range (-r)\n");
+				u_printf("Invalid argument to --range (-r).\n");
 				exit(EXIT_FAILURE);
+			}
+
+			STRINGINT(optarg, tmp);
+			if (tmp < 1) {
+				u_printf("the first range value must be bigger than zero.\n\n");
+				exit (EXIT_FAILURE);
 			}
 
 			option.rstart=tmp;
 
 			STRINGINT(p, tmp);
-			if (tmp <= 0) {
-				u_printf("range values must be > 0\n\n");
+			if ( option.rstart >= tmp) {
+				u_printf("the second range value must be bigger than the first.\n\n");
 				exit (EXIT_FAILURE);
 			}
+
 			option.rend=tmp;
 			
 			break;
@@ -314,10 +326,13 @@ int main_Colloc(int argc, char **argv) {
 	array_t candidates=NULL;
 	
 	candidates=colloc_generate_candidates(snt_files, option);
-	colloc_print(candidates, option.threshold);
+	colloc_print(candidates, option);
+	if (! option.quiet) u_printf("freeing resources...\n");
+	colloc_free(candidates);
 	
-	u_printf("Done.\n");
+	u_fprintf(stderr,"Done.\n");
 	
 	return 0;
 }
+
 
