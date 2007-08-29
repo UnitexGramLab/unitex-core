@@ -59,7 +59,12 @@ static void usage(int header) {
 		"     -m, --compact=PERIOD          Compact the array every PERIOD sentences. This means to\n"
 		"                                   prune all the combinations that are below half the\n" 
 		"                                   threshold. This is a simple heuristic to let Colloc parse\n"
-		"                                   GIANT corpora.\n"
+#ifdef BDB
+		"                                   giant corpora. 5000 seems to be a reasonable choice for a\n"
+#else
+		"                                   giant corpora. 10000 seems to be a reasonable choice for a\n"
+#endif
+		"                                   machine with 256MB free physical ram.\n"
 		"     -l, --linear-width=LEN        TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
 		"                                   This the n in C(n,p).\n"
 		"     -p, --no-strip-punctuations   Strip punctuations like , . ! etc.\n"
@@ -107,7 +112,7 @@ int main_Colloc(int argc, char **argv) {
 	option.swords    = NULL;
 	option.rstart    = 0;
 	option.rend      = 0;
-	option.threshold = 2;
+	option.threshold = 0;
 	option.compact   = 0;
 	option.quiet     = 0;
 
@@ -327,10 +332,10 @@ int main_Colloc(int argc, char **argv) {
 	
 	candidates=colloc_generate_candidates(snt_files, option);
 	colloc_print(candidates, option);
-	if (! option.quiet) u_printf("freeing resources...\n");
+	if (! option.quiet) u_fprintf(stderr,"freeing resources...\n");
 	colloc_free(&candidates);
 	
-	u_fprintf(stderr,"Done.\n");
+	if (! option.quiet) u_fprintf(stderr,"Done.\n");
 	
 	return 0;
 }

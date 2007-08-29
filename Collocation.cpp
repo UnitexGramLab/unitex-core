@@ -25,11 +25,6 @@
  *         This File contains the collocation extraction api implementation.
  */
 
-/*
- * tip: think that the code is confusing with all those ifdefs around? try
- *      gcc -E Collocation.cpp [ -DBDB ] | less -S  
- */
-
 #include <Judy.h>
 #include <time.h>
 
@@ -51,11 +46,34 @@ typedef struct {
 
 static Word_t cnum=0,cnumu=0,thrash=0;
 
+unichar * readfile(char *name) {
+	FILE *f=u_fopen (name, "r");
+	unichar *retval;
+	size_t size;
+
+	if (f) {
+		fseek(f, 0, SEEK_END);
+		size=ftell(f);
+		fseek(f, 2, SEEK_SET);
+		
+		custom_malloc( unichar, size, retval );
+		memset( retval, 0, size );
+		fread( retval, 1, size, f );
+
+		fclose(f);
+	}
+	else {
+		retval=NULL;
+	}
+
+	return retval;
+
+}
+
 void colloc_free( Parray_t array ) {
 #ifdef BDB
 	int ret, ret_t;
 	DB_ENV *arrayE=NULL;
-
 
     /* Close our database handle, if it was opened. */
     if (array && *array) {
@@ -88,7 +106,7 @@ void colloc_free( Parray_t array ) {
 	JUDYHSH(array);
 
 	JHSFA(arrayAL,*array);
-	
+
 #endif
 
 	*array=NULL;
@@ -188,7 +206,7 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 		// concats here may still cause problems in case of merging 2+ sessions of computation output. must merge with care.
 		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) { 
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
-			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
+			pkey+=u_sprintf( pkey, "%S",  (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 
 #ifdef BDB
 			/* Zero out the DBTs before using them. */
@@ -200,6 +218,7 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 			retvalD.data = &value;
 			retvalD.size = sizeof(value);
 
+			ret = (*retval)->get(*retval, NULL, &retvalK, &retvalD, 0);
 			if (ret) {
 #else
 			retvalK  = key; 
@@ -211,7 +230,7 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 #endif
 				pkey =key;
 				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
-				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
+				pkey+=u_sprintf( pkey, "%S",  (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
 #ifdef BDB
 				ret = (*retval)->get(*retval, NULL, &retvalK, &retvalD, 0);
 				if (ret) {
@@ -274,7 +293,6 @@ int colloc_print(array_t array, colloc_opt option) {
 		DBC *arrayC; // database cursor
 		DBT arrayKey, arrayData;
 		int ret;
-//		memset(&arrayKey, 0, sizeof(arrayKey));
 
 		arrayKey.flags=0;
 		arrayData.flags=0;
@@ -323,9 +341,7 @@ int colloc_print(array_t array, colloc_opt option) {
 
 #else
         JHSFI(arraySL, arrayS);
-
 #endif
-
 		if (! option.quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, option.threshold);
 
 	}
@@ -445,7 +461,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
     /* 
      * Specify the size of the in-memory cache. 
      */
-    ret = retvalE->set_cachesize(retvalE, 0, 256 * 1024 * 1024, 1);
+    ret = retvalE->set_cachesize(retvalE, 0, 128 * 1024 * 1024, 1);
     if (ret != 0) {
         u_fprintf(stderr, "Error increasing the cache size: %s\n", db_strerror(ret));
         exit(1);
@@ -483,7 +499,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
              NULL,             /* Txn pointer */
              filename,         /* File name -- Must be NULL for inmemory! */
              db_name,          /* Logical db name */
-             DB_HASH,          /* Database type (using btree) */
+             DB_BTREE,          /* Database type (using btree) */
              open_flags,       /* Open flags */
              0);               /* File mode. Using defaults */
 
@@ -553,11 +569,6 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 		sentenceK=0;
 	
-		if (i==4914) {
-			u_printf("ibibique\n");
-		}
-
-
 		if ( (time(&ctime)-ptime) && (! option.quiet) ) {
 			u_fprintf(stderr,"Snt %8d/%d, %4.3f snt/s, %8d/%8d comb. so far. still ~%8.3f sec. to go. \r",
 			               i, sfst2->number_of_graphs, ((float)(i-prev_i)) / ((float)(ctime-ptime)) , cnum, cnumu,
@@ -592,7 +603,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 						}
 
 						unichar **sword = option.swords;
-						if (! *spos) {
+						if ( (! spos) || (spos && (! *spos) ) )  { // check if it does not match above
 							if (sword) {
 								while( *sword ) { 
 									if (! u_strcmp( *sword, tag.can ) ) break;
@@ -675,6 +686,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 			}
 		}
 
+
 		comb_l1( 0, stack, sentence, &retval );
 
 		// loop that frees the judy array
@@ -687,11 +699,18 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 			JLN(sentenceI, sentence, sentenceK);
 		}
 		JLFA( sentenceAL, sentence );
-
+#ifdef BDB
+		if (! (i % 2000) ) {
+			u_fprintf(stderr,"Snt %8d/%d,              %8d/%8d comb. so far. syncing....                             \r",
+			               i, sfst2->number_of_graphs, cnum, cnumu
+			         );
+			retval->sync(retval,0);
+		}
+#endif
 		if (option.compact) {
 			if (! (i % option.compact) ) {
-				if (! option.quiet) u_fprintf (stderr, "\ncompacting...                                                                     \n");
-				colloc_compact( retval, option.threshold/2, option.quiet );
+				if (! option.quiet) u_fprintf (stderr, "\ncompacting...");
+				colloc_compact( retval, option.threshold/(end/option.compact)*(i-start)/option.compact, option.quiet );
 			}
 		}
 	}
@@ -705,7 +724,4 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	free_stack_int(stack);
 	return retval;
 }
-
-
-
 
