@@ -875,7 +875,7 @@ return value->_int;
 
 /**
  * This function looks for the given state set in the given hash table. If it
- * find it, the corresponding state is returned. Otherwise, we add a state
+ * finds it, the corresponding state is returned. Otherwise, we add a state
  * to the given graph and we associate its number to the state set.
  * (*created) will contain a non null value if and only if the state did
  * not already exist.
@@ -888,7 +888,7 @@ return graph->states[get_state_number(graph,hash,state_set,created)];
 
 /**
  * This function looks for the given state set in the given hash table. If it
- * find it, the corresponding state is returned. Otherwise, we add a state
+ * finds it, the corresponding state is returned. Otherwise, we add a state
  * to the given graph and we associate its number to the state set.
  */
 SingleGraphState get_state(SingleGraph graph,struct hash_table* hash,struct list_int* state_set) {
@@ -971,11 +971,10 @@ if (current_state_set==NULL) {
    /* If the automaton has no initial state */
    fatal_error("Trying to determinize an automaton with no initial state\n");
 }
+/* The initial state has the number 0 */
 state=get_state(new_graph,hash,current_state_set);
 set_initial_state(state);
 put_ptr(fifo,current_state_set);
-/* The initial state has the number 0 */
-get_state(new_graph,hash,current_state_set);
 /* And now, we loop until we have processed all the state sets */
 while (!is_empty(fifo)) {
    current_state_set=(struct list_int*)take_ptr(fifo);

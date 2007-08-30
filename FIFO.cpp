@@ -36,7 +36,6 @@ f->output=NULL;
 return f;
 }
 
-
 /**
  * Allocates, initializes and returns a new FIFO list.
  */

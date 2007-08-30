@@ -577,7 +577,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
    check_epsilon_tag(fst2->tags[i]);
 }
 /* Then, we look for graphs that match <E> with or without conditions */
-for (i=1;i<fst2->number_of_graphs+1;i++) {
+for (i=1;i<=fst2->number_of_graphs;i++) {
    conditions_for_state=(ConditionList*)malloc(sizeof(ConditionList)*fst2->number_of_states_per_graphs[i]);
    if (conditions_for_state==NULL) {
       fatal_error("Not enough memory in grf_OK\n");

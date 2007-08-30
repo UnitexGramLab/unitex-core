@@ -166,6 +166,7 @@ if (h->table!=NULL) {
    for (unsigned int i=0;i<h->capacity;i++) {
       free_hash_list(h->table[i],h->free);
    }
+   free(h->table);
 }
 free(h);
 }
