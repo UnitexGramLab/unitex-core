@@ -51,7 +51,9 @@ typedef struct {
 
 static Word_t cnum=0,cnumu=0,thrash=0;
 
-unichar * readfile(char *name) {
+unichar *garipi;
+
+unichar *readfile(char *name) {
 	FILE *f=u_fopen (name, "r");
 	unichar *retval;
 	size_t size;
@@ -72,7 +74,6 @@ unichar * readfile(char *name) {
 	}
 
 	return retval;
-
 }
 
 void colloc_free( Parray_t array ) {
@@ -80,32 +81,32 @@ void colloc_free( Parray_t array ) {
 	int ret, ret_t;
 	DB_ENV *arrayE=NULL;
 
-    /* Close our database handle, if it was opened. */
-    if (array && *array) {
+	/* Close our database handle, if it was opened. */
+	if (array && *array) {
 		arrayE = (*array)->get_env(*array);
-        ret_t = (*array)->close(*array, 0);
-        if (ret_t) {
-            u_fprintf(stderr, "%s database close failed.\n", db_strerror(ret_t));
-            ret = ret_t;
-        }
+		ret_t = (*array)->close(*array, 0);
+		if (ret_t) {
+			u_fprintf(stderr, "%s database close failed.\n", db_strerror(ret_t));
+			ret = ret_t;
+		}
 		char filename[32];
 		sprintf(filename, "%s%d", TMPPREFIX, getpid() );
-
+	
 		ret_t = arrayE->dbremove(arrayE,NULL,filename, NULL, 0);
-        if (ret_t) {
-            u_fprintf(stderr, "%s database remove failed.\n", db_strerror(ret_t));
-            ret = ret_t;
-        }
-    }
-
-    /* Close our environment, if it was opened. */
-    if (arrayE) {
-        ret_t = arrayE->close(arrayE, 0);
-        if (ret_t) {
-            u_fprintf(stderr, "environment close failed: %s\n", db_strerror(ret_t));
-            ret = ret_t;
-        }
-    }
+		if (ret_t) {
+			error("%s database remove failed.\n", db_strerror(ret_t));
+			ret = ret_t;
+		}
+	}
+	
+	/* Close our environment, if it was opened. */
+	if (arrayE) {
+		ret_t = arrayE->close(arrayE, 0);
+		if (ret_t) {
+			error("environment close failed: %s\n", db_strerror(ret_t));
+			ret = ret_t;
+		}
+	}
 
 #else
 	JUDYHSH(array);
@@ -251,7 +252,7 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 #endif
 			}
 
-            if (!(*((Word_t *)retvalI))) cnumu++;
+			if (!(*((Word_t *)retvalI))) cnumu++;
 			(*((Word_t *)retvalI))++;
 
 #ifdef BDB
@@ -335,8 +336,7 @@ int colloc_print(array_t array, colloc_opt option) {
 
 #ifdef BDB
 		if (ret != DB_NOTFOUND) {
-			u_printf("There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); 
-			exit(1);
+			fatal_error("There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); 
 		}
 
 		/* Cursors must be closed */
@@ -401,8 +401,7 @@ int colloc_compact(array_t array, unsigned threshold, int quiet) {
 
 #ifdef BDB
 		if (ret != DB_NOTFOUND) {
-			u_printf("There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); 
-			exit(1);
+			fatal_error("There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); 
 		}
 
 		/* Cursors must be closed */
@@ -422,13 +421,13 @@ int colloc_compact(array_t array, unsigned threshold, int quiet) {
 	return 0;
 }
 
-
-
 array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
 	Fst2State state;
 	Transition *tran=NULL;
+
+	garipi=readfile("eheh");
 
 	struct stack_int *stack=new_stack_int(2); // start by generating combinations of 2. we'll then try to combine them.
 	                                          // if this changes, comb_l2 should be adjusted accordingly.
@@ -442,77 +441,73 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	 */
 #ifdef BDB
     /* Initialize our handles */
-    DB *retval = NULL;
-    DB_ENV *retvalE = NULL;
-    DB_MPOOLFILE *retvalPF = NULL;
+	DB *retval = NULL;
+	DB_ENV *retvalE = NULL;
+	DB_MPOOLFILE *retvalPF = NULL;
+	
+	int ret_t; 
+	const char *db_name = "db";
+	u_int32_t open_flags;
 
-    int ret_t; 
-    const char *db_name = "db";
-    u_int32_t open_flags;
+	/* Create the environment */
+	ret = db_env_create(&retvalE, 0);
+	if (ret != 0) {
+		fatal_error("Error creating environment handle: %s\n", db_strerror(ret));
+	}
+	
+	open_flags =
+		DB_CREATE     |  /* Create the environment if it does not exist */
+		DB_INIT_MPOOL |  /* Initialize the memory pool (in-memory cache) */
+		DB_PRIVATE;      /* Region files are not backed by the filesystem. 
+		                  * Instead, they are backed by heap memory.  */
 
-/* Create the environment */
-    ret = db_env_create(&retvalE, 0);
-    if (ret != 0) {
-        u_fprintf(stderr, "Error creating environment handle: %s\n", db_strerror(ret));
-        exit(1);
-    }
-
-    open_flags =
-      DB_CREATE     |  /* Create the environment if it does not exist */
-      DB_INIT_MPOOL |  /* Initialize the memory pool (in-memory cache) */
-      DB_PRIVATE;      /* Region files are not backed by the filesystem. 
-                        * Instead, they are backed by heap memory.  */
-
-    /* 
-     * Specify the size of the in-memory cache. 
-     */
-    ret = retvalE->set_cachesize(retvalE, 0, 2048 * 1024 * 1024, 1);
-    if (ret != 0) {
-        u_fprintf(stderr, "Error increasing the cache size: %s\n", db_strerror(ret));
-        exit(1);
-    }
-
-    /* 
-     * Now actually open the environment. Notice that the environment home
-     * directory is NULL. This is required for an in-memory only
-     * application. 
-     */
-    ret = retvalE->open(retvalE, NULL, open_flags, 0);
-    if (ret != 0) {
-        u_fprintf(stderr, "Error opening environment: %s\n", db_strerror(ret));
-        exit(1);
-    }
-
-
-   /* Initialize the DB handle */
-    ret = db_create(&retval, retvalE, 0);
-    if (ret != 0) {
-         retvalE->err(retvalE, ret,
-                "Attempt to create db handle failed.");
-        exit(1);
-    }
-
-
-    /* 
-     * Set the database open flags. 
-     */
-
+	/*
+	 * Specify the size of the in-memory cache.
+	 */
+	ret = retvalE->set_cachesize(retvalE, 0, 200 * 1024 * 1024, 1); // according to bdb documentation, if 
+	                                                                // this number is smaller than 500MB
+	                                                                // a %25 overhead is added.
+	if (ret != 0) {
+		fatal_error("Error increasing the cache size: %s\n", db_strerror(ret));
+	}
+	
+	/*
+	 * Now actually open the environment. Notice that the environment home
+	 * directory is NULL. This is required for an in-memory only
+	 * application.
+	 */
+	ret = retvalE->open(retvalE, NULL, open_flags, 0);
+	if (ret != 0) {
+		fatal_error( "Error opening environment: %s\n", db_strerror(ret));
+	}
+	
+	
+	/* Initialize the DB handle */
+	ret = db_create(&retval, retvalE, 0);
+	if (ret != 0) {
+		retvalE->err(retvalE, ret, "Attempt to create db handle failed.");
+		fatal_error("Bailing out...\n");
+	}
+	
+	
+	/*
+	 * Set the database open flags.
+	 */
 	char filename[32];
 	sprintf(filename, "%s%d", TMPPREFIX, getpid() );
-    open_flags = DB_CREATE | DB_TRUNCATE;
-    ret = retval->open(retval, /* Pointer to the database */
-             NULL,             /* Txn pointer */
-             filename,         /* File name -- Must be NULL for inmemory! */
-             db_name,          /* Logical db name */
-             DB_BTREE,          /* Database type (using btree) */
-             open_flags,       /* Open flags */
-             0);               /* File mode. Using defaults */
-
-    if (ret != 0) {
-         retvalE->err(retvalE, ret,
-                "Attempt to open db failed.");
-        exit(1);
-    }
+	open_flags = DB_CREATE | DB_TRUNCATE;
+	ret = retval->open(retval, /* Pointer to the database */
+				NULL,             /* Txn pointer */
+				filename,         /* File name -- Must be NULL for inmemory! */
+				db_name,          /* Logical db name */
+				DB_BTREE,         /* Database type (using btree) */
+				open_flags,       /* Open flags */
+				0);               /* File mode. Using defaults */
+	
+	if (ret != 0) {
+		retvalE->err(retvalE, ret, "Attempt to open db failed.");
+		fatal_error("Bailing out...\n");		
+	}
 
 	if (! option.quiet) u_fprintf(stderr, "Colloc is using the bdb backend.\n");
 
@@ -565,7 +560,6 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		start = 1;
 		end   = sfst2->number_of_graphs;
 	}
-
 	
 	for (i=start; i<=end; i++) { // for every sentence
 		j = sfst2->initial_states[i];
@@ -583,7 +577,6 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 			prev_i=i;
 		}
 
-
 		while (state) { // here we try to group transitions whose terminal states are the same. FIXME: need confirmation about this.
 			if (tran) {
 				state=sfst2->states[tran->state_number];
@@ -593,7 +586,9 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 				while (tran) { 
 					input=sfst2->tags[tran->tag_number]->input;
-
+					if (! u_strcmp(input,garipi) ) { 
+						u_printf("%d\n",i); 
+					}
 					if (input[0]=='{') {
 						tag_t tag;
 						parse_tag_string( &tag, input+1 );
@@ -633,8 +628,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 									if (*c != ',') key[nodesKL++] = *c;
 
 									if (nodesKL==KEYLENGTH) {
-										u_fprintf( stderr, "Node key is too long in %s:%d. bailing out.\n", __FILE__, __LINE__ );
-										exit(1);
+										fatal_error( "Node key is too long in %s:%d. bailing out.\n", __FILE__, __LINE__ );									
 									}
 									c++;
 								}
@@ -644,9 +638,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 								nodesK=(Pvoid_t)key;
 							}
 							else {
-								u_fprintf( stderr, "format error in %s, state %d transition %d: %S\n",
-								                   snt->text_fst2, tran->state_number, tran->tag_number, input );
-								exit(1);
+								fatal_error( "format error in %s, state %d transition %d: %S\n",
+								                   snt->text_fst2, tran->state_number, tran->tag_number, input );								
 							}
 						}
 					}
@@ -654,7 +647,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 						if ( (   *input == ','  || *input == '.' || *input == '?' || *input == '!' 
 					          || *input == '\'' || *input == '_' || *input == '-' || *input == ':' 
 						      || *input == ')'  || *input == '(' || *input == '"' || *input == ';'
-						      || *input == '%'  || *input == '/' ) && option.spunc) { // FIXME: do we have a list of punctuations? they differ from language to language.
+						      || *input == '%'  || *input == '/' || *input == '`' || *input == '^'
+							  || *input == '\\' || *input == '[' || *input == ']' ) && option.spunc ) { // FIXME: do we have a list of punctuations? they differ from language to language.
 							nodesK=NULL;
 						}
 						else {
@@ -690,7 +684,6 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 				state=0;
 			}
 		}
-
 
 		comb_l1( 0, stack, sentence, &retval );
 
