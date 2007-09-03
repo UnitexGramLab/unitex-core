@@ -360,9 +360,6 @@ int colloc_compact(array_t array, unsigned threshold, int quiet) {
 		u_fprintf(stderr,"%s() in %s:%d was passed a null pointer.\n", __FUNCTION__, __FILE__, __LINE__ );
 		return 1;
 	}
-	else if (! threshold) {
-		return 0;
-	}
 	else { /* one can pipe this output to "sort -n" to get a sorted list. */
 #ifdef BDB
 		DBC *arrayC; // database cursor
@@ -572,9 +569,9 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		sentenceK=0;
 	
 		if ( (time(&ctime)-ptime) && (! option.quiet) ) {
-			u_fprintf(stderr,"Snt %8d/%d, %4.3f snt/s, %8d/%8d comb. so far. still ~%8.3f min. to go. \r",
+			u_fprintf(stderr,"Snt %8d/%d, %4.3f snt/s, %8d/%8d comb. so far. still ~%8.3f sec. to go. \r",
 			               i, sfst2->number_of_graphs, ((float)(i-prev_i)) / ((float)(ctime-ptime)) , cnum, cnumu,
-			               (ctime-stime) * (end -i) / ((float)i) / 60.0
+			               (ctime-stime) * (end -i) / ((float)i)
 			         );
 			ptime=ctime;
 			prev_i=i;
@@ -624,8 +621,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 							if ( c == d ) c=input+1;
 							d=u_strchr(     c, '+' );
-							if (! d) d=u_strchr(c, ':');
-							if (! d) d=u_strchr(c, '}');
+							if (! d) d=u_strchr( c, ':');
+							if (! d) d=u_strchr( c, '}' );
 
 							if (d) {
 								nodesKL=0;
@@ -649,14 +646,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 						}
 					}
 					else {
-						if ( (   *input == ','  || *input == '.' || *input == '?' || *input == '!' 
-					          || *input == '\'' || *input == '_' || *input == '-' || *input == ':' 
-						      || *input == ')'  || *input == '(' || *input == '"' || *input == ';'
-						      || *input == '%'  || *input == '/' || *input == '`' || *input == '^'
-							  || *input == '\\' || *input == '[' || *input == ']' ) && option.spunc ) { // FIXME: do we have a list of punctuations? they differ from language to language.
-							nodesK=NULL;
-						}
-						else {
+						if ( u_is_word(input) ) {
 							unichar **sword = option.swords;
 							if (sword) {
 								while( *sword ) { 
@@ -673,6 +663,10 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 								nodesK=(Pvoid_t)input;
 							}
 						}
+						else {
+							nodesK=NULL;
+						}
+
 					}
 
 					if (nodesK) {

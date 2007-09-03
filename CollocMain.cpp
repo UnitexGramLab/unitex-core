@@ -67,7 +67,6 @@ static void usage(int header) {
 		"                                   machine with 256MB free physical ram.\n"
 		"     -l, --linear-width=LEN        TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
 		"                                   This the n in C(n,p).\n"
-		"     -p, --no-strip-punctuations   Strip punctuations like , . ! etc.\n"
 		"     -q, --quiet                   Dont print anything except the results and errors.\n"
 		"     -r, --range=<range>           Limit number of sentences to process, to get around memory\n"
 		"                                   limitations. <range> is two positive integers with a comma\n"
@@ -96,7 +95,6 @@ int main_Colloc(int argc, char **argv) {
 		,{             "threshold", required_argument, NULL, 'h' }
 		,{               "compact", required_argument, NULL, 'm' }
 		,{          "linear-width", required_argument, NULL, 'l' } 
-		,{ "no-strip-punctuations",       no_argument, NULL, 'p' }	
 		,{                 "quiet",       no_argument, NULL, 'q' }	
 		,{                 "range", required_argument, NULL, 'r' }
 		,{            "strip-tags", required_argument, NULL, 't' }
@@ -107,7 +105,6 @@ int main_Colloc(int argc, char **argv) {
 	colloc_opt option;
 	option.clength   = 2; 
 	option.lwidth    = 0;
-	option.spunc     = 1;
 	option.spos      = NULL;
 	option.swords    = NULL;
 	option.rstart    = 0;
@@ -116,7 +113,7 @@ int main_Colloc(int argc, char **argv) {
 	option.compact   = 0;
 	option.quiet     = 0;
 
-	while ((ch = getopt_long(argc, argv, "?c:l:t:pw:h:r:m:", longopts, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "?c:l:t:w:h:r:m:", longopts, &option_index)) != -1) {
 		switch (ch) {
 	
 		case '?':
@@ -249,10 +246,6 @@ int main_Colloc(int argc, char **argv) {
 			break;
 			
 		}
-
-		case 'p': 
-			option.spunc=1;
-			break;
 
 		case 'q': 
 			option.quiet=1;
