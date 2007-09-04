@@ -670,8 +670,18 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 					}
 
 					if (nodesK) {
-						JHSI( nodesI, *nodes, nodesK, nodesKL );
-						if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;
+						c=u_strchr( (unichar *)nodesK, '.');
+//						c=(unichar *)nodesK;
+						if (c) *c=0;
+						if (! u_is_word((unichar *)nodesK)) {
+//						if ( u_strchr(c, ' ') || u_strchr(c, '-') ) {
+							u_fprintf(stderr,"%S\n",(unichar *)nodesK);
+						}
+						else {
+							*c='.'							
+							JHSI( nodesI, *nodes, nodesK, nodesKL );
+							if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;
+						}
 					}
 
 					tran=tran->next;
