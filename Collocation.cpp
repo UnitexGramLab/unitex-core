@@ -51,8 +51,6 @@ typedef struct {
 
 static Word_t cnum=0,cnumu=0,thrash=0;
 
-unichar *garipi;
-
 unichar *readfile(char *name) {
 	FILE *f=u_fopen (name, "r");
 	unichar *retval;
@@ -74,49 +72,6 @@ unichar *readfile(char *name) {
 	}
 
 	return retval;
-}
-
-void colloc_free( Parray_t array ) {
-#ifdef BDB
-	int ret, ret_t;
-	DB_ENV *arrayE=NULL;
-
-	/* Close our database handle, if it was opened. */
-	if (array && *array) {
-		arrayE = (*array)->get_env(*array);
-		ret_t = (*array)->close(*array, 0);
-		if (ret_t) {
-			u_fprintf(stderr, "%s database close failed.\n", db_strerror(ret_t));
-			ret = ret_t;
-		}
-		char filename[32];
-		sprintf(filename, "%s%d", TMPPREFIX, getpid() );
-	
-		ret_t = arrayE->dbremove(arrayE,NULL,filename, NULL, 0);
-		if (ret_t) {
-			error("%s database remove failed.\n", db_strerror(ret_t));
-			ret = ret_t;
-		}
-	}
-	
-	/* Close our environment, if it was opened. */
-	if (arrayE) {
-		ret_t = arrayE->close(arrayE, 0);
-		if (ret_t) {
-			error("environment close failed: %s\n", db_strerror(ret_t));
-			ret = ret_t;
-		}
-	}
-
-#else
-	JUDYHSH(array);
-
-	JHSFA(arrayAL,*array);
-
-#endif
-
-	*array=NULL;
-
 }
 
 static void parse_tag_string ( tag_t *tag, unichar *str ) { // TODO: do boundary checks.
@@ -198,72 +153,32 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 	else { 
 		int i=0;
 		unichar key[KEYLENGTH], *pkey=key;
-
-#ifdef BDB
-		DBT retvalK, retvalD;
-		Word_t value=0;
+		size_t retvalKL, retvalDL=sizeof(Word_t);
+		Word_t *retvalD, value;
 		int ret;
-#define retvalI (retvalD.data)
 
-#else
-		JUDYHSH(retval);
-#endif
-
-		// concats here may still cause problems in case of merging 2+ sessions of computation output. must merge with care.
 		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) { 
 			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
 			pkey+=u_sprintf( pkey, "%S",  (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 
-#ifdef BDB
-			/* Zero out the DBTs before using them. */
-			memset( &retvalK, 0, sizeof(DBT) );
-			retvalK.data = key;
-			retvalK.size = pkey-key+1; retvalK.size*=sizeof(unichar);
-
-			memset( &retvalD, 0, sizeof(DBT) );
-			retvalD.data = &value;
-			retvalD.size = sizeof(value);
-
-			ret = (*retval)->get(*retval, NULL, &retvalK, &retvalD, 0);
-			if (ret) {
-#else
-			retvalK  = key; 
-			retvalKL = pkey-key+1; retvalKL*=sizeof(unichar);
-
-			JHSG( retvalI, *retval , retvalK, retvalKL );
-
-			if (! retvalI) { 
-#endif
+			retvalKL  = pkey-key+1; 
+			retvalKL *= sizeof(unichar);
+			if ( array_get(retval, key, retvalKL, (void**)(&retvalD), &retvalDL ) ) {
 				pkey =key;
 				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 				pkey+=u_sprintf( pkey, "%S",  (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
-#ifdef BDB
-				ret = (*retval)->get(*retval, NULL, &retvalK, &retvalD, 0);
-				if (ret) {
-					memset( &retvalD, 0, sizeof(DBT) );
+				if ( array_get(retval, key, retvalKL, (void**)(&retvalD), &retvalDL ) ) {
+					cnumu++;
+					retvalD=&value;
 					value=0;
-					retvalD.data = &value;
-					retvalD.size = sizeof(value);
-
-					(*retval)->put(*retval, NULL, &retvalK, &retvalD, 0);
 				}
-#else
-				JHSI( retvalI, *retval, retvalK, retvalKL );
-#endif
 			}
-
-			if (!(*((Word_t *)retvalI))) cnumu++;
-			(*((Word_t *)retvalI))++;
-
-#ifdef BDB
-			(*retval)->put( *retval, NULL, &retvalK, &retvalD, 0 );
-
-#undef retvalI
-#endif
-
+ 
+			(*retvalD)++;
+			array_set( retval, key, retvalKL, (void**)(&retvalD), &retvalDL );
 			cnum++;
 		}
-	}		
+	}
 }
 
 static void comb_l1( Word_t arrayK, struct stack_int *stack, Pvoid_t array, Parray_t retval ) {
@@ -295,126 +210,43 @@ int colloc_print(array_t array, colloc_opt option) {
 		return 1;
 	}
 	else { /* one can pipe this output to "sort -n" to get a sorted list. */
-#ifdef BDB
-		DBC *arrayC; // database cursor
-		DBT arrayKey, arrayData;
-		int ret;
-
-		arrayKey.flags=0;
-		arrayData.flags=0;
-#define arrayI (arrayData.data)
-#define arrayK (arrayKey.data)
-
-#else
-		JUDYHSH(array);
-#endif
-
 		if (! option.quiet) {
 			u_fprintf(stderr,"Frequency\tCollocation\n"
 			                 "---------------------------\n");
 		}
-#ifdef BDB
-		array->cursor( array, NULL, &arrayC, 0);
-
-		/* Iterate over the database, retrieving each record in turn. */
-		while ((ret = arrayC->get(arrayC, &arrayKey, &arrayData, DB_NEXT)) == 0) {
-#else
-		JHSIF(arrayI, array, arrayS, arrayK, arrayKL);
-		while (arrayI)	{
-#endif
-
-			if ( (*((Word_t*)arrayI)) > option.threshold ) {
-				u_printf("%9d\t%S\n", *((Word_t*)arrayI), (unichar*)arrayK );
+		arrayI_t arrayK,arrayD;
+		foreach (array, arrayK, arrayD) {
+			if ( (*((Word_t*)arrayD.data)) > option.threshold ) {
+				u_printf("%9d\t%S\n", *((Word_t*)(arrayD.data)), (unichar*)(arrayK.data) );
 			}
 			else { 
 				thrash++;
 			}
-#ifndef BDB
-			JHSIN(arrayI, array, arrayS, arrayK, arrayKL);
-#endif
-		}
+		} end_foreach(array, arrayK, arrayD);
 
-#ifdef BDB
-		if (ret != DB_NOTFOUND) {
-			fatal_error("There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); 
-		}
-
-		/* Cursors must be closed */
-		if (arrayC) arrayC->close(arrayC);
-#undef arrayK 
-#undef arrayI
-
-#else
-        JHSFI(arraySL, arrayS);
-#endif
-		if (! option.quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, option.threshold);
+		if (! option.quiet) u_fprintf(stderr,"\n%d out of %d were below the threshold (%d).\n", thrash, cnumu, option.threshold);
 
 	}
 
 	return 0;
 }
 
-int colloc_compact(array_t array, unsigned threshold, int quiet) {
+int colloc_compact(Parray_t array, unsigned threshold, int quiet) {
 
-	if (! array ) {
+	if (! ( array && *array) ) {
 		u_fprintf(stderr,"%s() in %s:%d was passed a null pointer.\n", __FUNCTION__, __FILE__, __LINE__ );
 		return 1;
 	}
 	else { /* one can pipe this output to "sort -n" to get a sorted list. */
-#ifdef BDB
-		DBC *arrayC; // database cursor
-		DBT arrayKey, arrayData;
-		int ret;
-
-		arrayKey.flags=0;
-		arrayData.flags=0;
-#define arrayI (arrayData.data)
-#define arrayK (arrayKey.data)
-
-#else
-		JUDYHSH(array);
-#endif
-
-#ifdef BDB
-		array->cursor( array, NULL, &arrayC, 0);
-
-		/* Iterate over the database, retrieving each record in turn. */
-		while ((ret = arrayC->get(arrayC, &arrayKey, &arrayData, DB_NEXT)) == 0) {
-#else
-		JHSIF(arrayI, array, arrayS, arrayK, arrayKL);
-		while (arrayI)	{
-#endif
-
-			if ( (*((Word_t*)arrayI)) <= threshold ) {
+		arrayI_t arrayD, arrayK;
+		foreach (*array, arrayK, arrayD) {
+			if ( (*((Word_t*)(arrayD.data))) <= threshold ) {
 				thrash++;
-#ifdef BDB
-			    array->del(array, NULL, &arrayKey, 0);
-#else
-				JHSD(arrayR, array, arrayK, arrayKL);
-#endif
+				array_del( array, arrayK.data, arrayK.size);
+			} 
+		} end_foreach(*array, arrayK, arrayD);
 
-			}
-#ifndef BDB
-			JHSIN(arrayI, array, arrayS, arrayK, arrayKL);
-#endif
-		}
-
-#ifdef BDB
-		if (ret != DB_NOTFOUND) {
-			fatal_error("There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); 
-		}
-
-		/* Cursors must be closed */
-		if (arrayC) arrayC->close(arrayC);
-#undef arrayK 
-#undef arrayI
-
-#else
-        JHSFI(arraySL, arrayS);
-
-#endif
-
-		if (! quiet) u_fprintf(stderr,"\n%d were below the threshold (%d).\n", thrash, threshold);
+		if (! quiet) u_fprintf(stderr,"\n%d out of %d were below the threshold (%d).\n", thrash, cnumu, threshold);
 
 	}
 
@@ -427,94 +259,12 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	Fst2State state;
 	Transition *tran=NULL;
 
-	garipi=readfile("eheh");
-
 	struct stack_int *stack=new_stack_int(2); // start by generating combinations of 2. we'll then try to combine them.
 	                                          // if this changes, comb_l2 should be adjusted accordingly.
 	unichar *input, *c, *d,key[KEYLENGTH];
 
 	int i,j,index=0,prev_i;
 	int ret;
-
-    /*
-	 * array initialization
-	 */
-#ifdef BDB
-    /* Initialize our handles */
-	DB *retval = NULL;
-	DB_ENV *retvalE = NULL;
-	DB_MPOOLFILE *retvalPF = NULL;
-	
-	int ret_t; 
-	const char *db_name = "db";
-	u_int32_t open_flags;
-
-	/* Create the environment */
-	ret = db_env_create(&retvalE, 0);
-	if (ret != 0) {
-		fatal_error("Error creating environment handle: %s\n", db_strerror(ret));
-	}
-	
-	open_flags =
-		DB_CREATE     |  /* Create the environment if it does not exist */
-		DB_INIT_MPOOL |  /* Initialize the memory pool (in-memory cache) */
-		DB_PRIVATE;      /* Region files are not backed by the filesystem. 
-		                  * Instead, they are backed by heap memory.  */
-
-	/*
-	 * Specify the size of the in-memory cache.
-	 */
-	ret = retvalE->set_cachesize(retvalE, 0, 200 * 1024 * 1024, 1); // according to bdb documentation, if 
-	                                                                // this number is smaller than 500MB
-	                                                                // a %25 overhead is added.
-	if (ret != 0) {
-		fatal_error("Error increasing the cache size: %s\n", db_strerror(ret));
-	}
-	
-	/*
-	 * Now actually open the environment. Notice that the environment home
-	 * directory is NULL. This is required for an in-memory only
-	 * application.
-	 */
-	ret = retvalE->open(retvalE, NULL, open_flags, 0);
-	if (ret != 0) {
-		fatal_error( "Error opening environment: %s\n", db_strerror(ret));
-	}
-	
-	
-	/* Initialize the DB handle */
-	ret = db_create(&retval, retvalE, 0);
-	if (ret != 0) {
-		retvalE->err(retvalE, ret, "Attempt to create db handle failed.");
-		fatal_error("Bailing out...\n");
-	}
-	
-	
-	/*
-	 * Set the database open flags.
-	 */
-	char filename[32];
-	sprintf(filename, "%s%d", TMPPREFIX, getpid() );
-	open_flags = DB_CREATE | DB_TRUNCATE;
-	ret = retval->open(retval, /* Pointer to the database */
-				NULL,             /* Txn pointer */
-				filename,         /* File name -- Must be NULL for inmemory! */
-				db_name,          /* Logical db name */
-				DB_BTREE,         /* Database type (using btree) */
-				open_flags,       /* Open flags */
-				0);               /* File mode. Using defaults */
-	
-	if (ret != 0) {
-		retvalE->err(retvalE, ret, "Attempt to open db failed.");
-		fatal_error("Bailing out...\n");		
-	}
-
-	if (! option.quiet) u_fprintf(stderr, "Colloc is using the bdb backend.\n");
-
-#else
-	Pvoid_t retval=NULL;
-	if (! option.quiet) u_fprintf(stderr, "Colloc is using the Judy backend.\n");
-#endif
 
 	if (option.rstart > option.rend) {
 		error("Error: option.rstart > option.rend. \n");
@@ -540,6 +290,9 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	PPvoid_t nodes=NULL;
 	JUDYHSH(nodes);
+
+	array_t retval;
+	array_init(&retval);
 
 	if (! option.quiet) u_fprintf(stderr,"Generating collocation candidates...\n");
 	time_t ptime=0,ctime,stime;
@@ -586,13 +339,9 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 				while (tran) { 
 					input=sfst2->tags[tran->tag_number]->input;
-					if (! u_strcmp(input,garipi) ) { 
-						u_printf("%d\n",i); 
-					}
 					if (input[0]=='{') {
 						tag_t tag;
 						parse_tag_string( &tag, input+1 );
-
 
 						unichar **spos = option.spos;
 						if (spos) {
@@ -671,14 +420,17 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 					if (nodesK) {
 						c=u_strchr( (unichar *)nodesK, '.');
-//						c=(unichar *)nodesK;
 						if (c) *c=0;
-						if (! u_is_word((unichar *)nodesK)) {
-//						if ( u_strchr(c, ' ') || u_strchr(c, '-') ) {
-							u_fprintf(stderr,"%S\n",(unichar *)nodesK);
+						if ( (! u_is_word((unichar *)nodesK)) || u_strchr((unichar*)nodesK, ' ') ) {
+//							u_fprintf(stderr,"%S\n",(unichar *)nodesK);
 						}
 						else {
-							*c='.'							
+							if (c) {
+								//*c='.'; 
+								c++;
+								nodesKL=c-((unichar*)nodesK); nodesKL*=sizeof(unichar);
+							}
+							
 							JHSI( nodesI, *nodes, nodesK, nodesKL );
 							if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;
 						}
@@ -706,18 +458,11 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 			JLN(sentenceI, sentence, sentenceK);
 		}
 		JLFA( sentenceAL, sentence );
-#ifdef BDB
-		if (! (i % 2000) ) {
-			u_fprintf(stderr,"Snt %8d/%d,              %8d/%8d comb. so far. syncing....                             \r",
-			               i, sfst2->number_of_graphs, cnum, cnumu
-			         );
-			retval->sync(retval,0);
-		}
-#endif
+
 		if (option.compact) {
 			if (! (i % option.compact) ) {
 				if (! option.quiet) u_fprintf (stderr, "\ncompacting...");
-				colloc_compact( retval, option.threshold/(end/option.compact)*(i-start)/option.compact, option.quiet );
+				colloc_compact( &retval, option.threshold/(end/option.compact)*(i-start)/option.compact, option.quiet );
 			}
 		}
 	}

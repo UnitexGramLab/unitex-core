@@ -54,7 +54,6 @@ static void usage(int header) {
 		"\n"
 		"Parameters:\n"
 		"     -?, --help                    Shows this message\n"
-		"     -c, --combination-length=LEN  TODO: The length of word combinations. The p in C(n,p)\n"
 		"     -h, --threshold               Frequency threshold for printing the results.\n"
 		"     -m, --compact=PERIOD          Compact the array every PERIOD sentences. This means to\n"
 		"                                   prune all the combinations that are below half the\n" 
@@ -65,8 +64,6 @@ static void usage(int header) {
 		"                                   giant corpora. 10000 seems to be a reasonable choice for a\n"
 #endif
 		"                                   machine with 256MB free physical ram.\n"
-		"     -l, --linear-width=LEN        TODO: The limit in which the token combinations are formed. FIXME: Do we need this, actually?\n"
-		"                                   This the n in C(n,p).\n"
 		"     -q, --quiet                   Dont print anything except the results and errors.\n"
 		"     -r, --range=<range>           Limit number of sentences to process, to get around memory\n"
 		"                                   limitations. <range> is two positive integers with a comma\n"
@@ -90,21 +87,17 @@ int main_Colloc(int argc, char **argv) {
 	int option_index = 0;
 	
 	const struct option longopts[] = { 
-		 {                  "help",       no_argument, NULL, '?' }
-		,{    "combination-length", required_argument, NULL, 'c' }
-		,{             "threshold", required_argument, NULL, 'h' }
-		,{               "compact", required_argument, NULL, 'm' }
-		,{          "linear-width", required_argument, NULL, 'l' } 
-		,{                 "quiet",       no_argument, NULL, 'q' }	
-		,{                 "range", required_argument, NULL, 'r' }
-		,{            "strip-tags", required_argument, NULL, 't' }
-		,{           "strip-words", required_argument, NULL, 'w' }
+		 {        "help",       no_argument, NULL, '?' }
+		,{   "threshold", required_argument, NULL, 'h' }
+		,{     "compact", required_argument, NULL, 'm' }
+		,{       "quiet",       no_argument, NULL, 'q' }	
+		,{       "range", required_argument, NULL, 'r' }
+		,{  "strip-tags", required_argument, NULL, 't' }
+		,{ "strip-words", required_argument, NULL, 'w' }
 		,{NULL, 0, NULL, 0}
 	};
 
 	colloc_opt option;
-	option.clength   = 2; 
-	option.lwidth    = 0;
 	option.spos      = NULL;
 	option.swords    = NULL;
 	option.rstart    = 0;
@@ -121,22 +114,6 @@ int main_Colloc(int argc, char **argv) {
 			exit(EXIT_SUCCESS);
 			break;	
 	
-		case 'c':
-			STRINGINT(optarg, option.clength);
-			if (option.clength <= 2) {
-				u_printf("combination length must be > 2\n\n");
-				exit (EXIT_FAILURE);
-			}
-			break;
-
-		case 'l':
-			STRINGINT(optarg, option.lwidth);
-			if (option.lwidth <= 0) {
-				u_printf("linear context width must be > 0\n\n");
-				exit (EXIT_FAILURE);
-			}
-			break;
-
 		case 'h':
 			STRINGINT(optarg, option.threshold);
 			if (option.threshold < 0) {
@@ -321,12 +298,18 @@ int main_Colloc(int argc, char **argv) {
 	struct snt_files* snt_files=NULL;
 	snt_files = new_snt_files_from_path(text_snt);
 
+#ifdef BDB
+	if (! option.quiet) u_fprintf(stderr, "array_t is using the bdb backend.\n");
+#else
+	if (! option.quiet) u_fprintf(stderr, "array_t is using the Judy backend.\n");
+#endif
+
 	array_t candidates=NULL;
-	
+
 	candidates=colloc_generate_candidates(snt_files, option);
 	colloc_print(candidates, option);
-	if (! option.quiet) u_fprintf(stderr,"freeing resources...\n");
-	colloc_free(&candidates);
+	//if (! option.quiet) u_fprintf(stderr,"freeing resources...\n");
+	//colloc_free(&candidates);
 	
 	if (! option.quiet) u_fprintf(stderr,"Done.\n");
 	

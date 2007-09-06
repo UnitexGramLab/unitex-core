@@ -23,6 +23,8 @@
 #define CollocationH
 
 #include "Unicode.h"
+#include "Array.h"
+#include "Snt.h"
 
 /**
  * This structure is used to store information about the given
@@ -31,8 +33,6 @@
  */
 
 typedef struct {
-	int clength;
-	int lwidth;
 	unsigned rstart;
 	unsigned rend;
 	unichar **spos;
@@ -42,18 +42,6 @@ typedef struct {
 	int quiet;
 } colloc_opt;
 
-#include "Snt.h"
-
-#ifdef BDB
-#include <db.h>
-#define Parray_t DB**
-#define array_t DB*
-#else
-#define Parray_t PPvoid_t
-#define array_t Pvoid_t
-#endif
-
-void    colloc_free (Parray_t array);
 int     colloc_print(array_t array, colloc_opt option);
 array_t colloc_generate_candidates( struct snt_files *, colloc_opt option );
 

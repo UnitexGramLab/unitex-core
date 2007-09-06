@@ -265,7 +265,7 @@ CHECKDIC_OBJS = IOBuffer.o CheckDic.o Unicode.o File.o DELA.o Alphabet.o String_
 				List_ustring.o Error.o StringParsing.o
 
 COLLOC         = Colloc
-COLLOC_OBJS    = IOBuffer.o Colloc.o CollocMain.o Collocation.o Unicode.o Text_tokens.o          \
+COLLOC_OBJS    = IOBuffer.o Colloc.o CollocMain.o Collocation.o Unicode.o Text_tokens.o Array.o  \
 				List_int.o Alphabet.o Matches.o Frequency.o File.o String_hash.o                 \
 				Text_parsing.o LocatePattern.o Stack_int.o                                       \
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o        \
