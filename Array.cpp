@@ -1,8 +1,15 @@
 
+#include <stdlib.h>
+#include <string.h>
 #include "Array.h"
 
 int array_init( Parray_t array ) {
 #ifdef BDB
+
+#define TMPPREFIX "/var/tmp/Colloc_"
+
+	int ret;
+
     /* Initialize our handles */
 	*array = NULL;
 	DB_ENV *arrayE = NULL;
@@ -28,7 +35,7 @@ int array_init( Parray_t array ) {
 	/*
 	 * Specify the size of the in-memory cache.
 	 */
-	ret = arrayE->set_cachesize(retvalE, 0, 200 * 1024 * 1024, 1); // according to bdb documentation, if 
+	ret = arrayE->set_cachesize(arrayE, 0, 200 * 1024 * 1024, 1); // according to bdb documentation, if 
 	                                                                // this number is smaller than 500MB
 	                                                                // a %25 overhead is added.
 	if (ret != 0) {
@@ -41,17 +48,16 @@ int array_init( Parray_t array ) {
 	 * directory is NULL. This is required for an in-memory only
 	 * application.
 	 */
-	ret = retvalE->open(retvalE, NULL, open_flags, 0);
+	ret = arrayE->open(arrayE, NULL, open_flags, 0);
 	if (ret != 0) {
 		fprintf(stderr, "Error opening environment: %s\n", db_strerror(ret));
 		exit(1);
 	}
 	
-	
 	/* Initialize the DB handle */
-	ret = db_create(array, retvalE, 0);
+	ret = db_create(array, arrayE, 0);
 	if (ret != 0) {
-		retvalE->err(retvalE, ret, "Attempt to create db handle failed.");
+		arrayE->err(arrayE, ret, "Attempt to create db handle failed.");
 		fprintf(stderr,"Bailing out...\n");
 		exit(1);
 	}
@@ -71,7 +77,7 @@ int array_init( Parray_t array ) {
 				0);               /* File mode. Using defaults */
 	
 	if (ret != 0) {
-		retvalE->err(retvalE, ret, "Attempt to open db failed.");
+		arrayE->err(arrayE, ret, "Attempt to open db failed.");
 		fprintf(stderr,"Bailing out...\n");
 		exit(1);
 	}
@@ -86,19 +92,19 @@ int array_get(Parray_t array, void *key, size_t keyL, void **data, size_t *dataL
 #ifdef BDB
 
 	DBT arrayK, arrayD;
-	Word_t value=0;
 	int ret;
 
-	arrayK.flags = 0;
-	arrayK.data  = key;
-	arrayK.size  = keyL;	
+	memset (&arrayK, 0, sizeof(arrayK) );
+	memset (&arrayD, 0, sizeof(arrayD) );
 
-	arrayD.flags = 0;
+	arrayK.data  = key;
+	arrayK.size  = keyL;
 
 	ret = (*array)->get(*array, NULL, &arrayK, &arrayD, 0);
 	if (ret) {
 		*data=NULL;
 		dataL=0;
+        //fprintf(stderr, "%s\n", db_strerror(ret));
 		return 1;
 	}
 	else {
@@ -111,13 +117,12 @@ int array_get(Parray_t array, void *key, size_t keyL, void **data, size_t *dataL
 
 	JHSG( arrayI, *array, key, keyL );
 
+	*data=arrayI;
 	if (arrayI) { 
-		*data=arrayI;
 		*dataL=sizeof(Word_t);
 		return 0;
 	}
 	else {
-		*data=NULL;
 		*dataL=0;
 		return 1;
 	}
@@ -125,11 +130,10 @@ int array_get(Parray_t array, void *key, size_t keyL, void **data, size_t *dataL
 
 }
 
-int array_set(Parray_t array, void *key, size_t keyL, void **data, size_t *dataL ) {
+int array_set(Parray_t array, void *key, size_t keyL, void *data, size_t dataL ) {
 
 #ifdef BDB
 	DBT arrayK, arrayD;
-	Word_t value=0;
 	int ret;
 
 	arrayK.flags = 0;
@@ -137,16 +141,16 @@ int array_set(Parray_t array, void *key, size_t keyL, void **data, size_t *dataL
 	arrayK.size  = keyL;	
 
 	arrayD.flags = 0;
+	arrayD.data  = data;
+	arrayD.size  = dataL;
 
 	ret = (*array)->put(*array, NULL, &arrayK, &arrayD, 0);
 	if (ret) {
-		*data=NULL;
-		dataL=0;
+        fprintf(stderr, "%s\n", db_strerror(ret));
+		exit(1);
 		return 1;
 	}
 	else {
-		*data  = arrayD.data;
-		*dataL = arrayD.size;
 		return 0;
 	}
 #else
@@ -157,17 +161,13 @@ int array_set(Parray_t array, void *key, size_t keyL, void **data, size_t *dataL
 
 	JUDYHSH(array);
 
-	arrayI  = *data;
+	arrayI  = data;
 	JHSI( arrayI, *array, key, keyL );
 
-	*data  = arrayI;
-
 	if (arrayI) { 
-		*dataL = sizeof(Word_t);
 		return 0;
 	}
 	else {
-		*dataL = 0;
 		return 1;
 	}
 #endif
@@ -224,7 +224,6 @@ int array_free( Parray_t array, int contains_pointers ) {
 int array_del( Parray_t array, void *key, size_t keyL ) {
 #ifdef BDB
 	DBT arrayK, arrayD;
-	Word_t value=0;
 	int ret;
 
 	arrayK.flags = 0;

@@ -22,29 +22,29 @@ typedef struct {
 #ifdef BDB
 #define foreach(A,K,V) \
 {                                     \
-	DBC *_arrayC; /*database cursor */ \
-	DBT _arrayKey, _arrayData;          \
-	int _ret;                          \
-	_arrayKey.flags=0;                 \
-	_arrayData.flags=0;                \
-	int _tmp=1; \
+	DBC *_arrayC;                     \
+	DBT _arrayKey, _arrayData;        \
+	int _ret;                         \
+	_arrayKey.flags=0;                \
+	_arrayData.flags=0;               \
+	int _tmp=1;                       \
 	(A)->cursor( (A), NULL, &_arrayC, 0); \
 	while ( \
 		((_ret = _arrayC->get(_arrayC, &_arrayKey, &_arrayData, DB_NEXT)) == 0 ) && \
-		( \
-			( ((K).data=_arrayKey.data ) || 1 ) ||   \
-			( ((K).size=_arrayKey.size ) || 1 ) ||   \
-			( ((V).data=_arrayData.data) || 1 ) ||   \
-			( ((V).size=_arrayData.size) || 1 ) || 1 \
+		( ( \
+			( ((K).data=_arrayKey.data ) || _tmp ) &&   \
+			( ((K).size=_arrayKey.size ) || _tmp ) &&   \
+			( ((V).data=_arrayData.data) || _tmp ) &&   \
+			( ((V).size=_arrayData.size) || _tmp )    ) || _tmp \
 		) \
 	)
 
 #define end_foreach(A,K,V) \
-	if (ret != DB_NOTFOUND) { \
+	if (_ret != DB_NOTFOUND) { \
 		fprintf(stderr,"There was a problem with the bdb in %s() %s:%d. Bailing out.\n", __FUNCTION__, __FILE__, __LINE__); \
 		exit(1); \
 	} \
-	if (arrayC) arrayC->close(arrayC); \
+	if (_arrayC) _arrayC->close(_arrayC); \
 }
 
 #else
@@ -63,10 +63,10 @@ typedef struct {
 	while ( \
 		((((_arrayI) = (Pvoid_t) JudyHSIterNext((A), &(_arrayS), &(_arrayK), &(_arrayKL), &_arrayErr)) != PJERR) && _arrayI ) && \
 		( (\
-			( ((K).data=_arrayK        ) || 1 ) && \
-			( ((K).size=_arrayKL       ) || 1 ) && \
-			( ((V).data=_arrayI        ) || 1 ) && \
-			( ((V).size=sizeof(Pvoid_t)) || 1 )    ) || _tmp \
+			( ((K).data=_arrayK        ) || _tmp ) && \
+			( ((K).size=_arrayKL       ) || _tmp ) && \
+			( ((V).data=_arrayI        ) || _tmp ) && \
+			( ((V).size=sizeof(Pvoid_t)) || _tmp )    ) || _tmp \
 		) \
 	); \
 	if (_arrayI == PJERR) { \
@@ -119,7 +119,7 @@ Word_t   arrayR  = 0;    // general-purpose return value. used generally for del
 
 int array_init( Parray_t array );
 int array_get( Parray_t array, void *key, size_t keyL, void **data, size_t *dataL );
-int array_set( Parray_t array, void *key, size_t keyL, void **data, size_t *dataL );
+int array_set( Parray_t array, void *key, size_t keyL, void  *data, size_t  dataL );
 int array_del( Parray_t array, void *key, size_t keyL );
 int array_free( Parray_t array, int contains_pointers );
 

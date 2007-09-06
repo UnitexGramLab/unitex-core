@@ -41,7 +41,6 @@
 #include "Fst2.h"
 
 #define KEYLENGTH 1024
-#define TMPPREFIX "/var/tmp/Colloc_"
 
 typedef struct {
 	unichar can[32];        // canonical form
@@ -158,15 +157,15 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 		int ret;
 
 		if ( u_strcmp((unichar *)stack->stack[0], (unichar *)stack->stack[1] ) ) { 
-			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
-			pkey+=u_sprintf( pkey, "%S",  (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
+			pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
+			pkey+=u_sprintf( pkey, "%S",  (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
 
 			retvalKL  = pkey-key+1; 
 			retvalKL *= sizeof(unichar);
 			if ( array_get(retval, key, retvalKL, (void**)(&retvalD), &retvalDL ) ) {
 				pkey =key;
-				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
-				pkey+=u_sprintf( pkey, "%S",  (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
+				pkey+=u_sprintf( pkey, "%S ", (unichar *)stack->stack[0] ); // FIXME: need u_snprintf, this may overflow.
+				pkey+=u_sprintf( pkey, "%S",  (unichar *)stack->stack[1] ); // FIXME: need u_snprintf, this may overflow.
 				if ( array_get(retval, key, retvalKL, (void**)(&retvalD), &retvalDL ) ) {
 					cnumu++;
 					retvalD=&value;
@@ -175,7 +174,7 @@ static void comb_l2( Word_t start, struct stack_int *stack, struct stack_int *st
 			}
  
 			(*retvalD)++;
-			array_set( retval, key, retvalKL, (void**)(&retvalD), &retvalDL );
+			array_set( retval, key, retvalKL, (void*)(retvalD), retvalDL );
 			cnum++;
 		}
 	}
@@ -253,6 +252,12 @@ int colloc_compact(Parray_t array, unsigned threshold, int quiet) {
 	return 0;
 }
 
+#define print_status \
+	u_fprintf(stderr,"Snt %8d/%d, %4.3f snt/s, %8d/%8d comb. so far. still ~%8.3f sec. to go. \r", \
+					i, sfst2->number_of_graphs, ((float)(i-prev_i)) / ((float)(ctime-ptime)) , cnum, cnumu, \
+					(ctime-stime) * (end -i) / ((float)i) \
+				) 
+
 array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 	Fst2 *sfst2=NULL;
@@ -322,10 +327,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		sentenceK=0;
 	
 		if ( (time(&ctime)-ptime) && (! option.quiet) ) {
-			u_fprintf(stderr,"Snt %8d/%d, %4.3f snt/s, %8d/%8d comb. so far. still ~%8.3f sec. to go. \r",
-			               i, sfst2->number_of_graphs, ((float)(i-prev_i)) / ((float)(ctime-ptime)) , cnum, cnumu,
-			               (ctime-stime) * (end -i) / ((float)i)
-			         );
+			print_status;
+
 			ptime=ctime;
 			prev_i=i;
 		}
@@ -461,6 +464,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 		if (option.compact) {
 			if (! (i % option.compact) ) {
+				print_status;
 				if (! option.quiet) u_fprintf (stderr, "\ncompacting...");
 				colloc_compact( &retval, option.threshold/(end/option.compact)*(i-start)/option.compact, option.quiet );
 			}

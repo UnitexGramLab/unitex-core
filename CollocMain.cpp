@@ -29,6 +29,7 @@
 #include <unistd.h>
 
 #include "Snt.h"
+#include "Array.h"
 #include "Error.h"
 #include "Unicode.h"
 #include "defines.h"
@@ -308,8 +309,8 @@ int main_Colloc(int argc, char **argv) {
 
 	candidates=colloc_generate_candidates(snt_files, option);
 	colloc_print(candidates, option);
-	//if (! option.quiet) u_fprintf(stderr,"freeing resources...\n");
-	//colloc_free(&candidates);
+	if (! option.quiet) u_fprintf(stderr,"freeing resources...\n");
+	array_free(&candidates, 0);
 	
 	if (! option.quiet) u_fprintf(stderr,"Done.\n");
 	
