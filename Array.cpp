@@ -154,7 +154,7 @@ int array_set(Parray_t array, void *key, size_t keyL, void *data, size_t dataL )
 		return 0;
 	}
 #else
-	if (*dataL > sizeof(Word_t)) {
+	if (dataL > sizeof(Word_t)) {
 		fprintf(stderr,"This array library only accepts word-size values, which is for this machine %d bytes.\n",sizeof(Pvoid_t));
 		exit(1);
 	}

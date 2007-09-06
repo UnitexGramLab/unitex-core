@@ -22,7 +22,6 @@
   
 #include <errno.h>
 #include <stdio.h>
-#include <getopt.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +30,7 @@
 #include "Snt.h"
 #include "Array.h"
 #include "Error.h"
+#include "getopt.h"
 #include "Unicode.h"
 #include "defines.h"
 #include "Alphabet.h"
