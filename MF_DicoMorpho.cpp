@@ -19,7 +19,7 @@
   *
   */
 
-/* Created by Agata Savary (savary@univ-tours.fr)
+/* Created by Agata Savary (agata.savary@univ-tours.fr)
  * Last modification on June 2232005
  */
 //---------------------------------------------------------------------------
