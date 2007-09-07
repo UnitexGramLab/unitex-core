@@ -43,7 +43,6 @@ typedef struct {
 	int token_limit;
 	unsigned threshold;
 	int sentence_only;
-	int clength;
 } freq_opt;
 
 typedef struct {
