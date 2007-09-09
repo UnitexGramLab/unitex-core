@@ -260,8 +260,6 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	Fst2State state;
 	Transition *tran=NULL;
 
-	option.level=3;
-
 	struct stack_int *stack=new_stack_int(2); // start by generating combinations of 2. we'll then try to combine them.
 	                                          // if this changes, comb_l2 should be adjusted accordingly.
 	unichar *input, *c, *d,key[KEYLENGTH];

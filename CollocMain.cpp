@@ -97,6 +97,7 @@ int main_Colloc(int argc, char **argv) {
 	const struct option longopts[] = { 
 		 {        "help",       no_argument, NULL, '?' }
 		,{   "threshold", required_argument, NULL, 'h' }
+		,{       "level", required_argument, NULL, 'l' }
 		,{     "compact", required_argument, NULL, 'm' }
 		,{       "quiet",       no_argument, NULL, 'q' }	
 		,{       "range", required_argument, NULL, 'r' }
@@ -115,7 +116,7 @@ int main_Colloc(int argc, char **argv) {
 	option.quiet     = 0;
 	option.level     = 0;
 
-	while ((ch = getopt_long(argc, argv, "?c:l:t:w:h:r:m:", longopts, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "?qc:l:t:w:h:r:m:", longopts, &option_index)) != -1) {
 		switch (ch) {
 	
 		case '?':
