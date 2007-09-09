@@ -25,10 +25,6 @@
  *         This File contains the collocation extraction api implementation.
  */
 
-/*
- * Is tested with BDB 4.6.19. may not work with older versions.
- */
-
 #include <Judy.h>
 #include <time.h>
 #include <unistd.h>
@@ -241,7 +237,7 @@ int colloc_compact(Parray_t array, unsigned threshold, int quiet) {
 		foreach (*array, arrayK, arrayD) {
 			if ( (*((Word_t*)(arrayD.data))) <= threshold ) {
 				thrash++;
-				array_del( array, arrayK.data, arrayK.size);
+				array_del( array, arrayK.data, arrayK.size );
 			} 
 		} end_foreach(*array, arrayK, arrayD);
 
@@ -333,7 +329,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 			prev_i=i;
 		}
 
-		while (state) { // here we try to group transitions whose terminal states are the same. FIXME: need confirmation about this.
+		while (state) { // here we try to group transitions whose terminal states are the same.
 			if (tran) {
 				state=sfst2->states[tran->state_number];
 				JLI(sentenceI, sentence, sentenceK );
@@ -465,8 +461,13 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		if (option.compact) {
 			if (! (i % option.compact) ) {
 				print_status;
+
 				if (! option.quiet) u_fprintf (stderr, "\ncompacting...");
-				colloc_compact( &retval, option.threshold/(end/option.compact)*(i-start)/option.compact, option.quiet );
+				colloc_compact( &retval, (i-start) * option.threshold/end, option.quiet );
+
+
+				ptime=ctime;
+				prev_i=i;
 			}
 		}
 	}

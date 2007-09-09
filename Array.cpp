@@ -1,4 +1,46 @@
 
+ /*
+  * Unitex
+  *
+  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  * 
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+  *
+  */
+
+/*
+ * Author: Burak Arslan (arslan@univ-mlv.fr, plq@gsulinux.org)
+ *         This file contains the associative array (BDB-Judy thin abstraction layer) api implementation.
+ */
+
+/*
+ * Uses a modified version of Judy-1.0.3 included in this package. It will *not*
+ * work with other versions. This version was obtained via:
+ *
+ *     svn co http://svn.pugscode.org/pugs/third-party/judy/Judy-1.0.3 -r 10611
+ */
+
+/*
+ * This library is tested with BDB 4.6.19. It may not work with older versions.
+ */
+
+/* 
+ * Example uses of this library (iteration, insertion, deletion, etc) may be 
+ * found in Collocation.cpp
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "Array.h"
@@ -84,6 +126,7 @@ int array_init( Parray_t array ) {
 
 #else
 	*array=NULL;
+
 #endif
 
 }

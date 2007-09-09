@@ -20,6 +20,12 @@
   *
   */
 
+/*
+ * Author: Burak Arslan (arslan@univ-mlv.fr, plq@gsulinux.org)
+ *         This File is the fixed-memory read-only file buffer Buffer_ng api header file.
+ */
+
+
 
 #ifndef BUFFER_NG_H
 #define BUFFER_NG_H
