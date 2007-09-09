@@ -56,15 +56,22 @@ static void usage(int header) {
 		"Parameters:\n"
 		"     -?, --help                    Shows this message\n"
 		"     -h, --threshold               Frequency threshold for printing the results.\n"
+		"     -l, --level=LEVEL             The level of lexical detail in the entries. LEVEL may be\n"
+		"                                   0,1,2 or 3.\n"
+		"                                   0: only lemmatized form:\n"
+		"                                         eg. Paris\n"
+		"                                   1: lemmatized form with POS:\n"
+		"                                         eg. Paris.N\n"
+		"                                   2: lemmatized form with POS and additional semantic info:\n"
+		"                                         eg. Paris.N+PR+DetZ+Toponyme+Ville+IsoFR\n"
+		"                                   3: Full DELA form:\n"
+		"                                         eg. Paris.N+PR+DetZ+Toponyme+Ville+IsoFR:ms:fs\n"
+		"                                   Use this option with caution! Higher levels will increase\n"
+		"                                   memory usage drastically!\n"
 		"     -m, --compact=PERIOD          Compact the array every PERIOD sentences. This means to\n"
 		"                                   prune all the combinations that are below half the\n" 
 		"                                   threshold. This is a simple heuristic to let Colloc parse\n"
-#ifdef BDB
-		"                                   giant corpora. 5000 seems to be a reasonable choice for a\n"
-#else
-		"                                   giant corpora. 10000 seems to be a reasonable choice for a\n"
-#endif
-		"                                   machine with 256MB free physical ram.\n"
+		"                                   giant corpora.\n"
 		"     -q, --quiet                   Dont print anything except the results and errors.\n"
 		"     -r, --range=<range>           Limit number of sentences to process, to get around memory\n"
 		"                                   limitations. <range> is two positive integers with a comma\n"
@@ -106,6 +113,7 @@ int main_Colloc(int argc, char **argv) {
 	option.threshold = 0;
 	option.compact   = 0;
 	option.quiet     = 0;
+	option.level     = 0;
 
 	while ((ch = getopt_long(argc, argv, "?c:l:t:w:h:r:m:", longopts, &option_index)) != -1) {
 		switch (ch) {
@@ -262,6 +270,11 @@ int main_Colloc(int argc, char **argv) {
 			
 			break;
 		}
+
+		case 'l': 
+			STRINGINT(optarg, option.level);
+			break;
+
 		case 'm': {
 			int tmp;
 			STRINGINT(optarg, tmp);
@@ -309,7 +322,7 @@ int main_Colloc(int argc, char **argv) {
 
 	candidates=colloc_generate_candidates(snt_files, option);
 	colloc_print(candidates, option);
-	if (! option.quiet) u_fprintf(stderr,"freeing resources...\n");
+	if (! option.quiet) u_fprintf(stderr,"Freeing resources...\n");
 	array_free(&candidates, 0);
 	
 	if (! option.quiet) u_fprintf(stderr,"Done.\n");

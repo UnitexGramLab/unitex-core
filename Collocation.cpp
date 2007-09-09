@@ -260,6 +260,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	Fst2State state;
 	Transition *tran=NULL;
 
+	option.level=3;
+
 	struct stack_int *stack=new_stack_int(2); // start by generating combinations of 2. we'll then try to combine them.
 	                                          // if this changes, comb_l2 should be adjusted accordingly.
 	unichar *input, *c, *d,key[KEYLENGTH];
@@ -368,9 +370,14 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 							d=u_strchr(     c, '.' );
 
 							if ( c == d ) c=input+1;
-							d=u_strchr(     c, '+' );
-							if (! d) d=u_strchr( c, ':');
-							if (! d) d=u_strchr( c, '}' );
+							if (option.level == 0) {
+								d=u_strchr( c, '.' );
+								if (! d) fatal_error( "format error in %s, state %d transition %d: %S\n",
+								                       snt->text_fst2, tran->state_number, tran->tag_number, input );
+							}
+							if ( (! d) || option.level == 1 ) d=u_strchr( c, '+' );
+							if ( (! d) || option.level == 2 ) d=u_strchr( c, ':' );
+							if ( (! d) || option.level >= 3 ) d=u_strchr( c, '}' );
 
 							if (d) {
 								nodesKL=0;
@@ -378,7 +385,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 									if (*c != ',') key[nodesKL++] = *c;
 
 									if (nodesKL==KEYLENGTH) {
-										fatal_error( "Node key is too long in %s:%d. bailing out.\n", __FILE__, __LINE__ );									
+										fatal_error( "Node key is too long (>%d) in %s:%d. bailing out.\n", KEYLENGTH, __FILE__, __LINE__ );									
 									}
 									c++;
 								}
@@ -389,7 +396,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 							}
 							else {
 								fatal_error( "format error in %s, state %d transition %d: %S\n",
-								                   snt->text_fst2, tran->state_number, tran->tag_number, input );								
+								              snt->text_fst2, tran->state_number, tran->tag_number, input );								
 							}
 						}
 					}
@@ -421,14 +428,10 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 						c=u_strchr( (unichar *)nodesK, '.');
 						if (c) *c=0;
 						if ( (! u_is_word((unichar *)nodesK)) || u_strchr((unichar*)nodesK, ' ') ) {
-//							u_fprintf(stderr,"%S\n",(unichar *)nodesK);
+
 						}
 						else {
-							if (c) {
-								//*c='.'; 
-								c++;
-								nodesKL=c-((unichar*)nodesK); nodesKL*=sizeof(unichar);
-							}
+							if (c) *c='.'; 
 							
 							JHSI( nodesI, *nodes, nodesK, nodesKL );
 							if (! (*((int*)nodesI)) ) *((int*)nodesI)=++index;

@@ -40,6 +40,7 @@ typedef struct {
 	int threshold;
 	int compact;
 	int quiet;
+	int level;
 } colloc_opt;
 
 int     colloc_print(array_t array, colloc_opt option);
