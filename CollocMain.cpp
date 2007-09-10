@@ -313,8 +313,12 @@ int main_Colloc(int argc, char **argv) {
 	struct snt_files* snt_files=NULL;
 	snt_files = new_snt_files_from_path(text_snt);
 
+	if (option.compact && (! option.threshold)) {
+		fatal_error("You must specify a non-null threshold when --compact is enabled.\n");
+	}
+
 #ifdef BDB
-	if (! option.quiet) u_fprintf(stderr, "array_t is using the bdb backend.\n");
+	if (! option.quiet) u_fprintf(stderr, "array_t is using the bdb backend. The temporary database is in /var/tmp/Colloc_%d\n",getpid());
 #else
 	if (! option.quiet) u_fprintf(stderr, "array_t is using the Judy backend.\n");
 #endif

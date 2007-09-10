@@ -295,6 +295,8 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 	array_t retval;
 	array_init(&retval);
 
+	if ( option.compat && (! option.threshold) ) return NULL;
+
 	if (! option.quiet) u_fprintf(stderr,"Generating collocation candidates...\n");
 	time_t ptime=0,ctime,stime;
 
