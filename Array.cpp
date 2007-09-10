@@ -204,8 +204,8 @@ int array_set(Parray_t array, void *key, size_t keyL, void *data, size_t dataL )
 
 	JUDYHSH(array);
 
-	arrayI  = data;
 	JHSI( arrayI, *array, key, keyL );
+	*((Word_t*)arrayI)  = *((Word_t*)data);
 
 	if (arrayI) { 
 		return 0;
