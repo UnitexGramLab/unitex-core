@@ -213,7 +213,7 @@ int colloc_print(array_t array, colloc_opt option) {
 		foreach (array, arrayK, arrayD) {
 			if ( (*((Word_t*)arrayD.data)) > option.threshold ) {
 #ifdef DEBUG_STAT
-				u_printf("[outp] %9d\t%S\n", 
+				u_printf("[outp]\t%9d\t%S\n", 
 #else
 				u_printf("%9d\t%S\n", 
 #endif
@@ -331,7 +331,7 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 		sentenceK=0;
 #ifdef DEBUG_STAT
-		u_printf("[stat] %9d %9d %9d\n", i, cnum, cnumu );
+		u_printf("[stat]\t%9d\t%9d\t%9d\n", i, cnum, cnumu );
 #endif
 		if ( (time(&ctime)-ptime) && (! option.quiet) ) {
 			print_status;
