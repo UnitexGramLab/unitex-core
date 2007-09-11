@@ -95,4 +95,5 @@
 all: .preprocessed
 	unitex/Unitex-Java/Colloc                                               \
 		$(HOME)/unitex/French/Corpus/80jours_snt/ | sort -n > sample_output
+	cat sample_output | cut -b1,9 > veri
 

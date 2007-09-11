@@ -81,6 +81,7 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 # USING TRE LIBRARY
 #
 DEFFLAGS = -D_NOT_UNDER_WINDOWS
+#                                 -DDEBUG_STAT
 #                                 -DBDB
 CFLAGS   = -Wall -W 
 ifeq ($(DEBUG), yes)

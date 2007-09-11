@@ -212,7 +212,14 @@ int colloc_print(array_t array, colloc_opt option) {
 		arrayI_t arrayK,arrayD;
 		foreach (array, arrayK, arrayD) {
 			if ( (*((Word_t*)arrayD.data)) > option.threshold ) {
-				u_printf("%9d\t%S\n", *((Word_t*)(arrayD.data)), (unichar*)(arrayK.data) );
+#ifdef DEBUG_STAT
+				u_printf("[outp] %9d\t%S\n", 
+#else
+				u_printf("%9d\t%S\n", 
+#endif
+
+					*((Word_t*)(arrayD.data)), (unichar*)(arrayK.data) 
+				);
 			}
 			else { 
 				thrash++;
@@ -323,7 +330,9 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 		tran = state->transitions;
 
 		sentenceK=0;
-	
+#ifdef DEBUG_STAT
+		u_printf("[stat] %9d %9d %9d\n", i, cnum, cnumu );
+#endif
 		if ( (time(&ctime)-ptime) && (! option.quiet) ) {
 			print_status;
 
@@ -467,7 +476,6 @@ array_t colloc_generate_candidates( struct snt_files *snt, colloc_opt option ) {
 
 				if (! option.quiet) u_fprintf (stderr, "\ncompacting...");
 				colloc_compact( &retval, (i-start) * option.threshold/end, option.quiet );
-
 
 				ptime=ctime;
 				prev_i=i;
