@@ -9,6 +9,8 @@
 \usepackage{subfigure}
 \usepackage{graphicx}
 \usepackage{pstricks}
+\usepackage{listings}
+\usepackage{color}
 
 \setlength{\parskip}{8pt plus 8pt minus 8pt}
 \setlength{\itemsep}{12pt}
@@ -24,27 +26,18 @@
 
 \title{Implementation of Collocation Extraction in Unitex}
 \author{B. Burak Arslan}
-\date{\today}
+\date{September 12, 2007}
 
 \begin{document}
 \maketitle
 \begin{abstract}
-Collocation extraction is an elaborate problem in the field of corpus linguistics that requires both statistical and linguistic information in order to be successful. The problem is attracting more attention as the importance of collocations, (aka multi-word expressions) is recognized by the NLP community. In this report, I present the work that I reviewed, and the \texttt{Colloc} module that was the result of this work, by explaining reasons behind taken decisions during the implementation and of course, what remains to be done.
+Collocation extraction is an elaborate problem in the field of corpus linguistics that requires both statistical and linguistic information in order to be successful. The problem is attracting more attention as the importance of collocations, (aka multi-word expressions) is recognized by the NLP community. In this report, I present the work that I reviewed, and the \texttt{Colloc} module that was the result of this work, by explaining reasons behind taken decisions during the implementation, and of course, what remains to be done.
 
 \begin{center}
 \textbf{Résumé}
 \end{center}
 
-Collocation extraction est un problème compliqué du domaine de
-linguistique de corpus qui exige de l'information statistique autant que
-linguistique afin d'obtenir des résultats satisfaisants. Au fur et à
-mesure que l'importance des collocations, (Multi-Word Expressions (MWE)
-étant également un terme populaire) soit aperçue de la communaute du
-TLN, ce problème attire encore plus d'attention. Dans ce rapport, je
-présente le travail que j'ai examiné, avec le module \texttt{Colloc}
-qui en est le résultat, en expliquant les raisons derrière les décisions 
-prises pendant l'implémentation, et bien sûr, ce qui reste à faire.
-
+L'extraction des collocations est un problème compliqué du domaine de la linguistique de corpus qui exige l'utilisation de l'information statistique autant que linguistique afin d'obtenir des résultats satisfaisants. Au fur et à mesure que l'importance des collocations (également Multi-Word Expressions ou MWE) est perçue par la communaute du TLN, ce problème attire davantage l'attention. Dans cette présentation de stage, je présente le travail que j'ai examiné, ainsi que le module \texttt{Colloc} qui en est le résultat, en expliquant les raisons des décisions prises pendant l'implémentation, et bien sûr, ce qu'il reste à faire.
 \end{abstract}
 
 \section{Introduction}
@@ -57,16 +50,16 @@ Another important property of the collocations is the fact that they are languag
 
 When looking for a more formal definition, one observes that many were proposed during the course of the research done on this topic.
 
-Further study of the collocations in the pre-computing era showed that collocations have particular statistical distributions.
-Basing on this information, in \cite{smadja93}, collocations are defined to be ``recurrent combinations of words that co-occur more often than expected by chance and that correspond to arbitrary word usages''.
+Further study of the collocations in the pre-computing era showed that collocations have particular statistical distributions\cite{smadja93}.
+Basing on this information, collocations are defined to be ``recurrent combinations of words that co-occur more often than expected by chance and that correspond to arbitrary word usages''.
 While this purely statistical definition was seemingly correct, later research has shown that collocations that do not manifest any statistical property also seem to exist \cite{1118854}.
 
-According to a more recent work recognizing the importance of MWE-related problems that NLP systems suffer, \cite{sag02multiword}, collocations should rather be defined as: ``idiosyncratic interpretations that cross word boundaries'', which is a more accurate, but much more vague definition which is harder to follow from a computational perspective.
+According to a more recent work\cite{sag02multiword} recognizing the importance of MWE-related problems that NLP systems suffer, collocations should rather be defined as: ``idiosyncratic interpretations that cross word boundaries'', which is a more accurate, but much more vague definition which is harder to track computationally. 
 
 There are many types of collocations which are generally classified basing on their behaviour in real-world corpora. We can say that these types vary between two extremes, based on their rigidness in form. Some collocations are simply words-with-spaces, which are simply words that always follow each other, and receive no morphosyntactic modification no matter the context. These types of collocations are the easiest to extract, especially when they are statistically distinguisable. On the other extreme are collocations that vary wildly in form depending on their context.
 
 \section{Design of a Collocation Extraction System}
-Generally it all boils down to two main issues to be resolved in order to implement a robust system in collocation extraction:
+Generally it all boils down to two main issues to be resolved in order to implement a robust collocation extraction system:
 \begin{enumerate}
 \item There is no general form that defines all collocations. 
 
@@ -75,7 +68,7 @@ Generally it all boils down to two main issues to be resolved in order to implem
       So, a collocation system should incorporate lexical and syntactical knowledge in order to prevent statistical information from fragmenting, and should be robust to such heavy alterations in the form.
 \item As pointed out in \cite{1118854}, collocations may not always carry statistical properties, or may be extremely sparse, even in fairly large corpora.
 
-      While it is accepted that this fact is the result of the nature of the collocations, it is due to the existance of thematic collocations \footnote{ Thematic collocations are what makes up the \emph{lingo} used by people that are somehow organized around a common social or professional activity, and are only encountered in corpora that share that particular theme.} as well.
+      While it is accepted that this fact is the result of the nature of the collocations, it is partly due to the existance of thematic collocations\footnote{which are what makes up the \emph{lingo} used by people that are somehow organized around a common social or professional activity, and are only encountered in corpora that share that particular theme} as well.
 \end{enumerate}
 
 Basically, all of the collocation extraction systems that I reviewed work in three steps:
@@ -88,17 +81,17 @@ Basically, all of the collocation extraction systems that I reviewed work in thr
 The defining steps being identification and elimination, the two may be undistinguishable. Two main approaches exist:
 
 \begin{description}
-\item[Deep parsing:] Apply syntactic analysis to the text (using a deep parser like Fips\cite{fips2007}) and extract collocation candidates basing on syntactic relations between words \cite{SeretanWehrli2006ACL}. This is a relatively complicated approach that requires a full-blown grammar and its parser for the target language.
+\item[Deep parsing:] Apply syntactic analysis to the text (using a deep parser like Fips\cite{fips2007}) and extract collocation candidates basing on relations between words \cite{SeretanWehrli2006ACL}. This is a relatively complicated approach that requires a full-blown grammar and its parser for the target language.
 
-\item[Shallow Parsing:] Treat the text as a linear string of words, and for a given word, count all the occurences of other words in the vicinity of the given word. 
+\item[Shallow Parsing:] Treat the text as a linear string of words, and for a given word, count all the occurences of other words in the neighborhood of the given word. 
 
-But, before making relatively complex operations on raw text, it is always a good idea to apply a few normalizations to the text. So, operations like marking sentence boundaries, lemmatization, POS-tagging etc. simplifies greatly the lives of processess that may follow\cite{smadja93}. These operations are called \emph{shallow parsing} operations, because they don't analyze deeply the structure of the sentence.
+But, before making relatively complex operations on raw text, it is always a good idea to apply a few normalizations to the text. So, operations like marking sentence boundaries, lemmatization, POS-tagging etc. simplifies greatly the lives of processess that may follow\cite{smadja93}. These operations are called \emph{shallow parsing} operations, because they don't seek to obtain the structure of the sentence.
 
 \end{description}
 
-While shallow parsing approach is simpler to adopt, because of combinatorial explosion it is likely to cause, it is desirable to restrain the definition of the ``neighborhood of a word'' to a small number. Smadja, in \cite{smadja93} states that 5 is a reasonable limit while Seretan and Wehrli argue, in \cite{SeretanWehrli2006ACL}, that this limit is too low. In fact, such limits are rather artifical because they are there because of practical reasons (limits of today's modern computers) and not algorithmic ones.
+While shallow parsing approach is simpler to adopt, because combinatorial explosion it is likely to cause, it is desirable to restrain the definition of the ``neighborhood of a word'' to a small number. Smadja, in his work\cite{smadja93}, states that 5 is a reasonable limit while Seretan and Wehrli argue, in \cite{SeretanWehrli2006ACL}, that this limit is too low. They should be right, because in fact, such limits are rather artifical that are put because of practical reasons (limits of today's modern computers) and not algorithmic ones.
 
-I have tried to take the path of shallow parsing, but tried not to introduce artifical constraints in order to simplify memory management.
+I have tried to take the path of shallow parsing, but tried not to introduce any artifical constraints for simplifying memory management.
 
 \subsection{Implementation Details}
 At first, the raw corpus is preprocessed via Unitex' various tools. These tools apply the following operations on the raw corpus:
@@ -107,14 +100,12 @@ At first, the raw corpus is preprocessed via Unitex' various tools. These tools 
 \item Tokenization
 \item Detection of Sentence Boundaries
 \item Lemmatization/POS Tagging
-\item Identification of MWE's of the sort ``words-with-spaces''. Thanks to the lemmatization operation, this process can also capture MWE's that may receive a few lexical alterations. (i.e. the collocation \emph{part of speech} may be seen like \emph{parts of speech} in some places)
+\item Identification of MWE's of the sort ``words-with-spaces''. Thanks to the lemmatization operation, this process can also capture MWE's that may receive a few lexical alterations. (i.e. the collocation \emph{part of speech} that may be seen like \emph{parts of speech} in some places is also recognized) \texttt{Colloc} tries its best to ignore these combined states when encountered in the text automata in order to eliminate invalid pairs they cause.
 \end{enumerate}
 
-This string of operations results in a text automata that results in a kind of 2d array of the form in figure \ref{difint}.
+This string of operations results in a text automata that results in a kind of matrix where for every word $w_i$, there is an interpretation $s_{i,j}$ with $j$ mostly bigger than 1.
 
-\input{difint}
-
-Colloc commuatatively combines these different interpretations two by two, never combining two different interpretations of the same word by also counting the number of occurences of each combination in each phrase. This is where the memory needs may be more than typical, and Colloc contains a user-configurable solution which is what I call \textbf{compacting}. Assuming that a $N$ phrase part of the corpus exhibits the same statistical properties as the whole corpus itself, Colloc may delete, every $N$ sententences combinations that have frequency values below $$(i-s)\frac{t}{e}$$
+\texttt{Colloc} commutatively combines, than counts these different interpretations two by two, never combining two different interpretations of the same word. This is where the memory needs may be more than typical so some precautions are needed to keep the computing environment sane. \texttt{Colloc} contains a user-configurable solution which is what I call \textbf{compacting}. Assuming that a $N$ phrase subset of the corpus exhibits the same statistical properties as the whole corpus itself, \texttt{Colloc} may delete, every $N$ sententences, combinations that have frequency values below $$(i-s)\frac{t}{e}$$
 
 where
 \begin{small}
@@ -126,26 +117,50 @@ where
 	\end{description}
 \end{small}
 
-This algorithm adaptively deletes entries that will seemingly be below the specified threshold in the end of the computation, thus resulting in a much more efficient memory usage. Note that this is optional behaviour that is needed to be enabled via the command lines passed to the \texttt{Colloc} executable.
+This algorithm adaptively deletes entries that will supposedly be below the user-specified threshold in the end of the computation, thus resulting in a much more efficient memory usage. Note that this is optional behaviour that is needed to be enabled via the command line arguments passed to the \texttt{Colloc} executable.
+
+Another precaution is to ignore part of the information that comes from the DELA dictionary entries. Split in levels 0 through 3 in the following manner, it helps the user keep the memory usage to a minimum by discarding information that is not needed.
+	\begin{description}
+		\item [Level 0] 
+			Keeps only lemmatized form:
+
+		      eg. \texttt{Paris}
+		\item [Level 1] lemmatized form with POS:
+
+		      eg. \texttt{Paris.N}
+		\item [Level 2] lemmatized form with POS and additional semantic info:
+
+		      eg. \texttt{Paris.N+PR+DetZ+Toponyme+Ville+IsoFR}
+		\item [Level 3] Full DELA form:
+
+		      eg. \texttt{Paris.N+PR+DetZ+Toponyme+Ville+IsoFR:ms:fs}
+	\end{description}
+
 
 \subsection{What remains to be done}
-Actually, what is described in this report barely scratches the face of the collocation extraction problem. Collocation extraction requires comlex linguistic operations in order to produce competitive results with other work on collocation extraction.
+Actually, what is described in this report barely scratches the face of the collocation extraction problem. Complex linguistic operations are needed to be applied to corpora in order to produce competitive results with other work on collocation extraction. 
 
 \begin{description}
 \item[Detection of boundaries of subordinate clauses]
-	A first step towards obtaining safer word pairs is to combine words that are only in the same subordinate clause in a complex sentence. According to my observations, collocations do not seem to cross subordinate boundaries in a random complex sentence, if they are not the simple sentences themselves. While the problem of detection of the boundaries of subordinate clause(s) in a complex sentence remains mostly an open problem, experiences with a restricted corpus with a simpler subordinate boundary detection system deserves attention. Such a system would drastically reduce the number of bogus combinations, resulting in remarkable performance gains.
+	A first step towards obtaining safer word pairs is to combine words that are only in the same subordinate clause in a complex sentence. According to my observations, collocations do not seem to cross subordinate boundaries in a random complex sentence, if they are not the simple sentences themselves. While the problem of detection of the boundaries of subordinate clause(s) in a complex sentence remains mostly an open problem, experiences with a restricted corpus with a simpler subordinate boundary detection system deserves attention. Such a system would drastically reduce the number of bogus combinations, increasing the success rate of the \texttt{Colloc} module and also resulting in remarkable performance gains.
 
-\item[Safer elimination of pairs]
-	After eliminating as much bogus pairs as possible, one will still end up with invalid word pairs. By invalid, I mean pairs like \emph{le table} or pairs that are statistically very significant like \emph{le le}, \emph{le du} which are out-and-out wrong. Such pairs are possible, as we are combining \emph{all} the words in a sentence in pairs. So, applying linguistic operations like unification will result in pairs with much higher quality.
+\item[Unification]
+	Even after eliminating as much bogus pairs as possible, one will still end up with invalid word pairs. By invalid, I mean pairs like \emph{le table} or pairs that are statistically very significant like \emph{le le}, \emph{le du} which are out-and-out wrong. Such pairs are possible, as we are combining \emph{all} of the words of a sentence in pairs. So, applying linguistic operations like unification will result in pairs with much higher quality.
 
-\item[Elimination of ambiguities]
+\item[Disambiguation]
 	Combinatorial explosion while processing candidates is also due to the fact that more than one interpretation exists for a surface string. So, elimination of incorrect or inappropriate parses will also help increase the efficiency of the program. For example, the pair \emph{le.DET la.DET} is invalid, (which is mostly the case in a French corpus) whereas \emph{le.DET la.N} should be kept.
 
 \item[Smarter thresholding]
-	Thresholding is an effective elimination method when dealing with frequency values. An analysis of 30.485 first phrases of the lm94 corpus shows that 68\% of all pairs have frequencies $\leq 3$. An environment for R\cite{RProject} is saved in \texttt{Unitex-C++/build} directory.
+	Thresholding is an effective elimination method when dealing with frequency data. An analysis of the first 30.485 sentences of the \texttt{lm94}\footnote{Le Monde '94, a ~843.000 sentence corpus of modern French} corpus shows that 85\% of 4.241.598 pairs have frequencies $\leq 3$. \footnote{An environment for R\cite{RProject} is saved in \texttt{Unitex-C++/build} directory, in case one seeks to conduct further statistical analysis. Also see the script \texttt{make\_environment} that comes with this document which creates this environment from scratch.}
 
-\item[Combining pairs]
-	There exist collocations that span more than two words. So, a combination algorithm is needed to be implemented in order to detect such collocations.
+	The weakness of thresholding is its mercilessness. While this method is a very simple and effective way of eliminating most of the pairs that can not be considered as collocations one way or the other, one should either:
+	\begin{enumerate}
+		\item Adopt a reliable method of determining this threshold which should especially tune itself according to the size of the corpora at hand, or
+
+		\item Not rely on thresholding at all and use it as just as a simple filtering mechanism.
+	\end{enumerate}
+
+	\item[Combining pairs] There exist collocations that span more than two words. So, a combination algorithm should be implemented in order to detect such collocations. Note that the current data structure that holds collocation candidates needs to be extended for this purpose because the information about the pairs' origins is currently discarded.
 
 \end{description}
 
@@ -157,7 +172,7 @@ A great deal of my time was spent on optimizing memory usage. I have tried many 
 
 Both are associative arrays of some sort, performing mapping between key-value pairs (which are arbitrary-length binary data). The key difference is that Judy is optimized to be fast, and for in-memory use, while BerkeleyDB is designed as an embedded database that has data security as a first priority instead of speed. BDB's interesting feature was its possibility to be configured as an in-memory associative array, which, once a pre-defined memory limit was reached, started to cache data to disk. While it kept the operating system quite happy, it did not result in a noticable performance increase. BDB is a complex library with many configuration options, so it may be possible to further optimize the BDB configuration in order to obtain more subtle performance gains. That's why I did not drop the BDB support, and actually implemented a thin abstraction layer on top of Judy and BDB, (available in the form of \texttt{array\_*} functions in \texttt{Array.\{ h,cpp \}}) that uses only one of them depending on a compilation flag given in the \texttt{Makefile}.
 
-Another contribution of mine was a read only file buffer that is designed to work on large files. This got required in \texttt{Freq}, my introductory project to Unitex (cf next section). With its \texttt{buffer\_*} functions, one can access an arbitrarily large file, making sure that the memory usage is never more than was specified initially when initializing the buffer. It is optimized to reduce file reads in cases where sequential access to file is needed. It can be found in \texttt{Buffer\_ng.\{h,cpp\}}. When the \texttt{Buffer\_ng.cpp} file is compiled with \texttt{-DBUFFER\_NG\_TEST} option as a standalone executable, it results in a binary that demonstrates the behaviour of \texttt{Buffer\_ng} in different cases.
+Another contribution of mine was a read only file buffer that is designed to work on large files. This got required in \texttt{Freq}, my introductory project to Unitex (cf next section). With its \texttt{buffer\_*} functions, one can access an arbitrarily large file, making sure that the memory usage is never more than was specified initially when initializing the buffer. It is optimized to reduce file reads in cases where sequential access to file is needed. It can be found in \texttt{Buffer\_ng.\{h,cpp\}}. When the \texttt{Buffer\_ng.cpp} file is compiled with \texttt{-DBUFFER\_NG\_TEST} option as a standalone executable, it results in a binary that demonstrates the behaviour of \texttt{Buffer\_ng} in different cases. Instead of using direct system calls, I have used standard file functions in order to increase portability (maybe sacrificing some performance in *nix systems).
 
 \subsection{Frequency Computation}
 I was introduced to the Unitex project by implementing a frequency computation module. It takes as input the \texttt{concord.ind} file produced by the \texttt{Locate} module and the \texttt{text.cod} file produced by the tokenizer, it displays the frequency of all the tokens in the vicinity of the given token(s) in the \texttt{concord.ind} file.
