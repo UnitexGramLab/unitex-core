@@ -19,70 +19,86 @@
   *
   */
 
-//---------------------------------------------------------------------------
+#include "ParsingInfo.h"
+#include "Error.h"
 
-#include "Liste_num.h"
-#include "TransductionVariables.h"
-//---------------------------------------------------------------------------
 
-struct liste_num* new_liste_num(int n,int sommet,unichar pile[],Variables* v) {
-struct liste_num* l;
-l=(struct liste_num*)malloc(sizeof(struct liste_num));
-l->position=n;
-l->suivant=NULL;
-l->sommet=sommet;
-u_strcpy(l->pile,pile);
-l->variable_backup=create_variable_backup(v);
-return l;
+/**
+ * Allocates, initializes and returns a new parsing info structure.
+ */
+struct parsing_info* new_parsing_info(int pos,int stack_pointer,unichar* stack,Variables* v) {
+struct parsing_info* info;
+info=(struct parsing_info*)malloc(sizeof(struct parsing_info));
+if (info==NULL) {
+   fatal_error("Not enough memory in new_parsing_info\n");
+}
+//u_printf("%S\n",stack);
+info->position=pos;
+info->next=NULL;
+info->stack_pointer=stack_pointer;
+info->stack=u_strdup(stack);
+info->variable_backup=create_variable_backup(v);
+return info;
 }
 
 
-/* inserts an element to list_num l only if there is no element with
-   same n (same end position of match) */
-/* may be optimized: Locate with "Ignore outputs" does not need
-   sommet nor pile */
-struct liste_num* inserer_si_absent(int n,struct liste_num* l,int sommet,
-                                    unichar* pile,Variables* v) {
-if (l==NULL) return new_liste_num(n,sommet,pile,v);
-if (l->position==n) {
-  l->sommet=sommet;
-  u_strcpy(l->pile,pile);
-  free_variable_backup(l->variable_backup);
-  l->variable_backup=create_variable_backup(v);
-  return l;
+/**
+ * Frees the whole memory associated to the given information list.
+ */
+void free_parsing_info(struct parsing_info* list) {
+struct parsing_info* tmp;
+while (list!=NULL) {
+   tmp=list->next;
+   free(list->stack);
+   free_variable_backup(list->variable_backup);
+   free(list);
+   list=tmp;
 }
-l->suivant=inserer_si_absent(n,l->suivant,sommet,pile,v);
-return l;
 }
 
 
-/* inserts an element to list_num l only if there is no element with
-   same n _and_ same pile */
-struct liste_num* inserer_si_different(int n,struct liste_num* l,int sommet,
-                                       unichar* pile,Variables* v) {
-if (l==NULL)
-  return new_liste_num(n,sommet,pile,v);
-if ((l->position==n)                       // length is the same
-    && !(u_strcmp(l->pile,pile))) { // stack content, too
-  // overwrite liste_num entry
-  l->sommet=sommet;
-  u_strcpy(l->pile,pile);
-  free_variable_backup(l->variable_backup);
-  l->variable_backup=create_variable_backup(v);
-  return l;
+/**
+ * Inserts an element in the given information list only if there is no element
+ * with same end position of match.
+ */
+struct parsing_info* insert_if_absent(int pos,struct parsing_info* list,int stack_pointer,
+                                      unichar* stack,Variables* v) {
+if (list==NULL) return new_parsing_info(pos,stack_pointer,stack,v);
+if (list->position==pos) {
+   list->stack_pointer=stack_pointer;
+   /* We free the previous stack */
+   free(list->stack);
+   list->stack=u_strdup(stack);
+   free_variable_backup(list->variable_backup);
+   list->variable_backup=create_variable_backup(v);
+   return list;
+}
+list->next=insert_if_absent(pos,list->next,stack_pointer,stack,v);
+return list;
 }
 
-l->suivant=inserer_si_different(n,l->suivant,sommet,pile,v);
-return l;
+
+/**
+ * Inserts an element in the given information list only if there is no element
+ * with position and same stack. */
+struct parsing_info* insert_if_different(int pos,struct parsing_info* list,int stack_pointer,
+                                         unichar* stack,Variables* v) {
+if (list==NULL) return new_parsing_info(pos,stack_pointer,stack,v);
+if ((list->position==pos) /* If the length is the same... */
+    && !(u_strcmp(list->stack,stack))) { /* ...and if the stack content too */
+    /* then we overwrite the current list element */
+   list->stack_pointer=stack_pointer;
+//    /* We free the previous stack */
+//    free(list->stack);
+//    list->stack=u_strdup(stack);
+   free_variable_backup(list->variable_backup);
+   list->variable_backup=create_variable_backup(v);
+   return list;
+}
+/* Otherwise, we look in the rest of the list */
+list->next=insert_if_different(pos,list->next,stack_pointer,stack,v);
+return list;
 }
 
 
-void free_list_num(struct liste_num* l) {
-struct liste_num* tmp;
-while (l!=NULL) {
-   tmp=l->suivant;
-   free_variable_backup(l->variable_backup);
-   free(l);
-   l=tmp;
-}
-}
+

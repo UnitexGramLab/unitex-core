@@ -41,6 +41,10 @@ return alphabet;
  */
 void free_alphabet(Alphabet* alphabet) {
 if (alphabet==NULL) return;
+for (int i=0;i<0x10000;i++) {
+  if (alphabet->t[i]!=NULL)
+    free(alphabet->t[i]);
+}
 free(alphabet);
 }
 

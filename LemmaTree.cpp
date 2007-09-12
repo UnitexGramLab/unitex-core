@@ -52,7 +52,7 @@ return n;
 void free_lemma_node(struct lemma_node* node) {
 if (node==NULL) return;
 if (node->inflected_forms!=NULL) {
-   free(node->inflected_forms);
+   free_list_ustring(node->inflected_forms);
 }
 free_lemma_node_list(node->sons);
 free(node);

@@ -1692,25 +1692,46 @@ return (i-1);
  * Unicode version of strcpy.
  */
 unichar* u_strcpy(unichar* dest,const unichar* src) {
+unichar *s = dest; // backup pointer to start of destination string
 register unichar c;
 do {
    c=*src++;
    *dest++=c;
 } while (c!='\0');
-return dest;
+return s;
 }
 
+
+/**
+ * unicode version of strncpy
+ */
+unichar* u_strncpy(unichar *dest,const unichar *src,int n) {
+register unichar c;
+unichar *s = dest; // backup pointer to start of destination string
+do {
+   c = *src++;
+   *dest++ = c;
+   if (--n == 0)
+     return s;
+} while (c != 0);
+// null-padding
+do
+  *dest++ = 0;
+while (--n > 0);
+return s;
+}
 
 /**
  * Unicode version of strcpy that takes a non unicode source string.
  */
 unichar* u_strcpy(unichar* dest,const char* src) {
+unichar *s = dest; // backup pointer to start of destination string
 register unichar c;
 do {
    c=*src++;
    *dest++=c;
 } while (c!='\0');
-return dest;
+return s;
 }
 
 
@@ -1799,14 +1820,14 @@ return a_c-b_c;
 unichar* u_strdup(const unichar* str) {
 if (str==NULL) return NULL;
 unichar* res=(unichar*)malloc((u_strlen(str)+1)*sizeof(unichar));
-if (res==NULL) {fatal_error("Not enough memory in u_strdup\n");}
-for (int i=0;(res[i]=str[i])!=0;i++);
-return res;
+if (res==NULL) fatal_error("Not enough memory in u_strdup\n");
+return u_strcpy(res,str);
 }
 
 
 /**
- * Unicode version of strdup.
+ * Unicode version of strndup.
+ *   -- why this is then called u_strdup, and not u_strndup? (Sebastian, Munich)
  * This version returns an allocated string that is a copy of the
  * n first bytes of the given one.
  * 
@@ -1814,16 +1835,15 @@ return res;
  */
 unichar* u_strdup(const unichar* str,int n) {
 if (str==NULL) return NULL;
-if (n<0) {fatal_error("Invalid length in u_strdup\n");}
+if (n<0)
+  fatal_error("Invalid length in u_strdup\n");
 int length=u_strlen(str);
-if (length<n) {
-   n=length;
-}
+if (length<n)
+  n=length;
 unichar* res=(unichar*)malloc((n+1)*sizeof(unichar));
-if (res==NULL) {fatal_error("Not enough memory in u_strdup\n");}
-for (int i=0;i<n;i++) {
-   res[i]=str[i];
-}
+if (res==NULL)
+  fatal_error("Not enough memory in u_strdup\n");
+u_strncpy(res,str,n);
 res[n]='\0';
 return res;
 }
@@ -1838,9 +1858,8 @@ return res;
 unichar* u_strdup(const char* str) {
 if (str==NULL) return NULL;
 unichar* res=(unichar*)malloc((strlen(str)+1)*sizeof(unichar));
-if (res==NULL) {fatal_error("Not enough memory in u_strdup\n");}
-for (int i=0;(res[i]=str[i])!=0;i++);
-return res;
+if (res==NULL) fatal_error("Not enough memory in u_strdup\n");
+return u_strcpy(res,str);
 }
 
 

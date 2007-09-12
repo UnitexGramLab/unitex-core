@@ -80,7 +80,9 @@ while (p->current_origin<p->token_buffer->size
        && p->space_policy==DONT_START_WITH_SPACE)) {
       p->stack_base=-1;
       p->stack->stack_pointer=-1;
-      locate(0,initial_state,0,0,NULL,0,NULL,p);
+      struct parsing_info* matches = NULL;
+      locate(0,initial_state,0,0,&matches,0,NULL,p);
+      free_parsing_info(matches);
    }
    p->match_list=save_matches(p->match_list,p->absolute_offset+p->current_origin,out,p);
    (p->current_origin)++;
@@ -286,38 +288,34 @@ if (graph_call_list!=NULL) {
          struct parsing_info* L=NULL;
          p->stack_base=p->stack->stack_pointer;
          locate(graph_depth+1, /* Exploration of the subgraph */
-                      p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
-                      pos,depth+1,&L,0,NULL,p);
+                p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
+                pos,depth+1,&L,0,NULL,p);
          p->stack_base=old_StackBase;
          if (L!=NULL) {
-            /* If there is at least one match, we process the match list */
-            do  {
-               /* We restore the settings of the current graph level */
+           struct parsing_info* L_first=L;
+           /* If there is at least one match, we process the match list */
+           do  {
+             /* We restore the settings of the current graph level */
+             if (p->output_policy!=IGNORE_OUTPUTS) {
+               u_strcpy(&(p->stack->stack[stack_top+1]),L->stack);
+               p->stack->stack_pointer=L->stack_pointer;
+               install_variable_backup(p->variables,L->variable_backup);
+             }
+             /* And we continue the exploration */
+             locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p);
+             p->stack->stack_pointer=stack_top;
+             if (graph_depth==0) {
+               /* If we are at the top graph level, we restore the variables */
                if (p->output_policy!=IGNORE_OUTPUTS) {
-                  u_strcpy(&(p->stack->stack[stack_top+1]),L->stack);
-                  p->stack->stack_pointer=L->stack_pointer;
-                  install_variable_backup(p->variables,L->variable_backup);
+                 install_variable_backup(p->variables,var_backup);
                }
-               /* And we continue the exploration */
-               locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p);
-               p->stack->stack_pointer=stack_top;
-               if (graph_depth==0) {
-                  /* If we are at the top graph level, we restore the variables */
-                  if (p->output_policy!=IGNORE_OUTPUTS) {
-                     install_variable_backup(p->variables,var_backup);
-                  }
-               }
-               struct parsing_info* l_tmp=L;
-               L=L->next;
-               if (p->output_policy!=IGNORE_OUTPUTS) {
-                  /* We free the temporary variable backup, if needed */
-              	   free_variable_backup(l_tmp->variable_backup);
-               }
-               free(l_tmp);
-            }
-          while (L!=NULL);
-        }
-        t=t->next;
+             }
+             L=L->next;
+           }
+           while (L!=NULL);
+           free_parsing_info(L_first); // free all subgraph matches
+         }
+         t=t->next;
       } /* end of while (t!=NULL) */
    } while ((graph_call_list=graph_call_list->next)!=NULL);
    /* Finally, we have to restore the stack and other backup stuff */
