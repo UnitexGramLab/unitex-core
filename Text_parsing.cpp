@@ -313,7 +313,7 @@ if (graph_call_list!=NULL) {
              L=L->next;
            }
            while (L!=NULL);
-           free_parsing_info(L_first); // free all subgraph matches
+           free_parsing_info(L_first); //  free all subgraph matches
          }
          t=t->next;
       } /* end of while (t!=NULL) */
