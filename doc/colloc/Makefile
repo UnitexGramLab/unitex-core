@@ -1,23 +1,22 @@
 all: rap.pdf rap.ps sld.pdf
 
-rap.aux: rap.tex rap.bib difint.tex
+rap.dvi: rap.tex rap.bib difint.tex
 	latex rap.tex
 	bibtex rap
 	latex rap.tex
 	latex rap.tex
 
-rap.pdf: rap.aux
+rap.pdf: rap.dvi
 	dvipdf rap.dvi
-
 
 rap.ps: rap.aux
 	dvips rap.dvi -orap.ps
 
-sld.pdf: sld.tex rap.bib 
+sld.pdf: sld.tex rap.bib comb.png
 	pdflatex sld.tex
 	bibtex sld
 	pdflatex sld.tex
 	pdflatex sld.tex
 
 clean:
-	-rm *.log *.pdf *.dvi *.aux *.bbl *.blg *.ps
+	-rm *.log *.pdf *.dvi *.aux *.bbl *.blg *.ps *.nav *.out *.snm *.toc

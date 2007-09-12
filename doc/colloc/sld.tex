@@ -1,5 +1,5 @@
 
-\documentclass[utf8]{beamer}
+\documentclass[utf8x]{beamer}
 
 \usepackage{beamerthemesplit}
 \usepackage[absolute]{textpos}
@@ -7,12 +7,13 @@
 \title{Collocation Extraction: A study for the Unitex project}
 \author{B.Burak Arslan}
 \institute{Marne-la-Vall\'{e}e University, Paris}
-\date{\today}
+\date{September 12, 2007}
 \bibliographystyle{abbrv}
 
 \setbeamercovered{ transparent=20 }
 
 \begin{document}
+
 \frame{
 	\titlepage
 }
@@ -21,13 +22,22 @@
 	\frametitle{Outline}
 	\tableofcontents
 }
+
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       \tableofcontents[currentsection]
+   \end{frame}
+}
 \section{Collocations}
 \subsection{Definitions}
+
 \frame{
 	\frametitle{ Collocations: An Intuitive Definition }
 	\begin{itemize}
 	\item The term collocation (aka compound word or multi-word expression) is used to represent groups of words that either have slightly different meanings when used together, or have become idiosyncratic with heavy use.
-	\item Has been an active research area even before the computing era.
+	\item An active research area even before the computing era.
 	\item Noticed first as language constructs that, when translated word-by-word from a source language, stand out as awkward at best, for a native speaker of the target language.
 	\end{itemize}
 }
@@ -36,7 +46,7 @@
 	\begin{itemize}
 	\item ``Recurrent combinations of words that co-occur more often than expected by chance and that correspond to arbitrary word usages''	\cite{smadja93}
 		\begin{itemize}
-			\item later research has shown that collocations that do not manifest any statistical property also seem to exist \cite{1118854}.
+			\item later research showed that collocations can't be located by purely statistical methods\cite{1118854}.
 		\end{itemize}
 	\item ``Idiosyncratic interpretations that cross word boundaries''\cite{sag02multiword} 
 		\begin{itemize}
@@ -66,7 +76,7 @@
 \section{Collocation Extraction Systems}
 \subsection{Overview}
 \frame{
-	\frametitle{ Overview I }
+	\frametitle{ Collocation Extraction Systems: Overview I }
 	\begin{itemize}
 	\item Requires both statistical and linguistic information in order to be successful.
 	\item Basically, all of the collocation extraction systems that I reviewed work in three steps:
@@ -78,7 +88,7 @@
 	\end{itemize}
 } 
 \frame{
-	\frametitle{ Overview II }
+	\frametitle{ Collocation Extraction Systems: Overview II }
 	\begin{itemize}
 		\item The defining steps being identification and elimination, the two may be undistinguishable. Two main approaches exist:
 			\begin{itemize}
@@ -111,8 +121,11 @@
 	\begin{itemize}
 		\item \texttt{Colloc} creates commutative pairs, than counts their number of occurences, never combining two different interpretations of the same word. 
 		\item Every \textbf{unique} word combination consumes memory.
-		\item This is where the memory needs may be more than typical.
-		\item So a precaution that I call \textbf{compacting} is taken.
+		\item This is where the memory needs may be more than typical. Two precautions:
+		\begin{enumerate}
+			\item \textbf{compacting}
+			\item Dictionary levels
+		\end{enumerate}
 	\end{itemize}
 }
 \frame{
@@ -147,8 +160,26 @@
 \frame{
 	\begin{center}
 	\includegraphics[scale=0.5]{comb.png}	 
-	\small The array that stores this information takes exactly $456.797.420$ bytes in $1^{st}$ entry level 
+	\small The array that stores this information takes exactly $456.797.420$ bytes in entry level 0
 	\end{center}
+}
+
+\subsection{A Sample Run}
+\frame{
+	\frametitle{ Preprocessing }
+	\begin{itemize}
+		\item As a first step the following preprocessing operations are applied:
+			\begin{itemize}
+			\item Normalization
+			\item Tokenization
+			\item Detection of Sentence Boundaries
+			\item Lemmatization/POS Tagging
+				\begin{itemize}
+				\item  Introduces ambiguities that are stored in sentence automata.
+				\end{itemize}
+			\end{itemize}
+
+	\end{itemize}
 }
 \section{Remaining work}
 \frame{
@@ -204,7 +235,7 @@
 	\begin{itemize}
 		\item There exist collocations that span more than two words. 
 		\item Current data structure that holds collocation candidates does not contain which pair comes from which sentence.
-		\item Once this data structure is expanded, collocations can be combined by studying the correlation of appereance between two pairs
+		\item Once this data structure is extended, collocations can be combined by studying the correlation of occurence between two pairs that share a common word.
 	\end{itemize}
 }
 \frame{
