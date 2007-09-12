@@ -278,7 +278,7 @@ int MU_graph_explore_label(MU_graph_label_T* l,Etat_fst q_bis, MU_forms_T* forms
 
 ////////////////////////////////////////////
 // Given the current instantiation of unification variables and of
-// inheritance variables, recursively explore the input of current transition label's input, 
+// inheritance variables, recursively explore the input of current transition label, 
 // knowing that it is a reference to the MU lemma's unit 'u' and its
 // desired morphology is 'l_in_morpho'.
 // Then explore the label's output 'l_out_morpho'.
@@ -759,7 +759,15 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
       MU_delete_inflection(forms);
       return 1;
     }
-    return MU_graph_explore_label_out_rec(l_out_morpho,i_morpho,feat,q_bis,forms);
+    err = MU_graph_explore_label_out_rec(l_out_morpho,i_morpho,feat,q_bis,forms);
+
+    //Delete the current category-value pair
+    f_del_one_morpho(feat, c->cat);
+    //feat->no_cats--;
+
+    //Pass on the error
+    return err;
+      
   }
 
   else {//If the variable not yet instantiated
@@ -796,7 +804,8 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
       }
 
       //Delete the current category-value pair
-      feat->no_cats--;
+      f_del_one_morpho(feat, c->cat)
+  //      feat->no_cats--;
       
       //Delete the current instantiation
       unif_desinstantiate(var);
