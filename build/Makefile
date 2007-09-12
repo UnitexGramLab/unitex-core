@@ -125,7 +125,7 @@ ifeq ($(SYSTEM), mingw32)
 #####################
 #####################
 
-CC = i386-mingw32msvc-g++
+CC      = i386-mingw32msvc-g++
 RM      = rm -f
 INSTALL = cp
 
@@ -554,8 +554,8 @@ EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segt
 
 PROGS__ = $(TEST) 
 
-PROGS = $(CHECKDIC) $(COLLOC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
-		$(EXTRACT) $(FLATTEN) $(FREQ) $(FST2GRF) \
+PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
+		$(EXTRACT) $(FLATTEN) $(FST2GRF) \
 		$(FST2TXT) $(GRF2FST2) $(INFLECT) $(LOCATE) $(MERGETEXTAUTOMATON)\
 		$(NORMALIZE) $(POLYLEX) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TOKENIZE)\
@@ -566,7 +566,10 @@ PROGS = $(CHECKDIC) $(COLLOC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) $(TXT2FST2KR) \
 		$(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR) $(FST2UNAMBIG) $(MULTIFLEX) \
 		$(EXPORTDIC) $(ELAG) $(ELAGCOMP)
-		
+
+ifeq ($(SYSTEM),linux-like)
+PROGS = $(PROGS) $(COLLOC) $(FREQ)
+endif
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
