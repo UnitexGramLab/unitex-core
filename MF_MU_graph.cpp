@@ -804,7 +804,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
       }
 
       //Delete the current category-value pair
-      f_del_one_morpho(feat, c->cat)
+      f_del_one_morpho(feat, c->cat);
   //      feat->no_cats--;
       
       //Delete the current instantiation

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Unitex-C++</name>
+	<name>C++</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -33,32 +33,32 @@
 					<value>all</value>
 				</dictionary>
 				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.arguments</key>
+					<value>SYSTEM=windows</value>
+				</dictionary>
+				<dictionary>
 					<key>org.eclipse.cdt.make.core.build.target.full</key>
 					<value>clean all</value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.build.arguments</key>
-					<value></value>
-				</dictionary>
-				<dictionary>
-					<key>org.eclipse.cdt.make.core.environment</key>
-					<value></value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.useDefaultBuildCmd</key>
 					<value>false</value>
 				</dictionary>
 				<dictionary>
-					<key>org.eclipse.cdt.make.core.enableFullBuild</key>
-					<value>true</value>
+					<key>org.eclipse.cdt.make.core.environment</key>
+					<value></value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.auto</key>
+					<value>all</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.enableAutoBuild</key>
 					<value>true</value>
 				</dictionary>
 				<dictionary>
-					<key>org.eclipse.cdt.make.core.build.target.auto</key>
-					<value>all</value>
+					<key>org.eclipse.cdt.make.core.enableFullBuild</key>
+					<value>true</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.build.target.clean</key>
@@ -66,7 +66,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.build.location</key>
-					<value>/Unitex-C++/build</value>
+					<value>/C++/build</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.core.errorOutputParser</key>
