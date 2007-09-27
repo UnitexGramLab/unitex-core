@@ -839,6 +839,13 @@ return length;
  * - %C for printing a unicode character
  * - %S for printing a unicode string
  * - %R for printing the reversed of a unicode string
+ * - %H combined with one of the 3 previous can be used to display HTML
+ *   things. For instance, if we do u_printf("%HC",c); it will print:
+ *   &lt;   if c='<'
+ *   &gt;   if c='>'
+ *   &amp;  if c='&'
+ *   c      otherwise
+ *   See 'htmlize' for details.
  * 
  * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
@@ -873,7 +880,16 @@ while (*format) {
          case 'H': {
             /* If we have a '%H', it means that we have to print HTML things */
             format++;
-            if (*format=='S') {
+            if (*format=='C' || *format=='c') {
+               /* If we have to print a HTML character */
+               unichar tmp[2];
+               tmp[0]=(unichar)va_arg(list,int);
+               tmp[1]='\0';
+               unichar html[32];
+               int l=htmlize(tmp,html);
+               u_fprints(encoding,html,f);
+               n_printed=n_printed+l;
+            } else if (*format=='S') {
                /* If we have to print a HTML string */
                us=va_arg(list,unichar*);
                if (us==NULL) {
