@@ -167,17 +167,19 @@ i=0;
 n_token=0;
 while (list!=NULL) {
    j=j=get_value_index(list->string,tok,DONT_INSERT);
-   if (j==-1) {
-      /* If a token of a compound word is not a token of the text,
-       * then we traduce it by an empty list. We don't raise an
-       * error because if there is by accident a token in a dictionary
-       * that is not in the text, it would block the Locate without
-       * necessity. */
-      tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
-      tokens[n_token++]=END_CASE_VARIANT_LIST;
-   } else if (is_letter2(list->string[0],alphabet)) {
+   /* If a token of a compound word is not a token of the text,
+    * we MUST NOT ignore it. For instance, if we have the compound
+    * word "a priori" and if the text only contains "PRIORI", it is not
+    * an error case. The error case is when there is no case equivalent of
+    * "priori" in the text. In such a situation, we traduce it by an empty
+    * list. We don't raise an error because if there is by accident a token
+    * in a dictionary that is not in the text, it would block the Locate
+    * without necessity. */
+   if (is_letter2(list->string[0],alphabet) || j==-1) {
       /* If the current token is made of letters, we look for all
-       * its case variants. */
+       * its case variants. If we have a non letter token that is
+       * not in the text tokens, we handle it here to produce an
+       * empty case variant list. */
       tokens[n_token++]=BEGIN_CASE_VARIANT_LIST;
       ptr=get_token_list_for_sequence(list->string,alphabet,tok);
       struct list_int* ptr_copy=ptr; // s.n.
