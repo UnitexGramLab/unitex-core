@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@
 #define GLOSSANET_ 2
 #define INDEX_ 3
 #define AXIS_ 4
+#define XALIGN_ 5
 
 int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,
                                 int*,int*,int,int,struct conc_opt);
@@ -122,6 +123,7 @@ if (strcmp(option.result_mode,"html") &&
     strcmp(option.result_mode,"text") && 
     strcmp(option.result_mode,"index") && 
     strcmp(option.result_mode,"axis") && 
+    strcmp(option.result_mode,"xalign") && 
     script_glossanet==NULL) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
@@ -133,6 +135,7 @@ if (!strcmp(option.result_mode,"html")) RES=HTML_;
 else if (!strcmp(option.result_mode,"text")) RES=TEXT_;
 else if (!strcmp(option.result_mode,"index")) RES=INDEX_;
 else if (!strcmp(option.result_mode,"axis")) RES=AXIS_;
+else if (!strcmp(option.result_mode,"xalign")) RES=XALIGN_;
 else {
 	RES=GLOSSANET_;
 	/* The structure glossa_hash will be used to ignore duplicate lines
@@ -151,12 +154,16 @@ else {
 strcpy(temp_file_name,option.working_directory);
 strcat(temp_file_name,"concord_.txt");
 strcpy(output_file_name,option.working_directory);
-if (RES==TEXT_ || RES==INDEX_ || RES==AXIS_)
+if (RES==TEXT_ || RES==INDEX_ || RES==AXIS_ || RES==XALIGN_)
 	strcat(output_file_name,"concord.txt");
 else
 	strcat(output_file_name,"concord.html");
 int N_MATCHES;
-f=u_fopen(temp_file_name,U_WRITE);
+
+/* If we are in the 'xalign' mode, we don't need to sort the results.
+ * So, we don't need to store the results in a temporary file */
+if (RES==XALIGN_) f=u_fopen(UTF8,output_file_name,U_WRITE);
+else f=u_fopen(temp_file_name,U_WRITE);
 if (f==NULL) {
 	error("Cannot write %s\n",temp_file_name);
 	return;
@@ -170,6 +177,9 @@ N_MATCHES=create_raw_text_concordance(f,concordance,text,tokens,
                                       option);
 u_fclose(f);
 free(token_length);
+
+if(RES==XALIGN_) return;
+
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
 if (option.sort_mode!=TEXT_ORDER) {
    char** argv;
@@ -205,7 +215,8 @@ if (RES==TEXT_ || RES==INDEX_ || RES==AXIS_) {
    /* If we have to produce a unicode text file, we open it
     * as a unicode one */
    out=u_fopen(output_file_name,U_WRITE);
-} else {
+}
+else {
    /* Otherwise, we open it normally */
    out=fopen(output_file_name,"w");
 }
@@ -458,7 +469,8 @@ u_fprintf(UTF8,f,"</html>\n");
  */
 void move_buffer_to_position(int start_pos,FILE* text,struct text_tokens* tokens,int* token_length,
 					struct buffer* buffer,int *n_units_already_read,
-					int *current_origin_in_chars,int *current_sentence) {
+					int *current_origin_in_chars,int *current_sentence,
+					int * position_from_eos) {
 /* Before moving in the file, buffer[0] contains the token number '*n_units_already_read'.
  * After moving, we want it to contain the token number 'start_pos'-'MAX_CONTEXT_IN_UNITS',
  * so we move of ((start_pos-MAX_CONTEXT_IN_UNITS)-*n_units_already_read) int. */
@@ -472,8 +484,12 @@ while (jump_size!=0) {
 	for (int i=0;i<buffer->size;i++) {
 		/* We update the current position in characters */
 		(*current_origin_in_chars)=(*current_origin_in_chars)+token_length[buffer->int_buffer[i]];
+		(*position_from_eos)=(*position_from_eos)+token_length[buffer->int_buffer[i]];
 		/* And the current sentence number */
-		if (buffer->int_buffer[i]==tokens->SENTENCE_MARKER) {(*current_sentence)++;}
+		if (buffer->int_buffer[i]==tokens->SENTENCE_MARKER) {
+			(*current_sentence)++;
+			(*position_from_eos) = 0;
+		}
 	}
 }
 /* Finally, we update '*n_units_already_read' */
@@ -700,13 +716,13 @@ return 1;
  * see chapter 3.1 in:
  * 
  * Paumier Sébastien, 2003. De la reconnaissance de formes linguistiques à
- * l'analyse syntaxique, Ph.D., Université de Marne-la-Vallée. Downloadable
+ * l'analyse syntaxique, Ph.D., Université Paris-Est Marne-la-Vallée. Downloadable
  * at: http://igm.univ-mlv.fr/LabInfo/theses/
  * 
  * You can also consult (in French too):
  * 
  * Kosawat Krit, 2003. Méthodes de segmentation et d'analyse automatique de
- * textes thaï, Ph.D., Université de Marne-la-Vallée. Downloadable
+ * textes thaï, Ph.D., Université Paris-Est Marne-la-Vallée. Downloadable
  * at: http://igm.univ-mlv.fr/LabInfo/theses/
  */
 void reverse_initial_vowels_thai(unichar* s) {
@@ -754,6 +770,12 @@ while (s[i]!='\0') {
  * is a Thai one. This information is used to compute correctly the context sizes.
  * 
  * The function returns the number of matches actually written to the output file.
+ *
+ * For the xalign mode we produce a concord file with the following information :
+ *
+ *    - Column 1: sentence number
+ *    - Column 2: shift from the beginning of the sentence to the left side of the match
+ *    - Column 3: shift from the beginning of the sentence to the right side of the match
  */
 int create_raw_text_concordance(FILE* output,FILE* concordance,FILE* text,struct text_tokens* tokens,
                                 int expected_result,
@@ -784,6 +806,15 @@ int end_pos_char;
 int current_sentence=1;
 int position_in_chars=0;
 int position_in_tokens=0;
+
+/* Information needed by the 'xalign' mode
+ * - position_from_eos : current position from the beginning of the sentence
+ * - start_from_eos: position of the first character from the beginning of the sentence
+ * - end_from_eos: position of the last character from the beginning of the sentence */
+int position_from_eos=0;
+int start_from_eos=0;
+int end_from_eos=0;
+
 /* Now we can proceed all the matches, assuming that they are sorted by starting
  * position */
 u_printf("Constructing concordance...\n");
@@ -792,8 +823,10 @@ while (matches!=NULL) {
 		&& ((matches->start-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
 		/* If we must change of block... */
       move_buffer_to_position(matches->start,text,tokens,token_length,buffer,&n_units_already_read,
-						&current_origin_in_chars,&current_sentence);
-		/* We update the position in characters so that we know how
+						&current_origin_in_chars,&current_sentence,
+						&position_from_eos);
+		/* We update the position in characters (from the beginning of the text
+		 * and from the beginning of the sentence) so that we know how
 		 * many characters there are before buffer[0]. We update
 		 * the sentence number in the same way. */
 		position_in_chars=current_origin_in_chars;
@@ -810,8 +843,12 @@ while (matches!=NULL) {
 	 * the sentence number in the same way. */
 	for (int z=position_in_tokens;z<start_pos;z++) {
 		start_pos_char=start_pos_char+token_length[buffer->int_buffer[z]];
+		position_from_eos=position_from_eos+token_length[buffer->int_buffer[z]];
+		start_from_eos=position_from_eos;
 		if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
 			current_sentence++;
+			position_from_eos = 0;
+			start_from_eos = 0;
 		}
 	}
 	position_in_chars=start_pos_char;
@@ -820,6 +857,8 @@ while (matches!=NULL) {
 	/* We update 'end_pos_char' in the same way */
 	for (int z=start_pos;z<=end_pos;z++) {
 		end_pos_char=end_pos_char+token_length[buffer->int_buffer[z]];
+		position_from_eos=position_from_eos+token_length[buffer->int_buffer[z]];
+		end_from_eos=position_from_eos;
 	}
 	/* Now we extract the 3 parts of the concordance */
 	extract_left_context(start_pos,left,tokens,option,token_length,buffer);
@@ -840,6 +879,7 @@ while (matches!=NULL) {
 	}
 	/* We compute the shift due to the new lines that count for 2 characters */
 	unichar positions[100];
+	unichar positions_from_eos[100];
 	/* And we use it to compute the bounds of the matched sequence in characters
 	 * from the beginning of the text file. */
 	int shift=get_shift(n_enter_char,enter_pos,matches->start);
@@ -848,8 +888,10 @@ while (matches!=NULL) {
 	 * can occur inside a match. */
 	shift=get_shift(n_enter_char,enter_pos,matches->end);
 	end_pos_char=end_pos_char+shift;
-   /* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
+	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
 	u_sprintf(positions,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence);
+	u_sprintf(positions_from_eos,"%d\t%d\t%d",current_sentence,start_from_eos,end_from_eos);
+	//u_printf("MATCH:%S\t%S\n",positions_from_eos,middle);
 	/* Now we save the concordance line to the output file, but only if
 	 * it's a valid match. */
 	if (is_a_good_match) {
@@ -862,7 +904,10 @@ while (matches!=NULL) {
 		}
 		/* We save the 3 parts of the concordance line according to the sort mode */
 		switch(option.sort_mode) {
-			case TEXT_ORDER:   u_fprintf(output,"%S\t%S\t%S",left,middle,right); break;
+			case TEXT_ORDER:
+			if(expected_result==XALIGN_) u_fprintf(UTF8,output,"%S\t%S",positions_from_eos,middle);
+				else u_fprintf(output,"%S\t%S\t%S",left,middle,right);
+				break;
 			case LEFT_CENTER:  u_fprintf(output,"%R\t%S\t%S",left,middle,right); break;
 			case LEFT_RIGHT:   u_fprintf(output,"%R\t%S\t%S",left,right,middle); break;
 			case CENTER_LEFT:  u_fprintf(output,"%S\t%R\t%S",middle,left,right); break;
@@ -871,12 +916,14 @@ while (matches!=NULL) {
 			case RIGHT_CENTER: u_fprintf(output,"%S\t%S\t%R",right,middle,left);	break;
 		}
 		/* And we add the position information */
-		u_fprintf(output,"%S",positions);
+		if(expected_result!=XALIGN_) u_fprintf(output,"%S",positions);
 		/* And the GlossaNet URL if needed */
 		if (expected_result==GLOSSANET_) {
 			u_fprintf(output,"\t%S",href);
 		}
-		u_fprintf(output,"\n");
+		
+		if(expected_result==XALIGN_) u_fprintf(UTF8,output,"\n");
+		else u_fprintf(output,"\n");
 		/* We increase the number of matches actually written to the output */
 		number_of_matches++;
 	}

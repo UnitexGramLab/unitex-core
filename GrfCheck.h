@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,27 +19,16 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#ifndef VerifierRecursionH
-#define VerifierRecursionH
-//---------------------------------------------------------------------------
+#ifndef GrfCheckH
+#define GrfCheckH
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "Unicode.h"
 #include "Fst2.h"
 
-#warning a degager!
-struct liste_num {
-  int numero;
-  struct liste_num* suivant;
-};
-typedef struct liste_num* Liste_num;
 
+int grf_OK(char*);
 
-
-int pas_de_recursion(char *);
-int chercher_recursion(int,Liste_num,int*,unichar**,Fst2State*,Fst2Tag*,int*);
 
 #endif

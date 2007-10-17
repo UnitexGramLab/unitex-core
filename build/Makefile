@@ -90,7 +90,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".." -IJudy/include
 LIBTRE   = libtre
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre -LJudy/lib -lJudy -ldb
+LIBS   = -Llibtre/lib -ltre -LJudy/lib -lJudy #-ldb
 else
 #
 # IGNORING TRE LIBRARY
@@ -103,7 +103,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".." -I../Judy
 LIBTRE   = 
 CLEAN-LIBTRE   = 
-LIBS   = -LJudy/lib -lJudy -ldb
+LIBS   = -LJudy/lib -lJudy #-ldb
 endif
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -397,7 +397,8 @@ FST2TXT      = Fst2Txt
 FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
                TransductionVariables.o String_hash.o Error.o StringParsing.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
-               Fst2Txt_TokenTree.o Buffer.o Transitions.o
+               Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
+	       Fst2TxtAsRoutine.o
 
 FST2UNAMBIG      = Fst2Unambig
 FST2UNAMBIG_OBJS = Fst2.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o\
@@ -439,7 +440,7 @@ MULTIFLEX_OBJS = Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = IOBuffer.o Normalize.o Unicode.o File.o DELA.o List_ustring.o String_hash.o\
-				Alphabet.o Error.o StringParsing.o Buffer.o
+				Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o
 
 POLYLEX      = PolyLex
 POLYLEX_OBJS = IOBuffer.o PolyLex.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o\
@@ -484,6 +485,18 @@ TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o autalmot.o fst_file.o us
 					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
 					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
 					BitMasks.o FIFO.o Transitions.o
+
+XMLIZER      = XMLizer
+XMLIZER_OBJS = IOBuffer.o Unicode.o Fst2.o Alphabet.o \
+               TransductionVariables.o String_hash.o Error.o StringParsing.o File.o\
+               Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o\
+               NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
+	       XMLizer.o getopt.o
+
+TEI2TXT      = TEI2Txt
+TEI2TXT_OBJS = IOBuffer.o Unicode.o Error.o File.o TEI2Txt.o HTMLCharacters.o\
+               AsciiSearchTree.o getopt.o
+
 
 ######################
 ## Korean programs  ##
@@ -565,7 +578,8 @@ PROGLIST = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(INFLECTKR) $(FST2LIST) $(SUFFORM2RAC) $(COMPRESSKR)\
 		$(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) $(TXT2FST2KR) \
 		$(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR) $(FST2UNAMBIG) $(MULTIFLEX) \
-		$(EXPORTDIC) $(ELAG) $(ELAGCOMP)
+		$(EXPORTDIC) $(ELAG) $(ELAGCOMP) \
+		$(XMLIZER) $(TEI2TXT)
 
 ifeq ($(SYSTEM),linux-like)
 PROGS = $(PROGLIST) $(COLLOC) $(FREQ)
@@ -588,7 +602,8 @@ OBJS  = $(CHECKDIC_OBJS) $(COLLOC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_
 		$(COMPRESSKR_OBJS) $(FST2LIST_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
 		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(FST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS) \
-		$(TEST_OBJS) $(FSTLOCATE_OBJS) $(EXPORTDIC_OBJS)
+		$(TEST_OBJS) $(FSTLOCATE_OBJS) $(EXPORTDIC_OBJS) \
+		$(XMLIZER_OBJS) $(TEI2TXT_OBJS)
 
 
 ###########################
@@ -701,6 +716,9 @@ install: bin
 	$(INSTALL) $(BINARIES) $(APPDIR)
 
 bin: $(BINARIES)
+
+getopt.o: ../getopt.c
+	$(CC) -c $(CFLAGS) ../getopt.c
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -852,6 +870,12 @@ $(BIN_DIR)$(JAMO2SYL)$(EXTENSION): $(JAMO2SYL_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(EXTRACTCHAR)$(EXTENSION): $(EXTRACTCHAR_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(TEI2TXT)$(EXTENSION): $(TEI2TXT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 #

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,23 +19,30 @@
   *
   */
 
-
-/* Nom 		: compgr.h */
-/* Date 	: juin 98 */
-/* Auteur(s) 	: MAYER Laurent et al */
-
-#ifndef _COMPGR_H_
-#define _COMPGR_H_
+#ifndef ElagRulesCompilationH
+#define ElagRulesCompilationH
 
 #include "autalmot.h"
 
 
+/**
+ * This library provides the tools for compiling Elag rules.
+ * 
+ * Authors: Laurent Mayer et al (1998)
+ *          Olivier Blanc (2002-2006)
+ * Modified by Sébastien Paumier
+ */
+ 
+
+/**
+ * This is the maximum number of constraints for an Elag rule.
+ */
 #define ELAG_MAX_CONSTRAINTS 8
-#define ELAG_UNDEFINED (-1)
 
 
 /**
- * ....
+ * This structure defines a couple of automata. It is used
+ * to store the left and right parts of an Elag rule.
  */
 typedef struct {
    SingleGraph left;
@@ -62,6 +69,6 @@ typedef struct {
 
 
 int compile_elag_grammar(char*,char*);
-int compile_rules(char * rulesname, char * outname);
+int compile_elag_rules(char*,char*);
 
 #endif

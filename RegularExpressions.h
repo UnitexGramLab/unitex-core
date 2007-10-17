@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,33 +19,16 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#ifndef Regular_expressionH
-#define Regular_expressionH
-//---------------------------------------------------------------------------
+#ifndef RegularExpressionsH
+#define RegularExpressionsH
 
 #include "Unicode.h"
 
 
-#define N_ETATS_REG 10000
-
-struct etat_reg {
-  unichar *contenu;
-  struct liste_transitions_reg *l;
-  int nombre_trans;
-};
-typedef struct etat_reg* Etat_reg;
-
-struct liste_transitions_reg {
-  int numero;
-  struct liste_transitions_reg *suivant;
-};
-
+#define REG_EXP_MAX_LENGTH 10000
 
 
 int reg2grf(unichar*,char*);
-Etat_reg nouvel_etat_reg(unichar*);
-int reg_2_grf(unichar*,int*,int*,Etat_reg*,int*);
-void relier_reg(int,int,Etat_reg*);
-void sauver_etats_reg(FILE*,Etat_reg*,int);
+
+
 #endif

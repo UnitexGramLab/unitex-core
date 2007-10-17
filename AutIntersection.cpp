@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -25,149 +25,156 @@
 #include "autalmot.h"
 #include "ElagStateSet.h"
 
-static inline transition_t * trans_extract(transition_t ** trans, symbol_t * s) {
-
-  if (*trans == NULL) { return NULL; }
 
 
-  if (symbol_compare(s, (*trans)->label) == 0) { // match with first trans
-    transition_t * res = *trans;
-    *trans = (*trans)->next;
-    return res;
-  }
-
-  for (transition_t * t = *trans; t->next; t = t->next) {
-    if (symbol_compare(s, t->next->label) == 0) {
-      transition_t * res = t->next;
-      t->next = t->next->next;
+/**
+ * This function looks for a transition of 'trans' that is tagged
+ * with the symbol 's'. If found, the transition is extracted from
+ * the list and returned.
+ */
+Transition* extract_transition(Transition **trans,symbol_t* s) {
+if (*trans==NULL) {
+   return NULL;
+}
+if (symbol_compare(s,(symbol_t*)(*trans)->label)==0) {
+   /* If the first transition is the one we want */
+   Transition* res=*trans;
+   *trans=(*trans)->next;
+   return res;
+}
+for (Transition* t=*trans;t->next!=NULL;t=t->next) {
+   if (symbol_compare(s,(symbol_t*)t->next->label)==0) {
+      Transition* res=t->next;
+      t->next=t->next->next;
       return res;
-    }
-  }
-
-  return NULL;
+   }
+}
+return NULL;
 }
 
 
-
-static inline transition_t * trans_pop(transition_t ** trans) {
-
-  if (*trans == NULL) { return NULL; }
-
-  transition_t * res = *trans;
-  *trans = (*trans)->next;
-  return res;
+/**
+ * Builds the intersection of A's state #q1 and B's state #q2.
+ * Returns the index of the corresponding state in the result
+ * automaton.
+ */
+int intersect_states(SingleGraph res,const SingleGraph A,int q1,
+                     const SingleGraph B,int q2,int** renumber) {
+if (renumber[q1][q2]!=-1) {
+   /* Nothing to do if the job has already been done */
+   return renumber[q1][q2];
 }
-
-
-
-static int inter_state(Fst2Automaton * res, const Fst2Automaton * A, int q1,
-                       const Fst2Automaton * B, int q2, int ** corresp) {
-
-  if (corresp[q1][q2] != -1) { return corresp[q1][q2]; }
-
-  int q = corresp[q1][q2] = autalmot_add_state(res);
-
-  if ((A->states[q1].flags & AUT_INITIAL) && (B->states[q2].flags & AUT_INITIAL)) {
-    autalmot_set_initial(res, q);
-  }
-
-  if ((A->states[q1].flags & AUT_TERMINAL) && (B->states[q2].flags & AUT_TERMINAL)) {
-    autalmot_set_terminal(res, q);
-  }
-
-  transition_t * transA = transitions_dup(A->states[q1].trans);
-  transition_t * transB = transitions_dup(B->states[q2].trans);
-
-/* ZZZ  expand_transitions(transA,transB);*/
-
-  int to;
-  transition_t * transa;
-  transition_t * transb;
-
-  while ((transa = trans_pop(& transA))) {
-
-    /* extract from transB the same labeled trans */
-
-    transb = trans_extract(& transB, transa->label);
-
-    if (transb) {
-
-      to = inter_state(res, A, transa->to, B, transb->to, corresp);
-
-      add_transition(res, q, transa->label, to);
-
-      transition_delete(transb);
-
-    } else {                            // transa has no equiv in transB
-
-      if (B->states[q2].defto != -1) {  // if B[q2] has a defaut trans it matches with transa
-
-	to = inter_state(res, A, transa->to, B, B->states[q2].defto, corresp);
-
-	add_transition(res, q, transa->label, to);
+int q=res->number_of_states;
+renumber[q1][q2]=q;
+SingleGraphState state=add_state(res);
+if (is_initial_state(A->states[q1]) && is_initial_state(B->states[q2])) {
+   /* If both q1 and q2 are initial, then the new state must be too */
+   set_initial_state(state);
+}
+if (is_final_state(A->states[q1]) && is_final_state(B->states[q2])) {
+   /* If both q1 and q2 are final, then the new state must be too */
+   set_final_state(state);
+}
+/* We clone the transitions of q1 and q2 and we expand them in order to
+ * compute their intersection easily */
+Transition* transA=clone_transition_list(A->states[q1]->outgoing_transitions,NULL,(void*(*)(void*))dup_symbol);
+Transition* transB=clone_transition_list(B->states[q2]->outgoing_transitions,NULL,(void*(*)(void*))dup_symbol);
+expand_transitions(transA,transB);
+int destination;
+Transition* transa;
+Transition* transb;
+while (transA!=NULL) {
+   /* We take one transition from q1's ones */
+   transa=transA;
+   transA=transA->next;
+   /* And we take from q2's ones the same, if any */
+   transb=extract_transition(&transB,(symbol_t*)transa->label);
+   if (transb!=NULL) {
+      /* If there is such a transition, we merge A and B's transitions */
+      destination=intersect_states(res,A,transa->state_number,B,transb->state_number,renumber);
+      add_outgoing_transition(res->states[q],transa->label,destination);
+      /* We NULL transa so that we can free transa without affecting
+       * the transition we have just added to q */
+      transa->label=NULL; 
+      /* And we can free B's one */
+      free_Transition(transb,(void(*)(void*))free_symbol);
+   } else {
+      /* If A's transition has no equivalent in B... */
+      if (B->states[q2]->default_state!=-1) {
+         /* ...it can match however with B's default transition, if any */
+         destination=intersect_states(res,A,transa->state_number,B,B->states[q2]->default_state,renumber);
+         add_outgoing_transition(res->states[q],transa->label,destination);
+         /* See above */
+         transa->label=NULL; 
       }
-    }
-
-    transition_delete(transa);
-  }
-
-  if (A->states[q1].defto != -1) { // if A[q1] has une transition par défaut
-    
-    while ((transb = trans_pop(& transB))) {
-      // elle concorde avec toutes les trans restantes dans B[q2]
-
-      to = inter_state(res, A, A->states[q1].defto, B, transb->to, corresp);
-      add_transition(res, q, transb->label, to);
-
-      transition_delete(transb);
-    }
-
-    if (B->states[q2].defto != -1) { // <def> trans
-      res->states[q].defto = inter_state(res, A, A->states[q1].defto,
-                                         B, B->states[q2].defto,
-                                         corresp);
-    }
-
-  } else { transitions_delete(transB); }
-
-  return q;
+   }
+   /* We don't need transa anymore */
+   free_Transition(transa);
+}
+if (A->states[q1]->default_state!=-1) {
+   /* If q1 has a default transition, it will match
+    * with all remaining transitions of B */
+   while (transB!=NULL) {
+      transb=transB;
+      transB=transB->next;
+      destination=intersect_states(res,A,A->states[q1]->default_state,B,transb->state_number,renumber);
+      add_outgoing_transition(res->states[q],transb->label,destination);
+      /* See above */
+      transb->label=NULL;
+      free_Transition(transb);
+   }
+   if (B->states[q2]->default_state!=-1) {
+      /* If both q1 and q2 have default transitions */
+      res->states[q]->default_state=intersect_states(res,A,A->states[q1]->default_state,
+                                         B,B->states[q2]->default_state,renumber);
+   }
+} else {
+   /* We don't need the remaining transitions from transB */
+   free_Transition_list(transB,(void (*)(void*))free_symbol);
+}
+return q;
 }
 
 
-Fst2Automaton * autalmot_intersection(const Fst2Automaton * A, const Fst2Automaton * B) {
-  
-  if ((A->nbinitials > 1) || (B->nbinitials > 1)) {
-    error("a nbstates=%d & b->nbstates=%d\n", A->nbinitials, B->nbinitials);
-    fatal_error("autalmot_inter: non deterministic auto\n");
-  }
+/**
+ * Returns the intersection of the two given automata. A and B
+ * are supposed to be deterministic.
+ */
+SingleGraph elag_intersection(const SingleGraph A,const SingleGraph B) {
+int initial_A=get_initial_state(A);
+int initial_B=get_initial_state(B);
+if (initial_A==-2 || initial_B==-2) {
+   fatal_error("Non deterministic automaton(a) in elag_intersection\n");
+}
 
-
-  Fst2Automaton * res = new_Fst2Automaton(A->name ? A->name : B->name, A->nbstates * B->nbstates);
-
-  if (A->nbinitials == 0 || B->nbinitials == 0) {
-    //    warning("aut-inter: auto is void\n");
-    return res;
-  }
-
-  int ** corresp = (int **) xmalloc(A->nbstates * sizeof(int *));
-
-  int i;
-  for (i = 0; i < A->nbstates; i++) {
-
-    corresp[i] = (int *) xmalloc(B->nbstates * sizeof(int));
-
-    for (int j = 0; j < B->nbstates; j++) { corresp[i][j] = -1; }
-  }
-
-  inter_state(res, A, A->initials[0], B, B->initials[0], corresp);
-
-  autalmot_resize(res);
-
-  for (i = 0; i < A->nbstates; i++) { free(corresp[i]); }
-
-  free(corresp);
-
-  return res;
+if (initial_A==-1 || initial_B==-1) {
+   /* If there is no initial in A or B, then the intersection is empty */
+   return new_SingleGraph(0,PTR_TAGS);
+}
+SingleGraph res=new_SingleGraph(A->number_of_states*B->number_of_states,PTR_TAGS);
+/* We initialize the renumber matrix */
+int** renumber=(int**)malloc(A->number_of_states*sizeof(int*));
+if (renumber==NULL) {
+   fatal_error("Not enough memory in elag_intersection\n");
+}
+int i;
+for (i=0;i<A->number_of_states;i++) {
+   renumber[i]=(int*)malloc(B->number_of_states*sizeof(int));
+   if (renumber[i]==NULL) {
+      fatal_error("Not enough memory in elag_intersection\n");
+   }
+   for (int j=0;j<B->number_of_states;j++) {
+      renumber[i][j]=-1;
+   }
+}
+intersect_states(res,A,initial_A,B,initial_B,renumber);
+resize(res);
+/* And we free the renumber matrix */
+for (i=0;i<A->number_of_states;i++) {
+   free(renumber[i]);
+}
+free(renumber);
+return res;
 }
 
 

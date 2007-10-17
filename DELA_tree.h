@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,36 +19,40 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef Load_DLF_DLCH
 #define Load_DLF_DLCH
-//---------------------------------------------------------------------------
+
+
 #include "Unicode.h"
 #include "DELA.h"
-
-struct noeud_dlf_dlc {
-   struct liste_chaines* liste;
-   struct trans_dlf_dlc* trans;
-};
-
-struct trans_dlf_dlc {
-   unichar c;
-   struct noeud_dlf_dlc* arr;
-   struct trans_dlf_dlc* suivant;
-};
+#include "String_hash.h"
 
 
-struct liste_chaines {
+/* This structure represents a list of DELA entries */
+struct dela_entry_list {
    struct dela_entry* entry;
-   struct liste_chaines* suivant;
+   struct dela_entry_list* next;
 };
 
 
-struct noeud_dlf_dlc* new_noeud_dlf_dlc();
-void free_noeud_dlf_dlc(struct noeud_dlf_dlc*);
-void free_trans_dlf_dlc(struct trans_dlf_dlc*);
-void free_liste_chaines(struct liste_chaines*);
-void load_dlf_dlc(char*,struct noeud_dlf_dlc*);
+/**
+ * This structure is used to associate lists of DELA entries to inflected forms.
+ * Each inflected form is associated to an integer i so that
+ * 'dela_entries[i]' is the list of DELA entries associated to this form.
+ * 'capacity' is the maximum size of this list array and 'size' is its actual
+ * number of elements.
+ */
+struct DELA_tree {
+   struct string_hash* inflected_forms;
+   struct dela_entry_list** dela_entries;
+   int size;
+   int capacity;
+};
+
+
+struct DELA_tree* new_DELA_tree();
+void free_DELA_tree(struct DELA_tree*);
+void load_DELA(char*,struct DELA_tree*);
 
 #endif
 

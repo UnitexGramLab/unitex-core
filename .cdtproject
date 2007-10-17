@@ -49,8 +49,8 @@
 </profile>
 </item>
 <item id="org.eclipse.cdt.core.pathentry">
-<pathentry base-path="Unitex-C++" include="korean" kind="inc" path="" system="true"/>
-<pathentry base-path="Unitex-C++" include="Libtre" kind="inc" path="" system="true"/>
+<pathentry base-path="C++" include="korean" kind="inc" path="" system="true"/>
+<pathentry base-path="C++" include="Libtre" kind="inc" path="" system="true"/>
 <pathentry kind="src" path=""/>
 <pathentry kind="out" path=""/>
 <pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>

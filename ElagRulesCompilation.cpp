@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +19,6 @@
   *
   */
 
-/* compgr.cpp */
-
-/* Date 	: juin 98 */
-/* Auteur(s) 	: MAYER Laurent et al */
-/*                Olivier Blanc 2002-2006 */
-/* compilation des grammaires de levee d ambiguites */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,22 +26,21 @@
 #include <time.h>
 #include "autalmot.h"
 #include "fst_file.h"
-#include "list_aut.h"
-#include "compgr.h"
-#include "utils.h"
+#include "ElagRulesCompilation.h"
 #include "File.h"
 #include "String_hash.h"
 #include "AutConcat.h"
 #include "AutDeterminization.h"
 #include "AutMinimization.h"
 #include "AutComplementation.h"
+#include "AutIntersection.h"
 
 
-
-/* maximum number of state for a grammar before we split it in several fst2 */
-
+/* Maximum number of states for a grammar before we split it in several fst2 */
 #define MAX_GRAM_SIZE   128
 
+/* This constant is used at the time of locating the bounds of Elag rules's parts */
+#define ELAG_UNDEFINED (-1)
 
 
 void split_elag_rule(elRule*);
@@ -62,25 +53,17 @@ SingleGraph combine_constraints(elRule*,int,SingleGraph,SingleGraph,struct strin
 
 
 
-
-static inline void chomp(char * s) {
-  while (*s) {
-    if (*s == '\n' || *s == '\r' || *s == '#') {
-      *s = 0;
-    } else { s++; }
-  }
+/**
+ * Removes everything after a new line or a # in 's'.
+ */
+void chomp(char* s) {
+while (*s!='\0') {
+   if (*s=='\n' || *s=='\r' || *s=='#') {
+      *s='\0';
+   } else {
+      s++;
+   }
 }
-
-
-static inline void strip_extension(char * s) {
-
-  char * p = s + strlen(s) - 1;
-  
-  while (p > s) {
-    if (*p == '.') { *p = 0; break; }
-    if (*p == '/' || *p == '\\') { break; }
-    p--;
-  }
 }
 
 
@@ -109,13 +92,11 @@ for (int i=0;i<A->number_of_states;i++) {
        * its transitions, since the Kleene star transition will
        * include them. We use NULL since we don't want to NULL the
        * symbols that tag transitions, because these symbols can be shared */
-      free_Transition(A->states[i]->outgoing_transitions,NULL);
+      free_Transition_list(A->states[i]->outgoing_transitions,NULL);
       add_outgoing_transition(A->states[i],new_symbol(LEXIC),i);
     }
   }
 }
-
-
 
 
 /**
@@ -142,19 +123,19 @@ return rule;
 }
 
 
-
-static void deleteRegle(elRule * regle) {
-
-  free(regle->name);
-
-  for (int i = 0; i < regle->nbContexts; i++) {
-    free_SingleGraph(regle->contexts[i].right);
-    free_SingleGraph(regle->contexts[i].left);
-  }
-
-  free(regle->contexts);
-
-  free(regle);
+/**
+ * Frees all the memory associated to the given rule, except its
+ * automaton.
+ */
+void free_elRule(elRule* rule) {
+if (rule==NULL) return;
+if (rule->name!=NULL) free(rule->name);
+for (int i=0;i<rule->nbContexts;i++) {
+   free_SingleGraph(rule->contexts[i].right);
+   free_SingleGraph(rule->contexts[i].left);
+}
+free(rule->contexts);
+free(rule);
 }
 
 
@@ -177,7 +158,9 @@ for (int i=0;i<g->number_of_states;i++) {
 
 
 /**
- * 
+ * This function takes an fst2 representing an Elag rule and returns
+ * an automaton A so that the intersection of A and a sentence automaton
+ * reject sequences that are not valid regarding this rule.
  */
 Fst2Automaton* compile_elag_rule(elRule* rule) {
 u_printf("Compiling %s... (%d context%s)\n",rule->name,rule->nbContexts,(rule->nbContexts>1)?"s":"");
@@ -223,12 +206,11 @@ if (result->number_of_states==0) {
    error("Grammar %s forbids everything\n",rule->name);
 }
 u_printf("Grammar %s compiled (%d states)\n",rule->name,result->number_of_states);
-Fst2Automaton* Result=new_Fst2Automaton(NULL,-1);
+Fst2Automaton* Result=new_Fst2Automaton(rule->automaton->name,-1);
 Result->symbols=rule->automaton->symbols;
 Result->automaton=result;
 return Result;
 }
-
 
 
 /**
@@ -245,157 +227,120 @@ Fst2Automaton* A=compile_elag_rule(rule);
 if (A==NULL) {
    fatal_error("Unable to compile rule '%s'\n",grammar);
 }
-error("after compile\n");
-deleteRegle(rule);
-error("after delete\n");
+free_elRule(rule);
 save_automaton(A,elg_file,FST_GRAMMAR);
 free_Fst2Automaton(A);
-error("endofcompile\n");
 return 0;
 }
 
 
-/* Lit les regles de levee d'ambiguites et les compile sous la forme d'automates. 
- * nomFichNomRegles est le fichier des noms des grammaires. 
- * nomFichNomGramm est le fichier de la composition des grammaires compilées.
+/**
+ * This function reads a file that contains a list of Elag grammar names,
+ * and it compiles them into the file 'outname'. However, if the result
+ * automaton is too big, it will be saved in several automata inside
+ * the output file.
  */
-
-
-int compile_rules(char * rulesname, char * outname) {
-
-  u_printf("Compilation of %s\n", rulesname);
-
-  FILE * f = NULL;
-  FILE * frules = fopen(rulesname, "r");
-  if (frules == NULL) { fatal_error("cannot open file '%s'\n", rulesname); }
-
-  FILE * out = fopen(outname, "w");
-  if (out == NULL) { fatal_error("cannot open file '%s'\n", outname); }
-
-  char fstoutname[FILENAME_MAX]; // le nom du fichier qui contient l'automate resultat (fst2)
-
-  int nbregles = 0;
-  char buf[FILENAME_MAX];
-
-  time_t debut = time(0);
-
-  Fst2Automaton * res = NULL, * A;
-  int fstno = 0;
-  Ustring * ustr = new_Ustring();
-
-
-
-
-  while (fgets(buf, FILENAME_MAX, frules)) {
-
-    chomp(buf);
-    if (*buf == 0) { continue; }
-
-    u_printf("\n\n%s ...\n", buf);
-
-    strip_extension(buf);
-    strcat(buf, ".elg");
-
-    if ((f = fopen(buf, "r")) == NULL) { // .elg doesn't exist, making one
-
-      strip_extension(buf);
-      u_printf("precompiling %s.fst2\n", buf);
-
-      strcat(buf, ".fst2");
-      
-      elRule * regle = new_elRule(buf);
-      if (regle == NULL) { fatal_error("unable to read grammar '%s'\n", buf); }
-      
-      if ((A = compile_elag_rule(regle)) == NULL) { fatal_error("unable to compile rule '%s'\n", buf); }
-
-      deleteRegle(regle);
-
-      /* saving result in name.elg  ? */
-      /*
-      strip_extension(buf);
-      strcat(buf, ".elg");
-      autalmot_output_fst2(A, buf, FST_GRAMMAR);
-      */
-    } else {
+int compile_elag_rules(char* rulesname,char* outname) {
+u_printf("Compilation of %s\n",rulesname);
+FILE* f=NULL;
+FILE* frules=fopen(rulesname,"r");
+if (frules==NULL) {
+   fatal_error("Cannot open file '%s'\n",rulesname);
+}
+FILE* out=fopen(outname,"w");
+if (out==NULL) {
+   fatal_error("cannot open file '%s'\n",outname);
+}
+/* Name of the file that contains the result automaton */
+char fstoutname[FILENAME_MAX];
+int nbRules=0;
+char buf[FILENAME_MAX];
+time_t start_time=time(0);
+Fst2Automaton* res=NULL;
+Fst2Automaton* A;
+int fst_number=0;
+Ustring* ustr=new_Ustring();
+while (fgets(buf,FILENAME_MAX,frules)) {
+   /* We read one by one the Elag grammar names in the .lst file */
+   chomp(buf);
+   if (*buf=='\0') {
+      /* If we have an empty line */
+      continue;
+   }
+   u_printf("\n%s...\n",buf);
+   remove_extension(buf);
+   strcat(buf,".elg");
+   if ((f=fopen(buf,"r"))==NULL) {
+      /* If the .elg file doesn't exist, we create one */
+      remove_extension(buf);
+      u_printf("Precompiling %s.fst2\n",buf);
+      strcat(buf,".fst2");
+      elRule* rule=new_elRule(buf);
+      if (rule==NULL) {
+         fatal_error("Unable to read grammar '%s'\n",buf);
+      }
+      if ((A=compile_elag_rule(rule))==NULL) {
+         fatal_error("Unable to compile rule '%s'\n",buf);
+      }
+      free_elRule(rule);
+   } else {
+      /* If there is already .elg, we use it */
       fclose(f);
-      u_printf("using already exiting %s\n", buf);
-      A = load_elag_grammar_automaton(buf);      
-      if (A == NULL) { fatal_error("unable to load '%s'\n", buf); }
-    }
-
-
-    if (A->nbstates == 0) { error("grammar %s forbids everything!\n", buf); }
- 
-    error("regroupe\n");
-
-    printtime(if (res) {
-
-      Fst2Automaton * tmp = res;
-      res = autalmot_intersection(tmp, A);
-      free_Fst2Automaton(tmp);
+      A=load_elag_grammar_automaton(buf);      
+      if (A==NULL) {
+         fatal_error("Unable to load '%s'\n",buf);
+      }
+   }
+   if (A->automaton->number_of_states==0) {
+      error("Grammar %s forbids everything!\n",buf);
+   }
+   if (res!=NULL) {
+      /* If there is already an automaton, we intersect it with the new one */
+      SingleGraph tmp=res->automaton;
+      res->automaton=elag_intersection(tmp,A->automaton);
+      free_SingleGraph(tmp);
       free_Fst2Automaton(A);
-      elag_trim(res);
-
-    } else { res = A; });
-
-    error("regroupe done (nbstates = %d)\n", res->nbstates);
-
-    fprintf(out, "\t%s\n", buf);
-    nbregles++;
-
-
-    if (res->nbstates > MAX_GRAM_SIZE) {
-
+      trim(res->automaton);
+   } else {
+      res=A;
+   }
+   nbRules++;
+   if (res->automaton->number_of_states>MAX_GRAM_SIZE) {
+      /* If the automaton is too large, we will split the grammar
+       * into several automata */
       elag_minimize(res->automaton,res->symbols,1);
-
-      sprintf(fstoutname, "%s-%d.elg", outname, fstno++);
-      fprintf(out, "<%s>\n", fstoutname);
-
-      u_printf("splitting big grammar in '%s' (%d states)\n", fstoutname, res->nbstates);
-
-      u_sprintf(ustr, "%s: compiled elag grammar", fstoutname);
+      sprintf(fstoutname,"%s-%d.elg",outname,fst_number++);
+      fprintf(out,"<%s>\n",fstoutname);
+      u_printf("Splitting big grammar in '%s' (%d states)\n",fstoutname,res->automaton->number_of_states);
+      u_sprintf(ustr,"%s: compiled elag grammar",fstoutname);
       free(res->name);
-      res->name = u_strdup(ustr->str);
-
-      save_automaton(res, fstoutname, FST_GRAMMAR);
-
+      res->name=u_strdup(ustr->str);
+      save_automaton(res,fstoutname,FST_GRAMMAR);
       free_Fst2Automaton(res);
-      res = NULL;
-    }
-  }
-
-
-  
-  if (res) {
-
-    sprintf(fstoutname, "%s-%d.elg", outname, fstno++);
-    fprintf(out, "<%s>\n", fstoutname);
-
-    u_printf("outputing grammar in '%s'(%d states)\n", fstoutname, res->nbstates);
-
-    elag_minimize(res->automaton,res->symbols,1);
-
-    u_sprintf(ustr, "%s: compiled elag grammar", fstoutname);
-    free(res->name);
-    res->name = u_strdup(ustr->str);
-
-    save_automaton(res, fstoutname, FST_GRAMMAR);
-
-    free_Fst2Automaton(res);
-  }
-
-  time_t fin = time(0);
-
-  fclose(frules);
-  fclose(out);
-
-  free_Ustring(ustr);
-
-  u_printf("\ndone.\nElapsed time: %.0f s.\n", difftime(fin, debut));
-
-  u_printf("\n%d rule%s from %s compiled in %s (%d automat%s).\n",
-         nbregles, (nbregles > 1) ? "s" : "", rulesname, outname, fstno, (fstno > 1) ? "a" : "on");
-  return 0;
+      res=NULL;
+   }
+}
+if (res!=NULL) {
+   /* We save the last automaton, if any */
+   sprintf(fstoutname,"%s-%d.elg",outname,fst_number++);
+   fprintf(out,"<%s>\n",fstoutname);
+   u_printf("Saving grammar in '%s'(%d states)\n",fstoutname,res->automaton->number_of_states);
+   elag_minimize(res->automaton,res->symbols,1);
+   u_sprintf(ustr,"%s: compiled elag grammar",fstoutname);
+   free(res->name);
+   res->name=u_strdup(ustr->str);
+   save_automaton(res,fstoutname,FST_GRAMMAR);
+   free_Fst2Automaton(res);
+}
+time_t end_time=time(0);
+fclose(frules);
+fclose(out);
+free_Ustring(ustr);
+u_printf("\nDone.\nElapsed time: %.0f s\n",difftime(end_time,start_time));
+u_printf("\n%d rule%s from %s compiled in %s (%d automat%s)\n",
+         nbRules,(nbRules>1)?"s":"",rulesname,outname,fst_number,
+         (fst_number>1)?"a":"on");
+return 0;
 }
 
 
@@ -440,7 +385,6 @@ for (int q=1;q<res->automaton->number_of_states;q++) {
 free_list_int(list);
 return res;
 }
-
 
 
 /**
@@ -715,105 +659,59 @@ return found;
 }
 
 
-
-
-
-
-/* Parcours de l'ensemble des contraintes. Chaque contrainte est
- * representee par un bit dans la representation binaire de ens.
- * Postcondition : l'automate resultat est deterministe et complet.
- * Il peut ne pas avoir d'etats.
- * 
- * retourne:  (A*.R1 \ (U_{i in ens} (A*.Ci,1))) (R2.A* \ (U_{i not in ens} (Ci,2.A*)))
+/**
+ * For a given set of constraints represented by the bit mask 'constraint_set',
+ * this function returns an automaton A that recognizes all incorrect sequences.
  */
-
-
 SingleGraph combine_constraints(elRule* rule,int constraint_set,SingleGraph anything_R1,
                                 SingleGraph R2_anything,struct string_hash_ptr* symbols) {
-/* a1 will be the union of all the constraint of the given constraint set */
+/* a1 will be the union of all the left parts of the constraints of the
+ * given constraint set */
 SingleGraph a1=new_SingleGraph();
+/* a2 will be the union of all the right parts of the constraints that
+ * are not in the given constraint set */
 SingleGraph a2=new_SingleGraph();
 /* dpc = pow(2,c-1) */
 for (int c=1,dpc=1;c<rule->nbContexts;c++,dpc=dpc<<1) {
    if (dpc & constraint_set) {
       /* If the cth bit of the constraint set is set to 1, then we must 
-       * add the cth constraint to a1 */
+       * add the cth constraint's left part to a1 */
       build_union(a1,clone(rule->contexts[c].left));
       elag_determinize(a1);
       elag_minimize(a1,symbols);
-    } else {    /* le c-ieme bit de ens vaut 0 */
-
+   } else {
+      /* Otherwise, we add the cth constraint's right part to a2 */
       build_union(a2,clone(rule->contexts[c].right));
       elag_determinize(a2);
       elag_minimize(a2,symbols);
-    }
-  }
-
-  error("\nI\n");
-
-  //  debug("U_{i in E} (Ci,1):\n"); autalmot_dump(a1);
-  //  debug("U_{i not in E} (Ci,2):\n"); autalmot_dump(a2);
-
-  /* L(a1) = U_{i in I} R1_i
-   * L(a2) = U_{i not in I} R2_i */
-
-  printtime(prefix_with_everything(a1));
-  
-  printtime(elag_determinize(a1));
-
-  printtime(elag_minimize(a1,symbols));
-
-  printtime(elag_complementation(a1));
-
-  printtime(trim(a1));
-
-  SingleGraph tmp = a1;
-  // ZZZ printtime(a1=autalmot_intersection(a1,anything_R1));
-
-  printtime(free_SingleGraph(tmp));
-
-  printtime(trim(a1));
-
-  printtime(elag_minimize(a1,symbols));  /* emonder a3 ? */
-
-  /* L(a1) =  (A*.R1 \ (U_{i in ens} (A*.Ci,1))) */
-
-  error("\nII\n");
-
-  printtime(suffix_with_everything(a2));
-
-  printtime(elag_determinize(a2));
-
-  printtime(elag_minimize(a2,symbols));
-    
-  printtime(elag_complementation(a2));
-
-  printtime(trim(a2));
-
-  tmp = a2;
-  // ZZZ printtime(a2 = autalmot_intersection(a2, R2_anything));
-  free_SingleGraph(tmp);
-
-
-  /* autalmot_determinize(a2) ; */
-
-  printtime(trim(a2));
-  printtime(elag_minimize(a2,symbols));
-
-  /* L(a2) == (R2.A* \ (U_{i not in ens} (Ci,2.A*))) */
-
-  error("\nIII\n");
-
-  elag_concat(a1,a2,symbols);
-
-  free_SingleGraph(a2);
-
-  printtime(trim(a1));
-
-  printtime(elag_determinize(a1));
-
-  printtime(trim(a1));  /* utile quand tous les etats sont inutiles */
-
-  printtime(elag_minimize(a1,symbols));
-  return a1;
+   }
 }
+prefix_with_everything(a1);
+elag_determinize(a1);
+elag_minimize(a1,symbols);
+elag_complementation(a1);
+trim(a1);
+SingleGraph tmp=a1;
+a1=elag_intersection(a1,anything_R1);
+free_SingleGraph(tmp);
+trim(a1);
+elag_minimize(a1,symbols);
+suffix_with_everything(a2);
+elag_determinize(a2);
+elag_minimize(a2,symbols);
+elag_complementation(a2);
+trim(a2);
+tmp=a2;
+a2=elag_intersection(a2,R2_anything);
+free_SingleGraph(tmp);
+trim(a2);
+elag_minimize(a2,symbols);
+elag_concat(a1,a2,symbols);
+free_SingleGraph(a2);
+trim(a1);
+elag_determinize(a1);
+trim(a1);
+elag_minimize(a1,symbols);
+return a1;
+}
+

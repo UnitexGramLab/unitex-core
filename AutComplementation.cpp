@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,106 +19,85 @@
   *
   */
 
-#include "utils.h"
 #include "autalmot.h"
 #include "symbol_op.h"
+#include "ElagStateSet.h"
+#include "AutComplementation.h"
 
 
-//
-// deprecated
-//
-/* static symbol_t * LEXIC_minus_transitions_old(transition_t * trans) {
-
-  symbol_t * LEX = symbol_LEXIC_new();
-  symbol_t * res = symbol_LEXIC_new();
-
-  while (res && trans) {
-
-    symbol_t * minus = symbol_minus_symbol(LEX, trans->label);
-    symbol_t * tmp   = res;
-
-    res = symbols_inter_symbols(tmp, minus);
-
-    symbols_delete(tmp); symbols_delete(minus);
-    trans = trans->next;
-  }
-
-  symbol_delete(LEX);
-  return res;
-}*/
-
-
-
-static symbol_t * LEXIC_minus_transitions(transition_t * trans) {
-
-  symbol_t * TAB[LANGUAGE->POSs->size];
-
-  int i;
-  for (i = 0; i < LANGUAGE->POSs->size; i++) {
-    TAB[i] = new_symbol_POS((POS_t *) LANGUAGE->POSs->value[i]);
-  }
-
-  while (trans) {
-
-    if (trans->label->type == LEXIC) {
-      for (i = 0; i < LANGUAGE->POSs->size; i++) {
-	free_symbols(TAB[i]);
+/**
+ * This function returns a symbol list that matches
+ * everything but the symbols matched by the given
+ * transition list, or NULL if the transition list
+ * matches everything.
+ */
+symbol_t* LEXIC_minus_transitions(Transition* trans) {
+symbol_t* POS[LANGUAGE->POSs->size];
+int i;
+/* First we build an array containing a full symbol for each POS.
+ * For instance, we could have POS[0]=<A>, POS[1]=<V>, etc. */
+for (i=0;i<LANGUAGE->POSs->size;i++) {
+   POS[i]=new_symbol_POS((POS_t*)LANGUAGE->POSs->value[i]);
+}
+symbol_t* tmp;
+while (trans!=NULL) {
+   tmp=(symbol_t*)trans->label;
+   if (tmp->type==LEXIC) {
+      /* If a transition matches everything, then we can stop
+       * and return NULL */
+      for (i=0;i<LANGUAGE->POSs->size;i++) {
+         free_symbols(POS[i]);
       }
       return NULL;
-    }
-
-    symbol_t * minus = symbols_minus_symbol(TAB[trans->label->POS->index], trans->label);
-    free_symbols(TAB[trans->label->POS->index]);
-    TAB[trans->label->POS->index] = minus;
-
-    trans = trans->next;
-  }
-
-  symbol_t res;
-  res.next = NULL;
-  symbol_t * end = & res;
-
-  for (i = 0; i < LANGUAGE->POSs->size; i++) {
-    concat_symbols(end, TAB[i], & end);
-  }
-
-  return res.next;
+   }
+   /* If we have a transition tagged by <A:s>, we have to replace
+    * the POS array cell #z that corresponds to <A> by POS[z]-<A:s>,
+    * that may give something like POS[z]=<A:p> */
+   symbol_t* minus=symbols_minus_symbol(POS[tmp->POS->index],tmp);
+   free_symbols(POS[tmp->POS->index]);
+   POS[tmp->POS->index]=minus;
+   trans=trans->next;
+}
+/* Finally, we concatenate all the symbols we have computed into
+ * one symbol list */
+symbol_t res;
+res.next=NULL;
+symbol_t* end=&res;
+for (i=0;i<LANGUAGE->POSs->size;i++) {
+   concat_symbols(end,POS[i],&end);
+}
+return res.next;
 }
 
-#define autalmot_complementation2 autalmot_complementation
 
-void autalmot_complementation2(Fst2Automaton * A) {
-
-  int nouvo = autalmot_add_state(A, 0); // dont make it TERMMINAL because flags will be reversed below
-  A->states[nouvo].defto = nouvo;
-
-  for (int q = 0; q < A->nbstates; q++) {
-    if (autalmot_is_final(A, q)) {
-      autalmot_unset_final(A, q);
-    } else { autalmot_set_final(A, q); }
-
-    if (A->states[q].defto == -1) {
-      symbol_t * s = LEXIC_minus_transitions(A->states[q].trans);
-      if (s) {
-	add_transition(A, q, s, nouvo);
-	free_symbols(s);
-	// A->states[q].defto = nouvo;
+/**
+ * Replaces the given automaton by its complement one.
+ */
+void elag_complementation(SingleGraph A) {
+int sink_state_index=A->number_of_states;
+SingleGraphState sink_state=add_state(A);
+/* The sink state is not final (because finalities will be reversed
+ * below), and its default transition loops back on itself */
+sink_state->default_state=sink_state_index;
+for (int q=0;q<A->number_of_states;q++) {
+   /* We reverse the finality of each state */
+   if (is_final_state(A->states[q])) {
+      unset_final_state(A->states[q]);
+   } else {
+      set_final_state(A->states[q]);
+   }
+   if (A->states[q]->default_state==-1) {
+      /* If there is no default transition, we create one that is
+       * tagged by anything but the non default ones */
+      symbol_t* s=LEXIC_minus_transitions(A->states[q]->outgoing_transitions);
+      if (s!=NULL) {
+         add_outgoing_transition(A->states[q],s,sink_state_index);
+         /* We have added a single transition tagged by a symbol list. Now
+          * we replace it by a list of transitions, each one of them
+          * tagged with a single symbol */
+         flatten_transition(A->states[q]->outgoing_transitions);
       }
-    }
-  }
+   }
+}
 }
 
-
-void autalmot_complementation1(Fst2Automaton * A) {
-
-  int nouvo = autalmot_add_state(A, 0); // dont make it TERMMINAL because flags will be reversed below
-  A->states[nouvo].defto = nouvo;
-
-  for (int q = 0; q < A->nbstates; q++) {
-    if (autalmot_is_final(A, q)) {
-      autalmot_unset_final(A, q);
-    } else { autalmot_set_final(A, q); }
-
-    if (A->states[q].defto == -1) { A->states[q].defto = nouvo; }
-  }
-}

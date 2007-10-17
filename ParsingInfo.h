@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2007 Université de Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2007 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,25 +19,41 @@
   *
   */
 
-//---------------------------------------------------------------------------
-#ifndef Liste_numH
-#define Liste_numH
-//---------------------------------------------------------------------------
+#ifndef ParsingInfoH
+#define ParsingInfoH
 
 #include "Unicode.h"
 #include "TransductionVariables.h"
 
-struct liste_num {
-       int position;
-       int sommet;
-       int* variable_backup;
-       struct liste_num* suivant;
-       unichar pile[3000];
+
+/**
+ * This structure is used to store information during the parsing of a text.
+ * It represents the state of the parsing when arriving at the final state of
+ * a subgraph. Such information is represented as a list.
+ */
+struct parsing_info {
+   /* Current position in the text, i.e. position in the text when the
+    * final state of the subgraph was reached. */
+   int position;
+   
+   /* Content of the stack */
+   unichar* stack;
+   /* Stack pointer */
+   int stack_pointer;
+   
+   /* A copy of the variable ranges */
+   int* variable_backup;
+   
+   /* The next element of the list */
+   struct parsing_info* next;
 };
 
-struct liste_num* new_liste_num(int,int,Variables*);
-struct liste_num* inserer_si_absent(int,struct liste_num*,int,unichar*,Variables*);
-struct liste_num* inserer_si_different(int,struct liste_num*,int,unichar*,Variables*);
-void free_list_num(struct liste_num*);
+
+
+struct parsing_info* new_parsing_info(int,int,unichar*,Variables*);
+void free_parsing_info(struct parsing_info*);
+struct parsing_info* insert_if_absent(int,struct parsing_info*,int,unichar*,Variables*);
+struct parsing_info* insert_if_different(int,struct parsing_info*,int,unichar*,Variables*);
+
 
 #endif
