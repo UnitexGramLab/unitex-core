@@ -626,6 +626,9 @@ all: bin
 
 bin: $(LIBTRE) $(LIBJUDY) $(BINARIES)
 
+getopt.o: ../getopt.c
+	$(CC) -c $(CFLAGS) ../getopt.c
+
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
 
