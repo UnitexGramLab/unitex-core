@@ -35,11 +35,11 @@ void usage() {
 	u_printf("Usage: TEI2Txt [-o <output file>] <input file>\n"
 	         "------\n"
 	         "   -h (--help): print this info\n\n"
-	         "   -o (--output): optional output file name (default: file.txt > file.xml)\n\n"
+	         "   -o (--output): optional output file name (default: file.xml > file.txt)\n\n"
 	         "Example:\n"
 	         "--------\n"
-	         "  XMLizer -o result.xml original.txt\n"
-	         "      -> produces a raw text file named 'result.xml' from the TEI file 'original.xml'\n");
+	         "  TEI2Txt -o result.txt original.xml\n"
+	         "      -> produces a raw text file named 'result.txt' from the TEI file 'original.xml'\n");
 }
 
 int main (int argc, char **argv) {
@@ -132,14 +132,19 @@ void tei2txt(char *fin, char *fout) {
 
 	char schars[11];
 
+   int first_sentence=1;
 	int current_state = 0;
+   int inside_sentence=0;
 	while ((i = u_fgetc(UTF8, input)) != EOF) {
 		c = (unichar)i;
 		switch (current_state) {
 			case 0: {
-				if(c == '<') current_state = 1;
+				if(c == '<') {
+               current_state = 1;
+               inside_sentence=0;
+            }
 				else if(c == '&') current_state = 3;
-				else u_fputc(UTF16_LE, c, output);
+				else if (inside_sentence) u_fputc(UTF16_LE, c, output);
 				break;
 			}
 			case 1: {
@@ -156,9 +161,15 @@ void tei2txt(char *fin, char *fout) {
 			case 2: {
 				if(c == ' ' || c == '>') {
 					current_state = 0;
-					u_fputc(UTF16_LE, '{', output);
-					u_fputc(UTF16_LE, 'S', output);
-					u_fputc(UTF16_LE, '}', output);
+               inside_sentence=1;
+               if (!first_sentence) {
+                  u_fputc(UTF16_LE, '\n', output);
+					   u_fputc(UTF16_LE, '{', output);
+					   u_fputc(UTF16_LE, 'S', output);
+					   u_fputc(UTF16_LE, '}', output);
+               } else {
+                  first_sentence=0;
+               }
 				}
 				if(c != '>') {
 					while((i = u_fgetc(UTF8, input)) != EOF) {

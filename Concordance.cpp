@@ -854,11 +854,13 @@ while (matches!=NULL) {
 	position_in_chars=start_pos_char;
 	position_in_tokens=start_pos;
 	end_pos_char=start_pos_char;
+   end_from_eos=start_from_eos;
 	/* We update 'end_pos_char' in the same way */
 	for (int z=start_pos;z<=end_pos;z++) {
 		end_pos_char=end_pos_char+token_length[buffer->int_buffer[z]];
-		position_from_eos=position_from_eos+token_length[buffer->int_buffer[z]];
-		end_from_eos=position_from_eos;
+		//position_from_eos=position_from_eos+token_length[buffer->int_buffer[z]];
+		//end_from_eos=position_from_eos;
+      end_from_eos=end_from_eos+token_length[buffer->int_buffer[z]];
 	}
 	/* Now we extract the 3 parts of the concordance */
 	extract_left_context(start_pos,left,tokens,option,token_length,buffer);
