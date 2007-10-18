@@ -119,10 +119,16 @@ void tei2txt(char *fin, char *fout) {
 				c = (unichar)i;
 
 			j = 0;
-			while((i = u_fgetc(UTF8, input)) != EOF && (c = (unichar)i) != '>') {
+			while((i = u_fgetc(UTF8, input)) != EOF && (c = (unichar)i) != ' '
+               && (c = (unichar)i) != '\t' && (c = (unichar)i) != '\n'
+               && (c = (unichar)i) != '>') {
 				buffer[j++] = c;
 			}
 			buffer[j] = '\0';
+         if (c!='>') {
+            /* We do this because we can find <body ...> */
+            while((i = u_fgetc(UTF8, input)) != EOF && (c = (unichar)i) != '>');
+         }
 			//u_printf("Current tag : <%S>\n", buffer);
 
 			if(!u_strcmp(buffer, body)) break;
