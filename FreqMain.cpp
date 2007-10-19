@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <getopt.h>
+#include "getopt.h"
 #include <errno.h>
 #include <limits.h>
 #include "FreqMain.h"
@@ -54,7 +54,8 @@ static void usage(int header) {
 	if (header) {
 		u_printf("%S",COPYRIGHT);
 		u_printf(
-			"Creates the frequency table of words that were in the vicinity of the given word (in the .ind file)\n\n"
+			"Creates the frequency table of words that were in the vicinity of the\n"
+         "given word (in the .ind file)\n\n"
 		);
 	}
 
@@ -63,16 +64,16 @@ static void usage(int header) {
 		"     Freq [OPTIONS] <snt_directory>\n"
 		"\n"
 		"Parameters:\n"
-		"     -?, --help                  Shows this message\n"
-		"     -t, --threshold=LIMIT       Words with values below LIMIT won't be displayed.\n"
-        "                                 Default: 2\n"
-		"     -a, --text-automata         FIXME: Work on text automata instead of linear text.\n"
-		"                                 (Which should be used for Thai) Implies -s.\n"
-		"     -o, --words-only            Tokens that are not words are ignored.\n"
-		"     -w, --context-width=SIZE    The size of the window the frequency values are\n" 
-        "                                 computed for. Default: 10\n"
-		"     -s, --sentence-only         When counting tokens, don't go beyond sentence\n" 
-        "                                 boundaries\n"
+		" -?, --help                Shows this message\n"
+		" -t, --threshold=LIMIT     Words with values below LIMIT won't be displayed.\n"
+      "                           Default: 2\n"
+		" -a, --text-automata       FIXME: Work on text automata instead of linear text.\n"
+		"                           (Which should be used for Thai) Implies -s.\n"
+		" -o, --words-only          Tokens that are not words are ignored.\n"
+		" -w, --context-width=SIZE  The size of the window the frequency values are\n" 
+      "                           computed for. Default: 10\n"
+		" -s, --sentence-only       When counting tokens, don't go beyond sentence\n" 
+      "                           boundaries\n"
 		"\n"
 		"\n"
 	); 
@@ -85,6 +86,11 @@ static void usage(int header) {
 
 int main_Freq(int argc, char **argv) {
 
+   if (argc==1) {
+      usage(1);
+      exit(0);
+   }
+   
 	char ch;
 	int option_index = 0;
 	
@@ -128,8 +134,7 @@ int main_Freq(int argc, char **argv) {
 		case 'w':
 			STRINGINT(optarg, option.token_limit);
 			if (option.token_limit < 1) {
-				u_printf("context width must be > 0\n\n");
-				exit (EXIT_FAILURE);
+				fatal_error("Context width must be > 0\n\n");
 			}
 			break;
 	
@@ -147,17 +152,14 @@ int main_Freq(int argc, char **argv) {
 	char text_snt[FILENAME_MAX];
 	if (optind < argc) {
 		if (strlen (argv[optind]) > FILENAME_MAX) {
-			u_fprintf(stderr, "`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
-			exit (EXIT_FAILURE);
+			fatal_error("`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
 		}
 		else {
 			get_path ( argv[optind], text_snt );
 	    }
 	}
 	else { 
-		usage(1);
-		u_fprintf(stderr, "Error: no snt directory specified\n\n");
-		exit(EXIT_FAILURE);
+		fatal_error("Error: no snt directory specified\n\n");
 	}
 	
 	struct snt_files* snt_files=NULL;
