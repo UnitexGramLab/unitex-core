@@ -348,8 +348,8 @@ while (meta_list!=NULL) {
        * if we are at the end of the token buffer. With this trick, the morphofilter test
        * will avoid overpassing the end of the token buffer. */
       int morpho_filter_OK=(token2!=-1)?1:0;
-      filter_number=p->tags[t->tag_number]->filter_number;
       #ifdef TRE_WCHAR
+      filter_number=p->tags[t->tag_number]->filter_number;
       if (token2!=-1) {
          morpho_filter_OK=(filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number));
       }
@@ -690,7 +690,9 @@ struct opt_pattern* pattern_list=current_state->compound_patterns;
 while (pattern_list!=NULL) {
    t=pattern_list->transition;
    while (t!=NULL) {
+      #ifdef TRE_WCHAR
       filter_number=p->tags[t->tag_number]->filter_number;
+      #endif
       output=p->tags[t->tag_number]->output;
       end_of_compound=find_compound_word(pos2,pattern_list->pattern_number,p->DLC_tree,p);
       if (end_of_compound!=-1 && !(pattern_list->negation)) {
