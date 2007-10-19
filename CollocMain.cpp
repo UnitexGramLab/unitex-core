@@ -44,7 +44,7 @@ static void usage(int header) {
 	if (header) {
 		u_printf("%S", COPYRIGHT);
 		u_printf(
-			"This is a tool that is aimed to be used to extract collocations. "
+			"This is a tool that is aimed to be used to extract collocations.\n"
 			"It works on the normalized text automata.\n"
 			"\n"
 		);
@@ -54,32 +54,32 @@ static void usage(int header) {
 		"Usage: Colloc [OPTIONS] <snt directory>\n"
 		"\n"
 		"Parameters:\n"
-		"     -?, --help               Shows this message\n"
-		"     -h, --threshold          Frequency threshold for printing the results.\n"
-		"     -l, --level=LEVEL        The level of lexical detail in the entries. LEVEL may be\n"
-		"                              0,1,2 or 3.\n"
-		"                              0: only lemmatized form:\n"
-		"                                    eg. Paris\n"
-		"                              1: lemmatized form with POS:\n"
-		"                                    eg. Paris.N\n"
-		"                              2: lemmatized form with POS and additional semantic info:\n"
-		"                                    eg. Paris.N+PR+DetZ+Toponyme+Ville+IsoFR\n"
-		"                              3: Full DELA form:\n"
-		"                                    eg. Paris.N+PR+DetZ+Toponyme+Ville+IsoFR:ms:fs\n"
-		"                              Use this option with caution! Higher levels will increase\n"
-		"                              memory usage drastically!\n"
-		"     -m, --compact=PERIOD     Compact the array every PERIOD sentences. This means to\n"
-		"                              prune all the combinations that are below half the\n" 
-		"                              threshold. This is a simple heuristic to let Colloc parse\n"
-		"                              giant corpora.\n"
-		"     -q, --quiet              Dont print anything except the results and errors.\n"
-		"     -r, --range=<range>      Limit number of sentences to process, to get around memory\n"
-		"                              limitations. <range> is two positive integers with a comma\n"
-        "                              between. Example: --range=4500,8000\n"
-		"     -t, --strip-tags         POS tags to strip from the collocation candidates.\n"
-		"            =TAG1,TAG2,...    \n"
-		"     -w, --strip-words        Words to strip from the collocation candidates.\n"
-		"            =WORD1,WORD2,...  Uses canonical form of the words.\n"
+		"-?, --help            Shows this message\n"
+		"-h, --threshold       Frequency threshold for printing the results.\n"
+		"-l, --level=LEVEL     The level of lexical detail in the entries. LEVEL\n"
+		"                      may be 0,1,2 or 3.\n"
+		"                      0: only lemmatized form:\n"
+		"                            eg. Paris\n"
+		"                      1: lemmatized form with POS:\n"
+		"                            eg. Paris.N\n"
+		"                      2: lemmatized form with POS and additional semantic info:\n"
+		"                            eg. Paris.N+PR+DetZ+Toponyme+Ville+IsoFR\n"
+		"                      3: Full DELA form:\n"
+		"                            eg. Paris.N+PR+DetZ+Toponyme+Ville+IsoFR:ms:fs\n"
+		"                      Use this option with caution! Higher levels will increase\n"
+		"                      memory usage drastically!\n"
+		"-m, --compact=PERIOD  Compact the array every PERIOD sentences. This means to\n"
+		"                      prune all the combinations that are below half the\n" 
+		"                      threshold. This is a simple heuristic to let Colloc parse\n"
+		"                      giant corpora.\n"
+		"-q, --quiet           Dont print anything except the results and errors.\n"
+		"-r, --range=<range>   Max number of sentences to process, to get around memory\n"
+		"                      limitations. <range> is 2 positive integers with a comma\n"
+      "                      between. Example: --range=4500,8000\n"
+		"-t, --strip-tags      POS tags to strip from the collocation candidates.\n"
+		"    =TAG1,TAG2,...\n"
+		"-w, --strip-words     Words to strip from the collocation candidates.\n"
+		"    =WORD1,WORD2,...  Uses canonical form of the words.\n"
 		"\n"
 	); 
 }
@@ -90,6 +90,11 @@ static void usage(int header) {
  */
 
 int main_Colloc(int argc, char **argv) {
+
+  if (argc==1) {
+   usage(1);
+   exit(0);
+  }
 
 	char ch;
 	int option_index = 0;
@@ -121,7 +126,7 @@ int main_Colloc(int argc, char **argv) {
 	
 		case '?':
 			usage(1);
-			exit(EXIT_SUCCESS);
+			exit(0);
 			break;	
 	
 		case 'h':
@@ -248,23 +253,19 @@ int main_Colloc(int argc, char **argv) {
 				p++;
 			}
 			else {
-				usage(1);
-				u_printf("Invalid argument to --range (-r).\n");
-				exit(EXIT_FAILURE);
+				fatal_error("Invalid argument to --range (-r).\n");
 			}
 
 			STRINGINT(optarg, tmp);
 			if (tmp < 1) {
-				u_printf("the first range value must be bigger than zero.\n\n");
-				exit (EXIT_FAILURE);
+				fatal_error("the first range value must be bigger than zero.\n\n");
 			}
 
 			option.rstart=tmp;
 
 			STRINGINT(p, tmp);
-			if ( option.rstart >= tmp) {
-				u_printf("the second range value must be bigger than the first.\n\n");
-				exit (EXIT_FAILURE);
+			if ( option.rstart >= (unsigned int)tmp) {
+				fatal_error("the second range value must be bigger than the first.\n\n");
 			}
 
 			option.rend=tmp;
@@ -280,8 +281,7 @@ int main_Colloc(int argc, char **argv) {
 			int tmp;
 			STRINGINT(optarg, tmp);
 			if (tmp < 0) {
-				u_printf("compact period must be > 0\n\n");
-				exit (EXIT_FAILURE);
+				fatal_error("compact period must be > 0\n\n");
 			}
 			option.compact=tmp;
 
@@ -297,17 +297,14 @@ int main_Colloc(int argc, char **argv) {
 	char text_snt[FILENAME_MAX];
 	if (optind < argc) {
 		if (strlen (argv[optind]) > FILENAME_MAX) {
-			u_fprintf(stderr, "`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
-			exit (EXIT_FAILURE);
+			fatal_error("`%s' is too long for a file name (max=%d)", argv[optind], FILENAME_MAX);
 		}
 		else {
 			get_path ( argv[optind], text_snt );
 	    }
 	}
 	else { 
-		usage(1);
-		u_fprintf(stderr, "Error: no snt directory specified\n\n");
-		exit(EXIT_FAILURE);
+		fatal_error("Error: no snt directory specified\n\n");
 	}
 	
 	struct snt_files* snt_files=NULL;
@@ -318,19 +315,19 @@ int main_Colloc(int argc, char **argv) {
 	}
 
 #ifdef BDB
-	if (! option.quiet) u_fprintf(stderr, "array_t is using the bdb backend. The temporary database is in /var/tmp/Colloc_%d\n",getpid());
+	if (! option.quiet) error("array_t is using the bdb backend. The temporary database is in /var/tmp/Colloc_%d\n",getpid());
 #else
-	if (! option.quiet) u_fprintf(stderr, "array_t is using the Judy backend.\n");
+	if (! option.quiet) error("array_t is using the Judy backend.\n");
 #endif
 
 	array_t candidates=NULL;
 
 	candidates=colloc_generate_candidates(snt_files, option);
 	colloc_print(candidates, option);
-	if (! option.quiet) u_fprintf(stderr,"Freeing resources...\n");
+	if (! option.quiet) u_printf("Freeing resources...\n");
 	array_free(&candidates, 0);
 	
-	if (! option.quiet) u_fprintf(stderr,"Done.\n");
+	if (! option.quiet) u_printf("Done.\n");
 	
 	return 0;
 }
