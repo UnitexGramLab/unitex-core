@@ -103,7 +103,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".." -I../Judy
 LIBTRE   = 
 CLEAN-LIBTRE   = 
-LIBS   = -LJudy/lib -lJudy #-ldb
+LIBS   = -LJudy/lib -lJudy
 endif
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -202,8 +202,8 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 #
 # USING TRE LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" -L"../Libtre" ../Libtre/tre.lib 
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".."
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L"../Libtre" ../Libtre/tre.lib  -L../$(JUDY_SRC)-win32/lib -lJudy
+INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".." -I"../$(JUDY_SRC)-win32/include"
 # Note: the -I".." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../Libtre" -I"../korean" -I".." 
@@ -213,8 +213,8 @@ else
 #
 # IGNORING TRE LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib"
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../korean" -I".."
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L../$(JUDY_SRC)-win32/lib -lJudy
+INCS =  -I"$(DEVCPP_PATH)/include" -I"../korean" -I".." -I"../$(JUDY_SRC)-win32/include"
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"
@@ -274,7 +274,7 @@ COLLOC_OBJS    = IOBuffer.o Colloc.o CollocMain.o Collocation.o Unicode.o Text_t
 				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
-				Stack_unichar.o Transitions.o Buffer_ng.o
+				Stack_unichar.o Transitions.o Buffer_ng.o getopt.o
 
 COMPRESS      = Compress
 COMPRESS_OBJS = IOBuffer.o Compress.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
@@ -373,7 +373,7 @@ FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.
 				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
-				Stack_unichar.o Transitions.o Buffer_ng.o
+				Stack_unichar.o Transitions.o Buffer_ng.o getopt.o
 
 
 
@@ -584,7 +584,7 @@ PROGLIST = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 ifeq ($(SYSTEM),linux-like)
 PROGS = $(PROGLIST) $(COLLOC) $(FREQ)
 else
-PROGS = $(PROGLIST)
+PROGS = $(PROGLIST) $(COLLOC) $(FREQ)
 endif
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
