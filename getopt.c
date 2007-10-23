@@ -512,7 +512,7 @@ getopt(int nargc, char * const *nargv, const char *options)
 	 * before dropping privileges it makes sense to keep things
 	 * as simple (and bug-free) as possible.
 	 */
-	return (getopt_internal(nargc, nargv, options, NULL, NULL, 0));
+	return (getopt_internal(nargc, nargv, options, NULL, NULL, /*0*/FLAG_PERMUTE));
 }
 #endif /* REPLACE_GETOPT */
 
