@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 	u_printf("\n");
 
 	/* If we have used a temporary file, we delete it */
-	if (tmp_file != argv[1]) { remove(tmp_file); }
+	if (strcmp(tmp_file,argv[1])) { remove(tmp_file); }
 
 	return 0;
 }
