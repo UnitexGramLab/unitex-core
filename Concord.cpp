@@ -52,6 +52,7 @@ u_printf("Usage: Concord <concor> <font> <fontsize> <l> <r> <order> <mode> <alph
        "            text : produces a plain text concordance file\n"
        "            glossanet=<script> : produces a glossanet HTML concordance file\n"
        "            index : produces an index of the concordance\n"
+       "            uima : produces another index of the concordance\n"
        "            axis : produces an axis file for the concordance (cf. [Melamed 06])\n"
        "            xalign : produces an index file for XAlign display\n"
        "            (txt) : produces a file named (txt) which is the SNT file\n"

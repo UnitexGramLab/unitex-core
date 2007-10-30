@@ -160,8 +160,10 @@ get_path(argv[1],option.working_directory);
 option.fontname=argv[2];
 option.fontsize=argv[3];
 option.result_mode=argv[7];
-if (!strcmp(option.result_mode,"index") || !strcmp(option.result_mode,"axis")) {
-   /* We force some options for index and axis files */
+if (!strcmp(option.result_mode,"index") 
+    || !strcmp(option.result_mode,"uima")
+    || !strcmp(option.result_mode,"axis")) {
+   /* We force some options for index, uima and axis files */
    option.left_context=0;
    option.right_context=0;
    option.sort_mode=TEXT_ORDER;

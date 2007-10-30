@@ -36,6 +36,9 @@
 #define AXIS_ 4
 #define XALIGN_ 5
 
+/* UIMA: begin & end positions in chars in the txt file, ignoring {S} */
+#define UIMA_ 6
+
 int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,
                                 int*,int*,int,int,struct conc_opt);
 void compute_token_length(int*,struct text_tokens*);
@@ -122,6 +125,7 @@ if (script_glossanet!=NULL) {
 if (strcmp(option.result_mode,"html") &&
     strcmp(option.result_mode,"text") && 
     strcmp(option.result_mode,"index") && 
+    strcmp(option.result_mode,"uima") && 
     strcmp(option.result_mode,"axis") && 
     strcmp(option.result_mode,"xalign") && 
     script_glossanet==NULL) {
@@ -134,6 +138,7 @@ if (strcmp(option.result_mode,"html") &&
 if (!strcmp(option.result_mode,"html")) RES=HTML_;
 else if (!strcmp(option.result_mode,"text")) RES=TEXT_;
 else if (!strcmp(option.result_mode,"index")) RES=INDEX_;
+else if (!strcmp(option.result_mode,"uima")) RES=UIMA_;
 else if (!strcmp(option.result_mode,"axis")) RES=AXIS_;
 else if (!strcmp(option.result_mode,"xalign")) RES=XALIGN_;
 else {
@@ -154,7 +159,7 @@ else {
 strcpy(temp_file_name,option.working_directory);
 strcat(temp_file_name,"concord_.txt");
 strcpy(output_file_name,option.working_directory);
-if (RES==TEXT_ || RES==INDEX_ || RES==AXIS_ || RES==XALIGN_)
+if (RES==TEXT_ || RES==INDEX_ || RES==UIMA_ || RES==AXIS_ || RES==XALIGN_)
 	strcat(output_file_name,"concord.txt");
 else
 	strcat(output_file_name,"concord.html");
@@ -211,7 +216,7 @@ if (f==NULL) {
 	error("Cannot read %s\n",temp_file_name);
 	return;
 }
-if (RES==TEXT_ || RES==INDEX_ || RES==AXIS_) {
+if (RES==TEXT_ || RES==INDEX_ || RES==UIMA_ || RES==AXIS_) {
    /* If we have to produce a unicode text file, we open it
     * as a unicode one */
    out=u_fopen(output_file_name,U_WRITE);
@@ -375,6 +380,13 @@ while ((c=u_fgetc(f))!=EOF) {
          parse_string(indices,idx,P_SPACE);
          u_fprintf(out,"%S\t%S\n",idx,middle);
       }
+      else if (RES==UIMA_) {
+         char tmp1[100];
+         u_to_char(tmp1,indices);
+         int start,end;
+         sscanf(tmp1,"%d %d",&start,&end);
+         u_fprintf(out,"%d %d\t%S\n",start,end,middle);
+      }
       /* If must must produce an axis file...
          VARIABLES :
          -----------
@@ -470,7 +482,7 @@ u_fprintf(UTF8,f,"</html>\n");
 void move_buffer_to_position(int start_pos,FILE* text,struct text_tokens* tokens,int* token_length,
 					struct buffer* buffer,int *n_units_already_read,
 					int *current_origin_in_chars,int *current_sentence,
-					int * position_from_eos) {
+					int * position_from_eos,int RES) {
 /* Before moving in the file, buffer[0] contains the token number '*n_units_already_read'.
  * After moving, we want it to contain the token number 'start_pos'-'MAX_CONTEXT_IN_UNITS',
  * so we move of ((start_pos-MAX_CONTEXT_IN_UNITS)-*n_units_already_read) int. */
@@ -483,8 +495,12 @@ while (jump_size!=0) {
 	jump_size=jump_size-buffer->size;
 	for (int i=0;i<buffer->size;i++) {
 		/* We update the current position in characters */
-		(*current_origin_in_chars)=(*current_origin_in_chars)+token_length[buffer->int_buffer[i]];
-		(*position_from_eos)=(*position_from_eos)+token_length[buffer->int_buffer[i]];
+      int token_size=0;
+      if (RES!=UIMA_ || buffer->int_buffer[i]!=tokens->SENTENCE_MARKER) {
+         token_size=token_length[buffer->int_buffer[i]];
+      }
+      (*current_origin_in_chars)=(*current_origin_in_chars)+token_size;
+		(*position_from_eos)=(*position_from_eos)+token_size;
 		/* And the current sentence number */
 		if (buffer->int_buffer[i]==tokens->SENTENCE_MARKER) {
 			(*current_sentence)++;
@@ -824,7 +840,7 @@ while (matches!=NULL) {
 		/* If we must change of block... */
       move_buffer_to_position(matches->start,text,tokens,token_length,buffer,&n_units_already_read,
 						&current_origin_in_chars,&current_sentence,
-						&position_from_eos);
+						&position_from_eos,expected_result);
 		/* We update the position in characters (from the beginning of the text
 		 * and from the beginning of the sentence) so that we know how
 		 * many characters there are before buffer[0]. We update
@@ -842,8 +858,12 @@ while (matches!=NULL) {
 	 * many characters there are before buffer[start_pos]. We update
 	 * the sentence number in the same way. */
 	for (int z=position_in_tokens;z<start_pos;z++) {
-		start_pos_char=start_pos_char+token_length[buffer->int_buffer[z]];
-		position_from_eos=position_from_eos+token_length[buffer->int_buffer[z]];
+      int token_size=0;
+      if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
+         token_size=token_length[buffer->int_buffer[z]];
+      }
+		start_pos_char=start_pos_char+token_size;
+		position_from_eos=position_from_eos+token_size;
 		start_from_eos=position_from_eos;
 		if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
 			current_sentence++;
@@ -857,10 +877,12 @@ while (matches!=NULL) {
    end_from_eos=start_from_eos;
 	/* We update 'end_pos_char' in the same way */
 	for (int z=start_pos;z<=end_pos;z++) {
-		end_pos_char=end_pos_char+token_length[buffer->int_buffer[z]];
-		//position_from_eos=position_from_eos+token_length[buffer->int_buffer[z]];
-		//end_from_eos=position_from_eos;
-      end_from_eos=end_from_eos+token_length[buffer->int_buffer[z]];
+		int token_size=0;
+      if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
+         token_size=token_length[buffer->int_buffer[z]];
+      }
+      end_pos_char=end_pos_char+token_size;
+      end_from_eos=end_from_eos+token_size;
 	}
 	/* Now we extract the 3 parts of the concordance */
 	extract_left_context(start_pos,left,tokens,option,token_length,buffer);
