@@ -232,6 +232,7 @@ int debut=p->fst2->initial_states[1];
 p->variables=new_Variables(p->fst2->variables);
 int n_blocks=0;
 u_printf("Block %d",n_blocks);
+int within_tag=0;
 while (p->current_origin<p->text_buffer->size) {
       if (!p->text_buffer->end_of_file
           && p->current_origin>(p->text_buffer->size-2000)) {
@@ -246,7 +247,11 @@ while (p->current_origin<p->text_buffer->size) {
       output[0]='\0';
       head=0;
       input_length=0;
-      if (p->buffer[p->current_origin]!=' ' || p->parsing_mode==PARSING_CHAR_BY_CHAR_WITH_SPACE) {
+      if (p->buffer[p->current_origin]=='{') {
+         within_tag=1;
+      } else if (p->buffer[p->current_origin]=='}') {
+         within_tag=0;
+      } else if (!within_tag && p->buffer[p->current_origin]!=' ' || p->parsing_mode==PARSING_CHAR_BY_CHAR_WITH_SPACE) {
          // we don't start a match on a space
         scan_graph(0,debut,0,0,NULL,p);
       }
@@ -256,13 +261,8 @@ while (p->current_origin<p->text_buffer->size) {
          (p->current_origin)++;
       }
       else {
-           // we increase origine_courante
+           // we increase current_origin
            p->current_origin=p->current_origin+input_length;
-          /* if (buffer[origine_courante]==0x0a) {
-              // we don't want to separate 0d an 0a (\n)
-              origine_courante++;
-              update_position_in_file();
-           }*/
       }
 }
 u_printf("\r                           \n");
