@@ -100,7 +100,7 @@ CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
 endif
-override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".." -I../Judy
+override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".." -IJudy/include
 LIBTRE   = 
 CLEAN-LIBTRE   = 
 LIBS   = -LJudy/lib -lJudy
