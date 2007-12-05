@@ -104,6 +104,7 @@ while (l!=EOF) {
       get_inflection_code(DELAS_entry->semantic_codes[0],inflection_code,code_gramm,&semitic);
       /* And we inflect the word */
       err=SU_inflect(DELAS_entry->lemma,inflection_code,forms,semitic);
+      #warning mettre toutes les entrees sur une meme ligne
       /* Then, we print its inflected forms to the output */
       for (int i=0;i<forms->no_forms;i++) {
          u_fprintf(dlcf,"%S,%S.%S",forms->forms[i].form,DELAS_entry->lemma,code_gramm);
@@ -111,7 +112,7 @@ while (l!=EOF) {
          for (int j=1;j<DELAS_entry->n_semantic_codes;j++) {
             u_fprintf(dlcf,"+%S",DELAS_entry->semantic_codes[j]);
          }
-         #warning que faire si pas de raw_feature ?
+         #warning que faire si pas de raw_feature (exemple ADV) ?
          u_fprintf(dlcf,":%S\n",forms->forms[i].raw_features);
       }
       free_dela_entry(DELAS_entry);
