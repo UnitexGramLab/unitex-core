@@ -112,8 +112,10 @@ while (l!=EOF) {
          for (int j=1;j<DELAS_entry->n_semantic_codes;j++) {
             u_fprintf(dlcf,"+%S",DELAS_entry->semantic_codes[j]);
          }
-         #warning que faire si pas de raw_feature (exemple ADV) ?
-         u_fprintf(dlcf,":%S\n",forms->forms[i].raw_features);
+         if (forms->forms[i].raw_features!=NULL && forms->forms[i].raw_features[0]!='\0') {
+            u_fprintf(dlcf,":%S",forms->forms[i].raw_features);
+         }
+         u_fprintf(dlcf,"\n");
       }
       free_dela_entry(DELAS_entry);
       /* End of simple word case */
