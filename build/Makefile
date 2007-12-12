@@ -259,7 +259,7 @@ endif ## MINGW (ifeq)
 TEST      = Test
 TEST_OBJS = Test.o Unicode.o Pattern.o String_hash.o IOBuffer.o Error.o \
 			List_ustring.o StringParsing.o PatternTree.o List_pointer.o DELA.o\
-			Alphabet.o
+			Alphabet.o Fst2.o Transitions.o List_int.o
 
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = IOBuffer.o CheckDic.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
@@ -374,8 +374,6 @@ FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
 				Stack_unichar.o Transitions.o Buffer_ng.o getopt.o
-
-
 
 FST2GRF      = Fst2Grf
 FST2GRF_OBJS = IOBuffer.o Fst2Grf.o Unicode.o Fst2.o Sentence2Grf.o\

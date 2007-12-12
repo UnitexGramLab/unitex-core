@@ -31,6 +31,7 @@
 #include "List_pointer.h"
 #include "StringParsing.h"
 #include "Copyright.h"
+#include "Fst2.h"
 #include "Error.h"
 
 /**
@@ -39,21 +40,9 @@
 int main(int argc,char *argv[]) {
 setBufferMode();
 
-struct string_hash_ptr* hash=new_string_hash_ptr(2);
-char* a=strdup("aaaaa");
-char* b=strdup("bbbbb");
-char* c=strdup("ccccc");
-u_printf("index=%d\n",get_value_index(u_strdup("AAA"),hash,INSERT_IF_NEEDED,a));
-u_printf("index=%d\n",get_value_index(u_strdup("BBB"),hash,INSERT_IF_NEEDED,b));
-u_printf("index=%d\n",get_value_index(u_strdup("CCC"),hash,DONT_INSERT,c));
+Fst2* f=load_fst2("D:\\My Unitex\\French\\Inflection\\V51.fst2",1);
 
-u_printf("size=%d  capacity=%d\n",hash->hash->size,hash->capacity);
-
-u_printf("index=%d\n",get_value_index(u_strdup("AAA"),hash,INSERT_IF_NEEDED,a));
-u_printf("index=%d\n",get_value_index(u_strdup("BBB"),hash,INSERT_IF_NEEDED,b));
-u_printf("index=%d\n",get_value_index(u_strdup("CCC"),hash,DONT_INSERT,c));
-
-u_printf("size=%d  capacity=%d\n",hash->hash->size,hash->capacity);
+save_Fst2("D:\\My Unitex\\French\\Inflection\\V51_new.fst2",f);
 
 return 0;
 }

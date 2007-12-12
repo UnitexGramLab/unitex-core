@@ -372,30 +372,16 @@ u_fprintf(f,"f\n");
 /**
  * Writes one state of automaton to the .fst2 file 'f'.
  */
-void write_fst2_state(FILE* f,Fst2State s) {
+void write_fst2_state(FILE* f,Fst2State s,int shift) {
 if (is_final_state(s))
    u_fprintf(f,"t ");
 else u_fprintf(f,": ");
 Transition* ptr=s->transitions;
 while(ptr!=NULL) {
-   u_fprintf(f," %d %d",ptr->tag_number,ptr->state_number);
+   u_fprintf(f,"%d %d ",ptr->tag_number,ptr->state_number-shift);
    ptr=ptr->next;
 }
-u_fputc((unichar)' ',f);
 u_fputc((unichar)'\n',f);
-}
-
-
-/**
- * Writes graph n of the grammar g to the .fst2 file 'f'.
- */
-void write_graph(FILE* f,Fst2* fst2,int n) {
-u_fprintf(f,
-          "-1 flattened version of graph "
-          "%S\n",
-          fst2->graph_names[n]);
-/* to be implemented */
-fatal_error("function write_graph not fully implemented\n");
 }
 
 
@@ -630,7 +616,6 @@ if (f==NULL) {
 }
 
 int ret=load_fst2_from_file(f,read_names, &fst2, graph_number);
-
 switch (ret) {
 case GRAPH_IS_EMPTY:
 	error("Graph %s is empty\n",filename);
@@ -642,11 +627,10 @@ return fst2;
 }
 
 int load_fst2_from_file(FILE *f,int read_names,Fst2** retval, int graph_number) {
-
-if (! f) return 2;
-
+if (f==NULL) {
+   return 2;
+}
 Fst2 *fst2=new_Fst2();
-
 /* We read the number of graphs contained in the fst2 */
 u_fscanf(f,"%d\n",&(fst2->number_of_graphs));
 if (fst2->number_of_graphs==0) {
@@ -767,4 +751,46 @@ if (finality) {
 }
 }
 
+
+/**
+ * Saves the given subgraph of the given fst2 in the given file.
+ */
+void save_fst2_subgraph(FILE* f,int n,Fst2* fst2) {
+u_fprintf(f,"-%d ",n);
+if (fst2->graph_names!=NULL) {
+   u_fprintf(f,"%S\n",fst2->graph_names[n]);
+} else {
+   u_fprintf(f,"(null)\n");
+}
+int n_states_for_this_graph=fst2->number_of_states_per_graphs[n];
+int current=fst2->initial_states[n];
+for (int k=0;k<n_states_for_this_graph;k++,current++) {
+   write_fst2_state(f,fst2->states[current],fst2->initial_states[n]);
+}
+u_fprintf(f,"f \n");
+}
+
+
+/**
+ * Saves the given fst2 into a file.
+ */
+void save_Fst2(char* name,Fst2* fst2) {
+if (fst2==NULL) {
+   fatal_error("NULL fst2 in save_Fst2\n");
+}
+if (name==NULL || name[0]=='\0') {
+   fatal_error("NULL or empry name in save_Fst2\n");
+}
+FILE* f=u_fopen(name,U_WRITE);
+if (f==NULL) {
+   fatal_error("Cannot open %s in save_Fst2\n",name);
+}
+/* The header of a .fst2 is the number of subgraphs on 10 digits */
+u_fprintf(f,"%010d\n",fst2->number_of_graphs);
+for (int i=1;i<=fst2->number_of_graphs;i++) {
+   save_fst2_subgraph(f,i,fst2);
+}
+write_fst2_tags(f,fst2);
+u_fclose(f);
+}
 

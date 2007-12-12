@@ -234,6 +234,7 @@ int n_blocks=0;
 u_printf("Block %d",n_blocks);
 int within_tag=0;
 while (p->current_origin<p->text_buffer->size) {
+      
       if (!p->text_buffer->end_of_file
           && p->current_origin>(p->text_buffer->size-2000)) {
          /* If must change of block, we update the absolute offset, and we fill the

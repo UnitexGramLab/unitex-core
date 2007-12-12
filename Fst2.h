@@ -214,8 +214,9 @@ Fst2* load_one_sentence_from_fst2(char*,int);
 void free_Fst2(Fst2*);
 
 /* Functions for writing grammars */
-void write_fst2_graph(FILE*,Fst2*,int);
+void write_graph(FILE*,Fst2*,int);
 void write_fst2_tags(FILE*,Fst2*);
+void save_Fst2(char*,Fst2*);
 
 
 int is_initial_state(Fst2State);
