@@ -1177,6 +1177,7 @@ if (s[0]=='$') {
 } else {
    (*semitic)=0;
 }
+u_printf("code=_%S_\n",s);
 for (;(s[i]>='A' && s[i]<='Z')||(s[i]>='a' && s[i]<='z');i++);
 if (s[i]=='\0') {
    /* If the whole string is made of ANSI letters, then the inflection and
@@ -1201,7 +1202,7 @@ if (s[i]=='(' && s[u_strlen(s)-1]==')') {
 /* If we are in the case "N32" */
 u_to_char(inflection_code,&(s[*semitic]));
 u_strcpy(code_gramm,&(s[*semitic]));
-code_gramm[i]='\0';
+code_gramm[i-(*semitic)]='\0';
 }
 
 
