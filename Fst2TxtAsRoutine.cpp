@@ -627,7 +627,7 @@ while (t!=NULL) {
                  scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,p);
               }
          }
-         else if (!u_strcmp(contenu,"#")) {
+         else if (!u_strcmp(contenu,"#") && !(etiq->control&RESPECT_CASE_TAG_BIT_MASK)) {
               // case of a no space condition
               if (p->buffer[pos+p->current_origin]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
