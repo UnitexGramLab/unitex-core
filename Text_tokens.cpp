@@ -119,8 +119,9 @@ return res;
 
 void free_text_tokens(struct text_tokens* tok) {
 for (int i=0;i<tok->N;i++) {
-  free(tok->token[i]);
+   free(tok->token[i]);
 }
+free(tok->token);
 free(tok);
 }
 
