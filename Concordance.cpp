@@ -1044,6 +1044,7 @@ while (0!=(buffer->size = fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_B
 		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
 										n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 	}
+   current_global_position = current_global_position+buffer->MAXIMUM_BUFFER_SIZE; 
 }
 return pos_in_enter_pos;
 }
