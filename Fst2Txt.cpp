@@ -57,10 +57,10 @@ int main(int argc, char **argv) {
 	}
 	struct fst2txt_parameters* p=new_fst2txt_parameters();
 
-	char *tmp;
-	tmp = strdup(argv[1]);
-	remove_extension(argv[1], tmp);
-	strcat(tmp, ".tmp");
+	char tmp[FILENAME_MAX];
+	strcpy(tmp,argv[1]);
+	remove_extension(argv[1],tmp);
+	strcat(tmp,".tmp");
 
 	p->text_file=argv[1];
 	p->temp_file=tmp;

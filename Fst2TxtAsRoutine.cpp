@@ -233,8 +233,8 @@ p->variables=new_Variables(p->fst2->variables);
 int n_blocks=0;
 u_printf("Block %d",n_blocks);
 int within_tag=0;
+
 while (p->current_origin<p->text_buffer->size) {
-      
       if (!p->text_buffer->end_of_file
           && p->current_origin>(p->text_buffer->size-2000)) {
          /* If must change of block, we update the absolute offset, and we fill the
@@ -280,7 +280,6 @@ void scan_graph(int n_graph,         // number of current graph
                      struct parsing_info** liste_arrivee,
                      struct fst2txt_parameters* p) {
 Fst2State etat_courant=p->fst2->states[e];
-
 if (depth > MAX_DEPTH) {
   
   error(  "\n"
@@ -345,10 +344,13 @@ if (p->token_tree[e]->transition_array!=NULL) {
       /* If we are in character by character mode */
       while (pos2+p->current_origin<p->text_buffer->size && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)) {
          token[position++]=p->buffer[(pos2++)+p->current_origin];
+         if (p->parsing_mode!=PARSING_WORD_BY_WORD) {
+            break;
+         }
       }
       token[position]='\0';
       if (position!=0 &&
-          !(is_letter(token[position-1],p->alphabet) && is_letter(p->buffer[pos2+p->current_origin],p->alphabet))) {
+          (p->parsing_mode!=PARSING_WORD_BY_WORD || !(is_letter(token[position-1],p->alphabet) && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)))) {
        // we proceed only if we have exactly read the contenu sequence
        // in both modes MERGE and REPLACE, we process the transduction if any
        int SOMMET2=head;
@@ -689,6 +691,7 @@ while (t!=NULL) {
                  // case of variable case match
                  // the letter sequences may have been caught by the arbre_etiquette structure
                  int position=0;
+                 int uu=pos2;
                  unichar mot[1000];
                  while (pos2+p->current_origin<p->text_buffer->size && is_equal_or_uppercase(contenu[position],p->buffer[pos2+p->current_origin],p->alphabet)) {
                    mot[position++]=p->buffer[(pos2++)+p->current_origin];
