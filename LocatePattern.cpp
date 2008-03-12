@@ -229,13 +229,14 @@ free_Variables(p->variables);
 fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
-u_printf("Freeing memory...\n");
 free_optimized_states(p->optimized_states,p->fst2->number_of_states);
 free_stack_unichar(p->stack);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
  */
+free_pattern_node(p->pattern_tree_root);
 free_Fst2(p->fst2);
+
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(alph);
 free_string_hash(p->tokens);

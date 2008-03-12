@@ -93,8 +93,9 @@ for (i=0;i<fst2->number_of_states;i++) {
   free_Fst2State(fst2->states[i]);
 }
 free(fst2->states);
-for (i=0;i<fst2->number_of_tags;i++)
-  free_Fst2Tag(fst2->tags[i]);
+for (i=0;i<fst2->number_of_tags;i++) {
+   free_Fst2Tag(fst2->tags[i]);
+}
 free(fst2->tags);
 if (fst2->graph_names!=NULL) {
   for ( i = 1;                       /* start at 1 because at pos 0

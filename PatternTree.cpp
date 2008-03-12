@@ -37,8 +37,7 @@ void free_pattern_node_transition(struct pattern_node_transition*);
  * Allocates, initializes and returns a new pattern node.
  */
 struct pattern_node* new_pattern_node() {
-struct pattern_node *n;
-n=(struct pattern_node*)malloc(sizeof(struct pattern_node));
+struct pattern_node* n=(struct pattern_node*)malloc(sizeof(struct pattern_node));
 if (n==NULL) {
    fatal_error("Not enough memory in new_pattern_node\n");
 }

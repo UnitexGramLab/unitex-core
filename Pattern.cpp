@@ -50,7 +50,7 @@ return p;
  */
 void free_pattern(struct pattern* p) {
 if (p==NULL) return;
-if (p->inflected!=NULL) free(p->lemma);
+if (p->inflected!=NULL) free(p->inflected);
 if (p->lemma!=NULL) free(p->lemma);
 free_list_ustring(p->grammatical_codes);
 free_list_ustring(p->inflectional_codes);
