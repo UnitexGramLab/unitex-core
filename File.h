@@ -55,5 +55,6 @@ void replace_path_separator_by_colon(char*);
 void replace_colon_by_path_separator(char*);
 void new_file(const char*,const char*,char*);
 void copy_file(char*,char*);
+int fexists(char*);
 
 #endif

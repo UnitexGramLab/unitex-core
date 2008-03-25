@@ -240,3 +240,15 @@ while ((n=fread(buffer,sizeof(char),4096,input))>0) {
 fclose(input);
 fclose(output);
 }
+
+
+/**
+ * Returns 1 if the given file exists and can be read; 0 otherwise.
+ */
+int fexists(char* name) {
+FILE* f=fopen(name,"r");
+if (f==NULL) return 0;
+fclose(f);
+return 1;
+}
+

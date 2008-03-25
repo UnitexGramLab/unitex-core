@@ -33,6 +33,7 @@
 #include "MF_InflectTransd.h"
 #include "Error.h"
 #include "File.h"
+#include "Grf2Fst2_main.h"
 
 ///////////////////////////////
 // GLOBAL VARIABLES
@@ -168,6 +169,16 @@ if (flex[pos]=='\0') {
         char s[FILENAME_MAX];
         new_file(inflection_directory,flex,s);
         strcat(s,".fst2");
+        if (!fexists(s)) {
+           /* If there is no .fst2 file, we try to find a .grf one */
+           char grf[FILENAME_MAX];
+           new_file(inflection_directory,flex,grf);
+           strcat(grf,".grf");
+           if (fexists(grf)) {
+              /* If there is a .grf one, we try to compile it */
+              pseudo_main_Grf2Fst2(grf,1,NULL);
+           }
+        }
         fst2[n_fst2]=load_fst2(s,1);
         n->final=n_fst2;
         return n_fst2++;
