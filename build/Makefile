@@ -403,7 +403,7 @@ FST2UNAMBIG_OBJS = Fst2.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o
                    List_int.o BitMasks.o Transitions.o
 
 GRF2FST2      = Grf2Fst2
-GRF2FST2_OBJS = IOBuffer.o Grf2Fst2.o Alphabet.o Unicode.o Fst2.o\
+GRF2FST2_OBJS = IOBuffer.o Grf2Fst2_main.o Grf2Fst2.o Alphabet.o Unicode.o Fst2.o\
                 GrfCheck.o Grf2Fst2_lib.o Error.o File.o SingleGraph.o\
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o\
                 List_ustring.o String_hash.o StringParsing.o Transitions.o

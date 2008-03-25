@@ -19,17 +19,10 @@
   *
   */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "IOBuffer.h"
-#include "Grf2Fst2_main.h"
+#ifndef Grf2Fst2_mainH
+#define Grf2Fst2_mainH
 
+int main_Grf2Fst2(int argc,char* argv[]);
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-return main_Grf2Fst2(argc,argv);
-}
+#endif
 
