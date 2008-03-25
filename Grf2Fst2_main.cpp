@@ -31,9 +31,10 @@
 #include "File.h"
 #include "LocateConstants.h"
 #include "Error.h"
+#include "Grf2Fst2_main.h"
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n"
          "      <grf> : main graph of grammar (must be an absolute path)\n"
