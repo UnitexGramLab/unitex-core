@@ -48,6 +48,28 @@ u_printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n"
 }
 
 
+/**
+ * A convenient way to call the main function within a Unitex program.
+ */
+int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet) {
+int argc=0;
+char** argv=(char**)malloc(4*sizeof(char*));
+if (argv==NULL) {
+   fatal_error("Not enough memory in main_Grf2Fst2\n");
+}
+argv[argc++]=NULL;
+argv[argc++]=strdup(name);
+argv[argc++]=strdup(yes_or_no?"y":"n");
+if (alphabet) argv[argc++]=strdup(alphabet);
+else argv[3]=NULL;
+int ret=main_Grf2Fst2(argc,argv);
+free(argv[1]);
+free(argv[2]);
+free(argv[3]);
+free(argv);
+return ret;
+}
+
 
 /**
  * The same than main, but no call to setBufferMode.
