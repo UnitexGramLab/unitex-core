@@ -444,13 +444,15 @@ while (c!=EOF) {
         s[z++]=(unichar)c;
         COUNT++;
      }
-     if (z==(MAX_TAG_LENGTH-1) || c!='}') {
-        // if the tag has no ending }
-        fatal_error("Error: a tag without ending } has been found\n");
-     }
      if (c=='\n') {
         // if the tag contains a return
         fatal_error("Error: a tag containing a new-line sequence has been found\n");
+     }
+     if (z==(MAX_TAG_LENGTH-1) || c!='}') {
+        // if the tag has no ending }
+        if (z==(MAX_TAG_LENGTH-1)) {z--;}
+        s[z]='\0';
+        fatal_error("Error: a tag without ending } has been found:\n==>%S<==\n",s);
      }
      s[z]='}';
      s[z+1]='\0';
