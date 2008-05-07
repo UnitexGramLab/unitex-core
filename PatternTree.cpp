@@ -86,6 +86,7 @@ struct pattern_node_transition* tmp;
 while (list!=NULL) {
    free_pattern_node(list->node);
    free(list->grammatical_code);
+   tmp=list;
    list=list->next;
    free(tmp);
 }
