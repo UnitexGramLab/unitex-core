@@ -257,6 +257,7 @@ int u_parse_int(unichar * str, unichar ** next = NULL);
 // Sebastian Nagel's functions
 unichar u_toupper(unichar);
 unichar u_tolower(unichar);
+unichar u_deaccentuate(unichar);
 // end of Sebastian Nagel's functions
 
 
