@@ -107,4 +107,3 @@ struct dic_variable* clone_dic_variable_list(struct dic_variable* list) {
 if (list==NULL) return NULL;
 return new_dic_variable(list->name,list->dic_entry,clone_dic_variable_list(list->next));
 }
-
