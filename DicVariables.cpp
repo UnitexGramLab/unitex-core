@@ -84,7 +84,7 @@ while (*list!=NULL) {
 
 
 /**
- * Returns the struct dela_entry* associated to the given dic variable, 
+ * Returns the struct dela_entry* associated to the given dic variable name, 
  * or NULL if not found.
  */
 struct dela_entry* get_dic_variable(unichar* name,struct dic_variable* list) {
