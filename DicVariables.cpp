@@ -33,7 +33,7 @@ if (tmp==NULL) {
 }
 tmp->name=u_strdup(name);
 tmp->dic_entry=clone_dela_entry(dic_entry);
-tmp->next=next; 
+tmp->next=next;
 return tmp;
 }
 
