@@ -348,7 +348,7 @@ for (int i=0;i<info->tokens->N;i++) {
 void explore_bin_compound_words(struct dico_application_info* info,
                                 int offset,unichar* current_token,unichar* inflected,
                                 int pos_in_current_token,
-                                int pos_in_inflected,struct word_struct *w,int pos_offset,
+                                int pos_in_inflected,struct word_struct* ws,int pos_offset,
                                 int* token_sequence,int pos_token_sequence,int priority,
                                 int current_start_pos) {
 int n_transitions=((unsigned char)info->bin[offset])*256+(unsigned char)info->bin[offset+1];
@@ -357,7 +357,7 @@ if (current_token[pos_in_current_token]=='\0') {
    /* If we are at the end of the current token, we look for the 
     * corresponding node in the token tree */
    struct word_transition* trans;
-   w->trans=insert_word_transition(w->trans,&trans,info->buffer->int_buffer[current_start_pos+pos_offset]);
+   ws->trans=insert_word_transition(ws->trans,&trans,info->buffer->int_buffer[current_start_pos+pos_offset]);
    if (trans->node==NULL) {
       /* If the node does not exist in the token tree, we create it */
       trans->node=new_word_struct();
@@ -401,7 +401,7 @@ if (current_token[pos_in_current_token]=='\0') {
    /* Then, we go on with the next token in the text, so we update 'current_token' */
    current_token=info->tokens->token[info->buffer->int_buffer[current_start_pos+pos_offset]];
    pos_in_current_token=0;
-   w=trans->node;
+   ws=trans->node;
    /* TRICK! We don't need to perform a call to 'explore_bin_compound_words', since
     * we would arrive after the next closing round bracket in the same conditions
     * than now. */
@@ -425,7 +425,7 @@ for (int i=0;i<n_transitions;i++) {
        * dictionary char is compatible with the token char. In that case,
        * we copy in 'inflected' the exact chararacter that is in the dictionary. */
       inflected[pos_in_inflected]=c;
-      explore_bin_compound_words(info,adr,current_token,inflected,pos_in_current_token+1,pos_in_inflected+1,w,pos_offset,token_sequence,pos_token_sequence,priority,current_start_pos);
+      explore_bin_compound_words(info,adr,current_token,inflected,pos_in_current_token+1,pos_in_inflected+1,ws,pos_offset,token_sequence,pos_token_sequence,priority,current_start_pos);
    }
 }
 }

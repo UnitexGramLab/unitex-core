@@ -1,4 +1,4 @@
-/*
+ /*
   * Unitex
   *
   * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
@@ -19,19 +19,29 @@
   *
   */
 
-//  The purpose is to call locate  with one Fst from dico.exe
-//  by Alexis Neme 15/11/2005
-// we simulate the command line ( the argv[]) of locate.exe from a calling program.
+#ifndef DicVariablesH
+#define DicVariablesH
+
+#include "Unicode.h"
+#include "DELA.h"
 
 
-#ifndef LocateAsRoutineH
-#define LocateAsRoutineH
+/**
+ * This structure represents a list of DELAF entry variables.
+ */
+struct dic_variable {
+   /* The name of the variable */
+   unichar* name;
+   /* the corresponding struct dela_entry */
+   struct dela_entry* dic_entry;
+   struct dic_variable* next;
+};
 
-#include "LocateConstants.h"
 
-int main_Locate(int, char**); 
-void launch_locate_as_routine(char*,char*,char*,OutputPolicy,char*);
+void clear_dic_variable_list(struct dic_variable* *list);
+void set_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_variable* *list);
+struct dela_entry* get_dic_variable(unichar* name,struct dic_variable* list);
+struct dic_variable* clone_dic_variable_list(struct dic_variable* list);
 
 
 #endif
-

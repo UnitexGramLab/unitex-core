@@ -54,16 +54,17 @@
  * not invoke the setBufferMode function and that it does not print the
  * synopsis.
  */
-int main_Locate(int argc, char **argv) {
+int main_Locate(int argc,char* argv[]) {
 /* $CD$ begin + overall */
-char staticSntDir[2000], dynamicSntDir[2000];
+char staticSntDir[FILENAME_MAX], dynamicSntDir[FILENAME_MAX];
 /* $CD$ end */
 
-char tokens_txt[2000];
-char text_cod[2000];
-char dlf[2000];
-char dlc[2000];
-char err[2000];
+char tokens_txt[FILENAME_MAX];
+char text_cod[FILENAME_MAX];
+char dlf[FILENAME_MAX];
+char dlc[FILENAME_MAX];
+char err[FILENAME_MAX];
+char* morpho_dic=NULL;
 
 get_snt_path((const char*)argv[1],staticSntDir);
 
@@ -134,7 +135,7 @@ switch (argc) {
         break;
 
 
-    case 8: // 7 arguments: soit dynamic, soit -thai, soit -space
+    case 8: // 7 arguments: soit dynamic, soit -thai, soit -space, soit -md=XXX
 
         if (!strcmp(argv[7], "-thai")) {
             strcpy(dynamicSntDir, staticSntDir);
@@ -146,6 +147,12 @@ switch (argc) {
             tokenization_policy=WORD_BY_WORD_TOKENIZATION;
             space_policy=START_WITH_SPACE;
             }
+        else if (strstr(argv[7],"-md=")==argv[7]) {
+            morpho_dic=argv[7]+4;
+            strcpy(dynamicSntDir, staticSntDir);
+            tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+            space_policy=DONT_START_WITH_SPACE;
+            }
         else {
             strcpy(dynamicSntDir, argv[7]);
             tokenization_policy=WORD_BY_WORD_TOKENIZATION;
@@ -154,15 +161,15 @@ switch (argc) {
         break; 
 
     
-    case 9: // 8 arguments: 7 = dynamic, 8 = soit -thai, soit -space
+    case 9: // 8 arguments: 7 = dynamic, 8 = soit -thai, soit -space, soit -md=XXX
     
         strcpy(dynamicSntDir, argv[7]);
         
-        if (strcmp(argv[8], "-thai") && strcmp(argv[8], "-space")) {
+        if (strcmp(argv[8], "-thai") && strcmp(argv[8], "-space")
+            && strstr(argv[8],"-md=")!=argv[8]) {
             error("Invalid parameter %s\n", argv[8]);
             return 1;
-            }
-        
+        }
         if (!strcmp(argv[8], "-thai"))
             tokenization_policy=CHAR_BY_CHAR_TOKENIZATION;
         else
@@ -172,15 +179,19 @@ switch (argc) {
             space_policy=START_WITH_SPACE;
         else
             space_policy=DONT_START_WITH_SPACE;
+        if (strstr(argv[8],"-md=")==argv[8]) {
+           morpho_dic=argv[8]+4;
+        }
         break; 
 
     
-    case 10: // 9 arguments: 7 = dynamic, 8 = or -thai, or -space
-             //                           9 = or -space, or -thai
+    case 10: // 9 arguments: 7 = dynamic, 8 = or -thai, or -space, or -md=XXX
+             //                           9 = or -space, or -thai, or -md=XXX
     
         strcpy(dynamicSntDir, argv[7]);
         
-        if (strcmp(argv[8], "-thai") && strcmp(argv[8], "-space")) {
+        if (strcmp(argv[8], "-thai") && strcmp(argv[8], "-space")
+            && strstr(argv[8],"-md=")!=argv[8]) {
             error("Invalid parameter %s\n", argv[8]);
             return 1;
         }
@@ -194,10 +205,13 @@ switch (argc) {
             space_policy=START_WITH_SPACE;
         else
             space_policy=DONT_START_WITH_SPACE;
-        
-        if (strcmp(argv[9], "-thai") && strcmp(argv[9], "-space")) {
-            error("Invalid parameter %s\n", argv[9]);
-            return 1;
+        if (strstr(argv[8],"-md=")==argv[8]) {
+           morpho_dic=argv[8]+4;
+        }
+        if (strcmp(argv[9], "-thai") && strcmp(argv[9], "-space")
+            && strstr(argv[9],"-md=")!=argv[9]) {
+           error("Invalid parameter %s\n", argv[9]);
+           return 1;
         }
         
         if (!strcmp(argv[9], "-thai"))
@@ -209,18 +223,36 @@ switch (argc) {
             space_policy=START_WITH_SPACE;
         else
             space_policy=DONT_START_WITH_SPACE;
+        if (strstr(argv[9],"-md=")==argv[9]) {
+           morpho_dic=argv[9]+4;
+        }
+        break;
+
+    case 11: // 10 arguments: 7 = dynamic, 8 = -thai, 9 = -space, and 10 = -md=XXX
+    
+        strcpy(dynamicSntDir, argv[7]);
+        
+        if (strcmp(argv[8], "-thai")) {
+            error("Invalid parameter %s\n", argv[8]);
+            return 1;
+        }
+        tokenization_policy=CHAR_BY_CHAR_TOKENIZATION;
+        if (strcmp(argv[9], "-space")) {
+           error("Invalid parameter %s\n", argv[9]);
+           return 1;
+        }
+        space_policy=START_WITH_SPACE;
+        if (strstr(argv[10],"-md=")!=argv[10]) {
+           error("Invalid parameter %s\n", argv[10]);
+        } 
+        morpho_dic=argv[10]+4;
         break;
     
     } 
 /* $CD$ end */
 int OK=locate_pattern(text_cod,tokens_txt,argv[2],dlf,dlc,err,argv[3],match_policy,output_policy,
-               dynamicSntDir,tokenization_policy,space_policy,search_limit);
-if (OK == 1) {
-    return 0;
-}
-else {
-return 1;
-}
+               dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic);
+return (!OK);
 }
 
 
@@ -232,7 +264,8 @@ return 1;
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-void launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet,OutputPolicy output_policy) {
+void launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet,
+                              OutputPolicy output_policy,char* morpho_dic) {
 char tmp[FILENAME_MAX];
 char tmp2[FILENAME_MAX];
 get_path(alphabet,tmp);
@@ -247,8 +280,12 @@ int thai=0;
 if (!strcmp(lang,"Thai")) {
    thai=1;
 }
+int md=0;
+if (morpho_dic!=NULL) {
+   md=1;
+}
 char** argv;
-argv=(char**)malloc((7+thai)*sizeof(char*));
+argv=(char**)malloc((7+thai+md)*sizeof(char*));
 if (argv==NULL) {
    fatal_error("Not enough memory in launch_locate_as_routine\n");
 }
@@ -268,11 +305,18 @@ switch (output_policy) {
 /* We look for all the occurrences */
 argv[6]=strdup("all");
 /* If needed, we add the -thai option */
+int index=7;
 if (thai) {
-   argv[7]=strdup("-thai");
+   argv[index++]=strdup("-thai");
+}
+if (md) {
+   char tmp[FILENAME_MAX];
+   strcpy(tmp,"-md=");
+   strcat(tmp,morpho_dic);
+   argv[index++]=tmp;
 }
 /* Finally, we call the main function of Locate */
-main_Locate(7+thai,argv);
+main_Locate(index,argv);
 }
 
 

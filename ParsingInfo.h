@@ -24,6 +24,8 @@
 
 #include "Unicode.h"
 #include "TransductionVariables.h"
+#include "DicVariables.h"
+#include "DELA.h"
 
 
 /**
@@ -35,6 +37,16 @@ struct parsing_info {
    /* Current position in the text, i.e. position in the text when the
     * final state of the subgraph was reached. */
    int position;
+
+   /* This field is used in the morphological mode to know where the
+    * matches ends in the current token. -1 means "end of the token". */
+   int pos_in_token;
+   
+   /* This field is used in the morphological mode to know the
+    * number of the state pointed by the $> transition that ends the
+    * morphological mode. -1 if not used. */
+   int state_number;
+   
    
    /* Content of the stack */
    unichar* stack;
@@ -44,16 +56,25 @@ struct parsing_info {
    /* A copy of the variable ranges */
    int* variable_backup;
    
+   /* A copy of the DELAF entry variables */
+   struct dic_variable* dic_variable_backup;
+   
+   /* In morphological mode, we may want to save the matching DELAF entry 
+    * when we have a pattern like <V:W>. To do that, we use this field to
+    * save the address of a struct dela_entry. */
+   struct dela_entry* dic_entry;
+   
    /* The next element of the list */
    struct parsing_info* next;
 };
 
 
 
-struct parsing_info* new_parsing_info(int,int,unichar*,Variables*);
+struct parsing_info* new_parsing_info(int,int,int,int,unichar*,Variables*,struct dic_variable*);
 void free_parsing_info(struct parsing_info*);
-struct parsing_info* insert_if_absent(int,struct parsing_info*,int,unichar*,Variables*);
-struct parsing_info* insert_if_different(int,struct parsing_info*,int,unichar*,Variables*);
-
+struct parsing_info* insert_if_absent(int,int,int,struct parsing_info*,int,unichar*,Variables*,struct dic_variable*);
+struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,unichar*,Variables*,struct dic_variable*);
+struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,
+                                                struct parsing_info* list,struct dela_entry*);
 
 #endif

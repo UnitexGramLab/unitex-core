@@ -66,7 +66,10 @@ enum tag_type {
    END_VAR_TAG,   // $a)
    BEGIN_POSITIVE_CONTEXT_TAG, // $[
    BEGIN_NEGATIVE_CONTEXT_TAG, // $![
-   END_CONTEXT_TAG             // $]
+   END_CONTEXT_TAG,            // $]
+   LEFT_CONTEXT_TAG,           // $*
+   BEGIN_MORPHO_TAG, // $<
+   END_MORPHO_TAG    // $>
 };
 
 

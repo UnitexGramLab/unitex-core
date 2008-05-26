@@ -179,10 +179,9 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                   tag[i]->pattern_number=add_pattern(number_of_patterns,tag[i]->pattern,parameters->pattern_tree_root);
                   if (tag[i]->pattern->type==CODE_PATTERN) {
                      /* If we have a code pattern, then the tag will just need to contain
-                      * the pattern number, so that we can free the pattern. */
+                      * the pattern number, BUT, WE DO NOT FREE THE PATTERN,
+                      * since this pattern still could be used in morphological mode */
                      tag[i]->type=PATTERN_NUMBER_TAG;
-                     free_pattern(tag[i]->pattern);
-                     tag[i]->pattern=NULL;
                   }
                }
             }

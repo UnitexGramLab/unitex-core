@@ -21,9 +21,10 @@
 
 #include "TransductionStack.h"
 #include "Error.h"
+#include "DicVariables.h"
 
 
-int DISPLAY_VARIABLE_ERRORS=0;
+int FAIL_ON_VARIABLE_ERRORS=1;
 
 
 
@@ -59,6 +60,20 @@ for (i=0;s[i]!='\0';i++) {
 
 
 /**
+ * Pushes the given string to the output, if not NULL, in the limit of 'length' chars.
+ */
+void push_substring(struct stack_unichar* stack,unichar* s,int length) {
+int i;
+if (s==NULL) {
+   return;
+}
+for (i=0;i<length && s[i]!='\0';i++) {
+   push_char(stack,s[i]);
+}
+}
+
+
+/**
  * This function processes the given output string.
  */
 void process_output(unichar* s,struct locate_parameters* p) {
@@ -70,16 +85,65 @@ if (s==NULL || !u_strcmp(s,"<E>")) {
 while (s[i]!='\0') {
    if (s[i]=='$') {
       /* Case of a variable name */
-      unichar name[100];
+      unichar name[128];
       int l=0;
       i++;
       while (is_variable_char(s[i])) {
          name[l++]=s[i++];
       }
       name[l]='\0';
-      if (s[i]!='$') {
-         if (DISPLAY_VARIABLE_ERRORS) {
-            error("Error: missing closing $ after $%S\n",name);
+      if (s[i]!='$' && s[i]!='.') {
+         if (FAIL_ON_VARIABLE_ERRORS) {
+            fatal_error("Output error: missing closing $ after $%S\n",name);
+         }
+         continue;
+      }
+      if (s[i]=='.') {
+         /* Here we deal with the case of a field like $a.CODE$ */
+         unichar field[128];
+         l=0;
+         i++;
+         while (s[i]!='\0' && s[i]!='$') {
+            field[l++]=s[i++];
+         }
+         field[l]='\0';
+         if (s[i]=='\0') {
+            if (FAIL_ON_VARIABLE_ERRORS) {
+               fatal_error("Output error: missing closing $ after $%S.%S\n",name,field);
+            }
+            continue;
+         }
+         if (field[0]=='\0') {
+            if (FAIL_ON_VARIABLE_ERRORS) {
+               fatal_error("Output error: empty field: $%S.$\n",name);
+            }
+            continue;
+         }
+         i++;
+         struct dela_entry* entry=(struct dela_entry*)get_dic_variable(name,p->dic_variables);
+         if (entry==NULL) {
+            if (FAIL_ON_VARIABLE_ERRORS) {
+               fatal_error("Output error: undefined morphological variable %S\n",name);
+            }
+            continue;
+         }
+         if (!u_strcmp(field,"INFLECTED")) {
+            /* TODO: protect special chars */
+            push_string(p->stack,entry->inflected);
+         } else if (!u_strcmp(field,"LEMMA")) {
+            push_string(p->stack,entry->lemma);
+         } else if (!u_strcmp(field,"CODE")) {
+            push_string(p->stack,entry->semantic_codes[0]);
+            for (int i=1;i<entry->n_semantic_codes;i++) {
+               push_char(p->stack,'+');
+               push_string(p->stack,entry->semantic_codes[i]);
+            }
+            for (int i=0;i<entry->n_inflectional_codes;i++) {
+               push_char(p->stack,':');
+               push_string(p->stack,entry->inflectional_codes[i]);
+            }
+         } else {
+            fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
          }
          continue;
       }
@@ -91,26 +155,26 @@ while (s[i]!='\0') {
       }
       struct transduction_variable* v=get_transduction_variable(p->variables,name);
       if (v==NULL) {
-         if (DISPLAY_VARIABLE_ERRORS) {
-            error("Error: undefined variable $%S\n",name);
+         if (FAIL_ON_VARIABLE_ERRORS) {
+            fatal_error("Output error: undefined variable $%S$\n",name);
          }
          continue;
       }
       if (v->start==-1) {
-         if (DISPLAY_VARIABLE_ERRORS) {
-            error("Error: starting position of variable $%S undefined\n",name);
+         if (FAIL_ON_VARIABLE_ERRORS) {
+            fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
          }
          continue;
       }
       if (v->end==-1) {
-         if (DISPLAY_VARIABLE_ERRORS) {
-            error("Error: end position of variable $%S undefined\n",name);
+         if (FAIL_ON_VARIABLE_ERRORS) {
+            fatal_error("Output error: end position of variable $%S$ undefined\n",name);
          }
          continue;
       }
       if (v->start>v->end) {
-         if (DISPLAY_VARIABLE_ERRORS) {
-            error("Error: end position before starting position for variable $%S\n",name);
+         if (FAIL_ON_VARIABLE_ERRORS) {
+            fatal_error("Output error: end position before starting position for variable $%S$\n",name);
          }
          continue;
       }

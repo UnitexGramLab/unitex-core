@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "List_ustring.h"
 #include "String_hash.h"
+#include "DELA.h"
 
 
 /**
@@ -87,5 +88,6 @@ struct pattern {
 struct pattern* build_pattern(unichar*,struct string_hash*);
 struct pattern* build_token_pattern(unichar*);
 void free_pattern(struct pattern*);
+int is_entry_compatible_with_pattern(struct dela_entry* entry,struct pattern* pattern);
 
 #endif

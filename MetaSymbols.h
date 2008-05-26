@@ -39,7 +39,10 @@ enum meta_symbol {
    META_MIN, // <MIN>: used to match a token made of lowercase letters
    META_PRE, // <PRE>: used to match a token made of letters that starts with an uppercase one
    META_NB,  // <NB>: used to match a contiguous sequence of latin digits (0-9)
-   META_TOKEN // <TOKEN>: used to match any token that is not the space
+   META_TOKEN, // <TOKEN>: used to match any token that is not the space
+   META_BEGIN_MORPHO, // $<: used to enter the morphological mode
+   META_END_MORPHO,   // $>: used to leave the morphological mode
+   META_LEFT_CONTEXT  // $*: used to specify the end of a left context
 };
 
 #endif

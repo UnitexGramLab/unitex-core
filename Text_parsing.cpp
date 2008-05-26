@@ -26,18 +26,18 @@
 #include "BitArray.h"
 #include "Buffer.h"
 #include "Transitions.h"
+#include "MorphologicalLocate.h"
+#include "DicVariables.h"
 
 
 /* Delay between two prints (yyy% done) */
 #define DELAY CLOCKS_PER_SEC
 
 
-void locate(int,OptimizedFst2State,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*);
 int binary_search(int,int*,int);
 int find_compound_word(int,int,struct DLC_tree_info*,struct locate_parameters*);
 unichar* get_token_sequence(int*,struct string_hash*,int,int);
-
-
+void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*);
 
 
 /**
@@ -83,6 +83,7 @@ while (p->current_origin<p->token_buffer->size
       struct parsing_info* matches = NULL;
       locate(0,initial_state,0,0,&matches,0,NULL,p);
       free_parsing_info(matches);
+      clear_dic_variable_list(&(p->dic_variables));
    }
    p->match_list=save_matches(p->match_list,p->absolute_offset+p->current_origin,out,p);
    (p->current_origin)++;
@@ -118,7 +119,7 @@ if (info!=NULL) {
  *  If there are more than MAX_ERRORS errors,
  *  exit the programm by calling "fatal_error".
  */
-static void error_at_token_pos(char* message,int start,int length,struct locate_parameters* p) {
+void error_at_token_pos(char* message,int start,int length,struct locate_parameters* p) {
 static int n_errors;
 static int last_start=-1;
 static int last_length;
@@ -241,9 +242,9 @@ if (current_state->control & 1) {
          n_matches++;
          p->stack->stack[stack_top+1]='\0';
          if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-            (*matches)=insert_if_different(pos,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables);
+            (*matches)=insert_if_different(pos,-1,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables);
          } else {
-            (*matches)=insert_if_absent(pos,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables);
+            (*matches)=insert_if_absent(pos,-1,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables);
          }
       }
    }
@@ -275,11 +276,12 @@ struct opt_graph_call* graph_call_list=current_state->graph_calls;
 if (graph_call_list!=NULL) {
    /* If there are subgraphs, we process them */
    int* var_backup=NULL;
-   int old_StackBase;
-   old_StackBase=p->stack_base;
+   struct dic_variable* dic_variables_backup=NULL;
+   int old_StackBase=p->stack_base;
    if (p->output_policy!=IGNORE_OUTPUTS) {
       /* For better performance when ignoring outputs */
       var_backup=create_variable_backup(p->variables);
+      dic_variables_backup=p->dic_variables;
    }
    do {
       /* For each graph call, we look all the reachable states */
@@ -300,15 +302,16 @@ if (graph_call_list!=NULL) {
                u_strcpy(&(p->stack->stack[stack_top+1]),L->stack);
                p->stack->stack_pointer=L->stack_pointer;
                install_variable_backup(p->variables,L->variable_backup);
+               p->dic_variables=L->dic_variable_backup;
              }
              /* And we continue the exploration */
              locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p);
              p->stack->stack_pointer=stack_top;
              if (graph_depth==0) {
-               /* If we are at the top graph level, we restore the variables */
-               if (p->output_policy!=IGNORE_OUTPUTS) {
-                 install_variable_backup(p->variables,var_backup);
-               }
+                /* If we are at the top graph level, we restore the variables */
+                if (p->output_policy!=IGNORE_OUTPUTS) {
+                   install_variable_backup(p->variables,var_backup);
+                }
              }
              L=L->next;
            }
@@ -324,6 +327,7 @@ if (graph_call_list!=NULL) {
    if (p->output_policy!=IGNORE_OUTPUTS) { /* For better performance (see above) */
       install_variable_backup(p->variables,var_backup);
       free_variable_backup(var_backup);
+      p->dic_variables=dic_variables_backup;
    }
 } /* End of processing subgraphs */
 
@@ -407,7 +411,7 @@ while (meta_list!=NULL) {
             break;
             
          case META_DIC:
-            if (token2==-1) break;
+            if (token2==-1 || token2==p->STOP) break;
             if (!negation) {
                /* If there is no negation on DIC, we can look for a compound word */
                end_of_compound=find_compound_word(pos2,COMPOUND_WORD_PATTERN,p->DLC_tree,p);
@@ -459,7 +463,7 @@ while (meta_list!=NULL) {
             break;
             
          case META_CDIC:
-            if (token2==-1) break;
+            if (token2==-1 || token2==p->STOP) break;
             end_of_compound=find_compound_word(pos2,COMPOUND_WORD_PATTERN,p->DLC_tree,p);
             if (end_of_compound!=-1) {
                /* If we find a compound word */
@@ -565,6 +569,42 @@ while (meta_list!=NULL) {
          }
          start=pos;
          end=pos2+1;
+         break;
+
+      case META_BEGIN_MORPHO: 
+         if (token2==-1 || token2==p->STOP || !morpho_filter_OK) {
+            /* The {STOP} tag must NEVER be matched by any pattern */
+            break;
+         }
+         if (p->output_policy==MERGE_OUTPUTS) {
+            if (pos2!=pos) push_char(p->stack,' ');
+         }
+         enter_morphological_mode(graph_depth,t->state_number,pos2,depth+1,matches,n_matches,ctx,p);
+         p->stack->stack_pointer=stack_top;
+         break;
+         
+      case META_END_MORPHO: 
+         /* Should not happen */
+         fatal_error("Unexpected morphological mode end tag $>\n");
+         break;
+
+      case META_LEFT_CONTEXT: 
+         int real_origin=p->current_origin;
+         if (p->space_policy==START_WITH_SPACE) {
+            p->current_origin+=pos;
+         } else {
+            p->current_origin+=pos2;
+         }
+         int real_stack_base=p->stack_base;
+         p->stack_base=0;
+         struct stack_unichar* real_stack=p->stack;
+         p->stack=new_stack_unichar(real_stack->capacity);
+         locate(graph_depth,p->optimized_states[t->state_number],0,depth+1,matches,n_matches,ctx,p);
+         p->current_origin=real_origin;
+         p->stack_base=real_stack_base;
+         free_stack_unichar(p->stack);
+         p->stack=real_stack;
+         p->stack->stack_pointer=stack_top;
          break;
 
       } /* End of the switch */
@@ -966,5 +1006,4 @@ for (i=start;i<=end;i++) {
 }
 return res;
 }
-
 

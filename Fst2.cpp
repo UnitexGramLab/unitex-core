@@ -237,6 +237,18 @@ if (!u_strcmp(input,"$]")) {
    tag->type=END_CONTEXT_TAG;
    return tag;
 }
+if (!u_strcmp(input,"$*")) {
+   tag->type=LEFT_CONTEXT_TAG;
+   return tag;
+}
+if (!u_strcmp(input,"$<")) {
+   tag->type=BEGIN_MORPHO_TAG;
+   return tag;
+}
+if (!u_strcmp(input,"$>")) {
+   tag->type=END_MORPHO_TAG;
+   return tag;
+}
 /* 
  * IMPORTANT: if the tag is a variable declaration, we must add this variable
  *            to the variable list of the fst2 .

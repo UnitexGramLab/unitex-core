@@ -112,7 +112,7 @@ return v->variables[n].end;
  * the variable ranges.
  */
 int* create_variable_backup(Variables* v) {
-if (v->variable_index==NULL) return NULL;
+if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
 int* backup=(int*)malloc(sizeof(int)*2*l);
 if (backup==NULL) {

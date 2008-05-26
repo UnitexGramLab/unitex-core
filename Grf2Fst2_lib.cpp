@@ -731,9 +731,13 @@ int length=u_strlen(box_content);
 if ((length>2 && box_content[0]=='$' && 
        (box_content[length-1]=='('
         || box_content[length-1]==')'))
-        || (!u_strcmp(box_content,"$[") || !u_strcmp(box_content,"$![")
-        || !u_strcmp(box_content,"$]"))) {
-   /* If we have a variable or context mark */
+        || !u_strcmp(box_content,"$[") 
+        || !u_strcmp(box_content,"$![")
+        || !u_strcmp(box_content,"$]")
+        || !u_strcmp(box_content,"$<")
+        || !u_strcmp(box_content,"$>")
+        || !u_strcmp(box_content,"$*")) {
+   /* If we have a variable or context mark, or a morphological mode delimiter */
    u_strcpy(input,box_content);
    if (box_content[1]=='!' || box_content[1]=='[') {
       /* If we have a context start mark, we adds a unique number to it

@@ -52,9 +52,12 @@
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Dico <text> <alphabet> <dic-fst_1> [<dic-fst_2> <dic-fst_3> ...]\n");
+u_printf("Usage: Dico <text> <alphabet> [-md=XXX] <dic-fst_1> [<dic-fst_2> <dic-fst_3> ...]\n");
 u_printf("     <text>      : the text file\n");
 u_printf("     <alphabet>  : the alphabet file\n");
+u_printf("     [-md=XXX]   : optional argument specifying that XXX is the .bin dictionary\n"
+         "                   list to use in Locate's morphological mode. .bin names are\n"
+         "                   supposed to be separated with semi-colons.\n");
 u_printf("     <dic-fst_i> : name of dictionary or local grammar to be applied\n\n");
 
 u_printf("Applies dictionaries and/or local grammars to the text and produces \n");
@@ -118,7 +121,7 @@ if (argc<4) {
 
 struct snt_files* snt_files=new_snt_files(argv[1]);
 FILE* text_cod;
-struct text_tokens* tokens;        
+struct text_tokens* tokens;
 
 /* And we create empty files in order to append things to them */
 if (!u_fempty(snt_files->dlf)) {
@@ -153,6 +156,15 @@ if (text_cod==NULL) {
 }
 u_printf("Initializing...\n");
 struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,text_cod,alphabet);
+
+char* morpho_dic=NULL;
+int first_dic_index=3;
+if (strstr(argv[3],"-md=")==argv[3]) {
+   /* If there is the option -md=XXX */
+   morpho_dic=argv[3]+4;
+   first_dic_index++;
+}
+
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
 count_token_occurrences(info);
@@ -160,7 +172,7 @@ count_token_occurrences(info);
 for (int priority=1;priority<4;priority++) {
    /* For a given priority, we apply all concerned dictionaries 
     * in their order on the command line */
-   for (int i=3;i<argc;i++) {
+   for (int i=first_dic_index;i<argc;i++) {
       char tmp[FILENAME_MAX];
       remove_extension(argv[i],tmp);
       char priority_mark=tmp[strlen(tmp)-1];
@@ -206,7 +218,7 @@ for (int priority=1;priority<4;priority++) {
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            launch_locate_as_routine(argv[1],argv[i],argv[2],policy);
+            launch_locate_as_routine(argv[1],argv[i],argv[2],policy,morpho_dic);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

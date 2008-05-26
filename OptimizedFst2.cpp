@@ -481,6 +481,9 @@ switch (tag->type) {
    case BEGIN_POSITIVE_CONTEXT_TAG: add_positive_context(fst2,state,transition); return;
    case BEGIN_NEGATIVE_CONTEXT_TAG: add_negative_context(fst2,state,transition); return;
    case END_CONTEXT_TAG: add_end_context(state,transition); return;
+   case LEFT_CONTEXT_TAG: add_meta(META_LEFT_CONTEXT,transition,&(state->metas),0); return;
+   case BEGIN_MORPHO_TAG: add_meta(META_BEGIN_MORPHO,transition,&(state->metas),0); return;
+   case END_MORPHO_TAG: add_meta(META_END_MORPHO,transition,&(state->metas),0); return;
    default: fatal_error("Unexpected transition tag type in optimize_transition\n");
 }
 }

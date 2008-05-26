@@ -32,7 +32,7 @@
 
 void load_dic_for_locate(char*,Alphabet*,int,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*);
-
+void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p);
 
 
 /**
@@ -78,6 +78,11 @@ p->end_position_last_printed_match=-1;
 p->search_limit=0;
 p->variables=NULL;
 p->stack=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
+p->alphabet=NULL;
+p->morpho_dic_inf=NULL;
+p->morpho_dic_bin=NULL;
+p->n_morpho_dics=0;
+p->dic_variables=NULL;
 return p;
 }
 
@@ -94,7 +99,7 @@ free(p);
 int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,char* err,
                    char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
                    char* dynamicDir,TokenizationPolicy tokenization_policy,
-                   SpacePolicy space_policy,int search_limit) {
+                   SpacePolicy space_policy,int search_limit,char* morpho_dic_list) {
 struct locate_parameters* p=new_locate_parameters();
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;
@@ -113,8 +118,8 @@ fseek(text_file,0,SEEK_END);
 long int text_size=ftell(text_file)/sizeof(int);
 fseek(text_file,0,SEEK_SET);
 
-char concord[1000];
-char concord_info[1000];
+char concord[FILENAME_MAX];
+char concord_info[FILENAME_MAX];
 
 strcpy(concord,dynamicDir);
 strcat(concord,"concord.ind");
@@ -138,8 +143,8 @@ switch(output_policy) {
    case REPLACE_OUTPUTS: u_fprintf(out,"#R\n"); break;
 }
 u_printf("Loading alphabet...\n");
-Alphabet* alph=load_alphabet(alphabet);
-if (alph==NULL) {
+p->alphabet=load_alphabet(alphabet);
+if (p->alphabet==NULL) {
    error("Cannot load alphabet file %s\n",alphabet);
    return 0;
 }
@@ -150,16 +155,16 @@ u_printf("Loading fst2...\n");
 p->fst2=load_fst2(fst2_name,1);
 if (p->fst2==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
-   free_alphabet(alph);
+   free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    return 0;
 }
 p->tags=p->fst2->tags;
 #ifdef TRE_WCHAR
-p->filters=new_FilterSet(p->fst2,alph);
+p->filters=new_FilterSet(p->fst2,p->alphabet);
 if (p->filters==NULL) {
    error("Cannot compile filter(s)\n");
-   free_alphabet(alph);
+   free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    return 0;
 }
@@ -169,7 +174,7 @@ u_printf("Loading token list...\n");
 p->tokens=load_text_tokens_hash(tokens,&(p->SENTENCE),&(p->STOP));
 if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
-   free_alphabet(alph);
+   free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2);
    return 0;
@@ -179,7 +184,7 @@ if (p->tokens==NULL) {
 p->filter_match_index=new_FilterMatchIndex(p->filters,p->tokens);
 if (p->filter_match_index==NULL) {
    error("Cannot optimize filter(s)\n");
-   free_alphabet(alph);
+   free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    free_string_hash(p->tokens);
    free_Fst2(p->fst2);
@@ -200,7 +205,7 @@ for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
   p->token_control[i]=0;
   p->matching_patterns[i]=NULL;
 }
-compute_token_controls(alph,err,p);
+compute_token_controls(p->alphabet,err,p);
 int number_of_patterns,is_DIC,is_CDIC,is_SDIC;
 p->pattern_tree_root=new_pattern_node();
 u_printf("Computing fst2 tags...\n");
@@ -209,19 +214,21 @@ p->current_compound_pattern=number_of_patterns;
 p->DLC_tree=new_DLC_tree(p->tokens->size);
 struct lemma_node* root=new_lemma_node();
 u_printf("Loading dlf...\n");
-load_dic_for_locate(dlf,alph,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
+load_dic_for_locate(dlf,p->alphabet,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
 u_printf("Loading dlc...\n");
-load_dic_for_locate(dlc,alph,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
+load_dic_for_locate(dlc,p->alphabet,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
 /* We look if tag tokens like "{today,.ADV}" verify some patterns */
-check_patterns_for_tag_tokens(alph,number_of_patterns,root,p);
+check_patterns_for_tag_tokens(p->alphabet,number_of_patterns,root,p);
 u_printf("Optimizing fst2 pattern tags...\n");
-optimize_pattern_tags(alph,root,p);
+optimize_pattern_tags(p->alphabet,root,p);
 u_printf("Optimizing compound word dictionary...\n");
 optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
 p->variables=new_Variables(p->fst2->variables);
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
+u_printf("Loading morphological dictionaries...\n");
+load_morphological_dictionaries(morpho_dic_list,p);
 u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
 free_buffer(p->token_buffer);
@@ -238,7 +245,7 @@ free_pattern_node(p->pattern_tree_root);
 free_Fst2(p->fst2);
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
-free_alphabet(alph);
+free_alphabet(p->alphabet);
 free_string_hash(p->tokens);
 free_list_int(p->tag_token_list);
 free_lemma_node(root);
@@ -251,10 +258,67 @@ free(p->matching_patterns);
 free_FilterSet(p->filters);
 free_FilterMatchIndex(p->filter_match_index);
 #endif
+for (int i=0;i<p->n_morpho_dics;i++) {
+   free_INF_codes(p->morpho_dic_inf[i]);
+   free(p->morpho_dic_bin[i]);
+}
+free(p->morpho_dic_inf);
+free(p->morpho_dic_bin);
 free_locate_parameters(p);
 u_printf("Done.\n");
 return 1;
 }
+
+
+int count_semi_colons(char* s) {
+int n=0;
+for (int i=0;s[i]!='\0';i++) {
+   if (s[i]==';') n++;
+}
+return n;
+}
+
+
+/**
+ * Takes a string containing .bin names separated with semi-colons and
+ * loads the corresponding dictionaries.
+ */
+void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p) {
+if (morpho_dic_list==NULL || morpho_dic_list[0]=='\0') {
+   return;
+}
+p->n_morpho_dics=1+count_semi_colons(morpho_dic_list);
+p->morpho_dic_bin=(unsigned char**)malloc(p->n_morpho_dics*sizeof(unsigned char*));
+p->morpho_dic_inf=(struct INF_codes**)malloc(p->n_morpho_dics*sizeof(struct INF_codes*));
+if (p->morpho_dic_bin==NULL || p->morpho_dic_inf==NULL) {
+   fatal_error("Not enough memory in load_morphological_dictionaries\n");
+}
+char bin[FILENAME_MAX];
+int pos;
+for (int i=0;i<p->n_morpho_dics;i++) {
+   pos=0;
+   while (*morpho_dic_list!='\0' && *morpho_dic_list!=';') {
+      bin[pos++]=*morpho_dic_list;
+      morpho_dic_list++;
+   }
+   bin[pos]='\0';
+   if (*morpho_dic_list==';') {
+      morpho_dic_list++;
+   }
+   p->morpho_dic_bin[i]=load_BIN_file(bin);
+   if (p->morpho_dic_bin[i]!=NULL) {
+      char inf[FILENAME_MAX];
+      remove_extension(bin,inf);
+      strcat(inf,".inf");
+      p->morpho_dic_inf[i]=load_INF_file(inf);
+      if (p->morpho_dic_inf[i]==NULL) {
+         free(p->morpho_dic_bin[i]);
+         p->morpho_dic_bin[i]=NULL;
+      }
+   }
+}
+}
+
 
 
 /**

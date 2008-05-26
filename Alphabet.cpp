@@ -377,3 +377,22 @@ while (src[i]!='\0') {
 dest[j]='\0';
 }
 
+
+
+/**
+ * Returns the length of the longuest prefix common to the strings 'a' and 'b',
+ * but allowing the following case variants:
+ * 
+ * ab OK
+ * Ab OK
+ * AB OK
+ * aB X
+ */
+int get_longuest_prefix_ignoring_case(unichar* a,unichar* b,Alphabet* alphabet) {
+if (a==NULL || b==NULL) {
+   return 0;
+}
+int i=0;
+while (is_equal_or_uppercase(b[i],a[i],alphabet) && a[i]!='\0') i++;
+return i;
+}

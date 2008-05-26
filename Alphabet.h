@@ -52,6 +52,7 @@ int is_sequence_of_letters(unichar*,Alphabet*);
 int is_equal_ignore_case_and_quotes(unichar*,unichar*,Alphabet*);
 void turn_portuguese_sequence_to_lowercase(unichar*);
 void replace_letter_by_letter_set(Alphabet*,unichar*,unichar*);
+int get_longuest_prefix_ignoring_case(unichar*,unichar*,Alphabet*);
 
 //---------------------------------------------------------------------------
 #endif
