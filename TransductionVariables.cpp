@@ -44,8 +44,8 @@ if (v->variables==NULL) {
    fatal_error("Not enough memory in new_Variables\n");
 }
 for (int i=0;i<l;i++) {
-   v->variables[i].start=-1;
-   v->variables[i].end=-1;
+   v->variables[i].start=UNDEF_VAR_BOUND;
+   v->variables[i].end=UNDEF_VAR_BOUND;
 }
 return v;
 }

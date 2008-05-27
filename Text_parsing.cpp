@@ -38,6 +38,7 @@ int binary_search(int,int*,int);
 int find_compound_word(int,int,struct DLC_tree_info*,struct locate_parameters*);
 unichar* get_token_sequence(int*,struct string_hash*,int,int);
 void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*);
+void shift_variable_bounds(Variables*,int);
 
 
 /**
@@ -599,7 +600,18 @@ while (meta_list!=NULL) {
          p->stack_base=0;
          struct stack_unichar* real_stack=p->stack;
          p->stack=new_stack_unichar(real_stack->capacity);
+         
+         /* ZZZ*/
+         int* var_backup=NULL;
+         if (p->output_policy!=IGNORE_OUTPUTS) {
+        	 var_backup=create_variable_backup(p->variables);
+        	 shift_variable_bounds(p->variables,real_origin-p->current_origin);
+         }
          locate(graph_depth,p->optimized_states[t->state_number],0,depth+1,matches,n_matches,ctx,p);
+         if (p->output_policy!=IGNORE_OUTPUTS) {
+            install_variable_backup(p->variables,var_backup);
+            free_variable_backup(var_backup);
+         }
          p->current_origin=real_origin;
          p->stack_base=real_stack_base;
          free_stack_unichar(p->stack);
@@ -1006,4 +1018,25 @@ for (i=start;i<=end;i++) {
 }
 return res;
 }
+
+
+
+/**
+ * Apply the given shift to all variable bounds in the given variable set.
+ */
+void shift_variable_bounds(Variables* v,int shift) {
+if (v==NULL) {
+	return;
+}
+int l=v->variable_index->size;
+for (int i=0;i<l;i++) {
+	if (v->variables[i].start!=UNDEF_VAR_BOUND) {
+		v->variables[i].start+=shift;
+	}
+	if (v->variables[i].end!=UNDEF_VAR_BOUND) {
+		v->variables[i].end+=shift;
+	}
+}
+}
+
 

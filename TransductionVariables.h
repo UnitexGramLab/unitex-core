@@ -28,6 +28,10 @@
 #include "List_ustring.h"
 
 
+/* Value to use to indicate that a variable bound is undefined */
+#define UNDEF_VAR_BOUND -666666
+
+
 /**
  * This structure is used to associates ranges to variable names.
  */

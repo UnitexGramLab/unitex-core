@@ -27,7 +27,6 @@
 int FAIL_ON_VARIABLE_ERRORS=1;
 
 
-
 /**
  * This function returns a non zero value if c can be a part of a variable name;
  * 0 otherwise.
@@ -160,13 +159,13 @@ while (s[i]!='\0') {
          }
          continue;
       }
-      if (v->start==-1) {
+      if (v->start==UNDEF_VAR_BOUND) {
          if (FAIL_ON_VARIABLE_ERRORS) {
             fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
          }
          continue;
       }
-      if (v->end==-1) {
+      if (v->end==UNDEF_VAR_BOUND) {
          if (FAIL_ON_VARIABLE_ERRORS) {
             fatal_error("Output error: end position of variable $%S$ undefined\n",name);
          }
