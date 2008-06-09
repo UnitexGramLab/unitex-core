@@ -1261,3 +1261,16 @@ for (int i=0;i<src->n_inflectional_codes;i++) {
 }
 }
 
+
+/**
+ * Tests wether the given string looks like a tag sequence like:
+ * 
+ *    {the,.DET} {cats,cat.N:p}
+ * 
+ * Spaces are allowed between tags.
+ * Returns 1 in case of success; 0 otherwise.
+ */
+int is_a_valid_tag_sequence(unichar* s) {
+
+return 1;
+}

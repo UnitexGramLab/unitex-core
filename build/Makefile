@@ -475,7 +475,7 @@ TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o DELA_tr
                 DELA.o List_ustring.o String_hash.o TextAutomaton.o List_int.o\
                 NormalizationFst2.o Fst2.o File.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
-                FIFO.o BitArray.o HashTable.o Transitions.o
+                FIFO.o BitArray.o HashTable.o Transitions.o Matches.o
 
 TAGSETNORM = TagsetNormFst2
 TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o autalmot.o fst_file.o ustring.o \

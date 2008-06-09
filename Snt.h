@@ -38,6 +38,7 @@ struct snt_files {
    char dlc_n[FILENAME_MAX];
    char err[FILENAME_MAX];
    char err_n[FILENAME_MAX];
+   char tags_ind[FILENAME_MAX];
    char stats_n[FILENAME_MAX];
    char stat_dic_n[FILENAME_MAX];
    char text_cod[FILENAME_MAX];

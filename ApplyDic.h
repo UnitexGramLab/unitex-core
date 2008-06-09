@@ -94,7 +94,8 @@ struct dico_application_info {
    FILE* dlf;
    FILE* dlc;
    FILE* err;
-   /* The buffer to use to read the text.cod file */
+   char tags_ind[FILENAME_MAX];
+      /* The buffer to use to read the text.cod file */
    struct buffer* buffer;
    /* The alphabet to use */
    Alphabet* alphabet;
@@ -122,12 +123,18 @@ struct dico_application_info {
    int SIMPLE_WORDS;
    int COMPOUND_WORDS;
    int UNKNOWN_WORDS;
+   
+   /* The following field define a pointer array used to store tag sequences in order
+    * to sort them before saving them into the "tags.ind" file */
+   struct match_list** tag_sequences;
+   int n_tag_sequences;
+   int tag_sequences_capacity;
 };
 
 #define BUFFER_SIZE 200000
 
 
-struct dico_application_info* init_dico_application(struct text_tokens*,FILE*,FILE*,FILE*,FILE*,Alphabet*);
+struct dico_application_info* init_dico_application(struct text_tokens*,FILE*,FILE*,FILE*,char*,FILE*,Alphabet*);
 void dico_application(char*,struct dico_application_info*,int);
 void free_dico_application(struct dico_application_info*);
 void count_token_occurrences(struct dico_application_info*);
@@ -135,5 +142,7 @@ void save_unknown_words(struct dico_application_info*);
 
 /* Added by Alexis Neme: FST Functionality of Dico */
 int merge_dic_locate_results(struct dico_application_info*,char*,int);
+
+void save_and_sort_tag_sequences(struct dico_application_info*);
 
 #endif

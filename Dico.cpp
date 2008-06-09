@@ -41,7 +41,7 @@
 
 
 /**
- * This enhanced  version of Dico was rewritten by Alexis Neme,
+ * This enhanced version of Dico was rewritten by Alexis Neme,
  * based on the original version written by Sébastien Paumier
  * 15 Novembre 2005
  * This new version take into account not only compiled dictionnary but also
@@ -76,7 +76,10 @@ u_printf("The local grammars are represented by finite state transducers(.fst2).
 u_printf("These grammars will be applied in MERGE mode, except if a .fst2 ends\n");
 u_printf("with -r. In that case, it will be applied in REPLACE mode.\n");
 u_printf("Note that -r can be combined with - or + priority marks (-r- and -r+)\n\n");
-u_printf("The grammar output shall respect the file format of both DLF and DLC. \n\n");
+u_printf("The grammar output shall respect the file format of both DLF and DLC.\n"
+         "If an output starts with a / character, it will be considered as a tag\n"
+         "sequence to be put in the 'tags.ind' file. Such sequences are used\n"
+         "by the Txt2Fst2 program in order to add paths to the text automaton.\n\n");
 
 u_printf("The numbers of simple, compound and unknown forms are saved\n");
 u_printf("in a file named stat_dic.n which is created in the text directory.\n");
@@ -155,7 +158,7 @@ if (text_cod==NULL) {
    return 1;
 }
 u_printf("Initializing...\n");
-struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,text_cod,alphabet);
+struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,snt_files->tags_ind,text_cod,alphabet);
 
 char* morpho_dic=NULL;
 int first_dic_index=3;
@@ -239,6 +242,10 @@ for (int priority=1;priority<4;priority++) {
 	  }
    }
 }
+/* We process the tag sequences, if any */
+u_printf("Sorting and saving tag sequences...\n");
+save_and_sort_tag_sequences(info);
+
 /* Finally, we have to save the definitive list of unknown words */
 u_printf("Saving unknown words...\n");
 if (info->err==NULL ) {

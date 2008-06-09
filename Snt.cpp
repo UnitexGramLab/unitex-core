@@ -43,6 +43,7 @@ new_file(path,"dlc",snt_files->dlc);
 new_file(path,"dlc.n",snt_files->dlc_n);
 new_file(path,"err",snt_files->err);
 new_file(path,"err.n",snt_files->err_n);
+new_file(path,"tags.ind",snt_files->tags_ind);
 new_file(path,"stats.n",snt_files->stats_n);
 new_file(path,"stat_dic.n",snt_files->stat_dic_n);
 new_file(path,"text.cod",snt_files->text_cod);

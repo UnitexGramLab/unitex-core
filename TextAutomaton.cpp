@@ -128,6 +128,14 @@ while (trans!=NULL) {
 
 
 /**
+ * Returns 1 if the given string seems to be a {xxx,xxx.xxx} tag; 0 otherwise.
+ */
+int is_high_weight_tag(unichar* s) {
+return s[0]=='{' && s[1]!='\0'; 
+}
+
+
+/**
  * This function explores the given graph, trying to find for each state the path with
  * the lowest number of unknown tokens made of letters that leads to it. These
  * numbers of tokens are stored in 'weight'.
@@ -139,7 +147,7 @@ Transition* trans=graph->states[state]->outgoing_transitions;
 while (trans!=NULL) {
    unichar* tmp=tmp_tags->value[trans->tag_number];
    int w_tmp=w;
-   if (tmp[0]!='{' && u_is_letter(tmp[0])) {
+   if (!is_high_weight_tag(tmp)) {
       /* If the transition is tagged by an unknown token made of letters */
       w_tmp=w_tmp+1;
    }
@@ -176,7 +184,7 @@ Transition* remove_bad_path_transitions(int min_weight,Transition* trans,
                                         struct string_hash* tmp_tags) {
 if (trans==NULL) return NULL;
 unichar* s=tmp_tags->value[trans->tag_number];
-if ((s[0]!='{' && u_is_letter(s[0]) && weight[trans->state_number] < (min_weight+1))
+if ((!is_high_weight_tag(s) && weight[trans->state_number] < (min_weight+1))
     || (weight[trans->state_number] < min_weight )) {
    /* If we have to remove the transition */
    Transition* tmp=trans->next;
@@ -238,7 +246,7 @@ void add_path_to_sentence_automaton(int start_state_index,Alphabet* alph,
                                     unichar* s,int destination_state_index) {
 struct list_ustring* l=tokenize_normalization_output(s,alph);
 if (l==NULL) {
-   /* If the output to be generated have no interest, we do nothing */
+   /* If the output to be generated has no interest, we do nothing */
    return;
 }
 struct list_ustring* tmp;
@@ -317,7 +325,9 @@ void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
                                struct DELA_tree* DELA_tree,struct string_hash* tags,
                                Alphabet* alph,FILE* out,int sentence_number,
                                int we_must_clean,
-                               struct normalization_tree* norm_tree) {
+                               struct normalization_tree* norm_tree,
+                               struct match_list* *tag_list,
+                               int current_global_position) {
 /* We declare the graph that will represent the sentence as well as
  * a temporary string_hash that will be used to store the tags of this
  * graph. We don't put tags directly in the main tags, because a tag can
@@ -360,6 +370,39 @@ for (i=0;i<length;i++) {
       current_state++;
    }
 }
+/* Now, we insert the tag sequences found in the 'tags.ind' file, if any */
+struct match_list* tmp;
+while ((*tag_list)!=NULL && (*tag_list)->start>=current_global_position 
+       && (*tag_list)->start<=current_global_position+length) {
+   if ((*tag_list)->end>current_global_position+length) {
+      /* If we have a tag sequence that overlap two sentences, we must ignore it */
+      tmp=(*tag_list)->next;
+      free_match_list_element((*tag_list));
+      (*tag_list)=tmp;
+      continue;
+   }
+   /* We compute the local bounds of the tag sequence */
+   int start_index=(*tag_list)->start-current_global_position;
+   int end_index=(*tag_list)->end-current_global_position;
+   /* And we adjust them to our state indexes, because spaces
+    * must be ignored */
+   for (int i=start_index;i>=0;i--) {
+      if (buffer[i]==tokens->SPACE) {
+         start_index--;
+      }
+   }
+   for (int i=end_index;i>=0;i--) {
+      if (buffer[i]==tokens->SPACE) {
+         end_index--;
+      }
+   }
+   add_path_to_sentence_automaton(start_index,INFO.alph,graph,tmp_tags,(*tag_list)->output,end_index+1);
+   tmp=(*tag_list)->next;
+   free_match_list_element((*tag_list));
+   (*tag_list)=tmp;
+}
+
+
 if (we_must_clean) {
    /* If necessary, we apply the "good paths" heuristic */
    keep_best_paths(graph,tmp_tags);

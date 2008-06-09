@@ -534,7 +534,7 @@ for (int i=0;i<info->tokens->N;i++) {
  * the information needed for the application of dictionaries.
  */
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
-                                                    FILE* dlf,FILE* dlc,FILE* err,
+                                                    FILE* dlf,FILE* dlc,FILE* err,char* tags,
                                                     FILE* text_cod,Alphabet* alphabet) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
@@ -545,6 +545,7 @@ info->tokens=tokens;
 info->dlf=dlf;
 info->dlc=dlc;
 info->err=err;
+strcpy(info->tags_ind,tags);
 info->buffer=new_buffer(BUFFER_SIZE,INTEGER_BUFFER);
 info->alphabet=alphabet;
 info->bin=NULL;
@@ -563,6 +564,9 @@ info->tct_h=new_tct_hash();
 info->SIMPLE_WORDS=0;
 info->COMPOUND_WORDS=0;
 info->UNKNOWN_WORDS=0;
+info->tag_sequences=NULL;
+info->n_tag_sequences=0;
+info->tag_sequences_capacity=0;
 return info;
 }
 
@@ -581,6 +585,10 @@ free_bit_array(info->part_of_a_word);
 free_bit_array(info->simple_word);
 free(info->n_occurrences);
 free_tct_hash(info->tct_h);
+for (int i=0;i<info->n_tag_sequences;i++) {
+	free_match_list_element(info->tag_sequences[i]);
+}
+free(info->tag_sequences);
 free(info);
 }
 
@@ -632,6 +640,24 @@ free(info->bin);
 
 
 /**
+ * Adds the given match to the tag sequence array, enlarging it if needed.
+ */
+void add_tag_sequence(struct dico_application_info* info,struct match_list* match) {
+if (info->n_tag_sequences==info->tag_sequences_capacity) {
+   /* If we have to enlarge the array, doubling its capacity */
+	if (info->tag_sequences_capacity==0) {
+		info->tag_sequences_capacity=32;
+	}
+	else {
+		info->tag_sequences_capacity=2*info->tag_sequences_capacity;
+	}
+	info->tag_sequences=(struct match_list**)realloc(info->tag_sequences,info->tag_sequences_capacity*sizeof(struct match_list*));
+}
+info->tag_sequences[(info->n_tag_sequences)++]=match;
+}
+
+
+/**
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
@@ -650,6 +676,16 @@ if (f==NULL) {
 struct match_list* l=load_match_list(f,NULL);
 u_fclose(f);
 while (l!=NULL) {
+   if (l->output!=NULL && l->output[0]=='/') {
+	   /* If we have a tag sequence to be used at the time of
+	    * building the text automaton */
+	   add_tag_sequence(info,l);
+	   /* If we have found and handled a valid tag sequence, we process
+	    * the next match in the list, AND WE DON'T FREE THE CURRENT
+	    * MATCH, since it's now in a pointer array. */
+	   l=l->next;
+	   continue;
+   }
    /* We test if the match is a valid dictionary entry */
    struct dela_entry* entry=tokenize_DELAF_line(l->output,1);
    if (entry!=NULL) {
@@ -695,7 +731,9 @@ while (l!=NULL) {
    }
    /* If the match is not a valid entry, an error message has already
     * been produced by tokenize_DELAF_line, so there is nothing to do. */
-   l=l->next;
+   struct match_list* tmp=l->next;
+   free_match_list_element(l);
+   l=tmp;
 }
 return 1;
 }
@@ -714,6 +752,37 @@ do {
       info->n_occurrences[buffer[i]]++;
    }
 } while (!info->buffer->end_of_file);
+}
+
+
+/**
+ * This function is used to sort matches by start/end positions.
+ */
+int compare_matches(const void* a,const void* b) {
+struct match_list** A=(struct match_list**)a;
+struct match_list** B=(struct match_list**)b;
+int u=(*A)->start-(*B)->start;
+if (u) return u;
+return (*A)->end-(*B)->end;
+}
+
+
+/**
+ * Does as explained in the function name.
+ */
+void save_and_sort_tag_sequences(struct dico_application_info* info) {
+qsort(info->tag_sequences,info->n_tag_sequences,sizeof(struct match_list*),compare_matches);
+FILE* f=u_fopen(info->tags_ind,U_WRITE);
+if (f==NULL) {return;}
+/* We use the header T, just to say something different from I, M and R */
+u_fprintf(f,"#T\n");
+struct match_list* tmp;
+for (int i=0;i<info->n_tag_sequences;i++) {
+   tmp=info->tag_sequences[i];
+   /* We take tmp->output+1 in order to avoid copying the / character */
+   u_fprintf(f,"%d %d %S\n",tmp->start,tmp->end,tmp->output+1);
+}
+u_fclose(f);
 }
 
 

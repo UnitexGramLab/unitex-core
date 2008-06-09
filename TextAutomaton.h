@@ -29,7 +29,7 @@
 #include "DELA_tree.h"
 #include "String_hash.h"
 #include "NormalizationFst2.h"
-
+#include "Matches.h"
 
 #define MAX_TOKENS_IN_SENTENCE 2000
 
@@ -37,7 +37,8 @@
 void build_sentence_automaton(int*,int,struct text_tokens*,
                               struct DELA_tree*,struct string_hash*,
                               Alphabet*,FILE*,int,int,
-                              struct normalization_tree*);
+                              struct normalization_tree*,
+                              struct match_list**,int);
 
 
 #endif

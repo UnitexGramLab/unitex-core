@@ -37,6 +37,7 @@
 #include "StringParsing.h"
 #include "Error.h"
 #include "Grf2Fst2_lib.h"
+#include "Matches.h"
 
 
 
@@ -60,15 +61,18 @@ u_printf("named TEXT.FST2 is stored is the text directory.\n");
  * It stops when it finds the EOF, a "{S}" or when MAX_TOKENS_IN_SENTENCE
  * tokens have been read. All the tokens that compose the sentence are stored
  * into 'buffer', except the "{S}", if any. The number of these tokens is stored
- * in '*N'.
+ * in '*N'. '*total' contains the whole number of integers read from the file.
  * 
  * The function returns 1 if a sentence was read; 0 otherwise.
  */
-int read_sentence(int* buffer,int *N,FILE* f,int SENTENCE_MARKER) {
+int read_sentence(int* buffer,int *N,int *total,FILE* f,int SENTENCE_MARKER) {
+*total=0;
+*N=0;
 if (1!=fread(buffer,sizeof(int),1,f)) {
    /* If we are at the end of the file */
    return 0;
 }
+*total=1;
 int length;
 if (buffer[0]==SENTENCE_MARKER) {
    /* If the text starts by a {S}, we don't want to stop there */
@@ -78,6 +82,10 @@ if (buffer[0]==SENTENCE_MARKER) {
 }
 while (length<MAX_TOKENS_IN_SENTENCE && 1==fread(buffer+length,sizeof(int),1,f) && buffer[length]!=SENTENCE_MARKER) {
    length++;
+   (*total)++;
+}
+if (buffer[length]==SENTENCE_MARKER) {
+   (*total)++;
 }
 if (length==0) return 0;
 *N=length;
@@ -107,6 +115,7 @@ char tokens_txt[FILENAME_MAX];
 char text_cod[FILENAME_MAX];
 char dlf[FILENAME_MAX];
 char dlc[FILENAME_MAX];
+char tags_ind[FILENAME_MAX];
 get_snt_path(argv[1],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
 get_snt_path(argv[1],text_cod);
@@ -115,8 +124,17 @@ get_snt_path(argv[1],dlf);
 strcat(dlf,"dlf");
 get_snt_path(argv[1],dlc);
 strcat(dlc,"dlc");
+get_snt_path(argv[1],tags_ind);
+strcat(tags_ind,"tags.ind");
 load_DELA(dlf,tree);
 load_DELA(dlc,tree);
+u_printf("Loading %s...\n",tags_ind);
+struct match_list* tag_list=NULL;
+FILE* tag_file=u_fopen(tags_ind,U_READ);
+if (tag_file!=NULL) {
+   tag_list=load_match_list(tag_file,NULL);
+   u_fclose(tag_file);
+}
 Alphabet* alph=load_alphabet(argv[2]);
 if (alph==NULL) {
    fatal_error("Cannot open %s\n",argv[2]);
@@ -157,14 +175,18 @@ if (argc==4) {
    }
 }
 int sentence_number=1;
-int N;
+int N=0;
+int total=0;
+int current_global_position=0;
 /* We reserve the space for printing the number of sentence automata */
 u_fprintf(out,"0000000000\n");
 u_printf("Constructing text automaton...\n");
-while (read_sentence(buffer,&N,f,tokens->SENTENCE_MARKER)) {
-   build_sentence_automaton(buffer,N,tokens,tree,tags,alph,out,sentence_number,CLEAN,normalization_tree);
+while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
+   build_sentence_automaton(buffer,N,tokens,tree,tags,alph,out,sentence_number,CLEAN,
+                            normalization_tree,&tag_list,current_global_position);
    if (sentence_number%100==0) u_printf("%d sentences read...        \r",sentence_number);
    sentence_number++;
+   current_global_position=current_global_position+total;
 }
 u_printf("%d sentence%s read\n",sentence_number-1,(sentence_number-1)>1?"s":"");
 fclose(f);
@@ -182,6 +204,8 @@ free_text_tokens(tokens);
 free_alphabet(alph);
 free_string_hash(tags);
 free_normalization_tree(normalization_tree);
+/* After the execution, tag_list should have been emptied, so that we don't
+ * need to do it here */ 
 return 0;
 }
 
