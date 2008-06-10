@@ -1972,6 +1972,32 @@ return NULL;
 
 
 /**
+ * Returns 1 if s ends with the given suffix; 0 otherwise.
+ */
+int u_ends_with(const unichar* s,const unichar* suffix) {
+if (s==NULL) return 0;
+if (suffix==NULL) return 1;
+int l1=u_strlen(s);
+int l2=u_strlen(suffix);
+if (l2>l1) return 0;
+return !u_strcmp(s+(l1-l2),suffix);
+}
+
+
+/**
+ * Returns 1 if s ends with the given suffix; 0 otherwise.
+ */
+int u_ends_with(const unichar* s,const char* suffix) {
+if (s==NULL) return 0;
+if (suffix==NULL) return 1;
+int l1=u_strlen(s);
+int l2=strlen(suffix);
+if (l2>l1) return 0;
+return !u_strcmp(s+(l1-l2),suffix);
+}
+
+
+/**
  * Converts the unichar* src into a char* dest.
  * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
  * 
