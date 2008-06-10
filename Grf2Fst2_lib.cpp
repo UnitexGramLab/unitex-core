@@ -482,6 +482,9 @@ if (i==MAX_GRF_BOX_CONTENT) {
    fatal_error("Graph call too long in get_subgraph_call\n");
 }
 dest[i]='\0';
+if (u_ends_with(dest,".grf")) {
+   dest[i-4]='\0';
+}
 }
 
 
