@@ -659,7 +659,7 @@ while (meta_list!=NULL) {
 struct opt_variable* variable_list=current_state->variable_starts;
 while (variable_list!=NULL) {
    int old=get_variable_start(p->variables,variable_list->variable_number);
-   set_variable_start(p->variables,variable_list->variable_number,pos);
+   set_variable_start(p->variables,variable_list->variable_number,pos2);
    locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
    p->stack->stack_pointer=stack_top;
    if (ctx==NULL) {
