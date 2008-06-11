@@ -406,7 +406,7 @@ while (meta_list!=NULL) {
                end=pos+1;
             }
             else if (XOR(negation,ctrl&MOT_TOKEN_BIT_MASK)) {
-               start=pos;
+               start=pos2;
                end=pos2+1;
             }
             break;
@@ -431,13 +431,16 @@ while (meta_list!=NULL) {
                      /* <DIC> can match two things: a sequence of tokens or a single token
                       * As we don't want to process lists of [start,end[ ranges, we
                       * directly handle here the case of a token sequence. */
+                     if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
+                        push_char(p->stack,' ');
+                     }
                      if (p->output_policy!=IGNORE_OUTPUTS) {
                         if (!process_output(output,p)) {
                            break;
                         }
                      }
                      if (p->output_policy==MERGE_OUTPUTS) {
-                        for (int x=pos;x<=end_of_compound;x++) {
+                        for (int x=pos2;x<=end_of_compound;x++) {
                            push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
                         }
                      }
@@ -447,14 +450,14 @@ while (meta_list!=NULL) {
                }
                /* Now, we look for a simple word */
                if (ctrl&DIC_TOKEN_BIT_MASK && morpho_filter_OK) {
-                  start=pos;
+                  start=pos2;
                   end=pos2+1;
                }
                break;
             }
             /* We have the meta <!DIC> */
             if (ctrl&NOT_DIC_TOKEN_BIT_MASK && morpho_filter_OK) {
-               start=pos;
+               start=pos2;
                end=pos2+1;
             }
             break;
@@ -462,7 +465,7 @@ while (meta_list!=NULL) {
          case META_SDIC: 
             if (morpho_filter_OK && (ctrl&DIC_TOKEN_BIT_MASK) && !(ctrl&CDIC_TOKEN_BIT_MASK)) {
                /* We match only simple words */
-               start=pos;
+               start=pos2;
                end=pos2+1;
             }
             break;
@@ -486,13 +489,16 @@ while (meta_list!=NULL) {
                    * tag token like "{black-eyed,.A}". As we don't want to process lists
                    * of [start,end[ ranges, we directly handle here the case of a
                    * token sequence. */
+                  if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
+                     push_char(p->stack,' ');
+                  }
                   if (p->output_policy!=IGNORE_OUTPUTS) {
                      if (!process_output(output,p)) {
                         break;
                      }
                   }
                   if (p->output_policy==MERGE_OUTPUTS) {
-                     for (int x=pos;x<=end_of_compound;x++) {
+                     for (int x=pos2;x<=end_of_compound;x++) {
                         push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
                      }
                   }
@@ -502,7 +508,7 @@ while (meta_list!=NULL) {
             }
             /* Anyway, we could have a tag compound word like {aujourd'hui,.ADV} */
             if (morpho_filter_OK && ctrl&CDIC_TOKEN_BIT_MASK) {
-               start=pos;
+               start=pos2;
                end=pos2+1;
             }
             break;
@@ -518,7 +524,7 @@ while (meta_list!=NULL) {
             }
             if ( !(ctrl&MAJ_TOKEN_BIT_MASK) && (ctrl&MOT_TOKEN_BIT_MASK)) {
                /* If we have <!MAJ>, the matching token must be matched by <MOT> */
-               start=pos;
+               start=pos2;
                end=pos2+1;
             }
             break;
@@ -527,14 +533,14 @@ while (meta_list!=NULL) {
             if (!morpho_filter_OK) break;
             if (!negation) {
                if (ctrl&MIN_TOKEN_BIT_MASK) {
-                  start=pos;
+                  start=pos2;
                   end=pos2+1;
                }
                break;
             }
             if ( !(ctrl&MIN_TOKEN_BIT_MASK) && (ctrl&MOT_TOKEN_BIT_MASK)) {
                /* If we have <!MIN>, the matching token must be matched by <MOT> */
-               start=pos;
+               start=pos2;
                end=pos2+1;
             }
             break;
@@ -550,7 +556,7 @@ while (meta_list!=NULL) {
             }
             if ( !(ctrl&PRE_TOKEN_BIT_MASK) && (ctrl&MOT_TOKEN_BIT_MASK)) {
                /* If we have <!PRE>, the matching token must be matched by <MOT> */
-               start=pos;
+               start=pos2;
                end=pos2+1;
             }
             break;
@@ -565,7 +571,7 @@ while (meta_list!=NULL) {
             }
             if (z!=pos2) {
                /* If we have found a contiguous digit sequence */
-               start=pos;
+               start=pos2;
                end=z;
             }
          }
@@ -576,7 +582,7 @@ while (meta_list!=NULL) {
             /* The {STOP} tag must NEVER be matched by any pattern */
             break;
          }
-         start=pos;
+         start=pos2;
          end=pos2+1;
          break;
 
@@ -630,6 +636,9 @@ while (meta_list!=NULL) {
 
       if (start!=-1) {
          /* If the transition has matched */
+         if (p->output_policy==MERGE_OUTPUTS && start==pos2 && pos2!=pos) {
+            push_char(p->stack,' ');
+         }
          if (p->output_policy!=IGNORE_OUTPUTS) {
             /* We process its output */
             if (!process_output(output,p)) {
@@ -777,9 +786,16 @@ while (pattern_list!=NULL) {
          }
          #endif
          if (OK){
-            if (p->output_policy!=IGNORE_OUTPUTS) process_output(output,p);
+            if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
+               push_char(p->stack,' ');
+            }
+            if (p->output_policy!=IGNORE_OUTPUTS) {
+               if (!process_output(output,p)) {
+                  goto next4;
+               }
+            }
             if (p->output_policy==MERGE_OUTPUTS) {
-               for (int x=pos;x<=end_of_compound;x++) {
+               for (int x=pos2;x<=end_of_compound;x++) {
                   push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
                }
             }
@@ -787,7 +803,7 @@ while (pattern_list!=NULL) {
             p->stack->stack_pointer=stack_top;
          }
       }
-      t=t->next;
+      next4: t=t->next;
    }
    pattern_list=pattern_list->next;
 }
@@ -818,15 +834,24 @@ while (pattern_list!=NULL) {
          }
          #endif
          if (OK) {
-            if (p->output_policy!=IGNORE_OUTPUTS) process_output(output,p);
+            if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
+               push_char(p->stack,' ');
+            }
+            if (p->output_policy!=IGNORE_OUTPUTS) {
+               if (!process_output(output,p)) {
+                  goto next6;
+               }
+            }
             if (p->output_policy==MERGE_OUTPUTS) {
-               for (int x=pos;x<=end_of_compound;x++) {
+               for (int x=pos2;x<=end_of_compound;x++) {
                   push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
                }
             }
             locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
             p->stack->stack_pointer=stack_top;
          }
+         /* This useless instruction is just here to enable the declaration of the next6 label */ 
+         next6: OK++;
       }
       /* And now, we look for simple words */
       int OK=1;
@@ -836,9 +861,15 @@ while (pattern_list!=NULL) {
       if (OK) {
          if (p->matching_patterns[token2]!=NULL) {
             if (XOR(get_value(p->matching_patterns[token2],pattern_list->pattern_number),pattern_list->negation)) {
-               if (p->output_policy!=IGNORE_OUTPUTS) process_output(output,p);
+               if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
+                  push_char(p->stack,' ');
+               }
+               if (p->output_policy!=IGNORE_OUTPUTS) {
+                  if (!process_output(output,p)) {
+                     goto next2;
+                  }
+               }
                if (p->output_policy==MERGE_OUTPUTS) {
-                  if (pos2!=pos) push_char(p->stack,' ');
                   push_string(p->stack,p->tokens->value[token2]);
                }
                locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
@@ -848,13 +879,15 @@ while (pattern_list!=NULL) {
             /* If the token matches no pattern, then it can match a pattern negation
              * like <!V> */
             if (pattern_list->negation && (p->token_control[token2] & MOT_TOKEN_BIT_MASK)) {
+               if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
+                  push_char(p->stack,' ');
+               }
                if (p->output_policy!=IGNORE_OUTPUTS) {
                   if (!process_output(output,p)) {
                      goto next2;
                   }
                }
                if (p->output_policy==MERGE_OUTPUTS) {
-                  if (pos2!=pos) push_char(p->stack,' ');
                   push_string(p->stack,p->tokens->value[token2]);
                }
                locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
@@ -881,13 +914,15 @@ if (current_state->number_of_tokens!=0) {
          #endif
          {
             output=p->tags[t->tag_number]->output;
+            if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
+               push_char(p->stack,' ');
+            }
             if (p->output_policy!=IGNORE_OUTPUTS) {
                if (!process_output(output,p)) {
                   goto next3;
                }
             }
             if (p->output_policy==MERGE_OUTPUTS) {
-               if (pos2!=pos) push_char(p->stack,' ');
                push_string(p->stack,p->tokens->value[token2]);
             }
             locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
