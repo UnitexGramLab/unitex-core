@@ -431,7 +431,11 @@ while (meta_list!=NULL) {
                      /* <DIC> can match two things: a sequence of tokens or a single token
                       * As we don't want to process lists of [start,end[ ranges, we
                       * directly handle here the case of a token sequence. */
-                     if (p->output_policy!=IGNORE_OUTPUTS) process_output(output,p);
+                     if (p->output_policy!=IGNORE_OUTPUTS) {
+                        if (!process_output(output,p)) {
+                           break;
+                        }
+                     }
                      if (p->output_policy==MERGE_OUTPUTS) {
                         for (int x=pos;x<=end_of_compound;x++) {
                            push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
@@ -482,7 +486,11 @@ while (meta_list!=NULL) {
                    * tag token like "{black-eyed,.A}". As we don't want to process lists
                    * of [start,end[ ranges, we directly handle here the case of a
                    * token sequence. */
-                  if (p->output_policy!=IGNORE_OUTPUTS) process_output(output,p);
+                  if (p->output_policy!=IGNORE_OUTPUTS) {
+                     if (!process_output(output,p)) {
+                        break;
+                     }
+                  }
                   if (p->output_policy==MERGE_OUTPUTS) {
                      for (int x=pos;x<=end_of_compound;x++) {
                         push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
@@ -601,7 +609,6 @@ while (meta_list!=NULL) {
          struct stack_unichar* real_stack=p->stack;
          p->stack=new_stack_unichar(real_stack->capacity);
          
-         /* ZZZ*/
          int* var_backup=NULL;
          if (p->output_policy!=IGNORE_OUTPUTS) {
         	 var_backup=create_variable_backup(p->variables);
@@ -625,7 +632,9 @@ while (meta_list!=NULL) {
          /* If the transition has matched */
          if (p->output_policy!=IGNORE_OUTPUTS) {
             /* We process its output */
-            process_output(output,p);
+            if (!process_output(output,p)) {
+               goto next;
+            }
          }
          if (p->output_policy==MERGE_OUTPUTS) {
             /* Then, if we are in merge mode, we push the tokens that have
@@ -639,7 +648,7 @@ while (meta_list!=NULL) {
          /* Once we have finished, we restore the stack */
          p->stack->stack_pointer=stack_top;
       }
-      t=t->next;
+      next: t=t->next;
    }
    meta_list=meta_list->next;
 }
@@ -653,7 +662,12 @@ while (variable_list!=NULL) {
    set_variable_start(p->variables,variable_list->variable_number,pos);
    locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
    p->stack->stack_pointer=stack_top;
-   set_variable_start(p->variables,variable_list->variable_number,old);
+   if (ctx==NULL) {
+      /* We do not restore previous value if we are inside a context, in order
+       * to allow extracting things from contexts (see the
+       * "the cat is white" example in Unitex manual). */
+      set_variable_start(p->variables,variable_list->variable_number,old);
+   }
    variable_list=variable_list->next;
 }
 
@@ -666,7 +680,12 @@ while (variable_list!=NULL) {
    set_variable_end(p->variables,variable_list->variable_number,pos);
    locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
    p->stack->stack_pointer=stack_top;
-   set_variable_end(p->variables,variable_list->variable_number,old);
+   if (ctx==NULL) {
+      /* We do not restore previous value if we are inside a context, in order
+       * to allow extracting things from contexts (see the
+       * "the cat is white" example in Unitex manual). */
+      set_variable_end(p->variables,variable_list->variable_number,old);
+   }
    variable_list=variable_list->next;
 }
 
@@ -829,7 +848,11 @@ while (pattern_list!=NULL) {
             /* If the token matches no pattern, then it can match a pattern negation
              * like <!V> */
             if (pattern_list->negation && (p->token_control[token2] & MOT_TOKEN_BIT_MASK)) {
-               if (p->output_policy!=IGNORE_OUTPUTS) process_output(output,p);
+               if (p->output_policy!=IGNORE_OUTPUTS) {
+                  if (!process_output(output,p)) {
+                     goto next2;
+                  }
+               }
                if (p->output_policy==MERGE_OUTPUTS) {
                   if (pos2!=pos) push_char(p->stack,' ');
                   push_string(p->stack,p->tokens->value[token2]);
@@ -839,7 +862,7 @@ while (pattern_list!=NULL) {
             }
          }
       }
-      t=t->next;
+      next2: t=t->next;
    }
    pattern_list=pattern_list->next;
 }
@@ -858,7 +881,11 @@ if (current_state->number_of_tokens!=0) {
          #endif
          {
             output=p->tags[t->tag_number]->output;
-            if (p->output_policy!=IGNORE_OUTPUTS) process_output(output,p);
+            if (p->output_policy!=IGNORE_OUTPUTS) {
+               if (!process_output(output,p)) {
+                  goto next3;
+               }
+            }
             if (p->output_policy==MERGE_OUTPUTS) {
                if (pos2!=pos) push_char(p->stack,' ');
                push_string(p->stack,p->tokens->value[token2]);
@@ -866,7 +893,7 @@ if (current_state->number_of_tokens!=0) {
             locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
             p->stack->stack_pointer=stack_top;
          }
-         t=t->next;
+         next3: t=t->next;
       }
    }
 }

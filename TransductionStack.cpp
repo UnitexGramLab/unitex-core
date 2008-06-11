@@ -24,7 +24,7 @@
 #include "DicVariables.h"
 
 
-int FAIL_ON_VARIABLE_ERRORS=1;
+int VARIABLE_ERROR_POLICY=IGNORE_VARIABLE_ERRORS;
 
 
 /**
@@ -74,12 +74,15 @@ for (i=0;i<length && s[i]!='\0';i++) {
 
 /**
  * This function processes the given output string.
+ * Returns 1 if OK; 0 otherwise (for instance, if a variable is 
+ * not correctly defined).
  */
-void process_output(unichar* s,struct locate_parameters* p) {
+int process_output(unichar* s,struct locate_parameters* p) {
+int old_stack_pointer=p->stack->stack_pointer;
 int i=0;
 if (s==NULL || !u_strcmp(s,"<E>")) {
    /* We do nothing if the output is <E> */
-   return;
+   return 1;
 }
 while (s[i]!='\0') {
    if (s[i]=='$') {
@@ -92,10 +95,11 @@ while (s[i]!='\0') {
       }
       name[l]='\0';
       if (s[i]!='$' && s[i]!='.') {
-         if (FAIL_ON_VARIABLE_ERRORS) {
-            fatal_error("Output error: missing closing $ after $%S\n",name);
+         switch (VARIABLE_ERROR_POLICY) {
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name);
+            case IGNORE_VARIABLE_ERRORS: continue;
+            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-         continue;
       }
       if (s[i]=='.') {
          /* Here we deal with the case of a field like $a.CODE$ */
@@ -107,24 +111,27 @@ while (s[i]!='\0') {
          }
          field[l]='\0';
          if (s[i]=='\0') {
-            if (FAIL_ON_VARIABLE_ERRORS) {
-               fatal_error("Output error: missing closing $ after $%S.%S\n",name,field);
+            switch (VARIABLE_ERROR_POLICY) {
+               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S.%S\n",name,field);
+               case IGNORE_VARIABLE_ERRORS: continue;
+               case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
-            continue;
          }
          if (field[0]=='\0') {
-            if (FAIL_ON_VARIABLE_ERRORS) {
-               fatal_error("Output error: empty field: $%S.$\n",name);
+            switch (VARIABLE_ERROR_POLICY) {
+               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
+               case IGNORE_VARIABLE_ERRORS: continue;
+               case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
-            continue;
          }
          i++;
          struct dela_entry* entry=(struct dela_entry*)get_dic_variable(name,p->dic_variables);
          if (entry==NULL) {
-            if (FAIL_ON_VARIABLE_ERRORS) {
-               fatal_error("Output error: undefined morphological variable %S\n",name);
+            switch (VARIABLE_ERROR_POLICY) {
+               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name);
+               case IGNORE_VARIABLE_ERRORS: continue;
+               case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
-            continue;
          }
          if (!u_strcmp(field,"INFLECTED")) {
             /* TODO: protect special chars */
@@ -142,7 +149,11 @@ while (s[i]!='\0') {
                push_string(p->stack,entry->inflectional_codes[i]);
             }
          } else {
-            fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
+            switch (VARIABLE_ERROR_POLICY) {
+               case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
+               case IGNORE_VARIABLE_ERRORS: continue;
+               case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+            }
          }
          continue;
       }
@@ -154,28 +165,32 @@ while (s[i]!='\0') {
       }
       struct transduction_variable* v=get_transduction_variable(p->variables,name);
       if (v==NULL) {
-         if (FAIL_ON_VARIABLE_ERRORS) {
-            fatal_error("Output error: undefined variable $%S$\n",name);
+         switch (VARIABLE_ERROR_POLICY) {
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
+            case IGNORE_VARIABLE_ERRORS: continue;
+            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-         continue;
       }
       if (v->start==UNDEF_VAR_BOUND) {
-         if (FAIL_ON_VARIABLE_ERRORS) {
-            fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
+         switch (VARIABLE_ERROR_POLICY) {
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
+            case IGNORE_VARIABLE_ERRORS: continue;
+            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-         continue;
       }
       if (v->end==UNDEF_VAR_BOUND) {
-         if (FAIL_ON_VARIABLE_ERRORS) {
-            fatal_error("Output error: end position of variable $%S$ undefined\n",name);
+         switch (VARIABLE_ERROR_POLICY) {
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name);
+            case IGNORE_VARIABLE_ERRORS: continue;
+            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-         continue;
       }
       if (v->start>v->end) {
-         if (FAIL_ON_VARIABLE_ERRORS) {
-            fatal_error("Output error: end position before starting position for variable $%S$\n",name);
+         switch (VARIABLE_ERROR_POLICY) {
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);
+            case IGNORE_VARIABLE_ERRORS: continue;
+            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
-         continue;
       }
       /* If the variable definition is correct */
       for (int k=v->start;k<v->end;k++) {
@@ -188,5 +203,6 @@ while (s[i]!='\0') {
       i++;
    }
 }
+return 1;
 }
 

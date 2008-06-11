@@ -233,7 +233,9 @@ while (meta_list!=NULL) {
          case META_EPSILON:
             /* We could have an output associated to an epsilon, so we handle this case */
             if (p->output_policy!=IGNORE_OUTPUTS) {
-               process_output(p->tags[t->tag_number]->output,p);
+               if (!process_output(p->tags[t->tag_number]->output,p)) {
+                  break;
+               }
             }
             morphological_locate(graph_depth,meta_list->transition->state_number,pos,pos_in_token,depth+1,
                                  matches,n_matches,ctx,p);
@@ -266,7 +268,11 @@ while (meta_list!=NULL) {
                /* If there is at least one match, we process the match list */
                do  {
                   get_content(content,p,pos,pos_in_token,L2->position,L2->pos_in_token);
-                  if (p->output_policy!=IGNORE_OUTPUTS) process_output(p->tags[t->tag_number]->output,p);
+                  if (p->output_policy!=IGNORE_OUTPUTS) {
+                     if (!process_output(p->tags[t->tag_number]->output,p)) {
+                        break;
+                     }
+                  }
                   if (p->output_policy==MERGE_OUTPUTS) {
                      push_string(p->stack,content);
                   }
@@ -361,7 +367,11 @@ while (meta_list!=NULL) {
       if (match_one_letter) {
          /* We factorize here the cases <MOT>, <MIN> and <MAJ> that all correspond
           * to matching one letter */
-         if (p->output_policy!=IGNORE_OUTPUTS) process_output(p->tags[t->tag_number]->output,p);
+         if (p->output_policy!=IGNORE_OUTPUTS) {
+            if (!process_output(p->tags[t->tag_number]->output,p)) {
+               goto next;
+            }
+         }
          if (p->output_policy==MERGE_OUTPUTS) {
             /* If needed, we push the character that was matched */
             push_char(p->stack,current_token[pos_in_token]);
@@ -381,7 +391,7 @@ while (meta_list!=NULL) {
                                  matches,n_matches,ctx,p);
          p->stack->stack_pointer=stack_top;
       }
-      t=t->next;
+      next: t=t->next;
    }
    meta_list=meta_list->next;
 }
@@ -441,7 +451,11 @@ while (trans!=NULL) {
          }
          if (prefix_length==length) {
             /* If we can match the tag's token, we process the output, if we have to */
-            if (p->output_policy!=IGNORE_OUTPUTS) process_output(tag->output,p);
+            if (p->output_policy!=IGNORE_OUTPUTS) {
+               if (!process_output(tag->output,p)) {
+                  continue;
+               }
+            }
             if (p->output_policy==MERGE_OUTPUTS) {
                push_substring(p->stack,current_token+pos_in_token,prefix_length);
             }
@@ -475,7 +489,11 @@ while (trans!=NULL) {
                 *          is a variable declaration like $abc$. Note that it could
                 *          make a difference if a variable with the same
                 *          name was declared before entering the morphological mode */
-               if (!save_dic_entry && p->output_policy!=IGNORE_OUTPUTS) process_output(tag->output,p);
+               if (!save_dic_entry && p->output_policy!=IGNORE_OUTPUTS) {
+                  if (!process_output(tag->output,p)) {
+                     continue;
+                  }
+               }
                if (p->output_policy==MERGE_OUTPUTS) {
                   push_string(p->stack,content);
                }
