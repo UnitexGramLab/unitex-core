@@ -23,7 +23,7 @@
 #include "Error.h"
 #include "DicVariables.h"
 
-
+#warning add a parameter to Locate for variable error policy
 int VARIABLE_ERROR_POLICY=IGNORE_VARIABLE_ERRORS;
 
 
