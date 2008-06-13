@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2008 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -50,6 +50,10 @@
  *      so 49 forms is the maximum.
  */
 #define MAX_INFLECTIONAL_CODES 100
+
+/* Maximum number of filters 100 */
+
+#define MAX_FILTERS 100
         
 /* Value returned when a word is not found in a dictionary */
 #define NOT_IN_DICTIONARY -1
@@ -78,8 +82,10 @@ struct dela_entry {
 	 * grammatical category of the entry. */
 	unsigned char n_semantic_codes;
 	unsigned char n_inflectional_codes;
+	unsigned char n_filters;
 	unichar* semantic_codes[MAX_SEMANTIC_CODES];
 	unichar* inflectional_codes[MAX_INFLECTIONAL_CODES];
+	unichar* filters[MAX_FILTERS];
 };
 
 

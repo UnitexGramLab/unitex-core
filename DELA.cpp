@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2008 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -300,6 +300,9 @@ res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
 res->semantic_codes[0]=NULL;
 res->n_inflectional_codes=0;
 res->inflectional_codes[0]=NULL;
+res->n_filters=1;
+res->filters[0]=NULL;
+res->filters[1]=NULL;
 i=0;
 /*
  * We read the inflected part
@@ -329,7 +332,7 @@ res->lemma=u_strdup(temp);
  * We read the grammatical code
  */
 i++;
-val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
+val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
@@ -343,6 +346,41 @@ if (temp[0]=='\0') {
    return NULL;
 }
 res->semantic_codes[0]=u_strdup(temp);
+/*
+ * Now we read the filters if any
+ */
+if (line[i] == '!' ) {//Negative filter
+	//u_fprintf(stderr,"FILTRE-\n");
+	res->filters[0]=u_strdup("n");
+	i=i+2; //we skpip !
+}
+else if (line[i] == '[' ) {//Positive filter
+	//u_fprintf(stderr,"FILTRE+\n");
+	res->filters[0]=u_strdup("p");
+	i++;
+}
+/*
+ * Now we read the list of filters
+ */
+while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
+   i++;
+   val=parse_string(line,&i,temp,P_COLON_CLOSING_BRACKET,P_EMPTY,P_EMPTY);
+   if (val==P_BACKSLASH_AT_END) {
+      if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
+      else (*verbose)=P_BACKSLASH_AT_END;
+      return NULL;
+   }
+   /*  */
+   if (temp[0]=='\0') {
+      if (!verbose) {
+         error("***Dictionary error: incorrect line\n_%S_\n",line);
+      } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
+      return NULL;
+   }
+   res->filters[res->n_filters]=u_strdup(temp);
+   (res->n_filters)++;
+}
+
 /*
  * Now we read the other gramatical and semantic codes if any
  */
@@ -1018,7 +1056,7 @@ if (space || tab || non_ascii) {
    comment[u_strlen(comment)-2]='\0';
    u_strcat(comment,"): (");
    unichar temp2[10];
-   /* We explicit the content of the code. For instance, if the code is "é t",
+   /* We explicit the content of the code. For instance, if the code is "ï¿½ t",
     * the result will be: "E9 SPACE t" */
    for (i=0;i<l-1;i++) {
       if (code[i]==' ') u_sprintf(temp2,"SPACE");
@@ -1099,6 +1137,9 @@ for (int i=0;i<d->n_semantic_codes;i++) {
 }
 for (int i=0;i<d->n_inflectional_codes;i++) {
    free(d->inflectional_codes[i]);
+}
+for (int i=0;i<d->n_filters;i++) {
+   free(d->filters[i]);
 }
 free(d);
 }
@@ -1261,16 +1302,3 @@ for (int i=0;i<src->n_inflectional_codes;i++) {
 }
 }
 
-
-/**
- * Tests wether the given string looks like a tag sequence like:
- * 
- *    {the,.DET} {cats,cat.N:p}
- * 
- * Spaces are allowed between tags.
- * Returns 1 in case of success; 0 otherwise.
- */
-int is_a_valid_tag_sequence(unichar* s) {
-
-return 1;
-}
