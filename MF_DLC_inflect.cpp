@@ -1,7 +1,7 @@
 /*
   * Unitex 
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2008 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -103,7 +103,8 @@ while (l!=EOF) {
        * of the inflection transducer to use */
       get_inflection_code(DELAS_entry->semantic_codes[0],inflection_code,code_gramm,&semitic);
       /* And we inflect the word */
-      err=SU_inflect(DELAS_entry->lemma,inflection_code,forms,semitic);
+   //   err=SU_inflect(DELAS_entry->lemma,inflection_code,forms,semitic);
+      err=SU_inflect(DELAS_entry->lemma,inflection_code,DELAS_entry->filters,forms,semitic);
       #warning mettre toutes les entrees sur une meme ligne
       /* Then, we print its inflected forms to the output */
       for (int i=0;i<forms->no_forms;i++) {
