@@ -1,7 +1,7 @@
 /*
   * Unitex 
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2008 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -96,7 +96,7 @@ typedef struct {
 int SU_inflect(SU_id_T* SU_id,f_morpho_T* feat, SU_forms_T* forms,int);
 
 /* This prototype has been added in order to deal with simple words */
-int SU_inflect(unichar* lemma,char* inflection_code, SU_forms_T* forms,int);
+int SU_inflect(unichar* lemma,char* inflection_code,unichar **filters,SU_forms_T* forms,int);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms
