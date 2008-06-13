@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2008 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -38,6 +38,9 @@ unichar* P_DOUBLE_QUOTE=u_strdup("\"");
 unichar* P_PLUS_COLON=u_strdup("+:");
 unichar* P_PLUS_MINUS_COLON=u_strdup("+-:");
 unichar* P_PLUS_COLON_SLASH=u_strdup("+:/");
+unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=u_strdup("+:/[");
+unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=u_strdup("+:/![");
+unichar* P_COLON_CLOSING_BRACKET=u_strdup(":]");
 unichar* P_COLON_SLASH=u_strdup(":/");
 unichar* P_CLOSING_ROUND_BRACKET=u_strdup("}");
 unichar* P_COMMA_DOT=u_strdup(",.");
@@ -45,7 +48,6 @@ unichar* P_PLUS_COLON_SLASH_BACKSLASH=u_strdup("+:/\\");
 unichar* P_COLON_SLASH_BACKSLASH=u_strdup(":/\\");
 unichar* P_COMMA_DOT_BACKSLASH_DIGITS=u_strdup(",.\\0123456789");
 unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup(".+/\\");
-
 
 
 /**

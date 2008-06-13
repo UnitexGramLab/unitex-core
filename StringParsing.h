@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2008 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -59,6 +59,9 @@ extern unichar* P_DOUBLE_QUOTE;
 extern unichar* P_PLUS_COLON;
 extern unichar* P_PLUS_MINUS_COLON;
 extern unichar* P_PLUS_COLON_SLASH;
+extern unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET;
+extern unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET;
+extern unichar* P_COLON_CLOSING_BRACKET;
 extern unichar* P_COLON_SLASH;
 extern unichar* P_CLOSING_ROUND_BRACKET;
 extern unichar* P_COMMA_DOT;
