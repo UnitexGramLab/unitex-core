@@ -42,6 +42,7 @@
 //          features = {Gen=fem, Nb=pl}
 typedef struct {
    unichar* form;         //e.g. "vives", or "-"
+   unichar* local_semantic_code;
    union {
       f_morpho_T* features;   //e.g. {Gen=fem, Nb=pl}, or {}
       unichar* raw_features; // used for simple words

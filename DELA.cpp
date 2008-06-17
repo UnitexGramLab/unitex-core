@@ -350,12 +350,10 @@ res->semantic_codes[0]=u_strdup(temp);
  * Now we read the filters if any
  */
 if (line[i] == '!' ) {//Negative filter
-	//u_fprintf(stderr,"FILTRE-\n");
 	res->filters[0]=u_strdup("n");
 	i=i+2; //we skpip !
 }
 else if (line[i] == '[' ) {//Positive filter
-	//u_fprintf(stderr,"FILTRE+\n");
 	res->filters[0]=u_strdup("p");
 	i++;
 }
@@ -374,7 +372,7 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
    if (temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
-      } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
+      } else (*verbose)=P_EMPTY_FILTER;
       return NULL;
    }
    res->filters[res->n_filters]=u_strdup(temp);

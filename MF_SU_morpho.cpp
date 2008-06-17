@@ -54,6 +54,7 @@ extern Fst2* fst2[N_FST2];
  */
 struct inflect_infos {
    unichar* inflected;
+   unichar* local_sem_code;
    unichar* output;
    unichar* semitic;
    struct inflect_infos* next;
@@ -62,12 +63,12 @@ struct inflect_infos {
 //////////////////////////////
 int SU_inflect(SU_id_T* SU_id,f_morpho_T* desired_features, SU_forms_T* forms);
 int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
-		               Fst2* a,int etat_courant, f_morpho_T* desired_features, SU_forms_T* forms,unichar*,int,unsigned int,unichar **);
+		               Fst2* a,int etat_courant, f_morpho_T* desired_features, SU_forms_T* forms,unichar*,int,unsigned int,unichar **,unichar *);
 int SU_explore_state_recursion(unichar* flechi,unichar* canonique,unichar* sortie,
                    Fst2* a,int etat_courant,struct inflect_infos** L,
-		             f_morpho_T* desired_features, SU_forms_T* forms,unichar*,int,unsigned int,unichar **);
+		             f_morpho_T* desired_features, SU_forms_T* forms,unichar*,int,unsigned int,unichar **,unichar *);
 int SU_explore_tag(Transition* T,unichar* flechi,unichar* canonique,unichar* sortie,
-			           Fst2* a,struct inflect_infos** LISTE,f_morpho_T* desired_features, SU_forms_T* forms,unichar*,int, unsigned int,unichar **);
+			           Fst2* a,struct inflect_infos** LISTE,f_morpho_T* desired_features, SU_forms_T* forms,unichar*,int, unsigned int,unichar **,unichar*);
 void shift_stack(unichar* stack,int pos);
 void shift_stack_left(unichar* stack,int pos);
 int SU_convert_features(f_morpho_T*** feat,unichar* feat_str);
@@ -122,7 +123,7 @@ int SU_inflect(SU_id_T* SU_id,f_morpho_T* desired_features, SU_forms_T* forms,in
     return 1;
   }
   u_strcpy(inflected,semitic?U_EMPTY:SU_id->lemma->unit);
-  err = SU_explore_state(inflected,SU_id->lemma->unit,inflection_codes,fst2[T],0,desired_features,forms,semitic?semitic_:NULL,0,0,NULL);
+  err = SU_explore_state(inflected,SU_id->lemma->unit,inflection_codes,fst2[T],0,desired_features,forms,semitic?semitic_:NULL,0,0,NULL,NULL);
   return err;
 }
 
@@ -139,6 +140,8 @@ int SU_inflect(unichar* lemma,char* inflection_code,unichar** filters, SU_forms_
   unichar inflected[MAX_CHARS_IN_STACK];
   unichar inflection_codes[MAX_CHARS_IN_STACK];
   unichar semitic_[MAX_CHARS_IN_STACK];
+  unichar local_sem_code[MAX_CHARS_IN_STACK];
+  
   inflection_codes[0]='\0';
   semitic_[0]='\0';
   int T=get_transducer(inflection_code);
@@ -147,7 +150,8 @@ int SU_inflect(unichar* lemma,char* inflection_code,unichar** filters, SU_forms_
     return 1;
   }
   u_strcpy(inflected,semitic?U_EMPTY:lemma);
-  err=SU_explore_state(inflected,lemma,inflection_codes,fst2[T],0,NULL,forms,semitic?semitic_:NULL,0,0,filters);
+  local_sem_code[0]='\0';
+  err=SU_explore_state(inflected,lemma,inflection_codes,fst2[T],0,NULL,forms,semitic?semitic_:NULL,0,0,filters,local_sem_code);
   return err;
 
 }
@@ -211,7 +215,7 @@ t=T;
 // Returns 0 on success, 1 otherwise.   
 int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
                    Fst2* a,int etat_courant, f_morpho_T* desired_features, SU_forms_T* forms,
-                   unichar* semitic,int flag_var,unsigned int var_in_use,unichar **filters) {
+                   unichar* semitic,int flag_var,unsigned int var_in_use,unichar **filters,unichar *local_semantic_codes) {
   int err;
   Fst2State e=a->states[etat_courant];
   if (e->control & 1) {  //If final state
@@ -266,6 +270,9 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
             fatal_error("Not enough memory in function SU_explore_state\n");
          }
          forms->forms[forms->no_forms].form=u_strdup(flechi);
+         
+         forms->forms[forms->no_forms].local_semantic_code=u_strdup(local_semantic_codes);
+         
          forms->forms[forms->no_forms].raw_features=features->string;
          forms->no_forms++;
          struct list_ustring* tmp=features->next;
@@ -283,7 +290,7 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
  default_trans = explore_trans(&(e->transitions),&t,a);
  
   while (t!=NULL) {//u_fprintf(stderr,"Explore 1\n");
-    retour_tag = SU_explore_tag(t,flechi,canonique,sortie,a,NULL,desired_features,forms,semitic,flag_var,var_in_use,filters);
+    retour_tag = SU_explore_tag(t,flechi,canonique,sortie,a,NULL,desired_features,forms,semitic,flag_var,var_in_use,filters,local_semantic_codes);
     retour_all_tags += retour_tag;
     t=t->next;
   }
@@ -306,6 +313,7 @@ if (i==NULL) {
 }
 i->inflected=NULL;
 i->output=NULL;
+i->local_sem_code=NULL;
 i->semitic=NULL;
 i->next=NULL;
 return i;
@@ -319,6 +327,7 @@ void free_inflect_infos(struct inflect_infos* i) {
 if (i==NULL) return;
 if (i->inflected!=NULL) free(i->inflected);
 if (i->output!=NULL) free(i->output);
+if (i->local_sem_code!=NULL) free(i->local_sem_code);
 if (i->semitic!=NULL) free(i->semitic);
 free(i);
 }
@@ -334,12 +343,14 @@ free(i);
 int SU_explore_state_recursion(unichar* inflected,unichar* lemma,unichar* output,
                    Fst2* a,int current_state,struct inflect_infos** L,
                    f_morpho_T* desired_features, SU_forms_T* forms,unichar* semitic,
-                   int flag_var,unsigned int var_in_use,unichar **filters) {
+                   int flag_var,unsigned int var_in_use,unichar **filters,unichar *local_semantic_codes) {
   Fst2State e=a->states[current_state];
   if (e->control & 1) {
     // if we are in a final state, we save the computed things
     struct inflect_infos* res=new_inflect_infos();
     res->inflected=u_strdup(inflected);
+    
+    res->local_sem_code=u_strdup(local_semantic_codes); 
     
     if (filters != NULL && filters[1]!= NULL) filtrer(output,filters);
     res->output=u_strdup(output);
@@ -357,13 +368,13 @@ int SU_explore_state_recursion(unichar* inflected,unichar* lemma,unichar* output
   //static Transition *default_trans=explore_trans(&t,a);
   int retour_all_tags = 0;
   int retour_tag;
- while (t!=NULL) {//u_fprintf(stderr,"Explore 2\n");
-	 retour_tag = SU_explore_tag(t,inflected,lemma,output,a,L,desired_features,forms,semitic,flag_var,var_in_use,filters);
+ while (t!=NULL) {//u_fprintf(stderr,"Explore 2\n");local_
+	 retour_tag = SU_explore_tag(t,inflected,lemma,output,a,L,desired_features,forms,semitic,flag_var,var_in_use,filters,local_semantic_codes);
     retour_all_tags += retour_tag;
     t=t->next;
   }
  if (default_trans != NULL){ //u_fprintf(stderr,"PASS2\n");
- SU_explore_tag(default_trans,inflected,lemma,output,a,L,desired_features,forms,semitic,flag_var,var_in_use,filters);}
+ SU_explore_tag(default_trans,inflected,lemma,output,a,L,desired_features,forms,semitic,flag_var,var_in_use,filters,local_semantic_codes);}
 
 
   //if ((retour_all_tags+retour_tag)) return 0; else return 1;
@@ -380,21 +391,21 @@ int SU_explore_state_recursion(unichar* inflected,unichar* lemma,unichar* output
 // Returns 0 on success, 1 otherwise.   
 int SU_explore_tag(Transition* T,unichar* inflected,unichar* lemma,unichar* output,
                  Fst2* a,struct inflect_infos** LIST,f_morpho_T* desired_features, SU_forms_T* forms,
-                 unichar* semitic,int flag_var,unsigned int var_in_use,unichar **filters) {
+                 unichar* semitic,int flag_var,unsigned int var_in_use,unichar **filters,unichar *local_semantic_codes) {
 if (T->tag_number < 0) {
    /* If we are in the case of a call to a sub-graph */
    struct inflect_infos* L=NULL;
    struct inflect_infos* temp;
    int retour_state = 0;
    int retour_all_states = 1; 
-   SU_explore_state_recursion(inflected,lemma,output,a,a->initial_states[-(T->tag_number)],&L,desired_features,forms,semitic,flag_var,var_in_use,filters);
+   SU_explore_state_recursion(inflected,lemma,output,a,a->initial_states[-(T->tag_number)],&L,desired_features,forms,semitic,flag_var,var_in_use,filters,local_semantic_codes);
    while (L!=NULL) {
       if (LIST==NULL) {//u_fprintf(stderr,"Explore state 1\n");
-    	  retour_state = SU_explore_state(L->inflected,lemma,L->output,a,T->state_number,desired_features,forms,L->semitic,flag_var,var_in_use,filters);
+    	  retour_state = SU_explore_state(L->inflected,lemma,L->output,a,T->state_number,desired_features,forms,L->semitic,flag_var,var_in_use,filters,local_semantic_codes);
     	  retour_all_states += (retour_state + 1);
     	  }
       else {//u_fprintf(stderr,"Explore state recursion 1\n");
-    	  retour_state = SU_explore_state_recursion(L->inflected,lemma,L->output,a,T->state_number,LIST,desired_features,forms,L->semitic,flag_var,var_in_use,filters);
+    	  retour_state = SU_explore_state_recursion(L->inflected,lemma,L->output,a,T->state_number,LIST,desired_features,forms,L->semitic,flag_var,var_in_use,filters,local_semantic_codes);
     	  retour_all_states += (1- retour_state );
     	  }
       temp=L;
@@ -535,6 +546,18 @@ if (t->output!=NULL && u_strcmp(t->output,"<E>")) {
       }
    } else {
       /* If we are in normal mode, we just append the tag's output to the global one */
+	   local_semantic_codes[0]='\0';
+	   if (t->output[0]=='+') {
+		   //u_fprintf(UTF8,stderr,"SEMANTIC:%S\n",semantic_codes);
+		   //u_fprintf(UTF8,stderr,"SEM:%S\n",t->output);
+		   int sem=0;
+		   while (t->output[sem] != ':') local_semantic_codes[sem]=t->output[sem++];
+		   local_semantic_codes[sem]='\0';
+		   int jj=0;
+		   while (t->output[sem] != '\0') t->output[jj++]=t->output[sem++];
+		   t->output[jj]='\0';
+		   //u_fprintf(UTF8,stderr,"OUT:%S LOCAL_SEM:%S\n",t->output,semantic_codes);
+	   }
       u_strcat(out,t->output);
    }
 }
@@ -544,9 +567,9 @@ stack[pos]='\0';
 int retour_state = 1;
 if (retour) {
 if (LIST==NULL) {//u_fprintf(stderr,"Explore state 2\n");
-	retour_state= SU_explore_state(stack,lemma,out,a,T->state_number,desired_features,forms,semitic?semitic2:NULL,flag_var,var_in_use,filters);
+	retour_state= SU_explore_state(stack,lemma,out,a,T->state_number,desired_features,forms,semitic?semitic2:NULL,flag_var,var_in_use,filters,local_semantic_codes);
 } else {//u_fprintf(stderr,"Explore state recursion 2\n");
-	retour_state = SU_explore_state_recursion(stack,lemma,out,a,T->state_number,LIST,desired_features,forms,semitic?semitic2:NULL,flag_var,var_in_use,filters);
+	retour_state = SU_explore_state_recursion(stack,lemma,out,a,T->state_number,LIST,desired_features,forms,semitic?semitic2:NULL,flag_var,var_in_use,filters,local_semantic_codes);
 }
 }
 //return (retour * (1-retour_state));
