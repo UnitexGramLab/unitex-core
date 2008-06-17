@@ -168,10 +168,6 @@ for (i=0;s[i]!='\0';i++)
 
 static void push_output_string(struct fst2txt_parameters* p,unichar s[]) {
 int i=0;
-if (!u_strcmp(s,"<E>")) {
-  // we do nothing if the transduction is <E>
-  return;
-}
 while (s[i]!='\0') {
       if (s[i]=='$') {
          // case of a variable name

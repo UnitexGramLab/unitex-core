@@ -80,8 +80,8 @@ for (i=0;i<length && s[i]!='\0';i++) {
 int process_output(unichar* s,struct locate_parameters* p) {
 int old_stack_pointer=p->stack->stack_pointer;
 int i=0;
-if (s==NULL || !u_strcmp(s,"<E>")) {
-   /* We do nothing if the output is <E> */
+if (s==NULL) {
+   /* We do nothing if there is no output */
    return 1;
 }
 while (s[i]!='\0') {

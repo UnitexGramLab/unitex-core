@@ -644,7 +644,7 @@ while (!is_empty(u_tokens)) {
    if (token[0]==':' && token[1]!='\0') {
       fatal_error("Unexpected subgraph call in token_sequence_2_integer_sequence\n");
    }
-   u_sprintf(tmp,"%S%s",token,is_an_output?"/<E>":"");
+   u_sprintf(tmp,"%S",token);
    i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
    free(token);
 }
