@@ -57,6 +57,7 @@ struct list_int* get_token_list_for_sequence(unichar*,Alphabet*,struct string_ha
 int get_token_number(unichar*,struct text_tokens*);
 int is_a_digit_token(unichar* s);
 void extract_semantic_codes_from_tokens(struct string_hash*,struct string_hash*);
+void extract_semantic_codes_from_morpho_dics(struct INF_codes**,int,struct string_hash*);
 
 //---------------------------------------------------------------------------
 #endif

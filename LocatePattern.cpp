@@ -193,6 +193,9 @@ if (p->filter_match_index==NULL) {
 #endif
 
 extract_semantic_codes_from_tokens(p->tokens,semantic_codes);
+u_printf("Loading morphological dictionaries...\n");
+load_morphological_dictionaries(morpho_dic_list,p);
+extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes);
 p->token_control=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
 if (p->token_control==NULL) {
    fatal_error("Not enough memory in locate_pattern\n");
@@ -227,8 +230,6 @@ free_string_hash(semantic_codes);
 p->variables=new_Variables(p->fst2->variables);
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
-u_printf("Loading morphological dictionaries...\n");
-load_morphological_dictionaries(morpho_dic_list,p);
 u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
 free_buffer(p->token_buffer);
@@ -306,6 +307,7 @@ for (int i=0;i<p->n_morpho_dics;i++) {
       morpho_dic_list++;
    }
    p->morpho_dic_bin[i]=load_BIN_file(bin);
+   p->morpho_dic_inf[i]=NULL;
    if (p->morpho_dic_bin[i]!=NULL) {
       char inf[FILENAME_MAX];
       remove_extension(bin,inf);
