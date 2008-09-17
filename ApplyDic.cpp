@@ -690,7 +690,7 @@ while (l!=NULL) {
    struct dela_entry* entry=tokenize_DELAF_line(l->output,1);
    if (entry!=NULL) {
       /* If the entry is valid */
-      if(l->start==l->end) {  
+      if(l->start==l->end) {
          /* If it is a simple word */
          int token_number=get_token_number(entry->inflected,info->tokens);
          if (token_number!=-1) {

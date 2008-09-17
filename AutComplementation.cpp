@@ -91,7 +91,7 @@ for (int q=0;q<A->number_of_states;q++) {
        * tagged by anything but the non default ones */
       symbol_t* s=LEXIC_minus_transitions(A->states[q]->outgoing_transitions);
       if (s!=NULL) {
-         add_outgoing_transition(A->states[q],s,sink_state_index);
+         add_all_outgoing_transitions(A->states[q],s,sink_state_index);
          /* We have added a single transition tagged by a symbol list. Now
           * we replace it by a list of transitions, each one of them
           * tagged with a single symbol */

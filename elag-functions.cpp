@@ -36,7 +36,7 @@
 #include "autalmot.h"
 #include "list_aut.h"
 #include "elag-functions.h"
-#include "fst_file.h"
+#include "ElagFstFilesIO.h"
 #include "AutConcat.h"
 #include "AutDeterminization.h"
 #include "AutMinimization.h"
@@ -60,7 +60,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
   u_printf("\n* leve ambiguite(%s): %d grammar%s.\n", fstname, gramms->nbelems,
          gramms->nbelems > 1 ?  "s" : "");
 
-  fst_file_in_t * txtin = load_fst_file(fstname,FST_TEXT,LANGUAGE);
+  Elag_fst_file_in * txtin = load_fst_file(fstname,FST_TEXT,LANGUAGE);
 
   if (txtin == NULL) { fatal_error("unable to load text '%s'\n", fstname); }
 
@@ -68,7 +68,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
   error("%d sentence(s) in %s\n", txtin->nb_automata, fstname);
 
 
-  fst_file_out_t * fstout = fst_file_out_open(outname, FST_TEXT);
+  Elag_fst_file_out * fstout = fst_file_out_open(outname, FST_TEXT);
 
   if (fstout == NULL) { fatal_error("unable to open '%s' for writing\n", outname); }
 
@@ -163,7 +163,7 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 	    symbol_t * s = symbol_unknow_new(LANG, idx);
             */
 	    add_transition(A, 0, rejected, 1);
-            elag_concat(A->automaton,orig->automaton,A->symbols);
+            elag_concat(A->automaton,orig->automaton);
             isrej = 1;
           }
         }
@@ -277,7 +277,7 @@ list_aut * chargeGramm(char * nomFichGramm) {
 
     error("\nReading %s...\n", buf + 1);
 
-    Fst2Automaton * A = load_elag_grammar_automaton(buf + 1);
+    Fst2Automaton * A = load_elag_grammar_automaton(buf + 1,LANGUAGE);
 
     if (A == NULL) { fatal_error("unable to load '%s' automaton\n", buf + 1); }
 

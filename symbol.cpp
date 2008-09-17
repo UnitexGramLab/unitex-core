@@ -47,7 +47,7 @@ unichar PUNC_TAB[] = {
  * Allocates, initializes and returns a new symbol_t corresponding to the
  * given type.
  */
-symbol_t* new_symbol(char type) {
+symbol_t* new_symbol(SymbolType type) {
 symbol_t* symbol=(symbol_t*)malloc(sizeof(symbol_t));
 if (symbol==NULL) {
    fatal_error("Not enough memory in new_symbol\n");
@@ -107,6 +107,7 @@ return s;
  * <PNC> tag in ELAG grammars.
  */
 symbol_t* new_symbol_PUNC(language_t* language,int canonic) {
+u_printf("new_symbol_PUNC %d\n",canonic);
 POS_t* POS=language_get_POS(language,PUNC_STR);
 symbol_t* symbol=new_symbol_POS(POS);
 symbol->type=ATOM; 
@@ -162,7 +163,7 @@ return symbol;
 void empty_symbol(symbol_t* symbol) {
 if (symbol->feature!=NULL) free(symbol->feature);
 if (symbol->negative) free(symbol->negs);
-symbol->type=-1;
+symbol->type=UNTYPED;
 symbol->negative=false;
 symbol->form=0;
 symbol->lemma=0;
@@ -422,7 +423,7 @@ if (symbol->POS->codes!=NULL) {
    int count=symbol_match_codes(symbol,matching_code);
    if (count==0) {
       /* If the symbol doesn't match any POS code, then it's an invalid one */
-      symbol->type=-1;
+      symbol->type=UNTYPED;
       free_symbol(matching_code);
       return symbol->type;
    }
@@ -487,40 +488,46 @@ void symbol_dump_all(const symbol_t * symb, FILE * f) {
   static const unichar locked[] = { 'l', 'o', 'c', 'k', 'e', 'd', 0 };
 
   int i;
+
+  while (symb!=NULL) {
+  
   language_t * lang = symb->POS ? symb->POS->language : LANGUAGE;
 
-  u_fprintf(f, "<%c:", symb->type);
+  u_printf("<%c:", symb->type);
 
   if (symb->negative) {
     for (i = 0; i < symb->nbnegs; i++) {
-      u_fprintf(f, "!%S", language_get_form(lang, symb->negs[i]));
+      u_printf("!%S", language_get_form(lang, symb->negs[i]));
     }
   } else {
-    u_fprintf(f, "%S,%S", language_get_form(lang, symb->form), language_get_form(lang, symb->lemma));
+    u_printf("%S,%S", language_get_form(lang, symb->form), language_get_form(lang, symb->lemma));
   }
 
 
   if (symb->POS) {
-
-    u_fprintf(f, ".%S", symb->POS->name);
+    u_printf(".%S", symb->POS->name);
 
     for (i = symb->POS->nb_inflect; i < symb->POS->CATs->size; i++) {
       CAT_t * CAT = POS_get_CAT(symb->POS,i);
-      u_fprintf(f, "+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[symb->feature[i]]);
+      u_printf("+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[symb->feature[i]]);
     }
 
-    u_fprintf(f, ":");
+    u_printf(":");
 
     for (i = 0; i < symb->POS->nb_inflect; i++) {
       CAT_t * CAT = POS_get_CAT(symb->POS,i);
-      u_fprintf(f, "+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[symb->feature[i]]);
+      u_printf("+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[symb->feature[i]]);
     }
 
   } else {
-    u_fprintf(f, ".*");
+    u_printf(".*");
   }
 
-  u_fprintf(f, ">");
+  u_printf("> ");
+  
+  symb=symb->next;
+  }
+  
 }
 
 
@@ -598,6 +605,8 @@ switch (s->type) {
 
    case EQUAL:
       fatal_error("Unexpected <=> tag in symbol_to_locate_label\n");
+      
+   default: ; /* nothing to do: just want to avoid a warning */
 }
 language_t* lang=s->POS->language;
 if (!u_strcmp(s->POS->name,UNKNOWN_STR)) {
@@ -662,6 +671,7 @@ void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
   case EQUAL:
     u_strcpy(ustr, "<=>");
     return;
+  default: ; /* nothing to do: just want to avoid a warning */
   }
 
 
@@ -748,6 +758,7 @@ switch (s->type) {
    case EPSILON: u_strcpy(ustr,"<E>"); return;
    case EXCLAM: u_strcpy(ustr,"<!>"); return;
    case EQUAL: u_strcpy(ustr,"<=>"); return;
+   default: ; /* nothing to do: just want to avoid a warning */
 }
 /* Then, we process other symbols */
 language_t* lang=s->POS->language;
@@ -759,7 +770,7 @@ if (s->negative) {
       u_strcatf(ustr,"!%S(%d)",language_get_form(lang,s->negs[i]),s->negs[i]);
    }
 } else {
-   /* If the symbol is positive one, we may have to print
+   /* If the symbol is a positive one, we may have to print
     * an inflected form and/or a lemma */
    if (s->form) {
       u_strcatf(ustr,"%S,",language_get_form(lang,s->form));
@@ -799,16 +810,16 @@ u_strcat(ustr,">");
 void symbol_dump(const symbol_t * s, FILE * f) {
   Ustring * ustr = new_Ustring();
   symbol_to_str(s, ustr);
-  u_fprintf(f, "%S", ustr->str);
+  u_printf("%S", ustr->str);
   free_Ustring(ustr);
 }
 
 
 void symbols_dump(const symbol_t * s, FILE * f) {
 
-  u_fprintf(f, "(");
-  while (s) { symbol_dump(s, f); if ((s = ((s == SYMBOL_DEF) ? NULL : s->next))) { u_fprintf(f, ", "); } }
-  u_fprintf(f, ")");
+  u_printf("(");
+  while (s) { symbol_dump(s, f); if ((s = ((s == SYMBOL_DEF) ? NULL : s->next))) { u_printf(", "); } }
+  u_printf(")");
 }
 
 
@@ -1215,7 +1226,6 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
     if (*buf == '\\' && (! buf[1] || buf[2])) { fatal_error("bad PUNC symbol '%S'\n", tag); }
     if (buf[1] && buf[0] != '\\') { fatal_error("bad symbol '%S' (PONC too long)\n", tag); }
-
     return new_symbol_PUNC(language, idx);
   }
 
@@ -1239,43 +1249,3 @@ if (tag[0]=='<' && tag[1]!='\0') {
   return new_symbol_UNKNOWN(language, idx);
 }
 
-
-
-#if 0
-static bool symbol_equals_traits(symbol_t * a, symbol_t * b) {
-
-  if (b->nb_features < a->nb_features) {
-    symbol_t * tmp = a;
-    a = b;
-    b = tmp;
-  }
-
-  int i;
-  for (i = 0; i < a->nb_features; i++) {
-    if (a->values[i] != b->values[i]) { return false; }
-  }
-
-  for (; i < b->nb_features; i++) {
-    if (b->values[i] != UNSPECIFIED) { return false; }
-  }
-  return true;
-}
-
-
-bool symbol_equals(symbol_t * a, symbol_t * b) {
-
-  if (a == b) { return true; }
-
-  if (a == NULL || b == NULL || a == SYMBOL_DEF || b == SYMBOL_DEF) { return false; }
-
-  if ((a->type != b->type) || (a->POS != b->POS)) { return false; }
-
-  if (a->lemma) {
-
-    if ((! b->lemma) || u_strcmp(a->lemma, b->lemma)) { return false; }
-
-  } else if (b->lemma) { return false; }
-
-  return symbol_equals_traits(a, b);
-}
-#endif

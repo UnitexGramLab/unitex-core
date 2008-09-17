@@ -29,13 +29,13 @@
  * Returns a list of symbols that corresponds to all the symbols
  * that tag transitions of the given list.
  */
-symbol_t* symbols_from_transs(Transition* list,struct string_hash_ptr* symbols) {
+symbol_t* symbols_from_transs(Transition* list) {
 symbol_t res;
 symbol_t* tmp;
 res.next=NULL;
 symbol_t* end=&res;
 while (list!=NULL) {
-   tmp=(symbol_t*)symbols->value[list->tag_number];
+   tmp=list->label;
    concat_symbols(end,dup_symbols(tmp),&end);
    list=list->next;
 }
@@ -47,30 +47,25 @@ return res.next;
  * If the state #q of the automaton A has a default transition, this function
  * adds all the explicit transitions that are equivalent to the default one.
  */
-void explicit_default_transition(SingleGraph A,int q,struct string_hash_ptr* symbols) {
+void explicit_default_transition(SingleGraph A,int q) {
 if (A->states[q]->default_state==-1) {
    /* Nothing to do if there is no default transition */
    return;
 }
-if (symbols==NULL) {
-   fatal_error("Cannot work on default transitions if the symbol set is NULL\n");
-}
 /* We compute the set of symbols tagging transitions that outgo from q */
-symbol_t* s=symbols_from_transs(A->states[q]->outgoing_transitions,symbols);
+symbol_t* s=symbols_from_transs(A->states[q]->outgoing_transitions);
 /* and we take the complementary set */
 symbol_t* all_but_s=minus_symbols(s);
-add_transition(A,symbols,q,all_but_s,A->states[q]->default_state);
+add_all_outgoing_transitions(A->states[q],all_but_s,A->states[q]->default_state);
 free_symbols(s);
 free_symbols(all_but_s);
 }
 
 
 /**
- * This function concatenates B at the end of A. A is modified. If
- * 'symbols' is not NULL, it will be used to compute default
- * transitions, if any.
+ * This function concatenates B at the end of A. A is modified. 
  */
-void elag_concat(SingleGraph A,SingleGraph B,struct string_hash_ptr* symbols) {
+void elag_concat(SingleGraph A,SingleGraph B) {
 int oldnb=A->number_of_states;
 int* renumber=(int*)malloc(B->number_of_states*sizeof(int));
 if (renumber==NULL) {
@@ -94,7 +89,7 @@ for (q=0;q<B->number_of_states;q++) {
  *    by explicit transitions */
 struct list_int* initials=get_initial_states(B);
 for (struct list_int* tmp=initials;tmp!=NULL;tmp=tmp->next) {
-   explicit_default_transition(A,renumber[tmp->n],symbols);
+   explicit_default_transition(A,renumber[tmp->n]);
 }
 for (q=0;q<oldnb;q++) {
    if (is_final_state(A->states[q])) {
@@ -102,7 +97,7 @@ for (q=0;q<oldnb;q++) {
        * to explicit its default transition, because if not, the concatenation
        * algorithm will modify the recognized language. */
       unset_final_state(A->states[q]);
-      explicit_default_transition(A,q,symbols);
+      explicit_default_transition(A,q);
       for (struct list_int* tmp=initials;tmp!=NULL;tmp=tmp->next) {
          concat(&(A->states[q]->outgoing_transitions),clone_transition_list(A->states[renumber[tmp->n]]->outgoing_transitions,NULL,NULL));
          if (is_final_state(A->states[renumber[tmp->n]])) {

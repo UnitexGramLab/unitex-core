@@ -24,6 +24,7 @@
 #include "symbol_op.h"
 #include "autalmot.h"
 #include "ElagStateSet.h"
+#include "Transitions.h"
 
 
 
@@ -77,8 +78,8 @@ if (is_final_state(A->states[q1]) && is_final_state(B->states[q2])) {
 }
 /* We clone the transitions of q1 and q2 and we expand them in order to
  * compute their intersection easily */
-Transition* transA=clone_transition_list(A->states[q1]->outgoing_transitions,NULL,(void*(*)(void*))dup_symbol);
-Transition* transB=clone_transition_list(B->states[q2]->outgoing_transitions,NULL,(void*(*)(void*))dup_symbol);
+Transition* transA=clone_transition_list(A->states[q1]->outgoing_transitions,NULL,dup_symbol);
+Transition* transB=clone_transition_list(B->states[q2]->outgoing_transitions,NULL,dup_symbol);
 expand_transitions(transA,transB);
 int destination;
 Transition* transa;
@@ -97,7 +98,7 @@ while (transA!=NULL) {
        * the transition we have just added to q */
       transa->label=NULL; 
       /* And we can free B's one */
-      free_Transition(transb,(void(*)(void*))free_symbol);
+      free_Transition(transb,free_symbol);
    } else {
       /* If A's transition has no equivalent in B... */
       if (B->states[q2]->default_state!=-1) {
@@ -130,7 +131,7 @@ if (A->states[q1]->default_state!=-1) {
    }
 } else {
    /* We don't need the remaining transitions from transB */
-   free_Transition_list(transB,(void (*)(void*))free_symbol);
+   free_Transition_list(transB,free_symbol);
 }
 return q;
 }

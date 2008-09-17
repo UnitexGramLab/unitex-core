@@ -177,18 +177,9 @@ pos=0;
 if (P_BACKSLASH_AT_END==parse_string(s,&pos,tmp,P_COMMA_DOT)) {
    fatal_error("Backslash at end of pattern\n");
 }
-/*
-i=0;
-int k=0;
-inflected[0]='\0';
-while ((s[i]!=',')&&(s[i]!='.')&&(s[i]!='\0')) {
-   if (s[i]=='\\') {i++;}
-   inflected[k++]=s[i++];
-}
-inflected[k]='\0';*/
 /* If we are in the <XXX> case, we must decide if XXX is a lemma
  * or a combination of grammatical/semantic/inflectional codes */
-if (s[/*i*/pos]=='\0') {
+if (s[pos]=='\0') {
    /* We must test on s and NOT on inflected, because of patterns like
     * <A+faux\-ami>. In fact, s contains "A+faux\-ami" and inflected
     * contains "A+faux-ami". So, if we consider inflected instead of s, 
@@ -209,48 +200,36 @@ if (s[/*i*/pos]=='\0') {
    }
 }
 /* If are in the <be.V> or <.V> case */
-if (s[/*i*/pos]=='.') {
-   if (/*inflected*/tmp[0]=='\0') {
+if (s[pos]=='.') {
+   if (tmp[0]=='\0') {
       /* If we are in the <.V> case */
       p->type=CODE_PATTERN;
-      build_code_pattern(p,&(s[/*i*/pos+1]));
+      build_code_pattern(p,&(s[pos+1]));
       return p;
    }
    /* If we are in the <be.V> case */
-   p->lemma=u_strdup(tmp);//inflected);
+   p->lemma=u_strdup(tmp);
    p->type=LEMMA_AND_CODE_PATTERN;
-   build_code_pattern(p,&(s[/*i*/pos+1]));
+   build_code_pattern(p,&(s[pos+1]));
    return p;
 }
 /* If we are in the  <am,be.V> case */
-if (/*inflected*/tmp[0]=='\0') {
+if (tmp[0]=='\0') {
    fatal_error("Invalid pattern has been found\n");
 }
 p->type=FULL_PATTERN;
-p->inflected=u_strdup(tmp);//inflected);
-/*i++;
-j=0;
-lemma[0]='\0';
-while ((s[i]!='.')&&(s[i]!='\0')) {
-   lemma[j++]=s[i++];
-}
-lemma[j]='\0';
-*/
+p->inflected=u_strdup(tmp);
+
 pos++;
 switch(parse_string(s,&pos,tmp,P_DOT)) {
    case P_BACKSLASH_AT_END: {fatal_error("Backslash at end of pattern\n");}
    case P_EOS: {fatal_error("Missing grammatical code in pattern\n");}
 }
-/*if (j==0) {
-   error("Invalid pattern has been found\n");
-   free_pattern(p);
-   return NULL;
-}*/
-if (s[/*i*/pos]=='\0') {
+if (s[pos]=='\0') {
    fatal_error("Invalid pattern has been found\n");
 }
-p->lemma=u_strdup(tmp);//lemma);
-build_code_pattern(p,&(s[/*i*/pos+1]));
+p->lemma=u_strdup(tmp);
+build_code_pattern(p,&(s[pos+1]));
 return p;
 }
 
@@ -311,6 +290,7 @@ switch(pattern->type) {
    case FULL_PATTERN: return (!u_strcmp(entry->inflected,pattern->inflected)) && (!u_strcmp(entry->lemma,pattern->lemma)) && is_compatible_code_pattern(entry,pattern);
    default: fatal_error("Unexpected case in is_entry_compatible_with_pattern\n");
 }
+return 0;
 }
 
 

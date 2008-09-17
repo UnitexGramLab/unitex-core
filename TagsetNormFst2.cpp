@@ -25,7 +25,7 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "autalmot.h"
-#include "fst_file.h"
+#include "ElagFstFilesIO.h"
 #include "utils.h"
 #include "IOBuffer.h"
 #include "Error.h"
@@ -103,11 +103,11 @@ copy_file(bak,txtauto);
 u_printf("Loading tagset...\n");
 language_t* language=load_language_definition(langname);
 set_current_language(language);
-fst_file_in_t* txtin=load_fst_file(bak,FST_TEXT,LANGUAGE);
+Elag_fst_file_in* txtin=load_fst_file(bak,FST_TEXT,LANGUAGE);
 if (txtin==NULL) {
    fatal_error("Unable to load text automaton '%s'\n",bak);
 }
-fst_file_out_t* txtout=fst_file_out_open(txtauto,FST_TEXT);
+Elag_fst_file_out* txtout=fst_file_out_open(txtauto,FST_TEXT);
 if (txtout==NULL) {
    fatal_error("Unable to open '%s' for writing\n",txtauto);
 }

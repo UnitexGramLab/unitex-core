@@ -23,12 +23,11 @@
 #define AutConcatH
 
 #include "SingleGraph.h"
-#include "String_hash.h"
 
 /**
  * This library provides a function for concatenating automata.
  */
 
-void elag_concat(SingleGraph,SingleGraph,struct string_hash_ptr*);
+void elag_concat(SingleGraph,SingleGraph);
 
 #endif

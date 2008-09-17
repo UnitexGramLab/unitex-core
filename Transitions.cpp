@@ -51,13 +51,13 @@ return new_Transition(tag_number,state_number,NULL);
 /**
  * Creates, initializes and returns a transition tagged by a pointer.
  */
-Transition* new_Transition(void* label,int state_number,Transition* next) {
+Transition* new_Transition(symbol_t* label,int state_number,Transition* next) {
 Transition* transition;
 transition=(Transition*)malloc(sizeof(Transition));
 if (transition==NULL) {
   fatal_error("Not enough memory in new_Transition\n");
 }
-transition->label=label;
+transition->label=dup_symbol(label);
 transition->state_number=state_number;
 transition->next=next;
 return transition;
@@ -67,7 +67,7 @@ return transition;
 /**
  * Creates, initializes and returns a transition tagged by a pointer.
  */
-Transition* new_Transition(void* label,int state_number) {
+Transition* new_Transition(symbol_t* label,int state_number) {
 return new_Transition(label,state_number,NULL);
 }
 
@@ -75,13 +75,13 @@ return new_Transition(label,state_number,NULL);
 /**
  * Frees a transition list.
  */
-void free_Transition_list(Transition* t,void(*free_tag)(void*)) {
+void free_Transition_list(Transition* t,void(*free_elag_tag)(symbol_t*)) {
 Transition* tmp;
 while (t!=NULL) {
    tmp=t;
    t=t->next;
-   if (free_tag!=NULL && tmp->label!=NULL) {
-      free_tag(tmp->label);
+   if (free_elag_tag!=NULL && tmp->label!=NULL) {
+      free_elag_tag(tmp->label);
    }
    free(tmp);
 }
@@ -99,10 +99,10 @@ free_Transition_list(t,NULL);
 /**
  * Frees a single transition.
  */
-void free_Transition(Transition* t,void(*free_tag)(void*)) {
+void free_Transition(Transition* t,void(*free_elag_tag)(symbol_t*)) {
 if (t==NULL) return;
-if (free_tag!=NULL && t->label!=NULL) {
-   free_tag(t->label);
+if (free_elag_tag!=NULL && t->label!=NULL) {
+   free_elag_tag(t->label);
 }
 free(t);
 }
@@ -130,7 +130,7 @@ if (ptr==NULL) {
  * This function adds a transition to the given transition list, if not
  * already present.
  */
-void add_transition_if_not_present(Transition** list,void* label,int state_number) {
+void add_transition_if_not_present(Transition** list,symbol_t* label,int state_number) {
 Transition* ptr;
 ptr=*list;
 /* We look for a transition with the same properties */
@@ -149,16 +149,16 @@ if (ptr==NULL) {
  * an integer or a pointer. If 'clone_tag_label' is not NULL,
  * this function is used to duplicate t's pointer label.
  */
-Transition* clone_transition(Transition* t,void*(*clone_tag_label)(void*)) {
+Transition* clone_transition(Transition* t,symbol_t*(*clone_elag_symbol)(const symbol_t*)) {
 Transition* transition;
 transition=(Transition*)malloc(sizeof(Transition));
 if (transition==NULL) {
   fatal_error("Not enough memory in clone_transition\n");
 }
-if (clone_tag_label==NULL) {
+if (clone_elag_symbol==NULL) {
    memcpy(transition,t,sizeof(Transition));
 } else {
-   transition->label=clone_tag_label(t->label);
+   transition->label=clone_elag_symbol(t->label);
    transition->state_number=t->state_number;
    transition->next=t->next;
 }
@@ -172,9 +172,9 @@ return transition;
  * 'clone_tag_label' is not NULL, it is used to clone the pointer
  * labels. If NULL, transitions are rawly copied with a memcpy.
  */
-Transition* clone_transition_list(Transition* list,int* renumber,void*(*clone_tag_label)(void*)) {
+Transition* clone_transition_list(Transition* list,int* renumber,symbol_t*(*clone_elag_symbol)(const symbol_t*)) {
 if (list==NULL) return NULL;
-Transition* result=clone_transition(list,clone_tag_label);
+Transition* result=clone_transition(list,clone_elag_symbol);
 result->next=NULL;
 if (renumber!=NULL) {
    result->state_number=renumber[result->state_number];
@@ -182,7 +182,7 @@ if (renumber!=NULL) {
 list=list->next;
 Transition* tmp=result;
 while (list!=NULL) {
-   tmp->next=clone_transition(list,clone_tag_label);
+   tmp->next=clone_transition(list,clone_elag_symbol);
    tmp->next->next=NULL;
    if (renumber!=NULL) {
       tmp->next->state_number=renumber[tmp->next->state_number];

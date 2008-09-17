@@ -687,7 +687,6 @@ while (t!=NULL) {
                  // case of variable case match
                  // the letter sequences may have been caught by the arbre_etiquette structure
                  int position=0;
-                 int uu=pos2;
                  unichar mot[1000];
                  while (pos2+p->current_origin<p->text_buffer->size && is_equal_or_uppercase(contenu[position],p->buffer[pos2+p->current_origin],p->alphabet)) {
                    mot[position++]=p->buffer[(pos2++)+p->current_origin];

@@ -289,7 +289,8 @@ CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o Unicode.o Text_tokens.o String
 				LocateFst2Tags.o Error.o SortTxtMain.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o\
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
-				Stack_unichar.o Transitions.o DicVariables.o
+				Stack_unichar.o Transitions.o DicVariables.o\
+				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o Unicode.o Text_tokens.o String_hash.o List_int.o\
@@ -299,7 +300,8 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o Unicode.o Text_to
 				DELA.o List_ustring.o Fst2.o Pattern.o LocateFst2Tags.o\
 				Error.o SortTxtMain.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
-				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o
+				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
+				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 CONVERT      = Convert
 CONVERT_OBJS = IOBuffer.o Convert.o Unicode.o File.o CodePages.o Error.o\
@@ -312,36 +314,38 @@ DICO_OBJS = Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o 
             Pattern.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o \
             Text_parsing.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o LocateAsRoutine.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
-            LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o
+            LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
+            symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 ELAG      = Elag
-ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o fst_file.o AutDeterminization.o \
+ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o ElagFstFilesIO.o AutDeterminization.o \
             AutMinimization.o aut-emonde.o AutConcat.o autalmot.o \
             symbol.o hash_str_table.o String_hash.o Tagset.o ustring.o \
-   		   ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o LanguageDefinition.o\
+   		    ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o LanguageDefinition.o\
             aut-topo.o AutIntersection.o aut-eval.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
-            BitMasks.o FIFO.o Transitions.o
+            BitMasks.o FIFO.o Transitions.o ElagDebug.o
  
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o ElagRulesCompilation.o autalmot.o\
-               fst_file.o hash_str_table.o String_hash.o\
+               ElagFstFilesIO.o hash_str_table.o String_hash.o\
                symbol.o ustring.o AutDeterminization.o AutIntersection.o ElagStateSet.o symbol_op.o LanguageDefinition.o Tagset.o \
 	            AutMinimization.o SymbolAlphabet.o aut-emonde.o AutConcat.o AutComplementation.o\
 	            Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o\
 	            SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o\
-	            Transitions.o
+	            Transitions.o ElagDebug.o
 
 EVAMB      = Evamb
 EVAMB_OBJS = IOBuffer.o Evamb.o Unicode.o Fst2.o String_hash.o\
              Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
              List_int.o BitMasks.o DELA.o List_pointer.o SingleGraph.o\
-             BitArray.o HashTable.o FIFO.o Transitions.o
+             BitArray.o HashTable.o FIFO.o Transitions.o\
+             symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 EXPLOSEFST2      = ExploseFst2
 EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o Unicode.o fst2autalmot.o autalmot_old.o Fst2.o String_hash.o\
                    Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o List_int.o ustring.o\
-                   BitMasks.o DELA.o Transitions.o
+                   BitMasks.o DELA.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o Tagset.o
 
 EXPORTDIC      = ExportDic
 EXPORTDIC_OBJS = IOBuffer.o ExportDic.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
@@ -353,15 +357,17 @@ EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o Morphological
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o List_ustring.o Fst2.o Pattern.o \
                Unicode.o Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o Matches.o\
-	            MorphologicalFilters.o Error.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o\
-	            LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
-	            Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o
+	           MorphologicalFilters.o Error.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o\
+	           LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
+	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
+	           symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
                FlattenFst2.o List_int.o Error.o File.o SingleGraph.o\
                BitMasks.o BitArray.o HashTable.o FIFO.o Pattern.o List_ustring.o\
-               String_hash.o StringParsing.o Transitions.o DELA.o
+               String_hash.o StringParsing.o Transitions.o DELA.o\
+               symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 #FREQ         = Freq
 #FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.o                \
@@ -378,16 +384,16 @@ FST2GRF      = Fst2Grf
 FST2GRF_OBJS = IOBuffer.o Fst2Grf.o Unicode.o Fst2.o Sentence2Grf.o\
                File.o List_int.o Error.o StringParsing.o Pattern.o\
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o\
-               Alphabet.o Transitions.o
+               Alphabet.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = IOBuffer.o Fst2List.o Unicode.o Fst2.o Alphabet.o\
                 File.o String_hash.o Error.o TransductionVariables.o\
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o\
-                Transitions.o DELA.o
+                Transitions.o DELA.o symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 FSTLOCATE      = FstLocate
-FSTLOCATE_OBJS = FstLocate.o autalmot.o symbol_op.o stack.o fst_file.o Error.o symbol.o Unicode.o ustring.o\
+FSTLOCATE_OBJS = FstLocate.o autalmot.o symbol_op.o stack.o ElagFstFilesIO.o Error.o symbol.o Unicode.o ustring.o\
                  hash_str_table.o LanguageDefinition.o Tagset.o IOBuffer.o
 
 FST2TXT      = Fst2Txt
@@ -395,24 +401,28 @@ FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
                TransductionVariables.o String_hash.o Error.o StringParsing.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
-	           Fst2TxtAsRoutine.o DELA.o DicVariables.o
+	           Fst2TxtAsRoutine.o DELA.o DicVariables.o\
+	           symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 FST2UNAMBIG      = Fst2Unambig
 FST2UNAMBIG_OBJS = Fst2.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o\
                    Unicode.o Pattern.o List_ustring.o StringParsing.o String_hash.o\
-                   List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o
+                   List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
+                   symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = IOBuffer.o Grf2Fst2_main.o Grf2Fst2.o Alphabet.o Unicode.o Fst2.o\
                 GrfCheck.o Grf2Fst2_lib.o Error.o File.o SingleGraph.o\
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o\
-                List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o
+                List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o\
+                symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 
 IMPLODEFST2      = ImplodeFst2
 IMPLODEFST2_OBJS = IOBuffer.o ImplodeFst2.o Unicode.o Fst2.o\
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
-                   List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o
+                   List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o\
+                   symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 LOCATE      = Locate
 LOCATE_OBJS = IOBuffer.o Locate.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
@@ -421,20 +431,23 @@ LOCATE_OBJS = IOBuffer.o Locate.o Unicode.o Alphabet.o DELA.o List_ustring.o Str
               OptimizedFst2.o Text_parsing.o MorphologicalLocate.o Matches.o TransductionVariables.o TransductionStack.o\
               ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o LocateAsRoutine.o\
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
-              Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o
+              Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
+              symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 MERGETEXTAUTOMATON      = MergeTextAutomaton
 MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o Unicode.o String_hash.o Fst2.o\
                           File.o stack.o qsort.o grf.o Alphabet.o Error.o StringParsing.o\
                           Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
-                          Transitions.o DELA.o
+                          Transitions.o DELA.o\
+                          symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_Inflect.o MF_LangMorpho.o\
                  MF_InflectTransd.o  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
                  Fst2.o Unicode.o Error.o IOBuffer.o File.o DELA.o StringParsing.o List_ustring.o\
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2_main.o\
-                 Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o GrfCheck.o MF_Operators_Util.o\
+                 Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o GrfCheck.o\
+                 symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o MF_Operators_Util.o
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = IOBuffer.o Normalize.o Unicode.o File.o DELA.o List_ustring.o String_hash.o\
@@ -454,7 +467,8 @@ RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.
                Text_parsing.o MorphologicalLocate.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
                Sentence2Grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
-               Buffer.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o
+               Buffer.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
+               symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Unicode.o RegularExpressions.o Error.o File.o\
@@ -475,21 +489,24 @@ TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o DELA_tr
                 DELA.o List_ustring.o String_hash.o TextAutomaton.o List_int.o\
                 NormalizationFst2.o Fst2.o File.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
-                FIFO.o BitArray.o HashTable.o Transitions.o Matches.o
+                FIFO.o BitArray.o HashTable.o Transitions.o Matches.o\
+                symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 TAGSETNORM = TagsetNormFst2
-TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o autalmot.o fst_file.o ustring.o \
-					String_hash.o symbol.o LanguageDefinition.o Tagset.o aut-emonde.o\
+TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o ElagFstFilesIO.o ustring.o \
+					String_hash.o symbol.o LanguageDefinition.o Tagset.o\
 					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
 					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
-					BitMasks.o FIFO.o Transitions.o
+					BitMasks.o FIFO.o Transitions.o\
+					symbol_op.o autalmot.o aut-emonde.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = IOBuffer.o Unicode.o Fst2.o Alphabet.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o File.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o\
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
-	           XMLizer.o getopt.o DicVariables.o
+	           XMLizer.o getopt.o DicVariables.o\
+	           symbol.o symbol_op.o LanguageDefinition.o Tagset.o ustring.o
 
 TEI2TXT      = TEI2Txt
 TEI2TXT_OBJS = IOBuffer.o Unicode.o Error.o File.o TEI2Txt.o HTMLCharacters.o\
@@ -507,13 +524,14 @@ COMPRESSKR_OBJS = IOBuffer.o CompressKr.o etc.o pro_type.o \
 CONSULTDIC = ConsultDic
 CONSULTDIC_OBJS = IOBuffer.o ConsultDic.o etc.o pro_type.o \
 		    Unicode.o Fst2.o File.o Error.o Alphabet.o Pattern.o List_ustring.o\
-		    StringParsing.o String_hash.o List_int.o BitMasks.o Transitions.o DELA.o
+		    StringParsing.o String_hash.o List_int.o BitMasks.o Transitions.o DELA.o\
+		    symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 INFLECTKR = InflectKr
 INFLECTKR_OBJS  = IOBuffer.o InflectKr.o etc.o pro_type.o \
                   Unicode.o Fst2.o File.o Error.o Pattern.o List_ustring.o\
                   String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o\
-                  Alphabet.o
+                  Alphabet.o symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 SUFFORM2RAC  = SufForm2Rac
 SUFFORM2RAC_OBJS  = IOBuffer.o SufForm2Rac.o  etc.o \
@@ -533,7 +551,8 @@ JAMO2SYL_OBJS  = IOBuffer.o Jamo2Syl.o etc.o bitmap.o \
                   pro_type.o jamoCodage.o\
                   Unicode.o File.o Fst2.o Error.o Pattern.o\
                   List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
-                  Transitions.o DELA.o Alphabet.o
+                  Transitions.o DELA.o Alphabet.o\
+                  symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 SYL2JAMO  = Syl2Jamo
 SYL2JAMO_OBJS  = IOBuffer.o Syl2Jamo.o jamoCodage.o etc.o \
@@ -543,13 +562,15 @@ SYL2JAMO_OBJS  = IOBuffer.o Syl2Jamo.o jamoCodage.o etc.o \
 TXT2FST2KR  = Txt2Fst2Kr
 TXT2FST2KR_OBJS  = IOBuffer.o Txt2Fst2Kr.o bitmap.o etc.o segtype.o \
 		   Unicode.o File.o Fst2.o Error.o Pattern.o List_ustring.o\
-		   String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o
+		   String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
+		   symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 EXTRACTCHAR  = ExtractChar
 EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segtype.o \
 		            jamoCodage.o pro_type.o Unicode.o File.o Fst2.o Error.o\
 		            Pattern.o List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
-		            Transitions.o DELA.o Alphabet.o
+		            Transitions.o DELA.o Alphabet.o\
+		            symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 #############################################################################
 # IMPORTANT!!! DO NOT MOVE OR REMOVE THE FOLLOWING LINE #</PROG>. IT IS USED

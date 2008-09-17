@@ -103,6 +103,7 @@ res->n_semantic_codes=1;   /* 0 would be an error (no grammatical code) */
 res->semantic_codes[0]=NULL;
 res->n_inflectional_codes=0;
 res->inflectional_codes[0]=NULL;
+res->n_filters=0;
 i=0;
 /*
  * We read the inflected part

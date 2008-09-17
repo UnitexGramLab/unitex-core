@@ -59,19 +59,6 @@ u_printf("Usage: ElagComp [-r <rlist>|-g <grammar>] -l <lang> [-o <output>] [-d 
 }
 
 
-static inline void strip_extension(char * s) {
-
-  char * p = s + strlen(s) - 1;
-  
-  while (p > s) {
-    if (*p == '.') { *p = 0; break; }
-    if (*p == '/' || *p == '\\') { break; }
-    p--;
-  }
-}
-
-
-
 int main(int argc,char** argv) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
@@ -174,7 +161,6 @@ if (rules!=NULL) {
    u_printf("\nElag grammars are compiled in %s.\n",compilename);
 } else {
    /* If we must compile a single grammar */
-   u_printf("Compiling %s...\n",grammar);
    char elg_file[FILENAME_MAX];
    get_extension(grammar,elg_file);
    if (strcmp(elg_file,".fst2")) {

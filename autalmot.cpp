@@ -20,9 +20,10 @@
   */
 
 #include "utils.h"
-#include "fst_file.h"
+#include "ElagFstFilesIO.h"
 #include "autalmot.h"
 #include "Error.h"
+#include "SingleGraph.h"
 
 
 transition_t * transition_new(int to, symbol_t * label, transition_t * next) {
@@ -112,7 +113,6 @@ if (aut==NULL) {
    fatal_error("Not enough memory in new_Fst2Automaton\n");
 }
 aut->name=u_strdup(name);
-aut->symbols=NULL;
 if (size>=0) {
    aut->automaton=new_SingleGraph(size);
 } else {
@@ -285,7 +285,7 @@ void autalmot_unset_initial(Fst2Automaton * A, int q) {
  * (text fst, elag grammar, ...).
  */
 void save_automaton(const Fst2Automaton* A,char* name,int type) {
-fst_file_out_t* fstf=fst_file_out_open(name,type);
+Elag_fst_file_out* fstf=fst_file_out_open(name,type);
 if (fstf==NULL) {
    error("Unable to open '%s'\n",name);
    return;

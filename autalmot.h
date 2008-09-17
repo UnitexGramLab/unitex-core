@@ -83,14 +83,12 @@ typedef struct {
    /* The automaton itself */
    SingleGraph automaton;
    
-   /* The symbols that tag the transitions of the automaton */
-   struct string_hash_ptr* symbols;
-
-
-
-  int nbstates;
-  state_t * states;   /* tableau des etats */
-  int size;           /* taille du tableau */
+   
+   
+   
+   int nbstates;
+   state_t * states;   /* tableau des etats */
+   int size;           /* taille du tableau */
   /* Tableau des etats initiaux. initial[0],
    * initial[1], etc. contiennent les numeros des etats initiaux.
    */
@@ -122,8 +120,6 @@ void autalmot_unset_initial(Fst2Automaton * A, int q);
 int autalmot_add_state(Fst2Automaton * A, int flags = 0);
 void add_transition(Fst2Automaton * A, int from, symbol_t * label, int to);
 void add_transition(SingleGraph,struct string_hash_ptr*,int,symbol_t*,int);
-
-Fst2Automaton * load_elag_grammar_automaton(char * name, language_t * lang = LANGUAGE);
 
 // type == TEXT | GRAM | LOCATE
 

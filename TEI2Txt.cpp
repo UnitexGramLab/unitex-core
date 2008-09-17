@@ -169,7 +169,14 @@ void tei2txt(char *fin, char *fout) {
 					current_state = 0;
                inside_sentence=1;
                if (!first_sentence) {
+                  /* We put a {STOP} tag in order to avoid matches that overlap 2 sentences */
                   u_fputc(UTF16_LE, '\n', output);
+					   u_fputc(UTF16_LE, '{', output);
+					   u_fputc(UTF16_LE, 'S', output);
+					   u_fputc(UTF16_LE, 'T', output);
+					   u_fputc(UTF16_LE, 'O', output);
+					   u_fputc(UTF16_LE, 'P', output);
+					   u_fputc(UTF16_LE, '}', output);
 					   u_fputc(UTF16_LE, '{', output);
 					   u_fputc(UTF16_LE, 'S', output);
 					   u_fputc(UTF16_LE, '}', output);

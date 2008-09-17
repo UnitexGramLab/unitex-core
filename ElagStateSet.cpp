@@ -23,6 +23,7 @@
 #include "symbol_op.h"
 #include "Error.h"
 #include "ElagStateSet.h"
+#include "ElagDebug.h"
 
 
 
@@ -491,6 +492,11 @@ for (state_id* id=Q->original_state_set->state_list;id!=NULL;id=id->next) {
       TRANS_t* T;
       if ((T=TRANS_t_lookup(Q->transitions,(symbol_t*)t->label))==NULL) {
          /* If we have to create a new symbol */
+         if (is_set_debug()) {
+            u_printf("on cree le symbol: ");
+            symbol_dump((symbol_t*)t->label);
+            u_printf("\n");
+         }
          T=new_TRANS_t((symbol_t*)t->label,Q->transitions);
          Q->transitions=T;
       }
@@ -545,5 +551,16 @@ free(Q);
 }
 
 
-
+/**
+ * Debug function that prints the indices of the states in the given set.
+ */
+void debug_print(state_set* s) {
+u_printf("state set=");
+if (s==NULL) return;
+state_id* l=s->state_list;
+while (l!=NULL) {
+   u_printf("%d ",l->state_number);
+   l=l->next;
+}
+}
 

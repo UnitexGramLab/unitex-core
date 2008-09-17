@@ -49,7 +49,7 @@ void determine_sortesymbole(tSymbole * symb) {
     switch (*symb->canonique) {
 
     case 0:
-      symb->sorteSymbole = CODE;
+      symb->sorteSymbole = CODE_POUET;
       break;
 
     case '!':
@@ -775,8 +775,8 @@ void text_output_fst2(list_aut_old * txt, FILE * f) {
 	    u_sprintf(buf, "<.>");
 	    break;
 
-	  case CODE:
-	    error("CODE in text automaton???\n");
+	  case CODE_POUET:
+	    error("CODE_POUET in text automaton???\n");
 	    u_sprintf(buf, "<%S>", t->etiq->gramm);
 	    break;
 

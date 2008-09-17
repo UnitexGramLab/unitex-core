@@ -235,6 +235,7 @@ if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - t
     if (a->nbnegs != b->nbnegs) { return b->nbnegs - a->nbnegs; }
     for (int i = 0; i < a->nbnegs; i++) { if (a->negs[i] != b->negs[i]) { return b->negs[i] - a->negs[i]; } }
     break;
+  default: ; /* nothing to do: just want to avoid a warning */
   }
 
   /* same symbols */
@@ -636,6 +637,7 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
     case INC:
       res = CAN_in_CODE(a, b);
       break;
+    default: ; /* nothing to do: just want to avoid a warning */
     }
     break;
 
@@ -658,6 +660,7 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
     case INC:
       res = NEG_in_CODE(a, b);
       break;
+    default: ; /* nothing to do: just want to avoid a warning */
     }
     break;
 
@@ -681,9 +684,11 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
     case INC:
       res = CODE_in_CODE(a, b);
       break;
+    default: ; /* nothing to do: just want to avoid a warning */
     }
     break;
-
+  
+  default: ; /* nothing to do: just want to avoid a warning */
   }
   return res;
 }
@@ -973,7 +978,9 @@ static symbol_t * CODE_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
 
 
-static inline symbol_t * CODE_minus_CODE(const symbol_t * a, const symbol_t * b) { return type_and_clean_symbols(minus_traits(a, b));  }
+static inline symbol_t * CODE_minus_CODE(const symbol_t * a, const symbol_t * b) {
+return type_and_clean_symbols(minus_traits(a, b));
+}
 /*
  debug("CODE_minus_CODE("); symbol_dump(a); errprintf(", "); symbol_dump(b); errprintf(")\n");
 
@@ -1139,6 +1146,7 @@ switch (b->type) {
 
          case CODE:
          case INC: res=CODE_minus_CAN(a,b); break;
+         default: ; /* nothing to do: just want to avoid a warning */
        }
        break;
 
@@ -1153,6 +1161,7 @@ switch (b->type) {
          
          case CODE:
          case INC: res=CODE_minus_NEG(a,b); break;
+         default: ; /* nothing to do: just want to avoid a warning */
       }
       break;
       
@@ -1167,8 +1176,10 @@ switch (b->type) {
          
          case CODE:
          case INC: res=CODE_minus_CODE(a,b); break;
+         default: ; /* nothing to do: just want to avoid a warning */
       }
       break;
+   default: ; /* nothing to do: just want to avoid a warning */
 }
 return res;
 }
@@ -1179,7 +1190,7 @@ return res;
  */
 symbol_t* symbol_minus_symbol(const symbol_t* a,const symbol_t* b) {
 if (!symbol_in_symbol(b,a)) {
-   /* If b is not fully included in a, we must a inter b */
+   /* If b is not fully included in a, we must compute a inter b */
    symbol_t* i=symbol_inter_symbol(a,b);
    if (i==NULL) {
       /* If the intersection is empty, then the result is a */

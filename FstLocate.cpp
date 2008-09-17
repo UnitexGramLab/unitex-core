@@ -100,7 +100,7 @@ if (patternname==NULL) {
 u_printf("Loading %s langage definition ...\n", langname);
 language_t* lang=load_language_definition(langname);
 set_current_language(lang);
-fst_file_in_t* txtin=load_fst_file(txtname,FST_TEXT);
+Elag_fst_file_in* txtin=load_fst_file(txtname,FST_TEXT);
 if (txtin==NULL) {
    fatal_error("Unable to load text '%s'\n", txtname);
 }

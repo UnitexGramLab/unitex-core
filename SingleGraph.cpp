@@ -90,15 +90,15 @@ return new_SingleGraph(DEFAULT_STATE_ARRAY_SIZE);
 /**
  * Frees a SingleGraph
  */
-void free_SingleGraph(SingleGraph g,void(*free_tag)(void*)) {
+void free_SingleGraph(SingleGraph g,void(*free_elag_symbol)(symbol_t*)) {
 if (g==NULL) return;
-if (g->tag_type!=PTR_TAGS && free_tag!=NULL) {
+if (g->tag_type!=PTR_TAGS && free_elag_symbol!=NULL) {
    error("Unexpected free function in free_SingleGraph\n");
-   free_tag=NULL;
+   free_elag_symbol=NULL;
 }
 if (g->states!=NULL) {
    for (int i=0;i<g->number_of_states;i++) {
-      free_SingleGraphState(g->states[i],free_tag);
+      free_SingleGraphState(g->states[i],free_elag_symbol);
    }
    free(g->states);
 }
@@ -187,6 +187,14 @@ set_bit_mask(&(e->control),CO_ACCESSIBILITY_BIT_MASK);
 
 
 /**
+ * Marks a SingleGraph state as non accessible and non coaccessible.
+ */
+void reset_accessibility_info(SingleGraphState e) {
+unset_bit_mask(&(e->control),ACCESSIBILITY_BIT_MASK|CO_ACCESSIBILITY_BIT_MASK);
+}
+
+
+/**
  * Returns 1 if the state is not both accessible and
  * co-accessible; 0 otherwise.
  */
@@ -216,9 +224,9 @@ return s;
  * Frees a SingleGraph state and all its transitions. The states
  * pointed by its transitions are not modified.
  */
-void free_SingleGraphState(SingleGraphState s,void (*free_tag)(void*)) {
+void free_SingleGraphState(SingleGraphState s,void (*free_elag_symbol)(symbol_t*)) {
 if (s==NULL) return;
-free_Transition_list(s->outgoing_transitions,free_tag);
+free_Transition_list(s->outgoing_transitions,free_elag_symbol);
 /* We don't use free_tag on the reverted transitions, because there
  * would be double free problems */
 free_Transition_list(s->reverted_incoming_transitions);
@@ -238,12 +246,37 @@ state->outgoing_transitions=new_Transition(tag_number,state_number,state->outgoi
 
 
 /**
+ * Creates and adds one outgoing transition per symbol of the given label
+ * to the given state. No test
+ * is performs to check whether the transition already exists.
+ * Note that it is the responsability to the caller to deal with
+ * the corresponding reverted incoming transition, if needed.
+ */
+void add_all_outgoing_transitions(SingleGraphState state,symbol_t* label,int state_number) {
+if (label==SYMBOL_DEF) {
+   /* If we must add a default transition */
+   if (state->default_state!=-1) {
+      fatal_error("add_outgoing_transition: trying to set several default transitions!\n");
+   }
+   state->default_state=state_number;
+   return;
+}
+while (label!=NULL) {
+   if (label==SYMBOL_DEF) {
+      fatal_error("add_outgoing_transition: unexpected DEF transition!\n");
+   }
+   state->outgoing_transitions=new_Transition(label,state_number,state->outgoing_transitions);
+   label=label->next;
+}
+}
+
+/**
  * Creates and adds an outgoing transition to the given state. No test
  * is performs to check whether the transition already exists.
  * Note that it is the responsability to the caller to deal with
  * the corresponding reverted incoming transition, if needed.
  */
-void add_outgoing_transition(SingleGraphState state,void* label,int state_number) {
+void add_outgoing_transition(SingleGraphState state,symbol_t* label,int state_number) {
 state->outgoing_transitions=new_Transition(label,state_number,state->outgoing_transitions);
 }
 
@@ -265,8 +298,9 @@ state->reverted_incoming_transitions=new_Transition(tag_number,state_number,stat
 void set_state_array_capacity(SingleGraph g,int new_capacity) {
 if (g->states==NULL && new_capacity==0) return;
 g->states=(SingleGraphState*)realloc(g->states,new_capacity*sizeof(SingleGraphState));
-if (g->states==NULL) {
-  fatal_error("Not enough memory in set_state_array_capacity\n");
+if (new_capacity!=0 && g->states==NULL) {
+   /* Don't want to raise an error if a an empty array was explicitly required */
+   fatal_error("Not enough memory in set_state_array_capacity\n");
 }
 g->capacity=new_capacity;
 }
@@ -305,15 +339,15 @@ return s;
  * dest is freed before copying content of src to it,
  * src is freed and nulled after.
  */
-void move_SingleGraph(SingleGraph dest,SingleGraph *src,void (*free_tag)(void*)) {
+void move_SingleGraph(SingleGraph dest,SingleGraph *src,void (*free_elag_symbol)(symbol_t*)) {
 /* We free dest */
-if (dest->tag_type!=PTR_TAGS && free_tag!=NULL) {
+if (dest->tag_type!=PTR_TAGS && free_elag_symbol!=NULL) {
    error("Unexpected free function in move_SingleGraph\n");
-   free_tag=NULL;
+   free_elag_symbol=NULL;
 }
 if (dest->states!=NULL) {
    for (int i=0;i<dest->number_of_states;i++) {
-      free_SingleGraphState(dest->states[i],free_tag);
+      free_SingleGraphState(dest->states[i],free_elag_symbol);
    }
    free(dest->states);
 }
@@ -601,7 +635,7 @@ Transition* tmp2;
 Transition* tmp_old;
 tmp=transitions;
 while (tmp!=NULL) {
-   if ((((states[tmp->state_number]->control)&4)==0)||(((states[tmp->state_number]->control)&8)==0)) {
+   if (is_useless_state(states[tmp->state_number])) {
       tmp2=tmp->next;
       if (tmp==transitions) {
          transitions=tmp2;
@@ -655,9 +689,13 @@ while (t!=NULL) {
        * 
        * old_state_number <---- X
        * 
-       * then we must renumber the outging transitions of X. */
+       * then we must renumber the outgoing transitions of X. */
       renumber_transitions(states[t->state_number]->outgoing_transitions,
                            old_state_number,new_state_number);
+      /* And we don't forget to update the default transition, if needed */
+      if (states[t->state_number]->default_state==old_state_number) {
+         states[t->state_number]->default_state=new_state_number;
+      }
    }
    else {
       /* If we have a transition like:
@@ -668,6 +706,10 @@ while (t!=NULL) {
       t->state_number=new_state_number;
    }
    t=t->next;
+}
+/* And we don't forget to update the default transition, if needed */
+if (states[old_state_number]->default_state==old_state_number) {
+   states[old_state_number]->default_state=new_state_number;
 }
 }
 
@@ -685,6 +727,13 @@ for (i=0;i<graph->number_of_states;i++) {
     * to be removed */
    graph->states[i]->outgoing_transitions=remove_transitions_to_useless_states(graph->states[i]->outgoing_transitions,graph->states);
    graph->states[i]->reverted_incoming_transitions=remove_transitions_to_useless_states(graph->states[i]->reverted_incoming_transitions,graph->states);
+   /* We don't forget to update default transitions */
+   if (graph->states[i]->default_state!=-1) {
+      SingleGraphState s=graph->states[graph->states[i]->default_state];
+      if (!(s->control&4) || !(s->control&4)) {
+         graph->states[i]->default_state=-1;
+      }
+   }
 }
 int last_state=graph->number_of_states-1;
 i=0;
@@ -738,6 +787,10 @@ graph->number_of_states=last_state+1;
  * No epsilon removal is done.
  */
 void trim(SingleGraph graph) {
+/* First, we reset all the accessibility info */
+for (int h=0;h<graph->number_of_states;h++) {
+   reset_accessibility_info(graph->states[h]);
+}
 compute_reverse_transitions(graph);
 for (int h=0;h<graph->number_of_states;h++) {
    if (is_final_state(graph->states[h])) {
@@ -805,7 +858,7 @@ for (int i=0;i<graph->number_of_states;i++) {
 /**
  * Returns a copy of the given automaton.
  */
-SingleGraph clone(SingleGraph src,void*(*clone_tag_label)(void*)) {
+SingleGraph clone(SingleGraph src,symbol_t*(*clone_elag_symbol)(const symbol_t*)) {
 if (src==NULL) return NULL;
 SingleGraph dest=new_SingleGraph(src->number_of_states,src->tag_type);
 SingleGraphState src_state;
@@ -816,7 +869,7 @@ for (int i=0;i<src->number_of_states;i++) {
    dest_state->default_state=src_state->default_state;
    if (is_initial_state(src_state)) set_initial_state(dest_state);
    if (is_final_state(src_state)) set_final_state(dest_state);
-   dest_state->outgoing_transitions=clone_transition_list(src_state->outgoing_transitions,NULL,clone_tag_label);
+   dest_state->outgoing_transitions=clone_transition_list(src_state->outgoing_transitions,NULL,clone_elag_symbol);
 }
 return dest;
 }
@@ -1371,3 +1424,4 @@ for (q=0;q<B->number_of_states;q++) {
 /* We free B */
 free_SingleGraph(B,NULL);
 }
+

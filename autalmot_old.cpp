@@ -361,7 +361,7 @@ int compSymb(tSymbole * s1, tSymbole * s2) {
 	return 0 ;
       } else { return 1 ; }
 
-    case CODE:
+    case CODE_POUET:
       return u_strcmp(s1->gramm, s2->gramm);
 
     case UNIVERSEL:
@@ -405,7 +405,7 @@ tSymbole * copieSymbole(tSymbole * Source) {
     u_strcpy(s->gramm, Source->gramm) ;
     break;
 
-  case CODE:
+  case CODE_POUET:
     if (1 + u_strlen(Source->gramm) >= maxGramm) { fatal_error("Erreur interne [copieSymbole], c.g. trop long\n"); }
     u_strcpy(s->gramm, Source->gramm);
     s->canonique    = (unichar *) xmalloc(sizeof(unichar));

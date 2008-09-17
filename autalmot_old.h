@@ -33,7 +33,7 @@
 
 #define ATOME        4           /* Symbole de l'alphabet */
 #define UNIVERSEL    5           /* Represente tous les symboles */
-#define CODE         6           /* Code sans forme canonique */
+#define CODE_POUET   6           /* Code sans forme canonique */
 #define NEGATIF      7           /* Code avec formes canoniques negatives */
 #define INCOMPLET    8           /* Etiquette incomplete */
 #define INDETERMINE  9

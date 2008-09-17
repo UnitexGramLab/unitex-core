@@ -20,6 +20,7 @@
   */
 
 #include "ElagStateSet.h"
+#include "ElagDebug.h"
 
 
 /**
@@ -36,14 +37,21 @@ while (l!=NULL) {
    l=l->next;
 }
 free_list_int(l);
+/* First, we create a state set containing all the initial states */
 state_set_array_add(ARRAY,initial_states);
 free_state_set(initial_states);
 for (int current_state_set=0;current_state_set<ARRAY->size;current_state_set++) {
+   /* Now, we process each state set, corresponding to a new state in the 
+    * deterministic automaton */
+   /* We compute the output transitions of the new state. Those transitions
+    * will point to state sets */
    STATE_t* Q=new_STATE_t(ARRAY->state_sets[current_state_set]);
    SingleGraphState q=add_state(res);
    if (Q->flags & AUT_INITIAL) set_initial_state(q);
    if (Q->flags & AUT_TERMINAL) set_final_state(q);
    for (TRANS_t* T=Q->transitions;T!=NULL;T=T->next) {
+      /* For each outgoing transition, we test if the pointed state set
+       * already exists in our state set array */
       int index=state_set_array_lookup(ARRAY,T->destination);
       if (index==-1) {
          /* If we have to create a new state in the result automaton */
@@ -51,7 +59,7 @@ for (int current_state_set=0;current_state_set<ARRAY->size;current_state_set++) 
       }
       add_outgoing_transition(q,T->label,index);
    }
-   if (Q->default_transition!=NULL && Q->default_transition->size) {
+   if (Q->default_transition!=NULL && Q->default_transition->size!=0) {
       /* We deal with the default transition, if any */
       int index=state_set_array_lookup(ARRAY,Q->default_transition);
       if (index==-1) {

@@ -24,6 +24,7 @@
 #include "Error.h"
 #include "File.h"
 #include "Transitions.h"
+#include "SingleGraph.h"
 
 
 /* Maximum length for the content of a grf box */

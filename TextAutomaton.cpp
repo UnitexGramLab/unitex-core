@@ -28,6 +28,7 @@
 #include "NormalizationFst2.h"
 #include "BitMasks.h"
 #include "Transitions.h"
+#include "SingleGraph.h"
 
 
 /**

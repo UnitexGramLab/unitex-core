@@ -38,6 +38,6 @@
  * Cleaned and commented by Sébastien Paumier
  */
 
-void elag_minimize(SingleGraph,struct string_hash_ptr*,int level=0);
+void elag_minimize(SingleGraph,int level=0);
 
 #endif

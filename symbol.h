@@ -74,12 +74,13 @@ extern unichar PUNC_TAB[];
  * EXCLAM and EQUAL : used to parse ELAG grammars before compiling them
  */
 typedef enum {
+   UNTYPED=-1,
    LEXIC='L',
    EPSILON='e',
    ATOM='a',
    CODE_NEG='N',
-   CODE='C',
    INC_CAN='c',
+   CODE='C',
    INC_NEG='n',
    INC='I',
    EXCLAM='!',
@@ -102,7 +103,7 @@ typedef struct symbol_t {
    /* The symbol type, see the enumeration above. We use an integer
     * here instead of a SymbolType, because it would raise many compilation
     * warnings about enumeration values not handled in switches. */
-   int type;
+   SymbolType type;
    
    /* Is the lemma a negative one ? */
    bool negative;
@@ -137,7 +138,7 @@ typedef struct symbol_t {
 
 
 
-symbol_t* new_symbol(char);
+symbol_t* new_symbol(SymbolType);
 symbol_t* new_symbol_POS(POS_t*);
 
 symbol_t * new_symbol_UNKNOWN(language_t * lang, int idx);

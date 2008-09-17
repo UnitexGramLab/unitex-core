@@ -22,8 +22,9 @@
 #ifndef SingleGraphH
 #define SingleGraphH
 
-
 #include "Fst2.h"
+#include "Transitions.h"
+
 
 /* Here are bit masks that can be used to mark states. Note that lower
  * bit masks are reserved. */
@@ -83,7 +84,7 @@ SingleGraph new_SingleGraph(int,TagType);
 SingleGraph new_SingleGraph(int);
 SingleGraph new_SingleGraph(TagType);
 SingleGraph new_SingleGraph();
-void free_SingleGraph(SingleGraph,void(*f)(void*)=NULL);
+void free_SingleGraph(SingleGraph,void(*f)(symbol_t*)=NULL);
 
 int is_final_state(SingleGraphState);
 void set_final_state(SingleGraphState);
@@ -95,17 +96,19 @@ int is_accessible_state(SingleGraphState);
 void set_accessible_state(SingleGraphState);
 int is_co_accessible_state(SingleGraphState);
 void set_co_accessible_state(SingleGraphState);
+void reset_accessibility_info(SingleGraphState);
 
 SingleGraphState new_SingleGraphState();
-void free_SingleGraphState(SingleGraphState,void (*free_tag)(void*)=NULL);
+void free_SingleGraphState(SingleGraphState,void (*free_elag_symbol)(symbol_t*)=NULL);
 void add_outgoing_transition(SingleGraphState,int,int);
-void add_outgoing_transition(SingleGraphState,void*,int);
+void add_outgoing_transition(SingleGraphState,symbol_t*,int);
+void add_all_outgoing_transitions(SingleGraphState,symbol_t*,int);
 struct list_int* get_initial_states(SingleGraph);
 int get_initial_state(SingleGraph);
 void set_state_array_capacity(SingleGraph,int);
 void resize(SingleGraph);
 SingleGraphState add_state(SingleGraph);
-void move_SingleGraph(SingleGraph,SingleGraph*,void (*free_tag)(void*)=NULL);
+void move_SingleGraph(SingleGraph,SingleGraph*,void (*free_elag_symbol)(symbol_t*)=NULL);
 
 void compute_reverse_transitions(SingleGraph);
 void check_accessibility(SingleGraphState*,int);
@@ -113,7 +116,7 @@ void check_co_accessibility(SingleGraphState*,int);
 void remove_epsilon_transitions(SingleGraph);
 void remove_useless_states(SingleGraph);
 void reverse(SingleGraph);
-SingleGraph clone(SingleGraph,void*(*clone_tag_label)(void*)=NULL);
+SingleGraph clone(SingleGraph,symbol_t*(*clone_elag_symbol)(const symbol_t*)=NULL);
 
 void trim(SingleGraph);
 void determinize(SingleGraph);

@@ -234,13 +234,13 @@ return chosen;
 Transition* clean_transitions(Transition* trans, int n) {
 while (trans!=NULL && trans->state_number==n) {
    Transition* next=trans->next;
-   free_Transition_list(trans,(void (*)(void*))free_symbol);
+   free_Transition_list(trans,free_symbol);
    trans=next;
 }
 for (Transition* t=trans;t!=NULL;t=t->next) {
    while (t->next!=NULL && t->next->state_number==n) {
       Transition* next=t->next->next;
-      free_Transition_list(t->next,(void (*)(void*))free_symbol);
+      free_Transition_list(t->next,free_symbol);
       t->next=next;
    }
 }
@@ -266,10 +266,15 @@ for (int q=0;q<g->number_of_states;q++) {
  * that it must be deterministic. For more information,
  * see comments in this library's .h file.
  */
-void elag_minimize(SingleGraph automaton,struct string_hash_ptr* symbols,int level) {
+void elag_minimize(SingleGraph automaton,int level) {
 struct list_int* initials=get_initial_states(automaton);
 if (initials==NULL) {
-   fatal_error("Cannot minimize an automaton with no initial state\n");
+   /* No initial state should mean 'empty automaton' */
+   if (automaton->number_of_states!=0) {
+      /* If not, we fail */
+      fatal_error("No initial state in non empty automaton in elag_minimize\n");
+   }
+   return;
 }
 if (initials->next!=NULL) {
    fatal_error("Non-deterministic automaton in elag_minimize\n");
