@@ -285,7 +285,7 @@ concat_symbols(a,next);
  * symbols, so that the union of these symbols is equivalent to the
  * original symbol.
  */
-void compare_and_expand_symbol_with_symbol(symbol_t* a, symbol_t* b) {
+void compare_and_expand_symbol_with_symbol(symbol_t* a,symbol_t* b) {
 if (symbol_compare(a,b)==0) {
    /* Nothing to do if the symbols are identical */
    return;
@@ -370,9 +370,9 @@ while (trans!=NULL) {
    if (trans->label==NULL) {
       fatal_error("flatten_transition: NULL tagged transition\n");
    }
-   symbol_t* symbol=(symbol_t*)trans->label;
+   symbol_t* symbol=trans->label;
    if (symbol->next!=NULL) {
-      trans->next=new_Transition(symbol->next,trans->state_number,trans->next);
+      trans->next=new_Transition_no_copy(symbol->next,trans->state_number,trans->next);
       symbol->next=NULL;
    }
    trans=trans->next;
@@ -387,7 +387,7 @@ while (trans!=NULL) {
  */
 Transition* Transition_lookup(Transition* trans,symbol_t* s) {
 while (trans!=NULL) {
-   if (symbol_compare((symbol_t*)trans->label,s)==0) {
+   if (symbol_compare(trans->label,s)==0) {
       break;
    }
 }
@@ -401,7 +401,7 @@ return trans;
 void expand_transitions(Transition* _t1,Transition* _t2) {
 for (Transition* t1=_t1;t1!=NULL;t1=t1->next) {
    for (Transition* t2=_t2;t2!=NULL;t2=t2->next) {
-      expand_symbols((symbol_t*)(t1->label),(symbol_t*)(t2->label));
+      expand_symbols(t1->label,t2->label);
    }
 }
 flatten_transition(_t1);
@@ -418,11 +418,11 @@ void expand_transitions(Transition* trans) {
 Transition* t1;
 Transition* t2;
 for (t1=trans;t1!=NULL;t1=t1->next) {
-   expand_symbols((symbol_t*)t1->label);
+   expand_symbols(t1->label);
 }
 for (t1=trans;t1!=NULL;t1=t1->next) {
    for (t2=t1->next;t2!=NULL;t2=t2->next) {
-      expand_symbols((symbol_t*)(t1->label),(symbol_t*)(t2->label));
+      expand_symbols(t1->label,t2->label);
    }
 }
 flatten_transition(trans);
@@ -440,7 +440,7 @@ if (q1->default_state!=-1) {
     * symbol s that tags a transition from q2 but not from 
     * q1, we add a transition q1 --s--> q1's default state */
    for (Transition* t=q2->outgoing_transitions;t!=NULL;t=t->next) {
-      if (Transition_lookup(q1->outgoing_transitions,(symbol_t*)t->label)==NULL) {
+      if (Transition_lookup(q1->outgoing_transitions,t->label)==NULL) {
          add_outgoing_transition(q1,t->label,q1->default_state);
       }
    }
@@ -448,7 +448,7 @@ if (q1->default_state!=-1) {
 if (q2->default_state!=-1) {
    /* If q2 has a default transition, the same as above */
    for (Transition* t=q1->outgoing_transitions;t!=NULL;t=t->next) {
-      if (Transition_lookup(q2->outgoing_transitions,(symbol_t*)t->label)==NULL) {
+      if (Transition_lookup(q2->outgoing_transitions,t->label)==NULL) {
          add_outgoing_transition(q2,t->label,q2->default_state);
       }
    }
@@ -490,14 +490,9 @@ for (state_id* id=Q->original_state_set->state_list;id!=NULL;id=id->next) {
    }
    for (Transition* t=q->outgoing_transitions;t!=NULL;t=t->next) {
       TRANS_t* T;
-      if ((T=TRANS_t_lookup(Q->transitions,(symbol_t*)t->label))==NULL) {
+      if ((T=TRANS_t_lookup(Q->transitions,t->label))==NULL) {
          /* If we have to create a new symbol */
-         if (is_set_debug()) {
-            u_printf("on cree le symbol: ");
-            symbol_dump((symbol_t*)t->label);
-            u_printf("\n");
-         }
-         T=new_TRANS_t((symbol_t*)t->label,Q->transitions);
+         T=new_TRANS_t(t->label,Q->transitions);
          Q->transitions=T;
       }
       state_set_add(T->destination,id->automaton,t->state_number);
@@ -522,11 +517,15 @@ res->default_transition=new_state_set();
  * are states are initial ones => Q is an initial one
  * one state is a final one    => Q is a final one
  */
-res->flags=AUT_INITIAL;
+res->flags=0;
 for (state_id* id=res->original_state_set->state_list;id!=NULL;id=id->next) {
-   if (!is_initial_state(id->automaton->states[id->state_number])) {
+   /* We don't do that, because in such a case, a subset of the initial state set
+    * would also become an initial state in the result automaton, and producing
+    * a deterministic automaton with several initial states would not be serious.
+    
+    if (!is_initial_state(id->automaton->states[id->state_number])) {
       res->flags&=~(AUT_INITIAL);
-   }
+   }*/
    if (is_final_state(id->automaton->states[id->state_number])) {
       res->flags|=AUT_TERMINAL;
    }

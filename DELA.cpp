@@ -27,7 +27,9 @@
 
 
 /**
- * Returns a copy of the given entry.
+ * Returns a copy of the given entry. 
+ * WARNING: filters are not taken into account since they aren't
+ *          used, except in the inflection module
  */
 struct dela_entry* clone_dela_entry(struct dela_entry* entry) {
 if (entry==NULL) return NULL;
@@ -46,6 +48,7 @@ res->n_inflectional_codes=entry->n_inflectional_codes;
 for (i=0;i<res->n_inflectional_codes;i++) {
    res->inflectional_codes[i]=u_strdup(entry->inflectional_codes[i]);
 }
+res->n_filters=0;
 return res;
 }
 
@@ -54,6 +57,8 @@ return res;
  * Returns 1 if a and b are identical; 0 otherwise.
  * a and b are supposed to be valid entries, that is to say, entries
  * will non NULL inflected forms and lemmas.
+ * 
+ * WARNING: this comparison does not take inflection filters into account 
  */
 int equal(struct dela_entry* a,struct dela_entry* b) {
 int i;

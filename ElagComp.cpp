@@ -143,16 +143,22 @@ if (rules!=NULL) {
    if (ruledir==NULL) {
       get_path(rules,directory);
       ruledir=directory;
-      remove_path_and_extension(rules,rule_file_name);
+      remove_path(rules,rule_file_name);
       rules=rule_file_name;
    }
    if (chdir(ruledir)==-1) {
       fatal_error("Unable to change to %s directory\n",ruledir);
    }
-   char output_name[FILENAME_MAX];
-   if (compilename==NULL) {
-      sprintf(output_name,"%s.rul",rules);
-      compilename=output_name;
+   char buf[FILENAME_MAX];
+   if (compilename == NULL) {
+      int l=strlen(rules);
+      if (strcmp(rules+l-4,".lst")==0) {
+         strcpy(buf,rules);
+         strcpy(buf+l-4,".rul");
+      } else {
+         sprintf(buf,"%s.rul",rules);
+      }
+      compilename=buf;
    }
    if (compile_elag_rules(rules,compilename)==-1) {
       error("An error occurred\n");

@@ -585,7 +585,7 @@ EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segt
 ################################
 ################################
 
-PROGS__ = $(TEST) 
+PROGS__ = $(ELAGCOMP) #$(TEST) 
 
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(EXTRACT) $(FLATTEN) $(FST2GRF) \

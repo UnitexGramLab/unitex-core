@@ -65,6 +65,22 @@ return transition;
 
 
 /**
+ * The same than above, except that it does not duplicate the given symbol.
+ */
+Transition* new_Transition_no_copy(symbol_t* label,int state_number,Transition* next) {
+Transition* transition;
+transition=(Transition*)malloc(sizeof(Transition));
+if (transition==NULL) {
+  fatal_error("Not enough memory in new_Transition\n");
+}
+transition->label=label;
+transition->state_number=state_number;
+transition->next=next;
+return transition;
+}
+
+
+/**
  * Creates, initializes and returns a transition tagged by a pointer.
  */
 Transition* new_Transition(symbol_t* label,int state_number) {

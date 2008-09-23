@@ -107,7 +107,6 @@ return s;
  * <PNC> tag in ELAG grammars.
  */
 symbol_t* new_symbol_PUNC(language_t* language,int canonic) {
-u_printf("new_symbol_PUNC %d\n",canonic);
 POS_t* POS=language_get_POS(language,PUNC_STR);
 symbol_t* symbol=new_symbol_POS(POS);
 symbol->type=ATOM; 

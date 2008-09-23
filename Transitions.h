@@ -71,6 +71,7 @@ typedef struct transition_ Transition;
 Transition* new_Transition(int,int,Transition*);
 Transition* new_Transition(int,int);
 Transition* new_Transition(symbol_t*,int,Transition*);
+Transition* new_Transition_no_copy(symbol_t*,int,Transition*);
 Transition* new_Transition(symbol_t*,int);
 void free_Transition_list(Transition*,void(*)(symbol_t*));
 void free_Transition_list(Transition*);

@@ -46,7 +46,7 @@ for (int i=0;i<g->number_of_states;i++) {
    u_printf("(def %d) \n\t",s->default_state);
    Transition* t=s->outgoing_transitions;
    while (t!=NULL) {
-      symbol_dump((symbol_t*)t->label);
+      symbols_dump((symbol_t*)t->label);
       u_printf(",%d ",t->state_number);
       t=t->next;
    }

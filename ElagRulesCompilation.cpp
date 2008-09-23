@@ -94,6 +94,7 @@ for (int i=0;i<A->number_of_states;i++) {
        * include them. We use NULL since we don't want to NULL the
        * symbols that tag transitions, because these symbols can be shared */
       free_Transition_list(A->states[i]->outgoing_transitions,NULL);
+      A->states[i]->outgoing_transitions=NULL;
       add_outgoing_transition(A->states[i],new_symbol(LEXIC),i);
     }
   }
@@ -158,19 +159,11 @@ for (int c=0;c<rule->nbContexts;c++) {
    trim(rule->contexts[c].right);
 }
 /* We build A*.R1 */
-
 prefix_with_everything(rule->contexts[0].left);
-
-u_printf("------------- anything_R1 -------------\n");
-print_graph(rule->contexts[0].left);
-
+//u_printf("------------- anything_R1 -------------\n");
+//print_graph(rule->contexts[0].left);
 elag_determinize(rule->contexts[0].left);
-
-u_printf("------------- anything_R1 -------------\n");
-print_graph(rule->contexts[0].left);
-exit(1);
-
-
+//print_graph(rule->contexts[0].left);
 elag_minimize(rule->contexts[0].left);
 SingleGraph anything_R1=rule->contexts[0].left;
 /* and R2.A* */
@@ -187,11 +180,8 @@ SingleGraph result=new_SingleGraph();
 for (int ens=0;ens<p;ens++) {
    /* For each combination of constraints, we produce an automaton a1
     * that does not match these constraints */
-   u_printf("\n\n\navant combine_constraints: \n");
-   
    SingleGraph a1=combine_constraints(rule,ens,anything_R1,R2_anything);
    /* And we make the union of it with the current automaton */
-   
    build_union(result,a1);
    elag_determinize(result);
    elag_minimize(result);
@@ -207,7 +197,6 @@ elag_complementation(result);
 
 //u_printf("------------- AFTER COMPL -------------\n");
 //print_graph(result);
-
 
 trim(result);
 
@@ -352,8 +341,6 @@ return 0;
 }
 
 
-#if 0
-
 /**
  * This function builds and returns an automaton for pattern
  * matching of the rule's context.
@@ -365,38 +352,21 @@ res->automaton=clone(rule->contexts[0].left);
 elag_concat(res->automaton,rule->contexts[0].right);
 /* Then we add loops with ignorable POS on each state */
 language_t* lang=get_current_language();
-struct list_int* list=NULL;
 for (int i=0;i<lang->POSs->size;i++) {
    POS_t* PoS=(POS_t*)lang->POSs->value[i];
    if (PoS->ignorable) {
-      /* If we have a POS that can be ignored, we build
-       * the corresponding tag like <XXX> and we add it to
-       * the symbols of the grammar */
-      unichar temp[1024];
-      u_sprintf(temp,"<%S>",PoS->name);
-      int size=res->symbols->size;
-      symbol_t* s=new_symbol_POS(PoS);
-      int n=get_value_index(temp,res->symbols,INSERT_IF_NEEDED,s);
-      if (n!=size) {
-         /* If the symbol was already there, we free it */
-         free_symbols(s);
+      /* If we have a POS that can be ignored, we add a transition tagged
+       * by this symbol to each state */
+      for (int q=1;q<res->automaton->number_of_states;q++) {
+         symbol_t* s=new_symbol_POS(PoS);
+         add_outgoing_transition(res->automaton->states[q],s,q);
       }
-      list=sorted_insert(n,list);
    }
 }
-for (int q=1;q<res->automaton->number_of_states;q++) {
-   struct list_int* l=list;
-   while (l!=NULL) {
-      add_outgoing_transition(res->automaton->states[q],l->n,q);
-      l=l->next;
-   }
-}
-free_list_int(list);
 return res;
 }
 
 
-#endif
 
 /**
  * This function analyzes the given Elag rule automaton to find
@@ -468,12 +438,10 @@ char buf[FILENAME_MAX];
 remove_extension(rule->name,buf);
 strcat(buf,"-conc.fst2");
 
-#if 0
 /* We create the.fst2 to be used by Locate */
 Fst2Automaton* locate=make_locate_automaton(rule);
 save_automaton(locate,buf,FST_LOCATE);
 free_Fst2Automaton(locate);
-#endif
 }
 
 
@@ -724,11 +692,9 @@ elag_concat(a1,a2);
 
 free_SingleGraph(a2);
 trim(a1);
-u_printf("\n########## AVANT ################\n");
-print_graph(a1);
+//print_graph(a1);
 elag_determinize(a1);
-u_printf("\n########## APRES ################\n");
-print_graph(a1);
+//print_graph(a1);
 
 trim(a1);
 elag_minimize(a1);
