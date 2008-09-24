@@ -168,7 +168,7 @@ int main(int argc, char ** argv) {
   u_printf("Grammars are loaded.\n") ;
 
   
-  leve_ambiguite(txtauto, gramm, output);
+  remove_ambiguities(txtauto, gramm, output);
 
   return 0;
 }

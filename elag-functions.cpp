@@ -1,23 +1,23 @@
- /*
-  * Unitex
-  *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
-  *
-  * This library is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU Lesser General Public
-  * License as published by the Free Software Foundation; either
-  * version 2.1 of the License, or (at your option) any later version.
-  *
-  * This library is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  * Lesser General Public License for more details.
-  * 
-  * You should have received a copy of the GNU Lesser General Public
-  * License along with this library; if not, write to the Free Software
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
-  *
-  */
+/*
+ * Unitex
+ *
+ * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+ *
+ */
 
 /* elag-functions.cpp */
 /* Date         : juin 98 */
@@ -31,7 +31,6 @@
 #include <time.h>
 #include <math.h>
 
-
 #include "utils.h"
 #include "autalmot.h"
 #include "list_aut.h"
@@ -40,209 +39,145 @@
 #include "AutConcat.h"
 #include "AutDeterminization.h"
 #include "AutMinimization.h"
-
+#include "AutIntersection.h"
 
 double eval_sentence(Fst2Automaton * A, int * min = NULL, int * max = NULL);
-static void add_limphrase(Fst2Automaton * A);
-static int suppress_limphrase(Fst2Automaton * A);
-
+static void add_sentence_delimiters(Fst2Automaton * A);
+static void remove_sentence_delimiters(Fst2Automaton * A);
 
 //void leve_ambiguite(char * nom_fic_phrases, list_aut * gramm, char * nomSortie) {
 
-void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
+void remove_ambiguities(char * fstname, list_aut * gramms, char * outname) {
+   static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
+   static unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
+   symbol_t * unloadable = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE,_unloadable));
+   symbol_t * rejected = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE,_rejected));
+   Elag_fst_file_in * txtin = load_fst_file(fstname, FST_TEXT, LANGUAGE);
+   if (txtin == NULL) {
+      fatal_error("unable to load text '%s'\n", fstname);
+   }
+   error("%d sentence(s) in %s\n", txtin->nb_automata, fstname);
+   Elag_fst_file_out * fstout = fst_file_out_open(outname, FST_TEXT);
+   if (fstout == NULL) {
+      fatal_error("unable to open '%s' for writing\n", outname);
+   }
+   time_t start_time = time(0);
+   u_printf("\nProcessing ...\n");
+   int current_sentence = 0;
+   int n_rejected_sentences = 0;
+   int nb_unloadable = 0;
+   Fst2Automaton* A;
+   double before, after;
+   double total_before = 0.0, total_after = 0.0;
+   double length_before = 0., length_after = 0.; // average text length in words
 
-  static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
-  static unichar _rejected[]   = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
-
-  symbol_t * unloadable = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE, _unloadable));
-  symbol_t * rejected   = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE, _rejected));
-  
-  u_printf("\n* leve ambiguite(%s): %d grammar%s.\n", fstname, gramms->nbelems,
-         gramms->nbelems > 1 ?  "s" : "");
-
-  Elag_fst_file_in * txtin = load_fst_file(fstname,FST_TEXT,LANGUAGE);
-
-  if (txtin == NULL) { fatal_error("unable to load text '%s'\n", fstname); }
-
-
-  error("%d sentence(s) in %s\n", txtin->nb_automata, fstname);
-
-
-  Elag_fst_file_out * fstout = fst_file_out_open(outname, FST_TEXT);
-
-  if (fstout == NULL) { fatal_error("unable to open '%s' for writing\n", outname); }
-
-
-  time_t debut = time(0);
-
-  u_printf("\nprocessing ...\n");
-
-  int no = 0;       // numero de la phrase courante
-  int nbPhrRej = 0; // nombre de phrases rejetées
-  int nb_unloadable = 0; // nombre de phrases qui n'ont pas pu etre chargees
-
-  Fst2Automaton * A;
-
-  double avant, apres;
-  double cumulavant = 0.0, cumulapres = 0.0;
-  double lgavant = 0., lgapres = 0.; // longueur moyenne du texte (en mots)
-
-  while ((A = load_automaton(txtin)) != NULL) {
-
-    int isrej = 0;
-
-    Fst2Automaton * orig = autalmot_dup(A);
-
-    if (no % 100 == 0) { u_printf("sentence %d/%d ...\r", no + 1, txtin->nb_automata); }
-
-    /* ZZZ elag_determinize(A);
-    elag_trim(A);
-    elag_minimize(A); */
-
-    if (A->nbstates < 2) {
-
-      error("sentence %d is empty.\n", no + 1);
-
-      free_Fst2Automaton(A);
-      A = new_Fst2Automaton();
-      autalmot_add_state(A);
-      autalmot_add_state(A, AUT_TERMINAL);
- 
-      /*
-        int idx = language_add_form(LANG, unloadable);
-        symbol_t * s = symbol_unknow_new(LANG, idx);
-      */
+   while ((A = load_automaton(txtin)) != NULL) {
+      elag_determinize(A->automaton);
+      elag_minimize(A->automaton);
       
-      add_transition(A, 0, unloadable, 1);
-      nb_unloadable++;
-
-    } else {
-
-      int min, max;
-
-      avant       = eval_sentence(A, &min, &max);
-      cumulavant += avant;
-      lgavant = lgavant + ((double) (min + max) / (double) 2);
-
-      add_limphrase(A);
-      
-      if (A->nbstates < 2) {
-
-        error("sentence %d is void?????.\n", no + 1) ;
-
+      int is_rejected=0;
+      if (current_sentence % 100 == 0) {
+         u_printf("Sentence %d/%d...\r",current_sentence+1,txtin->nb_automata);
+      }
+      if (A->automaton->number_of_states<2) {
+         /* If the sentence is empty, we replace the sentence automaton
+          * by a 2-states automaton with one transition saying "UNLOADABLE" */
+         error("Sentence %d is empty\n",current_sentence+1);
+         free_SingleGraph(A->automaton);
+         A->automaton=new_SingleGraph(2,PTR_TAGS);
+         SingleGraphState initial_state=add_state(A->automaton);
+         set_initial_state(initial_state);
+         SingleGraphState final_state=add_state(A->automaton);
+         set_final_state(final_state);
+         add_outgoing_transition(initial_state,unloadable,1);
+         nb_unloadable++;
       } else {
-
-        for (int j = 0; j < gramms->nbelems; j++) {
-
-          Fst2Automaton * temp = interAutAtome(A, (Fst2Automaton *) gramms->tab[j]);
-          
-          //debug("avant emonde\n");
-          
-          elag_trim(temp);
-          
-          //debug("apres emonde\n");
-  
-          free_Fst2Automaton(A);
-          A = temp;
-
-          //debug("un peu plus loin ...\n");
- 
-          if (A->nbstates < 2) { // sentence rejected by grammar
-
-            error("sentence %d rejected.\n\n", no + 1) ;
-            j = gramms->nbelems;  /* on arrete pour cette phrase */
-            nbPhrRej++;
-
-	    free_Fst2Automaton(A);
-	    A = new_Fst2Automaton();
-	    autalmot_add_state(A);
-	    autalmot_add_state(A, AUT_TERMINAL);
-
-            /*
-	    int idx = language_add_form(LANG, rejected);
-	    symbol_t * s = symbol_unknow_new(LANG, idx);
-            */
-	    add_transition(A, 0, rejected, 1);
-            elag_concat(A->automaton,orig->automaton);
-            isrej = 1;
-          }
-        }
+         int min,max;
+         before=evaluate_ambiguity(A->automaton,&min,&max);
+         total_before += before;
+         length_before = length_before + ((double) (min + max) / (double) 2);
+         add_sentence_delimiters(A);
+         if (A->automaton->number_of_states<2) {
+            error("Sentence %d is empty\n",current_sentence+1) ;
+         } else {
+            for (int j=0;j<gramms->nbelems;j++) {
+               Fst2Automaton* grammar=(Fst2Automaton*)(gramms->tab[j]);
+               SingleGraph temp=elag_intersection(A->automaton,grammar->automaton);
+               trim(temp);
+               free_SingleGraph(A->automaton);
+               A->automaton=temp;
+               if (A->automaton->number_of_states<2) {
+                  /* If the sentence has been rejected by the grammar */
+                  error("Sentence %d rejected\n\n",current_sentence+1);
+                  j=gramms->nbelems; /* We don't go on intersecting with other grammars */
+                  n_rejected_sentences++;
+                  free_SingleGraph(A->automaton);
+                  A->automaton=new_SingleGraph(2,PTR_TAGS);
+                  SingleGraphState initial_state=add_state(A->automaton);
+                  set_initial_state(initial_state);
+                  SingleGraphState final_state=add_state(A->automaton);
+                  set_final_state(final_state);
+                  add_outgoing_transition(initial_state,rejected,1);
+                  is_rejected=1;
+               }
+            }
+         }
+         if (!is_rejected) {
+            elag_determinize(A->automaton);
+            trim(A->automaton);
+            elag_minimize(A->automaton);
+            remove_sentence_delimiters(A);
+            after = evaluate_ambiguity(A->automaton,&min,&max);
+            total_after += after;
+            length_after = length_after + ((double) (min + max) / (double) 2);
+         }
       }
-
-
-      if (! isrej) {
-
-        /* ZZZ elag_determinize(A);
-        elag_trim(A);
-        elag_minimize(A); */
-      
-        if (suppress_limphrase(A) == -1) {
-          error("an error occured while trying to remove sentence limits in sentence %d.\n", 
-                no + 1);
-        }
-
-        apres = eval_sentence(A, &min, &max);
-        cumulapres += apres;
-        lgapres = lgapres + ((double) (min + max) / (double) 2);
+      fst_file_write(fstout, A);
+      free_Fst2Automaton(A);
+      current_sentence++;
+   }
+   u_printf("\n");
+   fst_file_close_in(txtin);
+   fst_file_close_out(fstout);
+   time_t fin = time(0);
+   u_printf("\n*** Done. Result in '%s'\n", outname);
+   u_printf("\nElapsed time: %.0f s.\n", difftime(fin, start_time));
+   u_printf("Text. Before: %.1f, after: %.1f units per sentence. ", total_before / current_sentence, total_after / current_sentence);
+   if (total_before > 0.0) {
+      if (total_after / total_before > 0.01) {
+         u_printf("Residual: %.0f%%.\n", 100.0 * total_after / total_before);
+      } else {
+         u_printf("Residual: %.1f%%.\n", 100.0 * total_after / total_before);
       }
-    }
-
-    fst_file_write(fstout, A);
-
-    free_Fst2Automaton(A);
-    free_Fst2Automaton(orig);
-
-    no++;
-  }
-
-  u_printf("\n");
-
-  fst_file_close_in(txtin);
-  fst_file_close_out(fstout);
-
-
-  time_t fin = time(0);
-
-  u_printf("\n*** done. result in '%s'\n", outname);
-  u_printf("\nElapsed time: %.0f s.\n",difftime(fin, debut));
-  u_printf("Text. Before: %.1f, after: %.1f units per sentence. ", cumulavant / no, cumulapres / no);
-  if (cumulavant > 0.0) {
-    
-    if (cumulapres / cumulavant > 0.01) {
-       u_printf("Residual: %.0f%%.\n",100.0 * cumulapres / cumulavant);
-    } else {
-      u_printf("Residual: %.1f%%.\n",100.0 * cumulapres / cumulavant);
-    }
-  }
-
-
-  /* nouveau decompte */
-
-  u_printf("\n****************\n\n");
-
-  double logITo = cumulavant; // logITo pour log(nbre d'Interpretation du Texte d'origine)
-  double logITe = cumulapres; // logITe pour log(nbre d'Interpretation du Texte élagué)
-  double ambrateo = exp(logITo/lgavant);
-  double ambratee = exp(logITe/lgapres);
-
-  u_printf("before grammar application:\n");
-  u_printf("log(|Int(Torig)|) = %.1f (%.0f interpretations, %.1f interp. per sentence)\n",
-         logITo, exp(logITo), exp(logITo/(double) no));
-  u_printf("corpus length = %.1f (%.1f lexems per sentence)\naverage ambiguity rate: %.3f\n",
-         lgavant, lgavant / (double) no, ambrateo);
-  u_printf("\nafter grammar application:\n");
-  u_printf("log(|Int(Telag)|) = %.1f (%.0f interpretations, %.1f interp. per sentence)\n",
-         logITe, exp(logITe), exp(logITe/(double) no));
-  u_printf("corpus length = %.1f (%.1f lexems per sentence)\n"
-         "average ambiguity rate: %.3f\n", lgapres, lgavant / (double) no, ambratee);
-  u_printf("\nResidual: %.2f %%.\n", (ambratee / ambrateo) * 100.);
-  u_printf("(Other residual: %.5f %% of residual ambig.)\n", exp(logITe - logITo) * (double) 100.);
-  u_printf("\n%d sentences, %d not successfully loaded and %d rejected by elag grammars.\n\n",
-         no, nb_unloadable, nbPhrRej);
-  free_symbol(unloadable);
-  free_symbol(rejected);
+   }
+   u_printf("\n****************\n\n");
+   double logITo = total_before; // logITo = log(nb of interpretation in the original text)
+   double logITe = total_after; // logITe = log(nb of interpretation in the text after Elag)
+   double ambrateo = exp(logITo/length_before);
+   double ambratee = exp(logITe/length_after);
+   u_printf("Before grammar application:\n");
+   u_printf(
+         "log(|Int(Torig)|) = %.1f (%.0f interpretations, %.1f interp. per sentence)\n",
+         logITo, exp(logITo), exp(logITo/(double) current_sentence));
+   u_printf(
+         "Corpus length = %.1f (%.1f lexems per sentence)\naverage ambiguity rate: %.3f\n",
+         length_before, length_before / (double) current_sentence, ambrateo);
+   u_printf("\nAfter grammar application:\n");
+   u_printf(
+         "log(|Int(Telag)|) = %.1f (%.0f interpretations, %.1f interp. per sentence)\n",
+         logITe, exp(logITe), exp(logITe/(double) current_sentence));
+   u_printf("Corpus length = %.1f (%.1f lexems per sentence)\n"
+            "Average ambiguity rate: %.3f\n", length_after, length_before / (double) current_sentence,
+                                                 ambratee);
+   u_printf("\nResidual: %.2f %%.\n", (ambratee / ambrateo) * 100.);
+   u_printf("(Other residual: %.5f %% of residual ambig.)\n", exp(logITe
+         - logITo) * (double) 100.);
+   u_printf(
+         "\n%d sentences, %d not successfully loaded and %d rejected by elag grammars.\n\n",
+         current_sentence, nb_unloadable, n_rejected_sentences);
+   free_symbol(unloadable);
+   free_symbol(rejected);
 }
-
 
 
 
@@ -251,178 +186,143 @@ void leve_ambiguite(char * fstname, list_aut * gramms, char * outname) {
 
 list_aut * chargeGramm(char * nomFichGramm) {
 
-  char fname[strlen(nomFichGramm) + 5];
+   char fname[strlen(nomFichGramm) + 5];
 
-  strcpy(fname, nomFichGramm);
+   strcpy(fname, nomFichGramm);
 
-  if (strcmp(fname + strlen(fname) - 4, ".rul") != 0) { strcat(fname, ".rul"); } 
+   if (strcmp(fname + strlen(fname) - 4, ".rul") != 0) {
+      strcat(fname, ".rul");
+   }
 
-  FILE * fGramm = fopen(fname, "r");
+   FILE * fGramm = fopen(fname, "r");
 
-  if (! fGramm) { fatal_error("opening file %s\n", fname); }
+   if (!fGramm) {
+      fatal_error("opening file %s\n", fname);
+   }
 
-  list_aut * gramms = list_aut_new();
+   list_aut * gramms = list_aut_new();
 
-  char buf[FILENAME_MAX];
+   char buf[FILENAME_MAX];
 
-  while (fgets(buf, FILENAME_MAX, fGramm) != NULL) {
+   while (fgets(buf, FILENAME_MAX, fGramm) != NULL) {
 
-    if (*buf != '<') { continue; }
-
-    char * p = strchr(buf, '>');
-
-    if (p == NULL) { fatal_error("in %s: at line '%s': delimitor '>' not found\n", nomFichGramm, buf);  }
-
-    *p = 0;
-
-    error("\nReading %s...\n", buf + 1);
-
-    Fst2Automaton * A = load_elag_grammar_automaton(buf + 1,LANGUAGE);
-
-    if (A == NULL) { fatal_error("unable to load '%s' automaton\n", buf + 1); }
-
-    list_aut_add(gramms, A);
-  }
-
-  error("%d gramm(s) loaded\n", gramms->nbelems);
-
-  return gramms;
-}
-
-
-
-
-
-
-list_aut * chargeUneGramm(char * name) { fatal_error("charhgeUneGramm: not implemented\n"); return NULL; }
-
-
-
-
-
-
-/* Ajoute les limites de phrase.
- * A utiliser avec la version Windows d'INTEX. Preconditions :
- * d a au moins un etat ; la taille est egale au nombre d'etats.
- * Postcondition : la taille est egale au nombre d'etats.
- */
- 
-static void add_limphrase(Fst2Automaton * A) {
-
-  static unichar S[] = { '{', 'S', '}', 0 };
-
-  int idx = language_add_form(LANGUAGE, S);
-
-  symbol_t * LIM = new_symbol_PUNC(LANGUAGE, idx);
-
-  int initBis   = autalmot_add_state(A);
-  int nouvFinal = autalmot_add_state(A, AUT_TERMINAL);
-
-  A->states[initBis].trans  = A->states[A->initials[0]].trans;
-  A->states[A->initials[0]].trans = NULL;
-
-  A->states[initBis].flags = A->states[A->initials[0]].flags & ~(AUT_INITIAL);
-  A->states[A->initials[0]].flags = AUT_INITIAL;
-
-  add_transition(A, A->initials[0], LIM, initBis);
-
-
-  for (int q = 1; q < A->nbstates - 2; q++) {
-    if (autalmot_is_final(A, q)) {
-      add_transition(A, q, LIM, nouvFinal);
-      autalmot_unset_terminal(A, q);
-    }
-  }
-
-  free_symbol(LIM);
-}
-
-
-
-
-
-
-
-
-
-
-/* enleve les '{S}' rajoutes aux limites des phrases lors de leur chargement
- *
- * l'automate doit avoir un unique etat initial a la premiere position
- * et un unique etat final ... a la derniere position. 
- */
-
-
-int suppress_limphrase(Fst2Automaton * A) {
-
-
-  if (A->initials[0] != 0 || ! autalmot_is_final(A, A->nbstates - 1)
-      || (A->states[A->nbstates - 2].trans->to != A->nbstates - 1)
-      || (A->states[A->nbstates - 2].trans->next != NULL)) {
-
-    autalmot_tri_topo(A);
-  }
-
-  if (A->nbstates < 4 || A->nbinitials != 1 || A->initials[0] != 0 || A->states[0].trans == NULL
-      || A->states[0].trans->next != NULL || ! autalmot_is_final(A, A->nbstates - 1)) {
-
-    error("suppress_limphrase: bad automaton\n");
-
-    error("nbetats=%d, nbinitiaux=%d, initial[0]=%d, etats[0]=%d, etats[0]->suivant=%d, type[last]=%d\n",
-          A->nbstates, A->nbinitials, A->initials[0], A->states[0].trans,
-          A->states[0].trans ? A->states[0].trans->next : (void *) -1,  A->states[A->nbstates - 1].flags);
-    return -1;
-  }
-
-  if (u_strcmp(language_get_form(A->states[0].trans->label->lemma), "{S}") != 0) {
-    error("suppress_limphrase: no sentence limit found\n");
-    return -1;
-  }
-
-
-  int newinit = A->states[0].trans->to - 1;
-
-  int qfinal  = A->nbstates - 1;
-  int nbstate = A->nbstates - 2;
-
-  state_t * newtab = (state_t *) xmalloc(nbstate * sizeof(state_t));
-
-
-  for (int q = 0; q < nbstate; q++) {
-
-    newtab[q].trans = NULL;
-    newtab[q].flags = A->states[q + 1].flags;
-    newtab[q].defto = -1;
-
-    transition_t * tmp;
-
-    for (transition_t * t = A->states[q + 1].trans; t; t = tmp) {
-
-      tmp = t->next;
-
-      if (t->to == qfinal) { /* on indique l'etat comme final et on supprime la transition */
-
-        newtab[q].flags |= AUT_FINAL;
-        transition_delete(t);
-
-      } else {                /* on garde la transition */
-
-        t->to = t->to - 1;
-        t->next = newtab[q].trans;
-        newtab[q].trans = t;
+      if (*buf != '<') {
+         continue;
       }
-    }
 
-  }
+      char * p = strchr(buf, '>');
 
-  newtab[newinit].flags |= AUT_INITIAL;
-  A->initials[0]     = newinit;
+      if (p == NULL) {
+         fatal_error("in %s: at line '%s': delimitor '>' not found\n",
+               nomFichGramm, buf);
+      }
 
-  free(A->states); A->states = newtab;
-  A->nbstates = A->size = nbstate;
+      *p = 0;
 
-  return 0;
+      error("\nReading %s...\n", buf + 1);
+
+      Fst2Automaton * A = load_elag_grammar_automaton(buf + 1, LANGUAGE);
+
+      if (A == NULL) {
+         fatal_error("unable to load '%s' automaton\n", buf + 1);
+      }
+
+      list_aut_add(gramms, A);
+   }
+
+   error("%d gramm(s) loaded\n", gramms->nbelems);
+
+   return gramms;
+}
+
+list_aut * chargeUneGramm(char * name) {
+   fatal_error("charhgeUneGramm: not implemented\n");
+   return NULL;
 }
 
 
+/**
+ * Adds {S} at the beginning and end of the sentence automaton.
+ */
+static void add_sentence_delimiters(Fst2Automaton* A) {
+static unichar S[] = { '{', 'S', '}', 0 };
+int idx=language_add_form(LANGUAGE,S);
+symbol_t* delimiter=new_symbol_PUNC(LANGUAGE,idx);
+int pseudo_initial_state_index=A->automaton->number_of_states;
+SingleGraphState pseudo_initial_state=add_state(A->automaton);
+int new_final_state_index=A->automaton->number_of_states;
+SingleGraphState new_final_state=add_state(A->automaton);
+set_final_state(new_final_state);
+if (!is_initial_state(A->automaton->states[0])) {
+   fatal_error("add_sentence_delimiter: state #0 is not initial\n");
+}
+pseudo_initial_state->outgoing_transitions=A->automaton->states[0]->outgoing_transitions;
+A->automaton->states[0]->outgoing_transitions=NULL;
+add_outgoing_transition(A->automaton->states[0],delimiter,pseudo_initial_state_index);
+if (is_final_state(A->automaton->states[0])) {
+   set_final_state(pseudo_initial_state);
+   unset_initial_state(A->automaton->states[0]);
+}
+for (int q=1;q<A->automaton->number_of_states-2;q++) {
+   if (is_final_state(A->automaton->states[q])) {
+      add_outgoing_transition(A->automaton->states[q],delimiter,new_final_state_index);
+      unset_initial_state(A->automaton->states[q]);
+   }
+}
+free_symbol(delimiter);
+}
+
+
+/**
+ * Removes a transition to state #n from the given list, if any.
+ * If a transition to state #n is removed, then *flag is set to 1.  
+ */
+Transition* remove_transition_to_state(int n,Transition* list,int *flag) {
+if (list==NULL) return NULL;
+if (list->state_number==n) {
+   (*flag)=1;
+   Transition* tmp=list->next;
+   list->next=NULL;
+   free_Transition(list);
+   return tmp;
+}
+list->next=remove_transition_to_state(n,list->next,flag);
+return list;
+}
+
+
+/**
+ * Removes the {S} delimiters previously added by add_sentence_delimiters.
+ */
+static void remove_sentence_delimiters(Fst2Automaton* A) {
+topological_sort(A->automaton);
+if (A->automaton->number_of_states<4 || get_initial_state(A->automaton)!=0
+    || A->automaton->states[0]->outgoing_transitions==NULL 
+    || A->automaton->states[0]->outgoing_transitions->next!=NULL
+    || !is_final_state(A->automaton->states[A->automaton->number_of_states-1])
+    || A->automaton->states[A->automaton->number_of_states-1]->outgoing_transitions!=NULL) {
+   /* If the automaton does not start and ends with a {S} transition,
+    * it's an error */
+   fatal_error("remove_sentence_delimiters: bad automaton\n");
+}
+if (u_strcmp(language_get_form(A->automaton->states[0]->outgoing_transitions->label->lemma),"{S}")) {
+   fatal_error("remove_sentence_delimiters: no sentence delimiter found\n");
+}
+#warning we could do the same at a lower cost by shifting the 1->N-2 states to 0->N-3
+unset_initial_state(A->automaton->states[0]);
+free_Transition_list(A->automaton->states[0]->outgoing_transitions);
+set_initial_state(A->automaton->states[1]);
+int final_state_index=A->automaton->number_of_states-1;
+for (int q=1;q<final_state_index;q++) {
+   SingleGraphState s=A->automaton->states[q];
+   int flag=0;
+   s->outgoing_transitions=remove_transition_to_state(final_state_index,s->outgoing_transitions,&flag);
+   if (flag) {
+      set_final_state(s);
+   }
+}
+unset_final_state(A->automaton->states[final_state_index]);
+trim(A->automaton);
+topological_sort(A->automaton);
+}
 

@@ -30,7 +30,7 @@
 #include "autalmot.h"
 #include "list_aut.h"
 
-void leve_ambiguite(char * fstname, list_aut * grammars, char * fstout);
+void remove_ambiguities(char * fstname, list_aut * grammars, char * fstout);
 list_aut * chargeGramm(char * nomFichGramm);
 list_aut * chargeUneGramm(char * nomFichGramm);
 
