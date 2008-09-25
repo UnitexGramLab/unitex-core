@@ -22,7 +22,7 @@
 #ifndef ElagRulesCompilationH
 #define ElagRulesCompilationH
 
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 
 
 /**

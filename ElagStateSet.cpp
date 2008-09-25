@@ -527,7 +527,7 @@ for (state_id* id=res->original_state_set->state_list;id!=NULL;id=id->next) {
       res->flags&=~(AUT_INITIAL);
    }*/
    if (is_final_state(id->automaton->states[id->state_number])) {
-      res->flags|=AUT_TERMINAL;
+      res->flags|=AUT_FINAL;
    }
 }
 /* We expand the transitions of the original automaton */

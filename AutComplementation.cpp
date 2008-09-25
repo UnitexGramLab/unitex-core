@@ -19,7 +19,7 @@
   *
   */
 
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "symbol_op.h"
 #include "ElagStateSet.h"
 #include "AutComplementation.h"

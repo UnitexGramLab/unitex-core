@@ -27,7 +27,6 @@
 
 SYSTEM = linux-like
 USE_TRE_LIBRARY = yes
-#USE_TRE_LIBRARY = no
 
 OBJ_DIR = build/
 BIN_DIR = ../bin/
@@ -318,19 +317,19 @@ DICO_OBJS = Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o 
             symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 ELAG      = Elag
-ELAG_OBJS = IOBuffer.o Elag.o Unicode.o elag-functions.o ElagFstFilesIO.o AutDeterminization.o \
-            AutMinimization.o aut-emonde.o AutConcat.o autalmot.o \
+ELAG_OBJS = IOBuffer.o Elag.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
+            AutMinimization.o AutConcat.o Fst2Automaton.o \
             symbol.o hash_str_table.o String_hash.o Tagset.o ustring.o \
    		    ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o LanguageDefinition.o\
-            aut-topo.o AutIntersection.o aut-eval.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
+            AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
             BitMasks.o FIFO.o Transitions.o ElagDebug.o
  
 ELAGCOMP      = ElagComp
-ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o ElagRulesCompilation.o autalmot.o\
+ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o ElagRulesCompilation.o Fst2Automaton.o\
                ElagFstFilesIO.o hash_str_table.o String_hash.o\
                symbol.o ustring.o AutDeterminization.o AutIntersection.o ElagStateSet.o symbol_op.o LanguageDefinition.o Tagset.o \
-	            AutMinimization.o SymbolAlphabet.o aut-emonde.o AutConcat.o AutComplementation.o\
+	            AutMinimization.o SymbolAlphabet.o AutConcat.o AutComplementation.o\
 	            Alphabet.o Error.o StringParsing.o DELA.o List_ustring.o List_int.o\
 	            SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o BitMasks.o FIFO.o File.o\
 	            Transitions.o ElagDebug.o
@@ -343,7 +342,7 @@ EVAMB_OBJS = IOBuffer.o Evamb.o Unicode.o Fst2.o String_hash.o\
              symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 EXPLOSEFST2      = ExploseFst2
-EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o Unicode.o fst2autalmot.o autalmot_old.o Fst2.o String_hash.o\
+EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o Unicode.o ExploseFst2Utils.o Fst2.o String_hash.o\
                    Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o List_int.o ustring.o\
                    BitMasks.o DELA.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o Tagset.o
 
@@ -391,10 +390,6 @@ FST2LIST_OBJS = IOBuffer.o Fst2List.o Unicode.o Fst2.o Alphabet.o\
                 File.o String_hash.o Error.o TransductionVariables.o\
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o\
                 Transitions.o DELA.o symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
-
-FSTLOCATE      = FstLocate
-FSTLOCATE_OBJS = FstLocate.o autalmot.o symbol_op.o stack.o ElagFstFilesIO.o Error.o symbol.o Unicode.o ustring.o\
-                 hash_str_table.o LanguageDefinition.o Tagset.o IOBuffer.o
 
 FST2TXT      = Fst2Txt
 FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
@@ -498,7 +493,7 @@ TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o ElagFstFilesIO.o ustring
 					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
 					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
 					BitMasks.o FIFO.o Transitions.o\
-					symbol_op.o autalmot.o aut-emonde.o
+					symbol_op.o Fst2Automaton.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = IOBuffer.o Unicode.o Fst2.o Alphabet.o \
@@ -585,7 +580,7 @@ EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segt
 ################################
 ################################
 
-PROGS__ = $(ELAGCOMP) #$(TEST) 
+PROGS__ = $(ELAGCOMP) #$(TEST)
 
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(EXTRACT) $(FLATTEN) $(FST2GRF) \
@@ -593,7 +588,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(NORMALIZE) $(POLYLEX) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TOKENIZE)\
 		$(TXT2FST2) $(IMPLODEFST2) \
-		$(EXPLOSEFST2) $(LOADFST) $(EVAMB) $(CONVERT) \
+		$(EXPLOSEFST2) $(EVAMB) $(CONVERT) \
 		$(TAGSETNORM) \
 		$(INFLECTKR) $(FST2LIST) $(SUFFORM2RAC) $(COMPRESSKR)\
 		$(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) $(TXT2FST2KR) \
@@ -611,12 +606,12 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OB
 		$(NORMALIZE_OBJS) $(POLYLEX_OBJS) $(RECONSTRUCAO_OBJS) \
 		$(REG2GRF_OBJS) $(SORTTXT_OBJS) $(TABLE2GRF_OBJS)\
 		$(TOKENIZE_OBJS) $(TXT2FST2_OBJS) \
-		$(IMPLODEFST2_OBJS) $(LOADFST_OBJS) $(EVAMB_OBJS) $(CONVERT_OBJS) \
+		$(IMPLODEFST2_OBJS) $(EVAMB_OBJS) $(CONVERT_OBJS) \
 		$(TAGSETNORM_OBJS) $(CONCORDIFF_OBJS) \
 		$(COMPRESSKR_OBJS) $(FST2LIST_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
 		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(FST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS) \
-		$(TEST_OBJS) $(FSTLOCATE_OBJS) $(EXPORTDIC_OBJS) \
+		$(TEST_OBJS) $(EXPORTDIC_OBJS) \
 		$(XMLIZER_OBJS) $(TEI2TXT_OBJS) #$(COLLOC_OBJS) $(FREQ_OBJS)
 
 
@@ -804,9 +799,6 @@ $(BIN_DIR)$(FST2GRF)$(EXTENSION): $(FST2GRF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2LIST)$(EXTENSION): $(FST2LIST_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(FSTLOCATE)$(EXTENSION): $(FSTLOCATE_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2TXT)$(EXTENSION): $(FST2TXT_OBJS)

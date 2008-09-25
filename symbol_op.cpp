@@ -95,12 +95,10 @@ return res;
 }
 
 
-
 static inline bool canonic_in_neg(int canonic, const symbol_t * s) {
   for (int i = 0; i < s->nbnegs; i++) { if (canonic == s->negs[i]) { return true; } }
   return false;
 }
-
 
 
 
@@ -1035,28 +1033,6 @@ static symbol_t * POS_minus_symbol(const symbol_t * a) {
 
   return res.next;
 }
-
-/*
- * moved in symbol.o, so that it doesn't depend on this file
-symbol_t * LEXIC_minus_POS(POS_t * POS) {
-
-  symbol_t res;
-  res.next = NULL;
-  symbol_t * end = & res;
-
-  for (int i = 0; i < LANG->POSs->nbelems; i++) {
-
-    POS_t * POS2 = (POS_t *) LANG->POSs->tab[i];
-
-    if (POS2 == POS) { continue; }
-
-    symbols_concat(end, symbol_new(POS), & end);
-  }
-
-  return res.next;
-}
-
-*/
 
 
 static symbol_t * LEXIC_minus_symbol(const symbol_t * b) {

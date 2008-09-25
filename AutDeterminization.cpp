@@ -53,7 +53,7 @@ for (int current_state_set=0;current_state_set<ARRAY->size;current_state_set++) 
    if (Q->flags & AUT_INITIAL) {
       set_initial_state(q);
    }
-   if (Q->flags & AUT_TERMINAL) set_final_state(q);
+   if (Q->flags & AUT_FINAL) set_final_state(q);
    for (TRANS_t* T=Q->transitions;T!=NULL;T=T->next) {
       /* For each outgoing transition, we test if the pointed state set
        * already exists in our state set array */

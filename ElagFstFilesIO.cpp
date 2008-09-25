@@ -26,8 +26,8 @@
 #include "ustring.h"
 #include "hash_str_table.h"
 #include "symbol.h"
-#include "autalmot.h"
-#include "fst_file.h"
+#include "Fst2Automaton.h"
+#include "ElagFstFilesIO.h"
 
 #define MAXBUF  1024
 
@@ -36,7 +36,7 @@
  * Loads the tags of the given .fst2 file. Returns 0 in case of success; -1 otherwise.
  * Note that the position in the file is unchanged after a call to this function.
  */
-int load_fst_tags(fst_file_in_t* fst) {
+int load_fst_tags(Elag_fst_file_in* fst) {
 /* We backup the position in the file, and we come back at the
  * beginning of the file */
 long fpos=ftell(fst->f);
@@ -129,8 +129,8 @@ return 0;
  * Loads a .fst2 file with the given name and type, according to the
  * given language description.
  */
-fst_file_in_t* load_fst_file(char* fname,int type,language_t* language) {
-fst_file_in_t* fstf=(fst_file_in_t*)malloc(sizeof(fst_file_in_t));
+Elag_fst_file_in* load_fst_file(char* fname,int type,language_t* language) {
+Elag_fst_file_in* fstf=(Elag_fst_file_in*)malloc(sizeof(Elag_fst_file_in));
 if (fstf==NULL) {
    fatal_error("Not enough memory in load_fst_file\n");
 }
@@ -179,7 +179,7 @@ return NULL;
 /**
  * Closes the given file and frees the memory associated to the structure.
  */
-void fst_file_close_in(fst_file_in_t* fstf) {
+void fst_file_close_in(Elag_fst_file_in* fstf) {
 if (fstf==NULL) return;
 if (fstf->name!=NULL) free(fstf->name);
 u_fclose(fstf->f);
@@ -193,7 +193,7 @@ free(fstf);
  * Loads and returns an automaton from the given .fst2.
  * Returns NULL if there is no more automaton to load.
  */
-Fst2Automaton* load_automaton(fst_file_in_t* fstf) {
+Fst2Automaton* load_automaton(Elag_fst_file_in* fstf) {
 if (fstf->pos>=fstf->nb_automata) {
    return NULL;
 }
@@ -213,7 +213,6 @@ if (i!=fstf->pos+1) {
 /* Now p points on the automaton name */
 p++;
 Fst2Automaton* A=new_Fst2Automaton(p);
-A->symbols=fstf->symbols;
 while (readline(ustr,fstf->f) && ustr->str[0]!='f') {
    /* If there is a state to read */
    chomp_new_line(ustr);
@@ -244,7 +243,7 @@ while (readline(ustr,fstf->f) && ustr->str[0]!='f') {
       if (tmp!=NULL) {
          /* If it is a good symbol (successfully loaded), we add transition(s) */
          if (fstf->type!=FST_TEXT) {
-            add_outgoing_transition(state,tag_number,state_number);
+            add_all_outgoing_transitions(state,tmp,state_number);
          } else {
             /* In a text automaton, we add one transition per element of
              * the symbol list. For instance, if we have:
@@ -252,19 +251,7 @@ while (readline(ustr,fstf->f) && ustr->str[0]!='f') {
              * tmp = "{domestique,.N:fs}" => "{domestique,.N:ms}" => NULL
              * 
              * then we add two transitions. */
-            Ustring* form=new_Ustring();
-            while (tmp!=NULL) {
-               /* We convert the current symbol into a string */
-               symbol_to_text_label(tmp,form);
-               /* We associate the single form to the correponding symbol.
-                * Note that if we don't duplicate the symbol, there will
-                * be problems when freeing the string_hash_ptr 'fstf->symbols'. */
-               int n=get_value_index(form->str,fstf->symbols,INSERT_IF_NEEDED,dup_symbol(tmp));
-               /* And we add a transition for this symbol */
-               add_outgoing_transition(state,n,state_number);
-               tmp=tmp->next;
-            }
-            free_Ustring(form);
+            add_all_outgoing_transitions(state,tmp,state_number);
          }
       }
       while (*p!='\0' && !u_is_digit(*p)) {
@@ -291,7 +278,7 @@ return A;
  * before the nth automaton. For instance, if we have n=2, the
  * file position will be set at the beginning of the line "-2 .....".
  */
-void fst_file_seek(fst_file_in_t* fstin,int n) {
+void fst_file_seek(Elag_fst_file_in* fstin,int n) {
 if (n<=0 || n>fstin->nb_automata) {
    fatal_error("fst_file_seek(%d): automaton number should be in [1;%d]\n",n,fstin->nb_automata);
 }
@@ -321,7 +308,7 @@ while (fstin->pos<n-1) {
  * Loads and returns the automaton #n in the given .fst2 file.
  * Note that n must be in [1;number of automata].
  */
-Fst2Automaton* fst_file_autalmot_load(fst_file_in_t* fstin,int n) {
+Fst2Automaton* fst_file_autalmot_load(Elag_fst_file_in* fstin,int n) {
 fst_file_seek(fstin,n);
 return load_automaton(fstin);
 }
@@ -331,8 +318,8 @@ return load_automaton(fstin);
  * Opens a .fst2 file in output mode and returns the associated fst_file_out_t
  * structure, or NULL in case of error.
  */
-fst_file_out_t* fst_file_out_open(char* fname,int type) {
-fst_file_out_t* res=(fst_file_out_t*)malloc(sizeof(fst_file_out_t));
+Elag_fst_file_out* fst_file_out_open(char* fname,int type) {
+Elag_fst_file_out* res=(Elag_fst_file_out*)malloc(sizeof(Elag_fst_file_out));
 if (res==NULL) {
    fatal_error("Not enough memory in fst_file_out_open\n");
 }
@@ -360,7 +347,7 @@ return res;
 /**
  * Writes the fst's labels.
  */
-void write_fst_tags(fst_file_out_t* fstout) {
+void write_fst_tags(Elag_fst_file_out* fstout) {
 for (int i=0;i<fstout->labels->size;i++) {
    u_fprintf(fstout->f,"%%%S\n",fstout->labels->value[i]);
 }
@@ -372,7 +359,7 @@ u_fprintf(fstout->f,"f\n");
  * Saves the labels of the given .fst2, closes the file
  * and frees the associated memory.
  */
-void fst_file_close_out(fst_file_out_t* fstout) {
+void fst_file_close_out(Elag_fst_file_out* fstout) {
 write_fst_tags(fstout);
 fseek(fstout->f,fstout->fstart,SEEK_SET);
 /* We print the number of automata on 10 digits */
@@ -385,7 +372,7 @@ free(fstout);
 
 
 
-void PNC_trans_write(fst_file_out_t * fstf, int to) {
+void PNC_trans_write(Elag_fst_file_out * fstf, int to) {
 
   unichar label[4];
   int idx;
@@ -406,7 +393,7 @@ void PNC_trans_write(fst_file_out_t * fstf, int to) {
 
 
 
-void CHFA_trans_write(fst_file_out_t * fstf, int to) {
+void CHFA_trans_write(Elag_fst_file_out * fstf, int to) {
 
   unichar label[2];
   int idx;
@@ -425,7 +412,7 @@ void CHFA_trans_write(fst_file_out_t * fstf, int to) {
 
 
 
-void LEXIC_trans_write(fst_file_out_t * fstf, int to) {
+void LEXIC_trans_write(Elag_fst_file_out * fstf, int to) {
 
   unichar label[8];
   int idx;
@@ -447,7 +434,7 @@ void LEXIC_trans_write(fst_file_out_t * fstf, int to) {
 /**
  * Saves the given automaton into the given .fst2 file.
  */
-void fst_file_write(fst_file_out_t* fstf,const Fst2Automaton* A) {
+void fst_file_write(Elag_fst_file_out* fstf,const Fst2Automaton* A) {
 Ustring* tag=new_Ustring();
 void (*symbol_to_tag)(const symbol_t*,Ustring*)=NULL;
 switch (fstf->type) {
@@ -479,7 +466,7 @@ for (int q=0;q<A->automaton->number_of_states;q++) {
           * the automaton was emptied as trim time */
          u_strcpy(tag,"EMPTY");
       } else {
-         symbol_t* symbol=(symbol_t*)A->symbols->value[t->tag_number];
+         symbol_t* symbol=t->label;
          symbol_to_tag(symbol,tag);
       }
       if (fstf->type==FST_LOCATE) {
@@ -523,7 +510,7 @@ Fst2Automaton* load_elag_grammar_automaton(char* fst2,language_t* language) {
 if (language==NULL) {
    fatal_error("NULL language error in load_elag_grammar_automaton\n");
 }
-fst_file_in_t* fstin=load_fst_file(fst2,FST_GRAMMAR,language);
+Elag_fst_file_in* fstin=load_fst_file(fst2,FST_GRAMMAR,language);
 if (fstin==NULL) {
    error("Unable to open '%s'\n", fst2);
    return NULL; 
@@ -533,7 +520,6 @@ if (fstin->nb_automata!=1) {
 }
 Fst2Automaton* A=fst_file_autalmot_load(fstin,1);
 /* As we use the symbols of fstin in A, we must not free them here */
-fstin->symbols=NULL;
 fst_file_close_in(fstin);
 return A;
 }

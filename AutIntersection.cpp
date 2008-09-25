@@ -22,7 +22,7 @@
 #include "utils.h"
 #include "symbol.h"
 #include "symbol_op.h"
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "ElagStateSet.h"
 #include "Transitions.h"
 
@@ -180,102 +180,3 @@ return res;
 
 
 
-
-static int interStateAtom(Fst2Automaton * res, const Fst2Automaton * A, int q1, const Fst2Automaton * B,
-                          int q2, int ** corresp) {
-
-  if (corresp[q1][q2] != -1) { return corresp[q1][q2]; }
-
-  int q = corresp[q1][q2] = autalmot_add_state(res);
-
-  if ((A->states[q1].flags & AUT_INITIAL) && (B->states[q2].flags & AUT_INITIAL)) {
-    autalmot_set_initial(res, q);
-  }
-
-  if ((A->states[q1].flags & AUT_TERMINAL) && (B->states[q2].flags & AUT_TERMINAL)) {
-    autalmot_set_terminal(res, q);
-  }
-
-
-  for (transition_t * t1 = A->states[q1].trans; t1; t1 = t1->next) {
-
-    //debug("process :"); symbol_dump(t1->label); endl();
-
-    if (t1->label->POS->ignorable) { // skip ignorable tokens
-      //debug("skip ignorable :"); symbol_dump(t1->label); endl();
-      //debug("IGNORABLE\n");
-      int to = interStateAtom(res, A, t1->to, B, q2, corresp);
-      add_transition(res, q, t1->label, to);
-      continue;
-      //debug("CONTINUE\n");
-    }
- 
-
-    bool found = false;
-
-    for (transition_t * t2 = B->states[q2].trans; t2 && ! found; t2 = t2->next) {
-
-      //debug("t2="); symbol_dump(t2->label); endl();
-
-      if (symbol_in_symbol(t1->label, t2->label)) {
-        //debug("  symbols matches\n");
-	if (found) {
-	  error("interStateAtom: non deterministic automaton\n");
-	}
-
-	found = true;
-
-	int to = interStateAtom(res, A, t1->to, B, t2->to, corresp);
-	add_transition(res, q, t1->label, to);
-      } //else { debug("  DONT MATCH\n"); }
-    }
-
-//#warning "should no have def trans ???"
-    if (! found && B->states[q2].defto != -1) {   
-      int to = interStateAtom(res, A, t1->to, B, B->states[q2].defto, corresp);
-      add_transition(res, q, t1->label, to);
-    }
-  }
-
-  return q;
-}
-
-
-Fst2Automaton * interAutAtome(const Fst2Automaton * A, const Fst2Automaton * B) {
-
-  if ((A->nbinitials > 1) || (B->nbinitials > 1)) {
-    error("a nbstates=%d & b->nbstates=%d\n", A->nbinitials, B->nbinitials);
-    fatal_error("autalmot_interAutAtome: non deterministic auto\n");
-  }
-
-  Fst2Automaton * res = new_Fst2Automaton(A->name, A->nbstates * B->nbstates);
-
-  if (A->nbinitials == 0 || B->nbinitials == 0) {
-    error("interAutAtome: auto is void\n");
-    return res;
-  }
-
-  int ** corresp = (int **) xmalloc(A->nbstates * sizeof(int *));
-
-  int i;
-  for (i = 0; i < A->nbstates; i++) {
-
-    corresp[i] = (int *) xmalloc(B->nbstates * sizeof(int));
-
-    for (int j = 0; j < B->nbstates; j++) { corresp[i][j] = -1; }
-  }
-
-
-  interStateAtom(res, A, A->initials[0], B, B->initials[0], corresp);
-
-  autalmot_resize(res);
-
-  for (i = 0; i < A->nbstates; i++) { free(corresp[i]); }
-
-  free(corresp);
-
-  //  debug("out of interAutAtom:\n"); autalmot_dump(res);
-  //  autalmot_dump_dot_fname(res, "interAutAtom.out");
-
-  return res;				     
-}

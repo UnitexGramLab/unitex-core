@@ -21,8 +21,7 @@
 
 #include "Unicode.h"
 #include "Copyright.h"
-#include "autalmot_old.h"
-#include "fst2autalmot.h"
+#include "ExploseFst2Utils.h"
 #include "utils.h"
 #include "IOBuffer.h"
 

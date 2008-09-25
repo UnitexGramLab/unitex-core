@@ -19,12 +19,12 @@
   *
   */
 
-#ifndef _FST_FILE_H_
-#define _FST_FILE_H_
+#ifndef ElagFstFilesIOH
+#define ElagFstFilesIOH
 
 #include "LanguageDefinition.h"
 #include "String_hash.h"
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 
 
 
@@ -73,7 +73,7 @@ typedef struct fst_file_in_t {
     * "<comme,.CONJS+5>" and "<comme,.CONJS+8>" in the original .fst2,
     * and x is the index of "<comme,.CONJS>" in 'symbols->value'. */
    int* renumber;
-} fst_file_in_t;
+} Elag_fst_file_in;
 
 
 /**
@@ -98,22 +98,22 @@ typedef struct fst_file_out_t {
    
    /* The tags of the .fst2 */
    struct string_hash* labels;
-} fst_file_out_t;
+} Elag_fst_file_out;
 
 
-fst_file_in_t* load_fst_file(char*,int,language_t*);
-void fst_file_close_in(fst_file_in_t*);
+Elag_fst_file_in* load_fst_file(char*,int,language_t*);
+void fst_file_close_in(Elag_fst_file_in*);
 
-void fst_file_seek(fst_file_in_t*,int);
-inline void fst_file_rewind(fst_file_in_t* fstin) { fst_file_seek(fstin, 1); }
+void fst_file_seek(Elag_fst_file_in*,int);
+inline void fst_file_rewind(Elag_fst_file_in* fstin) { fst_file_seek(fstin, 1); }
 
-Fst2Automaton* load_automaton(fst_file_in_t*);
-Fst2Automaton* fst_file_autalmot_load(fst_file_in_t*,int);
+Fst2Automaton* load_automaton(Elag_fst_file_in*);
+Fst2Automaton* fst_file_autalmot_load(Elag_fst_file_in*,int);
+Fst2Automaton* load_elag_grammar_automaton(char* fst2,language_t*);
 
+Elag_fst_file_out* fst_file_out_open(char*,int);
+void fst_file_close_out(Elag_fst_file_out * fstout);
 
-fst_file_out_t* fst_file_out_open(char*,int);
-void fst_file_close_out(fst_file_out_t * fstout);
-
-void fst_file_write(fst_file_out_t * fstf, const Fst2Automaton * A);
+void fst_file_write(Elag_fst_file_out * fstf, const Fst2Automaton * A);
 
 #endif

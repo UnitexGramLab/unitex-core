@@ -39,9 +39,9 @@
 
 #include "Unicode.h"
 #include "Copyright.h"
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "list_aut.h"
-#include "elag-functions.h"
+#include "ElagFunctions.h"
 #include "utils.h"
 #include "IOBuffer.h"
 #include "Error.h"

@@ -21,7 +21,7 @@
 
 #include "AutConcat.h"
 #include "utils.h"
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "symbol_op.h"
 
 

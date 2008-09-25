@@ -22,14 +22,17 @@
 #ifndef ElagStateSetH
 #define ElagStateSetH
 
-#include "symbol.h"
-#include "autalmot.h"
-
 /**
  * This library is designed to manipulate set of ELAG grammars' states
  * and transitions during algorithms like determinization.
  */
 
+#include "SingleGraph.h"
+#include "symbol.h"
+
+
+#define AUT_INITIAL    1
+#define AUT_FINAL      2
 
 
 /**

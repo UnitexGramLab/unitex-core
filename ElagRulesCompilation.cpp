@@ -24,7 +24,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "ElagFstFilesIO.h"
 #include "ElagRulesCompilation.h"
 #include "File.h"

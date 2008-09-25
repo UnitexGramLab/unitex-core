@@ -34,7 +34,7 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "LanguageDefinition.h"
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "ElagRulesCompilation.h"
 #include "utils.h"
 #include "File.h"

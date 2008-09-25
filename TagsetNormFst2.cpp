@@ -24,7 +24,7 @@
 #include <string.h>
 #include "Unicode.h"
 #include "Copyright.h"
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "ElagFstFilesIO.h"
 #include "utils.h"
 #include "IOBuffer.h"

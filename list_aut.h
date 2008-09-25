@@ -23,7 +23,7 @@
 #define __LIST_AUT_H_
 
 
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "vector.h"
 
 /* Structure de liste d'automates */
