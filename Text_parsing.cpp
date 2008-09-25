@@ -82,6 +82,8 @@ while (p->current_origin<p->token_buffer->size
       p->stack_base=-1;
       p->stack->stack_pointer=-1;
       struct parsing_info* matches = NULL;
+      p->left_ctx_shift=0;
+      p->left_ctx_base=0;
       locate(0,initial_state,0,0,&matches,0,NULL,p);
       free_parsing_info(matches);
       clear_dic_variable_list(&(p->dic_variables));
@@ -221,11 +223,13 @@ if (current_state->control & 1) {
       n_matches_at_token_pos++;
       if (p->output_policy==IGNORE_OUTPUTS) {
          if (pos>0) {add_match(pos+p->current_origin+p->absolute_offset-1,NULL,p);}
-         else {add_match(pos+p->current_origin+p->absolute_offset,NULL,p);}
+         else {
+            add_match(pos+p->current_origin+p->absolute_offset,NULL,p);
+         }
       } else {
          p->stack->stack[stack_top+1]='\0';
-         if (pos>0) {add_match(pos+p->current_origin+p->absolute_offset-1,p->stack->stack,p);}
-         else {add_match(pos+p->current_origin+p->absolute_offset,p->stack->stack,p);}
+         if (pos>0) {add_match(pos+p->current_origin+p->absolute_offset-1,p->stack->stack+p->left_ctx_base,p);}
+         else {add_match(pos+p->current_origin+p->absolute_offset,p->stack->stack+p->left_ctx_base,p);}
       }
    }
    else {
@@ -243,9 +247,9 @@ if (current_state->control & 1) {
          n_matches++;
          p->stack->stack[stack_top+1]='\0';
          if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-            (*matches)=insert_if_different(pos,-1,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables);
+            (*matches)=insert_if_different(pos,-1,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables,p->left_ctx_shift,p->left_ctx_base);
          } else {
-            (*matches)=insert_if_absent(pos,-1,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables);
+            (*matches)=insert_if_absent(pos,-1,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables,p->left_ctx_shift,p->left_ctx_base);
          }
       }
    }
@@ -306,7 +310,14 @@ if (graph_call_list!=NULL) {
                p->dic_variables=L->dic_variable_backup;
              }
              /* And we continue the exploration */
+             int old_left_ctx_shift=p->left_ctx_shift;
+             int old_left_ctx_base=p->left_ctx_base;
+             p->left_ctx_shift=L->left_ctx_shift;
+             p->left_ctx_base=L->left_ctx_base;
              locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p);
+             p->left_ctx_shift=old_left_ctx_shift;
+             p->left_ctx_base=old_left_ctx_base;
+             
              p->stack->stack_pointer=stack_top;
              if (graph_depth==0) {
                 /* If we are at the top graph level, we restore the variables */
@@ -604,31 +615,26 @@ while (meta_list!=NULL) {
          break;
 
       case META_LEFT_CONTEXT: 
-         int real_origin=p->current_origin;
+         int current_shift=p->left_ctx_shift;
          if (p->space_policy==START_WITH_SPACE) {
-            p->current_origin+=pos;
+            p->left_ctx_shift=pos;
          } else {
-            p->current_origin+=pos2;
+            p->left_ctx_shift=pos2;
          }
-         int real_stack_base=p->stack_base;
-         p->stack_base=0;
-         struct stack_unichar* real_stack=p->stack;
-         p->stack=new_stack_unichar(real_stack->capacity);
-         
-         int* var_backup=NULL;
+         int old_left_ctx_stack_base=p->left_ctx_base;
+         p->left_ctx_base=p->stack->stack_pointer+1;
+         /*int* var_backup=NULL;
          if (p->output_policy!=IGNORE_OUTPUTS) {
-        	 var_backup=create_variable_backup(p->variables);
-        	 shift_variable_bounds(p->variables,real_origin-p->current_origin);
-         }
-         locate(graph_depth,p->optimized_states[t->state_number],0,depth+1,matches,n_matches,ctx,p);
-         if (p->output_policy!=IGNORE_OUTPUTS) {
+        	   var_backup=create_variable_backup(p->variables);
+        	   shift_variable_bounds(p->variables,real_origin-p->current_origin);
+         }*/
+         locate(graph_depth,p->optimized_states[t->state_number],pos2,depth+1,matches,n_matches,ctx,p);
+         /*if (p->output_policy!=IGNORE_OUTPUTS) {
             install_variable_backup(p->variables,var_backup);
             free_variable_backup(var_backup);
-         }
-         p->current_origin=real_origin;
-         p->stack_base=real_stack_base;
-         free_stack_unichar(p->stack);
-         p->stack=real_stack;
+         }*/
+         p->left_ctx_shift=current_shift;
+         p->left_ctx_base=old_left_ctx_stack_base;
          p->stack->stack_pointer=stack_top;
          break;
 

@@ -64,16 +64,20 @@ struct parsing_info {
     * save the address of a struct dela_entry. */
    struct dela_entry* dic_entry;
    
+   /* The same as in locate_parameters */
+   int left_ctx_shift;
+   int left_ctx_base;
+   
    /* The next element of the list */
    struct parsing_info* next;
 };
 
 
 
-struct parsing_info* new_parsing_info(int,int,int,int,unichar*,Variables*,struct dic_variable*);
+struct parsing_info* new_parsing_info(int,int,int,int,unichar*,Variables*,struct dic_variable*,int,int);
 void free_parsing_info(struct parsing_info*);
-struct parsing_info* insert_if_absent(int,int,int,struct parsing_info*,int,unichar*,Variables*,struct dic_variable*);
-struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,unichar*,Variables*,struct dic_variable*);
+struct parsing_info* insert_if_absent(int,int,int,struct parsing_info*,int,unichar*,Variables*,struct dic_variable*,int,int);
+struct parsing_info* insert_if_different(int,int,int,struct parsing_info*,int,unichar*,Variables*,struct dic_variable*,int,int);
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,
                                                 struct parsing_info* list,struct dela_entry*);
 

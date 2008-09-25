@@ -27,7 +27,8 @@
  * Allocates, initializes and returns a new parsing info structure.
  */
 struct parsing_info* new_parsing_info(int pos,int pos_in_token,int state,int stack_pointer,unichar* stack,
-                                      Variables* v,struct dela_entry* dic_entry,struct dic_variable* v2) {
+                                      Variables* v,struct dela_entry* dic_entry,struct dic_variable* v2,
+                                      int left_ctx_shift,int left_ctx_base) {
 struct parsing_info* info;
 info=(struct parsing_info*)malloc(sizeof(struct parsing_info));
 if (info==NULL) {
@@ -42,6 +43,8 @@ info->stack=u_strdup(stack);
 info->variable_backup=create_variable_backup(v);
 info->dic_entry=dic_entry;
 info->dic_variable_backup=clone_dic_variable_list(v2);
+info->left_ctx_shift=left_ctx_shift;
+info->left_ctx_base=left_ctx_base;
 return info;
 }
 
@@ -68,8 +71,10 @@ while (list!=NULL) {
  * with same end position of match.
  */
 struct parsing_info* insert_if_absent(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
-                                      unichar* stack,Variables* v,struct dic_variable* v2) {
-if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,NULL,v2);
+                                      unichar* stack,Variables* v,struct dic_variable* v2,
+                                      int left_ctx_shift,int left_ctx_base) {
+if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,NULL,v2,
+                                        left_ctx_shift,left_ctx_base);
 if (list->position==pos && list->pos_in_token==pos_in_token && list->state_number==state) {
    list->stack_pointer=stack_pointer;
    /* We free the previous stack */
@@ -79,9 +84,12 @@ if (list->position==pos && list->pos_in_token==pos_in_token && list->state_numbe
    list->variable_backup=create_variable_backup(v);
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);
+   list->left_ctx_shift=left_ctx_shift;
+   list->left_ctx_base=left_ctx_base;
    return list;
 }
-list->next=insert_if_absent(pos,pos_in_token,state,list->next,stack_pointer,stack,v,v2);
+list->next=insert_if_absent(pos,pos_in_token,state,list->next,stack_pointer,stack,v,v2,
+      left_ctx_shift,left_ctx_base);
 return list;
 }
 
@@ -90,12 +98,16 @@ return list;
  * Inserts an element in the given information list only if there is no element
  * with position and same stack. */
 struct parsing_info* insert_if_different(int pos,int pos_in_token,int state,struct parsing_info* list,int stack_pointer,
-                                         unichar* stack,Variables* v,struct dic_variable* v2) {
-if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,NULL,v2);
+                                         unichar* stack,Variables* v,struct dic_variable* v2,
+                                         int left_ctx_shift,int left_ctx_base) {
+if (list==NULL) return new_parsing_info(pos,pos_in_token,state,stack_pointer,stack,v,NULL,v2,
+                                        left_ctx_shift,left_ctx_base);
 if ((list->position==pos) /* If the length is the same... */
     && (list->pos_in_token==pos_in_token)
     && (list->state_number==state)
-    && !(u_strcmp(list->stack,stack))) { /* ...and if the stack content too */
+    && !(u_strcmp(list->stack,stack)) /* ...and if the stack content too */
+    && list->left_ctx_shift==left_ctx_shift
+    && list->left_ctx_base==left_ctx_base) { 
     /* then we overwrite the current list element */
    list->stack_pointer=stack_pointer;
    free_variable_backup(list->variable_backup);
@@ -105,7 +117,8 @@ if ((list->position==pos) /* If the length is the same... */
    return list;
 }
 /* Otherwise, we look in the rest of the list */
-list->next=insert_if_different(pos,pos_in_token,state,list->next,stack_pointer,stack,v,v2);
+list->next=insert_if_different(pos,pos_in_token,state,list->next,stack_pointer,stack,v,v2,
+                               left_ctx_shift,left_ctx_base);
 return list;
 }
 
@@ -117,7 +130,7 @@ return list;
  */
 struct parsing_info* insert_morphological_match(int pos,int pos_in_token,int state,struct parsing_info* list,
                                                 struct dela_entry* dic_entry) {
-if (list==NULL) return new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,dic_entry,NULL);
+if (list==NULL) return new_parsing_info(pos,pos_in_token,state,-1,NULL,NULL,dic_entry,NULL,-1,-1);
 if (list->position==pos && list->pos_in_token==pos_in_token && list->state_number==state
     && list->dic_entry==dic_entry) {
     /* If the morphological match is already in the list, we do nothing.

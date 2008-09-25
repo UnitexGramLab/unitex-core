@@ -181,6 +181,13 @@ struct locate_parameters {
    
    /* The DELAF entry variables filled in morphological mode */
    struct dic_variable* dic_variables;
+   
+   /* These 2 fields are used to manage left contexts. 
+    * - left_ctx_shift = shift value to add to the start of the match
+    * - left_ctx_base = stack base
+    */
+   int left_ctx_shift;
+   int left_ctx_base;
 };
 
 

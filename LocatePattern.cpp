@@ -83,6 +83,8 @@ p->morpho_dic_inf=NULL;
 p->morpho_dic_bin=NULL;
 p->n_morpho_dics=0;
 p->dic_variables=NULL;
+p->left_ctx_shift=0;
+p->left_ctx_base=0;
 return p;
 }
 

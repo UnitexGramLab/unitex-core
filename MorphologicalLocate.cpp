@@ -143,9 +143,9 @@ if (current_state->control & 1) {
          n_matches++;
          p->stack->stack[stack_top+1]='\0';
          if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-            (*matches)=insert_if_different(pos,pos_in_token,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables);
+            (*matches)=insert_if_different(pos,pos_in_token,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables,-1,-1);
          } else {
-            (*matches)=insert_if_absent(pos,pos_in_token,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables);
+            (*matches)=insert_if_absent(pos,pos_in_token,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables,-1,-1);
          }
       }
    }
@@ -357,9 +357,9 @@ while (meta_list!=NULL) {
              * the exploration in the 'enter_morphological_mode' function. */
             p->stack->stack[stack_top+1]='\0';
             if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-               (*matches)=insert_if_different(pos,pos_in_token,t->state_number,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables);
+               (*matches)=insert_if_different(pos,pos_in_token,t->state_number,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables,-1,-1);
             } else {
-               (*matches)=insert_if_absent(pos,pos_in_token,t->state_number,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables);
+               (*matches)=insert_if_absent(pos,pos_in_token,t->state_number,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables,-1,-1);
             }
             break;
 

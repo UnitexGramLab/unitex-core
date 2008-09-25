@@ -63,7 +63,7 @@ free(l);
  * # Changed to allow different outputs in merge/replace
  * mode when the grammar is an ambiguous transducer (S.N.) */
 void add_match(int end,unichar* output,struct locate_parameters* p) {
-int start=p->current_origin+p->absolute_offset;
+int start=p->current_origin+p->absolute_offset+p->left_ctx_shift;
 struct match_list *l;
 if (p->match_list==NULL) {
    /* If the match list was empty, we always can put the match in the list */
