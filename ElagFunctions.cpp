@@ -32,20 +32,17 @@
 #include <math.h>
 
 #include "utils.h"
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "list_aut.h"
-#include "elag-functions.h"
+#include "ElagFunctions.h"
 #include "ElagFstFilesIO.h"
 #include "AutConcat.h"
 #include "AutDeterminization.h"
 #include "AutMinimization.h"
 #include "AutIntersection.h"
 
-double eval_sentence(Fst2Automaton * A, int * min = NULL, int * max = NULL);
 static void add_sentence_delimiters(Fst2Automaton * A);
 static void remove_sentence_delimiters(Fst2Automaton * A);
-
-//void leve_ambiguite(char * nom_fic_phrases, list_aut * gramm, char * nomSortie) {
 
 void remove_ambiguities(char * fstname, list_aut * gramms, char * outname) {
    static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
@@ -102,7 +99,7 @@ void remove_ambiguities(char * fstname, list_aut * gramms, char * outname) {
          } else {
             for (int j=0;j<gramms->nbelems;j++) {
                Fst2Automaton* grammar=(Fst2Automaton*)(gramms->tab[j]);
-               SingleGraph temp=elag_intersection(A->automaton,grammar->automaton);
+               SingleGraph temp=elag_intersection(A->automaton,grammar->automaton,TEXT_GRAMMAR);
                trim(temp);
                free_SingleGraph(A->automaton);
                A->automaton=temp;
@@ -183,7 +180,6 @@ void remove_ambiguities(char * fstname, list_aut * gramms, char * outname) {
 
 
 /* Charge les grammaires deja compilees. */
-
 list_aut * chargeGramm(char * nomFichGramm) {
 
    char fname[strlen(nomFichGramm) + 5];
@@ -235,10 +231,6 @@ list_aut * chargeGramm(char * nomFichGramm) {
    return gramms;
 }
 
-list_aut * chargeUneGramm(char * name) {
-   fatal_error("charhgeUneGramm: not implemented\n");
-   return NULL;
-}
 
 
 /**
@@ -311,6 +303,7 @@ if (u_strcmp(language_get_form(A->automaton->states[0]->outgoing_transitions->la
 #warning we could do the same at a lower cost by shifting the 1->N-2 states to 0->N-3
 unset_initial_state(A->automaton->states[0]);
 free_Transition_list(A->automaton->states[0]->outgoing_transitions);
+A->automaton->states[0]->outgoing_transitions=NULL;
 set_initial_state(A->automaton->states[1]);
 int final_state_index=A->automaton->number_of_states-1;
 for (int q=1;q<final_state_index;q++) {

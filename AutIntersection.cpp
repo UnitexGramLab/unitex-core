@@ -25,7 +25,14 @@
 #include "Fst2Automaton.h"
 #include "ElagStateSet.h"
 #include "Transitions.h"
+#include "AutIntersection.h"
 
+
+
+int text_grammar_symbol_comparison(const symbol_t* a,const symbol_t* b) {
+if (symbol_in_symbol(a,b)==true) return 0;
+return 1;
+}
 
 
 /**
@@ -33,18 +40,26 @@
  * with the symbol 's'. If found, the transition is extracted from
  * the list and returned.
  */
-Transition* extract_transition(Transition **trans,symbol_t* s) {
+Transition* extract_transition(Transition **trans,symbol_t* s,int type) {
 if (*trans==NULL) {
    return NULL;
 }
-if (symbol_compare(s,(symbol_t*)(*trans)->label)==0) {
+int (*compare)(const symbol_t*,const symbol_t*);
+if (type==GRAMMAR_GRAMMAR) {
+   compare=symbol_compare;
+} else if (type==TEXT_GRAMMAR) {
+   compare=text_grammar_symbol_comparison;
+} else {
+   fatal_error("Invalid type in extract_transition\n");
+}
+if (compare(s,(*trans)->label)==0) {
    /* If the first transition is the one we want */
    Transition* res=*trans;
    *trans=(*trans)->next;
    return res;
 }
 for (Transition* t=*trans;t->next!=NULL;t=t->next) {
-   if (symbol_compare(s,(symbol_t*)t->next->label)==0) {
+   if (compare(s,t->next->label)==0) {
       Transition* res=t->next;
       t->next=t->next->next;
       return res;
@@ -60,7 +75,7 @@ return NULL;
  * automaton.
  */
 int intersect_states(SingleGraph res,const SingleGraph A,int q1,
-                     const SingleGraph B,int q2,int** renumber) {
+                     const SingleGraph B,int q2,int** renumber,int type) {
 if (renumber[q1][q2]!=-1) {
    /* Nothing to do if the job has already been done */
    return renumber[q1][q2];
@@ -89,10 +104,10 @@ while (transA!=NULL) {
    transa=transA;
    transA=transA->next;
    /* And we take from q2's ones the same, if any */
-   transb=extract_transition(&transB,(symbol_t*)transa->label);
+   transb=extract_transition(&transB,transa->label,type);
    if (transb!=NULL) {
       /* If there is such a transition, we merge A and B's transitions */
-      destination=intersect_states(res,A,transa->state_number,B,transb->state_number,renumber);
+      destination=intersect_states(res,A,transa->state_number,B,transb->state_number,renumber,type);
       add_outgoing_transition(res->states[q],transa->label,destination);
       /* We NULL transa so that we can free transa without affecting
        * the transition we have just added to q */
@@ -103,7 +118,7 @@ while (transA!=NULL) {
       /* If A's transition has no equivalent in B... */
       if (B->states[q2]->default_state!=-1) {
          /* ...it can match however with B's default transition, if any */
-         destination=intersect_states(res,A,transa->state_number,B,B->states[q2]->default_state,renumber);
+         destination=intersect_states(res,A,transa->state_number,B,B->states[q2]->default_state,renumber,type);
          add_outgoing_transition(res->states[q],transa->label,destination);
          /* See above */
          transa->label=NULL; 
@@ -118,7 +133,7 @@ if (A->states[q1]->default_state!=-1) {
    while (transB!=NULL) {
       transb=transB;
       transB=transB->next;
-      destination=intersect_states(res,A,A->states[q1]->default_state,B,transb->state_number,renumber);
+      destination=intersect_states(res,A,A->states[q1]->default_state,B,transb->state_number,renumber,type);
       add_outgoing_transition(res->states[q],transb->label,destination);
       /* See above */
       transb->label=NULL;
@@ -127,7 +142,7 @@ if (A->states[q1]->default_state!=-1) {
    if (B->states[q2]->default_state!=-1) {
       /* If both q1 and q2 have default transitions */
       res->states[q]->default_state=intersect_states(res,A,A->states[q1]->default_state,
-                                         B,B->states[q2]->default_state,renumber);
+                                         B,B->states[q2]->default_state,renumber,type);
    }
 } else {
    /* We don't need the remaining transitions from transB */
@@ -139,9 +154,11 @@ return q;
 
 /**
  * Returns the intersection of the two given automata. A and B
- * are supposed to be deterministic.
+ * are supposed to be deterministic. 'type' is used to determine
+ * whether we are intersecting 2 elag grammars or 1 elag grammar
+ * and 1 sentence automaton.
  */
-SingleGraph elag_intersection(const SingleGraph A,const SingleGraph B) {
+SingleGraph elag_intersection(const SingleGraph A,const SingleGraph B,int type) {
 int initial_A=get_initial_state(A);
 int initial_B=get_initial_state(B);
 if (initial_A==-2 || initial_B==-2) {
@@ -168,7 +185,7 @@ for (i=0;i<A->number_of_states;i++) {
       renumber[i][j]=-1;
    }
 }
-intersect_states(res,A,initial_A,B,initial_B,renumber);
+intersect_states(res,A,initial_A,B,initial_B,renumber,type);
 resize(res);
 /* And we free the renumber matrix */
 for (i=0;i<A->number_of_states;i++) {

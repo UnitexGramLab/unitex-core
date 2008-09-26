@@ -294,7 +294,7 @@ while (fgets(buf,FILENAME_MAX,frules)) {
    if (res!=NULL) {
       /* If there is already an automaton, we intersect it with the new one */
       SingleGraph tmp=res->automaton;
-      res->automaton=elag_intersection(tmp,A->automaton);
+      res->automaton=elag_intersection(tmp,A->automaton,GRAMMAR_GRAMMAR);
       free_SingleGraph(tmp);
       free_Fst2Automaton(A);
       trim(res->automaton);
@@ -673,7 +673,7 @@ elag_minimize(a1);
 elag_complementation(a1);
 trim(a1);
 SingleGraph tmp=a1;
-a1=elag_intersection(a1,anything_R1);
+a1=elag_intersection(a1,anything_R1,GRAMMAR_GRAMMAR);
 free_SingleGraph(tmp);
 trim(a1);
 elag_minimize(a1);
@@ -684,7 +684,7 @@ elag_minimize(a2);
 elag_complementation(a2);
 trim(a2);
 tmp=a2;
-a2=elag_intersection(a2,R2_anything);
+a2=elag_intersection(a2,R2_anything,GRAMMAR_GRAMMAR);
 free_SingleGraph(tmp);
 trim(a2);
 elag_minimize(a2);

@@ -28,6 +28,9 @@
  * This library provides a function for intersecting ELAG automata.
  */
 
-SingleGraph elag_intersection(const SingleGraph,const SingleGraph);
+#define GRAMMAR_GRAMMAR 0
+#define TEXT_GRAMMAR 1
+
+SingleGraph elag_intersection(const SingleGraph,const SingleGraph,int type);
 
 #endif
