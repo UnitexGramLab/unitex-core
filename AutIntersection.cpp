@@ -28,38 +28,23 @@
 #include "AutIntersection.h"
 
 
-
-int text_grammar_symbol_comparison(const symbol_t* a,const symbol_t* b) {
-if (symbol_in_symbol(a,b)==true) return 0;
-return 1;
-}
-
-
 /**
  * This function looks for a transition of 'trans' that is tagged
  * with the symbol 's'. If found, the transition is extracted from
  * the list and returned.
  */
-Transition* extract_transition(Transition **trans,symbol_t* s,int type) {
+Transition* extract_transition(Transition **trans,symbol_t* s) {
 if (*trans==NULL) {
    return NULL;
 }
-int (*compare)(const symbol_t*,const symbol_t*);
-if (type==GRAMMAR_GRAMMAR) {
-   compare=symbol_compare;
-} else if (type==TEXT_GRAMMAR) {
-   compare=text_grammar_symbol_comparison;
-} else {
-   fatal_error("Invalid type in extract_transition\n");
-}
-if (compare(s,(*trans)->label)==0) {
+if (symbol_compare(s,(*trans)->label)==0) {
    /* If the first transition is the one we want */
    Transition* res=*trans;
    *trans=(*trans)->next;
    return res;
 }
 for (Transition* t=*trans;t->next!=NULL;t=t->next) {
-   if (compare(s,t->next->label)==0) {
+   if (symbol_compare(s,t->next->label)==0) {
       Transition* res=t->next;
       t->next=t->next->next;
       return res;
@@ -72,10 +57,11 @@ return NULL;
 /**
  * Builds the intersection of A's state #q1 and B's state #q2.
  * Returns the index of the corresponding state in the result
- * automaton.
+ * automaton. This function is supposed to be used when we
+ * intersect two elag grammars.
  */
-int intersect_states(SingleGraph res,const SingleGraph A,int q1,
-                     const SingleGraph B,int q2,int** renumber,int type) {
+int intersect_states_grammar_grammar(SingleGraph res,const SingleGraph A,int q1,
+                     const SingleGraph B,int q2,int** renumber) {
 if (renumber[q1][q2]!=-1) {
    /* Nothing to do if the job has already been done */
    return renumber[q1][q2];
@@ -104,10 +90,10 @@ while (transA!=NULL) {
    transa=transA;
    transA=transA->next;
    /* And we take from q2's ones the same, if any */
-   transb=extract_transition(&transB,transa->label,type);
+   transb=extract_transition(&transB,transa->label);
    if (transb!=NULL) {
       /* If there is such a transition, we merge A and B's transitions */
-      destination=intersect_states(res,A,transa->state_number,B,transb->state_number,renumber,type);
+      destination=intersect_states_grammar_grammar(res,A,transa->state_number,B,transb->state_number,renumber);
       add_outgoing_transition(res->states[q],transa->label,destination);
       /* We NULL transa so that we can free transa without affecting
        * the transition we have just added to q */
@@ -118,7 +104,7 @@ while (transA!=NULL) {
       /* If A's transition has no equivalent in B... */
       if (B->states[q2]->default_state!=-1) {
          /* ...it can match however with B's default transition, if any */
-         destination=intersect_states(res,A,transa->state_number,B,B->states[q2]->default_state,renumber,type);
+         destination=intersect_states_grammar_grammar(res,A,transa->state_number,B,B->states[q2]->default_state,renumber);
          add_outgoing_transition(res->states[q],transa->label,destination);
          /* See above */
          transa->label=NULL; 
@@ -133,7 +119,7 @@ if (A->states[q1]->default_state!=-1) {
    while (transB!=NULL) {
       transb=transB;
       transB=transB->next;
-      destination=intersect_states(res,A,A->states[q1]->default_state,B,transb->state_number,renumber,type);
+      destination=intersect_states_grammar_grammar(res,A,A->states[q1]->default_state,B,transb->state_number,renumber);
       add_outgoing_transition(res->states[q],transb->label,destination);
       /* See above */
       transb->label=NULL;
@@ -141,8 +127,8 @@ if (A->states[q1]->default_state!=-1) {
    }
    if (B->states[q2]->default_state!=-1) {
       /* If both q1 and q2 have default transitions */
-      res->states[q]->default_state=intersect_states(res,A,A->states[q1]->default_state,
-                                         B,B->states[q2]->default_state,renumber,type);
+      res->states[q]->default_state=intersect_states_grammar_grammar(res,A,A->states[q1]->default_state,
+                                         B,B->states[q2]->default_state,renumber);
    }
 } else {
    /* We don't need the remaining transitions from transB */
@@ -150,6 +136,52 @@ if (A->states[q1]->default_state!=-1) {
 }
 return q;
 }
+
+
+/**
+ * Builds the intersection of A's state #q1 and B's state #q2.
+ * Returns the index of the corresponding state in the result
+ * automaton. This function is supposed to be used when we
+ * intersect an elag grammar with a sentence automaton.
+ */
+int intersect_states_text_grammar(SingleGraph res,const SingleGraph A,int q1,
+                     const SingleGraph B,int q2,int** renumber) {
+if (renumber[q1][q2]!=-1) {
+   /* Nothing to do if the job has already been done */
+   return renumber[q1][q2];
+}
+int q=res->number_of_states;
+renumber[q1][q2]=q;
+SingleGraphState state=add_state(res);
+if (is_initial_state(A->states[q1]) && is_initial_state(B->states[q2])) {
+   /* If both q1 and q2 are initial, then the new state must be too */
+   set_initial_state(state);
+}
+if (is_final_state(A->states[q1]) && is_final_state(B->states[q2])) {
+   /* If both q1 and q2 are final, then the new state must be too */
+   set_final_state(state);
+}
+
+for (Transition* transA=A->states[q1]->outgoing_transitions;transA!=NULL;transA=transA->next) {
+   int found=0;
+   for (Transition* transB=B->states[q2]->outgoing_transitions;transB!=NULL;transB=transB->next) {
+      if (symbol_in_symbol(transA->label,transB->label)) {
+         if (found) {
+            fatal_error("intersect_states_text_grammar: non deterministic automaton\n");
+         }
+         found=1;
+         int destination=intersect_states_text_grammar(res,A,transA->state_number,B,transB->state_number,renumber);
+         add_outgoing_transition(res->states[q],transA->label,destination);
+      }
+   }
+   if (!found && B->states[q2]->default_state!=-1) {
+      int destination=intersect_states_text_grammar(res,A,transA->state_number,B,B->states[q2]->default_state,renumber);
+      add_outgoing_transition(res->states[q],transA->label,destination);
+   }
+}
+return q;
+}
+
 
 
 /**
@@ -185,7 +217,13 @@ for (i=0;i<A->number_of_states;i++) {
       renumber[i][j]=-1;
    }
 }
-intersect_states(res,A,initial_A,B,initial_B,renumber,type);
+if (type==GRAMMAR_GRAMMAR) {
+   intersect_states_grammar_grammar(res,A,initial_A,B,initial_B,renumber);
+} else if (type==TEXT_GRAMMAR) {
+   intersect_states_text_grammar(res,A,initial_A,B,initial_B,renumber);
+} else {
+   fatal_error("Invalid type in elag_intersection\n");
+}
 resize(res);
 /* And we free the renumber matrix */
 for (i=0;i<A->number_of_states;i++) {

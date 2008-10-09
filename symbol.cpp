@@ -1076,7 +1076,6 @@ if (lemma[0]!='\0') {
    if (lemma[0]!='!') {
       /* And if it's not a negative lemma */
       symbol->lemma=language_add_form(language,lemma);
-      u_printf("le lemme _%S_ a le numero %d\n",lemma,symbol->lemma);
    } else {
       /* If we have a negative lemma list like in <!man!woman.N>*/
       symbol->negative=true;
