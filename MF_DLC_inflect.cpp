@@ -114,7 +114,7 @@ while (l!=EOF) {
             u_fprintf(dlcf,"+%S",DELAS_entry->semantic_codes[j]);
          }
          if (forms->forms[i].local_semantic_code!=NULL) {
-        	   u_fprintf(dlcf,"#%S#",forms->forms[i].local_semantic_code);
+        	   u_fprintf(dlcf,"%S",forms->forms[i].local_semantic_code);
          }
          if (forms->forms[i].raw_features!=NULL && forms->forms[i].raw_features[0]!='\0') {
             u_fprintf(dlcf,":%S",forms->forms[i].raw_features);
