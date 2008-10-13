@@ -268,6 +268,15 @@ while (meta_list!=NULL) {
                /* If there is at least one match, we process the match list */
                do  {
                   get_content(content,p,pos,pos_in_token,L2->position,L2->pos_in_token);
+                  #ifdef TRE_WCHAR
+                  int filter_number=p->tags[t->tag_number]->filter_number;
+                  int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content,filter_number));
+                  if (!morpho_filter_OK) {
+                     p->stack->stack_pointer=stack_top;
+                     L2=L2->next;
+                     continue;
+                  }
+                  #endif
                   if (p->output_policy!=IGNORE_OUTPUTS) {
                      if (!process_output(p->tags[t->tag_number]->output,p)) {
                         break;
@@ -485,6 +494,15 @@ while (trans!=NULL) {
             /* If there is at least one match, we process the match list */
             do  {
                get_content(content,p,pos,pos_in_token,L->position,L->pos_in_token);
+               #ifdef TRE_WCHAR
+               int filter_number=p->tags[trans->tag_number]->filter_number;
+               int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content,filter_number));
+               if (!morpho_filter_OK) {
+                  p->stack->stack_pointer=stack_top;
+                  L=L->next;
+                  continue;
+               }
+                  #endif
                /* WARNING: we don't process the tag's output as usual if it
                 *          is a variable declaration like $abc$. Note that it could
                 *          make a difference if a variable with the same

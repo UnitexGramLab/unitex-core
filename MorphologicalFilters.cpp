@@ -236,7 +236,7 @@ free(index);
 int string_match_filter(FilterSet* filters,unichar* s,int filter_number) {
 wchar_t tmp[2048];
 w_strcpy(tmp,s);
-return regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+return !regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
 
 

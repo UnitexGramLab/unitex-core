@@ -434,7 +434,7 @@ while (meta_list!=NULL) {
                   if (filter_number==-1) OK=1;
                   else {
                      unichar* sequence=get_token_sequence(p->buffer,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
-                     OK=(string_match_filter(p->filters,sequence,filter_number)==0);
+                     OK=string_match_filter(p->filters,sequence,filter_number);
                      free(sequence);
                   }
                   #endif
@@ -491,7 +491,7 @@ while (meta_list!=NULL) {
                if (filter_number==-1) OK=1;
                else {
                   unichar* sequence=get_token_sequence(p->buffer,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
-                  OK=(string_match_filter(p->filters,sequence,filter_number)==0);
+                  OK=string_match_filter(p->filters,sequence,filter_number);
                   free(sequence);
                }
                #endif
@@ -787,7 +787,7 @@ while (pattern_list!=NULL) {
          if (filter_number==-1 ) OK=1;
          else {
             unichar* sequence=get_token_sequence(p->buffer,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
-            OK=(string_match_filter(p->filters,sequence,filter_number)==0);
+            OK=string_match_filter(p->filters,sequence,filter_number);
             free(sequence);
          }
          #endif
@@ -835,7 +835,7 @@ while (pattern_list!=NULL) {
          if (filter_number==-1) OK=1;
          else {
             unichar* sequence=get_token_sequence(p->buffer,p->tokens,pos2+p->current_origin,end_of_compound+p->current_origin);
-            OK=(string_match_filter(p->filters,sequence,filter_number)==0);
+            OK=string_match_filter(p->filters,sequence,filter_number);
             free(sequence);
          }
          #endif
