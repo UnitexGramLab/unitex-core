@@ -54,7 +54,7 @@ extern Fst2* fst2[N_FST2];
  */
 struct inflect_infos {
    unichar* inflected;
-   unichar* local_sem_code;
+   unichar* local_semantic_code;
    unichar* output;
    unichar* semitic;
    struct inflect_infos* next;
@@ -318,7 +318,7 @@ if (i==NULL) {
 }
 i->inflected=NULL;
 i->output=NULL;
-i->local_sem_code=NULL;
+i->local_semantic_code=NULL;
 i->semitic=NULL;
 i->next=NULL;
 return i;
@@ -332,7 +332,7 @@ void free_inflect_infos(struct inflect_infos* i) {
 if (i==NULL) return;
 if (i->inflected!=NULL) free(i->inflected);
 if (i->output!=NULL) free(i->output);
-if (i->local_sem_code!=NULL) free(i->local_sem_code);
+if (i->local_semantic_code!=NULL) free(i->local_semantic_code);
 if (i->semitic!=NULL) free(i->semitic);
 free(i);
 }
@@ -355,7 +355,7 @@ int SU_explore_state_recursion(unichar* inflected,unichar* lemma,unichar* output
     struct inflect_infos* res=new_inflect_infos();
     res->inflected=u_strdup(inflected);
     
-    res->local_sem_code=u_strdup(local_semantic_codes); 
+    res->local_semantic_code=u_strdup(local_semantic_codes); 
     
     if (filters != NULL && filters[1]!= NULL) filtrer(output,filters);
     res->output=u_strdup(output);
