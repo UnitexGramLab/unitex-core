@@ -36,7 +36,7 @@ void implode(Fst2*,FILE*);
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: ImploseFst2 <txtauto> -o <out>\n"
+u_printf("Usage: ImplodeFst2 <txtauto> -o <out>\n"
          "\n"
          "where :\n"
          " <txtauto>     : input text automaton FST2 file,\n"

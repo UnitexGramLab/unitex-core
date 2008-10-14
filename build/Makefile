@@ -341,8 +341,8 @@ EVAMB_OBJS = IOBuffer.o Evamb.o Unicode.o Fst2.o String_hash.o\
              BitArray.o HashTable.o FIFO.o Transitions.o\
              symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
-EXPLOSEFST2      = ExploseFst2
-EXPLOSEFST2_OBJS = IOBuffer.o ExploseFst2.o Unicode.o ExploseFst2Utils.o Fst2.o String_hash.o\
+EXPLODEFST2      = ExplodeFst2
+EXPLODEFST2_OBJS = IOBuffer.o ExplodeFst2.o Unicode.o ExplodeFst2Utils.o Fst2.o String_hash.o\
                    Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o List_int.o ustring.o\
                    BitMasks.o DELA.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o Tagset.o
 
@@ -588,7 +588,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(NORMALIZE) $(POLYLEX) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TOKENIZE)\
 		$(TXT2FST2) $(IMPLODEFST2) \
-		$(EXPLOSEFST2) $(EVAMB) $(CONVERT) \
+		$(EXPLODEFST2) $(EVAMB) $(CONVERT) \
 		$(TAGSETNORM) \
 		$(INFLECTKR) $(FST2LIST) $(SUFFORM2RAC) $(COMPRESSKR)\
 		$(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) $(TXT2FST2KR) \
@@ -600,7 +600,7 @@ BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
 OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OBJS)\
 		$(ELAGCOMP_OBJS)  \
-		$(EXPLOSEFST2_OBJS) $(EXTRACT_OBJS) $(FLATTEN_OBJS) $(FST2GRF_OBJS)\
+		$(EXPLODEFST2_OBJS) $(EXTRACT_OBJS) $(FLATTEN_OBJS) $(FST2GRF_OBJS)\
 		$(FST2TXT_OBJS) $(GRF2FST2_OBJS) \
 		$(INFLECT_OBJS) $(LOCATE_OBJS) $(MERGETEXTAUTOMATON_OBJS)\
 		$(NORMALIZE_OBJS) $(POLYLEX_OBJS) $(RECONSTRUCAO_OBJS) \
@@ -780,7 +780,7 @@ $(BIN_DIR)$(ELAGCOMP)$(EXTENSION): $(ELAGCOMP_OBJS)
 $(BIN_DIR)$(EVAMB)$(EXTENSION): $(EVAMB_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(EXPLOSEFST2)$(EXTENSION): $(EXPLOSEFST2_OBJS)
+$(BIN_DIR)$(EXPLODEFST2)$(EXTENSION): $(EXPLODEFST2_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(EXPORTDIC)$(EXTENSION): $(EXPORTDIC_OBJS)
