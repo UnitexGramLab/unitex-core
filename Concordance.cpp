@@ -857,19 +857,41 @@ while (matches!=NULL) {
 	/* We update the position in characters so that we know how
 	 * many characters there are before buffer[start_pos]. We update
 	 * the sentence number in the same way. */
-	for (int z=position_in_tokens;z<start_pos;z++) {
-      int token_size=0;
-      if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
-         token_size=token_length[buffer->int_buffer[z]];
+	if (position_in_tokens>start_pos) {
+	   /* If we have to go backward, in the case a Locate made in "All matches mode" */
+	   for (int z=position_in_tokens-1; z>=start_pos; z--) {
+         int token_size=0;
+         if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
+            token_size=token_length[buffer->int_buffer[z]];
+         }
+         start_pos_char=start_pos_char-token_size;
+         position_from_eos=position_from_eos-token_size;
+         start_from_eos=position_from_eos;
+         if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
+            current_sentence--;
+            error("Bug: concordances that contain a sentence marker {S} cannot be used in an unsorted concord.ind file\n");
+            position_from_eos = 0;
+            start_from_eos = 0;
+         }
       }
-		start_pos_char=start_pos_char+token_size;
-		position_from_eos=position_from_eos+token_size;
-		start_from_eos=position_from_eos;
-		if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
-			current_sentence++;
-			position_from_eos = 0;
-			start_from_eos = 0;
-		}
+	   position_in_tokens=start_pos;
+	}
+	else {
+	   /* If we have to go forward */
+      for (int z=position_in_tokens; z<start_pos; z++) {
+         int token_size=0;
+         if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
+            token_size=token_length[buffer->int_buffer[z]];
+         }
+         start_pos_char=start_pos_char+token_size;
+         position_from_eos=position_from_eos+token_size;
+         start_from_eos=position_from_eos;
+         if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
+            current_sentence++;
+            position_from_eos = 0;
+            start_from_eos = 0;
+         }
+      }
 	}
 	position_in_chars=start_pos_char;
 	position_in_tokens=start_pos;
