@@ -245,17 +245,17 @@ return 1;
  * form <<...>> we also read the second >. Note that it is not necessary to
  * read in one pass a sequence of the form <...><<...>> since no difference
  * will be made with reading it in two pass, because all the elements
- * of a token are concatenated. All characters read
+ * of a token are concatenated in read_angle_bracketed_sequence. All characters read
  * are copied into 'token'. Characters are not unspecialized.
  * The function returns 1 in case of success or 0 if the end of string
  * is found.
  */
-int read_angle_bracketed_sequence(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+int read_angle_bracketed_sequence_single(unichar* input,int *pos,unichar* token,int *pos_in_token) {
 token[(*pos_in_token)++]=input[(*pos)++];
 int tmp=(*pos_in_token);
 while (input[*pos]!='\0' && input[*pos]!='>') {
    if (input[*pos]=='\\') {
-      /* If there is a \ a copy it and we take the next character */
+      /* If there is a backslash we a copy it and we take the next character */
       token[(*pos_in_token)++]=input[(*pos)++];
       if (input[*pos]=='\0') return 0;
    }
@@ -276,6 +276,84 @@ return 1;
 }
 
 
+/**
+ * We try to read one of the following sequences:
+ *  
+ *    <...>
+ *    <<...>>
+ *    <...><<...>>
+ */
+int read_angle_bracketed_sequence(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+int original_pos_in_token=*pos_in_token;
+if (!read_angle_bracketed_sequence_single(input,pos,token,pos_in_token)) {
+   return 0;
+}
+if (token[original_pos_in_token]=='<' && token[original_pos_in_token+1]=='<') {
+   /* If we have read a <<...>> sequence, we have finished */
+   return 1;
+}
+if (input[*pos]=='<' && input[(*pos)+1]=='<') {
+   /* If we have read a <...> sequence and if the input contains <<, then
+    * we try to read a <<...>> sequence */
+   if (!read_angle_bracketed_sequence_single(input,pos,token,pos_in_token)) {
+      return 0;
+   }
+}
+return 1;
+}
+
+/**
+ * This function reads a token from the regular expression and
+ * copies it into 'token'. The function returns 1 in case of success; 0
+ * otherwise.
+ */
+int read_token(unichar* input,int *pos,unichar* token) {
+if (input[*pos]=='\0') {
+   fatal_error("read_token should not have been called with an empty input\n");
+}
+int i=0;
+if (input[*pos]=='"') {
+   /* If there is a " we try to read a sequence between double quotes */
+   if (!read_double_quoted_sequence(input,pos,token,&i)) {
+      return 0;
+   }
+   token[i]='\0';
+   return 1;
+}
+if (input[*pos]=='<') {
+   /* If there is a < we try to read a pattern of the form <....> */
+   if (!read_angle_bracketed_sequence(input,pos,token,&i)) {
+      return 0;
+   }
+   token[i]='\0';
+   return 1;
+}
+
+while (input[*pos]!='\0' && input[*pos]!='+' && input[*pos]!='.' && input[*pos]!='(' && input[*pos]!=')' 
+       && input[*pos]!='*' && input[*pos]!=' ' && input[*pos]!='<' && input[*pos]!='"') {
+   if (input[*pos]=='\\') {
+      /* If we find a \ we despecialize the next character if it is an operator of
+       * the grammar */
+      (*pos)++;
+      if (input[*pos]=='\0') {
+         error("Backslash at end of input in read_token\n");
+         return 0;
+      }
+      if (input[*pos]!='+' && input[*pos]!='.' && input[*pos]!='(' && input[*pos]!=')' && input[*pos]!='*') {
+         token[i++]='\\';
+      }
+      token[i++]=input[(*pos)++];
+      continue;
+   }
+   /* Otherwise, if we have a single character */
+   token[i++]=input[(*pos)++];
+}
+token[i]='\0';
+return 1;
+}
+
+#if 0
+OLD VERSION
 /**
  * This function reads a token from the regular expression and
  * copies it into 'token'. The function returns 1 in case of success; 0
@@ -321,7 +399,634 @@ while (input[*pos]!='\0' && input[*pos]!='+' && input[*pos]!='.' && input[*pos]!
 token[i]='\0';
 return 1;
 }
+#endif
 
+/**
+ * This function takes a regular expression and builds the corresponding
+ * Thompson automaton. To do that, we use the following grammar:
+ * 
+ * S -> E \0
+ * E -> E + E
+ * E -> E . E
+ * E -> E E
+ * E -> E Y E
+ * E -> (E)
+ * E -> E*
+ * E -> TOKEN
+ * Y -> SPACE
+ * Y -> SPACE Y
+ * 
+ * with priority(*) > priority(.) > priority(+)
+ * 
+ * If we have the following expression:
+ * 
+ * <DET> (very <A>+<E>).<N> of <<es$>>
+ * 
+ * tokens will be "<DET>", "very", "<A>", "<E>", "<N>", "of" and "<<es$>>"
+ * 
+ * See comments in "RegularExpressions.h" for more details.
+ * 
+ * We use two integer stacks: one for the LR analyzer that contains the item automaton
+ * states number and another that contains, for each piece of automaton being built, the
+ * numbers of the input and output states of this piece.
+ * The function returns 1 in case of success; 0 in case of a syntax error in the
+ * expression and 2 in case of a malformed token.
+ */
+int reg_2_grf(unichar* regexp,int *input_state,int *output_state,struct reg2grf_info* info) {
+/* transE represents the transitions tagged with the non terminal E in the LR table.
+ * transY does sthe same for Y  */
+int transE[19]={4,-1,5,-1,12,12,-1,15,16,-1,-1,-1,12,18,-1,12,12,-1,12};
+int transY[19]={-1,-1,-1,-1,13,13,-1,-1,-1,17,-1,-1,13,-1,-1,13,13,-1,13};
+struct stack_int* stack=new_stack_int(1024);
+struct stack_int* couples=new_stack_int(1024);
+int value=-1;
+int pos=0;
+unichar token[REG_EXP_MAX_LENGTH];
+/* We initialize the LR analyze stack */
+stacki_push(stack,0);
+while (value==-1) {
+   int state=stack->stack[stack->stack_pointer];
+   switch (state) {
+      /* state 0 */
+      case 0: {
+         switch(regexp[pos]) {
+            case '+':
+            case ')':
+            case '*':
+            case '.':
+            case ' ':
+            case '\0': {
+               /* Failure */
+               value=0; break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,1);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 1 */
+      case 1: {
+         /* If we must reduce with the rule E -> TOKEN,
+          * there is nothing to pop/push in the couple stack, but
+          * we pop 1 right member */
+          stacki_pop(stack);
+          /* We look in the LR table where to go */
+          int next_state=transE[stack->stack[stack->stack_pointer]];
+          if (next_state==-1) {
+             /* Failure */
+             value=0; break;
+             }
+          stacki_push(stack,next_state);
+          break;
+      }
+      /* state 2 */
+      case 2: {
+         switch(regexp[pos]) {
+            case '+':
+            case ')':
+            case '*':
+            case '.':
+            case ' ':
+            case '\0': {
+               /* Failure */
+               value=0; break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,1);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 3 */
+      case 3: {
+         /* Should not appear, since we quit the automaton when we have read the final '\0' */
+         fatal_error("reg_2_grf: illegal position in state 3\n");
+      }
+      /* state 4 */
+      case 4: {
+         switch(regexp[pos]) {
+            case '+': {
+               pos++;
+               stacki_push(stack,7);
+               break;
+            }
+            case '.': {
+               pos++;
+               stacki_push(stack,8);
+               break;
+            }
+            case ' ': {
+               pos++;
+               stacki_push(stack,9);
+               break;
+            }
+            case '*': {
+               pos++;
+               stacki_push(stack,10);
+               break;
+            }
+            case '\0': {
+               pos++;
+               stacki_push(stack,11);
+               break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }   
+            case ')': {
+               /* Failure */
+               value=0; break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,1);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 5 */
+      case 5: {
+         switch(regexp[pos]) {
+            case '+': {
+               pos++;
+               stacki_push(stack,7);
+               break;
+            }
+            case '.': {
+               pos++;
+               stacki_push(stack,8);
+               break;
+            }
+            case ' ': {
+               pos++;
+               stacki_push(stack,9);
+               break;
+            }
+            case '*': {
+               pos++;
+               stacki_push(stack,10);
+               break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            case ')': {
+               pos++;
+               stacki_push(stack,14);
+               break;
+            }
+            case '\0': {
+               /* Failure */
+               value=0; break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,1);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 6 */
+      case 6: {
+         /* Should not appear, since we quit the automaton when we have read the final '\0' */
+         fatal_error("reg_2_grf: illegal position in state 6\n");
+      }
+      /* state 7 */
+      case 7: {
+         switch(regexp[pos]) {
+            case '+':
+            case ')':
+            case '*':
+            case '.':
+            case ' ':
+            case '\0': {
+               /* Failure */
+               value=0; break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,1);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 8 */
+      case 8: {
+         switch(regexp[pos]) {
+            case '+':
+            case ')':
+            case '*':
+            case '.':
+            case ' ':
+            case '\0': {
+               /* Failure */
+               value=0; break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,1);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 9 */
+      case 9: {
+         switch(regexp[pos]) {
+            case ' ': {
+               pos++;
+               stacki_push(stack,9);
+               break;
+            }
+            default:  {
+               /* If we must reduce with the rule Y -> SPACE,
+                * there is nothing to pop/push in the couple stack, but
+                * we pop 1 right member */
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=transY[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+            }
+         }
+         break;
+      }
+      /* state 10 */
+      case 10: {
+         /* If we must reduce with the rule rule E -> E*,
+          * we pop 2 right members */
+         stacki_pop(stack);
+         stacki_pop(stack);
+         /* We look in the LR table where to go */
+         int next_state=transE[stack->stack[stack->stack_pointer]];
+         if (next_state==-1) {
+            /* Failure */
+            value=0;
+            break;
+         }
+         stacki_push(stack, next_state);
+         /* We pop the automaton A ->.....-> B */
+         int B=stacki_pop(couples);
+         int A=stacki_pop(couples);
+         /* Then we create 2 empty states */
+         int input=add_state(info, u_strdup("<E>"));
+         int output=add_state(info, u_strdup("<E>"));
+         /* We rely them to A and B */
+         add_transition(input, A, info);
+         add_transition(B, output, info);
+         /* We create a loop relying B to A */
+         add_transition(B, A, info);
+         /* And we rely input to output since the Kleene star matches the
+          * empty word */
+         add_transition(input, output, info);
+         /* Finally we push the automaton input ->.....-> output */
+         stacki_push(couples, input);
+         stacki_push(couples, output);
+         break;
+      }
+      /* state 11 */
+      case 11: {
+         /* If we must reduce by S -> E '0', we have matched the whole expression */
+         /* We return the input and output state numbers of the automaton */
+         *output_state=stacki_pop(couples);
+         *input_state=stacki_pop(couples);
+         value=1;
+         break;
+      }
+      /* state 12 */
+      case 12: {
+         switch(regexp[pos]) {
+            case '*': {
+               pos++;
+               stacki_push(stack,10);
+               break;
+            }
+            default: {
+               /* If we must reduce with the rule E -> EE,
+                * we pop 2 right members */
+               stacki_pop(stack);
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=transE[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0;
+                  break;
+               }
+               stacki_push(stack, next_state);
+               /* We pop 2 automata A ->.....-> B and C ->.....-> D */
+               int D=stacki_pop(couples);
+               int C=stacki_pop(couples);
+               int B=stacki_pop(couples);
+               int A=stacki_pop(couples);
+               /* We rely B to C */
+               add_transition(B, C, info);
+               /* And we push the automaton A ->.....-> D */
+               stacki_push(couples, A);
+               stacki_push(couples, D);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 13 */
+      case 13: {
+         switch(regexp[pos]) {
+            case '+':
+            case ')':
+            case '*':
+            case '.':
+            case ' ':
+            case '\0': {
+               /* Failure */
+               value=0; break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,1);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 14 */
+      case 14: {
+         /* If we must reduce with the rule E -> (E),
+          * we pop 3 right members */
+         stacki_pop(stack);
+         stacki_pop(stack);
+         stacki_pop(stack);
+         /* We look in the LR table where to go */
+         int next_state=transE[stack->stack[stack->stack_pointer]];
+         if (next_state==-1) {
+            /* Failure */
+            value=0; break;
+         }
+         stacki_push(stack,next_state);
+         /* And we have nothing else to do */
+         break;
+      }
+      /* state 15 */
+      case 15: {
+         switch(regexp[pos]) {
+            case '+':
+            case ')':
+            case '\0': {
+               /* If we must reduce with the rule E -> E+E,
+                * we pop 3 right members */
+               stacki_pop(stack);
+               stacki_pop(stack);
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=transE[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+               /* We pop 2 automata A ->.....-> B and C ->.....-> D */
+               int D=stacki_pop(couples);
+               int C=stacki_pop(couples);
+               int B=stacki_pop(couples);
+               int A=stacki_pop(couples);
+               /* Then we create 2 empty states */
+               int input=add_state(info,u_strdup("<E>"));
+               int output=add_state(info,u_strdup("<E>"));
+               /* We rely input to A and C */
+               add_transition(input,A,info);
+               add_transition(input,C,info);
+               /* We rely B and D to output */
+               add_transition(B,output,info);
+               add_transition(D,output,info);
+               /* Finally we push the automaton input ->.....-> output */
+               stacki_push(couples,input);
+               stacki_push(couples,output);
+               break;
+            }   
+            case '*': {
+               pos++;
+               stacki_push(stack,10);
+               break;
+            }
+            case '.': {
+               pos++;
+               stacki_push(stack,8);
+               break;
+            }
+            case ' ': {
+               pos++;
+               stacki_push(stack,9);
+               break;
+            }
+            case '(': {
+               pos++;
+               stacki_push(stack,2);
+               break;
+            }
+            default: {
+               /* When we read a token, we create a state with this content */
+               if (!read_token(regexp,&pos,token)) {
+                  /* Failure */
+                  value=2; break;
+               }
+               int n=add_state(info,u_strdup(token));
+               stacki_push(couples,n);
+               stacki_push(couples,n);
+               stacki_push(stack,1);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 16 */
+      case 16: {
+         switch(regexp[pos]) {
+            case '*': {
+               pos++;
+               stacki_push(stack,10);
+               break;
+            }
+            default: {
+               /* If we must reduce with the rule E -> E.E,
+                * we pop 3 right members */
+               stacki_pop(stack);
+               stacki_pop(stack);
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=transE[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+               /* We pop 2 automata A ->.....-> B and C ->.....-> D */
+               int D=stacki_pop(couples);
+               int C=stacki_pop(couples);
+               int B=stacki_pop(couples);
+               int A=stacki_pop(couples);
+               /* We rely B to C */
+               add_transition(B,C,info);
+               /* And we push the automaton A ->.....-> D */
+               stacki_push(couples,A);
+               stacki_push(couples,D);
+               break;
+            }
+         }
+         break;
+      }
+      /* state 17 */
+      case 17: {
+         /* If we must reduce with the rule Y -> SPACE Y,
+          * there is nothing to pop/push in the couple stack, but
+          * we pop 2 right members */
+         stacki_pop(stack);
+         stacki_pop(stack);
+         /* We look in the LR table where to go */
+         int next_state=transY[stack->stack[stack->stack_pointer]];
+         if (next_state==-1) {
+            /* Failure */
+            value=0;
+            break;
+         }
+         stacki_push(stack, next_state);
+         break;
+      }      
+      /* state 18 */
+      case 18: {
+         switch(regexp[pos]) {
+            case '*': {
+               pos++;
+               stacki_push(stack,10);
+               break;
+            }
+            default: {
+               /* If we must reduce with the rule E -> E Y E,
+                * we pop 3 right members */
+               stacki_pop(stack);
+               stacki_pop(stack);
+               stacki_pop(stack);
+               /* We look in the LR table where to go */
+               int next_state=transE[stack->stack[stack->stack_pointer]];
+               if (next_state==-1) {
+                  /* Failure */
+                  value=0; break;
+               }
+               stacki_push(stack,next_state);
+               /* We pop 2 automata A ->.....-> B and C ->.....-> D */
+               int D=stacki_pop(couples);
+               int C=stacki_pop(couples);
+               int B=stacki_pop(couples);
+               int A=stacki_pop(couples);
+               /* We rely B to C */
+               add_transition(B,C,info);
+               /* And we push the automaton A ->.....-> D */
+               stacki_push(couples,A);
+               stacki_push(couples,D);
+               break;
+            }
+         }
+         break;
+      }
+   }
+}
+free_stack_int(stack);
+free_stack_int(couples);
+return value;
+}
+
+
+#if 0
+
+OLD VERSION
 
 /**
  * This function takes a regular expression and builds the corresponding
@@ -765,3 +1470,5 @@ free_stack_int(couples);
 return value;
 }
 
+
+#endif
