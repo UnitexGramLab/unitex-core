@@ -58,7 +58,7 @@ u_printf("Tries to decompose some norwegian words as combinaisons of shortest wo
 u_printf("This words are removed from the <list> files.\n");
 u_printf("NOTE: when the program is used for Dutch or Norwegian words, it tries to read a text file\n");
 u_printf("containing a list of forbidden words. This file is supposed to be named\n");
-u_printf("'ForbiddenWords.txt' and stored in the same directory that <dic>.\n");
+u_printf("'ForbiddenWords.txt' and stored in the same directory than <dic>.\n");
 }
 
 
