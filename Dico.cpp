@@ -61,10 +61,11 @@ u_printf("     [-md=XXX]   : optional argument specifying that XXX is the .bin d
 u_printf("     <dic-fst_i> : name of dictionary or local grammar to be applied\n\n");
 
 u_printf("Applies dictionaries and/or local grammars to the text and produces \n");
-u_printf("4 files, saved in the text directory. These files are:\n\n");
+u_printf("5 files, saved in the text directory. These files are:\n\n");
 u_printf(" DLF : simple entry dictionary\n");
 u_printf(" DLC : compound entry dictionary\n");
 u_printf(" ERR : unrecognized simple words\n");
+u_printf(" tags.ind : sequences to be inserted in the text automaton\n");
 u_printf(" stat_dic.n : file containing the number of simple words, the number\n"
          "              of compound words, and the number of unknown words in the text\n\n");
 
