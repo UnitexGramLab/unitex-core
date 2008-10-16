@@ -51,7 +51,8 @@ u_printf("     [norm] : the fst2 grammar used to normalize the text automaton.\n
 u_printf("Constructs the text automaton. If the sentences of the text were delimited\n");
 u_printf("with the special tag {S}, the program produces one automaton per sentence.\n");
 u_printf("If not, the text is turned into %d token long automata. The result file\n",MAX_TOKENS_IN_SENTENCE);
-u_printf("named TEXT.FST2 is stored is the text directory.\n");
+u_printf("named text.fst2 is stored is the text directory.\n\n");
+u_printf("Note that the program will also take into account the file tags.ind, if any.\n\n");
 }
 
 
