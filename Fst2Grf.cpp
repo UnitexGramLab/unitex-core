@@ -34,14 +34,14 @@
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Fst2Grf <text automata> <sentence> [<output>] [-f=<font>]\n");
-u_printf("     <text automata> :  the FST2 file that contains the text automata.\n");
+u_printf("Usage: Fst2Grf <text automaton> <sentence> [<output>] [-f=<font>]\n");
+u_printf("     <text automaton> : the FST2 file that contains the text automaton.\n");
 u_printf("     <sentence> :       the number of the sentence to be converted.\n");
 u_printf("     <output> :         name GRF file as <output>.grf and the TXT one as <output>.txt (default cursentence)\n"); 
 u_printf("     -f=<font> :        use the font <font> in the output .grf (Times new Roman by default).\n\n"); 
 u_printf("Converts a sentence automaton into a GRF file that can be viewed. The\n");
 u_printf("resulting file, named cursentence.grf, is stored in the same directory\n");
-u_printf("that <text automata>. The text of the sentence is saved in the same\n");
+u_printf("that <text automaton>. The text of the sentence is saved in the same\n");
 u_printf("directory, in a file named cursentence.txt.\n");
 }
 
