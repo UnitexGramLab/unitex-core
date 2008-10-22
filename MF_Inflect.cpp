@@ -72,11 +72,12 @@ if (argc!= 5) {
 }
 //Load morphology description
 char morphology[FILENAME_MAX];
-new_file(argv[4],"Morphology",morphology);
+new_file(argv[4],"Morphology.txt",morphology);
 err=read_language_morpho(morphology);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
+print_language_morpho();
 //Load alphabet
 alph=load_alphabet(argv[3]);  //To be done once at the beginning of the inflection
 if (alph==NULL) {
@@ -87,7 +88,7 @@ if (alph==NULL) {
 }
 //Init equivalence files
 char equivalences[FILENAME_MAX];
-new_file(argv[4],"Equivalences",equivalences);
+new_file(argv[4],"Equivalences.txt",equivalences);
 err=d_init_morpho_equiv(equivalences);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;

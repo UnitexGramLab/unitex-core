@@ -97,6 +97,32 @@ MU_id_T*  MU_get_id(MU_f_T* MU_form, MU_lemma_T* MU_lemma);
 int MU_free_id(MU_id_T* id);
 
 ////////////////////////////////////////////
+// Initialize the multi-unit 'forms' with null values
+// We suppose that 'forms' has its space allocated
+void MU_init_forms(MU_forms_T* forms);
+
+////////////////////////////////////////////
+// Add an empty form with empty features 'feat' to the initially empty set of forms 'forms'
+void MU_add_empty_form(MU_forms_T* forms);
+
+////////////////////////////////////////////
+// Concatenante each simple form in 'SU_forms' in front of
+// each multi-unit form in 'MU_forms'. Put the resulting
+// forms into 'forms'
+// E.g. while generating the instrucmental of "rece pelne roboty", if we have :
+// SU_forms = {("rekami",{Case=Inst, Nb=pl, Gen=fem}), ("rekoma",{Case=Inst, Nb=pl, Gen=fem})}
+// MU_forms = {("pelnymi roboty",{Case=Inst, Nb=pl, Gen=fem})}
+// then we obtain {("rekami pelnymi roboty",{Case=Inst, Nb=pl, Gen=fem}), ("rekoma pelnymi roboty",{Case=Inst, Nb=pl, Gen=fem})}
+// Initially, 'forms' has its space allocated but is empty.
+void MU_concat_forms(SU_forms_T* SU_forms, MU_forms_T* MU_forms, MU_forms_T* forms);
+
+////////////////////////////////////////////
+// Add forms appearing in 'new_forms' to 'forms' so that
+// no form appears twice in the result.
+// Exist in case of errors.
+void MU_merge_forms(MU_forms_T* forms, MU_forms_T* new_forms);
+
+////////////////////////////////////////////
 // Prints a form and its inflection features.
 int MU_print_f(MU_f_T* f);
 

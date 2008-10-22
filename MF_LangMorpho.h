@@ -93,19 +93,22 @@ typedef struct{
 
 /**************************************************************************************/
 /* Read the language file "file".                                                     */
-/* This file conatins lists of all classes (nous, verb, etc.) of the language,         */
+/* This file contains lists of all classes (nous, verb, etc.) of the language,        */
 /* with their inflection categories (number, case, gender, etc.) and values           */
 /* (e.g. sing, pl, masc, etc.).                                                       */
+/* <E> is a special character meaning that the feature may have an empty value, e.g.  */
+/* the base form in gradation                                                         */
 /* E.g. for Polish:								      */
 /* 			Polish							      */
 /*                      <CATEGORIES>                                                  */
 /* 			Nb:sing,pl		                 		      */
 /* 			Case:Nom,Gen,Dat,Acc,Inst,Loc,Voc			      */
 /* 			Gen:masc_pers,masc_anim,masc_inanim,fem,neu                   */
+/*                      Gr:<E>,aug,sup                                                */
 /*                      <CLASSES>                                                     */
 /*                      noun: (Nb,<var>),(Case,<var>),(Gen,<fixed>)                   */
-/*                      adj: (Nb,<var>),(Case,<var>),(Gen,<var>)                      */
-/*                      adv:                                                          */
+/*                      adj: (Nb,<var>),(Case,<var>),(Gen,<var>),(Gr,<var>)           */
+/*                      adv: (Gr,<var>)                                               */
 /* Fills out L_CLASSES and L_CATS.						      */
 /* Returns 0 if success, 1 otherwise                                                  */
 int read_language_morpho(char *file);
@@ -129,6 +132,22 @@ l_category_T* is_valid_cat(unichar* cat);
 /* If val is a valid value in the domain of category cat, returns the index of val    */
 /* in cat. Otherwise returns -1.                                                      */
 int is_valid_val(l_category_T* cat, unichar* val);
+
+/**************************************************************************************/
+/* If val is an empty value in the domain of category cat, returns 1,                 */
+/* otherwise returns 0.                                                               */
+/* val is the ordinal number of the value in 'cat'                                    */
+int is_empty_val(l_category_T* cat, int val);
+
+/**************************************************************************************/
+/* If category 'cat' admits an empty value returns 1, otherwise returns 0.                                                               */
+/* val is the ordinal number of the value in 'cat'                                    */
+int admits_empty_val(l_category_T* cat);
+
+/**************************************************************************************/
+/* If category 'cat' admits an empty value returns the ordinal number of this value   */
+/* in 'cat'. Otherwise returns -1.                                                    */
+int get_empty_val(l_category_T* cat);
 
 /**************************************************************************************/
 /* If val is a  valid value, returns the pointer to its (first) category.             */

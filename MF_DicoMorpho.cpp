@@ -36,7 +36,7 @@ int config_files_status=CONFIG_FILES_OK;
 
 
 //////////////////////////////////////////////////////////////////////////////////////
-//Global structure describing the morphological equivalences between morphological and dictinoary values
+//Global structure describing the morphological equivalences between morphological and dictinary values
 d_morpho_equiv_T D_MORPHO_EQUIV;
 //////////////////////////////////////////////////////////////////////////////////////
 //Global structure describing the equivalences between class names in a dictionary (e.g. "N") and language classes (e.g. noun)
@@ -58,6 +58,7 @@ void d_print_morpho_equiv();
 f_morpho_T* d_get_feat_str(unichar* feat_str);
 unichar* d_get_str_feat(f_morpho_T* feat);
 l_class_T* d_get_class_str(unichar* cl_str);
+unichar* d_get_str_class(l_class_T* cl);
 
 /**************************************************************************************/
 /* Initialises the set of equivalences between morphological and dictionary features. */
@@ -237,12 +238,20 @@ void d_init_class_equiv() {
   //Adjectif
   u_strcpy(D_CLASS_EQUIV.equiv[2].dico_class,"A");
   D_CLASS_EQUIV.equiv[2].cl = &(L_CLASSES.classes[1]);
+  u_strcpy(D_CLASS_EQUIV.equiv[3].dico_class,"AC");
+  D_CLASS_EQUIV.equiv[3].cl = &(L_CLASSES.classes[1]);
 
   //Adverb
-  u_strcpy(D_CLASS_EQUIV.equiv[3].dico_class,"ADV");
-  D_CLASS_EQUIV.equiv[3].cl = &(L_CLASSES.classes[2]);
+  u_strcpy(D_CLASS_EQUIV.equiv[4].dico_class,"ADV");
+  D_CLASS_EQUIV.equiv[4].cl = &(L_CLASSES.classes[2]);
 
-  D_CLASS_EQUIV.no_equiv = 4;
+  //Verb
+  u_strcpy(D_CLASS_EQUIV.equiv[5].dico_class,"V");
+  D_CLASS_EQUIV.equiv[5].cl = &(L_CLASSES.classes[3]);
+  u_strcpy(D_CLASS_EQUIV.equiv[6].dico_class,"VC");
+  D_CLASS_EQUIV.equiv[6].cl = &(L_CLASSES.classes[3]);
+
+  D_CLASS_EQUIV.no_equiv = 7;
 }
 
 /**************************************************************************************/
@@ -305,8 +314,11 @@ unichar* d_get_str_feat(f_morpho_T* feat) {
 	found = 1;
       }
     }
-    if (!found)
+    //If a feature was not found in equivalences and it is not empty
+    //no string corresponds to the desired morphology 
+    if (!found && !is_empty_val(feat->cats[f].cat,feat->cats[f].val))
       return NULL;
+    //If the feature is empty, it is simply omitted from the string 
   }
   tmp[c] = (unichar) '\0';
   return tmp;
@@ -321,6 +333,19 @@ l_class_T* d_get_class_str(unichar* cl_str) {
   for (c=0; c<D_CLASS_EQUIV.no_equiv; c++)
     if (!u_strcmp(cl_str,D_CLASS_EQUIV.equiv[c].dico_class))
       return D_CLASS_EQUIV.equiv[c].cl;
+  return NULL;
+	
+}
+
+/**************************************************************************************/
+/* Returns the class string (e.g. 'N') corresponding to a class (e.g. noun)           */
+/*If no string corresponds to the class, returns NULL.                                */
+/* The return structure is NOT allocated in the function.                             */
+unichar* d_get_str_class(l_class_T* cl) {
+  int c;  //index of the current class in the equivalence set
+  for (c=0; c<D_CLASS_EQUIV.no_equiv; c++)
+    if (cl == D_CLASS_EQUIV.equiv[c].cl)
+      return D_CLASS_EQUIV.equiv[c].dico_class;
   return NULL;
 	
 }

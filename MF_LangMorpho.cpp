@@ -47,6 +47,9 @@ int line_no = 0;
 //Current character (not unichar) line, and current character word of the morphology file
 char line_ch[MAX_LANG_MORPHO_LINE], word_ch[MAX_LANG_MORPHO_LINE];
 
+//empty morphological value
+unichar EMPTY_VAL[MAX_MORPHO_NAME];
+
 //Says if we are in a category block (0) or in a class block (1) in the language morphology file
 int CATS_OR_CLASSES;
 
@@ -66,24 +69,30 @@ l_category_T* get_cat(unichar* val);
 //////////////////////////////////////
 
 /**************************************************************************************/
-/* Read the language file "lan_file" in directory "dir".                              */
+/* Read the language file "file".                                                     */
 /* This file contains lists of all classes (nous, verb, etc.) of the language,        */
 /* with their inflection categories (number, case, gender, etc.) and values           */
 /* (e.g. sing, pl, masc, etc.).                                                       */
-/* Categories must appear before classes.                                             */
+/* <E> is a special character meaning that the feature may have an empty value, e.g.  */
+/* the base form in gradation                                                         */
 /* E.g. for Polish:								      */
 /* 			Polish							      */
 /*                      <CATEGORIES>                                                  */
 /* 			Nb:sing,pl		                 		      */
 /* 			Case:Nom,Gen,Dat,Acc,Inst,Loc,Voc			      */
 /* 			Gen:masc_pers,masc_anim,masc_inanim,fem,neu                   */
+/*                      Gr:<E>,aug,sup                                                */
 /*                      <CLASSES>                                                     */
 /*                      noun: (Nb,<var>),(Case,<var>),(Gen,<fixed>)                   */
-/*                      adj: (Nb,<var>),(Case,<var>),(Gen,<var>)                      */
-/*                      adv:                                                          */
-/* Fills out L_CLASSES								      */
+/*                      adj: (Nb,<var>),(Case,<var>),(Gen,<var>),(Gr,<var>)           */
+/*                      adv: (Gr,<var>)                                               */
+/* Fills out L_CLASSES and L_CATS.						      */
 /* Returns 0 if success, 1 otherwise                                                  */
 int read_language_morpho(char *file) {
+  //Initialise the symbol representing an empty morphological value
+  u_strcpy(EMPTY_VAL,"<E>");
+
+  //Open the Morphology file
   if ( !(lf = u_fopen(file, "r")))  {
     error("Unable to open language morphology file %s\n",file);
     return 1;
@@ -189,7 +198,8 @@ int read_cat_line(int cat_no) {
     v_cnt++;
     if (*line_pos == (char) '\n')
       done = 1;
-    else      line_pos++;  //Omit the ',' or the newline
+    else      
+      line_pos++;  //Omit the ',' or the newline
   } while (!done);
   L_CATS.cats[cat_no].no_values = v_cnt;
   return 0;
@@ -401,6 +411,38 @@ int is_valid_val(l_category_T* cat, unichar* val) {
       return v;
   return -1;
 }
+
+/**************************************************************************************/
+/* If val is an empty value in the domain of category cat, returns 1,                 */
+/* otherwise returns 0.                                                               */
+/* val is the ordinal number of the value in 'cat'                                    */
+int is_empty_val(l_category_T* cat, int val) {
+  if (! u_strcmp(cat->values[val],EMPTY_VAL))
+    return 1;
+  else
+    return 0;
+}
+
+/**************************************************************************************/
+/* If category 'cat' admits an empty value returns 1, otherwise returns 0.                                                               */
+/* val is the ordinal number of the value in 'cat'                                    */
+int admits_empty_val(l_category_T* cat) {
+  if (get_empty_val(cat) >= 0)
+    return 1;
+  else
+    return 0;
+}
+
+/**************************************************************************************/
+/* If category 'cat' admits an empty value returns the ordinal number of this value   */
+/* in 'cat'. Otherwise returns -1.                                                    */
+int get_empty_val(l_category_T* cat) {
+  int v;  //Current value
+  for (v=0; v<cat->no_values; v++)
+    if (! u_strcmp(cat->values[v],EMPTY_VAL))
+      return v;
+  return 0;
+}  
 
 /**************************************************************************************/
 /* If val is a valid value, returns the pointer to its (first) category.             */

@@ -43,7 +43,7 @@
 // e.g. Gen = $g1
 typedef struct {
   l_category_T* cat;   //e.g. Gen
-  unichar* original_state_set;         //variable's id, e.g. g1
+  unichar* id;         //variable's id, e.g. g1
   int val;             //variable's instantiation (e.g. fem): index of val in the domain of cat
 } unif_v_T;
 

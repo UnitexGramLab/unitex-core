@@ -52,7 +52,6 @@ int n_fst2;
 
 ///////////////////////////////
 // Directory containing the inflection tranducers
-//char repertoire[1000] = "/home/agata/UNITEX1.2beta_avec_flex_comp/UNITEX1.2beta_avec_flex_comp_22062005/Polish/Inflection/";
 char inflection_directory[FILENAME_MAX];
 
 ///////////////////////////////

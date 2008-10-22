@@ -74,11 +74,12 @@ void shift_stack_left(unichar* stack,int pos);
 int SU_convert_features(f_morpho_T*** feat,unichar* feat_str);
 struct list_ustring* SU_split_raw_features(unichar*);
 int SU_feature_agreement(f_morpho_T* feat,f_morpho_T* desired_features);
-int SU_delete_inflection(SU_forms_T* forms);
+void SU_delete_inflection(SU_forms_T* forms);
 int SU_cpy_features(f_morpho_T* feat,SU_id_T* SU_id);
 void SU_delete_features(f_morpho_T* f);
 SU_id_T*  SU_get_id(SU_f_T* SU_form, SU_lemma_T* SU_lemma);
 int SU_delete_id(SU_id_T* id);
+void SU_init_forms(SU_forms_T** forms);
 int SU_print_f(SU_f_T* f);
 int SU_print_forms(SU_forms_T* F);
 int SU_print_lemma(SU_lemma_T* l);
@@ -304,7 +305,9 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
   }
   
   //if ((retour_all_tags+retour_tag)) return 0; else return 1;
-  return 1;
+  //Modif Agata
+  // return 1;
+  return 0;
 }
 
 
@@ -676,54 +679,83 @@ return result;
 
 
 ////////////////////////////////////////////
-// Returns 1 if the set of morphological features 'feat'
-// agrees with the set 'desired_features'.
+// Returns 1 if the set of morphological features 'feat1'
+// agrees with the set 'feat2', i.e. both contains exactly the same
+// values, except for empty values
 // Otherwise returns 0.
+// If an empty feature is present in on set then the 
+// corresponding category in the other set must also be empty.
+// e.g. if feat1=<Gen=m;Nb=pl> and feat2=<Gen=m;Nb=pl; Gr=<E>>
+// then both agree
+// But if feat1=<Gen=m;Nb=pl; Gr=D> and feat2=<Gen=m;Nb=pl>
+// then they do not agree
 //
 // In order to facilitate the processing of simple words, we say
-// that 'desired_features'=NULL means that all the inflected forms are
+// that 'feat2'=NULL means that all the inflected forms are
 // to keep.
-int SU_feature_agreement(f_morpho_T* feat,f_morpho_T* desired_features) {
-if (desired_features==NULL) {
+int SU_feature_agreement(f_morpho_T* feat1,f_morpho_T* feat2) {
+  if (feat2 == NULL)
    return 1;
-}
-   
-  int f; //Index of the current feature in 'feat'
-  int df; //Index of the current feature in 'desired_feat'
-  int found; //Has the current feature's category been found in 'desired_features'
 
-  //Each category-value pair of the 'desired_features' has to be present in 'feat'
-  for (df=0; df<desired_features->no_cats; df++) {
+  if (feat1 == NULL)
+    return 0;
+  
+  int f1; //Index of the current feature in 'feat1'
+  int f2; //Index of the current feature in 'feat2'
+  int found; //Has the current feature's category been found in 'feat2'
+
+  //Each category-value pair of the 'feat2' has to be present in 'feat1'
+  //except empty features (<E>)
+  for (f2=0; f2<feat2->no_cats; f2++) {
     found = 0;
-    f = 0;
-    while ((!found) && (f<feat->no_cats)) {
-      if (desired_features->cats[df].cat == feat->cats[f].cat) {
+    f1 = 0;
+    while ((!found) && (f1<feat1->no_cats)) {
+      if (feat2->cats[f2].cat == feat1->cats[f1].cat) {
 	found = 1;
 	//If the same category then the value has to be the same
-	if (desired_features->cats[df].val != feat->cats[f].val) {
-	return 0;
-	}
+	if (feat2->cats[f2].val != feat1->cats[f1].val)
+	  return 0;
       }
-      f++;
+      f1++;
     }
-    if (!found) {
-      return 0;
+    //If a desired category has a non empty value, and it does not appear in 'feat'
+    //then both feature sets do not agree
+    if (!found && !is_empty_val(feat2->cats[f2].cat,feat2->cats[f2].val)) 
+	return 0;
+  }
+
+  //Each category-value pair of the 'feat' has to be present in 'feat2'
+  //except empty features (<E>)
+  for (f1=0; f1<feat1->no_cats; f1++) {
+    found = 0;
+    f2 = 0;
+    while ((!found) && (f2<feat2->no_cats)) {
+      if (feat1->cats[f1].cat == feat2->cats[f2].cat) {
+	found = 1;
+	//If the same category then the value has to be the same
+	if (feat1->cats[f1].val != feat2->cats[f2].val)
+	  return 0;
+      }
+      f2++;
     }
+    //If a desired category has a non empty value, and it does not appear in 'feat'
+    //then both feature sets do not agree
+    if (!found && !is_empty_val(feat1->cats[f1].cat,feat1->cats[f1].val)) 
+	return 0;
   }
   return 1;
 }
 
-
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms
-int SU_delete_inflection(SU_forms_T* forms) {
+void SU_delete_inflection(SU_forms_T* forms) {
   int f;
+  if (!forms)
+    return;
   for (f=0; f<forms->no_forms; f++) {
     free(forms->forms[f].form);
     free(forms->forms[f].features);
   }
-  return 0;
-  free(forms);
 }
 
 ////////////////////////////////////////////
@@ -882,6 +914,45 @@ int SU_delete_id(SU_id_T* id) {
   free(id);
   return 0;
 }
+
+////////////////////////////////////////////
+// Initialize the single-unit 'forms' with null values
+// We suppose that 'forms' has its space allocated
+void SU_init_forms(SU_forms_T* forms) {
+  forms->no_forms = 0;
+  forms->forms = NULL;
+}
+
+////////////////////////////////////////////
+// Initialize the set of inflected forms "forms" with 
+// the unique form "form"
+// E.g. if form = "rekami" then forms becomes (1,{("rekami",NULL)}
+void SU_init_invariable_form(SU_forms_T* forms, unichar* form) {
+  forms->no_forms = 1;
+  forms->forms = (SU_f_T*) malloc(sizeof(SU_f_T));
+  if (!forms->forms)
+    fatal_error("Not enough memory in function SU_init_invariable_form\n");
+  forms->forms[0].form = (unichar*) malloc(sizeof(unichar)*u_strlen(form)+1);
+  if (!forms->forms[0].form)
+    fatal_error("Not enough memory in function SU_init_invariable_form\n");
+  u_strcpy(forms->forms[0].form,form);
+  forms->forms[0].features = NULL;
+}
+
+/////////////////////////////////////////////////////////////////////
+// Same as SU_init_invariable_form but the second parameter is a char*
+void SU_init_invariable_form_char(SU_forms_T* forms, char* form) {
+  forms->no_forms = 1;
+  forms->forms = (SU_f_T*) malloc(sizeof(SU_f_T));
+  if (!forms->forms)
+    fatal_error("Not enough memory in function SU_init_invariable_form\n");
+  forms->forms[0].form = (unichar*) malloc(sizeof(unichar)*strlen(form)+1);
+  if (!forms->forms[0].form)
+    fatal_error("Not enough memory in function SU_init_invariable_form\n");
+  u_strcpy(forms->forms[0].form,form);
+  forms->forms[0].features = NULL;
+}
+
 ////////////////////////////////////////////
 // Prints a form and its inflection features.
 int SU_print_f(SU_f_T* f) {

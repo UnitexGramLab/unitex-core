@@ -80,7 +80,7 @@ void MU_graph_free_morpho(MU_graph_morpho_T* MU_morpho);
 /////////////////////////////////////////////////
 // Explores the inflection transducer of the MU-lemma 'MU_lemma' 
 // in order to generate all its inflected forms. The generated forms are put to 'forms'
-// Initially, '*forms' has its space allocated but is empty.
+// Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise. 
 int MU_graph_explore_graph(MU_lemma_T* MU_l, MU_forms_T* forms) {
   int res;
@@ -91,10 +91,6 @@ int MU_graph_explore_graph(MU_lemma_T* MU_l, MU_forms_T* forms) {
  //Initialize the structure for graph unification variables
   unif_init_vars();
   
-  //Initialize the set of inflected forms
-  forms->no_forms = 0;
-  forms->forms = NULL;
-
   //Get the initial state of the inflection tranducer
   Fst2State initial;
   initial = MU_graph_get_initial(MU_lemma->paradigm);
@@ -146,7 +142,7 @@ Fst2State MU_graph_get_initial(char* graph_name) {
 // of an inflection transducer for MWUs. Generate suffixes of the inflected
 // forms and their features, and put them to 'forms'.
 // In case of error put an empty list into 'forms' (which is not identical to ((epsilon,empty_set))). 
-// Initially, '*forms' has its space allocated but is empty.
+// Initially, 'forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise. 
 int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
   int err;
@@ -154,30 +150,12 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
   Fst2State q_bis;
 
   //If we are in a final state, then the empty word is recognized, we add it to 'forms' and we continue to explore
-  if (q->control & 1) {
-    //Allocate space for a couple (epsilon,empty_set)
-    forms->forms = (MU_f_T*)malloc(sizeof(MU_f_T));
-    if (!forms->forms) {
-      fatal_error("Not enough memory in function MU_graph_explore_state\n");
-    }
-    MU_f_T* f;
-    f = &(forms->forms[0]);
-    f->form = (unichar*) malloc(sizeof(unichar));
-    if (f->form==NULL) {
-       fatal_error("Not enough memory in function MU_graph_explore_state\n");
-    }
-    f->form[0] = (unichar) '\0';
-    f->features = (f_morpho_T*) malloc(sizeof(f_morpho_T));
-    if (f->features==NULL) {
-       fatal_error("Not enough memory in function MU_graph_explore_state\n");
-    }
-    f->features->no_cats = 0;
-    forms->no_forms++;
-  }
+  if (q->control & 1) 
+    MU_add_empty_form(forms);
+
   //Explore each outgoing transition
   Transition* t;
-  MU_forms_T forms_bis;
-  int mf;  //index of a sigle MU form
+  MU_forms_T forms_bis; //Suffixes obtained by the exploration of one outgoing transition
   
   t = q->transitions;
   while (t) {
@@ -191,28 +169,25 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
     if (err)
       return err;
     //Initialize the set of inflected forms
-    forms_bis.no_forms = 0;
-    forms_bis.forms = NULL;
+    MU_init_forms(&forms_bis);
     err = MU_graph_explore_label(l,q_bis,&forms_bis);
-    if (err)
+    if (err) {
+      MU_delete_inflection(&forms_bis);
       return err;
-    if (forms_bis.no_forms) {  //If any suffix found, add it to the list of those generated previously
-      forms->forms = (MU_f_T*)realloc(forms->forms,sizeof(MU_f_T)*(forms->no_forms+forms_bis.no_forms));
-      if (! forms->forms) {
-	      fatal_error("Not enough memory in function MU_graph_explore_state\n");
-      }
-      for (mf=0; mf<forms_bis.no_forms; mf++) {
-	     forms->forms[forms->no_forms+mf] = forms_bis.forms[mf];
-      }
-      forms->no_forms += forms_bis.no_forms;
-      //Free the current label
-      MU_graph_free_label(l);
     }
+
+    //Add each new form to the one generated previously, if it does not exist already
+    MU_merge_forms(forms, &forms_bis);
+
+    //Free the current label
+    MU_graph_free_label(l);
+
     //Go to the next transition
     t = t->next;
   }
   return 0;
 }
+
 
 ////////////////////////////////////////////
 // Given the current instantiation of unification variables and of
@@ -225,45 +200,56 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
 // Return a number !=0 in case of errors, 0 otherwise. 
 int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms) { 
   int err;
-
-  //If label's input empty then explore the output
-  if (! l->in) { //Epsilon case
-    err = MU_graph_explore_label_out(l->out,q_bis,forms);
-    if (err)
+  //If the current unit is a reference to a lemma's unit (e.g. <$2>)
+  if (l->in && l->in->unit.type!=cst) {
+    SU_id_T* u;  //Referenced lemma's unit
+    int u_no;    //Number of the referenced unit
+    u_no = l->in->unit.u.num-1;
+    u = MU_lemma->units[u_no];  //Get the referenced lemma's unit
+    //explore the current unit according to its morphology, then the label's output and the rest of the automaton
+    err = MU_graph_explore_label_in_var(u,l->in->morpho,l->out,q_bis,forms);  
+    if (err) 
       return err;
   }
-  //Explore the label's input (and recursively also the output)
-  else  
-    if (l->in->unit.type == cst) { //if the current unit is a constant (e.g. "of")
-      err = MU_graph_explore_label_out(l->out,q_bis,forms);   //explore the output and the rest of the automaton
-      if (err)
-	return err;
-      int f;  //a single form suffix
 
-      //Concatenate the current constituent in front of each of the form suffixes obtained
-      unichar* tmp;
-      for (f=0; f<forms->no_forms; f++) {
-	tmp = (unichar*) malloc((u_strlen(forms->forms[f].form)+u_strlen(l->in->unit.u.seq)+1) * sizeof(unichar));
-	if (!tmp) {
-	   fatal_error("Not enough memory in function MU_graph_explore_label\n");
-	}
-	u_strcpy(tmp,l->in->unit.u.seq);
-	u_strcat(tmp,forms->forms[f].form);
-	free(forms->forms[f].form);
-	forms->forms[f].form = tmp;
-      }
+  else { //If the current unit is fixed (empty or a fixed word, e.g. "of")
+    
+    //////////////////////////////////
+    //Get the forms of the current unit
+    SU_forms_T SU_forms;
+    SU_init_forms(&SU_forms);
+    
+    ///If the current unit's input is empty (it is an epsilon input <E>)
+    if (!l->in)
+      //The current form is empty
+      SU_init_invariable_form_char(&SU_forms,"");
+    
+    //If the current unit is a constant (e.g. "of")
+    else 
+      //Get the form appearing in the node's input
+      SU_init_invariable_form(&SU_forms,l->in->unit.u.seq);
+
+     
+    ///////////////////////////////////
+    //Get the suffixes of the MWU forms
+    MU_forms_T suffix_forms;  
+    MU_init_forms(&suffix_forms);
+    err = MU_graph_explore_label_out(l->out,q_bis,&suffix_forms);  //Explore the rest of the automaton
+    if (err) {
+      SU_delete_inflection(&SU_forms);
+      MU_delete_inflection(&suffix_forms);
+      return err;
     }
-  
-    else {  //if the current unit is a reference to a lemma's unit (e.g. <$2>)
-      SU_id_T* u;  //Referenced lemma's unit
-      int u_no;    //Number of the referenced unit
-      u_no = l->in->unit.u.num-1;
-      u = MU_lemma->units[u_no];  //Get the referenced lemma's unit
-      //explore the current unit according to its morphology, then the label's output and the rest of the automaton
-      err = MU_graph_explore_label_in_var(u,l->in->morpho,l->out,q_bis,forms);  
-      if (err)
-	return err;
-    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //Concatenante each inflected form of the current unit in front of each multi-unit form
+    //resulting from the exploration of the rest of the automaton
+    MU_concat_forms(&SU_forms, &suffix_forms, forms);
+    
+    //Delete the intermediate simple et compound forms
+    SU_delete_inflection(&SU_forms);
+    MU_delete_inflection(&suffix_forms);      
+  } 
   return 0;
 }
 
@@ -313,131 +299,93 @@ int MU_graph_explore_label_in_var(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_
 int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
 
-  //If no morphology in the input label, take the unit as it appears in the MWU's lemma
-  if (!l_in_morpho) {
-    //Explore the rest of the automaton
-    err = MU_graph_explore_label_out(l_out_morpho,q_bis,forms);  
+  /////////////////////////////////////////////////////////////////
+  //If the whole label's input not yet treated continue treating it
+  if (l_in_morpho && i_morpho != l_in_morpho->no_cats){
+    MU_graph_category_T* c;  // a single graph category-value pair, e.g. Case==$n1
+    c = &(l_in_morpho->cats[i_morpho]);
+    switch (c->type) {
+    case cnst : //e.g. Nb=pl
+      err = MU_graph_explore_label_in_morph_const(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
+      break;
+    case inherit_var: //e.g. Gen==$g
+      err = MU_graph_explore_label_in_morph_inher(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
+      break;
+    case unif_var:  //e.g. Case=$c1
+      err = MU_graph_explore_label_in_morph_unif(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
+      break;
+    }
     if (err)
       return err;
-    //Attach the current unit to each suffix
-    int mf;  //Index of a single suffix generated by the rest of the automaton
-    unichar* tmp;
-    for (mf=0; mf<forms->no_forms;mf++) {
-      tmp = (unichar*) malloc((u_strlen(u->form)+u_strlen(forms->forms[mf].form)+1) * sizeof(unichar));
-      if (!tmp) {
-         fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
-      }
-      u_strcpy(tmp,u->form);
-      u_strcat(tmp,forms->forms[mf].form);
-      free(forms->forms[mf].form);
-      forms->forms[mf].form = tmp;
-    }
-  }
-
-  //If the whole label's input treated
-  else
-    if (i_morpho == l_in_morpho->no_cats) {
-      //Inflected forms of the unit concerned
-      SU_forms_T* SU_forms;  
-      SU_forms = (SU_forms_T*) malloc(sizeof(SU_forms_T));
-      if (!SU_forms) {
-	      fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
-      }
-      SU_forms->no_forms = 0;
-      SU_forms->forms = NULL;
-      //Suffixes of the MWU forms
-      MU_forms_T* forms_bis;  
-      forms_bis = (MU_forms_T*) malloc(sizeof(MU_forms_T));
-      if (!forms_bis) {
-	      fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
-      }
-      forms_bis->no_forms = 0;
-      forms_bis->forms = NULL;
-      
-      err = MU_graph_explore_label_out(l_out_morpho,q_bis,forms_bis);  //Explore the rest of the automaton
-      if (err)
-	return err;
-      //Inflect the current unit only if any suffix has been found
-      if (forms_bis->no_forms) {
-	err = MU_graph_get_unit_forms(u,feat,SU_forms);  //Inflect the unit concerned according to desired features
-	if (err)
-	  return err;
-	int sf;  //Index of a single form of the current unit
-	int mf_bis;  //Index of a single suffix generated by the rest of the automaton
-	int mf;  //Index of a suffix concatenated with the current unit
-	//Concatenate each inflected form of the current unit in front of each suffix
-	mf = 0;
-	if (forms_bis->no_forms && SU_forms->no_forms) {  //Check if there is anything to concatenante
-	  forms->forms = (MU_f_T*) malloc((forms_bis->no_forms*SU_forms->no_forms) * sizeof(MU_f_T));
-	  if (!forms->forms) {
-	     fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
-	  }
-	}
-	for (sf=0; sf<SU_forms->no_forms; sf++)
-	  for (mf_bis=0; mf_bis<forms_bis->no_forms;mf_bis++) {
-	    forms->forms[mf].form = 
-	      (unichar*) malloc((u_strlen(forms_bis->forms[mf_bis].form)+u_strlen(SU_forms->forms[sf].form)+1) * sizeof(unichar));
-	    if (!forms->forms[mf].form) {
-	       fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
-	    }
-	    //Concatenate the forms
-	    u_strcpy(forms->forms[mf].form, SU_forms->forms[sf].form);
-	    u_strcat(forms->forms[mf].form, forms_bis->forms[mf_bis].form);
-	    //Copy the features
-	    forms->forms[mf].features = (f_morpho_T*) malloc(sizeof(f_morpho_T));
-	    if (! forms->forms[mf].features) {
-	       fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
-	    }
-	    forms->forms[mf].features->no_cats = forms_bis->forms[mf_bis].features->no_cats;
-	    for (int c=0; c<forms_bis->forms[mf_bis].features->no_cats; c++)
-	      forms->forms[mf].features->cats[c] = forms_bis->forms[mf_bis].features->cats[c];
-	    mf++;
-	  }
-	forms->no_forms = mf;
-	SU_delete_inflection(SU_forms);
-      }
-      MU_delete_inflection(forms_bis);
-    }
+  }														   
   
-  //If the whole label's input not yet treated
+  ////////////////////////////////////////////////////////////////////////////////
+  //If the whole label's input treated get the inflected forms of the current unit
+  else {
+    
+    //Get the inflected forms of the current unit
+    SU_forms_T SU_forms;
+    SU_init_forms(&SU_forms);
+    
+    //If no morphology in the input label, take the unit as it appears in the MWU's lemma
+    if (!l_in_morpho)
+      //Get the inflected form from the current unit (this form is not to be modified since there is no morphology in the input label)
+      SU_init_invariable_form(&SU_forms,u->form);
+    
+    //If all morphological category-value equations in the input label treated
     else {
-      MU_graph_category_T* c;  // a single graph category-value pair, e.g. Case==$n1
-      c = &(l_in_morpho->cats[i_morpho]);
-      switch (c->type) {
-      case cnst : //e.g. Nb=pl
-	err = MU_graph_explore_label_in_morph_const(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
-	break;
-      case inherit_var: //e.g. Gen==$g
-	err = MU_graph_explore_label_in_morph_inher(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
-	break;
-      case unif_var:  //e.g. Case=$c1
-	err = MU_graph_explore_label_in_morph_unif(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
-	break;
-      }
-      if (err)
+      //Inflect the unit concerned according to desired features
+      err = MU_graph_get_unit_forms(u,feat,&SU_forms);  
+      if (err) {
+	SU_delete_inflection(&SU_forms);
 	return err;
-    }														   
+      }
+    }
+
+    ///////////////////////////////////
+    //Get the suffixes of the MWU forms
+    MU_forms_T suffix_forms;  
+    MU_init_forms(&suffix_forms);
+    err = MU_graph_explore_label_out(l_out_morpho,q_bis,&suffix_forms);  //Explore the rest of the automaton
+    if (err) {
+      SU_delete_inflection(&SU_forms);
+      MU_delete_inflection(&suffix_forms);      
+      return err;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //Concatenante each inflected form of the current unit in front of each multi-unit form
+    //resulting from the exploration of the rest of the automaton
+    MU_concat_forms(&SU_forms, &suffix_forms, forms);
+    
+    //Delete the intermediate simple et compound forms
+    SU_delete_inflection(&SU_forms);
+    MU_delete_inflection(&suffix_forms);      
+  }
   return 0;
 }
 
 /////////////////////////////////////////////////
 // Generate the desired inflected forms (defined by 'feat')
 // of the current single unit 'u'.
-// Return the generated forms in 'forms'.
-// In case of error put an empty list into 'forms'. 
-// Initially, '*forms' has its space allocated but is empty.
+// Return the generated forms in 'SU_forms'.
+// In case of error put an empty list into 'SU_forms'. 
+// Initially, 'SU_forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise. 
 int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
   int err;
   f_morpho_T old_feat;  //Features that the current unit has in the lemma of the MWU
 
   //Get the features that the unit has in the lemma of the MWU, e.g. <Nb=sing; Gen=fem> for "vif" in "memoire vive"
-  SU_cpy_features(&old_feat,u);
+  //SU_cpy_features(&old_feat,u);
+  err = f_copy_morpho(&old_feat, u->feat);
+  if (err)
+    return err;
 
   //Change the features to adapt them to the desired features, e.g. if 'feat'=<Nb=pl> then old_feat<-<Nb=pl; Gen=fem>
   err = f_change_morpho(&old_feat,feat); 
   if (err)
-    return 1;
+    return err;
 
   //Generate the desired inflected forms of the single unit
   err = SU_inflect(u,&old_feat, SU_forms,0);
@@ -495,13 +443,15 @@ int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU
 
   //Get the features that the unit has in the lemma of the MWU, e.g. <Nb=sing; Gen=fem; Case=Nom>
   f_morpho_T old_feat;  //Features that the current unit has in the lemma of the MWU
-  err = SU_cpy_features(&old_feat,u);    //e.g. <Nb=sing; Case=$c1; Gen==$g>
+  //err = SU_cpy_features(&old_feat,u);    //e.g. <Nb=sing; Case=$c1; Gen==$g>
+  err = f_copy_morpho(&old_feat, u->feat);
   if (err)
     return err;
 
-  //Get the value of the current category (detuermined by 'c') of the unit as it appears in the lemma of the MWU
+  //Get the value of the current category (determined by 'c') of the unit as it appears in the lemma of the MWU
   int val;  //Value of the current category (index that this value has in the domain os the category)
   val = f_get_value(&old_feat,c->cat);   //e.g. val: fem
+
   if (val == -1)
     return -1;
 
@@ -523,17 +473,20 @@ int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU
   }
 
   //Add the the instantiated category-value pair to the features of the single unit to be generated
-  feat->cats[feat->no_cats].cat = c->cat;   //e.g. 'feat' devient <Nb=pl; Case=Nom; Gen=fem>
-  feat->cats[feat->no_cats].val = val;
-  feat->no_cats++;
+  err = f_add_morpho(feat, c->cat, val);
+  if (err)
+    return err;
 
   //Explore recursively the rest of the label
   err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
+  if (err)
+    return err;
 
   //Desinstantiate the variable only if it has been instantiated by the current category-value pair 'c'
   if (new_instant)
     unif_desinstantiate(var);
-  
+
+  err = f_del_one_morpho(feat, c->cat);
   return err;
 }
 
@@ -563,63 +516,79 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
   //  err = SU_cpy_features(&old_feat,u);    //e.g. <Nb=sing; Case=$c1; Gen==$g>
   //  if (err)
   //    return err;
-
+  
   if (unif_instantiated(var)) {
     //If the same variable already instantiated for a DIFFERENT category then cut off the exploration path 
     //The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
     if (unif_get_cat(var)!=c->cat)
       return 0; 
-   
+    
     //If the same variable already instantiated for the same category, only this instantiation is taken into account
-    //Add the the instantiated category-value pair to the features of the single unit to be generated
+    //Add the instantiated category-value pair to the features of the single unit to be generated
     err = f_add_morpho(feat,c->cat,unif_get_val_index(var));
     if (err == -1) {
       error(" in graph %s.\n",MU_lemma->paradigm);
       MU_delete_inflection(forms);
       return 1;
-    }    
-    return MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
-  }
+    } 
+   
+    //Return MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
+    err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
+    if (err == -1) {
+      error(" in graph %s.\n",MU_lemma->paradigm);
+      MU_delete_inflection(forms);
+      return 1;
+    }
+    err = f_del_one_morpho(feat, c->cat);
+    return err;
+   }
 
   else {//If the variable not yet instantiated
     int val;  //Index of different values in the domain of the current category
-    MU_forms_T forms_bis; //Suffixes generated in one run of the for-loop
-    int mf;  //index of a sigle MU form
+    MU_forms_T suffix_forms; //Suffixes generated in one run of the for-loop
     for (val=0; val<c->cat->no_values; val++) {
       
       //Instantiated to the current value
       unif_instantiate_index(var,c->cat,val);
 
       //Add the the instantiated category-value pair to the features of the single unit to be generated
-      feat->cats[feat->no_cats].cat = c->cat;   //e.g. 'feat' devient <Nb=pl; Case=Nom; Gen=fem>
-      feat->cats[feat->no_cats].val = val;
-      feat->no_cats++;
-
-      //Explore the rest of the label and the rest of the automaton 
-      forms_bis.no_forms = 0;
-      forms_bis.forms = NULL;
-      err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,&forms_bis);
-      if (err)
+      err = f_add_morpho(feat, c->cat, val);
+      if (err) {
+	MU_delete_inflection(&suffix_forms);      
 	return err;
-      if (forms_bis.no_forms) {  //If any suffix found, add it to the list of those generated previously
-	forms->forms = (MU_f_T*)realloc(forms->forms,sizeof(MU_f_T)*(forms->no_forms+forms_bis.no_forms));
-	if (! forms->forms) {
-	   fatal_error("Not enough memory in function MU_graph_explore_label_in_morph_unif\n");
-	}
-	for (mf=0; mf<forms_bis.no_forms; mf++) 
-	  forms->forms[forms->no_forms+mf] = forms_bis.forms[mf];
-	forms->no_forms += forms_bis.no_forms;
       }
 
+      //Explore the rest of the label and the rest of the automaton 
+      MU_init_forms(&suffix_forms);
+      err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,&suffix_forms);
+      if (err) {
+	//Delete the intermediate simple et compound forms
+	MU_delete_inflection(&suffix_forms);      
+  	return err;
+      }
+
+      //Add each suffix obtained to the list of previously obtained suffixes
+      MU_merge_forms(forms, &suffix_forms);
+
       //Delete the current category-value pair
-      feat->no_cats--;
+      //feat->no_cats--;
+      err = f_del_one_morpho(feat, c->cat);
+      if (err) {
+	//Delete the intermediate simple et compound forms
+	MU_delete_inflection(&suffix_forms);      
+	return err;
+      }
       
       //Delete the current instantiation
       unif_desinstantiate(var);
-    }
+      
+      //Delete the intermediate simple et compound forms
+      MU_delete_inflection(&suffix_forms);      
+      }
   }
   return 0;
 }
+
 ////////////////////////////////////////////
 // Given the current instantiation of unification variables and of
 // inheritance variables, explore the current transition label's output 'l_out_morpho', 
@@ -632,7 +601,8 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
 int MU_graph_explore_label_out(MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms) { 
   int err;
   f_morpho_T feat;   //A set of the amready treated morphological features contained in the label's input
-  feat.no_cats = 0;
+  f_init_morpho(&feat);
+  //feat.no_cats = 0;
   err = MU_graph_explore_label_out_rec(l_out_morpho,0,&feat,q_bis,forms);
   return(err);
 }
@@ -772,8 +742,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
 
   else {//If the variable not yet instantiated
     int val;  //Index of different values in the domain of the current category
-    MU_forms_T forms_bis; //Suffixes generated in one run of the for-loop
-    int mf;  //index of a sigle MU form
+    MU_forms_T suffix_forms; //Suffixes generated in one run of the for-loop
     for (val=0; val<c->cat->no_values; val++) {
       
       //Instantiated to the current value
@@ -788,24 +757,17 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
       }
 
       //Explore the rest of the label and the rest of the automaton 
-      forms_bis.no_forms = 0;
-      forms_bis.forms = NULL;
-      err = MU_graph_explore_label_out_rec(l_out_morpho,i_morpho,feat,q_bis,&forms_bis);
-      if (err)
+      MU_init_forms(&suffix_forms);
+      err = MU_graph_explore_label_out_rec(l_out_morpho,i_morpho,feat,q_bis,&suffix_forms);
+      if (err) {
+	MU_delete_inflection(&suffix_forms);
 	return err;
-      if (forms_bis.no_forms) {  //If any suffix found, add it to the list of those generated previously
-	forms->forms = (MU_f_T*)realloc(forms->forms,sizeof(MU_f_T)*(forms->no_forms+forms_bis.no_forms));
-	if (! forms->forms) {
-	  fatal_error("Not enough memory in function MU_graph_explore_label_out_morph_unif\n");
-	}
-	for (mf=0; mf<forms_bis.no_forms; mf++) 
-	  forms->forms[forms->no_forms+mf] = forms_bis.forms[mf];
-	forms->no_forms += forms_bis.no_forms;
       }
+      //If any suffix found, add it to the list of those generated previously
+      MU_merge_forms(forms, &suffix_forms);
 
       //Delete the current category-value pair
       f_del_one_morpho(feat, c->cat);
-  //      feat->no_cats--;
       
       //Delete the current instantiation
       unif_desinstantiate(var);

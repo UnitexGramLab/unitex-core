@@ -149,4 +149,10 @@ unichar* d_get_str_feat(f_morpho_T* feat);
 /* The returned structure is NOT allocated in the function.                           */
 l_class_T* d_get_class_str(unichar* cl_str);
 
+/**************************************************************************************/
+/* Returns the class string (e.g. 'N') corresponding to a class (e.g. noun)           */
+/*If no string corresponds to the class, returns NULL.                                */
+/* The return structure is NOT allocated in the function.                             */
+unichar* d_get_str_class(l_class_T* cl);
+
 #endif

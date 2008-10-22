@@ -52,7 +52,7 @@ typedef struct {
 int f_init_morpho(f_morpho_T *feat);
 
 ////////////////////////////////////////////
-// Initializes the morphology of a form.
+// Liberates the morphology of a form.
 void f_delete_morpho(f_morpho_T *feat);
 
 ////////////////////////////////////////////
@@ -61,6 +61,11 @@ void f_delete_morpho(f_morpho_T *feat);
 // e.g. if 'old_feat'={Gen=fem, Nb=sing} and 'new_feat'={Nb=pl} then 'old_feat' becomes {Gen=fem, Nb=pl}
 // Returns 0 on success, 1 otherwise.
 int f_change_morpho(f_morpho_T *old_feat, f_morpho_T *new_feat);
+
+////////////////////////////////////////////
+// Compare two morphological descriptions
+// Return 0 if they are identical, 1 otherwise.
+int f_morpho_cmp(f_morpho_T* m1, f_morpho_T* m2);
 
 ////////////////////////////////////////////
 // Enlarges the morphology of a form.
@@ -89,7 +94,8 @@ int f_del_one_morpho(f_morpho_T *feat, l_category_T* cat);
 // Reads the morphology of a form.
 // Returns the value of the category 'cat' in 'feat' (i.e. the index of the value in the domain of 'cat'),
 // e.g. if 'feat'={Gen=neu,Nb=pl}, 'cat'=Gen, and Gen={masc,fem,neu} then return 2.
-// Returns -1 if 'act' not found in 'feat'.
+// If 'cat' does not appear in 'feat' but it admits an emmpty value, then returns the index of the empty value.
+// Returns -1 if 'cat' not found in 'feat' and 'cat' does not admit an empty value.
 int f_get_value(f_morpho_T *feat, l_category_T* cat);
 
 /////////////////////////////////////////////////
@@ -97,5 +103,11 @@ int f_get_value(f_morpho_T *feat, l_category_T* cat);
 // Returns 0.
 int f_print_morpho(f_morpho_T *feat);
 
-
+////////////////////////////////////////////
+// Copies the form morphology feat2 into feat1
+// If feat1 has its space allocated its contents is replaced by a copy of feat2
+// If feat1 does not have its space allocated it is allocated first and then filled with a copy feat2
+// Returns 0 on success, -1 on error
+int f_copy_morpho(f_morpho_T *feat1, f_morpho_T *feat2);
+  
 #endif

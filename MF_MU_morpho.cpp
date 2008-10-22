@@ -31,11 +31,12 @@
 #include "MF_MU_morpho.h"
 #include "MF_Unif.h"
 #include "MF_MU_graph.h"
+#include "Error.h"
 
 ////////////////////////////////////////////
 // For a given multi-word unit, generates all the inflected forms,
 // e.g. {["mémoire vive",{Gen=fem,Nb=sing}],["mémoires vives",{Gen=fem,Nb=pl}]}
-// Initially, 'forms' does not have its space allocated.
+// Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise.   
 int MU_inflect(MU_lemma_T* lemma, MU_forms_T* forms) {
   int err;
@@ -55,10 +56,12 @@ void MU_delete_inflection(MU_forms_T* forms) {
   if (!forms)
     return;
   for (f=0; f<forms->no_forms; f++) {
-    free(forms->forms[f].form);
-    f_delete_morpho(forms->forms[f].features);
+    if (forms->forms[f].form)
+      free(forms->forms[f].form);
+    if (forms->forms[f].features)
+      f_delete_morpho(forms->forms[f].features);
   }
-  free(forms);
+  free(forms->forms);
 }
 
 /*
@@ -82,6 +85,157 @@ void MU_delete_id(MU_id_T* id){
     f_delete_morpho(id->feat);
   }
   free(id);
+}
+
+////////////////////////////////////////////
+// Compare two multi-unit forms
+// Return 0 if they are identical, 1 otherwise.
+int MU_form_cmp(MU_f_T f1, MU_f_T f2) {
+  if (u_strcmp(f1.form,f2.form))
+    return 1;
+  return f_morpho_cmp(f1.features, f2.features);
+}
+
+////////////////////////////////////////////
+// Initialize the multi-unit 'forms' with null values
+// We suppose that 'forms' has its space allocated
+void MU_init_forms(MU_forms_T* forms) {
+  forms->no_forms = 0;
+  forms->forms = NULL;
+}
+
+////////////////////////////////////////////
+// Add an empty form with empty features 'feat' to the initially empty set of forms 'forms'
+void MU_add_empty_form(MU_forms_T* forms) {
+  //Allocate space for a couple (epsilon,empty_set)
+  forms->forms = (MU_f_T*)malloc(sizeof(MU_f_T));
+  if (!forms->forms) {
+    fatal_error("Not enough memory in function MU_add_empty_form\n");
+  }
+  MU_f_T* f;
+  f = &(forms->forms[0]);
+  f->form = (unichar*) malloc(sizeof(unichar));
+  if (f->form==NULL) {
+    fatal_error("Not enough memory in function MU_add_empty_form\n");
+  }
+  f->form[0] = (unichar) '\0';
+  f->features = (f_morpho_T*) malloc(sizeof(f_morpho_T));
+  if (f->features==NULL) {
+    fatal_error("Not enough memory in function MU_add_empty_form\n");
+  }
+  f->features->no_cats = 0;
+
+  forms->no_forms++;
+}
+
+////////////////////////////////////////////
+// Concatenante each simple form in 'SU_forms' in front of
+// each multi-unit form in 'MU_forms'. Add the resulting
+// forms into 'forms'
+// E.g. while generating the instrumental of "rece pelne roboty", if we have :
+// SU_forms = {("rekami",{Case=Inst, Nb=pl, Gen=fem}), ("rekoma",{Case=Inst, Nb=pl, Gen=fem})}
+// MU_forms = {("pelnymi roboty",{Case=Inst, Nb=pl, Gen=fem})}
+// forms = {("rak pelnych roboty",{Case=Acc, Nb=pl, Gen=fem})}
+// then we obtain {("rak pelnych roboty",{Case=Acc, Nb=pl, Gen=fem}),
+//                 ("rekami pelnymi roboty",{Case=Inst, Nb=pl, Gen=fem}),
+//                 ("rekoma pelnymi roboty",{Case=Inst, Nb=pl, Gen=fem})}
+// Initially, 'forms' has its space allocated, it may be empty or non empty.
+// If it is non empty, the existing forms must not be lost
+void MU_concat_forms(SU_forms_T* SU_forms, MU_forms_T* MU_forms, MU_forms_T* forms) {
+  int sf; //Index of a simple form in SU_forms
+  int mf; //Index of a multi-word form in MU_form
+  int f;  //Index of a concatenated form
+
+  if (MU_forms->no_forms && SU_forms->no_forms) {  //Check if there is anything to concatenante
+    forms->forms = (MU_f_T*) realloc(forms->forms,(forms->no_forms+MU_forms->no_forms*SU_forms->no_forms) * sizeof(MU_f_T));
+    if (!forms->forms) {
+      fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
+    }
+    f = forms->no_forms;
+    for (sf=0; sf<SU_forms->no_forms; sf++)
+      for (mf=0; mf<MU_forms->no_forms;mf++) {
+	forms->forms[f].form = 
+	  (unichar*) malloc((u_strlen(MU_forms->forms[mf].form)+u_strlen(SU_forms->forms[sf].form)+1) * sizeof(unichar));
+	if (!forms->forms[f].form) {
+	  fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
+	}
+	//Concatenate the forms
+	u_strcpy(forms->forms[f].form, SU_forms->forms[sf].form);
+	u_strcat(forms->forms[f].form, MU_forms->forms[mf].form);
+	//Copy the features
+	forms->forms[f].features = (f_morpho_T*) malloc(sizeof(f_morpho_T));
+	if (! forms->forms[f].features) {
+	  fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
+	}
+	forms->forms[f].features->no_cats = MU_forms->forms[mf].features->no_cats;
+	for (int c=0; c<MU_forms->forms[mf].features->no_cats; c++)
+	  forms->forms[f].features->cats[c] = MU_forms->forms[mf].features->cats[c];
+	f++;
+      }
+    forms->no_forms = f; 
+  }
+  else  //If there is nothing to concatenate
+    forms = NULL;
+}
+
+////////////////////////////////////////////
+// Add forms appearing in 'new_forms' to 'forms' so that
+// no form appears twice in the result. The forms allocated in
+// 'new_forms' are copied by pointer assignment. They shouldn't be 
+// liberated while 'new_forms' are liberated.
+// Exit in case of errors.
+void MU_merge_forms(MU_forms_T* forms, MU_forms_T* new_forms) {
+  int nb_mf;  //Number of forms to be added to 'forms'
+  int mf;  //index of a sigle MU form in 'forms'
+  int nmf; //index of a sigle MU form in 'new_forms
+  int found; //Boolean showing if a search form has been found
+
+  //Check how many forms are to be added to 'forms'
+  nb_mf = 0;
+  for (nmf=0; nmf<new_forms->no_forms; nmf++) {
+    mf=0;
+    found = 0;
+    while (mf<forms->no_forms && !found) {
+      if (! MU_form_cmp(forms->forms[mf],new_forms->forms[nmf]))  //If forms are identical
+	found = 1;
+      mf++;
+    }
+    if (!found)
+        nb_mf++;
+  }
+ 
+  //Add the new forms
+  if (nb_mf) {  //If any forms are to be added 
+    //Reallocate the memory for new forms
+    forms->forms = (MU_f_T*)realloc(forms->forms,sizeof(MU_f_T)*(forms->no_forms+nb_mf));
+    if (!forms->forms) {
+      fatal_error("Not enough memory in function MU_graph_explore_state\n");
+    }
+    //Treat each new form
+    for (nmf=0; nmf<new_forms->no_forms; nmf++) {
+      //Check if the new form exists already in 'forms'
+      mf = 0;
+      found = 0;
+      while (mf<forms->no_forms && !found) {
+	if (! MU_form_cmp(forms->forms[mf],new_forms->forms[nmf]))  //If forms are identical
+	  found = 1;
+	mf++;
+      }
+      //If the new form does not exist in 'forms', add it
+      if (!found) {
+        forms->forms[forms->no_forms] = new_forms->forms[nmf];
+	//If a for has been added to a different list, it shouldn't be accessible from the old one (otherwise memory liberation problems).
+	new_forms->forms[nmf].form = NULL;   
+	new_forms->forms[nmf].features = NULL;
+	forms->no_forms++;
+      }
+      //Otherwise free the space allocated for the form
+      else {
+	free(new_forms->forms[nmf].form);
+	f_delete_morpho(new_forms->forms[nmf].features);
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////

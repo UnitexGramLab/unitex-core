@@ -101,13 +101,13 @@ int SU_inflect(unichar* lemma,char* inflection_code,unichar **filters,SU_forms_T
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms
-int SU_delete_inflection(SU_forms_T* forms);
+void SU_delete_inflection(SU_forms_T* forms);
 
 ////////////////////////////////////////////
 // Returns in 'feat' a copy of the inflection features of the given form.
 // Initially 'feat' has its space allocated but is empty.
 // Returns 1 on error, 0 otherwise.
-int SU_cpy_features(f_morpho_T* feat,SU_id_T* SU_id);
+//int SU_cpy_features(f_morpho_T* feat,SU_id_T* SU_id);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a form's morphology.
@@ -137,6 +137,21 @@ int SU_get_unit(unichar* unit,unichar* line, int max, Alphabet* alph, int elimin
 ////////////////////////////////////////////
 // Liberates the memory allocated for a form's id.
 int SU_delete_id(SU_id_T* id);
+
+////////////////////////////////////////////
+// Initialize the single-unit 'forms' with null values
+// We suppose that 'forms' has its space allocated
+void SU_init_forms(SU_forms_T* forms);
+
+////////////////////////////////////////////
+// Initialize the set of inflected forms "forms" with 
+// the unique form "form"
+// E.g. if form = "rekami" then forms becomes (1,{("rekami",NULL)}
+void SU_init_invariable_form(SU_forms_T* forms, unichar* form);
+
+/////////////////////////////////////////////////////////////////////
+// Same as SU_init_invariable_form but the second parameter is a char*
+void SU_init_invariable_form_char(SU_forms_T* forms, char* form);
 
 ////////////////////////////////////////////
 // Prints a form and its inflection features.

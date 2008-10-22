@@ -40,7 +40,7 @@ int f_init_morpho(f_morpho_T *feat) {
 }
 
 ////////////////////////////////////////////
-// Initializes the morphology of a form.
+// Liberates the morphology of a form.
 void f_delete_morpho(f_morpho_T *feat) {
   free(feat);
 }
@@ -49,7 +49,11 @@ void f_delete_morpho(f_morpho_T *feat) {
 // Modifies the morphology of a form.
 // Each category-value appearing in 'new_feat' replaces the corresponding category in 'old_feat',
 // e.g. if 'old_feat'={Gen=fem, Nb=sing} and 'new_feat'={Nb=pl} then 'old_feat' becomes {Gen=fem, Nb=pl}.
-// Returns 0 on success, returns 1 if a category from 'new_feat' does not appear in 'old_feat'.
+// If a category does not appear in 'old_feat' but it appears in 'new_feat' an error occurs, except when
+// this category may admit an empty value. In this case the category is added to 'old_feat'.
+// e.g. if 'old_feat'={Gen=fem, Nb=sing} and 'new_feat'={Nb=pl, Gr=D} and Gr:<E>,D,A then
+// 'old_feat' becomes {Gen=fem, Nb=pl, Gr=D}. But if Gr:B,D,A than an error appears.
+// Returns 0 on success, 1 otherwise  
 int f_change_morpho(f_morpho_T *old_feat, f_morpho_T *new_feat) {
   int c_old, c_new;  //category indices in old_feat and in new_feat
   int found;
@@ -61,23 +65,67 @@ int f_change_morpho(f_morpho_T *old_feat, f_morpho_T *new_feat) {
 	old_feat->cats[c_old].val = new_feat->cats[c_new].val;
 	found = 1;
       }
+    //If a category was not found in 'old_feat' but is admits and empty value
+    //then it is added to 'old_feat' with the current value
+    if (!found && admits_empty_val(new_feat->cats[c_new].cat)) {
+      f_add_morpho(old_feat, new_feat->cats[c_new].cat, new_feat->cats[c_new].val);
+    }
+
+    /*
     if (!found)   //Error if the category to be changed does not appear in 'old_feat'
       return 1;
+    */
+    
   }
   return 0;
 } 
+
+////////////////////////////////////////////
+// Compare two morphological descriptions
+// Return 0 if they are identical, 1 otherwise.
+int f_morpho_cmp(f_morpho_T* m1, f_morpho_T* m2) {
+  if (!m1 && !m2)
+    return 0;
+  if (!m1 || !m2)
+    return 1;
+  if (m1->no_cats != m2->no_cats)
+    return 1;
+  int c1;  //index of the current category-value pair in m1
+  int c2;  //index of the current category-value pair in m2
+  int found;  //Boolean saying if the current category-value in m1 has been found in m2
+  for (c1=0; c1<m1->no_cats; c1++) {
+    found = 0;
+    c2=0; 
+    while (c2<m2->no_cats && !found) {
+      if ((m1->cats[c1].cat == m2->cats[c2].cat) && (m1->cats[c1].val == m2->cats[c2].val))
+	  found = 1;
+      c2++;
+    }
+    //If the current category-value pair in m1 does not exist in m2 then m1 and m2 are not identical
+    if (!found)
+      return 1;
+  }
+  return 0;
+}
+
 ////////////////////////////////////////////
 // Enlarges the morphology of a form.
 // The category-value pair created from 'cat' and 'val' is added to 'feat',
 // e.g. if 'feat'={Gen=fem}, 'cat'=Nb, nb=(sing,pl) and 'val'=1 then 'feat' becomes {Gen=fem, Nb=pl}.
 // We assume that 'val' is a valid index in the domain of 'cat.
-// Returns 0 on success, returns 1 if 'cat' already appears in 'feat'.
+// Returns 0 on success, returns 1 if 'cat' already appears in 'feat', returns -1 if no space for a new category.
 int f_add_morpho(f_morpho_T *feat, l_category_T *cat, int val) {
   int c;  //category index in feat
 
-  for (c=0; c<feat->no_cats; c++)
+  for (c=0; c<feat->no_cats; c++) 
       if (feat->cats[c].cat == cat) 
         return 1;      //Error if the category to be added already appears in old_cat
+
+  //Check if there is enough space for a new category
+  if (feat->no_cats >= MAX_CATS) {
+    error("Too many inflection categories required");
+    return 1;
+  }
   feat->cats[feat->no_cats].cat = cat;  //Add new category-value pair
   feat->cats[feat->no_cats].val = val;  //Add new category-value pair
   feat->no_cats++;
@@ -133,13 +181,15 @@ int f_del_one_morpho(f_morpho_T *feat, l_category_T* cat) {
 // Reads the morphology of a form.
 // Returns the value of the category 'cat' in 'feat' (i.e. the index of the value in the domain of 'cat'),
 // e.g. if 'feat'={Gen=neu,Nb=pl}, 'cat'=Gen, and Gen={masc,fem,neu} then return 2.
-// Returns -1 if 'cat' not found in 'feat'.
+// If 'cat' does not appear in 'feat' but it admits an empty value, then returns the index of the empty value.
+// Returns -1 if 'cat' not found in 'feat' and 'cat' does not admit an empty value.
 int f_get_value(f_morpho_T *feat, l_category_T* cat) {
   int c; //category index in feat
   for (c=0; c<feat->no_cats; c++)
     if (feat->cats[c].cat == cat)    //Category 'cat' found in 'feat'.
       return feat->cats[c].val;
-  return -1;
+  //If the category 'cat' not found in 'feat' check if 'cat' admits an empty value
+  return get_empty_val(cat);
 }
 
 /////////////////////////////////////////////////
@@ -160,4 +210,30 @@ for (c=0; c<feat->no_cats; c++) {
 u_printf("}\n");
 return 0;
 }
+
+////////////////////////////////////////////
+// Copies the form morphology feat2 into feat1
+// If feat1 has its space allocated its contents is replaced by a copy of feat2
+// If feat1 does not have its space allocated it is allocated first and then filled with a copy feat2
+// Returns 0 on success, -1 on error
+int f_copy_morpho(f_morpho_T *feat1, f_morpho_T *feat2) {
+  int c;  //category index in feat1 and feat2
+  
+  if (!feat1) {
+    feat1 = (f_morpho_T*) malloc(sizeof(f_morpho_T));
+    if (!feat1)
+      fatal_error("Not enough memory in function f_copy_morpho.\n");
+  }
+
+  if (!feat2)
+    return -1;
+
+  for (c=0; c<feat2->no_cats; c++)  
+    feat1->cats[c] = feat2->cats[c];  //Add new category-value pair
+
+  feat1->no_cats = feat2->no_cats;
+
+  return 0;
+}
+
 
