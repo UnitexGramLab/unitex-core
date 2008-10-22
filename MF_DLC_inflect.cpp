@@ -56,133 +56,126 @@ void DLC_delete_entry(DLC_entry_T* entry);
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
 int inflect(char* DLC, char* DLCF) {
-FILE *dlc, *dlcf;  //DELAS/DELAC and DELAF/DELACF files
-unichar input_line[DIC_LINE_SIZE];  //current DELAS/DELAC line 
-unichar output_line[DIC_LINE_SIZE];  //current DELAF/DELACF line 
-int l;  //length of the line scanned
-DLC_entry_T* dlc_entry;
-MU_forms_T* MU_forms;  //inflected forms of the MWU
-int err;
-
-//Open DELAS/DELAC
-dlc = u_fopen(DLC, U_READ);
-if (!dlc) {
-   error("Unable to open file: '%s' !\n", DLC);
-   return 1;
-}
-//Open DELAF/DELACF
-dlcf = u_fopen(DLCF, U_WRITE);
-if (!dlcf) {
-   error("Unable to open file: '%s' !\n", DLCF);
-   return 1;
-}
-//Inflect one entry at a time
-l = u_fgets(input_line,DIC_LINE_SIZE-1,dlc);
-//Omit the final newline
-if (u_strlen(input_line)>0 && input_line[u_strlen(input_line)-1]==(unichar)'\n') {
-   input_line[u_strlen(input_line)-1] = (unichar)'\0';
-}
-int flag=0;
-//If a line is empty the file is not necessarily finished. 
-//If the last entry has no newline, we should not skip this entry
-struct dela_entry* DELAS_entry;
-int semitic;
-while (l!=EOF) {
-   if ((DELAS_entry=is_strict_DELAS_line(input_line,alph))!=NULL) {
+  FILE *dlc, *dlcf;  //DELAS/DELAC and DELAF/DELACF files
+  unichar input_line[DIC_LINE_SIZE];  //current DELAS/DELAC line 
+  unichar output_line[DIC_LINE_SIZE];  //current DELAF/DELACF line 
+  int l;  //length of the line scanned
+  DLC_entry_T* dlc_entry;
+  MU_forms_T MU_forms;  //inflected forms of the MWU
+  int err;
+  
+  //Open DELAS/DELAC
+  dlc = u_fopen(DLC, U_READ);
+  if (!dlc) {
+    error("Unable to open file: '%s' !\n", DLC);
+    return 1;
+  }
+  //Open DELAF/DELACF
+  dlcf = u_fopen(DLCF, U_WRITE);
+  if (!dlcf) {
+    error("Unable to open file: '%s' !\n", DLCF);
+    return 1;
+  }
+  //Inflect one entry at a time
+  l = u_fgets(input_line,DIC_LINE_SIZE-1,dlc);
+  //Omit the final newline
+  if (u_strlen(input_line)>0 && input_line[u_strlen(input_line)-1]==(unichar)'\n') {
+    input_line[u_strlen(input_line)-1] = (unichar)'\0';
+  }
+  int flag=0;
+  //If a line is empty the file is not necessarily finished. 
+  //If the last entry has no newline, we should not skip this entry
+  struct dela_entry* DELAS_entry;
+  int semitic;
+  while (l!=EOF) {
+    if ((DELAS_entry=is_strict_DELAS_line(input_line,alph))!=NULL) {
       /* If we have a strict DELAS line, that is to say, one with
        * a simple word */
-      SU_forms_T* forms=(SU_forms_T*)malloc(sizeof(SU_forms_T));
-      if (!forms) {
-         fatal_error("Not enough memory in function inflect\n");
-      }
-      forms->no_forms=0;
-      forms->forms=NULL;
+      SU_forms_T forms;
+      SU_init_forms(&forms); //Allocate the space for forms and initialize it to null values
       char inflection_code[1024];
       unichar code_gramm[1024];
       /* We take the first grammatical code, and we extract from it the name
        * of the inflection transducer to use */
       get_inflection_code(DELAS_entry->semantic_codes[0],inflection_code,code_gramm,&semitic);
       /* And we inflect the word */
-   //   err=SU_inflect(DELAS_entry->lemma,inflection_code,forms,semitic);
-      err=SU_inflect(DELAS_entry->lemma,inflection_code,DELAS_entry->filters,forms,semitic);
-      #warning mettre toutes les entrees sur une meme ligne
+      //   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
+      err=SU_inflect(DELAS_entry->lemma,inflection_code,DELAS_entry->filters,&forms,semitic);
+#warning mettre toutes les entrees sur une meme ligne
       /* Then, we print its inflected forms to the output */
-      for (int i=0;i<forms->no_forms;i++) {
-         u_fprintf(dlcf,"%S,%S.%S",forms->forms[i].form,DELAS_entry->lemma,code_gramm);
-         /* We add the semantic codes, if any */
-         for (int j=1;j<DELAS_entry->n_semantic_codes;j++) {
-            u_fprintf(dlcf,"+%S",DELAS_entry->semantic_codes[j]);
-         }
-         if (forms->forms[i].local_semantic_code!=NULL) {
-        	   u_fprintf(dlcf,"%S",forms->forms[i].local_semantic_code);
-         }
-         if (forms->forms[i].raw_features!=NULL && forms->forms[i].raw_features[0]!='\0') {
-            u_fprintf(dlcf,":%S",forms->forms[i].raw_features);
-         }
-         u_fprintf(dlcf,"\n");
+      for (int i=0;i<forms.no_forms;i++) {
+	u_fprintf(dlcf,"%S,%S.%S",forms.forms[i].form,DELAS_entry->lemma,code_gramm);
+	/* We add the semantic codes, if any */
+	for (int j=1;j<DELAS_entry->n_semantic_codes;j++) {
+	  u_fprintf(dlcf,"+%S",DELAS_entry->semantic_codes[j]);
+	}
+	if (forms.forms[i].local_semantic_code!=NULL) {
+	  u_fprintf(dlcf,"%S",forms.forms[i].local_semantic_code);
+	}
+	if (forms.forms[i].raw_features!=NULL && forms.forms[i].raw_features[0]!='\0') {
+	  u_fprintf(dlcf,":%S",forms.forms[i].raw_features);
+	}
+	u_fprintf(dlcf,"\n");
       }
       free_dela_entry(DELAS_entry);
       /* End of simple word case */
-   } else {  
+    } else {  
       /* If we have not a simple word DELAS line, we try to analyse it
        * as a compound word DELAC line */
       if (config_files_status!=CONFIG_FILES_ERROR) {
-         /* If this is a compound word, we process it if and only if the 
-          * configuration files have been correctly loaded */
-         dlc_entry=(DLC_entry_T*)malloc(sizeof(DLC_entry_T));
-         if (!dlc_entry) {
-            fatal_error("Not enough memory in function inflect\n");
-         }
-         /* Convert a DELAC entry into the internal multi-word format */
-         err=DLC_line2entry(input_line,dlc_entry);
-         if (!err) {
-            //Inflect the entry
-            MU_forms=(MU_forms_T*)malloc(sizeof(MU_forms_T));
-            if (!MU_forms) {
-               fatal_error("Not enough memory in function inflect\n");
-            }
-            err=MU_inflect(dlc_entry->lemma,MU_forms);
-            if (!err) {
-	            int f;  //index of the current inflected form
-	            //Inform the user if no form generated 
-	            if (MU_forms->no_forms == 0) {
-	               error("No inflected form could be generated for ");
-	               DLC_print_entry(dlc_entry);
-               }
-	            //Print inflected forms
-	            for (f=0; f<MU_forms->no_forms; f++) {
-	               //Format the inflected form to the DELACF format
-	               err=DLC_format_form(output_line,DIC_LINE_SIZE-1,MU_forms->forms[f],dlc_entry);
-                  if (!err) {
-                     //Print one inflected form at a time to the DELACF file
-                     u_fprintf(dlcf,"%S\n",output_line);
-                  }
-               }
-            }
-            MU_delete_inflection(MU_forms);      
-            DLC_delete_entry(dlc_entry);
-         }
+	/* If this is a compound word, we process it if and only if the 
+	 * configuration files have been correctly loaded */
+	dlc_entry=(DLC_entry_T*)malloc(sizeof(DLC_entry_T));
+	if (!dlc_entry) {
+	  fatal_error("Not enough memory in function inflect\n");
+	}
+	/* Convert a DELAC entry into the internal multi-word format */
+	err=DLC_line2entry(input_line,dlc_entry);
+	if (!err) {
+	  //Inflect the entry
+	  MU_init_forms(&MU_forms);
+	  err=MU_inflect(dlc_entry->lemma,&MU_forms);
+	  if (!err) {
+	    int f;  //index of the current inflected form
+	    //Inform the user if no form generated 
+	    if (MU_forms.no_forms == 0) {
+	      error("No inflected form could be generated for ");
+	      DLC_print_entry(dlc_entry);
+	    }
+	    //Print inflected forms
+	    for (f=0; f<MU_forms.no_forms; f++) {
+	      //Format the inflected form to the DELACF format
+	      err=DLC_format_form(output_line,DIC_LINE_SIZE-1,MU_forms.forms[f],dlc_entry);
+	      if (!err) {
+		//Print one inflected form at a time to the DELACF file
+		u_fprintf(dlcf,"%S\n",output_line);
+	      }
+	    }
+	  }
+	  MU_delete_inflection(&MU_forms);      
+	  DLC_delete_entry(dlc_entry);
+	}
       } else {
-         /* We try to inflect a compound word whereas the "Morphology" and/or
-          * "Equivalences" file(s) has/have not been loaded */
-         if (!flag) {
-            /* We use a flag to print the error message only once */
-            error("WARNING: Compound words won't be inflected because configuration files\n");
-            error("         have not been correctly loaded.\n");
-            flag=1;
-         }
+	/* We try to inflect a compound word whereas the "Morphology.txt" and/or
+	 * "Equivalences.txt" file(s) has/have not been loaded */
+	if (!flag) {
+	  /* We use a flag to print the error message only once */
+	  error("WARNING: Compound words won't be inflected because configuration files\n");
+	  error("         have not been correctly loaded.\n");
+	  flag=1;
+	}
       }
-   }
-   //Get next entry
-   l = u_fgets(input_line,DIC_LINE_SIZE-1,dlc);
-   //Omit the final newline
-   if (u_strlen(input_line)>0 && input_line[u_strlen(input_line)-1]==(unichar)'\n') {
+    }
+    //Get next entry
+    l = u_fgets(input_line,DIC_LINE_SIZE-1,dlc);
+    //Omit the final newline
+    if (u_strlen(input_line)>0 && input_line[u_strlen(input_line)-1]==(unichar)'\n') {
       input_line[u_strlen(input_line)-1] = (unichar)'\0';
-   }
-}
-u_fclose(dlc);
-u_fclose(dlcf);
-return 0;
+    }
+  }
+  u_fclose(dlc);
+  u_fclose(dlcf);
+  return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -232,7 +225,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   //Scan the inflection paradigm
   unichar tmp[DIC_LINE_SIZE];
   pos++;  //Omit the comma
-  l = u_scan_until_char(tmp,&(line[pos]),DIC_LINE_SIZE-1,"+:)\\",1);
+  l = u_scan_until_char(tmp,&(line[pos]),DIC_LINE_SIZE-1,"+:)\\/",1);
   pos += l;
   if (!l) {
     error("Inflection paradigm inexistent in line:\n%S\n",line);
@@ -400,7 +393,7 @@ int DLC_scan_codes(unichar* codes[MAX_CODES],unichar* line) {
   c = 0;
   while (line[pos] == (unichar) '+') {
     pos ++;  //Omit the '+'
-    l = u_scan_until_char(tmp,&(line[pos]),DIC_LINE_SIZE-1,":/\\+",1);
+    l = u_scan_until_char(tmp,&(line[pos]),DIC_LINE_SIZE-1,":/\\+/",1);
     if (l) {
       codes[c]=u_strdup(tmp);
       pos += l;
@@ -526,10 +519,16 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
   u_strcat(entry,".");
 
   //Inflection paradigm
-  l = l + strlen(dlc_entry->lemma->paradigm);
-  if (l >= max) return 1;
-  u_strcat(entry,dlc_entry->lemma->paradigm);
+  //l = l + strlen(dlc_entry->lemma->paradigm);
+  //if (l >= max) return 1;
+  //u_strcat(entry,dlc_entry->lemma->paradigm);
 
+  //Inflection class
+  l = l + u_strlen(d_get_str_class(dlc_entry->lemma->cl));
+  if (l>= max)
+    return 1;
+  u_strcat(entry,d_get_str_class(dlc_entry->lemma->cl));
+	 
   //Semantic codes
   int c;  //index of the current semantic code
   for (c=0; dlc_entry->codes[c]; c++)
