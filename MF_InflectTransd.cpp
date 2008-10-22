@@ -150,6 +150,24 @@ tmp->n=NULL;
 return tmp;
 }
 
+
+/**
+ * Returns 1 if grf exists and is more recent than fst2; 0 otherwise.
+ */
+int must_compile_grf(char* grf,char* fst2) {
+if (!fexists(grf)) {
+   /* No .grf? We fail */
+   return 0;
+}
+if (!fexists(fst2)) {
+   /* A grf and no .fst2? Let's compile the .grf! */
+   return 1;
+}
+/* There are both .grf and .fst2? Let's see which file is older */
+return (get_file_date(grf)>=get_file_date(fst2));
+}
+
+
 ///////////////////////////////
 // Look for the path to 'flex', creating it if necessary
 // The current node is n, and pos is the position in the flex string
@@ -168,15 +186,13 @@ if (flex[pos]=='\0') {
         char s[FILENAME_MAX];
         new_file(inflection_directory,flex,s);
         strcat(s,".fst2");
-        if (!fexists(s)) {
-           /* If there is no .fst2 file, we try to find a .grf one */
-           char grf[FILENAME_MAX];
-           new_file(inflection_directory,flex,grf);
-           strcat(grf,".grf");
-           if (fexists(grf)) {
-              /* If there is a .grf one, we try to compile it */
-              pseudo_main_Grf2Fst2(grf,1,NULL);
-           }
+        char grf[FILENAME_MAX];
+        new_file(inflection_directory,flex,grf);
+        strcat(grf,".grf");
+        if (must_compile_grf(grf,s)) {
+           /* If there is no .fst2 file, of a one than is older than the 
+            * corresponding .grf, we try to compile it */
+           pseudo_main_Grf2Fst2(grf,1,NULL);
         }
         fst2[n_fst2]=load_fst2(s,1);
         n->final=n_fst2;

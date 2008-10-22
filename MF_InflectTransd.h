@@ -32,7 +32,7 @@
 #include "Fst2.h"
 
 //Maximum number of flexional transducers
-#define N_FST2 3000
+#define N_FST2 5000
 
 ///////////////////////////////
 // A node of the tree for inflection transducers' names

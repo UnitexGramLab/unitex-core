@@ -21,6 +21,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include "File.h"
 #include "Error.h"
 
@@ -252,3 +253,12 @@ fclose(f);
 return 1;
 }
 
+
+/**
+ * Returns a value corresponding to the file date. 
+ */
+time_t get_file_date(char* name) {
+struct stat info;
+stat(name,&info);
+return info.st_mtime;
+}

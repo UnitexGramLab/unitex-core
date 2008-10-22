@@ -41,6 +41,7 @@
    #define PATH_SEPARATOR_STRING "\\"
 #endif
 
+#include <sys/types.h>
 
 void add_suffix_to_file_name(char*,char*,const char*);
 void add_prefix_to_file_name(char*,char*,const char*);
@@ -56,5 +57,6 @@ void replace_colon_by_path_separator(char*);
 void new_file(const char*,const char*,char*);
 void copy_file(char*,char*);
 int fexists(char*);
+time_t get_file_date(char* name);
 
 #endif
