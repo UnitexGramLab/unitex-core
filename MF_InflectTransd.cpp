@@ -181,7 +181,7 @@ if (flex[pos]=='\0') {
     else {
         // else we load it
         if (n_fst2==N_FST2) {
-            fatal_error("Memory error: too much flexional transducers\n");
+            fatal_error("Memory error: too much inflectional transducers\n");
         }
         char s[FILENAME_MAX];
         new_file(inflection_directory,flex,s);
