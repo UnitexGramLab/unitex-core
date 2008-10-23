@@ -9,7 +9,12 @@
 #
 #    make USE_TRE_LIBRARY=no
 #
-# By default, 'make' will compile Unitex for Linux, using the TRE library
+# If have a 64 bits machine, you must use '64BITS=yes':
+#
+#    make 64BITS=yes
+#
+#
+# By default, 'make' will compile Unitex for a  32 bits Linux, using the TRE library
 #
 #
 # The special command
@@ -27,6 +32,7 @@
 
 SYSTEM = linux-like
 USE_TRE_LIBRARY = yes
+64BITS = no
 
 OBJ_DIR = build/
 BIN_DIR = ../bin/
@@ -590,11 +596,15 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(TXT2FST2) $(IMPLODEFST2) \
 		$(EXPLODEFST2) $(EVAMB) $(CONVERT) \
 		$(TAGSETNORM) \
-		$(INFLECTKR) $(FST2LIST) $(SUFFORM2RAC) $(COMPRESSKR)\
-		$(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) $(TXT2FST2KR) \
-		$(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR) $(FST2UNAMBIG) $(MULTIFLEX) \
+		$(FST2LIST) $(FST2UNAMBIG) $(MULTIFLEX) \
 		$(EXPORTDIC) $(ELAG) $(ELAGCOMP) \
 		$(XMLIZER) $(TEI2TXT) #$(COLLOC) $(FREQ)
+
+ifeq ($(64BITS),no)
+PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \
+         $(TXT2FST2KR) $(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR)
+endif
+
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
