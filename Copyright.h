@@ -32,7 +32,7 @@
 static unichar COPYRIGHT[256];
 
 static int init_copyright() {
-u_sprintf(COPYRIGHT,"This program is part of Unitex 2.0%C version\nCopyright %C 2001-2007 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",0x3B2,0xA9,0xE9,0xE9);
+u_sprintf(COPYRIGHT,"This program is part of Unitex 2.1%C version\nCopyright %C 2001-2008 Universit%C Paris-Est Marne-la-Vall%Ce\nContact: <unitex@univ-mlv.fr>\n\n",0x3B2,0xA9,0xE9,0xE9);
 return 0;
 }
 
