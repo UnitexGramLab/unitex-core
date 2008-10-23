@@ -114,7 +114,7 @@ int u_fgetc_UTF8(FILE*);
 int u_fgetc(FILE*);
 int u_fgetc_CR(FILE*);
 int u_fread_raw(unichar*,int,FILE*);
-int u_fread(unichar*,int,FILE*);
+int u_fread(unichar*,int,FILE*,int*);
 
 int u_fputc_raw(unichar,FILE*);
 int u_fputc_UTF16LE(unichar,FILE*);
@@ -158,7 +158,7 @@ int u_fgetc(Encoding,FILE*);
 int u_fgetc_CR(Encoding,FILE*);
 
 int u_fread_raw(Encoding,unichar*,int,FILE*);
-int u_fread(Encoding,unichar*,int,FILE*);
+int u_fread(Encoding,unichar*,int,FILE*,int*);
 
 int u_fputc_UTF16LE_raw(unichar,FILE*);
 int u_fputc_UTF16BE_raw(unichar,FILE*);

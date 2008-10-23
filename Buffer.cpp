@@ -98,10 +98,16 @@ free(buffer);
  * | XXXXXXXXXXXXXXXXXXXXXX |            new data read from input file          |
  * |                        |                                                   |
  * ------------------------------------------------------------------------------
+ * 
+ * 
+ * The function returns 1, except in one case: when the function has to fill a 
+ * character buffer, if skips '\0' chars that should not appear in a text file. In that 
+ * case, the function ignore those characters and returns 0.  
  */
-void fill_buffer(struct buffer* buffer,int pos,FILE* f) {
+int fill_buffer(struct buffer* buffer,int pos,FILE* f) {
 int new_position;
 int n_element_read;
+int OK=1;
 switch (buffer->type) {
    case INTEGER_BUFFER: {
       int* array=buffer->int_buffer;
@@ -122,7 +128,11 @@ switch (buffer->type) {
       new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
       /* Here, we must not use a 'fread', since it would not unify \r\n 
        * into the single \n that is used in Unitex programs */
-      n_element_read=u_fread(&(array[new_position]),pos,f);
+      int tmp;
+      n_element_read=u_fread(&(array[new_position]),pos,f,&tmp);
+      if (!tmp) {
+         OK=0;
+      }
       /* We add an extra \0 in order for string parsing reasons */
       array[new_position+n_element_read]='\0';
       break;
@@ -130,13 +140,15 @@ switch (buffer->type) {
 }
 buffer->size=new_position+n_element_read;
 buffer->end_of_file=(n_element_read==0) || (buffer->size<buffer->MAXIMUM_BUFFER_SIZE);
+return OK;
 }
 
 
 /**
  * This function fills the given buffer from the given file.
+ * See above for details about the returned value.
  */
-void fill_buffer(struct buffer* buffer,FILE* f) {
-fill_buffer(buffer,buffer->MAXIMUM_BUFFER_SIZE,f);
+int fill_buffer(struct buffer* buffer,FILE* f) {
+return fill_buffer(buffer,buffer->MAXIMUM_BUFFER_SIZE,f);
 }
 

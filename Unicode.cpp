@@ -81,8 +81,8 @@ int u_fread_raw(unichar* t,int N,FILE* f) {
 return u_fread_raw(FILE_ENC,t,N,f);
 }
 
-int u_fread(unichar* t,int N,FILE* f) {
-return u_fread(FILE_ENC,t,N,f);
+int u_fread(unichar* t,int N,FILE* f,int *OK) {
+return u_fread(FILE_ENC,t,N,f,OK);
 }
 
 int u_fputc_raw(unichar c,FILE* f) {
@@ -493,15 +493,23 @@ return i;
 
 
 /**
- * Reads N characters and stores them in 't', that is supposed to be large enough.
+ * Reads N characters THAT ARE NOT '\0' and stores them in 't', that is supposed to be large enough.
  * Returns the number of characters read. This function converts \r\n into \n.
+ * 
+ * The '*OK' parameter is set to 0 if at least one '\0' was found and ignored; 1 otherwise. 
  */
-int u_fread(Encoding encoding,unichar* t,int N,FILE* f) {
+int u_fread(Encoding encoding,unichar* t,int N,FILE* f,int *OK) {
 int i,c;
-for (i=0;i<N;i++) {
+*OK=1;
+i=0;
+while (i<N) {
    c=u_fgetc_CR(encoding,f);
    if (c==EOF) return i;
-   t[i]=(unichar)c; 
+   if (c=='\0') {
+      *OK=0;
+   } else {
+      t[i++]=(unichar)c; 
+   }
 }
 return i;
 }

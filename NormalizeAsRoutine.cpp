@@ -100,8 +100,13 @@ int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
 	unichar close_bracket[2];
 	close_bracket[0]='}';
 	close_bracket[1]='\0';
-	/* First, we fill the buffer */
-	fill_buffer(buffer,input);
+   int corrupted_file=0;
+   /* First, we fill the buffer */
+	if (!fill_buffer(buffer,input)) {
+	   corrupted_file=1;
+	   error("Corrupted text file containing NULL characters!\n");
+	   error("They have been ignored by Normalize, but you should clean your text\n");
+	}
 	int current_start_pos=0;
 	u_printf("First block...              \r");
 	int current_block=1;
@@ -109,7 +114,11 @@ int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
 		if (!buffer->end_of_file && current_start_pos>(buffer->size-MARGIN_BEFORE_BUFFER_END)) {
 			/* If we must change of block and if we can */
 			u_printf("Block %d...              \r",++current_block);
-			fill_buffer(buffer,current_start_pos,input);
+			if (!fill_buffer(buffer,current_start_pos,input) && !corrupted_file) {
+			   corrupted_file=1;
+			   error("Corrupted text file containing NULL characters!\n");
+			   error("They have been ignored by Normalize, but you should clean your text\n");
+			}
 			current_start_pos=0;
 		}
 		if (buff[current_start_pos]=='{') {

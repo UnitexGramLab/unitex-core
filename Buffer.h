@@ -52,8 +52,8 @@ struct buffer {
 
 struct buffer* new_buffer(int,BufferType);
 void free_buffer(struct buffer*);
-void fill_buffer(struct buffer*,int,FILE*);
-void fill_buffer(struct buffer*,FILE*);
+int fill_buffer(struct buffer*,int,FILE*);
+int fill_buffer(struct buffer*,FILE*);
 
 #endif
 
