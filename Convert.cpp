@@ -206,7 +206,7 @@ int decode_normal_characters=0;
 int decode_control_characters=0;
 int encode_all_characters=0;
 int encode_control_characters=0;
-int done;
+int done=0;
 do {
 	if (param==argc) {
 		/* If there is no more parameter, we raise an error */
