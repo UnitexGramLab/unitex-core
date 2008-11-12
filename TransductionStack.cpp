@@ -24,6 +24,8 @@
 #include "DicVariables.h"
 
 #warning add a parameter to Locate for variable error policy
+// add a test on variable, just to see if the variable is defined or not, wihtout
+// try to output it
 int VARIABLE_ERROR_POLICY=IGNORE_VARIABLE_ERRORS;
 
 

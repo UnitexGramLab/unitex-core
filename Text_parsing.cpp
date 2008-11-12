@@ -286,7 +286,7 @@ if (graph_call_list!=NULL) {
    if (p->output_policy!=IGNORE_OUTPUTS) {
       /* For better performance when ignoring outputs */
       var_backup=create_variable_backup(p->variables);
-      dic_variables_backup=p->dic_variables;
+      dic_variables_backup=clone_dic_variable_list(p->dic_variables);
    }
    do {
       /* For each graph call, we look all the reachable states */
@@ -317,7 +317,6 @@ if (graph_call_list!=NULL) {
              locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p);
              p->left_ctx_shift=old_left_ctx_shift;
              p->left_ctx_base=old_left_ctx_base;
-             
              p->stack->stack_pointer=stack_top;
              if (graph_depth==0) {
                 /* If we are at the top graph level, we restore the variables */
@@ -330,6 +329,8 @@ if (graph_call_list!=NULL) {
            while (L!=NULL);
            free_parsing_info(L_first); //  free all subgraph matches
          }
+         /* As free_parsing_info has freed p->dic_variables, we must restore it */
+         p->dic_variables=clone_dic_variable_list(dic_variables_backup);
          t=t->next;
       } /* end of while (t!=NULL) */
    } while ((graph_call_list=graph_call_list->next)!=NULL);
@@ -339,8 +340,8 @@ if (graph_call_list!=NULL) {
    if (p->output_policy!=IGNORE_OUTPUTS) { /* For better performance (see above) */
       install_variable_backup(p->variables,var_backup);
       free_variable_backup(var_backup);
-      p->dic_variables=dic_variables_backup;
    }
+   clear_dic_variable_list(&dic_variables_backup);
 } /* End of processing subgraphs */
 
 /**
@@ -746,7 +747,8 @@ if (contexts!=NULL) {
             states=states->next;
          }
       }
-      free_list_int(c);
+      /* We just want to free the cell we created */
+      free(c);
    }
    if ((t=contexts->end_mark)!=NULL) {
       /* If we have a closing context mark */

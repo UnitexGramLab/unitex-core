@@ -176,7 +176,7 @@ if (graph_call_list!=NULL) {
    old_StackBase=p->stack_base;
    /* In morphological mode, we cannot modify variables because $xxx( and $xxx) tags are
     * not allowed. However, we can have to modify DELAF entry variables */
-   struct dic_variable* dic_variables_backup=p->dic_variables;
+   struct dic_variable* dic_variables_backup=clone_dic_variable_list(p->dic_variables);
    do {
       /* For each graph call, we look all the reachable states */
       t=graph_call_list->transition;
@@ -205,6 +205,7 @@ if (graph_call_list!=NULL) {
             /* We free all subgraph matches */
             free_parsing_info(L_first);
          }
+         p->dic_variables=clone_dic_variable_list(dic_variables_backup);
          t=t->next;
       } /* end of while (t!=NULL) */
    } while ((graph_call_list=graph_call_list->next)!=NULL);
@@ -214,7 +215,7 @@ if (graph_call_list!=NULL) {
    
    /* NOTE: we don't have to take care of normal variables, since they cannot be
     *       modified in morphological mode */
-   p->dic_variables=dic_variables_backup;
+   clear_dic_variable_list(&dic_variables_backup);
 } /* End of processing subgraphs */
 
 
@@ -661,7 +662,7 @@ if (!(n_transitions & 32768)) {
          }
          if (!save_dic_entry) {
             /* Now we free the DELAF entry, but only if it may not be used
-             * later, through an expression like $A$.LEMMA */
+             * later, through an expression like $A.LEMMA$ */
             free_dela_entry(dela_entry);
          }
          tmp=tmp->next;
