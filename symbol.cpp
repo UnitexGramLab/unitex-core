@@ -38,7 +38,7 @@ unichar PUNC_TAB[] = {
   '(', ')', '[', ']', '<', '>', '{', '}',
   '%', '#', '@', '/', '$', '&',
   '|', '_',
-//  '«', '»',
+  0xAB,0xBB,
     0
 };
 
@@ -673,23 +673,24 @@ void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
   default: ; /* nothing to do: just want to avoid a warning */
   }
 
+  unichar tmp[1024];
 
   language_t * lang = s->POS->language;
-
   if (s->negative) {
 
     u_strcpy(ustr, "<");
     for (int i = 0; i < s->nbnegs; i++) {
-      u_strcatf(ustr, "!%S", language_get_form(lang, s->negs[i]));
+       escape(language_get_form(lang, s->negs[i]),tmp,P_ELAG_TAG);
+      u_strcatf(ustr, "!%S",tmp);
     }
-    u_strcatf(ustr, ".%S", s->POS->name);
+    u_strcatf(ustr, ".%S",s->POS->name);
 
   } else if (s->lemma) {
 
-    u_sprintf(ustr, "<%S.%S", language_get_form(lang, s->lemma), s->POS->name);
+     escape(language_get_form(lang, s->lemma),tmp,P_ELAG_TAG);
+    u_sprintf(ustr, "<%S.%S",tmp,s->POS->name);
 
   } else {    
-
     u_sprintf(ustr, "<%S", s->POS->name);
   }
 
@@ -1243,7 +1244,7 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
   /* unknow word  */
 
-  error("label '%S': unknow word in grammar???\n", tag);
+  error("Label '%S': unknown word in grammar???\n", tag);
 
   return new_symbol_UNKNOWN(language, idx);
 }

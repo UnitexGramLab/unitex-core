@@ -70,6 +70,7 @@ extern unichar* P_PLUS_COLON_SLASH_BACKSLASH;
 extern unichar* P_COLON_SLASH_BACKSLASH;
 extern unichar* P_COMMA_DOT_BACKSLASH_DIGITS;
 extern unichar* P_DOT_PLUS_SLASH_BACKSLASH;
+extern unichar* P_ELAG_TAG;
 
 int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars,
                  unichar* forbidden_chars,unichar* chars_to_keep_protected);

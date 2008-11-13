@@ -48,6 +48,7 @@ unichar* P_PLUS_COLON_SLASH_BACKSLASH=u_strdup("+:/\\");
 unichar* P_COLON_SLASH_BACKSLASH=u_strdup(":/\\");
 unichar* P_COMMA_DOT_BACKSLASH_DIGITS=u_strdup(",.\\0123456789");
 unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup(".+/\\");
+unichar* P_ELAG_TAG=u_strdup(".!:>");
 
 
 /**
