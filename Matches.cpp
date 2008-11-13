@@ -96,6 +96,7 @@ switch (p->match_policy) {
          p->match_list=new_match(start,end,output,p->match_list);
          return;
       }
+      u_printf("ici\n");
       /* If we have the same start and the same end, we consider the
        * new match only if ambiguous outputs are allowed */
       if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS

@@ -612,9 +612,15 @@ if (L!=NULL) {
             install_variable_backup(p->variables,var_backup);
          }
       }
+      if (ctx!=NULL && L->next==NULL) {
+         /* If we are inside a context, we don't want to free all the dic_variables that
+          * have been set, in order to allow extracting morphological information from contexts.
+          * To do that, we arbitrarily keep the dic_variables of the last path match. */
+         L->dic_variable_backup=NULL;
+      }
       L=L->next;
    } while (L!=NULL);
-   free_parsing_info(L_first); /*  free all morphological matches */
+   free_parsing_info(L_first); /* free all morphological matches */
 }
 /* Finally, we have to restore the stack and other backup stuff */
 p->stack->stack_pointer=stack_top;
@@ -623,7 +629,9 @@ if (p->output_policy!=IGNORE_OUTPUTS) { /* For better performance (see above) */
    install_variable_backup(p->variables,var_backup);
    free_variable_backup(var_backup);
 }
-p->dic_variables=dic_variable_backup;
+if (ctx==NULL) {
+   p->dic_variables=dic_variable_backup;
+}
 }
 
 

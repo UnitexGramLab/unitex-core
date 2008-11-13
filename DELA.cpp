@@ -117,6 +117,7 @@ val=parse_string(line,&i,temp,P_COMMA,P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
+   free_dela_entry(res);
    return NULL;
 }
 /* If we are at the end of line, it's an error */
@@ -124,6 +125,7 @@ if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
+   free_dela_entry(res);
    return NULL;
 }
 /* The inflected form cannot be empty */
@@ -131,6 +133,7 @@ if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_INFLECTED_FORM;
+   free_dela_entry(res);
    return NULL;
 }
 res->inflected=u_strdup(temp);
@@ -142,6 +145,7 @@ val=parse_string(line,&i,temp,P_DOT,P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
+   free_dela_entry(res);
    return NULL;
 }
 /* If we are at the end of line, it's an error */
@@ -149,6 +153,7 @@ if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
+   free_dela_entry(res);
    return NULL;
 }
 if (temp[0]=='\0') {
@@ -168,6 +173,7 @@ val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
+   free_dela_entry(res);
    return NULL;
 }
 /* The grammatical code cannot be empty */
@@ -175,6 +181,7 @@ if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
+   free_dela_entry(res);
    return NULL;
 }
 res->semantic_codes[0]=u_strdup(temp);
@@ -187,6 +194,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
+      free_dela_entry(res);
       return NULL;
    }
    /* A grammatical or semantic code cannot be empty */
@@ -194,6 +202,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
+      free_dela_entry(res);
       return NULL;
    }
    res->semantic_codes[res->n_semantic_codes]=u_strdup(temp);
@@ -208,6 +217,7 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
+      free_dela_entry(res);
       return NULL;
    }
       /* An inflectional code cannot be empty */
@@ -215,6 +225,7 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
+      free_dela_entry(res);
       return NULL;
    }
    res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp);
@@ -223,8 +234,9 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
 /* Finally we check if there is a comment */
 if (line[i]=='/' && !comments_allowed) {
    if (!verbose) error("***Dictionary error: unexpected comment at end of entry\n_%S_\n",line);
-      else (*verbose)=P_UNEXPECTED_COMMENT;
-      return NULL;
+   else (*verbose)=P_UNEXPECTED_COMMENT;
+   free_dela_entry(res);
+   return NULL;
 }
 return res;
 }
