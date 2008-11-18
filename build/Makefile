@@ -267,7 +267,7 @@ TEST_OBJS = Test.o Unicode.o Pattern.o String_hash.o IOBuffer.o Error.o \
 
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = IOBuffer.o CheckDic.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
-				List_ustring.o Error.o StringParsing.o
+				List_ustring.o Error.o StringParsing.o getopt.o
 
 #COLLOC         = Colloc
 #COLLOC_OBJS    = IOBuffer.o Colloc.o CollocMain.o Collocation.o Unicode.o Text_tokens.o Array.o  \

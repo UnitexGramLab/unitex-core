@@ -29,19 +29,22 @@
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "getopt.h"
 
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: CheckDic <dela> <type>\n");
-u_printf("     <dela> : name of the unicode text dictionary (must be a full path)\n");
-u_printf("     <type> : dictionary type. Two values are possible:\n");
-u_printf("              DELAS : check any non inflected dictionary\n");
-u_printf("              DELAF : check any inflected dictionary\n");
-u_printf("\nChecks the format of <dela> and produces a file named CHECK_DIC.TXT\n");
-u_printf("that contains check result informations. This file is stored in the\n");
-u_printf("<dela> directory.\n");
+u_printf("Usage: CheckDic [OPTIONS] <dela>\n"
+         "   <dela> : name of the unicode text dictionary (must be a full path)\n"
+         "OPTIONS:\n"
+         " -s/--delas: checks a non inflected dictionary\n"
+         " -f/--delaf: checks an inflected dictionary\n"
+         " -h/--help: this help\n"
+         "\n"
+         "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
+         "that contains check result informations. This file is stored in the\n"
+         "<dela> directory.\n");
 }
 
 int main(int argc, char **argv) {
@@ -49,32 +52,43 @@ int main(int argc, char **argv) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-int i;
 
-if (argc!=3) {
-   usage();
-   return 0;
+int is_a_DELAF=-1;
+const char* optstring=":sfh";
+const struct option lopts[]= {
+      {"delas",no_argument,NULL,'s'},
+      {"delaf",no_argument,NULL,'f'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'f': is_a_DELAF=1; break;
+   case 's': is_a_DELAF=0; break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
 }
-FILE* dic;
-FILE* out;
-int is_a_DELAF;
-if (!strcmp(argv[2],"DELAS")) {
-	is_a_DELAF=0;
+   
+if (is_a_DELAF==-1 || optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return 1;
 }
-else if (!strcmp(argv[2],"DELAF")) {
-		is_a_DELAF=1;
-}
-else {
-	fatal_error("Invalid dictionary type %s\n",argv[2]);
-}
-dic=u_fopen(argv[1],U_READ);
+
+FILE* dic=u_fopen(argv[optind],U_READ);
 if (dic==NULL) {
-	fatal_error("Cannot open dictionary %s\n",argv[1]);
+	fatal_error("Cannot open dictionary %s\n",argv[optind]);
 }
-char output_filename[2048];
-get_path(argv[1],output_filename);
+char output_filename[FILENAME_MAX];
+get_path(argv[optind],output_filename);
 strcat(output_filename,"CHECK_DIC.TXT");
-out=u_fopen(output_filename,U_WRITE);
+FILE* out=u_fopen(output_filename,U_WRITE);
 if (out==NULL) {
 	u_fclose(dic);
 	fatal_error("Cannot create %s\n",output_filename);
@@ -86,8 +100,9 @@ int line_number=1;
  * We declare and initialize an array in order to know which
  * letters are used in the dictionary.
  */
+int i;
 char alphabet[MAX_NUMBER_OF_UNICODE_CHARS];
-for (int i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
+for (i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
 	alphabet[i]=0;
 }
 /*
@@ -159,7 +174,7 @@ r[2]='(';
 r[3]='\0';
 r2[5]='\n';
 r2[6]='\0';
-for (int i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
+for (i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
 	if (alphabet[i]) {
       u_fprintf(out,"%C (%04X)\n",i,i);
 	}
