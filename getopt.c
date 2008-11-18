@@ -65,6 +65,7 @@ static char *rcsid = "$OpenBSD: getopt_long.c,v 1.16 2004/02/04 18:17:25 millert
 #include "getopt.h"
 #include <stdlib.h>
 #include <string.h>
+#include "unicode.h"
 
 #define	REPLACE_GETOPT		/* use this getopt as the system getopt(3) */
 
@@ -224,6 +225,7 @@ parse_long_options(char * const *nargv, const char *options,
 		}
 	}
 	if (match != -1) {		/* option found */
+	   *idx = match;
 		if (long_options[match].has_arg == no_argument
 		    && has_equal) {
 			if (PRINT_ERROR) {
@@ -277,10 +279,12 @@ parse_long_options(char * const *nargv, const char *options,
 		//	warnx(illoptstring, current_argv);
       }
 		optopt = 0;
+		/* S.P. */
+		optarg = current_argv;
+		*idx=0;
+		/* S.P. end */
 		return (BADCH);
 	}
-	if (idx)
-		*idx = match;
 	if (long_options[match].flag) {
 		*long_options[match].flag = long_options[match].val;
 		return (0);

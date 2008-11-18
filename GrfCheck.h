@@ -28,7 +28,7 @@
 #include "Fst2.h"
 
 
-int grf_OK(char*);
+int grf_OK(char*,char);
 
 
 #endif

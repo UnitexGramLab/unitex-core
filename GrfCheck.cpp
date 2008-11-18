@@ -553,7 +553,7 @@ return ret;
  * 2) no loop that can recognize the empty word (<E> with an output or subgraph
  *    that can match the empty word).
  */
-int grf_OK(char* name) {
+int grf_OK(char* name,char no_empty_graph_warning) {
 ConditionList* conditions;
 ConditionList* conditions_for_state;
 int i,j;
@@ -609,14 +609,14 @@ while (resolve_conditions(conditions,fst2->number_of_graphs,
 							fst2->states,fst2->initial_states,fst2->graph_names));
 if (is_bit_mask_set(fst2->states[fst2->initial_states[1]]->control,UNCONDITIONAL_E_MATCH)) {
    /* If the main graph matches <E> */
-   error("ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
+   if (!no_empty_graph_warning) error("ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
    ERROR=1;
 }
 if (!ERROR) {
    for (i=1;i<fst2->number_of_graphs+1;i++) {
       if (is_bit_mask_set(fst2->states[fst2->initial_states[i]]->control,UNCONDITIONAL_E_MATCH)) {
          /* If the graph matches <E> */
-         error("WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
+         if (!no_empty_graph_warning) error("WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
       }
    }
 }

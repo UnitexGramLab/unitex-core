@@ -32,18 +32,24 @@
 #include "LocateConstants.h"
 #include "Error.h"
 #include "Grf2Fst2_main.h"
+#include "getopt.h"
 
 
 static void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n"
-         "      <grf> : main graph of grammar (must be an absolute path)\n"
-         "      [y/n] : enable or not the loops/left-recursion detection\n"
-         "      [ALPH] : name of the alphabet file to use for tokenizing\n"
-         "               lexical units. If ALPH=char_by_char, lexical units\n"
-         "               will be single letters. If this parameter is omitted,\n"
-         "               lexical units will be sequences of any unicode letters.\n"
-         "      <pckgPath> : path of the root dir of all grammar packages\n"
+u_printf("Usage : Grf2Fst2 [OPTIONS] <grf>\n"
+         "   <grf> : main graph of grammar (must be an absolute path)\n"
+         "OPTIONS:\n"      
+         " -y/--loop_check: enables the loops/left-recursion detection\n"
+         " -n/--no_loop_check: disables the loops/left-recursion detection (default)\n"
+         " -e/--no_empty_graph_warning: no warning will be emitted when a graph matches <E>\n"
+         " -a ALPH/--alphabet=ALPH: name of the alphabet file to use for tokenizing\n"
+         "                          lexical units.\n"
+         " -c/--char_by_char: lexical units are single letters. If both -a and -c options are\n"
+         "                    unused, lexical units will be sequences of any unicode letters.\n"
+         " -d DIR/--pkgdir=DIR: path of the root dir of all grammar packages\n"
+         " -h/--help: this help\n"
+         "\n"
          "Compiles the grammar <grf> and saves the result in a FST2 file\n"
          "stored in the same directory as <grf>.\n");
 }
@@ -52,21 +58,29 @@ u_printf("Usage : Grf2Fst2 <grf> [y/n] [ALPH] [-d <pckgPath>]\n"
 /**
  * A convenient way to call the main function within a Unitex program.
  */
-int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet) {
+int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet,int no_empty_graph_warning) {
 int argc=0;
-char** argv=(char**)malloc(4*sizeof(char*));
+char** argv=(char**)malloc((4+(no_empty_graph_warning!=0))*sizeof(char*));
 if (argv==NULL) {
    fatal_error("Not enough memory in main_Grf2Fst2\n");
 }
 argv[argc++]=NULL;
 argv[argc++]=strdup(name);
-argv[argc++]=strdup(yes_or_no?"y":"n");
-if (alphabet) argv[argc++]=strdup(alphabet);
+argv[argc++]=strdup(yes_or_no?"-y":"-n");
+char tmp[FILENAME_MAX];
+if (alphabet) {
+   sprintf(tmp,"-a=%s",alphabet);
+   argv[argc++]=tmp;
+}
 else argv[3]=NULL;
+if (no_empty_graph_warning) {
+   argv[argc++]=strdup("-e");
+} else {
+   argv[argc++]=NULL;
+}
 int ret=main_Grf2Fst2(argc,argv);
 free(argv[1]);
 free(argv[2]);
-free(argv[3]);
 free(argv);
 return ret;
 }
@@ -76,6 +90,91 @@ return ret;
  * The same than main, but no call to setBufferMode.
  */
 int main_Grf2Fst2(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+struct compilation_info* infos=new_compilation_info();
+int check_recursion=0;
+const char* optstring=":yna:d:ech";
+const struct option lopts[]= {
+      {"loop_check",no_argument,NULL,'y'},
+      {"no_loop_check",no_argument,NULL,'n'},
+      {"alphabet",required_argument,NULL,'a'},
+      {"pkgdir",required_argument,NULL,'d'},
+      {"no_empty_graph_warning",no_argument,NULL,'e'},
+      {"char_by_char",no_argument,NULL,'c'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'y': check_recursion=1; break;
+   case 'n': check_recursion=0; break;
+   case 'e': infos->no_empty_graph_warning=1; break;
+   case 'c': infos->tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
+   case 'a': infos->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+             if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty alphabet file\n");
+             }
+             infos->alphabet=load_alphabet(optarg);
+             if (infos->alphabet==NULL) {
+                fatal_error("Cannot load alphabet file %s\n",optarg);
+             }
+             break;
+   case 'd': strcpy(infos->repository,optarg); break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+   
+if (optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return 1;
+}
+
+
+char fst2_file_name[FILENAME_MAX];
+remove_extension(argv[optind],fst2_file_name);
+strcat(fst2_file_name,".fst2");
+if ((infos->fst2=u_fopen(fst2_file_name,U_WRITE))==NULL) {
+   error("Cannot open file %s\n",fst2_file_name);
+   return 1;
+}
+u_fprintf(infos->fst2,"0000000000\n");
+int result=compile_grf(argv[optind],infos);
+if (result==0) {
+   error("Compilation has failed\n");
+   free_compilation_info(infos);
+   u_fclose(infos->fst2);
+   return 1;
+}
+free_alphabet(infos->alphabet);
+write_tags(infos->fst2,infos->tags);
+u_fclose(infos->fst2);
+write_number_of_graphs(fst2_file_name,infos->graph_names->size-1);
+if (check_recursion) {
+   if (!grf_OK(fst2_file_name,infos->no_empty_graph_warning)) {
+      return 1;
+   }
+}
+free_compilation_info(infos);
+u_printf("Compilation has succeeded\n");
+return 0;
+}
+
+
+
+/**
+ * The same than main, but no call to setBufferMode.
+ */
+int main_Grf2Fst2_old(int argc,char* argv[]) {
 if(argc<2 || argc>6) {
    usage();
    return 0;
@@ -137,7 +236,7 @@ write_tags(infos->fst2,infos->tags);
 u_fclose(infos->fst2);
 write_number_of_graphs(fst2_file_name,infos->graph_names->size-1);
 if (check_recursion) {
-   if (!grf_OK(fst2_file_name)) {
+   if (!grf_OK(fst2_file_name,infos->no_empty_graph_warning)) {
       return 1;
    }
 }
@@ -145,4 +244,3 @@ free_compilation_info(infos);
 u_printf("Compilation has succeeded\n");
 return 0;
 }
-

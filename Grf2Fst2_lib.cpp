@@ -85,6 +85,7 @@ infos->nombre_graphes_comp=0;
 infos->tokenization_policy=DEFAULT_TOKENIZATION;
 infos->alphabet=NULL;
 infos->fst2=NULL;
+infos->no_empty_graph_warning=0;
 return infos;
 }
 
@@ -878,6 +879,7 @@ if (graph->states[0]==NULL) {
    /* If the graph has been emptied */
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
    free_SingleGraph(graph);
+   if (infos->no_empty_graph_warning) return 1;
    if (n==0) {
       error("ERROR: Main graph %S.grf has been emptied\n",infos->graph_names->value[n]);
       return 0;

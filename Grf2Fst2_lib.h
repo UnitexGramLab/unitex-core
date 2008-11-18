@@ -45,6 +45,7 @@ struct compilation_info {
    TokenizationPolicy tokenization_policy;
    Alphabet* alphabet;
    FILE* fst2;
+   char no_empty_graph_warning;
 };
 
 
