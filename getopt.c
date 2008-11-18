@@ -65,7 +65,7 @@ static char *rcsid = "$OpenBSD: getopt_long.c,v 1.16 2004/02/04 18:17:25 millert
 #include "getopt.h"
 #include <stdlib.h>
 #include <string.h>
-#include "unicode.h"
+#include "Unicode.h"
 
 #define	REPLACE_GETOPT		/* use this getopt as the system getopt(3) */
 
