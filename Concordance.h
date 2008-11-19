@@ -34,6 +34,18 @@
 #define RIGHT_CENTER 6
 #define MAX_CONTEXT_IN_UNITS 5000
 
+
+#define HTML_ 0
+#define TEXT_ 1
+#define GLOSSANET_ 2
+#define INDEX_ 3
+#define AXIS_ 4
+#define XALIGN_ 5
+/* UIMA: begin & end positions in chars in the txt file, ignoring {S} */
+#define UIMA_ 6
+#define MERGE_ 7
+
+
 /**
  * This structure is used to store information about the current
  * concordance build. It is used to avoid giving too much parameters
@@ -47,15 +59,19 @@ struct conc_opt {
   unsigned char right_context_until_eos;
   int thai_mode;
   char* fontname;
-  char* fontsize;
-  char* directory;
-  char* result_mode;
+  int fontsize;
+  int result_mode;
+  char output[FILENAME_MAX];
+  char* glossanet_script;
   char* sort_alphabet;
-  char working_directory[2000];
+  char working_directory[FILENAME_MAX];
 };
 
+struct conc_opt* new_conc_opt();
+void free_conc_opt(struct conc_opt*);
+
 void create_concordance(FILE*,FILE*,struct text_tokens*,
-                        int,int*,struct conc_opt);
+                        int,int*,struct conc_opt*);
                         
 
 #endif

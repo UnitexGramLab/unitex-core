@@ -28,23 +28,12 @@
 #include "StringParsing.h"
 #include "Thai.h"
 
-
-#define HTML_ 0
-#define TEXT_ 1
-#define GLOSSANET_ 2
-#define INDEX_ 3
-#define AXIS_ 4
-#define XALIGN_ 5
-
-/* UIMA: begin & end positions in chars in the txt file, ignoring {S} */
-#define UIMA_ 6
-
 int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,
-                                int*,int*,int,int,struct conc_opt);
+                                int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
 
 void create_modified_text_file(FILE*,FILE*,struct text_tokens*,char*,int,int*);
-void write_HTML_header(FILE*,int,struct conc_opt);
+void write_HTML_header(FILE*,int,struct conc_opt*);
 void write_HTML_end(FILE*);
 void reverse_initial_vowels_thai(unichar*);
 int get_shift(int,int*,int);
@@ -101,48 +90,25 @@ int get_shift(int,int*,int);
  * 2.5  9 
  */
 void create_concordance(FILE* concordance,FILE* text,struct text_tokens* tokens,
-                        int n_enter_char,int* enter_pos,struct conc_opt option) {
+                        int n_enter_char,int* enter_pos,struct conc_opt* option) {
 FILE* out;
 FILE* f;
-char temp_file_name[2000];
-char output_file_name[2000];
-char* script_glossanet=NULL;
+char temp_file_name[FILENAME_MAX];
 struct string_hash* glossa_hash=NULL;
-int RES;
 int open_bracket=-1;
 int close_bracket=-1;
 /* We compute the length of each token */
 int* token_length=(int*)malloc(sizeof(int)*tokens->N);
 if (token_length==NULL) {fatal_error("Not enough memory in create_concordance\n");}
 compute_token_length(token_length,tokens);
-/* Then, we see which kind of output is expected */
-script_glossanet=strstr(option.result_mode,"glossanet=");
-if (script_glossanet!=NULL) {
-	/* If the result parameter starts with "glossanet=", then we make
-	 * start the GlossaNet script after the equal sign. */
-	script_glossanet=script_glossanet+strlen("glossanet=");
-}
-if (strcmp(option.result_mode,"html") &&
-    strcmp(option.result_mode,"text") && 
-    strcmp(option.result_mode,"index") && 
-    strcmp(option.result_mode,"uima") && 
-    strcmp(option.result_mode,"axis") && 
-    strcmp(option.result_mode,"xalign") && 
-    script_glossanet==NULL) {
+if (option->result_mode==MERGE_) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
-	create_modified_text_file(concordance,text,tokens,option.result_mode,n_enter_char,enter_pos);
+	create_modified_text_file(concordance,text,tokens,option->output,n_enter_char,enter_pos);
 	return;
 }
 /* If the expected result is a concordance */
-if (!strcmp(option.result_mode,"html")) RES=HTML_;
-else if (!strcmp(option.result_mode,"text")) RES=TEXT_;
-else if (!strcmp(option.result_mode,"index")) RES=INDEX_;
-else if (!strcmp(option.result_mode,"uima")) RES=UIMA_;
-else if (!strcmp(option.result_mode,"axis")) RES=AXIS_;
-else if (!strcmp(option.result_mode,"xalign")) RES=XALIGN_;
-else {
-	RES=GLOSSANET_;
+if (option->result_mode==GLOSSANET_) {
 	/* The structure glossa_hash will be used to ignore duplicate lines
 	 * without sorting */
 	glossa_hash=new_string_hash();
@@ -156,18 +122,20 @@ else {
 	close_bracket=get_token_number(r,tokens);
 }
 /* We set temporary and final file names */
-strcpy(temp_file_name,option.working_directory);
+strcpy(temp_file_name,option->working_directory);
 strcat(temp_file_name,"concord_.txt");
-strcpy(output_file_name,option.working_directory);
-if (RES==TEXT_ || RES==INDEX_ || RES==UIMA_ || RES==AXIS_ || RES==XALIGN_)
-	strcat(output_file_name,"concord.txt");
+strcpy(option->output,option->working_directory);
+if (option->result_mode==TEXT_ || option->result_mode==INDEX_ 
+      || option->result_mode==UIMA_ || option->result_mode==AXIS_ 
+      || option->result_mode==XALIGN_)
+	strcat(option->output,"concord.txt");
 else
-	strcat(output_file_name,"concord.html");
+	strcat(option->output,"concord.html");
 int N_MATCHES;
 
 /* If we are in the 'xalign' mode, we don't need to sort the results.
  * So, we don't need to store the results in a temporary file */
-if (RES==XALIGN_) f=u_fopen(UTF8,output_file_name,U_WRITE);
+if (option->result_mode==XALIGN_) f=u_fopen(UTF8,option->output,U_WRITE);
 else f=u_fopen(temp_file_name,U_WRITE);
 if (f==NULL) {
 	error("Cannot write %s\n",temp_file_name);
@@ -177,27 +145,27 @@ if (f==NULL) {
  * NOTE: columns may have been reordered according to the sort mode. See the
  * comments of the 'create_raw_text_concordance' function for more details. */
 N_MATCHES=create_raw_text_concordance(f,concordance,text,tokens,
-                                      RES,n_enter_char,enter_pos,
+                                      option->result_mode,n_enter_char,enter_pos,
                                       token_length,open_bracket,close_bracket,
                                       option);
 u_fclose(f);
 free(token_length);
 
-if(RES==XALIGN_) return;
+if(option->result_mode==XALIGN_) return;
 
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
-if (option.sort_mode!=TEXT_ORDER) {
+if (option->sort_mode!=TEXT_ORDER) {
    char** argv;
 	argv=(char**)malloc(6*sizeof(char*));
 	argv[0]=strdup(" ");
 	argv[1]=strdup(temp_file_name);
 	argv[2]=strdup("-n");
 	int i=3;
-	if (strcmp(option.sort_alphabet,"NULL")) {
+	if (option->sort_alphabet!=NULL) {
 		argv[i++]=strdup("-o");
-		argv[i++]=strdup(option.sort_alphabet);
+		argv[i++]=strdup(option->sort_alphabet);
 	}
-	if (option.thai_mode) {
+	if (option->thai_mode) {
 		argv[i++]=strdup("-thai");
 	}
 	main_SortTxt(i,argv);
@@ -216,23 +184,24 @@ if (f==NULL) {
 	error("Cannot read %s\n",temp_file_name);
 	return;
 }
-if (RES==TEXT_ || RES==INDEX_ || RES==UIMA_ || RES==AXIS_) {
+if (option->result_mode==TEXT_ || option->result_mode==INDEX_ 
+      || option->result_mode==UIMA_ || option->result_mode==AXIS_) {
    /* If we have to produce a unicode text file, we open it
     * as a unicode one */
-   out=u_fopen(output_file_name,U_WRITE);
+   out=u_fopen(option->output,U_WRITE);
 }
 else {
    /* Otherwise, we open it normally */
-   out=fopen(output_file_name,"w");
+   out=fopen(option->output,"w");
 }
 if (out==NULL) {
-	error("Cannot write %s\n",output_file_name);
+	error("Cannot write %s\n",option->output);
 	u_fclose(f);
 	return;
 }
 /* If we have an HTML or a GlossaNet concordance, we must write an HTML
  * file header. */
-if (RES==HTML_ || RES==GLOSSANET_) write_HTML_header(out,N_MATCHES,option);
+if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) write_HTML_header(out,N_MATCHES,option);
 unichar A[3000];
 unichar B[3000];
 unichar C[3000];
@@ -280,7 +249,7 @@ while ((c=u_fgetc(f))!=EOF) {
 		indices[j]='\0';
 		/*------------begin GlossaNet-------------------*/
 		/* If we are in GlossaNet mode, we extract the url at the end of the line */
-		if (RES==GLOSSANET_) {
+		if (option->result_mode==GLOSSANET_) {
 			if (c!='\t') {
 				error("ERROR in GlossaNet concordance: no URL found\n");
 				href[0]='\0';
@@ -295,7 +264,7 @@ while ((c=u_fgetc(f))!=EOF) {
 		/*------------end GlossaNet-------------------*/
 	}
 	/* Now we will reorder the columns according to the sort mode */
-	switch(option.sort_mode) {
+	switch(option->sort_mode) {
 		case TEXT_ORDER: left=A; middle=B; right=C; break;
 		case LEFT_CENTER: left=A; middle=B; right=C; break;
 		case LEFT_RIGHT: left=A; right=B; middle=C; break;
@@ -307,7 +276,7 @@ while ((c=u_fgetc(f))!=EOF) {
 	/* We use 'can_print_line' to decide if the concordance line must be
 	 * printed, because in GlossaNet mode, duplicates must be removed. */
 	int can_print_line=1;
-	if (RES==GLOSSANET_) {
+	if (option->result_mode==GLOSSANET_) {
 		unichar line[4000];
       u_sprintf(line,"%S\t%S\t%S",left,middle,right);
 		/* We test if the line was already seen */
@@ -320,24 +289,20 @@ while ((c=u_fgetc(f))!=EOF) {
 	}
 	/* If we can print the line */
 	if (can_print_line) {
-		if (option.sort_mode!=TEXT_ORDER) {
+		if (option->sort_mode!=TEXT_ORDER) {
 			/* If the concordance was sorted, the left sequence was reversed, and
 			 * then, we have to reverse it again. However, the Thai sort algorithm
 			 * requires to modify some vowels. That's why we must apply a special
 			 * procedure if we have a Thai sorted concordance. */
-			if (option.thai_mode) reverse_initial_vowels_thai(left);
+			if (option->thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
-			if (RES==HTML_ || RES==GLOSSANET_) {
-				//fprintf(out,"<tr><td nowrap>");
-				//u_fprints_html_reverse(left,out);
+			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) {
             u_fprintf(UTF8,out,"<tr><td nowrap>%HR",left);
 			} else {u_fprintf(out,"%R",left);}
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
 			 * left context. */
-			if (RES==HTML_ || RES==GLOSSANET_) {
-				//fprintf(out,"<tr><td nowrap>");
-				//u_fprints_html(left,out);
+			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) {
             u_fprintf(UTF8,out,"<tr><td nowrap>%HS",left);
 			} else {u_fprintf(out,"%S",left);}
 		}
@@ -347,40 +312,26 @@ while ((c=u_fgetc(f))!=EOF) {
 		 * X and Y are the starting and ending position of the sequence (in
 		 * tokens) and Z is the number of the sentence that contains the
 		 * sequence. */
-		if (RES==HTML_) {
-			//char tmp[100];
-			//u_to_char(tmp,indices);
+		if (option->result_mode==HTML_) {
 			u_fprintf(UTF8,out,"<a href=\"%S\">%HS</a>%HS&nbsp;</td></tr>\n",indices,middle,right);
-			//u_fprints_html(middle,out);
-			//fprintf(out,"</a>");
-			//u_fprints_html(right,out);
-			//fprintf(out,"&nbsp;</td></tr>\n");
 		}
 		/* If we must produce a GlossaNet concordance, we turn the sequence
 		 * into an URL, using the given GlossaNet script. */
-		else if (RES==GLOSSANET_) {
-			u_fprintf(UTF8,out,"<A HREF=\"%s?rec=%HS&adr=%HS",script_glossanet,middle,href);
-			//u_fprints_html(middle,out);
-			//fprintf(out,"&adr=");
-			//u_fprints_html(href,out);
-			//fprintf(out,"\" style=\"color: rgb(0,0,128)\">");
+		else if (option->result_mode==GLOSSANET_) {
+			u_fprintf(UTF8,out,"<A HREF=\"%s?rec=%HS&adr=%HS",option->glossanet_script,middle,href);
          u_fprintf(UTF8,out,"\" style=\"color: rgb(0,0,128)\">%HS</A>%HS</td></tr>\n",middle,right);
-			//u_fprints_html(middle,out);
-			//fprintf(out,"</A>");
-			//u_fprints_html(right,out);
-			//fprintf(out,"</td></tr>\n");
 		}
 		/* If we must produce a text concordance */
-		else if (RES==TEXT_) {
+		else if (option->result_mode==TEXT_) {
 			u_fprintf(out,"\t%S\t%S\n",middle,right);
 		}
       /* If must must produce an index file */
-      else if (RES==INDEX_) {
+      else if (option->result_mode==INDEX_) {
          unichar idx[128];
          parse_string(indices,idx,P_SPACE);
          u_fprintf(out,"%S\t%S\n",idx,middle);
       }
-      else if (RES==UIMA_) {
+      else if (option->result_mode==UIMA_) {
          char tmp1[100];
          u_to_char(tmp1,indices);
          int start,end;
@@ -397,7 +348,7 @@ while ((c=u_fgetc(f))!=EOF) {
          - med : position of the median character of a token
             -> med = ((len+1)/2) + f1
       */
-      else if (RES==AXIS_) {
+      else if (option->result_mode==AXIS_) {
          char tmp1[100];
          u_to_char(tmp1,indices);
          float f1,f2,len,med;
@@ -410,11 +361,11 @@ while ((c=u_fgetc(f))!=EOF) {
 }
 /* If we have an HTML or a GlossaNet concordance, we must write some
  * HTML closing tags. */
-if (RES==HTML_ || RES==GLOSSANET_) write_HTML_end(out);
+if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) write_HTML_end(out);
 u_fclose(f);
 remove(temp_file_name);
 fclose(out);
-if (RES==GLOSSANET_) {
+if (option->result_mode==GLOSSANET_) {
 	free_string_hash(glossa_hash);
 }
 }
@@ -435,13 +386,13 @@ for (i=0;i<tokens->N;i++) {
 /**
  * This function writes the HTML header for an HTML or a GlossaNet concordance.
  */
-void write_HTML_header(FILE* f,int number_of_matches,struct conc_opt option) {
+void write_HTML_header(FILE* f,int number_of_matches,struct conc_opt* option) {
 u_fprintf(UTF8,f,"<html lang=en>\n");
 u_fprintf(UTF8,f,"<head>\n");
 u_fprintf(UTF8,f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
 u_fprintf(UTF8,f,"   <title>%d match%s</title>\n",number_of_matches,(number_of_matches>1)?"es":"");
 u_fprintf(UTF8,f,"</head>\n");
-u_fprintf(UTF8,f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %s\">\n",option.fontname,option.fontsize);
+u_fprintf(UTF8,f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %d\">\n",option->fontname,option->fontsize);
 }
 
 
@@ -527,12 +478,12 @@ buffer->size=fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,te
  * in order to preserve alignment at display time.
  */
 void extract_left_context(int pos,unichar* left,struct text_tokens* tokens,
-                          struct conc_opt option,int* token_length,
+                          struct conc_opt* option,int* token_length,
                           struct buffer* buffer) {
 int i;
 /* If there is no left context at all, we fill 'left' with spaces. */
 if (pos==0) {
-	for (i=0;i<option.left_context;i++) {
+	for (i=0;i<option->left_context;i++) {
 		left[i]=' ';
 	}
 	left[i]='\0';
@@ -540,23 +491,23 @@ if (pos==0) {
 }
 i=0;
 int count=0;
-left[option.left_context]='\0';
+left[option->left_context]='\0';
 /* We must start on the left of the match */
 pos--;
 int l=token_length[buffer->int_buffer[pos]]-1;
 unichar* s=tokens->token[buffer->int_buffer[pos]];
 /* We look for every token, until we have the correct number of displayable
  * characters. */
-while (pos>=0 && count<option.left_context) {
+while (pos>=0 && count<option->left_context) {
 	left[i]=s[l--];
-	if (!option.thai_mode || !is_Thai_skipable(left[i])) {
+	if (!option->thai_mode || !is_Thai_skipable(left[i])) {
 		/* We increase the character count only we don't have a diacritic mark */
 		count++;
 	}
 	i++;
 	if (l<0) {
 		/* If we must change of token */
-		if (option.left_context_until_eos
+		if (option->left_context_until_eos
                     && !u_strcmp(tokens->token[buffer->int_buffer[pos]],"{S}"))
                   break; /* token was "{S}" */
 		pos--;
@@ -570,8 +521,8 @@ while (pos>=0 && count<option.left_context) {
 /* If it was not possible to get to correct number of characters because
  * the sequence was too close to the beginning of the text, we fill
  * 'left' with spaces. */ 
-if (count!=option.left_context) {
-	while (count++!=option.left_context) {
+if (count!=option->left_context) {
+	while (count++!=option->left_context) {
 		left[i++]=' ';
 	}
 }
@@ -626,16 +577,16 @@ if (output==NULL) {
  * operation in order to count correctly displayable characters.
  */
 void extract_right_context(int pos,unichar* right,struct text_tokens* tokens,
-                           int match_length,struct conc_opt option,
+                           int match_length,struct conc_opt* option,
                            struct buffer* buffer) {
 right[0]='\0';
-if (match_length>=option.right_context || pos+1>=buffer->size) {
+if (match_length>=option->right_context || pos+1>=buffer->size) {
    /* We return if we have already overpassed the right context length
     * with the matched sequence, or if there is no right context because
     * we are at the end of the text. */
     return;
 }
-int right_context_length=option.right_context-match_length;
+int right_context_length=option->right_context-match_length;
 int i=0;
 int count=0;
 /* We must start after the last token of the matched sequence */
@@ -644,11 +595,11 @@ int l=0;
 unichar* s=tokens->token[buffer->int_buffer[pos]];
 while (pos<buffer->size && count<right_context_length) {
 	right[i]=s[l++];
-	if (!option.thai_mode || !is_Thai_skipable(right[i])) count++;
+	if (!option->thai_mode || !is_Thai_skipable(right[i])) count++;
 	i++;
 	if (s[l]=='\0') {
 		/* If we must change of token */
-		if (option.right_context_until_eos
+		if (option->right_context_until_eos
                     && !u_strcmp(tokens->token[buffer->int_buffer[pos]],"{S}"))
                   break; /* token was "{S}" */
 		pos++;
@@ -797,7 +748,7 @@ int create_raw_text_concordance(FILE* output,FILE* concordance,FILE* text,struct
                                 int expected_result,
                                 int n_enter_char,int* enter_pos,
                                 int* token_length,int open_bracket,int close_bracket,
-                                struct conc_opt option) {
+                                struct conc_opt* option) {
 struct match_list* matches;
 struct match_list* matches_tmp;
 unichar left[MAX_CONTEXT_IN_UNITS+1];
@@ -912,7 +863,7 @@ while (matches!=NULL) {
 	/* To compute the 3rd part (right context), we need to know the length of
 	 * the matched sequence in displayable characters. */
 	int match_length_in_displayable_chars;
-	if (option.thai_mode) {match_length_in_displayable_chars=u_strlen_Thai(middle);}
+	if (option->thai_mode) {match_length_in_displayable_chars=u_strlen_Thai(middle);}
 	else {match_length_in_displayable_chars=u_strlen(middle);}
 	/* Then we can compute the right context */
 	extract_right_context(end_pos,right,tokens,match_length_in_displayable_chars,
@@ -941,15 +892,15 @@ while (matches!=NULL) {
 	/* Now we save the concordance line to the output file, but only if
 	 * it's a valid match. */
 	if (is_a_good_match) {
-		if (option.sort_mode!=TEXT_ORDER) {
+		if (option->sort_mode!=TEXT_ORDER) {
 			/* If we must reverse the left context in thai mode,
 			 * we must reverse initial vowels with their following consonants. */
-			if (option.thai_mode) {
+			if (option->thai_mode) {
 				reverse_initial_vowels_thai(left);
 			}
 		}
 		/* We save the 3 parts of the concordance line according to the sort mode */
-		switch(option.sort_mode) {
+		switch(option->sort_mode) {
 			case TEXT_ORDER:
 			if(expected_result==XALIGN_) u_fprintf(UTF8,output,"%S\t%S",positions_from_eos,middle);
 				else u_fprintf(output,"%S\t%S\t%S",left,middle,right);
@@ -1172,5 +1123,42 @@ return n+1;
 int get_shift(int n_enter_char,int* enter_pos,int pos) {
 int res=find_by_dichotomy(pos,enter_pos,n_enter_char);
 return res;
+}
+
+
+/**
+ * Allocates, initializes and returns a struct conc_opt.
+ */
+struct conc_opt* new_conc_opt() {
+struct conc_opt* opt=(struct conc_opt*)malloc(sizeof(struct conc_opt));
+if (opt==NULL) {
+   fatal_error("Not enough memory in new_conc_opt\n");
+}
+opt->sort_mode=TEXT_ORDER;
+opt->left_context=0;
+opt->right_context=0;
+opt->left_context_until_eos=0;
+opt->right_context_until_eos=0;
+opt->thai_mode=0;
+opt->fontname=NULL;
+opt->fontsize=0;
+opt->result_mode=TEXT_;
+opt->output[0]='\0';
+opt->glossanet_script=NULL;
+opt->sort_alphabet=NULL;
+opt->working_directory[0]='\0';
+return opt;
+}
+
+
+/**
+ * Frees all the memory associated with the given structure.
+ */
+void free_conc_opt(struct conc_opt* opt) {
+if (opt==NULL) return;
+if (opt->fontname!=NULL) free(opt->fontname);
+if (opt->glossanet_script!=NULL) free(opt->glossanet_script);
+if (opt->sort_alphabet!=NULL) free(opt->sort_alphabet);
+free(opt);
 }
 

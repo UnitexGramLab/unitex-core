@@ -295,7 +295,7 @@ CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o Unicode.o Text_tokens.o String
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o\
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
 				Stack_unichar.o Transitions.o DicVariables.o\
-				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o Unicode.o Text_tokens.o String_hash.o List_int.o\
@@ -306,7 +306,7 @@ CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o Unicode.o Text_to
 				Error.o SortTxtMain.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 CONVERT      = Convert
 CONVERT_OBJS = IOBuffer.o Convert.o Unicode.o File.o CodePages.o Error.o\
