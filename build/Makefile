@@ -283,7 +283,7 @@ CHECKDIC_OBJS = IOBuffer.o CheckDic.o Unicode.o File.o DELA.o Alphabet.o String_
 COMPRESS      = Compress
 COMPRESS_OBJS = IOBuffer.o Compress.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
 				String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
-				List_ustring.o Error.o StringParsing.o
+				List_ustring.o Error.o StringParsing.o getopt.o
 
 CONCORD      = Concord
 CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o Unicode.o Text_tokens.o String_hash.o\

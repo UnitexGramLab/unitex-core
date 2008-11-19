@@ -31,17 +31,22 @@
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "getopt.h"
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Compress <dictionary> [-flip]\n");
-u_printf("   <dictionary> : any unicode DELAF or DELACF dictionary\n");
-u_printf("   -flip : this optional parameter specifies that the inflected and lemma\n");
-u_printf("           forms must be swapped\n\n");
-u_printf("Compresses a dictionary into an finite state automaton. This automaton\n");
-u_printf("is stored is a .bin file, and the associated flexional codes are\n");
-u_printf("written in a .inf file.\n\n");
+u_printf("Usage: Compress [OPTIONS] <dictionary>\n"
+         "\n"
+         "  <dictionary>: any unicode DELAF or DELACF dictionary\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -f/--flip: specifies that the inflected and lemma forms must be swapped\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Compresses a dictionary into an finite state automaton. This automaton\n"
+         "is stored is a .bin file, and the associated flexional codes are\n"
+         "written in a .inf file.\n\n");
 }
 
 
@@ -79,12 +84,37 @@ int main(int argc, char** argv) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-if (argc!=2 && argc!=3) {
-	/* We print the synopsis if the number arguments
-	 * if not correct */
-	usage();
-	return 0;
+if (argc==1) {
+   usage();
+   return 0;
 }
+
+int FLIP=0;
+const char* optstring=":fh";
+const struct option lopts[]= {
+      {"flip",no_argument,NULL,'f'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'f': FLIP=1; break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+   
+if (optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   return 1;
+}
+
 FILE* f;
 FILE* INF_file;
 unichar s[DIC_WORD_SIZE];
@@ -95,25 +125,14 @@ struct dictionary_node* root; /* Root of the dictionary tree */
 struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
 int line=0; /* Current line number */
 
-f=u_fopen(argv[1],U_READ);
+f=u_fopen(argv[optind],U_READ);
 if (f==NULL) {
-	fatal_error("Cannot open %s\n",argv[1]);
-}
-int FLIP=0;
-if (argc==3) {
-	/* If there is an extra parameter, we look if it is "-flip" */
-	if (!strcmp(argv[2],"-flip")) {
-		FLIP=1;
-	} else {
-		/* If not, we print a message and we raise a fatal error */
-		u_fclose(f);
-		fatal_error("Invalid parameter: %s\n",argv[2]);
-	}
+	fatal_error("Cannot open %s\n",argv[optind]);
 }
 /* We compute the name of the output .bin and .inf files */
-remove_extension(argv[1],bin);
+remove_extension(argv[optind],bin);
 strcat(bin,".bin");
-remove_extension(argv[1],inf);
+remove_extension(argv[optind],inf);
 strcat(inf,".inf");
 INF_file=u_fopen(inf,U_WRITE);
 if (INF_file==NULL) {

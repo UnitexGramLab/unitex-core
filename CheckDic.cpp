@@ -32,26 +32,32 @@
 #include "getopt.h"
 
 
-
 void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: CheckDic [OPTIONS] <dela>\n"
-         "   <dela> : name of the unicode text dictionary (must be a full path)\n"
+         "\n"
+         "  <dela> : name of the unicode text dictionary (must be a full path)\n"
+         "\n"
          "OPTIONS:\n"
-         " -s/--delas: checks a non inflected dictionary\n"
-         " -f/--delaf: checks an inflected dictionary\n"
-         " -h/--help: this help\n"
+         "  -s/--delas: checks a non inflected dictionary\n"
+         "  -f/--delaf: checks an inflected dictionary\n"
+         "  -h/--help: this help\n"
          "\n"
          "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
          "that contains check result informations. This file is stored in the\n"
          "<dela> directory.\n");
 }
 
+
 int main(int argc, char **argv) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
+if (argc==1) {
+   usage();
+   return 0;
+}
 
 int is_a_DELAF=-1;
 const char* optstring=":sfh";
