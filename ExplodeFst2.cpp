@@ -21,103 +21,88 @@
 
 #include "Unicode.h"
 #include "Copyright.h"
-#include "ExploseFst2Utils.h"
+#include "ExplodeFst2Utils.h"
 #include "utils.h"
 #include "IOBuffer.h"
+#include "getopt.h"
 
 
 void usage() {
-u_printf("%S", COPYRIGHT);
-u_printf("Usage: ExploseFst2 <txtauto> -o <out>\n"
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: ExplodeFst2 [OPTIONS] <txtauto>\n"
          "\n"
-         "where :\n"
-         " <txtauto>     : input text automaton FST2 file,\n"
-         " <out>         : resulting text automaton\n"
+         "  <txtauto>: input text automaton file\n"
          "\n"
-         "\"Explose\" the factorized labels in the specified text automaton, setting\n"
-         "apart their corresponding lexical entries.\n"
-         "The resulting text automaton is stored in <out>.\n\n");
+         "OPTIONS:\n"
+         "  -o OUT/--output=OUT: resulting text automaton. By default, OUT is of the form \"text-exp.fst2\"\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "\"Explodes\" the factorized labels in the specified text automaton, setting\n"
+         "apart their corresponding lexical entries. The resulting text automaton is stored\n"
+         "in OUT.\n");
 }
 
 
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
+if (argc==1) {
+   usage();
+   return 0;
+}
 
-
-
-int main(int argc, char ** argv) {
-
-  setBufferMode();
-
-  char * txtname = NULL, * outname = NULL;
-
-  *argv++, argc--;
-
-  if (argc == 0) { usage(); return 0; }
-
-  while (argc) {
-
-    if (**argv != '-') {
-
-      txtname = *argv;
-
-    } else {
-
-      if (strcmp(*argv, "-h") == 0) {
-
-	usage();
-        return 0;
-
-      } else if (strcmp(*argv, "-o") == 0) {
-
-	*argv++, argc--;
-	if (argc == 0) { fatal_error("'-o' needs an additionnal argument\n"); }
-
-	outname = *argv;
-
-      } else {
-      
-        error("unknow argument: '%s'\n", *argv);
-        return 1;
-      }
-    }
-
-    *argv++, argc--;
-  }
-
-   if (txtname == NULL) {
-      fatal_error("no text automaton specified\n");
+const char* optstring=":o:h";
+const struct option lopts[]= {
+      {"output",required_argument,NULL,'o'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+char txtname[FILENAME_MAX]="";
+char outname[FILENAME_MAX]="";
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name: %s\n",optarg);
+             }
+             strcpy(outname,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
    }
+   index=-1;
+}
 
-  
-  if (outname == NULL) {
-
-    int len = strlen(txtname);
-    outname = (char *) malloc((len + 10) * sizeof(char));
-
-    strcpy(outname, txtname);
-
-    if (strcmp(txtname + len - 5, ".fst2") == 0) {
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+strcpy(txtname,argv[optind]);
+if (outname[0]=='\0') {
+   int len = strlen(txtname);
+   strcpy(outname,txtname);
+   if (strcmp(txtname + len - 5, ".fst2") == 0) {
       strcpy(outname + len - 5, "-exp.fst2");
-    } else {
+   } else {
       strcat(outname, "-exp.fst2");
-    }
-  }
-
-
-  u_printf("loading '%s'\n", txtname);
-
-  list_aut_old * txtauto = load_text_automaton(txtname);
-
-  if (txtauto == NULL) { fatal_error("unable to load '%s'\n", txtname); }
-
-  u_printf("explosion ....\n");
-
-  if (text_output_fst2_fname(txtauto, outname) == -1) {
-    fatal_error("unable to explode fst in '%s'\n", outname);
-  }
-  list_aut_old_delete(txtauto);
-
-  u_printf("done. '%s' is explosed in '%s'.\n", txtname, outname);
-
-  return 0;
+   }
+}
+u_printf("Loading '%s'\n", txtname);
+list_aut_old * txtauto=load_text_automaton(txtname);
+if (txtauto==NULL) {
+   fatal_error("Unable to load '%s'\n", txtname);
+}
+u_printf("Explosion ....\n");
+if (text_output_fst2_fname(txtauto, outname) == -1) {
+   fatal_error("Unable to explode fst in '%s'\n", outname);
+}
+list_aut_old_delete(txtauto);
+u_printf("Done. '%s' is exploded in '%s'.\n", txtname, outname);
+return 0;
 }
 

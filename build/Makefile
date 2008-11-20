@@ -350,7 +350,8 @@ EVAMB_OBJS = IOBuffer.o Evamb.o Unicode.o Fst2.o String_hash.o\
 EXPLODEFST2      = ExplodeFst2
 EXPLODEFST2_OBJS = IOBuffer.o ExplodeFst2.o Unicode.o ExplodeFst2Utils.o Fst2.o String_hash.o\
                    Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o List_int.o ustring.o\
-                   BitMasks.o DELA.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o Tagset.o
+                   BitMasks.o DELA.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o Tagset.o\
+                   getopt.o
 
 EXPORTDIC      = ExportDic
 EXPORTDIC_OBJS = IOBuffer.o ExportDic.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
