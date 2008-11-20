@@ -30,18 +30,25 @@
 #include "IOBuffer.h"
 #include "Error.h"
 #include "Snt.h"
+#include "getopt.h"
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Extract yes/no <text> <concordance> <result>\n");
-u_printf("       yes/no : yes tells the program extract all matching units\n");
-u_printf("                no extracts unmatching units\n");
-u_printf("       <text> : the .snt text to extract from the units\n");
-u_printf("       <concordance> : the .ind file that describes the concordance\n");
-u_printf("       <result> : the text file where the units will be stored\n");
-u_printf("\nExtract all the units that contain (or not) any part of a utterance. The\n");
-u_printf("units are supposed to be separated by the symbol {S}.\n");
+u_printf("Usage: Extract [OPTIONS] <text>\n"
+         "\n"
+         "  <text>: the .snt text to extract from the units\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -y/--yes: extract all matching units (default)\n"
+         "  -n/--no: extract all unmatching units\n"
+         "  -i X/--index=X: the .ind file that describes the concordance. By default,\n"
+         "                  X is the concord.ind file located in the text directory.\n"
+         "  -o OUT/--output=OUT: the text file where the units will be stored\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "\nExtract all the units that contain (or not) any part of a utterance. The\n"
+         "units are supposed to be separated by the symbol {S}.\n");
 }
 
 
@@ -50,19 +57,58 @@ int main(int argc, char **argv) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-
-if (argc!=5) {
+if (argc==1) {
    usage();
    return 0;
 }
-char extract_matching_units;
-if (!strcmp(argv[1],"yes")) extract_matching_units=1;
-else if (!strcmp(argv[1],"no")) extract_matching_units=0;
-else {
-   error("Invalid parameter %s: must be yes or no\n",argv[1]);
-   return 1;
+
+const char* optstring=":yni:o:h";
+const struct option lopts[]= {
+      {"yes",no_argument,NULL,'y'},
+      {"no",no_argument,NULL,'n'},
+      {"output",required_argument,NULL,'o'},
+      {"index",required_argument,NULL,'i'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+char extract_matching_units=1;
+char text_name[FILENAME_MAX]="";
+char concord_ind[FILENAME_MAX]="";
+char output[FILENAME_MAX]="";
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'y': extract_matching_units=1; break;
+   case 'n': extract_matching_units=0; break;
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name\n");
+             }
+             strcpy(output,optarg);
+             break;
+   case 'i': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty concordance file name\n");
+             }
+             strcpy(concord_ind,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
 }
-struct snt_files* snt_files=new_snt_files(argv[2]);
+
+if (output[0]=='\0') {
+   fatal_error("You must specify the output text file\n");
+}
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+strcpy(text_name,argv[optind]);
+
+struct snt_files* snt_files=new_snt_files(text_name);
 FILE* text=fopen(snt_files->text_cod,"rb");
 if (text==NULL) {
    error("Cannot open %s\n",snt_files->text_cod);
@@ -80,19 +126,28 @@ if (tok->SENTENCE_MARKER==-1) {
    free_text_tokens(tok);
    return 1;
 }
-/* Warning: here we don't use a concordance name built from argv[2],
- *          since the concordance file can be elsewhere and can have 
- *          another name than "concord.ind" */
-FILE* concord=u_fopen(argv[3],U_READ);
+
+if (concord_ind[0]=='\0') {
+   char tmp[FILENAME_MAX];
+   get_extension(text_name,tmp);
+   if (strcmp(tmp,"snt")) {
+      fatal_error("Unable to find the concord.ind file. Please explicit it\n");
+   }
+   remove_extension(text_name,concord_ind);
+   strcat(concord_ind,"_snt");
+   strcat(concord_ind,PATH_SEPARATOR_STRING);
+   strcat(concord_ind,"concord.ind");
+}
+FILE* concord=u_fopen(concord_ind,U_READ);
 if (concord==NULL) {
-   error("Cannot open concordance %s\n",argv[3]);
+   error("Cannot open concordance %s\n",concord_ind);
    fclose(text);
    free_text_tokens(tok);
    return 1;
 }
-FILE* result=u_fopen(argv[4],U_WRITE);
+FILE* result=u_fopen(output,U_WRITE);
 if (result==NULL) {
-   error("Cannot write output file %s\n",argv[4]);
+   error("Cannot write output file %s\n",output);
    fclose(text);
    u_fclose(concord);
    free_text_tokens(tok);
