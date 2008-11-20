@@ -39,22 +39,25 @@
 #include "utils.h"
 #include "File.h"
 #include "IOBuffer.h"
+#include "getopt.h"
 
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: ElagComp [-r <rlist>|-g <grammar>] -l <lang> [-o <output>] [-d <rdir>]\n"
+u_printf("Usage: ElagComp [OPTIONS]\n"
          "\n"
-         "<rlist>   : Elag .fst2 grammar list file\n"
-         "<grammar> : Elag .fst2 grammar\n"
-         "<lang>    : Elag language description file\n"
-         "<output>  : (optional) file where the resulting compiled grammar is stored.\n"
-         "            The default name is same as <rlist> except for the .rul extension\n"
-         "<rdir>    : (optional) directory where Elag grammars are located\n"
+         "OPTIONS:\n"
+         "  -r RULES/--rules=RULES: Elag .fst2 grammar list file\n"
+         "  -g GRAMMAR/--grammar=GRAMMAR: Elag .fst2 grammar\n"
+         "  -l LANG/--language=LANG: Elag language description file\n"
+         "  -o OUT/--output=OUT: output file where the resulting compiled grammar is stored\n"
+         "                       The default name is same as RULES except for the .rul extension\n"
+         "  -d DIR/--directory=DIR: directory where Elag grammars are located\n"
+         "  -h/--help: this help\n"
          "\n"
-         "ElagComp compiles one Elag grammar specified by <grammar> or all the grammars\n"
-         "specified in the <rlist> file. The result is stored into the file <output>\n"
+         "ElagComp compiles one Elag grammar specified by GRAMMAR or all the grammars\n"
+         "specified in the RULES file. The result is stored into the file OUT\n"
          "for later use by the Elag text disambiguation program.\n");
 }
 
@@ -64,103 +67,105 @@ int main(int argc,char** argv) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-
-char* compilename=NULL;
-char* ruledir=NULL;
-char* rules=NULL;
-char* langname=NULL;
-char* grammar=NULL;
 if (argc==1) {
    usage();
    return 0;
 }
-argv++;
-argc--;
-while (argc!=0) {
-   if (*argv[0]!='-') {
-      rules=*argv;
-   } else {
-      if (!strcmp(*argv,"-o")) {
-         argv++;
-         argc--;
-         if (argc==0) {
-            fatal_error("-o argument needs a parameter\n");
-         }
-         compilename=*argv;
-      } else if (!strcmp(*argv,"-d")) {
-         argv++;
-         argc--;
-         if (argc==0) {
-            fatal_error("-d argument needs a parameter\n");
-         }
-         ruledir=*argv;
-      } else if (!strcmp(*argv,"-r")) {
-         argv++;
-         argc--;
-         if (argc==0) {
-            fatal_error("-r argument needs a parameter\n");
-         }
-         rules=*argv;
-      } else if (!strcmp(*argv,"-g")) {
-         argv++;
-         argc--;
-         if (argc==0) {
-            fatal_error("-g argument needs a parameter\n");
-         }
-         grammar=*argv;
-      } else if (!strcmp(*argv,"-h")) {
-         usage();
-         return 0;
-      } else if (!strcmp(*argv,"-l")) {
-         argv++;
-         argc--;
-         if (argc==0) {
-            fatal_error("-l argument needs a parameter\n");
-         }
-         langname=*argv;
-      } else {
-         fatal_error("Unknown argument: '%s'\n",*argv);
-      }
+
+const char* optstring=":l:r:o:d:g:h";
+const struct option lopts[]= {
+      {"language",required_argument,NULL,'l'},
+      {"rulelist",required_argument,NULL,'r'},
+      {"grammar",required_argument,NULL,'g'},
+      {"output",required_argument,NULL,'o'},
+      {"directory",required_argument,NULL,'d'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+char compilename[FILENAME_MAX]="";
+char directory[FILENAME_MAX]="";
+char grammar[FILENAME_MAX]="";
+char rule_file[FILENAME_MAX]="";
+char lang[FILENAME_MAX]="";
+
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'l': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty language definition file\n");
+             }
+             strcpy(lang,optarg);
+             break;
+   case 'r': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty rule file\n");
+             }
+             strcpy(rule_file,optarg);
+             break;
+   case 'g': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty grammar file name\n");
+             }
+             strcpy(grammar,optarg);
+             break;
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file\n");
+             }
+             strcpy(compilename,optarg);
+             break;
+   case 'd': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty directory\n");
+             }
+             strcpy(directory,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
    }
-   argv++;
-   argc--;
+   index=-1;
 }
-if (langname==NULL) {
-   fatal_error("No language definition file specified\n");
+
+if (lang[0]=='\0') {
+   fatal_error("You must define the language definition file\n");
 }
-language_t* language=load_language_definition(langname);
+if ((rule_file[0]=='\0' && grammar[0]=='\0')
+     || (rule_file[0]!='\0' && grammar[0]!='\0')) {
+   fatal_error("You must define a rule file OR a grammar\n");
+}
+if (optind!=argc) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+
+language_t* language=load_language_definition(lang);
 set_current_language(language);
-if (rules==NULL && grammar==NULL) {
+if (rule_file==NULL && grammar==NULL) {
    fatal_error("You must specified a grammar or a rule file name\n");
 }
-if (rules!=NULL && grammar!=NULL) {
+if (rule_file!=NULL && grammar!=NULL) {
    fatal_error("Cannot handle both a rule file and a grammar\n");
 }
-if (rules!=NULL) {
+if (rule_file!=NULL) {
    /* If we work with a rule list */
-   char directory[FILENAME_MAX];
    char rule_file_name[FILENAME_MAX];
-   if (ruledir==NULL) {
-      get_path(rules,directory);
-      ruledir=directory;
-      remove_path(rules,rule_file_name);
-      rules=rule_file_name;
+   if (directory==NULL) {
+      get_path(rule_file,directory);
+      remove_path(rule_file,rule_file_name);
+      strcpy(rule_file,rule_file_name);
    }
-   if (chdir(ruledir)==-1) {
-      fatal_error("Unable to change to %s directory\n",ruledir);
+   if (chdir(directory)==-1) {
+      fatal_error("Unable to change to %s directory\n",directory);
    }
-   char buf[FILENAME_MAX];
-   if (compilename == NULL) {
-      int l=strlen(rules);
-      if (strcmp(rules+l-4,".lst")==0) {
-         strcpy(buf,rules);
-         strcpy(buf+l-4,".rul");
+   if (compilename[0]=='\0') {
+      int l=strlen(rule_file);
+      if (strcmp(rule_file+l-4,".lst")==0) {
+         strcpy(compilename,rule_file);
+         strcpy(compilename+l-4,".rul");
       } else {
-         sprintf(buf,"%s.rul",rules);
+         sprintf(compilename,"%s.rul",rule_file);
       }
-      compilename=buf;
    }
-   if (compile_elag_rules(rules,compilename)==-1) {
+   if (compile_elag_rules(rule_file,compilename)==-1) {
       error("An error occurred\n");
       return 1;
    }
