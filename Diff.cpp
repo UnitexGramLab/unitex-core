@@ -61,7 +61,7 @@ free(argv);
 /**
  * Printing the header of the HTML file.
  */
-void print_diff_HTML_header(FILE* f,char* font,char* size) {
+void print_diff_HTML_header(FILE* f,char* font,int size) {
 u_fprintf(UTF8,f,"<html>\n");
 u_fprintf(UTF8,f,"<head>\n");
 u_fprintf(UTF8,f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
@@ -76,7 +76,7 @@ u_fprintf(UTF8,f,"<h4>\n");
 u_fprintf(UTF8,f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
 u_fprintf(UTF8,f,"<font color=\"red\">Red:</font> similar but different sequences<br>\n");
 u_fprintf(UTF8,f,"<font color=\"green\">Green:</font> sequences that occur in only one of the two concordances<br>\n");
-u_fprintf(UTF8,f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-size: %s\">\n",font,size);
+u_fprintf(UTF8,f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-size: %d\">\n",font,size);
 }
 
 
@@ -93,7 +93,7 @@ u_fprintf(UTF8,f,"</table>\n</body>\n</html>\n");
  * produces a HTML file (out) that shows the differences between
  * those two concordances.
  */
-int diff(char* in1,char* in2,char* out,char* font,char* size) {
+int diff(char* in1,char* in2,char* out,char* font,int size) {
 char concor1[FILENAME_MAX];
 char concor2[FILENAME_MAX];
 get_path(in1,concor1);

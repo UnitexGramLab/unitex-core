@@ -23,30 +23,29 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Unicode.h"
-#include "Text_tokens.h"
-#include "String_hash.h"
-#include "List_int.h"
-#include "Alphabet.h"
-#include "Matches.h"
-#include "Concordance.h"
-#include "File.h"
 #include "Copyright.h"
-#include "LocatePattern.h"
 #include "Diff.h"
 #include "IOBuffer.h"
-
+#include "getopt.h"
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: ConcorDiff <concor1> <concor2> <out> <font> <size>\n");
-u_printf("   <concor1> : the first concord.ind file\n");
-u_printf("   <concor2> : the second concord.ind file\n");
-u_printf("   <out> : the result HTML file\n");
-u_printf("   <font> : name of font\n");
-u_printf("   <size> : size of font\n");
-u_printf("\nProduces an HTML file that shows differences between input\n");
-u_printf("concordance files.\n");
+u_printf("Usage: ConcorDiff [OPTIONS] <concor1> <concor2>\n"
+         "\n"
+         "  <concor1>: the first concord.ind file\n"
+         "  <concor2>: the second concord.ind file\n"
+         "\n"
+         "REQUIRED OPTIONS:\n"
+         "  -o X/--out=X: the result HTML file\n"
+         "  -f FONT/--font=FONT: name of the font to use\n"
+         "  -s N/--fontsize=N: size of the font to use\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "\nProduces an HTML file that shows differences between input\n"
+         "concordance files.\n");
 }
 
 
@@ -55,10 +54,67 @@ int main(int argc,char** argv) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-if (argc!=6) {
+if (argc==1) {
 	usage();
 	return 0;
 }
-diff(argv[1],argv[2],argv[3],argv[4],argv[5]);
+
+const char* optstring=":o:f:s:h";
+const struct option lopts[]= {
+      {"out",required_argument,NULL,'o'},
+      {"font",required_argument,NULL,'f'},
+      {"fontsize",required_argument,NULL,'s'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+char* out=NULL;
+char* font=NULL;
+int size=0;
+char foo;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file\n");
+             }
+             out=strdup(optarg);
+             break;
+   case 'f': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty font name\n");
+             }
+             font=strdup(optarg);
+             break;
+   case 's': if (1!=sscanf(optarg,"%d%c",&size,&foo)
+                 || size<=0) {
+                /* foo is used to check that the font size is not like "45gjh" */
+                fatal_error("Invalid font size argument: %s\n",optarg);
+             }
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (out==NULL) {
+   fatal_error("You must specify the output file\n");
+}
+if (font==NULL) {
+   fatal_error("You must specify the font to use\n");
+}
+if (size==0) {
+   fatal_error("You must specify the font size to use\n");
+}
+if (optind!=argc-2) {
+   error("Invalid arguments: rerun with --help\n");
+   return 1;
+}
+diff(argv[optind],argv[optind+1],out,font,size);
+free(out);
+free(font);
 return 0;
 }
