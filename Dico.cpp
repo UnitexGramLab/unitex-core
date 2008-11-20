@@ -38,6 +38,7 @@
 #include "Error.h"
 #include "Snt.h"
 #include "LocateConstants.h"
+#include "getopt.h"
 
 
 /**
@@ -52,51 +53,57 @@
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Dico <text> <alphabet> [-md=XXX] <dic-fst_1> [<dic-fst_2> <dic-fst_3> ...]\n");
-u_printf("     <text>      : the text file\n");
-u_printf("     <alphabet>  : the alphabet file\n");
-u_printf("     [-md=XXX]   : optional argument specifying that XXX is the .bin dictionary\n"
-         "                   list to use in Locate's morphological mode. .bin names are\n"
-         "                   supposed to be separated with semi-colons.\n");
-u_printf("     <dic-fst_i> : name of dictionary or local grammar to be applied\n\n");
-
-u_printf("Applies dictionaries and/or local grammars to the text and produces \n");
-u_printf("5 files, saved in the text directory. These files are:\n\n");
-u_printf(" DLF : simple entry dictionary\n");
-u_printf(" DLC : compound entry dictionary\n");
-u_printf(" ERR : unrecognized simple words\n");
-u_printf(" tags.ind : sequences to be inserted in the text automaton\n");
-u_printf(" stat_dic.n : file containing the number of simple words, the number\n"
-         "              of compound words, and the number of unknown words in the text\n\n");
-
-u_printf("There are 3 levels of priority. If the dictionary name ends with \"-\",\n");
-u_printf("it will be applied with the maximum priority. If the suffix\n");
-u_printf("is \"+\", the priority is minimal. If there is no suffix, the priority\n");
-u_printf("is normal. Any lexical unit identified in a previous stage will be ignored\n");
-u_printf("in the subsequent stages. \n\n");
-
-u_printf("The local grammars are represented by finite state transducers(.fst2).\n");
-u_printf("These grammars will be applied in MERGE mode, except if a .fst2 ends\n");
-u_printf("with -r. In that case, it will be applied in REPLACE mode.\n");
-u_printf("Note that -r can be combined with - or + priority marks (-r- and -r+)\n\n");
-u_printf("The grammar output shall respect the file format of both DLF and DLC.\n"
+u_printf("Usage: Dico [OPTIONS] <dic_1> [<dic_2> <dic_3> ...]\n"
+         "\n"
+         "  <dic_i>: .bin dictionary or .fst2 local grammar to be applied\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -t TXT/--text=TXT: the .snt text file\n"
+         "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
+         "  -m DICS/--morpho=DICS: specifies that DICS is the .bin dictionary\n"
+         "                         list to use in Locate's morphological mode. .bin names are\n"
+         "                         supposed to be separated with semi-colons.\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Applies dictionaries and/or local grammars to the text and produces \n"
+         "5 files, saved in the text directory. These files are:\n"
+         "\n"
+         "  dlf: simple entry dictionary\n"
+         "  dlc: compound entry dictionary\n"
+         "  err: unrecognized simple words\n"
+         "  tags.ind: sequences to be inserted in the text automaton\n"
+         "  stat_dic.n: file containing the number of simple words, the number\n"
+         "              of compound words, and the number of unknown words in the text\n"
+         "\n"
+         "There are 3 levels of priority. If the dictionary name ends with \"-\",\n"
+         "it will be applied with the maximum priority. If the suffix\n"
+         "is \"+\", the priority is minimal. If there is no suffix, the priority\n"
+         "is normal. Any lexical unit identified in a previous stage will be ignored\n"
+         "in the subsequent stages. \n"
+         "\n"
+         "The local grammars are represented by finite state transducers(.fst2).\n"
+         "These grammars will be applied in MERGE mode, except if a .fst2 ends\n"
+         "with -r. In that case, it will be applied in REPLACE mode.\n"
+         "Note that -r can be combined with - or + priority marks (-r- and -r+)\n"
+         "\n"
+         "The grammar output shall respect the file format of both DLF and DLC.\n"
          "If an output starts with a / character, it will be considered as a tag\n"
          "sequence to be put in the 'tags.ind' file. Such sequences are used\n"
-         "by the Txt2Fst2 program in order to add paths to the text automaton.\n\n");
-
-u_printf("The numbers of simple, compound and unknown forms are saved\n");
-u_printf("in a file named stat_dic.n which is created in the text directory.\n");
-
-u_printf("\nExamples:\n");
-u_printf(" - Dico \"c:\\tutu.snt\" \"c:\\Alphabet.txt\" Dela.bin MyFilter-.bin\n");
-u_printf("This command will apply first MyFilter-.bin and then Dela.bin.\n");
-u_printf(" - Dico \"c:\\tutu.snt\" \"c:\\Alphabet.txt\" Dela.bin Rom_numbs-.fst2 numbers+.fst2\n");
-u_printf("This command will apply Rom_numbs-.fst2 then Dela.bin and finally\n");
-u_printf("numbers+.fst2\n\n");
-
-u_printf("\nNote: the 3 resulting files (DLF, DLC and ERR) are stored in the text\n");
-u_printf("directory. THEY ARE NOT SORTED AND MAY CONTAIN DUPLICATES. Use the\n");
-u_printf("SortTxt program to clean these files.\n\n");
+         "by the Txt2Fst2 program in order to add paths to the text automaton.\n"
+         "\n"
+         "The numbers of simple, compound and unknown forms are saved\n"
+         "in a file named stat_dic.n which is created in the text directory.\n"
+         "\n"
+         "Examples:\n"
+         " - Dico \"c:\\tutu.snt\" \"c:\\Alphabet.txt\" Dela.bin MyFilter-.bin\n"
+         "This command will apply first MyFilter-.bin and then Dela.bin.\n"
+         " - Dico \"c:\\tutu.snt\" \"c:\\Alphabet.txt\" Dela.bin Rom_numbs-.fst2 numbers+.fst2\n"
+         "This command will apply Rom_numbs-.fst2 then Dela.bin and finally\n"
+         "numbers+.fst2\n"
+         "\n"
+         "Note: the 3 resulting files (DLF, DLC and ERR) are stored in the text\n"
+         "directory. THEY ARE NOT SORTED AND MAY CONTAIN DUPLICATES. Use the\n"
+         "SortTxt program to clean these files.\n");
 }
 
 
@@ -120,12 +127,60 @@ int main(int argc, char **argv) {
  * the graphical interface */
 setBufferMode();
 
-if (argc<4) {
+if (argc==1) {
    usage();
    return 0;
 }
 
-struct snt_files* snt_files=new_snt_files(argv[1]);
+const char* optstring=":t:a:m:h";
+const struct option lopts[]= {
+      {"text",required_argument,NULL,'t'},
+      {"alphabet",required_argument,NULL,'a'},
+      {"morpho",required_argument,NULL,'m'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+char alph[FILENAME_MAX]="";
+char text[FILENAME_MAX]="";
+char* morpho_dic=NULL;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 't': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty text file name\n");
+             }
+             strcpy(text,optarg);
+             break;
+   case 'a': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty alphabet name\n");
+             }
+             strcpy(alph,optarg);
+             break;
+   case 'm': if (optarg[0]!='\0') {
+                morpho_dic=strdup(optarg);
+             }
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (text[0]=='\0') {
+   fatal_error("You must specify a .snt text file\n");
+}
+if (alph[0]=='\0') {
+   fatal_error("You must specify an alphabet file\n");
+}
+if (optind==argc) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+
+struct snt_files* snt_files=new_snt_files(text);
 FILE* text_cod;
 struct text_tokens* tokens;
 
@@ -140,9 +195,9 @@ if (!u_fempty(snt_files->err)) {
    fatal_error("Cannot create %s\n",snt_files->err);
 }
 /* We load the alphabet */
-Alphabet* alphabet=load_alphabet(argv[2]);
+Alphabet* alphabet=load_alphabet(alph);
 if (alphabet==NULL) {
-   error("Cannot open alphabet file %s\n",argv[2]);
+   error("Cannot open alphabet file %s\n",alph);
    return 1;
 }
 /* We load the text tokens */
@@ -163,14 +218,6 @@ if (text_cod==NULL) {
 u_printf("Initializing...\n");
 struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,snt_files->tags_ind,text_cod,alphabet);
 
-char* morpho_dic=NULL;
-int first_dic_index=3;
-if (strstr(argv[3],"-md=")==argv[3]) {
-   /* If there is the option -md=XXX */
-   morpho_dic=argv[3]+4;
-   first_dic_index++;
-}
-
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
 count_token_occurrences(info);
@@ -178,7 +225,7 @@ count_token_occurrences(info);
 for (int priority=1;priority<4;priority++) {
    /* For a given priority, we apply all concerned dictionaries 
     * in their order on the command line */
-   for (int i=first_dic_index;i<argc;i++) {
+   for (int i=optind;i<argc;i++) {
       char tmp[FILENAME_MAX];
       remove_extension(argv[i],tmp);
       char priority_mark=tmp[strlen(tmp)-1];
@@ -267,6 +314,7 @@ if (info->err!=NULL) u_fclose(info->err);
 fclose(text_cod);
 free_dico_application(info);
 free_snt_files(snt_files);
+if (morpho_dic!=NULL) free(morpho_dic);
 return 0;
 }
 
