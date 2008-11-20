@@ -329,7 +329,7 @@ ELAG_OBJS = IOBuffer.o Elag.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDete
    		    ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o LanguageDefinition.o\
             AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
-            BitMasks.o FIFO.o Transitions.o ElagDebug.o
+            BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o getopt.o
  
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o ElagRulesCompilation.o Fst2Automaton.o\

@@ -45,130 +45,120 @@
 #include "utils.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "getopt.h"
+#include "File.h"
+
 
 void usage() {
 u_printf("%S", COPYRIGHT);
-u_printf("Usage: Elag <txtauto> -l <LANG> -g <rules> -o <output> [-d <dir>]\n"
+u_printf("Usage: Elag [OPTIONS] <txtauto>\n"
          "\n"
-         "whith:\n"
-         "<txtauto>       :    input text automaton FST2 file,\n"
-         "<LANG>          :    the current language definition file,\n"
-         "<rules>         :    compiled elag rules file,\n"
-         "<output>        :    the resulting output FST2 file,\n"
-         "<dir>           :    (optional) directory where elag rules are located.\n"
+         "  <txtauto>: input text automaton FST2 file\n"
          "\n"
-         "Disambiguate the input text automaton <txtauto> using the specified compiled elag rules.\n"
-         "The resulting automaton is stored in <output>.\n\n");
+         "OPTIONS:\n"
+         "  -l LANG/--language=LANG: language definition file\n"
+         "  -r RULES/--rules=RULES: compiled elag rules file\n"
+         "  -o OUT/--output=OUT: resulting output .fst2 file\n"
+         "  -d DIR/--directory=DIR: directory where elag rules are located\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Disambiguate the input text automaton <txtauto> using the specified compiled elag rules.\n");
 }
 
 
-int main(int argc, char ** argv) {
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
+if (argc==1) {
+   usage();
+   return 0;
+}
 
-  setBufferMode();
+const char* optstring=":l:r:o:d:h";
+const struct option lopts[]= {
+      {"language",required_argument,NULL,'l'},
+      {"rules",required_argument,NULL,'r'},
+      {"output",required_argument,NULL,'o'},
+      {"directory",required_argument,NULL,'d'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+char txtauto[FILENAME_MAX]="";
+char language[FILENAME_MAX]="";
+char rule_file[FILENAME_MAX]="";
+char output[FILENAME_MAX]="";
+char directory[FILENAME_MAX]="";
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'l': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty language definition file\n");
+             }
+             strcpy(language,optarg);
+             break;
+   case 'r': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty rule file\n");
+             }
+             strcpy(rule_file,optarg);
+             break;
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file\n");
+             }
+             strcpy(output,optarg);
+             break;
+   case 'd': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty directory\n");
+             }
+             strcpy(directory,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
 
-  char * progname   = *argv;
-  char * txtauto    = NULL;
-  char * grammardir = NULL;
-  char * grammars   = NULL;
-  char * output     = NULL;
-
-  char * langname   = NULL;
-
-  argv++, argc--;
-
-  if (argc == 0) { usage(); return 0; }
-  
-  while (argc) {
-
-    if (**argv != '-') { // text automaton
-      
-      txtauto = *argv;
-
-    } else {
-
-      if (strcmp(*argv, "-o") == 0) { // output
-	
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-o needs an arg\n"); }
-
-	output = *argv;
-
-      } else if (strcmp(*argv, "-d") == 0) { // grammars directory
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-d needs an arg\n"); }
-
-	grammardir = *argv;
-
-      } else if (strcmp(*argv, "-l") == 0) { // file of compiled grammar names
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-l needs an arg\n"); }
-	langname = *argv;
-
-      } else if (strcmp(*argv, "-g") == 0) { // 1 grammar already compiled
-
-	argv++, argc--;
-	if (argc == 0) { fatal_error("-g needs an arg\n"); }
-
-	grammars = *argv;
-
-      } else if (strcmp(*argv, "-h") == 0) {
-
-	u_printf("\nusage: %s <txtauto> -l <LANG> -d <gramdir> [ -g <gramlist> ] -o <output>\n\n",
-               progname);
-	return 0;
-
-      }	else { fatal_error("unknow arg: '%s'\n", *argv); }
-
-    }
-
-    argv++, argc--;
-  }	
-
-
-  if (! langname) { fatal_error("no LANGUAGE specified\n"); }
-  if (txtauto == NULL) { fatal_error("no text automaton specified\n"); }
-  if (! grammars) { fatal_error("-g option should be used\n"); }
-
-
-  u_printf("loading %s langage definition ...\n", langname);
-
-  language_t * lang = load_language_definition(langname);
-  set_current_language(lang);
-
-
-  char buf[FILENAME_MAX];
-
-  if (output == NULL) {
-
-    strcpy(buf, txtauto);
-    int len = strlen(buf);
-
-    if (strcmp(buf + len - 5, ".fst2") == 0) {
-      len = len - 5;
-    }
-    strcpy(buf + len, "-elag.fst2");
-    output = buf;
-  }
-
-
-  if (grammardir == NULL) {
-    grammardir = dirname(strdup(grammars));
-    grammars   = basename(grammars);
-  }
-
-  error("changing to %s directory\n", grammardir);
-
-  if (chdir(grammardir) == -1) { error("unable to change to %s directory.\n", grammardir); }
-
-  list_aut * gramm;
-  if ((gramm = chargeGramm(grammars)) == NULL) { fatal_error("unable to load grammar %s", grammars); }
-
-  u_printf("Grammars are loaded.\n") ;
-
-  
-  remove_ambiguities(txtauto, gramm, output);
-
-  return 0;
+if (language[0]=='\0') {
+   fatal_error("You must define the language definition file\n");
+}
+if (rule_file[0]=='\0') {
+   fatal_error("You must define the rule file\n");
+}
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+strcpy(txtauto,argv[optind]);
+u_printf("Loading %s langage definition ...\n", language);
+language_t * lang = load_language_definition(language);
+set_current_language(lang);
+if (output[0]=='\0') {
+   strcpy(output,txtauto);
+   int len=strlen(output);
+   if (strcmp(output+len-5,".fst2")==0) {
+      len=len-5;
+   }
+   strcpy(output+len, "-elag.fst2");
+}
+if (directory[0]=='\0') {
+   get_path(rule_file,directory);
+   char tmp[FILENAME_MAX];
+   strcpy(tmp,rule_file);
+   remove_path(tmp,rule_file);
+}
+u_printf("Changing to %s directory\n",directory);
+if (chdir(directory)==-1) {
+   error("Unable to change to %s directory.\n", directory);
+}
+list_aut* gramm;
+if ((gramm = chargeGramm(rule_file)) == NULL) {
+   fatal_error("Unable to load grammar %s", rule_file);
+}
+u_printf("Grammars are loaded.\n") ;
+remove_ambiguities(txtauto,gramm,output);
+return 0;
 }
