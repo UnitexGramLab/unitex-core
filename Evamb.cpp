@@ -27,14 +27,18 @@
 #include "IOBuffer.h"
 #include "Error.h"
 #include "SingleGraph.h"
+#include "getopt.h"
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Evamb [-o] <fstname> [-n <#sentence>]\n"
+u_printf("Usage: Evamb [OPTIONS] <txtauto>\n"
          "\n"
-         "<fstname>   : text automaton FST2 file\n"
-         "<#sentence> : sentence number\n"
+         "  <txtauto>: text automaton FST2 file\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -s N/--sentence=N: sentence number\n"
+         "  -h/--help: this help\n"
          "\n"
          "Prints the average lexical ambiguity rate of the whole text automaton, or of the\n"
          "sentence specified by <#sentence>. This value represents the average number of\n"
@@ -44,57 +48,55 @@ u_printf("Usage: Evamb [-o] <fstname> [-n <#sentence>]\n"
 }
 
 
-
-int main(int argc,char** argv) {
+int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-
-argv++;
-argc--;
-if (argc==0) {
+if (argc==1) {
    usage();
    return 0;
 }
-char* fst_name=NULL;
+
+const char* optstring=":s:h";
+const struct option lopts[]= {
+      {"sentence",required_argument,NULL,'s'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
 int sentence_number=-1;
-while (argc!=0) {
-   if (**argv!='-') {
-      fst_name=*argv;
-   } else if (!strcmp(*argv,"-h")) {
-      usage();
-      return 0;
-   } else if (!strcmp(*argv,"-o")) {
-      argv++;
-      argc--;
-      if (argc<1) {
-         fatal_error("-o needs an argument\n");
-      }
-      fst_name=*argv;
-   } else if (!strcmp(*argv,"-n")) {
-      argv++;
-      argc--;
-      if (argc<1) {
-         fatal_error("-n needs an argument\n");
-      }
-      sentence_number=atoi(*argv);
+char foo;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 's': if (1!=sscanf(optarg,"%d%c",&sentence_number,&foo) || sentence_number<=0) {
+                /* foo is used to check that the sentence number is not like "45gjh" */
+                fatal_error("Invalid sentence number: %s\n",optarg);
+             }
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
    }
-   argv++;
-   argc--;
+   index=-1;
 }
-if (fst_name==NULL) {
-   fatal_error("No text automaton specified\n");
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
 }
-u_printf("Loading '%s'...\n",fst_name);
-Fst2* fst2=load_fst2(fst_name,0);
+
+u_printf("Loading '%s'...\n",argv[optind]);
+Fst2* fst2=load_fst2(argv[optind],0);
 if (fst2==NULL) {
-   fatal_error("Unable to load '%s' fst2\n",fst_name);
+   fatal_error("Unable to load '%s' fst2\n",argv[optind]);
 }
-if (sentence_number==0 || sentence_number>fst2->number_of_graphs) {
+if (sentence_number>fst2->number_of_graphs) {
    fatal_error("Invalid sentence number %d: should be in [1;%d]\n",sentence_number,fst2->number_of_graphs);
 }
-if (sentence_number<0) {
+if (sentence_number==-1) {
    /* If we have to evaluate the ambiguity rate of the whole automaton */
    double lognp_total=0.0;
    double lmoy_total=0.0;

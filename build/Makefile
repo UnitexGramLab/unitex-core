@@ -345,7 +345,7 @@ EVAMB_OBJS = IOBuffer.o Evamb.o Unicode.o Fst2.o String_hash.o\
              Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
              List_int.o BitMasks.o DELA.o List_pointer.o SingleGraph.o\
              BitArray.o HashTable.o FIFO.o Transitions.o\
-             symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+             symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 EXPLODEFST2      = ExplodeFst2
 EXPLODEFST2_OBJS = IOBuffer.o ExplodeFst2.o Unicode.o ExplodeFst2Utils.o Fst2.o String_hash.o\

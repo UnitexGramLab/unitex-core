@@ -88,7 +88,6 @@ char directory[FILENAME_MAX]="";
 char grammar[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char lang[FILENAME_MAX]="";
-
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 'l': if (optarg[0]=='\0') {
@@ -131,7 +130,7 @@ if (lang[0]=='\0') {
 }
 if ((rule_file[0]=='\0' && grammar[0]=='\0')
      || (rule_file[0]!='\0' && grammar[0]!='\0')) {
-   fatal_error("You must define a rule file OR a grammar\n");
+   fatal_error("You must define a rule list OR a grammar\n");
 }
 if (optind!=argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
