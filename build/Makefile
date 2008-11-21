@@ -198,7 +198,6 @@ else
 #####################
 
 CC   = g++.exe
-INSTALL = move
 APPDIR = ../../../App
 DEVCPP_PATH = C:/Dev-Cpp
 
@@ -734,11 +733,9 @@ else
 #######################
 #######################
 all: bin
-	@echo ------------ 
-	@echo All is done.
+	@echo ---------------------------------------------------------------------------- 
+	@echo All is done. You need to move .exe programs from '$(BIN_DIR)' to '$(APPDIR)'.
 
-install: bin
-	$(INSTALL) $(BINARIES) $(APPDIR)
 
 bin: $(BINARIES)
 
