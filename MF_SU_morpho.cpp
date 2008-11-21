@@ -478,6 +478,14 @@ if (u_strcmp(tag,"<E>")) {
             break;
          }
          
+         /* Unaccent operator */
+         case 'U': {
+            stack[pos]=u_deaccentuate(stack[pos]);
+            pos++;
+            pos_tag++;
+            break;
+         }
+                  
          /* Right copy operator */
          case 'C': {
             shift_stack(stack,pos);

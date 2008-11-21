@@ -329,6 +329,7 @@ val=parse_string(line,&i,temp,P_COMMA,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
+   free_dela_entry(res);
    return NULL;
 }
 /* If we are at the end of line, it's an error */
@@ -336,6 +337,7 @@ if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
+   free_dela_entry(res);
    return NULL;
 }
 /* The lemma form cannot be empty */
@@ -343,6 +345,7 @@ if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_LEMMA;
+   free_dela_entry(res);
    return NULL;
 }
 res->lemma=u_strdup(temp);
@@ -354,6 +357,7 @@ val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET,P_E
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
+   free_dela_entry(res);
    return NULL;
 }
 /* The grammatical code cannot be empty */
@@ -361,6 +365,7 @@ if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
+   free_dela_entry(res);
    return NULL;
 }
 res->semantic_codes[0]=u_strdup(temp);
@@ -384,6 +389,7 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
+      free_dela_entry(res);
       return NULL;
    }
    /*  */
@@ -391,12 +397,12 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_FILTER;
+      free_dela_entry(res);
       return NULL;
    }
    res->filters[res->n_filters]=u_strdup(temp);
    (res->n_filters)++;
 }
-
 /*
  * Now we read the other gramatical and semantic codes if any
  */
@@ -406,6 +412,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
+      free_dela_entry(res);
       return NULL;
    }
    /* A grammatical or semantic code cannot be empty */
@@ -413,6 +420,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
+      free_dela_entry(res);
       return NULL;
    }
    res->semantic_codes[res->n_semantic_codes]=u_strdup(temp);
@@ -427,13 +435,15 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
+      free_dela_entry(res);
       return NULL;
    }
-      /* An inflectional code cannot be empty */
+   /* An inflectional code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
+      free_dela_entry(res);
       return NULL;
    }
    res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp);
@@ -447,7 +457,7 @@ return res;
  * This function tests if the given line is a strict DELAS line, that is to say:
  * 1) it can be tokenized as a DELAS line
  * 2) the lemma is only made of letters
- * In case of success, the fucntion returns a dela_entry structure describing the
+ * In case of success, the function returns a dela_entry structure describing the
  * line; NULL otherwise.
  */
 struct dela_entry* is_strict_DELAS_line(unichar* line,Alphabet* alphabet) {
@@ -455,6 +465,7 @@ int verbose;
 struct dela_entry* res=tokenize_DELAS_line(line,&verbose);
 if (res==NULL) return NULL;
 if (!is_sequence_of_letters(res->lemma,alphabet)) {
+   error("A DELAS lemma must be only made of letters in the alphabet file: %S\n",res->lemma);
    free_dela_entry(res);
    return NULL;
 }
