@@ -530,15 +530,13 @@ while (trans!=NULL) {
                /* We continue the exploration */
                struct dela_entry* old_value=NULL;
                if (save_dic_entry) {
-                  old_value=get_dic_variable(var_name,p->dic_variables);
+                  old_value=clone_dela_entry(get_dic_variable(var_name,p->dic_variables));
                   set_dic_variable(var_name,L->dic_entry,&(p->dic_variables));
                }
                morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,depth+1,matches,n_matches,ctx,p);
                if (save_dic_entry) {
-                  /* Now we can free it, it cannot be useful anymore */
-                  free_dela_entry(L->dic_entry);
-                  L->dic_entry=NULL;
                   set_dic_variable(var_name,old_value,&(p->dic_variables));
+                  free_dela_entry(old_value);
                }
                p->stack->stack_pointer=stack_top;
                L=L->next;
@@ -588,10 +586,10 @@ if (p->output_policy!=IGNORE_OUTPUTS) {
 }
 struct parsing_info* L=NULL;
 p->stack_base=p->stack->stack_pointer;
+struct dic_variable* dic_variable_backup=clone_dic_variable_list(p->dic_variables);
 morphological_locate(0,state,pos,0,depth+1,&L,0,NULL,p);
-
+clear_dic_variable_list(&(p->dic_variables));
 p->stack_base=old_StackBase;
-struct dic_variable* dic_variable_backup=p->dic_variables;
 if (L!=NULL) {
    struct parsing_info* L_first=L;
    /* If there is at least one match, we process the match list */
@@ -602,7 +600,7 @@ if (L!=NULL) {
          p->stack->stack_pointer=L->stack_pointer;
          install_variable_backup(p->variables,L->variable_backup);
       }
-      p->dic_variables=L->dic_variable_backup;
+      p->dic_variables=clone_dic_variable_list(L->dic_variable_backup);
       /* And we continue the exploration */
       locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p);
       p->stack->stack_pointer=stack_top;
@@ -612,11 +610,11 @@ if (L!=NULL) {
             install_variable_backup(p->variables,var_backup);
          }
       }
-      if (ctx!=NULL && L->next==NULL) {
+      if (ctx==NULL || L->next!=NULL) {
          /* If we are inside a context, we don't want to free all the dic_variables that
           * have been set, in order to allow extracting morphological information from contexts.
           * To do that, we arbitrarily keep the dic_variables of the last path match. */
-         L->dic_variable_backup=NULL;
+         clear_dic_variable_list(&(p->dic_variables));
       }
       L=L->next;
    } while (L!=NULL);
@@ -631,6 +629,8 @@ if (p->output_policy!=IGNORE_OUTPUTS) { /* For better performance (see above) */
 }
 if (ctx==NULL) {
    p->dic_variables=dic_variable_backup;
+} else {
+   clear_dic_variable_list(&dic_variable_backup);
 }
 }
 
@@ -668,11 +668,7 @@ if (!(n_transitions & 32768)) {
          if (is_entry_compatible_with_pattern(dela_entry,pattern)) {
             (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),save_dic_entry?dela_entry:NULL);
          }
-         if (!save_dic_entry) {
-            /* Now we free the DELAF entry, but only if it may not be used
-             * later, through an expression like $A.LEMMA$ */
-            free_dela_entry(dela_entry);
-         }
+         free_dela_entry(dela_entry);
          tmp=tmp->next;
       }
    }

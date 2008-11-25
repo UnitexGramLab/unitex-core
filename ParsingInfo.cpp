@@ -41,7 +41,7 @@ info->next=NULL;
 info->stack_pointer=stack_pointer;
 info->stack=u_strdup(stack);
 info->variable_backup=create_variable_backup(v);
-info->dic_entry=dic_entry;
+info->dic_entry=clone_dela_entry(dic_entry);
 info->dic_variable_backup=clone_dic_variable_list(v2);
 info->left_ctx_shift=left_ctx_shift;
 info->left_ctx_base=left_ctx_base;
@@ -59,7 +59,7 @@ while (list!=NULL) {
    free(list->stack);
    free_variable_backup(list->variable_backup);
    clear_dic_variable_list(&(list->dic_variable_backup));
-   /* Note that we don't try to clear the dic_entry field */
+   free_dela_entry(list->dic_entry);
    free(list);
    list=tmp;
 }
@@ -84,6 +84,9 @@ if (list->position==pos && list->pos_in_token==pos_in_token && list->state_numbe
    list->variable_backup=create_variable_backup(v);
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);
+   if (list->dic_entry!=NULL) {
+      fatal_error("Unexpected non NULL dic_entry in insert_if_absent\n");
+   }
    list->left_ctx_shift=left_ctx_shift;
    list->left_ctx_base=left_ctx_base;
    return list;
@@ -114,6 +117,9 @@ if ((list->position==pos) /* If the length is the same... */
    list->variable_backup=create_variable_backup(v);
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);
+   if (list->dic_entry!=NULL) {
+      fatal_error("Unexpected non NULL dic_entry in insert_if_different\n");
+   }
    return list;
 }
 /* Otherwise, we look in the rest of the list */

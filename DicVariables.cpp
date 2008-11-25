@@ -72,8 +72,9 @@ void set_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_vari
 while (*list!=NULL) {
    if (!u_strcmp((*list)->name,name)) {
       /* If we have found the variable we were looking for */
-      /* We do not have to free the previous value */
-      (*list)->dic_entry=dic_entry;
+      /* We have to free the previous value */
+      free_dela_entry((*list)->dic_entry);
+      (*list)->dic_entry=clone_dela_entry(dic_entry);
       return;
    }
    list=&((*list)->next);

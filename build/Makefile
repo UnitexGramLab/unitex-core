@@ -93,7 +93,7 @@ ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
 endif
 override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".." #-IJudy/include
-LIBTRE   = libtre
+LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
 LIBS   = -Llibtre/lib -ltre #-LJudy/lib -lJudy #-ldb
 else
@@ -653,21 +653,18 @@ getopt.o: ../getopt.c
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
 
-.libtre-done:
-	touch .libtre-done
-
-
 $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library ..."
 	tar xzf $(TRE_TGZ)
 
-libtre: .libtre-done $(TRE_SRC)
+.libtre-done: $(TRE_SRC)
 	@echo "Making TRE library ..."
 	chmod +x $(TRE_SRC)/configure
 	cd $(TRE_SRC) && ./configure --disable-shared --enable-static && make
 	mkdir -p libtre/lib libtre/include
 	cd $(TRE_SRC)/lib && ar rcs libtre.a *.o
 	cp $(TRE_SRC)/lib/libtre.a  libtre/lib/libtre.a
+	touch .libtre-done
 
 clean-libtre:
 	rm -rf libtre
