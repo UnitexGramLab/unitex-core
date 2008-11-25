@@ -325,14 +325,8 @@ return maximum_rank;
 void write_grf_header(int width,int height,int n_states,char* font,FILE* f) {
 u_fprintf(f,"#Unigraph\n");
 u_fprintf(f,"SIZE %d %d\n",width,height);
-if (font==NULL) {
-   u_fprintf(f,"FONT Times New Roman:  10\n");
-   u_fprintf(f,"OFONT Times New Roman:B 10\n");
-}
-else {
-   u_fprintf(f,"FONT %s:  10\n",font);
-   u_fprintf(f,"OFONT %s:B 10\n",font);
-}
+u_fprintf(f,"FONT %s:  10\n",font);
+u_fprintf(f,"OFONT %s:B 10\n",font);
 u_fprintf(f,"BCOLOR 16777215\n");
 u_fprintf(f,"FCOLOR 0\n");
 u_fprintf(f,"ACOLOR 12632256\n");

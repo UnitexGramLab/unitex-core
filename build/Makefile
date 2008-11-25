@@ -389,7 +389,8 @@ FST2GRF      = Fst2Grf
 FST2GRF_OBJS = IOBuffer.o Fst2Grf.o Unicode.o Fst2.o Sentence2Grf.o\
                File.o List_int.o Error.o StringParsing.o Pattern.o\
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o\
-               Alphabet.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+               Alphabet.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o\
+               ustring.o Tagset.o getopt.o
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = IOBuffer.o Fst2List.o Unicode.o Fst2.o Alphabet.o\

@@ -30,19 +30,25 @@
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "getopt.h"
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Fst2Grf <text automaton> <sentence> [<output>] [-f=<font>]\n");
-u_printf("     <text automaton> : the FST2 file that contains the text automaton.\n");
-u_printf("     <sentence> :       the number of the sentence to be converted.\n");
-u_printf("     <output> :         name GRF file as <output>.grf and the TXT one as <output>.txt (default cursentence)\n"); 
-u_printf("     -f=<font> :        use the font <font> in the output .grf (Times new Roman by default).\n\n"); 
-u_printf("Converts a sentence automaton into a GRF file that can be viewed. The\n");
-u_printf("resulting file, named cursentence.grf, is stored in the same directory\n");
-u_printf("that <text automaton>. The text of the sentence is saved in the same\n");
-u_printf("directory, in a file named cursentence.txt.\n");
+u_printf("Usage: Fst2Grf [OPTIONS] <fst2>\n"
+         "\n"
+         "  <fst2>: the .fst2 file that contains the text automaton.\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -s N/--sentence=N: the number of the sentence to be converted.\n"
+         "  -o XXX/--output=XXX:  name .grf file as XXX.grf and the .txt one as XXX.txt (default=cursentence)\n" 
+         "  -f FONT/--font=FONT: use the font FONT in the output .grf (default=Times new Roman).\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Converts a sentence automaton into a GRF file that can be viewed. The\n"
+         "resulting file, named cursentence.grf, is stored in the same directory\n"
+         "that <text automaton>. The text of the sentence is saved in the same\n"
+         "directory, in a file named cursentence.txt.\n");
 }
 
 
@@ -53,50 +59,76 @@ int main(int argc, char **argv) {
  * the graphical interface */
 setBufferMode();
 
-if (argc<3 || argc>5) {
+if (argc==1) {
    usage();
    return 0;
 }
-int SENTENCE;
-char grf_name[FILENAME_MAX];
-char txt_name[FILENAME_MAX];
+
+const char* optstring=":s:o:f:h";
+const struct option lopts[]= {
+      {"sentence",required_argument,NULL,'s'},
+      {"output",required_argument,NULL,'o'},
+      {"font",required_argument,NULL,'f'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int SENTENCE=-1;
 char* fontname=NULL;
-if (!sscanf(argv[2],"%d",&SENTENCE)) {
-   error("Invalid sentence number %s\n",argv[2]);
+char* output=NULL;
+int val,index=-1;
+char foo;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 's': if (1!=sscanf(optarg,"%d%c",&SENTENCE,&foo) || SENTENCE<=0) {
+                /* foo is used to check that the sentence number is not like "45gjh" */
+                fatal_error("Invalid sentence number: %s\n",optarg);
+             }
+             break;
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output name pattern\n");
+             }
+             output=strdup(optarg);
+             break;
+   case 'f': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty font name\n");
+             }
+             fontname=strdup(optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (SENTENCE==-1) {
+   fatal_error("You must specify a sentence number\n");
+}
+
+if (optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-get_path(argv[1],grf_name);
-get_path(argv[1],txt_name);
-switch (argc){
-   case 3:
-      strcat(grf_name,"cursentence.grf");
-      strcat(txt_name,"cursentence.txt");
-      break;
-      
-   case 4:
-      if (argv[3][0]=='-' && argv[3][1]=='f' && argv[3][2]=='=') {
-         fontname=&(argv[3][3]);
-         strcat(grf_name,"cursentence.grf");
-         strcat(txt_name,"cursentence.txt");
-      } else {
-         strcat(grf_name,argv[3]);
-         strcat(grf_name,".grf");
-         strcat(txt_name,argv[3]);
-         strcat(txt_name,".txt");
-      }
-      break; 
-      
-   case 5:
-      if (argv[4][0]=='-' && argv[4][1]=='f' && argv[4][2]=='=') {
-         fontname=&(argv[4][3]);
-      } else {
-         error("Wrong parameter: %s\n",argv[4]);
-      }  
-      strcat(grf_name,argv[3]);
-      strcat(grf_name,".grf");
-      strcat(txt_name,argv[3]);
-      strcat(txt_name,".txt");
-      break;
+char grf_name[FILENAME_MAX];
+char txt_name[FILENAME_MAX];
+
+get_path(argv[optind],grf_name);
+get_path(argv[optind],txt_name);
+if (output==NULL) {
+   strcat(grf_name,"cursentence.grf");
+   strcat(txt_name,"cursentence.txt");
+} else {
+   strcat(grf_name,output);
+   strcat(grf_name,".grf");
+   strcat(txt_name,output);
+   strcat(txt_name,".txt");
+}
+if (fontname==NULL) {
+   fontname=strdup("Times New Roman");
 }
 FILE* f=u_fopen(grf_name,U_WRITE);
 if (f==NULL) {
@@ -109,10 +141,10 @@ if (txt==NULL) {
    u_fclose(f);
    return 1;
 }
-u_printf("Loading %s...\n",argv[1]);
-Fst2* fst2=load_one_sentence_from_fst2(argv[1],SENTENCE);
+u_printf("Loading %s...\n",argv[optind]);
+Fst2* fst2=load_one_sentence_from_fst2(argv[optind],SENTENCE);
 if (fst2==NULL) {
-   error("Cannot load text automata file %s\n",argv[1]);
+   error("Cannot load text automata file %s\n",argv[optind]);
    u_fclose(f);
    u_fclose(txt);
    return 1;
@@ -122,6 +154,10 @@ u_fclose(txt);
 u_printf("Creating GRF...\n");
 sentence_to_grf(fst2,SENTENCE,fontname,f);
 u_fclose(f);
+free(fontname);
+if (output!=NULL) {
+   free(output);
+}
 free_Fst2(fst2);
 u_printf("Done.\n");
 return 0;
