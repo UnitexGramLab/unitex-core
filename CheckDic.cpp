@@ -68,6 +68,7 @@ const struct option lopts[]= {
       {NULL,no_argument,NULL,0}
 };
 int val,index=-1;
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 'f': is_a_DELAF=1; break;

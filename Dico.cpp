@@ -144,6 +144,7 @@ int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char* morpho_dic=NULL;
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 't': if (optarg[0]=='\0') {
@@ -221,11 +222,13 @@ struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,s
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
 count_token_occurrences(info);
+/* We save optind since it is a global variable that can be modified by Locate */
+int OPTIND=optind;
 /* We all dictionaries according their priority */
 for (int priority=1;priority<4;priority++) {
    /* For a given priority, we apply all concerned dictionaries 
     * in their order on the command line */
-   for (int i=optind;i<argc;i++) {
+   for (int i=OPTIND;i<argc;i++) {
       char tmp[FILENAME_MAX];
       remove_extension(argv[i],tmp);
       char priority_mark=tmp[strlen(tmp)-1];
@@ -271,7 +274,7 @@ for (int priority=1;priority<4;priority++) {
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            launch_locate_as_routine(argv[1],argv[i],argv[2],policy,morpho_dic);
+            launch_locate_as_routine(text,argv[i],alph,policy,morpho_dic);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

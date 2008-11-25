@@ -72,6 +72,7 @@ char* out=NULL;
 char* font=NULL;
 int size=0;
 char foo;
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 'o': if (optarg[0]=='\0') {

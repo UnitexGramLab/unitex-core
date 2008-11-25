@@ -76,6 +76,7 @@ char extract_matching_units=1;
 char text_name[FILENAME_MAX]="";
 char concord_ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 'y': extract_matching_units=1; break;

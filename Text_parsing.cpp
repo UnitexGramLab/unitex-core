@@ -49,10 +49,6 @@ void launch_locate(FILE* f,FILE* out,
                    long int text_size,FILE* info,
                    struct locate_parameters* p) {
 fill_buffer(p->token_buffer,f);
-if (p->output_policy!=IGNORE_OUTPUTS) {
-   /* There may be transducer output, so we allow different output */
-   p->ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
-}
 OptimizedFst2State initial_state=p->optimized_states[p->fst2->initial_states[1]];
 p->current_origin=0;
 int n_read=0;

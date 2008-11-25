@@ -62,6 +62,7 @@ const struct option lopts[]= {
 int val,index=-1;
 char txtname[FILENAME_MAX]="";
 char outname[FILENAME_MAX]="";
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 'o': if (optarg[0]=='\0') {

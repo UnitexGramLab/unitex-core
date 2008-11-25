@@ -74,5 +74,14 @@ typedef enum {
    DEFAULT_TOKENIZATION
 } TokenizationPolicy;
 
+
+/* How to behave when an output containing an invalid variable is found 
+ * with output policy!=IGNORE_OUTPUTS ? */
+typedef enum {
+   EXIT_ON_VARIABLE_ERRORS,
+   IGNORE_VARIABLE_ERRORS,
+   BACKTRACK_ON_VARIABLE_ERRORS
+} VariableErrorPolicy;
+
 #endif
 

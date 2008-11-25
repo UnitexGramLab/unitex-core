@@ -433,7 +433,7 @@ LOCATE_OBJS = IOBuffer.o Locate.o Unicode.o Alphabet.o DELA.o List_ustring.o Str
               ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o LocateAsRoutine.o\
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-              symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+              symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 MERGETEXTAUTOMATON      = MergeTextAutomaton
 MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o Unicode.o String_hash.o Fst2.o\

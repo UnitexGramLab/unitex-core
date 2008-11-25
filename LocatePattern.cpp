@@ -69,7 +69,8 @@ p->space_policy=DONT_START_WITH_SPACE;
 p->matching_units=0;
 p->match_policy=LONGEST_MATCHES;
 p->output_policy=IGNORE_OUTPUTS;
-p->ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS;
+p->ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
+p->variable_error_policy=IGNORE_VARIABLE_ERRORS;
 p->match_list=NULL;
 p->number_of_matches=0;
 p->number_of_outputs=0;
@@ -101,13 +102,17 @@ free(p);
 int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,char* err,
                    char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
                    char* dynamicDir,TokenizationPolicy tokenization_policy,
-                   SpacePolicy space_policy,int search_limit,char* morpho_dic_list) {
+                   SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
+                   AmbiguousOutputPolicy ambiguous_output_policy,
+                   VariableErrorPolicy variable_error_policy) {
 struct locate_parameters* p=new_locate_parameters();
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;
 p->space_policy=space_policy;
 p->output_policy=output_policy;
 p->search_limit=search_limit;
+p->ambiguous_output_policy=ambiguous_output_policy;
+p->variable_error_policy=variable_error_policy;
 FILE* text_file;
 FILE* out;
 FILE* info;

@@ -140,6 +140,7 @@ struct locate_parameters {
    /* Policies for handling outputs */
    OutputPolicy output_policy;
    AmbiguousOutputPolicy ambiguous_output_policy;
+   VariableErrorPolicy variable_error_policy;
    
    /* The match list associated to the current Locate operation */
    struct match_list* match_list;
@@ -192,7 +193,9 @@ struct locate_parameters {
 
 
 int locate_pattern(char*,char*,char*,char*,char*,char*,char*,
-                   MatchPolicy,OutputPolicy,char*,TokenizationPolicy,SpacePolicy,int,char*);
+                   MatchPolicy,OutputPolicy,char*,TokenizationPolicy,
+                   SpacePolicy,int,char*,AmbiguousOutputPolicy,
+                   VariableErrorPolicy);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,TokenizationPolicy);

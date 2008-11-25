@@ -23,11 +23,6 @@
 #include "Error.h"
 #include "DicVariables.h"
 
-#warning add a parameter to Locate for variable error policy
-// add a test on variable, just to see if the variable is defined or not, wihtout
-// try to output it
-int VARIABLE_ERROR_POLICY=IGNORE_VARIABLE_ERRORS;
-
 
 /**
  * This function returns a non zero value if c can be a part of a variable name;
@@ -97,10 +92,10 @@ while (s[i]!='\0') {
       }
       name[l]='\0';
       if (s[i]!='$' && s[i]!='.') {
-         switch (VARIABLE_ERROR_POLICY) {
+         switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
-            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
       }
       if (s[i]=='.') {
@@ -113,26 +108,26 @@ while (s[i]!='\0') {
          }
          field[l]='\0';
          if (s[i]=='\0') {
-            switch (VARIABLE_ERROR_POLICY) {
+            switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: missing closing $ after $%S.%S\n",name,field);
                case IGNORE_VARIABLE_ERRORS: continue;
-               case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
          }
          if (field[0]=='\0') {
-            switch (VARIABLE_ERROR_POLICY) {
+            switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: empty field: $%S.$\n",name);
                case IGNORE_VARIABLE_ERRORS: continue;
-               case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
          }
          i++;
-         struct dela_entry* entry=(struct dela_entry*)get_dic_variable(name,p->dic_variables);
+         struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
          if (entry==NULL) {
-            switch (VARIABLE_ERROR_POLICY) {
+            switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined morphological variable %S\n",name);
                case IGNORE_VARIABLE_ERRORS: continue;
-               case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
          }
          if (!u_strcmp(field,"INFLECTED")) {
@@ -151,10 +146,10 @@ while (s[i]!='\0') {
                push_string(p->stack,entry->inflectional_codes[i]);
             }
          } else {
-            switch (VARIABLE_ERROR_POLICY) {
+            switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
                case IGNORE_VARIABLE_ERRORS: continue;
-               case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+               case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
          }
          continue;
@@ -167,31 +162,31 @@ while (s[i]!='\0') {
       }
       struct transduction_variable* v=get_transduction_variable(p->variables,name);
       if (v==NULL) {
-         switch (VARIABLE_ERROR_POLICY) {
+         switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: undefined variable $%S$\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
-            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
       }
       if (v->start==UNDEF_VAR_BOUND) {
-         switch (VARIABLE_ERROR_POLICY) {
+         switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: starting position of variable $%S$ undefined\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
-            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
       }
       if (v->end==UNDEF_VAR_BOUND) {
-         switch (VARIABLE_ERROR_POLICY) {
+         switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position of variable $%S$ undefined\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
-            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
       }
       if (v->start>v->end) {
-         switch (VARIABLE_ERROR_POLICY) {
+         switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
-            case STOP_MATCH_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
+            case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
          }
       }
       /* If the variable definition is correct */

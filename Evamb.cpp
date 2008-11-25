@@ -67,6 +67,7 @@ const struct option lopts[]= {
 int val,index=-1;
 int sentence_number=-1;
 char foo;
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 's': if (1!=sscanf(optarg,"%d%c",&sentence_number,&foo) || sentence_number<=0) {

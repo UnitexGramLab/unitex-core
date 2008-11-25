@@ -29,11 +29,6 @@
 #define TRANSDUCTION_STACK_SIZE 10000
 
 
-#define EXIT_ON_VARIABLE_ERRORS 0
-#define IGNORE_VARIABLE_ERRORS 1
-#define STOP_MATCH_ON_VARIABLE_ERRORS 2
-
-
 int is_variable_char(unichar);
 void push_char(struct stack_unichar*,unichar);
 void push_string(struct stack_unichar*,unichar*);

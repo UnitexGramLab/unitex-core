@@ -123,6 +123,7 @@ int decode_normal_characters=0;
 int decode_control_characters=0;
 int encode_all_characters=0;
 int encode_control_characters=0;
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 's': if (optarg[0]=='\0') {

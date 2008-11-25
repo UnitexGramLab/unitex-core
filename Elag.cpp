@@ -91,6 +91,7 @@ char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 'l': if (optarg[0]=='\0') {

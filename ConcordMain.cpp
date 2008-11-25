@@ -139,6 +139,7 @@ int val,index=-1;
 struct conc_opt* options=new_conc_opt();
 char foo;
 int ret;
+optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    switch(val) {
    case 'f': if (optarg[0]=='\0') {
