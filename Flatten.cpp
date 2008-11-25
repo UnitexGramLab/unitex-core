@@ -28,22 +28,24 @@
 #include "FlattenFst2.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "getopt.h"
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Flatten <fst2> <type> [depth]\n"
-       "     <fst2> : compiled grammar to flatten;\n"
-       "     <type> : this parameter specifies the type of the resulting grammar\n"
-       "              The 2 possibles values are:\n"
-       "              FST : if the grammar is not a finite-state one, the program\n"
-       "                    makes a finite-state approximation of it. The resulting\n"
-       "                    FST2 will contain only one graph.\n"
-       "              RTN : the grammar will be flattened according to the depth limit.\n"
-       "                    The resulting grammar may not be finite-state.\n"
-       "     [depth] : maximum subgraph depth to be flattened. If this parameter is\n"
-       "               not precised, the value 10 is taken by default.\n"
-       "\n\n"
+u_printf("Usage: Flatten [OPTIONS] <fst2>\n"
+       "\n"
+       "  <fst2>: compiled grammar to flatten;\n"
+       "\n"
+       "OPTIONS:\n"
+       "  -f/--fst: if the grammar is not a finite-state one, the program\n"
+       "            makes a finite-state approximation of it. The resulting\n"
+       "            .fst2 will contain only one graph (default);\n"
+       "  -r/--rtn: the grammar will be flattened according to the depth limit.\n"
+       "            The resulting grammar may not be finite-state.\n"
+       "  -d N/--depth=N: maximum subgraph depth to be flattened (default=10).\n"
+       "  -h/--help: this help\n"
+       "\n"
        "Flattens a FST2 grammar into a finite state transducer in the limit of\n"
        "a recursion depth. The grammar <fst2> is replaced by its flattened equivalent.\n"
        "If the flattening process is complete, the resulting grammar contains only one\n"
@@ -58,35 +60,56 @@ int main(int argc, char **argv) {
  * the graphical interface */
 setBufferMode();
 
-if ((argc<3) || (argc>4)) {
+if (argc==1) {
    usage();
    return 0;
 }
 
-int RTN;
-if (!strcmp(argv[2],"RTN")) {
-   RTN=1;
-} else if (!strcmp(argv[2],"FST")) {
-   RTN=0;
-}  else {
-   error("Invalid parameter: %s\n",argv[2]);
+const char* optstring=":frd:h";
+const struct option lopts[]= {
+      {"fst",no_argument,NULL,'f'},
+      {"rtn",no_argument,NULL,'r'},
+      {"depth",required_argument,NULL,'d'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int RTN=1;
+int depth=10;
+int val,index=-1;
+char foo;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'f': RTN=0; break;
+   case 'r': RTN=1; break;
+   case 'd': if (1!=sscanf(optarg,"%d%c",&depth,&foo) || depth<=0) {
+                /* foo is used to check that the depth is not like "45gjh" */
+                fatal_error("Invalid depth argument: %s\n",optarg);
+             }
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-int depth=10;
-if (argc==4) {
-   if (1!=sscanf(argv[3],"%d",&depth) || (depth<1)) {
-      error("Invalid depth parameter %s\n",argv[3]);
-      return 1;
-   }
-}
-u_printf("Loading %s...\n",argv[1]);
-Fst2* origin=load_fst2(argv[1],1);
+
+u_printf("Loading %s...\n",argv[optind]);
+Fst2* origin=load_fst2(argv[optind],1);
 if (origin==NULL) {
-   error("Cannot load %s\n",argv[1]);
+   error("Cannot load %s\n",argv[optind]);
    return 1;
 }
 char temp[FILENAME_MAX];
-strcpy(temp,argv[1]);
+strcpy(temp,argv[optind]);
 strcat(temp,".tmp.fst2");
 switch (flatten_fst2(origin,depth,temp,RTN)) {
    case EQUIVALENT_FST:
@@ -98,10 +121,10 @@ switch (flatten_fst2(origin,depth,temp,RTN)) {
    case EQUIVALENT_RTN:
       u_printf("The resulting grammar is an equivalent FST2 (RTN).\n");
       break;
-   default:; // FIXME: What if the execution reaches here, just in case ?
+   default: fatal_error("Internal state error in Flatten's main\n");
 }
 free_Fst2(origin);
-remove(argv[1]);
-rename(temp,argv[1]);
+remove(argv[optind]);
+rename(temp,argv[optind]);
 return 0;
 }

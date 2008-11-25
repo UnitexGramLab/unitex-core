@@ -372,7 +372,7 @@ FLATTEN_OBJS = IOBuffer.o Flatten.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
                FlattenFst2.o List_int.o Error.o File.o SingleGraph.o\
                BitMasks.o BitArray.o HashTable.o FIFO.o Pattern.o List_ustring.o\
                String_hash.o StringParsing.o Transitions.o DELA.o\
-               symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+               symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 #FREQ         = Freq
 #FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.o                \
