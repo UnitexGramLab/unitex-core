@@ -724,6 +724,8 @@ remake: clean all
 
 else
 
+ifeq ($(SYSTEM),windows)
+
 #######################
 #######################
 ##  WINDOWS TARGETS  ##
@@ -750,8 +752,37 @@ clean:
 ##  END WINDOWS TARGETS ##
 ##########################
 ##########################
-endif
+else 
 
+#############################
+#############################
+##  MINGW WINDOWS TARGETS  ##
+#############################
+#############################
+all: bin
+	@echo
+	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
+	@echo
+
+
+bin: $(BINARIES)
+
+getopt.o: ../getopt.c
+	$(CC) -c $(CFLAGS) ../getopt.c
+
+%.o: ../%.cpp
+	$(CC) -c $(CFLAGS) $<
+
+clean: 
+	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe
+
+#############################
+#############################
+##  MINGW WINDOWS TARGETS  ##
+#############################
+#############################
+endif 
+endif
 
 $(BIN_DIR)$(TEST)$(EXTENSION): $(TEST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
