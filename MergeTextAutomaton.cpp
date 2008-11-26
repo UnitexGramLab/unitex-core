@@ -36,9 +36,6 @@
 static unichar epsilon[] = { '<', 'E', '>', 0 };
 
 
-
-
-
 #ifndef MAX_PATH
 #define MAX_PATH 2000
 #endif

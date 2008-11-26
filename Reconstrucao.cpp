@@ -42,10 +42,10 @@
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Reconstrucao [OPTIONS] <list>\n"
+u_printf("Usage: Reconstrucao [OPTIONS] <index>\n"
          "\n"
-         "  <list> : the match list that describes the forms to be normalized. This\n"
-         "            list must have been computed in MERGE or REPLACE mode.\n"
+         "  <index> : the match list that describes the forms to be normalized. This\n"
+         "            list must have been computed by Locate in MERGE or REPLACE mode.\n"
          "\n"
          "OPTIONS:\n"
          "  -a ALPH/--alphabet=ALPH: the alphabet file to use\n"
