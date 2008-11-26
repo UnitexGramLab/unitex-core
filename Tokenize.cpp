@@ -31,6 +31,7 @@
 #include "Table_hash.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "getopt.h"
 
 
 #define NORMAL 0
@@ -43,7 +44,6 @@
 int n_occur[MAX_TOKENS];
 int enter_pos[MAX_ENTER_CHAR];
 int n_enter_char=0;
-int MODE;
 int SENTENCES=0;
 int TOKENS_TOTAL=0;
 int WORDS_TOTAL=0;
@@ -51,28 +51,16 @@ int DIFFERENT_WORDS=0;
 int DIGITS_TOTAL=0;
 int DIFFERENT_DIGITS=0;
 
-
-void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Tokenize <text> <alphabet> [-char_by_char]\n");
-u_printf("     <text> : any unicode text file\n");
-u_printf("     <alphabet> : the alphabet file\n");
-u_printf("     [-char_by_char] : with this option, the program do a char by char\n");
-u_printf("     tokenization (except for the tags {S}, {STOP} or like {today,.ADV}). This\n");
-u_printf("     mode may be used for languages like Thai.\n\n");
-u_printf("Tokenizes the text. The token list is stored into a TOKENS.TXT file and\n");
-u_printf("the coded text is stored into a TEXT.COD file.\n");
-u_printf("The program also produces 4 files named tok_by_freq.txt, tok_by_alph.txt,\n");
-u_printf("stats.n and enter.pos. They contain the token list sorted by frequence and by\n");
-u_printf("alphabetical order and stats.n contains some statistics. The file enter.pos\n");
-u_printf("contains the position in tokens of all the carridge return sequences. All\n");
-u_printf("files are saved in the text_snt directory.\n");
-}
+void init_n_occur();
+void sort_and_save_by_frequence(FILE*,struct table_hash*);
+void sort_and_save_by_alph_order(FILE*,struct table_hash*);
+void compute_statistics(FILE*,struct table_hash*,Alphabet*);
+void normal_tokenization(FILE*,FILE*,FILE*,Alphabet*,struct table_hash*);
+void char_by_char_tokenization(FILE*,FILE*,FILE*,Alphabet*,struct table_hash*);
+void sauver_enter_pos(FILE*);
 
 
-
-void ecrire_nombre_lignes(char name[],int n)
-{
+void ecrire_nombre_lignes(char name[],int n) {
   FILE *f;
   int i;
   i=2+9*2; // *2 because of unicode +2 because of FF FE at file start
@@ -90,55 +78,102 @@ void ecrire_nombre_lignes(char name[],int n)
 
 
 
+void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Tokenize [OPTIONS] <txt>\n"
+         "\n"
+         "  <txt>: any unicode text file\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
+         "  -c/--char_by_char: with this option, the program does a char by char tokenization\n"
+         "                     (except for the tags {S}, {STOP} or like {today,.ADV}). This\n"
+         "                     mode may be used for languages like Thai.\n"
+         "  -w/--word_by_word: word by word tokenization (default);\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Tokenizes the text. The token list is stored into \"tokens.txt\" and\n"
+         "the coded text is stored into \"text.cod\".\n"
+         "The program also produces 4 files named \"tok_by_freq.txt\", \"tok_by_alph.txt\",\n"
+         "\"stats.n\" and \"enter.pos\". They contain the token list sorted by frequence and by\n"
+         "alphabetical order and \"stats.n\" contains some statistics. The file \"enter.pos\"\n"
+         "contains the position in tokens of all the carridge return sequences. All\n"
+         "files are saved in the XXX_snt directory where XXX is <txt> without its extension.\n");
+}
 
-void init_n_occur();
-void sort_and_save_by_frequence(FILE*,struct table_hash*);
-void sort_and_save_by_alph_order(FILE*,struct table_hash*);
-void compute_statistics(FILE*,struct table_hash*,Alphabet*);
-void normal_tokenization(FILE*,FILE*,FILE*,Alphabet*,struct table_hash*);
-void char_by_char_tokenization(FILE*,FILE*,FILE*,Alphabet*,struct table_hash*);
-void sauver_enter_pos(FILE*);
 
 
-
-int main(int argc, char **argv) {
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
 
-if (argc<3 || argc>4) {
+if (argc==1) {
    usage();
    return 0;
 }
+
+const char* optstring=":a:cwh";
+const struct option lopts[]={
+   {"alphabet", required_argument, NULL, 'a'},
+   {"char_by_char", no_argument, NULL, 'c'},
+   {"word_by_word", no_argument, NULL, 'w'},
+   {"help", no_argument, NULL, 'h'},
+   {NULL, no_argument, NULL, 0}
+};
+char alphabet[FILENAME_MAX]="";
+int val,index=-1;
+int mode=NORMAL;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'a': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty alphabet file name\n");
+             }
+             strcpy(alphabet,optarg);
+             break;      
+   case 'c': mode=CHAR_BY_CHAR; break;
+   case 'w': mode=NORMAL; break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+if (alphabet[0]=='\0') {
+   fatal_error("You must specify the alphabet file\n");
+}
+
 FILE* text;
 FILE* out;
 FILE* tokens;
 FILE* enter;
-char tokens_txt[2000];
-char text_cod[2000];
-char enter_pos[2000];
+char tokens_txt[FILENAME_MAX];
+char text_cod[FILENAME_MAX];
+char enter_pos[FILENAME_MAX];
 Alphabet* alph;
 
-get_snt_path((const char*)argv[1],text_cod);
+get_snt_path(argv[optind],text_cod);
 strcat(text_cod,"text.cod");
-get_snt_path(argv[1],tokens_txt);
+get_snt_path(argv[optind],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
-get_snt_path(argv[1],enter_pos);
+get_snt_path(argv[optind],enter_pos);
 strcat(enter_pos,"enter.pos");
-text=u_fopen(argv[1],U_READ);
+text=u_fopen(argv[optind],U_READ);
 if (text==NULL) {
-   error("Cannot open text file %s\n",argv[1]);
-   return 1;
+   fatal_error("Cannot open text file %s\n",argv[optind]);
 }
-MODE=NORMAL;
-if (argc==4) {
-   if (!strcmp(argv[3],"-char_by_char"))
-      MODE=CHAR_BY_CHAR;
-   else {
-      error("Invalid parameter %s\n",argv[3]);
-   }
-}
-alph=load_alphabet(argv[2]);
+alph=load_alphabet(alphabet);
 if (alph==NULL) {
-   error("Cannot load alphabet file %s\n",argv[2]);
+   error("Cannot load alphabet file %s\n",alphabet);
    u_fclose(text);
    return 1;
 }
@@ -179,7 +214,7 @@ h_table = new_table_hash(HASH_SIZE, HASH_BLOCK_SIZE);
 
 init_n_occur();
 u_printf("Tokenizing text...\n");
-if (MODE==NORMAL) {
+if (mode==NORMAL) {
    normal_tokenization(text,out,tokens,alph,h_table);
 }
 else {
@@ -191,10 +226,9 @@ fclose(enter);
 u_fclose(text);
 fclose(out);
 u_fclose(tokens);
-
 ecrire_nombre_lignes(tokens_txt,h_table->last_token_cod);
 // we compute some statistics
-get_snt_path(argv[1],tokens_txt);
+get_snt_path(argv[optind],tokens_txt);
 strcat(tokens_txt,"stats.n");
 tokens=u_fopen(tokens_txt,U_WRITE);
 if (tokens==NULL) {
@@ -205,7 +239,7 @@ else {
    u_fclose(tokens);
 }
 // we save the tokens by frequence
-get_snt_path(argv[1],tokens_txt);
+get_snt_path(argv[optind],tokens_txt);
 strcat(tokens_txt,"tok_by_freq.txt");
 tokens=u_fopen(tokens_txt,U_WRITE);
 if (tokens==NULL) {
@@ -216,7 +250,7 @@ else {
    u_fclose(tokens);
 }
 // we save the tokens by alphabetical order
-get_snt_path(argv[1],tokens_txt);
+get_snt_path(argv[optind],tokens_txt);
 strcat(tokens_txt,"tok_by_alph.txt");
 tokens=u_fopen(tokens_txt,U_WRITE);
 if (tokens==NULL) {
