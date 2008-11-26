@@ -485,6 +485,14 @@ SORTTXT_OBJS = IOBuffer.o SortTxt.o Unicode.o Error.o SortTxtMain.o Thai.o getop
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Unicode.o File.o Error.o getopt.o
 
+TAGSETNORM = TagsetNormFst2
+TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o ElagFstFilesIO.o ustring.o \
+					String_hash.o symbol.o LanguageDefinition.o Tagset.o\
+					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
+					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
+					BitMasks.o FIFO.o Transitions.o\
+					symbol_op.o Fst2Automaton.o getopt.o
+
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\
 				File.o DELA.o List_ustring.o Table_hash.o Error.o StringParsing.o
@@ -496,14 +504,6 @@ TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o DELA_tr
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
                 FIFO.o BitArray.o HashTable.o Transitions.o Matches.o\
                 symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
-
-TAGSETNORM = TagsetNormFst2
-TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o ElagFstFilesIO.o ustring.o \
-					String_hash.o symbol.o LanguageDefinition.o Tagset.o\
-					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
-					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
-					BitMasks.o FIFO.o Transitions.o\
-					symbol_op.o Fst2Automaton.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = IOBuffer.o Unicode.o Fst2.o Alphabet.o \

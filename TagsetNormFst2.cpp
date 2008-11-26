@@ -32,76 +32,82 @@
 #include "File.h"
 #include "LanguageDefinition.h"
 #include "SingleGraph.h"
+#include "getopt.h"
 
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: TagsetNormFst2 -l <tagset> <txtauto>\n"
+u_printf("Usage: TagsetNormFst2 [OPTIONS] <txtauto>\n"
          "\n"
-         "with:\n"
-         "<tagset>  : tagset description file\n"
-         "<txtauto> : text automaton to normalize\n"
+         "  <txtauto>: text automaton to normalize\n"
          "\n"
-         "Normalize the specified text automaton according to the tagset description\n"
+         "OPTIONS:\n"
+         "  -t TAGSET/--tagset=TAGSET: tagset description file\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Normalizes the specified text automaton according to the tagset description\n"
          "file, discarding undeclared dictionary codes and incoherent lexical entries.\n"
          "Inflectional features are unfactorized so that '{rouge,.A:fs:ms}' will be\n"
          "divided into the 2 tags '{rouge,.A:fs}' and '{rouge,.A:ms}'.\n"
-         "The text automaton is modified.\n");
+         "The input text automaton is modified.\n");
 }
 
 
 
-int main(int argc, char ** argv) {
+int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
 
-char* txtauto=NULL;
-char* langname=NULL;
-argv++;
-argc--;
-if (argc==0) {
+if (argc==1) {
    usage();
    return 0;
 }
-while (argc) {
-   if (**argv!='-') {
-      /* Text automaton */
-      txtauto=(*argv);
-   } else {
-      if (!strcmp(*argv, "-l")) {
-         /* Tagset file */
-         argv++;
-         argc--;
-         if (argc==0) {
-            fatal_error("-l needs an argument\n");
-         }
-         langname=(*argv);
-      } else if (!strcmp(*argv,"-h")) {
-         usage();
-         return 0;
-      } else {
-         fatal_error("Unknown argument: '%s'\n",*argv);
-      }
+
+const char* optstring=":t:h";
+const struct option lopts[]= {
+      {"tagset",required_argument,NULL,'t'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+char txtauto[FILENAME_MAX]="";
+char tagset[FILENAME_MAX]="";
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 't': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty tagset file name\n");
+             }
+             strcpy(tagset,optarg);
+             break;      
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
    }
-   argv++;
-   argc--;
-}	
-if (!langname) {
-   fatal_error("No tagset specified\n");
+   index=-1;
 }
-if (txtauto==NULL) {
-   fatal_error("No text automaton specified\n");
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}   
+
+if (tagset[0]=='\0') {
+   fatal_error("You must specify the tagset file\n");
 }
+strcpy(txtauto,argv[optind]);
 char bak[FILENAME_MAX];
 strcpy(bak,txtauto);
 strcat(bak,".bak");
 u_printf("Copying %s to %s ...\n",txtauto,bak);
 copy_file(bak,txtauto);
 u_printf("Loading tagset...\n");
-language_t* language=load_language_definition(langname);
+language_t* language=load_language_definition(tagset);
 set_current_language(language);
 Elag_fst_file_in* txtin=load_fst_file(bak,FST_TEXT,LANGUAGE);
 if (txtin==NULL) {
