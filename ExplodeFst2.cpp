@@ -48,6 +48,7 @@ int main(int argc,char* argv[]) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
+
 if (argc==1) {
    usage();
    return 0;

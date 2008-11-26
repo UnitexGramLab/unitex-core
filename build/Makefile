@@ -425,7 +425,7 @@ IMPLODEFST2      = ImplodeFst2
 IMPLODEFST2_OBJS = IOBuffer.o ImplodeFst2.o Unicode.o Fst2.o\
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
                    List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o\
-                   symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+                   symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 LOCATE      = Locate
 LOCATE_OBJS = IOBuffer.o Locate.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \

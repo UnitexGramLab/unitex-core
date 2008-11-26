@@ -29,6 +29,7 @@
 #include "List_pointer.h"
 #include "Error.h"
 #include "Transitions.h"
+#include "getopt.h"
 
 
 void implode(Fst2*,FILE*);
@@ -36,15 +37,16 @@ void implode(Fst2*,FILE*);
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: ImplodeFst2 <txtauto> -o <out>\n"
+u_printf("Usage: ImplodeFst2 [OPTIONS] <txtauto>\n"
          "\n"
-         "where :\n"
-         " <txtauto>     : input text automaton FST2 file,\n"
-         " <out>         : resulting text automaton\n"
+         "  <txtauto>: input text automaton file\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -o OUT/--output=OUT: resulting text automaton. By default, OUT is of the form \"text-imp.fst2\"\n"
+         "  -h/--help: this help\n"
          "\n"
          "Implodes the specified text automaton by merging together lexical entries\n"
-         "which only differ in their inflectional features.\n"
-         "The resulting text automaton is stored in <out>.\n\n");
+         "which only differ in their inflectional features.\n");
 }
 
 
@@ -54,48 +56,50 @@ int main(int argc, char ** argv) {
  * the graphical interface */
 setBufferMode();  
 
-char* txtname=NULL;
-char* outname=NULL;
-argv++;
-argc--;
-if (argc==0) {
+if (argc==1) {
    usage();
    return 0;
 }
-while (argc) {
-   if (**argv!='-') {
-      txtname=(*argv);
-   } else {
-      if (!strcmp(*argv,"-h")) {
-         usage();
-         return 0;
-      }
-      else if (!strcmp(*argv,"-o")) {
-         *argv++;
-         argc--;
-         if (argc==0) {
-            fatal_error("'-o' needs an additionnal argument\n");
-         }
-         outname=*argv;
-      }
+
+const char* optstring=":o:h";
+const struct option lopts[]= {
+      {"output",required_argument,NULL,'o'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+char txtname[FILENAME_MAX]="";
+char outname[FILENAME_MAX]="";
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name: %s\n",optarg);
+             }
+             strcpy(outname,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
    }
-   *argv++;
-   argc--;
+   index=-1;
 }
-if (txtname==NULL) {
-   fatal_error("No text automaton specified\n");
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
 }
-if (outname==NULL) {
-   int len=strlen(txtname);
-   outname=(char*)malloc((len+10)*sizeof(char));
-   if (outname==NULL) {
-      fatal_error("Not enough memory in main\n");
-   }
+
+strcpy(txtname,argv[optind]);
+if (outname[0]=='\0') {
+   int len = strlen(txtname);
    strcpy(outname,txtname);
-   if (!strcmp(txtname+len-5,".fst2")) {
-      strcpy(outname+len-5,"-imp.fst2");
+   if (strcmp(txtname + len - 5, ".fst2") == 0) {
+      strcpy(outname + len - 5, "-imp.fst2");
    } else {
-      strcat(outname,"-imp.fst2");
+      strcat(outname, "-imp.fst2");
    }
 }
 u_printf("Loading '%s'...\n",txtname);
