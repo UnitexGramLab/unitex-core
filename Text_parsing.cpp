@@ -282,7 +282,7 @@ if (graph_call_list!=NULL) {
    if (p->output_policy!=IGNORE_OUTPUTS) {
       /* For better performance when ignoring outputs */
       var_backup=create_variable_backup(p->variables);
-      dic_variables_backup=clone_dic_variable_list(p->dic_variables);
+      dic_variables_backup=p->dic_variables;
    }
    do {
       /* For each graph call, we look all the reachable states */
@@ -290,10 +290,12 @@ if (graph_call_list!=NULL) {
       while (t!=NULL) {
          struct parsing_info* L=NULL;
          p->stack_base=p->stack->stack_pointer;
+         p->dic_variables=clone_dic_variable_list(dic_variables_backup);
          locate(graph_depth+1, /* Exploration of the subgraph */
                 p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
                 pos,depth+1,&L,0,NULL,p);
          p->stack_base=old_StackBase;
+         clear_dic_variable_list(&(p->dic_variables));
          if (L!=NULL) {
            struct parsing_info* L_first=L;
            /* If there is at least one match, we process the match list */
@@ -303,7 +305,7 @@ if (graph_call_list!=NULL) {
                u_strcpy(&(p->stack->stack[stack_top+1]),L->stack);
                p->stack->stack_pointer=L->stack_pointer;
                install_variable_backup(p->variables,L->variable_backup);
-               p->dic_variables=L->dic_variable_backup;
+               p->dic_variables=clone_dic_variable_list(L->dic_variable_backup);
              }
              /* And we continue the exploration */
              int old_left_ctx_shift=p->left_ctx_shift;
@@ -314,6 +316,7 @@ if (graph_call_list!=NULL) {
              p->left_ctx_shift=old_left_ctx_shift;
              p->left_ctx_base=old_left_ctx_base;
              p->stack->stack_pointer=stack_top;
+             clear_dic_variable_list(&(p->dic_variables));
              if (graph_depth==0) {
                 /* If we are at the top graph level, we restore the variables */
                 if (p->output_policy!=IGNORE_OUTPUTS) {
@@ -326,7 +329,6 @@ if (graph_call_list!=NULL) {
            free_parsing_info(L_first); //  free all subgraph matches
          }
          /* As free_parsing_info has freed p->dic_variables, we must restore it */
-         p->dic_variables=clone_dic_variable_list(dic_variables_backup);
          t=t->next;
       } /* end of while (t!=NULL) */
    } while ((graph_call_list=graph_call_list->next)!=NULL);
@@ -337,7 +339,7 @@ if (graph_call_list!=NULL) {
       install_variable_backup(p->variables,var_backup);
       free_variable_backup(var_backup);
    }
-   clear_dic_variable_list(&dic_variables_backup);
+   p->dic_variables=dic_variables_backup;
 } /* End of processing subgraphs */
 
 /**
