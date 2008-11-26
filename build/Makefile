@@ -493,6 +493,10 @@ TAGSETNORM_OBJS = IOBuffer.o TagsetNormFst2.o Unicode.o ElagFstFilesIO.o ustring
 					BitMasks.o FIFO.o Transitions.o\
 					symbol_op.o Fst2Automaton.o getopt.o
 
+TEI2TXT      = TEI2Txt
+TEI2TXT_OBJS = IOBuffer.o Unicode.o Error.o File.o TEI2Txt.o HTMLCharacters.o\
+               AsciiSearchTree.o getopt.o
+
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\
 				File.o DELA.o List_ustring.o Table_hash.o Error.o StringParsing.o getopt.o
@@ -503,7 +507,7 @@ TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o DELA_tr
                 NormalizationFst2.o Fst2.o File.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
                 FIFO.o BitArray.o HashTable.o Transitions.o Matches.o\
-                symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+                symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = IOBuffer.o Unicode.o Fst2.o Alphabet.o \
@@ -512,10 +516,6 @@ XMLIZER_OBJS = IOBuffer.o Unicode.o Fst2.o Alphabet.o \
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
 	           XMLizer.o getopt.o DicVariables.o\
 	           symbol.o symbol_op.o LanguageDefinition.o Tagset.o ustring.o
-
-TEI2TXT      = TEI2Txt
-TEI2TXT_OBJS = IOBuffer.o Unicode.o Error.o File.o TEI2Txt.o HTMLCharacters.o\
-               AsciiSearchTree.o getopt.o
 
 
 ######################
