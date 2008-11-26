@@ -65,7 +65,7 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":t:a:MRcwhsx";
+const char* optstring=":t:a:MRcwsxh";
 const struct option lopts[]= {
       {"text",required_argument,NULL,'t'},
       {"alphabet",required_argument,NULL,'a'},
