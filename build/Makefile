@@ -456,7 +456,7 @@ MULTIFLEX_OBJS = Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = IOBuffer.o Normalize.o Unicode.o File.o DELA.o List_ustring.o String_hash.o\
-				Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o
+				Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o getopt.o
 
 POLYLEX      = PolyLex
 POLYLEX_OBJS = IOBuffer.o PolyLex.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o\

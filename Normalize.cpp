@@ -30,93 +30,101 @@
 #include "IOBuffer.h"
 #include "Error.h"
 #include "NormalizeAsRoutine.h"
-
+#include "getopt.h"
 
 void usage() {
-	u_printf("%S",COPYRIGHT);
-	u_printf("Usage: Normalize <text> [-no_CR] [-f=EQUIV]\n");
-	u_printf("     <text>   : text file to be normalized\n");
-	u_printf("     -no_CR   : this optional parameter indicates that every separator\n");
-	u_printf("                sequence will be turned into a single space\n\n");
-	u_printf("     -f=EQUIV : this optional parameter specifies a configuration file\n");
-	u_printf("                EQUIV that contains replacement instructions in the form\n");
-	u_printf("                of lines like: input_sequence tab output_sequence\n");
-	u_printf("                By default, the program only replace { and } by [ and ]\n");
-	u_printf("Turns every sequence of separator chars (space, tab, new line) into one.\n");
-	u_printf("If a separator sequence contains a new line char, it is turned to a single new\n");
-	u_printf("line (except with -no_CR); if not, it is turned into a single space. As\n");
-	u_printf("a side effect, new line sequences are converted into the Windows style: \\r\\n.\n");
-	u_printf("If you specifies replacement rules with -f, they will be applied prior\n");
-	u_printf("to the separator normalization, so you have to take care if you manipulate\n");
-	u_printf("separators in your replacement rules.\n");
-	u_printf("The result is stored in a file named file_name.snt.\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Normalize [OPTIONS] <text>\n"
+         "\n"
+         "  <text>: text file to be normalized\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -n/--no_carridge_return: indicates that every separator turned into a single space\n"
+         "  -r XXX/--replacement_rules=XXX: specifies a configuration file XXX that contains\n"
+         "                                  replacement instructions in the form of lines like:\n"
+         "\n"
+         "                                     input_sequence TABULATION output_sequence\n"
+         "\n"
+         "                                  By default, the program only replaces { and } by [ and ]\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Turns every sequence of separator chars (space, tab, new line) into one.\n"
+         "If a separator sequence contains a new line char, it is turned to a single new\n"
+         "line (except with --no_carridge_return); if not, it is turned into a single space. As\n"
+         "a side effect, new line sequences are converted into the Windows style: \\r\\n.\n"
+         "If you specifies replacement rules with -f, they will be applied prior\n"
+         "to the separator normalization, so you have to take care if you manipulate\n"
+         "separators in your replacement rules.\n"
+         "The result is stored in a file with the same name as <text>, but with .snt extension.\n");
 }
 
 
-int main(int argc, char **argv) {
-	/* Every Unitex program must start by this instruction,
-	 * in order to avoid display problems when called from
-	 * the graphical interface */
-	setBufferMode();
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-	if (argc<2 || argc >4) {
-		usage();
-		return 0;
-	}
-
-	int mode=KEEP_CARRIDGE_RETURN;
-	char *rules = NULL;
-
-	/* We check the parameters */
-	if (argc==3) {
-		if (strcmp(argv[2],"-no_CR")) {
-			if (argv[2][0]=='-' && argv[2][1]=='f' && argv[2][2]=='=') { rules = &(argv[2][3]); }
-			else {
-				error("Wrong parameter: %s\n",argv[2]);
-				return 1;
-			}
-		}
-		else { mode=REMOVE_CARRIDGE_RETURN; }
-	}
-
-	if (argc==4) {
-		if (strcmp(argv[2],"-no_CR")) {
-			error("Wrong parameter: %s\n",argv[2]);
-			return 1;
-		}
-
-		mode=REMOVE_CARRIDGE_RETURN;
-
-		if (argv[3][0]=='-' && argv[3][1]=='f' && argv[3][2]=='=') { rules = &(argv[3][3]); }
-		else {
-			error("Wrong parameter: %s\n", argv[3]);
-			return 1;
-		}
-	}
-
-	char tmp_file[FILENAME_MAX];
-	get_extension(argv[1],tmp_file);
-	if (!strcmp(tmp_file, ".snt")) {
-		/* If the file to process has allready the .snt extension, we temporary rename it to
-		 * .snt.normalizing */
-		strcpy(tmp_file, argv[1]);
-		strcat(tmp_file, ".normalizing");
-		rename(argv[1], tmp_file);
-	} else { strcpy(tmp_file, argv[1]); }
-
-	/* We set the destination file */
-	char dest_file[FILENAME_MAX];
-	remove_extension(argv[1], dest_file);
-	strcat(dest_file, ".snt");
-
-	u_printf("Normalizing %s...\n",argv[1]);
-	normalize(tmp_file, dest_file, mode, rules);
-	u_printf("\n");
-
-	/* If we have used a temporary file, we delete it */
-	if (strcmp(tmp_file,argv[1])) { remove(tmp_file); }
-
+if (argc==1) {
+	usage();
 	return 0;
+}
+
+const char* optstring=":nr:h";
+const struct option lopts[]= {
+      {"no_carridge_return",no_argument,NULL,'n'},
+      {"replacement_rules",required_argument,NULL,'r'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int mode=KEEP_CARRIDGE_RETURN;
+char rules[FILENAME_MAX]="";
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'n': mode=REMOVE_CARRIDGE_RETURN; break;
+   case 'r': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty replacement rule file name\n");
+             }
+             strcpy(rules,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+char tmp_file[FILENAME_MAX];
+get_extension(argv[optind],tmp_file);
+if (!strcmp(tmp_file, ".snt")) {
+   /* If the file to process has allready the .snt extension, we temporary rename it to
+	 * .snt.normalizing */
+	strcpy(tmp_file,argv[optind]);
+	strcat(tmp_file,".normalizing");
+	rename(argv[optind],tmp_file);
+} else {
+   strcpy(tmp_file,argv[optind]);
+}
+/* We set the destination file */
+char dest_file[FILENAME_MAX];
+remove_extension(argv[optind],dest_file);
+strcat(dest_file,".snt");
+u_printf("Normalizing %s...\n",argv[optind]);
+normalize(tmp_file, dest_file, mode, rules);
+u_printf("\n");
+/* If we have used a temporary file, we delete it */
+if (strcmp(tmp_file,argv[optind])) { 
+   remove(tmp_file);
+}
+return 0;
 }
 
 
