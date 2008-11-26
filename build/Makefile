@@ -442,7 +442,8 @@ MERGETEXTAUTOMATON_OBJS = IOBuffer.o MergeTextAutomaton.o Unicode.o String_hash.
                           File.o stack.o qsort.o grf.o Alphabet.o Error.o StringParsing.o\
                           Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                           Transitions.o DELA.o\
-                          symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+                          symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o\
+                          getopt.o
 
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_Inflect.o MF_LangMorpho.o\

@@ -30,7 +30,7 @@
 #include "IOBuffer.h"
 #include "Error.h"
 #include "Transitions.h"
-
+#include "getopt.h"
 
 // also defined in grf.cpp
 static unichar epsilon[] = { '<', 'E', '>', 0 };
@@ -45,10 +45,15 @@ static unichar epsilon[] = { '<', 'E', '>', 0 };
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: MergeTextAutomaton <text fst2>\n");
-u_printf("     <text fst2> : text automaton to be rebuilt\n\n");
-u_printf("Rebuilds the text automaton taking into account the sentence graphs that have\n");
-u_printf("been manually modified. The text automaton is modified.\n");
+u_printf("Usage: MergeTextAutomaton <txtauto>\n"
+         "\n"
+         "  <txtauto>: text automaton to be rebuilt\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Rebuilds the text automaton taking into account the sentence graphs that have\n"
+         "been manually modified. The text automaton is modified.\n");
 }
 
 
@@ -199,98 +204,94 @@ int clean_grf(grf_t * grf) {
 
 
 int main(int argc, char ** argv) {
-setBufferMode();
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();  
 
-  if (argc != 2) {
-    usage();
-    return 0;
-  }
-  argv++;
+if (argc==1) {
+   usage();
+   return 0;
+}
 
-   u_printf("Loading %s...\n", *argv);
+const char* optstring=":h";
+const struct option lopts[]= {
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
 
-  Fst2 * A = load_fst2(*argv, 1);
- 
-  if (A == NULL) {
-    fatal_error("Unable to load %s automaton\n", *argv);
-  }
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
 
-  char * basedir = strdup(*argv);
-  get_path(*argv, basedir);
-
-  char * outname = (char *) malloc(strlen(*argv) + 5);
-  sprintf(outname, "%s.new", *argv);
-
-  FILE * out;
-  if ((out = u_fopen(outname, U_WRITE)) == NULL) {
-    fatal_error("Unable to open %s for writting\n", outname);
-  }
-  
-  string_hash * labels = new_string_hash();
-
-  get_value_index(epsilon, labels);
-
-  fst_header(A, out);
-
-  for (int i = 1; i <= A->number_of_graphs; i++) {
-
-    if ((i % 100) == 0) {
+u_printf("Loading %s...\n",argv[optind]);
+Fst2* A = load_fst2(argv[optind], 1);
+if (A==NULL) {
+   fatal_error("Unable to load %s automaton\n",argv[optind]);
+}
+char basedir[FILENAME_MAX];
+get_path(argv[optind],basedir);
+char outname[FILENAME_MAX];
+sprintf(outname,"%s.new",argv[optind]);
+FILE* out;
+if ((out = u_fopen(outname, U_WRITE)) == NULL) {
+   fatal_error("Unable to open %s for writting\n",outname);
+}
+string_hash * labels = new_string_hash();
+get_value_index(epsilon, labels);
+fst_header(A, out);
+for (int i = 1; i <= A->number_of_graphs; i++) {
+   if ((i % 100) == 0) {
       u_printf("%d/%d sentences rebuilt...\n", i, A->number_of_graphs);
-    }
-
-    char grfname[MAX_PATH];
-    sprintf(grfname, "%ssentence%d.grf", basedir,i);
-
-    grf_t * grf;
-    FILE * f;
-
-    grf = NULL;
-
-    if ((f = u_fopen(grfname, U_READ)) != NULL) {
-
+   }
+   char grfname[MAX_PATH];
+   sprintf(grfname, "%ssentence%d.grf", basedir, i);
+   grf_t * grf;
+   FILE * f;
+   grf = NULL;
+   if ((f = u_fopen(grfname, U_READ)) != NULL) {
       if ((grf = grf_load(f)) == NULL) {
-
-	error("Unable to load '%s'.\n", grfname);
-
+         error("Unable to load '%s'.\n", grfname);
       } else if (clean_grf(grf) == -1) {
-
-	error("%s is a bad grf file.\n", grfname);
-	grf_delete(grf);
-	grf = NULL;
+         error("%s is a bad grf file.\n", grfname);
+         grf_delete(grf);
+         grf = NULL;
       }
-
-      fclose(f);
-    }
-
-
-    u_fprintf(out, "-%d %S\n", i, A->graph_names[i]);
-
-    if (grf) {
-
+      u_fclose(f);
+   }
+   u_fprintf(out, "-%d %S\n", i, A->graph_names[i]);
+   if (grf) {
       output_grf(grf, labels, out);
       grf_delete(grf);
-
-    } else {
-
+   } else {
       output_fst(A, i, labels, out);
-    }
-  }
+   }
+}
+output_labels(labels,out);
+u_printf("Text automaton rebuilt.\n");
+u_fclose(out);
 
-  output_labels(labels, out);
-
-  u_printf("Text automaton rebuilt.\n");
-  fflush(out);
-  u_fclose(out);
-
-
-  /* make a backup and replace old automaton with new */
-
-  sprintf(outname, "%s.bck", *argv);
-  remove(outname);
-  rename(*argv, outname);
-  sprintf(outname, "%s.new", *argv);
-  rename(outname, *argv);
-  u_printf("\nYou can find a backup of the original \"%s\" file in \"%s.bck\".\n", *argv, *argv);
+/* make a backup and replace old automaton with new */
+sprintf(outname, "%s.bck",argv[optind]);
+remove(outname);
+rename(argv[optind], outname);
+sprintf(outname, "%s.new",argv[optind]);
+rename(outname,argv[optind]);
+u_printf("\nYou can find a backup of the original \"%s\" file in \"%s.bck\".\n",argv[optind],argv[optind]);
+return 0;
 }
 
 
