@@ -473,7 +473,7 @@ RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.
                Sentence2Grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
                Buffer.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-               symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+               symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Unicode.o RegularExpressions.o Error.o File.o\

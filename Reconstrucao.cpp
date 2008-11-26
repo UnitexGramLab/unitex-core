@@ -37,44 +37,135 @@
 #include "List_int.h"
 #include "IOBuffer.h"
 #include "Error.h"
-
+#include "getopt.h"
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Reconstrucao <alph> <list> <root> <dic> <pro> <nasalpro> <res>\n");
-u_printf("   <alph> : the alphabet file to use\n");
-u_printf("   <list> : the match list that describes the forms to be normalized. This\n");
-u_printf("            list must have been computed in MERGE or REPLACE mode.\n");
-u_printf("   <root> : the .bin dictionary containing the radical forms\n");
-u_printf("   <dic> : the .bin dictionary containing the complete forms\n");
-u_printf("   <pro> : the .fst2 grammar describing pronoun rewriting rules\n");
-u_printf("   <nasalpro> : the .fst2 grammar describing nasal pronoun rewriting rules\n");
-u_printf("   <res> :  the name of the .grf graph to be generated\n\n");
-u_printf("Takes a list of multi-part verbs and creates an apropriate normalization\ngrammar.\n");
+u_printf("Usage: Reconstrucao [OPTIONS] <list>\n"
+         "\n"
+         "  <list> : the match list that describes the forms to be normalized. This\n"
+         "            list must have been computed in MERGE or REPLACE mode.\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -a ALPH/--alphabet=ALPH: the alphabet file to use\n"
+         "  -r ROOT/--root=ROOT: the .bin dictionary containing the radical forms\n"
+         "  -d BIN/--dictionary=BIN: the .bin dictionary containing the complete forms\n"
+         "  -p PRO/--pronoun_rules=PRO: the .fst2 grammar describing pronoun rewriting rules\n"
+         "  -n NAS/--nasal_pronoun_rules=NAS: the .fst2 grammar describing nasal pronoun rewriting rules\n"
+         "  -o OUT/--output=OUT:  the name of the .grf graph to be generated\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Takes a list of multi-part verbs and creates an apropriate normalization grammar.\n");
 }
 
 
 
-int main(int argc, char **argv) {
+int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
- * the graphical interface */setBufferMode();
+ * the graphical interface */
+setBufferMode();
 
-if (argc!=8) {
+if (argc==1) {
    usage();
    return 0;
 }
+
+const char* optstring=":a:r:d:p:n:o:h";
+const struct option lopts[]= {
+      {"alphabet",required_argument,NULL,'a'},
+      {"root",required_argument,NULL,'r'},
+      {"dictionary",required_argument,NULL,'d'},
+      {"pronoun_rules",required_argument,NULL,'p'},
+      {"nasal_pronoun_rules",required_argument,NULL,'n'},
+      {"output",required_argument,NULL,'o'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+char alphabet[FILENAME_MAX]="";
+char root[FILENAME_MAX]="";
+char dictionary[FILENAME_MAX]="";
+char pronoun_rules[FILENAME_MAX]="";
+char nasal_pronoun_rules[FILENAME_MAX]="";
+char output[FILENAME_MAX]="";
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'a': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty alphabet file name\n");
+             }
+             strcpy(alphabet,optarg);
+             break;
+   case 'r': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty root dictionary file name\n");
+             }
+             strcpy(root,optarg);
+             break;
+   case 'd': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty dictionary file name\n");
+             }
+             strcpy(dictionary,optarg);
+             break;
+   case 'p': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty pronoun rewriting rule file name\n");
+             }
+             strcpy(pronoun_rules,optarg);
+             break;
+   case 'n': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty nasal pronoun rewriting rule file name\n");
+             }
+             strcpy(nasal_pronoun_rules,optarg);
+             break;
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name\n");
+             }
+             strcpy(output,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+
+if (alphabet[0]=='\0') {
+   fatal_error("You must specify the alphabet file\n");
+}
+if (root[0]=='\0') {
+   fatal_error("You must specify the root .bin dictionary\n");
+}
+if (dictionary[0]=='\0') {
+   fatal_error("You must specify the .bin dictionary to use\n");
+}
+if (pronoun_rules[0]=='\0') {
+   fatal_error("You must specify the pronoun rule file\n");
+}
+if (nasal_pronoun_rules[0]=='\0') {
+   fatal_error("You must specify the nasal pronoun rule file\n");
+}
+if (output[0]=='\0') {
+   fatal_error("You must specify the output dictionary file name\n");
+}
+
 u_printf("Loading alphabet...\n");
-Alphabet* alph=load_alphabet(argv[1]);
+Alphabet* alph=load_alphabet(alphabet);
 if (alph==NULL) {
-   fatal_error("Cannot load alphabet file %s\n",argv[1]);
+   fatal_error("Cannot load alphabet file %s\n",alphabet);
    return 1;
 }
 u_printf("Loading match list...\n");
-FILE* f_list=u_fopen(argv[2],U_READ);
+FILE* f_list=u_fopen(argv[optind],U_READ);
 if (f_list==NULL) {
-   error("Cannot load match list %s\n",argv[2]);
+   error("Cannot load match list %s\n",argv[optind]);
    free_alphabet(alph);
    return 1;
 }
@@ -82,19 +173,19 @@ OutputPolicy output_policy;
 struct match_list* list=load_match_list(f_list,&output_policy);
 u_fclose(f_list);
 if (output_policy==IGNORE_OUTPUTS) {
-   error("Invalid match list %s\n",argv[2]);
+   error("Invalid match list %s\n",argv[optind]);
    free_alphabet(alph);
    return 1;
 }
 u_printf("Loading radical form dictionary...\n");
-unsigned char* root_bin=load_BIN_file(argv[3]);
+unsigned char* root_bin=load_BIN_file(root);
 if (root_bin==NULL) {
-   error("Cannot load radical form dictionary %s\n",argv[3]);
+   error("Cannot load radical form dictionary %s\n",root);
    free_alphabet(alph);
    return 1;
 }
 char root_inf_file[FILENAME_MAX];
-remove_extension(argv[3],root_inf_file);
+remove_extension(root,root_inf_file);
 strcat(root_inf_file,".inf");
 struct INF_codes* root_inf=load_INF_file(root_inf_file);
 if (root_bin==NULL) {
@@ -104,16 +195,16 @@ if (root_bin==NULL) {
    return 1;
 }
 u_printf("Loading inflected form dictionary...\n");
-unsigned char* inflected_bin=load_BIN_file(argv[4]);
+unsigned char* inflected_bin=load_BIN_file(dictionary);
 if (inflected_bin==NULL) {
-   error("Cannot load inflected form dictionary %s\n",argv[4]);
+   error("Cannot load inflected form dictionary %s\n",dictionary);
    free_alphabet(alph);
    free(root_bin);
    free_INF_codes(root_inf);
    return 1;
 }
 char inflected_inf_file[FILENAME_MAX];
-remove_extension(argv[4],inflected_inf_file);
+remove_extension(dictionary,inflected_inf_file);
 strcat(inflected_inf_file,".inf");
 struct INF_codes* inflected_inf=load_INF_file(inflected_inf_file);
 if (inflected_inf==NULL) {
@@ -125,9 +216,9 @@ if (inflected_inf==NULL) {
    return 1;
 }
 u_printf("Loading pronoun rewriting rule grammar...\n");
-struct normalization_tree* rewriting_rules=load_normalization_transducer_string(argv[5]);
+struct normalization_tree* rewriting_rules=load_normalization_transducer_string(pronoun_rules);
 if (rewriting_rules==NULL) {
-   error("Cannot load pronoun rewriting grammar %s\n",argv[5]);
+   error("Cannot load pronoun rewriting grammar %s\n",pronoun_rules);
    free_alphabet(alph);
    free(root_bin);
    free(inflected_bin);
@@ -136,9 +227,9 @@ if (rewriting_rules==NULL) {
    return 1;
 }
 u_printf("Loading nasal pronoun rewriting rule grammar...\n");
-struct normalization_tree* nasal_rewriting_rules=load_normalization_transducer_string(argv[6]);
+struct normalization_tree* nasal_rewriting_rules=load_normalization_transducer_string(nasal_pronoun_rules);
 if (rewriting_rules==NULL) {
-   error("Cannot load nasal pronoun rewriting grammar %s\n",argv[6]);
+   error("Cannot load nasal pronoun rewriting grammar %s\n",nasal_pronoun_rules);
    free_alphabet(alph);
    free(root_bin);
    free(inflected_bin);
@@ -148,7 +239,7 @@ if (rewriting_rules==NULL) {
    return 1;
 }
 u_printf("Constructing normalization grammar...\n");
-build_portuguese_normalization_grammar(alph,list,root_bin,root_inf,inflected_bin,inflected_inf,argv[7],
+build_portuguese_normalization_grammar(alph,list,root_bin,root_inf,inflected_bin,inflected_inf,output,
                                        rewriting_rules,nasal_rewriting_rules);
 free_alphabet(alph);
 free(root_bin);
