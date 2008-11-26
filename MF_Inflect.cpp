@@ -36,6 +36,7 @@
 #include "File.h"
 #include "Copyright.h"
 #include "Error.h"
+#include "getopt.h"
 
 
 //Current language's alphabet
@@ -45,17 +46,21 @@ Alphabet* alph;
 extern char inflection_directory[FILENAME_MAX];
 
 
-
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: MultiFlex <dela> <delaf> <alpha> <dir>\n");
-u_printf("     <dela> : the unicode DELAS or DELAC file to be inflected\n");
-u_printf("     <delaf> : the unicode resulting DELAF or DELACF dictionary \n");
-u_printf("     <alpha> : the alphabet file \n");
-u_printf("     <dir> : the directory containing 'Morphology' and 'Equivalences'\n");
-u_printf("              files and inflection graphs for single and compound words.\n");
-u_printf("\nInflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n");
-u_printf("simple and compound words in a same dictionary.\n");
+u_printf("Usage: MultiFlex [OPTIONS] <dela>\n"
+         "\n"
+         "  <dela>: the unicode DELAS or DELAC file to be inflected\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -o DELAF/--output=DELAF: the unicode resulting DELAF or DELACF dictionary\n"
+         "  -a ALPH/--alphabet=ALPH: the alphabet file \n"
+         "  -d DIR/--directory=DIR: the directory containing 'Morphology' and 'Equivalences'\n"
+                     "              files and inflection graphs for single and compound words.\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Inflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n"
+         "simple and compound words in a same dictionary.\n");
 }
 
 
@@ -65,44 +70,92 @@ int main(int argc, char* argv[]) {
  * the graphical interface */
 setBufferMode();
 
-int err;  //0 if a function completes with no error 
-if (argc!= 5) {
+if (argc==1) {
    usage();
    return 0;
 }
+
+const char* optstring=":o:a:d:h";
+const struct option lopts[]= {
+      {"output",required_argument,NULL,'o'},
+      {"alphabet",required_argument,NULL,'a'},
+      {"directory",required_argument,NULL,'d'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int val,index=-1;
+optind=1;
+char output[FILENAME_MAX]="";
+char config_dir[FILENAME_MAX]="";
+char alphabet[FILENAME_MAX]="";
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty DELAF file name\n");
+             }
+             strcpy(output,optarg);
+             break;
+   case 'a': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty alphabet file name\n");
+             }
+             strcpy(alphabet,optarg);
+             break;
+   case 'd': strcpy(config_dir,optarg); break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+
+if (output[0]=='\0') {
+   fatal_error("You must specify the output DELAF name\n");
+}
+if (alphabet[0]=='\0') {
+   fatal_error("You must specify the alphabet file\n");
+}
+
+int err;  //0 if a function completes with no error 
 //Load morphology description
 char morphology[FILENAME_MAX];
-new_file(argv[4],"Morphology.txt",morphology);
+new_file(config_dir,"Morphology.txt",morphology);
 err=read_language_morpho(morphology);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
 print_language_morpho();
 //Load alphabet
-alph=load_alphabet(argv[3]);  //To be done once at the beginning of the inflection
+alph=load_alphabet(alphabet);  //To be done once at the beginning of the inflection
 if (alph==NULL) {
-   error("Cannot open alphabet file %s\n",argv[3]);
+   error("Cannot open alphabet file %s\n",alphabet);
    free_language_morpho();
    free_alphabet(alph);    
    return 1;
 }
 //Init equivalence files
 char equivalences[FILENAME_MAX];
-new_file(argv[4],"Equivalences.txt",equivalences);
+new_file(config_dir,"Equivalences.txt",equivalences);
 err=d_init_morpho_equiv(equivalences);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
 d_init_class_equiv();
 //Initialize the structure for inflection transducers
-strcpy(inflection_directory,argv[4]);
+strcpy(inflection_directory,config_dir);
 err=MU_graph_init_graphs();
 if (err) {
    MU_graph_free_graphs();
    return 1;
 }
 //DELAC inflection
-err=inflect(argv[1],argv[2]);
+err=inflect(argv[optind],output);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();
