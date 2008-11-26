@@ -95,7 +95,7 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
 
 if (optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
-}   
+}
 
 if (tagset[0]=='\0') {
    fatal_error("You must specify the tagset file\n");

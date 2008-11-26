@@ -1,98 +1,77 @@
 #include <stdlib.h>
-#include "getopt.h"
 #include <string.h>
-
 #include "Copyright.h"
 #include "Error.h"
 #include "File.h"
 #include "HTMLCharacters.h"
 #include "IOBuffer.h"
 #include "Unicode.h"
+#include "getopt.h"
 
-/* Getopt variables
- * ---------------- */
-
-static const char *sopts = "ho:";
-
-static const struct option lopts[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"output", required_argument, NULL, 'o'},
-	{NULL, no_argument, NULL, 0}
-};
-
-typedef struct args {
-	char *input;
-	char *output;
-} params;
 
 void tei2txt(char*, char*);
 
-/* Headers (XML & TEI) Variables
- * ----------------------------- */
 
 void usage() {
-	u_printf("%S",COPYRIGHT);
-	u_printf("Usage: TEI2Txt [-o <output file>] <input file>\n"
-	         "------\n"
-	         "   -h (--help): print this info\n\n"
-	         "   -o (--output): optional output file name (default: file.xml > file.txt)\n\n"
-	         "Example:\n"
-	         "--------\n"
-	         "  TEI2Txt -o result.txt original.xml\n"
-	         "      -> produces a raw text file named 'result.txt' from the TEI file 'original.xml'\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: TEI2Txt [OPTIONS] <xml>\n"
+         "\n"
+         "  <xml>: the input TEI file\n"
+         "\n"
+         "OPTIONS:\n"
+	      "  -o TXT/--output=TXT: optional output file name (default: file.xml > file.txt)\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Produces a raw text file from the given TEI file.\n");
 }
 
 int main (int argc, char **argv) {
-	/* Every Unitex program must start by this instruction,
-	 * in order to avoid display problems when called from
-	 * the graphical interface */
-	setBufferMode();
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-	params options;
-	options.input = NULL;
-	options.output = NULL;
+if (argc==1) {
+   usage();
+   return 0;
+}
 
-	int opt = 0;
-	int idx = 0;
+const char* optstring=":o:h";
+const struct option lopts[]={
+   {"output", required_argument, NULL, 'o'},
+   {"help", no_argument, NULL, 'h'},
+   {NULL, no_argument, NULL, 0}
+};
+char output[FILENAME_MAX]="";
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name\n");
+             }
+             strcpy(output,optarg);
+             break;      
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
 
-	while ((opt = getopt_long(argc, argv, sopts, lopts, &idx)) != -1) {
-		switch (opt) {
-			case 0: break;
-			case 'h':
-				usage();
-				exit(0);
-			case 'o' :
-				options.output = optarg;
-				break;
-			case '?':
-				usage();
-				exit(0);
-			case ':':
-				usage();
-				exit(0);
-			default:
-				usage();
-				exit(0);
-		}
-	}
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
 
-	if(optind < argc) { options.input = argv[optind++]; }
-	else {
-		usage();
-		exit(0);
-	}
-
-	if(options.output == NULL) {
-		options.output = (char*)malloc((FILENAME_MAX+1)*sizeof(char));
-      if (options.output) {
-         fatal_error("Not enough memory in TEI2Txt main\n");
-      }
-		remove_extension(options.input, options.output);
-		strcat(options.output, ".txt");
-	}
-	tei2txt(options.input, options.output);
-
-	return 0;
+if(output[0]=='\0') {
+   remove_extension(argv[optind],output);
+	strcat(output,".txt");
+}
+tei2txt(argv[optind],output);
+return 0;
 }
 
 static const char *body = "body";
