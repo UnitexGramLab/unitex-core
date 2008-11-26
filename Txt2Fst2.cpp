@@ -82,16 +82,22 @@ return 1;
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Txt2Fst2 <text> <alphabet> [-clean] [norm]\n");
-u_printf("     <text> : the text file\n");
-u_printf("     <alphabet> : the alphabet file for the text language\n");
-u_printf("     [-clean] : cleans each sentence automaton, keeping best paths.\n");
-u_printf("     [norm] : the fst2 grammar used to normalize the text automaton.\n\n");
-u_printf("Constructs the text automaton. If the sentences of the text were delimited\n");
-u_printf("with the special tag {S}, the program produces one automaton per sentence.\n");
-u_printf("If not, the text is turned into %d token long automata. The result file\n",MAX_TOKENS_IN_SENTENCE);
-u_printf("named text.fst2 is stored is the text directory.\n\n");
-u_printf("Note that the program will also take into account the file tags.ind, if any.\n\n");
+u_printf("Usage: Txt2Fst2 [OPTIONS] <txt>\n"
+         "\n"
+         "  <txt> : the text file\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
+         "  -c/---clean: cleans each sentence automaton, keeping best paths\n"
+         "  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Constructs the text automaton. If the sentences of the text were delimited\n"
+         "with the special tag {S}, the program produces one automaton per sentence.\n"
+         "If not, the text is turned into %d token long automata. The result file\n"
+         "named \"text.fst2\" is stored is the text directory.\n"
+         "\n"
+         "Note that the program will also take into account the file \"tags.ind\", if any.\n",MAX_TOKENS_IN_SENTENCE);
 }
 
 
