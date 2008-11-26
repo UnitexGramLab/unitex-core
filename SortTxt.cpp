@@ -22,37 +22,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Unicode.h"
-#include "Copyright.h"
 #include "IOBuffer.h"
 #include "SortTxtMain.h"
 
 
-void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: SortTxt <text file> [OPTIONS]\n");
-u_printf("     <text file> : any unicode text file\n\n");
-u_printf("The options can be a combinaison of the following:\n");
-u_printf("     -y : remove duplicates\n");
-u_printf("     -n : do not remove duplicates\n");
-u_printf("     -r : reverse the sort order\n");
-u_printf("     -o <char order> : use a file describing the char order for sorting\n");
-u_printf("     -l <file> : saves the resulting number of lines in <file>\n");
-u_printf("     -thai : sort thai text\n\n");
-u_printf("By default, the sort is done according the Unicode char order, removing\n");
-u_printf("the duplicates.\n\n");
-}
-
-
-int main(int argc, char **argv) {
+int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-if (argc<2) {
-	usage();
-	return 0;
-}
 /* We call an artificial main function located in 'SortTxtMain'. This
  * trick allows to use the functionalities of the 'SortTxt' program
  * without having to launch an external process.

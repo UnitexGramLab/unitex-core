@@ -27,6 +27,7 @@
 #include "IOBuffer.h"
 #include "Error.h"
 #include "Thai.h"
+#include "getopt.h"
 
 
 #define DEFAULT 0
@@ -121,8 +122,6 @@ int priority[0x10000];
 /* This array will be used to sort transitions that outgo from a node */
 struct sort_tree_transition* transitions[0x10000];
 
-int mode=DEFAULT;
-char line_number[LINE_LENGTH];
 int resulting_line_number=0;
 
 
@@ -176,38 +175,22 @@ u_fclose(f);
 }
 
 
-/**
- * This function analyses the parameters of the SortTxt program.
- * It sets some global variables.
- */
-void parse_parameters(int n,char **p) {
-for (int i=2;i<n;i++) {
-   if (!strcmp(p[i],"-y") || !strcmp(p[i],"-Y")) {
-      REMOVE_DUPLICATES=1;
-   }
-   else if (!strcmp(p[i],"-n") || !strcmp(p[i],"-N")) {
-      REMOVE_DUPLICATES=0;
-   }
-   else if (!strcmp(p[i],"-o") || !strcmp(p[i],"-O")) {
-      if (i==n-1) {
-         error("Missing char order file name after -o\n");
-         return;
-      }
-      i++;
-      read_char_order(p[i]);
-   }
-   else if (!strcmp(p[i],"-l") || !strcmp(p[i],"-L")) {
-      if (i==n-1) {
-         error("Missing file name after -l\n");
-         return;
-      }
-      i++;
-      strcpy(line_number,p[i]);
-   }
-   else if (!strcmp(p[i],"-r") || !strcmp(p[i],"-R")) REVERSE=-1;
-   else if (!strcmp(p[i],"-thai")) mode=THAI;
-   else error("Invalid parameter: %s\n",p[i]);
-}
+void usage_SortTxt() {
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: SortTxt [OPTIONS] <txt>\n"
+         "\n"
+         "  <txt>: any unicode text file\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -n/--no_duplicates: remove duplicates (default)\n"
+         "  -d/--duplicates: do not remove duplicates\n"
+         "  -r/--reverse: reverse the sort order\n"
+         "  -o XXX/--sort_order=XXX: use a file describing the char order for sorting\n"
+         "  -l XXX/--line_info: saves the resulting number of lines in file XXX\n"
+         "  -t/--thai: sort thai text\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "By default, the sort is done according the Unicode char order, removing duplicates.\n");
 }
 
 
@@ -216,16 +199,70 @@ for (int i=2;i<n;i++) {
  * not invoke the setBufferMode function and that it does not print the
  * synopsis.
  */
-int main_SortTxt(int argc, char **argv) {
+int main_SortTxt(int argc,char* argv[]) {
+if (argc==1) {
+   usage_SortTxt();
+   return 0;
+}
+
+const char* optstring=":ndr:o:l:th";
+const struct option lopts[]= {
+      {"no_duplicates",no_argument,NULL,'n'},
+      {"duplicates",no_argument,NULL,'d'},
+      {"reverse",no_argument,NULL,'r'},
+      {"sort_order",required_argument,NULL,'o'},
+      {"line_info",required_argument,NULL,'l'},
+      {"thai",no_argument,NULL,'t'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+REMOVE_DUPLICATES=1;
+REVERSE=1;
+int mode=DEFAULT;
+char line_info[FILENAME_MAX]="";
+char sort_order[FILENAME_MAX]="";
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'n': REMOVE_DUPLICATES=1; break;
+   case 'd': REMOVE_DUPLICATES=0; break;
+   case 'r': REVERSE=-1; break;
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty sort order file name\n");
+             }
+             strcpy(sort_order,optarg);
+             break;      
+   case 'l': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty information file name\n");
+             }
+             strcpy(line_info,optarg);
+             break;
+   case 't': mode=THAI; break;
+   case 'h': usage_SortTxt(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}   
+if (sort_order[0]!='\0') {
+   read_char_order(sort_order);
+}
+
 char new_name[FILENAME_MAX];
 init_char_arrays();
-line_number[0]='\0';
-parse_parameters(argc,argv);
-strcpy(new_name,argv[1]);
+strcpy(new_name,argv[optind]);
 strcat(new_name,".new");
-f=u_fopen(argv[1],U_READ);
+f=u_fopen(argv[optind],U_READ);
 if (f==NULL) {
-   error("Cannot open file %s\n",argv[1]);
+   error("Cannot open file %s\n",argv[optind]);
    return 1;
 }
 f_out=u_fopen(new_name,U_WRITE);
@@ -238,10 +275,10 @@ switch (mode) {
    case DEFAULT: sort(); break;
    case THAI: sort_thai(); break;
 }
-if (line_number[0]!='\0') {
-   FILE* F=u_fopen(line_number,U_WRITE);
+if (line_info[0]!='\0') {
+   FILE* F=u_fopen(line_info,U_WRITE);
    if (F==NULL) {
-      error("Cannot write %s\n",line_number);
+      error("Cannot write %s\n",line_info);
    }
    else {
       u_fprintf(F,"%d\n",resulting_line_number);
@@ -252,8 +289,8 @@ if (line_number[0]!='\0') {
  * the sorted file */
 u_fclose(f);
 u_fclose(f_out);
-remove(argv[1]);
-rename(new_name,argv[1]);
+remove(argv[optind]);
+rename(new_name,argv[optind]);
 u_printf("Done.\n");
 return 0;
 }
