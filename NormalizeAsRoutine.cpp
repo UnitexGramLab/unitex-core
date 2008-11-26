@@ -61,7 +61,7 @@ int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
 	}
 
 	struct string_hash* replacements=NULL;
-	if(rules != NULL) {
+	if(rules != NULL && rules[0]!='\0') {
 		replacements=load_key_value_list(rules,'\t');
 		if (replacements==NULL) {
 		   error("Cannot load replacement rules file %s\n", rules);

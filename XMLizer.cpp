@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "getopt.h"
 #include "Copyright.h"
 #include "Error.h"
 #include "File.h"
@@ -33,37 +32,13 @@
 #include "ParsingInfo.h"
 #include "Transitions.h"
 #include "Unicode.h"
-#include "XMLizer.h"
+#include "getopt.h"
 
-/* Getopt variables
- * ---------------- */
+#define XML 0
+#define TEI 1
 
-static const char *sopts = "hxta:s:o:n:";
+void xmlize(char*,char*,int);
 
-static const struct option lopts[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"xml", no_argument, NULL, 'x'},
-	{"tei", no_argument, NULL, 't'},
-	{"normalize", required_argument, NULL, 'n'},
-	{"alphabet", required_argument, NULL, 'a'},
-	{"segment", required_argument, NULL, 's'},
-	{"output", required_argument, NULL, 'o'},
-	{NULL, no_argument, NULL, 0}
-};
-
-typedef struct args {
-	int xml;
-	int tei;
-
-	char *normalize;
-	char *alphabet;
-	char *sfst;
-	char *output;
-
-	char *input;
-	char *dname;
-	char *fname;
-} params;
 
 /* Headers (XML & TEI) Variables
  * ----------------------------- */
@@ -73,126 +48,131 @@ static char *xml_close = "</text>";
 static char *tei_open = "<?xml version='1.0' encoding='UTF-8'?>\n<tei>\n<teiHeader/>\n<text>\n<body>\n<div xml:id=\"d1\">\n";
 static char *tei_close = "</div>\n</body>\n</text>\n</tei>";
 
+
+
 void usage() {
-	u_printf("%S",COPYRIGHT);
-	u_printf("Usage: XMLizer [-x|-t] [-n <norm file>] [-o <output file>] -s <segmentation graph> -a <alphabet> <input file>\n"
-	         "------\n"
-	         "   -h (--help): print this info\n\n"
-	         "   -x (--xml): build a simple XML file from a raw text file\n"
-	         "   -t (--tei): build a minimal TEI file from a raw text file\n\n"
-	         "   -n (--normalize): optional configuration file for the normalization process\n\n"
-	         "   -o (--output): optional output file name (default: file.txt > file.xml)\n\n"
-	         "   -a (--alphabet): alphabet file\n"
-	         "   -s (--segment): segmentation graph ('.fst2' format)\n\n"
-	         "Example:\n"
-	         "--------\n"
-	         "  XMLizer -t -s Sentence.fst2 -a Alphabet.txt -o result.xml original.txt\n"
-	         "      -> produces a TEI file named 'result.xml' from the file 'original.txt'\n");
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: XMLizer [OPTIONS] <txt>\n"
+         "\n"
+         "  <txt>: the input text file\n"
+         "\n"
+	      "OPTIONS:\n"
+         "  -x/--xml: build a simple XML file from a raw text file\n"
+	      "  -t/--tei: build a minimal TEI file from a raw text file (default)\n"
+	      "  -n XXX/--normalization=XXX: optional configuration file for the normalization process\n"
+	      "  -o OUT/--output=OUT: optional output file name (default: file.txt > file.xml)\n"
+	      "  -a ALPH/--alphabet=ALPH: alphabet file\n"
+         "  -s SEG/--segmentation_grammar=SEG: .fst2 segmentation grammar\n"
+         "  -h/--help: this help\n"
+         "\n"
+	      "Produces a TEI or simple XML file from the given raw text file.\n");
 }
 
-int main (int argc, char **argv) {
-	/* Every Unitex program must start by this instruction,
-	 * in order to avoid display problems when called from
-	 * the graphical interface */
-	setBufferMode();
+int main (int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-	params options;
-
-	options.xml = 0;
-	options.tei = 0;
-	options.sfst = NULL;
-
-	options.normalize = NULL;
-
-	options.input = NULL;
-	options.output = NULL;
-
-	int opt = 0;
-	int idx = 0;
-
-	while ((opt = getopt_long(argc, argv, sopts, lopts, &idx)) != -1) {
-		switch (opt) {
-			case 0: break;
-			case 'h':
-				usage();
-				exit(0);
-			case 'x':
-				options.xml = 1;
-				break;
-			case 't':
-				options.tei = 1;
-				break;
-			case 'a' :
-				options.alphabet = optarg;
-				break;
-			case 's' :
-				options.sfst = optarg;
-				break;
-			case 'o' :
-				options.output = optarg;
-				break;
-			case 'n' :
-				options.normalize = optarg;
-				break;
-
-			case '?':
-				usage();
-				exit(0);
-			case ':':
-				usage();
-				exit(0);
-			default:
-				usage();
-				exit(0);
-		}
-	}
-
-	if(options.xml == options.tei) {
-		usage();
-		exit(0);
-	}
-
-	if(optind < argc) { options.input = argv[optind++]; }
-	else {
-		usage();
-		exit(0);
-	}
-
-	//u_printf("F: %s | D: %s\n", options.fname, options.dname);
-	//u_printf("[x: %d], [t: %d], [s: %s], [o: %s], [i: %s]\n", options.xml, options.tei, options.sfst, options.output, options.input);
-
-	char snt[FILENAME_MAX];
-	remove_extension(options.input, snt);
-	strcat(snt,"_tmp.snt");
-
-   char tmp[FILENAME_MAX];
-	remove_extension(options.input, tmp);
-	strcat(tmp, ".tmp");
-
-   normalize(options.input, snt, KEEP_CARRIDGE_RETURN, options.normalize);
-
-   struct fst2txt_parameters* p=new_fst2txt_parameters();
-	p->text_file=snt;
-	p->temp_file=tmp;
-	p->fst_file=options.sfst;
-	p->alphabet_file=options.alphabet;
-	p->output_policy=MERGE_OUTPUTS;
-	p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
-	p->space_policy=DONT_START_WITH_SPACE;
-	main_fst2txt(p);
-   
-	if(options.output == NULL) {
-		options.output = strdup(options.input);
-		remove_extension(options.input, options.output);
-		strcat(options.output, ".xml");
-	}
-	xmlize(snt, options.output, options.xml, options.tei);
-   remove(snt);
-   remove(tmp);
-	return 0;
+if (argc==1) {
+   usage();
+   return 0;
 }
 
-void xmlize(char *fin, char *fout, int xml, int tei) {
+const char* optstring = ":xtn:o:a:s:h";
+const struct option lopts[] = {
+   {"xml", no_argument, NULL, 'x'},
+   {"tei", no_argument, NULL, 't'},
+   {"normalization", required_argument, NULL, 'n'},
+   {"output", required_argument, NULL, 'o'},
+   {"alphabet", required_argument, NULL, 'a'},
+   {"segmentation_grammar", required_argument, NULL, 's'},
+   {"help", no_argument, NULL, 'h'},
+   {NULL, no_argument, NULL, 0}
+};
+
+int output_style=TEI;
+char output[FILENAME_MAX]="";
+char alphabet[FILENAME_MAX]="";
+char normalization[FILENAME_MAX]="";
+char segmentation[FILENAME_MAX]="";
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'x': output_style=XML; break;
+   case 't': output_style=TEI; break;
+   case 'n': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty normalization grammar name\n");
+             }
+             strcpy(normalization,optarg);
+             break;      
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name\n");
+             }
+             strcpy(output,optarg);
+             break;      
+   case 'a': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty alphabet file name\n");
+             }
+             strcpy(alphabet,optarg);
+             break;      
+   case 's': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty segmentation grammar name\n");
+             }
+             strcpy(segmentation,optarg);
+             break;      
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+if (alphabet[0]=='\0') {
+   fatal_error("You must specify the alphabet file\n");
+}
+if (segmentation[0]=='\0') {
+   fatal_error("You must specify the segmentation grammar to use\n");
+}
+char input[FILENAME_MAX];
+strcpy(input,argv[optind]);
+char snt[FILENAME_MAX];
+remove_extension(input,snt);
+strcat(snt,"_tmp.snt");
+char tmp[FILENAME_MAX];
+remove_extension(input,tmp);
+strcat(tmp,".tmp");
+normalize(input,snt,KEEP_CARRIDGE_RETURN,normalization);
+struct fst2txt_parameters* p=new_fst2txt_parameters();
+p->text_file=strdup(snt);
+p->temp_file=strdup(tmp);
+p->fst_file=strdup(segmentation);
+p->alphabet_file=strdup(alphabet);
+p->output_policy=MERGE_OUTPUTS;
+p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+p->space_policy=DONT_START_WITH_SPACE;
+main_fst2txt(p);
+free_fst2txt_parameters(p);
+if (output[0]=='\0') {
+   remove_extension(input,output);
+	strcat(output,".xml");
+}
+xmlize(snt,output,output_style);
+remove(snt);
+remove(tmp);
+return 0;
+}
+
+
+
+void xmlize(char* fin,char* fout,int ouput_style) {
 	FILE* input = u_fopen(UTF16_LE, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
@@ -202,8 +182,12 @@ void xmlize(char *fin, char *fout, int xml, int tei) {
 		fatal_error("Cannot open output file '%s'!\n", fout);
 	} else
 
-	if(xml) { u_fprintf(UTF8, output, xml_open); }
-	else if(tei) { u_fprintf(UTF8, output, tei_open); }
+	if(ouput_style==XML) { 
+	   u_fprintf(UTF8, output, xml_open);
+	}
+	else { 
+	   u_fprintf(UTF8, output, tei_open);
+	}
 
 	int sentence_count = 1;
    int sentence_count_relative = 1;
@@ -313,8 +297,12 @@ void xmlize(char *fin, char *fout, int xml, int tei) {
 		u_fprintf(UTF8, output, "</s></p>\n");
 	}
 
-	if(xml) { u_fprintf(UTF8, output, xml_close); }
-	else if(tei) { u_fprintf(UTF8, output, tei_close); }
+	if(ouput_style==XML) {
+	   u_fprintf(UTF8, output, xml_close);
+	}
+	else { 
+	   u_fprintf(UTF8, output, tei_close);
+	}
 
 	u_fclose(input);
 	u_fclose(output);
