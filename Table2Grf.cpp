@@ -27,72 +27,121 @@
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "getopt.h"
 
-#define MAX_LINES_IN_TABLE 1024  
+#define MAX_LINES_IN_TABLE 10000  
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Table2Grf <table> <graph> <result> [subgraph]\n"
-       "       <table> : unicode text table with tabs as separator\n"
-       "       <graph> : reference graph\n"
-       "       <result> : name of the result main graph\n"
-       "       [subgraph] : this optionnal parameter specifies the name of the\n"
-       "                    subgraphs. Use \"@%%\" to insert the id (line number)\n"
-       "                    to get unique names, e.g. \"sub_@%%.grf\".\n"
-       "Applies a reference graph to a lexicon-grammar table, producing a sub-graph\n"
-       "for each entry of the table.\n");
+u_printf("Usage: Table2Grf [OPTIONS] <table>\n"
+         "\n"
+         "  <table>: unicode text table with tabs as separator\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -r GRF/--reference_graph=GRF: reference graph\n"
+         "  -o OUT/--output=OUT: name of the result main graph\n"
+         "  -s XXX/--subgraph_pattern=XXX: this optional parameter specifies the name of the\n"
+         "                                 subgraphs. Use \"@%%\" to insert the id (line number)\n"
+         "                                 to get unique names, e.g. \"sub_@%%.grf\". The default is\n"
+         "                                 BINIOU_@%%.grf where BINIOU.grf=OUT.\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Applies a reference graph to a lexicon-grammar table, producing a sub-graph\n"
+         "for each entry of the table.\n");
 }
 
 
 void table2grf(FILE*,FILE*,FILE*,char*,char*);
 
 
-int main(int argc, char **argv) {
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
 
-if (argc<4 || argc>5) {
+if (argc==1) {
    usage();
    return 0;
 }
-FILE* table=u_fopen(argv[1],U_READ);
+const char* optstring=":r:o:s:h";
+const struct option lopts[]= {
+      {"reference_graph",required_argument,NULL,'r'},
+      {"output",required_argument,NULL,'o'},
+      {"subgraph_pattern",required_argument,NULL,'s'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+char reference_graph_name[FILENAME_MAX]="";
+char output[FILENAME_MAX]="";
+char subgraph_pattern[FILENAME_MAX]="";
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'r': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty reference graph name\n");
+             }
+             strcpy(reference_graph_name,optarg);
+             break;      
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output graph name\n");
+             }
+             strcpy(output,optarg);
+             break;
+   case 's': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty subgraph name pattern\n");
+             }
+             strcpy(subgraph_pattern,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}   
+
+if (reference_graph_name[0]=='\0') {
+   fatal_error("You must specify the reference graph to use\n");
+}
+if (output[0]=='\0') {
+   fatal_error("You must specify the output graph name\n");
+}
+
+FILE* table=u_fopen(argv[optind],U_READ);
 if (table==NULL) {
-   fatal_error("Cannot open table %s\n",argv[1]);
+   fatal_error("Cannot open table %s\n",argv[optind]);
 }
-FILE* reference_graph=u_fopen(argv[2],U_READ);
+FILE* reference_graph=u_fopen(reference_graph_name,U_READ);
 if (reference_graph==NULL) {
-   error("Cannot open reference graph %s\n",argv[2]);
+   error("Cannot open reference graph %s\n",reference_graph_name);
    u_fclose(table);
    return 1;
 }
-if ((strlen(argv[3])-4)<=0) {
-   error("Error in result graph name %s\n",argv[3]);
-   u_fclose(table);
-   return 1;
-}
-FILE* result_graph=u_fopen(argv[3],U_WRITE);
+FILE* result_graph=u_fopen(output,U_WRITE);
 if (result_graph==NULL) {
-   error("Cannot create result graph %s\n",argv[3]);
+   error("Cannot create result graph %s\n",output);
    u_fclose(table);
    u_fclose(reference_graph);
    return 1;
 }
-char subgraph[FILENAME_MAX];
-if (argc!=5) {
-   // if no subgraph name is given for the graph TUTU.grf, we
-   // take TUTU_xxxx as subgraph name
-   //name_without_path(argv[3],subgraph);
-   //subgraph[strlen(subgraph)-4]='\0';
-   strcpy(subgraph,argv[3]);
-   subgraph[strlen(subgraph)-4]='\0';
-   strcat(subgraph,"_@%.grf");
-} else {
-   // if we do have a subgraph name, we just take it
-   strcpy(subgraph,argv[4]);
+if (subgraph_pattern[0]=='\0') {
+   /* If no subgraph name is given for the graph TUTU.grf, we
+    * take TUTU_xxxx as subgraph name */
+   remove_extension(subgraph_pattern,output);
+   strcat(subgraph_pattern,"_@%.grf");
 }
-char chemin[FILENAME_MAX];
-get_path(argv[3],chemin);
-table2grf(table,reference_graph,result_graph,subgraph,chemin);
+char path[FILENAME_MAX];
+get_path(output,path);
+table2grf(table,reference_graph,result_graph,subgraph_pattern,path);
 return 0;
 }
 

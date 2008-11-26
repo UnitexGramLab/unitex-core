@@ -483,7 +483,7 @@ SORTTXT      = SortTxt
 SORTTXT_OBJS = IOBuffer.o SortTxt.o Unicode.o Error.o SortTxtMain.o Thai.o getopt.o
 
 TABLE2GRF      = Table2Grf
-TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Unicode.o File.o Error.o
+TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Unicode.o File.o Error.o getopt.o
 
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\

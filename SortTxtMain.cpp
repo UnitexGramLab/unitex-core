@@ -196,8 +196,7 @@ u_printf("Usage: SortTxt [OPTIONS] <txt>\n"
 
 /* 
  * This function behaves in the same way that a main one, except that it does
- * not invoke the setBufferMode function and that it does not print the
- * synopsis.
+ * not invoke the setBufferMode function.
  */
 int main_SortTxt(int argc,char* argv[]) {
 if (argc==1) {
