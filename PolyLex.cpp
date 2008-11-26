@@ -35,62 +35,146 @@
 #include "RussianCompounds.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "getopt.h"
 
+enum {DUTCH,GERMAN,NORWEGIAN,RUSSIAN};
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: PolyLex <lang> <alph> <dic> <list> <out> [<info>]\n");
-u_printf("     <lang> : language to work on. Possible values are:\n");
-u_printf("              DUTCH\n");
-u_printf("              GERMAN\n");
-u_printf("              NORWEGIAN\n");
-u_printf("              RUSSIAN\n");
-u_printf("     <alph> : alphabet file of the language\n");
-u_printf("     <dic> : dictionary .BIN to use\n");
-u_printf("     <list> : text file containing the words to be analysed\n");
-u_printf("     <out> : dictionary .DIC where the resulting lines will be stored. If\n");
-u_printf("             this file already exists, the lines are added at the end of it.\n");
-u_printf("     [<info>] : if this optional parameter is precised, it is taken as\n");
-u_printf("                the name of a file which will contain information about\n");
-u_printf("                the analysis\n");
-u_printf("\n");
-u_printf("Tries to decompose some norwegian words as combinaisons of shortest words.\n");
-u_printf("This words are removed from the <list> files.\n");
-u_printf("NOTE: when the program is used for Dutch or Norwegian words, it tries to read a text file\n");
-u_printf("containing a list of forbidden words. This file is supposed to be named\n");
-u_printf("'ForbiddenWords.txt' and stored in the same directory than <dic>.\n");
+u_printf("Usage: PolyLex [OPTIONS] <list>\n"
+         "\n"
+         "  <list>: text file containing the words to be analysed\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -a ALPH/--alphabet=ALPH: alphabet file of the language\n"
+         "  -d BIN/--dictionary=BIN: .bin dictionary to use\n"
+         "  -o OUT/--output=OUT: text DELAF dictionary where the resulting lines will be stored. If\n"
+         "                       this file already exists, the lines are added at the end of it.\n"
+         "  -i INFO/--info=INFO: if this optional parameter is precised, it is taken as\n"
+         "                       the name of a file which will contain information about\n"
+         "                       the analysis\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Language options:\n"
+         "  -D/--dutch\n"
+         "  -G/--german\n"
+         "  -N/--norwegian\n"
+         "  -R/--russian\n"
+         "\n"
+         "Tries to decompose some words as combinaisons of shortest words.\n"
+         "This words are removed from the <list> files.\n"
+         "NOTE: when the program is used for Dutch or Norwegian words, it tries to read a text file\n"
+         "containing a list of forbidden words. This file is supposed to be named\n"
+         "'ForbiddenWords.txt' and stored in the same directory than BIN.\n");
 }
 
 
 int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
 setBufferMode();
 
-if (argc<6 || argc>7) {
+if (argc==1) {
    usage();
    return 0;
 }
-u_printf("Loading alphabet...\n");
-Alphabet* alph=load_alphabet(argv[2]);
-if (alph==NULL) {
-   fatal_error("Cannot load alphabet file %s\n",argv[2]);
+
+const char* optstring=":DGNRa:d:o:i:h";
+const struct option lopts[]= {
+      {"dutch",no_argument,NULL,'D'},
+      {"german",no_argument,NULL,'G'},
+      {"norwegian",no_argument,NULL,'N'},
+      {"russian",no_argument,NULL,'R'},
+      {"alphabet",required_argument,NULL,'a'},
+      {"dictionary",required_argument,NULL,'d'},
+      {"output",required_argument,NULL,'o'},
+      {"info",required_argument,NULL,'i'},
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+int language=-1;
+char alphabet[FILENAME_MAX]="";
+char dictionary[FILENAME_MAX]="";
+char output[FILENAME_MAX]="";
+char info[FILENAME_MAX]="";
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 'D': language=DUTCH; break;
+   case 'G': language=GERMAN; break;
+   case 'N': language=NORWEGIAN; break;
+   case 'R': language=RUSSIAN; break;
+   case 'a': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty alphabet file name\n");
+             }
+             strcpy(alphabet,optarg);
+             break;
+   case 'd': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty dictionary file name\n");
+             }
+             strcpy(dictionary,optarg);
+             break;
+   case 'o': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name\n");
+             }
+             strcpy(output,optarg);
+             break;
+   case 'i': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty information file name\n");
+             }
+             strcpy(info,optarg);
+             break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
 }
-char temp[1024];
+
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
+
+if (alphabet[0]=='\0') {
+   fatal_error("You must specify the alphabet file\n");
+}
+if (dictionary[0]=='\0') {
+   fatal_error("You must specify the .bin dictionary to use\n");
+}
+if (output[0]=='\0') {
+   fatal_error("You must specify the output dictionary file name\n");
+}
+if (language==-1) {
+   fatal_error("You must specify the language\n");
+}
+
+u_printf("Loading alphabet...\n");
+Alphabet* alph=load_alphabet(alphabet);
+if (alph==NULL) {
+   fatal_error("Cannot load alphabet file %s\n",alphabet);
+}
+char temp[FILENAME_MAX];
 struct string_hash* forbiddenWords=NULL;
-if (!strcmp(argv[1],"DUTCH") || !strcmp(argv[1],"NORWEGIAN")) {
-   get_path(argv[3],temp);
+if (language==DUTCH || language==NORWEGIAN) {
+   get_path(dictionary,temp);
    strcat(temp,"ForbiddenWords.txt");
    forbiddenWords=load_key_list(temp);
 }
 u_printf("Loading BIN file...\n");
-unsigned char* bin=load_BIN_file(argv[3]);
+unsigned char* bin=load_BIN_file(dictionary);
 if (bin==NULL) {
-   error("Cannot load bin file %s\n",argv[3]);
+   error("Cannot load bin file %s\n",dictionary);
    free_alphabet(alph);
    free_string_hash(forbiddenWords);
    return 1;
 }
-strcpy(temp,argv[3]);
-temp[strlen(argv[3])-3]='\0';
+strcpy(temp,dictionary);
+temp[strlen(dictionary)-3]='\0';
 strcat(temp,"inf");
 u_printf("Loading INF file...\n");
 struct INF_codes* inf=load_INF_file(temp);
@@ -101,12 +185,12 @@ if (inf==NULL) {
    free_string_hash(forbiddenWords);
    return 1;
 }
-char tmp[2000];
-strcpy(tmp,argv[4]);
+char tmp[FILENAME_MAX];
+strcpy(tmp,argv[optind]);
 strcat(tmp,".tmp");
-FILE* words=u_fopen(argv[4],U_READ);
+FILE* words=u_fopen(argv[optind],U_READ);
 if (words==NULL) {
-   error("Cannot open word list file %s\n",argv[4]);
+   error("Cannot open word list file %s\n",argv[optind]);
    free_alphabet(alph);
    free(bin);
    free_INF_codes(inf);
@@ -127,9 +211,9 @@ if (new_unknown_words==NULL) {
    return 1;
 }
 
-FILE* res=u_fopen(argv[5],U_APPEND);
+FILE* res=u_fopen(output,U_APPEND);
 if (res==NULL) {
-   error("Cannot open result file %s\n",argv[5]);
+   error("Cannot open result file %s\n",output);
    free_alphabet(alph);
    free(bin);
    free_INF_codes(inf);
@@ -139,39 +223,21 @@ if (res==NULL) {
    return 1;
 }
 FILE* debug=NULL;
-if (argc==7) {
-   debug=u_fopen(argv[6],U_WRITE);
+if (info!=NULL) {
+   debug=u_fopen(info,U_WRITE);
    if (debug==NULL) {
-      error("Cannot open debug file %s\n",argv[6]);
+      error("Cannot open debug file %s\n",info);
    }
 }
 
-if (!strcmp(argv[1],"DUTCH")) {
-   analyse_dutch_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords);
-}
-else if (!strcmp(argv[1],"GERMAN")) {
-   analyse_german_compounds(alph,bin,inf,words,res,debug,new_unknown_words);
-}
-else if (!strcmp(argv[1],"NORWEGIAN")) {
-   analyse_norwegian_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords);
-}
-else if (!strcmp(argv[1],"RUSSIAN")) {
-  init_russian();
-  analyse_compounds(alph,bin,inf,words,res,debug,new_unknown_words);
-}
-else {
-   error("Invalid language argument: %s\n",argv[1]);
-   free_alphabet(alph);
-   free(bin);
-   free_INF_codes(inf);
-   u_fclose(words);
-   u_fclose(new_unknown_words);
-   u_fclose(res);
-   if (debug!=NULL) {
-      u_fclose(debug);
-   }
-   free_string_hash(forbiddenWords);
-   return 1;
+switch(language) {
+case DUTCH: analyse_dutch_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords); break;
+case GERMAN: analyse_german_compounds(alph,bin,inf,words,res,debug,new_unknown_words); break;
+case NORWEGIAN: analyse_norwegian_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords); break;
+case RUSSIAN:
+   init_russian();
+   analyse_compounds(alph,bin,inf,words,res,debug,new_unknown_words);
+   break;
 }
 
 free_alphabet(alph);
@@ -180,8 +246,8 @@ free_INF_codes(inf);
 u_fclose(words);
 u_fclose(new_unknown_words);
 free_string_hash(forbiddenWords);
-remove(argv[4]);
-rename(tmp,argv[4]);
+remove(output);
+rename(tmp,output);
 u_fclose(res);
 if (debug!=NULL) {
    u_fclose(debug);
