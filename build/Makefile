@@ -404,7 +404,7 @@ FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
 	           Fst2TxtAsRoutine.o DELA.o DicVariables.o\
-	           symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
+	           symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 FST2UNAMBIG      = Fst2Unambig
 FST2UNAMBIG_OBJS = Fst2.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o\

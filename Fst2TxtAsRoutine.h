@@ -31,16 +31,6 @@
 #include "TransductionVariables.h"
 #include "Unicode.h"
 
-/**
- * This enumeration defines the available parsing modes.
- */
-typedef enum {
-   PARSING_WORD_BY_WORD,
-   PARSING_CHAR_BY_CHAR,
-   /* This mode allows to start parsing on a space */
-   PARSING_CHAR_BY_CHAR_WITH_SPACE,
-} ParsingMode;
-
 
 /**
  * This structure represents the parameters required by Fst2Txt.
@@ -57,7 +47,8 @@ struct fst2txt_parameters {
    Alphabet* alphabet;
 
    OutputPolicy output_policy;
-   ParsingMode parsing_mode;
+   TokenizationPolicy tokenization_policy;
+   SpacePolicy space_policy;
 
    struct fst2txt_token_tree** token_tree;
    /* n_token_trees corresponds to the number of states in the fst2, but

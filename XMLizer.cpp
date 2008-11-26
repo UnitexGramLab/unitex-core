@@ -177,7 +177,8 @@ int main (int argc, char **argv) {
 	p->fst_file=options.sfst;
 	p->alphabet_file=options.alphabet;
 	p->output_policy=MERGE_OUTPUTS;
-	p->parsing_mode=PARSING_WORD_BY_WORD;
+	p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+	p->space_policy=DONT_START_WITH_SPACE;
 	main_fst2txt(p);
    
 	if(options.output == NULL) {

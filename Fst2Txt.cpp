@@ -26,69 +26,108 @@
 #include "Fst2TxtAsRoutine.h"
 #include "IOBuffer.h"
 #include "LocateConstants.h"
+#include "getopt.h"
 
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Fst2Txt <text> <fst2> <alphabet> <MODE> [-char_by_char|-char_by_char_with_space]\n"
-       "     <text> : the unicode text file to be parsed\n"
-       "     <fst2> : the grammar to be applied to the text\n"
-       "     <alphabet> : the alphabet file for the current language.\n"
-       "     <MODE> : the parsing can be done in merge mode or replace mode, using\n"
-       "              -merge or -replace\n"
-       "     -char_by_char : force the program to parse char by char. This\n"
-       "                     option is useful for languages like Thai.\n"
-       "     -char_by_char_with_space : force the program to parse char by char, allowing\n"
-       "                     the matching of expressions beginning by spaces.\n\n"
-       "Applies a grammar to a text. The text file is modified.\n");
+u_printf("Usage: Fst2Txt [OPTIONS] <fst2>\n"
+         "\n"
+         "  <fst2>: the grammar to be applied to the text\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -t TXT/--text=TXT: the unicode text file to be parsed\n"
+         "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
+         "  -s/--start_on_space: enables morphological use of space\n"
+         "  -x/--dont_start_on_space: disables morphological use of space (default)\n"
+         "  -c/--char_by_char: uses char by char tokenization; useful for languages like Thai\n"
+         "  -w/--word_by_word: uses word by word tokenization (default)\n"
+         "\n"
+         "Output options:\n"
+         "  -M/--merge (default)\n"
+         "  -R/--replace\n"
+         "\n"
+         "  -h/--help: this help\n"
+         "\n"
+         "Applies a grammar to a text. The text file is modified.\n");
 }
 
 
 
 int main(int argc, char **argv) {
-	/* Every Unitex program must start by this instruction,
-	 * in order to avoid display problems when called from
-	 * the graphical interface */
-	setBufferMode();
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-	if (argc<5) {
-	   usage();
-	   return 0;
-	}
-	struct fst2txt_parameters* p=new_fst2txt_parameters();
+if (argc==1) {
+   usage();
+   return 0;
+}
 
-	char tmp[FILENAME_MAX];
-	strcpy(tmp,argv[1]);
-	remove_extension(argv[1],tmp);
-	strcat(tmp,".tmp");
+const char* optstring=":t:a:MRcwhsx";
+const struct option lopts[]= {
+      {"text",required_argument,NULL,'t'},
+      {"alphabet",required_argument,NULL,'a'},
+      {"merge",no_argument,NULL,'M'},
+      {"replace",no_argument,NULL,'R'},
+      {"char_by_char",no_argument,NULL,'c'},
+      {"word_by_word",no_argument,NULL,'w'},
+      {"start_on_space",no_argument,NULL,'s'},
+      {"dont_start_on_space",no_argument,NULL,'x'},      
+      {"help",no_argument,NULL,'h'},
+      {NULL,no_argument,NULL,0}
+};
+struct fst2txt_parameters* p=new_fst2txt_parameters();
+int val,index=-1;
+optind=1;
+while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+   switch(val) {
+   case 't': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty text file name\n");
+             }
+             p->text_file=strdup(optarg);
+             break;
+   case 'a': if (optarg[0]=='\0') {
+                fatal_error("You must specify a non empty alphabet file name\n");
+             }
+             p->alphabet_file=strdup(optarg);
+             break;
+   case 'M': p->output_policy=MERGE_OUTPUTS; break;
+   case 'R': p->output_policy=REPLACE_OUTPUTS; break;
+   case 'c': p->tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
+   case 'w': p->tokenization_policy=WORD_BY_WORD_TOKENIZATION; break;
+   case 's': p->space_policy=START_WITH_SPACE; break;
+   case 'x': p->space_policy=DONT_START_WITH_SPACE; break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
+             else fatal_error("Invalid option --%s\n",optarg);
+             break;
+   }
+   index=-1;
+}
 
-	p->text_file=argv[1];
-	p->temp_file=tmp;
-	p->fst_file=argv[2];
-	p->alphabet_file=argv[3];
+if (optind!=argc-1) {
+   fatal_error("Invalid arguments: rerun with --help\n");
+}
 
-	if (!strcmp(argv[4],"-merge")) {
-		p->output_policy=MERGE_OUTPUTS;
-	}
-	else if (!strcmp(argv[4],"-replace")) {
-		p->output_policy=REPLACE_OUTPUTS;
-	} else {
-		error("Invalid parameter %s : the mode must be -merge or -replace\n",argv[4]);
-		return 1;
-	}
+if (p->text_file==NULL) {
+   fatal_error("You must specify the text file\n");
+}
 
-	if (argc>=6) {
-		if (!strcmp(argv[5],"-char_by_char")) {
-			p->parsing_mode=PARSING_CHAR_BY_CHAR;
-		} 
-		else if (!strcmp(argv[5],"-char_by_char_with_space")) {
-			p->parsing_mode=PARSING_CHAR_BY_CHAR_WITH_SPACE;
-		} 
-		else {
-			error("Invalid parameter: %s\n",argv[5]);
-			return 1;
-		}
-	}
+if (p->alphabet_file==NULL) {
+   fatal_error("You must specify the alphabet file\n");
+}
 
-	return main_fst2txt(p);
+char tmp[FILENAME_MAX];
+remove_extension(p->text_file,tmp);
+strcat(tmp,".tmp");
+p->temp_file=strdup(tmp);
+p->fst_file=strdup(argv[optind]);
+
+int result=main_fst2txt(p);
+free_fst2txt_parameters(p);
+return result;
 }

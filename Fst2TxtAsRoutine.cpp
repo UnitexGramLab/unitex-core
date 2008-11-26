@@ -68,9 +68,6 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 	u_fclose(p->output);
 	remove(p->text_file);
 	rename(p->temp_file,p->text_file);
-	free_Fst2(p->fst2);
-	free_alphabet(p->alphabet);
-	free_fst2txt_parameters(p);
 	u_printf("Done.\n");
 	return 0;
 }
@@ -98,7 +95,9 @@ p->alphabet_file=NULL;
 p->token_tree=NULL;
 p->n_token_trees=0;
 p->variables=NULL;
-p->parsing_mode=PARSING_WORD_BY_WORD;
+p->output_policy=MERGE_OUTPUTS;
+p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
+p->space_policy=DONT_START_WITH_SPACE;
 p->text_buffer=new_buffer(BUFFER_SIZE,UNICHAR_BUFFER);
 p->buffer=p->text_buffer->unichar_buffer;
 p->current_origin=0;
@@ -112,6 +111,10 @@ return p;
  */
 void free_fst2txt_parameters(struct fst2txt_parameters* p) {
 if (p==NULL) return;
+free(p->text_file);
+free(p->temp_file);
+free(p->fst_file);
+free(p->alphabet_file);
 for (int i=0;i<p->n_token_trees;i++) {
    free_fst2txt_token_tree(p->token_tree[i]);
 }
@@ -120,6 +123,8 @@ if (p->token_tree!=NULL) {
 }
 free_Variables(p->variables);
 free_buffer(p->text_buffer);
+free_Fst2(p->fst2);
+free_alphabet(p->alphabet);
 free(p);
 }
 
@@ -248,7 +253,7 @@ while (p->current_origin<p->text_buffer->size) {
          within_tag=1;
       } else if (p->buffer[p->current_origin]=='}') {
          within_tag=0;
-      } else if (!within_tag && p->buffer[p->current_origin]!=' ' || p->parsing_mode==PARSING_CHAR_BY_CHAR_WITH_SPACE) {
+      } else if (!within_tag && p->buffer[p->current_origin]!=' ' || p->space_policy==START_WITH_SPACE) {
          // we don't start a match on a space
         scan_graph(0,debut,0,0,NULL,p);
       }
@@ -335,18 +340,18 @@ if (p->token_tree[e]->transition_array!=NULL) {
    else pos2=pos;
    int position=0;
    unichar token[1000];
-   if (p->parsing_mode!=PARSING_WORD_BY_WORD 
+   if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION 
        || (is_letter(p->buffer[pos2+p->current_origin],p->alphabet) && (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet)))) {
       /* If we are in character by character mode */
       while (pos2+p->current_origin<p->text_buffer->size && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)) {
          token[position++]=p->buffer[(pos2++)+p->current_origin];
-         if (p->parsing_mode!=PARSING_WORD_BY_WORD) {
+         if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION) {
             break;
          }
       }
       token[position]='\0';
       if (position!=0 &&
-          (p->parsing_mode!=PARSING_WORD_BY_WORD || !(is_letter(token[position-1],p->alphabet) && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)))) {
+          (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION || !(is_letter(token[position-1],p->alphabet) && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)))) {
        // we proceed only if we have exactly read the contenu sequence
        // in both modes MERGE and REPLACE, we process the transduction if any
        int SOMMET2=head;
@@ -443,7 +448,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar mot[1000];
               int position=0;
-              if (p->parsing_mode!=PARSING_WORD_BY_WORD ||
+              if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   ((pos2+p->current_origin)==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
                      while (pos2+p->current_origin<p->text_buffer->size && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)) {
                            mot[position++]=p->buffer[(pos2++)+p->current_origin];
@@ -494,7 +499,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar mot[1000];
               int position=0;
-              if (p->parsing_mode!=PARSING_WORD_BY_WORD ||
+              if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   ((pos2+p->current_origin)==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
                  while (pos2+p->current_origin<p->text_buffer->size && is_upper(p->buffer[pos2+p->current_origin],p->alphabet)) {
                     mot[position++]=p->buffer[(pos2++)+p->current_origin];
@@ -520,7 +525,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar mot[1000];
               int position=0;
-              if (p->parsing_mode!=PARSING_WORD_BY_WORD ||
+              if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
                  while (pos2+p->current_origin<p->text_buffer->size && is_lower(p->buffer[pos2+p->current_origin],p->alphabet)) {
                     mot[position++]=p->buffer[(pos2++)+p->current_origin];
@@ -546,7 +551,7 @@ while (t!=NULL) {
               else pos2=pos;
               unichar mot[1000];
               int position=0;
-              if (p->parsing_mode!=PARSING_WORD_BY_WORD ||
+              if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   (is_upper(p->buffer[pos2+p->current_origin],p->alphabet) && (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet)))) {
                  while (pos2+p->current_origin<p->text_buffer->size && is_letter(p->buffer[pos2+p->current_origin],p->alphabet)) {
                     mot[position++]=p->buffer[(pos2++)+p->current_origin];
