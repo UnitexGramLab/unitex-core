@@ -499,7 +499,7 @@ TEI2TXT_OBJS = IOBuffer.o Unicode.o Error.o File.o TEI2Txt.o HTMLCharacters.o\
 
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\
-				File.o DELA.o List_ustring.o Table_hash.o Error.o StringParsing.o getopt.o
+				File.o DELA.o List_ustring.o HashTable.o Error.o StringParsing.o getopt.o
 
 TXT2FST2      = Txt2Fst2
 TXT2FST2_OBJS = IOBuffer.o Txt2Fst2.o Text_tokens.o Alphabet.o Unicode.o DELA_tree.o\

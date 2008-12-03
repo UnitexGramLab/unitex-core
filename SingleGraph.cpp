@@ -1014,7 +1014,7 @@ Transition* transition;
  *      it to associate to a given tag number the list of the states that can
  *      be reached.
  */
-struct hash_table* hash=new_hash_table((unsigned int (*)(void*))hash_list_int,(int (*)(void*, void*))equal_list_int,(void (*)(void*))free_list_int);
+struct hash_table* hash=new_hash_table((unsigned int (*)(void*))hash_list_int,(int (*)(void*, void*))equal_list_int,(void (*)(void*))free_list_int,NULL);
 struct fifo* fifo=new_fifo();
 struct hash_table* transition_hash=new_hash_table();
 /* We start by creating the initial state of the new graph and inserting it

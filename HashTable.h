@@ -54,6 +54,11 @@ struct hash_list {
    struct hash_list* next;
 };
 
+typedef unsigned int (*HASH_FUNCTION)(void*);
+typedef int (*EQUAL_FUNCTION)(void*,void*);
+typedef void (*FREE_FUNCTION)(void*);
+typedef void* (*KEYCOPY_FUNCTION)(void*);
+
 
 /**
  * This structure represents a generic hash table used to associate values to elements.
@@ -71,17 +76,21 @@ struct hash_table {
    float ratio;
    /* The hash function that returns a positive integer for a given element. A NULL
     * hash function indicates that keys are integers. */
-   unsigned int (*hash)(void*);
+   HASH_FUNCTION hash;
    /* The equal function must return a non null value if the two elements are
     * identical; 0 otherwise. */
-   int (*equal)(void*,void*);
+   EQUAL_FUNCTION equal;
    /* The function to use for freeing an element of the hash table */
-   void (*free)(void*);
+   FREE_FUNCTION free;
+   /* The function to use to duplicate the given key when it has to be inserted
+    * in the table. This is useful when we look for a key that may already be in the table:
+    * in such a case, we don't want to malloc a key that finally will have to be freed. */
+   KEYCOPY_FUNCTION keycopy;
 };
 
 
-struct hash_table* new_hash_table(int,float,unsigned int (*)(void*),int (*)(void*,void*),void (*)(void*));
-struct hash_table* new_hash_table(unsigned int (*)(void*),int (*)(void*,void*),void (*)(void*));
+struct hash_table* new_hash_table(int,float,HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
+struct hash_table* new_hash_table(HASH_FUNCTION,EQUAL_FUNCTION,FREE_FUNCTION,KEYCOPY_FUNCTION);
 struct hash_table* new_hash_table(int,float);
 struct hash_table* new_hash_table();
 void free_hash_table(struct hash_table*);

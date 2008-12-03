@@ -28,22 +28,18 @@
 #include "File.h"
 #include "Copyright.h"
 #include "DELA.h"
-#include "Table_hash.h"
 #include "IOBuffer.h"
 #include "Error.h"
+#include "vector.h"
+#include "HashTable.h"
 #include "getopt.h"
 
 
 #define NORMAL 0
 #define CHAR_BY_CHAR 1
-#define MAX_TOKENS 1000000
-#define MAX_ENTER_CHAR 1000000
 #define MAX_TAG_LENGTH 4000
 
 
-int n_occur[MAX_TOKENS];
-int enter_pos[MAX_ENTER_CHAR];
-int n_enter_char=0;
 int SENTENCES=0;
 int TOKENS_TOTAL=0;
 int WORDS_TOTAL=0;
@@ -51,16 +47,16 @@ int DIFFERENT_WORDS=0;
 int DIGITS_TOTAL=0;
 int DIFFERENT_DIGITS=0;
 
-void init_n_occur();
-void sort_and_save_by_frequence(FILE*,struct table_hash*);
-void sort_and_save_by_alph_order(FILE*,struct table_hash*);
-void compute_statistics(FILE*,struct table_hash*,Alphabet*);
-void normal_tokenization(FILE*,FILE*,FILE*,Alphabet*,struct table_hash*);
-void char_by_char_tokenization(FILE*,FILE*,FILE*,Alphabet*,struct table_hash*);
-void sauver_enter_pos(FILE*);
+
+void sort_and_save_by_frequence(FILE*,vector_ptr*,vector_int*);
+void sort_and_save_by_alph_order(FILE*,vector_ptr*,vector_int*);
+void compute_statistics(FILE*,vector_ptr*,Alphabet*);
+void normal_tokenization(FILE*,FILE*,FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*);
+void char_by_char_tokenization(FILE*,FILE*,FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*);
+void save_new_line_positions(FILE*,vector_int*);
 
 
-void ecrire_nombre_lignes(char name[],int n) {
+void write_number_of_tokens(char name[],int n) {
   FILE *f;
   int i;
   i=2+9*2; // *2 because of unicode +2 because of FF FE at file start
@@ -77,6 +73,9 @@ void ecrire_nombre_lignes(char name[],int n) {
 }
 
 
+unichar* keycopy(unichar* key) {
+return u_strdup(key);
+}
 
 void usage() {
 u_printf("%S",COPYRIGHT);
@@ -154,7 +153,7 @@ if (alphabet[0]=='\0') {
 
 FILE* text;
 FILE* out;
-FILE* tokens;
+FILE* output;
 FILE* enter;
 char tokens_txt[FILENAME_MAX];
 char text_cod[FILENAME_MAX];
@@ -196,8 +195,8 @@ if (enter==NULL) {
    }
    return 1;
 }
-tokens=u_fopen(tokens_txt,U_WRITE);
-if (tokens==NULL) {
+output=u_fopen(tokens_txt,U_WRITE);
+if (output==NULL) {
    error("Cannot create file %s\n",tokens_txt);
    u_fclose(text);
    fclose(out);
@@ -207,61 +206,68 @@ if (tokens==NULL) {
    }
    return 1;
 }
-u_fprintf(tokens,"0000000000\n");
+u_fprintf(output,"0000000000\n");
 
-struct table_hash *h_table;
-h_table = new_table_hash(HASH_SIZE, HASH_BLOCK_SIZE);
+//struct table_hash *h_table;
+//h_table = new_table_hash(HASH_SIZE, HASH_BLOCK_SIZE);
+vector_ptr* tokens=new_vector_ptr(4096);
+vector_int* n_occur=new_vector_int(4096);
+vector_int* n_enter_pos=new_vector_int(4096);
+struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+                                            (FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
 
-init_n_occur();
 u_printf("Tokenizing text...\n");
 if (mode==NORMAL) {
-   normal_tokenization(text,out,tokens,alph,h_table);
+   normal_tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos);
 }
 else {
-   char_by_char_tokenization(text,out,tokens,alph,h_table);
+   char_by_char_tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos);
 }
 u_printf("\nDone.\n");
-sauver_enter_pos(enter);
+save_new_line_positions(enter,n_enter_pos);
 fclose(enter);
 u_fclose(text);
 fclose(out);
-u_fclose(tokens);
-ecrire_nombre_lignes(tokens_txt,h_table->last_token_cod);
+u_fclose(output);
+write_number_of_tokens(tokens_txt,tokens->nbelems);
 // we compute some statistics
 get_snt_path(argv[optind],tokens_txt);
 strcat(tokens_txt,"stats.n");
-tokens=u_fopen(tokens_txt,U_WRITE);
-if (tokens==NULL) {
+output=u_fopen(tokens_txt,U_WRITE);
+if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
 else {
-   compute_statistics(tokens,h_table,alph);
-   u_fclose(tokens);
+   compute_statistics(output,tokens,alph);
+   u_fclose(output);
 }
 // we save the tokens by frequence
 get_snt_path(argv[optind],tokens_txt);
 strcat(tokens_txt,"tok_by_freq.txt");
-tokens=u_fopen(tokens_txt,U_WRITE);
-if (tokens==NULL) {
+output=u_fopen(tokens_txt,U_WRITE);
+if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
 else {
-   sort_and_save_by_frequence(tokens,h_table);
-   u_fclose(tokens);
+   sort_and_save_by_frequence(output,tokens,n_occur);
+   u_fclose(output);
 }
 // we save the tokens by alphabetical order
 get_snt_path(argv[optind],tokens_txt);
 strcat(tokens_txt,"tok_by_alph.txt");
-tokens=u_fopen(tokens_txt,U_WRITE);
-if (tokens==NULL) {
+output=u_fopen(tokens_txt,U_WRITE);
+if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
 else {
-   sort_and_save_by_alph_order(tokens,h_table);
-   u_fclose(tokens);
+   sort_and_save_by_alph_order(output,tokens,n_occur);
+   u_fclose(output);
 }
 
-free_table_hash(h_table);
+free_hash_table(hashtable);
+free_vector_ptr(tokens);
+free_vector_int(n_occur);
+free_vector_int(n_enter_pos);
 if (alph!=NULL) {
    free_alphabet(alph);
 }
@@ -270,16 +276,30 @@ return 0;
 //---------------------------------------------------------------------------
 
 
-
-void init_n_occur() {
-for (int i=0;i<MAX_TOKENS;i++) {
-   n_occur[i]=0;
+/**
+ * Returns the number of the given token, inserting it if needed in the 
+ * data structures. Its number of occurrences is also updated.
+ */
+int get_token_number(unichar* s,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
+int ret;
+struct any* value=get_value(hashtable,s,HT_INSERT_IF_NEEDED,&ret);
+if (ret==HT_KEY_ADDED) {
+   /* If the token was not already in the hash table, we must give it
+    * a number */
+   value->_int=vector_ptr_add(tokens,u_strdup(s));
+   vector_int_add(n_occur,0);
 }
+int n=value->_int;
+/* Then we update the number of occurrences */
+n_occur->tab[n]++;
+return n;
 }
 
 
 
-void normal_tokenization(FILE* f,FILE* coded_text,FILE* tokens,Alphabet* alph,struct table_hash* h_table) {
+void normal_tokenization(FILE* f,FILE* coded_text,FILE* output,Alphabet* alph,
+                         vector_ptr* tokens,struct hash_table* hashtable,
+                         vector_int* n_occur,vector_int* n_enter_pos) {
 int c;
 unichar s[MAX_TAG_LENGTH];
 int n;
@@ -304,21 +324,10 @@ while (c!=EOF) {
       }
       s[0]=' ';
       s[1]='\0';
-
-      if ( (n = find_token_numb(s,h_table)) == -1 ) {
-        n = add_token(s, h_table);
-        h_table->tab[n]=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-        u_strcpy(h_table->tab[n],s); 
-      }
-	  
-      if (n==1000000) {
-         fatal_error("Array overflow\n");
-      }
-      n_occur[n]++;
+      n=get_token_number(s,tokens,hashtable,n_occur);
+      /* If there is a \n, we note it */
       if (ENTER==1) {
-         if (n_enter_char<MAX_ENTER_CHAR) {
-            enter_pos[n_enter_char++]=TOKENS_TOTAL;
-         }
+         vector_int_add(n_enter_pos,TOKENS_TOTAL);
       }
       TOKENS_TOTAL++;
       fwrite(&n,4,1,coded_text);
@@ -350,22 +359,7 @@ while (c!=EOF) {
            fatal_error("The text contains an invalid tag. Unitex cannot process it.");
         }
      }
-     
-	 if ((n = find_token_numb(s,h_table)) == -1 ) {
-           n = add_token(s, h_table);	
-           unichar* tmp = (unichar*) malloc(sizeof(unichar)*(1+u_strlen(s)));
-           if (tmp == NULL)
-           {
-             fatal_error("Not enough memory, exiting!\n");
-           }
-           h_table->tab[n]=tmp;
-           u_strcpy(h_table->tab[n],s); 
-     }
-     
-     if (n==1000000) {
-        fatal_error("Array overflow\n");
-     }
-     n_occur[n]++;
+     n=get_token_number(s,tokens,hashtable,n_occur);
      TOKENS_TOTAL++;
      fwrite(&n,4,1,coded_text);
      c=u_fgetc(f);
@@ -375,16 +369,7 @@ while (c!=EOF) {
       n=1;
       if (!is_letter(s[0],alph)) {
          s[1]='\0';
-         if ((n = find_token_numb(s,h_table)) == -1 ) {
-			n = add_token(s , h_table);	
-			h_table->tab[n]=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-	   		u_strcpy(h_table->tab[n],s); 			 
-		 }
-         
-         if (n==1000000) {
-            fatal_error("Array overflow\n");
-         }
-         n_occur[n]++;
+         n=get_token_number(s,tokens,hashtable,n_occur);
          TOKENS_TOTAL++;
          if (c>='0' && c<='9') DIGITS_TOTAL++;
          fwrite(&n,4,1,coded_text);
@@ -400,35 +385,23 @@ while (c!=EOF) {
             error("Token too long at position %d\n",COUNT);
          }
          s[n]='\0';
-
-         if ((n = find_token_numb(s,h_table)) == -1 ) {
-           n = add_token(s, h_table);
-           unichar* tmp = (unichar*) malloc(sizeof(unichar)*(1+u_strlen(s)));
-           if (tmp == NULL) {
-             fatal_error("Not enough memory, exiting!\n");
-           }
-           h_table->tab[n]=tmp;
-           u_strcpy(h_table->tab[n],s); 			 
-         }
-
-         if (n==1000000) {
-            fatal_error("Array overflow\n");
-         }
-         n_occur[n]++;
+         n=get_token_number(s,tokens,hashtable,n_occur);
          TOKENS_TOTAL++;
          WORDS_TOTAL++;
          fwrite(&n,4,1,coded_text);
       }
    }
 }
-for (n=0;n<h_table->last_token_cod;n++) {
-   u_fprintf(tokens,"%S\n",h_table->tab[n]);
+for (n=0;n<tokens->nbelems;n++) {
+   u_fprintf(output,"%S\n",tokens->tab[n]);
 }
 }
 
 
 
-void char_by_char_tokenization(FILE* f,FILE* coded_text,FILE* tokens,Alphabet* alph,struct table_hash* h_table) {
+void char_by_char_tokenization(FILE* f,FILE* coded_text,FILE* output,Alphabet* alph,
+                               vector_ptr* tokens,struct hash_table* hashtable,
+                               vector_int* n_occur,vector_int* n_enter_pos) {
 int c;
 unichar s[MAX_TAG_LENGTH];
 int n;
@@ -452,22 +425,11 @@ while (c!=EOF) {
       }
       s[0]=' ';
       s[1]='\0';
-
-      if ((n = find_token_numb(s,h_table)) == -1 ) {
-         n = add_token(s , h_table);	
-		 h_table->tab[n]=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-	   	 u_strcpy(h_table->tab[n],s); 			 
-      }
-
-      if (n==1000000) {
-            fatal_error("Array overflow\n");
-         }
+      n=get_token_number(s,tokens,hashtable,n_occur);
+      /* If there is a \n, we note it */
       if (ENTER==1) {
-         if (n_enter_char<MAX_ENTER_CHAR) {
-            enter_pos[n_enter_char++]=TOKENS_TOTAL;
-         }
+         vector_int_add(n_enter_pos,TOKENS_TOTAL);
       }
-      n_occur[n]++;
       TOKENS_TOTAL++;
       fwrite(&n,4,1,coded_text);
    }
@@ -499,17 +461,7 @@ while (c!=EOF) {
            fatal_error("The text contains an invalid tag. Unitex cannot process it.");
         }
      }
-
-      if ((n = find_token_numb(s,h_table)) == -1 ) {
-         n = add_token(s , h_table);	
-		 h_table->tab[n]=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-	   	 u_strcpy(h_table->tab[n],s); 			 
-      }
-
-     if (n==1000000) {
-        fatal_error("Array overflow\n");
-     }
-     n_occur[n]++;
+     n=get_token_number(s,tokens,hashtable,n_occur);
      TOKENS_TOTAL++;
      fwrite(&n,4,1,coded_text);
      c=u_fgetc(f);
@@ -517,17 +469,7 @@ while (c!=EOF) {
    else {
       s[0]=(unichar)c;
       s[1]='\0';
-
-      if ((n = find_token_numb(s,h_table)) == -1 ) {
-         n = add_token(s , h_table);	
-		 h_table->tab[n]=(unichar*)malloc(sizeof(unichar)*(1+u_strlen(s)));
-	   	 u_strcpy(h_table->tab[n],s); 			 
-      }
-
-      if (n==1000000) {
-           fatal_error("Array overflow\n");
-        }
-        n_occur[n]++;
+      n=get_token_number(s,tokens,hashtable,n_occur);
       TOKENS_TOTAL++;
       if (is_letter((unichar)c,alph)) WORDS_TOTAL++;
       else if (c>='0' && c<='9') DIGITS_TOTAL++;
@@ -535,119 +477,120 @@ while (c!=EOF) {
       c=u_fgetc(f);
    }
 }
-for (n=0;n<h_table->last_token_cod;n++) {
-   u_fprintf(tokens,"%S\n",h_table->tab[n],tokens);
+for (n=0;n<tokens->nbelems;n++) {
+   u_fprintf(output,"%S\n",tokens->tab[n],output);
 }
 }
 
 
 
 
-int partition_pour_quicksort_by_frequence(int m, int n,struct table_hash* h_table) {
+int partition_pour_quicksort_by_frequence(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
 int pivot;
 int tmp;
 unichar* tmp_char;
 int i = m-1;
-int j = n+1;         // indice final du pivot
-pivot=n_occur[(m+n)/2];
+int j = n+1; // final pivot index
+pivot=n_occur->tab[(m+n)/2];
 while (true) {
   do j--;
-  while ((j>(m-1))&&(pivot>n_occur[j]));
+  while ((j>(m-1))&&(pivot>n_occur->tab[j]));
   do i++;
-  while ((i<n+1)&&(n_occur[i]>pivot));
+  while ((i<n+1)&&(n_occur->tab[i]>pivot));
   if (i<j) {
-    tmp=n_occur[i];
-    n_occur[i]=n_occur[j];
-    n_occur[j]=tmp;
+    tmp=n_occur->tab[i];
+    n_occur->tab[i]=n_occur->tab[j];
+    n_occur->tab[j]=tmp;
 
-    tmp_char=h_table->tab[i];
-    h_table->tab[i]=h_table->tab[j];
-    h_table->tab[j]=tmp_char;
+    tmp_char=(unichar*)tokens->tab[i];
+    tokens->tab[i]=tokens->tab[j];
+    tokens->tab[j]=tmp_char;
   } else return j;
 }
 }
 
 
 
-void quicksort_by_frequence(int debut,int fin,struct table_hash* h_table) {
+void quicksort_by_frequence(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
 int p;
-if (debut<fin) {
-  p=partition_pour_quicksort_by_frequence(debut,fin,h_table);
-  quicksort_by_frequence(debut,p,h_table);
-  quicksort_by_frequence(p+1,fin,h_table);
+if (first<last) {
+  p=partition_pour_quicksort_by_frequence(first,last,tokens,n_occur);
+  quicksort_by_frequence(first,p,tokens,n_occur);
+  quicksort_by_frequence(p+1,last,tokens,n_occur);
 }
 }
 
 
 
-int partition_pour_quicksort_by_alph_order(int m, int n,struct table_hash* h_table) {
+int partition_pour_quicksort_by_alph_order(int m, int n,vector_ptr* tokens,vector_int* n_occur) {
 unichar* pivot;
 unichar* tmp;
 int tmp_int;
 int i = m-1;
-int j = n+1;         // indice final du pivot
-pivot=h_table->tab[(m+n)/2];
+int j = n+1; // final pivot index
+pivot=(unichar*)tokens->tab[(m+n)/2];
 while (true) {
   do j--;
-  while ((j>(m-1))&&(u_strcmp(pivot,h_table->tab[j])<0));
+  while ((j>(m-1))&&(u_strcmp(pivot,(unichar*)tokens->tab[j])<0));
   do i++;
-  while ((i<n+1)&&(u_strcmp(h_table->tab[i],pivot)<0));
+  while ((i<n+1)&&(u_strcmp((unichar*)tokens->tab[i],pivot)<0));
   if (i<j) {
-    tmp_int=n_occur[i];
-    n_occur[i]=n_occur[j];
-    n_occur[j]=tmp_int;
+    tmp_int=n_occur->tab[i];
+    n_occur->tab[i]=n_occur->tab[j];
+    n_occur->tab[j]=tmp_int;
 
-    tmp=h_table->tab[i];
-    h_table->tab[i]=h_table->tab[j];
-    h_table->tab[j]=tmp;
+    tmp=(unichar*)tokens->tab[i];
+    tokens->tab[i]=tokens->tab[j];
+    tokens->tab[j]=tmp;
   } else return j;
 }
 }
 
 
 
-void quicksort_by_alph_order(int debut,int fin,struct table_hash* h_table) {
+void quicksort_by_alph_order(int first,int last,vector_ptr* tokens,vector_int* n_occur) {
 int p;
-if (debut<fin) {
-  p=partition_pour_quicksort_by_alph_order(debut,fin,h_table);
-  quicksort_by_alph_order(debut,p,h_table);
-  quicksort_by_alph_order(p+1,fin,h_table);
+if (first<last) {
+  p=partition_pour_quicksort_by_alph_order(first,last,tokens,n_occur);
+  quicksort_by_alph_order(first,p,tokens,n_occur);
+  quicksort_by_alph_order(p+1,last,tokens,n_occur);
 }
 }
 
 
 
 
-void sort_and_save_by_frequence(FILE *f,struct table_hash* h_table) {
-quicksort_by_frequence(0,h_table->last_token_cod - 1,h_table);
-for (int i=0;i<h_table->last_token_cod;i++) {
-   u_fprintf(f,"%d\t%S\n",n_occur[i],h_table->tab[i]);
+void sort_and_save_by_frequence(FILE *f,vector_ptr* tokens,vector_int* n_occur) {
+quicksort_by_frequence(0,tokens->nbelems - 1,tokens,n_occur);
+for (int i=0;i<tokens->nbelems;i++) {
+   u_fprintf(f,"%d\t%S\n",n_occur->tab[i],tokens->tab[i]);
 }
 }
 
 
 
-void sort_and_save_by_alph_order(FILE *f,struct table_hash* h_table) {
-quicksort_by_alph_order(0,h_table->last_token_cod-1,h_table);
-for (int i=0;i<h_table->last_token_cod;i++) {
-   u_fprintf(f,"%S\t%d\n",h_table->tab[i],n_occur[i]);
+void sort_and_save_by_alph_order(FILE *f,vector_ptr* tokens,vector_int* n_occur) {
+quicksort_by_alph_order(0,tokens->nbelems - 1,tokens,n_occur);
+for (int i=0;i<tokens->nbelems;i++) {
+   u_fprintf(f,"%S\t%d\n",tokens->tab[i],n_occur->tab[i]);
 }
 }
 
 
 
-void compute_statistics(FILE *f,struct table_hash* h_table,Alphabet* alph) {
-for (int i=0;i<h_table->last_token_cod;i++) {
-   if (u_strlen(h_table->tab[i])==1) {
-      if (h_table->tab[i][0]>='0' && h_table->tab[i][0]<='9') DIFFERENT_DIGITS++;
+void compute_statistics(FILE *f,vector_ptr* tokens,Alphabet* alph) {
+for (int i=0;i<tokens->nbelems;i++) {
+   unichar* foo=(unichar*)tokens->tab[i];
+   if (u_strlen(foo)==1) {
+      if (foo[0]>='0' && foo[0]<='9') DIFFERENT_DIGITS++;
    }
-   if (is_letter(h_table->tab[i][0],alph)) DIFFERENT_WORDS++;
+   if (is_letter(foo[0],alph)) DIFFERENT_WORDS++;
 }
-u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%s, %d (%d) digit%s\n",SENTENCES,(SENTENCES>1)?"s":"",TOKENS_TOTAL,h_table->last_token_cod,(TOKENS_TOTAL>1)?"s":"",WORDS_TOTAL,DIFFERENT_WORDS,(WORDS_TOTAL>1)?"s":"",DIGITS_TOTAL,DIFFERENT_DIGITS,(DIGITS_TOTAL>1)?"s":"");
+u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%s, %d (%d) digit%s\n",SENTENCES,(SENTENCES>1)?"s":"",TOKENS_TOTAL,tokens->nbelems,(TOKENS_TOTAL>1)?"s":"",WORDS_TOTAL,DIFFERENT_WORDS,(WORDS_TOTAL>1)?"s":"",DIGITS_TOTAL,DIFFERENT_DIGITS,(DIGITS_TOTAL>1)?"s":"");
 }
 
 
 
-void sauver_enter_pos(FILE* f) {
-fwrite(&enter_pos,sizeof(int),n_enter_char,f);
+void save_new_line_positions(FILE* f,vector_int* n_enter_pos) {
+fwrite(&(n_enter_pos->tab),sizeof(int),n_enter_pos->nbelems,f);
 }

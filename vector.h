@@ -24,50 +24,113 @@
 
 #include "utils.h"
 
-typedef struct vector_t {
-  int     nbelems;
-  void ** tab;
-  int     size;
-} vector_t;
+
+/**
+ * This library provides implementations of autoresizable arrays:
+ * 
+ * - vector_ptr: data type=void*
+ * - vector_int: data type=int
+ */
 
 
-inline vector_t * vector_new(int size = 16) {
-  vector_t * vec = (vector_t *) xmalloc(sizeof(vector_t));
-  if (size <= 0) { size = 1; }
-  vec->tab = (void **) xmalloc(size * sizeof(void *));
-  vec->size = size;
-  vec->nbelems = 0;
-  return vec;
+typedef struct vector_ptr {
+  int nbelems;
+  void** tab;
+  int size;
+} vector_ptr;
+
+
+typedef struct vector_int {
+  int nbelems;
+  int* tab;
+  int size;
+} vector_int;
+
+
+inline vector_ptr* new_vector_ptr(int size=16) {
+vector_ptr* vec=(vector_ptr*)xmalloc(sizeof(vector_ptr));
+if (size<=0) {
+   size=1;
+}
+vec->tab=(void**)xmalloc(size*sizeof(void*));
+vec->size=size;
+vec->nbelems=0;
+return vec;
 }
 
 
 typedef void (*release_f) (void *);
 
-inline void vector_delete(vector_t * vec, release_f release = NULL) {
-  if (release) { for (int i = 0; i< vec->nbelems; i++) { release(vec->tab[i]); } }
-  free(vec->tab);
-  free(vec);
+inline void free_vector_ptr(vector_ptr* vec,release_f release=NULL) {
+if (vec==NULL) return;
+if (release!=NULL) {
+   for (int i=0;i<vec->nbelems;i++) {
+      release(vec->tab[i]);
+   }
+}
+free(vec->tab);
+free(vec);
 }
 
 
-inline void vector_resize(vector_t * vec, int size) {
-  if (size <= 0) { size = 1; }
-  if (size < vec->nbelems) {
-    fatal_error("vec_resize: size=%d && nbelems=%d\n", size, vec->nbelems);
-  }
-  vec->tab = (void **) xrealloc(vec->tab, size * sizeof(void *));
-  vec->size = size;
+inline void vector_ptr_resize(vector_ptr* vec,int size) {
+if (size<=0) {
+   size=1;
+}
+if (size<vec->nbelems) {
+   fatal_error("vector_ptr_resize: size=%d && nbelems=%d\n",size,vec->nbelems);
+}
+vec->tab=(void**)xrealloc(vec->tab,size*sizeof(void*));
+vec->size=size;
 }
 
 
-inline int vector_add(vector_t * vec, void * data) {
-
-  while (vec->nbelems >= vec->size) { vector_resize(vec, vec->size * 2); }
-
-  vec->tab[vec->nbelems++] = data;
-
-  return vec->nbelems - 1;
+inline int vector_ptr_add(vector_ptr* vec,void* data) {
+while (vec->nbelems>=vec->size) {
+   vector_ptr_resize(vec,vec->size*2);
+}
+vec->tab[vec->nbelems++]=data;
+return vec->nbelems-1;
 }
 
+
+inline vector_int* new_vector_int(int size=16) {
+vector_int* vec=(vector_int*)xmalloc(sizeof(vector_int));
+if (size<=0) {
+   size=1;
+}
+vec->tab=(int*)xmalloc(size*sizeof(int));
+vec->size=size;
+vec->nbelems=0;
+return vec;
+}
+
+
+inline void free_vector_int(vector_int* vec) {
+if (vec==NULL) return;
+free(vec->tab);
+free(vec);
+}
+
+
+inline void vector_int_resize(vector_int* vec,int size) {
+if (size<=0) {
+   size=1;
+}
+if (size<vec->nbelems) {
+   fatal_error("vector_int_resize: size=%d && nbelems=%d\n",size,vec->nbelems);
+}
+vec->tab=(int*)xrealloc(vec->tab,size*sizeof(int));
+vec->size=size;
+}
+
+
+inline int vector_int_add(vector_int* vec,int data) {
+while (vec->nbelems>=vec->size) {
+   vector_int_resize(vec,vec->size*2);
+}
+vec->tab[vec->nbelems++]=data;
+return vec->nbelems-1;
+}
 
 #endif

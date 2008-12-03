@@ -1836,6 +1836,13 @@ return a_c-b_c;
 
 
 /**
+ * Returns 1 if a is the same as b; 0 otherwise.
+ */
+int u_equal(const unichar* a, const unichar* b) {
+return !u_strcmp(a,b); 
+}
+
+/**
  * Unicode version of strdup.
  * This function returns an allocated string that is a copy of the given one.
  * 

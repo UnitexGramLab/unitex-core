@@ -28,14 +28,14 @@
 
 /* Structure de liste d'automates */
 
-typedef vector_t list_aut;
+typedef vector_ptr list_aut;
 
 
 
-inline list_aut * list_aut_new(int size = 16) { return vector_new(size); }
+inline list_aut * list_aut_new(int size = 16) { return new_vector_ptr(size); }
 
-inline void list_aut_delete(list_aut * l) { vector_delete(l, (release_f) free_Fst2Automaton); }
+inline void list_aut_delete(list_aut * l) { free_vector_ptr(l, (release_f) free_Fst2Automaton); }
 
-inline int list_aut_add(list_aut * l, Fst2Automaton * A) { return vector_add(l, (void *) A); }
+inline int list_aut_add(list_aut * l, Fst2Automaton * A) { return vector_ptr_add(l, (void *) A); }
 
 #endif

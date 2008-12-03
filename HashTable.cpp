@@ -29,8 +29,9 @@
 /**
  * Allocates, initializes and return a new hash table for pointer elements.
  */
-struct hash_table* new_hash_table(int capacity,float ratio,unsigned int (*hash)(void*),
-                                  int (*equal)(void*,void*),void (*free_element)(void*)) {
+struct hash_table* new_hash_table(int capacity,float ratio,HASH_FUNCTION hash,
+                                  EQUAL_FUNCTION equal,FREE_FUNCTION free_element,
+                                  KEYCOPY_FUNCTION keycopy) {
 if (ratio<=0 || ratio >=1) {
    fatal_error("Invalid ratio in new_hash_table\n");
 }
@@ -60,6 +61,7 @@ if (free==NULL) {
    fatal_error("NULL free function error in new_hash_table\n");
 }
 h->free=free_element;
+h->keycopy=keycopy;
 h->number_of_elements=0;
 return h;
 }
@@ -69,9 +71,9 @@ return h;
  * Allocates, initializes and return a new hash table for pointer elements with
  * default ratio and capacity.
  */
-struct hash_table* new_hash_table(unsigned int (*hash)(void*),int (*equal)(void*,void*),
-                                  void (*free_element)(void*)) {
-return new_hash_table(DEFAULT_HASH_SIZE,DEFAULT_RATIO,hash,equal,free_element);
+struct hash_table* new_hash_table(HASH_FUNCTION hash,EQUAL_FUNCTION equal,
+                                  FREE_FUNCTION free_element,KEYCOPY_FUNCTION keycopy) {
+return new_hash_table(DEFAULT_HASH_SIZE,DEFAULT_RATIO,hash,equal,free_element,keycopy);
 }
 
 
@@ -129,10 +131,13 @@ return list;
 /**
  * Allocates, initializes and returns a new hash_list with a pointer key.
  */
-struct hash_list* new_hash_list(void* key,struct hash_list* next) {
+struct hash_list* new_hash_list(KEYCOPY_FUNCTION keycopy,void* key,struct hash_list* next) {
 struct hash_list* list=(struct hash_list*)malloc(sizeof(struct hash_list));
 if (list==NULL) {
    fatal_error("Not enough memory in new_hash_list\n");
+}
+if (keycopy!=NULL) {
+   key=keycopy(key);
 }
 list->ptr_key=key;
 list->next=next;
@@ -268,7 +273,7 @@ if (h->number_of_elements>=(h->ratio*h->capacity)) {
 }
 /* Then we add the new key */
 int cell_index=h->hash(key)%h->capacity;
-h->table[cell_index]=new_hash_list(key,h->table[cell_index]);
+h->table[cell_index]=new_hash_list(h->keycopy,key,h->table[cell_index]);
 h->number_of_elements++;
 return &(h->table[cell_index]->value);
 }
@@ -301,7 +306,7 @@ if (h->hash==NULL) {
 int cell_index=h->hash(key)%h->capacity;
 struct any* value=get_value_(key,h->table[cell_index],h);
 if (value!=NULL) {
-   /* If the key is the table we have finished */
+   /* If the key is in the table we have finished */
    (*ret)=HT_KEY_ALREADY_THERE;
    return value;
 }
