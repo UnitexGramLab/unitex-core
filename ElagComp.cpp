@@ -139,13 +139,13 @@ if (optind!=argc) {
 
 language_t* language=load_language_definition(lang);
 set_current_language(language);
-if (rule_file==NULL && grammar==NULL) {
+if (rule_file[0]=='\0' && grammar[0]=='\0') {
    fatal_error("You must specified a grammar or a rule file name\n");
 }
-if (rule_file!=NULL && grammar!=NULL) {
+if (rule_file[0]!='\0' && grammar[0]!='\0') {
    fatal_error("Cannot handle both a rule file and a grammar\n");
 }
-if (rule_file!=NULL) {
+if (rule_file[0]!='\0') {
    /* If we work with a rule list */
    char rule_file_name[FILENAME_MAX];
    if (directory==NULL) {
