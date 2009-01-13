@@ -79,6 +79,19 @@ return 1;
 
 
 /**
+ * Returns 1 if s contains several times the same characters; 0 otherwise.
+ */
+int is_duplicate_char_in_inflectional_code(unichar* s) {
+for (int i=0;s[i]!='\0';i++) {
+   if (NULL!=u_strchr(s+i+1,s[i])) {
+      return 1;
+   }
+}
+return 0;
+}
+
+
+/**
  * Tokenizes a DELAF line and returns the information in a dela_entry structure, or
  * NULL if there is an error in the line. The second parameter indicates if
  * comments are allowed at the end of the line or not. 'keep_equal_signs' indicates
@@ -238,6 +251,42 @@ if (line[i]=='/' && !comments_allowed) {
    free_dela_entry(res);
    return NULL;
 }
+/* We check if a character appears several times in an inflectional code like :KKms */
+for (int i=0;i<res->n_inflectional_codes;i++) {
+   if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[i])) {
+      if (!verbose) error("***Dictionary error: duplicate character in an inflectional code\n_%S_\n",line);
+         else (*verbose)=P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE;
+      free_dela_entry(res);
+      return NULL;
+   }
+}
+/* We check if an inflectional code is a subset of another like :Kms:ms */
+for (int i=0;i<res->n_inflectional_codes;i++) {
+   for (int j=0;j<res->n_inflectional_codes;j++) {
+      if (i==j) continue;
+      if (one_inflectional_codes_contains_the_other(res->inflectional_codes[i],
+                                                    res->inflectional_codes[j])) {
+         if (!verbose) error("***Dictionary error: an inflectional code is a subset of another\n_%S_\n",line);
+         else (*verbose)=P_DUPLICATE_INFLECTIONAL_CODE;
+         free_dela_entry(res);
+         return NULL;
+      }
+   }
+}
+/* We check if a semantic code appears twice as in V+z1+z1 */
+for (int i=0;i<res->n_semantic_codes;i++) {
+   for (int j=0;j<res->n_semantic_codes;j++) {
+      if (i==j) continue;
+      if (!u_strcmp(res->semantic_codes[i],res->semantic_codes[j])) {
+         if (!verbose) error("***Dictionary error: duplicate semantic code\n_%S_\n",line);
+         else (*verbose)=P_DUPLICATE_SEMANTIC_CODE;
+         free_dela_entry(res);
+         return NULL;
+      }
+   }
+}
+
+
 return res;
 }
 
@@ -1016,6 +1065,18 @@ switch (error_code) {
    }
    case P_EMPTY_INFLECTIONAL_CODE: {
       u_fprintf(out,"Line %d: empty inflectional code\n%S\n",line_number,DELA_line);
+      return;
+   }
+   case P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE: {
+      u_fprintf(out,"Line %d: duplicate character in an inflectional\n%S\n",line_number,DELA_line);
+      return;
+   }
+   case P_DUPLICATE_INFLECTIONAL_CODE: {
+      u_fprintf(out,"Line %d: an inflectional code is a subset of another\n%S\n",line_number,DELA_line);
+      return;
+   }
+   case P_DUPLICATE_SEMANTIC_CODE: {
+      u_fprintf(out,"Line %d: duplicate semantic code\n%S\n",line_number,DELA_line);
       return;
    }
 }

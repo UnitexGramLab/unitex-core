@@ -100,7 +100,7 @@ if (out==NULL) {
 	u_fclose(dic);
 	fatal_error("Cannot create %s\n",output_filename);
 }
-u_printf("Checking %s...\n",argv[1]);
+u_printf("Checking %s...\n",argv[optind]);
 unichar line[10000];
 int line_number=1;
 /*
@@ -158,7 +158,7 @@ u_fclose(dic);
 u_fprintf(out,"-----------------------------------\n");
 u_fprintf(out,"-------------  Stats  -------------\n");
 u_fprintf(out,"-----------------------------------\n");
-u_fprintf(out,"File: %s\n",argv[1]);
+u_fprintf(out,"File: %s\n",argv[optind]);
 u_fprintf(out,"Type: %s\n",is_a_DELAF?"DELAF":"DELAS");
 u_fprintf(out,"%d line%s read\n",line_number-1,(line_number-1>1)?"s":"");
 u_fprintf(out,"%d simple entr%s ",n_simple_entries,(n_simple_entries>1)?"ies":"y");
