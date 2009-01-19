@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,9 +19,8 @@
   *
   */
 
-#include "autalmot_old.h"
 #include "String_hash.h"
-#include "fst2autalmot.h"
+#include "ExplodeFst2Utils.h"
 #include "utils.h"
 #include "DELA.h"
 #include "Transitions.h"
@@ -37,51 +36,6 @@ static unichar PONCTAB[] = {
 };
 
 
-#if 0
-
-void determine_sortesymbole(tSymbole * symb) {
-
-  if (symb->sorteSymbole != INDETERMINE) { return; }
-
-
-  if (complet(symb->gramm)) {
-
-    switch (*symb->canonique) {
-
-    case 0:
-      symb->sorteSymbole = CODE_POUET;
-      break;
-
-    case '!':
-      symb->sorteSymbole = NEGATIF;
-      break;
-
-    default:
-      symb->sorteSymbole = ATOME;
-    }
-
-  } else {
-    
-    if (*symb->canonique) { die("bad symbol: canonical form (%S) with incomplete code (%S)\n", symb->canonique, symb->gramm); }
-
-    symb->sorteSymbole = INCOMPLET;
-  }
-}
-
-
-void symbole_strip(tSymbole * symb) {
-
-  unichar * p, * q;
-
-  for (p = symb->gramm; *p != '+'; p++) { if (*p == 0) return; }
-
-  for (q = p + 1; (*q != 0) && (*q != ':'); q++);
-
-  while ((*(p++) = *(q++)));
-}
-
-#endif
-
 
 static int compte_flex(unichar * gramm) {
 
@@ -94,7 +48,6 @@ static int compte_flex(unichar * gramm) {
 
   return nb;
 }
-
 
 
 // assume symb->sorteSymbole == ATOM
@@ -137,36 +90,6 @@ int symbole_developp(tAlphMot * alphabet, tSymbole * symb) {
   return nbflex;
 }
 
-
-/*
-static int check_dic_entry(const unichar * label) {
-
-  // {__,__.__} 
-
-  if (*label != '{') { error("label %S isn't a good DELA entry\n", label); return -1; }
-
-  const unichar * p = label + 1;
-
-  while (*p !=  ',') { // look for ','
-    if (*p == 0) { error("malformed DELA entry: '%S' (',' is missing).\n", label); return -1; }
-    p++;
-  }
-    
-  while (*p != '.') {
-    if (*p == 0) { error("malformed DELA entry: '%S' ('.' is missing).\n", label); return -1; }
-    p++;
-  }
-
-  while (*p != '}') {
-    if (*p == 0) { error("malformed DELA entry: '%S' ('}' is missing).\n", label); return -1; }
-    p++;
-  }
-  
-  p++;
-  if (*p != 0) { error("malformed label: '%S': label should end with '}'.\n", label); return -1; }
-
-  return 0;
-}*/
 
 
 
@@ -293,266 +216,6 @@ void load_text_symbol(tSymbole * symb, unichar * lex) {
 }
 
 
-#if 0
-
-
-void load_gramm_symbol(tSymbole * symb, unichar * _lex) {
-
-  int i, j;
-  unichar * p, * delim;
-
-  unichar * lex = u_strdup(_lex);
-
-  //  debug("load_gramm_symbol: \"%S\"\n", lex);
-
-  if (*lex == '{') {   /* dictionnary entry */
-
-    if (u_strcmp(lex, "{S}") == 0) {
-      
-      symb->sorteSymbole = ATOME;
-      *symb->flechie     = 0;
-      symb->canonique    = lex;
-      u_strcpy(symb->gramm, "PNC");
-      return;
-    }
-
-
-    if (check_dic_entry(lex) == -1) { fatal_error("bad label grammar '%S'\n", lex); }
-
-    symb->sorteSymbole = ATOME;
-
-    /* inflected form */
-
-    i = 1, j = 0;
-
-    while (lex[i] != ',') {
-
-      if (j >= maxMot) { fatal_error("inflected form too long in '%S'\n", lex); }
-
-      symb->flechie[j++] = lex[i++];
-    }
-
-    symb->flechie[j] = 0;
-    i++;
-
-
-    /* forme canonique */
-
-    for (j = i; lex[j] != '.'; j++);
-    lex[j] = 0;
-
-    symb->canonique = u_strdup(lex + i);
-
-    i = j + 1;
-
-
-    /* traits gramma ... */
-
-    j = 0;
-    while (lex[i] && lex[i] != '}' && j < maxGramm - 1) { symb->gramm[j++] = lex[i++]; }
-    symb->gramm[j] = 0;
-
-    free(lex);
-    return;
-  }
-
-
-  if (*lex ==  '<') {
-
-    if (lex[1] == 0) {
-      symb->sorteSymbole = ATOME;
-      *symb->flechie  = 0;
-      symb->canonique = lex;
-      u_strcpy(symb->gramm, "PNC");
-      return;
-    }
-
-    if (u_strcmp(lex, "<def>") == 0) { /* special <def> label */
-      symb->sorteSymbole = SPECIAL;
-      symb->canonique    = lex;
-      u_strcpy(symb->flechie, lex);
-      symb->gramm[0] = 0;
-      return;
-    }
-
-    if (u_strcmp(lex, "<.>") == 0) { /* UNIVERSEL label */
-
-      symb->sorteSymbole = UNIVERSEL;
-      symb->canonique    = u_strdup("");
-      symb->flechie[0]   = 0;
-      symb->gramm[0]     = 0;
-      free(lex);
-      return;
-    }
-
-
-    *symb->flechie = 0;
-
-    p = lex + 1;
-
-    if ((delim = u_strchr(p, '.'))) { /* read canonical form */
-
-      *delim = 0;
-      symb->canonique = u_strdup(p);
-      p = delim + 1;
-
-    } else {
-
-      symb->canonique  = (unichar *) xmalloc(sizeof(unichar));
-      *symb->canonique = 0;
-    }
-
-    i = 0;
-
-    while ((*p != '>') && (i < maxGramm - 1)) {
-
-      if (*p == 0) { fatal_error("missing closing '>' in label: '%S'\n", _lex); }
-
-      symb->gramm[i++] = *(p++);
-    }
-    symb->gramm[i] = 0;
-
-
-    symb->sorteSymbole = INDETERMINE;
-
-    free(lex);
-    return;
-  }
-
-
-
-  /* label doesn't start with '{' nor '<' */
-
-
-  if ((*lex == '!') || (*lex == '=')) { /* special rule's symbols */
-
-    if (lex[1]) { fatal_error("bad grammar label: '%S'\n", lex); }
-
-    symb->sorteSymbole = ATOME;
-    symb->canonique    = (unichar *) xmalloc(sizeof(unichar));
-    symb->canonique[0] = 0;
-    u_strcpy(symb->flechie, lex);
-    u_strcpy(symb->gramm, lex);
-
-    free(lex);
-
-    return;
-  }
-
-
-
-  /* mot inconnu dans un texte ou ponctuation (pas d'accolade, pas de point, pas de virgule) */
-
-
-  symb->sorteSymbole = ATOME;
-  *symb->flechie = 0;
-
-  if (*lex == '\\') {
-
-    if (! lex[1] || lex[2]) { fatal_error("illegal label '%S'\n", *lex); }
-
-    symb->canonique = lex;
-    u_strcpy(symb->gramm, "PNC");    
-    return;
-  }
-
-
-  if (u_strchr(PONCTAB, *lex)) {     /* ponctuation */
-
-    if (lex[1]) { fatal_error("bad grammar label: '%S'\n", lex); }
-
-    symb->canonique = lex;
-    u_strcpy(symb->gramm, "PNC");
-    return;
-  }
-
- 
-  if (u_is_digit(*lex)) { // chiffre arabe
-
-    if (lex[1]) { fatal_error("illegal label text: '%S'\n", lex); }
-
-    symb->canonique = lex;
-    u_strcpy(symb->gramm, "CHFA");
-    return;
-  }
-
-
-  /* mot inconnu */
-
-  i = 0;
-  while (lex[i]) {
-    if (i >= maxMot) { fatal_error("inflected form too long: %S Y.\n", lex); }
-    symb->flechie[i] = lex[i];
-    i++;
-  }
-  symb->flechie[i] = 0;
-
-
-  symb->sorteSymbole = ATOME;
-
-  symb->canonique    = (unichar *) xmalloc(sizeof(unichar));
-  symb->canonique[0] = 0;
-
-  symb->gramm[0] = '?';
-  symb->gramm[1] = 0;
-
-  free(lex);
-}
-
-
-tAutAlMot * fst2AutAlMot(Fst2 * automaton, int nb) {
-
-  nb++; /* Fst2 start at 1 */
-
-  tAutAlMot * aut = initAutAlMot(automaton->number_of_states_per_graphs[nb]);
-
-  tAlphMot * alphabet = new_SymbolAlphabet();
-
-  int base = automaton->initial_states[nb];
-
-  for (int q = 0; q < (int) aut->nbEtats; q++) {
-
-    int qq = base + q;
-
-    aut->type[q] = 0;
-
-
-    if (is_final_state(automaton->states[qq]->control))  { aut->type[q] |= AUT_FINAL;   }
-    if (automaton->states[qq]->control & FST2_INITIAL_STATE_BIT_MASK)  { aut->type[q] |= AUT_INITIAL; }
-
-    aut->etats[q] = NULL;
-
-    for (struct fst2Transition * transitions = automaton->states[qq]->transitions;
-         transitions; transitions = transitions->next) {
-
-      tSymbole symb;
-
-      load_text_symbol(& symb, automaton->tag_number[transitions->tag_number]->input);
-
-      alphabet_clear(alphabet);
-
-      int nb_inflect = symbole_developp(alphabet, & symb);
-
-      if (nb_inflect == 0) { fatal_error("symbole_developp: nbflex=0\n"); }
-
-      while (nb_inflect--) {
-	nouvTrans(aut, q, alphabet->symb + nb_inflect, transitions->state_number - base);
-        free_Ustring(alphabet->symb[nb_inflect].flex);
-	free(alphabet->symb[nb_inflect].canonique);
-      }
-    }
-  }
-
-  free_SymbolAlphabet(alphabet);
-
-  return aut;
-}
-
-
-#endif
-
-
-
 list_aut_old * load_text_automaton(char * fname, bool developp) {
 
 
@@ -631,73 +294,6 @@ list_aut_old * load_text_automaton(char * fname, bool developp) {
   return res;
 }
 
-
-
-#if 0
-
-tAutAlMot * load_elag_grammar_automaton(char * fname) {
-
-
-  unichar buf[1024];
-
-  Fst2 * automaton = load_fst2(fname, 1);
-
-  if (automaton == NULL) { fatal_error("cannot load %s\n", fname); }
-
-  if (automaton->number_of_graphs != 1) { error("%d graphs in grammar %s\n", automaton->number_of_graphs, fname); }
-
-  int nb   = 1;  /* automate in fst2 start at index 1 */
-  int base = automaton->initial_states[nb];
-
-
-  tAutAlMot * aut = initAutAlMot(automaton->number_of_states_per_graphs[1]);
-
-  aut->name = u_strdup(automaton->graph_names[nb]);
-
-  tAlphMot * alphabet = new_SymbolAlphabet();
-
-
-  for (int q = 0; q < (int) aut->nbEtats; q++) {
-
-    int qq = base + q;
-
-    aut->type[q] = 0;
-
-    if (is_final_state(automaton->states[qq])) { aut->type[q] |= AUT_TERMINAL; }
-    if (automaton->states[qq]->control & FST2_INITIAL_STATE_BIT_MASK) { aut->type[q] |= AUT_INITIAL;  }
-
-    aut->etats[q] = NULL;
-
-    for (struct fst2Transition * transitions = automaton->states[qq]->transitions; transitions; transitions = transitions->next) {
-
-      tSymbole symb;
-
-      u_strcpy(buf, automaton->tag_number[transitions->tag_number]->input);
-
-      load_gramm_symbol(& symb, buf);
-
-      alphabet_clear(alphabet);
-
-      int nb_inflect = symbole_developp(alphabet, & symb);
-
-      if (nb_inflect == 0) { nouvTrans(aut, q, NULL, transitions->state_number - base); }
-
-      while (nb_inflect--) {
-	//#warning "must free canonique!!!!????"
-	nouvTrans(aut, q, alphabet->symb + nb_inflect, transitions->state_number - base);
-	free(alphabet->symb[nb_inflect].canonique);
-      }
-
-    }
-  }
-
-  free_SymbolAlphabet(alphabet);
-  free_Fst2(automaton);
-
-  return aut;
-}
-
-#endif
 
 
 void text_output_fst2(list_aut_old * txt, FILE * f) {
@@ -818,3 +414,229 @@ int text_output_fst2_fname(list_aut_old * txt, char * fname) {
 
   return 0;
 }
+
+
+
+/* Cree une nouvelle transition de source vers but etiquetee s. 
+ * Il n'y a pas de partage de memoire entre s et l'etiquette de la transition.
+ */
+
+void nouvTrans(tAutAlMot * a, int source, tSymbole * s, int but) {
+
+  tTransitions * t = (tTransitions *) xmalloc(sizeof(tTransitions)) ;
+
+  //  t->etiq    = s ? copieSymbole(s) : NULL;
+  t->etiq = symbole_dup(s);
+  t->but     = but;
+  t->suivant = a->etats[source];
+  a->etats[source] = t;
+}
+
+
+/* Postconditions : la taille est egale au nombre d'etats ;
+ * l'unique etat initial est 0, sauf s'il n'y a pas d'etats.
+ */
+
+tAutAlMot * initAutAlMot(int nbEtats) {
+
+  tAutAlMot * aut = (tAutAlMot *) xcalloc(1, sizeof(tAutAlMot));
+
+  aut->name           = NULL;
+  aut->nbEtats        = nbEtats; 
+  aut->taille         = nbEtats; 
+  aut->entrantesEtats = NULL;
+
+  if (nbEtats == 0) {
+
+    error("automaton with no states.\n") ;
+    aut->nbEtatsInitiaux = 0 ;
+
+  } else {
+
+    aut->etats = (tTransitions **) xcalloc(nbEtats, sizeof(tTransitions *)) ;
+    aut->type  = (char *) xcalloc(nbEtats, sizeof(char)); 
+
+    marqueEtatInitial(aut);
+  }
+
+  return aut ;
+}
+
+
+/* Marque 0 comme etat initial de l automate.
+ */
+
+void marqueEtatInitial(tAutAlMot * aut) {
+  aut->nbEtatsInitiaux = 1;
+  aut->initial = (int *) xcalloc(1, sizeof(int));
+  aut->initial[0] = 0;
+  //  aut->type[0] |= AUT_INITIAL; 
+}
+
+
+
+tSymbole * add_symbol(tAlphMot * alphabet, tSymbole * symb) {
+
+  while (alphabet->nbSymboles >= alphabet->size) {
+    alphabet->size = alphabet->size * 2;
+    alphabet->symb    = (tSymbole *) xrealloc(alphabet->symb, alphabet->size * sizeof(tSymbole));
+  }
+
+  tSymbole * addr = alphabet->symb + alphabet->nbSymboles;
+  addr->flex = new_Ustring();
+  symbole_copy(addr, symb);
+
+  alphabet->nbSymboles++;
+
+  return addr;
+}
+
+
+tSymbole * tSymbole_new() {
+  tSymbole * res = (tSymbole *) xmalloc(sizeof(tSymbole));
+  res->sorteSymbole = UNIVERSEL;
+  res->flex = new_Ustring();
+  res->canonique = NULL;
+  return res;
+}
+
+void symbole_delete(tSymbole * symb) {
+  if (! symb) { return; }
+  free_Ustring(symb->flex);
+  free(symb->canonique); 
+  free(symb);
+}
+
+
+void symbole_copy(tSymbole * dest, tSymbole * src) {
+  dest->sorteSymbole = src->sorteSymbole;
+  u_strcpy(dest->flex, src->flex);
+  //u_strcpy(dest->flechie, src->flechie);
+  dest->canonique = u_strdup(src->canonique);
+  u_strcpy(dest->gramm, src->gramm);
+}
+
+
+tSymbole * symbole_dup(tSymbole * src) {
+
+//  debug("symbole_dup: (%d:%S,%S.%S)\n", src->sorteSymbole, src->flex->str, src->canonique, src->gramm);
+
+  if (src == NULL) { return NULL; }
+
+  //tSymbole * dest = (tSymbole *) xmalloc(sizeof(tSymbole));
+  tSymbole * dest = tSymbole_new();
+
+  dest->sorteSymbole = src->sorteSymbole;
+  //u_strcpy(dest->flechie, src->flechie);
+  u_strcpy(dest->flex, src->flex);
+  u_strcpy(dest->gramm, src->gramm);
+  dest->canonique = u_strdup(src->canonique);
+
+  return dest;
+}
+
+
+tAlphMot * alphabet_new(int size) {
+  tAlphMot * alphabet  = (tAlphMot *) xmalloc(sizeof(tAlphMot));
+  alphabet->symb       = (tSymbole *) xmalloc(size * sizeof(tSymbole));
+  alphabet->size    = size;
+  alphabet->nbSymboles = 0;
+  return alphabet;
+}
+
+
+void free_SymbolAlphabet(tAlphMot * alpha) {
+  free(alpha->symb);
+  free(alpha);
+}
+
+void alphabet_clear(tAlphMot * alpha) {
+  alpha->nbSymboles = 0;
+}
+
+
+
+
+/* Libere le contenu de l'automate sans liberer l'automate. */
+/* Precondition : l automate a au moins un etat. */
+
+void videAutomate(tAutAlMot * Aut) {
+
+  int i ;
+  tTransitions * t, * s ;       /* Transition courante et suivante */
+
+  for (i = 0 ; i < Aut -> nbEtats ; i ++) {
+    for (t = Aut->etats[i]; t; t = s) { /* Destruction des transitions sortantes pour chaque etat */
+      s = t->suivant;
+      //libereEtiq(t);
+      symbole_delete(t->etiq);
+      free(t);
+    }
+  }
+
+  free(Aut->etats);
+  Aut->etats = 0;
+
+  free(Aut->type);
+  Aut->type = 0;
+
+  free(Aut->initial);
+  Aut->initial = 0;
+ 
+  if (Aut->entrantesEtats) libereEntrantesEtats(Aut);
+
+  Aut->nbEtats = 0;
+}
+
+
+
+/* PrÝcondition : a -> entrantesEtats != 0. */
+
+void libereEntrantesEtats(tAutAlMot * a) {
+
+  int i ;
+  tTransitions * pt, * temp ;
+
+  for (i = 0; i < a->nbEtats; i ++) {
+    for (pt = a->entrantesEtats[i] ; pt ; pt = temp) {
+      temp = pt->suivant ;
+      free(pt) ;
+      pt = 0 ;
+    }   /* pt -> etiq est partage avec Aut -> etats[i] */
+  }
+
+  free(a->entrantesEtats) ;
+  a->entrantesEtats = 0 ; /* free() ne le fait pas */
+}   
+
+
+
+void libereAutAlMot(tAutAlMot * Aut) {
+
+  if (Aut->nbEtats) { videAutomate(Aut); }
+
+  free(Aut->name);
+  free(Aut);
+}
+
+
+void list_aut_old_delete(list_aut_old * lst) {
+
+  for (int i = 0; i < lst->nb_aut; ++i) {
+    libereAutAlMot(lst->les_aut[i]);
+  }
+  free(lst->les_aut);
+  free(lst);
+}
+
+
+
+
+
+void output_fst2_labels(string_hash* hash,FILE* f) {
+for (int i=0;i<hash->size;i++) {
+   u_fprintf(f,"%%%S\n",hash->value[i]);
+}
+u_fprintf(f,"f\n");
+}
+

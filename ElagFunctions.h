@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 #define _ELAG_H_
 
 
-#include "autalmot.h"
+#include "Fst2Automaton.h"
 #include "list_aut.h"
 
 void remove_ambiguities(char * fstname, list_aut * grammars, char * fstout);

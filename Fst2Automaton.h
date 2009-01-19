@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2008 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +19,6 @@
   *
   */
 
-/* autalmot.h	Automates finis sur les mots */
-
 #ifndef _AUTALMOT_H_
 #define _AUTALMOT_H_
 
@@ -28,47 +26,6 @@
 #include "symbol.h"
 #include "SingleGraph.h"
 #include "String_hash.h"
-
-
-//#define TRUE	1
-//#define FALSE 	0
-
-
-#define AUT_INITIAL    1
-#define AUT_FINAL      2
-#define AUT_TERMINAL   AUT_FINAL
-
-
-//#define initial(A, q)  (A->states[q].flags & AUT_INITIAL)
-//#define final(A, q)  (A->states[q].flags & AUT_FINAL)
-
-
-
-/* Liste de transitions */
-
-typedef struct transition_t {
-  int to;                /* Etat but de la transition (etat source s'il s'agit d'une liste de transitions entrantes) */
-  symbol_t * label;      /* Etiquette de la transition */
-  struct transition_t * next;
-} transition_t;
-
-transition_t * transition_new(int to, symbol_t * label, transition_t * next = NULL);
-void transition_delete(transition_t * trans);
-void transitions_delete(transition_t * trans);
-
-void transitions_concat(transition_t ** t1, transition_t * t2);
-
-transition_t * transition_dup(const transition_t * trans);
-transition_t * transitions_dup(const transition_t * trans);
-
-
-
-typedef struct state_t {
-  int flags;               /* final, initial */
-  transition_t * trans;    /* transitions en partance de cet état */
-  int defto;               /* etat destination de la transition par défaut depuis cet état, -1 si il n'y en a pas */
-} state_t;
-
 
 /**
  * This structure defines an automaton of .fst2, ready to be used
@@ -82,71 +39,13 @@ typedef struct {
 
    /* The automaton itself */
    SingleGraph automaton;
-   
-   
-   
-   
-   int nbstates;
-   state_t * states;   /* tableau des etats */
-   int size;           /* taille du tableau */
-  /* Tableau des etats initiaux. initial[0],
-   * initial[1], etc. contiennent les numeros des etats initiaux.
-   */
-  int * initials;
-  int   nbinitials;
 } Fst2Automaton;
-
 
 
 Fst2Automaton* new_Fst2Automaton(unichar* name=NULL,int size=8);
 void free_Fst2Automaton(Fst2Automaton*);
-
-void autalmot_empty(Fst2Automaton * A);
-Fst2Automaton * autalmot_dup(const Fst2Automaton * A);
-
-void autalmot_resize(Fst2Automaton * A, int size);
-static inline void autalmot_resize(Fst2Automaton * A) { autalmot_resize(A, A->nbstates); }
-
-
-inline void autalmot_set_name(Fst2Automaton * A, unichar * name) { free(A->name); A->name = u_strdup(name); }
-inline void autalmot_set_name(Fst2Automaton * A, char * name) { free(A->name); A->name = u_strdup(name); }
-
-void autalmot_set_initial(Fst2Automaton * A, int state);
-static inline void autalmot_set_final(Fst2Automaton * A, int state);
-
-void autalmot_unset_initial(Fst2Automaton * A, int q);
-
-
-int autalmot_add_state(Fst2Automaton * A, int flags = 0);
-void add_transition(Fst2Automaton * A, int from, symbol_t * label, int to);
 void add_transition(SingleGraph,struct string_hash_ptr*,int,symbol_t*,int);
-
-// type == TEXT | GRAM | LOCATE
-
 void save_automaton(const Fst2Automaton * A, char * name, int type);
 
-
-Fst2Automaton * autalmot_intersection(const Fst2Automaton * A, const Fst2Automaton * B);
-
-Fst2Automaton * interAutAtome(const Fst2Automaton * A, const Fst2Automaton * B);
-
-void autalmot_tri_topo(Fst2Automaton * A);
-
-/* TODO */
-
-void elag_trim(Fst2Automaton * A);
-
-
-// inline implementations
-
-static inline void autalmot_set_final(Fst2Automaton * A, int q)    { A->states[q].flags |= AUT_FINAL; }
-static inline void autalmot_set_terminal(Fst2Automaton * A, int q) { A->states[q].flags |= AUT_FINAL; }
-
-static inline void autalmot_unset_final(Fst2Automaton * A, int q)    { A->states[q].flags &= ~(AUT_FINAL); }
-static inline void autalmot_unset_terminal(Fst2Automaton * A, int q) { A->states[q].flags &= ~(AUT_FINAL); }
-
-inline int autalmot_is_final(Fst2Automaton * A, int q)    { return A->states[q].flags & AUT_TERMINAL; }
-inline int autalmot_is_terminal(Fst2Automaton * A, int q) { return A->states[q].flags & AUT_TERMINAL; }
-inline int autalmot_is_initial(Fst2Automaton * A, int q)  { return A->states[q].flags & AUT_INITIAL;  }
 
 #endif
