@@ -592,5 +592,5 @@ u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%
 
 
 void save_new_line_positions(FILE* f,vector_int* n_enter_pos) {
-fwrite(&(n_enter_pos->tab),sizeof(int),n_enter_pos->nbelems,f);
+fwrite(n_enter_pos->tab,sizeof(int),n_enter_pos->nbelems,f);
 }
