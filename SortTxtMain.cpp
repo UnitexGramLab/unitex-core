@@ -80,7 +80,7 @@ int read_line_thai();
 void save();
 struct sort_tree_node* new_sort_tree_node();
 void free_sort_tree_node(struct sort_tree_node*);
-void free_transition(struct sort_tree_transition*);
+void free_sort_tree_transition(struct sort_tree_transition*);
 void free_couple(struct couple*);
 void get_node(unichar*,int,struct sort_tree_node*);
 void explore_node(struct sort_tree_node*);
@@ -251,12 +251,12 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
 if (optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }   
+init_char_arrays();
 if (sort_order[0]!='\0') {
    read_char_order(sort_order);
 }
 
 char new_name[FILENAME_MAX];
-init_char_arrays();
 strcpy(new_name,argv[optind]);
 strcat(new_name,".new");
 f=u_fopen(argv[optind],U_READ);
@@ -416,6 +416,7 @@ if (n==NULL) {
   return;
 }
 free_couple(n->couples);
+free_sort_tree_transition(n->transitions);
 free(n);
 }
 
@@ -440,7 +441,10 @@ return t;
 void free_sort_tree_transition(struct sort_tree_transition* t) {
 struct sort_tree_transition* tmp;
 while (t!=NULL) {
-   free_sort_tree_node(t->node);
+   /* We MUST NOT call 'free_sort_tree_node' since we are
+    * freeing while recursively exploring the node tree. So,
+    * when we free a node, its child have already been freed. */
+   //free_sort_tree_node(t->node);
    tmp=t;
    t=t->next;
    free(tmp);
