@@ -396,13 +396,6 @@ FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
 	           Fst2TxtAsRoutine.o DELA.o DicVariables.o\
 	           symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
-FST2UNAMBIG      = Fst2Unambig
-FST2UNAMBIG_OBJS = Fst2.o Error.o Fst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o\
-                   Unicode.o Pattern.o List_ustring.o StringParsing.o String_hash.o\
-                   List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
-                   symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o\
-                   getopt.o
-
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = IOBuffer.o Grf2Fst2_main.o Grf2Fst2.o Alphabet.o Unicode.o Fst2.o\
                 Fst2Check.o Grf2Fst2_lib.o Error.o File.o SingleGraph.o\
@@ -496,6 +489,13 @@ TFST2GRF_OBJS = IOBuffer.o Tfst2Grf.o Unicode.o Tfst.o Sentence2Grf.o\
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o\
                Alphabet.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o\
                ustring.o Tagset.o getopt.o SingleGraph.o HashTable.o FIFO.o
+
+TFST2UNAMBIG      = Tfst2Unambig
+TFST2UNAMBIG_OBJS = Tfst.o Error.o Tfst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o\
+                   Unicode.o Pattern.o List_ustring.o StringParsing.o String_hash.o\
+                   List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
+                   symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o\
+                   getopt.o SingleGraph.o BitArray.o HashTable.o FIFO.o File.o
 
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\
@@ -604,7 +604,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(TAGSETNORMTFST) \
 		$(FST2LIST) $(MULTIFLEX) \
 		$(EXPORTDIC) \
-		$(XMLIZER) $(TEI2TXT) $(EVAMB) $(IMPLODETFST) #$(FST2UNAMBIG) $(COLLOC) $(FREQ)
+		$(XMLIZER) $(TEI2TXT) $(EVAMB) $(IMPLODETFST) $(TFST2UNAMBIG) #$(COLLOC) $(FREQ)
 
 ifeq ($(64BITS),no)
 PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \
@@ -626,7 +626,7 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OB
 		$(TAGSETNORMTFST_OBJS) $(CONCORDIFF_OBJS) \
 		$(COMPRESSKR_OBJS) $(FST2LIST_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
-		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(FST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS) \
+		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(TFST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS) \
 		$(TEST_OBJS) $(EXPORTDIC_OBJS) \
 		$(XMLIZER_OBJS) $(TEI2TXT_OBJS) #$(COLLOC_OBJS) $(FREQ_OBJS)
 
@@ -840,7 +840,7 @@ $(BIN_DIR)$(FST2LIST)$(EXTENSION): $(FST2LIST_OBJS)
 $(BIN_DIR)$(FST2TXT)$(EXTENSION): $(FST2TXT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(FST2UNAMBIG)$(EXTENSION): $(FST2UNAMBIG_OBJS)
+$(BIN_DIR)$(TFST2UNAMBIG)$(EXTENSION): $(TFST2UNAMBIG_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(GRF2FST2)$(EXTENSION): $(GRF2FST2_OBJS)

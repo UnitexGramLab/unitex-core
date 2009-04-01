@@ -22,13 +22,13 @@
 #ifndef LinearAutomaton2TxtH
 #define LinearAutomaton2TxtH
 
-#include "Fst2.h"
+#include "Tfst.h"
 
 #define LINEAR_AUTOMATON -1
 
 
-int isLinearAutomaton(Fst2*);
-int convertLinearAutomaton(Fst2*,FILE*);
+int isLinearAutomaton(Tfst*);
+int convertLinearAutomaton(Tfst*,FILE*);
 
 #endif
 

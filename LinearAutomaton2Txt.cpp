@@ -29,17 +29,18 @@
  * all its sentence automata are linear. Otherwise, it returns the
  * number of the first non linear sentence automaton.
  */
-int isLinearAutomaton(Fst2* fst2) {
-if (fst2==NULL) {
+int isLinearAutomaton(Tfst* tfst) {
+if (tfst==NULL) {
    fatal_error("NULL error in isLinearAutomaton\n");
 }
 Transition* l;
-Fst2State state;
-for (int sentence=1;sentence<fst2->number_of_graphs+1;sentence++) {
-   int n=fst2->initial_states[sentence]+fst2->number_of_states_per_graphs[sentence];
-   for (int i=fst2->initial_states[sentence];i<n;i++) {
-      state=fst2->states[i];
-      l=state->transitions;
+SingleGraphState state;
+for (int sentence=1;sentence<tfst->N;sentence++) {
+   load_sentence(tfst,sentence);
+   int n=tfst->automaton->number_of_states;
+   for (int i=0;i<n;i++) {
+      state=tfst->automaton->states[i];
+      l=state->outgoing_transitions;
       if (is_final_state(state)) {
          if (l!=NULL) {
             /* The final state must not have any outgoing transition */
@@ -65,22 +66,23 @@ return LINEAR_AUTOMATON;
  * all its sentence automata are linear. Otherwise, it returns the
  * number of the first non linear sentence automaton.
  */
-int convertLinearAutomaton(Fst2* fst2,FILE* f) {
-if (fst2==NULL) {
+int convertLinearAutomaton(Tfst* tfst,FILE* f) {
+if (tfst==NULL) {
    fatal_error("NULL error in convertLinearAutomaton\n");
 }
 Transition* l;
-Fst2State state;
-for (int sentence=1;sentence<fst2->number_of_graphs+1;sentence++) {
-   state=fst2->states[fst2->initial_states[sentence]];
-   l=state->transitions;
+SingleGraphState state;
+for (int sentence=1;sentence<tfst->N;sentence++) {
+   load_sentence(tfst,sentence);
+   state=tfst->automaton->states[0];
+   l=state->outgoing_transitions;
    do {
       if (is_final_state(state)) {
          if (l!=NULL) {
             /* The final state must not have any outgoing transition */
             return sentence;
          }
-         if (sentence!=fst2->number_of_graphs) {
+         if (sentence!=tfst->N) {
             /* If this is not the last sentence, we put a sentence delimiter {S} */
             u_fprintf(f,"{S}");
          }
@@ -93,9 +95,10 @@ for (int sentence=1;sentence<fst2->number_of_graphs+1;sentence++) {
             /* If there is not exactly one transition in each state */
             return sentence;
          }
-         u_fprintf(f,"%S ",fst2->tags[l->tag_number]->input);
-         state=fst2->states[l->state_number];
-         l=state->transitions;
+         TfstTag* tag=(TfstTag*)(tfst->tags->tab[l->tag_number]);
+         u_fprintf(f,"%S ",tag->content);
+         state=tfst->automaton->states[l->state_number];
+         l=state->outgoing_transitions;
       }
    } while (state!=NULL);
 }
