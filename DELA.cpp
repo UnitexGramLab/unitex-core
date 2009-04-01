@@ -27,6 +27,24 @@
 
 
 /**
+ * Allocates, initializes and returns a dela_entry.
+ */
+struct dela_entry* new_dela_entry(unichar* inflected,unichar* lemma,unichar* code) {
+struct dela_entry* res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
+if (res==NULL) {
+   fatal_error("Not enough memory in new_dela_entry\n");
+}
+res->inflected=u_strdup(inflected);
+res->lemma=u_strdup(lemma);
+res->n_semantic_codes=1;
+res->semantic_codes[0]=u_strdup(code);
+res->n_inflectional_codes=0;
+res->n_filters=0;
+return res;
+}
+
+
+/**
  * Returns a copy of the given entry. 
  * WARNING: filters are not taken into account since they aren't
  *          used, except in the inflection module
@@ -51,6 +69,7 @@ for (i=0;i<res->n_inflectional_codes;i++) {
 res->n_filters=0;
 return res;
 }
+
 
 
 /**

@@ -31,6 +31,8 @@
 
 #include "String_hash.h"
 #include "symbol.h"
+#include "DELA.h"
+
 
 /* Predefined POSs */
 static const unichar UNKNOWN_STR[] = { '?', 0 };
@@ -60,7 +62,7 @@ typedef struct POS_t {
    /* The POS name like "V" or "ADV" */
    unichar* name;
    
-   /* IGNORE symbol in text fsa, during elag grammar application */
+   /* IGNORE symbol in text tfst, during elag grammar application */
    bool ignorable;
    
    /* The first nb_inflect features are inflectional features */
@@ -224,7 +226,7 @@ return infos;
 
 
 language_t * new_language_t(unichar*);
-void free_language_(language_t*);
+void free_language_t(language_t*);
 
 
 language_t* load_language_definition(FILE*);
@@ -247,5 +249,7 @@ static inline unichar * language_get_form(int idx) { return (unichar *) LANGUAGE
 void set_current_language(language_t*);
 language_t * get_current_language();
 
+
+struct dela_entry* filter_dela_entry(struct dela_entry*,unichar* tag,language_t*,int);
 
 #endif

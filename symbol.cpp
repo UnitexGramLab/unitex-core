@@ -27,6 +27,7 @@
 #include "symbol_op.h"
 #include "StringParsing.h"
 #include "List_int.h"
+#include "DELA.h"
 
 #define MAXBUF 1024
 
@@ -47,7 +48,7 @@ unichar PUNC_TAB[] = {
  * Allocates, initializes and returns a new symbol_t corresponding to the
  * given type.
  */
-symbol_t* new_symbol(SymbolType type) {
+symbol_t* new_symbol(SymbolType type,int tag_number) {
 symbol_t* symbol=(symbol_t*)malloc(sizeof(symbol_t));
 if (symbol==NULL) {
    fatal_error("Not enough memory in new_symbol\n");
@@ -59,6 +60,7 @@ symbol->lemma=0;
 symbol->POS=NULL;
 symbol->feature=NULL;
 symbol->nb_features=0;
+symbol->tfsttag_index=tag_number;
 symbol->next=NULL;
 return symbol;
 }
@@ -69,8 +71,8 @@ return symbol;
  * given POS description. The difference with 'new_symbol' is that this one
  * does not call 'symbol_type', in order to avoid infinite loops.
  */
-symbol_t* new_symbol_POS_no_type(POS_t* POS) {
-symbol_t* symbol=new_symbol(INC);
+symbol_t* new_symbol_POS_no_type(POS_t* POS,int tag_number) {
+symbol_t* symbol=new_symbol(INC,tag_number);
 symbol->POS=POS;
 if (POS->CATs->size!=0) {
    symbol->feature=(char*)malloc(POS->CATs->size*sizeof(char));
@@ -95,8 +97,8 @@ return symbol;
  * Allocates, initializes and returns a new symbol_t corresponding to the
  * given POS description.
  */
-symbol_t* new_symbol_POS(POS_t* POS) {
-symbol_t* s=new_symbol_POS_no_type(POS);
+symbol_t* new_symbol_POS(POS_t* POS,int tag_number) {
+symbol_t* s=new_symbol_POS_no_type(POS,tag_number);
 type_symbol(s);
 return s;
 }
@@ -106,9 +108,9 @@ return s;
  * Allocates, initializes and returns a new symbol_t corresponding to the
  * <PNC> tag in ELAG grammars.
  */
-symbol_t* new_symbol_PUNC(language_t* language,int canonic) {
+symbol_t* new_symbol_PUNC(language_t* language,int canonic,int tag_number) {
 POS_t* POS=language_get_POS(language,PUNC_STR);
-symbol_t* symbol=new_symbol_POS(POS);
+symbol_t* symbol=new_symbol_POS(POS,tag_number);
 symbol->type=ATOM; 
 symbol->negative=false;
 symbol->form=0;
@@ -121,8 +123,8 @@ return symbol;
  * Allocates, initializes and returns a new symbol_t corresponding to the
  * <PNC> tag in ELAG grammars.
  */
-symbol_t* new_symbol_PUNC(int punc) {
-return new_symbol_PUNC(LANGUAGE,punc);
+symbol_t* new_symbol_PUNC(int punc,int tag_number) {
+return new_symbol_PUNC(LANGUAGE,punc,tag_number);
 }
 
 
@@ -130,9 +132,9 @@ return new_symbol_PUNC(LANGUAGE,punc);
  * Allocates, initializes and returns a new symbol_t corresponding to the
  * <NB> tag in ELAG grammars.
  */
-symbol_t* new_symbol_CHFA(language_t* language,int canonic) {
+symbol_t* new_symbol_CHFA(language_t* language,int canonic,int tag_number) {
 POS_t* POS=language_get_POS(language,CHFA_STR);
-symbol_t* symbol=new_symbol_POS(POS);
+symbol_t* symbol=new_symbol_POS(POS,tag_number);
 symbol->type=ATOM;
 symbol->negative=false;
 symbol->form=0;
@@ -145,9 +147,9 @@ return symbol;
  * Allocates, initializes and returns a new symbol_t corresponding to the
  * <?> tag in ELAG grammars.
  */
-symbol_t* new_symbol_UNKNOWN(language_t* language,int form) {
+symbol_t* new_symbol_UNKNOWN(language_t* language,int form,int tag_number) {
 POS_t* POS=language_get_POS(language,UNKNOWN_STR);
-symbol_t* symbol=new_symbol_POS(POS);
+symbol_t* symbol=new_symbol_POS(POS,tag_number);
 symbol->type=ATOM;
 symbol->negative=false;
 symbol->form=0;
@@ -169,6 +171,7 @@ symbol->lemma=0;
 symbol->POS=NULL;
 symbol->feature=NULL;
 symbol->nb_features=0;
+symbol->tfsttag_index=-1;
 symbol->next=NULL;
 }
 
@@ -205,6 +208,7 @@ for (i=0;i<src->nb_features;i++) {
    dest->feature[i]=src->feature[i];
 }
 dest->nb_features=src->nb_features;
+dest->tfsttag_index=src->tfsttag_index;
 dest->next=src->next;
 }
 
@@ -223,10 +227,10 @@ symbol_t* res=NULL;
 int i;
 switch (symbol->type) {
    case LEXIC:
-      res=new_symbol(LEXIC);
+      res=new_symbol(LEXIC,symbol->tfsttag_index);
       break;
    case EPSILON:
-      res=new_symbol(EPSILON);
+      res=new_symbol(EPSILON,symbol->tfsttag_index);
       break;
    case ATOM:
    case INC_CAN: 
@@ -234,7 +238,7 @@ switch (symbol->type) {
    case INC:
    case INC_NEG:
    case CODE_NEG:
-      res=new_symbol_POS(symbol->POS);
+      res=new_symbol_POS(symbol->POS,symbol->tfsttag_index);
       res->type=symbol->type;
       if (!symbol->negative) {
          res->form=symbol->form;
@@ -256,10 +260,10 @@ switch (symbol->type) {
       }
       break;
    case EXCLAM:
-      res=new_symbol(EXCLAM);
+      res=new_symbol(EXCLAM,symbol->tfsttag_index);
       break;
    case EQUAL:
-      res=new_symbol(EQUAL);
+      res=new_symbol(EQUAL,symbol->tfsttag_index);
       break;
    default: fatal_error("dup_symbol: unknown symbol type: '%c'\n",symbol->type);
 }
@@ -366,7 +370,7 @@ for (symbol_t* code=s->POS->codes;code!=NULL;code=code->next) {
          default: 
             if (s->feature[i]!=UNSPECIFIED && s->feature[i]!=code->feature[i]) {
                /* If a feature is set with different values in the current code
-                * and in s, then s can match this code */
+                * and in s, then s cannot match this code */
                ok=false;
             }
          break;
@@ -418,10 +422,10 @@ int type_symbol(symbol_t* symbol) {
 symbol->type=INC;
 if (symbol->POS->codes!=NULL) {
    /* If there are feature combinations to look at */
-   symbol_t* matching_code=new_symbol_POS_no_type(symbol->POS);
+   symbol_t* matching_code=new_symbol_POS_no_type(symbol->POS,-1);
    int count=symbol_match_codes(symbol,matching_code);
    if (count==0) {
-      /* If the symbol doesn't match any POS code, then it's an invalid one */
+      /* If the symbol doesn't match any POS code, then it is an invalid one */
       symbol->type=UNTYPED;
       free_symbol(matching_code);
       return symbol->type;
@@ -576,6 +580,72 @@ for (i=0;i<s->POS->nb_inflect;i++) {
 }
 u_strcat(ustr,"}");
 }
+
+
+/**
+ * This function converts a the given symbol into a text tag.
+ * If the symbol is a list of several symbols corresponding to several 
+ * inflectional codes, the resulting entry will aggregate them like:
+ * 
+ * {fait,faire.V:Kms:P3s}
+ * 
+ * NOTE: if this function is called on a symbol that is not a dictionary
+ *       entry, it will return NULL. 
+ */
+struct dela_entry* symbol_to_dela_entry(const symbol_t* s) {
+if (s==NULL) {
+   fatal_error("NULL error in symbol_to_dela_entry\n");
+}
+if (s==SYMBOL_DEF) {
+   fatal_error("Unexpected <def> symbol in symbol_to_dela_entry\n");
+}
+if (s->type!=ATOM) {
+   error("symbol_to_dela_entry: symbol '");
+   symbol_dump(s);
+   fatal_error("' is'nt an atom.\n");
+}
+language_t* language=s->POS->language;
+if (!u_strcmp(s->POS->name,UNKNOWN_STR) || !u_strcmp(s->POS->name,PUNC_STR) 
+   || !u_strcmp(s->POS->name,CHFA_STR)) {
+   /* If the symbol is an unknown word, a digit sequence or a punctuation mark */
+   return NULL;
+}
+struct dela_entry* e=new_dela_entry(language_get_form(language,s->form),language_get_form(language,s->lemma),s->POS->name);
+int i;
+/* We concatenate the semantic features like "+hum+z1" */
+CAT_t* CAT;
+for (i=s->POS->nb_inflect;i<s->nb_features;i++) {
+   if (s->feature[i]>0) {
+      CAT=POS_get_CAT(s->POS,i);
+      e->semantic_codes[(e->n_semantic_codes)++]=u_strdup(CAT_get_valname(CAT,s->feature[i]));
+   }
+}
+/* Then we deal with the inflectional features */
+unichar foo[128];
+foo[0]='\0';
+for (i=0;i<s->POS->nb_inflect;i++) {
+   CAT=POS_get_CAT(s->POS,i);
+   if (s->feature[i]>0) {
+      u_strcat(foo,CAT_get_valname(CAT,s->feature[i]));
+   }
+}
+if (foo[0]!='\0') {
+   e->inflectional_codes[(e->n_inflectional_codes)++]=u_strdup(foo);
+}
+while (s->next!=NULL) {
+   s=s->next;
+   foo[0]='\0';
+   for (i=0;i<s->POS->nb_inflect;i++) {
+      CAT=POS_get_CAT(s->POS,i);
+      if (s->feature[i]>0) {
+         u_strcat(foo,CAT_get_valname(CAT,s->feature[i]));
+      }
+   }
+   e->inflectional_codes[(e->n_inflectional_codes)++]=u_strdup(foo);
+}
+return e;
+}
+
 
 
 /**
@@ -852,17 +922,22 @@ return 0;
  * for all inflectional codes. For instance, if we have the tag "{rouge,.A:ms:fs}",
  * we will load it as two symbols corresponding to "{rouge,.A:ms}" and "{rouge,.A:fs}".
  */
-symbol_t* load_dic_entry(language_t* language,const unichar* tag,struct dela_entry* entry) {
+symbol_t* load_dic_entry(language_t* language,unichar* tag,struct dela_entry* entry,int tag_number) {
 int i;
 POS_t* POS=language_get_POS(language,entry->semantic_codes[0]);
 if (POS==NULL) {
    if (get_value_index(entry->semantic_codes[0],language->unknown_codes,DONT_INSERT)==-1) {
+      unichar tmp[4096];
+      if (tag==NULL) {
+         build_tag(entry,NULL,tmp);
+         tag=tmp;
+      }
       error("'%S': unknown POS '%S'\n",tag,entry->semantic_codes[0]);
       get_value_index(entry->semantic_codes[0],language->unknown_codes,INSERT_IF_NEEDED,NULL);
    }
    return NULL;
 }
-symbol_t* symbol=new_symbol_POS(POS);
+symbol_t* symbol=new_symbol_POS(POS,tag_number);
 symbol_t* model;
 symbol->type=ATOM;
 symbol->form=language_add_form(language,entry->inflected);
@@ -878,7 +953,7 @@ for (i=1;i<entry->n_semantic_codes;i++) {
       symbol->feature[info->CATid]=info->val;
    } else {
       if (get_value_index(entry->semantic_codes[i],language->unknown_codes,DONT_INSERT)==-1) {
-	      error("Unknown semantic value '%S', will not be taken into account\n",entry->semantic_codes[i]);
+         error("Unknown semantic value '%S', will not be taken into account\n",entry->semantic_codes[i]);
 	      get_value_index(entry->semantic_codes[i],language->unknown_codes,INSERT_IF_NEEDED,NULL);
       }
    }
@@ -887,7 +962,16 @@ for (i=1;i<entry->n_semantic_codes;i++) {
 if (entry->n_inflectional_codes==0) {
    /* If there is no inflectional code */
    if (POS->codes!=0 && !symbol_match_codes(symbol,NULL)) {
-      error("'%S': doesn't match with POS '%S' definition\n",tag,POS->name);
+      unichar tmp[4096];
+      if (tag==NULL) {
+         build_tag(entry,NULL,tmp);
+         tag=tmp;
+      }
+      if (get_value_index(tag,language->unknown_codes,DONT_INSERT)==-1) {
+         /* We don't want to print several times the same error message */
+         error("'%S': doesn't match with POS '%S' definition\n",tag,POS->name);
+         get_value_index(tag,language->unknown_codes,INSERT_IF_NEEDED,NULL);
+      }
       goto err_symb;
    }
    return symbol;
@@ -900,13 +984,27 @@ for (i=0;i<entry->n_inflectional_codes;i++) {
    for (;*p!='\0';p++) {
       feature_info_t* infos=POS_get_inflect_feature_infos(POS,*p);
       if (infos==NULL) {
+         unichar tmp[4096];
+         if (tag==NULL) {
+            build_tag(entry,NULL,tmp);
+            tag=tmp;
+         }
          error("'%S': unknown inflectional code '%C'\n",tag,*p);
          goto err_model;
       }
       tmp->feature[infos->CATid]=infos->val;
    }
    if (POS->codes!=0 && !symbol_match_codes(tmp,NULL)) {
-      error("'%S': doesn't match with POS '%S' definition\n",tag,POS->name);
+      unichar tmp[4096];
+      if (tag==NULL) {
+         build_tag(entry,NULL,tmp);
+         tag=tmp;
+      }
+      if (get_value_index(tag,language->unknown_codes,DONT_INSERT)==-1) {
+         /* We don't want to print several times the same error message */
+         error("'%S': doesn't match with POS '%S' definition\n",tag,POS->name);
+         get_value_index(tag,language->unknown_codes,INSERT_IF_NEEDED,NULL);
+      }
       goto err_model;
    }
    tmp->next=symbol;
@@ -923,10 +1021,12 @@ return NULL;
 
 
 /**
- * Loads a tag from a text .fst2 and returns the associated symbol or NULL
- * if the tag is not valid.
+ * Loads a tag from a text .tfst and returns the associated symbol or NULL
+ * if the tag is not valid. The given tag number is used to remember the original
+ * TfstTag that corresponds to the symbol_t*, because we will need this information
+ * when saving the output .tfst.
  */
-symbol_t* load_text_symbol(language_t* language,unichar* tag) {
+symbol_t* load_text_symbol(language_t* language,unichar* tag,int tag_number) {
 if (tag==NULL) {
    error("NULL error in load_text_symbol\n");
    return NULL;
@@ -936,7 +1036,7 @@ if (tag[0]=='\0') {
    return NULL;
 }
 if (!u_strcmp(tag,"<E>")) {
-   return new_symbol(EPSILON);
+   return new_symbol(EPSILON,tag_number);
 }
 if (!u_strcmp(tag,"<def>")) {
    fatal_error("Unexpected '<def>' tag in text automaton\n");
@@ -947,7 +1047,8 @@ if (tag[0]=='{' && tag[1]!='\0') {
    if (entry==NULL) {
       fatal_error("Cannot load invalid tag '%S'\n",tag);
    }
-   symbol_t* result=load_dic_entry(language,tag,entry);
+   symbol_t* result=load_dic_entry(language,tag,entry,tag_number);
+   result->tfsttag_index=tag_number;
    free_dela_entry(entry);
    return result;
 }
@@ -959,7 +1060,7 @@ if (u_strchr(PUNC_TAB,tag[0])) {
    if (tag[1]!='\0' && tag[0]!='\\') {
       fatal_error("Bad text symbol '%S' (ponctuation too long)\n",tag);
    }
-   return new_symbol_PUNC(language,index);
+   return new_symbol_PUNC(language,index,tag_number);
 }
 /* If we have a digit sequence */
 if (u_is_digit(tag[0])) {
@@ -968,10 +1069,10 @@ if (u_is_digit(tag[0])) {
          fatal_error("Bad symbol : '%S' (mixed digits and characters)\n",tag);
       }
    }
-   return new_symbol_CHFA(language, index);
+   return new_symbol_CHFA(language, index,tag_number);
 }
 /* If we have an unknown word  */
-return new_symbol_UNKNOWN(language,index);
+return new_symbol_UNKNOWN(language,index,tag_number);
 }
 
 
@@ -988,7 +1089,7 @@ for (int i=0;i<LANGUAGE->POSs->size;i++) {
    if (POS2==POS) {
       continue;
    }
-   concat_symbols(end,new_symbol_POS(POS2),&end);
+   concat_symbols(end,new_symbol_POS(POS2,-1),&end);
 }
 return res.next;
 }
@@ -1071,7 +1172,7 @@ POS_t* POS=language_get_POS(language,tmp);
 if (POS==NULL) {
    fatal_error("In symbol '%S': unknown part of speech '%S'\n",tag,tmp);
 }
-symbol_t* symbol=new_symbol_POS(POS);
+symbol_t* symbol=new_symbol_POS(POS,-1);
 if (lemma[0]!='\0') {
    /* If the lemma is not empty */
    if (lemma[0]!='!') {
@@ -1124,7 +1225,7 @@ while (buffer[position]=='+' || buffer[position]=='!') {
 if (buffer[position]=='\0') {
    /* If there are no inflectional codes */
    if (type_symbol(symbol)==-1) {
-      fatal_error("'%S' is not a valid tag\n",tag);
+      fatal_error("'%S' is not a valid tag (1)\n",tag);
    }
    free(buffer);
    return symbol;
@@ -1158,7 +1259,7 @@ while (buffer[position]!='\0') {
       }
    }
    if (type_symbol(tmp_symbol)==-1) {
-      fatal_error("'%S' is not a valid tag\n",tag);
+      fatal_error("'%S' is not a valid tag (2)\n",tag);
    }
    tmp_symbol->next=symbol;
    symbol=tmp_symbol;
@@ -1179,7 +1280,7 @@ if (tag[0]=='{' && tag[1]!='\0') {
    /* If we have something like a dictionary entry of the form {__,__.__} */
    if (!u_strcmp(tag,"{S}")) {
       /* First we check if it is not a sentence delimiter */
-      return new_symbol_PUNC(language,language_add_form(language,tag));
+      return new_symbol_PUNC(language,language_add_form(language,tag),-1);
    }
    /* If it is really a dictionary entry, it shouldn't be there */
    error("'%S': DELAF entry should not appear in Elag grammar\n",tag);
@@ -1190,17 +1291,17 @@ if (tag[0]=='{' && tag[1]!='\0') {
    if (entry==NULL) {
       fatal_error("Cannot use invalid tag '%S' in an ELAG grammar\n",tag);
    }
-   symbol_t* result=load_dic_entry(language,tag,entry);
+   symbol_t* result=load_dic_entry(language,tag,entry,-1);
    free_dela_entry(entry);
    return result;
 }
 if (tag[0]=='<' && tag[1]!='\0') {
    /* If we have a tag like <xxxx>, we test if it's a special symbol */
-   if (!u_strcmp(tag,"<E>")) return new_symbol(EPSILON);
-   if (!u_strcmp(tag,"<.>")) return new_symbol(LEXIC);
+   if (!u_strcmp(tag,"<E>")) return new_symbol(EPSILON,-1);
+   if (!u_strcmp(tag,"<.>")) return new_symbol(LEXIC,-1);
    if (!u_strcmp(tag,"<def>")) return SYMBOL_DEF;
-   if (!u_strcmp(tag,"<!>")) return new_symbol(EXCLAM);
-   if (!u_strcmp(tag,"<=>")) return new_symbol(EQUAL);
+   if (!u_strcmp(tag,"<!>")) return new_symbol(EXCLAM,-1);
+   if (!u_strcmp(tag,"<=>")) return new_symbol(EQUAL,-1);
    /* Otherwise, we try to read a tag like <PRO:1s> */
    return load_gram_symbol(language,tag);
 }
@@ -1209,12 +1310,12 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
   /* special EXCLAM symbol */
 
-  if (*buf == '!' && buf[1] == 0) { return new_symbol(EXCLAM); }
+  if (*buf == '!' && buf[1] == 0) { return new_symbol(EXCLAM,-1); }
 
 
   /* special EQUAL symbol */
 
-  if (*buf == '=' && buf[1] == 0) { return new_symbol(EQUAL); }
+  if (*buf == '=' && buf[1] == 0) { return new_symbol(EQUAL,-1); }
 
 
 
@@ -1226,7 +1327,7 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
     if (*buf == '\\' && (! buf[1] || buf[2])) { fatal_error("bad PUNC symbol '%S'\n", tag); }
     if (buf[1] && buf[0] != '\\') { fatal_error("bad symbol '%S' (PONC too long)\n", tag); }
-    return new_symbol_PUNC(language, idx);
+    return new_symbol_PUNC(language, idx,-1);
   }
 
 
@@ -1238,7 +1339,7 @@ if (tag[0]=='<' && tag[1]!='\0') {
       if (! u_is_digit(*p)) { fatal_error("bad symbol : '%S' (mixed nums and chars)\n", tag); }
     }
 
-    return new_symbol_CHFA(language, idx);
+    return new_symbol_CHFA(language, idx,-1);
   }
 
 
@@ -1246,6 +1347,6 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
   error("Label '%S': unknown word in grammar???\n", tag);
 
-  return new_symbol_UNKNOWN(language, idx);
+  return new_symbol_UNKNOWN(language, idx,-1);
 }
 

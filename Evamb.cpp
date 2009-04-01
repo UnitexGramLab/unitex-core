@@ -22,7 +22,7 @@
 #include <limits.h>
 #include "Unicode.h"
 #include "Copyright.h"
-#include "Fst2.h"
+#include "Tfst.h"
 #include "String_hash.h"
 #include "IOBuffer.h"
 #include "Error.h"
@@ -32,9 +32,9 @@
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Evamb [OPTIONS] <txtauto>\n"
+u_printf("Usage: Evamb [OPTIONS] <tfst>\n"
          "\n"
-         "  <txtauto>: text automaton FST2 file\n"
+         "  <tfst>: text automaton file\n"
          "\n"
          "OPTIONS:\n"
          "  -s N/--sentence=N: sentence number\n"
@@ -90,12 +90,12 @@ if (optind!=argc-1) {
 }
 
 u_printf("Loading '%s'...\n",argv[optind]);
-Fst2* fst2=load_fst2(argv[optind],0);
-if (fst2==NULL) {
-   fatal_error("Unable to load '%s' fst2\n",argv[optind]);
+Tfst* tfst=open_text_automaton(argv[optind]);
+if (tfst==NULL) {
+   fatal_error("Unable to load '%s'\n",argv[optind]);
 }
-if (sentence_number>fst2->number_of_graphs) {
-   fatal_error("Invalid sentence number %d: should be in [1;%d]\n",sentence_number,fst2->number_of_graphs);
+if (sentence_number>tfst->N) {
+   fatal_error("Invalid sentence number %d: should be in [1;%d]\n",sentence_number,tfst->N);
 }
 if (sentence_number==-1) {
    /* If we have to evaluate the ambiguity rate of the whole automaton */
@@ -107,8 +107,9 @@ if (sentence_number==-1) {
    int n_bad_automata=0;
    int maxambno=-1;
    int minambno=-1;
-   for (sentence_number=1;sentence_number<=fst2->number_of_graphs;sentence_number++) {
-      SingleGraph graph=get_subgraph(fst2,sentence_number);
+   for (sentence_number=1;sentence_number<=tfst->N;sentence_number++) {
+      load_sentence(tfst,sentence_number);
+      SingleGraph graph=tfst->automaton;
       if (graph->number_of_states==0 || graph->states[0]->outgoing_transitions==NULL) {
          n_bad_automata++;
          error("Sentence %d: empty automaton\n",sentence_number);
@@ -136,19 +137,19 @@ if (sentence_number==-1) {
          lognp_total=lognp_total+lognp;
          lmoy_total=lmoy_total+lmoy;
       }
-      free_SingleGraph(graph);
    }
-   if (n_bad_automata>=fst2->number_of_graphs) {
+   if (n_bad_automata>=tfst->N) {
       error("No stats to print because no non-empty sentence automata were found.\n");
    } else {
-      u_printf("%d/%d sentence%s taken into account\n",fst2->number_of_graphs-n_bad_automata,fst2->number_of_graphs,(fst2->number_of_graphs>1)?"s":"");
+      u_printf("%d/%d sentence%s taken into account\n",tfst->N-n_bad_automata,tfst->N,(tfst->N>1)?"s":"");
       u_printf("Average ambiguity rate=%.3f\n",exp(lognp_total/lmoy_total));
       u_printf("Minimum ambiguity rate=%.3f (sentence %d)\n",exp(minlogamb),minambno);
       u_printf("Maximum ambiguity rate=%.3f (sentence %d)\n",exp(maxlogamb),maxambno);
    }
 } else {
    /* If we have to evaluate the ambiguity rate of a single sentence automaton */
-   SingleGraph graph=get_subgraph(fst2,sentence_number);
+   load_sentence(tfst,sentence_number);
+   SingleGraph graph=tfst->automaton;
    if (graph->number_of_states==0) {
       error("Sentence %d: empty automaton\n",sentence_number);
    } else {
@@ -158,9 +159,8 @@ if (sentence_number==-1) {
       double lmoy=(double)(min+max)/2.0;
       u_printf("Sentence %d: ambiguity rate=%.3f\n",sentence_number,exp(lognp/lmoy));
    }
-   free_SingleGraph(graph);
 }
-free_Fst2(fst2);
+close_text_automaton(tfst);
 return 0;
 }
 

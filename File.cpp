@@ -262,3 +262,28 @@ struct stat info;
 stat(name,&info);
 return info.st_mtime;
 }
+
+
+/**
+ * Returns the size in bytes of the given file, or -1 if not found. 
+ */
+long get_file_size(char* name) {
+FILE* f=fopen(name,"rb");
+if (f==NULL) return -1;
+fseek(f,0,SEEK_END);
+long size=ftell(f);
+fclose(f);
+return size;
+}
+
+
+/**
+ * Returns the size in bytes of the given file. 
+ */
+long get_file_size(FILE* f) {
+long old_pos=ftell(f);
+fseek(f,0,SEEK_END);
+long size=ftell(f);
+fseek(f,old_pos,SEEK_SET);
+return size;
+}

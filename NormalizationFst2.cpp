@@ -277,65 +277,6 @@ return root;
 
 
 
-//
-// this function takes an output s like " {de,.PREP} {le,.DET} "
-// and returns the string list of the tags that must be produced:
-// "{de,.PREP}" and "{le,.DET}"
-//
-struct list_ustring* tokenize_normalization_output(unichar* s,Alphabet* alph) {
-if (s==NULL) return NULL;
-struct list_ustring* result=NULL;
-unichar tmp[1000];
-int i;
-int j;
-i=0;
-while (s[i]!='\0') {
-   while (s[i]==' ') {
-      // we ingore spaces
-      i++;
-   }
-   if (s[i]!='\0') {
-      // if we are not at the end of the string
-      if (s[i]=='{') {
-         // case of a tag like "{de,.PREP}"
-         j=0;
-         while (s[i]!='\0' && s[i]!='}') {
-            tmp[j++]=s[i++];
-         }
-         if (s[i]!='\0') {
-            // the end of string is an error (no closing '}'), so we save the
-            // tag only if it is a valid one
-            tmp[j]='}';
-            tmp[j+1]='\0';
-            // we go on the next char
-            i++;
-            result=insert_at_end_of_list(tmp,result);
-         }
-      }
-      else
-      if (is_letter(s[i],alph)) {
-         // case of a letter sequence like "Rivoli"
-         j=0;
-         while (is_letter(s[i],alph)) {
-            tmp[j++]=s[i++];
-         }
-         tmp[j]='\0';
-         // we don't have to go on the next char, we are already on it
-         result=insert_at_end_of_list(tmp,result);
-      }
-      else {
-         // case of a single non-space char like "-"
-         tmp[0]=s[i];
-         tmp[1]='\0';
-         // we go on the next char of the string
-         i++;
-         result=insert_at_end_of_list(tmp,result);
-      }
-   }
-}
-return result;
-}
-
 
 //---------------- _string -----------------------------
 

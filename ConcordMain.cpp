@@ -239,6 +239,7 @@ FILE* text=fopen(snt_files->text_cod,"rb");
 if (text==NULL) {
 	error("Cannot open file %s\n",snt_files->text_cod);
 	u_fclose(concor);
+	free_snt_files(snt_files);
 	return 1;
 }
 struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
@@ -246,6 +247,7 @@ if (tok==NULL) {
 	error("Cannot load text token file %s\n",snt_files->tokens_txt);
 	u_fclose(concor);
 	fclose(text);
+	free_snt_files(snt_files);
 	return 1;
 }
 FILE* f_enter=fopen(snt_files->enter_pos,"rb");
@@ -270,6 +272,7 @@ if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->resu
 create_concordance(concor,text,tok,n_enter_char,enter_pos,options);
 u_fclose(concor);
 fclose(text);
+free_snt_files(snt_files);
 free_text_tokens(tok);
 free_conc_opt(options);
 u_printf("Done.\n");

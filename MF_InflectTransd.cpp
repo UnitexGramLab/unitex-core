@@ -192,7 +192,7 @@ if (flex[pos]=='\0') {
         if (must_compile_grf(grf,s)) {
            /* If there is no .fst2 file, of a one than is older than the 
             * corresponding .grf, we try to compile it */
-           pseudo_main_Grf2Fst2(grf,1,NULL,1);
+           pseudo_main_Grf2Fst2(grf,1,NULL,1,0);
         }
         fst2[n_fst2]=load_fst2(s,1);
         n->final=n_fst2;

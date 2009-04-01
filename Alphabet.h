@@ -40,6 +40,7 @@ typedef struct alphabet_ Alphabet;
 Alphabet* load_alphabet(char*);
 void free_alphabet(Alphabet*);
 int is_upper_of(unichar,unichar,Alphabet*);
+int is_equal_ignore_case(unichar,unichar,Alphabet*);
 int is_equal_or_uppercase(unichar,unichar,Alphabet*);
 int is_equal_or_uppercase(unichar*,unichar*,Alphabet*);
 int is_lower(unichar,Alphabet*);

@@ -132,6 +132,15 @@ return 0;
 
 
 /**
+ * Returns a non-zero value if 'a' and 'b' are identical no matter the case;
+ * 0 otherwise.
+ */
+int is_equal_ignore_case(unichar a,unichar b,Alphabet* alphabet) {
+return a==b || is_upper_of(a,b,alphabet) || is_upper_of(b,a,alphabet);
+}
+
+
+/**
  * Returns a non-zero value if 'b' is identical to 'a' or if it is
  * an uppercase equivalent of 'a' according for the given alphabet; 
  * returns 0 otherwise.

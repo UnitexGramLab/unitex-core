@@ -256,7 +256,14 @@ if (a->nb_features<b->nb_features) {
    a=b;
    b=tmp;
 }
-symbol_t* res=new_symbol_POS(a->POS);
+int tag_number=a->tfsttag_index;
+if (tag_number==-1) {
+   tag_number=b->tfsttag_index;
+} else if (b->tfsttag_index!=-1 && b->tfsttag_index!=a->tfsttag_index) {
+   /* Means that we try to intersects 2 text automaton symbols */
+   fatal_error("Internal error in inter_features a=%d b=%d\n",a->tfsttag_index,b->tfsttag_index);
+}
+symbol_t* res=new_symbol_POS(a->POS,tag_number);
 int i;
 for (i=0;i<b->nb_features;i++) {
    switch (a->feature[i]) {
@@ -711,10 +718,16 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
   res.next = NULL;
   symbol_t * end = & res;
 
-
+  int tag_number=a->tfsttag_index;
+  if (tag_number==-1) {
+     tag_number=b->tfsttag_index;
+  } else if (b->tfsttag_index!=-1) {
+     /* Means that we try to intersects 2 text automaton symbols */
+     fatal_error("Internal error in minus_traits\n");
+  }
   if (a->POS != b->POS) { fatal_error("minus_traits: ! POSs\n"); }
 
-  symbol_t * templat = new_symbol_POS(a->POS);
+  symbol_t * templat = new_symbol_POS(a->POS,tag_number);
 
   int idx;
   for (idx = 0; idx < a->nb_features; idx++) { templat->feature[idx] = a->feature[idx]; }
@@ -830,7 +843,15 @@ static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
   /* (code(b) minus b) inter a */
 
-  s = new_symbol_POS(b->POS);
+  int tag_number=a->tfsttag_index;
+  if (tag_number==-1) {
+     tag_number=b->tfsttag_index;
+  } else if (b->tfsttag_index!=-1) {
+     /* Means that we try to intersects 2 text automaton symbols */
+     fatal_error("Internal error in NEG_minus_CAN\n");
+  }
+  
+  s = new_symbol_POS(b->POS,tag_number);
   traits_copy(s, b);
 
   /* insert b->canonic in neglist */
@@ -883,7 +904,13 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
     s->negs = (int *) xmalloc(s->nbnegs * sizeof(int));
     for (i = 0; i < s->nbnegs; i++) { s->negs[i] = a->negs[i]; }
   }
-
+  int tag_number=a->tfsttag_index;
+    if (tag_number==-1) {
+       tag_number=b->tfsttag_index;
+    } else if (b->tfsttag_index!=-1) {
+       /* Means that we try to intersects 2 text automaton symbols */
+       fatal_error("Internal error in NEG_minus_NEG\n");
+    }
 
   for (i = 0; i < b->nbnegs; i++) {
 
@@ -893,7 +920,7 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
        * => (canonic(form) inter code(b)) in (a minus b)
        */
 
-      symbol_t * nouvo = new_symbol_POS(b->POS);
+      symbol_t * nouvo = new_symbol_POS(b->POS,tag_number);
       traits_copy(nouvo, b);
       nouvo->lemma = b->negs[i];
       nouvo->next = res;
@@ -934,7 +961,15 @@ static symbol_t * CODE_minus_CAN(const symbol_t * a, const symbol_t * b) {
 
   /* code(b) minus b ... */
 
-  symbol_t * res = new_symbol_POS(b->POS);
+   int tag_number=a->tfsttag_index;
+   if (tag_number==-1) {
+      tag_number=b->tfsttag_index;
+   } else if (b->tfsttag_index!=-1) {
+      /* Means that we try to intersects 2 text automaton symbols */
+      fatal_error("Internal error in CODE_minus_CAN\n");
+   }   
+   
+  symbol_t * res = new_symbol_POS(b->POS,tag_number);
 
   traits_copy(res, b);
   res->negative = true;
@@ -959,10 +994,16 @@ static symbol_t * CODE_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
 
   /* code(b) minus b */
-
+  int tag_number=a->tfsttag_index;
+  if (tag_number==-1) {
+     tag_number=b->tfsttag_index;
+  } else if (b->tfsttag_index!=-1) {
+     /* Means that we try to intersects 2 text automaton symbols */
+     fatal_error("Internal error in CODE_minus_NEG\n");
+  } 
   for (int i = 0; i < b->nbnegs; i++) {
 
-    symbol_t * nouvo = new_symbol_POS(b->POS);
+    symbol_t * nouvo = new_symbol_POS(b->POS,tag_number);
     traits_copy(nouvo, b);
 
     nouvo->lemma = b->negs[i];
@@ -997,9 +1038,9 @@ return type_and_clean_symbols(minus_traits(a, b));
 static symbol_t * POS_minus_symbol(const symbol_t * a) {
 
   POS_t * POS = a->POS;
-
+  
   if (POS->codes == NULL) {
-    symbol_t * s = new_symbol_POS(POS);
+    symbol_t * s = new_symbol_POS(POS,-1);
     symbol_t * res = symbol_minus_symbol(s, a);
     free_symbol(s);
     return res;
@@ -1050,7 +1091,7 @@ static symbol_t * LEXIC_minus_symbol(const symbol_t * b) {
     if (POS == b->POS) { continue; }
 
     //    symbols_concat(end, POS_expand(POS), & end);
-    concat_symbols(end, new_symbol_POS(POS), & end);
+    concat_symbols(end, new_symbol_POS(POS,-1), & end);
   }
 
   concat_symbols(end, POS_minus_symbol(b)); // POS minus b
@@ -1246,7 +1287,7 @@ symbol_t * minus_symbol(const symbol_t * b) { return LEXIC_minus_symbol(b); }
  * Computes and returns the set containing all symbols but b's ones.
  */
 symbol_t* minus_symbols(const symbol_t* b) {
-symbol_t* LEX=new_symbol(LEXIC);
+symbol_t* LEX=new_symbol(LEXIC,-1);
 symbol_t* res=symbol_minus_symbols(LEX,b);
 free_symbol(LEX);
 return res;

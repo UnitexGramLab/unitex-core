@@ -31,10 +31,12 @@
  * character */
 #define WIDTH_OF_A_CHAR 10
 
+static unichar* EMPTY_AUTOMATON_DISCLAIMER=u_strdup("THIS SENTENCE AUTOMATON HAS BEEN EMPTIED");
 
-int compute_state_ranks(Fst2*,int,int*);
-int get_max_width_for_ranks(Fst2*,int,int*,int*,int);
-void fst2_transitions_to_grf_states(Fst2*,int,int*,FILE*,int,int,int*,char*);
+
+int compute_state_ranks(Tfst*,int,int*);
+int get_max_width_for_ranks(Tfst*,int,int*,int*,int);
+void tfst_transitions_to_grf_states(Tfst*,int,int*,FILE*,int,int,int*,char*);
 struct grf_state* new_grf_state(char*,int,int);
 struct grf_state* new_grf_state(unichar*,int,int);
 void free_grf_state(struct grf_state*);
@@ -43,28 +45,52 @@ void write_grf_header(int,int,int,char*,FILE*);
 void save_grf_states(FILE*,struct grf_state**,int,int,char* font,int);
 
 
+/**
+ * If the given .tfst is empty (only one state with no outgoing transition),
+ * this function modifies it in order to have a single path containing 
+ * the 'EMPTIED' disclaimer. 
+ */
+void check_automaton_is_empty(Tfst* t) {
+SingleGraph g=t->automaton;
+if (g==NULL) {
+   fatal_error("NULL automaton error in check_automaton_is_empty\n");
+}
+if (g->number_of_states==0) {
+   fatal_error("Unexpected null number of states in check_automaton_is_empty\n");
+}
+if (g->number_of_states>1) {
+   return;
+}
+if (g->states[0]->outgoing_transitions!=NULL) {
+   fatal_error("check_automaton_is_empty: unexpected transitions from single state\n");
+}
+SingleGraphState s=add_state(g);
+set_final_state(s);
+TfstTag* tag=new_TfstTag(T_STD);
+tag->content=u_strdup(EMPTY_AUTOMATON_DISCLAIMER);
+int tag_number=vector_ptr_add(t->tags,tag);
+add_outgoing_transition(g->states[0],tag_number,1);
+}
+
 
 /**
- * This function takes a .fst2 that represents a text automaton and
- * it build in 'f' the .grf that corresponds to the given sentence.
+ * This function takes a Tfst that represents a text automaton and
+ * it build in 'f' the .grf that corresponds to its current sentence.
  * 
  * WARNING: a sentence automaton is supposed to have the following properties:
  *           1) being acyclic 
  *           2) being minimal
  *           2) having no outgoing transition from the final state
  */
-void sentence_to_grf(Fst2* fst2,int SENTENCE,char* font,FILE* f) {
-if (SENTENCE>fst2->number_of_graphs) {
-   /* If the index is out of bound */
-   error("Sentence number too large\n");
-   return;
-}
+void sentence_to_grf(Tfst* tfst,char* font,FILE* f) {
+check_automaton_is_empty(tfst);
+int SENTENCE=tfst->current_sentence;
 /* The rank array will be used to store the rank of each state */
-int* rank=(int*)malloc(sizeof(int)*fst2->number_of_states_per_graphs[SENTENCE]);
+int* rank=(int*)malloc(sizeof(int)*tfst->automaton->number_of_states);
 if (rank==NULL) {
    fatal_error("Not enough memory in sentence_to_grf\n");
 }
-int maximum_rank=compute_state_ranks(fst2,SENTENCE,rank);
+int maximum_rank=compute_state_ranks(tfst,SENTENCE,rank);
 /* The pos_X array will be used to store the X coordinate of the grf
  * boxes that correspond to a given rank. We add +1 to the maximum rank,
  * because the rank has been computed on the fst2 states and the
@@ -73,8 +99,8 @@ int* pos_X=(int*)malloc(sizeof(int)*(maximum_rank+1));
 if (pos_X==NULL) {
    fatal_error("Not enough memory in sentence_to_grf\n");
 }
-int width_max=get_max_width_for_ranks(fst2,SENTENCE,pos_X,rank,maximum_rank);
-fst2_transitions_to_grf_states(fst2,SENTENCE,rank,f,maximum_rank,width_max,pos_X,font);
+int width_max=get_max_width_for_ranks(tfst,SENTENCE,pos_X,rank,maximum_rank);
+tfst_transitions_to_grf_states(tfst,SENTENCE,rank,f,maximum_rank,width_max,pos_X,font);
 free(rank);
 free(pos_X);
 }
@@ -108,18 +134,17 @@ free(pos_X);
  * Note that the array has an extra cell at its end. We use it to store the
  * total number of transitions in the automaton.
  */
-int* get_n_transitions_before_state(Fst2* fst2,int n) {
-int max=fst2->number_of_states_per_graphs[n];
+int* get_n_transitions_before_state(Tfst* tfst) {
+int max=tfst->automaton->number_of_states;
 int* n_transitions_par_state=(int*)malloc((1+max)*sizeof(int));
 if (n_transitions_par_state==NULL) {
    fatal_error("Not enough memory in get_n_transitions_par_state\n");
 }
-int initial_state=fst2->initial_states[n];
 Transition* trans;
 n_transitions_par_state[0]=0;
 for (int i=0;i<max;i++) {
    n_transitions_par_state[i+1]=n_transitions_par_state[i];
-   trans=fst2->states[i+initial_state]->transitions;
+   trans=tfst->automaton->states[i]->outgoing_transitions;
    while (trans!=NULL) {
       n_transitions_par_state[i+1]++;
       trans=trans->next;
@@ -193,15 +218,14 @@ for (int i=2;i<*N;i++) {
  * This function creates the grf states that correspond to the given fst2
  * and saves them to the given file.
  */
-void fst2_transitions_to_grf_states(Fst2* fst2,int SENTENCE,
+void tfst_transitions_to_grf_states(Tfst* tfst,int SENTENCE,
                                     int* rank,FILE* f,int maximum_rank,
                                     int width_max,int* pos_X,char* font) {
-int n_states=fst2->number_of_states_per_graphs[SENTENCE];
-int* n_transitions_before_state=get_n_transitions_before_state(fst2,SENTENCE);
+int n_states=tfst->automaton->number_of_states;
+int* n_transitions_before_state=get_n_transitions_before_state(tfst);
 int max_transitions=get_maximum_difference(n_transitions_before_state,n_states);
 int N_GRF_STATES=2;
 int MAX_STATES=2+n_transitions_before_state[n_states];
-int initial_state=fst2->initial_states[SENTENCE];
 Transition* trans;
 struct grf_state** grf_states=(struct grf_state**)malloc(MAX_STATES*sizeof(struct grf_state));
 if (grf_states==NULL) {
@@ -211,7 +235,7 @@ if (grf_states==NULL) {
  * 0 and 1 are respectively reserved for the initial and the final states. */
 grf_states[0]=new_grf_state("\"<E>\"",50,0);
 int j=2;
-trans=fst2->states[initial_state]->transitions;
+trans=tfst->automaton->states[0]->outgoing_transitions;
 while (trans!=NULL) {
    add_transition_to_grf_state(grf_states[0],j++);
    trans=trans->next;
@@ -221,28 +245,31 @@ grf_states[1]=new_grf_state("\"\"",(width_max+100),maximum_rank);
 /* Then, we save all the other grf states */
 unichar content[10000];
 for (int i=0;i<n_states;i++) {
-   trans=fst2->states[i+initial_state]->transitions;
+   trans=tfst->automaton->states[i]->outgoing_transitions;
    while (trans!=NULL) {
-      if (!u_strcmp(fst2->tags[trans->tag_number]->input,"\"")) {
+      TfstTag* t=(TfstTag*)tfst->tags->tab[trans->tag_number];
+      if (!u_strcmp(t->content,"\"")) {
          /* If the box content is a double quote, we must protect it in a special
           * way since both \ and "  are special characters in grf files. */
-         u_strcpy(content,"\"\\\\\\\"\"");
+         u_sprintf(content,"\"\\\\\\\"/%d %d %d %d\"",t->start_pos_token,t->start_pos_char,
+                                                     t->end_pos_token,t->end_pos_char);
       } else {
          /* Otherwise, we put the content between double quotes */
          content[0]='"';
-         escape(fst2->tags[trans->tag_number]->input,&content[1],P_DOUBLE_QUOTE);
-         u_strcat(content,"\"");
+         int length=1+escape(t->content,&content[1],P_DOUBLE_QUOTE);
+         u_sprintf(content+length,"/%d %d %d %d\"",t->start_pos_token,t->start_pos_char,
+                                                              t->end_pos_token,t->end_pos_char);
       }
       grf_states[N_GRF_STATES]=new_grf_state(content,pos_X[rank[i]],rank[i]);
       /* Now that we have created the grf state, we set its outgoing transitions */
-      if (fst2->states[trans->state_number]->transitions==NULL) {
+      if (tfst->automaton->states[trans->state_number]->outgoing_transitions==NULL) {
          /* If the current fst2 transition points on the final state, 
           * we must put a transition for the current grf state to the
           * grf final state */
          add_transition_to_grf_state(grf_states[N_GRF_STATES],1);
       } else {
          /* Otherwise, we create transitions */
-         Transition* tmp=fst2->states[trans->state_number]->transitions;
+         Transition* tmp=tfst->automaton->states[trans->state_number]->outgoing_transitions;
          /* +2 because of the grf states 0 and 1 that are reserved */
          int j=2+n_transitions_before_state[trans->state_number];
          while (tmp!=NULL) {
@@ -272,9 +299,9 @@ free(grf_states);
  * is the case, then we increase the rank of B and we mark B as updated.
  * Finally, we explore recursively all the states that have been updated.
  */
-void explore_states_for_ranks(int current_state,int initial_state,Fst2* fst2,
+void explore_states_for_ranks(int current_state,int initial_state,Tfst* tfst,
                         int* rank,struct bit_array* modified,int* maximum_rank) {
-Transition* trans=fst2->states[current_state]->transitions;
+Transition* trans=tfst->automaton->states[current_state]->outgoing_transitions;
 int current_rank=rank[current_state-initial_state];
 while (trans!=NULL) {
    if (current_rank+1>rank[trans->state_number-initial_state]) {
@@ -288,10 +315,10 @@ while (trans!=NULL) {
    trans=trans->next;
 }
 /* Then, we process all the states we have modified */
-trans=fst2->states[current_state]->transitions;
+trans=tfst->automaton->states[current_state]->outgoing_transitions;
 while (trans!=NULL) {
    if (get_value(modified,trans->state_number-initial_state)) {
-      explore_states_for_ranks(trans->state_number,initial_state,fst2,rank,modified,maximum_rank);
+      explore_states_for_ranks(trans->state_number,initial_state,tfst,rank,modified,maximum_rank);
       /* After we have processed the state, we remove the modification mark */
       set_value(modified,(trans->state_number)-initial_state,0);
    }
@@ -305,15 +332,14 @@ while (trans!=NULL) {
  * All ranks are stored into the 'rank' array, and the
  * maximum rank is returned.
  */
-int compute_state_ranks(Fst2* fst2,int SENTENCE,int* rank) {
-int n_states=fst2->number_of_states_per_graphs[SENTENCE];
+int compute_state_ranks(Tfst* tfst,int SENTENCE,int* rank) {
+int n_states=tfst->automaton->number_of_states;
 int maximum_rank=0;
 for (int i=0;i<n_states;i++) {
    rank[i]=0;
 }
 struct bit_array* modified=new_bit_array(n_states,ONE_BIT);
-explore_states_for_ranks(fst2->initial_states[SENTENCE],fst2->initial_states[SENTENCE],
-                         fst2,rank,modified,&maximum_rank);
+explore_states_for_ranks(0,0,tfst,rank,modified,&maximum_rank);
 free_bit_array(modified);
 return maximum_rank;
 }
@@ -349,14 +375,14 @@ u_fprintf(f,"%d\n",n_states);
 /**
  * This is a raw approximation of the width of a tag.
  */
-int width_of_tag(Fst2Tag e) {
-if (e->input[0]!='{' || !u_strcmp(e->input,"{S}")) {
+int width_of_tag(TfstTag* e) {
+if (e->content[0]!='{' || !u_strcmp(e->content,"{S}")) {
    /* Note that the {S} should not appear in a sentence automaton */
-   return u_strlen(e->input);
+   return u_strlen(e->content);
 }
 /* If the tag is a tag token like {today,.ADV}, we take the maximum
  * of the lengths of the inflected form, the lemma and the codes */
-struct dela_entry* entry=tokenize_tag_token(e->input);
+struct dela_entry* entry=tokenize_tag_token(e->content);
 int width=u_strlen(entry->inflected);
 int tmp=u_strlen(entry->lemma);
 if (tmp>width) width=tmp;
@@ -379,20 +405,20 @@ return width;
  * the X coordinates of the grf boxes so that the graph will be readable.
  * The function returns the X position of the last rank boxes.
  */
-int get_max_width_for_ranks(Fst2* fst2,int SENTENCE,int* pos_X,int* rank,
+int get_max_width_for_ranks(Tfst* tfst,int SENTENCE,int* pos_X,int* rank,
                             int maximum_rank) {
-int n_states=fst2->number_of_states_per_graphs[SENTENCE];
+int n_states=tfst->automaton->number_of_states;
 int i;
 Transition* trans;
 for (i=0;i<=maximum_rank;i++) {
    pos_X[i]=0;
 }
-int initial_state=fst2->initial_states[SENTENCE];
 /* First, we compute the maximum width for the boxes of each rank */
 for (i=0;i<n_states;i++) {
-   trans=fst2->states[i+initial_state]->transitions;
+   trans=tfst->automaton->states[i]->outgoing_transitions;
    while (trans!=NULL) {
-      int v=(WIDTH_OF_A_CHAR*(5+width_of_tag(fst2->tags[trans->tag_number])));
+      TfstTag* t=(TfstTag*)tfst->tags->tab[trans->tag_number];
+      int v=WIDTH_OF_A_CHAR*(5+width_of_tag(t));
       if (pos_X[rank[i]+1]<v) {
          pos_X[rank[i]+1]=v;
       }

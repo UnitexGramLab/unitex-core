@@ -23,7 +23,6 @@
 #define DELAH
 #include <stdio.h>
 #include <string.h>
-#include <fcntl.h>
 #include "String_hash.h"
 #include "List_ustring.h"
 #include "Alphabet.h"
@@ -109,6 +108,7 @@ struct INF_codes {
 };
 
 
+struct dela_entry* new_dela_entry(unichar*,unichar*,unichar*);
 struct dela_entry* clone_dela_entry(struct dela_entry*);
 int equal(struct dela_entry*,struct dela_entry*);
 struct dela_entry* tokenize_DELAF_line(unichar*);

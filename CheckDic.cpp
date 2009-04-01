@@ -127,7 +127,7 @@ int n_compound_entries=0;
  * We read all the lines and check them.
  */
 while (EOF!=u_fgets(line,dic)) {
-	if (line[0]=='\0') {
+   if (line[0]=='\0') {
 		/* If we have an empty line, we print a unicode error message
 		 * into the output file */
 		u_fprintf(out,"Line %d: empty line\n",line_number);

@@ -25,6 +25,7 @@
 #include "LanguageDefinition.h"
 #include "String_hash.h"
 #include "Fst2Automaton.h"
+#include "Tfst.h"
 
 
 
@@ -77,6 +78,35 @@ typedef struct fst_file_in_t {
 
 
 /**
+ * This structure is used to load a .tfst
+ */
+typedef struct tfst_file_in_t {
+
+   /* The .tfst */
+   Tfst* tfst;
+
+   /* The language definition for the tfst's language */
+   language_t* language;
+   
+   /* This structure will contain all the symbols of the grammar */
+   struct string_hash_ptr* symbols;
+   
+   /* This array is used to renumber tags that can have been made
+    * equivalent. For instance, when we load a text automaton, we can
+    * have different tags like "<comme,.CONJS+5>" and "<comme,.CONJS+8>".
+    * However, these tags will both be taken by TagsetNormFst2 as
+    * "<comme,.CONJS>", since semantic value "5" and "8" are not defined
+    * in the tagset file. So, at the time of loading the text .fst2,
+    * we will really load "<comme,.CONJS>" into 'symbols' and we will
+    * set renumber[i]=renumber[j]=x where i and j are the tag numbers for
+    * "<comme,.CONJS+5>" and "<comme,.CONJS+8>" in the original .fst2,
+    * and x is the index of "<comme,.CONJS>" in 'symbols->value'. */
+   int* renumber;
+} Elag_Tfst_file_in;
+
+
+
+/**
  * This structure is used to save a .fst2
  */
 typedef struct fst_file_out_t {
@@ -100,6 +130,10 @@ typedef struct fst_file_out_t {
    struct string_hash* labels;
 } Elag_fst_file_out;
 
+
+Elag_Tfst_file_in* load_tfst_file(char*,language_t*);
+void load_tfst_sentence_automaton(Elag_Tfst_file_in*,int);
+void tfst_file_close_in(Elag_Tfst_file_in*);
 
 Elag_fst_file_in* load_fst_file(char*,int,language_t*);
 void fst_file_close_in(Elag_fst_file_in*);

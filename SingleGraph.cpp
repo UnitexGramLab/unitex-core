@@ -1249,6 +1249,10 @@ graph->states=new_states;
 }
 
 
+#if 0
+
+/* all this is only used by Evamb, and it is about to change with the new Tfst* type */
+
 /**
  * This function takes a .fst2 and return the automaton corresponding to its
  * subgraph #n. Note that the resulting automaton considers state numbers
@@ -1277,7 +1281,7 @@ for (int i=initial_state;i<max_states;i++) {
 }
 return graph;
 }
-
+#endif
 
 /**
  * This function computes the number of paths between the states q1 and q2.

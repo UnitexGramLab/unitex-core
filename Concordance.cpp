@@ -929,6 +929,7 @@ while (matches!=NULL) {
 	matches=matches->next;
 	free_match_list_element(matches_tmp);
 }
+free_buffer(buffer);
 return number_of_matches;
 }
 

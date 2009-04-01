@@ -28,7 +28,7 @@
  * The given automaton is modified.
  */
 void elag_determinize(SingleGraph A) {
-SingleGraph res=new_SingleGraph();
+SingleGraph res=new_SingleGraph(PTR_TAGS);
 state_set_array* ARRAY=new_state_set_array();
 state_set* initial_states=new_state_set();
 struct list_int* l=get_initial_states(A);

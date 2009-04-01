@@ -36,7 +36,7 @@
  * Loads the tags of the given .fst2 file. Returns 0 in case of success; -1 otherwise.
  * Note that the position in the file is unchanged after a call to this function.
  */
-int load_fst_tags(Elag_fst_file_in* fst) {
+int load_elag_fst2_tags(Elag_fst_file_in* fst) {
 /* We backup the position in the file, and we come back at the
  * beginning of the file */
 long fpos=ftell(fst->f);
@@ -58,25 +58,6 @@ while (i<fst->nb_automata) {
       len=u_fgets(buf,MAXBUF,fst->f);
    }
 }
-/* We set the tag loading function, depending on the kind of .fst2 we have */
-symbol_t* (*load_symbol)(language_t*,unichar*);
-load_symbol=(fst->type==FST_TEXT)?load_text_symbol:load_grammar_symbol;
-void (*symbol_to_tag)(const symbol_t*,Ustring*)=NULL;
-/* We also set the symbol to tag function if we are loading a text
- * automaton */
-int size=16;
-int n_tags=0;
-switch (fst->type) {
-   case FST_TEXT:
-      symbol_to_tag=symbol_to_text_label;
-      fst->renumber=(int*)malloc(size*sizeof(int));
-      if (fst->renumber==NULL) {
-         fatal_error("Not enough memory in load_fst_tags\n");
-      }
-      break;
-
-   default: symbol_to_tag=NULL;
-}
 Ustring* ustr=new_Ustring(64);
 while (readline(ustr,fst->f) && ustr->str[0]!='f') {
    if (ustr->str[0]!='%' && ustr->str[0]!='@') {
@@ -85,35 +66,12 @@ while (readline(ustr,fst->f) && ustr->str[0]!='f') {
    }
    chomp_new_line(ustr);
    /* +1 because we ignore the % or @ at the beginning of the line */
-   symbol_t* symbol=load_symbol(fst->language,ustr->str+1);
+   symbol_t* symbol=load_grammar_symbol(fst->language,ustr->str+1);
    /* If 'symbol' is NULL, then an error message has already
     * been printed. Moreover, we want to associate NULL to the
     * string, so that we don't exit the function. Whatever it is,
     * we add the symbol to the symbols of the .fst2 */
-   int index;
-   if (symbol!=NULL && symbol_to_tag!=NULL && u_strcmp(ustr->str+1,"<E>")) {
-      /* We convert the symbol into a string in order to avoid
-       * duplicates after the normalization. For instance,
-       * "N+z2:ms" and "N+z3:ms" would become equivalent if "z2" and
-       * "z3" are optional codes. */
-      symbol_to_tag(symbol,ustr);
-      index=get_value_index(ustr->str,fst->symbols,INSERT_IF_NEEDED,symbol);
-   }
-   else {
-      index=get_value_index(ustr->str+1,fst->symbols,INSERT_IF_NEEDED,symbol);
-   }
-   if (n_tags==size && fst->renumber!=NULL) {
-      /* If necessary, we double the size of the renumbering array */
-      size=size*2;
-      fst->renumber=(int*)realloc(fst->renumber,size*sizeof(int));
-      if (fst->renumber==NULL) {
-         fatal_error("Not enough memory in load_fst_tags\n");
-      }
-   }
-   if (fst->renumber!=NULL) {
-      /* If there is a renumbering array, we fill it */
-      fst->renumber[n_tags++]=index;
-   }
+   get_value_index(ustr->str+1,fst->symbols,INSERT_IF_NEEDED,symbol);
 }
 if (*ustr->str==0) {
    fatal_error("load_fst_tags: unexpected EOF\n");
@@ -129,7 +87,7 @@ return 0;
  * Loads a .fst2 file with the given name and type, according to the
  * given language description.
  */
-Elag_fst_file_in* load_fst_file(char* fname,int type,language_t* language) {
+Elag_fst_file_in* load_elag_fst2_file(char* fname,language_t* language) {
 Elag_fst_file_in* fstf=(Elag_fst_file_in*)malloc(sizeof(Elag_fst_file_in));
 if (fstf==NULL) {
    fatal_error("Not enough memory in load_fst_file\n");
@@ -149,16 +107,12 @@ if (!u_is_digit(*buf)) {
    goto error_f;
 } 
 fstf->nb_automata=u_parse_int(buf);
-if (type!=FST_TEXT && type!=FST_GRAMMAR) {
-   error("load_fst_file: bad fst_type=%d\n",type);
-   goto error_f;
-}
 fstf->language=language;
-fstf->type=type;
+fstf->type=FST_GRAMMAR;
 fstf->pos0=ftell(fstf->f);
 fstf->symbols=new_string_hash_ptr(64);
 fstf->renumber=NULL;
-if (load_fst_tags(fstf)==-1) {
+if (load_elag_fst2_tags(fstf)==-1) {
    error("load_fst_file: %s: cannot load symbols\n",fstf->name);
    goto error_symbols;
 }
@@ -510,7 +464,7 @@ Fst2Automaton* load_elag_grammar_automaton(char* fst2,language_t* language) {
 if (language==NULL) {
    fatal_error("NULL language error in load_elag_grammar_automaton\n");
 }
-Elag_fst_file_in* fstin=load_fst_file(fst2,FST_GRAMMAR,language);
+Elag_fst_file_in* fstin=load_elag_fst2_file(fst2,language);
 if (fstin==NULL) {
    error("Unable to open '%s'\n", fst2);
    return NULL; 
@@ -522,4 +476,97 @@ Fst2Automaton* A=fst_file_autalmot_load(fstin,1);
 /* As we use the symbols of fstin in A, we must not free them here */
 fst_file_close_in(fstin);
 return A;
+}
+
+
+/**
+ * Loads a .tfst file with the given name, according to the
+ * given language description.
+ */
+Elag_Tfst_file_in* load_tfst_file(char* fname,language_t* language) {
+Elag_Tfst_file_in* fstf=(Elag_Tfst_file_in*)malloc(sizeof(Elag_Tfst_file_in));
+if (fstf==NULL) {
+   fatal_error("Not enough memory in load_tfst_file\n");
+}
+fstf->tfst=open_text_automaton(fname);
+fstf->language=language;
+fstf->symbols=NULL;
+fstf->renumber=NULL;
+return fstf;
+}
+
+
+/**
+ * Loads the given sentence automaton and converts its transitions tagged with integers
+ * into transitions tagged with symbol_t*
+ */
+void load_tfst_sentence_automaton(Elag_Tfst_file_in* input,int n) {
+load_sentence(input->tfst,n);
+/* We free previously used fields */
+free_string_hash_ptr(input->symbols,(void(*)(void*))free_symbols);
+free(input->renumber);
+/* We convert the transitions. To do that, we first allocate the renumber array */
+int n_tags=0;
+int size=16;
+input->renumber=(int*)malloc(16*sizeof(int));
+if (input->renumber==NULL) {
+   fatal_error("Not enough memory in load_tfst_sentence_automaton\n");
+}
+/* And we compute all the symbol_t* from the tags */
+input->symbols=new_string_hash_ptr(input->tfst->tags->size);
+Ustring* ustr=new_Ustring(256);
+for (int i=0;i<input->tfst->tags->nbelems;i++) {
+   TfstTag* tag=(TfstTag*)input->tfst->tags->tab[i];
+   symbol_t* symbol=load_text_symbol(input->language,tag->content,i);
+   /* If 'symbol' is NULL, then an error message has already
+    * been printed. Moreover, we want to associate NULL to the
+    * string, so that we don't exit the function. Whatever it is,
+    * we add the symbol to the symbols of the .fst2 */
+   int index;
+   if (symbol!=NULL && u_strcmp(tag->content,"<E>")) {
+      /* We convert the symbol into a string in order to avoid
+       * duplicates after the normalization. For instance,
+       * "N+z2:ms" and "N+z3:ms" would become equivalent if "z2" and
+       * "z3" are optional codes. */
+      symbol_to_text_label(symbol,ustr);
+      index=get_value_index(ustr->str,input->symbols,INSERT_IF_NEEDED,symbol);
+   }
+   else {
+      index=get_value_index(tag->content,input->symbols,INSERT_IF_NEEDED,symbol);
+   }
+   if (n_tags==size && input->renumber!=NULL) {
+      /* If necessary, we double the size of the renumbering array */
+      size=size*2;
+      input->renumber=(int*)realloc(input->renumber,size*sizeof(int));
+      if (input->renumber==NULL) {
+         fatal_error("Not enough memory in load_tfst_sentence_automaton\n");
+      }
+   }
+   input->renumber[n_tags++]=index;
+}
+free_Ustring(ustr);
+/* Now, we must replace integer transitions by symbol transitions */
+for (int i=0;i<input->tfst->automaton->number_of_states;i++) {
+   SingleGraphState state=input->tfst->automaton->states[i];
+   Transition* t=state->outgoing_transitions;
+   while (t!=NULL) {
+      t->label=(symbol_t*)input->symbols->value[input->renumber[t->tag_number]];
+      t=t->next;
+   }
+}
+/* We must indicate that now we deal a pointer tags */
+input->tfst->automaton->tag_type=PTR_TAGS;
+}
+
+
+/**
+ * Closes the given file and frees the memory associated to the structure.
+ */
+void tfst_file_close_in(Elag_Tfst_file_in* fstf) {
+if (fstf==NULL) return;
+close_text_automaton(fstf->tfst);
+free_language_t(fstf->language);
+free_string_hash_ptr(fstf->symbols,(void(*)(void*))free_symbols);
+if (fstf->renumber!=NULL) free(fstf->renumber);
+free(fstf);
 }

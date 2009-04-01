@@ -22,8 +22,8 @@
 #ifndef SingleGraphH
 #define SingleGraphH
 
-#include "Fst2.h"
 #include "Transitions.h"
+#include "List_int.h"
 
 
 /* Here are bit masks that can be used to mark states. Note that lower
@@ -124,7 +124,7 @@ void minimize(SingleGraph,int);
 void topological_sort(SingleGraph);
 void build_union(SingleGraph,SingleGraph);
 
-SingleGraph get_subgraph(Fst2*,int);
+//SingleGraph get_subgraph(Fst2*,int);
 void save_fst2_subgraph(FILE*,SingleGraph,int,unichar*);
 
 double evaluate_ambiguity(SingleGraph,int*,int*);

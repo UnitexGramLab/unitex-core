@@ -42,6 +42,7 @@
 #endif
 
 #include <sys/types.h>
+#include <stdio.h>
 
 void add_suffix_to_file_name(char*,char*,const char*);
 void add_prefix_to_file_name(char*,char*,const char*);
@@ -58,5 +59,7 @@ void new_file(const char*,const char*,char*);
 void copy_file(char*,char*);
 int fexists(char*);
 time_t get_file_date(char* name);
+long get_file_size(char*);
+long get_file_size(FILE*);
 
 #endif

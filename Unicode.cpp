@@ -1472,6 +1472,9 @@ while (*format) {
             n_variables++;
             break;
          }
+
+         default: error("Unsupported format in u_vfscanf: %%%c\n",*format);
+
       }
    } else {
       /* If we have a normal character, we must read it */
@@ -1513,8 +1516,12 @@ while (*format) {
    /* First, we skip the separators, but only if the current format character is
     * not a separator */
    if (!is_separator(*format)) {
-      while (is_separator(s[pos])) pos++;
-      if (s[pos]=='\0') {
+      while (is_separator(s[pos])) {
+         pos++;
+      }
+      if (s[pos]=='\0' && !(*format=='%' && *(format+1)=='n')) {
+         /* We will stop only if the current format is not %n, because %n can
+          * work even if the end of the input has been reached */ 
          if (n_variables==0) {
             /* If the EOF occurs before the first conversion, we return EOF */
             return EOF;
@@ -1647,6 +1654,16 @@ while (*format) {
             n_variables++;
             break;
          }
+         
+         /* If we have %n we must store the number of characters that have already 
+          * been read from the input string */
+         case 'n': {
+            i=va_arg(list,int*);
+            *i=pos;
+            break;
+         }
+         
+         default: error("Unsupported format in u_vsscanf: %%%c\n",*format);
       }
    } else {
       /* If we have a normal character, we must read it */
@@ -1985,6 +2002,41 @@ while (*s) {
 return NULL;
 }
 
+
+/**
+ * Returns 1 if s starts with the given prefix; 0 otherwise.
+ */
+int u_starts_with(const unichar* s,const unichar* prefix) {
+if (s==NULL) return 0;
+if (prefix==NULL) return 1;
+int l1=u_strlen(s);
+int l2=u_strlen(prefix);
+if (l2>l1) return 0;
+for (int i=0;i<l2;i++) {
+   if (s[i]!=prefix[i]) {
+      return 0;
+   }
+}
+return 1;
+}
+
+
+/**
+ * Returns 1 if s starts with the given prefix; 0 otherwise.
+ */
+int u_starts_with(const unichar* s,const char* prefix) {
+if (s==NULL) return 0;
+if (prefix==NULL) return 1;
+int l1=u_strlen(s);
+int l2=strlen(prefix);
+if (l2>l1) return 0;
+for (int i=0;i<l2;i++) {
+   if (s[i]!=prefix[i]) {
+      return 0;
+   }
+}
+return 1;
+}
 
 /**
  * Returns 1 if s ends with the given suffix; 0 otherwise.

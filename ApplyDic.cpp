@@ -75,6 +75,7 @@ if (w==NULL) return;
 for (int i=0;i<w->N;i++) {
   free_word_struct(w->element[i]);
 }
+free(w->element);
 free(w);
 }
 

@@ -206,7 +206,7 @@ return index;
 symbol_t * POS_expand(POS_t * POS) {
   
   if (POS->codes == NULL) {
-    return new_symbol_POS(POS);
+    return new_symbol_POS(POS,-1);
   }
 
   //  debug("POS_expand: '%S': codes==\n", POS->name); symbols_dump(POS->codes); endl();
@@ -247,7 +247,7 @@ return language;
 /**
  * Frees all the memory associated to the given language description.
  */
-void free_language_(language_t* language) {
+void free_language_t(language_t* language) {
 if (language==NULL) return;
 if (language->name!=NULL) free(language->name);
 free_string_hash_ptr(language->POSs,(void (*)(void*))free_POS_t);
@@ -322,7 +322,7 @@ return res.next;
  *    f p
  */
 symbol_t* expand_code(symbol_t* code) {
-symbol_t* templat=new_symbol_POS(code->POS);
+symbol_t* templat=new_symbol_POS(code->POS,code->tfsttag_index);
 templat->type=CODE;
 symbol_t* res=expand_code(code,templat,0);
 free_symbol(templat);
@@ -339,7 +339,7 @@ symbol_t* get_full_codes(POS_t* POS,tokens_list* code_list) {
 symbol_t res;
 res.next=NULL;
 symbol_t* end=&res;
-symbol_t* symbol=new_symbol_POS(POS);
+symbol_t* symbol=new_symbol_POS(POS,-1);
 /* We look each line */
 for (tokens_list* list=code_list;list!=NULL;list=list->next) {
    /**
@@ -473,3 +473,19 @@ if (f==NULL) {
 return load_language_definition(f);
 }
 
+
+/**
+ * This function filters the given dictionary entry according to the given
+ * ELAG tagset definition. Returns the modified entry, or NULL if the entry
+ * was not compatible with the tagset; in this case, the function frees the entry.
+ */
+struct dela_entry* filter_dela_entry(struct dela_entry* e,unichar* tag,language_t* l,int must_free) {
+symbol_t* symbol=load_dic_entry(l,tag,e,-1);
+if (must_free) free_dela_entry(e);
+if (symbol==NULL) {
+   return NULL;
+}
+struct dela_entry* result=symbol_to_dela_entry(symbol);
+free_symbol(symbol);
+return result;
+}

@@ -132,16 +132,20 @@ typedef struct symbol_t {
    /* Size of 'feature' */
    int  nb_features;
 
+   /* When a symbol represents a tag of a text automaton, we must remember with this
+    * field to which TfstTag it corresponds. -1 means no tag. */
+   int tfsttag_index;
+   
    /* The next symbol in the list */
    struct symbol_t* next;
 } symbol_t;
 
 
 
-symbol_t* new_symbol(SymbolType);
-symbol_t* new_symbol_POS(POS_t*);
+symbol_t* new_symbol(SymbolType,int);
+symbol_t* new_symbol_POS(POS_t*,int);
 
-symbol_t * new_symbol_UNKNOWN(language_t * lang, int idx);
+symbol_t * new_symbol_UNKNOWN(language_t * lang, int idx,int);
 
 
 symbol_t * dup_symbol(const symbol_t * symb);
@@ -163,22 +167,22 @@ void symbols_dump(const symbol_t * symb, FILE * f = stderr);
 void symbol_to_str(const symbol_t * s, Ustring * ustr);
 void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr);
 void symbol_to_text_label(const symbol_t * s, Ustring * ustr);
-//void symbol_to_implosed_text_label(const symbol_t * s, Ustring * ustr);
+struct dela_entry* symbol_to_dela_entry(const symbol_t*);
 void symbol_to_locate_label(const symbol_t * s, Ustring * ustr);
 
-symbol_t* load_text_symbol(language_t*,unichar*);
+symbol_t* load_text_symbol(language_t*,unichar*,int);
 symbol_t* load_grammar_symbol(language_t*,unichar*);
 
 
 int check_dic_entry(const unichar * label);
-symbol_t* load_dic_entry(language_t*,const unichar*,struct dela_entry*);
+symbol_t* load_dic_entry(language_t*,unichar*,struct dela_entry*,int);
 
 void concat_symbols(symbol_t * a, symbol_t * b, symbol_t ** end = NULL);
 
 int type_symbol(symbol_t * symb);
 
-symbol_t * new_symbol_PUNC(language_t * lang, int idx);
-symbol_t * new_symbol_PUNC(int punc);
+symbol_t * new_symbol_PUNC(language_t * lang, int idx,int);
+symbol_t * new_symbol_PUNC(int punc,int);
 
 
 

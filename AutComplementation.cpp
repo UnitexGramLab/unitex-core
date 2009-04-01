@@ -37,7 +37,7 @@ int i;
 /* First we build an array containing a full symbol for each POS.
  * For instance, we could have POS[0]=<A>, POS[1]=<V>, etc. */
 for (i=0;i<LANGUAGE->POSs->size;i++) {
-   POS[i]=new_symbol_POS((POS_t*)LANGUAGE->POSs->value[i]);
+   POS[i]=new_symbol_POS((POS_t*)LANGUAGE->POSs->value[i],-1);
 }
 symbol_t* tmp;
 while (trans!=NULL) {

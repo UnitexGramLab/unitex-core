@@ -33,6 +33,7 @@
 #include "Copyright.h"
 #include "Fst2.h"
 #include "Error.h"
+#include "Tfst.h"
 
 /**
  * This program is designed for test purpose only.
@@ -40,9 +41,9 @@
 int main(int argc,char *argv[]) {
 setBufferMode();
 
-Fst2* f=load_fst2("D:\\My Unitex\\French\\Inflection\\V51.fst2",1);
-
-save_Fst2("D:\\My Unitex\\French\\Inflection\\V51_new.fst2",f);
+Tfst* t=open_text_automaton("D:\\My Unitex\\French\\Corpus\\test_snt\\text.tfst");
+load_sentence(t,2);
+close_text_automaton(t);
 
 return 0;
 }

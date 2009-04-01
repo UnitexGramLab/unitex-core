@@ -47,22 +47,23 @@
 #include "Error.h"
 #include "getopt.h"
 #include "File.h"
+#include "Tfst.h"
 
 
 void usage() {
 u_printf("%S", COPYRIGHT);
-u_printf("Usage: Elag [OPTIONS] <txtauto>\n"
+u_printf("Usage: Elag [OPTIONS] <tfst>\n"
          "\n"
-         "  <txtauto>: input text automaton FST2 file\n"
+         "  <tfst>: input text automaton file\n"
          "\n"
          "OPTIONS:\n"
          "  -l LANG/--language=LANG: language definition file\n"
          "  -r RULES/--rules=RULES: compiled elag rules file\n"
-         "  -o OUT/--output=OUT: resulting output .fst2 file\n"
+         "  -o OUT/--output=OUT: resulting output .tfst file\n"
          "  -d DIR/--directory=DIR: directory where elag rules are located\n"
          "  -h/--help: this help\n"
          "\n"
-         "Disambiguate the input text automaton <txtauto> using the specified compiled elag rules.\n");
+         "Disambiguate the input text automaton <tfst> using the specified compiled elag rules.\n");
 }
 
 
@@ -86,10 +87,9 @@ const struct option lopts[]= {
       {NULL,no_argument,NULL,0}
 };
 int val,index=-1;
-char txtauto[FILENAME_MAX]="";
 char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
-char output[FILENAME_MAX]="";
+char output_tfst[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
 optind=1;
 while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
@@ -107,7 +107,7 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 'o': if (optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file\n");
              }
-             strcpy(output,optarg);
+             strcpy(output_tfst,optarg);
              break;
    case 'd': if (optarg[0]=='\0') {
                 fatal_error("You must specify a non empty directory\n");
@@ -133,18 +133,17 @@ if (rule_file[0]=='\0') {
 if (optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-strcpy(txtauto,argv[optind]);
+char input_tfst[FILENAME_MAX];
+strcpy(input_tfst,argv[optind]);
+
 u_printf("Loading %s langage definition ...\n", language);
-language_t * lang = load_language_definition(language);
+language_t* lang = load_language_definition(language);
 set_current_language(lang);
-if (output[0]=='\0') {
-   strcpy(output,txtauto);
-   int len=strlen(output);
-   if (strcmp(output+len-5,".fst2")==0) {
-      len=len-5;
-   }
-   strcpy(output+len, "-elag.fst2");
+if (output_tfst[0]=='\0') {
+   remove_extension(input_tfst,output_tfst);
+   strcat(output_tfst,"-elag.tfst");
 }
+
 if (directory[0]=='\0') {
    get_path(rule_file,directory);
    char tmp[FILENAME_MAX];
@@ -159,7 +158,7 @@ list_aut* gramm;
 if ((gramm = chargeGramm(rule_file)) == NULL) {
    fatal_error("Unable to load grammar %s", rule_file);
 }
-u_printf("Grammars are loaded.\n") ;
-remove_ambiguities(txtauto,gramm,output);
+u_printf("Grammars are loaded.\n");
+remove_ambiguities(input_tfst,gramm,output_tfst);
 return 0;
 }

@@ -93,16 +93,18 @@ free(ustr);
 
 /**
  * Resizes th internal buffer of the given Ustring to the given size.
- * If the size is reduced, then the internal buffer will be truncated
- * with a '\0' put at size-1. Note that you cannot set a size<1.
+ * The buffer size is never decreased. Note that you cannot set a size<1.
  */
 void resize(Ustring* ustr,int size) {
 if (size<1) {
    size=1;
 }
+if (size<=ustr->size) {
+   return;
+}
 ustr->str=(unichar*)realloc(ustr->str,size*sizeof(unichar));
 if (ustr->str==NULL) {
-   fatal_error("Not enough memory in resize\n");
+   fatal_error("Not enough memory in resize %d\n",size);
 }
 if (size<ustr->len) {
    /* If we truncate the string */
@@ -125,13 +127,36 @@ if (str==NULL || str[0]=='\0' || length==0) {
 int newlen=ustr->len+length;
 if (ustr->size<newlen+1) {
    /* If necessary, we enlarge the internal buffer */
-   resize(ustr,newlen+1);
+   int n=ustr->size;
+   while (n<=newlen+1) {
+      n=n*2;
+   }
+   resize(ustr,n);
 }
 for (int i=0;i<length;i++) {
    ustr->str[ustr->len+i]=str[i];
 }
 ustr->str[newlen]='\0';
 ustr->len=newlen;
+}
+
+
+/**
+ * Concatenates the given unicode character to the given Ustring. 
+ */
+void u_strcat(Ustring* ustr,unichar c) {
+int newlen=ustr->len+1;
+if (ustr->size<newlen+1) {
+   /* If necessary, we enlarge the internal buffer */
+   int n=ustr->size;
+      while (n<=newlen+1) {
+         n=n*2;
+   }
+   resize(ustr,n);
+}
+ustr->str[ustr->len]=c;
+ustr->str[ustr->len+1]='\0';
+ustr->len++;
 }
 
 
@@ -147,7 +172,11 @@ if (str==NULL || str[0]=='\0' || length==0) {
 int newlen=ustr->len+length;
 if (ustr->size<newlen+1) {
    /* If necessary, we enlarge the internal buffer */
-   resize(ustr,newlen+1);
+   int n=ustr->size;
+   while (n<=newlen+1) {
+       n=n*2;
+   }
+   resize(ustr,n);
 }
 for (int i=0;i<length;i++) {
    ustr->str[ustr->len+i]=str[i];

@@ -37,6 +37,8 @@
 #include "ElagDebug.h"
 
 
+
+
 /* Maximum number of states for a grammar before we split it in several fst2 */
 #define MAX_GRAM_SIZE   128
 
@@ -75,7 +77,7 @@ while (*s!='\0') {
 void prefix_with_everything(SingleGraph A) {
 struct list_int* list=get_initial_states(A);
 while (list!=NULL) {
-   add_outgoing_transition(A->states[list->n],new_symbol(LEXIC),list->n);
+   add_outgoing_transition(A->states[list->n],new_symbol(LEXIC,-1),list->n);
    list=list->next;
 }
 free_list_int(list);
@@ -95,7 +97,7 @@ for (int i=0;i<A->number_of_states;i++) {
        * symbols that tag transitions, because these symbols can be shared */
       free_Transition_list(A->states[i]->outgoing_transitions,NULL);
       A->states[i]->outgoing_transitions=NULL;
-      add_outgoing_transition(A->states[i],new_symbol(LEXIC),i);
+      add_outgoing_transition(A->states[i],new_symbol(LEXIC,-1),i);
     }
   }
 }
@@ -358,7 +360,7 @@ for (int i=0;i<lang->POSs->size;i++) {
       /* If we have a POS that can be ignored, we add a transition tagged
        * by this symbol to each state */
       for (int q=1;q<res->automaton->number_of_states;q++) {
-         symbol_t* s=new_symbol_POS(PoS);
+         symbol_t* s=new_symbol_POS(PoS,-1);
          add_outgoing_transition(res->automaton->states[q],s,q);
       }
    }

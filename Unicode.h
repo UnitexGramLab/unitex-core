@@ -206,6 +206,8 @@ unichar* u_strchr(const unichar*,unichar);
 char* u_strchr(char*,unichar);
 unichar* u_strpbrk(const unichar*,unichar*);
 unichar* u_strpbrk(const unichar*,char*);
+int u_starts_with(const unichar*,const unichar*);
+int u_starts_with(const unichar*,const char*);
 int u_ends_with(const unichar*,const unichar*);
 int u_ends_with(const unichar*,const char*);
 

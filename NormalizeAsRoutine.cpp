@@ -69,7 +69,9 @@ int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
 		}
 	}
 	/* If there is no replacement rules file, we simulate one */
-	else { replacements=new_string_hash(); }
+	else { 
+	   replacements=new_string_hash();
+	}
 
 	/* If there is a replacement rule file, we ensure that there are replacement
 	 * rules for { and }. If not, we add our default ones, so that in any case,

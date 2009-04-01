@@ -31,6 +31,7 @@
 #include "list_aut.h"
 
 void remove_ambiguities(char * fstname, list_aut * grammars, char * fstout);
+void explode_tfst(char* input_tfst,char* output);
 list_aut * chargeGramm(char * nomFichGramm);
 list_aut * chargeUneGramm(char * nomFichGramm);
 

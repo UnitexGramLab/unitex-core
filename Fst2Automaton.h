@@ -19,8 +19,8 @@
   *
   */
 
-#ifndef _AUTALMOT_H_
-#define _AUTALMOT_H_
+#ifndef Fst2AutomatonH
+#define Fst2AutomatonH
 
 #include "Unicode.h"
 #include "symbol.h"

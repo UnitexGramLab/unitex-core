@@ -142,7 +142,9 @@ u_printf("Loading %s...\n",name);
 unichar line[4096];
 while (EOF!=u_fgets(line,f)) {
    struct dela_entry* entry=tokenize_DELAF_line(line,1);
-   add_entry(tree,entry);
+   if (entry!=NULL) {
+      add_entry(tree,entry);
+   }
    /* We don't need to free the entry, since it's done (if needed)
     * in the insertion function */
 }

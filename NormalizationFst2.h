@@ -64,7 +64,6 @@ struct normalization_tree_transition {
 struct normalization_tree* load_normalization_fst2(char*,Alphabet*,struct text_tokens*);
 struct normalization_tree* new_normalization_tree();
 void free_normalization_tree(struct normalization_tree*);
-struct list_ustring* tokenize_normalization_output(unichar*,Alphabet*);
 
 struct normalization_tree_transition* new_trans_arbre_normalization_string(unichar*);
 struct normalization_tree* load_normalization_transducer_string(char*);

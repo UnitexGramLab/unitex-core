@@ -59,10 +59,10 @@ return t;
  */
 void free_dictionary_node(struct dictionary_node* a) {
 if (a==NULL) return;
-(a->incoming)--;
-if (a->incoming!=0) {
+if (a->incoming>1) {
 	/* We don't free a state that is still pointed by someone else 
 	 * in order to avoid double freeing problems. */
+   (a->incoming)--;
 	return;
 }
 free_list_int(a->single_INF_code_list);

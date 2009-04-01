@@ -24,7 +24,7 @@
 
 
 #include "Unicode.h"
-#include "Fst2.h"
+#include "Tfst.h"
 #include "List_int.h"
 
 
@@ -42,8 +42,8 @@ struct grf_state {
 
 
 
-void sentence_to_grf(Fst2*,int,char*,FILE*);
-int width_of_tag(Fst2Tag);
+void sentence_to_grf(Tfst*,char*,FILE*);
+int width_of_tag(TfstTag*);
 void write_grf_header(int,int,int,char*,FILE*);
 
 #endif

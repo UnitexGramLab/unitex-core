@@ -77,7 +77,7 @@ inline void vector_ptr_resize(vector_ptr* vec,int size) {
 if (size<=0) {
    size=1;
 }
-if (size<vec->nbelems) {
+if (size<=vec->nbelems) {
    fatal_error("vector_ptr_resize: size=%d && nbelems=%d\n",size,vec->nbelems);
 }
 vec->tab=(void**)xrealloc(vec->tab,size*sizeof(void*));
