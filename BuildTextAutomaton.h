@@ -30,15 +30,18 @@
 #include "String_hash.h"
 #include "NormalizationFst2.h"
 #include "Matches.h"
+#include "LanguageDefinition.h"
 
 #define MAX_TOKENS_IN_SENTENCE 2000
 
 
 void build_sentence_automaton(int*,int,struct text_tokens*,
-                              struct DELA_tree*,struct string_hash*,
-                              Alphabet*,FILE*,int,int,
+                              struct DELA_tree*,
+                              Alphabet*,FILE*,FILE*,int,int,
                               struct normalization_tree*,
-                              struct match_list**,int);
+                              struct match_list**,int,int,
+                              language_t*);
 
+void dump_offset(long,FILE*);
 
 #endif

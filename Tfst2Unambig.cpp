@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Unicode.h"
-#include "Fst2.h"
+#include "Tfst.h"
 #include "Copyright.h"
 #include "IOBuffer.h"
 #include "LinearAutomaton2Txt.h"
@@ -33,9 +33,9 @@
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Fst2Unambig  [OPTIONS] <fst2>\n"
+u_printf("Usage: Fst2Unambig  [OPTIONS] <tfst>\n"
          "\n"
-         "  <fst2>: fst2 file representing the text automaton\n"
+         "  <tfst>: .tfst file representing the text automaton\n"
          "\n"
          "OPTIONS:\n"
          "  -o TXT/--out=TXT : output unicode text file\n"
@@ -93,27 +93,27 @@ if (output==NULL) {
 }
 
 u_printf("Loading text automaton...\n");
-Fst2* fst2=load_fst2(argv[optind],0);
-if (fst2==NULL) {
+Tfst* tfst=open_text_automaton(argv[optind]);
+if (tfst==NULL) {
    error("Cannot load text automaton %s\n",argv[optind]);
    return 1;
 }
-int res=isLinearAutomaton(fst2);
+int res=isLinearAutomaton(tfst);
 if (res!=LINEAR_AUTOMATON) {
    error("Error: the text automaton is not linear in sentence %d\n",res);
-   free_Fst2(fst2);
+   close_text_automaton(tfst);
    return 1;
 }
 FILE* f=u_fopen(output,U_WRITE);
 if (f==NULL) {
    error("Cannot create %s\n",output);
-   free_Fst2(fst2);
+   close_text_automaton(tfst);
    return 1;
 }
 u_printf("Converting linear automaton into text...\n");
-convertLinearAutomaton(fst2,f);
+convertLinearAutomaton(tfst,f);
 u_fclose(f);
-free_Fst2(fst2);
+close_text_automaton(tfst);
 free(output);
 u_printf("Done.\n");
 return 0;

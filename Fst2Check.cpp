@@ -19,10 +19,11 @@
   *
   */
 
-#include "GrfCheck.h"
+#include "Fst2Check.h"
 #include "Error.h"
 #include "BitMasks.h"
 #include "Transitions.h"
+
 
 int look_for_recursion(int,struct list_int*,Fst2*,int*);
 
@@ -548,12 +549,14 @@ return ret;
 
 
 /**
- * Returns 1 if the given .fst2 is OK; 0 otherwise. OK means:
+ * Returns 1 if the given .fst2 is OK to be used by the Locate program; 0 otherwise. 
+ * Conditions are:
+ * 
  * 1) no left recursion
  * 2) no loop that can recognize the empty word (<E> with an output or subgraph
  *    that can match the empty word).
  */
-int grf_OK(char* name,char no_empty_graph_warning) {
+int OK_for_Locate(char* name,char no_empty_graph_warning) {
 ConditionList* conditions;
 ConditionList* conditions_for_state;
 int i,j;
@@ -645,8 +648,117 @@ return NO_LEFT_RECURSION;
 
 
 
+#define NOT_SEEN_YET 0
+#define SEEN 1
+#define BEING_EXPLORED 2
+/**
+ * Returns 1 if the exploration of the current state leads to the conclusion that
+ * the automaton is acyclic; 0 otherwise.
+ */
+int is_acyclic(Fst2* fst2,char* mark,int current_state_index,int shift) {
+if (mark[current_state_index-shift]==BEING_EXPLORED) {
+   /* If we find a state that is currently being explored, then we found
+    * a cycle */
+   return 0;
+}
+if (mark[current_state_index-shift]==SEEN) {
+   return 1;
+}
+/* If the state is unseen, we mark it as being explored */
+mark[current_state_index-shift]=BEING_EXPLORED;
+Fst2State state=fst2->states[current_state_index];
+Transition* t=state->transitions;
+while (t!=NULL) {
+   if (!is_acyclic(fst2,mark,t->state_number,shift)) {
+      return 0;
+   }
+   t=t->next;
+}
+/* Finally, we mark the state as seen, and we return the success value */
+mark[current_state_index-shift]=SEEN;
+return 1;
+}
 
 
+/**
+ * Returns 1 if the given sentence automaton is acylic; 0 otherwise.
+ */
+int is_acyclic(Fst2* fst2,int graph_number) {
+if (graph_number<1 || graph_number>fst2->number_of_graphs) {
+   fatal_error("Invalid graph number in is_acyclic\n");
+}
+int N=fst2->number_of_states_per_graphs[graph_number];
+char mark[N];
+for (int i=0;i<N;i++) {
+   mark[i]=NOT_SEEN_YET;
+}
+return is_acyclic(fst2,mark,fst2->initial_states[graph_number],fst2->initial_states[graph_number]);
+}
 
+
+/**
+ * Returns 1 if all tags have valid sentence automaton outputs; 0 otherwise.
+ */
+int valid_outputs(Fst2* fst2) {
+if (u_strcmp(fst2->tags[0]->input,"<E>") || fst2->tags[0]->output!=NULL) {
+   /* Should never happen */
+   fatal_error("valid_outputs: the first tag of the .fst2 should be <E>\n");
+}
+for (int i=1;i<fst2->number_of_tags;i++) {
+   /* Condition 3: no tag of the form <E>/XXX */
+   if (!u_strcmp(fst2->tags[i]->input,"<E>") && fst2->tags[i]->output!=NULL) {
+      return 0;
+   }
+   if (fst2->tags[i]->output==NULL) {
+      /* Condition 4: <E> must the only tag without output */
+      return 0;
+   }
+   int w,x,y,z;
+   char foo;
+   /* Condition 5 */
+   if (4!=u_sscanf(fst2->tags[i]->output,"%d %d %d %d%c",&w,&x,&y,&z,&foo)) {
+      /* If the output is not made of 4 integers */
+      return 0;
+   }
+   if (w<0 || x<-1 || y<0 || z<-1) {
+      return 0;
+   }
+}
+return 1;
+}
+
+
+/**
+ * Returns 1 if the given .fst2 corresponds to a valid sentence automaton; 0
+ * otherwise. Following conditions must be true:
+ * 
+ * 1) there must be only one graph
+ * 2) it must be acyclic
+ * 3) there must not be any <E> transition with an ouput
+ * 4) <E> must the only tag without output
+ * 5) all other tags must have an ouput of the form w x y z, with
+ *    w and y being integers >=0, and x and z being integers >=-1 
+ */
+int valid_sentence_automaton(char* name) {
+Fst2* fst2=load_fst2(name,0);
+if (fst2==NULL) return 0;
+/* Condition 1 */
+if (fst2->number_of_graphs!=1) {
+   free_Fst2(fst2);
+   return 0;
+}
+/* Condition 2 */
+if (!is_acyclic(fst2,1)) {
+   free_Fst2(fst2);
+   return 0;
+}
+/* Conditions 3, 4 & 5 */
+if (!valid_outputs(fst2)) {
+   free_Fst2(fst2);
+   return 0;
+}
+/* Victory! */
+return 1;
+}
 
 

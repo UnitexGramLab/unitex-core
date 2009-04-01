@@ -19,8 +19,8 @@
   *
   */
 
-#ifndef GrfCheckH
-#define GrfCheckH
+#ifndef Fst2CheckH
+#define Fst2CheckH
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +28,8 @@
 #include "Fst2.h"
 
 
-int grf_OK(char*,char);
+int OK_for_Locate(char*,char);
+int valid_sentence_automaton(char*);
 
 
 #endif

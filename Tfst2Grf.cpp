@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Unicode.h"
-#include "Fst2.h"
+#include "Tfst.h"
 #include "Sentence2Grf.h"
 #include "File.h"
 #include "List_int.h"
@@ -35,9 +35,9 @@
 
 void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Fst2Grf [OPTIONS] <fst2>\n"
+u_printf("Usage: Tfst2Grf [OPTIONS] <tfst>\n"
          "\n"
-         "  <fst2>: the .fst2 file that contains the text automaton.\n"
+         "  <tfst>: the .tfst file that contains the text automaton.\n"
          "\n"
          "OPTIONS:\n"
          "  -s N/--sentence=N: the number of the sentence to be converted.\n"
@@ -48,12 +48,13 @@ u_printf("Usage: Fst2Grf [OPTIONS] <fst2>\n"
          "Converts a sentence automaton into a GRF file that can be viewed. The\n"
          "resulting file, named cursentence.grf, is stored in the same directory\n"
          "that <text automaton>. The text of the sentence is saved in the same\n"
-         "directory, in a file named cursentence.txt.\n");
+         "directory, in a file named cursentence.txt. The numbers of the tokens are\n"
+         "saved in a file named cursentence.tok.\n");
 }
 
 
 
-int main(int argc, char **argv) {
+int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
  * in order to avoid display problems when called from
  * the graphical interface */
@@ -115,17 +116,22 @@ if (optind!=argc-1) {
 }
 char grf_name[FILENAME_MAX];
 char txt_name[FILENAME_MAX];
+char tok_name[FILENAME_MAX];
 
 get_path(argv[optind],grf_name);
 get_path(argv[optind],txt_name);
+get_path(argv[optind],tok_name);
 if (output==NULL) {
    strcat(grf_name,"cursentence.grf");
    strcat(txt_name,"cursentence.txt");
+   strcat(tok_name,"cursentence.tok");
 } else {
    strcat(grf_name,output);
    strcat(grf_name,".grf");
    strcat(txt_name,output);
    strcat(txt_name,".txt");
+   strcat(tok_name,output);
+   strcat(tok_name,".tok");
 }
 if (fontname==NULL) {
    fontname=strdup("Times New Roman");
@@ -141,24 +147,33 @@ if (txt==NULL) {
    u_fclose(f);
    return 1;
 }
-u_printf("Loading %s...\n",argv[optind]);
-Fst2* fst2=load_one_sentence_from_fst2(argv[optind],SENTENCE);
-if (fst2==NULL) {
-   error("Cannot load text automata file %s\n",argv[optind]);
+FILE* tok=u_fopen(tok_name,U_WRITE);
+if (tok==NULL) {
+   error("Cannot file %s\n",tok_name);
    u_fclose(f);
    u_fclose(txt);
    return 1;
 }
-u_fprintf(txt,"%S\n",fst2->graph_names[SENTENCE]);
+u_printf("Loading %s...\n",argv[optind]);
+Tfst* tfst=open_text_automaton(argv[optind]);
+
+load_sentence(tfst,SENTENCE);
+u_fprintf(txt,"%S\n",tfst->text);
 u_fclose(txt);
+
+for (int i=0;i<tfst->tokens->nbelems;i++) {
+   u_fprintf(tok,"%d %d\n",tfst->tokens->tab[i],tfst->token_sizes->tab[i]);
+}
+u_fclose(tok);
+
 u_printf("Creating GRF...\n");
-sentence_to_grf(fst2,SENTENCE,fontname,f);
+sentence_to_grf(tfst,fontname,f);
 u_fclose(f);
 free(fontname);
 if (output!=NULL) {
    free(output);
 }
-free_Fst2(fst2);
+close_text_automaton(tfst);
 u_printf("Done.\n");
 return 0;
 }
