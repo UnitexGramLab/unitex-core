@@ -27,7 +27,6 @@
 #include "Text_tokens.h"
 #include "ExtractUnits.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "Snt.h"
 #include "getopt.h"
@@ -52,11 +51,7 @@ u_printf("Usage: Extract [OPTIONS] <text>\n"
 }
 
 
-int main(int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
+int main_Extract(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
