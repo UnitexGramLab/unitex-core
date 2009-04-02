@@ -22,7 +22,7 @@
 #include "Concordance.h"
 #include "Unicode.h"
 #include "Matches.h"
-#include "SortTxtMain.h"
+#include "SortTxt.h"
 #include "Error.h"
 #include "Buffer.h"
 #include "StringParsing.h"

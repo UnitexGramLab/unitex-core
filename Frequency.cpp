@@ -29,7 +29,7 @@
 #include "Frequency.h"
 #include "Unicode.h"
 #include "Matches.h"
-#include "SortTxtMain.h"
+#include "SortTxt.h"
 #include "Error.h"
 #include "Buffer_ng.h"
 #include "StringParsing.h"

@@ -19,10 +19,10 @@
   *
   */
   
-#ifndef SortTxtMainH
-#define SortTxtMainH
+#ifndef SortTxtH
+#define SortTxtH
 
-int main_SortTxt(int,char**);
+int main_SortTxt(int argc,char* argv[]);
 
 #endif
 

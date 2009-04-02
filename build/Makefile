@@ -292,7 +292,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Unicode.o Text_tokens.o Strin
 				Text_parsing.o MorphologicalLocate.o LocatePattern.o\
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o\
-				LocateFst2Tags.o Error.o SortTxtMain.o\
+				LocateFst2Tags.o Error.o SortTxt.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o\
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
 				Stack_unichar.o Transitions.o DicVariables.o\
@@ -304,7 +304,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Uni
 				Text_parsing.o MorphologicalLocate.o LocatePattern.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o\
 				DELA.o List_ustring.o Fst2.o Pattern.o LocateFst2Tags.o\
-				Error.o SortTxtMain.o\
+				Error.o SortTxt.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
@@ -354,7 +354,7 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o List_ustring.o Fst2.o Pattern.o \
                Unicode.o Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o Matches.o\
-	           MorphologicalFilters.o Error.o Buffer.o SortTxtMain.o StringParsing.o BitArray.o\
+	           MorphologicalFilters.o Error.o Buffer.o SortTxt.o StringParsing.o BitArray.o\
 	           LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 	           symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
@@ -372,7 +372,7 @@ FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Unicode.o Fst2.o G
 #				Text_parsing.o MorphologicalLocate.o LocatePattern.o Stack_int.o                                       \
 #				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o        \
 #				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o \
-#				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
+#				LocateFst2Tags.o Error.o SortTxt.o                                           \
 #				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
 #				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
 #				Stack_unichar.o Transitions.o Buffer_ng.o getopt.o DicVariables.o
@@ -461,7 +461,7 @@ REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Unicode.o RegularExpressions.
                List_int.o Stack_int.o getopt.o
 
 SORTTXT      = SortTxt
-SORTTXT_OBJS = IOBuffer.o SortTxt.o Unicode.o Error.o SortTxtMain.o Thai.o getopt.o
+SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Unicode.o Error.o Thai.o getopt.o
 
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Unicode.o File.o Error.o getopt.o
