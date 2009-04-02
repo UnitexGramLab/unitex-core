@@ -467,7 +467,7 @@ TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Unicode.o File.o Error.o getopt.o
 
 TAGSETNORMTFST = TagsetNormTfst
-TAGSETNORMTFST_OBJS = IOBuffer.o TagsetNormTfst.o Unicode.o ElagFstFilesIO.o ustring.o \
+TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Unicode.o ElagFstFilesIO.o ustring.o \
 					String_hash.o symbol.o LanguageDefinition.o Tagset.o\
 					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
 					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\

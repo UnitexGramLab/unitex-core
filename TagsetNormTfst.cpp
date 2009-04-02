@@ -27,7 +27,6 @@
 #include "Fst2Automaton.h"
 #include "ElagFstFilesIO.h"
 #include "utils.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "File.h"
 #include "LanguageDefinition.h"
@@ -61,12 +60,7 @@ u_printf("Usage: TagsetNormTfst [OPTIONS] <tfst>\n"
 int get_tfst_tag_index(vector_ptr*,unichar*,int,int,int,int);
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_TagsetNormTfst(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
