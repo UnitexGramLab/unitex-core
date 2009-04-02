@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include "Unicode.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "Tfst.h"
 #include "String_hash.h"
 #include "DELA.h"
@@ -53,12 +52,7 @@ u_printf("Usage: ImplodeTfst [OPTIONS] <tfst>\n"
 }
 
 
-int main(int argc, char ** argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();  
-
+int main_ImplodeTfst(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

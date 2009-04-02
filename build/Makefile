@@ -400,7 +400,7 @@ GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Unicode.o Fst2.
 
 
 IMPLODETFST      = ImplodeTfst
-IMPLODETFST_OBJS = IOBuffer.o ImplodeTfst.o Unicode.o Tfst.o File.o SingleGraph.o\
+IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Unicode.o Tfst.o File.o SingleGraph.o\
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
                    List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o\
                    symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o\
