@@ -29,7 +29,6 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "getopt.h"
-#include "CheckDic.h"
 
 
 void usage() {

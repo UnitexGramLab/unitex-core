@@ -29,7 +29,6 @@
 #include "AutomatonDictionary2Bin.h"
 #include "File.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "getopt.h"
 
@@ -79,11 +78,7 @@ fclose(f);
  * First, it builds a tree with all the entries, and then, it builds a minimal
  * transducer from this tree, using the Dominique Revuz's algorithm.
  */
-int main(int argc, char** argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
+int main_Compress(int argc, char** argv) {
 if (argc==1) {
    usage();
    return 0;

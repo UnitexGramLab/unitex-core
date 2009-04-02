@@ -282,7 +282,7 @@ CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Unicode.o File.o DELA.o Al
 #				Stack_unichar.o Transitions.o Buffer_ng.o getopt.o DicVariables.o
 
 COMPRESS      = Compress
-COMPRESS_OBJS = IOBuffer.o Compress.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
+COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
 				String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
 				List_ustring.o Error.o StringParsing.o getopt.o
 
