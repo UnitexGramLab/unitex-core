@@ -102,7 +102,7 @@ u_printf("Usage: Concord [OPTIONS] <concord>\n"
 /**
  * The same than main, but no call to setBufferMode.
  */
-int main_Concord(int argc, char **argv) {
+int main_Concord(int argc,char* argv[]) {
 if (argc==1) {
    usage_();
    return 0;
