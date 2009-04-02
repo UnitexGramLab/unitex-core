@@ -24,7 +24,6 @@
 #include "Error.h"
 #include "File.h"
 #include "Fst2TxtAsRoutine.h"
-#include "IOBuffer.h"
 #include "LocateConstants.h"
 #include "getopt.h"
 
@@ -54,12 +53,7 @@ u_printf("Usage: Fst2Txt [OPTIONS] <fst2>\n"
 
 
 
-int main(int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Fst2Txt(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

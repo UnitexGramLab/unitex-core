@@ -384,7 +384,7 @@ FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Unicode.o Fst2.o Alphabet.
                 Transitions.o DELA.o symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
 
 FST2TXT      = Fst2Txt
-FST2TXT_OBJS = IOBuffer.o Fst2Txt.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
+FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
                TransductionVariables.o String_hash.o Error.o StringParsing.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
