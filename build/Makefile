@@ -493,7 +493,7 @@ TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o Error.o IOBuffer.o
                    getopt.o SingleGraph.o BitArray.o HashTable.o FIFO.o File.o
 
 TOKENIZE      = Tokenize
-TOKENIZE_OBJS = IOBuffer.o Tokenize.o Unicode.o Alphabet.o String_hash.o\
+TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Unicode.o Alphabet.o String_hash.o\
 				File.o DELA.o List_ustring.o HashTable.o Error.o StringParsing.o getopt.o
 
 TXT2TFST      = Txt2Tfst

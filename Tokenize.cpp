@@ -28,7 +28,6 @@
 #include "File.h"
 #include "Copyright.h"
 #include "DELA.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "vector.h"
 #include "HashTable.h"
@@ -102,12 +101,7 @@ u_printf("Usage: Tokenize [OPTIONS] <txt>\n"
 
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Tokenize(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
