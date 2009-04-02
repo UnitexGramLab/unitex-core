@@ -26,7 +26,6 @@
 #include "File.h"
 #include "Fst2Txt_TokenTree.h"
 #include "Fst2TxtAsRoutine.h"
-#include "IOBuffer.h"
 #include "LocateConstants.h"
 #include "NormalizeAsRoutine.h"
 #include "ParsingInfo.h"
@@ -68,12 +67,7 @@ u_printf("Usage: XMLizer [OPTIONS] <txt>\n"
 	      "Produces a TEI or simple XML file from the given raw text file.\n");
 }
 
-int main (int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_XMLizer(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

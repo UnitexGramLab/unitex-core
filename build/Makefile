@@ -506,11 +506,11 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o U
                 Tfst.o
 
 XMLIZER      = XMLizer
-XMLIZER_OBJS = IOBuffer.o Unicode.o Fst2.o Alphabet.o \
+XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Unicode.o Fst2.o Alphabet.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o File.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o\
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
-	           XMLizer.o getopt.o DicVariables.o\
+	           getopt.o DicVariables.o\
 	           symbol.o symbol_op.o LanguageDefinition.o Tagset.o ustring.o
 
 
