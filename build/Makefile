@@ -479,7 +479,7 @@ TEI2TXT_OBJS = Main_TEI2Txt.o TEI2Txt.o IOBuffer.o Unicode.o Error.o File.o HTML
                AsciiSearchTree.o getopt.o
 
 TFST2GRF      = Tfst2Grf
-TFST2GRF_OBJS = IOBuffer.o Tfst2Grf.o Unicode.o Tfst.o Sentence2Grf.o\
+TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Unicode.o Tfst.o Sentence2Grf.o\
                File.o List_int.o Error.o StringParsing.o Pattern.o\
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o\
                Alphabet.o Transitions.o symbol.o symbol_op.o LanguageDefinition.o\
