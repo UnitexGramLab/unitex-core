@@ -324,7 +324,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 ELAG      = Elag
-ELAG_OBJS = IOBuffer.o Elag.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
+ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
             AutMinimization.o AutConcat.o Fst2Automaton.o \
             symbol.o hash_str_table.o String_hash.o Tagset.o ustring.o \
    		    ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o LanguageDefinition.o\

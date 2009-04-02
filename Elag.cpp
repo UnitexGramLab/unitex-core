@@ -43,7 +43,6 @@
 #include "list_aut.h"
 #include "ElagFunctions.h"
 #include "utils.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "getopt.h"
 #include "File.h"
@@ -67,11 +66,7 @@ u_printf("Usage: Elag [OPTIONS] <tfst>\n"
 }
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
+int main_Elag(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
