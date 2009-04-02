@@ -26,7 +26,6 @@
 #include "Copyright.h"
 #include "Fst2.h"
 #include "FlattenFst2.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "getopt.h"
 
@@ -54,12 +53,7 @@ u_printf("Usage: Flatten [OPTIONS] <fst2>\n"
 
 
 
-int main(int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Flatten(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
