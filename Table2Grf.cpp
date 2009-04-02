@@ -25,7 +25,6 @@
 #include "Unicode.h"
 #include "File.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "getopt.h"
 
@@ -55,12 +54,7 @@ u_printf("Usage: Table2Grf [OPTIONS] <table>\n"
 void table2grf(FILE*,FILE*,FILE*,char*,char*);
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Table2Grf(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

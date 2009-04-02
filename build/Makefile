@@ -464,7 +464,7 @@ SORTTXT      = SortTxt
 SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Unicode.o Error.o Thai.o getopt.o
 
 TABLE2GRF      = Table2Grf
-TABLE2GRF_OBJS = IOBuffer.o Table2Grf.o Unicode.o File.o Error.o getopt.o
+TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Unicode.o File.o Error.o getopt.o
 
 TAGSETNORMTFST = TagsetNormTfst
 TAGSETNORMTFST_OBJS = IOBuffer.o TagsetNormTfst.o Unicode.o ElagFstFilesIO.o ustring.o \
