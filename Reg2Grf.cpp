@@ -25,7 +25,6 @@
 #include "Unicode.h"
 #include "RegularExpressions.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "File.h"
 #include "getopt.h"
@@ -56,12 +55,7 @@ u_printf("Usage: Reg2Grf <txt>\n"
 }
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Reg2Grf(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

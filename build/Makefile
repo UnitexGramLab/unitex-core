@@ -457,7 +457,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                Tfst.o SingleGraph.o FIFO.o HashTable.o
 
 REG2GRF      = Reg2Grf
-REG2GRF_OBJS = IOBuffer.o Reg2Grf.o Unicode.o RegularExpressions.o Error.o File.o\
+REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Unicode.o RegularExpressions.o Error.o File.o\
                List_int.o Stack_int.o getopt.o
 
 SORTTXT      = SortTxt
