@@ -310,7 +310,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Uni
 				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 CONVERT      = Convert
-CONVERT_OBJS = IOBuffer.o Convert.o Unicode.o File.o CodePages.o Error.o\
+CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Unicode.o File.o CodePages.o Error.o\
 				HTMLCharacters.o AsciiSearchTree.o getopt.o
 
 DICO      = Dico

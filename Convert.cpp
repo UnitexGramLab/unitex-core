@@ -26,7 +26,6 @@
 #include "Unicode.h"
 #include "CodePages.h"
 #include "File.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "getopt.h"
 
@@ -80,12 +79,7 @@ u_printf("Usage: Convert [OPTIONS] <text_1> [<text_2> <text_3> ...]\n"
 
 
 
-int main(int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Convert(int argc,char* argv[]) {
 if (argc==1) {
 	usage();
 	return 0;
