@@ -27,7 +27,6 @@
 #include "File.h"
 #include "Copyright.h"
 #include "String_hash.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "NormalizeAsRoutine.h"
 #include "getopt.h"
@@ -59,12 +58,7 @@ u_printf("Usage: Normalize [OPTIONS] <text>\n"
 }
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Normalize(int argc,char* argv[]) {
 if (argc==1) {
 	usage();
 	return 0;
