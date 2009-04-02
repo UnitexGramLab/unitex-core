@@ -343,14 +343,14 @@ ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Unicode.o ElagRulesCompila
 	            Transitions.o ElagDebug.o getopt.o Tfst.o
 
 EVAMB      = Evamb
-EVAMB_OBJS = IOBuffer.o Evamb.o Unicode.o String_hash.o\
+EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Unicode.o String_hash.o\
              Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
              List_int.o BitMasks.o DELA.o List_pointer.o SingleGraph.o\
              BitArray.o HashTable.o FIFO.o Transitions.o\
              symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o Tfst.o File.o
 
 EXTRACT      = Extract
-EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
+EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o List_ustring.o Fst2.o Pattern.o \
                Unicode.o Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o Matches.o\

@@ -24,7 +24,6 @@
 #include "Copyright.h"
 #include "Tfst.h"
 #include "String_hash.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "SingleGraph.h"
 #include "getopt.h"
@@ -48,11 +47,7 @@ u_printf("Usage: Evamb [OPTIONS] <tfst>\n"
 }
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
+int main_Evamb(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
