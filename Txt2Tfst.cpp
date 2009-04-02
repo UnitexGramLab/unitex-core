@@ -33,7 +33,6 @@
 #include "Fst2.h"
 #include "File.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "StringParsing.h"
 #include "Error.h"
 #include "Grf2Fst2_lib.h"
@@ -105,12 +104,7 @@ u_printf("Usage: Txt2Tfst [OPTIONS] <txt>\n"
 
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Txt2Tfst(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

@@ -497,7 +497,7 @@ TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Unicode.o Alphabet.o Strin
 				File.o DELA.o List_ustring.o HashTable.o Error.o StringParsing.o getopt.o
 
 TXT2TFST      = Txt2Tfst
-TXT2TFST_OBJS = IOBuffer.o Txt2Tfst.o Text_tokens.o Alphabet.o Unicode.o DELA_tree.o\
+TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Unicode.o DELA_tree.o\
                 DELA.o List_ustring.o String_hash.o BuildTextAutomaton.o List_int.o\
                 NormalizationFst2.o Fst2.o File.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
