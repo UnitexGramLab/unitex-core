@@ -29,7 +29,6 @@ using namespace std;
 #include "Alphabet.h"
 #include "Copyright.h"
 #include "File.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "Transitions.h"
 
@@ -1713,10 +1712,7 @@ void CFstApp::outWordsOfGraph(int depth)
 //
 
 
-int main(int argc, char **argv) {
-setBufferMode();
-    
-   
+int main_Fst2List(int argc,char* argv[]) {
     
 	char *ofilename =0;
 	int iargIndex = 1;

@@ -378,7 +378,7 @@ FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Unicode.o Fst2.o G
 #				Stack_unichar.o Transitions.o Buffer_ng.o getopt.o DicVariables.o
 
 FST2LIST      = Fst2List
-FST2LIST_OBJS = IOBuffer.o Fst2List.o Unicode.o Fst2.o Alphabet.o\
+FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Unicode.o Fst2.o Alphabet.o\
                 File.o String_hash.o Error.o TransductionVariables.o\
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o\
                 Transitions.o DELA.o symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o
