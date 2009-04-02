@@ -19,11 +19,8 @@
   *
   */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "ConcordMain.h"
 #include "IOBuffer.h"
+#include "Concord.h"
 
 
 int main(int argc, char **argv) {
@@ -31,9 +28,6 @@ int main(int argc, char **argv) {
  * in order to avoid display problems when called from
  * the graphical interface */
 setBufferMode();
-/* We call an artificial main function located in 'ConcordMain'. This
- * trick allows to use the functionalities of the 'Concord' program
- * without having to launch an external process.
- */
+
 return main_Concord(argc,argv);
 }
