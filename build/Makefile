@@ -392,7 +392,7 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Unicode.o Fst2.o Alphabet.o P
 	           symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 GRF2FST2      = Grf2Fst2
-GRF2FST2_OBJS = IOBuffer.o Grf2Fst2_main.o Grf2Fst2.o Alphabet.o Unicode.o Fst2.o\
+GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Unicode.o Fst2.o\
                 Fst2Check.o Grf2Fst2_lib.o Error.o File.o SingleGraph.o\
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o\
                 List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o\
@@ -420,7 +420,7 @@ MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_Inflect.o MF_LangMorpho.o\
                  MF_InflectTransd.o  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
                  Fst2.o Unicode.o Error.o IOBuffer.o File.o DELA.o StringParsing.o List_ustring.o\
-                 String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2_main.o\
+                 String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check.o\
                  symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o\
                  MF_Operators_Util.o getopt.o
@@ -437,12 +437,12 @@ POLYLEX_OBJS = IOBuffer.o PolyLex.o Unicode.o Alphabet.o DELA.o List_ustring.o S
 
 REBUILDTFST      = RebuildTfst
 REBUILDTFST_OBJS = IOBuffer.o RebuildTfst.o Unicode.o String_hash.o Fst2.o\
-                          File.o stack.o Alphabet.o Error.o StringParsing.o\
-                          Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
-                          Transitions.o DELA.o\
-                          symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o\
-                          getopt.o Tfst.o Grf2Fst2_main.o Grf2Fst2_lib.o SingleGraph.o\
-                          HashTable.o FIFO.o Fst2Check.o
+                   File.o stack.o Alphabet.o Error.o StringParsing.o\
+                   Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
+                   Transitions.o DELA.o\
+                   symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o\
+                   getopt.o Tfst.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o\
+                   HashTable.o FIFO.o Fst2Check.o
 
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o CompoundWordTree.o\

@@ -19,8 +19,8 @@
   *
   */
 
-#ifndef Grf2Fst2_mainH
-#define Grf2Fst2_mainH
+#ifndef Grf2Fst2H
+#define Grf2Fst2H
 
 int main_Grf2Fst2(int argc,char* argv[]);
 int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet,

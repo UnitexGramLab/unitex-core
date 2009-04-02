@@ -31,7 +31,7 @@
 #include "Transitions.h"
 #include "getopt.h"
 #include "Tfst.h"
-#include "Grf2Fst2_main.h"
+#include "Grf2Fst2.h"
 
 
 void usage() {

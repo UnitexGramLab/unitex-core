@@ -33,7 +33,7 @@
 #include "MF_InflectTransd.h"
 #include "Error.h"
 #include "File.h"
-#include "Grf2Fst2_main.h"
+#include "Grf2Fst2.h"
 
 ///////////////////////////////
 // GLOBAL VARIABLES
