@@ -314,7 +314,7 @@ CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Unicode.o File.o CodePages.o 
 				HTMLCharacters.o AsciiSearchTree.o getopt.o
 
 DICO      = Dico
-DICO_OBJS = Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
+DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
             List_ustring.o Unicode.o CompoundWordHashTable.o Fst2.o IOBuffer.o Error.o \
             CompoundWordTree.o\
             Pattern.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o \

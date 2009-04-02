@@ -33,7 +33,6 @@
 #include "CompoundWordHashTable.h"
 #include "Fst2.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "LocateAsRoutine.h"
 #include "Error.h"
 #include "Snt.h"
@@ -121,12 +120,8 @@ u_fclose(f);
 }
 
 
-int main(int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
 
+int main_Dico(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
