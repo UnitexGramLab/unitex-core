@@ -27,9 +27,9 @@
 #include "DELA.h"
 #include "String_hash.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "getopt.h"
+#include "CheckDic.h"
 
 
 void usage() {
@@ -49,11 +49,7 @@ u_printf("Usage: CheckDic [OPTIONS] <dela>\n"
 }
 
 
-int main(int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
+int main_CheckDic(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

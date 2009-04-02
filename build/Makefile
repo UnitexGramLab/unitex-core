@@ -267,7 +267,7 @@ TEST_OBJS = Test.o Unicode.o Pattern.o String_hash.o IOBuffer.o Error.o \
 			LanguageDefinition.o Tagset.o
 
 CHECKDIC      = CheckDic
-CHECKDIC_OBJS = IOBuffer.o CheckDic.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
+CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
 				List_ustring.o Error.o StringParsing.o getopt.o
 
 #COLLOC         = Colloc
@@ -348,11 +348,6 @@ EVAMB_OBJS = IOBuffer.o Evamb.o Unicode.o String_hash.o\
              List_int.o BitMasks.o DELA.o List_pointer.o SingleGraph.o\
              BitArray.o HashTable.o FIFO.o Transitions.o\
              symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o Tfst.o File.o
-
-EXPORTDIC      = ExportDic
-EXPORTDIC_OBJS = IOBuffer.o ExportDic.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
-				List_ustring.o Error.o StringParsing.o
-
 
 EXTRACT      = Extract
 EXTRACT_OBJS = IOBuffer.o Extract.o LocatePattern.o Text_parsing.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
@@ -603,7 +598,6 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(CONVERT) \
 		$(TAGSETNORMTFST) \
 		$(FST2LIST) $(MULTIFLEX) \
-		$(EXPORTDIC) \
 		$(XMLIZER) $(TEI2TXT) $(EVAMB) $(IMPLODETFST) $(TFST2UNAMBIG) #$(COLLOC) $(FREQ)
 
 ifeq ($(64BITS),no)
@@ -627,7 +621,7 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OB
 		$(COMPRESSKR_OBJS) $(FST2LIST_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
 		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(TFST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS) \
-		$(TEST_OBJS) $(EXPORTDIC_OBJS) \
+		$(TEST_OBJS) \
 		$(XMLIZER_OBJS) $(TEI2TXT_OBJS) #$(COLLOC_OBJS) $(FREQ_OBJS)
 
 
@@ -820,9 +814,6 @@ $(BIN_DIR)$(ELAGCOMP)$(EXTENSION): $(ELAGCOMP_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(EVAMB)$(EXTENSION): $(EVAMB_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(EXPORTDIC)$(EXTENSION): $(EXPORTDIC_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(EXTRACT)$(EXTENSION): $(EXTRACT_OBJS)
