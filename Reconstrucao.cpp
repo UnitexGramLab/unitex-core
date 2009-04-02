@@ -35,7 +35,6 @@
 #include "NormalizationFst2.h"
 #include "Text_tokens.h"
 #include "List_int.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "getopt.h"
 
@@ -61,12 +60,7 @@ u_printf("Usage: Reconstrucao [OPTIONS] <index>\n"
 
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Reconstrucao(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

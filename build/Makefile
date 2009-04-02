@@ -445,10 +445,10 @@ REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Unicode.o String_
                    HashTable.o FIFO.o Fst2Check.o
 
 RECONSTRUCAO      = Reconstrucao
-RECONSTRUCAO_OBJS = IOBuffer.o Reconstrucao.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o CompoundWordTree.o\
-               DELA.o List_ustring.o Fst2.o Pattern.o \
+RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTree.o\
+               DELA.o List_ustring.o Fst2.o IOBuffer.o TransductionStack.o Pattern.o \
                Unicode.o Alphabet.o Matches.o File.o NormalizationFst2.o\
-	            PortugueseNormalization.o\
+	            PortugueseNormalization.o TransductionVariables.o \
                Text_parsing.o MorphologicalLocate.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
                Sentence2Grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
