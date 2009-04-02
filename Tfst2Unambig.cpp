@@ -25,7 +25,6 @@
 #include "Unicode.h"
 #include "Tfst.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "LinearAutomaton2Txt.h"
 #include "Error.h"
 #include "getopt.h"
@@ -47,12 +46,7 @@ u_printf("Usage: Fst2Unambig  [OPTIONS] <tfst>\n"
 
 
 
-int main(int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_Tfst2Unambig(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

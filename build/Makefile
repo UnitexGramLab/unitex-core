@@ -486,7 +486,7 @@ TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Unicode.o Tfst.o Sentence2
                ustring.o Tagset.o getopt.o SingleGraph.o HashTable.o FIFO.o
 
 TFST2UNAMBIG      = Tfst2Unambig
-TFST2UNAMBIG_OBJS = Tfst.o Error.o Tfst2Unambig.o IOBuffer.o LinearAutomaton2Txt.o\
+TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o Error.o IOBuffer.o LinearAutomaton2Txt.o\
                    Unicode.o Pattern.o List_ustring.o StringParsing.o String_hash.o\
                    List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
                    symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o\
