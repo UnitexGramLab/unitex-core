@@ -333,7 +333,7 @@ ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Unicode.o ElagFunctions.o ElagFstFiles
             BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o getopt.o Tfst.o
  
 ELAGCOMP      = ElagComp
-ELAGCOMP_OBJS = IOBuffer.o ElagComp.o Unicode.o ElagRulesCompilation.o Fst2Automaton.o\
+ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Unicode.o ElagRulesCompilation.o Fst2Automaton.o\
                 ElagFstFilesIO.o hash_str_table.o String_hash.o\
                 symbol.o ustring.o AutDeterminization.o AutIntersection.o\
                 ElagStateSet.o symbol_op.o LanguageDefinition.o Tagset.o \

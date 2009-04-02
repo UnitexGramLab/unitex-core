@@ -38,7 +38,6 @@
 #include "ElagRulesCompilation.h"
 #include "utils.h"
 #include "File.h"
-#include "IOBuffer.h"
 #include "getopt.h"
 
 
@@ -62,11 +61,7 @@ u_printf("Usage: ElagComp [OPTIONS]\n"
 }
 
 
-int main(int argc,char** argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
+int main_ElagComp(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
