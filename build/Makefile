@@ -475,7 +475,7 @@ TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Unicode.
 					symbol_op.o Fst2Automaton.o getopt.o Tfst.o
 
 TEI2TXT      = TEI2Txt
-TEI2TXT_OBJS = IOBuffer.o Unicode.o Error.o File.o TEI2Txt.o HTMLCharacters.o\
+TEI2TXT_OBJS = Main_TEI2Txt.o TEI2Txt.o IOBuffer.o Unicode.o Error.o File.o HTMLCharacters.o\
                AsciiSearchTree.o getopt.o
 
 TFST2GRF      = Tfst2Grf

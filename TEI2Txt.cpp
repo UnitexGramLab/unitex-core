@@ -4,7 +4,6 @@
 #include "Error.h"
 #include "File.h"
 #include "HTMLCharacters.h"
-#include "IOBuffer.h"
 #include "Unicode.h"
 #include "getopt.h"
 
@@ -25,12 +24,7 @@ u_printf("Usage: TEI2Txt [OPTIONS] <xml>\n"
          "Produces a raw text file from the given TEI file.\n");
 }
 
-int main (int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_TEI2Txt(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
