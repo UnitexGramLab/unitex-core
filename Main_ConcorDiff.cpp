@@ -18,11 +18,16 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-  
-#ifndef ConcordH
-#define ConcordH
 
-int main_Concord(int argc,char* argv[]);
+#include "IOBuffer.h"
+#include "ConcorDiff.h"
 
-#endif
 
+int main(int argc, char **argv) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
+
+return main_ConcorDiff(argc,argv);
+}

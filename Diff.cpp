@@ -22,7 +22,7 @@
 #include "Diff.h"
 #include "Unicode.h"
 #include "File.h"
-#include "ConcordMain.h"
+#include "Concord.h"
 #include "Concordance.h"
 
 

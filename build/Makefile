@@ -287,7 +287,7 @@ COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Unicode.o DELA.o Dictionar
 				List_ustring.o Error.o StringParsing.o getopt.o
 
 CONCORD      = Concord
-CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o Unicode.o Text_tokens.o String_hash.o\
+CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Unicode.o Text_tokens.o String_hash.o\
 				List_int.o Alphabet.o Matches.o Concordance.o File.o\
 				Text_parsing.o MorphologicalLocate.o LocatePattern.o\
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
@@ -299,7 +299,7 @@ CONCORD_OBJS = IOBuffer.o Concord.o ConcordMain.o Unicode.o Text_tokens.o String
 				symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
 
 CONCORDIFF      = ConcorDiff
-CONCORDIFF_OBJS = IOBuffer.o Diff.o ConcordMain.o ConcorDiff.o Unicode.o Text_tokens.o String_hash.o List_int.o\
+CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Unicode.o Text_tokens.o String_hash.o List_int.o\
 				Alphabet.o Matches.o Concordance.o File.o\
 				Text_parsing.o MorphologicalLocate.o LocatePattern.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o\

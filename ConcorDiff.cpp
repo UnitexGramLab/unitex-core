@@ -25,7 +25,6 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "Diff.h"
-#include "IOBuffer.h"
 #include "getopt.h"
 
 
@@ -49,11 +48,8 @@ u_printf("Usage: ConcorDiff [OPTIONS] <concor1> <concor2>\n"
 }
 
 
-int main(int argc,char** argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
+
+int main_ConcorDiff(int argc,char* argv[]) {
 if (argc==1) {
 	usage();
 	return 0;
