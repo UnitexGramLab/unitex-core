@@ -436,7 +436,7 @@ POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Unicode.o Alphabet.o DELA.o L
 				DutchCompounds.o getopt.o
 
 REBUILDTFST      = RebuildTfst
-REBUILDTFST_OBJS = IOBuffer.o RebuildTfst.o Unicode.o String_hash.o Fst2.o\
+REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Unicode.o String_hash.o Fst2.o\
                    File.o stack.o Alphabet.o Error.o StringParsing.o\
                    Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                    Transitions.o DELA.o\

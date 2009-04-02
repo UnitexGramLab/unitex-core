@@ -26,7 +26,6 @@
 #include "Fst2.h"
 #include "File.h"
 #include "Copyright.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "Transitions.h"
 #include "getopt.h"
@@ -53,12 +52,7 @@ SingleGraph create_copy_of_fst2_subgraph(Fst2* fst2,int n);
 unichar** create_tfst_tags(Fst2* fst2,int *n_tags);
 
 
-int main(int argc,char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_RebuildTfst(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
