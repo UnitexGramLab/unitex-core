@@ -76,7 +76,7 @@ unichar* keycopy(unichar* key) {
 return u_strdup(key);
 }
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Tokenize [OPTIONS] <txt>\n"
          "\n"

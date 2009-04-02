@@ -36,7 +36,7 @@
 void implode(Tfst*,FILE*,FILE*);
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: ImplodeTfst [OPTIONS] <tfst>\n"
          "\n"

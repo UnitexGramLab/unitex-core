@@ -49,7 +49,7 @@
 #include "Tfst.h"
 
 
-void usage() {
+static void usage() {
 u_printf("%S", COPYRIGHT);
 u_printf("Usage: Elag [OPTIONS] <tfst>\n"
          "\n"

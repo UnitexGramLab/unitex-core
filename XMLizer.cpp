@@ -49,7 +49,7 @@ static char *tei_close = "</div>\n</body>\n</text>\n</tei>";
 
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: XMLizer [OPTIONS] <txt>\n"
          "\n"

@@ -50,7 +50,7 @@
  */
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Dico [OPTIONS] <dic_1> [<dic_2> <dic_3> ...]\n"
          "\n"

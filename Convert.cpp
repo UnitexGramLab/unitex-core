@@ -37,7 +37,7 @@
 #define SUFFIX_DEST 4
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Convert [OPTIONS] <text_1> [<text_2> <text_3> ...]\n"
          "\n"

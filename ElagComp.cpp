@@ -42,7 +42,7 @@
 
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: ElagComp [OPTIONS]\n"
          "\n"

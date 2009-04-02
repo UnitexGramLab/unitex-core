@@ -81,7 +81,7 @@ return 1;
 
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Txt2Tfst [OPTIONS] <txt>\n"
          "\n"

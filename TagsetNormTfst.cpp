@@ -37,7 +37,7 @@
 
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: TagsetNormTfst [OPTIONS] <tfst>\n"
          "\n"

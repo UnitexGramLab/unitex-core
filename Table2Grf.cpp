@@ -31,7 +31,7 @@
 #define MAX_LINES_IN_TABLE 10000  
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Table2Grf [OPTIONS] <table>\n"
          "\n"

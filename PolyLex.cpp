@@ -38,7 +38,8 @@
 
 enum {DUTCH,GERMAN,NORWEGIAN,RUSSIAN};
 
-void usage() {
+
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: PolyLex [OPTIONS] <list>\n"
          "\n"

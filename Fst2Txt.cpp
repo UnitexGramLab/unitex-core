@@ -28,7 +28,7 @@
 #include "getopt.h"
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Fst2Txt [OPTIONS] <fst2>\n"
          "\n"

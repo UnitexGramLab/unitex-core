@@ -31,7 +31,7 @@
 
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Reg2Grf <txt>\n"
          "\n"

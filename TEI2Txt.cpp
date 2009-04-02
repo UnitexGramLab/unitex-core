@@ -11,7 +11,7 @@
 void tei2txt(char*, char*);
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: TEI2Txt [OPTIONS] <xml>\n"
          "\n"

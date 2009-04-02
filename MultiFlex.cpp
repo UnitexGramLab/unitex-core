@@ -45,7 +45,7 @@ Alphabet* alph;
 extern char inflection_directory[FILENAME_MAX];
 
 
-void usage() {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: MultiFlex [OPTIONS] <dela>\n"
          "\n"

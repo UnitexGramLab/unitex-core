@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "Unicode.h"
 #include "File.h"
 #include "Copyright.h"
@@ -31,7 +30,8 @@
 #include "NormalizeAsRoutine.h"
 #include "getopt.h"
 
-void usage() {
+
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Normalize [OPTIONS] <text>\n"
          "\n"

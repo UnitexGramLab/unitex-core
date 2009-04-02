@@ -45,7 +45,7 @@ int enter_pos[MAX_ENTER_CHAR];
 
 
 
-void usage_() {
+static void usage_() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Concord [OPTIONS] <concord>\n"
         "\n"
