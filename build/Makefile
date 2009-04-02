@@ -430,7 +430,7 @@ NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Unicode.o File.o DELA.o
 				Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o getopt.o
 
 POLYLEX      = PolyLex
-POLYLEX_OBJS = IOBuffer.o PolyLex.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o\
+POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o\
 				NorwegianCompounds.o GermanCompounds.o Compounds.o File.o\
 				RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o\
 				DutchCompounds.o getopt.o

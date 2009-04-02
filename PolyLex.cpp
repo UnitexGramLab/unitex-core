@@ -33,7 +33,6 @@
 #include "File.h"
 #include "GeneralDerivation.h"
 #include "RussianCompounds.h"
-#include "IOBuffer.h"
 #include "Error.h"
 #include "getopt.h"
 
@@ -69,12 +68,7 @@ u_printf("Usage: PolyLex [OPTIONS] <list>\n"
 }
 
 
-int main(int argc, char **argv) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_PolyLex(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
