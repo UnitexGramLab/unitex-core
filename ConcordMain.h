@@ -19,10 +19,10 @@
   *
   */
   
-#ifndef ConcordMainH
-#define ConcordMainH
+#ifndef ConcordH
+#define ConcordH
 
-int main_Concord(int,char**);
+int main_Concord(int argc,char* argv[]);
 
 #endif
 
