@@ -32,7 +32,6 @@
 #include "Alphabet.h"
 #include "MF_DicoMorpho.h"
 #include "MF_DLC_inflect.h"
-#include "IOBuffer.h"
 #include "File.h"
 #include "Copyright.h"
 #include "Error.h"
@@ -64,12 +63,7 @@ u_printf("Usage: MultiFlex [OPTIONS] <dela>\n"
 }
 
 
-int main(int argc, char* argv[]) {
-/* Every Unitex program must start by this instruction,
- * in order to avoid display problems when called from
- * the graphical interface */
-setBufferMode();
-
+int main_MultiFlex(int argc,char* argv[]) {
 if (argc==1) {
    usage();
    return 0;
