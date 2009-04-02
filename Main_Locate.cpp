@@ -1,4 +1,4 @@
-/*
+ /*
   * Unitex
   *
   * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
@@ -19,19 +19,15 @@
   *
   */
 
-//  The purpose is to call locate  with one Fst from dico.exe
-//  by Alexis Neme 15/11/2005
-// we simulate the command line ( the argv[]) of locate.exe from a calling program.
+#include "IOBuffer.h"
+#include "Locate.h"
 
 
-#ifndef LocateAsRoutineH
-#define LocateAsRoutineH
+int main(int argc,char* argv[]) {
+/* Every Unitex program must start by this instruction,
+ * in order to avoid display problems when called from
+ * the graphical interface */
+setBufferMode();
 
-#include "LocateConstants.h"
-
-int main_Locate(int, char**); 
-void launch_locate_as_routine(char*,char*,char*,OutputPolicy,char*);
-
-
-#endif
-
+return main_Locate(argc,argv);
+}

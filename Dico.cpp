@@ -33,7 +33,7 @@
 #include "CompoundWordHashTable.h"
 #include "Fst2.h"
 #include "Copyright.h"
-#include "LocateAsRoutine.h"
+#include "Locate.h"
 #include "Error.h"
 #include "Snt.h"
 #include "LocateConstants.h"

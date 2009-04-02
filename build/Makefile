@@ -318,7 +318,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             List_ustring.o Unicode.o CompoundWordHashTable.o Fst2.o IOBuffer.o Error.o \
             CompoundWordTree.o\
             Pattern.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o \
-            Text_parsing.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o LocateAsRoutine.o\
+            Text_parsing.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o Locate.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
             symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
@@ -407,11 +407,11 @@ IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Unicode.o Tfst.o 
                    BitArray.o HashTable.o FIFO.o
 
 LOCATE      = Locate
-LOCATE_OBJS = IOBuffer.o Locate.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
+LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
               LocatePattern.o Fst2.o Text_tokens.o List_int.o\
               Pattern.o CompoundWordTree.o LocateFst2Tags.o \
               OptimizedFst2.o Text_parsing.o MorphologicalLocate.o Matches.o TransductionVariables.o TransductionStack.o\
-              ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o LocateAsRoutine.o\
+              ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o\
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
               symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
