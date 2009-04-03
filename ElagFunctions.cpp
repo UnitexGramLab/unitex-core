@@ -31,7 +31,7 @@
 #include <time.h>
 #include <math.h>
 
-#include "utils.h"
+#include "Utils.h"
 #include "Fst2Automaton.h"
 #include "ElagFunctions.h"
 #include "ElagFstFilesIO.h"
@@ -40,8 +40,8 @@
 #include "AutMinimization.h"
 #include "AutIntersection.h"
 #include "File.h"
-#include "symbol.h"
-#include "ustring.h"
+#include "Symbol.h"
+#include "Ustring.h"
 
 
 static void add_sentence_delimiters(Tfst* tfst);

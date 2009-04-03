@@ -26,7 +26,7 @@
 #include "Copyright.h"
 #include "Fst2Automaton.h"
 #include "ElagFstFilesIO.h"
-#include "utils.h"
+#include "Utils.h"
 #include "Error.h"
 #include "File.h"
 #include "LanguageDefinition.h"

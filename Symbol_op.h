@@ -22,7 +22,7 @@
 #ifndef _SYMBOL_OP_H_
 #define _SYMBOL_OP_H_
 
-#include "symbol.h"
+#include "Symbol.h"
 
 /* operations ensemblistes sur les symboles  */
 

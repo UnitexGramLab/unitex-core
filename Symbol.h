@@ -22,7 +22,7 @@
 #ifndef _SYMBOL_H_
 #define _SYMBOL_H_
 
-#include "ustring.h"
+#include "Ustring.h"
 #include "LanguageDefinition.h"
 #include "DELA.h"
 

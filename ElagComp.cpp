@@ -36,7 +36,7 @@
 #include "LanguageDefinition.h"
 #include "Fst2Automaton.h"
 #include "ElagRulesCompilation.h"
-#include "utils.h"
+#include "Utils.h"
 #include "File.h"
 #include "getopt.h"
 

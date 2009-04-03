@@ -24,7 +24,7 @@
 //	.inf	infomation of lingustics
 //	.aut	initial states with nom and offset of start point
 //
-//#include "utils.h"
+//#include "Utils.h"
 
 #ifndef RELOCATABLE_BIN_DEF
 #define RELOCATABLE_BIN_DEF

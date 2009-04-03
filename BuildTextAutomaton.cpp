@@ -29,7 +29,7 @@
 #include "BitMasks.h"
 #include "Transitions.h"
 #include "SingleGraph.h"
-#include "vector.h"
+#include "Vector.h"
 #include "Tfst.h"
 
 

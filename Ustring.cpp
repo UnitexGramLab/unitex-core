@@ -19,8 +19,8 @@
   *
   */
 
-#include "utils.h"
-#include "ustring.h"
+#include "Utils.h"
+#include "Ustring.h"
 #include "Error.h"
 
 #define MAXBUF 1024

@@ -19,7 +19,7 @@
   *
   */
 
-#include "utils.h"
+#include "Utils.h"
 #include "ElagFstFilesIO.h"
 #include "Fst2Automaton.h"
 #include "Error.h"

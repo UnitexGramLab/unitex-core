@@ -23,8 +23,8 @@
 #define ElagDebugH
 
 #include "SingleGraph.h"
-#include "symbol.h"
-#include "symbol_op.h"
+#include "Symbol.h"
+#include "Symbol_op.h"
 
 void print_graph(SingleGraph);
 

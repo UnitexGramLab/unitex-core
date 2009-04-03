@@ -28,7 +28,7 @@
 
 
 #include "Fst2Automaton.h"
-#include "vector.h"
+#include "Vector.h"
 
 void remove_ambiguities(char* input_tfst,vector_ptr* grammars,char* output_tfst);
 void explode_tfst(char* input_tfst,char* output_tfst);

@@ -28,7 +28,7 @@
  */
 
 #include "SingleGraph.h"
-#include "symbol.h"
+#include "Symbol.h"
 
 
 #define AUT_INITIAL    1

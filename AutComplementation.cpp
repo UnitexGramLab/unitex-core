@@ -20,7 +20,7 @@
   */
 
 #include "Fst2Automaton.h"
-#include "symbol_op.h"
+#include "Symbol_op.h"
 #include "ElagStateSet.h"
 #include "AutComplementation.h"
 

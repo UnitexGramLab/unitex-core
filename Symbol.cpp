@@ -22,9 +22,9 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "utils.h"
-#include "symbol.h"
-#include "symbol_op.h"
+#include "Utils.h"
+#include "Symbol.h"
+#include "Symbol_op.h"
 #include "StringParsing.h"
 #include "List_int.h"
 #include "DELA.h"

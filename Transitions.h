@@ -22,8 +22,8 @@
 #ifndef TransitionsH
 #define TransitionsH
 
-#include "symbol.h"
-#include "symbol_op.h"
+#include "Symbol.h"
+#include "Symbol_op.h"
 
 /**
  * This library provides functions and types for manipulating 

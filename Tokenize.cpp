@@ -29,7 +29,7 @@
 #include "Copyright.h"
 #include "DELA.h"
 #include "Error.h"
-#include "vector.h"
+#include "Vector.h"
 #include "HashTable.h"
 #include "getopt.h"
 

@@ -21,10 +21,10 @@
 
 #include <assert.h>
 
-#include "utils.h"
-#include "ustring.h"
-#include "symbol.h"
-#include "symbol_op.h"
+#include "Utils.h"
+#include "Ustring.h"
+#include "Symbol.h"
+#include "Symbol_op.h"
 
 
 #define MIN(a, b) ((a <= b) ? a : b)

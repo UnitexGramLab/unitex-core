@@ -22,8 +22,8 @@
 #ifndef SymbolAlphabetH
 #define SymbolAlphabetH
 
-#include "symbol.h"
-#include "ustring.h"
+#include "Symbol.h"
+#include "Ustring.h"
 #include "String_hash.h"
 #include "SingleGraph.h"
 

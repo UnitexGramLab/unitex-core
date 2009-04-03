@@ -22,7 +22,7 @@
 #include "String_hash.h"
 #include "Error.h"
 #include "StringParsing.h"
-#include "utils.h"
+#include "Utils.h"
 
 
 #define DEFAULT_STRING_HASH_SIZE 4096

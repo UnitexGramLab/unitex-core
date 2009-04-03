@@ -23,7 +23,7 @@
 #define Fst2AutomatonH
 
 #include "Unicode.h"
-#include "symbol.h"
+#include "Symbol.h"
 #include "SingleGraph.h"
 #include "String_hash.h"
 

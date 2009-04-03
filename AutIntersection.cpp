@@ -19,9 +19,9 @@
   *
   */
 
-#include "utils.h"
-#include "symbol.h"
-#include "symbol_op.h"
+#include "Utils.h"
+#include "Symbol.h"
+#include "Symbol_op.h"
 #include "Fst2Automaton.h"
 #include "ElagStateSet.h"
 #include "Transitions.h"

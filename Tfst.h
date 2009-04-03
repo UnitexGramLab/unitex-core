@@ -27,8 +27,8 @@
  */
 
 #include <stdio.h>
-#include "ustring.h"
-#include "vector.h"
+#include "Ustring.h"
+#include "Vector.h"
 #include "SingleGraph.h"
 
 #define NO_SENTENCE_LOADED -1

@@ -30,7 +30,7 @@
 #define LanguageDefinitionH
 
 #include "String_hash.h"
-#include "symbol.h"
+#include "Symbol.h"
 #include "DELA.h"
 
 

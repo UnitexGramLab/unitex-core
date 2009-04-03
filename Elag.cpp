@@ -41,7 +41,7 @@
 #include "Copyright.h"
 #include "Fst2Automaton.h"
 #include "ElagFunctions.h"
-#include "utils.h"
+#include "Utils.h"
 #include "Error.h"
 #include "getopt.h"
 #include "File.h"
