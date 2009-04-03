@@ -38,19 +38,6 @@ OBJ_DIR = build/
 BIN_DIR = ../bin/
 
 
-#
-# everything judy: 
-#
-# Note: This variant of Judy is obtained by:
-#       svn co http://svn.pugscode.org/pugs/third-party/judy/Judy-1.0.3 -r 10611
-#       later revisions seem to have their build system modified to fit better into that of PUGS.
-#
-
-#LIBJUDY = Judy
-#JUDY_SRC = Judy-1.0.3
-#JUDY_TGZ = ../Judy-1.0.3.tar.gz
-#CLEAN-JUDY = clean-Judy
-
 ifeq ($(SYSTEM),linux-like)
 ###################
 ###################
@@ -92,10 +79,10 @@ CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
 endif
-override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".." #-IJudy/include
+override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre #-LJudy/lib -lJudy #-ldb
+LIBS   = -Llibtre/lib -ltre 
 else
 #
 # IGNORING TRE LIBRARY
@@ -105,10 +92,10 @@ CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
 endif
-override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".." #-IJudy/include
+override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
 LIBTRE   = 
 CLEAN-LIBTRE   = 
-LIBS   = #-LJudy/lib -lJudy
+LIBS   = 
 endif
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -150,20 +137,20 @@ INSTALL_COMMAND = make USE_TRE_LIBRARY=yes install
 
 ifeq ($(USE_TRE_LIBRARY),yes)
 
-LIBS =  ../Libtre/tre.lib #-L../$(JUDY_SRC)-win32/lib -lJudy
-INCS =  -I"../korean" -I".." #-I"../$(JUDY_SRC)-win32/include"
+LIBS =  ../Libtre/tre.lib 
+INCS =  -I"../korean" -I".." 
 #
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
 #
-CXXINCS =  -I"../korean" -I".." #-I"../$(JUDY_SRC)-win32/include"
+CXXINCS =  -I"../korean" -I".." 
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
 else
 
-LIBS =  #../$(JUDY_SRC)-win32/lib/Judy.lib 
-INCS =  -I"../korean" -I".." -I"../" #-I"../$(JUDY_SRC)-win32/include"
+LIBS =   
+INCS =  -I"../korean" -I".." -I"../" 
 #
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
@@ -205,8 +192,8 @@ ifeq ($(USE_TRE_LIBRARY),yes)
 #
 # USING TRE LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" -L"../Libtre" ../Libtre/tre.lib  #-L../$(JUDY_SRC)-win32/lib -lJudy
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".." #-I"../$(JUDY_SRC)-win32/include"
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L"../Libtre" ../Libtre/tre.lib
+INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".." 
 # Note: the -I".." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../Libtre" -I"../korean" -I".." 
@@ -216,8 +203,8 @@ else
 #
 # IGNORING TRE LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" #-L../$(JUDY_SRC)-win32/lib -lJudy
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../korean" -I".." #-I"../$(JUDY_SRC)-win32/include"
+LIBS =  -L"$(DEVCPP_PATH)/lib" 
+INCS =  -I"$(DEVCPP_PATH)/include" -I"../korean" -I".." 
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"
@@ -269,17 +256,6 @@ TEST_OBJS = Test.o Unicode.o Pattern.o String_hash.o IOBuffer.o Error.o \
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
 				List_ustring.o Error.o StringParsing.o getopt.o
-
-#COLLOC         = Colloc
-#COLLOC_OBJS    = IOBuffer.o Colloc.o CollocMain.o Collocation.o Unicode.o Text_tokens.o Array.o  \
-#				List_int.o Alphabet.o Matches.o Frequency.o File.o String_hash.o                 \
-#				Text_parsing.o MorphologicalLocate.o LocatePattern.o Stack_int.o                                       \
-#				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o        \
-#				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o \
-#				LocateFst2Tags.o Error.o SortTxtMain.o                                           \
-#				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
-#				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
-#				Stack_unichar.o Transitions.o Buffer_ng.o getopt.o DicVariables.o
 
 COMPRESS      = Compress
 COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
@@ -365,17 +341,6 @@ FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Unicode.o Fst2.o G
                BitMasks.o BitArray.o HashTable.o FIFO.o Pattern.o List_ustring.o\
                String_hash.o StringParsing.o Transitions.o DELA.o\
                symbol.o symbol_op.o LanguageDefinition.o ustring.o Tagset.o getopt.o
-
-#FREQ         = Freq
-#FREQ_OBJS    = IOBuffer.o Freq.o FreqMain.o Unicode.o Text_tokens.o String_hash.o                \
-#				List_int.o Alphabet.o Matches.o Frequency.o File.o                               \
-#				Text_parsing.o MorphologicalLocate.o LocatePattern.o Stack_int.o                                       \
-#				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o        \
-#				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o Pattern.o \
-#				LocateFst2Tags.o Error.o SortTxt.o                                           \
-#				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o                            \
-#				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o         \
-#				Stack_unichar.o Transitions.o Buffer_ng.o getopt.o DicVariables.o
 
 FST2LIST      = Fst2List
 FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Unicode.o Fst2.o Alphabet.o\
@@ -598,7 +563,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(DICO)\
 		$(CONVERT) \
 		$(TAGSETNORMTFST) \
 		$(FST2LIST) $(MULTIFLEX) \
-		$(XMLIZER) $(TEI2TXT) $(EVAMB) $(IMPLODETFST) $(TFST2UNAMBIG) #$(COLLOC) $(FREQ)
+		$(XMLIZER) $(TEI2TXT) $(EVAMB) $(IMPLODETFST) $(TFST2UNAMBIG)
 
 ifeq ($(64BITS),no)
 PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \
@@ -622,7 +587,7 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OB
 		$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
 		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(TFST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS) \
 		$(TEST_OBJS) \
-		$(XMLIZER_OBJS) $(TEI2TXT_OBJS) #$(COLLOC_OBJS) $(FREQ_OBJS)
+		$(XMLIZER_OBJS) $(TEI2TXT_OBJS)
 
 
 ###########################
@@ -671,31 +636,11 @@ clean-libtre:
 	rm -f .libtre-done
 
 
-#$(JUDY_SRC): $(JUDY_TGZ)
-#	tar xzf $(JUDY_TGZ)
-#
-#.Judy-done:
-#	touch .Judy-done
-#
-#Judy: .Judy-done $(JUDY_SRC)
-#	@echo "Making Judy ..."
-#	chmod +x $(JUDY_SRC)/configure
-#	cd $(JUDY_SRC) && ./configure --disable-shared --enable-static && make
-#	mkdir -p Judy/lib Judy/include
-#	#cd $(JUDY_SRC)/src/obj/.libs && ar rcs libJudy.a *.o
-#	cp $(JUDY_SRC)/src/obj/.libs/libJudy.a  Judy/lib/libJudy.a
-#	cp $(JUDY_SRC)/src/Judy.h Judy/include/Judy.h
-#
-#clean-Judy:
-#	rm -rf Judy 
-#	rm -rf $(JUDY_SRC)
-#	rm -f .Judy-done
-
 install: bin
 	$(INSTALL) $(BINARIES) $(APPDIR)
 
 
-clean: $(CLEAN-LIBTRE) #$(CLEAN-JUDY)
+clean: $(CLEAN-LIBTRE)
 	rm -f $(OBJS) $(PROGS) *~ korean/*.o korean/*~
 
 dist: clean
@@ -789,9 +734,6 @@ $(BIN_DIR)$(TEST)$(EXTENSION): $(TEST_OBJS)
 $(BIN_DIR)$(CHECKDIC)$(EXTENSION): $(CHECKDIC_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-#$(BIN_DIR)$(COLLOC)$(EXTENSION): $(COLLOC_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-
 $(BIN_DIR)$(COMPRESS)$(EXTENSION): $(COMPRESS_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS) 
 
@@ -821,9 +763,6 @@ $(BIN_DIR)$(EXTRACT)$(EXTENSION): $(EXTRACT_OBJS)
 
 $(BIN_DIR)$(FLATTEN)$(EXTENSION): $(FLATTEN_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
-
-#$(BIN_DIR)$(FREQ)$(EXTENSION): $(FREQ_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(FST2LIST)$(EXTENSION): $(FST2LIST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
