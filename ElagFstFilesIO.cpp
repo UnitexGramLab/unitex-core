@@ -24,7 +24,7 @@
 
 #include "utils.h"
 #include "ustring.h"
-#include "hash_str_table.h"
+//#include "hash_str_table.h"
 #include "symbol.h"
 #include "Fst2Automaton.h"
 #include "ElagFstFilesIO.h"

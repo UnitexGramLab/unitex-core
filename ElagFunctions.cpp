@@ -33,7 +33,6 @@
 
 #include "utils.h"
 #include "Fst2Automaton.h"
-#include "list_aut.h"
 #include "ElagFunctions.h"
 #include "ElagFstFilesIO.h"
 #include "AutConcat.h"
@@ -41,7 +40,6 @@
 #include "AutMinimization.h"
 #include "AutIntersection.h"
 #include "File.h"
-#include "vector.h"
 #include "symbol.h"
 #include "ustring.h"
 
@@ -54,7 +52,7 @@ vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
  * This function loads a .tfst text automaton, disambiguates it according to the given rules,
  * and saves the result in another text automaton.
  */
-void remove_ambiguities(char* input_tfst,list_aut* gramms,char* output) {
+void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output) {
    static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
    symbol_t* unloadable = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE,_unloadable),-1);
@@ -259,58 +257,39 @@ void explode_tfst(char* input_tfst,char* output) {
 
 
 
-
-
-/* Charge les grammaires deja compilees. */
-list_aut * chargeGramm(char * nomFichGramm) {
-
-   char fname[strlen(nomFichGramm) + 5];
-
-   strcpy(fname, nomFichGramm);
-
-   if (strcmp(fname + strlen(fname) - 4, ".rul") != 0) {
-      strcat(fname, ".rul");
+/**
+ * Loads all the ELAG grammars contained in the given .elg file.
+ */
+vector_ptr* load_elag_grammars(char* filename) {
+FILE* f=fopen(filename,"r");
+if (f==NULL) {
+   error("Cannot open file %s\n",filename);
+   return NULL;
+}
+vector_ptr* grammars=new_vector_ptr(16);
+char buf[FILENAME_MAX];
+while (fgets(buf,FILENAME_MAX,f) != NULL) {
+   if (*buf != '<') {
+      continue;
    }
-
-   FILE * fGramm = fopen(fname, "r");
-
-   if (!fGramm) {
-      fatal_error("opening file %s\n", fname);
+   char* p=strchr(buf,'>');
+   if (p==NULL) {
+      error("In %s: at line '%s': delimitor '>' not found\n",filename,buf);
+      free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
+      return NULL;
    }
-
-   list_aut * gramms = list_aut_new();
-
-   char buf[FILENAME_MAX];
-
-   while (fgets(buf, FILENAME_MAX, fGramm) != NULL) {
-
-      if (*buf != '<') {
-         continue;
-      }
-
-      char * p = strchr(buf, '>');
-
-      if (p == NULL) {
-         fatal_error("in %s: at line '%s': delimitor '>' not found\n",
-               nomFichGramm, buf);
-      }
-
-      *p = 0;
-
-      error("\nReading %s...\n", buf + 1);
-
-      Fst2Automaton * A = load_elag_grammar_automaton(buf + 1, LANGUAGE);
-
-      if (A == NULL) {
-         fatal_error("unable to load '%s' automaton\n", buf + 1);
-      }
-
-      list_aut_add(gramms, A);
+   (*p)='\0';
+   u_printf("\nLoadding %s...\n",buf+1);
+   Fst2Automaton* A=load_elag_grammar_automaton(buf+1,LANGUAGE);
+   if (A==NULL) {
+      error("Unable to load '%s' automaton\n",buf+1);
+      free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
+      return NULL;   
    }
-
-   error("%d gramm(s) loaded\n", gramms->nbelems);
-
-   return gramms;
+   vector_ptr_add(grammars,A);
+}
+u_printf("%d grammar(s) loaded\n",grammars->nbelems);
+return grammars;
 }
 
 

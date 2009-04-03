@@ -23,16 +23,15 @@
 /* Date 	: juin 98 */
 /* Auteur(s) 	: MAYER Laurent et al */
 
-#ifndef _ELAG_H_
-#define _ELAG_H_
+#ifndef ElagFunctionsH
+#define ElagFunctionsH
 
 
 #include "Fst2Automaton.h"
-#include "list_aut.h"
+#include "vector.h"
 
-void remove_ambiguities(char * fstname, list_aut * grammars, char * fstout);
-void explode_tfst(char* input_tfst,char* output);
-list_aut * chargeGramm(char * nomFichGramm);
-list_aut * chargeUneGramm(char * nomFichGramm);
+void remove_ambiguities(char* input_tfst,vector_ptr* grammars,char* output_tfst);
+void explode_tfst(char* input_tfst,char* output_tfst);
+vector_ptr* load_elag_grammars(char* filename);
 
 #endif

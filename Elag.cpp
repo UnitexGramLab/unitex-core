@@ -40,7 +40,6 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "Fst2Automaton.h"
-#include "list_aut.h"
 #include "ElagFunctions.h"
 #include "utils.h"
 #include "Error.h"
@@ -149,11 +148,12 @@ u_printf("Changing to %s directory\n",directory);
 if (chdir(directory)==-1) {
    error("Unable to change to %s directory.\n", directory);
 }
-list_aut* gramm;
-if ((gramm = chargeGramm(rule_file)) == NULL) {
+vector_ptr* grammars;
+if ((grammars=load_elag_grammars(rule_file)) == NULL) {
    fatal_error("Unable to load grammar %s", rule_file);
 }
 u_printf("Grammars are loaded.\n");
-remove_ambiguities(input_tfst,gramm,output_tfst);
+remove_ambiguities(input_tfst,grammars,output_tfst);
+free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
 return 0;
 }

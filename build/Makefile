@@ -302,7 +302,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
 ELAG      = Elag
 ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
             AutMinimization.o AutConcat.o Fst2Automaton.o \
-            symbol.o hash_str_table.o String_hash.o Tagset.o ustring.o \
+            symbol.o String_hash.o Tagset.o ustring.o \
    		    ElagStateSet.o SymbolAlphabet.o symbol_op.o Error.o LanguageDefinition.o\
             AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
@@ -310,7 +310,7 @@ ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Unicode.o ElagFunctions.o ElagFstFiles
  
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Unicode.o ElagRulesCompilation.o Fst2Automaton.o\
-                ElagFstFilesIO.o hash_str_table.o String_hash.o\
+                ElagFstFilesIO.o String_hash.o\
                 symbol.o ustring.o AutDeterminization.o AutIntersection.o\
                 ElagStateSet.o symbol_op.o LanguageDefinition.o Tagset.o \
 	            AutMinimization.o SymbolAlphabet.o AutConcat.o AutComplementation.o\
