@@ -19,7 +19,6 @@
   *
   */
 
-#include "Utils.h"
 #include "Symbol_op.h"
 #include "Error.h"
 #include "ElagStateSet.h"

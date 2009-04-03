@@ -22,9 +22,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#include "Utils.h"
 #include "Ustring.h"
-//#include "hash_str_table.h"
 #include "Symbol.h"
 #include "Fst2Automaton.h"
 #include "ElagFstFilesIO.h"

@@ -22,7 +22,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "Utils.h"
 #include "Symbol.h"
 #include "Symbol_op.h"
 #include "StringParsing.h"

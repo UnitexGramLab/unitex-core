@@ -20,8 +20,6 @@
   */
 
 #include <assert.h>
-
-#include "Utils.h"
 #include "Ustring.h"
 #include "Symbol.h"
 #include "Symbol_op.h"
@@ -837,7 +835,10 @@ static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
   for (s = minus; s; s = s->next) {
     s->negative = true;
     s->nbnegs   = a->nbnegs;
-    s->negs = (int *) xmalloc(s->nbnegs * sizeof(int));
+    s->negs = (int *) malloc(s->nbnegs * sizeof(int));
+    if (s->negs==NULL) {
+       fatal_error("Not enough memory in NEG_minus_CAN\n");
+    }
     for (i = 0; i < s->nbnegs; i++) { s->negs[i] = a->negs[i]; }
   }
 
@@ -857,7 +858,10 @@ static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
   /* insert b->canonic in neglist */
 
   s->negative = true;
-  s->negs   = (int *) xmalloc((a->nbnegs + 1) * sizeof(int));
+  s->negs   = (int *) malloc((a->nbnegs + 1) * sizeof(int));
+  if (s->negs==NULL) {
+     fatal_error("Not enough memory in NEG_minus_CAN\n");
+  }
 
   s->nbnegs = 0;
 
@@ -901,7 +905,10 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
   for (symbol_t * s = res; s; s = s->next) {
     s->negative = true;
     s->nbnegs   = a->nbnegs;
-    s->negs = (int *) xmalloc(s->nbnegs * sizeof(int));
+    s->negs = (int *) malloc(s->nbnegs * sizeof(int));
+    if (s->negs==NULL) {
+       fatal_error("Not enough memory in NEG_minus_NEG\n");
+    }
     for (i = 0; i < s->nbnegs; i++) { s->negs[i] = a->negs[i]; }
   }
   int tag_number=a->tfsttag_index;
@@ -948,7 +955,10 @@ static symbol_t * NEG_minus_CODE(const symbol_t * a, const symbol_t * b) {
   for (symbol_t * s = res; s; s = s->next) {
     s->negative = true;
     s->nbnegs = a->nbnegs;
-    s->negs = (int *) xmalloc(s->nbnegs * sizeof(int));
+    s->negs = (int *) malloc(s->nbnegs * sizeof(int));
+    if (s->negs==NULL) {
+       fatal_error("Not enough memory in NEG_minus_CODE\n");
+    }
     for (int i = 0; i < s->nbnegs; i++) { s->negs[i]  = a->negs[i]; }
   }
 
@@ -974,7 +984,10 @@ static symbol_t * CODE_minus_CAN(const symbol_t * a, const symbol_t * b) {
   traits_copy(res, b);
   res->negative = true;
   res->nbnegs  = 1;
-  res->negs    = (int *) xmalloc(sizeof(int));
+  res->negs    = (int*)malloc(sizeof(int));
+  if (res->negs==NULL) {
+     fatal_error("Not enough memory in CODE_minus_CAN\n");
+  }
   res->negs[0] = b->lemma;
 
   /* ... union (a minus code(b)) */
@@ -985,9 +998,8 @@ static symbol_t * CODE_minus_CAN(const symbol_t * a, const symbol_t * b) {
 }
 
 
+
 static symbol_t * CODE_minus_NEG(const symbol_t * a, const symbol_t * b) {
-
-
   /* a minus code(b) */
 
   symbol_t * res = minus_traits(a, b);

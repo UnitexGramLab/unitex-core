@@ -19,7 +19,6 @@
   *
   */
 
-#include "Utils.h"
 #include "Symbol.h"
 #include "Symbol_op.h"
 #include "Fst2Automaton.h"

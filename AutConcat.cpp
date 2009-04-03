@@ -20,7 +20,6 @@
   */
 
 #include "AutConcat.h"
-#include "Utils.h"
 #include "Fst2Automaton.h"
 #include "Symbol_op.h"
 

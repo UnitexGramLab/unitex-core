@@ -22,7 +22,6 @@
 #include "LanguageDefinition.h"
 #include "Tagset.h"
 #include "Symbol.h"
-#include "Utils.h"
 
 language_t* LANGUAGE=NULL;
 

@@ -23,17 +23,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __GNUC__  // gcc 
+#ifdef __GNUC__ 
 #include <unistd.h>
-
-#elif  defined(__VISUALC__)
-
-//  #ifdef __VISUALC__  // visual studio
-
+#elif defined(__VISUALC__)
 #include <DIRECT.H>
-
-#else    // Borland
-
+#else
 #include <dir.h>
 #endif
 
@@ -41,7 +35,6 @@
 #include "Copyright.h"
 #include "Fst2Automaton.h"
 #include "ElagFunctions.h"
-#include "Utils.h"
 #include "Error.h"
 #include "getopt.h"
 #include "File.h"

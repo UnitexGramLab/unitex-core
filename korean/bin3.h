@@ -21,7 +21,6 @@
 //
 //	STRUCTURE  for dictionnaire de coree by transducteur
 //
-#include "Utils.h"
 #include "Alphabet.h"
 #ifndef BIN3_DEF
 #include "formation_dic_line.h"

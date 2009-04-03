@@ -31,7 +31,6 @@
 #include <time.h>
 #include <math.h>
 
-#include "Utils.h"
 #include "Fst2Automaton.h"
 #include "ElagFunctions.h"
 #include "ElagFstFilesIO.h"

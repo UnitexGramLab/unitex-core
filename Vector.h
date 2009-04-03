@@ -19,11 +19,10 @@
   *
   */
 
-#ifndef _VECTOR_H_
-#define _VECTOR_H_
+#ifndef VectorH
+#define VectorH
 
-#include "Utils.h"
-
+#include "Error.h"
 
 /**
  * This library provides implementations of autoresizable arrays:
@@ -48,11 +47,17 @@ typedef struct vector_int {
 
 
 inline vector_ptr* new_vector_ptr(int size=16) {
-vector_ptr* vec=(vector_ptr*)xmalloc(sizeof(vector_ptr));
+vector_ptr* vec=(vector_ptr*)malloc(sizeof(vector_ptr));
+if (vec==NULL) {
+   fatal_error("Not enough memory in new_vector_ptr\n");
+}
 if (size<=0) {
    size=1;
 }
-vec->tab=(void**)xmalloc(size*sizeof(void*));
+vec->tab=(void**)malloc(size*sizeof(void*));
+if (vec->tab==NULL) {
+   fatal_error("Not enough memory in new_vector_ptr\n");
+}
 vec->size=size;
 vec->nbelems=0;
 return vec;
@@ -80,7 +85,10 @@ if (size<=0) {
 if (size<=vec->nbelems) {
    fatal_error("vector_ptr_resize: size=%d && nbelems=%d\n",size,vec->nbelems);
 }
-vec->tab=(void**)xrealloc(vec->tab,size*sizeof(void*));
+vec->tab=(void**)realloc(vec->tab,size*sizeof(void*));
+if (vec->tab==NULL) {
+   fatal_error("Not enough memory in vector_ptr_resize\n");
+}
 vec->size=size;
 }
 
@@ -95,11 +103,17 @@ return vec->nbelems-1;
 
 
 inline vector_int* new_vector_int(int size=16) {
-vector_int* vec=(vector_int*)xmalloc(sizeof(vector_int));
+vector_int* vec=(vector_int*)malloc(sizeof(vector_int));
+if (vec==NULL) {
+   fatal_error("Not enough memory in new_vector_int\n");
+}
 if (size<=0) {
    size=1;
 }
-vec->tab=(int*)xmalloc(size*sizeof(int));
+vec->tab=(int*)malloc(size*sizeof(int));
+if (vec==NULL) {
+   fatal_error("Not enough memory in new_vector_int\n");
+}
 vec->size=size;
 vec->nbelems=0;
 return vec;
@@ -120,7 +134,10 @@ if (size<=0) {
 if (size<vec->nbelems) {
    fatal_error("vector_int_resize: size=%d && nbelems=%d\n",size,vec->nbelems);
 }
-vec->tab=(int*)xrealloc(vec->tab,size*sizeof(int));
+vec->tab=(int*)realloc(vec->tab,size*sizeof(int));
+if (vec->tab==NULL) {
+   fatal_error("Not enough memory in vector_int_resize\n");
+}
 vec->size=size;
 }
 

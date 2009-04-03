@@ -20,7 +20,7 @@
   */
 
 #include "Tagset.h"
-#include "Utils.h"
+#include "Error.h"
 #include <ctype.h>
 
 
