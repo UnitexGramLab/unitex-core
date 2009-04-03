@@ -56,7 +56,6 @@ Ustring* new_Ustring(int);
 void free_Ustring(Ustring * ustr);
 
 static inline void empty(Ustring * ustr);
-void resize(Ustring * ustr, int size);
 
 void u_strcat(Ustring*,const unichar*,int);
 void u_strcat(Ustring*,const char*,int);

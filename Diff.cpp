@@ -33,6 +33,9 @@
 void create_text_concordances(char* in1,char* in2,char* out1,char* out2) {
 char** argv;
 argv=(char**)malloc(9*sizeof(char*));
+if (argv==NULL) {
+   fatal_alloc_error("create_text_concordances");
+}
 argv[0]=strdup(" ");
 argv[1]=strdup(in1);
 argv[2]=strdup("Courier New");
@@ -42,6 +45,11 @@ argv[5]=strdup("40");
 argv[6]=strdup("TO");
 argv[7]=strdup("text");
 argv[8]=strdup("NULL");
+for (int i=0;i<9;i++) {
+   if (argv[i]==NULL) {
+      fatal_alloc_error("create_text_concordances");
+   }
+}
 main_Concord(9,argv);
 char f[FILENAME_MAX];
 get_path(in1,f);
@@ -49,6 +57,9 @@ strcat(f,"concord.txt");
 rename(f,out1);
 free(argv[1]);
 argv[1]=strdup(in2);
+if (argv[1]==NULL) {
+   fatal_alloc_error("create_text_concordances");
+}
 main_Concord(9,argv);
 rename(f,out2);
 for (int i=0;i<9;i++) {

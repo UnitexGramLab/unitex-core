@@ -20,9 +20,8 @@
   */
 
 /* Created by Agata Savary (savary@univ-mlv.fr)
- * Last modification on June 23 2005
  */
-//---------------------------------------------------------------------------
+
 
 ////////////////////////////////////////////////////////////
 // Implementation of unification variables

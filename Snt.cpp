@@ -34,7 +34,7 @@
 struct snt_files* new_snt_files_from_path(char* path) {
 struct snt_files* snt_files=(struct snt_files*)malloc(sizeof(struct snt_files));
 if (snt_files==NULL) {
-	fatal_error("Not enough memory in new_snt_files_from_path\n");
+	fatal_alloc_error("new_snt_files_from_path");
 }
 strcpy(snt_files->path,path);
 new_file(path,"dlf",snt_files->dlf);

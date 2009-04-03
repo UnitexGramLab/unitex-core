@@ -19,6 +19,7 @@
   *
   */
 
+#include <stdlib.h>
 #include "Stack_pointer.h"
 #include "Error.h"
 
@@ -29,11 +30,11 @@
 struct stack_pointer* new_stack_pointer(int capacity) {
 struct stack_pointer* s=(struct stack_pointer*)malloc(sizeof(struct stack_pointer));
 if (s==NULL) {
-   fatal_error("Not enough memory in new_stack_pointer\n");
+   fatal_alloc_error("new_stack_pointer");
 }
 s->stack=(void**)malloc(capacity*sizeof(void*));
 if (s->stack==NULL) {
-   fatal_error("Not enough memory in new_stack_pointer\n");
+   fatal_alloc_error("new_stack_pointer");
 }
 s->stack_pointer=-1;
 s->capacity=capacity;

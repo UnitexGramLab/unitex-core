@@ -396,7 +396,7 @@ explore_node(root);
 struct sort_tree_node* new_sort_tree_node() {
 struct sort_tree_node* n=(struct sort_tree_node*)malloc(sizeof(struct sort_tree_node));
 if (n==NULL) {
-   fatal_error("Not enough memory in new_sort_tree_node\n");
+   fatal_alloc_error("new_sort_tree_node");
 }
 n->couples=NULL;
 n->transitions=NULL;
@@ -423,7 +423,7 @@ free(n);
 struct sort_tree_transition* new_sort_tree_transition() {
 struct sort_tree_transition* t=(struct sort_tree_transition*)malloc(sizeof(struct sort_tree_transition));
 if (t==NULL) {
-   fatal_error("Not enough memory in new_sort_tree_transition\n");
+   fatal_alloc_error("new_sort_tree_transition");
 }
 t->node=NULL;
 t->next=NULL;
@@ -454,7 +454,7 @@ while (t!=NULL) {
 struct couple* new_couple(unichar* s) {
 struct couple* c=(struct couple*)malloc(sizeof(struct couple));
 if (c==NULL) {
-   fatal_error("Not enough memory in new_couple\n");
+   fatal_alloc_error("new_couple");
 }
 c->next=NULL;
 c->n=1;

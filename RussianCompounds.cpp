@@ -19,10 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "RussianCompounds.h"
 #include "GeneralDerivation.h"
-//---------------------------------------------------------------------------
+
 
 extern utags UTAG;
 // declared in GeneralDerivation.cpp

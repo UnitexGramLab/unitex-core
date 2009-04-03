@@ -20,9 +20,7 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on Sept 08 2005
  */
-//---------------------------------------------------------------------------
 
 /********************************************************************************/
 /* INFLECTION OF A DELAC FILE INTO A DELACF                                     */
@@ -127,7 +125,7 @@ int inflect(char* DLC, char* DLCF) {
 	 * configuration files have been correctly loaded */
 	dlc_entry=(DLC_entry_T*)malloc(sizeof(DLC_entry_T));
 	if (!dlc_entry) {
-	  fatal_error("Not enough memory in function inflect\n");
+	  fatal_alloc_error("inflect");
 	}
 	/* Convert a DELAC entry into the internal multi-word format */
 	err=DLC_line2entry(input_line,dlc_entry);
@@ -195,7 +193,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   //Initalize the lemma
   entry->lemma = (MU_lemma_T*) malloc(sizeof(MU_lemma_T));
   if (!entry->lemma) { 
-    fatal_error("Not enough memory in function DLC_line2entry\n");
+    fatal_alloc_error("DLC_line2entry");
   }
   entry->lemma->no_units = 0;
 
@@ -203,7 +201,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   while (line[pos] && line[pos] != (unichar) ',') {  //Each DELAC line must contain a comma
     unit = (SU_id_T*) malloc(sizeof(SU_id_T));
     if (!unit) { 
-      fatal_error("Not enough memory in function DLC_line2entry\n");
+       fatal_alloc_error("DLC_line2entry");
     }
     l = DLC_scan_unit(unit,&(line[pos]));
     if (l <= 0) {
@@ -234,7 +232,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   }
   entry->lemma->paradigm = (char*) malloc((u_strlen(tmp)+1) * sizeof(char));
   if (!entry->lemma->paradigm)  { 
-    fatal_error("Not enough memory in function DLC_line2entry\n");
+     fatal_alloc_error("DLC_line2entry");
   }
   for (int c=0; c<=u_strlen(tmp); c++) //Convert to char and copy
     entry->lemma->paradigm[c] = (char) tmp[c];
@@ -298,7 +296,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     //Scan the lemma if any
     u->lemma = (SU_lemma_T*) malloc(sizeof(SU_lemma_T));
     if (!u->lemma) { 
-      fatal_error("Not enough memory in function DLC_scan_unit\n");
+      fatal_alloc_error("DLC_scan_unit");
     }
     l = SU_get_unit(tmp,&(line[pos]),DIC_LINE_SIZE-1,alph,0);  //The single word module determines what is a word and what is a separator, etc.
     if (l < 0) {
@@ -327,7 +325,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     }
     u->lemma->paradigm = (char*) malloc((u_strlen(u_para)+1) * sizeof(char));
     if (! u->lemma->paradigm) {
-      fatal_error("Not enough memory in function DLC_scan_unit\n");
+      fatal_alloc_error("DLC_scan_unit");
     }
     for (int c=0; c<=u_strlen(u_para); c++)
       u->lemma->paradigm[c] = (char)u_para[c];

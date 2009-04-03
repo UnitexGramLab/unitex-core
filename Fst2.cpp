@@ -69,6 +69,9 @@ free(e);
  */
 Fst2* new_Fst2() {
 Fst2* a=(Fst2*)malloc(sizeof(Fst2));
+if (a==NULL) {
+   fatal_alloc_error("new_Fst2");
+}
 a->states=NULL;
 a->tags=NULL;
 a->number_of_graphs=0;
@@ -122,7 +125,7 @@ Fst2Tag new_Fst2Tag() {
 Fst2Tag e;
 e=(Fst2Tag)malloc(sizeof(struct fst2Tag));
 if (e==NULL) {
-  fatal_error("Not enough memory in new_Fst2Tag\n");
+  fatal_alloc_error("new_Fst2Tag");
 }
 e->type=UNDEFINED_TAG;
 e->control=0;
@@ -320,7 +323,7 @@ int current_tag=0;
 /* First, we allocate the tag array */
 fst2->tags=(Fst2Tag*)malloc(SIZE*sizeof(Fst2Tag));
 if (fst2->tags==NULL) {
-   fatal_error("Not enough memory in read_fst2_tags\n");
+   fatal_alloc_error("read_fst2_tags");
 }
 /* If the position in the file is not correct we exit */
 if (((c=(unichar)u_fgetc(f))!='%')&&(c!='@')) {
@@ -349,7 +352,7 @@ while (c!='f' && (limit==NO_TAG_LIMIT || current_tag<=limit)) {
       SIZE=SIZE*2;
       fst2->tags=(Fst2Tag*)realloc(fst2->tags,SIZE*sizeof(Fst2Tag));
       if (fst2->tags==NULL) {
-         fatal_error("Not enough memory in read_fst2_tags\n");
+         fatal_alloc_error("read_fst2_tags");
       }
    }
 }
@@ -358,7 +361,7 @@ fst2->number_of_tags=current_tag;
 /* And we resize the array to the exact size */
 fst2->tags=(Fst2Tag*)realloc(fst2->tags,current_tag*sizeof(Fst2Tag));
 if (fst2->tags==NULL) {
-   fatal_error("Not enough memory in read_fst2_tags\n");
+   fatal_alloc_error("read_fst2_tags");
 }
 }
 
@@ -405,7 +408,7 @@ Fst2State new_Fst2State() {
 Fst2State state;
 state=(Fst2State)malloc(sizeof(struct fst2State));
 if (state==NULL) {
-  fatal_error("Not enough memory in new_Fst2State\n");
+  fatal_alloc_error("new_Fst2State");
 }
 state->control=0;
 state->transitions=NULL;
@@ -489,7 +492,7 @@ int i,end_of_line,tag_number,destination_state_number,current_graph;
 int current_state=0;
 fst2->states=(Fst2State*)malloc(SIZE*sizeof(Fst2State));
 if (fst2->states==NULL) {
-   fatal_error("Not enough memory in read_fst2_states\n");
+   fatal_alloc_error("read_fst2_states");
 }
 /* We read all the graphs that make the fst2 */
 for (i=0;i<fst2->number_of_graphs;i++) {
@@ -565,7 +568,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
             SIZE=SIZE*2;
             fst2->states=(Fst2State*)realloc(fst2->states,SIZE*sizeof(Fst2State));
             if (fst2->states==NULL) {
-               fatal_error("Not enough memory in read_fst2_states\n");
+               fatal_alloc_error("read_fst2_states");
             }
          }
 			relative_state++;
@@ -592,7 +595,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 fst2->number_of_states=current_state;
 fst2->states=(Fst2State*)realloc(fst2->states,current_state*sizeof(Fst2State));
 if (fst2->states==NULL) {
-   fatal_error("Not enough memory in read_fst2_states\n");
+   fatal_alloc_error("read_fst2_states");
 }
 }
 
@@ -655,16 +658,22 @@ if (fst2->number_of_graphs==0) {
  * starts at 1.
  */
 fst2->initial_states=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
-if (fst2->initial_states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+if (fst2->initial_states==NULL) {
+   fatal_alloc_error("load_fst2_from_file");
+}
 fst2->number_of_states_per_graphs=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
-if (fst2->number_of_states_per_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+if (fst2->number_of_states_per_graphs==NULL) {
+   fatal_alloc_error("load_fst2_from_file");
+}
 /*
  * If needed, we allocate the 'graph_names' array. The +1 has the same motivation
  * than above.
  */
 if (read_names) {
 	fst2->graph_names=(unichar**)malloc((fst2->number_of_graphs+1)*sizeof(unichar*));
-	if (fst2->graph_names==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+	if (fst2->graph_names==NULL) {
+	   fatal_alloc_error("load_fst2_from_file");
+	}
 }
 /*
  * Then we read the states of the fst2

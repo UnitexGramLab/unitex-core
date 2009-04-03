@@ -39,7 +39,7 @@ void free_pattern_node_transition(struct pattern_node_transition*);
 struct pattern_node* new_pattern_node() {
 struct pattern_node* n=(struct pattern_node*)malloc(sizeof(struct pattern_node));
 if (n==NULL) {
-   fatal_error("Not enough memory in new_pattern_node\n");
+   fatal_alloc_error("new_pattern_node");
 }
 n->constraints=NULL;
 n->sons=NULL;
@@ -64,12 +64,12 @@ free(node);
 struct pattern_node_transition* new_pattern_node_transition(unichar* grammatical_code,
                                                       struct pattern_node* node,
                                                       struct pattern_node_transition* next) {
-struct pattern_node_transition* list=(struct pattern_node_transition*)malloc(sizeof(struct pattern_node_transition));
-if (list==NULL) {
-   fatal_error("Not enough memory in new_pattern_node_transition\n");
-}
 if (grammatical_code==NULL) {
    fatal_error("NULL grammatical/semantic code in new_pattern_node_transition\n");
+}
+struct pattern_node_transition* list=(struct pattern_node_transition*)malloc(sizeof(struct pattern_node_transition));
+if (list==NULL) {
+   fatal_alloc_error("new_pattern_node_transition");
 }
 list->grammatical_code=u_strdup(grammatical_code);
 list->node=node;
@@ -104,7 +104,7 @@ if (pattern==NULL) {
 }
 struct constraint_list* cell=(struct constraint_list*)malloc(sizeof(struct constraint_list));
 if (cell==NULL) {
-   fatal_error("Not enough memory in new_constraint_list\n");
+   fatal_alloc_error("new_constraint_list");
 }
 cell->inflected=u_strdup(pattern->inflected);
 cell->lemma=u_strdup(pattern->lemma);

@@ -33,7 +33,7 @@
 struct bit_array* new_bit_array(int number_of_elements,InfoLength info_length) {
 struct bit_array* bit_array=(struct bit_array*)malloc(sizeof(struct bit_array));
 if (bit_array==NULL) {
-	fatal_error("Not enough memory in new_bit_array\n");
+	fatal_alloc_error("new_bit_array");
 }
 if (number_of_elements<=0) {
    fatal_error("Invalid number of elements (%d) in new_bit_array\n",number_of_elements);
@@ -47,7 +47,7 @@ switch(info_length) {
 bit_array->size_in_bytes=(number_of_elements/bit_array->divider)+1;
 bit_array->array=(unsigned char*)malloc(sizeof(unsigned char)*bit_array->size_in_bytes);
 if (bit_array->array==NULL) {
-	fatal_error("Not enough memory in new_buffer\n");
+	fatal_alloc_error("new_bit_array");
 }
 for (int i=0;i<bit_array->size_in_bytes;i++) {
    bit_array->array[i]=0;

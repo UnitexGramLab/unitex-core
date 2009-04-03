@@ -233,7 +233,7 @@ else {
    n_enter_char=get_file_size(f_enter)/4;
    enter_pos=(int*)malloc(sizeof(int)*n_enter_char);
    if (enter_pos==NULL) {
-      fatal_error("Not enough memory in main\n");
+      fatal_alloc_error("main_Txt2Tfst");
    }
    if (n_enter_char!=(int)fread(enter_pos,sizeof(int),n_enter_char,f_enter)) {
       fatal_error("I/O error in main on file %d %s\n",n_enter_char,enter_pos_f);

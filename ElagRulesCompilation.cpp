@@ -110,12 +110,15 @@ for (int i=0;i<A->number_of_states;i++) {
 elRule* new_elRule(char* fst2) {
 elRule* rule=(elRule*)malloc(sizeof(elRule));
 if (rule==NULL) {
-   fatal_error("Not enough memory in new_elRule\n");
+   fatal_alloc_error("new_elRule");
 }
 rule->automaton=NULL;
 rule->nbContexts=0;
 rule->contexts=NULL;
 rule->name=strdup(fst2);
+if (rule->name==NULL) {
+   fatal_alloc_error("new_elRule");
+}
 if ((rule->automaton=load_elag_grammar_automaton(rule->name,LANGUAGE))==NULL) {
    error("Cannot load '%s' automaton.\n", fst2);
    free(rule->name);
@@ -386,7 +389,7 @@ int nbConstraints=count_constraints(rule->automaton,constraints);
 rule->nbContexts=nbConstraints+1;
 rule->contexts=(elContext*)malloc(rule->nbContexts*sizeof(elContext));
 if (rule->contexts==NULL) {
-   fatal_error("Not enough memory in split_elag_rule\n");
+   fatal_alloc_error("split_elag_rule");
 }
 for (c=0;c<rule->nbContexts;c++) {
    rule->contexts[c].left=NULL;
@@ -524,7 +527,7 @@ set_initial_state(state);
 /* We use this array to renumber states */
 int* renumber=(int*)malloc(src->number_of_states*sizeof(int));
 if (renumber==NULL) {
-   fatal_error("Not enough memory in get_sub_automaton\n");
+   fatal_alloc_error("in get_sub_automaton");
 }
 for (int e=0;e<src->number_of_states;e++) {
    renumber[e]=ELAG_UNDEFINED;

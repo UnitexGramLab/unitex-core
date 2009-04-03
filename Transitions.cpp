@@ -31,7 +31,7 @@ Transition* new_Transition(int tag_number,int state_number,Transition* next) {
 Transition* transition;
 transition=(Transition*)malloc(sizeof(Transition));
 if (transition==NULL) {
-  fatal_error("Not enough memory in new_Transition\n");
+  fatal_alloc_error("new_Transition");
 }
 transition->tag_number=tag_number;
 transition->state_number=state_number;
@@ -55,7 +55,7 @@ Transition* new_Transition(symbol_t* label,int state_number,Transition* next) {
 Transition* transition;
 transition=(Transition*)malloc(sizeof(Transition));
 if (transition==NULL) {
-  fatal_error("Not enough memory in new_Transition\n");
+  fatal_alloc_error("new_Transition");
 }
 transition->label=dup_symbol(label);
 transition->state_number=state_number;
@@ -71,7 +71,7 @@ Transition* new_Transition_no_copy(symbol_t* label,int state_number,Transition* 
 Transition* transition;
 transition=(Transition*)malloc(sizeof(Transition));
 if (transition==NULL) {
-  fatal_error("Not enough memory in new_Transition\n");
+  fatal_alloc_error("new_Transition");
 }
 transition->label=label;
 transition->state_number=state_number;
@@ -169,7 +169,7 @@ Transition* clone_transition(Transition* t,symbol_t*(*clone_elag_symbol)(const s
 Transition* transition;
 transition=(Transition*)malloc(sizeof(Transition));
 if (transition==NULL) {
-  fatal_error("Not enough memory in clone_transition\n");
+  fatal_alloc_error("clone_transition");
 }
 if (clone_elag_symbol==NULL) {
    memcpy(transition,t,sizeof(Transition));

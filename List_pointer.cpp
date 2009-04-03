@@ -30,7 +30,7 @@
 struct list_pointer* new_list_pointer(void* pointer,struct list_pointer* next) {
 struct list_pointer* p=(struct list_pointer*)malloc(sizeof(struct list_pointer));
 if (p==NULL) {
-   fatal_error("Not enough memory in new_list_pointer\n");
+   fatal_alloc_error("new_list_pointer");
 }
 p->pointer=pointer;
 p->next=next;

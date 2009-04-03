@@ -33,14 +33,14 @@
 struct buffer* new_buffer(int capacity,BufferType type) {
 struct buffer* buffer=(struct buffer*)malloc(sizeof(struct buffer));
 if (buffer==NULL) {
-	fatal_error("Not enough memory in new_buffer\n");
+	fatal_alloc_error("new_buffer");
 }
 buffer->type=type;
 switch (type) {
    case INTEGER_BUFFER: 
       buffer->int_buffer=(int*)malloc(sizeof(int)*capacity);
       if (buffer->int_buffer==NULL) {
-         fatal_error("Not enough memory in new_buffer\n");
+         fatal_alloc_error("new_buffer");
       }
       break;
    case UNICHAR_BUFFER: 
@@ -50,7 +50,7 @@ switch (type) {
        * bounds error */
       buffer->unichar_buffer=(unichar*)malloc(sizeof(unichar)*(capacity+1));
       if (buffer->unichar_buffer==NULL) {
-         fatal_error("Not enough memory in new_buffer\n");
+         fatal_alloc_error("new_buffer");
       }
       break; /* Useless, except if we add something in the future... */
 }

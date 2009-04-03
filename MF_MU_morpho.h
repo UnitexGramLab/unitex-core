@@ -20,9 +20,8 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on July 11 2005
  */
-//---------------------------------------------------------------------------
+
 
 /********************************************************************************/
 //// Morphology and inflection of a multi-word unit ///

@@ -30,7 +30,7 @@
 struct fst2txt_token_tree* new_fst2txt_token_tree() {
 struct fst2txt_token_tree* t=(struct fst2txt_token_tree*)malloc(sizeof(struct fst2txt_token_tree));
 if (t==NULL) {
-   fatal_error("Not enough memory in new_fst2txt_token_tree\n");
+   fatal_alloc_error("new_fst2txt_token_tree");
 }
 t->hash=new_string_hash(DONT_USE_VALUES);
 /* We set a small default capacity since there will be one structure of
@@ -39,7 +39,7 @@ t->capacity=2;
 t->size=0;
 t->transition_array=(Transition**)malloc(t->capacity*sizeof(Transition*));
 if (t->transition_array==NULL) {
-   fatal_error("Not enough memory in new_fst2txt_token_tree\n");
+   fatal_alloc_error("new_fst2txt_token_tree");
 }
 return t;
 }
@@ -73,7 +73,7 @@ if (n==tree->size) {
       tree->capacity=2*tree->capacity;
       tree->transition_array=(Transition**)realloc(tree->transition_array,tree->capacity*sizeof(Transition*));
       if (tree->transition_array==NULL) {
-         fatal_error("Not enough memory in add_tag\n");
+         fatal_alloc_error("add_tag");
       }
    }
    (tree->size)++;

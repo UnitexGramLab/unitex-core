@@ -19,12 +19,11 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef RussianCompoundsH
 #define RussianCompoundsH
-//---------------------------------------------------------------------------
+
 #include "GeneralDerivation.h"
 
-void init_russian ();
+void init_russian();
 
 #endif

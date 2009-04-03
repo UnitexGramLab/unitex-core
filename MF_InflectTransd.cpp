@@ -20,9 +20,8 @@
   */
 
 /* Created by Agata Savary (savary@univ-tours.fr)
- * Last modification on July 22 2005
  */
-//---------------------------------------------------------------------------
+
 
 ////////////////////////////////////////////////////////////
 // Implementation of the management of inflectional tranducers
@@ -96,6 +95,9 @@ return get_node(flex,0,root);
 // Create a new node in the tree
 struct node* new_node() {
 struct node* n=(struct node*)malloc(sizeof(struct node));
+if (n==NULL) {
+   fatal_alloc_error("new_node");
+}
 n->final=-1;
 n->t=NULL;
 return n;
@@ -105,6 +107,9 @@ return n;
 // Create a new branch in the tree
 struct transition* new_transition(char c) {
 struct transition* t=(struct transition*)malloc(sizeof(struct transition));
+if (t==NULL) {
+   fatal_alloc_error("new_transition");
+}
 t->c=c;
 t->n=NULL;
 t->suivant=NULL;

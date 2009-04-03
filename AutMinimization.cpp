@@ -46,7 +46,7 @@ TransitionCollection* new_TransitionCollection(int tag_number,int state_number,
                                                TransitionCollection* next=NULL) {
 TransitionCollection* res=(TransitionCollection*)malloc(sizeof(TransitionCollection));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_TransitionCollection\n");
+   fatal_alloc_error("new_TransitionCollection");
 }
 res->tag_number=tag_number ;
 res->state_number=state_number;
@@ -106,7 +106,7 @@ if (previous) {
 TransitionCollection** build_transition_collections(SingleGraph A,SymbolAlphabet* alph) {
 TransitionCollection** trans=(TransitionCollection**)malloc(A->number_of_states*sizeof(TransitionCollection*));
 if (trans==NULL) {
-   fatal_error("Not enough memory in build_transition_collections\n");
+   fatal_alloc_error("build_transition_collections");
 }
 for (int e=0;e<A->number_of_states;e++) {
    trans[e]=NULL;
@@ -150,7 +150,7 @@ return (t1!=t2);
 int* init_colors(SingleGraph A,int *nbColors) {
 int* color=(int*)calloc(A->number_of_states,sizeof(int));
 if (color==NULL) {
-   fatal_error("Not enough memory in init_colors\n");
+   fatal_alloc_error("init_colors");
 }
 /* bicolor will indicate if all states are of the same color (finality) or
  * not */
@@ -210,7 +210,7 @@ return (*nbShades)-1;
 int* choose_states(int* color,int nbColors,int nbStates) {
 int* chosen=(int*)malloc(nbColors*sizeof(int));
 if (chosen==NULL) {
-   fatal_error("Not enough memory in choose_states\n");
+   fatal_alloc_error("choose_states");
 }
 for (int c=0;c<nbColors;c++) {
    bool found=false;
@@ -294,7 +294,7 @@ int nbColors;
 int nbShades;
 int* color=(int*)calloc(automaton->number_of_states,sizeof(int));
 if (color==NULL) {
-   fatal_error("Not enough memory in elag_minimize\n");
+   fatal_alloc_error("elag_minimize");
 }
 int* shade=init_colors(automaton,&nbShades);
 do {

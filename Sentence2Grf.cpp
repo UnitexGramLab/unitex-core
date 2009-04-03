@@ -88,7 +88,7 @@ int SENTENCE=tfst->current_sentence;
 /* The rank array will be used to store the rank of each state */
 int* rank=(int*)malloc(sizeof(int)*tfst->automaton->number_of_states);
 if (rank==NULL) {
-   fatal_error("Not enough memory in sentence_to_grf\n");
+   fatal_alloc_error("sentence_to_grf");
 }
 int maximum_rank=compute_state_ranks(tfst,SENTENCE,rank);
 /* The pos_X array will be used to store the X coordinate of the grf
@@ -97,7 +97,7 @@ int maximum_rank=compute_state_ranks(tfst,SENTENCE,rank);
  * X positions concerns fst2 transitions. */
 int* pos_X=(int*)malloc(sizeof(int)*(maximum_rank+1));
 if (pos_X==NULL) {
-   fatal_error("Not enough memory in sentence_to_grf\n");
+   fatal_alloc_error("sentence_to_grf");
 }
 int width_max=get_max_width_for_ranks(tfst,SENTENCE,pos_X,rank,maximum_rank);
 tfst_transitions_to_grf_states(tfst,SENTENCE,rank,f,maximum_rank,width_max,pos_X,font);
@@ -138,7 +138,7 @@ int* get_n_transitions_before_state(Tfst* tfst) {
 int max=tfst->automaton->number_of_states;
 int* n_transitions_par_state=(int*)malloc((1+max)*sizeof(int));
 if (n_transitions_par_state==NULL) {
-   fatal_error("Not enough memory in get_n_transitions_par_state\n");
+   fatal_alloc_error("get_n_transitions_par_state");
 }
 Transition* trans;
 n_transitions_par_state[0]=0;
@@ -229,7 +229,7 @@ int MAX_STATES=2+n_transitions_before_state[n_states];
 Transition* trans;
 struct grf_state** grf_states=(struct grf_state**)malloc(MAX_STATES*sizeof(struct grf_state));
 if (grf_states==NULL) {
-   fatal_error("Not enough memory in fst2_transitions_to_grf_states\n");
+   fatal_alloc_error("tfst_transitions_to_grf_states");
 }
 /* We create initial state and set its transitions. We start at 2 because
  * 0 and 1 are respectively reserved for the initial and the final states. */
@@ -443,7 +443,7 @@ return pos_X[maximum_rank];
 struct grf_state* new_grf_state(unichar* content,int pos_X,int rank) {
 struct grf_state* g=(struct grf_state*)malloc(sizeof(struct grf_state));
 if (g==NULL) {
-   fatal_error("Not enough memory in new_grf_state\n");
+   fatal_alloc_error("new_grf_state");
 }
 g->content=u_strdup(content);
 g->pos_X=pos_X;
@@ -459,7 +459,7 @@ return g;
 struct grf_state* new_grf_state(char* content,int pos_X,int rank) {
 struct grf_state* g=(struct grf_state*)malloc(sizeof(struct grf_state));
 if (g==NULL) {
-   fatal_error("Not enough memory in new_grf_state\n");
+   fatal_alloc_error("new_grf_state");
 }
 g->content=u_strdup(content);
 g->pos_X=pos_X;

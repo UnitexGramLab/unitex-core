@@ -67,7 +67,7 @@ int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet,
 int argc=0;
 char** argv=(char**)malloc((4+(no_empty_graph_warning!=0)+((tfst_check!=0)))*sizeof(char*));
 if (argv==NULL) {
-   fatal_error("Not enough memory in main_Grf2Fst2\n");
+   fatal_alloc_error("pseudo_main_Grf2Fst2");
 }
 argv[argc++]=NULL;
 argv[argc++]=strdup(name);
@@ -82,6 +82,11 @@ if (no_empty_graph_warning) {
 }
 if (tfst_check) {
    argv[argc++]=strdup("-t");
+}
+for (int i=1;i<argc;i++) {
+   if (argv[i]==NULL) {
+      fatal_alloc_error("pseudo_main_Grf2Fst2");
+   }
 }
 int ret=main_Grf2Fst2(argc,argv);
 for (int i=1;i<argc;i++) {

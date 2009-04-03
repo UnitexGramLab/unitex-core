@@ -69,7 +69,7 @@ int CONTEXT_COUNTER=0;
 struct compilation_info* new_compilation_info() {
 struct compilation_info* infos=(struct compilation_info*)malloc(sizeof(struct compilation_info));
 if (infos==NULL) {
-   fatal_error("Not enough memory in new_compilation_info\n");
+   fatal_alloc_error("new_compilation_info");
 }
 infos->main_graph_path[0]='\0';
 infos->repository[0]='\0';

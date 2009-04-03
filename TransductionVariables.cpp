@@ -30,7 +30,7 @@
 Variables* new_Variables(struct list_ustring* list) {
 Variables* v=(Variables*)malloc(sizeof(Variables));
 if (v==NULL) {
-   fatal_error("Not enough memory in new_Variables\n");
+   fatal_alloc_error("new_Variables");
 }
 v->variable_index=new_string_hash(DONT_USE_VALUES);
 int l=0;
@@ -41,7 +41,7 @@ while (list!=NULL) {
 }
 v->variables=(struct transduction_variable*)malloc(l*sizeof(struct transduction_variable));
 if (v->variables==NULL) {
-   fatal_error("Not enough memory in new_Variables\n");
+   fatal_alloc_error("new_Variables");
 }
 for (int i=0;i<l;i++) {
    v->variables[i].start=UNDEF_VAR_BOUND;
@@ -116,7 +116,7 @@ if (v==NULL || v->variable_index==NULL) return NULL;
 int l=v->variable_index->size;
 int* backup=(int*)malloc(sizeof(int)*2*l);
 if (backup==NULL) {
-   fatal_error("Not enough memory in create_variable_backup\n");
+   fatal_alloc_error("create_variable_backup");
 }
 int j=0;
 for (int i=0;i<l;i++) {

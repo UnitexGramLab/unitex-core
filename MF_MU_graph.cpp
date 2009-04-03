@@ -20,12 +20,7 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on July 11 2005
  */
-//---------------------------------------------------------------------------
-
-/********************************************************************************/
-/********************************************************************************/
 
 #include "MF_MU_graph.h"
 #include "Fst2.h"
@@ -161,7 +156,7 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
   while (t) {
     l = (MU_graph_label_T*) malloc(sizeof(MU_graph_label_T));
     if (!l) {
-       fatal_error("Not enough memory in function MU_graph_explore_state\n");
+       fatal_alloc_error("MU_graph_explore_state");
     }
     q_bis = fst2[T]->states[t->state_number];  //get the arrival state
     Fst2Tag e = fst2[T]->tags[t->tag_number];  //get the transition's label
@@ -794,6 +789,9 @@ int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T*
     MU_label->in = NULL;
   else {
     MU_label->in = (MU_graph_in_T*)malloc(sizeof(MU_graph_in_T));
+    if (MU_label->in==NULL) {
+       fatal_alloc_error("MU_graph_scan_label");
+    }
     err1 = MU_graph_scan_label_in(label_in, MU_label->in);
   }
   //Output label
@@ -806,6 +804,9 @@ int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T*
     MU_label->out = NULL;
   else {
     MU_label->out = (MU_graph_out_T*)malloc(sizeof(MU_graph_out_T));
+    if (MU_label->out==NULL) {
+       fatal_alloc_error("MU_graph_scan_label");
+    }
     err2 = MU_graph_scan_label_out(label_out, MU_label->out);
   }
   return (err1 or err2);
@@ -831,8 +832,7 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
   if (*pos != (unichar)'<') {
     l = u_scan_until_char(tmp,pos,MAX_GRAPH_NODE-1,"",1);
     MU_label_in->unit.type = cst;
-    MU_label_in->unit.u.seq = (unichar*) malloc((u_strlen(tmp)+1) * sizeof(unichar));
-    u_strcpy(MU_label_in->unit.u.seq,tmp);    
+    MU_label_in->unit.u.seq = u_strdup(tmp);    
     MU_label_in->morpho = NULL;
     pos = pos + l;
   }
@@ -874,6 +874,9 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
     if (*pos == (unichar) ':') {
       pos++;
       MU_label_in->morpho = (MU_graph_morpho_T*) malloc(sizeof(MU_graph_morpho_T));
+      if (MU_label_in->morpho==NULL) {
+         fatal_alloc_error("MU_graph_scan_label_in");
+      }
       unichar tmp1[MAX_GRAPH_NODE];
       l = u_scan_until_char(tmp1,pos,MAX_GRAPH_NODE-1,">",1);
       err = MU_graph_scan_graph_morpho(tmp1, MU_label_in->morpho);
@@ -1019,8 +1022,7 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
 	error("a variable missing after \'$\'.\n");
 	return 1;      
       }
-      MU_graph_morpho->cats[cv].val.unif_var = (unichar*) malloc((u_strlen(tmp)+1) * sizeof(unichar));
-      u_strcpy(MU_graph_morpho->cats[cv].val.unif_var,tmp);
+      MU_graph_morpho->cats[cv].val.unif_var = u_strdup(tmp);
     }
     else {  //constant value, e.g. fem
       if (dbl_eq) {

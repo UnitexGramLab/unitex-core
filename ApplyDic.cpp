@@ -53,11 +53,11 @@ struct word_struct_array* new_word_struct_array(int n) {
 struct word_struct_array* res;
 res=(struct word_struct_array*)malloc(sizeof(struct word_struct_array));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_word_struct_array\n");
+   fatal_alloc_error("new_word_struct_array");
 }
 res->element=(struct word_struct**)malloc(sizeof(struct word_struct*)*n);
 if (res->element==NULL) {
-   fatal_error("Not enough memory in new_word_struct_array\n");
+   fatal_alloc_error("new_word_struct_array");
 }
 for (int i=0;i<n;i++) {
    res->element[i]=NULL;
@@ -87,7 +87,7 @@ struct word_struct* new_word_struct() {
 struct word_struct* res;
 res=(struct word_struct*)malloc(sizeof(struct word_struct));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_word_struct\n");
+   fatal_alloc_error("new_word_struct");
 }
 res->list=NULL;
 res->trans=NULL;
@@ -113,7 +113,7 @@ struct word_transition* new_word_transition() {
 struct word_transition* res;
 res=(struct word_transition*)malloc(sizeof(struct word_transition));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_word_transition\n");
+   fatal_alloc_error("new_word_transition");
 }
 res->node=NULL;
 res->next=NULL;
@@ -187,7 +187,7 @@ if (l==NULL) {
    /* If the offset is not in the list, we add it */
    l=(struct offset_list*)malloc(sizeof(struct offset_list));
    if (l==NULL) {
-      fatal_error("Not enough memory in get_offset\n");
+      fatal_alloc_error("get_offset");
    }
    l->offset=offset;
    l->content=u_strdup(content);
@@ -539,7 +539,7 @@ struct dico_application_info* init_dico_application(struct text_tokens* tokens,
                                                     FILE* text_cod,Alphabet* alphabet) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
-   fatal_error("Not enough memory in init_dico_application\n");
+   fatal_alloc_error("init_dico_application");
 }
 info->text_cod=text_cod;
 info->tokens=tokens;
@@ -556,7 +556,7 @@ info->part_of_a_word=new_bit_array(tokens->N,ONE_BIT);
 info->simple_word=new_bit_array(tokens->N,TWO_BITS);
 info->n_occurrences=(int*)malloc(tokens->N*sizeof(int));
 if (info->part_of_a_word==NULL || info->simple_word==NULL || info->n_occurrences==NULL) {
-   fatal_error("Not enough memory in init_dico_application\n");
+   fatal_alloc_error("init_dico_application");
 }
 for (int j=0;j<tokens->N;j++) {
    info->n_occurrences[j]=0;
@@ -653,6 +653,9 @@ if (info->n_tag_sequences==info->tag_sequences_capacity) {
 		info->tag_sequences_capacity=2*info->tag_sequences_capacity;
 	}
 	info->tag_sequences=(struct match_list**)realloc(info->tag_sequences,info->tag_sequences_capacity*sizeof(struct match_list*));
+	if (info->tag_sequences==NULL) {
+	   fatal_alloc_error("add_tag_sequence");
+	}
 }
 info->tag_sequences[(info->n_tag_sequences)++]=match;
 }

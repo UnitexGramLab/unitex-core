@@ -29,7 +29,7 @@
 struct dictionary_node* new_dictionary_node() {
 struct dictionary_node* a=(struct dictionary_node*)malloc(sizeof(struct dictionary_node));
 if (a==NULL) {
-	fatal_error("Not enough memory in new_dictionary_node\n");
+	fatal_alloc_error("new_dictionary_node");
 }
 a->single_INF_code_list=NULL;
 a->offset=-1;
@@ -45,7 +45,7 @@ return a;
 struct dictionary_node_transition* new_dictionary_node_transition() {
 struct dictionary_node_transition* t=(struct dictionary_node_transition*)malloc(sizeof(struct dictionary_node_transition));
 if (t==NULL) {
-	fatal_error("Not enough memory in new_arbre_dico_trans\n");
+	fatal_alloc_error("new_dictionary_node_transition");
 }
 t->letter='\0';
 t->node=NULL;
@@ -317,7 +317,7 @@ void init_minimize_arrays(struct transition_list** *transitions_by_height,
                           struct dictionary_node_transition** *transitions) {
 (*transitions_by_height)=(struct transition_list**)malloc(MAXIMUM_HEIGHT*sizeof(struct transition_list*));
 if (*transitions_by_height==NULL) {
-   fatal_error("Not enough memory in init_minimize_arrays\n");
+   fatal_alloc_error("init_minimize_arrays");
 }
 unsigned int i;
 for (i=0;i<MAXIMUM_HEIGHT;i++) {
@@ -325,7 +325,7 @@ for (i=0;i<MAXIMUM_HEIGHT;i++) {
 }
 (*transitions)=(dictionary_node_transition**)malloc(MAXIMUM_TRANSITIONS*sizeof(struct dictionary_node_transition*));
 if (*transitions==NULL) {
-   fatal_error("Not enough memory in init_minimize_arrays\n");
+   fatal_alloc_error("init_minimize_arrays");
 }
 }
 
@@ -399,7 +399,7 @@ struct transition_list* new_transition_list(struct dictionary_node_transition* t
 struct transition_list* t;
 t=(struct transition_list*)malloc(sizeof(struct transition_list));
 if (t==NULL) {
-   fatal_error("Not enough memory in new_transition_list\n");
+   fatal_alloc_error("new_transition_list");
 }
 t->transition=transition;
 t->next=next;

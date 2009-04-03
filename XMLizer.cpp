@@ -146,9 +146,21 @@ strcat(tmp,".tmp");
 normalize(input,snt,KEEP_CARRIDGE_RETURN,normalization);
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 p->text_file=strdup(snt);
+if (p->text_file==NULL) {
+   fatal_alloc_error("main_XMLizer");
+}
 p->temp_file=strdup(tmp);
+if (p->temp_file==NULL) {
+   fatal_alloc_error("main_XMLizer");
+}
 p->fst_file=strdup(segmentation);
+if (p->fst_file==NULL) {
+   fatal_alloc_error("main_XMLizer");
+}
 p->alphabet_file=strdup(alphabet);
+if (p->alphabet_file==NULL) {
+   fatal_alloc_error("main_XMLizer");
+}
 p->output_policy=MERGE_OUTPUTS;
 p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
 p->space_policy=DONT_START_WITH_SPACE;

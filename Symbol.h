@@ -19,8 +19,8 @@
   *
   */
 
-#ifndef _SYMBOL_H_
-#define _SYMBOL_H_
+#ifndef SymbolH
+#define SymbolH
 
 #include "Ustring.h"
 #include "LanguageDefinition.h"

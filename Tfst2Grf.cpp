@@ -84,11 +84,17 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
                 fatal_error("You must specify a non empty output name pattern\n");
              }
              output=strdup(optarg);
+             if (output==NULL) {
+                fatal_alloc_error("main_Tfst2Grf");
+             }
              break;
    case 'f': if (optarg[0]=='\0') {
                 fatal_error("You must specify a non empty font name\n");
              }
              fontname=strdup(optarg);
+             if (fontname==NULL) {
+                fatal_alloc_error("main_Tfst2Grf");
+             }
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
@@ -129,6 +135,9 @@ if (output==NULL) {
 }
 if (fontname==NULL) {
    fontname=strdup("Times New Roman");
+   if (fontname==NULL) {
+      fatal_alloc_error("main_Tfst2Grf");
+   }
 }
 FILE* f=u_fopen(grf_name,U_WRITE);
 if (f==NULL) {

@@ -32,7 +32,7 @@ struct parsing_info* new_parsing_info(int pos,int pos_in_token,int state,int sta
 struct parsing_info* info;
 info=(struct parsing_info*)malloc(sizeof(struct parsing_info));
 if (info==NULL) {
-   fatal_error("Not enough memory in new_parsing_info\n");
+   fatal_alloc_error("new_parsing_info");
 }
 info->position=pos;
 info->pos_in_token=pos_in_token;

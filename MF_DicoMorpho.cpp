@@ -20,9 +20,7 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on June 2232005
  */
-//---------------------------------------------------------------------------
 
 #include <stdio.h>
 #include "MF_LangMorpho.h"
@@ -267,7 +265,7 @@ f_morpho_T* d_get_feat_str(unichar* feat_str) {
   f_morpho_T* feat;
   feat = (f_morpho_T*) malloc(sizeof(f_morpho_T));
   if (!feat) {
-    fatal_error("Not enough memory in function d_get_feat_str\n");
+    fatal_alloc_error("d_get_feat_str");
   }
   f_init_morpho(feat);
   for (f=0; f<u_strlen(feat_str); f++) {
@@ -296,7 +294,7 @@ unichar* d_get_str_feat(f_morpho_T* feat) {
   int c;   //index of the current character in tmp;
   tmp = (unichar*) malloc((MAX_CATS+1) * sizeof(unichar));
   if (!tmp) {
-    fatal_error("Not enough memory in function d_get_str_feat\n");
+    fatal_alloc_error("d_get_str_feat");
   }
   tmp[0] = (unichar) '\0';
   c = 0;

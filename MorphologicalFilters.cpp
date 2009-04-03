@@ -54,7 +54,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
 /* Then, */
 FilterSet* filter_set=(FilterSet*)malloc(sizeof(FilterSet));
 if (filter_set==NULL) {
-   fatal_error("Not enough memory in new_FilterSet\n");
+   fatal_alloc_error("new_FilterSet");
 }
 if (filters->size>0) {
    unichar filterContent[512];
@@ -64,7 +64,7 @@ if (filters->size>0) {
    filter_set->size=filters->size;
    filter_set->filter=(MorphoFilter*)malloc(sizeof(MorphoFilter)*filters->size);
    if (filter_set->filter==NULL) {
-      fatal_error("Not enough memory in new_FilterSet\n");
+      fatal_alloc_error("new_FilterSet");
    }
    for (i=0;i<filters->size;i++) {
       /* For each filter */
@@ -75,6 +75,9 @@ if (filters->size>0) {
        * "<<able$>>_f_" will be turned into "able$" and "f". */
       split_filter(filters->value[i],filterContent,filterOptions);
       filter_set->filter[i].options=strdup(filterOptions);
+      if (filter_set->filter[i].options) {
+         fatal_alloc_error("new_FilterSet");
+      }
       regBasic=0;
       int replaceLetters=1;
       for (int j=0;filterOptions[j]!='\0';j++) {
@@ -107,7 +110,7 @@ if (filters->size>0) {
       }
       filter_set->filter[i].matcher=(regex_t*)malloc(sizeof(regex_t));
       if (filter_set->filter[i].matcher==NULL) {
-         fatal_error("Not enough memory in new_FilterSet\n");
+         fatal_alloc_error("new_FilterSet");
       }
       /* As the TRE library manipulates wchar_t* strings, we must convert our unichar* one */
       w_strcpy(warray,filter_set->filter[i].content);
@@ -173,13 +176,13 @@ wchar_t inflected[2048];
 unichar* current_token;
 FilterMatchIndex* index=(FilterMatchIndex*)malloc(sizeof(FilterMatchIndex));
 if (index==NULL) {
-   fatal_error("Not enough memory in new_FilterMatchIndex\n");
+   fatal_alloc_error("new_FilterMatchIndex");
 }
 if (filters->size>0) {
    index->size=filters->size;
    index->matching_tokens=(struct bit_array**)malloc(sizeof(struct bit_array*)*index->size);
    if (index->matching_tokens==NULL) {
-      fatal_error("Not enough memory in new_FilterMatchIndex\n");
+      fatal_alloc_error("new_FilterMatchIndex");
    }
    /* We initialize the bit arrays */
    for (i=0;i<index->size;i++) {

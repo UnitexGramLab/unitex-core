@@ -20,7 +20,6 @@
   */
 
 #include "NormalizeAsRoutine.h"
-
 #include "Buffer.h"
 #include "DELA.h"
 #include "Error.h"

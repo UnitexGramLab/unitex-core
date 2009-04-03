@@ -1367,7 +1367,9 @@ struct search_tree_node* encoding_names=NULL;
  */
 struct encoding* new_encoding() {
 struct encoding* encoding=(struct encoding*)malloc(sizeof(struct encoding));
-if (encoding==NULL) {fatal_error("Not enough memory in new_one_byte_encoding\n");}
+if (encoding==NULL) {
+   fatal_alloc_error("new_encoding");
+}
 encoding->name=NULL;
 encoding->aliases=NULL;
 encoding->number_of_aliases=0;
@@ -1427,12 +1429,14 @@ for (int i=0;s[i];i++) {
 void install_one_byte_encoding(char* name,void (*init_function)(unichar*),
                                void (*usage_function)(void),
                                char** aliases) {
-if (name==NULL) {fatal_error("NULL name error in install_one_byte_encoding\n");}
+if (name==NULL) {
+   fatal_error("NULL name error in install_one_byte_encoding\n");
+}
 /* First we build the encoding */
 struct encoding* encoding=new_encoding();
 encoding->type=ONE_BYTE_ENCODING;
 if ((encoding->name=strdup(name))==NULL) {
-	fatal_error("Not enough memory in install_one_byte_encoding\n");
+	fatal_alloc_error("install_one_byte_encoding");
 }
 strtolower(encoding->name);
 if (init_function==NULL) {
@@ -1452,16 +1456,22 @@ if (aliases==NULL) {
 int i=0;
 while (aliases[i]!=NULL) {
 	encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
-	if (encoding->aliases==NULL) {fatal_error("Not enough memory in install_one_byte_encoding\n");}
+	if (encoding->aliases==NULL) {
+	   fatal_alloc_error("install_one_byte_encoding");
+	}
 	encoding->aliases[i]=strdup(aliases[i]);
 	strtolower(encoding->aliases[i]);
-	if (encoding->aliases[i]==NULL) {fatal_error("Not enough memory in install_one_byte_encoding\n");}
+	if (encoding->aliases[i]==NULL) {
+	   fatal_alloc_error("install_one_byte_encoding");
+	}
 	i++;
 }
 encoding->number_of_aliases=i;
 /* Now, we install this encoding, enlarging the encoding array */
 encodings=(struct encoding**)realloc(encodings,(number_of_encodings+1)*sizeof(struct encoding*));
-if (encodings==NULL) {fatal_error("Not enough memory in install_one_byte_encoding\n");}
+if (encodings==NULL) {
+   fatal_alloc_error("install_one_byte_encoding");
+}
 encodings[number_of_encodings]=encoding;
 /* Then we insert the encoding name and its aliases in the encoding name tree,
  * associating them to the corresponding index in 'encodings'. The insertion
@@ -1496,12 +1506,14 @@ void install_multi_bytes_encoding(char* name,int type,int (*input_function)(FILE
 								int (*output_function)(unichar,FILE*),
 								void (*usage_function)(void),
 								char** aliases) {
-if (name==NULL) {fatal_error("NULL name error in install_multi_bytes_encoding\n");}
+if (name==NULL) {
+   fatal_error("NULL name error in install_multi_bytes_encoding\n");
+}
 /* First we build the encoding */
 struct encoding* encoding=new_encoding();
 encoding->type=type;
 if ((encoding->name=strdup(name))==NULL) {
-	fatal_error("Not enough memory in install_multi_bytes_encoding\n");
+	fatal_alloc_error("install_multi_bytes_encoding");
 }
 strtolower(encoding->name);
 if (input_function==NULL) {
@@ -1526,16 +1538,22 @@ if (aliases==NULL) {
 int i=0;
 while (aliases[i]!=NULL) {
 	encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
-	if (encoding->aliases==NULL) {fatal_error("Not enough memory in install_multi_bytes_encoding\n");}
+	if (encoding->aliases==NULL) {
+	   fatal_alloc_error("install_multi_bytes_encoding");
+	}
 	encoding->aliases[i]=strdup(aliases[i]);
 	strtolower(encoding->aliases[i]);
-	if (encoding->aliases[i]==NULL) {fatal_error("Not enough memory in install_multi_bytes_encoding\n");}
+	if (encoding->aliases[i]==NULL) {
+	   fatal_alloc_error("install_multi_bytes_encoding");
+	}
 	i++;
 }
 encoding->number_of_aliases=i;
 /* Now, we install this encoding, enlarging the encoding array */
 encodings=(struct encoding**)realloc(encodings,(number_of_encodings+1)*sizeof(struct encoding*));
-if (encodings==NULL) {fatal_error("Not enough memory in install_multi_bytes_encoding\n");}
+if (encodings==NULL) {
+   fatal_alloc_error("install_multi_bytes_encoding");
+}
 encodings[number_of_encodings]=encoding;
 /* Then we insert the encoding name and its aliases in the encoding name tree,
  * associating them to the corresponding index in 'encodings'. The insertion

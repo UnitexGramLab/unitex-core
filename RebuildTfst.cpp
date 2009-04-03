@@ -216,7 +216,7 @@ if (fst2->states[0]->transitions==NULL) {
 }
 unichar** tags=(unichar**)malloc(sizeof(unichar*)*fst2->number_of_tags);
 if (tags==NULL) {
-   fatal_error("Not enough memory in create_tfst_tags\n");
+   fatal_alloc_error("create_tfst_tags");
 }
 tags[0]=u_strdup("@<E>\n.\n");
 unichar tmp[4096];
@@ -228,9 +228,6 @@ for (int i=1;i<fst2->number_of_tags;i++) {
                                                 &(foo.end_pos_token),&(foo.end_pos_char));
    TfstTag_to_string(&foo,tmp);
    tags[i]=u_strdup(tmp);
-   if (tags[i]==NULL) {
-      fatal_error("Not enough memory in create_tfst_tags\n");
-   }
 }
 return tags;
 }

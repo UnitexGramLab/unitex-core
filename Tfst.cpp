@@ -35,7 +35,7 @@ void free_current_sentence(Tfst*);
 Tfst* new_Tfst(FILE* tfst,FILE* tind,int N) {
 Tfst* t=(Tfst*)malloc(sizeof(Tfst));
 if (t==NULL) {
-   fatal_error("Not enough memory in new_Tfst\n");
+   fatal_alloc_error("new_Tfst");
 }
 t->N=N;
 t->tfst=tfst;
@@ -323,7 +323,7 @@ free_Ustring(foo);
 TfstTag* new_TfstTag(TfstTagType type) {
 TfstTag* t=(TfstTag*)malloc(sizeof(TfstTag));
 if (t==NULL) {
-   fatal_error("Not enough memory in new_TfstTag\n");
+   fatal_alloc_error("new_TfstTag");
 }
 if (type!=T_EPSILON && type!=T_STD) {
    fatal_error("Invalid tag type in new_TfstTag\n");

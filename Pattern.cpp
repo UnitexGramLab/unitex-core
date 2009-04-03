@@ -24,8 +24,6 @@
 #include "StringParsing.h"
 
 
-
-
 /**
  * Allocates, initializes and returns a new pattern.
  */
@@ -33,7 +31,7 @@ struct pattern* new_pattern() {
 struct pattern* p;
 p=(struct pattern*)malloc(sizeof(struct pattern));
 if (p==NULL) {
-   fatal_error("Not enough memory in new_pattern\n");
+   fatal_alloc_error("new_pattern");
 }
 p->inflected=NULL;
 p->lemma=NULL;

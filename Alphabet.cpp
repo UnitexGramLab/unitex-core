@@ -28,6 +28,9 @@
  */
 Alphabet* new_alphabet() {
 Alphabet* alphabet=(Alphabet*)malloc(sizeof(Alphabet));
+if (alphabet==NULL) {
+   fatal_alloc_error("new_alphabet");
+}
 for (int i=0;i<0x10000;i++) {
     alphabet->t[i]=NULL;
     alphabet->t2[i]=0;
@@ -57,12 +60,18 @@ free(alphabet);
 void add_letter_equivalence(Alphabet* alphabet,unichar lower,unichar upper) {
 if (alphabet->t[lower]==NULL) {
    alphabet->t[lower]=(unichar*)malloc(2*sizeof(unichar));
+   if (alphabet->t[lower]==NULL) {
+      fatal_alloc_error("add_letter_equivalence");
+   }
    alphabet->t[lower][0]=upper;
    alphabet->t[lower][1]='\0';
    return;
 }
 int L=u_strlen(alphabet->t[lower]);
 alphabet->t[lower]=(unichar*)realloc(alphabet->t[lower],(L+2)*sizeof(unichar));
+if (alphabet->t[lower]==NULL) {
+   fatal_alloc_error("add_letter_equivalence");
+}
 alphabet->t[lower][L]=upper;
 alphabet->t[lower][L+1]='\0';
 }

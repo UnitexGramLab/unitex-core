@@ -48,7 +48,7 @@ return LANGUAGE;
 feature_info_t* new_feature_info_t(char type,int CATid,int val) {
 feature_info_t* infos=(feature_info_t*)malloc(sizeof(feature_info_t));
 if (infos==NULL) {
-   fatal_error("Not enough memory in new_feature_info_t\n");
+   fatal_alloc_error("new_feature_info_t");
 }
 infos->type=type;
 infos->CATid=CATid;
@@ -72,7 +72,7 @@ CAT_t* new_CAT_t(unichar* name) {
 static unichar unspecified[]={ 'u', 'n', 's', 'p', 'e', 'c', 'i', 'f', 'i', 'e', 'd', 0 };
 CAT_t* CAT=(CAT_t*)malloc(sizeof(CAT_t));
 if (CAT==NULL) {
-   fatal_error("Not enough memory in new_CAT_t\n");
+   fatal_alloc_error("new_CAT_t");
 }
 CAT->name=u_strdup(name);
 CAT->values=new_string_hash(16);
@@ -106,7 +106,7 @@ return get_value_index(value,CAT->values);
 POS_t* new_POS_t(unichar* POS_name) {
 POS_t* res=(POS_t*)malloc(sizeof(POS_t));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_POS_t\n");
+   fatal_alloc_error("new_POS_t");
 }
 res->name=u_strdup(POS_name);
 res->ignorable=false;
@@ -226,7 +226,7 @@ POS_t * add_POS(language_t * lang, const unichar * name);
 language_t* new_language_t(unichar* language_name) {
 language_t* language=(language_t*)malloc(sizeof(language_t));
 if (language==NULL) {
-   fatal_error("Not enough memory in new_language_t\n");
+   fatal_alloc_error("in new_language_t");
 }
 language->name=u_strdup(language_name);
 language->POSs=new_string_hash_ptr(16);

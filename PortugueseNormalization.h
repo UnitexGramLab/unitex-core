@@ -19,10 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef PortugueseNormalizationH
 #define PortugueseNormalizationH
-//---------------------------------------------------------------------------
+
 
 #include "Unicode.h"
 #include "Alphabet.h"

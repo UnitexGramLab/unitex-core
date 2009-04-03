@@ -111,7 +111,7 @@ int max_negs=a->nbnegs+b->nbnegs;
 res->nbnegs=0;
 res->negs=(int*)malloc(max_negs*sizeof(int));
 if (res->negs==NULL) {
-   fatal_error("Not enough memory in negs_union_negs\n");
+   fatal_alloc_error("negs_union_negs");
 }
 int c1=0;
 int c2=0;
@@ -374,7 +374,7 @@ res->negative=true;
 res->nbnegs=a->nbnegs;
 res->negs=(int*)malloc(res->nbnegs*sizeof(int));
 if (res->negs==NULL) {
-   fatal_error("Not enough memory in NEG_inter_CODE\n");
+   fatal_alloc_error("NEG_inter_CODE");
 }
 for (int i=0;i< res->nbnegs;i++) {
    res->negs[i]=a->negs[i];
@@ -837,7 +837,7 @@ static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
     s->nbnegs   = a->nbnegs;
     s->negs = (int *) malloc(s->nbnegs * sizeof(int));
     if (s->negs==NULL) {
-       fatal_error("Not enough memory in NEG_minus_CAN\n");
+       fatal_alloc_error("NEG_minus_CAN");
     }
     for (i = 0; i < s->nbnegs; i++) { s->negs[i] = a->negs[i]; }
   }
@@ -860,7 +860,7 @@ static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
   s->negative = true;
   s->negs   = (int *) malloc((a->nbnegs + 1) * sizeof(int));
   if (s->negs==NULL) {
-     fatal_error("Not enough memory in NEG_minus_CAN\n");
+     fatal_alloc_error("NEG_minus_CAN");
   }
 
   s->nbnegs = 0;
@@ -907,7 +907,7 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
     s->nbnegs   = a->nbnegs;
     s->negs = (int *) malloc(s->nbnegs * sizeof(int));
     if (s->negs==NULL) {
-       fatal_error("Not enough memory in NEG_minus_NEG\n");
+       fatal_alloc_error("NEG_minus_NEG");
     }
     for (i = 0; i < s->nbnegs; i++) { s->negs[i] = a->negs[i]; }
   }
@@ -957,7 +957,7 @@ static symbol_t * NEG_minus_CODE(const symbol_t * a, const symbol_t * b) {
     s->nbnegs = a->nbnegs;
     s->negs = (int *) malloc(s->nbnegs * sizeof(int));
     if (s->negs==NULL) {
-       fatal_error("Not enough memory in NEG_minus_CODE\n");
+       fatal_alloc_error("NEG_minus_CODE");
     }
     for (int i = 0; i < s->nbnegs; i++) { s->negs[i]  = a->negs[i]; }
   }
@@ -986,7 +986,7 @@ static symbol_t * CODE_minus_CAN(const symbol_t * a, const symbol_t * b) {
   res->nbnegs  = 1;
   res->negs    = (int*)malloc(sizeof(int));
   if (res->negs==NULL) {
-     fatal_error("Not enough memory in CODE_minus_CAN\n");
+     fatal_alloc_error("CODE_minus_CAN");
   }
   res->negs[0] = b->lemma;
 

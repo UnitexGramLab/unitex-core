@@ -31,7 +31,7 @@
 Ustring* new_Ustring(const unichar* str) {
 Ustring* res=(Ustring*)malloc(sizeof(Ustring));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_Ustring\n");
+   fatal_alloc_error("new_Ustring");
 }
 if (str==NULL) {
    str=U_EMPTY;
@@ -40,7 +40,7 @@ res->len=u_strlen(str);
 res->size=res->len+1;
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
-   fatal_error("Not enough memory in new_Ustring\n");
+   fatal_alloc_error("new_Ustring");
 }
 for (int i=0;i<res->size;i++) {
    res->str[i]=str[i];
@@ -64,7 +64,7 @@ return new_Ustring((unichar*)NULL);
 Ustring* new_Ustring(int size) {
 Ustring* res=(Ustring*)malloc(sizeof(Ustring));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_Ustring\n");
+   fatal_alloc_error("new_Ustring");
 }
 if (size<=0) {
    size=1;
@@ -73,7 +73,7 @@ res->len=0;
 res->size=size;
 res->str=(unichar*)malloc(res->size*sizeof(unichar));
 if (res->str==NULL) {
-   fatal_error("Not enough memory in new_Ustring\n");
+   fatal_alloc_error("new_Ustring");
 }
 res->str[0]='\0';
 return res;
@@ -94,7 +94,7 @@ free(ustr);
  * Resizes th internal buffer of the given Ustring to the given size.
  * The buffer size is never decreased. Note that you cannot set a size<1.
  */
-void resize(Ustring* ustr,int size) {
+static void resize(Ustring* ustr,int size) {
 if (size<1) {
    size=1;
 }
@@ -103,7 +103,7 @@ if (size<=ustr->size) {
 }
 ustr->str=(unichar*)realloc(ustr->str,size*sizeof(unichar));
 if (ustr->str==NULL) {
-   fatal_error("Not enough memory in resize %d\n",size);
+   fatal_alloc_error("resize");
 }
 if (size<ustr->len) {
    /* If we truncate the string */

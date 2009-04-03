@@ -18,11 +18,10 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-//---------------------------------------------------------------------------
 #include "NorwegianCompounds.h"
 #include "Error.h"
 #include "List_ustring.h"
-//---------------------------------------------------------------------------
+
 
 /**
  * As the PolyLex program was originaly designed for Norwegian,
@@ -132,11 +131,11 @@ infos.new_unknown_word_list=new_unknown_word_list;
 infos.forbidden_words=forbidden_words;
 infos.valid_left_component=(char*)malloc(sizeof(char)*(inf->N));
 if (infos.valid_left_component==NULL) {
-	fatal_error("Not enough memory in analyse_norwegian_unknown_words\n");
+	fatal_alloc_error("analyse_norwegian_unknown_words");
 }
 infos.valid_right_component=(char*)malloc(sizeof(char)*(inf->N));
 if (infos.valid_right_component==NULL) {
-	fatal_error("Not enough memory in analyse_norwegian_unknown_words\n");
+   fatal_alloc_error("analyse_norwegian_unknown_words");
 }
 /* We look for all INF codes if they correspond to valid left/right
  * components of compounds words. */
@@ -640,7 +639,9 @@ return 1;
 struct word_decomposition* new_word_decomposition() {
 struct word_decomposition* tmp;
 tmp=(struct word_decomposition*)malloc(sizeof(struct word_decomposition));
-if (tmp==NULL) {fatal_error("Not enough memory in new_word_decomposition\n");}
+if (tmp==NULL) {
+   fatal_alloc_error("new_word_decomposition");
+}
 tmp->n_parts=0;
 tmp->decomposition[0]='\0';
 tmp->dela_line[0]='\0';
@@ -665,7 +666,9 @@ free(t);
 struct word_decomposition_list* new_word_decomposition_list() {
 struct word_decomposition_list* tmp;
 tmp=(struct word_decomposition_list*)malloc(sizeof(struct word_decomposition_list));
-if (tmp==NULL) {fatal_error("Not enough memory in new_word_decomposition_list\n");}
+if (tmp==NULL) {
+   fatal_alloc_error("new_word_decomposition_list");
+}
 tmp->element=NULL;
 tmp->next=NULL;
 return tmp;

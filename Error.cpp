@@ -23,10 +23,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "Error.h"
 #include "Unicode.h"
 
 #define DEFAULT_ERROR_CODE 1
+#define ALLOC_ERROR_CODE 2
 
 
 /**
@@ -74,3 +74,11 @@ va_end(list);
 }
 
 
+
+/**
+ * Raises a fatal memory allocation error. 'function' is the name 
+ * of the function where the error occurred.
+ */
+void fatal_alloc_error(char* function) {
+fatal_error(ALLOC_ERROR_CODE,"Not enough memory in %s\n",function);
+}

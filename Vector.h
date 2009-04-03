@@ -49,14 +49,14 @@ typedef struct vector_int {
 inline vector_ptr* new_vector_ptr(int size=16) {
 vector_ptr* vec=(vector_ptr*)malloc(sizeof(vector_ptr));
 if (vec==NULL) {
-   fatal_error("Not enough memory in new_vector_ptr\n");
+   fatal_alloc_error("new_vector_ptr");
 }
 if (size<=0) {
    size=1;
 }
 vec->tab=(void**)malloc(size*sizeof(void*));
 if (vec->tab==NULL) {
-   fatal_error("Not enough memory in new_vector_ptr\n");
+   fatal_alloc_error("new_vector_ptr");
 }
 vec->size=size;
 vec->nbelems=0;
@@ -87,7 +87,7 @@ if (size<=vec->nbelems) {
 }
 vec->tab=(void**)realloc(vec->tab,size*sizeof(void*));
 if (vec->tab==NULL) {
-   fatal_error("Not enough memory in vector_ptr_resize\n");
+   fatal_alloc_error("vector_ptr_resize");
 }
 vec->size=size;
 }
@@ -105,14 +105,14 @@ return vec->nbelems-1;
 inline vector_int* new_vector_int(int size=16) {
 vector_int* vec=(vector_int*)malloc(sizeof(vector_int));
 if (vec==NULL) {
-   fatal_error("Not enough memory in new_vector_int\n");
+   fatal_alloc_error("new_vector_int");
 }
 if (size<=0) {
    size=1;
 }
 vec->tab=(int*)malloc(size*sizeof(int));
 if (vec==NULL) {
-   fatal_error("Not enough memory in new_vector_int\n");
+   fatal_alloc_error("new_vector_int");
 }
 vec->size=size;
 vec->nbelems=0;
@@ -136,7 +136,7 @@ if (size<vec->nbelems) {
 }
 vec->tab=(int*)realloc(vec->tab,size*sizeof(int));
 if (vec->tab==NULL) {
-   fatal_error("Not enough memory in vector_int_resize\n");
+   fatal_alloc_error("vector_int_resize");
 }
 vec->size=size;
 }

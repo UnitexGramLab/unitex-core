@@ -19,11 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include <stdlib.h>
 #include "List_ustring.h"
 #include "Error.h"
-//---------------------------------------------------------------------------
 
 
 /**
@@ -36,7 +34,7 @@ if (string==NULL) {
 struct list_ustring* l;
 l=(struct list_ustring*)malloc(sizeof(struct list_ustring));
 if (l==NULL) {
-   fatal_error("Not enough memory in new_list_ustring\n");
+   fatal_alloc_error("new_list_ustring");
 }
 l->string=u_strdup(string);
 l->next=following;

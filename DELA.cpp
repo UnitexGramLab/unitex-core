@@ -32,7 +32,7 @@
 struct dela_entry* new_dela_entry(unichar* inflected,unichar* lemma,unichar* code) {
 struct dela_entry* res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_dela_entry\n");
+   fatal_alloc_error("new_dela_entry");
 }
 res->inflected=u_strdup(inflected);
 res->lemma=u_strdup(lemma);
@@ -54,7 +54,7 @@ if (entry==NULL) return NULL;
 int i;
 struct dela_entry* res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
 if (res==NULL) {
-   fatal_error("Not enough memory in clone_dela_entry\n");
+   fatal_alloc_error("clone_dela_entry");
 }
 res->inflected=u_strdup(entry->inflected);
 res->lemma=u_strdup(entry->lemma);
@@ -132,7 +132,7 @@ if (line==NULL) {
 /* Initialization of the result structure */
 res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
 if (res==NULL) {
-	fatal_error("Not enough memory in tokenize_DELAF_line\n");
+	fatal_alloc_error("tokenize_DELAF_line");
 }
 res->inflected=NULL;
 res->lemma=NULL;
@@ -378,7 +378,7 @@ if (line==NULL) {
 /* Initialization of the result structure */
 res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
 if (res==NULL) {
-   fatal_error("Not enough memory in tokenize_DELAS_line\n");
+   fatal_alloc_error("tokenize_DELAS_line");
 }
 res->inflected=NULL;
 res->lemma=NULL;
@@ -848,14 +848,14 @@ if (f==NULL) {
 }
 res=(struct INF_codes*)malloc(sizeof(struct INF_codes));
 if (res==NULL) {
-   fatal_error("Not enough memory in load_INF_file\n");
+   fatal_alloc_error("in load_INF_file");
 }
 if (1!=u_fscanf(f,"%d\n",&(res->N))) {
    fatal_error("Invalid INF file: %s\n",name);
 }
 res->codes=(struct list_ustring**)malloc(sizeof(struct list_ustring*)*(res->N));
 if (res->codes==NULL) {
-   fatal_error("Not enough memory in load_INF_file\n");
+   fatal_alloc_error("in load_INF_file");
 }
 unichar s[DIC_LINE_SIZE*10];
 int i=0;
@@ -907,7 +907,7 @@ int file_size=d+256*c+256*256*b+256*256*256*a;
 fseek(f,0,SEEK_SET);
 tab=(unsigned char*)malloc(sizeof(unsigned char)*file_size);
 if (tab==NULL) {
-   error("Memory error: cannot load %s\n",name);
+   fatal_alloc_error("load_BIN_file");
    return NULL;
 }
 if (file_size!=(int)fread(tab,sizeof(char),file_size,f)) {

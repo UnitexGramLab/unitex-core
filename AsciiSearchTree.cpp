@@ -31,7 +31,9 @@
  */
 struct search_tree_node* new_search_tree() {
 struct search_tree_node* tree=(struct search_tree_node*)malloc(sizeof(struct search_tree_node));
-if (tree==NULL) {fatal_error("Not enough memory in new_search_tree\n");}
+if (tree==NULL) {
+   fatal_alloc_error("new_search_tree");
+}
 tree->is_final=0;
 /* There is no need to give a default value since because the value field
  * is not supposed to be read if the node is not final */

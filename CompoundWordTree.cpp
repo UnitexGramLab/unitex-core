@@ -40,7 +40,7 @@ struct DLC_tree_node* new_DLC_tree_node() {
 struct DLC_tree_node* n;
 n=(struct DLC_tree_node*)malloc(sizeof(struct DLC_tree_node));
 if (n==NULL) {
-	fatal_error("Not enough memory in new_DLC_tree_node\n");
+	fatal_alloc_error("new_DLC_tree_node");
 }
 n->patterns=NULL;
 n->number_of_patterns=0;
@@ -60,7 +60,7 @@ struct DLC_tree_transition* new_DLC_tree_transition() {
 struct DLC_tree_transition* t;
 t=(struct DLC_tree_transition*)malloc(sizeof(struct DLC_tree_transition));
 if (t==NULL) {
-	fatal_error("Not enough memory in new_DLC_tree_transition\n");
+	fatal_alloc_error("new_DLC_tree_transition");
 }
 t->token_sequence=NULL;
 t->node=NULL;
@@ -80,12 +80,12 @@ return t;
 struct DLC_tree_info* new_DLC_tree(int number_of_tokens) {
 struct DLC_tree_info* DLC_tree=(struct DLC_tree_info*)malloc(sizeof(struct DLC_tree_info));
 if (DLC_tree==NULL) {
-	fatal_error("Not enough memory in init_DLC_tree\n");
+	fatal_alloc_error("new_DLC_tree");
 }
 DLC_tree->root=new_DLC_tree_node();
 DLC_tree->index=(struct DLC_tree_node**)malloc(number_of_tokens*sizeof(struct DLC_tree_node*));
 if (DLC_tree->index==NULL) {
-	fatal_error("Not enough memory in new_DLC_tree\n");
+   fatal_alloc_error("new_DLC_tree");
 }
 for (int i=0;i<number_of_tokens;i++) {
 	DLC_tree->index[i]=NULL;
@@ -519,7 +519,7 @@ if (n->number_of_patterns!=0) {
    /* We allocate the array for pattern numbers and we fill it */
    n->array_of_patterns=(int*)malloc(sizeof(int)*n->number_of_patterns);
    if (n->array_of_patterns==NULL) {
-      fatal_error("Not enough memory in optimize_DLC_node\n");
+      fatal_alloc_error("optimize_DLC_node");
    }
    i=0;
    while (n->patterns!=NULL) {
@@ -535,11 +535,11 @@ if (n->transitions!=NULL) {
     * transitions and fill them */
    n->destination_tokens=(int*)malloc(sizeof(int)*n->number_of_transitions);
    if (n->destination_tokens==NULL) {
-      fatal_error("Not enough memory in optimize_DLC_node\n");
+      fatal_alloc_error("optimize_DLC_node");
    }
    n->destination_nodes=(struct DLC_tree_node**)malloc(sizeof(struct DLC_tree_node*)*n->number_of_transitions);
    if (n->destination_nodes==NULL) {
-      fatal_error("Not enough memory in optimize_DLC_node\n");
+      fatal_alloc_error("optimize_DLC_node");
    }
    i=0;
    while (n->transitions!=NULL) {
@@ -680,7 +680,7 @@ int l;
 for (l=0;src[l]!=-1;l++);
 IntSequence dst=(IntSequence)malloc((l+1)*sizeof(int));
 if (dst==NULL) {
-   fatal_error("Not enough memory in clone_IntSequence\n");
+   fatal_alloc_error("clone_IntSequence");
 }
 l=0;
 while ((dst[l]=src[l])!=-1) l++;

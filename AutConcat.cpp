@@ -68,7 +68,7 @@ void elag_concat(SingleGraph A,SingleGraph B) {
 int oldnb=A->number_of_states;
 int* renumber=(int*)malloc(B->number_of_states*sizeof(int));
 if (renumber==NULL) {
-   fatal_error("Not enough memory in concat\n");
+   fatal_alloc_error("elag_concat");
 }
 int q;
 /* We copy the states of B into A */

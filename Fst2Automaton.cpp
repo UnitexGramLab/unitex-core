@@ -33,7 +33,7 @@
 Fst2Automaton* new_Fst2Automaton(unichar* name,int size) {
 Fst2Automaton* aut=(Fst2Automaton*)malloc(sizeof(Fst2Automaton));
 if (aut==NULL) {
-   fatal_error("Not enough memory in new_Fst2Automaton\n");
+   fatal_alloc_error("new_Fst2Automaton");
 }
 aut->name=u_strdup(name);
 if (size>=0) {

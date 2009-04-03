@@ -19,15 +19,18 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "Text_tokens.h"
-//---------------------------------------------------------------------------
+#include "Error.h"
+
 
 int NUMBER_OF_TEXT_TOKENS=0;
 
 struct text_tokens* new_text_tokens() {
 struct text_tokens* tmp;
 tmp=(struct text_tokens*)malloc(sizeof(struct text_tokens));
+if (tmp==NULL) {
+   fatal_alloc_error("new_text_tokens");
+}
 tmp->N=0;
 tmp->SENTENCE_MARKER=-1;
 tmp->token=NULL;
@@ -44,6 +47,9 @@ if (f==NULL) {
 struct text_tokens* res=new_text_tokens();
 u_fscanf(f,"%d\n",&(res->N));
 res->token=(unichar**)malloc((res->N)*sizeof(unichar*));
+if (res->token==NULL) {
+   fatal_alloc_error("load_text_tokens");
+}
 unichar tmp[1000];
 res->SENTENCE_MARKER=-1;
 int i=0;

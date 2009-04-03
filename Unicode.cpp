@@ -1868,7 +1868,9 @@ return !u_strcmp(a,b);
 unichar* u_strdup(const unichar* str) {
 if (str==NULL) return NULL;
 unichar* res=(unichar*)malloc((u_strlen(str)+1)*sizeof(unichar));
-if (res==NULL) fatal_error("Not enough memory in u_strdup\n");
+if (res==NULL) {
+   fatal_alloc_error("u_strdup");
+}
 return u_strcpy(res,str);
 }
 
@@ -1883,14 +1885,17 @@ return u_strcpy(res,str);
  */
 unichar* u_strdup(const unichar* str,int n) {
 if (str==NULL) return NULL;
-if (n<0)
-  fatal_error("Invalid length in u_strdup\n");
+if (n<0) {
+   fatal_error("Invalid length in u_strdup\n");
+}
 int length=u_strlen(str);
-if (length<n)
-  n=length;
+if (length<n) {
+   n=length;
+}
 unichar* res=(unichar*)malloc((n+1)*sizeof(unichar));
-if (res==NULL)
-  fatal_error("Not enough memory in u_strdup\n");
+if (res==NULL) {
+   fatal_alloc_error("u_strdup");
+}
 u_strncpy(res,str,n);
 res[n]='\0';
 return res;
@@ -1906,7 +1911,9 @@ return res;
 unichar* u_strdup(const char* str) {
 if (str==NULL) return NULL;
 unichar* res=(unichar*)malloc((strlen(str)+1)*sizeof(unichar));
-if (res==NULL) fatal_error("Not enough memory in u_strdup\n");
+if (res==NULL) {
+   fatal_alloc_error("u_strdup");
+}
 return u_strcpy(res,str);
 }
 

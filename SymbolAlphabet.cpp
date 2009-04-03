@@ -29,7 +29,7 @@
 SymbolAlphabet* new_SymbolAlphabet() {
 SymbolAlphabet* alph=(SymbolAlphabet*)malloc(sizeof(SymbolAlphabet));
 if (alph==NULL) {
-   fatal_error("Not enough memory in new_SymbolAlphabet\n");
+   fatal_alloc_error("new_SymbolAlphabet");
 }
 alph->ustr=new_Ustring();
 alph->symbols=new_string_hash_ptr();

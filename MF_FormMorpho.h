@@ -20,15 +20,11 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on Jul 10 2005
  */
-//---------------------------------------------------------------------------
 
-/********************************************************************************/
-/********************************************************************************/
+#ifndef MF_FormMorphoH
+#define MF_FormMorphoH
 
-#ifndef FormMorphoH
-#define FormMorphoH
 
 #include "Unicode.h"
 #include "MF_LangMorpho.h"

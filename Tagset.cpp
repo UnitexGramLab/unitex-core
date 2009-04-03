@@ -60,7 +60,7 @@ static keyword_t keywords[] = {
 token_t* new_token_t(unichar* str) {
 token_t* tok=(token_t*)malloc(sizeof(token_t));
 if (tok==NULL) {
-   fatal_error("Not enough memory in new_token_t\n");
+   fatal_alloc_error("new_token_t");
 }
 for (keyword_t* key=keywords;key->str!=NULL;key++) {
    if (!u_strcmp(str, key->str)) {
@@ -120,7 +120,7 @@ while (tok!=NULL) {
 tokens_list* new_tokens_list(token_t* tokens,tokens_list* next) {
 tokens_list* res =(tokens_list*)malloc(sizeof(tokens_list));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_tokens_list\n");
+   fatal_alloc_error("new_tokens_list");
 }
 res->tokens=tokens;
 res->next=next;
@@ -162,7 +162,7 @@ return list;
 pos_section_t* new_pos_section_t(char* name) {
 pos_section_t* res=(pos_section_t*)malloc(sizeof(pos_section_t));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_pos_section_t\n");
+   fatal_alloc_error("new_pos_section_t");
 }
 res->name=u_strdup(name);
 res->ignore=false;
@@ -179,7 +179,7 @@ return res;
 pos_section_t* new_pos_section_t(unichar* name) {
 pos_section_t* res=(pos_section_t*)malloc(sizeof(pos_section_t));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_pos_section_t\n");
+   fatal_alloc_error("new_pos_section_t");
 }
 res->name=u_strdup(name);
 res->ignore=false;
@@ -222,7 +222,7 @@ while (list!=NULL) {
 tagset_t* new_tagset_t(unichar* name) {
 tagset_t* tree=(tagset_t*)malloc(sizeof(tagset_t));
 if (tree==NULL) {
-   fatal_error("Not enough memory in new_tagset_t\n");
+   fatal_alloc_error("new_tagset_t");
 }
 tree->name=u_strdup(name);
 tree->pos_sections=NULL;

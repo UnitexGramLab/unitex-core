@@ -20,9 +20,8 @@
   */
 
 /* Created by Agata Savary (savary@univ-tours.fr)
- * Last modification on July 22 2005
  */
-//---------------------------------------------------------------------------
+
 
 ////////////////////////////////////////////////////////////
 // Implementation of the management of inflectional tranducers

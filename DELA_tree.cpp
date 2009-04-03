@@ -33,12 +33,15 @@ struct DELA_tree* new_DELA_tree() {
 struct DELA_tree* tree;
 tree=(struct DELA_tree*)malloc(sizeof(struct DELA_tree));
 if (tree==NULL) {
-   fatal_error("Not enough memory in new_DELA_tree\n");
+   fatal_alloc_error("new_DELA_tree");
 }
 tree->inflected_forms=new_string_hash(DONT_USE_VALUES);
 tree->size=0;
 tree->capacity=256;
 tree->dela_entries=(struct dela_entry_list**)malloc(tree->capacity*sizeof(struct dela_entry_list*));
+if (tree->dela_entries==NULL) {
+   fatal_alloc_error("new_DELA_tree");
+}
 return tree;
 }
 
@@ -66,7 +69,7 @@ struct dela_entry_list* new_dela_entry_list(struct dela_entry* entry,int clone) 
 struct dela_entry_list* l;
 l=(struct dela_entry_list*)malloc(sizeof(struct dela_entry_list));
 if (l==NULL) {
-   fatal_error("Not enough memory in new_dela_entry_list\n");
+   fatal_alloc_error("new_dela_entry_list");
 }
 l->next=NULL;
 if (clone) l->entry=clone_dela_entry(entry);
@@ -119,7 +122,7 @@ if (n==tree->size) {
       tree->capacity=2*tree->capacity;
       tree->dela_entries=(struct dela_entry_list**)realloc(tree->dela_entries,tree->capacity*sizeof(struct dela_entry_list*));
       if (tree->dela_entries==NULL) {
-         fatal_error("Not enough memory in add_entry\n");
+         fatal_alloc_error("add_entry");
       }
    }
    tree->dela_entries[n]=NULL;

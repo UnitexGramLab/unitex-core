@@ -81,11 +81,17 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
                 fatal_error("You must specify a non empty text file name\n");
              }
              p->text_file=strdup(optarg);
+             if (p->text_file==NULL) {
+                fatal_alloc_error("main_Fst2Txt");
+             }
              break;
    case 'a': if (optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
              p->alphabet_file=strdup(optarg);
+             if (p->alphabet_file==NULL) {
+                fatal_alloc_error("main_Fst2Txt");
+             }
              break;
    case 'M': p->output_policy=MERGE_OUTPUTS; break;
    case 'R': p->output_policy=REPLACE_OUTPUTS; break;
@@ -119,8 +125,13 @@ char tmp[FILENAME_MAX];
 remove_extension(p->text_file,tmp);
 strcat(tmp,".tmp");
 p->temp_file=strdup(tmp);
+if (p->temp_file==NULL) {
+   fatal_alloc_error("main_Fst2Txt");
+}
 p->fst_file=strdup(argv[optind]);
-
+if (p->fst_file==NULL) {
+   fatal_alloc_error("main_Fst2Txt");
+}
 int result=main_fst2txt(p);
 free_fst2txt_parameters(p);
 return result;

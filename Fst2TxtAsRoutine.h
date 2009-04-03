@@ -19,8 +19,8 @@
   *
   */
 
-#ifndef FST2TXTASROUTINE_H
-#define FST2TXTASROUTINE_H
+#ifndef Fst2TxtAsRoutineH
+#define Fst2TxtAsRoutineH
 
 #include "Alphabet.h"
 #include "Buffer.h"

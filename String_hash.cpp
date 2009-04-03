@@ -40,7 +40,7 @@ struct string_hash* new_string_hash(int capacity,int bound_policy) {
 struct string_hash* s;
 s=(struct string_hash*)malloc(sizeof(struct string_hash));
 if (s==NULL) {
-   fatal_error("Not enough memory in new_string_hash\n");
+   fatal_alloc_error("new_string_hash");
 }
 s->size=0;
 s->capacity=capacity;
@@ -51,7 +51,7 @@ if (s->capacity==DONT_USE_VALUES) {
 } else {
    s->value=(unichar**)malloc(capacity*sizeof(unichar*));
    if (s->value==NULL) {
-      fatal_error("Not enough memory in new_string_hash\n");
+      fatal_alloc_error("new_string_hash");
    }
 }
 s->root=new_string_hash_tree_node();
@@ -84,7 +84,7 @@ struct string_hash_tree_node* new_string_hash_tree_node() {
 struct string_hash_tree_node* node;
 node=(struct string_hash_tree_node*)malloc(sizeof(struct string_hash_tree_node));
 if (node==NULL) {
-   fatal_error("Not enough memory in new_string_hash_tree_node\n");
+   fatal_alloc_error("new_string_hash_tree_node");
 }
 node->value_index=NO_VALUE_INDEX;
 node->trans=NULL;
@@ -99,7 +99,7 @@ struct string_hash_tree_transition* new_string_hash_tree_transition() {
 struct string_hash_tree_transition* transition;
 transition=(struct string_hash_tree_transition*)malloc(sizeof(struct string_hash_tree_transition));
 if (transition==NULL) {
-   fatal_error("Not enough memory in new_string_hash_tree_transition\n");
+   fatal_alloc_error("new_string_hash_tree_transition");
 }
 transition->letter='\0';
 transition->node=NULL;
@@ -206,7 +206,7 @@ if (key[pos]=='\0') {
        hash->capacity=2*hash->capacity;
        hash->value=(unichar**)realloc(hash->value,sizeof(unichar*)*hash->capacity);
        if (hash->value==NULL) {
-         fatal_error("Not enough memory in get_value_index\n");
+         fatal_alloc_error("get_value_index");
        }
      }
      node->value_index=hash->size;
@@ -428,7 +428,7 @@ return get_longest_key_index_(s,0,key_length,hash->root);
 struct string_hash_ptr* new_string_hash_ptr(int capacity) {
 struct string_hash_ptr* s=(struct string_hash_ptr*)malloc(sizeof(struct string_hash_ptr));
 if (s==NULL) {
-   fatal_error("Not enough memory in new_string_hash_ptr\n");
+   fatal_alloc_error("new_string_hash_ptr");
 }
 /* We don't use the unichar* values of the normal string hash */
 s->hash=new_string_hash(DONT_USE_VALUES);
@@ -436,7 +436,7 @@ s->capacity=capacity;
 s->size=0;
 s->value=(void**)malloc(capacity*sizeof(void*));
 if (s->value==NULL) {
-   fatal_error("Not enough memory in new_string_hash\n");
+   fatal_alloc_error("new_string_hash_ptr");
 }
 return s;
 }
@@ -506,7 +506,7 @@ if (hash->hash->size!=size) {
       hash->capacity=2*hash->capacity;
       hash->value=(void**)realloc(hash->value,sizeof(void*)*hash->capacity);
       if (hash->value==NULL) {
-         fatal_error("Not enough memory in get_value_index\n");
+         fatal_alloc_error("get_value_index\n");
       }
    }
    hash->value[index]=value;
@@ -545,7 +545,7 @@ if (hash->hash->size==hash->capacity) {
    hash->capacity=2*hash->capacity;
    hash->value=(void**)realloc(hash->value,sizeof(void*)*hash->capacity);
    if (hash->value==NULL) {
-      fatal_error("Not enough memory in add_value\n");
+      fatal_alloc_error("add_value");
    }
 }
 hash->value[index]=value;

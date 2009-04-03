@@ -19,10 +19,10 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef GeneralDerivationH
 #define GeneralDerivationH
-//---------------------------------------------------------------------------
+
+
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "DELA.h"

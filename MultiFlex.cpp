@@ -20,7 +20,6 @@
   */
 
 /* Created by Agata Savary (savary@univ-tours.fr)
- * Last modification on September 12 2005
  */
 
 

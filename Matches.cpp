@@ -31,7 +31,7 @@ struct match_list* new_match(int start,int end,unichar* output,struct match_list
 struct match_list *l;
 l=(struct match_list*)malloc(sizeof(struct match_list));
 if (l==NULL) {
-   fatal_error("Not enough memory in new_match\n");
+   fatal_alloc_error("new_match");
 }
 l->start=start;
 l->end=end;

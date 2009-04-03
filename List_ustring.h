@@ -18,13 +18,11 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-
-//---------------------------------------------------------------------------
 #ifndef List_ustringH
 #define List_ustringH
-//---------------------------------------------------------------------------
 
 #include "Unicode.h"
+
 
 /**
  * This is a simple structure for manipulating unicode string lists.

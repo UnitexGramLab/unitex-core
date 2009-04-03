@@ -99,7 +99,9 @@ int open_bracket=-1;
 int close_bracket=-1;
 /* We compute the length of each token */
 int* token_length=(int*)malloc(sizeof(int)*tokens->N);
-if (token_length==NULL) {fatal_error("Not enough memory in create_concordance\n");}
+if (token_length==NULL) {
+   fatal_alloc_error("create_concordance");
+}
 compute_token_length(token_length,tokens);
 if (option->result_mode==MERGE_) {
 	/* If we have to produced a modified version of the original text, we
@@ -157,16 +159,40 @@ if(option->result_mode==XALIGN_) return;
 if (option->sort_mode!=TEXT_ORDER) {
    char** argv;
 	argv=(char**)malloc(6*sizeof(char*));
+	if (argv==NULL) {
+	   fatal_alloc_error("create_concordance");
+	}
 	argv[0]=strdup(" ");
+	if (argv[0]==NULL) {
+	   fatal_alloc_error("create_concordance");
+	}
 	argv[1]=strdup(temp_file_name);
+	if (argv[1]==NULL) {
+	   fatal_alloc_error("create_concordance");
+	}
 	argv[2]=strdup("-n");
+   if (argv[2]==NULL) {
+      fatal_alloc_error("create_concordance");
+   }
 	int i=3;
 	if (option->sort_alphabet!=NULL) {
-		argv[i++]=strdup("-o");
-		argv[i++]=strdup(option->sort_alphabet);
+		argv[i]=strdup("-o");
+	   if (argv[i]==NULL) {
+	      fatal_alloc_error("create_concordance");
+	   }
+		i++;
+		argv[i]=strdup(option->sort_alphabet);
+      if (argv[i]==NULL) {
+         fatal_alloc_error("create_concordance");
+      }
+		i++;
 	}
 	if (option->thai_mode) {
-		argv[i++]=strdup("-thai");
+		argv[i]=strdup("-thai");
+      if (argv[i]==NULL) {
+         fatal_alloc_error("create_concordance");
+      }
+		i++;
 	}
 	main_SortTxt(i,argv);
 	for (int j=0;j<i;j++) {
@@ -1133,7 +1159,7 @@ return res;
 struct conc_opt* new_conc_opt() {
 struct conc_opt* opt=(struct conc_opt*)malloc(sizeof(struct conc_opt));
 if (opt==NULL) {
-   fatal_error("Not enough memory in new_conc_opt\n");
+   fatal_alloc_error("new_conc_opt");
 }
 opt->sort_mode=TEXT_ORDER;
 opt->left_context=0;

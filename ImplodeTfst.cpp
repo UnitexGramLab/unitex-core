@@ -199,7 +199,7 @@ struct implode_infos {
 struct implode_infos* new_implode_infos(struct dela_entry* entry,TfstTag* tag) {
 struct implode_infos* res=(struct implode_infos*)malloc(sizeof(struct implode_infos));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_implode_infos\n");
+   fatal_alloc_error("new_implode_infos");
 }
 res->entry=entry;
 res->tag=tag;

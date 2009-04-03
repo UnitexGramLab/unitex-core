@@ -37,12 +37,12 @@ int size=hash_table->size;
 for (int i=0;i<size;i++) {
    block=(struct tct_hash_block*)malloc(sizeof(struct tct_hash_block));
    if (block==NULL) {
-      fatal_error("Not enough memory in new_hash_block\n");
+      fatal_alloc_error("initialize_hash_blocks");
    }
    block->size=block_size;
    block->token_array=(int*)malloc(block_size*sizeof(int));
    if (block->token_array==NULL) {
-      fatal_error("Not enough memory in new_hash_block\n");
+      fatal_alloc_error("initialize_hash_blocks");
    }
    block->length=0;
    hash_table->hash_blocks[i]=block;
@@ -58,12 +58,12 @@ struct tct_hash* new_tct_hash(int size,int tct_hash_block_size) {
 struct tct_hash* hash_table;
 hash_table=(struct tct_hash*)malloc(sizeof(struct tct_hash));
 if (hash_table==NULL) {
-   fatal_error("Not enough memory in new_tct_hash\n");
+   fatal_alloc_error("new_tct_hash");
 }
 hash_table->size=size;
 hash_table->hash_blocks=(struct tct_hash_block**)malloc(size*sizeof(struct tct_hash_block*));
 if (hash_table->hash_blocks==NULL) {
-   fatal_error("Not enough memory in new_tct_hash\n");
+   fatal_alloc_error("new_tct_hash");
 }
 /* We initialize the block array */
 initialize_hash_blocks(hash_table,tct_hash_block_size);
@@ -138,7 +138,7 @@ block->size=block->size*factor;
 if (factor==1) return;
 block->token_array=(int*)realloc(block->token_array,block->size*sizeof(int));
 if (block->token_array==NULL) {
-   fatal_error("Not enough memory in realloc_tct_hash_block\n");
+   fatal_alloc_error("realloc_tct_hash_block");
 }
 }
 

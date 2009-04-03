@@ -222,7 +222,7 @@ int f_copy_morpho(f_morpho_T *feat1, f_morpho_T *feat2) {
   if (!feat1) {
     feat1 = (f_morpho_T*) malloc(sizeof(f_morpho_T));
     if (!feat1)
-      fatal_error("Not enough memory in function f_copy_morpho.\n");
+      fatal_alloc_error("f_copy_morpho");
   }
 
   if (!feat2)

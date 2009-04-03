@@ -32,7 +32,7 @@
 
 static void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Fst2Unambig  [OPTIONS] <tfst>\n"
+u_printf("Usage: Tfst2Unambig  [OPTIONS] <tfst>\n"
          "\n"
          "  <tfst>: .tfst file representing the text automaton\n"
          "\n"
@@ -67,6 +67,9 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
                 fatal_error("You must specify a non empty output text file name\n");
              }
              output=strdup(optarg);
+             if (output==NULL) {
+                fatal_alloc_error("main_Tfst2Unambig");
+             }
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 

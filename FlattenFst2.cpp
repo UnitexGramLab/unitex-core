@@ -138,7 +138,7 @@ return result;
 struct list_int** compute_dependencies(Fst2* grammar) {
 struct list_int** dependencies=(struct list_int**)malloc(sizeof(struct list_int*)*(1+grammar->number_of_graphs));
 if (dependencies==NULL) {
-   fatal_error("Not enough memory in compute_dependencies\n");
+   fatal_alloc_error("compute_dependencies");
 }
 for (int i=1;i<=grammar->number_of_graphs;i++) {
    dependencies[i]=NULL;
@@ -221,7 +221,7 @@ else {
 int* check_for_graphs_to_keep(Fst2* grammar,int depth) {
 int* new_graph_number=(int*)malloc((1+grammar->number_of_graphs)*sizeof(int));
 if (new_graph_number==NULL) {
-   fatal_error("Not enough memory in check_for_graphs_to_keep\n");
+   fatal_alloc_error("check_for_graphs_to_keep");
 }
 /* The main graph must always be kept */
 new_graph_number[1]=1;
@@ -285,7 +285,7 @@ int initial_position_for_new_states=new_main_graph->number_of_states;
 int trans_to_flatten_capacity=2048;
 Transition** transitions_to_flatten=(Transition**)malloc(trans_to_flatten_capacity*sizeof(Transition*));
 if (transitions_to_flatten==NULL) {
-   fatal_error("Not enough memory in flatten_graph\n");
+   fatal_alloc_error("flatten_graph");
 }
 int trans_to_flatten_size=0;
 /* First, we copy the original states into the destination graph */
@@ -338,7 +338,7 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
                   trans_to_flatten_capacity=2*trans_to_flatten_capacity;
                   transitions_to_flatten=(Transition**)realloc(transitions_to_flatten,trans_to_flatten_capacity*sizeof(Transition*));
                   if (transitions_to_flatten==NULL) {
-                     fatal_error("Not enough memory in flatten_graph\n");
+                     fatal_alloc_error("flatten_graph");
                   }
                }
                transitions_to_flatten[trans_to_flatten_size++]=temp;

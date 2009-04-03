@@ -19,6 +19,7 @@
   *
   */
 
+#include <stdlib.h>
 #include "Stack_unichar.h"
 #include "Error.h"
 
@@ -29,11 +30,11 @@
 struct stack_unichar* new_stack_unichar(int capacity) {
 struct stack_unichar* s=(struct stack_unichar*)malloc(sizeof(struct stack_unichar));
 if (s==NULL) {
-   fatal_error("Not enough memory in new_stack_unichar\n");
+   fatal_alloc_error("new_stack_unichar");
 }
 s->stack=(unichar*)malloc(capacity*sizeof(unichar));
 if (s->stack==NULL) {
-   fatal_error("Not enough memory in new_stack_unichar\n");
+   fatal_alloc_error("new_stack_unichar");
 }
 s->stack_pointer=-1;
 s->capacity=capacity;

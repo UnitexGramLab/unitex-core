@@ -88,9 +88,12 @@ return 0;
 Elag_fst_file_in* load_elag_fst2_file(char* fname,language_t* language) {
 Elag_fst_file_in* fstf=(Elag_fst_file_in*)malloc(sizeof(Elag_fst_file_in));
 if (fstf==NULL) {
-   fatal_error("Not enough memory in load_fst_file\n");
+   fatal_alloc_error("load_elag_fst2_file");
 }
 fstf->name=strdup(fname);
+if (fstf->name==NULL) {
+   fatal_alloc_error("load_elag_fst2_file");
+}
 if ((fstf->f=u_fopen(fname,U_READ))==NULL) {
    error("load_fst_file: unable to open '%s' for reading\n",fname);
    goto error_fstf;
@@ -273,7 +276,7 @@ return load_automaton(fstin);
 Elag_fst_file_out* fst_file_out_open(char* fname,int type) {
 Elag_fst_file_out* res=(Elag_fst_file_out*)malloc(sizeof(Elag_fst_file_out));
 if (res==NULL) {
-   fatal_error("Not enough memory in fst_file_out_open\n");
+   fatal_alloc_error("fst_file_out_open");
 }
 if (type<0 || type>=FST_BAD_TYPE) {
    fatal_error("fst_file_out_open: bad FST_TYPE\n");
@@ -286,6 +289,9 @@ if ((res->f=u_fopen(fname,U_WRITE))==NULL) {
 res->fstart=ftell(res->f);
 u_fprintf(res->f,"0000000000\n");
 res->name=strdup(fname);
+if (res->name) {
+   fatal_alloc_error("fst_file_out_open");
+}
 res->type=type;
 res->nb_automata=0;
 res->labels=new_string_hash(16);
@@ -484,7 +490,7 @@ return A;
 Elag_Tfst_file_in* load_tfst_file(char* fname,language_t* language) {
 Elag_Tfst_file_in* fstf=(Elag_Tfst_file_in*)malloc(sizeof(Elag_Tfst_file_in));
 if (fstf==NULL) {
-   fatal_error("Not enough memory in load_tfst_file\n");
+   fatal_alloc_error("load_tfst_file");
 }
 fstf->tfst=open_text_automaton(fname);
 fstf->language=language;
@@ -508,7 +514,7 @@ int n_tags=0;
 int size=16;
 input->renumber=(int*)malloc(16*sizeof(int));
 if (input->renumber==NULL) {
-   fatal_error("Not enough memory in load_tfst_sentence_automaton\n");
+   fatal_alloc_error("load_tfst_sentence_automaton");
 }
 /* And we compute all the symbol_t* from the tags */
 input->symbols=new_string_hash_ptr(input->tfst->tags->size);
@@ -537,7 +543,7 @@ for (int i=0;i<input->tfst->tags->nbelems;i++) {
       size=size*2;
       input->renumber=(int*)realloc(input->renumber,size*sizeof(int));
       if (input->renumber==NULL) {
-         fatal_error("Not enough memory in load_tfst_sentence_automaton\n");
+         fatal_alloc_error("load_tfst_sentence_automaton");
       }
    }
    input->renumber[n_tags++]=index;

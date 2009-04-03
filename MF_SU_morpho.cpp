@@ -22,8 +22,6 @@
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
  */
 
-/********************************************************************************/
-/********************************************************************************/
 
 #include <string.h>
 #include "MF_LangMorpho.h"
@@ -239,7 +237,7 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
 	         //Put the form into 'forms'
 	         forms->forms=(SU_f_T*)realloc(forms->forms,(forms->no_forms+1)*sizeof(SU_f_T));
             if (!forms->forms) {
-	            fatal_error("Not enough memory in function SU_explore_state\n");
+	            fatal_alloc_error("SU_explore_state");
 	         }
             forms->forms[forms->no_forms].form=u_strdup(flechi);
             forms->forms[forms->no_forms].features = feat[f];
@@ -256,7 +254,7 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
        * several inflection codes */
          forms->forms=(SU_f_T*)realloc(forms->forms,(forms->no_forms+1)*sizeof(SU_f_T));
          if (!forms->forms) {
-            fatal_error("Not enough memory in function SU_explore_state\n");
+            fatal_alloc_error("SU_explore_state");
          }
          forms->forms[forms->no_forms].form=u_strdup(flechi);
          forms->forms[forms->no_forms].raw_features=u_strdup(sortie);
@@ -273,7 +271,7 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
          //Put the form into 'forms'
          forms->forms=(SU_f_T*)realloc(forms->forms,(forms->no_forms+1)*sizeof(SU_f_T));
          if (!forms->forms) {
-            fatal_error("Not enough memory in function SU_explore_state\n");
+            fatal_alloc_error("SU_explore_state");
          }
          forms->forms[forms->no_forms].form=u_strdup(flechi);
          
@@ -317,7 +315,7 @@ int SU_explore_state(unichar* flechi,unichar* canonique,unichar* sortie,
 struct inflect_infos* new_inflect_infos() {
 struct inflect_infos* i=(struct inflect_infos*)malloc(sizeof(struct inflect_infos));
 if (i==NULL) {
-   fatal_error("Not enough memory in new_inflect_infos\n");
+   fatal_alloc_error("new_inflect_infos");
 }
 i->inflected=NULL;
 i->output=NULL;
@@ -633,6 +631,9 @@ int SU_convert_features(f_morpho_T*** feat,unichar* feat_str) {
   int no_f;  //number of feature sets scanned
 
   (*feat) = (f_morpho_T**) malloc(sizeof(f_morpho_T*));
+  if ((*feat)==NULL) {
+     fatal_alloc_error("SU_convert_features");
+  }
   no_f = 0;
 
   while (*feat_str) {
@@ -653,7 +654,7 @@ int SU_convert_features(f_morpho_T*** feat,unichar* feat_str) {
     no_f++;
     (*feat) = (f_morpho_T**) realloc((*feat), (no_f+1) * sizeof(f_morpho_T*));
     if (!(*feat)) {
-      fatal_error("Not enough memory in function SU_convert_features\n");
+      fatal_alloc_error("SU_convert_features");
     }
     (*feat)[no_f-1] = f;
   }
@@ -799,6 +800,9 @@ void SU_delete_features(f_morpho_T* f) {
 SU_id_T*  SU_get_id(unichar* form, f_morpho_T* feat, SU_lemma_T* SU_lemma) {
   SU_id_T* SU_id;
   SU_id = (SU_id_T*) malloc(sizeof(SU_id_T));
+  if (SU_id==NULL) {
+     fatal_alloc_error("SU_get_id");
+  }
 
   //Form
   SU_id->form=u_strdup(form);
@@ -808,7 +812,7 @@ SU_id_T*  SU_get_id(unichar* form, f_morpho_T* feat, SU_lemma_T* SU_lemma) {
     //Lemma
     SU_id->lemma = (SU_lemma_T*) malloc(sizeof(SU_lemma_T));
     if (!SU_id->lemma) {
-       fatal_error("Not enough memory in function SU_get_id\n");
+       fatal_alloc_error("SU_get_id");
     }
     //Lemma form
     SU_id->lemma->unit=u_strdup(SU_lemma->unit);
@@ -816,11 +820,14 @@ SU_id_T*  SU_get_id(unichar* form, f_morpho_T* feat, SU_lemma_T* SU_lemma) {
     SU_id->lemma->cl = SU_lemma->cl;
     //Paradigm
     SU_id->lemma->paradigm=strdup(SU_lemma->paradigm);
+    if (SU_id->lemma->paradigm==NULL) {
+       fatal_alloc_error("SU_get_id");
+    }
     //Features
     f_morpho_T* fea;
     fea = (f_morpho_T*) malloc(sizeof(f_morpho_T));
     if (!fea) {
-       fatal_error("Not enough memory in function SU_get_id\n");
+       fatal_alloc_error("SU_get_id");
     }
     f_init_morpho(fea);
     int f;  //index of the current category-value pair in 'feat'
@@ -938,12 +945,10 @@ void SU_init_forms(SU_forms_T* forms) {
 void SU_init_invariable_form(SU_forms_T* forms, unichar* form) {
   forms->no_forms = 1;
   forms->forms = (SU_f_T*) malloc(sizeof(SU_f_T));
-  if (!forms->forms)
-    fatal_error("Not enough memory in function SU_init_invariable_form\n");
-  forms->forms[0].form = (unichar*) malloc(sizeof(unichar)*u_strlen(form)+1);
-  if (!forms->forms[0].form)
-    fatal_error("Not enough memory in function SU_init_invariable_form\n");
-  u_strcpy(forms->forms[0].form,form);
+  if (!forms->forms) {
+    fatal_alloc_error("SU_init_invariable_form");
+  }
+  forms->forms[0].form = u_strdup(form);
   forms->forms[0].features = NULL;
 }
 
@@ -952,12 +957,10 @@ void SU_init_invariable_form(SU_forms_T* forms, unichar* form) {
 void SU_init_invariable_form_char(SU_forms_T* forms, char* form) {
   forms->no_forms = 1;
   forms->forms = (SU_f_T*) malloc(sizeof(SU_f_T));
-  if (!forms->forms)
-    fatal_error("Not enough memory in function SU_init_invariable_form\n");
-  forms->forms[0].form = (unichar*) malloc(sizeof(unichar)*strlen(form)+1);
-  if (!forms->forms[0].form)
-    fatal_error("Not enough memory in function SU_init_invariable_form\n");
-  u_strcpy(forms->forms[0].form,form);
+  if (!forms->forms) {
+    fatal_alloc_error("SU_init_invariable_form_char");
+  }
+  forms->forms[0].form = u_strdup(form);
   forms->forms[0].features = NULL;
 }
 
@@ -992,8 +995,7 @@ return 0;
 // Initialise a sample lemma structure for tests.
 int SU_init_lemma(SU_lemma_T* l, char* word, char* cl, char* para) {
   //lemma
-  l->unit = (unichar*) malloc((strlen(word)+1)*sizeof(unichar));
-  u_strcpy(l->unit,word);
+  l->unit = u_strdup(word);
   //class
   if (!strcmp(cl,"noun"))
     l->cl = &(L_CLASSES.classes[0]);
@@ -1006,8 +1008,10 @@ int SU_init_lemma(SU_lemma_T* l, char* word, char* cl, char* para) {
       else
 	l->cl = NULL;
   //paradigm
-  l->paradigm = (char*) malloc((strlen(para)+1)*sizeof(char));
-  strcpy(l->paradigm,para);
+  l->paradigm = strdup(para);
+  if (l->paradigm==NULL) {
+     fatal_alloc_error("SU_init_lemma");
+  }
   return 0;
 }
 

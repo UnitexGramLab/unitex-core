@@ -111,11 +111,11 @@ infos.info_output=info_output;
 infos.new_unknown_word_list=new_unknown_word_list;
 infos.valid_left_component=(char*)malloc(sizeof(char)*(inf->N));
 if (infos.valid_left_component==NULL) {
-	fatal_error("Not enough memory in analyse_dutch_unknown_words\n");
+	fatal_alloc_error("analyse_dutch_unknown_words");
 }
 infos.valid_right_component=(char*)malloc(sizeof(char)*(inf->N));
 if (infos.valid_right_component==NULL) {
-	fatal_error("Not enough memory in analyse_dutch_unknown_words\n");
+   fatal_alloc_error("analyse_dutch_unknown_words");
 }
 /* We look for all INF codes if they correspond to valid left/right
  * components of compounds words. */
@@ -418,7 +418,9 @@ return 1;
 struct word_decomposition* new_word_decomposition_dutch() {
 struct word_decomposition* tmp;
 tmp=(struct word_decomposition*)malloc(sizeof(struct word_decomposition));
-if (tmp==NULL) {fatal_error("Not enough memory in new_word_decomposition\n");}
+if (tmp==NULL) {
+   fatal_alloc_error("new_word_decomposition_dutch");
+}
 tmp->n_parts=0;
 tmp->decomposition[0]='\0';
 tmp->dela_line[0]='\0';
@@ -441,7 +443,9 @@ free(t);
 struct word_decomposition_list* new_word_decomposition_list_dutch() {
 struct word_decomposition_list* tmp;
 tmp=(struct word_decomposition_list*)malloc(sizeof(struct word_decomposition_list));
-if (tmp==NULL) {fatal_error("Not enough memory in new_word_decomposition_list\n");}
+if (tmp==NULL) {
+   fatal_alloc_error("new_word_decomposition_list_dutch");
+}
 tmp->element=NULL;
 tmp->next=NULL;
 return tmp;

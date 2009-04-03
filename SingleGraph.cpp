@@ -52,7 +52,7 @@
 SingleGraph new_SingleGraph(int size,TagType type) {
 SingleGraph g =(SingleGraph)malloc(sizeof(struct single_graph_));
 if (g==NULL) {
-   fatal_error("Not enough memory in new_SingleGraph\n");
+   fatal_alloc_error("new_SingleGraph");
 }
 g->number_of_states=0;
 g->capacity=0;
@@ -210,7 +210,7 @@ SingleGraphState new_SingleGraphState() {
 SingleGraphState s;
 s=(SingleGraphState)malloc(sizeof(struct single_graph_state_));
 if (s==NULL) {
-   fatal_error("Not enough memory in new_SingleGraphState\n");
+   fatal_alloc_error("new_SingleGraphState");
 }
 s->control=0;
 s->outgoing_transitions=NULL;
@@ -300,7 +300,7 @@ if (g->states==NULL && new_capacity==0) return;
 g->states=(SingleGraphState*)realloc(g->states,new_capacity*sizeof(SingleGraphState));
 if (new_capacity!=0 && g->states==NULL) {
    /* Don't want to raise an error if a an empty array was explicitly required */
-   fatal_error("Not enough memory in set_state_array_capacity\n");
+   fatal_alloc_error("set_state_array_capacity");
 }
 g->capacity=new_capacity;
 }
@@ -490,7 +490,7 @@ return closures[state_number];
 struct list_int** get_epsilon_closures(SingleGraph graph) {
 struct list_int** closures=(struct list_int**)malloc(graph->number_of_states*sizeof(struct list_int*));
 if (closures==NULL) {
-   fatal_error("Not enough memory in get_epsilon_closures\n");
+   fatal_alloc_error("get_epsilon_closures");
 }
 /* We use a bit array to mark states. We don't use a bit mask with the
  * control byte of the state, since having been processed in a function
@@ -1184,7 +1184,7 @@ void topological_sort(SingleGraph graph) {
 /* First, we compute for each state its number of incoming transitions */
 int* incoming=(int*)malloc(graph->number_of_states*sizeof(int));
 if (incoming==NULL) {
-   fatal_error("Not enough memory in topological_sort\n");
+   fatal_alloc_error("topological_sort");
 }
 int i;
 for (i=0;i<graph->number_of_states;i++) {
@@ -1202,7 +1202,7 @@ for (i=0;i<graph->number_of_states;i++) {
  * be renumber into the state #y */
 int* renumber=(int*)malloc(graph->number_of_states*sizeof(int));
 if (renumber==NULL) {
-   fatal_error("Not enough memory in topological_sort\n");
+   fatal_alloc_error("topological_sort");
 }
 int q;
 for (q=0;q<graph->number_of_states;q++) {
@@ -1224,7 +1224,7 @@ for (q=0;q<graph->number_of_states;q++) {
  * their transitions' destination state numbers */
 SingleGraphState* new_states=(SingleGraphState*)malloc(graph->number_of_states*sizeof(SingleGraphState));
 if (new_states==NULL) {
-   fatal_error("Not enough memory in topological_sort\n");
+   fatal_alloc_error("topological_sort");
 }
 for (q=0;q<graph->number_of_states;q++) {
    new_states[q]=new_SingleGraphState();

@@ -35,7 +35,7 @@ struct lemma_node* new_lemma_node() {
 struct lemma_node* n;
 n=(struct lemma_node*)malloc(sizeof(struct lemma_node));
 if (n==NULL) {
-   fatal_error("Not enough memory in new_lemma_node\n");
+   fatal_alloc_error("new_lemma_node");
 }
 n->inflected_forms=NULL;
 /* We initialize the letter field with 1 in order to avoid
@@ -67,7 +67,7 @@ struct lemma_node_list* new_lemma_node_list(struct lemma_node_list* list,
 struct lemma_node_list* l;
 l=(struct lemma_node_list*)malloc(sizeof(struct lemma_node_list));
 if (l==NULL) {
-   fatal_error("Not enough memory in new_lemma_node_list\n");
+   fatal_alloc_error("new_lemma_node_list");
 }
 l->node=node;
 l->next=list;

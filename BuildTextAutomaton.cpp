@@ -240,7 +240,7 @@ void keep_best_paths(SingleGraph graph,struct string_hash* tmp_tags) {
 int i;
 int* weight=(int*)malloc(sizeof(int)*graph->number_of_states);
 if (weight==NULL) {
-   fatal_error("Not enough memory in keep_best_paths\n");
+   fatal_alloc_error("keep_best_paths");
 }
 /* We initialize the initial state with 0 untagged transition */
 weight[0]=0;
@@ -289,7 +289,7 @@ if (tag==NULL) {
 }
 struct output_info* x=(struct output_info*)malloc(sizeof(struct output_info));
 if (x==NULL) {
-   fatal_error("Not enough memory in new_output_info\n");
+   fatal_alloc_error("new_output_info");
 }
 x->output=u_strdup(tag);
 if (tag[0]=='{' && tag[1]!='\0') {

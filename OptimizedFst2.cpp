@@ -36,7 +36,7 @@ struct opt_graph_call* new_opt_graph_call(int graph_number) {
 struct opt_graph_call* g;
 g=(struct opt_graph_call*)malloc(sizeof(struct opt_graph_call));
 if (g==NULL) {
-   fatal_error("Not enough memory in new_opt_graph_call\n");
+   fatal_alloc_error("new_opt_graph_call");
 }
 g->graph_number=graph_number;
 g->transition=NULL;
@@ -87,7 +87,7 @@ struct opt_pattern* new_opt_pattern(int pattern_number,int negation) {
 struct opt_pattern* p;
 p=(struct opt_pattern*)malloc(sizeof(struct opt_pattern));
 if (p==NULL) {
-   fatal_error("Not enough memory in new_opt_pattern\n");
+   fatal_alloc_error("new_opt_pattern");
 }
 p->pattern_number=pattern_number;
 p->negation=negation;
@@ -138,7 +138,7 @@ struct opt_token* new_opt_token(int token_number) {
 struct opt_token* t;
 t=(struct opt_token*)malloc(sizeof(struct opt_token));
 if (t==NULL) {
-   fatal_error("Not enough memory in new_opt_token\n");
+   fatal_alloc_error("new_opt_token");
 }
 t->token_number=token_number;
 t->transition=NULL;
@@ -236,7 +236,7 @@ struct opt_meta* new_opt_meta(enum meta_symbol meta,int negation) {
 struct opt_meta* m;
 m=(struct opt_meta*)malloc(sizeof(struct opt_meta));
 if (m==NULL) {
-   fatal_error("Not enough memory in new_opt_meta\n");
+   fatal_alloc_error("new_opt_meta");
 }
 m->meta=meta;
 m->negation=negation;
@@ -287,7 +287,7 @@ struct opt_variable* new_opt_variable(int variable_number,Transition* transition
 struct opt_variable* v;
 v=(struct opt_variable*)malloc(sizeof(struct opt_variable));
 if (v==NULL) {
-   fatal_error("Not enough memory in new_opt_variable\n");
+   fatal_alloc_error("new_opt_variable");
 }
 v->variable_number=variable_number;
 v->transition=NULL;
@@ -330,7 +330,7 @@ v->next=(*variable_list);
 struct opt_contexts* new_opt_contexts() {
 struct opt_contexts* c=(struct opt_contexts*)malloc(sizeof(struct opt_contexts));
 if (c==NULL) {
-   fatal_error("Not enough memory in new_opt_contexts\n");
+   fatal_alloc_error("new_opt_contexts");
 }
 c->positive_mark=NULL;
 c->size_positive=0;
@@ -381,6 +381,9 @@ if (state->contexts->positive_mark!=NULL) {
 int n=state->contexts->size_positive;
 state->contexts->size_positive=state->contexts->size_positive+2;
 state->contexts->positive_mark=(Transition**)realloc(state->contexts->positive_mark,state->contexts->size_positive*sizeof(Transition*));
+if (state->contexts->positive_mark==NULL) {
+   fatal_alloc_error("add_positive_context");
+}
 state->contexts->positive_mark[n]=new_Transition(transition->tag_number,transition->state_number);
 get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->positive_mark[n+1]));
 if (state->contexts->positive_mark[n+1]==NULL) {
@@ -415,6 +418,9 @@ if (state->contexts==NULL) {
 int n=state->contexts->size_negative;
 state->contexts->size_negative=state->contexts->size_negative+2;
 state->contexts->negative_mark=(Transition**)realloc(state->contexts->negative_mark,state->contexts->size_negative*sizeof(Transition*));
+if (state->contexts->negative_mark==NULL) {
+   fatal_alloc_error("add_negative_context");
+}
 state->contexts->negative_mark[n]=new_Transition(transition->tag_number,transition->state_number);
 get_reachable_closing_context_marks(fst2,transition->state_number,&(state->contexts->negative_mark[n+1]));
 if (state->contexts->negative_mark[n+1]==NULL) {
@@ -504,9 +510,12 @@ if (state->number_of_tokens==0) {
    return;
 }
 state->tokens=(int*)malloc(sizeof(int)*state->number_of_tokens);
+if (state->tokens==NULL) {
+   fatal_alloc_error("token_list_2_token_array");
+}
 state->token_transitions=(Transition**)malloc(sizeof(Transition*)*state->number_of_tokens);
-if (state->tokens==NULL || state->token_transitions==NULL) {
-   fatal_error("Not enough memory in token_list_2_token_array\n");
+if (state->token_transitions==NULL) {
+   fatal_alloc_error("token_list_2_token_array");
 }
 i=0;
 l=state->token_list;
@@ -533,7 +542,7 @@ state->token_list=NULL;
 OptimizedFst2State new_optimized_state() {
 OptimizedFst2State state=(OptimizedFst2State)malloc(sizeof(struct optimizedFst2State));
 if (state==NULL) {
-   fatal_error("Not enough memory in new_optimized_state\n");
+   fatal_alloc_error("new_optimized_state");
 }
 state->control=0;
 state->graph_calls=NULL;
@@ -601,7 +610,7 @@ return new_state;
 OptimizedFst2State* build_optimized_fst2_states(Variables* v,Fst2* fst2) {
 OptimizedFst2State* optimized_states=(OptimizedFst2State*)malloc(fst2->number_of_states*sizeof(OptimizedFst2State));
 if (optimized_states==NULL) {
-   fatal_error("Not enough memory in build_optimized_fst2_states\n");
+   fatal_alloc_error("build_optimized_fst2_states");
 }
 for (int i=0;i<fst2->number_of_states;i++) {
    optimized_states[i]=optimize_state(v,fst2,fst2->states[i],i,fst2->tags);

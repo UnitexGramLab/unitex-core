@@ -193,6 +193,9 @@ u_fprintf(f,"#Unigraph\n"
 struct etat* nouvel_etat() {
 struct etat* e;
 e=(struct etat*)malloc(sizeof(struct etat));
+if (e==NULL) {
+   fatal_alloc_error("nouvel_etat");
+}
 e->contenu[0]='\0';
 e->x=0;
 e->y=0;
@@ -277,8 +280,7 @@ while ((c=u_fgetc(f))!=EOF && c!=delimiteur && c!='\n') {
 }
 if ((i==0 && c==EOF) || c!=delimiteur) return 0;
 tmp[i]='\0';
-ligne[colonne]=(unichar*)malloc(sizeof(unichar)*(i+1));
-u_strcpy(ligne[colonne],tmp);
+ligne[colonne]=u_strdup(tmp);
 return 1;
 }
 
@@ -295,6 +297,9 @@ for (i=0;i<n_champs;i++) {
          // case of missing fields at the end of line
          for (int j=i;j<n_champs;j++) {
             ligne[j]=(unichar*)malloc(sizeof(unichar));
+            if (ligne[j]==NULL) {
+               fatal_alloc_error("read_table_line");
+            }
             ligne[j][0]='\0';
          }
          return 1;
@@ -524,6 +529,9 @@ if (G->tab[0]->n_trans==0) {
    return 0;
 }
 t=(int*)malloc(sizeof(int)*n_etats);
+if (t==NULL) {
+   fatal_alloc_error("nettoyer_graphe");
+}
 for (i=0;i<n_etats;i++) {
   t[i]=i;
 }

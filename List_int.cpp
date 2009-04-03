@@ -32,7 +32,7 @@ struct list_int* new_list_int(int value,struct list_int* next) {
 struct list_int* l;
 l=(struct list_int*)malloc(sizeof(struct list_int));
 if (l==NULL) {
-   fatal_error("Not enough memory in new_list_int\n");
+   fatal_alloc_error("new_list_int");
 }
 l->n=value;
 l->next=next;
@@ -274,7 +274,7 @@ while (tmp!=NULL) {
 }
 int* result=(int*)malloc((*size)*sizeof(int));
 if (result==NULL) {
-   fatal_error("Not enough memmory in dump\n");
+   fatal_alloc_error("dump");
 }
 tmp=list;
 for (int i=0;i<(*size);i++) {

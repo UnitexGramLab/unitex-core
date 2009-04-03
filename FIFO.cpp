@@ -29,7 +29,7 @@
 struct fifo* new_fifo() {
 struct fifo* f=(struct fifo*)malloc(sizeof(struct fifo));
 if (f==NULL) {
-   fatal_error("Not enough memory in new_fifo\n");
+   fatal_alloc_error("new_fifo");
 }
 f->input=NULL;
 f->output=NULL;
@@ -42,7 +42,7 @@ return f;
 struct fifo_list* new_fifo_list(struct any value) {
 struct fifo_list* l=(struct fifo_list*)malloc(sizeof(struct fifo_list));
 if (l==NULL) {
-   fatal_error("Not enough memory in new_fifo_list\n");
+   fatal_alloc_error("new_fifo_list");
 }
 l->value=value;
 l->next=NULL;

@@ -20,10 +20,7 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on June 22 2005
  */
-//---------------------------------------------------------------------------
-
 
 #ifndef LangMorphoH
 #define LangMorphoH

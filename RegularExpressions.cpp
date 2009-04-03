@@ -60,7 +60,7 @@ void save_states(FILE*,struct reg2grf_info*);
 struct reg2grf_info* new_reg2grf_info() {
 struct reg2grf_info* info=(struct reg2grf_info*)malloc(sizeof(struct reg2grf_info));
 if (info==NULL) {
-   fatal_error("Not enough memory in new_reg2grf_info\n");
+   fatal_alloc_error("new_reg2grf_info");
 }
 info->n_states=0;
 return info;

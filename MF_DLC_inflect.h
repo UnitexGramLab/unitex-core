@@ -20,9 +20,8 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on Sept 08 2005
  */
-//---------------------------------------------------------------------------
+
 
 /********************************************************************************/
 /* INFLECTION OF A DELAC FILE INTO A DELACF                                     */

@@ -50,7 +50,7 @@ unichar PUNC_TAB[] = {
 symbol_t* new_symbol(SymbolType type,int tag_number) {
 symbol_t* symbol=(symbol_t*)malloc(sizeof(symbol_t));
 if (symbol==NULL) {
-   fatal_error("Not enough memory in new_symbol\n");
+   fatal_alloc_error("new_symbol");
 }
 symbol->type=type;
 symbol->negative=false;
@@ -76,7 +76,7 @@ symbol->POS=POS;
 if (POS->CATs->size!=0) {
    symbol->feature=(char*)malloc(POS->CATs->size*sizeof(char));
    if (symbol->feature==NULL) {
-      fatal_error("Not enough memory in new_symbol_no_type\n");
+      fatal_alloc_error("new_symbol_POS_no_type");
    }
    symbol->nb_features=POS->CATs->size;
 } else {
@@ -189,7 +189,7 @@ if ((dest->negative=src->negative)==true) {
    dest->nbnegs=src->nbnegs;
    dest->negs=(int*)malloc(dest->nbnegs*sizeof(int));
    if (dest->negs==NULL) {
-      fatal_error("Not enough memory in copy_symbol\n");
+      fatal_alloc_error("copy_symbol");
    }
    for (i=0;i<dest->nbnegs;i++) {
       dest->negs[i]=src->negs[i];
@@ -201,7 +201,7 @@ if ((dest->negative=src->negative)==true) {
 dest->POS=src->POS;
 dest->feature=(char*)malloc(src->nb_features*sizeof(char));
 if (dest->feature==NULL) {
-   fatal_error("Not enough memory in copy_symbol\n");
+   fatal_alloc_error("copy_symbol");
 }
 for (i=0;i<src->nb_features;i++) {
    dest->feature[i]=src->feature[i];
@@ -247,7 +247,7 @@ switch (symbol->type) {
          res->nbnegs=symbol->nbnegs;
          res->negs=(int*)malloc(res->nbnegs*sizeof(int));
          if (res->negs==NULL) {
-            fatal_error("Not enough memory in dup_symbol\n");
+            fatal_alloc_error("dup_symbol");
          }
          for (i=0;i<res->nbnegs;i++) {
             res->negs[i]=symbol->negs[i];

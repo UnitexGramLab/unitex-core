@@ -37,13 +37,13 @@ if (ratio<=0 || ratio >=1) {
 }
 struct hash_table* h=(struct hash_table*)malloc(sizeof(struct hash_table));
 if (h==NULL) {
-   fatal_error("Not enough memory in new_hash_table\n");
+   fatal_alloc_error("new_hash_table");
 }
 h->capacity=capacity;
 h->ratio=ratio;
 h->table=(struct hash_list**)malloc(capacity*sizeof(struct hash_list*));
 if (h->table==NULL) {
-   fatal_error("Not enough memory in new_hash_table\n");
+   fatal_alloc_error("new_hash_table");
 }
 /* We don't forget to initialize the table */
 for (int i=0;i<capacity;i++) {
@@ -86,13 +86,13 @@ if (ratio<=0 || ratio >=1) {
 }
 struct hash_table* h=(struct hash_table*)malloc(sizeof(struct hash_table));
 if (h==NULL) {
-   fatal_error("Not enough memory in new_hash_table\n");
+   fatal_alloc_error("new_hash_table");
 }
 h->capacity=capacity;
 h->ratio=ratio;
 h->table=(struct hash_list**)malloc(capacity*sizeof(struct hash_list*));
 if (h->table==NULL) {
-   fatal_error("Not enough memory in new_hash_table\n");
+   fatal_alloc_error("new_hash_table");
 }
 /* We don't forget to initialize the table */
 for (int i=0;i<capacity;i++) {
@@ -120,7 +120,7 @@ return new_hash_table(DEFAULT_HASH_SIZE,DEFAULT_RATIO);
 struct hash_list* new_hash_list(int key,struct hash_list* next) {
 struct hash_list* list=(struct hash_list*)malloc(sizeof(struct hash_list));
 if (list==NULL) {
-   fatal_error("Not enough memory in new_hash_list\n");
+   fatal_alloc_error("new_hash_list");
 }
 list->int_key=key;
 list->next=next;
@@ -134,7 +134,7 @@ return list;
 struct hash_list* new_hash_list(KEYCOPY_FUNCTION keycopy,void* key,struct hash_list* next) {
 struct hash_list* list=(struct hash_list*)malloc(sizeof(struct hash_list));
 if (list==NULL) {
-   fatal_error("Not enough memory in new_hash_list\n");
+   fatal_alloc_error("new_hash_list");
 }
 if (keycopy!=NULL) {
    key=keycopy(key);
@@ -197,14 +197,14 @@ h->number_of_elements=0;
  * This function doubles the capacity of the hash table, rehashing all its
  * elements.
  */
-void resize(struct hash_table* h) {
+static void resize(struct hash_table* h) {
 unsigned int i;
 int new_cell_index;
 struct hash_list* tmp;
 unsigned int new_capacity=h->capacity*2;
 struct hash_list** new_table=(struct hash_list**)malloc(new_capacity*sizeof(struct hash_list*));
 if (new_table==NULL) {
-   fatal_error("Not enough memory in resize\n");
+   fatal_alloc_error("resize");
 }
 /* We don't forget to initialize the new table */
 for (i=0;i<new_capacity;i++) {

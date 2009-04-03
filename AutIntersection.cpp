@@ -204,13 +204,13 @@ SingleGraph res=new_SingleGraph(A->number_of_states*B->number_of_states,PTR_TAGS
 /* We initialize the renumber matrix */
 int** renumber=(int**)malloc(A->number_of_states*sizeof(int*));
 if (renumber==NULL) {
-   fatal_error("Not enough memory in elag_intersection\n");
+   fatal_alloc_error("elag_intersection");
 }
 int i;
 for (i=0;i<A->number_of_states;i++) {
    renumber[i]=(int*)malloc(B->number_of_states*sizeof(int));
    if (renumber[i]==NULL) {
-      fatal_error("Not enough memory in elag_intersection\n");
+      fatal_alloc_error("elag_intersection");
    }
    for (int j=0;j<B->number_of_states;j++) {
       renumber[i][j]=-1;

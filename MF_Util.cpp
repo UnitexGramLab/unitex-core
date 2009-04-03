@@ -20,9 +20,8 @@
   */
 
 /* Created by Agata Savary (savary@univ-mlv.fr)
- * Last modification on Mon Jul 21 2003
  */
-//---------------------------------------------------------------------------
+
 /****************************************************************/
 /* Operations sur des chaines de caracteres			*/
 /****************************************************************/
@@ -315,12 +314,12 @@ int u_add_unitab_elem(unichar* form,unitab_t* tab) {
   //If the table doesn't exist
   if ((tab->n) == 1) {
      if (!(tab->t = (unichar**) malloc(sizeof(unichar**)))) {
-        fatal_error("Not enough memory in function u_add_unitab_elem\n");
+        fatal_alloc_error("u_add_unitab_elem");
      }
   }
   else {
      if (!(tab->t = (unichar**) realloc(tab->t,tab->n * sizeof(unichar*)))) {
-        fatal_error("Not enough memory in function u_add_unitab_elem\n");
+        fatal_alloc_error("u_add_unitab_elem");
      }
   }
   tab->t[tab->n-1]=u_strdup(form);

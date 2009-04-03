@@ -19,10 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef NorwegianCompoundsH
 #define NorwegianCompoundsH
-//---------------------------------------------------------------------------
+
 #include "Alphabet.h"
 #include "DELA.h"
 #include "String_hash.h"

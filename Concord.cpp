@@ -144,7 +144,10 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 'f': if (optarg[0]=='\0') {
                 fatal_error("Empty font name argument\n");
              }
-             options->fontname=strdup(optarg); 
+             options->fontname=strdup(optarg);
+             if (options->fontname==NULL) {
+                fatal_alloc_error("main_Concord");
+             }
              break;
    case 's': if (1!=sscanf(optarg,"%d%c",&(options->fontsize),&foo)) {
                 /* foo is used to check that the font size is not like "45gjh" */
@@ -181,6 +184,9 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
                 fatal_error("Empty glossanet script argument\n");
              }
              options->glossanet_script=strdup(optarg);
+             if (options->glossanet_script==NULL) {
+                fatal_alloc_error("main_Concord");
+             }
              break;
    case 'i': options->result_mode=INDEX_; break;
    case 'u': options->result_mode=UIMA_; break;
@@ -196,6 +202,9 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
                 fatal_error("Empty alphabet argument\n");
              }
              options->sort_alphabet=strdup(optarg);
+             if (options->sort_alphabet==NULL) {
+                fatal_alloc_error("main_Concord");
+             }
              break;
    case 'T': options->thai_mode=1; break;
    case 'd': if (optarg[0]=='\0') {

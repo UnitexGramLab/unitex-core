@@ -19,11 +19,6 @@
   *
   */
 
-//---------------------------------------------------------------------------
-//  The purpose is to call locate  with one Fst from dico.exe
-//  by Alexis Neme 15/11/2005
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -176,6 +171,9 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
              break;
    case 'm': if (optarg[0]!='\0') {
                 morpho_dic=strdup(optarg);
+                if (morpho_dic==NULL) {
+                   fatal_alloc_error("main_Locate");
+                }
              }
              break;
    case 'S': match_policy=SHORTEST_MATCHES; break;
@@ -289,7 +287,7 @@ if (morpho_dic!=NULL) {
 char** argv;
 argv=(char**)malloc((7+thai+md)*sizeof(char*));
 if (argv==NULL) {
-   fatal_error("Not enough memory in launch_locate_as_routine\n");
+   fatal_alloc_error("launch_locate_as_routine");
 }
 char tmp[FILENAME_MAX];
 /* If needed: just to know that the call come from here if necessary */
@@ -318,6 +316,11 @@ if (md) {
    argv[index++]=strdup(tmp);
 }
 argv[index++]=strdup(fst2);
+for (int i=0;i<index;i++) {
+   if (argv[i]==NULL) {
+      fatal_alloc_error("launch_locate_as_routine");
+   }
+}
 /* Finally, we call the main function of Locate */
 main_Locate(index,argv);
 for (int i=0;i<index;i++) {

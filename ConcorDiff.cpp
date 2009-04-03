@@ -75,11 +75,17 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
                 fatal_error("You must specify a non empty output file\n");
              }
              out=strdup(optarg);
+             if (out==NULL) {
+                fatal_alloc_error("main_ConcorDiff");
+             }
              break;
    case 'f': if (optarg[0]=='\0') {
                 fatal_error("You must specify a non empty font name\n");
              }
              font=strdup(optarg);
+             if (font==NULL) {
+                fatal_alloc_error("main_ConcorDiff");
+             }
              break;
    case 's': if (1!=sscanf(optarg,"%d%c",&size,&foo)
                  || size<=0) {

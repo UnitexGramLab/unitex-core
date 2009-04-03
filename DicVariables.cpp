@@ -29,7 +29,7 @@
 struct dic_variable* new_dic_variable(unichar* name,struct dela_entry* dic_entry,struct dic_variable* next) {
 struct dic_variable* tmp=(struct dic_variable*)malloc(sizeof(struct dic_variable));
 if (tmp==NULL) {
-   fatal_error("Not enough memory in new_dic_variable\n");
+   fatal_alloc_error("new_dic_variable");
 }
 tmp->name=u_strdup(name);
 tmp->dic_entry=clone_dela_entry(dic_entry);

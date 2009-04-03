@@ -1077,7 +1077,7 @@ for (i=start;i<=end;i++) {
 }
 unichar* res=(unichar*)malloc((l+1)*sizeof(unichar));
 if (res==NULL) {
-   fatal_error("Not enough memory in get_token_sequence\n");
+   fatal_alloc_error("get_token_sequence");
 }
 l=0;
 for (i=start;i<=end;i++) {

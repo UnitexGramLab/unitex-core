@@ -20,9 +20,7 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on Sept 08 2005
  */
-//---------------------------------------------------------------------------
 
 
 #ifndef DicoMorphoH

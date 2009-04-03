@@ -41,7 +41,7 @@ void load_morphological_dictionaries(char* morpho_dic_list,struct locate_paramet
 struct locate_parameters* new_locate_parameters() {
 struct locate_parameters* p=(struct locate_parameters*)malloc(sizeof(struct locate_parameters));
 if (p==NULL) {
-   fatal_error("Not enough memory in new_locate_parameters\n");
+   fatal_alloc_error("new_locate_parameters");
 }
 p->token_control=NULL;
 p->matching_patterns=NULL;
@@ -205,11 +205,11 @@ load_morphological_dictionaries(morpho_dic_list,p);
 extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes);
 p->token_control=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
 if (p->token_control==NULL) {
-   fatal_error("Not enough memory in locate_pattern\n");
+   fatal_alloc_error("locate_pattern");
 }
 p->matching_patterns=(struct bit_array**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(struct bit_array*));
 if (p->matching_patterns==NULL) {
-   fatal_error("Not enough memory in locate_pattern\n");
+   fatal_alloc_error("locate_pattern");
 }
 for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
   p->token_control[i]=0;
@@ -300,7 +300,7 @@ p->n_morpho_dics=1+count_semi_colons(morpho_dic_list);
 p->morpho_dic_bin=(unsigned char**)malloc(p->n_morpho_dics*sizeof(unsigned char*));
 p->morpho_dic_inf=(struct INF_codes**)malloc(p->n_morpho_dics*sizeof(struct INF_codes*));
 if (p->morpho_dic_bin==NULL || p->morpho_dic_inf==NULL) {
-   fatal_error("Not enough memory in load_morphological_dictionaries\n");
+   fatal_alloc_error("load_morphological_dictionaries");
 }
 char bin[FILENAME_MAX];
 int pos;

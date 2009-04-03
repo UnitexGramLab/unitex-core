@@ -32,7 +32,7 @@
 state_id* new_state_id(SingleGraph A, int n,state_id* next) {
 state_id* id=(state_id*)malloc(sizeof(state_id));
 if (id==NULL) {
-   fatal_error("Not enough memory in new_state_id\n");
+   fatal_alloc_error("new_state_id");
 }
 id->automaton=A;
 id->state_number=n;
@@ -56,7 +56,7 @@ free(id);
 state_set* new_state_set() {
 state_set* res=(state_set*)malloc(sizeof(state_set));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_state_set\n");
+   fatal_alloc_error("new_state_set");
 }
 res->state_list=NULL;
 res->size=0;
@@ -151,7 +151,7 @@ return (id1==id2);
 TRANS_t* new_TRANS_t(symbol_t* s,TRANS_t* next) {
 TRANS_t* T=(TRANS_t*)malloc(sizeof(TRANS_t));
 if (T==NULL) {
-   fatal_error("Not enough memory in new_TRANS_t\n");
+   fatal_alloc_error("new_TRANS_t");
 }
 T->label=s;
 T->destination=new_state_set();
@@ -206,14 +206,14 @@ return T;
 state_set_array* new_state_set_array(int capacity) {
 state_set_array* s=(state_set_array*)malloc(sizeof(state_set_array));
 if (s==NULL) {
-   fatal_error("Not enough memory in new_state_set_array\n");
+   fatal_alloc_error("new_state_set_array");
 }
 if (capacity<=0) {
    capacity=1;
 }
 s->state_sets=(state_set**)malloc(sizeof(state_set*)*capacity);
 if (s->state_sets==NULL) {
-   fatal_error("Not enough memory in new_state_set_array\n");
+   fatal_alloc_error("new_state_set_array");
 }
 s->capacity=capacity;
 s->size=0;
@@ -244,7 +244,7 @@ if (ARRAY->size==ARRAY->capacity) {
    ARRAY->capacity=ARRAY->capacity*2;
    ARRAY->state_sets=(state_set**)realloc(ARRAY->state_sets,ARRAY->capacity*sizeof(state_set*));
    if (ARRAY->state_sets==NULL) {
-      fatal_error("Not enough memory in state_set_array_add\n");
+      fatal_alloc_error("state_set_array_add");
    }
 }
 ARRAY->state_sets[ARRAY->size++]=clone_state_set(s);
@@ -507,7 +507,7 @@ for (state_id* id=Q->original_state_set->state_list;id!=NULL;id=id->next) {
 STATE_t* new_STATE_t(state_set* s) {
 STATE_t* res=(STATE_t *)malloc(sizeof(STATE_t));
 if (res==NULL) {
-   fatal_error("Not enough memory in new_STATE_t\n");
+   fatal_alloc_error("new_STATE_t");
 }
 res->original_state_set=clone_state_set(s);
 res->transitions=NULL;

@@ -78,7 +78,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 struct fst2txt_parameters* new_fst2txt_parameters() {
 struct fst2txt_parameters* p=(struct fst2txt_parameters*)malloc(sizeof(struct fst2txt_parameters));
 if (p==NULL) {
-   fatal_error("Not enoug memory in new_fst2txt_parameters\n");
+   fatal_alloc_error("new_fst2txt_parameters");
 }
 p->text_file=NULL;
 p->temp_file=NULL;
@@ -770,7 +770,7 @@ void build_state_token_trees(struct fst2txt_parameters* p) {
 p->n_token_trees=p->fst2->number_of_states;
 p->token_tree=(struct fst2txt_token_tree**)malloc(p->n_token_trees*sizeof(struct fst2txt_token_tree*));
 if (p->token_tree==NULL) {
-   fatal_error("Not enough memory in preprocess_tags\n");
+   fatal_alloc_error("build_state_token_trees\n");
 }
 for (int i=0;i<p->n_token_trees;i++) {
    p->token_tree[i]=new_fst2txt_token_tree();

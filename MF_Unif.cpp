@@ -20,9 +20,8 @@
   */
 
 /* Created by Agata Savary (savary@univ-tours.fr)
- * Last modification on June 23 2005
  */
-//---------------------------------------------------------------------------
+
 
 ////////////////////////////////////////////////////////////
 // Implementation of unification variables
@@ -90,10 +89,7 @@ int unif_instantiate(unichar* var, l_category_T* cat, unichar* val) {
   UNIF_VARS.vars[i].val = v;
 
   //id
-  if (!(UNIF_VARS.vars[i].id = (unichar*) malloc((u_strlen(var)+1)*sizeof(unichar)))) {
-     fatal_error("Not enough memory in function unif_instantiate\n");
-  }
-  u_strcpy(UNIF_VARS.vars[i].id,var);
+  UNIF_VARS.vars[i].id = u_strdup(var);
 
   UNIF_VARS.no_vars++;
   return 0;
@@ -118,10 +114,7 @@ int unif_instantiate_index(unichar* var, l_category_T* cat, int val) {
   //Value
   UNIF_VARS.vars[i].val = val;
   //Variable's id
-  if (!(UNIF_VARS.vars[i].id = (unichar*) malloc((u_strlen(var)+1)*sizeof(unichar)))) {
-     fatal_error("Not enough memory in function unif_instantiate_index\n");
-  }
-  u_strcpy(UNIF_VARS.vars[i].id,var);
+  UNIF_VARS.vars[i].id = u_strdup(var);
 
   UNIF_VARS.no_vars++;
   return 0;

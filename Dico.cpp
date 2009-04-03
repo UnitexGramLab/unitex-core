@@ -154,6 +154,9 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
              break;
    case 'm': if (optarg[0]!='\0') {
                 morpho_dic=strdup(optarg);
+                if (morpho_dic==NULL) {
+                   fatal_alloc_error("main_Dico");
+                }
              }
              break;
    case 'h': usage(); return 0;

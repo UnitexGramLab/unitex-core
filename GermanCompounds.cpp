@@ -19,10 +19,11 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "Compounds.h"
 #include "GermanCompounds.h"
-//---------------------------------------------------------------------------
+#include "Error.h"
+
+
 
 Alphabet* german_alphabet;
 
@@ -33,7 +34,13 @@ Alphabet* german_alphabet;
 void analyse_german_compounds(Alphabet* alph,unsigned char* bin,struct INF_codes* inf,
                                  FILE* words,FILE* result,FILE* debug,FILE* new_unknown_words) {
 tableau_correct_left_component=(char*)malloc(sizeof(char)*(inf->N));
+if (tableau_correct_left_component==NULL) {
+   fatal_alloc_error("analyse_german_compounds");
+}
 tableau_correct_right_component=(char*)malloc(sizeof(char)*(inf->N));
+if (tableau_correct_right_component==NULL) {
+   fatal_alloc_error("analyse_german_compounds");
+}
 check_valid_left_component_german(tableau_correct_left_component,inf);
 check_valid_right_component_german(tableau_correct_right_component,inf);
 german_alphabet=alph;
@@ -237,6 +244,9 @@ return 1;
 struct german_word_decomposition* new_german_word_decomposition() {
 struct german_word_decomposition* tmp;
 tmp=(struct german_word_decomposition*)malloc(sizeof(struct german_word_decomposition));
+if (tmp==NULL) {
+   fatal_alloc_error("new_german_word_decomposition");
+}
 tmp->n_parts=0;
 tmp->decomposition[0]='\0';
 tmp->dela_line[0]='\0';
@@ -255,6 +265,9 @@ free(t);
 struct german_word_decomposition_list* new_german_word_decomposition_list() {
 struct german_word_decomposition_list* tmp;
 tmp=(struct german_word_decomposition_list*)malloc(sizeof(struct german_word_decomposition_list));
+if (tmp==NULL) {
+   fatal_alloc_error("new_german_word_decomposition_list");
+}
 tmp->element=NULL;
 tmp->suivant=NULL;
 return tmp;

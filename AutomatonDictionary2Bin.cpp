@@ -168,7 +168,7 @@ number_node(root,bin_size);
 /* An then we allocate a byte array of the correct size */
 unsigned char* bin=(unsigned char*)malloc((*bin_size)*sizeof(unsigned char));
 if (bin==NULL) {
-   fatal_error("Not enough memory to create the dictionary automaton\n");
+   fatal_alloc_error("create_and_save_bin");
 }
 int n=(*bin_size);
 /* We save the .bin size on the 4 first bytes, forcing the byte order

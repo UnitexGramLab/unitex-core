@@ -20,9 +20,7 @@
   */
 
 /* Created by Agata Savary (savary@univ-tours.fr)
- * Last modification on June 2232005
  */
-//---------------------------------------------------------------------------
 
 #include <stdio.h>
 #include "MF_LangMorpho.h"

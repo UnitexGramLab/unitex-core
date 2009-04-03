@@ -46,7 +46,7 @@ void free_normalization_tree_transition(struct normalization_tree_transition*);
 struct normalization_tree* new_normalization_tree() {
 struct normalization_tree* n=(struct normalization_tree*)malloc(sizeof(struct normalization_tree));
 if (n==NULL) {
-   fatal_error("Not enough memory in new_normalization_tree\n");
+   fatal_alloc_error("new_normalization_tree");
 }
 n->outputs=NULL;
 n->trans=NULL;
@@ -63,7 +63,7 @@ struct normalization_tree_transition* new_normalization_tree_transition(int toke
 struct normalization_tree_transition* tmp;
 tmp=(struct normalization_tree_transition*)malloc(sizeof(struct normalization_tree_transition));
 if (tmp==NULL) {
-   fatal_error("Not enough memory in new_normalization_tree_transition\n");
+   fatal_alloc_error("new_normalization_tree_transition");
 }
 tmp->token=token;
 tmp->node=dest_node;
@@ -128,7 +128,7 @@ return get_trans_arbre_normalization_string(s,t->next);
 struct norm_info* new_norm_info(unichar* output,struct normalization_tree* n) {
 struct norm_info* t=(struct norm_info*)malloc(sizeof(struct norm_info));
 if (t==NULL) {
-   fatal_error("Not enough memory in new_norm_info\n");
+   fatal_alloc_error("new_norm_info");
 }
 t->output=u_strdup(output);
 t->node=n;
@@ -284,6 +284,9 @@ return root;
 struct normalization_tree_transition* new_trans_arbre_normalization_string(unichar* s) {
 struct normalization_tree_transition* tmp;
 tmp=(struct normalization_tree_transition*)malloc(sizeof(struct normalization_tree_transition));
+if (tmp==NULL) {
+   fatal_alloc_error("new_trans_arbre_normalization_string");
+}
 tmp->s=u_strdup(s);
 tmp->node=NULL;
 tmp->next=NULL;

@@ -22,10 +22,9 @@
 #ifndef ErrorH
 #define ErrorH
 
-#include "Unicode.h"
-
 void fatal_error(int,char*,...);
 void fatal_error(char*,...);
+void fatal_alloc_error(char*);
 void error(char*,...);
 
 #endif

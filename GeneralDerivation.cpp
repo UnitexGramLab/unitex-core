@@ -19,11 +19,9 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #include "Compounds.h"
 #include "GeneralDerivation.h"
 #include "Error.h"
-//---------------------------------------------------------------------------
 
 
 Alphabet* alphabet;
@@ -132,12 +130,23 @@ void check_valid_INF_lines(unichar*, bool*, struct INF_codes*);
 bool check_is_valid_for_an_INF_line(unichar*, struct list_ustring*);
 int check_is_valid_for_one_INF_code(unichar* t, unichar* s);
 int check_is_valid(unichar*, struct dela_entry*);
+
+
+
 void init_tableaux (struct INF_codes* inf) {
   tableau_prefix = (bool*)malloc(sizeof(bool)*(inf->N));
+  if (tableau_prefix==NULL) {
+     fatal_alloc_error("init_tableaux");
+  }
   tableau_suffix = (bool*)malloc(sizeof(bool)*(inf->N));
+  if (tableau_suffix==NULL) {
+     fatal_alloc_error("init_tableaux");
+  }
   check_valid_INF_lines(UTAG.PREFIX, tableau_prefix, inf);
   check_valid_INF_lines(UTAG.SUFFIX, tableau_suffix, inf);
 }
+
+
 void free_tableaux () {
   free(tableau_prefix);
   free(tableau_suffix);
@@ -286,6 +295,9 @@ struct decomposed_word* new_decomposed_word()
 {
   struct decomposed_word* tmp;
   tmp=(struct decomposed_word*)malloc(sizeof(struct decomposed_word));
+  if (tmp==NULL) {
+     fatal_alloc_error("new_decomposed_word");
+  }
   tmp->n_parts=0;
   tmp->decomposition[0]='\0';
   tmp->dela_line[0]='\0';
@@ -301,6 +313,9 @@ struct decomposed_word_list* new_decomposed_word_list()
 {
   struct decomposed_word_list* tmp;
   tmp = (struct decomposed_word_list*) malloc(sizeof(struct decomposed_word_list));
+  if (tmp==NULL) {
+       fatal_alloc_error("new_decomposed_word_list");
+    }
   tmp->element = 0;
   tmp->suivant = 0;
   return tmp;
@@ -403,6 +418,9 @@ void parse_condition (unichar* condition, pattern* patterns)
 struct composition_rule* new_composition_rule () {
   struct composition_rule* tmp
     = (struct composition_rule*)malloc(sizeof(struct composition_rule));
+  if (tmp==NULL) {
+     fatal_alloc_error("new_composition_rule");
+  }
   tmp->before[0].string[0] = '\0';
   tmp->after[0].string[0] = '\0';
   tmp->then.add[0]    = '\0';
@@ -458,10 +476,15 @@ int _n_used_rule_lists = 0;
 int _max_used_rule_lists = 0;
 struct rule_list* _all_adresses_of_rule_lists[1000];
 
+
+
 struct rule_list* new_rule_list ()
 {
   struct rule_list* tmp
     = (struct rule_list*)malloc(sizeof(struct rule_list));
+  if (tmp==NULL) {
+     fatal_alloc_error("new_rule_list");
+  }
   tmp->rule = 0;
   tmp->next = 0;
   _all_adresses_of_rule_lists[_n_used_rule_lists++] = tmp;

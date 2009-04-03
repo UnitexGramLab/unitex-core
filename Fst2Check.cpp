@@ -85,15 +85,15 @@ while (l!=NULL) {
 /**
  * Returns a copy of the given condition list.
  */
-ConditionList clone(ConditionList l) {
+ConditionList clone_ConditionList(ConditionList l) {
 ConditionList tmp;
 if (l==NULL) return NULL;
 tmp=(ConditionList)malloc(sizeof(struct condition_list));
 if (tmp==NULL) {
-   fatal_error("Not enough memory in clone\n");
+   fatal_alloc_error("clone_ConditionList");
 }
 tmp->condition=clone(l->condition);
-tmp->next=clone(l->next);
+tmp->next=clone_ConditionList(l->next);
 return tmp;
 }
 
@@ -107,7 +107,7 @@ if (*l==NULL) {
    /* If the condition list is empty, we create one */
    tmp=(ConditionList)malloc(sizeof(struct condition_list));
    if (tmp==NULL) {
-      fatal_error("Not enough memory in insert_graph_in_conditions\n");
+      fatal_alloc_error("insert_graph_in_conditions");
    }
    tmp->next=NULL;
    tmp->condition=new_list_int(n);
@@ -205,7 +205,7 @@ if (is_bit_mask_set(s->control,VISITED_MARK)) {
    if (is_bit_mask_set(s->control,CONDITIONAL_E_MATCH)) {
       /* If this state can match <E> with conditions, then we have finished, but
        * we copy the necessary conditions in 'graph_conditions'. */
-      *graph_conditions=clone(conditions_for_states[current_state-initial_state]);
+      *graph_conditions=clone_ConditionList(conditions_for_states[current_state-initial_state]);
       return 1;
    }
    /* If the state has been visited and if it does not match <E>, then we return OK */
@@ -255,7 +255,7 @@ while (l!=NULL) {
    l=l->next;
 }
 unset_bit_mask(&(s->control),TMP_LOOP_MARK);
-*graph_conditions=clone(conditions_for_states[current_state-initial_state]);
+*graph_conditions=clone_ConditionList(conditions_for_states[current_state-initial_state]);
 return ret_value;
 }
 
@@ -569,7 +569,7 @@ u_printf("Recursion detection started\n");
 int* graphs_matching_E=(int*)malloc(sizeof(int)*(fst2->number_of_graphs+1));
 conditions=(ConditionList*)malloc(sizeof(ConditionList)*(fst2->number_of_graphs+1));
 if (graphs_matching_E==NULL || conditions==NULL) {
-   fatal_error("Not enough memory in grf_OK\n");
+   fatal_alloc_error("OK_for_Locate");
 }
 for (i=0;i<fst2->number_of_graphs+1;i++) {
    graphs_matching_E[i]=0;
@@ -583,7 +583,7 @@ for (i=0;i<fst2->number_of_tags;i++) {
 for (i=1;i<=fst2->number_of_graphs;i++) {
    conditions_for_state=(ConditionList*)malloc(sizeof(ConditionList)*fst2->number_of_states_per_graphs[i]);
    if (conditions_for_state==NULL) {
-      fatal_error("Not enough memory in grf_OK\n");
+      fatal_alloc_error("OK_for_Locate");
    }
    for (j=0;j<fst2->number_of_states_per_graphs[i];j++) {
       conditions_for_state[j]=NULL;

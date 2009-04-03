@@ -20,9 +20,8 @@
   */
 
 /* Created by Agata Savary (agata.savary@univ-tours.fr)
- * Last modification on July 11 2005
  */
-//---------------------------------------------------------------------------
+
 
 /********************************************************************************/
 //// Morphology and inflection of a multi-word unit ///
@@ -110,18 +109,18 @@ void MU_add_empty_form(MU_forms_T* forms) {
   //Allocate space for a couple (epsilon,empty_set)
   forms->forms = (MU_f_T*)malloc(sizeof(MU_f_T));
   if (!forms->forms) {
-    fatal_error("Not enough memory in function MU_add_empty_form\n");
+    fatal_alloc_error("MU_add_empty_form");
   }
   MU_f_T* f;
   f = &(forms->forms[0]);
   f->form = (unichar*) malloc(sizeof(unichar));
   if (f->form==NULL) {
-    fatal_error("Not enough memory in function MU_add_empty_form\n");
+     fatal_alloc_error("MU_add_empty_form");
   }
   f->form[0] = (unichar) '\0';
   f->features = (f_morpho_T*) malloc(sizeof(f_morpho_T));
   if (f->features==NULL) {
-    fatal_error("Not enough memory in function MU_add_empty_form\n");
+     fatal_alloc_error("MU_add_empty_form");
   }
   f->features->no_cats = 0;
 
@@ -149,7 +148,7 @@ void MU_concat_forms(SU_forms_T* SU_forms, MU_forms_T* MU_forms, MU_forms_T* for
   if (MU_forms->no_forms && SU_forms->no_forms) {  //Check if there is anything to concatenante
     forms->forms = (MU_f_T*) realloc(forms->forms,(forms->no_forms+MU_forms->no_forms*SU_forms->no_forms) * sizeof(MU_f_T));
     if (!forms->forms) {
-      fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
+      fatal_alloc_error("MU_concat_forms");
     }
     f = forms->no_forms;
     for (sf=0; sf<SU_forms->no_forms; sf++)
@@ -157,7 +156,7 @@ void MU_concat_forms(SU_forms_T* SU_forms, MU_forms_T* MU_forms, MU_forms_T* for
 	forms->forms[f].form = 
 	  (unichar*) malloc((u_strlen(MU_forms->forms[mf].form)+u_strlen(SU_forms->forms[sf].form)+1) * sizeof(unichar));
 	if (!forms->forms[f].form) {
-	  fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
+	   fatal_alloc_error("MU_concat_forms");
 	}
 	//Concatenate the forms
 	u_strcpy(forms->forms[f].form, SU_forms->forms[sf].form);
@@ -165,7 +164,7 @@ void MU_concat_forms(SU_forms_T* SU_forms, MU_forms_T* MU_forms, MU_forms_T* for
 	//Copy the features
 	forms->forms[f].features = (f_morpho_T*) malloc(sizeof(f_morpho_T));
 	if (! forms->forms[f].features) {
-	  fatal_error("Not enough memory in function MU_graph_explore_label_in_var_rec\n");
+	   fatal_alloc_error("MU_concat_forms");
 	}
 	forms->forms[f].features->no_cats = MU_forms->forms[mf].features->no_cats;
 	for (int c=0; c<MU_forms->forms[mf].features->no_cats; c++)
@@ -209,7 +208,7 @@ void MU_merge_forms(MU_forms_T* forms, MU_forms_T* new_forms) {
     //Reallocate the memory for new forms
     forms->forms = (MU_f_T*)realloc(forms->forms,sizeof(MU_f_T)*(forms->no_forms+nb_mf));
     if (!forms->forms) {
-      fatal_error("Not enough memory in function MU_graph_explore_state\n");
+      fatal_alloc_error("MU_merge_forms");
     }
     //Treat each new form
     for (nmf=0; nmf<new_forms->no_forms; nmf++) {
