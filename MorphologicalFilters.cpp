@@ -75,7 +75,7 @@ if (filters->size>0) {
        * "<<able$>>_f_" will be turned into "able$" and "f". */
       split_filter(filters->value[i],filterContent,filterOptions);
       filter_set->filter[i].options=strdup(filterOptions);
-      if (filter_set->filter[i].options) {
+      if (filter_set->filter[i].options==NULL) {
          fatal_alloc_error("new_FilterSet");
       }
       regBasic=0;
