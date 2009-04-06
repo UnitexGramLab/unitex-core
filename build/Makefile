@@ -273,7 +273,7 @@ CONCORD_OBJS = Concord.o IOBuffer.o Unicode.o Text_tokens.o String_hash.o\
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
 				Stack_unichar.o Transitions.o DicVariables.o\
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-				ProgramInvoker.o
+				ProgramInvoker.o NewLineShifts.o
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = ConcorDiff.o IOBuffer.o Diff.o Concord.o Unicode.o Text_tokens.o String_hash.o List_int.o\
@@ -285,7 +285,7 @@ CONCORDIFF_OBJS = ConcorDiff.o IOBuffer.o Diff.o Concord.o Unicode.o Text_tokens
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-				ProgramInvoker.o
+				ProgramInvoker.o NewLineShifts.o
 
 CONVERT      = Convert
 CONVERT_OBJS = Convert.o IOBuffer.o Unicode.o File.o CodePages.o Error.o\
@@ -336,7 +336,7 @@ EXTRACT_OBJS = Extract.o IOBuffer.o LocatePattern.o Text_parsing.o Morphological
 	           LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-	           ProgramInvoker.o
+	           ProgramInvoker.o NewLineShifts.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = Flatten.o IOBuffer.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
@@ -472,7 +472,7 @@ TXT2TFST_OBJS = Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Unicode.o DELA_tr
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
                 FIFO.o BitArray.o HashTable.o Transitions.o Matches.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-                Tfst.o
+                Tfst.o NewLineShifts.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = XMLizer.o IOBuffer.o Unicode.o Fst2.o Alphabet.o \
@@ -555,8 +555,7 @@ XMLIZER_OBJS = XMLizer.o IOBuffer.o Unicode.o Fst2.o Alphabet.o \
 ################################
 ################################
 
-PROGS__ = $(TEST) $(TXT2TFST) $(CHECKDIC) $(TFST2GRF) $(TAGSETNORMTFST) $(SORTTXT) $(REBUILDTFST)\
-		$(GRF2FST2)
+PROGS__ = $(LOCATE) 
 
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
 		$(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) \
@@ -583,10 +582,11 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(DICO_OBJS) $(ELAG_OB
 		$(TOKENIZE_OBJS) $(TXT2TFST_OBJS) \
 		$(IMPLODETFST_OBJS) $(EVAMB_OBJS) $(CONVERT_OBJS) \
 		$(TAGSETNORMTFST_OBJS) $(CONCORDIFF_OBJS) \
-		$(COMPRESSKR_OBJS) $(FST2LIST_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
-		$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
-		$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS) $(TFST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS) \
-		$(TEST_OBJS) \
+		
+		#$(COMPRESSKR_OBJS) $(FST2LIST_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
+		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
+		#$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS)  \
+		$(TEST_OBJS) $(TFST2UNAMBIG_OBJS) $(MULTIFLEX_OBJS)\
 		$(XMLIZER_OBJS) $(TEI2TXT_OBJS)
 
 
@@ -907,3 +907,17 @@ $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS) Main_$(XMLIZER).o
 #Txt2Fst2Kr.o: ../korean/Txt2Fst2Kr.cpp ../korean/strToAuto.h
 #	$(CC) -c ../korean/Txt2Fst2Kr.cpp $(OPTIONS) 
 #
+
+# Compiling Unitex as a library
+ifeq ($(SYSTEM),linux-like)
+
+else 
+
+no_o_files:
+	del *.o
+
+libunitex: no_o_files $(OBJS)
+	$(CC) *.o -shared -Wl,--export-all-symbols -o unitex.dll $(OPTIONS)
+
+endif
+	

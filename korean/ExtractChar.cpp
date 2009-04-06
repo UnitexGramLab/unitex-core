@@ -31,7 +31,7 @@ using namespace std;
 
 
 
-void usage(int flag)
+static void usage(int flag)
 {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage:\n");
