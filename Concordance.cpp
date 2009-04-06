@@ -157,48 +157,7 @@ if(option->result_mode==XALIGN_) return;
 
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
 if (option->sort_mode!=TEXT_ORDER) {
-   char** argv;
-	argv=(char**)malloc(6*sizeof(char*));
-	if (argv==NULL) {
-	   fatal_alloc_error("create_concordance");
-	}
-	argv[0]=strdup(" ");
-	if (argv[0]==NULL) {
-	   fatal_alloc_error("create_concordance");
-	}
-	argv[1]=strdup(temp_file_name);
-	if (argv[1]==NULL) {
-	   fatal_alloc_error("create_concordance");
-	}
-	argv[2]=strdup("-n");
-   if (argv[2]==NULL) {
-      fatal_alloc_error("create_concordance");
-   }
-	int i=3;
-	if (option->sort_alphabet!=NULL) {
-		argv[i]=strdup("-o");
-	   if (argv[i]==NULL) {
-	      fatal_alloc_error("create_concordance");
-	   }
-		i++;
-		argv[i]=strdup(option->sort_alphabet);
-      if (argv[i]==NULL) {
-         fatal_alloc_error("create_concordance");
-      }
-		i++;
-	}
-	if (option->thai_mode) {
-		argv[i]=strdup("-thai");
-      if (argv[i]==NULL) {
-         fatal_alloc_error("create_concordance");
-      }
-		i++;
-	}
-	main_SortTxt(i,argv);
-	for (int j=0;j<i;j++) {
-		free(argv[j]);
-	}
-	free(argv);
+   pseudo_main_SortTxt(0,0,option->sort_alphabet,NULL,option->thai_mode);
 }
 /* Now, we will take the sorted raw text concordance and we will:
  * 1) reorder the columns

@@ -28,6 +28,8 @@
 #include "Error.h"
 #include "Thai.h"
 #include "getopt.h"
+#include "SortTxt.h"
+#include "ProgramInvoker.h"
 
 
 #define DEFAULT 0
@@ -191,6 +193,34 @@ u_printf("Usage: SortTxt [OPTIONS] <txt>\n"
          "  -h/--help: this help\n"
          "\n"
          "By default, the sort is done according the Unicode char order, removing duplicates.\n");
+}
+
+
+
+int pseudo_main_SortTxt(int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai) {
+ProgramInvoker* invoker=new_ProgramInvoker(main_SortTxt,"main_SortTxt");
+if (duplicates) {
+   add_argument(invoker,"-d");
+} else {
+   add_argument(invoker,"-n");
+}
+if (reverse) {
+   add_argument(invoker,"-r");
+}
+if (sort_alphabet!=NULL) {
+   add_argument(invoker,"-o");
+   add_argument(invoker,sort_alphabet);
+}
+if (line_info!=NULL) {
+   add_argument(invoker,"-l");
+   add_argument(invoker,line_info);
+}
+if (thai) {
+   add_argument(invoker,"-t");
+}
+int ret=invoke(invoker);
+free_ProgramInvoker(invoker);
+return ret;
 }
 
 

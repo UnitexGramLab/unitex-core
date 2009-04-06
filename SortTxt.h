@@ -23,6 +23,7 @@
 #define SortTxtH
 
 int main_SortTxt(int argc,char* argv[]);
+int pseudo_main_SortTxt(int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai);
 
 #endif
 

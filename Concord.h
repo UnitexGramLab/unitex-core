@@ -23,6 +23,9 @@
 #define ConcordH
 
 int main_Concord(int argc,char* argv[]);
+int pseudo_main_Concord(char* index_file,char* font,int fontsize,
+                        int left_context,int right_context,char* sort_order,
+                        char* output,char* directory,char* alphabet,int thai);
 
 #endif
 

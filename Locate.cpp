@@ -42,7 +42,7 @@
 #include "Locate.h"
 #include "Error.h"
 #include "getopt.h"
-
+#include "ProgramInvoker.h"
 
 
 static void usage() {
@@ -268,7 +268,7 @@ return (!OK);
  * @author Alexis Neme
  * Modified by Sébastien Paumier
  */
-void launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet,
+int launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet,
                               OutputPolicy output_policy,char* morpho_dic) {
 /* We test if we are working on Thai, on the basis of the alphabet file */
 char path[FILENAME_MAX];
@@ -284,50 +284,36 @@ int md=0;
 if (morpho_dic!=NULL) {
    md=1;
 }
-char** argv;
-argv=(char**)malloc((7+thai+md)*sizeof(char*));
-if (argv==NULL) {
-   fatal_alloc_error("launch_locate_as_routine");
-}
+ProgramInvoker* invoker=new_ProgramInvoker(main_Locate,"main_Locate");
 char tmp[FILENAME_MAX];
 /* If needed: just to know that the call come from here if necessary */
-int index=0;
-argv[index++]=strdup("launch_locate_as_routine");
 sprintf(tmp,"--text=%s",text_snt);
-argv[index++]=strdup(tmp);
+add_argument(invoker,tmp);
 sprintf(tmp,"-a%s",alphabet);
-argv[index++]=strdup(tmp);
+add_argument(invoker,tmp);
 /* We work in longuest match mode */
-argv[index++]=strdup("-L");
+add_argument(invoker,"-L");
 /* We set the output policy */
 switch (output_policy) {
-   case MERGE_OUTPUTS: argv[index++]=strdup("-M"); break;
-   case REPLACE_OUTPUTS: argv[index++]=strdup("-R"); break;
-   default: argv[index++]=strdup("-I"); break;
+   case MERGE_OUTPUTS: add_argument(invoker,"-M"); break;
+   case REPLACE_OUTPUTS: add_argument(invoker,"-R"); break;
+   default: add_argument(invoker,"-I"); break;
 }
 /* We look for all the occurrences */
-argv[index++]=strdup("--all");
+add_argument(invoker,"--all");
 /* If needed, we add the -thai option */
 if (thai) {
-   argv[index++]=strdup("--thai");
+   add_argument(invoker,"--thai");
 }
 if (md) {
    sprintf(tmp,"--morpho=%s",morpho_dic);
-   argv[index++]=strdup(tmp);
+   add_argument(invoker,tmp);
 }
-argv[index++]=strdup(fst2);
-for (int i=0;i<index;i++) {
-   if (argv[i]==NULL) {
-      fatal_alloc_error("launch_locate_as_routine");
-   }
-}
+add_argument(invoker,fst2);
 /* Finally, we call the main function of Locate */
-main_Locate(index,argv);
-for (int i=0;i<index;i++) {
-   free(argv[i]);
-}
+int ret=invoke(invoker);
+free_ProgramInvoker(invoker);
+return ret;
 }
 
-
-//---------------------------------------------------------------------------
 

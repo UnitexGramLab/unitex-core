@@ -31,41 +31,16 @@
  * the associated concordacnces 'out1' and 'out2'.
  */
 void create_text_concordances(char* in1,char* in2,char* out1,char* out2) {
-char** argv;
-argv=(char**)malloc(9*sizeof(char*));
-if (argv==NULL) {
-   fatal_alloc_error("create_text_concordances");
-}
-argv[0]=strdup(" ");
-argv[1]=strdup(in1);
-argv[2]=strdup("Courier New");
-argv[3]=strdup("10");
-argv[4]=strdup("20");
-argv[5]=strdup("40");
-argv[6]=strdup("TO");
-argv[7]=strdup("text");
-argv[8]=strdup("NULL");
-for (int i=0;i<9;i++) {
-   if (argv[i]==NULL) {
-      fatal_alloc_error("create_text_concordances");
-   }
-}
-main_Concord(9,argv);
+pseudo_main_Concord(in1,NULL,0,20,40,NULL,"text",NULL,NULL,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
 strcat(f,"concord.txt");
+remove(out1);
 rename(f,out1);
-free(argv[1]);
-argv[1]=strdup(in2);
-if (argv[1]==NULL) {
-   fatal_alloc_error("create_text_concordances");
-}
-main_Concord(9,argv);
+
+pseudo_main_Concord(in2,NULL,0,20,40,NULL,"text",NULL,NULL,0);
+remove(out2);
 rename(f,out2);
-for (int i=0;i<9;i++) {
-   free(argv[i]);
-}
-free(argv);
 }
 
 

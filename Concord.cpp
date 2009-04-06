@@ -36,6 +36,8 @@
 #include "Snt.h"
 #include "Copyright.h"
 #include "getopt.h"
+#include "ProgramInvoker.h"
+#include "Concord.h"
 
 
 /* Maximum number of new lines in a text. New lines are encoded in
@@ -95,6 +97,47 @@ u_printf("Usage: Concord [OPTIONS] <concord>\n"
 }
 
 
+
+int pseudo_main_Concord(char* index_file,char* font,int fontsize,
+                        int left_context,int right_context,char* sort_order,
+                        char* output,char* directory,char* alphabet,int thai) {
+ProgramInvoker* invoker=new_ProgramInvoker(main_Concord,"main_Concord");
+char tmp[256];
+if (font!=NULL) {
+   add_argument(invoker,"-f");
+   add_argument(invoker,font);
+   sprintf(tmp,"%d",fontsize);
+   add_argument(invoker,"-s");
+   add_argument(invoker,tmp);
+}
+sprintf(tmp,"%d",left_context);
+add_argument(invoker,"-l");
+add_argument(invoker,tmp);
+sprintf(tmp,"%d",right_context);
+add_argument(invoker,"-r");
+add_argument(invoker,tmp);
+if (sort_order==NULL) {
+   add_argument(invoker,"--TO");
+} else {
+   add_argument(invoker,sort_order);
+}
+add_argument(invoker,output);
+if (directory!=NULL) {
+   add_argument(invoker,"-d");
+   add_argument(invoker,directory);
+}
+if (alphabet!=NULL) {
+   add_argument(invoker,"-a");
+   add_argument(invoker,alphabet);
+}
+if (thai) {
+   add_argument(invoker,"-T");
+}
+add_argument(invoker,index_file);
+int ret=invoke(invoker);
+free_ProgramInvoker(invoker);
+return ret;
+}
 
 
 

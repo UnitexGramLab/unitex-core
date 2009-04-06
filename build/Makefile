@@ -272,7 +272,8 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Unicode.o Text_tokens.o Strin
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o\
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
 				Stack_unichar.o Transitions.o DicVariables.o\
-				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o
+				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
+				ProgramInvoker.o
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Unicode.o Text_tokens.o String_hash.o List_int.o\
@@ -283,7 +284,8 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Uni
 				Error.o SortTxt.o\
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o
+				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
+				ProgramInvoker.o
 
 CONVERT      = Convert
 CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Unicode.o File.o CodePages.o Error.o\
@@ -297,7 +299,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             Text_parsing.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o Locate.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o
+            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o
 
 ELAG      = Elag
 ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
@@ -333,7 +335,8 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.
 	           MorphologicalFilters.o Error.o Buffer.o SortTxt.o StringParsing.o BitArray.o\
 	           LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o
+	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
+	           ProgramInvoker.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
@@ -379,7 +382,7 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Unicode.o Alphabet.o DELA.o List
               ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o\
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o
+              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o
 
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_LangMorpho.o\
@@ -426,7 +429,8 @@ REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Unicode.o RegularExpressions.
                List_int.o Stack_int.o getopt.o
 
 SORTTXT      = SortTxt
-SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Unicode.o Error.o Thai.o getopt.o
+SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Unicode.o Error.o Thai.o getopt.o\
+               ProgramInvoker.o
 
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Unicode.o File.o Error.o getopt.o

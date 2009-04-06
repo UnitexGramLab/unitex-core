@@ -22,6 +22,7 @@
 #ifndef VectorH
 #define VectorH
 
+#include <stdlib.h>
 #include "Error.h"
 
 /**
