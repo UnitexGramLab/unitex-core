@@ -106,7 +106,7 @@ Tfst* new_Tfst(FILE* tfst,FILE* tind,int N);
 Tfst* open_text_automaton(char* tfst);
 void close_text_automaton(Tfst* tfst);
 void load_sentence(Tfst* tfst,int n);
-void save_current_sentence(Tfst* tfst,FILE* tfst,FILE* tind,unichar** tags,int n_tags);
+void save_current_sentence(Tfst* tfst,FILE* out_tfst,FILE* tind,unichar** tags,int n_tags);
 
 TfstTag* new_TfstTag(TfstTagType);
 void free_TfstTag(TfstTag*);
