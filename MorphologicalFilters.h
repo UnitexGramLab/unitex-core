@@ -34,7 +34,6 @@
  * Claude Devis (devis@tedm.ucl.ac.be).
  */
 
-#ifndef DO_NOT_USE_TRE_LIBRARY
 #include "regex.h"
 #ifdef TRE_WCHAR
 #include "Unicode.h"
@@ -93,7 +92,6 @@ void free_FilterMatchIndex(FilterMatchIndex*);
 int string_match_filter(FilterSet*,unichar*,int);
 int token_match_filter(FilterMatchIndex*,int,int);
 
-#endif
 #endif
 #endif
 

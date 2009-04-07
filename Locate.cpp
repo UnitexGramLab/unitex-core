@@ -96,13 +96,9 @@ u_printf("Usage: Locate [OPTIONS] <fst2>\n"
          "Applies a grammar to a text, and saves the matching sequence index in a\n"
          "file named \"concord.ind\" stored in the text directory. A result info file\n"
          "named \"concord.n\" is also saved in the same directory.\n");
-#ifdef DO_NOT_USE_TRE_LIBRARY
-   error("\nWARNING: morphological filters are disabled\n");
-#else
 #ifndef TRE_WCHAR
    error("\nWARNING: on this system, morphological filters will not be taken into account,\n");
    error("         because wide characters are not supported\n");
-#endif
 #endif
 }
 
