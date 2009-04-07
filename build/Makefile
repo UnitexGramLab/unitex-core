@@ -5,10 +5,6 @@
 #
 #    make SYSTEM=windows
 #
-# If you don't want to use the TRE library, use the 'USE_TRE_LIBRARY=no' parameter:
-#
-#    make USE_TRE_LIBRARY=no
-#
 # If have a 64 bits machine, you must use '64BITS=yes':
 #
 #    make 64BITS=yes
@@ -31,7 +27,6 @@
 ################################
 
 SYSTEM = linux-like
-USE_TRE_LIBRARY = yes
 64BITS = no
 
 OBJ_DIR = build/
@@ -52,23 +47,15 @@ NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
-#
-# Compiling instructions for the TRE library
-#
-# (by default, the TRE library is used)
-#
-INSTALL_COMMAND = make USE_TRE_LIBRARY=yes install
-ifeq  ($(USE_TRE_LIBRARY),yes)
-TRE_SRC = tre-0.7.2
-TRE_TGZ = ../tre-0.7.2.tar.gz
+INSTALL_COMMAND = make install
+TRE_SRC = tre-0.7.5
+TRE_TGZ = ../tre-0.7.5.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
-endif
 
 #APPDIR = where to install binaries
 APPDIR = ../../../App
 
-ifeq ($(USE_TRE_LIBRARY),yes)
 #
 # USING TRE LIBRARY
 #
@@ -79,24 +66,11 @@ CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
 endif
-override CFLAGS   += $(DEFFLAGS) -Ilibtre/include -I"../korean" -I".."
+override CFLAGS   += $(DEFFLAGS) -I"../Libtre" -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
 LIBS   = -Llibtre/lib -ltre 
-else
-#
-# IGNORING TRE LIBRARY
-#
-DEFFLAGS = -D_NOT_UNDER_WINDOWS -DDO_NOT_USE_TRE_LIBRARY
-CFLAGS   = -Wall -W 
-ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0 
-endif
-override CFLAGS   += $(DEFFLAGS) -I"../korean" -I".."
-LIBTRE   = 
-CLEAN-LIBTRE   = 
-LIBS   = 
-endif
+
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
 EXTENSION = 
@@ -129,13 +103,7 @@ BUILD   = $(NAME)-$(VERSION)
 #
 # Compiling instructions for the TRE library
 #
-# (by default, the TRE library is used)
-
-INSTALL_COMMAND = make USE_TRE_LIBRARY=yes install
-
-
-
-ifeq ($(USE_TRE_LIBRARY),yes)
+INSTALL_COMMAND = make install
 
 LIBS =  -L"../Libtre" ../Libtre/tre.lib 
 INCS =  -I"../korean" -I".." -I"../Libtre"
@@ -147,19 +115,6 @@ CXXINCS =  -I"../korean" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
-else
-
-LIBS =   
-INCS =  -I"../korean" -I".." -I"../" 
-#
-# Note: the -I"." inclusion is intended to deal with compilation directory problem
-#       while compiling Korean programs
-#
-CXXINCS =
-CXXFLAGS = $(CXXINCS)  -Wall
-CFLAGS = $(INCS)  -Wall -DDO_NOT_USE_TRE_LIBRARY
-
-endif
 
 APPDIR = ../../../App
 
@@ -172,7 +127,6 @@ EXTENSION = .exe
 ##  END MINGW32    ##
 #####################
 #####################
-
 
 
 else
@@ -188,7 +142,6 @@ CC   = g++.exe
 APPDIR = ../../../App
 DEVCPP_PATH = C:/Dev-Cpp
 
-ifeq ($(USE_TRE_LIBRARY),yes)
 #
 # USING TRE LIBRARY
 #
@@ -199,18 +152,6 @@ INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".."
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../Libtre" -I"../korean" -I".." 
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
-else
-#
-# IGNORING TRE LIBRARY
-#
-LIBS =  -L"$(DEVCPP_PATH)/lib" 
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../korean" -I".." 
-# Note: the -I"." inclusion is intended to deal with compilation directory problem
-#       while compiling Korean programs
-CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"
-CXXFLAGS = $(CXXINCS)  -Wall
-CFLAGS = $(INCS)  -Wall -D_NOT_UNDER_WINDOWS -DDO_NOT_USE_TRE_LIBRARY
-endif
 
 OPTIONS = $(LIBS) $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
