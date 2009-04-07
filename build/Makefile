@@ -254,16 +254,16 @@ TEST_OBJS = Test.o Unicode.o Pattern.o String_hash.o IOBuffer.o Error.o \
 			LanguageDefinition.o Tagset.o
 
 CHECKDIC      = CheckDic
-CHECKDIC_OBJS = CheckDic.o IOBuffer.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
+CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\
 				List_ustring.o Error.o StringParsing.o getopt.o
 
 COMPRESS      = Compress
-COMPRESS_OBJS = Compress.o IOBuffer.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
+COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
 				String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
 				List_ustring.o Error.o StringParsing.o getopt.o
 
 CONCORD      = Concord
-CONCORD_OBJS = Concord.o IOBuffer.o Unicode.o Text_tokens.o String_hash.o\
+CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Unicode.o Text_tokens.o String_hash.o\
 				List_int.o Alphabet.o Matches.o Concordance.o File.o\
 				Text_parsing.o MorphologicalLocate.o LocatePattern.o\
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
@@ -276,7 +276,7 @@ CONCORD_OBJS = Concord.o IOBuffer.o Unicode.o Text_tokens.o String_hash.o\
 				ProgramInvoker.o NewLineShifts.o
 
 CONCORDIFF      = ConcorDiff
-CONCORDIFF_OBJS = ConcorDiff.o IOBuffer.o Diff.o Concord.o Unicode.o Text_tokens.o String_hash.o List_int.o\
+CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Unicode.o Text_tokens.o String_hash.o List_int.o\
 				Alphabet.o Matches.o Concordance.o File.o\
 				Text_parsing.o MorphologicalLocate.o LocatePattern.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o\
@@ -288,11 +288,11 @@ CONCORDIFF_OBJS = ConcorDiff.o IOBuffer.o Diff.o Concord.o Unicode.o Text_tokens
 				ProgramInvoker.o NewLineShifts.o
 
 CONVERT      = Convert
-CONVERT_OBJS = Convert.o IOBuffer.o Unicode.o File.o CodePages.o Error.o\
+CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Unicode.o File.o CodePages.o Error.o\
 				HTMLCharacters.o AsciiSearchTree.o getopt.o
 
 DICO      = Dico
-DICO_OBJS = Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
+DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
             List_ustring.o Unicode.o CompoundWordHashTable.o Fst2.o IOBuffer.o Error.o \
             CompoundWordTree.o\
             Pattern.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o \
@@ -302,7 +302,7 @@ DICO_OBJS = Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o 
             Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o
 
 ELAG      = Elag
-ELAG_OBJS = Elag.o IOBuffer.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
+ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
             AutMinimization.o AutConcat.o Fst2Automaton.o \
             Symbol.o String_hash.o Tagset.o Ustring.o \
    		    ElagStateSet.o SymbolAlphabet.o Symbol_op.o Error.o LanguageDefinition.o\
@@ -311,7 +311,7 @@ ELAG_OBJS = Elag.o IOBuffer.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDete
             BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o getopt.o Tfst.o
  
 ELAGCOMP      = ElagComp
-ELAGCOMP_OBJS = ElagComp.o IOBuffer.o Unicode.o ElagRulesCompilation.o Fst2Automaton.o\
+ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Unicode.o ElagRulesCompilation.o Fst2Automaton.o\
                 ElagFstFilesIO.o String_hash.o\
                 Symbol.o Ustring.o AutDeterminization.o AutIntersection.o\
                 ElagStateSet.o Symbol_op.o LanguageDefinition.o Tagset.o \
@@ -321,14 +321,14 @@ ELAGCOMP_OBJS = ElagComp.o IOBuffer.o Unicode.o ElagRulesCompilation.o Fst2Autom
 	            Transitions.o ElagDebug.o getopt.o Tfst.o
 
 EVAMB      = Evamb
-EVAMB_OBJS = Evamb.o IOBuffer.o Unicode.o String_hash.o\
+EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Unicode.o String_hash.o\
              Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
              List_int.o BitMasks.o DELA.o List_pointer.o SingleGraph.o\
              BitArray.o HashTable.o FIFO.o Transitions.o\
              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o Tfst.o File.o
 
 EXTRACT      = Extract
-EXTRACT_OBJS = Extract.o IOBuffer.o LocatePattern.o Text_parsing.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
+EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o List_ustring.o Fst2.o Pattern.o \
                Unicode.o Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o Matches.o\
@@ -339,20 +339,20 @@ EXTRACT_OBJS = Extract.o IOBuffer.o LocatePattern.o Text_parsing.o Morphological
 	           ProgramInvoker.o NewLineShifts.o
 
 FLATTEN      = Flatten
-FLATTEN_OBJS = Flatten.o IOBuffer.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
+FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Unicode.o Fst2.o Grf2Fst2_lib.o\
                FlattenFst2.o List_int.o Error.o File.o SingleGraph.o\
                BitMasks.o BitArray.o HashTable.o FIFO.o Pattern.o List_ustring.o\
                String_hash.o StringParsing.o Transitions.o DELA.o\
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o
 
 FST2LIST      = Fst2List
-FST2LIST_OBJS = Fst2List.o IOBuffer.o Unicode.o Fst2.o Alphabet.o\
+FST2LIST_OBJS = Main_Fst2List.o Fst2List.o IOBuffer.o Unicode.o Fst2.o Alphabet.o\
                 File.o String_hash.o Error.o TransductionVariables.o\
                 StringParsing.o Pattern.o List_ustring.o List_int.o BitMasks.o\
                 Transitions.o DELA.o Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
 
 FST2TXT      = Fst2Txt
-FST2TXT_OBJS = Fst2Txt.o IOBuffer.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
+FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
                TransductionVariables.o String_hash.o Error.o StringParsing.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
@@ -360,7 +360,7 @@ FST2TXT_OBJS = Fst2Txt.o IOBuffer.o Unicode.o Fst2.o Alphabet.o ParsingInfo.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o
 
 GRF2FST2      = Grf2Fst2
-GRF2FST2_OBJS = Grf2Fst2.o IOBuffer.o Alphabet.o Unicode.o Fst2.o\
+GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Unicode.o Fst2.o\
                 Fst2Check.o Grf2Fst2_lib.o Error.o File.o SingleGraph.o\
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o\
                 List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o\
@@ -368,14 +368,14 @@ GRF2FST2_OBJS = Grf2Fst2.o IOBuffer.o Alphabet.o Unicode.o Fst2.o\
 
 
 IMPLODETFST      = ImplodeTfst
-IMPLODETFST_OBJS = ImplodeTfst.o IOBuffer.o Unicode.o Tfst.o File.o SingleGraph.o\
+IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Unicode.o Tfst.o File.o SingleGraph.o\
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
                    List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
                    BitArray.o HashTable.o FIFO.o
 
 LOCATE      = Locate
-LOCATE_OBJS = Locate.o IOBuffer.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
+LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
               LocatePattern.o Fst2.o Text_tokens.o List_int.o\
               Pattern.o CompoundWordTree.o LocateFst2Tags.o \
               OptimizedFst2.o Text_parsing.o MorphologicalLocate.o Matches.o TransductionVariables.o TransductionStack.o\
@@ -385,7 +385,7 @@ LOCATE_OBJS = Locate.o IOBuffer.o Unicode.o Alphabet.o DELA.o List_ustring.o Str
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o
 
 MULTIFLEX      = MultiFlex
-MULTIFLEX_OBJS = MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_LangMorpho.o\
+MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_LangMorpho.o\
                  MF_InflectTransd.o  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
                  Fst2.o Unicode.o Error.o IOBuffer.o File.o DELA.o StringParsing.o List_ustring.o\
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
@@ -394,17 +394,17 @@ MULTIFLEX_OBJS = MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_Form
                  MF_Operators_Util.o getopt.o
 
 NORMALIZE      = Normalize
-NORMALIZE_OBJS = Normalize.o IOBuffer.o Unicode.o File.o DELA.o List_ustring.o String_hash.o\
+NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Unicode.o File.o DELA.o List_ustring.o String_hash.o\
 				Alphabet.o Error.o StringParsing.o Buffer.o NormalizeAsRoutine.o getopt.o
 
 POLYLEX      = PolyLex
-POLYLEX_OBJS = PolyLex.o IOBuffer.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o\
+POLYLEX_OBJS = Main_PolyLex.o PolyLex.o IOBuffer.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o\
 				NorwegianCompounds.o GermanCompounds.o Compounds.o File.o\
 				RussianCompounds.o GeneralDerivation.o Error.o StringParsing.o\
 				DutchCompounds.o getopt.o
 
 REBUILDTFST      = RebuildTfst
-REBUILDTFST_OBJS = RebuildTfst.o IOBuffer.o Unicode.o String_hash.o Fst2.o\
+REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Unicode.o String_hash.o Fst2.o\
                    File.o Alphabet.o Error.o StringParsing.o\
                    Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                    Transitions.o DELA.o\
@@ -413,7 +413,7 @@ REBUILDTFST_OBJS = RebuildTfst.o IOBuffer.o Unicode.o String_hash.o Fst2.o\
                    HashTable.o FIFO.o Fst2Check.o
 
 RECONSTRUCAO      = Reconstrucao
-RECONSTRUCAO_OBJS = Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTree.o\
+RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTree.o\
                DELA.o List_ustring.o Fst2.o IOBuffer.o TransductionStack.o Pattern.o \
                Unicode.o Alphabet.o Matches.o File.o NormalizationFst2.o\
 	            PortugueseNormalization.o TransductionVariables.o \
@@ -425,18 +425,18 @@ RECONSTRUCAO_OBJS = Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTre
                Tfst.o SingleGraph.o FIFO.o HashTable.o
 
 REG2GRF      = Reg2Grf
-REG2GRF_OBJS = Reg2Grf.o IOBuffer.o Unicode.o RegularExpressions.o Error.o File.o\
+REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Unicode.o RegularExpressions.o Error.o File.o\
                List_int.o Stack_int.o getopt.o
 
 SORTTXT      = SortTxt
-SORTTXT_OBJS = SortTxt.o IOBuffer.o Unicode.o Error.o Thai.o getopt.o\
+SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Unicode.o Error.o Thai.o getopt.o\
                ProgramInvoker.o
 
 TABLE2GRF      = Table2Grf
-TABLE2GRF_OBJS = Table2Grf.o IOBuffer.o Unicode.o File.o Error.o getopt.o
+TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Unicode.o File.o Error.o getopt.o
 
 TAGSETNORMTFST = TagsetNormTfst
-TAGSETNORMTFST_OBJS = TagsetNormTfst.o IOBuffer.o Unicode.o ElagFstFilesIO.o Ustring.o \
+TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Unicode.o ElagFstFilesIO.o Ustring.o \
 					String_hash.o Symbol.o LanguageDefinition.o Tagset.o\
 					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
 					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
@@ -444,29 +444,29 @@ TAGSETNORMTFST_OBJS = TagsetNormTfst.o IOBuffer.o Unicode.o ElagFstFilesIO.o Ust
 					Symbol_op.o Fst2Automaton.o getopt.o Tfst.o
 
 TEI2TXT      = TEI2Txt
-TEI2TXT_OBJS = TEI2Txt.o IOBuffer.o Unicode.o Error.o File.o HTMLCharacters.o\
+TEI2TXT_OBJS = Main_TEI2Txt.o TEI2Txt.o IOBuffer.o Unicode.o Error.o File.o HTMLCharacters.o\
                AsciiSearchTree.o getopt.o
 
 TFST2GRF      = Tfst2Grf
-TFST2GRF_OBJS = Tfst2Grf.o IOBuffer.o Unicode.o Tfst.o Sentence2Grf.o\
+TFST2GRF_OBJS = Main_Tfst2Grf.o Tfst2Grf.o IOBuffer.o Unicode.o Tfst.o Sentence2Grf.o\
                File.o List_int.o Error.o StringParsing.o Pattern.o\
                List_ustring.o String_hash.o BitMasks.o BitArray.o DELA.o\
                Alphabet.o Transitions.o Symbol.o Symbol_op.o LanguageDefinition.o\
                Ustring.o Tagset.o getopt.o SingleGraph.o HashTable.o FIFO.o
 
 TFST2UNAMBIG      = Tfst2Unambig
-TFST2UNAMBIG_OBJS = Tfst2Unambig.o Tfst.o Error.o IOBuffer.o LinearAutomaton2Txt.o\
+TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o Error.o IOBuffer.o LinearAutomaton2Txt.o\
                    Unicode.o Pattern.o List_ustring.o StringParsing.o String_hash.o\
                    List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
                    getopt.o SingleGraph.o BitArray.o HashTable.o FIFO.o File.o
 
 TOKENIZE      = Tokenize
-TOKENIZE_OBJS = Tokenize.o IOBuffer.o Unicode.o Alphabet.o String_hash.o\
+TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Unicode.o Alphabet.o String_hash.o\
 				File.o DELA.o List_ustring.o HashTable.o Error.o StringParsing.o getopt.o
 
 TXT2TFST      = Txt2Tfst
-TXT2TFST_OBJS = Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Unicode.o DELA_tree.o\
+TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Unicode.o DELA_tree.o\
                 DELA.o List_ustring.o String_hash.o BuildTextAutomaton.o List_int.o\
                 NormalizationFst2.o Fst2.o File.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
@@ -475,7 +475,7 @@ TXT2TFST_OBJS = Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Unicode.o DELA_tr
                 Tfst.o NewLineShifts.o
 
 XMLIZER      = XMLizer
-XMLIZER_OBJS = XMLizer.o IOBuffer.o Unicode.o Fst2.o Alphabet.o \
+XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Unicode.o Fst2.o Alphabet.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o File.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o\
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
@@ -688,7 +688,7 @@ getopt.o: ../getopt.c
 	$(CC) -c $(CFLAGS) $<
 
 clean: 
-	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe Main_*.o
+	rm -f $(OBJ_DIR)*.o $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll
 
 ##########################
 ##########################
@@ -717,7 +717,7 @@ getopt.o: ../getopt.c
 	$(CC) -c $(CFLAGS) $<
 
 clean: 
-	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe Main_*.o
+	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
 
 #############################
 #############################
@@ -727,100 +727,100 @@ clean:
 endif 
 endif
 
-$(BIN_DIR)$(TEST)$(EXTENSION): $(TEST_OBJS)
+$(BIN_DIR)$(TEST)$(EXTENSION): Test.o
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(CHECKDIC)$(EXTENSION): $(CHECKDIC_OBJS) Main_$(CHECKDIC).o
+$(BIN_DIR)$(CHECKDIC)$(EXTENSION): $(CHECKDIC_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(COMPRESS)$(EXTENSION): $(COMPRESS_OBJS) Main_$(COMPRESS).o
+$(BIN_DIR)$(COMPRESS)$(EXTENSION): $(COMPRESS_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS) 
 
-$(BIN_DIR)$(CONCORD)$(EXTENSION): $(CONCORD_OBJS) Main_$(CONCORD).o
+$(BIN_DIR)$(CONCORD)$(EXTENSION): $(CONCORD_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(CONCORDIFF)$(EXTENSION): $(CONCORDIFF_OBJS) Main_$(CONCORDIFF).o
+$(BIN_DIR)$(CONCORDIFF)$(EXTENSION): $(CONCORDIFF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(CONVERT)$(EXTENSION): $(CONVERT_OBJS) Main_$(CONVERT).o
+$(BIN_DIR)$(CONVERT)$(EXTENSION): $(CONVERT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(DICO)$(EXTENSION): $(DICO_OBJS) Main_$(DICO).o
+$(BIN_DIR)$(DICO)$(EXTENSION): $(DICO_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(ELAG)$(EXTENSION): $(ELAG_OBJS) Main_$(ELAG).o
+$(BIN_DIR)$(ELAG)$(EXTENSION): $(ELAG_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(ELAGCOMP)$(EXTENSION): $(ELAGCOMP_OBJS) Main_$(ELAGCOMP).o
+$(BIN_DIR)$(ELAGCOMP)$(EXTENSION): $(ELAGCOMP_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(EVAMB)$(EXTENSION): $(EVAMB_OBJS) Main_$(EVAMB).o
+$(BIN_DIR)$(EVAMB)$(EXTENSION): $(EVAMB_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(EXTRACT)$(EXTENSION): $(EXTRACT_OBJS) Main_$(EXTRACT).o
+$(BIN_DIR)$(EXTRACT)$(EXTENSION): $(EXTRACT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(FLATTEN)$(EXTENSION): $(FLATTEN_OBJS) Main_$(FLATTEN).o
+$(BIN_DIR)$(FLATTEN)$(EXTENSION): $(FLATTEN_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(FST2LIST)$(EXTENSION): $(FST2LIST_OBJS) Main_$(FST2LIST).o
+$(BIN_DIR)$(FST2LIST)$(EXTENSION): $(FST2LIST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(FST2TXT)$(EXTENSION): $(FST2TXT_OBJS) Main_$(FST2TXT).o
+$(BIN_DIR)$(FST2TXT)$(EXTENSION): $(FST2TXT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(GRF2FST2)$(EXTENSION): $(GRF2FST2_OBJS) Main_$(GRF2FST2).o
+$(BIN_DIR)$(GRF2FST2)$(EXTENSION): $(GRF2FST2_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(IMPLODETFST)$(EXTENSION): $(IMPLODETFST_OBJS) Main_$(IMPLODETFST).o
+$(BIN_DIR)$(IMPLODETFST)$(EXTENSION): $(IMPLODETFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(LOCATE)$(EXTENSION): $(LOCATE_OBJS) Main_$(LOCATE).o
+$(BIN_DIR)$(LOCATE)$(EXTENSION): $(LOCATE_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(MULTIFLEX)$(EXTENSION): $(MULTIFLEX_OBJS) Main_$(MULTIFLEX).o
+$(BIN_DIR)$(MULTIFLEX)$(EXTENSION): $(MULTIFLEX_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(NORMALIZE)$(EXTENSION): $(NORMALIZE_OBJS) Main_$(NORMALIZE).o
+$(BIN_DIR)$(NORMALIZE)$(EXTENSION): $(NORMALIZE_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(POLYLEX)$(EXTENSION): $(POLYLEX_OBJS) Main_$(POLYLEX).o
+$(BIN_DIR)$(POLYLEX)$(EXTENSION): $(POLYLEX_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(REBUILDTFST)$(EXTENSION): $(REBUILDTFST_OBJS) Main_$(REBUILDTFST).o
+$(BIN_DIR)$(REBUILDTFST)$(EXTENSION): $(REBUILDTFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(RECONSTRUCAO)$(EXTENSION): $(RECONSTRUCAO_OBJS) Main_$(RECONSTRUCAO).o
+$(BIN_DIR)$(RECONSTRUCAO)$(EXTENSION): $(RECONSTRUCAO_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(REG2GRF)$(EXTENSION): $(REG2GRF_OBJS) Main_$(REG2GRF).o
+$(BIN_DIR)$(REG2GRF)$(EXTENSION): $(REG2GRF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(SORTTXT)$(EXTENSION): $(SORTTXT_OBJS) Main_$(SORTTXT).o
+$(BIN_DIR)$(SORTTXT)$(EXTENSION): $(SORTTXT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(TABLE2GRF)$(EXTENSION): $(TABLE2GRF_OBJS) Main_$(TABLE2GRF).o
+$(BIN_DIR)$(TABLE2GRF)$(EXTENSION): $(TABLE2GRF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(TAGSETNORMTFST)$(EXTENSION): $(TAGSETNORMTFST_OBJS) Main_$(TAGSETNORMTFST).o
+$(BIN_DIR)$(TAGSETNORMTFST)$(EXTENSION): $(TAGSETNORMTFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(TEI2TXT)$(EXTENSION): $(TEI2TXT_OBJS) Main_$(TEI2TXT).o
+$(BIN_DIR)$(TEI2TXT)$(EXTENSION): $(TEI2TXT_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(TFST2GRF)$(EXTENSION): $(TFST2GRF_OBJS) Main_$(TFST2GRF).o
+$(BIN_DIR)$(TFST2GRF)$(EXTENSION): $(TFST2GRF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(TFST2UNAMBIG)$(EXTENSION): $(TFST2UNAMBIG_OBJS) Main_$(TFST2UNAMBIG).o
+$(BIN_DIR)$(TFST2UNAMBIG)$(EXTENSION): $(TFST2UNAMBIG_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(TOKENIZE)$(EXTENSION): $(TOKENIZE_OBJS) Main_$(TOKENIZE).o
+$(BIN_DIR)$(TOKENIZE)$(EXTENSION): $(TOKENIZE_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(TXT2TFST)$(EXTENSION): $(TXT2TFST_OBJS) Main_$(TXT2TFST).o
+$(BIN_DIR)$(TXT2TFST)$(EXTENSION): $(TXT2TFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS) Main_$(XMLIZER).o
+$(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 
@@ -908,16 +908,19 @@ $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS) Main_$(XMLIZER).o
 #	$(CC) -c ../korean/Txt2Fst2Kr.cpp $(OPTIONS) 
 #
 
-# Compiling Unitex as a library
+# Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)
 
 else 
 
+# Compiling Unitex as a library under Windows
 no_o_files:
 	del *.o
 
-libunitex: no_o_files $(OBJS)
-	$(CC) *.o -shared -Wl,--export-all-symbols -o unitex.dll $(OPTIONS)
+libunitex: no_o_files $(OBJS) Test_lib.o
+	del Main_*.o
+	$(CC) *.o -shared -Wl,--export-all-symbols ../Libtre/tre.dll -o ../bin/unitex.dll
+	$(CC) Test_lib.o $(OPTIONS) ../Libtre/tre.dll ../bin/unitex.dll -o ../bin/Test_lib.exe
 
 endif
 	
