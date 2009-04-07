@@ -137,8 +137,8 @@ INSTALL_COMMAND = make USE_TRE_LIBRARY=yes install
 
 ifeq ($(USE_TRE_LIBRARY),yes)
 
-LIBS =  ../Libtre/tre.lib 
-INCS =  -I"../korean" -I".." 
+LIBS =  -L"../Libtre" ../Libtre/tre.lib 
+INCS =  -I"../korean" -I".." -I"../Libtre"
 #
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
