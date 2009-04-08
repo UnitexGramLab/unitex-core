@@ -10,7 +10,7 @@
 #    make 64BITS=yes
 #
 #
-# By default, 'make' will compile Unitex for a  32 bits Linux, using the TRE library
+# By default, 'make' will compile Unitex for a 32 bits Linux.
 #
 #
 # The special command
@@ -18,6 +18,18 @@
 #    make SYSTEM=mingw32
 #
 # can be used to generate Windows executables under Linux, using the mingw32 tools.
+#
+#-----------------------------------
+#
+# If you want to generate a dynamic library, use:
+#
+# Linux:    make LIBRARY=yes
+# => creates libunitex.so
+#
+# Windows:  make SYSTEM=windows LIBRARY=yes
+# mingw32:  make SYSTEM=mingw32 LIBRARY=yes
+# => creates unitex.dll
+#
 #
 
 
@@ -66,6 +78,11 @@ CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
 endif
+
+ifeq ($(LIBRARY),yes)
+CFLAGS += -fPIC 
+endif 
+
 override CFLAGS   += $(DEFFLAGS) -I"../Libtre" -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
@@ -115,6 +132,10 @@ CXXINCS =  -I"../korean" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
+# -fPIC is not required because all code is position independent under Windows
+#ifeq ($(LIBRARY),yes)
+#CFLAGS += -fPIC
+#endif
 
 APPDIR = ../../../App
 
@@ -152,6 +173,11 @@ INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".."
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../Libtre" -I"../korean" -I".." 
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
+
+# -fPIC is not required because all code is position independent under Windows
+#ifeq ($(LIBRARY),yes)
+#CFLAGS += -fPIC
+#endif
 
 OPTIONS = $(LIBS) $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
@@ -544,10 +570,14 @@ ifeq ($(SYSTEM),linux-like)
 #####################
 #####################
 
+ifeq ($(LIBRARY),yes)
+all: $(LIBTRE) .libunitex
+else
 all: bin
 	@echo
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
+endif
 
 bin: $(LIBTRE) $(BINARIES)
 
@@ -615,10 +645,13 @@ ifeq ($(SYSTEM),windows)
 ##  WINDOWS TARGETS  ##
 #######################
 #######################
+ifeq ($(LIBRARY),yes)
+all: $(LIBTRE) .libunitex
+else
 all: bin
 	@echo ---------------------------------------------------------------------------- 
 	@echo All is done. You need to move .exe programs from '$(BIN_DIR)' to '$(APPDIR)'.
-
+endif
 
 bin: $(BINARIES)
 
@@ -643,11 +676,14 @@ else
 ##  MINGW WINDOWS TARGETS  ##
 #############################
 #############################
+ifeq ($(LIBRARY),yes)
+all: $(LIBTRE) .libunitex
+else
 all: bin
 	@echo
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
-
+endif
 
 bin: $(BINARIES)
 
@@ -852,14 +888,24 @@ $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
 # Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)
 
+
+no_o_files:
+	rm -f *.o
+
+.libunitex: no_o_files $(OBJS) Test_lib.o
+	rm -f Main_*.o
+	$(CC) *.o $(OPTIONS) -shared -o ../bin/libunitex.so
+	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
+
+
 else 
 
 # Compiling Unitex as a library under Windows
 no_o_files:
-	del *.o
+	rm -f *.o
 
-libunitex: no_o_files $(OBJS) Test_lib.o
-	del Main_*.o
+.libunitex: no_o_files $(OBJS) Test_lib.o
+	rm -f Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols ../Libtre/tre.dll -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) ../Libtre/tre.dll ../bin/unitex.dll -o ../bin/Test_lib.exe
 
