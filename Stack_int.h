@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -38,6 +38,7 @@ struct stack_int {
 struct stack_int* new_stack_int(int);
 void free_stack_int(struct stack_int*);
 int stacki_is_empty(struct stack_int*);
+void stacki_empty(struct stack_int* stack);
 int stacki_is_full(struct stack_int*);
 void stacki_push(struct stack_int*,int);
 int stacki_pop(struct stack_int*);
