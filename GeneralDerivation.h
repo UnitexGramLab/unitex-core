@@ -52,5 +52,7 @@ struct utags {
 };
 struct utags init_utags (tags);
 
-void analyse_compounds(Alphabet*, unsigned char*, struct INF_codes*, FILE*, FILE*, FILE*, FILE*);
+void analyse_compounds(Alphabet*, unsigned char*, struct INF_codes*, FILE*, FILE*, FILE*, FILE*,
+                       struct utags);
+
 #endif

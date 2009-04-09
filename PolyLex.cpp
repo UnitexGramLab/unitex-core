@@ -224,14 +224,15 @@ if (info!=NULL) {
       error("Cannot open debug file %s\n",info);
    }
 }
+struct utags UTAG;
 
 switch(language) {
 case DUTCH: analyse_dutch_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords); break;
 case GERMAN: analyse_german_compounds(alph,bin,inf,words,res,debug,new_unknown_words); break;
 case NORWEGIAN: analyse_norwegian_unknown_words(alph,bin,inf,words,res,debug,new_unknown_words,forbiddenWords); break;
 case RUSSIAN:
-   init_russian();
-   analyse_compounds(alph,bin,inf,words,res,debug,new_unknown_words);
+   init_russian(&UTAG);
+   analyse_compounds(alph,bin,inf,words,res,debug,new_unknown_words,UTAG);
    break;
 }
 

@@ -19,16 +19,15 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef GermanCompoundsH
 #define GermanCompoundsH
-//---------------------------------------------------------------------------
+
+
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "DELA.h"
 #include "String_hash.h"
 
-extern Alphabet* german_alphabet;
 
 struct german_word_decomposition {
    int n_parts;
@@ -49,14 +48,15 @@ char check_valid_left_component_for_an_INF_line_german(struct list_ustring*);
 char check_valid_left_component_for_one_INF_code_german(unichar*);
 char check_valid_right_component_for_an_INF_line_german(struct list_ustring*);
 char check_valid_right_component_for_one_INF_code_german(unichar*);
-void analyse_german_word_list(unsigned char*,struct INF_codes*,FILE*,FILE*,FILE*,FILE*);
-int analyse_german_word(unichar*);
-void get_first_sia_code_german(int,unichar*);
+void analyse_german_word_list(unsigned char*,struct INF_codes*,FILE*,FILE*,FILE*,FILE*,char*,char*,Alphabet*);
+int analyse_german_word(unichar*,FILE*,FILE*,char*,char*,struct INF_codes*,Alphabet*,unsigned char*);
+void get_first_sia_code_german(int,unichar*,struct INF_codes*);
 
 struct german_word_decomposition* new_german_word_decomposition();
 void free_german_word_decomposition(struct german_word_decomposition*);
 struct german_word_decomposition_list* new_german_word_decomposition_list();
 void free_german_word_decomposition_list(struct german_word_decomposition_list*);
-void explore_state_german(int,unichar*,int,unichar*,int,unichar*,unichar*,struct german_word_decomposition_list**,int);
+void explore_state_german(int,unichar*,int,unichar*,int,unichar*,unichar*,
+      struct german_word_decomposition_list**,int,char*,char*,struct INF_codes*,Alphabet*,unsigned char*);
 
 #endif

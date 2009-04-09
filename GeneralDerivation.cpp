@@ -19,18 +19,19 @@
   *
   */
 
-#include "Compounds.h"
 #include "GeneralDerivation.h"
 #include "Error.h"
-
-
-Alphabet* alphabet;
+#include "Vector.h"
 
 
 // main internal functions:
-void analyse_word_list(unsigned char*, struct INF_codes*, FILE*, FILE*, FILE*, FILE*);
-int analyse_word(unichar*);
-void explore_state(int, unichar*, int, unichar*, unichar*, int, unichar*, unichar*, struct decomposed_word_list**, int, struct rule_list*, struct dela_entry*);
+void analyse_word_list(unsigned char*, struct INF_codes*, FILE*, FILE*, FILE*, FILE*,Alphabet*,
+                       bool*,bool*,struct utags,vector_ptr*,vector_ptr*);
+int analyse_word(unichar*,unsigned char*,FILE*,FILE*,struct INF_codes*,bool*,bool*,Alphabet*,struct utags
+      ,vector_ptr*,vector_ptr*);
+void explore_state(int, unichar*, int, unichar*, unichar*, int, unichar*, unichar*, 
+                   struct decomposed_word_list**, int, struct rule_list*, struct dela_entry*,
+                   unsigned char*,struct INF_codes*,bool*,bool*,Alphabet*,FILE*,struct utags,vector_ptr*,vector_ptr*);
 
 
 // results of decomposition are written to
@@ -63,7 +64,7 @@ struct utags init_utags (tags T)
   u_strcpy(UTAG.RULE,   T.RULE);
   return UTAG;
 }
-struct utags UTAG;
+
 
 
 /* data and functions for rule matching */
@@ -106,26 +107,22 @@ struct rule_list {
   struct composition_rule* rule;
   struct rule_list* next;
 };
-struct rule_list* new_rule_list ();
+struct rule_list* new_rule_list(vector_ptr*);
 void free_rule_list (struct rule_list*);
-void free_all_rule_lists ();
+void free_all_rule_lists (vector_ptr*);
 
 // parse_condition parses condition parts of rules
 void parse_condition (unichar*, pattern*);
 // parse_then_code parses replacement part of a rule
 void parse_then_code (unichar*_code, struct change_code*);
 // parse_rules parses a rule
-struct rule_list* parse_rules (unichar*);
+struct rule_list* parse_rules (unichar*,struct utags,vector_ptr*);
 // composition_rule_matches_entry decides whether rule and entry match
-int composition_rule_matches_entry (struct pattern*, struct dela_entry*);
+int composition_rule_matches_entry (struct pattern*, struct dela_entry*,FILE*);
 // substring_operation changes prefix or suffix of word given a substring-rule
 void substring_operation (unichar*, unichar*);
 
 
-// for efficiency reasons the lexicon is analysed ahead
-// and all valid affixes are stored in tables
-bool* tableau_prefix;
-bool* tableau_suffix;
 void check_valid_INF_lines(unichar*, bool*, struct INF_codes*);
 bool check_is_valid_for_an_INF_line(unichar*, struct list_ustring*);
 int check_is_valid_for_one_INF_code(unichar* t, unichar* s);
@@ -133,21 +130,22 @@ int check_is_valid(unichar*, struct dela_entry*);
 
 
 
-void init_tableaux (struct INF_codes* inf) {
-  tableau_prefix = (bool*)malloc(sizeof(bool)*(inf->N));
-  if (tableau_prefix==NULL) {
+void init_tableaux (struct INF_codes* inf,bool* *tableau_prefix,
+                    bool* *tableau_suffix,struct utags UTAG) {
+  *tableau_prefix = (bool*)malloc(sizeof(bool)*(inf->N));
+  if (*tableau_prefix==NULL) {
      fatal_alloc_error("init_tableaux");
   }
-  tableau_suffix = (bool*)malloc(sizeof(bool)*(inf->N));
-  if (tableau_suffix==NULL) {
+  *tableau_suffix = (bool*)malloc(sizeof(bool)*(inf->N));
+  if (*tableau_suffix==NULL) {
      fatal_alloc_error("init_tableaux");
   }
-  check_valid_INF_lines(UTAG.PREFIX, tableau_prefix, inf);
-  check_valid_INF_lines(UTAG.SUFFIX, tableau_suffix, inf);
+  check_valid_INF_lines(UTAG.PREFIX, *tableau_prefix, inf);
+  check_valid_INF_lines(UTAG.SUFFIX, *tableau_suffix, inf);
 }
 
 
-void free_tableaux () {
+void free_tableaux (bool* tableau_prefix,bool* tableau_suffix) {
   free(tableau_prefix);
   free(tableau_suffix);
 }
@@ -156,8 +154,7 @@ void free_tableaux () {
 
 // stacks of dic_entries and rule_lists
 // respectively garbage collection
-void free_all_dic_entries();
-void free_all_rule_lists();
+void free_all_dic_entries(vector_ptr*);
 
 
 
@@ -170,41 +167,40 @@ void analyse_compounds(Alphabet* alph,
 		       FILE* words,
 		       FILE* result,
 		       FILE* debug,
-		       FILE* new_unknown_words)
+		       FILE* new_unknown_words,struct utags UTAG)
 {
-
-  init_tableaux(inf);
-
-  alphabet = alph;
-  inf_codes = inf;
-
-  analyse_word_list(bin,inf,words,result,debug,new_unknown_words);
-
-  free_tableaux();
-
+   bool* prefix;
+   bool* suffix;
+   vector_ptr* rules=new_vector_ptr(16);
+   vector_ptr* entries=new_vector_ptr(16);
+  init_tableaux(inf,&prefix,&suffix,UTAG);
+  analyse_word_list(bin,inf,words,result,debug,new_unknown_words,alph,prefix,suffix,UTAG,rules,entries);
+  free_tableaux(prefix,suffix);
+  free_vector_ptr(rules);
+  free_vector_ptr(entries);
 }
-
-extern unsigned char* tableau_bin;
 
 //
 // this function reads words in the word file and try analyse them
 //
-void analyse_word_list(unsigned char* bin,
+void analyse_word_list(unsigned char* tableau_bin,
 			       struct INF_codes* inf,
 			       FILE* words,
 			       FILE* result,
 			       FILE* debug,
-			       FILE* new_unknown_words)
+			       FILE* new_unknown_words,
+			       Alphabet* alph,
+			       bool* prefix,bool* suffix,
+			       struct utags UTAG,
+			       vector_ptr* rules,
+			       vector_ptr* entries)
 {
   unichar s[MAX_WORD_LENGTH];
-  tableau_bin=bin;
-  debug_file=debug;
-  result_file=result;
   u_printf("Analysing russian unknown words...\n");
   int n=0;
   int words_done = 0;
   while (EOF!=u_fgets(s,words)) {
-    if (!analyse_word(s)) {
+    if (!analyse_word(s,tableau_bin,debug,result,inf,prefix,suffix,alph,UTAG,rules,entries)) {
       // if the analysis has failed, we store the word in the new unknown word file
       u_fprintf(new_unknown_words,"%S\n",s);
     } else {
@@ -221,10 +217,12 @@ void analyse_word_list(unsigned char* bin,
 //
 // this function try to analyse an unknown russian word
 //
-int analyse_word(unichar* mot)
+int analyse_word(unichar* mot,unsigned char* tableau_bin,FILE* debug,FILE* result_file,
+                 struct INF_codes* inf_codes,bool* prefix,bool* suffix,Alphabet* alphabet,
+                 struct utags UTAG,vector_ptr* rules,vector_ptr* entries)
 {
   if (DDEBUG) {
-    u_fprintf(debug_file,"\n  %S\n",mot);
+    u_fprintf(debug,"\n  %S\n",mot);
   }
   
   unichar decomposition[MAX_DICT_LINE_LENGTH];
@@ -234,16 +232,17 @@ int analyse_word(unichar* mot)
   dela_line[0]='\0';
   correct_word[0]='\0';
   struct decomposed_word_list* l = 0;
-  explore_state(4,correct_word,0,mot,mot,0,decomposition,dela_line,&l,1,0,0);
-  free_all_dic_entries();
-  free_all_rule_lists();
+  explore_state(4,correct_word,0,mot,mot,0,decomposition,dela_line,&l,1,0,0,tableau_bin,
+        inf_codes,prefix,suffix,alphabet,debug,UTAG,rules,entries);
+  free_all_dic_entries(entries);
+  free_all_rule_lists(rules);
   if ( l == 0 ) {
     return 0;
   }
   struct decomposed_word_list* tmp = l;
   while ( tmp != NULL ) {
-	  if (debug_file!=NULL) {
-	     u_fprintf(debug_file,"%S = %S\n",mot,tmp->element->decomposition);
+	  if (debug!=NULL) {
+	     u_fprintf(debug,"%S = %S\n",mot,tmp->element->decomposition);
 	  }
 	  u_fprintf(result_file,"%S\n",tmp->element->dela_line);
      tmp=tmp->suivant;
@@ -334,19 +333,19 @@ void free_decomposed_word_list(struct decomposed_word_list* l)
 
 
 
-bool affix_is_valid (int index)
+bool affix_is_valid (int index,bool* prefix,bool* suffix)
 {
-  return tableau_prefix[index] || tableau_suffix[index];
+  return prefix[index] || suffix[index];
 }
 
-bool prefix_is_valid (int index)
+bool prefix_is_valid (int index,bool* prefix)
 {
-  return tableau_prefix[index];
+  return prefix[index];
 }
 
-bool suffix_is_valid (int index)
+bool suffix_is_valid (int index,bool* suffix)
 {
-  return tableau_suffix[index];
+  return suffix[index];
 }
 
 
@@ -470,16 +469,8 @@ struct composition_rule* copy_composition_rule (struct composition_rule* a,
 
 
 
-/* a (very primitive) memory managment resp. garbage collection */
 
-int _n_used_rule_lists = 0;
-int _max_used_rule_lists = 0;
-struct rule_list* _all_adresses_of_rule_lists[1000];
-
-
-
-struct rule_list* new_rule_list ()
-{
+struct rule_list* new_rule_list(vector_ptr* rule_collection) {
   struct rule_list* tmp
     = (struct rule_list*)malloc(sizeof(struct rule_list));
   if (tmp==NULL) {
@@ -487,10 +478,7 @@ struct rule_list* new_rule_list ()
   }
   tmp->rule = 0;
   tmp->next = 0;
-  _all_adresses_of_rule_lists[_n_used_rule_lists++] = tmp;
-  if (_n_used_rule_lists > _max_used_rule_lists) {
-    _max_used_rule_lists = _n_used_rule_lists;
-  }
+  vector_ptr_add(rule_collection,tmp);
   return tmp;
 }
 
@@ -514,41 +502,31 @@ void free_rule_list2 (struct rule_list* r)
   }
 }
 
-void free_all_rule_lists ()
-{
-  while (_n_used_rule_lists > 0) {
-    _n_used_rule_lists--;
-    if ( _all_adresses_of_rule_lists[_n_used_rule_lists] != 0 )
-      free_rule_list2(_all_adresses_of_rule_lists[_n_used_rule_lists]);
-  }
+void free_all_rule_lists (vector_ptr* rule_collection) {
+for (int i=0;i<rule_collection->nbelems;i++) {
+   struct rule_list* r=(struct rule_list*)rule_collection->tab[i];
+   free_rule_list2(r);
+   /* We don't want the vector to be freed now, and we don't want free_vector_ptr to crash */
+   rule_collection->tab[i]=NULL;
+}
+rule_collection->nbelems=0;
 }
 
 
-int _n_used_dic_entries = 0;
-int _max_used_dic_entries = 0;
-struct dela_entry* _all_adresses_of_dic_entries[1000];
-
-struct dela_entry* new_dic_entry (unichar* entry) {
+struct dela_entry* new_dic_entry (unichar* entry,vector_ptr* entry_collection) {
   struct dela_entry* d = tokenize_DELAF_line(entry,0);
-  _all_adresses_of_dic_entries[_n_used_dic_entries++] = d;
-  if (_n_used_dic_entries > _max_used_dic_entries) {
-    _max_used_dic_entries = _n_used_dic_entries;
-  }
+  vector_ptr_add(entry_collection,d);
   return d;
 }
 
-void free_all_dic_entries ()
-{
-   while (_n_used_dic_entries > 0) {
-    _n_used_dic_entries--;
-    if ( _all_adresses_of_dic_entries[_n_used_dic_entries] != 0 )
-      free_dela_entry(_all_adresses_of_dic_entries[_n_used_dic_entries]);
-  }
-}
-
-void memstat () {
-error("%d used rule_lists\n",_max_used_rule_lists);
-error("%d used dic_entries\n",_max_used_dic_entries);
+void free_all_dic_entries (vector_ptr* entry_collection) {
+   for (int i=0;i<entry_collection->nbelems;i++) {
+      struct dela_entry* r=(struct dela_entry*)entry_collection->tab[i];
+      free_dela_entry(r);
+      /* We don't want the vector to be freed now, and we don't want free_vector_ptr to crash */
+      entry_collection->tab[i]=NULL;
+   }
+   entry_collection->nbelems=0;
 }
 
 
@@ -638,11 +616,11 @@ void parse_then_code (unichar* then_code, struct change_code* then)
   }
 }
 
-struct rule_list* parse_rules (unichar* entry)
+struct rule_list* parse_rules (unichar* entry,struct utags UTAG,vector_ptr* rules)
 {
   // parses dictionary entry to extract rules for derivation and composition
 
-  struct rule_list* rule_list = new_rule_list();
+  struct rule_list* rule_list = new_rule_list(rules);
   struct rule_list* actual_list_pos = rule_list;
 
   unichar cleaned_entry[MAX_DICT_LINE_LENGTH]; // rules will be stripped off
@@ -670,7 +648,7 @@ struct rule_list* parse_rules (unichar* entry)
 	parse_then_code(then_code, &rule->then);
 	bcpos = acpos = tpos = 0;
 	if (actual_list_pos->rule != 0) { // not first rule
-	  struct rule_list* tmp = new_rule_list();
+	  struct rule_list* tmp = new_rule_list(rules);
 	  actual_list_pos->next = tmp;
 	  actual_list_pos = tmp;
 	}
@@ -730,7 +708,7 @@ struct rule_list* parse_rules (unichar* entry)
 
 
 int composition_rule_matches_entry (struct pattern* rule,
-				     struct dela_entry* d) {
+				     struct dela_entry* d,FILE* debug_file) {
   int ok = 1;
   // "ok = 0;"  may be replaced by "return 0;"
   int flex_code_already_matched = 1;
@@ -925,7 +903,12 @@ void explore_state (int adresse,
 		    struct decomposed_word_list** L,
 		    int n_decomp,
 		    struct rule_list* rule_list_called,
-		    struct dela_entry* dic_entr_called)
+		    struct dela_entry* dic_entr_called,
+		    unsigned char* tableau_bin,
+		    struct INF_codes* inf_codes,
+		    bool* prefix,bool* suffix,Alphabet* alphabet,
+		    FILE* debug_file,struct utags UTAG,
+		    vector_ptr* rules,vector_ptr* entries)
 {
 
   int c = tableau_bin[adresse]*256+tableau_bin[adresse+1];
@@ -956,17 +939,17 @@ void explore_state (int adresse,
 	  u_fprintf(debug_file,": %S\n",entry);
 	}
 
-	struct dela_entry* dic_entr = new_dic_entry(entry);
+	struct dela_entry* dic_entr = new_dic_entry(entry,entries);
 
 	unichar lemma_prefix_new[MAX_DICT_LINE_LENGTH];
 	struct rule_list* rule_list_new = 0;
 	unichar next_remaining_word[MAX_WORD_LENGTH];
 
 	struct rule_list* rule_list = 0;
-	if (prefix_is_valid(index) || suffix_is_valid(index))
-	  rule_list = parse_rules(entry);
+	if (prefix_is_valid(index,prefix) || suffix_is_valid(index,suffix))
+	  rule_list = parse_rules(entry,UTAG,rules);
 	else {
-	  rule_list = new_rule_list();
+	  rule_list = new_rule_list(rules);
 	  rule_list->rule = new_composition_rule();
 	}
 	// entry is now cleaned from rules for composition and derivation
@@ -1001,12 +984,12 @@ void explore_state (int adresse,
 	    if (remaining_word[pos_in_remaining_word]=='\0' &&
 		// we have explored the entire original word
 		((((dic_entr_called != 0) &&
-		   composition_rule_matches_entry(rule->before, dic_entr_called))  &&
+		   composition_rule_matches_entry(rule->before, dic_entr_called,debug_file))  &&
 		  ((rule_called != 0) &&
-		   composition_rule_matches_entry(rule_called->after, dic_entr))) ||
+		   composition_rule_matches_entry(rule_called->after, dic_entr,debug_file))) ||
 		 // and we have a valid right component, i.e. rules match
 		 ((dic_entr_called == 0) &&  // or a simple entry (i.e. no prefix),
-		  (! affix_is_valid(index))) // but no affix
+		  (! affix_is_valid(index,prefix,suffix))) // but no affix
 		 )
 		)  {
 
@@ -1101,7 +1084,7 @@ void explore_state (int adresse,
 	    } // end if end of word and valid right component
 	    else if
 	      // beginning or middle of word: explore the rest of the original word
-	      (prefix_is_valid(index) &&
+	      (prefix_is_valid(index,prefix) &&
 	       check_is_valid(UTAG.PREFIX, dic_entr) &&
 	       // but only if the current component was a valid left one
 	       // we go on with the next component
@@ -1110,9 +1093,9 @@ void explore_state (int adresse,
 		||
 		(               // prefix in the middle of a word
 		 (rule_called &&
-		  composition_rule_matches_entry(rule_called->after, dic_entr)) &&
+		  composition_rule_matches_entry(rule_called->after, dic_entr,debug_file)) &&
 		 (dic_entr_called &&
-		  composition_rule_matches_entry(rule->before, dic_entr_called))
+		  composition_rule_matches_entry(rule->before, dic_entr_called,debug_file))
 		)
 	       )) {
 
@@ -1141,7 +1124,7 @@ void explore_state (int adresse,
 	      if (DDEBUG) {
             u_fprintf(debug_file,"- %S\n",entry);
 	      }
-	      struct rule_list* tmp = new_rule_list();
+	      struct rule_list* tmp = new_rule_list(rules);
 	      tmp->rule = new_composition_rule();
 	      copy_composition_rule(tmp->rule, rule);
 	      tmp->next = 0;
@@ -1185,7 +1168,8 @@ void explore_state (int adresse,
 			L,
 			n_decomp+1,
 			rule_list_new,
-			dic_entr);
+			dic_entr,
+			tableau_bin,inf_codes,prefix,suffix,alphabet,debug_file,UTAG,rules,entries);
 	}
 	else {
 // 	  free_dic_entry(dic_entr);
@@ -1233,7 +1217,9 @@ void explore_state (int adresse,
 		    L,
 		    n_decomp,
 		    rule_list_called,
-		    dic_entr_called);
+		    dic_entr_called,
+		    tableau_bin,
+		    inf_codes,prefix,suffix,alphabet,debug_file,UTAG,rules,entries);
     }
     t += 5;
   }

@@ -24,6 +24,6 @@
 
 #include "GeneralDerivation.h"
 
-void init_russian();
+void init_russian(struct utags *UTAG);
 
 #endif

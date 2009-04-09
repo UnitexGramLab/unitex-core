@@ -19,13 +19,9 @@
   *
   */
 
-#include "Compounds.h"
 #include "GermanCompounds.h"
 #include "Error.h"
 
-
-
-Alphabet* german_alphabet;
 
 
 //
@@ -33,19 +29,18 @@ Alphabet* german_alphabet;
 //
 void analyse_german_compounds(Alphabet* alph,unsigned char* bin,struct INF_codes* inf,
                                  FILE* words,FILE* result,FILE* debug,FILE* new_unknown_words) {
-tableau_correct_left_component=(char*)malloc(sizeof(char)*(inf->N));
+char* tableau_correct_left_component=(char*)malloc(sizeof(char)*(inf->N));
 if (tableau_correct_left_component==NULL) {
    fatal_alloc_error("analyse_german_compounds");
 }
-tableau_correct_right_component=(char*)malloc(sizeof(char)*(inf->N));
+char* tableau_correct_right_component=(char*)malloc(sizeof(char)*(inf->N));
 if (tableau_correct_right_component==NULL) {
    fatal_alloc_error("analyse_german_compounds");
 }
 check_valid_left_component_german(tableau_correct_left_component,inf);
 check_valid_right_component_german(tableau_correct_right_component,inf);
-german_alphabet=alph;
-inf_codes=inf;
-analyse_german_word_list(bin,inf,words,result,debug,new_unknown_words);
+analyse_german_word_list(bin,inf,words,result,debug,new_unknown_words,tableau_correct_left_component,
+                         tableau_correct_right_component,alph);
 free(tableau_correct_left_component);
 free(tableau_correct_right_component);
 }
@@ -113,7 +108,7 @@ return 0;
 //
 // this function look for the first sia code of the line number n and stores it in s
 //
-void get_first_sia_code_german(int n,unichar* s) {
+void get_first_sia_code_german(int n,unichar* s,struct INF_codes* inf_codes) {
 // we initialize s to prevent errors, but this case should never happen
 s[0]='\0';
 struct list_ustring* l=inf_codes->codes[n];
@@ -185,21 +180,17 @@ return res;
 
 
 
-unsigned char* tableau_bin;
-
 //
 // this function reads words in the word file and try analyse them
 //
 void analyse_german_word_list(unsigned char* bin,struct INF_codes* inf,
-                              FILE* words,FILE* result,FILE* debug,FILE* new_unknown_words) {
+                              FILE* words,FILE* result,FILE* debug,FILE* new_unknown_words,
+                              char* left,char* right,Alphabet* alphabet) {
 unichar s[1000];
-tableau_bin=bin;
-debug_file=debug;
-result_file=result;
 u_printf("Analysing german unknown words...\n");
 int n=0;
 while (EOF!=u_fgets(s,words)) {
-  if (!analyse_german_word(s)) {
+  if (!analyse_german_word(s,debug,result,left,right,inf,alphabet,bin)) {
      // if the analysis has failed, we store the word in the new unknown word file
      u_fprintf(new_unknown_words,"%S\n",s);
   } else {n++;}
@@ -212,7 +203,8 @@ u_printf("%d words decomposed as compound words\n",n);
 //
 // this function try to analyse an unknown german word
 //
-int analyse_german_word(unichar* mot) {
+int analyse_german_word(unichar* mot,FILE* debug_file,FILE* result_file,char* left,char* right,
+                        struct INF_codes* inf_codes,Alphabet* alphabet,unsigned char* bin) {
 unichar decomposition[2000];
 unichar dela_line[2000];
 unichar correct_word[2000];
@@ -220,7 +212,7 @@ decomposition[0]='\0';
 dela_line[0]='\0';
 correct_word[0]='\0';
 struct german_word_decomposition_list* l=NULL;
-explore_state_german(4,correct_word,0,mot,0,decomposition,dela_line,&l,1);
+explore_state_german(4,correct_word,0,mot,0,decomposition,dela_line,&l,1,left,right,inf_codes,alphabet,bin);
 if (l==NULL) {
    return 0;
 }
@@ -291,7 +283,10 @@ while (l!=NULL) {
 //
 void explore_state_german(int adresse,unichar* current_component,int pos_in_current_component,
                    unichar* original_word,int pos_in_original_word,unichar* decomposition,
-                   unichar* dela_line,struct german_word_decomposition_list** L,int n_decomp) {
+                   unichar* dela_line,struct german_word_decomposition_list** L,int n_decomp,
+                   char* left,char* right,
+                   struct INF_codes* inf_codes,Alphabet* alphabet,
+                   unsigned char* tableau_bin) {
 int c;
 int index,t;
 c=tableau_bin[adresse]*256+tableau_bin[adresse+1];
@@ -303,7 +298,7 @@ if (!(c&32768)) {
     // we don't consider words with a length of 1
     if (original_word[pos_in_original_word]=='\0') {
       // if we have explored the entire original word
-      if (tableau_correct_right_component[index]) {
+      if (left[index]) {
          // and if we have a valid right component
          struct list_ustring* l=inf_codes->codes[index];
          while (l!=NULL) {
@@ -360,7 +355,7 @@ if (!(c&32768)) {
     }
     else {
       // else, we must explore the rest of the original word
-      if (tableau_correct_left_component[index]) {
+      if (right[index]) {
          // but only if the current component was a valid left one
          // we go on with the next component
          unichar dec[2000];
@@ -369,14 +364,14 @@ if (!(c&32768)) {
          if (dec[0]!='\0') {u_strcat(dec," +++ ");}
          unichar sia_code[500];
          unichar entry[500];
-         get_first_sia_code_german(index,sia_code);
+         get_first_sia_code_german(index,sia_code,inf_codes);
          uncompress_entry(current_component,sia_code,entry);
          u_strcat(dec,entry);
          u_strcpy(line,dela_line);
          u_strcat(line,current_component);
          unichar temp[500];
          explore_state_german(4,temp,0,original_word,pos_in_original_word,
-                  dec,line,L,n_decomp+1);
+                  dec,line,L,n_decomp+1,left,right,inf_codes,alphabet,tableau_bin);
       }
     }
   }
@@ -392,12 +387,12 @@ if (original_word[pos_in_original_word]=='\0') {
 }
 // if not, we go on with the next letter
 for (int i=0;i<c;i++) {
-  if (is_equal_or_uppercase((unichar)(tableau_bin[t]*256+tableau_bin[t+1]),original_word[pos_in_original_word],german_alphabet)
-      || is_equal_or_uppercase(original_word[pos_in_original_word],(unichar)(tableau_bin[t]*256+tableau_bin[t+1]),german_alphabet)) {
+  if (is_equal_or_uppercase((unichar)(tableau_bin[t]*256+tableau_bin[t+1]),original_word[pos_in_original_word],alphabet)
+      || is_equal_or_uppercase(original_word[pos_in_original_word],(unichar)(tableau_bin[t]*256+tableau_bin[t+1]),alphabet)) {
     index=tableau_bin[t+2]*256*256+tableau_bin[t+3]*256+tableau_bin[t+4];
     current_component[pos_in_current_component]=(unichar)(tableau_bin[t]*256+tableau_bin[t+1]);
     explore_state_german(index,current_component,pos_in_current_component+1,original_word,pos_in_original_word+1,
-                  decomposition,dela_line,L,n_decomp);
+                  decomposition,dela_line,L,n_decomp,left,right,inf_codes,alphabet,tableau_bin);
   }
   t=t+5;
 }

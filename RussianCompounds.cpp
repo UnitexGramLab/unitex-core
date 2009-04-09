@@ -23,10 +23,7 @@
 #include "GeneralDerivation.h"
 
 
-extern utags UTAG;
-// declared in GeneralDerivation.cpp
-
-void init_russian () {
+void init_russian(struct utags *UTAG) {
 
   // names of affixes and rules in lexicon
   tags RUSSIAN_TAG = {
@@ -35,6 +32,6 @@ void init_russian () {
     "DR"
   };
 
-  UTAG = init_utags(RUSSIAN_TAG);
+  *UTAG = init_utags(RUSSIAN_TAG);
 
 }
