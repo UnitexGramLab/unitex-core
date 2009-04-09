@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -31,33 +31,33 @@
 /**
  * This library provides facilities for converting text files from
  * an encoding to another. The process is as follows:
- * 
+ *
  * input => internal representation in UTF-16 Little-Endian => output
- * 
+ *
  * When the input encoding is on 1 byte, we use the 'unicode_src' array
  * so that 'unicode_src[c]' will give the unicode equivalent of the
  * 1 byte char 'c'.
- * 
+ *
  * When the output encoding is on 1 byte, we use the 'unicode_dest' array
  * in the same way than 'unicode_src'. Then, we use the 'init_uni2asc_code_page_array'
  * function in order to fill the 'ascii_dest' so that 'ascii_dest[u]' will
  * give the 1 byte equivalent of the unicode character 'u'. We use this trick
  * in order to use only one initialization function per 1 byte encoding.
- * 
+ *
  * All the 'init_....' functions take an array of 256 unichar and fill it
  * so that 'array[c]' is the unicode equivalent of the 1 byte character 'c'.
  * Each code page must be documented with an 'usage_....' function.
- * 
+ *
  * Most code pages have been added by Claude Devis.
- * 
+ *
  * More encodings can be found at:
  * - http://www.i18nguy.com/unicode/codepages.html#msftwindows
  * - http://www.kostis.net/charsets/
  */
 
-unichar unicode_src[256];
-unichar unicode_dest[256];
-unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
+//unichar unicode_src[256];
+//unichar unicode_dest[256];
+//unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 
 
 /**
@@ -198,7 +198,7 @@ unicode[0x8b]=0x2039;
 unicode[0x8c]=0x015a;
 unicode[0x8d]=0x0164;
 unicode[0x8e]=0x017d;
-unicode[0x8f]=0x0179; 
+unicode[0x8f]=0x0179;
 unicode[0x91]=0x2018;
 unicode[0x92]=0x2019;
 unicode[0x93]=0x201c;
@@ -709,7 +709,7 @@ unicode[0xb6]=0x0386;
 unicode[0xb8]=0x0388;
 unicode[0xb9]=0x0389;
 unicode[0xba]=0x038a;
-unicode[0xbc]=0x038c; 
+unicode[0xbc]=0x038c;
 for (i=0xbe;i<=0xd1;i++) unicode[i]=(unsigned short int)(i+(0x038e -0xbe));
 for (i=0xd3;i<=0xfe;i++) unicode[i]=(unsigned short int)(i+(0x03a3-0xd3));
 }
@@ -788,11 +788,11 @@ unicode[0xff]=0x0138;
 /**
  * This function uses the 'unicode_dest' array to fill properly
  * the 'ascii_dest' one, so that 'ascii_dest[u]' will be
- * the 1 byte equivalent character of the unicode character 'u', 
+ * the 1 byte equivalent character of the unicode character 'u',
  * or the character '?' if 'u' has no equivalent in the given 1
  * byte encoding.
  */
-void init_uni2asc_code_page_array() {
+void init_uni2asc_code_page_array(unsigned char* ascii_dest,unichar* unicode_dest) {
 int i;
 for (i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
 	ascii_dest[i]='?';
@@ -1104,7 +1104,7 @@ u_printf("byte first.\n");
  * returns its unicode equivalent, or EOF if the end of file has
  * been reached.
  */
-int read_1_byte_character(FILE* f) {
+int read_1_byte_character(FILE* f,unichar* unicode_src) {
 unsigned char c;
 if (!fread(&c,1,1,f)) return EOF;
 return unicode_src[(unsigned char)c];
@@ -1115,8 +1115,17 @@ return unicode_src[(unsigned char)c];
  * This function encodes the character 'c' into a 1 byte one, and
  * writes it to the given file. Returns 1 if OK or 0 if an error occurs.
  */
-int write_1_byte_character(unichar c,FILE* f) {
+int write_1_byte_character(unsigned char c,FILE* f) {
 return fwrite(&c,1,1,f);
+}
+
+
+int write_one_char(unichar c,FILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
+if (encoding->type==ONE_BYTE_ENCODING) {
+	return write_1_byte_character(ascii_dest[c],f);
+} else {
+	return encoding->output_function(c,f);
+}
 }
 
 
@@ -1127,66 +1136,75 @@ return fwrite(&c,1,1,f);
  * '&' '#' '2' '3' '3' and ';' encoded as 2-bytes characters, for instance
  * with an UTF16 output encoding.
  */
-void write_integer(int n,int (*output_function)(unichar,FILE*),FILE* f) {
+void write_integer(int n,FILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
 if (n<10) {
-	output_function('0'+n,f);
+	write_one_char('0'+n,f,encoding,ascii_dest);
 	return;
 }
-write_integer(n/10,output_function,f);
-output_function('0'+n%10,f);
+write_integer(n/10,f,encoding,ascii_dest);
+write_one_char('0'+n%10,f,encoding,ascii_dest);
 }
 
- 
+
 /**
  * This function prints the unicode character 'c' to the file 'f' according
  * to the output function of the given encoding. If the character is not supported
  * by the encoding, the function can encode it in the HTML
  * form '&#XXX;' if specified by the parameters 'encode_all_characters'
  * and 'encode_HTML_control_characters'.
- * 
+ *
  */
 void html_characters_encoding(unichar c,struct encoding* encoding,FILE* f,
-			int encode_all_characters,int encode_HTML_control_characters) {
-int (*output_function)(unichar,FILE*)=encoding->output_function;
+			int encode_all_characters,int encode_HTML_control_characters,
+			unsigned char* ascii_dest) {
 /* First, we check if we have an HTML control character */
 if (is_HTML_control_character(c)) {
 	/* If necessary, we encode it in HTML */
 	if (encode_HTML_control_characters) {
-		output_function('&',f);
+		write_one_char('&',f,encoding,ascii_dest);
 		switch (c) {
-			case '<': output_function('l',f); output_function('t',f); break;
-			case '>': output_function('g',f); output_function('t',f); break;
-			case '&': output_function('a',f); output_function('m',f);
-						output_function('p',f); break;
-			case '\'': output_function('q',f); output_function('u',f);
-						output_function('o',f); output_function('t',f);
-						break;
+			case '<': write_one_char('l',f,encoding,ascii_dest);
+			          write_one_char('t',f,encoding,ascii_dest);
+			          break;
+			case '>': write_one_char('g',f,encoding,ascii_dest);
+			          write_one_char('t',f,encoding,ascii_dest);
+			          break;
+			case '&': write_one_char('a',f,encoding,ascii_dest);
+			          write_one_char('m',f,encoding,ascii_dest);
+			          write_one_char('p',f,encoding,ascii_dest);
+			          break;
+			case '\'': write_one_char('q',f,encoding,ascii_dest);
+			           write_one_char('u',f,encoding,ascii_dest);
+			           write_one_char('o',f,encoding,ascii_dest);
+			           write_one_char('t',f,encoding,ascii_dest);
+			           break;
 			default: error("Internal error in html_characters_encoding:\n");
 					fatal_error("inconsistency about HTML characters\n");
 		}
-		output_function(';',f);
+		write_one_char(';',f,encoding,ascii_dest);
 		return;
 	}
 	/* Otherwise, we just print it, but only if it is supported by the encoding */
-	if (encoding->can_be_encoded_function(c)) {output_function(c,f);}
-	else {
-		/* If the control character can not be encoded as it, we 
+	if (encoding->can_be_encoded_function(c,ascii_dest)) {
+
+	} else {
+		/* If the control character can not be encoded as it, we
 		 * print the default character '?' */
-		output_function('?',f);
+		write_one_char('?',f,encoding,ascii_dest);
 	}
 	return;
 }
 /* Here, we have to deal with a normal character */
-if (!encoding->can_be_encoded_function(c) && encode_all_characters) {
+if (!encoding->can_be_encoded_function(c,ascii_dest) && encode_all_characters) {
 	/* If the character can not be encoded as it, we encode it like &#1200; */
-	output_function('&',f);
-	output_function('#',f);
-	write_integer(c,output_function,f);
-	output_function(';',f);
+	write_one_char('&',f,encoding,ascii_dest);
+	write_one_char('#',f,encoding,ascii_dest);
+	write_integer(c,f,encoding,ascii_dest);
+	write_one_char(';',f,encoding,ascii_dest);
 	return;
 }
 /* Otherwise, we just print the character */
-output_function(c,f);
+write_one_char(c,f,encoding,ascii_dest);
 }
 
 
@@ -1194,17 +1212,31 @@ output_function(c,f);
  * These 4 functions are shorcuts for invoking the 'html_characters_encoding'
  * function.
  */
-void f00(unichar c,struct encoding* encoding,FILE* f) {
-html_characters_encoding(c,encoding,f,0,0);
+void f00(unichar c,struct encoding* encoding,FILE* f,unsigned char* ascii_dest) {
+html_characters_encoding(c,encoding,f,0,0,ascii_dest);
 }
-void f01(unichar c,struct encoding* encoding,FILE* f) {
-html_characters_encoding(c,encoding,f,0,1);
+void f01(unichar c,struct encoding* encoding,FILE* f,unsigned char* ascii_dest) {
+html_characters_encoding(c,encoding,f,0,1,ascii_dest);
 }
-void f10(unichar c,struct encoding* encoding,FILE* f) {
-html_characters_encoding(c,encoding,f,1,0);
+void f10(unichar c,struct encoding* encoding,FILE* f,unsigned char* ascii_dest) {
+html_characters_encoding(c,encoding,f,1,0,ascii_dest);
 }
-void f11(unichar c,struct encoding* encoding,FILE* f) {
-html_characters_encoding(c,encoding,f,1,1);
+void f11(unichar c,struct encoding* encoding,FILE* f,unsigned char* ascii_dest) {
+html_characters_encoding(c,encoding,f,1,1,ascii_dest);
+}
+
+
+/**
+ * Reads one char from 'input', according to the given encoding, using
+ * 'unicode_src' if the encoding is a 1-byte one.
+ *
+ */
+int read_one_char(FILE* input,struct encoding* encoding,unichar* unicode_src) {
+if (encoding->type==ONE_BYTE_ENCODING) {
+	return read_1_byte_character(input,unicode_src);
+} else {
+	return encoding->input_function(input);
+}
 }
 
 
@@ -1213,7 +1245,7 @@ html_characters_encoding(c,encoding,f,1,1);
  * it to an output file according to a given output encoding.
  * It returns CONVERSION_OK if the conversion succeeded, an error code
  * otherwise. The other parameters have the following meanings:
- * 
+ *
  * - 'decode_HTML_normal_characters': if non null, indicates that HTML
  *      character declarations like '&#220', '&#xF12' or '&alpha;' must be
  *      decoded instead of being printed as it
@@ -1235,16 +1267,18 @@ int convert(FILE* input,FILE* output,struct encoding* input_encoding,
  * Initialization for the source encoding.
  */
 int tmp;
-int (*input_function)(FILE*)=input_encoding->input_function;
-void (*z)(unichar,struct encoding*,FILE*);
+void (*z)(unichar,struct encoding*,FILE*,unsigned char*);
+unichar unicode_src[256];
+unichar unicode_dest[256];
+unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 switch(input_encoding->type) {
 	/* For UTF-16 encodings, we need to read the 2-byte header */
-	case UTF16_LE: tmp=u_fgetc(input); 
+	case UTF16_LE: tmp=u_fgetc(input);
 		if (tmp!=U_BYTE_ORDER_MARK) {
 			return INPUT_FILE_NOT_IN_UTF16_LE;
 		}
 		break;
-	case UTF16_BE: tmp=u_fgetc_UTF16BE(input); 
+	case UTF16_BE: tmp=u_fgetc_UTF16BE(input);
 		if (tmp!=U_BYTE_ORDER_MARK) {
 			return INPUT_FILE_NOT_IN_UTF16_BE;
 		}
@@ -1252,7 +1286,7 @@ switch(input_encoding->type) {
 	case ONE_BYTE_ENCODING: input_encoding->init_function(unicode_src);
 		break;
 }
-/* 
+/*
  * If necessary, we write the UTF16 2-byte header to the destination file.
  * If the destination encoding is a 1 byte one, we call its initialiaztion
  * function.
@@ -1261,7 +1295,7 @@ switch(output_encoding->type) {
 	case UTF16_LE: u_fputc((unichar)U_BYTE_ORDER_MARK,output); break;
 	case UTF16_BE: u_fputc_UTF16BE((unichar)U_BYTE_ORDER_MARK,output); break;
 	case ONE_BYTE_ENCODING: output_encoding->init_function(unicode_dest);
-							init_uni2asc_code_page_array();
+							init_uni2asc_code_page_array(ascii_dest,unicode_dest);
 							break;
 }
 /* We choose the function that will be used to encode HTML characters
@@ -1274,17 +1308,17 @@ else if (encode_HTML_control_characters)
 		z=f01;
 	else z=f00;
 /* Then we read all the characters from the input file and we encode them */
-while ((tmp=input_function(input))!=EOF) {
+while ((tmp=read_one_char(input,input_encoding,unicode_src))!=EOF) {
 	if (!decode_HTML_normal_characters || tmp!='&') {
 		/* If we do not need to decode HTML normal characters like &#eacute;
 		 * or if we do not have '&', we can print the character to the output */
-		z((unichar)tmp,output_encoding,output);
+		z((unichar)tmp,output_encoding,output,ascii_dest);
 	} else {
 		/* We read everything until we find the ';' character */
 		char temp[257];
 		int i=0;
 		do {
-			tmp=input_function(input);
+			tmp=read_one_char(input,input_encoding,unicode_src);
 			if (tmp==EOF) {
 				/* If we find an unexpected end of file, we raise an error */
 				return ERROR_IN_HTML_CHARACTER_NAME;
@@ -1300,17 +1334,17 @@ while ((tmp=input_function(input))!=EOF) {
 			/* If the character declaration contains a non ascii character,
 			 * we print an error message and we write '?' to the output. */
 			error("Non ASCII character in a HTML character declaration of the form &......;\n");
-			z('?',output_encoding,output);
+			z('?',output_encoding,output,ascii_dest);
 		} else if (i==1) {
 			/* If we have an empty code '&;' we print an error message and
 			 * we print nothing to the output. */
 			 error("Empty HTML code &;\n");
-		} 
+		}
 		else if (tmp!=';' && i==256) {
 			/* If the HTML character if too long, we print an error message
 			 * and print '?' in the output. */
 			 error("Too long HTML character of the form &........;\n");
-			 z('?',output_encoding,output);
+			 z('?',output_encoding,output,ascii_dest);
 		} else {
 			temp[i-1]='\0';
 			/* Now, temp contains "#228" or "eacute". We look for the associated
@@ -1318,33 +1352,33 @@ while ((tmp=input_function(input))!=EOF) {
 			 * the '?' character. */
 			i=get_HTML_character(temp,decode_HTML_control_characters);
 			switch (i) {
-				case UNKNOWN_CHARACTER: z('?',output_encoding,output); break;
+				case UNKNOWN_CHARACTER: z('?',output_encoding,output,ascii_dest); break;
 				case MALFORMED_HTML_CODE: error("Malformed HTML character declaration &%s;\n",temp);
-									z('?',output_encoding,output); break;
+									z('?',output_encoding,output,ascii_dest); break;
 				case DO_NOT_DECODE_CHARACTER:
 					/* If we have a control character that we must not decode like '&gt;',
 					 * we print it as it to the output */
-					 z('&',output_encoding,output);
+					 z('&',output_encoding,output,ascii_dest);
 					 for (int j=0;temp[j]!='\0';j++) {
-					 	z(temp[j],output_encoding,output);
+					 	z(temp[j],output_encoding,output,ascii_dest);
 					 }
-					 z(';',output_encoding,output);
+					 z(';',output_encoding,output,ascii_dest);
 					 break;
 				default: if (!is_HTML_control_character(i) || decode_HTML_control_characters) {
 							/* If we have a normal character or if we can
 							 * encode control characters, then we print it */
-							z(i,output_encoding,output);
+							z(i,output_encoding,output,ascii_dest);
 						} else {
 							/* If we have a control character and if we can not decode it,
 							 * then we copy the string representation that was in
 							 * the input */
-							z('&',output_encoding,output);
+							z('&',output_encoding,output,ascii_dest);
 							for (int j=0;temp[j]!='\0';j++) {
-								z(temp[j],output_encoding,output);
+								z(temp[j],output_encoding,output,ascii_dest);
 							}
-							z(';',output_encoding,output);
-					 		break; 
-						}	
+							z(';',output_encoding,output,ascii_dest);
+					 		break;
+						}
 			}
 		}
 	}
@@ -1385,9 +1419,9 @@ return encoding;
 /**
  * This function is used for unrestricted encodings like UTF8 and UTF16.
  */
-int can_always_encode(unichar c) {
+int can_always_encode(unichar c,unsigned char* a) {
 /* Stupid expression, but its real purpose is to avoid the 'unused parameter warning' */
-return 1 || c;
+return 1 || c || a;
 }
 
 
@@ -1397,7 +1431,7 @@ return 1 || c;
  * that the 'ascii_dest' array has been initialized with
  * 'init_uni2asc_code_page_array'.
  */
-int can_encode(unichar c) {
+int can_encode(unichar c,unsigned char* ascii_dest) {
 if (c=='?' || ascii_dest[c]!='?') return 1;
 return 0;
 }
@@ -1405,7 +1439,7 @@ return 0;
 
 /**
  * Converts an ASCII string to lower case.
- * 
+ *
  * WARNING: as the given string is modified, this function will
  *          raise an error if called on a constant string.
  */
@@ -1449,8 +1483,8 @@ if (usage_function==NULL) {
 }
 encoding->usage_function=usage_function;
 encoding->can_be_encoded_function=can_encode;
-encoding->input_function=read_1_byte_character;
-encoding->output_function=write_1_byte_character;
+encoding->input_function=NULL;
+encoding->output_function=NULL;
 if (aliases==NULL) {
 	/* If there is no aliases, we can return */
 }
@@ -1500,7 +1534,7 @@ number_of_encodings++;
  * already used by another encoding.
  * If not NULL, the 'aliases' array is supposed to contains NULL as last
  * element.
- * 
+ *
  * We consider that a multi-bytes encoding can encode any character.
  */
 void install_multi_bytes_encoding(const char* name,int type,int (*input_function)(FILE*),
@@ -1576,7 +1610,7 @@ number_of_encodings++;
 /**
  * This function install all the available encodings. If you
  * want to add an encoding, you must install it via this function.
- * 
+ *
  * NOTE: all encoding will be put in lower case in order to match them
  *       ignoring case.
  */
@@ -1613,7 +1647,7 @@ const char* aliases_iso_8859_15[4]={"iso885915","latin15","latin-15",NULL};
 install_one_byte_encoding("iso-8859-15",init_iso_8859_15,usage_iso_8859_15,aliases_iso_8859_15);
 /*
  * Microsoft Windows code pages
- * 
+ *
  * As the Microsoft Windows code page 1252 is the default one on many computers,
  * we associate to it aliases for some language names.
  */
