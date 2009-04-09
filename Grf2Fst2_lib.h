@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -46,6 +46,27 @@ struct compilation_info {
    Alphabet* alphabet;
    FILE* fst2;
    char no_empty_graph_warning;
+
+   /**
+    * This counter is used to identify each context start mark $[ or $![ with
+    * a unique number in order to make them different. This is used to
+    * avoid merging distinct context start marks during the determinization.
+    * For instance, let us consider the two following paths from the initial state:
+    *
+    * ------> $![ ---> <N:s> ---> $] ---> <N:p>
+    *    |--> $![ ---> <N:p> ---> $] ---> <N:s>
+    *
+    * The first path recoqnizes a noun at plural that cannot be at singular, and
+    * the second recoqnizes a noun at singular that cannot be at plural. However,
+    * if the determinization merges the two $![ marks, we will have:
+    *
+    * ------> $![ ---> <N:s> ---> $] ---> <N:p>
+    *              |-> <N:p> ---> $] ---> <N:s>
+    *
+    * With such a negative context, we will fail in both singular and plural
+    * cases, and the behavior of the grammar will not be the expected one.
+    */
+   int CONTEXT_COUNTER;
 };
 
 

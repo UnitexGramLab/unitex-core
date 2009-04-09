@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -41,27 +41,6 @@
 #define NON_EMPTY_GRAPH 2
 
 
-/**
- * This counter is used to identify each context start mark $[ or $![ with
- * a unique number in order to make them different. This is used to
- * avoid merging distinct context start marks during the determinization.
- * For instance, let us consider the two following paths from the initial state:
- * 
- * ------> $![ ---> <N:s> ---> $] ---> <N:p>
- *    |--> $![ ---> <N:p> ---> $] ---> <N:s>
- * 
- * The first path recoqnizes a noun at plural that cannot be at singular, and 
- * the second recoqnizes a noun at singular that cannot be at plural. However,
- * if the determinization merges the two $![ marks, we will have:
- * 
- * ------> $![ ---> <N:s> ---> $] ---> <N:p>
- *              |-> <N:p> ---> $] ---> <N:s>
- * 
- * With such a negative context, we will fail in both singular and plural
- * cases, and the behavior of the grammar will not be the expected one.
- */
-int CONTEXT_COUNTER=0;
-
 
 /**
  * Allocates, initializes and returns a compilation information structure.
@@ -86,6 +65,7 @@ infos->tokenization_policy=DEFAULT_TOKENIZATION;
 infos->alphabet=NULL;
 infos->fst2=NULL;
 infos->no_empty_graph_warning=0;
+infos->CONTEXT_COUNTER=0;
 return infos;
 }
 
@@ -136,7 +116,7 @@ u_fprintf(f," \n");
  */
 void write_graph(FILE* f,SingleGraph graph,int n,unichar* name) {
 u_fprintf(f,"%d %S\n",n,name);
-/* By convention, the empty automaton is represented by an initial state with no 
+/* By convention, the empty automaton is represented by an initial state with no
  * transition */
 if (graph->number_of_states==0) u_fprintf(f, ": \n");
 /* Otherwisen we print all the states */
@@ -187,7 +167,7 @@ int offset;
 int abs_path_name_warning=0; // 1 windows, 2 unix
 temp[0]='\0'; // necessary if we have an absolute path name
 if (infos->graph_names->value[n][0]==':') {
-   /* If the graph is located in the repository, then we must test if 
+   /* If the graph is located in the repository, then we must test if
     * the repository is defined. If not, an absolute path is tried
     * starting with '/' resp. '\\'. This enables absolute path names
     * under Unixes. */
@@ -206,7 +186,7 @@ else if (test4abs_windows_path_name(infos->graph_names->value[n])) {
    abs_path_name_warning=1;
 }
 #endif
-else { 
+else {
    /* If the graph path is relative to its calling graph, then we have just
     * to concatenate it with the main graph path. For instance, if the main
     * graph is "/tmp/ABC.grf" and if the sugraph call is "my_dir/DEF", then
@@ -227,7 +207,7 @@ if (abs_path_name_warning!=0) {
          name);
 }
 /* Finally, we turn all the ':' into the system separator ('/' or '\'),
- * but we must ignore the ':' in "C:\...", so we start the 
+ * but we must ignore the ':' in "C:\...", so we start the
  * replacement after a shift offset */
 name=name+offset;
 replace_colon_by_path_separator(name);
@@ -642,7 +622,7 @@ free(token);
 
 /* Then, we process the rest of the tokens */
 while (!is_empty(u_tokens)) {
-   token=(unichar*)take_ptr(u_tokens);                                 
+   token=(unichar*)take_ptr(u_tokens);
    if (token[0]==':' && token[1]!='\0') {
       fatal_error("Unexpected subgraph call in token_sequence_2_integer_sequence\n");
    }
@@ -678,7 +658,7 @@ while (transitions!=NULL) {
 
 
 /**
- * This function takes the input and the output that correspond to one box in the graph #n 
+ * This function takes the input and the output that correspond to one box in the graph #n
  * and it adds the necessary states and transitions to
  * the given SingleGraph. '*pos' represents the current position in the input string.
  * For instance, if the current state corresponds to the box
@@ -732,10 +712,10 @@ if (transitions==NULL) {
    return;
 }
 int length=u_strlen(box_content);
-if ((length>2 && box_content[0]=='$' && 
+if ((length>2 && box_content[0]=='$' &&
        (box_content[length-1]=='('
         || box_content[length-1]==')'))
-        || !u_strcmp(box_content,"$[") 
+        || !u_strcmp(box_content,"$[")
         || !u_strcmp(box_content,"$![")
         || !u_strcmp(box_content,"$]")
         || !u_strcmp(box_content,"$<")
@@ -746,7 +726,7 @@ if ((length>2 && box_content[0]=='$' &&
    if (box_content[1]=='!' || box_content[1]=='[') {
       /* If we have a context start mark, we adds a unique number to it
        * (see declaration of CONTEXT_COUNTER) */
-      u_sprintf(input,"%s%d",(box_content[1]=='!')?"$![":"$[",CONTEXT_COUNTER++);
+      u_sprintf(input,"%s%d",(box_content[1]=='!')?"$![":"$[",(infos->CONTEXT_COUNTER)++);
    }
    u_strcpy(output,"");
    process_variable_or_context(graph,input,transitions,current_state,infos);
@@ -820,7 +800,7 @@ unichar ligne[MAX_GRF_BOX_CONTENT];
 SingleGraph graph=new_SingleGraph();
 u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
 /* We get the absolute path of the graph */
-get_absolute_name(name,n,infos); 
+get_absolute_name(name,n,infos);
 FILE* f=u_fopen(name,U_READ);
 if (f==NULL) {
    error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
@@ -828,7 +808,7 @@ if (f==NULL) {
    if (n==0) return 0;
    return 1;
 }
-/* If we can open the .grf file, we start with skipping the header. We skip 
+/* If we can open the .grf file, we start with skipping the header. We skip
  * the first '#' and then we look for the second. */
 u_fgetc(f);
 int c;
@@ -870,7 +850,7 @@ u_fclose(f);
 set_initial_state(graph->states[0]);
 set_final_state(graph->states[1]);
 compute_reverse_transitions(graph);
-check_co_accessibility(graph->states,1);  
+check_co_accessibility(graph->states,1);
 remove_epsilon_transitions(graph);
 check_accessibility(graph->states,0);
 remove_useless_states(graph);
@@ -899,12 +879,12 @@ return 1;
  * This function takes the main graph name as given to the program and
  * computes its path and its name without path and extension. Then, the
  * name without path and extension is added to the graph names string_hash.
- * 
+ *
  * Examples:
- * 
+ *
  *    "E:\Unitex\French\date.grf" => "E:\Unitex\French\" and "date"
  *    "/tmp/foo.grf" => "/tmp/" and "foo"
- * 
+ *
  */
 void extract_path_and_main_graph(char* main_graph,struct compilation_info* infos) {
 char temp[FILENAME_MAX];
