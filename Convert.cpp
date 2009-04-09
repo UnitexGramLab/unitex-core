@@ -117,24 +117,24 @@ int decode_normal_characters=0;
 int decode_control_characters=0;
 int encode_all_characters=0;
 int encode_control_characters=0;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 's': if (optarg[0]=='\0') {
+   case 's': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty source encoding\n");
              }
-             strcpy(src,optarg);
+             strcpy(src,vars->optarg);
              break;
-   case 'd': if (optarg[0]=='\0') {
+   case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty destination encoding\n");
              }
-             strcpy(dest,optarg);
+             strcpy(dest,vars->optarg);
              break;
    case 'r': output_mode=REPLACE_FILE; break;
-   case 0: output_mode=PREFIX_SRC; strcpy(FX,optarg); break;
-   case 1: output_mode=PREFIX_DEST; strcpy(FX,optarg); break;
-   case 2: output_mode=SUFFIX_SRC; strcpy(FX,optarg); break;
-   case 3: output_mode=SUFFIX_DEST; strcpy(FX,optarg); break;
+   case 0: output_mode=PREFIX_SRC; strcpy(FX,vars->optarg); break;
+   case 1: output_mode=PREFIX_DEST; strcpy(FX,vars->optarg); break;
+   case 2: output_mode=SUFFIX_SRC; strcpy(FX,vars->optarg); break;
+   case 3: output_mode=SUFFIX_DEST; strcpy(FX,vars->optarg); break;
    case 4: decode_normal_characters=1; break;
    case 5: decode_control_characters=1; break;
    case 6: encode_all_characters=1; break;
@@ -144,16 +144,16 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 'm': print_encoding_main_names(); return 0;
    case 'a': print_encoding_aliases(); return 0;
    case 'A': print_information_for_all_encodings(); return 0;
-   case 'i': if (optarg[0]=='\0') {
+   case 'i': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty encoding\n");
              }
-             print_encoding_infos(optarg);
+             print_encoding_infos(vars->optarg);
              return 0;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
@@ -165,7 +165,7 @@ if (src[0]=='\0') {
 if (dest[0]=='\0') {
    strcpy(dest,"utf16-le");
 }
-if (optind==argc) {
+if (vars->optind==argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
@@ -187,7 +187,7 @@ char output_name[FILENAME_MAX];
 FILE* input=NULL;
 FILE* output=NULL;
 int error_code;
-for (int i=optind;i<argc;i++) {
+for (int i=vars->optind;i<argc;i++) {
 	/*
 	 * We set input and output file names according to the output mode
 	 */
@@ -254,6 +254,7 @@ for (int i=optind;i<argc;i++) {
 		}
 	}
 }
+free_OptVars(vars);
 return 0;
 }
 

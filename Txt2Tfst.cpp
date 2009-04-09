@@ -123,36 +123,36 @@ char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 int CLEAN=0;
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
-             strcpy(alphabet,optarg);
+             strcpy(alphabet,vars->optarg);
              break;      
    case 'c': CLEAN=1; break;
-   case 'n': if (optarg[0]=='\0') {
+   case 'n': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty normalization grammar name\n");
              }
-             strcpy(norm,optarg);
+             strcpy(norm,vars->optarg);
              break;      
-   case 't': if (optarg[0]=='\0') {
+   case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty tagset file name\n");
              }
-             strcpy(tagset,optarg);
+             strcpy(tagset,vars->optarg);
              break;      
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 if (alphabet[0]=='\0') {
@@ -166,15 +166,15 @@ char text_cod[FILENAME_MAX];
 char dlf[FILENAME_MAX];
 char dlc[FILENAME_MAX];
 char tags_ind[FILENAME_MAX];
-get_snt_path(argv[optind],tokens_txt);
+get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
-get_snt_path(argv[optind],text_cod);
+get_snt_path(argv[vars->optind],text_cod);
 strcat(text_cod,"text.cod");
-get_snt_path(argv[optind],dlf);
+get_snt_path(argv[vars->optind],dlf);
 strcat(dlf,"dlf");
-get_snt_path(argv[optind],dlc);
+get_snt_path(argv[vars->optind],dlc);
 strcat(dlc,"dlc");
-get_snt_path(argv[optind],tags_ind);
+get_snt_path(argv[vars->optind],tags_ind);
 strcat(tags_ind,"tags.ind");
 load_DELA(dlf,tree);
 load_DELA(dlc,tree);
@@ -198,7 +198,7 @@ if (f==NULL) {
    fatal_error("Cannot open %s\n",text_cod);
 }
 char text_tfst[FILENAME_MAX];
-get_snt_path(argv[optind],text_tfst);
+get_snt_path(argv[vars->optind],text_tfst);
 strcat(text_tfst,"text.tfst");
 FILE* tfst=u_fopen(text_tfst,U_WRITE);
 if (tfst==NULL) {
@@ -206,7 +206,7 @@ if (tfst==NULL) {
    fatal_error("Cannot create %s\n",text_tfst);
 }
 char text_tind[FILENAME_MAX];
-get_snt_path(argv[optind],text_tind);
+get_snt_path(argv[vars->optind],text_tind);
 strcat(text_tind,"text.tind");
 FILE* tind=fopen(text_tind,"wb");
 if (tind==NULL) {
@@ -219,7 +219,7 @@ if (norm[0]!='\0') {
    normalization_tree=load_normalization_fst2(norm,alph,tokens);
 }
 char enter_pos_f[FILENAME_MAX];
-get_snt_path(argv[optind],enter_pos_f);
+get_snt_path(argv[vars->optind],enter_pos_f);
 strcat(enter_pos_f,"enter.pos");
 FILE* f_enter=fopen(enter_pos_f,"rb");
 int n_enter_char;
@@ -281,6 +281,7 @@ free_text_tokens(tokens);
 free_alphabet(alph);
 free_normalization_tree(normalization_tree);
 free_language_t(language);
+free_OptVars(vars);
 /* After the execution, tag_list should have been emptied, so that we don't
  * need to do it here */ 
 return 0;

@@ -76,35 +76,35 @@ const struct option lopts[]= {
       {"help",no_argument,NULL,'h'},
       {NULL,no_argument,NULL,0}
 };
-int val,index=-1;
-optind=1;
 char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+int val,index=-1;
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty DELAF file name\n");
              }
-             strcpy(output,optarg);
+             strcpy(output,vars->optarg);
              break;
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
-             strcpy(alphabet,optarg);
+             strcpy(alphabet,vars->optarg);
              break;
-   case 'd': strcpy(config_dir,optarg); break;
+   case 'd': strcpy(config_dir,vars->optarg); break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
@@ -148,10 +148,11 @@ if (err) {
    return 1;
 }
 //DELAC inflection
-err=inflect(argv[optind],output);
+err=inflect(argv[vars->optind],output);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();
+free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }

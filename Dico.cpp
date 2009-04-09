@@ -139,31 +139,31 @@ int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char* morpho_dic=NULL;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 't': if (optarg[0]=='\0') {
+   case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty text file name\n");
              }
-             strcpy(text,optarg);
+             strcpy(text,vars->optarg);
              break;
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet name\n");
              }
-             strcpy(alph,optarg);
+             strcpy(alph,vars->optarg);
              break;
-   case 'm': if (optarg[0]!='\0') {
-                morpho_dic=strdup(optarg);
+   case 'm': if (vars->optarg[0]!='\0') {
+                morpho_dic=strdup(vars->optarg);
                 if (morpho_dic==NULL) {
                    fatal_alloc_error("main_Dico");
                 }
              }
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
@@ -175,7 +175,7 @@ if (text[0]=='\0') {
 if (alph[0]=='\0') {
    fatal_error("You must specify an alphabet file\n");
 }
-if (optind==argc) {
+if (vars->optind==argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
@@ -221,12 +221,11 @@ struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,s
 u_printf("Counting tokens...\n");
 count_token_occurrences(info);
 /* We save optind since it is a global variable that can be modified by Locate */
-int OPTIND=optind;
 /* We all dictionaries according their priority */
 for (int priority=1;priority<4;priority++) {
    /* For a given priority, we apply all concerned dictionaries 
     * in their order on the command line */
-   for (int i=OPTIND;i<argc;i++) {
+   for (int i=vars->optind;i<argc;i++) {
       char tmp[FILENAME_MAX];
       remove_extension(argv[i],tmp);
       char priority_mark=tmp[strlen(tmp)-1];
@@ -316,6 +315,7 @@ fclose(text_cod);
 free_dico_application(info);
 free_snt_files(snt_files);
 if (morpho_dic!=NULL) free(morpho_dic);
+free_OptVars(vars);
 return 0;
 }
 

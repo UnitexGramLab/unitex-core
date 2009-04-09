@@ -74,21 +74,21 @@ const struct option lopts[]= {
 };
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 't': if (optarg[0]=='\0') {
+   case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty text file name\n");
              }
-             p->text_file=strdup(optarg);
+             p->text_file=strdup(vars->optarg);
              if (p->text_file==NULL) {
                 fatal_alloc_error("main_Fst2Txt");
              }
              break;
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
-             p->alphabet_file=strdup(optarg);
+             p->alphabet_file=strdup(vars->optarg);
              if (p->alphabet_file==NULL) {
                 fatal_alloc_error("main_Fst2Txt");
              }
@@ -100,16 +100,16 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 's': p->space_policy=START_WITH_SPACE; break;
    case 'x': p->space_policy=DONT_START_WITH_SPACE; break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
@@ -128,11 +128,12 @@ p->temp_file=strdup(tmp);
 if (p->temp_file==NULL) {
    fatal_alloc_error("main_Fst2Txt");
 }
-p->fst_file=strdup(argv[optind]);
+p->fst_file=strdup(argv[vars->optind]);
 if (p->fst_file==NULL) {
    fatal_alloc_error("main_Fst2Txt");
 }
 int result=main_fst2txt(p);
 free_fst2txt_parameters(p);
+free_OptVars(vars);
 return result;
 }

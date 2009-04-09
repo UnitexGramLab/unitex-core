@@ -68,36 +68,36 @@ char* out=NULL;
 char* font=NULL;
 int size=0;
 char foo;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file\n");
              }
-             out=strdup(optarg);
+             out=strdup(vars->optarg);
              if (out==NULL) {
                 fatal_alloc_error("main_ConcorDiff");
              }
              break;
-   case 'f': if (optarg[0]=='\0') {
+   case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty font name\n");
              }
-             font=strdup(optarg);
+             font=strdup(vars->optarg);
              if (font==NULL) {
                 fatal_alloc_error("main_ConcorDiff");
              }
              break;
-   case 's': if (1!=sscanf(optarg,"%d%c",&size,&foo)
+   case 's': if (1!=sscanf(vars->optarg,"%d%c",&size,&foo)
                  || size<=0) {
                 /* foo is used to check that the font size is not like "45gjh" */
-                fatal_error("Invalid font size argument: %s\n",optarg);
+                fatal_error("Invalid font size argument: %s\n",vars->optarg);
              }
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
@@ -112,12 +112,13 @@ if (font==NULL) {
 if (size==0) {
    fatal_error("You must specify the font size to use\n");
 }
-if (optind!=argc-2) {
+if (vars->optind!=argc-2) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-diff(argv[optind],argv[optind+1],out,font,size);
+diff(argv[vars->optind],argv[vars->optind+1],out,font,size);
 free(out);
 free(font);
+free_OptVars(vars);
 return 0;
 }

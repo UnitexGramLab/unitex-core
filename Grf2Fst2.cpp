@@ -33,7 +33,7 @@
 #include "Error.h"
 #include "Grf2Fst2.h"
 #include "getopt.h"
-
+#include "ProgramInvoker.h"
 
 static void usage() {
 u_printf("%S",COPYRIGHT);
@@ -64,35 +64,22 @@ u_printf("Usage : Grf2Fst2 [OPTIONS] <grf>\n"
  */
 int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet,
                          int no_empty_graph_warning,int tfst_check) {
-int argc=0;
-char** argv=(char**)malloc((4+(no_empty_graph_warning!=0)+((tfst_check!=0)))*sizeof(char*));
-if (argv==NULL) {
-   fatal_alloc_error("pseudo_main_Grf2Fst2");
-}
-argv[argc++]=NULL;
-argv[argc++]=strdup(name);
-argv[argc++]=strdup(yes_or_no?"-y":"-n");
+ProgramInvoker* invoker=new_ProgramInvoker(main_Grf2Fst2,"main_Grf2Fst2");
+add_argument(invoker,name);
+add_argument(invoker,yes_or_no?"-y":"-n");
 char tmp[FILENAME_MAX];
 if (alphabet) {
    sprintf(tmp,"-a=%s",alphabet);
-   argv[argc++]=strdup(tmp);
+   add_argument(invoker,tmp);
 }
 if (no_empty_graph_warning) {
-   argv[argc++]=strdup("-e");
+   add_argument(invoker,"-e");
 }
 if (tfst_check) {
-   argv[argc++]=strdup("-t");
+   add_argument(invoker,"-t");
 }
-for (int i=1;i<argc;i++) {
-   if (argv[i]==NULL) {
-      fatal_alloc_error("pseudo_main_Grf2Fst2");
-   }
-}
-int ret=main_Grf2Fst2(argc,argv);
-for (int i=1;i<argc;i++) {
-   free(argv[i]);
-}
-free(argv);
+int ret=invoke(invoker);
+free_ProgramInvoker(invoker);
 return ret;
 }
 
@@ -120,8 +107,8 @@ const struct option lopts[]= {
       {NULL,no_argument,NULL,0}
 };
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'y': check_recursion=1; break;
    case 'n': check_recursion=0; break;
@@ -134,39 +121,39 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 'e': infos->no_empty_graph_warning=1; break;
    case 'c': infos->tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
    case 'a': infos->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
-             if (optarg[0]=='\0') {
+             if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file\n");
              }
-             infos->alphabet=load_alphabet(optarg);
+             infos->alphabet=load_alphabet(vars->optarg);
              if (infos->alphabet==NULL) {
-                fatal_error("Cannot load alphabet file %s\n",optarg);
+                fatal_error("Cannot load alphabet file %s\n",vars->optarg);
              }
              break;
-   case 'd': strcpy(infos->repository,optarg); break;
+   case 'd': strcpy(infos->repository,vars->optarg); break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
    
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
 
 char fst2_file_name[FILENAME_MAX];
-remove_extension(argv[optind],fst2_file_name);
+remove_extension(argv[vars->optind],fst2_file_name);
 strcat(fst2_file_name,".fst2");
 if ((infos->fst2=u_fopen(fst2_file_name,U_WRITE))==NULL) {
    error("Cannot open file %s\n",fst2_file_name);
    return 1;
 }
 u_fprintf(infos->fst2,"0000000000\n");
-int result=compile_grf(argv[optind],infos);
+int result=compile_grf(argv[vars->optind],infos);
 if (result==0) {
    error("Compilation has failed\n");
    free_compilation_info(infos);
@@ -176,6 +163,7 @@ if (result==0) {
 free_alphabet(infos->alphabet);
 write_tags(infos->fst2,infos->tags);
 u_fclose(infos->fst2);
+free_OptVars(vars);
 write_number_of_graphs(fst2_file_name,infos->graph_names->size-1);
 if (check_recursion) {
    if (!OK_for_Locate(fst2_file_name,infos->no_empty_graph_warning)) {

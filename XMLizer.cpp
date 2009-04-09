@@ -91,42 +91,42 @@ char alphabet[FILENAME_MAX]="";
 char normalization[FILENAME_MAX]="";
 char segmentation[FILENAME_MAX]="";
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'x': output_style=XML; break;
    case 't': output_style=TEI; break;
-   case 'n': if (optarg[0]=='\0') {
+   case 'n': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty normalization grammar name\n");
              }
-             strcpy(normalization,optarg);
+             strcpy(normalization,vars->optarg);
              break;      
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
              }
-             strcpy(output,optarg);
+             strcpy(output,vars->optarg);
              break;      
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
-             strcpy(alphabet,optarg);
+             strcpy(alphabet,vars->optarg);
              break;      
-   case 's': if (optarg[0]=='\0') {
+   case 's': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty segmentation grammar name\n");
              }
-             strcpy(segmentation,optarg);
+             strcpy(segmentation,vars->optarg);
              break;      
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 if (alphabet[0]=='\0') {
@@ -136,7 +136,7 @@ if (segmentation[0]=='\0') {
    fatal_error("You must specify the segmentation grammar to use\n");
 }
 char input[FILENAME_MAX];
-strcpy(input,argv[optind]);
+strcpy(input,argv[vars->optind]);
 char snt[FILENAME_MAX];
 remove_extension(input,snt);
 strcat(snt,"_tmp.snt");
@@ -173,6 +173,7 @@ if (output[0]=='\0') {
 xmlize(snt,output,output_style);
 remove(snt);
 remove(tmp);
+free_OptVars(vars);
 return 0;
 }
 

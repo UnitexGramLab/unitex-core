@@ -181,33 +181,33 @@ int val,index=-1;
 struct conc_opt* options=new_conc_opt();
 char foo;
 int ret;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'f': if (optarg[0]=='\0') {
+   case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty font name argument\n");
              }
-             options->fontname=strdup(optarg);
+             options->fontname=strdup(vars->optarg);
              if (options->fontname==NULL) {
                 fatal_alloc_error("main_Concord");
              }
              break;
-   case 's': if (1!=sscanf(optarg,"%d%c",&(options->fontsize),&foo)) {
+   case 's': if (1!=sscanf(vars->optarg,"%d%c",&(options->fontsize),&foo)) {
                 /* foo is used to check that the font size is not like "45gjh" */
-                fatal_error("Invalid font size argument: %s\n",optarg);
+                fatal_error("Invalid font size argument: %s\n",vars->optarg);
              }
              break;
-   case 'l': ret=sscanf(optarg,"%d%c%c",&(options->left_context),&foo,&foo);
+   case 'l': ret=sscanf(vars->optarg,"%d%c%c",&(options->left_context),&foo,&foo);
              if (ret==0 || ret==3 || (ret==2 && foo!='s') || options->left_context<0) {
-                fatal_error("Invalid left context argument: %s\n",optarg);
+                fatal_error("Invalid left context argument: %s\n",vars->optarg);
              }
              if (ret==2) {
                 options->left_context_until_eos=1;
              }
              break;
-   case 'r': ret=sscanf(optarg,"%d%c%c",&(options->right_context),&foo,&foo);
+   case 'r': ret=sscanf(vars->optarg,"%d%c%c",&(options->right_context),&foo,&foo);
              if (ret==0 || ret==3 || (ret==2 && foo!='s') || options->right_context<0) {
-                fatal_error("Invalid right context argument: %s\n",optarg);
+                fatal_error("Invalid right context argument: %s\n",vars->optarg);
              }
              if (ret==2) {
                 options->right_context_until_eos=1;
@@ -223,10 +223,10 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 'H': options->result_mode=HTML_; break;
    case 't': options->result_mode=TEXT_; break;
    case 'g': options->result_mode=GLOSSANET_;
-             if (optarg[0]=='\0') {
+             if (vars->optarg[0]=='\0') {
                 fatal_error("Empty glossanet script argument\n");
              }
-             options->glossanet_script=strdup(optarg);
+             options->glossanet_script=strdup(vars->optarg);
              if (options->glossanet_script==NULL) {
                 fatal_alloc_error("main_Concord");
              }
@@ -236,36 +236,36 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 'A': options->result_mode=AXIS_; break;
    case 'x': options->result_mode=XALIGN_; break;
    case 'm': options->result_mode=MERGE_;
-             if (optarg[0]=='\0') {
+             if (vars->optarg[0]=='\0') {
                 fatal_error("Empty output file name argument\n");
              }
-             strcpy(options->output,optarg);
+             strcpy(options->output,vars->optarg);
              break;
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty alphabet argument\n");
              }
-             options->sort_alphabet=strdup(optarg);
+             options->sort_alphabet=strdup(vars->optarg);
              if (options->sort_alphabet==NULL) {
                 fatal_alloc_error("main_Concord");
              }
              break;
    case 'T': options->thai_mode=1; break;
-   case 'd': if (optarg[0]=='\0') {
+   case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty snt directory argument\n");
              }
-             strcpy(options->working_directory,optarg);
+             strcpy(options->working_directory,vars->optarg);
              break;
    case 'h': usage_(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
@@ -275,14 +275,14 @@ if (options->fontname==NULL || options->fontsize<=0) {
       fatal_error("The specified output mode is an HTML file: you must specify font parameters\n");
    }
 }
-FILE* concor=u_fopen(argv[optind],U_READ);
+FILE* concor=u_fopen(argv[vars->optind],U_READ);
 if (concor==NULL) {
-   error("Cannot open concordance index file %s\n",argv[optind]);
+   error("Cannot open concordance index file %s\n",argv[vars->optind]);
    return 1;
 }
 
 if (options->working_directory[0]=='\0') {
-   get_path(argv[optind],options->working_directory);
+   get_path(argv[vars->optind],options->working_directory);
 }
 /* We compute the name of the files associated to the text */
 struct snt_files* snt_files=new_snt_files_from_path(options->working_directory);
@@ -326,6 +326,7 @@ fclose(text);
 free_snt_files(snt_files);
 free_text_tokens(tok);
 free_conc_opt(options);
+free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }

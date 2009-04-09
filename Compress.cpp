@@ -92,21 +92,21 @@ const struct option lopts[]= {
       {NULL,no_argument,NULL,0}
 };
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'f': FLIP=1; break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
    
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
@@ -121,14 +121,14 @@ struct dictionary_node* root; /* Root of the dictionary tree */
 struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
 int line=0; /* Current line number */
 
-f=u_fopen(argv[optind],U_READ);
+f=u_fopen(argv[vars->optind],U_READ);
 if (f==NULL) {
-	fatal_error("Cannot open %s\n",argv[optind]);
+	fatal_error("Cannot open %s\n",argv[vars->optind]);
 }
 /* We compute the name of the output .bin and .inf files */
-remove_extension(argv[optind],bin);
+remove_extension(argv[vars->optind],bin);
 strcat(bin,".bin");
-remove_extension(argv[optind],inf);
+remove_extension(argv[vars->optind],inf);
 strcat(inf,".inf");
 INF_file=u_fopen(inf,U_WRITE);
 if (INF_file==NULL) {
@@ -237,6 +237,7 @@ u_printf("%d line%s read            \n"
          (INF_codes->size!=1)?"ies":"y");
 u_printf("%d states, %d transitions\n",n_states,n_transitions);
 write_INF_file_header(inf,INF_codes->size);
+free_OptVars(vars);
 /*
  * WARNING: we do not free the 'INF_codes' structure because of a slowness
  *          problem with very large INF lines.

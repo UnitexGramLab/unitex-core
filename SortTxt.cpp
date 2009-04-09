@@ -247,34 +247,34 @@ int mode=DEFAULT;
 char line_info[FILENAME_MAX]="";
 char sort_order[FILENAME_MAX]="";
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'n': REMOVE_DUPLICATES=1; break;
    case 'd': REMOVE_DUPLICATES=0; break;
    case 'r': REVERSE=-1; break;
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty sort order file name\n");
              }
-             strcpy(sort_order,optarg);
+             strcpy(sort_order,vars->optarg);
              break;      
-   case 'l': if (optarg[0]=='\0') {
+   case 'l': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty information file name\n");
              }
-             strcpy(line_info,optarg);
+             strcpy(line_info,vars->optarg);
              break;
    case 't': mode=THAI; break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }   
 init_char_arrays();
@@ -283,11 +283,11 @@ if (sort_order[0]!='\0') {
 }
 
 char new_name[FILENAME_MAX];
-strcpy(new_name,argv[optind]);
+strcpy(new_name,argv[vars->optind]);
 strcat(new_name,".new");
-f=u_fopen(argv[optind],U_READ);
+f=u_fopen(argv[vars->optind],U_READ);
 if (f==NULL) {
-   error("Cannot open file %s\n",argv[optind]);
+   error("Cannot open file %s\n",argv[vars->optind]);
    return 1;
 }
 f_out=u_fopen(new_name,U_WRITE);
@@ -314,8 +314,9 @@ if (line_info[0]!='\0') {
  * the sorted file */
 u_fclose(f);
 u_fclose(f_out);
-remove(argv[optind]);
-rename(new_name,argv[optind]);
+remove(argv[vars->optind]);
+rename(new_name,argv[vars->optind]);
+free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }

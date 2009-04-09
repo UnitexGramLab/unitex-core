@@ -69,29 +69,29 @@ char input_tfst[FILENAME_MAX]="";
 char input_tind[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char output_tind[FILENAME_MAX]="";
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'o': if (optarg[0]=='\0') {
-                fatal_error("You must specify a non empty output file name: %s\n",optarg);
+   case 'o': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name: %s\n",vars->optarg);
              }
-             strcpy(output_tfst,optarg);
+             strcpy(output_tfst,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-strcpy(input_tfst,argv[optind]);
+strcpy(input_tfst,argv[vars->optind]);
 remove_extension(input_tfst,input_tind);
 strcat(input_tind,".tind");
 
@@ -126,6 +126,7 @@ if (no_explicit_output) {
    rename(output_tfst,input_tfst);
    rename(output_tind,input_tind);
 }
+free_OptVars(vars);
 return 0;
 }
 

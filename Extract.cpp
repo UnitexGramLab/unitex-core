@@ -71,26 +71,26 @@ char extract_matching_units=1;
 char text_name[FILENAME_MAX]="";
 char concord_ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'y': extract_matching_units=1; break;
    case 'n': extract_matching_units=0; break;
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
              }
-             strcpy(output,optarg);
+             strcpy(output,vars->optarg);
              break;
-   case 'i': if (optarg[0]=='\0') {
+   case 'i': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty concordance file name\n");
              }
-             strcpy(concord_ind,optarg);
+             strcpy(concord_ind,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
@@ -99,10 +99,10 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
 if (output[0]=='\0') {
    fatal_error("You must specify the output text file\n");
 }
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-strcpy(text_name,argv[optind]);
+strcpy(text_name,argv[vars->optind]);
 
 struct snt_files* snt_files=new_snt_files(text_name);
 FILE* text=fopen(snt_files->text_cod,"rb");
@@ -155,6 +155,7 @@ fclose(text);
 u_fclose(concord);
 u_fclose(result);
 free_text_tokens(tok);
+free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }

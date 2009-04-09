@@ -30,6 +30,9 @@ ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,const char* name) {
 if (f==NULL) {
    fatal_error("NULL main pointer in new_ProgramInvoker\n");
 }
+if (name==NULL) {
+   fatal_error("NULL program name in new_ProgramInvoker\n");
+}
 ProgramInvoker* res=(ProgramInvoker*)malloc(sizeof(ProgramInvoker));
 if (res==NULL) {
    fatal_alloc_error("new_ProgramInvoker");
@@ -55,6 +58,9 @@ free(i);
  * Add the given argument to the given invoker.
  */
 void add_argument(ProgramInvoker* invoker,const char* arg) {
+if (arg==NULL) {
+   fatal_error("NULL argument in new_ProgramInvoker\n");
+}
 char* tmp=strdup(arg);
 if (tmp==NULL) {
    fatal_alloc_error("add_argument");

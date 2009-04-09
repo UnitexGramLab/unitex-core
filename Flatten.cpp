@@ -71,39 +71,39 @@ int RTN=1;
 int depth=10;
 int val,index=-1;
 char foo;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'f': RTN=0; break;
    case 'r': RTN=1; break;
-   case 'd': if (1!=sscanf(optarg,"%d%c",&depth,&foo) || depth<=0) {
+   case 'd': if (1!=sscanf(vars->optarg,"%d%c",&depth,&foo) || depth<=0) {
                 /* foo is used to check that the depth is not like "45gjh" */
-                fatal_error("Invalid depth argument: %s\n",optarg);
+                fatal_error("Invalid depth argument: %s\n",vars->optarg);
              }
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
 
-u_printf("Loading %s...\n",argv[optind]);
-Fst2* origin=load_fst2(argv[optind],1);
+u_printf("Loading %s...\n",argv[vars->optind]);
+Fst2* origin=load_fst2(argv[vars->optind],1);
 if (origin==NULL) {
-   error("Cannot load %s\n",argv[optind]);
+   error("Cannot load %s\n",argv[vars->optind]);
    return 1;
 }
 char temp[FILENAME_MAX];
-strcpy(temp,argv[optind]);
+strcpy(temp,argv[vars->optind]);
 strcat(temp,".tmp.fst2");
 switch (flatten_fst2(origin,depth,temp,RTN)) {
    case EQUIVALENT_FST:
@@ -118,7 +118,8 @@ switch (flatten_fst2(origin,depth,temp,RTN)) {
    default: fatal_error("Internal state error in Flatten's main\n");
 }
 free_Fst2(origin);
-remove(argv[optind]);
-rename(temp,argv[optind]);
+remove(argv[vars->optind]);
+rename(temp,argv[vars->optind]);
+free_OptVars(vars);
 return 0;
 }

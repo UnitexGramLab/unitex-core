@@ -72,35 +72,35 @@ char* fontname=NULL;
 char* output=NULL;
 int val,index=-1;
 char foo;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 's': if (1!=sscanf(optarg,"%d%c",&SENTENCE,&foo) || SENTENCE<=0) {
+   case 's': if (1!=sscanf(vars->optarg,"%d%c",&SENTENCE,&foo) || SENTENCE<=0) {
                 /* foo is used to check that the sentence number is not like "45gjh" */
-                fatal_error("Invalid sentence number: %s\n",optarg);
+                fatal_error("Invalid sentence number: %s\n",vars->optarg);
              }
              break;
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output name pattern\n");
              }
-             output=strdup(optarg);
+             output=strdup(vars->optarg);
              if (output==NULL) {
                 fatal_alloc_error("main_Tfst2Grf");
              }
              break;
-   case 'f': if (optarg[0]=='\0') {
+   case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty font name\n");
              }
-             fontname=strdup(optarg);
+             fontname=strdup(vars->optarg);
              if (fontname==NULL) {
                 fatal_alloc_error("main_Tfst2Grf");
              }
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
@@ -110,7 +110,7 @@ if (SENTENCE==-1) {
    fatal_error("You must specify a sentence number\n");
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
@@ -118,9 +118,9 @@ char grf_name[FILENAME_MAX];
 char txt_name[FILENAME_MAX];
 char tok_name[FILENAME_MAX];
 
-get_path(argv[optind],grf_name);
-get_path(argv[optind],txt_name);
-get_path(argv[optind],tok_name);
+get_path(argv[vars->optind],grf_name);
+get_path(argv[vars->optind],txt_name);
+get_path(argv[vars->optind],tok_name);
 if (output==NULL) {
    strcat(grf_name,"cursentence.grf");
    strcat(txt_name,"cursentence.txt");
@@ -157,8 +157,8 @@ if (tok==NULL) {
    u_fclose(txt);
    return 1;
 }
-u_printf("Loading %s...\n",argv[optind]);
-Tfst* tfst=open_text_automaton(argv[optind]);
+u_printf("Loading %s...\n",argv[vars->optind]);
+Tfst* tfst=open_text_automaton(argv[vars->optind]);
 
 load_sentence(tfst,SENTENCE);
 u_fprintf(txt,"%S\n",tfst->text);
@@ -177,6 +177,7 @@ if (output!=NULL) {
    free(output);
 }
 close_text_automaton(tfst);
+free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }

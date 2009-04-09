@@ -38,35 +38,37 @@ const struct option lopts[]={
 };
 char output[FILENAME_MAX]="";
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
              }
-             strcpy(output,optarg);
+             strcpy(output,vars->optarg);
              break;      
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
 if(output[0]=='\0') {
-   remove_extension(argv[optind],output);
+   remove_extension(argv[vars->optind],output);
 	strcat(output,".txt");
 }
-tei2txt(argv[optind],output);
+tei2txt(argv[vars->optind],output);
+free_OptVars(vars);
 return 0;
 }
+
 
 static const char *body = "body";
 

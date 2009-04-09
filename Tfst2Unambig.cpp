@@ -59,29 +59,29 @@ const struct option lopts[]= {
       {NULL,no_argument,NULL,0}
 };
 int val,index=-1;
-optind=1;
+struct OptVars* vars=new_OptVars();
 char* output=NULL;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output text file name\n");
              }
-             output=strdup(optarg);
+             output=strdup(vars->optarg);
              if (output==NULL) {
                 fatal_alloc_error("main_Tfst2Unambig");
              }
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
@@ -90,9 +90,9 @@ if (output==NULL) {
 }
 
 u_printf("Loading text automaton...\n");
-Tfst* tfst=open_text_automaton(argv[optind]);
+Tfst* tfst=open_text_automaton(argv[vars->optind]);
 if (tfst==NULL) {
-   error("Cannot load text automaton %s\n",argv[optind]);
+   error("Cannot load text automaton %s\n",argv[vars->optind]);
    return 1;
 }
 int res=isLinearAutomaton(tfst);
@@ -112,6 +112,7 @@ convertLinearAutomaton(tfst,f);
 u_fclose(f);
 close_text_automaton(tfst);
 free(output);
+free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }

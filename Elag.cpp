@@ -78,34 +78,34 @@ char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'l': if (optarg[0]=='\0') {
+   case 'l': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty language definition file\n");
              }
-             strcpy(language,optarg);
+             strcpy(language,vars->optarg);
              break;
-   case 'r': if (optarg[0]=='\0') {
+   case 'r': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty rule file\n");
              }
-             strcpy(rule_file,optarg);
+             strcpy(rule_file,vars->optarg);
              break;
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file\n");
              }
-             strcpy(output_tfst,optarg);
+             strcpy(output_tfst,vars->optarg);
              break;
-   case 'd': if (optarg[0]=='\0') {
+   case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty directory\n");
              }
-             strcpy(directory,optarg);
+             strcpy(directory,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
@@ -117,11 +117,11 @@ if (language[0]=='\0') {
 if (rule_file[0]=='\0') {
    fatal_error("You must define the rule file\n");
 }
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 char input_tfst[FILENAME_MAX];
-strcpy(input_tfst,argv[optind]);
+strcpy(input_tfst,argv[vars->optind]);
 
 u_printf("Loading %s langage definition ...\n", language);
 language_t* lang = load_language_definition(language);
@@ -148,5 +148,6 @@ if ((grammars=load_elag_grammars(rule_file)) == NULL) {
 u_printf("Grammars are loaded.\n");
 remove_ambiguities(input_tfst,grammars,output_tfst);
 free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
+free_OptVars(vars);
 return 0;
 }

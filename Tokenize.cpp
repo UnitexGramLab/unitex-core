@@ -76,6 +76,7 @@ unichar* keycopy(unichar* key) {
 return u_strdup(key);
 }
 
+
 static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Tokenize [OPTIONS] <txt>\n"
@@ -118,27 +119,27 @@ const struct option lopts[]={
 char alphabet[FILENAME_MAX]="";
 int val,index=-1;
 int mode=NORMAL;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
-             strcpy(alphabet,optarg);
+             strcpy(alphabet,vars->optarg);
              break;      
    case 'c': mode=CHAR_BY_CHAR; break;
    case 'w': mode=NORMAL; break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 if (alphabet[0]=='\0') {
@@ -154,15 +155,15 @@ char text_cod[FILENAME_MAX];
 char enter_pos[FILENAME_MAX];
 Alphabet* alph;
 
-get_snt_path(argv[optind],text_cod);
+get_snt_path(argv[vars->optind],text_cod);
 strcat(text_cod,"text.cod");
-get_snt_path(argv[optind],tokens_txt);
+get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
-get_snt_path(argv[optind],enter_pos);
+get_snt_path(argv[vars->optind],enter_pos);
 strcat(enter_pos,"enter.pos");
-text=u_fopen(argv[optind],U_READ);
+text=u_fopen(argv[vars->optind],U_READ);
 if (text==NULL) {
-   fatal_error("Cannot open text file %s\n",argv[optind]);
+   fatal_error("Cannot open text file %s\n",argv[vars->optind]);
 }
 alph=load_alphabet(alphabet);
 if (alph==NULL) {
@@ -202,8 +203,6 @@ if (output==NULL) {
 }
 u_fprintf(output,"0000000000\n");
 
-//struct table_hash *h_table;
-//h_table = new_table_hash(HASH_SIZE, HASH_BLOCK_SIZE);
 vector_ptr* tokens=new_vector_ptr(4096);
 vector_int* n_occur=new_vector_int(4096);
 vector_int* n_enter_pos=new_vector_int(4096);
@@ -225,7 +224,7 @@ fclose(out);
 u_fclose(output);
 write_number_of_tokens(tokens_txt,tokens->nbelems);
 // we compute some statistics
-get_snt_path(argv[optind],tokens_txt);
+get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"stats.n");
 output=u_fopen(tokens_txt,U_WRITE);
 if (output==NULL) {
@@ -236,7 +235,7 @@ else {
    u_fclose(output);
 }
 // we save the tokens by frequence
-get_snt_path(argv[optind],tokens_txt);
+get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_freq.txt");
 output=u_fopen(tokens_txt,U_WRITE);
 if (output==NULL) {
@@ -247,7 +246,7 @@ else {
    u_fclose(output);
 }
 // we save the tokens by alphabetical order
-get_snt_path(argv[optind],tokens_txt);
+get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_alph.txt");
 output=u_fopen(tokens_txt,U_WRITE);
 if (output==NULL) {
@@ -265,6 +264,7 @@ free_vector_int(n_enter_pos);
 if (alph!=NULL) {
    free_alphabet(alph);
 }
+free_OptVars(vars);
 return 0;
 }
 //---------------------------------------------------------------------------

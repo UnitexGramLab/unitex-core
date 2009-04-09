@@ -74,50 +74,51 @@ const struct option lopts[]= {
 int mode=KEEP_CARRIDGE_RETURN;
 char rules[FILENAME_MAX]="";
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'n': mode=REMOVE_CARRIDGE_RETURN; break;
-   case 'r': if (optarg[0]=='\0') {
+   case 'r': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty replacement rule file name\n");
              }
-             strcpy(rules,optarg);
+             strcpy(rules,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 char tmp_file[FILENAME_MAX];
-get_extension(argv[optind],tmp_file);
+get_extension(argv[vars->optind],tmp_file);
 if (!strcmp(tmp_file, ".snt")) {
    /* If the file to process has allready the .snt extension, we temporary rename it to
 	 * .snt.normalizing */
-	strcpy(tmp_file,argv[optind]);
+	strcpy(tmp_file,argv[vars->optind]);
 	strcat(tmp_file,".normalizing");
-	rename(argv[optind],tmp_file);
+	rename(argv[vars->optind],tmp_file);
 } else {
-   strcpy(tmp_file,argv[optind]);
+   strcpy(tmp_file,argv[vars->optind]);
 }
 /* We set the destination file */
 char dest_file[FILENAME_MAX];
-remove_extension(argv[optind],dest_file);
+remove_extension(argv[vars->optind],dest_file);
 strcat(dest_file,".snt");
-u_printf("Normalizing %s...\n",argv[optind]);
+u_printf("Normalizing %s...\n",argv[vars->optind]);
 normalize(tmp_file, dest_file, mode, rules);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
-if (strcmp(tmp_file,argv[optind])) { 
+if (strcmp(tmp_file,argv[vars->optind])) { 
    remove(tmp_file);
 }
+free_OptVars(vars);
 return 0;
 }
 

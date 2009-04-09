@@ -31,62 +31,56 @@
  * SUCH DAMAGE.
  */
 
-#ifdef _COMPILING_NEWLIB
-#include_next "getopt.h"
-#else
-#ifndef __GETOPT_H__
-#define __GETOPT_H__
+/**
+ * This library has been modified by S. Paumier in order to make the getopt... functions
+ * thread safe, because Unitex main_XXX programs parse their options with them, and
+ * as Unitex must now be also compiled as a library, multiple calls to getopt...
+ * could cause problems.  
+ */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef getoptH
+#define getoptH
 
-#ifndef __INSIDE_CYGWIN__
-extern int /*__declspec(dllimport)*/ opterr;	/* if error message should be printed */
-extern int /*__declspec(dllimport)*/ optind;	/* index into parent argv vector */
-extern int /*__declspec(dllimport)*/ optopt;	/* character checked for validity */
-extern int /*__declspec(dllimport)*/ optreset;	/* reset getopt */
-extern char /*__declspec(dllimport)*/ *optarg;	/* argument associated with option */
-#endif
-
-int getopt (int, char * const *, const char *);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __GETOPT_H__ */
-
-#ifndef __UNISTD_GETOPT__
-#ifndef __GETOPT_LONG_H__
-#define __GETOPT_LONG_H__
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct option {
-	const char *name;
-	int  has_arg;
-	int *flag;
-	int val;
-};
-
-int getopt_long(int, char *const *, const char *, const struct option *, int *);
-int getopt_long_only (int, char *const *, const char *, const struct option *, int *);
-
-#ifndef HAVE_DECL_GETOPT
-#define HAVE_DECL_GETOPT 1
-#endif
+/**
+ * struct option, no_argument, required_argument and optional_argument may already
+ * have been defined if someone use both libunitex.so and the original getopt.
+ */
+#ifndef __need_getopt
 
 #define no_argument             0
 #define required_argument       1
 #define optional_argument       2
 
-#ifdef __cplusplus
-}
+struct option {
+   const char *name;
+   int  has_arg;
+   int *flag;
+   int val;
+};
+
 #endif
 
-#endif /* __GETOPT_LONG_H__ */
-#endif /* __UNISTD_GETOPT__ */
-#endif /*_INSIDE_NEWLIB*/
+
+/**
+ * This structure defines all the things getopt needs to work in a thread safe way. 
+ */
+struct OptVars {
+   int   opterr;       /* if error message should be printed */
+   int   optind;       /* index into parent argv vector */
+   int   optopt;       /* character checked for validity */
+   int   optreset;     /* reset getopt */
+   char  *optarg;      /* argument associated with option */
+   int   nonopt_start; /* first non option argument (for permute) */
+   int   nonopt_end;  /* first option after non options (for permute) */
+};
+
+
+struct OptVars* new_OptVars();
+void free_OptVars(struct OptVars*);
+int getopt_TS(int, char * const *, const char *,struct OptVars*);
+int getopt_long_TS(int, char *const *, const char *, const struct option *, int *,struct OptVars*);
+int getopt_long_only_TS(int, char *const *, const char *, const struct option *, int *,struct OptVars*);
+
+
+
+#endif

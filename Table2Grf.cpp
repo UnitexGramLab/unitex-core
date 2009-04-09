@@ -71,35 +71,35 @@ char reference_graph_name[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char subgraph_pattern[FILENAME_MAX]="";
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'r': if (optarg[0]=='\0') {
+   case 'r': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty reference graph name\n");
              }
-             strcpy(reference_graph_name,optarg);
+             strcpy(reference_graph_name,vars->optarg);
              break;      
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output graph name\n");
              }
-             strcpy(output,optarg);
+             strcpy(output,vars->optarg);
              break;
-   case 's': if (optarg[0]=='\0') {
+   case 's': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty subgraph name pattern\n");
              }
-             strcpy(subgraph_pattern,optarg);
+             strcpy(subgraph_pattern,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }   
 
@@ -110,9 +110,9 @@ if (output[0]=='\0') {
    fatal_error("You must specify the output graph name\n");
 }
 
-FILE* table=u_fopen(argv[optind],U_READ);
+FILE* table=u_fopen(argv[vars->optind],U_READ);
 if (table==NULL) {
-   fatal_error("Cannot open table %s\n",argv[optind]);
+   fatal_error("Cannot open table %s\n",argv[vars->optind]);
 }
 FILE* reference_graph=u_fopen(reference_graph_name,U_READ);
 if (reference_graph==NULL) {
@@ -136,6 +136,7 @@ if (subgraph_pattern[0]=='\0') {
 char path[FILENAME_MAX];
 get_path(output,path);
 table2grf(table,reference_graph,result_graph,subgraph_pattern,path);
+free_OptVars(vars);
 return 0;
 }
 

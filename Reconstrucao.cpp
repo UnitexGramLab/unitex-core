@@ -84,50 +84,50 @@ char pronoun_rules[FILENAME_MAX]="";
 char nasal_pronoun_rules[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
-             strcpy(alphabet,optarg);
+             strcpy(alphabet,vars->optarg);
              break;
-   case 'r': if (optarg[0]=='\0') {
+   case 'r': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty root dictionary file name\n");
              }
-             strcpy(root,optarg);
+             strcpy(root,vars->optarg);
              break;
-   case 'd': if (optarg[0]=='\0') {
+   case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty dictionary file name\n");
              }
-             strcpy(dictionary,optarg);
+             strcpy(dictionary,vars->optarg);
              break;
-   case 'p': if (optarg[0]=='\0') {
+   case 'p': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty pronoun rewriting rule file name\n");
              }
-             strcpy(pronoun_rules,optarg);
+             strcpy(pronoun_rules,vars->optarg);
              break;
-   case 'n': if (optarg[0]=='\0') {
+   case 'n': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty nasal pronoun rewriting rule file name\n");
              }
-             strcpy(nasal_pronoun_rules,optarg);
+             strcpy(nasal_pronoun_rules,vars->optarg);
              break;
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
              }
-             strcpy(output,optarg);
+             strcpy(output,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
@@ -157,9 +157,9 @@ if (alph==NULL) {
    return 1;
 }
 u_printf("Loading match list...\n");
-FILE* f_list=u_fopen(argv[optind],U_READ);
+FILE* f_list=u_fopen(argv[vars->optind],U_READ);
 if (f_list==NULL) {
-   error("Cannot load match list %s\n",argv[optind]);
+   error("Cannot load match list %s\n",argv[vars->optind]);
    free_alphabet(alph);
    return 1;
 }
@@ -167,7 +167,7 @@ OutputPolicy output_policy;
 struct match_list* list=load_match_list(f_list,&output_policy);
 u_fclose(f_list);
 if (output_policy==IGNORE_OUTPUTS) {
-   error("Invalid match list %s\n",argv[optind]);
+   error("Invalid match list %s\n",argv[vars->optind]);
    free_alphabet(alph);
    return 1;
 }
@@ -242,6 +242,7 @@ free(inflected_bin);
 free_INF_codes(inflected_inf);
 free_normalization_tree(rewriting_rules);
 free_normalization_tree(nasal_rewriting_rules);
+free_OptVars(vars);
 return 0;
 }
 

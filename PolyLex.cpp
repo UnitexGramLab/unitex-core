@@ -94,44 +94,44 @@ char dictionary[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char info[FILENAME_MAX]="";
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'D': language=DUTCH; break;
    case 'G': language=GERMAN; break;
    case 'N': language=NORWEGIAN; break;
    case 'R': language=RUSSIAN; break;
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
-             strcpy(alphabet,optarg);
+             strcpy(alphabet,vars->optarg);
              break;
-   case 'd': if (optarg[0]=='\0') {
+   case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty dictionary file name\n");
              }
-             strcpy(dictionary,optarg);
+             strcpy(dictionary,vars->optarg);
              break;
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
              }
-             strcpy(output,optarg);
+             strcpy(output,vars->optarg);
              break;
-   case 'i': if (optarg[0]=='\0') {
+   case 'i': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty information file name\n");
              }
-             strcpy(info,optarg);
+             strcpy(info,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
@@ -181,11 +181,11 @@ if (inf==NULL) {
    return 1;
 }
 char tmp[FILENAME_MAX];
-strcpy(tmp,argv[optind]);
+strcpy(tmp,argv[vars->optind]);
 strcat(tmp,".tmp");
-FILE* words=u_fopen(argv[optind],U_READ);
+FILE* words=u_fopen(argv[vars->optind],U_READ);
 if (words==NULL) {
-   error("Cannot open word list file %s\n",argv[optind]);
+   error("Cannot open word list file %s\n",argv[vars->optind]);
    free_alphabet(alph);
    free(bin);
    free_INF_codes(inf);
@@ -247,6 +247,7 @@ u_fclose(res);
 if (debug!=NULL) {
    u_fclose(debug);
 }
+free_OptVars(vars);
 return 0;
 }
 

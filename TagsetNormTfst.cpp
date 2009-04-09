@@ -78,40 +78,40 @@ char output_tfst[FILENAME_MAX]="";
 char output_tind[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'o': if (optarg[0]=='\0') {
+   case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
              }
-             strcpy(output_tfst,optarg);
+             strcpy(output_tfst,vars->optarg);
              remove_extension(output_tfst,output_tind);
              strcat(output_tind,".tind");
              break;      
-   case 't': if (optarg[0]=='\0') {
+   case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty tagset file name\n");
              }
-             strcpy(tagset,optarg);
+             strcpy(tagset,vars->optarg);
              break;      
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
 if (tagset[0]=='\0') {
    fatal_error("You must specify the tagset file\n");
 }
-strcpy(tfst,argv[optind]);
-remove_extension(argv[optind],tind);
+strcpy(tfst,argv[vars->optind]);
+remove_extension(argv[vars->optind],tind);
 strcat(tind,".tind");
 int no_explicit_output=0;
 if (output_tfst[0]=='\0') {
@@ -274,6 +274,7 @@ if (no_explicit_output) {
    rename(output_tfst,tfst);
    rename(output_tind,tind);
 }
+free_OptVars(vars);
 return 0;
 }
 

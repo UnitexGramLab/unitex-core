@@ -62,32 +62,32 @@ const struct option lopts[]= {
 int val,index=-1;
 int sentence_number=-1;
 char foo;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 's': if (1!=sscanf(optarg,"%d%c",&sentence_number,&foo) || sentence_number<=0) {
+   case 's': if (1!=sscanf(vars->optarg,"%d%c",&sentence_number,&foo) || sentence_number<=0) {
                 /* foo is used to check that the sentence number is not like "45gjh" */
-                fatal_error("Invalid sentence number: %s\n",optarg);
+                fatal_error("Invalid sentence number: %s\n",vars->optarg);
              }
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-u_printf("Loading '%s'...\n",argv[optind]);
-Tfst* tfst=open_text_automaton(argv[optind]);
+u_printf("Loading '%s'...\n",argv[vars->optind]);
+Tfst* tfst=open_text_automaton(argv[vars->optind]);
 if (tfst==NULL) {
-   fatal_error("Unable to load '%s'\n",argv[optind]);
+   fatal_error("Unable to load '%s'\n",argv[vars->optind]);
 }
 if (sentence_number>tfst->N) {
    fatal_error("Invalid sentence number %d: should be in [1;%d]\n",sentence_number,tfst->N);
@@ -156,6 +156,7 @@ if (sentence_number==-1) {
    }
 }
 close_text_automaton(tfst);
+free_OptVars(vars);
 return 0;
 }
 

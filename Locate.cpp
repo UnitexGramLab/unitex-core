@@ -153,21 +153,21 @@ SpacePolicy space_policy=DONT_START_WITH_SPACE;
 AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 char foo;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 't': if (optarg[0]=='\0') {
+   case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty text file name\n");
              }
-             strcpy(text,optarg);
+             strcpy(text,vars->optarg);
              break;
-   case 'a': if (optarg[0]=='\0') {
+   case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet name\n");
              }
-             strcpy(alph,optarg);
+             strcpy(alph,vars->optarg);
              break;
-   case 'm': if (optarg[0]!='\0') {
-                morpho_dic=strdup(optarg);
+   case 'm': if (vars->optarg[0]!='\0') {
+                morpho_dic=strdup(vars->optarg);
                 if (morpho_dic==NULL) {
                    fatal_alloc_error("main_Locate");
                 }
@@ -183,15 +183,15 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 'Y': variable_error_policy=IGNORE_VARIABLE_ERRORS; break;
    case 'Z': variable_error_policy=BACKTRACK_ON_VARIABLE_ERRORS; break;
    case 'l': search_limit=NO_MATCH_LIMIT; break;
-   case 'n': if (1!=sscanf(optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
+   case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
-                fatal_error("Invalid search limit argument: %s\n",optarg);
+                fatal_error("Invalid search limit argument: %s\n",vars->optarg);
              }
              break;
-   case 'd': if (optarg[0]=='\0') {
+   case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty snt dir name\n");
              }
-             strcpy(dynamicSntDir,optarg);
+             strcpy(dynamicSntDir,vars->optarg);
              break;
    case 'c': tokenization_policy=CHAR_BY_CHAR_TOKENIZATION; break;
    case 'w': tokenization_policy=WORD_BY_WORD_TOKENIZATION; break;
@@ -201,10 +201,10 @@ while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
              
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
@@ -216,7 +216,7 @@ if (text[0]=='\0') {
 if (alph[0]=='\0') {
    fatal_error("You must specify an alphabet file\n");
 }
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
@@ -247,12 +247,13 @@ strcat(dlc,"dlc");
 strcpy(err,staticSntDir);
 strcat(err,"err");
 
-int OK=locate_pattern(text_cod,tokens_txt,argv[optind],dlf,dlc,err,alph,match_policy,output_policy,
+int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
                ambiguous_output_policy,variable_error_policy);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }
+free_OptVars(vars);
 return (!OK);
 }
 

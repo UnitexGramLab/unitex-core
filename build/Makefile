@@ -331,7 +331,8 @@ GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Unicode.o Fst2.
                 Fst2Check.o Grf2Fst2_lib.o Error.o File.o SingleGraph.o\
                 BitMasks.o BitArray.o List_int.o HashTable.o FIFO.o Pattern.o\
                 List_ustring.o String_hash.o StringParsing.o Transitions.o DELA.o\
-                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o
+                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
+                ProgramInvoker.o
 
 
 IMPLODETFST      = ImplodeTfst
@@ -358,7 +359,7 @@ MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_Dic
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check.o\
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
-                 MF_Operators_Util.o getopt.o
+                 MF_Operators_Util.o getopt.o ProgramInvoker.o
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Unicode.o File.o DELA.o List_ustring.o String_hash.o\
@@ -377,7 +378,7 @@ REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Unicode.o String_
                    Transitions.o DELA.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
                    getopt.o Tfst.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o\
-                   HashTable.o FIFO.o Fst2Check.o
+                   HashTable.o FIFO.o Fst2Check.o ProgramInvoker.o
 
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTree.o\
@@ -579,9 +580,6 @@ endif
 
 bin: $(LIBTRE) $(BINARIES)
 
-getopt.o: ../getopt.c
-	$(CC) -c $(CFLAGS) ../getopt.c
-
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
 
@@ -653,9 +651,6 @@ endif
 
 bin: $(BINARIES)
 
-getopt.o: ../getopt.c
-	$(CC) -c $(CFLAGS) ../getopt.c
-
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
 
@@ -684,9 +679,6 @@ all: bin
 endif
 
 bin: $(BINARIES)
-
-getopt.o: ../getopt.c
-	$(CC) -c $(CFLAGS) ../getopt.c
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<

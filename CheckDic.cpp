@@ -63,39 +63,39 @@ const struct option lopts[]= {
       {NULL,no_argument,NULL,0}
 };
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'f': is_a_DELAF=1; break;
    case 's': is_a_DELAF=0; break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
    
-if (is_a_DELAF==-1 || optind!=argc-1) {
+if (is_a_DELAF==-1 || vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
 
-FILE* dic=u_fopen(argv[optind],U_READ);
+FILE* dic=u_fopen(argv[vars->optind],U_READ);
 if (dic==NULL) {
-	fatal_error("Cannot open dictionary %s\n",argv[optind]);
+	fatal_error("Cannot open dictionary %s\n",argv[vars->optind]);
 }
 char output_filename[FILENAME_MAX];
-get_path(argv[optind],output_filename);
+get_path(argv[vars->optind],output_filename);
 strcat(output_filename,"CHECK_DIC.TXT");
 FILE* out=u_fopen(output_filename,U_WRITE);
 if (out==NULL) {
 	u_fclose(dic);
 	fatal_error("Cannot create %s\n",output_filename);
 }
-u_printf("Checking %s...\n",argv[optind]);
+u_printf("Checking %s...\n",argv[vars->optind]);
 unichar line[10000];
 int line_number=1;
 /*
@@ -153,7 +153,7 @@ u_fclose(dic);
 u_fprintf(out,"-----------------------------------\n");
 u_fprintf(out,"-------------  Stats  -------------\n");
 u_fprintf(out,"-----------------------------------\n");
-u_fprintf(out,"File: %s\n",argv[optind]);
+u_fprintf(out,"File: %s\n",argv[vars->optind]);
 u_fprintf(out,"Type: %s\n",is_a_DELAF?"DELAF":"DELAS");
 u_fprintf(out,"%d line%s read\n",line_number-1,(line_number-1>1)?"s":"");
 u_fprintf(out,"%d simple entr%s ",n_simple_entries,(n_simple_entries>1)?"ies":"y");
@@ -216,6 +216,7 @@ for (i=0;i<inflectional_codes->size;i++) {
 	u_fprintf(out,"\n");
 }
 u_fclose(out);
+free_OptVars(vars);
 u_printf("Done.\n");
 /* Note that we don't free anything since it would only waste time */
 return 0;

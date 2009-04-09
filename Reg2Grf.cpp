@@ -67,26 +67,26 @@ const struct option lopts[]= {
       {NULL,no_argument,NULL,0}
 };
 int val,index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",optopt); 
-             else fatal_error("Invalid option --%s\n",optarg);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+             else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-FILE* f=u_fopen(argv[optind],U_READ);
+FILE* f=u_fopen(argv[vars->optind],U_READ);
 if (f==NULL) {
-   fatal_error("Cannot open file %s\n",argv[optind]);
+   fatal_error("Cannot open file %s\n",argv[vars->optind]);
 }
 /* We read the regular expression in the file */
 unichar exp[REG_EXP_MAX_LENGTH];
@@ -95,11 +95,12 @@ if ((REG_EXP_MAX_LENGTH-1)==u_fgets(exp,REG_EXP_MAX_LENGTH,f)) {
 }
 u_fclose(f);
 char grf_name[FILENAME_MAX];
-get_path(argv[optind],grf_name);
+get_path(argv[vars->optind],grf_name);
 strcat(grf_name,"regexp.grf");
 if (!reg2grf(exp,grf_name)) {
    return 1;
 }
+free_OptVars(vars);
 u_printf("Expression converted.\n");
 return 0;
 }

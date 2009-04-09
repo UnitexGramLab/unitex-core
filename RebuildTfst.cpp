@@ -64,34 +64,34 @@ const struct option lopts[]= {
    { NULL, no_argument, NULL, 0 }
 };
 int val, index=-1;
-optind=1;
-while (EOF!=(val=getopt_long(argc,argv,optstring,lopts,&index))) {
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch (val) {
    case 'h':
       usage();
       return 0;
    case ':':
       if (index==-1)
-         fatal_error("Missing argument for option -%c\n", optopt);
+         fatal_error("Missing argument for option -%c\n", vars->optopt);
       else
          fatal_error("Missing argument for option --%s\n", lopts[index].name);
    case '?':
       if (index==-1)
-         fatal_error("Invalid option -%c\n", optopt);
+         fatal_error("Invalid option -%c\n", vars->optopt);
       else
-         fatal_error("Invalid option --%s\n", optarg);
+         fatal_error("Invalid option --%s\n", vars->optarg);
       break;
    }
    index=-1;
 }
 
-if (optind!=argc-1) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
 char input_tfst[FILENAME_MAX];
 char input_tind[FILENAME_MAX];
-strcpy(input_tfst,argv[optind]);
+strcpy(input_tfst,argv[vars->optind]);
 remove_extension(input_tfst,input_tind);
 strcat(input_tind,".tind");
 
@@ -172,6 +172,7 @@ rename(output_tfst,input_tfst);
 rename(output_tind,input_tind);
 u_printf("\nYou can find a backup of the original files in:\n    %s\nand %s\n",
          backup_tfst,backup_tind);
+free_OptVars(vars);
 return 0;
 }
 
