@@ -40,12 +40,6 @@
 #include "Concord.h"
 
 
-/* Maximum number of new lines in a text. New lines are encoded in
- * 'enter.pos' files. Those files will disappear in the future */
-#define MAX_ENTER_CHAR 1000000
-int enter_pos[MAX_ENTER_CHAR];
-
-
 
 static void usage_() {
 u_printf("%S",COPYRIGHT);
@@ -301,14 +295,25 @@ if (tok==NULL) {
 	free_snt_files(snt_files);
 	return 1;
 }
+
 FILE* f_enter=fopen(snt_files->enter_pos,"rb");
 int n_enter_char;
+/* New lines are encoded in 'enter.pos' files. Those files will disappear in the future */
+int* enter_pos;
+long size=get_file_size(f_enter);
+enter_pos=(int*)malloc(size);
+if (enter_pos==NULL) {
+	fatal_alloc_error("main_Concord");
+}
 if (f_enter==NULL) {
 	error("Cannot open file %s\n",snt_files->enter_pos);
 	n_enter_char=0;
 }
 else {
-	n_enter_char=fread(&enter_pos,sizeof(int),MAX_ENTER_CHAR,f_enter);
+	n_enter_char=fread(&enter_pos,sizeof(int),size/sizeof(int),f_enter);
+	if (n_enter_char!=(int)(size/sizeof(int))) {
+		fatal_error("Read error on enter.pos file in main_Concord\n");
+	}
    fclose(f_enter);
 }
 if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->result_mode==AXIS_) {
@@ -321,6 +326,7 @@ if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->resu
 /* Once we have setted all the parameters, we call the function that
  * will actually create the concordance. */
 create_concordance(concor,text,tok,n_enter_char,enter_pos,options);
+free(enter_pos);
 u_fclose(concor);
 fclose(text);
 free_snt_files(snt_files);
