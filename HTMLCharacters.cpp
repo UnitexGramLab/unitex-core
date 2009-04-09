@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -34,8 +34,8 @@
 struct search_tree_node* init_control_characters();
 struct search_tree_node* init_normal_characters();
 
-struct search_tree_node* control_characters=init_control_characters();
-struct search_tree_node* normal_characters=init_normal_characters();
+static struct search_tree_node* control_characters=init_control_characters();
+static struct search_tree_node* normal_characters=init_normal_characters();
 
 
 /**
@@ -385,11 +385,11 @@ return value;
  * - decimal integer: '#220'
  * - hexadecimal integer: '#xFF4'
  * - character name: 'eacute'
- * 
+ *
  * If the parameter 'decode_control_character' is set to 0, the function
  * will return DO_NOT_DECODE_CHARACTER if the given sequence corresponds
  * to an HTML control character like 'gt'.
- * 
+ *
  * The function raises a fatal error if XXX is NULL or an empty string. It
  * returns MALFORMED_HTML_CODE if the sequence is a malformed integer code
  * like "#x42W4"
@@ -403,7 +403,7 @@ if (sequence[0]!='#') {
 	/* If we have a character name */
 	value=get_normal_character_number(sequence);
 	if (value!=-1) return value;
-	/* If the character is not in the normal character set, we 
+	/* If the character is not in the normal character set, we
 	 * look in the control character set. */
 	value=get_control_character_number(sequence);
 	if (value==-1) {
