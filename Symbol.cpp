@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -110,20 +110,11 @@ return s;
 symbol_t* new_symbol_PUNC(language_t* language,int canonic,int tag_number) {
 POS_t* POS=language_get_POS(language,PUNC_STR);
 symbol_t* symbol=new_symbol_POS(POS,tag_number);
-symbol->type=ATOM; 
+symbol->type=ATOM;
 symbol->negative=false;
 symbol->form=0;
 symbol->lemma=canonic;
 return symbol;
-}
-
-
-/**
- * Allocates, initializes and returns a new symbol_t corresponding to the
- * <PNC> tag in ELAG grammars.
- */
-symbol_t* new_symbol_PUNC(int punc,int tag_number) {
-return new_symbol_PUNC(LANGUAGE,punc,tag_number);
 }
 
 
@@ -178,7 +169,7 @@ symbol->next=NULL;
 /**
  * Copies the symbol 'src' into 'dest'. Note that the content of 'dest' will be
  * overwritten, so that you should call 'empty_symbol' on it before.
- * 
+ *
  * WARNING: the POS field of 'src' is just copied and NOT duplicated, so that if
  *          'src->POS' is freed, 'dest->POS' will be undefined.
  */
@@ -232,7 +223,7 @@ switch (symbol->type) {
       res=new_symbol(EPSILON,symbol->tfsttag_index);
       break;
    case ATOM:
-   case INC_CAN: 
+   case INC_CAN:
    case CODE:
    case INC:
    case INC_NEG:
@@ -337,7 +328,7 @@ if (end) {
 /**
  * Returns how many codes in POS match with 's'. For instance, if we have the French
  * tag "<V:s>", it can match all the following codes:
- * 
+ *
  * C <pers> s
  * F <pers> s
  * I <pers> s
@@ -345,14 +336,14 @@ if (end) {
  * P <pers> s
  * S <pers> s
  * T <pers> s
- * X 1 s   # eussé dussé puissé fussé
+ * X 1 s   # eussï¿½ dussï¿½ puissï¿½ fussï¿½
  * Y 2 s
  * K <gender> s
- * 
+ *
  * If 'matching_code' is not NULL, we copy the first matching code in it. If
  * there are several matching codes, we set the common values and we set to
  * UNSPECIFIED the divergent values. In our example, we would have:
- * 
+ *
  * tense=UNSPECIFIED pers=UNSPECIFIED gender=UNSPECIFIED number='s'
  */
 int symbol_match_codes(symbol_t* s,symbol_t* matching_code) {
@@ -366,7 +357,7 @@ for (symbol_t* code=s->POS->codes;code!=NULL;code=code->next) {
             /* This should never happen */
             fatal_error("symbol_match_codes: in POS '%S': code with UNSPECIFIED discriminative feature\n",s->POS->name);
          }
-         default: 
+         default:
             if (s->feature[i]!=UNSPECIFIED && s->feature[i]!=code->feature[i]) {
                /* If a feature is set with different values in the current code
                 * and in s, then s cannot match this code */
@@ -407,8 +398,8 @@ return count;
  * be typed as an incomplete one. The function returns -1 if the symbol is
  * not a correct one; otherwise, the type of the symbol is returned (see
  * the enum SymbolType).
- * 
- * If the lemma form was a negative list, then the symbol type will be 
+ *
+ * If the lemma form was a negative list, then the symbol type will be
  * INC_NEG or CODE_NEG.
  * If the feature values match with only one full code, then its a CODE or ATOM
  * (depending if it contains a lemma).
@@ -485,15 +476,15 @@ return symbol->type;
 
 
 
-void symbol_dump_all(const symbol_t * symb) {
+void symbol_dump_all(language_t* language,const symbol_t * symb) {
 
   static const unichar locked[] = { 'l', 'o', 'c', 'k', 'e', 'd', 0 };
 
   int i;
 
   while (symb!=NULL) {
-  
-  language_t * lang = symb->POS ? symb->POS->language : LANGUAGE;
+
+  language_t * lang = symb->POS ? symb->POS->language : language;
 
   u_printf("<%c:", symb->type);
 
@@ -526,10 +517,10 @@ void symbol_dump_all(const symbol_t * symb) {
   }
 
   u_printf("> ");
-  
+
   symb=symb->next;
   }
-  
+
 }
 
 
@@ -549,7 +540,7 @@ if (s->type!=ATOM) {
    fatal_error("' is'nt an atom.\n");
 }
 language_t* language=s->POS->language;
-if (!u_strcmp(s->POS->name,UNKNOWN_STR) || !u_strcmp(s->POS->name,PUNC_STR) 
+if (!u_strcmp(s->POS->name,UNKNOWN_STR) || !u_strcmp(s->POS->name,PUNC_STR)
    || !u_strcmp(s->POS->name,CHFA_STR)) {
    /* If the symbol is an unknown word, a digit sequence or a punctuation mark */
    u_strcpy(ustr,language_get_form(language,s->lemma));
@@ -583,13 +574,13 @@ u_strcat(ustr,"}");
 
 /**
  * This function converts a the given symbol into a text tag.
- * If the symbol is a list of several symbols corresponding to several 
+ * If the symbol is a list of several symbols corresponding to several
  * inflectional codes, the resulting entry will aggregate them like:
- * 
+ *
  * {fait,faire.V:Kms:P3s}
- * 
+ *
  * NOTE: if this function is called on a symbol that is not a dictionary
- *       entry, it will return NULL. 
+ *       entry, it will return NULL.
  */
 struct dela_entry* symbol_to_dela_entry(const symbol_t* s) {
 if (s==NULL) {
@@ -604,7 +595,7 @@ if (s->type!=ATOM) {
    fatal_error("' is'nt an atom.\n");
 }
 language_t* language=s->POS->language;
-if (!u_strcmp(s->POS->name,UNKNOWN_STR) || !u_strcmp(s->POS->name,PUNC_STR) 
+if (!u_strcmp(s->POS->name,UNKNOWN_STR) || !u_strcmp(s->POS->name,PUNC_STR)
    || !u_strcmp(s->POS->name,CHFA_STR)) {
    /* If the symbol is an unknown word, a digit sequence or a punctuation mark */
    return NULL;
@@ -673,7 +664,7 @@ switch (s->type) {
 
    case EQUAL:
       fatal_error("Unexpected <=> tag in symbol_to_locate_label\n");
-      
+
    default: ; /* nothing to do: just want to avoid a warning */
 }
 language_t* lang=s->POS->language;
@@ -722,7 +713,7 @@ u_strcat(ustr,">");
 void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
 
   //  debug("symbtogrammlabel\n"); symbol_dump(s); endl();
-  
+
   if (s == NULL) { fatal_error("symb2grammar label: symb is null\n"); }
   if (s == SYMBOL_DEF) { u_strcpy(ustr, "<def>"); return; }
 
@@ -759,7 +750,7 @@ void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
      escape(language_get_form(lang, s->lemma),tmp,P_ELAG_TAG);
     u_sprintf(ustr, "<%S.%S",tmp,s->POS->name);
 
-  } else {    
+  } else {
     u_sprintf(ustr, "<%S", s->POS->name);
   }
 
@@ -774,7 +765,7 @@ void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
       u_strcatf(ustr, "+%S", CAT_get_valname(CAT, s->feature[i]));
 
     } else if (s->feature[i] == LOCKED) {
-      /* Pour specifier que l'attribut est bloque on l'ecrit !attrname 
+      /* Pour specifier que l'attribut est bloque on l'ecrit !attrname
        * ex : !discr
        */
       CAT = POS_get_CAT(s->POS, i);
@@ -871,7 +862,7 @@ for (i=0;i<s->POS->nb_inflect;i++) {
    } else if (s->feature[i]==LOCKED) {
       u_strcatf(ustr,"!{%S}",CAT->name);
    }
-}  
+}
 u_strcat(ustr,">");
 }
 
@@ -1079,12 +1070,12 @@ return new_symbol_UNKNOWN(language,index,tag_number);
  * This function returns a list that contains symbols for all POS except
  * the given one. It is used when there is a negative tag like <!A>.
  */
-symbol_t* LEXIC_minus_POS(POS_t* POS) {
+symbol_t* LEXIC_minus_POS(language_t* language,POS_t* POS) {
 symbol_t res;
 res.next=NULL;
 symbol_t* end=&res;
-for (int i=0;i<LANGUAGE->POSs->size;i++) {
-   POS_t* POS2=(POS_t*)LANGUAGE->POSs->value[i];
+for (int i=0;i<language->POSs->size;i++) {
+   POS_t* POS2=(POS_t*)language->POSs->value[i];
    if (POS2==POS) {
       continue;
    }
@@ -1161,7 +1152,7 @@ if (buffer[position]=='!') {
       fatal_error("In symbol '%S': unknown part of speech '%S'\n",tag,buffer[position+1]);
    }
    free(buffer);
-   return LEXIC_minus_POS(POS);
+   return LEXIC_minus_POS(language,POS);
 }
 /* We look for the end of the POS in the tag */
 if (P_OK!=parse_string(buffer,&position,tmp,"+!:")) {

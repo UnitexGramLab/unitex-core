@@ -125,7 +125,6 @@ strcpy(input_tfst,argv[vars->optind]);
 
 u_printf("Loading %s langage definition ...\n", language);
 language_t* lang = load_language_definition(language);
-set_current_language(lang);
 if (output_tfst[0]=='\0') {
    remove_extension(input_tfst,output_tfst);
    strcat(output_tfst,"-elag.tfst");
@@ -142,11 +141,12 @@ if (chdir(directory)==-1) {
    error("Unable to change to %s directory.\n", directory);
 }
 vector_ptr* grammars;
-if ((grammars=load_elag_grammars(rule_file)) == NULL) {
+if ((grammars=load_elag_grammars(rule_file,lang)) == NULL) {
    fatal_error("Unable to load grammar %s", rule_file);
 }
 u_printf("Grammars are loaded.\n");
-remove_ambiguities(input_tfst,grammars,output_tfst);
+remove_ambiguities(input_tfst,grammars,output_tfst,lang);
+free_language_t(lang);
 free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
 free_OptVars(vars);
 return 0;

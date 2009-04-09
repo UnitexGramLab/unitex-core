@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -284,7 +284,7 @@ concat_symbols(a,next);
  * symbols, so that the union of these symbols is equivalent to the
  * original symbol.
  */
-void compare_and_expand_symbol_with_symbol(symbol_t* a,symbol_t* b) {
+void compare_and_expand_symbol_with_symbol(language_t* language,symbol_t* a,symbol_t* b) {
 if (symbol_compare(a,b)==0) {
    /* Nothing to do if the symbols are identical */
    return;
@@ -297,8 +297,8 @@ if (i==NULL) {
 if (i->next!=NULL) {
    fatal_error("compare_and_expand_symbol_with_symbol: i->next not NULL\n");
 }
-symbol_t* aminusb=symbol_minus_symbol(a,i);
-symbol_t* bminusa=symbol_minus_symbol(b,i);
+symbol_t* aminusb=symbol_minus_symbol(language,a,i);
+symbol_t* bminusa=symbol_minus_symbol(language,b,i);
 if (aminusb==NULL) {
    if (symbol_compare(a,i)) {
       fatal_error("compare_and_expand_symbol_with_symbol: A!=I and A\\I=null\n");
@@ -324,9 +324,9 @@ replace_symbol(b,i);
  * each pair (a,b[i]), it compares the two symbols, expanding them
  * if necessary.
  */
-void compare_and_expand_symbol_with_symbols(symbol_t * a, symbol_t * b) {
+void compare_and_expand_symbol_with_symbols(language_t* language,symbol_t * a, symbol_t * b) {
 while (b!=NULL) {
-   compare_and_expand_symbol_with_symbol(a,b);
+   compare_and_expand_symbol_with_symbol(language,a,b);
    b=b->next;
 }
 }
@@ -336,9 +336,9 @@ while (b!=NULL) {
  * Compares each symbol of a with each one of b, expanding
  * them if necessary.
  */
-void expand_symbols(symbol_t* a,symbol_t* b) {
+void expand_symbols(language_t* language,symbol_t* a,symbol_t* b) {
 while (a!=NULL) {
-   compare_and_expand_symbol_with_symbols(a,b);
+   compare_and_expand_symbol_with_symbols(language,a,b);
    a=a->next;
 }
 }
@@ -348,12 +348,12 @@ while (a!=NULL) {
  * This function takes a symbol list and compares each element with
  * its follower. Then, it expands them if necessary.
  */
-void expand_symbols(symbol_t* s) {
+void expand_symbols(language_t* language,symbol_t* s) {
 if (s==NULL) {
    return;
 }
 while (s->next!=NULL) {
-   compare_and_expand_symbol_with_symbols(s,s->next);
+   compare_and_expand_symbol_with_symbols(language,s,s->next);
    s=s->next;
 }
 }
@@ -361,7 +361,7 @@ while (s->next!=NULL) {
 
 /**
  * This function takes a transition list, where each transition
- * can be tagged with a symbol list, and it modifies it so that 
+ * can be tagged with a symbol list, and it modifies it so that
  * we will have exactly one transition per symbol.
  */
 void flatten_transition(Transition* trans) {
@@ -397,10 +397,10 @@ return trans;
 /**
  * Expands the two given transition lists.
  */
-void expand_transitions(Transition* _t1,Transition* _t2) {
+void expand_transitions(language_t* language,Transition* _t1,Transition* _t2) {
 for (Transition* t1=_t1;t1!=NULL;t1=t1->next) {
    for (Transition* t2=_t2;t2!=NULL;t2=t2->next) {
-      expand_symbols(t1->label,t2->label);
+      expand_symbols(language,t1->label,t2->label);
    }
 }
 flatten_transition(_t1);
@@ -413,15 +413,15 @@ flatten_transition(_t2);
  * Expands the given transition list, so that all its symbols
  * with have empty intersection between them.
  */
-void expand_transitions(Transition* trans) {
+void expand_transitions(language_t* language,Transition* trans) {
 Transition* t1;
 Transition* t2;
 for (t1=trans;t1!=NULL;t1=t1->next) {
-   expand_symbols(t1->label);
+   expand_symbols(language,t1->label);
 }
 for (t1=trans;t1!=NULL;t1=t1->next) {
    for (t2=t1->next;t2!=NULL;t2=t2->next) {
-      expand_symbols(t1->label,t2->label);
+      expand_symbols(language,t1->label,t2->label);
    }
 }
 flatten_transition(trans);
@@ -432,11 +432,11 @@ flatten_transition(trans);
  * This function takes two states and expands their transitions, including
  * the default ones, if any.
  */
-void expand_transitions(SingleGraphState q1,SingleGraphState q2) {
-expand_transitions(q1->outgoing_transitions,q2->outgoing_transitions);
+void expand_transitions(language_t* language,SingleGraphState q1,SingleGraphState q2) {
+expand_transitions(language,q1->outgoing_transitions,q2->outgoing_transitions);
 if (q1->default_state!=-1) {
    /* If q1 has a default transition, then for each
-    * symbol s that tags a transition from q2 but not from 
+    * symbol s that tags a transition from q2 but not from
     * q1, we add a transition q1 --s--> q1's default state */
    for (Transition* t=q2->outgoing_transitions;t!=NULL;t=t->next) {
       if (Transition_lookup(q1->outgoing_transitions,t->label)==NULL) {
@@ -459,17 +459,17 @@ if (q2->default_state!=-1) {
  * Expands all the transitions in the original states that belong
  * to state set of the given new state.
  */
-void expand_transitions(STATE_t* Q) {
+void expand_transitions(language_t* language,STATE_t* Q) {
 for (state_id* id=Q->original_state_set->state_list;id!=NULL;id=id->next) {
    /* First, we expand the transitions of the original states of Q */
    SingleGraphState q=id->automaton->states[id->state_number];
-   expand_transitions(q->outgoing_transitions);
+   expand_transitions(language,q->outgoing_transitions);
 }
 for (state_id* id1=Q->original_state_set->state_list;id1!=NULL;id1=id1->next) {
    for (state_id* id2=id1->next;id2!=NULL;id2=id2->next) {
       SingleGraphState q1=id1->automaton->states[id1->state_number];
       SingleGraphState q2=id2->automaton->states[id2->state_number];
-      expand_transitions(q1,q2);
+      expand_transitions(language,q1,q2);
     }
   }
 }
@@ -504,7 +504,7 @@ for (state_id* id=Q->original_state_set->state_list;id!=NULL;id=id->next) {
  * Allocates, initializes and returns a new STATE_t from the
  * given state set.
  */
-STATE_t* new_STATE_t(state_set* s) {
+STATE_t* new_STATE_t(language_t* language,state_set* s) {
 STATE_t* res=(STATE_t *)malloc(sizeof(STATE_t));
 if (res==NULL) {
    fatal_alloc_error("new_STATE_t");
@@ -521,7 +521,7 @@ for (state_id* id=res->original_state_set->state_list;id!=NULL;id=id->next) {
    /* We don't do that, because in such a case, a subset of the initial state set
     * would also become an initial state in the result automaton, and producing
     * a deterministic automaton with several initial states would not be serious.
-    
+
     if (!is_initial_state(id->automaton->states[id->state_number])) {
       res->flags&=~(AUT_INITIAL);
    }*/
@@ -530,7 +530,7 @@ for (state_id* id=res->original_state_set->state_list;id!=NULL;id=id->next) {
    }
 }
 /* We expand the transitions of the original automaton */
-expand_transitions(res);
+expand_transitions(language,res);
 /* And we build the transitions of our STATE_t */
 build_TRANS_t(res);
 return res;

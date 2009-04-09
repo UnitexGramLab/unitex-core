@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -45,15 +45,15 @@ symbol_t * symbols_inter_symbols(const symbol_t * A, const symbol_t * B);
 
 /* complementation */
 
-symbol_t * symbol_minus_symbol(const symbol_t * a, const symbol_t * b);
-symbol_t * symbol_minus_symbols(const symbol_t * a, const symbol_t * B);
-symbol_t * symbols_minus_symbols(const symbol_t * A, const symbol_t * B);
-symbol_t * symbols_minus_symbol(const symbol_t * A, const symbol_t * B);
+symbol_t * symbol_minus_symbol(language_t* language,const symbol_t* a,const symbol_t* b);
+symbol_t * symbol_minus_symbols(language_t* language,const symbol_t * a, const symbol_t * B);
+symbol_t * symbols_minus_symbols(language_t* language,const symbol_t * A, const symbol_t * B);
+symbol_t * symbols_minus_symbol(language_t* language,const symbol_t * A, const symbol_t * B);
 
-symbol_t * minus_symbol(const symbol_t * b);
-symbol_t * minus_symbols(const symbol_t * B);
+symbol_t * minus_symbol(language_t* language,const symbol_t * b);
+symbol_t * minus_symbols(language_t* language,const symbol_t * B);
 
 
-symbol_t * LEXIC_minus_POS(POS_t * POS);
+symbol_t* LEXIC_minus_POS(language_t* language,POS_t* POS);
 
 #endif

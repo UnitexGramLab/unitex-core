@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -43,26 +43,26 @@
 #include "Ustring.h"
 
 
-static void add_sentence_delimiters(Tfst* tfst);
-static void remove_sentence_delimiters(Tfst* tfst);
+static void add_sentence_delimiters(Tfst* tfst,language_t*);
+static void remove_sentence_delimiters(Tfst* tfst,language_t*);
 vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
 
 /**
  * This function loads a .tfst text automaton, disambiguates it according to the given rules,
  * and saves the result in another text automaton.
  */
-void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output) {
+void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,language_t* language) {
    static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
-   symbol_t* unloadable = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE,_unloadable),-1);
-   symbol_t* rejected = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE,_rejected),-1);
-   
-   Elag_Tfst_file_in* input=load_tfst_file(input_tfst,LANGUAGE);
+   symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);
+   symbol_t* rejected = new_symbol_UNKNOWN(language, language_add_form(language,_rejected),-1);
+
+   Elag_Tfst_file_in* input=load_tfst_file(input_tfst,language);
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
    }
    error("%d sentence(s) in %s\n", input->tfst->N,input_tfst);
-   
+
    FILE* output_tfst=u_fopen(output,U_WRITE);
    if (output_tfst==NULL) {
       fatal_error("Cannot open %s\n",output);
@@ -76,7 +76,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output) {
    if (output_tind==NULL) {
       fatal_error("Cannot open %s\n",tind);
    }
-   
+
    time_t start_time = time(0);
    u_printf("\nProcessing ...\n");
    int n_rejected_sentences = 0;
@@ -85,12 +85,12 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output) {
    double total_before = 0.0, total_after = 0.0;
    double length_before = 0., length_after = 0.; // average text length in words
    Tfst* tfst=input->tfst;
-         
+
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
       load_tfst_sentence_automaton(input,current_sentence);
-      elag_determinize(tfst->automaton);
+      elag_determinize(language,tfst->automaton);
       elag_minimize(tfst->automaton);
-      
+
       int is_rejected=0;
       if (current_sentence % 100 == 0) {
          u_printf("Sentence %d/%d...\r",current_sentence,input->tfst->N);
@@ -112,13 +112,13 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output) {
          before=evaluate_ambiguity(tfst->automaton,&min,&max);
          total_before += before;
          length_before = length_before + ((double) (min + max) / (double) 2);
-         add_sentence_delimiters(tfst);
+         add_sentence_delimiters(tfst,language);
          if (tfst->automaton->number_of_states<2) {
             error("Sentence %d is empty\n",current_sentence+1) ;
          } else {
             for (int j=0;j<gramms->nbelems;j++) {
                Fst2Automaton* grammar=(Fst2Automaton*)(gramms->tab[j]);
-               SingleGraph temp=elag_intersection(tfst->automaton,grammar->automaton,TEXT_GRAMMAR);
+               SingleGraph temp=elag_intersection(language,tfst->automaton,grammar->automaton,TEXT_GRAMMAR);
                trim(temp);
                free_SingleGraph(tfst->automaton);
                tfst->automaton=temp;
@@ -139,10 +139,10 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output) {
             }
          }
          if (!is_rejected) {
-            elag_determinize(tfst->automaton);
+            elag_determinize(language,tfst->automaton);
             trim(tfst->automaton);
             elag_minimize(tfst->automaton);
-            remove_sentence_delimiters(tfst);
+            remove_sentence_delimiters(tfst,language);
             after = evaluate_ambiguity(tfst->automaton,&min,&max);
             total_after += after;
             length_after = length_after + ((double) (min + max) / (double) 2);
@@ -202,21 +202,21 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output) {
 /**
  * This function loads a .tfst text automaton, and saves the result in another text automaton.
  * The desired side effect is to explode tags. For instance, a transition tagged like:
- * 
+ *
  *    {jeunes,jeune.A:mp:fp}
- * 
+ *
  * will be replaced by two transitions tagged like:
- * 
+ *
  *    {jeunes,jeune.A:mp}
  *    {jeunes,jeune.A:fp}
  */
-void explode_tfst(char* input_tfst,char* output) {
+void explode_tfst(char* input_tfst,char* output,language_t* language) {
    static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
-   symbol_t* unloadable = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE,_unloadable),-1);
-   symbol_t* rejected = new_symbol_UNKNOWN(LANGUAGE, language_add_form(LANGUAGE,_rejected),-1);
-   
-   Elag_Tfst_file_in* input=load_tfst_file(input_tfst,LANGUAGE);
+   symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);
+   symbol_t* rejected = new_symbol_UNKNOWN(language, language_add_form(language,_rejected),-1);
+
+   Elag_Tfst_file_in* input=load_tfst_file(input_tfst,language);
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
    }
@@ -235,10 +235,10 @@ void explode_tfst(char* input_tfst,char* output) {
    }
    u_printf("\nProcessing ...\n");
    Tfst* tfst=input->tfst;
-         
+
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
       load_tfst_sentence_automaton(input,current_sentence);
-      elag_determinize(tfst->automaton);
+      elag_determinize(language,tfst->automaton);
       elag_minimize(tfst->automaton);
       if (current_sentence % 100 == 0) {
          u_printf("Sentence %d/%d...\r",current_sentence,input->tfst->N);
@@ -259,7 +259,7 @@ void explode_tfst(char* input_tfst,char* output) {
 /**
  * Loads all the ELAG grammars contained in the given .elg file.
  */
-vector_ptr* load_elag_grammars(char* filename) {
+vector_ptr* load_elag_grammars(char* filename,language_t* language) {
 FILE* f=fopen(filename,"r");
 if (f==NULL) {
    error("Cannot open file %s\n",filename);
@@ -279,11 +279,11 @@ while (fgets(buf,FILENAME_MAX,f) != NULL) {
    }
    (*p)='\0';
    u_printf("\nLoadding %s...\n",buf+1);
-   Fst2Automaton* A=load_elag_grammar_automaton(buf+1,LANGUAGE);
+   Fst2Automaton* A=load_elag_grammar_automaton(buf+1,language);
    if (A==NULL) {
       error("Unable to load '%s' automaton\n",buf+1);
       free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
-      return NULL;   
+      return NULL;
    }
    vector_ptr_add(grammars,A);
 }
@@ -296,10 +296,10 @@ return grammars;
 /**
  * Adds {S} at the beginning and end of the sentence automaton.
  */
-static void add_sentence_delimiters(Tfst* tfst) {
+static void add_sentence_delimiters(Tfst* tfst,language_t* language) {
 static unichar S[] = { '{', 'S', '}', 0 };
-int idx=language_add_form(LANGUAGE,S);
-symbol_t* delimiter=new_symbol_PUNC(LANGUAGE,idx,-1);
+int idx=language_add_form(language,S);
+symbol_t* delimiter=new_symbol_PUNC(language,idx,-1);
 int pseudo_initial_state_index=tfst->automaton->number_of_states;
 SingleGraphState pseudo_initial_state=add_state(tfst->automaton);
 int new_final_state_index=tfst->automaton->number_of_states;
@@ -327,7 +327,7 @@ free_symbol(delimiter);
 
 /**
  * Removes a transition to state #n from the given list, if any.
- * If a transition to state #n is removed, then *flag is set to 1.  
+ * If a transition to state #n is removed, then *flag is set to 1.
  */
 Transition* remove_transition_to_state(int n,Transition* list,int *flag) {
 if (list==NULL) return NULL;
@@ -346,10 +346,10 @@ return list;
 /**
  * Removes the {S} delimiters previously added by add_sentence_delimiters.
  */
-static void remove_sentence_delimiters(Tfst* tfst) {
+static void remove_sentence_delimiters(Tfst* tfst,language_t* language) {
 topological_sort(tfst->automaton);
 if (tfst->automaton->number_of_states<4 || get_initial_state(tfst->automaton)!=0
-    || tfst->automaton->states[0]->outgoing_transitions==NULL 
+    || tfst->automaton->states[0]->outgoing_transitions==NULL
     || tfst->automaton->states[0]->outgoing_transitions->next!=NULL
     || !is_final_state(tfst->automaton->states[tfst->automaton->number_of_states-1])
     || tfst->automaton->states[tfst->automaton->number_of_states-1]->outgoing_transitions!=NULL) {
@@ -357,7 +357,7 @@ if (tfst->automaton->number_of_states<4 || get_initial_state(tfst->automaton)!=0
     * it's an error */
    fatal_error("remove_sentence_delimiters: bad automaton\n");
 }
-if (u_strcmp(language_get_form(tfst->automaton->states[0]->outgoing_transitions->label->lemma),"{S}")) {
+if (u_strcmp(language_get_form(language,tfst->automaton->states[0]->outgoing_transitions->label->lemma),"{S}")) {
    fatal_error("remove_sentence_delimiters: no sentence delimiter found\n");
 }
 #warning we could do the same at a lower cost by shifting the 1->N-2 states to 0->N-3
@@ -415,9 +415,9 @@ return vector_ptr_add(tags,u_strdup(tag));
 
 
 /**
- * We have worked with symbol_t* and now, we want to replace them with 
+ * We have worked with symbol_t* and now, we want to replace them with
  * tfst tag strings like "@STD\n@{fait,faire.V:P3s:Kms}\n@2-2\n.\n"
- * We replace symbol_t* by integers that are indexes in the vector we return. 
+ * We replace symbol_t* by integers that are indexes in the vector we return.
  */
 vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in* input) {
 /* We change the tag type */

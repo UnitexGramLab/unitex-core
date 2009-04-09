@@ -122,9 +122,8 @@ if (output_tfst[0]=='\0') {
 
 u_printf("Loading tagset...\n");
 language_t* language=load_language_definition(tagset);
-set_current_language(language);
 
-Elag_Tfst_file_in* txtin=load_tfst_file(tfst,LANGUAGE);
+Elag_Tfst_file_in* txtin=load_tfst_file(tfst,language);
 if (txtin==NULL) {
    fatal_error("Unable to load text automaton '%s'\n",tfst);
 }
@@ -157,7 +156,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
          /* If the tag is a dictionary entry */
          struct dela_entry* e=tokenize_tag_token(t->content);
          if (e==NULL) continue;
-         e=filter_dela_entry(e,t->content,LANGUAGE,1);
+         e=filter_dela_entry(e,t->content,language,1);
          if (e==NULL) {
             /* We note that the entry has been rejected by the tagset by
              * setting the tag content to NULL */
@@ -274,6 +273,7 @@ if (no_explicit_output) {
    rename(output_tfst,tfst);
    rename(output_tind,tind);
 }
+free_language_t(language);
 free_OptVars(vars);
 return 0;
 }

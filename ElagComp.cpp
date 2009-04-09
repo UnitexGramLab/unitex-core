@@ -132,7 +132,6 @@ if (vars->optind!=argc) {
 }
 
 language_t* language=load_language_definition(lang);
-set_current_language(language);
 if (rule_file[0]=='\0' && grammar[0]=='\0') {
    fatal_error("You must specified a grammar or a rule file name\n");
 }
@@ -159,7 +158,7 @@ if (rule_file[0]!='\0') {
          sprintf(compilename,"%s.rul",rule_file);
       }
    }
-   if (compile_elag_rules(rule_file,compilename)==-1) {
+   if (compile_elag_rules(rule_file,compilename,language)==-1) {
       error("An error occurred\n");
       return 1;
    }
@@ -173,12 +172,15 @@ if (rule_file[0]!='\0') {
    }
    remove_extension(grammar,elg_file);
    strcat(elg_file,".elg");
-   if (compile_elag_grammar(grammar,elg_file)==-1) {
+   if (compile_elag_grammar(grammar,elg_file,language)==-1) {
      error("An error occured while compiling %s\n",grammar);
+     free_language_t(language);
+     free_OptVars(vars);
      return 1;
    }
    u_printf("Elag grammar is compiled into %s.\n",elg_file);
 }
+free_language_t(language);
 free_OptVars(vars);
 return 0;
 }

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -28,8 +28,6 @@
 
 struct POS_t;
 struct language_t;
-
-extern language_t* LANGUAGE;
 
 
 extern unichar PUNC_TAB[];
@@ -66,7 +64,7 @@ extern unichar PUNC_TAB[];
  *             +no lemma
  * INC_CAN :   the same as INC but with a lemma
  * INC_NEG :   the same as INC with a set of forbidden lemmas
- * 
+ *
  * Note that discriminative categories must combine with the correct corresponding POS
  * category code. If not, the symbol is not valid.
  *
@@ -104,19 +102,19 @@ typedef struct symbol_t {
     * here instead of a SymbolType, because it would raise many compilation
     * warnings about enumeration values not handled in switches. */
    SymbolType type;
-   
+
    /* Is the lemma a negative one ? */
    bool negative;
-   
+
    /* If the tag contains a negative lemma, then 'nbnegs' will be
     * the size of the 'negs' array. */
    union {
       int form;
       int nbnegs;
    };
-   
+
    /* If the tag contains a lemma, then 'lemma' contains its index in
-    * the language's forms; otherwise, 'negs' will contain the indices of 
+    * the language's forms; otherwise, 'negs' will contain the indices of
     * all the negative lemmas, by increasing order. */
    union {
       int lemma;
@@ -128,14 +126,14 @@ typedef struct symbol_t {
 
    /* The 'feature' array is used to know if the feature #i has been set or not */
    char* feature;
-   
+
    /* Size of 'feature' */
    int  nb_features;
 
    /* When a symbol represents a tag of a text automaton, we must remember with this
     * field to which TfstTag it corresponds. -1 means no tag. */
    int tfsttag_index;
-   
+
    /* The next symbol in the list */
    struct symbol_t* next;
 } symbol_t;
@@ -159,7 +157,7 @@ void copy_symbol(symbol_t * dest, symbol_t * src);
 
 bool symbol_equals(symbol_t * a, symbol_t * b);
 
-void symbol_dump_all(const symbol_t * symb);
+void symbol_dump_all(language_t* language,const symbol_t * symb);
 
 void symbol_dump(const symbol_t * symb);
 void symbols_dump(const symbol_t * symb);
@@ -182,8 +180,6 @@ void concat_symbols(symbol_t * a, symbol_t * b, symbol_t ** end = NULL);
 int type_symbol(symbol_t * symb);
 
 symbol_t * new_symbol_PUNC(language_t * lang, int idx,int);
-symbol_t * new_symbol_PUNC(int punc,int);
-
 
 
 #endif

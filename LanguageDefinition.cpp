@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -23,23 +23,6 @@
 #include "Tagset.h"
 #include "Symbol.h"
 
-language_t* LANGUAGE=NULL;
-
-
-/**
- * Sets the current language.
- */
-void set_current_language(language_t* l) {
-LANGUAGE=l;
-}
-
-
-/**
- * Returns the current language.
- */
-language_t* get_current_language() {
-return LANGUAGE;
-}
 
 
 /**
@@ -203,7 +186,7 @@ return index;
  */
 
 symbol_t * POS_expand(POS_t * POS) {
-  
+
   if (POS->codes == NULL) {
     return new_symbol_POS(POS,-1);
   }
@@ -258,7 +241,7 @@ free(language);
 
 /**
  * Adds the POS with the given name to the given language definition.
- * 
+ *
  * The corresponding POS_t structure is returned.
  */
 POS_t* add_POS(language_t* language,const unichar* POS_name) {
@@ -310,11 +293,11 @@ return res.next;
  * a category like "<gender>" and it returns the exhaustive list of
  * possible codes, replacing each category by all its value. For instance,
  * the symbole:
- * 
+ *
  *   <gender> <number>
- * 
+ *
  * may be replaced by:
- * 
+ *
  *    m s
  *    f s
  *    m p
@@ -332,7 +315,7 @@ return res;
 /**
  * This function takes a POS description and a list of lines representing
  * the valid codes for this POS (see example in definition of the 'POS_t' type).
- * It returns the corresponding list of symbols. 
+ * It returns the corresponding list of symbols.
  */
 symbol_t* get_full_codes(POS_t* POS,tokens_list* code_list) {
 symbol_t res;
@@ -427,7 +410,7 @@ for (pos_section_t* section=tagset->pos_sections;section!=NULL;section=section->
       }
    }
    /* Discriminative part of the POS description
-    * 
+    *
     * If there is a discriminatory category, we put it in front of the category part,
     * so its index will always be 0 */
    if (section->parts[PART_DISCR]!=NULL) {

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -21,9 +21,9 @@
 
 /**
  * This library is used to manipulate languages.
- * 
+ *
  * Author: Olivier Blanc
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 
 #ifndef LanguageDefinitionH
@@ -42,7 +42,7 @@ static const unichar CHFA_STR[]   = { 'N', 'B', 0 };
 
 
 /**
- * This structure defines a set of inflectional features, such as 
+ * This structure defines a set of inflectional features, such as
  * "gender" that can be "m" or "f".
  */
 typedef struct CAT_t {
@@ -61,40 +61,40 @@ struct language_t;
 typedef struct POS_t {
    /* The POS name like "V" or "ADV" */
    unichar* name;
-   
+
    /* IGNORE symbol in text tfst, during elag grammar application */
    bool ignorable;
-   
+
    /* The first nb_inflect features are inflectional features */
    int nb_inflect;
-   
+
    /* The first nb_discr category features are discriminatory features */
    int nb_discr;
-   
+
    /* Possible attributes for this POS. For instance, if you set the language level
     * with z1 z2 and z3, you could have the following line in the tagset definition:
-    * 
+    *
     *    language_level = z1 z2 z3
-    * 
+    *
     * Then, CATS would contain the attribute "language_level". */
    struct string_hash_ptr* CATs;
-   
+
    /* This hash table is used to know for each feature value what
     * is the associated category, i.e. "f" => "gender" or
-    * "z2" => "language_level". 
-    * 
+    * "z2" => "language_level".
+    *
     * WARNING: a same value cannot be shared by several features. For instance,
     *          you cannot use "m" as a syntactic information if it already
     *          represents the masculine feature, even if DELAF lines like
-    *          
+    *
     *          arbre,.N+m+z1:ms
-    *          
+    *
     *          are valid. */
    struct string_hash_ptr* values;
 
-   /* This list defines the valid combinations of features for this POS. 
+   /* This list defines the valid combinations of features for this POS.
     * Here is the list for French verbs:
-    * 
+    *
     * W
     * G
     * C <pers> <nombre>
@@ -104,7 +104,7 @@ typedef struct POS_t {
     * P <pers> <nombre>
     * S <pers> <nombre>
     * T <pers> <nombre>
-    * X 1 s   # eussé dussé puissé fussé
+    * X 1 s   # eussï¿½ dussï¿½ puissï¿½ fussï¿½
     * Y 1 p
     * Y 2 <nombre>
     * K <genre> <nombre>
@@ -138,22 +138,18 @@ typedef struct feature_info_t {
 typedef struct language_t {
    /* Language name like "English" */
    unichar* name;
-   
+
    /* Hashtable for the POSs of the language */
    struct string_hash_ptr* POSs;
-   
+
    /* Hashtable containing all the inflected forms and lemmas */
    struct string_hash* forms;
-   
+
    /* Hashtable used to store codes that are not defined in the
     * language's legal tagset. This is useful for not printing the
     * same error messages several times. */
    struct string_hash_ptr* unknown_codes;
 } language_t;
-
-/* This is the current language */
-extern struct language_t* LANGUAGE;
-
 
 
 
@@ -243,12 +239,6 @@ int language_add_form(language_t * lang, const unichar * form);
 static inline unichar * language_get_form(language_t * lang, int idx) {
   return (unichar *) lang->forms->value[idx];
 }
-static inline unichar * language_get_form(int idx) { return (unichar *) LANGUAGE->forms->value[idx]; }
-
-
-void set_current_language(language_t*);
-language_t * get_current_language();
-
 
 struct dela_entry* filter_dela_entry(struct dela_entry*,unichar* tag,language_t*,int);
 

@@ -243,7 +243,6 @@ else {
 language_t* language=NULL;
 if (tagset[0]!='\0') {
    language=load_language_definition(tagset);
-   set_current_language(language);
 }
 
 int sentence_number=1;

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -59,7 +59,7 @@ return NULL;
  * automaton. This function is supposed to be used when we
  * intersect two elag grammars.
  */
-int intersect_states_grammar_grammar(SingleGraph res,const SingleGraph A,int q1,
+int intersect_states_grammar_grammar(language_t* language,SingleGraph res,const SingleGraph A,int q1,
                      const SingleGraph B,int q2,int** renumber) {
 if (renumber[q1][q2]!=-1) {
    /* Nothing to do if the job has already been done */
@@ -80,7 +80,7 @@ if (is_final_state(A->states[q1]) && is_final_state(B->states[q2])) {
  * compute their intersection easily */
 Transition* transA=clone_transition_list(A->states[q1]->outgoing_transitions,NULL,dup_symbol);
 Transition* transB=clone_transition_list(B->states[q2]->outgoing_transitions,NULL,dup_symbol);
-expand_transitions(transA,transB);
+expand_transitions(language,transA,transB);
 int destination;
 Transition* transa;
 Transition* transb;
@@ -92,21 +92,21 @@ while (transA!=NULL) {
    transb=extract_transition(&transB,transa->label);
    if (transb!=NULL) {
       /* If there is such a transition, we merge A and B's transitions */
-      destination=intersect_states_grammar_grammar(res,A,transa->state_number,B,transb->state_number,renumber);
+      destination=intersect_states_grammar_grammar(language,res,A,transa->state_number,B,transb->state_number,renumber);
       add_outgoing_transition(res->states[q],transa->label,destination);
       /* We NULL transa so that we can free transa without affecting
        * the transition we have just added to q */
-      transa->label=NULL; 
+      transa->label=NULL;
       /* And we can free B's one */
       free_Transition(transb,free_symbol);
    } else {
       /* If A's transition has no equivalent in B... */
       if (B->states[q2]->default_state!=-1) {
          /* ...it can match however with B's default transition, if any */
-         destination=intersect_states_grammar_grammar(res,A,transa->state_number,B,B->states[q2]->default_state,renumber);
+         destination=intersect_states_grammar_grammar(language,res,A,transa->state_number,B,B->states[q2]->default_state,renumber);
          add_outgoing_transition(res->states[q],transa->label,destination);
          /* See above */
-         transa->label=NULL; 
+         transa->label=NULL;
       }
    }
    /* We don't need transa anymore */
@@ -118,7 +118,7 @@ if (A->states[q1]->default_state!=-1) {
    while (transB!=NULL) {
       transb=transB;
       transB=transB->next;
-      destination=intersect_states_grammar_grammar(res,A,A->states[q1]->default_state,B,transb->state_number,renumber);
+      destination=intersect_states_grammar_grammar(language,res,A,A->states[q1]->default_state,B,transb->state_number,renumber);
       add_outgoing_transition(res->states[q],transb->label,destination);
       /* See above */
       transb->label=NULL;
@@ -126,7 +126,7 @@ if (A->states[q1]->default_state!=-1) {
    }
    if (B->states[q2]->default_state!=-1) {
       /* If both q1 and q2 have default transitions */
-      res->states[q]->default_state=intersect_states_grammar_grammar(res,A,A->states[q1]->default_state,
+      res->states[q]->default_state=intersect_states_grammar_grammar(language,res,A,A->states[q1]->default_state,
                                          B,B->states[q2]->default_state,renumber);
    }
 } else {
@@ -189,7 +189,7 @@ return q;
  * whether we are intersecting 2 elag grammars or 1 elag grammar
  * and 1 sentence automaton.
  */
-SingleGraph elag_intersection(const SingleGraph A,const SingleGraph B,int type) {
+SingleGraph elag_intersection(language_t* language,const SingleGraph A,const SingleGraph B,int type) {
 int initial_A=get_initial_state(A);
 int initial_B=get_initial_state(B);
 if (initial_A==-2 || initial_B==-2) {
@@ -217,7 +217,7 @@ for (i=0;i<A->number_of_states;i++) {
    }
 }
 if (type==GRAMMAR_GRAMMAR) {
-   intersect_states_grammar_grammar(res,A,initial_A,B,initial_B,renumber);
+   intersect_states_grammar_grammar(language,res,A,initial_A,B,initial_B,renumber);
 } else if (type==TEXT_GRAMMAR) {
    intersect_states_text_grammar(res,A,initial_A,B,initial_B,renumber);
 } else {

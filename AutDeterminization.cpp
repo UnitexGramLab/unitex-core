@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -27,7 +27,7 @@
  * Determinizes an automaton with transitions tagged with Elag symbols.
  * The given automaton is modified.
  */
-void elag_determinize(SingleGraph A) {
+void elag_determinize(language_t* language,SingleGraph A) {
 SingleGraph res=new_SingleGraph(PTR_TAGS);
 state_set_array* ARRAY=new_state_set_array();
 state_set* initial_states=new_state_set();
@@ -41,11 +41,11 @@ free_list_int(l);
 state_set_array_add(ARRAY,initial_states);
 free_state_set(initial_states);
 for (int current_state_set=0;current_state_set<ARRAY->size;current_state_set++) {
-   /* Now, we process each state set, corresponding to a new state in the 
+   /* Now, we process each state set, corresponding to a new state in the
     * deterministic automaton */
    /* We compute the output transitions of the new state. Those transitions
     * will point to state sets */
-   STATE_t* Q=new_STATE_t(ARRAY->state_sets[current_state_set]);
+   STATE_t* Q=new_STATE_t(language,ARRAY->state_sets[current_state_set]);
    if (current_state_set==0) {
       Q->flags|=AUT_INITIAL;
    }

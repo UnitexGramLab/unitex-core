@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -46,13 +46,13 @@
 #define ELAG_UNDEFINED (-1)
 
 
-void split_elag_rule(elRule*);
+void split_elag_rule(elRule*,language_t*);
 int count_constraints(Fst2Automaton*,int*);
-Fst2Automaton* compile_elag_rule(elRule*);
+Fst2Automaton* compile_elag_rule(elRule*,language_t*);
 int get_sub_automaton(SingleGraph,SingleGraph,int,int,int);
 int get_sub_automaton(SingleGraph,SingleGraph,int,SymbolType,int*);
 int get_left_constraint_part(SingleGraph,SingleGraph,int,int,int*);
-SingleGraph combine_constraints(elRule*,int,SingleGraph,SingleGraph);
+SingleGraph combine_constraints(elRule*,int,SingleGraph,SingleGraph,language_t*);
 
 
 
@@ -107,7 +107,7 @@ for (int i=0;i<A->number_of_states;i++) {
  * Allocates, initializes and returns a new Elag rule from the given .fst2.
  * Returns NULL in case of error at loading the rule.
  */
-elRule* new_elRule(char* fst2) {
+elRule* new_elRule(char* fst2,language_t* language) {
 elRule* rule=(elRule*)malloc(sizeof(elRule));
 if (rule==NULL) {
    fatal_alloc_error("new_elRule");
@@ -119,13 +119,13 @@ rule->name=strdup(fst2);
 if (rule->name==NULL) {
    fatal_alloc_error("new_elRule");
 }
-if ((rule->automaton=load_elag_grammar_automaton(rule->name,LANGUAGE))==NULL) {
+if ((rule->automaton=load_elag_grammar_automaton(rule->name,language))==NULL) {
    error("Cannot load '%s' automaton.\n", fst2);
    free(rule->name);
    free(rule);
    return NULL;
 }
-split_elag_rule(rule);
+split_elag_rule(rule,language);
 return rule;
 }
 
@@ -151,29 +151,29 @@ free(rule);
  * an automaton A so that the intersection of A and a sentence automaton
  * reject sequences that are not valid regarding this rule.
  */
-Fst2Automaton* compile_elag_rule(elRule* rule) {
+Fst2Automaton* compile_elag_rule(elRule* rule,language_t* language) {
 u_printf("Compiling %s... (%d context%s)\n",rule->name,rule->nbContexts,(rule->nbContexts>1)?"s":"");
 /* Now, we will convert the automaton into the Elag format, i.e. with
  * transitions tagged with symbol_t* and not integers */
 for (int c=0;c<rule->nbContexts;c++) {
    //convert_transitions_to_elag_ones(rule->contexts[c].left);
-   elag_determinize(rule->contexts[c].left);
+   elag_determinize(language,rule->contexts[c].left);
    trim(rule->contexts[c].left);
    //convert_transitions_to_elag_ones(rule->contexts[c].right);
-   elag_determinize(rule->contexts[c].right);
+   elag_determinize(language,rule->contexts[c].right);
    trim(rule->contexts[c].right);
 }
 /* We build A*.R1 */
 prefix_with_everything(rule->contexts[0].left);
 //u_printf("------------- anything_R1 -------------\n");
 //print_graph(rule->contexts[0].left);
-elag_determinize(rule->contexts[0].left);
+elag_determinize(language,rule->contexts[0].left);
 //print_graph(rule->contexts[0].left);
 elag_minimize(rule->contexts[0].left);
 SingleGraph anything_R1=rule->contexts[0].left;
 /* and R2.A* */
 suffix_with_everything(rule->contexts[0].right);
-elag_determinize(rule->contexts[0].right);
+elag_determinize(language,rule->contexts[0].right);
 elag_minimize(rule->contexts[0].right);
 SingleGraph R2_anything=rule->contexts[0].right;
 /* We compute the number of constraint combinations */
@@ -185,10 +185,10 @@ SingleGraph result=new_SingleGraph();
 for (int ens=0;ens<p;ens++) {
    /* For each combination of constraints, we produce an automaton a1
     * that does not match these constraints */
-   SingleGraph a1=combine_constraints(rule,ens,anything_R1,R2_anything);
+   SingleGraph a1=combine_constraints(rule,ens,anything_R1,R2_anything,language);
    /* And we make the union of it with the current automaton */
    build_union(result,a1);
-   elag_determinize(result);
+   elag_determinize(language,result);
    elag_minimize(result);
 }
 /* Finally, we take the complement of the automaton that rejects wrong paths.
@@ -198,7 +198,7 @@ for (int ens=0;ens<p;ens++) {
 //u_printf("------------- DUMP -------------\n");
 //print_graph(result);
 
-elag_complementation(result);
+elag_complementation(language,result);
 
 //u_printf("------------- AFTER COMPL -------------\n");
 //print_graph(result);
@@ -219,13 +219,13 @@ return Result;
  * Compiles the given .fst2 grammar into the given .elg file.
  * Returns 0 in case of success; -1 otherwise.
  */
-int compile_elag_grammar(char* grammar,char* elg_file) {
-elRule* rule=new_elRule(grammar);
+int compile_elag_grammar(char* grammar,char* elg_file,language_t* language) {
+elRule* rule=new_elRule(grammar,language);
 if (rule==NULL) {
    error("Unable to read grammar '%s'\n",grammar);
    return -1;
 }
-Fst2Automaton* A=compile_elag_rule(rule);
+Fst2Automaton* A=compile_elag_rule(rule,language);
 if (A==NULL) {
    fatal_error("Unable to compile rule '%s'\n",grammar);
 }
@@ -242,7 +242,7 @@ return 0;
  * automaton is too big, it will be saved in several automata inside
  * the output file.
  */
-int compile_elag_rules(char* rulesname,char* outname) {
+int compile_elag_rules(char* rulesname,char* outname,language_t* language) {
 u_printf("Compilation of %s\n",rulesname);
 FILE* f=NULL;
 FILE* frules=fopen(rulesname,"r");
@@ -277,18 +277,18 @@ while (fgets(buf,FILENAME_MAX,frules)) {
       remove_extension(buf);
       u_printf("Precompiling %s.fst2\n",buf);
       strcat(buf,".fst2");
-      elRule* rule=new_elRule(buf);
+      elRule* rule=new_elRule(buf,language);
       if (rule==NULL) {
          fatal_error("Unable to read grammar '%s'\n",buf);
       }
-      if ((A=compile_elag_rule(rule))==NULL) {
+      if ((A=compile_elag_rule(rule,language))==NULL) {
          fatal_error("Unable to compile rule '%s'\n",buf);
       }
       free_elRule(rule);
    } else {
       /* If there is already .elg, we use it */
       fclose(f);
-      A=load_elag_grammar_automaton(buf,LANGUAGE);
+      A=load_elag_grammar_automaton(buf,language);
       if (A==NULL) {
          fatal_error("Unable to load '%s'\n",buf);
       }
@@ -299,7 +299,7 @@ while (fgets(buf,FILENAME_MAX,frules)) {
    if (res!=NULL) {
       /* If there is already an automaton, we intersect it with the new one */
       SingleGraph tmp=res->automaton;
-      res->automaton=elag_intersection(tmp,A->automaton,GRAMMAR_GRAMMAR);
+      res->automaton=elag_intersection(language,tmp,A->automaton,GRAMMAR_GRAMMAR);
       free_SingleGraph(tmp);
       free_Fst2Automaton(A);
       trim(res->automaton);
@@ -350,15 +350,14 @@ return 0;
  * This function builds and returns an automaton for pattern
  * matching of the rule's context.
  */
-Fst2Automaton* make_locate_automaton(elRule* rule) {
+Fst2Automaton* make_locate_automaton(elRule* rule,language_t* language) {
 Fst2Automaton* res=new_Fst2Automaton(NULL);
 res->automaton=clone(rule->contexts[0].left);
 /* We concatenate the left and right contexts */
-elag_concat(res->automaton,rule->contexts[0].right);
+elag_concat(language,res->automaton,rule->contexts[0].right);
 /* Then we add loops with ignorable POS on each state */
-language_t* lang=get_current_language();
-for (int i=0;i<lang->POSs->size;i++) {
-   POS_t* PoS=(POS_t*)lang->POSs->value[i];
+for (int i=0;i<language->POSs->size;i++) {
+   POS_t* PoS=(POS_t*)language->POSs->value[i];
    if (PoS->ignorable) {
       /* If we have a POS that can be ignored, we add a transition tagged
        * by this symbol to each state */
@@ -379,7 +378,7 @@ return res;
  * a fst2 grammar ("foo.fst2" => "foo-conc.fst2") that can be used by
  * the Locate program to match the <!> .... <!> .... <!> part of the rule.
  */
-void split_elag_rule(elRule* rule) {
+void split_elag_rule(elRule* rule,language_t* language) {
 int c;
 /* This array contains the numbers of the states that are pointed to by
  * middle '<=>' of the constraints */
@@ -432,7 +431,7 @@ for (Transition* t=rule->automaton->automaton->states[0]->outgoing_transitions;t
             }
          }
          break;
-         
+
       default: fatal_error("Left delimitor '<!>' or '<=>' missing\n");
    }
 }
@@ -444,7 +443,7 @@ remove_extension(rule->name,buf);
 strcat(buf,"-conc.fst2");
 
 /* We create the.fst2 to be used by Locate */
-Fst2Automaton* locate=make_locate_automaton(rule);
+Fst2Automaton* locate=make_locate_automaton(rule,language);
 save_automaton(locate,buf,FST_LOCATE);
 free_Fst2Automaton(locate);
 }
@@ -510,13 +509,13 @@ return nbConstraints;
 /**
  * This function copies into 'aut_dest' the sub-automaton of 'aut_src' that
  * starts at the state #start and that ends at:
- * 
+ *
  * - the state #z pointed by transitions, if left_constraint_part=1;
  * - the state pointed by transitions tagged with the 'z' symbol otherwise.
- * 
- * Note that these transitions are not copied. The function returns the number of 
+ *
+ * Note that these transitions are not copied. The function returns the number of
  * the ending state.
- * 
+ *
  * 'aut_dest' is supposed to have been allocated and to be empty.
  */
 int get_sub_automaton(SingleGraph src,SingleGraph dest,int start,
@@ -649,7 +648,7 @@ return found;
  * this function returns an automaton A that recognizes all incorrect sequences.
  */
 SingleGraph combine_constraints(elRule* rule,int constraint_set,SingleGraph anything_R1,
-                                SingleGraph R2_anything) {
+                                SingleGraph R2_anything,language_t* language) {
 /* a1 will be the union of all the left parts of the constraints of the
  * given constraint set */
 SingleGraph a1=new_SingleGraph();
@@ -659,46 +658,46 @@ SingleGraph a2=new_SingleGraph();
 /* dpc = pow(2,c-1) */
 for (int c=1,dpc=1;c<rule->nbContexts;c++,dpc=dpc<<1) {
    if (dpc & constraint_set) {
-      /* If the cth bit of the constraint set is set to 1, then we must 
+      /* If the cth bit of the constraint set is set to 1, then we must
        * add the cth constraint's left part to a1 */
       build_union(a1,clone(rule->contexts[c].left));
-      elag_determinize(a1);
+      elag_determinize(language,a1);
       elag_minimize(a1);
    } else {
       /* Otherwise, we add the cth constraint's right part to a2 */
       build_union(a2,clone(rule->contexts[c].right));
-      elag_determinize(a2);
+      elag_determinize(language,a2);
       elag_minimize(a2);
    }
 }
 
 prefix_with_everything(a1);
-elag_determinize(a1);
+elag_determinize(language,a1);
 elag_minimize(a1);
-elag_complementation(a1);
+elag_complementation(language,a1);
 trim(a1);
 SingleGraph tmp=a1;
-a1=elag_intersection(a1,anything_R1,GRAMMAR_GRAMMAR);
+a1=elag_intersection(language,a1,anything_R1,GRAMMAR_GRAMMAR);
 free_SingleGraph(tmp);
 trim(a1);
 elag_minimize(a1);
 
 suffix_with_everything(a2);
-elag_determinize(a2);
+elag_determinize(language,a2);
 elag_minimize(a2);
-elag_complementation(a2);
+elag_complementation(language,a2);
 trim(a2);
 tmp=a2;
-a2=elag_intersection(a2,R2_anything,GRAMMAR_GRAMMAR);
+a2=elag_intersection(language,a2,R2_anything,GRAMMAR_GRAMMAR);
 free_SingleGraph(tmp);
 trim(a2);
 elag_minimize(a2);
-elag_concat(a1,a2);
+elag_concat(language,a1,a2);
 
 free_SingleGraph(a2);
 trim(a1);
 //print_graph(a1);
-elag_determinize(a1);
+elag_determinize(language,a1);
 //print_graph(a1);
 
 trim(a1);

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -23,6 +23,7 @@
 #define AutIntersectionH
 
 #include "SingleGraph.h"
+#include "LanguageDefinition.h"
 
 /**
  * This library provides a function for intersecting ELAG automata.
@@ -31,6 +32,6 @@
 #define GRAMMAR_GRAMMAR 0
 #define TEXT_GRAMMAR 1
 
-SingleGraph elag_intersection(const SingleGraph,const SingleGraph,int type);
+SingleGraph elag_intersection(language_t*,const SingleGraph,const SingleGraph,int type);
 
 #endif

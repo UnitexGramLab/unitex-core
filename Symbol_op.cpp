@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -103,7 +103,7 @@ static inline bool canonic_in_neg(int canonic, const symbol_t * s) {
 /**
  * This function takes two symbols a and b of the form <!seat!ball.N:fs>
  * and it res's forbidden lemmas with those that belong to a or b's ones.
- * 
+ *
  * <!seat!ball.N:fs> inter <!chair!ball.N:fs> => <!seat!ball!chair>
  */
 void negs_union_negs(symbol_t* res,const symbol_t* a,const symbol_t* b) {
@@ -174,7 +174,7 @@ static inline int compare_traits(const symbol_t * a, const symbol_t * b) {
 
 /**
  * Compares the symbols a and b and returns:
- *  0 if a==b 
+ *  0 if a==b
  * <0 if a<b
  * >0 if a>b
  */
@@ -208,7 +208,7 @@ if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - t
   /* same type */
 
   /* first compare POSs */
-  
+
   if (a->POS != b->POS) { return b->POS - a->POS; }
 
   /* next compare by traits */
@@ -220,7 +220,7 @@ if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - t
 
   switch (a->type) {
 
-  case ATOM:  
+  case ATOM:
   case INC_CAN:
     if (a->lemma != b->lemma) { return b->lemma - a->lemma; }
     if (a->form != b->form) { return b->form - a->form; }
@@ -266,8 +266,8 @@ int i;
 for (i=0;i<b->nb_features;i++) {
    switch (a->feature[i]) {
       case UNSPECIFIED: res->feature[i]=b->feature[i]; break;
-      
-      case LOCKED: 
+
+      case LOCKED:
          if (b->feature[i]>0) {
             /* If a feature is set in b while locked in a, then
              * the symbols a and b are not compatible */
@@ -275,7 +275,7 @@ for (i=0;i<b->nb_features;i++) {
          }
          res->feature[i]=LOCKED;
          break;
-         
+
       default:
          if (b->feature[i]!=a->feature[i] && b->feature[i]!=UNSPECIFIED) {
             /* If a feature is set with different values in a and b, then
@@ -328,7 +328,7 @@ if (canonic_in_neg(a->lemma,b)) {
 }
 symbol_t* res=inter_features(a,b);
 if (res==NULL) {return NULL;}
-res->form=a->form; 
+res->form=a->form;
 res->lemma=a->lemma;
 return type_and_clean_symbols(res);
 }
@@ -341,7 +341,7 @@ return type_and_clean_symbols(res);
 symbol_t* CAN_inter_CODE(const symbol_t* a,const symbol_t* b) {
 symbol_t* res=inter_features(a,b);
 if (res==NULL) {return NULL;}
-res->form=a->form; 
+res->form=a->form;
 res->lemma=a->lemma;
 return type_and_clean_symbols(res);
 }
@@ -350,7 +350,7 @@ return type_and_clean_symbols(res);
 /**
  * Returns the intersection of a and b where a and b are both of the
  * form <!seat!ball.N:fs>
- * 
+ *
  * <!seat!ball.N:s> inter <!chair!ball.N:m> => <!seat!ball!chair.N:ms>
  */
 static symbol_t* NEG_inter_NEG(const symbol_t* a,const symbol_t* b) {
@@ -386,7 +386,7 @@ return type_and_clean_symbols(res);
 /**
  * Returns the intersection of a and b where a and b are both of the
  * form <N:fs>
- * 
+ *
  * <V:Ks> inter <V:Kf> => <V:Kfs>
  */
 symbol_t* CODE_inter_CODE(const symbol_t* a,const symbol_t* b) {
@@ -439,13 +439,13 @@ switch (a->type) {
       switch (b->type) {
          case ATOM:
          case INC_CAN: res=CAN_inter_CAN(a,b); break;
-         
+
          case CODE_NEG:
          case INC_NEG: res=CAN_inter_NEG(a,b); break;
-         
+
          case CODE:
          case INC: res=CAN_inter_CODE(a,b); break;
-         
+
          default: fatal_error("Internal error in symbol_inter_symbol: invalid symbol type=%d\n",b->type);
        }
        break;
@@ -455,29 +455,29 @@ switch (a->type) {
       switch (b->type) {
          case ATOM:
          case INC_CAN: res=CAN_inter_NEG(b,a); break;
-         
+
          case CODE_NEG:
          case INC_NEG: res=NEG_inter_NEG(a,b); break;
-         
+
          case CODE:
          case INC: res=NEG_inter_CODE(a,b); break;
-         
+
          default: fatal_error("Internal error in symbol_inter_symbol: weird symbol type=%d\n",b->type);
       }
       break;
-   
+
    case CODE:
    case INC:
       switch (b->type) {
          case ATOM:
          case INC_CAN: res=CAN_inter_CODE(b,a); break;
-         
+
          case CODE_NEG:
          case INC_NEG: res=NEG_inter_CODE(b,a); break;
-         
+
          case INC:
          case CODE: res=CODE_inter_CODE(a,b); break;
-         
+
          default: fatal_error("Internal error in symbol_inter_symbol: weird symbol type=%c\n",b->type);
       }
       break;
@@ -690,7 +690,7 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
     default: ; /* nothing to do: just want to avoid a warning */
     }
     break;
-  
+
   default: ; /* nothing to do: just want to avoid a warning */
   }
   return res;
@@ -702,12 +702,12 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
 
 /* complementation
  *
- * toutes les fonctions XXX_minus_YYY(a, b) ont pour précondition que b est inclu où egal à a
+ * toutes les fonctions XXX_minus_YYY(a, b) ont pour prï¿½condition que b est inclu oï¿½ egal ï¿½ a
  */
 
 
 /* calcule la complementation de a moins b au niveau des traits uniquement
- * b doit etre inclu ou egal à a
+ * b doit etre inclu ou egal ï¿½ a
  */
 
 static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
@@ -735,16 +735,16 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
   for (idx = 0; idx < min; idx++) {
 
     if (a->feature[idx] == b->feature[idx]) { continue; }
-      
+
     if (a->feature[idx] != UNSPECIFIED) { fatal_error("minus_traits: b not in a\n"); }
 
-    /* a->traits[idx] est UNSPEC et b->traits[idx] est fixé */
+    /* a->traits[idx] est UNSPEC et b->traits[idx] est fixï¿½ */
 
     CAT_t * CAT = POS_get_CAT(a->POS, idx);
 
     // debug("minus_trait: differs in '%S'\n", CAT->name);
 
-    for (int v = -1; v < CAT->values->size; v++) { /* on ajoute pour chaque valeur fixée != b->traits[idx] */
+    for (int v = -1; v < CAT->values->size; v++) { /* on ajoute pour chaque valeur fixï¿½e != b->traits[idx] */
 
       if (v == UNSPECIFIED || v == b->feature[idx]) { continue; }
 
@@ -752,7 +752,7 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
       concat_symbols(end, dup_symbol(templat), & end);
     }
-    
+
     /* on fixe la valeur a b->traits[idx] et on continue */
 
     templat->feature[idx] = b->feature[idx];
@@ -760,21 +760,21 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
 
   for (; idx < b->nb_features; idx++) { // si il reste des traits pour b
-      
+
     if (b->feature[idx] != UNSPECIFIED) { // a->traits[idx] == UNSPEC
 
       CAT_t * CAT = POS_get_CAT(a->POS, idx);
 
-      for (int v = -1; v < CAT->values->size; v++) { /* on ajoute pour chaque valeur fixée != b->traits[idx] */
+      for (int v = -1; v < CAT->values->size; v++) { /* on ajoute pour chaque valeur fixï¿½e != b->traits[idx] */
 
 	if (v == UNSPECIFIED || v == b->feature[idx]) { continue; }
 
 	templat->feature[idx] = v;
 	concat_symbols(end, dup_symbol(templat), & end);
       }
-    
+
       /* on fixe la valeur a b->traits[idx] et on continue */
-	
+
       templat->feature[idx] = b->feature[idx];
     }
   }
@@ -796,7 +796,7 @@ static inline symbol_t * CAN_minus_CAN(const symbol_t * a, const symbol_t * b) {
 }
 
 
-/* un symbole negatif ne peut jamais etre inclu dans un symbole ou la forme canonique est fixée */
+/* un symbole negatif ne peut jamais etre inclu dans un symbole ou la forme canonique est fixï¿½e */
 
 static inline symbol_t * CAN_minus_NEG(const symbol_t * /*a*/, const symbol_t * /*b*/) {
   fatal_error("CAN minus NEG: should never happen\n");
@@ -851,7 +851,7 @@ static symbol_t * NEG_minus_CAN(const symbol_t * a, const symbol_t * b) {
      /* Means that we try to intersects 2 text automaton symbols */
      fatal_error("Internal error in NEG_minus_CAN\n");
   }
-  
+
   s = new_symbol_POS(b->POS,tag_number);
   traits_copy(s, b);
 
@@ -901,7 +901,7 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
   int i;
 
-  symbol_t * res = minus_traits(a, b); 
+  symbol_t * res = minus_traits(a, b);
   for (symbol_t * s = res; s; s = s->next) {
     s->negative = true;
     s->nbnegs   = a->nbnegs;
@@ -923,7 +923,7 @@ static symbol_t * NEG_minus_NEG(const symbol_t * a, const symbol_t * b) {
 
     if (! canonic_in_neg(b->negs[i], a)) {
 
-      /* la forme form = b->negs[i] est niée dans b mais pas dans a
+      /* la forme form = b->negs[i] est niï¿½e dans b mais pas dans a
        * => (canonic(form) inter code(b)) in (a minus b)
        */
 
@@ -977,8 +977,8 @@ static symbol_t * CODE_minus_CAN(const symbol_t * a, const symbol_t * b) {
    } else if (b->tfsttag_index!=-1) {
       /* Means that we try to intersects 2 text automaton symbols */
       fatal_error("Internal error in CODE_minus_CAN\n");
-   }   
-   
+   }
+
   symbol_t * res = new_symbol_POS(b->POS,tag_number);
 
   traits_copy(res, b);
@@ -1012,7 +1012,7 @@ static symbol_t * CODE_minus_NEG(const symbol_t * a, const symbol_t * b) {
   } else if (b->tfsttag_index!=-1) {
      /* Means that we try to intersects 2 text automaton symbols */
      fatal_error("Internal error in CODE_minus_NEG\n");
-  } 
+  }
   for (int i = 0; i < b->nbnegs; i++) {
 
     symbol_t * nouvo = new_symbol_POS(b->POS,tag_number);
@@ -1047,13 +1047,13 @@ return type_and_clean_symbols(minus_traits(a, b));
 }
 */
 
-static symbol_t * POS_minus_symbol(const symbol_t * a) {
+static symbol_t * POS_minus_symbol(language_t* language,const symbol_t * a) {
 
   POS_t * POS = a->POS;
-  
+
   if (POS->codes == NULL) {
     symbol_t * s = new_symbol_POS(POS,-1);
-    symbol_t * res = symbol_minus_symbol(s, a);
+    symbol_t * res = symbol_minus_symbol(language,s, a);
     free_symbol(s);
     return res;
   }
@@ -1071,7 +1071,7 @@ static symbol_t * POS_minus_symbol(const symbol_t * a) {
     if (inter) {
 
       found = true;
-      concat_symbols(end, symbol_minus_symbol(code, inter), & end);
+      concat_symbols(end, symbol_minus_symbol(language,code, inter), & end);
 
       free_symbol(inter);
 
@@ -1088,17 +1088,15 @@ static symbol_t * POS_minus_symbol(const symbol_t * a) {
 }
 
 
-static symbol_t * LEXIC_minus_symbol(const symbol_t * b) {
+static symbol_t * LEXIC_minus_symbol(language_t* language,const symbol_t * b) {
 
   symbol_t res;
   res.next = NULL;
   symbol_t * end = & res;
 
-  if (! LANGUAGE) { fatal_error("current LANGUAGE is not set!\n"); }
+  for (int i = 0; i < language->POSs->size; i++) {
 
-  for (int i = 0; i < LANGUAGE->POSs->size; i++) {
-
-    POS_t * POS = (POS_t *) LANGUAGE->POSs->value[i];
+    POS_t * POS = (POS_t *) language->POSs->value[i];
 
     if (POS == b->POS) { continue; }
 
@@ -1106,7 +1104,7 @@ static symbol_t * LEXIC_minus_symbol(const symbol_t * b) {
     concat_symbols(end, new_symbol_POS(POS,-1), & end);
   }
 
-  concat_symbols(end, POS_minus_symbol(b)); // POS minus b
+  concat_symbols(end, POS_minus_symbol(language,b)); // POS minus b
 
   return res.next;
 }
@@ -1115,7 +1113,7 @@ static symbol_t * LEXIC_minus_symbol(const symbol_t * b) {
 /**
  * Returns a-b, assuming that b is included in a.
  */
-symbol_t* _symbol_minus_symbol(const symbol_t* a,const symbol_t* b) {
+symbol_t* _symbol_minus_symbol(language_t* language,const symbol_t* a,const symbol_t* b) {
 if (a==SYMBOL_DEF || b==SYMBOL_DEF) {
    fatal_error("_symbol_minus_symbol: called with SYMBOL_DEF as arg\n");
 }
@@ -1144,7 +1142,7 @@ if (a->type==LEXIC) {
    if (b->type==EPSILON) {
       fatal_error("_symbol_minus_symbol: LEXIC minus EPSILON\n");
    }
-   return LEXIC_minus_symbol(b);
+   return LEXIC_minus_symbol(language,b);
 }
 if (a->type==EPSILON) {
    error("_symbol_minus_symbol: a == EPSILON\n");
@@ -1184,25 +1182,25 @@ switch (b->type) {
       switch (a->type) {
          case ATOM:
          case INC_CAN: res=CAN_minus_NEG(a,b); break;
-         
+
          case CODE_NEG:
          case INC_NEG: res=NEG_minus_NEG(a,b); break;
-         
+
          case CODE:
          case INC: res=CODE_minus_NEG(a,b); break;
          default: ; /* nothing to do: just want to avoid a warning */
       }
       break;
-      
+
    case INC:
    case CODE:
       switch (a->type) {
          case ATOM:
          case INC_CAN: res=CAN_minus_CODE(a,b); break;
-         
+
          case CODE_NEG:
          case INC_NEG: res=NEG_minus_CODE(a,b); break;
-         
+
          case CODE:
          case INC: res=CODE_minus_CODE(a,b); break;
          default: ; /* nothing to do: just want to avoid a warning */
@@ -1217,7 +1215,7 @@ return res;
 /**
  * Takes any 2 single symbols a and b and returns a-b.
  */
-symbol_t* symbol_minus_symbol(const symbol_t* a,const symbol_t* b) {
+symbol_t* symbol_minus_symbol(language_t* language,const symbol_t* a,const symbol_t* b) {
 if (!symbol_in_symbol(b,a)) {
    /* If b is not fully included in a, we must compute a inter b */
    symbol_t* i=symbol_inter_symbol(a,b);
@@ -1226,12 +1224,12 @@ if (!symbol_in_symbol(b,a)) {
       return dup_symbol(a);
    }
    /* Otherwise, the result is a-(a inter b) */
-   symbol_t* res=_symbol_minus_symbol(a,i);
+   symbol_t* res=_symbol_minus_symbol(language,a,i);
    free_symbol(i);
    return res;
 }
 /* If b is included in a */
-return _symbol_minus_symbol(a,b);
+return _symbol_minus_symbol(language,a,b);
 }
 
 
@@ -1241,10 +1239,10 @@ return _symbol_minus_symbol(a,b);
  * Computes and returns the set of symbols A-B, where A contains the
  * single symbol 'a'.
  */
-symbol_t* symbol_minus_symbols(const symbol_t* a, const symbol_t* B) {
+symbol_t* symbol_minus_symbols(language_t* language,const symbol_t* a, const symbol_t* B) {
 symbol_t* res=dup_symbol(a);
 while (res!=NULL && B!=NULL) {
-   symbol_t* minus=symbol_minus_symbol(a,B);
+   symbol_t* minus=symbol_minus_symbol(language,a,B);
    symbol_t* tmp=res;
    res=symbols_inter_symbols(tmp,minus);
    free_symbols(tmp);
@@ -1255,14 +1253,14 @@ return res;
 }
 
 
-symbol_t * symbols_minus_symbols(const symbol_t * A, const symbol_t * B) {
+symbol_t * symbols_minus_symbols(language_t* language,const symbol_t * A, const symbol_t * B) {
 
   symbol_t res;
   res.next = NULL;
   symbol_t * end = & res;
 
   while (A) {
-    symbol_t * minus = symbol_minus_symbols(A, B);
+    symbol_t * minus = symbol_minus_symbols(language,A, B);
     concat_symbols(end, minus, & end);
     A = A->next;
   }
@@ -1277,12 +1275,12 @@ symbol_t * symbols_minus_symbols(const symbol_t * A, const symbol_t * B) {
  * If we have 'list'=<A:ms>,<A:mp>,<A:fs>,<A:fp> and 's'=<A:s>,
  * we will return the list <A:mp>,<A:fp>.
  */
-symbol_t* symbols_minus_symbol(const symbol_t* list,const symbol_t* s) {
+symbol_t* symbols_minus_symbol(language_t* language,const symbol_t* list,const symbol_t* s) {
 symbol_t res;
 res.next=NULL;
 symbol_t* end=&res;
 while (list!=NULL) {
-   symbol_t* minus=symbol_minus_symbol(list,s);
+   symbol_t* minus=symbol_minus_symbol(language,list,s);
    concat_symbols(end,minus,&end);
    list=list->next;
 }
@@ -1292,15 +1290,17 @@ return res.next;
 
 
 
-symbol_t * minus_symbol(const symbol_t * b) { return LEXIC_minus_symbol(b); }
+symbol_t * minus_symbol(language_t* language,const symbol_t * b) {
+	return LEXIC_minus_symbol(language,b);
+}
 
 
 /**
  * Computes and returns the set containing all symbols but b's ones.
  */
-symbol_t* minus_symbols(const symbol_t* b) {
+symbol_t* minus_symbols(language_t* language,const symbol_t* b) {
 symbol_t* LEX=new_symbol(LEXIC,-1);
-symbol_t* res=symbol_minus_symbols(LEX,b);
+symbol_t* res=symbol_minus_symbols(language,LEX,b);
 free_symbol(LEX);
 return res;
 }
