@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -89,24 +89,24 @@ install_all_encodings();
 /* And we analyze the parameters */
 
 const char* optstring=":s:d:ri:hmaA";
-const struct option lopts[]= {
-      {"src",required_argument,NULL,'s'},
-      {"dest",required_argument,NULL,'d'},
-      {"replace",no_argument,NULL,'r'},
-      {"ps",required_argument,NULL,0},
-      {"pd",required_argument,NULL,1},
-      {"ss",required_argument,NULL,2},
-      {"sd",required_argument,NULL,3},
-      {"dnc",no_argument,NULL,4},
-      {"dcc",no_argument,NULL,5},
-      {"eac",no_argument,NULL,6},
-      {"ecc",no_argument,NULL,7},
-      {"main-names",no_argument,NULL,'m'},
-      {"aliases",no_argument,NULL,'a'},
-      {"all-infos",no_argument,NULL,'A'},
-      {"info",required_argument,NULL,'i'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"src",required_argument_TS,NULL,'s'},
+      {"dest",required_argument_TS,NULL,'d'},
+      {"replace",no_argument_TS,NULL,'r'},
+      {"ps",required_argument_TS,NULL,0},
+      {"pd",required_argument_TS,NULL,1},
+      {"ss",required_argument_TS,NULL,2},
+      {"sd",required_argument_TS,NULL,3},
+      {"dnc",no_argument_TS,NULL,4},
+      {"dcc",no_argument_TS,NULL,5},
+      {"eac",no_argument_TS,NULL,6},
+      {"ecc",no_argument_TS,NULL,7},
+      {"main-names",no_argument_TS,NULL,'m'},
+      {"aliases",no_argument_TS,NULL,'a'},
+      {"all-infos",no_argument_TS,NULL,'A'},
+      {"info",required_argument_TS,NULL,'i'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 int val,index=-1;
 char src[1024]="";
@@ -139,8 +139,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 5: decode_control_characters=1; break;
    case 6: encode_all_characters=1; break;
    case 7: encode_control_characters=1; break;
-   
-   
+
+
    case 'm': print_encoding_main_names(); return 0;
    case 'a': print_encoding_aliases(); return 0;
    case 'A': print_information_for_all_encodings(); return 0;
@@ -150,9 +150,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              print_encoding_infos(vars->optarg);
              return 0;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -172,11 +172,11 @@ if (vars->optind==argc) {
 struct encoding* src_encoding=get_encoding(src);
 if (src_encoding==NULL) {
 	fatal_error("%s is not a valid encoding name\n",src);
-} 
+}
 struct encoding* dest_encoding=get_encoding(dest);
 if (dest_encoding==NULL) {
    fatal_error("%s is not a valid encoding name\n",dest);
-} 
+}
 
 /*
  * Now we will transcode all the files described by the remaining
@@ -192,19 +192,19 @@ for (int i=vars->optind;i<argc;i++) {
 	 * We set input and output file names according to the output mode
 	 */
 	switch (output_mode) {
-		case REPLACE_FILE: strcpy(input_name,argv[i]); 
+		case REPLACE_FILE: strcpy(input_name,argv[i]);
 						add_suffix_to_file_name(output_name,input_name,"_TEMP"); break;
-		case PREFIX_SRC: strcpy(output_name,argv[i]); 
-						add_prefix_to_file_name(input_name,output_name,FX); 
+		case PREFIX_SRC: strcpy(output_name,argv[i]);
+						add_prefix_to_file_name(input_name,output_name,FX);
 						remove(input_name);
 						rename(argv[i],input_name); break;
-		case SUFFIX_SRC: strcpy(output_name,argv[i]); 
-						add_suffix_to_file_name(input_name,output_name,FX); 
+		case SUFFIX_SRC: strcpy(output_name,argv[i]);
+						add_suffix_to_file_name(input_name,output_name,FX);
 						remove(input_name);
 						rename(argv[i],input_name); break;
-		case PREFIX_DEST: strcpy(input_name,argv[i]); 
+		case PREFIX_DEST: strcpy(input_name,argv[i]);
 						add_prefix_to_file_name(output_name,input_name,FX); break;
-		case SUFFIX_DEST: strcpy(input_name,argv[i]); 
+		case SUFFIX_DEST: strcpy(input_name,argv[i]);
 						add_suffix_to_file_name(output_name,input_name,FX); break;
 		default: fatal_error("Internal error in Convert\n");
 	}
@@ -246,9 +246,9 @@ for (int i=vars->optind;i<argc;i++) {
 									rename(output_name,argv[i]);
 								}
 								break;
-			case INPUT_FILE_NOT_IN_UTF16_LE: 
+			case INPUT_FILE_NOT_IN_UTF16_LE:
 								error("Error: %s is not a Unicode Little-Endian file\n",argv[i]); break;
-			case INPUT_FILE_NOT_IN_UTF16_BE: 
+			case INPUT_FILE_NOT_IN_UTF16_BE:
 								error("Error: %s is not a Unicode Big-Endian file\n",argv[i]); break;
 			default: fatal_error("Internal error in Convert\n");
 		}

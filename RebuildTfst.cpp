@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -59,9 +59,9 @@ if (argc==1) {
 }
 
 const char* optstring=":h";
-const struct option lopts[]= {
-   { "help", no_argument, NULL, 'h' }, 
-   { NULL, no_argument, NULL, 0 }
+const struct option_TS lopts[]= {
+   { "help", no_argument_TS, NULL, 'h' },
+   { NULL, no_argument_TS, NULL, 0 }
 };
 int val, index=-1;
 struct OptVars* vars=new_OptVars();
@@ -122,13 +122,13 @@ for (int i = 1; i <= tfst->N; i++) {
       u_printf("%d/%d sentences rebuilt...\n", i, tfst->N);
    }
    load_sentence(tfst,i);
-   
+
    char grfname[FILENAME_MAX];
    sprintf(grfname, "%ssentence%d.grf", basedir, i);
    unichar** tags=NULL;
    int n_tags=-1;
    if (fexists(grfname)) {
-      /* If there is a .grf for the current sentence, then we must 
+      /* If there is a .grf for the current sentence, then we must
        * take it into account */
       if (0==pseudo_main_Grf2Fst2(grfname,0,NULL,1,1)) {
          /* We proceed only if the graph compilation was a success */

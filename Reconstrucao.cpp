@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -67,15 +67,15 @@ if (argc==1) {
 }
 
 const char* optstring=":a:r:d:p:n:o:h";
-const struct option lopts[]= {
-      {"alphabet",required_argument,NULL,'a'},
-      {"root",required_argument,NULL,'r'},
-      {"dictionary",required_argument,NULL,'d'},
-      {"pronoun_rules",required_argument,NULL,'p'},
-      {"nasal_pronoun_rules",required_argument,NULL,'n'},
-      {"output",required_argument,NULL,'o'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"alphabet",required_argument_TS,NULL,'a'},
+      {"root",required_argument_TS,NULL,'r'},
+      {"dictionary",required_argument_TS,NULL,'d'},
+      {"pronoun_rules",required_argument_TS,NULL,'p'},
+      {"nasal_pronoun_rules",required_argument_TS,NULL,'n'},
+      {"output",required_argument_TS,NULL,'o'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 char alphabet[FILENAME_MAX]="";
 char root[FILENAME_MAX]="";
@@ -118,9 +118,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              strcpy(output,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }

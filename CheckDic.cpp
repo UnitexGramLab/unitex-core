@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -56,11 +56,11 @@ if (argc==1) {
 
 int is_a_DELAF=-1;
 const char* optstring=":sfh";
-const struct option lopts[]= {
-      {"delas",no_argument,NULL,'s'},
-      {"delaf",no_argument,NULL,'f'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"delas",no_argument_TS,NULL,'s'},
+      {"delaf",no_argument_TS,NULL,'f'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -69,15 +69,15 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 'f': is_a_DELAF=1; break;
    case 's': is_a_DELAF=0; break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
    index=-1;
 }
-   
+
 if (is_a_DELAF==-1 || vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;

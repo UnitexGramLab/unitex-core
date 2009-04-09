@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -42,7 +42,7 @@
 
 /**
  * This enhanced version of Dico was rewritten by Alexis Neme,
- * based on the original version written by Sébastien Paumier
+ * based on the original version written by Sï¿½bastien Paumier
  * 15 Novembre 2005
  * This new version take into account not only compiled dictionnary but also
  * local grammars representent by an FST2 as part of the lexical identification
@@ -128,12 +128,12 @@ if (argc==1) {
 }
 
 const char* optstring=":t:a:m:h";
-const struct option lopts[]= {
-      {"text",required_argument,NULL,'t'},
-      {"alphabet",required_argument,NULL,'a'},
-      {"morpho",required_argument,NULL,'m'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"text",required_argument_TS,NULL,'t'},
+      {"alphabet",required_argument_TS,NULL,'a'},
+      {"morpho",required_argument_TS,NULL,'m'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 int val,index=-1;
 char alph[FILENAME_MAX]="";
@@ -160,9 +160,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              }
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -223,7 +223,7 @@ count_token_occurrences(info);
 /* We save optind since it is a global variable that can be modified by Locate */
 /* We all dictionaries according their priority */
 for (int priority=1;priority<4;priority++) {
-   /* For a given priority, we apply all concerned dictionaries 
+   /* For a given priority, we apply all concerned dictionaries
     * in their order on the command line */
    for (int i=vars->optind;i<argc;i++) {
       char tmp[FILENAME_MAX];
@@ -233,7 +233,7 @@ for (int priority=1;priority<4;priority++) {
          /* If we must must process a dictionary, we check its type */
          char tmp2[FILENAME_MAX];
          get_extension(argv[i],tmp2);
-         if (!strcmp(tmp2,".bin"))    {    
+         if (!strcmp(tmp2,".bin"))    {
             /*
              * If it is a .bin dictionary
              */
@@ -256,7 +256,7 @@ for (int priority=1;priority<4;priority++) {
             info->dlc=NULL;
             info->err=NULL;
          }
-         else if (!strcmp(tmp2,".fst2"))       { 
+         else if (!strcmp(tmp2,".fst2"))       {
             /*
              * If it is a .fst2 dictionary
              */
@@ -284,10 +284,10 @@ for (int priority=1;priority<4;priority++) {
             save_unknown_words(info);
         	   u_fclose(info->dlf);
             u_fclose(info->dlc);
-            u_fclose(info->err); 
+            u_fclose(info->err);
             info->dlf=NULL;
-            info->dlc=NULL; 
-            info->err=NULL; 
+            info->dlc=NULL;
+            info->err=NULL;
          }
 	  }
    }
@@ -299,7 +299,7 @@ save_and_sort_tag_sequences(info);
 /* Finally, we have to save the definitive list of unknown words */
 u_printf("Saving unknown words...\n");
 if (info->err==NULL ) {
-	info->err=u_fopen(snt_files->err,U_WRITE);  
+	info->err=u_fopen(snt_files->err,U_WRITE);
 }
 save_unknown_words(info);
 /* We compute some statistics */

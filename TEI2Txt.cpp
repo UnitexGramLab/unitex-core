@@ -31,10 +31,10 @@ if (argc==1) {
 }
 
 const char* optstring=":o:h";
-const struct option lopts[]={
-   {"output", required_argument, NULL, 'o'},
-   {"help", no_argument, NULL, 'h'},
-   {NULL, no_argument, NULL, 0}
+const struct option_TS lopts[]={
+   {"output", required_argument_TS, NULL, 'o'},
+   {"help", no_argument_TS, NULL, 'h'},
+   {NULL, no_argument_TS, NULL, 0}
 };
 char output[FILENAME_MAX]="";
 int val,index=-1;
@@ -45,11 +45,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
                 fatal_error("You must specify a non empty output file name\n");
              }
              strcpy(output,vars->optarg);
-             break;      
+             break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -201,7 +201,7 @@ void tei2txt(char *fin, char *fout) {
 			}
 		}
 	}
-	
+
 	u_fclose(input);
 	u_fclose(output);
 	u_printf("Done.\n");

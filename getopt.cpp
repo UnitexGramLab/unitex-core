@@ -82,9 +82,9 @@ static char *rcsid = "$OpenBSD: getopt_long.c,v 1.16 2004/02/04 18:17:25 millert
 static char EMSG[] = "";
 
 static int getopt_internal_TS(int, char * const *, const char *,
-			   const struct option *, int *, int,struct OptVars*);
+			   const struct option_TS *, int *, int,struct OptVars*);
 static int parse_long_options_TS(char * const *, const char *,
-			      const struct option *, int *, int,struct OptVars*);
+			      const struct option_TS *, int *, int,struct OptVars*);
 static int gcd(int, int);
 static void permute_args(int, int, int, char * const *);
 
@@ -162,7 +162,7 @@ permute_args(int panonopt_start, int panonopt_end, int opt_end,
  */
 static int
 parse_long_options_TS(char * const *nargv, const char *options,
-	const struct option *long_options, int *idx, int short_too,struct OptVars* vars)
+	const struct option_TS *long_options, int *idx, int short_too,struct OptVars* vars)
 {
 	char *current_argv, *has_equal;
 	size_t current_argv_len;
@@ -211,7 +211,7 @@ parse_long_options_TS(char * const *nargv, const char *options,
 	}
 	if (match != -1) {		/* option found */
 	   *idx = match;
-		if (long_options[match].has_arg == no_argument
+		if (long_options[match].has_arg == no_argument_TS
 		    && has_equal) {
 			if (PRINT_ERROR) {
 				//warnx(noarg, (int)current_argv_len, current_argv);
@@ -224,19 +224,19 @@ parse_long_options_TS(char * const *nargv, const char *options,
 				vars->optopt = 0;
 			return (BADARG);
 		}
-		if (long_options[match].has_arg == required_argument ||
-		    long_options[match].has_arg == optional_argument) {
+		if (long_options[match].has_arg == required_argument_TS ||
+		    long_options[match].has_arg == optional_argument_TS) {
 			if (has_equal)
 				vars->optarg = has_equal;
 			else if (long_options[match].has_arg ==
-			    required_argument) {
+			    required_argument_TS) {
 				/*
 				 * optional argument doesn't use next nargv
 				 */
 			   vars->optarg = nargv[(vars->optind)++];
 			}
 		}
-		if ((long_options[match].has_arg == required_argument)
+		if ((long_options[match].has_arg == required_argument_TS)
 		    && (vars->optarg == NULL)) {
 			/*
 			 * Missing argument; leading ':' indicates no error
@@ -283,7 +283,7 @@ parse_long_options_TS(char * const *nargv, const char *options,
  */
 static int
 getopt_internal_TS(int nargc, char * const *nargv, const char *options,
-	const struct option *long_options, int *idx, int flags,struct OptVars* vars)
+	const struct option_TS *long_options, int *idx, int flags,struct OptVars* vars)
 {
 	char *oli;				/* option letter list index */
 	int optchar, short_too;
@@ -506,7 +506,7 @@ getopt_TS(int nargc, char * const *nargv, const char *options,struct OptVars* va
  */
 int
 getopt_long_TS(int nargc, char * const *nargv, const char *options,
-            const struct option *long_options,int* idx,struct OptVars* vars)
+            const struct option_TS *long_options,int* idx,struct OptVars* vars)
 {
 
 	return getopt_internal_TS(nargc, nargv, options, long_options, idx,FLAG_PERMUTE,vars);
@@ -518,7 +518,7 @@ getopt_long_TS(int nargc, char * const *nargv, const char *options,
  */
 int
 getopt_long_only_TS(int nargc, char * const *nargv, const char *options,
-                 const struct option * long_options,int* idx,struct OptVars* vars)
+                 const struct option_TS * long_options,int* idx,struct OptVars* vars)
 {
 
 	return getopt_internal_TS(nargc, nargv, options, long_options, idx,

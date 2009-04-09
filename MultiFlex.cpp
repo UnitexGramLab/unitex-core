@@ -1,5 +1,5 @@
 /*
-  * Unitex 
+  * Unitex
   *
   * Copyright (C) 2001-2003 Universit<E9> Paris-Est Marne-la-Vall<E9>e <unitex@univ-mlv.fr>
   *
@@ -69,12 +69,12 @@ if (argc==1) {
 }
 
 const char* optstring=":o:a:d:h";
-const struct option lopts[]= {
-      {"output",required_argument,NULL,'o'},
-      {"alphabet",required_argument,NULL,'a'},
-      {"directory",required_argument,NULL,'d'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"output",required_argument_TS,NULL,'o'},
+      {"alphabet",required_argument_TS,NULL,'a'},
+      {"directory",required_argument_TS,NULL,'d'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
@@ -95,9 +95,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'd': strcpy(config_dir,vars->optarg); break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -115,7 +115,7 @@ if (alphabet[0]=='\0') {
    fatal_error("You must specify the alphabet file\n");
 }
 
-int err;  //0 if a function completes with no error 
+int err;  //0 if a function completes with no error
 //Load morphology description
 char morphology[FILENAME_MAX];
 new_file(config_dir,"Morphology.txt",morphology);
@@ -129,7 +129,7 @@ alph=load_alphabet(alphabet);  //To be done once at the beginning of the inflect
 if (alph==NULL) {
    error("Cannot open alphabet file %s\n",alphabet);
    free_language_morpho();
-   free_alphabet(alph);    
+   free_alphabet(alph);
    return 1;
 }
 //Init equivalence files

@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -66,11 +66,11 @@ if (argc==1) {
 }
 
 const char* optstring=":o:t:h";
-const struct option lopts[]= {
-      {"output",required_argument,NULL,'o'},
-      {"tagset",required_argument,NULL,'t'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"output",required_argument_TS,NULL,'o'},
+      {"tagset",required_argument_TS,NULL,'t'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 char tfst[FILENAME_MAX]="";
 char tind[FILENAME_MAX]="";
@@ -87,16 +87,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              strcpy(output_tfst,vars->optarg);
              remove_extension(output_tfst,output_tind);
              strcat(output_tind,".tind");
-             break;      
+             break;
    case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty tagset file name\n");
              }
              strcpy(tagset,vars->optarg);
-             break;      
+             break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -146,7 +146,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
    /* The 'renumbering' array is used to indicate that for
     * any transition tagged by the tag #i, we must add transitions tagged by the
     * integers of 'renumbering[i]'. As some tags will be inserted, we must remember
-    * the original size of the tags array. */ 
+    * the original size of the tags array. */
    int original_number_of_tags=txtin->tfst->tags->nbelems;
    struct list_int* renumbering[original_number_of_tags];
    /* We clean all the tags. A rejected tag is marked with its content set to NULL */
@@ -198,7 +198,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
    unichar tmp[4096];
    struct string_hash* tmp_tags=new_string_hash(txtin->tfst->tags->nbelems);
    unichar EPSILON[]={'@','<','E','>','\n','.','\n','\0'};
-   /* The epsilon tag is always the first one */ 
+   /* The epsilon tag is always the first one */
    get_value_index(EPSILON,tmp_tags);
    for (int i=0;i<g->number_of_states;i++) {
       Transition** t=&(g->states[i]->outgoing_transitions);
@@ -288,7 +288,7 @@ int get_tfst_tag_index(vector_ptr* tags,unichar* content,
                        int end_pos_token,int end_pos_char) {
 for (int i=0;i<tags->nbelems;i++) {
    TfstTag* t=(TfstTag*)(tags->tab[i]);
-   if (t!=NULL 
+   if (t!=NULL
          /* We must test for NULL, because some tags may have been removed */
     && t->type==T_STD
     && !u_strcmp(t->content,content)

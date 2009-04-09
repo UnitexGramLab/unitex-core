@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -48,7 +48,7 @@
  * tokens have been read. All the tokens that compose the sentence are stored
  * into 'buffer', except the "{S}", if any. The number of these tokens is stored
  * in '*N'. '*total' contains the whole number of integers read from the file.
- * 
+ *
  * The function returns 1 if a sentence was read; 0 otherwise.
  */
 int read_sentence(int* buffer,int *N,int *total,FILE* f,int SENTENCE_MARKER) {
@@ -110,13 +110,13 @@ if (argc==1) {
 }
 
 const char* optstring=":a:cn:t:h";
-const struct option lopts[]={
-   {"alphabet", required_argument, NULL, 'a'},
-   {"clean", no_argument, NULL, 'c'},
-   {"normalization_grammar", required_argument, NULL, 'n'},
-   {"tagset", required_argument, NULL, 't'},
-   {"help", no_argument, NULL, 'h'},
-   {NULL, no_argument, NULL, 0}
+const struct option_TS lopts[]={
+   {"alphabet", required_argument_TS, NULL, 'a'},
+   {"clean", no_argument_TS, NULL, 'c'},
+   {"normalization_grammar", required_argument_TS, NULL, 'n'},
+   {"tagset", required_argument_TS, NULL, 't'},
+   {"help", no_argument_TS, NULL, 'h'},
+   {NULL, no_argument_TS, NULL, 0}
 };
 char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
@@ -130,22 +130,22 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
              strcpy(alphabet,vars->optarg);
-             break;      
+             break;
    case 'c': CLEAN=1; break;
    case 'n': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty normalization grammar name\n");
              }
              strcpy(norm,vars->optarg);
-             break;      
+             break;
    case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty tagset file name\n");
              }
              strcpy(tagset,vars->optarg);
-             break;      
+             break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -283,7 +283,7 @@ free_normalization_tree(normalization_tree);
 free_language_t(language);
 free_OptVars(vars);
 /* After the execution, tag_list should have been emptied, so that we don't
- * need to do it here */ 
+ * need to do it here */
 return 0;
 }
 

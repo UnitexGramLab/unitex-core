@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -28,7 +28,7 @@
 #include "Error.h"
 #include "getopt.h"
 
-#define MAX_LINES_IN_TABLE 10000  
+#define MAX_LINES_IN_TABLE 10000
 
 
 static void usage() {
@@ -60,12 +60,12 @@ if (argc==1) {
    return 0;
 }
 const char* optstring=":r:o:s:h";
-const struct option lopts[]= {
-      {"reference_graph",required_argument,NULL,'r'},
-      {"output",required_argument,NULL,'o'},
-      {"subgraph_pattern",required_argument,NULL,'s'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"reference_graph",required_argument_TS,NULL,'r'},
+      {"output",required_argument_TS,NULL,'o'},
+      {"subgraph_pattern",required_argument_TS,NULL,'s'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 char reference_graph_name[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
@@ -78,7 +78,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
                 fatal_error("You must specify a non empty reference graph name\n");
              }
              strcpy(reference_graph_name,vars->optarg);
-             break;      
+             break;
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output graph name\n");
              }
@@ -90,9 +90,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              strcpy(subgraph_pattern,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -101,7 +101,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
 
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
-}   
+}
 
 if (reference_graph_name[0]=='\0') {
    fatal_error("You must specify the reference graph to use\n");
@@ -605,7 +605,7 @@ if (!nettoyer_graphe(res)) {
   // if the graph has been emptied, we return
   error("%S has been emptied\n",current_graph);
   return false;
-} 
+}
 if (graphs_printed!=0) {
   /* print a "+" only if any subgraph already has been printed:
    *  - not in first line (ligne_courante==0)

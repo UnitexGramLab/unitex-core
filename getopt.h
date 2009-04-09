@@ -35,7 +35,7 @@
  * This library has been modified by S. Paumier in order to make the getopt... functions
  * thread safe, because Unitex main_XXX programs parse their options with them, and
  * as Unitex must now be also compiled as a library, multiple calls to getopt...
- * could cause problems.  
+ * could cause problems.
  */
 
 #ifndef getoptH
@@ -45,24 +45,22 @@
  * struct option, no_argument, required_argument and optional_argument may already
  * have been defined if someone use both libunitex.so and the original getopt.
  */
-#ifndef __need_getopt
 
-#define no_argument             0
-#define required_argument       1
-#define optional_argument       2
+#define no_argument_TS             0
+#define required_argument_TS       1
+#define optional_argument_TS       2
 
-struct option {
+struct option_TS {
    const char *name;
    int  has_arg;
    int *flag;
    int val;
 };
 
-#endif
 
 
 /**
- * This structure defines all the things getopt needs to work in a thread safe way. 
+ * This structure defines all the things getopt needs to work in a thread safe way.
  */
 struct OptVars {
    int   opterr;       /* if error message should be printed */
@@ -78,8 +76,8 @@ struct OptVars {
 struct OptVars* new_OptVars();
 void free_OptVars(struct OptVars*);
 int getopt_TS(int, char * const *, const char *,struct OptVars*);
-int getopt_long_TS(int, char *const *, const char *, const struct option *, int *,struct OptVars*);
-int getopt_long_only_TS(int, char *const *, const char *, const struct option *, int *,struct OptVars*);
+int getopt_long_TS(int, char *const *, const char *, const struct option_TS *, int *,struct OptVars*);
+int getopt_long_only_TS(int, char *const *, const char *, const struct option_TS *, int *,struct OptVars*);
 
 
 

@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -74,15 +74,15 @@ if (argc==1) {
 }
 
 const char* optstring = ":xtn:o:a:s:h";
-const struct option lopts[] = {
-   {"xml", no_argument, NULL, 'x'},
-   {"tei", no_argument, NULL, 't'},
-   {"normalization", required_argument, NULL, 'n'},
-   {"output", required_argument, NULL, 'o'},
-   {"alphabet", required_argument, NULL, 'a'},
-   {"segmentation_grammar", required_argument, NULL, 's'},
-   {"help", no_argument, NULL, 'h'},
-   {NULL, no_argument, NULL, 0}
+const struct option_TS lopts[] = {
+   {"xml", no_argument_TS, NULL, 'x'},
+   {"tei", no_argument_TS, NULL, 't'},
+   {"normalization", required_argument_TS, NULL, 'n'},
+   {"output", required_argument_TS, NULL, 'o'},
+   {"alphabet", required_argument_TS, NULL, 'a'},
+   {"segmentation_grammar", required_argument_TS, NULL, 's'},
+   {"help", no_argument_TS, NULL, 'h'},
+   {NULL, no_argument_TS, NULL, 0}
 };
 
 int output_style=TEI;
@@ -100,26 +100,26 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
                 fatal_error("You must specify a non empty normalization grammar name\n");
              }
              strcpy(normalization,vars->optarg);
-             break;      
+             break;
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
              }
              strcpy(output,vars->optarg);
-             break;      
+             break;
    case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
              strcpy(alphabet,vars->optarg);
-             break;      
+             break;
    case 's': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty segmentation grammar name\n");
              }
              strcpy(segmentation,vars->optarg);
-             break;      
+             break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -189,17 +189,17 @@ void xmlize(char* fin,char* fout,int ouput_style) {
 		fatal_error("Cannot open output file '%s'!\n", fout);
 	} else
 
-	if(ouput_style==XML) { 
+	if(ouput_style==XML) {
 	   u_fprintf(UTF8, output, xml_open);
 	}
-	else { 
+	else {
 	   u_fprintf(UTF8, output, tei_open);
 	}
 
 	int sentence_count = 1;
    int sentence_count_relative = 1;
    int paragraph_count = 1;
-   
+
 	u_fprintf(UTF8, output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
 
 	int current_state = 0;
@@ -307,7 +307,7 @@ void xmlize(char* fin,char* fout,int ouput_style) {
 	if(ouput_style==XML) {
 	   u_fprintf(UTF8, output, xml_close);
 	}
-	else { 
+	else {
 	   u_fprintf(UTF8, output, tei_close);
 	}
 

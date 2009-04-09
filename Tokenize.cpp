@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -109,12 +109,12 @@ if (argc==1) {
 }
 
 const char* optstring=":a:cwh";
-const struct option lopts[]={
-   {"alphabet", required_argument, NULL, 'a'},
-   {"char_by_char", no_argument, NULL, 'c'},
-   {"word_by_word", no_argument, NULL, 'w'},
-   {"help", no_argument, NULL, 'h'},
-   {NULL, no_argument, NULL, 0}
+const struct option_TS lopts[]={
+   {"alphabet", required_argument_TS, NULL, 'a'},
+   {"char_by_char", no_argument_TS, NULL, 'c'},
+   {"word_by_word", no_argument_TS, NULL, 'w'},
+   {"help", no_argument_TS, NULL, 'h'},
+   {NULL, no_argument_TS, NULL, 0}
 };
 char alphabet[FILENAME_MAX]="";
 int val,index=-1;
@@ -126,13 +126,13 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
                 fatal_error("You must specify a non empty alphabet file name\n");
              }
              strcpy(alphabet,vars->optarg);
-             break;      
+             break;
    case 'c': mode=CHAR_BY_CHAR; break;
    case 'w': mode=NORMAL; break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -271,7 +271,7 @@ return 0;
 
 
 /**
- * Returns the number of the given token, inserting it if needed in the 
+ * Returns the number of the given token, inserting it if needed in the
  * data structures. Its number of occurrences is also updated.
  */
 int get_token_number(unichar* s,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
@@ -367,7 +367,7 @@ while (c!=EOF) {
          TOKENS_TOTAL++;
          if (c>='0' && c<='9') DIGITS_TOTAL++;
          fwrite(&n,4,1,coded_text);
-         
+
          c=u_fgetc(f);
       }
       else {

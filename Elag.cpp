@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -22,8 +22,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "getopt.h"
 
-#ifdef __GNUC__ 
+#ifdef __GNUC__
 #include <unistd.h>
 #elif defined(__VISUALC__)
 #include <DIRECT.H>
@@ -36,7 +37,6 @@
 #include "Fst2Automaton.h"
 #include "ElagFunctions.h"
 #include "Error.h"
-#include "getopt.h"
 #include "File.h"
 #include "Tfst.h"
 
@@ -65,13 +65,13 @@ if (argc==1) {
 }
 
 const char* optstring=":l:r:o:d:h";
-const struct option lopts[]= {
-      {"language",required_argument,NULL,'l'},
-      {"rules",required_argument,NULL,'r'},
-      {"output",required_argument,NULL,'o'},
-      {"directory",required_argument,NULL,'d'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"language",required_argument_TS,NULL,'l'},
+      {"rules",required_argument_TS,NULL,'r'},
+      {"output",required_argument_TS,NULL,'o'},
+      {"directory",required_argument_TS,NULL,'d'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 int val,index=-1;
 char language[FILENAME_MAX]="";
@@ -102,9 +102,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              strcpy(directory,vars->optarg);
              break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -104,7 +104,7 @@ u_printf("Usage: Locate [OPTIONS] <fst2>\n"
 
 
 
-/* 
+/*
  * This function behaves in the same way that a main one, except that it does
  * not invoke the setBufferMode function.
  */
@@ -113,32 +113,32 @@ if (argc==1) {
    usage();
    return 0;
 }
-  
+
 const char* optstring=":t:a:m:SLAIMRXYZln:d:cwsxbh";
-const struct option lopts[]= {
-      {"text",required_argument,NULL,'t'},
-      {"alphabet",required_argument,NULL,'a'},
-      {"morpho",required_argument,NULL,'m'},
-      {"shortest_matches",no_argument,NULL,'S'},
-      {"longest_matches",no_argument,NULL,'L'},
-      {"all_matches",no_argument,NULL,'A'},
-      {"ignore",no_argument,NULL,'I'},
-      {"merge",no_argument,NULL,'M'},
-      {"replace",no_argument,NULL,'R'},
-      {"exit_on_variable_error",no_argument,NULL,'X'},
-      {"ignore_variable_errors",no_argument,NULL,'Y'},
-      {"backtrack_on_variable_errors",no_argument,NULL,'Z'},
-      {"all",no_argument,NULL,'l'},
-      {"number_of_matches",required_argument,NULL,'n'},
-      {"sntdir",required_argument,NULL,'d'},
-      {"char_by_char",no_argument,NULL,'c'},
-      {"word_by_word",no_argument,NULL,'w'},
-      {"start_on_space",no_argument,NULL,'s'},
-      {"dont_start_on_space",no_argument,NULL,'x'},
-      {"ambiguous_outputs",no_argument,NULL,'b'},
-      {"no_ambiguous_outputs",no_argument,NULL,'z'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"text",required_argument_TS,NULL,'t'},
+      {"alphabet",required_argument_TS,NULL,'a'},
+      {"morpho",required_argument_TS,NULL,'m'},
+      {"shortest_matches",no_argument_TS,NULL,'S'},
+      {"longest_matches",no_argument_TS,NULL,'L'},
+      {"all_matches",no_argument_TS,NULL,'A'},
+      {"ignore",no_argument_TS,NULL,'I'},
+      {"merge",no_argument_TS,NULL,'M'},
+      {"replace",no_argument_TS,NULL,'R'},
+      {"exit_on_variable_error",no_argument_TS,NULL,'X'},
+      {"ignore_variable_errors",no_argument_TS,NULL,'Y'},
+      {"backtrack_on_variable_errors",no_argument_TS,NULL,'Z'},
+      {"all",no_argument_TS,NULL,'l'},
+      {"number_of_matches",required_argument_TS,NULL,'n'},
+      {"sntdir",required_argument_TS,NULL,'d'},
+      {"char_by_char",no_argument_TS,NULL,'c'},
+      {"word_by_word",no_argument_TS,NULL,'w'},
+      {"start_on_space",no_argument_TS,NULL,'s'},
+      {"dont_start_on_space",no_argument_TS,NULL,'x'},
+      {"ambiguous_outputs",no_argument_TS,NULL,'b'},
+      {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 int val,index=-1;
 char alph[FILENAME_MAX]="";
@@ -199,11 +199,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 'x': space_policy=DONT_START_WITH_SPACE; break;
    case 'b': ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS; break;
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
-             
+
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -262,9 +262,9 @@ return (!OK);
  * Launches the Locate main function with the appropriate arguments.
  * This function is used to apply a .fst2 as dictionary in the Dico
  * program.
- * 
+ *
  * @author Alexis Neme
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 int launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet,
                               OutputPolicy output_policy,char* morpho_dic) {

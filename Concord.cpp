@@ -12,13 +12,13 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-  
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,7 +60,7 @@ u_printf("Usage: Concord [OPTIONS] <concord>\n"
         "                 that the match can end before the limit if there is a {S}. Default=0\n"
         "  -r X/--right=X: the same for right context. Default=0\n"
         "\n"
-        "Sort order options:\n"      
+        "Sort order options:\n"
         "  --TO: text order (default)\n"
         "  --LC: left, center\n"
         "  --LR: left, right\n"
@@ -84,7 +84,7 @@ u_printf("Usage: Concord [OPTIONS] <concord>\n"
         "  -a ALPH/--alphabet=ALPH : the char order file used for sorting\n"
         "  -T/--thai: option to use for Thai concordances\n"
         "  -h/--help: this help\n"
-        "\n"     
+        "\n"
         "Extracts the matches stored in <concord>, and stores them into a UTF-8\n"
         "HTML file saved in the <concord> directory or produces a text file, according\n"
         "to the mode parameter\n"
@@ -151,31 +151,31 @@ if (argc==1) {
 }
 
 const char* optstring=":f:s:l:r:Htg:iuAxm:a:Td:h";
-const struct option lopts[]= {
-      {"font",required_argument,NULL,'f'},
-      {"fontsize",required_argument,NULL,'s'},
-      {"left",required_argument,NULL,'l'},
-      {"right",required_argument,NULL,'r'},
-      {"TO",no_argument,NULL,0},
-      {"LC",no_argument,NULL,1},
-      {"LR",no_argument,NULL,2},
-      {"CL",no_argument,NULL,3},
-      {"CR",no_argument,NULL,4},
-      {"RL",no_argument,NULL,5},
-      {"RC",no_argument,NULL,6},
-      {"html",no_argument,NULL,'H'},
-      {"text",no_argument,NULL,'t'},
-      {"glossanet",required_argument,NULL,'g'},
-      {"index",no_argument,NULL,'i'},
-      {"uima",no_argument,NULL,'u'},
-      {"axis",no_argument,NULL,'A'},
-      {"xalign",no_argument,NULL,'x'},
-      {"merge",required_argument,NULL,'m'},
-      {"alphabet",required_argument,NULL,'a'},
-      {"thai",no_argument,NULL,'T'},
-      {"directory",required_argument,NULL,'d'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"font",required_argument_TS,NULL,'f'},
+      {"fontsize",required_argument_TS,NULL,'s'},
+      {"left",required_argument_TS,NULL,'l'},
+      {"right",required_argument_TS,NULL,'r'},
+      {"TO",no_argument_TS,NULL,0},
+      {"LC",no_argument_TS,NULL,1},
+      {"LR",no_argument_TS,NULL,2},
+      {"CL",no_argument_TS,NULL,3},
+      {"CR",no_argument_TS,NULL,4},
+      {"RL",no_argument_TS,NULL,5},
+      {"RC",no_argument_TS,NULL,6},
+      {"html",no_argument_TS,NULL,'H'},
+      {"text",no_argument_TS,NULL,'t'},
+      {"glossanet",required_argument_TS,NULL,'g'},
+      {"index",no_argument_TS,NULL,'i'},
+      {"uima",no_argument_TS,NULL,'u'},
+      {"axis",no_argument_TS,NULL,'A'},
+      {"xalign",no_argument_TS,NULL,'x'},
+      {"merge",required_argument_TS,NULL,'m'},
+      {"alphabet",required_argument_TS,NULL,'a'},
+      {"thai",no_argument_TS,NULL,'T'},
+      {"directory",required_argument_TS,NULL,'d'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 int val,index=-1;
 struct conc_opt* options=new_conc_opt();
@@ -256,9 +256,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              strcpy(options->working_directory,vars->optarg);
              break;
    case 'h': usage_(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -311,7 +311,7 @@ else {
 	n_enter_char=fread(&enter_pos,sizeof(int),MAX_ENTER_CHAR,f_enter);
    fclose(f_enter);
 }
-if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->result_mode==AXIS_) { 
+if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->result_mode==AXIS_) {
    /* We force some options for index, uima and axis files */
    options->left_context=0;
    options->right_context=0;

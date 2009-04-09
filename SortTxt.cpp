@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -43,11 +43,11 @@
 /**
  * This structure defines a list of couples (string,int). The integer
  * represents the number of occurrences of the string, so that the list
- * 
+ *
  * a -> a -> a -> b -> c -> c
- * 
+ *
  * will be represented by:
- * 
+ *
  * (a,3) -> (b,1) -> (c,2)
  */
 struct couple {
@@ -110,13 +110,13 @@ unichar canonical[0x10000];
 
 /* For a char that is a letter, this array indicates its position in its
  * class. This information will be used for comparing characters of the
- * same class. For instance, if we have the following char order file: 
- * 
- * Aaà
+ * same class. For instance, if we have the following char order file:
+ *
+ * Aaï¿½
  * Bb
- * Ccç
+ * Ccï¿½
  * ...
- * 
+ *
  * we will have class_numbers['c']=3, canonical['c']='C' and priority['c']=2
  */
 int priority[0x10000];
@@ -231,15 +231,15 @@ if (argc==1) {
 }
 
 const char* optstring=":ndr:o:l:th";
-const struct option lopts[]= {
-      {"no_duplicates",no_argument,NULL,'n'},
-      {"duplicates",no_argument,NULL,'d'},
-      {"reverse",no_argument,NULL,'r'},
-      {"sort_order",required_argument,NULL,'o'},
-      {"line_info",required_argument,NULL,'l'},
-      {"thai",no_argument,NULL,'t'},
-      {"help",no_argument,NULL,'h'},
-      {NULL,no_argument,NULL,0}
+const struct option_TS lopts[]= {
+      {"no_duplicates",no_argument_TS,NULL,'n'},
+      {"duplicates",no_argument_TS,NULL,'d'},
+      {"reverse",no_argument_TS,NULL,'r'},
+      {"sort_order",required_argument_TS,NULL,'o'},
+      {"line_info",required_argument_TS,NULL,'l'},
+      {"thai",no_argument_TS,NULL,'t'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
 };
 REMOVE_DUPLICATES=1;
 REVERSE=1;
@@ -257,7 +257,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
                 fatal_error("You must specify a non empty sort order file name\n");
              }
              strcpy(sort_order,vars->optarg);
-             break;      
+             break;
    case 'l': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty information file name\n");
              }
@@ -265,9 +265,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 't': mode=THAI; break;
    case 'h': usage(); return 0;
-   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt); 
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
-   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt); 
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
    }
@@ -276,7 +276,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
 
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
-}   
+}
 init_char_arrays();
 if (sort_order[0]!='\0') {
    read_char_order(sort_order);
@@ -557,7 +557,7 @@ return couple;
  * This function looks for the path to 'line', creating it if necessary
  * the current node is n, and pos is the position in the 'line' string.
  * Note that the branches of the tree are not tagged with letters but with
- * letter classes, so that "lé" and "le" correspond to the same node.
+ * letter classes, so that "lï¿½" and "le" correspond to the same node.
  */
 void get_node(unichar* line,int pos,struct sort_tree_node* n) {
 if (line[pos]=='\0') {
@@ -694,7 +694,7 @@ dest[j]='\0';
  * This function look for the path to 'line', creating it if necessary
  * the current node is n, and pos is the position in the 'line' string.
  * Note that the branches of the tree are not tagged with letters but with
- * letter classes, so that "lé" and "le" correspond to the same node.
+ * letter classes, so that "lï¿½" and "le" correspond to the same node.
  * When the final node is reached, we insert the real Thai string with diacritic
  * signs in the correct position.
  */
