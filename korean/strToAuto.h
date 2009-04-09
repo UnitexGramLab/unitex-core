@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -1993,10 +1993,10 @@ unePhraseAuto.prAuto(stderr,2);
 			wp = mapTrans;
 			while(t){
 				etiPtr = loadFst2->tag_number[t->tag_number];
-				switch(etiPtr->input[1]){
+				switch(etiPtr->f_input[1]){
 				case '{':
 				case '"':
-					if(etiPtr->input[1] == 0) break;
+					if(etiPtr->f_input[1] == 0) break;
 					for( j = 0; j < k;j++){
 
 					}

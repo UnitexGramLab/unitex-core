@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -516,7 +516,7 @@ if (input[*pos]==':') {
       }
    }
    #ifndef _NOT_UNDER_WINDOWS
-   else if (test4abs_windows_path_name(&(input[*pos]))) {
+   else if (test4abs_windows_path_name(&(f_input[*pos]))) {
       /* If the subgraph has an absolute path */
       l=0;
    }

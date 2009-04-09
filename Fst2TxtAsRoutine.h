@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -30,6 +30,9 @@
 #include "ParsingInfo.h"
 #include "TransductionVariables.h"
 #include "Unicode.h"
+#include "Stack_unichar.h"
+
+#define MAX_OUTPUT_LENGTH 10000
 
 
 /**
@@ -41,8 +44,8 @@ struct fst2txt_parameters {
    char* fst_file;
    char* alphabet_file;
 
-   FILE* input;
-   FILE* output;
+   FILE* f_input;
+   FILE* f_output;
    Fst2* fst2;
    Alphabet* alphabet;
 
@@ -63,6 +66,12 @@ struct fst2txt_parameters {
    unichar* buffer;
    /* This is the absolute offset of the first character in the buffer */
    int absolute_offset;
+   /* Here are the stack and string used to deal with outputs */
+   struct stack_unichar* stack;
+   unichar output[MAX_OUTPUT_LENGTH];
+
+   /* Used to know how long was the input that has been matched */
+   int input_length;
 };
 
 struct fst2txt_parameters* new_fst2txt_parameters();
