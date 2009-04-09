@@ -119,6 +119,7 @@ int err;  //0 if a function completes with no error
 //Load morphology description
 char morphology[FILENAME_MAX];
 new_file(config_dir,"Morphology.txt",morphology);
+int config_files_status=CONFIG_FILES_OK;
 err=read_language_morpho(morphology);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
@@ -139,7 +140,8 @@ err=d_init_morpho_equiv(equivalences);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
-d_init_class_equiv();
+d_class_equiv_T D_CLASS_EQUIV;
+d_init_class_equiv(&D_CLASS_EQUIV);
 //Initialize the structure for inflection transducers
 strcpy(inflection_directory,config_dir);
 err=MU_graph_init_graphs();
@@ -148,7 +150,7 @@ if (err) {
    return 1;
 }
 //DELAC inflection
-err=inflect(argv[vars->optind],output);
+err=inflect(argv[vars->optind],output,config_files_status,&D_CLASS_EQUIV);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();

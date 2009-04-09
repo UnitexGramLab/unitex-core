@@ -1,7 +1,7 @@
 /*
-  * Unitex 
+  * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -32,17 +32,15 @@
 
 
 /**
- * 
- * This library is used to parse the "Equivalences" file that is 
+ *
+ * This library is used to parse the "Equivalences" file that is
  * supposed to be in the same directory than the inflection graphs.
- * 
+ *
  */
 
 
 #define CONFIG_FILES_OK 0
 #define CONFIG_FILES_ERROR 1
-extern int config_files_status;
-
 
 //maximum length of a line in the file containing equivalences between morphological and dictionary values
 #define MAX_EQUIV_LINE 100
@@ -91,7 +89,7 @@ typedef struct {
 /*      <df>:<cat>=<val>                                                              */
 /* meaning that in the morphological dictionaries of the given language the feature   */
 /* 'df' corresponds to category 'cat' taking value 'val'. Each 'cat' and 'val' has to */
-/* has to appear in the 'Morphology' file of the given language.                      */  
+/* has to appear in the 'Morphology' file of the given language.                      */
 /* E.g. for Polish:                                                                   */
 /*                    Polish                                                          */
 /*                    s:Nb=sing                                                       */
@@ -117,7 +115,7 @@ int d_init_morpho_equiv(char* equiv_file);
 /* and language classes (e.g. noun)                                                   */
 /* This function is temporarily done for Polish. In future it has to be replaced by   */
 /* a function scanning an external equivalence file for the given language.           */
-void d_init_class_equiv();
+void d_init_class_equiv(d_class_equiv_T *D_CLASS_EQUIV);
 
 /**************************************************************************************/
 /* Prints to the standard output the equivalences between dictionary and morphology   */
@@ -145,12 +143,12 @@ unichar* d_get_str_feat(f_morpho_T* feat);
 /* Returns the class (e.g. noun) corresponding to a class string as it appears in a   */
 /* dictionary (e.g. "N"). If no class corresponds to the string, returns NULL.        */
 /* The returned structure is NOT allocated in the function.                           */
-l_class_T* d_get_class_str(unichar* cl_str);
+l_class_T* d_get_class_str(unichar* cl_str,d_class_equiv_T* D_CLASS_EQUIV);
 
 /**************************************************************************************/
 /* Returns the class string (e.g. 'N') corresponding to a class (e.g. noun)           */
 /*If no string corresponds to the class, returns NULL.                                */
 /* The return structure is NOT allocated in the function.                             */
-unichar* d_get_str_class(l_class_T* cl);
+unichar* d_get_str_class(l_class_T* cl,d_class_equiv_T* D_CLASS_EQUIV);
 
 #endif

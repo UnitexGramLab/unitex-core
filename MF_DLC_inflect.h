@@ -1,7 +1,7 @@
 /*
-  * Unitex 
+  * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@
 #include "Unicode.h"
 #include "MF_LangMorpho.h"
 #include "MF_MU_morpho.h"
+#include "MF_DicoMorpho.h"
 
 /////////////////////////////////////////////////
 //Maximum number of semantic or syntactic codes
@@ -49,13 +50,13 @@ typedef struct {
 /////////////////////////////////////////////////////////////////////////////////
 // Converts a DELAC line ('line') into a structured DELAC entry ('entry').
 // Initially, entry has its space allocated but is empty.
-// Return 1 if 'line' is empty, -1 if its format is incorrect, 0 otherwise. 
-int DLC_line2entry(unichar* line, DLC_entry_T* entry);
+// Return 1 if 'line' is empty, -1 if its format is incorrect, 0 otherwise.
+int DLC_line2entry(unichar* line, DLC_entry_T* entry,d_class_equiv_T* D_CLASS_EQUIV);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Inflects a DELAS/DELAC into a DELAC/DELACF.
 // On error returns 1, 0 otherwise.
-int inflect(char*,char*);
+int inflect(char*,char*,int,d_class_equiv_T* D_CLASS_EQUIV);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry.

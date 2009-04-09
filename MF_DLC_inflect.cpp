@@ -1,5 +1,5 @@
 /*
-  * Unitex 
+  * Unitex
   *
   * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
   *
@@ -39,33 +39,31 @@
 //Alphabet of the current language
 extern Alphabet* alph;
 
-int DLC_line2entry(unichar* line, DLC_entry_T* entry);
-int DLC_scan_unit(SU_id_T* u,unichar* line);
+int DLC_scan_unit(SU_id_T* u,unichar* line,d_class_equiv_T* D_CLASS_EQUIV);
 int DLC_scan_codes(unichar* codes[MAX_CODES],unichar* line);
 int DLC_scan_comment(unichar** comment,unichar* line);
-l_class_T* DLC_class_para(unichar* para);
+l_class_T* DLC_class_para(unichar* para,d_class_equiv_T* D_CLASS_EQUIV);
 int DLC_print_entry(DLC_entry_T* entry);
 int DLC_print_unit(SU_id_T* unit);
-int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry);
+int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry,d_class_equiv_T* D_CLASS_EQUIV);
 void DLC_delete_entry(DLC_entry_T* entry);
 
 
 /////////////////////////////////////////////////////////////////////////////////
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
-int inflect(char* DLC, char* DLCF) {
+int inflect(char* DLC, char* DLCF,int config_files_status,d_class_equiv_T* D_CLASS_EQUIV) {
   FILE *dlc, *dlcf;  //DELAS/DELAC and DELAF/DELACF files
-  unichar input_line[DIC_LINE_SIZE];  //current DELAS/DELAC line 
-  unichar output_line[DIC_LINE_SIZE];  //current DELAF/DELACF line 
+  unichar input_line[DIC_LINE_SIZE];  //current DELAS/DELAC line
+  unichar output_line[DIC_LINE_SIZE];  //current DELAF/DELACF line
   int l;  //length of the line scanned
   DLC_entry_T* dlc_entry;
   MU_forms_T MU_forms;  //inflected forms of the MWU
   int err;
-  
+
   //Open DELAS/DELAC
   dlc = u_fopen(DLC, U_READ);
   if (!dlc) {
-    error("Unable to open file: '%s' !\n", DLC);
     return 1;
   }
   //Open DELAF/DELACF
@@ -81,7 +79,7 @@ int inflect(char* DLC, char* DLCF) {
     input_line[u_strlen(input_line)-1] = (unichar)'\0';
   }
   int flag=0;
-  //If a line is empty the file is not necessarily finished. 
+  //If a line is empty the file is not necessarily finished.
   //If the last entry has no newline, we should not skip this entry
   struct dela_entry* DELAS_entry;
   int semitic;
@@ -117,25 +115,25 @@ int inflect(char* DLC, char* DLCF) {
       }
       free_dela_entry(DELAS_entry);
       /* End of simple word case */
-    } else {  
+    } else {
       /* If we have not a simple word DELAS line, we try to analyse it
        * as a compound word DELAC line */
       if (config_files_status!=CONFIG_FILES_ERROR) {
-	/* If this is a compound word, we process it if and only if the 
+	/* If this is a compound word, we process it if and only if the
 	 * configuration files have been correctly loaded */
 	dlc_entry=(DLC_entry_T*)malloc(sizeof(DLC_entry_T));
 	if (!dlc_entry) {
 	  fatal_alloc_error("inflect");
 	}
 	/* Convert a DELAC entry into the internal multi-word format */
-	err=DLC_line2entry(input_line,dlc_entry);
+	err=DLC_line2entry(input_line,dlc_entry,D_CLASS_EQUIV);
 	if (!err) {
 	  //Inflect the entry
 	  MU_init_forms(&MU_forms);
 	  err=MU_inflect(dlc_entry->lemma,&MU_forms);
 	  if (!err) {
 	    int f;  //index of the current inflected form
-	    //Inform the user if no form generated 
+	    //Inform the user if no form generated
 	    if (MU_forms.no_forms == 0) {
 	      error("No inflected form could be generated for ");
 	      DLC_print_entry(dlc_entry);
@@ -143,14 +141,14 @@ int inflect(char* DLC, char* DLCF) {
 	    //Print inflected forms
 	    for (f=0; f<MU_forms.no_forms; f++) {
 	      //Format the inflected form to the DELACF format
-	      err=DLC_format_form(output_line,DIC_LINE_SIZE-1,MU_forms.forms[f],dlc_entry);
+	      err=DLC_format_form(output_line,DIC_LINE_SIZE-1,MU_forms.forms[f],dlc_entry,D_CLASS_EQUIV);
 	      if (!err) {
 		//Print one inflected form at a time to the DELACF file
 		u_fprintf(dlcf,"%S\n",output_line);
 	      }
 	    }
 	  }
-	  MU_delete_inflection(&MU_forms);      
+	  MU_delete_inflection(&MU_forms);
 	  DLC_delete_entry(dlc_entry);
 	}
       } else {
@@ -180,8 +178,8 @@ int inflect(char* DLC, char* DLCF) {
 // Converts a DELAC line ('line') into a structured DELAC entry ('entry').
 // 'line' is non terminated by a newline.
 // Initially, entry has its space allocated but is empty.
-// Returns 1 if 'line' is empty, 2 if its format is incorrect, -1 if memory allocation problems, 0 otherwise. 
-int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
+// Returns 1 if 'line' is empty, 2 if its format is incorrect, -1 if memory allocation problems, 0 otherwise.
+int DLC_line2entry(unichar* line, DLC_entry_T* entry,d_class_equiv_T* D_CLASS_EQUIV) {
   int l;  //length of the scanned sequence
   int pos;  //index of the next character to be read
   SU_id_T* unit;
@@ -192,7 +190,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
 
   //Initalize the lemma
   entry->lemma = (MU_lemma_T*) malloc(sizeof(MU_lemma_T));
-  if (!entry->lemma) { 
+  if (!entry->lemma) {
     fatal_alloc_error("DLC_line2entry");
   }
   entry->lemma->no_units = 0;
@@ -200,10 +198,10 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   //Scan the single units
   while (line[pos] && line[pos] != (unichar) ',') {  //Each DELAC line must contain a comma
     unit = (SU_id_T*) malloc(sizeof(SU_id_T));
-    if (!unit) { 
+    if (!unit) {
        fatal_alloc_error("DLC_line2entry");
     }
-    l = DLC_scan_unit(unit,&(line[pos]));
+    l = DLC_scan_unit(unit,&(line[pos]),D_CLASS_EQUIV);
     if (l <= 0) {
       free(unit);
       MU_delete_lemma(entry->lemma);
@@ -213,7 +211,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
     entry->lemma->no_units++;
     pos += l;
   }
-  
+
   if (line[pos] != (unichar) ',') {
     error("Comma missing in DELAC line:\n%S\n",line);
     MU_delete_lemma(entry->lemma);
@@ -231,7 +229,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
     return 2;
   }
   entry->lemma->paradigm = (char*) malloc((u_strlen(tmp)+1) * sizeof(char));
-  if (!entry->lemma->paradigm)  { 
+  if (!entry->lemma->paradigm)  {
      fatal_alloc_error("DLC_line2entry");
   }
   for (int c=0; c<=u_strlen(tmp); c++) //Convert to char and copy
@@ -239,8 +237,8 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
 
   //Determine the class (e.g. noun)
   l_class_T* cl;
-  cl = DLC_class_para(tmp);
-  if (!cl) {    
+  cl = DLC_class_para(tmp,D_CLASS_EQUIV);
+  if (!cl) {
     error("Impossible to deduce the compound's inflection class (noun, adj, etc.):\n%S\n",line);
     MU_delete_lemma(entry->lemma);
     return 2;
@@ -254,12 +252,12 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
   //Scan the comment
   l = DLC_scan_comment(&(entry->comment),&(line[pos]));
   pos += l;
-  
+
   if (line[pos]) {
     error("Bad format in DELAC line:\n%S\n",line);
     MU_delete_lemma(entry->lemma);  //delete lemma
     for (int c=0; entry->codes[c]; c++)  //delete codes
-      free(entry->codes[c]);  
+      free(entry->codes[c]);
     free(entry->comment);  //delete comment
     return 2;
   }
@@ -269,12 +267,12 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry) {
 /////////////////////////////////////////////////////////////////////////////////
 // Scans a single unit from a DELAC entry. 'line' is non terminated by a newline.
 // Initially, 'u' has its space allocated but is empty.
-// Returns the length of the scanned sequence, -1 if a format error occurred, -2 if a memory allocation problem occured. 
-int DLC_scan_unit(SU_id_T* u,unichar* line) {
+// Returns the length of the scanned sequence, -1 if a format error occurred, -2 if a memory allocation problem occured.
+int DLC_scan_unit(SU_id_T* u,unichar* line,d_class_equiv_T* D_CLASS_EQUIV) {
   int l;  //length of the scanned sequence
   int pos;  //index of the next caracter to be scanned
   unichar tmp[DIC_LINE_SIZE];
-  
+
   pos = 0;
   //Scan a unit
   l = SU_get_unit(tmp,line,DIC_LINE_SIZE-1,alph,0);  //The single word module determines what is a word and what is a separator, etc.
@@ -292,10 +290,10 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
 
   //Scan the unit's description contained between '(' and ')'
   else {
-    pos++;  //Omit the '(' 
+    pos++;  //Omit the '('
     //Scan the lemma if any
     u->lemma = (SU_lemma_T*) malloc(sizeof(SU_lemma_T));
-    if (!u->lemma) { 
+    if (!u->lemma) {
       fatal_alloc_error("DLC_scan_unit");
     }
     l = SU_get_unit(tmp,&(line[pos]),DIC_LINE_SIZE-1,alph,0);  //The single word module determines what is a word and what is a separator, etc.
@@ -306,7 +304,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     }
     u->lemma->unit=u_strdup(tmp);
     pos += l;
-    
+
     //Scan the lemma's inflection paradigm
     if (line[pos] != (unichar) '.') {
       error("Dot missing after a unit's lemma:\n%S\n",line);
@@ -317,11 +315,11 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
     pos ++;  //Omit the dot
     unichar u_para[DIC_LINE_SIZE];
     l = u_scan_until_char(u_para,&(line[pos]),DIC_LINE_SIZE-1,"+:\\",1);
-    if (!l) {    
+    if (!l) {
       error("Unit's inflection paradigm non existent in DELAC line:\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
-      return -1;     
+      return -1;
     }
     u->lemma->paradigm = (char*) malloc((u_strlen(u_para)+1) * sizeof(char));
     if (! u->lemma->paradigm) {
@@ -332,8 +330,8 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
 
     //Determine the lemma's inflection class (noun, adj, etc.)
     l_class_T* cl;
-    cl = DLC_class_para(u_para);
-    if (!cl) {    
+    cl = DLC_class_para(u_para,D_CLASS_EQUIV);
+    if (!cl) {
       error("Impossible to deduce the unit's inflection class (noun, adj, etc.):\n%S\n",line);
       free(u->form);
       SU_delete_lemma(u->lemma);
@@ -380,7 +378,7 @@ int DLC_scan_unit(SU_id_T* u,unichar* line) {
 /////////////////////////////////////////////////////////////////////////////////
 // Scans semantic codes (e.g. "+Hum+z1") from a DELAC entry. 'line' is non terminated by a newline.
 // The function allocates space for codes scanned. It must be liberated by the calling function.
-// Returns the length of the scanned sequence, -1 if a format error occured, -2 if a memory allocation problem occured. 
+// Returns the length of the scanned sequence, -1 if a format error occured, -2 if a memory allocation problem occured.
 int DLC_scan_codes(unichar* codes[MAX_CODES],unichar* line) {
   int l; //length of the scanned sequence
   int pos; //position of the current character in line
@@ -398,14 +396,14 @@ int DLC_scan_codes(unichar* codes[MAX_CODES],unichar* line) {
       c++;
     }
   }
-  codes[c] = NULL; 
+  codes[c] = NULL;
   return pos;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
 // Scans comment (e.g. "/electricity") from a DELAC entry. 'line' is non terminated by a newline.
 // The function allocates space for comment scanned. It must be liberated by the calling function.
-// Returns the length of the scanned sequence, -1 if a format error occured, -2 if a memory allocation problem occured. 
+// Returns the length of the scanned sequence, -1 if a format error occured, -2 if a memory allocation problem occured.
 int DLC_scan_comment(unichar** comment,unichar* line) {
   int l;  //length of the scanned sequence
   unichar tmp[DIC_LINE_SIZE];
@@ -426,13 +424,13 @@ int DLC_scan_comment(unichar** comment,unichar* line) {
 /* Deduces the morphological class (e.g. noun) from the inflection paradigm (e.g. "N41").*/
 /* If the string beginning the inflection paradigm is not in the list of class        */
 /* equivalences, returns NULL.                                                        */
-l_class_T* DLC_class_para(unichar* para) {
+l_class_T* DLC_class_para(unichar* para,d_class_equiv_T* D_CLASS_EQUIV) {
   unichar cl[MAX_CLASS_NAME];  //buffer for the class string
   int l;   //length of a scanned sequence
   l = u_scan_until_char(cl,para,MAX_CLASS_NAME-1,"0123456789 _;-:/\\+",1);
-  if (l) 
-    return d_get_class_str(cl);
-  else 
+  if (l)
+    return d_get_class_str(cl,D_CLASS_EQUIV);
+  else
     return NULL;
 }
 
@@ -478,7 +476,7 @@ if (unit->lemma) {
       u_printf(":%S",tmp);
       free(tmp);
    }
-   u_printf(")");      
+   u_printf(")");
 }
 return 0;
 }
@@ -488,7 +486,7 @@ return 0;
 // The resulting enntry may takes up to 'max' characters.
 // 'entry' almready has its space allocated.
 // Returns 1 on error, 0 otherwise.
-int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
+int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry,d_class_equiv_T* D_CLASS_EQUIV) {
   int l;  //length of the entry
 
   //Inflected form
@@ -498,7 +496,7 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
   u_strcpy(entry, f.form);
 
   //Comma
-  l++; 
+  l++;
   if (l >= max) return 1;
   u_strcat(entry,",");
 
@@ -512,7 +510,7 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
     u_strcat(entry,dlc_entry->lemma->units[u]->form);
 
   //Full stop
-  l++; 
+  l++;
   if (l >= max) return 1;
   u_strcat(entry,".");
 
@@ -522,11 +520,11 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
   //u_strcat(entry,dlc_entry->lemma->paradigm);
 
   //Inflection class
-  l = l + u_strlen(d_get_str_class(dlc_entry->lemma->cl));
+  l = l + u_strlen(d_get_str_class(dlc_entry->lemma->cl,D_CLASS_EQUIV));
   if (l>= max)
     return 1;
-  u_strcat(entry,d_get_str_class(dlc_entry->lemma->cl));
-	 
+  u_strcat(entry,d_get_str_class(dlc_entry->lemma->cl,D_CLASS_EQUIV));
+
   //Semantic codes
   int c;  //index of the current semantic code
   for (c=0; dlc_entry->codes[c]; c++)
@@ -553,7 +551,7 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry) {
     l = l + u_strlen(dlc_entry->comment);//Place for a '/' and the comment
     if (l >= max) return 1;
     u_strcat(entry,"/");
-    u_strcat(entry,dlc_entry->comment);    
+    u_strcat(entry,dlc_entry->comment);
   }
   return 0;
 }
@@ -565,7 +563,7 @@ void DLC_delete_entry(DLC_entry_T* entry) {
     return;
   MU_delete_lemma(entry->lemma);
   for (int c=0; entry->codes[c]; c++)  //delete codes
-    free(entry->codes[c]);  
+    free(entry->codes[c]);
   free(entry->comment);  //delete comment
   free(entry);
 }
