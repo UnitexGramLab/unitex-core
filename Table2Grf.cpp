@@ -209,7 +209,7 @@ return e;
 void lire_ligne(FILE *f,struct etat *e) {
 int i;
 int c;
-while (u_fgetc(f)!='"');
+while (u_fgetc(f)!='"') {}
 i=0;
 while ((c=u_fgetc(f))!='"') {
   e->contenu[i++]=(unichar)c;

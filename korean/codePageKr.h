@@ -40,7 +40,7 @@ public:
         loadHJAConvMap = 0;
         mbcsUni949Table = new short int[256*128];
         uniMbcs949Table = new unsigned char[0x20000];
-        strToMapKr("");
+        strToMapKr();
         ready_uniMbcs = 1;
     };
     ~convert_windows949kr_uni(){
@@ -110,8 +110,7 @@ public:
          return(ret);
      };
     
-    void loadFromFile(char *fname){};
-    void strToMapKr(char *map){
+    void strToMapKr() {
     unsigned short *wp; 
    
     unsigned char page, off;

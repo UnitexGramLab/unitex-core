@@ -485,7 +485,7 @@ return symbol->type;
 
 
 
-void symbol_dump_all(const symbol_t * symb, FILE * f) {
+void symbol_dump_all(const symbol_t * symb) {
 
   static const unichar locked[] = { 'l', 'o', 'c', 'k', 'e', 'd', 0 };
 
@@ -511,14 +511,14 @@ void symbol_dump_all(const symbol_t * symb, FILE * f) {
 
     for (i = symb->POS->nb_inflect; i < symb->POS->CATs->size; i++) {
       CAT_t * CAT = POS_get_CAT(symb->POS,i);
-      u_printf("+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[symb->feature[i]]);
+      u_printf("+%S=%S", CAT->name, (symb->feature[i]<0) ? locked : (unichar *) CAT->values->value[(int)symb->feature[i]]);
     }
 
     u_printf(":");
 
     for (i = 0; i < symb->POS->nb_inflect; i++) {
       CAT_t * CAT = POS_get_CAT(symb->POS,i);
-      u_printf("+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[symb->feature[i]]);
+      u_printf("+%S=%S", CAT->name, (symb->feature[i] < 0) ? locked : (unichar *) CAT->values->value[(int)symb->feature[i]]);
     }
 
   } else {
@@ -876,7 +876,7 @@ u_strcat(ustr,">");
 }
 
 
-void symbol_dump(const symbol_t * s, FILE * f) {
+void symbol_dump(const symbol_t * s) {
   Ustring * ustr = new_Ustring();
   symbol_to_str(s, ustr);
   u_printf("%S", ustr->str);
@@ -884,10 +884,10 @@ void symbol_dump(const symbol_t * s, FILE * f) {
 }
 
 
-void symbols_dump(const symbol_t * s, FILE * f) {
+void symbols_dump(const symbol_t * s) {
 
   u_printf("(");
-  while (s) { symbol_dump(s, f); if ((s = ((s == SYMBOL_DEF) ? NULL : s->next))) { u_printf(", "); } }
+  while (s) { symbol_dump(s); if ((s = ((s == SYMBOL_DEF) ? NULL : s->next))) { u_printf(", "); } }
   u_printf(")");
 }
 

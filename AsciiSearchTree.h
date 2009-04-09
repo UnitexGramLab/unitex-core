@@ -42,8 +42,8 @@ struct search_tree_node {
 };
 
 
-int insert_string(struct search_tree_node**,char*,int);
-int get_string_number(struct search_tree_node*,char*,int*);
+int insert_string(struct search_tree_node**,const char*,int);
+int get_string_number(struct search_tree_node*,const char*,int*);
 
 #endif
 

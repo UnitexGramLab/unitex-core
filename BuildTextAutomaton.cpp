@@ -508,7 +508,7 @@ void add_path_to_sentence_automaton(int start_pos,int end_pos,
                                     int start_state_index,Alphabet* alph,
                                     SingleGraph graph,struct string_hash* tmp_tags,
                                     unichar* s,int destination_state_index,Ustring* foo,
-                                    struct info* INFO,language_t* language) {
+                                    struct info* INFO) {
 vector_ptr* vector=tokenize_normalization_output(s,alph);
 if (vector==NULL) {
    /* If the output to be generated has no interest, we do nothing */
@@ -559,7 +559,7 @@ while (outputs!=NULL) {
    /* If there are outputs, we add paths in the text automaton */
    add_path_to_sentence_automaton(first_pos_in_buffer,current_pos_in_buffer-increment,
                                   first_state_index,INFO->alph,graph,tmp_tags,
-                                  outputs->string,first_state_index+shift-1,foo,INFO,language);
+                                  outputs->string,first_state_index+shift-1,foo,INFO);
    outputs=outputs->next;
 }
 /* Then, we explore the transitions from this node. Note that transitions
@@ -702,7 +702,7 @@ while ((*tag_list)!=NULL && (*tag_list)->start>=current_global_position_in_token
    }
    add_path_to_sentence_automaton(start_pos_in_token,end_pos_in_token,start_index,
                                   INFO.alph,tfst->automaton,tmp_tags,
-                                  (*tag_list)->output,end_index+1,foo,&INFO,language);
+                                  (*tag_list)->output,end_index+1,foo,&INFO);
    tmp=(*tag_list)->next;
    free_match_list_element((*tag_list));
    (*tag_list)=tmp;

@@ -1386,7 +1386,8 @@ return encoding;
  * This function is used for unrestricted encodings like UTF8 and UTF16.
  */
 int can_always_encode(unichar c) {
-return 1;
+/* Stupid expression, but its real purpose is to avoid the 'unused parameter warning' */
+return 1 || c;
 }
 
 
@@ -1426,9 +1427,9 @@ for (int i=0;s[i];i++) {
  * If not NULL, the 'aliases' array is supposed to contains NULL as last
  * element.
  */
-void install_one_byte_encoding(char* name,void (*init_function)(unichar*),
+void install_one_byte_encoding(const char* name,void (*init_function)(unichar*),
                                void (*usage_function)(void),
-                               char** aliases) {
+                               const char** aliases) {
 if (name==NULL) {
    fatal_error("NULL name error in install_one_byte_encoding\n");
 }
@@ -1502,10 +1503,10 @@ number_of_encodings++;
  * 
  * We consider that a multi-bytes encoding can encode any character.
  */
-void install_multi_bytes_encoding(char* name,int type,int (*input_function)(FILE*),
+void install_multi_bytes_encoding(const char* name,int type,int (*input_function)(FILE*),
 								int (*output_function)(unichar,FILE*),
 								void (*usage_function)(void),
-								char** aliases) {
+								const char** aliases) {
 if (name==NULL) {
    fatal_error("NULL name error in install_multi_bytes_encoding\n");
 }
@@ -1583,32 +1584,32 @@ void install_all_encodings() {
 /*
  * First we install UTF encodings.
  */
-char* aliases_utf8[2]={"utf-8",NULL};
+const char* aliases_utf8[2]={"utf-8",NULL};
 install_multi_bytes_encoding("utf8",UTF8,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8,aliases_utf8);
-char* aliases_utf16_le[4]={"utf-16-le","utf16le","little-endian",NULL};
+const char* aliases_utf16_le[4]={"utf-16-le","utf16le","little-endian",NULL};
 install_multi_bytes_encoding("utf16-le",UTF16_LE,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le,aliases_utf16_le);
-char* aliases_utf16_be[4]={"utf-16-be","utf16be","big-endian",NULL};
+const char* aliases_utf16_be[4]={"utf-16-be","utf16be","big-endian",NULL};
 install_multi_bytes_encoding("utf16-be",UTF16_BE,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be,aliases_utf16_be);
 /*
  * ISO encodings
  */
-char* aliases_iso_8859_1[4]={"iso88591","latin1","latin-1",NULL};
+const char* aliases_iso_8859_1[4]={"iso88591","latin1","latin-1",NULL};
 install_one_byte_encoding("iso-8859-1",init_iso_8859_1,usage_iso_8859_1,aliases_iso_8859_1);
-char* aliases_iso_8859_2[4]={"iso88592","latin2","latin-2",NULL};
+const char* aliases_iso_8859_2[4]={"iso88592","latin2","latin-2",NULL};
 install_one_byte_encoding("iso-8859-2",init_iso_8859_2,usage_iso_8859_2,aliases_iso_8859_2);
-char* aliases_iso_8859_3[4]={"iso88593","latin3","latin-3",NULL};
+const char* aliases_iso_8859_3[4]={"iso88593","latin3","latin-3",NULL};
 install_one_byte_encoding("iso-8859-3",init_iso_8859_3,usage_iso_8859_3,aliases_iso_8859_3);
-char* aliases_iso_8859_4[4]={"iso88594","latin4","latin-4",NULL};
+const char* aliases_iso_8859_4[4]={"iso88594","latin4","latin-4",NULL};
 install_one_byte_encoding("iso-8859-4",init_iso_8859_4,usage_iso_8859_4,aliases_iso_8859_4);
-char* aliases_iso_8859_5[4]={"iso88595","latin5","latin-5",NULL};
+const char* aliases_iso_8859_5[4]={"iso88595","latin5","latin-5",NULL};
 install_one_byte_encoding("iso-8859-5",init_iso_8859_5,usage_iso_8859_5,aliases_iso_8859_5);
-char* aliases_iso_8859_7[4]={"iso88597","latin7","latin-7",NULL};
+const char* aliases_iso_8859_7[4]={"iso88597","latin7","latin-7",NULL};
 install_one_byte_encoding("iso-8859-7",init_iso_8859_7,usage_iso_8859_7,aliases_iso_8859_7);
-char* aliases_iso_8859_9[4]={"iso88599","latin9","latin-9",NULL};
+const char* aliases_iso_8859_9[4]={"iso88599","latin9","latin-9",NULL};
 install_one_byte_encoding("iso-8859-9",init_iso_8859_9,usage_iso_8859_9,aliases_iso_8859_9);
-char* aliases_iso_8859_10[4]={"iso885910","latin10","latin-10",NULL};
+const char* aliases_iso_8859_10[4]={"iso885910","latin10","latin-10",NULL};
 install_one_byte_encoding("iso-8859-10",init_iso_8859_10,usage_iso_8859_10,aliases_iso_8859_10);
-char* aliases_iso_8859_15[4]={"iso885915","latin15","latin-15",NULL};
+const char* aliases_iso_8859_15[4]={"iso885915","latin15","latin-15",NULL};
 install_one_byte_encoding("iso-8859-15",init_iso_8859_15,usage_iso_8859_15,aliases_iso_8859_15);
 /*
  * Microsoft Windows code pages
@@ -1616,33 +1617,33 @@ install_one_byte_encoding("iso-8859-15",init_iso_8859_15,usage_iso_8859_15,alias
  * As the Microsoft Windows code page 1252 is the default one on many computers,
  * we associate to it aliases for some language names.
  */
-char* aliases_windows_874[4]={"windows-874","windows874","thai",NULL};
+const char* aliases_windows_874[4]={"windows-874","windows874","thai",NULL};
 install_one_byte_encoding("ms-windows-874",init_windows_874,usage_windows_874,aliases_windows_874);
 #ifndef HGH_INSERT
 /* Note that ms-windows-949 is a multi-bytes encoding */
-char* aliases_windows_949[4]={"windows-949","windows949","korean",NULL};
+const char* aliases_windows_949[4]={"windows-949","windows949","korean",NULL};
 install_multi_bytes_encoding("ms-windows-949",MBCS_KR,read_mbcs_char,write_mbcs_char,usage_windows_949,aliases_windows_949);
 #endif
-char* aliases_windows_1250[4]={"windows-1250","windows1250","czech",NULL};
+const char* aliases_windows_1250[4]={"windows-1250","windows1250","czech",NULL};
 install_one_byte_encoding("ms-windows-1250",init_windows_1250,usage_windows_1250,aliases_windows_1250);
-char* aliases_windows_1251[4]={"windows-1251","windows1251","cyrillic",NULL};
+const char* aliases_windows_1251[4]={"windows-1251","windows1251","cyrillic",NULL};
 install_one_byte_encoding("ms-windows-1251",init_windows_1251,usage_windows_1251,aliases_windows_1251);
-char* aliases_windows_1252[10]={"windows-1252","windows1252","french","english",
+const char* aliases_windows_1252[10]={"windows-1252","windows1252","french","english",
 								"german","spanish","portuguese","italian",
 								"norwegian",NULL};
 install_one_byte_encoding("ms-windows-1252",init_windows_1252,usage_windows_1252,aliases_windows_1252);
-char* aliases_windows_1253[4]={"windows-1253","windows1253","greek",NULL};
+const char* aliases_windows_1253[4]={"windows-1253","windows1253","greek",NULL};
 install_one_byte_encoding("ms-windows-1253",init_windows_1253,usage_windows_1253,aliases_windows_1253);
-char* aliases_windows_1254[4]={"windows-1254","windows1254","turkish",NULL};
+const char* aliases_windows_1254[4]={"windows-1254","windows1254","turkish",NULL};
 install_one_byte_encoding("ms-windows-1254",init_windows_1254,usage_windows_1254,aliases_windows_1254);
-char* aliases_windows_1257[4]={"windows-1257","windows1257","baltic",NULL};
+const char* aliases_windows_1257[4]={"windows-1257","windows1257","baltic",NULL};
 install_one_byte_encoding("ms-windows-1257",init_windows_1257,usage_windows_1257,aliases_windows_1257);
-char* aliases_windows_1258[5]={"windows-1258","windows1258","viet","vietnamese",NULL};
+const char* aliases_windows_1258[5]={"windows-1258","windows1258","viet","vietnamese",NULL};
 install_one_byte_encoding("ms-windows-1258",init_windows_1258,usage_windows_1258,aliases_windows_1258);
 /*
  * NeXTSTEP encoding
  */
-char* aliases_NeXTSTEP[2]={"next-step",NULL};
+const char* aliases_NeXTSTEP[2]={"next-step",NULL};
 install_one_byte_encoding("nextstep",init_NeXTSTEP,usage_NeXTSTEP,aliases_NeXTSTEP);
 }
 

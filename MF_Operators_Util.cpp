@@ -73,7 +73,7 @@ return retour;
 int is_var_op(unichar *s, int pos) {
 
   if (pos > 0 && u_is_digit(s[pos]) && (s[pos-1] == '$' || s[pos-1] == POUND)) return 1;
-  if (pos >= 0 && s[pos] == '$' || s[pos] == POUND) return 1;
+  if (pos >= 0 && (s[pos] == '$' || s[pos] == POUND)) return 1;
   return 0;
 }
 
@@ -85,7 +85,7 @@ int i;
      (*pos)--; 
      return 1;
   }
-  else if (i >= 0 && s[i] == '$' || s[i] == POUND) {
+  else if (i >= 0 && (s[i] == '$' || s[i] == POUND)) {
      int k=0;
      var[k++] = s[i];
      if (u_is_digit(s[i+1])) var[k++] = s[i+1];
@@ -176,7 +176,10 @@ unsigned int protege;
 
   BEGIN = 0;l=0;
   if (facteur[0]=='^') { l=0;
-     while (facteur[l] != '\0') facteur[l] = facteur[++l];
+     while (facteur[l] != '\0') {
+        facteur[l] = facteur[l+1];
+        l++;
+     }
      BEGIN = 1;
   }
   last_pos_match = -1; *pos_match = -1;
@@ -230,11 +233,14 @@ int ind,init_pos,pos_pattern,var_precede,match_type,retour,pos_match,var_end;
 unichar var_name[L1],facteur[L1];
 unsigned int mode=0;
 
- if (!u_strcmp(etiq,"<!>")) { *pos_etiq +=3; return 1;}
+ if (!u_strcmp(etiq,"<!>")) { 
+    *pos_etiq +=3; 
+    return 1;
+}
 
     init_pos = *pos;
     if (VERBOSE) u_fprintf(stderr,"PATTERN: %s\n",etiq);
-    while (etiq[*pos_etiq] != '\0' && etiq[(*pos_etiq)++] != '>' ); // Valeur de retour
+    while (etiq[*pos_etiq] != '\0' && etiq[(*pos_etiq)++] != '>' ) {} // Valeur de retour
     pos_pattern = *pos_etiq -2;
     var_precede = 0;
     retour = 0;

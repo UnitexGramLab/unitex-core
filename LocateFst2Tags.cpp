@@ -198,7 +198,6 @@ for (int i=0;i<fst2->number_of_tags;i++) {
  * This function optimizes a pattern of the form "eat".
  */
 void optimize_token_pattern(int i,Fst2Tag* tag,Alphabet* alph,
-               struct lemma_node* root,
                struct locate_parameters* p) {
 /* Whatever happens, this pattern will be turned into a token list */
 tag[i]->type=TOKEN_LIST_TAG;
@@ -234,7 +233,6 @@ tag[i]->matching_tokens=destructive_sorted_merge(get_token_list_for_sequence(opt
  * can match the given tag token like "{today,.ADV}".
  */
 void optimize_full_pattern_for_tag(unichar* tag_token,int i,Fst2Tag* tag,Alphabet* alph,
-               struct lemma_node* root,
                struct locate_parameters* p) {
 int token_number=get_value_index(tag_token,p->tokens);
 struct dela_entry* entry=tokenize_tag_token(tag_token);
@@ -277,7 +275,6 @@ free_dela_entry(entry);
  * can match the given token sequence like "today" or "black-eyed".
  */
 void optimize_full_pattern_for_sequence(unichar* sequence,int i,Fst2Tag* tag,Alphabet* alph,
-               struct lemma_node* root,
                struct locate_parameters* p) {
 /* First, we test if the given sequence corresponds or not to a single token
  * like "today". */
@@ -292,7 +289,7 @@ if (!is_a_simple_token(sequence,p->tokenization_policy,alph)) {
    }
    /* Then, we add the compound sequence into the compound word tree. */
    add_compound_word_with_pattern(sequence,tag[i]->compound_pattern,alph,p->tokens,
-                                  p->DLC_tree,p->tokenization_policy,p->SPACE); 
+                                  p->DLC_tree,p->tokenization_policy); 
    return;
 }
 /* If we have a single sequence like "today", we get the list of all its case variants
@@ -329,10 +326,10 @@ struct list_ustring* inflected_forms=get_inflected_forms(tag[i]->pattern->lemma,
 while (inflected_forms!=NULL) {
    if (inflected_forms->string[0]=='{' && u_strcmp(inflected_forms->string,"{")) {
       /* We can have a tag token like "{today,.ADV}" */
-      optimize_full_pattern_for_tag(inflected_forms->string,i,tag,alph,root,p);
+      optimize_full_pattern_for_tag(inflected_forms->string,i,tag,alph,p);
    } else {
       /* Or a normal token sequence like "today" */
-      optimize_full_pattern_for_sequence(inflected_forms->string,i,tag,alph,root,p);
+      optimize_full_pattern_for_sequence(inflected_forms->string,i,tag,alph,p);
    }
    inflected_forms=inflected_forms->next;
 }
@@ -361,7 +358,7 @@ for (int i=0;i<n_tags;i++) {
    if (tag[i]->type==PATTERN_TAG) {
       /* We just look at pattern tags */
       switch (tag[i]->pattern->type) {
-         case TOKEN_PATTERN: optimize_token_pattern(i,tag,alphabet,root,parameters);
+         case TOKEN_PATTERN: optimize_token_pattern(i,tag,alphabet,parameters);
                              break;
          case LEMMA_PATTERN: /* There is no difference in the handling of these
                               * kind of patterns */

@@ -659,7 +659,7 @@ while (!is_empty(u_tokens)) {
  * introducing at new intermediate states as needed.
  */
 void write_transitions(SingleGraph graph,int* tag_numbers,struct list_int* transitions,
-                      int current_state,int n_tag_numbers,int n,int trans) {
+                      int current_state,int n_tag_numbers) {
 int tmp_state;
 while (transitions!=NULL) {
    tmp_state=current_state;
@@ -697,7 +697,7 @@ int sequence_ent[MAX_TOKENS_IN_A_SEQUENCE];
 int n_tokens;
 token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens);
 free_fifo(sequence);
-write_transitions(graph,sequence_ent,transitions,state,n_tokens,n,0);
+write_transitions(graph,sequence_ent,transitions,state,n_tokens);
 }
 
 
@@ -707,15 +707,14 @@ write_transitions(graph,sequence_ent,transitions,state,n_tokens,n,0);
  */
 void process_variable_or_context(SingleGraph graph,unichar* input,
                                 struct list_int* transitions,
-                                int state,int n,
-                                struct compilation_info* infos) {
+                                int state,struct compilation_info* infos) {
 struct fifo* tmp=new_fifo();
 put_ptr(tmp,u_strdup(input));
 int token[1];
 int i;
 token_sequence_2_integer_sequence(tmp,NULL,token,infos,&i);
 free_fifo(tmp);
-write_transitions(graph,token,transitions,state,1,n,0);
+write_transitions(graph,token,transitions,state,1);
 }
 
 
@@ -750,7 +749,7 @@ if ((length>2 && box_content[0]=='$' &&
       u_sprintf(input,"%s%d",(box_content[1]=='!')?"$![":"$[",CONTEXT_COUNTER++);
    }
    u_strcpy(output,"");
-   process_variable_or_context(graph,input,transitions,current_state,n,infos);
+   process_variable_or_context(graph,input,transitions,current_state,infos);
    return;
 }
 /* Otherwise, we deal with the output of the box, if any */
@@ -774,7 +773,7 @@ unichar c;
 int n_sortantes;
 int i=0;
 /* We skip chars until we have read the '"' that starts the line */
-while (u_fgetc(f)!='"');
+while (u_fgetc(f)!='"') {}
 /* Then we copy the box content, escaping the '"'found in it */
 while (((c=(unichar)u_fgetc(f))!='"') && (i<MAX_GRF_BOX_CONTENT)) {
    box_content[i]=c;
@@ -833,7 +832,7 @@ if (f==NULL) {
  * the first '#' and then we look for the second. */
 u_fgetc(f);
 int c;
-while ((c=u_fgetc(f))!=EOF && c!='#');
+while ((c=u_fgetc(f))!=EOF && c!='#') {}
 if (c==EOF) {
    error("Invalid graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);

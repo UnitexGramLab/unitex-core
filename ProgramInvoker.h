@@ -37,9 +37,9 @@ typedef struct {
 } ProgramInvoker;
 
 
-ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,char* name);
+ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,const char* name);
 void free_ProgramInvoker(ProgramInvoker*);
-void add_argument(ProgramInvoker* invoker,char* arg);
+void add_argument(ProgramInvoker* invoker,const char* arg);
 int invoke(ProgramInvoker* invoker);
 
 

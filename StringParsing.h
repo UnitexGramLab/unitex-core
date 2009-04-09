@@ -75,15 +75,15 @@ extern unichar* P_COMMA_DOT_BACKSLASH_DIGITS;
 extern unichar* P_DOT_PLUS_SLASH_BACKSLASH;
 extern unichar* P_ELAG_TAG;
 
-int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars,
-                 unichar* forbidden_chars,unichar* chars_to_keep_protected);
+int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
+      const unichar* forbidden_chars,const unichar* chars_to_keep_protected);
 
-int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars);
-int parse_string(unichar* s,int *ptr,unichar* result,char* stop_chars);
+int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars);
+int parse_string(const unichar* s,int *ptr,unichar* result,const char* stop_chars);
 
-int parse_string(unichar* s,unichar* result,unichar* stop_chars);
-int parse_string(unichar* s,unichar* result,char* stop_chars);
+int parse_string(const unichar* s,unichar* result,const unichar* stop_chars);
+int parse_string(const unichar* s,unichar* result,const char* stop_chars);
 
-int escape(unichar*,unichar*,unichar*);
+int escape(const unichar* s,unichar* result,const unichar* chars_to_escape);
 
 #endif

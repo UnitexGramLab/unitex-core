@@ -1325,7 +1325,7 @@ if (s[0]=='$') {
 } else {
    (*semitic)=0;
 }
-for (;(s[i]>='A' && s[i]<='Z')||(s[i]>='a' && s[i]<='z');i++);
+for (;(s[i]>='A' && s[i]<='Z')||(s[i]>='a' && s[i]<='z');i++) {}
 if (s[i]=='\0') {
    /* If the whole string is made of ANSI letters, then the inflection and
     * grammmatical codes are identical */

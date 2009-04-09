@@ -40,19 +40,19 @@
 
 /****************************************************************/
 /* Retourner 1 si str1 contient str2, sinon 0.			*/
-int u_contient(unichar *str1, unichar *str2);
+int u_contient(const unichar *str1,const unichar *str2);
 
 /****************************************************************/
 /* Retourne 1 si str1 est une permutation de str2, sinon 0.  	*/
-int u_is_permut(unichar *str1, unichar *str2);
+int u_is_permut(const unichar *str1,const unichar *str2);
 
 /****************************************************************/
 /* Verifier si la chaine unicode str contient le caractere c.	*/
-int u_is_in(unichar c, unichar *str);
+int u_is_in(unichar c,const unichar *str);
 
 /****************************************************************/
 /* Verifier si la chaine char str contient le caractere c.	*/
-int u_is_in_char(unichar c, char *str);
+int u_is_in_char(unichar c,const char *str);
 
 /********************************************************************************/
 /* Scan the prefix of "source" string until the first non protected             */
@@ -63,7 +63,7 @@ int u_is_in_char(unichar c, char *str);
 /* If "eliminate_bcksl" is set to 1 each protecting backslash is omitted in the */
 /* copied sequence.                                                             */
 /* Return the length of the scanned sequence.                                   */
-int u_scan_until(unichar *dest, unichar *source, int max, unichar *delim, int eliminate_bcksl);
+int u_scan_until(unichar *dest,const unichar *source, int max,const unichar *delim, int eliminate_bcksl);
 
 /***********************************************************************************************************/
 /* Scan the prefix of "source" string until the first non protected deliminator belonging to "delim"       */
@@ -71,7 +71,7 @@ int u_scan_until(unichar *dest, unichar *source, int max, unichar *delim, int el
 /* (at least max+1 unichars). The length of the copied sequence is no higner than "max" unicode characters.*/
 /* If "eliminate_bcksl" is set to 1 each protecting backslash is omitted in the copied sequence.           */
 /* Return the length of the scanned sequence.                                                              */
-int u_scan_until_char(unichar *dest, unichar *source, int max, char *delim, int eliminate_bcksl);
+int u_scan_until_char(unichar *dest,const unichar *source, int max,const char *delim, int eliminate_bcksl);
 
 /********************************************************************************/
 /* Scan the prefix of "source" string as long as the current character belongs  */
@@ -80,7 +80,7 @@ int u_scan_until_char(unichar *dest, unichar *source, int max, char *delim, int 
 /* (at least max+1 unichars).                                                   */
 /* The length of the copied sequence is no higher than "max" unicode characters.*/
 /* Return the length of the scanned sequence.                                   */
-int u_scan_while(unichar *dest, unichar *source, int max, unichar *admitted);
+int u_scan_while(unichar *dest,const unichar *source, int max,const unichar *admitted);
 
 /********************************************************************************/
 /* Scan the prefix of "source" string as long as the current character belongs  */
@@ -89,7 +89,7 @@ int u_scan_while(unichar *dest, unichar *source, int max, unichar *admitted);
 /* (at least max+1 unichars).                                                   */
 /* The length of the copied sequence is no higher than "max" unicode characters.*/
 /* Return the length of the scanned sequence.                                   */
-int u_scan_while_char(unichar *dest, unichar *source, int max, char *admitted);
+int u_scan_while_char(unichar *dest,const unichar *source, int max,const char *admitted);
 
 
 /****************************************************************/

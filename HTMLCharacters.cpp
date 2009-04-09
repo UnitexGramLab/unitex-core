@@ -323,7 +323,7 @@ return root;
  * This function takes a sequence representing an HTML normal character
  * name like "eacute" and returns its unicode number, or -1 if not found.
  */
-int get_normal_character_number(char* sequence) {
+int get_normal_character_number(const char* sequence) {
 int value;
 if (get_string_number(normal_characters,sequence,&value)) return value;
 return -1;
@@ -334,7 +334,7 @@ return -1;
  * This function takes a sequence representing an HTML control character
  * name like "gt" and returns its unicode number, or -1 if not found.
  */
-int get_control_character_number(char* sequence) {
+int get_control_character_number(const char* sequence) {
 int value;
 if (get_string_number(control_characters,sequence,&value)) return value;
 return -1;
@@ -346,7 +346,7 @@ return -1;
  * integer value, and returns its value, or MALFORMED_HTML_CODE if
  * the string is not a valid hexadecimal integer.
  */
-int analyse_hexadecimal_code(char* sequence) {
+int analyse_hexadecimal_code(const char* sequence) {
 int value=0;
 for (int i=0;sequence[i]!='\0';i++) {
 	if (sequence[i]>='0' && sequence[i]<='9') {
@@ -366,7 +366,7 @@ return value;
  * integer value, and returns its value, or MALFORMED_HTML_CODE if
  * the string is not a valid decimal integer.
  */
-int analyse_decimal_code(char* sequence) {
+int analyse_decimal_code(const char* sequence) {
 int value=0;
 for (int i=0;sequence[i]!='\0';i++) {
 	if (sequence[i]>='0' && sequence[i]<='9') {
@@ -394,7 +394,7 @@ return value;
  * returns MALFORMED_HTML_CODE if the sequence is a malformed integer code
  * like "#x42W4"
  */
-int get_HTML_character(char* sequence,int decode_control_character) {
+int get_HTML_character(const char* sequence,int decode_control_character) {
 if (sequence==NULL || sequence[0]=='\0') {
 	fatal_error("Internal error in get_HTML_character\n");
 }

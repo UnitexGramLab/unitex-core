@@ -99,7 +99,7 @@ while (L!=NULL) {
                                                            inflected_inf,norm_tree);
          }
          else if (!u_strcmp(prefix,"NasalSuffix")) {
-           //      N=N+replace_match_output_by_normalization_line_nasal(L,alph,nasal_norm_tree);
+                 //N=N+replace_match_output_by_normalization_line_nasal(L,alph,nasal_norm_tree);
          }
          else if (prefix[0]!='\0') {
                  error("Unknown normalization code: %S\n",prefix);

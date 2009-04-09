@@ -157,7 +157,7 @@ free(DLC_tree);
  * or not.
  */
 void tokenize_compound_word(unichar* word,int tokens[],Alphabet* alphabet,
-                            struct string_hash* tok,TokenizationPolicy tokenization_mode,int SPACE) {
+                            struct string_hash* tok,TokenizationPolicy tokenization_mode) {
 
 int i,n_token,j;
 struct list_ustring* list=tokenize(word,tokenization_mode,alphabet);
@@ -166,7 +166,7 @@ struct list_int* ptr;
 i=0;
 n_token=0;
 while (list!=NULL) {
-   j=j=get_value_index(list->string,tok,DONT_INSERT);
+   j=get_value_index(list->string,tok,DONT_INSERT);
    /* If a token of a compound word is not a token of the text,
     * we MUST NOT ignore it. For instance, if we have the compound
     * word "a priori" and if the text only contains "PRIORI", it is not
@@ -374,9 +374,9 @@ associate_pattern_to_compound_word(token_list,pos,ptr,pattern,DLC_tree);
  * for any compound word, regardless the pattern, with <DIC> or <CDIC>.
  */
 void add_compound_word_with_no_pattern(unichar* word,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode,int SPACE) {
+							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode) {
 add_compound_word_with_pattern(word,COMPOUND_WORD_PATTERN,alph,tok,DLC_tree,
-							tokenization_mode,SPACE);
+							tokenization_mode);
 }
 
 
@@ -385,9 +385,9 @@ add_compound_word_with_pattern(word,COMPOUND_WORD_PATTERN,alph,tok,DLC_tree,
  * number 'pattern'.
  */
 void add_compound_word_with_pattern(unichar* word,int pattern,Alphabet* alph,struct string_hash* tok,
-							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode,int SPACE) {
+							struct DLC_tree_info* DLC_tree,TokenizationPolicy tokenization_mode) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
-tokenize_compound_word(word,token_list,alph,tok,tokenization_mode,SPACE);
+tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
 associate_pattern_to_compound_word(token_list,0,DLC_tree->root,pattern,DLC_tree);
 }
 
@@ -472,10 +472,9 @@ return 0;
  * non-zero value.
  */
 int conditional_insertion_in_DLC_tree(unichar* word,int pattern1,int pattern2,Alphabet* alph,
-						struct string_hash* tok,struct DLC_tree_info* infos,TokenizationPolicy tokenization_mode,
-                  int SPACE) {
+						struct string_hash* tok,struct DLC_tree_info* infos,TokenizationPolicy tokenization_mode) {
 int token_list[MAX_TOKEN_IN_A_COMPOUND_WORD];
-tokenize_compound_word(word,token_list,alph,tok,tokenization_mode,SPACE);
+tokenize_compound_word(word,token_list,alph,tok,tokenization_mode);
 return conditional_insertion_in_DLC_tree_node(token_list,0,infos->root,pattern1,pattern2);
 }
 
@@ -677,7 +676,7 @@ quicksort2(0,size-1,array1,array2);
 IntSequence clone_IntSequence(IntSequence src) {
 if (src==NULL) return NULL;
 int l;
-for (l=0;src[l]!=-1;l++);
+for (l=0;src[l]!=-1;l++) {}
 IntSequence dst=(IntSequence)malloc((l+1)*sizeof(int));
 if (dst==NULL) {
    fatal_alloc_error("clone_IntSequence");

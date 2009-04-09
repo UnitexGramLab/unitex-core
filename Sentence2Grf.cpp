@@ -34,10 +34,10 @@
 static unichar* EMPTY_AUTOMATON_DISCLAIMER=u_strdup("THIS SENTENCE AUTOMATON HAS BEEN EMPTIED");
 
 
-int compute_state_ranks(Tfst*,int,int*);
-int get_max_width_for_ranks(Tfst*,int,int*,int*,int);
-void tfst_transitions_to_grf_states(Tfst*,int,int*,FILE*,int,int,int*,char*);
-struct grf_state* new_grf_state(char*,int,int);
+int compute_state_ranks(Tfst*,int*);
+int get_max_width_for_ranks(Tfst*,int*,int*,int);
+void tfst_transitions_to_grf_states(Tfst*,int*,FILE*,int,int,int*,char*);
+struct grf_state* new_grf_state(const char*,int,int);
 struct grf_state* new_grf_state(unichar*,int,int);
 void free_grf_state(struct grf_state*);
 void add_transition_to_grf_state(struct grf_state*,int);
@@ -84,13 +84,12 @@ add_outgoing_transition(g->states[0],tag_number,1);
  */
 void sentence_to_grf(Tfst* tfst,char* font,FILE* f) {
 check_automaton_is_empty(tfst);
-int SENTENCE=tfst->current_sentence;
 /* The rank array will be used to store the rank of each state */
 int* rank=(int*)malloc(sizeof(int)*tfst->automaton->number_of_states);
 if (rank==NULL) {
    fatal_alloc_error("sentence_to_grf");
 }
-int maximum_rank=compute_state_ranks(tfst,SENTENCE,rank);
+int maximum_rank=compute_state_ranks(tfst,rank);
 /* The pos_X array will be used to store the X coordinate of the grf
  * boxes that correspond to a given rank. We add +1 to the maximum rank,
  * because the rank has been computed on the fst2 states and the
@@ -99,8 +98,8 @@ int* pos_X=(int*)malloc(sizeof(int)*(maximum_rank+1));
 if (pos_X==NULL) {
    fatal_alloc_error("sentence_to_grf");
 }
-int width_max=get_max_width_for_ranks(tfst,SENTENCE,pos_X,rank,maximum_rank);
-tfst_transitions_to_grf_states(tfst,SENTENCE,rank,f,maximum_rank,width_max,pos_X,font);
+int width_max=get_max_width_for_ranks(tfst,pos_X,rank,maximum_rank);
+tfst_transitions_to_grf_states(tfst,rank,f,maximum_rank,width_max,pos_X,font);
 free(rank);
 free(pos_X);
 }
@@ -218,7 +217,7 @@ for (int i=2;i<*N;i++) {
  * This function creates the grf states that correspond to the given fst2
  * and saves them to the given file.
  */
-void tfst_transitions_to_grf_states(Tfst* tfst,int SENTENCE,
+void tfst_transitions_to_grf_states(Tfst* tfst,
                                     int* rank,FILE* f,int maximum_rank,
                                     int width_max,int* pos_X,char* font) {
 int n_states=tfst->automaton->number_of_states;
@@ -332,7 +331,7 @@ while (trans!=NULL) {
  * All ranks are stored into the 'rank' array, and the
  * maximum rank is returned.
  */
-int compute_state_ranks(Tfst* tfst,int SENTENCE,int* rank) {
+int compute_state_ranks(Tfst* tfst,int* rank) {
 int n_states=tfst->automaton->number_of_states;
 int maximum_rank=0;
 for (int i=0;i<n_states;i++) {
@@ -405,8 +404,7 @@ return width;
  * the X coordinates of the grf boxes so that the graph will be readable.
  * The function returns the X position of the last rank boxes.
  */
-int get_max_width_for_ranks(Tfst* tfst,int SENTENCE,int* pos_X,int* rank,
-                            int maximum_rank) {
+int get_max_width_for_ranks(Tfst* tfst,int* pos_X,int* rank,int maximum_rank) {
 int n_states=tfst->automaton->number_of_states;
 int i;
 Transition* trans;
@@ -456,7 +454,7 @@ return g;
 /**
  * The same than the previous one, but with a char* parameter.
  */
-struct grf_state* new_grf_state(char* content,int pos_X,int rank) {
+struct grf_state* new_grf_state(const char* content,int pos_X,int rank) {
 struct grf_state* g=(struct grf_state*)malloc(sizeof(struct grf_state));
 if (g==NULL) {
    fatal_alloc_error("new_grf_state");

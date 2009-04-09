@@ -589,7 +589,7 @@ free(state);
  * and returns an equivalent optimized state, or NULL if the given state
  * was NULL.
  */
-OptimizedFst2State optimize_state(Variables* v,Fst2* fst2,Fst2State state,int state_number,Fst2Tag* tags) {
+OptimizedFst2State optimize_state(Variables* v,Fst2* fst2,Fst2State state,Fst2Tag* tags) {
 if (state==NULL) return NULL;
 OptimizedFst2State new_state=new_optimized_state();
 new_state->control=state->control;
@@ -613,7 +613,7 @@ if (optimized_states==NULL) {
    fatal_alloc_error("build_optimized_fst2_states");
 }
 for (int i=0;i<fst2->number_of_states;i++) {
-   optimized_states[i]=optimize_state(v,fst2,fst2->states[i],i,fst2->tags);
+   optimized_states[i]=optimize_state(v,fst2,fst2->states[i],fst2->tags);
 }
 return optimized_states;
 }

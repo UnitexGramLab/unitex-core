@@ -70,8 +70,8 @@ unichar* P_ELAG_TAG=u_strdup(".!:>");
  * Example: parse("E\=\mc\2 is a formula",result," ","m","2") will produce the
  *          result = "E=mc\2"
  */
-int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars,
-                 unichar* forbidden_chars,unichar* chars_to_keep_protected) {
+int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
+                 const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
 int j=0;
 if (s[*ptr]=='\0') return P_EOS;
 while (s[*ptr]!='\0') {
@@ -116,7 +116,7 @@ return P_OK;
  * If an error occurs, it returns an error code; otherwise, the substring obtained
  * is stored in 'result' and P_OK is returned.
  */
-int parse_string(unichar* s,int *ptr,unichar* result,unichar* stop_chars) {
+int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars) {
 return parse_string(s,ptr,result,stop_chars,P_EMPTY,P_EMPTY);
 }
 
@@ -127,7 +127,7 @@ return parse_string(s,ptr,result,stop_chars,P_EMPTY,P_EMPTY);
  * If an error occurs, it returns an error code; otherwise, the substring obtained
  * is stored in 'result' and P_OK is returned.
  */
-int parse_string(unichar* s,int *ptr,unichar* result,char* stop_chars) {
+int parse_string(const unichar* s,int *ptr,unichar* result,const char* stop_chars) {
 unichar* tmp=u_strdup(stop_chars);
 int value=parse_string(s,ptr,result,tmp,P_EMPTY,P_EMPTY);
 free(tmp);
@@ -139,7 +139,7 @@ return value;
  * This function do the same as above, except that it starts from the
  * beginning of the string. It can be used for one-shot tokenization.
  */
-int parse_string(unichar* s,unichar* result,unichar* stop_chars) {
+int parse_string(const unichar* s,unichar* result,const unichar* stop_chars) {
 int ptr=0;
 return parse_string(s,&ptr,result,stop_chars,P_EMPTY,P_EMPTY);
 }
@@ -149,7 +149,7 @@ return parse_string(s,&ptr,result,stop_chars,P_EMPTY,P_EMPTY);
  * This function do the same as above, except that it starts from the
  * beginning of the string. It can be used for one-shot tokenization.
  */
-int parse_string(unichar* s,unichar* result,char* stop_chars) {
+int parse_string(const unichar* s,unichar* result,const char* stop_chars) {
 unichar* tmp=u_strdup(stop_chars);
 int ptr=0;
 int value=parse_string(s,&ptr,result,tmp,P_EMPTY,P_EMPTY);
@@ -172,7 +172,7 @@ return value;
  * The function returns the length of 'result'.
  * 
  */
-int escape(unichar* s,unichar* result,unichar* chars_to_escape) {
+int escape(const unichar* s,unichar* result,const unichar* chars_to_escape) {
 int j=0;
 for (int i=0;s[i]!='\0';i++) {
    if (u_strchr(chars_to_escape,s[i])) {

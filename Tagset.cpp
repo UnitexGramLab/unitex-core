@@ -28,7 +28,7 @@
  * This structure defines a keyword and its associated value.
  */
 typedef struct keyword_t {
-   char* str;
+   const char* str;
    int val;
 } keyword_t;
 
@@ -150,7 +150,7 @@ if (list==NULL) {
    return new_tokens_list(toks,NULL);
 }
 tokens_list* end;
-for (end=list;end->next!=NULL;end=end->next);
+for (end=list;end->next!=NULL;end=end->next) {}
 end->next=new_tokens_list(toks,NULL);
 return list;
 }

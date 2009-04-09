@@ -142,11 +142,11 @@ void SU_init_forms(SU_forms_T* forms);
 // Initialize the set of inflected forms "forms" with 
 // the unique form "form"
 // E.g. if form = "rekami" then forms becomes (1,{("rekami",NULL)}
-void SU_init_invariable_form(SU_forms_T* forms, unichar* form);
+void SU_init_invariable_form(SU_forms_T* forms,const unichar* form);
 
 /////////////////////////////////////////////////////////////////////
 // Same as SU_init_invariable_form but the second parameter is a char*
-void SU_init_invariable_form_char(SU_forms_T* forms, char* form);
+void SU_init_invariable_form_char(SU_forms_T* forms,const char* form);
 
 ////////////////////////////////////////////
 // Prints a form and its inflection features.

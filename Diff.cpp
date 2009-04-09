@@ -30,7 +30,7 @@
  * This function takes two concordance index 'in1' and 'in2', and builds
  * the associated concordacnces 'out1' and 'out2'.
  */
-void create_text_concordances(char* in1,char* in2,char* out1,char* out2) {
+void create_text_concordances(const char* in1,const char* in2,const char* out1,const char* out2) {
 pseudo_main_Concord(in1,NULL,0,20,40,NULL,"text",NULL,NULL,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
@@ -47,7 +47,7 @@ rename(f,out2);
 /**
  * Printing the header of the HTML file.
  */
-void print_diff_HTML_header(FILE* f,char* font,int size) {
+void print_diff_HTML_header(FILE* f,const char* font,int size) {
 u_fprintf(UTF8,f,"<html>\n");
 u_fprintf(UTF8,f,"<head>\n");
 u_fprintf(UTF8,f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
@@ -79,7 +79,7 @@ u_fprintf(UTF8,f,"</table>\n</body>\n</html>\n");
  * produces a HTML file (out) that shows the differences between
  * those two concordances.
  */
-int diff(char* in1,char* in2,char* out,char* font,int size) {
+int diff(const char* in1,const char* in2,const char* out,const char* font,int size) {
 char concor1[FILENAME_MAX];
 char concor2[FILENAME_MAX];
 get_path(in1,concor1);
@@ -248,7 +248,7 @@ right[i]='\0';
  * This function loads concordance lines from 'f1' and/or 'f2' and prints them to 
  * 'output' in the given color.
  */
-void print_diff_matches(FILE* output,FILE* f1,FILE* f2,char* color) {
+void print_diff_matches(FILE* output,FILE* f1,FILE* f2,const char* color) {
 unichar left[MAX_CONTEXT_IN_UNITS];
 unichar middle[MAX_CONTEXT_IN_UNITS];
 unichar right[MAX_CONTEXT_IN_UNITS];

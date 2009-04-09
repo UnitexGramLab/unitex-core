@@ -57,7 +57,7 @@ if (equal==NULL) {
    fatal_error("NULL equal function error in new_hash_table\n");
 }
 h->equal=equal;
-if (free==NULL) {
+if (free_element==NULL) {
    fatal_error("NULL free function error in new_hash_table\n");
 }
 h->free=free_element;
@@ -326,7 +326,7 @@ return value;
  * key. In that case, it returns a pointer on its associated value; NULL
  * otherwise.
  */
-struct any* get_value_(int key,struct hash_list* list,struct hash_table* h) {
+struct any* get_value_(int key,struct hash_list* list) {
 while (list!=NULL) {
    if (key==list->int_key) {
       /* If we have found an equal key, we return a pointer on its value */
@@ -379,7 +379,7 @@ if (h==NULL) {
    fatal_error("NULL hash table error in get_value\n");
 }
 int cell_index=key%h->capacity;
-struct any* value=get_value_(key,h->table[cell_index],h);
+struct any* value=get_value_(key,h->table[cell_index]);
 if (value!=NULL) {
    /* If the key is the table we have finished */
    (*ret)=HT_KEY_ALREADY_THERE;

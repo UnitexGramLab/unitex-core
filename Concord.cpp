@@ -98,9 +98,9 @@ u_printf("Usage: Concord [OPTIONS] <concord>\n"
 
 
 
-int pseudo_main_Concord(char* index_file,char* font,int fontsize,
-                        int left_context,int right_context,char* sort_order,
-                        char* output,char* directory,char* alphabet,int thai) {
+int pseudo_main_Concord(const char* index_file,const char* font,int fontsize,
+                        int left_context,int right_context,const char* sort_order,
+                        const char* output,const char* directory,const char* alphabet,int thai) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Concord,"main_Concord");
 char tmp[256];
 if (font!=NULL) {

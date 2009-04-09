@@ -41,7 +41,7 @@ exit(error_code);
  * Prints the given message and
  * exits the program with the given exit code.
  */
-void fatal_error(int error_code,char* format,...) {
+void fatal_error(int error_code,const char* format,...) {
 va_list list;
 va_start(list,format);
 u_vfprintf(STDERR_ENC,stderr,format,list);
@@ -54,7 +54,7 @@ fatal_error(error_code);
  * Prints the given message and
  * exits the program with the default exit code.
  */
-void fatal_error(char* format,...) {
+void fatal_error(const char* format,...) {
 va_list list;
 va_start(list,format);
 u_vfprintf(STDERR_ENC,stderr,format,list);
@@ -66,7 +66,7 @@ fatal_error(DEFAULT_ERROR_CODE);
 /**
  * Prints the given message on the error stream.
  */
-void error(char* format,...) {
+void error(const char* format,...) {
 va_list list;
 va_start(list,format);
 u_vfprintf(STDERR_ENC,stderr,format,list);
@@ -79,6 +79,6 @@ va_end(list);
  * Raises a fatal memory allocation error. 'function' is the name 
  * of the function where the error occurred.
  */
-void fatal_alloc_error(char* function) {
+void fatal_alloc_error(const char* function) {
 fatal_error(ALLOC_ERROR_CODE,"Not enough memory in %s\n",function);
 }

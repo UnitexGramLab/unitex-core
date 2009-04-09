@@ -358,8 +358,7 @@ return l;
  * It returns 1 if at least one condition was resolved.
  */
 int resolve_conditions_for_one_graph(int n,ConditionList* conditions,
-                                     Fst2State* states,int* initial_states,
-                                     unichar** graph_names) {
+                                     Fst2State* states,int* initial_states) {
 int modification=0;
 int matches_E=DOES_NOT_KNOW_IF_E_IS_MATCHED;
 if (conditions[n]==NULL) {
@@ -393,8 +392,7 @@ return modification;
  * even just one; 0 otherwise.
  */
 int resolve_conditions(ConditionList* conditions,int n_graphs,
-                       Fst2State* states,int* initial_states,
-                       unichar** graph_names) {
+                       Fst2State* states,int* initial_states) {
 int modification=0;
 for (int i=1;i<n_graphs+1;i++) {
    if (!is_bit_mask_set(states[initial_states[i]]->control,
@@ -407,7 +405,7 @@ for (int i=1;i<n_graphs+1;i++) {
          modification++;
       } else {
          /* Otherwise, we try to solve the conditions of the graph */
-         modification=modification+resolve_conditions_for_one_graph(i,conditions,states,initial_states,graph_names);
+         modification=modification+resolve_conditions_for_one_graph(i,conditions,states,initial_states);
       }
    }
 }
@@ -609,7 +607,7 @@ for (i=1;i<=fst2->number_of_graphs;i++) {
  * and this case will be dealt with later. */
 u_printf("Resolving <E> conditions\n");
 while (resolve_conditions(conditions,fst2->number_of_graphs,
-							fst2->states,fst2->initial_states,fst2->graph_names));
+							fst2->states,fst2->initial_states)) {}
 if (is_bit_mask_set(fst2->states[fst2->initial_states[1]]->control,UNCONDITIONAL_E_MATCH)) {
    /* If the main graph matches <E> */
    if (!no_empty_graph_warning) error("ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);

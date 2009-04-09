@@ -104,8 +104,8 @@ extern Encoding FILE_ENC;
 
 
 /* ------------------- Some aliases, mainly for default UTF16-LE use ------------------- */
-FILE* u_fopen(char*,char*);
-int u_fempty(char*);
+FILE* u_fopen(const char*,const char*);
+int u_fempty(const char*);
 
 int u_fgetc_raw(FILE*);
 int u_fgetc_UTF16LE(FILE*);
@@ -130,11 +130,11 @@ int u_fgets(unichar*,FILE*);
 int u_fgets(unichar*,int,FILE*);
 int u_fgets2(unichar*,FILE*);
 
-int u_printf(char*,...);
-int u_fprintf(FILE*,char*,...);
+int u_printf(const char*,...);
+int u_fprintf(FILE*,const char*,...);
 
-int u_scanf(char*,...);
-int u_fscanf(FILE*,char*,...);
+int u_scanf(const char*,...);
+int u_fscanf(FILE*,const char*,...);
 
 /* The u_prints and u_fprints functions should not be visible from the
  * outside of this library. People should use u_printf and u_fprintf */
@@ -145,10 +145,10 @@ int u_fscanf(FILE*,char*,...);
 //void u_fprints(Encoding,char*,FILE*);
 
 /* ------------------- File functions ------------------- */
-FILE* u_fopen(Encoding,char*,char*);
+FILE* u_fopen(Encoding,const char*,const char*);
 int u_fclose(FILE*);
-int u_fempty(Encoding,char*);
-int u_is_UTF16(char*);
+int u_fempty(Encoding,const char*);
+int u_is_UTF16(const char*);
 
 int u_fgetc_UTF16LE_raw(FILE*);
 int u_fgetc_UTF16BE_raw(FILE*);
@@ -166,8 +166,8 @@ int u_fputc_UTF8_raw(unichar,FILE*);
 int u_fputc_raw(Encoding,unichar,FILE*);
 int u_fputc(Encoding,unichar,FILE*);
 
-int u_ungetc_UTF16LE_raw(unichar,FILE*);
-int u_ungetc_UTF16BE_raw(unichar,FILE*);
+int u_ungetc_UTF16LE_raw(FILE*);
+int u_ungetc_UTF16BE_raw(FILE*);
 int u_ungetc_UTF8_raw(unichar,FILE*);
 int u_ungetc_raw(Encoding,unichar,FILE*);
 int u_ungetc(Encoding,unichar,FILE*);
@@ -179,22 +179,22 @@ int u_fgets(Encoding,unichar*,FILE*);
 int u_fgets(Encoding,unichar*,int,FILE*);
 int u_fgets2(Encoding encoding,unichar* line,FILE* f);
 
-int u_fprintf(Encoding,FILE*,char*,...);
-int u_vfprintf(Encoding,FILE*,char*,va_list);
-int u_sprintf(unichar*,char*,...);
-int u_vsprintf(unichar*,char*,va_list);
+int u_fprintf(Encoding,FILE*,const char*,...);
+int u_vfprintf(Encoding,FILE*,const char*,va_list);
+int u_sprintf(unichar*,const char*,...);
+int u_vsprintf(unichar*,const char*,va_list);
 
-int u_fscanf(Encoding,FILE*,char*,...);
-int u_vfscanf(Encoding,FILE*,char*,va_list);
-int u_sscanf(unichar*,char*,...);
-int u_vsscanf(unichar*,char*,va_list);
+int u_fscanf(Encoding,FILE*,const char*,...);
+int u_vfscanf(Encoding,FILE*,const char*,va_list);
+int u_sscanf(unichar*,const char*,...);
+int u_vsscanf(unichar*,const char*,va_list);
 
 /* ------------------- String functions ------------------- */
 int u_strlen(const unichar*);
 unichar* u_strcpy(unichar*,const unichar*);
 unichar* u_strcpy(unichar*,const char*);
-unichar* u_strcat(unichar*,unichar*);
-unichar* u_strcat(unichar*,char*);
+unichar* u_strcat(unichar*,const unichar*);
+unichar* u_strcat(unichar*,const char*);
 int u_strcmp(const unichar*, const unichar*);
 int u_equal(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
@@ -203,7 +203,7 @@ unichar* u_strdup(const unichar*,int);
 unichar* u_strdup(const char*);
 unichar* u_strchr(const unichar*,unichar,int);
 unichar* u_strchr(const unichar*,unichar);
-char* u_strchr(char*,unichar);
+const char* u_strchr(const char*,unichar);
 unichar* u_strpbrk(const unichar*,unichar*);
 unichar* u_strpbrk(const unichar*,char*);
 int u_starts_with(const unichar*,const unichar*);

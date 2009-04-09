@@ -72,7 +72,7 @@ return 0;
 // this function check for all the INF codes that are:
 // N+FF
 //
-void check_valid_right_component_german(char* tableau_sia,struct INF_codes* inf) {
+void check_valid_right_component_german(char* tableau_correct_right_component,struct INF_codes* inf) {
 u_printf("Check valid right components...\n");
 for (int i=0;i<inf->N;i++) {
    tableau_correct_right_component[i]=check_valid_right_component_for_an_INF_line_german(inf->codes[i]);
@@ -191,7 +191,7 @@ unsigned char* tableau_bin;
 // this function reads words in the word file and try analyse them
 //
 void analyse_german_word_list(unsigned char* bin,struct INF_codes* inf,
-                                 FILE* words,FILE* result,FILE* debug,FILE* new_unknown_words) {
+                              FILE* words,FILE* result,FILE* debug,FILE* new_unknown_words) {
 unichar s[1000];
 tableau_bin=bin;
 debug_file=debug;

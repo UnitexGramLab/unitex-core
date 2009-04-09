@@ -110,7 +110,7 @@ if (state_number<S->state_list->state_number) {
    S->state_list=new_state_id(A,state_number,S->state_list);
 } else {
    state_id* id;
-   for (id=S->state_list;id->next!=NULL && (id->next->state_number<state_number);id=id->next);
+   for (id=S->state_list;id->next!=NULL && (id->next->state_number<state_number);id=id->next) {}
    if (id->next!=NULL && (id->next->state_number==state_number)) {
       /* If the state is already in the set, nothing to do */
       return;

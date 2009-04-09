@@ -118,7 +118,7 @@ if (info!=NULL) {
  *  If there are more than MAX_ERRORS errors,
  *  exit the programm by calling "fatal_error".
  */
-void error_at_token_pos(char* message,int start,int length,struct locate_parameters* p) {
+void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p) {
 static int n_errors;
 static int last_start=-1;
 static int last_length;

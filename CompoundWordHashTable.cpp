@@ -101,7 +101,7 @@ free(hash_table);
  */
 int tct_length(int* token_sequence) {
 int i;
-for (i=0;token_sequence[i]!=-1;i++);
+for (i=0;token_sequence[i]!=-1;i++) {}
 return i+1; 
 }
 

@@ -136,7 +136,7 @@ static unichar u_null_string[]= {(unichar)'\0',(unichar)'\0'};
 static unichar u_epsilon_string[] = {(unichar)'<',(unichar)'E'
 ,(unichar)'>',(unichar)'\0'};
 
-static char *StrMemLack = "allocation of memory for cycle data is fail";
+static const char *StrMemLack = "allocation of memory for cycle data is fail";
 
 struct pathAndEti {
     int autoNo;
@@ -187,7 +187,7 @@ public:
 	} CautoQueue[2048];
 	int CautoDepth;
 	
-	void CqueuePathPr(FILE *f,int dep);
+	void CqueuePathPr(FILE *f);
 
 	int *ignoreTable;
 	int *numOfIgnore;
@@ -236,7 +236,7 @@ public:
 		}
 		if(ofnameOnly[0]== 0) fatal_error("ofile name not correct");
 	}
-	void makeOfileName(char *des,char *fn,char *ext){
+	void makeOfileName(char *des,const char *fn,const char *ext){
 	   strcpy(des,ofdirName);
 	   if(fn) strcat(des,fn);
 	   else strcat(des,ofnameOnly);
@@ -414,7 +414,7 @@ verboseMode  = 0;
 		   error("%d : (%08x:%08x) : %08x\n",
                i,pathEtiQ[i].autoNo,pathEtiQ[i].etatNo,pathEtiQ[i].eti);
 		   
-		   CqueuePathPr(stderr,numOfPath);
+		   CqueuePathPr(stderr);
            fatal_error("eu~ak\n");
         }
         if(setflag){
@@ -423,7 +423,7 @@ verboseMode  = 0;
 			cnode->flag = 1;
 		}
 		}
-      #warning beurk!!!
+      #warning beurk!!! aa is a static 
 		u_sprintf(aa,"Loc%d",cnode->index);
 		return((unichar *)aa);
 		
@@ -457,7 +457,7 @@ verboseMode  = 0;
 			(*cnode)->flag = 0;
 		}
 		
-		struct cyclePathMark *pCyc = getLoopId(offset,cntNode);
+		struct cyclePathMark *pCyc = getLoopId(offset);
 		struct cycleNodeId::linkCycle **a = &((*cnode)->cycInfos);
 		while(*a){
 			if(pCyc->index == (*a)->cyc->index) return;
@@ -470,7 +470,7 @@ verboseMode  = 0;
 		(*a)->cyc = pCyc;
 
 	}
-	struct cyclePathMark *getLoopId(int offset,int noNode)
+	struct cyclePathMark *getLoopId(int offset)
 	{
 		struct cyclePathMark **h = &headCyc;
 		int numOfPath;
@@ -693,7 +693,7 @@ verboseMode  = 0;
             if((automateMode == TRANMODE) && SOutCnt){
                   u_fprintf(foutput,"%S%S",saveSep,SOUTLINE);
             }
-            if(display_control ==  DEBUG)CqueuePathPr(foutput,depthDebug);
+            if(display_control ==  DEBUG)CqueuePathPr(foutput);
             u_fprintf(foutput,"\n");
             numberOfOutLine++;
 		    EOutCnt = SOutCnt = 0;
@@ -1424,7 +1424,7 @@ void CFstApp::findCycleSubGraph(int automateNo,int autoDepth,int stateNo,int sta
 //	for debugging, display all stack
 //
 #warning f peut etre la sortie d erreur!
-void CFstApp::CqueuePathPr(FILE *f,int depth)
+void CFstApp::CqueuePathPr(FILE *f)
 {
 	int pidx = -1;
 	int i;
@@ -1445,9 +1445,7 @@ uascToNum(unichar *uasc,int *val)
 	unichar *wp = uasc;
 	int base = 10;
 	int sum = 0;
-	if((*wp == (unichar)'0') && 
-		(*(wp+1)==(unichar)'x') || 
-		(*(wp+1) == (unichar)'X'))
+	if((*wp == (unichar)'0') && ((*(wp+1)==(unichar)'x') || (*(wp+1) == (unichar)'X')))
 	{
 		base = 16;
 		wp+=2;

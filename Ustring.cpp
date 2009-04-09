@@ -217,7 +217,7 @@ return readline(ustr,UTF16_LE,f);
  * The same as u_sprintf, but into a Ustring, whose previous
  * content is lost.
  */
-void u_sprintf(Ustring* ustr,char* fmt,...) {
+void u_sprintf(Ustring* ustr,const char* fmt,...) {
 va_list plist;
 va_start(plist,fmt);
 int size=u_vsprintf(NULL,fmt,plist);
@@ -236,7 +236,7 @@ if (size!=ustr->len) {
  * is appended at the end of the given Ustring instead of replacing
  * its previous content.
  */
-void u_strcatf(Ustring* ustr,char* fmt,...) {
+void u_strcatf(Ustring* ustr,const char* fmt,...) {
 va_list plist;
 va_start(plist,fmt);
 int size=u_vsprintf(NULL,fmt,plist)+ustr->len;

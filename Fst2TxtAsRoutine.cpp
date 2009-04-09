@@ -253,7 +253,7 @@ while (p->current_origin<p->text_buffer->size) {
          within_tag=1;
       } else if (p->buffer[p->current_origin]=='}') {
          within_tag=0;
-      } else if (!within_tag && p->buffer[p->current_origin]!=' ' || p->space_policy==START_WITH_SPACE) {
+      } else if (!within_tag && (p->buffer[p->current_origin]!=' ' || p->space_policy==START_WITH_SPACE)) {
          // we don't start a match on a space
         scan_graph(0,debut,0,0,NULL,p);
       }

@@ -22,10 +22,10 @@
 #ifndef ErrorH
 #define ErrorH
 
-void fatal_error(int,char*,...);
-void fatal_error(char*,...);
-void fatal_alloc_error(char*);
-void error(char*,...);
+void fatal_error(int,const char*,...);
+void fatal_error(const char*,...);
+void fatal_alloc_error(const char*);
+void error(const char*,...);
 
 #endif
 

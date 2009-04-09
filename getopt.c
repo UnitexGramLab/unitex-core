@@ -88,11 +88,7 @@ char    *optarg;		/* argument associated with option */
 #define	BADARG		((*options == ':') ? (int)':' : (int)'?')
 #define	INORDER 	(int)1
 
-#ifdef __CYGWIN__
 static char EMSG[] = "";
-#else
-#define	EMSG		""
-#endif
 
 static int getopt_internal(int, char * const *, const char *,
 			   const struct option *, int *, int);
@@ -101,7 +97,7 @@ static int parse_long_options(char * const *, const char *,
 static int gcd(int, int);
 static void permute_args(int, int, int, char * const *);
 
-static char *place = EMSG; /* option letter processing */
+static char* place = EMSG; /* option letter processing */
 
 /* XXX: set optreset to 1 rather than these two */
 static int nonopt_start = -1; /* first non option argument (for permute) */

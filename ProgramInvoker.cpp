@@ -26,7 +26,7 @@
 /**
  * Allocates, initializes and returns a new program invoker.
  */
-ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,char* name) {
+ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,const char* name) {
 if (f==NULL) {
    fatal_error("NULL main pointer in new_ProgramInvoker\n");
 }
@@ -54,7 +54,7 @@ free(i);
 /**
  * Add the given argument to the given invoker.
  */
-void add_argument(ProgramInvoker* invoker,char* arg) {
+void add_argument(ProgramInvoker* invoker,const char* arg) {
 char* tmp=strdup(arg);
 if (tmp==NULL) {
    fatal_alloc_error("add_argument");

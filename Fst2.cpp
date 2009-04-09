@@ -584,7 +584,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		if (read_names) {
 			fst2->graph_names[current_graph]=NULL;
 		}
-		while(((c=(unichar)u_fgetc(f))!='f'));
+		while(((c=(unichar)u_fgetc(f))!='f')) {}
 	}
 	/* We read the space and the '\n' that follows the final 'f' */
    u_fgetc(f);

@@ -45,11 +45,11 @@ Encoding FILE_ENC=UTF16_LE;
 
 /* ------------------- Some aliases, mainly for default UTF16-LE use ------------------- */
 
-FILE* u_fopen(char* name,char* MODE) {
+FILE* u_fopen(const char* name,const char* MODE) {
 return u_fopen(FILE_ENC,name,MODE);
 }
 
-int u_fempty(char* name) {
+int u_fempty(const char* name) {
 return u_fempty(FILE_ENC,name);
 }
 
@@ -132,7 +132,7 @@ return u_fgets2(FILE_ENC,s,f);
 /**
  * By default, messages printed to the standard output are UTF8-encoded.
  */
-int u_printf(char* format,...) {
+int u_printf(const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vfprintf(STDOUT_ENC,stdout,format,list);
@@ -140,7 +140,7 @@ va_end(list);
 return n;
 }
 
-int u_fprintf(FILE* f,char* format,...) {
+int u_fprintf(FILE* f,const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vfprintf(FILE_ENC,f,format,list);
@@ -148,17 +148,17 @@ va_end(list);
 return n;
 }
 
-void u_fprints(Encoding,unichar*,FILE*);
-void u_fprints(unichar* s,FILE* f) {
+void u_fprints(Encoding,const unichar*,FILE*);
+void u_fprints(const unichar* s,FILE* f) {
 u_fprints(FILE_ENC,s,f);
 }
 
-void u_fprints(Encoding,char*,FILE*);
-void u_fprints(char* s,FILE* f) {
+void u_fprints(Encoding,const char*,FILE*);
+void u_fprints(const char* s,FILE* f) {
 u_fprints(FILE_ENC,s,f);
 }
 
-int u_scanf(char* format,...) {
+int u_scanf(const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vfscanf(STDIN_ENC,stdin,format,list);
@@ -166,7 +166,7 @@ va_end(list);
 return n;
 }
 
-int u_fscanf(FILE* f,char* format,...) {
+int u_fscanf(FILE* f,const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vfscanf(FILE_ENC,f,format,list);
@@ -186,7 +186,7 @@ return n;
  * 
  * 'MODE' should be U_READ, U_WRITE, U_APPEND or U_MODIFY
  */
-FILE* u_fopen(Encoding encoding,char* name,char* MODE) {
+FILE* u_fopen(Encoding encoding,const char* name,const char* MODE) {
 FILE* f;
 if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
    /* If we are in APPEND or MODIFY mode, we check first if the file already exists */
@@ -263,7 +263,7 @@ return fclose(f);
  * This function creates an empty Unicode file that just contains the
  * byte order mark. It returns 0 if it fails; 1 otherwise.
  */
-int u_fempty(Encoding encoding,char* name) {
+int u_fempty(Encoding encoding,const char* name) {
 FILE* f=u_fopen(encoding,name,U_WRITE);
 if (f==NULL) {
    return 0;
@@ -276,7 +276,7 @@ return 1;
 /**
  * This function tests if the given file name correspond to a UTF16 file.
  */
-int u_is_UTF16(char* name) {
+int u_is_UTF16(const char* name) {
 FILE* f=fopen(name,U_READ);
 if (f==NULL) {
    /* If the file does not exist */
@@ -618,7 +618,7 @@ return u_fputc_raw(encoding,c,f);
  * 
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc_UTF16_raw(unichar c,FILE *f) {
+int u_ungetc_UTF16_raw(FILE *f) {
 return (fseek(f,-2,SEEK_CUR)==0)?1:0;
 }
 
@@ -630,8 +630,8 @@ return (fseek(f,-2,SEEK_CUR)==0)?1:0;
  * 
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc_UTF16LE_raw(unichar c,FILE *f) {
-return u_ungetc_UTF16_raw(c,f);
+int u_ungetc_UTF16LE_raw(FILE *f) {
+return u_ungetc_UTF16_raw(f);
 }
 
 
@@ -642,8 +642,8 @@ return u_ungetc_UTF16_raw(c,f);
  * 
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc_UTF16BE_raw(unichar c,FILE *f) {
-return u_ungetc_UTF16_raw(c,f);
+int u_ungetc_UTF16BE_raw(FILE *f) {
+return u_ungetc_UTF16_raw(f);
 }
 
 
@@ -665,7 +665,7 @@ else if (c<=0x7FF) {
    /* 2 bytes 110X XXXX*/
    number_of_bytes=-2;
 }
-else if (c<=0xFFFF) {
+else /* The following test is always true: if (c<=0xFFFF) */ {
    /* 3 bytes 1110X XXXX */
    number_of_bytes=-3;
 }
@@ -683,8 +683,8 @@ return (fseek(f,number_of_bytes,SEEK_CUR)==0)?1:0;
  */
 int u_ungetc_raw(Encoding encoding,unichar c,FILE *f) {
 switch (encoding) {
-   case UTF16_LE: return u_ungetc_UTF16LE_raw(c,f);
-   case UTF16_BE: return u_ungetc_UTF16BE_raw(c,f);
+   case UTF16_LE: return u_ungetc_UTF16LE_raw(f);
+   case UTF16_BE: return u_ungetc_UTF16BE_raw(f);
    case UTF8: return u_ungetc_UTF8_raw(c,f);
 }
 return 0;
@@ -694,7 +694,7 @@ return 0;
 /**
  * Unicode version of ungetc. In fact, we just rewind 'n' bytes before in 'f',
  * where 'n' is the length of the represention of 'c' in the given encoding.
- * If 'c' is '\n', then we also ungetc a '\r'.
+ * If 'c' is '\n', then we also ungetc one char representing a '\r'.
  * At the opposite of the real ungetc, it does not push back the given 
  * character to the stream.
  * 
@@ -703,7 +703,7 @@ return 0;
 int u_ungetc(Encoding encoding,unichar c,FILE *f) {
 if (c=='\n') {
    if (!u_ungetc_raw(encoding,c,f)) return 0;
-   if (!u_ungetc_raw(encoding,'\r',f)) return 0;
+   if (!u_ungetc_raw(encoding,c,f)) return 0;
    return 1;
 }
 return u_ungetc_raw(encoding,c,f);
@@ -858,7 +858,7 @@ return length;
  * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
-int u_vfprintf(Encoding encoding,FILE* f,char* format,va_list list) {
+int u_vfprintf(Encoding encoding,FILE* f,const char* format,va_list list) {
 int n_printed=0;
 int i;
 double d;
@@ -1028,7 +1028,7 @@ return n_printed;
  * Author: Olivier Blanc
  * Modified by Sébastien Paumier
  */
-int u_fprintf(Encoding encoding,FILE* f,char* format,...) {
+int u_fprintf(Encoding encoding,FILE* f,const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vfprintf(encoding,f,format,list);
@@ -1045,7 +1045,7 @@ return n;
  * 
  * Author: Olivier Blanc
  */
-int u_sprintf(unichar* dest,char* format,...) {
+int u_sprintf(unichar* dest,const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vsprintf(dest,format,list);
@@ -1066,7 +1066,7 @@ return n;
  * Author: Sébastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
-int u_vsprintf(unichar* dest,char* format,va_list list) {
+int u_vsprintf(unichar* dest,const char* format,va_list list) {
 int n_printed=0;
 int i;
 double d;
@@ -1264,7 +1264,7 @@ return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
  * 
  * Author: Sébastien Paumier
  */
-int u_vfscanf(Encoding encoding,FILE* f,char* format,va_list list) {
+int u_vfscanf(Encoding encoding,FILE* f,const char* format,va_list list) {
 int c;
 int *i;
 unichar *uc;
@@ -1304,7 +1304,7 @@ while (*format) {
       } else {
          /* 2) the format is for instance a '\t' and we have a current input 
           *    separator that is not a '\t' => we skip all separators that are not '\t' */
-         while ((c=u_fgetc_raw(encoding,f))!=EOF && is_separator(c) && c!=*format);
+         while ((c=u_fgetc_raw(encoding,f))!=EOF && is_separator(c) && c!=*format) {}
          /* Subcase 1: EOF */
          if (c==EOF) return (n_variables==0)?EOF:n_variables;
          /* Subcase 2: we found the correct separator */
@@ -1491,7 +1491,7 @@ return n_variables;
  * 
  * Author: Sébastien Paumier
  */
-int u_fscanf(Encoding encoding,FILE* f,char* format,...) {
+int u_fscanf(Encoding encoding,FILE* f,const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vfscanf(encoding,f,format,list);
@@ -1505,7 +1505,7 @@ return n;
  * 
  * Author: Sébastien Paumier
  */
-int u_vsscanf(unichar* s,char* format,va_list list) {
+int u_vsscanf(unichar* s,const char* format,va_list list) {
 int c;
 int *i;
 unichar *uc;
@@ -1680,7 +1680,7 @@ return n_variables;
  * 
  * Author: Sébastien Paumier
  */
-int u_sscanf(unichar* input,char* format,...) {
+int u_sscanf(unichar* input,const char* format,...) {
 va_list list;
 va_start(list,format);
 int n=u_vsscanf(input,format,list);
@@ -1692,7 +1692,7 @@ return n;
 /**
  * Prints an unicode string into a file.
  */
-void u_fprints(Encoding encoding,unichar* s,FILE* f) {
+void u_fprints(Encoding encoding,const unichar* s,FILE* f) {
 int i=0;
 if (s==NULL) {
    return;
@@ -1706,7 +1706,7 @@ while (s[i]!='\0') {
 /**
  * Prints a char string into a file.
  */
-void u_fprints(Encoding encoding,char* s,FILE* f) {
+void u_fprints(Encoding encoding,const char* s,FILE* f) {
 int i=0;
 if (s==NULL) {
    return;
@@ -1724,7 +1724,7 @@ while (s[i]!='\0') {
  */
 int u_strlen(const unichar* s) {
 register int i=0;
-while (s[i++]);
+while (s[i++]) {}
 return (i-1);
 }
 
@@ -1779,7 +1779,7 @@ return s;
 /**
  * Unicode version of strcat.
  */
-unichar* u_strcat(unichar* dest,unichar* src) {
+unichar* u_strcat(unichar* dest,const unichar* src) {
 unichar *s1=dest;
 const unichar *s2=src;
 register unichar c;
@@ -1800,10 +1800,10 @@ return dest;
 /**
  * Unicode version of strcat.
  */
-unichar* u_strcat(unichar* dest,char* src) {
+unichar* u_strcat(unichar* dest,const char* src) {
 int i,j=0;
 i=u_strlen(dest);
-while ((dest[i++]=(unichar)((unsigned char)src[j++]))!=0);
+while ((dest[i++]=(unichar)((unsigned char)src[j++]))!=0) {}
 return dest;
 }
 
@@ -1811,7 +1811,7 @@ return dest;
 /**
  * Unicode version of strcmp that tolerates NULL strings.
  */
-int u_strcmp(const unichar* a, const unichar* b) {
+int u_strcmp(const unichar* a,const unichar* b) {
 if (a==NULL) {
    if (b==NULL) return 0;
    return 1;
@@ -1833,7 +1833,7 @@ return a_c-b_c;
 /**
  * Unicode version of strcmp that tolerates NULL strings.
  */
-int u_strcmp(const unichar* a, const char* b) {
+int u_strcmp(const unichar* a,const char* b) {
 if (a==NULL) {
    if (b==NULL) return 0;
    return 1;
@@ -1966,7 +1966,7 @@ return u_strchr(s,c,0);
  * Author: Olivier Blanc
  * Modified by Sébastien Paumier
  */
-char* u_strchr(char* s,unichar c) {
+const char* u_strchr(const char* s,unichar c) {
 if (s==NULL) return NULL;
 while (*s) {
    if (c==(unichar)*s) return s;

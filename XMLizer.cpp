@@ -42,10 +42,10 @@ void xmlize(char*,char*,int);
 /* Headers (XML & TEI) Variables
  * ----------------------------- */
 
-static char *xml_open = "<?xml version='1.0' encoding='UTF-8'?>\n<text>";
-static char *xml_close = "</text>";
-static char *tei_open = "<?xml version='1.0' encoding='UTF-8'?>\n<tei>\n<teiHeader/>\n<text>\n<body>\n<div xml:id=\"d1\">\n";
-static char *tei_close = "</div>\n</body>\n</text>\n</tei>";
+static const char *xml_open = "<?xml version='1.0' encoding='UTF-8'?>\n<text>";
+static const char *xml_close = "</text>";
+static const char *tei_open = "<?xml version='1.0' encoding='UTF-8'?>\n<tei>\n<teiHeader/>\n<text>\n<body>\n<div xml:id=\"d1\">\n";
+static const char *tei_close = "</div>\n</body>\n</text>\n</tei>";
 
 
 

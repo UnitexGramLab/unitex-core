@@ -354,7 +354,7 @@ if (class_numbers[a]) {
 int strcmp2(unichar* a,unichar* b) {
 int i=0;
 while (a[i] && a[i]==b[i]) i++;
-return (char_cmp(a[i],b[i]));
+return char_cmp(a[i],b[i]);
 }
 
 
@@ -364,7 +364,7 @@ return (char_cmp(a[i],b[i]));
  */
 void sort() {
 u_printf("Loading text...\n");
-while (read_line());
+while (read_line()) {}
 u_printf("%d lines read\n",number_of_lines);
 save();
 }
@@ -376,7 +376,7 @@ save();
  */
 void sort_thai() {
 u_printf("Loading text...\n");
-while (read_line_thai());
+while (read_line_thai()) {}
 u_printf("%d lines read\n",number_of_lines);
 save();
 }

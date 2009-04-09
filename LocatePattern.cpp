@@ -30,7 +30,7 @@
 #include "File.h"
 
 
-void load_dic_for_locate(char*,Alphabet*,int,int,int,int,struct lemma_node*,struct locate_parameters*);
+void load_dic_for_locate(char*,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*);
 void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p);
 
@@ -224,9 +224,9 @@ p->current_compound_pattern=number_of_patterns;
 p->DLC_tree=new_DLC_tree(p->tokens->size);
 struct lemma_node* root=new_lemma_node();
 u_printf("Loading dlf...\n");
-load_dic_for_locate(dlf,p->alphabet,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
+load_dic_for_locate(dlf,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 u_printf("Loading dlc...\n");
-load_dic_for_locate(dlc,p->alphabet,number_of_patterns,is_DIC,is_CDIC,is_SDIC,root,p);
+load_dic_for_locate(dlc,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 /* We look if tag tokens like "{today,.ADV}" verify some patterns */
 check_patterns_for_tag_tokens(p->alphabet,number_of_patterns,root,p);
 u_printf("Optimizing fst2 pattern tags...\n");
@@ -452,14 +452,14 @@ free_string_hash(ERR);
  * by the pattern 456. Moreover, all case variations will be taken into account,
  * so that the "Extended" and "EXTENDED" tokens will also be updated.
  * 
- * The three parameters 'is_DIC_pattern', 'is_CDIC_pattern' and 'is_SDIC_pattern'
- * indicates if the .fst2 contains the corresponding patterns. For instance, if
- * the pattern "<SDIC>" is used in the grammar, it means that any token that is a
- * simple word must be marked as be matched by this pattern.
+ * The two parameters 'is_DIC_pattern' and 'is_CDIC_pattern'
+ * indicate if the .fst2 contains the corresponding patterns. For instance, if
+ * the pattern "<CDIC>" is used in the grammar, it means that any token sequence that is a
+ * compound word must be marked as be matched by this pattern.
  */
 void load_dic_for_locate(char* dic_name,Alphabet* alphabet,
                          int number_of_patterns,int is_DIC_pattern,
-                         int is_CDIC_pattern,int is_SDIC_pattern,
+                         int is_CDIC_pattern,
                          struct lemma_node* root,struct locate_parameters* parameters) {
 struct string_hash* tokens=parameters->tokens;
 FILE* f;
@@ -531,7 +531,7 @@ while (EOF!=u_fgets(line,f)) {
       if (is_DIC_pattern || is_CDIC_pattern) {
          /* If the .fst2 contains "<DIC>" and/or "<CDIC>", then we
           * must note that all compound words can be matched by them */
-         add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy,parameters->SPACE);
+         add_compound_word_with_no_pattern(entry->inflected,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy);
       }
       if (number_of_patterns) {
          /* We look for matching patterns only if there are some */
@@ -541,7 +541,7 @@ while (EOF!=u_fgets(line,f)) {
          while (tmp!=NULL) {
             /* If the word is matched by at least one pattern, we store it. */
             int pattern_number=((struct constraint_list*)(tmp->pointer))->pattern_number;
-            add_compound_word_with_pattern(entry->inflected,pattern_number,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy,parameters->SPACE); 
+            add_compound_word_with_pattern(entry->inflected,pattern_number,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy); 
             tmp=tmp->next;
          }
          free_list_pointer(list);
