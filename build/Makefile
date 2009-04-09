@@ -609,6 +609,9 @@ install: bin
 clean: $(CLEAN-LIBTRE)
 	rm -f $(OBJS) $(PROGS) *~ korean/*.o korean/*~ Main_*.o
 
+clean-all-but-tre:
+	rm -f $(OBJS) $(PROGS) *~ korean/*.o korean/*~ Main_*.o
+
 dist: clean
 	if test -d $(BUILD); then rm -rf $(BUILD); fi
 	mkdir $(BUILD)
