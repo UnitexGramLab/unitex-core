@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -21,23 +21,23 @@
 
 #include "Korean.h"
 
-unichar first_letter_tab[]={0x3131,0x3132,0x3134,0x3137,0x3138,
+static const unichar first_letter_tab[]={0x3131,0x3132,0x3134,0x3137,0x3138,
                             0x3139,0x3141,0x3142,0x3143,0x3145,
                             0x3146,0x3147,0x3148,0x3149,0x314A,
                             0x314B,0x314C,0x314D,0x314E};
 
-unichar second_letter_tab_A[]={0x314F,0x3150,0x3151,0x3152,0x3153,
+static const unichar second_letter_tab_A[]={0x314F,0x3150,0x3151,0x3152,0x3153,
                              0x3154,0x3155,0x3156};
 
-unichar second_letter_tab_B[]={0x3157,0x315B,0x315C,0x3160,0x3161};
+static const unichar second_letter_tab_B[]={0x3157,0x315B,0x315C,0x3160,0x3161};
 
-unichar second_letter_tab_C[]={0x3163};
+static const unichar second_letter_tab_C[]={0x3163};
 
-unichar last_part_A[28][3];
+static unichar last_part_A[28][3];
 
-unichar last_part_B[4][2];
+static unichar last_part_B[4][2];
 
-unichar last_part_C[2][2];
+static unichar last_part_C[2][2];
 
 /**
  * Converts a Korean syllab S into a letter sequence stored in res. Returns 0
@@ -135,4 +135,4 @@ return 0;
 }
 
 
-int __korean_bidon=initKoreanArrays();
+static int __korean_foo=initKoreanArrays();
