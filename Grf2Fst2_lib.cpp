@@ -496,7 +496,7 @@ if (input[*pos]==':') {
       }
    }
    #ifndef _NOT_UNDER_WINDOWS
-   else if (test4abs_windows_path_name(&(f_input[*pos]))) {
+   else if (test4abs_windows_path_name(&(input[*pos]))) {
       /* If the subgraph has an absolute path */
       l=0;
    }
