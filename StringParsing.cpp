@@ -26,29 +26,29 @@
  * Here we define some separator sets that will be used
  * many times.
  */
-unichar* P_SPACE=u_strdup(" ");
-unichar* P_COMMA=u_strdup(",");
-unichar* P_DOT=u_strdup(".");
-unichar* P_EQUAL=u_strdup("=");
-unichar* P_PLUS=u_strdup("+");
-unichar* P_COLON=u_strdup(":");
-unichar* P_SLASH=u_strdup("/");
-unichar* P_EXCLAMATION=u_strdup("!");
-unichar* P_DOUBLE_QUOTE=u_strdup("\"");
-unichar* P_PLUS_COLON=u_strdup("+:");
-unichar* P_PLUS_MINUS_COLON=u_strdup("+-:");
-unichar* P_PLUS_COLON_SLASH=u_strdup("+:/");
-unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=u_strdup("+:/[");
-unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=u_strdup("+:/![");
-unichar* P_COLON_CLOSING_BRACKET=u_strdup(":]");
-unichar* P_COLON_SLASH=u_strdup(":/");
-unichar* P_CLOSING_ROUND_BRACKET=u_strdup("}");
-unichar* P_COMMA_DOT=u_strdup(",.");
-unichar* P_PLUS_COLON_SLASH_BACKSLASH=u_strdup("+:/\\");
-unichar* P_COLON_SLASH_BACKSLASH=u_strdup(":/\\");
-unichar* P_COMMA_DOT_BACKSLASH_DIGITS=u_strdup(",.\\0123456789");
-unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup(".+/\\");
-unichar* P_ELAG_TAG=u_strdup(".!:>");
+const unichar* P_SPACE=u_strdup(" ");
+const unichar* P_COMMA=u_strdup(",");
+const unichar* P_DOT=u_strdup(".");
+const unichar* P_EQUAL=u_strdup("=");
+const unichar* P_PLUS=u_strdup("+");
+const unichar* P_COLON=u_strdup(":");
+const unichar* P_SLASH=u_strdup("/");
+const unichar* P_EXCLAMATION=u_strdup("!");
+const unichar* P_DOUBLE_QUOTE=u_strdup("\"");
+const unichar* P_PLUS_COLON=u_strdup("+:");
+const unichar* P_PLUS_MINUS_COLON=u_strdup("+-:");
+const unichar* P_PLUS_COLON_SLASH=u_strdup("+:/");
+const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=u_strdup("+:/[");
+const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=u_strdup("+:/![");
+const unichar* P_COLON_CLOSING_BRACKET=u_strdup(":]");
+const unichar* P_COLON_SLASH=u_strdup(":/");
+const unichar* P_CLOSING_ROUND_BRACKET=u_strdup("}");
+const unichar* P_COMMA_DOT=u_strdup(",.");
+const unichar* P_PLUS_COLON_SLASH_BACKSLASH=u_strdup("+:/\\");
+const unichar* P_COLON_SLASH_BACKSLASH=u_strdup(":/\\");
+const unichar* P_COMMA_DOT_BACKSLASH_DIGITS=u_strdup(",.\\0123456789");
+const unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup(".+/\\");
+const unichar* P_ELAG_TAG=u_strdup(".!:>");
 
 
 /**
