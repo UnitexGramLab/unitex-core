@@ -39,19 +39,14 @@
 #define MAX_TAG_LENGTH 4000
 
 
-int SENTENCES=0;
-int TOKENS_TOTAL=0;
-int WORDS_TOTAL=0;
-int DIFFERENT_WORDS=0;
-int DIGITS_TOTAL=0;
-int DIFFERENT_DIGITS=0;
-
 
 void sort_and_save_by_frequence(FILE*,vector_ptr*,vector_int*);
 void sort_and_save_by_alph_order(FILE*,vector_ptr*,vector_int*);
-void compute_statistics(FILE*,vector_ptr*,Alphabet*);
-void normal_tokenization(FILE*,FILE*,FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*);
-void char_by_char_tokenization(FILE*,FILE*,FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*);
+void compute_statistics(FILE*,vector_ptr*,Alphabet*,int,int,int,int);
+void normal_tokenization(FILE*,FILE*,FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
+		   int*,int*,int*,int*);
+void char_by_char_tokenization(FILE*,FILE*,FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
+		   int*,int*,int*,int*);
 void save_new_line_positions(FILE*,vector_int*);
 
 
@@ -208,13 +203,18 @@ vector_int* n_occur=new_vector_int(4096);
 vector_int* n_enter_pos=new_vector_int(4096);
 struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
                                             (FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
-
+int SENTENCES=0;
+int TOKENS_TOTAL=0;
+int WORDS_TOTAL=0;
+int DIGITS_TOTAL=0;
 u_printf("Tokenizing text...\n");
 if (mode==NORMAL) {
-   normal_tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos);
+   normal_tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
+		   &SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL);
 }
 else {
-   char_by_char_tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos);
+   char_by_char_tokenization(text,out,output,alph,tokens,hashtable,n_occur,n_enter_pos,
+		   &SENTENCES,&TOKENS_TOTAL,&WORDS_TOTAL,&DIGITS_TOTAL);
 }
 u_printf("\nDone.\n");
 save_new_line_positions(enter,n_enter_pos);
@@ -231,7 +231,7 @@ if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
 else {
-   compute_statistics(output,tokens,alph);
+   compute_statistics(output,tokens,alph,SENTENCES,TOKENS_TOTAL,WORDS_TOTAL,DIGITS_TOTAL);
    u_fclose(output);
 }
 // we save the tokens by frequence
@@ -293,7 +293,9 @@ return n;
 
 void normal_tokenization(FILE* f,FILE* coded_text,FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
-                         vector_int* n_occur,vector_int* n_enter_pos) {
+                         vector_int* n_occur,vector_int* n_enter_pos,
+                         int *SENTENCES,int *TOKENS_TOTAL,int *WORDS_TOTAL,
+                         int *DIGITS_TOTAL) {
 int c;
 unichar s[MAX_TAG_LENGTH];
 int n;
@@ -321,9 +323,9 @@ while (c!=EOF) {
       n=get_token_number(s,tokens,hashtable,n_occur);
       /* If there is a \n, we note it */
       if (ENTER==1) {
-         vector_int_add(n_enter_pos,TOKENS_TOTAL);
+         vector_int_add(n_enter_pos,*TOKENS_TOTAL);
       }
-      TOKENS_TOTAL++;
+      (*TOKENS_TOTAL)++;
       fwrite(&n,4,1,coded_text);
    }
    else if (c=='{') {
@@ -346,7 +348,7 @@ while (c!=EOF) {
      s[z+1]='\0';
      if (!u_strcmp(s,"{S}")) {
         // if we have found a sentence delimiter
-        SENTENCES++;
+        (*SENTENCES)++;
      } else {
         if (u_strcmp(s,"{STOP}") && !check_tag_token(s)) {
            // if a tag is incorrect, we exit
@@ -354,7 +356,7 @@ while (c!=EOF) {
         }
      }
      n=get_token_number(s,tokens,hashtable,n_occur);
-     TOKENS_TOTAL++;
+     (*TOKENS_TOTAL)++;
      fwrite(&n,4,1,coded_text);
      c=u_fgetc(f);
    }
@@ -364,10 +366,9 @@ while (c!=EOF) {
       if (!is_letter(s[0],alph)) {
          s[1]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
-         TOKENS_TOTAL++;
-         if (c>='0' && c<='9') DIGITS_TOTAL++;
+         (*TOKENS_TOTAL)++;
+         if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
          fwrite(&n,4,1,coded_text);
-
          c=u_fgetc(f);
       }
       else {
@@ -380,8 +381,8 @@ while (c!=EOF) {
          }
          s[n]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
-         TOKENS_TOTAL++;
-         WORDS_TOTAL++;
+         (*TOKENS_TOTAL)++;
+         (*WORDS_TOTAL)++;
          fwrite(&n,4,1,coded_text);
       }
    }
@@ -395,7 +396,9 @@ for (n=0;n<tokens->nbelems;n++) {
 
 void char_by_char_tokenization(FILE* f,FILE* coded_text,FILE* output,Alphabet* alph,
                                vector_ptr* tokens,struct hash_table* hashtable,
-                               vector_int* n_occur,vector_int* n_enter_pos) {
+                               vector_int* n_occur,vector_int* n_enter_pos,
+                               int *SENTENCES,int *TOKENS_TOTAL,int *WORDS_TOTAL,
+                               int *DIGITS_TOTAL) {
 int c;
 unichar s[MAX_TAG_LENGTH];
 int n;
@@ -422,9 +425,9 @@ while (c!=EOF) {
       n=get_token_number(s,tokens,hashtable,n_occur);
       /* If there is a \n, we note it */
       if (ENTER==1) {
-         vector_int_add(n_enter_pos,TOKENS_TOTAL);
+         vector_int_add(n_enter_pos,*TOKENS_TOTAL);
       }
-      TOKENS_TOTAL++;
+      (*TOKENS_TOTAL)++;
       fwrite(&n,4,1,coded_text);
    }
    else if (c=='{') {
@@ -448,7 +451,7 @@ while (c!=EOF) {
      s[z+1]='\0';
      if (!u_strcmp(s,"{S}")) {
         // if we have found a sentence delimiter
-        SENTENCES++;
+        (*SENTENCES)++;
      } else {
         if (u_strcmp(s,"{STOP}") && !check_tag_token(s)) {
            // if a tag is incorrect, we exit
@@ -456,7 +459,7 @@ while (c!=EOF) {
         }
      }
      n=get_token_number(s,tokens,hashtable,n_occur);
-     TOKENS_TOTAL++;
+     (*TOKENS_TOTAL)++;
      fwrite(&n,4,1,coded_text);
      c=u_fgetc(f);
    }
@@ -464,9 +467,9 @@ while (c!=EOF) {
       s[0]=(unichar)c;
       s[1]='\0';
       n=get_token_number(s,tokens,hashtable,n_occur);
-      TOKENS_TOTAL++;
-      if (is_letter((unichar)c,alph)) WORDS_TOTAL++;
-      else if (c>='0' && c<='9') DIGITS_TOTAL++;
+      (*TOKENS_TOTAL)++;
+      if (is_letter((unichar)c,alph)) (*WORDS_TOTAL)++;
+      else if (c>='0' && c<='9') (*DIGITS_TOTAL)++;
       fwrite(&n,4,1,coded_text);
       c=u_fgetc(f);
    }
@@ -572,7 +575,10 @@ for (int i=0;i<tokens->nbelems;i++) {
 
 
 
-void compute_statistics(FILE *f,vector_ptr* tokens,Alphabet* alph) {
+void compute_statistics(FILE *f,vector_ptr* tokens,Alphabet* alph,
+		                int SENTENCES,int TOKENS_TOTAL,int WORDS_TOTAL,int DIGITS_TOTAL) {
+int DIFFERENT_DIGITS=0;
+int DIFFERENT_WORDS=0;
 for (int i=0;i<tokens->nbelems;i++) {
    unichar* foo=(unichar*)tokens->tab[i];
    if (u_strlen(foo)==1) {
@@ -580,7 +586,9 @@ for (int i=0;i<tokens->nbelems;i++) {
    }
    if (is_letter(foo[0],alph)) DIFFERENT_WORDS++;
 }
-u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%s, %d (%d) digit%s\n",SENTENCES,(SENTENCES>1)?"s":"",TOKENS_TOTAL,tokens->nbelems,(TOKENS_TOTAL>1)?"s":"",WORDS_TOTAL,DIFFERENT_WORDS,(WORDS_TOTAL>1)?"s":"",DIGITS_TOTAL,DIFFERENT_DIGITS,(DIGITS_TOTAL>1)?"s":"");
+u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%s, %d (%d) digit%s\n",
+		SENTENCES,(SENTENCES>1)?"s":"",TOKENS_TOTAL,tokens->nbelems,(TOKENS_TOTAL>1)?"s":"",WORDS_TOTAL,
+		DIFFERENT_WORDS,(WORDS_TOTAL>1)?"s":"",DIGITS_TOTAL,DIFFERENT_DIGITS,(DIGITS_TOTAL>1)?"s":"");
 }
 
 
