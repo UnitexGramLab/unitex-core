@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -337,7 +337,7 @@ void PNC_trans_write(Elag_fst_file_out * fstf, int to) {
 
   label[1] = 0;
 
-  for (unichar * pnc = PUNC_TAB; *pnc; pnc++) {
+  for (const unichar * pnc = PUNC_TAB; *pnc; pnc++) {
 
     if (*pnc != '{') {
       label[0] = *pnc;

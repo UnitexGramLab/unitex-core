@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -176,9 +176,9 @@ if (p->filters==NULL) {
    return 0;
 }
 #endif
-
 u_printf("Loading token list...\n");
-p->tokens=load_text_tokens_hash(tokens,&(p->SENTENCE),&(p->STOP));
+int n_text_tokens=0;
+p->tokens=load_text_tokens_hash(tokens,&(p->SENTENCE),&(p->STOP),&n_text_tokens);
 if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
    free_alphabet(p->alphabet);
@@ -203,15 +203,15 @@ extract_semantic_codes_from_tokens(p->tokens,semantic_codes);
 u_printf("Loading morphological dictionaries...\n");
 load_morphological_dictionaries(morpho_dic_list,p);
 extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes);
-p->token_control=(unsigned char*)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(unsigned char));
+p->token_control=(unsigned char*)malloc(n_text_tokens*sizeof(unsigned char));
 if (p->token_control==NULL) {
    fatal_alloc_error("locate_pattern");
 }
-p->matching_patterns=(struct bit_array**)malloc(NUMBER_OF_TEXT_TOKENS*sizeof(struct bit_array*));
+p->matching_patterns=(struct bit_array**)malloc(n_text_tokens*sizeof(struct bit_array*));
 if (p->matching_patterns==NULL) {
    fatal_alloc_error("locate_pattern");
 }
-for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
+for (int i=0;i<n_text_tokens;i++) {
   p->token_control[i]=0;
   p->matching_patterns[i]=NULL;
 }
@@ -258,7 +258,7 @@ free_string_hash(p->tokens);
 free_list_int(p->tag_token_list);
 free_lemma_node(root);
 free(p->token_control);
-for (int i=0;i<NUMBER_OF_TEXT_TOKENS;i++) {
+for (int i=0;i<n_text_tokens;i++) {
    free_bit_array(p->matching_patterns[i]);
 }
 free(p->matching_patterns);

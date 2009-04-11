@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -22,8 +22,6 @@
 #include "Text_tokens.h"
 #include "Error.h"
 
-
-int NUMBER_OF_TEXT_TOKENS=0;
 
 struct text_tokens* new_text_tokens() {
 struct text_tokens* tmp;
@@ -71,18 +69,18 @@ return res;
 
 
 
-struct string_hash* load_text_tokens_hash(char* nom) {
+struct string_hash* load_text_tokens_hash(char* nom,int *NUMBER_OF_TEXT_TOKENS) {
 FILE* f;
 f=u_fopen(nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
-u_fscanf(f,"%d\n",&NUMBER_OF_TEXT_TOKENS);
-NUMBER_OF_TEXT_TOKENS=NUMBER_OF_TEXT_TOKENS+100000; // the +100000 is used to prevent the addition
+u_fscanf(f,"%d\n",NUMBER_OF_TEXT_TOKENS);
+*NUMBER_OF_TEXT_TOKENS=(*NUMBER_OF_TEXT_TOKENS)+100000; // the +100000 is used to prevent the addition
                                             // of tokens while locate preprocessing
 struct string_hash* res;
-res=new_string_hash(NUMBER_OF_TEXT_TOKENS);
-unichar tmp[1000];
+res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
+unichar tmp[4096];
 while (EOF!=u_fgets(tmp,f)) {
    get_value_index(tmp,res);
 }
@@ -93,19 +91,20 @@ return res;
 
 
 struct string_hash* load_text_tokens_hash(char* nom,int *SENTENCE_MARKER,
-                                          int* STOP_MARKER) {
+                                          int* STOP_MARKER,
+                                          int *NUMBER_OF_TEXT_TOKENS) {
 FILE* f;
 f=u_fopen(nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
 (*SENTENCE_MARKER)=-1;
-u_fscanf(f,"%d\n",&NUMBER_OF_TEXT_TOKENS);
-NUMBER_OF_TEXT_TOKENS=NUMBER_OF_TEXT_TOKENS+100000; // the +100000 is used to prevent the addition
+u_fscanf(f,"%d\n",NUMBER_OF_TEXT_TOKENS);
+*NUMBER_OF_TEXT_TOKENS=(*NUMBER_OF_TEXT_TOKENS)+100000; // the +100000 is used to prevent the addition
                                             // of tokens while locate preprocessing
 struct string_hash* res;
-res=new_string_hash(NUMBER_OF_TEXT_TOKENS);
-unichar tmp[1000];
+res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
+unichar tmp[4096];
 int x;
 while (EOF!=u_fgets(tmp,f)) {
    x=get_value_index(tmp,res);

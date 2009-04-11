@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,6 @@
 #include "Alphabet.h"
 #include "DELA.h"
 
-extern int NUMBER_OF_TEXT_TOKENS;
 
 /*
  * This is the structure that holds 
@@ -50,8 +49,8 @@ struct text_tokens {
 
 
 struct text_tokens* load_text_tokens(char*);
-struct string_hash* load_text_tokens_hash(char*);
-struct string_hash* load_text_tokens_hash(char*,int*,int*);
+struct string_hash* load_text_tokens_hash(char*,int*);
+struct string_hash* load_text_tokens_hash(char*,int*,int*,int*);
 void free_text_tokens(struct text_tokens*);
 struct list_int* get_token_list_for_sequence(unichar*,Alphabet*,struct string_hash*);
 int get_token_number(unichar*,struct text_tokens*);
