@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@ typedef struct keyword_t {
 /**
  * Here are the keywords that can be used in a tagset definition file.
  */
-static keyword_t keywords[] = {
+static const keyword_t keywords[] = {
   { "NAME", TOK_NAME },
   { "POS",  TOK_POS  },
   { ".", TOK_END },
@@ -62,7 +62,7 @@ token_t* tok=(token_t*)malloc(sizeof(token_t));
 if (tok==NULL) {
    fatal_alloc_error("new_token_t");
 }
-for (keyword_t* key=keywords;key->str!=NULL;key++) {
+for (const keyword_t* key=keywords;key->str!=NULL;key++) {
    if (!u_strcmp(str, key->str)) {
       /* If the token is a keyword */
       tok->type=key->val;
