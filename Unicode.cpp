@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@
 
 
 /* This array is a bit array used to define characters that are letters */
-char tab_is_letter[8192];
+static char tab_is_letter[8192];
 
 
 /**
@@ -780,7 +780,7 @@ return i;
  * - (0 < len < size-1) : means that we have read a complete line (str[len-1]=='\n', unless EOF)
  * 
  * Author: Olivier Blanc
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 
 int u_fgets(Encoding encoding,unichar* line,int size,FILE* f) {
@@ -855,7 +855,7 @@ return length;
  *   c      otherwise
  *   See 'htmlize' for details.
  * 
- * Author: Sébastien Paumier
+ * Author: Sï¿½bastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
 int u_vfprintf(Encoding encoding,FILE* f,const char* format,va_list list) {
@@ -1026,7 +1026,7 @@ return n_printed;
  * Unicode version of fprintf. See u_vfprintf for supported format options.
  * 
  * Author: Olivier Blanc
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 int u_fprintf(Encoding encoding,FILE* f,const char* format,...) {
 va_list list;
@@ -1063,7 +1063,7 @@ return n;
  * - %R for printing the reversed of a unicode string
  * - %HR for printing the reversed of a unicode string in HTML (see htmlize)
  * 
- * Author: Sébastien Paumier
+ * Author: Sï¿½bastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
 int u_vsprintf(unichar* dest,const char* format,va_list list) {
@@ -1262,7 +1262,7 @@ return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
  * Note 2: if yout type u_fscanf(f,"%d\n",&i); the function will skip any separator that is
  *         not '\n' after the integer, so that the line " 45   \t   \n" will be entirely read.
  * 
- * Author: Sébastien Paumier
+ * Author: Sï¿½bastien Paumier
  */
 int u_vfscanf(Encoding encoding,FILE* f,const char* format,va_list list) {
 int c;
@@ -1489,7 +1489,7 @@ return n_variables;
 /**
  * Unicode version of fscanf. See u_vfscanf for supported format options.
  * 
- * Author: Sébastien Paumier
+ * Author: Sï¿½bastien Paumier
  */
 int u_fscanf(Encoding encoding,FILE* f,const char* format,...) {
 va_list list;
@@ -1503,7 +1503,7 @@ return n;
 /**
  * Unicode version of sscanf. See u_vfscanf for supported format options.
  * 
- * Author: Sébastien Paumier
+ * Author: Sï¿½bastien Paumier
  */
 int u_vsscanf(unichar* s,const char* format,va_list list) {
 int c;
@@ -1678,7 +1678,7 @@ return n_variables;
 /**
  * Unicode version of sscanf. See u_vfscanf for supported format options.
  * 
- * Author: Sébastien Paumier
+ * Author: Sï¿½bastien Paumier
  */
 int u_sscanf(unichar* input,const char* format,...) {
 va_list list;
@@ -1926,7 +1926,7 @@ return u_strcpy(res,str);
  * occurrence, protected by a backslash or not.
  * 
  * Author: Olivier Blanc
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 unichar* u_strchr(const unichar* s,unichar c,int unprotected) {
 if (s==NULL) return NULL;
@@ -1964,7 +1964,7 @@ return u_strchr(s,c,0);
  * because such a cast would cause invalid matches.
  * 
  * Author: Olivier Blanc
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 const char* u_strchr(const char* s,unichar c) {
 if (s==NULL) return NULL;
@@ -2075,8 +2075,8 @@ return !u_strcmp(s+(l1-l2),suffix);
  * Converts the unichar* src into a char* dest.
  * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
  * 
- * Author: Sébastien Paumier
- * Modified by Sébastian Nagel
+ * Author: Sï¿½bastien Paumier
+ * Modified by Sï¿½bastian Nagel
  */
 void u_to_char(char *dest,unichar *src) {
 register unichar c;
@@ -2614,13 +2614,13 @@ the unicode case folding table:
 
 Case folding is done only for "common" and "simple" case
 folding, i.e. only single characters to single characters.  
-Foldings like á -> A' (A+accute) or (I -> i, I -> ï)
+Foldings like ï¿½ -> A' (A+accute) or (I -> i, I -> ï¿½)
 are excluded, see
   http://www.unicode.org/Public/UNIDATA/SpecialCasing.txt
 for many examples from various languages.
 
 To use the alphabet file is not possible, because of
-multiple mappings (A -> a or à in French), see commentary
+multiple mappings (A -> a or ï¿½ in French), see commentary
 on "turn_portuguese_sequence_to_lowercase" in Alphabet.cpp
 
 The case folding tables are implemented by a switch statement which
