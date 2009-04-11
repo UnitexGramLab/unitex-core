@@ -55,7 +55,7 @@ return t;
 
 
 static char _TYPE_ORDER_[256];
-static char* TYPE_ORDER=make_TYPE_ORDER(_TYPE_ORDER_);
+static const char* TYPE_ORDER=make_TYPE_ORDER(_TYPE_ORDER_);
 
 /**
  * Returns the order value corresponding to the given symbol's type.
