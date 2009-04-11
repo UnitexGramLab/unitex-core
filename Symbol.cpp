@@ -31,7 +31,7 @@
 #define MAXBUF 1024
 
 
-unichar PUNC_TAB[] = {
+const unichar PUNC_TAB[] = {
   '"', '\'',
   '+', '-', '*', '\\', '=',
   '.', ',', ':', ';', '!', '?',

@@ -30,7 +30,7 @@ struct POS_t;
 struct language_t;
 
 
-extern unichar PUNC_TAB[];
+extern const unichar PUNC_TAB[];
 
 /**
  * These constants are used to attribute special values to features.
