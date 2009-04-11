@@ -305,7 +305,7 @@ return res.next;
  */
 symbol_t* expand_code(symbol_t* code) {
 symbol_t* templat=new_symbol_POS(code->POS,code->tfsttag_index);
-templat->type=CODE;
+templat->type=S_CODE;
 symbol_t* res=expand_code(code,templat,0);
 free_symbol(templat);
 return res;

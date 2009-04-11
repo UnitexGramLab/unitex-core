@@ -42,7 +42,7 @@ for (i=0;i<language->POSs->size;i++) {
 symbol_t* tmp;
 while (trans!=NULL) {
    tmp=(symbol_t*)trans->label;
-   if (tmp->type==LEXIC) {
+   if (tmp->type==S_LEXIC) {
       /* If a transition matches everything, then we can stop
        * and return NULL */
       for (i=0;i<language->POSs->size;i++) {

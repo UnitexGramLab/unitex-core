@@ -77,7 +77,7 @@ while (*s!='\0') {
 void prefix_with_everything(SingleGraph A) {
 struct list_int* list=get_initial_states(A);
 while (list!=NULL) {
-   add_outgoing_transition(A->states[list->n],new_symbol(LEXIC,-1),list->n);
+   add_outgoing_transition(A->states[list->n],new_symbol(S_LEXIC,-1),list->n);
    list=list->next;
 }
 free_list_int(list);
@@ -97,7 +97,7 @@ for (int i=0;i<A->number_of_states;i++) {
        * symbols that tag transitions, because these symbols can be shared */
       free_Transition_list(A->states[i]->outgoing_transitions,NULL);
       A->states[i]->outgoing_transitions=NULL;
-      add_outgoing_transition(A->states[i],new_symbol(LEXIC,-1),i);
+      add_outgoing_transition(A->states[i],new_symbol(S_LEXIC,-1),i);
     }
   }
 }
@@ -401,15 +401,15 @@ for (Transition* t=rule->automaton->automaton->states[0]->outgoing_transitions;t
    symbol_t* symbol=t->label;
    switch (symbol->type) {
       /* We split the unique <!> .... <!> .... <!> part */
-      case EXCLAM:
+      case S_EXCLAM:
          if (rule->contexts[0].left!=NULL) {
             fatal_error("Too much '<!>' tags\n",rule->name);
          }
          rule->contexts[0].left=new_SingleGraph();
          /* We look for the end of the first part of the rule */
-         endR1=get_sub_automaton(rule->automaton->automaton,rule->contexts[0].left,t->state_number,0,EXCLAM);
+         endR1=get_sub_automaton(rule->automaton->automaton,rule->contexts[0].left,t->state_number,0,S_EXCLAM);
          rule->contexts[0].right=new_SingleGraph();
-         endR2=get_sub_automaton(rule->automaton->automaton,rule->contexts[0].right,endR1,0,EXCLAM);
+         endR2=get_sub_automaton(rule->automaton->automaton,rule->contexts[0].right,endR1,0,S_EXCLAM);
          if (endR1==ELAG_UNDEFINED || endR2==ELAG_UNDEFINED
              || !is_final_state(rule->automaton->automaton->states[endR2])) {
             fatal_error("split_elag_rule: %s: parse error in <!> part\n",rule->name);
@@ -417,7 +417,7 @@ for (Transition* t=rule->automaton->automaton->states[0]->outgoing_transitions;t
          break;
 
       /* We split the nbConstraints <=> .... <=> .... <=> parts */
-      case EQUAL:
+      case S_EQUAL:
          if (rule->contexts[1].left!=NULL) {
             fatal_error("Non deterministic .fst2 file\n");
          }
@@ -425,7 +425,7 @@ for (Transition* t=rule->automaton->automaton->states[0]->outgoing_transitions;t
             rule->contexts[c+1].left=new_SingleGraph();
             get_sub_automaton(rule->automaton->automaton,rule->contexts[c+1].left,t->state_number,1,constraints[c]);
             rule->contexts[c+1].right=new_SingleGraph();
-            endC2=get_sub_automaton(rule->automaton->automaton,rule->contexts[c+1].right,constraints[c],0,EQUAL);
+            endC2=get_sub_automaton(rule->automaton->automaton,rule->contexts[c+1].right,constraints[c],0,S_EQUAL);
             if (endC2==ELAG_UNDEFINED || !is_final_state(rule->automaton->automaton->states[endC2])) {
                fatal_error("split_elag_rule: %s: parse error in <=> part\n",rule->name);
             }
@@ -465,7 +465,7 @@ symbol_t* symbol;
 SingleGraph automaton=aut->automaton;
 for (t=automaton->states[0]->outgoing_transitions;t!=NULL && source==0;t=t->next) {
    symbol=t->label;
-   if (symbol->type==EQUAL) {
+   if (symbol->type==S_EQUAL) {
       if (t->state_number==0) {
          fatal_error("Illegal cycle in grammar\n");
       }
@@ -481,7 +481,7 @@ if (source==0) {
 for (e=1;e<automaton->number_of_states;e++) {
    for (t=automaton->states[e]->outgoing_transitions;t!=NULL;t=t->next) {
       symbol=t->label;
-      if (t->state_number!=source && symbol->type==EQUAL && !is_final_state(automaton->states[t->state_number])) {
+      if (t->state_number!=source && symbol->type==S_EQUAL && !is_final_state(automaton->states[t->state_number])) {
          /* We don't take into account '<=>' transitions that go to final states because
           * they are not middle '<=>' transitions. */
          for (c=0;c<nbConstraints;c++) {
@@ -615,7 +615,7 @@ int get_left_constraint_part(SingleGraph src,SingleGraph dest,int current_state,
 int found=0;
 for (Transition* t=src->states[current_state]->outgoing_transitions;t!=NULL;t=t->next) {
    symbol_t* symbol=t->label;
-   if (symbol->type==EQUAL) {
+   if (symbol->type==S_EQUAL) {
       /* If we find a <=> transition */
       if (t->state_number==final && !is_final_state(dest->states[renumber[current_state]])) {
          /* If we find the final state for the first time */

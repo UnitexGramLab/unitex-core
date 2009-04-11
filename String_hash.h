@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -102,21 +102,22 @@ struct string_hash* new_string_hash(int,int);
 struct string_hash* new_string_hash(int);
 struct string_hash* new_string_hash();
 void free_string_hash(struct string_hash*);
-int get_value_index(unichar*,struct string_hash*,int,unichar*);
-int get_value_index(unichar*,struct string_hash*,int);
-int get_value_index(unichar*,struct string_hash*);
+int get_value_index(const unichar*,struct string_hash*,int,unichar*);
+int get_value_index(const unichar*,struct string_hash*,int);
+int get_value_index(const unichar*,struct string_hash*);
 struct string_hash* load_key_list(char*);
 struct string_hash* load_key_value_list(char*,unichar);
 void dump_values(FILE*,struct string_hash*);
-int get_longest_key_index(unichar*,int*,struct string_hash*);
+int get_longest_key_index(const unichar*,int*,struct string_hash*);
 
 
 struct string_hash_ptr* new_string_hash_ptr(int);
 struct string_hash_ptr* new_string_hash_ptr();
 void free_string_hash_ptr(struct string_hash_ptr*,void (*)(void*));
-int get_value_index(unichar*,struct string_hash_ptr*,int);
-int get_value_index(unichar*,struct string_hash_ptr*);
-int get_value_index(unichar*,struct string_hash_ptr*,int,void*);
-void* get_value(unichar*,struct string_hash_ptr*);
+int get_value_index(const unichar*,struct string_hash_ptr*,int);
+int get_value_index(const unichar*,struct string_hash_ptr*);
+int get_value_index(const unichar*,struct string_hash_ptr*,int,void*);
+void* get_value(const unichar*,struct string_hash_ptr*);
 int add_value(void*,struct string_hash_ptr*);
+
 #endif

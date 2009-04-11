@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -33,14 +33,14 @@ struct list_ustring {
 };
 
 
-struct list_ustring* new_list_ustring(unichar*,struct list_ustring*);
-struct list_ustring* new_list_ustring(unichar*);
+struct list_ustring* new_list_ustring(const unichar*,struct list_ustring*);
+struct list_ustring* new_list_ustring(const unichar*);
 void free_list_ustring(struct list_ustring*);
 void free_list_ustring_element(struct list_ustring*);
-struct list_ustring* sorted_insert(unichar*,struct list_ustring*);
-struct list_ustring* head_insert(unichar*,struct list_ustring*);
-struct list_ustring* insert_at_end_of_list(unichar*,struct list_ustring*);
-int is_in_list(unichar*,struct list_ustring*);
+struct list_ustring* sorted_insert(const unichar*,struct list_ustring*);
+struct list_ustring* head_insert(const unichar*,struct list_ustring*);
+struct list_ustring* insert_at_end_of_list(const unichar*,struct list_ustring*);
+int is_in_list(const unichar*,struct list_ustring*);
 int equal(struct list_ustring*,struct list_ustring*);
 struct list_ustring* clone(struct list_ustring*);
 int length(struct list_ustring*);

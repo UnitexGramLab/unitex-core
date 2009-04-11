@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 /**
  * Allocates, initializes and returns a new string list element.
  */
-struct list_ustring* new_list_ustring(unichar* string,struct list_ustring* following) {
+struct list_ustring* new_list_ustring(const unichar* string,struct list_ustring* following) {
 if (string==NULL) {
    fatal_error("NULL string argument in new_list_ustring\n");
 }
@@ -45,7 +45,7 @@ return l;
 /**
  * Allocates, initializes and returns a new string list element.
  */
-struct list_ustring* new_list_ustring(unichar* string) {
+struct list_ustring* new_list_ustring(const unichar* string) {
 return new_list_ustring(string,NULL);
 }
 
@@ -84,7 +84,7 @@ free(element);
  * NOTE: in the general case, a struct list_ustring is not supposed
  *       to be sorted.
  */
-struct list_ustring* sorted_insert(unichar* value,struct list_ustring* l) {
+struct list_ustring* sorted_insert(const unichar* value,struct list_ustring* l) {
 if (value==NULL) {
    fatal_error("NULL string argument in sorted_insert\n");
 }
@@ -106,7 +106,7 @@ return l;
 /**
  * Inserts an element at the head of the list.
  */
-struct list_ustring* head_insert(unichar* value,struct list_ustring* old_head) {
+struct list_ustring* head_insert(const unichar* value,struct list_ustring* old_head) {
 if (value==NULL) {
    fatal_error("NULL string argument in head_insert\n");
 }
@@ -119,7 +119,7 @@ return new_head;
 /**
  * Inserts an element at the end of a list.
  */
-struct list_ustring* insert_at_end_of_list(unichar* s,struct list_ustring* l) {
+struct list_ustring* insert_at_end_of_list(const unichar* s,struct list_ustring* l) {
 if (l==NULL) return new_list_ustring(s);
 l->next=insert_at_end_of_list(s,l->next);
 return l;
@@ -129,7 +129,7 @@ return l;
 /**
  * Returns 1 if the given value is in the list; 0 otherwise.
  */
-int is_in_list(unichar* value,struct list_ustring* l) {
+int is_in_list(const unichar* value,struct list_ustring* l) {
 if (value==NULL) {
    fatal_error("NULL string argument in is_in_list\n");
 }

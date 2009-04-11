@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -59,13 +59,13 @@ for (int i=0;i<length;i++) {
 }
 return n;
 }
- 
+
 
 /**
  * This function explores in parallel a text token 'token' and the dictionary tree
- * 'tree'. 'n' is the current node in this tree. 'pos' is the current position in 
+ * 'tree'. 'n' is the current node in this tree. 'pos' is the current position in
  * 'token'. 'inflected' is the inflected form as in the text, i.e. with the same case.
- * It's not the same than 'token' because it can be a composed inflected form. 
+ * It's not the same than 'token' because it can be a composed inflected form.
  * 'pos_inflected' is the current position in this string. 'state' is the current
  * state in the sentence automaton we are building, so, if we find transitions to
  * add, we will add them from it. 'shift' represents the number of non space tokens
@@ -87,7 +87,7 @@ void explore_dictionary_tree(int pos,unichar* token,unichar* inflected,int pos_i
                              language_t* language) {
 if (token[pos]=='\0') {
    if (shift==1 && n->value_index!=-1) {
-      /* If we are on the first token and if there are some DELA entries for it, 
+      /* If we are on the first token and if there are some DELA entries for it,
        * then it is not an unknown one */
       (*is_not_unknown_token)=1;
    }
@@ -101,7 +101,7 @@ if (token[pos]=='\0') {
       if (language!=NULL) {
          entry=filter_dela_entry(list->entry,NULL,language,0);
       }
-      if (entry!=NULL) { 
+      if (entry!=NULL) {
          unichar tag[4096];
          build_tag(entry,inflected,tag);
          u_sprintf(foo,"@STD\n@%S\n@%d-%d\n.\n",tag,first_token_index,current_token_index);
@@ -229,10 +229,10 @@ return trans;
  * if there are several paths to go from A to B, then we will keep those
  * that are tagged with the smallest number of unknown token made of letters.
  * For instance, if we have the 2 concurrent paths:
- * 
+ *
  *   Aujourd ' {hui,huir.V:Kms}
  *   {Aujourd'hui,aujourd'hui.ADV+z1}
- * 
+ *
  * we will remove the first one because it contains 1 unkown token made of letters
  * ("Aujourd") while the second contains none.
  */
@@ -324,9 +324,9 @@ free(x);
 /**
  * This function takes an output s like " {de,.PREP} {le,.DET} "
  * and returns a vector containing description of the tags that must be produced:
- * 
+ *
  * "{de,.PREP}" and "{le,.DET}"
- * 
+ *
  * The vector contains struct output_info*
  */
 vector_ptr* tokenize_normalization_output(unichar* s,Alphabet* alph) {
@@ -389,7 +389,7 @@ return result;
 
 
 /**
- * This function does its best to compute the start/end values for each tag 
+ * This function does its best to compute the start/end values for each tag
  * to be produced.
  */
 void solve_alignment_puzzle(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph) {
@@ -500,7 +500,7 @@ for (int i=0;i<vector->nbelems;i++) {
  * transitions in the given graph. For instance, if we have to add a path
  * from the state 4 to 7 corresponding to the sequence "{de,.PREP} {le,.PRO:ms}",
  * we will create a new intermediate state, for instance 19, and add two transitions:
- * 
+ *
  *   4 -- {de,.PREP} ----> 19
  *  19 -- {le,.PRO:ms} --> 7
  */
@@ -539,13 +539,13 @@ free_vector_ptr(vector,(void (*)(void*))free_output_info);
  * This function explores in parallel the text and the normalization tree.
  * If a sequence matches, then we add the transitions corresponding to the
  * normalized sequences. For instance, if we have a rule of the form:
- * 
+ *
  * j' => {je,.PRO:1s}
- * 
+ *
  * we will add a transition by "{je,.PRO:1s}" if we find "j'" in the text. This
  * is not the same than the exploration of the dictionary since here we ignore
  * the text sequence ("j'" is not taken into account for building the tag).
- * 
+ *
  * WARNING: this function MUST NOT BE CALLED when the current token is a space.
  */
 void explore_normalization_tree(int first_pos_in_buffer,int current_pos_in_buffer,
@@ -613,10 +613,10 @@ tfst->offset_in_chars=current_global_position_in_chars;
 
 struct string_hash* tags=new_string_hash(32);
 struct string_hash* tmp_tags=new_string_hash(32);
-unichar EPSILON[]={'@','<','E','>','\n','.','\n','\0'};
-/* The epsilon tag is always the first one */ 
-get_value_index(EPSILON,tmp_tags);
-get_value_index(EPSILON,tags);
+unichar EPSILON_TAG[]={'@','<','E','>','\n','.','\n','\0'};
+/* The epsilon tag is always the first one */
+get_value_index(EPSILON_TAG,tmp_tags);
+get_value_index(EPSILON_TAG,tags);
 
 int i;
 /* We add +1 for the final node */
@@ -674,7 +674,7 @@ for (i=0;i<length;i++) {
 
 /* Now, we insert the tag sequences found in the 'tags.ind' file, if any */
 struct match_list* tmp;
-while ((*tag_list)!=NULL && (*tag_list)->start>=current_global_position_in_tokens 
+while ((*tag_list)!=NULL && (*tag_list)->start>=current_global_position_in_tokens
        && (*tag_list)->start<=current_global_position_in_tokens+length) {
    if ((*tag_list)->end>current_global_position_in_tokens+length) {
       /* If we have a tag sequence that overlap two sentences, we must ignore it */
@@ -724,7 +724,7 @@ if (tfst->automaton->number_of_states==0) {
    save_current_sentence(tfst,out_tfst,out_tind,NULL,0);
 } else {
    /* Case 2: the automaton is not empty */
-   
+
    /* We minimize the sentence automaton. It will remove the unused states and may
     * factorize suffixes introduced during the application of the normalization tree. */
    minimize(tfst->automaton,1);

@@ -71,7 +71,7 @@ return symbol;
  * does not call 'symbol_type', in order to avoid infinite loops.
  */
 symbol_t* new_symbol_POS_no_type(POS_t* POS,int tag_number) {
-symbol_t* symbol=new_symbol(INC,tag_number);
+symbol_t* symbol=new_symbol(S_INC,tag_number);
 symbol->POS=POS;
 if (POS->CATs->size!=0) {
    symbol->feature=(char*)malloc(POS->CATs->size*sizeof(char));
@@ -110,7 +110,7 @@ return s;
 symbol_t* new_symbol_PUNC(language_t* language,int canonic,int tag_number) {
 POS_t* POS=language_get_POS(language,PUNC_STR);
 symbol_t* symbol=new_symbol_POS(POS,tag_number);
-symbol->type=ATOM;
+symbol->type=S_ATOM;
 symbol->negative=false;
 symbol->form=0;
 symbol->lemma=canonic;
@@ -125,7 +125,7 @@ return symbol;
 symbol_t* new_symbol_CHFA(language_t* language,int canonic,int tag_number) {
 POS_t* POS=language_get_POS(language,CHFA_STR);
 symbol_t* symbol=new_symbol_POS(POS,tag_number);
-symbol->type=ATOM;
+symbol->type=S_ATOM;
 symbol->negative=false;
 symbol->form=0;
 symbol->lemma=canonic;
@@ -140,7 +140,7 @@ return symbol;
 symbol_t* new_symbol_UNKNOWN(language_t* language,int form,int tag_number) {
 POS_t* POS=language_get_POS(language,UNKNOWN_STR);
 symbol_t* symbol=new_symbol_POS(POS,tag_number);
-symbol->type=ATOM;
+symbol->type=S_ATOM;
 symbol->negative=false;
 symbol->form=0;
 symbol->lemma=form;
@@ -154,7 +154,7 @@ return symbol;
 void empty_symbol(symbol_t* symbol) {
 if (symbol->feature!=NULL) free(symbol->feature);
 if (symbol->negative) free(symbol->negs);
-symbol->type=UNTYPED;
+symbol->type=S_UNTYPED;
 symbol->negative=false;
 symbol->form=0;
 symbol->lemma=0;
@@ -216,18 +216,18 @@ if (symbol==NULL) return NULL;
 symbol_t* res=NULL;
 int i;
 switch (symbol->type) {
-   case LEXIC:
-      res=new_symbol(LEXIC,symbol->tfsttag_index);
+   case S_LEXIC:
+      res=new_symbol(S_LEXIC,symbol->tfsttag_index);
       break;
-   case EPSILON:
-      res=new_symbol(EPSILON,symbol->tfsttag_index);
+   case S_EPSILON:
+      res=new_symbol(S_EPSILON,symbol->tfsttag_index);
       break;
-   case ATOM:
-   case INC_CAN:
-   case CODE:
-   case INC:
-   case INC_NEG:
-   case CODE_NEG:
+   case S_ATOM:
+   case S_INC_CAN:
+   case S_CODE:
+   case S_INC:
+   case S_INC_NEG:
+   case S_CODE_NEG:
       res=new_symbol_POS(symbol->POS,symbol->tfsttag_index);
       res->type=symbol->type;
       if (!symbol->negative) {
@@ -249,11 +249,11 @@ switch (symbol->type) {
          res->feature[i]=symbol->feature[i];
       }
       break;
-   case EXCLAM:
-      res=new_symbol(EXCLAM,symbol->tfsttag_index);
+   case S_EXCLAM:
+      res=new_symbol(S_EXCLAM,symbol->tfsttag_index);
       break;
-   case EQUAL:
-      res=new_symbol(EQUAL,symbol->tfsttag_index);
+   case S_EQUAL:
+      res=new_symbol(S_EQUAL,symbol->tfsttag_index);
       break;
    default: fatal_error("dup_symbol: unknown symbol type: '%c'\n",symbol->type);
 }
@@ -409,14 +409,14 @@ return count;
  */
 int type_symbol(symbol_t* symbol) {
 /* By default, a symbol is incomplete */
-symbol->type=INC;
+symbol->type=S_INC;
 if (symbol->POS->codes!=NULL) {
    /* If there are feature combinations to look at */
    symbol_t* matching_code=new_symbol_POS_no_type(symbol->POS,-1);
    int count=symbol_match_codes(symbol,matching_code);
    if (count==0) {
       /* If the symbol doesn't match any POS code, then it is an invalid one */
-      symbol->type=UNTYPED;
+      symbol->type=S_UNTYPED;
       free_symbol(matching_code);
       return symbol->type;
    }
@@ -424,7 +424,7 @@ if (symbol->POS->codes!=NULL) {
       /* If the symbol corresponds to one code, we set its discriminative
        * features as the matching code's one, so that the symbol is no more
        * an INC but a CODE */
-      symbol->type=CODE;
+      symbol->type=S_CODE;
       for (int i=0;i<symbol->POS->nb_discr;i++) {
          symbol->feature[i]=matching_code->feature[i];
       }
@@ -440,7 +440,7 @@ if (symbol->POS->codes!=NULL) {
    }
    free_symbol(matching_code);
 }
-if (symbol->type==INC) {
+if (symbol->type==S_INC) {
    /* If the symbol is not yet marked as a CODE, we check if some discriminative
     * features remain UNSPECIFIED, because if (count>1) above, we may have set
     * some feature values. */
@@ -453,23 +453,23 @@ if (symbol->type==INC) {
    if (i==symbol->POS->nb_discr) {
       /* If we find that all dicriminative features have been set, then
        * we promote the symbol to CODE */
-      symbol->type=CODE;
+      symbol->type=S_CODE;
    }
 }
 /* Now we look for a lemma, firstly in the case of an INC symbol... */
-if (symbol->type==INC) {
+if (symbol->type==S_INC) {
    if (symbol->negative) {
-      symbol->type=INC_NEG;
+      symbol->type=S_INC_NEG;
    } else if (symbol->lemma) {
-      symbol->type=INC_CAN;
+      symbol->type=S_INC_CAN;
    }
    return symbol->type;
 }
 /* ...and then for a CODE symbol */
 if (symbol->negative) {
-   symbol->type=CODE_NEG;
+   symbol->type=S_CODE_NEG;
 } else if (symbol->lemma) {
-   symbol->type=ATOM;
+   symbol->type=S_ATOM;
 }
 return symbol->type;
 }
@@ -534,7 +534,7 @@ if (s==NULL) {
 if (s==SYMBOL_DEF) {
    fatal_error("Unexpected <def> symbol in symbol_to_text_label\n");
 }
-if (s->type!=ATOM) {
+if (s->type!=S_ATOM) {
    error("symbol_to_text_label: symbol '");
    symbol_dump(s);
    fatal_error("' is'nt an atom.\n");
@@ -589,7 +589,7 @@ if (s==NULL) {
 if (s==SYMBOL_DEF) {
    fatal_error("Unexpected <def> symbol in symbol_to_dela_entry\n");
 }
-if (s->type!=ATOM) {
+if (s->type!=S_ATOM) {
    error("symbol_to_dela_entry: symbol '");
    symbol_dump(s);
    fatal_error("' is'nt an atom.\n");
@@ -650,19 +650,19 @@ if (s==SYMBOL_DEF) {
 }
 /* First, we deal with special tags */
 switch (s->type) {
-   case LEXIC:
+   case S_LEXIC:
       /* We copy a special tag that will be rewritten later */
       u_strcpy(ustr,"<.>");
       return;
 
-   case EPSILON:
+   case S_EPSILON:
       u_strcpy(ustr,"<E>");
       return;
 
-   case EXCLAM:
+   case S_EXCLAM:
       fatal_error("Unexpected <!> tag in symbol_to_locate_label\n");
 
-   case EQUAL:
+   case S_EQUAL:
       fatal_error("Unexpected <=> tag in symbol_to_locate_label\n");
 
    default: ; /* nothing to do: just want to avoid a warning */
@@ -718,16 +718,16 @@ void symbol_to_grammar_label(const symbol_t * s, Ustring * ustr) {
   if (s == SYMBOL_DEF) { u_strcpy(ustr, "<def>"); return; }
 
   switch (s->type) {
-  case LEXIC:
+  case S_LEXIC:
     u_strcpy(ustr, "<.>");
     return;
-  case EPSILON:
+  case S_EPSILON:
     u_strcpy(ustr, "<E>");
     return;
-  case EXCLAM:
+  case S_EXCLAM:
     u_strcpy(ustr, "<!>");
     return;
-  case EQUAL:
+  case S_EQUAL:
     u_strcpy(ustr, "<=>");
     return;
   default: ; /* nothing to do: just want to avoid a warning */
@@ -814,10 +814,10 @@ if (s==SYMBOL_DEF) {
    return;
 }
 switch (s->type) {
-   case LEXIC: u_strcpy(ustr,"<.>"); return;
-   case EPSILON: u_strcpy(ustr,"<E>"); return;
-   case EXCLAM: u_strcpy(ustr,"<!>"); return;
-   case EQUAL: u_strcpy(ustr,"<=>"); return;
+   case S_LEXIC: u_strcpy(ustr,"<.>"); return;
+   case S_EPSILON: u_strcpy(ustr,"<E>"); return;
+   case S_EXCLAM: u_strcpy(ustr,"<!>"); return;
+   case S_EQUAL: u_strcpy(ustr,"<=>"); return;
    default: ; /* nothing to do: just want to avoid a warning */
 }
 /* Then, we process other symbols */
@@ -929,7 +929,7 @@ if (POS==NULL) {
 }
 symbol_t* symbol=new_symbol_POS(POS,tag_number);
 symbol_t* model;
-symbol->type=ATOM;
+symbol->type=S_ATOM;
 symbol->form=language_add_form(language,entry->inflected);
 symbol->lemma=language_add_form(language,entry->lemma);
 /* We lock all the features that are not explicitly set in the tag */
@@ -1026,7 +1026,7 @@ if (tag[0]=='\0') {
    return NULL;
 }
 if (!u_strcmp(tag,"<E>")) {
-   return new_symbol(EPSILON,tag_number);
+   return new_symbol(S_EPSILON,tag_number);
 }
 if (!u_strcmp(tag,"<def>")) {
    fatal_error("Unexpected '<def>' tag in text automaton\n");
@@ -1287,11 +1287,11 @@ if (tag[0]=='{' && tag[1]!='\0') {
 }
 if (tag[0]=='<' && tag[1]!='\0') {
    /* If we have a tag like <xxxx>, we test if it's a special symbol */
-   if (!u_strcmp(tag,"<E>")) return new_symbol(EPSILON,-1);
-   if (!u_strcmp(tag,"<.>")) return new_symbol(LEXIC,-1);
+   if (!u_strcmp(tag,"<E>")) return new_symbol(S_EPSILON,-1);
+   if (!u_strcmp(tag,"<.>")) return new_symbol(S_LEXIC,-1);
    if (!u_strcmp(tag,"<def>")) return SYMBOL_DEF;
-   if (!u_strcmp(tag,"<!>")) return new_symbol(EXCLAM,-1);
-   if (!u_strcmp(tag,"<=>")) return new_symbol(EQUAL,-1);
+   if (!u_strcmp(tag,"<!>")) return new_symbol(S_EXCLAM,-1);
+   if (!u_strcmp(tag,"<=>")) return new_symbol(S_EQUAL,-1);
    /* Otherwise, we try to read a tag like <PRO:1s> */
    return load_gram_symbol(language,tag);
 }
@@ -1300,12 +1300,12 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
   /* special EXCLAM symbol */
 
-  if (*buf == '!' && buf[1] == 0) { return new_symbol(EXCLAM,-1); }
+  if (*buf == '!' && buf[1] == 0) { return new_symbol(S_EXCLAM,-1); }
 
 
   /* special EQUAL symbol */
 
-  if (*buf == '=' && buf[1] == 0) { return new_symbol(EQUAL,-1); }
+  if (*buf == '=' && buf[1] == 0) { return new_symbol(S_EQUAL,-1); }
 
 
 

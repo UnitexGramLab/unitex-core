@@ -387,7 +387,7 @@ topological_sort(tfst->automaton);
  */
 void symbol_to_tfst_tag(symbol_t* symbol,TfstTag* original_tag,
                         TfstTag* foo_tag,Ustring* foo_content,unichar* out) {
-if (symbol->type==EPSILON) {
+if (symbol->type==S_EPSILON) {
    u_strcpy(out,"@<E>\n.\n");
    return;
 }

@@ -72,17 +72,17 @@ extern const unichar PUNC_TAB[];
  * EXCLAM and EQUAL : used to parse ELAG grammars before compiling them
  */
 typedef enum {
-   UNTYPED=-1,
-   LEXIC='L',
-   EPSILON='e',
-   ATOM='a',
-   CODE_NEG='N',
-   INC_CAN='c',
-   CODE='C',
-   INC_NEG='n',
-   INC='I',
-   EXCLAM='!',
-   EQUAL='='
+   S_UNTYPED=-1,
+   S_LEXIC='L',
+   S_EPSILON='e',
+   S_ATOM='a',
+   S_CODE_NEG='N',
+   S_INC_CAN='c',
+   S_CODE='C',
+   S_INC_NEG='n',
+   S_INC='I',
+   S_EXCLAM='!',
+   S_EQUAL='='
 } SymbolType;
 
 

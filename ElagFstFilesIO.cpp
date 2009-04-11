@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -106,7 +106,7 @@ if (u_fgets(buf,MAXBUF,fstf->f)==EOF) {
 if (!u_is_digit(*buf)) {
    error("load_fst_file: %s: bad file format\n",fname);
    goto error_f;
-} 
+}
 fstf->nb_automata=u_parse_int(buf);
 fstf->language=language;
 fstf->type=FST_GRAMMAR;
@@ -202,9 +202,9 @@ while (readline(ustr,fstf->f) && ustr->str[0]!='f') {
          } else {
             /* In a text automaton, we add one transition per element of
              * the symbol list. For instance, if we have:
-             * 
+             *
              * tmp = "{domestique,.N:fs}" => "{domestique,.N:ms}" => NULL
-             * 
+             *
              * then we add two transitions. */
             add_all_outgoing_transitions(state,tmp,state_number);
          }
@@ -296,8 +296,7 @@ res->type=type;
 res->nb_automata=0;
 res->labels=new_string_hash(16);
 /* We add <E> to the tags in order to be sure that this special tag will have #0 */
-unichar epsilon[]={'<','E','>',0};
-get_value_index(epsilon,res->labels);
+get_value_index(EPSILON,res->labels);
 return res;
 }
 
@@ -471,7 +470,7 @@ if (language==NULL) {
 Elag_fst_file_in* fstin=load_elag_fst2_file(fst2,language);
 if (fstin==NULL) {
    error("Unable to open '%s'\n", fst2);
-   return NULL; 
+   return NULL;
 }
 if (fstin->nb_automata!=1) {
    fatal_error("Elag grammar '%s' is not supposed to contain more than 1 automaton\n");

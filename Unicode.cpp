@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -31,8 +31,10 @@ static char tab_is_letter[8192];
  * We define here the unicode NULL character and the unicode
  * empty string.
  */
-unichar U_NULL='\0';
-unichar* U_EMPTY=&U_NULL;
+const unichar U_NULL='\0';
+const unichar* U_EMPTY=&U_NULL;
+
+const unichar EPSILON[]={'<','E','>','\0'};
 
 /**
  * Here are defined the default encodings.
@@ -177,13 +179,13 @@ return n;
 /* ------------------- File functions ------------------- */
 
 /**
- * Opens a file in binary mode for unicode I/O and returns the 
+ * Opens a file in binary mode for unicode I/O and returns the
  * file in case of success; NULL otherwise. If you try to open a file
  * in READ mode, NULL will be returned if the file does not exist or
  * if it does not start with the byte order mark, in the case of a UTF16
  * file. In this last case, an error message will be printed to indicate
  * that the file is not a UTF16 one.
- * 
+ *
  * 'MODE' should be U_READ, U_WRITE, U_APPEND or U_MODIFY
  */
 FILE* u_fopen(Encoding encoding,const char* name,const char* MODE) {
@@ -335,7 +337,7 @@ return c;
  * unicode number. Returns EOF if the end of file has been reached.
  * Prints an error and returns '?' if the end of file is found while reading a
  * compound character, or if there is an encoding error.
- * 
+ *
  * IMPORTANT: This function allows reading characters > 65536, so if
  *            it is used only for 16 bits unicode, the caller
  *            must check that the value is not greater than expected.
@@ -399,7 +401,7 @@ return value;
  * In UTF16:
  * - It returns EOF if it cannot read a well-formed character. Moreover, it
  *   prints an error message if it can read just one byte.
- * 
+ *
  * In UTF8:
  * - It returns EOF at the end of file or '?' if it cannot read a well-formed
  *   character. In that case, it prints an error message.
@@ -412,7 +414,7 @@ switch(encoding) {
 }
 return EOF;
 }
-   
+
 
 /**
  * Unicode version of fgetc. This function reads Windows-style end-of-lines,
@@ -486,7 +488,7 @@ int i,c;
 for (i=0;i<N;i++) {
    c=u_fgetc_raw(encoding,f);
    if (c==EOF) return i;
-   t[i]=(unichar)c; 
+   t[i]=(unichar)c;
 }
 return i;
 }
@@ -495,8 +497,8 @@ return i;
 /**
  * Reads N characters THAT ARE NOT '\0' and stores them in 't', that is supposed to be large enough.
  * Returns the number of characters read. This function converts \r\n into \n.
- * 
- * The '*OK' parameter is set to 0 if at least one '\0' was found and ignored; 1 otherwise. 
+ *
+ * The '*OK' parameter is set to 0 if at least one '\0' was found and ignored; 1 otherwise.
  */
 int u_fread(Encoding encoding,unichar* t,int N,FILE* f,int *OK) {
 int i,c;
@@ -508,7 +510,7 @@ while (i<N) {
    if (c=='\0') {
       *OK=0;
    } else {
-      t[i++]=(unichar)c; 
+      t[i++]=(unichar)c;
    }
 }
 return i;
@@ -556,9 +558,9 @@ return fwrite(&c,1,1,f);
 
 /**
  * This function writes a 2-bytes unicode character in the given file
- * encoding it in UTF8. It does not put a 0xOA after a 0x0D. 
+ * encoding it in UTF8. It does not put a 0xOA after a 0x0D.
  * Returns 0 if an error occurs; 1 otherwise.
- * 
+ *
  * NOTE: as it takes a unichar, this function cannot be used for writing
  *       a unicode character > 0xFFFF
  */
@@ -613,9 +615,9 @@ return u_fputc_raw(encoding,c,f);
 
 /**
  * UTF16 version of ungetc. In fact, we just rewind 2 bytes before in 'f'.
- * At the opposite of the real ungetc, it does not push back the given 
+ * At the opposite of the real ungetc, it does not push back the given
  * character to the stream.
- * 
+ *
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_ungetc_UTF16_raw(FILE *f) {
@@ -625,9 +627,9 @@ return (fseek(f,-2,SEEK_CUR)==0)?1:0;
 
 /**
  * UTF16-LE version of ungetc. In fact, we just rewind 2 bytes before in 'f'.
- * At the opposite of the real ungetc, it does not push back the given 
+ * At the opposite of the real ungetc, it does not push back the given
  * character to the stream.
- * 
+ *
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_ungetc_UTF16LE_raw(FILE *f) {
@@ -637,9 +639,9 @@ return u_ungetc_UTF16_raw(f);
 
 /**
  * UTF16-BE version of ungetc. In fact, we just rewind 2 bytes before in 'f'.
- * At the opposite of the real ungetc, it does not push back the given 
+ * At the opposite of the real ungetc, it does not push back the given
  * character to the stream.
- * 
+ *
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_ungetc_UTF16BE_raw(FILE *f) {
@@ -650,9 +652,9 @@ return u_ungetc_UTF16_raw(f);
 /**
  * UTF8 version of ungetc. In fact, we just rewind 'n' bytes before in 'f',
  * where 'n' is the length of the UTF8 represention of 'c'.
- * At the opposite of the real ungetc, it does not push back the given 
+ * At the opposite of the real ungetc, it does not push back the given
  * character to the stream.
- * 
+ *
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_ungetc_UTF8_raw(unichar c,FILE *f) {
@@ -676,9 +678,9 @@ return (fseek(f,number_of_bytes,SEEK_CUR)==0)?1:0;
 /**
  * Unicode version of ungetc. In fact, we just rewind 'n' bytes before in 'f',
  * where 'n' is the length of the represention of 'c' in the given encoding.
- * At the opposite of the real ungetc, it does not push back the given 
+ * At the opposite of the real ungetc, it does not push back the given
  * character to the stream.
- * 
+ *
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_ungetc_raw(Encoding encoding,unichar c,FILE *f) {
@@ -695,9 +697,9 @@ return 0;
  * Unicode version of ungetc. In fact, we just rewind 'n' bytes before in 'f',
  * where 'n' is the length of the represention of 'c' in the given encoding.
  * If 'c' is '\n', then we also ungetc one char representing a '\r'.
- * At the opposite of the real ungetc, it does not push back the given 
+ * At the opposite of the real ungetc, it does not push back the given
  * character to the stream.
- * 
+ *
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_ungetc(Encoding encoding,unichar c,FILE *f) {
@@ -751,7 +753,7 @@ while (s[i]!='\0')
  * function returns EOF if the current position in the file is at the
  * end of file; otherwise, it returns the number of characters read, possibly
  * 0 if there is an empty line.
- * 
+ *
  * NOTE: there is no overflow control!
  */
 int u_fgets(Encoding encoding,unichar* line,FILE* f) {
@@ -778,7 +780,7 @@ return i;
  * - 0 : means that we have read an empty line ended by '\n'
  * - (len ==(size-1)) and (line[len-1] != '\n') : means that the line was too long for the buffer
  * - (0 < len < size-1) : means that we have read a complete line (str[len-1]=='\n', unless EOF)
- * 
+ *
  * Author: Olivier Blanc
  * Modified by S�bastien Paumier
  */
@@ -797,18 +799,18 @@ return i;
 
 
 /**
- * This function acts exactly as 'u_fgets' does, except that 
+ * This function acts exactly as 'u_fgets' does, except that
  * it stops at an end of line if and only if it is not protected by
  * a backslash. Backslashe that are not immediately before a '\n' are taken
  * as normal characters. The function returns the length of 'line'.
  * NOTE: this is an approximation, since we cannot represent a single line
  * ended by a backslash.
- * 
+ *
  * Example:
- * 
+ *
  * abc\de\
  * ef
- * 
+ *
  * will lead to a string like: a b c \ d e \n e f
  */
 int u_fgets2(Encoding encoding,unichar* line,FILE* f) {
@@ -842,7 +844,7 @@ return length;
 
 
 /**
- * Unicode version of fprintf. It supports all the printf format options. 
+ * Unicode version of fprintf. It supports all the printf format options.
  * It also supports:
  * - %C for printing a unicode character
  * - %S for printing a unicode string
@@ -854,7 +856,7 @@ return length;
  *   &amp;  if c='&'
  *   c      otherwise
  *   See 'htmlize' for details.
- * 
+ *
  * Author: S�bastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
@@ -874,17 +876,17 @@ while (*format) {
       switch (*format) {
          /* If we have %% we must print a '%' */
          case '%': u_fputc(encoding,'%',f); n_printed++; break;
-         
+
          /* If we have %c or %C we must print an unicode character */
          case 'c': /* We intercept %c here, because of the \n that always
                       must be encoded as \r\n */
          case 'C': {
             uc=(unichar)va_arg(list,int);
             u_fputc(encoding,uc,f);
-            n_printed++; 
+            n_printed++;
             break;
          }
-         
+
          case 'H': {
             /* If we have a '%H', it means that we have to print HTML things */
             format++;
@@ -902,7 +904,7 @@ while (*format) {
                us=va_arg(list,unichar*);
                if (us==NULL) {
                   u_fprints(encoding,"(null)",f);
-                  n_printed=n_printed+6; 
+                  n_printed=n_printed+6;
                } else {
                   unichar html[4096];
                   int l=htmlize(us,html);
@@ -914,7 +916,7 @@ while (*format) {
                us=va_arg(list,unichar*);
                if (us==NULL) {
                   u_fprints(encoding,"(null)",f);
-                  n_printed=n_printed+6; 
+                  n_printed=n_printed+6;
                } else {
                   unichar reversed[4096];
                   mirror(us,reversed);
@@ -954,7 +956,7 @@ while (*format) {
             u_fprints(encoding,reversed,f);
             break;
          }
-         
+
          /* If we have %n, we must store the number of characters that have
           * already been printed into the given int*. */
          case 'n': {
@@ -962,7 +964,7 @@ while (*format) {
             *res=n_printed;
             break;
          }
-         
+
          /* If we have '%???', we let sprintf do the job */
          default: {
             /* We get back on the '%' */
@@ -1024,7 +1026,7 @@ return n_printed;
 
 /**
  * Unicode version of fprintf. See u_vfprintf for supported format options.
- * 
+ *
  * Author: Olivier Blanc
  * Modified by S�bastien Paumier
  */
@@ -1042,7 +1044,7 @@ return n;
  * size of the result. Note that if 'dest' is NULL, the function will
  * only count the size of the result without actually building it.
  * See u_fprintf for supported format options.
- * 
+ *
  * Author: Olivier Blanc
  */
 int u_sprintf(unichar* dest,const char* format,...) {
@@ -1055,14 +1057,14 @@ return n;
 
 
 /**
- * Unicode version of sprintf. It supports all the printf format options. 
+ * Unicode version of sprintf. It supports all the printf format options.
  * It also supports:
  * - %C for printing a unicode character
  * - %S for printing a unicode string
  * - %HS for printing a unicode string in HTML (see htmlize)
  * - %R for printing the reversed of a unicode string
  * - %HR for printing the reversed of a unicode string in HTML (see htmlize)
- * 
+ *
  * Author: S�bastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
@@ -1082,7 +1084,7 @@ while (*format) {
       switch (*format) {
          /* If we have %% we must print a '%' */
          case '%': if (dest) dest[n_printed]='%'; n_printed++; break;
-         
+
          /* If we have %C we must print an unicode character */
          case 'C': {
             uc=(unichar)va_arg(list,int);
@@ -1090,7 +1092,7 @@ while (*format) {
             n_printed++;
             break;
          }
-         
+
          case 'H': {
             /* If we have a '%H', it means that we have to print HTML things */
             format++;
@@ -1099,7 +1101,7 @@ while (*format) {
                us=va_arg(list,unichar*);
                if (us==NULL) {
                   if (dest) u_strcpy(&(dest[n_printed]),"(null)");
-                  n_printed=n_printed+6; 
+                  n_printed=n_printed+6;
                } else {
                   unichar html[4096];
                   int l=htmlize(us,html);
@@ -1111,7 +1113,7 @@ while (*format) {
                us=va_arg(list,unichar*);
                if (us==NULL) {
                   if (dest) u_strcpy(&(dest[n_printed]),"(null)");
-                  n_printed=n_printed+6; 
+                  n_printed=n_printed+6;
                } else {
                   unichar reversed[4096];
                   mirror(us,reversed);
@@ -1123,13 +1125,13 @@ while (*format) {
             } else fatal_error("Invalid format option %%H%c\n",*format);
             break;
          }
-         
+
          /* If we have %S we must print an unicode string */
          case 'S': {
             us=va_arg(list,unichar*);
             if (us==NULL) {
                if (dest) u_strcpy(&(dest[n_printed]),"(null)");
-               n_printed=n_printed+6; 
+               n_printed=n_printed+6;
             } else {
                if (dest) u_strcpy(&(dest[n_printed]),us);
                n_printed=n_printed+u_strlen(us);
@@ -1143,7 +1145,7 @@ while (*format) {
             if (us==NULL) {
                /* We don't want to print ")llun(" when the string to reverse is NULL */
                if (dest) u_strcpy(&(dest[n_printed]),"(null)");
-               n_printed=n_printed+6; 
+               n_printed=n_printed+6;
                break;
             }
             unichar reversed[4096];
@@ -1152,7 +1154,7 @@ while (*format) {
             if (dest) u_strcpy(&(dest[old]),reversed);
             break;
          }
-         
+
          /* If we have %n, we must store the number of characters that have
           * already been printed into the given int*. */
          case 'n': {
@@ -1160,7 +1162,7 @@ while (*format) {
             *res=n_printed;
             break;
          }
-         
+
          /* If we have '%???', we let sprintf do the job */
          default: {
             /* We get back on the '%' */
@@ -1234,7 +1236,7 @@ return (c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F');
  * Returns a non-zero value if 'c' is a separator; 0 otherwise.
  */
 int is_separator(unichar c) {
-return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');   
+return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
 }
 
 
@@ -1246,22 +1248,22 @@ return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
  * %S : unicode string
  * %d : decimal integer of the form 45 -45 or +45
  * %x : hexadecimal integer of the form a9 -B75 or +f8CE
- * 
+ *
  * The separators are space, tabulation '\r' and '\n'. They are skipped in
  * input stream BUT NOT IN FORMAT STRING!!! So, if we do:
- * 
+ *
  *    u_fscanf(f,"%d %s",&i,s);
- * 
+ *
  * it will match only if there is a space after the integer. For instance, you can use this
  * feature to eat EOL. If we want to an integer and the EOL sequences that follows,
  * just use:
- * 
+ *
  *    u_fscanf(f,"%d\r\n",&i);
- * 
+ *
  * Note 1: if this function is applied on stdin, it may have read one character in advance.
  * Note 2: if yout type u_fscanf(f,"%d\n",&i); the function will skip any separator that is
  *         not '\n' after the integer, so that the line " 45   \t   \n" will be entirely read.
- * 
+ *
  * Author: S�bastien Paumier
  */
 int u_vfscanf(Encoding encoding,FILE* f,const char* format,va_list list) {
@@ -1302,7 +1304,7 @@ while (*format) {
          format++;
          continue;
       } else {
-         /* 2) the format is for instance a '\t' and we have a current input 
+         /* 2) the format is for instance a '\t' and we have a current input
           *    separator that is not a '\t' => we skip all separators that are not '\t' */
          while ((c=u_fgetc_raw(encoding,f))!=EOF && is_separator(c) && c!=*format) {}
          /* Subcase 1: EOF */
@@ -1339,7 +1341,7 @@ while (*format) {
             if (c!='%') return n_variables;
             break;
          }
-         
+
          /* If we have %c we must read a normal character */
          case 'c': {
             ch=va_arg(list,char*);
@@ -1355,7 +1357,7 @@ while (*format) {
             n_variables++;
             break;
          }
-         
+
          /* If we have %s we must read a normal string */
          case 's': {
             ch=va_arg(list,char*);
@@ -1399,7 +1401,7 @@ while (*format) {
             n_variables++;
             break;
          }
-         
+
          /* If we have %d we must read a decimal integer, eventually preceeded by '+' or '-' */
          case 'd': {
             i=va_arg(list,int*);
@@ -1488,7 +1490,7 @@ return n_variables;
 
 /**
  * Unicode version of fscanf. See u_vfscanf for supported format options.
- * 
+ *
  * Author: S�bastien Paumier
  */
 int u_fscanf(Encoding encoding,FILE* f,const char* format,...) {
@@ -1502,7 +1504,7 @@ return n;
 
 /**
  * Unicode version of sscanf. See u_vfscanf for supported format options.
- * 
+ *
  * Author: S�bastien Paumier
  */
 int u_vsscanf(unichar* s,const char* format,va_list list) {
@@ -1521,7 +1523,7 @@ while (*format) {
       }
       if (s[pos]=='\0' && !(*format=='%' && *(format+1)=='n')) {
          /* We will stop only if the current format is not %n, because %n can
-          * work even if the end of the input has been reached */ 
+          * work even if the end of the input has been reached */
          if (n_variables==0) {
             /* If the EOF occurs before the first conversion, we return EOF */
             return EOF;
@@ -1548,7 +1550,7 @@ while (*format) {
             if (s[pos]!='%') return n_variables;
             break;
          }
-         
+
          /* If we have %c we must read a normal character */
          case 'c': {
             ch=va_arg(list,char*);
@@ -1564,7 +1566,7 @@ while (*format) {
             n_variables++;
             break;
          }
-         
+
          /* If we have %s we must read a normal string */
          case 's': {
             ch=va_arg(list,char*);
@@ -1594,7 +1596,7 @@ while (*format) {
             n_variables++;
             break;
          }
-         
+
          /* If we have %d we must read a decimal integer, eventually preceeded by '+' or '-' */
          case 'd': {
             i=va_arg(list,int*);
@@ -1654,15 +1656,15 @@ while (*format) {
             n_variables++;
             break;
          }
-         
-         /* If we have %n we must store the number of characters that have already 
+
+         /* If we have %n we must store the number of characters that have already
           * been read from the input string */
          case 'n': {
             i=va_arg(list,int*);
             *i=pos;
             break;
          }
-         
+
          default: error("Unsupported format in u_vsscanf: %%%c\n",*format);
       }
    } else {
@@ -1677,7 +1679,7 @@ return n_variables;
 
 /**
  * Unicode version of sscanf. See u_vfscanf for supported format options.
- * 
+ *
  * Author: S�bastien Paumier
  */
 int u_sscanf(unichar* input,const char* format,...) {
@@ -1856,13 +1858,13 @@ return a_c-b_c;
  * Returns 1 if a is the same as b; 0 otherwise.
  */
 int u_equal(const unichar* a, const unichar* b) {
-return !u_strcmp(a,b); 
+return !u_strcmp(a,b);
 }
 
 /**
  * Unicode version of strdup.
  * This function returns an allocated string that is a copy of the given one.
- * 
+ *
  * Author: Olivier Blanc
  */
 unichar* u_strdup(const unichar* str) {
@@ -1880,7 +1882,7 @@ return u_strcpy(res,str);
  *   -- why this is then called u_strdup, and not u_strndup? (Sebastian, Munich)
  * This version returns an allocated string that is a copy of the
  * n first bytes of the given one.
- * 
+ *
  * Author: Olivier Blanc
  */
 unichar* u_strdup(const unichar* str,int n) {
@@ -1905,7 +1907,7 @@ return res;
 /**
  * Unicode version of strdup.
  * This function returns an allocated string that is a copy of the given one.
- * 
+ *
  * Author: Olivier Blanc
  */
 unichar* u_strdup(const char* str) {
@@ -1924,7 +1926,7 @@ return u_strcpy(res,str);
  * NULL if not found. If 'unprotected' is not null, the function looks for the
  * first unprotected occurrence of 'c'; otherwise, it looks for the first
  * occurrence, protected by a backslash or not.
- * 
+ *
  * Author: Olivier Blanc
  * Modified by S�bastien Paumier
  */
@@ -1950,7 +1952,7 @@ return NULL;
  * Unicode version of strchr.
  * This function returns a pointer on the first occurrence of 'c' in 's', or
  * NULL if not found.
- * 
+ *
  * Author: Olivier Blanc
  */
 unichar* u_strchr(const unichar* s,unichar c) {
@@ -1962,7 +1964,7 @@ return u_strchr(s,c,0);
  * A version of strchr that looks for a unicode character in a normal string.
  * We do this instead of calling the original strchr with a cast of 'c' to 'char',
  * because such a cast would cause invalid matches.
- * 
+ *
  * Author: Olivier Blanc
  * Modified by S�bastien Paumier
  */
@@ -1980,7 +1982,7 @@ return NULL;
  * Unicode version of strpbrk.
  * This function returns a pointer on the first occurrence of any delimiter 's', or
  * NULL if not found.
- * 
+ *
  * Author: Olivier Blanc
  */
 unichar* u_strpbrk(const unichar* s,unichar* delimiters) {
@@ -1997,7 +1999,7 @@ return NULL;
  * Unicode version of strpbrk.
  * This function returns a pointer on the first occurrence of any delimiter 's', or
  * NULL if not found.
- * 
+ *
  * Author: Olivier Blanc
  */
 unichar* u_strpbrk(const unichar* s,char* delimiters) {
@@ -2074,7 +2076,7 @@ return !u_strcmp(s+(l1-l2),suffix);
 /**
  * Converts the unichar* src into a char* dest.
  * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
- * 
+ *
  * Author: S�bastien Paumier
  * Modified by S�bastian Nagel
  */
@@ -2094,7 +2096,7 @@ do {
  * - '< ' by "&lt;"
  * - '> ' by "&gt;"
  * - '& ' by "&amp;"
- * 
+ *
  * Note that 'dst' is supposed to be large enough.
  * The function returns the length of 'dst'.
  */
@@ -2285,7 +2287,7 @@ int u_is_CJK_Unified_Ideographs(unichar c)
 }
 int u_is_cjk_compatibility_ideographs(unichar c)
 {
-	return( (c>= 0xf900) && (c <= 0xfaff));	
+	return( (c>= 0xf900) && (c <= 0xfaff));
 }
 //
 //	return true if c is a character of the alphabet coreen
@@ -2294,7 +2296,7 @@ int u_is_cjk_compatibility_ideographs(unichar c)
 //
 int u_is_Hangul_Compatility_Jamo(unichar c)
 {
-	return( (c>= 0x3130) && (c <= 0x318f));	
+	return( (c>= 0x3130) && (c <= 0x318f));
 }
 //
 //	return true
@@ -2452,7 +2454,7 @@ int u_is_kannada_letter(unichar c) {
 return (c>=0x0C85 && c<=0x0CCC && c!=0x0C8D && c!=0x0C91
         && c!=0x0CA9 && c!=0x0CB4 && c!=0x0CBA && c!=0x0CBB
         && c!=0x0CBC && c!=0x0CBD && c!=0x0CC5 && c!=0x0CC9) ||
-       (c==0x0CDE || c==0x0CE0 || c==0x0CE1); 
+       (c==0x0CDE || c==0x0CE0 || c==0x0CE1);
 }
 
 
@@ -2487,7 +2489,7 @@ return (c>=0x0E01 && c<=0x0E39 && c!=0x0E3F) ||
 }
 
 // returns true if c is a greek extended letter
-//																
+//
 int u_is_greek_extended_letter(unichar c) {							//$CD:20021115
 return (c>=0x1F00 && c<=0x1F15) || (c>=0x1F18 && c<=0x1F1D) ||		//$CD:20021115
        (c>=0x1F20 && c<=0x1F45) || (c>=0x1F48 && c<=0x1F4D) ||		//$CD:20021115
@@ -2583,7 +2585,7 @@ return 1;
  * Reads an integer from the string 'str'. If 'next' is not NULL,
  * it will contains a pointer to the first character that follows the
  * integer.
- * 
+ *
  * Author: Olivier Blanc
  */
 int u_parse_int(unichar* str,unichar* *next) {
@@ -2613,7 +2615,7 @@ the unicode case folding table:
   http://www.unicode.org/Public/UNIDATA/CaseFolding.txt
 
 Case folding is done only for "common" and "simple" case
-folding, i.e. only single characters to single characters.  
+folding, i.e. only single characters to single characters.
 Foldings like � -> A' (A+accute) or (I -> i, I -> �)
 are excluded, see
   http://www.unicode.org/Public/UNIDATA/SpecialCasing.txt
@@ -2625,18 +2627,18 @@ on "turn_portuguese_sequence_to_lowercase" in Alphabet.cpp
 
 The case folding tables are implemented by a switch statement which
 will be (hopefully) optimized by gcc to a table lookup or (even not
-bad) a b-tree.  
+bad) a b-tree.
 Of course, it could also be hardcoded as a sparse array with first and
 second 8 bits of unichar as dimensions. Because scripts are allocated
 in unicode blocks this will be memory efficient.
 
-Switch statements are autogenerated from 
+Switch statements are autogenerated from
   http://www.unicode.org/Public/UNIDATA/CaseFolding.txt
 using this small perl script:
 
 % cat CaseFolding.txt \
-  | perl -ne 'do { next LINE if ($1 > 0xffff || $2 > 0xffff); 
-                   print "    case 0x", lc($1), ": r=0x", lc($2), 
+  | perl -ne 'do { next LINE if ($1 > 0xffff || $2 > 0xffff);
+                   print "    case 0x", lc($1), ": r=0x", lc($2),
                      "; break; // ", $3, "\n" }
                 if /([0-9A-F]+);\s*[CS];\s*([0-9A-F]+);\s*#\s*(.+)/' \
   > tolower_tab
@@ -2644,8 +2646,8 @@ using this small perl script:
 resp.
 
 % cat CaseFolding.txt \
-  | perl -ne 'do { next LINE if (hex($1) > 0xffff || hex($2) > 0xffff); next if $h{$2}++; 
-                   print "    case 0x", lc($2), ": r=0x", lc($1), 
+  | perl -ne 'do { next LINE if (hex($1) > 0xffff || hex($2) > 0xffff); next if $h{$2}++;
+                   print "    case 0x", lc($2), ": r=0x", lc($1),
                       "; break; // ", $3, "\n" }
                 if /([0-9A-F]+);\s*[CS];\s*([0-9A-F]+);\s*#\s*(.+)/' \
   > toupper_tab
@@ -4339,7 +4341,7 @@ unichar u_deaccentuate (unichar c) {
     case 0x00d4: r=0x004F; break; // LATIN CAPITAL LETTER O WITH CIRCUMFLEX => LATIN CAPITAL LETTER O
     case 0x00d5: r=0x004F; break; // LATIN CAPITAL LETTER O WITH TILDE => LATIN CAPITAL LETTER O
     case 0x00d6: r=0x004F; break; // LATIN CAPITAL LETTER O WITH DIAERESIS => LATIN CAPITAL LETTER O
-    case 0x00d8: r=0x4f; break; // LATIN CAPITAL LETTER O WITH STROKE => 
+    case 0x00d8: r=0x4f; break; // LATIN CAPITAL LETTER O WITH STROKE =>
     case 0x00d9: r=0x0055; break; // LATIN CAPITAL LETTER U WITH GRAVE => LATIN CAPITAL LETTER U
     case 0x00da: r=0x0055; break; // LATIN CAPITAL LETTER U WITH ACUTE => LATIN CAPITAL LETTER U
     case 0x00db: r=0x0055; break; // LATIN CAPITAL LETTER U WITH CIRCUMFLEX => LATIN CAPITAL LETTER U
@@ -4366,7 +4368,7 @@ unichar u_deaccentuate (unichar c) {
     case 0x00f4: r=0x006F; break; // LATIN SMALL LETTER O WITH CIRCUMFLEX => LATIN SMALL LETTER O
     case 0x00f5: r=0x006F; break; // LATIN SMALL LETTER O WITH TILDE => LATIN SMALL LETTER O
     case 0x00f6: r=0x006F; break; // LATIN SMALL LETTER O WITH DIAERESIS => LATIN SMALL LETTER O
-    case 0x00f8: r=0x6f; break; // LATIN SMALL LETTER O WITH STROKE => 
+    case 0x00f8: r=0x6f; break; // LATIN SMALL LETTER O WITH STROKE =>
     case 0x00f9: r=0x0075; break; // LATIN SMALL LETTER U WITH GRAVE => LATIN SMALL LETTER U
     case 0x00fa: r=0x0075; break; // LATIN SMALL LETTER U WITH ACUTE => LATIN SMALL LETTER U
     case 0x00fb: r=0x0075; break; // LATIN SMALL LETTER U WITH CIRCUMFLEX => LATIN SMALL LETTER U
@@ -4389,8 +4391,8 @@ unichar u_deaccentuate (unichar c) {
     case 0x010d: r=0x0063; break; // LATIN SMALL LETTER C WITH CARON => LATIN SMALL LETTER C
     case 0x010e: r=0x0044; break; // LATIN CAPITAL LETTER D WITH CARON => LATIN CAPITAL LETTER D
     case 0x010f: r=0x0064; break; // LATIN SMALL LETTER D WITH CARON => LATIN SMALL LETTER D
-    case 0x0110: r=0x44; break; // LATIN CAPITAL LETTER D WITH STROKE => 
-    case 0x0111: r=0x64; break; // LATIN SMALL LETTER D WITH STROKE => 
+    case 0x0110: r=0x44; break; // LATIN CAPITAL LETTER D WITH STROKE =>
+    case 0x0111: r=0x64; break; // LATIN SMALL LETTER D WITH STROKE =>
     case 0x0112: r=0x0045; break; // LATIN CAPITAL LETTER E WITH MACRON => LATIN CAPITAL LETTER E
     case 0x0113: r=0x0065; break; // LATIN SMALL LETTER E WITH MACRON => LATIN SMALL LETTER E
     case 0x0114: r=0x0045; break; // LATIN CAPITAL LETTER E WITH BREVE => LATIN CAPITAL LETTER E
@@ -4411,8 +4413,8 @@ unichar u_deaccentuate (unichar c) {
     case 0x0123: r=0x0067; break; // LATIN SMALL LETTER G WITH CEDILLA => LATIN SMALL LETTER G
     case 0x0124: r=0x0048; break; // LATIN CAPITAL LETTER H WITH CIRCUMFLEX => LATIN CAPITAL LETTER H
     case 0x0125: r=0x0068; break; // LATIN SMALL LETTER H WITH CIRCUMFLEX => LATIN SMALL LETTER H
-    case 0x0126: r=0x48; break; // LATIN CAPITAL LETTER H WITH STROKE => 
-    case 0x0127: r=0x68; break; // LATIN SMALL LETTER H WITH STROKE => 
+    case 0x0126: r=0x48; break; // LATIN CAPITAL LETTER H WITH STROKE =>
+    case 0x0127: r=0x68; break; // LATIN SMALL LETTER H WITH STROKE =>
     case 0x0128: r=0x0049; break; // LATIN CAPITAL LETTER I WITH TILDE => LATIN CAPITAL LETTER I
     case 0x0129: r=0x0069; break; // LATIN SMALL LETTER I WITH TILDE => LATIN SMALL LETTER I
     case 0x012a: r=0x0049; break; // LATIN CAPITAL LETTER I WITH MACRON => LATIN CAPITAL LETTER I
@@ -4432,10 +4434,10 @@ unichar u_deaccentuate (unichar c) {
     case 0x013c: r=0x006C; break; // LATIN SMALL LETTER L WITH CEDILLA => LATIN SMALL LETTER L
     case 0x013d: r=0x004C; break; // LATIN CAPITAL LETTER L WITH CARON => LATIN CAPITAL LETTER L
     case 0x013e: r=0x006C; break; // LATIN SMALL LETTER L WITH CARON => LATIN SMALL LETTER L
-    case 0x013f: r=0x4c; break; // LATIN CAPITAL LETTER L WITH MIDDLE DOT => 
-    case 0x0140: r=0x6c; break; // LATIN SMALL LETTER L WITH MIDDLE DOT => 
-    case 0x0141: r=0x4c; break; // LATIN CAPITAL LETTER L WITH STROKE => 
-    case 0x0142: r=0x6c; break; // LATIN SMALL LETTER L WITH STROKE => 
+    case 0x013f: r=0x4c; break; // LATIN CAPITAL LETTER L WITH MIDDLE DOT =>
+    case 0x0140: r=0x6c; break; // LATIN SMALL LETTER L WITH MIDDLE DOT =>
+    case 0x0141: r=0x4c; break; // LATIN CAPITAL LETTER L WITH STROKE =>
+    case 0x0142: r=0x6c; break; // LATIN SMALL LETTER L WITH STROKE =>
     case 0x0143: r=0x004E; break; // LATIN CAPITAL LETTER N WITH ACUTE => LATIN CAPITAL LETTER N
     case 0x0144: r=0x006E; break; // LATIN SMALL LETTER N WITH ACUTE => LATIN SMALL LETTER N
     case 0x0145: r=0x004E; break; // LATIN CAPITAL LETTER N WITH CEDILLA => LATIN CAPITAL LETTER N
@@ -4466,8 +4468,8 @@ unichar u_deaccentuate (unichar c) {
     case 0x0163: r=0x0074; break; // LATIN SMALL LETTER T WITH CEDILLA => LATIN SMALL LETTER T
     case 0x0164: r=0x0054; break; // LATIN CAPITAL LETTER T WITH CARON => LATIN CAPITAL LETTER T
     case 0x0165: r=0x0074; break; // LATIN SMALL LETTER T WITH CARON => LATIN SMALL LETTER T
-    case 0x0166: r=0x54; break; // LATIN CAPITAL LETTER T WITH STROKE => 
-    case 0x0167: r=0x74; break; // LATIN SMALL LETTER T WITH STROKE => 
+    case 0x0166: r=0x54; break; // LATIN CAPITAL LETTER T WITH STROKE =>
+    case 0x0167: r=0x74; break; // LATIN SMALL LETTER T WITH STROKE =>
     case 0x0168: r=0x0055; break; // LATIN CAPITAL LETTER U WITH TILDE => LATIN CAPITAL LETTER U
     case 0x0169: r=0x0075; break; // LATIN SMALL LETTER U WITH TILDE => LATIN SMALL LETTER U
     case 0x016a: r=0x0055; break; // LATIN CAPITAL LETTER U WITH MACRON => LATIN CAPITAL LETTER U
@@ -4491,43 +4493,43 @@ unichar u_deaccentuate (unichar c) {
     case 0x017c: r=0x007A; break; // LATIN SMALL LETTER Z WITH DOT ABOVE => LATIN SMALL LETTER Z
     case 0x017d: r=0x005A; break; // LATIN CAPITAL LETTER Z WITH CARON => LATIN CAPITAL LETTER Z
     case 0x017e: r=0x007A; break; // LATIN SMALL LETTER Z WITH CARON => LATIN SMALL LETTER Z
-    case 0x0180: r=0x62; break; // LATIN SMALL LETTER B WITH STROKE => 
-    case 0x0181: r=0x42; break; // LATIN CAPITAL LETTER B WITH HOOK => 
-    case 0x0182: r=0x42; break; // LATIN CAPITAL LETTER B WITH TOPBAR => 
-    case 0x0183: r=0x62; break; // LATIN SMALL LETTER B WITH TOPBAR => 
-    case 0x0187: r=0x43; break; // LATIN CAPITAL LETTER C WITH HOOK => 
-    case 0x0188: r=0x63; break; // LATIN SMALL LETTER C WITH HOOK => 
-    case 0x018a: r=0x44; break; // LATIN CAPITAL LETTER D WITH HOOK => 
-    case 0x018b: r=0x44; break; // LATIN CAPITAL LETTER D WITH TOPBAR => 
-    case 0x018c: r=0x64; break; // LATIN SMALL LETTER D WITH TOPBAR => 
-    case 0x0191: r=0x46; break; // LATIN CAPITAL LETTER F WITH HOOK => 
-    case 0x0192: r=0x66; break; // LATIN SMALL LETTER F WITH HOOK => 
-    case 0x0193: r=0x47; break; // LATIN CAPITAL LETTER G WITH HOOK => 
-    case 0x0197: r=0x49; break; // LATIN CAPITAL LETTER I WITH STROKE => 
-    case 0x0198: r=0x4b; break; // LATIN CAPITAL LETTER K WITH HOOK => 
-    case 0x0199: r=0x6b; break; // LATIN SMALL LETTER K WITH HOOK => 
-    case 0x019a: r=0x6c; break; // LATIN SMALL LETTER L WITH BAR => 
-    case 0x019d: r=0x4e; break; // LATIN CAPITAL LETTER N WITH LEFT HOOK => 
-    case 0x019e: r=0x6e; break; // LATIN SMALL LETTER N WITH LONG RIGHT LEG => 
-    case 0x019f: r=0x4f; break; // LATIN CAPITAL LETTER O WITH MIDDLE TILDE => 
+    case 0x0180: r=0x62; break; // LATIN SMALL LETTER B WITH STROKE =>
+    case 0x0181: r=0x42; break; // LATIN CAPITAL LETTER B WITH HOOK =>
+    case 0x0182: r=0x42; break; // LATIN CAPITAL LETTER B WITH TOPBAR =>
+    case 0x0183: r=0x62; break; // LATIN SMALL LETTER B WITH TOPBAR =>
+    case 0x0187: r=0x43; break; // LATIN CAPITAL LETTER C WITH HOOK =>
+    case 0x0188: r=0x63; break; // LATIN SMALL LETTER C WITH HOOK =>
+    case 0x018a: r=0x44; break; // LATIN CAPITAL LETTER D WITH HOOK =>
+    case 0x018b: r=0x44; break; // LATIN CAPITAL LETTER D WITH TOPBAR =>
+    case 0x018c: r=0x64; break; // LATIN SMALL LETTER D WITH TOPBAR =>
+    case 0x0191: r=0x46; break; // LATIN CAPITAL LETTER F WITH HOOK =>
+    case 0x0192: r=0x66; break; // LATIN SMALL LETTER F WITH HOOK =>
+    case 0x0193: r=0x47; break; // LATIN CAPITAL LETTER G WITH HOOK =>
+    case 0x0197: r=0x49; break; // LATIN CAPITAL LETTER I WITH STROKE =>
+    case 0x0198: r=0x4b; break; // LATIN CAPITAL LETTER K WITH HOOK =>
+    case 0x0199: r=0x6b; break; // LATIN SMALL LETTER K WITH HOOK =>
+    case 0x019a: r=0x6c; break; // LATIN SMALL LETTER L WITH BAR =>
+    case 0x019d: r=0x4e; break; // LATIN CAPITAL LETTER N WITH LEFT HOOK =>
+    case 0x019e: r=0x6e; break; // LATIN SMALL LETTER N WITH LONG RIGHT LEG =>
+    case 0x019f: r=0x4f; break; // LATIN CAPITAL LETTER O WITH MIDDLE TILDE =>
     case 0x01a0: r=0x004F; break; // LATIN CAPITAL LETTER O WITH HORN => LATIN CAPITAL LETTER O
     case 0x01a1: r=0x006F; break; // LATIN SMALL LETTER O WITH HORN => LATIN SMALL LETTER O
-    case 0x01a4: r=0x50; break; // LATIN CAPITAL LETTER P WITH HOOK => 
-    case 0x01a5: r=0x70; break; // LATIN SMALL LETTER P WITH HOOK => 
-    case 0x01ab: r=0x74; break; // LATIN SMALL LETTER T WITH PALATAL HOOK => 
-    case 0x01ac: r=0x54; break; // LATIN CAPITAL LETTER T WITH HOOK => 
-    case 0x01ad: r=0x74; break; // LATIN SMALL LETTER T WITH HOOK => 
-    case 0x01ae: r=0x54; break; // LATIN CAPITAL LETTER T WITH RETROFLEX HOOK => 
+    case 0x01a4: r=0x50; break; // LATIN CAPITAL LETTER P WITH HOOK =>
+    case 0x01a5: r=0x70; break; // LATIN SMALL LETTER P WITH HOOK =>
+    case 0x01ab: r=0x74; break; // LATIN SMALL LETTER T WITH PALATAL HOOK =>
+    case 0x01ac: r=0x54; break; // LATIN CAPITAL LETTER T WITH HOOK =>
+    case 0x01ad: r=0x74; break; // LATIN SMALL LETTER T WITH HOOK =>
+    case 0x01ae: r=0x54; break; // LATIN CAPITAL LETTER T WITH RETROFLEX HOOK =>
     case 0x01af: r=0x0055; break; // LATIN CAPITAL LETTER U WITH HORN => LATIN CAPITAL LETTER U
     case 0x01b0: r=0x0075; break; // LATIN SMALL LETTER U WITH HORN => LATIN SMALL LETTER U
-    case 0x01b2: r=0x56; break; // LATIN CAPITAL LETTER V WITH HOOK => 
-    case 0x01b3: r=0x59; break; // LATIN CAPITAL LETTER Y WITH HOOK => 
-    case 0x01b4: r=0x79; break; // LATIN SMALL LETTER Y WITH HOOK => 
-    case 0x01b5: r=0x5a; break; // LATIN CAPITAL LETTER Z WITH STROKE => 
-    case 0x01b6: r=0x7a; break; // LATIN SMALL LETTER Z WITH STROKE => 
-    case 0x01c5: r=0x44; break; // LATIN CAPITAL LETTER D WITH SMALL LETTER Z WITH CARON => 
-    case 0x01c8: r=0x4c; break; // LATIN CAPITAL LETTER L WITH SMALL LETTER J => 
-    case 0x01cb: r=0x4e; break; // LATIN CAPITAL LETTER N WITH SMALL LETTER J => 
+    case 0x01b2: r=0x56; break; // LATIN CAPITAL LETTER V WITH HOOK =>
+    case 0x01b3: r=0x59; break; // LATIN CAPITAL LETTER Y WITH HOOK =>
+    case 0x01b4: r=0x79; break; // LATIN SMALL LETTER Y WITH HOOK =>
+    case 0x01b5: r=0x5a; break; // LATIN CAPITAL LETTER Z WITH STROKE =>
+    case 0x01b6: r=0x7a; break; // LATIN SMALL LETTER Z WITH STROKE =>
+    case 0x01c5: r=0x44; break; // LATIN CAPITAL LETTER D WITH SMALL LETTER Z WITH CARON =>
+    case 0x01c8: r=0x4c; break; // LATIN CAPITAL LETTER L WITH SMALL LETTER J =>
+    case 0x01cb: r=0x4e; break; // LATIN CAPITAL LETTER N WITH SMALL LETTER J =>
     case 0x01cd: r=0x0041; break; // LATIN CAPITAL LETTER A WITH CARON => LATIN CAPITAL LETTER A
     case 0x01ce: r=0x0061; break; // LATIN SMALL LETTER A WITH CARON => LATIN SMALL LETTER A
     case 0x01cf: r=0x0049; break; // LATIN CAPITAL LETTER I WITH CARON => LATIN CAPITAL LETTER I
@@ -4546,12 +4548,12 @@ unichar u_deaccentuate (unichar c) {
     case 0x01dc: r=0x0075; break; // LATIN SMALL LETTER U WITH DIAERESIS AND GRAVE => LATIN SMALL LETTER U
     case 0x01de: r=0x0041; break; // LATIN CAPITAL LETTER A WITH DIAERESIS AND MACRON => LATIN CAPITAL LETTER A
     case 0x01df: r=0x0061; break; // LATIN SMALL LETTER A WITH DIAERESIS AND MACRON => LATIN SMALL LETTER A
-    case 0x01e0: r=0x0226; break; // LATIN CAPITAL LETTER A WITH DOT ABOVE AND MACRON => 
-    case 0x01e1: r=0x0227; break; // LATIN SMALL LETTER A WITH DOT ABOVE AND MACRON => 
+    case 0x01e0: r=0x0226; break; // LATIN CAPITAL LETTER A WITH DOT ABOVE AND MACRON =>
+    case 0x01e1: r=0x0227; break; // LATIN SMALL LETTER A WITH DOT ABOVE AND MACRON =>
     case 0x01e2: r=0x00C6; break; // LATIN CAPITAL LETTER AE WITH MACRON => LATIN CAPITAL LETTER AE
     case 0x01e3: r=0x00E6; break; // LATIN SMALL LETTER AE WITH MACRON => LATIN SMALL LETTER AE
-    case 0x01e4: r=0x47; break; // LATIN CAPITAL LETTER G WITH STROKE => 
-    case 0x01e5: r=0x67; break; // LATIN SMALL LETTER G WITH STROKE => 
+    case 0x01e4: r=0x47; break; // LATIN CAPITAL LETTER G WITH STROKE =>
+    case 0x01e5: r=0x67; break; // LATIN SMALL LETTER G WITH STROKE =>
     case 0x01e6: r=0x0047; break; // LATIN CAPITAL LETTER G WITH CARON => LATIN CAPITAL LETTER G
     case 0x01e7: r=0x0067; break; // LATIN SMALL LETTER G WITH CARON => LATIN SMALL LETTER G
     case 0x01e8: r=0x004B; break; // LATIN CAPITAL LETTER K WITH CARON => LATIN CAPITAL LETTER K
@@ -4561,9 +4563,9 @@ unichar u_deaccentuate (unichar c) {
     case 0x01ec: r=0x004F; break; // LATIN CAPITAL LETTER O WITH OGONEK AND MACRON => LATIN CAPITAL LETTER O
     case 0x01ed: r=0x006F; break; // LATIN SMALL LETTER O WITH OGONEK AND MACRON => LATIN SMALL LETTER O
     case 0x01ee: r=0x01B7; break; // LATIN CAPITAL LETTER EZH WITH CARON => LATIN CAPITAL LETTER EZH
-    case 0x01ef: r=0x0292; break; // LATIN SMALL LETTER EZH WITH CARON => 
+    case 0x01ef: r=0x0292; break; // LATIN SMALL LETTER EZH WITH CARON =>
     case 0x01f0: r=0x006A; break; // LATIN SMALL LETTER J WITH CARON => LATIN SMALL LETTER J
-    case 0x01f2: r=0x44; break; // LATIN CAPITAL LETTER D WITH SMALL LETTER Z => 
+    case 0x01f2: r=0x44; break; // LATIN CAPITAL LETTER D WITH SMALL LETTER Z =>
     case 0x01f4: r=0x0047; break; // LATIN CAPITAL LETTER G WITH ACUTE => LATIN CAPITAL LETTER G
     case 0x01f5: r=0x0067; break; // LATIN SMALL LETTER G WITH ACUTE => LATIN SMALL LETTER G
     case 0x01f8: r=0x004E; break; // LATIN CAPITAL LETTER N WITH GRAVE => LATIN CAPITAL LETTER N
@@ -4572,8 +4574,8 @@ unichar u_deaccentuate (unichar c) {
     case 0x01fb: r=0x0061; break; // LATIN SMALL LETTER A WITH RING ABOVE AND ACUTE => LATIN SMALL LETTER A
     case 0x01fc: r=0x00C6; break; // LATIN CAPITAL LETTER AE WITH ACUTE => LATIN CAPITAL LETTER AE
     case 0x01fd: r=0x00E6; break; // LATIN SMALL LETTER AE WITH ACUTE => LATIN SMALL LETTER AE
-    case 0x01fe: r=0x4f; break; // LATIN CAPITAL LETTER O WITH STROKE AND ACUTE => 
-    case 0x01ff: r=0x6f; break; // LATIN SMALL LETTER O WITH STROKE AND ACUTE => 
+    case 0x01fe: r=0x4f; break; // LATIN CAPITAL LETTER O WITH STROKE AND ACUTE =>
+    case 0x01ff: r=0x6f; break; // LATIN SMALL LETTER O WITH STROKE AND ACUTE =>
     case 0x0200: r=0x0041; break; // LATIN CAPITAL LETTER A WITH DOUBLE GRAVE => LATIN CAPITAL LETTER A
     case 0x0201: r=0x0061; break; // LATIN SMALL LETTER A WITH DOUBLE GRAVE => LATIN SMALL LETTER A
     case 0x0202: r=0x0041; break; // LATIN CAPITAL LETTER A WITH INVERTED BREVE => LATIN CAPITAL LETTER A
@@ -4604,9 +4606,9 @@ unichar u_deaccentuate (unichar c) {
     case 0x021b: r=0x0074; break; // LATIN SMALL LETTER T WITH COMMA BELOW => LATIN SMALL LETTER T
     case 0x021e: r=0x0048; break; // LATIN CAPITAL LETTER H WITH CARON => LATIN CAPITAL LETTER H
     case 0x021f: r=0x0068; break; // LATIN SMALL LETTER H WITH CARON => LATIN SMALL LETTER H
-    case 0x0220: r=0x4e; break; // LATIN CAPITAL LETTER N WITH LONG RIGHT LEG => 
-    case 0x0224: r=0x5a; break; // LATIN CAPITAL LETTER Z WITH HOOK => 
-    case 0x0225: r=0x7a; break; // LATIN SMALL LETTER Z WITH HOOK => 
+    case 0x0220: r=0x4e; break; // LATIN CAPITAL LETTER N WITH LONG RIGHT LEG =>
+    case 0x0224: r=0x5a; break; // LATIN CAPITAL LETTER Z WITH HOOK =>
+    case 0x0225: r=0x7a; break; // LATIN SMALL LETTER Z WITH HOOK =>
     case 0x0226: r=0x0041; break; // LATIN CAPITAL LETTER A WITH DOT ABOVE => LATIN CAPITAL LETTER A
     case 0x0227: r=0x0061; break; // LATIN SMALL LETTER A WITH DOT ABOVE => LATIN SMALL LETTER A
     case 0x0228: r=0x0045; break; // LATIN CAPITAL LETTER E WITH CEDILLA => LATIN CAPITAL LETTER E
@@ -4621,56 +4623,56 @@ unichar u_deaccentuate (unichar c) {
     case 0x0231: r=0x006F; break; // LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON => LATIN SMALL LETTER O
     case 0x0232: r=0x0059; break; // LATIN CAPITAL LETTER Y WITH MACRON => LATIN CAPITAL LETTER Y
     case 0x0233: r=0x0079; break; // LATIN SMALL LETTER Y WITH MACRON => LATIN SMALL LETTER Y
-    case 0x0253: r=0x62; break; // LATIN SMALL LETTER B WITH HOOK => 
-    case 0x0255: r=0x63; break; // LATIN SMALL LETTER C WITH CURL => 
-    case 0x0256: r=0x64; break; // LATIN SMALL LETTER D WITH TAIL => 
-    case 0x0257: r=0x64; break; // LATIN SMALL LETTER D WITH HOOK => 
-    case 0x0260: r=0x67; break; // LATIN SMALL LETTER G WITH HOOK => 
-    case 0x0266: r=0x68; break; // LATIN SMALL LETTER H WITH HOOK => 
-    case 0x0268: r=0x69; break; // LATIN SMALL LETTER I WITH STROKE => 
-    case 0x026b: r=0x6c; break; // LATIN SMALL LETTER L WITH MIDDLE TILDE => 
-    case 0x026c: r=0x6c; break; // LATIN SMALL LETTER L WITH BELT => 
-    case 0x026d: r=0x6c; break; // LATIN SMALL LETTER L WITH RETROFLEX HOOK => 
-    case 0x0271: r=0x6d; break; // LATIN SMALL LETTER M WITH HOOK => 
-    case 0x0272: r=0x6e; break; // LATIN SMALL LETTER N WITH LEFT HOOK => 
-    case 0x0273: r=0x6e; break; // LATIN SMALL LETTER N WITH RETROFLEX HOOK => 
-    case 0x027c: r=0x72; break; // LATIN SMALL LETTER R WITH LONG LEG => 
-    case 0x027d: r=0x72; break; // LATIN SMALL LETTER R WITH TAIL => 
-    case 0x027e: r=0x72; break; // LATIN SMALL LETTER R WITH FISHHOOK => 
-    case 0x0282: r=0x73; break; // LATIN SMALL LETTER S WITH HOOK => 
-    case 0x0288: r=0x74; break; // LATIN SMALL LETTER T WITH RETROFLEX HOOK => 
-    case 0x028b: r=0x76; break; // LATIN SMALL LETTER V WITH HOOK => 
-    case 0x0290: r=0x7a; break; // LATIN SMALL LETTER Z WITH RETROFLEX HOOK => 
-    case 0x0291: r=0x7a; break; // LATIN SMALL LETTER Z WITH CURL => 
-    case 0x029d: r=0x6a; break; // LATIN SMALL LETTER J WITH CROSSED-TAIL => 
-    case 0x02a0: r=0x71; break; // LATIN SMALL LETTER Q WITH HOOK => 
-    case 0x0386: r=0x0391; break; // GREEK CAPITAL LETTER ALPHA WITH TONOS => 
-    case 0x0388: r=0x0395; break; // GREEK CAPITAL LETTER EPSILON WITH TONOS => 
-    case 0x0389: r=0x0397; break; // GREEK CAPITAL LETTER ETA WITH TONOS => 
-    case 0x038a: r=0x0399; break; // GREEK CAPITAL LETTER IOTA WITH TONOS => 
-    case 0x038c: r=0x039F; break; // GREEK CAPITAL LETTER OMICRON WITH TONOS => 
-    case 0x038e: r=0x03A5; break; // GREEK CAPITAL LETTER UPSILON WITH TONOS => 
-    case 0x038f: r=0x03A9; break; // GREEK CAPITAL LETTER OMEGA WITH TONOS => 
-    case 0x0390: r=0x03CA; break; // GREEK SMALL LETTER IOTA WITH DIALYTIKA AND TONOS => 
+    case 0x0253: r=0x62; break; // LATIN SMALL LETTER B WITH HOOK =>
+    case 0x0255: r=0x63; break; // LATIN SMALL LETTER C WITH CURL =>
+    case 0x0256: r=0x64; break; // LATIN SMALL LETTER D WITH TAIL =>
+    case 0x0257: r=0x64; break; // LATIN SMALL LETTER D WITH HOOK =>
+    case 0x0260: r=0x67; break; // LATIN SMALL LETTER G WITH HOOK =>
+    case 0x0266: r=0x68; break; // LATIN SMALL LETTER H WITH HOOK =>
+    case 0x0268: r=0x69; break; // LATIN SMALL LETTER I WITH STROKE =>
+    case 0x026b: r=0x6c; break; // LATIN SMALL LETTER L WITH MIDDLE TILDE =>
+    case 0x026c: r=0x6c; break; // LATIN SMALL LETTER L WITH BELT =>
+    case 0x026d: r=0x6c; break; // LATIN SMALL LETTER L WITH RETROFLEX HOOK =>
+    case 0x0271: r=0x6d; break; // LATIN SMALL LETTER M WITH HOOK =>
+    case 0x0272: r=0x6e; break; // LATIN SMALL LETTER N WITH LEFT HOOK =>
+    case 0x0273: r=0x6e; break; // LATIN SMALL LETTER N WITH RETROFLEX HOOK =>
+    case 0x027c: r=0x72; break; // LATIN SMALL LETTER R WITH LONG LEG =>
+    case 0x027d: r=0x72; break; // LATIN SMALL LETTER R WITH TAIL =>
+    case 0x027e: r=0x72; break; // LATIN SMALL LETTER R WITH FISHHOOK =>
+    case 0x0282: r=0x73; break; // LATIN SMALL LETTER S WITH HOOK =>
+    case 0x0288: r=0x74; break; // LATIN SMALL LETTER T WITH RETROFLEX HOOK =>
+    case 0x028b: r=0x76; break; // LATIN SMALL LETTER V WITH HOOK =>
+    case 0x0290: r=0x7a; break; // LATIN SMALL LETTER Z WITH RETROFLEX HOOK =>
+    case 0x0291: r=0x7a; break; // LATIN SMALL LETTER Z WITH CURL =>
+    case 0x029d: r=0x6a; break; // LATIN SMALL LETTER J WITH CROSSED-TAIL =>
+    case 0x02a0: r=0x71; break; // LATIN SMALL LETTER Q WITH HOOK =>
+    case 0x0386: r=0x0391; break; // GREEK CAPITAL LETTER ALPHA WITH TONOS =>
+    case 0x0388: r=0x0395; break; // GREEK CAPITAL LETTER EPSILON WITH TONOS =>
+    case 0x0389: r=0x0397; break; // GREEK CAPITAL LETTER ETA WITH TONOS =>
+    case 0x038a: r=0x0399; break; // GREEK CAPITAL LETTER IOTA WITH TONOS =>
+    case 0x038c: r=0x039F; break; // GREEK CAPITAL LETTER OMICRON WITH TONOS =>
+    case 0x038e: r=0x03A5; break; // GREEK CAPITAL LETTER UPSILON WITH TONOS =>
+    case 0x038f: r=0x03A9; break; // GREEK CAPITAL LETTER OMEGA WITH TONOS =>
+    case 0x0390: r=0x03CA; break; // GREEK SMALL LETTER IOTA WITH DIALYTIKA AND TONOS =>
     case 0x03aa: r=0x0399; break; // GREEK CAPITAL LETTER IOTA WITH DIALYTIKA => GREEK CAPITAL LETTER IOTA
     case 0x03ab: r=0x03A5; break; // GREEK CAPITAL LETTER UPSILON WITH DIALYTIKA => GREEK CAPITAL LETTER UPSILON
-    case 0x03ac: r=0x03B1; break; // GREEK SMALL LETTER ALPHA WITH TONOS => 
-    case 0x03ad: r=0x03B5; break; // GREEK SMALL LETTER EPSILON WITH TONOS => 
-    case 0x03ae: r=0x03B7; break; // GREEK SMALL LETTER ETA WITH TONOS => 
-    case 0x03af: r=0x03B9; break; // GREEK SMALL LETTER IOTA WITH TONOS => 
-    case 0x03b0: r=0x03CB; break; // GREEK SMALL LETTER UPSILON WITH DIALYTIKA AND TONOS => 
+    case 0x03ac: r=0x03B1; break; // GREEK SMALL LETTER ALPHA WITH TONOS =>
+    case 0x03ad: r=0x03B5; break; // GREEK SMALL LETTER EPSILON WITH TONOS =>
+    case 0x03ae: r=0x03B7; break; // GREEK SMALL LETTER ETA WITH TONOS =>
+    case 0x03af: r=0x03B9; break; // GREEK SMALL LETTER IOTA WITH TONOS =>
+    case 0x03b0: r=0x03CB; break; // GREEK SMALL LETTER UPSILON WITH DIALYTIKA AND TONOS =>
     case 0x03ca: r=0x03B9; break; // GREEK SMALL LETTER IOTA WITH DIALYTIKA => GREEK SMALL LETTER IOTA
     case 0x03cb: r=0x03C5; break; // GREEK SMALL LETTER UPSILON WITH DIALYTIKA => GREEK SMALL LETTER UPSILON
     case 0x03cc: r=0x03BF; break; // GREEK SMALL LETTER OMICRON WITH TONOS => GREEK SMALL LETTER OMICRON
     case 0x03cd: r=0x03C5; break; // GREEK SMALL LETTER UPSILON WITH TONOS => GREEK SMALL LETTER UPSILON
     case 0x03ce: r=0x03C9; break; // GREEK SMALL LETTER OMEGA WITH TONOS => GREEK SMALL LETTER OMEGA
-    case 0x0400: r=0x0415; break; // CYRILLIC CAPITAL LETTER IE WITH GRAVE => 
-    case 0x0401: r=0x0415; break; // CYRILLIC CAPITAL LETTER IO => 
-    case 0x0403: r=0x0413; break; // CYRILLIC CAPITAL LETTER GJE => 
+    case 0x0400: r=0x0415; break; // CYRILLIC CAPITAL LETTER IE WITH GRAVE =>
+    case 0x0401: r=0x0415; break; // CYRILLIC CAPITAL LETTER IO =>
+    case 0x0403: r=0x0413; break; // CYRILLIC CAPITAL LETTER GJE =>
     case 0x0407: r=0x0406; break; // CYRILLIC CAPITAL LETTER YI => CYRILLIC CAPITAL LETTER BYELORUSSIAN-UKRAINIAN I
-    case 0x040c: r=0x041A; break; // CYRILLIC CAPITAL LETTER KJE => 
-    case 0x040d: r=0x0418; break; // CYRILLIC CAPITAL LETTER I WITH GRAVE => 
-    case 0x040e: r=0x0423; break; // CYRILLIC CAPITAL LETTER SHORT U => 
+    case 0x040c: r=0x041A; break; // CYRILLIC CAPITAL LETTER KJE =>
+    case 0x040d: r=0x0418; break; // CYRILLIC CAPITAL LETTER I WITH GRAVE =>
+    case 0x040e: r=0x0423; break; // CYRILLIC CAPITAL LETTER SHORT U =>
     case 0x0419: r=0x0418; break; // CYRILLIC CAPITAL LETTER SHORT I => CYRILLIC CAPITAL LETTER I
     case 0x0439: r=0x0438; break; // CYRILLIC SMALL LETTER SHORT I => CYRILLIC SMALL LETTER I
     case 0x0450: r=0x0435; break; // CYRILLIC SMALL LETTER IE WITH GRAVE => CYRILLIC SMALL LETTER IE
@@ -4716,12 +4718,12 @@ unichar u_deaccentuate (unichar c) {
     case 0x04f5: r=0x0447; break; // CYRILLIC SMALL LETTER CHE WITH DIAERESIS => CYRILLIC SMALL LETTER CHE
     case 0x04f8: r=0x042B; break; // CYRILLIC CAPITAL LETTER YERU WITH DIAERESIS => CYRILLIC CAPITAL LETTER YERU
     case 0x04f9: r=0x044B; break; // CYRILLIC SMALL LETTER YERU WITH DIAERESIS => CYRILLIC SMALL LETTER YERU
-    case 0x0622: r=0x0627; break; // ARABIC LETTER ALEF WITH MADDA ABOVE => 
-    case 0x0623: r=0x0627; break; // ARABIC LETTER ALEF WITH HAMZA ABOVE => 
-    case 0x0624: r=0x0648; break; // ARABIC LETTER WAW WITH HAMZA ABOVE => 
-    case 0x0625: r=0x0627; break; // ARABIC LETTER ALEF WITH HAMZA BELOW => 
-    case 0x0626: r=0x064A; break; // ARABIC LETTER YEH WITH HAMZA ABOVE => 
-    case 0x06c0: r=0x06D5; break; // ARABIC LETTER HEH WITH YEH ABOVE => 
+    case 0x0622: r=0x0627; break; // ARABIC LETTER ALEF WITH MADDA ABOVE =>
+    case 0x0623: r=0x0627; break; // ARABIC LETTER ALEF WITH HAMZA ABOVE =>
+    case 0x0624: r=0x0648; break; // ARABIC LETTER WAW WITH HAMZA ABOVE =>
+    case 0x0625: r=0x0627; break; // ARABIC LETTER ALEF WITH HAMZA BELOW =>
+    case 0x0626: r=0x064A; break; // ARABIC LETTER YEH WITH HAMZA ABOVE =>
+    case 0x06c0: r=0x06D5; break; // ARABIC LETTER HEH WITH YEH ABOVE =>
     case 0x06c2: r=0x06C1; break; // ARABIC LETTER HEH GOAL WITH HAMZA ABOVE => ARABIC LETTER HEH GOAL
     case 0x06d3: r=0x06D2; break; // ARABIC LETTER YEH BARREE WITH HAMZA ABOVE => ARABIC LETTER YEH BARREE
     case 0x0929: r=0x0928; break; // DEVANAGARI LETTER NNNA => DEVANAGARI LETTER NA
@@ -4739,7 +4741,7 @@ unichar u_deaccentuate (unichar c) {
     case 0x09dd: r=0x09A2; break; // BENGALI LETTER RHA => BENGALI LETTER DDHA
     case 0x09df: r=0x09AF; break; // BENGALI LETTER YYA => BENGALI LETTER YA
     case 0x0a33: r=0x0A32; break; // GURMUKHI LETTER LLA => GURMUKHI LETTER LA
-    case 0x0a36: r=0x0A38; break; // GURMUKHI LETTER SHA => 
+    case 0x0a36: r=0x0A38; break; // GURMUKHI LETTER SHA =>
     case 0x0a59: r=0x0A16; break; // GURMUKHI LETTER KHHA => GURMUKHI LETTER KHA
     case 0x0a5a: r=0x0A17; break; // GURMUKHI LETTER GHHA => GURMUKHI LETTER GA
     case 0x0a5b: r=0x0A1C; break; // GURMUKHI LETTER ZA => GURMUKHI LETTER JA
@@ -4914,7 +4916,7 @@ unichar u_deaccentuate (unichar c) {
     case 0x1e97: r=0x0074; break; // LATIN SMALL LETTER T WITH DIAERESIS => LATIN SMALL LETTER T
     case 0x1e98: r=0x0077; break; // LATIN SMALL LETTER W WITH RING ABOVE => LATIN SMALL LETTER W
     case 0x1e99: r=0x0079; break; // LATIN SMALL LETTER Y WITH RING ABOVE => LATIN SMALL LETTER Y
-    case 0x1e9a: r=0x61; break; // LATIN SMALL LETTER A WITH RIGHT HALF RING => 
+    case 0x1e9a: r=0x61; break; // LATIN SMALL LETTER A WITH RIGHT HALF RING =>
     case 0x1e9b: r=0x017F; break; // LATIN SMALL LETTER LONG S WITH DOT ABOVE => LATIN SMALL LETTER LONG S
     case 0x1ea0: r=0x0041; break; // LATIN CAPITAL LETTER A WITH DOT BELOW => LATIN CAPITAL LETTER A
     case 0x1ea1: r=0x0061; break; // LATIN SMALL LETTER A WITH DOT BELOW => LATIN SMALL LETTER A
@@ -5282,8 +5284,8 @@ unichar u_deaccentuate (unichar c) {
     case 0xfb1d: r=0x05D9; break; // HEBREW LETTER YOD WITH HIRIQ => HEBREW LETTER YOD
     case 0xfb2a: r=0x05E9; break; // HEBREW LETTER SHIN WITH SHIN DOT => HEBREW LETTER SHIN
     case 0xfb2b: r=0x05E9; break; // HEBREW LETTER SHIN WITH SIN DOT => HEBREW LETTER SHIN
-    case 0xfb2c: r=0xFB49; break; // HEBREW LETTER SHIN WITH DAGESH AND SHIN DOT => 
-    case 0xfb2d: r=0xFB49; break; // HEBREW LETTER SHIN WITH DAGESH AND SIN DOT => 
+    case 0xfb2c: r=0xFB49; break; // HEBREW LETTER SHIN WITH DAGESH AND SHIN DOT =>
+    case 0xfb2d: r=0xFB49; break; // HEBREW LETTER SHIN WITH DAGESH AND SIN DOT =>
     case 0xfb2e: r=0x05D0; break; // HEBREW LETTER ALEF WITH PATAH => HEBREW LETTER ALEF
     case 0xfb2f: r=0x05D0; break; // HEBREW LETTER ALEF WITH QAMATS => HEBREW LETTER ALEF
     case 0xfb30: r=0x05D0; break; // HEBREW LETTER ALEF WITH MAPIQ => HEBREW LETTER ALEF

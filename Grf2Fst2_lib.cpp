@@ -57,9 +57,7 @@ infos->graph_names=new_string_hash(256);
 get_value_index(U_EMPTY,infos->graph_names);
 infos->tags=new_string_hash(256);
 /* We insert <E> in the tags in order to ensure that its number is 0 */
-unichar E[4];
-u_strcpy(E,"<E>");
-get_value_index(E,infos->tags);
+get_value_index(EPSILON,infos->tags);
 infos->nombre_graphes_comp=0;
 infos->tokenization_policy=DEFAULT_TOKENIZATION;
 infos->alphabet=NULL;

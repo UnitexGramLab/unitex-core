@@ -40,16 +40,16 @@ static char* make_TYPE_ORDER(char* t) {
 for (int i=0;i<256;i++) {
    t[i]=-1;
 }
-t[LEXIC]=0;
-t[EPSILON]=1;
-t[ATOM]=2;
-t[CODE_NEG]=3;
-t[CODE]=4;
-t[INC_CAN]=5;
-t[INC_NEG]=6;
-t[INC]=7;
-t[EXCLAM]=-2;
-t[EQUAL]=-2;
+t[S_LEXIC]=0;
+t[S_EPSILON]=1;
+t[S_ATOM]=2;
+t[S_CODE_NEG]=3;
+t[S_CODE]=4;
+t[S_INC_CAN]=5;
+t[S_INC_NEG]=6;
+t[S_INC]=7;
+t[S_EXCLAM]=-2;
+t[S_EQUAL]=-2;
 return t;
 }
 
@@ -220,14 +220,14 @@ if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - t
 
   switch (a->type) {
 
-  case ATOM:
-  case INC_CAN:
+  case S_ATOM:
+  case S_INC_CAN:
     if (a->lemma != b->lemma) { return b->lemma - a->lemma; }
     if (a->form != b->form) { return b->form - a->form; }
     break;
 
-  case CODE_NEG:
-  case INC_NEG:
+  case S_CODE_NEG:
+  case S_INC_NEG:
     if (a->nbnegs != b->nbnegs) { return b->nbnegs - a->nbnegs; }
     for (int i = 0; i < a->nbnegs; i++) { if (a->negs[i] != b->negs[i]) { return b->negs[i] - a->negs[i]; } }
     break;
@@ -417,14 +417,14 @@ if (type_order(a->type)<0) {
 if (type_order(b->type)<0) {
    fatal_error("symbol_inter_symbol: invalid symbol type = '%c'\n",b->type);
 }
-if (a->type==EPSILON || b->type==EPSILON) {
+if (a->type==S_EPSILON || b->type==S_EPSILON) {
    fatal_error("epsilon error in symbol_inter_symbol\n");
 }
-if (a->type==LEXIC) {
+if (a->type==S_LEXIC) {
    /* b included in a */
    return dup_symbol(b);
 }
-if (b->type==LEXIC) {
+if (b->type==S_LEXIC) {
    /* a included in b */
    return dup_symbol(a);
 }
@@ -434,49 +434,49 @@ if (a->POS!=b->POS) {
 }
 symbol_t* res=NULL;
 switch (a->type) {
-   case ATOM:
-   case INC_CAN:
+   case S_ATOM:
+   case S_INC_CAN:
       switch (b->type) {
-         case ATOM:
-         case INC_CAN: res=CAN_inter_CAN(a,b); break;
+         case S_ATOM:
+         case S_INC_CAN: res=CAN_inter_CAN(a,b); break;
 
-         case CODE_NEG:
-         case INC_NEG: res=CAN_inter_NEG(a,b); break;
+         case S_CODE_NEG:
+         case S_INC_NEG: res=CAN_inter_NEG(a,b); break;
 
-         case CODE:
-         case INC: res=CAN_inter_CODE(a,b); break;
+         case S_CODE:
+         case S_INC: res=CAN_inter_CODE(a,b); break;
 
          default: fatal_error("Internal error in symbol_inter_symbol: invalid symbol type=%d\n",b->type);
        }
        break;
 
-   case CODE_NEG:
-   case INC_NEG:
+   case S_CODE_NEG:
+   case S_INC_NEG:
       switch (b->type) {
-         case ATOM:
-         case INC_CAN: res=CAN_inter_NEG(b,a); break;
+         case S_ATOM:
+         case S_INC_CAN: res=CAN_inter_NEG(b,a); break;
 
-         case CODE_NEG:
-         case INC_NEG: res=NEG_inter_NEG(a,b); break;
+         case S_CODE_NEG:
+         case S_INC_NEG: res=NEG_inter_NEG(a,b); break;
 
-         case CODE:
-         case INC: res=NEG_inter_CODE(a,b); break;
+         case S_CODE:
+         case S_INC: res=NEG_inter_CODE(a,b); break;
 
          default: fatal_error("Internal error in symbol_inter_symbol: weird symbol type=%d\n",b->type);
       }
       break;
 
-   case CODE:
-   case INC:
+   case S_CODE:
+   case S_INC:
       switch (b->type) {
-         case ATOM:
-         case INC_CAN: res=CAN_inter_CODE(b,a); break;
+         case S_ATOM:
+         case S_INC_CAN: res=CAN_inter_CODE(b,a); break;
 
-         case CODE_NEG:
-         case INC_NEG: res=NEG_inter_CODE(b,a); break;
+         case S_CODE_NEG:
+         case S_INC_NEG: res=NEG_inter_CODE(b,a); break;
 
-         case INC:
-         case CODE: res=CODE_inter_CODE(a,b); break;
+         case S_INC:
+         case S_CODE: res=CODE_inter_CODE(a,b); break;
 
          default: fatal_error("Internal error in symbol_inter_symbol: weird symbol type=%c\n",b->type);
       }
@@ -609,11 +609,11 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
   if (type_order(a->type) < 0) { fatal_error("in: invalid type in a '%c'\n", a->type); }
   if (type_order(b->type) < 0) { fatal_error("in: invalid type in b '%c'\n", b->type); }
 
-  if (a->type == EPSILON || b->type == EPSILON) { fatal_error("in: epsilon\n"); }
+  if (a->type == S_EPSILON || b->type == S_EPSILON) { fatal_error("in: epsilon\n"); }
 
-  if (b->type == LEXIC) { return true; }
+  if (b->type == S_LEXIC) { return true; }
 
-  if (a->type == LEXIC) { return false; }
+  if (a->type == S_LEXIC) { return false; }
 
   if (a->POS != b->POS) { return false;; }
 
@@ -621,46 +621,46 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
 
   switch (a->type) {
 
-  case ATOM:
-  case INC_CAN:
+  case S_ATOM:
+  case S_INC_CAN:
 
     switch (b->type) {
 
-    case ATOM:
-    case INC_CAN:
+    case S_ATOM:
+    case S_INC_CAN:
       res = CAN_in_CAN(a, b);
       break;
 
-    case CODE_NEG:
-    case INC_NEG:
+    case S_CODE_NEG:
+    case S_INC_NEG:
       res = CAN_in_NEG(a, b);
       break;
 
-    case CODE:
-    case INC:
+    case S_CODE:
+    case S_INC:
       res = CAN_in_CODE(a, b);
       break;
     default: ; /* nothing to do: just want to avoid a warning */
     }
     break;
 
-  case CODE_NEG:
-  case INC_NEG:
+  case S_CODE_NEG:
+  case S_INC_NEG:
 
     switch (b->type) {
 
-    case ATOM:
-    case INC_CAN:
+    case S_ATOM:
+    case S_INC_CAN:
       res = NEG_in_CAN(a, b);
       break;
 
-    case CODE_NEG:
-    case INC_NEG:
+    case S_CODE_NEG:
+    case S_INC_NEG:
       res = NEG_in_NEG(a, b);
       break;
 
-    case CODE:
-    case INC:
+    case S_CODE:
+    case S_INC:
       res = NEG_in_CODE(a, b);
       break;
     default: ; /* nothing to do: just want to avoid a warning */
@@ -668,23 +668,23 @@ bool symbol_in_symbol(const symbol_t * a, const symbol_t * b) {
     break;
 
 
-  case INC:
-  case CODE:
+  case S_INC:
+  case S_CODE:
 
     switch (b->type) {
 
-    case ATOM:
-    case INC_CAN:
+    case S_ATOM:
+    case S_INC_CAN:
       res = CODE_in_CAN(a, b);
       break;
 
-    case CODE_NEG:
-    case INC_NEG:
+    case S_CODE_NEG:
+    case S_INC_NEG:
       res = CODE_in_NEG(a, b);
       break;
 
-    case CODE:
-    case INC:
+    case S_CODE:
+    case S_INC:
       res = CODE_in_CODE(a, b);
       break;
     default: ; /* nothing to do: just want to avoid a warning */
@@ -1135,26 +1135,26 @@ if (type_order(a->type)<0) {
 if (type_order(b->type)<0) {
    fatal_error("_symbol_minus_symbol: invalid type in 'b': '%c'\n",b->type);
 }
-if (a->type==LEXIC) {
-   if (b->type==LEXIC) {
+if (a->type==S_LEXIC) {
+   if (b->type==S_LEXIC) {
       return NULL;
    }
-   if (b->type==EPSILON) {
+   if (b->type==S_EPSILON) {
       fatal_error("_symbol_minus_symbol: LEXIC minus EPSILON\n");
    }
    return LEXIC_minus_symbol(language,b);
 }
-if (a->type==EPSILON) {
+if (a->type==S_EPSILON) {
    error("_symbol_minus_symbol: a == EPSILON\n");
-   if (b->type==EPSILON) {
+   if (b->type==S_EPSILON) {
       return NULL;
    }
    fatal_error("_symbol_minus_symbol: a == EPSILON\n");
 }
-if (b->type==LEXIC) {
+if (b->type==S_LEXIC) {
    fatal_error("_symbol_minus_symbol: b == LEXIC\n");
 }
-if (b->type==EPSILON) {
+if (b->type==S_EPSILON) {
    fatal_error("_symbol_minus_symbol: b == epsilon\n");
 }
 if (a->POS!=b->POS) {
@@ -1162,47 +1162,47 @@ if (a->POS!=b->POS) {
 }
 symbol_t* res=NULL;
 switch (b->type) {
-   case ATOM:
-   case INC_CAN:
+   case S_ATOM:
+   case S_INC_CAN:
       switch (a->type) {
-         case ATOM:
-         case INC_CAN: res=CAN_minus_CAN(a,b); break;
+         case S_ATOM:
+         case S_INC_CAN: res=CAN_minus_CAN(a,b); break;
 
-         case CODE_NEG:
-         case INC_NEG: res=NEG_minus_CAN(a,b); break;
+         case S_CODE_NEG:
+         case S_INC_NEG: res=NEG_minus_CAN(a,b); break;
 
-         case CODE:
-         case INC: res=CODE_minus_CAN(a,b); break;
+         case S_CODE:
+         case S_INC: res=CODE_minus_CAN(a,b); break;
          default: ; /* nothing to do: just want to avoid a warning */
        }
        break;
 
-   case CODE_NEG:
-   case INC_NEG:
+   case S_CODE_NEG:
+   case S_INC_NEG:
       switch (a->type) {
-         case ATOM:
-         case INC_CAN: res=CAN_minus_NEG(a,b); break;
+         case S_ATOM:
+         case S_INC_CAN: res=CAN_minus_NEG(a,b); break;
 
-         case CODE_NEG:
-         case INC_NEG: res=NEG_minus_NEG(a,b); break;
+         case S_CODE_NEG:
+         case S_INC_NEG: res=NEG_minus_NEG(a,b); break;
 
-         case CODE:
-         case INC: res=CODE_minus_NEG(a,b); break;
+         case S_CODE:
+         case S_INC: res=CODE_minus_NEG(a,b); break;
          default: ; /* nothing to do: just want to avoid a warning */
       }
       break;
 
-   case INC:
-   case CODE:
+   case S_INC:
+   case S_CODE:
       switch (a->type) {
-         case ATOM:
-         case INC_CAN: res=CAN_minus_CODE(a,b); break;
+         case S_ATOM:
+         case S_INC_CAN: res=CAN_minus_CODE(a,b); break;
 
-         case CODE_NEG:
-         case INC_NEG: res=NEG_minus_CODE(a,b); break;
+         case S_CODE_NEG:
+         case S_INC_NEG: res=NEG_minus_CODE(a,b); break;
 
-         case CODE:
-         case INC: res=CODE_minus_CODE(a,b); break;
+         case S_CODE:
+         case S_INC: res=CODE_minus_CODE(a,b); break;
          default: ; /* nothing to do: just want to avoid a warning */
       }
       break;
@@ -1299,7 +1299,7 @@ symbol_t * minus_symbol(language_t* language,const symbol_t * b) {
  * Computes and returns the set containing all symbols but b's ones.
  */
 symbol_t* minus_symbols(language_t* language,const symbol_t* b) {
-symbol_t* LEX=new_symbol(LEXIC,-1);
+symbol_t* LEX=new_symbol(S_LEXIC,-1);
 symbol_t* res=symbol_minus_symbols(language,LEX,b);
 free_symbol(LEX);
 return res;

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -173,8 +173,8 @@ return NULL;
  * in the string_hash if not already present. Otherwise, the function will
  * return NO_VALUE_INDEX if the key is not in the string_hash.
  */
-int get_value_index_(unichar* key,int pos,struct string_hash_tree_node* node,
-                    struct string_hash* hash,int insert_policy,unichar* value) {
+int get_value_index_(const unichar* key,int pos,struct string_hash_tree_node* node,
+                    struct string_hash* hash,int insert_policy,const unichar* value) {
 if (node==NULL) {
    fatal_error("NULL error in get_value_index\n");
 }
@@ -241,7 +241,7 @@ return get_value_index_(key,pos+1,t->node,hash,insert_policy,value);
  * tolerates values, 'value' will be associated to the given key if the key is
  * not already present in the string_hash.
  */
-int get_value_index(unichar* key,struct string_hash* hash,int insert_policy,unichar* value) {
+int get_value_index(const unichar* key,struct string_hash* hash,int insert_policy,unichar* value) {
 return get_value_index_(key,0,hash->root,hash,insert_policy,value);
 }
 
@@ -250,7 +250,7 @@ return get_value_index_(key,0,hash->root,hash,insert_policy,value);
  * Returns the index value associated to the given key. If the given string_hash
  * tolerates values, the key will be used as value.
  */
-int get_value_index(unichar* key,struct string_hash* hash,int insert_policy) {
+int get_value_index(const unichar* key,struct string_hash* hash,int insert_policy) {
 return get_value_index_(key,0,hash->root,hash,insert_policy,key);
 }
 
@@ -259,7 +259,7 @@ return get_value_index_(key,0,hash->root,hash,insert_policy,key);
  * Returns the index value associated to the given key, inserting it if needed.
  * In that case, the key itself will be used as value.
  */
-int get_value_index(unichar* key,struct string_hash* hash) {
+int get_value_index(const unichar* key,struct string_hash* hash) {
 return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
 }
 
@@ -376,7 +376,7 @@ for (int i=0;i<hash->size;i++) {
  * in the string_hash. 'pos' is the current position in 's'. 'node' is the current node
  * in the string_hash tree.
  */
-int get_longest_key_index_(unichar* s,int pos,int *key_length,struct string_hash_tree_node* node) {
+int get_longest_key_index_(const unichar* s,int pos,int *key_length,struct string_hash_tree_node* node) {
 int index=-1;
 if (node->value_index!=NO_VALUE_INDEX) {
    /* If we have a key, we check if its length is greater than the previous one, if any */
@@ -413,7 +413,7 @@ return index;
  * in the given string_hash, and returns its value index, or NO_VALUE_INDEX if
  * no key matches. If a key is found, its length is returned in 'key_length'.
  */
-int get_longest_key_index(unichar* s,int *key_length,struct string_hash* hash) {
+int get_longest_key_index(const unichar* s,int *key_length,struct string_hash* hash) {
 (*key_length)=0;
 return get_longest_key_index_(s,0,key_length,hash->root);
 }
@@ -473,7 +473,7 @@ free(s);
 /**
  * Returns the index value associated to the given key.
  */
-int get_value_index(unichar* key,struct string_hash_ptr* hash,int insert_policy) {
+int get_value_index(const unichar* key,struct string_hash_ptr* hash,int insert_policy) {
 return get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
 }
 
@@ -481,7 +481,7 @@ return get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
 /**
  * Returns the index value associated to the given key, inserting it if needed.
  */
-int get_value_index(unichar* key,struct string_hash_ptr* hash) {
+int get_value_index(const unichar* key,struct string_hash_ptr* hash) {
 return get_value_index_(key,0,hash->hash->root,hash->hash,INSERT_IF_NEEDED,NULL);
 }
 
@@ -490,7 +490,7 @@ return get_value_index_(key,0,hash->hash->root,hash->hash,INSERT_IF_NEEDED,NULL)
  * Returns the index value associated to the given key. 'value' will be associated to
  * the given key if the key is not already present in the string_hash_ptr.
  */
-int get_value_index(unichar* key,struct string_hash_ptr* hash,int insert_policy,void* value) {
+int get_value_index(const unichar* key,struct string_hash_ptr* hash,int insert_policy,void* value) {
 int size=hash->hash->size;
 int index=get_value_index_(key,0,hash->hash->root,hash->hash,insert_policy,NULL);
 if (index==-1) {
@@ -522,7 +522,7 @@ return index;
  * WARNING: NULL is also returned if it has been associated to the key, so
  *          it's not possible to distinguish the cases (key,NULL) and key not found.
  */
-void* get_value(unichar* key,struct string_hash_ptr* hash) {
+void* get_value(const unichar* key,struct string_hash_ptr* hash) {
 int index=get_value_index(key,hash->hash,DONT_INSERT);
 if (index==-1) return NULL;
 return hash->value[index];

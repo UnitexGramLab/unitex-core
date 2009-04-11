@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -125,7 +125,7 @@ return get_trans_arbre_normalization_string(s,t->next);
 /**
  * Allocates, initializes and returns a new norm_info structure.
  */
-struct norm_info* new_norm_info(unichar* output,struct normalization_tree* n) {
+struct norm_info* new_norm_info(const unichar* output,struct normalization_tree* n) {
 struct norm_info* t=(struct norm_info*)malloc(sizeof(struct norm_info));
 if (t==NULL) {
    fatal_alloc_error("new_norm_info");
@@ -141,7 +141,7 @@ return t;
  * Inserts the given (output,node) couple in the given list, if not
  * already present.
  */
-struct norm_info* insert_in_norm_info_list(unichar* output,
+struct norm_info* insert_in_norm_info_list(const unichar* output,
                                            struct normalization_tree* n,
                                            struct norm_info* l) {
 if (l==NULL) return new_norm_info(output,n);
@@ -182,7 +182,7 @@ return 1;
  */
 void explore_normalization_fst2(Fst2* fst2,int current_state,
                                 struct normalization_tree* node,
-                                struct string_hash* tokens,unichar* output,
+                                struct string_hash* tokens,const unichar* output,
                                 Alphabet* alph,struct norm_info** list) {
 Fst2State state=fst2->states[current_state];
 if (is_final_state(state)) {
@@ -229,7 +229,7 @@ while (trans!=NULL) {
          /* If we have a normal transition, we explore all the tokens that match it */
          struct list_int* l=get_token_list_for_sequence(tag->input,alph,tokens);
          while (l!=NULL) {
-            /* Then, we add a branch in the normalization tree for 
+            /* Then, we add a branch in the normalization tree for
              * each token. Note that it may introduce combinatory explosions
              * if the the fst2 matches large sequences */
             struct normalization_tree_transition* trans_norm;

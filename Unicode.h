@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -75,9 +75,10 @@ typedef unsigned short int unichar;
  * We define here the unicode NULL character and the unicode
  * empty string.
  */
-extern unichar U_NULL;
-extern unichar* U_EMPTY;
+extern const unichar U_NULL;
+extern const unichar* U_EMPTY;
 
+extern const unichar EPSILON[4];
 
 /* This constant must be used instead of 65536 (0x10000) in order
  * to avoid problems if one day the type unichar becomes larger
