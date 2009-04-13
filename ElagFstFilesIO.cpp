@@ -568,7 +568,8 @@ input->tfst->automaton->tag_type=PTR_TAGS;
 void tfst_file_close_in(Elag_Tfst_file_in* fstf) {
 if (fstf==NULL) return;
 close_text_automaton(fstf->tfst);
-free_language_t(fstf->language);
+/* We MUST NOT free the language since we have not allocated it in load_tfst_file */
+//free_language_t(fstf->language);
 free_string_hash_ptr(fstf->symbols,(void(*)(void*))free_symbols);
 if (fstf->renumber!=NULL) free(fstf->renumber);
 free(fstf);
