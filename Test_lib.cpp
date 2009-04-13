@@ -35,21 +35,21 @@
 int main(int argc,char *argv[]) {
 setBufferMode();
 
-char* name="biniou";
+const char* name="biniou";
 U_FILE* f=u_fopen(UTF16_LE,"biniou",U_WRITE);
 if (f==NULL) {
    fatal_error("Cannot open %s\n",name);
 }
 u_fprintf(f,"a+(b.c)");
 u_fclose(f);
-char* grf="regexp.grf";
+const char* grf="regexp.grf";
 ProgramInvoker* invoker=new_ProgramInvoker(main_Reg2Grf,"main_Reg2Grf");
 add_argument(invoker,name);
 int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
 u_printf("Reg2Grf exit code: %d\n\n",ret);
 
-f=u_fopen(grf,U_READ);
+f=u_fopen(UTF16_LE,grf,U_READ);
 int c;
 while ((c=u_fgetc(f))!=-1) {
    u_printf("%C",c);

@@ -214,7 +214,7 @@ endif ## MINGW (ifeq)
 #############################################################################
 
 TEST      = Test
-TEST_OBJS = Test.o Unicode.o Pattern.o String_hash.o IOBuffer.o Error.o \
+TEST_OBJS = Main_Test.o Unicode.o Pattern.o String_hash.o IOBuffer.o Error.o \
 			List_ustring.o StringParsing.o PatternTree.o List_pointer.o DELA.o\
 			Alphabet.o Fst2.o Transitions.o List_int.o Tfst.o File.o SingleGraph.o\
 			BitArray.o HashTable.o FIFO.o BitMasks.o Ustring.o Symbol.o\
