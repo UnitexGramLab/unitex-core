@@ -21,6 +21,7 @@
 
 #include "Error.h"
 #include "Fst2TxtAsRoutine.h"
+#include "TransductionStack.h"
 
 #define BUFFER_SIZE 1000000
 #define MAX_DEPTH 300
@@ -139,18 +140,6 @@ free(p);
 
 void scan_graph(int,int,int,int,struct parsing_info**,struct fst2txt_parameters*);
 int write_transduction();
-
-
-int is_variable_char(unichar c) {
-return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_');
-}
-
-static void push_string(struct stack_unichar* stack,unichar* s) {
-int i;
-if (s==NULL) return;
-for (i=0;s[i]!='\0';i++)
-   push(stack,s[i]);
-}
 
 
 static void push_output_string(struct fst2txt_parameters* p,unichar s[]) {

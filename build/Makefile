@@ -323,7 +323,7 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Unicode.o Fst2.o Alphabet.o P
                TransductionVariables.o String_hash.o Error.o StringParsing.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o BitArray.o\
                Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
-	           Fst2TxtAsRoutine.o DELA.o DicVariables.o\
+	           Fst2TxtAsRoutine.o DELA.o DicVariables.o TransductionStack.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o Stack_unichar.o
 
 GRF2FST2      = Grf2Fst2
@@ -447,7 +447,7 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Unicode.o Fst2.o Alphabet.o \
                TransductionVariables.o String_hash.o Error.o StringParsing.o File.o\
                Pattern.o List_ustring.o List_int.o BitMasks.o Fst2TxtAsRoutine.o\
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
-	           getopt.o DicVariables.o\
+	           getopt.o DicVariables.o TransductionStack.o \
 	           Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o
 
 
