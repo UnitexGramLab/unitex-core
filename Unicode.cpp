@@ -238,7 +238,7 @@ if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
       if (!strcmp(MODE,U_MODIFY)) {
          /* If we are in MODIFY mode, we must set the cursor at the beginning of the
           * file, i.e. after the byte order mark, if any. */
-         if (encoding==UTF16_LE || encoding==BIG_ENDIAN) {
+         if (encoding==UTF16_LE || encoding==BIG_ENDIAN_UTF16) {
             fseek(f,2,0);
          }
       }
@@ -251,7 +251,7 @@ if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
     * UTF16. */
    if (encoding==UTF16_LE) {
 	   u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
-   } else if (encoding==BIG_ENDIAN) {
+   } else if (encoding==BIG_ENDIAN_UTF16) {
       u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
    }
    return new_U_FILE(f,encoding);
@@ -271,7 +271,7 @@ if (!strcmp(MODE,U_READ)) {
       }
       return new_U_FILE(f,encoding);
    }
-   if (encoding==BIG_ENDIAN) {
+   if (encoding==BIG_ENDIAN_UTF16) {
       c=u_fgetc_UTF16BE(f);
       if (c!=U_BYTE_ORDER_MARK) {
          error("u_fopen error: %s is not a UTF16-BE text file\n",name);
@@ -285,7 +285,7 @@ if (!strcmp(MODE,U_READ)) {
 /* If the file is opened in WRITE mode, we may insert the 0xFEFF unicode char */
 if (!strcmp(MODE,U_WRITE)) {
    if (encoding==UTF16_LE) u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
-   else if (encoding==BIG_ENDIAN) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
+   else if (encoding==BIG_ENDIAN_UTF16) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
 }
 return new_U_FILE(f,encoding);
 }
