@@ -94,7 +94,7 @@ fstf->name=strdup(fname);
 if (fstf->name==NULL) {
    fatal_alloc_error("load_elag_fst2_file");
 }
-if ((fstf->f=u_fopen(fname,U_READ))==NULL) {
+if ((fstf->f=u_fopen(UTF16_LE,fname,U_READ))==NULL) {
    error("load_fst_file: unable to open '%s' for reading\n",fname);
    goto error_fstf;
 }
@@ -122,7 +122,7 @@ return fstf;
 /* If an error occurs */
 error_symbols: free_string_hash_ptr(fstf->symbols,(void(*)(void*))free_symbols);
 
-error_f: fclose(fstf->f);
+error_f: u_fclose(fstf->f);
 
 error_fstf: free(fstf->name);
 
@@ -281,7 +281,7 @@ if (res==NULL) {
 if (type<0 || type>=FST_BAD_TYPE) {
    fatal_error("fst_file_out_open: bad FST_TYPE\n");
 }
-if ((res->f=u_fopen(fname,U_WRITE))==NULL) {
+if ((res->f=u_fopen(UTF16_LE,fname,U_WRITE))==NULL) {
    error("fst_out_open: unable to open '%s'\n",fname);
    free(res);
    return NULL;

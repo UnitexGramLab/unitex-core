@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -315,7 +315,7 @@ set_state_array_capacity(g,g->number_of_states);
 
 
 /**
- * Adds a new state to a SingleGraph. The function returns 
+ * Adds a new state to a SingleGraph. The function returns
  * the new state.
  */
 SingleGraphState add_state(SingleGraph g) {
@@ -500,7 +500,7 @@ int i;
 /* First, we initialize the closures. Note that 'mark' was already initialized
  * when it was created */
 for (i=0;i<graph->number_of_states;i++) {
-   closures[i]=NULL;    
+   closures[i]=NULL;
 }
 /* Then, for each state, we compute the epsilon closure */
 for (i=0;i<graph->number_of_states;i++) {
@@ -535,7 +535,7 @@ for (int i=0;i<graph->number_of_states;i++) {
       ptr=ptr->next;
       if (temp->tag_number==0) {
          /* If we have an epsilon transition, we free it */
-         free(temp); 
+         free(temp);
       }
       else {
          /* Otherwise, we add the transition to the list of good ones */
@@ -552,7 +552,7 @@ for (int i=0;i<graph->number_of_states;i++) {
       temp=ptr;
       ptr=ptr->next;
       if (temp->tag_number==0) {
-         free(temp); 
+         free(temp);
       }
       else {
          temp->next=non_epsilon_transitions;
@@ -599,7 +599,7 @@ for (int i=0;i<graph->number_of_states;i++) {
 
 /**
  * Removes epsilon transitions from the given graph, adding the transitions
- * that are necessary not to modify the language recognized by the graph. 
+ * that are necessary not to modify the language recognized by the graph.
  */
 void remove_epsilon_transitions(SingleGraph graph) {
 /* We compute the epsilon closure for each state */
@@ -608,12 +608,12 @@ struct list_int** closures=get_epsilon_closures(graph);
 delete_epsilon_transitions(graph);
 /* And we add transitions in order to preserve the graph language. For instance,
  * if we have the following transitions:
- * 
+ *
  * A --epsilon--> B
  * B --XXX--> C
- * 
+ *
  * we have to remove the first one and then to add the following new one:
- * 
+ *
  * A --XXX--> C
  */
 add_transitions_according_to_epsilon_closure(closures,graph);
@@ -664,18 +664,18 @@ Transition* t=states[old_state_number]->outgoing_transitions;
 while (t!=NULL) {
    if (t->state_number!=old_state_number) {
       /* If we have a transition of the form:
-       * 
+       *
        * old_state_number ----> X
-       * 
+       *
        * then we must renumber the incoming transitions of X. */
       renumber_transitions(states[t->state_number]->reverted_incoming_transitions,
                            old_state_number,new_state_number);
    }
    else {
       /* If we have a transition like:
-       * 
+       *
        * old_state_number ----> old_state_number
-       * 
+       *
        * then we must replace change its destination to new_state_number. */
       t->state_number=new_state_number;
    }
@@ -686,9 +686,9 @@ t=states[old_state_number]->reverted_incoming_transitions;
 while (t!=NULL) {
    if (t->state_number!=old_state_number) {
       /* If we have a transition of the form:
-       * 
+       *
        * old_state_number <---- X
-       * 
+       *
        * then we must renumber the outgoing transitions of X. */
       renumber_transitions(states[t->state_number]->outgoing_transitions,
                            old_state_number,new_state_number);
@@ -699,9 +699,9 @@ while (t!=NULL) {
    }
    else {
       /* If we have a transition like:
-       * 
+       *
        * old_state_number <---- old_state_number
-       * 
+       *
        * then we must replace change its destination to new_state_number. */
       t->state_number=new_state_number;
    }
@@ -812,9 +812,9 @@ remove_useless_states(graph);
  * This function reverses a graph, that is to say:
  * 1) it reverses all its transitions
  * 2) each initial state becomes final and each final state becomes initial
- * 
+ *
  * Note that we assume that reversed transitions have been computed before.
- * 
+ *
  * The function raises a fatal error in case of NULL or empty automaton.
  */
 void reverse(SingleGraph graph) {
@@ -989,10 +989,10 @@ value->_ptr=sorted_insert(t->state_number,(struct list_int*)value->_ptr);
  * This function takes a graph and determinizes it. We assume that the graph
  * does not contain any epsilon transition. However, we make no hypothesis about
  * its initial state(s).
- * 
+ *
  * Note that, after the determinization, the new reversed transitions have not been
  * computed.
- * 
+ *
  * The function raises a fatal error in case of NULL or empty automaton.
  */
 void determinize(SingleGraph graph) {
@@ -1007,7 +1007,7 @@ SingleGraph new_graph=new_SingleGraph();
 SingleGraphState state;
 Transition* transition;
 /* NOTE about structures to be used:
- * 
+ *
  * - hash: a hash table used to associate numbers to set of states
  * - fifo: a FIFO used to deal with the state sets to be processed
  * - transition_hash: a hash table reinitialized for each state set. We use
@@ -1102,16 +1102,16 @@ move_SingleGraph(graph,&new_graph);
 
 
 /**
- * Minimize the given graph, using Brzozowski's algorithm: 
+ * Minimize the given graph, using Brzozowski's algorithm:
  * reverse, determinize, reverse, determinize again.
  * If 'compute_reversed_transitions' parameter is non null,
  * then the function will first compute the reversed transitions
  * of the graph; otherwise, it will assume that this is already
  * done.
- * 
+ *
  * Note that, after the minimization, the new reversed transitions
  * have not been computed.
- * 
+ *
  * The function raises a fatal error in case of NULL or empty automaton,
  * or if the automaton is emptied during the minimization, for example if
  * it has no final state.
@@ -1142,7 +1142,7 @@ determinize(graph);
  * case, this can be replaced by a string value. For instance, the graph name is
  * replaced by the content of a sentence, when a .fst2 represents a text automaton.
  */
-void save_fst2_subgraph(FILE* fst2,SingleGraph graph,int graph_number,unichar* graph_name) {
+void save_fst2_subgraph(U_FILE* fst2,SingleGraph graph,int graph_number,unichar* graph_name) {
 /* We print the graph header made of its negative number and its name */
 u_fprintf(fst2,"%d %S\n", graph_number, graph_name);
 /* If we have an empty graph, we represent it by a single state with
@@ -1374,7 +1374,7 @@ for (int i=0;i<graph->number_of_states;i++) {
    free_bit_array(direct[i]);
 }
 /* Now, we will count the number of paths between all the couple
- * of states q_i and q_i+1, where q_i is the factorizing state #i. 
+ * of states q_i and q_i+1, where q_i is the factorizing state #i.
  * We do that because the combinatory explosion makes impossible to
  * count directly the number of paths of the whole automaton. */
 double ambiguity_rate=0;

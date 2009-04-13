@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -50,7 +50,7 @@ struct string_hash_tree_transition {
 
 /**
  * This is a tree node with a control integer to know if it is a final one
- * and a list of transitions. If the node is a final one, 'value_index' 
+ * and a list of transitions. If the node is a final one, 'value_index'
  * contains an integer that is the index of the value in the 'value' array.
  * It contains NO_VALUE_INDEX if the node is not final.
  */
@@ -61,14 +61,14 @@ struct string_hash_tree_node {
 
 
 /**
- * This structure is used to manage unicode string pairs like (key,value). 
+ * This structure is used to manage unicode string pairs like (key,value).
  * We use a tree in order to associate an integer to each key, and a string
  * array that contains the values. For instance, if we insert the pair ("abc","ABC"),
  * the tree may give us the number 37 for "abc", and we will have value[37]="ABC".
  * 'size' is the actual number of pairs in the structure. 'capacity' is the maximum
  * size of the 'value' array. 'bound_policy' is used to define what to do when 'value'
  * is full, raising an error or enlarge the array. 'root' is the root of the key tree.
- * 
+ *
  * Note that this structure is often used with key=value in order to have a bijection
  * between strings and integers:
  * - if we know the string, the key tree provides us the number
@@ -107,7 +107,7 @@ int get_value_index(const unichar*,struct string_hash*,int);
 int get_value_index(const unichar*,struct string_hash*);
 struct string_hash* load_key_list(char*);
 struct string_hash* load_key_value_list(char*,unichar);
-void dump_values(FILE*,struct string_hash*);
+void dump_values(U_FILE*,struct string_hash*);
 int get_longest_key_index(const unichar*,int*,struct string_hash*);
 
 

@@ -26,12 +26,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 /* This line is used to prevent people from using printf and scanf. We do
  * that because we want to parametrize I/O operations with encodings. */
 #define printf DONT_USE_PRINTF_BUT_U_PRINTF
 #define scanf DONT_USE_SCANF_BUT_U_SCANF
 
+#define fopen DONT_USE_FOPEN_BUT_U_FOPEN
 
 /**
  * This library provides basic I/O unicode operations. For internal data
@@ -68,7 +70,28 @@
  * so that it cannot handle characters >= 0xFFFF. Such characters, theoretically
  * represented with low and high surrowgate characters are not handled by Unitex.
  */
-typedef unsigned short int unichar;
+typedef uint16_t unichar;
+
+/**
+ * We define here the I/O encodings that are supported by the Unicode library.
+ */
+typedef enum {
+   UTF16_LE,
+   /* We give such a name to UTF16_BE in order to avoid encoding errors due to completion */
+   BIG_ENDIAN_UTF16,
+   UTF8,
+   ASCII,
+   BINARY=ASCII
+} Encoding;
+
+
+/**
+ * This structure is used to represent a file with its encoding.
+ */
+typedef struct {
+	FILE* f;
+	Encoding enc;
+} U_FILE;
 
 
 /**
@@ -87,15 +110,6 @@ extern const unichar EPSILON[4];
 
 
 /**
- * We define here the I/O encodings that are supported by the Unicode library.
- */
-typedef enum {
-   UTF16_LE,
-   UTF16_BE,
-   UTF8
-} Encoding;
-
-/**
  * Here are defined the default encodings.
  */
 extern Encoding STDIN_ENC8;
@@ -103,90 +117,101 @@ extern Encoding STDOUT_ENC;
 extern Encoding STDERR_ENC;
 extern Encoding FILE_ENC;
 
+extern U_FILE* U_STDIN;
+extern U_FILE* U_STDOUT;
+extern U_FILE* U_STDERR;
+
+
+/* Some aliases for U_FILE */
+int fseek(U_FILE *stream, long offset, int whence);
+long ftell(U_FILE *stream);
+void rewind(U_FILE *stream);
+int feof(U_FILE* stream);
+size_t fread(void *ptr,size_t size,size_t nmemb,U_FILE *stream);
+size_t fwrite(const void *ptr,size_t size,size_t nmemb,U_FILE *stream);
+
+
 
 /* ------------------- Some aliases, mainly for default UTF16-LE use ------------------- */
-FILE* u_fopen(const char*,const char*);
-int u_fempty(const char*);
-
-int u_fgetc_raw(FILE*);
+int u_fgetc_raw(U_FILE*);
 int u_fgetc_UTF16LE(FILE*);
 int u_fgetc_UTF16BE(FILE*);
 int u_fgetc_UTF8(FILE*);
-int u_fgetc(FILE*);
-int u_fgetc_CR(FILE*);
-int u_fread_raw(unichar*,int,FILE*);
-int u_fread(unichar*,int,FILE*,int*);
+int u_fgetc(U_FILE*);
+int u_fgetc_CR(U_FILE*);
+int u_fread_raw(unichar*,int,U_FILE*);
+int u_fread(unichar*,int,U_FILE*,int*);
 
-int u_fputc_raw(unichar,FILE*);
+int u_fputc_raw(unichar,U_FILE*);
 int u_fputc_UTF16LE(unichar,FILE*);
 int u_fputc_UTF16BE(unichar,FILE*);
 int u_fputc_UTF8(unichar,FILE*);
-int u_fputc(unichar,FILE*);
-int u_ungetc(unichar,FILE*);
+int u_fputc(unichar,U_FILE*);
+int u_ungetc(unichar,U_FILE*);
 
-int u_fwrite_raw(unichar*,int,FILE*);
-int u_fwrite(unichar*,int,FILE*);
+int u_fwrite_raw(unichar*,int,U_FILE*);
+int u_fwrite(unichar*,int,U_FILE*);
 
-int u_fgets(unichar*,FILE*);
-int u_fgets(unichar*,int,FILE*);
-int u_fgets2(unichar*,FILE*);
+int u_fgets(unichar*,U_FILE*);
+int u_fgets(unichar*,int,U_FILE*);
+int u_fgets2(unichar*,U_FILE*);
 
 int u_printf(const char*,...);
-int u_fprintf(FILE*,const char*,...);
+int u_fprintf(U_FILE*,const char*,...);
 
 int u_scanf(const char*,...);
-int u_fscanf(FILE*,const char*,...);
+int u_fscanf(U_FILE*,const char*,...);
 
 /* The u_prints and u_fprints functions should not be visible from the
  * outside of this library. People should use u_printf and u_fprintf */
 //void u_prints(unichar*);
-//void u_fprints(unichar*,FILE*);
-//void u_fprints(char*,FILE*);
+//void u_fprints(unichar*,U_FILE*);
+//void u_fprints(char*,U_FILE*);
 //void u_fprints(Encoding,unichar*,FILE*);
 //void u_fprints(Encoding,char*,FILE*);
 
 /* ------------------- File functions ------------------- */
-FILE* u_fopen(Encoding,const char*,const char*);
-int u_fclose(FILE*);
+U_FILE* u_fopen(Encoding,const char*,const char*);
+int u_fclose(U_FILE*);
 int u_fempty(Encoding,const char*);
 int u_is_UTF16(const char*);
 
 int u_fgetc_UTF16LE_raw(FILE*);
 int u_fgetc_UTF16BE_raw(FILE*);
 int u_fgetc_UTF8_raw(FILE*);
-int u_fgetc_raw(Encoding,FILE*);
-int u_fgetc(Encoding,FILE*);
-int u_fgetc_CR(Encoding,FILE*);
+int u_fgetc_raw(U_FILE*);
+int u_fgetc(U_FILE*);
+int u_fgetc_CR(U_FILE*);
 
-int u_fread_raw(Encoding,unichar*,int,FILE*);
-int u_fread(Encoding,unichar*,int,FILE*,int*);
+int u_fread_raw(unichar*,int,U_FILE*);
+int u_fread(unichar*,int,U_FILE*,int*);
 
 int u_fputc_UTF16LE_raw(unichar,FILE*);
 int u_fputc_UTF16BE_raw(unichar,FILE*);
 int u_fputc_UTF8_raw(unichar,FILE*);
-int u_fputc_raw(Encoding,unichar,FILE*);
-int u_fputc(Encoding,unichar,FILE*);
+int u_fputc_raw(unichar,U_FILE*);
+int u_fputc(unichar,U_FILE*);
 
 int u_ungetc_UTF16LE_raw(FILE*);
 int u_ungetc_UTF16BE_raw(FILE*);
 int u_ungetc_UTF8_raw(unichar,FILE*);
-int u_ungetc_raw(Encoding,unichar,FILE*);
-int u_ungetc(Encoding,unichar,FILE*);
+int u_ungetc_raw(unichar,U_FILE*);
+int u_ungetc(unichar,U_FILE*);
 
-int u_fwrite_raw(Encoding,unichar*,int,FILE*);
-int u_fwrite(Encoding,unichar*,int,FILE*);
+int u_fwrite_raw(unichar*,int,U_FILE*);
+int u_fwrite(unichar*,int,U_FILE*);
 
-int u_fgets(Encoding,unichar*,FILE*);
-int u_fgets(Encoding,unichar*,int,FILE*);
-int u_fgets2(Encoding encoding,unichar* line,FILE* f);
+int u_fgets(unichar*,U_FILE*);
+int u_fgets(unichar*,int,U_FILE*);
+int u_fgets2(unichar* line,U_FILE* f);
 
-int u_fprintf(Encoding,FILE*,const char*,...);
-int u_vfprintf(Encoding,FILE*,const char*,va_list);
+int u_fprintf(U_FILE*,const char*,...);
+int u_vfprintf(U_FILE*,const char*,va_list);
 int u_sprintf(unichar*,const char*,...);
 int u_vsprintf(unichar*,const char*,va_list);
 
-int u_fscanf(Encoding,FILE*,const char*,...);
-int u_vfscanf(Encoding,FILE*,const char*,va_list);
+int u_fscanf(U_FILE*,const char*,...);
+int u_vfscanf(U_FILE*,const char*,va_list);
 int u_sscanf(unichar*,const char*,...);
 int u_vsscanf(unichar*,const char*,va_list);
 

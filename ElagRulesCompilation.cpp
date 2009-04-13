@@ -244,12 +244,12 @@ return 0;
  */
 int compile_elag_rules(char* rulesname,char* outname,language_t* language) {
 u_printf("Compilation of %s\n",rulesname);
-FILE* f=NULL;
-FILE* frules=fopen(rulesname,"r");
+U_FILE* f=NULL;
+U_FILE* frules=u_fopen(ASCII,rulesname,"r");
 if (frules==NULL) {
    fatal_error("Cannot open file '%s'\n",rulesname);
 }
-FILE* out=fopen(outname,"w");
+U_FILE* out=u_fopen(ASCII,outname,"w");
 if (out==NULL) {
    fatal_error("cannot open file '%s'\n",outname);
 }
@@ -262,7 +262,7 @@ Fst2Automaton* res=NULL;
 Fst2Automaton* A;
 int fst_number=0;
 Ustring* ustr=new_Ustring();
-while (fgets(buf,FILENAME_MAX,frules)) {
+while (fgets(buf,FILENAME_MAX,frules->f)) {
    /* We read one by one the Elag grammar names in the .lst file */
    chomp(buf);
    if (*buf=='\0') {
@@ -272,7 +272,7 @@ while (fgets(buf,FILENAME_MAX,frules)) {
    u_printf("\n%s...\n",buf);
    remove_extension(buf);
    strcat(buf,".elg");
-   if ((f=fopen(buf,"r"))==NULL) {
+   if ((f=u_fopen(ASCII,buf,"r"))==NULL) {
       /* If the .elg file doesn't exist, we create one */
       remove_extension(buf);
       u_printf("Precompiling %s.fst2\n",buf);
@@ -287,7 +287,7 @@ while (fgets(buf,FILENAME_MAX,frules)) {
       free_elRule(rule);
    } else {
       /* If there is already .elg, we use it */
-      fclose(f);
+      u_fclose(f);
       A=load_elag_grammar_automaton(buf,language);
       if (A==NULL) {
          fatal_error("Unable to load '%s'\n",buf);
@@ -312,7 +312,7 @@ while (fgets(buf,FILENAME_MAX,frules)) {
        * into several automata */
       elag_minimize(res->automaton,1);
       sprintf(fstoutname,"%s-%d.elg",outname,fst_number++);
-      fprintf(out,"<%s>\n",fstoutname);
+      u_fprintf(out,"<%s>\n",fstoutname);
       u_printf("Splitting big grammar in '%s' (%d states)\n",fstoutname,res->automaton->number_of_states);
       u_sprintf(ustr,"%s: compiled elag grammar",fstoutname);
       free(res->name);
@@ -325,7 +325,7 @@ while (fgets(buf,FILENAME_MAX,frules)) {
 if (res!=NULL) {
    /* We save the last automaton, if any */
    sprintf(fstoutname,"%s-%d.elg",outname,fst_number++);
-   fprintf(out,"<%s>\n",fstoutname);
+   u_fprintf(out,"<%s>\n",fstoutname);
    u_printf("Saving grammar in '%s'(%d states)\n",fstoutname,res->automaton->number_of_states);
    elag_minimize(res->automaton,1);
    u_sprintf(ustr,"%s: compiled elag grammar",fstoutname);
@@ -335,8 +335,8 @@ if (res!=NULL) {
    free_Fst2Automaton(res);
 }
 time_t end_time=time(0);
-fclose(frules);
-fclose(out);
+u_fclose(frules);
+u_fclose(out);
 free_Ustring(ustr);
 u_printf("\nDone.\nElapsed time: %.0f s\n",difftime(end_time,start_time));
 u_printf("\n%d rule%s from %s compiled in %s (%d automat%s)\n",

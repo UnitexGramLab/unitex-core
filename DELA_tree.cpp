@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -136,7 +136,7 @@ tree->dela_entries[n]=insert_if_not_present(entry,tree->dela_entries[n]);
  * Loads the given DELA into the given DELA tree.
  */
 void load_DELA(char* name,struct DELA_tree* tree) {
-FILE* f=u_fopen(name,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
 if (f==NULL) {
    error("Cannot load dictionary %s\n",name);
    return;

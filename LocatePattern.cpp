@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -113,10 +113,10 @@ p->output_policy=output_policy;
 p->search_limit=search_limit;
 p->ambiguous_output_policy=ambiguous_output_policy;
 p->variable_error_policy=variable_error_policy;
-FILE* text_file;
-FILE* out;
-FILE* info;
-text_file=fopen(text,"rb");
+U_FILE* text_file;
+U_FILE* out;
+U_FILE* info;
+text_file=u_fopen(BINARY,text,U_READ);
 if (text_file==NULL) {
    error("Cannot load %s\n",text);
    return 0;
@@ -134,13 +134,13 @@ strcat(concord,"concord.ind");
 strcpy(concord_info,dynamicDir);
 strcat(concord_info,"concord.n");
 
-out=u_fopen(concord,U_WRITE);
+out=u_fopen(UTF16_LE,concord,U_WRITE);
 if (out==NULL) {
    error("Cannot write %s\n",concord);
-   fclose(text_file);
+   u_fclose(text_file);
    return 0;
 }
-info=u_fopen(concord_info,U_WRITE);
+info=u_fopen(UTF16_LE,concord_info,U_WRITE);
 if (info==NULL) {
    error("Cannot write %s\n",concord_info);
 }
@@ -241,7 +241,7 @@ u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
 free_buffer(p->token_buffer);
 free_Variables(p->variables);
-fclose(text_file);
+u_fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
 free_optimized_states(p->optimized_states,p->fst2->number_of_states);
@@ -380,7 +380,7 @@ if (is_letter(token[0],alph)) {
    }
    return c;
 }
-/* If the token doesn't start with a letter, we start with 
+/* If the token doesn't start with a letter, we start with
  * checking if it is a tag like {today,.ADV} */
 if (token[0]=='{' && u_strcmp(token,"{S}") && u_strcmp(token,"{STOP}")) {
    /* Anyway, such a tag is classed as verifying <MOT> and <DIC> */
@@ -444,14 +444,14 @@ free_string_hash(ERR);
  * This function loads a DLF or a DLC. It computes information about tokens
  * that will be used during the Locate operation. For instance, if we have the
  * following line:
- * 
+ *
  *   extended,.A
- * 
+ *
  * and if the .fst2 to be applied to the text contains the pattern <A> with,
- * number 456, then the function will mark the "extended" token to be matched 
+ * number 456, then the function will mark the "extended" token to be matched
  * by the pattern 456. Moreover, all case variations will be taken into account,
  * so that the "Extended" and "EXTENDED" tokens will also be updated.
- * 
+ *
  * The two parameters 'is_DIC_pattern' and 'is_CDIC_pattern'
  * indicate if the .fst2 contains the corresponding patterns. For instance, if
  * the pattern "<CDIC>" is used in the grammar, it means that any token sequence that is a
@@ -462,9 +462,9 @@ void load_dic_for_locate(char* dic_name,Alphabet* alphabet,
                          int is_CDIC_pattern,
                          struct lemma_node* root,struct locate_parameters* parameters) {
 struct string_hash* tokens=parameters->tokens;
-FILE* f;
+U_FILE* f;
 unichar line[DIC_LINE_SIZE];
-f=u_fopen(dic_name,U_READ);
+f=u_fopen(UTF16_LE,dic_name,U_READ);
 if (f==NULL) {
    error("Cannot open dictionary %s\n",dic_name);
    return;
@@ -541,7 +541,7 @@ while (EOF!=u_fgets(line,f)) {
          while (tmp!=NULL) {
             /* If the word is matched by at least one pattern, we store it. */
             int pattern_number=((struct constraint_list*)(tmp->pointer))->pattern_number;
-            add_compound_word_with_pattern(entry->inflected,pattern_number,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy); 
+            add_compound_word_with_pattern(entry->inflected,pattern_number,alphabet,tokens,parameters->DLC_tree,parameters->tokenization_policy);
             tmp=tmp->next;
          }
          free_list_pointer(list);

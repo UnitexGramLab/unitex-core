@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -36,19 +36,18 @@ static const unichar* EMPTY_AUTOMATON_DISCLAIMER=u_strdup("THIS SENTENCE AUTOMAT
 
 int compute_state_ranks(Tfst*,int*);
 int get_max_width_for_ranks(Tfst*,int*,int*,int);
-void tfst_transitions_to_grf_states(Tfst*,int*,FILE*,int,int,int*,char*);
+void tfst_transitions_to_grf_states(Tfst*,int*,U_FILE*,int,int,int*,char*);
 struct grf_state* new_grf_state(const char*,int,int);
 struct grf_state* new_grf_state(unichar*,int,int);
 void free_grf_state(struct grf_state*);
 void add_transition_to_grf_state(struct grf_state*,int);
-void write_grf_header(int,int,int,char*,FILE*);
-void save_grf_states(FILE*,struct grf_state**,int,int,char* font,int);
+void save_grf_states(U_FILE*,struct grf_state**,int,int,char* font,int);
 
 
 /**
  * If the given .tfst is empty (only one state with no outgoing transition),
- * this function modifies it in order to have a single path containing 
- * the 'EMPTIED' disclaimer. 
+ * this function modifies it in order to have a single path containing
+ * the 'EMPTIED' disclaimer.
  */
 void check_automaton_is_empty(Tfst* t) {
 SingleGraph g=t->automaton;
@@ -76,13 +75,13 @@ add_outgoing_transition(g->states[0],tag_number,1);
 /**
  * This function takes a Tfst that represents a text automaton and
  * it build in 'f' the .grf that corresponds to its current sentence.
- * 
+ *
  * WARNING: a sentence automaton is supposed to have the following properties:
- *           1) being acyclic 
+ *           1) being acyclic
  *           2) being minimal
  *           2) having no outgoing transition from the final state
  */
-void sentence_to_grf(Tfst* tfst,char* font,FILE* f) {
+void sentence_to_grf(Tfst* tfst,char* font,U_FILE* f) {
 check_automaton_is_empty(tfst);
 /* The rank array will be used to store the rank of each state */
 int* rank=(int*)malloc(sizeof(int)*tfst->automaton->number_of_states);
@@ -111,17 +110,17 @@ free(pos_X);
  * that have been declared before it. These values will be used to know which number
  * must be associated to a given transition of a given state. For instance, if we have
  * the following automaton:
- * 
- * state 0: (4 1) 
+ *
+ * state 0: (4 1)
  * state 1: (5 2) (6 2)
- * state 2: (7 3) 
- * state 3: (8 4) (9 5) 
- * state 4: (10 6) (11 7) (12 8) 
- * state 5: (13 9) 
+ * state 2: (7 3)
+ * state 3: (8 4) (9 5)
+ * state 4: (10 6) (11 7) (12 8)
+ * state 5: (13 9)
  * ...
- * 
+ *
  * we will have the following array:
- * 
+ *
  * state 0: 0
  * state 1: 1
  * state 2: 3
@@ -129,7 +128,7 @@ free(pos_X);
  * state 4: 6
  * state 5: 9
  * ...
- * 
+ *
  * Note that the array has an extra cell at its end. We use it to store the
  * total number of transitions in the automaton.
  */
@@ -218,7 +217,7 @@ for (int i=2;i<*N;i++) {
  * and saves them to the given file.
  */
 void tfst_transitions_to_grf_states(Tfst* tfst,
-                                    int* rank,FILE* f,int maximum_rank,
+                                    int* rank,U_FILE* f,int maximum_rank,
                                     int width_max,int* pos_X,char* font) {
 int n_states=tfst->automaton->number_of_states;
 int* n_transitions_before_state=get_n_transitions_before_state(tfst);
@@ -262,7 +261,7 @@ for (int i=0;i<n_states;i++) {
       grf_states[N_GRF_STATES]=new_grf_state(content,pos_X[rank[i]],rank[i]);
       /* Now that we have created the grf state, we set its outgoing transitions */
       if (tfst->automaton->states[trans->state_number]->outgoing_transitions==NULL) {
-         /* If the current fst2 transition points on the final state, 
+         /* If the current fst2 transition points on the final state,
           * we must put a transition for the current grf state to the
           * grf final state */
          add_transition_to_grf_state(grf_states[N_GRF_STATES],1);
@@ -347,7 +346,7 @@ return maximum_rank;
 /**
  * Prints the header of the grf to the given file.
  */
-void write_grf_header(int width,int height,int n_states,char* font,FILE* f) {
+void write_grf_header(int width,int height,int n_states,char* font,U_FILE* f) {
 u_fprintf(f,"#Unigraph\n");
 u_fprintf(f,"SIZE %d %d\n",width,height);
 u_fprintf(f,"FONT %s:  10\n",font);
@@ -424,7 +423,7 @@ for (i=0;i<n_states;i++) {
    }
 }
 /* Now that we have the width for each rank, we compute the absolute X
- * for each rank. We arbitrary set a distance of 100 pixels between boxes 
+ * for each rank. We arbitrary set a distance of 100 pixels between boxes
  * of consecutive ranks. */
 int tmp=100;
 for (i=0;i<=maximum_rank;i++) {
@@ -489,7 +488,7 @@ state->l=sorted_insert(dest_state,state->l);
 /**
  * Saves the given grf states to the given file.
  */
-void save_grf_states(FILE* f,struct grf_state** tab_grf_state,int N_GRF_STATES,
+void save_grf_states(U_FILE* f,struct grf_state** tab_grf_state,int N_GRF_STATES,
                      int maximum_rank,char* font,int height_indication) {
 /* We count the number of boxes for each rank */
 int pos_Y[maximum_rank+1];

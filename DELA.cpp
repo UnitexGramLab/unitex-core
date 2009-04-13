@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -45,7 +45,7 @@ return res;
 
 
 /**
- * Returns a copy of the given entry. 
+ * Returns a copy of the given entry.
  * WARNING: filters are not taken into account since they aren't
  *          used, except in the inflection module
  */
@@ -76,8 +76,8 @@ return res;
  * Returns 1 if a and b are identical; 0 otherwise.
  * a and b are supposed to be valid entries, that is to say, entries
  * will non NULL inflected forms and lemmas.
- * 
- * WARNING: this comparison does not take inflection filters into account 
+ *
+ * WARNING: this comparison does not take inflection filters into account
  */
 int equal(struct dela_entry* a,struct dela_entry* b) {
 int i;
@@ -343,7 +343,7 @@ if (tag==NULL || tag[0]!='{') {
 }
 /* We copy the tag content without the round brackets in a string. We
  * must take care not to unprotect chars during this operation, since
- * with a tag like: 
+ * with a tag like:
  *    {3\,14,PI.CONST}
  * we would parse the following invalid dictionary entry:
  *    3,14,PI.CONST
@@ -545,9 +545,9 @@ return res;
  * This function fills the string 'codes' with all the codes of the given entry.
  * The result is ready to be concatenated with an inflected form and a lemma.
  * Special characters '+' ':' '/' and '\' are escaped with a backslash.
- * 
+ *
  * Result example:
- * 
+ *
  * .N+blood=A\+:ms
  */
 void get_codes(struct dela_entry* e,unichar* codes) {
@@ -600,7 +600,7 @@ return n;
  * contain the length of the suffix to be removed from the inflected form in
  * order to get the longest common prefix, followed by the suffix
  * of the lemma. For instance:
- * 
+ *
  * inflected="written"  lemma ="write"
  * - longest common prefix = "writ"
  * - 3 characters ("ten") to remove from "written" to get "writ"
@@ -613,7 +613,7 @@ int length_of_sfx_to_remove=u_strlen(inflected)-prefix;
 int lemma_length=u_strlen(lemma);
 if (lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
    u_strlen(inflected)==1 && (inflected[0]==' ' || inflected[0]=='-')) {
-   /* If we have 2 separators, we write the lemma one rawly in order 
+   /* If we have 2 separators, we write the lemma one rawly in order
     * to make the INF file visible.
     * Ex: "jean-pierre,jean-pierre.N" => "0-0.N" instead of "000.N" */
    result[0]=lemma[0];
@@ -661,7 +661,7 @@ unichar code_gramm[DIC_LINE_SIZE];
 /* Anyway, we will need the grammatical/inflectional codes of the
  * entry. */
 get_codes(e,code_gramm);
-/* If the 2 strings are identical, we just return the grammatical 
+/* If the 2 strings are identical, we just return the grammatical
  * code => .N+z1:ms */
 if (!u_strcmp(e->inflected,e->lemma)) {
    u_strcpy(result,code_gramm);
@@ -673,8 +673,8 @@ int n_lemma=get_number_of_tokens(e->lemma);
 if (n_inflected!=n_lemma) {
    /* If the 2 strings have not the same number of tokens,
     * we rawly consider them as two big tokens. However,
-    * we put the prefix "_" in order to indicate that we have 
-    * a multi-token string that must be considered as a single 
+    * we put the prefix "_" in order to indicate that we have
+    * a multi-token string that must be considered as a single
     * token. */
     result[0]='_';
     /* Here we use a trick to avoid a strcpy */
@@ -722,7 +722,7 @@ return result;
 /**
  * This function takes an inflected form and its associated compression code, and
  * it replaces 'inflected' by the lemma that is rebuilt.
- * 
+ *
  * Example: inflected="written"  compress_info="3e"
  *       => inflected="write"
  */
@@ -750,7 +750,7 @@ if (P_EOS==parse_string(compress_info,&pos,&(inflected[i]),P_EMPTY)) {
 /**
  * This function takes an inflected form of the BIN file and a code
  * of the INF file. It stores in 'result' the rebuilt line.
- * 
+ *
  * Example: entry="mains" + info="1.N:fs" ==> res="mains,main.N:fs"
  */
 void uncompress_entry(unichar* inflected,unichar* INF_code,unichar* result) {
@@ -766,7 +766,7 @@ if (INF_code[0]=='.') {
    return;
 }
 if (INF_code[0]=='_') {
-   /* In this case, we rawly suppress chars, before adding some 
+   /* In this case, we rawly suppress chars, before adding some
     * "Albert Einstein" + "_15Einstein.N+Npr" => "Albert Einstein,Einstein.N+Npr" */
    pos=1;
    n=0;
@@ -835,13 +835,13 @@ result[i]='\0';
 
 
 /**
- * This function loads the content of an .inf file and returns 
+ * This function loads the content of an .inf file and returns
  * a structure containing the lines of the file tokenized into INF
  * codes.
  */
 struct INF_codes* load_INF_file(char* name) {
 struct INF_codes* res;
-FILE *f=u_fopen(name,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
 if (f==NULL) {
    error("Cannot open %s\n",name);
    return NULL;
@@ -887,9 +887,9 @@ free(INF);
  * Returns NULL if an error occurs.
  */
 unsigned char* load_BIN_file(char* name) {
-FILE* f;
+U_FILE* f;
 /* We open the file as a binary one */
-f=fopen(name,"rb");
+f=u_fopen(BINARY,name,U_READ);
 unsigned char* tab;
 if (f==NULL) {
    error("Cannot open %s\n",name);
@@ -898,10 +898,10 @@ if (f==NULL) {
 /* We compute the size of the file that is encoded in the 4 first bytes.
  * This value could be used to check the integrity of the file. */
 int a,b,c,d;
-a=(unsigned char)fgetc(f);
-b=(unsigned char)fgetc(f);
-c=(unsigned char)fgetc(f);
-d=(unsigned char)fgetc(f);
+a=(unsigned char)fgetc(f->f);
+b=(unsigned char)fgetc(f->f);
+c=(unsigned char)fgetc(f->f);
+d=(unsigned char)fgetc(f->f);
 int file_size=d+256*c+256*256*b+256*256*256*a;
 /* We come back to the beginning and we load rawly the file */
 fseek(f,0,SEEK_SET);
@@ -913,16 +913,16 @@ if (tab==NULL) {
 if (file_size!=(int)fread(tab,sizeof(char),file_size,f)) {
    error("Error while reading %s\n",name);
    free(tab);
-   fclose(f);
+   u_fclose(f);
    return NULL;
 }
-fclose(f);
+u_fclose(f);
 return tab;
 }
 
 
 /**
- * This function explores all the paths from the current state in the 
+ * This function explores all the paths from the current state in the
  * .bin automaton and produces all the corresponding DELAF lines in the
  * 'output' file.
  * 'pos' is the offset in the byte array 'bin'. 'content' is the string
@@ -930,7 +930,7 @@ return tab;
  * automaton. 'string_pos' is the current position in 'content'.
  */
 void explore_all_paths(int pos,unichar* content,int string_pos,unsigned char* bin,
-                      struct INF_codes* inf,FILE* output) {
+                      struct INF_codes* inf,U_FILE* output) {
 int n_transitions;
 int ref;
 n_transitions=((unsigned char)bin[pos])*256+(unsigned char)bin[pos+1];
@@ -969,7 +969,7 @@ for (int i=0;i<n_transitions;i++) {
  * This function explores the automaton stored in the .bin and rebuilds
  * the original DELAF in the 'output' file.
  */
-void rebuild_dictionary(unsigned char* bin,struct INF_codes* inf,FILE* output) {
+void rebuild_dictionary(unsigned char* bin,struct INF_codes* inf,U_FILE* output) {
 unichar content[DIC_LINE_SIZE];
 /* The offset of the initial state is 4 */
 explore_all_paths(4,content,0,bin,inf,output);
@@ -979,11 +979,11 @@ explore_all_paths(4,content,0,bin,inf,output);
 /**
  * This function parses a DELAF and stores all its grammatical and
  * semantic codes into the 'hash' structure. This structure is later
- * used in the Locate program in order to know if XXX can be such a 
+ * used in the Locate program in order to know if XXX can be such a
  * code when there is a pattern like "<XXX>".
  */
 void extract_semantic_codes(char* delaf,struct string_hash* hash) {
-FILE* f=u_fopen(delaf,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,delaf,U_READ);
 if (f==NULL) return;
 unichar line[DIC_LINE_SIZE];
 int i;
@@ -1001,7 +1001,7 @@ while (EOF!=u_fgets(line,f)) {
       }
    }
 }
-fclose(f);
+u_fclose(f);
 return;
 }
 
@@ -1009,14 +1009,14 @@ return;
 /**
  * This function checks the validity of a DELAF/DELAS line. If there are errors,
  * it prints error messages in the 'out' file.
- * 
+ *
  * NOTE 1: as a side effect, this function stores the grammatical/semantic and inflectional
  *         codes into the 'semantic_codes' and 'inflectional_codes' structures. This is
  *         used to build the list of all the codes that are used in the dictionary.
- * NOTE 2: the 'alphabet' array is used to mark characters that are used in 
+ * NOTE 2: the 'alphabet' array is used to mark characters that are used in
  *         inflected forms and lemmas.
  */
-void check_DELA_line(unichar* DELA_line,FILE* out,int is_a_DELAF,int line_number,char* alphabet,
+void check_DELA_line(unichar* DELA_line,U_FILE* out,int is_a_DELAF,int line_number,char* alphabet,
                      struct string_hash* semantic_codes,struct string_hash* inflectional_codes,
                      struct string_hash* simple_lemmas,struct string_hash* compound_lemmas,
                      int *n_simple_entries,int *n_compound_entries) {
@@ -1030,7 +1030,7 @@ if (is_a_DELAF) {
    entry=tokenize_DELAS_line(DELA_line,&error_code);
 }
 if (entry!=NULL) {
-   /* If the line is correct, we just have to note its codes and the characters 
+   /* If the line is correct, we just have to note its codes and the characters
     * that compose the inflected form and the lemma. */
    for (i=0;i<entry->n_semantic_codes;i++) {
       get_value_index(entry->semantic_codes[i],semantic_codes);
@@ -1059,7 +1059,7 @@ if (entry!=NULL) {
    return;
 }
 /**
- * If the entry is not correct, we must produce an appropriate error message. 
+ * If the entry is not correct, we must produce an appropriate error message.
  */
 switch (error_code) {
    case P_UNEXPECTED_END_OF_LINE: {
@@ -1105,9 +1105,9 @@ switch (error_code) {
 /**
  * This function tests if the tag token passed in parameter is valid. A tag token
  * is supposed to be like a DELAF without comment surrounded by round brackets like:
- * 
+ *
  *    {being,be.V:G}
- * 
+ *
  * It returns 1 on success. Otherwise, it prints an error message to the error output
  * and returns 0.
  */
@@ -1218,7 +1218,7 @@ for (int i=1;s[i]!='\0';i++) {
 
 /**
  * Takes a string containing protected equal signs and unprotects them
- * ex: E\=mc2 -> E=mc2 
+ * ex: E\=mc2 -> E=mc2
  */
 void unprotect_equal_signs(unichar* s) {
 int j=0;
@@ -1307,13 +1307,13 @@ return 0;
  *    between parenthesis like "N(NC_XXX)"
  * 2) The grammatical code, made of ANSI letters, is followed by a suffix like "N32".
  *    In that case, the whole string is the inflection code.
- * 
+ *
  * Moreover, if the code starts with a '$' we set the '*semitic' parameter to 1.
- * 
+ *
  * The output strings are supposed to be allocated.
- * 
+ *
  * Examples:
- * 
+ *
  *    s="N32"       => inflection_code="N32"     code_gramm="N"
  *    s="N(NC_XXX)" => inflection_code="NC_XXX"  code_gramm="N"
  */

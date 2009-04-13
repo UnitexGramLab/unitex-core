@@ -40,21 +40,21 @@
 
 
 
-void sort_and_save_by_frequence(FILE*,vector_ptr*,vector_int*);
-void sort_and_save_by_alph_order(FILE*,vector_ptr*,vector_int*);
-void compute_statistics(FILE*,vector_ptr*,Alphabet*,int,int,int,int);
-void normal_tokenization(FILE*,FILE*,FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
+void sort_and_save_by_frequence(U_FILE*,vector_ptr*,vector_int*);
+void sort_and_save_by_alph_order(U_FILE*,vector_ptr*,vector_int*);
+void compute_statistics(U_FILE*,vector_ptr*,Alphabet*,int,int,int,int);
+void normal_tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
 		   int*,int*,int*,int*);
-void char_by_char_tokenization(FILE*,FILE*,FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
+void char_by_char_tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
 		   int*,int*,int*,int*);
-void save_new_line_positions(FILE*,vector_int*);
+void save_new_line_positions(U_FILE*,vector_int*);
 
 
-void write_number_of_tokens(char name[],int n) {
-  FILE *f;
+void write_number_of_tokens(const char* name,int n) {
+  U_FILE* f;
   int i;
   i=2+9*2; // *2 because of unicode +2 because of FF FE at file start
-  f=fopen((char*)name,"r+b");
+  f=u_fopen(UTF16_LE,name,U_MODIFY);
   do
     {
       fseek(f,i,0);
@@ -63,7 +63,7 @@ void write_number_of_tokens(char name[],int n) {
       n=n/10;
     }
   while (n);
-  fclose(f);
+  u_fclose(f);
 }
 
 
@@ -141,10 +141,10 @@ if (alphabet[0]=='\0') {
    fatal_error("You must specify the alphabet file\n");
 }
 
-FILE* text;
-FILE* out;
-FILE* output;
-FILE* enter;
+U_FILE* text;
+U_FILE* out;
+U_FILE* output;
+U_FILE* enter;
 char tokens_txt[FILENAME_MAX];
 char text_cod[FILENAME_MAX];
 char enter_pos[FILENAME_MAX];
@@ -156,7 +156,7 @@ get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tokens.txt");
 get_snt_path(argv[vars->optind],enter_pos);
 strcat(enter_pos,"enter.pos");
-text=u_fopen(argv[vars->optind],U_READ);
+text=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (text==NULL) {
    fatal_error("Cannot open text file %s\n",argv[vars->optind]);
 }
@@ -166,7 +166,7 @@ if (alph==NULL) {
    u_fclose(text);
    return 1;
 }
-out=fopen(text_cod,"wb");
+out=u_fopen(BINARY,text_cod,U_WRITE);
 if (out==NULL) {
    error("Cannot create file %s\n",text_cod);
    u_fclose(text);
@@ -175,22 +175,22 @@ if (out==NULL) {
    }
    return 1;
 }
-enter=fopen(enter_pos,"wb");
+enter=u_fopen(BINARY,enter_pos,U_WRITE);
 if (enter==NULL) {
    error("Cannot create file %s\n",enter_pos);
    u_fclose(text);
-   fclose(out);
+   u_fclose(out);
    if (alph!=NULL) {
       free_alphabet(alph);
    }
    return 1;
 }
-output=u_fopen(tokens_txt,U_WRITE);
+output=u_fopen(UTF16_LE,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot create file %s\n",tokens_txt);
    u_fclose(text);
-   fclose(out);
-   fclose(enter);
+   u_fclose(out);
+   u_fclose(enter);
    if (alph!=NULL) {
       free_alphabet(alph);
    }
@@ -218,15 +218,15 @@ else {
 }
 u_printf("\nDone.\n");
 save_new_line_positions(enter,n_enter_pos);
-fclose(enter);
+u_fclose(enter);
 u_fclose(text);
-fclose(out);
+u_fclose(out);
 u_fclose(output);
 write_number_of_tokens(tokens_txt,tokens->nbelems);
 // we compute some statistics
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"stats.n");
-output=u_fopen(tokens_txt,U_WRITE);
+output=u_fopen(UTF16_LE,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
@@ -237,7 +237,7 @@ else {
 // we save the tokens by frequence
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_freq.txt");
-output=u_fopen(tokens_txt,U_WRITE);
+output=u_fopen(UTF16_LE,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
@@ -248,7 +248,7 @@ else {
 // we save the tokens by alphabetical order
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_alph.txt");
-output=u_fopen(tokens_txt,U_WRITE);
+output=u_fopen(UTF16_LE,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
@@ -291,7 +291,7 @@ return n;
 
 
 
-void normal_tokenization(FILE* f,FILE* coded_text,FILE* output,Alphabet* alph,
+void normal_tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                          vector_ptr* tokens,struct hash_table* hashtable,
                          vector_int* n_occur,vector_int* n_enter_pos,
                          int *SENTENCES,int *TOKENS_TOTAL,int *WORDS_TOTAL,
@@ -394,7 +394,7 @@ for (n=0;n<tokens->nbelems;n++) {
 
 
 
-void char_by_char_tokenization(FILE* f,FILE* coded_text,FILE* output,Alphabet* alph,
+void char_by_char_tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
                                vector_ptr* tokens,struct hash_table* hashtable,
                                vector_int* n_occur,vector_int* n_enter_pos,
                                int *SENTENCES,int *TOKENS_TOTAL,int *WORDS_TOTAL,
@@ -557,7 +557,7 @@ if (first<last) {
 
 
 
-void sort_and_save_by_frequence(FILE *f,vector_ptr* tokens,vector_int* n_occur) {
+void sort_and_save_by_frequence(U_FILE *f,vector_ptr* tokens,vector_int* n_occur) {
 quicksort_by_frequence(0,tokens->nbelems - 1,tokens,n_occur);
 for (int i=0;i<tokens->nbelems;i++) {
    u_fprintf(f,"%d\t%S\n",n_occur->tab[i],tokens->tab[i]);
@@ -566,7 +566,7 @@ for (int i=0;i<tokens->nbelems;i++) {
 
 
 
-void sort_and_save_by_alph_order(FILE *f,vector_ptr* tokens,vector_int* n_occur) {
+void sort_and_save_by_alph_order(U_FILE *f,vector_ptr* tokens,vector_int* n_occur) {
 quicksort_by_alph_order(0,tokens->nbelems - 1,tokens,n_occur);
 for (int i=0;i<tokens->nbelems;i++) {
    u_fprintf(f,"%S\t%d\n",tokens->tab[i],n_occur->tab[i]);
@@ -575,7 +575,7 @@ for (int i=0;i<tokens->nbelems;i++) {
 
 
 
-void compute_statistics(FILE *f,vector_ptr* tokens,Alphabet* alph,
+void compute_statistics(U_FILE *f,vector_ptr* tokens,Alphabet* alph,
 		                int SENTENCES,int TOKENS_TOTAL,int WORDS_TOTAL,int DIGITS_TOTAL) {
 int DIFFERENT_DIGITS=0;
 int DIFFERENT_WORDS=0;
@@ -593,6 +593,6 @@ u_fprintf(f,"%d sentence delimiter%s, %d (%d diff) token%s, %d (%d) simple form%
 
 
 
-void save_new_line_positions(FILE* f,vector_int* n_enter_pos) {
+void save_new_line_positions(U_FILE* f,vector_int* n_enter_pos) {
 fwrite(n_enter_pos->tab,sizeof(int),n_enter_pos->nbelems,f);
 }

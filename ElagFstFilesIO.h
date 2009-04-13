@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -40,29 +40,29 @@ enum { FST_TEXT = 0, FST_GRAMMAR, FST_LOCATE, FST_BAD_TYPE };
 typedef struct fst_file_in_t {
    /* File name */
    char* name;
-   
+
    /* The file itself */
-   FILE* f;
-   
+   U_FILE* f;
+
    /* The language definition for the fst2's language */
    language_t* language;
-   
+
    /* The kind of .fst2 (text, grammar,...) */
    int type;
-   
+
    /* Offset for the first automaton (after headers) */
    int pos0;
-   
+
    /* The number of automata contained in the .fst2 */
    int nb_automata;
-   
+
    /* The number of automata that have already been read from the
     * .fst2 file */
    int pos;
 
    /* This structure will contain all the symbols of the grammar */
    struct string_hash_ptr* symbols;
-   
+
    /* This array is used to renumber tags that can have been made
     * equivalent. For instance, when we load a text automaton, we can
     * have different tags like "<comme,.CONJS+5>" and "<comme,.CONJS+8>".
@@ -87,10 +87,10 @@ typedef struct tfst_file_in_t {
 
    /* The language definition for the tfst's language */
    language_t* language;
-   
+
    /* This structure will contain all the symbols of the grammar */
    struct string_hash_ptr* symbols;
-   
+
    /* This array is used to renumber tags that can have been made
     * equivalent. For instance, when we load a text automaton, we can
     * have different tags like "<comme,.CONJS+5>" and "<comme,.CONJS+8>".
@@ -112,20 +112,20 @@ typedef struct tfst_file_in_t {
 typedef struct fst_file_out_t {
    /* File name */
    char* name;
-   
+
    /* The file itself */
-   FILE* f;
+   U_FILE* f;
 
    /* The start position in the Unicode file, after the byte-order mark,
     * if any. */
    long fstart;
-   
+
    /* The kind of .fst2: TEXT | GRAMMAR */
    int type;
-   
+
    /* The number of automata in the .fst2 */
    int nb_automata;
-   
+
    /* The tags of the .fst2 */
    struct string_hash* labels;
 } Elag_fst_file_out;

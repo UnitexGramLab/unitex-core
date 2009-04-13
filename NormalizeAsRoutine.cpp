@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -28,9 +28,9 @@
 /**
  * This function produces a normalized version of 'input' and stores it into 'ouput'.
  * The following rules are applied in the given order:
- * 
+ *
  * 1) If there is a { at the current position, we try to read a {S}, a {STOP} or
- *    a tag token like {today,.ADV}. If we fail, we replace the { and the }, if any, 
+ *    a tag token like {today,.ADV}. If we fail, we replace the { and the }, if any,
  *    according to the replacement rules. Otherwise, we let the token unchanged.
  * 2) If there is one or more replacement rules that can apply to the current
  *    position in 'input', then we apply the longest one.
@@ -38,21 +38,20 @@
  *    - by a new line if the sequence contains one and if 'carridge_return_policy' is
  *      set to KEEP_CARRIDGE_RETURN;
  *    - by a space otherwise.
- * 4) We copy the character that was read to the output.   
- * 
+ * 4) We copy the character that was read to the output.
+ *
  * Note that 'replacements' is supposed to contain replacement rules for { and }
  */
-//void normalize(FILE* input, FILE* output, int carridge_return_policy, struct string_hash* replacements) {
 int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
-	FILE* input;
-	input = u_fopen(fin, U_READ);
+	U_FILE* input;
+	input = u_fopen(UTF16_LE,fin,U_READ);
 	if (input == NULL) {
 		error("Cannot open file %s\n", fin);
 		return 1;
 	}
 
-	FILE* output;
-	output = u_fopen(fout, U_WRITE);
+	U_FILE* output;
+	output = u_fopen(UTF16_LE,fout,U_WRITE);
 	if (output == NULL) {
 		error("Cannot create file %s\n", fout);
 		u_fclose(input);
@@ -68,7 +67,7 @@ int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
 		}
 	}
 	/* If there is no replacement rules file, we simulate one */
-	else { 
+	else {
 	   replacements=new_string_hash();
 	}
 
@@ -177,7 +176,7 @@ int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
 							|| buff[current_start_pos]=='\n') {
 						/* Note 1: no bound check is needed, since an unichar buffer is always
 						 *        ended by a \0
-						 * 
+						 *
 						 * Note 2: we don't take into account the case of a buffer ended by
 						 *         separator while it's not the end of file: that would mean
 						 *         that the text contains something like MARGIN_BEFORE_BUFFER_END

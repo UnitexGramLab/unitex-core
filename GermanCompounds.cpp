@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -28,7 +28,7 @@
 // this function analyses the german compound words
 //
 void analyse_german_compounds(Alphabet* alph,unsigned char* bin,struct INF_codes* inf,
-                                 FILE* words,FILE* result,FILE* debug,FILE* new_unknown_words) {
+                                 U_FILE* words,U_FILE* result,U_FILE* debug,U_FILE* new_unknown_words) {
 char* tableau_correct_left_component=(char*)malloc(sizeof(char)*(inf->N));
 if (tableau_correct_left_component==NULL) {
    fatal_alloc_error("analyse_german_compounds");
@@ -184,7 +184,7 @@ return res;
 // this function reads words in the word file and try analyse them
 //
 void analyse_german_word_list(unsigned char* bin,struct INF_codes* inf,
-                              FILE* words,FILE* result,FILE* debug,FILE* new_unknown_words,
+                              U_FILE* words,U_FILE* result,U_FILE* debug,U_FILE* new_unknown_words,
                               char* left,char* right,Alphabet* alphabet) {
 unichar s[1000];
 u_printf("Analysing german unknown words...\n");
@@ -203,7 +203,7 @@ u_printf("%d words decomposed as compound words\n",n);
 //
 // this function try to analyse an unknown german word
 //
-int analyse_german_word(unichar* mot,FILE* debug_file,FILE* result_file,char* left,char* right,
+int analyse_german_word(unichar* mot,U_FILE* debug_file,U_FILE* result_file,char* left,char* right,
                         struct INF_codes* inf_codes,Alphabet* alphabet,unsigned char* bin) {
 unichar decomposition[2000];
 unichar dela_line[2000];

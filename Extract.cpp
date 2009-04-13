@@ -105,7 +105,7 @@ if (vars->optind!=argc-1) {
 strcpy(text_name,argv[vars->optind]);
 
 struct snt_files* snt_files=new_snt_files(text_name);
-FILE* text=fopen(snt_files->text_cod,"rb");
+U_FILE* text=u_fopen(BINARY,snt_files->text_cod,U_READ);
 if (text==NULL) {
    error("Cannot open %s\n",snt_files->text_cod);
    return 1;
@@ -113,12 +113,12 @@ if (text==NULL) {
 struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
 if (tok==NULL) {
    error("Cannot load token list %s\n",snt_files->tokens_txt);
-   fclose(text);
+   u_fclose(text);
    return 1;
 }
 if (tok->SENTENCE_MARKER==-1) {
    error("The text does not contain any sentence marker {S}\n");
-   fclose(text);
+   u_fclose(text);
    free_text_tokens(tok);
    return 1;
 }
@@ -134,24 +134,24 @@ if (concord_ind[0]=='\0') {
    strcat(concord_ind,PATH_SEPARATOR_STRING);
    strcat(concord_ind,"concord.ind");
 }
-FILE* concord=u_fopen(concord_ind,U_READ);
+U_FILE* concord=u_fopen(UTF16_LE,concord_ind,U_READ);
 if (concord==NULL) {
    error("Cannot open concordance %s\n",concord_ind);
-   fclose(text);
+   u_fclose(text);
    free_text_tokens(tok);
    return 1;
 }
-FILE* result=u_fopen(output,U_WRITE);
+U_FILE* result=u_fopen(UTF16_LE,output,U_WRITE);
 if (result==NULL) {
    error("Cannot write output file %s\n",output);
-   fclose(text);
+   u_fclose(text);
    u_fclose(concord);
    free_text_tokens(tok);
    return 1;
 }
 free_snt_files(snt_files);
 extract_units(extract_matching_units,text,tok,concord,result);
-fclose(text);
+u_fclose(text);
 u_fclose(concord);
 u_fclose(result);
 free_text_tokens(tok);

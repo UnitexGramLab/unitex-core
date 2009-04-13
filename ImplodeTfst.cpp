@@ -33,7 +33,7 @@
 #include "SingleGraph.h"
 
 
-void implode(Tfst*,FILE*,FILE*);
+void implode(Tfst*,U_FILE*,U_FILE*);
 
 
 static void usage() {
@@ -106,17 +106,17 @@ Tfst* tfst=open_text_automaton(input_tfst);
 if (tfst==NULL) {
    fatal_error("Unable to load '%s'\n",input_tfst);
 }
-FILE* f_tfst=u_fopen(output_tfst,U_WRITE);
+U_FILE* f_tfst=u_fopen(UTF16_LE,output_tfst,U_WRITE);
 if (f_tfst==NULL) {
    fatal_error("Cannot open '%s' for writing\n",output_tfst);
 }
-FILE* f_tind=fopen(output_tind,"wb");
+U_FILE* f_tind=u_fopen(BINARY,output_tind,U_WRITE);
 if (f_tind==NULL) {
    fatal_error("Cannot open '%s' for writing\n",output_tind);
 }
 implode(tfst,f_tfst,f_tind);
 u_fclose(f_tfst);
-fclose(f_tind);
+u_fclose(f_tind);
 close_text_automaton(tfst);
 
 /* Finally, we rename files if we must modify the input text automaton */
@@ -260,7 +260,7 @@ return list;
  * we will merge them into the single one "{rouge,.A:fs:ms}".
  * The resulting tfst is stored into the given .tfst and .tind files.
  */
-void implode(Tfst* tfst,FILE* f_tfst,FILE* f_tind) {
+void implode(Tfst* tfst,U_FILE* f_tfst,U_FILE* f_tind) {
 u_printf("Imploding tags...\n");
 unichar tag_content[4096];
 unichar tmp[4096];

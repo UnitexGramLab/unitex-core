@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -80,27 +80,27 @@ enum tag_type {
 struct fst2Tag {
 	/* Field used to indicate the nature of the tag */
    enum tag_type type;
-	
+
 	/* This control byte is used to set information about the tag with
 	 * bit masks. The meaning of these tags can be found in LocateConstants.h
-	 * 
+	 *
 	 * This field is also used in the Grf2Fst2 program in order to mark the
 	 * tags that can match the empty word <E>.
 	 */
 	unsigned char control;
-	
+
 	/*
 	 * 'input' represents the input part of a tag, that is to say without
 	 * its morphological filter and output if any.
 	 * Example: "<V:P><<^in>>/[V]" => input="<V:P>"
-	 * 
+	 *
 	 * NOTE: if the input only contains a morphological filter like "<<^in>>",
 	 *       the default sequence "<TOKEN>" will be copied in the 'input' field.
 	 */
 	unichar* input;
-	
+
    /*
-    * If a tag contains a morphological filter, it is copied into this field 
+    * If a tag contains a morphological filter, it is copied into this field
     * at the loading of the fst2. It is setted to NULL if there is
     * no morphological filter.
     */
@@ -109,13 +109,13 @@ struct fst2Tag {
    /*
     * When a fst2 is used by the Locate program, all morphological filters are
     * compiled into automata in the MorphologicalFilters library. This field is used
-    * to store the number of the morphological filter of the tag, if any. It is setted 
+    * to store the number of the morphological filter of the tag, if any. It is setted
     * to -1 if there is no morphological filter. These numbers are global so two tags
     * can share the same filter number if their filters are identical (for instance
     * "<A><<^in>>" and "<N><<^in>>/NOUN").
     */
    int filter_number;
-	
+
    /*
     * 'output' represents the output part of a tag, without the '/' separator, or
     * NULL if the tag contains no output.
@@ -132,13 +132,13 @@ struct fst2Tag {
     struct pattern* pattern;
     int pattern_number;
     unichar* variable;
-    
+
    /*
 	 * This field represents the list of the numbers of the tokens that this tag
 	 * can match.
 	 */
 	struct list_int* matching_tokens;
-	
+
 	/*
 	 * If the tag can match one or several compound words, a compound pattern is
 	 * created, and this field is used to store the number of this compound
@@ -161,7 +161,7 @@ struct fst2State {
 	 * instance, it is used for cycle detection in the Grf2Fst2 program.
 	 */
 	unsigned char control;
-	
+
 	/* Transitions outgoing from this state */
 	Transition* transitions;
 };
@@ -169,37 +169,37 @@ typedef struct fst2State* Fst2State;
 
 
 /*
- * This structure represent a fst2. 
+ * This structure represent a fst2.
  */
 struct fst2 {
 	/* Array that contains all the states of the fst2 */
     Fst2State* states;
-    
+
     /* Array that contains all the tags of the fst2 */
     Fst2Tag* tags;
-    
+
     /* Number of graphs contained in the fst2 */
     int number_of_graphs;
-    
+
     /* Number of states contained in the fst2 */
     int number_of_states;
-    
+
     /* Number of tags of the fst2 */
     int number_of_tags;
-    
+
     /* Array that indicates for each graph the number of its initial state */
     int* initial_states;
-    
+
     /*
      * This array is used to store the graph names. We use the type unichar and
      * not char, because this array is also used to store sentences, when the fst2
      * represents a text automaton.
      */
     unichar** graph_names;
-    
+
     /* This array indicates for each graph its number of states */
     int* number_of_states_per_graphs;
-    
+
     /* List of variables used in the graph. This list is initialized from
      * the $a( and $a) deaclarations found in the tags. */
     struct list_ustring* variables;
@@ -210,15 +210,15 @@ typedef struct fst2 Fst2;
 /* Functions for loading grammars */
 Fst2* load_fst2(char*,int);
 
-int   load_fst2_from_file(FILE*,int,Fst2 **);
-int   load_fst2_from_file(FILE*,int,Fst2 **, int);
+int   load_fst2_from_file(U_FILE*,int,Fst2 **);
+int   load_fst2_from_file(U_FILE*,int,Fst2 **, int);
 
 Fst2* load_one_sentence_from_fst2(char*,int);
 void free_Fst2(Fst2*);
 
 /* Functions for writing grammars */
-void write_graph(FILE*,Fst2*,int);
-void write_fst2_tags(FILE*,Fst2*);
+void write_graph(U_FILE*,Fst2*,int);
+void write_fst2_tags(U_FILE*,Fst2*);
 void save_Fst2(char*,Fst2*);
 
 

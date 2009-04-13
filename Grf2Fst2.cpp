@@ -148,7 +148,7 @@ if (vars->optind!=argc-1) {
 char fst2_file_name[FILENAME_MAX];
 remove_extension(argv[vars->optind],fst2_file_name);
 strcat(fst2_file_name,".fst2");
-if ((infos->fst2=u_fopen(fst2_file_name,U_WRITE))==NULL) {
+if ((infos->fst2=u_fopen(UTF16_LE,fst2_file_name,U_WRITE))==NULL) {
    error("Cannot open file %s\n",fst2_file_name);
    return 1;
 }

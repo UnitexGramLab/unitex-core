@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -34,7 +34,7 @@ static struct list_int** dependencies;
  * During the flatten operation, some graphs may be kept and some
  * may not. We use the 'new_graph_number' array to know for each graph
  * if it will be kept. new_graph_number[k]==0 means that the graph number k
- * won't be kept; otherwise, new_graph_number[k]==i means that the graph 
+ * won't be kept; otherwise, new_graph_number[k]==i means that the graph
  * number k will have the number i in the flattened fst2.
  */
 
@@ -47,9 +47,9 @@ int flatten_graph(Fst2*,int,int,int,
                   SingleGraph,
                   int,int,int*,int*,int*);
 void remove_epsilon_transitions_in_flattened_graph(SingleGraph);
-void save_graphs_to_keep(Fst2*,FILE*,int*);
-void save_graph_to_keep(int,Fst2*,FILE*,int*);
-void copy_tags_into_file(Fst2*,FILE*);
+void save_graphs_to_keep(Fst2*,U_FILE*,int*);
+void save_graph_to_keep(int,Fst2*,U_FILE*,int*);
+void copy_tags_into_file(Fst2*,U_FILE*);
 
 
 /**
@@ -59,7 +59,7 @@ void copy_tags_into_file(Fst2*,FILE*);
  * even if it is not a strict FST.
  */
 int flatten_fst2(Fst2* origin,int depth,char* temp,int RTN) {
-FILE* res=u_fopen(temp,U_WRITE);
+U_FILE* res=u_fopen(UTF16_LE,temp,U_WRITE);
 if (res==NULL) {
    error("Cannot create %s\n",temp);
    return FLATTEN_ERROR;
@@ -93,7 +93,7 @@ int result=flatten_graph(origin,
                            RTN,
                            &SUBGRAPH_CALL_IGNORED,
                            &SUBGRAPH_CALL,
-                           new_graph_number); 
+                           new_graph_number);
 /* Now, we clean the new main graph, i.e.we remove epsilon transitions
  * and unreachable states */
 u_printf("Cleaning graph...\n");
@@ -236,7 +236,7 @@ return new_graph_number;
 /**
  * This function renumbers the graphs to be kept: if the graph 17 must
  * be renumbered to 8 then new_graph_number[17]=8.
- * 0 means that the graph won't be kept. The fucntion 
+ * 0 means that the graph won't be kept. The fucntion
  */
 int renumber_graphs_to_keep(Fst2* grammar,int* new_graph_number) {
 int j=2;
@@ -258,7 +258,7 @@ return N;
  *  an equivalent RTN, an equivalent FST or an FST approximation.
  * Recursive function: called by itself for subgraphs.
  * @param grammar the fst2 grammar to be flattened
- * @param n_graph number of actually treated graph 
+ * @param n_graph number of actually treated graph
  * @param depth actual depth
  * @param max_depth maximal depth until which the grammar should be flattened
  * @param new_graph the main graph of the resulting grammar (only the main graph is flattened)
@@ -302,7 +302,7 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
          set_final_state(new_state);
       }
       else {
-         /* In a subgraph, we add an epsilon transition pointing to the 
+         /* In a subgraph, we add an epsilon transition pointing to the
           * destination state specified in parameter. By convention,
           * epsilon has the tag number 0 */
          add_outgoing_transition(new_state,0,destination_state);
@@ -319,9 +319,9 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
       }
       else {
          /* Otherwise, we deal with the transition. First of all, we compute the
-          * number of its destination state in the new graph. The point is that 
+          * number of its destination state in the new graph. The point is that
           * original_transitions->state_number is a global state number in the original
-          * fst2. So, we compute its relative number in the current graph, 
+          * fst2. So, we compute its relative number in the current graph,
           * which is original_transitions->state_number-grammar->initial_states[n_graph],
           * and we add to it the starting position of the current graph.
           */
@@ -346,9 +346,9 @@ for (int i=grammar->initial_states[n_graph];i<limit;i++) {
             else {
                /* If we have overpassed the maximum depth, we know that we can produce
                 * a subgraph call, since, if not, the condition tested above:
-                * 
+                *
                 *   (!RTN && (original_transitions->tag_number<0) && depth>=max_depth)
-                * 
+                *
                 * would have been true and we would not be here. So, we just produce
                 * a call to the subgraph taking care of the graph renumerotation. */
                temp->tag_number=-(new_graph_number[-(original_transitions->tag_number)]);
@@ -414,7 +414,7 @@ return initial_position_for_new_states;
  * This function dumps a graph from a Fst2 that had been marked to be kept,
  * taking into account renumbering of graphs.
  */
-void save_graph_to_keep(int graph_number,Fst2* grammar,FILE* f,int* new_graph_number) {
+void save_graph_to_keep(int graph_number,Fst2* grammar,U_FILE* f,int* new_graph_number) {
 int limit=grammar->initial_states[graph_number]+grammar->number_of_states_per_graphs[graph_number];
 /* We save the graph header (number+name) */
 u_fprintf(f,"%d ",-new_graph_number[graph_number]);
@@ -450,7 +450,7 @@ u_fprintf(f,"f \n");
  * This function dumps to the given file each graph of the
  * given grammar that has been marked to be kept.
  */
-void save_graphs_to_keep(Fst2* grammar,FILE* f,int* new_graph_number) {
+void save_graphs_to_keep(Fst2* grammar,U_FILE* f,int* new_graph_number) {
 for (int i=2;i<=grammar->number_of_graphs;i++) {
    if (new_graph_number[i]!=0) {
       save_graph_to_keep(i,grammar,f,new_graph_number);

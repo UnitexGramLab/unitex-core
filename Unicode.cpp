@@ -19,6 +19,9 @@
   *
   */
 
+#include<stdio.h>
+static FILE* (*real_fopen)(const char*,const char*);
+
 #include "Unicode.h"
 #include "Error.h"
 
@@ -36,99 +39,146 @@ const unichar* U_EMPTY=&U_NULL;
 
 const unichar EPSILON[]={'<','E','>','\0'};
 
+
 /**
- * Here are defined the default encodings.
+ * Allocates, initializes and returns a new U_FILE*
+ * f is supposed to have been opened.
  */
-Encoding STDIN_ENC=UTF8;
-Encoding STDOUT_ENC=UTF8;
-Encoding STDERR_ENC=UTF8;
-Encoding FILE_ENC=UTF16_LE;
-
-
-/* ------------------- Some aliases, mainly for default UTF16-LE use ------------------- */
-
-FILE* u_fopen(const char* name,const char* MODE) {
-return u_fopen(FILE_ENC,name,MODE);
+U_FILE* new_U_FILE(FILE* f,Encoding e) {
+U_FILE* u=(U_FILE*)malloc(sizeof(U_FILE));
+u->f=f;
+u->enc=e;
+return u;
 }
 
-int u_fempty(const char* name) {
-return u_fempty(FILE_ENC,name);
+
+/**
+ * Frees the U_FILE*. The caller has to fclose the file.
+ */
+void free_U_FILE(U_FILE* u) {
+if (u==NULL) return;
+free(u);
 }
 
-int u_fgetc_raw(FILE* f) {
-return u_fgetc_raw(FILE_ENC,f);
+
+U_FILE* U_STDIN=new_U_FILE(stdin,UTF8);
+U_FILE* U_STDOUT=new_U_FILE(stdout,UTF8);
+U_FILE* U_STDERR=new_U_FILE(stderr,UTF8);
+
+
+int fseek(U_FILE* stream, long offset, int whence) {
+return fseek(stream->f,offset,whence);
 }
 
+long ftell(U_FILE* stream) {
+return ftell(stream->f);
+}
+
+void rewind(U_FILE* stream) {
+rewind(stream->f);
+}
+
+int feof(U_FILE* stream) {
+return feof(stream->f);
+}
+
+size_t fread(void *ptr,size_t size,size_t nmemb,U_FILE *stream) {
+return fread(ptr,size,nmemb,stream->f);
+}
+
+size_t fwrite(const void *ptr,size_t size,size_t nmemb,U_FILE *stream) {
+return fwrite(ptr,size,nmemb,stream->f);
+}
+
+
+
+int u_fgetc_raw(Encoding,FILE*);
+int u_fgetc_raw(U_FILE* f) {
+return u_fgetc_raw(f->enc,f->f);
+}
+
+int u_fgetc(Encoding,FILE*);
 int u_fgetc_UTF16LE(FILE* f) {
 return u_fgetc(UTF16_LE,f);
 }
 
 int u_fgetc_UTF16BE(FILE* f) {
-return u_fgetc(UTF16_BE,f);
+return u_fgetc(BIG_ENDIAN_UTF16,f);
 }
 
 int u_fgetc_UTF8(FILE* f) {
 return u_fgetc(UTF8,f);
 }
 
-int u_fgetc(FILE* f) {
-return u_fgetc(FILE_ENC,f);
+int u_fgetc(U_FILE* f) {
+return u_fgetc(f->enc,f->f);
 }
 
-int u_fgetc_CR(FILE* f) {
-return u_fgetc_CR(FILE_ENC,f);
+int u_fgetc_CR(Encoding,FILE*);
+int u_fgetc_CR(U_FILE* f) {
+return u_fgetc_CR(f->enc,f->f);
 }
 
-int u_fread_raw(unichar* t,int N,FILE* f) {
-return u_fread_raw(FILE_ENC,t,N,f);
+int u_fread_raw(Encoding,unichar*,int,FILE*);
+int u_fread_raw(unichar* t,int N,U_FILE* f) {
+return u_fread_raw(f->enc,t,N,f->f);
 }
 
-int u_fread(unichar* t,int N,FILE* f,int *OK) {
-return u_fread(FILE_ENC,t,N,f,OK);
+int u_fread(Encoding,unichar*,int,FILE*,int*);
+int u_fread(unichar* t,int N,U_FILE* f,int *OK) {
+return u_fread(f->enc,t,N,f->f,OK);
 }
 
-int u_fputc_raw(unichar c,FILE* f) {
-return u_fputc_raw(FILE_ENC,c,f);
+int u_fputc_raw(Encoding,unichar,FILE*);
+int u_fputc_raw(unichar c,U_FILE* f) {
+return u_fputc_raw(f->enc,c,f->f);
 }
 
+int u_fputc(Encoding,unichar,FILE*);
 int u_fputc_UTF16LE(unichar c,FILE* f) {
 return u_fputc(UTF16_LE,c,f);
 }
 
 int u_fputc_UTF16BE(unichar c,FILE* f) {
-return u_fputc(UTF16_BE,c,f);
+return u_fputc(BIG_ENDIAN_UTF16,c,f);
 }
 
 int u_fputc_UTF8(unichar c,FILE* f) {
 return u_fputc(UTF8,c,f);
 }
 
-int u_fputc(unichar c,FILE* f) {
-return u_fputc(FILE_ENC,c,f);
+int u_fputc(unichar c,U_FILE* f) {
+return u_fputc(f->enc,c,f->f);
 }
 
-int u_ungetc(unichar c,FILE* f) {
-return u_ungetc(FILE_ENC,c,f);
+int u_ungetc(Encoding,unichar,FILE*);
+int u_ungetc(unichar c,U_FILE* f) {
+return u_ungetc(f->enc,c,f->f);
 }
 
-int u_fwrite_raw(unichar* t,int N,FILE* f) {
-return u_fwrite_raw(FILE_ENC,t,N,f);
+int u_fwrite_raw(Encoding,unichar*,int,FILE*);
+int u_fwrite_raw(unichar* t,int N,U_FILE* f) {
+return u_fwrite_raw(f->enc,t,N,f->f);
 }
 
-int u_fwrite(unichar* t,int N,FILE* f) {
-return u_fwrite(FILE_ENC,t,N,f);
+int u_fwrite(Encoding,unichar*,int,FILE*);
+int u_fwrite(unichar* t,int N,U_FILE* f) {
+return u_fwrite(f->enc,t,N,f->f);
 }
 
-int u_fgets(unichar* s,FILE* f) {
-return u_fgets(FILE_ENC,s,f);
+int u_fgets(Encoding,unichar*,FILE*);
+int u_fgets(unichar* s,U_FILE* f) {
+return u_fgets(f->enc,s,f->f);
 }
 
-int u_fgets(unichar* s,int size,FILE* f) {
-return u_fgets(FILE_ENC,s,size,f);
+int u_fgets(Encoding,unichar*,int,FILE*);
+int u_fgets(unichar* s,int size,U_FILE* f) {
+return u_fgets(f->enc,s,size,f->f);
 }
 
-int u_fgets2(unichar* s,FILE* f) {
-return u_fgets2(FILE_ENC,s,f);
+int u_fgets2(Encoding,unichar*,FILE*);
+int u_fgets2(unichar* s,U_FILE* f) {
+return u_fgets2(f->enc,s,f->f);
 }
 
 /**
@@ -137,44 +187,29 @@ return u_fgets2(FILE_ENC,s,f);
 int u_printf(const char* format,...) {
 va_list list;
 va_start(list,format);
-int n=u_vfprintf(STDOUT_ENC,stdout,format,list);
-va_end(list);
-return n;
-}
-
-int u_fprintf(FILE* f,const char* format,...) {
-va_list list;
-va_start(list,format);
-int n=u_vfprintf(FILE_ENC,f,format,list);
+int n=u_vfprintf(U_STDOUT,format,list);
 va_end(list);
 return n;
 }
 
 void u_fprints(Encoding,const unichar*,FILE*);
-void u_fprints(const unichar* s,FILE* f) {
-u_fprints(FILE_ENC,s,f);
+void u_fprints(const unichar* s,U_FILE* f) {
+u_fprints(f->enc,s,f->f);
 }
 
 void u_fprints(Encoding,const char*,FILE*);
-void u_fprints(const char* s,FILE* f) {
-u_fprints(FILE_ENC,s,f);
+void u_fprints(const char* s,U_FILE* f) {
+u_fprints(f->enc,s,f->f);
 }
 
 int u_scanf(const char* format,...) {
 va_list list;
 va_start(list,format);
-int n=u_vfscanf(STDIN_ENC,stdin,format,list);
+int n=u_vfscanf(U_STDIN,format,list);
 va_end(list);
 return n;
 }
 
-int u_fscanf(FILE* f,const char* format,...) {
-va_list list;
-va_start(list,format);
-int n=u_vfscanf(FILE_ENC,f,format,list);
-va_end(list);
-return n;
-}
 
 /* ------------------- File functions ------------------- */
 
@@ -188,37 +223,37 @@ return n;
  *
  * 'MODE' should be U_READ, U_WRITE, U_APPEND or U_MODIFY
  */
-FILE* u_fopen(Encoding encoding,const char* name,const char* MODE) {
+U_FILE* u_fopen(Encoding encoding,const char* name,const char* MODE) {
 FILE* f;
 if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
    /* If we are in APPEND or MODIFY mode, we check first if the file already exists */
-   f=fopen(name,U_READ);
+   f=real_fopen(name,U_READ);
    if (f!=NULL) {
       /* If the file exists, we close it and reopen it in APPEND mode */
       fclose(f);
-      f=fopen(name,MODE);
+      f=real_fopen(name,MODE);
       if (!strcmp(MODE,U_MODIFY)) {
          /* If we are in MODIFY mode, we must set the cursor at the beginning of the
           * file, i.e. after the byte order mark, if any. */
-         if (encoding==UTF16_LE || encoding==UTF16_BE) {
+         if (encoding==UTF16_LE || encoding==BIG_ENDIAN) {
             fseek(f,2,0);
          }
       }
-      return f;
+      return new_U_FILE(f,encoding);
    }
    /* If the file does not exists, we are in WRITE mode */
-   f=fopen(name,U_WRITE);
+   f=real_fopen(name,U_WRITE);
    if (f==NULL) return NULL;
    /* As the file is new, we must insert the byte order char if we are in
     * UTF16. */
    if (encoding==UTF16_LE) {
-      u_fputc(U_BYTE_ORDER_MARK,f);
-   } else if (encoding==UTF16_BE) {
+	   u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
+   } else if (encoding==BIG_ENDIAN) {
       u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
    }
-   return f;
+   return new_U_FILE(f,encoding);
 }
-f=fopen(name,MODE);
+f=real_fopen(name,MODE);
 int c;
 if (f==NULL) return NULL;
 /* If the file is opened in READ mode and if we are in UTF16,
@@ -231,33 +266,35 @@ if (!strcmp(MODE,U_READ)) {
          fclose(f);
          return NULL;
       }
-      return f;
+      return new_U_FILE(f,encoding);
    }
-   if (encoding==UTF16_BE) {
+   if (encoding==BIG_ENDIAN) {
       c=u_fgetc_UTF16BE(f);
       if (c!=U_BYTE_ORDER_MARK) {
          error("u_fopen error: %s is not a UTF16-BE text file\n",name);
          fclose(f);
          return NULL;
       }
-      return f;
+      return new_U_FILE(f,encoding);
    }
-   return f;
+   return new_U_FILE(f,encoding);
 }
 /* If the file is opened in WRITE mode, we may insert the 0xFEFF unicode char */
 if (!strcmp(MODE,U_WRITE)) {
-   if (encoding==UTF16_LE) u_fputc(U_BYTE_ORDER_MARK,f);
-   else if (encoding==UTF16_BE) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
+   if (encoding==UTF16_LE) u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
+   else if (encoding==BIG_ENDIAN) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
 }
-return f;
+return new_U_FILE(f,encoding);
 }
 
 
 /**
  * Closes a UTF16 file.
  */
-int u_fclose(FILE* f) {
-return fclose(f);
+int u_fclose(U_FILE* f) {
+int ret=fclose(f->f);
+free_U_FILE(f);
+return ret;
 }
 
 
@@ -266,7 +303,7 @@ return fclose(f);
  * byte order mark. It returns 0 if it fails; 1 otherwise.
  */
 int u_fempty(Encoding encoding,const char* name) {
-FILE* f=u_fopen(encoding,name,U_WRITE);
+U_FILE* f=u_fopen(encoding,name,U_WRITE);
 if (f==NULL) {
    return 0;
 }
@@ -279,7 +316,7 @@ return 1;
  * This function tests if the given file name correspond to a UTF16 file.
  */
 int u_is_UTF16(const char* name) {
-FILE* f=fopen(name,U_READ);
+FILE* f=real_fopen(name,U_READ);
 if (f==NULL) {
    /* If the file does not exist */
    return FILE_DOES_NOT_EXIST;
@@ -409,8 +446,9 @@ return value;
 int u_fgetc_raw(Encoding encoding,FILE* f) {
 switch(encoding) {
    case UTF16_LE: return u_fgetc_UTF16LE_raw(f);
-   case UTF16_BE: return u_fgetc_UTF16BE_raw(f);
+   case BIG_ENDIAN_UTF16: return u_fgetc_UTF16BE_raw(f);
    case UTF8: return u_fgetc_UTF8_raw(f);
+   case ASCII: return fgetc(f);
 }
 return EOF;
 }
@@ -433,6 +471,7 @@ return c;
 }
 
 
+int u_ungetc_raw(Encoding,unichar,FILE*);
 /**
  * A version of u_fgetc that returns \n whatever it reads \n, \r or \r\n.
  */
@@ -460,11 +499,12 @@ if (c==0x0D) {
       /* If there is no 0x0A after 0x0D, we put back the character */
       switch(encoding) {
          case UTF16_LE:
-         case UTF16_BE: {
+         case BIG_ENDIAN_UTF16: {
             u_ungetc_raw(encoding,c,f);
             break;
          }
-         case UTF8: {
+         case UTF8:
+         case ASCII: {
             ungetc((char)c,f);
             break;
          }
@@ -594,8 +634,9 @@ return 1;
 int u_fputc_raw(Encoding encoding,unichar c,FILE* f) {
 switch(encoding) {
    case UTF16_LE: return u_fputc_UTF16LE_raw(c,f);
-   case UTF16_BE: return u_fputc_UTF16BE_raw(c,f);
+   case BIG_ENDIAN_UTF16: return u_fputc_UTF16BE_raw(c,f);
    case UTF8: return u_fputc_UTF8_raw(c,f);
+   case ASCII: return fputc(c,f);
 }
 return 0;
 }
@@ -684,10 +725,11 @@ return (fseek(f,number_of_bytes,SEEK_CUR)==0)?1:0;
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_ungetc_raw(Encoding encoding,unichar c,FILE *f) {
-switch (encoding) {
+switch(encoding) {
    case UTF16_LE: return u_ungetc_UTF16LE_raw(f);
-   case UTF16_BE: return u_ungetc_UTF16BE_raw(f);
+   case BIG_ENDIAN_UTF16: return u_ungetc_UTF16BE_raw(f);
    case UTF8: return u_ungetc_UTF8_raw(c,f);
+   case ASCII: return ungetc(c,f);
 }
 return 0;
 }
@@ -860,7 +902,9 @@ return length;
  * Author: S�bastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
-int u_vfprintf(Encoding encoding,FILE* f,const char* format,va_list list) {
+int u_vfprintf(U_FILE* ufile,const char* format,va_list list) {
+Encoding encoding=ufile->enc;
+FILE* f=ufile->f;
 int n_printed=0;
 int i;
 double d;
@@ -1030,10 +1074,10 @@ return n_printed;
  * Author: Olivier Blanc
  * Modified by S�bastien Paumier
  */
-int u_fprintf(Encoding encoding,FILE* f,const char* format,...) {
+int u_fprintf(U_FILE* f,const char* format,...) {
 va_list list;
 va_start(list,format);
-int n=u_vfprintf(encoding,f,format,list);
+int n=u_vfprintf(f,format,list);
 va_end(list);
 return n;
 }
@@ -1266,7 +1310,9 @@ return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
  *
  * Author: S�bastien Paumier
  */
-int u_vfscanf(Encoding encoding,FILE* f,const char* format,va_list list) {
+int u_vfscanf(U_FILE* ufile,const char* format,va_list list) {
+Encoding encoding=ufile->enc;
+FILE* f=ufile->f;
 int c;
 int *i;
 unichar *uc;
@@ -1493,10 +1539,10 @@ return n_variables;
  *
  * Author: S�bastien Paumier
  */
-int u_fscanf(Encoding encoding,FILE* f,const char* format,...) {
+int u_fscanf(U_FILE* f,const char* format,...) {
 va_list list;
 va_start(list,format);
-int n=u_vfscanf(encoding,f,format,list);
+int n=u_vfscanf(f,format,list);
 va_end(list);
 return n;
 }

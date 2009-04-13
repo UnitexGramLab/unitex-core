@@ -1,7 +1,7 @@
 /*
-  * Unitex 
+  * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -19,8 +19,9 @@
   *
   */
 #include "MF_Operators_Util.h"
+#include "Error.h"
 
-FILE *f_sort;
+U_FILE* f_sort;
 
 //
 // fonction comparer  qu'un code de sortie est conforme ou non aux filtres
@@ -30,7 +31,7 @@ FILE *f_sort;
 int compare(unichar *tmp,unichar **filtre) {
 int i,res;
 
-    res=0;i=1; 
+    res=0;i=1;
     while(filtre[i]!=NULL && !res) {
         if (u_strcmp(tmp,filtre[i]) == 0) res = 1;
         i++;
@@ -48,12 +49,12 @@ int i,j,l,retour;
     if (sortie[i] == ':' ) i++;
     else  {//fprintf(stderr,"erreur Sortie sans : -->");
     //u_fprintf(stderr,"%S",sortie);
-    //fprintf(stderr,"\n"); 
+    //fprintf(stderr,"\n");
     retour=0;}
 
     l = u_strlen(sortie);
     while( i <= l ) {
-      if (sortie[i] != ':' && sortie[i] != '\0') tmp[j++] = sortie[i++]; 
+      if (sortie[i] != ':' && sortie[i] != '\0') tmp[j++] = sortie[i++];
       else {
         tmp[j] = '\0'; i++; j = 0;
         if (compare(tmp,filtre)) {
@@ -82,7 +83,7 @@ int i;
   i = *pos;
   if (i > 0 && u_is_digit(s[i]) && (s[i-1] == '$' || s[i-1] == POUND)) {
      var[1] = s[i]; var[0] = s[i-1]; var[2] = '\0';
-     (*pos)--; 
+     (*pos)--;
      return 1;
   }
   else if (i >= 0 && (s[i] == '$' || s[i] == POUND)) {
@@ -134,7 +135,7 @@ int i,k,ind;
 
   ind = get_indice_var_op(var_name);
   if (debut >= 0 ) {
-     for (k=0, i = debut; i <= fin  ; i++,k++) Variables[ind][k] =  pile[i]; 
+     for (k=0, i = debut; i <= fin  ; i++,k++) Variables[ind][k] =  pile[i];
      Variables[ind][k]='\0';
   }
   else Variables[ind][0]='\0';
@@ -187,8 +188,8 @@ unsigned int protege;
   pos_test = *pos  -l + 1;
   if (VERBOSE) fprintf(stderr,"l = %d\n",l);
 
-  if ( pos_test < 0 ) { 
-    if (VERBOSE) fprintf(stderr,"facteur > pile \n"); 
+  if ( pos_test < 0 ) {
+    if (VERBOSE) fprintf(stderr,"facteur > pile \n");
     return 0;
   }
   while ( pos_test >= 0 ) {
@@ -204,19 +205,19 @@ unsigned int protege;
     if ( match_type == IMMEDIAT ) {
       if (MATCH) {
           if (!protege) *pos = pos_test;
-          *pos_match = pos_test + l - 1; 
+          *pos_match = pos_test + l - 1;
                    if (!BEGIN) return 1;
-                   else {if (*pos == 0) return 1; 
+                   else {if (*pos == 0) return 1;
                          else return 0;
                    }
       }
-      else return 0; 
+      else return 0;
     }
     else if ( match_type == SHORTEST ) {
       if (MATCH) {*pos = pos_test; *pos_match = pos_test + l - 1; return 1;}
       else pos_test--;
     }
-    else if ( match_type == LONGEST ) { 
+    else if ( match_type == LONGEST ) {
       if (MATCH) { last_pos_match = pos_test; last_pos = pos_test; }
       pos_test--;
     }
@@ -225,7 +226,7 @@ unsigned int protege;
        *pos_match = last_pos_match + l - 1;
        *pos = last_pos; return 1;
   }
-  else return 0; 
+  else return 0;
 }
 
 int flex_op_with_var(unichar (*Variables)[L1],unichar *pile,unichar *etiq,int *pos,int *pos_etiq,unsigned int *var_in_use){
@@ -233,13 +234,13 @@ int ind,init_pos,pos_pattern,var_precede,match_type,retour,pos_match,var_end;
 unichar var_name[L1],facteur[L1];
 unsigned int mode=0;
 
- if (!u_strcmp(etiq,"<!>")) { 
-    *pos_etiq +=3; 
+ if (!u_strcmp(etiq,"<!>")) {
+    *pos_etiq +=3;
     return 1;
 }
 
     init_pos = *pos;
-    if (VERBOSE) u_fprintf(stderr,"PATTERN: %s\n",etiq);
+    if (VERBOSE) error("PATTERN: %s\n",etiq);
     while (etiq[*pos_etiq] != '\0' && etiq[(*pos_etiq)++] != '>' ) {} // Valeur de retour
     pos_pattern = *pos_etiq -2;
     var_precede = 0;
@@ -249,7 +250,7 @@ unsigned int mode=0;
        //if (VERBOSE) u_fprintf(stderr,"***DEBUT***\n");
       if (get_var_op(var_name,etiq,&pos_pattern)) {
     //if (VERBOSE) u_fprintf(stderr,"GET Variable name  : %S\n",var_name);
-	 if (is_var_op(etiq,pos_pattern-1) || etiq[pos_pattern-1] == '<') { 
+	 if (is_var_op(etiq,pos_pattern-1) || etiq[pos_pattern-1] == '<') {
          // si <$  ou <$1$  ou ï¿½$ ....on capte le contenu de la variable
              (*pos)--;
              var_end = *pos;
@@ -257,13 +258,13 @@ unsigned int mode=0;
 	     else { pos_match = -1; *pos = 0;}
      // if (VERBOSE) u_fprintf(stderr,"pos_match = %d var_end = %d \n",pos_match,var_end);
              init_var(var_name,Variables,pile,pos_match + 1,var_end);
-             ind = get_indice_var_op(var_name); 
+             ind = get_indice_var_op(var_name);
              add_flag_var(ind,var_in_use);
      // if (VERBOSE) u_fprintf(stderr,"SPECIAL pos = %d  pos_pattern =  %dVariable %S = %S\n",*pos,pos_pattern,var_name,Variables[ind]);
             if (*pos == -1) *pos = 0;
             retour = 1;
           }
-	 else {var_precede = 1;} 
+	 else {var_precede = 1;}
 
       pos_pattern--;
       }

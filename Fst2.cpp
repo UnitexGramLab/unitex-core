@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -179,7 +179,7 @@ output[j]='\0';
  * morphological filter is of the form "<<.....>>_f_", but the "_..._" part
  * is optional.
  */
-/* $CD$ begin */  
+/* $CD$ begin */
 unichar input[2048],filter[2048];
 input[0] = '\0';
 filter[0] = '\0';
@@ -218,7 +218,7 @@ tag->input=u_strdup(input);
 if (output[0]!='\0') {
    tag->output=u_strdup(output);
 } else {tag->output=NULL;}
-   
+
 if (filter[0]!='\0') {
    tag->morphological_filter=u_strdup(filter);
 } else {tag->morphological_filter=NULL;}
@@ -252,12 +252,12 @@ if (!u_strcmp(input,"$>")) {
    tag->type=END_MORPHO_TAG;
    return tag;
 }
-/* 
+/*
  * IMPORTANT: if the tag is a variable declaration, we must add this variable
  *            to the variable list of the fst2 .
  */
 int length=u_strlen(input);
-if (input[0]=='$' && 
+if (input[0]=='$' &&
     (input[length-1]=='(' || input[length-1]==')')) {
    tag->variable=u_strdup(&(input[1]),length-2);
    fst2->variables=sorted_insert(tag->variable,fst2->variables);
@@ -276,7 +276,7 @@ return tag;
  * Stringifies and writes a tag to a file including '\n'.
  * Opposite of "create_tag".
  */
-void write_tag(FILE* f,Fst2Tag tag) {
+void write_tag(U_FILE* f,Fst2Tag tag) {
 if (tag->control & RESPECT_CASE_TAG_BIT_MASK) {
    u_fprintf(f,"@");
 }
@@ -304,17 +304,17 @@ u_fprintf(f,"\n");
 /**
  * Reads the tags of the .fst2 file 'f'. The function assumes that the
  * current position in the file is just before the first tag line.
- * For each tag line, a tag is created and inserted in the tag array of 
+ * For each tag line, a tag is created and inserted in the tag array of
  * the given fst2.
- * 
+ *
  * The parameter 'limit' indicates that the function
  * may stop reading after the tag number 'limit'. NO_TAG_LIMIT indicates
  * that there is no limit. This is used to avoid loading the whole tag list
  * when you know the highest tag number that you will need, in particular
  * when you load just one sentence from a .fst2 that represents a text
- * automaton. 
+ * automaton.
  */
-void read_fst2_tags(FILE *f,Fst2* fst2,int limit) {
+void read_fst2_tags(U_FILE* f,Fst2* fst2,int limit) {
 int SIZE=2;
 int i;
 unichar c;
@@ -369,7 +369,7 @@ if (fst2->tags==NULL) {
 /**
  * Reads all the tags of the .fst2 file 'f'.
  */
-void read_fst2_tags(FILE *f,Fst2* fst2) {
+void read_fst2_tags(U_FILE* f,Fst2* fst2) {
 read_fst2_tags(f,fst2,NO_TAG_LIMIT);
 }
 
@@ -378,7 +378,7 @@ read_fst2_tags(f,fst2,NO_TAG_LIMIT);
  * Writes all the tags to the .fst2 file 'f'.
  * (opposite of "read_fst2_tags")
  */
-void write_fst2_tags(FILE* f,Fst2* fst2) {
+void write_fst2_tags(U_FILE* f,Fst2* fst2) {
 for (int i=0;i<fst2->number_of_tags;i++) {
    write_tag(f,fst2->tags[i]);
 }
@@ -388,7 +388,7 @@ u_fprintf(f,"f\n");
 /**
  * Writes one state of automaton to the .fst2 file 'f'.
  */
-void write_fst2_state(FILE* f,Fst2State s,int shift) {
+void write_fst2_state(U_FILE* f,Fst2State s,int shift) {
 if (is_final_state(s))
    u_fprintf(f,"t ");
 else u_fprintf(f,": ");
@@ -418,10 +418,10 @@ return state;
 
 /**
  * Reads and returns a signed integer in a .fst2 file. If an end of line is
- * found, 'end_of_line' is setted to 1 and 0 is returned; Otherwise, 
+ * found, 'end_of_line' is setted to 1 and 0 is returned; Otherwise,
  * 'end_of_line' is setted to 0.
  */
-int read_int(FILE *f,int *end_of_line) {
+int read_int(U_FILE* f,int *end_of_line) {
 register unichar c;
 register int value;
 int negative_number;
@@ -458,8 +458,8 @@ return value;
 
 /**
  * Creates and adds a transition to the given fst2 state.
- * 
- * NOTE: as a fst2 state is not supposed to contains duplicate 
+ *
+ * NOTE: as a fst2 state is not supposed to contains duplicate
  *       transitions, we do not check if the transition already
  *       exists before adding it.
  */
@@ -475,17 +475,17 @@ void set_final_state(fst2State*,int);
  * Reads fst2 states from the given file 'f' and stores them into
  * the given fst2. If 'read_names' is non null, graph names are
  * stored in the 'graph_names' array of the fst2.
- * 
+ *
  * The 'graph_number' parameter is used when you want to load only one
  * graph. In that case, its value is the number of the graph to load. The
  * value must be positive; the first graph is 1. If this parameter is used,
  * the 'max_tag_number' will be used to store the higher tag number used by
- * the specified graph, in order to avoid loading the whole tag list. These 
+ * the specified graph, in order to avoid loading the whole tag list. These
  * parameters are useful for loading one sentence from a .fst2 that represents
  * a text automaton. If the value of 'graph_number' is NO_GRAPH_NUMBER_SPECIFIED,
  * then all the fst2 is loaded, and the 'max_tag_number' parameter is ignored.
  */
-void read_fst2_states(FILE *f,Fst2* fst2,int read_names,int graph_number,int *max_tag_number) {
+void read_fst2_states(U_FILE* f,Fst2* fst2,int read_names,int graph_number,int *max_tag_number) {
 int SIZE=256;
 unichar c;
 int i,end_of_line,tag_number,destination_state_number,current_graph;
@@ -510,7 +510,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
    u_fgets(graph_name,f);
 	if (graph_number==NO_GRAPH_NUMBER_SPECIFIED || graph_number==current_graph) {
 		/* If we must read the graph either because it is the one we look for
-		 * or because we must read them all, then we initialize 'max_tag_number' */ 
+		 * or because we must read them all, then we initialize 'max_tag_number' */
     	(*max_tag_number)=0;
 		/*
 		 * We save the graph name if needed
@@ -518,9 +518,9 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		if (read_names) {
 			fst2->graph_names[current_graph]=u_strdup(graph_name);
 		}
-		/* 
-		 * We read the next char that must be 't' or ':' but not 'f', because 
-		 * empty graphs are not allowed 
+		/*
+		 * We read the next char that must be 't' or ':' but not 'f', because
+		 * empty graphs are not allowed
 		 */
 		c=(unichar)u_fgetc(f);
 		if ((c!='t')&&(c!=':')) {fatal_error("Unexpected character in fst2: %c (read state)\n",c);}
@@ -540,7 +540,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 			 * We read the tag number
 			 */
 			tag_number=read_int(f,&end_of_line);
-			/* 
+			/*
 			 * We read transitions made of couple of integers (tag number/state number)
 			 * until we find an end of line
 			 */
@@ -605,7 +605,7 @@ if (fst2->states==NULL) {
  * the given fst2. If 'read_names' is non null, graph names are
  * stored in the 'graph_names' array of the fst2.
  */
-void read_fst2_states(FILE *f,Fst2* fst2,int read_names) {
+void read_fst2_states(U_FILE* f,Fst2* fst2,int read_names) {
 read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
 }
 
@@ -615,7 +615,7 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
  * 'read_names' indicates if graph names must be stored.
  * If 'graph_number' is setted to NO_GRAPH_NUMBER_SPECIFIED, all the fst2
  * is loaded; otherwise this parameter is taken as the number of the unique
- * graph to load. 
+ * graph to load.
  */
 
 #define GRAPH_IS_EMPTY 1
@@ -623,8 +623,8 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
 
 Fst2* load_fst2(char* filename,int read_names,int graph_number) {
 
-FILE* f;
-f=u_fopen(filename,U_READ);
+U_FILE* f;
+f=u_fopen(UTF16_LE,filename,U_READ);
 Fst2* fst2;
 if (f==NULL) {
 	error("Cannot open the file %s\n",filename);
@@ -642,11 +642,11 @@ return fst2;
 
 }
 
-int load_fst2_from_file(FILE *f,int read_names,Fst2** retval, int graph_number) {
+int load_fst2_from_file(U_FILE* f,int read_names,Fst2** retval, int graph_number) {
 if (f==NULL) {
    return 2;
 }
-Fst2 *fst2=new_Fst2();
+Fst2* fst2=new_Fst2();
 /* We read the number of graphs contained in the fst2 */
 u_fscanf(f,"%d\n",&(fst2->number_of_graphs));
 if (fst2->number_of_graphs==0) {
@@ -701,8 +701,7 @@ Fst2* load_fst2(char* filename,int read_names) {
 return load_fst2(filename,read_names,NO_GRAPH_NUMBER_SPECIFIED);
 }
 
-int load_fst2_from_file(FILE *f,int read_names, Fst2 **fst2) {
-	
+int load_fst2_from_file(U_FILE* f,int read_names,Fst2* *fst2) {
 	return load_fst2_from_file(f,read_names,fst2,NO_GRAPH_NUMBER_SPECIFIED);
 
 }
@@ -777,7 +776,7 @@ if (finality) {
 /**
  * Saves the given subgraph of the given fst2 in the given file.
  */
-void save_fst2_subgraph(FILE* f,int n,Fst2* fst2) {
+void save_fst2_subgraph(U_FILE* f,int n,Fst2* fst2) {
 u_fprintf(f,"-%d ",n);
 if (fst2->graph_names!=NULL) {
    u_fprintf(f,"%S\n",fst2->graph_names[n]);
@@ -801,9 +800,9 @@ if (fst2==NULL) {
    fatal_error("NULL fst2 in save_Fst2\n");
 }
 if (name==NULL || name[0]=='\0') {
-   fatal_error("NULL or empry name in save_Fst2\n");
+   fatal_error("NULL or empty name in save_Fst2\n");
 }
-FILE* f=u_fopen(name,U_WRITE);
+U_FILE* f=u_fopen(UTF16_LE,name,U_WRITE);
 if (f==NULL) {
    fatal_error("Cannot open %s in save_Fst2\n",name);
 }

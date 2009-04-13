@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -34,7 +34,7 @@
 #define MARK4_BIT_MASK 128
 
 
-/** 
+/**
  * This structure represents a state of a single graph of a fst2. The difference with
  * Fst2State is that it contains a list of reversed transitions, which is useful
  * for things like removing useless states.
@@ -42,15 +42,15 @@
 struct single_graph_state_ {
    /* Control byte used to know if the state is final */
    unsigned char control;
-   
+
    /* List of outgoing transitions */
    Transition* outgoing_transitions;
-   
+
    /* List of reverted incoming transitions, i.e. if there is
     * a transition from A to B with the tag 56, then the transition
     * (56,A) will belong to B's reverted transitions */
    Transition* reverted_incoming_transitions;
-   
+
    /* This is the number of the state pointed out by the default transition,
     * or -1 if none. This field is used by the complementation algorithm. */
    int default_state;
@@ -125,7 +125,7 @@ void topological_sort(SingleGraph);
 void build_union(SingleGraph,SingleGraph);
 
 //SingleGraph get_subgraph(Fst2*,int);
-void save_fst2_subgraph(FILE*,SingleGraph,int,unichar*);
+void save_fst2_subgraph(U_FILE*,SingleGraph,int,unichar*);
 
 double evaluate_ambiguity(SingleGraph,int*,int*);
 

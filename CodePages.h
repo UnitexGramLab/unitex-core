@@ -27,12 +27,12 @@
 /*
  * Encoding types
  */
-#define ONE_BYTE_ENCODING 0
-#define UTF8 1
-#define UTF16_LE 2
-#define UTF16_BE 3
+#define E_ONE_BYTE_ENCODING 0
+#define E_UTF8 1
+#define E_UTF16_LE 2
+#define E_UTF16_BE 3
 #ifndef HGH_INSERT
-#define MBCS_KR    4
+#define E_MBCS_KR    4
 #endif // HGH_INSERT
 
 /*
@@ -77,7 +77,7 @@ struct encoding {
 
 
 void install_all_encodings();
-int convert(FILE*,FILE*,struct encoding*,struct encoding*,int,int,int,int);
+int convert(U_FILE*,U_FILE*,struct encoding*,struct encoding*,int,int,int,int);
 struct encoding* get_encoding(char*);
 
 void print_encoding_main_names();

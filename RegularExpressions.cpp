@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -50,7 +50,7 @@ struct reg2grf_info {
 
 
 int reg_2_grf(unichar*,int*,int*,struct reg2grf_info*);
-void save_states(FILE*,struct reg2grf_info*);
+void save_states(U_FILE*,struct reg2grf_info*);
 
 
 
@@ -83,7 +83,7 @@ free(info);
 /**
  * Creates and adds a new state with the given content. The
  * function returns the index of the new state.
- * 
+ *
  * WARNING: note that the content is not duplicated, so you
  *          need to provide a persistent pointer to the function,
  *          for instance, by calling it with u_strdup(...)
@@ -113,7 +113,7 @@ if (regexp[0]=='\0') {
    error("You must specify a non empty regular expression\n");
    return 0;
 }
-FILE* out=u_fopen(name_grf,U_WRITE);
+U_FILE* out=u_fopen(UTF16_LE,name_grf,U_WRITE);
 if (out==NULL) {
    error("Cannot open the output file for the regular expression\n");
    return 0;
@@ -190,7 +190,7 @@ dest[j]='\0';
 /**
  * Saves the given states in the given grf file.
  */
-void save_states(FILE* f,struct reg2grf_info* info) {
+void save_states(U_FILE* f,struct reg2grf_info* info) {
 unichar temp[4096];
 struct list_int* transitions;
 /* We print the number of states */
@@ -278,7 +278,7 @@ return 1;
 
 /**
  * We try to read one of the following sequences:
- *  
+ *
  *    <...>
  *    <<...>>
  *    <...><<...>>
@@ -329,7 +329,7 @@ if (input[*pos]=='<') {
    return 1;
 }
 
-while (input[*pos]!='\0' && input[*pos]!='+' && input[*pos]!='.' && input[*pos]!='(' && input[*pos]!=')' 
+while (input[*pos]!='\0' && input[*pos]!='+' && input[*pos]!='.' && input[*pos]!='(' && input[*pos]!=')'
        && input[*pos]!='*' && input[*pos]!=' ' && input[*pos]!='<' && input[*pos]!='"') {
    if (input[*pos]=='\\') {
       /* If we find a \ we despecialize the next character if it is an operator of
@@ -356,7 +356,7 @@ return 1;
 /**
  * This function takes a regular expression and builds the corresponding
  * Thompson automaton. To do that, we use the following grammar:
- * 
+ *
  * S -> E \0
  * E -> E + E
  * E -> E . E
@@ -367,17 +367,17 @@ return 1;
  * E -> TOKEN
  * Y -> SPACE
  * Y -> SPACE Y
- * 
+ *
  * with priority(*) > priority(.) > priority(+)
- * 
+ *
  * If we have the following expression:
- * 
+ *
  * <DET> (very <A>+<E>).<N> of <<es$>>
- * 
+ *
  * tokens will be "<DET>", "very", "<A>", "<E>", "<N>", "of" and "<<es$>>"
- * 
+ *
  * See comments in "RegularExpressions.h" for more details.
- * 
+ *
  * We use two integer stacks: one for the LR analyzer that contains the item automaton
  * states number and another that contains, for each piece of automaton being built, the
  * numbers of the input and output states of this piece.
@@ -515,7 +515,7 @@ while (value==-1) {
                pos++;
                stacki_push(stack,2);
                break;
-            }   
+            }
             case ')': {
                /* Failure */
                value=0; break;
@@ -843,7 +843,7 @@ while (value==-1) {
                stacki_push(couples,input);
                stacki_push(couples,output);
                break;
-            }   
+            }
             case '*': {
                pos++;
                stacki_push(stack,10);
@@ -931,7 +931,7 @@ while (value==-1) {
          }
          stacki_push(stack, next_state);
          break;
-      }      
+      }
       /* state 18 */
       case 18: {
          switch(regexp[pos]) {

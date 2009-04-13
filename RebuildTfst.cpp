@@ -107,12 +107,12 @@ sprintf(output_tfst, "%s.new.tfst",input_tfst);
 char output_tind[FILENAME_MAX];
 sprintf(output_tind, "%s.new.tind",input_tfst);
 
-FILE* f_tfst;
-if ((f_tfst = u_fopen(output_tfst, U_WRITE)) == NULL) {
+U_FILE* f_tfst;
+if ((f_tfst = u_fopen(UTF16_LE,output_tfst,U_WRITE)) == NULL) {
    fatal_error("Unable to open %s for writing\n", output_tfst);
 }
-FILE* f_tind;
-if ((f_tind = fopen(output_tind, U_WRITE)) == NULL) {
+U_FILE* f_tind;
+if ((f_tind = u_fopen(BINARY,output_tind,U_WRITE)) == NULL) {
    u_fclose(f_tfst);
    fatal_error("Unable to open %s for writing\n", output_tind);
 }
@@ -156,7 +156,7 @@ for (int i = 1; i <= tfst->N; i++) {
 u_printf("Text automaton rebuilt.\n");
 close_text_automaton(tfst);
 u_fclose(f_tfst);
-fclose(f_tind);
+u_fclose(f_tind);
 
 /* make a backup and replace old automaton with new */
 char backup_tfst[FILENAME_MAX];

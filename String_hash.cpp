@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -168,7 +168,7 @@ return NULL;
 
 /**
  * Returns the index value associated to the given key in the given string_hash.
- * 'pos' is the current position the key and 'node' is the current node in the 
+ * 'pos' is the current position the key and 'node' is the current node in the
  * string_hash_tree. If 'insert_if_needed' is non null, the key will be added
  * in the string_hash if not already present. Otherwise, the function will
  * return NO_VALUE_INDEX if the key is not in the string_hash.
@@ -272,7 +272,7 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
  * an empty line is found.
  */
 struct string_hash* load_key_list(char* name) {
-FILE* f=u_fopen(name,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
 unichar temp[4096];
@@ -297,13 +297,13 @@ return hash;
  * an empty key. In case of empty values, the empty string will be used.
  * Note that keys and values can contain characters protected with the \ character,
  * including protected new lines like:
- * 
+ *
  * 123\
  * =ONE_TWO_THREE_NEW_LINE
- * 
+ *
  */
 struct string_hash* load_key_value_list(char* name,unichar separator) {
-FILE* f=u_fopen(name,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash();
 unichar temp[4096];
@@ -358,7 +358,7 @@ return hash;
  * Dumps the values of the given string_hash into the given file (one
  * string per line). Raises a fatal error if the strign_hash has no value.
  */
-void dump_values(FILE *f,struct string_hash* hash) {
+void dump_values(U_FILE *f,struct string_hash* hash) {
 if (hash==NULL) {
    fatal_error("NULL error in dump_values\n");
 }
@@ -459,7 +459,7 @@ return new_string_hash_ptr(DEFAULT_CAPACITY);
 void free_string_hash_ptr(struct string_hash_ptr* s,void (*free_)(void*)) {
 if (s==NULL) return;
 /* If necessary, we free the 'value' array */
-if (free_!=NULL) { 
+if (free_!=NULL) {
    for (int i=0;i<s->hash->size;i++) {
       free_(s->value[i]);
    }
@@ -518,7 +518,7 @@ return index;
 /**
  * Returns the value associated to the given key, or NULL if not found in the
  * given string_hash_ptr.
- * 
+ *
  * WARNING: NULL is also returned if it has been associated to the key, so
  *          it's not possible to distinguish the cases (key,NULL) and key not found.
  */

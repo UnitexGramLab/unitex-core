@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -81,8 +81,8 @@ alphabet->t[lower][L+1]='\0';
  * Loads an alphabet file and returns the associated 'Alphabet*' structure.
  */
 Alphabet* load_alphabet(char* filename) {
-FILE* f;
-f=u_fopen(filename,U_READ);
+U_FILE* f;
+f=u_fopen(UTF16_LE,filename,U_READ);
 if (f==NULL) return NULL;
 Alphabet* alphabet=new_alphabet();
 int c;
@@ -151,7 +151,7 @@ return a==b || is_upper_of(a,b,alphabet) || is_upper_of(b,a,alphabet);
 
 /**
  * Returns a non-zero value if 'b' is identical to 'a' or if it is
- * an uppercase equivalent of 'a' according for the given alphabet; 
+ * an uppercase equivalent of 'a' according for the given alphabet;
  * returns 0 otherwise.
  */
 int is_equal_or_uppercase(unichar a,unichar b,Alphabet* alphabet) {
@@ -161,7 +161,7 @@ return (a==b || is_upper_of(a,b,alphabet));
 
 /**
  * Returns a non-zero value if 'b' is identical to 'a' or if it is
- * an uppercase equivalent of 'a' according for the given alphabet; 
+ * an uppercase equivalent of 'a' according for the given alphabet;
  * returns 0 otherwise.
  */
 int is_equal_or_uppercase(unichar* a,unichar* b,Alphabet* alphabet) {
@@ -254,8 +254,8 @@ return 1;
 /**
  * This function turns a Portuguese letter sequence into a lowercase one.
  * It cannot be a general function because of potential ambiguities
- * like "A" -> "a" or "à" in French.
- * It works on Portuguese because the uppercase/lowercase relations are 
+ * like "A" -> "a" or "ï¿½" in French.
+ * It works on Portuguese because the uppercase/lowercase relations are
  * bijectives.
  */
 void turn_portuguese_sequence_to_lowercase(unichar* s) {
@@ -324,13 +324,13 @@ while (s[i]!='\0') {
  * its uppercase equivalent, surrounded with square brackets if
  * the letter was not already between square brackets.
  * Examples:
- * 
+ *
  * "For" => "F[oO][rR]"
  * "F[ao]r" => "F[aAoO][rR]"
- * 
+ *
  * The output is stored in 'src'. The function assumes that 'src' is
  * wide enough.
- * 
+ *
  * This function is used for morphological filter regular expressions.
  */
 void replace_letter_by_letter_set(Alphabet* a,unichar* dest,unichar* src) {
@@ -338,10 +338,10 @@ int i=0,j=0;
 char inside_a_set=0;
 while (src[i]!='\0') {
    switch (src[i]) {
-      case '\\': 
+      case '\\':
          if (src[i+1]=='\0') {
              // there is nothing after a backslash, then we stop,
-             // and the RE compiler may indicate an error 
+             // and the RE compiler may indicate an error
              dest[j++] = src[i++];
              dest[j] = src[i];
              return;
@@ -375,7 +375,7 @@ while (src[i]!='\0') {
           break;
        case '.': case '*': case '+': case '?': case '|': case '^': case '$':
        case ':': case '(': case ')': case '{': case '}': case '1': case '2':
-       case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+       case '3': case '4': case '5': case '6': case '7': case '8': case '9':
           dest[j++]=src[i++];
           break;
        default:
@@ -390,7 +390,7 @@ while (src[i]!='\0') {
              i++;
           }
           else dest[j++]=src[i++];
-   }       
+   }
 }
 dest[j]='\0';
 }
@@ -400,7 +400,7 @@ dest[j]='\0';
 /**
  * Returns the length of the longuest prefix common to the strings 'a' and 'b',
  * but allowing the following case variants:
- * 
+ *
  * ab OK
  * Ab OK
  * AB OK

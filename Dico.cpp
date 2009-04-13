@@ -110,7 +110,7 @@ u_printf("Usage: Dico [OPTIONS] <dic_1> [<dic_2> <dic_3> ...]\n"
  * This function stores some statistics in 'stat_dic.n'.
  */
 void save_statistics(char* name,struct dico_application_info* info) {
-FILE* f=u_fopen(name,U_WRITE);
+U_FILE* f=u_fopen(UTF16_LE,name,U_WRITE);
 if (f==NULL) {
    error("Cannot write stat file %s\n",name);
    return;
@@ -180,17 +180,17 @@ if (vars->optind==argc) {
 }
 
 struct snt_files* snt_files=new_snt_files(text);
-FILE* text_cod;
+U_FILE* text_cod;
 struct text_tokens* tokens;
 
 /* And we create empty files in order to append things to them */
-if (!u_fempty(snt_files->dlf)) {
+if (!u_fempty(UTF16_LE,snt_files->dlf)) {
    fatal_error("Cannot create %s\n",snt_files->dlf);
 }
-if (!u_fempty(snt_files->dlc)) {
+if (!u_fempty(UTF16_LE,snt_files->dlc)) {
    fatal_error("Cannot create %s\n",snt_files->dlc);
 }
-if (!u_fempty(snt_files->err)) {
+if (!u_fempty(UTF16_LE,snt_files->err)) {
    fatal_error("Cannot create %s\n",snt_files->err);
 }
 /* We load the alphabet */
@@ -207,7 +207,7 @@ if (tokens==NULL) {
    return 1;
 }
 /* We open the text.cod file for binary reading */
-text_cod=fopen(snt_files->text_cod,"rb");
+text_cod=u_fopen(BINARY,snt_files->text_cod,U_READ);
 if (text_cod==NULL) {
    free_alphabet(alphabet);
    free_text_tokens(tokens);
@@ -241,9 +241,9 @@ for (int priority=1;priority<4;priority++) {
             /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
-            info->dlf=u_fopen(snt_files->dlf,U_APPEND);
-            info->dlc=u_fopen(snt_files->dlc,U_APPEND);
-            info->err=u_fopen(snt_files->err,U_WRITE);
+            info->dlf=u_fopen(UTF16_LE,snt_files->dlf,U_APPEND);
+            info->dlc=u_fopen(UTF16_LE,snt_files->dlc,U_APPEND);
+            info->err=u_fopen(UTF16_LE,snt_files->err,U_WRITE);
             /* Working... */
             dico_application(argv[i],info,priority);
             /* Dumping and closing output files */
@@ -275,9 +275,9 @@ for (int priority=1;priority<4;priority++) {
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
-            info->dlf=u_fopen(snt_files->dlf,U_APPEND);
-            info->dlc=u_fopen(snt_files->dlc,U_APPEND);
-            info->err=u_fopen(snt_files->err,U_WRITE);
+            info->dlf=u_fopen(UTF16_LE,snt_files->dlf,U_APPEND);
+            info->dlc=u_fopen(UTF16_LE,snt_files->dlc,U_APPEND);
+            info->err=u_fopen(UTF16_LE,snt_files->err,U_WRITE);
             /* And we merge the Locate results with current dictionaries */
             merge_dic_locate_results(info,snt_files->concord_ind,priority);
             /* We dump and close output files */
@@ -299,7 +299,7 @@ save_and_sort_tag_sequences(info);
 /* Finally, we have to save the definitive list of unknown words */
 u_printf("Saving unknown words...\n");
 if (info->err==NULL ) {
-	info->err=u_fopen(snt_files->err,U_WRITE);
+	info->err=u_fopen(UTF16_LE,snt_files->err,U_WRITE);
 }
 save_unknown_words(info);
 /* We compute some statistics */
@@ -311,7 +311,7 @@ free_text_tokens(tokens);
 if (info->dlf!=NULL) u_fclose(info->dlf);
 if (info->dlc!=NULL) u_fclose(info->dlc);
 if (info->err!=NULL) u_fclose(info->err);
-fclose(text_cod);
+u_fclose(text_cod);
 free_dico_application(info);
 free_snt_files(snt_files);
 if (morpho_dic!=NULL) free(morpho_dic);

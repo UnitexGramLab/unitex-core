@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -25,13 +25,13 @@
 
 
 // main internal functions:
-void analyse_word_list(unsigned char*, struct INF_codes*, FILE*, FILE*, FILE*, FILE*,Alphabet*,
+void analyse_word_list(unsigned char*, struct INF_codes*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,Alphabet*,
                        bool*,bool*,struct utags,vector_ptr*,vector_ptr*);
-int analyse_word(unichar*,unsigned char*,FILE*,FILE*,struct INF_codes*,bool*,bool*,Alphabet*,struct utags
+int analyse_word(unichar*,unsigned char*,U_FILE*,U_FILE*,struct INF_codes*,bool*,bool*,Alphabet*,struct utags
       ,vector_ptr*,vector_ptr*);
-void explore_state(int, unichar*, int, unichar*, unichar*, int, unichar*, unichar*, 
+void explore_state(int, unichar*, int, unichar*, unichar*, int, unichar*, unichar*,
                    struct decomposed_word_list**, int, struct rule_list*, struct dela_entry*,
-                   unsigned char*,struct INF_codes*,bool*,bool*,Alphabet*,FILE*,struct utags,vector_ptr*,vector_ptr*);
+                   unsigned char*,struct INF_codes*,bool*,bool*,Alphabet*,U_FILE*,struct utags,vector_ptr*,vector_ptr*);
 
 
 // results of decomposition are written to
@@ -100,7 +100,7 @@ struct composition_rule {
 // associated functions:
 struct composition_rule* new_composition_rule ();
 void free_composition_rule (struct composition_rule*);
-struct composition_rule* copy_composition_rule (struct composition_rule*, 
+struct composition_rule* copy_composition_rule (struct composition_rule*,
 						struct composition_rule*);
 // all rules of one lexicon entry are stored in a list
 struct rule_list {
@@ -118,7 +118,7 @@ void parse_then_code (unichar*_code, struct change_code*);
 // parse_rules parses a rule
 struct rule_list* parse_rules (unichar*,struct utags,vector_ptr*);
 // composition_rule_matches_entry decides whether rule and entry match
-int composition_rule_matches_entry (struct pattern*, struct dela_entry*,FILE*);
+int composition_rule_matches_entry (struct pattern*, struct dela_entry*,U_FILE*);
 // substring_operation changes prefix or suffix of word given a substring-rule
 void substring_operation (unichar*, unichar*);
 
@@ -164,10 +164,10 @@ void free_all_dic_entries(vector_ptr*);
 void analyse_compounds(Alphabet* alph,
 		       unsigned char* bin,
 		       struct INF_codes* inf,
-		       FILE* words,
-		       FILE* result,
-		       FILE* debug,
-		       FILE* new_unknown_words,struct utags UTAG)
+		       U_FILE* words,
+		       U_FILE* result,
+		       U_FILE* debug,
+		       U_FILE* new_unknown_words,struct utags UTAG)
 {
    bool* prefix;
    bool* suffix;
@@ -185,10 +185,10 @@ void analyse_compounds(Alphabet* alph,
 //
 void analyse_word_list(unsigned char* tableau_bin,
 			       struct INF_codes* inf,
-			       FILE* words,
-			       FILE* result,
-			       FILE* debug,
-			       FILE* new_unknown_words,
+			       U_FILE* words,
+			       U_FILE* result,
+			       U_FILE* debug,
+			       U_FILE* new_unknown_words,
 			       Alphabet* alph,
 			       bool* prefix,bool* suffix,
 			       struct utags UTAG,
@@ -217,14 +217,14 @@ void analyse_word_list(unsigned char* tableau_bin,
 //
 // this function try to analyse an unknown russian word
 //
-int analyse_word(unichar* mot,unsigned char* tableau_bin,FILE* debug,FILE* result_file,
+int analyse_word(unichar* mot,unsigned char* tableau_bin,U_FILE* debug,U_FILE* result_file,
                  struct INF_codes* inf_codes,bool* prefix,bool* suffix,Alphabet* alphabet,
                  struct utags UTAG,vector_ptr* rules,vector_ptr* entries)
 {
   if (DDEBUG) {
     u_fprintf(debug,"\n  %S\n",mot);
   }
-  
+
   unichar decomposition[MAX_DICT_LINE_LENGTH];
   unichar dela_line[MAX_DICT_LINE_LENGTH];
   unichar correct_word[MAX_DICT_LINE_LENGTH];
@@ -708,7 +708,7 @@ struct rule_list* parse_rules (unichar* entry,struct utags UTAG,vector_ptr* rule
 
 
 int composition_rule_matches_entry (struct pattern* rule,
-				     struct dela_entry* d,FILE* debug_file) {
+				     struct dela_entry* d,U_FILE* debug_file) {
   int ok = 1;
   // "ok = 0;"  may be replaced by "return 0;"
   int flex_code_already_matched = 1;
@@ -824,7 +824,7 @@ void substring_operation (unichar* affix, unichar* rule)
  * This function parses a DELAF line and stores in the appropriate parameters
  * the inflected form, the lemma and the codes. If there is no lemma, it takes
  * the value of the inflected form. All these strings are unprotected:
- * 
+ *
  * "3\,14,.PI" => inflected="3,14" lemma="3,14" codes="PI"
  */
 void tokenize_DELA_line_into_3_parts(unichar* line,unichar* inflected,unichar* lemma,unichar* codes) {
@@ -907,7 +907,7 @@ void explore_state (int adresse,
 		    unsigned char* tableau_bin,
 		    struct INF_codes* inf_codes,
 		    bool* prefix,bool* suffix,Alphabet* alphabet,
-		    FILE* debug_file,struct utags UTAG,
+		    U_FILE* debug_file,struct utags UTAG,
 		    vector_ptr* rules,vector_ptr* entries)
 {
 
@@ -926,7 +926,7 @@ void explore_state (int adresse,
       if (DDEBUG) {
          u_fprintf(debug_file,". %S\n",current_component);
       }
-    
+
       struct list_ustring* l = inf_codes->codes[index];
       while ( l != 0 ) {
 
@@ -975,7 +975,7 @@ void explore_state (int adresse,
 	  // loop on all actual composition_rules
 	  struct rule_list* r_list = rule_list;
  	  while ( r_list != 0 ) {
-	  
+
 // 	    if (one_rule_already_matched)
 // 	      break;
 
@@ -999,10 +999,10 @@ void explore_state (int adresse,
 	      unichar lemma[MAX_WORD_LENGTH];
 	      unichar codes[MAX_DICT_LINE_LENGTH];
 	      tokenize_DELA_line_into_3_parts(entry, inflected, lemma, codes);
-	
+
 	      /* generating new lexicon entry */
 	      unichar new_dela_line[MAX_DICT_LINE_LENGTH];
-	
+
 	      /* word form */
 	      u_strcpy(new_dela_line, original_word);
 	      u_strcat(new_dela_line, ",");
@@ -1021,7 +1021,7 @@ void explore_state (int adresse,
 	      } else {
 		u_strcat(new_dela_line, original_word);
 	      }
-	
+
 	      /* codes */
 	      u_strcat(new_dela_line,".");
 	      if (rule->then.repl[0] != '\0') {            // replacing codes by
@@ -1062,7 +1062,7 @@ void explore_state (int adresse,
 		    u_strcat(new_dela_line,codes);
 		  }
 		} else if (rule_called->then.del[0] != '\0') { // delete codes
-	      
+
 		} else {
 		  u_strcat(new_dela_line,codes);
 		}

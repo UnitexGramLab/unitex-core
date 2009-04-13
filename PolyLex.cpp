@@ -183,7 +183,7 @@ if (inf==NULL) {
 char tmp[FILENAME_MAX];
 strcpy(tmp,argv[vars->optind]);
 strcat(tmp,".tmp");
-FILE* words=u_fopen(argv[vars->optind],U_READ);
+U_FILE* words=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (words==NULL) {
    error("Cannot open word list file %s\n",argv[vars->optind]);
    free_alphabet(alph);
@@ -195,7 +195,7 @@ if (words==NULL) {
    // so that there is no "err" file
    return 0;
 }
-FILE* new_unknown_words=u_fopen(tmp,U_WRITE);
+U_FILE* new_unknown_words=u_fopen(UTF16_LE,tmp,U_WRITE);
 if (new_unknown_words==NULL) {
    error("Cannot open temporary word list file %s\n",tmp);
    free_alphabet(alph);
@@ -206,7 +206,7 @@ if (new_unknown_words==NULL) {
    return 1;
 }
 
-FILE* res=u_fopen(output,U_APPEND);
+U_FILE* res=u_fopen(UTF16_LE,output,U_APPEND);
 if (res==NULL) {
    error("Cannot open result file %s\n",output);
    free_alphabet(alph);
@@ -217,9 +217,9 @@ if (res==NULL) {
    free_string_hash(forbiddenWords);
    return 1;
 }
-FILE* debug=NULL;
+U_FILE* debug=NULL;
 if (info!=NULL) {
-   debug=u_fopen(info,U_WRITE);
+   debug=u_fopen(UTF16_LE,info,U_WRITE);
    if (debug==NULL) {
       error("Cannot open debug file %s\n",info);
    }

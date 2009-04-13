@@ -31,13 +31,13 @@ void parse_text(struct fst2txt_parameters*);
 
 
 int main_fst2txt(struct fst2txt_parameters* p) {
-	p->f_input=u_fopen(p->text_file,U_READ);
+	p->f_input=u_fopen(UTF16_LE,p->text_file,U_READ);
 	if (p->f_input==NULL) {
 		error("Cannot open file %s\n",p->text_file);
 		return 1;
 	}
 
-	p->f_output=u_fopen(p->temp_file,U_WRITE);
+	p->f_output=u_fopen(UTF16_LE,p->temp_file,U_WRITE);
 	if (p->f_output==NULL) {
 		error("Cannot open temporary file %s\n",p->temp_file);
 		u_fclose(p->f_input);

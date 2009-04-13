@@ -128,12 +128,12 @@ if (txtin==NULL) {
    fatal_error("Unable to load text automaton '%s'\n",tfst);
 }
 
-FILE* out_tfst=u_fopen(output_tfst,U_WRITE);
+U_FILE* out_tfst=u_fopen(UTF16_LE,output_tfst,U_WRITE);
 if (out_tfst==NULL) {
    fatal_error("Unable to open text automaton '%s'\n",output_tfst);
 }
 u_fprintf(out_tfst,"%010d\n",txtin->tfst->N);
-FILE* out_tind=fopen(output_tind,"wb");
+U_FILE* out_tind=u_fopen(BINARY,output_tind,U_WRITE);
 if (out_tind==NULL) {
    fatal_error("Unable to open text automaton index '%s'\n",output_tind);
 }
@@ -264,7 +264,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
 u_printf("Sentence %d/%d.\nDone: text automaton is normalized.\n",txtin->tfst->N,txtin->tfst->N);
 tfst_file_close_in(txtin);
 u_fclose(out_tfst);
-fclose(out_tind);
+u_fclose(out_tind);
 
 /* Finally, we rename files if we must modify the input text automaton */
 if (no_explicit_output) {

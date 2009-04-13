@@ -382,7 +382,7 @@ return get_value_index((unichar*)form,language->forms);
 /**
  * Loads and returns the given tagset definition file.
  */
-language_t* load_language_definition(FILE* f) {
+language_t* load_language_definition(U_FILE* f) {
 /* We load the content of the tagset file */
 tagset_t* tagset=load_tagset(f);
 if (tagset==NULL) {
@@ -448,7 +448,7 @@ return language;
  * Loads and returns the given tagset definition file.
  */
 language_t* load_language_definition(char* name) {
-FILE* f=u_fopen(name,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
 if (f==NULL) {
    fatal_error("Unable to open %s for reading.\n",name);
 }

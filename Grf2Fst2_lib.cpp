@@ -97,7 +97,7 @@ return 0;
 /**
  * Writes the given state into the given file.
  */
-void write_state(FILE* f,SingleGraphState s) {
+void write_state(U_FILE* f,SingleGraphState s) {
 if (is_final_state(s)) u_fputc('t',f);
 else u_fputc(':',f);
 Transition* ptr=s->outgoing_transitions;
@@ -112,7 +112,7 @@ u_fprintf(f," \n");
 /**
  * Writes the states and transitions of of the given graph #n into the given file.
  */
-void write_graph(FILE* f,SingleGraph graph,int n,unichar* name) {
+void write_graph(U_FILE* f,SingleGraph graph,int n,unichar* name) {
 u_fprintf(f,"%d %S\n",n,name);
 /* By convention, the empty automaton is represented by an initial state with no
  * transition */
@@ -745,7 +745,7 @@ while (input[pos]!='\0') {
  * the outgoing transitions are stored into 'transitions'.
  * It returns 0 if the box is too large; 1 otherwise.
  */
-int read_grf_line(FILE* f,unichar* box_content,struct list_int* *transitions,int n,struct compilation_info* infos) {
+int read_grf_line(U_FILE* f,unichar* box_content,struct list_int* *transitions,int n,struct compilation_info* infos) {
 *transitions=NULL;
 unichar c;
 int n_sortantes;
@@ -799,7 +799,7 @@ SingleGraph graph=new_SingleGraph();
 u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
 /* We get the absolute path of the graph */
 get_absolute_name(name,n,infos);
-FILE* f=u_fopen(name,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
 if (f==NULL) {
    error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
@@ -929,7 +929,7 @@ return 1;
  * safer to let the U_MODIFY mode do the job.
  */
 void write_number_of_graphs(char* name,int n) {
-FILE* f=u_fopen(name,U_MODIFY);
+U_FILE* f=u_fopen(UTF16_LE,name,U_MODIFY);
 /* And we print the number of graphs on 10 digits */
 u_fprintf(f,"%010d",n);
 u_fclose(f);
@@ -939,7 +939,7 @@ u_fclose(f);
 /**
  * Dumps into the given fst2 the tags contained in the given string_hash.
  */
-void write_tags(FILE* fst2,struct string_hash* tags) {
+void write_tags(U_FILE* fst2,struct string_hash* tags) {
 int n_tags=tags->size;
 for (int i=0;i<n_tags;i++) {
    if (tags->value[i][0]=='@') {

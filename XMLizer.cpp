@@ -180,27 +180,27 @@ return 0;
 
 
 void xmlize(char* fin,char* fout,int ouput_style) {
-	FILE* input = u_fopen(UTF16_LE, fin, U_READ);
+	U_FILE* input = u_fopen(UTF16_LE, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
-	FILE* output = u_fopen(UTF8, fout, U_WRITE);
+	U_FILE* output = u_fopen(UTF8, fout, U_WRITE);
 	if (output == NULL) {
 		u_fclose(input);
 		fatal_error("Cannot open output file '%s'!\n", fout);
 	} else
 
 	if(ouput_style==XML) {
-	   u_fprintf(UTF8, output, xml_open);
+	   u_fprintf(output, xml_open);
 	}
 	else {
-	   u_fprintf(UTF8, output, tei_open);
+	   u_fprintf(output, tei_open);
 	}
 
 	int sentence_count = 1;
    int sentence_count_relative = 1;
    int paragraph_count = 1;
 
-	u_fprintf(UTF8, output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
+	u_fprintf(output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
 
 	int current_state = 0;
 	unichar c;
@@ -210,17 +210,17 @@ void xmlize(char* fin,char* fout,int ouput_style) {
 		switch (current_state) {
 			case 0: {
 				if ( c == '{') current_state = 1;
-				else if(c == '&') u_fprintf(UTF8, output, "&amp;");
-				else if(c == '<') u_fprintf(UTF8, output, "&lt;");
-				else if(c == '>') u_fprintf(UTF8, output, "&gt;");
-				else u_fputc(UTF8, c, output);
+				else if(c == '&') u_fprintf(output, "&amp;");
+				else if(c == '<') u_fprintf(output, "&lt;");
+				else if(c == '>') u_fprintf(output, "&gt;");
+				else u_fputc(c, output);
 				break;
 			}
 			case 1: {
 				if (c == 'S') current_state = 2;
 				else {
-					u_fputc(UTF8, '{', output);
-					u_fputc(UTF8, c, output);
+					u_fputc('{', output);
+					u_fputc(c, output);
 					current_state = 0;
 				}
 				break;
@@ -228,9 +228,9 @@ void xmlize(char* fin,char* fout,int ouput_style) {
 			case 2: {
 				if (c == '}') current_state = 3;
 				else {
-					u_fputc(UTF8, '{', output);
-					u_fputc(UTF8, 'S', output);
-					u_fputc(UTF8, c, output);
+					u_fputc('{', output);
+					u_fputc('S', output);
+					u_fputc(c, output);
 					current_state = 0;
 				}
 				break;
@@ -238,12 +238,12 @@ void xmlize(char* fin,char* fout,int ouput_style) {
 			case 3: {
 				if (c == '{') current_state = 4;
 				else if (c == '\n' || c == ' ' || c == '\t') {
-					u_fputc(UTF8, c, output);
+					u_fputc(c, output);
 					current_state = 3;
 				}
 				else {
-					u_fprintf(UTF8, output, "</s><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
-					u_fputc(UTF8, c, output);
+					u_fprintf(output, "</s><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
+					u_fputc(c, output);
 					current_state = 0;
 				}
 				break;
@@ -252,31 +252,31 @@ void xmlize(char* fin,char* fout,int ouput_style) {
 				if (c == 'S') current_state = 7;
 				else if (c == 'P') current_state = 5;
 				else {
-					u_fputc(UTF8, '{', output);
-					u_fputc(UTF8, c, output);
+					u_fputc('{', output);
+					u_fputc(c, output);
 					current_state = 0;
 				}
 				break;
 			}
 			case 5: {
 				if (c == '}') {
-					u_fprintf(UTF8, output, "</s></p>\n");
-               paragraph_count++;
-               sentence_count_relative=1;
+					u_fprintf(output, "</s></p>\n");
+					paragraph_count++;
+					sentence_count_relative=1;
 					current_state = 6;
 				} else {
-					u_fputc(UTF8, '{', output);
-					u_fputc(UTF8, 'P', output);
-					u_fputc(UTF8, c, output);
+					u_fputc('{', output);
+					u_fputc('P', output);
+					u_fputc(c, output);
 					current_state = 0;
 				}
 				break;
 			}
 			case 6: {
-				if (c == '\n' || c == ' ' || c == '\t') u_fputc(UTF8, c, output);
+				if (c == '\n' || c == ' ' || c == '\t') u_fputc(c, output);
 				else {
-					u_fprintf(UTF8, output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
-					u_fputc(UTF8, c, output);
+					u_fprintf(output, "<p><s id=\"n%d\" xml:id=\"d1p%ds%d\">",sentence_count++,paragraph_count,sentence_count_relative++);
+					u_fputc(c, output);
 					current_state = 0;
 				}
 				break;
@@ -286,9 +286,9 @@ void xmlize(char* fin,char* fout,int ouput_style) {
 					current_state = 3;
 				}
 				else {
-					u_fputc(UTF8, '{', output);
-					u_fputc(UTF8, 'S', output);
-					u_fputc(UTF8, c, output);
+					u_fputc('{', output);
+					u_fputc('S', output);
+					u_fputc(c, output);
 					current_state = 0;
 				}
 				break;
@@ -301,14 +301,14 @@ void xmlize(char* fin,char* fout,int ouput_style) {
 	} else if (current_state == 6) {
 		//...
 	} else {
-		u_fprintf(UTF8, output, "</s></p>\n");
+		u_fprintf(output, "</s></p>\n");
 	}
 
 	if(ouput_style==XML) {
-	   u_fprintf(UTF8, output, xml_close);
+	   u_fprintf(output, xml_close);
 	}
 	else {
-	   u_fprintf(UTF8, output, tei_close);
+	   u_fprintf(output, tei_close);
 	}
 
 	u_fclose(input);

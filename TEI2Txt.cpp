@@ -73,10 +73,10 @@ return 0;
 static const char *body = "body";
 
 void tei2txt(char *fin, char *fout) {
-	FILE* input = u_fopen(UTF8, fin, U_READ);
+	U_FILE* input = u_fopen(UTF8, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
-	FILE* output = u_fopen(UTF16_LE, fout, U_WRITE);
+	U_FILE* output = u_fopen(UTF16_LE, fout, U_WRITE);
 	if (output == NULL) {
 		u_fclose(input);
 		fatal_error("Cannot open output file '%s'!\n", fout);
@@ -86,15 +86,15 @@ void tei2txt(char *fin, char *fout) {
 
 	int i, j, k;
 	unichar c;
-	if((i = u_fgetc(UTF8, input)) != EOF) {
+	if((i = u_fgetc(input)) != EOF) {
 		c = (unichar)i;
 
 		while(1) {
-			while(c != '<' && (i = u_fgetc(UTF8, input)) != EOF)
+			while(c != '<' && (i = u_fgetc(input)) != EOF)
 				c = (unichar)i;
 
 			j = 0;
-			while((i = u_fgetc(UTF8, input)) != EOF && (c = (unichar)i) != ' '
+			while((i = u_fgetc(input)) != EOF && (c = (unichar)i) != ' '
                && (c = (unichar)i) != '\t' && (c = (unichar)i) != '\n'
                && (c = (unichar)i) != '>') {
 				buffer[j++] = c;
@@ -102,7 +102,7 @@ void tei2txt(char *fin, char *fout) {
 			buffer[j] = '\0';
          if (c!='>') {
             /* We do this because we can find <body ...> */
-            while((i = u_fgetc(UTF8, input)) != EOF && (c = (unichar)i) != '>') {}
+            while((i = u_fgetc(input)) != EOF && (c = (unichar)i) != '>') {}
          }
 			//u_printf("Current tag : <%S>\n", buffer);
 
@@ -116,7 +116,7 @@ void tei2txt(char *fin, char *fout) {
    int first_sentence=1;
 	int current_state = 0;
    int inside_sentence=0;
-	while ((i = u_fgetc(UTF8, input)) != EOF) {
+	while ((i = u_fgetc(input)) != EOF) {
 		c = (unichar)i;
 		switch (current_state) {
 			case 0: {
@@ -125,13 +125,13 @@ void tei2txt(char *fin, char *fout) {
                inside_sentence=0;
             }
 				else if(c == '&') current_state = 3;
-				else if (inside_sentence) u_fputc(UTF16_LE, c, output);
+				else if (inside_sentence) u_fputc(c, output);
 				break;
 			}
 			case 1: {
 				if(c == 's' || c == 'S') current_state = 2;
 				else {
-					while((i = u_fgetc(UTF8, input)) != EOF) {
+					while((i = u_fgetc(input)) != EOF) {
 						c = (unichar)i;
 						if(c == '>') break;
 					}
@@ -145,22 +145,13 @@ void tei2txt(char *fin, char *fout) {
                inside_sentence=1;
                if (!first_sentence) {
                   /* We put a {STOP} tag in order to avoid matches that overlap 2 sentences */
-                  u_fputc(UTF16_LE, '\n', output);
-					   u_fputc(UTF16_LE, '{', output);
-					   u_fputc(UTF16_LE, 'S', output);
-					   u_fputc(UTF16_LE, 'T', output);
-					   u_fputc(UTF16_LE, 'O', output);
-					   u_fputc(UTF16_LE, 'P', output);
-					   u_fputc(UTF16_LE, '}', output);
-					   u_fputc(UTF16_LE, '{', output);
-					   u_fputc(UTF16_LE, 'S', output);
-					   u_fputc(UTF16_LE, '}', output);
+                  u_fprintf(output,"\n{STOP}{S}");
                } else {
                   first_sentence=0;
                }
 				}
 				if(c != '>') {
-					while((i = u_fgetc(UTF8, input)) != EOF) {
+					while((i = u_fgetc(input)) != EOF) {
 						c = (unichar)i;
 						if(c == '>') break;
 					}
@@ -169,7 +160,7 @@ void tei2txt(char *fin, char *fout) {
 			}
 			case 3: {
 				j = 0;
-				while(c != ';' && (i = u_fgetc(UTF8, input)) != EOF) {
+				while(c != ';' && (i = u_fgetc(input)) != EOF) {
 					//u_printf("Current S-character: %C\n", c);
 					schars[j++] = (char)c;
 					c = (unichar)i;
@@ -180,17 +171,17 @@ void tei2txt(char *fin, char *fout) {
 				k = get_HTML_character(schars, 1);
 				switch (k) {
 					case UNKNOWN_CHARACTER: {
-						u_fputc(UTF16_LE, '?', output);
+						u_fputc('?', output);
 						break;
 					}
 					case MALFORMED_HTML_CODE: {
 						error("Malformed HTML character declaration &%s;\n", schars);
-						u_fputc(UTF16_LE, '?', output);
+						u_fputc('?', output);
 						break;
 					}
 					default: {
 						c = (unichar)k;
-						u_fputc(UTF16_LE, c, output);
+						u_fputc(c, output);
 						break;
 					}
 				}

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -69,7 +69,7 @@ do {
 
 //
 // this function builds the normalization grammar adapted to the match list
-// passed in parameter 
+// passed in parameter
 //
 void build_portuguese_normalization_grammar(Alphabet* alph,struct match_list* list,unsigned char* root_bin,
                                             struct INF_codes* root_inf,unsigned char* inflected_bin,
@@ -119,10 +119,10 @@ u_printf("%d normalization rules have been produced.\n",N);
 /**
  * This function takes a string like ":F1s:F2s" and fills an array
  * like this: array[0]="F1s",    array[1]="F2s"
- * 
+ *
  * Note that the length of the array is stored in '*length'.
 
- * WARNING: this function does not consider protected chars. There could be 
+ * WARNING: this function does not consider protected chars. There could be
  *          problems if someone had the strange idea to use ':' as an inflectional
  *          code letter like ":F1s:F\:s"
  */
@@ -443,7 +443,7 @@ return -1;
 // this function saves the normalization rules into a file
 //
 void save_portuguese_normalization_grammar(int N,struct match_list* list,char* res_grf_name) {
-FILE* f=u_fopen(res_grf_name,U_WRITE);
+U_FILE* f=u_fopen(UTF16_LE,res_grf_name,U_WRITE);
 if (f==NULL) {
    error("Cannot create file %s\n",res_grf_name);
    return;

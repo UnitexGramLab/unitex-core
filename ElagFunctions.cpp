@@ -63,7 +63,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,languag
    }
    error("%d sentence(s) in %s\n", input->tfst->N,input_tfst);
 
-   FILE* output_tfst=u_fopen(output,U_WRITE);
+   U_FILE* output_tfst=u_fopen(UTF16_LE,output,U_WRITE);
    if (output_tfst==NULL) {
       fatal_error("Cannot open %s\n",output);
    }
@@ -72,7 +72,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,languag
    char tind[FILENAME_MAX];
    remove_extension(output,tind);
    strcat(tind,".tind");
-   FILE* output_tind=fopen(tind,"wb");
+   U_FILE* output_tind=u_fopen(BINARY,tind,U_WRITE);
    if (output_tind==NULL) {
       fatal_error("Cannot open %s\n",tind);
    }
@@ -156,7 +156,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,languag
    int N=input->tfst->N;
    tfst_file_close_in(input);
    u_fclose(output_tfst);
-   fclose(output_tind);
+   u_fclose(output_tind);
    time_t end_time = time(0);
    u_printf("\n*** Done. Result in '%s'\n",output);
    u_printf("\nElapsed time: %.0f s.\n", difftime(end_time,start_time));
@@ -220,7 +220,7 @@ void explode_tfst(char* input_tfst,char* output,language_t* language) {
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
    }
-   FILE* output_tfst=u_fopen(output,U_WRITE);
+   U_FILE* output_tfst=u_fopen(UTF16_LE,output,U_WRITE);
    if (output_tfst==NULL) {
       fatal_error("Cannot open %s\n",output);
    }
@@ -229,7 +229,7 @@ void explode_tfst(char* input_tfst,char* output,language_t* language) {
    char tind[FILENAME_MAX];
    remove_extension(output,tind);
    strcat(tind,".tind");
-   FILE* output_tind=fopen(tind,"wb");
+   U_FILE* output_tind=u_fopen(BINARY,tind,U_WRITE);
    if (output_tind==NULL) {
       fatal_error("Cannot open %s\n",tind);
    }
@@ -249,7 +249,7 @@ void explode_tfst(char* input_tfst,char* output,language_t* language) {
    }
    tfst_file_close_in(input);
    u_fclose(output_tfst);
-   fclose(output_tind);
+   u_fclose(output_tind);
    free_symbol(unloadable);
    free_symbol(rejected);
 }
@@ -260,14 +260,14 @@ void explode_tfst(char* input_tfst,char* output,language_t* language) {
  * Loads all the ELAG grammars contained in the given .elg file.
  */
 vector_ptr* load_elag_grammars(char* filename,language_t* language) {
-FILE* f=fopen(filename,"r");
+U_FILE* f=u_fopen(ASCII,filename,"r");
 if (f==NULL) {
    error("Cannot open file %s\n",filename);
    return NULL;
 }
 vector_ptr* grammars=new_vector_ptr(16);
 char buf[FILENAME_MAX];
-while (fgets(buf,FILENAME_MAX,f) != NULL) {
+while (fgets(buf,FILENAME_MAX,f->f) != NULL) {
    if (*buf != '<') {
       continue;
    }
@@ -275,6 +275,7 @@ while (fgets(buf,FILENAME_MAX,f) != NULL) {
    if (p==NULL) {
       error("In %s: at line '%s': delimitor '>' not found\n",filename,buf);
       free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
+      u_fclose(f);
       return NULL;
    }
    (*p)='\0';
@@ -283,11 +284,13 @@ while (fgets(buf,FILENAME_MAX,f) != NULL) {
    if (A==NULL) {
       error("Unable to load '%s' automaton\n",buf+1);
       free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
+      u_fclose(f);
       return NULL;
    }
    vector_ptr_add(grammars,A);
 }
 u_printf("%d grammar(s) loaded\n",grammars->nbelems);
+u_fclose(f);
 return grammars;
 }
 

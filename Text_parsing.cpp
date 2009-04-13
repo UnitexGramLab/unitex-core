@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -45,8 +45,8 @@ void shift_variable_bounds(Variables*,int);
  * Performs the Locate operation on the text, saving the occurrences
  * on the fly.
  */
-void launch_locate(FILE* f,FILE* out,
-                   long int text_size,FILE* info,
+void launch_locate(U_FILE* f,U_FILE* out,
+                   long int text_size,U_FILE* info,
                    struct locate_parameters* p) {
 fill_buffer(p->token_buffer,f);
 OptimizedFst2State initial_state=p->optimized_states[p->fst2->initial_states[1]];
@@ -379,7 +379,7 @@ while (meta_list!=NULL) {
       int start=-1;
       int end=-1;
       switch (meta_list->meta) {
-         
+
          case META_SHARP:
             if (token==-1 || token!=p->SPACE) {
                /* # can match only if there is no space at the current position or
@@ -388,7 +388,7 @@ while (meta_list!=NULL) {
                end=pos;
             }
             break;
-            
+
          case META_SPACE:
             if (token!=-1 && token==p->SPACE) {
                /* The space meta can match only if there is a space at the current position.
@@ -398,13 +398,13 @@ while (meta_list!=NULL) {
                end=pos+1;
             }
             break;
-            
+
          case META_EPSILON:
             /* We can always match the empty word */
             start=pos;
             end=pos;
             break;
-            
+
          case META_MOT:
             if (!morpho_filter_OK || token2==p->SENTENCE || token2==p->STOP) {
                /* <MOT> and <!MOT> must NEVER match {S} and {STOP}! */
@@ -420,7 +420,7 @@ while (meta_list!=NULL) {
                end=pos2+1;
             }
             break;
-            
+
          case META_DIC:
             if (token2==-1 || token2==p->STOP) break;
             if (!negation) {
@@ -471,15 +471,15 @@ while (meta_list!=NULL) {
                end=pos2+1;
             }
             break;
-            
-         case META_SDIC: 
+
+         case META_SDIC:
             if (morpho_filter_OK && (ctrl&DIC_TOKEN_BIT_MASK) && !(ctrl&CDIC_TOKEN_BIT_MASK)) {
                /* We match only simple words */
                start=pos2;
                end=pos2+1;
             }
             break;
-            
+
          case META_CDIC:
             if (token2==-1 || token2==p->STOP) break;
             end_of_compound=find_compound_word(pos2,COMPOUND_WORD_PATTERN,p->DLC_tree,p);
@@ -554,8 +554,8 @@ while (meta_list!=NULL) {
                end=pos2+1;
             }
             break;
- 
-         case META_PRE: 
+
+         case META_PRE:
             if (!morpho_filter_OK) break;
             if (!negation) {
                if (ctrl&PRE_TOKEN_BIT_MASK) {
@@ -571,11 +571,11 @@ while (meta_list!=NULL) {
             }
             break;
 
-      case META_NB: 
+      case META_NB:
          if (token2==-1) break;
          { /* This block avoids visibility problem about 'z' */
             int z=pos2;
-            while (z+p->current_origin<p->token_buffer->size 
+            while (z+p->current_origin<p->token_buffer->size
                    && is_a_digit_token(p->tokens->value[p->buffer[z+p->current_origin]])) {
                z++;
             }
@@ -596,7 +596,7 @@ while (meta_list!=NULL) {
          end=pos2+1;
          break;
 
-      case META_BEGIN_MORPHO: 
+      case META_BEGIN_MORPHO:
          if (token2==-1 || token2==p->STOP || !morpho_filter_OK) {
             /* The {STOP} tag must NEVER be matched by any pattern */
             break;
@@ -607,13 +607,13 @@ while (meta_list!=NULL) {
          enter_morphological_mode(graph_depth,t->state_number,pos2,depth+1,matches,n_matches,ctx,p);
          p->stack->stack_pointer=stack_top;
          break;
-         
-      case META_END_MORPHO: 
+
+      case META_END_MORPHO:
          /* Should not happen */
          fatal_error("Unexpected morphological mode end tag $>\n");
          break;
 
-      case META_LEFT_CONTEXT: 
+      case META_LEFT_CONTEXT:
          int current_shift=p->left_ctx_shift;
          if (p->space_policy==START_WITH_SPACE) {
             p->left_ctx_shift=pos;
@@ -818,13 +818,13 @@ while (pattern_list!=NULL) {
  * SIMPLE WORD PATTERNS:
  * here, we deal with patterns that can match both simple and
  * compound words, like "<N>".
- */ 
+ */
 pattern_list=current_state->patterns;
 while (pattern_list!=NULL) {
    t=pattern_list->transition;
    while (t!=NULL) {
       #ifdef TRE_WCHAR
-      filter_number=p->tags[t->tag_number]->filter_number;  
+      filter_number=p->tags[t->tag_number]->filter_number;
       #endif
       output=p->tags[t->tag_number]->output;
       /* We try to match a compound word */
@@ -856,7 +856,7 @@ while (pattern_list!=NULL) {
             locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
             p->stack->stack_pointer=stack_top;
          }
-         /* This useless instruction is just here to enable the declaration of the next6 label */ 
+         /* This useless instruction is just here to enable the declaration of the next6 label */
          next6: OK++;
       }
       /* And now, we look for simple words */
@@ -916,7 +916,7 @@ if (current_state->number_of_tokens!=0) {
       while (t!=NULL) {
          #ifdef TRE_WCHAR
          filter_number=p->tags[t->tag_number]->filter_number;
-         if (filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number)) 
+         if (filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number))
          #endif
          {
             output=p->tags[t->tag_number]->output;
@@ -1003,7 +1003,7 @@ return position_max;
 /**
  * Looks for a compound word from the position 'pos' in the text, that matches the
  * given pattern_number. Returns the position of the last token of the compound word
- * or -1 if no compound word is found. In case of a compound word that is a prefix 
+ * or -1 if no compound word is found. In case of a compound word that is a prefix
  * of another, the function considers the longest one.
  */
 int find_compound_word(int pos,int pattern_number,struct DLC_tree_info* DLC_tree,struct locate_parameters* p) {
@@ -1034,7 +1034,7 @@ return position_max;
 /**
  * Looks for a compound word from the position 'pos' in the text, that matches the
  * given pattern_number. Returns the position of the last token of the compound word
- * or -1 if no compound word is found. In case of a compound word that is a prefix 
+ * or -1 if no compound word is found. In case of a compound word that is a prefix
  * of another, the function considers the longest one.
  */
 int find_compound_word_old(int pos,int pattern_number,struct DLC_tree_info* DLC_tree,struct locate_parameters* p) {

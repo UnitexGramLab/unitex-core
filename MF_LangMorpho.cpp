@@ -1,7 +1,7 @@
 /*
-  * Unitex 
+  * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -37,7 +37,7 @@ l_cats_T L_CATS;
 l_classes_T L_CLASSES;
 
 //Morphology file
-FILE* lf;
+U_FILE* lf;
 //Current line of the morphology file
 unichar line[MAX_LANG_MORPHO_LINE];
 //Curent line number of the morphology file
@@ -91,11 +91,11 @@ int read_language_morpho(char *file) {
   u_strcpy(EMPTY_VAL,"<E>");
 
   //Open the Morphology file
-  if ( !(lf = u_fopen(file, "r")))  {
+  if ( !(lf = u_fopen(UTF16_LE,file,U_READ)))  {
     error("Unable to open language morphology file %s\n",file);
     return 1;
   }
-  
+
   //Omit the first line (language name)
   if (! feof(lf)) {
     u_fgets(line,MAX_LANG_MORPHO_LINE-1,lf);
@@ -118,22 +118,22 @@ int read_language_morpho(char *file) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Read the category block of the language morphology file.                                     
+// Read the category block of the language morphology file.
 // It should begin with <CATEGORIES>
-// Before the beginning and after the end of the function "line" (global) contains 
+// Before the beginning and after the end of the function "line" (global) contains
 // the current line of the morpho file.
 int read_cats() {
 
   int cat_no; //category's number
   int l;   //lenght of the scanned line
-  
+
   //Current line should contain <CATEGORIES>
-  
+
   if (feof(lf) || strcmp(word_ch,"<CATEGORIES>")) {
     error("Language morphology file format incorrect in line %d!\n",line_no);
     return 1;
   }
-  
+
   //Scan categories
   l = u_fgets(line,MAX_LANG_MORPHO_LINE-1,lf);
   u_to_char(line_ch,line);
@@ -154,11 +154,11 @@ int read_cats() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Read a category line (having number cat_no) of the language morphology file.                                     
-// Before the beginning of the function "line" (global) contains 
+// Read a category line (having number cat_no) of the language morphology file.
+// Before the beginning of the function "line" (global) contains
 // the current line of the morpho file.
 int read_cat_line(int cat_no) {
-  
+
   int v_cnt;  //counter of values for the present category
   unichar* cat_name;   //category's name
   unichar* cat_val;    //category's value
@@ -167,9 +167,9 @@ int read_cat_line(int cat_no) {
   unichar* line_pos; //current position in the input line
   int l;  //length of a scanned sequence
   int done;
-  
+
   line_pos = line;
-  
+
   //Read category name
   line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
   l = u_scan_until_char(tmp,line_pos,MAX_MORPHO_NAME-1,": \t",1);
@@ -181,8 +181,8 @@ int read_cat_line(int cat_no) {
   }
   cat_name=u_strdup(tmp);
   L_CATS.cats[cat_no].name = cat_name;
-  line_pos++;   //Omit the ':' 
-  
+  line_pos++;   //Omit the ':'
+
   //Read category values
   v_cnt = 0;
   done = 0;
@@ -196,7 +196,7 @@ int read_cat_line(int cat_no) {
     v_cnt++;
     if (*line_pos == (char) '\n')
       done = 1;
-    else      
+    else
       line_pos++;  //Omit the ',' or the newline
   } while (!done);
   L_CATS.cats[cat_no].no_values = v_cnt;
@@ -204,15 +204,15 @@ int read_cat_line(int cat_no) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Read that class block of the language morphology file.                                     
+// Read that class block of the language morphology file.
 // It should begin with <CLASSES>.
-// Before the beginning and after the end of the function "line" (global) contains 
+// Before the beginning and after the end of the function "line" (global) contains
 // the current line of the morpho file.
 int read_classes() {
-  
+
   int class_no; //class number
   int l;   //lenght of the scanned line
-  
+
   //Current line should contain <CLASSES>
   if (feof(lf) || strcmp(word_ch,"<CLASSES>")) {
     error("Language morphology file format incorrect: <CLASSES> missing in line %d!\n", line_no);
@@ -240,8 +240,8 @@ int read_classes() {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Read a class line (having number class_no) of the language morphology file.                                     
-// Before the beginning and after the end of the function "line" (global) contains 
+// Read a class line (having number class_no) of the language morphology file.
+// Before the beginning and after the end of the function "line" (global) contains
 // the current line of the morpho file.
 int read_class_line(int class_no) {
 
@@ -267,7 +267,7 @@ int read_class_line(int class_no) {
 
   //Read class' categories
   c_cnt = 0;
-  line_pos++;   //Omit the ':' 
+  line_pos++;   //Omit the ':'
   line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
   if (*line_pos != (char) '\n') {
     done = 0;
@@ -290,7 +290,7 @@ int read_class_line(int class_no) {
       }
       else
 	L_CLASSES.classes[class_no].cats[c_cnt].cat = &(L_CATS.cats[c-1]);
-      
+
       //Read the fixedness
       line_pos = line_pos + u_scan_while_char(tmp_void, line_pos, MAX_MORPHO_NAME-1," \t");  //Omit void characters
       line_pos ++; //Omit the ','
@@ -360,7 +360,7 @@ for (cl=0; cl<L_CLASSES.no_classes; cl++) {
       u_printf(">)");
       if (c != L_CLASSES.classes[cl].no_cats-1) {
          u_printf(",");
-      }	
+      }
    }
    u_printf("\n");
 }
@@ -380,7 +380,7 @@ int free_language_morpho() {
     for (v=0; v<L_CATS.cats[c].no_values; v++)
       free(L_CATS.cats[c].values[v]);
   }
-	
+
   //Liberate L_CLASSES
   for (c=0; c<L_CLASSES.no_classes; c++)
     free(L_CLASSES.classes[c].name);
@@ -440,7 +440,7 @@ int get_empty_val(l_category_T* cat) {
     if (! u_strcmp(cat->values[v],EMPTY_VAL))
       return v;
   return 0;
-}  
+}
 
 /**************************************************************************************/
 /* If val is a valid value, returns the pointer to its (first) category.             */

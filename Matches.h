@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -30,7 +30,7 @@
 /**
  * This structure represents a match list. [start;end] is the interval
  * that corresponds to the matched sequence. 'start' and 'end' are absolute
- * positions in tokens. 'output' is the output associated to the match, if any; 
+ * positions in tokens. 'output' is the output associated to the match, if any;
  * NULL otherwise.
  */
 struct match_list {
@@ -46,7 +46,7 @@ void free_match_list_element(struct match_list*);
 void add_match(int,unichar*,struct locate_parameters*);
 struct match_list* eliminate_longer_matches(struct match_list*,int,int,unichar*,int*,struct locate_parameters*);
 struct match_list* save_matches(struct match_list*,int,
-                                               FILE*,struct locate_parameters*);
-struct match_list* load_match_list(FILE*,OutputPolicy*);
+                                               U_FILE*,struct locate_parameters*);
+struct match_list* load_match_list(U_FILE*,OutputPolicy*);
 
 #endif

@@ -51,7 +51,7 @@ u_printf("Usage: Table2Grf [OPTIONS] <table>\n"
 }
 
 
-void table2grf(FILE*,FILE*,FILE*,char*,char*);
+void table2grf(U_FILE*,U_FILE*,U_FILE*,char*,char*);
 
 
 int main_Table2Grf(int argc,char* argv[]) {
@@ -110,17 +110,17 @@ if (output[0]=='\0') {
    fatal_error("You must specify the output graph name\n");
 }
 
-FILE* table=u_fopen(argv[vars->optind],U_READ);
+U_FILE* table=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (table==NULL) {
    fatal_error("Cannot open table %s\n",argv[vars->optind]);
 }
-FILE* reference_graph=u_fopen(reference_graph_name,U_READ);
+U_FILE* reference_graph=u_fopen(UTF16_LE,reference_graph_name,U_READ);
 if (reference_graph==NULL) {
    error("Cannot open reference graph %s\n",reference_graph_name);
    u_fclose(table);
    return 1;
 }
-FILE* result_graph=u_fopen(output,U_WRITE);
+U_FILE* result_graph=u_fopen(UTF16_LE,output,U_WRITE);
 if (result_graph==NULL) {
    error("Cannot create result graph %s\n",output);
    u_fclose(table);
@@ -164,7 +164,7 @@ struct graphe_patron {
 
 
 
-void write_result_graph_header(FILE *f) {
+void write_result_graph_header(U_FILE *f) {
 u_fprintf(f,"#Unigraph\n"
                "SIZE 950 1328\n"
                "FONT Times New Roman:  12\n"
@@ -207,7 +207,7 @@ return e;
 
 
 
-void lire_ligne(FILE *f,struct etat *e) {
+void lire_ligne(U_FILE *f,struct etat *e) {
 int i;
 int c;
 while (u_fgetc(f)!='"') {}
@@ -236,7 +236,7 @@ u_fgetc(f);
 
 
 
-void charger_graphe_patron(FILE *f,struct graphe_patron *g) {
+void charger_graphe_patron(U_FILE *f,struct graphe_patron *g) {
 int i;
 int c;
 g->en_tete[0]=(unichar)u_fgetc(f);
@@ -259,7 +259,7 @@ for (i=0;i<g->n_etats;i++) {
 
 
 
-void read_table_first_line(FILE *f,int *n) {
+void read_table_first_line(U_FILE *f,int *n) {
 int c;
 (*n)=0;
 while ((c=u_fgetc(f))!='\n') {
@@ -270,7 +270,7 @@ while ((c=u_fgetc(f))!='\n') {
 
 
 
-int read_field(FILE *f,unichar** ligne,int colonne,int delimiteur) {
+int read_field(U_FILE *f,unichar** ligne,int colonne,int delimiteur) {
 int i;
 int c;
 unichar tmp[1000];
@@ -287,7 +287,7 @@ return 1;
 
 
 
-int read_table_line(FILE *f,unichar** ligne,int n_champs) {
+int read_table_line(U_FILE *f,unichar** ligne,int n_champs) {
 int i;
 for (i=0;i<n_champs;i++) {
    if (!read_field(f,ligne,i,(i!=(n_champs-1))?'\t':'\n')) {
@@ -572,12 +572,12 @@ return 1;
 
 
 bool create_graph(int ligne_courante,unichar** ligne,int n_champs,struct graphe_patron* g,
-                  char* nom_resultat,char* chemin,FILE *f_coord,int graphs_printed) {
+                  char* nom_resultat,char* chemin,U_FILE *f_coord,int graphs_printed) {
 
 struct graphe_patron r;
 struct graphe_patron* res;
 int i,j;
-FILE *f;
+U_FILE* f;
 res=&r;
 //determine_subgraph_name(nom_resultat,nom_res,ligne_courante);
 
@@ -634,7 +634,7 @@ remove_extension(tmp3,tmp4);
 u_fprintf(f_coord,"%s",tmp4);
 }
 
-f=u_fopen(current_graph_char,U_WRITE);
+f=u_fopen(UTF16_LE,current_graph_char,U_WRITE);
 if (f==NULL) {
   error("Cannot create subgraph %s\n",current_graph_char);
   return false;
@@ -653,13 +653,13 @@ for (i=0;i<res->n_etats;i++) {
   u_fprintf(f," \n");
   free(res->tab[i]);
 }
-fclose(f);
+u_fclose(f);
 return true;
 }
 
 
 
-void table2grf(FILE* table,FILE* reference_graph,FILE* result_graph,char* subgraph,char* chemin) {
+void table2grf(U_FILE* table,U_FILE* reference_graph,U_FILE* result_graph,char* subgraph,char* chemin) {
 int ligne_courante;
 struct graphe_patron structure;
 unichar* ligne[MAX_LINES_IN_TABLE];

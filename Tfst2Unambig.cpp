@@ -101,7 +101,7 @@ if (res!=LINEAR_AUTOMATON) {
    close_text_automaton(tfst);
    return 1;
 }
-FILE* f=u_fopen(output,U_WRITE);
+U_FILE* f=u_fopen(UTF16_LE,output,U_WRITE);
 if (f==NULL) {
    error("Cannot create %s\n",output);
    close_text_automaton(tfst);

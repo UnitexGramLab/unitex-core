@@ -225,7 +225,7 @@ language_t * new_language_t(unichar*);
 void free_language_t(language_t*);
 
 
-language_t* load_language_definition(FILE*);
+language_t* load_language_definition(U_FILE*);
 language_t* load_language_definition(char*);
 
 static inline POS_t * language_get_POS(language_t * lang, const unichar * posname) {

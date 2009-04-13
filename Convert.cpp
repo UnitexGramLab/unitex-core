@@ -184,8 +184,8 @@ if (dest_encoding==NULL) {
  */
 char input_name[FILENAME_MAX];
 char output_name[FILENAME_MAX];
-FILE* input=NULL;
-FILE* output=NULL;
+U_FILE* input=NULL;
+U_FILE* output=NULL;
 int error_code;
 for (int i=vars->optind;i<argc;i++) {
 	/*
@@ -213,18 +213,18 @@ for (int i=vars->optind;i<argc;i++) {
 	 * header in the case of unicode files. This is delegated to the
 	 * conversion function.
 	 */
-	input=fopen(input_name,"rb");
+	input=u_fopen(BINARY,input_name,U_READ);
 	int problem=0;
 	if (input==NULL) {
 		error("Cannot open %s\n",argv[i]);
 		problem=1;
 	}
 	else {
-		output=fopen(output_name,"wb");
+		output=u_fopen(BINARY,output_name,U_WRITE);
 		if (output==NULL) {
 			error("Cannot write to file %s\n",output_name);
 			problem=1;
-			fclose(input);
+			u_fclose(input);
 		}
 	}
 	/*
@@ -236,8 +236,8 @@ for (int i=vars->optind;i<argc;i++) {
 							decode_control_characters,
 							encode_all_characters,
 							encode_control_characters);
-		fclose(input);
-		fclose(output);
+		u_fclose(input);
+		u_fclose(output);
 		switch(error_code) {
 			case CONVERSION_OK: u_printf("%s converted\n",argv[i]);
 								if (output_mode==REPLACE_FILE) {

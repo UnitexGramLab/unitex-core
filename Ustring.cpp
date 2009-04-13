@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -115,7 +115,7 @@ ustr->size=size;
 
 
 /**
- * Concatenates the given unicode string to the given Ustring. 
+ * Concatenates the given unicode string to the given Ustring.
  * 'length' is the number of chars of 'str' to be copied.
  */
 void u_strcat(Ustring* ustr,const unichar* str,int length) {
@@ -141,7 +141,7 @@ ustr->len=newlen;
 
 
 /**
- * Concatenates the given unicode character to the given Ustring. 
+ * Concatenates the given unicode character to the given Ustring.
  */
 void u_strcat(Ustring* ustr,unichar c) {
 int newlen=ustr->len+1;
@@ -160,7 +160,7 @@ ustr->len++;
 
 
 /**
- * Concatenates the given string to the given Ustring. 
+ * Concatenates the given string to the given Ustring.
  * 'length' is the number of chars of 'str' to be copied.
  */
 void u_strcat(Ustring* ustr,const char* str,int length) {
@@ -190,26 +190,15 @@ ustr->len=newlen;
  * The line content is copied into the given Ustring, whose previous
  * content is lost. The length the line read is returned.
  */
-int readline(Ustring* ustr,Encoding encoding,FILE* f) {
+int readline(Ustring* ustr,U_FILE* f) {
 unichar buf[MAXBUF];
 int len=0;
 empty(ustr);
 do {
-   len=u_fgets(encoding,buf,MAXBUF,f);
+   len=u_fgets(buf,MAXBUF,f);
    u_strcat(ustr,buf,len);
 } while ((len==MAXBUF-1) && buf[len-1]!='\n'); /* If we are not at the end of the line... */
 return ustr->len;
-}
-
-
-/**
- * This function performs a safe read line from the given file.
- * The line content is copied into the given Ustring, whose previous
- * content is lost. The length the line read is returned. This function
- * assumes that the file is UTF16-LE encoded.
- */
-int readline(Ustring* ustr,FILE* f) {
-return readline(ustr,UTF16_LE,f);
 }
 
 

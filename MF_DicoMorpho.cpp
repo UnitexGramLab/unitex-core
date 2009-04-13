@@ -84,12 +84,12 @@ unichar* d_get_str_class(l_class_T* cl);
 /* Returns 0 on success, 1 otherwise.                                                 */
 int d_init_morpho_equiv(char* equiv_file) {
 
-  FILE* ef; //equivalence file
+  U_FILE* ef; //equivalence file
   int line_no;  //number of the current line
   unichar line[MAX_EQUIV_LINE];  //current line of the Equivalence file
 
   //Opening the equivalence file
-  if ( !(ef = u_fopen(equiv_file, "r")))  {
+  if ( !(ef = u_fopen(UTF16_LE,equiv_file,U_READ)))  {
     error("Unable to open equivalence file %s\n",equiv_file);
     return 1;
   }

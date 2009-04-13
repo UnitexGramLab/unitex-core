@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -29,7 +29,7 @@
  * the 'bin_size' value according to the number of bytes taken by this node
  * and its transitions. Then, the function is called recursively on all the
  * nodes that are children of 'node'.
- * If the node has already been numbered (we are in an automaton, 
+ * If the node has already been numbered (we are in an automaton,
  * not a tree), the function does nothing.
  */
 void number_node(struct dictionary_node* node,int *bin_size) {
@@ -54,9 +54,9 @@ node->n_trans=0;
 struct dictionary_node_transition* tmp;
 tmp=node->trans;
 while (tmp!=NULL) {
-	/* For each transition, we count 2 bytes for the letter and 3 bytes for the 
+	/* For each transition, we count 2 bytes for the letter and 3 bytes for the
 	 * destination offset */
-  	(*bin_size)=(*bin_size)+5; 
+  	(*bin_size)=(*bin_size)+5;
   	tmp=tmp->next;
   	/* We update the number of transitions */
 	(node->n_trans)++;
@@ -71,13 +71,13 @@ while (tmp!=NULL) {
 
 
 /**
- * This function dumps the information relative to 'node' and its transitions 
+ * This function dumps the information relative to 'node' and its transitions
  * in the 'bin' array. Then, the function is called recursively on the children
  * nodes of 'node'. The function assumes that all nodes have previously been
  * numbered with the function 'number_node'.
- * 
+ *
  * If the node has already been dumped, the function does nothing.
- * 
+ *
  * The parameters 'n_states' and 'n_transitions' are used to count the states
  * and transitions of the dictionary automaton.
  */
@@ -144,16 +144,16 @@ while (tmp!=NULL) {
 
 /**
  * This function saves the dictionary automaton whose initial state is 'root'
- * in a .bin file named 'output'. 
+ * in a .bin file named 'output'.
  * The parameters 'n_states' and 'n_transitions' are used to count the states
  * and transitions of the dictionary automaton. 'bin_size' represents the size
  * of the resulting .bin file.
  */
 void create_and_save_bin(struct dictionary_node* root,char* output,int *n_states,
 						int *n_transitions,int *bin_size) {
-FILE *f;
+U_FILE* f;
 /* The output file must be opened as a binary one */
-f=fopen(output,"wb");
+f=u_fopen(BINARY,output,U_WRITE);
 if (f==NULL) {
   fatal_error("Cannot write automaton file %s\n",output);
 }
@@ -186,6 +186,6 @@ fill_bin_array(root,n_states,n_transitions,bin);
 if (fwrite(bin,1,(*bin_size),f)!=(unsigned)(*bin_size)) {
   fatal_error("Error while writing file %s\n",output);
 }
-fclose(f);
+u_fclose(f);
 free(bin);
 }

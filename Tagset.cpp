@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -286,7 +286,7 @@ return tok;
 
 
 /**
- * This function takes a token sequence that is supposed to belong to 
+ * This function takes a token sequence that is supposed to belong to
  * the "cat:" part of a POS definition. If returns -1 in case the token sequence
  * is invalid; 0 otherwise.
  */
@@ -334,7 +334,7 @@ return 0;
 
 
 /**
- * This function takes a token sequence that is supposed to belong to 
+ * This function takes a token sequence that is supposed to belong to
  * the "flex:" part of a POS definition. If returns -1 in case the token sequence
  * is invalid; 0 otherwise.
  */
@@ -377,7 +377,7 @@ return 0;
 
 
 /**
- * This function takes a token sequence that is supposed to belong to 
+ * This function takes a token sequence that is supposed to belong to
  * the "complete:" part of a POS definition. If returns -1 in case the
  * token sequence is invalid; 0 otherwise.
  */
@@ -411,7 +411,7 @@ return 0;
  * This function reads a POS section from the given tagset file and returns the
  * corresponding structure.
  */
-pos_section_t* parse_pos_section(FILE* f) {
+pos_section_t* parse_pos_section(U_FILE* f) {
 unichar buf[MAXBUF];
 unichar line[MAXBUF];
 /* We look for a non empty line containing "POS xxx" */
@@ -445,32 +445,32 @@ while (partid!=-1 && u_fgets(line,MAXBUF,f)>0) {
       case TOK_IGNORE:
          pos_section->ignore=true;
          break;
-      
+
       case TOK_DISCR:
          partid=PART_DISCR;
          free_token_t(toks);
          break;
-         
+
       case TOK_FLEX:
          partid=PART_FLEX;
          free_token_t(toks);
          break;
-         
+
       case TOK_CAT:
          partid=PART_CAT;
          free_token_t(toks);
          break;
-         
+
       case TOK_COMPLET:
          partid=PART_COMP;
          free_token_t(toks);
          break;
-         
+
       case TOK_END:
          partid=-1;
          free_token_t(toks);
          break;
-         
+
       /* We add a tokenized line to the current POS section part */
       case TOK_STR:
       case TOK_ANGLE:
@@ -480,33 +480,33 @@ while (partid!=-1 && u_fgets(line,MAXBUF,f)>0) {
                if (pos_section->parts[PART_DISCR]!=NULL) {
                   fatal_error("Only one discriminant category can be specified.\n");
                }
-            
+
             case PART_CAT:
                if (check_cat_line(toks)==-1) {
                   fatal_error("Bad cat line format: '%S'\n", line);
                }
                break;
-               
+
             case PART_FLEX:
                if (check_flex_line(toks)==-1) {
                   fatal_error("Bad flex line format: '%S'\n", line);
                }
                break;
-            
+
             case PART_COMP:
                if (check_complete_line(toks)==-1) {
                   fatal_error("Bad complete line format: '%S'\n", line);
                }
                break;
-               
+
             case PART_NUM:
                fatal_error("No section specified. (line '%S')\n", line);
-            
+
             default:	fatal_error("While parsing POS section: what am i doing here?\n");
          }
          pos_section->parts[partid]=tokens_list_append(pos_section->parts[partid],toks);
          break;
-      
+
       default: fatal_error("Error while parsing POS section with line '%S'\n", line);
    }
 }
@@ -518,7 +518,7 @@ return pos_section;
  * This function loads the given tagset file and returns the corresponding tagset_t
  * structure.
  */
-tagset_t* load_tagset(FILE* f) {
+tagset_t* load_tagset(U_FILE* f) {
 unichar buf[MAXBUF];
 token_t* toks=NULL;
 /* First, we read the language name */

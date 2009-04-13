@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -26,9 +26,9 @@
 /**
  * This library provides functions for manipulating files and file
  * names. File names should be stored in arrays like:
- * 
+ *
  *    char filename[FILENAME_MAX];
- * 
+ *
  * FILENAME_MAX is a system-dependent constant that defines the maximum
  * size of a file name. It is defined in <stdio.h>.
  */
@@ -43,6 +43,7 @@
 
 #include <sys/types.h>
 #include <stdio.h>
+#include "Unicode.h"
 
 void add_suffix_to_file_name(char*,char*,const char*);
 void add_prefix_to_file_name(char*,char*,const char*);
@@ -60,6 +61,6 @@ void copy_file(char*,char*);
 int fexists(char*);
 time_t get_file_date(char* name);
 long get_file_size(char*);
-long get_file_size(FILE*);
+long get_file_size(U_FILE*);
 
 #endif

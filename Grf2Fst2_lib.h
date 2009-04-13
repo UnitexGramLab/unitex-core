@@ -44,7 +44,7 @@ struct compilation_info {
    int nombre_etiquettes_comp;
    TokenizationPolicy tokenization_policy;
    Alphabet* alphabet;
-   FILE* fst2;
+   U_FILE* fst2;
    char no_empty_graph_warning;
 
    /**
@@ -75,10 +75,9 @@ struct compilation_info* new_compilation_info();
 void free_compilation_info(struct compilation_info*);
 
 int compile_grf(char*,struct compilation_info*);
-void write_tags(FILE*,struct string_hash*);
+void write_tags(U_FILE*,struct string_hash*);
 void write_number_of_graphs(char*,int);
-void write_graph(FILE*,SingleGraph,int,unichar*);
-
+void write_graph(U_FILE*,SingleGraph,int,unichar*);
 
 
 #endif

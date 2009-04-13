@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -37,13 +37,13 @@ if (buffer==NULL) {
 }
 buffer->type=type;
 switch (type) {
-   case INTEGER_BUFFER: 
+   case INTEGER_BUFFER:
       buffer->int_buffer=(int*)malloc(sizeof(int)*capacity);
       if (buffer->int_buffer==NULL) {
          fatal_alloc_error("new_buffer");
       }
       break;
-   case UNICHAR_BUFFER: 
+   case UNICHAR_BUFFER:
       /* In case of a unichar buffer, we add 1 to the size in order to store a \0,
        * even if the buffer is full. This precaution is useful in order to
        * do string parsing in a unichar buffer, avoiding the risk of an out of
@@ -81,7 +81,7 @@ free(buffer);
  * moved at the beginning of the buffer, and then, data read from the input
  * file will be appended. If no data can be read, the flag 'buffer->end_of_file'
  * is set to 1.
- * 
+ *
  * buffer before:
  * 0                                                  pos          buffer->MAXIMUM_BUFFER_SIZE
  * ------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ free(buffer);
  * |                                                   |                        |
  * ------------------------------------------------------------------------------
  *
- * 
+ *
  * buffer after:
  * 0         buffer->MAXIMUM_BUFFER_SIZE-pos                       buffer->MAXIMUM_BUFFER_SIZE
  * ------------------------------------------------------------------------------
@@ -98,13 +98,13 @@ free(buffer);
  * | XXXXXXXXXXXXXXXXXXXXXX |            new data read from input file          |
  * |                        |                                                   |
  * ------------------------------------------------------------------------------
- * 
- * 
- * The function returns 1, except in one case: when the function has to fill a 
- * character buffer, if skips '\0' chars that should not appear in a text file. In that 
- * case, the function ignore those characters and returns 0.  
+ *
+ *
+ * The function returns 1, except in one case: when the function has to fill a
+ * character buffer, if skips '\0' chars that should not appear in a text file. In that
+ * case, the function ignore those characters and returns 0.
  */
-int fill_buffer(struct buffer* buffer,int pos,FILE* f) {
+int fill_buffer(struct buffer* buffer,int pos,U_FILE* f) {
 int new_position;
 int n_element_read;
 int OK=1;
@@ -126,7 +126,7 @@ switch (buffer->type) {
         array[i-pos]=array[i];
       }
       new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
-      /* Here, we must not use a 'fread', since it would not unify \r\n 
+      /* Here, we must not use a 'fread', since it would not unify \r\n
        * into the single \n that is used in Unitex programs */
       int tmp;
       n_element_read=u_fread(&(array[new_position]),pos,f,&tmp);
@@ -148,7 +148,7 @@ return OK;
  * This function fills the given buffer from the given file.
  * See above for details about the returned value.
  */
-int fill_buffer(struct buffer* buffer,FILE* f) {
+int fill_buffer(struct buffer* buffer,U_FILE* f) {
 return fill_buffer(buffer,buffer->MAXIMUM_BUFFER_SIZE,f);
 }
 

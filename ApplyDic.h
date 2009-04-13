@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -34,11 +34,11 @@
 /**
  * This structure is used to represent a list of offsets in the current
  * .bin dictionary. For each offset, 'content' contains the sequence that
- * leads to the node with this offset. For instance, if we are in the .bin 
+ * leads to the node with this offset. For instance, if we are in the .bin
  * dictionary at the position 5487 corresponding to "black-eyed", we will have:
- * 
+ *
  * offset=5487   content="black-eyed"
- * 
+ *
  * This is used to cache information when looking for compound words.
  * 'next' is the next element in the list.
  */
@@ -74,7 +74,7 @@ struct word_struct {
 
 /**
  * This structure is used to store information about the structure
- * of words. element[i] is a tree that provides information about words 
+ * of words. element[i] is a tree that provides information about words
  * whose first token has the number i. N is the size of the array.
  */
 struct word_struct_array {
@@ -89,13 +89,13 @@ struct word_struct_array {
  */
 struct dico_application_info {
    /* Info about the text files */
-   FILE* text_cod;
+   U_FILE* text_cod;
    struct text_tokens* tokens;
-   FILE* dlf;
-   FILE* dlc;
-   FILE* err;
+   U_FILE* dlf;
+   U_FILE* dlc;
+   U_FILE* err;
    char tags_ind[FILENAME_MAX];
-      /* The buffer to use to read the text.cod file */
+   /* The buffer to use to read the text.cod file */
    struct buffer* buffer;
    /* The alphabet to use */
    Alphabet* alphabet;
@@ -123,7 +123,7 @@ struct dico_application_info {
    int SIMPLE_WORDS;
    int COMPOUND_WORDS;
    int UNKNOWN_WORDS;
-   
+
    /* The following field define a pointer array used to store tag sequences in order
     * to sort them before saving them into the "tags.ind" file */
    struct match_list** tag_sequences;
@@ -134,7 +134,7 @@ struct dico_application_info {
 #define BUFFER_SIZE 200000
 
 
-struct dico_application_info* init_dico_application(struct text_tokens*,FILE*,FILE*,FILE*,char*,FILE*,Alphabet*);
+struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,char*,U_FILE*,Alphabet*);
 void dico_application(char*,struct dico_application_info*,int);
 void free_dico_application(struct dico_application_info*);
 void count_token_occurrences(struct dico_application_info*);

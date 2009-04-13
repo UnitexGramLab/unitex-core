@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -47,30 +47,30 @@ rename(f,out2);
 /**
  * Printing the header of the HTML file.
  */
-void print_diff_HTML_header(FILE* f,const char* font,int size) {
-u_fprintf(UTF8,f,"<html>\n");
-u_fprintf(UTF8,f,"<head>\n");
-u_fprintf(UTF8,f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
-u_fprintf(UTF8,f,"   <style type=\"text/css\">\n");
-u_fprintf(UTF8,f,"   a.blue {color:blue; text-decoration:underline;}\n");
-u_fprintf(UTF8,f,"   a.red {color:red; text-decoration:underline;}\n");
-u_fprintf(UTF8,f,"   a.green {color:green; text-decoration:underline;}\n");
-u_fprintf(UTF8,f,"   </style>\n");
-u_fprintf(UTF8,f,"</head>\n");
-u_fprintf(UTF8,f,"<body>\n");
-u_fprintf(UTF8,f,"<h4>\n");
-u_fprintf(UTF8,f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
-u_fprintf(UTF8,f,"<font color=\"red\">Red:</font> similar but different sequences<br>\n");
-u_fprintf(UTF8,f,"<font color=\"green\">Green:</font> sequences that occur in only one of the two concordances<br>\n");
-u_fprintf(UTF8,f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-size: %d\">\n",font,size);
+void print_diff_HTML_header(U_FILE* f,const char* font,int size) {
+u_fprintf(f,"<html>\n");
+u_fprintf(f,"<head>\n");
+u_fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
+u_fprintf(f,"   <style type=\"text/css\">\n");
+u_fprintf(f,"   a.blue {color:blue; text-decoration:underline;}\n");
+u_fprintf(f,"   a.red {color:red; text-decoration:underline;}\n");
+u_fprintf(f,"   a.green {color:green; text-decoration:underline;}\n");
+u_fprintf(f,"   </style>\n");
+u_fprintf(f,"</head>\n");
+u_fprintf(f,"<body>\n");
+u_fprintf(f,"<h4>\n");
+u_fprintf(f,"<font color=\"blue\">Blue:</font> identical sequences<br>\n");
+u_fprintf(f,"<font color=\"red\">Red:</font> similar but different sequences<br>\n");
+u_fprintf(f,"<font color=\"green\">Green:</font> sequences that occur in only one of the two concordances<br>\n");
+u_fprintf(f,"<table border=\"1\" cellpadding=\"0\" style=\"font-family: %s; font-size: %d\">\n",font,size);
 }
 
 
 /**
  * Printing the closing tags of the HTML file.
  */
-void print_diff_HTML_end(FILE* f) {
-u_fprintf(UTF8,f,"</table>\n</body>\n</html>\n");
+void print_diff_HTML_end(U_FILE* f) {
+u_fprintf(f,"</table>\n</body>\n</html>\n");
 }
 
 
@@ -89,32 +89,32 @@ strcat(concor2,"concord-2.txt");
 /* First, we build the two concordances */
 create_text_concordances(in1,in2,concor1,concor2);
 /* Then, we load the two index */
-FILE* f1=u_fopen(in1,U_READ);
+U_FILE* f1=u_fopen(UTF16_LE,in1,U_READ);
 if (f1==NULL) return 0;
 struct match_list* l1=load_match_list(f1,NULL);
 u_fclose(f1);
-FILE* f2=u_fopen(in2,U_READ);
+U_FILE* f2=u_fopen(UTF16_LE,in2,U_READ);
 if (f2==NULL) {
    return 0;
 }
 struct match_list* l2=load_match_list(f2,NULL);
 u_fclose(f2);
 /* We open the output file */
-FILE* output=fopen(out,"w");
+U_FILE* output=u_fopen(UTF8,out,"w");
 if (output==NULL) {
    return 0;
 }
 /* We open the two concordance files */
-f1=u_fopen(concor1,U_READ);
-f2=u_fopen(concor2,U_READ);
-/* And then we fill the output file with the differences 
+f1=u_fopen(UTF16_LE,concor1,U_READ);
+f2=u_fopen(UTF16_LE,concor2,U_READ);
+/* And then we fill the output file with the differences
  * between the two concordances */
 print_diff_HTML_header(output,font,size);
 compute_concordance_differences(l1,l2,f1,f2,output);
 print_diff_HTML_end(output);
 u_fclose(f1);
 u_fclose(f2);
-fclose(output);
+u_fclose(output);
 /* We remove the tmp files */
 remove(concor1);
 remove(concor2);
@@ -128,14 +128,14 @@ return 1;
  * files that are used to get the text sequences to put in 'output'.
  * Matches that appear in only one file are printed in green.
  * Matches that are identical in both files are printed in blue.
- * Matches that are different but with a non empty intersection like 
+ * Matches that are different but with a non empty intersection like
  * "the blue car" and "blue car" are printed in red.
  */
 void compute_concordance_differences(struct match_list* list1,
                                      struct match_list* list2,
-                                     FILE* f1,
-                                     FILE* f2,
-                                     FILE* output) {
+                                     U_FILE* f1,
+                                     U_FILE* f2,
+                                     U_FILE* output) {
 /* We look both match index entirely */
 while (!(list1==NULL && list2==NULL)) {
    if (list1==NULL) {
@@ -169,7 +169,7 @@ while (!(list1==NULL && list2==NULL)) {
               else {
                  /* list2 overlaps list1:
                   * abcdef,cdefgh
-                  * 
+                  *
                   * We consider that they are two distinct lines, and we
                   * print the first */
                  print_diff_matches(output,f1,NULL,"green");
@@ -224,7 +224,7 @@ while (!(list1==NULL && list2==NULL)) {
  * This function reads one concordance line from 'f', and splits its
  * components into 'left', 'middle' and 'right'.
  */
-void read_concordance_line(FILE* f,unichar* left,unichar* middle,unichar* right) {
+void read_concordance_line(U_FILE* f,unichar* left,unichar* middle,unichar* right) {
 int i,c;
 i=0;
 while ((c=u_fgetc(f))!='\t') {
@@ -245,36 +245,36 @@ right[i]='\0';
 
 
 /**
- * This function loads concordance lines from 'f1' and/or 'f2' and prints them to 
+ * This function loads concordance lines from 'f1' and/or 'f2' and prints them to
  * 'output' in the given color.
  */
-void print_diff_matches(FILE* output,FILE* f1,FILE* f2,const char* color) {
+void print_diff_matches(U_FILE* output,U_FILE* f1,U_FILE* f2,const char* color) {
 unichar left[MAX_CONTEXT_IN_UNITS];
 unichar middle[MAX_CONTEXT_IN_UNITS];
 unichar right[MAX_CONTEXT_IN_UNITS];
 /* We print the line from the first file, if needed */
-u_fprintf(UTF8,output,"<tr><td width=\"450\"><font color=\"%s\">",color);
+u_fprintf(output,"<tr><td width=\"450\"><font color=\"%s\">",color);
 if (f1!=NULL) {
    read_concordance_line(f1,left,middle,right);
-   u_fprintf(UTF8,output,"%HS<u>%HS</u>%HS",left,middle,right);
+   u_fprintf(output,"%HS<u>%HS</u>%HS",left,middle,right);
    /*u_fprints_html(left,output);
    fprintf(output,"<u>");
    u_fprints_html(middle,output);
    fprintf(output,"</u>");
    u_fprints_html(right,output);*/
 }
-u_fprintf(UTF8,output,"</font></td>");
-u_fprintf(UTF8,output,"<td width=\"450\"><font color=\"%s\">",color);
+u_fprintf(output,"</font></td>");
+u_fprintf(output,"<td width=\"450\"><font color=\"%s\">",color);
 /* We print the line from the second file, if needed */
 if (f2!=NULL) {
    read_concordance_line(f2,left,middle,right);
-   u_fprintf(UTF8,output,"%HS<u>%HS</u>%HS",left,middle,right);
+   u_fprintf(output,"%HS<u>%HS</u>%HS",left,middle,right);
    /*u_fprints_html(left,output);
    fprintf(output,"<u>");
    u_fprints_html(middle,output);
    fprintf(output,"</u>");
    u_fprints_html(right,output);*/
 }
-u_fprintf(UTF8,output,"</font></td></tr>\n");
+u_fprintf(output,"</font></td></tr>\n");
 }
 

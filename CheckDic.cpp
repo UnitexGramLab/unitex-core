@@ -83,14 +83,14 @@ if (is_a_DELAF==-1 || vars->optind!=argc-1) {
    return 1;
 }
 
-FILE* dic=u_fopen(argv[vars->optind],U_READ);
+U_FILE* dic=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (dic==NULL) {
 	fatal_error("Cannot open dictionary %s\n",argv[vars->optind]);
 }
 char output_filename[FILENAME_MAX];
 get_path(argv[vars->optind],output_filename);
 strcat(output_filename,"CHECK_DIC.TXT");
-FILE* out=u_fopen(output_filename,U_WRITE);
+U_FILE* out=u_fopen(UTF16_LE,output_filename,U_WRITE);
 if (out==NULL) {
 	u_fclose(dic);
 	fatal_error("Cannot create %s\n",output_filename);

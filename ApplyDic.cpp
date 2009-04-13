@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -208,9 +208,9 @@ return l;
  * token #45="APPLE", word_array->element[45] will contain a reference to
  * the offset that correspond to the word "apple", and "apple" will be copied
  * in the content associated to this offset.
- * 
+ *
  * Note that several offset/content pairs can be assigned to a token. For instance,
- * the token "JACK" can be associated to both entries "Jack" (proper name)  and "jack" 
+ * the token "JACK" can be associated to both entries "Jack" (proper name)  and "jack"
  * (noun: electrical connection stuff, card figure, etc).
  */
 void add_offset_for_token(struct word_struct_array* word_array,
@@ -240,9 +240,9 @@ while (l!=NULL) {
  * This function explores a .bin dictionary in order to test if 'token' is a
  * simple word. 'offset' is the offset of the current dictionary node. 'inflected'
  * is the exact entry in the dictionary. It may differ from 'token' because of
- * case variation (for instance, if 'token'="WRITTEN", we will have 
+ * case variation (for instance, if 'token'="WRITTEN", we will have
  * 'inflected'="written"). 'pos' is the current position in 'token'.
- * 'token_number' is the number of the current token. If the token is found 
+ * 'token_number' is the number of the current token. If the token is found
  * to be an entry of the dictionary and if it has not already been matched by
  * dictionary with a greater priority, we save the corresponding DELAF line
  * in the DLF.
@@ -329,7 +329,7 @@ for (int i=0;i<info->tokens->N;i++) {
  *   we don't try to match the whole sequence. For instance, if we already have matched
  *   "grand-maman", we know where to start in the .bin if we have "grand-". Then,
  *   if now we need to match "grand-papa Joe", we will only look for "papa Joe" starting from
- *   the offset corresponding to "grand-" that we have cached. In this example, 
+ *   the offset corresponding to "grand-" that we have cached. In this example,
  *   'current_token' would be "papa" and 'inflected' would be "grand-". Note that
  *   inflected contains the exact entry with no case variation. For instance, if
  *   there is "BLACK-EYED" in the text, entry will contain "black-eyed".
@@ -337,12 +337,12 @@ for (int i=0;i<info->tokens->N;i++) {
  *   example, it would be 2 at the first call and 4 at when the whole sequence is
  *   processed, since "grand-papa Joe" contains 5 tokens.
  * - 'token_sequence' is the array that contains the number of the tokens that
- *   compose the word, ended by -1. If "grand"=token 45, "-"=token 2, 
- *   "papa"=token 324, " "=token 4 and "Joe"=token 17, we would have 
+ *   compose the word, ended by -1. If "grand"=token 45, "-"=token 2,
+ *   "papa"=token 324, " "=token 4 and "Joe"=token 17, we would have
  *   'token_sequence'={45,2,324,4,17,-1}
- * - 'current_start_pos' is the offset of the first token of the sequence in the 
+ * - 'current_start_pos' is the offset of the first token of the sequence in the
  *   text buffer
- * 
+ *
  * If we find a compound that has not already been matched by a dictionary
  * with a greater priority, we save it to 'info->dlc'.
  */
@@ -355,7 +355,7 @@ void explore_bin_compound_words(struct dico_application_info* info,
 int n_transitions=((unsigned char)info->bin[offset])*256+(unsigned char)info->bin[offset+1];
 offset=offset+2;
 if (current_token[pos_in_current_token]=='\0') {
-   /* If we are at the end of the current token, we look for the 
+   /* If we are at the end of the current token, we look for the
     * corresponding node in the token tree */
    struct word_transition* trans;
    ws->trans=insert_word_transition(ws->trans,&trans,info->buffer->int_buffer[current_start_pos+pos_offset]);
@@ -535,8 +535,8 @@ for (int i=0;i<info->tokens->N;i++) {
  * the information needed for the application of dictionaries.
  */
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
-                                                    FILE* dlf,FILE* dlc,FILE* err,char* tags,
-                                                    FILE* text_cod,Alphabet* alphabet) {
+                                                    U_FILE* dlf,U_FILE* dlc,U_FILE* err,char* tags,
+                                                    U_FILE* text_cod,Alphabet* alphabet) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
    fatal_alloc_error("init_dico_application");
@@ -574,9 +574,9 @@ return info;
 
 /**
  * Frees all the memory allocated for the given structure.
- * 
- * IMPORTANT: note that info->alphabet and info->word_array are 
- * not freed; this is the responsability of the function 
+ *
+ * IMPORTANT: note that info->alphabet and info->word_array are
+ * not freed; this is the responsability of the function
  * that allocated these objects.
  */
 void free_dico_application(struct dico_application_info* info) {
@@ -596,9 +596,9 @@ free(info);
 
 /**
  * This function launches the application of the given .bin dictionary.
- * 
+ *
  * @author Alexis Neme
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 void dico_application(char* name_bin,struct dico_application_info* info,int priority) {
 char name_inf[FILENAME_MAX];
@@ -663,7 +663,7 @@ info->tag_sequences[(info->n_tag_sequences)++]=match;
 
 /**
  * @author Alexis Neme
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 int merge_dic_locate_results(struct dico_application_info* info,char* concord_filename,
                              int priority) {
@@ -672,7 +672,7 @@ int merge_dic_locate_results(struct dico_application_info* info,char* concord_fi
 int token_tab_coumpounds[TOKENS_IN_A_COMPOUND];
 u_printf("Merging dic/locate result...\n");
 /* First, we load the match list */
-FILE* f=u_fopen(concord_filename,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,concord_filename,U_READ);
 if (f==NULL) {
    error("Cannot open %s\n",concord_filename);
    return 0;
@@ -704,7 +704,7 @@ while (l!=NULL) {
             if (p==0 || p==priority) {
                /* We save the simple word only if it hasn't already been processed with
                 * a greater priority */
-               set_value(info->part_of_a_word,token_number,1);             
+               set_value(info->part_of_a_word,token_number,1);
                set_value(info->simple_word,token_number,priority);
                /* We save it to the DLF */
                u_fprintf(info->dlf,"%S\n",l->output);
@@ -712,7 +712,7 @@ while (l!=NULL) {
          }
       }
       else if(l->start<l->end)    {
-         /* If it is a compound word, we turn it into a token sequence 
+         /* If it is a compound word, we turn it into a token sequence
           * ended by -1 */
          build_token_sequence(entry->inflected,info->tokens,token_tab_coumpounds);
          int w=was_already_in_tct_hash(token_tab_coumpounds,info->tct_h,priority);
@@ -776,7 +776,7 @@ return (*A)->end-(*B)->end;
  */
 void save_and_sort_tag_sequences(struct dico_application_info* info) {
 qsort(info->tag_sequences,info->n_tag_sequences,sizeof(struct match_list*),compare_matches);
-FILE* f=u_fopen(info->tags_ind,U_WRITE);
+U_FILE* f=u_fopen(UTF16_LE,info->tags_ind,U_WRITE);
 if (f==NULL) {return;}
 /* We use the header T, just to say something different from I, M and R */
 u_fprintf(f,"#T\n");

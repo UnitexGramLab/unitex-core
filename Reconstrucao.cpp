@@ -157,7 +157,7 @@ if (alph==NULL) {
    return 1;
 }
 u_printf("Loading match list...\n");
-FILE* f_list=u_fopen(argv[vars->optind],U_READ);
+U_FILE* f_list=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (f_list==NULL) {
    error("Cannot load match list %s\n",argv[vars->optind]);
    free_alphabet(alph);

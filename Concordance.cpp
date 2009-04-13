@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,13 +12,13 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-  
+
 #include "Concordance.h"
 #include "Unicode.h"
 #include "Matches.h"
@@ -29,13 +29,13 @@
 #include "Thai.h"
 #include "NewLineShifts.h"
 
-int create_raw_text_concordance(FILE*,FILE*,FILE*,struct text_tokens*,int,int,
+int create_raw_text_concordance(U_FILE*,U_FILE*,U_FILE*,struct text_tokens*,int,int,
                                 int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
 
-void create_modified_text_file(FILE*,FILE*,struct text_tokens*,char*,int,int*);
-void write_HTML_header(FILE*,int,struct conc_opt*);
-void write_HTML_end(FILE*);
+void create_modified_text_file(U_FILE*,U_FILE*,struct text_tokens*,char*,int,int*);
+void write_HTML_header(U_FILE*,int,struct conc_opt*);
+void write_HTML_end(U_FILE*);
 void reverse_initial_vowels_thai(unichar*);
 
 
@@ -70,11 +70,11 @@ void reverse_initial_vowels_thai(unichar*);
  * lines. If 'option.thai_mode' is set to a non zero value, it indicates that
  * the concordance is a Thai one. This information is used to compute
  * correctly the context sizes.
- * 
- * 
+ *
+ *
  * Modifications made by Patrick Watrin (pwatrin@gmail.com) allow to
  * build index and axis files.
- * 
+ *
  * WHAT IS AN AXIS FILE ?
  * ----------------------
  * "SIMR requires axes to be formatted with one "tic mark" per line.
@@ -83,17 +83,17 @@ void reverse_initial_vowels_thai(unichar*);
  * of its median character (I conjecture that this also works best in
  * terms of accuracy). Thus, a token's position is always a multiple
  * of 0.5." (http://nlp.cs.nyu.edu/GMA/docs/HOWTO-axis)
- * 
+ *
  * EXAMPLE :
  * ---------
  * 012345678901
  * This segment
- * 2.5  9 
+ * 2.5  9
  */
-void create_concordance(FILE* concordance,FILE* text,struct text_tokens* tokens,
+void create_concordance(U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt* option) {
-FILE* out;
-FILE* f;
+U_FILE* out;
+U_FILE* f;
 char temp_file_name[FILENAME_MAX];
 struct string_hash* glossa_hash=NULL;
 int open_bracket=-1;
@@ -128,8 +128,8 @@ if (option->result_mode==GLOSSANET_) {
 strcpy(temp_file_name,option->working_directory);
 strcat(temp_file_name,"concord_.txt");
 strcpy(option->output,option->working_directory);
-if (option->result_mode==TEXT_ || option->result_mode==INDEX_ 
-      || option->result_mode==UIMA_ || option->result_mode==AXIS_ 
+if (option->result_mode==TEXT_ || option->result_mode==INDEX_
+      || option->result_mode==UIMA_ || option->result_mode==AXIS_
       || option->result_mode==XALIGN_)
 	strcat(option->output,"concord.txt");
 else
@@ -139,12 +139,12 @@ int N_MATCHES;
 /* If we are in the 'xalign' mode, we don't need to sort the results.
  * So, we don't need to store the results in a temporary file */
 if (option->result_mode==XALIGN_) f=u_fopen(UTF8,option->output,U_WRITE);
-else f=u_fopen(temp_file_name,U_WRITE);
+else f=u_fopen(UTF16_LE,temp_file_name,U_WRITE);
 if (f==NULL) {
 	error("Cannot write %s\n",temp_file_name);
 	return;
 }
-/* First, we create a raw text concordance. 
+/* First, we create a raw text concordance.
  * NOTE: columns may have been reordered according to the sort mode. See the
  * comments of the 'create_raw_text_concordance' function for more details. */
 N_MATCHES=create_raw_text_concordance(f,concordance,text,tokens,
@@ -165,20 +165,20 @@ if (option->sort_mode!=TEXT_ORDER) {
  * 2) insert HTML info if needed
  */
 
-f=u_fopen(temp_file_name,U_READ);
+f=u_fopen(UTF16_LE,temp_file_name,U_READ);
 if (f==NULL) {
 	error("Cannot read %s\n",temp_file_name);
 	return;
 }
-if (option->result_mode==TEXT_ || option->result_mode==INDEX_ 
+if (option->result_mode==TEXT_ || option->result_mode==INDEX_
       || option->result_mode==UIMA_ || option->result_mode==AXIS_) {
    /* If we have to produce a unicode text file, we open it
-    * as a unicode one */
-   out=u_fopen(option->output,U_WRITE);
+    * as a UTF16LE one */
+   out=u_fopen(UTF16_LE,option->output,U_WRITE);
 }
 else {
-   /* Otherwise, we open it normally */
-   out=fopen(option->output,"w");
+   /* Otherwise, we open it as a UTF8 HTML file */
+   out=u_fopen(UTF8,option->output,"w");
 }
 if (out==NULL) {
 	error("Cannot write %s\n",option->output);
@@ -283,13 +283,13 @@ while ((c=u_fgetc(f))!=EOF) {
 			if (option->thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
 			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) {
-            u_fprintf(UTF8,out,"<tr><td nowrap>%HR",left);
+            u_fprintf(out,"<tr><td nowrap>%HR",left);
 			} else {u_fprintf(out,"%R",left);}
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
 			 * left context. */
 			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) {
-            u_fprintf(UTF8,out,"<tr><td nowrap>%HS",left);
+            u_fprintf(out,"<tr><td nowrap>%HS",left);
 			} else {u_fprintf(out,"%S",left);}
 		}
 		/* If we must produce an HTML concordance, then we surround the
@@ -299,13 +299,13 @@ while ((c=u_fgetc(f))!=EOF) {
 		 * tokens) and Z is the number of the sentence that contains the
 		 * sequence. */
 		if (option->result_mode==HTML_) {
-			u_fprintf(UTF8,out,"<a href=\"%S\">%HS</a>%HS&nbsp;</td></tr>\n",indices,middle,right);
+			u_fprintf(out,"<a href=\"%S\">%HS</a>%HS&nbsp;</td></tr>\n",indices,middle,right);
 		}
 		/* If we must produce a GlossaNet concordance, we turn the sequence
 		 * into an URL, using the given GlossaNet script. */
 		else if (option->result_mode==GLOSSANET_) {
-			u_fprintf(UTF8,out,"<A HREF=\"%s?rec=%HS&adr=%HS",option->glossanet_script,middle,href);
-         u_fprintf(UTF8,out,"\" style=\"color: rgb(0,0,128)\">%HS</A>%HS</td></tr>\n",middle,right);
+			u_fprintf(out,"<A HREF=\"%s?rec=%HS&adr=%HS",option->glossanet_script,middle,href);
+         u_fprintf(out,"\" style=\"color: rgb(0,0,128)\">%HS</A>%HS</td></tr>\n",middle,right);
 		}
 		/* If we must produce a text concordance */
 		else if (option->result_mode==TEXT_) {
@@ -350,7 +350,7 @@ while ((c=u_fgetc(f))!=EOF) {
 if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) write_HTML_end(out);
 u_fclose(f);
 remove(temp_file_name);
-fclose(out);
+u_fclose(out);
 if (option->result_mode==GLOSSANET_) {
 	free_string_hash(glossa_hash);
 }
@@ -372,29 +372,29 @@ for (i=0;i<tokens->N;i++) {
 /**
  * This function writes the HTML header for an HTML or a GlossaNet concordance.
  */
-void write_HTML_header(FILE* f,int number_of_matches,struct conc_opt* option) {
-u_fprintf(UTF8,f,"<html lang=en>\n");
-u_fprintf(UTF8,f,"<head>\n");
-u_fprintf(UTF8,f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
-u_fprintf(UTF8,f,"   <title>%d match%s</title>\n",number_of_matches,(number_of_matches>1)?"es":"");
-u_fprintf(UTF8,f,"</head>\n");
-u_fprintf(UTF8,f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %d\">\n",option->fontname,option->fontsize);
+void write_HTML_header(U_FILE* f,int number_of_matches,struct conc_opt* option) {
+u_fprintf(f,"<html lang=en>\n");
+u_fprintf(f,"<head>\n");
+u_fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
+u_fprintf(f,"   <title>%d match%s</title>\n",number_of_matches,(number_of_matches>1)?"es":"");
+u_fprintf(f,"</head>\n");
+u_fprintf(f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %d\">\n",option->fontname,option->fontsize);
 }
 
 
 /**
  * This function write the HTML closing tags for an HTML or a GlossaNet concordance.
  */
-void write_HTML_end(FILE* f) {
-u_fprintf(UTF8,f,"</table></body>\n");
-u_fprintf(UTF8,f,"</html>\n");
+void write_HTML_end(U_FILE* f) {
+u_fprintf(f,"</table></body>\n");
+u_fprintf(f,"</html>\n");
 }
 
 
 /**
  * This function moves in the file 'text' until the buffer 'buffer' contains the sequence
  * that begins at the global position 'start_pos', but with a large enough left context:
- * 
+ *
  * buffer:
  * 0                              X                                buffer->MAXIMUM_BUFFER_SIZE
  * ------------------------------------------------------------------------------
@@ -402,10 +402,10 @@ u_fprintf(UTF8,f,"</html>\n");
  * | <-- MAX_CONTEXT_IN_UNITS --> |                                             |
  * |                              |                                             |
  * ------------------------------------------------------------------------------
- * 
+ *
  * buffer[X] will contain the token number 'start_pos'.
- * 
- * 
+ *
+ *
  * The function updates the '*n_units_already_read' parameter that counts the total
  * number of tokens that have been read since the beginning of the file 'text'. It also
  * updates the parameter '*current_origin_in_chars' that counts the length in chars of the
@@ -416,7 +416,7 @@ u_fprintf(UTF8,f,"</html>\n");
  * '*current_sentence' is used to count the number of '{S}' in order to know
  * what is the current sentence number.
  */
-void move_buffer_to_position(int start_pos,FILE* text,struct text_tokens* tokens,int* token_length,
+void move_buffer_to_position(int start_pos,U_FILE* text,struct text_tokens* tokens,int* token_length,
 					struct buffer* buffer,int *n_units_already_read,
 					int *current_origin_in_chars,int *current_sentence,
 					int * position_from_eos,int RES) {
@@ -459,7 +459,7 @@ buffer->size=fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,te
  * 'buffer' contains the token numbers to work on. 'option.thai_mode' indicates by a non
  * zero value that we deal with a Thai sequence; in that case, we must do a special
  * operation in order to count correctly displayable characters.
- * 
+ *
  * Note that extra spaces will be used to fill 'left' if there no left context enough,
  * in order to preserve alignment at display time.
  */
@@ -506,7 +506,7 @@ while (pos>=0 && count<option->left_context) {
 }
 /* If it was not possible to get to correct number of characters because
  * the sequence was too close to the beginning of the text, we fill
- * 'left' with spaces. */ 
+ * 'left' with spaces. */
 if (count!=option->left_context) {
 	while (count++!=option->left_context) {
 		left[i++]=' ';
@@ -556,7 +556,7 @@ if (output==NULL) {
  * 'option.right_context'-'match_length' corresponding to the tokens located
  * after the token number 'pos'. Note that the 'right' may be empty if the match
  * was already greater or equal to 'option.right_context'.
- * 
+ *
  * 'token_length' is an array that gives the lengthes of the tokens.
  * 'buffer' contains the token numbers to work on. 'option.thai_mode' indicates by a non
  * zero value that we deal with a Thai sequence; in that case, we must do a special
@@ -605,19 +605,19 @@ right[i]='\0';
 /**
  * A GlossaNet concordance is supposed to have been computed on a text of the
  * following form:
- * 
+ *
  * document1
  * [[url1]]
  * document2
  * [[url2]]
  * ...
- * 
+ *
  * This function tries to find the URL between [[ and ]] that follows the matched sequence
  * in the text (i.e. after the token number 'end_pos'). If there is one, it is copied in
  * 'href'; if not, 'href' is empty. 1 is returned except if the function finds out that
  * the matched sequence is a part of an URL. In that case, 0 is returned in order to
  * indicate that this is not a real matched sequence.
- * 
+ *
  * The function assumes that 'buffer' is large enough to find the URL. It may
  * not work anymore if the buffer size is too small.
  */
@@ -667,15 +667,15 @@ return 1;
  * an initial vowel, because the Thai sort algorithm would behave strangely
  * when applied on raw reversed text. For more information (written in French),
  * see chapter 3.1 in:
- * 
- * Paumier Sébastien, 2003. De la reconnaissance de formes linguistiques à
- * l'analyse syntaxique, Ph.D., Université Paris-Est Marne-la-Vallée. Downloadable
+ *
+ * Paumier Sï¿½bastien, 2003. De la reconnaissance de formes linguistiques ï¿½
+ * l'analyse syntaxique, Ph.D., Universitï¿½ Paris-Est Marne-la-Vallï¿½e. Downloadable
  * at: http://igm.univ-mlv.fr/LabInfo/theses/
- * 
+ *
  * You can also consult (in French too):
- * 
- * Kosawat Krit, 2003. Méthodes de segmentation et d'analyse automatique de
- * textes thaï, Ph.D., Université Paris-Est Marne-la-Vallée. Downloadable
+ *
+ * Kosawat Krit, 2003. Mï¿½thodes de segmentation et d'analyse automatique de
+ * textes thaï¿½, Ph.D., Universitï¿½ Paris-Est Marne-la-Vallï¿½e. Downloadable
  * at: http://igm.univ-mlv.fr/LabInfo/theses/
  */
 void reverse_initial_vowels_thai(unichar* s) {
@@ -698,22 +698,22 @@ while (s[i]!='\0') {
  * text file that is stored in 'output'. This file contains the lines of the concordance,
  * but the columns may have been moved according to the sort mode, and the left
  * context is reversed. For instance, if we have a concordance line like:
- * 
+ *
  * ABC DEF GHI
- * 
+ *
  * where ABC is the left context, DEF is the matched sequence and GHI is the right
  * context. If the sort mode is "CENTER_LEFT", the output will contain the following
  * line:
- * 
+ *
  * DEF^CBA^GHI
- * 
+ *
  * where ^ stands for the tabulation character. If there are extra information like
  * positions (HTML concordance) or URL (GlossaNet concordance), they are stored at the end
  * of the line:
- * 
+ *
  * DEF^CBA^GHI^120 124 5
- * 
- * 
+ *
+ *
  * 'text' is the "text.cod" file. 'tokens' contains the text tokens.
  * 'option.left_context' and 'option.right_context' specify the lengthes of the
  * contexts to extract. 'expected_result' is used to know if the output is
@@ -721,7 +721,7 @@ while (s[i]!='\0') {
  * and 'enter_pos' is an array that contains the positions of these new lines.
  * If 'option.thai_mode' is set to a non zero value, it indicates that the concordance
  * is a Thai one. This information is used to compute correctly the context sizes.
- * 
+ *
  * The function returns the number of matches actually written to the output file.
  *
  * For the xalign mode we produce a concord file with the following information :
@@ -730,7 +730,7 @@ while (s[i]!='\0') {
  *    - Column 2: shift from the beginning of the sentence to the left side of the match
  *    - Column 3: shift from the beginning of the sentence to the right side of the match
  */
-int create_raw_text_concordance(FILE* output,FILE* concordance,FILE* text,struct text_tokens* tokens,
+int create_raw_text_concordance(U_FILE* output,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
                                 int expected_result,
                                 int n_enter_char,int* enter_pos,
                                 int* token_length,int open_bracket,int close_bracket,
@@ -888,7 +888,7 @@ while (matches!=NULL) {
 		/* We save the 3 parts of the concordance line according to the sort mode */
 		switch(option->sort_mode) {
 			case TEXT_ORDER:
-			if(expected_result==XALIGN_) u_fprintf(UTF8,output,"%S\t%S",positions_from_eos,middle);
+			if(expected_result==XALIGN_) u_fprintf(output,"%S\t%S",positions_from_eos,middle);
 				else u_fprintf(output,"%S\t%S\t%S",left,middle,right);
 				break;
 			case LEFT_CENTER:  u_fprintf(output,"%R\t%S\t%S",left,middle,right); break;
@@ -904,8 +904,8 @@ while (matches!=NULL) {
 		if (expected_result==GLOSSANET_) {
 			u_fprintf(output,"\t%S",href);
 		}
-		
-		if(expected_result==XALIGN_) u_fprintf(UTF8,output,"\n");
+
+		if(expected_result==XALIGN_) u_fprintf(output,"\n");
 		else u_fprintf(output,"\n");
 		/* We increase the number of matches actually written to the output */
 		number_of_matches++;
@@ -928,7 +928,7 @@ return number_of_matches;
  * 'pos_in_enter_pos' is the current position in this array. The function
  * returns the updated current position in the 'pos_in_enter_pos' array.
  */
-int fprint_token(FILE* output,struct text_tokens* tokens,long int offset_in_buffer,
+int fprint_token(U_FILE* output,struct text_tokens* tokens,long int offset_in_buffer,
 				int current_global_position,int n_enter_char,int* enter_pos,
 				int pos_in_enter_pos,struct buffer* buffer) {
 /* We look for the new line that is closer (but after) to the token to print */
@@ -957,13 +957,13 @@ return pos_in_enter_pos;
 
 
 /**
- * This function saves the text from the token n° 'current_global_position'
- * to the token n° 'match_start'. The text is printed in the file 'output'.
+ * This function saves the text from the token nï¿½ 'current_global_position'
+ * to the token nï¿½ 'match_start'. The text is printed in the file 'output'.
  * The function returns the updated current position in the 'pos_in_enter_pos'
  * array.
  */
-int move_in_text_with_writing(int match_start,FILE* text,struct text_tokens* tokens,
-								int current_global_position,FILE* output,
+int move_in_text_with_writing(int match_start,U_FILE* text,struct text_tokens* tokens,
+								int current_global_position,U_FILE* output,
 								int n_enter_char,int* enter_pos,int pos_in_enter_pos,
 								struct buffer* buffer) {
 long int address=current_global_position*sizeof(int);
@@ -990,11 +990,11 @@ return pos_in_enter_pos;
 
 
 /**
- * This function saves all the text from the token n° 'current_global_position' to
+ * This function saves all the text from the token nï¿½ 'current_global_position' to
  * the end.
  */
-int move_to_end_of_text_with_writing(FILE* text,struct text_tokens* tokens,
-									int current_global_position,FILE* output,
+int move_to_end_of_text_with_writing(U_FILE* text,struct text_tokens* tokens,
+									int current_global_position,U_FILE* output,
 									int n_enter_char,int* enter_pos,int pos_in_enter_pos,
 									struct buffer* buffer) {
 long int address=current_global_position*sizeof(int);
@@ -1004,7 +1004,7 @@ while (0!=(buffer->size = fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_B
 		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
 										n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 	}
-   current_global_position = current_global_position+buffer->MAXIMUM_BUFFER_SIZE; 
+   current_global_position = current_global_position+buffer->MAXIMUM_BUFFER_SIZE;
 }
 return pos_in_enter_pos;
 }
@@ -1020,13 +1020,13 @@ return pos_in_enter_pos;
  * the longest is preferred. If 2 matches start and end at the same positions,
  * then the first one is arbitrarily preferred.
  */
-void create_modified_text_file(FILE* concordance,FILE* text,
+void create_modified_text_file(U_FILE* concordance,U_FILE* text,
                                struct text_tokens* tokens,char* output_name,
                                int n_enter_char,int* enter_pos) {
-FILE* output=u_fopen(output_name,U_WRITE);
+U_FILE* output=u_fopen(UTF16_LE,output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);
-	fclose(text);
+	u_fclose(text);
 	fatal_error("Cannot write file %s\n",output_name);
 }
 struct match_list* matches;

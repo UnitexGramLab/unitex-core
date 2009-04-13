@@ -84,7 +84,7 @@ if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-FILE* f=u_fopen(argv[vars->optind],U_READ);
+U_FILE* f=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (f==NULL) {
    fatal_error("Cannot open file %s\n",argv[vars->optind]);
 }

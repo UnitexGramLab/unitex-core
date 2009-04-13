@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -24,7 +24,7 @@
 
 /**
  * This library provides tools for loading tagset definition files.
- * 
+ *
  * Author: Olivier Blanc
  */
 
@@ -46,10 +46,10 @@ enum {
 typedef struct token_t {
    /* Type of the token */
    int type;
-   
+
    /* Token's content */
    unichar* str;
-   
+
    /* Next token in the list */
    token_t* next;
 } token_t;
@@ -78,14 +78,14 @@ typedef struct tokens_list {
 typedef struct pos_section_t {
    /* POS name like "N" or "ADV" */
    unichar * name;
-   
+
    /* This field indicates whether this POS can be ignored or not during elag operations */
    bool ignore;
-   
+
    /* This array gives for each POS definition part the lines it contains, in the form
     * of token lists. */
    tokens_list* parts[PART_NUM];
-   
+
    /* The next POS definition */
    struct pos_section_t * next;
 } pos_section_t;
@@ -97,14 +97,14 @@ typedef struct pos_section_t {
 typedef struct tagset_t {
    /* Language name */
    unichar* name;
-   
+
    /* POSs defined in the tagset file */
    pos_section_t* pos_sections;
 } tagset_t;
 
 
 
-tagset_t* load_tagset(FILE*);
+tagset_t* load_tagset(U_FILE*);
 void free_tagset_t(tagset_t*);
 
 #endif

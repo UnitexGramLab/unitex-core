@@ -593,7 +593,7 @@ while (trans!=NULL) {
  */
 void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
                                struct DELA_tree* DELA_tree,
-                               Alphabet* alph,FILE* out_tfst,FILE* out_tind,
+                               Alphabet* alph,U_FILE* out_tfst,U_FILE* out_tind,
                                int sentence_number,
                                int we_must_clean,
                                struct normalization_tree* norm_tree,

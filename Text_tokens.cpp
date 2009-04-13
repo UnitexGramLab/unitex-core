@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -37,8 +37,8 @@ return tmp;
 
 
 struct text_tokens* load_text_tokens(char* nom) {
-FILE* f;
-f=u_fopen(nom,U_READ);
+U_FILE* f;
+f=u_fopen(UTF16_LE,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
@@ -70,8 +70,8 @@ return res;
 
 
 struct string_hash* load_text_tokens_hash(char* nom,int *NUMBER_OF_TEXT_TOKENS) {
-FILE* f;
-f=u_fopen(nom,U_READ);
+U_FILE* f;
+f=u_fopen(UTF16_LE,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
@@ -93,8 +93,8 @@ return res;
 struct string_hash* load_text_tokens_hash(char* nom,int *SENTENCE_MARKER,
                                           int* STOP_MARKER,
                                           int *NUMBER_OF_TEXT_TOKENS) {
-FILE* f;
-f=u_fopen(nom,U_READ);
+U_FILE* f;
+f=u_fopen(UTF16_LE,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
@@ -210,7 +210,7 @@ for (int i=0;i<tok->size;i++) {
 
 
 /**
- * Scans text tokens to extract semantic codes contained in .inf 
+ * Scans text tokens to extract semantic codes contained in .inf
  * of morphological mode dictionaries.
  */
 void extract_semantic_codes_from_morpho_dics(struct INF_codes** array,int N,

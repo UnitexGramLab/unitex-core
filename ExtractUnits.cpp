@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -28,18 +28,18 @@
 #define MAX_TOKENS_BY_SENTENCE 100000
 
 
-void read_one_sentence(struct buffer*,FILE*,struct text_tokens*,int*);
+void read_one_sentence(struct buffer*,U_FILE*,struct text_tokens*,int*);
 struct match_list* is_a_match_in_the_sentence(struct match_list*,int*,int,int);
 
 
 /**
  * This function takes a concordance index file and a .snt text file and it builds
  * an output file 'result' made of all sentences that contain an
- * occurrence. if 'extract_matching_units' is null, the function extracts 
+ * occurrence. if 'extract_matching_units' is null, the function extracts
  * all sentences that do NOT contain any occurrence.
  */
-void extract_units(char extract_matching_units,FILE* snt,struct text_tokens* tokens,
-                   FILE* concord,FILE* result) {
+void extract_units(char extract_matching_units,U_FILE* snt,struct text_tokens* tokens,
+                   U_FILE* concord,U_FILE* result) {
 int N_TOKENS_READ;
 OutputPolicy output_policy;
 int current_beginning,current_end,RESULT;
@@ -78,7 +78,7 @@ free_buffer(buffer);
  * buffer->size will contain the length of the sentence, in the limit of MAX_TOKENS_BY_SENTENCE
  * N_TOKENS_READ returns the length of tokens actually read (can be more than MAX_TOKENS_BY_SENTENCE)
  */
-void read_one_sentence(struct buffer* buffer,FILE* text,struct text_tokens* tok,
+void read_one_sentence(struct buffer* buffer,U_FILE* text,struct text_tokens* tok,
                        int* N_TOKENS_READ) {
 int i=0;
 int t=-15;

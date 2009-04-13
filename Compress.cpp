@@ -55,11 +55,11 @@ u_printf("Usage: Compress [OPTIONS] <dictionary>\n"
  * Little-Endian one, starting by a sequence made of ten zeros.
  */
 void write_INF_file_header(char* name,int n) {
-FILE* f;
+U_FILE* f;
 /* First, we set the offset on the last zero */
 int offset=2+9*2; /* *2 because of Unicode and +2 because of FF FE at file start */
 /* The file must be opened as a binary one */
-f=fopen((char*)name,"r+b");
+f=u_fopen(UTF16_LE,name,U_MODIFY);
 do {
 	/* We go at the given offset */
 	fseek(f,offset,0);
@@ -69,7 +69,7 @@ do {
 	/* And we update the offset (-2 because of Unicode) */
 	offset=offset-2;
 } while (n); /* We loop until there is no more digit to print */
-fclose(f);
+u_fclose(f);
 }
 
 
@@ -111,8 +111,8 @@ if (vars->optind!=argc-1) {
    return 1;
 }
 
-FILE* f;
-FILE* INF_file;
+U_FILE* f;
+U_FILE* INF_file;
 unichar s[DIC_WORD_SIZE];
 struct dela_entry* entry;
 char bin[DIC_WORD_SIZE];
@@ -121,7 +121,7 @@ struct dictionary_node* root; /* Root of the dictionary tree */
 struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
 int line=0; /* Current line number */
 
-f=u_fopen(argv[vars->optind],U_READ);
+f=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (f==NULL) {
 	fatal_error("Cannot open %s\n",argv[vars->optind]);
 }
@@ -130,7 +130,7 @@ remove_extension(argv[vars->optind],bin);
 strcat(bin,".bin");
 remove_extension(argv[vars->optind],inf);
 strcat(inf,".inf");
-INF_file=u_fopen(inf,U_WRITE);
+INF_file=u_fopen(UTF16_LE,inf,U_WRITE);
 if (INF_file==NULL) {
 	u_fclose(f);
 	fatal_error("Cannot create %s\n",inf);

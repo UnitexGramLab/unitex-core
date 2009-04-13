@@ -1,5 +1,5 @@
 /*
- * Unitex 
+ * Unitex
  *
  * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
  *
@@ -38,7 +38,7 @@
 #define MAX_CHARS_IN_STACK 4096
 
 //////////////////////////////
-//Description of all classes in the current language 
+//Description of all classes in the current language
 extern l_classes_T L_CLASSES;
 
 //////////////////////////////
@@ -92,7 +92,7 @@ int save_pos;
 
 ////////////////////////////////////////////
 // For a given single unit, generates all the inflected forms corresponding to
-// the given inflection features. For instance, this is used when we want to get 
+// the given inflection features. For instance, this is used when we want to get
 // the plural of "vive" knowing that its lemma is "vif" and that it's an adjective with
 // the inflection code YYY and the inflection features "fs".
 //
@@ -111,7 +111,7 @@ int save_pos;
 //          For instance, if we have the path "li1a2u3na", we will have the inflected form
 //          "likatubna"
 //
-// Returns 0 on success, 1 otherwise.   
+// Returns 0 on success, 1 otherwise.
 int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
       int semitic) {
    int err;
@@ -137,7 +137,7 @@ int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
 /**
  * This function inflects a simple word. 'lemma' is the lemma as found in
  * the DELAS, 'inflection_code' is the name of the inflection transducer without
- * extension (ex: N43). 'forms' is a structure (supposed to be allocated) that 
+ * extension (ex: N43). 'forms' is a structure (supposed to be allocated) that
  * will receive all the produced inflected forms with their inflectional features.
  * The output DELAF lines will have to be built from 'forms'.
  */
@@ -199,12 +199,12 @@ void aff_trans(Transition* T, Fst2* a) {
    while (t != NULL) {
       if (t->tag_number >= 0) {
          Fst2Tag e=a->tags[t->tag_number];
-         u_fprintf(stderr,"AFF %S,",e->input);
+         error("AFF %S,",e->input);
       }
       t=t->next;
    }
 
-   u_fprintf(stderr,"\n");
+   error("\n");
 }
 
 ////////////////////////////////////////////
@@ -217,7 +217,7 @@ void aff_trans(Transition* T, Fst2* a) {
 // forms: return parameter; set of the inflected forms corresponding to the given inflection features
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
-// Returns 0 on success, 1 otherwise.   
+// Returns 0 on success, 1 otherwise.
 int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
       Fst2* a, int etat_courant, f_morpho_T* desired_features,
       SU_forms_T* forms, unichar* semitic, int flag_var,
@@ -358,7 +358,7 @@ void free_inflect_infos(struct inflect_infos* i) {
 // forms: return parameter; set of the inflected forms corresponding to the given inflection features
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
-// Returns 0 on success, 1 otherwise.   
+// Returns 0 on success, 1 otherwise.
 int SU_explore_state_recursion(unichar* inflected, unichar* lemma,
       unichar* output, Fst2* a, int current_state, struct inflect_infos** L,
       f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
@@ -413,7 +413,7 @@ int SU_explore_state_recursion(unichar* inflected, unichar* lemma,
 // forms: return parameter; set of the inflected forms corresponding to the given inflection features
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
-// Returns 0 on success, 1 otherwise.   
+// Returns 0 on success, 1 otherwise.
 int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
       unichar* output, Fst2* a, struct inflect_infos** LIST,
       f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
@@ -731,7 +731,7 @@ struct list_ustring* SU_split_raw_features(unichar* features) {
 // agrees with the set 'feat2', i.e. both contains exactly the same
 // values, except for empty values
 // Otherwise returns 0.
-// If an empty feature is present in on set then the 
+// If an empty feature is present in on set then the
 // corresponding category in the other set must also be empty.
 // e.g. if feat1=<Gen=m;Nb=pl> and feat2=<Gen=m;Nb=pl; Gr=<E>>
 // then both agree
@@ -833,7 +833,7 @@ void SU_delete_features(f_morpho_T* f) {
 // Returns the word form's identifier on the basis of the form, its lemma, its inflection paradigm, and its inflection features.
 // SU_form : form and its inflection features, e.g. [rekoma,{Gen=fem,Nb=pl,Case=Instr}], or ["-",{}]
 // SU_lemma : lemma and its inflection paradigm, e.g. [reka,noun,N56,{"Conc"},""body"], or void (if separator)
-// Returns the pointer to the forms identifier on success 
+// Returns the pointer to the forms identifier on success
 // (e.g. ->("reka",word,[reka,noun,N56,{"Conc"},"body"],{Gen=fem; Nb=sing; Case=I})), NULL otherwise.
 // The identifier is allocated in this function. The liberation must be done by the calling function.
 SU_id_T* SU_get_id(unichar* form, f_morpho_T* feat, SU_lemma_T* SU_lemma) {
@@ -885,7 +885,7 @@ SU_id_T* SU_get_id(unichar* form, f_morpho_T* feat, SU_lemma_T* SU_lemma) {
 // This is the essential function defining the segmentation
 // of a text into units.
 // If "eliminate_bcksl" is set to 1 each protecting backslash is omitted in the
-// copied sequence.                                                            
+// copied sequence.
 // Returns the length of the scanned sequence.
 // Returns -2 on memory allocation problem.
 int SU_get_unit(unichar* unit, unichar* line, int max, Alphabet* alph,
@@ -977,7 +977,7 @@ void SU_init_forms(SU_forms_T* forms) {
 }
 
 ////////////////////////////////////////////
-// Initialize the set of inflected forms "forms" with 
+// Initialize the set of inflected forms "forms" with
 // the unique form "form"
 // E.g. if form = "rekami" then forms becomes (1,{("rekami",NULL)}
 void SU_init_invariable_form(SU_forms_T* forms, const unichar* form) {

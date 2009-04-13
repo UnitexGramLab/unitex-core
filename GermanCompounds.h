@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -41,15 +41,15 @@ struct german_word_decomposition_list {
 };
 
 
-void analyse_german_compounds(Alphabet*,unsigned char*,struct INF_codes*,FILE*,FILE*,FILE*,FILE*);
+void analyse_german_compounds(Alphabet*,unsigned char*,struct INF_codes*,U_FILE*,U_FILE*,U_FILE*,U_FILE*);
 void check_valid_right_component_german(char*,struct INF_codes*);
 void check_valid_left_component_german(char*,struct INF_codes*);
 char check_valid_left_component_for_an_INF_line_german(struct list_ustring*);
 char check_valid_left_component_for_one_INF_code_german(unichar*);
 char check_valid_right_component_for_an_INF_line_german(struct list_ustring*);
 char check_valid_right_component_for_one_INF_code_german(unichar*);
-void analyse_german_word_list(unsigned char*,struct INF_codes*,FILE*,FILE*,FILE*,FILE*,char*,char*,Alphabet*);
-int analyse_german_word(unichar*,FILE*,FILE*,char*,char*,struct INF_codes*,Alphabet*,unsigned char*);
+void analyse_german_word_list(unsigned char*,struct INF_codes*,U_FILE*,U_FILE*,U_FILE*,U_FILE*,char*,char*,Alphabet*);
+int analyse_german_word(unichar*,U_FILE*,U_FILE*,char*,char*,struct INF_codes*,Alphabet*,unsigned char*);
 void get_first_sia_code_german(int,unichar*,struct INF_codes*);
 
 struct german_word_decomposition* new_german_word_decomposition();

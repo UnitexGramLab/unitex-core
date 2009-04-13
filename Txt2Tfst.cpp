@@ -51,7 +51,7 @@
  *
  * The function returns 1 if a sentence was read; 0 otherwise.
  */
-int read_sentence(int* buffer,int *N,int *total,FILE* f,int SENTENCE_MARKER) {
+int read_sentence(int* buffer,int *N,int *total,U_FILE* f,int SENTENCE_MARKER) {
 *total=0;
 *N=0;
 if (1!=fread(buffer,sizeof(int),1,f)) {
@@ -180,7 +180,7 @@ load_DELA(dlf,tree);
 load_DELA(dlc,tree);
 u_printf("Loading %s...\n",tags_ind);
 struct match_list* tag_list=NULL;
-FILE* tag_file=u_fopen(tags_ind,U_READ);
+U_FILE* tag_file=u_fopen(UTF16_LE,tags_ind,U_READ);
 if (tag_file!=NULL) {
    tag_list=load_match_list(tag_file,NULL);
    u_fclose(tag_file);
@@ -193,14 +193,14 @@ struct text_tokens* tokens=load_text_tokens(tokens_txt);
 if (tokens==NULL) {
    fatal_error("Cannot open %s\n",tokens_txt);
 }
-FILE* f=fopen(text_cod,"rb");
+U_FILE* f=u_fopen(BINARY,text_cod,U_READ);
 if (f==NULL) {
    fatal_error("Cannot open %s\n",text_cod);
 }
 char text_tfst[FILENAME_MAX];
 get_snt_path(argv[vars->optind],text_tfst);
 strcat(text_tfst,"text.tfst");
-FILE* tfst=u_fopen(text_tfst,U_WRITE);
+U_FILE* tfst=u_fopen(UTF16_LE,text_tfst,U_WRITE);
 if (tfst==NULL) {
    u_fclose(f);
    fatal_error("Cannot create %s\n",text_tfst);
@@ -208,7 +208,7 @@ if (tfst==NULL) {
 char text_tind[FILENAME_MAX];
 get_snt_path(argv[vars->optind],text_tind);
 strcat(text_tind,"text.tind");
-FILE* tind=fopen(text_tind,"wb");
+U_FILE* tind=u_fopen(BINARY,text_tind,U_WRITE);
 if (tind==NULL) {
    u_fclose(f);
    u_fclose(tfst);
@@ -221,7 +221,7 @@ if (norm[0]!='\0') {
 char enter_pos_f[FILENAME_MAX];
 get_snt_path(argv[vars->optind],enter_pos_f);
 strcat(enter_pos_f,"enter.pos");
-FILE* f_enter=fopen(enter_pos_f,"rb");
+U_FILE* f_enter=u_fopen(BINARY,enter_pos_f,U_READ);
 int n_enter_char;
 int* enter_pos=NULL;
 if (f_enter==NULL) {
@@ -237,7 +237,7 @@ else {
    if (n_enter_char!=(int)fread(enter_pos,sizeof(int),n_enter_char,f_enter)) {
       fatal_error("I/O error in main on file %d %s\n",n_enter_char,enter_pos_f);
    }
-   fclose(f_enter);
+   u_fclose(f_enter);
 }
 
 language_t* language=NULL;
@@ -269,11 +269,11 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    }
 }
 u_printf("%d sentence%s read\n",sentence_number-1,(sentence_number-1)>1?"s":"");
-fclose(f);
+u_fclose(f);
 free(enter_pos);
 free_Ustring(text);
 u_fclose(tfst);
-fclose(tind);
+u_fclose(tind);
 write_number_of_graphs(text_tfst,sentence_number-1);
 free_DELA_tree(tree);
 free_text_tokens(tokens);

@@ -269,7 +269,7 @@ if (options->fontname==NULL || options->fontsize<=0) {
       fatal_error("The specified output mode is an HTML file: you must specify font parameters\n");
    }
 }
-FILE* concor=u_fopen(argv[vars->optind],U_READ);
+U_FILE* concor=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (concor==NULL) {
    error("Cannot open concordance index file %s\n",argv[vars->optind]);
    return 1;
@@ -280,7 +280,7 @@ if (options->working_directory[0]=='\0') {
 }
 /* We compute the name of the files associated to the text */
 struct snt_files* snt_files=new_snt_files_from_path(options->working_directory);
-FILE* text=fopen(snt_files->text_cod,"rb");
+U_FILE* text=u_fopen(BINARY,snt_files->text_cod,U_READ);
 if (text==NULL) {
 	error("Cannot open file %s\n",snt_files->text_cod);
 	u_fclose(concor);
@@ -291,12 +291,12 @@ struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
 if (tok==NULL) {
 	error("Cannot load text token file %s\n",snt_files->tokens_txt);
 	u_fclose(concor);
-	fclose(text);
+	u_fclose(text);
 	free_snt_files(snt_files);
 	return 1;
 }
 
-FILE* f_enter=fopen(snt_files->enter_pos,"rb");
+U_FILE* f_enter=u_fopen(BINARY,snt_files->enter_pos,U_READ);
 int n_enter_char;
 /* New lines are encoded in 'enter.pos' files. Those files will disappear in the future */
 int* enter_pos;
@@ -314,7 +314,7 @@ else {
 	if (n_enter_char!=(int)(size/sizeof(int))) {
 		fatal_error("Read error on enter.pos file in main_Concord\n");
 	}
-   fclose(f_enter);
+   u_fclose(f_enter);
 }
 if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->result_mode==AXIS_) {
    /* We force some options for index, uima and axis files */
@@ -328,7 +328,7 @@ if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->resu
 create_concordance(concor,text,tok,n_enter_char,enter_pos,options);
 free(enter_pos);
 u_fclose(concor);
-fclose(text);
+u_fclose(text);
 free_snt_files(snt_files);
 free_text_tokens(tok);
 free_conc_opt(options);

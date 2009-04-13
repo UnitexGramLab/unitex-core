@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -35,7 +35,7 @@ public:
     wchar_t *loadHJAConvMap;
     short int *mbcsUni949Table;
     unsigned char *uniMbcs949Table;
-	
+
     convert_windows949kr_uni(){
         loadHJAConvMap = 0;
         mbcsUni949Table = new short int[256*128];
@@ -48,12 +48,12 @@ public:
     delete uniMbcs949Table;
     if(loadHJAConvMap) unLoadHJAMap();
     };
-    
+
     void mbcsToUniWithSz(unsigned char mbcs[],wchar_t *des,int mbcs_byte_cnt)
     {
         unsigned char page;
         unsigned char off;
-        
+
         for( int i = 0; i < mbcs_byte_cnt;i++){
                 if(mbcs[i] & 0x80){
                     page = mbcs[i] & 0x7f ;
@@ -82,8 +82,8 @@ public:
                      page = 0;
                 }
                 off = *mbcs++;
-               *des = (wchar_t)mbcsUni949Table[page*256 + off]; 
-               ++des;               
+               *des = (wchar_t)mbcsUni949Table[page*256 + off];
+               ++des;
          }
          *des++ = 0;
      };
@@ -98,21 +98,21 @@ public:
         }
     };
     int mbcs949clen(unsigned char *mbcs){
-    int ret = 0;    
+    int ret = 0;
         while(*mbcs){
                 if(*mbcs & 0x80){
                     mbcs++;
                     if(*mbcs == 0) break; // abnormal case
                 }
                 mbcs++;
-               ++ret;               
+               ++ret;
          }
          return(ret);
      };
-    
+
     void strToMapKr() {
-    unsigned short *wp; 
-   
+    unsigned short *wp;
+
     unsigned char page, off;
     int i;
         wp = orgUniMbcsMap;
@@ -121,11 +121,11 @@ public:
         for( i = 128; i < 128 * 256; i++)
              mbcsUni949Table[i] = '?';
         for( i = 0; i < 256;i++){
-                uniMbcs949Table[i*2] = i;   
+                uniMbcs949Table[i*2] = i;
         }
         for( i = 256; i < 0x10000;i++){
                 uniMbcs949Table[i*2] = '?';
-                uniMbcs949Table[i*2 + 1] = '?';       
+                uniMbcs949Table[i*2 + 1] = '?';
         }
         while(*wp){
           if(*wp & 0x8000){
@@ -134,12 +134,12 @@ public:
               wp++;
               mbcsUni949Table[(page & 0x7f)* 256 +off] = *wp;
               // uni
-              if(page){ 
+              if(page){
                   uniMbcs949Table[*wp*2] = page;
                   uniMbcs949Table[*wp*2 + 1] = off;
               }
               wp++;
-          } 
+          }
         }
     };
 
@@ -147,7 +147,7 @@ public:
 	int csz = 0;
 	wchar_t c;
 	int index = 0;
-	
+
     	if(loadHJAConvMap){
     		while(src[index]){
     			c = loadHJAConvMap[src[index]];
@@ -155,16 +155,16 @@ public:
                    if(c){
     			        des[index] =  c;
     				    csz++;
-    				} else 
+    				} else
     				    des[index] = src[index];
     			} else {
-    			    if(c){ 
+    			    if(c){
     				  src[index] = c;
     				  csz++;
     	            }
     			}
-    		    index++;	
-    		} 
+    		    index++;
+    		}
     		if(des) des[index] = 0;
     	}
     	return(csz);
@@ -175,7 +175,7 @@ public:
 	wchar_t c;
 	for (int i = 0; i < 4; i++){
 		c = *l++;
-		
+
 		if(  ( c >= (unichar)'0' ) && (c <=(unichar)'9'))
 			su = su * 16 + c- L'0';
 		else if(  ( c >= (unichar)'a' ) && (c <=(unichar)'f'))
@@ -201,12 +201,12 @@ wchar_t getValueIdx(wchar_t *s,int &idx)
 }
     void loadHJAMap(char *f)
     {
-    	FILE *lf = u_fopen(f,U_READ);
+    	U_FILE* lf = u_fopen(UTF16_LE,f,U_READ);
     	int idx;
     	wchar_t srcIdx;
     	wchar_t desIdx;
     	wchar_t UtempLine[256];
-    	
+
     	loadHJAConvMap = (wchar_t *)malloc( sizeof(wchar_t)*0x10000);
     	for(idx = 0; idx < 0x10000;idx++) loadHJAConvMap[idx] = 0;
     	while(EOF!=u_fgets((unichar *)UtempLine,lf)){
@@ -226,20 +226,20 @@ wchar_t getValueIdx(wchar_t *s,int &idx)
                     if((desIdx >= UNIZONE_Hangul_Syllables) &&
                     (desIdx < UNIZONE_High_Surrogates) )
                     {
-                        		
+
                     loadHJAConvMap[srcIdx] = desIdx;
                     continue;
                     }
             }
             fatal_error("illegal value in HanMap\n");
     	}
-    
+
 	};
 	void unLoadHJAMap()
     {
 	 free(loadHJAConvMap);
 	};
-   
+
 };
 #endif //CODE_PAGE_KR
 

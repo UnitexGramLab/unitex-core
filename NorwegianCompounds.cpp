@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -27,9 +27,9 @@
  * As the PolyLex program was originaly designed for Norwegian,
  * complete information about the analysis of Norwegian words can be
  * found in:
- * 
- * Paumier Sébastien & Harald Ulland, 2005. Analyse automatique de mots
- * polylexicaux en norvégien. Lingvisticæ Investigationes 28:2, 
+ *
+ * Paumier Sï¿½bastien & Harald Ulland, 2005. Analyse automatique de mots
+ * polylexicaux en norvï¿½gien. Lingvisticï¿½ Investigationes 28:2,
  * Amsterdam-Philadelphia : John Benjamins Publishing Company.
  */
 
@@ -56,14 +56,14 @@ struct norwegian_infos {
 	unsigned char* bin;
 	struct INF_codes* inf;
 	/* The file where to read the words to analyze from */
-	FILE* unknown_word_list;
+	U_FILE* unknown_word_list;
 	/* The file where new dictionary lines will be written */
-	FILE* output;
+	U_FILE* output;
 	/* The file where to print information about the analysis */
-	FILE* info_output;
+	U_FILE* info_output;
 	/* The file where to write words that cannot be analyzed as
 	 * compound words */
-	FILE* new_unknown_word_list;
+	U_FILE* new_unknown_word_list;
 	/* Set of words that cannot be part of compound words */
 	struct string_hash* forbidden_words;
 	/* These arrays indicates for each INF code if it can be
@@ -116,8 +116,8 @@ void free_word_decomposition_list(struct word_decomposition_list*);
  * This function analyzes a list of unknown Norwegian words.
  */
 void analyse_norwegian_unknown_words(Alphabet* alphabet,unsigned char* bin,struct INF_codes* inf,
-								FILE* unknown_word_list,FILE* output,FILE* info_output,
-								FILE* new_unknown_word_list,
+								U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
+								U_FILE* new_unknown_word_list,
 								struct string_hash* forbidden_words) {
 /* We create a structure that will contain all settings */
 struct norwegian_infos infos;
@@ -576,7 +576,7 @@ int is_a_valid_right_A=0;
 while (tmp!=NULL) {
 	if (tmp->element->n_parts<=n) {
 		if (tmp->element->n_parts<n) {
-			/* If we change of component number, we reset the 
+			/* If we change of component number, we reset the
 			 * 'is_a_valid_right_N' and 'is_a_valid_right_A' fields,
 			 * because they only concern the head word. */
 			is_a_valid_right_N=0;
@@ -693,21 +693,21 @@ while (l!=NULL) {
  * This explores the dictionary in order decompose the given word into a valid sequence
  * of simple words. For instance, if we have the word "Sommervarmt", we will first
  * explore the dictionary and find that "sommer" is a valid left component that
- * corresponds to the dictionary entry "sommer,.N:msia". Then we will 
+ * corresponds to the dictionary entry "sommer,.N:msia". Then we will
  * look if the following word "varmt" is in the dictionary. It is
  * the case, with the entry "varmt,varm.A:nsio". As we are at the end of the word to
  * analyze and as "varmt" is a valid rightmost component, we will generate an entry
  * according to the following things:
- * 
+ *
  * 'output_dela_line'="sommervarmt,sommervarm.A:nsio"
  * 'analysis'="sommer,.N:msia +++ varmt,varm.A:nsio"
  * 'number_of_components'=2
- * 
+ *
  * Note that the initial "S" was put in lowercase, because the dictionary
  * contains "sommer" and not "Sommer". The lemma is obtained with
  * the lemma of the rightmost component (here "varm"), and the word inherits
  * from the grammatical information of its rightmost component.
- * 
+ *
  * 'offset': offset of the current node in the binary array 'infos->bin'
  * 'current_component': string that represents the current simple word
  * 'pos_in_current_component': position in the string 'current_component'
@@ -715,7 +715,7 @@ while (l!=NULL) {
  * 'pos_in_word_to_analyze': position in the string 'word_to_analyze'
  * 'analysis': string that represents the analysis as a concatenation like
  *             "sommer,.N:msia +++ varmt,varm.A:nsio"
- * 'output_dela_line': string that contains the final DELA line. The lemma is 
+ * 'output_dela_line': string that contains the final DELA line. The lemma is
  *                     obtained by replacing the rightmost term of
  *                     the word to analyze by its lemma.
  * 'L': list of all analysis for the given word

@@ -44,8 +44,8 @@ struct fst2txt_parameters {
    char* fst_file;
    char* alphabet_file;
 
-   FILE* f_input;
-   FILE* f_output;
+   U_FILE* f_input;
+   U_FILE* f_output;
    Fst2* fst2;
    Alphabet* alphabet;
 

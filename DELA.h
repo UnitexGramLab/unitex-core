@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -37,7 +37,7 @@
 #define MAX_SEMANTIC_CODES 100
 
 /* Maximum number of flexional codes (ms,Kf,W,...) per line
- * 
+ *
  * For languages with rich inflection this number must be considerably high,
  * because words with (almost) no inflection and many homonymic forms may occur.
  * e.g. Russian adjectives have max. 31 forms
@@ -53,7 +53,7 @@
 /* Maximum number of filters 100 */
 
 #define MAX_FILTERS 100
-        
+
 /* Value returned when a word is not found in a dictionary */
 #define NOT_IN_DICTIONARY -1
 
@@ -61,11 +61,11 @@
  * This structure is used to represent an entry of a DELA dictionary.
  * Special characters are supposed to have been unprotected, and comments
  * are ignored. For instance, if we have the following line:
- * 
+ *
  * M\. Phileas Fogg,Phileas Fogg.N+PR:ms// proper name with "M."
- * 
+ *
  * the associated entry will contain:
- * 
+ *
  * inflected =           "M. Phileas Fogg"
  * lemma =               "Phileas Fogg"
  * n_semantic_codes:     2
@@ -94,13 +94,13 @@ struct dela_entry {
 struct INF_codes {
 	/* Array containing for each line of the .inf file the reversed list of its
 	 * components. For instance, if the first line contains:
-	 * 
+	 *
 	 * .N+NA+z1:fs,.N+Loc:fs
-	 * 
+	 *
 	 * codes[0] will contain the following list:
 	 *
 	 *  ".N+Loc:fs"   -->   ".N+NA+z1:fs"   -->   NULL
-	 * 
+	 *
 	 */
 	struct list_ustring** codes;
 	/* Number of lines in the .inf file */
@@ -123,11 +123,11 @@ void uncompress_entry(unichar*,unichar*,unichar*);
 struct INF_codes* load_INF_file(char*);
 void free_INF_codes(struct INF_codes*);
 unsigned char* load_BIN_file(char*);
-void rebuild_dictionary(unsigned char*,struct INF_codes*,FILE*);
+void rebuild_dictionary(unsigned char*,struct INF_codes*,U_FILE*);
 void extract_semantic_codes(char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(unichar*,unichar*,unichar*,unichar*);
 void tokenize_tag_token_into_3_parts(unichar*,unichar*,unichar*,unichar*);
-void check_DELA_line(unichar*,FILE*,int,int,char*,struct string_hash*,struct string_hash*,
+void check_DELA_line(unichar*,U_FILE*,int,int,char*,struct string_hash*,struct string_hash*,
                      struct string_hash*,struct string_hash*,int*,int*);
 int warning_on_code(unichar*,unichar*);
 int contains_unprotected_equal_sign(unichar*);

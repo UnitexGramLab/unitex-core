@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -93,7 +93,7 @@ else path[0]='\0';
 /**
  * Takes a file name, removes its extension and adds the suffix "_snt"
  * followed by the separator character.
- * 
+ *
  * Example: filename="C:\English\novel.txt" => result="C:\English\novel_snt\"
  */
 void get_snt_path(const char* filename,char* result) {
@@ -190,7 +190,7 @@ while (*filename) {
 /**
  * This function builds a new absolute file name from a path and a file name.
  * 'result' is supposed to be allocated.
- * 
+ *
  * Example: path="/tmp/test/" name="hello.txt"
  *       => result="/tmp/test/toto.txt"
  */
@@ -209,7 +209,7 @@ int l=strlen(path);
  * we are tolerant: we admit to have a wrong separator char. */
 int length_without_separator=l-((path[l-1]=='/' || path[l-1]=='\\')?1:0);
 /* WARNING: we don't want to modify the existing path and we want to be sure
- * to put the correct path separator char. So, we copy the path except the 
+ * to put the correct path separator char. So, we copy the path except the
  * separator char, if any. */
 strncpy(result,path,length_without_separator);
 /* Then, we don't do a strcat since strncpy didn't put a '\0' at the end of 'res' */
@@ -222,14 +222,14 @@ strcpy(&(result[length_without_separator+1]),name);
 /**
  * This function copies the file 'src' into 'dest'.
  * Author: Olivier Blanc
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 void copy_file(char* dest,char* src) {
-FILE* input=fopen(src,"rb");
+U_FILE* input=u_fopen(ASCII,src,"rb");
 if (input==NULL) {
    fatal_error("Unable to open '%s'\n",src);
 }
-FILE* output=fopen(dest,"wb");
+U_FILE* output=u_fopen(ASCII,dest,"wb");
 if (output==NULL) {
    fatal_error("Unable to open '%s'\n",dest);
 }
@@ -238,8 +238,8 @@ int n;
 while ((n=fread(buffer,sizeof(char),4096,input))>0) {
    fwrite(buffer,sizeof(char),n,output);
 }
-fclose(input);
-fclose(output);
+u_fclose(input);
+u_fclose(output);
 }
 
 
@@ -247,15 +247,15 @@ fclose(output);
  * Returns 1 if the given file exists and can be read; 0 otherwise.
  */
 int fexists(char* name) {
-FILE* f=fopen(name,"r");
+U_FILE* f=u_fopen(ASCII,name,"r");
 if (f==NULL) return 0;
-fclose(f);
+u_fclose(f);
 return 1;
 }
 
 
 /**
- * Returns a value corresponding to the file date. 
+ * Returns a value corresponding to the file date.
  */
 time_t get_file_date(char* name) {
 struct stat info;
@@ -265,22 +265,22 @@ return info.st_mtime;
 
 
 /**
- * Returns the size in bytes of the given file, or -1 if not found. 
+ * Returns the size in bytes of the given file, or -1 if not found.
  */
 long get_file_size(char* name) {
-FILE* f=fopen(name,"rb");
+U_FILE* f=u_fopen(ASCII,name,"rb");
 if (f==NULL) return -1;
 fseek(f,0,SEEK_END);
 long size=ftell(f);
-fclose(f);
+u_fclose(f);
 return size;
 }
 
 
 /**
- * Returns the size in bytes of the given file. 
+ * Returns the size in bytes of the given file.
  */
-long get_file_size(FILE* f) {
+long get_file_size(U_FILE* f) {
 long old_pos=ftell(f);
 fseek(f,0,SEEK_END);
 long size=ftell(f);

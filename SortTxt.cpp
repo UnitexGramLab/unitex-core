@@ -80,8 +80,8 @@ struct sort_tree_transition {
  * All infos needed by sort operations.
  */
 struct sort_infos {
-	FILE* f;
-	FILE* f_out;
+	U_FILE* f;
+	U_FILE* f_out;
 	char REMOVE_DUPLICATES;
 	int REVERSE;
 	int number_of_lines;
@@ -176,7 +176,7 @@ free(inf);
 void read_char_order(char* name,struct sort_infos* inf) {
 int c;
 int current_line=1;
-FILE* f=u_fopen(name,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",name);
    return;
@@ -313,12 +313,12 @@ if (sort_order[0]!='\0') {
 char new_name[FILENAME_MAX];
 strcpy(new_name,argv[vars->optind]);
 strcat(new_name,".new");
-inf->f=u_fopen(argv[vars->optind],U_READ);
+inf->f=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (inf->f==NULL) {
    error("Cannot open file %s\n",argv[vars->optind]);
    return 1;
 }
-inf->f_out=u_fopen(new_name,U_WRITE);
+inf->f_out=u_fopen(UTF16_LE,new_name,U_WRITE);
 if (inf->f_out==NULL) {
    error("Cannot open temporary file %s\n",new_name);
    u_fclose(inf->f);
@@ -329,7 +329,7 @@ switch (mode) {
    case THAI: sort_thai(inf); break;
 }
 if (line_info[0]!='\0') {
-   FILE* F=u_fopen(line_info,U_WRITE);
+   U_FILE* F=u_fopen(UTF16_LE,line_info,U_WRITE);
    if (F==NULL) {
       error("Cannot write %s\n",line_info);
    }

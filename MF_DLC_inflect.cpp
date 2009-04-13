@@ -53,7 +53,7 @@ void DLC_delete_entry(DLC_entry_T* entry);
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
 int inflect(char* DLC, char* DLCF,int config_files_status,d_class_equiv_T* D_CLASS_EQUIV) {
-  FILE *dlc, *dlcf;  //DELAS/DELAC and DELAF/DELACF files
+  U_FILE *dlc, *dlcf;  //DELAS/DELAC and DELAF/DELACF files
   unichar input_line[DIC_LINE_SIZE];  //current DELAS/DELAC line
   unichar output_line[DIC_LINE_SIZE];  //current DELAF/DELACF line
   int l;  //length of the line scanned
@@ -62,12 +62,12 @@ int inflect(char* DLC, char* DLCF,int config_files_status,d_class_equiv_T* D_CLA
   int err;
 
   //Open DELAS/DELAC
-  dlc = u_fopen(DLC, U_READ);
+  dlc = u_fopen(UTF16_LE,DLC, U_READ);
   if (!dlc) {
     return 1;
   }
   //Open DELAF/DELACF
-  dlcf = u_fopen(DLCF, U_WRITE);
+  dlcf = u_fopen(UTF16_LE,DLCF, U_WRITE);
   if (!dlcf) {
     error("Unable to open file: '%s' !\n", DLCF);
     return 1;

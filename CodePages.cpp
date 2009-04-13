@@ -1121,7 +1121,7 @@ return fwrite(&c,1,1,f);
 
 
 int write_one_char(unichar c,FILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
-if (encoding->type==ONE_BYTE_ENCODING) {
+if (encoding->type==E_ONE_BYTE_ENCODING) {
 	return write_1_byte_character(ascii_dest[c],f);
 } else {
 	return encoding->output_function(c,f);
@@ -1232,7 +1232,7 @@ html_characters_encoding(c,encoding,f,1,1,ascii_dest);
  *
  */
 int read_one_char(FILE* input,struct encoding* encoding,unichar* unicode_src) {
-if (encoding->type==ONE_BYTE_ENCODING) {
+if (encoding->type==E_ONE_BYTE_ENCODING) {
 	return read_1_byte_character(input,unicode_src);
 } else {
 	return encoding->input_function(input);
@@ -1259,7 +1259,7 @@ if (encoding->type==ONE_BYTE_ENCODING) {
  *      characters like '<' must be encoded as HTML strings like '&#228;' instead
  *      of being encoded as any other character
  */
-int convert(FILE* input,FILE* output,struct encoding* input_encoding,
+int convert(U_FILE* input,U_FILE* output,struct encoding* input_encoding,
 			struct encoding* output_encoding,
             int decode_HTML_normal_characters,int decode_HTML_control_characters,
             int encode_all_characters,int encode_HTML_control_characters) {
@@ -1273,17 +1273,17 @@ unichar unicode_dest[256];
 unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 switch(input_encoding->type) {
 	/* For UTF-16 encodings, we need to read the 2-byte header */
-	case UTF16_LE: tmp=u_fgetc(input);
+	case E_UTF16_LE: tmp=u_fgetc(input);
 		if (tmp!=U_BYTE_ORDER_MARK) {
 			return INPUT_FILE_NOT_IN_UTF16_LE;
 		}
 		break;
-	case UTF16_BE: tmp=u_fgetc_UTF16BE(input);
+	case E_UTF16_BE: tmp=u_fgetc_UTF16BE(input->f);
 		if (tmp!=U_BYTE_ORDER_MARK) {
 			return INPUT_FILE_NOT_IN_UTF16_BE;
 		}
 		break;
-	case ONE_BYTE_ENCODING: input_encoding->init_function(unicode_src);
+	case E_ONE_BYTE_ENCODING: input_encoding->init_function(unicode_src);
 		break;
 }
 /*
@@ -1292,9 +1292,9 @@ switch(input_encoding->type) {
  * function.
  */
 switch(output_encoding->type) {
-	case UTF16_LE: u_fputc((unichar)U_BYTE_ORDER_MARK,output); break;
-	case UTF16_BE: u_fputc_UTF16BE((unichar)U_BYTE_ORDER_MARK,output); break;
-	case ONE_BYTE_ENCODING: output_encoding->init_function(unicode_dest);
+	case E_UTF16_LE: u_fputc_UTF16LE(U_BYTE_ORDER_MARK,output->f); break;
+	case E_UTF16_BE: u_fputc_UTF16BE(U_BYTE_ORDER_MARK,output->f); break;
+	case E_ONE_BYTE_ENCODING: output_encoding->init_function(unicode_dest);
 							init_uni2asc_code_page_array(ascii_dest,unicode_dest);
 							break;
 }
@@ -1308,17 +1308,17 @@ else if (encode_HTML_control_characters)
 		z=f01;
 	else z=f00;
 /* Then we read all the characters from the input file and we encode them */
-while ((tmp=read_one_char(input,input_encoding,unicode_src))!=EOF) {
+while ((tmp=read_one_char(input->f,input_encoding,unicode_src))!=EOF) {
 	if (!decode_HTML_normal_characters || tmp!='&') {
 		/* If we do not need to decode HTML normal characters like &#eacute;
 		 * or if we do not have '&', we can print the character to the output */
-		z((unichar)tmp,output_encoding,output,ascii_dest);
+		z((unichar)tmp,output_encoding,output->f,ascii_dest);
 	} else {
 		/* We read everything until we find the ';' character */
 		char temp[257];
 		int i=0;
 		do {
-			tmp=read_one_char(input,input_encoding,unicode_src);
+			tmp=read_one_char(input->f,input_encoding,unicode_src);
 			if (tmp==EOF) {
 				/* If we find an unexpected end of file, we raise an error */
 				return ERROR_IN_HTML_CHARACTER_NAME;
@@ -1334,7 +1334,7 @@ while ((tmp=read_one_char(input,input_encoding,unicode_src))!=EOF) {
 			/* If the character declaration contains a non ascii character,
 			 * we print an error message and we write '?' to the output. */
 			error("Non ASCII character in a HTML character declaration of the form &......;\n");
-			z('?',output_encoding,output,ascii_dest);
+			z('?',output_encoding,output->f,ascii_dest);
 		} else if (i==1) {
 			/* If we have an empty code '&;' we print an error message and
 			 * we print nothing to the output. */
@@ -1344,7 +1344,7 @@ while ((tmp=read_one_char(input,input_encoding,unicode_src))!=EOF) {
 			/* If the HTML character if too long, we print an error message
 			 * and print '?' in the output. */
 			 error("Too long HTML character of the form &........;\n");
-			 z('?',output_encoding,output,ascii_dest);
+			 z('?',output_encoding,output->f,ascii_dest);
 		} else {
 			temp[i-1]='\0';
 			/* Now, temp contains "#228" or "eacute". We look for the associated
@@ -1352,31 +1352,31 @@ while ((tmp=read_one_char(input,input_encoding,unicode_src))!=EOF) {
 			 * the '?' character. */
 			i=get_HTML_character(temp,decode_HTML_control_characters);
 			switch (i) {
-				case UNKNOWN_CHARACTER: z('?',output_encoding,output,ascii_dest); break;
+				case UNKNOWN_CHARACTER: z('?',output_encoding,output->f,ascii_dest); break;
 				case MALFORMED_HTML_CODE: error("Malformed HTML character declaration &%s;\n",temp);
-									z('?',output_encoding,output,ascii_dest); break;
+									z('?',output_encoding,output->f,ascii_dest); break;
 				case DO_NOT_DECODE_CHARACTER:
 					/* If we have a control character that we must not decode like '&gt;',
 					 * we print it as it to the output */
-					 z('&',output_encoding,output,ascii_dest);
+					 z('&',output_encoding,output->f,ascii_dest);
 					 for (int j=0;temp[j]!='\0';j++) {
-					 	z(temp[j],output_encoding,output,ascii_dest);
+					 	z(temp[j],output_encoding,output->f,ascii_dest);
 					 }
-					 z(';',output_encoding,output,ascii_dest);
+					 z(';',output_encoding,output->f,ascii_dest);
 					 break;
 				default: if (!is_HTML_control_character(i) || decode_HTML_control_characters) {
 							/* If we have a normal character or if we can
 							 * encode control characters, then we print it */
-							z(i,output_encoding,output,ascii_dest);
+							z(i,output_encoding,output->f,ascii_dest);
 						} else {
 							/* If we have a control character and if we can not decode it,
 							 * then we copy the string representation that was in
 							 * the input */
-							z('&',output_encoding,output,ascii_dest);
+							z('&',output_encoding,output->f,ascii_dest);
 							for (int j=0;temp[j]!='\0';j++) {
-								z(temp[j],output_encoding,output,ascii_dest);
+								z(temp[j],output_encoding,output->f,ascii_dest);
 							}
-							z(';',output_encoding,output,ascii_dest);
+							z(';',output_encoding,output->f,ascii_dest);
 					 		break;
 						}
 			}
@@ -1469,7 +1469,7 @@ if (name==NULL) {
 }
 /* First we build the encoding */
 struct encoding* encoding=new_encoding();
-encoding->type=ONE_BYTE_ENCODING;
+encoding->type=E_ONE_BYTE_ENCODING;
 if ((encoding->name=strdup(name))==NULL) {
 	fatal_alloc_error("install_one_byte_encoding");
 }
@@ -1619,11 +1619,11 @@ void install_all_encodings() {
  * First we install UTF encodings.
  */
 const char* aliases_utf8[2]={"utf-8",NULL};
-install_multi_bytes_encoding("utf8",UTF8,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8,aliases_utf8);
+install_multi_bytes_encoding("utf8",E_UTF8,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8,aliases_utf8);
 const char* aliases_utf16_le[4]={"utf-16-le","utf16le","little-endian",NULL};
-install_multi_bytes_encoding("utf16-le",UTF16_LE,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le,aliases_utf16_le);
+install_multi_bytes_encoding("utf16-le",E_UTF16_LE,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le,aliases_utf16_le);
 const char* aliases_utf16_be[4]={"utf-16-be","utf16be","big-endian",NULL};
-install_multi_bytes_encoding("utf16-be",UTF16_BE,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be,aliases_utf16_be);
+install_multi_bytes_encoding("utf16-be",E_UTF16_BE,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be,aliases_utf16_be);
 /*
  * ISO encodings
  */
@@ -1656,7 +1656,7 @@ install_one_byte_encoding("ms-windows-874",init_windows_874,usage_windows_874,al
 #ifndef HGH_INSERT
 /* Note that ms-windows-949 is a multi-bytes encoding */
 const char* aliases_windows_949[4]={"windows-949","windows949","korean",NULL};
-install_multi_bytes_encoding("ms-windows-949",MBCS_KR,read_mbcs_char,write_mbcs_char,usage_windows_949,aliases_windows_949);
+install_multi_bytes_encoding("ms-windows-949",E_MBCS_KR,read_mbcs_char,write_mbcs_char,usage_windows_949,aliases_windows_949);
 #endif
 const char* aliases_windows_1250[4]={"windows-1250","windows1250","czech",NULL};
 install_one_byte_encoding("ms-windows-1250",init_windows_1250,usage_windows_1250,aliases_windows_1250);

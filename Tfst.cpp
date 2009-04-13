@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -30,9 +30,9 @@ void free_current_sentence(Tfst*);
 
 
 /**
- * Allocates, initializes and returns a Tfst* 
+ * Allocates, initializes and returns a Tfst*
  */
-Tfst* new_Tfst(FILE* tfst,FILE* tind,int N) {
+Tfst* new_Tfst(U_FILE* tfst,U_FILE* tind,int N) {
 Tfst* t=(Tfst*)malloc(sizeof(Tfst));
 if (t==NULL) {
    fatal_alloc_error("new_Tfst");
@@ -58,7 +58,7 @@ return t;
 void close_text_automaton(Tfst* t) {
 if (t==NULL) return;
 if (t->tfst!=NULL) u_fclose(t->tfst);
-if (t->tind!=NULL) fclose(t->tind);
+if (t->tind!=NULL) u_fclose(t->tind);
 free_current_sentence(t);
 free(t);
 }
@@ -80,16 +80,16 @@ if (size==-1) {
    error("Cannot get size of file %s\n",tind);
    return NULL;
 }
-FILE* f=u_fopen(tfst,U_READ);
+U_FILE* f=u_fopen(UTF16_LE,tfst,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",tfst);
    return NULL;
 }
-FILE* f2=fopen(tind,U_READ);
+U_FILE* f2=u_fopen(BINARY,tind,U_READ);
 if (f2==NULL) {
    /* Should not happen since we checked the size of this file */
    error("Cannot open file %s\n",tind);
-   fclose(f);
+   u_fclose(f);
    return NULL;
 }
 int N;
@@ -210,7 +210,7 @@ if (n==2) {
       fatal_error("read_normal_tag: negative bound in line %S\n",foo->str);
    }
 }
-/* Finally, we must check that we have the final line with a dot */ 
+/* Finally, we must check that we have the final line with a dot */
 readline(foo,t->tfst);
 if (u_strcmp(foo->str,".\n")) {
    fatal_error("read_normal_tag: invalid final line %S\n",foo->str);
@@ -353,10 +353,10 @@ free(t);
 
 
 /**
- * Dumps the given offset in the given, as an unsigned 4-byte 
+ * Dumps the given offset in the given, as an unsigned 4-byte
  * Little-Endian sequence.
  */
-void dump_offset(long offset,FILE* tind) {
+void dump_offset(long offset,U_FILE* tind) {
 uint32_t n=(uint32_t)offset;
 unsigned char t[4];
 t[0]=n&0xFF;
@@ -371,12 +371,12 @@ if (4!=fwrite(t,1,4,tind)) {
 
 /**
  * Saves the current sentence of the given tfst.
- * If 'tags' is not NULL, it is supposed to contain ready-to-dump tag labels that 
+ * If 'tags' is not NULL, it is supposed to contain ready-to-dump tag labels that
  * will be used; otherwise, the function saves each TfstTag.
- * 
+ *
  * WARNING: if tags are provided, they are supposed to be \n terminated !
  */
-void save_current_sentence(Tfst* tfst,FILE* out_tfst,FILE* out_tind,unichar** tags,int n_tags) {
+void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* out_tind,unichar** tags,int n_tags) {
 if (tfst==NULL) {
    fatal_error("NULL tfst in save_current_sentence\n");
 }

@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -29,9 +29,9 @@
 /**
  * This library provides functions for safely manipulating
  * unicode strings.
- * 
+ *
  * Author: Olivier Blanc
- * Modified by Sébastien Paumier
+ * Modified by Sï¿½bastien Paumier
  */
 
 /**
@@ -40,10 +40,10 @@
 typedef struct {
    /* The unichar buffer */
    unichar* str;
-   
+
    /* Its maximum capacity */
    int size;
-   
+
    /* The actual length of the string being represented */
    int len;
 } Ustring;
@@ -72,8 +72,7 @@ static inline void chomp_new_line(Ustring*);
 void u_sprintf(Ustring*,const char*,...);
 void u_strcatf(Ustring*,const char*,...);
 
-int readline(Ustring*,Encoding,FILE*);
-int readline(Ustring*,FILE*);
+int readline(Ustring*,U_FILE*);
 
 
 
@@ -93,7 +92,7 @@ ustr->len=0;
 
 
 /**
- * Concatenates the given unicode string to the given Ustring. 
+ * Concatenates the given unicode string to the given Ustring.
  */
 static inline void u_strcat(Ustring* ustr,const unichar* str) {
 if (ustr==NULL) {
@@ -105,7 +104,7 @@ u_strcat(ustr,str,u_strlen(str));
 
 
 /**
- * Concatenates the given Utring to the given Ustring. 
+ * Concatenates the given Utring to the given Ustring.
  */
 static inline void u_strcat(Ustring* a,const Ustring* b) {
 if (a==NULL || b==NULL) {
@@ -117,7 +116,7 @@ u_strcat(a,b->str,b->len);
 
 
 /**
- * Concatenates the given string to the given Ustring. 
+ * Concatenates the given string to the given Ustring.
  */
 static inline void u_strcat(Ustring* ustr,const char* str) {
 if (ustr==NULL) {
