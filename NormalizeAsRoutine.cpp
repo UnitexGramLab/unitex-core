@@ -208,7 +208,6 @@ int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
 
 	u_fclose(input);
 	u_fclose(output);
-
 	return 0;
 }
 

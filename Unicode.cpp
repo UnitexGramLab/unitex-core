@@ -20,7 +20,7 @@
   */
 
 #include<stdio.h>
-static FILE* (*real_fopen)(const char*,const char*);
+static FILE* (*real_fopen)(const char*,const char*)=fopen;
 
 #include "Unicode.h"
 #include "Error.h"
@@ -224,6 +224,9 @@ return n;
  * 'MODE' should be U_READ, U_WRITE, U_APPEND or U_MODIFY
  */
 U_FILE* u_fopen(Encoding encoding,const char* name,const char* MODE) {
+if (name==NULL) {
+	fatal_error("NULL file name in u_fopen\n");
+}
 FILE* f;
 if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
    /* If we are in APPEND or MODIFY mode, we check first if the file already exists */

@@ -258,7 +258,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    }
    index=-1;
 }
-
 if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
@@ -310,7 +309,7 @@ if (f_enter==NULL) {
 	n_enter_char=0;
 }
 else {
-	n_enter_char=fread(&enter_pos,sizeof(int),size/sizeof(int),f_enter);
+	n_enter_char=fread(enter_pos,sizeof(int),size/sizeof(int),f_enter);
 	if (n_enter_char!=(int)(size/sizeof(int))) {
 		fatal_error("Read error on enter.pos file in main_Concord\n");
 	}

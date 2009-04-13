@@ -226,7 +226,7 @@ u_printf("Usage: SortTxt [OPTIONS] <txt>\n"
 
 
 
-int pseudo_main_SortTxt(int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai) {
+int pseudo_main_SortTxt(int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char* text) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_SortTxt,"main_SortTxt");
 if (duplicates) {
    add_argument(invoker,"-d");
@@ -247,6 +247,7 @@ if (line_info!=NULL) {
 if (thai) {
    add_argument(invoker,"-t");
 }
+add_argument(invoker,text);
 int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
 return ret;

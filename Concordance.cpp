@@ -158,7 +158,7 @@ if(option->result_mode==XALIGN_) return;
 
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
 if (option->sort_mode!=TEXT_ORDER) {
-   pseudo_main_SortTxt(0,0,option->sort_alphabet,NULL,option->thai_mode);
+   pseudo_main_SortTxt(0,0,option->sort_alphabet,NULL,option->thai_mode,temp_file_name);
 }
 /* Now, we will take the sorted raw text concordance and we will:
  * 1) reorder the columns

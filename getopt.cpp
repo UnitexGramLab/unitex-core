@@ -539,6 +539,7 @@ o->optind=1;
 o->optopt='?';
 o->nonopt_start=-1;
 o->nonopt_end=-1;
+o->optreset=0;
 return o;
 }
 
