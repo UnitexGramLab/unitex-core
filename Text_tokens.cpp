@@ -228,10 +228,14 @@ for (int i=0;i<N;i++) {
          u_strcpy(line+3,codes->string);
          //u_printf("code=_%S_\n",codes->string);
          struct dela_entry* entry=tokenize_DELAF_line(line);
-         for (int k=0;k<entry->n_semantic_codes;k++) {
-            get_value_index(entry->semantic_codes[k],semantic_codes);
+         if (entry!=NULL) {
+            /* There could be an error due to an old dictionary with,
+             * for instance, duplicate semantic codes */
+            for (int k=0;k<entry->n_semantic_codes;k++) {
+               get_value_index(entry->semantic_codes[k],semantic_codes);
+            }
+            free_dela_entry(entry);
          }
-         free_dela_entry(entry);
          codes=codes->next;
       }
    }
