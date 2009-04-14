@@ -665,7 +665,7 @@ if (!(n_transitions & 32768)) {
           * DELAF line in 'info->dlc' */
          uncompress_entry(inflected,tmp->string,line);
          struct dela_entry* dela_entry=tokenize_DELAF_line(line);
-         if (is_entry_compatible_with_pattern(dela_entry,pattern)) {
+         if (dela_entry!=NULL && is_entry_compatible_with_pattern(dela_entry,pattern)) {
             (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),save_dic_entry?dela_entry:NULL);
          }
          free_dela_entry(dela_entry);
