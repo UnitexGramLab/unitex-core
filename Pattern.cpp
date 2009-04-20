@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -59,11 +59,13 @@ free(p);
 
 
 /**
- * Returns 1 if s is a code pattern (V:Kms, N+Hum, ...); 0 otherwise.
- * 'semantic_codes' is a string_hash that contains all the possible 
- * grammatical/semantic codes.
+ * Tests if s is a code pattern (V:Kms, N+Hum, ...).
+ * 'semantic_codes' is a string_hash that contains all the possible
+ * grammatical/semantic codes. If NULL, the return value can be
+ * AMBIGUOUS_PATTERN if there no indication that helps to guess if
+ * we have a code or a lemma.
  */
-int is_code_pattern(unichar* s,struct string_hash* semantic_codes) {
+enum pattern_type is_code_pattern(unichar* s,struct string_hash* semantic_codes) {
 if ((s==NULL)||(s[0]=='\0')) {
    fatal_error("NULL or empty pattern in is_code_pattern\n");
 }
@@ -74,13 +76,17 @@ if (P_BACKSLASH_AT_END==parse_string(s,&i,tmp,P_PLUS_MINUS_COLON)) {
 }
 /* If we have found '+' '-' or ':', then we have a code pattern */
 if (s[i]!='\0') {
-   return 1;
+   return CODE_PATTERN;
+}
+/* If we have no grammatical codes, we can't decide */
+if (semantic_codes==NULL) {
+	return AMBIGUOUS_PATTERN;
 }
 /* Otherwise, we test if the string is a grammatical or semantic code */
 if (get_value_index(s,semantic_codes,DONT_INSERT)!=-1) {
-   return 1;
+   return CODE_PATTERN;
 }
-return 0;
+return LEMMA_PATTERN;
 }
 
 
@@ -180,20 +186,20 @@ if (P_BACKSLASH_AT_END==parse_string(s,&pos,tmp,P_COMMA_DOT)) {
 if (s[pos]=='\0') {
    /* We must test on s and NOT on inflected, because of patterns like
     * <A+faux\-ami>. In fact, s contains "A+faux\-ami" and inflected
-    * contains "A+faux-ami". So, if we consider inflected instead of s, 
+    * contains "A+faux-ami". So, if we consider inflected instead of s,
     * the minus will be taken as a negation and not as a part of the code
-    * "faux-ami", and then, no difference will be made between 
+    * "faux-ami", and then, no difference will be made between
     * "<A+faux\-ami>" and "<A+faux-ami>". */
-   if (is_code_pattern(s,semantic_codes)) {
+   p->type=is_code_pattern(s,semantic_codes);
+   if (p->type==CODE_PATTERN) {
       /* If we are in the <V> case */
-      p->type=CODE_PATTERN;
       build_code_pattern(p,s);
       return p;
    }
    else {
-      /* If we are in the <be> case */
-      p->type=LEMMA_PATTERN;
-      p->lemma=u_strdup(/*inflected*/tmp);
+      /* If we are in the <XXX> where XXX is either a lemma or an unknown element
+       * that can be both lemma and grammatical code */
+      p->lemma=u_strdup(tmp);
       return p;
    }
 }
@@ -286,6 +292,7 @@ switch(pattern->type) {
    case CODE_PATTERN: return is_compatible_code_pattern(entry,pattern);
    case LEMMA_AND_CODE_PATTERN: return (!u_strcmp(entry->lemma,pattern->lemma)) && is_compatible_code_pattern(entry,pattern);
    case FULL_PATTERN: return (!u_strcmp(entry->inflected,pattern->inflected)) && (!u_strcmp(entry->lemma,pattern->lemma)) && is_compatible_code_pattern(entry,pattern);
+   case AMBIGUOUS_PATTERN: return !u_strcmp(entry->lemma,pattern->lemma) || dic_entry_contain_gram_code(entry,pattern->lemma);
    default: fatal_error("Unexpected case in is_entry_compatible_with_pattern\n");
 }
 return 0;

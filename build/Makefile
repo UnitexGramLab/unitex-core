@@ -352,6 +352,14 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Unicode.o Alphabet.o DELA.o List
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o
 
+LOCATETFST      = LocateTfst
+LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Unicode.o Error.o getopt.o LocateTfst_lib.o \
+                  Tfst.o File.o Ustring.o SingleGraph.o List_int.o BitMasks.o FIFO.o Transitions.o \
+                  Symbol.o LanguageDefinition.o Tagset.o String_hash.o StringParsing.o DELA.o \
+                  Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o Pattern.o \
+                  LocateTfstMatches.o ConcordanceTfst.o
+
+
 MULTIFLEX      = MultiFlex
 MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_DicoMorpho.o MF_FormMorpho.o MF_LangMorpho.o\
                  MF_InflectTransd.o  MF_MU_graph.o MF_MU_morpho.o MF_SU_morpho.o MF_Unif.o MF_Util.o\
@@ -527,7 +535,7 @@ PROGS__ = $(LOCATE)
 
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
 		$(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) \
-		$(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(MULTIFLEX)\
+		$(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(LOCATETFST) $(MULTIFLEX)\
 		$(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TXT2TFST) $(XMLIZER)   
@@ -746,6 +754,9 @@ $(BIN_DIR)$(IMPLODETFST)$(EXTENSION): $(IMPLODETFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(LOCATE)$(EXTENSION): $(LOCATE_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(LOCATETFST)$(EXTENSION): $(LOCATETFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(MULTIFLEX)$(EXTENSION): $(MULTIFLEX_OBJS)

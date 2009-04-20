@@ -44,6 +44,7 @@ t->current_sentence=NO_SENTENCE_LOADED;
 t->text=NULL;
 t->tokens=NULL;
 t->token_sizes=NULL;
+t->token_content=NULL;
 t->offset_in_tokens=-1;
 t->offset_in_chars=-1;
 t->automaton=NULL;
@@ -111,6 +112,13 @@ if (tfst==NULL) {
 tfst->current_sentence=NO_SENTENCE_LOADED;
 free(tfst->text);
 tfst->text=NULL;
+if (tfst->token_content!=NULL) {
+	for (int i=0;i<tfst->tokens->nbelems;i++) {
+		free(tfst->token_content[i]);
+	}
+	free(tfst->token_content);
+	tfst->token_content=NULL;
+}
 free_vector_int(tfst->tokens);
 tfst->tokens=NULL;
 free_vector_int(tfst->token_sizes);
@@ -481,3 +489,31 @@ if (t->type==T_STD) {
 }
 fatal_error("Invalid tag type %d in TfstTag_to_string\n",t->type);
 }
+
+
+/**
+ * This function fills the 'token_content' field of the given tfst
+ */
+void compute_token_contents(Tfst* t) {
+if (t==NULL) {
+	fatal_error("NULL error in compute_token_contents\n");
+}
+if (t->current_sentence==NO_SENTENCE_LOADED) {
+	fatal_error("Cannot compute token contents when no sentence is loaded\n");
+}
+t->token_content=(unichar**)malloc(t->token_sizes->nbelems*sizeof(unichar*));
+if (t->token_content==NULL) {
+	fatal_alloc_error("compute_token_contents");
+}
+unichar tmp[4096];
+int j,pos=0;
+for (int i=0;i<t->token_sizes->nbelems;i++) {
+	for (j=0;j<t->token_sizes->tab[i];j++) {
+		tmp[j]=t->text[pos];
+		pos++;
+	}
+	tmp[j]='\0';
+	t->token_content[i]=u_strdup(tmp);
+}
+}
+

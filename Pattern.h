@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -34,11 +34,15 @@
  *   TOKEN_PATTERN: hello
  *                  By convention, the token of such a pattern is stored
  *                  in the 'inflected' field.
- * 
+ *
  *   LEMMA_PATTERN: <be>
  *   CODE_PATTERN:  <N+z1:ms>
  *   LEMMA_AND_CODE_PATTERN: <be.V:K>
  *   FULL_PATTERN:  <am,be.V>
+ *   AMBIGUOUS_PATTERN: <be> or <V>; this pattern can be used when we don't know what
+ *                      can be a grammatical code, if there is no other way to guess
+ *                      (for instance, <V-z1> is not ambiguous, because of '-z1'). By convention
+ *                      the ambiguous form is stored in the 'lemma' field of the pattern structure.
  */
 enum pattern_type {
    UNDEFINED_PATTERN,
@@ -46,7 +50,8 @@ enum pattern_type {
    LEMMA_PATTERN,
    CODE_PATTERN,
    LEMMA_AND_CODE_PATTERN,
-   FULL_PATTERN
+   FULL_PATTERN,
+   AMBIGUOUS_PATTERN
 };
 
 
@@ -58,7 +63,7 @@ enum pattern_type {
  * - a list of grammatical/semantic codes
  * - a list of forbidden grammatical/semantic codes
  * - a list of inflectional codes
- * 
+ *
  * Some of these fields may be optional according to the pattern type.
  * All these list are sorted, and inflectional codes are supposed to be strings whose
  * characters are sorted. For instance, the pattern "<rouges,rouge.A+Couleur-z3:sm:sf>" will be

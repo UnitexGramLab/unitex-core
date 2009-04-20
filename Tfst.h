@@ -52,9 +52,12 @@ typedef struct {
    /* The text of the current sentence */
    unichar* text;
 
-   /* The tokens of the current sentence and their sizes in characters */
+   /* The tokens of the current sentence (according to 'text.cod') and their sizes in characters */
    vector_int* tokens;
    vector_int* token_sizes;
+
+   /* For LocateTfst, it is useful to have directly the content of the tokens */
+   unichar** token_content;
 
    /* Offsets of the current sentence in the text */
    int offset_in_tokens;
@@ -111,6 +114,8 @@ void save_current_sentence(Tfst* tfst,U_FILE* out_tfst,U_FILE* tind,unichar** ta
 TfstTag* new_TfstTag(TfstTagType);
 void free_TfstTag(TfstTag*);
 void TfstTag_to_string(TfstTag*,unichar*);
+
+void compute_token_contents(Tfst*);
 
 #endif
 

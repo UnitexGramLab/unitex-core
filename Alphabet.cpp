@@ -95,6 +95,7 @@ while ((c=u_fgetc(f))!=EOF) {
          upper=(unichar)u_fgetc(f);
          if (lower>upper) {
             error("Error in alphabet file: for an interval like #AZ, A must be before Z\n");
+            free_alphabet(alphabet);
             u_fclose(f);
             return NULL;
          }
@@ -241,7 +242,7 @@ return 1;
  * Returns 1 if the string 's' is only made of uppercase letters,
  * according to the given alphabet, 0 otherwise.
  */
-int is_sequence_of_uppercase(unichar* s,Alphabet* alphabet) {
+int is_sequence_of_uppercase_letters(unichar* s,Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
   if (!is_upper(s[i],alphabet)) return 0;

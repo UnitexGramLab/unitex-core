@@ -1396,6 +1396,27 @@ return 1;
 
 
 /**
+ * Returns 1 if a and b have exactly the same semantic codes; 0
+ * otherwise. a and b are supposed to be non NULL.
+ */
+int same_inflectional_codes(struct dela_entry* a,struct dela_entry* b) {
+if (a->n_inflectional_codes!=b->n_inflectional_codes) return 0;
+for (int i=0;i<b->n_inflectional_codes;i++) {
+   if (!dic_entry_contain_inflectional_code(a,b->inflectional_codes[i])) return 0;
+}
+return 1;
+}
+
+
+/**
+ * Returns 1 if a and b have exactly the same semantic and inflectional codes; 0
+ * otherwise. a and b are supposed to be non NULL.
+ */
+int same_codes(struct dela_entry* a,struct dela_entry* b) {
+return same_semantic_codes(a,b) && same_inflectional_codes(a,b);
+}
+
+/**
  * Adds to dst all the inflectional codes of src, it not already present.
  * Both are supposed to be non NULL.
  */

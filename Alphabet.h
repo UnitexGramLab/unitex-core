@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -48,7 +48,7 @@ int is_upper(unichar,Alphabet*);
 int is_letter(unichar,Alphabet*);
 int is_letter2(unichar,Alphabet*);
 int is_sequence_of_lowercase_letters(unichar*,Alphabet*);
-int is_sequence_of_uppercase(unichar*,Alphabet*);
+int is_sequence_of_uppercase_letters(unichar*,Alphabet*);
 int is_sequence_of_letters(unichar*,Alphabet*);
 int is_equal_ignore_case_and_quotes(unichar*,unichar*,Alphabet*);
 void turn_portuguese_sequence_to_lowercase(unichar*);

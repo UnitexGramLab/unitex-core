@@ -140,6 +140,8 @@ int dic_entry_contain_inflectional_code(struct dela_entry*,unichar*);
 void get_inflection_code(unichar*,char*,unichar*,int*);
 void build_tag(struct dela_entry*,unichar*,unichar*);
 int same_semantic_codes(struct dela_entry*,struct dela_entry*);
+int same_inflectional_codes(struct dela_entry*,struct dela_entry*);
+int same_codes(struct dela_entry*,struct dela_entry*);
 void merge_inflectional_codes(struct dela_entry*,struct dela_entry*);
 int is_a_valid_tag_sequence(unichar*);
 int one_inflectional_codes_contains_the_other(unichar*,unichar*);
