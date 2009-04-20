@@ -516,6 +516,22 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
             break;
          }
 
+         /* Lowercase operator */
+         case 'W': {
+            stack[pos]=u_tolower(stack[pos]);
+            pos++;
+            pos_tag++;
+            break;
+         }
+
+         /* Uppercase operator */
+         case 'P': {
+            stack[pos]=u_toupper(stack[pos]);
+            pos++;
+            pos_tag++;
+            break;
+         }
+
             /* Right copy operator */
          case 'C': {
             shift_stack(stack, pos);
