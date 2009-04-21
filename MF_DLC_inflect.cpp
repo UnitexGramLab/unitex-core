@@ -130,7 +130,7 @@ int inflect(char* DLC, char* DLCF, int config_files_status,
 			/* If we have not a simple word DELAS line, we try to analyse it
 			 * as a compound word DELAC line */
 			if (error_check_status==ONLY_SIMPLE_WORDS) {
-				error("Unexpected simple compound forbidden by -s:\n%S\n",input_line);
+				error("Unexpected compound word forbidden by -s:\n%S\n",input_line);
 				goto next_line;
 			}
 			if (config_files_status != CONFIG_FILES_ERROR) {
