@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -50,7 +50,12 @@ if (s==NULL) {
    return;
 }
 for (i=0;s[i]!='\0';i++) {
-   push_char(stack,s[i]);
+	if (s[i]==',' || s[i]=='.') {
+		/* We want to protect dots and commas because the Locate program can be used
+		 * by Dico to generate dictionary entries */
+		push_char(stack,'\\');
+	}
+    push_char(stack,s[i]);
 }
 }
 
@@ -71,7 +76,7 @@ for (i=0;i<length && s[i]!='\0';i++) {
 
 /**
  * This function processes the given output string.
- * Returns 1 if OK; 0 otherwise (for instance, if a variable is 
+ * Returns 1 if OK; 0 otherwise (for instance, if a variable is
  * not correctly defined).
  */
 int process_output(unichar* s,struct locate_parameters* p) {
