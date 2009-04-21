@@ -185,9 +185,11 @@ if (out==NULL) {
 	u_fclose(f);
 	return;
 }
-/* If we have an HTML or a GlossaNet concordance, we must write an HTML
+/* If we have an HTML or a GlossaNet/script concordance, we must write an HTML
  * file header. */
-if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) write_HTML_header(out,N_MATCHES,option);
+if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_ || option->result_mode==SCRIPT_) {
+	write_HTML_header(out,N_MATCHES,option);
+}
 unichar A[3000];
 unichar B[3000];
 unichar C[3000];
@@ -282,13 +284,13 @@ while ((c=u_fgetc(f))!=EOF) {
 			 * procedure if we have a Thai sorted concordance. */
 			if (option->thai_mode) reverse_initial_vowels_thai(left);
 			/* Now we revert and print the left context */
-			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) {
+			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_ || option->result_mode==SCRIPT_) {
             u_fprintf(out,"<tr><td nowrap>%HR",left);
 			} else {u_fprintf(out,"%R",left);}
 		} else {
 			/* If the concordance is not sorted, we do not need to revert the
 			 * left context. */
-			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) {
+			if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_ || option->result_mode==SCRIPT_) {
             u_fprintf(out,"<tr><td nowrap>%HS",left);
 			} else {u_fprintf(out,"%S",left);}
 		}
@@ -304,8 +306,13 @@ while ((c=u_fgetc(f))!=EOF) {
 		/* If we must produce a GlossaNet concordance, we turn the sequence
 		 * into an URL, using the given GlossaNet script. */
 		else if (option->result_mode==GLOSSANET_) {
-			u_fprintf(out,"<A HREF=\"%s?rec=%HS&adr=%HS",option->glossanet_script,middle,href);
+			u_fprintf(out,"<A HREF=\"%s?rec=%HS&adr=%HS",option->script,middle,href);
          u_fprintf(out,"\" style=\"color: rgb(0,0,128)\">%HS</A>%HS</td></tr>\n",middle,right);
+		}
+		/* If we must produce a script concordance */
+		else if (option->result_mode==SCRIPT_) {
+			u_fprintf(out,"<a href=\"%s%US",option->script,middle);
+            u_fprintf(out,"\">%HS</a>%HS</td></tr>\n",middle,right);
 		}
 		/* If we must produce a text concordance */
 		else if (option->result_mode==TEXT_) {
@@ -1091,7 +1098,7 @@ opt->fontname=NULL;
 opt->fontsize=0;
 opt->result_mode=HTML_;
 opt->output[0]='\0';
-opt->glossanet_script=NULL;
+opt->script=NULL;
 opt->sort_alphabet=NULL;
 opt->working_directory[0]='\0';
 return opt;
@@ -1104,7 +1111,7 @@ return opt;
 void free_conc_opt(struct conc_opt* opt) {
 if (opt==NULL) return;
 if (opt->fontname!=NULL) free(opt->fontname);
-if (opt->glossanet_script!=NULL) free(opt->glossanet_script);
+if (opt->script!=NULL) free(opt->script);
 if (opt->sort_alphabet!=NULL) free(opt->sort_alphabet);
 free(opt);
 }

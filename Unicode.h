@@ -238,6 +238,7 @@ int u_ends_with(const unichar*,const unichar*);
 int u_ends_with(const unichar*,const char*);
 
 void u_to_char(char*,unichar*);
+int URLize(unichar*,unichar*);
 int htmlize(unichar*,unichar*);
 int mirror(unichar*,unichar*);
 int mirror(unichar*);
@@ -248,6 +249,7 @@ unsigned int hash_unichar(unichar*);
 /* ------------------- Character functions ------------------- */
 int u_is_digit(unichar);
 int u_is_basic_latin_letter(unichar);
+int u_is_ASCII_alphanumeric(unichar);
 int u_is_latin1_supplement_letter(unichar);
 int u_is_latin_extendedA_letter(unichar);
 int u_is_latin_extendedB_letter(unichar);

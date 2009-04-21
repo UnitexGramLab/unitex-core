@@ -44,6 +44,7 @@
 /* UIMA: begin & end positions in chars in the txt file, ignoring {S} */
 #define UIMA_ 6
 #define MERGE_ 7
+#define SCRIPT_ 8
 
 
 /**
@@ -62,7 +63,7 @@ struct conc_opt {
   int fontsize;
   int result_mode;
   char output[FILENAME_MAX];
-  char* glossanet_script;
+  char* script;
   char* sort_alphabet;
   char working_directory[FILENAME_MAX];
 };

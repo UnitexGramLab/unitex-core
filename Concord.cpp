@@ -67,6 +67,8 @@ u_printf("Usage: Concord [OPTIONS] <concord>\n"
         "  -H/--html: produces an HTML concordance file (default)\n"
         "  -t/--text: produces a plain text concordance file\n"
         "  -g SCRIPT/--glossanet=SCRIPT: produces a glossanet HTML concordance file\n"
+		"  -p SCRIPT/--script=SCRIPT: produces a HTML concordance file where occurrences\n"
+		"                             are links described by SCRIPT\n"
         "  -i/--index: produces an index of the concordance\n"
         "  -u/--uima: produces another index of the concordance\n"
         "  -A/--axis: produces an axis file for the concordance (cf. [Melamed 06])\n"
@@ -144,7 +146,7 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":f:s:l:r:Htg:iuAxm:a:Td:h";
+const char* optstring=":f:s:l:r:Htg:p:iuAxm:a:Td:h";
 const struct option_TS lopts[]= {
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
@@ -160,6 +162,7 @@ const struct option_TS lopts[]= {
       {"html",no_argument_TS,NULL,'H'},
       {"text",no_argument_TS,NULL,'t'},
       {"glossanet",required_argument_TS,NULL,'g'},
+      {"script",required_argument_TS,NULL,'p'},
       {"index",no_argument_TS,NULL,'i'},
       {"uima",no_argument_TS,NULL,'u'},
       {"axis",no_argument_TS,NULL,'A'},
@@ -220,8 +223,17 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              if (vars->optarg[0]=='\0') {
                 fatal_error("Empty glossanet script argument\n");
              }
-             options->glossanet_script=strdup(vars->optarg);
-             if (options->glossanet_script==NULL) {
+             options->script=strdup(vars->optarg);
+             if (options->script==NULL) {
+                fatal_alloc_error("main_Concord");
+             }
+             break;
+   case 'p': options->result_mode=SCRIPT_;
+             if (vars->optarg[0]=='\0') {
+                fatal_error("Empty script argument\n");
+             }
+             options->script=strdup(vars->optarg);
+             if (options->script==NULL) {
                 fatal_alloc_error("main_Concord");
              }
              break;

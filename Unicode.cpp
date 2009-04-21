@@ -902,6 +902,8 @@ return length;
  *   c      otherwise
  *   See 'htmlize' for details.
  *
+ * - %U works in the same way than %H, but it invokes 'URLize'
+ *
  * Author: S�bastien Paumier
  * Original version with format option restrictions: Olivier Blanc
  */
@@ -934,8 +936,15 @@ while (*format) {
             break;
          }
 
-         case 'H': {
-            /* If we have a '%H', it means that we have to print HTML things */
+         case 'H':
+         case 'U': {
+            int (*XXXize)(unichar*,unichar*);
+            if (*format=='H') {
+            	XXXize=htmlize;
+            } else {
+            	XXXize=URLize;
+            }
+        	/* If we have a '%H' (or '%U'), it means that we have to print HTML things (or URLs) */
             format++;
             if (*format=='C' || *format=='c') {
                /* If we have to print a HTML character */
@@ -943,7 +952,7 @@ while (*format) {
                tmp[0]=(unichar)va_arg(list,int);
                tmp[1]='\0';
                unichar html[32];
-               int l=htmlize(tmp,html);
+               int l=XXXize(tmp,html);
                u_fprints(encoding,html,f);
                n_printed=n_printed+l;
             } else if (*format=='S') {
@@ -954,7 +963,7 @@ while (*format) {
                   n_printed=n_printed+6;
                } else {
                   unichar html[4096];
-                  int l=htmlize(us,html);
+                  int l=XXXize(us,html);
                   u_fprints(encoding,html,f);
                   n_printed=n_printed+l;
                }
@@ -968,11 +977,11 @@ while (*format) {
                   unichar reversed[4096];
                   mirror(us,reversed);
                   unichar html[4096];
-                  int l=htmlize(reversed,html);
+                  int l=XXXize(reversed,html);
                   u_fprints(encoding,html,f);
                   n_printed=n_printed+l;
                }
-            } else fatal_error("Invalid format option %%H%c\n",*format);
+            } else fatal_error("Invalid format option %c%c\n",*(format-1),*format);
             break;
          }
 
@@ -1111,6 +1120,8 @@ return n;
  * - %HS for printing a unicode string in HTML (see htmlize)
  * - %R for printing the reversed of a unicode string
  * - %HR for printing the reversed of a unicode string in HTML (see htmlize)
+ * - %US for printing a unicode string as a URL (see URLize)
+ * - %UR for printing the reversed of a unicode string as a URL (see URLize)
  *
  * Author: S�bastien Paumier
  * Original version with format option restrictions: Olivier Blanc
@@ -1140,8 +1151,15 @@ while (*format) {
             break;
          }
 
-         case 'H': {
-            /* If we have a '%H', it means that we have to print HTML things */
+         case 'H':
+         case 'U': {
+            int (*XXXize)(unichar*,unichar*);
+            if (*format=='H') {
+            	XXXize=htmlize;
+            } else {
+            	XXXize=URLize;
+            }
+        	/* If we have a '%H', it means that we have to print HTML things */
             format++;
             if (*format=='S') {
                /* If we have to print a HTML string */
@@ -1151,7 +1169,7 @@ while (*format) {
                   n_printed=n_printed+6;
                } else {
                   unichar html[4096];
-                  int l=htmlize(us,html);
+                  int l=XXXize(us,html);
                   if (dest) u_strcpy(&(dest[n_printed]),html);
                   n_printed=n_printed+l;
                }
@@ -1165,11 +1183,11 @@ while (*format) {
                   unichar reversed[4096];
                   mirror(us,reversed);
                   unichar html[4096];
-                  int l=htmlize(reversed,html);
+                  int l=XXXize(reversed,html);
                   if (dest) u_strcpy(&(dest[n_printed]),html);
                   n_printed=n_printed+l;
                }
-            } else fatal_error("Invalid format option %%H%c\n",*format);
+            } else fatal_error("Invalid format option %c%c\n",*(format-1),*format);
             break;
          }
 
@@ -2140,6 +2158,32 @@ do {
 
 /**
  * Puts a copy of 'src' into 'dst', replacing:
+ * - ASCII alphanumerics by themselves
+ * - other by %YY where YY is the hexadecimal representation of the unicode character value
+ *
+ * Note that 'dst' is supposed to be large enough.
+ * The function returns the length of 'dst'.
+ */
+int URLize(unichar* src,unichar* dst) {
+if (src==NULL) {
+   fatal_error("NULL error in URLize\n");
+}
+int pos=0;
+for (int i=0;src[i]!='\0';i++) {
+	if (u_is_ASCII_alphanumeric(src[i])) {
+		dst[pos++]=src[i];
+	} else {
+		int n=u_sprintf(&(dst[pos]),"%%%X",src[i]);
+		pos=pos+n;
+	}
+}
+dst[pos]='\0';
+return pos;
+}
+
+
+/**
+ * Puts a copy of 'src' into 'dst', replacing:
  * - multi-spaces by non-breakable spaces. Spaces at the beginning of the string
  *   are also converted, even if there is only one
  * - '< ' by "&lt;"
@@ -2151,7 +2195,7 @@ do {
  */
 int htmlize(unichar* src,unichar* dst) {
 if (src==NULL) {
-   fatal_error("NULL error in ize\n");
+   fatal_error("NULL error in htmlize\n");
 }
 int i=0;
 int pos=0;
@@ -2276,6 +2320,10 @@ int u_is_basic_latin_letter(unichar c) {
 return ((c>='a' && c<='z') || (c>='A' && c<='Z'));
 }
 
+
+int u_is_ASCII_alphanumeric(unichar c) {
+return u_is_digit(c) || u_is_basic_latin_letter(c);
+}
 
 //
 // returns true if c is a latin-1 supplement letter
