@@ -533,7 +533,6 @@ int verbose;
 struct dela_entry* res=tokenize_DELAS_line(line,&verbose);
 if (res==NULL) return NULL;
 if (!is_sequence_of_letters(res->lemma,alphabet)) {
-   error("A DELAS lemma must be only made of letters in the alphabet file: %S\n",res->lemma);
    free_dela_entry(res);
    return NULL;
 }
