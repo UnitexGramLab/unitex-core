@@ -26,22 +26,46 @@
 #include "ConcordanceTfst.h"
 #include "DELA.h"
 #include "Pattern.h"
+#include "MorphologicalFilters.h"
 
 
 #define OK_MATCH_STATUS 1
 #define NO_MATCH_STATUS 2
 #define TEXT_INDEPENDENT_MATCH 3
 
+/**
+ * This structure is used to wrap many information needed to perform the locate
+ * operation on a text automaton.
+ */
+struct locate_tfst_infos {
+	U_FILE* output;
 
-void explore_tfst(Tfst* tfst,Fst2* fst2,Alphabet* alph,int current_state_in_tfst,
+	Alphabet* alphabet;
+
+	int n_matches;
+
+	#ifdef TRE_WCHAR
+	/* These field is used to manipulate morphological filters like:
+	 *
+	 * <<en$>>
+	 *
+	 * 'filters' is a structure used to store the filters.
+	 */
+	FilterSet* filters;
+	#endif
+};
+
+void explore_tfst(Tfst* tfst,Fst2* fst2,int current_state_in_tfst,
 		          int current_state_in_fst2,int depth,
 		          struct tfst_match* match_element_list,
-                  struct tfst_match_list** LIST,int *n_matches,U_FILE* output);
+                  struct tfst_match_list** LIST,
+                  struct locate_tfst_infos* infos);
 
-int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,Alphabet* alphabet);
+int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,struct locate_tfst_infos* infos);
 int same_codes(struct dela_entry* a,struct dela_entry* b);
 struct pattern* tokenize_grammar_tag(unichar* tag,int *negation);
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag);
+int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locate_tfst_infos* infos);
 
 
 /**
@@ -55,30 +79,53 @@ if (tfst==NULL) {
 }
 Fst2* fst2=load_fst2(grammar,0);
 if (fst2==NULL) {
+	close_text_automaton(tfst);
 	return 0;
 }
-Alphabet* alph=load_alphabet(alphabet);
-if (alph==NULL) {
+struct locate_tfst_infos infos;
+infos.n_matches=0;
+infos.alphabet=load_alphabet(alphabet);
+if (infos.alphabet==NULL) {
+	close_text_automaton(tfst);
+	free_Fst2(fst2);
 	error("Cannot load alphabet file: %s\n",alphabet);
 	return 0;
 }
-U_FILE* out=u_fopen(UTF16_LE,output,U_WRITE);
-if (out==NULL) {
+infos.output=u_fopen(UTF16_LE,output,U_WRITE);
+if (infos.output==NULL) {
+	close_text_automaton(tfst);
+	free_Fst2(fst2);
+	free_alphabet(infos.alphabet);
 	error("Cannot open %s\n",output);
+	return 0;
 }
-int n_matches=0;
+#ifdef TRE_WCHAR
+infos.filters=new_FilterSet(fst2,infos.alphabet);
+if (infos.filters==NULL) {
+	close_text_automaton(tfst);
+	free_Fst2(fst2);
+	free_alphabet(infos.alphabet);
+	u_fclose(infos.output);
+    error("Cannot compile filter(s)\n");
+   return 0;
+}
+#endif
+
 /* We launch the matching for each sentence */
 for (int i=1;i<=tfst->N;i++) {
 	load_sentence(tfst,i);
 	compute_token_contents(tfst);
 	/* Within a sentencce graph, we try to match from any state */
 	for (int j=0;j<tfst->automaton->number_of_states;j++) {
-		explore_tfst(tfst,fst2,alph,j,fst2->initial_states[1],0,NULL,NULL,&n_matches,out);
+		explore_tfst(tfst,fst2,j,fst2->initial_states[1],0,NULL,NULL,&infos);
 	}
 }
 /* And we free things */
-u_fclose(out);
-free_alphabet(alph);
+#ifdef TRE_WCHAR
+free_FilterSet(infos.filters);
+#endif
+u_fclose(infos.output);
+free_alphabet(infos.alphabet);
 free_Fst2(fst2);
 close_text_automaton(tfst);
 return 1;
@@ -88,19 +135,19 @@ return 1;
 /**
  * Explores in parallel the tfst and the fst2.
  */
-void explore_tfst(Tfst* tfst,Fst2* fst2,Alphabet* alphabet,int current_state_in_tfst,
+void explore_tfst(Tfst* tfst,Fst2* fst2,int current_state_in_tfst,
 		          int current_state_in_fst2,int depth,
 		          struct tfst_match* match_element_list,
                   struct tfst_match_list* *LIST,
-                  int *n_matches,U_FILE* output) {
+                  struct locate_tfst_infos* infos) {
 Fst2State current_state_in_grammar=fst2->states[current_state_in_fst2];
 
 if (is_final_state(current_state_in_grammar)) {
    /* If the current state is final */
    if (depth==0) {
       /* If we are in the main graph, we produce a concordance line */
-      compute_tfst_match_concordance_line(tfst,match_element_list,output);
-      (*n_matches)++;
+      compute_tfst_match_concordance_line(tfst,match_element_list,infos->output);
+      (infos->n_matches)++;
    } else {
       /* If we are in a subgraph, we add a match to the current match list */
       (*LIST)=add_match_in_list((*LIST),match_element_list);
@@ -116,19 +163,19 @@ while (grammar_transition!=NULL) {
       struct tfst_match_list* list_for_subgraph=NULL;
       struct tfst_match_list* tmp;
 
-      explore_tfst(tfst,fst2,alphabet,
+      explore_tfst(tfst,fst2,
     		  current_state_in_tfst,fst2->initial_states[-e],
-              depth+1,match_element_list,&list_for_subgraph,n_matches,output);
+              depth+1,match_element_list,&list_for_subgraph,infos);
       while (list_for_subgraph!=NULL) {
          tmp=list_for_subgraph->next;
          /* Before exploring an element that points on a subgraph match,
           * we decrease its 'pointed_by' variable that was previously increased
           * in the 'add_match_in_list' function */
          (list_for_subgraph->match->pointed_by)--;
-         explore_tfst(tfst,fst2,alphabet,
+         explore_tfst(tfst,fst2,
                            list_for_subgraph->match->dest_state_text,
                            grammar_transition->state_number,
-                           depth,list_for_subgraph->match,LIST,n_matches,output);
+                           depth,list_for_subgraph->match,LIST,infos);
          /* Finally, we remove, if necessary, the list of match element
           * that was used for storing the subgraph match. This cleaning
           * will only free elements that are not involved in others
@@ -146,7 +193,9 @@ while (grammar_transition!=NULL) {
        * text automaton, and we note all the states we can reach */
       while (text_transition!=NULL) {
          int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[text_transition->tag_number]),
-                                                 fst2->tags[grammar_transition->tag_number],alphabet);
+                                                 fst2->tags[grammar_transition->tag_number],infos);
+         TfstTag* r=(TfstTag*)(tfst->tags->tab[text_transition->tag_number]);
+         u_printf("%S %S => %d\n",r->content,fst2->tags[grammar_transition->tag_number]->input,result);
          if (result==OK_MATCH_STATUS) {
             /* Case of a match with something in the text automaton (i.e. <V>) */
             list=insert_in_tfst_matches(list,current_state_in_tfst,text_transition->state_number,
@@ -171,8 +220,8 @@ while (grammar_transition!=NULL) {
          list->next=match_element_list;
          /* match_element_list is pointed by one more element */
          if (match_element_list!=NULL) {(match_element_list->pointed_by)++;}
-         explore_tfst(tfst,fst2,alphabet,list->dest_state_text,grammar_transition->state_number,
-                           depth,list,LIST,n_matches,output);
+         explore_tfst(tfst,fst2,list->dest_state_text,grammar_transition->state_number,
+                           depth,list,LIST,infos);
          if (list->pointed_by==0) {
             /* If list is not blocked by being part of a match for the calling
              * graph, we can free it */
@@ -192,16 +241,19 @@ while (grammar_transition!=NULL) {
 /**
  * This function tests if a text tag can be matched by a grammar tag.
  */
-int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,Alphabet* alphabet) {
-/**************************************************
- * We want to match something that is text independent */
+int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
+                                        struct locate_tfst_infos* infos) {
 if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
 	|| grammar_tag->type==BEGIN_NEGATIVE_CONTEXT_TAG
 	|| grammar_tag->type==END_CONTEXT_TAG
 	|| grammar_tag->type==LEFT_CONTEXT_TAG
 	|| grammar_tag->type==BEGIN_MORPHO_TAG
-	|| grammar_tag->type==END_MORPHO_TAG
-	|| grammar_tag->type==BEGIN_VAR_TAG
+	|| grammar_tag->type==END_MORPHO_TAG) {
+   fatal_error("Tag '%S' should not be found in a grammar applied to a text automaton\n",grammar_tag->input);
+}
+/**************************************************
+ * We want to match something that is text independent */
+if (grammar_tag->type==BEGIN_VAR_TAG
 	|| grammar_tag->type==END_VAR_TAG
     || !u_strcmp(grammar_tag->input,"<E>")) {
    return TEXT_INDEPENDENT_MATCH;
@@ -232,8 +284,8 @@ struct dela_entry* text_entry=NULL;
 
 /**************************************************
  * We want to match a token like "le" */
-if (is_letter(grammar_tag->input[0],alphabet)) {
-   if (is_letter(text_tag->content[0],alphabet)) {
+if (is_letter(grammar_tag->input[0],infos->alphabet)) {
+   if (is_letter(text_tag->content[0],infos->alphabet)) {
       /* text= "toto" */
       if (grammar_tag->control & RESPECT_CASE_TAG_BIT_MASK) {
          /* If we must respect case */
@@ -241,7 +293,7 @@ if (is_letter(grammar_tag->input[0],alphabet)) {
          else {return NO_MATCH_STATUS;}
       } else {
          /* If case does not matter */
-         if (is_equal_or_uppercase(grammar_tag->input,text_tag->content,alphabet)) {return OK_MATCH_STATUS;}
+         if (is_equal_or_uppercase(grammar_tag->input,text_tag->content,infos->alphabet)) {return OK_MATCH_STATUS;}
          else {return NO_MATCH_STATUS;}
       }
    } else if (text_tag->content[0]=='{' && text_tag->content[1]!='\0') {
@@ -259,7 +311,7 @@ if (is_letter(grammar_tag->input[0],alphabet)) {
 		 }
       } else {
          /* If case does not matter */
-    	 if (is_equal_or_uppercase(grammar_tag->input,text_entry->inflected,alphabet)) {
+    	 if (is_equal_or_uppercase(grammar_tag->input,text_entry->inflected,infos->alphabet)) {
     		 goto ok_match;
     	 } else {
     		 goto no_match;
@@ -278,7 +330,7 @@ if (grammar_tag->input[0]=='{' && u_strcmp(grammar_tag->input,"{S}")) {
    }
    grammar_entry=tokenize_tag_token(grammar_tag->input);
    text_entry=tokenize_tag_token(text_tag->content);
-   if (!is_equal_or_uppercase(grammar_entry->inflected,text_entry->inflected,alphabet)) {
+   if (!is_equal_or_uppercase(grammar_entry->inflected,text_entry->inflected,infos->alphabet)) {
       /* We allow case variations on the inflected form :
        * if there is "{tutu,toto.XXX}" in the grammar, we want it
        * to match "{Tutu,toto.XXX}" in the text automaton */
@@ -307,15 +359,15 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<MOT>")) {
       /* <MOT> matches a sequence of letters or a tag like {tutu,toto.XXX}, even
        * if 'tutu' is not made of characters */
-      if (is_letter(text_tag->content[0],alphabet) || text_entry!=NULL) {
+      if (is_letter(text_tag->content[0],infos->alphabet) || text_entry!=NULL) {
          goto ok_match;
       }
       goto no_match;
    }
    if (!u_strcmp(grammar_tag->input,"<!MOT>")) {
       /* <!MOT> matches the opposite of <MOT> */
-      if (!is_letter(text_tag->content[0],alphabet)
-          && text_entry->inflected==NULL) {
+      if (!is_letter(text_tag->content[0],infos->alphabet)
+          && text_entry==NULL) {
     	  goto ok_match;
       }
       goto no_match;
@@ -323,8 +375,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<MIN>")) {
       /* <MIN> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * only made of lower case letters */
-      if (is_sequence_of_lowercase_letters(text_tag->content,alphabet) ||
-          (text_entry!=NULL && is_sequence_of_lowercase_letters(text_entry->inflected,alphabet))) {
+      if (is_sequence_of_lowercase_letters(text_tag->content,infos->alphabet) ||
+          (text_entry!=NULL && is_sequence_of_lowercase_letters(text_entry->inflected,infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -332,8 +384,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<!MIN>")) {
       /* <!MIN> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * that is not only made of lower case letters */
-      if ((is_letter(text_tag->content[0],alphabet) && !is_sequence_of_lowercase_letters(text_tag->content,alphabet))
-          || (text_entry!=NULL && !is_sequence_of_lowercase_letters(text_entry->inflected,alphabet))) {
+      if ((is_letter(text_tag->content[0],infos->alphabet) && !is_sequence_of_lowercase_letters(text_tag->content,infos->alphabet))
+          || (text_entry!=NULL && !is_sequence_of_lowercase_letters(text_entry->inflected,infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -341,8 +393,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<MAJ>")) {
       /* <MAJ> matches a sequence of letters or a tag like {TUTU,toto.XXX}
        * only made of upper case letters */
-      if (is_sequence_of_uppercase_letters(text_tag->content,alphabet) ||
-          (text_entry!=NULL && is_sequence_of_uppercase_letters(text_entry->inflected,alphabet))) {
+      if (is_sequence_of_uppercase_letters(text_tag->content,infos->alphabet) ||
+          (text_entry!=NULL && is_sequence_of_uppercase_letters(text_entry->inflected,infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -350,8 +402,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<!MAJ>")) {
       /* <!MAJ> matches a sequence of letters or a tag like {tutu,toto.XXX}
        * that is not only made of upper case letters */
-      if ((is_letter(text_tag->content[0],alphabet) && !is_sequence_of_uppercase_letters(text_tag->content,alphabet))
-          || (text_entry!=NULL && !is_sequence_of_uppercase_letters(text_entry->inflected,alphabet))) {
+      if ((is_letter(text_tag->content[0],infos->alphabet) && !is_sequence_of_uppercase_letters(text_tag->content,infos->alphabet))
+          || (text_entry!=NULL && !is_sequence_of_uppercase_letters(text_entry->inflected,infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -359,8 +411,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<PRE>")) {
       /* <PRE> matches a sequence of letters or a tag like {TUTU,toto.XXX}
        * that begins by an upper case letter */
-      if (is_upper(text_tag->content[0],alphabet) ||
-          (text_entry!=NULL && is_upper(text_entry->inflected[0],alphabet))) {
+      if (is_upper(text_tag->content[0],infos->alphabet) ||
+          (text_entry!=NULL && is_upper(text_entry->inflected[0],infos->alphabet))) {
          goto ok_match;
       }
       goto no_match;
@@ -368,8 +420,8 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    if (!u_strcmp(grammar_tag->input,"<!PRE>")) {
       /* <!PRE> matches a sequence of letters or a tag like {TUTU,toto.XXX}
        * that does not begin by an upper case letter */
-      if ((is_letter(text_tag->content[0],alphabet) && !is_upper(text_tag->content[0],alphabet)) ||
-          (text_entry!=NULL && is_letter(text_entry->inflected[0],alphabet) && !is_upper(text_entry->inflected[0],alphabet))) {
+      if ((is_letter(text_tag->content[0],infos->alphabet) && !is_upper(text_tag->content[0],infos->alphabet)) ||
+          (text_entry!=NULL && is_letter(text_entry->inflected[0],infos->alphabet) && !is_upper(text_entry->inflected[0],infos->alphabet))) {
          /* We test is_letter+!is_upper instead of is_lower in order to handle
           * cases where there is no difference between lower and upper case letters
           * (for instance Thai) */
@@ -391,7 +443,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
    }
    if (!u_strcmp(grammar_tag->input,"<!DIC>")) {
       /* <DIC> matches any sequence of letters that is not a tag like {tutu,toto.XXX} */
-      if (is_letter(text_tag->content[0],alphabet)) {
+      if (is_letter(text_tag->content[0],infos->alphabet)) {
          goto ok_match;
       }
       goto no_match;
@@ -402,7 +454,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
        * NOTE: according to the formal definition of simple words, something like
        *       {3,.NUMBER} is not considered as a simple word since 3 is not
        *       a letter. It will be considered as a compound word */
-      if (text_entry!=NULL && is_sequence_of_letters(text_entry->inflected,alphabet)) {
+      if (text_entry!=NULL && is_sequence_of_letters(text_entry->inflected,infos->alphabet)) {
          goto ok_match;
       }
       goto no_match;
@@ -411,7 +463,7 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       /* <CDIC> matches any tag like {tutu,toto.XXX} where tutu is a compound word
        *
        * NOTE: see <SDIC> note */
-      if (text_entry!=NULL && !is_sequence_of_letters(text_entry->inflected,alphabet)) {
+      if (text_entry!=NULL && !is_sequence_of_letters(text_entry->inflected,infos->alphabet)) {
          goto ok_match;
       }
       goto no_match;
@@ -450,15 +502,27 @@ if (!u_strcmp(grammar_tag->input,text_tag->content)) {
 return NO_MATCH_STATUS;
 
 /* We arrive here when we have used dela_entry variables */
+int ret_value;
+
+
 ok_match:
-free_dela_entry(grammar_entry);
-free_dela_entry(text_entry);
-return OK_MATCH_STATUS;
+/* We test the morphological filter, if any */
+if (!morphological_filter_is_ok((text_entry!=NULL)?text_entry->inflected:text_tag->content,grammar_tag,infos)) {
+	goto no_match;
+}
+ret_value=OK_MATCH_STATUS;
+goto clean;
 
 no_match:
+ret_value=NO_MATCH_STATUS;
+/* This goto is useless, but there because if one day someone inserts something here...
+ * Note that our friend compiler certainly removes it */
+goto clean;
+
+clean:
 free_dela_entry(grammar_entry);
 free_dela_entry(text_entry);
-return NO_MATCH_STATUS;
+return ret_value;
 }
 
 
@@ -493,7 +557,7 @@ return pattern;
  * Returns 1 if there is a space on the immediate left of the given tag.
  */
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag) {
-if (tag->start_pos_char==0) {
+if (tag->start_pos_char==0 || tag->start_pos_char==-1) {
 	/* The tag starts exactly at the beginning of a token, so we just
 	 * have to look if the previous token was ending with a space. By convention,
 	 * we say that the token #0 has no space on its left */
@@ -506,4 +570,16 @@ if (tag->start_pos_char==0) {
 	/* The tag is in the middle of a token */
 	return tfst->token_content[tag->start_pos_token][tag->start_pos_char-1]==' ';
 }
+}
+
+
+/**
+ * Tests if the text tag is compatible with the grammar tag morphological filter, if any.
+ * Returns 1 in case of success (no filter is a case of success); 0 otherwise.
+ */
+int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locate_tfst_infos* infos) {
+if (grammar_tag->filter_number==-1) {
+	return 1;
+}
+return string_match_filter(infos->filters,content,grammar_tag->filter_number);
 }
