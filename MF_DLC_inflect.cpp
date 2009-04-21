@@ -52,7 +52,7 @@ void DLC_delete_entry(DLC_entry_T* entry);
 /////////////////////////////////////////////////////////////////////////////////
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
-int inflect(char* DLC, char* DLCF,int config_files_status,d_class_equiv_T* D_CLASS_EQUIV) {
+int inflect(char* DLC, char* DLCF,int config_files_status,d_class_equiv_T* D_CLASS_EQUIV,int error_check_status) {
   U_FILE *dlc, *dlcf;  //DELAS/DELAC and DELAF/DELACF files
   unichar input_line[DIC_LINE_SIZE];  //current DELAS/DELAC line
   unichar output_line[DIC_LINE_SIZE];  //current DELAF/DELACF line
@@ -87,6 +87,10 @@ int inflect(char* DLC, char* DLCF,int config_files_status,d_class_equiv_T* D_CLA
     if ((DELAS_entry=is_strict_DELAS_line(input_line,alph))!=NULL) {
       /* If we have a strict DELAS line, that is to say, one with
        * a simple word */
+      if (error_check_status==ONLY_COMPOUND_WORDS) {
+    	  error("Forbidden simple word entry:\n%S\n",input_line);
+    	  continue;
+      }
       SU_forms_T forms;
       SU_init_forms(&forms); //Allocate the space for forms and initialize it to null values
       char inflection_code[1024];
@@ -118,7 +122,11 @@ int inflect(char* DLC, char* DLCF,int config_files_status,d_class_equiv_T* D_CLA
     } else {
       /* If we have not a simple word DELAS line, we try to analyse it
        * as a compound word DELAC line */
-      if (config_files_status!=CONFIG_FILES_ERROR) {
+    	if (error_check_status==ONLY_SIMPLE_WORDS) {
+    		error("Forbidden compound word entry:\n%S\n",input_line);
+    		continue;
+    	}
+    	if (config_files_status!=CONFIG_FILES_ERROR) {
 	/* If this is a compound word, we process it if and only if the
 	 * configuration files have been correctly loaded */
 	dlc_entry=(DLC_entry_T*)malloc(sizeof(DLC_entry_T));

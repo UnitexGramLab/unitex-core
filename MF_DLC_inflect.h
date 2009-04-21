@@ -35,6 +35,11 @@
 #include "MF_MU_morpho.h"
 #include "MF_DicoMorpho.h"
 
+#define ONLY_SIMPLE_WORDS 0
+#define ONLY_COMPOUND_WORDS 1
+#define SIMPLE_AND_COMPOUND_WORDS 2
+
+
 /////////////////////////////////////////////////
 //Maximum number of semantic or syntactic codes
 #define MAX_CODES 20
@@ -56,7 +61,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry,d_class_equiv_T* D_CLASS_EQ
 /////////////////////////////////////////////////////////////////////////////////
 // Inflects a DELAS/DELAC into a DELAC/DELACF.
 // On error returns 1, 0 otherwise.
-int inflect(char*,char*,int,d_class_equiv_T* D_CLASS_EQUIV);
+int inflect(char*,char*,int,d_class_equiv_T* D_CLASS_EQUIV,int error_check_status);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry.

@@ -55,6 +55,8 @@ u_printf("Usage: MultiFlex [OPTIONS] <dela>\n"
          "  -a ALPH/--alphabet=ALPH: the alphabet file \n"
          "  -d DIR/--directory=DIR: the directory containing 'Morphology' and 'Equivalences'\n"
                      "              files and inflection graphs for single and compound words.\n"
+		 "  -s/--only-simple-words: the program will consider compound words as errors\n"
+		 "  -c/--only-compound-words: the program will consider simple words as errors\n"
          "  -h/--help: this help\n"
          "\n"
          "Inflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n"
@@ -68,17 +70,20 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":o:a:d:h";
+const char* optstring=":o:a:d:sch";
 const struct option_TS lopts[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"directory",required_argument_TS,NULL,'d'},
+      {"only-simple-words",no_argument_TS,NULL,'s'},
+      {"only-compound-words",no_argument_TS,NULL,'c'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
 char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
+int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
@@ -94,6 +99,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              strcpy(alphabet,vars->optarg);
              break;
    case 'd': strcpy(config_dir,vars->optarg); break;
+   case 's': error_check_status=ONLY_SIMPLE_WORDS; break;
+   case 'c': error_check_status=ONLY_COMPOUND_WORDS; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
@@ -150,7 +157,7 @@ if (err) {
    return 1;
 }
 //DELAC inflection
-err=inflect(argv[vars->optind],output,config_files_status,&D_CLASS_EQUIV);
+err=inflect(argv[vars->optind],output,config_files_status,&D_CLASS_EQUIV,error_check_status);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();
