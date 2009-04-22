@@ -836,7 +836,7 @@ while ((i < (size-1)) && ((c=u_fgetc(encoding,f))!=EOF)) {
    if (c=='\n') break;
 }
 if (i==0 && c!='\n') return EOF;
-line[i]=0;
+line[i]='\0';
 return i;
 }
 
@@ -2335,6 +2335,17 @@ do {
    c=*src++;
    if (c<=0xFF) *dest++ = (char)c;
 } while (c!='\0');
+}
+
+
+/**
+ * Removes the \n at the end of the string, if any.
+ */
+void u_chomp_new_line(unichar* s) {
+int l=u_strlen(s);
+if (l>0 && s[l-1]=='\n') {
+	s[l-1]='\0';
+}
 }
 
 

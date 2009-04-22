@@ -1,7 +1,7 @@
 /*
-  * Unitex 
+  * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -182,7 +182,7 @@ if (flex[pos]=='\0') {
     if (n->final!=-1) {
         // if the automaton already exists we returns its position in the transducer array (fst2)
         return n->final;
-    } 
+    }
     else {
         // else we load it
         if (n_fst2==N_FST2) {
@@ -195,7 +195,7 @@ if (flex[pos]=='\0') {
         new_file(inflection_directory,flex,grf);
         strcat(grf,".grf");
         if (must_compile_grf(grf,s)) {
-           /* If there is no .fst2 file, of a one than is older than the 
+           /* If there is no .fst2 file, of a one than is older than the
             * corresponding .grf, we try to compile it */
            pseudo_main_Grf2Fst2(grf,1,NULL,1,0);
         }

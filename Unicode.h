@@ -238,6 +238,7 @@ int u_ends_with(const unichar*,const unichar*);
 int u_ends_with(const unichar*,const char*);
 
 void u_to_char(char*,unichar*);
+void u_chomp_new_line(unichar*);
 int URLize(unichar*,unichar*);
 int htmlize(unichar*,unichar*);
 int mirror(unichar*,unichar*);

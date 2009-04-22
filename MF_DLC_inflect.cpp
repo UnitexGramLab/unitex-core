@@ -75,10 +75,7 @@ int inflect(char* DLC, char* DLCF, int config_files_status,
 	//Inflect one entry at a time
 	l = u_fgets(input_line, DIC_LINE_SIZE - 1, dlc);
 	//Omit the final newline
-	if (u_strlen(input_line) > 0 && input_line[u_strlen(input_line) - 1]
-			== (unichar) '\n') {
-		input_line[u_strlen(input_line) - 1] = (unichar) '\0';
-	}
+	u_chomp_new_line(input_line);
 	int flag = 0;
 	//If a line is empty the file is not necessarily finished.
 	//If the last entry has no newline, we should not skip this entry
@@ -183,10 +180,13 @@ int inflect(char* DLC, char* DLCF, int config_files_status,
 		next_line:
 		//Get next entry
 		l = u_fgets(input_line, DIC_LINE_SIZE - 1, dlc);
-		//Omit the final newline
-		if (u_strlen(input_line) > 0 && input_line[u_strlen(input_line) - 1]
-				== (unichar) '\n') {
-			input_line[u_strlen(input_line) - 1] = (unichar) '\0';
+		if (l!=EOF) {
+			//Omit the final newline
+			u_chomp_new_line(input_line);
+			if (input_line[0]=='\0') {
+				/* If we find an empty line, then we go on */
+				goto next_line;
+			}
 		}
 	}
 	u_fclose(dlc);

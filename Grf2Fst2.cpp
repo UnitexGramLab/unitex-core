@@ -68,7 +68,7 @@ ProgramInvoker* invoker=new_ProgramInvoker(main_Grf2Fst2,"main_Grf2Fst2");
 add_argument(invoker,name);
 add_argument(invoker,yes_or_no?"-y":"-n");
 char tmp[FILENAME_MAX];
-if (alphabet) {
+if (alphabet!=NULL) {
    sprintf(tmp,"-a=%s",alphabet);
    add_argument(invoker,tmp);
 }
