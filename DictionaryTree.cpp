@@ -35,6 +35,8 @@ a->single_INF_code_list=NULL;
 a->offset=-1;
 a->trans=NULL;
 a->incoming=0;
+a->n_trans=0;
+a->INF_code=0;
 return a;
 }
 
@@ -258,7 +260,7 @@ for (unsigned int k=0;k<=H;k++) {
    int size=convert_list_to_array(k,transitions_by_height,transitions);
    quicksort(0,size-1,transitions);
    merge(size,transitions);
-   z=100.0*(float)(k)/(float)H;
+   z=(float)(100.0*(float)(k)/(float)H);
    if (z>100.0) z=100.0;
    u_printf("%2.0f%% completed...    \r",z);
 }
