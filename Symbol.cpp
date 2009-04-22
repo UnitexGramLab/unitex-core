@@ -28,6 +28,11 @@
 #include "List_int.h"
 #include "DELA.h"
 
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_SIZED_ARRAY)))
+#define NO_C99_VARIABLE_SIZED_ARRAY 1
+#endif
+
+
 #define MAXBUF 1024
 
 
@@ -1094,7 +1099,11 @@ return res.next;
 void fill_negative_lemma_list(language_t* language,symbol_t* s,unichar* lemma) {
 struct list_int* list=NULL;
 /* We take a buffer large enough */
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+unichar *tmp = (unichar*)malloc(sizeof(unichar)*u_strlen(lemma));
+#else
 unichar tmp[u_strlen(lemma)];
+#endif
 int position=0;
 while (lemma[position]!='\0') {
    if (lemma[position]!='!') {
@@ -1110,6 +1119,9 @@ while (lemma[position]!='\0') {
 }
 s->negs=dump(list,&(s->nbnegs));
 free_list_int(list);
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+free(tmp);
+#endif
 }
 
 
@@ -1126,8 +1138,13 @@ if (tag[0]!='<' || tag[length-1]!='>') {
 }
 /* We copy the content of the label without the angles */
 unichar* buffer=u_strdup(&(tag[1]),length-2);
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+unichar *lemma = (unichar *)malloc(sizeof(unichar)*(length-2));
+unichar *tmp = (unichar *)malloc(sizeof(unichar)*(length-2));
+#else
 unichar lemma[length-2];
 unichar tmp[length-2];
+#endif
 int position=0;
 /* We look for a dot in the tag */
 if (P_OK!=parse_string(buffer,&position,lemma,P_DOT)) {
@@ -1153,6 +1170,10 @@ if (buffer[position]=='!') {
       fatal_error("In symbol '%S': unknown part of speech '%S'\n",tag,buffer[position+1]);
    }
    free(buffer);
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+   free(lemma);
+   free(tmp);
+#endif
    return LEXIC_minus_POS(language,POS);
 }
 /* We look for the end of the POS in the tag */
@@ -1219,6 +1240,10 @@ if (buffer[position]=='\0') {
       fatal_error("'%S' is not a valid tag (1)\n",tag);
    }
    free(buffer);
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+   free(lemma);
+   free(tmp);
+#endif
    return symbol;
 }
 symbol_t* model=symbol;
@@ -1257,6 +1282,10 @@ while (buffer[position]!='\0') {
 }
 free_symbol(model);
 free(buffer);
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+free(lemma);
+free(tmp);
+#endif
 return symbol;
 }
 
@@ -1265,12 +1294,19 @@ return symbol;
  * Loads a symbol from an Elag grammar tag.
  */
 symbol_t* load_grammar_symbol(language_t* language,unichar* tag) {
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+unichar *buf = (unichar *)malloc(sizeof(unichar)*(u_strlen(tag)+1));
+#else
 unichar buf[u_strlen(tag)+1];
+#endif
 u_strcpy(buf,tag);
 if (tag[0]=='{' && tag[1]!='\0') {
    /* If we have something like a dictionary entry of the form {__,__.__} */
    if (!u_strcmp(tag,"{S}")) {
       /* First we check if it is not a sentence delimiter */
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+      free(buf);
+#endif
       return new_symbol_PUNC(language,language_add_form(language,tag),-1);
    }
    /* If it is really a dictionary entry, it shouldn't be there */
@@ -1284,9 +1320,15 @@ if (tag[0]=='{' && tag[1]!='\0') {
    }
    symbol_t* result=load_dic_entry(language,tag,entry,-1);
    free_dela_entry(entry);
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+      free(buf);
+#endif
    return result;
 }
 if (tag[0]=='<' && tag[1]!='\0') {
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+      free(buf);
+#endif
    /* If we have a tag like <xxxx>, we test if it's a special symbol */
    if (!u_strcmp(tag,"<E>")) return new_symbol(S_EPSILON,-1);
    if (!u_strcmp(tag,"<.>")) {
@@ -1303,12 +1345,22 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
   /* special EXCLAM symbol */
 
-  if (*buf == '!' && buf[1] == 0) { return new_symbol(S_EXCLAM,-1); }
+  if (*buf == '!' && buf[1] == 0) { 
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+      free(buf);
+#endif
+	  return new_symbol(S_EXCLAM,-1); 
+  }
 
 
   /* special EQUAL symbol */
 
-  if (*buf == '=' && buf[1] == 0) { return new_symbol(S_EQUAL,-1); }
+  if (*buf == '=' && buf[1] == 0) { 
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+      free(buf);
+#endif
+	  return new_symbol(S_EQUAL,-1); 
+  }
 
 
 
@@ -1318,8 +1370,21 @@ if (tag[0]=='<' && tag[1]!='\0') {
 
   if (u_strchr(PUNC_TAB, *buf)) {
 
-    if (*buf == '\\' && (! buf[1] || buf[2])) { fatal_error("bad PUNC symbol '%S'\n", tag); }
-    if (buf[1] && buf[0] != '\\') { fatal_error("bad symbol '%S' (PONC too long)\n", tag); }
+    if (*buf == '\\' && (! buf[1] || buf[2])) { 
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+        free(buf);
+#endif
+		fatal_error("bad PUNC symbol '%S'\n", tag); 
+	}
+    if (buf[1] && buf[0] != '\\') { 
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+        free(buf);
+#endif
+		fatal_error("bad symbol '%S' (PONC too long)\n", tag); 
+	}
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+      free(buf);
+#endif
     return new_symbol_PUNC(language, idx,-1);
   }
 
@@ -1332,6 +1397,9 @@ if (tag[0]=='<' && tag[1]!='\0') {
       if (! u_is_digit(*p)) { fatal_error("bad symbol : '%S' (mixed nums and chars)\n", tag); }
     }
 
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+      free(buf);
+#endif
     return new_symbol_CHFA(language, idx,-1);
   }
 
@@ -1339,7 +1407,9 @@ if (tag[0]=='<' && tag[1]!='\0') {
   /* unknow word  */
 
   error("Label '%S': unknown word in grammar???\n", tag);
-
+#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+      free(buf);
+#endif
   return new_symbol_UNKNOWN(language, idx,-1);
 }
 

@@ -242,6 +242,12 @@ free_OptVars(vars);
  * WARNING: we do not free the 'INF_codes' structure because of a slowness
  *          problem with very large INF lines.
  */
+
+#if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
+/* cleanup for no leak on library */
+free_string_hash(INF_codes);
+free_dictionary_node(root);
+#endif
 return 0;
 }
 

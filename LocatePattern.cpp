@@ -273,6 +273,9 @@ for (int i=0;i<p->n_morpho_dics;i++) {
 free(p->morpho_dic_inf);
 free(p->morpho_dic_bin);
 free_locate_parameters(p);
+#if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
+free_DLC_tree(p->DLC_tree);
+#endif
 u_printf("Done.\n");
 return 1;
 }

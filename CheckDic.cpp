@@ -219,6 +219,14 @@ u_fclose(out);
 free_OptVars(vars);
 u_printf("Done.\n");
 /* Note that we don't free anything since it would only waste time */
+
+#if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
+/* cleanup for no leak on library */
+free_string_hash(semantic_codes);
+free_string_hash(inflectional_codes);
+free_string_hash(simple_lemmas);
+free_string_hash(compound_lemmas);
+#endif
 return 0;
 }
 

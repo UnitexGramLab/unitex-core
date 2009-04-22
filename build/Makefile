@@ -80,7 +80,8 @@ CFLAGS += -g -O0
 endif
 
 ifeq ($(LIBRARY),yes)
-CFLAGS += -fPIC 
+CFLAGS += -fPIC
+DEFFLAGS += -DUNITEX_LIBRARY
 endif 
 
 override CFLAGS   += $(DEFFLAGS) -I"../Libtre" -Ilibtre/include -I"../korean" -I".."

@@ -150,7 +150,10 @@ if (filters->filter==NULL) {
 for (int i=0;i<n;i++) {
    if (filters->filter[i].options!= NULL) free(filters->filter[i].options);
    if (filters->filter[i].content!= NULL) free(filters->filter[i].content);
-   if (filters->filter[i].matcher!= NULL) regfree(filters->filter[i].matcher);
+   if (filters->filter[i].matcher!= NULL) {
+	   regfree(filters->filter[i].matcher);
+	   free(filters->filter[i].matcher);
+   }
 }
 free(filters->filter);
 free(filters);

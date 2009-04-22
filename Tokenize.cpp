@@ -258,7 +258,7 @@ else {
 }
 
 free_hash_table(hashtable);
-free_vector_ptr(tokens);
+free_vector_ptr(tokens,free);
 free_vector_int(n_occur);
 free_vector_int(n_enter_pos);
 if (alph!=NULL) {
