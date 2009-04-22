@@ -31,14 +31,14 @@
  * the associated concordacnces 'out1' and 'out2'.
  */
 void create_text_concordances(const char* in1,const char* in2,const char* out1,const char* out2) {
-pseudo_main_Concord(in1,NULL,0,20,40,NULL,"text",NULL,NULL,0);
+pseudo_main_Concord(in1,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
 strcat(f,"concord.txt");
 remove(out1);
 rename(f,out1);
 
-pseudo_main_Concord(in2,NULL,0,20,40,NULL,"text",NULL,NULL,0);
+pseudo_main_Concord(in2,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
 remove(out2);
 rename(f,out2);
 }
