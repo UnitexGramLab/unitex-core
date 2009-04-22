@@ -81,7 +81,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,languag
    Tfst* tfst=input->tfst;
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
-	  load_tfst_sentence_automaton(input,current_sentence);
+      load_tfst_sentence_automaton(input,current_sentence);
       elag_determinize(language,tfst->automaton);
       elag_minimize(tfst->automaton);
       int is_rejected=0;
@@ -306,7 +306,7 @@ if (is_final_state(tfst->automaton->states[0])) {
 for (int q=1;q<tfst->automaton->number_of_states-2;q++) {
    if (is_final_state(tfst->automaton->states[q])) {
       add_outgoing_transition(tfst->automaton->states[q],delimiter,new_final_state_index);
-      unset_initial_state(tfst->automaton->states[q]);
+      unset_final_state(tfst->automaton->states[q]);
    }
 }
 free_symbol(delimiter);
