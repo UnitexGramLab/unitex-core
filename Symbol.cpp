@@ -670,7 +670,7 @@ switch (s->type) {
 language_t* lang=s->POS->language;
 if (!u_strcmp(s->POS->name,UNKNOWN_STR)) {
    /* If we have an unknown POS */
-   u_strcpy(ustr, "<MOT>");
+   u_strcpy(ustr, "<!DIC>");
    return;
 }
 if (!u_strcmp(s->POS->name,PUNC_STR) || !u_strcmp(s->POS->name,CHFA_STR)) {
