@@ -304,8 +304,6 @@ for (int i=0;i<res->n_semantic_codes;i++) {
       }
    }
 }
-
-
 return res;
 }
 
@@ -442,7 +440,7 @@ res->semantic_codes[0]=u_strdup(temp);
  */
 if (line[i] == '!' ) {//Negative filter
 	res->filters[0]=u_strdup("n");
-	i=i+2; //we skpip !
+	i=i+2; //we skip !
 }
 else if (line[i] == '[' ) {//Positive filter
 	res->filters[0]=u_strdup("p");
@@ -516,6 +514,40 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    }
    res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp);
    (res->n_inflectional_codes)++;
+}
+/* We check if a character appears several times in an inflectional code like :KKms */
+for (int i=0;i<res->n_inflectional_codes;i++) {
+   if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[i])) {
+      if (!verbose) error("***Dictionary error: duplicate character in an inflectional code\n_%S_\n",line);
+         else (*verbose)=P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE;
+      free_dela_entry(res);
+      return NULL;
+   }
+}
+/* We check if an inflectional code is a subset of another like :Kms:ms */
+for (int i=0;i<res->n_inflectional_codes;i++) {
+   for (int j=0;j<res->n_inflectional_codes;j++) {
+      if (i==j) continue;
+      if (one_inflectional_codes_contains_the_other(res->inflectional_codes[i],
+                                                    res->inflectional_codes[j])) {
+         if (!verbose) error("***Dictionary error: an inflectional code is a subset of another\n_%S_\n",line);
+         else (*verbose)=P_DUPLICATE_INFLECTIONAL_CODE;
+         free_dela_entry(res);
+         return NULL;
+      }
+   }
+}
+/* We check if a semantic code appears twice as in V+z1+z1 */
+for (int i=0;i<res->n_semantic_codes;i++) {
+   for (int j=0;j<res->n_semantic_codes;j++) {
+      if (i==j) continue;
+      if (!u_strcmp(res->semantic_codes[i],res->semantic_codes[j])) {
+         if (!verbose) error("***Dictionary error: duplicate semantic code\n_%S_\n",line);
+         else (*verbose)=P_DUPLICATE_SEMANTIC_CODE;
+         free_dela_entry(res);
+         return NULL;
+      }
+   }
 }
 return res;
 }
