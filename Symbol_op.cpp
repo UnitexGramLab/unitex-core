@@ -296,7 +296,6 @@ for (;i<a->nb_features;i++) {
     * feature must appear in the intersection */
    res->feature[i]=a->feature[i];
 }
-u_printf("normal case \n");
 return res;
 
 null:

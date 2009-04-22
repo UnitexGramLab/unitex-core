@@ -679,7 +679,8 @@ if (!u_strcmp(s->POS->name,PUNC_STR) || !u_strcmp(s->POS->name,CHFA_STR)) {
       u_strcpy(ustr,language_get_form(lang,s->lemma));
       return;
    }
-   fatal_error("Unexpected null lemma in symbol_to_locate_label\n");
+   /* We can get here if we have <PNC>, but we don't have to worry since the special case
+    * of <PNC> is dealt with in fst_file_write */
 }
 if (!s->negative && s->lemma!=0) {
    u_sprintf(ustr,"<%S.%S",language_get_form(lang,s->lemma),s->POS->name);
