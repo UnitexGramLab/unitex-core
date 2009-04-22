@@ -607,7 +607,7 @@ return fwrite(&c,1,1,f);
  */
 int u_fputc_UTF8_raw(unichar c,FILE *f) {
 unsigned char tab[2];
-int iCountByte;
+unsigned int iCountByte;
 if (c<=0x7F) {
    tab[0] = (unsigned char)c;
    iCountByte = 1;
@@ -889,7 +889,7 @@ return length;
 */
 #define BUFFER_OUT_CACHE_SIZE (0x80)
 typedef struct
-{    
+{
     unsigned char tabOut[BUFFER_OUT_CACHE_SIZE+4];
     int iPosInTabOut;
 } Buffer_Out;
@@ -911,6 +911,7 @@ int FlushBufferOut(Buffer_Out* pBufOut,FILE* f)
     return (write_done_res == to_be_written);
 }
 
+
 int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
 {
     while ((*pc)!=0)
@@ -930,23 +931,28 @@ int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pB
             BuildEncodedOutForUnicharString(encoding,&CR[0],pBufOut,0,f);
         }
 
-        switch(encoding) 
+        switch(encoding)
         {
-           case UTF16_LE: 
+           case UTF16_LE:
                {
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                    break;
                }
 
-           case UTF16_BE: 
+           case BIG_ENDIAN_UTF16:
                {
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
                    break;
                }
+           case BINARY:
+           {
+        	   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c);
+        	   break;
+           }
 
-           case UTF8: 
+           case UTF8:
                {
 
                     if (c<=0x7F) {
@@ -965,7 +971,7 @@ int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pB
                         pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
 
                         pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | (c&0x3F));
-                    }    
+                    }
                }
         }
 
@@ -984,7 +990,7 @@ int BuildEncodedOutForUnicharItem(Encoding encoding,unichar w,Buffer_Out* pBufOu
     return BuildEncodedOutForUnicharString(encoding,&tab[0],pBufOut,0,f);
 }
 
-int BuildEncodedOutForCharString(Encoding encoding,char *pc,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
+int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
 {
     while ((*pc)!=0)
     {
@@ -1003,23 +1009,28 @@ int BuildEncodedOutForCharString(Encoding encoding,char *pc,Buffer_Out* pBufOut,
             BuildEncodedOutForUnicharString(encoding,&CR[0],pBufOut,0,f);
         }
 
-        switch(encoding) 
+        switch(encoding)
         {
-           case UTF16_LE: 
+           case UTF16_LE:
                {
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                    break;
                }
 
-           case UTF16_BE: 
+           case BIG_ENDIAN_UTF16:
                {
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
                    pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
                    break;
                }
 
-           case UTF8: 
+           case BINARY: {
+        	   pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char)c;
+        	   break;
+           }
+
+           case UTF8:
                {
 
                     if (c<=0x7F) {
@@ -1038,7 +1049,7 @@ int BuildEncodedOutForCharString(Encoding encoding,char *pc,Buffer_Out* pBufOut,
                         pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
 
                         pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | (c&0x3F));
-                    }    
+                    }
                }
         }
 
@@ -1095,14 +1106,14 @@ while (*format) {
       switch (*format) {
          /* If we have %% we must print a '%' */
          case '%': BuildEncodedOutForUnicharItem(encoding,'%',&BufOut,0,f); n_printed++; break;
-         
+
          /* If we have %c or %C we must print an unicode character */
          case 'c': /* We intercept %c here, because of the \n that always
                       must be encoded as \r\n */
          case 'C': {
             uc=(unichar)va_arg(list,int);
             BuildEncodedOutForUnicharItem(encoding,uc,&BufOut,1,f);
-            n_printed++; 
+            n_printed++;
             break;
          }
 
@@ -1129,8 +1140,8 @@ while (*format) {
                /* If we have to print a HTML string */
                us=va_arg(list,unichar*);
                if (us==NULL) {
-                  BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);                  
-                  n_printed=n_printed+6; 
+                  BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
+                  n_printed=n_printed+6;
                } else {
                   unichar html[4096];
                   int l=XXXize(us,html);
@@ -1140,9 +1151,9 @@ while (*format) {
             } else if (*format=='R') {
                /* If we have to print a HTML reversed string */
                us=va_arg(list,unichar*);
-               if (us==NULL) {                  
+               if (us==NULL) {
                   BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
-                  n_printed=n_printed+6; 
+                  n_printed=n_printed+6;
                } else {
                   unichar reversed[4096];
                   mirror(us,reversed);
@@ -1159,10 +1170,10 @@ while (*format) {
          case 'S': {
             us=va_arg(list,unichar*);
             if (us==NULL) {
-               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);                  
+               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
                n_printed=n_printed+6;
             } else {
-               BuildEncodedOutForUnicharString(encoding,us,&BufOut,1,f);                  
+               BuildEncodedOutForUnicharString(encoding,us,&BufOut,1,f);
                n_printed=n_printed+u_strlen(us);
             }
             break;
@@ -1173,13 +1184,13 @@ while (*format) {
             us=va_arg(list,unichar*);
             if (us==NULL) {
                /* We don't want to print ")llun(" when the string to reverse is NULL */
-               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);                  
+               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
                n_printed=n_printed+6;
                break;
             }
             unichar reversed[4096];
             n_printed=n_printed+mirror(us,reversed);
-            BuildEncodedOutForUnicharString(encoding,reversed,&BufOut,1,f);                  
+            BuildEncodedOutForUnicharString(encoding,reversed,&BufOut,1,f);
             break;
          }
 
