@@ -42,7 +42,6 @@
 #include "Symbol.h"
 #include "Ustring.h"
 
-
 static void add_sentence_delimiters(Tfst* tfst,language_t*);
 static void remove_sentence_delimiters(Tfst* tfst,language_t*);
 vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
@@ -52,11 +51,6 @@ vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
  * and saves the result in another text automaton.
  */
 void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,language_t* language) {
-   static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
-   static unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
-   symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);
-   symbol_t* rejected = new_symbol_UNKNOWN(language, language_add_form(language,_rejected),-1);
-
    Elag_Tfst_file_in* input=load_tfst_file(input_tfst,language);
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
@@ -87,25 +81,21 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,languag
    Tfst* tfst=input->tfst;
 
    for (int current_sentence=1;current_sentence<=input->tfst->N;current_sentence++) {
-      load_tfst_sentence_automaton(input,current_sentence);
+	  load_tfst_sentence_automaton(input,current_sentence);
       elag_determinize(language,tfst->automaton);
       elag_minimize(tfst->automaton);
-
       int is_rejected=0;
       if (current_sentence % 100 == 0) {
          u_printf("Sentence %d/%d...\r",current_sentence,input->tfst->N);
       }
       if (tfst->automaton->number_of_states<2) {
          /* If the sentence is empty, we replace the sentence automaton
-          * by a 2-states automaton with one transition saying "UNLOADABLE" */
-         error("Sentence %d is empty\n",current_sentence+1);
+          * by a 1-state automaton with no transition. */
+    	 error("Sentence %d is empty\n",current_sentence+1);
          free_SingleGraph(tfst->automaton);
-         tfst->automaton=new_SingleGraph(2,PTR_TAGS);
+         tfst->automaton=new_SingleGraph(1,PTR_TAGS);
          SingleGraphState initial_state=add_state(tfst->automaton);
          set_initial_state(initial_state);
-         SingleGraphState final_state=add_state(tfst->automaton);
-         set_final_state(final_state);
-         add_outgoing_transition(initial_state,unloadable,1);
          nb_unloadable++;
       } else {
          int min,max;
@@ -128,12 +118,9 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,languag
                   j=gramms->nbelems; /* We don't go on intersecting with other grammars */
                   n_rejected_sentences++;
                   free_SingleGraph(tfst->automaton);
-                  tfst->automaton=new_SingleGraph(2,PTR_TAGS);
+                  tfst->automaton=new_SingleGraph(1,PTR_TAGS);
                   SingleGraphState initial_state=add_state(tfst->automaton);
                   set_initial_state(initial_state);
-                  SingleGraphState final_state=add_state(tfst->automaton);
-                  set_final_state(final_state);
-                  add_outgoing_transition(initial_state,rejected,1);
                   is_rejected=1;
                }
             }
@@ -193,8 +180,6 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,languag
    u_printf(
          "\n%d sentences, %d not successfully loaded and %d rejected by elag grammars.\n\n",
          N, nb_unloadable, n_rejected_sentences);
-   free_symbol(unloadable);
-   free_symbol(rejected);
 }
 
 
@@ -438,7 +423,7 @@ for (int i=0;i<automaton->number_of_states;i++) {
       symbol_t* symbol=t->label;
       symbol_to_text_label(symbol,foo_content);
       if (symbol->tfsttag_index==-1) {
-         fatal_error("Internal error in convert_elag_symbols_to_tfst_tags: unexpected -1 tag index\n");
+         fatal_error("Internal error in convert_elag_symbols_to_tfst_tags: unexpected -1 tag index for this tag:\n%S\n",foo_content->str);
       }
       TfstTag* original_tag=(TfstTag*)input->tfst->tags->tab[symbol->tfsttag_index];
       symbol_to_tfst_tag(symbol,original_tag,foo_tag,foo_content,tmp);

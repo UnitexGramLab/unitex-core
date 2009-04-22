@@ -1288,7 +1288,9 @@ if (tag[0]=='{' && tag[1]!='\0') {
 if (tag[0]=='<' && tag[1]!='\0') {
    /* If we have a tag like <xxxx>, we test if it's a special symbol */
    if (!u_strcmp(tag,"<E>")) return new_symbol(S_EPSILON,-1);
-   if (!u_strcmp(tag,"<.>")) return new_symbol(S_LEXIC,-1);
+   if (!u_strcmp(tag,"<.>")) {
+	   fatal_error("Invalid ELAG tag <.>\n");
+   }
    if (!u_strcmp(tag,"<def>")) return SYMBOL_DEF;
    if (!u_strcmp(tag,"<!>")) return new_symbol(S_EXCLAM,-1);
    if (!u_strcmp(tag,"<=>")) return new_symbol(S_EQUAL,-1);

@@ -289,7 +289,7 @@ if ((res->f=u_fopen(UTF16_LE,fname,U_WRITE))==NULL) {
 res->fstart=ftell(res->f);
 u_fprintf(res->f,"0000000000\n");
 res->name=strdup(fname);
-if (res->name) {
+if (res->name==NULL) {
    fatal_alloc_error("fst_file_out_open");
 }
 res->type=type;

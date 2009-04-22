@@ -258,8 +258,13 @@ int tag_number=a->tfsttag_index;
 if (tag_number==-1) {
    tag_number=b->tfsttag_index;
 } else if (b->tfsttag_index!=-1 && b->tfsttag_index!=a->tfsttag_index) {
-   /* Means that we try to intersects 2 text automaton symbols */
-   fatal_error("Internal error in inter_features a=%d b=%d\n",a->tfsttag_index,b->tfsttag_index);
+   /* Means that we try to intersects 2 text automaton symbols.
+    * This could happen if there are two parallel tags with a non empty intersection like:
+    *
+    * {tutu,.N:ms:fs} and {tutu,.N:ms}
+    *
+    * If such a case really happen, then we assume that both tags have the same offset
+    * information. If not, we cannot solve the problem. */
 }
 symbol_t* res=new_symbol_POS(a->POS,tag_number);
 int i;
@@ -291,6 +296,7 @@ for (;i<a->nb_features;i++) {
     * feature must appear in the intersection */
    res->feature[i]=a->feature[i];
 }
+u_printf("normal case \n");
 return res;
 
 null:
