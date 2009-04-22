@@ -459,6 +459,29 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Unicode.o Fst2.o Alphabet.o \
 	           getopt.o DicVariables.o TransductionStack.o \
 	           Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o
 
+UNITEXTOOL   = UnitexTool
+UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o Alphabet.o ApplyDic.o AsciiSearchTree.o AutComplementation.o \
+                  AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
+                  AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildTextAutomaton.o CheckDic.o \
+                  CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
+                  ConcordanceTfst.o ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
+                  DicVariables.o Diff.o DutchCompounds.o Elag.o ElagComp.o ElagDebug.o ElagFstFilesIO.o \
+                  ElagFunctions.o ElagRulesCompilation.o ElagStateSet.o Error.o Evamb.o Extract.o ExtractUnits.o \
+                  FIFO.o File.o Flatten.o FlattenFst2.o Fst2.o Fst2Automaton.o Fst2Check.o Fst2List.o Fst2Txt.o \
+                  Fst2Txt_TokenTree.o Fst2TxtAsRoutine.o GeneralDerivation.o GermanCompounds.o getopt.o \
+                  Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o \
+                  LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
+                  Locate.o LocateFst2Tags.o LocatePattern.o LocateTfst.o LocateTfst_lib.o LocateTfstMatches.o \
+                  Matches.o MF_DicoMorpho.o MF_DLC_inflect.o MF_FormMorpho.o MF_InflectTransd.o MF_LangMorpho.o \
+                  MF_MU_graph.o MF_MU_morpho.o MF_Operators_Util.o MF_SU_morpho.o MF_Unif.o MF_Util.o \
+                  MorphologicalFilters.o MorphologicalLocate.o MultiFlex.o NewLineShifts.o NormalizationFst2.o \
+                  Normalize.o NormalizeAsRoutine.o NorwegianCompounds.o OptimizedFst2.o ParsingInfo.o Pattern.o \
+                  PatternTree.o PolyLex.o PortugueseNormalization.o ProgramInvoker.o RebuildTfst.o Reconstrucao.o \
+                  Reg2Grf.o RegularExpressions.o RussianCompounds.o Sentence2Grf.o SingleGraph.o Snt.o SortTxt.o \
+                  Stack_int.o Stack_unichar.o String_hash.o StringParsing.o Symbol.o Symbol_op.o SymbolAlphabet.o \
+                  Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o Text_tokens.o Tfst.o Tfst2Grf.o \
+                  Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o TransductionVariables.o \
+                  Transitions.o Txt2Tfst.o Unicode.o Ustring.o XMLizer.o 
 
 ######################
 ## Korean programs  ##
@@ -539,7 +562,7 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
 		$(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(LOCATETFST) $(MULTIFLEX)\
 		$(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TAGSETNORMTFST) $(TEI2TXT) \
-		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TXT2TFST) $(XMLIZER)   
+		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TXT2TFST) $(XMLIZER) $(UNITEXTOOL)
 
 #ifeq ($(64BITS),no)
 #PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \
@@ -558,7 +581,8 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(C
 		$(MULTIFLEX_OBJS) $(NORMALIZE_OBJS) $(POLYLEX_OBJS) $(REBUILDTFST_OBJS) \
 		$(RECONSTRUCAO_OBJS) $(REG2GRF_OBJS) $(SORTTXT_OBJS) $(TABLE2GRF_OBJS)\
 		$(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
-		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) 
+		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
+		$(UNITEXTOOL_OBJS)
 		
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
@@ -803,6 +827,9 @@ $(BIN_DIR)$(TXT2TFST)$(EXTENSION): $(TXT2TFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+	
+$(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 
