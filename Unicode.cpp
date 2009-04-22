@@ -565,12 +565,11 @@ return i;
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_fputc_UTF16LE_raw(unichar c,FILE *f) {
-unsigned char a,b;
+unsigned char tab[2];
 int ret;
-a=(unsigned char)(c/256);
-b=(unsigned char)(c%256);
-ret=fwrite(&b,1,1,f);
-ret=ret && fwrite(&a,1,1,f);
+tab[1]=(unsigned char)(c >> 8);
+tab[0]=(unsigned char)(c & 0xffff);
+ret=(fwrite(&tab[0],1,2,f) == 2);
 return ret;
 }
 
@@ -580,12 +579,11 @@ return ret;
  * Returns 1 in case of success; 0 otherwise.
  */
 int u_fputc_UTF16BE_raw(unichar c,FILE *f) {
-unsigned char a,b;
+unsigned char tab[2];
 int ret;
-a=(unsigned char)(c/256);
-b=(unsigned char)(c%256);
-ret=fwrite(&a,1,1,f);
-ret=ret && fwrite(&b,1,1,f);
+tab[0]=(unsigned char)(c >> 8);
+tab[1]=(unsigned char)(c & 0xffff);
+ret=(fwrite(&tab[0],1,2,f) == 2);
 return ret;
 }
 
@@ -608,26 +606,26 @@ return fwrite(&c,1,1,f);
  *       a unicode character > 0xFFFF
  */
 int u_fputc_UTF8_raw(unichar c,FILE *f) {
+unsigned char tab[2];
+int iCountByte;
 if (c<=0x7F) {
-   return (fputc_raw(c,f)==EOF)?0:1;
+   tab[0] = (unsigned char)c;
+   iCountByte = 1;
 }
-unsigned char a;
-unsigned char b;
+else
 if (c<=0x7FF) {
-   a=(unsigned char) (0xC0 | (c>>6));
-   b=(unsigned char) (0x80 | (c & 0x3F));
-   if (fputc_raw(a,f)==EOF) return 0;
-   return (fputc_raw(b,f)==EOF)?0:1;
+   tab[0]=(unsigned char) (0xC0 | (c>>6));
+   tab[1]=(unsigned char) (0x80 | (c & 0x3F));
+   iCountByte = 2;
 }
-unsigned char C;
-a=(unsigned char) (0xE0 | (c>>12));
-//b=(unsigned char) (0x80 | ((c-(c&12))>>6));   //$CD:20021119 old
-b=(unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
-C=(unsigned char) (0x80 | (c&0x3F));
-if (fputc_raw(a,f)==EOF) return 0;
-if (fputc_raw(b,f)==EOF) return 0;
-if (fputc_raw(C,f)==EOF) return 0;
-return 1;
+else
+{
+    tab[0]=(unsigned char) (0xE0 | (c>>12));
+    //tab[1]=(unsigned char) (0x80 | ((c-(c&12))>>6));   //$CD:20021119 old
+    tab[1]=(unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
+    tab[2]=(unsigned char) (0x80 | (c&0x3F));
+}
+return (fwrite(&tab[0],1,iCountByte,f) == iCountByte);
 }
 
 
@@ -887,6 +885,175 @@ while (line[length-1]=='\\') {
 return length;
 }
 
+/* Now : Gilles Vollant code for write unicode string "one call"
+*/
+#define BUFFER_OUT_CACHE_SIZE (0x80)
+typedef struct
+{    
+    unsigned char tabOut[BUFFER_OUT_CACHE_SIZE+4];
+    int iPosInTabOut;
+} Buffer_Out;
+
+void ClearBufferOut(Buffer_Out* pBufOut)
+{
+    pBufOut->iPosInTabOut=0;
+}
+
+int FlushBufferOut(Buffer_Out* pBufOut,FILE* f)
+{
+    size_t write_done_res ;
+    size_t to_be_written;
+    if (pBufOut->iPosInTabOut == 0)
+        return 1;
+    to_be_written = pBufOut->iPosInTabOut;
+    write_done_res = fwrite(pBufOut->tabOut,1,to_be_written,f) ;
+    pBufOut->iPosInTabOut=0;
+    return (write_done_res == to_be_written);
+}
+
+int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
+{
+    while ((*pc)!=0)
+    {
+        unichar c=*pc;
+        // with 4 char, we are sure all unichar will be written, including CRLF
+        if ((pBufOut->iPosInTabOut + 4) >= BUFFER_OUT_CACHE_SIZE)
+        {
+            if (FlushBufferOut(pBufOut,f)==0)
+                return 0;
+        }
+        if ((c=='\n') && (convLFtoCRLF!=0))
+        {
+            unichar CR[2];
+            CR[0]=0x0D;
+            CR[1]=0;
+            BuildEncodedOutForUnicharString(encoding,&CR[0],pBufOut,0,f);
+        }
+
+        switch(encoding) 
+        {
+           case UTF16_LE: 
+               {
+                   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+                   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
+                   break;
+               }
+
+           case UTF16_BE: 
+               {
+                   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
+                   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+                   break;
+               }
+
+           case UTF8: 
+               {
+
+                    if (c<=0x7F) {
+                       pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char)c;
+                    }
+                    else
+                    if (c<=0x7FF) {
+                       pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0xC0 | (c>>6));
+                       pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | (c & 0x3F));
+                    }
+                    else
+                    {
+                        pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0xE0 | (c>>12));
+
+                        //pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char) (0x80 | ((c-(c&12))>>6));   //$CD:20021119 old
+                        pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
+
+                        pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | (c&0x3F));
+                    }    
+               }
+        }
+
+
+        pc++;
+    }
+
+    return 1;
+}
+
+int BuildEncodedOutForUnicharItem(Encoding encoding,unichar w,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
+{
+    unichar tab[2];
+    tab[0]=w;
+    tab[1]=0;
+    return BuildEncodedOutForUnicharString(encoding,&tab[0],pBufOut,0,f);
+}
+
+int BuildEncodedOutForCharString(Encoding encoding,char *pc,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
+{
+    while ((*pc)!=0)
+    {
+        unichar c=(unichar)(*pc);
+        // with 4 char, we are sure all unichar will be written, including CRLF
+        if ((pBufOut->iPosInTabOut + 4) >= BUFFER_OUT_CACHE_SIZE)
+        {
+            if (FlushBufferOut(pBufOut,f)==0)
+                return 0;
+        }
+        if ((c=='\n') && (convLFtoCRLF!=0))
+        {
+            unichar CR[2];
+            CR[0]=0x0D;
+            CR[1]=0;
+            BuildEncodedOutForUnicharString(encoding,&CR[0],pBufOut,0,f);
+        }
+
+        switch(encoding) 
+        {
+           case UTF16_LE: 
+               {
+                   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+                   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
+                   break;
+               }
+
+           case UTF16_BE: 
+               {
+                   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c >> 8);
+                   pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char)(c & 0xffff);
+                   break;
+               }
+
+           case UTF8: 
+               {
+
+                    if (c<=0x7F) {
+                       pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char)c;
+                    }
+                    else
+                    if (c<=0x7FF) {
+                       pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0xC0 | (c>>6));
+                       pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | (c & 0x3F));
+                    }
+                    else
+                    {
+                        pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0xE0 | (c>>12));
+
+                        //pBufOut->tabOut[(pBufOut->iPosInTabOut)++]=(unsigned char) (0x80 | ((c-(c&12))>>6));   //$CD:20021119 old
+                        pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
+
+                        pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char) (0x80 | (c&0x3F));
+                    }    
+               }
+        }
+
+
+        pc++;
+    }
+/*
+    if (flush != 0)
+    {
+        if (FlushBufferOut(pBufOut,f)==0)
+            return 0;
+    }
+*/
+    return 1;
+}
 
 /**
  * Unicode version of fprintf. It supports all the printf format options.
@@ -918,21 +1085,24 @@ void* p;
 unichar uc;
 char* s;
 unichar* us;
+Buffer_Out BufOut;
+ClearBufferOut(&BufOut);
+
 while (*format) {
    if (*format=='%') {
       /* If we have a special sequence introduced by '%' */
       format++;
       switch (*format) {
          /* If we have %% we must print a '%' */
-         case '%': u_fputc(encoding,'%',f); n_printed++; break;
-
+         case '%': BuildEncodedOutForUnicharItem(encoding,'%',&BufOut,0,f); n_printed++; break;
+         
          /* If we have %c or %C we must print an unicode character */
          case 'c': /* We intercept %c here, because of the \n that always
                       must be encoded as \r\n */
          case 'C': {
             uc=(unichar)va_arg(list,int);
-            u_fputc(encoding,uc,f);
-            n_printed++;
+            BuildEncodedOutForUnicharItem(encoding,uc,&BufOut,1,f);
+            n_printed++; 
             break;
          }
 
@@ -953,32 +1123,32 @@ while (*format) {
                tmp[1]='\0';
                unichar html[32];
                int l=XXXize(tmp,html);
-               u_fprints(encoding,html,f);
+               BuildEncodedOutForUnicharString(encoding,html,&BufOut,1,f);
                n_printed=n_printed+l;
             } else if (*format=='S') {
                /* If we have to print a HTML string */
                us=va_arg(list,unichar*);
                if (us==NULL) {
-                  u_fprints(encoding,"(null)",f);
-                  n_printed=n_printed+6;
+                  BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);                  
+                  n_printed=n_printed+6; 
                } else {
                   unichar html[4096];
                   int l=XXXize(us,html);
-                  u_fprints(encoding,html,f);
+                  BuildEncodedOutForUnicharString(encoding,html,&BufOut,1,f);
                   n_printed=n_printed+l;
                }
             } else if (*format=='R') {
                /* If we have to print a HTML reversed string */
                us=va_arg(list,unichar*);
-               if (us==NULL) {
-                  u_fprints(encoding,"(null)",f);
-                  n_printed=n_printed+6;
+               if (us==NULL) {                  
+                  BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);
+                  n_printed=n_printed+6; 
                } else {
                   unichar reversed[4096];
                   mirror(us,reversed);
                   unichar html[4096];
                   int l=XXXize(reversed,html);
-                  u_fprints(encoding,html,f);
+                  BuildEncodedOutForUnicharString(encoding,html,&BufOut,1,f);
                   n_printed=n_printed+l;
                }
             } else fatal_error("Invalid format option %c%c\n",*(format-1),*format);
@@ -989,10 +1159,10 @@ while (*format) {
          case 'S': {
             us=va_arg(list,unichar*);
             if (us==NULL) {
-               u_fprints(encoding,"(null)",f);
+               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);                  
                n_printed=n_printed+6;
             } else {
-               u_fprints(encoding,us,f);
+               BuildEncodedOutForUnicharString(encoding,us,&BufOut,1,f);                  
                n_printed=n_printed+u_strlen(us);
             }
             break;
@@ -1003,13 +1173,13 @@ while (*format) {
             us=va_arg(list,unichar*);
             if (us==NULL) {
                /* We don't want to print ")llun(" when the string to reverse is NULL */
-               u_fprints(encoding,"(null)",f);
+               BuildEncodedOutForCharString(encoding,"(null)",&BufOut,1,f);                  
                n_printed=n_printed+6;
                break;
             }
             unichar reversed[4096];
             n_printed=n_printed+mirror(us,reversed);
-            u_fprints(encoding,reversed,f);
+            BuildEncodedOutForUnicharString(encoding,reversed,&BufOut,1,f);                  
             break;
          }
 
@@ -1065,17 +1235,18 @@ while (*format) {
                   break;
                }
             }
-            u_fprints_char(encoding,result,f);
+            BuildEncodedOutForCharString(encoding,result,&BufOut,1,f);
             break;
          }
       }
    } else {
       /* If we have a normal character, we print it */
-      u_fputc(encoding,(unsigned char)*format,f);
+      BuildEncodedOutForUnicharItem(encoding,(unsigned char)*format,&BufOut,1,f);
       n_printed++;
    }
    format++;
 }
+FlushBufferOut(&BufOut,f);
 return n_printed;
 }
 
@@ -2145,7 +2316,7 @@ return !u_strcmp(s+(l1-l2),suffix);
  * dest is encoded in latin-1 (iso-8859-1) and non-convertible characters are skipped.
  *
  * Author: S�bastien Paumier
- * Modified by S�bastian Nagel
+ * Modified by S?bastian Nagel
  */
 void u_to_char(char *dest,unichar *src) {
 register unichar c;
@@ -2727,13 +2898,13 @@ the unicode case folding table:
 
 Case folding is done only for "common" and "simple" case
 folding, i.e. only single characters to single characters.
-Foldings like � -> A' (A+accute) or (I -> i, I -> �)
+Foldings like ? -> A' (A+accute) or (I -> i, I -> ?)
 are excluded, see
   http://www.unicode.org/Public/UNIDATA/SpecialCasing.txt
 for many examples from various languages.
 
 To use the alphabet file is not possible, because of
-multiple mappings (A -> a or � in French), see commentary
+multiple mappings (A -> a or ? in French), see commentary
 on "turn_portuguese_sequence_to_lowercase" in Alphabet.cpp
 
 The case folding tables are implemented by a switch statement which
