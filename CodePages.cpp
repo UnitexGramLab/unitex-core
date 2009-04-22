@@ -1273,12 +1273,14 @@ unichar unicode_dest[256];
 unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 switch(input_encoding->type) {
 	/* For UTF-16 encodings, we need to read the 2-byte header */
-	case E_UTF16_LE: tmp=u_fgetc(input);
+	case E_UTF16_LE:
+		tmp=u_fgetc_UTF16LE(input->f);
 		if (tmp!=U_BYTE_ORDER_MARK) {
 			return INPUT_FILE_NOT_IN_UTF16_LE;
 		}
 		break;
-	case E_UTF16_BE: tmp=u_fgetc_UTF16BE(input->f);
+	case E_UTF16_BE:
+		tmp=u_fgetc_UTF16BE(input->f);
 		if (tmp!=U_BYTE_ORDER_MARK) {
 			return INPUT_FILE_NOT_IN_UTF16_BE;
 		}
