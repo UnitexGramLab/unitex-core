@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -49,6 +49,7 @@ n->transitions=NULL;
 n->number_of_transitions=0;
 n->destination_tokens=NULL;
 n->destination_nodes=NULL;
+n->duplicates=NULL;
 return n;
 }
 
@@ -112,7 +113,7 @@ while (transitions!=NULL) {
 
 /**
  * Frees the compound word tree whose root is 'node'.
- * 
+ *
  * WARNING: this function tries to free both 'transitions' and 'destination_nodes',
  *          so, in order to avoid double freeing, the programmer must take care not
  *          to have a same node referenced in both 'transitions' and 'destination_nodes'.
@@ -125,10 +126,21 @@ free_DLC_tree_transitions(node->transitions);
 if (node->destination_tokens!=NULL) free(node->destination_tokens);
 if (node->destination_nodes!=NULL) {
 	for (int i=0;i<node->number_of_transitions;i++) {
-		free_DLC_tree_node(node->destination_nodes[i]);
+		if (node->duplicates[i] == 0) {
+			bool bDup = false;
+
+			for (int j = 0; j < i; j++)
+				if (node->destination_nodes[i] == node->destination_nodes[j]) {
+					bDup = true;
+					break;
+				}
+			if (!bDup)
+				free_DLC_tree_node(node->destination_nodes[i]);
+		}
 	}
 	free(node->destination_nodes);
 }
+free(node->duplicates);
 free(node);
 }
 
@@ -151,7 +163,7 @@ free(DLC_tree);
  * a token can be replaced by a token list delimited by the special values
  * BEGIN_CASE_VARIANT_LIST and END_CASE_VARIANT_LIST. The token list is ended
  * by END_TOKEN_LIST.
- * 
+ *
  * The array 'tokens' is supposed to be large enough. 'tok' represents the text tokens.
  * 'tokenization_mode' indicates if the word must be tokenized character by character
  * or not.
@@ -320,17 +332,17 @@ return l->node;
  * a pattern number to a compound word. If the compound word is not already
  * in the tree, it is inserted. As a side effect, the index of 'DLC_tree'
  * is updated.
- * 
+ *
  * 'token_list' is an array representing the sequence of tokens that
  * constitute the compound word. This array has been produced by the
  * function 'tokenize_compound_word'.
- * 
+ *
  * 'pos' is the current position in the array 'token_list'.
- * 
+ *
  * 'node' is the current node in the tree.
- * 
+ *
  * 'pattern' is the pattern number to add.
- * 
+ *
  * 'DLC_tree' represents the tree and the compound word index.
  */
 void associate_pattern_to_compound_word(int* token_list,int pos,struct DLC_tree_node* node,
@@ -394,9 +406,9 @@ associate_pattern_to_compound_word(token_list,0,DLC_tree->root,pattern,DLC_tree)
 
 
 /**
- * This function inserts 'pattern2' in the pattern list of 'node' if and 
+ * This function inserts 'pattern2' in the pattern list of 'node' if and
  * only if the liste contains 'pattern1'. It returns 1 on success, 0
- * otherwise. 
+ * otherwise.
  */
 int conditional_pattern_insertion(struct DLC_tree_node* node,int pattern1,int pattern2) {
 if (is_in_list(pattern1,node->patterns)) {
@@ -410,24 +422,24 @@ return 0;
 /**
  * This function explores the compound word tree in order to associate
  * the pattern number 'pattern2' to a compound word if and only if this
- * has already the pattern number 'pattern1' in its pattern list. 
+ * has already the pattern number 'pattern1' in its pattern list.
  * If the compound word is not in the tree, or if it has not 'pattern1' in its
  * pattern list, the function fails and returns 0. Otherwise, 'pattern2' is added
  * to the pattern list and the function returns a non-zero value.
- * 
- * 
+ *
+ *
  * 'token_list' is an array representing the sequence of tokens that
  * constitute the compound word. This array has been produced by the
  * function 'tokenize_compound_word'.
- * 
+ *
  * 'pos' is the current position in the array 'token_list'.
- * 
+ *
  * 'node' is the current node in the tree.
- * 
+ *
  * 'pattern1' is the pattern number that must be in the pattern list of 'node'.
 
  * 'pattern2' is the pattern number to add.
- * 
+ *
  * 'DLC_tree' represents the tree and the compound word index.
  */
 int conditional_insertion_in_DLC_tree_node(int* token_list,int pos,struct DLC_tree_node* node,
@@ -463,8 +475,8 @@ return 0;
 
 
 /**
- * This function associates the pattern number 'pattern2' to the word 'word' 
- * in the compound word tree 'DLC_tree', if and only if: 
+ * This function associates the pattern number 'pattern2' to the word 'word'
+ * in the compound word tree 'DLC_tree', if and only if:
  *   1) 'word' is already in the tree
  *   2) 'pattern1' is in the pattern list associated to 'word'
  * The function returns 0 if one of these conditions is not verified; otherwise
@@ -540,12 +552,17 @@ if (n->transitions!=NULL) {
    if (n->destination_nodes==NULL) {
       fatal_alloc_error("optimize_DLC_node");
    }
+   n->duplicates = (short*)malloc(sizeof(short) * n->number_of_transitions);
    i=0;
    while (n->transitions!=NULL) {
      /* Recursively, we optimize the destination node */
      optimize_DLC_node(n->transitions->node);
      int* token_sequence=n->transitions->token_sequence;
      for (int j=0;token_sequence[j]!=-1;j++) {
+    	 if (j > 0)
+    		 n->duplicates[i] = 1;
+    	 else
+    		 n->duplicates[i] = 0;
         n->destination_nodes[i]=n->transitions->node;
         n->destination_tokens[i]=token_sequence[j];
         i++;
@@ -693,7 +710,7 @@ return dst;
  * - 0 if a==b
  * - a value <0 if a<b
  * - a value >0 if a>b
- * 
+ *
  * Raises a fatal error if a sequence is NULL.
  */
 int compare_IntSequence(IntSequence a,IntSequence b) {

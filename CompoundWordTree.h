@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -44,29 +44,29 @@
  * This structure represents a node in a compound word tree. It is used
  * by the locate functions to build a tree of all the compound words
  * in order to speed up the consultation. In fact, this tree is a token tree:
- * the branches are tagged by the numbers of the tokens that constitute 
+ * the branches are tagged by the numbers of the tokens that constitute
  * compound words. In a first step, the tree is built with transition lists.
  * In a second step, these lists are replaced by sorted arrays that 1) avoid
  * duplicates and 2) allow dichotomy searches to speed up the process. Each
  * node has two array: one for the token numbers ('destination_tokens') and
  * one for the nodes pointed out by the transitions ('destination_nodes'). The
  * set of transitions for a given token t is then represented by the couple:
- * 
+ *
  * (destination_tokens[k] , destination_nodes[k])
- * 
+ *
  * where destination_tokens[k] == t. These two arrays have been used to avoid
  * an array of structure. This is a trick to optimize dichotomy searches, because
  * testing destination_tokens[k] is quicker than testing t[k]->token.
- * 
+ *
  * For instance, if we have a transition tagged by 'the' that goes to the node 47
  * and another tagged by "The" that goes to the node 129, and if the text
  * contains the tokens "the", "The" and "THE" the original transition list is:
- * 
+ *
  * ("the" , 47) -> ("The" , 129) -> NULL
- * 
- * Once we have replaced tokens by all their case equivalents, we obtain the following 
+ *
+ * Once we have replaced tokens by all their case equivalents, we obtain the following
  * arrays:
- * 
+ *
  * destination_tokens	destination_nodes
  * THE					   47,129
  * The					   47,129
@@ -79,12 +79,12 @@ struct DLC_tree_node {
 	 */
 	struct list_int* patterns;
 	/*
-	 * 'number_of_patterns' is the length of the list 'patterns' 
+	 * 'number_of_patterns' is the length of the list 'patterns'
 	 */
 	int number_of_patterns;
 	/*
 	 * For optimization reasons, the list 'patterns' is replaced
-	 * by the sorted array 'array_of_patterns' before being used 
+	 * by the sorted array 'array_of_patterns' before being used
 	 * in the locate.
 	 */
 	int* array_of_patterns;
@@ -108,6 +108,12 @@ struct DLC_tree_node {
 	 * Sorted array of nodes. See comment above.
 	 */
 	struct DLC_tree_node** destination_nodes;
+	/*
+	 * An array to store duplicate nodes both in transitions and in destination nodes.
+	 * It has the same size than destination_nodes and if duplicates[i] = 1 then it
+	 * means that destination_nodes[i] is a duplicate. Otherwise it is 0.
+	 */
+	short* duplicates;
 };
 
 
@@ -132,7 +138,7 @@ struct DLC_tree_transition {
 
 
 /**
- * This structure contains the root of a compound word tree, and 
+ * This structure contains the root of a compound word tree, and
  * an array that is an index for accessing quickly to the compound
  * words that begin by a given token.
  */
