@@ -216,7 +216,7 @@ while (s[i]!='\0') {
    }
    else {
       /* If we have a normal character */
-      push_input_char(p->stack,s[i],p->protect_dic_chars);
+      push_output_char(p->stack,s[i]);
       i++;
    }
 }
