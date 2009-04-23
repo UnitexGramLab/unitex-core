@@ -19,41 +19,10 @@
   *
   */
 
-#include "Tfst.h"
 #include "Fst2.h"
-#include "Alphabet.h"
-#include "LocateTfstMatches.h"
-#include "ConcordanceTfst.h"
 #include "DELA.h"
 #include "Pattern.h"
-#include "MorphologicalFilters.h"
-
-
-#define OK_MATCH_STATUS 1
-#define NO_MATCH_STATUS 2
-#define TEXT_INDEPENDENT_MATCH 3
-
-/**
- * This structure is used to wrap many information needed to perform the locate
- * operation on a text automaton.
- */
-struct locate_tfst_infos {
-	U_FILE* output;
-
-	Alphabet* alphabet;
-
-	int n_matches;
-
-	#ifdef TRE_WCHAR
-	/* These field is used to manipulate morphological filters like:
-	 *
-	 * <<en$>>
-	 *
-	 * 'filters' is a structure used to store the filters.
-	 */
-	FilterSet* filters;
-	#endif
-};
+#include "LocateTfst_lib.h"
 
 void explore_tfst(Tfst* tfst,Fst2* fst2,int current_state_in_tfst,
 		          int current_state_in_fst2,int depth,
@@ -62,7 +31,6 @@ void explore_tfst(Tfst* tfst,Fst2* fst2,int current_state_in_tfst,
                   struct locate_tfst_infos* infos);
 
 int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,struct locate_tfst_infos* infos);
-int same_codes(struct dela_entry* a,struct dela_entry* b);
 struct pattern* tokenize_grammar_tag(unichar* tag,int *negation);
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag);
 int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locate_tfst_infos* infos);
@@ -83,6 +51,7 @@ if (fst2==NULL) {
 	return 0;
 }
 struct locate_tfst_infos infos;
+infos.tfst=tfst;
 infos.n_matches=0;
 infos.alphabet=load_alphabet(alphabet);
 if (infos.alphabet==NULL) {
@@ -101,6 +70,7 @@ if (infos.output==NULL) {
 }
 #ifdef TRE_WCHAR
 infos.filters=new_FilterSet(fst2,infos.alphabet);
+infos.matches=NULL;
 if (infos.filters==NULL) {
 	close_text_automaton(tfst);
 	free_Fst2(fst2);
@@ -115,10 +85,12 @@ if (infos.filters==NULL) {
 for (int i=1;i<=tfst->N;i++) {
 	load_sentence(tfst,i);
 	compute_token_contents(tfst);
+	infos.matches=NULL;
 	/* Within a sentencce graph, we try to match from any state */
 	for (int j=0;j<tfst->automaton->number_of_states;j++) {
 		explore_tfst(tfst,fst2,j,fst2->initial_states[1],0,NULL,NULL,&infos);
 	}
+	save_tfst_matches(&infos);
 }
 /* And we free things */
 #ifdef TRE_WCHAR
@@ -145,8 +117,8 @@ Fst2State current_state_in_grammar=fst2->states[current_state_in_fst2];
 if (is_final_state(current_state_in_grammar)) {
    /* If the current state is final */
    if (depth==0) {
-      /* If we are in the main graph, we produce a concordance line */
-      compute_tfst_match_concordance_line(tfst,match_element_list,infos->output);
+      /* If we are in the main graph, we add a match to the main match list */
+	   add_tfst_match(infos,match_element_list);
       (infos->n_matches)++;
    } else {
       /* If we are in a subgraph, we add a match to the current match list */
@@ -219,7 +191,9 @@ while (grammar_transition!=NULL) {
          tmp=list->next;
          list->next=match_element_list;
          /* match_element_list is pointed by one more element */
-         if (match_element_list!=NULL) {(match_element_list->pointed_by)++;}
+         if (match_element_list!=NULL) {
+        	 (match_element_list->pointed_by)++;
+         }
          explore_tfst(tfst,fst2,list->dest_state_text,grammar_transition->state_number,
                            depth,list,LIST,infos);
          if (list->pointed_by==0) {

@@ -337,7 +337,7 @@ if (p->token_tree[e]->transition_array!=NULL) {
           token[longueur]='\0';
           if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
              // if we are in MERGE mode, we add to ouput the char we have read
-             push_string(p->stack,token);
+             push_input_string(p->stack,token,0);
           }
           token[longueur]=C;
           scan_graph(n_graph,RES->state_number,pos2-(position-longueur),depth,liste_arrivee,p);
@@ -431,7 +431,7 @@ while (t!=NULL) {
                        traiter_transduction(p,etiq->output);
                        if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                          // if we are in MERGE mode, we add to ouput the char we have read
-                         push_string(p->stack,mot);
+                         push_output_string(p->stack,mot);
                        }
                        scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,p);
                      }
@@ -458,7 +458,7 @@ while (t!=NULL) {
                  traiter_transduction(p,etiq->output);
                  if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                     // if we are in MERGE mode, we add to ouput the char we have read
-                    push_string(p->stack,mot);
+                	 push_output_string(p->stack,mot);
                  }
                  scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,p);
               }
@@ -483,7 +483,7 @@ while (t!=NULL) {
                    traiter_transduction(p,etiq->output);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
-                     push_string(p->stack,mot);
+                     push_input_string(p->stack,mot,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,p);
                  }
@@ -509,7 +509,7 @@ while (t!=NULL) {
                    traiter_transduction(p,etiq->output);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
-                     push_string(p->stack,mot);
+                     push_input_string(p->stack,mot,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,p);
                  }
@@ -535,7 +535,7 @@ while (t!=NULL) {
                    traiter_transduction(p,etiq->output);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
-                     push_string(p->stack,mot);
+                     push_input_string(p->stack,mot,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,p);
                  }
@@ -654,7 +654,7 @@ while (t!=NULL) {
                    traiter_transduction(p,etiq->output);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
-                     push_string(p->stack,contenu);
+                     push_input_string(p->stack,contenu,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,p);
                  }
@@ -675,7 +675,7 @@ while (t!=NULL) {
                    traiter_transduction(p,etiq->output);
                    if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                      // if we are in MERGE mode, we add to ouput the char we have read
-                     push_string(p->stack,mot);
+                     push_input_string(p->stack,mot,0);
                    }
                    scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,p);
                  }

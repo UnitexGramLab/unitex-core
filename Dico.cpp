@@ -271,7 +271,7 @@ for (int priority=1;priority<4;priority++) {
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            launch_locate_as_routine(text,argv[i],alph,policy,morpho_dic);
+            launch_locate_as_routine(text,argv[i],alph,policy,morpho_dic,1);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

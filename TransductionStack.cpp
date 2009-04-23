@@ -36,7 +36,20 @@ return ((c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='_'
 /**
  * Pushes the given character.
  */
-void push_char(struct stack_unichar* s,unichar c) {
+void push_input_char(struct stack_unichar* s,unichar c,int protect_dic_chars) {
+if (protect_dic_chars && (c==',' || c=='.')) {
+	/* We want to protect dots and commas because the Locate program can be used
+	 * by Dico to generate dictionary entries */
+	push(s,'\\');
+}
+push(s,c);
+}
+
+
+/**
+ * Pushes the given character.
+ */
+void push_output_char(struct stack_unichar* s,unichar c) {
 push(s,c);
 }
 
@@ -44,18 +57,13 @@ push(s,c);
 /**
  * Pushes the given string to the output, if not NULL.
  */
-void push_string(struct stack_unichar* stack,unichar* s) {
+void push_input_string(struct stack_unichar* stack,unichar* s,int protect_dic_chars) {
 int i;
 if (s==NULL) {
    return;
 }
 for (i=0;s[i]!='\0';i++) {
-	if (s[i]==',' || s[i]=='.') {
-		/* We want to protect dots and commas because the Locate program can be used
-		 * by Dico to generate dictionary entries */
-		push_char(stack,'\\');
-	}
-    push_char(stack,s[i]);
+    push_input_char(stack,s[i],protect_dic_chars);
 }
 }
 
@@ -63,16 +71,23 @@ for (i=0;s[i]!='\0';i++) {
 /**
  * Pushes the given string to the output, if not NULL, in the limit of 'length' chars.
  */
-void push_substring(struct stack_unichar* stack,unichar* s,int length) {
+void push_input_substring(struct stack_unichar* stack,unichar* s,int length,int protect_dic_chars) {
 int i;
 if (s==NULL) {
    return;
 }
 for (i=0;i<length && s[i]!='\0';i++) {
-   push_char(stack,s[i]);
+   push_input_char(stack,s[i],protect_dic_chars);
 }
 }
 
+
+/**
+ * Pushes the given string to the output, if not NULL.
+ */
+void push_output_string(struct stack_unichar* stack,unichar* s) {
+push_input_string(stack,s,0);
+}
 
 /**
  * This function processes the given output string.
@@ -136,19 +151,19 @@ while (s[i]!='\0') {
             }
          }
          if (!u_strcmp(field,"INFLECTED")) {
-            /* TODO: protect special chars */
-            push_string(p->stack,entry->inflected);
+            /* We use push_input_string because it can protect special chars */
+            push_input_string(p->stack,entry->inflected,1);
          } else if (!u_strcmp(field,"LEMMA")) {
-            push_string(p->stack,entry->lemma);
+        	 push_input_string(p->stack,entry->lemma,1);
          } else if (!u_strcmp(field,"CODE")) {
-            push_string(p->stack,entry->semantic_codes[0]);
+        	 push_output_string(p->stack,entry->semantic_codes[0]);
             for (int i=1;i<entry->n_semantic_codes;i++) {
-               push_char(p->stack,'+');
-               push_string(p->stack,entry->semantic_codes[i]);
+               push_output_char(p->stack,'+');
+               push_output_string(p->stack,entry->semantic_codes[i]);
             }
             for (int i=0;i<entry->n_inflectional_codes;i++) {
-               push_char(p->stack,':');
-               push_string(p->stack,entry->inflectional_codes[i]);
+            	push_output_char(p->stack,':');
+               push_output_string(p->stack,entry->inflectional_codes[i]);
             }
          } else {
             switch (p->variable_error_policy) {
@@ -162,7 +177,7 @@ while (s[i]!='\0') {
       i++;
       if (l==0) {
          /* Case of $$ in order to print a $ */
-         push_char(p->stack,'$');
+    	  push_output_char(p->stack,'$');
          continue;
       }
       struct transduction_variable* v=get_transduction_variable(p->variables,name);
@@ -196,12 +211,12 @@ while (s[i]!='\0') {
       }
       /* If the variable definition is correct */
       for (int k=v->start;k<v->end;k++) {
-         push_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]]);
+         push_input_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
       }
    }
    else {
       /* If we have a normal character */
-      push_char(p->stack,s[i]);
+      push_input_char(p->stack,s[i],p->protect_dic_chars);
       i++;
    }
 }

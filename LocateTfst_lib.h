@@ -22,6 +22,43 @@
 #ifndef LocateTfst_libH
 #define LocateTfst_libH
 
+#include "Unicode.h"
+#include "Alphabet.h"
+#include "Tfst.h"
+#include "MorphologicalFilters.h"
+#include "LocateTfstMatches.h"
+
+
+#define OK_MATCH_STATUS 1
+#define NO_MATCH_STATUS 2
+#define TEXT_INDEPENDENT_MATCH 3
+
+/**
+ * This structure is used to wrap many information needed to perform the locate
+ * operation on a text automaton.
+ */
+struct locate_tfst_infos {
+	U_FILE* output;
+
+	Alphabet* alphabet;
+
+	int n_matches;
+
+	Tfst* tfst;
+
+	#ifdef TRE_WCHAR
+	/* These field is used to manipulate morphological filters like:
+	 *
+	 * <<en$>>
+	 *
+	 * 'filters' is a structure used to store the filters.
+	 */
+	FilterSet* filters;
+
+	struct tfst_simple_match_list* matches;
+	#endif
+};
+
 
 int locate_tfst(char*,char*,char*,char*);
 

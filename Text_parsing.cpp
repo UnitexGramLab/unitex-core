@@ -442,7 +442,7 @@ while (meta_list!=NULL) {
                       * As we don't want to process lists of [start,end[ ranges, we
                       * directly handle here the case of a token sequence. */
                      if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
-                        push_char(p->stack,' ');
+                        push_input_char(p->stack,' ',p->protect_dic_chars);
                      }
                      if (p->output_policy!=IGNORE_OUTPUTS) {
                         if (!process_output(output,p)) {
@@ -451,7 +451,7 @@ while (meta_list!=NULL) {
                      }
                      if (p->output_policy==MERGE_OUTPUTS) {
                         for (int x=pos2;x<=end_of_compound;x++) {
-                           push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
+                           push_input_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]],p->protect_dic_chars);
                         }
                      }
                      locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
@@ -500,7 +500,7 @@ while (meta_list!=NULL) {
                    * of [start,end[ ranges, we directly handle here the case of a
                    * token sequence. */
                   if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
-                     push_char(p->stack,' ');
+                     push_input_char(p->stack,' ',p->protect_dic_chars);
                   }
                   if (p->output_policy!=IGNORE_OUTPUTS) {
                      if (!process_output(output,p)) {
@@ -509,7 +509,7 @@ while (meta_list!=NULL) {
                   }
                   if (p->output_policy==MERGE_OUTPUTS) {
                      for (int x=pos2;x<=end_of_compound;x++) {
-                        push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
+                        push_input_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]],p->protect_dic_chars);
                      }
                   }
                   locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
@@ -602,7 +602,7 @@ while (meta_list!=NULL) {
             break;
          }
          if (p->output_policy==MERGE_OUTPUTS) {
-            if (pos2!=pos) push_char(p->stack,' ');
+            if (pos2!=pos) push_input_char(p->stack,' ',p->protect_dic_chars);
          }
          enter_morphological_mode(graph_depth,t->state_number,pos2,depth+1,matches,n_matches,ctx,p);
          p->stack->stack_pointer=stack_top;
@@ -642,7 +642,7 @@ while (meta_list!=NULL) {
       if (start!=-1) {
          /* If the transition has matched */
          if (p->output_policy==MERGE_OUTPUTS && start==pos2 && pos2!=pos) {
-            push_char(p->stack,' ');
+            push_input_char(p->stack,' ',p->protect_dic_chars);
          }
          if (p->output_policy!=IGNORE_OUTPUTS) {
             /* We process its output */
@@ -654,7 +654,7 @@ while (meta_list!=NULL) {
             /* Then, if we are in merge mode, we push the tokens that have
              * been read to the output */
             for (int y=start;y<end;y++) {
-               push_string(p->stack,p->tokens->value[p->buffer[y+p->current_origin]]);
+               push_input_string(p->stack,p->tokens->value[p->buffer[y+p->current_origin]],p->protect_dic_chars);
             }
          }
          /* Then, we continue the exploration of the grammar */
@@ -793,7 +793,7 @@ while (pattern_list!=NULL) {
          #endif
          if (OK){
             if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
-               push_char(p->stack,' ');
+               push_input_char(p->stack,' ',p->protect_dic_chars);
             }
             if (p->output_policy!=IGNORE_OUTPUTS) {
                if (!process_output(output,p)) {
@@ -802,7 +802,7 @@ while (pattern_list!=NULL) {
             }
             if (p->output_policy==MERGE_OUTPUTS) {
                for (int x=pos2;x<=end_of_compound;x++) {
-                  push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
+                  push_input_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]],p->protect_dic_chars);
                }
             }
             locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
@@ -841,7 +841,7 @@ while (pattern_list!=NULL) {
          #endif
          if (OK) {
             if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
-               push_char(p->stack,' ');
+               push_input_char(p->stack,' ',p->protect_dic_chars);
             }
             if (p->output_policy!=IGNORE_OUTPUTS) {
                if (!process_output(output,p)) {
@@ -850,7 +850,7 @@ while (pattern_list!=NULL) {
             }
             if (p->output_policy==MERGE_OUTPUTS) {
                for (int x=pos2;x<=end_of_compound;x++) {
-                  push_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]]);
+                  push_input_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]],p->protect_dic_chars);
                }
             }
             locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
@@ -868,7 +868,7 @@ while (pattern_list!=NULL) {
          if (p->matching_patterns[token2]!=NULL) {
             if (XOR(get_value(p->matching_patterns[token2],pattern_list->pattern_number),pattern_list->negation)) {
                if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
-                  push_char(p->stack,' ');
+                  push_input_char(p->stack,' ',p->protect_dic_chars);
                }
                if (p->output_policy!=IGNORE_OUTPUTS) {
                   if (!process_output(output,p)) {
@@ -876,7 +876,7 @@ while (pattern_list!=NULL) {
                   }
                }
                if (p->output_policy==MERGE_OUTPUTS) {
-                  push_string(p->stack,p->tokens->value[token2]);
+                  push_input_string(p->stack,p->tokens->value[token2],p->protect_dic_chars);
                }
                locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
                p->stack->stack_pointer=stack_top;
@@ -886,7 +886,7 @@ while (pattern_list!=NULL) {
              * like <!V> */
             if (pattern_list->negation && (p->token_control[token2] & MOT_TOKEN_BIT_MASK)) {
                if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
-                  push_char(p->stack,' ');
+                  push_input_char(p->stack,' ',p->protect_dic_chars);
                }
                if (p->output_policy!=IGNORE_OUTPUTS) {
                   if (!process_output(output,p)) {
@@ -894,7 +894,7 @@ while (pattern_list!=NULL) {
                   }
                }
                if (p->output_policy==MERGE_OUTPUTS) {
-                  push_string(p->stack,p->tokens->value[token2]);
+                  push_input_string(p->stack,p->tokens->value[token2],p->protect_dic_chars);
                }
                locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
                p->stack->stack_pointer=stack_top;
@@ -921,7 +921,7 @@ if (current_state->number_of_tokens!=0) {
          {
             output=p->tags[t->tag_number]->output;
             if (p->output_policy==MERGE_OUTPUTS && pos2!=pos) {
-               push_char(p->stack,' ');
+               push_input_char(p->stack,' ',p->protect_dic_chars);
             }
             if (p->output_policy!=IGNORE_OUTPUTS) {
                if (!process_output(output,p)) {
@@ -929,7 +929,7 @@ if (current_state->number_of_tokens!=0) {
                }
             }
             if (p->output_policy==MERGE_OUTPUTS) {
-               push_string(p->stack,p->tokens->value[token2]);
+               push_input_string(p->stack,p->tokens->value[token2],p->protect_dic_chars);
             }
             locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
             p->stack->stack_pointer=stack_top;

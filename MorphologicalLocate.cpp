@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -64,7 +64,7 @@ content[i]='\0';
 
 
 /**
- * Returns 1 if the given string is of the form $XXX$ where XXX is a valid 
+ * Returns 1 if the given string is of the form $XXX$ where XXX is a valid
  * variable name; 0 otherwise.
  */
 int is_morpho_variable_output(unichar* s,unichar* var_name) {
@@ -212,7 +212,7 @@ if (graph_call_list!=NULL) {
    /* Finally, we have to restore the stack and other backup stuff */
    p->stack->stack_pointer=stack_top;
    p->stack_base=old_StackBase; /* May be changed by recursive subgraph calls */
-   
+
    /* NOTE: we don't have to take care of normal variables, since they cannot be
     *       modified in morphological mode */
    clear_dic_variable_list(&dic_variables_backup);
@@ -230,7 +230,7 @@ while (meta_list!=NULL) {
    while (t!=NULL) {
       match_one_letter=0;
       switch (meta_list->meta) {
-         
+
          case META_EPSILON:
             /* We could have an output associated to an epsilon, so we handle this case */
             if (p->output_policy!=IGNORE_OUTPUTS) {
@@ -242,11 +242,11 @@ while (meta_list!=NULL) {
                                  matches,n_matches,ctx,p);
             p->stack->stack_pointer=stack_top;
             break;
-           
+
          case META_SHARP:
             fatal_error("Unexpected # tag in morphological mode\n");
             break;
-            
+
          case META_SPACE:
             /* This case will be handled in the token case (see below) */
             break;
@@ -258,7 +258,7 @@ while (meta_list!=NULL) {
                match_one_letter=1;
             }
             break;
-            
+
          case META_DIC: {
             if (token==-1 || token==p->STOP) {break;}
             struct parsing_info* L2=NULL;
@@ -284,7 +284,7 @@ while (meta_list!=NULL) {
                      }
                   }
                   if (p->output_policy==MERGE_OUTPUTS) {
-                     push_string(p->stack,content);
+                     push_input_string(p->stack,content,p->protect_dic_chars);
                   }
                   unichar* reached_token=p->tokens->value[p->buffer[p->current_origin+L2->position]];
                   int new_pos,new_pos_in_token;
@@ -306,11 +306,11 @@ while (meta_list!=NULL) {
             }
             break;
          }
-            
-         case META_SDIC: 
+
+         case META_SDIC:
             fatal_error("Unexpected <SDIC> tag in morphological mode\n");
             break;
-            
+
          case META_CDIC:
             fatal_error("Unexpected <CDIC> tag in morphological mode\n");
             break;
@@ -330,12 +330,12 @@ while (meta_list!=NULL) {
                match_one_letter=1;
             }
             break;
- 
-         case META_PRE: 
+
+         case META_PRE:
             fatal_error("Unexpected <PRE> tag in morphological mode\n");
             break;
 
-         case META_NB: 
+         case META_NB:
             fatal_error("Unexpected <NB> tag in morphological mode\n");
             break;
 
@@ -343,15 +343,15 @@ while (meta_list!=NULL) {
             fatal_error("Unexpected <TOKEN> tag in morphological mode\n");
             break;
 
-         case META_LEFT_CONTEXT: 
+         case META_LEFT_CONTEXT:
             fatal_error("Unexpected lext context mark in morphological mode\n");
             break;
 
-         case META_BEGIN_MORPHO: 
+         case META_BEGIN_MORPHO:
             fatal_error("Unexpected morphological mode begin tag $<\n");
             break;
-         
-         case META_END_MORPHO: 
+
+         case META_END_MORPHO:
             /* Should happen, but only at the same level than the $< tag */
             if (graph_depth!=0) {
                fatal_error("Unexpected end of morphological mode at a different\nlevel than the $< tag\n");
@@ -384,7 +384,7 @@ while (meta_list!=NULL) {
          }
          if (p->output_policy==MERGE_OUTPUTS) {
             /* If needed, we push the character that was matched */
-            push_char(p->stack,current_token[pos_in_token]);
+            push_input_char(p->stack,current_token[pos_in_token],p->protect_dic_chars);
          }
          int new_pos;
          int new_pos_in_token;
@@ -467,7 +467,7 @@ while (trans!=NULL) {
                }
             }
             if (p->output_policy==MERGE_OUTPUTS) {
-               push_substring(p->stack,current_token+pos_in_token,prefix_length);
+               push_input_substring(p->stack,current_token+pos_in_token,prefix_length,p->protect_dic_chars);
             }
             int new_pos,new_pos_in_token;
             if (pos_in_token+prefix_length<current_token_length) {
@@ -514,7 +514,7 @@ while (trans!=NULL) {
                   }
                }
                if (p->output_policy==MERGE_OUTPUTS) {
-                  push_string(p->stack,content);
+                  push_input_string(p->stack,content,p->protect_dic_chars);
                }
                unichar* reached_token=p->tokens->value[p->buffer[p->current_origin+L->position]];
                int new_pos,new_pos_in_token;
@@ -652,7 +652,7 @@ if (!(n_transitions & 32768)) {
    /* If this node is final, we get the INF line number */
    inflected[pos_in_inflected]='\0';
    if (pattern==NULL) {
-      /* If any word will do. Note that we don't save DELAF entries 
+      /* If any word will do. Note that we don't save DELAF entries
        * for the <DIC> pattern */
       (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),NULL);
    } else {

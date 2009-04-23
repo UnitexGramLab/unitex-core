@@ -86,6 +86,7 @@ p->n_morpho_dics=0;
 p->dic_variables=NULL;
 p->left_ctx_shift=0;
 p->left_ctx_base=0;
+p->protect_dic_chars=0;
 return p;
 }
 
@@ -104,7 +105,7 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
                    char* dynamicDir,TokenizationPolicy tokenization_policy,
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
-                   VariableErrorPolicy variable_error_policy) {
+                   VariableErrorPolicy variable_error_policy,int protect_dic_chars) {
 struct locate_parameters* p=new_locate_parameters();
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;
@@ -113,6 +114,7 @@ p->output_policy=output_policy;
 p->search_limit=search_limit;
 p->ambiguous_output_policy=ambiguous_output_policy;
 p->variable_error_policy=variable_error_policy;
+p->protect_dic_chars=protect_dic_chars;
 U_FILE* text_file;
 U_FILE* out;
 U_FILE* info;

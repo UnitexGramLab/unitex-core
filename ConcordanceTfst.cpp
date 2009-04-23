@@ -24,8 +24,7 @@
 /**
  * Computes the output corresponding to the given match and prints it to the output file.
  */
-void compute_tfst_match_concordance_line(Tfst* tfst,struct tfst_match* match_element_list,
-		                                 U_FILE* output) {
+void compute_tfst_match_concordance_line(Tfst* tfst,struct tfst_match* match_element_list) {
 
 }
 

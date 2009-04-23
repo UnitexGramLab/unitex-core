@@ -257,7 +257,7 @@ if (l->end<current_position) {
    }
    // To count the number of matched tokens this won't work:
    //  p->matching_units=p->matching_units+(l->end+1)-(l->start);
-   // or you get ouputs like:
+   // or you get outputs like:
    //  1647 matches
    //  4101 recognized units
    //  (221.916% of the text is covered)
@@ -274,7 +274,7 @@ if (l->end<current_position) {
    //   1 2 Y
    //   0 2 Z
    // So when processing match Z we don't know, that token 0 has been already counted.
-   // I guess an bit array is needed to count correctly.
+   // I guess a bit array is needed to count correctly.
    // But since for "Longest matches" only Z, and for "Shortest" only X and Y are
    // accepted, and the option "All matches" is rarely used, I (S.N.) propose:
    if (p->end_position_last_printed_match != current_position-1) {

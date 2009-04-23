@@ -22,6 +22,7 @@
 #include "LocateTfstMatches.h"
 #include "Error.h"
 #include <stdlib.h>
+#include "Tfst.h"
 
 
 /**
@@ -132,3 +133,64 @@ while (list!=NULL && list!=limit && list->pointed_by==0) {
 }
 }
 
+
+/**
+ * This function extracts simple information from a complex tfst_match list.
+ */
+static void fill_element(struct locate_tfst_infos* infos,struct tfst_simple_match_list* e,struct tfst_match* m) {
+/* First, we compute the end offsets with the first element of the list
+ * (remember: a match list is reversed) */
+e->end_pos_in_token=-1;
+e->end_pos_in_char=-1;
+struct list_int* tags=m->text_tag_numbers;
+while (tags!=NULL) {
+	TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
+	if (e->end_pos_in_token==-1 || e->end_pos_in_token<t->end_pos_token) {
+		e->end_pos_in_token=t->end_pos_token;
+	}
+	tags=tags->next;
+}
+
+/* Then, we locate the last element in order to get information about the start offset */
+while (m->next!=NULL) {
+	m=m->next;
+}
+e->start_pos_in_token=-1;
+e->start_pos_in_char=-1;
+tags=m->text_tag_numbers;
+while (tags!=NULL) {
+	TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
+	if (e->start_pos_in_token==-1 || e->start_pos_in_token>t->start_pos_token) {
+		e->start_pos_in_token=t->start_pos_token;
+	}
+	tags=tags->next;
+}
+
+
+/* Finally, we adjust offsets with the base offset of the current sentence */
+e->start_pos_in_token+=infos->tfst->offset_in_tokens;
+e->end_pos_in_token+=infos->tfst->offset_in_tokens;
+e->output=NULL;
+e->next=NULL;
+}
+
+
+/**
+ * This function takes a tfst_match list that represents a match. It turns it into
+ * a tfst_simple_match_list element and inserts it into to the main tfst_simple_match_list,
+ * according to the match filtering rules.
+ */
+void add_tfst_match(struct locate_tfst_infos* infos,struct tfst_match* m) {
+struct tfst_simple_match_list element;
+fill_element(infos,&element,m);
+u_printf("match from token %d to %d\n",element.start_pos_in_token,element.end_pos_in_token);
+//add_element_to_list(infos,element);
+}
+
+
+/**
+ * This function saves the current match list in the concordance index file.
+ */
+void save_tfst_matches(struct locate_tfst_infos* infos) {
+
+}
