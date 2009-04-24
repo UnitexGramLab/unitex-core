@@ -26,6 +26,7 @@
 #include "Copyright.h"
 #include "Alphabet.h"
 #include "DELA.h"
+#include "AbstractDelaLoad.h"
 #include "String_hash.h"
 #include "DutchCompounds.h"
 #include "NorwegianCompounds.h"
@@ -161,7 +162,8 @@ if (language==DUTCH || language==NORWEGIAN) {
    forbiddenWords=load_key_list(temp);
 }
 u_printf("Loading BIN file...\n");
-unsigned char* bin=load_BIN_file(dictionary);
+struct BIN_free_info bin_free;
+unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
 if (bin==NULL) {
    error("Cannot load bin file %s\n",dictionary);
    free_alphabet(alph);
@@ -172,11 +174,12 @@ strcpy(temp,dictionary);
 temp[strlen(dictionary)-3]='\0';
 strcat(temp,"inf");
 u_printf("Loading INF file...\n");
-struct INF_codes* inf=load_INF_file(temp);
+struct INF_free_info inf_free;
+struct INF_codes* inf=load_abstract_INF_file(temp,&inf_free);
 if (inf==NULL) {
    error("Cannot load inf file %s\n",temp);
    free_alphabet(alph);
-   free(bin);
+   free_abstract_BIN(bin,bin_free);
    free_string_hash(forbiddenWords);
    return 1;
 }
@@ -187,8 +190,8 @@ U_FILE* words=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (words==NULL) {
    error("Cannot open word list file %s\n",argv[vars->optind]);
    free_alphabet(alph);
-   free(bin);
-   free_INF_codes(inf);
+   free_abstract_BIN(bin,bin_free);
+   free_abstract_INF(inf,inf_free);
    free_string_hash(forbiddenWords);
    // here we return 0 in order to do not block the preprocessing
    // in the Unitex Java interface, if no dictionary was applied
@@ -199,8 +202,8 @@ U_FILE* new_unknown_words=u_fopen(UTF16_LE,tmp,U_WRITE);
 if (new_unknown_words==NULL) {
    error("Cannot open temporary word list file %s\n",tmp);
    free_alphabet(alph);
-   free(bin);
-   free_INF_codes(inf);
+   free_abstract_BIN(bin,bin_free);
+   free_abstract_INF(inf,inf_free);
    u_fclose(words);
    free_string_hash(forbiddenWords);
    return 1;
@@ -210,8 +213,8 @@ U_FILE* res=u_fopen(UTF16_LE,output,U_APPEND);
 if (res==NULL) {
    error("Cannot open result file %s\n",output);
    free_alphabet(alph);
-   free(bin);
-   free_INF_codes(inf);
+   free_abstract_BIN(bin,bin_free);
+   free_abstract_INF(inf,inf_free);
    u_fclose(words);
    u_fclose(new_unknown_words);
    free_string_hash(forbiddenWords);
@@ -237,8 +240,8 @@ case RUSSIAN:
 }
 
 free_alphabet(alph);
-free(bin);
-free_INF_codes(inf);
+free_abstract_BIN(bin,bin_free);
+free_abstract_INF(inf,inf_free);
 u_fclose(words);
 u_fclose(new_unknown_words);
 free_string_hash(forbiddenWords);

@@ -40,6 +40,7 @@
 #include "Buffer.h"
 #include "Stack_unichar.h"
 #include "DELA.h"
+#include "AbstractDelaLoad.h"
 
 
 #define TOKEN_BUFFER_SIZE 1000000
@@ -177,6 +178,9 @@ struct locate_parameters {
     * morphological mode, if any. */
    struct INF_codes** morpho_dic_inf;
    unsigned char** morpho_dic_bin;
+   struct INF_free_info* morpho_dic_inf_free;
+   struct BIN_free_info* morpho_dic_bin_free;
+
    /* Size of previous arrays */
    int n_morpho_dics;
 

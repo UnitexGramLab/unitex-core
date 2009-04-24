@@ -26,6 +26,7 @@
 #include "Alphabet.h"
 #include "Text_tokens.h"
 #include "DELA.h"
+#include "AbstractDelaLoad.h"
 #include "CompoundWordHashTable.h"
 #include "Buffer.h"
 #include "BitArray.h"
@@ -102,6 +103,8 @@ struct dico_application_info {
    /* The dictionary to use */
    unsigned char* bin;
    struct INF_codes* inf;
+   struct BIN_free_info bin_free;
+   struct INF_free_info inf_free;
    /* Information about the recognized words:
     * - word_array is a tree that contains information about the
     *   structure of words

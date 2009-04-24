@@ -81,7 +81,9 @@ p->variables=NULL;
 p->stack=new_stack_unichar(TRANSDUCTION_STACK_SIZE);
 p->alphabet=NULL;
 p->morpho_dic_inf=NULL;
+p->morpho_dic_inf_free=NULL;
 p->morpho_dic_bin=NULL;
+p->morpho_dic_bin_free=NULL;
 p->n_morpho_dics=0;
 p->dic_variables=NULL;
 p->left_ctx_shift=0;
@@ -269,11 +271,13 @@ free_FilterSet(p->filters);
 free_FilterMatchIndex(p->filter_match_index);
 #endif
 for (int i=0;i<p->n_morpho_dics;i++) {
-   free_INF_codes(p->morpho_dic_inf[i]);
-   free(p->morpho_dic_bin[i]);
+   free_abstract_INF(p->morpho_dic_inf[i],p->morpho_dic_inf_free[i]);
+   free_abstract_BIN(p->morpho_dic_bin[i],p->morpho_dic_bin_free[i]);
 }
 free(p->morpho_dic_inf);
+free(p->morpho_dic_inf_free);
 free(p->morpho_dic_bin);
+free(p->morpho_dic_bin_free);
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 free_DLC_tree(p->DLC_tree);
 #endif
@@ -302,8 +306,10 @@ if (morpho_dic_list==NULL || morpho_dic_list[0]=='\0') {
 }
 p->n_morpho_dics=1+count_semi_colons(morpho_dic_list);
 p->morpho_dic_bin=(unsigned char**)malloc(p->n_morpho_dics*sizeof(unsigned char*));
+p->morpho_dic_bin_free=(struct BIN_free_info*)malloc(p->n_morpho_dics*sizeof(struct BIN_free_info));
 p->morpho_dic_inf=(struct INF_codes**)malloc(p->n_morpho_dics*sizeof(struct INF_codes*));
-if (p->morpho_dic_bin==NULL || p->morpho_dic_inf==NULL) {
+p->morpho_dic_inf_free=(struct INF_free_info*)malloc(p->n_morpho_dics*sizeof(struct INF_free_info));
+if (p->morpho_dic_bin==NULL || p->morpho_dic_inf==NULL || p->morpho_dic_bin_free==NULL || p->morpho_dic_inf_free==NULL) {
    fatal_alloc_error("load_morphological_dictionaries");
 }
 char bin[FILENAME_MAX];
@@ -318,15 +324,15 @@ for (int i=0;i<p->n_morpho_dics;i++) {
    if (*morpho_dic_list==';') {
       morpho_dic_list++;
    }
-   p->morpho_dic_bin[i]=load_BIN_file(bin);
+   p->morpho_dic_bin[i]=load_abstract_BIN_file(bin,&(p->morpho_dic_bin_free[i]));
    p->morpho_dic_inf[i]=NULL;
    if (p->morpho_dic_bin[i]!=NULL) {
       char inf[FILENAME_MAX];
       remove_extension(bin,inf);
       strcat(inf,".inf");
-      p->morpho_dic_inf[i]=load_INF_file(inf);
+      p->morpho_dic_inf[i]=load_abstract_INF_file(inf,&(p->morpho_dic_inf_free[i]));
       if (p->morpho_dic_inf[i]==NULL) {
-         free(p->morpho_dic_bin[i]);
+         free_abstract_BIN(p->morpho_dic_bin[i],p->morpho_dic_bin_free[i]);
          p->morpho_dic_bin[i]=NULL;
       }
    }
