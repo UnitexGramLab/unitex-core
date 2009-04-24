@@ -29,7 +29,7 @@
 struct stack_pointer {
    void** stack;
    /* Pointer on the top element, -1 if the stack is empty */
-   int stack_pointer;
+   int stack_pointer_m;
    /* Maximum capacity of the stack */
    int capacity;
 };

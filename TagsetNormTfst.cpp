@@ -35,6 +35,11 @@
 #include "List_int.h"
 
 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it */
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
+#define NO_C99_VARIABLE_LENGTH_ARRAY 1
+#endif
+
 
 static void usage() {
 u_printf("%S",COPYRIGHT);
@@ -147,7 +152,11 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
     * integers of 'renumbering[i]'. As some tags will be inserted, we must remember
     * the original size of the tags array. */
    int original_number_of_tags=txtin->tfst->tags->nbelems;
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+   struct list_int** renumbering=(struct list_int**)malloc(sizeof(struct list_int*)*original_number_of_tags);
+#else
    struct list_int* renumbering[original_number_of_tags];
+#endif
    /* We clean all the tags. A rejected tag is marked with its content set to NULL */
    for (int i=0;i<original_number_of_tags;i++) {
       renumbering[i]=NULL;
@@ -260,6 +269,9 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
    if (current_sentence%100==0) {
       u_printf("Sentence %d/%d ...      \r",current_sentence,txtin->tfst->N);
    }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+   free(renumbering);
+#endif
 }
 u_printf("Sentence %d/%d.\nDone: text automaton is normalized.\n",txtin->tfst->N,txtin->tfst->N);
 tfst_file_close_in(txtin);

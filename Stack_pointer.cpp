@@ -36,7 +36,7 @@ s->stack=(void**)malloc(capacity*sizeof(void*));
 if (s->stack==NULL) {
    fatal_alloc_error("new_stack_pointer");
 }
-s->stack_pointer=-1;
+s->stack_pointer_m=-1;
 s->capacity=capacity;
 return s;
 }
@@ -59,7 +59,7 @@ int is_empty(struct stack_pointer* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in is_empty\n");
 }
-return (stack->stack_pointer==-1);
+return (stack->stack_pointer_m==-1);
 }
 
 
@@ -70,7 +70,7 @@ void empty(struct stack_pointer* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in empty\n");
 }
-stack->stack_pointer=-1;
+stack->stack_pointer_m=-1;
 }
 
 
@@ -81,7 +81,7 @@ int is_full(struct stack_pointer* stack) {
 if (stack==NULL) {
    fatal_error("NULL error in is_full\n");
 }
-return (stack->stack_pointer==stack->capacity-1);
+return (stack->stack_pointer_m==stack->capacity-1);
 }
 
 
@@ -92,7 +92,7 @@ void push(struct stack_pointer* stack,void* ptr) {
 if (is_full(stack)) {
    fatal_error("Cannot push on a full stack\n");
 }
-stack->stack[++(stack->stack_pointer)]=ptr;
+stack->stack[++(stack->stack_pointer_m)]=ptr;
 }
 
 
@@ -103,6 +103,6 @@ void* pop(struct stack_pointer* stack) {
 if (is_empty(stack)) {
    fatal_error("Cannot pop an empty stack\n");
 }
-return stack->stack[(stack->stack_pointer)--];
+return stack->stack[(stack->stack_pointer_m)--];
 }
 

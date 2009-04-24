@@ -78,7 +78,7 @@ u_fclose(f);
  * First, it builds a tree with all the entries, and then, it builds a minimal
  * transducer from this tree, using the Dominique Revuz's algorithm.
  */
-int main_Compress(int argc, char** argv) {
+int main_Compress(int argc, char* argv[]) {
 if (argc==1) {
    usage();
    return 0;

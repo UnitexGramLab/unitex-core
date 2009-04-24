@@ -31,8 +31,9 @@
 #include "HashTable.h"
 #include "FIFO.h"
 
-#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_SIZED_ARRAY)))
-#define NO_C99_VARIABLE_SIZED_ARRAY 1
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it */
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
+#define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
 #define DEFAULT_STATE_ARRAY_SIZE 256
@@ -1343,7 +1344,7 @@ if (min==NULL) {
 topological_sort(graph);
 /* We create and initialize a matrix to know, for each couple of state
  * (x,y) if there is a direct transition from x to y. */
-#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 struct bit_array** direct=(struct bit_array**)malloc(sizeof(struct bit_array*)*graph->number_of_states);
 #else
 struct bit_array* direct[graph->number_of_states];
@@ -1362,7 +1363,7 @@ for (q=0;q<graph->number_of_states;q++) {
 }
 /* Now, we look for factorizing states, i.e. states so that
  * every path of the automaton cross them */
-#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 char *factorizing=(char*)malloc(sizeof(char)*graph->number_of_states);
 #else
 char factorizing[graph->number_of_states];
@@ -1392,7 +1393,7 @@ for (int i=0;i<graph->number_of_states;i++) {
 double ambiguity_rate=0;
 *max=0;
 *min=0;
-#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 int* min_path_length=(int*)malloc(sizeof(int)*(graph->number_of_states));
 int* max_path_length=(int*)malloc(sizeof(int)*(graph->number_of_states));
 int* number_of_paths=(int*)malloc(sizeof(int)*(graph->number_of_states));
@@ -1421,7 +1422,7 @@ while (q2<graph->number_of_states-1) {
    *min=(*min)+min_path_length[q1];
    ambiguity_rate=ambiguity_rate+log((double)number_of_paths[q1]);
 }
-#ifdef NO_C99_VARIABLE_SIZED_ARRAY
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 free(direct);
 free(factorizing);
 free(min_path_length);

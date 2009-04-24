@@ -24,6 +24,11 @@
 #include "ElagStateSet.h"
 #include "AutComplementation.h"
 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it */
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
+#define NO_C99_VARIABLE_LENGTH_ARRAY 1
+#endif
+
 
 /**
  * This function returns a symbol list that matches
@@ -32,7 +37,11 @@
  * matches everything.
  */
 symbol_t* LEXIC_minus_transitions(language_t* language,Transition* trans) {
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+symbol_t** POS=(symbol_t**)malloc(sizeof(symbol_t*)*(language->POSs->size));
+#else
 symbol_t* POS[language->POSs->size];
+#endif
 int i;
 /* First we build an array containing a full symbol for each POS.
  * For instance, we could have POS[0]=<A>, POS[1]=<V>, etc. */
@@ -48,6 +57,9 @@ while (trans!=NULL) {
       for (i=0;i<language->POSs->size;i++) {
          free_symbols(POS[i]);
       }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+	  free(POS);
+#endif
       return NULL;
    }
    /* If we have a transition tagged by <A:s>, we have to replace
@@ -66,6 +78,9 @@ symbol_t* end=&res;
 for (i=0;i<language->POSs->size;i++) {
    concat_symbols(end,POS[i],&end);
 }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+free(POS);
+#endif
 return res.next;
 }
 

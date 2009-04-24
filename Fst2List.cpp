@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 
-using namespace std;
 
 #include <locale.h>
 #include "Unicode.h"
@@ -423,7 +422,11 @@ verboseMode  = 0;
 			cnode->flag = 1;
 		}
 		}
+      #ifdef __GNUC__
       #warning beurk!!! aa is a static
+      #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
+#pragma message("warning : beurk!!! aa is a static")
+      #endif
 		u_sprintf(aa,"Loc%d",cnode->index);
 		return((unichar *)aa);
 

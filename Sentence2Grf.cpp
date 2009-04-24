@@ -27,6 +27,12 @@
 #include "Transitions.h"
 
 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it */
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
+#define NO_C99_VARIABLE_LENGTH_ARRAY 1
+#endif
+
+
 /* This is an approximation of the average width in pixels of a
  * character */
 #define WIDTH_OF_A_CHAR 10
@@ -491,7 +497,11 @@ state->l=sorted_insert(dest_state,state->l);
 void save_grf_states(U_FILE* f,struct grf_state** tab_grf_state,int N_GRF_STATES,
                      int maximum_rank,char* font,int height_indication) {
 /* We count the number of boxes for each rank */
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+int *pos_Y=(int*)malloc(sizeof(int)*(maximum_rank+1));
+#else
 int pos_Y[maximum_rank+1];
+#endif
 for (int i=0;i<maximum_rank;i++) {
     pos_Y[i]=0;
 }
@@ -539,5 +549,8 @@ for (int i=2;i<N_GRF_STATES;i++) {
    }
    u_fprintf(f,"\n");
 }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+free(pos_Y);
+#endif
 }
 

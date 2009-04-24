@@ -348,7 +348,11 @@ if (tfst->automaton->number_of_states<4 || get_initial_state(tfst->automaton)!=0
 if (u_strcmp(language_get_form(language,tfst->automaton->states[0]->outgoing_transitions->label->lemma),"{S}")) {
    fatal_error("remove_sentence_delimiters: no sentence delimiter found\n");
 }
+#ifdef __GNUC__
 #warning we could do the same at a lower cost by shifting the 1->N-2 states to 0->N-3
+#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
+#pragma message("warning : we could do the same at a lower cost by shifting the 1->N-2 states to 0->N-3")
+#endif
 unset_initial_state(tfst->automaton->states[0]);
 free_Transition_list(tfst->automaton->states[0]->outgoing_transitions);
 tfst->automaton->states[0]->outgoing_transitions=NULL;

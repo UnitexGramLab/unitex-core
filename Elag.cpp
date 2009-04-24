@@ -26,8 +26,8 @@
 
 #ifdef __GNUC__
 #include <unistd.h>
-#elif defined(__VISUALC__)
-#include <DIRECT.H>
+#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
+#include <direct.h>
 #else
 #include <dir.h>
 #endif

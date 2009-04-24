@@ -177,7 +177,7 @@ elag_determinize(language,rule->contexts[0].right);
 elag_minimize(rule->contexts[0].right);
 SingleGraph R2_anything=rule->contexts[0].right;
 /* We compute the number of constraint combinations */
-int p=(int)pow(2,rule->nbContexts-1);
+int p=((rule->nbContexts-1)>=0) ? ((int)(1 << (rule->nbContexts-1))) : 0;
 /* We allocate the resulting automaton */
 SingleGraph result=new_SingleGraph();
 

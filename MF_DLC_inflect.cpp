@@ -103,7 +103,11 @@ int inflect(char* DLC, char* DLCF, int config_files_status,
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
 			err = SU_inflect(DELAS_entry->lemma, inflection_code,
 					DELAS_entry->filters, &forms, semitic);
+#ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
+#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
+#pragma message("warning : mettre toutes les entrees sur une meme ligne")
+#endif
 			/* Then, we print its inflected forms to the output */
 			for (int i = 0; i < forms.no_forms; i++) {
 				u_fprintf(dlcf, "%S,%S.%S", forms.forms[i].form,

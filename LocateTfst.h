@@ -23,7 +23,7 @@
 #define LocateTfstH
 
 
-int main_LocateTfst(int,char**);
+int main_LocateTfst(int,char* argv[]);
 
 
 #endif

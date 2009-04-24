@@ -809,7 +809,7 @@ int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T*
     }
     err2 = MU_graph_scan_label_out(label_out, MU_label->out);
   }
-  return (err1 or err2);
+  return (err1 || err2);
 }
 
 

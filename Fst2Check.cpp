@@ -25,6 +25,11 @@
 #include "Transitions.h"
 
 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it */
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
+#define NO_C99_VARIABLE_LENGTH_ARRAY 1
+#endif
+
 int look_for_recursion(int,struct list_int*,Fst2*,int*);
 
 
@@ -686,10 +691,17 @@ if (graph_number<1 || graph_number>fst2->number_of_graphs) {
    fatal_error("Invalid graph number in is_acyclic\n");
 }
 int N=fst2->number_of_states_per_graphs[graph_number];
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+char *mark=(char*)malloc(sizeof(char)*N);
+#else
 char mark[N];
+#endif
 for (int i=0;i<N;i++) {
    mark[i]=NOT_SEEN_YET;
 }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+free(mark);
+#endif
 return is_acyclic(fst2,mark,fst2->initial_states[graph_number],fst2->initial_states[graph_number]);
 }
 
