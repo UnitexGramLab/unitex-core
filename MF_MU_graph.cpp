@@ -1,7 +1,7 @@
 /*
-  * Unitex 
+  * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -73,10 +73,10 @@ void MU_graph_free_label(MU_graph_label_T* MU_label);
 void MU_graph_free_morpho(MU_graph_morpho_T* MU_morpho);
 
 /////////////////////////////////////////////////
-// Explores the inflection transducer of the MU-lemma 'MU_lemma' 
+// Explores the inflection transducer of the MU-lemma 'MU_lemma'
 // in order to generate all its inflected forms. The generated forms are put to 'forms'
 // Initially, 'forms' has its space allocated but is empty.
-// Returns 0 on success, 1 otherwise. 
+// Returns 0 on success, 1 otherwise.
 int MU_graph_explore_graph(MU_lemma_T* MU_l, MU_forms_T* forms) {
   int res;
 
@@ -85,7 +85,7 @@ int MU_graph_explore_graph(MU_lemma_T* MU_l, MU_forms_T* forms) {
 
  //Initialize the structure for graph unification variables
   unif_init_vars();
-  
+
   //Get the initial state of the inflection tranducer
   Fst2State initial;
   initial = MU_graph_get_initial(MU_lemma->paradigm);
@@ -120,7 +120,7 @@ void MU_graph_free_graphs() {
 // On success returns the graph's initial state, otherwise returns NULL.
 Fst2State MU_graph_get_initial(char* graph_name) {
   //Get the index of the tranducer in the transducer table
-  T=get_transducer(graph_name);  
+  T=get_transducer(graph_name);
   if (fst2[T]==NULL) {
     // if the automaton has not been loaded
     return NULL;
@@ -136,22 +136,22 @@ Fst2State MU_graph_get_initial(char* graph_name) {
 // inheritance variables, starting from state q, explore the current state q
 // of an inflection transducer for MWUs. Generate suffixes of the inflected
 // forms and their features, and put them to 'forms'.
-// In case of error put an empty list into 'forms' (which is not identical to ((epsilon,empty_set))). 
+// In case of error put an empty list into 'forms' (which is not identical to ((epsilon,empty_set))).
 // Initially, 'forms' has its space allocated but is empty.
-// Return a number !=0 in case of errors, 0 otherwise. 
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
   int err;
   MU_graph_label_T* l;
   Fst2State q_bis;
 
   //If we are in a final state, then the empty word is recognized, we add it to 'forms' and we continue to explore
-  if (q->control & 1) 
+  if (q->control & 1)
     MU_add_empty_form(forms);
 
   //Explore each outgoing transition
   Transition* t;
   MU_forms_T forms_bis; //Suffixes obtained by the exploration of one outgoing transition
-  
+
   t = q->transitions;
   while (t) {
     l = (MU_graph_label_T*) malloc(sizeof(MU_graph_label_T));
@@ -186,14 +186,14 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
 
 ////////////////////////////////////////////
 // Given the current instantiation of unification variables and of
-// inheritance variables, explore the current transition label 'l', 
+// inheritance variables, explore the current transition label 'l',
 // and the subautomaton starting from its arrival state 'q_bis'.
 // Generate suffixes of the inflected
 // forms and their features, and put them to 'forms'.
-// In case of error put an empty list into 'forms'. 
+// In case of error put an empty list into 'forms'.
 // Initially, '*forms' has its space allocated but is empty.
-// Return a number !=0 in case of errors, 0 otherwise. 
-int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms) { 
+// Return a number !=0 in case of errors, 0 otherwise.
+int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms) {
   int err;
   //If the current unit is a reference to a lemma's unit (e.g. <$2>)
   if (l->in && l->in->unit.type!=cst) {
@@ -202,32 +202,32 @@ int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* form
     u_no = l->in->unit.u.num-1;
     u = MU_lemma->units[u_no];  //Get the referenced lemma's unit
     //explore the current unit according to its morphology, then the label's output and the rest of the automaton
-    err = MU_graph_explore_label_in_var(u,l->in->morpho,l->out,q_bis,forms);  
-    if (err) 
+    err = MU_graph_explore_label_in_var(u,l->in->morpho,l->out,q_bis,forms);
+    if (err)
       return err;
   }
 
   else { //If the current unit is fixed (empty or a fixed word, e.g. "of")
-    
+
     //////////////////////////////////
     //Get the forms of the current unit
     SU_forms_T SU_forms;
     SU_init_forms(&SU_forms);
-    
+
     ///If the current unit's input is empty (it is an epsilon input <E>)
     if (!l->in)
       //The current form is empty
       SU_init_invariable_form_char(&SU_forms,"");
-    
+
     //If the current unit is a constant (e.g. "of")
-    else 
+    else
       //Get the form appearing in the node's input
       SU_init_invariable_form(&SU_forms,l->in->unit.u.seq);
 
-     
+
     ///////////////////////////////////
     //Get the suffixes of the MWU forms
-    MU_forms_T suffix_forms;  
+    MU_forms_T suffix_forms;
     MU_init_forms(&suffix_forms);
     err = MU_graph_explore_label_out(l->out,q_bis,&suffix_forms);  //Explore the rest of the automaton
     if (err) {
@@ -240,11 +240,11 @@ int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* form
     //Concatenante each inflected form of the current unit in front of each multi-unit form
     //resulting from the exploration of the rest of the automaton
     MU_concat_forms(&SU_forms, &suffix_forms, forms);
-    
+
     //Delete the intermediate simple et compound forms
     SU_delete_inflection(&SU_forms);
-    MU_delete_inflection(&suffix_forms);      
-  } 
+    MU_delete_inflection(&suffix_forms);
+  }
   return 0;
 }
 
@@ -259,7 +259,7 @@ int MU_graph_explore_label(MU_graph_label_T* l,Etat_fst q_bis, MU_forms_T* forms
 
 ////////////////////////////////////////////
 // Given the current instantiation of unification variables and of
-// inheritance variables, recursively explore the input of current transition label, 
+// inheritance variables, recursively explore the input of current transition label,
 // knowing that it is a reference to the MU lemma's unit 'u' and its
 // desired morphology is 'l_in_morpho'.
 // Then explore the label's output 'l_out_morpho'.
@@ -267,8 +267,8 @@ int MU_graph_explore_label(MU_graph_label_T* l,Etat_fst q_bis, MU_forms_T* forms
 // Generate suffixes of the inflected
 // forms and their features, and put them to 'forms'.
 // Initially, '*forms' has its space allocated but is empty.
-// In case of error put an empty list into 'forms'. 
-// Return a number !=0 in case of errors, 0 otherwise. 
+// In case of error put an empty list into 'forms'.
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_var(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
   f_morpho_T feat;   //A set of the already treated morphological features contained in the label's input
@@ -282,15 +282,15 @@ int MU_graph_explore_label_in_var(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_
 // then output, then of the rest of the automaton.
 // u: lemma's unit concerned
 // l_in_morpho: morphology contained in the label's input, e.g. Nb=pl; Case=$c1; Gen==$g
-// i_morpho: index of the first label's input morhological feature not yet treated 
+// i_morpho: index of the first label's input morhological feature not yet treated
 // feat: accumulated desired features of the current unit (deduced from this unit's features
 // in the MU lemma, and from the label's input).
 // l_out_morpho: morphology contained in the label's output
 // q_bis: arrival state of the label's transition
 // forms: suffixes of the inflected forms and their features
 // Initially, '*forms' has its space allocated but is empty.
-// In case of error put an empty list into 'forms'. 
-// Return a number !=0 in case of errors, 0 otherwise. 
+// In case of error put an empty list into 'forms'.
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
 
@@ -301,36 +301,36 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
     c = &(l_in_morpho->cats[i_morpho]);
     switch (c->type) {
     case cnst : //e.g. Nb=pl
-      err = MU_graph_explore_label_in_morph_const(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
+      err = MU_graph_explore_label_in_morph_const(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
       break;
     case inherit_var: //e.g. Gen==$g
-      err = MU_graph_explore_label_in_morph_inher(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
+      err = MU_graph_explore_label_in_morph_inher(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
       break;
     case unif_var:  //e.g. Case=$c1
-      err = MU_graph_explore_label_in_morph_unif(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms); 
+      err = MU_graph_explore_label_in_morph_unif(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
       break;
     }
     if (err)
       return err;
-  }														   
-  
+  }
+
   ////////////////////////////////////////////////////////////////////////////////
   //If the whole label's input treated get the inflected forms of the current unit
   else {
-    
+
     //Get the inflected forms of the current unit
     SU_forms_T SU_forms;
     SU_init_forms(&SU_forms);
-    
+
     //If no morphology in the input label, take the unit as it appears in the MWU's lemma
     if (!l_in_morpho)
       //Get the inflected form from the current unit (this form is not to be modified since there is no morphology in the input label)
       SU_init_invariable_form(&SU_forms,u->form);
-    
+
     //If all morphological category-value equations in the input label treated
     else {
       //Inflect the unit concerned according to desired features
-      err = MU_graph_get_unit_forms(u,feat,&SU_forms);  
+      err = MU_graph_get_unit_forms(u,feat,&SU_forms);
       if (err) {
 	SU_delete_inflection(&SU_forms);
 	return err;
@@ -339,12 +339,12 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
 
     ///////////////////////////////////
     //Get the suffixes of the MWU forms
-    MU_forms_T suffix_forms;  
+    MU_forms_T suffix_forms;
     MU_init_forms(&suffix_forms);
     err = MU_graph_explore_label_out(l_out_morpho,q_bis,&suffix_forms);  //Explore the rest of the automaton
     if (err) {
       SU_delete_inflection(&SU_forms);
-      MU_delete_inflection(&suffix_forms);      
+      MU_delete_inflection(&suffix_forms);
       return err;
     }
 
@@ -352,10 +352,10 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
     //Concatenante each inflected form of the current unit in front of each multi-unit form
     //resulting from the exploration of the rest of the automaton
     MU_concat_forms(&SU_forms, &suffix_forms, forms);
-    
+
     //Delete the intermediate simple et compound forms
     SU_delete_inflection(&SU_forms);
-    MU_delete_inflection(&suffix_forms);      
+    MU_delete_inflection(&suffix_forms);
   }
   return 0;
 }
@@ -364,9 +364,9 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
 // Generate the desired inflected forms (defined by 'feat')
 // of the current single unit 'u'.
 // Return the generated forms in 'SU_forms'.
-// In case of error put an empty list into 'SU_forms'. 
+// In case of error put an empty list into 'SU_forms'.
 // Initially, 'SU_forms' has its space allocated but is empty.
-// Return a number !=0 in case of errors, 0 otherwise. 
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
   int err;
   f_morpho_T old_feat;  //Features that the current unit has in the lemma of the MWU
@@ -378,7 +378,7 @@ int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
     return err;
 
   //Change the features to adapt them to the desired features, e.g. if 'feat'=<Nb=pl> then old_feat<-<Nb=pl; Gen=fem>
-  err = f_change_morpho(&old_feat,feat); 
+  err = f_change_morpho(&old_feat,feat);
   if (err)
     return err;
 
@@ -393,18 +393,18 @@ int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
 // c: single category-value pair from the current label, it has a CONSTANT value e.g. Nb=pl
 // u: lemma's unit concerned, e.g. vive
 // l_in_morpho: morphology contained in the label's input, e.g. Nb=pl; Case=$c1; Gen==$g
-// i_morpho: index of the first label's input morhological feature not yet treated 
+// i_morpho: index of the first label's input morhological feature not yet treated
 // feat: accumulated desired features of the current unit (deduced from this unit's features
 // in the MU lemma, and from the label's input).
 // l_out_morpho: morphology contained in the label's output
 // q_bis: arrival state of the label's transition
 // forms: suffixes of the inflected forms and their features
 // Initially, '*forms' has its space allocated but is empty.
-// In case of error put an empty list into 'forms'. 
-// Return a number !=0 in case of errors, 0 otherwise. 
+// In case of error put an empty list into 'forms'.
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_const(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
-  
+
   //Add the current label's category-value pair to the features of the single unit to be generated
   err = f_add_morpho(feat,c->cat,c->val.value);
   if (err == -1) {
@@ -423,18 +423,18 @@ int MU_graph_explore_label_in_morph_const(MU_graph_category_T* c, SU_id_T* u, MU
 // c: single category-value pair from the current label, it is an INHERITANCE variable e.g. Gen==$gl
 // u: lemma's unit concerned, e.g. vive
 // l_in_morpho: morphology contained in the label's input, e.g. Nb=pl; Case=$c1; Gen==$g
-// i_morpho: index of the first label's input morhological feature not yet treated 
+// i_morpho: index of the first label's input morhological feature not yet treated
 // feat: accumulated desired features of the current unit (deduced from this unit's features
 // in the MU lemma, and from the label's input), e.g. <Nb=pl; Case=Nom>
 // l_out_morpho: morphology contained in the label's output
 // q_bis: arrival state of the label's transition
 // forms: suffixes of the inflected forms and their features
 // Initially, '*forms' has its space allocated but is empty.
-// In case of error put an empty list into 'forms'. 
-// Return a number !=0 in case of errors, 0 otherwise. 
+// In case of error put an empty list into 'forms'.
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
-  int new_instant;  //Controls if an instantiation occured in the current instance of the function
+  int new_instant=0;  //Controls if an instantiation occured in the current instance of the function
 
   //Get the features that the unit has in the lemma of the MWU, e.g. <Nb=sing; Gen=fem; Case=Nom>
   f_morpho_T old_feat;  //Features that the current unit has in the lemma of the MWU
@@ -454,10 +454,10 @@ int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU
   unichar* var;
   var = c->val.inherit_var;  //get the identifier of the variable, e.g. g1
   if (unif_instantiated(var)) {
-    //If the same variable already instantiated to a DIFFERENT value then cut off the exploration path 
+    //If the same variable already instantiated to a DIFFERENT value then cut off the exploration path
     //The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
     if ( (unif_get_cat(var)!=c->cat) || (unif_get_val_index(var)!=val))
-      return 0; 
+      return 0;
     //If variable already instantiated to the same value, no further instantiation needed
   }
   else {  //Variable not yet instantiated
@@ -491,18 +491,18 @@ int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU
 // c: single category-value pair from the current label, it is a UNIFICATION variable e.g. Case=$c2
 // u: lemma's unit concerned, e.g. vive
 // l_in_morpho: morphology contained in the label's input, e.g. Nb=pl; Case=$c1; Gen==$g
-// i_morpho: index of the first label's input morhological feature not yet treated 
+// i_morpho: index of the first label's input morhological feature not yet treated
 // feat: accumulated desired features of the current unit (deduced from this unit's features
 // in the MU lemma, and from the label's input), e.g. <Nb=pl; Case=Nom>
 // l_out_morpho: morphology contained in the label's output
 // q_bis: arrival state of the label's transition
 // forms: suffixes of the inflected forms and their features
 // Initially, '*forms' has its space allocated but is empty.
-// In case of error put an empty list into 'forms'. 
-// Return a number !=0 in case of errors, 0 otherwise. 
+// In case of error put an empty list into 'forms'.
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
-  int err;  //Result of a function called 
-  
+  int err;  //Result of a function called
+
   unichar* var;  //Unification variable's identifier
   var = c->val.unif_var;
 
@@ -511,13 +511,13 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
   //  err = SU_cpy_features(&old_feat,u);    //e.g. <Nb=sing; Case=$c1; Gen==$g>
   //  if (err)
   //    return err;
-  
+
   if (unif_instantiated(var)) {
-    //If the same variable already instantiated for a DIFFERENT category then cut off the exploration path 
+    //If the same variable already instantiated for a DIFFERENT category then cut off the exploration path
     //The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
     if (unif_get_cat(var)!=c->cat)
-      return 0; 
-    
+      return 0;
+
     //If the same variable already instantiated for the same category, only this instantiation is taken into account
     //Add the instantiated category-value pair to the features of the single unit to be generated
     err = f_add_morpho(feat,c->cat,unif_get_val_index(var));
@@ -525,8 +525,8 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
       error(" in graph %s.\n",MU_lemma->paradigm);
       MU_delete_inflection(forms);
       return 1;
-    } 
-   
+    }
+
     //Return MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
     err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
     if (err == -1) {
@@ -542,23 +542,23 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
     int val;  //Index of different values in the domain of the current category
     MU_forms_T suffix_forms; //Suffixes generated in one run of the for-loop
     for (val=0; val<c->cat->no_values; val++) {
-      
+
       //Instantiated to the current value
       unif_instantiate_index(var,c->cat,val);
 
       //Add the the instantiated category-value pair to the features of the single unit to be generated
       err = f_add_morpho(feat, c->cat, val);
       if (err) {
-	MU_delete_inflection(&suffix_forms);      
+	MU_delete_inflection(&suffix_forms);
 	return err;
       }
 
-      //Explore the rest of the label and the rest of the automaton 
+      //Explore the rest of the label and the rest of the automaton
       MU_init_forms(&suffix_forms);
       err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,&suffix_forms);
       if (err) {
 	//Delete the intermediate simple et compound forms
-	MU_delete_inflection(&suffix_forms);      
+	MU_delete_inflection(&suffix_forms);
   	return err;
       }
 
@@ -570,15 +570,15 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
       err = f_del_one_morpho(feat, c->cat);
       if (err) {
 	//Delete the intermediate simple et compound forms
-	MU_delete_inflection(&suffix_forms);      
+	MU_delete_inflection(&suffix_forms);
 	return err;
       }
-      
+
       //Delete the current instantiation
       unif_desinstantiate(var);
-      
+
       //Delete the intermediate simple et compound forms
-      MU_delete_inflection(&suffix_forms);      
+      MU_delete_inflection(&suffix_forms);
       }
   }
   return 0;
@@ -586,14 +586,14 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
 
 ////////////////////////////////////////////
 // Given the current instantiation of unification variables and of
-// inheritance variables, explore the current transition label's output 'l_out_morpho', 
+// inheritance variables, explore the current transition label's output 'l_out_morpho',
 // and the subautomaton starting from its arrival state 'q_bis'.
 // Generate suffixes of the inflected
 // forms and their features, and put them to 'forms'.
-// In case of error put an empty list into 'forms'. 
+// In case of error put an empty list into 'forms'.
 // Initially, '*forms' has its space allocated but is empty.
-// Return a number !=0 in case of errors, 0 otherwise. 
-int MU_graph_explore_label_out(MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms) { 
+// Return a number !=0 in case of errors, 0 otherwise.
+int MU_graph_explore_label_out(MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms) {
   int err;
   f_morpho_T feat;   //A set of the amready treated morphological features contained in the label's input
   f_init_morpho(&feat);
@@ -606,20 +606,20 @@ int MU_graph_explore_label_out(MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, 
 // Recursive exploration of the current transition label's output,
 // then of the rest of the automaton.
 // l_out_morpho: morphology contained in the label's output, e.g. Nb=pl; Case=$c1; Gen=$g
-// i_morpho: index of the first label's output morhological feature not yet treated 
+// i_morpho: index of the first label's output morhological feature not yet treated
 // feat: accumulated output features of the MWU
 // q_bis: arrival state of the label's transition
 // forms: suffixes of the inflected forms and their features
 // Initially, '*forms' has its space allocated but is empty.
-// In case of error put an empty list into 'forms'. 
-// Return a number !=0 in case of errors, 0 otherwise. 
-int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) { 
+// In case of error put an empty list into 'forms'.
+// Return a number !=0 in case of errors, 0 otherwise.
+int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
   int err;
 
   //If no morphology in the output label, then go to the next state
   if (!l_out_morpho) {
     //Explore the arrival state
-    err = MU_graph_explore_state(q_bis,forms);  
+    err = MU_graph_explore_state(q_bis,forms);
     if (err)
       return err;
   }
@@ -629,15 +629,15 @@ int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,
     if (i_morpho == l_out_morpho->no_cats) {
 
       //Explore the arrival state
-      err = MU_graph_explore_state(q_bis,forms);  
+      err = MU_graph_explore_state(q_bis,forms);
       if (err)
 	return err;
-      
+
       //Add the current features to the features of the suffixes
       int f;  //Index of the current suffix
-      int c;  //Index of the current category-value pair in 'feat' 
-      for (f=0; f<forms->no_forms; f++) 
-	for (c=0; c<feat->no_cats; c++) { 
+      int c;  //Index of the current category-value pair in 'feat'
+      for (f=0; f<forms->no_forms; f++)
+	for (c=0; c<feat->no_cats; c++) {
 	  //If the ouput morphology in a graph is ambiguous, the final MWU's morphology is undefined
 	  err = f_add_morpho(forms->forms[f].features, feat->cats[c].cat,feat->cats[c].val);
 	  if (err == -1) {
@@ -647,23 +647,23 @@ int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,
 	  }
 	}
     }
-  
+
   //If the whole label's output not yet treated
     else {
       MU_graph_category_T* c;  // a single graph category-value pair, e.g. Case==$n1
       c = &(l_out_morpho->cats[i_morpho]);
       switch (c->type) {
       case cnst : //e.g. Nb=pl
-	err = MU_graph_explore_label_out_morph_const(c,l_out_morpho,i_morpho+1,feat,q_bis,forms); 
+	err = MU_graph_explore_label_out_morph_const(c,l_out_morpho,i_morpho+1,feat,q_bis,forms);
 	break;
       case unif_var:  //e.g. Case=$c1
-	err = MU_graph_explore_label_out_morph_unif(c,l_out_morpho,i_morpho+1,feat,q_bis,forms); 
+	err = MU_graph_explore_label_out_morph_unif(c,l_out_morpho,i_morpho+1,feat,q_bis,forms);
 	break;
    default:;
       }
       if (err)
 	return err;
-    }														   
+    }
   return 0;
 }
 
@@ -672,13 +672,13 @@ int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,
 // then of the rest of the automaton.
 // c: single category-value pair from the current label, it has a CONSTANT value e.g. Nb=pl
 // l_out_morpho: morphology contained in the label's output
-// i_morpho: index of the first label's output morhological feature not yet treated 
+// i_morpho: index of the first label's output morhological feature not yet treated
 // feat: accumulated output features of the MWU
 // q_bis: arrival state of the label's transition
 // forms: suffixes of the inflected forms and their features
 // Initially, '*forms' has its space allocated but is empty.
-// In case of error put an empty list into 'forms'. 
-// Return a number !=0 in case of errors, 0 otherwise. 
+// In case of error put an empty list into 'forms'.
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_morph_const(MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
   int err;
   //Add the current label's category-value pair to the features of the single unit to be generated
@@ -697,25 +697,25 @@ int MU_graph_explore_label_out_morph_const(MU_graph_category_T* c, MU_graph_morp
 // then of the rest of the automaton.
 // c: single category-value pair from the current label, it is a UNIFICATION variable e.g. Case=$c2
 // l_out_morpho: morphology contained in the label's output, e.g. Nb=pl; Case=$c1; Gen=$g
-// i_morpho: index of the first label's output morhological feature not yet treated 
+// i_morpho: index of the first label's output morhological feature not yet treated
 // feat: accumulated output features of the MWU
 // q_bis: arrival state of the label's transition
 // forms: suffixes of the inflected forms and their features
 // Initially, '*forms' has its space allocated but is empty.
-// In case of error put an empty list into 'forms'. 
-// Return a number !=0 in case of errors, 0 otherwise. 
+// In case of error put an empty list into 'forms'.
+// Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
-  int err;  //Result of a function called 
-  
+  int err;  //Result of a function called
+
   unichar* var;  //Unification variable's identifier
   var = c->val.unif_var;
 
   if (unif_instantiated(var)) {
-    //If the same variable already instantiated for a DIFFERENT category then cut off the exploration path 
+    //If the same variable already instantiated for a DIFFERENT category then cut off the exploration path
     //The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
     if (unif_get_cat(var)!=c->cat)
-      return 0; 
-   
+      return 0;
+
     //If the same variable already instantiated for the same category, only this instantiation is taken into account
     //Add the the instantiated category-value pair to the features of the single unit to be generated
     err = f_add_morpho(feat,c->cat,unif_get_val_index(var));
@@ -732,14 +732,14 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
 
     //Pass on the error
     return err;
-      
+
   }
 
   else {//If the variable not yet instantiated
     int val;  //Index of different values in the domain of the current category
     MU_forms_T suffix_forms; //Suffixes generated in one run of the for-loop
     for (val=0; val<c->cat->no_values; val++) {
-      
+
       //Instantiated to the current value
       unif_instantiate_index(var,c->cat,val);
 
@@ -751,7 +751,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
          return 1;
       }
 
-      //Explore the rest of the label and the rest of the automaton 
+      //Explore the rest of the label and the rest of the automaton
       MU_init_forms(&suffix_forms);
       err = MU_graph_explore_label_out_rec(l_out_morpho,i_morpho,feat,q_bis,&suffix_forms);
       if (err) {
@@ -763,7 +763,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
 
       //Delete the current category-value pair
       f_del_one_morpho(feat, c->cat);
-      
+
       //Delete the current instantiation
       unif_desinstantiate(var);
     }
@@ -772,7 +772,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
 }
 
 /////////////////////////////////////////////////
-// Creates a MU_graph label from two strings.    
+// Creates a MU_graph label from two strings.
 // We suppose that MU_label already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T* MU_label) {
@@ -814,7 +814,7 @@ int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T*
 
 
 /////////////////////////////////////////////////
-// Creates a MU_graph label's input from a string (e.g. "of" or "<$1[Gen==$g;Nb=$n;Case=Inst]>"  
+// Creates a MU_graph label's input from a string (e.g. "of" or "<$1[Gen==$g;Nb=$n;Case=Inst]>"
 // We suppose that MU_label_in already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
@@ -822,7 +822,7 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
   unichar* pos; //current position in label
   unichar tmp[MAX_GRAPH_NODE];
   int err=0;
-  
+
   pos = label;
 
   //Omit void characters
@@ -832,7 +832,7 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
   if (*pos != (unichar)'<') {
     l = u_scan_until_char(tmp,pos,MAX_GRAPH_NODE-1,"",1);
     MU_label_in->unit.type = cst;
-    MU_label_in->unit.u.seq = u_strdup(tmp);    
+    MU_label_in->unit.u.seq = u_strdup(tmp);
     MU_label_in->morpho = NULL;
     pos = pos + l;
   }
@@ -843,7 +843,7 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
       error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
       error(" (at position %d): ",(int)(pos-label));
       error(" a '$' missing after '<'.\n");
-      return 1;      
+      return 1;
     }
     pos++;  //Omit the '$'
     l = u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1,"0123456789");
@@ -860,7 +860,7 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
 
     //Omit void characters
     pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t");
-    
+
     //A ':' or a '>' must follow
     if ((*pos != (unichar) ':') && (*pos != (unichar) '>')) {
       error("In graph %s label format incorrect in ",MU_lemma->paradigm);
@@ -901,13 +901,13 @@ int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in) {
     error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
     error(" (at position %d): ",(int)(pos-label));
     error(" end of label expected.\n");
-    return 1;      
+    return 1;
   }
   return err;
 }
 
 /////////////////////////////////////////////////
-// Creates a MU_graph label's output structure from a string.    
+// Creates a MU_graph label's output structure from a string.
 // We suppose that MU_label_out already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_label_out(unichar* label, MU_graph_out_T* MU_label_out) {
@@ -923,7 +923,7 @@ int MU_graph_scan_label_out(unichar* label, MU_graph_out_T* MU_label_out) {
     error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
     error(" (at position %d): ",(int)(pos-label));
     error(" '<'  expected.\n");
-    return 1;      
+    return 1;
   }
   pos++;
   unichar tmp[MAX_GRAPH_NODE];
@@ -942,13 +942,13 @@ int MU_graph_scan_label_out(unichar* label, MU_graph_out_T* MU_label_out) {
     error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
     error(" (at position %d): ",(int)(pos-label));
     error(" '>'  expected.\n");
-    return 1;      
+    return 1;
   }
   return 0;
 }
 
 /////////////////////////////////////////////////
-// Creates a MU_graph morpho structure from a string.    
+// Creates a MU_graph morpho structure from a string.
 // We suppose that MU_graph_morpho already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
 int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morpho) {
@@ -959,7 +959,7 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
   l_category_T* cat;
   int val;  //Index of a value in the domain of a category.
   int dbl_eq; //Checks if a double equal sign has appeared
-  
+
   pos = label;
 
   //Omit void characters
@@ -971,11 +971,11 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
   while (!done) {
     //Omit void characters
     pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t");
-    
+
     //Category, e.g. Nb
     l = u_scan_until_char(tmp,pos,MAX_GRAPH_NODE-1," \t=",1);
     cat = is_valid_cat(tmp);
-    if (!cat) { 
+    if (!cat) {
       error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
       error(" (at position %d): %S",(int)(pos-label),tmp);
       error(" is not a valid category\n");
@@ -983,10 +983,10 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
     }
     MU_graph_morpho->cats[cv].cat = cat;
     pos = pos+l;
-    
+
     //Omit void characters
     pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t");
-    
+
     //The '=' character
     if (*pos != (unichar) '=') {
       error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
@@ -995,18 +995,18 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
       return 1;
     }
     pos++;
-    
+
     //The double '==' if any
     if (*pos == (unichar) '=') {
       dbl_eq = 1;
       pos++;
     }
-    else 
+    else
       dbl_eq = 0;
 
     //Omit void characters
-    pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t"); 
-    
+    pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t");
+
     //Value e.g. gen, $n1
     //Variable
     if (*pos == (unichar) '$') {
@@ -1020,7 +1020,7 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
 	error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
 	error(" (at position %d): ",(int)(pos-label));
 	error("a variable missing after \'$\'.\n");
-	return 1;      
+	return 1;
       }
       MU_graph_morpho->cats[cv].val.unif_var = u_strdup(tmp);
     }
@@ -1029,7 +1029,7 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
 	error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
 	error(" (at position %d): ",(int)(pos-label));
 	error("a variable missing after \'==\'.\n");
-	return 1;      
+	return 1;
       }
       MU_graph_morpho->cats[cv].type = cnst;
       l = u_scan_until_char(tmp,pos,MAX_GRAPH_NODE-1," \t;>",1);
@@ -1037,48 +1037,48 @@ int MU_graph_scan_graph_morpho(unichar* label, MU_graph_morpho_T* MU_graph_morph
 	error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
 	error(" (at position %d): %S",(int)(pos-label),tmp);
 	error("a value missing after \'=\'.\n");
-	return 1;      
+	return 1;
       }
       val = is_valid_val(cat,tmp);
       if (val == -1) {
 	error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
 	error(" (at position %d): %S",(int)(pos-label),tmp);
 	error(" is not a valid value in the domain of %S\n",cat->name);
-	return 1;            
+	return 1;
       }
       MU_graph_morpho->cats[cv].val.value = val;
     }
     pos = pos + l;  //go to the end of the current value
-    
+
     //New category-value pair read in
     cv++;
 
     //Omit void characters
-    pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t"); 
-    
+    pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t");
+
     //See if end of category-value pairs
     if ((*pos == (unichar)'>') || (*pos == (unichar)'\0'))
       done = 1;
-    else { 
+    else {
       if (*pos != (unichar)';') {
 	error("In graph %s label format incorrect in %S",MU_lemma->paradigm,label);
 	error(" (at position %d): %S",(int)(pos-label),tmp);
 	error(" ';' missing\n");
-	return 1;      
+	return 1;
       }
       pos++; //Omit the ';'
       }
   }
   MU_graph_morpho->no_cats = cv;
-  
+
   //Omit void characters
-  pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t"); 
-  
+  pos = pos + u_scan_while_char(tmp, pos, MAX_GRAPH_NODE-1," \t");
+
   return 0;
 }
 
 /////////////////////////////////////////////////
-// Prints a MU_graph label.    
+// Prints a MU_graph label.
 void MU_graph_print_label(MU_graph_label_T* MU_label) {
 //Label's input
 if (!MU_label->in) {  //Epsilon case
@@ -1105,12 +1105,12 @@ if (!MU_label->out) {  //Epsilon case
    MU_graph_print_morpho(MU_label->out);
    u_printf(">");
 }
-//Newline 
+//Newline
 u_printf("\n");
 }
 
 /////////////////////////////////////////////////
-// Prints a MU_graph morpho.    
+// Prints a MU_graph morpho.
 void MU_graph_print_morpho(MU_graph_morpho_T* MU_morpho) {
 int cv;  //number of the current category-value pair
 //Category-value features
@@ -1139,7 +1139,7 @@ for (cv=0;cv<MU_morpho->no_cats;cv++) {
 }
 }
 /////////////////////////////////////////////////
-// Frees the memory allocated for a MU_graph label.    
+// Frees the memory allocated for a MU_graph label.
 void MU_graph_free_label(MU_graph_label_T* MU_label) {
   //Free the label's input
   if (MU_label->in) {
@@ -1157,7 +1157,7 @@ void MU_graph_free_label(MU_graph_label_T* MU_label) {
 }
 
 /////////////////////////////////////////////////
-// Liberates the memory allocated for a MU_graph morpho.    
+// Liberates the memory allocated for a MU_graph morpho.
 void MU_graph_free_morpho(MU_graph_morpho_T* MU_morpho) {
   int cv;  //number of the current category-value pair
   for (cv=0; cv<MU_morpho->no_cats; cv++)

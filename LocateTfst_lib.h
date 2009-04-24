@@ -27,6 +27,7 @@
 #include "Tfst.h"
 #include "MorphologicalFilters.h"
 #include "LocateTfstMatches.h"
+#include "LocateConstants.h"
 
 
 #define OK_MATCH_STATUS 1
@@ -42,7 +43,11 @@ struct locate_tfst_infos {
 
 	Alphabet* alphabet;
 
-	int n_matches;
+	int number_of_matches;
+
+    /* Indicates the number of matches we want, or NO_MATCH_LIMIT (-1) if
+     * there is no limit. */
+    int search_limit;
 
 	Tfst* tfst;
 
@@ -55,12 +60,25 @@ struct locate_tfst_infos {
 	 */
 	FilterSet* filters;
 
+	MatchPolicy match_policy;
+	OutputPolicy output_policy;
+	AmbiguousOutputPolicy ambiguous_output_policy;
+
+	/* The total number of outputs. It may be different from the number
+	 * of matches if ambiguous outputs are allowed. */
+	int number_of_outputs;
+
+	/* Position of the last printed match. It is used when ambiguous outputs
+	 * are used. */
+	int start_position_last_printed_match;
+	int end_position_last_printed_match;
+
 	struct tfst_simple_match_list* matches;
 	#endif
 };
 
 
-int locate_tfst(char*,char*,char*,char*);
+int locate_tfst(char*,char*,char*,char*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,int);
 
 
 #endif

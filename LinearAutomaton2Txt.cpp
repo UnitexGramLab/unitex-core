@@ -88,7 +88,7 @@ for (int sentence=1;sentence<tfst->N;sentence++) {
          }
          /* Then, in any case we print a carridge return */
          u_fputc('\n',f);
-         /* And we set 'etat' to NULL in order to quit the loop */
+         /* And we set 'state' to NULL in order to quit the loop */
          state=NULL;
       } else {
          if (l==NULL || l->next!=NULL) {

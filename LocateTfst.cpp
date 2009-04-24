@@ -29,6 +29,7 @@
 #include "getopt.h"
 #include "LocateTfst_lib.h"
 #include "File.h"
+#include "LocateConstants.h"
 
 
 static void usage() {
@@ -40,10 +41,30 @@ u_printf("Usage: LocateTfst [OPTIONS] <tfst> <fst2>\n"
          "\n"
          "OPTIONS:\n"
          "  -a ALPH/--alphabet=ALPH: the language alphabet file\n"
+         "\n"
+         "Search limit options:\n"
+         "  -l/--all: looks for all matches (default)\n"
+         "  -n N/--number_of_matches=N: stops after the first N matches\n"
+         "\n"
+         "Matching mode options:\n"
+         "  -S/--shortest_matches\n"
+         "  -L/--longest_matches (default)\n"
+         "  -A/--all_matches\n"
+         "\n"
+         "Output options:\n"
+         "  -I/--ignore (default)\n"
+         "  -M/--merge\n"
+         "  -R/--replace\n"
+         "\n"
+         "Ambiguous output options:\n"
+         "  -b/--ambiguous_outputs: allows the production of several matches with same input\n"
+         "                          but different outputs (default)\n"
+         "  -z/--no_ambiguous_outputs: forbids ambiguous outputs\n"
+         "\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text automaton, and saves the matching sequence index in a\n"
-         "file named XXXXXXX.......\n");
+         "file named 'concord.ind', just as Locate does.\n");
 }
 
 
@@ -58,15 +79,30 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":a:h";
+const char* optstring=":a:ln:SLAIMRbzh";
 const struct option_TS lopts[]= {
       {"alphabet",required_argument_TS,NULL,'a'},
+      {"all",no_argument_TS,NULL,'l'},
+      {"number_of_matches",required_argument_TS,NULL,'n'},
+      {"shortest_matches",no_argument_TS,NULL,'S'},
+      {"longest_matches",no_argument_TS,NULL,'L'},
+      {"all_matches",no_argument_TS,NULL,'A'},
+      {"ignore",no_argument_TS,NULL,'I'},
+      {"merge",no_argument_TS,NULL,'M'},
+      {"replace",no_argument_TS,NULL,'R'},
+      {"ambiguous_outputs",no_argument_TS,NULL,'b'},
+      {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
 int val,index=-1;
 char alphabet[FILENAME_MAX]="";
+MatchPolicy match_policy=LONGEST_MATCHES;
+OutputPolicy output_policy=IGNORE_OUTPUTS;
+AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
+int search_limit=NO_MATCH_LIMIT;
 struct OptVars* vars=new_OptVars();
+char foo;
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
    case 'a': if (vars->optarg[0]=='\0') {
@@ -74,6 +110,20 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              }
              strcpy(alphabet,vars->optarg);
              break;
+   case 'l': search_limit=NO_MATCH_LIMIT; break;
+   case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
+                /* foo is used to check that the search limit is not like "45gjh" */
+                fatal_error("Invalid search limit argument: %s\n",vars->optarg);
+             }
+             break;
+   case 'S': match_policy=SHORTEST_MATCHES; break;
+   case 'L': match_policy=LONGEST_MATCHES; break;
+   case 'A': match_policy=ALL_MATCHES; break;
+   case 'I': output_policy=IGNORE_OUTPUTS; break;
+   case 'M': output_policy=MERGE_OUTPUTS; break;
+   case 'R': output_policy=REPLACE_OUTPUTS; break;
+   case 'b': ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS; break;
+   case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
@@ -96,9 +146,9 @@ if (vars->optind!=argc-2) {
 strcpy(text,argv[vars->optind]);
 strcpy(grammar,argv[vars->optind+1]);
 get_path(text,output);
-strcat(output,"tfstconcord.txt");
+strcat(output,"concord.ind");
 
-int OK=locate_tfst(text,grammar,alphabet,output);
+int OK=locate_tfst(text,grammar,alphabet,output,match_policy,output_policy,ambiguous_output_policy,search_limit);
 
 free_OptVars(vars);
 return (!OK);

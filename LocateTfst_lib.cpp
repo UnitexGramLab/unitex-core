@@ -40,7 +40,9 @@ int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locat
  * This function applies the given grammar to the given text automaton.
  * It returns 1 in case of success; 0 otherwise.
  */
-int locate_tfst(char* text,char* grammar,char* alphabet,char* output) {
+int locate_tfst(char* text,char* grammar,char* alphabet,char* output,MatchPolicy match_policy,
+		        OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
+		        int search_limit) {
 Tfst* tfst=open_text_automaton(text);
 if (tfst==NULL) {
 	return 0;
@@ -52,7 +54,7 @@ if (fst2==NULL) {
 }
 struct locate_tfst_infos infos;
 infos.tfst=tfst;
-infos.n_matches=0;
+infos.number_of_matches=0;
 infos.alphabet=load_alphabet(alphabet);
 if (infos.alphabet==NULL) {
 	close_text_automaton(tfst);
@@ -68,6 +70,12 @@ if (infos.output==NULL) {
 	error("Cannot open %s\n",output);
 	return 0;
 }
+infos.output_policy=output_policy;
+switch (infos.output_policy) {
+case IGNORE_OUTPUTS: u_fprintf(infos.output,"#I\n"); break;
+case MERGE_OUTPUTS: u_fprintf(infos.output,"#M\n"); break;
+case REPLACE_OUTPUTS: u_fprintf(infos.output,"#R\n"); break;
+}
 #ifdef TRE_WCHAR
 infos.filters=new_FilterSet(fst2,infos.alphabet);
 infos.matches=NULL;
@@ -80,7 +88,13 @@ if (infos.filters==NULL) {
    return 0;
 }
 #endif
-
+infos.match_policy=match_policy;
+infos.output_policy=output_policy;
+infos.ambiguous_output_policy=ambiguous_output_policy;
+infos.number_of_outputs=0;
+infos.start_position_last_printed_match=-1;
+infos.end_position_last_printed_match=-1;
+infos.search_limit=search_limit;
 /* We launch the matching for each sentence */
 for (int i=1;i<=tfst->N;i++) {
 	load_sentence(tfst,i);
@@ -119,7 +133,7 @@ if (is_final_state(current_state_in_grammar)) {
    if (depth==0) {
       /* If we are in the main graph, we add a match to the main match list */
 	   add_tfst_match(infos,match_element_list);
-      (infos->n_matches)++;
+      (infos->number_of_matches)++;
    } else {
       /* If we are in a subgraph, we add a match to the current match list */
       (*LIST)=add_match_in_list((*LIST),match_element_list);
@@ -166,8 +180,6 @@ while (grammar_transition!=NULL) {
       while (text_transition!=NULL) {
          int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[text_transition->tag_number]),
                                                  fst2->tags[grammar_transition->tag_number],infos);
-         TfstTag* r=(TfstTag*)(tfst->tags->tab[text_transition->tag_number]);
-         u_printf("%S %S => %d\n",r->content,fst2->tags[grammar_transition->tag_number]->input,result);
          if (result==OK_MATCH_STATUS) {
             /* Case of a match with something in the text automaton (i.e. <V>) */
             list=insert_in_tfst_matches(list,current_state_in_tfst,text_transition->state_number,
