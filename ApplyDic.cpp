@@ -418,8 +418,8 @@ if ((n_transitions & 32768)) {
 }
 /* Do not recursively explore deeper paths if we already have
  * reached the end of the current token. */
-if (pos_in_current_token == u_strlen(current_token) - 1)
-	return;
+//if (pos_in_current_token == u_strlen(current_token) - 1)
+//	return;
 for (int i=0;i<n_transitions;i++) {
    unichar c=(unichar)(((unsigned char)info->bin[offset])*256+(unsigned char)info->bin[offset+1]);
    offset=offset+2;
