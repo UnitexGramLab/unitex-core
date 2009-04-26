@@ -299,3 +299,26 @@ return 0;
 }
 
 
+/**
+ * Returns a clone of the pattern.
+ */
+struct pattern* clone(struct pattern* src) {
+	struct pattern* dst;
+
+	if (src == NULL)
+		return NULL;
+
+	dst=(struct pattern*)malloc(sizeof(struct pattern));
+	if (dst==NULL) {
+	   fatal_error("Not enough memory in new_pattern_ByCopy\n");
+	}
+	dst->inflected=u_strdup(src->inflected);
+	dst->lemma=u_strdup(src->lemma);
+	dst->grammatical_codes=clone(src->grammatical_codes);
+	dst->inflectional_codes=clone(src->inflectional_codes);
+	dst->forbidden_codes=clone(src->forbidden_codes);
+	dst->type=src->type;
+	return dst;
+}
+
+

@@ -94,5 +94,6 @@ struct pattern* build_pattern(unichar*,struct string_hash*);
 struct pattern* build_token_pattern(unichar*);
 void free_pattern(struct pattern*);
 int is_entry_compatible_with_pattern(struct dela_entry* entry,struct pattern* pattern);
+struct pattern* clone(struct pattern* src);
 
 #endif

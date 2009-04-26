@@ -166,9 +166,18 @@ return equal(a->next,b->next);
  */
 struct list_ustring* clone(struct list_ustring* list) {
 if (list==NULL) return NULL;
-return new_list_ustring(list->string,clone(list->next));
+list_ustring* result=new_list_ustring(list->string,NULL);
+list=list->next;
+list_ustring* tmp=result;
+while (list!=NULL) {
+   tmp->next=new_list_ustring(list->string,NULL);
+   tmp->next->next=NULL;
+   list=list->next;
+   tmp=tmp->next;
 }
 
+return result;
+}
 
 /**
  * Returns the length of the list.

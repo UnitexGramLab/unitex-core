@@ -216,6 +216,8 @@ int   load_fst2_from_file(U_FILE*,int,Fst2 **, int);
 Fst2* load_one_sentence_from_fst2(char*,int);
 void free_Fst2(Fst2*);
 
+Fst2* new_Fst2_clone(Fst2* fst2org);
+
 /* Functions for writing grammars */
 void write_graph(U_FILE*,Fst2*,int);
 void write_fst2_tags(U_FILE*,Fst2*);

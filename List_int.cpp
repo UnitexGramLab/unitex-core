@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -252,11 +252,20 @@ previous->next=NULL;
 /**
  * Returns a copy of the given list.
  */
-struct list_int* clone(struct list_int* l) {
-if (l==NULL) return NULL;
-return new_list_int(l->n,clone(l->next));
+struct list_int* clone(struct list_int* list) {
+if (list==NULL) return NULL;
+list_int* result=new_list_int(list->n,NULL);
+list=list->next;
+list_int* tmp=result;
+while (list!=NULL) {
+   tmp->next=new_list_int(list->n,NULL);
+   tmp->next->next=NULL;
+   list=list->next;
+   tmp=tmp->next;
 }
 
+return result;
+}
 
 /**
  * Allocates, initializes and returns an integer array that contains

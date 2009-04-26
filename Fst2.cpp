@@ -815,3 +815,118 @@ write_fst2_tags(f,fst2);
 u_fclose(f);
 }
 
+
+Fst2State new_Fst2State_clone(Fst2State Fst2StateSrc)
+{
+	if (Fst2StateSrc == NULL)
+		return NULL;
+
+	Fst2State Fst2dest=(fst2State*)malloc(sizeof(fst2State));
+	if (Fst2dest==NULL) {
+	   fatal_error("Not enough memory in new_Fst2State_clone\n");
+	}
+	Fst2dest->control = Fst2StateSrc->control;
+	Fst2dest->transitions = clone_transition_list(Fst2StateSrc->transitions,NULL,NULL);
+	return Fst2dest;
+}
+
+Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc)
+{
+	if  (Fst2TagSrc==NULL)
+		return NULL;
+
+	Fst2Tag Fst2TagDest=(fst2Tag*)malloc(sizeof(fst2Tag));
+	Fst2TagDest->type = Fst2TagSrc->type;
+	Fst2TagDest->control = Fst2TagSrc->control;
+	Fst2TagDest->input = u_strdup(Fst2TagSrc->input);
+	Fst2TagDest->morphological_filter = u_strdup(Fst2TagSrc->morphological_filter);
+	Fst2TagDest->filter_number = Fst2TagSrc->filter_number;
+	Fst2TagDest->output = u_strdup(Fst2TagSrc->output);
+	Fst2TagDest->meta = Fst2TagSrc->meta;
+	Fst2TagDest->pattern = clone(Fst2TagSrc->pattern);
+	Fst2TagDest->pattern_number = Fst2TagSrc->pattern_number;
+	Fst2TagDest->variable = u_strdup(Fst2TagSrc->variable);
+	Fst2TagDest->matching_tokens = clone(Fst2TagSrc->matching_tokens);
+	Fst2TagDest->compound_pattern = Fst2TagSrc->compound_pattern;
+
+	return Fst2TagDest;
+}
+
+
+Fst2* new_Fst2_clone(Fst2* fst2org)
+{
+Fst2* fst2ret;
+    fst2ret =(Fst2*)malloc(sizeof(Fst2));
+    if (fst2ret==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+
+    if (fst2ret != NULL)
+    {
+        int i;
+
+        fst2ret->states = NULL;
+        fst2ret->tags = NULL;
+        fst2ret->number_of_graphs = fst2org->number_of_graphs;
+        fst2ret->number_of_states = fst2org->number_of_states;
+        fst2ret->number_of_tags = fst2org->number_of_tags;
+        fst2ret->initial_states = NULL;
+        fst2ret->graph_names = NULL;
+        fst2ret->number_of_states_per_graphs = NULL;
+        fst2ret->variables = NULL;
+
+        fst2ret->states = (Fst2State*)malloc(sizeof(Fst2State)*fst2ret->number_of_states);
+        for (i=0;i<fst2org->number_of_states;i++)
+        {
+            fst2ret->states[i] = new_Fst2State_clone(fst2org->states[i]);
+        }
+
+		fst2ret->tags = (Fst2Tag*)malloc(sizeof(Fst2Tag)*fst2ret->number_of_tags);
+        for (i=0;i<fst2org->number_of_tags;i++)
+        {
+            fst2ret->tags[i] = new_Fst2Tag_clone(fst2org->tags[i]);
+        }
+
+
+        fst2ret->initial_states=(int*)malloc((fst2ret->number_of_graphs+1)*sizeof(int));
+        if (fst2ret->initial_states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+
+        for (i=0;i<fst2ret->number_of_graphs+1;i++)
+            fst2ret->initial_states[i] = fst2org->initial_states[i];
+
+
+        fst2ret->number_of_states_per_graphs=(int*)malloc((fst2ret->number_of_graphs+1)*sizeof(int));
+        if (fst2ret->number_of_states_per_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+
+        for (i=0;i<fst2ret->number_of_graphs+1;i++)
+            fst2ret->number_of_states_per_graphs[i] = fst2org->number_of_states_per_graphs[i];
+
+
+        if (fst2org->graph_names!=NULL) {
+          fst2ret->graph_names = (unichar**)malloc(sizeof(unichar*) * (fst2ret->number_of_graphs+1));
+          if (fst2ret->graph_names==NULL) {fatal_error("Not enough memory in load_fst2\n");}
+
+          if (fst2ret->graph_names != NULL)
+          {
+              fst2ret->graph_names[0]=NULL;
+              for ( i = 1;                       /* start at 1 because at pos 0
+                                                    there is no graph */
+                    i <= fst2org->number_of_graphs; /* consequently the last pos is
+                                                    number_of_graphs+1 */
+                    i++ )
+                {
+                  if (fst2org->graph_names[i] != NULL)
+                      fst2ret->graph_names[i] = u_strdup(fst2org->graph_names[i]);
+                  else
+                      fst2ret->graph_names[i] = NULL;
+                }
+          }
+        }
+
+		if (fst2org->variables!=NULL)
+		{
+			fst2ret->variables = clone(fst2org->variables);
+			if (fst2ret->variables == NULL) {fatal_error("Not enough memory in load_fst2\n");}
+		}
+
+    }
+	return fst2ret;
+}
