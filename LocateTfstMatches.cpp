@@ -396,9 +396,19 @@ add_element_to_list(infos,&element);
  * all matches have been computed.
  */
 void save_tfst_matches(struct locate_tfst_infos* p) {
-U_FILE* f=p->output;
 struct tfst_simple_match_list* l=p->matches;
 struct tfst_simple_match_list* ptr;
+if (p->number_of_matches==p->search_limit) {
+	/* If we have reached the limit, then we must free all the remaining matches */
+	while (l!=NULL) {
+		ptr=l;
+		l=l->next;
+		free_tfst_simple_match_list(ptr);
+	}
+	p->matches=NULL;
+	return;
+}
+U_FILE* f=p->output;
 if (l==NULL) return;
 u_fprintf(f,"%d %d",l->start_pos_in_token,l->end_pos_in_token);
 if (l->output!=NULL) {

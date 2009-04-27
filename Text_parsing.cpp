@@ -98,11 +98,11 @@ if (text_size!=0) {
    u_printf("(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
 }
 if (info!=NULL) {
-   u_fprintf(info,"%d match%s\n",p->number_of_matches,(p->number_of_matches==1)?"":"es");
+   u_fprintf(info,"%d match%s\n",p->number_of_matches,(p->number_of_matches<=1)?"":"es");
    if ((p->number_of_outputs != p->number_of_matches)
        && (p->number_of_outputs != 0))
      {
-       u_fprintf(info,"(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs==1)?"":"s");
+       u_fprintf(info,"(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs<=1)?"":"s");
      }
    u_fprintf(info,"%d recognized units\n",p->matching_units);
    if (text_size!=0) {

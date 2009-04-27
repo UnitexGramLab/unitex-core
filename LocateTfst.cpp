@@ -34,12 +34,12 @@
 
 static void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: LocateTfst [OPTIONS] <tfst> <fst2>\n"
+u_printf("Usage: LocateTfst [OPTIONS] <fst2>\n"
          "\n"
-		 "  <tfst>: the text automaton\n"
          "  <fst2>: the grammar to be applied\n"
          "\n"
          "OPTIONS:\n"
+         "  -t TFST/--text=TFST: the .tfst text automaton\n"
          "  -a ALPH/--alphabet=ALPH: the language alphabet file\n"
          "\n"
          "Search limit options:\n"
@@ -79,10 +79,11 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":a:ln:SLAIMRbzh";
+const char* optstring=":t:a:ln:SLAIMRbzh";
 const struct option_TS lopts[]= {
-      {"alphabet",required_argument_TS,NULL,'a'},
-      {"all",no_argument_TS,NULL,'l'},
+	  {"text",required_argument_TS,NULL,'t'},
+	  {"alphabet",required_argument_TS,NULL,'a'},
+	  {"all",no_argument_TS,NULL,'l'},
       {"number_of_matches",required_argument_TS,NULL,'n'},
       {"shortest_matches",no_argument_TS,NULL,'S'},
       {"longest_matches",no_argument_TS,NULL,'L'},
@@ -96,6 +97,7 @@ const struct option_TS lopts[]= {
       {NULL,no_argument_TS,NULL,0}
 };
 int val,index=-1;
+char text[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 MatchPolicy match_policy=LONGEST_MATCHES;
 OutputPolicy output_policy=IGNORE_OUTPUTS;
@@ -105,6 +107,11 @@ struct OptVars* vars=new_OptVars();
 char foo;
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
+   case 't': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty .tfst name\n");
+             }
+             strcpy(text,vars->optarg);
+             break;
    case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet name\n");
              }
@@ -137,14 +144,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
 if (alphabet[0]=='\0') {
    fatal_error("You must specify an alphabet file\n");
 }
-char text[FILENAME_MAX];
 char grammar[FILENAME_MAX];
 char output[FILENAME_MAX];
-if (vars->optind!=argc-2) {
+if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-strcpy(text,argv[vars->optind]);
-strcpy(grammar,argv[vars->optind+1]);
+strcpy(grammar,argv[vars->optind]);
 get_path(text,output);
 strcat(output,"concord.ind");
 

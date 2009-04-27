@@ -23,6 +23,7 @@
 #include "DELA.h"
 #include "Pattern.h"
 #include "LocateTfst_lib.h"
+#include "File.h"
 
 void explore_tfst(Tfst* tfst,Fst2* fst2,int current_state_in_tfst,
 		          int current_state_in_fst2,int depth,
@@ -96,7 +97,10 @@ infos.start_position_last_printed_match=-1;
 infos.end_position_last_printed_match=-1;
 infos.search_limit=search_limit;
 /* We launch the matching for each sentence */
-for (int i=1;i<=tfst->N;i++) {
+for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
+	if (i%100==0) {
+		u_printf("\rSentence %d/%d...",i,tfst->N);
+	}
 	load_sentence(tfst,i);
 	compute_token_contents(tfst);
 	infos.matches=NULL;
@@ -106,6 +110,31 @@ for (int i=1;i<=tfst->N;i++) {
 	}
 	save_tfst_matches(&infos);
 }
+u_printf("\rDone.                                    \n");
+/* We save some infos */
+char concord_tfst_n[FILENAME_MAX];
+get_path(output,concord_tfst_n);
+strcat(concord_tfst_n,"concord_tfst.n");
+U_FILE* f=u_fopen(UTF16_LE,concord_tfst_n,U_WRITE);
+if (f==NULL) {
+	error("Cannot save information in %s\n",concord_tfst_n);
+} else {
+	u_fprintf(f,"%d match%s",infos.number_of_matches,(infos.number_of_matches<=1)?"":"es");
+	if ((infos.number_of_outputs != infos.number_of_matches)
+	       && (infos.number_of_outputs != 0))
+	     {
+	       u_fprintf(f,"(%d output%s)\n",infos.number_of_outputs,(infos.number_of_outputs<=1)?"":"s");
+	     }
+	u_fprintf(f,"\n");
+	u_fclose(f);
+}
+u_printf("%d match%s",infos.number_of_matches,(infos.number_of_matches<=1)?"":"es");
+if ((infos.number_of_outputs != infos.number_of_matches)
+       && (infos.number_of_outputs != 0))
+     {
+       u_printf("(%d output%s)\n",infos.number_of_outputs,(infos.number_of_outputs<=1)?"":"s");
+     }
+u_printf("\n");
 /* And we free things */
 #ifdef TRE_WCHAR
 free_FilterSet(infos.filters);
@@ -133,7 +162,6 @@ if (is_final_state(current_state_in_grammar)) {
    if (depth==0) {
       /* If we are in the main graph, we add a match to the main match list */
 	   add_tfst_match(infos,match_element_list);
-      (infos->number_of_matches)++;
    } else {
       /* If we are in a subgraph, we add a match to the current match list */
       (*LIST)=add_match_in_list((*LIST),match_element_list);
