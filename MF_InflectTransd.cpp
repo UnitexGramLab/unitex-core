@@ -43,6 +43,7 @@ struct node* root;
 
 ///////////////////////////////
 // Table of inflection tranducers
+struct FST2_free_info fst2_free[N_FST2];
 Fst2* fst2[N_FST2];
 
 ///////////////////////////////
@@ -199,7 +200,7 @@ if (flex[pos]=='\0') {
             * corresponding .grf, we try to compile it */
            pseudo_main_Grf2Fst2(grf,1,NULL,1,0);
         }
-        fst2[n_fst2]=load_fst2(s,1);
+        fst2[n_fst2]=load_abstract_fst2(s,1,&(fst2_free[n_fst2]));
         n->final=n_fst2;
         return n_fst2++;
         }

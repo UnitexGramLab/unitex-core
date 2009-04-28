@@ -188,7 +188,7 @@ struct INF_codes* root_inf=load_abstract_INF_file(root_inf_file,&root_inf_free);
 if (root_bin==NULL) {
    error("Cannot load radical form dictionary %s\n",root_inf_file);
    free_alphabet(alph);
-   free_abstract_BIN(root_bin,root_bin_free);
+   free_abstract_BIN(root_bin,&root_bin_free);
    return 1;
 }
 u_printf("Loading inflected form dictionary...\n");
@@ -197,8 +197,8 @@ unsigned char* inflected_bin=load_abstract_BIN_file(dictionary,&inflected_bin_fr
 if (inflected_bin==NULL) {
    error("Cannot load inflected form dictionary %s\n",dictionary);
    free_alphabet(alph);
-   free_abstract_BIN(root_bin,root_bin_free);
-   free_abstract_INF(root_inf,root_inf_free);
+   free_abstract_BIN(root_bin,&root_bin_free);
+   free_abstract_INF(root_inf,&root_inf_free);
    return 1;
 }
 char inflected_inf_file[FILENAME_MAX];
@@ -209,9 +209,9 @@ struct INF_codes* inflected_inf=load_abstract_INF_file(inflected_inf_file,&infle
 if (inflected_inf==NULL) {
    error("Cannot load inflected form dictionary %s\n",inflected_inf_file);
    free_alphabet(alph);
-   free_abstract_BIN(root_bin,root_bin_free);
-   free_abstract_BIN(inflected_bin,inflected_bin_free);
-   free_abstract_INF(root_inf,root_inf_free);
+   free_abstract_BIN(root_bin,&root_bin_free);
+   free_abstract_BIN(inflected_bin,&inflected_bin_free);
+   free_abstract_INF(root_inf,&root_inf_free);
    return 1;
 }
 u_printf("Loading pronoun rewriting rule grammar...\n");
@@ -219,10 +219,10 @@ struct normalization_tree* rewriting_rules=load_normalization_transducer_string(
 if (rewriting_rules==NULL) {
    error("Cannot load pronoun rewriting grammar %s\n",pronoun_rules);
    free_alphabet(alph);
-   free_abstract_BIN(root_bin,root_bin_free);
-   free_abstract_BIN(inflected_bin,inflected_bin_free);
-   free_abstract_INF(root_inf,root_inf_free);
-   free_abstract_INF(inflected_inf,inflected_inf_free);
+   free_abstract_BIN(root_bin,&root_bin_free);
+   free_abstract_BIN(inflected_bin,&inflected_bin_free);
+   free_abstract_INF(root_inf,&root_inf_free);
+   free_abstract_INF(inflected_inf,&inflected_inf_free);
    return 1;
 }
 u_printf("Loading nasal pronoun rewriting rule grammar...\n");
@@ -230,10 +230,10 @@ struct normalization_tree* nasal_rewriting_rules=load_normalization_transducer_s
 if (rewriting_rules==NULL) {
    error("Cannot load nasal pronoun rewriting grammar %s\n",nasal_pronoun_rules);
    free_alphabet(alph);
-   free_abstract_BIN(root_bin,root_bin_free);
-   free_abstract_BIN(inflected_bin,inflected_bin_free);
-   free_abstract_INF(root_inf,root_inf_free);
-   free_abstract_INF(inflected_inf,inflected_inf_free);
+   free_abstract_BIN(root_bin,&root_bin_free);
+   free_abstract_BIN(inflected_bin,&inflected_bin_free);
+   free_abstract_INF(root_inf,&root_inf_free);
+   free_abstract_INF(inflected_inf,&inflected_inf_free);
    free_normalization_tree(rewriting_rules);
    return 1;
 }
@@ -241,10 +241,10 @@ u_printf("Constructing normalization grammar...\n");
 build_portuguese_normalization_grammar(alph,list,root_bin,root_inf,inflected_bin,inflected_inf,output,
                                        rewriting_rules,nasal_rewriting_rules);
 free_alphabet(alph);
-free_abstract_BIN(root_bin,root_bin_free);
-free_abstract_INF(root_inf,root_inf_free);
-free_abstract_BIN(inflected_bin,inflected_bin_free);
-free_abstract_INF(inflected_inf,inflected_inf_free);
+free_abstract_BIN(root_bin,&root_bin_free);
+free_abstract_INF(root_inf,&root_inf_free);
+free_abstract_BIN(inflected_bin,&inflected_bin_free);
+free_abstract_INF(inflected_inf,&inflected_inf_free);
 free_normalization_tree(rewriting_rules);
 free_normalization_tree(nasal_rewriting_rules);
 free_OptVars(vars);

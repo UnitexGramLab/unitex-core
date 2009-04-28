@@ -257,7 +257,8 @@ while (trans!=NULL) {
  * Tokens are represented by integers.
  */
 struct normalization_tree* load_normalization_fst2(char* grammar,Alphabet* alph,struct text_tokens* tok) {
-Fst2* fst2=load_fst2(grammar,0);
+struct FST2_free_info fst2_free;
+Fst2* fst2=load_abstract_fst2(grammar,0,&fst2_free);
 if (fst2==NULL) {
    return NULL;
 }
@@ -268,7 +269,7 @@ for (int i=0;i<tok->N;i++) {
 }
 struct normalization_tree* root=new_normalization_tree();
 explore_normalization_fst2(fst2,fst2->initial_states[1],root,hash,U_EMPTY,alph,NULL);
-free_Fst2(fst2);
+free_abstract_Fst2(fst2,&fst2_free);
 free_string_hash(hash);
 return root;
 }
@@ -421,7 +422,8 @@ while (trans!=NULL) {
 // tokens are represented by strings
 //
 struct normalization_tree* load_normalization_transducer_string(char* nom) {
-Fst2* automate=load_fst2(nom,0);
+struct FST2_free_info fst2_free;
+Fst2* automate=load_abstract_fst2(nom,0,&fst2_free);
 if (automate==NULL) {
    // if the loading of the normalization transducer has failed, we return
    return NULL;
@@ -430,7 +432,7 @@ struct normalization_tree* root=new_normalization_tree();
 unichar a[1];
 a[0]='\0';
 explorer_automate_normalization_string(automate,automate->initial_states[1],root,a);
-free_Fst2(automate);
+free_abstract_Fst2(automate,&fst2_free);
 return root;
 }
 

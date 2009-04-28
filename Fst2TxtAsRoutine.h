@@ -25,6 +25,7 @@
 #include "Alphabet.h"
 #include "Buffer.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "Fst2Txt_TokenTree.h"
 #include "LocateConstants.h"
 #include "ParsingInfo.h"
@@ -47,6 +48,7 @@ struct fst2txt_parameters {
    U_FILE* f_input;
    U_FILE* f_output;
    Fst2* fst2;
+   struct FST2_free_info fst2_free;
    Alphabet* alphabet;
 
    OutputPolicy output_policy;

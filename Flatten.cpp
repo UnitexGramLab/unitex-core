@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "FlattenFst2.h"
 #include "Error.h"
 #include "getopt.h"
@@ -97,7 +98,8 @@ if (vars->optind!=argc-1) {
 }
 
 u_printf("Loading %s...\n",argv[vars->optind]);
-Fst2* origin=load_fst2(argv[vars->optind],1);
+struct FST2_free_info fst2_free;
+Fst2* origin=load_abstract_fst2(argv[vars->optind],1,&fst2_free);
 if (origin==NULL) {
    error("Cannot load %s\n",argv[vars->optind]);
    return 1;
@@ -117,7 +119,7 @@ switch (flatten_fst2(origin,depth,temp,RTN)) {
       break;
    default: fatal_error("Internal state error in Flatten's main\n");
 }
-free_Fst2(origin);
+free_abstract_Fst2(origin,&fst2_free);
 remove(argv[vars->optind]);
 rename(temp,argv[vars->optind]);
 free_OptVars(vars);

@@ -20,6 +20,7 @@
   */
 
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "DELA.h"
 #include "Pattern.h"
 #include "LocateTfst_lib.h"
@@ -48,7 +49,8 @@ Tfst* tfst=open_text_automaton(text);
 if (tfst==NULL) {
 	return 0;
 }
-Fst2* fst2=load_fst2(grammar,0);
+struct FST2_free_info fst2_free;
+Fst2* fst2=load_abstract_fst2(grammar,0,&fst2_free);
 if (fst2==NULL) {
 	close_text_automaton(tfst);
 	return 0;
@@ -59,14 +61,14 @@ infos.number_of_matches=0;
 infos.alphabet=load_alphabet(alphabet);
 if (infos.alphabet==NULL) {
 	close_text_automaton(tfst);
-	free_Fst2(fst2);
+	free_abstract_Fst2(fst2,&fst2_free);
 	error("Cannot load alphabet file: %s\n",alphabet);
 	return 0;
 }
 infos.output=u_fopen(UTF16_LE,output,U_WRITE);
 if (infos.output==NULL) {
 	close_text_automaton(tfst);
-	free_Fst2(fst2);
+	free_abstract_Fst2(fst2,&fst2_free);
 	free_alphabet(infos.alphabet);
 	error("Cannot open %s\n",output);
 	return 0;
@@ -82,7 +84,7 @@ infos.filters=new_FilterSet(fst2,infos.alphabet);
 infos.matches=NULL;
 if (infos.filters==NULL) {
 	close_text_automaton(tfst);
-	free_Fst2(fst2);
+	free_abstract_Fst2(fst2,&fst2_free);
 	free_alphabet(infos.alphabet);
 	u_fclose(infos.output);
     error("Cannot compile filter(s)\n");
@@ -141,7 +143,7 @@ free_FilterSet(infos.filters);
 #endif
 u_fclose(infos.output);
 free_alphabet(infos.alphabet);
-free_Fst2(fst2);
+free_abstract_Fst2(fst2,&fst2_free);
 close_text_automaton(tfst);
 return 1;
 }

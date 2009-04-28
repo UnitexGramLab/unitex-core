@@ -564,7 +564,8 @@ ConditionList* conditions;
 ConditionList* conditions_for_state;
 int i,j;
 int ERROR=0;
-Fst2* fst2=load_fst2(name,1);
+struct FST2_free_info fst2_free;
+Fst2* fst2=load_abstract_fst2(name,1,&fst2_free);
 if (fst2==NULL) {
 	fatal_error("Cannot load graph %s\n",name);
 }
@@ -643,7 +644,7 @@ if (!ERROR) {
 for (i=1;i<fst2->number_of_graphs+1;i++) {
    free_ConditionList(conditions[i]);
 }
-free_Fst2(fst2);
+free_abstract_Fst2(fst2,&fst2_free);
 u_printf("Recursion detection completed\n");
 if (ERROR) return LEFT_RECURSION;
 return NO_LEFT_RECURSION;
@@ -750,21 +751,22 @@ return 1;
  *    w and y being integers >=0, and x and z being integers >=-1 
  */
 int valid_sentence_automaton(char* name) {
-Fst2* fst2=load_fst2(name,0);
+struct FST2_free_info fst2_free;
+Fst2* fst2=load_abstract_fst2(name,0,&fst2_free);
 if (fst2==NULL) return 0;
 /* Condition 1 */
 if (fst2->number_of_graphs!=1) {
-   free_Fst2(fst2);
+   free_abstract_Fst2(fst2,&fst2_free);
    return 0;
 }
 /* Condition 2 */
 if (!is_acyclic(fst2,1)) {
-   free_Fst2(fst2);
+   free_abstract_Fst2(fst2,&fst2_free);
    return 0;
 }
 /* Conditions 3, 4 & 5 */
 if (!valid_outputs(fst2)) {
-   free_Fst2(fst2);
+   free_abstract_Fst2(fst2,&fst2_free);
    return 0;
 }
 /* Victory! */

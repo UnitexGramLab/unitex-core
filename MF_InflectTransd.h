@@ -29,6 +29,7 @@
 // Copy of some functions from Inflect.cpp
 
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 
 //Maximum number of flexional transducers
 #define N_FST2 5000

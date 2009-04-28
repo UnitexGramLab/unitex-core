@@ -163,7 +163,7 @@ struct string_hash* semantic_codes=new_string_hash();
 extract_semantic_codes(dlf,semantic_codes);
 extract_semantic_codes(dlc,semantic_codes);
 u_printf("Loading fst2...\n");
-p->fst2=load_fst2(fst2_name,1);
+p->fst2=load_abstract_fst2(fst2_name,1,NULL);
 if (p->fst2==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(p->alphabet);
@@ -271,8 +271,8 @@ free_FilterSet(p->filters);
 free_FilterMatchIndex(p->filter_match_index);
 #endif
 for (int i=0;i<p->n_morpho_dics;i++) {
-   free_abstract_INF(p->morpho_dic_inf[i],p->morpho_dic_inf_free[i]);
-   free_abstract_BIN(p->morpho_dic_bin[i],p->morpho_dic_bin_free[i]);
+   free_abstract_INF(p->morpho_dic_inf[i],&(p->morpho_dic_inf_free[i]));
+   free_abstract_BIN(p->morpho_dic_bin[i],&(p->morpho_dic_bin_free[i]));
 }
 free(p->morpho_dic_inf);
 free(p->morpho_dic_inf_free);
@@ -332,7 +332,7 @@ for (int i=0;i<p->n_morpho_dics;i++) {
       strcat(inf,".inf");
       p->morpho_dic_inf[i]=load_abstract_INF_file(inf,&(p->morpho_dic_inf_free[i]));
       if (p->morpho_dic_inf[i]==NULL) {
-         free_abstract_BIN(p->morpho_dic_bin[i],p->morpho_dic_bin_free[i]);
+         free_abstract_BIN(p->morpho_dic_bin[i],&(p->morpho_dic_bin_free[i]));
          p->morpho_dic_bin[i]=NULL;
       }
    }

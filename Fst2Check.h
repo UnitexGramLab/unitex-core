@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include "Unicode.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 
 
 int OK_for_Locate(char*,char);

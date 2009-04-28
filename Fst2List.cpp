@@ -25,6 +25,7 @@
 #include <locale.h>
 #include "Unicode.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "Alphabet.h"
 #include "Copyright.h"
 #include "File.h"
@@ -154,6 +155,7 @@ class CFstApp {
 public:
 
 	struct fst2 *a;
+	struct FST2_free_info fst2_free;
 	U_FILE* foutput;
 	ModeOut prMode;
 	autoType automateMode;
@@ -281,7 +283,7 @@ verboseMode  = 0;
 	~CFstApp(){
 	   arretExpoDel();
 		cleanCyclePath();
-		free_Fst2(a);
+		free_abstract_Fst2(a,&fst2_free);
       if(saveSep != u_null_string) delete saveSep;
       if(sep1 != u_null_string) delete sep1;
 		if(stopSignal != u_null_string) delete stopSignal;
@@ -957,7 +959,7 @@ void CFstApp::loadGraph(char *fname)
 	int i,j;
 	Transition *strans;
 
-	a=load_fst2(fname,1);
+	a=load_abstract_fst2(fname,1,&fst2_free);
 	if (a==NULL) {
       fatal_error("Cannot load graph file %s\n",fname);
 	}

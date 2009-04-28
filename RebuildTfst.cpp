@@ -24,6 +24,7 @@
 #include "Unicode.h"
 #include "String_hash.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "File.h"
 #include "Copyright.h"
 #include "Error.h"
@@ -134,12 +135,13 @@ for (int i = 1; i <= tfst->N; i++) {
          /* We proceed only if the graph compilation was a success */
          char fst2name[FILENAME_MAX];
          sprintf(fst2name, "%ssentence%d.fst2", basedir, i);
-         Fst2* fst2=load_fst2(fst2name,0);
+         struct FST2_free_info fst2_free;
+         Fst2* fst2=load_abstract_fst2(fst2name,0,&fst2_free);
          remove(fst2name);
          free_SingleGraph(tfst->automaton,NULL);
          tfst->automaton=create_copy_of_fst2_subgraph(fst2,1);
          tags=create_tfst_tags(fst2,&n_tags);
-         free_Fst2(fst2);
+         free_abstract_Fst2(fst2,&fst2_free);
       } else {
          error("Error: %s is not a valid sentence automaton\n",grfname);
       }

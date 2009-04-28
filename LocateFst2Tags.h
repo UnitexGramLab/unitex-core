@@ -23,6 +23,7 @@
 #define LocateFst2TagsH
 
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "Alphabet.h"
 #include "String_hash.h"
 #include "LocatePattern.h"

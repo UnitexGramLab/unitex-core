@@ -618,7 +618,7 @@ if (info->inf==NULL) {
 /* We load the .bin file */
 info->bin=load_abstract_BIN_file(name_bin,&(info->bin_free));
 if (info->bin==NULL) {
-   free_abstract_INF(info->inf,info->inf_free);
+   free_abstract_INF(info->inf,&info->inf_free);
    error("Cannot open %s\n",name_bin);
    return;
 }
@@ -640,8 +640,8 @@ if (DEBUG) {
    u_printf("%2.8f seconds\n",elapsedTime);
 }
 free_word_struct_array(info->word_array);
-free_abstract_INF(info->inf,info->inf_free);
-free_abstract_BIN(info->bin,info->bin_free);
+free_abstract_INF(info->inf,&info->inf_free);
+free_abstract_BIN(info->bin,&info->bin_free);
 }
 
 
