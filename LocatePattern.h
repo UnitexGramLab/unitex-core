@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "String_hash.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "Text_tokens.h"
 #include "List_int.h"
 #include "Alphabet.h"

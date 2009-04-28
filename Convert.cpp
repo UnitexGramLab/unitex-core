@@ -196,12 +196,12 @@ for (int i=vars->optind;i<argc;i++) {
 						add_suffix_to_file_name(output_name,input_name,"_TEMP"); break;
 		case PREFIX_SRC: strcpy(output_name,argv[i]);
 						add_prefix_to_file_name(input_name,output_name,FX);
-						remove(input_name);
-						rename(argv[i],input_name); break;
+						af_remove(input_name);
+						af_rename(argv[i],input_name); break;
 		case SUFFIX_SRC: strcpy(output_name,argv[i]);
 						add_suffix_to_file_name(input_name,output_name,FX);
-						remove(input_name);
-						rename(argv[i],input_name); break;
+						af_remove(input_name);
+						af_rename(argv[i],input_name); break;
 		case PREFIX_DEST: strcpy(input_name,argv[i]);
 						add_prefix_to_file_name(output_name,input_name,FX); break;
 		case SUFFIX_DEST: strcpy(input_name,argv[i]);
@@ -242,8 +242,8 @@ for (int i=vars->optind;i<argc;i++) {
 			case CONVERSION_OK: u_printf("%s converted\n",argv[i]);
 								if (output_mode==REPLACE_FILE) {
 									/* If we must replace the input file */
-									remove(argv[i]);
-									rename(output_name,argv[i]);
+									af_remove(argv[i]);
+									af_rename(output_name,argv[i]);
 								}
 								break;
 			case INPUT_FILE_NOT_IN_UTF16_LE:

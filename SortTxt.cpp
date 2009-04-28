@@ -341,8 +341,8 @@ if (line_info[0]!='\0') {
 }
 u_fclose(inf->f);
 u_fclose(inf->f_out);
-remove(argv[vars->optind]);
-rename(new_name,argv[vars->optind]);
+af_remove(argv[vars->optind]);
+af_rename(new_name,argv[vars->optind]);
 free_sort_infos(inf);
 free_OptVars(vars);
 u_printf("Done.\n");

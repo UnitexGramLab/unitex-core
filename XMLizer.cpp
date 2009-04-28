@@ -171,8 +171,8 @@ if (output[0]=='\0') {
 	strcat(output,".xml");
 }
 xmlize(snt,output,output_style);
-remove(snt);
-remove(tmp);
+af_remove(snt);
+af_remove(tmp);
 free_OptVars(vars);
 return 0;
 }

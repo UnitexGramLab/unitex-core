@@ -121,10 +121,10 @@ close_text_automaton(tfst);
 
 /* Finally, we rename files if we must modify the input text automaton */
 if (no_explicit_output) {
-   remove(input_tfst);
-   remove(input_tind);
-   rename(output_tfst,input_tfst);
-   rename(output_tind,input_tind);
+   af_remove(input_tfst);
+   af_remove(input_tind);
+   af_rename(output_tfst,input_tfst);
+   af_rename(output_tind,input_tind);
 }
 free_OptVars(vars);
 return 0;

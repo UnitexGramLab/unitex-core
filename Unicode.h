@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include "Af_stdio.h"
 
 /* This line is used to prevent people from using printf and scanf. We do
  * that because we want to parametrize I/O operations with encodings. */
@@ -89,7 +90,7 @@ typedef enum {
  * This structure is used to represent a file with its encoding.
  */
 typedef struct {
-	FILE* f;
+	ABSTRACTFILE* f;
 	Encoding enc;
 } U_FILE;
 
@@ -134,18 +135,18 @@ size_t fwrite(const void *ptr,size_t size,size_t nmemb,U_FILE *stream);
 
 /* ------------------- Some aliases, mainly for default UTF16-LE use ------------------- */
 int u_fgetc_raw(U_FILE*);
-int u_fgetc_UTF16LE(FILE*);
-int u_fgetc_UTF16BE(FILE*);
-int u_fgetc_UTF8(FILE*);
+int u_fgetc_UTF16LE(ABSTRACTFILE*);
+int u_fgetc_UTF16BE(ABSTRACTFILE*);
+int u_fgetc_UTF8(ABSTRACTFILE*);
 int u_fgetc(U_FILE*);
 int u_fgetc_CR(U_FILE*);
 int u_fread_raw(unichar*,int,U_FILE*);
 int u_fread(unichar*,int,U_FILE*,int*);
 
 int u_fputc_raw(unichar,U_FILE*);
-int u_fputc_UTF16LE(unichar,FILE*);
-int u_fputc_UTF16BE(unichar,FILE*);
-int u_fputc_UTF8(unichar,FILE*);
+int u_fputc_UTF16LE(unichar,ABSTRACTFILE*);
+int u_fputc_UTF16BE(unichar,ABSTRACTFILE*);
+int u_fputc_UTF8(unichar,ABSTRACTFILE*);
 int u_fputc(unichar,U_FILE*);
 int u_ungetc(unichar,U_FILE*);
 
@@ -167,8 +168,8 @@ int u_fscanf(U_FILE*,const char*,...);
 //void u_prints(unichar*);
 //void u_fprints(unichar*,U_FILE*);
 //void u_fprints(char*,U_FILE*);
-//void u_fprints(Encoding,unichar*,FILE*);
-//void u_fprints(Encoding,char*,FILE*);
+//void u_fprints(Encoding,unichar*,ABSTRACTFILE*);
+//void u_fprints(Encoding,char*,ABSTRACTFILE*);
 
 /* ------------------- File functions ------------------- */
 U_FILE* u_fopen(Encoding,const char*,const char*);
@@ -176,9 +177,9 @@ int u_fclose(U_FILE*);
 int u_fempty(Encoding,const char*);
 int u_is_UTF16(const char*);
 
-int u_fgetc_UTF16LE_raw(FILE*);
-int u_fgetc_UTF16BE_raw(FILE*);
-int u_fgetc_UTF8_raw(FILE*);
+int u_fgetc_UTF16LE_raw(ABSTRACTFILE*);
+int u_fgetc_UTF16BE_raw(ABSTRACTFILE*);
+int u_fgetc_UTF8_raw(ABSTRACTFILE*);
 int u_fgetc_raw(U_FILE*);
 int u_fgetc(U_FILE*);
 int u_fgetc_CR(U_FILE*);
@@ -186,15 +187,15 @@ int u_fgetc_CR(U_FILE*);
 int u_fread_raw(unichar*,int,U_FILE*);
 int u_fread(unichar*,int,U_FILE*,int*);
 
-int u_fputc_UTF16LE_raw(unichar,FILE*);
-int u_fputc_UTF16BE_raw(unichar,FILE*);
-int u_fputc_UTF8_raw(unichar,FILE*);
+int u_fputc_UTF16LE_raw(unichar,ABSTRACTFILE*);
+int u_fputc_UTF16BE_raw(unichar,ABSTRACTFILE*);
+int u_fputc_UTF8_raw(unichar,ABSTRACTFILE*);
 int u_fputc_raw(unichar,U_FILE*);
 int u_fputc(unichar,U_FILE*);
 
-int u_ungetc_UTF16LE_raw(FILE*);
-int u_ungetc_UTF16BE_raw(FILE*);
-int u_ungetc_UTF8_raw(unichar,FILE*);
+int u_ungetc_UTF16LE_raw(ABSTRACTFILE*);
+int u_ungetc_UTF16BE_raw(ABSTRACTFILE*);
+int u_ungetc_UTF8_raw(unichar,ABSTRACTFILE*);
 int u_ungetc_raw(unichar,U_FILE*);
 int u_ungetc(unichar,U_FILE*);
 

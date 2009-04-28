@@ -928,13 +928,21 @@ if (f==NULL) {
 }
 /* We compute the size of the file that is encoded in the 4 first bytes.
  * This value could be used to check the integrity of the file. */
-int a,b,c,d;
+/*int a,b,c,d;
 a=(unsigned char)fgetc(f->f);
 b=(unsigned char)fgetc(f->f);
 c=(unsigned char)fgetc(f->f);
 d=(unsigned char)fgetc(f->f);
 int file_size=d+256*c+256*256*b+256*256*256*a;
-/* We come back to the beginning and we load rawly the file */
+*/
+unsigned char tab_size[4];
+if ((int)fread(tab_size,sizeof(char),4,f)!=4) {
+   error("Error while reading size of %s\n",name);
+   u_fclose(f);
+   return NULL;
+}
+int file_size=tab_size[3]+(256*tab_size[2])+(256*256*tab_size[1])+(256*256*256*tab_size[0]);
+/* We come back to the beginning and we load rawly the ABSTRACTFILE */
 fseek(f,0,SEEK_SET);
 tab=(unsigned char*)malloc(sizeof(unsigned char)*file_size);
 if (tab==NULL) {

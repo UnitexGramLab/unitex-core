@@ -137,7 +137,7 @@ for (int i = 1; i <= tfst->N; i++) {
          sprintf(fst2name, "%ssentence%d.fst2", basedir, i);
          struct FST2_free_info fst2_free;
          Fst2* fst2=load_abstract_fst2(fst2name,0,&fst2_free);
-         remove(fst2name);
+         af_remove(fst2name);
          free_SingleGraph(tfst->automaton,NULL);
          tfst->automaton=create_copy_of_fst2_subgraph(fst2,1);
          tags=create_tfst_tags(fst2,&n_tags);
@@ -166,12 +166,12 @@ char backup_tind[FILENAME_MAX];
 sprintf(backup_tfst,"%s.bck",input_tfst);
 sprintf(backup_tind,"%s.bck",input_tind);
 /* We remove the existing backup files, if any */
-remove(backup_tfst);
-remove(backup_tind);
-rename(input_tfst,backup_tfst);
-rename(input_tind,backup_tind);
-rename(output_tfst,input_tfst);
-rename(output_tind,input_tind);
+af_remove(backup_tfst);
+af_remove(backup_tind);
+af_rename(input_tfst,backup_tfst);
+af_rename(input_tind,backup_tind);
+af_rename(output_tfst,input_tfst);
+af_rename(output_tind,input_tind);
 u_printf("\nYou can find a backup of the original files in:\n    %s\nand %s\n",
          backup_tfst,backup_tind);
 free_OptVars(vars);

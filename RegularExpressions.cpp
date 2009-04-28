@@ -148,7 +148,7 @@ int output_state;
 int result=reg_2_grf(regexp,&input_state,&output_state,INFO);
 if (result!=1) {
    u_fclose(out);
-   remove(name_grf);
+   af_remove(name_grf);
    free_reg2grf_info(INFO);
    if (result==0) {
       error("Syntax error in regular expression\n");

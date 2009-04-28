@@ -896,7 +896,7 @@ verboseMode  = 0;
         if(!uf){
            fatal_error("Cannot open file %s\n",src);
         }
-        while(fgets(fileLine,256,uf->f)){
+        while(af_fgets(fileLine,256,uf->f)){
             if(fileLine[0] == ' ') continue;
             for(i  = 0; (i< 128) && (fileLine[i] != ' ')
                     &&(fileLine[i] != '.') && (fileLine[i] != 0)

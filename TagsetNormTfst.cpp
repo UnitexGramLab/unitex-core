@@ -280,10 +280,10 @@ u_fclose(out_tind);
 
 /* Finally, we rename files if we must modify the input text automaton */
 if (no_explicit_output) {
-   remove(tfst);
-   remove(tind);
-   rename(output_tfst,tfst);
-   rename(output_tind,tind);
+   af_remove(tfst);
+   af_remove(tind);
+   af_rename(output_tfst,tfst);
+   af_rename(output_tind,tind);
 }
 free_language_t(language);
 free_OptVars(vars);

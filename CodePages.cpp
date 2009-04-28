@@ -1051,12 +1051,20 @@ u_printf("Microsoft Windows Codepage 949 - Korean\n");
 /**
  * Reads a Korean character encoded in Windows 949.
  */
-int read_mbcs_char(FILE* f) {
-int page=fgetc(f);
+int read_mbcs_char(ABSTRACTFILE* f) {
+int page;
 int off;
+unsigned char c;
+if (af_fread((void*)&c,1,1,f)==1)
+  page=(int)c;
+else
+  page=EOF;
 if (page==EOF) return EOF;
 if(page&0x80){
-	off=fgetc(f);
+	if (af_fread(&c,1,1,f)==1)
+	  off=(int)c;
+	else
+	  off=EOF;
 	if(off==EOF) return EOF;
 	page=page&0x7F;
 } else {
@@ -1070,10 +1078,22 @@ return uniKoran949.mbcsUni949Table[page*256+off];
 /**
  * Writes a Korean character encoded in Windows 949.
  */
-int write_mbcs_char(unichar c,FILE* f) {
-int ret=fputc(uniKoran949.uniMbcs949Table[c*2]&0xFF,f);
+int write_mbcs_char(unichar c,ABSTRACTFILE* f) {
+int ret;
+unsigned char cw;
+cw=(unsigned char)(uniKoran949.uniMbcs949Table[c*2]&0xFF);
+if (af_fwrite(&cw,1,1,f)!=1)
+  return EOF;
+else
+  ret=(int)c;
 if(c<128) return ret;
-return fputc(uniKoran949.uniMbcs949Table[c*2+1]&0xFF,f);
+
+cw=(unsigned char)(uniKoran949.uniMbcs949Table[c*2+1]&0xFF);
+if (af_fwrite(&cw,1,1,f)!=1)
+  return EOF;
+else
+  ret=(int)c;
+return ret;
 }
 #endif
 
@@ -1104,9 +1124,9 @@ u_printf("byte first.\n");
  * returns its unicode equivalent, or EOF if the end of file has
  * been reached.
  */
-int read_1_byte_character(FILE* f,unichar* unicode_src) {
+int read_1_byte_character(ABSTRACTFILE* f,unichar* unicode_src) {
 unsigned char c;
-if (!fread(&c,1,1,f)) return EOF;
+if (!af_fread(&c,1,1,f)) return EOF;
 return unicode_src[(unsigned char)c];
 }
 
@@ -1115,12 +1135,12 @@ return unicode_src[(unsigned char)c];
  * This function encodes the character 'c' into a 1 byte one, and
  * writes it to the given file. Returns 1 if OK or 0 if an error occurs.
  */
-int write_1_byte_character(unsigned char c,FILE* f) {
-return fwrite(&c,1,1,f);
+int write_1_byte_character(unsigned char c,ABSTRACTFILE* f) {
+return af_fwrite(&c,1,1,f);
 }
 
 
-int write_one_char(unichar c,FILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
+int write_one_char(unichar c,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
 if (encoding->type==E_ONE_BYTE_ENCODING) {
 	return write_1_byte_character(ascii_dest[c],f);
 } else {
@@ -1136,7 +1156,7 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
  * '&' '#' '2' '3' '3' and ';' encoded as 2-bytes characters, for instance
  * with an UTF16 output encoding.
  */
-void write_integer(int n,FILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
+void write_integer(int n,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
 if (n<10) {
 	write_one_char('0'+n,f,encoding,ascii_dest);
 	return;
@@ -1154,7 +1174,7 @@ write_one_char('0'+n%10,f,encoding,ascii_dest);
  * and 'encode_HTML_control_characters'.
  *
  */
-void html_characters_encoding(unichar c,struct encoding* encoding,FILE* f,
+void html_characters_encoding(unichar c,struct encoding* encoding,ABSTRACTFILE* f,
 			int encode_all_characters,int encode_HTML_control_characters,
 			unsigned char* ascii_dest) {
 /* First, we check if we have an HTML control character */
@@ -1212,16 +1232,16 @@ write_one_char(c,f,encoding,ascii_dest);
  * These 4 functions are shorcuts for invoking the 'html_characters_encoding'
  * function.
  */
-void f00(unichar c,struct encoding* encoding,FILE* f,unsigned char* ascii_dest) {
+void f00(unichar c,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
 html_characters_encoding(c,encoding,f,0,0,ascii_dest);
 }
-void f01(unichar c,struct encoding* encoding,FILE* f,unsigned char* ascii_dest) {
+void f01(unichar c,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
 html_characters_encoding(c,encoding,f,0,1,ascii_dest);
 }
-void f10(unichar c,struct encoding* encoding,FILE* f,unsigned char* ascii_dest) {
+void f10(unichar c,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
 html_characters_encoding(c,encoding,f,1,0,ascii_dest);
 }
-void f11(unichar c,struct encoding* encoding,FILE* f,unsigned char* ascii_dest) {
+void f11(unichar c,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
 html_characters_encoding(c,encoding,f,1,1,ascii_dest);
 }
 
@@ -1231,7 +1251,7 @@ html_characters_encoding(c,encoding,f,1,1,ascii_dest);
  * 'unicode_src' if the encoding is a 1-byte one.
  *
  */
-int read_one_char(FILE* input,struct encoding* encoding,unichar* unicode_src) {
+int read_one_char(ABSTRACTFILE* input,struct encoding* encoding,unichar* unicode_src) {
 if (encoding->type==E_ONE_BYTE_ENCODING) {
 	return read_1_byte_character(input,unicode_src);
 } else {
@@ -1267,7 +1287,7 @@ int convert(U_FILE* input,U_FILE* output,struct encoding* input_encoding,
  * Initialization for the source encoding.
  */
 int tmp;
-void (*z)(unichar,struct encoding*,FILE*,unsigned char*);
+void (*z)(unichar,struct encoding*,ABSTRACTFILE*,unsigned char*);
 unichar unicode_src[256];
 unichar unicode_dest[256];
 unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
@@ -1539,8 +1559,8 @@ number_of_encodings++;
  *
  * We consider that a multi-bytes encoding can encode any character.
  */
-void install_multi_bytes_encoding(const char* name,int type,int (*input_function)(FILE*),
-								int (*output_function)(unichar,FILE*),
+void install_multi_bytes_encoding(const char* name,int type,int (*input_function)(ABSTRACTFILE*),
+								int (*output_function)(unichar,ABSTRACTFILE*),
 								void (*usage_function)(void),
 								const char** aliases) {
 if (name==NULL) {

@@ -35,12 +35,12 @@ pseudo_main_Concord(in1,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
 strcat(f,"concord.txt");
-remove(out1);
-rename(f,out1);
+af_remove(out1);
+af_rename(f,out1);
 
 pseudo_main_Concord(in2,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
-remove(out2);
-rename(f,out2);
+af_remove(out2);
+af_rename(f,out2);
 }
 
 
@@ -116,8 +116,8 @@ u_fclose(f1);
 u_fclose(f2);
 u_fclose(output);
 /* We remove the tmp files */
-remove(concor1);
-remove(concor2);
+af_remove(concor1);
+af_remove(concor2);
 return 1;
 }
 

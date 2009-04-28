@@ -120,8 +120,8 @@ switch (flatten_fst2(origin,depth,temp,RTN)) {
    default: fatal_error("Internal state error in Flatten's main\n");
 }
 free_abstract_Fst2(origin,&fst2_free);
-remove(argv[vars->optind]);
-rename(temp,argv[vars->optind]);
+af_remove(argv[vars->optind]);
+af_rename(temp,argv[vars->optind]);
 free_OptVars(vars);
 return 0;
 }

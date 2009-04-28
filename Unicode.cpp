@@ -19,8 +19,9 @@
   *
   */
 
-#include<stdio.h>
-static FILE* (*real_fopen)(const char*,const char*)=fopen;
+#include <stdio.h>
+#include "Af_stdio.h"
+static ABSTRACTFILE* (*real_fopen)(const char*,const char*)=af_fopen;
 
 #include "Unicode.h"
 #include "Error.h"
@@ -44,7 +45,7 @@ const unichar EPSILON[]={'<','E','>','\0'};
  * Allocates, initializes and returns a new U_FILE*
  * f is supposed to have been opened.
  */
-U_FILE* new_U_FILE(FILE* f,Encoding e) {
+U_FILE* new_U_FILE(ABSTRACTFILE* f,Encoding e) {
 U_FILE* u=(U_FILE*)malloc(sizeof(U_FILE));
 u->f=f;
 u->enc=e;
@@ -61,52 +62,52 @@ free(u);
 }
 
 
-U_FILE* U_STDIN=new_U_FILE(stdin,UTF8);
-U_FILE* U_STDOUT=new_U_FILE(stdout,UTF8);
-U_FILE* U_STDERR=new_U_FILE(stderr,UTF8);
+U_FILE* U_STDIN=new_U_FILE(return_af_stdin(),UTF8);
+U_FILE* U_STDOUT=new_U_FILE(return_af_stdout(),UTF8);
+U_FILE* U_STDERR=new_U_FILE(return_af_stderr(),UTF8);
 
 
 int fseek(U_FILE* stream, long offset, int whence) {
-return fseek(stream->f,offset,whence);
+return af_fseek(stream->f,offset,whence);
 }
 
 long ftell(U_FILE* stream) {
-return ftell(stream->f);
+return af_ftell(stream->f);
 }
 
 void rewind(U_FILE* stream) {
-rewind(stream->f);
+fseek( stream, 0L, SEEK_SET ); 
 }
 
 int feof(U_FILE* stream) {
-return feof(stream->f);
+return af_feof(stream->f);
 }
 
 size_t fread(void *ptr,size_t size,size_t nmemb,U_FILE *stream) {
-return fread(ptr,size,nmemb,stream->f);
+return af_fread(ptr,size,nmemb,stream->f);
 }
 
 size_t fwrite(const void *ptr,size_t size,size_t nmemb,U_FILE *stream) {
-return fwrite(ptr,size,nmemb,stream->f);
+return af_fwrite(ptr,size,nmemb,stream->f);
 }
 
 
 
-int u_fgetc_raw(Encoding,FILE*);
+int u_fgetc_raw(Encoding,ABSTRACTFILE*);
 int u_fgetc_raw(U_FILE* f) {
 return u_fgetc_raw(f->enc,f->f);
 }
 
-int u_fgetc(Encoding,FILE*);
-int u_fgetc_UTF16LE(FILE* f) {
+int u_fgetc(Encoding,ABSTRACTFILE*);
+int u_fgetc_UTF16LE(ABSTRACTFILE* f) {
 return u_fgetc(UTF16_LE,f);
 }
 
-int u_fgetc_UTF16BE(FILE* f) {
+int u_fgetc_UTF16BE(ABSTRACTFILE* f) {
 return u_fgetc(BIG_ENDIAN_UTF16,f);
 }
 
-int u_fgetc_UTF8(FILE* f) {
+int u_fgetc_UTF8(ABSTRACTFILE* f) {
 return u_fgetc(UTF8,f);
 }
 
@@ -114,36 +115,36 @@ int u_fgetc(U_FILE* f) {
 return u_fgetc(f->enc,f->f);
 }
 
-int u_fgetc_CR(Encoding,FILE*);
+int u_fgetc_CR(Encoding,ABSTRACTFILE*);
 int u_fgetc_CR(U_FILE* f) {
 return u_fgetc_CR(f->enc,f->f);
 }
 
-int u_fread_raw(Encoding,unichar*,int,FILE*);
+int u_fread_raw(Encoding,unichar*,int,ABSTRACTFILE*);
 int u_fread_raw(unichar* t,int N,U_FILE* f) {
 return u_fread_raw(f->enc,t,N,f->f);
 }
 
-int u_fread(Encoding,unichar*,int,FILE*,int*);
+int u_fread(Encoding,unichar*,int,ABSTRACTFILE*,int*);
 int u_fread(unichar* t,int N,U_FILE* f,int *OK) {
 return u_fread(f->enc,t,N,f->f,OK);
 }
 
-int u_fputc_raw(Encoding,unichar,FILE*);
+int u_fputc_raw(Encoding,unichar,ABSTRACTFILE*);
 int u_fputc_raw(unichar c,U_FILE* f) {
 return u_fputc_raw(f->enc,c,f->f);
 }
 
-int u_fputc(Encoding,unichar,FILE*);
-int u_fputc_UTF16LE(unichar c,FILE* f) {
+int u_fputc(Encoding,unichar,ABSTRACTFILE*);
+int u_fputc_UTF16LE(unichar c,ABSTRACTFILE* f) {
 return u_fputc(UTF16_LE,c,f);
 }
 
-int u_fputc_UTF16BE(unichar c,FILE* f) {
+int u_fputc_UTF16BE(unichar c,ABSTRACTFILE* f) {
 return u_fputc(BIG_ENDIAN_UTF16,c,f);
 }
 
-int u_fputc_UTF8(unichar c,FILE* f) {
+int u_fputc_UTF8(unichar c,ABSTRACTFILE* f) {
 return u_fputc(UTF8,c,f);
 }
 
@@ -151,32 +152,32 @@ int u_fputc(unichar c,U_FILE* f) {
 return u_fputc(f->enc,c,f->f);
 }
 
-int u_ungetc(Encoding,unichar,FILE*);
+int u_ungetc(Encoding,unichar,ABSTRACTFILE*);
 int u_ungetc(unichar c,U_FILE* f) {
 return u_ungetc(f->enc,c,f->f);
 }
 
-int u_fwrite_raw(Encoding,unichar*,int,FILE*);
+int u_fwrite_raw(Encoding,unichar*,int,ABSTRACTFILE*);
 int u_fwrite_raw(unichar* t,int N,U_FILE* f) {
 return u_fwrite_raw(f->enc,t,N,f->f);
 }
 
-int u_fwrite(Encoding,unichar*,int,FILE*);
+int u_fwrite(Encoding,unichar*,int,ABSTRACTFILE*);
 int u_fwrite(unichar* t,int N,U_FILE* f) {
 return u_fwrite(f->enc,t,N,f->f);
 }
 
-int u_fgets(Encoding,unichar*,FILE*);
+int u_fgets(Encoding,unichar*,ABSTRACTFILE*);
 int u_fgets(unichar* s,U_FILE* f) {
 return u_fgets(f->enc,s,f->f);
 }
 
-int u_fgets(Encoding,unichar*,int,FILE*);
+int u_fgets(Encoding,unichar*,int,ABSTRACTFILE*);
 int u_fgets(unichar* s,int size,U_FILE* f) {
 return u_fgets(f->enc,s,size,f->f);
 }
 
-int u_fgets2(Encoding,unichar*,FILE*);
+int u_fgets2(Encoding,unichar*,ABSTRACTFILE*);
 int u_fgets2(unichar* s,U_FILE* f) {
 return u_fgets2(f->enc,s,f->f);
 }
@@ -192,12 +193,12 @@ va_end(list);
 return n;
 }
 
-void u_fprints(Encoding,const unichar*,FILE*);
+void u_fprints(Encoding,const unichar*,ABSTRACTFILE*);
 void u_fprints(const unichar* s,U_FILE* f) {
 u_fprints(f->enc,s,f->f);
 }
 
-void u_fprints(Encoding,const char*,FILE*);
+void u_fprints(Encoding,const char*,ABSTRACTFILE*);
 void u_fprints(const char* s,U_FILE* f) {
 u_fprints(f->enc,s,f->f);
 }
@@ -227,19 +228,19 @@ U_FILE* u_fopen(Encoding encoding,const char* name,const char* MODE) {
 if (name==NULL) {
 	fatal_error("NULL file name in u_fopen\n");
 }
-FILE* f;
+ABSTRACTFILE* f;
 if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
    /* If we are in APPEND or MODIFY mode, we check first if the file already exists */
    f=real_fopen(name,U_READ);
    if (f!=NULL) {
       /* If the file exists, we close it and reopen it in APPEND mode */
-      fclose(f);
+      af_fclose(f);
       f=real_fopen(name,MODE);
       if (!strcmp(MODE,U_MODIFY)) {
          /* If we are in MODIFY mode, we must set the cursor at the beginning of the
           * file, i.e. after the byte order mark, if any. */
          if (encoding==UTF16_LE || encoding==BIG_ENDIAN_UTF16) {
-            fseek(f,2,0);
+            af_fseek(f,2,0);
          }
       }
       return new_U_FILE(f,encoding);
@@ -266,7 +267,7 @@ if (!strcmp(MODE,U_READ)) {
       c=u_fgetc_UTF16LE(f);
       if (c!=U_BYTE_ORDER_MARK) {
          error("u_fopen error: %s is not a UTF16-LE text file\n",name);
-         fclose(f);
+         af_fclose(f);
          return NULL;
       }
       return new_U_FILE(f,encoding);
@@ -275,7 +276,7 @@ if (!strcmp(MODE,U_READ)) {
       c=u_fgetc_UTF16BE(f);
       if (c!=U_BYTE_ORDER_MARK) {
          error("u_fopen error: %s is not a UTF16-BE text file\n",name);
-         fclose(f);
+         af_fclose(f);
          return NULL;
       }
       return new_U_FILE(f,encoding);
@@ -295,7 +296,7 @@ return new_U_FILE(f,encoding);
  * Closes a UTF16 file.
  */
 int u_fclose(U_FILE* f) {
-int ret=fclose(f->f);
+int ret=af_fclose(f->f);
 free_U_FILE(f);
 return ret;
 }
@@ -319,13 +320,13 @@ return 1;
  * This function tests if the given file name correspond to a UTF16 file.
  */
 int u_is_UTF16(const char* name) {
-FILE* f=real_fopen(name,U_READ);
+ABSTRACTFILE* f=real_fopen(name,U_READ);
 if (f==NULL) {
    /* If the file does not exist */
    return FILE_DOES_NOT_EXIST;
 }
 int c=u_fgetc_UTF16LE(f);
-fclose(f);
+af_fclose(f);
 if (c==U_BYTE_ORDER_MARK) {
    return UTF16_LITTLE_ENDIAN_FILE;
 }
@@ -341,11 +342,11 @@ return NOT_A_UTF16_FILE;
  * It returns EOF if it cannot read a UTF16-LE character. Moreover, it
  * prints an error message if it can read just one byte.
  */
-int u_fgetc_UTF16LE_raw(FILE* f) {
+int u_fgetc_UTF16LE_raw(ABSTRACTFILE* f) {
 int c;
 unsigned char a,b;
-if (!fread(&b,1,1,f)) return EOF;
-if (!fread(&a,1,1,f)) {
+if (!af_fread(&b,1,1,f)) return EOF;
+if (!af_fread(&a,1,1,f)) {
    error("Alignment error: odd number of characters in a UTF16 file\n");
    return EOF;
 }
@@ -359,11 +360,11 @@ return c;
  * It returns EOF if it cannot read a UTF16-BE character. Moreover, it
  * prints an error message if it can read just one byte.
  */
-int u_fgetc_UTF16BE_raw(FILE* f) {
+int u_fgetc_UTF16BE_raw(ABSTRACTFILE* f) {
 int c;
 unsigned char a,b;
-if (!fread(&b,1,1,f)) return EOF;
-if (!fread(&a,1,1,f)) {
+if (!af_fread(&b,1,1,f)) return EOF;
+if (!af_fread(&a,1,1,f)) {
    error("Alignment error: odd number of characters in a UTF16 file\n");
    return EOF;
 }
@@ -382,9 +383,9 @@ return c;
  *            it is used only for 16 bits unicode, the caller
  *            must check that the value is not greater than expected.
  */
-int u_fgetc_UTF8_raw(FILE* f) {
+int u_fgetc_UTF8_raw(ABSTRACTFILE* f) {
 unsigned char c;
-if (!fread(&c,1,1,f)) return EOF;
+if (af_fread(&c,1,1,f)!=1) return EOF;
 if (c<=0x7F) {
    /* Case of a 1 byte character 0XXX XXXX */
    return c;
@@ -424,7 +425,7 @@ else {
 /* If there are several bytes, we read them and compute the unicode
  * number of the character */
 for (int i=0;i<number_of_bytes-1;i++) {
-   if (!fread(&c,1,1,f)) return EOF;
+   if (!af_fread(&c,1,1,f)) return EOF;
    /* Following bytes should be of the form 10XX XXXX */
    if ((c&0xC0)!=0x80) {
       error("Encoding error in byte %d of a %d byte unicode sequence\n",i+2,number_of_bytes);
@@ -446,12 +447,18 @@ return value;
  * - It returns EOF at the end of file or '?' if it cannot read a well-formed
  *   character. In that case, it prints an error message.
  */
-int u_fgetc_raw(Encoding encoding,FILE* f) {
+int u_fgetc_raw(Encoding encoding,ABSTRACTFILE* f) {
 switch(encoding) {
    case UTF16_LE: return u_fgetc_UTF16LE_raw(f);
    case BIG_ENDIAN_UTF16: return u_fgetc_UTF16BE_raw(f);
    case UTF8: return u_fgetc_UTF8_raw(f);
-   case ASCII: return fgetc(f);
+   case ASCII: {
+	   unsigned char c;
+	   if (af_fread(&c,1,1,f)==1)
+		   return (int)c;
+	   else
+		   return EOF;
+			   }
 }
 return EOF;
 }
@@ -463,7 +470,7 @@ return EOF;
  *
  * See u_fgetc_raw for returned values.
  */
-int u_fgetc(Encoding encoding,FILE *f) {
+int u_fgetc(Encoding encoding,ABSTRACTFILE *f) {
 int c=u_fgetc_raw(encoding,f);
 if (c==0x0D) {
    /* If we read a '\r', we try to skip the '\n' */
@@ -474,11 +481,11 @@ return c;
 }
 
 
-int u_ungetc_raw(Encoding,unichar,FILE*);
+int u_ungetc_raw(Encoding,unichar,ABSTRACTFILE*);
 /**
  * A version of u_fgetc that returns \n whatever it reads \n, \r or \r\n.
  */
-int u_fgetc_CR(Encoding encoding,FILE* f) {
+int u_fgetc_CR(Encoding encoding,ABSTRACTFILE* f) {
 int c=u_fgetc_raw(encoding,f);
 if (c==EOF) {
    return EOF;
@@ -491,7 +498,8 @@ if (c==0x0D) {
       /* In UTF8, we know that if we look for a \n, it will take 1 byte. This
        * is a trick in order to avoid reading a character made of several bytes
        * that we should put back to the file. */
-      c=fgetc(f);
+      if (af_fread(&c,1,1,f)!=1)
+		  c=EOF;
    } else {
       c=u_fgetc_raw(encoding,f);
    }
@@ -508,7 +516,7 @@ if (c==0x0D) {
          }
          case UTF8:
          case ASCII: {
-            ungetc((char)c,f);
+            af_ungetc((char)c,f);
             break;
          }
       }
@@ -526,7 +534,7 @@ return c;
  *
  * WARNING: this function will be deprecated
  */
-int u_fread_raw(Encoding encoding,unichar* t,int N,FILE* f) {
+int u_fread_raw(Encoding encoding,unichar* t,int N,ABSTRACTFILE* f) {
 int i,c;
 for (i=0;i<N;i++) {
    c=u_fgetc_raw(encoding,f);
@@ -543,7 +551,7 @@ return i;
  *
  * The '*OK' parameter is set to 0 if at least one '\0' was found and ignored; 1 otherwise.
  */
-int u_fread(Encoding encoding,unichar* t,int N,FILE* f,int *OK) {
+int u_fread(Encoding encoding,unichar* t,int N,ABSTRACTFILE* f,int *OK) {
 int i,c;
 *OK=1;
 i=0;
@@ -564,12 +572,12 @@ return i;
  * UTF16-LE version of fputc. It does not put a 0xOA after a 0x0D.
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_fputc_UTF16LE_raw(unichar c,FILE *f) {
+int u_fputc_UTF16LE_raw(unichar c,ABSTRACTFILE *f) {
 unsigned char tab[2];
 int ret;
 tab[1]=(unsigned char)(c >> 8);
 tab[0]=(unsigned char)(c & 0xffff);
-ret=(fwrite(&tab[0],1,2,f) == 2);
+ret=(af_fwrite(&tab[0],1,2,f) == 2);
 return ret;
 }
 
@@ -578,12 +586,12 @@ return ret;
  * UTF16-BE version of fputc. It does not put a 0xOA after a 0x0D.
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_fputc_UTF16BE_raw(unichar c,FILE *f) {
+int u_fputc_UTF16BE_raw(unichar c,ABSTRACTFILE *f) {
 unsigned char tab[2];
 int ret;
 tab[0]=(unsigned char)(c >> 8);
 tab[1]=(unsigned char)(c & 0xffff);
-ret=(fwrite(&tab[0],1,2,f) == 2);
+ret=(af_fwrite(&tab[0],1,2,f) == 2);
 return ret;
 }
 
@@ -592,8 +600,8 @@ return ret;
  * A version of putc that does not prints \r\n when you want it to print a \n.
  * Returns 1 in case of success; 0 otherwise.
  */
-int fputc_raw(unsigned char c,FILE *f) {
-return fwrite(&c,1,1,f);
+int fputc_raw(unsigned char c,ABSTRACTFILE *f) {
+return af_fwrite(&c,1,1,f);
 }
 
 
@@ -605,7 +613,7 @@ return fwrite(&c,1,1,f);
  * NOTE: as it takes a unichar, this function cannot be used for writing
  *       a unicode character > 0xFFFF
  */
-int u_fputc_UTF8_raw(unichar c,FILE *f) {
+int u_fputc_UTF8_raw(unichar c,ABSTRACTFILE *f) {
 unsigned char tab[2];
 unsigned int iCountByte;
 if (c<=0x7F) {
@@ -625,19 +633,19 @@ else
     tab[1]=(unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
     tab[2]=(unsigned char) (0x80 | (c&0x3F));
 }
-return (fwrite(&tab[0],1,iCountByte,f) == iCountByte);
+return (af_fwrite(&tab[0],1,iCountByte,f) == iCountByte);
 }
 
 
 /**
  * Unicode version of fputc. Returns 0 if an error occurs; 1 otherwise.
  */
-int u_fputc_raw(Encoding encoding,unichar c,FILE* f) {
+int u_fputc_raw(Encoding encoding,unichar c,ABSTRACTFILE* f) {
 switch(encoding) {
    case UTF16_LE: return u_fputc_UTF16LE_raw(c,f);
    case BIG_ENDIAN_UTF16: return u_fputc_UTF16BE_raw(c,f);
    case UTF8: return u_fputc_UTF8_raw(c,f);
-   case ASCII: return fputc(c,f);
+   case ASCII: return (af_fwrite(&c,1,1,f) == 1);
 }
 return 0;
 }
@@ -647,7 +655,7 @@ return 0;
  * Unicode version of fputc that saves '\n' as '\r\n'.
  * Returns 0 if an error occurs; 1 otherwise.
  */
-int u_fputc(Encoding encoding,unichar c,FILE* f) {
+int u_fputc(Encoding encoding,unichar c,ABSTRACTFILE* f) {
 if (c=='\n') {
    if (!u_fputc_raw(encoding,0x0D,f)) return 0;
 }
@@ -662,8 +670,8 @@ return u_fputc_raw(encoding,c,f);
  *
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc_UTF16_raw(FILE *f) {
-return (fseek(f,-2,SEEK_CUR)==0)?1:0;
+int u_ungetc_UTF16_raw(ABSTRACTFILE *f) {
+return (af_fseek(f,-2,SEEK_CUR)==0)?1:0;
 }
 
 
@@ -674,7 +682,7 @@ return (fseek(f,-2,SEEK_CUR)==0)?1:0;
  *
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc_UTF16LE_raw(FILE *f) {
+int u_ungetc_UTF16LE_raw(ABSTRACTFILE *f) {
 return u_ungetc_UTF16_raw(f);
 }
 
@@ -686,7 +694,7 @@ return u_ungetc_UTF16_raw(f);
  *
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc_UTF16BE_raw(FILE *f) {
+int u_ungetc_UTF16BE_raw(ABSTRACTFILE *f) {
 return u_ungetc_UTF16_raw(f);
 }
 
@@ -699,7 +707,7 @@ return u_ungetc_UTF16_raw(f);
  *
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc_UTF8_raw(unichar c,FILE *f) {
+int u_ungetc_UTF8_raw(unichar c,ABSTRACTFILE *f) {
 int number_of_bytes;
 if (c<=0x7F) {
    /* Case of a 1 byte character 0XXX XXXX */
@@ -713,7 +721,7 @@ else /* The following test is always true: if (c<=0xFFFF) */ {
    /* 3 bytes 1110X XXXX */
    number_of_bytes=-3;
 }
-return (fseek(f,number_of_bytes,SEEK_CUR)==0)?1:0;
+return (af_fseek(f,number_of_bytes,SEEK_CUR)==0)?1:0;
 }
 
 
@@ -725,12 +733,12 @@ return (fseek(f,number_of_bytes,SEEK_CUR)==0)?1:0;
  *
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc_raw(Encoding encoding,unichar c,FILE *f) {
+int u_ungetc_raw(Encoding encoding,unichar c,ABSTRACTFILE *f) {
 switch(encoding) {
    case UTF16_LE: return u_ungetc_UTF16LE_raw(f);
    case BIG_ENDIAN_UTF16: return u_ungetc_UTF16BE_raw(f);
    case UTF8: return u_ungetc_UTF8_raw(c,f);
-   case ASCII: return ungetc(c,f);
+   case ASCII: return af_ungetc(c,f);
 }
 return 0;
 }
@@ -745,7 +753,7 @@ return 0;
  *
  * Returns 1 in case of success; 0 otherwise.
  */
-int u_ungetc(Encoding encoding,unichar c,FILE *f) {
+int u_ungetc(Encoding encoding,unichar c,ABSTRACTFILE *f) {
 if (c=='\n') {
    if (!u_ungetc_raw(encoding,c,f)) return 0;
    if (!u_ungetc_raw(encoding,c,f)) return 0;
@@ -759,7 +767,7 @@ return u_ungetc_raw(encoding,c,f);
  * Writes N characters from t. Returns the number of characters written.
  * It does not write '\r\n' for '\n'.
  */
-int u_fwrite_raw(Encoding encoding,unichar* t,int N,FILE* f) {
+int u_fwrite_raw(Encoding encoding,unichar* t,int N,ABSTRACTFILE* f) {
 for (int i=0;i<N;i++) {
    if (!u_fputc_raw(encoding,t[i],f)) return i;
 }
@@ -771,7 +779,7 @@ return N;
  * Writes N characters from t. Returns the number of characters written.
  * It writes '\r\n' for '\n'.
  */
-int u_fwrite(Encoding encoding,unichar* t,int N,FILE* f) {
+int u_fwrite(Encoding encoding,unichar* t,int N,ABSTRACTFILE* f) {
 for (int i=0;i<N;i++) {
    if (!u_fputc(encoding,t[i],f)) return i;
 }
@@ -783,7 +791,7 @@ return N;
  * Prints a char string into a file. Characters are promoted to unicode
  * and encoded according to the given encoding.
  */
-void u_fprints_char(Encoding encoding,char* s,FILE* f) {
+void u_fprints_char(Encoding encoding,char* s,ABSTRACTFILE* f) {
 int i=0;
 while (s[i]!='\0')
    u_fputc(encoding,(unichar)((unsigned char)s[i++]),f);
@@ -799,14 +807,14 @@ while (s[i]!='\0')
  *
  * NOTE: there is no overflow control!
  */
-int u_fgets(Encoding encoding,unichar* line,FILE* f) {
+int u_fgets(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
 int c;
 int i=0;
 while ((c=u_fgetc(encoding,f))!=EOF && c!='\n') {
    line[i++]=(unichar)c;
 }
 if (i==0 && c==EOF) {
-   /* If we are at the end of file */
+   /* If we are at the end of ABSTRACTFILE */
    return EOF;
 }
 line[i]='\0';
@@ -828,7 +836,7 @@ return i;
  * Modified by S�bastien Paumier
  */
 
-int u_fgets(Encoding encoding,unichar* line,int size,FILE* f) {
+int u_fgets(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
 int i=0;
 int c;
 while ((i < (size-1)) && ((c=u_fgetc(encoding,f))!=EOF)) {
@@ -856,7 +864,7 @@ return i;
  *
  * will lead to a string like: a b c \ d e \n e f
  */
-int u_fgets2(Encoding encoding,unichar* line,FILE* f) {
+int u_fgets2(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
 int pos,length;
 if (EOF==(pos=u_fgets(encoding,line,f))) {
    /* If we are at the end of file, then we return EOF */
@@ -899,20 +907,20 @@ void ClearBufferOut(Buffer_Out* pBufOut)
     pBufOut->iPosInTabOut=0;
 }
 
-int FlushBufferOut(Buffer_Out* pBufOut,FILE* f)
+int FlushBufferOut(Buffer_Out* pBufOut,ABSTRACTFILE* f)
 {
     size_t write_done_res ;
     size_t to_be_written;
     if (pBufOut->iPosInTabOut == 0)
         return 1;
     to_be_written = pBufOut->iPosInTabOut;
-    write_done_res = fwrite(pBufOut->tabOut,1,to_be_written,f) ;
+    write_done_res = af_fwrite(pBufOut->tabOut,1,to_be_written,f) ;
     pBufOut->iPosInTabOut=0;
     return (write_done_res == to_be_written);
 }
 
 
-int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
+int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
 {
     while ((*pc)!=0)
     {
@@ -982,15 +990,15 @@ int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pB
     return 1;
 }
 
-int BuildEncodedOutForUnicharItem(Encoding encoding,unichar w,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
+int BuildEncodedOutForUnicharItem(Encoding encoding,unichar w,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
 {
     unichar tab[2];
     tab[0]=w;
     tab[1]=0;
-    return BuildEncodedOutForUnicharString(encoding,&tab[0],pBufOut,0,f);
+    return BuildEncodedOutForUnicharString(encoding,&tab[0],pBufOut,convLFtoCRLF,f);
 }
 
-int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pBufOut,int convLFtoCRLF,FILE* f)
+int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pBufOut,int convLFtoCRLF,ABSTRACTFILE* f)
 {
     while ((*pc)!=0)
     {
@@ -1087,7 +1095,7 @@ int BuildEncodedOutForCharString(Encoding encoding,const char *pc,Buffer_Out* pB
  */
 int u_vfprintf(U_FILE* ufile,const char* format,va_list list) {
 Encoding encoding=ufile->enc;
-FILE* f=ufile->f;
+ABSTRACTFILE* f=ufile->f;
 int n_printed=0;
 int i;
 double d;
@@ -1515,7 +1523,7 @@ return (c==' ') || (c=='\t') || (c=='\r') || (c=='\n');
  */
 int u_vfscanf(U_FILE* ufile,const char* format,va_list list) {
 Encoding encoding=ufile->enc;
-FILE* f=ufile->f;
+ABSTRACTFILE* f=ufile->f;
 int c;
 int *i;
 unichar *uc;
@@ -1524,17 +1532,17 @@ int n_variables=0;
 static int stdin_ch=-1;
 while (*format) {
    /* First, we get the current character */
-   if (f==stdin) {
+   if (IsStdIn(f)) {
       /* If we read from the input stream, we may have to use the 1-char buffer */
       if (stdin_ch!=-1) {
          c=stdin_ch;
          stdin_ch=-1;
       } else {
-         /* If we have no character in the 1-char buffer, we take one from the file */
+         /* If we have no character in the 1-char buffer, we take one from the ABSTRACTFILE */
          c=u_fgetc_raw(encoding,f);
       }
    } else {
-      /* If we have to take one from the file */
+      /* If we have to take one from the ABSTRACTFILE */
       c=u_fgetc_raw(encoding,f);
    }
    if (c==EOF) {
@@ -1618,7 +1626,7 @@ while (*format) {
             if (c!=EOF) {
                /* If we have read a separator, we put it back in the file, for
                 * the case where the user would like to read it with another read function */
-               if (f==stdin) {
+               if (IsStdIn(f)) {
                   stdin_ch=c;
                }
                else {
@@ -1640,7 +1648,7 @@ while (*format) {
             if (c!=EOF) {
                /* If we have read a separator, we put it back in the file, for
                 * the case where the user would like to read it with another read function */
-               if (f==stdin) {
+               if (IsStdIn(f)) {
                   stdin_ch=c;
                }
                else {
@@ -1675,7 +1683,7 @@ while (*format) {
             if (c!=EOF) {
                /* If we have read a non digit, we put it back in the file, for
                 * the case where the user would like to read it with another read function */
-               if (f==stdin) {
+               if (IsStdIn(f)) {
                   stdin_ch=c;
                }
                else {
@@ -1713,7 +1721,7 @@ while (*format) {
             if (c!=EOF) {
                /* If we have read a non digit, we put it back in the file, for
                 * the case where the user would like to read it with another read function */
-               if (f==stdin) {
+               if (IsStdIn(f)) {
                   stdin_ch=c;
                }
                else {
@@ -1943,7 +1951,7 @@ return n;
 /**
  * Prints an unicode string into a file.
  */
-void u_fprints(Encoding encoding,const unichar* s,FILE* f) {
+void u_fprints(Encoding encoding,const unichar* s,ABSTRACTFILE* f) {
 int i=0;
 if (s==NULL) {
    return;
@@ -1957,7 +1965,7 @@ while (s[i]!='\0') {
 /**
  * Prints a char string into a file.
  */
-void u_fprints(Encoding encoding,const char* s,FILE* f) {
+void u_fprints(Encoding encoding,const char* s,ABSTRACTFILE* f) {
 int i=0;
 if (s==NULL) {
    return;

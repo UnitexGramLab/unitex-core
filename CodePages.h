@@ -66,8 +66,8 @@ struct encoding {
 	 * If the encoding type is not ON_BYTE_ENCODING, we must define
 	 * an input and output function.
 	 */
-	int (*input_function)(FILE*);
-	int (*output_function)(unichar,FILE*);
+	int (*input_function)(ABSTRACTFILE*);
+	int (*output_function)(unichar,ABSTRACTFILE*);
 
 	/* The usage function for this encoding */
 	void (*usage_function)(void);

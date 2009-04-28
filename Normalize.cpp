@@ -103,7 +103,7 @@ if (!strcmp(tmp_file, ".snt")) {
 	 * .snt.normalizing */
 	strcpy(tmp_file,argv[vars->optind]);
 	strcat(tmp_file,".normalizing");
-	rename(argv[vars->optind],tmp_file);
+	af_rename(argv[vars->optind],tmp_file);
 } else {
    strcpy(tmp_file,argv[vars->optind]);
 }
@@ -116,7 +116,7 @@ normalize(tmp_file, dest_file, mode, rules);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
 if (strcmp(tmp_file,argv[vars->optind])) {
-   remove(tmp_file);
+   af_remove(tmp_file);
 }
 free_OptVars(vars);
 u_printf("Done.\n");

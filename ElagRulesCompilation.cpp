@@ -262,7 +262,7 @@ Fst2Automaton* res=NULL;
 Fst2Automaton* A;
 int fst_number=0;
 Ustring* ustr=new_Ustring();
-while (fgets(buf,FILENAME_MAX,frules->f)) {
+while (af_fgets(buf,FILENAME_MAX,frules->f)) {
    /* We read one by one the Elag grammar names in the .lst file */
    chomp(buf);
    if (*buf=='\0') {

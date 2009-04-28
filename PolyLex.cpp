@@ -245,8 +245,8 @@ free_abstract_INF(inf,&inf_free);
 u_fclose(words);
 u_fclose(new_unknown_words);
 free_string_hash(forbiddenWords);
-remove(output);
-rename(tmp,output);
+af_remove(output);
+af_rename(tmp,output);
 u_fclose(res);
 if (debug!=NULL) {
    u_fclose(debug);

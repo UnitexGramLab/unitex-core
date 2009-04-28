@@ -67,8 +67,8 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 	parse_text(p);
 	u_fclose(p->f_input);
 	u_fclose(p->f_output);
-	remove(p->text_file);
-	rename(p->temp_file,p->text_file);
+	af_remove(p->text_file);
+	af_rename(p->temp_file,p->text_file);
 	u_printf("Done.\n");
 	return 0;
 }

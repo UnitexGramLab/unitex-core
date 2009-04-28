@@ -252,7 +252,7 @@ if (f==NULL) {
 }
 vector_ptr* grammars=new_vector_ptr(16);
 char buf[FILENAME_MAX];
-while (fgets(buf,FILENAME_MAX,f->f) != NULL) {
+while (af_fgets(buf,FILENAME_MAX,f->f) != NULL) {
    if (*buf != '<') {
       continue;
    }

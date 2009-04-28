@@ -55,8 +55,8 @@ while ((c=u_fgetc(f))!=-1) {
    u_printf("%C",c);
 }
 u_fclose(f);
-remove(name);
-remove(grf);
+af_remove(name);
+af_remove(grf);
 
 /* These lines are just here to test if the TRE library was correctly linked. */
 wchar_t warray[512];

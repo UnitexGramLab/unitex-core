@@ -356,7 +356,7 @@ while ((c=u_fgetc(f))!=EOF) {
  * HTML closing tags. */
 if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) write_HTML_end(out);
 u_fclose(f);
-remove(temp_file_name);
+af_remove(temp_file_name);
 u_fclose(out);
 if (option->result_mode==GLOSSANET_) {
 	free_string_hash(glossa_hash);
