@@ -1058,14 +1058,14 @@ unsigned char c;
 if (af_fread((void*)&c,1,1,f)==1)
   page=(int)c;
 else
-  page=EOF;
-if (page==EOF) return EOF;
+  return EOF;
+
 if(page&0x80){
 	if (af_fread(&c,1,1,f)==1)
 	  off=(int)c;
 	else
-	  off=EOF;
-	if(off==EOF) return EOF;
+	  return EOF;
+
 	page=page&0x7F;
 } else {
 	off = page;
