@@ -32,7 +32,7 @@ using namespace std;
 #include "Error.h"
 
 
-static void usage(int flag) {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: CompressKr [-s] [-g] [-o ofilename] [-l] <dictionary>\n");
 u_printf("  -s  : suffixes dictionnary, indicate the type of dictionnary, Suffixe or Racine\n");
@@ -43,7 +43,6 @@ u_printf("  -o  : set output file\n");
 u_printf("Compresses a dictionary into an finite state automaton. This automaton\n");
 u_printf("is stored is a .bin file,  the associated flexional codes are\n");
 u_printf("written in a .inf file and the list of automates at .aut file\n\n");
-if(flag) exit(1);
 }
 
 static void 
@@ -120,7 +119,7 @@ int listFormFlag = 0;	// filename is dictionnary
 suffixeMode = 0;
 	ofilename  =0;
 	if(argc == 1) {
-       usage(0);
+       usage();
        return 0;
     }
 //printf("%s\n",setlocale(LC_ALL,"Korean_korea.949"));
@@ -139,13 +138,17 @@ suffixeMode = 0;
 			case 'g':grapheMode++; break;
 			case 'o':argIdx++;ofilename = argv[argIdx];break;
 			default:
-				usage(1);
+				usage();
+				return 1;
 			}
 		}
 		argIdx++;
 	}
 	
-	if(argIdx != argc -1) usage(1);
+	if(argIdx != argc -1) {
+	   usage();
+	   return 1;
+	}
 	make_compress_files(argv[argIdx],listFormFlag);
 	if(debugfile) u_fclose(debugfile);
 	return(0);

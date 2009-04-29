@@ -35,7 +35,7 @@
 
 
 
-static void usage(int flag) {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage:\r\n");
 u_printf(
@@ -44,8 +44,9 @@ u_printf(
 " sqfile : name of lists of sequences of morphemes in a word\r\n"\
 " mcfile : name of lists of morphemes\r\n"\
 "        : Output file DLC, DLF, ERR\r\n");\
-exit(flag);
 }
+
+
 static     U_FILE *fout;
 static char ftemp[4096];
 static char pathNameSave[4096];
@@ -235,7 +236,10 @@ class arbre_string00 parFlechi, parCano;
 
 int main_SortMorph(int argc, char *argv[]) {
 
-    if(argc != 4) usage(0);
+    if(argc != 4) {
+       usage();
+       return 0;
+    }
     arbre_string00 tString,mString,sString,eString;
     
     unichar *tMem = 0;

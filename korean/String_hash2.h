@@ -1100,7 +1100,9 @@ public:
 
 	void setSz(int pageSz,int elementSize)
 	{
-		if(!elementSize || !pageSz) exit(8);
+		if(!elementSize || !pageSz) {
+		   fatal_error("Internal error in setSz\n");
+		}
 		pgSize = pageSz;
 		pgEMcnt = pageSz/elementSize;
 		pgESize = elementSize;

@@ -55,9 +55,7 @@ struct savePassingData {
 struct savePassingData aLine[4096];
 
 
-static void 
-usage(int flag)
-{
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(
 "\nConsultDic [-d dicfile] [-l diclistfile] [-a alphabetfile] textTokenfile"\
@@ -65,8 +63,6 @@ u_printf(
 "\n divide a word to rac+ suf+ form"\
 "\n output file : seqMorphs.txt"\
 );
-if(flag) exit(1);
-exit(0);
 }
 
 //
@@ -418,7 +414,10 @@ int main_ConsultDic(int argc,char *argv[]) {
  	int debugFlag =0;
  	fileListCounter = 0;
  	Alphabet *saveAlphabet =0;
-	if(argc == 1) usage(0);
+	if(argc == 1) {
+	   usage();
+	   return 9;
+	}
 	
     while(argIdx < argc -1 ){
 		if(argv[argIdx][0] != '-'){
@@ -435,7 +434,10 @@ int main_ConsultDic(int argc,char *argv[]) {
 //			break;
         case 'a':
              ++argIdx; saveAlphabet =load_alphabet(argv[argIdx] );
-             if(!saveAlphabet) usage(0);
+             if(!saveAlphabet) {
+                usage();
+                return 0;
+             }
              break; 
 		case 'l':
 			++argIdx;
@@ -444,12 +446,19 @@ int main_ConsultDic(int argc,char *argv[]) {
 		case 'd':
 			debugFlag = 1; break;
 		default:
-			usage(1);
+			usage();
+			return 1;
 		}
 		argIdx++;
 	}
-	if(argc -1  != argIdx) usage(1);
-	if(!fileListCounter) usage(1);
+	if(argc -1  != argIdx) {
+	   usage();
+	   return 1;
+	}
+	if(!fileListCounter) {
+	   usage();
+	   return 1;
+	}
 	consultationLesTokens(argv[argIdx],saveAlphabet);
 	if(saveAlphabet) free_alphabet(saveAlphabet);
 	return 0;

@@ -31,7 +31,7 @@ using namespace std;
 
 
 
-static void usage(int flag)
+static void usage()
 {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage:\n");
@@ -39,8 +39,6 @@ u_printf(
 "ExtractChar [-o outFile] [-c SS=0xxxx]* file.fs2 inputfile\n"\
 " -o outFile : if this option not exist, save paths at \"file\"lst.txt\n"\
 " -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \n");
-if(flag) exit(1);
-exit(0);
 }
 
 unsigned short retvalue[3];
@@ -58,7 +56,10 @@ int main_ExtractChar(int argc, char *argv[]) {
 	class state_machine extracter;
 	class jamoCodage encode;
 	unichar tempBuff[1024];
-	if(argc == 1) usage(0);
+	if(argc == 1) {
+	   usage();
+	   return 0;
+	}
 	retvalue[0] = 0x00d0;
 	retvalue[1] = 0x00a0;
 	retvalue[2] = 0;
@@ -73,12 +74,16 @@ int main_ExtractChar(int argc, char *argv[]) {
 		    u_strcpy(tempBuff,argv[iargIndex]);
 			if(!changeStrToVal((unsigned short*)tempBuff)) break;
 		default:
-			usage(1);
+			usage();
+			return 1;
 		}
 		iargIndex++;
 	}
 //printf("langue change %s\n",setlocale(LC_ALL,"Korean_Korea.949"));
-	if(iargIndex != (argc -2 )) usage(1);
+	if(iargIndex != (argc -2 )) {
+	   usage();
+	   return 1;
+	}
 	extracter.init_machine(argv[iargIndex],2);
 	iargIndex++;
 	ifilename = argv[iargIndex];

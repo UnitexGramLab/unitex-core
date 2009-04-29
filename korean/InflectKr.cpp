@@ -128,7 +128,7 @@ static int curEtiCnt;
 #define DERIVATION_MODE	1
 int grapheTraiteMode;
 
-static void usage(int flag) {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: InflectKr -d d_dir -v v_dir [-o ofile] <dictionnary>\n");
 u_printf("     <delas> : the unicode delas file to be inflected\n");
@@ -142,9 +142,9 @@ u_printf("    -x file   : load a file to change a character to sting\n");
 u_printf("    -r : the content is racines\n");
 u_printf("    -s : the content is suffixs\n");
 u_printf("\nInflects a korean DELAS.\n");
-if(flag) exit(1);
-exit(0);
 }
+
+
 static char *cfilename;
 static unichar *curLineTemp;
 static int lineCnt;
@@ -213,7 +213,10 @@ int main_InflectKr(int argc, char **argv) {
 	argIdx = 1;
 	char fNameSansExt[1024];
 	
-	if(argc == 1) usage(0);
+	if(argc == 1) {
+	   usage();
+	   return 0;
+	}
 	memset(reference,0,1024*4);
 //	printf("%s\n",	setlocale(LC_ALL,"Korean_Korea.949"));
     flagRacSuf = CONTENT_RACINE;    
@@ -261,15 +264,20 @@ int main_InflectKr(int argc, char **argv) {
 			   if(loadChangeFileToTable(argv[argIdx]))  break;
        
 			default:
-				usage(1);
+				usage();
+				return 1;
 			}
 			break;
 		default:
-			usage(1);
+			usage();
+			return 1;
 		}
 		argIdx++;
 	}
-	if(!dervRep || !flexRep) usage(1);
+	if(!dervRep || !flexRep) {
+	   usage();
+	   return 1;
+	}
 
 	cfilename = argv[argIdx];
 	if(!ofilename[0]){

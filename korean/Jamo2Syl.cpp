@@ -38,7 +38,7 @@ using namespace std;
 #define SZ8M	1024*1024*8
 #define S64K	1024*64
 
-static void usage(int flag)
+static void usage()
 {
 u_printf("%S",COPYRIGHT);
 u_printf("Jamo2Syl  [-m mapfile][-c Str=0xNNNN]* [-o outfile] transducter.fst2 input_file\n");
@@ -47,7 +47,6 @@ u_printf("-c : change pre-define value in transducter with '<' et '>' <Str> to h
 u_printf("-o : name of output file\n");
 u_printf("   : default outfile name \"input_fileSyl.ext\"\n");
 u_printf("transducter.fst2 : decoder \n");
-exit(flag);
 }
 
 
@@ -73,9 +72,10 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 	U_FILE *ofile;
 	debugPrFlag = 0;
 
-
-
-	if(argc == 1) usage(0);
+	if(argc == 1) {
+	   usage();
+	   return 0;
+	}
 	while(iargIndex < argc){
 		if(*argv[iargIndex] != '-') break;
 		switch(argv[iargIndex][1]){
@@ -85,23 +85,34 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 		    break;
 		case 'c': iargIndex++;
             trans.mbcsToUniStr((unsigned char *)argv[iargIndex],temp);
-		    if(changeStrToVal(temp)) usage(1);
+		    if(changeStrToVal(temp)) {
+		       usage();
+		       return 1;
+		    }
 			break;
 		case 'o':iargIndex++; 
 			ofilename = new char [strlen(argv[iargIndex])+1];
 			strcpy(ofilename,argv[iargIndex]);
 			break;
-		default:usage(1);
+		default: 
+		   usage();
+		   return 1;
 		}
 		iargIndex++;
 	}
-	if(iargIndex != (argc -2 )) usage(1);
+	if(iargIndex != (argc-2)) {
+	   usage();
+	   return 1;
+	}
 
 	trans.init_machine(argv[iargIndex],2);
 	iargIndex++;			
 	ifilename = new char [strlen(argv[iargIndex])+1];
 	strcpy(ifilename,argv[iargIndex]);
-	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ)))usage(1);
+	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ))) {
+	   usage();
+	   return 1;
+	}
 
 	if(!ofilename){
 		ofilename = new char [strlen(ifilename)+4];

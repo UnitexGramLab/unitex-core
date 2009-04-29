@@ -43,7 +43,8 @@ static int jamoFlag;
 #define SZ8M	1024*1024*8
 #define S64K	1024*64
 
-static void usage(int flag) {
+
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Syl2Jamo [-m mapfile] [-o outfile] [-j] [-c cTable] [-e [m/j]] input_file\n");
 u_printf("-m : convert table a sylabe to jamo\n");
@@ -55,8 +56,9 @@ u_printf("-c : convert characters with cTable which have pairs of change set\n")
 u_printf("   : format in the line \"[C/0xNNNN] [C/0xNNNN]\"  C: a character, NNNN : hex number\n");
 u_printf("-e : m : display from a syllalbe to jamos table\n");
 u_printf("-e : j : put jamoList to jamo.txt\n");
-exit(flag);
 }
+
+
 #ifdef DELETE
 void static setLocalKorean()
 {
@@ -87,7 +89,10 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 	U_FILE *ofile;
 
 	jamoFlag  = 0;
-	if(argc == 1) usage(0);
+	if(argc == 1) {
+	   usage();
+	   return 0;
+	}
 	while(iargIndex < argc){
 		if(*argv[iargIndex] != '-') break;
 		switch(argv[iargIndex][1]){
@@ -103,14 +108,20 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 		   remplaceFlag = 1; break; 
 		case 'c':	// convertmap file for ideogramms
 			iargIndex++;
-			if(iargIndex >= argc) usage(1);
+			if(iargIndex >= argc) {
+			   usage();
+			   return 1;
+			}
 			hangul.loadHJAMap(argv[iargIndex]);
 			break;
 		case 'j': 
 			jamoFlag = 1; break;
 		case 'e': 
             iargIndex++;
-			if(iargIndex >= argc) usage(1);
+			if(iargIndex >= argc) {
+			   usage();
+			   return 1;
+			}
 			switch(argv[iargIndex][0]){
 			case 'm':
 			{
@@ -127,19 +138,26 @@ int main_Syl2Jamo(int argc,char *argv[]) {
             }
 			case 'j':hangul.jamoMapOut(); return(0);
 			}
-		default:usage(1);
+		default:
+		   usage();
+		   return 1;
 		}
 		iargIndex++;
 	}
 
-	if(iargIndex != (argc -1 )) usage(1);
+	if(iargIndex != (argc-1)) {
+	   return 1;
+	}
 //	setLocalKorean();
 
 			
 	ifilename = new char [strlen(argv[iargIndex])+1];
 	strcpy(ifilename,argv[iargIndex]);
 
-	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ)))usage(1);
+	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ))) {
+	   usage();
+	   return 1;
+	}
 
 	if(!ofilename){
 		ofilename = new char [strlen(ifilename)+3];

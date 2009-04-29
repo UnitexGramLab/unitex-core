@@ -996,8 +996,6 @@ public:
 			case '+':
 			case '.':
 				*wp++ = '\0';
-//				if(!*sp) illegal_format(&m[i][1]);
-//				if(!u_strcmp(sp,(unsigned short *)L"i<E")) exit(1);
 				tmpEti[count_eti] =info.put(sp);
 #ifdef DEBUG
 u_fprintf(debugf,"<%S:%d>",sp,tmpEti[count_eti]);

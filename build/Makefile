@@ -451,7 +451,7 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 FIFO.o BitArray.o HashTable.o Transitions.o Matches.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
                 Tfst.o NewLineShifts.o ProgramInvoker.o\
-                Txt2Fst2Kr.o bitmap.o etc.o segtype.o
+                Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o Unicode.o Fst2.o AbstractFst2Load.o Alphabet.o \
@@ -483,7 +483,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Stack_int.o Stack_unichar.o String_hash.o StringParsing.o Symbol.o Symbol_op.o SymbolAlphabet.o \
                   Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o Text_tokens.o Tfst.o Tfst2Grf.o \
                   Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o TransductionVariables.o \
-                  Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o Txt2Fst2Kr.o bitmap.o etc.o segtype.o
+                  Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o Txt2Fst2Kr.o bitmap.o etc.o \
+                  segtype.o Korean.o
 
 ######################
 ## Korean programs  ##

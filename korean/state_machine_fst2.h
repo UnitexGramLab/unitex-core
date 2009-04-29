@@ -104,7 +104,9 @@ public:
 		unichar *wp;
 
 		a=load_fst2(mapfilename,1);
-		if (a==NULL) exit(1);
+		if (a==NULL) {
+		   fatal_error("Cannot load %s in 'init_machine'\n",mapfilename);
+		}
 		outSize = sz;
 		outCnt = 0;
 	

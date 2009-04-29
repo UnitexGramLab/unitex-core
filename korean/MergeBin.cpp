@@ -34,7 +34,7 @@ using namespace std;
 
 
 
-static void usage(int flag)
+static void usage()
 {
 u_printf("%S",COPYRIGHT);
 u_printf(
@@ -44,7 +44,6 @@ u_printf(
 "  -l lfilename : get files from list file\"\n"\
 "  -o ofilename : set the output file name,at input files from command line\"\n"\
 );
-exit(flag);
 }
 
 struct binFileList {
@@ -485,7 +484,10 @@ int main_MergeBin(int argc , char **argv) {
 	nameOfoutput = 0;
 	headFiles = tailFile = 0;
 	fileListCounter = 0;
-	if(argc == 1) usage(0);
+	if(argc == 1) {
+	   usage();
+	   return 0;
+	}
 #ifdef DEBUG_MER
 	dMode = 0;
 #endif
@@ -510,7 +512,8 @@ int main_MergeBin(int argc , char **argv) {
                   getListFile(argv[iargIndex]);
         		break;
         	default:
-        	  usage(1);
+        	  usage();
+        	  return 1;
             }
        	}
 		iargIndex++;

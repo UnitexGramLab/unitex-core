@@ -33,7 +33,7 @@
 #include "Tfst.h"
 #include "ProgramInvoker.h"
 #include "korean/Txt2Fst2Kr.h"
-
+#include "Korean.h"
 
 /**
  * This is an internal structure only used to give a set of parameters to some functions.
@@ -774,6 +774,13 @@ free_ProgramInvoker(invoker);
 if (ret_value!=0) {
    fatal_error("Txt2Fst2Kr did not quit normally. Cannot go on constructing .tfst file\n");
 }
+u_printf("ici\n");
+unichar tmp[128];
+syllabToLetters(0xC6B0,tmp);
+for (int i=0;tmp[i];i++) {
+   u_printf("%04X ",tmp[i]);
+}
+u_printf("\n");
 
 return;
 #if 0

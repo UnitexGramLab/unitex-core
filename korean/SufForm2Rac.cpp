@@ -36,9 +36,10 @@ static unichar saveOrg[2][1024];
 static unichar canonique[1024];
 static unichar flechi[1024];
 //static unichar suffixe[1024];
-static void usage(int flag)
+
+
+static void usage()
 {
-      //012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
     u_printf("%s",COPYRIGHT);
     u_printf("Usage:\r\n");
     u_printf(
@@ -47,7 +48,6 @@ static void usage(int flag)
     " -l : input file is liste of input files \r\n"\
     " -m convTable : change characters\r\n"\
     " \r\n");
-    exit(flag);
 }
 
 struct fileListe {
@@ -155,7 +155,10 @@ int main_SufForm2Rac(int argc, char **argv) {
     class fileLinkListe fileStock;
     int remFlag = 0;
     converMapExistFlag = 0;
-    if(argc == 1) usage(0);
+    if(argc == 1) {
+       usage();
+       return 0;
+    }
 
     converTableInit();
     while(iargIndex < argc-1){
@@ -174,7 +177,9 @@ int main_SufForm2Rac(int argc, char **argv) {
         case 'r': // replace
                 if(!ofilename) remFlag = 1;
                 break;
-    	default:usage(1);
+    	default:
+    	   usage();
+    	   return 1;
     	}
     	iargIndex++;
     }

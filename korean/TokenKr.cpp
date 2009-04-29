@@ -43,15 +43,15 @@ void makeSegments(char *ifn,char *ofn,int sz)
 }
 
 
-static void
-usage(int flag)
+static void usage()
 {
 printf("%s",COPYRIGHT);
 	printf("Usage: TokenKr [-o outfilename] filename[.txt]\n");
 	printf(" -d[0-5] : sizeof mem buff 2**n Mega\n");
 	printf(" -o: output filename select\n");
-	exit(flag);
 }
+
+
 #ifdef DELETE
 static void debugmain()
 {

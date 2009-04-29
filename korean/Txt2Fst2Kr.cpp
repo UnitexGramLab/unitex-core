@@ -43,7 +43,7 @@
 
 
 
-static void usage(int flag) {
+static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(
 "Txt2Fst2Kr [[-e #sentence -p[m/a]]|[-c]|[-m/a fst2file] file\n"\
@@ -57,7 +57,6 @@ u_printf(
 "a : add a automata\n"\
 "\n"
 );
-exit(flag);
 }
 
 
@@ -70,7 +69,10 @@ int main_Txt2Fst2Kr(int argc,char **argv) {
 	char *fstname = 0;
 
 //		printf("%s\n",setlocale(LC_ALL,"Korean_korea.949"));
-    if(argc == 1) usage(0);
+    if(argc == 1) {
+       usage();
+       return 0;
+    }
 	while(argIdx < argc -1 ){
 		if(argv[argIdx][0] != '-'){
 			argIdx++;
@@ -82,7 +84,8 @@ int main_Txt2Fst2Kr(int argc,char **argv) {
 			case 'm':txt.modeSet(MORPHEMEONLY);break;
 			case 'a':txt.modeSet(BOTHSET);break;
 			default:
-				usage(1);
+				usage();
+				return 1;
 			}
 			argIdx++;
 			lineNumber = atoi(argv[argIdx]);
@@ -107,11 +110,15 @@ int main_Txt2Fst2Kr(int argc,char **argv) {
 			fstname = argv[argIdx];
 			break;
 		default:
-			usage(1);
+			usage();
+			return 1;
 		}
 		argIdx++;
 	}
-	if(argc -1  != argIdx) usage(1);
+	if(argc -1  != argIdx) {
+	   usage();
+	   return 1;
+	}
 	// divide segments by morphemes
 	// from token file
 	unichar defaultSeparateurs[]={(unichar)' ',(unichar)'+',(unichar)'(',
@@ -125,15 +132,22 @@ int main_Txt2Fst2Kr(int argc,char **argv) {
 		txt.getUnePhraseFst3(argv[argIdx],lineNumber);
 		break;
 	case 3:
-		if(fstname) usage(1);
+		if(fstname) {
+		   usage();
+		   return 1;
+		}
 		txt.addition(fstname,argv[argIdx]);
 		break;
 	case 4:
-		if(fstname) usage(1);
+		if(fstname) {
+		   usage();
+		   return 1;
+		}
 		txt.modification(fstname,argv[argIdx]);
 		break;
 	default:
-		usage(1);
+		usage();
+		return 1;
 	}
 	return(0);
 }
