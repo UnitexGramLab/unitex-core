@@ -773,6 +773,7 @@ public:
 		strcat(ftemp,"phrase.cod");
 		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_WRITE)) == 0)
 			fopenErrMessage(ftemp);
+		phraseAutoMap->enc=UTF16_LE;
 		fwrite(&head,sizeof(struct localhead),1,phraseAutoMap);
 		return(phraseAutoMap);
 	}
@@ -1171,7 +1172,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
 		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_READ)) ==0 ) fopenErrMessage(ftemp);
-
+		phraseAutoMap->enc=UTF16_LE;
 		read_head();
 
 		fseek(phraseAutoMap,head.offset_morp_struct,SEEK_SET);
@@ -1247,12 +1248,14 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		return(map);
 	}
 	void 
-	loadMorphemesStruct(char *fname)
+	loadMorphemesStruct__(char *fname)
 	{
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
 		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_READ)) ==0 ) fopenErrMessage(ftemp);
-
+		/* This must be opened as a UTF16_LE file, but for some
+		 * mysterious reasons, the UTF16_LE mode must not be used */
+		phraseAutoMap->enc=UTF16_LE;
 		read_head();
 
 		fseek(phraseAutoMap,head.offset_morp_struct,SEEK_SET);
