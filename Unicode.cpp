@@ -224,19 +224,19 @@ return n;
  *
  * 'MODE' should be U_READ, U_WRITE, U_APPEND or U_MODIFY
  */
-U_FILE* u_fopen(Encoding encoding,const char* name,const char* MODE) {
+U_FILE* u_fopen(Encoding encoding,const char* name,OpenMode MODE) {
 if (name==NULL) {
 	fatal_error("NULL file name in u_fopen\n");
 }
 ABSTRACTFILE* f;
-if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
+if (MODE==U_APPEND || MODE==U_MODIFY) {
    /* If we are in APPEND or MODIFY mode, we check first if the file already exists */
-   f=real_fopen(name,U_READ);
+   f=real_fopen(name,"rb");
    if (f!=NULL) {
       /* If the file exists, we close it and reopen it in APPEND mode */
       af_fclose(f);
-      f=real_fopen(name,MODE);
-      if (!strcmp(MODE,U_MODIFY)) {
+      f=real_fopen(name,(MODE==U_APPEND)?"ab":"r+b");
+      if (MODE==U_MODIFY) {
          /* If we are in MODIFY mode, we must set the cursor at the beginning of the
           * file, i.e. after the byte order mark, if any. */
          if (encoding==UTF16_LE || encoding==BIG_ENDIAN_UTF16) {
@@ -246,7 +246,7 @@ if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
       return new_U_FILE(f,encoding);
    }
    /* If the file does not exists, we are in WRITE mode */
-   f=real_fopen(name,U_WRITE);
+   f=real_fopen(name,"wb");
    if (f==NULL) return NULL;
    /* As the file is new, we must insert the byte order char if we are in
     * UTF16. */
@@ -257,12 +257,13 @@ if (!strcmp(MODE,U_APPEND) || !strcmp(MODE,U_MODIFY)) {
    }
    return new_U_FILE(f,encoding);
 }
-f=real_fopen(name,MODE);
+/* Here we have U_READ or U_WRITE */
+f=real_fopen(name,(MODE==U_READ)?"rb":"wb");
 int c;
 if (f==NULL) return NULL;
 /* If the file is opened in READ mode and if we are in UTF16,
  * we check the presence of the byte order mark. */
-if (!strcmp(MODE,U_READ)) {
+if (MODE==U_READ) {
    if (encoding==UTF16_LE) {
       c=u_fgetc_UTF16LE(f);
       if (c!=U_BYTE_ORDER_MARK) {
@@ -284,7 +285,7 @@ if (!strcmp(MODE,U_READ)) {
    return new_U_FILE(f,encoding);
 }
 /* If the file is opened in WRITE mode, we may insert the 0xFEFF unicode char */
-if (!strcmp(MODE,U_WRITE)) {
+if (MODE==U_WRITE) {
    if (encoding==UTF16_LE) u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
    else if (encoding==BIG_ENDIAN_UTF16) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
 }
@@ -320,7 +321,7 @@ return 1;
  * This function tests if the given file name correspond to a UTF16 file.
  */
 int u_is_UTF16(const char* name) {
-ABSTRACTFILE* f=real_fopen(name,U_READ);
+ABSTRACTFILE* f=real_fopen(name,"rb");
 if (f==NULL) {
    /* If the file does not exist */
    return FILE_DOES_NOT_EXIST;

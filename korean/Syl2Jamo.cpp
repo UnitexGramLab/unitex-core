@@ -75,8 +75,7 @@ class jamoCodage hangul;
 
 
 
-int main(int argc,char *argv[]) {
-setBufferMode();
+int main_Syl2Jamo(int argc,char *argv[]) {
 
 	char *ifilename = 0;
 	char *ofilename =0;
@@ -84,8 +83,8 @@ setBufferMode();
 	int iargIndex = 1;
 	int remplaceFlag = 0;
 
-	FILE *ifile;
-	FILE *ofile;
+	U_FILE *ifile;
+	U_FILE *ofile;
 
 	jamoFlag  = 0;
 	if(argc == 1) usage(0);
@@ -116,13 +115,13 @@ setBufferMode();
 			case 'm':
 			{
 //               setLocalKorean();
-                ofile = u_fopen("jamoTable.txt",U_WRITE);
+                ofile = u_fopen(UTF16_LE,"jamoTable.txt",U_WRITE);
                 if(!ofile) fopenErrMessage("jamoTable.txt");
                 int length = hangul.mbcs949clen((unsigned char *)defaultSylToJamoMap);
                 unichar *outbuf = new unichar[length+1];
                 hangul.mbcsToUniStr((unsigned char *)defaultSylToJamoMap,outbuf);
                 u_fwrite_raw(outbuf,length,ofile);
-				fclose(ofile);
+				u_fclose(ofile);
 //wprintf(L"%s",defaultSylToJamoMap);
                 return(0);
             }
@@ -140,7 +139,7 @@ setBufferMode();
 	ifilename = new char [strlen(argv[iargIndex])+1];
 	strcpy(ifilename,argv[iargIndex]);
 
-	if(!(ifile = u_fopen(ifilename,U_READ)))usage(1);
+	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ)))usage(1);
 
 	if(!ofilename){
 		ofilename = new char [strlen(ifilename)+3];
@@ -150,7 +149,7 @@ setBufferMode();
 		strcat(ofilename,extension);
 	}
 	 
-	if(!(ofile = u_fopen(ofilename,U_WRITE))) { 
+	if(!(ofile = u_fopen(UTF16_LE,ofilename,U_WRITE))) { 
 		fatal_error("Can't open %s file for output\n",ofilename);
 	}
 
@@ -174,8 +173,8 @@ setBufferMode();
 		  u_fwrite_raw(obuff,
                 hangul.convertSylToJamo(sbuff,obuff,rsz,SZ8M),ofile);
 	} while(rsz == SZ1M);
-	fclose(ifile);
-	fclose(ofile);
+	u_fclose(ifile);
+	u_fclose(ofile);
 	delete buff;
 	delete obuff;
 	if(remplaceFlag){

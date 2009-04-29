@@ -133,7 +133,7 @@ public:
 		s = EC_code; while(*s) *d++ = *s++;
 		*d++ = '\0';
 	};
-	void fputs(FILE *f)
+	void fputs(U_FILE *f)
 	{
 	    u_fprintf(f,";%S,",EC_flechi);
 	    u_fprintf(f,"%S,",EC_orgin);
@@ -170,7 +170,7 @@ public:
 	};
 	~dicElements(){};
 
-	void prEle(FILE *f){
+	void prEle(U_FILE *f){
 		class dicLines *wPtr = hPtr;
 		while(wPtr){
 			wPtr->fputs(f);

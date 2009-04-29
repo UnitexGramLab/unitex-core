@@ -152,7 +152,7 @@ class arbre_string0 {
 	int modeExplore;
 	int noeud_cnt;
 	int trans_cnt;
-	FILE *tabOfile;
+	U_FILE *tabOfile;
 public:
 	unichar **tab;
 	arbre_string0(){
@@ -287,10 +287,10 @@ public:
 	// after use this function , on doit call release_value()
 	unichar **make_strPtr_table()
 	{
-		FILE *sf = tabOfile;
+		U_FILE *sf = tabOfile;
 		tabOfile = 0;
 		tab = (unichar **)malloc(N*sizeof(unichar *));
-		if(!tab) fatal_error("memory alloc fail\n");
+		if(!tab) fatal_alloc_error("make_strPtr_table");
 		explore_to_get(racine,1);
 		tabOfile = sf;
 		return(tab);
@@ -302,7 +302,7 @@ public:
 		free(tab);
 		tab = 0;
 	}
-	void out_to_file(FILE *f)
+	void out_to_file(U_FILE *f)
 	{
 		unichar **stab = tab;
 		tab = 0;
@@ -312,7 +312,7 @@ public:
 		tabOfile = 0;
 		tab = stab;
 	}
-	void out_to_file_data(FILE *f)
+	void out_to_file_data(U_FILE *f)
 	{
 		unichar **stab = tab;
 		tab = 0;
@@ -353,7 +353,7 @@ public:
 	//
 	unsigned int *sortedmap;
 	int accessOrderCnt;
-	void out_to_file_data1(FILE *f,unsigned int *sorted)
+	void out_to_file_data1(U_FILE *f,unsigned int *sorted)
 	{
 		accessOrderCnt = 0;
 		tabOfile = f;
@@ -626,8 +626,8 @@ public:
 	//   get all word in alphabetic order
 	//
 	int flag_value_out;
-	FILE *fileOut;
-	void save_tout_leaf(FILE *f,int flag)
+	U_FILE *fileOut;
+	void save_tout_leaf(U_FILE *f,int flag)
 	{
 	    flag_value_out = flag;
 	    if(!f) return;
@@ -660,8 +660,13 @@ public:
 	unichar **make_strPtr_table(int **v)
 	{
 		tab = (unichar **)malloc(N*sizeof(unichar *));
+		if (tab==NULL) {
+		   fatal_alloc_error("make_strPtr_table");
+		}
 		value_tab = (int *)malloc(N*sizeof(int *));
-      #warning tests sur malloc
+		if (value_tab==NULL) {
+		   fatal_alloc_error("make_strPtr_table");
+		}
 		(*v) = value_tab;
 		explore_to_get(racine,1);
 		return(tab);
@@ -945,11 +950,11 @@ public:
 			t = &((*t)->suivant);
 		}
 	}
-	void save_tout_leaf(FILE *f)
+	void save_tout_leaf(U_FILE *f)
 	{
 		explore_to_save(racine,0,f);
 	}
-	void explore_to_save(struct arbre_hash02* noeud,int pos,FILE *f)
+	void explore_to_save(struct arbre_hash02* noeud,int pos,U_FILE *f)
 	{
 		if(noeud->final != -1){
 			cbuff[pos] = 0;
@@ -967,8 +972,14 @@ public:
 	unichar **make_strPtr_table(int **v)
 	{
 		tab = (unichar **)malloc(N*sizeof(unichar *));
+		if (tab==NULL) {
+		   fatal_alloc_error("make_strPtr_table");
+		}
 		value_tab = (int *)malloc(N*sizeof(int *));
-      #warning tests sur malloc
+		if (value_tab==NULL) {
+		    fatal_alloc_error("make_strPtr_table");
+		}
+		      
 		(*v) = value_tab;
 		explore_to_get(racine,1);
 		return(tab);
@@ -1205,7 +1216,7 @@ public:
 	//
 	//
 	//
-	int tableOutToFile(FILE *f)
+	int tableOutToFile(U_FILE *f)
 	{
 		struct pageElement *wp = head;
 		unsigned int sum = 0;

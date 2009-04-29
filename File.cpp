@@ -225,11 +225,11 @@ strcpy(&(result[length_without_separator+1]),name);
  * Modified by S�bastien Paumier
  */
 void copy_file(char* dest,char* src) {
-U_FILE* input=u_fopen(ASCII,src,"rb");
+U_FILE* input=u_fopen(ASCII,src,U_READ);
 if (input==NULL) {
    fatal_error("Unable to open '%s'\n",src);
 }
-U_FILE* output=u_fopen(ASCII,dest,"wb");
+U_FILE* output=u_fopen(ASCII,dest,U_WRITE);
 if (output==NULL) {
    fatal_error("Unable to open '%s'\n",dest);
 }
@@ -247,7 +247,7 @@ u_fclose(output);
  * Returns 1 if the given file exists and can be read; 0 otherwise.
  */
 int fexists(char* name) {
-U_FILE* f=u_fopen(ASCII,name,"r");
+U_FILE* f=u_fopen(ASCII,name,U_READ);
 if (f==NULL) return 0;
 u_fclose(f);
 return 1;
@@ -268,7 +268,7 @@ return info.st_mtime;
  * Returns the size in bytes of the given file, or -1 if not found.
  */
 long get_file_size(char* name) {
-U_FILE* f=u_fopen(ASCII,name,"rb");
+U_FILE* f=u_fopen(ASCII,name,U_READ);
 if (f==NULL) return -1;
 fseek(f,0,SEEK_END);
 long size=ftell(f);

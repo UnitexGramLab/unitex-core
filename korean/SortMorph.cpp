@@ -46,7 +46,7 @@ u_printf(
 "        : Output file DLC, DLF, ERR\r\n");\
 exit(flag);
 }
-static     FILE *fout;
+static     U_FILE *fout;
 static char ftemp[4096];
 static char pathNameSave[4096];
 static void getPrOutWithValue(void * arg0,void *arg1,void *arg2)
@@ -113,13 +113,13 @@ static void getPrOutMorpheme(void * arg0,void *arg1,void *arg2)
 static void
 sortMorphemTable(char *f)
 {
-	FILE *fptr;
+	U_FILE *fptr;
 	int count = 0;
 	int tcount;
 	unichar *wp,*mem;
 class arbre_string00 parFlechi, parCano;
 	 
-	if((fptr = fopen(f,"rb")) ==0 )	fopenErrMessage(f);
+	if((fptr = u_fopen(BINARY,f,U_READ)) ==0 )	fopenErrMessage(f);
 	fseek(fptr,0,SEEK_END);	
 	int sizeFile =ftell(fptr);
 	sizeFile /= 2;
@@ -128,7 +128,7 @@ class arbre_string00 parFlechi, parCano;
 	fseek(fptr,2,SEEK_SET);
 	if(!u_fread_raw(mem,sizeFile-1,fptr)) fatal_error("Read morpheme table fail\n");
 	mem[sizeFile-1] = 0;
-    fclose(fptr);
+   u_fclose(fptr);
     
 	wp = mem;
 	for(;(*wp >= L'0') && (*wp <= '9') ;wp++) count = count * 10 + *wp - L'0';
@@ -202,22 +202,20 @@ class arbre_string00 parFlechi, parCano;
 
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"morph_by_flei.txt");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     parFlechi.explore_tout_leaf((release_f)getPrOutMorpheme);
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"morph_by_cano.txt");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     parCano.explore_tout_leaf((release_f)getPrOutMorpheme);
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"morph_by_freq.txt");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     
     quicksort_by_frequence(0,index-1);
@@ -227,8 +225,7 @@ class arbre_string00 parFlechi, parCano;
         u_fprintf(fout,"%S,%S.%S\t%d\n",table[i]->fl, table[i]->ca,
                table[i]->inf, freqtable[i]);
      }
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     delete table;
     delete freqtable;
     delete mem;
@@ -236,8 +233,7 @@ class arbre_string00 parFlechi, parCano;
 
 
 
-int main(int argc, char *argv[]) {
-setBufferMode();
+int main_SortMorph(int argc, char *argv[]) {
 
     if(argc != 4) usage(0);
     arbre_string00 tString,mString,sString,eString;
@@ -271,53 +267,47 @@ setBufferMode();
     outSize = tString.size();
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"mdlf.n");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     strFileHeadLine(fout,outSize);
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"mdlf");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     tString.explore_tout_leaf((release_f)getPrOutWithValue);
     
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
 
     outSize = 0;
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlf.n");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     
     strFileHeadLine(fout,outSize);
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlf");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     
     outSize = eString.size();
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"err.n");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     strFileHeadLine(fout,outSize);
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"err");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     eString.explore_tout_leaf((release_f)getPrOut);
 
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     
     
     /* reserve these fields for sequences of morphems about multi segments
@@ -325,35 +315,31 @@ setBufferMode();
     outSize = sString.size();
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"mdlc.n");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     strFileHeadLine(fout,outSize);
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"mdlc");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     sString.explore_tout_leaf((release_f)getPrOut);
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     
     outSize = 0;
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlc.n");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);   
     strFileHeadLine(fout,outSize);
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlc");
-    fout = u_fopen(ftemp,U_WRITE);
+    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     
-    fflush(fout);
-    fclose(fout);
+    u_fclose(fout);
     
     if(tMem) delete tMem;
 	if(mMem) delete mMem;

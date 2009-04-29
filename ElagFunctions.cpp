@@ -245,7 +245,7 @@ void explode_tfst(char* input_tfst,char* output,language_t* language) {
  * Loads all the ELAG grammars contained in the given .elg file.
  */
 vector_ptr* load_elag_grammars(char* filename,language_t* language) {
-U_FILE* f=u_fopen(ASCII,filename,"r");
+U_FILE* f=u_fopen(ASCII,filename,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",filename);
    return NULL;

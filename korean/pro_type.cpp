@@ -41,7 +41,7 @@ class pro_associ proType;
 	unichar LEintRead2(unsigned char *a){
 		return((unichar)*a++ * 256 + *a);
 	};
-	int LEoutbytes2(unichar v,FILE *f)
+	int LEoutbytes2(unichar v,U_FILE *f)
 	{
 		unsigned char outbin[2];
 		outbin[0]= (unsigned char)((0x0000ff00 & v) >>  8);
@@ -50,7 +50,7 @@ class pro_associ proType;
 			fatal_error("bin write error\n");
 		return(2);
 	}
-	int LEoutbytes3(unsigned int v,FILE *f)
+	int LEoutbytes3(unsigned int v,U_FILE *f)
 	{
 		unsigned char outbin[4];
 		outbin[0] = (unsigned char)((0x00ff0000 & v) >> 16);
@@ -60,7 +60,7 @@ class pro_associ proType;
 			fatal_error("bin write error\n");
 		return(3);
 	}
-	int LEoutbytes4(unsigned int v,FILE *f)
+	int LEoutbytes4(unsigned int v,U_FILE *f)
 	{
 		unsigned char outbin[4];
 		outbin[0] = (unsigned char)((0xff000000 & v) >> 24);
@@ -71,25 +71,25 @@ class pro_associ proType;
 			fatal_error("bin write error\n");
 		return(4);
 	}
-	unichar LEinbytes2(FILE *f)
+	unichar LEinbytes2(U_FILE *f)
 	{
-		return( ((fgetc(f) << 8) & 0xff00 ) | (fgetc(f) & 0xff) );
+		return( ((u_fgetc(f) << 8) & 0xff00 ) | (u_fgetc(f) & 0xff) );
 	}
-	unsigned int LEinbytes3(FILE *f)
+	unsigned int LEinbytes3(U_FILE *f)
 	{
 		return( (unsigned int)(
-			( (fgetc(f) << 16) & 0xff0000 ) |
-			( (fgetc(f) <<  8) & 0x00ff00 ) |
-			( fgetc(f)         & 0x0000ff)    )
+			( (u_fgetc(f) << 16) & 0xff0000 ) |
+			( (u_fgetc(f) <<  8) & 0x00ff00 ) |
+			( u_fgetc(f)         & 0x0000ff)    )
 			);
 	}
-	unsigned int LEinbytes4(FILE *f)
+	unsigned int LEinbytes4(U_FILE *f)
 	{
 		return((unsigned int)(
-			( (fgetc(f) << 24) & 0xff000000 ) |
-			( (fgetc(f) << 16) & 0x00ff0000 ) |
-			( (fgetc(f) <<  8) & 0x0000ff00 ) |
-			( fgetc(f)         & 0x000000ff)    )
+			( (u_fgetc(f) << 24) & 0xff000000 ) |
+			( (u_fgetc(f) << 16) & 0x00ff0000 ) |
+			( (u_fgetc(f) <<  8) & 0x0000ff00 ) |
+			( u_fgetc(f)         & 0x000000ff)    )
 			);
 	}
 	unsigned int GEintRead4(unsigned char *a){
@@ -103,38 +103,38 @@ class pro_associ proType;
 	{
 		return(*(unichar *)a);
 	};
-	int GEoutbytes2(unichar v,FILE *f)
+	int GEoutbytes2(unichar v,U_FILE *f)
 	{
 		if(!fwrite(&v,2,1,f)) 
 			fatal_error("bin write error\n");
 		return(2);
 	}
-	int GEoutbytes3(unsigned int v,FILE *f)
+	int GEoutbytes3(unsigned int v,U_FILE *f)
 	{
 		unsigned int k = (v << 8 ) & 0xffffff00;
 		if(!fwrite(&k,3,1,f)) 
 			fatal_error("bin write error\n");
 		return(3);
 	}
-	int GEoutbytes4(unsigned int v,FILE *f)
+	int GEoutbytes4(unsigned int v,U_FILE *f)
 	{
 		if(!fwrite(&v,4,1,f)) 
 			fatal_error("bin write error\n");
 		return(4);
 	}
-	unichar GEinbytes2(FILE *f)
+	unichar GEinbytes2(U_FILE *f)
 	{
 		unichar w;
 		fread(&w,2,1,f);
 		return(w);
 	}
-	unsigned int GEinbytes3(FILE *f)
+	unsigned int GEinbytes3(U_FILE *f)
 	{
 		unsigned int w;
 		fread(&w,3,1,f);
 		return(  (w >> 8) & 0xffffff );
 	}
-	unsigned int GEinbytes4(FILE *f)
+	unsigned int GEinbytes4(U_FILE *f)
 	{
 		unsigned int longV;
 		fread(&longV,4,1,f);

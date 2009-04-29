@@ -51,15 +51,15 @@ char repertoire[MAX_CHARS_IN_STACK];
 #define CONTENT_RACINE  0x01
 #define CONTENT_SUFFIX  0x02
 #define CONTENT_RACSUF  0x03
-static FILE *f_out;
+static U_FILE *f_out;
 int line=0;
 //
 // loads an fst2 and returns its representation in an Automate_fst2 structure
 // same as load_fst2 but no message for the not exist file
 // hhuh
 static Fst2* load_fst22(char* file,int noms) {
-FILE *f;
-f=u_fopen(file,U_READ);
+U_FILE *f;
+f=u_fopen(UTF16_LE,file,U_READ);
 if (f==NULL) {
   return NULL;
 }
@@ -128,7 +128,7 @@ static int curEtiCnt;
 #define DERIVATION_MODE	1
 int grapheTraiteMode;
 
-void usage(int flag) {
+static void usage(int flag) {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: InflectKr -d d_dir -v v_dir [-o ofile] <dictionnary>\n");
 u_printf("     <delas> : the unicode delas file to be inflected\n");
@@ -193,8 +193,8 @@ void prSuffixeString0(void *a,void *b,void *c)
 	u_fprintf(f_out," %S\n",&obuf[1]);
 }
 
-static void get_flexion_form(FILE *ifile,FILE *ofile);
-static void trait_renouvelle_lign(FILE *ofile,unichar *readLine);
+static void get_flexion_form(U_FILE *ifile,U_FILE *ofile);
+static void trait_renouvelle_lign(U_FILE *ofile,unichar *readLine);
 static int get_forms_variant(unichar *l,int *s,class dicElements *e);
 static void outFileRac(char *ofileName);
 static class dicLines *orgWord;
@@ -204,10 +204,9 @@ static int flagRacSuf;
 
 
 
-int main(int argc, char **argv) {
-setBufferMode();
+int main_InflectKr(int argc, char **argv) {
 
-	FILE *f;
+	U_FILE *f;
 	unichar *tt;
 	int argIdx;
 	skipMark= -1;
@@ -293,12 +292,12 @@ setBufferMode();
             sprintf(ofilename1,"%s.ric",fNameSansExt);
        }
 	}
-	f=u_fopen(argv[argIdx],U_READ);
+	f=u_fopen(UTF16_LE,argv[argIdx],U_READ);
 	if (f==NULL) {
 		error("Cannot open %s\n",argv[argIdx]);
 		return 1;
 	}
- 	f_out=u_fopen(ofilename,U_WRITE);
+ 	f_out=u_fopen(UTF16_LE,ofilename,U_WRITE);
 	if (f_out==NULL) {
 		error("Cannot open %s\n",ofilename);
 		return 1;
@@ -323,7 +322,7 @@ setBufferMode();
 
 }
 static void
-get_flexion_form(FILE *f,FILE *fout)
+get_flexion_form(U_FILE *f,U_FILE *fout)
 {
 //
 // reads the DELAS and produces the DELAF
@@ -425,7 +424,7 @@ get_flexion_form(FILE *f,FILE *fout)
 
 }
 static void
-trait_renouvelle_lign(FILE *f,unichar *readLine)
+trait_renouvelle_lign(U_FILE *f,unichar *readLine)
 {
 	int scanIdx = 0;
 	int saveIdx = 0;
@@ -920,7 +919,7 @@ void explore_state(int etat_courant)
 }
 static void outFileRac(char *ofileName)
 {
-    FILE *of = u_fopen(ofileName,U_WRITE);
+    U_FILE *of = u_fopen(UTF16_LE,ofileName,U_WRITE);
     char nameOfSuf[1024],temp[1024];
     remove_path(ofileName,temp);
     remove_extension(temp,nameOfSuf);

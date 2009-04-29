@@ -178,7 +178,7 @@ if (option->result_mode==TEXT_ || option->result_mode==INDEX_
 }
 else {
    /* Otherwise, we open it as a UTF8 HTML file */
-   out=u_fopen(UTF8,option->output,"w");
+   out=u_fopen(UTF8,option->output,U_WRITE);
 }
 if (out==NULL) {
 	error("Cannot write %s\n",option->output);

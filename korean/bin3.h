@@ -428,8 +428,8 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 	int offsetStrSave;
 	void toBinTr(char *fname,int racOrSuf)
 	{
-		FILE *bfile;
-		FILE *displayfile;
+		U_FILE *bfile;
+		U_FILE *displayfile;
 		char inf[1024];
 		int i,j;
 		class binHead0 tmpH;
@@ -442,7 +442,7 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 
 		strcpy(inf,fname);
 		strcat(inf,".bin");
-		bfile=fopen(inf,U_WRITE);
+		bfile=u_fopen(BINARY,inf,U_WRITE);
 		if (!bfile) {
 			fatal_error("Cannot create the file %s\n",inf);
 		}
@@ -450,7 +450,7 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 		
 		strcpy(inf,fname);
 		strcat(inf,".aut");
-		displayfile=u_fopen(inf,U_WRITE);
+		displayfile=u_fopen(UTF16_LE,inf,U_WRITE);
 		if (!displayfile) {
 			fatal_error("Cannot create the file %s\n",inf);
 		}
@@ -479,13 +479,12 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 //		for(i = 0; i < tmpH.cnt_suf;i++){
 //			outbytes2((unichar)offsetStrSave,bfile);	// offset of name of racine
 //		}
-		fflush(displayfile);
-		fclose(displayfile);
+		u_fclose(displayfile);
 
 		
 		strcpy(inf,fname);
 		strcat(inf,".suf");
-		displayfile=u_fopen(inf,U_WRITE);
+		displayfile=u_fopen(UTF16_LE,inf,U_WRITE);
 		if (!displayfile) {
 			fatal_error("Cannot create the file %s\n",inf);
 		}
@@ -502,13 +501,12 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 		sufName.release_value();
 		tmpH.size_str = offsetStrSave;
 
-		fflush(displayfile);
-		fclose(displayfile);
+		u_fclose(displayfile);
 
 
 		strcpy(inf,fname);
 		strcat(inf,".inf");
-		displayfile=u_fopen(inf,U_WRITE);
+		displayfile=u_fopen(UTF16_LE,inf,U_WRITE);
 		if (!displayfile) {
 			fatal_error("Cannot create the file %s\n",inf);
 		}
@@ -557,7 +555,7 @@ printf("%sT\n",getUtoChar(prTreeBuff));
 		tmpH.size_bin = taille_de_sauve;
 		tmpH.size_ref = racName.size() * 3;
 		tmpH.writeAtFile(bfile);	// reserve space
-		fclose(bfile);
+		u_fclose(bfile);
 	}
 
 };
@@ -619,9 +617,9 @@ public:
     }
 	void loadBin(char *fname)
 	{
-		FILE *f;
+		U_FILE *f;
 
-		if(!(f = fopen(fname,"rb")))
+		if(!(f = u_fopen(BINARY,fname,U_READ)))
 			fopenErrMessage(fname);
 		name = (char *)malloc(strlen(fname)+1);
 		strcpy(name,fname);
@@ -715,9 +713,9 @@ public:
 		if((unsigned int)&INF[refIdx] != (unsigned int)BIN)
 			fatal_error("illegal size INF %d (expected %d) %d( %d) %d\n",
                         (unsigned int)&INF[refIdx],(unsigned int)BIN,refIdx,i,head.cnt_inf);
-		fclose(f);
+		u_fclose(f);
 	}
-	void exploreTree(FILE *f,unichar *pBuff)
+	void exploreTree(U_FILE *f,unichar *pBuff)
 	{
 		int offset = 0;
 		if(isRacine()){
@@ -729,7 +727,7 @@ public:
 		}
 	}
 	unichar ttemp_buff[1024];
-	void explore_state(int pos,FILE *f,unichar *buff,int soffset)
+	void explore_state(int pos,U_FILE *f,unichar *buff,int soffset)
 	{
 		int tcnt;
 		unichar c;

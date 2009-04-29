@@ -510,9 +510,9 @@ if(debugPrFlag) {
 	}
 	int convFile(char *ifname,char *ofname)
 	{
-		FILE *fi,*fo;
-		fi = u_fopen(ifname,U_READ);
-		fo = u_fopen(ofname,U_WRITE);
+		U_FILE *fi,*fo;
+		fi = u_fopen(UTF16_LE,ifname,U_READ);
+		fo = u_fopen(UTF16_LE,ofname,U_WRITE);
 		if(!fi || !fo) return(0);
 	//
 	//	scan for get the order of character
@@ -534,8 +534,8 @@ if(debugPrFlag) {
 			u_printf("\rTotal  %d byte read",totalRead*2);
 		} while(rsz == SZ64K);
 		u_printf("\n");
-		fclose(fi);
-		fclose(fo);
+		u_fclose(fi);
+		u_fclose(fo);
 		return(totalRead);
 	}
 };

@@ -35,7 +35,7 @@ using namespace std;
 
 
 
-static FILE *findFile;
+static U_FILE *findFile;
 static unichar closeSymbol=(unichar)')';
 static unichar openSymbol=(unichar)'(';
 static unichar newLineSymbol=(unichar)'\n';
@@ -317,12 +317,12 @@ static void getListFile(char *filename)
 	char pathName[1024];
 	int pathLen;
 	struct binFileList *tmp;
-	FILE *lstF;
-    if(!(lstF = fopen(filename,"rb")))
+	U_FILE *lstF;
+    if(!(lstF = u_fopen(BINARY,filename,U_READ)))
     	fopenErrMessage(filename);	
     get_path(filename,pathName);
     pathLen = strlen(pathName);
-    while(fgets(buff,1024,lstF)){
+    while(fgets(buff,1024,lstF->f->fin)){
     	wp = buff;
 
     	while(*wp){
@@ -349,7 +349,7 @@ static void getListFile(char *filename)
             tailFile = headFiles= tmp;	}
     	fileListCounter++;
     }
-    fclose(lstF);
+    u_fclose(lstF);
 }
 
 
@@ -376,7 +376,7 @@ void consultationLesTokens(char *textfile,Alphabet *PtrAlphabet)
 
 	get_path(textfile,tmpBuff0);
 	strcat(tmpBuff0,"seqMorphs.txt");
-	findFile = u_fopen(tmpBuff0,U_WRITE);
+	findFile = u_fopen(UTF16_LE,tmpBuff0,U_WRITE);
 	if(!findFile) fatal_error("Save file \"seqMorphs.txt\" open fail\n");
 
 	int wordCnt = 0;
@@ -406,13 +406,11 @@ void consultationLesTokens(char *textfile,Alphabet *PtrAlphabet)
 //		fwrite(&newLineSymbol,2,1,findFile);
         u_fputc(newLineSymbol,findFile);
 	}
-
-	fclose(findFile);
+	u_fclose(findFile);
 }
 
 
-int main(int argc,char *argv[]) {
-setBufferMode();
+int main_ConsultDic(int argc,char *argv[]) {
 
 	int argIdx= 1;
 //	char *decodageMap = 0;

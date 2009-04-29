@@ -112,7 +112,7 @@ char *defaultSylToJamoMap = ""\
 int
 jamoCodage::loadJamoMap(char *mfName)
 {
-	FILE *f=0;
+	U_FILE *f=0;
 	unsigned short *wp; // token buff
 	int i;
 	int svFlag;
@@ -131,7 +131,7 @@ jamoCodage::loadJamoMap(char *mfName)
 
 	if(!mfName){ rp = defaultSylToJamoMap;roffset = 0;}
 	else {
-		f = u_fopen(mfName,U_READ);
+		f = u_fopen(UTF16_LE,mfName,U_READ);
 		if(!f) fatal_error("Cannot open %s\n",mfName);
 	}
 	jamoSize = 0;
@@ -230,7 +230,7 @@ jamoCodage::loadJamoMap(char *mfName)
 		if(orderTableJamo[i][1])
 			CjamoUjamoTable[orderTableJamo[i][1] - 0x3130] = &orderTableJamo[i][2];
 
-	if(f) fclose(f);
+	if(f) u_fclose(f);
 	return(1);
 }
 
@@ -313,9 +313,9 @@ void jamoCodage::jamoMapOut()
 {
 	unichar markReturn = '\n';
 	
-	FILE *f;
+	U_FILE *f;
 	int i,j;
-	if(!(f=u_fopen("jamoCTable.txt",U_WRITE))) fopenErrMessage("jamoCTable.txt");
+	if(!(f=u_fopen(UTF16_LE,"jamoCTable.txt",U_WRITE))) fopenErrMessage("jamoCTable.txt");
 
 	u_fprintf(f,"Unicode Jamos, pair of Hangul Jamo et Hangul Compatiblity Jamo\n");	
 	for(i = 0; i < jamoSize;i++){
@@ -356,8 +356,6 @@ void jamoCodage::jamoMapOut()
 		u_fputc(basicJamo[i],f); // fwrite(&basicJamo[i],2,1,f);
 		u_fputc(markReturn,f); //fwrite(&markReturn,2,1,f);
 	}
-
-
-	fclose(f);
+	u_fclose(f);
 }
 

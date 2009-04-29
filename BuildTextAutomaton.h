@@ -42,4 +42,12 @@ void build_sentence_automaton(int*,int,struct text_tokens*,
                               struct match_list**,int,int,
                               language_t*);
 
+void build_korean_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
+                               Alphabet* alph,U_FILE* out_tfst,U_FILE* out_tind,
+                               int sentence_number,
+                               int we_must_clean,
+                               int current_global_position_in_tokens,
+                               int current_global_position_in_chars,
+                               char* phrase_cod);
+
 #endif

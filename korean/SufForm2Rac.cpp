@@ -114,11 +114,11 @@ public:
     }
     void ajouteFromFile(char *fa)
     {
-        FILE *f = fopen(fa,"r");
+        U_FILE *f = u_fopen(BINARY,fa,U_READ);
         if(!f) fopenErrMessage(fa);
         char line[1024];
         char *wp;
-        while(fgets(line,1024,f)){
+        while(fgets(line,1024,f->f->fin)){
                 if(line[0] == ' ') continue;
             wp = line;
             while(*wp){
@@ -133,7 +133,7 @@ public:
             ajouteList(line);
             u_printf("line[%s]\n",line);
         }
-        fclose(f);
+        u_fclose(f);
     }
 
 };
@@ -147,8 +147,7 @@ static char inputFilePath[2048];
 
 
 
-int main(int argc, char **argv) {
-setBufferMode();
+int main_SufForm2Rac(int argc, char **argv) {
 
     int iargIndex = 1;
     int listFileFlag = 0;
@@ -210,7 +209,7 @@ setBufferMode();
 //static  char ofileNameBuff[1024];
 static void changeFile(char  *ifname,char *ofname)
 {
-FILE *ifile,*ofile;
+U_FILE *ifile,*ofile;
   int c;
   int countComma;
   int openFlag;
@@ -225,9 +224,9 @@ FILE *ifile,*ofile;
   countComma = 0;
   offset = 0;
   opened = 0;
-  if(!(ifile = u_fopen(ifname,U_READ)))
+  if(!(ifile = u_fopen(UTF16_LE,ifname,U_READ)))
     fopenErrMessage(ifname);
-  if(!(ofile = u_fopen(ofname,U_WRITE)))
+  if(!(ofile = u_fopen(UTF16_LE,ofname,U_WRITE)))
     fatal_error("Cannot open %s\n",ofname);
 //printf("%s %s\n",ifname,ofname);
   while((c = u_fgetc(ifile)) != EOF){
@@ -319,6 +318,6 @@ FILE *ifile,*ofile;
         }
     }
   }
-  fclose(ifile);
-  fclose(ofile);
+  u_fclose(ifile);
+  u_fclose(ofile);
 }

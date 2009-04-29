@@ -45,7 +45,7 @@ class double_arbre_string0 {
     struct double_link_state* racine;
 	int modeExplore;
 	struct double_link_state **Ttable;
-	FILE *tabOfile;
+	U_FILE *tabOfile;
 public:
 	unsigned short **tab;
 	double_arbre_string0(){
@@ -229,7 +229,7 @@ public:
 	// after use this function , on doit call release_value()
 	unsigned short **make_strPtr_table()
 	{
-		FILE *sf = tabOfile;
+		U_FILE *sf = tabOfile;
 		tabOfile = 0;
 		tab = (unsigned short **)malloc(N*sizeof(unsigned short *));
 		if(!tab) fatal_error("memory alloc fail\n");
@@ -244,7 +244,7 @@ public:
 		free(tab);
 		tab = 0;
 	}
-	void out_to_file(FILE *f)
+	void out_to_file(U_FILE *f)
 	{
 		unsigned short **stab = tab;
 		tab = 0;
@@ -254,7 +254,7 @@ public:
 		tabOfile = 0;
 		tab = stab;
 	}
-	void out_to_file_data(FILE *f, int headOutFlag)
+	void out_to_file_data(U_FILE *f, int headOutFlag)
 	{
 		unsigned short **stab = tab;
 		tab = 0;
@@ -300,7 +300,7 @@ public:
 	//
 	unsigned int *sortedmap;
 	int accessOrderCnt;
-	void out_to_file_data1(FILE *f,unsigned int *sorted)
+	void out_to_file_data1(U_FILE *f,unsigned int *sorted)
 	{
 		accessOrderCnt = 0;
 		tabOfile = f;
@@ -376,7 +376,7 @@ public:
 		return insertLink(v->suivant,tt->arr);
 	}
 	void
-	tableLoadFromFile(FILE *a,int cnt,int szOfLoad)
+	tableLoadFromFile(U_FILE *a,int cnt,int szOfLoad)
 	{
 		unsigned char *map = new unsigned char [szOfLoad];
 		if(!fread(map,szOfLoad,1,a)) fatal_error("read error\n");
@@ -403,7 +403,7 @@ public:
 			} else
 				wp++;			
 		};
-		if( N != cnt) fatal_error("illegal table size\n");
+		if( N != cnt) fatal_error("tableLoadFromFile: illegal table size\n");
 		delete map;
 	}
 };

@@ -245,11 +245,11 @@ return 0;
 int compile_elag_rules(char* rulesname,char* outname,language_t* language) {
 u_printf("Compilation of %s\n",rulesname);
 U_FILE* f=NULL;
-U_FILE* frules=u_fopen(ASCII,rulesname,"r");
+U_FILE* frules=u_fopen(ASCII,rulesname,U_READ);
 if (frules==NULL) {
    fatal_error("Cannot open file '%s'\n",rulesname);
 }
-U_FILE* out=u_fopen(ASCII,outname,"w");
+U_FILE* out=u_fopen(ASCII,outname,U_WRITE);
 if (out==NULL) {
    fatal_error("cannot open file '%s'\n",outname);
 }
@@ -272,7 +272,7 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
    u_printf("\n%s...\n",buf);
    remove_extension(buf);
    strcat(buf,".elg");
-   if ((f=u_fopen(ASCII,buf,"r"))==NULL) {
+   if ((f=u_fopen(ASCII,buf,U_READ))==NULL) {
       /* If the .elg file doesn't exist, we create one */
       remove_extension(buf);
       u_printf("Precompiling %s.fst2\n",buf);

@@ -94,7 +94,7 @@ public:
 		cnt_inf  = 0;
 	};
 	~binHead0(){};
-	void writeAtFile(FILE *f)
+	void writeAtFile(U_FILE *f)
 	{
 	    
 		outbytes2(0xfeff,f);
@@ -107,7 +107,7 @@ public:
 		outbytes2(cnt_suf,f);
 		outbytes2(cnt_inf,f);
 	}
-	void readFromFile(FILE *f)
+	void readFromFile(U_FILE *f)
 	{
 		unsigned short markUnicode = inbytes2(f);
 		if(markUnicode != 0xfeff){
@@ -580,7 +580,7 @@ return 1;
 //	static int tailleKr;
 	void toBinTr(char *fname,int racOrSuf)
 	{
-		FILE *bfile;
+		U_FILE *bfile;
 
 		char inf[1024];
 		int i;
@@ -588,7 +588,7 @@ return 1;
 
 		strcpy(inf,fname);
 		strcat(inf,".aut");
-		bfile=u_fopen(inf,U_WRITE);
+		bfile=u_fopen(UTF16_LE,inf,U_WRITE);
 		if (!bfile) {
 			fatal_error("Cannot create the file %s\n",inf);
 		}
@@ -601,21 +601,20 @@ return 1;
 				,racine[racName.check(&a[i][1])]->offset);
 		}
 		racName.release_value();
-		fflush(bfile);
-		fclose(bfile);
+		u_fclose(bfile);
 
 		strcpy(inf,fname);
 		strcat(inf,".bin");
-		bfile = fopen(inf,U_WRITE);	// for distingue
+		bfile = u_fopen(BINARY,inf,U_WRITE);	// for distingue
 		if(!bfile) fatal_error("binary file open error\n");
 
 		tmpH.size_bin = taille_de_sauve;
 		tmpH.flag |= (racOrSuf) ? 0: TYPE_BIN_RACINE;
 		tmpH.writeAtFile(bfile);
 		saveBin(bfile);
-		fclose(bfile);
+		u_fclose(bfile);
 	}
-	void saveBin(FILE *f)
+	void saveBin(U_FILE *f)
 	{
 		struct arbre_dico_with_depth* base;
 		unsigned int i;
@@ -694,10 +693,13 @@ public:
 	};
 	int isRacine(){ return(head.flag & TYPE_BIN_RACINE);};
 	void loadbin(char *fname){
-		FILE *f;
-		if(!(f = fopen(fname,"rb"))) 
+		U_FILE *f;
+		if(!(f = u_fopen(BINARY,fname,U_READ))) 
 			fopenErrMessage(fname);
 		name = (char *)malloc(strlen(fname)+1);
+		if (name==NULL) {
+		   fatal_alloc_error("loadbin");
+		}
 		strcpy(name,fname);
 		head.readFromFile(f);
 		int i = 
@@ -773,7 +775,7 @@ public:
 			}
          u_printf("%S start offset is %d\n",AUT[i],autoffset[i]);
 		}
-		fclose(f);
+		u_fclose(f);
 	}
 
 
@@ -1097,8 +1099,8 @@ public:
 	
 	struct sufptr **load_bins(char *listFileName)
 	{
-		FILE *lstF;
-		if(!(lstF = fopen(listFileName,"rb")))
+		U_FILE *lstF;
+		if(!(lstF = u_fopen(BINARY,listFileName,U_READ)))
 			fopenErrMessage(listFileName);	
 		char path_of_locate[1024];
 		char buff[1024];
@@ -1109,7 +1111,7 @@ public:
 		char *tmp;
 
 
-		while(fgets(buff,1024,lstF)){
+		while(fgets(buff,1024,lstF->f->fin)){
 			wp = buff;
 			while(*wp){
 				if(*wp == 0x0d){ *wp = 0; break;}
@@ -1133,7 +1135,7 @@ public:
 			strcpy(tmp,filename);
 			fileLists.put(tmp);
 		}
-		fclose(lstF); 
+		u_fclose(lstF); 
 		//
 		//	construction aut<->image map
 		//
@@ -1311,8 +1313,8 @@ public:
 	
 	void load_bins(char *listFileName)
 	{
-		FILE *lstF;
-		if(!(lstF = fopen(listFileName,"rb")))
+		U_FILE *lstF;
+		if(!(lstF = u_fopen(BINARY,listFileName,U_READ)))
 			fopenErrMessage(listFileName);	
 		char path_of_locate[1024];
 		char buff[1024];
@@ -1322,7 +1324,7 @@ public:
 		simpleL<char *> fileLists;
 		char *tmp;
 
-		while(fgets(buff,1024,lstF)){
+		while(fgets(buff,1024,lstF->f->fin)){
 			wp = buff;
 			while(*wp){
 				if(*wp == 0x0d){ *wp = 0; break;}
@@ -1346,7 +1348,7 @@ public:
 			strcpy(tmp,filename);
 			fileLists.put(tmp);
 		}
-		fclose(lstF); 
+		u_fclose(lstF); 
 		//
 		//	construction aut<->image map
 		//
@@ -1450,7 +1452,7 @@ public:
 //
 
 class union_bin_file {
-	FILE *inf;
+	U_FILE *inf;
 	int *newInfTable;
 	char sansExtension[1024];
 	class binHead0 imageHead;
@@ -1498,7 +1500,7 @@ public:
 	//
 	void ajouteRef(char *binfilename)
 	{
-		if(!(inf = fopen(binfilename,"r+b")))
+		if(!(inf = u_fopen(BINARY,binfilename,U_MODIFY)))
 			fopenErrMessage(binfilename);
 
 		imageHead.readFromFile(inf);
@@ -1511,18 +1513,18 @@ public:
 		fseek(inf,0,SEEK_SET);
 		imageHead.flag |= TYPE_BIN_LINKED;
 		imageHead.writeAtFile(inf);
-		fclose(inf);
+		u_fclose(inf);
 	}
 	void getAutoArray()
 	{
-		FILE *lf;
+		U_FILE *lf;
 		char openfilename[1024];
 		unichar UtempBuff[4096];
 		int i;
 
 		strcpy(openfilename,sansExtension);
 		strcat(openfilename,".aut");
-		if(!(lf = u_fopen(openfilename,U_READ)))
+		if(!(lf = u_fopen(UTF16_LE,openfilename,U_READ)))
 			fopenErrMessage(openfilename);
 		u_fgets(UtempBuff,lf);
 		imageHead.cnt_auto = utoi(UtempBuff);
@@ -1556,10 +1558,10 @@ public:
 		if((lidx-1) != imageHead.cnt_auto) 
 			fatal_error("suffix count is mismatch\n");
 		
-		fclose(lf);
+		u_fclose(lf);
 		strcpy(openfilename,sansExtension);
 		strcat(openfilename,".suf");
-		if(!(lf = u_fopen(openfilename,U_READ)))
+		if(!(lf = u_fopen(UTF16_LE,openfilename,U_READ)))
 			fopenErrMessage(openfilename);
 		u_fgets(UtempBuff,lf);
 		imageHead.cnt_suf = utoi(UtempBuff);
@@ -1583,13 +1585,13 @@ public:
 		}
 		if((lidx - 1 ) != imageHead.cnt_suf) 
 			fatal_error("suffix count is mismatch\n");
-		fclose(lf);
+		u_fclose(lf);
 	}
 #define DECALAGE_NEW_BIN	5
 	void load_ref()
 	{
 		int i;
-		FILE *lf;
+		U_FILE *lf;
 		fseek(inf,0,SEEK_END);
 		// get space 5 for initial state
 		outbytes2(0,inf);
@@ -1627,7 +1629,7 @@ public:
 
 		strcpy(fname_sans_extension,sansExtension);
 		strcat(fname_sans_extension,".inf");
-		if(!(lf = u_fopen(fname_sans_extension,U_READ)))
+		if(!(lf = u_fopen(UTF16_LE,fname_sans_extension,U_READ)))
 			fopenErrMessage(fname_sans_extension);
 		int rdInfCnt;// =u_read_int(lf);
       u_fscanf(lf,"%d\n",&rdInfCnt);
@@ -1643,7 +1645,7 @@ public:
 			if(!newInfTable[cidx]) fatal_error("illegal reference value\n");
 			cidx++;
 		}
-		fclose(lf);
+		u_fclose(lf);
 		if(cidx != rdInfCnt) fatal_error("not match read count\n");
 
 		imageHead.size_ref = save_ref_offset;

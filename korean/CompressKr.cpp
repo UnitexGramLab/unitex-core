@@ -32,7 +32,7 @@ using namespace std;
 #include "Error.h"
 
 
-void usage(int flag) {
+static void usage(int flag) {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: CompressKr [-s] [-g] [-o ofilename] [-l] <dictionary>\n");
 u_printf("  -s  : suffixes dictionnary, indicate the type of dictionnary, Suffixe or Racine\n");
@@ -74,7 +74,7 @@ getFileName(unichar *des,unichar *src)
 
 static int read_DELA_to_DICO(class arbre_string3 &arbre,int a,char *fname);
 //static void read_FST_to_DICO(class arbre_string3 &arbre,int a,char *fname); 
-FILE *debugfile;
+U_FILE *debugfile;
 static 	unichar UtempBuff[512];
 
 
@@ -110,8 +110,8 @@ static int suffixeMode;	// racine or suffixe
 static int grapheMode;
 static char *ofilename;
 
-int main(int argc, char **argv) {
-setBufferMode();
+
+int main_CompressKr(int argc, char **argv) {
 
 int argIdx = 1;
 int listFormFlag = 0;	// filename is dictionnary
@@ -129,10 +129,10 @@ suffixeMode = 0;
 		if(argv[argIdx][0] == '-'){
 			switch(argv[argIdx][1]){
 			case 'D': 
-				debugfile = u_fopen("dd.txt",U_WRITE);
+				debugfile = u_fopen(UTF16_LE,"dd.txt",U_WRITE);
 				break;
 			case 'd': 
-				debugfile = stdout;
+				debugfile = U_STDOUT;
 				break;
 			case 'l': listFormFlag++;break;
 			case 's':suffixeMode++; break;
@@ -147,7 +147,7 @@ suffixeMode = 0;
 	
 	if(argIdx != argc -1) usage(1);
 	make_compress_files(argv[argIdx],listFormFlag);
-	if(debugfile) fclose(debugfile);
+	if(debugfile) u_fclose(debugfile);
 	return(0);
 }
 /*
@@ -159,13 +159,13 @@ static void read_list_files(simpleL<char *> &rd,char *filename)
 	char pathName[1024];
 	char *t;
 
-	FILE *f=fopen(filename,"r");
+	U_FILE *f=u_fopen(BINARY,filename,U_READ);
 	
 	if(!f) {
 		fatal_error("file %s open fail\n",filename);
 	}
 	get_path(filename,pathName);
-	while(fgets(templine,256,f)){
+	while(fgets(templine,256,f->f->fin)){
 		sc =0;
 		while(templine[sc]){
 			if( (templine[sc] == 0x0d) ||
@@ -187,7 +187,7 @@ static void read_list_files(simpleL<char *> &rd,char *filename)
 		strcpy(t,fullPathName);
 		rd.put(t);
 	}
-	fclose(f);
+	u_fclose(f);
 }
 
 //
@@ -254,7 +254,7 @@ make_compress_files(char *listFileName,int listFormFlag)
 	 remove_extension(listFileName,templine);
 	arbres.toBinTr(templine,suffixeMode);
 
-	if(debugfile) fclose(debugfile);
+	if(debugfile) u_fclose(debugfile);
 }
 
 //
@@ -264,12 +264,12 @@ make_compress_files(char *listFileName,int listFormFlag)
 static int
 read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname)
 {
-	FILE *f;
+	U_FILE *f;
 	int tokenCnt;
 	int flineCnt = 0;
 	class dicLines *heads,*wp;
 	unichar RLine[2048];
-	if(!(f=u_fopen(fname,U_READ)))	fopenErrMessage(fname);
+	if(!(f=u_fopen(UTF16_LE,fname,U_READ)))	fopenErrMessage(fname);
 	cfilename = fname;
 	u_printf("Read File %s\n",fname);
 	while(EOF!=u_fgets(UtempBuff,f)){
@@ -295,7 +295,7 @@ read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname)
 	}
 	u_printf("\n%s: %d line read\n",fname,flineCnt);
 
-	fclose(f);
+	u_fclose(f);
 	return(flineCnt);
 }
 

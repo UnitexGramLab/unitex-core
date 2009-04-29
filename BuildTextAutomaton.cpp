@@ -31,6 +31,8 @@
 #include "SingleGraph.h"
 #include "Vector.h"
 #include "Tfst.h"
+#include "ProgramInvoker.h"
+#include "korean/Txt2Fst2Kr.h"
 
 
 /**
@@ -746,3 +748,177 @@ free_string_hash(tags);
 free_Ustring(foo);
 }
 
+
+
+/**
+ * This function builds the sentence automaton that correspond to the
+ * given Korean token buffer. It saves it into the given file.
+ */
+void build_korean_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
+                               Alphabet* alph,U_FILE* out_tfst,U_FILE* out_tind,
+                               int sentence_number,
+                               int we_must_clean,
+                               int current_global_position_in_tokens,
+                               int current_global_position_in_chars,
+                               char* phrase_cod) {
+/* First of all, we compute the sentence automaton, using the special
+ * Korean tools */
+char n[32];
+ProgramInvoker* invoker=new_ProgramInvoker(main_Txt2Fst2Kr,"main_Txt2Fst2Kr");
+add_argument(invoker,"-e");
+sprintf(n,"%d",sentence_number);
+add_argument(invoker,n);
+add_argument(invoker,phrase_cod);
+int ret_value=invoke(invoker);
+free_ProgramInvoker(invoker);
+if (ret_value!=0) {
+   fatal_error("Txt2Fst2Kr did not quit normally. Cannot go on constructing .tfst file\n");
+}
+
+return;
+#if 0
+/* We declare the graph that will represent the sentence as well as
+ * a temporary string_hash 'tmp_tags' that will be used to store the tags of this
+ * graph. We don't put tags directly in the main 'tags', because a tag can
+ * be introduced and then removed by cleaning */
+Tfst* tfst=new_Tfst(NULL,NULL,0);
+tfst->current_sentence=sentence_number;
+tfst->automaton=new_SingleGraph();
+tfst->offset_in_tokens=current_global_position_in_tokens;
+tfst->offset_in_chars=current_global_position_in_chars;
+
+struct string_hash* tags=new_string_hash(32);
+struct string_hash* tmp_tags=new_string_hash(32);
+unichar EPSILON_TAG[]={'@','<','E','>','\n','.','\n','\0'};
+/* The epsilon tag is always the first one */
+get_value_index(EPSILON_TAG,tmp_tags);
+get_value_index(EPSILON_TAG,tags);
+
+int i;
+/* We add +1 for the final node */
+int n_nodes=1+count_non_space_tokens(buffer,length,tokens->SPACE);
+for (i=0;i<n_nodes;i++) {
+   add_state(tfst->automaton);
+}
+set_initial_state(tfst->automaton->states[0]);
+set_final_state(tfst->automaton->states[n_nodes-1]);
+struct info INFO;
+INFO.tok=tokens;
+INFO.buffer=buffer;
+INFO.alph=alph;
+INFO.SPACE=tokens->SPACE;
+INFO.length_max=length;
+int current_state=0;
+int is_not_unknown_token;
+unichar inflected[4096];
+/* Temp string used to build tags with bound control */
+Ustring* foo=new_Ustring(1);
+/* We compute the text and tokens of the sentence */
+tfst->tokens=new_vector_int(length);
+tfst->token_sizes=new_vector_int(length);
+for (int i=0;i<length;i++) {
+   vector_int_add(tfst->tokens,buffer[i]);
+   int l=u_strlen(tokens->token[buffer[i]]);
+   vector_int_add(tfst->token_sizes,l);
+   u_strcat(foo,tokens->token[buffer[i]],l);
+}
+tfst->text=u_strdup(foo->str);
+
+
+for (i=0;i<length;i++) {
+   if (buffer[i]==tokens->SENTENCE_MARKER) {
+      fatal_error("build_sentence_automaton: unexpected {S} token\n");
+   }
+   if (buffer[i]!=tokens->SPACE) {
+      /* We try to produce every transition from the current token */
+      is_not_unknown_token=0;
+      explore_dictionary_tree(0,tokens->token[buffer[i]],inflected,0,DELA_tree->inflected_forms->root,DELA_tree,&INFO,tfst->automaton->states[current_state],1,
+                              current_state,&is_not_unknown_token,i,i,tmp_tags,foo,language);
+      if (norm_tree!=NULL) {
+         /* If there is a normalization tree, we explore it */
+         explore_normalization_tree(i,i,buffer[i],&INFO,tfst->automaton,tmp_tags,norm_tree,current_state,1,foo,0,language);
+      }
+      if (!is_not_unknown_token) {
+         /* If the token was not matched in the dictionary, we put it as an unknown one */
+         u_sprintf(foo,"@STD\n@%S\n@%d-%d\n.\n",tokens->token[buffer[i]],i,i);
+         int tag_number=get_value_index(foo->str,tmp_tags);
+         add_outgoing_transition(tfst->automaton->states[current_state],tag_number,current_state+1);
+      }
+      current_state++;
+   }
+}
+
+/* Now, we insert the tag sequences found in the 'tags.ind' file, if any */
+struct match_list* tmp;
+while ((*tag_list)!=NULL && (*tag_list)->start>=current_global_position_in_tokens
+       && (*tag_list)->start<=current_global_position_in_tokens+length) {
+   if ((*tag_list)->end>current_global_position_in_tokens+length) {
+      /* If we have a tag sequence that overlap two sentences, we must ignore it */
+      tmp=(*tag_list)->next;
+      free_match_list_element((*tag_list));
+      (*tag_list)=tmp;
+      continue;
+   }
+   /* We compute the local bounds of the tag sequence */
+   int start_index=(*tag_list)->start-current_global_position_in_tokens;
+   int end_index=(*tag_list)->end-current_global_position_in_tokens;
+   int start_pos_in_token=start_index;
+   int end_pos_in_token=end_index;
+   /* And we adjust them to our state indexes, because spaces
+    * must be ignored */
+   for (int i=start_index;i>=0;i--) {
+      if (buffer[i]==tokens->SPACE) {
+         start_index--;
+      }
+   }
+   for (int i=end_index;i>=0;i--) {
+      if (buffer[i]==tokens->SPACE) {
+         end_index--;
+      }
+   }
+   add_path_to_sentence_automaton(start_pos_in_token,end_pos_in_token,start_index,
+                                  INFO.alph,tfst->automaton,tmp_tags,
+                                  (*tag_list)->output,end_index+1,foo,&INFO);
+   tmp=(*tag_list)->next;
+   free_match_list_element((*tag_list));
+   (*tag_list)=tmp;
+}
+
+if (we_must_clean) {
+   /* If necessary, we apply the "good paths" heuristic */
+   keep_best_paths(tfst->automaton,tmp_tags);
+}
+trim(tfst->automaton);
+if (tfst->automaton->number_of_states==0) {
+   /* Case 1: the automaton has been emptied because of the tagset filtering */
+   error("Sentence %d is empty\n",tfst->current_sentence);
+   SingleGraphState initial=add_state(tfst->automaton);
+   set_initial_state(initial);
+   free_vector_ptr(tfst->tags,(void (*)(void*))free_TfstTag);
+   tfst->tags=new_vector_ptr(1);
+   vector_ptr_add(tfst->tags,new_TfstTag(T_EPSILON));
+   save_current_sentence(tfst,out_tfst,out_tind,NULL,0);
+} else {
+   /* Case 2: the automaton is not empty */
+
+   /* We minimize the sentence automaton. It will remove the unused states and may
+    * factorize suffixes introduced during the application of the normalization tree. */
+   minimize(tfst->automaton,1);
+   /* We explore all the transitions of the automaton in order to renumber transitions */
+   for (i=0;i<tfst->automaton->number_of_states;i++) {
+      Transition* trans=tfst->automaton->states[i]->outgoing_transitions;
+      while (trans!=NULL) {
+         /* For each tag of the graph that is actually used, we put it in the main
+          * tags and we use this index in the tfst transition */
+         trans->tag_number=get_value_index(tmp_tags->value[trans->tag_number],tags);
+         trans=trans->next;
+      }
+   }
+   save_current_sentence(tfst,out_tfst,out_tind,tags->value,tags->size);
+}
+close_text_automaton(tfst);
+free_string_hash(tmp_tags);
+free_string_hash(tags);
+free_Ustring(foo);
+#endif
+}

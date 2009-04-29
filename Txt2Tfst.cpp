@@ -91,6 +91,7 @@ u_printf("Usage: Txt2Tfst [OPTIONS] <txt>\n"
          "  -c/---clean: cleans each sentence automaton, keeping best paths\n"
          "  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
          "  -t XXX/--tagset=XXX: use the XXX ELAG tagset file to normalize the dictionary entries\n"
+         "  -k/--korean: produces a text automaton for Korean\n"
          "  -h/--help: this help\n"
          "\n"
          "Constructs the text automaton. If the sentences of the text were delimited\n"
@@ -109,12 +110,13 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":a:cn:t:h";
+const char* optstring=":a:cn:t:kh";
 const struct option_TS lopts[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"clean", no_argument_TS, NULL, 'c'},
    {"normalization_grammar", required_argument_TS, NULL, 'n'},
    {"tagset", required_argument_TS, NULL, 't'},
+   {"korean", no_argument_TS, NULL, 'k'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -122,6 +124,7 @@ char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 int CLEAN=0;
+int KOREAN=0;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
@@ -142,6 +145,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              }
              strcpy(tagset,vars->optarg);
              break;
+   case 'k': KOREAN=1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
@@ -158,7 +162,14 @@ if (vars->optind!=argc-1) {
 if (alphabet[0]=='\0') {
    fatal_error("You must specify the alphabet file\n");
 }
-
+if (KOREAN) {
+   if (norm[0]!='\0') {
+      error("-n option is ignored when -k is used\n");
+   }
+   if (tagset[0]!='\0') {
+      error("-t option is ignored when -k is used\n");
+   }
+}
 struct DELA_tree* tree=new_DELA_tree();
 int buffer[MAX_TOKENS_IN_SENTENCE];
 char tokens_txt[FILENAME_MAX];
@@ -176,14 +187,16 @@ get_snt_path(argv[vars->optind],dlc);
 strcat(dlc,"dlc");
 get_snt_path(argv[vars->optind],tags_ind);
 strcat(tags_ind,"tags.ind");
-load_DELA(dlf,tree);
-load_DELA(dlc,tree);
-u_printf("Loading %s...\n",tags_ind);
 struct match_list* tag_list=NULL;
-U_FILE* tag_file=u_fopen(UTF16_LE,tags_ind,U_READ);
-if (tag_file!=NULL) {
-   tag_list=load_match_list(tag_file,NULL);
-   u_fclose(tag_file);
+if (!KOREAN) {
+   load_DELA(dlf,tree);
+   load_DELA(dlc,tree);
+   u_printf("Loading %s...\n",tags_ind);
+   U_FILE* tag_file=u_fopen(UTF16_LE,tags_ind,U_READ);
+   if (tag_file!=NULL) {
+      tag_list=load_match_list(tag_file,NULL);
+      u_fclose(tag_file);
+   }
 }
 Alphabet* alph=load_alphabet(alphabet);
 if (alph==NULL) {
@@ -215,7 +228,7 @@ if (tind==NULL) {
    fatal_error("Cannot create %s\n",text_tind);
 }
 struct normalization_tree* normalization_tree=NULL;
-if (norm[0]!='\0') {
+if (!KOREAN && norm[0]!='\0') {
    normalization_tree=load_normalization_fst2(norm,alph,tokens);
 }
 char enter_pos_f[FILENAME_MAX];
@@ -241,7 +254,7 @@ else {
 }
 
 language_t* language=NULL;
-if (tagset[0]!='\0') {
+if (!KOREAN && tagset[0]!='\0') {
    language=load_language_definition(tagset);
 }
 
@@ -254,13 +267,22 @@ int current_global_position_in_chars=0;
 u_fprintf(tfst,"0000000000\n");
 u_printf("Constructing text automaton...\n");
 Ustring* text=new_Ustring(2048);
+char phrase_cod[FILENAME_MAX];
+get_snt_path(argv[vars->optind],phrase_cod);
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
-   build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
-                            normalization_tree,&tag_list,
-                            current_global_position_in_tokens,
-                            current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
-                            language);
+   if (KOREAN) {
+      build_korean_sentence_automaton(buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
+                  current_global_position_in_tokens,
+                  current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
+                  phrase_cod);
+   } else {
+      build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
+            normalization_tree,&tag_list,
+            current_global_position_in_tokens,
+            current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
+            language);
+   }
    if (sentence_number%100==0) u_printf("%d sentences read...        \r",sentence_number);
    sentence_number++;
    current_global_position_in_tokens=current_global_position_in_tokens+total;

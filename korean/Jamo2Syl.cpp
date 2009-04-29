@@ -61,8 +61,7 @@ public:
 
 
 
-int main(int argc, char *argv[]) {
-setBufferMode();
+int main_Jamo2Syl(int argc, char *argv[]) {
     
   	char *ifilename = 0;
 	char *ofilename =0;
@@ -70,8 +69,8 @@ setBufferMode();
 	char extension[16];
 	unichar temp[256];
 	int iargIndex = 1;
-	FILE *ifile;
-	FILE *ofile;
+	U_FILE *ifile;
+	U_FILE *ofile;
 	debugPrFlag = 0;
 
 
@@ -102,7 +101,7 @@ setBufferMode();
 	iargIndex++;			
 	ifilename = new char [strlen(argv[iargIndex])+1];
 	strcpy(ifilename,argv[iargIndex]);
-	if(!(ifile = u_fopen(ifilename,U_READ)))usage(1);
+	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ)))usage(1);
 
 	if(!ofilename){
 		ofilename = new char [strlen(ifilename)+4];
@@ -112,7 +111,7 @@ setBufferMode();
 		strcat(ofilename,extension);
 	}
 	 
-	if(!(ofile = u_fopen(ofilename,U_WRITE))) { 
+	if(!(ofile = u_fopen(UTF16_LE,ofilename,U_WRITE))) { 
 		fatal_error("Can't open %s file for output\n",ofilename);
 	}
 	trans.convFile(ifilename,ofilename);

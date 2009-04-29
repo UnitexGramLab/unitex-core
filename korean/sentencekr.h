@@ -40,7 +40,7 @@ class sentenceKr {
 	pageHandle transitions;
 	pageHandle stack;
 	struct sentence_stack *stack_tail;
-	FILE *senF;
+	U_FILE *senF;
 public:
 	sentenceKr()
 	{

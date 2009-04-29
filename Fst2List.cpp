@@ -91,8 +91,8 @@ static unichar *uascToNum(unichar *uasc,int *val);
 
 
 #define MAX_CHANGE_SYMBOL_SIZE 32
-unichar changeStrTo[16][MAX_CHANGE_SYMBOL_SIZE];
-int changeStrToIdx;
+static unichar changeStrTo[16][MAX_CHANGE_SYMBOL_SIZE];
+static int changeStrToIdx;
 
 static int changeStrToVal(char *src)
 {
@@ -892,7 +892,7 @@ verboseMode  = 0;
     {
         int i;
 
-        U_FILE* uf=u_fopen(ASCII,src,"r");
+        U_FILE* uf=u_fopen(ASCII,src,U_READ);
         if(!uf){
            fatal_error("Cannot open file %s\n",src);
         }
@@ -1148,7 +1148,7 @@ void CFstApp::getWordsFromGraph(char *fname)
 		strcpy(tmpchar,ofnameOnly);
 		strcat(tmpchar,"lst");
 			makeOfileName(ofNameTmp,tmpchar,".txt");
-			if(!(listFile = u_fopen(ASCII,ofNameTmp,"w")))
+			if(!(listFile = u_fopen(ASCII,ofNameTmp,U_WRITE)))
 				fatal_error("list file open error");
 			i = 0;
 

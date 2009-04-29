@@ -31,7 +31,7 @@ extern int getStringTableFile(char *,unichar *&,unichar **&);
 extern void loadStrTable(unichar *,unichar **&,int &);
 extern int getStringTableFileAvecNull(char *,unichar *&,unichar **&);
 extern void loadStrTableAvecNull(unichar *,unichar **&,int &);
-extern void strFileHeadLine(FILE *f,int sz);
+extern void strFileHeadLine(U_FILE *f,int sz);
 extern void fillIntAtArray(int v,unichar *A,int cdepth);
 extern 	int find_index_array(int *arr,int sz,int v);
 extern unichar *ctl_char_name_string[];

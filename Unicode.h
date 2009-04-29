@@ -46,12 +46,14 @@
 
 /**
  * These are the binary open modes for unicode text files.
+ * We use now an enum in order to keep control on how files are opened.
  */
-#define U_READ "rb"
-#define U_WRITE "wb"
-#define U_APPEND "ab"
-#define U_MODIFY "r+b"
-
+typedef enum {
+   U_READ,   // "rb"
+   U_WRITE,  // "wb"
+   U_APPEND, // "ab"
+   U_MODIFY  // "r+b"
+} OpenMode;
 
 /* This caracter is used as the first one of a unicode text file... */
 #define U_BYTE_ORDER_MARK 0xFEFF
@@ -172,7 +174,7 @@ int u_fscanf(U_FILE*,const char*,...);
 //void u_fprints(Encoding,char*,ABSTRACTFILE*);
 
 /* ------------------- File functions ------------------- */
-U_FILE* u_fopen(Encoding,const char*,const char*);
+U_FILE* u_fopen(Encoding,const char*,OpenMode);
 int u_fclose(U_FILE*);
 int u_fempty(Encoding,const char*);
 int u_is_UTF16(const char*);

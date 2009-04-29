@@ -450,7 +450,8 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
                 FIFO.o BitArray.o HashTable.o Transitions.o Matches.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-                Tfst.o NewLineShifts.o
+                Tfst.o NewLineShifts.o ProgramInvoker.o\
+                Txt2Fst2Kr.o bitmap.o etc.o segtype.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o Unicode.o Fst2.o AbstractFst2Load.o Alphabet.o \
@@ -482,66 +483,63 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Stack_int.o Stack_unichar.o String_hash.o StringParsing.o Symbol.o Symbol_op.o SymbolAlphabet.o \
                   Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o Text_tokens.o Tfst.o Tfst2Grf.o \
                   Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o TransductionVariables.o \
-                  Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o 
+                  Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o Txt2Fst2Kr.o bitmap.o etc.o segtype.o
 
 ######################
 ## Korean programs  ##
 ######################
 
-#COMPRESSKR	= CompressKr
-#COMPRESSKR_OBJS = IOBuffer.o CompressKr.o etc.o pro_type.o \
-#                  String_hash.o File.o Af_stdio.o Unicode.o Alphabet.o Error.o StringParsing.o
-#
-#CONSULTDIC = ConsultDic
-#CONSULTDIC_OBJS = IOBuffer.o ConsultDic.o etc.o pro_type.o \
-#		    Af_stdio.o Unicode.o Fst2.o File.o Error.o Alphabet.o Pattern.o List_ustring.o\
-#		    StringParsing.o String_hash.o List_int.o BitMasks.o Transitions.o DELA.o\
-#		    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-#
-#INFLECTKR = InflectKr
-#INFLECTKR_OBJS  = IOBuffer.o InflectKr.o etc.o pro_type.o \
-#                  Af_stdio.o Unicode.o Fst2.o File.o Error.o Pattern.o List_ustring.o\
-#                  String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o\
-#                  Alphabet.o Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-#
-#SUFFORM2RAC  = SufForm2Rac
-#SUFFORM2RAC_OBJS  = IOBuffer.o SufForm2Rac.o  etc.o \
-#		Af_stdio.o Unicode.o File.o Error.o
-#
-#MERGEBIN  = MergeBin
-#MERGEBIN_OBJS  = IOBuffer.o MergeBin.o etc.o pro_type.o \
-#                  Af_stdio.o Unicode.o File.o Error.o
-#
-#SORTMORPH  = SortMorph
-#SORTMORPH_OBJS  = IOBuffer.o SortMorph.o etc.o \
-#                  File.o Af_stdio.o Unicode.o Error.o
-#
-#JAMO2SYL  = Jamo2Syl
-#JAMO2SYL_OBJS  = IOBuffer.o Jamo2Syl.o etc.o bitmap.o \
-#                  codeForKorean.o segtype.o \
-#                  pro_type.o jamoCodage.o\
-#                  Af_stdio.o Unicode.o File.o Fst2.o Error.o Pattern.o\
-#                  List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
-#                  Transitions.o DELA.o Alphabet.o\
-#                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-#
-#SYL2JAMO  = Syl2Jamo
-#SYL2JAMO_OBJS  = IOBuffer.o Syl2Jamo.o jamoCodage.o etc.o \
-#                 pro_type.o codeForKorean.o segtype.o \
-#                 Af_stdio.o Unicode.o File.o Error.o
-#
-#TXT2FST2KR  = Txt2Fst2Kr
-#TXT2FST2KR_OBJS  = IOBuffer.o Txt2Fst2Kr.o bitmap.o etc.o segtype.o \
-#		   Af_stdio.o Unicode.o File.o Fst2.o Error.o Pattern.o List_ustring.o\
-#		   String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
-#		   Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-#
-#EXTRACTCHAR  = ExtractChar
-#EXTRACTCHAR_OBJS  = IOBuffer.o ExtractChar.o codeForKorean.o bitmap.o etc.o segtype.o \
-#		            jamoCodage.o pro_type.o Af_stdio.o Unicode.o File.o Fst2.o Error.o\
-#		            Pattern.o List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
-#		            Transitions.o DELA.o Alphabet.o\
-#		            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
+COMPRESSKR	= CompressKr
+COMPRESSKR_OBJS = Main_CompressKr.o CompressKr.o IOBuffer.o etc.o pro_type.o \
+                  String_hash.o File.o Af_stdio.o Unicode.o Alphabet.o Error.o StringParsing.o
+
+CONSULTDIC = ConsultDic
+CONSULTDIC_OBJS = Main_ConsultDic.o ConsultDic.o IOBuffer.o etc.o pro_type.o \
+		    Af_stdio.o Unicode.o Fst2.o File.o Error.o Alphabet.o Pattern.o List_ustring.o\
+		    StringParsing.o String_hash.o List_int.o BitMasks.o Transitions.o DELA.o\
+		    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
+
+INFLECTKR = InflectKr
+INFLECTKR_OBJS  = Main_InflectKr.o InflectKr.o IOBuffer.o etc.o pro_type.o \
+                  Af_stdio.o Unicode.o Fst2.o File.o Error.o Pattern.o List_ustring.o\
+                  String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o\
+                  Alphabet.o Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
+
+SUFFORM2RAC  = SufForm2Rac
+SUFFORM2RAC_OBJS  = Main_SufForm2Rac.o SufForm2Rac.o IOBuffer.o etc.o Af_stdio.o Unicode.o File.o Error.o
+
+MERGEBIN  = MergeBin
+MERGEBIN_OBJS  = Main_MergeBin.o MergeBin.o IOBuffer.o etc.o pro_type.o Af_stdio.o Unicode.o File.o Error.o
+
+SORTMORPH  = SortMorph
+SORTMORPH_OBJS  = Main_SortMorph.o SortMorph.o IOBuffer.o etc.o File.o Af_stdio.o Unicode.o Error.o
+
+JAMO2SYL  = Jamo2Syl
+JAMO2SYL_OBJS  = Main_Jamo2Syl.o Jamo2Syl.o IOBuffer.o etc.o bitmap.o \
+                  codeForKorean.o segtype.o \
+                  pro_type.o jamoCodage.o\
+                  Af_stdio.o Unicode.o File.o Fst2.o Error.o Pattern.o\
+                  List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
+                  Transitions.o DELA.o Alphabet.o\
+                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
+
+SYL2JAMO  = Syl2Jamo
+SYL2JAMO_OBJS  = Main_Syl2Jamo.o Syl2Jamo.o IOBuffer.o jamoCodage.o etc.o \
+                 pro_type.o codeForKorean.o segtype.o \
+                 Af_stdio.o Unicode.o File.o Error.o
+
+TXT2FST2KR  = Txt2Fst2Kr
+TXT2FST2KR_OBJS  = Main_Txt2Fst2Kr.o Txt2Fst2Kr.o IOBuffer.o bitmap.o etc.o segtype.o \
+		   Af_stdio.o Unicode.o File.o Fst2.o Error.o Pattern.o List_ustring.o\
+		   String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
+		   Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
+
+EXTRACTCHAR  = ExtractChar
+EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o bitmap.o etc.o segtype.o \
+		            jamoCodage.o pro_type.o Af_stdio.o Unicode.o File.o Fst2.o Error.o\
+		            Pattern.o List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
+		            Transitions.o DELA.o Alphabet.o\
+		            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
 
 #############################################################################
 # IMPORTANT!!! DO NOT MOVE OR REMOVE THE FOLLOWING LINE #</PROG>. IT IS USED
@@ -565,10 +563,10 @@ PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
 		$(REG2GRF) $(SORTTXT) $(TABLE2GRF) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TXT2TFST) $(XMLIZER) $(UNITEXTOOL)
 
-#ifeq ($(64BITS),no)
-#PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \
-#         $(TXT2FST2KR) $(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR)
-#endif
+ifeq ($(64BITS),no)
+PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \
+         $(TXT2FST2KR) $(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR)
+endif
 
 
 BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
@@ -833,90 +831,89 @@ $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
 $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
+$(BIN_DIR)$(INFLECTKR)$(EXTENSION): $(INFLECTKR_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
 
-#$(BIN_DIR)$(INFLECTKR)$(EXTENSION): $(INFLECTKR_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(SUFFORM2RAC)$(EXTENSION): $(SUFFORM2RAC_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(COMPRESSKR)$(EXTENSION): $(COMPRESSKR_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(MERGEBIN)$(EXTENSION): $(MERGEBIN_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(CONSULTDIC)$(EXTENSION): $(CONSULTDIC_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(SORTMORPH)$(EXTENSION): $(SORTMORPH_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(TXT2FST2KR)$(EXTENSION): $(TXT2FST2KR_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(SYL2JAMO)$(EXTENSION): $(SYL2JAMO_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(JAMO2SYL)$(EXTENSION): $(JAMO2SYL_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
-#$(BIN_DIR)$(EXTRACTCHAR)$(EXTENSION): $(EXTRACTCHAR_OBJS)
-#	$(CC) -o $@ $+ $(OPTIONS)
-#
+$(BIN_DIR)$(SUFFORM2RAC)$(EXTENSION): $(SUFFORM2RAC_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(COMPRESSKR)$(EXTENSION): $(COMPRESSKR_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(MERGEBIN)$(EXTENSION): $(MERGEBIN_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(CONSULTDIC)$(EXTENSION): $(CONSULTDIC_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(SORTMORPH)$(EXTENSION): $(SORTMORPH_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(TXT2FST2KR)$(EXTENSION): $(TXT2FST2KR_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(SYL2JAMO)$(EXTENSION): $(SYL2JAMO_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(JAMO2SYL)$(EXTENSION): $(JAMO2SYL_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(EXTRACTCHAR)$(EXTENSION): $(EXTRACTCHAR_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
 
 
 #
 # Compilation instructions for Korean .o 
 #
-#InflectKr.o: ../korean/InflectKr.cpp
-#	$(CC) -c ../korean/InflectKr.cpp $(OPTIONS)
-#
-#CompressKr.o: ../korean/CompressKr.cpp
-#	$(CC) -c ../korean/CompressKr.cpp $(OPTIONS) 
-#
-#etc.o: ../korean/etc.cpp
-#	$(CC) -c ../korean/etc.cpp $(OPTIONS) 
-#
-#pro_type.o: ../korean/pro_type.cpp
-#	$(CC) -c ../korean/pro_type.cpp $(OPTIONS) 
-#
-#codeForKorean.o: ../korean/codeForKorean.cpp
-#	$(CC) -c ../korean/codeForKorean.cpp $(OPTIONS) 
-#
-#bitmap.o: ../korean/bitmap.cpp
-#	$(CC) -c ../korean/bitmap.cpp $(OPTIONS) 
-#
-#ConsultDic.o: ../korean/ConsultDic.cpp ../korean/bin.h ../korean/bin3.h
-#	$(CC) -c ../korean/ConsultDic.cpp $(OPTIONS) 
-#
-#ExtractChar.o: ../korean/ExtractChar.cpp
-#	$(CC) -c ../korean/ExtractChar.cpp $(OPTIONS) 
-#
-#Jamo2Syl.o: ../korean/Jamo2Syl.cpp
-#	$(CC) -c ../korean/Jamo2Syl.cpp $(OPTIONS) 
-#
-#jamoCodage.o: ../korean/jamoCodage.cpp
-#	$(CC) -c ../korean/jamoCodage.cpp $(OPTIONS) 
-#
-#MergeBin.o: ../korean/MergeBin.cpp ../korean/bin.h ../korean/bin3.h
-#	$(CC) -c ../korean/MergeBin.cpp $(OPTIONS) 
-#
-#segtype.o: ../korean/segtype.cpp
-#	$(CC) -c ../korean/segtype.cpp $(OPTIONS) 
-#
-#SortMorph.o: ../korean/SortMorph.cpp
-#	$(CC) -c ../korean/SortMorph.cpp $(OPTIONS) 
-#
-#SufForm2Rac.o: ../korean/SufForm2Rac.cpp
-#	$(CC) -c ../korean/SufForm2Rac.cpp $(OPTIONS) 
-#
-#Syl2Jamo.o: ../korean/Syl2Jamo.cpp
-#	$(CC) -c ../korean/Syl2Jamo.cpp $(OPTIONS) 
-#
-#Txt2Fst2Kr.o: ../korean/Txt2Fst2Kr.cpp ../korean/strToAuto.h
-#	$(CC) -c ../korean/Txt2Fst2Kr.cpp $(OPTIONS) 
-#
+InflectKr.o: ../korean/InflectKr.cpp
+	$(CC) -c ../korean/InflectKr.cpp $(OPTIONS)
+
+CompressKr.o: ../korean/CompressKr.cpp
+	$(CC) -c ../korean/CompressKr.cpp $(OPTIONS) 
+
+etc.o: ../korean/etc.cpp
+	$(CC) -c ../korean/etc.cpp $(OPTIONS) 
+
+pro_type.o: ../korean/pro_type.cpp
+	$(CC) -c ../korean/pro_type.cpp $(OPTIONS) 
+
+codeForKorean.o: ../korean/codeForKorean.cpp
+	$(CC) -c ../korean/codeForKorean.cpp $(OPTIONS) 
+
+bitmap.o: ../korean/bitmap.cpp
+	$(CC) -c ../korean/bitmap.cpp $(OPTIONS) 
+
+ConsultDic.o: ../korean/ConsultDic.cpp ../korean/bin.h ../korean/bin3.h
+	$(CC) -c ../korean/ConsultDic.cpp $(OPTIONS) 
+
+ExtractChar.o: ../korean/ExtractChar.cpp
+	$(CC) -c ../korean/ExtractChar.cpp $(OPTIONS) 
+
+Jamo2Syl.o: ../korean/Jamo2Syl.cpp
+	$(CC) -c ../korean/Jamo2Syl.cpp $(OPTIONS) 
+
+jamoCodage.o: ../korean/jamoCodage.cpp
+	$(CC) -c ../korean/jamoCodage.cpp $(OPTIONS) 
+
+MergeBin.o: ../korean/MergeBin.cpp ../korean/bin.h ../korean/bin3.h
+	$(CC) -c ../korean/MergeBin.cpp $(OPTIONS) 
+
+segtype.o: ../korean/segtype.cpp
+	$(CC) -c ../korean/segtype.cpp $(OPTIONS) 
+
+SortMorph.o: ../korean/SortMorph.cpp
+	$(CC) -c ../korean/SortMorph.cpp $(OPTIONS) 
+
+SufForm2Rac.o: ../korean/SufForm2Rac.cpp
+	$(CC) -c ../korean/SufForm2Rac.cpp $(OPTIONS) 
+
+Syl2Jamo.o: ../korean/Syl2Jamo.cpp
+	$(CC) -c ../korean/Syl2Jamo.cpp $(OPTIONS) 
+
+Txt2Fst2Kr.o: ../korean/Txt2Fst2Kr.cpp ../korean/strToAuto.h
+	$(CC) -c ../korean/Txt2Fst2Kr.cpp $(OPTIONS) 
+
 
 # Compiling Unitex as a library under Linux-like systems
 ifeq ($(SYSTEM),linux-like)

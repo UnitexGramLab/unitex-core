@@ -46,16 +46,15 @@ exit(0);
 unsigned short retvalue[3];
 
 
-int main(int argc, char *argv[]) {
-setBufferMode();
+int main_ExtractChar(int argc, char *argv[]) {
 
     char *ifilename;
   	char *ofilename =0;
 	int iargIndex = 1;
 	
 	char extTmp[16];
-	FILE *ifile = 0;
-	FILE *ofile = 0;
+	U_FILE *ifile = 0;
+	U_FILE *ofile = 0;
 	class state_machine extracter;
 	class jamoCodage encode;
 	unichar tempBuff[1024];
@@ -91,8 +90,8 @@ setBufferMode();
 	   strcat(ofilename,extTmp);
 	   
 	}
-	if(!(ofile = u_fopen(ofilename,U_WRITE)))fopenErrMessage(ofilename);
-	if(!(ifile = u_fopen(ifilename,U_READ))) fopenErrMessage(ifilename);
+	if(!(ofile = u_fopen(UTF16_LE,ofilename,U_WRITE)))fopenErrMessage(ofilename);
+	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ))) fopenErrMessage(ifilename);
 
 	unsigned short exWord[1024];
 	unsigned short testWord[1024];

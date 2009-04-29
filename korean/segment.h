@@ -41,9 +41,9 @@ class segmentation:wideCharTable,nameOfControlChars
 {
 	class arbre_string00 segments;
 	char pathName[2048];
-	FILE *textFile;
-	FILE *tokenFile;
-	FILE *writeFile;
+	U_FILE *textFile;
+	U_FILE *tokenFile;
+	U_FILE *writeFile;
 public:
 
 	int segmentCount;
@@ -75,7 +75,7 @@ public:
 	unsigned short  cbuff[1024];
 	int spaceCnt;
 	unsigned short retnew[2];	// new line return
-	FILE *sort_token;
+	U_FILE *sort_token;
 	int *n_occur;
 	unsigned short  **tokTable;
 	time_t debug_time_point;
@@ -114,7 +114,7 @@ public:
 	unsigned char preTypeChar;
 
 	int segmentFile(char *,char *,int sizeBuffer);
-		void filleCntLine(FILE *,int);
+		void filleCntLine(U_FILE *,int);
 		void fillIntAtArray(int,unsigned short *,int);
 	void getSegments(unsigned short  *wp);
 
@@ -220,7 +220,7 @@ public:
 		explore_leaf(segments.getRacine(),0);
 		fclose(sort_token);
 
-		FILE *tmpf;
+		U_FILE *tmpf;
 		tFileName = "tok_by_freq.txt";
 		tokenFileName  = new char 
 			[strlen(pathName)+strlen(tFileName) +1];
@@ -302,7 +302,7 @@ public:
 		}
 	}
 
-	void a_token_out(FILE *f,unsigned short  *t)
+	void a_token_out(U_FILE *f,unsigned short  *t)
 	{
 		unsigned short  *l;
 		if(*t < 0x21)
@@ -604,7 +604,7 @@ segmentation::segmentFile(char *ifile_name, char *ofile_name,int MaxBufferSize)
 	return 0;
 }
 void 
-segmentation::filleCntLine(FILE *f,int cnt)
+segmentation::filleCntLine(U_FILE *f,int cnt)
 {
 	unsigned short line[12];
 	for(int i =0; i < 12;i++) line[i] = L'0';

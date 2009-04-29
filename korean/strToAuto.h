@@ -177,7 +177,7 @@ public:
 	int saveIdx;
 	int blancMarkIndex;
 #ifdef DEBUG
-	FILE *debugf;
+	U_FILE *debugf;
 #endif
 	str2Auto(){
 		nodes.setSz(sizeof(struct text_etat_fst2)*1024,sizeof(struct text_etat_fst2));
@@ -433,7 +433,7 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 		while(a){ markEtatNumber(a->arr); a = a->next;}
 	}
 	
-	int  outLesEtatToFile(FILE *f)
+	int  outLesEtatToFile(U_FILE *f)
 	{
 		int totEtat = nodes.getSize();
 		int sumOfOffset = 0;
@@ -623,7 +623,7 @@ error("\n");
 
 
 // debugging
-	void prAuto(FILE *fde,unsigned int flag)
+	void prAuto(U_FILE *fde,unsigned int flag)
 	{
 		struct text_etat_fst2* base;
 		struct text_transition_fst2 *strans;
@@ -631,25 +631,25 @@ error("\n");
 		int totNodes = nodes.counter;
 		int eleCnt = nodes.pgEMcnt;
 		unsigned int *addrmap= new unsigned int[(totNodes + eleCnt -1 )/eleCnt];
-		fprintf(fde,"total node %d \n\n",totNodes);
+		u_fprintf(fde,"total node %d \n\n",totNodes);
 		nodes.addMapOut(addrmap);
 		for( i = 0; i < totNodes ;i++){
 			base = (struct text_etat_fst2 *)(addrmap[i/eleCnt] +
 			(i % eleCnt) * sizeof(struct text_etat_fst2));
 			if(flag && (base->index != flag)) continue; 
-			fprintf(fde,"<%08x:%08x:0x%08x>:",base->index,i,(unsigned int)base);
+			u_fprintf(fde,"<%08x:%08x:0x%08x>:",base->index,i,(unsigned int)base);
 			strans = base->trans;
 			while(strans){
-				fprintf(fde,"(0x%08x:0x%08x:0x%08x)",strans->eti.noEtiq,
+				u_fprintf(fde,"(0x%08x:0x%08x:0x%08x)",strans->eti.noEtiq,
 					strans->eti.offset,(unsigned int)strans->arr);
 				strans = strans->next;
 			}
-			fprintf(fde,"\n");
+			u_fprintf(fde,"\n");
 		}
-		fflush(fde);
+		//fflush(fde->f);
 		delete addrmap;
 	}
-	void prEtiquette(FILE *fout)
+	void prEtiquette(U_FILE *fout)
 	{
 	    int *c;
 		unsigned short **m = morphStruct.make_strPtr_table(&c);
@@ -675,7 +675,7 @@ error("\n");
 	
 class morpheme_info: public str2Auto ,public nameOfControlChars{
 public:
-	FILE *phraseAutoMap;
+	U_FILE *phraseAutoMap;
 	unsigned short tbuff[4096];
 	char pathNameStore[4096];
 	char ftemp[2048];
@@ -766,12 +766,12 @@ public:
 	{
 	  get_path(f,pathNameStore);
 	}
-	FILE *
+	U_FILE *
 	openForWrite(char *f)
 	{
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
-		if((phraseAutoMap = fopen(ftemp,"wb")) == 0)
+		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_WRITE)) == 0)
 			fopenErrMessage(ftemp);
 		fwrite(&head,sizeof(struct localhead),1,phraseAutoMap);
 		return(phraseAutoMap);
@@ -779,8 +779,8 @@ public:
 	void write_head()
 	{
 		fseek(phraseAutoMap,0,0);
-                u_fputc_UTF16LE_raw(0xfeff,phraseAutoMap);
-                u_fputc_UTF16LE_raw(0xfffe,phraseAutoMap);
+                u_fputc_UTF16LE_raw(0xfeff,phraseAutoMap->f);
+                u_fputc_UTF16LE_raw(0xfffe,phraseAutoMap->f);
                 unsigned char b[4];
                 unsigned int i= head.count_of_sentences;
                 b[0] = i & 0xff;i = i >> 8;
@@ -794,8 +794,8 @@ public:
 	void read_head()
 	{
 		fseek(phraseAutoMap,0,0);
-               unichar a = u_fgetc_UTF16LE_raw(phraseAutoMap);
-                a =u_fgetc_UTF16LE_raw(phraseAutoMap);
+               unichar a = u_fgetc_UTF16LE_raw(phraseAutoMap->f);
+                a =u_fgetc_UTF16LE_raw(phraseAutoMap->f);
                 
                 unsigned char b[4];
                 fread(b,4,1,phraseAutoMap);
@@ -811,11 +811,11 @@ public:
 
 	void loadTokensMap(char *f)
 	{		
-		FILE *fptr;
+		U_FILE *fptr;
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"tokens.txt");
 		u_printf("load Tokens file\n");
-		if((fptr = u_fopen(ftemp,U_READ)) ==0 )	fopenErrMessage(f);
+		if((fptr = u_fopen(UTF16_LE,ftemp,U_READ)) ==0 )	fopenErrMessage(f);
 		fseek(fptr,0,SEEK_END);	
 		int sizeFile =ftell(fptr)/2;
 		tokMap = new unsigned short[sizeFile];
@@ -826,14 +826,14 @@ public:
 		tokMap[sizeFile-1] = 0;
 //		tokMap[sizeFile-2] = 0;
 		loadStrTableFile(tokMap,tokTable,tokTableSz,1);
-		fclose(fptr);
+		u_fclose(fptr);
 	}
 #ifdef FFFFFFF
 	void loadTokensStruct(char *f)
 	{
 		
 		
-		FILE *fptr;
+		U_FILE *fptr;
 
 		strcpy(temp,pathNameStore);
 		strcat(temp,"tokens.txt");
@@ -856,11 +856,11 @@ public:
 #endif //FFFFFFFFF
 	void loadSousTokensMap(char *f)
 	{
-		FILE *fptr;
+		U_FILE *fptr;
 
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"seqMorphs.txt");
-		if((fptr = u_fopen(ftemp,U_READ)) ==0 )	fopenErrMessage(ftemp);
+		if((fptr = u_fopen(UTF16_LE,ftemp,U_READ)) ==0 )	fopenErrMessage(ftemp);
 		fseek(fptr,0,SEEK_END);	
 		int sizeFile =ftell(fptr)/2;
 		mophMap = new unsigned short[sizeFile];
@@ -871,7 +871,7 @@ public:
 		mophMap[sizeFile-1] = 0;
 //		mophMap[sizeFile-2] = 0;
 		loadStrTableFile(mophMap,mophTable,mophTableSz,1);		
-		fclose(fptr);
+		u_fclose(fptr);
 	}
 	void 
 	loadStrTableFile(unsigned short *wp,unsigned short **&table,int &table_sz,int cflag)
@@ -884,7 +884,7 @@ public:
 		if(*wp == '\n') wp++;
 
 		table = new unsigned short *[table_sz];
-		if(!table) fatal_error("token table mem alloc fail\n");
+		if(!table) fatal_alloc_error("loadStrTableFile");
 		unsigned short *curoffset = wp;
 		int index  = 0;
 		while(*wp ) {
@@ -899,8 +899,8 @@ public:
 				*wp++ = 0;
 			} else
 				wp++;			
-		};
-		if( index != table_sz) fatal_error("illegal table size\n");
+		}
+		if( index != table_sz) fatal_error("loadStrTableFile: illegal table size\n");
 	}
 	
 	void
@@ -929,8 +929,8 @@ public:
 	}
 	void saveMorphems()
 	{
-		FILE *f = phraseAutoMap;			
-        FILE *fmor;
+		U_FILE *f = phraseAutoMap;			
+      U_FILE *fmor;
 		int count_eti; 
 		unsigned short *wp;
 		unsigned short *sp;
@@ -939,11 +939,11 @@ public:
 		
         strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"Morphemes.txt");
-		if((fmor = u_fopen(ftemp,U_WRITE)) ==0 ) fopenErrMessage(ftemp);
+		if((fmor = u_fopen(UTF16_LE,ftemp,U_WRITE)) ==0 ) fopenErrMessage(ftemp);
 		
 		strFileHeadLine(fmor,sz);
 		morphStruct.save_tout_leaf(fmor,1);
-		fclose(fmor);
+		u_fclose(fmor);
 		
 		unsigned short **m = morphStruct.make_strPtr_table(&frequenceMap);
 		
@@ -1119,7 +1119,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 //	return : size of the table
 
 	int
-	makeInfoTable(FILE *f,int count_of_infos,arbre_string0 &infoArray)
+	makeInfoTable(U_FILE *f,int count_of_infos,arbre_string0 &infoArray)
 	{
 		unsigned short **tables;
 		unsigned int *wi;
@@ -1170,7 +1170,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 			
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
-		if((phraseAutoMap = fopen(ftemp,"rb")) ==0 ) fopenErrMessage(ftemp);
+		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_READ)) ==0 ) fopenErrMessage(ftemp);
 
 		read_head();
 
@@ -1219,16 +1219,16 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 	}
 
 	unsigned short *
-	loadStrTableFromFile(FILE *f,int offset,int iSz,int cnt,unsigned short **&table)
+	loadStrTableFromFile(U_FILE *f,int offset,int iSz,int cnt,unsigned short **&table)
 	{
 		register unsigned short *wp;
                 int readSz= iSz/2;
 		unsigned short *map = new unsigned short[readSz];
-		if(!map) fatal_error("mem alloc fail\n");
+		if(!map) fatal_alloc_error("loadStrTableFromFile");
 		fseek(f,offset,SEEK_SET);
 		if(!u_fread_raw(map,readSz,f)) fatal_error("Read Tokens fail\n");
 		table = new unsigned short *[cnt];
-		if(!table) fatal_error("token table mem alloc fail\n");
+		if(!table) fatal_alloc_error("loadStrTableFromFile");
 		wp = map;
 		unsigned short *curoffset = wp;
 		int index  = 0;
@@ -1242,8 +1242,8 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 				*wp++ = 0;
 			} else
 				wp++;			
-		};
-		if( index != cnt) fatal_error("illegal table size\n");
+		}
+		if( index != cnt) fatal_error("loadStrTableFromFile: illegal table size\n");
 		return(map);
 	}
 	void 
@@ -1251,7 +1251,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 	{
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
-		if((phraseAutoMap = fopen(ftemp,"rb")) ==0 ) fopenErrMessage(ftemp);
+		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_READ)) ==0 ) fopenErrMessage(ftemp);
 
 		read_head();
 
@@ -1280,11 +1280,11 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		fread(infoArray_table,szinfos*4,1,phraseAutoMap);
 	}
 	void
-	loadStrStructFromFile(FILE *f,int offset,int sz,class arbre_string0 &table)
+	loadStrStructFromFile(U_FILE *f,int offset,int sz,class arbre_string0 &table)
 	{
 		register unsigned short *wp;
 		unsigned char *map = new unsigned char[sz];
-		if(!map) fatal_error("mem alloc fail\n");
+		if(!map) fatal_alloc_error("loadStrStructFromFile");
 		fseek(f,offset,SEEK_SET);
 		if(!fread(map,sz,1,f)) fatal_error("Read Tokens fail\n");
 		wp = (unsigned short *)map;
@@ -1437,13 +1437,13 @@ class mkTxt2Fst2Kr : public wideCharTable{
 	struct text_etat_fst2 *segOfPhrase[MAX_NO_ELEMENT_PHASE];
 	int segOfPhraseIdx;
 	Fst2 *loadFst2;
-	FILE *fidx;	// index file
+	U_FILE *fidx;	// index file
 	class morpheme_info unePhraseAuto;
 
 public:
-	FILE *fout;
+	U_FILE *fout;
 #ifdef DDEBUG
-	FILE *fdebug;
+	U_FILE *fdebug;
 #endif
 	#define SEGMASK	0x80000000
 	#define WORDONLY	0x1
@@ -1472,8 +1472,8 @@ public:
 #ifdef DDEBUG
 		if(fdebug){fflush(fdebug);fclose(fdebug);}
 #endif
-		if(fout){ fflush(fout); 	fclose(fout);}
-		if(fidx){ fclose(fidx);}
+		if(fout){ /*fflush(fout);*/ 	u_fclose(fout);}
+		if(fidx){ u_fclose(fidx);}
 		if(loadFst2) free_Fst2(loadFst2);
 	}
 
@@ -1642,7 +1642,7 @@ public:
 	    char *ft = unePhraseAuto.ftemp;
 		strcpy(ft,unePhraseAuto.pathNameStore);
 		strcat(ft,"sentence.fst2");
-		if((fout = u_fopen(ft,U_WRITE)) == 0) fopenErrMessage(ft);
+		if((fout = u_fopen(UTF16_LE,ft,U_WRITE)) == 0) fopenErrMessage(ft);
 
 		unePhraseAuto.loadTokensMap(f);
 		unePhraseAuto.loadMorphemes(f);
@@ -1665,7 +1665,7 @@ public:
 		int cnt_etat;
 		int tran_cnt;
 		unsigned short tt[2];
-		FILE *readFile = unePhraseAuto.phraseAutoMap;
+		U_FILE *readFile = unePhraseAuto.phraseAutoMap;
 		
 		fseek(readFile,off_automate,SEEK_SET);
 		int offset = off_automate;
@@ -1702,7 +1702,7 @@ public:
 			case TE_SYMBOL_NUM:
 			case TE_SYMBOL_GRA:
 			   tt[0] = *wp & 0xffff; 
-			   u_fputc_UTF16LE_raw(tt[0],fout);
+			   u_fputc_UTF16LE_raw(tt[0],fout->f);
 			   break;			
 			case TE_SEGMENT:
 				u_fprintf(fout,"%S",unePhraseAuto.tokTable[*wp&MASK_OF_INDEX]);
@@ -1756,7 +1756,7 @@ public:
 		int no = fst2etiStr.put(wp);
 		return(no);
 	}
-	void prStrList(FILE *f)
+	void prStrList(U_FILE *f)
 	{
 		int sz = fst2etiStr.size();
 		int i;
@@ -1781,7 +1781,7 @@ public:
 
 		strcpy(ft,unePhraseAuto.pathNameStore);
 		strcat(ft,"text.cod");
-		if((fidx = fopen(ft,"rb")) ==0 ) fopenErrMessage(ft);
+		if((fidx = u_fopen(BINARY,ft,U_READ)) ==0 ) fopenErrMessage(ft);
 		unePhraseAuto.loadTokensMap(f);
 		if(unePhraseAuto.phraseMark < 0)
 		fatal_error(" Sentence mark not exist!\n");
@@ -1967,7 +1967,7 @@ unePhraseAuto.prAuto(stderr,2);
 		int off_automate =unePhraseAuto.sentenceInit.tableLoaded[lineNum-1];
 		int cnt_etat;
 		int tran_cnt;
-		FILE *readFile = unePhraseAuto.phraseAutoMap;
+		U_FILE *readFile = unePhraseAuto.phraseAutoMap;
 		
 		fseek(readFile,off_automate,SEEK_SET);
 		int offset = off_automate;

@@ -100,7 +100,7 @@ if (f2==NULL) {
 struct match_list* l2=load_match_list(f2,NULL);
 u_fclose(f2);
 /* We open the output file */
-U_FILE* output=u_fopen(UTF8,out,"w");
+U_FILE* output=u_fopen(UTF8,out,U_WRITE);
 if (output==NULL) {
    return 0;
 }

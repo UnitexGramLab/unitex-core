@@ -119,13 +119,13 @@ static void getListFile(char *fn)
 	char pathName[1024];
 	int pathLen;
 struct binFileList *tmp;
-	FILE *lstF;
+	U_FILE *lstF;
 	u_printf("Load file %s\n",fn);
-    if(!(lstF = fopen(fn,"rb")))
+    if(!(lstF = u_fopen(BINARY,fn,U_READ)))
     	fopenErrMessage(fn);	
     get_path(fn,pathName);
     pathLen = strlen(pathName);
-    while(fgets(buff,1024,lstF)){
+    while(fgets(buff,1024,lstF->f->fin)){
     	wp = buff;
 
     	while(*wp){
@@ -153,7 +153,7 @@ struct binFileList *tmp;
             tailFile = headFiles= tmp;	}
     	fileListCounter++;
     }
-    fclose(lstF);
+    u_fclose(lstF);
 }
 
 static void 
@@ -291,7 +291,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 	class binHead0 newHead;
 	int *offsetMap;
 	int		offsetStrSave = 0;
-	FILE *f;
+	U_FILE *f;
 		unsigned char *wp,*limitBin;
 	unsigned short info,sinfo;
 	int trCnt;
@@ -302,7 +302,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 	char ofilename[1024];
 	remove_extension(ofn,ofilename);
 	strcat(ofilename,".mtb");
-	if(!(f = fopen(ofilename,"wb")))
+	if(!(f = u_fopen(BINARY,ofilename,U_WRITE)))
 		fopenErrMessage(ofilename);
 		
 	newHead.writeAtFile(f);
@@ -460,14 +460,14 @@ mergeFiles(char *ofn,struct binFileList *first)
 	newHead.flag |= (racStateCounter) ? TYPE_BIN_RACINE:0;
 	fseek(f,0,0);
 	newHead.writeAtFile(f);	
-	fclose(f);
+	u_fclose(f);
 }
 #ifdef DEBUG_MER
 static unichar PrBuff[4096];
 static void testLoad(char *fname)
 {
 	class explore_bin1 tbin;
-	FILE *t = u_fopen("out.txt",U_WRITE);
+	U_FILE *t = u_fopen(UTF16_LE,"out.txt",U_WRITE);
 	u_printf("result out\n");
 	remove_extension(fname,filename);
 	strcat(filename,".bin");
@@ -479,8 +479,7 @@ static void testLoad(char *fname)
 
 
 
-int main(int argc , char **argv) {
-setBufferMode();
+int main_MergeBin(int argc , char **argv) {
 
 	int iargIndex=1;
 	nameOfoutput = 0;

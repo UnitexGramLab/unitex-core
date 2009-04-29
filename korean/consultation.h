@@ -23,7 +23,7 @@
 #define MAX_CONSULTATION_DIC    128
 #define MAX_CACHE_LENGTH       2048
 class consultation_dictionnaire {
-FILE *textCodeFile;
+U_FILE *textCodeFile;
 unsigned int cacheOfIndex[MAX_CACHE_LENGTH];
 int lastReadOffset;
 int curTokenIndex;

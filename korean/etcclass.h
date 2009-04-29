@@ -73,7 +73,7 @@ public:
 	}
 
 	void
-	writeTableAtFile(FILE *fout)
+	writeTableAtFile(U_FILE *fout)
 	{
 		struct tables_link *wp = Lhead;
 		total = 0;
@@ -87,7 +87,7 @@ public:
 		}
 	}
 	void
-	readTablesFromFile(FILE *fin)
+	readTablesFromFile(U_FILE *fin)
 	{
 		tableLoaded = new T[total];
 		if(!tableLoaded) fatal_error("mem alloc fail for table\n");

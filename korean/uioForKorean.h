@@ -1,7 +1,7 @@
 #include 
 class io_UNICODE_Text;
 {
-    FILE *f;
+    U_FILE *f;
 public:
    io_UNICODE_Text(){
       f = 0;
@@ -11,7 +11,7 @@ public:
    };
    void u_TextCree(char *f){
    }
-   FILE *getFilePtr()
+   U_FILE *getFilePtr()
    {
       return(f);
    }

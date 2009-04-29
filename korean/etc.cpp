@@ -85,20 +85,20 @@ int utoi(unichar *ws)
 int getStringTableFile(char *f,
 	unsigned short *&mem,unichar **&table)
 {
-	FILE *fptr;
+	U_FILE *fptr;
 	int count;
-	if((fptr = fopen(f,"rb")) ==0 )	fopenErrMessage(f);
+	if((fptr = u_fopen(BINARY,f,U_READ)) ==0 )	fopenErrMessage(f);
 	fseek(fptr,0,SEEK_END);	
 	int sizeFile =ftell(fptr)/2;
 	mem = new unsigned short[sizeFile];
-	if(!mem) fatal_error("mem alloc fail\n");
+	if(!mem) fatal_alloc_error("getStringTableFile");
 	fseek(fptr,2,SEEK_SET);
 	if(!u_fread_raw(mem,sizeFile-1,fptr)) fatal_error("Read Tokens fail\n");
 //for(int  i = 0;i <(sizeFile -1);i++) mem[i] = u_fgetc(fptr); 
 	mem[sizeFile-1] = 0;
 //	mem[sizeFile-2] = 0;
 	loadStrTable((unichar *)mem,table,count);
-	fclose(fptr);
+	u_fclose(fptr);
 	return(count);
 }
 void 
@@ -126,14 +126,14 @@ loadStrTable(unichar *wp,unichar **&table,int &table_sz)
 		} else
 			wp++;			
 	};
-	if( index != table_sz) fatal_error("illegal table size\n");
+	if( index != table_sz) fatal_error("loadStrTable: illegal table size\n");
 }
 int getStringTableFileAvecNull(char *f,
 	unsigned short *&mem,unichar **&table)
 {
-	FILE *fptr;
+	U_FILE *fptr;
 	int count;
-	if((fptr = fopen(f,"rb")) ==0 )	fopenErrMessage(f);
+	if((fptr = u_fopen(BINARY,f,U_READ)) ==0 )	fopenErrMessage(f);
 	fseek(fptr,0,SEEK_END);	
 	int sizeFile =ftell(fptr)/2;
 	mem = new unsigned short[sizeFile];
@@ -144,7 +144,7 @@ int getStringTableFileAvecNull(char *f,
 	mem[sizeFile-1] = 0;
 //	mem[sizeFile-2] = 0;
 	loadStrTableAvecNull((unichar *)mem,table,count);
-	fclose(fptr);
+	u_fclose(fptr);
 	return(count);
 }
 void 
@@ -158,7 +158,7 @@ loadStrTableAvecNull(unichar *wp,unichar **&table,int &table_sz)
 	if(*wp == '\n') wp++;
 
 	table = new unichar *[table_sz];
-	if(!table) fatal_error("token table mem alloc fail\n");
+	if(!table) fatal_alloc_error("loadStrTableAvecNull");
 	unichar *curoffset = wp;
 	int index  = 0;
 	while(*wp ) {
@@ -175,13 +175,13 @@ loadStrTableAvecNull(unichar *wp,unichar **&table,int &table_sz)
 	 table[index++] = curoffset;
 	}
 	if( index != table_sz)  {
-             fatal_error(" index (%d %d)\nillegal table size\n",index,table_sz);
+             fatal_error("loadStrTableAvecNull: index (%d %d)\nillegal table size\n",index,table_sz);
         }
 }
 //
 //	write the number of element of string table 
 //
-void strFileHeadLine(FILE* f,int sz) {
+void strFileHeadLine(U_FILE* f,int sz) {
 u_fprintf(f,"%d\n",sz);
 }
 
@@ -360,7 +360,7 @@ unichar *changeTableMap[0x10000];
 int
 loadChangeFileToTable(char *f)
 {
-	FILE *lf = u_fopen(f,U_READ);
+	U_FILE *lf = u_fopen(UTF16_LE,f,U_READ);
 	if(!lf) return(0);
 	int idx;
 	int srcIdx;

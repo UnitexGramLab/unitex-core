@@ -26,30 +26,30 @@
 #define PRO_TYPE_BIG    	0xfeff
 #define PRO_TYPE_LITTLE	    0xfffe
 
-typedef int (*func_SF)(unichar arg0,FILE *f);
-typedef int (*func_LF)(unsigned int arg0,FILE *f);
-typedef unichar (*Sfunc_F)(FILE *f);
-typedef unsigned int (*Lfunc_F)(FILE *f);
+typedef int (*func_SF)(unichar arg0,U_FILE *f);
+typedef int (*func_LF)(unsigned int arg0,U_FILE *f);
+typedef unichar (*Sfunc_F)(U_FILE *f);
+typedef unsigned int (*Lfunc_F)(U_FILE *f);
 typedef unichar (*Sfunc_B)(unsigned char *arg2);
 typedef unsigned int (*Lfunc_B)(unsigned char *arg2);
 extern unsigned int  LEintRead4(unsigned char *a);
 extern 	unsigned int LEintRead3(unsigned char *a);
 extern	unichar      LEintRead2(unsigned char *a);
-extern 	int          LEoutbytes2(unichar v,FILE *f);
-extern 	int          LEoutbytes3(unsigned int v,FILE *f);
-extern 	int          LEoutbytes4(unsigned int v,FILE *f);
-extern	unichar      LEinbytes2(FILE *f);
-extern	unsigned int LEinbytes3(FILE *f);
-extern	unsigned int LEinbytes4(FILE *f);
+extern 	int          LEoutbytes2(unichar v,U_FILE *f);
+extern 	int          LEoutbytes3(unsigned int v,U_FILE *f);
+extern 	int          LEoutbytes4(unsigned int v,U_FILE *f);
+extern	unichar      LEinbytes2(U_FILE *f);
+extern	unsigned int LEinbytes3(U_FILE *f);
+extern	unsigned int LEinbytes4(U_FILE *f);
 extern	unsigned int GEintRead4(unsigned char *a);
 extern	unsigned int GEintRead3(unsigned char *a);
 extern	unichar      GEintRead2(unsigned char *a);
-extern	int          GEoutbytes2(unichar v,FILE *f);
-extern	int          GEoutbytes3(unsigned int v,FILE *f);
-extern	int          GEoutbytes4(unsigned int v,FILE *f);
-extern	unichar      GEinbytes2(FILE *f);
-extern	unsigned int GEinbytes3(FILE *f);
-extern	unsigned int GEinbytes4(FILE *f);
+extern	int          GEoutbytes2(unichar v,U_FILE *f);
+extern	int          GEoutbytes3(unsigned int v,U_FILE *f);
+extern	int          GEoutbytes4(unsigned int v,U_FILE *f);
+extern	unichar      GEinbytes2(U_FILE *f);
+extern	unsigned int GEinbytes3(U_FILE *f);
+extern	unsigned int GEinbytes4(U_FILE *f);
 
 class pro_associ {
 	

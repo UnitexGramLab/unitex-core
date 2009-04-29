@@ -188,7 +188,7 @@ convert_windows949kr_uni::convHJAtoHAN(unichar *src,unichar *des)
 void
 convert_windows949kr_uni::loadHJAMap(char *f)
 {
-	FILE *lf = u_fopen(f,U_READ);
+	U_FILE *lf = u_fopen(UTF16_LE,f,U_READ);
 	int idx;
 	unichar srcIdx;
 	unichar desIdx;
