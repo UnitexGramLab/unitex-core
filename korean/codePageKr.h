@@ -22,12 +22,8 @@
 #ifndef CODE_PAGE_KR
 #define CODE_PAGE_KR
 #include "unimap.h"
+#include "orgUniMbcsMap.h"
 
-unsigned short orgUniMbcsMap[0x20000]
-={
-#include "KSC5601.txt"
-0,0
-};
 class convert_windows949kr_uni  {
 
     int ready_uniMbcs;

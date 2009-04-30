@@ -1111,7 +1111,7 @@ public:
 		char *tmp;
 
 
-		while(fgets(buff,1024,lstF->f->fin)){
+		while(af_fgets(buff,1024,lstF->f)){
 			wp = buff;
 			while(*wp){
 				if(*wp == 0x0d){ *wp = 0; break;}
@@ -1324,7 +1324,7 @@ public:
 		simpleL<char *> fileLists;
 		char *tmp;
 
-		while(fgets(buff,1024,lstF->f->fin)){
+		while(af_fgets(buff,1024,lstF->f)){
 			wp = buff;
 			while(*wp){
 				if(*wp == 0x0d){ *wp = 0; break;}

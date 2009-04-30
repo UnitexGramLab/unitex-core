@@ -118,7 +118,7 @@ public:
         if(!f) fopenErrMessage(fa);
         char line[1024];
         char *wp;
-        while(fgets(line,1024,f->f->fin)){
+        while(af_fgets(line,1024,f->f)){
                 if(line[0] == ' ') continue;
             wp = line;
             while(*wp){

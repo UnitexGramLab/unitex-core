@@ -52,7 +52,7 @@ char repertoire[MAX_CHARS_IN_STACK];
 #define CONTENT_SUFFIX  0x02
 #define CONTENT_RACSUF  0x03
 static U_FILE *f_out;
-int line=0;
+int lineInflect=0;
 //
 // loads an fst2 and returns its representation in an Automate_fst2 structure
 // same as load_fst2 but no message for the not exist file
@@ -676,7 +676,7 @@ static int inflect_kr(Fst2*fstAuto,unichar* flex,int modeflex)
 //
 // Shifts all the stack from the position pos
 //
-void shift_stack(unichar* stack,int pos) {
+static void shift_stack(unichar* stack,int pos) {
 if (pos==0) {
    // this case should never happen
    return;

@@ -19,12 +19,12 @@
   *
   */
 
-#ifndef _VF_STDIO_INCLUDED
-#define _VF_STDIO_INCLUDED
-struct _vf {
-        FILE* fin;
+#ifndef _ABSTRACT_FILE_STDIO_INCLUDED
+#define _ABSTRACT_FILE_STDIO_INCLUDED
+struct _ABSTRACTFILE {
+        void* dummy;
         };
-typedef struct _vf ABSTRACTFILE;
+typedef struct _ABSTRACTFILE ABSTRACTFILE;
 
 size_t af_fread(void *ptr,size_t size,size_t nmemb,ABSTRACTFILE *stream);
 

@@ -69,6 +69,19 @@ struct utility_item {
 	mainFunc* fnc;
 } ;
 
+#ifndef UNITEX_NO_KOREAN_TOOL
+#include "CompressKr.h"
+#include "ConsultDic.h"
+#include "ExtractChar.h"
+#include "InflectKr.h"
+#include "Jamo2Syl.h"
+#include "MergeBin.h"
+#include "SortMorph.h"
+#include "SufForm2Rac.h"
+#include "Syl2Jamo.h"
+#include "Txt2Fst2Kr.h"
+#endif
+
 const struct utility_item utility_array[]=
 {
 	{ "CheckDic", 8, &main_CheckDic} ,
@@ -114,6 +127,19 @@ const struct utility_item utility_array[]=
 	{ "Tokenize", 8, &main_Tokenize} ,
 	{ "Txt2Tfst", 8, &main_Txt2Tfst} ,
 	{ "XMLizer", 7, &main_XMLizer} ,
+#endif
+
+#ifndef UNITEX_NO_KOREAN_TOOL
+	{ "CompressKr" ,10, &main_CompressKr} ,
+	{ "ConsultDic" ,10, &main_ConsultDic} ,
+	{ "ExtractChar" ,11, &main_ExtractChar} ,
+	{ "InflectKr" ,9, &main_InflectKr} ,
+	{ "Jamo2Syl" ,8, &main_Jamo2Syl} ,
+	{ "MergeBin" ,8, &main_MergeBin} ,
+	{ "SortMorph" ,9, &main_SortMorph} ,
+	{ "SufForm2Rac" ,11, &main_SufForm2Rac} ,
+	{ "Syl2Jamo" ,8, &main_Syl2Jamo} ,
+	{ "Txt2Fst2Kr" ,10, &main_Txt2Fst2Kr} ,
 #endif
 	{ "", 0, NULL} 
 };

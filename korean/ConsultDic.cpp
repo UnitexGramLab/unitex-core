@@ -318,7 +318,7 @@ static void getListFile(char *filename)
     	fopenErrMessage(filename);	
     get_path(filename,pathName);
     pathLen = strlen(pathName);
-    while(fgets(buff,1024,lstF->f->fin)){
+    while(af_fgets(buff,1024,lstF->f)){
     	wp = buff;
 
     	while(*wp){

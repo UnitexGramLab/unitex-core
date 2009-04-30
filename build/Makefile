@@ -256,7 +256,7 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 				ProgramInvoker.o NewLineShifts.o
 
 CONVERT      = Convert
-CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o Unicode.o File.o CodePages.o Error.o\
+CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o Unicode.o File.o CodePages.o orgUniMbcsMap.o Error.o\
 				HTMLCharacters.o AsciiSearchTree.o getopt.o
 
 DICO      = Dico
@@ -483,8 +483,10 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Stack_int.o Stack_unichar.o String_hash.o StringParsing.o Symbol.o Symbol_op.o SymbolAlphabet.o \
                   Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o Text_tokens.o Tfst.o Tfst2Grf.o \
                   Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o TransductionVariables.o \
-                  Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o Txt2Fst2Kr.o bitmap.o etc.o \
-                  segtype.o Korean.o
+                  Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o \
+                  Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o \
+                  codeForKorean.o orgUniMbcsMap.o CompressKr.o ConsultDic.o ExtractChar.o InflectKr.o Jamo2Syl.o \
+                  jamoCodage.o MergeBin.o pro_type.o SortMorph.o SufForm2Rac.o Syl2Jamo.o
 
 ######################
 ## Korean programs  ##
@@ -493,7 +495,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
 COMPRESSKR	= CompressKr
 COMPRESSKR_OBJS = Main_CompressKr.o CompressKr.o IOBuffer.o etc.o pro_type.o \
                   String_hash.o File.o Af_stdio.o Unicode.o Alphabet.o Error.o StringParsing.o
-
+	
 CONSULTDIC = ConsultDic
 CONSULTDIC_OBJS = Main_ConsultDic.o ConsultDic.o IOBuffer.o etc.o pro_type.o \
 		    Af_stdio.o Unicode.o Fst2.o File.o Error.o Alphabet.o Pattern.o List_ustring.o\
@@ -517,7 +519,7 @@ SORTMORPH_OBJS  = Main_SortMorph.o SortMorph.o IOBuffer.o etc.o File.o Af_stdio.
 
 JAMO2SYL  = Jamo2Syl
 JAMO2SYL_OBJS  = Main_Jamo2Syl.o Jamo2Syl.o IOBuffer.o etc.o bitmap.o \
-                  codeForKorean.o segtype.o \
+                  codeForKorean.o orgUniMbcsMap.o segtype.o \
                   pro_type.o jamoCodage.o\
                   Af_stdio.o Unicode.o File.o Fst2.o Error.o Pattern.o\
                   List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
@@ -526,7 +528,7 @@ JAMO2SYL_OBJS  = Main_Jamo2Syl.o Jamo2Syl.o IOBuffer.o etc.o bitmap.o \
 
 SYL2JAMO  = Syl2Jamo
 SYL2JAMO_OBJS  = Main_Syl2Jamo.o Syl2Jamo.o IOBuffer.o jamoCodage.o etc.o \
-                 pro_type.o codeForKorean.o segtype.o \
+                 pro_type.o codeForKorean.o orgUniMbcsMap.o segtype.o \
                  Af_stdio.o Unicode.o File.o Error.o
 
 TXT2FST2KR  = Txt2Fst2Kr
@@ -536,7 +538,7 @@ TXT2FST2KR_OBJS  = Main_Txt2Fst2Kr.o Txt2Fst2Kr.o IOBuffer.o bitmap.o etc.o segt
 		   Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
 
 EXTRACTCHAR  = ExtractChar
-EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o bitmap.o etc.o segtype.o \
+EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o orgUniMbcsMap.o bitmap.o etc.o segtype.o \
 		            jamoCodage.o pro_type.o Af_stdio.o Unicode.o File.o Fst2.o Error.o\
 		            Pattern.o List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
 		            Transitions.o DELA.o Alphabet.o\
@@ -881,6 +883,9 @@ pro_type.o: ../korean/pro_type.cpp
 
 codeForKorean.o: ../korean/codeForKorean.cpp
 	$(CC) -c ../korean/codeForKorean.cpp $(OPTIONS) 
+
+orgUniMbcsMap.o: ../korean/orgUniMbcsMap.cpp
+	$(CC) -c ../korean/orgUniMbcsMap.cpp $(OPTIONS) 
 
 bitmap.o: ../korean/bitmap.cpp
 	$(CC) -c ../korean/bitmap.cpp $(OPTIONS) 

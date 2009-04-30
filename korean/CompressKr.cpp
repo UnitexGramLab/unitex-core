@@ -168,7 +168,7 @@ static void read_list_files(simpleL<char *> &rd,char *filename)
 		fatal_error("file %s open fail\n",filename);
 	}
 	get_path(filename,pathName);
-	while(fgets(templine,256,f->f->fin)){
+	while(af_fgets(templine,256,f->f)){
 		sc =0;
 		while(templine[sc]){
 			if( (templine[sc] == 0x0d) ||

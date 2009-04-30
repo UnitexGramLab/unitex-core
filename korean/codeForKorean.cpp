@@ -27,11 +27,6 @@
 
 using namespace std;
 
-unsigned short orgUniMbcsMap[0x20000]
-={
-#include "KSC5601.txt"
-0,0
-};
 
 convert_windows949kr_uni::convert_windows949kr_uni()
 {

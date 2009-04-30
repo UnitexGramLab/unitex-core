@@ -21,7 +21,7 @@
 
 #include "pro_type.h"
 #include "segtype.h"
-extern unsigned short orgUniMbcsMap[];
+#include "orgUniMbcsMap.h"
 
 class convert_windows949kr_uni:public pro_associ, wideCharTable  {
 
