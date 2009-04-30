@@ -60,7 +60,7 @@ u_printf(
 }
 
 
-int main_Txt2Fst2Kr(int argc,char **argv) {
+int main_Txt2Fst2Kr(int argc,char *argv[]) {
 
 	mkTxt2Fst2Kr txt;
 	int argIdx = 1;

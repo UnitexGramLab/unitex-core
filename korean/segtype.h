@@ -131,26 +131,42 @@ struct offsetString {
 //#pragma pack(push, temp_pragma_save)
 //#pragma pack(push(temp_pragma_save))
 //#pragma pack(1)
+
+#ifdef _MSC_VER
+# pragma pack( push, packing )
+# pragma pack( 1 )
+# define PACK_STRUCT_ST
+#else
+#if defined( __GNUC__ )
+# define PACK_STRUCT_ST __attribute__((packed))
+#else
+# error you must byte-align these structures with the appropriate compiler directives
+#endif
+#endif
+
 struct tmplettre {
 	unsigned type:4;
 	unsigned index:28;
 	unsigned int Offset;
-}__attribute__ ((packed));
+} PACK_STRUCT_ST;
 struct tmpSymbole
 {
 	unsigned type:4;
 	unsigned vide:12;
 	unsigned symNum:16;
 	unsigned int Offset;
-}__attribute__ ((packed));
+} PACK_STRUCT_ST;
 struct tokenTemplate {
 	union {
 		struct tmplettre txt;
 		struct tmpSymbole sym;
 	} a;
-}__attribute__ ((packed));
+} PACK_STRUCT_ST;
 //#pragma pack(pop,temp_pragma_save)
 //#pragma pack(pop(temp_pragma_save))
+#ifdef _MSC_VER
+# pragma pack( pop, packing )
+#endif
 
 class wideCharTable {
 public:

@@ -103,12 +103,12 @@ public:
 	{
 		if(mot_buff)	
 			delete mot_buff;
-		if(textFile) fclose(textFile);
+		if(textFile) u_fclose(textFile);
 		if(saveTmps_cnt){
 			fwrite(saveTmps,sizeof(struct tmplettre)*
 				MAX_SAVETMPS_CNT,1,writeFile);
 		}
-		if(writeFile) fclose(writeFile);
+		if(writeFile) u_fclose(writeFile);
 	}
 
 	unsigned char preTypeChar;
@@ -207,7 +207,7 @@ public:
 			a_token_out(tokenFile,&tokTable[i][1]);
 			fwrite(&retnew,4,1,tokenFile);
 		}
-		fclose(tokenFile);
+		u_fclose(tokenFile);
 		
 		tFileName = "tok_by_alph.txt";
 		tokenFileName  = new char 
@@ -596,8 +596,8 @@ segmentation::segmentFile(char *ifile_name, char *ofile_name,int MaxBufferSize)
 	};
 
 	fflush(writeFile);
-	fclose(writeFile);
-	fclose(textFile);
+	u_fclose(writeFile);
+	u_fclose(textFile);
 
 
 	static_data();

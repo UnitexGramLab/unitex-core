@@ -54,11 +54,24 @@
 #define INF_NOABS_SUF			0x02	// not linked suf
 #define INF_NAME_STR			0x01	// use for save a string
 //#pragma pack(push, temp_pragma_save)
+
+#ifdef _MSC_VER
+# pragma pack( push, packing )
+# pragma pack( 1 )
+# define PACK_STRUCT_BH
+#else
+#if defined( __GNUC__ )
+# define PACK_STRUCT_BH __attribute__((packed))
+#else
+# error you must byte-align these structures with the appropriate compiler directives
+#endif
+#endif
+
 struct INF_raw {
 	unsigned char flag;
 	unsigned int  sufIdx;
 	unsigned int infIdx;	// lingusitic informations
-}__attribute__ ((packed));
+}PACK_STRUCT_BH;
 //#pragma pack(1)
 /*
 		bin structure 
@@ -125,8 +138,14 @@ public:
 //debug("readfromfil:flag=%d, cntAuto=%d, cntSuf=%d cntinf=%d\n",flag, cnt_auto,cnt_suf, cnt_inf);
 //debug("readfromfil:sizeRef=%d, sizeInf=%d, sizeBin=%d\n",size_ref, size_inf, size_bin);
 	}
-}__attribute__ ((packed));
+} PACK_STRUCT_BH;
 // #pragma pack(pop,temp_pragma_save)
+
+#ifdef _MSC_VER
+# pragma pack( pop, packing )
+#endif
+
+
 struct arbre_dico_with_depth {
 	   struct simple_link* arr;
        struct arbre_dico_trans_with_depth* trans;
