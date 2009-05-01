@@ -22,7 +22,6 @@
 #ifndef _ABSTRACT_FILE_CALLBACK_INCLUDED
 #define _ABSTRACT_FILE_CALLBACK_INCLUDED 1
 
-#include "FuncDeclModifier.h"
 #include "AbstractCallbackFuncModifier.h"
 
 typedef void* ABSTRACTFILE_PTR;

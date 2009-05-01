@@ -22,7 +22,6 @@
 #ifndef _ABSTRACT_DELA_CALLBACK_INCLUDED
 #define _ABSTRACT_DELA_CALLBACK_INCLUDED 1
 
-#include "FuncDeclModifier.h"
 #include "AbstractCallbackFuncModifier.h"
 
 

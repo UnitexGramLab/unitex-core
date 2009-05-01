@@ -22,7 +22,6 @@
 #ifndef _ABSTRACT_FST2_CALLBACK_INCLUDED
 #define _ABSTRACT_FST2_CALLBACK_INCLUDED 1
 
-#include "FuncDeclModifier.h"
 #include "AbstractCallbackFuncModifier.h"
 
 
