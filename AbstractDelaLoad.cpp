@@ -144,7 +144,7 @@ void free_abstract_INF(struct INF_codes* INF,struct INF_free_info* p_inf_free_in
 	if (INF != NULL)
 		if (p_inf_free_info->must_be_free != 0)
 	{
-		if (p_inf_free_info->func_free_inf != NULL)
+		if (p_inf_free_info->func_free_inf == NULL)
 			free_INF_codes(INF);
 		else
 		{
@@ -189,7 +189,7 @@ void free_abstract_BIN(unsigned char* BIN,struct BIN_free_info* p_bin_free_info)
 	if (BIN != NULL)
 		if (p_bin_free_info->must_be_free != 0)
 	{
-		if (p_bin_free_info->func_free_bin != NULL)
+		if (p_bin_free_info->func_free_bin == NULL)
 			free(BIN);
 		else
 		{

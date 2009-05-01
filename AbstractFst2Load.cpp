@@ -154,7 +154,7 @@ void free_abstract_Fst2(Fst2* fst2,struct FST2_free_info* p_fst2_free_info)
 	if (fst2 != NULL)
 		if (p_fst2_free_info->must_be_free != 0)
 		{
-			if (p_fst2_free_info->func_free_fst2 != NULL)
+			if (p_fst2_free_info->func_free_fst2 == NULL)
 				free_Fst2(fst2);
 			else
 			{
