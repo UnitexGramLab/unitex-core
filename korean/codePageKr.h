@@ -24,7 +24,16 @@
 #include "unimap.h"
 #include "orgUniMbcsMap.h"
 
-class convert_windows949kr_uni  {
+/* this class seem the perfect clone of convert_windows949kr_uni defined
+   in korean\codeForKorean.h and korean\codeForKorean.cpp
+
+   the better solution is probably remove duplication, after carefully check
+   both code are identical
+
+   Before, I rename to convert_windows949kr_uni_CodePageOnly to avoid name
+   conflict */
+
+class convert_windows949kr_uni_CodePageOnly  {
 
     int ready_uniMbcs;
 public:
@@ -32,14 +41,14 @@ public:
     short int *mbcsUni949Table;
     unsigned char *uniMbcs949Table;
 
-    convert_windows949kr_uni(){
+    convert_windows949kr_uni_CodePageOnly(){
         loadHJAConvMap = 0;
         mbcsUni949Table = new short int[256*128];
         uniMbcs949Table = new unsigned char[0x20000];
         strToMapKr();
         ready_uniMbcs = 1;
     };
-    ~convert_windows949kr_uni(){
+    ~convert_windows949kr_uni_CodePageOnly(){
     delete mbcsUni949Table;
     delete uniMbcs949Table;
     if(loadHJAConvMap) unLoadHJAMap();

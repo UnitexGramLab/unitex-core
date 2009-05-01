@@ -1042,7 +1042,7 @@ u_printf("    Swedish\n");
 }
 
 #ifndef HGH_INSERT
-convert_windows949kr_uni uniKoran949;
+convert_windows949kr_uni_CodePageOnly uniKoran949;
 void usage_windows_949() {
 u_printf("Microsoft Windows Codepage 949 - Korean\n");
 }
