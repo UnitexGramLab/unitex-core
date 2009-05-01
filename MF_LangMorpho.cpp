@@ -97,7 +97,7 @@ int read_language_morpho(char *file) {
   }
 
   //Omit the first line (language name)
-  if (! feof(lf)) {
+  if (! u_feof(lf)) {
     u_fgets(line,MAX_LANG_MORPHO_LINE-1,lf);
     line_no++;
   }
@@ -108,10 +108,10 @@ int read_language_morpho(char *file) {
   sscanf(line_ch,"%s",word_ch);
   line_no++;
 
-  if (! feof(lf))
+  if (! u_feof(lf))
     if (read_cats())
       return 1;
-  if (! feof(lf))
+  if (! u_feof(lf))
     if (read_classes())
       return 1;
   return 0;
@@ -129,7 +129,7 @@ int read_cats() {
 
   //Current line should contain <CATEGORIES>
 
-  if (feof(lf) || strcmp(word_ch,"<CATEGORIES>")) {
+  if (u_feof(lf) || strcmp(word_ch,"<CATEGORIES>")) {
     error("Language morphology file format incorrect in line %d!\n",line_no);
     return 1;
   }
@@ -214,7 +214,7 @@ int read_classes() {
   int l;   //lenght of the scanned line
 
   //Current line should contain <CLASSES>
-  if (feof(lf) || strcmp(word_ch,"<CLASSES>")) {
+  if (u_feof(lf) || strcmp(word_ch,"<CLASSES>")) {
     error("Language morphology file format incorrect: <CLASSES> missing in line %d!\n", line_no);
     return 1;
   }

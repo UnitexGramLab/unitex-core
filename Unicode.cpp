@@ -79,7 +79,7 @@ void rewind(U_FILE* stream) {
 fseek( stream, 0L, SEEK_SET ); 
 }
 
-int feof(U_FILE* stream) {
+int u_feof(U_FILE* stream) {
 return af_feof(stream->f);
 }
 
@@ -344,15 +344,13 @@ return NOT_A_UTF16_FILE;
  * prints an error message if it can read just one byte.
  */
 int u_fgetc_UTF16LE_raw(ABSTRACTFILE* f) {
-int c;
-unsigned char a,b;
-if (!af_fread(&b,1,1,f)) return EOF;
-if (!af_fread(&a,1,1,f)) {
-   error("Alignment error: odd number of characters in a UTF16 file\n");
-   return EOF;
-}
-c=a*256+b;
-return c;
+unsigned char tab[2];
+size_t ret_read = af_fread(&tab[0],1,2,f);
+if (ret_read == 2)
+  return (tab[1]*256)+tab[0];
+if (ret_read == 1)
+  error("Alignment error: odd number of characters in a UTF16 file\n");
+return EOF;
 }
 
 
@@ -362,15 +360,13 @@ return c;
  * prints an error message if it can read just one byte.
  */
 int u_fgetc_UTF16BE_raw(ABSTRACTFILE* f) {
-int c;
-unsigned char a,b;
-if (!af_fread(&b,1,1,f)) return EOF;
-if (!af_fread(&a,1,1,f)) {
-   error("Alignment error: odd number of characters in a UTF16 file\n");
-   return EOF;
-}
-c=b*256+a;
-return c;
+unsigned char tab[2];
+size_t ret_read = af_fread(&tab[0],1,2,f);
+if (ret_read == 2)
+  return (tab[0]*256)+tab[1];
+if (ret_read == 1)
+  error("Alignment error: odd number of characters in a UTF16 file\n");
+return EOF;
 }
 
 
@@ -386,6 +382,7 @@ return c;
  */
 int u_fgetc_UTF8_raw(ABSTRACTFILE* f) {
 unsigned char c;
+unsigned char tab[8];
 if (af_fread(&c,1,1,f)!=1) return EOF;
 if (c<=0x7F) {
    /* Case of a 1 byte character 0XXX XXXX */
@@ -425,8 +422,10 @@ else {
 }
 /* If there are several bytes, we read them and compute the unicode
  * number of the character */
+if (af_fread(&tab[0],1,number_of_bytes-1,f) != (number_of_bytes-1))
+   return EOF;
 for (int i=0;i<number_of_bytes-1;i++) {
-   if (!af_fread(&c,1,1,f)) return EOF;
+   c = tab[i];
    /* Following bytes should be of the form 10XX XXXX */
    if ((c&0xC0)!=0x80) {
       error("Encoding error in byte %d of a %d byte unicode sequence\n",i+2,number_of_bytes);

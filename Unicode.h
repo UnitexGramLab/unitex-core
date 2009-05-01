@@ -129,7 +129,7 @@ extern U_FILE* U_STDERR;
 int fseek(U_FILE *stream, long offset, int whence);
 long ftell(U_FILE *stream);
 void rewind(U_FILE *stream);
-int feof(U_FILE* stream);
+int u_feof(U_FILE* stream);
 size_t fread(void *ptr,size_t size,size_t nmemb,U_FILE *stream);
 size_t fwrite(const void *ptr,size_t size,size_t nmemb,U_FILE *stream);
 
