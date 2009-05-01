@@ -117,7 +117,10 @@ const AbstractFileSpace * GetFileSpaceForFileName(const char*name)
 	}
 	return NULL;
 }
-/**********/
+
+
+/*********************************************************************/
+
 typedef struct _ABSTRACTFILE_REAL
 {
 	union
@@ -128,7 +131,115 @@ typedef struct _ABSTRACTFILE_REAL
 	const AbstractFileSpace * afs;
 } ABSTRACTFILE_REAL;
 
+/*********************************************************************/
 
+
+ABSTRACTFILE_REAL VF_StdIn = { {stdin},NULL };
+ABSTRACTFILE_REAL VF_StdOut = { {stdout},NULL };
+ABSTRACTFILE_REAL VF_StdErr = { {stderr},NULL };
+
+ABSTRACTFILE* return_af_stdin()
+{
+	return (ABSTRACTFILE*)&VF_StdIn;
+}
+
+ABSTRACTFILE* return_af_stdout()
+{
+	return (ABSTRACTFILE*)&VF_StdOut;
+}
+
+ABSTRACTFILE* return_af_stderr()
+{
+	return (ABSTRACTFILE*)&VF_StdErr;
+}
+
+int IsStdIn(ABSTRACTFILE* stream)
+{
+	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
+	return (((p_abfr->f)==stdin) && (p_abfr->afs==NULL));
+}
+
+
+
+struct stdwrite_param
+{
+	int trashOutput;
+	t_fnc_stdOutWrite fnc_stdOutWrite;
+	void* privatePtr;
+};
+
+
+struct stdwrite_param stdwrite_setparam[2];
+/*
+int IsStdWrite(ABSTRACTFILE* stream,enum stdwrite_kind * p_std_write)
+{
+	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
+	if (p_abfr->afs != NULL)
+	  return 0;
+
+	if (((p_abfr->f)==stdout))
+	{
+		if (p_std_write != NULL)
+			*p_std_write = stdwrite_kind_out;
+		return 1;
+	}
+
+	if (((p_abfr->f)==stderr))
+	{
+		if (p_std_write != NULL)
+			*p_std_write = stdwrite_kind_err;
+		return 1;
+	}
+
+	return 0;
+}
+*/
+struct stdwrite_param* get_std_write_param(ABSTRACTFILE*stream)
+{
+	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
+	if (p_abfr->afs == NULL)
+	{
+		if (((p_abfr->f)==stdout))
+			return &stdwrite_setparam[stdwrite_kind_out];
+
+		if (((p_abfr->f)==stderr))
+			return &stdwrite_setparam[stdwrite_kind_err];
+	}
+
+	return NULL;
+}
+
+UNITEX_FUNC int UNITEX_CALL SetStdWriteCB(enum stdwrite_kind swk, int trashOutput, 
+										t_fnc_stdOutWrite fnc_stdOutWrite,void* privatePtr)
+{
+	if ((swk != stdwrite_kind_out) && (swk != stdwrite_kind_err))
+		return 0;
+	stdwrite_setparam[swk].trashOutput = trashOutput;
+	stdwrite_setparam[swk].fnc_stdOutWrite = fnc_stdOutWrite;
+	stdwrite_setparam[swk].privatePtr = privatePtr;
+
+	return 1;
+}
+
+UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(enum stdwrite_kind swk, int* p_trashOutput, 
+										t_fnc_stdOutWrite* p_fnc_stdOutWrite,void** p_privatePtr)
+{
+	if ((swk != stdwrite_kind_out) && (swk != stdwrite_kind_err))
+		return 0;
+
+	if (p_trashOutput != NULL)
+		*p_trashOutput = stdwrite_setparam[swk].trashOutput ;
+
+	if (p_fnc_stdOutWrite != NULL)
+		*p_fnc_stdOutWrite = stdwrite_setparam[swk].fnc_stdOutWrite ;
+
+	if (p_privatePtr != NULL)
+		*p_privatePtr = stdwrite_setparam[swk].privatePtr ;
+
+	return 1;
+}
+
+/*****************************************************************************/
 
 ABSTRACTFILE* af_fopen(const char* name,const char* MODE)
 {
@@ -158,7 +269,7 @@ ABSTRACTFILE* af_fopen(const char* name,const char* MODE)
         //vfRet -> Std_Stream_Type = STD_STREAM_MEMFILE;
 		vf->afs = pafs;
 		vf->fabstr = (*(pafs->func_array.fnc_memOpenLowLevel))(name, TypeOpen,
-			                      0,0,pafs->privateSpacePtr);
+			                      pafs->privateSpacePtr);
 
         if (vf->fabstr == NULL)
         {
@@ -205,7 +316,25 @@ size_t af_fwrite(const void *ptr,size_t sizeItem,size_t nmemb,ABSTRACTFILE *stre
 {
 	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
 	if (p_abfr->afs == NULL)
+	{
+		struct stdwrite_param* p_std_write_param = get_std_write_param(stream);
+		if (p_std_write_param != NULL)
+		{
+			if (p_std_write_param->trashOutput != 0)
+				return nmemb;
+
+			if (p_std_write_param->fnc_stdOutWrite != NULL)
+			{
+				size_t nbByteToWrite = sizeItem * nmemb;
+				size_t res = (*(p_std_write_param->fnc_stdOutWrite))(ptr,nbByteToWrite,p_std_write_param->privatePtr);
+				if ((res > 0) && (sizeItem>0))
+					res /= sizeItem;
+				return res;
+			}
+
+		}
 		return fwrite(ptr,sizeItem,nmemb,p_abfr->f);
+	}
 	else {
 		size_t nbByteToWrite = sizeItem * nmemb;
 		size_t res = (*(p_abfr->afs->func_array.fnc_memLowLevelWrite))(p_abfr->fabstr,ptr,nbByteToWrite,p_abfr->afs->privateSpacePtr);
@@ -298,6 +427,18 @@ int af_ungetc(int ch, ABSTRACTFILE* stream)
 		return (af_fseek(stream,-1,SEEK_CUR) != 0 ) ? EOF:ch;
 }
 
+/* when we create a new file, before write into, we can set the filesize,
+   (if we known the size of result file)
+   like the chsize or _chsize . This can help to avoid fragmentation or 
+   rewrite the File allocation table often, by example */
+void af_setsizereservation(ABSTRACTFILE* stream, long size_planned)
+{
+	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
+	if (p_abfr->afs != NULL)
+		if (p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation != NULL)
+			(*(p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation))(p_abfr->fabstr, size_planned,p_abfr->afs->privateSpacePtr);	
+}
+
 int af_rename(const char * OldFilename, const char * NewFilename)
 {
 	const AbstractFileSpace * pafs = GetFileSpaceForFileName(OldFilename);
@@ -316,50 +457,3 @@ int af_remove(const char * Filename)
 		return (*(pafs->func_array.fnc_memFileRemove))(Filename,pafs->privateSpacePtr);
 }
 
-ABSTRACTFILE_REAL VF_StdIn = { {stdin},NULL };
-ABSTRACTFILE_REAL VF_StdOut = { {stdout},NULL };
-ABSTRACTFILE_REAL VF_StdErr = { {stderr},NULL };
-
-ABSTRACTFILE* return_af_stdin()
-{
-	return (ABSTRACTFILE*)&VF_StdIn;
-}
-
-ABSTRACTFILE* return_af_stdout()
-{
-	return (ABSTRACTFILE*)&VF_StdOut;
-}
-
-ABSTRACTFILE* return_af_stderr()
-{
-	return (ABSTRACTFILE*)&VF_StdErr;
-}
-
-int IsStdIn(ABSTRACTFILE* stream)
-{
-	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
-	return (((p_abfr->f)==stdin) && (p_abfr->afs==NULL));
-}
-
-int IsStdWrite(ABSTRACTFILE* stream,enum stdwrite_kind * p_std_write)
-{
-	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
-	if (p_abfr->afs != NULL)
-	  return 0;
-
-	if (((p_abfr->f)==stdout))
-	{
-		if (p_std_write != NULL)
-			*p_std_write = stdwrite_kind_out;
-		return 1;
-	}
-
-	if (((p_abfr->f)==stderr))
-	{
-		if (p_std_write != NULL)
-			*p_std_write = stdwrite_kind_err;
-		return 1;
-	}
-
-	return 0;
-}

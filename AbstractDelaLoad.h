@@ -24,11 +24,17 @@
 
 struct INF_free_info
 {
+	void *func_free_inf;
+	void *private_ptr;
+	void *privateSpacePtr;
 	int must_be_free;
 } ;
 
 struct BIN_free_info
 {
+	void *func_free_bin;
+	void *private_ptr;
+	void *privateSpacePtr;
 	int must_be_free;
 } ;
 

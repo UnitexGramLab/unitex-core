@@ -19,56 +19,50 @@
   *
   */
 
-#ifndef _ABSTRACT_CALLBACK_FUNC_MODIFIER_INCLUDED
-#define _ABSTRACT_CALLBACK_FUNC_MODIFIER_INCLUDED 1
+#ifndef FUNC_DECL_MODIFIER_H
+#define FUNC_DECL_MODIFIER_H 1
 
-
-
-#if (((defined(_WIN32)) || defined(WIN32)) && (!(defined(NO_WIN32_DLLLIKE_FUNCSPEC))))
-/*
+#if (((defined(_WIN32)) || defined(WIN32)))
 #define ULIB__EXPORT __declspec(dllexport)
 #define ULIB__IMPORT __declspec(dllimport)
-*/
+#define ULIB_CALL __stdcall
 
-
-
-#ifndef ABSTRACT_CALLBACK_UNITEX_DEFINED
-#define ABSTRACT_CALLBACK_UNITEX_DEFINED
 #define ABSTRACT_CALLBACK_UNITEX __stdcall
-#endif
-
-#ifndef UNITEX_FUNC_DEFINED
-#define UNITEX_FUNC_DEFINED
-#define UNITEX_FUNC
-#endif
-
-#ifndef UNITEX_CALL_DEFINED
-#define UNITEX_CALL_DEFINED
-#define UNITEX_CALL __stdcall
-#endif
 
 
 #else
 
-
-
-#ifndef ABSTRACT_CALLBACK_UNITEX_DEFINED
-#define ABSTRACT_CALLBACK_UNITEX_DEFINED
 #define ABSTRACT_CALLBACK_UNITEX
-#endif
 
-#ifndef UNITEX_FUNC_DEFINED
-#define UNITEX_FUNC_DEFINED
-#define UNITEX_FUNC
-#endif
 
-#ifndef UNITEX_CALL_DEFINED
-#define UNITEX_CALL_DEFINED
-#define UNITEX_CALL
-#endif
 
+#define ULIB__EXPORT
+#define ULIB__IMPORT
+#define ULIB_CALL
 
 #endif
 
 
+#ifdef UNITEX_LIBRARY_VF
+#define ULB_VFFUNC ULIB__EXPORT
+#else
+#ifdef UNITEX_LIBRARY_VF__IMPORT
+#define ULB_VFFUNC ULIB__IMPORT
+#else
+#define ULB_VFFUNC
 #endif
+#endif
+
+
+#ifdef UNITEX_LIBRARY_CORE
+#define ULB_FUNC ULIB__EXPORT
+#else
+#ifdef UNITEX_LIBRARY_CORE_IMPORT
+#define ULB_FUNC ULIB__IMPORT
+#else
+#define ULB_FUNC
+#endif
+#endif
+
+#endif
+

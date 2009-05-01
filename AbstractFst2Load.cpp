@@ -21,23 +21,145 @@
 
 #include "Unicode.h"
 #include "Fst2.h"
+
 #include "AbstractFst2Load.h"
+#include "AbstractFst2PlugCallback.h"
+
+
+struct AbstractFst2Space {
+	t_persistent_fst2_func_array func_array;
+	void* privateSpacePtr;
+} ;
+
+
+struct List_AbstractFst2Space {
+	AbstractFst2Space afs;
+	List_AbstractFst2Space* next;
+} ;
+
+
+struct List_AbstractFst2Space* p_abstract_fst2_space_list;
+
+
+
+UNITEX_FUNC int UNITEX_CALL AddAbstractFst2Space(const t_persistent_fst2_func_array* func_array,void* privateSpacePtr)
+{
+	struct List_AbstractFst2Space* new_item;
+	new_item = (struct List_AbstractFst2Space*)malloc(sizeof(struct List_AbstractFst2Space));
+	if (new_item == NULL)
+		return 0;
+
+	new_item->afs.func_array = *func_array;
+	new_item->afs.privateSpacePtr = privateSpacePtr;
+	new_item->next = NULL;
+
+	if (p_abstract_fst2_space_list == NULL)
+		p_abstract_fst2_space_list = new_item;
+	else {
+		struct List_AbstractFst2Space* tmp = p_abstract_fst2_space_list;
+		while ((tmp->next) != NULL)
+			tmp = tmp->next;
+		tmp->next = p_abstract_fst2_space_list;
+	}
+
+	if ((new_item->afs.func_array.fnc_Init_Fst2Space) != NULL)
+		(*(new_item->afs.func_array.fnc_Init_Fst2Space))(new_item->afs.privateSpacePtr);
+
+	return 1;
+}
+
+UNITEX_FUNC int UNITEX_CALL RemoveAbstractFst2Space(const t_persistent_fst2_func_array* func_array,void* privateSpacePtr)
+{
+	struct List_AbstractFst2Space* tmp = p_abstract_fst2_space_list;
+	struct List_AbstractFst2Space* tmp_previous = NULL;
+
+	while (tmp != NULL)
+	{
+		t_persistent_fst2_func_array test_func_array = tmp->afs.func_array;
+		t_persistent_fst2_func_array request_func_array = *func_array;
+
+		if ((memcmp(&tmp->afs.func_array,func_array,sizeof(t_persistent_fst2_func_array))==0) &&
+			(tmp->afs.privateSpacePtr == privateSpacePtr))
+		{
+			if (tmp_previous == NULL)
+				p_abstract_fst2_space_list = tmp->next;
+			else
+				tmp_previous->next = tmp->next;
+
+			if ((tmp->afs.func_array.fnc_Uninit_Fst2Space) != NULL)
+				(*(tmp->afs.func_array.fnc_Uninit_Fst2Space))(tmp->afs.privateSpacePtr);
+
+			free(tmp);
+			return 1;
+		}
+		tmp_previous = tmp;
+		tmp = tmp->next;
+	}
+	return 0;
+}
+
+const AbstractFst2Space * GetFst2SpaceForFileName(const char*name)
+{
+	const struct List_AbstractFst2Space* tmp = p_abstract_fst2_space_list;
+
+	while (tmp != NULL)
+	{
+		const AbstractFst2Space * test_afs = &(tmp->afs);
+		if (tmp->afs.func_array.fnc_is_filename_object(name,tmp->afs.privateSpacePtr) != 0)
+			return test_afs;		
+
+		tmp = tmp->next;
+	}
+	return NULL;
+}
+
+/*******************************/
 
 
 Fst2* load_abstract_fst2(char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
 {
 	Fst2* res = NULL;
-	res = load_fst2(filename, read_names);
+	const AbstractFst2Space * pads = GetFst2SpaceForFileName(filename) ;
+	if (pads == NULL)
+	{
+		res = load_fst2(filename, read_names);
 
-	if ((res != NULL) && (p_fst2_free_info != NULL))
-		p_fst2_free_info->must_be_free = 1;
-
-	return res;
+		if ((res != NULL) && (p_fst2_free_info != NULL))
+		{
+			p_fst2_free_info->must_be_free = 1;
+			p_fst2_free_info->func_free_fst2 = NULL;
+			p_fst2_free_info->private_ptr = NULL;
+		}
+		return res;
+	}
+	else
+	{
+		if (p_fst2_free_info != NULL)
+		{
+			p_fst2_free_info->must_be_free = 0;
+			p_fst2_free_info->private_ptr = NULL;
+			p_fst2_free_info->privateSpacePtr = pads->privateSpacePtr;
+			p_fst2_free_info->func_free_fst2 = (void*)(pads->func_array.fnc_free_abstract_fst2);
+		}
+		res = (*(pads->func_array.fnc_load_abstract_fst2))(filename,read_names,p_fst2_free_info,pads->privateSpacePtr);
+		return res;
+	}
 }
+
+
+
 
 void free_abstract_Fst2(Fst2* fst2,struct FST2_free_info* p_fst2_free_info)
 {
 	if (fst2 != NULL)
 		if (p_fst2_free_info->must_be_free != 0)
-			free_Fst2(fst2);
+		{
+			if (p_fst2_free_info->func_free_fst2 != NULL)
+				free_Fst2(fst2);
+			else
+			{
+				t_fnc_free_abstract_fst2 fnc_free_abstract_fst2 = (t_fnc_free_abstract_fst2)(p_fst2_free_info->func_free_fst2);
+				(*fnc_free_abstract_fst2)(fst2,p_fst2_free_info,p_fst2_free_info->privateSpacePtr);
+			}
+		}
 }

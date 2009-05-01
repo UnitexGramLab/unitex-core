@@ -44,6 +44,8 @@ int af_ungetc(int, ABSTRACTFILE* stream) ;
 
 int af_fclose(ABSTRACTFILE* stream) ;
 
+void af_setsizereservation(ABSTRACTFILE* stream, long size_planned);
+
 int af_rename(const char * OldFilename, const char * NewFilename);
 
 int af_remove(const char * Filename);

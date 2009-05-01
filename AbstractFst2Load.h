@@ -24,6 +24,9 @@
 
 struct FST2_free_info
 {
+	void *func_free_fst2;
+	void *private_ptr;
+	void *privateSpacePtr;
 	int must_be_free;
 } ;
 

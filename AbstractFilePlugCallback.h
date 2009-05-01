@@ -22,6 +22,7 @@
 #ifndef _ABSTRACT_FILE_CALLBACK_INCLUDED
 #define _ABSTRACT_FILE_CALLBACK_INCLUDED 1
 
+#include "FuncDeclModifier.h"
 #include "AbstractCallbackFuncModifier.h"
 
 typedef void* ABSTRACTFILE_PTR;
@@ -44,7 +45,7 @@ typedef int (ABSTRACT_CALLBACK_UNITEX* t_fnc_Init_FileSpace)(void* privateSpaceP
 typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_Uninit_FileSpace)(void* privateSpacePtr);
 
 typedef ABSTRACTFILE_PTR (ABSTRACT_CALLBACK_UNITEX *t_fnc_memOpenLowLevel)
-        (const char* FileName, TYPEOPEN_MF TypeOpen, int ProjectedSize, afs_size_type dfProjectedSize,void* privateSpacePtr);
+        (const char* FileName, TYPEOPEN_MF TypeOpen, void* privateSpacePtr);
 typedef size_t (ABSTRACT_CALLBACK_UNITEX *t_fnc_memLowLevelWrite)(ABSTRACTFILE_PTR llFile, void const *Buf, size_t size,void* privateSpacePtr);
 typedef size_t (ABSTRACT_CALLBACK_UNITEX *t_fnc_memLowLevelRead)(ABSTRACTFILE_PTR llFile, void *Buf, size_t size,void* privateSpacePtr);
 typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memLowLevelSeek)(ABSTRACTFILE_PTR llFile, afs_size_type Pos, int TypeSeek,void* privateSpacePtr);
@@ -81,9 +82,11 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* f
 
 
 
-enum stdwrite_kind { stdwrite_kind_out, stdwrite_kind_err } ;
+enum stdwrite_kind { stdwrite_kind_out=0, stdwrite_kind_err } ;
 
 typedef size_t (ABSTRACT_CALLBACK_UNITEX *t_fnc_stdOutWrite)(void const *Buf, size_t size,void* privatePtr);
-UNITEX_FUNC int UNITEX_CALL SetStdOutCB(enum stdwrite_kind swk, int trashOutput, 
-										t_fnc_stdOutWrite fnc_stdOutWrite,void* privateSpace);
+UNITEX_FUNC int UNITEX_CALL SetStdWriteCB(enum stdwrite_kind swk, int trashOutput, 
+										t_fnc_stdOutWrite fnc_stdOutWrite,void* privatePtr);
+UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(enum stdwrite_kind swk, int* p_trashOutput, 
+										t_fnc_stdOutWrite* p_fnc_stdOutWrite,void** p_privatePtr);
 #endif
