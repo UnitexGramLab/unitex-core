@@ -1,4 +1,4 @@
- /*
+﻿ /*
   * Unitex
   *
   * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
@@ -83,9 +83,14 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* f
 
 enum stdwrite_kind { stdwrite_kind_out=0, stdwrite_kind_err } ;
 
-typedef size_t (ABSTRACT_CALLBACK_UNITEX *t_fnc_stdOutWrite)(void const *Buf, size_t size,void* privatePtr);
+typedef size_t (ABSTRACT_CALLBACK_UNITEX *t_fnc_stdOutWrite)(const void*Buf, size_t size,void* privatePtr);
 UNITEX_FUNC int UNITEX_CALL SetStdWriteCB(enum stdwrite_kind swk, int trashOutput, 
 										t_fnc_stdOutWrite fnc_stdOutWrite,void* privatePtr);
 UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(enum stdwrite_kind swk, int* p_trashOutput, 
 										t_fnc_stdOutWrite* p_fnc_stdOutWrite,void** p_privatePtr);
+
+
+typedef size_t (ABSTRACT_CALLBACK_UNITEX *t_fnc_stdIn)(void *Buf, size_t size,void* privatePtr);
+UNITEX_FUNC int UNITEX_CALL SetStdInCB(t_fnc_stdIn fnc_stdInRead,void* privatePtr);
+UNITEX_FUNC int UNITEX_CALL GetStdInCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_privatePtr);
 #endif

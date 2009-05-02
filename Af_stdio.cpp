@@ -169,31 +169,9 @@ struct stdwrite_param
 };
 
 
-struct stdwrite_param stdwrite_setparam[2];
-/*
-int IsStdWrite(ABSTRACTFILE* stream,enum stdwrite_kind * p_std_write)
-{
-	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
-	if (p_abfr->afs != NULL)
-	  return 0;
+struct stdwrite_param stdwrite_setparam[2] = { { 0 , NULL, NULL } , { 0 , NULL , NULL } };
 
-	if (((p_abfr->f)==stdout))
-	{
-		if (p_std_write != NULL)
-			*p_std_write = stdwrite_kind_out;
-		return 1;
-	}
 
-	if (((p_abfr->f)==stderr))
-	{
-		if (p_std_write != NULL)
-			*p_std_write = stdwrite_kind_err;
-		return 1;
-	}
-
-	return 0;
-}
-*/
 struct stdwrite_param* get_std_write_param(ABSTRACTFILE*stream)
 {
 	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
@@ -214,6 +192,12 @@ UNITEX_FUNC int UNITEX_CALL SetStdWriteCB(enum stdwrite_kind swk, int trashOutpu
 {
 	if ((swk != stdwrite_kind_out) && (swk != stdwrite_kind_err))
 		return 0;
+
+	if ((stdwrite_setparam[swk].trashOutput == 0) && (stdwrite_setparam[swk].fnc_stdOutWrite != NULL))
+	{
+		(*(stdwrite_setparam[swk].fnc_stdOutWrite))(NULL,0,stdwrite_setparam[swk].privatePtr);
+	}
+	
 	stdwrite_setparam[swk].trashOutput = trashOutput;
 	stdwrite_setparam[swk].fnc_stdOutWrite = fnc_stdOutWrite;
 	stdwrite_setparam[swk].privatePtr = privatePtr;
@@ -235,6 +219,62 @@ UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(enum stdwrite_kind swk, int* p_trashOu
 
 	if (p_privatePtr != NULL)
 		*p_privatePtr = stdwrite_setparam[swk].privatePtr ;
+
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+struct t_stdin_param
+{
+	t_fnc_stdIn fnc_stdIn;
+	void* privatePtr;
+};
+
+
+struct t_stdin_param stdin_param = { 0 , NULL } ;
+
+
+struct t_stdin_param* get_std_in(ABSTRACTFILE*stream)
+{
+	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
+	if (p_abfr->afs == NULL)
+	{
+		if (((p_abfr->f)==stdin))
+			return &stdin_param;
+	}
+
+	return NULL;
+}
+
+UNITEX_FUNC int UNITEX_CALL SetStdInCB(t_fnc_stdIn fnc_stdInRead,void* privatePtr)
+{
+	if (stdin_param.fnc_stdIn != NULL)
+	{
+		(*(stdin_param.fnc_stdIn))(NULL,0,stdin_param.privatePtr);
+	}
+	
+	stdin_param.fnc_stdIn = fnc_stdInRead;
+	stdin_param.privatePtr = privatePtr;
+
+	return 1;
+}
+
+UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_privatePtr)
+{
+
+	if (p_fnc_stdInRead != NULL)
+		*p_fnc_stdInRead = stdin_param.fnc_stdIn;
+
+	if (p_privatePtr != NULL)
+		*p_privatePtr = stdin_param.privatePtr ;
 
 	return 1;
 }
@@ -302,8 +342,20 @@ size_t af_fread(void *ptr,size_t sizeItem,size_t nmemb,ABSTRACTFILE *stream)
 {
 	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
 	if (p_abfr->afs == NULL)
+	{
+		struct t_stdin_param* p_stdin_param = get_std_in(stream);
+		if (p_stdin_param != NULL)
+			if (p_stdin_param -> fnc_stdIn != NULL) {
+				size_t nbByteToRead = sizeItem * nmemb;
+				size_t res = (*(p_stdin_param -> fnc_stdIn))(ptr,nbByteToRead,p_stdin_param->privatePtr);
+				if ((res > 0) && (sizeItem>0))
+					res /= sizeItem;
+				return res;
+			}
+
 		return fread(ptr,sizeItem,nmemb,p_abfr->f);
-	else{
+	}
+	else {
 		size_t nbByteToRead = sizeItem * nmemb;
 		size_t res = (*(p_abfr->afs->func_array.fnc_memLowLevelRead))(p_abfr->fabstr,ptr,nbByteToRead,p_abfr->afs->privateSpacePtr);
 		if ((res > 0) && (sizeItem>0))
@@ -326,12 +378,13 @@ size_t af_fwrite(const void *ptr,size_t sizeItem,size_t nmemb,ABSTRACTFILE *stre
 			if (p_std_write_param->fnc_stdOutWrite != NULL)
 			{
 				size_t nbByteToWrite = sizeItem * nmemb;
+				if (nbByteToWrite == 0)
+					return 0;
 				size_t res = (*(p_std_write_param->fnc_stdOutWrite))(ptr,nbByteToWrite,p_std_write_param->privatePtr);
 				if ((res > 0) && (sizeItem>0))
 					res /= sizeItem;
 				return res;
 			}
-
 		}
 		return fwrite(ptr,sizeItem,nmemb,p_abfr->f);
 	}
