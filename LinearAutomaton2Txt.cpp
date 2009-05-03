@@ -86,7 +86,7 @@ for (int sentence=1;sentence<tfst->N;sentence++) {
             /* If this is not the last sentence, we put a sentence delimiter {S} */
             u_fprintf(f,"{S}");
          }
-         /* Then, in any case we print a carridge return */
+         /* Then, in any case we print a carriage return */
          u_fputc('\n',f);
          /* And we set 'state' to NULL in order to quit the loop */
          state=NULL;

@@ -35,14 +35,14 @@
  * 2) If there is one or more replacement rules that can apply to the current
  *    position in 'input', then we apply the longest one.
  * 3) If we we find a separator (space, tab, new line) sequence, we replace it:
- *    - by a new line if the sequence contains one and if 'carridge_return_policy' is
- *      set to KEEP_CARRIDGE_RETURN;
+ *    - by a new line if the sequence contains one and if 'carriage_return_policy' is
+ *      set to KEEP_CARRIAGE_RETURN;
  *    - by a space otherwise.
  * 4) We copy the character that was read to the output.
  *
  * Note that 'replacements' is supposed to contain replacement rules for { and }
  */
-int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
+int normalize(char *fin, char *fout, int carriage_return_policy, char *rules) {
 	U_FILE* input;
 	input = u_fopen(UTF16_LE,fin,U_READ);
 	if (input == NULL) {
@@ -187,7 +187,7 @@ int normalize(char *fin, char *fout, int carridge_return_policy, char *rules) {
 						}
 						current_start_pos++;
 					}
-					if (new_line && (carridge_return_policy==KEEP_CARRIDGE_RETURN)) {
+					if (new_line && (carriage_return_policy==KEEP_CARRIAGE_RETURN)) {
 						/* We print a new line if the sequence contains one and if we are
 						 * allowed to; otherwise, we print a space. */
 						u_fputc('\n',output);

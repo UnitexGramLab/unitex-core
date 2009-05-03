@@ -91,7 +91,7 @@ u_printf("Usage: Tokenize [OPTIONS] <txt>\n"
          "The program also produces 4 files named \"tok_by_freq.txt\", \"tok_by_alph.txt\",\n"
          "\"stats.n\" and \"enter.pos\". They contain the token list sorted by frequence and by\n"
          "alphabetical order and \"stats.n\" contains some statistics. The file \"enter.pos\"\n"
-         "contains the position in tokens of all the carridge return sequences. All\n"
+         "contains the position in tokens of all the carriage return sequences. All\n"
          "files are saved in the XXX_snt directory where XXX is <txt> without its extension.\n");
 }
 

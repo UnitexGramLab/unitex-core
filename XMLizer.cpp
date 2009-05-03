@@ -143,7 +143,7 @@ strcat(snt,"_tmp.snt");
 char tmp[FILENAME_MAX];
 remove_extension(input,tmp);
 strcat(tmp,".tmp");
-normalize(input,snt,KEEP_CARRIDGE_RETURN,normalization);
+normalize(input,snt,KEEP_CARRIAGE_RETURN,normalization);
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 p->text_file=strdup(snt);
 if (p->text_file==NULL) {

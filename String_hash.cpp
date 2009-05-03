@@ -267,7 +267,7 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
 /**
  * Loads the lines of a text file info a string_hash and returns it, or NULL
  * if the file can not be opened. We arbitrary fix the limit of a line to 4096
- * characters. For each line, we ignore the carridge return, if any, and we use
+ * characters. For each line, we ignore the carriage return, if any, and we use
  * the remaining string as key and value. An error message will be printed if
  * an empty line is found.
  */

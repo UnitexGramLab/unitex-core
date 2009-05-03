@@ -22,6 +22,8 @@
 #ifndef UnitexToolH
 #define UnitexToolH
 
+#define _UNITEX_VER 0210
+
 int check_Utility(const char* name);
 
 int main_UnitexTool_single(int argc,char* argv[]);

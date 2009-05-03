@@ -38,7 +38,7 @@ u_printf("Usage: Normalize [OPTIONS] <text>\n"
          "  <text>: text file to be normalized\n"
          "\n"
          "OPTIONS:\n"
-         "  -n/--no_carridge_return: every separator sequence will be turned into a single space\n"
+         "  -n/--no_carriage_return: every separator sequence will be turned into a single space\n"
          "  -r XXX/--replacement_rules=XXX: specifies a configuration file XXX that contains\n"
          "                                  replacement instructions in the form of lines like:\n"
          "\n"
@@ -49,7 +49,7 @@ u_printf("Usage: Normalize [OPTIONS] <text>\n"
          "\n"
          "Turns every sequence of separator chars (space, tab, new line) into one.\n"
          "If a separator sequence contains a new line char, it is turned to a single new\n"
-         "line (except with --no_carridge_return); if not, it is turned into a single space. As\n"
+         "line (except with --no_carriage_return); if not, it is turned into a single space. As\n"
          "a side effect, new line sequences are converted into the Windows style: \\r\\n.\n"
          "If you specifies replacement rules with -f, they will be applied prior\n"
          "to the separator normalization, so you have to take care if you manipulate\n"
@@ -66,18 +66,18 @@ if (argc==1) {
 
 const char* optstring=":nr:h";
 const struct option_TS lopts[]= {
-      {"no_carridge_return",no_argument_TS,NULL,'n'},
+      {"no_carriage_return",no_argument_TS,NULL,'n'},
       {"replacement_rules",required_argument_TS,NULL,'r'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
-int mode=KEEP_CARRIDGE_RETURN;
+int mode=KEEP_CARRIAGE_RETURN;
 char rules[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
-   case 'n': mode=REMOVE_CARRIDGE_RETURN; break;
+   case 'n': mode=REMOVE_CARRIAGE_RETURN; break;
    case 'r': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty replacement rule file name\n");
              }
