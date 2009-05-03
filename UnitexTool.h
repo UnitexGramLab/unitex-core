@@ -31,5 +31,16 @@ int main_UnitexTool_single(int argc,char* argv[]);
 int UnitexTool_several(int argc,char* argv[],int* p_number_done);
 int main_UnitexTool(int argc,char* argv[]);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int main_UnitexTool_C(int argc,char* argv[]);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 #endif
 

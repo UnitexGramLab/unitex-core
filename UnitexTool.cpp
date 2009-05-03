@@ -268,3 +268,8 @@ int main_UnitexTool(int argc,char* argv[])
 {
 	return UnitexTool_several(argc,argv,NULL);
 }
+
+int main_UnitexTool_C(int argc,char* argv[])
+{
+	return UnitexTool_several(argc,argv,NULL);
+}

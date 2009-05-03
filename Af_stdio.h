@@ -21,6 +21,13 @@
 
 #ifndef _ABSTRACT_FILE_STDIO_INCLUDED
 #define _ABSTRACT_FILE_STDIO_INCLUDED
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _ABSTRACTFILE {
         void* dummy;
         };
@@ -55,5 +62,11 @@ ABSTRACTFILE* return_af_stdout();
 ABSTRACTFILE* return_af_stderr();
 
 int IsStdIn(ABSTRACTFILE*);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif
