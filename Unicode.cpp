@@ -422,7 +422,7 @@ else {
 }
 /* If there are several bytes, we read them and compute the unicode
  * number of the character */
-if (af_fread(&tab[0],1,number_of_bytes-1,f) != (number_of_bytes-1))
+if (((int)af_fread(&tab[0],1,number_of_bytes-1,f)) != (number_of_bytes-1))
    return EOF;
 for (int i=0;i<number_of_bytes-1;i++) {
    c = tab[i];
