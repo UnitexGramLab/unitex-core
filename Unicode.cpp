@@ -632,6 +632,7 @@ else
     //tab[1]=(unsigned char) (0x80 | ((c-(c&12))>>6));   //$CD:20021119 old
     tab[1]=(unsigned char) (0x80 | ((c>>6)&0x3F));       //$CD:20021119
     tab[2]=(unsigned char) (0x80 | (c&0x3F));
+    iCountByte = 3;
 }
 return (af_fwrite(&tab[0],1,iCountByte,f) == iCountByte);
 }
@@ -838,7 +839,7 @@ return i;
 
 int u_fgets(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
 int i=0;
-int c;
+int c=0;
 while ((i < (size-1)) && ((c=u_fgetc(encoding,f))!=EOF)) {
    line[i++]=(unichar)c;
    if (c=='\n') break;
