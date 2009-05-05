@@ -48,6 +48,7 @@ void build_korean_sentence_automaton(int* buffer,int length,struct text_tokens* 
                                int we_must_clean,
                                int current_global_position_in_tokens,
                                int current_global_position_in_chars,
-                               char* phrase_cod);
+                               char* phrase_cod,char* jamoTable,
+                               char* jamoFst2);
 
 #endif

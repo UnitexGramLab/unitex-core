@@ -102,6 +102,31 @@ typedef struct {
    int start_pos_char;
    int end_pos_token;
    int end_pos_char;
+   
+   /* Special information for Korean transitions
+    * 
+    * In a Korean word, a character represents a syllab, which may contains several 
+    * logical letters. Note that these information must always be set to values
+    * between 0 and MAX_LETTERS, where MAX_LETTERS is the maximum number of logical
+    * letters in the last syllabic character of the input of the transition.
+    * For instance, let us assume that (abc) stands for one syllabic character made of
+    * 3 logical letters a, b and c. Then, for the following input:
+    * 
+    *    {(fg)(fda) (zegd)(ddz),.XXX}
+    * 
+    * we would have end_pos_letter=2, because the 'z' of '(ddz)' is the third logical letter.
+    * In the same way, let us assume that the initial '(fg)' is actually the end of a syllab 
+    * in the text like '(afg)'. In that case, we would have start_pos_letter=1, because 'f' is 
+    * the second logical letter of '(afg)'.
+    */
+   int start_pos_letter;
+   int end_pos_letter;
+   /* With the previous information, it is easy to test if the left of the transition corresponds
+    * to a syllab limit, because we can test start_pos_letter==0. However, as we don't know the
+    * size of the last syllab, it is convenient to use 'syllab_bound_on_the_right' to store
+    * the information about the right side of the sequence. 1 means that the end of the input
+    * corresponds to the end of a real syllab in the text; 0 otherwise. */
+   char syllab_bound_on_the_right; 
 
 } TfstTag;
 

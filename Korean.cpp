@@ -39,11 +39,15 @@ static unichar last_part_B[4][2];
 
 static unichar last_part_C[2][2];
 
+
+
 /**
  * Converts a Korean syllab S into a letter sequence stored in res. Returns 0
  * if S is not a Korean syllab, 1 otherwise.
+ * 
+ * Here we work with the Hangul Compatible Jamo alphabet.
  */
-int syllabToLetters(unichar S,unichar* res) {
+int syllabToLetters_HCJ(unichar S,unichar* res) {
 if (S<0xAC00 || S>0xD7A3) return 0;
 res[0]=first_letter_tab[(S-0xAC00)/0x24C];
 int pos=(S-0xAC00)%0x24C;

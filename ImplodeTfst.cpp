@@ -222,8 +222,11 @@ free(infos);
 int compatible_offets(TfstTag* t1,TfstTag* t2) {
 return t1->start_pos_token==t2->start_pos_token
     && t1->start_pos_char==t2->start_pos_char
+    && t1->start_pos_letter==t2->start_pos_letter
     && t1->end_pos_token==t2->end_pos_token
-    && t1->end_pos_char==t2->end_pos_char;
+    && t1->end_pos_char==t2->end_pos_char
+    && t1->end_pos_letter==t2->end_pos_letter
+    && t1->syllab_bound_on_the_right==t2->syllab_bound_on_the_right;
 }
 
 

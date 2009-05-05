@@ -91,7 +91,8 @@ u_printf("Usage: Txt2Tfst [OPTIONS] <txt>\n"
          "  -c/---clean: cleans each sentence automaton, keeping best paths\n"
          "  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
          "  -t XXX/--tagset=XXX: use the XXX ELAG tagset file to normalize the dictionary entries\n"
-         "  -k/--korean: produces a text automaton for Korean\n"
+         "  -k XXX/--korean=XXX: produces a text automaton for Korean, using the XXX Jamo table file\n"
+         "  -j XXX/--jamo=XXX: set the XXX Jamo .fst2 transducer to use; required for Korean mode\n"
          "  -h/--help: this help\n"
          "\n"
          "Constructs the text automaton. If the sentences of the text were delimited\n"
@@ -110,19 +111,22 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":a:cn:t:kh";
+const char* optstring=":a:cn:t:k:j:h";
 const struct option_TS lopts[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"clean", no_argument_TS, NULL, 'c'},
    {"normalization_grammar", required_argument_TS, NULL, 'n'},
    {"tagset", required_argument_TS, NULL, 't'},
-   {"korean", no_argument_TS, NULL, 'k'},
+   {"korean", required_argument_TS, NULL, 'k'},
+   {"jamo", required_argument_TS, NULL, 'j'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
 char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
+char jamoTable[FILENAME_MAX]="";
+char jamoFst2[FILENAME_MAX]="";
 int CLEAN=0;
 int KOREAN=0;
 int val,index=-1;
@@ -145,7 +149,17 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              }
              strcpy(tagset,vars->optarg);
              break;
-   case 'k': KOREAN=1; break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty Jamo table file name\n");
+             }
+             strcpy(jamoTable,vars->optarg);
+             KOREAN=1; 
+             break;
+   case 'j': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty Jamo .fst2 file name\n");
+             }
+             strcpy(jamoFst2,vars->optarg);
+             break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
@@ -168,6 +182,9 @@ if (KOREAN) {
    }
    if (tagset[0]!='\0') {
       error("-t option is ignored when -k is used\n");
+   }
+   if (jamoFst2[0]=='\0') {
+      fatal_error("-j option is mandatory when -k is used\n");
    }
 }
 struct DELA_tree* tree=new_DELA_tree();
@@ -269,13 +286,14 @@ u_printf("Constructing text automaton...\n");
 Ustring* text=new_Ustring(2048);
 char phrase_cod[FILENAME_MAX];
 get_snt_path(argv[vars->optind],phrase_cod);
+strcat(phrase_cod ,"phrase.cod");
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
    if (KOREAN) {
       build_korean_sentence_automaton(buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
                   current_global_position_in_tokens,
                   current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
-                  phrase_cod);
+                  phrase_cod,jamoTable,jamoFst2);
    } else {
       build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
             normalization_tree,&tag_list,
@@ -288,6 +306,10 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    current_global_position_in_tokens=current_global_position_in_tokens+total;
    for (int y=0;y<total;y++) {
       current_global_position_in_chars=current_global_position_in_chars+u_strlen(tokens->token[buffer[y]]);
+   }
+#warning TO_BE_REMOVED
+   if (KOREAN && sentence_number==2) {
+      break;
    }
 }
 u_printf("%d sentence%s read\n",sentence_number-1,(sentence_number-1)>1?"s":"");

@@ -171,52 +171,36 @@ if (foo->str[0]!='@' || foo->str[1]=='\0') {
    fatal_error("read_normal_tag: invalid content line %S\n",foo->str);
 }
 unichar* content=u_strdup(foo->str+1);
-/* We read the bounds */
+/* We read the bounds that are supposed to be as follows:
+ * 
+ *    @a.b.c-d.e.fZ
+ * 
+ * a=start pos in tokens
+ * b=start pos in characters
+ * c=start pos in logical letters (for Korean)
+ * d=end pos in tokens
+ * e=end pos in characters
+ * f=end pos in logical letters (for Korean)
+ * 
+ * Z is used for Korean: 
+ *    Z='#' if there is no syllab bound at the end of the input sequence
+ *    If there is a syllab bound, then Z is not set.
+ */
 readline(foo,t->tfst);
 chomp_new_line(foo);
 if (foo->str[0]!='@' || foo->str[1]=='\0') {
    fatal_error("read_normal_tag: invalid bounds line %S\n",foo->str);
 }
-int a=-1,b=-1,c=-1,d=-1,n,pos=1,shift;
-unichar z;
+int a=-1,b=-1,c=-1,d=-1,e=-1,f=-1,n;
+unichar Z='\0';
+
 /* We read the start position */
-n=u_sscanf(&(foo->str[pos]),"%d%C%n",&a,&z,&shift);
-if (n!=2 || (z!='.' && z!='-')) {
+n=u_sscanf(&(foo->str[1]),"%d.%d.%d-%d.%d.%d%C",&a,&b,&c,&d,&e,&f,&Z);
+if (n<6 || (n==7 && Z!='#')) {
    fatal_error("read_normal_tag: invalid bounds line %S\n",foo->str);
 }
-if (a<0) {
+if (a<0 || b<0 || c<0 || d<0 || e<0 || f<0) {
    fatal_error("read_normal_tag: negative bound in line %S\n",foo->str);
-}
-pos=pos+shift;
-if (z=='.') {
-   /* If we have to read a char position */
-   n=u_sscanf(foo->str+pos,"%d%C%n",&b,&z,&shift);
-   if (n!=2 || z!='-') {
-      fatal_error("read_normal_tag: invalid bounds line %S\n",foo->str);
-   }
-   if (b<0) {
-      fatal_error("read_normal_tag: negative bound in line %S\n",foo->str);
-   }
-   pos=pos+shift;
-}
-/* We read the end position */
-n=u_sscanf(&(foo->str[pos]),"%d%C%n",&c,&z,&shift);
-if (n==0 || (n==2 && z!='.')) {
-   fatal_error("read_normal_tag: invalid bounds line %S\n",foo->str);
-}
-if (c<0) {
-   fatal_error("read_normal_tag: negative bound in line %S\n",foo->str);
-}
-pos=pos+shift;
-if (n==2) {
-   /* If we have to read a char position */
-   n=u_sscanf(foo->str+pos,"%d%C%n",&d,&z,&shift);
-   if (n!=1) {
-      fatal_error("read_normal_tag: invalid bounds line %S\n",foo->str);
-   }
-   if (d<0) {
-      fatal_error("read_normal_tag: negative bound in line %S\n",foo->str);
-   }
 }
 /* Finally, we must check that we have the final line with a dot */
 readline(foo,t->tfst);
@@ -227,8 +211,11 @@ TfstTag* tag=new_TfstTag(T_STD);
 tag->content=content;
 tag->start_pos_token=a;
 tag->start_pos_char=b;
-tag->end_pos_token=c;
-tag->end_pos_char=d;
+tag->start_pos_letter=c;
+tag->end_pos_token=d;
+tag->end_pos_char=e;
+tag->end_pos_letter=f;
+tag->syllab_bound_on_the_right=(Z!='#');
 return tag;
 }
 
@@ -344,8 +331,11 @@ if (type==T_EPSILON) {
 }
 t->start_pos_token=-1;
 t->start_pos_char=-1;
+t->start_pos_letter=-1;
 t->end_pos_token=-1;
 t->end_pos_char=-1;
+t->end_pos_letter=-1;
+t->syllab_bound_on_the_right=1;
 return t;
 }
 
@@ -472,19 +462,18 @@ if (t->type==T_EPSILON) {
 }
 if (t->type==T_STD) {
    int pos=0;
-   int n=u_sprintf(out,"@STD\n@%S\n@%d",t->content,t->start_pos_token);
+   int n=u_sprintf(out,"@STD\n@%S\n",t->content);
    pos=pos+n;
-   if (t->start_pos_char!=-1) {
-      n=u_sprintf(out+pos,".%d",t->start_pos_char);
-      pos=pos+n;
+   if (t->start_pos_token<0 || t->start_pos_char<0 || t->start_pos_letter<0
+         || t->end_pos_token<0 || t->end_pos_char<0 || t->end_pos_letter<0
+         || t->syllab_bound_on_the_right<0) {
+      fatal_error("Invalid TfstTag information in TfstTag_to_string\n");
    }
-   n=u_sprintf(out+pos,"-%d",t->end_pos_token);
+   n=u_sprintf(out+pos,"@%d.%d.%d-%d.%d.%d%s",t->start_pos_token,t->start_pos_char,t->start_pos_letter,
+                                               t->end_pos_token,t->end_pos_char,t->end_pos_letter,
+                                               (t->syllab_bound_on_the_right?"\n":"#\n"));
    pos=pos+n;
-   if (t->end_pos_char!=-1) {
-      n=u_sprintf(out+pos,".%d",t->end_pos_char);
-      pos=pos+n;
-   }
-   u_sprintf(out+pos,"\n.\n");
+   u_sprintf(out+pos,".\n");
    return;
 }
 fatal_error("Invalid tag type %d in TfstTag_to_string\n",t->type);

@@ -573,7 +573,7 @@ return pattern;
  * Returns 1 if there is a space on the immediate left of the given tag.
  */
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag) {
-if (tag->start_pos_char==0 || tag->start_pos_char==-1) {
+if (tag->start_pos_char==0) {
 	/* The tag starts exactly at the beginning of a token, so we just
 	 * have to look if the previous token was ending with a space. By convention,
 	 * we say that the token #0 has no space on its left */

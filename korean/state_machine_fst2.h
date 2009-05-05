@@ -533,9 +533,7 @@ if(debugPrFlag) {
 				osz = convStr(iBuff,rsz,oBuff);
                 u_fwrite_raw(oBuff,osz,fo);//fwrite(oBuff,2*osz,1,fo);
 			}
-			u_printf("\rTotal  %d byte read",totalRead*2);
 		} while(rsz == SZ64K);
-		u_printf("\n");
 		u_fclose(fi);
 		u_fclose(fo);
 		return(totalRead);

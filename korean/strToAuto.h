@@ -815,7 +815,6 @@ public:
 		U_FILE *fptr;
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"tokens.txt");
-		u_printf("load Tokens file\n");
 		if((fptr = u_fopen(UTF16_LE,ftemp,U_READ)) ==0 )	fopenErrMessage(f);
 		fseek(fptr,0,SEEK_END);	
 		int sizeFile =ftell(fptr)/2;

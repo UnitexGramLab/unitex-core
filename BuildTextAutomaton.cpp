@@ -34,6 +34,7 @@
 #include "ProgramInvoker.h"
 #include "korean/Txt2Fst2Kr.h"
 #include "Korean.h"
+#include "File.h"
 
 /**
  * This is an internal structure only used to give a set of parameters to some functions.
@@ -106,7 +107,7 @@ if (token[pos]=='\0') {
       if (entry!=NULL) {
          unichar tag[4096];
          build_tag(entry,inflected,tag);
-         u_sprintf(foo,"@STD\n@%S\n@%d-%d\n.\n",tag,first_token_index,current_token_index);
+         u_sprintf(foo,"@STD\n@%S\n@%d.0.0-%d.%d.0\n.\n",tag,first_token_index,current_token_index,pos-1);
          add_outgoing_transition(state,get_value_index(foo->str,tmp_tags),start_state_index+shift);
          if (entry!=list->entry) {
             free_dela_entry(entry);
@@ -520,7 +521,7 @@ solve_alignment_puzzle(vector,start_pos,end_pos,INFO,alph);
 int current_state=start_state_index;
 for (int i=0;i<vector->nbelems;i++) {
    struct output_info* info=(struct output_info*)(vector->tab[i]);
-   u_sprintf(foo,"@STD\n@%S\n@%d.%d-%d.%d\n.\n",info->output,info->start_pos,info->start_pos_char,info->end_pos,info->end_pos_char);
+   u_sprintf(foo,"@STD\n@%S\n@%d.%d.0-%d.%d.0\n.\n",info->output,info->start_pos,info->start_pos_char,info->end_pos,info->end_pos_char);
    if (i==vector->nbelems-1) {
       /* If this is the last transition to create, we make it point to the
        * destination state */
@@ -666,7 +667,7 @@ for (i=0;i<length;i++) {
       }
       if (!is_not_unknown_token) {
          /* If the token was not matched in the dictionary, we put it as an unknown one */
-         u_sprintf(foo,"@STD\n@%S\n@%d-%d\n.\n",tokens->token[buffer[i]],i,i);
+         u_sprintf(foo,"@STD\n@%S\n@%d.0.0-%d.%d.0\n.\n",tokens->token[buffer[i]],i,i,tfst->token_sizes->tab[i]-1);
          int tag_number=get_value_index(foo->str,tmp_tags);
          add_outgoing_transition(tfst->automaton->states[current_state],tag_number,current_state+1);
       }
@@ -749,6 +750,21 @@ free_Ustring(foo);
 }
 
 
+unichar* load_as_a_string(char* name) {
+U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+if (f==NULL) {
+   fatal_error("Cannot open %s in load_as_a_string\n",name);
+}
+long size=get_file_size(f);
+unichar* res=(unichar*)malloc(sizeof(unichar)*(size-2)/2);
+if (res==NULL) {
+   fatal_alloc_error("load_as_a_string");
+}
+u_fgets(res,f);
+u_fclose(f);
+return res;
+}
+
 
 /**
  * This function builds the sentence automaton that correspond to the
@@ -760,11 +776,12 @@ void build_korean_sentence_automaton(int* buffer,int length,struct text_tokens* 
                                int we_must_clean,
                                int current_global_position_in_tokens,
                                int current_global_position_in_chars,
-                               char* phrase_cod) {
+                               char* phrase_cod,char* jamoTable,char* kr_fst2) {
 /* First of all, we compute the sentence automaton, using the special
  * Korean tools */
+u_printf("sentence #%d\n",sentence_number);
 char n[32];
-ProgramInvoker* invoker=new_ProgramInvoker(main_Txt2Fst2Kr,"main_Txt2Fst2Kr");
+ProgramInvoker* invoker=new_ProgramInvoker(main_Txt2Fst2Kr,"Txt2Fst2Kr");
 add_argument(invoker,"-e");
 sprintf(n,"%d",sentence_number);
 add_argument(invoker,n);
@@ -774,14 +791,94 @@ free_ProgramInvoker(invoker);
 if (ret_value!=0) {
    fatal_error("Txt2Fst2Kr did not quit normally. Cannot go on constructing .tfst file\n");
 }
-u_printf("ici\n");
-unichar tmp[128];
-syllabToLetters(0xC6B0,tmp);
-for (int i=0;tmp[i];i++) {
-   u_printf("%04X ",tmp[i]);
+invoker=new_ProgramInvoker(NULL,"Jamo2Syl");
+add_argument(invoker,"-m");
+add_argument(invoker,jamoTable);
+add_argument(invoker,kr_fst2);
+char jamo_fst2[FILENAME_MAX];
+char syllab_fst2[FILENAME_MAX];
+get_path(phrase_cod,jamo_fst2);
+strcat(jamo_fst2,"sentence.fst2");
+get_path(phrase_cod,syllab_fst2);
+strcat(syllab_fst2,"sentencesyl.fst2");
+add_argument(invoker,jamo_fst2);
+ret_value=invoke_as_new_process(invoker);
+free_ProgramInvoker(invoker);
+if (ret_value!=0) {
+   fatal_error("Jamo2Syl did not quit normally. Cannot go on constructing .tfst file\n");
+}
+
+invoker=new_ProgramInvoker(NULL,"Syl2Jamo");
+add_argument(invoker,"-j");
+add_argument(invoker,"-m");
+add_argument(invoker,jamoTable);
+char current_sentence[FILENAME_MAX];
+get_path(phrase_cod,current_sentence);
+strcat(current_sentence,"cursentence.txt");
+add_argument(invoker,current_sentence);
+ret_value=invoke_as_new_process(invoker);
+free_ProgramInvoker(invoker);
+if (ret_value!=0) {
+   fatal_error("Syl2Jamo did not quit normally. Cannot go on constructing .tfst file\n");
+}
+/* Now, we load the letter version of the text of the current sentence */
+get_path(phrase_cod,current_sentence);
+strcat(current_sentence,"cursentencejm.txt");
+unichar* jamo_text=load_as_a_string(current_sentence); 
+for (int i=0;jamo_text[i];i++) {
+   u_printf("%4X ",jamo_text[i]);
 }
 u_printf("\n");
 
+
+
+/* We load the two versions of the Korean sentence automaton */ 
+Fst2* jamo=load_fst2(jamo_fst2,1);
+Fst2* syllab=load_fst2(syllab_fst2,0);
+
+/* We declare the graph that will represent the sentence as well as
+ * a temporary string_hash 'tmp_tags' that will be used to store the tags of this
+ * graph. We don't put tags directly in the main 'tags', because a tag can
+ * be introduced and then removed by cleaning */
+Tfst* tfst=new_Tfst(NULL,NULL,0);
+tfst->current_sentence=sentence_number;
+tfst->automaton=new_SingleGraph();
+tfst->offset_in_tokens=current_global_position_in_tokens;
+tfst->offset_in_chars=current_global_position_in_chars;
+
+struct string_hash* tags=new_string_hash(32);
+struct string_hash* tmp_tags=new_string_hash(32);
+
+
+
+
+unichar EPSILON_TAG[]={'@','<','E','>','\n','.','\n','\0'};
+/* The epsilon tag is always the first one */
+get_value_index(EPSILON_TAG,tmp_tags);
+get_value_index(EPSILON_TAG,tags);
+/* We create a copy of the Korean sentence automaton */
+for (int i=0;i<jamo->number_of_states;i++) {
+   Fst2State state_src=jamo->states[i];
+   SingleGraphState state_dest=add_state(tfst->automaton);
+   if (is_initial_state(state_src)) {
+      set_initial_state(state_dest);
+   }
+   if (is_final_state(state_src)) {
+      set_final_state(state_dest);
+   }
+   /* We recreate all transitions */
+   Transition* trans_src=state_src->transitions;
+   while (trans_src!=NULL) {
+      
+      trans_src=trans_src->next;
+   }
+}
+
+
+
+free_Fst2(jamo);
+free_Fst2(syllab);
+free(jamo_text);
 return;
 #if 0
 /* We declare the graph that will represent the sentence as well as

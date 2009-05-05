@@ -21,15 +21,13 @@
 
 #include "ProgramInvoker.h"
 #include "Error.h"
+#include "Ustring.h"
 #include <string.h>
 
 /**
  * Allocates, initializes and returns a new program invoker.
  */
 ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,const char* name) {
-if (f==NULL) {
-   fatal_error("NULL main pointer in new_ProgramInvoker\n");
-}
 if (name==NULL) {
    fatal_error("NULL program name in new_ProgramInvoker\n");
 }
@@ -73,8 +71,32 @@ vector_ptr_add(invoker->args,tmp);
  * Invoke the main function.
  */
 int invoke(ProgramInvoker* invoker) {
+if (invoker->main==NULL) {
+   fatal_error("NULL main pointer in invoke\n");
+}
 return invoker->main(invoker->args->nbelems,(char**)(invoker->args->tab));
 }
 
 
+/**
+ * Invoke the main function.
+ */
+int invoke_as_new_process(ProgramInvoker* invoker) {
+char line[4096];
+build_command_line(invoker,line);
+int ret=system(line);
+return ret;
+}
 
+
+/**
+ * Builds and returns a command line ready to be used with a 'system' call.
+ */
+void build_command_line(ProgramInvoker* invoker,char* line) {
+sprintf(line,"%s",(char*)(invoker->args->tab[0]));
+for (int i=1;i<invoker->args->nbelems;i++) {
+   strcat(line," \"");
+   strcat(line,(char*)(invoker->args->tab[i]));
+   strcat(line,"\"");
+}
+}

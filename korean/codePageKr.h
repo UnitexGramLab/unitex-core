@@ -148,76 +148,76 @@ public:
         }
     };
 
-	int convHJAtoHAN(wchar_t *src,wchar_t *des){
-	int csz = 0;
-	wchar_t c;
-	int index = 0;
+   int convHJAtoHAN(wchar_t *src,wchar_t *des){
+   int csz = 0;
+   wchar_t c;
+   int index = 0;
 
-    	if(loadHJAConvMap){
-    		while(src[index]){
-    			c = loadHJAConvMap[src[index]];
-    			if(des) {
+      if(loadHJAConvMap){
+         while(src[index]){
+            c = loadHJAConvMap[src[index]];
+            if(des) {
                    if(c){
-    			        des[index] =  c;
-    				    csz++;
-    				} else
-    				    des[index] = src[index];
-    			} else {
-    			    if(c){
-    				  src[index] = c;
-    				  csz++;
-    	            }
-    			}
-    		    index++;
-    		}
-    		if(des) des[index] = 0;
-    	}
-    	return(csz);
-	};
-	wchar_t get4HexVal(wchar_t *l)
+                    des[index] =  c;
+                   csz++;
+               } else
+                   des[index] = src[index];
+            } else {
+                if(c){
+                 src[index] = c;
+                 csz++;
+                  }
+            }
+             index++;
+         }
+         if(des) des[index] = 0;
+      }
+      return(csz);
+   };
+   wchar_t get4HexVal(wchar_t *l)
 {
-	wchar_t su = 0;
-	wchar_t c;
-	for (int i = 0; i < 4; i++){
-		c = *l++;
+   wchar_t su = 0;
+   wchar_t c;
+   for (int i = 0; i < 4; i++){
+      c = *l++;
 
-		if(  ( c >= (unichar)'0' ) && (c <=(unichar)'9'))
-			su = su * 16 + c- L'0';
-		else if(  ( c >= (unichar)'a' ) && (c <=(unichar)'f'))
-			su = su * 16 + c- L'a'+10;
-		else if(  ( c >= (unichar)'A' ) && (c <=(unichar)'9'))
-			su = su * 16 +  c- (unichar)'A'+10;
-		else
-			fatal_error("illegal value in conv map\n");
-	}
-	return(su);
+      if(  ( c >= (unichar)'0' ) && (c <=(unichar)'9'))
+         su = su * 16 + c- L'0';
+      else if(  ( c >= (unichar)'a' ) && (c <=(unichar)'f'))
+         su = su * 16 + c- L'a'+10;
+      else if(  ( c >= (unichar)'A' ) && (c <=(unichar)'9'))
+         su = su * 16 +  c- (unichar)'A'+10;
+      else
+         fatal_error("illegal value in conv map\n");
+   }
+   return(su);
 };
 wchar_t getValueIdx(wchar_t *s,int &idx)
 {
-	if(s[idx] == (unichar)'0'){
-		idx ++;
-		if((s[idx] == (unichar)'x') ||( s[idx] == (unichar)'X')){
-			idx += 4;
-			return(get4HexVal(s));
-		}
-		fatal_error("illegal value\n");
-	}
-	return(s[idx++]);
+   if(s[idx] == (unichar)'0'){
+      idx ++;
+      if((s[idx] == (unichar)'x') ||( s[idx] == (unichar)'X')){
+         idx += 4;
+         return(get4HexVal(s));
+      }
+      fatal_error("illegal value\n");
+   }
+   return(s[idx++]);
 }
     void loadHJAMap(char *f)
     {
-    	U_FILE* lf = u_fopen(UTF16_LE,f,U_READ);
-    	int idx;
-    	wchar_t srcIdx;
-    	wchar_t desIdx;
-    	wchar_t UtempLine[256];
+      U_FILE* lf = u_fopen(UTF16_LE,f,U_READ);
+      int idx;
+      wchar_t srcIdx;
+      wchar_t desIdx;
+      wchar_t UtempLine[256];
 
-    	loadHJAConvMap = (wchar_t *)malloc( sizeof(wchar_t)*0x10000);
-    	for(idx = 0; idx < 0x10000;idx++) loadHJAConvMap[idx] = 0;
-    	while(EOF!=u_fgets((unichar *)UtempLine,lf)){
-    		idx = 0;
-    		if(UtempLine[idx] == (unichar)' ') continue;
-    		srcIdx = getValueIdx(UtempLine,idx);
+      loadHJAConvMap = (wchar_t *)malloc( sizeof(wchar_t)*0x10000);
+      for(idx = 0; idx < 0x10000;idx++) loadHJAConvMap[idx] = 0;
+      while(EOF!=u_fgets((unichar *)UtempLine,lf)){
+         idx = 0;
+         if(UtempLine[idx] == (unichar)' ') continue;
+         srcIdx = getValueIdx(UtempLine,idx);
             if(
                ((srcIdx >= UNIZONE_CJK_Unified_Ideographs) &&
                 (srcIdx < UNIZONE_Yi_Syllables)) ||
@@ -226,7 +226,7 @@ wchar_t getValueIdx(wchar_t *s,int &idx)
                ((srcIdx >= UNIZONE_CJK_Compatibility_Forms) &&
                 (srcIdx < UNIZONE_Small_Form_Variants))
             ){
-               		idx++;
+                     idx++;
                     desIdx = getValueIdx(UtempLine,idx);
                     if((desIdx >= UNIZONE_Hangul_Syllables) &&
                     (desIdx < UNIZONE_High_Surrogates) )
@@ -237,13 +237,13 @@ wchar_t getValueIdx(wchar_t *s,int &idx)
                     }
             }
             fatal_error("illegal value in HanMap\n");
-    	}
+      }
 
-	};
-	void unLoadHJAMap()
+   };
+   void unLoadHJAMap()
     {
-	 free(loadHJAConvMap);
-	};
+    free(loadHJAConvMap);
+   };
 
 };
 #endif //CODE_PAGE_KR

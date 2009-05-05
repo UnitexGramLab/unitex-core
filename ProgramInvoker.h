@@ -28,6 +28,7 @@
  */
 
 #include "Vector.h"
+#include "Ustring.h"
 
 typedef int (*MAIN_FUNCTION)(int argc,char* argv[]);
 
@@ -41,6 +42,8 @@ ProgramInvoker* new_ProgramInvoker(MAIN_FUNCTION f,const char* name);
 void free_ProgramInvoker(ProgramInvoker*);
 void add_argument(ProgramInvoker* invoker,const char* arg);
 int invoke(ProgramInvoker* invoker);
+int invoke_as_new_process(ProgramInvoker* invoker);
+void build_command_line(ProgramInvoker* invoker,char* line);
 
 
 #endif

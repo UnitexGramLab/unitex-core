@@ -19,7 +19,6 @@
   *
   */
 
-//---------------------------------------------------------------------------
 #ifndef KoreanH
 #define KoreanH
 
@@ -27,9 +26,8 @@
 
 #define MAX_LETTERS_IN_A_SYLLAB 5
 
-int syllabToLetters(unichar,unichar*);
+
+int syllabToLetters_HCJ(unichar,unichar*);
 
 
-
-//---------------------------------------------------------------------------
 #endif
