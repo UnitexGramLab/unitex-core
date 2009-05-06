@@ -224,12 +224,7 @@ UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(enum stdwrite_kind swk, int* p_trashOu
 }
 
 
-
-
-
-
-
-
+/*******************************************************/
 
 
 struct t_stdin_param
@@ -492,15 +487,6 @@ void af_setsizereservation(ABSTRACTFILE* stream, long size_planned)
 			(*(p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation))(p_abfr->fabstr, size_planned,p_abfr->afs->privateSpacePtr);	
 }
 
-int af_rename(const char * OldFilename, const char * NewFilename)
-{
-	const AbstractFileSpace * pafs = GetFileSpaceForFileName(OldFilename);
-	if (pafs==NULL)
-		return rename(OldFilename,NewFilename);
-	else
-		return (*(pafs->func_array.fnc_memFileRename))(OldFilename,NewFilename,pafs->privateSpacePtr);
-}
-
 int af_remove(const char * Filename)
 {
 	const AbstractFileSpace * pafs = GetFileSpaceForFileName(Filename);
@@ -510,3 +496,87 @@ int af_remove(const char * Filename)
 		return (*(pafs->func_array.fnc_memFileRemove))(Filename,pafs->privateSpacePtr);
 }
 
+
+#define BUFFER_IO_SIZE (0x4000)
+int af_copy(const char* srcFile, const char* dstFile)
+{
+    ABSTRACTFILE* vfRead;
+    ABSTRACTFILE* vfWrite;
+    long size_to_do;    
+    int iSuccessCopyingRet=0;		
+	char *szBuffer = NULL;
+	int buffer_size = 0;
+
+
+    vfRead = af_fopen(srcFile,"rb");
+    if (vfRead == NULL)
+        return -1;
+
+    if (af_fseek(vfRead, 0, SEEK_END) == 0)
+	{
+		size_to_do = af_ftell(vfRead);
+		buffer_size = ((size_to_do+1) < BUFFER_IO_SIZE) ? ((int)size_to_do+1) : BUFFER_IO_SIZE;
+		szBuffer = (char *)malloc(buffer_size);
+		if (szBuffer == NULL)
+		{
+			af_fclose(vfRead);
+			return -1;
+		}
+	}
+
+    vfWrite = af_fopen(dstFile,"wb");
+    if (vfWrite == NULL)
+    {
+        af_fclose(vfRead);
+		free(szBuffer);
+        return 1;
+    }    
+
+    af_setsizereservation(vfWrite, size_to_do);
+
+    if (af_fseek(vfRead, 0, SEEK_SET) != 0)
+        iSuccessCopyingRet = 1;
+
+    while (size_to_do>0)
+    {
+        int iThis = (size_to_do < buffer_size) ? (((int)size_to_do)) : buffer_size;
+        int iReadDone = af_fread(szBuffer,1,iThis,vfRead);
+        int iWriteDone ;
+        if (iReadDone == 0)
+            break;
+        iWriteDone = af_fwrite(szBuffer,1,iReadDone,vfWrite);
+        if (iWriteDone != iReadDone)
+            break;
+        size_to_do -= iWriteDone;
+    }
+    af_fclose(vfRead);
+    af_fclose(vfWrite);
+	free(szBuffer);
+
+    if (size_to_do==0)
+		return 0; /* success */
+	else
+		return -1;
+}
+
+
+int af_rename(const char * OldFilename, const char * NewFilename)
+{
+	const AbstractFileSpace * pafsOld = GetFileSpaceForFileName(OldFilename);
+	const AbstractFileSpace * pafsNew = GetFileSpaceForFileName(NewFilename);
+
+	if (pafsOld == pafsNew)
+	{
+		if (pafsOld==NULL)
+			return rename(OldFilename,NewFilename);
+		else
+			return (*(pafsOld->func_array.fnc_memFileRename))(OldFilename,NewFilename,pafsOld->privateSpacePtr);
+	}
+	else
+	{
+		int ret = af_copy(OldFilename,NewFilename);
+		if (ret != 0)
+			return ret;
+		return af_remove(OldFilename);
+	}
+}

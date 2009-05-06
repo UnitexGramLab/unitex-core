@@ -57,6 +57,8 @@ int af_rename(const char * OldFilename, const char * NewFilename);
 
 int af_remove(const char * Filename);
 
+int af_copy(const char* srcFile, const char* dstFile);
+
 ABSTRACTFILE* return_af_stdin();
 ABSTRACTFILE* return_af_stdout();
 ABSTRACTFILE* return_af_stderr();

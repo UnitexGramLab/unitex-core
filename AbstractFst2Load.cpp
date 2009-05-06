@@ -159,7 +159,8 @@ void free_abstract_Fst2(Fst2* fst2,struct FST2_free_info* p_fst2_free_info)
 			else
 			{
 				t_fnc_free_abstract_fst2 fnc_free_abstract_fst2 = (t_fnc_free_abstract_fst2)(p_fst2_free_info->func_free_fst2);
-				(*fnc_free_abstract_fst2)(fst2,p_fst2_free_info,p_fst2_free_info->privateSpacePtr);
+				if (fnc_free_abstract_fst2 != NULL)
+					(*fnc_free_abstract_fst2)(fst2,p_fst2_free_info,p_fst2_free_info->privateSpacePtr);
 			}
 		}
 }

@@ -149,7 +149,8 @@ void free_abstract_INF(struct INF_codes* INF,struct INF_free_info* p_inf_free_in
 		else
 		{
 			t_fnc_free_abstract_INF fnc_free_abstract_INF = (t_fnc_free_abstract_INF)(p_inf_free_info->func_free_inf);
-			(*fnc_free_abstract_INF)(INF,p_inf_free_info,p_inf_free_info->privateSpacePtr);
+			if (fnc_free_abstract_INF != NULL)
+				(*fnc_free_abstract_INF)(INF,p_inf_free_info,p_inf_free_info->privateSpacePtr);
 		}
 	}
 }
@@ -194,6 +195,7 @@ void free_abstract_BIN(unsigned char* BIN,struct BIN_free_info* p_bin_free_info)
 		else
 		{
 			t_fnc_free_abstract_BIN fnc_free_abstract_BIN = (t_fnc_free_abstract_BIN)(p_bin_free_info->func_free_bin);
+			if (fnc_free_abstract_BIN != NULL)
 			(*fnc_free_abstract_BIN)(BIN,p_bin_free_info,p_bin_free_info->privateSpacePtr);
 		}
 	}
