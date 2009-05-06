@@ -124,8 +124,12 @@ const struct utility_item utility_array[]=
 	{ "TEI2Txt", 7, &main_TEI2Txt} ,
 	{ "Tfst2Grf", 8, &main_Tfst2Grf} ,
 	{ "Tfst2Unambig", 12, &main_Tfst2Unambig} ,
+#endif
 	{ "Tokenize", 8, &main_Tokenize} ,
+#ifndef UNITEX_NO_KOREAN_TOOL
 	{ "Txt2Tfst", 8, &main_Txt2Tfst} ,
+#endif
+#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
 	{ "XMLizer", 7, &main_XMLizer} ,
 #endif
 
