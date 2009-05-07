@@ -321,7 +321,7 @@ if (f_enter==NULL) {
 	n_enter_char=0;
 }
 else {
-	n_enter_char=fread(enter_pos,sizeof(int),size/sizeof(int),f_enter);
+	n_enter_char=(int)fread(enter_pos,sizeof(int),size/sizeof(int),f_enter);
 	if (n_enter_char!=(int)(size/sizeof(int))) {
 		fatal_error("Read error on enter.pos file in main_Concord\n");
 	}

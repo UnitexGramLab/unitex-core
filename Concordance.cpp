@@ -435,7 +435,7 @@ int jump_size=((start_pos-MAX_CONTEXT_IN_UNITS)-(*n_units_already_read));
 fseek(text,(*n_units_already_read)*sizeof(int),SEEK_SET);
 /* And we read ((start_pos-MAX_CONTEXT_IN_UNITS)-*n_units_already_read) integers */
 while (jump_size!=0) {
-	buffer->size=fread(buffer->int_buffer,sizeof(int),(jump_size>=buffer->MAXIMUM_BUFFER_SIZE)?buffer->MAXIMUM_BUFFER_SIZE:jump_size,text);
+	buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(jump_size>=buffer->MAXIMUM_BUFFER_SIZE)?buffer->MAXIMUM_BUFFER_SIZE:jump_size,text);
 	jump_size=jump_size-buffer->size;
 	for (int i=0;i<buffer->size;i++) {
 		/* We update the current position in characters */
@@ -455,7 +455,7 @@ while (jump_size!=0) {
 /* Finally, we update '*n_units_already_read' */
 (*n_units_already_read)=start_pos-MAX_CONTEXT_IN_UNITS;
 /* And we fill the buffer with the integers that we need */
-buffer->size=fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 }
 
 
@@ -760,7 +760,7 @@ u_printf("Loading concordance index...\n");
  * doesn't matter. */
 matches=load_match_list(concordance,NULL);
 /* Then we fill the buffer with the beginning of the text */
-buffer->size=fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 int start_pos_char;
 int end_pos_char;
 int current_sentence=1;
@@ -986,7 +986,7 @@ while ((match_start-current_global_position) > buffer->MAXIMUM_BUFFER_SIZE) {
 	}
 	current_global_position=current_global_position+buffer->MAXIMUM_BUFFER_SIZE;
 }
-buffer->size=fread(buffer->int_buffer,sizeof(int),(match_start-current_global_position),text);
+buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(match_start-current_global_position),text);
 for (address=0;address<buffer->size;address++) {
 	pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
 									n_enter_char,enter_pos,pos_in_enter_pos,
@@ -1006,7 +1006,7 @@ int move_to_end_of_text_with_writing(U_FILE* text,struct text_tokens* tokens,
 									struct buffer* buffer) {
 long int address=current_global_position*sizeof(int);
 fseek(text,address,SEEK_SET);
-while (0!=(buffer->size = fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text))) {
+while (0!=(buffer->size = (int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text))) {
 	for (address=0;address<buffer->size;address++) {
 		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
 										n_enter_char,enter_pos,pos_in_enter_pos,buffer);

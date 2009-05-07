@@ -116,7 +116,7 @@ switch (buffer->type) {
         array[i-pos]=array[i];
       }
       new_position=buffer->MAXIMUM_BUFFER_SIZE-pos;
-      n_element_read=fread(&(array[new_position]),sizeof(int),pos,f);
+      n_element_read=(int)fread(&(array[new_position]),sizeof(int),pos,f);
       break;
    }
    case UNICHAR_BUFFER: {

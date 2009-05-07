@@ -33,7 +33,7 @@
  */
 void get_extension(const char* filename,char* extension) {
 int l;
-l=strlen(filename)-1;
+l=(int)strlen(filename)-1;
 while (l>=0 && filename[l]!='/' && filename[l]!='\\' && filename[l]!='.') {
    l--;
 }
@@ -55,7 +55,7 @@ do {
  */
 void remove_extension(char* filename) {
 int l;
-l=strlen(filename)-1;
+l=(int)strlen(filename)-1;
 while (l>=0 && filename[l]!='/' && filename[l]!='\\' && filename[l]!='.') {
    l--;
 }
@@ -81,7 +81,7 @@ remove_extension(result);
 void get_path(const char* filename,char* path) {
 int l;
 strcpy(path,filename);
-l=strlen(path)-1;
+l=(int)strlen(path)-1;
 while (l>=0 && path[l]!='/' && path[l]!='\\') {
    l--;
 }
@@ -107,7 +107,7 @@ strcat(result,PATH_SEPARATOR_STRING);
  * Takes a file name and copies it without its path, if any, into 'result'.
  */
 void remove_path(char* filename,char* result) {
-int l=strlen(filename)-1;
+int l=(int)strlen(filename)-1;
 while (l>=0 && filename[l]!='/' && filename[l]!='\\') {
    l--;
 }
@@ -204,7 +204,7 @@ if (path[0]=='\0') {
 if (name[0]=='\0') {
    fatal_error("Empty file name in new_file\n");
 }
-int l=strlen(path);
+int l=(int)strlen(path);
 /* Here we test if the path already contains a path separator char, but
  * we are tolerant: we admit to have a wrong separator char. */
 int length_without_separator=l-((path[l-1]=='/' || path[l-1]=='\\')?1:0);
@@ -235,7 +235,7 @@ if (output==NULL) {
 }
 char buffer[4096];
 int n;
-while ((n=fread(buffer,sizeof(char),4096,input))>0) {
+while ((n=((int)fread(buffer,sizeof(char),4096,input)))>0) {
    fwrite(buffer,sizeof(char),n,output);
 }
 u_fclose(input);

@@ -540,11 +540,11 @@ int af_copy(const char* srcFile, const char* dstFile)
     while (size_to_do>0)
     {
         int iThis = (size_to_do < buffer_size) ? (((int)size_to_do)) : buffer_size;
-        int iReadDone = af_fread(szBuffer,1,iThis,vfRead);
+        int iReadDone = (int)af_fread(szBuffer,1,iThis,vfRead);
         int iWriteDone ;
         if (iReadDone == 0)
             break;
-        iWriteDone = af_fwrite(szBuffer,1,iReadDone,vfWrite);
+        iWriteDone = (int)af_fwrite(szBuffer,1,iReadDone,vfWrite);
         if (iWriteDone != iReadDone)
             break;
         size_to_do -= iWriteDone;

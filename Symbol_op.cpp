@@ -209,7 +209,7 @@ if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - t
 
   /* first compare POSs */
 
-  if (a->POS != b->POS) { return b->POS - a->POS; }
+  if (a->POS != b->POS) { return (int)(b->POS - a->POS); }
 
   /* next compare by traits */
 

@@ -295,7 +295,7 @@ while(a!=NULL && b!=NULL) {
     * character, then the nodes are different */
    if (a->letter != b->letter) return (a->letter - b->letter);
    /* If the characters are equal and destination nodes are different... */
-   if (a->node != b->node) return (a->node - b->node);
+   if (a->node != b->node) return (int)(a->node - b->node);
    a=a->next;
    b=b->next;
 }

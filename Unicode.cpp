@@ -601,7 +601,7 @@ return ret;
  * Returns 1 in case of success; 0 otherwise.
  */
 int fputc_raw(unsigned char c,ABSTRACTFILE *f) {
-return af_fwrite(&c,1,1,f);
+return (int)af_fwrite(&c,1,1,f);
 }
 
 
@@ -2295,7 +2295,7 @@ int u_starts_with(const unichar* s,const char* prefix) {
 if (s==NULL) return 0;
 if (prefix==NULL) return 1;
 int l1=u_strlen(s);
-int l2=strlen(prefix);
+int l2=(int)strlen(prefix);
 if (l2>l1) return 0;
 for (int i=0;i<l2;i++) {
    if (s[i]!=prefix[i]) {
@@ -2325,7 +2325,7 @@ int u_ends_with(const unichar* s,const char* suffix) {
 if (s==NULL) return 0;
 if (suffix==NULL) return 1;
 int l1=u_strlen(s);
-int l2=strlen(suffix);
+int l2=(int)strlen(suffix);
 if (l2>l1) return 0;
 return !u_strcmp(s+(l1-l2),suffix);
 }

@@ -123,7 +123,7 @@ if (ustr==NULL) {
    fatal_error("NULL Ustring error in u_strcat\n");
 }
 if (str==NULL || str[0]=='\0') return;
-u_strcat(ustr,(char*)str,strlen(str));
+u_strcat(ustr,(char*)str,(int)strlen(str));
 }
 
 

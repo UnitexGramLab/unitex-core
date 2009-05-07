@@ -150,7 +150,7 @@ const struct utility_item utility_array[]=
 
 const struct utility_item* found_utility(const char* search)
 {
-	int len_search = strlen(search);
+	int len_search = (int)strlen(search);
 	int i=0;
 	while (utility_array[i].len_name > 0)
 	{

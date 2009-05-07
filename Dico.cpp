@@ -260,7 +260,7 @@ for (int priority=1;priority<4;priority++) {
             /*
              * If it is a .fst2 dictionary
              */
-            int l=strlen(tmp)-((priority==2)?1:2);
+            int l=(int)(strlen(tmp)-((priority==2)?1:2));
             OutputPolicy policy=MERGE_OUTPUTS;
             if (l>0 && (tmp[l]=='r' || tmp[l]=='R') && tmp[l-1]=='-') {
                policy=REPLACE_OUTPUTS;
