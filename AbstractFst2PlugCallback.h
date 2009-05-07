@@ -37,9 +37,9 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_Uninit_Fst2Space)(void* privateSpa
 
 
 /* Unlike the load callback for dictionnary, p_fst2_free_info can be NULL
-   this mean the caller (Locate) will modify the Fst2* object, and the call free_Fst2
+   this mean the caller (Locate) will modify the Fst2* object, and then call free_Fst2
 
-   The solution, to reuse an Fst2 object, is calling new_Fst2_clone
+   To reuse an Fst2 object, the solution is to call new_Fst2_clone
 */
 
 
@@ -52,13 +52,13 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_fst2)(Fst2* fst2,str
 
 typedef struct
 {
-	t_fnc_is_filename_Fst2Space_object fnc_is_filename_object;
+    t_fnc_is_filename_Fst2Space_object fnc_is_filename_object;
 
-	t_fnc_Init_Fst2Space fnc_Init_Fst2Space;
-	t_fnc_Uninit_Fst2Space fnc_Uninit_Fst2Space;
+    t_fnc_Init_Fst2Space fnc_Init_Fst2Space;
+    t_fnc_Uninit_Fst2Space fnc_Uninit_Fst2Space;
 
-	t_fnc_load_abstract_fst2 fnc_load_abstract_fst2;
-	t_fnc_free_abstract_fst2 fnc_free_abstract_fst2;
+    t_fnc_load_abstract_fst2 fnc_load_abstract_fst2;
+    t_fnc_free_abstract_fst2 fnc_free_abstract_fst2;
 
 } t_persistent_fst2_func_array;
 
