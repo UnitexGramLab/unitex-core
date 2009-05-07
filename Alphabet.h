@@ -33,11 +33,16 @@ struct alphabet_ {
        // t2['e'] = 2 -> 'e' is a lowercase letter
        // t2['?'] = (1 & 2) -> '?' is a non variable letter (Thai, Chinese, ...)
        // t2['?'] = 0 -> '?' is not a letter
+  
+  /* This array is only used for Korean alphabets, because it is useful to
+   * know for a given Chinese character its Hangul syllab equivalent */
+  unichar* korean_equivalent_syllab;
 };
 
 typedef struct alphabet_ Alphabet;
 
 Alphabet* load_alphabet(char*);
+Alphabet* load_alphabet(char*,int);
 void free_alphabet(Alphabet*);
 int is_upper_of(unichar,unichar,Alphabet*);
 int is_equal_ignore_case(unichar,unichar,Alphabet*);

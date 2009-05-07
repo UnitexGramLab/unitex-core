@@ -26,7 +26,7 @@
 /**
  * Allocates, initializes an returns an 'Alphabet*' structure
  */
-Alphabet* new_alphabet() {
+Alphabet* new_alphabet(int korean) {
 Alphabet* alphabet=(Alphabet*)malloc(sizeof(Alphabet));
 if (alphabet==NULL) {
    fatal_alloc_error("new_alphabet");
@@ -34,6 +34,17 @@ if (alphabet==NULL) {
 for (int i=0;i<0x10000;i++) {
     alphabet->t[i]=NULL;
     alphabet->t2[i]=0;
+}
+if (korean) {
+   alphabet->korean_equivalent_syllab=(unichar*)malloc(0x10000*sizeof(unichar));
+   if (alphabet->korean_equivalent_syllab==NULL) {
+      fatal_alloc_error("new_alphabet");
+   }
+   for (int i=0;i<0x10000;i++) {
+      alphabet->korean_equivalent_syllab[i]=0;
+   }
+} else {
+   alphabet->korean_equivalent_syllab=NULL;
 }
 return alphabet;
 }
@@ -47,6 +58,9 @@ if (alphabet==NULL) return;
 for (int i=0;i<0x10000;i++) {
   if (alphabet->t[i]!=NULL)
     free(alphabet->t[i]);
+}
+if (alphabet->korean_equivalent_syllab!=NULL) {
+   free(alphabet->korean_equivalent_syllab);
 }
 free(alphabet);
 }
@@ -74,17 +88,28 @@ if (alphabet->t[lower]==NULL) {
 }
 alphabet->t[lower][L]=upper;
 alphabet->t[lower][L+1]='\0';
+/* If needed, we look at the Korean case, but only if we have a Chinese character */
+if (alphabet->korean_equivalent_syllab!=NULL) {
+   if (u_is_CJK_Unified_Ideographs(upper)) {
+      if (alphabet->korean_equivalent_syllab[upper]!=0) {
+         fatal_error("add_letter_equivalence: Chinese character %C has several equivalent Hangul characters\n",upper);
+      }
+      alphabet->korean_equivalent_syllab[upper]=lower;
+   }
+}
 }
 
 
 /**
  * Loads an alphabet file and returns the associated 'Alphabet*' structure.
+ * If 'korean' is non null, we compute the equivalences between Chinese and Hangul
+ * characters.
  */
-Alphabet* load_alphabet(char* filename) {
+Alphabet* load_alphabet(char* filename,int korean) {
 U_FILE* f;
 f=u_fopen(UTF16_LE,filename,U_READ);
 if (f==NULL) return NULL;
-Alphabet* alphabet=new_alphabet();
+Alphabet* alphabet=new_alphabet(korean);
 int c;
 unichar lower,upper;
 while ((c=u_fgetc(f))!=EOF) {
@@ -123,6 +148,14 @@ while ((c=u_fgetc(f))!=EOF) {
 }
 u_fclose(f);
 return alphabet;
+}
+
+
+/**
+ * Loads an alphabet file and returns the associated 'Alphabet*' structure.
+ */
+Alphabet* load_alphabet(char* filename) {
+return load_alphabet(filename,0);
 }
 
 
