@@ -170,7 +170,7 @@ if (infos->graph_names->value[n][0]==':') {
     * starting with '/' resp. '\\'. This enables absolute path names
     * under Unixes. */
    u_strcpy(temp,infos->repository);
-   offset=strlen(infos->repository);
+   offset=(int)strlen(infos->repository);
    if (infos->repository[0]=='\0') {
       abs_path_name_warning=2;
    }

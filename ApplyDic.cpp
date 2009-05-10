@@ -552,7 +552,7 @@ info->dlf=dlf;
 info->dlc=dlc;
 info->err=err;
 strcpy(info->tags_ind,tags);
-info->buffer=new_buffer(BUFFER_SIZE,INTEGER_BUFFER);
+info->buffer=new_buffer_for_file(INTEGER_BUFFER,info->text_cod);
 info->alphabet=alphabet;
 info->bin=NULL;
 info->inf=NULL;

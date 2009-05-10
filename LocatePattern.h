@@ -44,7 +44,6 @@
 #include "AbstractDelaLoad.h"
 
 
-#define TOKEN_BUFFER_SIZE 1000000
 
 /**
  * This structure is used to store all the information needed

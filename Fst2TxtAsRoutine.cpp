@@ -23,7 +23,6 @@
 #include "Fst2TxtAsRoutine.h"
 #include "TransductionStack.h"
 
-#define BUFFER_SIZE 1000000
 #define MAX_DEPTH 300
 
 
@@ -37,6 +36,9 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 		error("Cannot open file %s\n",p->text_file);
 		return 1;
 	}
+
+	p->text_buffer=new_buffer_for_file(UNICHAR_BUFFER,p->f_input);
+	p->buffer=p->text_buffer->unichar_buffer;
 
 	p->f_output=u_fopen(UTF16_LE,p->temp_file,U_WRITE);
 	if (p->f_output==NULL) {
@@ -99,8 +101,8 @@ p->variables=NULL;
 p->output_policy=MERGE_OUTPUTS;
 p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
 p->space_policy=DONT_START_WITH_SPACE;
-p->text_buffer=new_buffer(BUFFER_SIZE,UNICHAR_BUFFER);
-p->buffer=p->text_buffer->unichar_buffer;
+p->text_buffer=NULL;
+p->buffer=NULL;
 p->current_origin=0;
 p->absolute_offset=0;
 p->stack=new_stack_unichar(MAX_OUTPUT_LENGTH);

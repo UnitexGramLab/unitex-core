@@ -1136,7 +1136,7 @@ return unicode_src[(unsigned char)c];
  * writes it to the given file. Returns 1 if OK or 0 if an error occurs.
  */
 int write_1_byte_character(unsigned char c,ABSTRACTFILE* f) {
-return af_fwrite(&c,1,1,f);
+return (int)af_fwrite(&c,1,1,f);
 }
 
 

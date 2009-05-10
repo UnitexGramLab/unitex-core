@@ -47,7 +47,8 @@ int current_beginning,current_end,RESULT;
 struct match_list* l=load_match_list(concord,&output_policy);
 current_end=-1;
 
-struct buffer* buffer=new_buffer(MAX_TOKENS_BY_SENTENCE,INTEGER_BUFFER);
+//struct buffer* buffer=new_buffer(MAX_TOKENS_BY_SENTENCE,INTEGER_BUFFER);
+struct buffer* buffer=new_buffer_for_file(INTEGER_BUFFER,snt);
 read_one_sentence(buffer,snt,tokens,&N_TOKENS_READ);
 u_printf("Extracting %smatching units...\n",extract_matching_units?"":"un");
 while (buffer->size!=0) {
@@ -83,7 +84,7 @@ void read_one_sentence(struct buffer* buffer,U_FILE* text,struct text_tokens* to
 int i=0;
 int t=-15;
 int res=-15;
-while ((res=fread(&t,sizeof(int),1,text)) && (t!=tok->SENTENCE_MARKER) && (i!=MAX_TOKENS_BY_SENTENCE)) {
+while ((res=(int)fread(&t,sizeof(int),1,text)) && (t!=tok->SENTENCE_MARKER) && (i!=MAX_TOKENS_BY_SENTENCE)) {
    buffer->int_buffer[i++]=t;
 }
 if (i==MAX_TOKENS_BY_SENTENCE) {

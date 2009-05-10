@@ -150,7 +150,7 @@ if (rule_file[0]!='\0') {
       fatal_error("Unable to change to %s directory\n",directory);
    }
    if (compilename[0]=='\0') {
-      int l=strlen(rule_file);
+      int l=(int)strlen(rule_file);
       if (strcmp(rule_file+l-4,".lst")==0) {
          strcpy(compilename,rule_file);
          strcpy(compilename+l-4,".rul");

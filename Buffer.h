@@ -51,6 +51,7 @@ struct buffer {
 
 
 struct buffer* new_buffer(int,BufferType);
+struct buffer* new_buffer_for_file(BufferType,U_FILE*);
 void free_buffer(struct buffer*);
 int fill_buffer(struct buffer*,int,U_FILE*);
 int fill_buffer(struct buffer*,U_FILE*);

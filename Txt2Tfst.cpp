@@ -307,7 +307,11 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    for (int y=0;y<total;y++) {
       current_global_position_in_chars=current_global_position_in_chars+u_strlen(tokens->token[buffer[y]]);
    }
+#ifdef __GNUC__
 #warning TO_BE_REMOVED
+#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
+#pragma message("warning : TO_BE_REMOVED")
+#endif
    if (KOREAN && sentence_number==2) {
       break;
    }

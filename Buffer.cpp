@@ -62,6 +62,26 @@ return buffer;
 
 
 /**
+ * Allocates, initializes and returns a new buffer of file size length
+ */
+struct buffer* new_buffer_for_file(BufferType type,U_FILE* fileread) {
+int item_size=1;
+switch (type) {
+   case INTEGER_BUFFER:
+	   item_size = sizeof(int);
+	   break;
+   case UNICHAR_BUFFER:
+	   item_size = sizeof(unichar);
+	   break;
+}
+fseek(fileread,0,SEEK_END);
+long file_size=ftell(fileread);
+fseek(fileread,0,SEEK_SET);
+return new_buffer((file_size/item_size)+0x10,type);
+}
+
+
+/**
  * Frees a buffer, assuming that the field 'buffer' was not already freed.
  */
 void free_buffer(struct buffer* buffer) {

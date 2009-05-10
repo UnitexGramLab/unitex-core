@@ -754,7 +754,8 @@ int start_pos,end_pos;
 int n_units_already_read=0;
 int current_origin_in_chars=0;
 /* First, we allocate a buffer to read the "text.cod" file */
-struct buffer* buffer=new_buffer(1000000,INTEGER_BUFFER);
+struct buffer* buffer=new_buffer_for_file(INTEGER_BUFFER,text);
+
 u_printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
@@ -1040,7 +1041,7 @@ struct match_list* matches;
 struct match_list* matches_tmp;
 int current_global_position=0;
 /* We allocate a buffer to read the tokens of the text */
-struct buffer* buffer=new_buffer(1000000,INTEGER_BUFFER);
+struct buffer* buffer=new_buffer_for_file(INTEGER_BUFFER,text);
 /* We load the match list */
 matches=load_match_list(concordance,NULL);
 int pos_in_enter_pos=0;

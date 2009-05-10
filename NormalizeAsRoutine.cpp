@@ -84,7 +84,7 @@ int normalize(char *fin, char *fout, int carriage_return_policy, char *rules) {
 	get_value_index(key,replacements,INSERT_IF_NEEDED,value);
 
 	unichar tmp[MAX_TAG_LENGTH];
-	struct buffer* buffer=new_buffer(BUFFER_SIZE,UNICHAR_BUFFER);
+	struct buffer* buffer=new_buffer_for_file(UNICHAR_BUFFER,input);
 	unichar* buff=buffer->unichar_buffer;
 	/* We define some things that will be used for parsing the buffer */
 	unichar stop_chars[3];

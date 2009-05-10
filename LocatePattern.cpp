@@ -38,7 +38,7 @@ void load_morphological_dictionaries(char* morpho_dic_list,struct locate_paramet
 /**
  * Allocates, initializes and returns a new locate_parameters structure.
  */
-struct locate_parameters* new_locate_parameters() {
+struct locate_parameters* new_locate_parameters(U_FILE* fileread) {
 struct locate_parameters* p=(struct locate_parameters*)malloc(sizeof(struct locate_parameters));
 if (p==NULL) {
    fatal_alloc_error("new_locate_parameters");
@@ -62,7 +62,7 @@ p->fst2=NULL;
 p->tokens=NULL;
 p->absolute_offset=0;
 p->current_origin=-1;
-p->token_buffer=new_buffer(TOKEN_BUFFER_SIZE,INTEGER_BUFFER);
+p->token_buffer=new_buffer_for_file(INTEGER_BUFFER,fileread);
 p->buffer=p->token_buffer->int_buffer;
 p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
 p->space_policy=DONT_START_WITH_SPACE;
@@ -108,15 +108,7 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars) {
-struct locate_parameters* p=new_locate_parameters();
-p->match_policy=match_policy;
-p->tokenization_policy=tokenization_policy;
-p->space_policy=space_policy;
-p->output_policy=output_policy;
-p->search_limit=search_limit;
-p->ambiguous_output_policy=ambiguous_output_policy;
-p->variable_error_policy=variable_error_policy;
-p->protect_dic_chars=protect_dic_chars;
+
 U_FILE* text_file;
 U_FILE* out;
 U_FILE* info;
@@ -128,6 +120,16 @@ if (text_file==NULL) {
 fseek(text_file,0,SEEK_END);
 long int text_size=ftell(text_file)/sizeof(int);
 fseek(text_file,0,SEEK_SET);
+
+struct locate_parameters* p=new_locate_parameters(text_file);
+p->match_policy=match_policy;
+p->tokenization_policy=tokenization_policy;
+p->space_policy=space_policy;
+p->output_policy=output_policy;
+p->search_limit=search_limit;
+p->ambiguous_output_policy=ambiguous_output_policy;
+p->variable_error_policy=variable_error_policy;
+p->protect_dic_chars=protect_dic_chars;
 
 char concord[FILENAME_MAX];
 char concord_info[FILENAME_MAX];
