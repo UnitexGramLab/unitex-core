@@ -74,9 +74,10 @@ switch (type) {
 	   item_size = sizeof(unichar);
 	   break;
 }
+long save_pos=ftell(fileread);
 fseek(fileread,0,SEEK_END);
 long file_size=ftell(fileread);
-fseek(fileread,0,SEEK_SET);
+fseek(fileread,save_pos,SEEK_SET);
 return new_buffer((file_size/item_size)+0x10,type);
 }
 

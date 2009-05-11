@@ -117,9 +117,10 @@ if (text_file==NULL) {
    error("Cannot load %s\n",text);
    return 0;
 }
+long save_pos=ftell(text_file);
 fseek(text_file,0,SEEK_END);
-long int text_size=ftell(text_file)/sizeof(int);
-fseek(text_file,0,SEEK_SET);
+long text_size=ftell(text_file)/sizeof(int);
+fseek(text_file,save_pos,SEEK_SET);
 
 struct locate_parameters* p=new_locate_parameters(text_file);
 p->match_policy=match_policy;
