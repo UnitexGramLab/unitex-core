@@ -28,5 +28,5 @@ int main(int argc,char* argv[]) {
  * the graphical interface */
 setBufferMode();
 
-return main_stats(argc, argv);
+return main_Stats(argc, argv);
 }

@@ -23,6 +23,6 @@
 #ifndef StatsH
 #define StatsH
 
-int main_stats(int, char*[]);
+int main_Stats(int, char*[]);
 
 #endif

@@ -47,6 +47,7 @@
 #include "Reconstrucao.h"
 #include "Reg2Grf.h"
 #include "SortTxt.h"
+#include "Stats.h"
 #include "Table2Grf.h"
 #include "TagsetNormTfst.h"
 #include "TEI2Txt.h"
@@ -119,6 +120,7 @@ const struct utility_item utility_array[]=
 #endif
 	{ "SortTxt", 7, &main_SortTxt} ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
+	{ "Stats", 5, &main_Stats} ,
 	{ "Table2Grf", 9, &main_Table2Grf} ,
 	{ "TagsetNormTfst", 14, &main_TagsetNormTfst} ,
 	{ "TEI2Txt", 7, &main_TEI2Txt} ,

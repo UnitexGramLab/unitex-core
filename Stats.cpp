@@ -21,6 +21,7 @@
 
 #include <Math.h>
 #include "File.h"
+#include "Copyright.h"
 #include "Text_tokens.h"
 #include "Matches.h"
 #include "HashTable.h"
@@ -32,7 +33,7 @@
 
 // main work functions
 
-void concord_stats(int , char *, char* , char* , char*, int , int, int );
+void concord_stats(char* , int , char *, char* , char* , char*, int , int, int );
 void build_counted_concord(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_ptr** , hash_table** );
 void build_counted_collocates(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_int** , hash_table** , hash_table** , hash_table** );
 
@@ -65,7 +66,7 @@ inline int max_int(int, int);
 inline long min_long(long, long);
 inline long max_long(long, long);
 vector_int* get_string_in_context_as_token_list(match_list*, int, int, int**, long*, long*, long, text_tokens*, U_FILE*, int);
-void print_string_token_list_with_count(vector_int*, text_tokens*, int);
+void print_string_token_list_with_count(U_FILE*,vector_int*, text_tokens*, int);
 void get_buffer_around_token(U_FILE*, int**, long, long, long, long*, long*);
 void count_collocates(U_FILE* , text_tokens* , Alphabet*, int, hash_table* , hash_table** , int* );
 int is_appropriate_token(int tokenID, text_tokens* tokens);
@@ -107,8 +108,9 @@ int is_appropriate_token(int tokenID, text_tokens* tokens);
 
 #define STATS_BUFFER_LENGTH 4096
 
-void usage()
+static void usage()
 {
+	u_printf("%S",COPYRIGHT);
 	u_printf("Usage: Stats [ARGUMENTS]\n"
 			 "\n"
 			 "ARGUMENTS:\n"
@@ -117,14 +119,15 @@ void usage()
 			"-t/--tokens <tokens.txt>: path to tokens.txt\n"
 			"-x/--text <text.cod>: path to text.cod\n"
 			"-a/--alpha <alphabet.txt>: path to alphabet.txt\n"
+			"-o/--output <output.txt>: path to output.txt file to create with result\n"
 			"-l/--left <length>: length of left context\n"
 			"-r/--right <length>: length of right context\n"
-			"-s/--case <0/1>: 0 - case insensitive, 1 - case sensitive, default is 1!");
+			"-s/--case <0/1>: 0 - case insensitive, 1 - case sensitive, default is 1!\n");
 
 	return;
 }
 
-int main_stats(int argc,char *argv[]) {
+int main_Stats(int argc,char *argv[]) {
 
 	if (argc <= 1)
 	{
@@ -133,10 +136,10 @@ int main_stats(int argc,char *argv[]) {
 	}
 
 	int leftContext = 0,  rightContext = 0, mode, caseSensitive = 1;
-	char *concord = NULL, *text = NULL, *tokens = NULL, *alpha = NULL;
+	char *concord = NULL, *text = NULL, *tokens = NULL, *alpha = NULL, *output_file = NULL;
 
 
-	const char* optstring=":m:c:t:x:a:l:r:s:";
+	const char* optstring=":m:c:t:x:a:l:r:s:o:";
 
 	struct option_TS lopts[]= {
 	      {"mode",required_argument_TS,NULL,'m'},
@@ -147,6 +150,7 @@ int main_stats(int argc,char *argv[]) {
 	      {"left",required_argument_TS,NULL,'l'},
 	      {"right",required_argument_TS,NULL,'r'},
 	      {"case",optional_argument_TS,NULL,'s'},
+		  {"output",optional_argument_TS,NULL,'o'},
 	      {0, 0, 0, 0 }
 	 } ;
 
@@ -163,6 +167,7 @@ int main_stats(int argc,char *argv[]) {
 	   case 'l': leftContext = atoi(vars->optarg); break;
 	   case 'r': rightContext = atoi(vars->optarg); break;
 	   case 's': caseSensitive = atoi(vars->optarg); break;
+	   case 'o': output_file = vars->optarg; break;
 	   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
 	             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
 	   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -195,7 +200,7 @@ int main_stats(int argc,char *argv[]) {
 
 	if (mode == 0 || mode == 1 || mode == 2)
 	{
-		concord_stats(mode, concord, tokens, text, alpha, leftContext, rightContext, caseSensitive);
+		concord_stats(output_file, mode, concord, tokens, text, alpha, leftContext, rightContext, caseSensitive);
 	}
 	else
 	{
@@ -214,9 +219,11 @@ int main_stats(int argc,char *argv[]) {
  * match to build string for counting. The function is_appropriate_token makes distinction between
  * "space"-like and "regular" tokens to include.
  */
-void concord_stats(int mode, char *concordfname, char* tokens_path, char* codname, char* alphabetName, int leftContext, int rightContext, int caseSensitive)
+void concord_stats(char* outfilename,int mode, char *concordfname, char* tokens_path, char* codname,
+				   char* alphabetName, int leftContext, int rightContext, int caseSensitive)
 {
 	U_FILE* concord = u_fopen(UTF16_LE, concordfname, U_READ);
+	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen(UTF16_LE, outfilename, U_WRITE);
 	U_FILE* cod = u_fopen(BINARY, codname, U_READ);
 	match_list* matches = load_match_list(concord, NULL);
 	u_fclose(concord);
@@ -257,7 +264,7 @@ void concord_stats(int mode, char *concordfname, char* tokens_path, char* codnam
 		for (i = 0; i < allMatches->nbelems ; i++)
 		{
 			hash_val = get_value(countsPerMatch, allMatches->tab[i], HT_DONT_INSERT);
-			print_string_token_list_with_count(((vec_CS_tag*)(allMatches->tab[i]))->vec, tokens, hash_val->_int);
+			print_string_token_list_with_count(outfile, ((vec_CS_tag*)(allMatches->tab[i]))->vec, tokens, hash_val->_int);
 		}
 
 		free_vector_ptr(allMatches, NULL);
@@ -290,7 +297,7 @@ void concord_stats(int mode, char *concordfname, char* tokens_path, char* codnam
 			hash_val = get_value(countsPerMatch, currentKey, HT_DONT_INSERT);
 
 			K = hash_val->_int;
-			u_printf("%S\t%d\n", tokens->token[allMatches->tab[i]], K);
+			u_fprintf(outfile,"%S\t%d\n", tokens->token[allMatches->tab[i]], K);
 		}
 
 		free_int_CS_tag(currentKey);
@@ -335,7 +342,7 @@ void concord_stats(int mode, char *concordfname, char* tokens_path, char* codnam
 
 			zScore = *((double*)hash_val->_ptr);
 
-			u_printf("%S\t%d\t%d\t%f\n", tokens->token[allMatches->tab[i]], Fc, K, zScore);
+			u_fprintf(outfile,"%S\t%d\t%d\t%f\n", tokens->token[allMatches->tab[i]], Fc, K, zScore);
 		}
 
 
@@ -356,6 +363,8 @@ void concord_stats(int mode, char *concordfname, char* tokens_path, char* codnam
 
 
 	u_fclose(cod);
+	if (outfilename != NULL) 
+		u_fclose(outfile);
 	free_text_tokens(tokens);
 	free_alphabet(alphabet);
 	match_list* current_match = matches;
@@ -851,16 +860,16 @@ unsigned int jenkins_one_at_a_time_hash_string_uppercase(unichar *key, size_t ke
 }
 
 
-void print_string_token_list_with_count(vector_int* list, text_tokens* tokens, int count)
+void print_string_token_list_with_count(U_FILE* outfile,vector_int* list, text_tokens* tokens, int count)
 {
 	int i;
 
 	for (i = 0 ; i < list->nbelems ; i++)
 	{
-		u_printf("%S", tokens->token[list->tab[i]]);
+		u_fprintf(outfile,"%S", tokens->token[list->tab[i]]);
 	}
-	u_printf("\t%d", count);
-	u_printf("\n");
+	u_fprintf(outfile,"\t%d", count);
+	u_fprintf(outfile,"\n");
 }
 
 /**
@@ -891,7 +900,7 @@ void get_buffer_around_token(U_FILE* inputFile, int** buffer, long tokenPosition
 
 	fseek(inputFile, seekTo * sizeof(int), SEEK_SET);
 
-	long numRead = fread(*buffer, sizeof(int), bufferSize, inputFile);
+	long numRead = (long)fread(*buffer, sizeof(int), bufferSize, inputFile);
 
 	if (numRead != bufferSize)
 	{
