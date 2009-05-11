@@ -1188,7 +1188,7 @@ public:
 	
 		while((*scan)){
 			if( addr >= (*scan)->pageAddr){
-				offset = addr - (*scan)->pageAddr;
+				offset = (int)(addr - (*scan)->pageAddr);
 				if(offset < pgSize){
 					return( (*scan)->pageNum * pgEMcnt+
 						offset/pgESize);

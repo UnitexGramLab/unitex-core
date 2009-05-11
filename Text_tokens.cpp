@@ -76,8 +76,7 @@ if (f==NULL) {
    return NULL;
 }
 u_fscanf(f,"%d\n",NUMBER_OF_TEXT_TOKENS);
-*NUMBER_OF_TEXT_TOKENS=(*NUMBER_OF_TEXT_TOKENS)+100000; // the +100000 is used to prevent the addition
-                                            // of tokens while locate preprocessing
+*NUMBER_OF_TEXT_TOKENS=(*NUMBER_OF_TEXT_TOKENS);
 struct string_hash* res;
 res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
 unichar tmp[4096];
@@ -100,8 +99,7 @@ if (f==NULL) {
 }
 (*SENTENCE_MARKER)=-1;
 u_fscanf(f,"%d\n",NUMBER_OF_TEXT_TOKENS);
-*NUMBER_OF_TEXT_TOKENS=(*NUMBER_OF_TEXT_TOKENS)+100000; // the +100000 is used to prevent the addition
-                                            // of tokens while locate preprocessing
+*NUMBER_OF_TEXT_TOKENS=(*NUMBER_OF_TEXT_TOKENS);
 struct string_hash* res;
 res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
 unichar tmp[4096];
