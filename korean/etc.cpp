@@ -92,6 +92,8 @@ int getStringTableFile(char *f,
 	U_FILE *fptr;
 	int count;
 	if((fptr = u_fopen(BINARY,f,U_READ)) ==0 )	fopenErrMessage(f);
+	/* It's a binary file, but we read it as a Unicode one */
+	fptr->enc=UTF16_LE;
 	fseek(fptr,0,SEEK_END);	
 	int sizeFile =ftell(fptr)/2;
 	mem = new unsigned short[sizeFile];
