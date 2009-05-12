@@ -363,7 +363,7 @@ void concord_stats(char* outfilename,int mode, char *concordfname, char* tokens_
 
 
 	u_fclose(cod);
-	if (outfilename != NULL) 
+	if (outfilename != NULL)
 		u_fclose(outfile);
 	free_text_tokens(tokens);
 	free_alphabet(alphabet);
@@ -558,7 +558,7 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
 
 			for (i = 0 ; i < currentMatchList->nbelems; i++)
 			{
-				if (is_appropriate_token(tmpMatchList->tab[i], tokens))
+				if (is_appropriate_token(currentMatchList->tab[i], tokens))
 				{
 					totalWindow++;
 				}
