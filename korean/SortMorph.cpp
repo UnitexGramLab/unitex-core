@@ -120,7 +120,9 @@ sortMorphemTable(char *f)
 	unichar *wp,*mem;
 class arbre_string00 parFlechi, parCano;
 	 
-	if((fptr = u_fopen(BINARY,f,U_READ)) ==0 )	fopenErrMessage(f);
+	if((fptr = u_fopen(BINARY,f,U_READ)) ==0 )	{
+	   fopenErrMessage(f);
+	}
 	fseek(fptr,0,SEEK_END);	
 	int sizeFile =ftell(fptr);
 	sizeFile /= 2;
