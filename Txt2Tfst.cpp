@@ -82,9 +82,9 @@ return 1;
 
 static void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: Txt2Tfst [OPTIONS] <txt>\n"
+u_printf("Usage: Txt2Tfst [OPTIONS] <snt>\n"
          "\n"
-         "  <txt> : the text file\n"
+         "  <snt> : the .snt text file\n"
          "\n"
          "OPTIONS:\n"
          "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
@@ -215,7 +215,7 @@ if (!KOREAN) {
       u_fclose(tag_file);
    }
 }
-Alphabet* alph=load_alphabet(alphabet);
+Alphabet* alph=load_alphabet(alphabet,KOREAN);
 if (alph==NULL) {
    fatal_error("Cannot open %s\n",alphabet);
 }
@@ -285,12 +285,15 @@ u_fprintf(tfst,"0000000000\n");
 u_printf("Constructing text automaton...\n");
 Ustring* text=new_Ustring(2048);
 char phrase_cod[FILENAME_MAX];
+char exe_path[FILENAME_MAX];
+get_path(argv[0],exe_path);
 get_snt_path(argv[vars->optind],phrase_cod);
 strcat(phrase_cod ,"phrase.cod");
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
    if (KOREAN) {
-      build_korean_sentence_automaton(buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
+      /* vérifier pb de Jamo avec la phrase 1543 */ 
+      /*if (sentence_number>=3408)*/ build_korean_sentence_automaton(exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
                   current_global_position_in_tokens,
                   current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
                   phrase_cod,jamoTable,jamoFst2);
@@ -306,14 +309,6 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    current_global_position_in_tokens=current_global_position_in_tokens+total;
    for (int y=0;y<total;y++) {
       current_global_position_in_chars=current_global_position_in_chars+u_strlen(tokens->token[buffer[y]]);
-   }
-#ifdef __GNUC__
-#warning TO_BE_REMOVED
-#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
-#pragma message("warning : TO_BE_REMOVED")
-#endif
-   if (KOREAN && sentence_number==2) {
-      break;
    }
 }
 u_printf("%d sentence%s read\n",sentence_number-1,(sentence_number-1)>1?"s":"");

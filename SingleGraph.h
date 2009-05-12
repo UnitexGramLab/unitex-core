@@ -113,7 +113,7 @@ void move_SingleGraph(SingleGraph,SingleGraph*,void (*free_elag_symbol)(symbol_t
 void compute_reverse_transitions(SingleGraph);
 void check_accessibility(SingleGraphState*,int);
 void check_co_accessibility(SingleGraphState*,int);
-void remove_epsilon_transitions(SingleGraph);
+void remove_epsilon_transitions(SingleGraph,int);
 void remove_useless_states(SingleGraph);
 void reverse(SingleGraph);
 SingleGraph clone(SingleGraph,symbol_t*(*clone_elag_symbol)(const symbol_t*)=NULL);

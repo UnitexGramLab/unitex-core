@@ -849,7 +849,7 @@ set_initial_state(graph->states[0]);
 set_final_state(graph->states[1]);
 compute_reverse_transitions(graph);
 check_co_accessibility(graph->states,1);
-remove_epsilon_transitions(graph);
+remove_epsilon_transitions(graph,1);
 check_accessibility(graph->states,0);
 remove_useless_states(graph);
 if (graph->states[0]==NULL) {

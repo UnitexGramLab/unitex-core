@@ -90,7 +90,7 @@ alphabet->t[lower][L]=upper;
 alphabet->t[lower][L+1]='\0';
 /* If needed, we look at the Korean case, but only if we have a Chinese character */
 if (alphabet->korean_equivalent_syllab!=NULL) {
-   if (u_is_CJK_Unified_Ideographs(upper)) {
+   if (u_is_CJK_Unified_Ideographs(upper) || u_is_cjk_compatibility_ideographs(upper)) {
       if (alphabet->korean_equivalent_syllab[upper]!=0) {
          fatal_error("add_letter_equivalence: Chinese character %C has several equivalent Hangul characters\n",upper);
       }

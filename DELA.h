@@ -126,7 +126,6 @@ unsigned char* load_BIN_file(char*);
 void rebuild_dictionary(unsigned char*,struct INF_codes*,U_FILE*);
 void extract_semantic_codes(char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(unichar*,unichar*,unichar*,unichar*);
-void tokenize_tag_token_into_3_parts(unichar*,unichar*,unichar*,unichar*);
 void check_DELA_line(unichar*,U_FILE*,int,int,char*,struct string_hash*,struct string_hash*,
                      struct string_hash*,struct string_hash*,int*,int*);
 int warning_on_code(unichar*,unichar*);

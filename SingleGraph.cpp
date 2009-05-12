@@ -573,7 +573,8 @@ for (int i=0;i<graph->number_of_states;i++) {
  * This function adds to the given graph the transitions required by the given
  * epsilon closure in order to preserve the initial graph language.
  */
-void add_transitions_according_to_epsilon_closure(struct list_int** closures,SingleGraph graph) {
+void add_transitions_according_to_epsilon_closure(struct list_int** closures,SingleGraph graph,
+      int add_reversed_transitions) {
 for (int i=0;i<graph->number_of_states;i++) {
    /* For each state */
    struct list_int* closure=closures[i];
@@ -592,7 +593,9 @@ for (int i=0;i<graph->number_of_states;i++) {
          Transition* tr=e->outgoing_transitions;
          while (tr!=NULL) {
             add_outgoing_transition(graph->states[i],tr->tag_number,tr->state_number);
-            add_incoming_transition(graph->states[tr->state_number],tr->tag_number,i);
+            if (add_reversed_transitions) {
+               add_incoming_transition(graph->states[tr->state_number],tr->tag_number,i);
+            }
             tr=tr->next;
          }
       }
@@ -606,7 +609,7 @@ for (int i=0;i<graph->number_of_states;i++) {
  * Removes epsilon transitions from the given graph, adding the transitions
  * that are necessary not to modify the language recognized by the graph.
  */
-void remove_epsilon_transitions(SingleGraph graph) {
+void remove_epsilon_transitions(SingleGraph graph,int add_reversed_transitions) {
 /* We compute the epsilon closure for each state */
 struct list_int** closures=get_epsilon_closures(graph);
 /* Then we remove all the epsilon transitions */
@@ -621,7 +624,7 @@ delete_epsilon_transitions(graph);
  *
  * A --XXX--> C
  */
-add_transitions_according_to_epsilon_closure(closures,graph);
+add_transitions_according_to_epsilon_closure(closures,graph,add_reversed_transitions);
 /* Finally, we free the closures */
 for (int i=0;i<graph->number_of_states;i++) {
    free_list_int(closures[i]);
@@ -1003,6 +1006,9 @@ value->_ptr=sorted_insert(t->state_number,(struct list_int*)value->_ptr);
 void determinize(SingleGraph graph) {
 if (graph==NULL) {
    fatal_error("NULL error in determinize\n");
+}
+if (graph->tag_type!=INT_TAGS) {
+   fatal_error("determinize: cannot determinize an automaton with non integer tags\n");
 }
 if (graph->number_of_states==0) {
    /* If the automaton is empty */

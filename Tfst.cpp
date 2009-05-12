@@ -199,7 +199,9 @@ n=u_sscanf(&(foo->str[1]),"%d.%d.%d-%d.%d.%d%C",&a,&b,&c,&d,&e,&f,&Z);
 if (n<6 || (n==7 && Z!='#')) {
    fatal_error("read_normal_tag: invalid bounds line %S\n",foo->str);
 }
-if (a<0 || b<0 || c<0 || d<0 || e<0 || f<0) {
+/* We don't test f<0, because f==-1 is the sign that the tag has an empty
+ * surface form like {<E>,.JO} */
+if (a<0 || b<0 || c<0 || d<0 || e<0 /* || f<0*/) {
    fatal_error("read_normal_tag: negative bound in line %S\n",foo->str);
 }
 /* Finally, we must check that we have the final line with a dot */
@@ -465,8 +467,10 @@ if (t->type==T_STD) {
    int n=u_sprintf(out,"@STD\n@%S\n",t->content);
    pos=pos+n;
    if (t->start_pos_token<0 || t->start_pos_char<0 || t->start_pos_letter<0
-         || t->end_pos_token<0 || t->end_pos_char<0 || t->end_pos_letter<0
-         || t->syllab_bound_on_the_right<0) {
+         || t->end_pos_token<0 || t->end_pos_char<0 /*|| t->end_pos_letter<0*/
+         /*|| t->syllab_bound_on_the_right<0*/) {
+      /* We don't test t->end_pos_letter<0, because t->end_pos_letter==-1 is 
+       * the sign that the tag has an empty surface form like {<E>,.JO} */
       fatal_error("Invalid TfstTag information in TfstTag_to_string\n");
    }
    n=u_sprintf(out+pos,"@%d.%d.%d-%d.%d.%d%s",t->start_pos_token,t->start_pos_char,t->start_pos_letter,
