@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 
-using namespace std;
+// using namespace std;
 #include "Unicode.h"
 #include "Fst2.h"
 #include "Copyright.h"

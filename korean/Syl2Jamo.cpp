@@ -29,7 +29,7 @@
 #include "IOBuffer.h"
 #include "Error.h"
 
-using namespace std;
+// using namespace std;
 
 
 //

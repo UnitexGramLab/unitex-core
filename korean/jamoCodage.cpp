@@ -26,7 +26,7 @@
 #include "etc.h"
 #include "Error.h"
 
-using namespace std;
+// using namespace std;
 
 
 char *defaultSylToJamoMap = ""\

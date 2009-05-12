@@ -25,7 +25,7 @@
 #include "etc.h"
 #include "Error.h"
 
-using namespace std;
+// using namespace std;
 
 
 convert_windows949kr_uni::convert_windows949kr_uni()

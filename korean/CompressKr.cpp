@@ -20,7 +20,7 @@
   */ 
 
 #include <stdlib.h>
-using namespace std;
+// using namespace std;
 #include "Unicode.h"
 #include "File.h"
 #include "Copyright.h"

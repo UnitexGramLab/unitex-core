@@ -19,7 +19,7 @@
   *
   */
 
-using namespace std;
+// using namespace std;
 #include <locale.h>
 #include <stdlib.h>
 

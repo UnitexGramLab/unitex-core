@@ -27,7 +27,7 @@
 #include "IOBuffer.h"
 #include "Error.h"
 
-using namespace std;
+// using namespace std;
 
 //
 // change the format which is get from graph to format of list form
