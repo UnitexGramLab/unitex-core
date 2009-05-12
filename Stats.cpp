@@ -19,7 +19,7 @@
   *
   */
 
-#include <Math.h>
+#include <math.h>
 #include "File.h"
 #include "Copyright.h"
 #include "Text_tokens.h"
