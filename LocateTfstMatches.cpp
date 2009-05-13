@@ -30,7 +30,8 @@
  */
 struct tfst_match* new_tfst_match(int source_state_text,
                                   int dest_state_text,
-                                  int grammar_tag_number,
+                                  Transition* fst2_transition,
+                                  int pos_kr,
                                   int text_tag_number) {
 struct tfst_match* match=(struct tfst_match*)malloc(sizeof(struct tfst_match));
 if (match==NULL) {
@@ -38,7 +39,8 @@ if (match==NULL) {
 }
 match->source_state_text=source_state_text;
 match->dest_state_text=dest_state_text;
-match->grammar_tag_number=grammar_tag_number;
+match->fst2_transition=fst2_transition;
+match->pos_kr=pos_kr;
 match->text_tag_numbers=sorted_insert(text_tag_number,NULL);
 match->next=NULL;
 match->pointed_by=0;
@@ -52,21 +54,23 @@ return match;
 struct tfst_match* insert_in_tfst_matches(struct tfst_match* list,
                                           int source_state_text,
                                           int dest_state_text,
-                                          int grammar_tag_number,
+                                          Transition* fst2_transition,
+                                          int pos_kr,
                                           int text_tag_number) {
 if (list==NULL) {
    return new_tfst_match(source_state_text,dest_state_text,
-                         grammar_tag_number,text_tag_number);
+         fst2_transition,pos_kr,text_tag_number);
 }
 if (list->source_state_text==source_state_text
     && list->dest_state_text==dest_state_text
-    && list->grammar_tag_number==grammar_tag_number) {
+    && list->fst2_transition==fst2_transition
+    && list->pos_kr==pos_kr) {
     list->text_tag_numbers=sorted_insert(text_tag_number,list->text_tag_numbers);
     return list;
 }
 list->next=insert_in_tfst_matches(list->next,
                          source_state_text,dest_state_text,
-                         grammar_tag_number,text_tag_number);
+                         fst2_transition,pos_kr,text_tag_number);
 return list;
 }
 
@@ -78,6 +82,8 @@ void free_tfst_match(struct tfst_match* match) {
 if (match==NULL) {
    fatal_error("NULL error in free_tfst_match");
 }
+/* We MUST NOT free 'fst2_transition' since it is just a copy of an actual transition
+ * in the grammar */
 free_list_int(match->text_tag_numbers);
 free(match);
 }

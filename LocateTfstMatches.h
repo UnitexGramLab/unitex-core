@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "List_int.h"
 #include "LocateTfst_lib.h"
+#include "Transitions.h"
 
 
 #define NO_TEXT_TOKEN_WAS_MATCHED -1
@@ -38,8 +39,8 @@
 struct tfst_match {
    int source_state_text;
    int dest_state_text;
-   int grammar_tag_number;
-   int dest_state_grammar;
+   Transition* fst2_transition;
+   int pos_kr;
    int pointed_by;
    struct list_int* text_tag_numbers;
 
@@ -83,7 +84,7 @@ struct tfst_simple_match_list {
 };
 
 
-struct tfst_match* insert_in_tfst_matches(struct tfst_match*,int,int,int,int);
+struct tfst_match* insert_in_tfst_matches(struct tfst_match*,int,int,Transition*,int,int);
 void free_tfst_match(struct tfst_match*);
 struct tfst_match_list* add_match_in_list(struct tfst_match_list*,struct tfst_match*);
 void clean_tfst_match_list(struct tfst_match*,struct tfst_match*);
