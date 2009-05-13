@@ -31,7 +31,9 @@ void explore_tfst(Tfst* tfst,int current_state_in_tfst,
 		          int current_state_in_fst2,int depth,
 		          struct tfst_match* match_element_list,
                   struct tfst_match_list** LIST,
-                  struct locate_tfst_infos* infos);
+                  struct locate_tfst_infos* infos,
+                  int pos_kr_in_fst2_tag,
+                  Transition* current_kr_fst2_transition);
 void init_Korean_stuffs(struct locate_tfst_infos* infos,char* jamo_table);
 void free_Korean_stuffs(struct locate_tfst_infos* infos);
 void compute_jamo_tfst_tags(struct locate_tfst_infos* infos);
@@ -116,7 +118,7 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	infos.matches=NULL;
 	/* Within a sentence graph, we try to match from any state */
 	for (int j=0;j<tfst->automaton->number_of_states;j++) {
-		explore_tfst(tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos);
+		explore_tfst(tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,NULL);
 	}
 	save_tfst_matches(&infos);
 }
@@ -297,8 +299,15 @@ for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
 void explore_tfst(Tfst* tfst,int current_state_in_tfst,
 		          int current_state_in_fst2,int depth,
 		          struct tfst_match* match_element_list,
-                  struct tfst_match_list* *LIST,
-                  struct locate_tfst_infos* infos) {
+                struct tfst_match_list* *LIST,
+                struct locate_tfst_infos* infos,
+                /* This is used for Korean only when a fst2 tag contains a token that
+                 * can match several boxes in the tfst. 'pos_kr_in_fst2_tag' represents 
+                 * the current position in the current fst2 tag, or -1 if unused. 
+                 * 'current_kr_fst2_transition' is the current fst2 transition being explored if
+                 * 'pos_kr_in_fst2_tag' is not -1; null otherwise. */
+                int pos_kr_in_fst2_tag,
+                Transition* current_kr_fst2_transition) {
 Fst2State current_state_in_grammar=infos->fst2->states[current_state_in_fst2];
 
 if (is_final_state(current_state_in_grammar)) {
@@ -322,7 +331,7 @@ while (grammar_transition!=NULL) {
       struct tfst_match_list* tmp;
 
       explore_tfst(tfst,current_state_in_tfst,infos->fst2->initial_states[-e],
-              depth+1,match_element_list,&list_for_subgraph,infos);
+              depth+1,match_element_list,&list_for_subgraph,infos,-1,NULL);
       while (list_for_subgraph!=NULL) {
          tmp=list_for_subgraph->next;
          /* Before exploring an element that points on a subgraph match,
@@ -331,7 +340,7 @@ while (grammar_transition!=NULL) {
          (list_for_subgraph->match->pointed_by)--;
          explore_tfst(tfst,list_for_subgraph->match->dest_state_text,
                            grammar_transition->state_number,
-                           depth,list_for_subgraph->match,LIST,infos);
+                           depth,list_for_subgraph->match,LIST,infos,-1,NULL);
          /* Finally, we remove, if necessary, the list of match element
           * that was used for storing the subgraph match. This cleaning
           * will only free elements that are not involved in others
@@ -377,7 +386,7 @@ while (grammar_transition!=NULL) {
         	 (match_element_list->pointed_by)++;
          }
          explore_tfst(tfst,list->dest_state_text,grammar_transition->state_number,
-                           depth,list,LIST,infos);
+                           depth,list,LIST,infos,-1,NULL);
          if (list->pointed_by==0) {
             /* If list is not blocked by being part of a match for the calling
              * graph, we can free it */
@@ -659,7 +668,6 @@ return NO_MATCH_STATUS;
 
 /* We arrive here when we have used dela_entry variables */
 int ret_value;
-
 
 ok_match:
 /* We test the morphological filter, if any */

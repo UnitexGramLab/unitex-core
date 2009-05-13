@@ -85,6 +85,7 @@ int invoke_as_new_process(ProgramInvoker* invoker) {
 char line[4096];
 build_command_line(invoker,line);
 int ret=system(line);
+
 return ret;
 }
 
@@ -93,10 +94,18 @@ return ret;
  * Builds and returns a command line ready to be used with a 'system' call.
  */
 void build_command_line(ProgramInvoker* invoker,char* line) {
-sprintf(line,"%s",(char*)(invoker->args->tab[0]));
+/* If we are under Windows, we have to surround the whole command line with an
+ * additional pair of double quotes */
+#ifdef _NOT_UNDER_WINDOWS
+char* protection="";
+#else
+char* protection="\"";
+#endif
+sprintf(line,"%s\"%s\"",protection,(char*)(invoker->args->tab[0]));
 for (int i=1;i<invoker->args->nbelems;i++) {
    strcat(line," \"");
    strcat(line,(char*)(invoker->args->tab[i]));
    strcat(line,"\"");
 }
+strcat(line,protection);
 }
