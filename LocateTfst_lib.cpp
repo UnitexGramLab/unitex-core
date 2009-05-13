@@ -516,7 +516,7 @@ if (!u_strcmp(text_tag->content,"{STOP}")) {
 }
 
 
-if (infos->korean && (*pos_kr!=-1 || grammar_tag->input[0]!='{')) {
+if (infos->korean && (*pos_kr!=-1 || (grammar_tag->input[0]!='{' && grammar_tag->input[0]!='<'))) {
    /* If we have a Korean token in the fst2 */
    if (*pos_kr==-1) {
       /* If we were not in token exploration mode, we turn into this mode now */
@@ -554,7 +554,7 @@ if (infos->korean && (*pos_kr!=-1 || grammar_tag->input[0]!='{')) {
    }
    /* If we have consumed all the tfst tag, but not all th fst2 one, it's a partial match */
    (*pos_kr)=k;
-   //error("partial match between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
+   error("partial match between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
    return OK_MATCH_STATUS;
 }
 
