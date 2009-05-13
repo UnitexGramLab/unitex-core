@@ -18,6 +18,8 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
+#ifndef JamoCodageH
+#define JamoCodageH
 
 #define HANGUL_SYL_START	0xac00     // GA
 #define HANGUL_SYL_END		0xD7A3      // HIH
@@ -31,7 +33,9 @@
 //#define UNI_CHG_CE  0x314E /* End code of Hangul Jamo Initial consonants */
 //#define UNI_CHG_VS  0x314F /* Start code of Hangul Jamo Final consonants:28 */
 #define UNI_HJAMO_CEND  0x3163 /* End code of Hangul Jamo Final consonants */
+
 #include "codeForKorean.h"
+#include "Error.h"
 
 class jamoCodage : public convert_windows949kr_uni  {
 
@@ -43,8 +47,7 @@ public:
 	unichar sylMark;
 	unichar *sylMarkStr;
 	jamoCodage(){
-
-		sylMark = 0;
+	   sylMark = 0;
 		sylMarkStr = 0;
 		for(int i = 0; i < 256; i++) CjamoUjamoTable[i] = 0;
 		loadJamoMap(0);
@@ -66,3 +69,4 @@ public:
 extern char *defaultSylToJamoMap;
 
 
+#endif

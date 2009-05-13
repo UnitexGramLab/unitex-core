@@ -25,13 +25,16 @@
 #include "Pattern.h"
 #include "LocateTfst_lib.h"
 #include "File.h"
+#include "Korean.h"
 
-void explore_tfst(Tfst* tfst,Fst2* fst2,int current_state_in_tfst,
+void explore_tfst(Tfst* tfst,int current_state_in_tfst,
 		          int current_state_in_fst2,int depth,
 		          struct tfst_match* match_element_list,
                   struct tfst_match_list** LIST,
                   struct locate_tfst_infos* infos);
-
+void init_Korean_stuffs(struct locate_tfst_infos* infos,char* jamo_table);
+void free_Korean_stuffs(struct locate_tfst_infos* infos);
+void compute_jamo_tfst_tags(struct locate_tfst_infos* infos);
 int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,struct locate_tfst_infos* infos);
 struct pattern* tokenize_grammar_tag(unichar* tag,int *negation);
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag);
@@ -44,31 +47,32 @@ int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locat
  */
 int locate_tfst(char* text,char* grammar,char* alphabet,char* output,MatchPolicy match_policy,
 		        OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
-		        int search_limit) {
+		        int search_limit,char* jamo_table) {
 Tfst* tfst=open_text_automaton(text);
 if (tfst==NULL) {
 	return 0;
 }
 struct FST2_free_info fst2_free;
-Fst2* fst2=load_abstract_fst2(grammar,0,&fst2_free);
-if (fst2==NULL) {
+struct locate_tfst_infos infos;
+infos.fst2=load_abstract_fst2(grammar,0,&fst2_free);
+if (infos.fst2==NULL) {
 	close_text_automaton(tfst);
 	return 0;
 }
-struct locate_tfst_infos infos;
 infos.tfst=tfst;
 infos.number_of_matches=0;
-infos.alphabet=load_alphabet(alphabet);
+int korean=(jamo_table!=NULL && jamo_table[0]!='\0');
+infos.alphabet=load_alphabet(alphabet,korean);
 if (infos.alphabet==NULL) {
 	close_text_automaton(tfst);
-	free_abstract_Fst2(fst2,&fst2_free);
+	free_abstract_Fst2(infos.fst2,&fst2_free);
 	error("Cannot load alphabet file: %s\n",alphabet);
 	return 0;
 }
 infos.output=u_fopen(UTF16_LE,output,U_WRITE);
 if (infos.output==NULL) {
 	close_text_automaton(tfst);
-	free_abstract_Fst2(fst2,&fst2_free);
+	free_abstract_Fst2(infos.fst2,&fst2_free);
 	free_alphabet(infos.alphabet);
 	error("Cannot open %s\n",output);
 	return 0;
@@ -80,11 +84,11 @@ case MERGE_OUTPUTS: u_fprintf(infos.output,"#M\n"); break;
 case REPLACE_OUTPUTS: u_fprintf(infos.output,"#R\n"); break;
 }
 #ifdef TRE_WCHAR
-infos.filters=new_FilterSet(fst2,infos.alphabet);
+infos.filters=new_FilterSet(infos.fst2,infos.alphabet);
 infos.matches=NULL;
 if (infos.filters==NULL) {
 	close_text_automaton(tfst);
-	free_abstract_Fst2(fst2,&fst2_free);
+	free_abstract_Fst2(infos.fst2,&fst2_free);
 	free_alphabet(infos.alphabet);
 	u_fclose(infos.output);
     error("Cannot compile filter(s)\n");
@@ -98,17 +102,21 @@ infos.number_of_outputs=0;
 infos.start_position_last_printed_match=-1;
 infos.end_position_last_printed_match=-1;
 infos.search_limit=search_limit;
+init_Korean_stuffs(&infos,jamo_table);
 /* We launch the matching for each sentence */
 for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
-	if (i%100==0) {
+   if (i%100==0) {
 		u_printf("\rSentence %d/%d...",i,tfst->N);
 	}
 	load_sentence(tfst,i);
 	compute_token_contents(tfst);
+	if (infos.korean) {
+	   compute_jamo_tfst_tags(&infos);
+	}
 	infos.matches=NULL;
-	/* Within a sentencce graph, we try to match from any state */
+	/* Within a sentence graph, we try to match from any state */
 	for (int j=0;j<tfst->automaton->number_of_states;j++) {
-		explore_tfst(tfst,fst2,j,fst2->initial_states[1],0,NULL,NULL,&infos);
+		explore_tfst(tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos);
 	}
 	save_tfst_matches(&infos);
 }
@@ -143,21 +151,155 @@ free_FilterSet(infos.filters);
 #endif
 u_fclose(infos.output);
 free_alphabet(infos.alphabet);
-free_abstract_Fst2(fst2,&fst2_free);
+free_Korean_stuffs(&infos);
+free_abstract_Fst2(infos.fst2,&fst2_free);
 close_text_automaton(tfst);
 return 1;
 }
 
 
 /**
+ * If we must deal with a Korean .tfst, we compute the jamo version of all fst2 tags.
+ */
+void init_Korean_stuffs(struct locate_tfst_infos* infos,char* jamo_table) {
+if (jamo_table==NULL || jamo_table[0]=='\0') {
+   infos->korean=0;
+   infos->jamo=NULL;
+   infos->n_jamo_fst2_tags=0;
+   infos->jamo_fst2_tags=NULL;
+   infos->n_jamo_tfst_tags=0;
+   infos->jamo_tfst_tags=NULL;
+   return;
+}
+infos->korean=1;
+infos->jamo=new jamoCodage();
+infos->n_jamo_tfst_tags=0;
+infos->jamo_tfst_tags=NULL;
+/* We initialize the Jamo table */
+infos->jamo->loadJamoMap(jamo_table);
+/* We also initializes the Chinese -> Hangul table */ 
+infos->jamo->cloneHJAMap(infos->alphabet->korean_equivalent_syllab);
+infos->n_jamo_fst2_tags=infos->fst2->number_of_tags;
+infos->jamo_fst2_tags=(unichar**)malloc(sizeof(unichar*)*infos->n_jamo_fst2_tags);
+if (infos->jamo_fst2_tags==NULL) {
+   fatal_alloc_error("init_Korean_stuffs");
+}
+unichar tmp[4096];
+for (int i=0;i<infos->n_jamo_fst2_tags;i++) {
+   Fst2Tag t=infos->fst2->tags[i];
+   if (t->input[0]=='{' && t->input[1]!='\0') {
+      /* If we have a tag like {today,.ADV}, we compute the jamo version
+       * of its inflected form */
+      struct dela_entry* entry=tokenize_tag_token(t->input);
+      if (entry==NULL) {
+         fatal_error("NULL dela_entry in init_Korean_stuffs\n");
+      }
+      if (!u_strcmp(entry->inflected,"<E>")) {
+         /* <E> is a special inflected form indicating that the surface form
+          * is empty. In order to be careful, we prefer not to convert it */
+         u_strcpy(tmp,"<E>");
+      } else {
+         convert_Korean_text(entry->inflected,tmp,infos->jamo,infos->alphabet);
+      }
+      free_dela_entry(entry);
+   } else {
+      if (i!=0) {
+         convert_Korean_text(t->input,tmp,infos->jamo,infos->alphabet);
+      } else {
+         /* We don't want to convert the epsilon transition tag */
+         u_strcpy(tmp,"<E>");
+      }
+   }
+   infos->jamo_fst2_tags[i]=u_strdup(tmp);
+   if (infos->jamo_fst2_tags[i]==NULL) {
+      fatal_alloc_error("init_Korean_stuffs");
+   }
+}
+}
+
+
+/**
+ * Frees memory associated to Korean stuffs.
+ */
+void free_Korean_stuffs(struct locate_tfst_infos* infos) {
+if (!infos->korean) {
+   return;
+}
+delete infos->jamo;
+for (int i=0;i<infos->n_jamo_fst2_tags;i++) {
+   free(infos->jamo_fst2_tags[i]);
+}
+free(infos->jamo_fst2_tags);
+if (infos->jamo_tfst_tags!=NULL) {
+   for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
+      free(infos->jamo_tfst_tags[i]);
+   }
+   free(infos->jamo_tfst_tags);
+}
+}
+
+
+/**
+ * Computes the Jamo versions of the current sentence automaton tags, freeing the previous
+ * ones if any.
+ */
+void compute_jamo_tfst_tags(struct locate_tfst_infos* infos) {
+if (infos->jamo_tfst_tags!=NULL) {
+   for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
+      free(infos->jamo_tfst_tags[i]);
+   }
+   free(infos->jamo_tfst_tags);
+}
+infos->n_jamo_tfst_tags=infos->tfst->tags->nbelems;
+infos->jamo_tfst_tags=(unichar**)malloc(sizeof(unichar*)*infos->n_jamo_tfst_tags);
+if (infos->jamo_tfst_tags==NULL) {
+   fatal_alloc_error("compute_jamo_tfst_tags");
+}
+unichar tmp[4096];
+for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
+   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[i]);
+   if (t->content[0]=='{' && t->content[1]!='\0') {
+      /* If we have a tag like {today,.ADV}, we compute the jamo version
+       * of its inflected form */
+      struct dela_entry* entry=tokenize_tag_token(t->content);
+      if (entry==NULL) {
+         fatal_error("NULL dela_entry in compute_jamo_tfst_tags\n");
+      }
+      if (!u_strcmp(entry->inflected,"<E>")) {
+         /* <E> is a special inflected form indicating that the surface form
+          * is empty. In order to be careful, we prefer not to convert it */
+         u_strcpy(tmp,"<E>");
+      } else {
+         convert_Korean_text(entry->inflected,tmp,infos->jamo,infos->alphabet);
+      }
+      free_dela_entry(entry);
+   } else {
+      if (!u_strcmp(t->content,"<E>")) {
+         /* <E> is a special tag that should not be used by LocateTfst,
+          * but, in order to be careful, we prefer not to convert it */
+         u_strcpy(tmp,"<E>");
+      } else {
+         convert_Korean_text(t->content,tmp,infos->jamo,infos->alphabet);
+      }
+   }
+   infos->jamo_tfst_tags[i]=u_strdup(tmp);
+   if (infos->jamo_tfst_tags[i]==NULL) {
+      fatal_alloc_error("compute_jamo_tfst_tags");
+   }
+}
+
+}
+
+
+/**
  * Explores in parallel the tfst and the fst2.
  */
-void explore_tfst(Tfst* tfst,Fst2* fst2,int current_state_in_tfst,
+void explore_tfst(Tfst* tfst,int current_state_in_tfst,
 		          int current_state_in_fst2,int depth,
 		          struct tfst_match* match_element_list,
                   struct tfst_match_list* *LIST,
                   struct locate_tfst_infos* infos) {
-Fst2State current_state_in_grammar=fst2->states[current_state_in_fst2];
+Fst2State current_state_in_grammar=infos->fst2->states[current_state_in_fst2];
 
 if (is_final_state(current_state_in_grammar)) {
    /* If the current state is final */
@@ -179,8 +321,7 @@ while (grammar_transition!=NULL) {
       struct tfst_match_list* list_for_subgraph=NULL;
       struct tfst_match_list* tmp;
 
-      explore_tfst(tfst,fst2,
-    		  current_state_in_tfst,fst2->initial_states[-e],
+      explore_tfst(tfst,current_state_in_tfst,infos->fst2->initial_states[-e],
               depth+1,match_element_list,&list_for_subgraph,infos);
       while (list_for_subgraph!=NULL) {
          tmp=list_for_subgraph->next;
@@ -188,8 +329,7 @@ while (grammar_transition!=NULL) {
           * we decrease its 'pointed_by' variable that was previously increased
           * in the 'add_match_in_list' function */
          (list_for_subgraph->match->pointed_by)--;
-         explore_tfst(tfst,fst2,
-                           list_for_subgraph->match->dest_state_text,
+         explore_tfst(tfst,list_for_subgraph->match->dest_state_text,
                            grammar_transition->state_number,
                            depth,list_for_subgraph->match,LIST,infos);
          /* Finally, we remove, if necessary, the list of match element
@@ -209,7 +349,7 @@ while (grammar_transition!=NULL) {
        * text automaton, and we note all the states we can reach */
       while (text_transition!=NULL) {
          int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[text_transition->tag_number]),
-                                                 fst2->tags[grammar_transition->tag_number],infos);
+                                                 infos->fst2->tags[grammar_transition->tag_number],infos);
          if (result==OK_MATCH_STATUS) {
             /* Case of a match with something in the text automaton (i.e. <V>) */
             list=insert_in_tfst_matches(list,current_state_in_tfst,text_transition->state_number,
@@ -236,7 +376,7 @@ while (grammar_transition!=NULL) {
          if (match_element_list!=NULL) {
         	 (match_element_list->pointed_by)++;
          }
-         explore_tfst(tfst,fst2,list->dest_state_text,grammar_transition->state_number,
+         explore_tfst(tfst,list->dest_state_text,grammar_transition->state_number,
                            depth,list,LIST,infos);
          if (list->pointed_by==0) {
             /* If list is not blocked by being part of a match for the calling
@@ -282,7 +422,7 @@ if (!u_strcmp(grammar_tag->input," ")) {
 	return NO_MATCH_STATUS;
 }
 if (!u_strcmp(grammar_tag->input,"#")) {
-	if (!is_space_on_the_left_in_tfst(tfst,text_tag)) {
+   if (!is_space_on_the_left_in_tfst(tfst,text_tag)) {
 		return TEXT_INDEPENDENT_MATCH;
 	}
 	return NO_MATCH_STATUS;

@@ -44,7 +44,8 @@ public:
     void strToMapKr();
 
 	int convHJAtoHAN(unichar *src,unichar *des);
-    void loadHJAMap(char *f);
+   void loadHJAMap(char *f);
+   void cloneHJAMap(unichar* map);
 	void unLoadHJAMap();
 };
 

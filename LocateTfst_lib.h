@@ -28,6 +28,7 @@
 #include "MorphologicalFilters.h"
 #include "LocateTfstMatches.h"
 #include "LocateConstants.h"
+#include "jamoCodage.h"
 
 
 #define OK_MATCH_STATUS 1
@@ -42,6 +43,8 @@ struct locate_tfst_infos {
 	U_FILE* output;
 
 	Alphabet* alphabet;
+	
+	Fst2* fst2;
 
 	int number_of_matches;
 
@@ -74,11 +77,19 @@ struct locate_tfst_infos {
 	int end_position_last_printed_match;
 
 	struct tfst_simple_match_list* matches;
+	
+	/* Stuffs for Korean */
+	int korean;
+	jamoCodage* jamo;
+	int n_jamo_fst2_tags;
+	unichar** jamo_fst2_tags;
+	int n_jamo_tfst_tags;
+	unichar** jamo_tfst_tags;
 	#endif
 };
 
 
-int locate_tfst(char*,char*,char*,char*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,int);
+int locate_tfst(char*,char*,char*,char*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,int,char*);
 
 
 #endif

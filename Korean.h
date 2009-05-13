@@ -23,11 +23,13 @@
 #define KoreanH
 
 #include "Unicode.h"
+#include "Alphabet.h"
+#include "jamoCodage.h"
 
 #define MAX_LETTERS_IN_A_SYLLAB 5
-
+#define KR_SYLLAB_BOUND 0x318D
 
 int syllabToLetters_HCJ(unichar,unichar*);
-
+void convert_Korean_text(unichar* src,unichar* dest,jamoCodage* jamo,Alphabet* alphabet);
 
 #endif

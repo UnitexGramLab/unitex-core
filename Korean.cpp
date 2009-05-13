@@ -140,3 +140,30 @@ return 0;
 
 
 static int __korean_foo=initKoreanArrays();
+
+
+/**
+ * Converts a syllab text into a Jamo one, including Chinese -> Hangul conversion
+ * and Jamo compatible -> Jamo conversion.
+ */
+void convert_Korean_text(unichar* src,unichar* dest,jamoCodage* jamo,Alphabet* alphabet) {
+unichar temp[1048];
+/* First, we convert the Chinese characters, if any */
+jamo->convHJAtoHAN(src,dest);
+/* Then, we put a syllab bound before every character that is
+ * 1) not a syllab one but in the alphabet (i.e. latin letters)
+ * 2) a Jamo letter in order to avoid ambiguity when the syllab on its left
+ *    is turned into Jamo letters */
+int j=0;
+for (int i=0;dest[i]!='\0';i++) {
+   if ((is_letter(dest[i],alphabet) && !u_is_korea_syllabe_letter(dest[i]))
+         || (u_is_Hangul_Compatility_Jamo(dest[i]) && dest[i]!=KR_SYLLAB_BOUND)
+         || u_is_Hangul_Jamo(dest[i])){
+      temp[j++]=KR_SYLLAB_BOUND;
+   }
+   temp[j++]=dest[i];
+}
+temp[j]='\0';
+/* Then, we perform the syllab -> Jamo conversion */
+jamo->convertSyletCjamoToJamo(temp,dest,j,4096);
+}

@@ -278,6 +278,8 @@ jamoCodage::convertSylToJamo(unichar *ibuff,unichar *obuff,int sz,int limit)
 	obuff[osz]=0;
 	return(osz);
 }
+
+
 int
 jamoCodage::convertSyletCjamoToJamo(unichar *ibuff,unichar *obuff,int sz,int limit)
 {
@@ -309,6 +311,8 @@ jamoCodage::convertSyletCjamoToJamo(unichar *ibuff,unichar *obuff,int sz,int lim
 //	printf("\n");
 	return(osz);
 }
+
+
 void jamoCodage::jamoMapOut()
 {
 	unichar markReturn = '\n';

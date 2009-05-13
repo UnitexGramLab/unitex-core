@@ -3,7 +3,7 @@
   *
   * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
-  * This library is free software; you can redistribute it and/or
+  * This library is free LEintRead2software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
   * License as published by the Free Software Foundation; either
   * version 2.1 of the License, or (at your option) any later version.
@@ -180,8 +180,8 @@ convert_windows949kr_uni::convHJAtoHAN(unichar *src,unichar *des)
 	}
 	return(csz);
 }
-void
-convert_windows949kr_uni::loadHJAMap(char *f)
+
+void convert_windows949kr_uni::loadHJAMap(char *f)
 {
 	U_FILE *lf = u_fopen(UTF16_LE,f,U_READ);
 	int idx;
@@ -190,6 +190,9 @@ convert_windows949kr_uni::loadHJAMap(char *f)
 	unichar UtempLine[256];
 	
 	loadHJAConvMap = (unichar *)malloc( sizeof(unichar)*0x10000);
+	if (loadHJAConvMap==NULL) {
+	   fatal_alloc_error("convert_windows949kr_uni::loadHJAMap");
+	}
 	for(idx = 0; idx < 0x10000;idx++) loadHJAConvMap[idx] = 0;
 	while(EOF!=u_fgets(UtempLine,lf)){
 		idx = 0;
@@ -207,6 +210,19 @@ convert_windows949kr_uni::loadHJAMap(char *f)
 		loadHJAConvMap[srcIdx] = desIdx;
 
 	}
+}
 
+/* The same, but cloning an existing array */
+void convert_windows949kr_uni::cloneHJAMap(unichar* map) {
+if (map==NULL) {
+   fatal_error("NULL error in convert_windows949kr_uni::cloneHJAMap\n");
+}
+loadHJAConvMap=(unichar*)malloc(sizeof(unichar)*0x10000);
+if (loadHJAConvMap==NULL) {
+   fatal_alloc_error("convert_windows949kr_uni::cloneHJAMap");
+}
+for (int i=0;i<0x10000;i++) {
+   loadHJAConvMap[i]=map[i];
+}
 }
 
