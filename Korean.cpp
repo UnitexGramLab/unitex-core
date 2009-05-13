@@ -147,7 +147,8 @@ static int __korean_foo=initKoreanArrays();
  * and Jamo compatible -> Jamo conversion.
  */
 void convert_Korean_text(unichar* src,unichar* dest,jamoCodage* jamo,Alphabet* alphabet) {
-unichar temp[1048];
+unichar temp[1024];
+unichar temp2[1024];
 /* First, we convert the Chinese characters, if any */
 jamo->convHJAtoHAN(src,dest);
 /* Then, we put a syllab bound before every character that is
@@ -159,11 +160,31 @@ for (int i=0;dest[i]!='\0';i++) {
    if ((is_letter(dest[i],alphabet) && !u_is_korea_syllabe_letter(dest[i]))
          || (u_is_Hangul_Compatility_Jamo(dest[i]) && dest[i]!=KR_SYLLAB_BOUND)
          || u_is_Hangul_Jamo(dest[i])){
-      temp[j++]=KR_SYLLAB_BOUND;
+      /* We do not put yet the real syllab bound character, because we will
+       * have to use it as a marker in order to know where the empty consonant
+       * should be inserted */
+      temp[j++]=0x0001;
    }
    temp[j++]=dest[i];
 }
 temp[j]='\0';
 /* Then, we perform the syllab -> Jamo conversion */
-jamo->convertSyletCjamoToJamo(temp,dest,j,4096);
+jamo->convertSyletCjamoToJamo(temp,temp2,j,1024);
+/* Finally, we insert the empty consonant where it is necessary and we replace
+ * our 0x0001 marker by the syllab bound */ 
+j=0;
+for (int i=0;temp2[i]!='\0';i++) {
+   if (temp2[i]==0x0001) {
+      dest[j++]=KR_SYLLAB_BOUND;
+   } else if (temp2[i]==KR_SYLLAB_BOUND) {
+      dest[j++]=KR_SYLLAB_BOUND;
+      if (!u_is_Hangul_Jamo_initial_consonant(temp2[i+1])) {
+         /* If there is no initial consonant, we insert the empty one */
+         dest[j++]=KR_EMPTY_INITIAL_CONSONANT;
+      }
+   } else {
+      dest[j++]=temp2[i];
+   }
+}
+dest[j]='\0';
 }

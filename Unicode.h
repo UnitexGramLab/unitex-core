@@ -282,6 +282,7 @@ int u_is_CJK_Unified_Ideographs(unichar c);
 int u_is_cjk_compatibility_ideographs(unichar c);
 int u_is_Hangul_Compatility_Jamo(unichar c);
 int u_is_Hangul_Jamo(unichar c);
+int u_is_Hangul_Jamo_initial_consonant(unichar c);
 //--------End of Hyungue's inserts----------------
 int u_is_letter(unichar);
 int u_is_word(const unichar*);

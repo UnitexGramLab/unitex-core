@@ -2605,6 +2605,12 @@ int u_is_Hangul_Jamo(unichar c)
 {
 	return( (c>= 0x1100) && (c <= 0x11FF));
 }
+
+int u_is_Hangul_Jamo_initial_consonant(unichar c)
+{
+   return( (c>= 0x1100) && (c <= 0x1159));
+}
+
 //------End of Hyungue's inserts--------------
 
 //
