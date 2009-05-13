@@ -1272,6 +1272,11 @@ for (int i=0;i<tfst->automaton->number_of_states;i++) {
       t=t->next;
    }
 }
+if (we_must_clean) {
+   /* If necessary, we apply the "good paths" heuristic */
+   keep_best_paths(tfst->automaton,tmp_tags);
+   trim(tfst->automaton);
+}
 /* Then we minimize */
 minimize(tfst->automaton,1);
 
