@@ -27,6 +27,16 @@
 
 
 /**
+ * set the capacity of hash table, verify we have a power of two
+ */
+static void set_hash_capacity(struct hash_table* h,unsigned int capacity_set) {
+	h->capacity = 1;
+	while (h->capacity < capacity_set)
+		h->capacity *= 2;
+}
+
+
+/**
  * Allocates, initializes and return a new hash table for pointer elements.
  */
 struct hash_table* new_hash_table(int capacity,float ratio,HASH_FUNCTION hash,
@@ -39,7 +49,7 @@ struct hash_table* h=(struct hash_table*)malloc(sizeof(struct hash_table));
 if (h==NULL) {
    fatal_alloc_error("new_hash_table");
 }
-h->capacity=capacity;
+set_hash_capacity(h,capacity);
 h->ratio=ratio;
 h->table=(struct hash_list**)malloc(capacity*sizeof(struct hash_list*));
 if (h->table==NULL) {
@@ -88,7 +98,7 @@ struct hash_table* h=(struct hash_table*)malloc(sizeof(struct hash_table));
 if (h==NULL) {
    fatal_alloc_error("new_hash_table");
 }
-h->capacity=capacity;
+set_hash_capacity(h,capacity);
 h->ratio=ratio;
 h->table=(struct hash_list**)malloc(capacity*sizeof(struct hash_list*));
 if (h->table==NULL) {
@@ -202,6 +212,7 @@ unsigned int i;
 int new_cell_index;
 struct hash_list* tmp;
 unsigned int new_capacity=h->capacity*2;
+unsigned int new_capacity_and_mask=new_capacity-1;
 struct hash_list** new_table=(struct hash_list**)malloc(new_capacity*sizeof(struct hash_list*));
 if (new_table==NULL) {
    fatal_alloc_error("resize");
@@ -220,11 +231,11 @@ for (i=0;i<h->capacity;i++) {
       /* Then, we compute its new hash code */
       if (h->hash==NULL) {
          /* If keys are integers */
-         new_cell_index=tmp->int_key%new_capacity;
+         new_cell_index=tmp->int_key & new_capacity_and_mask;
       }
       else {
          /* If keys are pointers */
-         new_cell_index=h->hash(tmp->ptr_key)%new_capacity;
+         new_cell_index=h->hash(tmp->ptr_key) & new_capacity_and_mask;
       }
       /* And we insert it in the new table */
       tmp->next=new_table[new_cell_index];
@@ -272,7 +283,7 @@ if (h->number_of_elements>=(h->ratio*h->capacity)) {
    resize(h);
 }
 /* Then we add the new key */
-int cell_index=h->hash(key)%h->capacity;
+int cell_index=h->hash(key) & ( h->capacity-1);
 h->table[cell_index]=new_hash_list(h->keycopy,key,h->table[cell_index]);
 h->number_of_elements++;
 return &(h->table[cell_index]->value);
@@ -303,7 +314,7 @@ if (key==NULL) {
 if (h->hash==NULL) {
    fatal_error("NULL hash function error in get_value\n");
 }
-int cell_index=h->hash(key)%h->capacity;
+int cell_index=h->hash(key) & (h->capacity-1);
 struct any* value=get_value_(key,h->table[cell_index],h);
 if (value!=NULL) {
    /* If the key is in the table we have finished */
@@ -354,7 +365,7 @@ if (h->number_of_elements>=(h->ratio*h->capacity)) {
    resize(h);
 }
 /* Then we add the new key */
-int cell_index=key%h->capacity;
+int cell_index=key & (h->capacity-1);
 h->table[cell_index]=new_hash_list(key,h->table[cell_index]);
 h->number_of_elements++;
 return &(h->table[cell_index]->value);
@@ -378,7 +389,7 @@ struct any* get_value(struct hash_table* h,int key,int insert_policy,int *ret) {
 if (h==NULL) {
    fatal_error("NULL hash table error in get_value\n");
 }
-int cell_index=key%h->capacity;
+int cell_index=key & (h->capacity-1);
 struct any* value=get_value_(key,h->table[cell_index]);
 if (value!=NULL) {
    /* If the key is the table we have finished */
