@@ -442,14 +442,13 @@ if (current_kr_tfst_transition!=NULL) {
    return;
 } /* END OF CASE 2 */
 
-
 /* CASE 3: we are in the normal state exploration case */
 Fst2State current_state_in_grammar=infos->fst2->states[current_state_in_fst2];
 if (is_final_state(current_state_in_grammar)) {
    /* If the current state is final */
    if (depth==0) {
       /* If we are in the main graph, we add a match to the main match list */
-	   add_tfst_match(infos,match_element_list);
+      add_tfst_match(infos,match_element_list);
    } else {
       /* If we are in a subgraph, we add a match to the current match list */
       (*LIST)=add_match_in_list((*LIST),match_element_list);
@@ -533,8 +532,8 @@ while (grammar_transition!=NULL) {
         	 (match_element_list->pointed_by)++;
          }
          Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
-         int dest_state=(list->pos_kr!=-1)?-1:grammar_transition->state_number;
-         explore_tfst(tfst,list->dest_state_text,dest_state,
+         int dest_state_in_fst2=(list->pos_kr!=-1)?-1:grammar_transition->state_number;
+         explore_tfst(tfst,list->dest_state_text,dest_state_in_fst2,
                            depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL);
          if (list->pointed_by==0) {
             /* If list is not blocked by being part of a match for the calling
@@ -567,7 +566,7 @@ if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
 	|| grammar_tag->type==END_MORPHO_TAG) {
    fatal_error("Tag '%S' should not be found in a grammar applied to a text automaton\n",grammar_tag->input);
 }
-/**************************************************
+/*******************************************************
  * We want to match something that is text independent */
 if (grammar_tag->type==BEGIN_VAR_TAG
 	|| grammar_tag->type==END_VAR_TAG

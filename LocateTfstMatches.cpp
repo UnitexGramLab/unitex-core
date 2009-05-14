@@ -176,6 +176,52 @@ free(m);
 
 
 /**
+ * This function looks for the first element that is not text independent
+ */
+struct tfst_match* find_first_text_dependent_tag(struct tfst_match* list) {
+while (list!=NULL) {
+   struct list_int* l=list->text_tag_numbers;
+   while (l!=NULL) {
+      if (l->n!=-1) {
+         /* If there is at least one text dependent tag, 'list' is the one */
+         return list;
+      }
+      l=l->next;
+   }
+   list=list->next;
+}
+/* If the list has no text dependent tag, we fail */
+return NULL;
+}
+
+
+/**
+ * This function looks for the last element that is not text independent
+ */
+struct tfst_match* find_last_text_dependent_tag(struct tfst_match* m) {
+if (m==NULL) {
+   return NULL;
+}
+struct tfst_match* candidate=find_last_text_dependent_tag(m->next);
+if (candidate!=NULL) {
+   /* If there is a candidate, we return it */
+   return candidate;
+}
+/* If there is no candidate, maybe 'm' could be the one */
+struct list_int* list=m->text_tag_numbers;
+while (list!=NULL) {
+   if (list->n!=-1) {
+      /* If there is at least one text dependent tag, 'm' is the one */
+      return m;
+   }
+   list=list->next;
+}
+/* If 'm' has no text dependent tag, we fail */
+return NULL;
+}
+
+
+/**
  * This function extracts simple information from a complex tfst_match list.
  */
 static void fill_element(struct locate_tfst_infos* infos,struct tfst_simple_match_list* e,struct tfst_match* m) {
@@ -183,31 +229,39 @@ static void fill_element(struct locate_tfst_infos* infos,struct tfst_simple_matc
  * (remember: a match list is reversed) */
 e->end_pos_in_token=-1;
 e->end_pos_in_char=-1;
-struct list_int* tags=m->text_tag_numbers;
+struct tfst_match* first_text_dependent_tag=find_first_text_dependent_tag(m);
+struct list_int* tags=first_text_dependent_tag->text_tag_numbers;
 while (tags!=NULL) {
-	TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
-	if (e->end_pos_in_token==-1 || e->end_pos_in_token<t->end_pos_token) {
-		e->end_pos_in_token=t->end_pos_token;
-	}
+   if (tags->n!=-1) {
+      /* We only consider tags that are not text independent */
+	   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
+	   if (e->end_pos_in_token==-1 || e->end_pos_in_token<t->end_pos_token) {
+		   e->end_pos_in_token=t->end_pos_token;
+	   }
+   }
 	tags=tags->next;
 }
 
 /* Then, we locate the last element in order to get information about the start offset */
-while (m->next!=NULL) {
-	m=m->next;
+struct tfst_match* last_text_dependent_tag=find_last_text_dependent_tag(m);
+if (last_text_dependent_tag==NULL) {
+   /* If the whole match is text independent, we fail */
+   e->end_pos_in_token=-1;
+   return;
 }
 e->start_pos_in_token=-1;
 e->start_pos_in_char=-1;
-tags=m->text_tag_numbers;
+tags=last_text_dependent_tag->text_tag_numbers;
 while (tags!=NULL) {
-	TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
-	if (e->start_pos_in_token==-1 || e->start_pos_in_token>t->start_pos_token) {
-		e->start_pos_in_token=t->start_pos_token;
-	}
+   if (tags->n!=-1) {
+      /* We only consider tags that are not text independent */
+	   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
+	   if (e->start_pos_in_token==-1 || e->start_pos_in_token>t->start_pos_token) {
+		   e->start_pos_in_token=t->start_pos_token;
+	   }
+   }
 	tags=tags->next;
 }
-
-
 /* Finally, we adjust offsets with the base offset of the current sentence */
 e->start_pos_in_token+=infos->tfst->offset_in_tokens;
 e->end_pos_in_token+=infos->tfst->offset_in_tokens;
@@ -389,7 +443,11 @@ switch (p->match_policy) {
 void add_tfst_match(struct locate_tfst_infos* infos,struct tfst_match* m) {
 struct tfst_simple_match_list element;
 fill_element(infos,&element,m);
-//u_printf("match from token %d to %d\n",element.start_pos_in_token,element.end_pos_in_token);
+if (element.end_pos_in_token==-1) {
+   /* If the match was in fact completely text independent, then we reject it */
+   return;
+}
+//error("match from token %d to %d\n",element.start_pos_in_token,element.end_pos_in_token);
 add_element_to_list(infos,&element);
 }
 
