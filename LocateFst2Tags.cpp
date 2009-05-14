@@ -173,7 +173,8 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                tag[i]->pattern=build_pattern(content,semantic_codes);
                if (tag[i]->pattern->type==CODE_PATTERN ||
                    tag[i]->pattern->type==LEMMA_AND_CODE_PATTERN ||
-                   tag[i]->pattern->type==FULL_PATTERN) {
+                   tag[i]->pattern->type==FULL_PATTERN || 
+                   tag[i]->pattern->type==INFLECTED_AND_LEMMA_PATTERN) {
                   /* If the pattern we obtain contains grammatical/semantic
                    * codes, then we put it in the pattern tree and we note its number. */
                   tag[i]->pattern_number=add_pattern(number_of_patterns,tag[i]->pattern,parameters->pattern_tree_root);
@@ -237,12 +238,9 @@ void optimize_full_pattern_for_tag(unichar* tag_token,int i,Fst2Tag* tag,Alphabe
 int token_number=get_value_index(tag_token,p->tokens);
 struct dela_entry* entry=tokenize_tag_token(tag_token);
 struct pattern* pattern=tag[i]->pattern;
-if (pattern->type==LEMMA_PATTERN) {
-   /* If the pattern has a constraint on the inflected form, we check it.
-    * Note that we allow case variants so that the pattern "<today,.ADV>" will
-    * match the tag "{TODAY,today.ADV}". This is a pure convention that could
-    * change in the future. */
-   if (!is_equal_or_uppercase(entry->lemma,pattern->lemma,alph)) {
+if (pattern->type==LEMMA_PATTERN || INFLECTED_AND_LEMMA_PATTERN) {
+   /* If the pattern has a constraint on the lemma, we check it */
+   if (u_strcmp(entry->lemma,pattern->lemma)) {
       free_dela_entry(entry);
       return;
    }
@@ -296,7 +294,7 @@ if (!is_a_simple_token(sequence,p->tokenization_policy,alph)) {
  * that actually are in the text. */
 struct list_int* list=get_token_list_for_sequence(sequence,alph,p->tokens);
 struct list_int* head=list;
-int is_lemma_pattern=(tag[i]->pattern->type==LEMMA_PATTERN);
+int is_lemma_pattern=(tag[i]->pattern->type==LEMMA_PATTERN || tag[i]->pattern->type==INFLECTED_AND_LEMMA_PATTERN);
 while (list!=NULL) {
    if (is_lemma_pattern || 
        ((p->matching_patterns[list->n]!=NULL) && get_value(p->matching_patterns[list->n],tag[i]->pattern_number))) {
@@ -363,6 +361,7 @@ for (int i=0;i<n_tags;i++) {
          case LEMMA_PATTERN: /* There is no difference in the handling of these
                               * kind of patterns */
          case LEMMA_AND_CODE_PATTERN: 
+         case INFLECTED_AND_LEMMA_PATTERN:
          case FULL_PATTERN: optimize_full_pattern(i,tag,alphabet,root,parameters);
                             break;
          default: /* Here, a code pattern would be an error since they are supposed

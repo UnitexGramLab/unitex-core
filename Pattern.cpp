@@ -219,7 +219,7 @@ if (s[pos]=='.') {
 }
 /* If we are in the  <am,be.V> case */
 if (tmp[0]=='\0') {
-   fatal_error("Invalid pattern has been found\n");
+   fatal_error("Invalid pattern <,XXX> has been found\n");
 }
 p->type=FULL_PATTERN;
 p->inflected=u_strdup(tmp);
@@ -227,10 +227,17 @@ p->inflected=u_strdup(tmp);
 pos++;
 switch(parse_string(s,&pos,tmp,P_DOT)) {
    case P_BACKSLASH_AT_END: {fatal_error("Backslash at end of pattern\n");}
-   case P_EOS: {fatal_error("Missing grammatical code in pattern\n");}
+   case P_EOS: {
+      if (s[pos]=='\0') {
+         fatal_error("Invalid pattern <XXX,> has been found\n");
+      }
+   }
 }
 if (s[pos]=='\0') {
-   fatal_error("Invalid pattern has been found\n");
+   /* We have a <XXX,YYY> pattern */
+   p->lemma=u_strdup(tmp);
+   p->type=INFLECTED_AND_LEMMA_PATTERN;
+   return p;
 }
 p->lemma=u_strdup(tmp);
 build_code_pattern(p,&(s[pos+1]));
@@ -293,7 +300,8 @@ switch(pattern->type) {
    case LEMMA_AND_CODE_PATTERN: return (!u_strcmp(entry->lemma,pattern->lemma)) && is_compatible_code_pattern(entry,pattern);
    case FULL_PATTERN: return (!u_strcmp(entry->inflected,pattern->inflected)) && (!u_strcmp(entry->lemma,pattern->lemma)) && is_compatible_code_pattern(entry,pattern);
    case AMBIGUOUS_PATTERN: return !u_strcmp(entry->lemma,pattern->lemma) || dic_entry_contain_gram_code(entry,pattern->lemma);
-   default: fatal_error("Unexpected case in is_entry_compatible_with_pattern\n");
+   case INFLECTED_AND_LEMMA_PATTERN: return (!u_strcmp(entry->inflected,pattern->inflected)) && (!u_strcmp(entry->lemma,pattern->lemma));
+      default: fatal_error("Unexpected case in is_entry_compatible_with_pattern\n");
 }
 return 0;
 }

@@ -62,7 +62,7 @@ u_printf("Usage: TagsetNormTfst [OPTIONS] <tfst>\n"
 }
 
 
-int get_tfst_tag_index(vector_ptr*,unichar*,int,int,int,int,int,int,int);
+int get_tfst_tag_index(vector_ptr*,unichar*,int,int,int,int,int,int);
 
 
 int main_TagsetNormTfst(int argc,char* argv[]) {
@@ -196,8 +196,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
                build_tag(e,NULL,foo);
                int index=get_tfst_tag_index(txtin->tfst->tags,foo,
                      t->start_pos_token,t->start_pos_char,t->start_pos_letter,
-                     t->end_pos_token,t->end_pos_char,t->end_pos_letter,
-                     t->syllab_bound_on_the_right);
+                     t->end_pos_token,t->end_pos_char,t->end_pos_letter);
                renumbering[i]=new_list_int(index,renumbering[i]);
                e->inflectional_codes[0]=old_first_code;
             }
@@ -300,8 +299,7 @@ return 0;
  */
 int get_tfst_tag_index(vector_ptr* tags,unichar* content,
                        int start_pos_token,int start_pos_char,int start_pos_letter,
-                       int end_pos_token,int end_pos_char,int end_pos_letter,
-                       int syllab_bound_on_the_right) {
+                       int end_pos_token,int end_pos_char,int end_pos_letter) {
 for (int i=0;i<tags->nbelems;i++) {
    TfstTag* t=(TfstTag*)(tags->tab[i]);
    if (t!=NULL
@@ -313,8 +311,7 @@ for (int i=0;i<tags->nbelems;i++) {
     && t->start_pos_letter==start_pos_letter
     && t->end_pos_token==end_pos_token
     && t->end_pos_char==end_pos_char
-    && t->end_pos_letter==end_pos_letter
-    && t->syllab_bound_on_the_right==syllab_bound_on_the_right) {
+    && t->end_pos_letter==end_pos_letter) {
       return i;
    }
 }
@@ -327,7 +324,6 @@ t->start_pos_letter=start_pos_letter;
 t->end_pos_token=end_pos_token;
 t->end_pos_char=end_pos_char;
 t->end_pos_letter=end_pos_letter;
-t->syllab_bound_on_the_right=syllab_bound_on_the_right;
 return vector_ptr_add(tags,t);
 }
 

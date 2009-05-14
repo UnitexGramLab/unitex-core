@@ -724,11 +724,11 @@ for (int i=1;i<fst2->number_of_tags;i++) {
       /* Condition 4: <E> must the only tag without output */
       return 0;
    }
-   int w,x,y,z;
+   int w,x,y,z,f,g;
    char foo;
    /* Condition 5 */
-   if (4!=u_sscanf(fst2->tags[i]->output,"%d %d %d %d%c",&w,&x,&y,&z,&foo)) {
-      /* If the output is not made of 4 integers */
+   if (6!=u_sscanf(fst2->tags[i]->output,"%d %d %d %d %d %d%c",&w,&x,&y,&z,&f,&g,&foo)) {
+      /* If the output is not made of 6 integers */
       return 0;
    }
    if (w<0 || x<-1 || y<0 || z<-1) {
@@ -747,8 +747,8 @@ return 1;
  * 2) it must be acyclic
  * 3) there must not be any <E> transition with an ouput
  * 4) <E> must the only tag without output
- * 5) all other tags must have an ouput of the form w x y z, with
- *    w and y being integers >=0, and x and z being integers >=-1 
+ * 5) all other tags must have an ouput of the form w x y z f g, with
+ *    w and y being integers >=0, and x, z, f and g being integers >=-1 
  */
 int valid_sentence_automaton(char* name) {
 struct FST2_free_info fst2_free;

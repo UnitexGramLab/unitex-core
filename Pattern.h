@@ -51,7 +51,8 @@ enum pattern_type {
    CODE_PATTERN,
    LEMMA_AND_CODE_PATTERN,
    FULL_PATTERN,
-   AMBIGUOUS_PATTERN
+   AMBIGUOUS_PATTERN,
+   INFLECTED_AND_LEMMA_PATTERN /* This one is useful for Korean */
 };
 
 

@@ -302,6 +302,26 @@ if (input[*pos]=='<' && input[(*pos)+1]=='<') {
 return 1;
 }
 
+
+/**
+ * We try to read a tag like {eats,eat.V:P3s}
+ */
+int read_round_bracketed_sequence(unichar* input,int *pos,unichar* token,int *pos_in_token) {
+token[(*pos_in_token)++]=input[(*pos)++];
+while (input[*pos]!='\0' && input[*pos]!='}') {
+   if (input[*pos]=='\\') {
+      /* If there is a backslash we a copy it and we take the next character */
+      token[(*pos_in_token)++]=input[(*pos)++];
+      if (input[*pos]=='\0') return 0;
+   }
+   token[(*pos_in_token)++]=input[(*pos)++];
+}
+int OK=(input[*pos]=='}');
+token[(*pos_in_token)++]=input[(*pos)++];
+return OK;
+}
+
+
 /**
  * This function reads a token from the regular expression and
  * copies it into 'token'. The function returns 1 in case of success; 0
@@ -323,6 +343,14 @@ if (input[*pos]=='"') {
 if (input[*pos]=='<') {
    /* If there is a < we try to read a pattern of the form <....> */
    if (!read_angle_bracketed_sequence(input,pos,token,&i)) {
+      return 0;
+   }
+   token[i]='\0';
+   return 1;
+}
+if (input[*pos]=='{') {
+   /* If there is a { we try to read a tag of the form  {....} */
+   if (!read_round_bracketed_sequence(input,pos,token,&i)) {
       return 0;
    }
    token[i]='\0';

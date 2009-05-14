@@ -391,7 +391,6 @@ foo_tag->start_pos_letter=original_tag->start_pos_letter;
 foo_tag->end_pos_token=original_tag->end_pos_token;
 foo_tag->end_pos_char=original_tag->end_pos_char;
 foo_tag->end_pos_letter=original_tag->end_pos_letter;
-foo_tag->syllab_bound_on_the_right=original_tag->syllab_bound_on_the_right;
 TfstTag_to_string(foo_tag,out);
 foo_tag->content=NULL;
 }

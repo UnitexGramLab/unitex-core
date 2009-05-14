@@ -255,18 +255,16 @@ for (int i=0;i<n_states;i++) {
       if (!u_strcmp(t->content,"\"")) {
          /* If the box content is a double quote, we must protect it in a special
           * way since both \ and "  are special characters in grf files. */
-         u_sprintf(content,"\"\\\\\\\"/%d %d %d %d %d %d %d\"",
+         u_sprintf(content,"\"\\\\\\\"/%d %d %d %d %d %d\"",
                t->start_pos_token,t->start_pos_char,t->start_pos_letter,
-               t->end_pos_token,t->end_pos_char,t->end_pos_letter,
-               t->syllab_bound_on_the_right);
+               t->end_pos_token,t->end_pos_char,t->end_pos_letter);
       } else {
          /* Otherwise, we put the content between double quotes */
          content[0]='"';
          int length=1+escape(t->content,&content[1],P_DOUBLE_QUOTE);
-         u_sprintf(content+length,"/%d %d %d %d %d %d %d\"",
+         u_sprintf(content+length,"/%d %d %d %d %d %d\"",
                t->start_pos_token,t->start_pos_char,t->start_pos_letter,
-               t->end_pos_token,t->end_pos_char,t->end_pos_letter,
-               t->syllab_bound_on_the_right);
+               t->end_pos_token,t->end_pos_char,t->end_pos_letter);
       }
       grf_states[N_GRF_STATES]=new_grf_state(content,pos_X[rank[i]],rank[i]);
       /* Now that we have created the grf state, we set its outgoing transitions */

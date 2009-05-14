@@ -121,13 +121,6 @@ typedef struct {
     */
    int start_pos_letter;
    int end_pos_letter;
-   /* With the previous information, it is easy to test if the left of the transition corresponds
-    * to a syllab limit, because we can test start_pos_letter==0. However, as we don't know the
-    * size of the last syllab, it is convenient to use 'syllab_bound_on_the_right' to store
-    * the information about the right side of the sequence. 1 means that the end of the input
-    * corresponds to the end of a real syllab in the text; 0 otherwise. */
-   char syllab_bound_on_the_right; 
-
 } TfstTag;
 
 Tfst* new_Tfst(U_FILE* tfst,U_FILE* tind,int N);
