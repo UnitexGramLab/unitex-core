@@ -230,6 +230,11 @@ static void fill_element(struct locate_tfst_infos* infos,struct tfst_simple_matc
 e->end_pos_in_token=-1;
 e->end_pos_in_char=-1;
 struct tfst_match* first_text_dependent_tag=find_first_text_dependent_tag(m);
+if (first_text_dependent_tag==NULL) {
+   /* If the whole match is text independent, we fail */
+   e->end_pos_in_token=-1;
+   return;
+}
 struct list_int* tags=first_text_dependent_tag->text_tag_numbers;
 while (tags!=NULL) {
    if (tags->n!=-1) {
