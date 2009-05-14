@@ -344,7 +344,9 @@ if (current_kr_fst2_transition!=NULL) {
                current_kr_fst2_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED);
       }
       else if (result==PARTIAL_MATCH_STATUS) {
-#warning a completer
+         /* If we have consumed all the fst2 tag but not all the tfst one, we go on */
+         explore_tfst(tfst,current_state_in_tfst,current_kr_fst2_transition->state_number,
+                                                depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition);
       }
       text_transition=text_transition->next;
    }
@@ -580,8 +582,8 @@ if (!u_strcmp(grammar_tag->input," ")) {
 	return NO_MATCH_STATUS;
 }
 if (!u_strcmp(grammar_tag->input,"#")) {
-   if (!is_space_on_the_left_in_tfst(tfst,text_tag)) {
-		return TEXT_INDEPENDENT_MATCH;
+   if (*pos_kr_tfst_tag>0 || !is_space_on_the_left_in_tfst(tfst,text_tag)) {
+      return TEXT_INDEPENDENT_MATCH;
 	}
 	return NO_MATCH_STATUS;
 }
@@ -620,7 +622,7 @@ if (infos->korean && (*pos_kr_fst2_tag!=-1 || (grammar_tag->input[0]!='{' && gra
       }
       if (jamo_fst2[k]!=jamo_tfst[j]) {
          /* If a character doesn't match */
-        // error("match failed between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
+         //error("match failed between tfst=%S and fst2=%S\n",jamo_tfst,jamo_fst2);
          return NO_MATCH_STATUS;
       }
       k++;
