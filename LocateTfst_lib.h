@@ -34,6 +34,7 @@
 #define OK_MATCH_STATUS 1
 #define NO_MATCH_STATUS 2
 #define TEXT_INDEPENDENT_MATCH 3
+#define PARTIAL_MATCH_STATUS 4
 
 /**
  * This structure is used to wrap many information needed to perform the locate
