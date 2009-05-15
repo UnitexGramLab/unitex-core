@@ -20,7 +20,7 @@
  */
 #include <stdlib.h>
 
-// using namespace std;
+//using namespace std;
 
 #include <locale.h>
 #include <stdlib.h>
@@ -177,7 +177,7 @@ static void saveAsequnceMorpheme(int &saveCnt)
 	*iPtr++ = '}';
 	saveCnt++;
 	*iPtr=0;
-	u_fwrite_raw(workBuff,(iPtr-workBuff),findFile);
+	u_fwrite_raw(workBuff,(int)(iPtr-workBuff),findFile);
 	save_flechi[0]= 0;
 	save_cano[0]= 0;
 	save_org[0]= 0;
@@ -317,7 +317,7 @@ static void getListFile(char *filename)
     if(!(lstF = u_fopen(BINARY,filename,U_READ)))
     	fopenErrMessage(filename);	
     get_path(filename,pathName);
-    pathLen = strlen(pathName);
+    pathLen = (int)strlen(pathName);
     while(af_fgets(buff,1024,lstF->f)){
     	wp = buff;
 

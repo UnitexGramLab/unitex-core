@@ -573,7 +573,7 @@ while(a!=NULL && b!=NULL) {
    // if the unichars are different then nodes are different
    if (a->c != b->c) return (a->c - b->c);
    // if the unichars are equal and destination nodes are different...
-   if (a->noeud != b->noeud) return (a->noeud - b->noeud);
+   if (a->noeud != b->noeud) return (int)(a->noeud - b->noeud);
    a=a->suivant;
    b=b->suivant;
 }

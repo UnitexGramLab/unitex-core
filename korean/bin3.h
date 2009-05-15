@@ -262,24 +262,24 @@ printf("\n=== %x scanNode ====\n",scanNode);
 	{
 		int t = 0;
 		int cur;
-		struct avec_sorti_tran  *tt= noeud->transitions;
+		struct avec_sorti_tran  *tt= noeud->trans;
 		while(tt){
 			if(tt->c){
-			cur  = swprintf(&prTreeBuff[prdepth],
-				L"<%c,%x,%x,%x>",tt->c,tt->info,tt->a.node,tt->depth);
+			cur  = u_sprintf(&prTreeBuff[prdepth],
+				"<%c,%x,%x,%x>",tt->c,tt->info,tt->a.node,tt->depth);
 			} else {
-			cur  = swprintf(&prTreeBuff[prdepth],
-				L"< ,%x,%x,%x>",tt->info,tt->a.node,tt->depth);
+			cur  = u_sprintf(&prTreeBuff[prdepth],
+				"< ,%x,%x,%x>",tt->info,tt->a.node,tt->depth);
 			}
 			if(tt->info & 0x8000){
-				printf("%s\n",getUtoChar(prTreeBuff));
+				u_printf("%s\n",getUtoChar(prTreeBuff));
 			} else
 				prNode(cur+prdepth,tt->a.node);
 			t++;
 			tt = tt->suivant;
 		}
 		if(t) return;
-printf("%sT\n",getUtoChar(prTreeBuff));
+u_printf("%sT\n",getUtoChar(prTreeBuff));
 	}
 #endif	// __DEBUG
 	int taille_de_sauve;

@@ -22,7 +22,10 @@
 //
 //
 
+#ifndef _UNICODE
 #define _UNICODE
+#endif
+
 #include <time.h>
 
 #include <direct.h>
@@ -43,12 +46,12 @@ void makeSegments(char *ifn,char *ofn,int sz)
 }
 
 
-static void usage()
+static void usage(int)
 {
-printf("%s",COPYRIGHT);
-	printf("Usage: TokenKr [-o outfilename] filename[.txt]\n");
-	printf(" -d[0-5] : sizeof mem buff 2**n Mega\n");
-	printf(" -o: output filename select\n");
+	u_printf("%s",COPYRIGHT);
+	u_printf("Usage: TokenKr [-o outfilename] filename[.txt]\n");
+	u_printf(" -d[0-5] : sizeof mem buff 2**n Mega\n");
+	u_printf(" -o: output filename select\n");
 }
 
 
@@ -94,7 +97,7 @@ main(int argc,char *argv[])
 				if( (memBufferSize < 0) ||
 						(memBufferSize > 5)) 
 						usage(1);
-				memBufferSize = (int)pow(2,memBufferSize);
+				memBufferSize = (int)((memBufferSize)>=0) ? ((int)(1 << (memBufferSize))) : 0;
 				break;
 			case 'l':
 				listFlag =(*argv[i] == '-') ? -1 : 1; break;

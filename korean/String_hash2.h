@@ -566,6 +566,7 @@ public:
 		noeud->value++;
 		if(N < limit) 	return noeud->final;
 		fatal_error("Too many hash elements\n");
+		return 0;
 	}
      int insertWord(unichar *s)
      {

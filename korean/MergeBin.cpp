@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 
-// using namespace std;
+//using namespace std;
 
 #include "Unicode.h"
 #include "etc.h"
@@ -123,7 +123,7 @@ struct binFileList *tmp;
     if(!(lstF = u_fopen(BINARY,fn,U_READ)))
     	fopenErrMessage(fn);	
     get_path(fn,pathName);
-    pathLen = strlen(pathName);
+    pathLen = (int)strlen(pathName);
     while(af_fgets(buff,1024,lstF->f)){
     	wp = buff;
 

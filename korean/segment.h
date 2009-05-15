@@ -89,7 +89,7 @@ public:
 		int i;
 		startFileOffset = 1;	// unicode file mark skip
 		mot_buff = 0;
-		preTypeChar = 0xffffffff;
+		preTypeChar = (unsigned char)0xffffffff;
 		for(i = 0; i< NUM_OF_GROUP_SEG;i++)
 			grSegmentCnt[i] = 0;
 #ifdef AVEC_STRUCT
@@ -153,7 +153,7 @@ public:
 	{
 
 
-		if(!(textFile = u_fopen(ifn,U_READ)))
+		if(!(textFile = u_fopen(UTF16_LE,ifn,U_READ)))
 			fopenErrMessage(ifn);
 	
 		if(ofn)
@@ -167,7 +167,7 @@ public:
 			[strlen(pathName)+strlen(tFileName)+1];
 		strcpy(idFileName,pathName);
 		strcat(idFileName,tFileName);
-		if(!(writeFile = fopen(idFileName,"wb")))
+		if(!(writeFile = u_fopen(UTF16_LE,idFileName,U_WRITE)))
 			fopenErrMessage(idFileName);
 
 
@@ -184,7 +184,7 @@ public:
   			strcpy(tokenFileName,pathName);
 		strcat(tokenFileName,tFileName);
 		
-		if(!(tokenFile = u_fopen(tokenFileName,U_WRITE)))
+		if(!(tokenFile = u_fopen(UTF16_LE,tokenFileName,U_WRITE)))
 			fopenErrMessage(tokenFileName);
 		segmentCount = segments.size();
 		
@@ -214,11 +214,11 @@ public:
 			[strlen(pathName)+strlen(tFileName) +1];
 		strcpy(tokenFileName,pathName);
 		strcat(tokenFileName,tFileName);
-		if(!(sort_token = u_fopen(tokenFileName,U_WRITE)))
+		if(!(sort_token = u_fopen(UTF16_LE,tokenFileName,U_WRITE)))
 			fopenErrMessage(tokenFileName);
 		filleCntLine(sort_token,segments.size());	
 		explore_leaf(segments.getRacine(),0);
-		fclose(sort_token);
+		u_fclose(sort_token);
 
 		U_FILE *tmpf;
 		tFileName = "tok_by_freq.txt";
@@ -226,42 +226,42 @@ public:
 			[strlen(pathName)+strlen(tFileName) +1];
 		strcpy(tokenFileName,pathName);
 		strcat(tokenFileName,tFileName);
-		if(!(tmpf = u_fopen(tokenFileName,U_WRITE)))
+		if(!(tmpf = u_fopen(UTF16_LE,tokenFileName,U_WRITE)))
 			fopenErrMessage(tokenFileName);
 		filleCntLine(tmpf,segments.size());	
 		quicksort_by_frequence(0,segmentCount);
 		for(i = 0; i < segmentCount;i++){
-			fwprintf(tmpf,L"%d\t\t",n_occur[i]);
+			u_fprintf(tmpf,"%d\t\t",n_occur[i]);
 			a_token_out(tmpf,&tokTable[i][1]);
 			fwrite(&retnew,4,1,tokenFile);
 		}
 		
-		fclose(sort_token);
+		u_fclose(sort_token);
 		segments.release_value();
 		delete tokenFileName;
-		fclose(tmpf);
+		u_fclose(tmpf);
 			
 		tFileName = "stats.n";
 		tokenFileName  = new char 
 			[strlen(pathName)+strlen(tFileName) +1];
 		strcpy(tokenFileName,pathName);
 		strcat(tokenFileName,tFileName);
-		if(!(tmpf = u_fopen(tokenFileName,U_WRITE)))
+		if(!(tmpf = u_fopen(UTF16_LE,tokenFileName,U_WRITE)))
 			fopenErrMessage(tokenFileName);
 		
 	
-		fwprintf(tmpf,L"%d sentence delimiters",sentenceCnt);
-		fwprintf(tmpf,L" %d (%d diff) tokens,",
+		u_fprintf(tmpf,"%d sentence delimiters",sentenceCnt);
+		u_fprintf(tmpf," %d (%d diff) tokens,",
 			grSegmentSum[0]+grSegmentSum[1]+grSegmentSum[2]+grSegmentSum[3],
 			grSegmentCnt[0]+grSegmentCnt[1]+grSegmentCnt[2]+grSegmentCnt[3]
 			);
-		fwprintf(tmpf,L" %d (%d) simple forms, %d (%d) digits\n",			
+		u_fprintf(tmpf," %d (%d) simple forms, %d (%d) digits\n",			
 			grSegmentSum[4]+grSegmentSum[5]+grSegmentSum[6]+spaceCnt,
 			grSegmentCnt[4]+grSegmentCnt[5]+grSegmentCnt[6]+1,
 			grSegmentSum[7],		
 			grSegmentCnt[7]);
-		fwprintf(tmpf,L"%d text size, %d space\n",currentOffset,spaceCnt);
-		fclose(tmpf);
+		u_fprintf(tmpf,"%d text size, %d space\n",currentOffset,spaceCnt);
+		u_fclose(tmpf);
 		delete tokenFileName;
 	}
 	void explore_leaf(struct arbre_hash00* noeud,int pos)
@@ -269,9 +269,9 @@ public:
 		if(noeud->final != -1){
 			cbuff[pos] = 0;
 			a_token_out(sort_token,cbuff);
-			fwprintf(sort_token,L"\t\t%d\n",noeud->value);
+			u_fprintf(sort_token,"\t\t%d\n",noeud->value);
 		}
-		struct arbre_hash_trans00  **t= &noeud->transitions;
+		struct arbre_hash_trans00  **t= &noeud->trans;
 		while(*t){
 			cbuff[pos] = (*t)->c;
 			explore_leaf((*t)->arr,pos+1);
@@ -309,7 +309,7 @@ public:
 			l = ctl_char_name_string[*t];
 		else
 			l = t;
-		fwprintf(f,L"%s",l);
+		u_fprintf(f,"%s",l);
 	}
 
 	void quicksort_by_frequence(int debut,int fin)
@@ -331,7 +331,7 @@ public:
     
     	if(fseek(textFile,currentOffset*2,SEEK_SET))
     		return returnVal;
-    	if(!(readCnt= fread(rbuff,2,(maxUnitSize-1),textFile)) )
+    	if(!(readCnt= (int)fread(rbuff,2,(maxUnitSize-1),textFile)) )
     		return(returnVal);
     	if(readCnt == (maxUnitSize -1)){
     		for(i = readCnt -1 ; i >= 0;i--)
@@ -595,7 +595,7 @@ segmentation::segmentFile(char *ifile_name, char *ofile_name,int MaxBufferSize)
 		getSegments(mot_buff);
 	};
 
-	fflush(writeFile);
+	//flush(writeFile);
 	u_fclose(writeFile);
 	u_fclose(textFile);
 

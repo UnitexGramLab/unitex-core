@@ -502,7 +502,7 @@ int af_copy(const char* srcFile, const char* dstFile)
 {
     ABSTRACTFILE* vfRead;
     ABSTRACTFILE* vfWrite;
-    long size_to_do;    
+    long size_to_do = 0;    
     int iSuccessCopyingRet=0;		
 	char *szBuffer = NULL;
 	int buffer_size = 0;
