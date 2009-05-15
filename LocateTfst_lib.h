@@ -29,8 +29,11 @@
 #include "LocateTfstMatches.h"
 #include "LocateConstants.h"
 #include "jamoCodage.h"
+#include "OptimizedTfstTagMatching.h"
 
-
+/* Following values must be !=-1, because -1 is used in
+ * OptimizedTfstTagMatching to indicate that the result of a match
+ * is not known yet */
 #define OK_MATCH_STATUS 1
 #define NO_MATCH_STATUS 2
 #define TEXT_INDEPENDENT_MATCH 3
@@ -86,6 +89,8 @@ struct locate_tfst_infos {
 	unichar** jamo_fst2_tags;
 	int n_jamo_tfst_tags;
 	unichar** jamo_tfst_tags;
+	
+	LocateTfstTagMatchingCache* cache;
 	#endif
 };
 

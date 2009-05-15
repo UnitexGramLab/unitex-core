@@ -26,14 +26,15 @@
 #include "LocateTfst_lib.h"
 #include "File.h"
 #include "Korean.h"
+#include <time.h>
 
 /* During a locate operation starting on a given tfst state, we consider that
  * more than MAX_VISITS_PER_TFST_STATE visits in a state means that there is
  * a combinatorial explosion */
-#define MAX_VISITS_PER_TFST_STATE 1000
+#define MAX_VISITS_PER_TFST_STATE 128
 
 
-int explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
+void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
 		          int current_state_in_fst2,int graph_depth,
 		          struct tfst_match* match_element_list,
                 struct tfst_match_list** LIST,
@@ -46,6 +47,10 @@ void init_Korean_stuffs(struct locate_tfst_infos* infos,char* jamo_table);
 void free_Korean_stuffs(struct locate_tfst_infos* infos);
 void compute_jamo_tfst_tags(struct locate_tfst_infos* infos);
 int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
+                                        int tfst_tag_index,int fst2_tag_index,
+                                        struct locate_tfst_infos* infos,
+                                        int *pos_kr_fst2_tag,int *pos_kr_tfst_tag);
+int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
                                         int tfst_tag_index,int fst2_tag_index,
                                         struct locate_tfst_infos* infos,
                                         int *pos_kr_fst2_tag,int *pos_kr_tfst_tag);
@@ -116,17 +121,24 @@ infos.start_position_last_printed_match=-1;
 infos.end_position_last_printed_match=-1;
 infos.search_limit=search_limit;
 init_Korean_stuffs(&infos,jamo_table);
+infos.cache=new_LocateTfstTagMatchingCache(tfst->N,infos.fst2->number_of_tags);
+clock_t total_load=0;
+clock_t total_parse=0;
 /* We launch the matching for each sentence */
 for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
    if (i%100==0) {
 		u_printf("\rSentence %d/%d...",i,tfst->N);
 	}
-	load_sentence(tfst,i);
+   clock_t before=clock();
+   load_sentence(tfst,i);
 	compute_token_contents(tfst);
+	total_load+=clock()-before;
 	if (infos.korean) {
 	   compute_jamo_tfst_tags(&infos);
 	}
 	infos.matches=NULL;
+	before=clock();
+	prepare_cache_for_new_sentence(infos.cache,tfst->tags->nbelems);
 	int visits[tfst->automaton->number_of_states];
 	/* Within a sentence graph, we try to match from any state */
 	for (int j=0;j<tfst->automaton->number_of_states;j++) {
@@ -137,8 +149,10 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	   explore_tfst(visits,tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,-1,NULL,NULL);
 	}
 	save_tfst_matches(&infos);
+	total_parse+=clock()-before;
 }
 u_printf("\rDone.                                    \n");
+error("total load=%d  total parse=%d\n",total_load,total_parse);
 /* We save some infos */
 char concord_tfst_n[FILENAME_MAX];
 get_path(output,concord_tfst_n);
@@ -170,6 +184,7 @@ free_FilterSet(infos.filters);
 u_fclose(infos.output);
 free_alphabet(infos.alphabet);
 free_Korean_stuffs(&infos);
+free_LocateTfstTagMatchingCache(infos.cache);
 free_abstract_Fst2(infos.fst2,&fst2_free);
 close_text_automaton(tfst);
 return 1;
@@ -305,15 +320,13 @@ for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
       fatal_alloc_error("compute_jamo_tfst_tags");
    }
 }
-
 }
 
 
 /**
- * Explores in parallel the tfst and the fst2. Returns 0 if the computation
- * is aborted because of a combinatorial explosion; 1 otherwise.
+ * Explores in parallel the tfst and the fst2.
  */
-int explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
+void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
 		          int current_state_in_fst2,int graph_depth,
 		          struct tfst_match* match_element_list,
                 struct tfst_match_list* *LIST,
@@ -330,7 +343,7 @@ int explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
 //error("visits for current state=%d  tfst state=%d  fst2 state=%d\n",visits[current_state_in_tfst],current_state_in_tfst,current_state_in_fst2);
 if (visits[current_state_in_tfst]>MAX_VISITS_PER_TFST_STATE) {
    /* If there are too much recursive calls */
-   return 0;
+   return;
 }
 visits[current_state_in_tfst]++;
 
@@ -364,12 +377,8 @@ if (current_kr_fst2_transition!=NULL) {
       }
       else if (result==PARTIAL_MATCH_STATUS) {
          /* If we have consumed all the fst2 tag but not all the tfst one, we go on */
-         if (!explore_tfst(visits,tfst,current_state_in_tfst,current_kr_fst2_transition->state_number,
-                                                graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition)) {
-            /* Combinatorial explosion */
-#warning some free are missing
-            return 0;
-         }
+         explore_tfst(visits,tfst,current_state_in_tfst,current_kr_fst2_transition->state_number,
+                                                graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition);
       }
       text_transition=text_transition->next;
    }
@@ -389,12 +398,8 @@ if (current_kr_fst2_transition!=NULL) {
       }
       Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
       int dest_state=(list->pos_kr!=-1)?-1:current_kr_fst2_transition->state_number;
-      if (!explore_tfst(visits,tfst,list->dest_state_text,dest_state,
-                        graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL)) {
-         /* Combinatorial explosion */
-#warning some free are missing
-         return 0;
-      }
+      explore_tfst(visits,tfst,list->dest_state_text,dest_state,
+                        graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL);
       if (list->pointed_by==0) {
          /* If list is not blocked by being part of a match for the calling
           * graph, we can free it */
@@ -404,7 +409,7 @@ if (current_kr_fst2_transition!=NULL) {
       }
       list=tmp;
    }
-   return 1;
+   return;
 } /* END OF CASE 1 */
 
 
@@ -417,7 +422,7 @@ if (current_kr_tfst_transition!=NULL) {
       int e=grammar_transition->tag_number;
       if (e<0) {
          /* We forbid subgraph calls when a partial tfst tag match is running */
-         return 1;
+         return;
       }
       int pos_kr_fst2=pos_kr_in_fst2_tag;
       int pos_kr_tfst=pos_kr_in_tfst_tag;
@@ -434,12 +439,8 @@ if (current_kr_tfst_transition!=NULL) {
       else if (result==TEXT_INDEPENDENT_MATCH || result==PARTIAL_MATCH_STATUS) {
          /* If we have a match independent of the text automaton (i.e. <E>) 
           * or that does not consume all the tfst tag, we go on */
-         if (!explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                                       graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition)) {
-            /* Combinatorial explosion */
-#warning some free are missing
-            return 0;
-         }
+         explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
+                                       graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition);
       }
       grammar_transition=grammar_transition->next;
    }
@@ -459,12 +460,8 @@ if (current_kr_tfst_transition!=NULL) {
       }
       Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
       int dest_state=(list->pos_kr!=-1)?-1:list->fst2_transition->state_number;
-      if (!explore_tfst(visits,tfst,list->dest_state_text,dest_state,
-                        graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL)) {
-         /* Combinatorial explosion */
-         #warning some free are missing
-         return 0;
-      }
+      explore_tfst(visits,tfst,list->dest_state_text,dest_state,
+                        graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL);
       if (list->pointed_by==0) {
          /* If list is not blocked by being part of a match for the calling
           * graph, we can free it */
@@ -474,7 +471,7 @@ if (current_kr_tfst_transition!=NULL) {
       }
       list=tmp;
    }
-   return 1;
+   return;
 } /* END OF CASE 2 */
 
 /* CASE 3: we are in the normal state exploration case */
@@ -499,25 +496,17 @@ while (grammar_transition!=NULL) {
       struct tfst_match_list* list_for_subgraph=NULL;
       struct tfst_match_list* tmp;
 
-      if (!explore_tfst(visits,tfst,current_state_in_tfst,infos->fst2->initial_states[-e],
-              graph_depth+1,match_element_list,&list_for_subgraph,infos,-1,-1,NULL,NULL)) {
-         /* Combinatorial explosion */
-         #warning some free are missing
-         return 0;
-      }
+      explore_tfst(visits,tfst,current_state_in_tfst,infos->fst2->initial_states[-e],
+              graph_depth+1,match_element_list,&list_for_subgraph,infos,-1,-1,NULL,NULL);
       while (list_for_subgraph!=NULL) {
          tmp=list_for_subgraph->next;
          /* Before exploring an element that points on a subgraph match,
           * we decrease its 'pointed_by' variable that was previously increased
           * in the 'add_match_in_list' function */
          (list_for_subgraph->match->pointed_by)--;
-         if (!explore_tfst(visits,tfst,list_for_subgraph->match->dest_state_text,
+         explore_tfst(visits,tfst,list_for_subgraph->match->dest_state_text,
                            grammar_transition->state_number,
-                           graph_depth,list_for_subgraph->match,LIST,infos,-1,-1,NULL,NULL)) {
-            /* Combinatorial explosion */
-            #warning some free are missing
-            return 0;
-         }
+                           graph_depth,list_for_subgraph->match,LIST,infos,-1,-1,NULL,NULL);
          /* Finally, we remove, if necessary, the list of match element
           * that was used for storing the subgraph match. This cleaning
           * will only free elements that are not involved in others
@@ -555,12 +544,8 @@ while (grammar_transition!=NULL) {
              * we must go on. At the opposite of a partial fst2 tag, we don't 
              * add a partial match to 'list', because this must only be done when
              * a tfst tag has matched, and this is not the case here. */
-            if (!explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                              graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,text_transition)) {
-               /* Combinatorial explosion */
-               #warning some free are missing
-               return 0;
-            }
+            explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
+                              graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,text_transition);
          }
          text_transition=text_transition->next;
       }
@@ -580,12 +565,8 @@ while (grammar_transition!=NULL) {
          }
          Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
          int dest_state_in_fst2=(list->pos_kr!=-1)?-1:grammar_transition->state_number;
-         if (!explore_tfst(visits,tfst,list->dest_state_text,dest_state_in_fst2,
-                           graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL)) {
-            /* Combinatorial explosion */
-            #warning some free are missing
-            return 0;
-         }
+         explore_tfst(visits,tfst,list->dest_state_text,dest_state_in_fst2,
+                           graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL);
          if (list->pointed_by==0) {
             /* If list is not blocked by being part of a match for the calling
              * graph, we can free it */
@@ -598,54 +579,81 @@ while (grammar_transition!=NULL) {
    }
    grammar_transition=grammar_transition->next;
 }
-return 1;
 }
 
 
-
 /**
- * This function tests if a text tag can be matched by a grammar tag.
+ * This function tests if a text tag can be matched by a grammar tag, but only
+ * if the result is not already known.
  */
 int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
                                         int tfst_tag_index,int fst2_tag_index,
                                         struct locate_tfst_infos* infos,
                                         int *pos_kr_fst2_tag,int *pos_kr_tfst_tag) {
+/* We start by looking at special fst2 tags */
 if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
-	|| grammar_tag->type==BEGIN_NEGATIVE_CONTEXT_TAG
-	|| grammar_tag->type==END_CONTEXT_TAG
-	|| grammar_tag->type==LEFT_CONTEXT_TAG
-	|| grammar_tag->type==BEGIN_MORPHO_TAG
-	|| grammar_tag->type==END_MORPHO_TAG) {
+   || grammar_tag->type==BEGIN_NEGATIVE_CONTEXT_TAG
+   || grammar_tag->type==END_CONTEXT_TAG
+   || grammar_tag->type==LEFT_CONTEXT_TAG
+   || grammar_tag->type==BEGIN_MORPHO_TAG
+   || grammar_tag->type==END_MORPHO_TAG) {
    fatal_error("Tag '%S' should not be found in a grammar applied to a text automaton\n",grammar_tag->input);
 }
 /*******************************************************
  * We want to match something that is text independent */
 if (grammar_tag->type==BEGIN_VAR_TAG
-	|| grammar_tag->type==END_VAR_TAG
-    || !u_strcmp(grammar_tag->input,"<E>")) {
+   || grammar_tag->type==END_VAR_TAG
+   || !u_strcmp(grammar_tag->input,"<E>")) {
    return TEXT_INDEPENDENT_MATCH;
 }
-/* Here we test the special case of the " " and # tags */
+/* Here we test the special case of the " " and # tags that are contextual matches, and 
+ * for this reason, that cannot be cached */
 if (!u_strcmp(grammar_tag->input," ")) {
-	if (is_space_on_the_left_in_tfst(tfst,text_tag)) {
-		return TEXT_INDEPENDENT_MATCH;
-	}
-	return NO_MATCH_STATUS;
+   if (is_space_on_the_left_in_tfst(tfst,text_tag)) {
+      return TEXT_INDEPENDENT_MATCH;
+   }
+   return NO_MATCH_STATUS;
 }
 if (!u_strcmp(grammar_tag->input,"#")) {
    if (*pos_kr_tfst_tag>0 || !is_space_on_the_left_in_tfst(tfst,text_tag)) {
       return TEXT_INDEPENDENT_MATCH;
-	}
-	return NO_MATCH_STATUS;
+   }
+   return NO_MATCH_STATUS;
 }
-
-/* Now, we will compare the text tag and the grammar one */
-
 if (!u_strcmp(text_tag->content,"{STOP}")) {
-	/* {STOP} can NEVER be matched */
-	return NO_MATCH_STATUS;
+   /* {STOP} can NEVER be matched */
+   return NO_MATCH_STATUS;
+}
+/* Now, we will compare the text tag and the grammar one, but only if we
+ * don't already know the result */
+int result=get_cached_result(infos->cache,text_tag->content,fst2_tag_index,tfst_tag_index,
+                             *pos_kr_fst2_tag,*pos_kr_tfst_tag);
+if (result!=UNKNOWN_MATCH_STATUS) {
+   return result;
+}
+/* Otherwise, we compute the result */
+result=real_match_between_text_and_grammar_tags(tfst,text_tag,grammar_tag,
+                                                tfst_tag_index,fst2_tag_index,
+                                                infos,pos_kr_fst2_tag,pos_kr_tfst_tag);
+/* And we save it in the cache */
+set_cached_result(infos->cache,tfst_tag_index,fst2_tag_index,
+                  *pos_kr_fst2_tag,*pos_kr_tfst_tag,result);
+return result;
 }
 
+
+/**
+ * This function tests if a text tag can be matched by a grammar tag.
+ * 
+ * WARNING: as we use a cache that is supposed to be context independent, no
+ *          context dependent operation must be done here. Contextual
+ *          operations like # or " " must be handled in 
+ *          'match_between_text_and_grammar_tags'
+ */
+int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
+                                        int tfst_tag_index,int fst2_tag_index,
+                                        struct locate_tfst_infos* infos,
+                                        int *pos_kr_fst2_tag,int *pos_kr_tfst_tag) {
 if (infos->korean && *pos_kr_fst2_tag!=-1 && *pos_kr_tfst_tag!=-1) {
    fatal_error("Internal error in match_between_text_and_grammar_tags: cannot have partial match on both\n"
                "text tag and grammar tag\n");

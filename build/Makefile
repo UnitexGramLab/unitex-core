@@ -360,7 +360,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o Unicode.o
                   Symbol.o LanguageDefinition.o Tagset.o String_hash.o StringParsing.o DELA.o \
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o \
                   LocateTfstMatches.o MorphologicalFilters.o jamoCodage.o codeForKorean.o pro_type.o \
-                  orgUniMbcsMap.o segtype.o etc.o Korean.o
+                  orgUniMbcsMap.o segtype.o etc.o Korean.o OptimizedTfstTagMatching.o
 
 
 MULTIFLEX      = MultiFlex
@@ -493,7 +493,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o \
                   Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o \
                   codeForKorean.o orgUniMbcsMap.o CompressKr.o ConsultDic.o ExtractChar.o InflectKr.o Jamo2Syl.o \
-                  jamoCodage.o MergeBin.o pro_type.o SortMorph.o SufForm2Rac.o Syl2Jamo.o
+                  jamoCodage.o MergeBin.o pro_type.o SortMorph.o SufForm2Rac.o Syl2Jamo.o \
+                  OptimizedTfstTagMatching.o
 
 ######################
 ## Korean programs  ##

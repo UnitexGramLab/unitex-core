@@ -67,11 +67,6 @@ void write_number_of_tokens(const char* name,int n) {
 }
 
 
-unichar* keycopy(unichar* key) {
-return u_strdup(key);
-}
-
-
 static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf("Usage: Tokenize [OPTIONS] <txt>\n"

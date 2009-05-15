@@ -2136,6 +2136,15 @@ return u_strcpy(res,str);
 
 
 /**
+ * This version has the correct prototype to be used as a keycopy function for
+ * hash tables. 
+ */
+unichar* keycopy(unichar* key) {
+return u_strdup(key);
+}
+
+
+/**
  * Unicode version of strndup.
  *   -- why this is then called u_strdup, and not u_strndup? (Sebastian, Munich)
  * This version returns an allocated string that is a copy of the

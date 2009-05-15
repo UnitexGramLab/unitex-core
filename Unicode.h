@@ -228,6 +228,7 @@ int u_strcmp(const unichar*, const unichar*);
 int u_equal(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
 unichar* u_strdup(const unichar*);
+unichar* keycopy(unichar*); 
 unichar* u_strdup(const unichar*,int);
 unichar* u_strdup(const char*);
 unichar* u_strchr(const unichar*,unichar,int);
