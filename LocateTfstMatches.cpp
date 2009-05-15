@@ -568,16 +568,24 @@ if (l->output!=NULL) {
 u_fprintf(f,"\n");
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
    (p->number_of_outputs)++;
-   if (!(p->start_position_last_printed_match == l->start_pos_in_token
-	   && p->end_position_last_printed_match == l->end_pos_in_token)) {
+   if (!(p->start_position_last_printed_match_token == l->start_pos_in_token
+         && p->start_position_last_printed_match_char == l->start_pos_in_char
+         && p->start_position_last_printed_match_letter == l->start_pos_in_letter
+	      && p->end_position_last_printed_match_token == l->end_pos_in_token
+	      && p->end_position_last_printed_match_char == l->end_pos_in_char
+	      && p->end_position_last_printed_match_letter == l->end_pos_in_letter)) {
 	   (p->number_of_matches)++;
    }
 } else {
 	/* If we don't allow ambiguous outputs, we count the matches */
 	(p->number_of_matches)++;
 }
-p->start_position_last_printed_match=l->start_pos_in_token;
-p->end_position_last_printed_match=l->end_pos_in_token;
+p->start_position_last_printed_match_token=l->start_pos_in_token;
+p->end_position_last_printed_match_token=l->end_pos_in_token;
+p->start_position_last_printed_match_char=l->start_pos_in_char;
+p->end_position_last_printed_match_char=l->end_pos_in_char;
+p->start_position_last_printed_match_letter=l->start_pos_in_letter;
+p->end_position_last_printed_match_letter=l->end_pos_in_letter;
 if (p->number_of_matches==p->search_limit) {
 	/* If we have reached the search limitation, we free the remaining
 	 * matches and return */

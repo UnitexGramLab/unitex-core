@@ -117,8 +117,13 @@ infos.match_policy=match_policy;
 infos.output_policy=output_policy;
 infos.ambiguous_output_policy=ambiguous_output_policy;
 infos.number_of_outputs=0;
-infos.start_position_last_printed_match=-1;
-infos.end_position_last_printed_match=-1;
+infos.start_position_last_printed_match_token=-1;
+infos.end_position_last_printed_match_token=-1;
+infos.start_position_last_printed_match_char=-1;
+infos.end_position_last_printed_match_char=-1;
+infos.start_position_last_printed_match_letter=-1;
+infos.end_position_last_printed_match_letter=-1;
+
 infos.search_limit=search_limit;
 init_Korean_stuffs(&infos,jamo_table);
 infos.cache=new_LocateTfstTagMatchingCache(tfst->N,infos.fst2->number_of_tags);

@@ -77,9 +77,13 @@ struct locate_tfst_infos {
 
 	/* Position of the last printed match. It is used when ambiguous outputs
 	 * are used. */
-	int start_position_last_printed_match;
-	int end_position_last_printed_match;
-
+	int start_position_last_printed_match_token;
+	int end_position_last_printed_match_token;
+	int start_position_last_printed_match_char;
+	int end_position_last_printed_match_char;
+	int start_position_last_printed_match_letter;
+	int end_position_last_printed_match_letter;
+	
 	struct tfst_simple_match_list* matches;
 	
 	/* Stuffs for Korean */
