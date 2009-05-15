@@ -28,6 +28,15 @@
  * Allocates, initializes and returns a new match list element.
  */
 struct match_list* new_match(int start,int end,unichar* output,struct match_list* next) {
+return new_match(start,end,-1,-1,-1,-1,output,next);
+}
+
+
+/**
+ * Allocates, initializes and returns a new match list element.
+ */
+struct match_list* new_match(int start,int end,int start_char,int end_char,
+                             int start_letter,int end_letter,unichar* output,struct match_list* next) {
 struct match_list *l;
 l=(struct match_list*)malloc(sizeof(struct match_list));
 if (l==NULL) {
@@ -40,6 +49,10 @@ if (output==NULL) {
 } else {
    l->output=u_strdup(output);
 }
+l->start_char=start_char;
+l->end_char=end_char;
+l->start_letter=start_letter;
+l->end_letter=end_letter;
 l->next=next;
 return l;
 }
@@ -226,7 +239,13 @@ if (l==NULL) return NULL;
 if (l->end<current_position) {
    /* we can save the match (necessary for SHORTEST_MATCHES: there
     * may be no shorter match) */
-   u_fprintf(f,"%d %d",l->start,l->end);
+   
+   /* We save the match according to the new concord.ind format
+    * that takes into account 3 kinds of information:
+    *   1) offset in token
+    *   2) offset in char inside the token
+    *   3) offset in logical letter inside the current char (for Korean) */
+   u_fprintf(f,"%d.0.0 %d.%d.0",l->start,l->end,u_strlen(p->tokens->value[p->buffer[l->end]])-1);
    if (l->output!=NULL) {
       /* If there is an output */
       u_fprintf(f," %S",l->output);
@@ -326,7 +345,7 @@ return l;
 struct match_list* load_match_list(U_FILE* f,OutputPolicy *output_policy) {
 struct match_list* l=NULL;
 struct match_list* end_of_list=NULL;
-int c,start,end;
+int c,start,end,start_char,end_char,start_letter,end_letter;
 unichar output[3000];
 char is_an_output;
 /* We read the header */
@@ -338,7 +357,7 @@ if (output_policy!=NULL) {
       case 'R': *output_policy=REPLACE_OUTPUTS; break;
 	}
 }
-while (2==u_fscanf(f,"%d%d",&start,&end)) {
+while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&end_char,&end_letter)) {
    /* We look if there is an output or not, i.e. a space or a new line */
    c=u_fgetc(f);
    if (c==' ') {
@@ -353,10 +372,10 @@ while (2==u_fscanf(f,"%d%d",&start,&end)) {
       is_an_output=0;
    }
    if (l==NULL) {
-      l=new_match(start,end,is_an_output?output:NULL,NULL);
+      l=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?output:NULL,NULL);
       end_of_list=l;
    } else {
-      end_of_list->next=new_match(start,end,is_an_output?output:NULL,NULL);
+      end_of_list->next=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?output:NULL,NULL);
       end_of_list=end_of_list->next;
    }
 }

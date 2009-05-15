@@ -73,10 +73,11 @@ struct tfst_simple_match_list {
 	int start_pos_in_token;
 	int end_pos_in_token;
 
-	/* Currently, those informations are not used, since we just want to
-	 * produce 'concord.ind' files that does not support this information */
+   /* Information for Korean, but not only */
 	int start_pos_in_char;
 	int end_pos_in_char;
+	int start_pos_in_letter;
+	int end_pos_in_letter;
 
 	unichar* output;
 
