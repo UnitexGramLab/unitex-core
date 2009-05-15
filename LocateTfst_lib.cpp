@@ -26,7 +26,7 @@
 #include "LocateTfst_lib.h"
 #include "File.h"
 #include "Korean.h"
-#include <time.h>
+
 
 /* During a locate operation starting on a given tfst state, we consider that
  * more than MAX_VISITS_PER_TFST_STATE visits in a state means that there is
@@ -122,22 +122,17 @@ infos.end_position_last_printed_match=-1;
 infos.search_limit=search_limit;
 init_Korean_stuffs(&infos,jamo_table);
 infos.cache=new_LocateTfstTagMatchingCache(tfst->N,infos.fst2->number_of_tags);
-clock_t total_load=0;
-clock_t total_parse=0;
 /* We launch the matching for each sentence */
 for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
    if (i%100==0) {
 		u_printf("\rSentence %d/%d...",i,tfst->N);
 	}
-   clock_t before=clock();
    load_sentence(tfst,i);
 	compute_token_contents(tfst);
-	total_load+=clock()-before;
 	if (infos.korean) {
 	   compute_jamo_tfst_tags(&infos);
 	}
 	infos.matches=NULL;
-	before=clock();
 	prepare_cache_for_new_sentence(infos.cache,tfst->tags->nbelems);
 	int visits[tfst->automaton->number_of_states];
 	/* Within a sentence graph, we try to match from any state */
@@ -149,10 +144,8 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	   explore_tfst(visits,tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,-1,NULL,NULL);
 	}
 	save_tfst_matches(&infos);
-	total_parse+=clock()-before;
 }
 u_printf("\rDone.                                    \n");
-error("total load=%d  total parse=%d\n",total_load,total_parse);
 /* We save some infos */
 char concord_tfst_n[FILENAME_MAX];
 get_path(output,concord_tfst_n);

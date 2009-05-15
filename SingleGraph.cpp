@@ -640,7 +640,7 @@ Transition* remove_transitions_to_useless_states(Transition* transitions,
                                                     SingleGraphState* states) {
 Transition* tmp;
 Transition* tmp2;
-Transition* tmp_old;
+Transition* tmp_old=NULL;
 tmp=transitions;
 while (tmp!=NULL) {
    if (is_useless_state(states[tmp->state_number])) {

@@ -126,8 +126,8 @@ free(buffer);
  * case, the function ignore those characters and returns 0.
  */
 int fill_buffer(struct buffer* buffer,int pos,U_FILE* f) {
-int new_position;
-int n_element_read;
+int new_position=-1;
+int n_element_read=-1;
 int OK=1;
 switch (buffer->type) {
    case INTEGER_BUFFER: {
@@ -158,6 +158,7 @@ switch (buffer->type) {
       array[new_position+n_element_read]='\0';
       break;
    }
+   default: fatal_error("Invalid buffer type in fill_buffer\n");
 }
 buffer->size=new_position+n_element_read;
 buffer->end_of_file=(n_element_read==0) || (buffer->size<buffer->MAXIMUM_BUFFER_SIZE);

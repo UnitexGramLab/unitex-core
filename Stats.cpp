@@ -135,10 +135,8 @@ int main_Stats(int argc,char *argv[]) {
 		return 0;
 	}
 
-	int leftContext = 0,  rightContext = 0, mode, caseSensitive = 1;
+	int leftContext = 0,  rightContext = 0, mode=-1, caseSensitive = 1;
 	char *concord = NULL, *text = NULL, *tokens = NULL, *alpha = NULL, *output_file = NULL;
-
-
 	const char* optstring=":m:c:t:x:a:l:r:s:o:";
 
 	struct option_TS lopts[]= {

@@ -179,7 +179,7 @@ void locate(int graph_depth, /* 0 means that we are in the top level graph */
 #ifdef TRE_WCHAR
 int filter_number;
 #endif
-int pos2,ctrl=0,end_of_compound;
+int pos2=-1,ctrl=0,end_of_compound;
 int token,token2;
 Transition* t;
 int stack_top=p->stack->stack_pointer;

@@ -77,6 +77,8 @@ DEFFLAGS = -D_NOT_UNDER_WINDOWS
 CFLAGS   = -Wall -W 
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 
+else
+CFLAGS += -O2
 endif
 
 ifeq ($(LIBRARY),yes)
@@ -133,6 +135,13 @@ CXXINCS =  -I"../korean" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
+ifeq ($(DEBUG), yes)
+CFLAGS += -g -O0 
+else
+CFLAGS += -O2
+endif
+
+
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
 #CFLAGS += -fPIC
@@ -174,6 +183,12 @@ INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".."
 CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../Libtre" -I"../korean" -I".." 
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
+
+ifeq ($(DEBUG), yes)
+CFLAGS += -g -O0 
+else
+CFLAGS += -O2
+endif
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
