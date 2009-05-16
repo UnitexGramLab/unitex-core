@@ -25,8 +25,6 @@
 #include "Matches.h"
 #include "File.h"
 
-#define DEBUG 0
-
 
 /*
  * "pomme de terre" is made of 5 tokens : "pomme" SPACE "de" SPACE "terre"
@@ -632,13 +630,15 @@ u_printf("Looking for simple words...\n");
 look_for_simple_words(info,priority);
 u_printf("Looking for compound words...\n");
 /* We measure the elapsed time */
+#ifdef DEBUG
 clock_t startTime=clock();
+#endif
 look_for_compound_words(info,priority);
+#ifdef DEBUG
 clock_t endTime = clock();
 double  elapsedTime = (double) (endTime - startTime);
-if (DEBUG) {
-   u_printf("%2.8f seconds\n",elapsedTime);
-}
+u_printf("%2.8f seconds\n",elapsedTime);
+#endif
 free_word_struct_array(info->word_array);
 free_abstract_INF(info->inf,&info->inf_free);
 free_abstract_BIN(info->bin,&info->bin_free);
