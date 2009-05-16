@@ -18,7 +18,7 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
-  
+
 //
 //	construction a automate from th sequence of words
 //
@@ -190,13 +190,13 @@ public:
 		epsilonIndex = morphStruct.insertWord(u_epsilon_string);
 
 #ifdef DEBUG
-		debugf = u_fopen("test.txt",U_WRITE);
+		debugf = u_fopen(UTF16_LE,"test.txt",U_WRITE);
 #endif
 	}
 	~str2Auto(){
 		delete saveTokenP;
 #ifdef DEBUG
-		fclose(debugf);
+		u_fclose(debugf);
 #endif
 	}
 	void resetMem(){
