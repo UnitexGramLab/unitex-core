@@ -86,9 +86,7 @@ struct utility_item {
 const struct utility_item utility_array[]=
 {
 	{ "CheckDic", 8, &main_CheckDic} ,
-#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
 	{ "Compress", 8, &main_Compress} ,
-#endif
 	{ "Concord", 7, &main_Concord} ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
 	{ "ConcorDiff", 10, &main_ConcorDiff} ,
@@ -102,7 +100,9 @@ const struct utility_item utility_array[]=
 	{ "Extract", 7, &main_Extract} ,
 	{ "Flatten", 7, &main_Flatten} ,
 	{ "Fst2List", 8, &main_Fst2List} ,
+#endif
 	{ "Fst2Txt", 7, &main_Fst2Txt} ,
+#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
 	{ "Grf2Fst2", 8, &main_Grf2Fst2} ,
 	{ "ImplodeTfst", 11, &main_ImplodeTfst} ,
 #endif
@@ -212,6 +212,12 @@ int UnitexTool_several(int argc,char* argv[],int* p_number_done)
 	int number_done=0;
 	int pos = 1;
 
+#ifdef DEBUG
+	int icount;
+	for (icount=0;icount<argc;icount++) u_printf("%s ",argv[icount]);
+	u_printf("\n");
+#endif
+	
 	if (argc <= 1)
 	{
 		unitex_tool_usage(1);
