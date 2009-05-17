@@ -398,6 +398,9 @@ if (current_token[pos_in_current_token]=='\0') {
    }
    pos_offset++;
    /* Then, we go on with the next token in the text, so we update 'current_token' */
+   if (current_start_pos+pos_offset >= info->buffer->size) {
+     return;
+}
    current_token=info->tokens->token[info->buffer->int_buffer[current_start_pos+pos_offset]];
    pos_in_current_token=0;
    ws=trans->node;
@@ -475,7 +478,9 @@ while (current_start_pos<info->buffer->size) {
       /* We try to go in the text as far as possible, using the information cached
        * in info->word_array to avoid some computation */
       while (!no_more_word_transition) {
-         trans=get_word_transition(w->trans,info->buffer->int_buffer[current_start_pos+pos_offset]);
+         trans=NULL;
+         if (current_start_pos+pos_offset < info->buffer->size)
+           trans=get_word_transition(w->trans,info->buffer->int_buffer[current_start_pos+pos_offset]);
          if (trans==NULL) {
             /* If there is no more possibility to go on */
             no_more_word_transition=1;
@@ -491,14 +496,17 @@ while (current_start_pos<info->buffer->size) {
          }
       }
       struct offset_list* l=w->list;
-      while (l!=NULL) {
-         /* If there are dictionary nodes to explore, we do so. For each node
-          * we copy into 'entry' the sequence of character that leads to it in
-          * the .bin */
-         u_strcpy(inflected,l->content);
-         explore_bin_compound_words(info,l->offset,info->tokens->token[info->buffer->int_buffer[current_start_pos+pos_offset]],inflected,0,u_strlen(inflected),w,pos_offset,token_sequence,current_token_in_compound/*0*/,priority,current_start_pos);
-         l=l->next;
-      }
+
+	  if (current_start_pos+pos_offset < info->buffer->size) {
+        while (l!=NULL) {
+           /* If there are dictionary nodes to explore, we do so. For each node
+            * we copy into 'entry' the sequence of character that leads to it in
+            * the .bin */
+           u_strcpy(inflected,l->content);
+           explore_bin_compound_words(info,l->offset,info->tokens->token[info->buffer->int_buffer[current_start_pos+pos_offset]],inflected,0,u_strlen(inflected),w,pos_offset,token_sequence,current_token_in_compound/*0*/,priority,current_start_pos);
+           l=l->next;
+        }
+	  }
    }
    current_start_pos++;
 }

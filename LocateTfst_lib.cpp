@@ -28,6 +28,12 @@
 #include "Korean.h"
 
 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it */
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
+#define NO_C99_VARIABLE_LENGTH_ARRAY 1
+#endif
+
+
 /* During a locate operation starting on a given tfst state, we consider that
  * more than MAX_VISITS_PER_TFST_STATE visits in a state means that there is
  * a combinatorial explosion */
@@ -139,7 +145,11 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	}
 	infos.matches=NULL;
 	prepare_cache_for_new_sentence(infos.cache,tfst->tags->nbelems);
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+	int* visits=(int*)malloc(sizeof(int)*(1+tfst->automaton->number_of_states));
+#else
 	int visits[tfst->automaton->number_of_states];
+#endif
 	/* Within a sentence graph, we try to match from any state */
 	for (int j=0;j<tfst->automaton->number_of_states;j++) {
 	   for (int k=0;k<tfst->automaton->number_of_states;k++) {
@@ -148,6 +158,9 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	   //error("sentence=%d  from state %d/%d\n",i,j,tfst->automaton->number_of_states);
 	   explore_tfst(visits,tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,-1,NULL,NULL);
 	}
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
+	free(visits);
+#endif
 	save_tfst_matches(&infos);
 }
 u_printf("\rDone.                                    \n");
