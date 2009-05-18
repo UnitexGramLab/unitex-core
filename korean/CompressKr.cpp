@@ -110,7 +110,7 @@ static int grapheMode;
 static char *ofilename;
 
 
-int main_CompressKr(int argc, char **argv) {
+int main_CompressKr(int argc, char *argv[]) {
 
 int argIdx = 1;
 int listFormFlag = 0;	// filename is dictionnary

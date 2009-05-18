@@ -147,7 +147,7 @@ static char inputFilePath[2048];
 
 
 
-int main_SufForm2Rac(int argc, char **argv) {
+int main_SufForm2Rac(int argc, char *argv[]) {
 
     int iargIndex = 1;
     int listFileFlag = 0;

@@ -478,7 +478,7 @@ static void testLoad(char *fname)
 
 
 
-int main_MergeBin(int argc , char **argv) {
+int main_MergeBin(int argc , char *argv[]) {
 
 	int iargIndex=1;
 	nameOfoutput = 0;

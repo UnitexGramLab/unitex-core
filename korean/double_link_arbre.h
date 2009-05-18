@@ -58,7 +58,8 @@ public:
 		limit = 0x100000;
 		tab = 0;
 		racine=new_noeud();
-		tabOfile = 0;
+		Ttable = NULL;
+		tabOfile = NULL;
 
 	};
 	~double_arbre_string0(){

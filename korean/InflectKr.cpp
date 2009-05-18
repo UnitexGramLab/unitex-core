@@ -204,7 +204,7 @@ static int flagRacSuf;
 
 
 
-int main_InflectKr(int argc, char **argv) {
+int main_InflectKr(int argc, char *argv[]) {
 
 	U_FILE *f;
 	unichar *tt;

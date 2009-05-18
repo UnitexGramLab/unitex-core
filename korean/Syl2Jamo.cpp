@@ -194,6 +194,7 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 	u_fclose(ifile);
 	u_fclose(ofile);
 	delete buff;
+	delete hbuff;
 	delete obuff;
 	if(remplaceFlag){
 	  remove(ifilename);
