@@ -397,10 +397,11 @@ if (current_token[pos_in_current_token]=='\0') {
       }
    }
    pos_offset++;
-   /* Then, we go on with the next token in the text, so we update 'current_token' */
+   /* Then, we go on with the next token in the text, so we update 'current_token',
+    * but only if we haven't reached the end of the text buffer */
    if (current_start_pos+pos_offset >= info->buffer->size) {
-     return;
-}
+      return;
+   }
    current_token=info->tokens->token[info->buffer->int_buffer[current_start_pos+pos_offset]];
    pos_in_current_token=0;
    ws=trans->node;
