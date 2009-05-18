@@ -97,9 +97,9 @@ void build_command_line(ProgramInvoker* invoker,char* line) {
 /* If we are under Windows, we have to surround the whole command line with an
  * additional pair of double quotes */
 #ifdef _NOT_UNDER_WINDOWS
-char* protection="";
+const char* protection="";
 #else
-char* protection="\"";
+const char* protection="\"";
 #endif
 sprintf(line,"%s\"%s\"",protection,(char*)(invoker->args->tab[0]));
 for (int i=1;i<invoker->args->nbelems;i++) {
