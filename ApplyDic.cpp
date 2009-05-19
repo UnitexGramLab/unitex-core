@@ -320,6 +320,40 @@ for (int i=0;i<info->tokens->N;i++) {
 }
 
 
+/** subfunction of explore_bin_compound_words
+    This function was extracted from explore_bin_compound_words, because some compiler
+	(MSVC2008) take the (huge) space for line[DIC_LINE_SIZE] on stack a each recursive call
+  */
+static inline void explore_bin_compound_words_do_match(struct dico_application_info* info,
+                                         const int offset,
+                                         unichar* current_token,unichar* inflected,
+                                         const int current_start_pos,const int pos_offset)
+{
+     /* If the compound has not already been matched by a dictionary
+      * with a greater priority */
+     for (int k=current_start_pos;k<=current_start_pos+pos_offset;k++) {
+        /* We say that its tokens are not unknown words */
+        set_value(info->part_of_a_word,info->buffer->int_buffer[k],1);
+     }
+     /* We get the INF line number */
+     int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
+     unichar line[DIC_LINE_SIZE];
+     struct list_ustring* tmp=info->inf->codes[inf_number];
+     /* We increase the number of compound word occurrences.
+      * Note that we count occurrences and not number of entries, so that
+      * if we find "copy and paste" in the text we will count one more
+      * compound occurrence, even if this word can be a noun and a verb. */
+     info->COMPOUND_WORDS++;
+     while (tmp!=NULL) {
+        /* For each compressed code of the INF line, we save the corresponding
+         * DELAF line in 'info->dlc' */
+        uncompress_entry(inflected,tmp->string,line);
+        u_fprintf(info->dlc,"%S\n",line);
+        tmp=tmp->next;
+     }
+}
+
+
 /**
  * This function explores a .bin dictionary in order to find out compound words.
  * - 'offset' is the offset of the current .bin node.
@@ -371,30 +405,8 @@ if (current_token[pos_in_current_token]=='\0') {
       token_sequence[pos_token_sequence]=-1;
       /* We look if the compound word has already been matched */
       int w=was_already_in_tct_hash(token_sequence,info->tct_h,priority);
-      if (w==0 || w==priority) {
-         /* If the compound has not already been matched by a dictionary
-          * with a greater priority */
-         for (int k=current_start_pos;k<=current_start_pos+pos_offset;k++) {
-            /* We say that its tokens are not unknown words */
-            set_value(info->part_of_a_word,info->buffer->int_buffer[k],1);
-         }
-         /* We get the INF line number */
-         int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
-         unichar line[DIC_LINE_SIZE];
-         struct list_ustring* tmp=info->inf->codes[inf_number];
-         /* We increase the number of compound word occurrences.
-          * Note that we count occurrences and not number of entries, so that
-          * if we find "copy and paste" in the text we will count one more
-          * compound occurrence, even if this word can be a noun and a verb. */
-         info->COMPOUND_WORDS++;
-         while (tmp!=NULL) {
-            /* For each compressed code of the INF line, we save the corresponding
-             * DELAF line in 'info->dlc' */
-            uncompress_entry(inflected,tmp->string,line);
-            u_fprintf(info->dlc,"%S\n",line);
-            tmp=tmp->next;
-         }
-      }
+      if (w==0 || w==priority) 
+		  explore_bin_compound_words_do_match(info,offset,current_token,inflected,current_start_pos,pos_offset);
    }
    pos_offset++;
    /* Then, we go on with the next token in the text, so we update 'current_token',
