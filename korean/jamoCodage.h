@@ -47,7 +47,9 @@ public:
 	unichar sylMark;
 	unichar *sylMarkStr;
 	jamoCodage(){
-	   sylMark = 0;
+		jamoSize=0;
+		orderTableJamo[0xff]=0;
+		sylMark = 0;
 		sylMarkStr = 0;
 		for(int i = 0; i < 256; i++) CjamoUjamoTable[i] = 0;
 		loadJamoMap(0);
@@ -55,6 +57,12 @@ public:
 	~jamoCodage(){
 
 		if(sylMarkStr) delete [] sylMarkStr;
+		for(int i = 0; i< jamoSize;i++)
+			if (orderTableJamo[i])
+				delete [] orderTableJamo[i];
+		if (jamoSize<0xff)
+			if (orderTableJamo[0xff])
+				delete [] orderTableJamo[0xff];
 	};
 	int loadJamoMap(char *fname);
 	int sylToJamo(unichar syl,unichar *obuff,int o_off);

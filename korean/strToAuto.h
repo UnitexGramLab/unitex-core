@@ -761,7 +761,7 @@ public:
 		if(infoArray_table) delete [] infoArray_table;
 		if(morStructTable) delete [] morStructTable;
 		if(tokMap) delete [] tokMap;
-		//if(tokTable) delete [] tokTable;
+		if(tokTable) delete [] tokTable;
 		if(mophMap) delete [] mophMap;
 		if(phraseAutoMap!=NULL) u_fclose(phraseAutoMap);
 	};

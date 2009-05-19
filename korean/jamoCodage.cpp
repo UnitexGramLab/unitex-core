@@ -134,6 +134,15 @@ jamoCodage::loadJamoMap(char *mfName)
 		f = u_fopen(UTF16_LE,mfName,U_READ);
 		if(!f) fatal_error("Cannot open %s\n",mfName);
 	}
+
+
+	if (jamoSize>0)
+	{
+		for(int i = 0; i< jamoSize;i++)
+			if (orderTableJamo[i])
+				delete [] orderTableJamo[i];
+	}
+
 	jamoSize = 0;
 	int jamoOffset = 0;
 	do {
@@ -178,10 +187,14 @@ jamoCodage::loadJamoMap(char *mfName)
 			for(int i = 0; i < 8;i++)orderTableJamo[jamoOffset][i] = 0;
 			orderTableJamo[jamoOffset][JamoCnt++] = JamoIndex;
 		} else if( *wp == '<'){	// symbol for syllabe mark
+			if (sylMarkStr !=NULL)
+			  delete [] sylMarkStr ;
 			sylMarkStr = new unichar [u_strlen((unsigned short *)wp)+1];
             u_strcpy((unsigned short *)sylMarkStr,(unsigned short *)wp);
 			if(segCnt == 2){
 			    wp = segPtr[1];
+				if (orderTableJamo[0xff])
+					delete [] orderTableJamo[0xff];
 				orderTableJamo[0xff] = new unichar[8];
 				for(int i = 0; i < 8;i++)orderTableJamo[0xff][i] = 0;
 				if(*wp == '0') 
