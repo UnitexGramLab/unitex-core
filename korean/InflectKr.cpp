@@ -24,6 +24,7 @@
 // using namespace std;
 #include "Unicode.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "Copyright.h"
 #include "File.h"
 #include "String_hash2.h"
@@ -58,13 +59,15 @@ int lineInflect=0;
 // same as load_fst2 but no message for the not exist file
 // hhuh
 static Fst2* load_fst22(char* file,int noms) {
-U_FILE *f;
-f=u_fopen(UTF16_LE,file,U_READ);
-if (f==NULL) {
-  return NULL;
+if (is_abstract_fst2_filename(file) == 0) {
+  U_FILE *f;
+  f=u_fopen(UTF16_LE,file,U_READ);
+  if (f==NULL) {
+    return NULL;
+  }
+  u_fclose(f);
 }
-u_fclose(f);
-return load_fst2(file,noms);
+return load_abstract_fst2(file,noms,NULL);
 }
 //
 //

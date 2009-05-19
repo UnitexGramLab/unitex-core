@@ -27,6 +27,7 @@
 #include <wchar.h>
 #include "Unicode.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 #include "bitmap.h"
 #include "etc.h"
 #include "Error.h"
@@ -114,7 +115,7 @@ public:
 		unichar wt;
 		unichar *wp;
 
-		a=load_fst2(mapfilename,1);
+		a=load_abstract_fst2(mapfilename,1,NULL);
 		if (a==NULL) {
 		   fatal_error("Cannot load %s in 'init_machine'\n",mapfilename);
 		}

@@ -29,6 +29,7 @@
 #include "etcclass.h"
 #include "double_link_arbre.h"
 #include "Fst2.h"
+#include "AbstractFst2Load.h"
 
 //
 //	structure for head of file which save automates and structures of morphemes
@@ -1938,7 +1939,7 @@ unePhraseAuto.prAuto(stderr,2);
 		remove_extension(infile,pathName);
 		
 		
-		loadFst2 = load_fst2(fstna,1);
+		loadFst2 = load_abstract_fst2(fstna,1,NULL);
 		
 		unePhraseAuto.loadTokensMap(infile);
 		unePhraseAuto.loadMorphemes(infile);
@@ -1952,7 +1953,7 @@ unePhraseAuto.prAuto(stderr,2);
 		remove_extension(infile,pathName);
 		
 		
-		loadFst2 = load_fst2(fstna,1);
+		loadFst2 = load_abstract_fst2(fstna,1,NULL);
 
 		unePhraseAuto.loadTokensMap(infile);
 		unePhraseAuto.loadMorphemes(infile);

@@ -146,7 +146,10 @@ Fst2* load_abstract_fst2(char* filename,int read_names,struct FST2_free_info* p_
 	}
 }
 
-
+int is_abstract_fst2_filename(char* filename)
+{
+	return ((GetFst2SpaceForFileName(filename) == NULL) ? 0 : 1);
+}
 
 
 void free_abstract_Fst2(Fst2* fst2,struct FST2_free_info* p_fst2_free_info)

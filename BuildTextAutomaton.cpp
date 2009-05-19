@@ -37,6 +37,7 @@
 #include "korean/Jamo2Syl.h"
 #include "Korean.h"
 #include "File.h"
+#include "AbstractFst2Load.h"
 
 /**
  * This is an internal structure only used to give a set of parameters to some functions.
@@ -1133,8 +1134,8 @@ if (ret_value!=0) {
 }
 
 /* We load the two versions of the Korean sentence automaton */ 
-Fst2* jamo=load_fst2(jamo_fst2,1);
-Fst2* syllab=load_fst2(syllab_fst2,0);
+Fst2* jamo=load_abstract_fst2(jamo_fst2,1,NULL);
+Fst2* syllab=load_abstract_fst2(syllab_fst2,0,NULL);
 
 
 /* We declare the graph that will represent the sentence as well as
