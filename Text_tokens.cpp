@@ -36,7 +36,7 @@ return tmp;
 }
 
 
-struct text_tokens* load_text_tokens(char* nom) {
+struct text_tokens* load_text_tokens(const char* nom) {
 U_FILE* f;
 f=u_fopen(UTF16_LE,nom,U_READ);
 if (f==NULL) {

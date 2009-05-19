@@ -67,9 +67,10 @@ struct OptVars {
    int   optind;       /* index into parent argv vector */
    int   optopt;       /* character checked for validity */
    int   optreset;     /* reset getopt */
-   char  *optarg;      /* argument associated with option */
+   const char  *optarg;      /* argument associated with option */
    int   nonopt_start; /* first non option argument (for permute) */
    int   nonopt_end;  /* first option after non options (for permute) */
+   const char* place ;
 };
 
 

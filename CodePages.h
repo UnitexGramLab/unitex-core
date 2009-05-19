@@ -78,11 +78,11 @@ struct encoding {
 
 void install_all_encodings();
 int convert(U_FILE*,U_FILE*,struct encoding*,struct encoding*,int,int,int,int);
-struct encoding* get_encoding(char*);
+struct encoding* get_encoding(const char*);
 
 void print_encoding_main_names();
 void print_encoding_aliases();
-void print_encoding_infos(char*);
+void print_encoding_infos(const char*);
 void print_information_for_all_encodings();
 
 #endif

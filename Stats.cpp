@@ -33,7 +33,7 @@
 
 // main work functions
 
-void concord_stats(char* , int , char *, char* , char* , char*, int , int, int );
+void concord_stats(const char* , int , const char *, const char* , const char* , const char*, int , int, int );
 void build_counted_concord(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_ptr** , hash_table** );
 void build_counted_collocates(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_int** , hash_table** , hash_table** , hash_table** );
 
@@ -136,7 +136,7 @@ int main_Stats(int argc,char *argv[]) {
 	}
 
 	int leftContext = 0,  rightContext = 0, mode=-1, caseSensitive = 1;
-	char *concord = NULL, *text = NULL, *tokens = NULL, *alpha = NULL, *output_file = NULL;
+	const char *concord = NULL, *text = NULL, *tokens = NULL, *alpha = NULL, *output_file = NULL;
 	const char* optstring=":m:c:t:x:a:l:r:s:o:";
 
 	struct option_TS lopts[]= {
@@ -217,8 +217,8 @@ int main_Stats(int argc,char *argv[]) {
  * match to build string for counting. The function is_appropriate_token makes distinction between
  * "space"-like and "regular" tokens to include.
  */
-void concord_stats(char* outfilename,int mode, char *concordfname, char* tokens_path, char* codname,
-				   char* alphabetName, int leftContext, int rightContext, int caseSensitive)
+void concord_stats(const char* outfilename,int mode, const char *concordfname, const char* tokens_path, const char* codname,
+				   const char* alphabetName, int leftContext, int rightContext, int caseSensitive)
 {
 	U_FILE* concord = u_fopen(UTF16_LE, concordfname, U_READ);
 	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen(UTF16_LE, outfilename, U_WRITE);

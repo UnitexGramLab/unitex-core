@@ -41,8 +41,8 @@ struct alphabet_ {
 
 typedef struct alphabet_ Alphabet;
 
-Alphabet* load_alphabet(char*);
-Alphabet* load_alphabet(char*,int);
+Alphabet* load_alphabet(const char*);
+Alphabet* load_alphabet(const char*,int);
 void free_alphabet(Alphabet*);
 int is_upper_of(unichar,unichar,Alphabet*);
 int is_equal_ignore_case(unichar,unichar,Alphabet*);

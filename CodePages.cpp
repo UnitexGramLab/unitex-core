@@ -1749,7 +1749,7 @@ encoding->usage_function();
  * Prints an error message if 'name' is not a valid encoding main
  * name or alias.
  */
-void print_encoding_infos(char* name) {
+void print_encoding_infos(const char* name) {
 struct encoding* encoding=get_encoding(name);
 if (encoding==NULL) {
 	error("%s is not a valid encoding name\n",name);
@@ -1774,7 +1774,7 @@ for (int i=0;i<number_of_encodings;i++) {
  * Returns the encoding named 'name' or NULL if 'name' is not a valid
  * encoding main name or alias.
  */
-struct encoding* get_encoding(char* name) {
+struct encoding* get_encoding(const char* name) {
 	char name_in_lower[1024];
 strcpy(name_in_lower,name);
 strtolower(name_in_lower);

@@ -48,7 +48,7 @@ struct text_tokens {
 };
 
 
-struct text_tokens* load_text_tokens(char*);
+struct text_tokens* load_text_tokens(const char*);
 struct string_hash* load_text_tokens_hash(char*,int*);
 struct string_hash* load_text_tokens_hash(char*,int*,int*,int*);
 void free_text_tokens(struct text_tokens*);

@@ -105,7 +105,7 @@ if (alphabet->korean_equivalent_syllab!=NULL) {
  * If 'korean' is non null, we compute the equivalences between Chinese and Hangul
  * characters.
  */
-Alphabet* load_alphabet(char* filename,int korean) {
+Alphabet* load_alphabet(const char* filename,int korean) {
 U_FILE* f;
 f=u_fopen(UTF16_LE,filename,U_READ);
 if (f==NULL) return NULL;
@@ -154,7 +154,7 @@ return alphabet;
 /**
  * Loads an alphabet file and returns the associated 'Alphabet*' structure.
  */
-Alphabet* load_alphabet(char* filename) {
+Alphabet* load_alphabet(const char* filename) {
 return load_alphabet(filename,0);
 }
 
