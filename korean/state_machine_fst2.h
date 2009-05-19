@@ -88,7 +88,16 @@ public:
 		if(saveTransductionTable){
 			for( int i = 1; i < a->number_of_tags;i++)
 				if(saveTransductionTable[i])
+				{
+					struct cmdInst *lcmdInstBrowse = (struct cmdInst *)a->tags[i]->output;
+					while (lcmdInstBrowse!=NULL)
+					{
+						struct cmdInst *lcmdInstBrowseNext=lcmdInstBrowse->next;
+						delete(lcmdInstBrowse);
+						lcmdInstBrowse=lcmdInstBrowseNext;
+					}
 					a->tags[i]->output=(unichar*)saveTransductionTable[i];
+				}
 			delete [] saveTransductionTable;
 		}
 		if(a)free_Fst2(a);

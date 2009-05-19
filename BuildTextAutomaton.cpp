@@ -33,6 +33,8 @@
 #include "Tfst.h"
 #include "ProgramInvoker.h"
 #include "korean/Txt2Fst2Kr.h"
+#include "korean/Syl2Jamo.h"
+#include "korean/Jamo2Syl.h"
 #include "Korean.h"
 #include "File.h"
 
@@ -1007,7 +1009,7 @@ void explore_korean_automaton_for_positions(Tfst* tfst,Fst2* jamo,unichar* jamo_
 Transition* t=tfst->automaton->states[current_state]->outgoing_transitions;
 TfstTag* tag;
 unichar jamo_tag[256];
-unichar syllab_tag[256];
+//unichar syllab_tag[256];
 while (t!=NULL) {
    tag=(TfstTag*)(tfst->tags->tab[t->tag_number]);
    if (tag->type!=T_EPSILON && tag->end_pos_token==-1) {
@@ -1049,7 +1051,7 @@ while (t!=NULL) {
                                        pos_in_syllab_text,pos_in_jamo_text,alphabet);
          } else {
             /* Normal tag */ 
-            get_tag_content(tag->content,syllab_tag);
+            //get_tag_content(tag->content,syllab_tag);
             /* The start positions are the current ones */
             tag->start_pos_token=pos_in_token;
             tag->start_pos_char=pos_in_char;
@@ -1098,18 +1100,21 @@ u_printf("sentence #%d\n",sentence_number);
 char n[32];
 char command[FILENAME_MAX];
 sprintf(command,"%s%s",exe_path,"Txt2Fst2Kr");
-ProgramInvoker* invoker=new_ProgramInvoker(NULL,command);
+//ProgramInvoker* invoker=new_ProgramInvoker(NULL,command);
+ProgramInvoker* invoker=new_ProgramInvoker(main_Txt2Fst2Kr,command);
 add_argument(invoker,"-e");
 sprintf(n,"%d",sentence_number);
 add_argument(invoker,n);
 add_argument(invoker,phrase_cod);
-int ret_value=invoke_as_new_process(invoker);
+//int ret_value=invoke_as_new_process(invoker);
+int ret_value=invoke(invoker);
 free_ProgramInvoker(invoker);
 if (ret_value!=0) {
    fatal_error("Txt2Fst2Kr did not quit normally. Cannot go on constructing .tfst file\n");
 }
 sprintf(command,"%s%s",exe_path,"Jamo2Syl");
-invoker=new_ProgramInvoker(NULL,command);
+//invoker=new_ProgramInvoker(NULL,command);
+invoker=new_ProgramInvoker(main_Jamo2Syl,command);
 add_argument(invoker,"-m");
 add_argument(invoker,jamoTable);
 add_argument(invoker,kr_fst2);
@@ -1120,7 +1125,8 @@ strcat(jamo_fst2,"sentence.fst2");
 get_path(phrase_cod,syllab_fst2);
 strcat(syllab_fst2,"sentencesyl.fst2");
 add_argument(invoker,jamo_fst2);
-ret_value=invoke_as_new_process(invoker);
+//ret_value=invoke_as_new_process(invoker);
+ret_value=invoke(invoker);
 free_ProgramInvoker(invoker);
 if (ret_value!=0) {
    fatal_error("Jamo2Syl did not quit normally. Cannot go on constructing .tfst file\n");
@@ -1171,7 +1177,8 @@ u_fprintf(zz,"%S",foo->str);
 u_fclose(zz);
 /* And we convert it to cursentencejm.txt */
 sprintf(command,"%s%s",exe_path,"Syl2Jamo");
-invoker=new_ProgramInvoker(NULL,command);
+//invoker=new_ProgramInvoker(NULL,command);
+invoker=new_ProgramInvoker(main_Syl2Jamo,command);
 add_argument(invoker,"-j");
 add_argument(invoker,"-m");
 add_argument(invoker,jamoTable);
@@ -1179,7 +1186,8 @@ char current_sentence[FILENAME_MAX];
 get_path(phrase_cod,current_sentence);
 strcat(current_sentence,"cursentence.txt");
 add_argument(invoker,current_sentence);
-ret_value=invoke_as_new_process(invoker);
+//ret_value=invoke_as_new_process(invoker);
+ret_value=invoke(invoker);
 free_ProgramInvoker(invoker);
 if (ret_value!=0) {
    fatal_error("Syl2Jamo did not quit normally. Cannot go on constructing .tfst file\n");
@@ -1300,6 +1308,7 @@ save_current_sentence(tfst,out_tfst,out_tind,tags->value,tags->size);
 close_text_automaton(tfst);
 free_string_hash(tmp_tags);
 free_string_hash(tags);
+free_Ustring(foo);
 free_Fst2(jamo);
 free_Fst2(syllab);
 free(jamo_text);

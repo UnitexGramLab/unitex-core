@@ -473,7 +473,8 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
                 Tfst.o NewLineShifts.o ProgramInvoker.o\
                 Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o Jamo2Syl.o jamoCodage.o\
-                codeForKorean.o pro_type.o orgUniMbcsMap.o
+                codeForKorean.o pro_type.o orgUniMbcsMap.o \
+                Syl2Jamo.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o Unicode.o Fst2.o AbstractFst2Load.o Alphabet.o \
