@@ -343,7 +343,7 @@ tokenize_entrees_Kr(int lineCnt,unsigned short *iline,class dicLines *&head)
 	int scanIdx = 0;
 	int openF = 0;
 	int segIdx = 0;
-	int saveIdx;
+	int saveIdx = 0;
 	int i;
 	dicLines *tail = 0;
 	unichar *s = Stmp;

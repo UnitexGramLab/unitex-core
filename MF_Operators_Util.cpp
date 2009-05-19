@@ -171,7 +171,7 @@ unichar tmp[L1];
 int get_pos_factor(unichar *pile,int *pos,unichar *facteur,unsigned int match_type,int *pos_match) {
 int l,pos_test,last_pos_match,last_pos,parcours_fact,parcours_pile,MATCH,BEGIN;
 unsigned int protege;
-
+  last_pos = 0;
   protege = match_type; match_type &= 3; protege >>= 2;
 
 
@@ -233,7 +233,7 @@ int flex_op_with_var(unichar (*Variables)[L1],unichar *pile,unichar *etiq,int *p
 int ind,init_pos,pos_pattern,var_precede,match_type,retour,pos_match,var_end;
 unichar var_name[L1],facteur[L1];
 unsigned int mode=0;
-
+ match_type = 0;
  if (!u_strcmp(etiq,"<!>")) {
     *pos_etiq +=3;
     return 1;
@@ -275,7 +275,7 @@ unsigned int mode=0;
          else if (var_name[0] == POUND) match_type = LONGEST;
          match_type |= mode;                                                                       if (VERBOSE) fprintf(stderr,"var_name[0]:%c match_type: %d\n",var_name[0],match_type);
          pos_match = 0;
-         int tmp_pos;
+         int tmp_pos = 0;
          if (mode == PROTEGE) tmp_pos = (*pos);
          (*pos)--;
      // if (VERBOSE) u_fprintf(stderr,"APPEL pos:%d match_type:%d facteur: %s\n",*pos,match_type,facteur);

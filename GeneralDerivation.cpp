@@ -912,8 +912,8 @@ void explore_state (int adresse,
 {
 
   int c = tableau_bin[adresse]*256+tableau_bin[adresse+1];
-  int index, t;
-
+  int index;
+  int t = 0;
 
   if ( !(c&32768) ) { // if we are in a terminal state
 

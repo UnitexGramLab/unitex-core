@@ -527,7 +527,7 @@ CONSULTDIC_OBJS = Main_ConsultDic.o ConsultDic.o IOBuffer.o etc.o pro_type.o \
 		    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
 
 INFLECTKR = InflectKr
-INFLECTKR_OBJS  = Main_InflectKr.o InflectKr.o IOBuffer.o etc.o pro_type.o \
+INFLECTKR_OBJS  = Main_InflectKr.o InflectKr.o IOBuffer.o etc.o pro_type.o AbstractFst2Load.o \
                   Af_stdio.o Unicode.o Fst2.o File.o Error.o Pattern.o List_ustring.o\
                   String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o\
                   Alphabet.o Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
@@ -544,7 +544,7 @@ SORTMORPH_OBJS  = Main_SortMorph.o SortMorph.o IOBuffer.o etc.o File.o Af_stdio.
 JAMO2SYL  = Jamo2Syl
 JAMO2SYL_OBJS  = Main_Jamo2Syl.o Jamo2Syl.o IOBuffer.o etc.o bitmap.o \
                   codeForKorean.o orgUniMbcsMap.o segtype.o \
-                  pro_type.o jamoCodage.o\
+                  pro_type.o jamoCodage.o AbstractFst2Load.o \
                   Af_stdio.o Unicode.o File.o Fst2.o Error.o Pattern.o\
                   List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
                   Transitions.o DELA.o Alphabet.o\
@@ -557,13 +557,13 @@ SYL2JAMO_OBJS  = Main_Syl2Jamo.o Syl2Jamo.o IOBuffer.o jamoCodage.o etc.o \
 
 TXT2FST2KR  = Txt2Fst2Kr
 TXT2FST2KR_OBJS  = Main_Txt2Fst2Kr.o Txt2Fst2Kr.o IOBuffer.o bitmap.o etc.o segtype.o \
-		   Af_stdio.o Unicode.o File.o Fst2.o Error.o Pattern.o List_ustring.o\
+		   Af_stdio.o Unicode.o File.o Fst2.o AbstractFst2Load.o Error.o Pattern.o List_ustring.o\
 		   String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
 		   Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
 
 EXTRACTCHAR  = ExtractChar
 EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o orgUniMbcsMap.o bitmap.o etc.o segtype.o \
-		            jamoCodage.o pro_type.o Af_stdio.o Unicode.o File.o Fst2.o Error.o\
+		            jamoCodage.o pro_type.o Af_stdio.o Unicode.o File.o Fst2.o AbstractFst2Load.o Error.o\
 		            Pattern.o List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
 		            Transitions.o DELA.o Alphabet.o\
 		            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o

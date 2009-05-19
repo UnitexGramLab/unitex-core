@@ -1323,7 +1323,8 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		int type = e->noEtiq & MASK_OF_TYPE;
 		unsigned int *lp;
 	    unsigned short sc;
-		
+		sp = NULL;
+
 		switch(type){
 		case TE_NEW_TOKEN: fatal_error("Illegal value exist in the text automaton\n");
 		case TE_SEGMENT:

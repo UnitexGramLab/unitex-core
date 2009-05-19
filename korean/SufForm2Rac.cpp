@@ -218,11 +218,11 @@ U_FILE *ifile,*ofile;
   int c;
   int countComma;
   int openFlag;
-  int index;
+  int index = 0;
   int offset;
   int opened;
   int changeFlag;
-  int flechiIndex;
+  int flechiIndex = 0;
   unichar *wp,*cwp,*twp;
   
   openFlag = 0;

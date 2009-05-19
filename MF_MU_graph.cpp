@@ -292,7 +292,7 @@ int MU_graph_explore_label_in_var(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
-  int err;
+  int err = 0;
 
   /////////////////////////////////////////////////////////////////
   //If the whole label's input not yet treated continue treating it
@@ -614,7 +614,7 @@ int MU_graph_explore_label_out(MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, 
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
-  int err;
+  int err = 0;
 
   //If no morphology in the output label, then go to the next state
   if (!l_out_morpho) {

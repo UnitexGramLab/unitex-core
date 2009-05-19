@@ -120,7 +120,7 @@ jamoCodage::loadJamoMap(char *mfName)
 	unichar buff[256];
 
 	int rsz;
-	const char *rp;
+	const char *rp = NULL;
 	unichar roffset;
 	
 	
