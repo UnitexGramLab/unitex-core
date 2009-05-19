@@ -96,7 +96,7 @@ class arbre_string0 MotEtr;
 static char *cfilename;
 static 	char templine[512];
 
-static void lineErrMess(int lineCnt,char *msg)
+static void lineErrMess(int lineCnt,const char *msg)
 {
 	error("%s file at line %d\n",cfilename,lineCnt);
 	error("<<%S>>\nhas syntax error",UtempBuff);

@@ -97,7 +97,7 @@ class fst_array {
 		while(*rep) *wp++ = *rep++;
 		if(*(rep-1) != '\\' && *(rep-1) != '/') *wp++ = '/';
 		while(*fn) {*wp++ = (char)(*fn & 0x7f); fn++;}
-		for(char *k=".fst2";*k;k++)
+		for(const char *k=".fst2";*k;k++)
 			*wp++ = *k;
 		*wp = 0;
 
@@ -115,9 +115,9 @@ int ADD_TWO_POINTS=0;
 int REMOVE_DIGITS_FROM_GRAMM_CODE=1;
 
 
-static int inflect_kr(struct fst2 *,unichar*,int mode);
+static int inflect_kr(changeStrContext* ctx,struct fst2 *,unichar*,int mode);
 
-static void explore_state(int);
+static void explore_state(changeStrContext*,int);
 #define MAX_DEPTH_AUTO	2048
 static int etiQueue[MAX_DEPTH_AUTO];
 static int curEtiCnt;
@@ -193,9 +193,9 @@ void prSuffixeString0(void *a,void *b,void *c)
 	u_fprintf(f_out," %S\n",&obuf[1]);
 }
 
-static void get_flexion_form(U_FILE *ifile,U_FILE *ofile);
-static void trait_renouvelle_lign(U_FILE *ofile,unichar *readLine);
-static int get_forms_variant(unichar *l,int *s,class dicElements *e);
+static void get_flexion_form(changeStrContext* ctx,U_FILE *ifile,U_FILE *ofile);
+static void trait_renouvelle_lign(changeStrContext* ctx,U_FILE *ofile,unichar *readLine);
+static int get_forms_variant(changeStrContext* ctx,unichar *l,int *s,class dicElements *e);
 static void outFileRac(char *ofileName);
 static class dicLines *orgWord;
 static class dicElements *curDicElements;
@@ -209,6 +209,7 @@ int main_InflectKr(int argc, char *argv[]) {
 	U_FILE *f;
 	unichar *tt;
 	int argIdx;
+	changeStrContext ctx;
 	skipMark= -1;
 	argIdx = 1;
 	char fNameSansExt[1024];
@@ -224,6 +225,7 @@ int main_InflectKr(int argc, char *argv[]) {
 	flexRep = 0;
 	ofilename[0] = 0;
 	ofilename1[0] = 0;
+	initChangeStrContext(&ctx);
  	while(argIdx < argc -1 ){
 
 		switch(*argv[argIdx]){
@@ -234,7 +236,7 @@ int main_InflectKr(int argc, char *argv[]) {
 
 			   tt = new unichar[strlen(argv[argIdx])+1];
 			   u_strcpy((unichar *)tt,argv[argIdx]);
-			   changeStrToVal(tt);
+			   changeStrToVal(&ctx,tt);
 			   break;
 			case 'd':
 				argIdx++;
@@ -312,7 +314,7 @@ int main_InflectKr(int argc, char *argv[]) {
 	}
 	//
 	//
-	get_flexion_form(f,f_out);
+	get_flexion_form(&ctx,f,f_out);
 	cleanData();
 	u_fclose(f);
 	u_fclose(f_out);	//
@@ -330,7 +332,7 @@ int main_InflectKr(int argc, char *argv[]) {
 
 }
 static void
-get_flexion_form(U_FILE *f,U_FILE *fout)
+get_flexion_form(changeStrContext* ctx,U_FILE *f,U_FILE *fout)
 {
 //
 // reads the DELAS and produces the DELAF
@@ -426,13 +428,13 @@ get_flexion_form(U_FILE *f,U_FILE *fout)
 		} while (s[scanIdx++]);
 		workLine[saveIdx] = 0;
 		
-		trait_renouvelle_lign(f_out,workLine);
+		trait_renouvelle_lign(ctx,f_out,workLine);
 
 	}
 
 }
 static void
-trait_renouvelle_lign(U_FILE *f,unichar *readLine)
+trait_renouvelle_lign(changeStrContext* ctx,U_FILE *f,unichar *readLine)
 {
 	int scanIdx = 0;
 	int saveIdx = 0;
@@ -473,7 +475,7 @@ trait_renouvelle_lign(U_FILE *f,unichar *readLine)
 						(workLine[segs[3]] != c))
 					fatal_error("%d:%S line syntax error\n",lineCnt,readLine);
 				}
-				get_forms_variant(workLine,segs,tail_chaine);
+				get_forms_variant(ctx,workLine,segs,tail_chaine);
 				if(readLine[scanIdx] != '\0')
 				{
 					tail_chaine->next = new class dicElements;
@@ -516,7 +518,7 @@ trait_renouvelle_lign(U_FILE *f,unichar *readLine)
 //
 
 static int
-get_forms_variant(unichar *workLine,int *segIndex,class dicElements *ele)
+get_forms_variant(changeStrContext* ctx,unichar *workLine,int *segIndex,class dicElements *ele)
 {
 	int lineIdx ;
 	int saveIdx;
@@ -596,7 +598,7 @@ u_printf("\n");
 			}
 			if((fstAuto = dev.loadfst2name(dervRep,wp))
 				!= (struct fst2 *)0 ){
-				inflect_kr(fstAuto,orgWord->EC_canonique,DERIVATION_MODE);
+				inflect_kr(ctx,fstAuto,orgWord->EC_canonique,DERIVATION_MODE);
 			}else {
 				fatal_error("error: derivation file not exist\n");
 			}
@@ -620,7 +622,7 @@ u_printf("\n");
 		}
 		if( (fstAuto = suf.loadfst2name(flexRep,variation_code))
 			!= (struct fst2 *)0){
-			inflect_kr(fstAuto,orgWord->EC_canonique,FLEXION_MODE);
+			inflect_kr(ctx,fstAuto,orgWord->EC_canonique,FLEXION_MODE);
 			wEle = wEle->next;
 		} else{
 			notTraiteSuff.put(orgWord->EC_code);
@@ -635,7 +637,7 @@ u_printf("\n");
 			wEle = wEle->next;
 		}
 		
-	} while(wEle);
+	} while(wEle) ;
 	orgWord = curDicElements->hPtr;
 	do {
 		variation_code = orgWord->EC_code;
@@ -660,14 +662,14 @@ u_printf("\n");
 // inflect the lemma 'lemme', using the flexional transducer 'flex', and
 // taking 'code' as the basic grammatical code to be written in the DELAF
 //
-static int inflect_kr(Fst2*fstAuto,unichar* flex,int modeflex)
+static int inflect_kr(changeStrContext* ctx,Fst2*fstAuto,unichar* flex,int modeflex)
 {
 	grapheTraiteMode = modeflex;
 	auto_courant = 1;
 	startAutoNum = auto_courant;
 	curEtiCnt = 0;
 	Ptr_cAuto= fstAuto;
-	explore_state(Ptr_cAuto->initial_states[auto_courant]);
+	explore_state(ctx,Ptr_cAuto->initial_states[auto_courant]);
 	return(1);
 }
 
@@ -694,7 +696,7 @@ static 	unichar SuF[1024];
 static	unichar InF[1024];
 
 
-static void traiteEttiques()
+static void traiteEttiques(changeStrContext* ctx)
 {
 	Fst2Tag et;
 
@@ -771,7 +773,7 @@ if(debugFlag)
             continue;
 		  } else if (!u_strcmp(et->input,"<E>")) {
 		     continue;
-		  } else if (findChangeStr((unichar*)et->input,temp)) {
+		  } else if (findChangeStr(ctx,(unichar*)et->input,temp)) {
 				FF[FIdx++] = temp[0];
 				OF[OIdx++] = temp[0];
 				continue;
@@ -792,7 +794,7 @@ if(debugFlag)
                        fatal_error("skipMark is not defined\n");
                   } 
                   while((FIdx != 0) &&(Fpile[FpileIdx++] = FF[--FIdx])
-					!= skipMark);
+					!= skipMark) {};
 					
                   Ctmp = OF[OIdx-1];
                   if(u_is_CJK_Unified_Ideographs(Ctmp)
@@ -802,7 +804,7 @@ if(debugFlag)
                       break;
                   }
                   while((OIdx != 0) &&(Opile[OpileIdx++] = OF[--OIdx])
-					!= skipMark);				  	
+					!= skipMark) {};			  	
                   break;
 			case 'L': 
                   Ctmp = OF[OIdx-1];
@@ -811,7 +813,7 @@ if(debugFlag)
                       if(OIdx != 0)	Opile[OpileIdx++]= Ctmp;
                       --OIdx;
                      while((FIdx != 0) &&(Fpile[FpileIdx++] = FF[--FIdx])
-					  != skipMark);
+					  != skipMark) {};
                       break;
                   }
                if(FIdx!= 0)	Fpile[FpileIdx++]= FF[--FIdx];
@@ -827,11 +829,11 @@ if(debugFlag)
                       if(OIdx != 0)	Opile[OpileIdx++]= Ctmp;
                       --OIdx;
                      while((FIdx != 0) &&(Fpile[FpileIdx++] = FF[--FIdx])
-					  != skipMark);
+					  != skipMark) {};
                       break;
                   }
-             	while((FpileIdx != 0) && (Fpile[--FpileIdx] != skipMark));
-             	while((OpileIdx != 0) && (Opile[--OpileIdx] != skipMark));
+             	while((FpileIdx != 0) && (Fpile[--FpileIdx] != skipMark)) {};
+             	while((OpileIdx != 0) && (Opile[--OpileIdx] != skipMark)) {};
              	
 				break;
 			case 'R': 
@@ -900,13 +902,13 @@ if(debugFlag){ FF[FIdx] = 0;  u_printf("%S >>>>\n",FF);}
 //
 // explore the transducer a
 //
-void explore_state(int etat_courant)
+void explore_state(changeStrContext* ctx,int etat_courant)
 {
 	int save_auto;
 	Fst2State e=Ptr_cAuto->states[etat_courant];
 	if (is_final_state(e)) {
 		if(auto_courant == startAutoNum){
-			traiteEttiques();
+			traiteEttiques(ctx);
 		}
 	}
 	Transition* t=e->transitions;
@@ -914,12 +916,12 @@ void explore_state(int etat_courant)
 		if (t->tag_number < 0) {
 			save_auto = auto_courant;
 			auto_courant = -(t->tag_number);
-		    explore_state(Ptr_cAuto->initial_states[-(t->tag_number)]);
+		    explore_state(ctx,Ptr_cAuto->initial_states[-(t->tag_number)]);
 		    auto_courant = save_auto;
 		}
 
 		etiQueue[curEtiCnt++] = t->tag_number;
-		explore_state(t->state_number);
+		explore_state(ctx,t->state_number);
 		curEtiCnt--;
 		t = t->next;
    }

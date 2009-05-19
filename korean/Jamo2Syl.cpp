@@ -56,7 +56,7 @@ public:
     localtemp(){
 	};
     ~localtemp(){};
-} trans;
+} ;
 
 
 
@@ -71,6 +71,7 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 	U_FILE *ifile;
 	U_FILE *ofile;
 	debugPrFlag = 0;
+	class localtemp trans;
 
 	if(argc == 1) {
 	   usage();
@@ -81,11 +82,11 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 		switch(argv[iargIndex][1]){
 		case 'm':iargIndex++;
 		        trans.loadJamoMap(argv[iargIndex]);
-		        setStrToVal(trans.sylMarkStr,trans.sylMark);
+				setStrToVal(trans.GetChangeStrContext(),trans.sylMarkStr,trans.sylMark);
 		    break;
 		case 'c': iargIndex++;
             trans.mbcsToUniStr((unsigned char *)argv[iargIndex],temp);
-		    if(changeStrToVal(temp)) {
+			if(changeStrToVal(trans.GetChangeStrContext(),temp)) {
 		       usage();
 		       return 1;
 		    }
@@ -125,9 +126,11 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 	if(!(ofile = u_fopen(UTF16_LE,ofilename,U_WRITE))) { 
 		fatal_error("Can't open %s file for output\n",ofilename);
 	}
+	u_fclose(ifile);
+	u_fclose(ofile);
 	trans.convFile(ifilename,ofilename);
 
-	delete ifilename;
-	delete ofilename;
+	delete [] ifilename;
+	delete [] ofilename;
   return 0;
 }

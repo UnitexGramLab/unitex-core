@@ -37,8 +37,8 @@ convert_windows949kr_uni::convert_windows949kr_uni()
     ready_uniMbcs = 1;
 }
 convert_windows949kr_uni::~convert_windows949kr_uni(){
-delete mbcsUni949Table;
-delete uniMbcs949Table;
+delete [] mbcsUni949Table;
+delete [] uniMbcs949Table;
 if(loadHJAConvMap) unLoadHJAMap();
 }
     

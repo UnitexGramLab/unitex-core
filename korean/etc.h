@@ -23,8 +23,8 @@
 #define KR_ETC_H
 
 extern int uniToInt(unichar *);
-extern void fopenErrMessage(char *m);
-extern void freadError(char *m);
+extern void fopenErrMessage(const char *m);
+extern void freadError(const char *m);
 extern int utoi(unichar *ws);
 extern char *getExtension(char *a);
 extern int getStringTableFile(char *,unichar *&,unichar **&);
@@ -41,11 +41,16 @@ extern unichar getValueIdx(unichar *s,int &idx);
 
 extern unichar *uascToNum(unichar *uasc,int *val);
 extern int debugPrFlag;
-extern unichar changeStrTo[16][16];
-extern int changeStrToIdx;
-extern int findChangeStr(unichar *v,unichar *des);
-extern int changeStrToVal(unichar *src);
-extern int setStrToVal(unichar *str,unichar v);
+
+struct changeStrContext {
+unichar changeStrTo[16][16];
+int changeStrToIdx;
+} ;
+
+extern void initChangeStrContext(changeStrContext* ctx);
+extern int findChangeStr(changeStrContext* ctx,unichar *v,unichar *des);
+extern int changeStrToVal(changeStrContext* ctx,unichar *src);
+extern int setStrToVal(changeStrContext* ctx,unichar *str,unichar v);
 
 extern unichar u_null_string[];
 extern unichar u_epsilon_string[];

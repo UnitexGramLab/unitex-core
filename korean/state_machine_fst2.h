@@ -56,10 +56,11 @@ struct link
 };
 	Fst2* a;
 	int controlFlag;
+	changeStrContext ctx;
 public:
 	state_machine(){
 	    int i;
-		changeStrToIdx = 0;
+		initChangeStrContext(&ctx);
 		a = 0;
 		terSymbol = u_null_string;
 		Null_intValue = 0;
@@ -80,7 +81,7 @@ public:
 		sp  = HeadVari;
 		while(sp){
 			ntp = sp->next;
-			delete (unichar *)sp->val;
+			delete [] (unichar *)sp->val;
 			delete sp;
 			sp  = ntp;
 		}
@@ -88,11 +89,12 @@ public:
 			for( int i = 1; i < a->number_of_tags;i++)
 				if(saveTransductionTable[i])
 					a->tags[i]->output=(unichar*)saveTransductionTable[i];
-			delete saveTransductionTable;
+			delete [] saveTransductionTable;
 		}
 		if(a)free_Fst2(a);
 
 	};
+	changeStrContext* GetChangeStrContext() { return &ctx; } ;
 	int isReady(){ return( a ? 1:0);};
 	//
 	//	load fst2 file and set variables
@@ -129,7 +131,7 @@ public:
                  continue;  		
 		       if((*(wp+1) == '#') && (*(wp+2) == '>') )
          		  *wp = (unichar)*terSymbol;
-               else if(findChangeStr(wp,&wt)){
+               else if(findChangeStr(&ctx,wp,&wt)){
 				    *wp=(unichar)wt;
 		       } else {
 				     fatal_error("un define %s\n",getUtoChar(a->tags[i]->input));
@@ -309,7 +311,7 @@ ajouteTransValue(unichar *istr)
 	int i;
 	struct cmdInst *lhead =0;
 	struct cmdInst **p;
-	struct cmdInst *tcmd;
+	struct cmdInst *tcmd=NULL;
 	unsigned int lstack[16];
 	int lstackIdx = 0;
 	int sum;
@@ -372,6 +374,9 @@ do {
 					}
 					if(!*ss){
 						*ss = new struct link;
+#if defined(_WIN64) && defined(_MSC_VER)
+#pragma message("warning : convert pointer to int (4 bytes) on MS Windows 64 bits truncate pointer")
+#endif
 						(*ss)->val = (int)new unichar[strSz+1];
 						u_strcpy((unichar *)(*ss)->val,valName);
 						(*ss)->next = 0;
@@ -515,11 +520,19 @@ if(debugPrFlag) {
 		U_FILE *fi,*fo;
 		fi = u_fopen(UTF16_LE,ifname,U_READ);
 		fo = u_fopen(UTF16_LE,ofname,U_WRITE);
-		if(!fi || !fo) return(0);
+		if(!fi || !fo) {
+		  if (fi) u_fclose(fi);
+		  if (fo) u_fclose(fo);
+			return(0);
+		}
 	//
 	//	scan for get the order of character
 	//
-		if(!a) return(0);
+		if(!a) {
+			u_fclose(fi);
+			u_fclose(fo);
+			return(0);
+		}
 		unichar iBuff[SZ64K];
 		unichar oBuff[SZ64K];
 		cleanMachine();

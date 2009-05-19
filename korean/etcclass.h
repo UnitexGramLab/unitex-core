@@ -50,7 +50,7 @@ public:
 			delete Ltail->table;
 			delete Ltail;
 		}
-		if(tableLoaded) delete tableLoaded;
+		if(tableLoaded) delete [] tableLoaded;
 	}
 	void setMaxSz(int sz){ max_alloc_size = sz;}
 
@@ -100,7 +100,7 @@ public:
 class nameOfControlChars {
 	class arbre_string0 nameOfCtlChars;
 public:
-    static char *ctl_Bchar_name_string[0x21];
+    static const char *ctl_Bchar_name_string[0x21];
     unsigned short *ctl_Uchar_name_string[0x21];
 	
 	nameOfControlChars()
@@ -123,7 +123,7 @@ public:
 		return(nameOfCtlChars.check(a));
 	};
 };
-char*nameOfControlChars::ctl_Bchar_name_string[0x21]
+const char*nameOfControlChars::ctl_Bchar_name_string[0x21]
 = {
 "<NULL>",	"<STX>",	"<SOT>",	"<ETX>",
 "<EOT>",	"<ENQ>",	"<ACK>",	"<BEL>",

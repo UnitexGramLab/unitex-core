@@ -54,7 +54,7 @@ public:
 	};
 	~jamoCodage(){
 
-		if(sylMarkStr) delete sylMarkStr;
+		if(sylMarkStr) delete [] sylMarkStr;
 	};
 	int loadJamoMap(char *fname);
 	int sylToJamo(unichar syl,unichar *obuff,int o_off);
@@ -66,7 +66,7 @@ public:
 
 
 };
-extern char *defaultSylToJamoMap;
+extern const char *defaultSylToJamoMap;
 
 
 #endif

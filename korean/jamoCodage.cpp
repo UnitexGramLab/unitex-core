@@ -29,7 +29,7 @@
 // using namespace std;
 
 
-char *defaultSylToJamoMap = ""\
+const char *defaultSylToJamoMap = ""\
 "# map of  korean alphabet in the UNICODE\n"\
 "#		\n"\
 "#		\n"\
@@ -120,7 +120,7 @@ jamoCodage::loadJamoMap(char *mfName)
 	unichar buff[256];
 
 	int rsz;
-	char *rp;
+	const char *rp;
 	unichar roffset;
 	
 	

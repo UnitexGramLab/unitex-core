@@ -72,7 +72,7 @@ int main_ExtractChar(int argc, char *argv[]) {
 			break;
 		case 'c':iargIndex++;
 		    u_strcpy(tempBuff,argv[iargIndex]);
-			if(!changeStrToVal((unsigned short*)tempBuff)) break;
+			if(!changeStrToVal(extracter.GetChangeStrContext(),(unsigned short*)tempBuff)) break;
 		default:
 			usage();
 			return 1;

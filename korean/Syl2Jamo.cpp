@@ -193,15 +193,15 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 	} while(rsz == SZ1M);
 	u_fclose(ifile);
 	u_fclose(ofile);
-	delete buff;
-	delete hbuff;
-	delete obuff;
+	delete [] buff;
+	delete [] hbuff;
+	delete [] obuff;
 	if(remplaceFlag){
 	  remove(ifilename);
 	  rename(ofilename,ifilename);
 	}
-	delete ifilename;
-	delete ofilename;
+	delete [] ifilename;
+	delete [] ofilename;
 	return(0);
 }
 

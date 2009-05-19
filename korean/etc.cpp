@@ -68,11 +68,11 @@ int uniToInt(unichar *orgin)
 
 
 
-void fopenErrMessage(char* m){
+void fopenErrMessage(const char* m){
 fatal_error("%s: file open error\n",m);
 }
 
-void freadError(char* m){
+void freadError(const char* m){
 fatal_error("%s: file read error\n",m);
 }
 
@@ -267,8 +267,8 @@ uascToNum(unichar *uasc,int *val)
 	int base = 10;
 	int sum = 0;
 	if((*wp == '0') && 
-		(*(wp+1)=='x') || 
-		(*(wp+1) == 'X'))
+		((*(wp+1)=='x') || 
+		 (*(wp+1) == 'X')))
 	{
 		base = 16;
 		wp+=2;
@@ -293,27 +293,30 @@ uascToNum(unichar *uasc,int *val)
 	return(wp);
 }
 
-unichar changeStrTo[16][16];
-int changeStrToIdx;
-int findChangeStr(unichar *v,unichar *des)
+void initChangeStrContext(changeStrContext* ctx)
+{
+	ctx->changeStrToIdx = 0;
+}
+
+int findChangeStr(changeStrContext* ctx,unichar *v,unichar *des)
 {
 	int i,j;
 	unichar *wp;
-	for( i = 0; i< changeStrToIdx;i++){
+	for( i = 0; i< ctx->changeStrToIdx;i++){
 		wp = v;
 		for( j = 1;j<16 && (*wp);j++,wp++)
 		{
-			if(	changeStrTo[i][j] != *wp) break;
+			if(	ctx->changeStrTo[i][j] != *wp) break;
 		}
-		if(	!changeStrTo[i][j] && (!*wp)){
-			*des = changeStrTo[i][0];
+		if(	!ctx->changeStrTo[i][j] && (!*wp)){
+			*des = ctx->changeStrTo[i][0];
 if(debugPrFlag) u_printf("change str %s to %d\n",getUtoChar(v),*des);
 			return(1);
 		}
 	}
 	return(0);
 }
-int changeStrToVal(unichar *src)
+int changeStrToVal(changeStrContext* ctx,unichar *src)
 {
 	unichar *wp = src;
 	int i;
@@ -327,38 +330,38 @@ int changeStrToVal(unichar *src)
 	wp = uascToNum(wp,&i);
 	if(*wp != '\0') return(1);
 //	changeStrs.setVar(src,(unichar)a);
-	changeStrTo[changeStrToIdx][0] = (unichar)i;
+	ctx->changeStrTo[ctx->changeStrToIdx][0] = (unichar)i;
 	i = 1;
-	changeStrTo[changeStrToIdx][i++] = '<';	
+	ctx->changeStrTo[ctx->changeStrToIdx][i++] = '<';	
 	for(wp = src; i <16 && (*wp) ;i++)
-		changeStrTo[changeStrToIdx][i] = *wp++;
-	changeStrTo[changeStrToIdx][i++] = '>';	
-	changeStrTo[changeStrToIdx][i++] = '\0';
+		ctx->changeStrTo[ctx->changeStrToIdx][i] = *wp++;
+	ctx->changeStrTo[ctx->changeStrToIdx][i++] = '>';	
+	ctx->changeStrTo[ctx->changeStrToIdx][i++] = '\0';
 	if(i == 16) {
 		fatal_error("the name \"%s\"of the variable too long\n",getUtoChar(src));
 	}
 if(debugPrFlag){
-	u_printf("%s --> %d",getUtoChar(&changeStrTo[changeStrToIdx][1]),
-	changeStrTo[changeStrToIdx][0]);
+	u_printf("%s --> %d",getUtoChar(&(ctx->changeStrTo[ctx->changeStrToIdx][1])),
+	ctx->changeStrTo[ctx->changeStrToIdx][0]);
 }
-	changeStrToIdx++;
+	ctx->changeStrToIdx++;
 	return(0);
 }
-int setStrToVal(unichar *str,unichar v)
+int setStrToVal(changeStrContext* ctx,unichar *str,unichar v)
 {
 	    int i;
-		changeStrTo[changeStrToIdx][0] = v;
+		ctx->changeStrTo[ctx->changeStrToIdx][0] = v;
 		for(i = 0; i <16 && str[i] ;i++)
-			changeStrTo[changeStrToIdx][i+1] = str[i];
-		changeStrTo[changeStrToIdx][i+1] = '\0';
+			ctx->changeStrTo[ctx->changeStrToIdx][i+1] = str[i];
+		ctx->changeStrTo[ctx->changeStrToIdx][i+1] = '\0';
 		if(i == 16) {
 			fatal_error("The name of the variable too long %s\n",getUtoChar(str));
 		}
 if(debugPrFlag){
-	u_printf("%s --> %d",getUtoChar(&changeStrTo[changeStrToIdx][1]),
-	changeStrTo[changeStrToIdx][0]);
+	u_printf("%s --> %d",getUtoChar(&(ctx->changeStrTo[ctx->changeStrToIdx][1])),
+	ctx->changeStrTo[ctx->changeStrToIdx][0]);
 }
-		changeStrToIdx++;
+		ctx->changeStrToIdx++;
 		return(0);
 }
 //
@@ -381,7 +384,7 @@ loadChangeFileToTable(char *f)
 		if( (UtempLine[idx] != ' ') && 
 			(UtempLine[idx] != '\t') )
 			return(0);
-		for(;UtempLine[idx];idx++);
+		for(;UtempLine[idx];idx++) {};
 		if(idx == 2) return 0;
 		
 		changeTableMap[srcIdx] = new unichar [idx - 1];

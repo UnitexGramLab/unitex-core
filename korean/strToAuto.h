@@ -194,7 +194,7 @@ public:
 #endif
 	}
 	~str2Auto(){
-		delete saveTokenP;
+		delete [] saveTokenP;
 #ifdef DEBUG
 		u_fclose(debugf);
 #endif
@@ -726,6 +726,7 @@ public:
 	int info_col;
 	class link_tables<int> sentenceInit;
 	morpheme_info(){
+		phraseAutoMap=NULL;
 		head.uni_mark=0;
 		head.count_of_sentences = 0;
 
@@ -744,23 +745,25 @@ public:
 		infoArray_table = 0;
 		morStructTable = 0;
 		tokMap = 0;
+		tokTable = 0;
 		mophMap = 0;
 		sentenceInit.setMaxSz(1024);
 		variation_table.setSz(sizeof(struct org_variation_table)*1024,
 			sizeof(struct org_variation_table));
 	};
 	~morpheme_info(){
-		if(flechi_table) delete flechi_table;
-		if(canoni_table) delete canoni_table;
-		if(linfos_table) delete linfos_table;
-		if(flechi_map) delete flechi_map;
-		if(canoni_map) delete canoni_map;
-		if(linfos_map) delete linfos_map;
-		if(infoArray_table) delete infoArray_table;
-		if(morStructTable) delete morStructTable;
-		if(tokMap) delete tokMap;
-		if(mophMap) delete mophMap;
-
+		if(flechi_table) delete [] flechi_table;
+		if(canoni_table) delete [] canoni_table;
+		if(linfos_table) delete [] linfos_table;
+		if(flechi_map) delete [] flechi_map;
+		if(canoni_map) delete [] canoni_map;
+		if(linfos_map) delete [] linfos_map;
+		if(infoArray_table) delete [] infoArray_table;
+		if(morStructTable) delete [] morStructTable;
+		if(tokMap) delete [] tokMap;
+		//if(tokTable) delete [] tokTable;
+		if(mophMap) delete [] mophMap;
+		if(phraseAutoMap!=NULL) u_fclose(phraseAutoMap);
 	};
 	void pathNameSet(char *f)
 	{
@@ -1131,7 +1134,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		tables = infoArray.make_strPtr_table();
 		wi = infoArray_table;
 		for(i = 0; i < row_cnt;i++){
-			for( j = 0; j < colon_size;wi[j++] = 0);
+			for( j = 0; j < colon_size;wi[j++] = 0) {};
 			for( j = 1; j < tables[i][0];j++){
 //printf("%08x",tables[i][j]);
 				wi[(tables[i][j]/32)%colon_size] |=
@@ -1741,8 +1744,8 @@ public:
 			}
 			u_fprintf(fout,"\n");
 		}
-		delete tab;
-		delete autoMap;
+		delete [] tab;
+		delete [] autoMap;
 		u_fprintf(fout,"f \n");
 		prStrList(fout);
 		u_fprintf(fout,"f \n");
