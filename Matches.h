@@ -37,7 +37,9 @@ struct match_list {
    int start;
    int end;
    
-   /* Those fields are used for Korean */
+   /* Those fields are used for Korean
+    * xxx_char=offset of the char in the token 
+    * xxx_letter=offset of the logical letter in the char */
    int start_char;
    int end_char;
    int start_letter;

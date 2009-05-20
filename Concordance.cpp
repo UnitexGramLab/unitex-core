@@ -965,31 +965,42 @@ return pos_in_enter_pos;
 
 
 /**
- * This function saves the text from the token n� 'current_global_position'
- * to the token n� 'match_start'. The text is printed in the file 'output'.
+ * This function saves the text from the token #'current_global_position'
+ * to the token #'match_start'. The text is printed in the file 'output'.
  * The function returns the updated current position in the 'pos_in_enter_pos'
- * array.
+ * array. 
+ * 
+ * The function also makes sure that the last token #match_end has been loaded into the buffer.
  */
-int move_in_text_with_writing(int match_start,U_FILE* text,struct text_tokens* tokens,
+int move_in_text_with_writing(int match_start,int match_end,U_FILE* text,struct text_tokens* tokens,
 								int current_global_position,U_FILE* output,
 								int n_enter_char,int* enter_pos,int pos_in_enter_pos,
-								struct buffer* buffer) {
+								struct buffer* buffer,int *pos_int_char) {
 long int address=current_global_position*sizeof(int);
 fseek(text,address,SEEK_SET);
-while ((match_start-current_global_position) > buffer->MAXIMUM_BUFFER_SIZE) {
+int last_pos_to_be_loaded=match_end+1;
+while ((last_pos_to_be_loaded-current_global_position) > buffer->MAXIMUM_BUFFER_SIZE) {
 	/* If the distance between current position and final position is larger than
 	 * the buffer size, then we read a full buffer. */
 	fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
-	for (address=0;address<buffer->MAXIMUM_BUFFER_SIZE;address++) {
-		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
+	/* We indicate that we are at the beginning of a token */
+	(*pos_int_char)=0;
+	for (int i=0;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
+		pos_in_enter_pos=fprint_token(output,tokens,i,current_global_position,
 										n_enter_char,enter_pos,pos_in_enter_pos,
 										buffer);
 	}
 	current_global_position=current_global_position+buffer->MAXIMUM_BUFFER_SIZE;
 }
-buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(match_start-current_global_position),text);
-for (address=0;address<buffer->size;address++) {
-	pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
+/* We read what we want to write in the output file + all the tokens of the match */
+buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(last_pos_to_be_loaded-current_global_position),text);
+if (buffer->size>0) {
+   /* We indicate that we are at the beginning of a token */
+   (*pos_int_char)=0;
+}
+int last_pos_to_be_written=buffer->size-(match_end+1-match_start);
+for (int i=0;i<last_pos_to_be_written;i++) {
+	pos_in_enter_pos=fprint_token(output,tokens,i,current_global_position,
 									n_enter_char,enter_pos,pos_in_enter_pos,
 									buffer);
 }
@@ -1039,7 +1050,9 @@ if (output==NULL) {
 }
 struct match_list* matches;
 struct match_list* matches_tmp;
-int current_global_position=0;
+int current_global_position_in_token=0;
+int current_global_position_in_char=0;
+
 /* We allocate a buffer to read the tokens of the text */
 struct buffer* buffer=new_buffer_for_file(INTEGER_BUFFER,text);
 /* We load the match list */
@@ -1047,24 +1060,55 @@ matches=load_match_list(concordance,NULL);
 int pos_in_enter_pos=0;
 u_printf("Merging outputs with text...\n");
 while (matches!=NULL) {
-	while (matches!=NULL && matches->start<current_global_position) {
-		/* If we must ignore this match because it is overlapping a previous
-		 * match */
+	while (matches!=NULL && 
+	          (matches->start<current_global_position_in_token 
+	            || (matches->start==current_global_position_in_token && matches->start_char<current_global_position_in_char)
+	           )
+	       ) {
+		/* If we must ignore this match because it is overlapping a previous match */
 		matches_tmp=matches;
 		matches=matches->next;
 		free_match_list_element(matches_tmp);
 	}
 	if (matches!=NULL) {
 		/* There, we are sure that we have a valid match to process */
-		pos_in_enter_pos=move_in_text_with_writing(matches->start,text,tokens,
-													current_global_position,output,
+		pos_in_enter_pos=move_in_text_with_writing(matches->start,matches->end,text,tokens,
+													current_global_position_in_token,output,
 													n_enter_char,enter_pos,pos_in_enter_pos,
-													buffer);
+													buffer,&current_global_position_in_char);
 		/* Now, we are sure that the buffer contains all we want */
+		/* If the match doesn't start at the beginning of the token, we add the prefix */
+		int zz=matches->start-current_global_position_in_token;
+		unichar* first_token=tokens->token[buffer->int_buffer[zz]];
+		error("global=%d zz=%d  buffer[%d]=%d first token=_%S_\n",current_global_position_in_token,zz,matches->start,buffer->int_buffer[zz],first_token);
+		for (int i=current_global_position_in_char;i<matches->start_char;i++) {
+		   u_fprintf(output,"%C",first_token[i]);
+		}
 		if (matches->output!=NULL) {
 			u_fprintf(output,"%S",matches->output);
 		}
-		current_global_position=matches->end+1;
+		zz=matches->end-current_global_position_in_token;
+		unichar* last_token=tokens->token[buffer->int_buffer[zz]];
+		if (last_token[matches->end_char+1]=='\0') {
+		   /* If we have completely consumed the last token of the match */
+		   current_global_position_in_token=matches->end+1;
+		   current_global_position_in_char=0;
+		} else {
+		   current_global_position_in_token=matches->end;
+	      current_global_position_in_char=matches->end_char+1;
+		}
+		/* If it was the last match or if the next match starts on another token, 
+		 * we dump the end of the current token, if any */
+		if (current_global_position_in_char!=0 && 
+		      (matches->next==NULL || matches->next->start!=current_global_position_in_token)) {
+		   for (int i=current_global_position_in_char;last_token[i]!='\0';i++) {
+		      u_fprintf(output,"%C",last_token[i]);
+		   }
+		   /* We update the position in tokens so that 'move_to_end_of_text_with_writing'
+		    * will work fine */
+		   current_global_position_in_token++;
+		}
+		
 		/* We skip to the next match of the list */
 		matches_tmp=matches;
 		matches=matches->next;
@@ -1073,7 +1117,7 @@ while (matches!=NULL) {
 }
 /* Finally, we don't forget to dump all the text that may remain after the
  * last match. */
-move_to_end_of_text_with_writing(text,tokens,current_global_position,output,
+move_to_end_of_text_with_writing(text,tokens,current_global_position_in_token,output,
 								n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 free_buffer(buffer);
 u_printf("Done.\n");
