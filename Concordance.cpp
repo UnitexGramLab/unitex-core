@@ -470,12 +470,12 @@ buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SI
  * Note that extra spaces will be used to fill 'left' if there no left context enough,
  * in order to preserve alignment at display time.
  */
-void extract_left_context(int pos,unichar* left,struct text_tokens* tokens,
+void extract_left_context(int pos,int pos_in_char,unichar* left,struct text_tokens* tokens,
                           struct conc_opt* option,int* token_length,
                           struct buffer* buffer) {
 int i;
 /* If there is no left context at all, we fill 'left' with spaces. */
-if (pos==0) {
+if (pos==0 && pos_in_char==0) {
 	for (i=0;i<option->left_context;i++) {
 		left[i]=' ';
 	}
@@ -485,8 +485,30 @@ if (pos==0) {
 i=0;
 int count=0;
 left[option->left_context]='\0';
-/* We must start on the left of the match */
-pos--;
+
+if (pos_in_char==0) {
+   /* If must start on the left of the match */
+   pos--;
+} else {
+   
+   /* If we have to take a prefix of the match's first token */
+   unichar* s=tokens->token[buffer->int_buffer[pos]];
+   for (int j=pos_in_char-1;j>=0;j--) {
+      left[i++]=s[j];
+   }
+   pos--;
+   if (pos==-1) {
+      /* If the first token of the match was the first token at all,
+       * we fill with spaces */
+      for (;i<option->left_context;i++) {
+         left[i]=' ';
+      }
+      left[i]='\0';
+      mirror(left);
+      return;
+   }
+}
+
 int l=token_length[buffer->int_buffer[pos]]-1;
 unichar* s=tokens->token[buffer->int_buffer[pos]];
 /* We look for every token, until we have the correct number of displayable
@@ -536,25 +558,42 @@ mirror(left);
  * 'middle' must have been carefully allocated. 'buffer' contains the token numbers
  * to work on.
  */
-void extract_match(int start_pos,int end_pos,unichar* output,unichar* middle,
+void extract_match(int start_pos,int start_pos_char,int end_pos,int end_pos_char,unichar* output,unichar* middle,
 					struct text_tokens* tokens,struct buffer* buffer) {
-int j,k;
-unichar* s;
-if (output==NULL) {
-	/* If there is no output, we compute the match from the text */
-	j=0;
-	for (int i=start_pos;i<=end_pos;i++) {
-		k=0;
-		s=tokens->token[buffer->int_buffer[i]];
-		while (s[k]!='\0') {
-			middle[j++]=s[k++];
-		}
-	}
-	middle[j]='\0';
-} else {
-	/* If there is an output, then the match is the output */
-	u_strcpy(middle,output);
+if (output!=NULL) {
+   /* If there is an output, then the match is the output */
+   u_strcpy(middle,output);
+   return;
 }
+/* If there is no output, we compute the match from the text */
+int j=0,k;
+unichar* s;
+if (start_pos_char!=0) {
+   /* If the match doesn't start on the first char of the first token */
+   s=tokens->token[buffer->int_buffer[start_pos]];
+   int end=(end_pos==start_pos)?end_pos_char+1:u_strlen(s);
+   for (k=start_pos_char;k<end;k++) {
+      middle[j++]=s[k];
+   }
+   if (start_pos==end_pos) {
+      middle[j]='\0';
+      return;
+   }
+   start_pos++;
+}
+for (int i=start_pos;i<end_pos;i++) {
+   k=0;
+	s=tokens->token[buffer->int_buffer[i]];
+	while (s[k]!='\0') {
+		middle[j++]=s[k++];
+	}
+}
+/* We write the last token */
+s=tokens->token[buffer->int_buffer[end_pos]];
+for (k=0;k<=end_pos_char;k++) {
+   middle[j++]=s[k];
+}
+middle[j]='\0';
 }
 
 
@@ -569,21 +608,31 @@ if (output==NULL) {
  * zero value that we deal with a Thai sequence; in that case, we must do a special
  * operation in order to count correctly displayable characters.
  */
-void extract_right_context(int pos,unichar* right,struct text_tokens* tokens,
+void extract_right_context(int pos,int pos_char,unichar* right,struct text_tokens* tokens,
                            int match_length,struct conc_opt* option,
                            struct buffer* buffer) {
 right[0]='\0';
-if (match_length>=option->right_context || pos+1>=buffer->size) {
+if (match_length>=option->right_context) {
    /* We return if we have already overpassed the right context length
-    * with the matched sequence, or if there is no right context because
-    * we are at the end of the text. */
+    * with the matched sequence */
     return;
 }
 int right_context_length=option->right_context-match_length;
 int i=0;
 int count=0;
+
+/* We save the end of the last match token, if needed */
+unichar* last_match_token=tokens->token[buffer->int_buffer[pos]];
+for (int u=pos_char+1;last_match_token[u]!='\0';u++) {
+   right[i++]=last_match_token[u];
+}
+
 /* We must start after the last token of the matched sequence */
 pos++;
+if (pos==buffer->size) {
+   /* If this token was the last token of the text */
+   return;
+}
 int l=0;
 unichar* s=tokens->token[buffer->int_buffer[pos]];
 while (pos<buffer->size && count<right_context_length) {
@@ -734,8 +783,8 @@ while (s[i]!='\0') {
  * For the xalign mode we produce a concord file with the following information :
  *
  *    - Column 1: sentence number
- *    - Column 2: shift from the beginning of the sentence to the left side of the match
- *    - Column 3: shift from the beginning of the sentence to the right side of the match
+ *    - Column 2: shift in chars from the beginning of the sentence to the left side of the match
+ *    - Column 3: shift in chars from the beginning of the sentence to the right side of the match
  */
 int create_raw_text_concordance(U_FILE* output,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
                                 int expected_result,
@@ -838,12 +887,12 @@ while (matches!=NULL) {
          }
       }
 	}
-	position_in_chars=start_pos_char;
+	position_in_chars=start_pos_char+matches->start_char;
 	position_in_tokens=start_pos;
 	end_pos_char=start_pos_char;
    end_from_eos=start_from_eos;
 	/* We update 'end_pos_char' in the same way */
-	for (int z=start_pos;z<=end_pos;z++) {
+	for (int z=start_pos;z<end_pos;z++) {
 		int token_size=0;
       if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
          token_size=token_length[buffer->int_buffer[z]];
@@ -851,16 +900,17 @@ while (matches!=NULL) {
       end_pos_char=end_pos_char+token_size;
       end_from_eos=end_from_eos+token_size;
 	}
+	end_pos_char=end_pos_char+matches->end_char+1;
 	/* Now we extract the 3 parts of the concordance */
-	extract_left_context(start_pos,left,tokens,option,token_length,buffer);
-	extract_match(start_pos,end_pos,matches->output,middle,tokens,buffer);
+	extract_left_context(start_pos,matches->start_char,left,tokens,option,token_length,buffer);
+	extract_match(start_pos,matches->start_char,end_pos,matches->end_char,matches->output,middle,tokens,buffer);
 	/* To compute the 3rd part (right context), we need to know the length of
 	 * the matched sequence in displayable characters. */
 	int match_length_in_displayable_chars;
 	if (option->thai_mode) {match_length_in_displayable_chars=u_strlen_Thai(middle);}
 	else {match_length_in_displayable_chars=u_strlen(middle);}
 	/* Then we can compute the right context */
-	extract_right_context(end_pos,right,tokens,match_length_in_displayable_chars,
+	extract_right_context(end_pos,matches->end_char,right,tokens,match_length_in_displayable_chars,
                               option,buffer);
 	/* If we must produce a GlossaNet concordance, we look for a URL. After the
 	 * function call, 'is_a_good_match' can be set to 0 if the match
