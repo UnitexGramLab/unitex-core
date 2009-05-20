@@ -1080,7 +1080,6 @@ while (matches!=NULL) {
 		/* If the match doesn't start at the beginning of the token, we add the prefix */
 		int zz=matches->start-current_global_position_in_token;
 		unichar* first_token=tokens->token[buffer->int_buffer[zz]];
-		error("global=%d zz=%d  buffer[%d]=%d first token=_%S_\n",current_global_position_in_token,zz,matches->start,buffer->int_buffer[zz],first_token);
 		for (int i=current_global_position_in_char;i<matches->start_char;i++) {
 		   u_fprintf(output,"%C",first_token[i]);
 		}
