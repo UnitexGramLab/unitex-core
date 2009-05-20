@@ -232,7 +232,7 @@ for (int i=1;i<fst2->number_of_tags;i++) {
                                                      ,&(foo.start_pos_letter)
                                                      ,&(foo.end_pos_token)
                                                      ,&(foo.end_pos_char)
-                                                     ,&(foo.end_pos_token));
+                                                     ,&(foo.end_pos_letter));
    TfstTag_to_string(&foo,tmp);
    tags[i]=u_strdup(tmp);
 }
