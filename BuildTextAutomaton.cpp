@@ -997,20 +997,15 @@ for (int i=0;jamo_tag[i]!='\0';i++) {
 }
 
 
-/**
- * This function explores the sentence automaton in order to set up the positions
- * in its TfstTag. In order to avoid combinatorial explosion, we use 
- * TfstTag->end_pos_token!=-1 as a test to determine if a transition was already 
- * visited (we don't use TfstTag->start_pos_token because it is already used to 
- * know the number of the original tag).
+/* the function is the recursive work for explore_korean_automaton_for_positions
+   with jamo_tag and syllab_tag private array of 256 unichar provided
  */
-void explore_korean_automaton_for_positions(Tfst* tfst,Fst2* jamo,unichar* jamo_text,
+void explore_korean_automaton_for_positions_with_buffer(Tfst* tfst,Fst2* jamo,unichar* jamo_text,
       int current_state,int pos_in_token,int pos_in_char,int pos_in_letter,
-      int pos_in_syllab_text,int pos_in_jamo_text,Alphabet* alphabet) {
+      int pos_in_syllab_text,int pos_in_jamo_text,Alphabet* alphabet,
+      unichar* jamo_tag,unichar* syllab_tag) {
 Transition* t=tfst->automaton->states[current_state]->outgoing_transitions;
 TfstTag* tag;
-unichar jamo_tag[256];
-//unichar syllab_tag[256];
 while (t!=NULL) {
    tag=(TfstTag*)(tfst->tags->tab[t->tag_number]);
    if (tag->type!=T_EPSILON && tag->end_pos_token==-1) {
@@ -1020,18 +1015,18 @@ while (t!=NULL) {
           * Now, we just increase our positions and then turn this tag into an 
           * epsilon one, after some error checking */
          if (jamo_text[pos_in_jamo_text]!=' ') {
-            fatal_error("explore_korean_automaton_for_positions: jamo_text <BL> error\n");
+            fatal_error("explore_korean_automaton_for_positions_with_buffer: jamo_text <BL> error\n");
          }
          if (tfst->text[pos_in_syllab_text]!=' ') {
-            fatal_error("explore_korean_automaton_for_positions: syllab_text <BL> error\n"
+            fatal_error("explore_korean_automaton_for_positions_with_buffer: syllab_text <BL> error\n"
                         "text[%d]=%C\n",pos_in_syllab_text,tfst->text[pos_in_syllab_text]);
          }
          /* We set the tag number to 0 in order to replace this <BL> transition by an epsilon one */
          t->tag_number=0;
          
-         explore_korean_automaton_for_positions(tfst,jamo,jamo_text,t->state_number,
+         explore_korean_automaton_for_positions_with_buffer(tfst,jamo,jamo_text,t->state_number,
                /* We change of token */
-               pos_in_token+1,0,0,pos_in_syllab_text+1,pos_in_jamo_text+1,alphabet);
+               pos_in_token+1,0,0,pos_in_syllab_text+1,pos_in_jamo_text+1,alphabet,jamo_tag,syllab_tag);
       } else {
          /* Non <BL> tag */
          /* Remember that the original tag number was stored in 'start_pos_token' */
@@ -1047,9 +1042,9 @@ while (t!=NULL) {
              * setting end_pos_letter to -1. We set all other fields with correct values in
              * order to know where this empty surface form occurs */
             tag->end_pos_letter=-1;
-            explore_korean_automaton_for_positions(tfst,jamo,jamo_text,t->state_number,
+            explore_korean_automaton_for_positions_with_buffer(tfst,jamo,jamo_text,t->state_number,
                                        pos_in_token,pos_in_char,pos_in_letter,
-                                       pos_in_syllab_text,pos_in_jamo_text,alphabet);
+                                       pos_in_syllab_text,pos_in_jamo_text,alphabet,jamo_tag,syllab_tag);
          } else {
             /* Normal tag */ 
             //get_tag_content(tag->content,syllab_tag);
@@ -1073,9 +1068,9 @@ while (t!=NULL) {
             
             //error("\nafter tag %S, pos_token=%d pos_char=%d pos_letter=%d      pos_syllab=%d pos_jamo=%d\n",syllab_tag,
             //      new_pos_in_token,new_pos_in_char,new_pos_in_letter,new_pos_in_syllab_text,new_pos_in_jamo_text);
-            explore_korean_automaton_for_positions(tfst,jamo,jamo_text,t->state_number,
+            explore_korean_automaton_for_positions_with_buffer(tfst,jamo,jamo_text,t->state_number,
                            new_pos_in_token,new_pos_in_char,new_pos_in_letter,
-                           new_pos_in_syllab_text,new_pos_in_jamo_text,alphabet);
+                           new_pos_in_syllab_text,new_pos_in_jamo_text,alphabet,jamo_tag,syllab_tag);
          }
       }
    }
@@ -1083,6 +1078,23 @@ while (t!=NULL) {
 }
 }
 
+
+/**
+ * This function explores the sentence automaton in order to set up the positions
+ * in its TfstTag. In order to avoid combinatorial explosion, we use 
+ * TfstTag->end_pos_token!=-1 as a test to determine if a transition was already 
+ * visited (we don't use TfstTag->start_pos_token because it is already used to 
+ * know the number of the original tag).
+ */
+void explore_korean_automaton_for_positions(Tfst* tfst,Fst2* jamo,unichar* jamo_text,
+      int current_state,int pos_in_token,int pos_in_char,int pos_in_letter,
+      int pos_in_syllab_text,int pos_in_jamo_text,Alphabet* alphabet) {
+unichar jamo_tag[256];
+unichar syllab_tag[256];
+  explore_korean_automaton_for_positions_with_buffer(tfst,jamo,jamo_text,
+      current_state,pos_in_token,pos_in_char,pos_in_letter,
+      pos_in_syllab_text,pos_in_jamo_text,alphabet,jamo_tag,syllab_tag) ;
+}
 
 /**
  * This function builds the sentence automaton that correspond to the

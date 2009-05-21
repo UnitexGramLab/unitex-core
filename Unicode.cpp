@@ -799,6 +799,122 @@ while (s[i]!='\0')
 }
 
 
+
+int u_fgets_unbuffered(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
+int c;
+int i=0;
+while ((c=u_fgetc(encoding,f))!=EOF && c!='\n') {
+   line[i++]=(unichar)c;
+}
+if (i==0 && c==EOF) {
+   /* If we are at the end of FILE */
+   return EOF;
+}
+line[i]='\0';
+return i;
+}
+
+
+int u_fgets_unbuffered(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
+int i=0;
+int c=0;
+while ((i < (size-1)) && ((c=u_fgetc(encoding,f))!=EOF)) {
+   line[i++]=(unichar)c;
+   if (c=='\n') break;
+}
+if (i==0 && c!='\n') return EOF;
+line[i]='\0';
+return i;
+}
+
+
+/**
+  * this function act as u_fgets(encoding,line,f) if i_size==0 and
+                    like u_fgets(encoding,line,size,f) if i_size==1 and
+	optimized by reading several char at same time in a buffer for UTF16
+	call char by char f_gets for UTF8 and BIN/ASCII
+  */
+#define BUFFER_IN_CACHE_SIZE (0x80)
+int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABSTRACTFILE* f)
+{
+	unsigned char tab_in[BUFFER_IN_CACHE_SIZE];
+
+	if ((i_is_size != 0) && (size == 0))
+		return EOF;
+
+	switch(encoding) {
+	   case UTF16_LE:
+	   case BIG_ENDIAN_UTF16:
+		  {
+			  int is_eof = 0;
+			  int pos_in_unichar_line = 0;
+			  int hibytepos = (encoding == UTF16_LE) ? 1 : 0;
+
+			  for (;;)
+			  {
+				  int size_to_read_unichar = BUFFER_IN_CACHE_SIZE/2;
+				  if (i_is_size != 0)
+					  if ((size-1) < BUFFER_IN_CACHE_SIZE)
+						  size_to_read_unichar = size-1;
+				  size_t read_utf16_in_file = 0;
+				  if (size_to_read_unichar>0)
+					  read_utf16_in_file = af_fread(&tab_in[0],2,(size_t)size_to_read_unichar/2,f);
+				  if (read_utf16_in_file<=0)
+				  {
+					  if (pos_in_unichar_line == 0)
+						  return EOF;
+					  else
+					  {
+						  line[pos_in_unichar_line]='\0';
+						  return pos_in_unichar_line;
+					  }
+				  }
+
+				  if (read_utf16_in_file > 0)
+				  {
+					  int i;
+					  for (i=0;i<(int)read_utf16_in_file;i++)
+					  {
+						  unichar c;
+						  c = (((unichar)tab_in[(i*2)+hibytepos]) << 8) | (tab_in[(i*2)+(1-hibytepos)]) ;
+						  
+						  if (c!=0x0d)
+						  {
+							  if (c=='\n')
+							  {
+								  af_fseek(f,-2 * (long)(read_utf16_in_file - (i+1)),SEEK_CUR);
+								  if (i_is_size!=0) {
+									  line[pos_in_unichar_line++]='\n';
+								  }
+								  line[pos_in_unichar_line]='\0';
+								  return pos_in_unichar_line;
+							  }
+
+							  if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
+							  {
+								  af_fseek(f,-2 * (long)(read_utf16_in_file - i),SEEK_CUR);
+								  line[pos_in_unichar_line]='\0';
+								  return pos_in_unichar_line;
+							  }
+
+							  line[pos_in_unichar_line++] = c;						  
+						  }
+					  }
+				  }
+			  }
+		  }
+		   /*
+	   case UTF8: 
+	   case ASCII:*/
+	   default:
+		   if (i_is_size==0)
+			   return u_fgets_unbuffered(encoding,line,f);
+		   else
+			   return u_fgets_unbuffered(encoding,line,size,f);
+	}
+}
+
+
 /**
  * Reads from the file 'f' until it finds the end of line '\n' or
  * the end of file. The characters read are written in 'line'. The
@@ -809,17 +925,7 @@ while (s[i]!='\0')
  * NOTE: there is no overflow control!
  */
 int u_fgets(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
-int c;
-int i=0;
-while ((c=u_fgetc(encoding,f))!=EOF && c!='\n') {
-   line[i++]=(unichar)c;
-}
-if (i==0 && c==EOF) {
-   /* If we are at the end of ABSTRACTFILE */
-   return EOF;
-}
-line[i]='\0';
-return i;
+	return u_fgets_buffered(encoding,line,0,0,f);
 }
 
 
@@ -836,17 +942,8 @@ return i;
  * Author: Olivier Blanc
  * Modified by S�bastien Paumier
  */
-
 int u_fgets(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
-int i=0;
-int c=0;
-while ((i < (size-1)) && ((c=u_fgetc(encoding,f))!=EOF)) {
-   line[i++]=(unichar)c;
-   if (c=='\n') break;
-}
-if (i==0 && c!='\n') return EOF;
-line[i]='\0';
-return i;
+	return u_fgets_buffered(encoding,line,1,size,f);
 }
 
 
@@ -893,6 +990,7 @@ while (line[length-1]=='\\') {
 }
 return length;
 }
+
 
 /* Now : Gilles Vollant code for write unicode string "one call"
 */
@@ -2137,7 +2235,7 @@ return u_strcpy(res,str);
 
 /**
  * This version has the correct prototype to be used as a keycopy function for
- * hash tables.
+ * hash tables. 
  */
 unichar* keycopy(unichar* key) {
 return u_strdup(key);
