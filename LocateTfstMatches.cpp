@@ -151,6 +151,10 @@ if (m==NULL) {
 	fatal_alloc_error("new_tfst_simple_match_list");
 }
 memcpy(m,e,sizeof(struct tfst_simple_match_list));
+if (m->output!=NULL) {
+	/* If there was an output, we have to clone it */
+	m->output=u_strdup(m->output);
+}
 if (m->match!=NULL) {
 	(m->match->pointed_by)++;
 }
@@ -678,6 +682,48 @@ switch (compare_matches(list,e)) {
 return NULL;
 }
 
+
+/**
+ * Saves the elements of 'list' in reverse order into 'items'.
+ */
+void fill_vector(vector_ptr* items,struct tfst_match* list) {
+if (list==NULL) return;
+fill_vector(items,list->next);
+vector_ptr_add(items,list);
+}
+
+
+/**
+ * This function explores the partial matches that constitute the given match in order to produce
+ * one or all possible outputs, depending on infos->ambiguous_output_policy.
+ * The output(s) is(are) then used to add matches to the infos->matches list.
+ */
+void explore_match_to_get_outputs(struct locate_tfst_infos* infos,struct tfst_match* m,
+		                          struct tfst_simple_match_list* element) {
+/* As m is a reversed list, we first need to get its elements in the right order */
+vector_ptr* items=new_vector_ptr(16);
+fill_vector(items,m);
+Ustring* s=new_Ustring(1024);
+if (infos->output_policy==REPLACE_OUTPUTS) {
+   /* Simplest case: we don't have to take the text automaton into account */
+	for (int i=0;i<items->nbelems;i++) {
+		struct tfst_match* item=(struct tfst_match*)(items->tab[i]);
+		int fst2_tag_number=item->fst2_transition->tag_number;
+		u_strcat(s,infos->fst2->tags[fst2_tag_number]->output);
+	}
+	/* Trick: as element is a variable that will soon be destroyed, we don't need to u_strdup s->str */
+	element->output=s->str;
+	infos->matches=add_element_to_list(infos,infos->matches,element);
+	element->output=NULL;
+} else {
+	/* MERGE mode */
+
+}
+free_Ustring(s);
+free_vector_ptr(items);
+}
+
+
 /**
  * This function takes a tfst_match list that represents a match. It turns it into
  * a tfst_simple_match_list element and inserts it into to the main tfst_simple_match_list,
@@ -691,7 +737,12 @@ if (element.end_pos_in_token==-1) {
    return;
 }
 //error("match from token %d to %d\n",element.start_pos_in_token,element.end_pos_in_token);
-infos->matches=add_element_to_list(infos,infos->matches,&element);
+if (infos->output_policy==IGNORE_OUTPUTS) {
+	/* The simplest case */
+	infos->matches=add_element_to_list(infos,infos->matches,&element);
+} else {
+	explore_match_to_get_outputs(infos,m,&element);
+}
 }
 
 
