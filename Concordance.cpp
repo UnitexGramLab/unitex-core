@@ -385,7 +385,7 @@ u_fprintf(f,"<head>\n");
 u_fprintf(f,"   <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
 u_fprintf(f,"   <title>%d match%s</title>\n",number_of_matches,(number_of_matches>1)?"es":"");
 u_fprintf(f,"</head>\n");
-u_fprintf(f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: %s; font-size: %d\">\n",option->fontname,option->fontsize);
+u_fprintf(f,"<body>\n<table border=\"0\" cellpadding=\"0\" width=\"100%%\" style=\"font-family: '%s'; font-size: %d\">\n",option->fontname,option->fontsize);
 }
 
 
@@ -490,7 +490,7 @@ if (pos_in_char==0) {
    /* If must start on the left of the match */
    pos--;
 } else {
-   
+
    /* If we have to take a prefix of the match's first token */
    unichar* s=tokens->token[buffer->int_buffer[pos]];
    for (int j=pos_in_char-1;j>=0;j--) {
@@ -1018,8 +1018,8 @@ return pos_in_enter_pos;
  * This function saves the text from the token #'current_global_position'
  * to the token #'match_start'. The text is printed in the file 'output'.
  * The function returns the updated current position in the 'pos_in_enter_pos'
- * array. 
- * 
+ * array.
+ *
  * The function also makes sure that the last token #match_end has been loaded into the buffer.
  */
 int move_in_text_with_writing(int match_start,int match_end,U_FILE* text,struct text_tokens* tokens,
@@ -1110,8 +1110,8 @@ matches=load_match_list(concordance,NULL);
 int pos_in_enter_pos=0;
 u_printf("Merging outputs with text...\n");
 while (matches!=NULL) {
-	while (matches!=NULL && 
-	          (matches->start<current_global_position_in_token 
+	while (matches!=NULL &&
+	          (matches->start<current_global_position_in_token
 	            || (matches->start==current_global_position_in_token && matches->start_char<current_global_position_in_char)
 	           )
 	       ) {
@@ -1146,9 +1146,9 @@ while (matches!=NULL) {
 		   current_global_position_in_token=matches->end;
 	      current_global_position_in_char=matches->end_char+1;
 		}
-		/* If it was the last match or if the next match starts on another token, 
+		/* If it was the last match or if the next match starts on another token,
 		 * we dump the end of the current token, if any */
-		if (current_global_position_in_char!=0 && 
+		if (current_global_position_in_char!=0 &&
 		      (matches->next==NULL || matches->next->start!=current_global_position_in_token)) {
 		   for (int i=current_global_position_in_char;last_token[i]!='\0';i++) {
 		      u_fprintf(output,"%C",last_token[i]);
@@ -1157,7 +1157,7 @@ while (matches!=NULL) {
 		    * will work fine */
 		   current_global_position_in_token++;
 		}
-		
+
 		/* We skip to the next match of the list */
 		matches_tmp=matches;
 		matches=matches->next;
