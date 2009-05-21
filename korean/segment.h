@@ -102,7 +102,7 @@ public:
 	~segmentation()
 	{
 		if(mot_buff)	
-			delete mot_buff;
+			delete [] mot_buff;
 		if(textFile) u_fclose(textFile);
 		if(saveTmps_cnt){
 			fwrite(saveTmps,sizeof(struct tmplettre)*
@@ -171,7 +171,7 @@ public:
 			fopenErrMessage(idFileName);
 
 
-		delete idFileName;
+		delete [] idFileName;
 	}
 
 	void
@@ -238,7 +238,7 @@ public:
 		
 		u_fclose(sort_token);
 		segments.release_value();
-		delete tokenFileName;
+		delete [] tokenFileName;
 		u_fclose(tmpf);
 			
 		tFileName = "stats.n";
@@ -262,7 +262,7 @@ public:
 			grSegmentCnt[7]);
 		u_fprintf(tmpf,"%d text size, %d space\n",currentOffset,spaceCnt);
 		u_fclose(tmpf);
-		delete tokenFileName;
+		delete [] tokenFileName;
 	}
 	void explore_leaf(struct arbre_hash00* noeud,int pos)
 	{

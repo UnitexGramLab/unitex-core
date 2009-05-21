@@ -605,9 +605,9 @@ public:
 
 	~explore_bin1(){
 		if(REF) free(REF);
-		if(sufoffset) delete sufoffset;
-		if(autoffset) delete autoffset;
-		if(infoffset) delete infoffset;
+		if(sufoffset) delete [] sufoffset;
+		if(autoffset) delete [] autoffset;
+		if(infoffset) delete [] infoffset;
 		if(name) free( name);
 	};
 	int isRacine(){ return(head.flag & TYPE_BIN_RACINE);};

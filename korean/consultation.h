@@ -44,11 +44,11 @@ public:
     };
     ~consultation_dictionnaire(){
         if(tokenTable){
-             delete memAllocTmp;
-             delete tokenTable;
+             delete [] memAllocTmp;
+             delete [] tokenTable;
         }
         if(findTokenTable)
-        delete findTokenTable;
+        delete [] findTokenTable;
     };
     int cacheIndex;
     void consutlationTextCode(char *fna)

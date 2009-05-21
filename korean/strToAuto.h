@@ -648,7 +648,7 @@ error("\n");
 			u_fprintf(fde,"\n");
 		}
 		//fflush(fde->f);
-		delete addrmap;
+		delete [] addrmap;
 	}
 	void prEtiquette(U_FILE *fout)
 	{
@@ -853,7 +853,7 @@ public:
 		tokMap[sizeFile-2] = 0;
 		loadStrStructFile((unsigned short *)tokMap,tokenStruct);
 		phraseMark = tokenStruct.check(u_phraseMark_string);
-		delete tokMap;
+		delete [] tokMap;
 		tokMap = 0;
 		fclose(fptr);
 	}
@@ -1308,7 +1308,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 				wp++;			
 		};
 		if( table.size() != cnt) fatal_error("illegal table size\n");
-		delete map;
+		delete [] map;
 	}
 
 	//

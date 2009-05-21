@@ -107,7 +107,7 @@ public:
 	{
 		struct symLink *scan = head;
 		while(scan){
-			delete scan->v;
+			free(scan->v);
 			scan = scan->next;
 		}
 	}

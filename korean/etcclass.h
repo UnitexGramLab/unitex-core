@@ -47,7 +47,7 @@ public:
 		while(Lhead){
 			Ltail = Lhead;
 			Lhead = Lhead->next;
-			delete Ltail->table;
+			delete [] Ltail->table;
 			delete Ltail;
 		}
 		if(tableLoaded) delete [] tableLoaded;

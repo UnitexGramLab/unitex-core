@@ -65,7 +65,7 @@ public:
         struct fileListe *wp;
         while(headFileList){
                 wp = headFileList->next;
-                delete headFileList->filename;
+				delete [] headFileList->filename;
                 delete headFileList;
                 headFileList = wp;
         }

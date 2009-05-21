@@ -49,8 +49,8 @@ public:
         ready_uniMbcs = 1;
     };
     ~convert_windows949kr_uni_CodePageOnly(){
-    delete mbcsUni949Table;
-    delete uniMbcs949Table;
+    delete [] mbcsUni949Table;
+    delete [] uniMbcs949Table;
     if(loadHJAConvMap) unLoadHJAMap();
     };
 

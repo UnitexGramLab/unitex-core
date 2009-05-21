@@ -146,7 +146,7 @@ main(int argc,char *argv[])
 
 	makeSegments(argv[argc-1],ofile_name,memBufferSize);
 
-	if(ofile_name)	delete ofile_name;
+	if(ofile_name)	delete [] ofile_name;
 	return(0);
 }
 

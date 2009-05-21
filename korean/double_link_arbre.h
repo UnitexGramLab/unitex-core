@@ -65,7 +65,7 @@ public:
 	~double_arbre_string0(){
 		if(tab){ for(int i = 0; i < N;i++) if(tab[i]) free(tab[i]);
 		free(tab);}
-		if(Ttable) delete Ttable;
+		if(Ttable) delete [] Ttable;
 	};
 	int size(){return(N);};
 	struct double_link_state *getRacine(){ return(racine);};
@@ -193,7 +193,7 @@ public:
 
 	void releaseTable()
 	{
-		delete Ttable;
+		delete [] Ttable;
 		Ttable = 0;
 	}
 	void explore_tout_leaf(release_f ppr)
@@ -405,6 +405,6 @@ public:
 				wp++;			
 		};
 		if( N != cnt) fatal_error("tableLoadFromFile: illegal table size\n");
-		delete map;
+		delete [] map;
 	}
 };

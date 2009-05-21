@@ -535,13 +535,13 @@ int main_MergeBin(int argc , char *argv[]) {
 		headFiles = tail;
 		tail = tail->next;
 		if(headFiles->newSufId)
-			delete headFiles->newSufId;
+			delete [] headFiles->newSufId;
 		delete headFiles;
 	}
 
 	if(dMode)	testLoad(argv[iargIndex]);
 #endif
-	if(nameOfoutput) delete nameOfoutput;
+	if(nameOfoutput) delete [] nameOfoutput;
 	u_printf("Done.\n");
 
 	return(0);

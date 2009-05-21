@@ -347,12 +347,12 @@ int main_SortMorph(int argc, char *argv[]) {
     
     u_fclose(fout);
     
-    if(tMem) delete tMem;
-	if(mMem) delete mMem;
-	if(sMem) delete sMem;
-    if(tTable) delete tTable;
-	if(mTable) delete mTable;
-	if(sTable) delete sTable;
+    if(tMem) delete [] tMem;
+	if(mMem) delete [] mMem;
+	if(sMem) delete [] sMem;
+    if(tTable) delete [] tTable;
+	if(mTable) delete [] mTable;
+	if(sTable) delete [] sTable;
 	//
 	// load list of morphème file to sort by canonique form, forme flechi,
 	// frequence of occurence

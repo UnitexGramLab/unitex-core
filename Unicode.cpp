@@ -846,7 +846,6 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 	   case UTF16_LE:
 	   case BIG_ENDIAN_UTF16:
 		  {
-			  int is_eof = 0;
 			  int pos_in_unichar_line = 0;
 			  int hibytepos = (encoding == UTF16_LE) ? 1 : 0;
 
@@ -856,6 +855,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 				  if (i_is_size != 0)
 					  if ((size-1) < BUFFER_IN_CACHE_SIZE)
 						  size_to_read_unichar = size-1;
+
 				  size_t read_utf16_in_file = 0;
 				  if (size_to_read_unichar>0)
 					  read_utf16_in_file = af_fread(&tab_in[0],2,(size_t)size_to_read_unichar/2,f);

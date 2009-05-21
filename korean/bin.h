@@ -707,8 +707,8 @@ public:
 	};
 	~explore_bin0(){
 		if(BIN) free(BIN);
-		if(sufoffset) delete sufoffset;
-		if(name) free( name);
+		if(sufoffset) delete [] sufoffset;
+		if(name) free(name);
 	};
 	int isRacine(){ return(head.flag & TYPE_BIN_RACINE);};
 	void loadbin(char *fname){
@@ -1077,7 +1077,7 @@ class load_consultation_dics
 {
 	class explore_bin0 **loaded_map;
 	arbre_string00 SUF;
-	unichar **SUF_tmp;
+	unichar **SUF_tmp_unichar;
 public:
 	struct sufptr **offsetCommon;
 
@@ -1093,7 +1093,7 @@ public:
 		AUT = 0;
 		loaded_map = 0;
 		offsetCommon = 0;
-		SUF_tmp = 0;
+		SUF_tmp_unichar = 0;
 	};
 	~load_consultation_dics()
 	{
@@ -1101,18 +1101,18 @@ public:
 		if(loaded_map){
 			for( i = 0; i < loadMapCnt;i++)
 				if(loaded_map[i]) delete loaded_map[i];
-			delete loaded_map;
+			delete [] loaded_map;
 		}
-		if(AUT) delete AUT;
+		if(AUT) delete [] AUT;
 		if(offsetCommon){
 			for( i = 0; i < offsetCommonCnt;i++)
 				if(offsetCommon[i]) delete offsetCommon[i];
-			delete offsetCommon;
+			free(offsetCommon);
 		}
-		if(SUF_tmp){
+		if(SUF_tmp_unichar){
 			for( i = 0; i < offsetCommonCnt;i++)
-				if(SUF_tmp[i]) delete SUF_tmp[i];
-			delete SUF_tmp;
+				if(SUF_tmp_unichar[i]) free(SUF_tmp_unichar[i]);
+			free(SUF_tmp_unichar);
 		}
 	};
 	
@@ -1196,13 +1196,13 @@ public:
 		AUT = new class explore_bin0 *[racineCnt];
 		offsetCommonCnt = SUF.size();
 
-		SUF_tmp = SUF.make_strPtr_table((int **)&offsetCommon);
+		SUF_tmp_unichar = SUF.make_strPtr_table((int **)&offsetCommon);
       if(!offsetCommon) {
          fatal_error("mem alloc fail for offset array\n");
       }
 		for( i = 1; i < offsetCommonCnt;i++){
 			error("%d %S %d",
-				i,&SUF_tmp[i][1],offsetCommon[i]->offset);
+				i,&SUF_tmp_unichar[i][1],offsetCommon[i]->offset);
 			error("%s\n",offsetCommon[i]->bin->name);
 				
 		}
@@ -1291,7 +1291,7 @@ class unification_des_bins
 	class binHead0	head;
 	class explore_bin0 **loaded_map;
 	arbre_string00 SUF;
-	unichar **SUF_tmp;
+	unichar **SUF_tmp_uni_char;
 public:
 	struct sufptr **offsetCommon;
 	int offsetCommonCnt;
@@ -1306,7 +1306,7 @@ public:
 		AUT = 0;
 		loaded_map = 0;
 		offsetCommon = 0;
-		SUF_tmp = 0;
+		SUF_tmp_uni_char = 0;
 
 	};
 	~unification_des_bins()
@@ -1317,16 +1317,16 @@ public:
 				if(loaded_map[i]) delete loaded_map[i];
 			delete loaded_map;
 		}
-		if(AUT) delete AUT;
+		if(AUT) delete [] AUT;
 		if(offsetCommon){
 			for( i = 0; i < offsetCommonCnt;i++)
 				if(offsetCommon[i]) delete offsetCommon[i];
-			delete offsetCommon;
+			free(offsetCommon);
 		}
-		if(SUF_tmp){
+		if(SUF_tmp_uni_char){
 			for( i = 0; i < offsetCommonCnt;i++)
-				if(SUF_tmp[i]) delete SUF_tmp[i];
-			delete SUF_tmp;
+				if(SUF_tmp_uni_char[i]) free(SUF_tmp_uni_char[i]);
+			free(SUF_tmp_uni_char);
 		}
 	};
 	
@@ -1405,10 +1405,10 @@ public:
 		AUT = new class explore_bin0 *[racineCnt];
 		offsetCommonCnt = SUF.size();
 
-		SUF_tmp = SUF.make_strPtr_table((int **)&offsetCommon);
+		SUF_tmp_uni_char = SUF.make_strPtr_table((int **)&offsetCommon);
 		for( i = 1; i < offsetCommonCnt;i++){
 			error("%d %s %d %d\n",i
-                     ,getUtoChar(&SUF_tmp[i][1])
+                     ,getUtoChar(&SUF_tmp_uni_char[i][1])
             , (unsigned int)offsetCommon[i]->bin,offsetCommon[i]->offset);
 		}
 		if(!offsetCommon)
@@ -1482,7 +1482,7 @@ class union_bin_file {
 	};
 	class arbre_string0 AUT;
 	struct simpleTmp *AUT_tmp;
-	struct simpleTmp *SUF_tmp;
+	struct simpleTmp *SUF_tmp_simpleTmp;
 	class arbre_string00	 NINF;
 	class arbre_string00 SUF;
 	int save_inf_offset;
@@ -1497,21 +1497,21 @@ public:
 		newInfTable = 0;
 		save_ref_offset = 0;
 		AUT_tmp = 0;
-		SUF_tmp = 0;
+		SUF_tmp_simpleTmp = 0;
 		
 	};
 	~union_bin_file()
 	{
 		int i;
-		if(newInfTable) delete newInfTable;
+		if(newInfTable) delete [] newInfTable;
 		
 		if(AUT_tmp){
 			for( i = 0; i < imageHead.cnt_auto;i++)
-				if(AUT_tmp[i].name) delete AUT_tmp[i].name;
+				if(AUT_tmp[i].name) delete [] AUT_tmp[i].name;
 		}
-		if(SUF_tmp){
+		if(SUF_tmp_simpleTmp){
 			for( i = 0; i < imageHead.cnt_suf;i++)
-				if(SUF_tmp[i].name) delete SUF_tmp[i].name;
+				if(SUF_tmp_simpleTmp[i].name) delete [] SUF_tmp_simpleTmp[i].name;
 		}
 	};
 	//
@@ -1584,21 +1584,21 @@ public:
 			fopenErrMessage(openfilename);
 		u_fgets(UtempBuff,lf);
 		imageHead.cnt_suf = utoi(UtempBuff);
-		SUF_tmp = 
+		SUF_tmp_simpleTmp = 
 			new struct union_bin_file::simpleTmp[imageHead.cnt_suf+1]; 
 		for( i = 0; i <= imageHead.cnt_suf;i++)
 		{
-			SUF_tmp[i].name = 0;
-			SUF_tmp[i].szStr = 0;
-			SUF_tmp[i].offset = 0;
+			SUF_tmp_simpleTmp[i].name = 0;
+			SUF_tmp_simpleTmp[i].szStr = 0;
+			SUF_tmp_simpleTmp[i].offset = 0;
 		}
 		SUF.put(assignUstring(u_epsilon_string),0);
 		lidx = 1;
 		while(EOF!=u_fgets(UtempBuff,lf)){
-			SUF_tmp[lidx].szStr = u_strlen(UtempBuff) +1;
-			SUF_tmp[lidx].name = new unichar[SUF_tmp[lidx].szStr+1];
-			u_strcpy(SUF_tmp[lidx].name,UtempBuff);
-			SUF_tmp[lidx].offset = 0;
+			SUF_tmp_simpleTmp[lidx].szStr = u_strlen(UtempBuff) +1;
+			SUF_tmp_simpleTmp[lidx].name = new unichar[SUF_tmp_simpleTmp[lidx].szStr+1];
+			u_strcpy(SUF_tmp_simpleTmp[lidx].name,UtempBuff);
+			SUF_tmp_simpleTmp[lidx].offset = 0;
 //			SUF.put(UtempBuff,0);
 			lidx++;
 		}
@@ -1638,9 +1638,9 @@ public:
          u_printf("%s %d\n",getUtoChar(AUT_tmp[i].name),save_inf_offset);
 		}
 		for( i = 1; i <= imageHead.cnt_suf;i++){
-			SUF.put(SUF_tmp[i].name,(void *)save_inf_offset);
-			save_inf_offset += SUF_tmp[i].szStr;
-         u_printf("%s %d\n",getUtoChar(SUF_tmp[i].name),save_inf_offset);
+			SUF.put(SUF_tmp_simpleTmp[i].name,(void *)save_inf_offset);
+			save_inf_offset += SUF_tmp_simpleTmp[i].szStr;
+         u_printf("%s %d\n",getUtoChar(SUF_tmp_simpleTmp[i].name),save_inf_offset);
 		}
 
 		char fname_sans_extension[1024];
@@ -1870,8 +1870,8 @@ public:
 		outbytes3(0,inf);
 		fwrite(BIN,imageHead.size_bin,1,inf);
 		imageHead.size_bin += DECALAGE_NEW_BIN;
-		delete BIN;
-		delete newInfTable;
+		delete [] BIN;
+		delete [] newInfTable;
 		newInfTable = 0;
 	}
 
@@ -1888,10 +1888,10 @@ public:
 			inf_offset += AUT_tmp[i].szStr;
 		}
 		for( i = 1; i <= imageHead.cnt_suf;i++){
-			for(j = 0; SUF_tmp[i].name[j];j++)
-				outbytes2(SUF_tmp[i].name[j],inf);
+			for(j = 0; SUF_tmp_simpleTmp[i].name[j];j++)
+				outbytes2(SUF_tmp_simpleTmp[i].name[j],inf);
 			outbytes2(0,inf);
-			inf_offset += SUF_tmp[i].szStr;
+			inf_offset += SUF_tmp_simpleTmp[i].szStr;
 		}
 		sz  = NINF.size();
 		int *s;		
