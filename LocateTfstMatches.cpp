@@ -425,10 +425,10 @@ return a->end_pos_in_token==b->end_pos_in_token
  * Returns 1 if a and b have the same bounds.
  */
 int same_positions(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-return same_start_positions(a,b) && same_end_positions(a,b); 
+return same_start_positions(a,b) && same_end_positions(a,b);
 }
 
-
+#if 0
 /**
  * Adds a match to the global list of matches. The function takes into
  * account the match policy. For instance, we don't take [2;3] into account
@@ -516,8 +516,167 @@ switch (p->match_policy) {
       break;
    }
 }
+#endif
 
 
+
+
+enum {A_BEFORE_B,
+	  A_BEFORE_B_OVERLAP,
+	  A_INCLUDES_B,
+	  A_EQUALS_B,
+	  B_INCLUDES_A,
+	  A_AFTER_B_OVERLAP,
+	  A_AFTER_B};
+
+/**
+ * Returns 1 if a's start position < b's start position; 0 otherwise
+ */
+int match_start_before(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
+if (a->start_pos_in_token>b->start_pos_in_token) return 0;
+if (a->start_pos_in_token<b->start_pos_in_token) return 1;
+if (a->start_pos_in_char>b->start_pos_in_char) return 0;
+if (a->start_pos_in_char<b->start_pos_in_char) return 1;
+return a->start_pos_in_letter<b->start_pos_in_letter;
+}
+
+
+int b_starts_after_end_of_a(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
+if (b->start_pos_in_token<a->end_pos_in_token) return 0;
+if (b->start_pos_in_token>a->end_pos_in_token) return 1;
+if (b->start_pos_in_char<a->end_pos_in_char) return 0;
+if (b->start_pos_in_char>a->end_pos_in_char) return 1;
+return b->start_pos_in_letter>a->end_pos_in_letter;
+}
+
+
+/**
+ * Compares a's positions and b's positions.
+ */
+int compare_matches(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
+if (match_start_before(a,b)) {
+	/* a starts before b starts */
+	if (b_starts_after_end_of_a(a,b)) return A_BEFORE_B;
+	if (match_end_after(b,a)) return A_BEFORE_B_OVERLAP;
+	return A_INCLUDES_B;
+} else if (same_start_positions(a,b)) {
+   /* a and b start at the same position */
+   if (same_end_positions(a,b)) return A_EQUALS_B;
+   if (match_end_after(b,a)) return B_INCLUDES_A;
+   return A_INCLUDES_B;
+} else {
+	/* a starts after b starts */
+	if (match_end_after(b,a)) return B_INCLUDES_A;
+	if (same_end_positions(a,b)) return B_INCLUDES_A;
+	if (b_starts_after_end_of_a(b,a)) return A_AFTER_B;
+	return A_AFTER_B_OVERLAP;
+}
+}
+
+
+/**
+ * We replace dest by a copy of src, freeing dest's previous values.
+ */
+void replace_match(struct tfst_simple_match_list* dest,struct tfst_simple_match_list* src) {
+dest->start_pos_in_token=src->start_pos_in_token;
+dest->end_pos_in_token=src->end_pos_in_token;
+dest->start_pos_in_char=src->start_pos_in_char;
+dest->end_pos_in_char=src->end_pos_in_char;
+dest->start_pos_in_letter=src->start_pos_in_letter;
+dest->end_pos_in_letter=src->end_pos_in_letter;
+if (dest->match!=NULL) {
+   (dest->match->pointed_by)--;
+}
+/* src->match->pointed_by does not need to be changed */
+dest->match=src->match;
+if (dest->output!=NULL) free(dest->output);
+dest->output=u_strdup(src->output);
+}
+
+
+/**
+ * Adds a match to the global list of matches. The function takes into
+ * account the match policy. For instance, we don't take [2;3] into account
+ * if we are in longest match mode and if we already have [2;5].
+ *
+ * This function is derived from the 'add_match' one in 'Matches.cpp', but it differs because
+ * in Locate, we know exactly where we are in the text, so that we can filter matches easily. When
+ * exploring a text automaton, it's not so easy to sort matches, because the state from where we
+ * started the match may correspond to a position in text lower than the one of a previous match.
+ *
+ * IMPORTANT: 'e' is to be copied if the corresponding match must be added to the list
+ */
+struct tfst_simple_match_list* add_element_to_list(struct locate_tfst_infos* p,struct tfst_simple_match_list* list,struct tfst_simple_match_list* e) {
+if (list==NULL) {
+	/* We can always add a match to the empty list */
+	return new_tfst_simple_match_list(e,NULL);
+}
+switch (compare_matches(list,e)) {
+   case A_BEFORE_B:
+   case A_BEFORE_B_OVERLAP: {
+	   //error("A before B:   candidate=%S  current=%S\n",e->output,list->output);
+	   /* If the candidate starts after the end of the current match, then we have to go on,
+	    * no matter the mode (shortest, longest or all matches) */
+	   list->next=add_element_to_list(p,list->next,e);
+	   return list;
+   }
+
+   case A_INCLUDES_B: {
+	   //error("A includes B:   candidate=%S  current=%S\n",e->output,list->output);
+	   if (p->match_policy==SHORTEST_MATCHES) {
+		   /* e must replace the current match in the list */
+		   replace_match(list,e);
+		   return list;
+	   } else if (p->match_policy==LONGEST_MATCHES) {
+		   /* Our match is shorter than a match in the list, we discard it */
+		   return list;
+	   } else {
+		   list->next=add_element_to_list(p,list->next,e);
+		   return list;
+	   }
+   }
+
+   case A_EQUALS_B: {
+	   //error("A equals B:   candidate=%S  current=%S\n",e->output,list->output);
+	   /* In any mode we replace the existing match by the new one, except if we allow
+	    * ambiguous outputs */
+	   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS && u_strcmp(list->output,e->output)) {
+		   list=new_tfst_simple_match_list(e,list);
+		   return list;
+	   } else {
+		   replace_match(list,e);
+		   return list;
+
+	   }
+   }
+
+   case B_INCLUDES_A: {
+	   //error("B includes A:   candidate=%S  current=%S\n",e->output,list->output);
+	   if (p->match_policy==SHORTEST_MATCHES) {
+		   /* Our match is longer than a match in the list, we discard it */
+		   return list;
+   	   } else if (p->match_policy==LONGEST_MATCHES) {
+   		   /* e must replace the current match in the list */
+   		   replace_match(list,e);
+   		   return list;
+   	   } else {
+   		   list->next=add_element_to_list(p,list->next,e);
+   		   return list;
+   	   }
+   }
+
+   case A_AFTER_B:
+   case A_AFTER_B_OVERLAP: {
+	   //error("A after B:   candidate=%S  current=%S\n",e->output,list->output);
+	   /* If the candidate ends before the start of the current match, then we have to insert it
+	    * no matter the mode (shortest, longest or all matches) */
+	   list=new_tfst_simple_match_list(e,list);
+	   return list;
+   }
+}
+/* Should not arrive here */
+return NULL;
+}
 
 /**
  * This function takes a tfst_match list that represents a match. It turns it into
@@ -532,7 +691,7 @@ if (element.end_pos_in_token==-1) {
    return;
 }
 //error("match from token %d to %d\n",element.start_pos_in_token,element.end_pos_in_token);
-add_element_to_list(infos,&element);
+infos->matches=add_element_to_list(infos,infos->matches,&element);
 }
 
 

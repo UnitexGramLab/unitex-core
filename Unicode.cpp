@@ -76,7 +76,7 @@ return af_ftell(stream->f);
 }
 
 void rewind(U_FILE* stream) {
-fseek( stream, 0L, SEEK_SET ); 
+fseek( stream, 0L, SEEK_SET );
 }
 
 int u_feof(U_FILE* stream) {
@@ -2137,7 +2137,7 @@ return u_strcpy(res,str);
 
 /**
  * This version has the correct prototype to be used as a keycopy function for
- * hash tables. 
+ * hash tables.
  */
 unichar* keycopy(unichar* key) {
 return u_strdup(key);

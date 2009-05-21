@@ -172,24 +172,24 @@ if (foo->str[0]!='@' || foo->str[1]=='\0') {
 }
 unichar* content=u_strdup(foo->str+1);
 /* We read the bounds that are supposed to be as follows:
- * 
+ *
  *    @a.b.c-d.e.fZ
- * 
+ *
  * a=start pos in tokens
  * b=start pos in characters
  * c=start pos in logical letters (for Korean)
  * d=end pos in tokens
  * e=end pos in characters
  * f=end pos in logical letters (for Korean)
- * 
- * Z is used for Korean: 
+ *
+ * Z is used for Korean:
  *    Z='#' if there is no syllab bound at the end of the input sequence
  *    If there is a syllab bound, then Z is not set.
  */
 readline(foo,t->tfst);
 chomp_new_line(foo);
 if (foo->str[0]!='@' || foo->str[1]=='\0') {
-   fatal_error("read_normal_tag: invalid bounds line %S\n",foo->str);
+   fatal_error("read_normal_tag #1: invalid bounds line %S\n",foo->str);
 }
 int a=-1,b=-1,c=-1,d=-1,e=-1,f=-1,n;
 unichar Z='\0';
@@ -197,7 +197,7 @@ unichar Z='\0';
 /* We read the start position */
 n=u_sscanf(&(foo->str[1]),"%d.%d.%d-%d.%d.%d%C",&a,&b,&c,&d,&e,&f,&Z);
 if (n<6 || (n==7 && Z!='#')) {
-   fatal_error("read_normal_tag: invalid bounds line %S\n",foo->str);
+   fatal_error("read_normal_tag #2: invalid bounds line %S\n",foo->str);
 }
 /* We don't test f<0, because f==-1 is the sign that the tag has an empty
  * surface form like {<E>,.JO} */
@@ -466,7 +466,7 @@ if (t->type==T_STD) {
    pos=pos+n;
    if (t->start_pos_token<0 || t->start_pos_char<0 || t->start_pos_letter<0
          || t->end_pos_token<0 || t->end_pos_char<0 /*|| t->end_pos_letter<0*/) {
-      /* We don't test t->end_pos_letter<0, because t->end_pos_letter==-1 is 
+      /* We don't test t->end_pos_letter<0, because t->end_pos_letter==-1 is
        * the sign that the tag has an empty surface form like {<E>,.JO} */
       fatal_error("Invalid TfstTag information in TfstTag_to_string\n");
    }
