@@ -291,6 +291,7 @@ e->next=NULL;
 
 
 
+#if 0
 
 /**
  * For given actual match:
@@ -305,7 +306,6 @@ e->next=NULL;
  * NOTE: 'dont_add_match' is supposed to be initialized at 0 before this
  *       funtion is called.
  */
-#if 0
 struct tfst_simple_match_list* eliminate_longer_matches(struct tfst_simple_match_list* ptr,
                                             struct tfst_simple_match_list* e,
                                             int *dont_add_match,
@@ -588,6 +588,57 @@ vector_ptr_add(items,list);
 
 
 /**
+ * Explores all the partial matches to produce outputs in MERGE mode. 
+ */
+void explore_match_for_MERGE_mode(struct locate_tfst_infos* infos,
+                                  struct tfst_simple_match_list* element,
+                                  vector_ptr* items,int current_item,Ustring* s,
+                                  int last_tfst_tag) {
+if (current_item==items->nbelems) {
+   /* If we have finished, we can save the current output */
+   element->m.output=s->str;
+   infos->matches=add_element_to_list(infos,infos->matches,element);
+   element->m.output=NULL;
+   return;
+}
+
+/* We save the length because it will be modified */
+int len=s->len;
+struct tfst_match* item=(struct tfst_match*)(items->tab[current_item]);
+struct list_int* text_tags=item->text_tag_numbers;
+/* We explore all the text tags */
+while (text_tags!=NULL) {
+   /* First, we restore the output string */
+   s->len=len;
+   s->str[len]='\0';
+   TfstTag* current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
+   int current_start,current_end;
+   get_global_offsets(current_tag,&current_start,&current_end);
+   if (current_item>0) {
+      /* If the item is not the first, we must insert the original text that is
+       * between the end of the previous merged text and the beginning of the
+       * current one, typically to insert spaces */
+      TfstTag* previous_tag=(TfstTag*)(infos->tfst->tags->tab[last_tfst_tag]);
+      int a,b;
+      get_global_offsets(previous_tag,&a,&b);
+      /* We start just after the end of the previous match */
+      current_start=b+1;
+   }
+#warning todo
+   /* Here we have to insert the text that is between current_start and current_end,
+    * and then, the ouput of the fst2 transition */
+   
+   if (infos->ambiguous_output_policy==IGNORE_AMBIGUOUS_OUTPUTS) {
+      /* If we don't want ambiguous outputs, then the first path is
+       * enough for our purpose */ 
+      return;
+   }
+   text_tags=text_tags->next;
+}
+}
+
+
+/**
  * This function explores the partial matches that constitute the given match in order to produce
  * one or all possible outputs, depending on infos->ambiguous_output_policy.
  * The output(s) is(are) then used to add matches to the infos->matches list.
@@ -605,13 +656,15 @@ if (infos->output_policy==REPLACE_OUTPUTS) {
 		int fst2_tag_number=item->fst2_transition->tag_number;
 		u_strcat(s,infos->fst2->tags[fst2_tag_number]->output);
 	}
-	/* Trick: as element is a variable that will soon be destroyed, we don't need to u_strdup s->str */
+	/* Trick: as 'element' is a variable that will soon be destroyed, 
+	 * we don't need to u_strdup s->str */
 	element->m.output=s->str;
 	infos->matches=add_element_to_list(infos,infos->matches,element);
 	element->m.output=NULL;
 } else {
-	/* MERGE mode */
-
+	/* In MERGE mode, we have to explore the combination of partial matches */
+   empty(s);
+   explore_match_for_MERGE_mode(infos,element,items,0,s,-1);
 }
 free_Ustring(s);
 free_vector_ptr(items);

@@ -506,3 +506,12 @@ for (int i=0;i<t->token_sizes->nbelems;i++) {
 }
 }
 
+
+/**
+ * Computes the start and end positions in chars from the beginning of the sentence for
+ * the given tag.
+ */
+void get_global_offsets(TfstTag* tag,int *start,int *end) {
+#warning to do
+}
+
