@@ -151,9 +151,9 @@ if (m==NULL) {
 	fatal_alloc_error("new_tfst_simple_match_list");
 }
 memcpy(m,e,sizeof(struct tfst_simple_match_list));
-if (m->output!=NULL) {
+if (m->m.output!=NULL) {
 	/* If there was an output, we have to clone it */
-	m->output=u_strdup(m->output);
+	m->m.output=u_strdup(m->m.output);
 }
 if (m->match!=NULL) {
 	(m->match->pointed_by)++;
@@ -174,7 +174,7 @@ if (m==NULL) {
 if (m->match!=NULL) {
 	(m->match->pointed_by)--;
 }
-free(m->output);
+free(m->m.output);
 free(m);
 }
 
@@ -231,13 +231,13 @@ return NULL;
 static void fill_element(struct locate_tfst_infos* infos,struct tfst_simple_match_list* e,struct tfst_match* m) {
 /* First, we compute the end offsets with the first element of the list
  * (remember: a match list is reversed) */
-e->end_pos_in_token=-1;
-e->end_pos_in_char=-1;
-e->end_pos_in_letter=-1;
+e->m.end_pos_in_token=-1;
+e->m.end_pos_in_char=-1;
+e->m.end_pos_in_letter=-1;
 struct tfst_match* first_text_dependent_tag=find_first_text_dependent_tag(m);
 if (first_text_dependent_tag==NULL) {
    /* If the whole match is text independent, we fail */
-   e->end_pos_in_token=-1;
+   e->m.end_pos_in_token=-1;
    return;
 }
 struct list_int* tags=first_text_dependent_tag->text_tag_numbers;
@@ -245,12 +245,12 @@ while (tags!=NULL) {
    if (tags->n!=-1) {
       /* We only consider tags that are not text independent */
 	   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
-	   if (e->end_pos_in_token==-1 || e->end_pos_in_token<t->end_pos_token
-	       || e->end_pos_in_char<t->end_pos_char
-	       || e->end_pos_in_letter<t->end_pos_letter) {
-		   e->end_pos_in_token=t->end_pos_token;
-		   e->end_pos_in_char=t->end_pos_char;
-		   e->end_pos_in_letter=t->end_pos_letter;
+	   if (e->m.end_pos_in_token==-1 || e->m.end_pos_in_token<t->end_pos_token
+	       || e->m.end_pos_in_char<t->end_pos_char
+	       || e->m.end_pos_in_letter<t->end_pos_letter) {
+		   e->m.end_pos_in_token=t->end_pos_token;
+		   e->m.end_pos_in_char=t->end_pos_char;
+		   e->m.end_pos_in_letter=t->end_pos_letter;
 	   }
    }
 	tags=tags->next;
@@ -260,56 +260,36 @@ while (tags!=NULL) {
 struct tfst_match* last_text_dependent_tag=find_last_text_dependent_tag(m);
 if (last_text_dependent_tag==NULL) {
    /* If the whole match is text independent, we fail */
-   e->end_pos_in_token=-1;
+   e->m.end_pos_in_token=-1;
    return;
 }
-e->start_pos_in_token=-1;
-e->start_pos_in_char=-1;
-e->start_pos_in_letter=-1;
+e->m.start_pos_in_token=-1;
+e->m.start_pos_in_char=-1;
+e->m.start_pos_in_letter=-1;
 tags=last_text_dependent_tag->text_tag_numbers;
 while (tags!=NULL) {
    if (tags->n!=-1) {
       /* We only consider tags that are not text independent */
 	   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
-	   if (e->start_pos_in_token==-1 || e->start_pos_in_token>t->start_pos_token
-	       || e->start_pos_in_char>t->start_pos_char
-	       || e->start_pos_in_letter>t->start_pos_letter) {
-		   e->start_pos_in_token=t->start_pos_token;
-		   e->start_pos_in_char=t->start_pos_char;
-		   e->start_pos_in_letter=t->start_pos_letter;
+	   if (e->m.start_pos_in_token==-1 || e->m.start_pos_in_token>t->start_pos_token
+	       || e->m.start_pos_in_char>t->start_pos_char
+	       || e->m.start_pos_in_letter>t->start_pos_letter) {
+		   e->m.start_pos_in_token=t->start_pos_token;
+		   e->m.start_pos_in_char=t->start_pos_char;
+		   e->m.start_pos_in_letter=t->start_pos_letter;
 	   }
    }
 	tags=tags->next;
 }
 /* Finally, we adjust offsets with the base offset of the current sentence */
-e->start_pos_in_token+=infos->tfst->offset_in_tokens;
-e->end_pos_in_token+=infos->tfst->offset_in_tokens;
-e->output=NULL;
+e->m.start_pos_in_token+=infos->tfst->offset_in_tokens;
+e->m.end_pos_in_token+=infos->tfst->offset_in_tokens;
+e->m.output=NULL;
 e->match=NULL;
 e->next=NULL;
 }
 
 
-/**
- * Returns 1 if a is longer than b; 0 otherwise.
- */
-int is_longer_match(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-if (a->start_pos_in_token>b->start_pos_in_token) return 0;
-if (a->start_pos_in_token==b->start_pos_in_token) {
-   if (a->start_pos_in_char>b->start_pos_in_char) return 0;
-   if (a->start_pos_in_char==b->start_pos_in_char) {
-      if (a->start_pos_in_letter>b->start_pos_in_letter) return 0;
-   }
-}
-if (a->end_pos_in_token<b->end_pos_in_token) return 0;
-if (a->end_pos_in_token==b->end_pos_in_token) {
-   if (a->end_pos_in_char<b->end_pos_in_char) return 0;
-   if (a->end_pos_in_char==b->end_pos_in_char) {
-      if (a->end_pos_in_letter<b->end_pos_in_letter) return 0;
-   }
-}
-return 1;
-}
 
 
 /**
@@ -325,6 +305,7 @@ return 1;
  * NOTE: 'dont_add_match' is supposed to be initialized at 0 before this
  *       funtion is called.
  */
+#if 0
 struct tfst_simple_match_list* eliminate_longer_matches(struct tfst_simple_match_list* ptr,
                                             struct tfst_simple_match_list* e,
                                             int *dont_add_match,
@@ -388,49 +369,12 @@ if (is_longer_match(e,ptr)) {
 ptr->next=eliminate_longer_matches(ptr->next,e,dont_add_match,p);
 return ptr;
 }
+#endif
 
 
-/**
- * Returns 1 if a ends strictly after b.
- */
-int match_end_after(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-if (a->end_pos_in_token<b->end_pos_in_token) return 0;
-if (a->end_pos_in_token>b->end_pos_in_token) return 1;
-/* Same end positions in tokens */
-if (a->end_pos_in_char<b->end_pos_in_char) return 0;
-if (a->end_pos_in_char>b->end_pos_in_char) return 1;
-/* Same end positions in chars */
-if (a->end_pos_in_letter<=b->end_pos_in_letter) return 0;
-return 1;
-}
 
 
-/**
- * Returns 1 if a begins exactly at the same position that b.
- */
-int same_start_positions(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-return a->start_pos_in_token==b->start_pos_in_token
-    && a->start_pos_in_char==b->start_pos_in_char
-    && a->start_pos_in_letter==b->start_pos_in_letter;
-}
 
-
-/**
- * Returns 1 if a ends exactly at the same position that b.
- */
-int same_end_positions(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-return a->end_pos_in_token==b->end_pos_in_token
-    && a->end_pos_in_char==b->end_pos_in_char
-    && a->end_pos_in_letter==b->end_pos_in_letter;
-}
-
-
-/**
- * Returns 1 if a and b have the same bounds.
- */
-int same_positions(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-return same_start_positions(a,b) && same_end_positions(a,b);
-}
 
 #if 0
 /**
@@ -525,76 +469,26 @@ switch (p->match_policy) {
 
 
 
-enum {A_BEFORE_B,
-	  A_BEFORE_B_OVERLAP,
-	  A_INCLUDES_B,
-	  A_EQUALS_B,
-	  B_INCLUDES_A,
-	  A_AFTER_B_OVERLAP,
-	  A_AFTER_B};
 
-/**
- * Returns 1 if a's start position < b's start position; 0 otherwise
- */
-int match_start_before(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-if (a->start_pos_in_token>b->start_pos_in_token) return 0;
-if (a->start_pos_in_token<b->start_pos_in_token) return 1;
-if (a->start_pos_in_char>b->start_pos_in_char) return 0;
-if (a->start_pos_in_char<b->start_pos_in_char) return 1;
-return a->start_pos_in_letter<b->start_pos_in_letter;
-}
-
-
-int b_starts_after_end_of_a(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-if (b->start_pos_in_token<a->end_pos_in_token) return 0;
-if (b->start_pos_in_token>a->end_pos_in_token) return 1;
-if (b->start_pos_in_char<a->end_pos_in_char) return 0;
-if (b->start_pos_in_char>a->end_pos_in_char) return 1;
-return b->start_pos_in_letter>a->end_pos_in_letter;
-}
-
-
-/**
- * Compares a's positions and b's positions.
- */
-int compare_matches(struct tfst_simple_match_list* a,struct tfst_simple_match_list* b) {
-if (match_start_before(a,b)) {
-	/* a starts before b starts */
-	if (b_starts_after_end_of_a(a,b)) return A_BEFORE_B;
-	if (match_end_after(b,a)) return A_BEFORE_B_OVERLAP;
-	return A_INCLUDES_B;
-} else if (same_start_positions(a,b)) {
-   /* a and b start at the same position */
-   if (same_end_positions(a,b)) return A_EQUALS_B;
-   if (match_end_after(b,a)) return B_INCLUDES_A;
-   return A_INCLUDES_B;
-} else {
-	/* a starts after b starts */
-	if (match_end_after(b,a)) return B_INCLUDES_A;
-	if (same_end_positions(a,b)) return B_INCLUDES_A;
-	if (b_starts_after_end_of_a(b,a)) return A_AFTER_B;
-	return A_AFTER_B_OVERLAP;
-}
-}
 
 
 /**
  * We replace dest by a copy of src, freeing dest's previous values.
  */
 void replace_match(struct tfst_simple_match_list* dest,struct tfst_simple_match_list* src) {
-dest->start_pos_in_token=src->start_pos_in_token;
-dest->end_pos_in_token=src->end_pos_in_token;
-dest->start_pos_in_char=src->start_pos_in_char;
-dest->end_pos_in_char=src->end_pos_in_char;
-dest->start_pos_in_letter=src->start_pos_in_letter;
-dest->end_pos_in_letter=src->end_pos_in_letter;
+dest->m.start_pos_in_token=src->m.start_pos_in_token;
+dest->m.end_pos_in_token=src->m.end_pos_in_token;
+dest->m.start_pos_in_char=src->m.start_pos_in_char;
+dest->m.end_pos_in_char=src->m.end_pos_in_char;
+dest->m.start_pos_in_letter=src->m.start_pos_in_letter;
+dest->m.end_pos_in_letter=src->m.end_pos_in_letter;
 if (dest->match!=NULL) {
    (dest->match->pointed_by)--;
 }
 /* src->match->pointed_by does not need to be changed */
 dest->match=src->match;
-if (dest->output!=NULL) free(dest->output);
-dest->output=u_strdup(src->output);
+if (dest->m.output!=NULL) free(dest->m.output);
+dest->m.output=u_strdup(src->m.output);
 }
 
 
@@ -615,7 +509,7 @@ if (list==NULL) {
 	/* We can always add a match to the empty list */
 	return new_tfst_simple_match_list(e,NULL);
 }
-switch (compare_matches(list,e)) {
+switch (compare_matches(&(list->m),&(e->m))) {
    case A_BEFORE_B:
    case A_BEFORE_B_OVERLAP: {
 	   //error("A before B:   candidate=%S  current=%S\n",e->output,list->output);
@@ -644,7 +538,7 @@ switch (compare_matches(list,e)) {
 	   //error("A equals B:   candidate=%S  current=%S\n",e->output,list->output);
 	   /* In any mode we replace the existing match by the new one, except if we allow
 	    * ambiguous outputs */
-	   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS && u_strcmp(list->output,e->output)) {
+	   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS && u_strcmp(list->m.output,e->m.output)) {
 		   list=new_tfst_simple_match_list(e,list);
 		   return list;
 	   } else {
@@ -712,9 +606,9 @@ if (infos->output_policy==REPLACE_OUTPUTS) {
 		u_strcat(s,infos->fst2->tags[fst2_tag_number]->output);
 	}
 	/* Trick: as element is a variable that will soon be destroyed, we don't need to u_strdup s->str */
-	element->output=s->str;
+	element->m.output=s->str;
 	infos->matches=add_element_to_list(infos,infos->matches,element);
-	element->output=NULL;
+	element->m.output=NULL;
 } else {
 	/* MERGE mode */
 
@@ -732,7 +626,7 @@ free_vector_ptr(items);
 void add_tfst_match(struct locate_tfst_infos* infos,struct tfst_match* m) {
 struct tfst_simple_match_list element;
 fill_element(infos,&element,m);
-if (element.end_pos_in_token==-1) {
+if (element.m.end_pos_in_token==-1) {
    /* If the match was in fact completely text independent, then we reject it */
    return;
 }
@@ -768,34 +662,34 @@ if (p->number_of_matches==p->search_limit) {
 }
 U_FILE* f=p->output;
 if (l==NULL) return;
-u_fprintf(f,"%d.%d.%d %d.%d.%d",l->start_pos_in_token,l->start_pos_in_char,
-      l->start_pos_in_letter,l->end_pos_in_token,
-      l->end_pos_in_char,l->end_pos_in_letter);
-if (l->output!=NULL) {
+u_fprintf(f,"%d.%d.%d %d.%d.%d",l->m.start_pos_in_token,l->m.start_pos_in_char,
+      l->m.start_pos_in_letter,l->m.end_pos_in_token,
+      l->m.end_pos_in_char,l->m.end_pos_in_letter);
+if (l->m.output!=NULL) {
 	/* If there is an output */
-	u_fprintf(f," %S",l->output);
+	u_fprintf(f," %S",l->m.output);
 }
 u_fprintf(f,"\n");
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
    (p->number_of_outputs)++;
-   if (!(p->start_position_last_printed_match_token == l->start_pos_in_token
-         && p->start_position_last_printed_match_char == l->start_pos_in_char
-         && p->start_position_last_printed_match_letter == l->start_pos_in_letter
-	      && p->end_position_last_printed_match_token == l->end_pos_in_token
-	      && p->end_position_last_printed_match_char == l->end_pos_in_char
-	      && p->end_position_last_printed_match_letter == l->end_pos_in_letter)) {
+   if (!(p->start_position_last_printed_match_token == l->m.start_pos_in_token
+         && p->start_position_last_printed_match_char == l->m.start_pos_in_char
+         && p->start_position_last_printed_match_letter == l->m.start_pos_in_letter
+	      && p->end_position_last_printed_match_token == l->m.end_pos_in_token
+	      && p->end_position_last_printed_match_char == l->m.end_pos_in_char
+	      && p->end_position_last_printed_match_letter == l->m.end_pos_in_letter)) {
 	   (p->number_of_matches)++;
    }
 } else {
 	/* If we don't allow ambiguous outputs, we count the matches */
 	(p->number_of_matches)++;
 }
-p->start_position_last_printed_match_token=l->start_pos_in_token;
-p->end_position_last_printed_match_token=l->end_pos_in_token;
-p->start_position_last_printed_match_char=l->start_pos_in_char;
-p->end_position_last_printed_match_char=l->end_pos_in_char;
-p->start_position_last_printed_match_letter=l->start_pos_in_letter;
-p->end_position_last_printed_match_letter=l->end_pos_in_letter;
+p->start_position_last_printed_match_token=l->m.start_pos_in_token;
+p->end_position_last_printed_match_token=l->m.end_pos_in_token;
+p->start_position_last_printed_match_char=l->m.start_pos_in_char;
+p->end_position_last_printed_match_char=l->m.end_pos_in_char;
+p->start_position_last_printed_match_letter=l->m.start_pos_in_letter;
+p->end_position_last_printed_match_letter=l->m.end_pos_in_letter;
 if (p->number_of_matches==p->search_limit) {
 	/* If we have reached the search limitation, we free the remaining
 	 * matches and return */

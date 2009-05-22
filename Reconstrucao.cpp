@@ -28,7 +28,7 @@
 #include "AbstractDelaLoad.h"
 #include "File.h"
 #include "Copyright.h"
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "PortugueseNormalization.h"
 #include "String_hash.h"
 #include "Sentence2Grf.h"

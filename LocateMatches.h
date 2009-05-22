@@ -25,7 +25,7 @@
 #include "Unicode.h"
 #include "LocatePattern.h"
 #include "LocateConstants.h"
-
+#include "Match.h"
 
 /**
  * This structure represents a match list. [start;end] is the interval
@@ -34,18 +34,7 @@
  * NULL otherwise.
  */
 struct match_list {
-   int start;
-   int end;
-   
-   /* Those fields are used for Korean
-    * xxx_char=offset of the char in the token 
-    * xxx_letter=offset of the logical letter in the char */
-   int start_char;
-   int end_char;
-   int start_letter;
-   int end_letter;
-         
-   unichar* output;
+   Match m;
    struct match_list* next;
 };
 

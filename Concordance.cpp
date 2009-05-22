@@ -21,7 +21,7 @@
 
 #include "Concordance.h"
 #include "Unicode.h"
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "SortTxt.h"
 #include "Error.h"
 #include "Buffer.h"
@@ -830,9 +830,9 @@ int end_from_eos=0;
 u_printf("Constructing concordance...\n");
 while (matches!=NULL) {
 	if (buffer->size==buffer->MAXIMUM_BUFFER_SIZE
-		&& ((matches->start-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
+		&& ((matches->m.start_pos_in_token-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
 		/* If we must change of block... */
-      move_buffer_to_position(matches->start,text,tokens,token_length,buffer,&n_units_already_read,
+      move_buffer_to_position(matches->m.start_pos_in_token,text,tokens,token_length,buffer,&n_units_already_read,
 						&current_origin_in_chars,&current_sentence,
 						&position_from_eos,expected_result);
 		/* We update the position in characters (from the beginning of the text
@@ -845,8 +845,8 @@ while (matches!=NULL) {
 	/* Here, we are sure that the buffer contains all the tokens we need.
 	 * We adjust 'start_pos' and 'end_pos' so that the tokens that compose
 	 * the current match are between buffer[start_pos] and buffer[end_pos]. */
-	start_pos=matches->start-n_units_already_read;
-	end_pos=matches->end-n_units_already_read;
+	start_pos=matches->m.start_pos_in_token-n_units_already_read;
+	end_pos=matches->m.end_pos_in_token-n_units_already_read;
 	start_pos_char=position_in_chars;
 	/* We update the position in characters so that we know how
 	 * many characters there are before buffer[start_pos]. We update
@@ -887,7 +887,7 @@ while (matches!=NULL) {
          }
       }
 	}
-	position_in_chars=start_pos_char+matches->start_char;
+	position_in_chars=start_pos_char+matches->m.start_pos_in_char;
 	position_in_tokens=start_pos;
 	end_pos_char=start_pos_char;
    end_from_eos=start_from_eos;
@@ -900,17 +900,17 @@ while (matches!=NULL) {
       end_pos_char=end_pos_char+token_size;
       end_from_eos=end_from_eos+token_size;
 	}
-	end_pos_char=end_pos_char+matches->end_char+1;
+	end_pos_char=end_pos_char+matches->m.end_pos_in_char+1;
 	/* Now we extract the 3 parts of the concordance */
-	extract_left_context(start_pos,matches->start_char,left,tokens,option,token_length,buffer);
-	extract_match(start_pos,matches->start_char,end_pos,matches->end_char,matches->output,middle,tokens,buffer);
+	extract_left_context(start_pos,matches->m.start_pos_in_char,left,tokens,option,token_length,buffer);
+	extract_match(start_pos,matches->m.start_pos_in_char,end_pos,matches->m.end_pos_in_char,matches->m.output,middle,tokens,buffer);
 	/* To compute the 3rd part (right context), we need to know the length of
 	 * the matched sequence in displayable characters. */
 	int match_length_in_displayable_chars;
 	if (option->thai_mode) {match_length_in_displayable_chars=u_strlen_Thai(middle);}
 	else {match_length_in_displayable_chars=u_strlen(middle);}
 	/* Then we can compute the right context */
-	extract_right_context(end_pos,matches->end_char,right,tokens,match_length_in_displayable_chars,
+	extract_right_context(end_pos,matches->m.end_pos_in_char,right,tokens,match_length_in_displayable_chars,
                               option,buffer);
 	/* If we must produce a GlossaNet concordance, we look for a URL. After the
 	 * function call, 'is_a_good_match' can be set to 0 if the match
@@ -923,11 +923,11 @@ while (matches!=NULL) {
 	unichar positions_from_eos[100];
 	/* And we use it to compute the bounds of the matched sequence in characters
 	 * from the beginning of the text file. */
-	int shift=get_shift(n_enter_char,enter_pos,matches->start);
+	int shift=get_shift(n_enter_char,enter_pos,matches->m.start_pos_in_token);
 	start_pos_char=start_pos_char+shift;
 	/* The shift value can be different at the end of the match since new lines
 	 * can occur inside a match. */
-	shift=get_shift(n_enter_char,enter_pos,matches->end);
+	shift=get_shift(n_enter_char,enter_pos,matches->m.end_pos_in_token);
 	end_pos_char=end_pos_char+shift;
 	/* Finally, we copy the sequence bounds and the sentence number into 'positions'. */
 	u_sprintf(positions,"\t%d %d %d",start_pos_char,end_pos_char,current_sentence);
@@ -1111,8 +1111,8 @@ int pos_in_enter_pos=0;
 u_printf("Merging outputs with text...\n");
 while (matches!=NULL) {
 	while (matches!=NULL &&
-	          (matches->start<current_global_position_in_token
-	            || (matches->start==current_global_position_in_token && matches->start_char<current_global_position_in_char)
+	          (matches->m.start_pos_in_token<current_global_position_in_token
+	            || (matches->m.start_pos_in_token==current_global_position_in_token && matches->m.start_pos_in_char<current_global_position_in_char)
 	           )
 	       ) {
 		/* If we must ignore this match because it is overlapping a previous match */
@@ -1122,34 +1122,34 @@ while (matches!=NULL) {
 	}
 	if (matches!=NULL) {
 		/* There, we are sure that we have a valid match to process */
-		pos_in_enter_pos=move_in_text_with_writing(matches->start,matches->end,text,tokens,
+		pos_in_enter_pos=move_in_text_with_writing(matches->m.start_pos_in_token,matches->m.end_pos_in_token,text,tokens,
 													current_global_position_in_token,output,
 													n_enter_char,enter_pos,pos_in_enter_pos,
 													buffer,&current_global_position_in_char);
 		/* Now, we are sure that the buffer contains all we want */
 		/* If the match doesn't start at the beginning of the token, we add the prefix */
-		int zz=matches->start-current_global_position_in_token;
+		int zz=matches->m.start_pos_in_token-current_global_position_in_token;
 		unichar* first_token=tokens->token[buffer->int_buffer[zz]];
-		for (int i=current_global_position_in_char;i<matches->start_char;i++) {
+		for (int i=current_global_position_in_char;i<matches->m.start_pos_in_char;i++) {
 		   u_fprintf(output,"%C",first_token[i]);
 		}
-		if (matches->output!=NULL) {
-			u_fprintf(output,"%S",matches->output);
+		if (matches->m.output!=NULL) {
+			u_fprintf(output,"%S",matches->m.output);
 		}
-		zz=matches->end-current_global_position_in_token;
+		zz=matches->m.end_pos_in_token-current_global_position_in_token;
 		unichar* last_token=tokens->token[buffer->int_buffer[zz]];
-		if (last_token[matches->end_char+1]=='\0') {
+		if (last_token[matches->m.end_pos_in_char+1]=='\0') {
 		   /* If we have completely consumed the last token of the match */
-		   current_global_position_in_token=matches->end+1;
+		   current_global_position_in_token=matches->m.end_pos_in_token+1;
 		   current_global_position_in_char=0;
 		} else {
-		   current_global_position_in_token=matches->end;
-	      current_global_position_in_char=matches->end_char+1;
+		   current_global_position_in_token=matches->m.end_pos_in_token;
+	      current_global_position_in_char=matches->m.end_pos_in_char+1;
 		}
 		/* If it was the last match or if the next match starts on another token,
 		 * we dump the end of the current token, if any */
 		if (current_global_position_in_char!=0 &&
-		      (matches->next==NULL || matches->next->start!=current_global_position_in_token)) {
+		      (matches->next==NULL || matches->next->m.start_pos_in_token!=current_global_position_in_token)) {
 		   for (int i=current_global_position_in_char;last_token[i]!='\0';i++) {
 		      u_fprintf(output,"%C",last_token[i]);
 		   }

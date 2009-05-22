@@ -21,7 +21,7 @@
 
 #include "ExtractUnits.h"
 #include "Buffer.h"
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "Error.h"
 
 
@@ -116,10 +116,10 @@ if (L==NULL) {
    (*RESULT)=0;
    return NULL;
 }
-if (L->end < beginning) {
+if (L->m.end_pos_in_token < beginning) {
    fatal_error("Error in the function is_a_match_in_the_sentence\n");
 }
-if (L->start > end) {
+if (L->m.start_pos_in_token > end) {
    /* If the match starts after the end of the range, we remove nothing and return 0 */
    (*RESULT)=0;
    return L;
@@ -128,7 +128,7 @@ if (L->start > end) {
 (*RESULT)=1;
 /* And we remove all the matches within the range */
 struct match_list* tmp;
-while (L!=NULL && L->start<=end) {
+while (L!=NULL && L->m.start_pos_in_token<=end) {
    tmp=L;
    L=L->next;
    free_match_list_element(tmp);

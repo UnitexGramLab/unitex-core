@@ -27,7 +27,6 @@
 #include "String_hash.h"
 #include "List_int.h"
 #include "Alphabet.h"
-#include "Matches.h"
 #include "Concordance.h"
 #include "File.h"
 #include "Copyright.h"

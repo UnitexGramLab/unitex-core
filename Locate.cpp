@@ -33,7 +33,7 @@
 #include "List_int.h"
 #include "CompoundWordTree.h"
 #include "Text_parsing.h"
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "TransductionVariables.h"
 #include "TransductionStack.h"
 #include "ParsingInfo.h"

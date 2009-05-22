@@ -25,7 +25,7 @@
 
 #include "Unicode.h"
 #include "Alphabet.h"
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "List_ustring.h"
 #include "Sentence2Grf.h"
 #include "NormalizationFst2.h"

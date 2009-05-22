@@ -247,7 +247,7 @@ COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Af_stdio.o Unicode.o DELA.
 
 CONCORD      = Concord
 CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o Unicode.o Text_tokens.o String_hash.o\
-				List_int.o Alphabet.o Matches.o Concordance.o File.o\
+				List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o File.o\
 				Text_parsing.o MorphologicalLocate.o LocatePattern.o\
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o \
@@ -260,7 +260,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o Unicode.o Text_tok
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_stdio.o Unicode.o Text_tokens.o String_hash.o List_int.o\
-				Alphabet.o Matches.o Concordance.o File.o\
+				Alphabet.o LocateMatches.o Match.o Concordance.o File.o\
 				Text_parsing.o MorphologicalLocate.o LocatePattern.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o\
 				DELA.o List_ustring.o Fst2.o AbstractDelaLoad.o AbstractFst2Load.o Pattern.o LocateFst2Tags.o\
@@ -278,7 +278,7 @@ DICO      = Dico
 DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o String_hash.o Text_tokens.o \
             List_ustring.o Af_stdio.o Unicode.o CompoundWordHashTable.o Fst2.o AbstractDelaLoad.o AbstractFst2Load.o \
             IOBuffer.o Error.o CompoundWordTree.o\
-            Pattern.o ParsingInfo.o LocatePattern.o Matches.o OptimizedFst2.o \
+            Pattern.o ParsingInfo.o LocatePattern.o LocateMatches.o Match.o OptimizedFst2.o \
             Text_parsing.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o Locate.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
@@ -314,7 +314,7 @@ EXTRACT      = Extract
 EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o List_ustring.o Fst2.o Pattern.o Af_stdio.o Unicode.o AbstractDelaLoad.o AbstractFst2Load.o\
-               Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o Matches.o\
+               Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o LocateMatches.o Match.o\
 	           MorphologicalFilters.o Error.o Buffer.o SortTxt.o StringParsing.o BitArray.o\
 	           LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
@@ -363,18 +363,20 @@ LOCATE      = Locate
 LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
               LocatePattern.o AbstractDelaLoad.o AbstractFst2Load.o Fst2.o Text_tokens.o List_int.o\
               Pattern.o CompoundWordTree.o LocateFst2Tags.o \
-              OptimizedFst2.o Text_parsing.o MorphologicalLocate.o Matches.o TransductionVariables.o TransductionStack.o\
+              OptimizedFst2.o Text_parsing.o MorphologicalLocate.o LocateMatches.o \
+              Match.o TransductionVariables.o TransductionStack.o\
               ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o\
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o
+              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o \
+              ProgramInvoker.o
 
 LOCATETFST      = LocateTfst
 LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o Unicode.o Error.o getopt.o LocateTfst_lib.o \
                   Tfst.o File.o Ustring.o SingleGraph.o List_int.o BitMasks.o FIFO.o Transitions.o \
                   Symbol.o LanguageDefinition.o Tagset.o String_hash.o StringParsing.o DELA.o \
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o \
-                  LocateTfstMatches.o MorphologicalFilters.o jamoCodage.o codeForKorean.o pro_type.o \
+                  LocateTfstMatches.o Match.o MorphologicalFilters.o jamoCodage.o codeForKorean.o pro_type.o \
                   orgUniMbcsMap.o segtype.o etc.o Korean.o OptimizedTfstTagMatching.o
 
 
@@ -409,7 +411,7 @@ REBUILDTFST_OBJS = Main_RebuildTfst.o RebuildTfst.o IOBuffer.o Af_stdio.o Unicod
 RECONSTRUCAO      = Reconstrucao
 RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingInfo.o CompoundWordTree.o\
                DELA.o AbstractDelaLoad.o List_ustring.o Fst2.o AbstractFst2Load.o IOBuffer.o TransductionStack.o Pattern.o \
-               Af_stdio.o Unicode.o Alphabet.o Matches.o File.o NormalizationFst2.o\
+               Af_stdio.o Unicode.o Alphabet.o LocateMatches.o Match.o File.o NormalizationFst2.o\
 	            PortugueseNormalization.o TransductionVariables.o \
                Text_parsing.o MorphologicalLocate.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
                Sentence2Grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
@@ -428,7 +430,8 @@ SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Af_stdio.o Unicode.o Error.o 
                
 STATS      = Stats
 STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Af_stdio.o Unicode.o Error.o Thai.o getopt.o\
-               ProgramInvoker.o HashTable.o File.o Text_tokens.o String_hash.o Matches.o DELA.o \
+               ProgramInvoker.o HashTable.o File.o Text_tokens.o String_hash.o \
+               LocateMatches.o Match.o DELA.o \
                Alphabet.o StringParsing.o List_int.o List_ustring.o
 
 TABLE2GRF      = Table2Grf
@@ -469,7 +472,7 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 DELA.o List_ustring.o String_hash.o BuildTextAutomaton.o List_int.o\
                 NormalizationFst2.o Fst2.o AbstractFst2Load.o File.o Error.o\
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
-                FIFO.o BitArray.o HashTable.o Transitions.o Matches.o\
+                FIFO.o BitArray.o HashTable.o Transitions.o LocateMatches.o Match.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
                 Tfst.o NewLineShifts.o ProgramInvoker.o\
                 Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o Jamo2Syl.o jamoCodage.o\
@@ -497,7 +500,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Grf2Fst2.o Grf2Fst2_lib.o HashTable.o HTMLCharacters.o ImplodeTfst.o IOBuffer.o \
                   LanguageDefinition.o LemmaTree.o LinearAutomaton2Txt.o List_int.o List_pointer.o List_ustring.o \
                   Locate.o LocateFst2Tags.o LocatePattern.o LocateTfst.o LocateTfst_lib.o LocateTfstMatches.o \
-                  Matches.o MF_DicoMorpho.o MF_DLC_inflect.o MF_FormMorpho.o MF_InflectTransd.o MF_LangMorpho.o \
+                  LocateMatches.o Match.o MF_DicoMorpho.o MF_DLC_inflect.o MF_FormMorpho.o MF_InflectTransd.o MF_LangMorpho.o \
                   MF_MU_graph.o MF_MU_morpho.o MF_Operators_Util.o MF_SU_morpho.o MF_Unif.o MF_Util.o \
                   MorphologicalFilters.o MorphologicalLocate.o MultiFlex.o NewLineShifts.o NormalizationFst2.o \
                   Normalize.o NormalizeAsRoutine.o NorwegianCompounds.o OptimizedFst2.o ParsingInfo.o Pattern.o \

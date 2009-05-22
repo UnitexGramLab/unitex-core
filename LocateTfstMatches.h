@@ -26,6 +26,7 @@
 #include "List_int.h"
 #include "LocateTfst_lib.h"
 #include "Transitions.h"
+#include "Match.h"
 
 
 #define NO_TEXT_TOKEN_WAS_MATCHED -1
@@ -70,17 +71,7 @@ struct tfst_match_list {
  */
 struct tfst_simple_match_list {
 	struct tfst_match* match;
-	int start_pos_in_token;
-	int end_pos_in_token;
-
-   /* Information for Korean, but not only */
-	int start_pos_in_char;
-	int end_pos_in_char;
-	int start_pos_in_letter;
-	int end_pos_in_letter;
-
-	unichar* output;
-
+	Match m;
 	struct tfst_simple_match_list* next;
 };
 

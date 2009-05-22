@@ -22,7 +22,6 @@
 #include <time.h>
 #include "ApplyDic.h"
 #include "Error.h"
-#include "Matches.h"
 #include "File.h"
 
 
@@ -697,7 +696,7 @@ if (f==NULL) {
 struct match_list* l=load_match_list(f,NULL);
 u_fclose(f);
 while (l!=NULL) {
-   if (l->output!=NULL && l->output[0]=='/') {
+   if (l->m.output!=NULL && l->m.output[0]=='/') {
 	   /* If we have a tag sequence to be used at the time of
 	    * building the text automaton */
 	   add_tag_sequence(info,l);
@@ -708,10 +707,10 @@ while (l!=NULL) {
 	   continue;
    }
    /* We test if the match is a valid dictionary entry */
-   struct dela_entry* entry=tokenize_DELAF_line(l->output,1);
+   struct dela_entry* entry=tokenize_DELAF_line(l->m.output,1);
    if (entry!=NULL) {
       /* If the entry is valid */
-      if(l->start==l->end) {
+      if(l->m.start_pos_in_token==l->m.end_pos_in_token) {
          /* If it is a simple word */
          int token_number=get_token_number(entry->inflected,info->tokens);
          if (token_number!=-1) {
@@ -724,11 +723,11 @@ while (l!=NULL) {
                set_value(info->part_of_a_word,token_number,1);
                set_value(info->simple_word,token_number,priority);
                /* We save it to the DLF */
-               u_fprintf(info->dlf,"%S\n",l->output);
+               u_fprintf(info->dlf,"%S\n",l->m.output);
             }
          }
       }
-      else if(l->start<l->end)    {
+      else if(l->m.start_pos_in_token<l->m.end_pos_in_token)    {
          /* If it is a compound word, we turn it into a token sequence
           * ended by -1 */
          build_token_sequence(entry->inflected,info->tokens,token_tab_coumpounds);
@@ -742,7 +741,7 @@ while (l!=NULL) {
                set_value(info->part_of_a_word,token_tab_coumpounds[k],1);
             }
             /* We save it to the DLC */
-            u_fprintf(info->dlc,"%S\n",l->output);
+            u_fprintf(info->dlc,"%S\n",l->m.output);
          }
       } else {
          error("Invalid match in concord.ind\n");
@@ -782,9 +781,19 @@ do {
 int compare_matches(const void* a,const void* b) {
 struct match_list** A=(struct match_list**)a;
 struct match_list** B=(struct match_list**)b;
-int u=(*A)->start-(*B)->start;
-if (u) return u;
-return (*A)->end-(*B)->end;
+switch (compare_matches(&((*A)->m),&((*B)->m))) {
+   case A_BEFORE_B:
+   case A_BEFORE_B_OVERLAP:
+   case A_INCLUDES_B: return -1;
+   
+   case A_EQUALS_B: return 0;
+   
+   case A_AFTER_B:
+   case A_AFTER_B_OVERLAP:
+   case B_INCLUDES_A: return 1;
+}
+fatal_error("Internal error in compare_matches\n");
+return 0; /* Just to avoid a warning */
 }
 
 
@@ -801,7 +810,7 @@ struct match_list* tmp;
 for (int i=0;i<info->n_tag_sequences;i++) {
    tmp=info->tag_sequences[i];
    /* We take tmp->output+1 in order to avoid copying the / character */
-   u_fprintf(f,"%d %d %S\n",tmp->start,tmp->end,tmp->output+1);
+   u_fprintf(f,"%d.0.0 %d.%d.0 %S\n",tmp->m.start_pos_in_token,tmp->m.end_pos_in_token,tmp->m.end_pos_in_char,tmp->m.output+1);
 }
 u_fclose(f);
 }

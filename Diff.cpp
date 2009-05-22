@@ -136,6 +136,7 @@ void compute_concordance_differences(struct match_list* list1,
                                      U_FILE* f1,
                                      U_FILE* f2,
                                      U_FILE* output) {
+#if 0
 /* We look both match index entirely */
 while (!(list1==NULL && list2==NULL)) {
    if (list1==NULL) {
@@ -217,6 +218,7 @@ while (!(list1==NULL && list2==NULL)) {
       list2=list2->next;
    }
 }
+#endif
 }
 
 

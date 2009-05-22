@@ -19,7 +19,7 @@
   *
   */
 
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "Error.h"
 
 
@@ -42,17 +42,17 @@ l=(struct match_list*)malloc(sizeof(struct match_list));
 if (l==NULL) {
    fatal_alloc_error("new_match");
 }
-l->start=start;
-l->end=end;
+l->m.start_pos_in_token=start;
+l->m.end_pos_in_token=end;
 if (output==NULL) {
-   l->output=NULL;
+   l->m.output=NULL;
 } else {
-   l->output=u_strdup(output);
+   l->m.output=u_strdup(output);
 }
-l->start_char=start_char;
-l->end_char=end_char;
-l->start_letter=start_letter;
-l->end_letter=end_letter;
+l->m.start_pos_in_char=start_char;
+l->m.end_pos_in_char=end_char;
+l->m.start_pos_in_letter=start_letter;
+l->m.end_pos_in_letter=end_letter;
 l->next=next;
 return l;
 }
@@ -63,7 +63,7 @@ return l;
  */
 void free_match_list_element(struct match_list* l) {
 if (l==NULL) return;
-if (l->output!=NULL) free(l->output);
+if (l->m.output!=NULL) free(l->m.output);
 free(l);
 }
 
@@ -86,11 +86,11 @@ if (p->match_list==NULL) {
 switch (p->match_policy) {
    case LONGEST_MATCHES:
       /* We put new matches at the beginning of the list */
-      if (end>p->match_list->end) {
+      if (end>p->match_list->m.end_pos_in_token) {
          /* In longest match mode, we only consider matches ending
           * later. Moreover, we allow just one match from a given
           * start position, except if ambiguous outputs are allowed. */
-         if (p->match_list->start==start) {
+         if (p->match_list->m.start_pos_in_token==start) {
             /* We overwrite matches starting at same position but ending earlier.
              * We do this by deleting the actual head element of the list
              * and calling the function recursively.
@@ -112,14 +112,14 @@ switch (p->match_policy) {
       /* If we have the same start and the same end, we consider the
        * new match only if ambiguous outputs are allowed */
       if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS
-         && p->match_list->end==end
-         && p->match_list->start==start
-         && u_strcmp(p->match_list->output,output)) {
+         && p->match_list->m.end_pos_in_token==end
+         && p->match_list->m.start_pos_in_token==start
+         && u_strcmp(p->match_list->m.output,output)) {
          /* Because matches with same range and same output may not come
           * one after another, we have to look if a match with same output
           * already exists */
          l=p->match_list;
-         while (l!=NULL && u_strcmp(l->output,output)) {
+         while (l!=NULL && u_strcmp(l->m.output,output)) {
             l=l->next;
          }
          if (l==NULL) {
@@ -134,9 +134,9 @@ switch (p->match_policy) {
       /* We unify identical matches, i.e. matches with same range (start and end),
        * taking the output into account if ambiguous outputs are allowed. */
       while (l!=NULL
-             && !(l->start==start && l->end==end
+             && !(l->m.start_pos_in_token==start && l->m.end_pos_in_token==end
                   && (p->ambiguous_output_policy!=ALLOW_AMBIGUOUS_OUTPUTS
-                      || u_strcmp(l->output,output)))) {
+                      || u_strcmp(l->m.output,output)))) {
          l=l->next;
       }
       if (l==NULL) {
@@ -179,14 +179,14 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr,
 struct match_list *l;
 if (ptr==NULL) return NULL;
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS
-    && ptr->start==start && ptr->end==end
-    && u_strcmp(ptr->output,output)) {
+    && ptr->m.start_pos_in_token==start && ptr->m.end_pos_in_token==end
+    && u_strcmp(ptr->m.output,output)) {
     /* In the case of ambiguous transductions producing different outputs,
      * we accept matches with same range */
    ptr->next=eliminate_longer_matches(ptr->next,start,end,output,dont_add_match,p);
    return ptr;
 }
-if (start>=ptr->start && end<=ptr->end) {
+if (start>=ptr->m.start_pos_in_token && end<=ptr->m.end_pos_in_token) {
    /* If the new match is shorter (or of equal length) than the current one
     * in the list, we replace the match in the list by the new one */
    if (*dont_add_match) {
@@ -198,16 +198,16 @@ if (start>=ptr->start && end<=ptr->end) {
     }
     /* If the new match is shorter than the current one in the list, then we
      * update the current one with the value of the new match. */
-    ptr->start=start;
-    ptr->end=end;
-    if (ptr->output!=NULL) free(ptr->output);
-    ptr->output=u_strdup(output);
+    ptr->m.start_pos_in_token=start;
+    ptr->m.end_pos_in_token=end;
+    if (ptr->m.output!=NULL) free(ptr->m.output);
+    ptr->m.output=u_strdup(output);
     /* We note that the match does not need anymore to be added */
     (*dont_add_match)=1;
     ptr->next=eliminate_longer_matches(ptr->next,start,end,output,dont_add_match,p);
     return ptr;
 }
-if (start<=ptr->start && end>=ptr->end) {
+if (start<=ptr->m.start_pos_in_token && end>=ptr->m.end_pos_in_token) {
    /* The new match is longer than the one in list => we
     * skip the new match */
    (*dont_add_match)=1;
@@ -236,7 +236,7 @@ struct match_list* save_matches(struct match_list* l,int current_position,
                                 U_FILE* f,struct locate_parameters* p) {
 struct match_list *ptr;
 if (l==NULL) return NULL;
-if (l->end<current_position) {
+if (l->m.end_pos_in_token<current_position) {
    /* we can save the match (necessary for SHORTEST_MATCHES: there
     * may be no shorter match) */
    
@@ -245,10 +245,10 @@ if (l->end<current_position) {
     *   1) offset in token
     *   2) offset in char inside the token
     *   3) offset in logical letter inside the current char (for Korean) */
-   u_fprintf(f,"%d.0.0 %d.%d.0",l->start,l->end,u_strlen(p->tokens->value[p->buffer[l->end]])-1);
-   if (l->output!=NULL) {
+   u_fprintf(f,"%d.0.0 %d.%d.0",l->m.start_pos_in_token,l->m.end_pos_in_token,u_strlen(p->tokens->value[p->buffer[l->m.end_pos_in_token]])-1);
+   if (l->m.output!=NULL) {
       /* If there is an output */
-      u_fprintf(f," %S",l->output);
+      u_fprintf(f," %S",l->m.output);
    }
    u_fprintf(f,"\n");
    if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
@@ -266,8 +266,8 @@ if (l->end<current_position) {
       *  - if the range differs (start and/or end position are different),
       *    a new match is counted
       */
-      if (!(p->start_position_last_printed_match == l->start
-            && p->end_position_last_printed_match == l->end)) {
+      if (!(p->start_position_last_printed_match == l->m.start_pos_in_token
+            && p->end_position_last_printed_match == l->m.end_pos_in_token)) {
          (p->number_of_matches)++;
       }
    } else {
@@ -299,10 +299,10 @@ if (l->end<current_position) {
    if (p->end_position_last_printed_match != current_position-1) {
       // initial (non-recursive) call of function:
       // then check if match is out of range of previous matches
-      if (p->end_position_last_printed_match < l->start) { // out of range
-         p->matching_units += (l->end+1)-(l->start);
+      if (p->end_position_last_printed_match < l->m.start_pos_in_token) { // out of range
+         p->matching_units += (l->m.end_pos_in_token+1)-(l->m.start_pos_in_token);
       } else {
-         p->matching_units += (l->end+1)-(p->end_position_last_printed_match+1);
+         p->matching_units += (l->m.end_pos_in_token+1)-(p->end_position_last_printed_match+1);
       }
    }
    // else:
@@ -313,12 +313,12 @@ if (l->end<current_position) {
    //  coverage, lower than correct.
    else {
       // this may make the coverage greater than correct:
-      if (p->start_position_last_printed_match > l->start) {
-         p->matching_units += p->start_position_last_printed_match-(l->start);
+      if (p->start_position_last_printed_match > l->m.start_pos_in_token) {
+         p->matching_units += p->start_position_last_printed_match-(l->m.start_pos_in_token);
       }
    }
-   p->start_position_last_printed_match=l->start;
-   p->end_position_last_printed_match=l->end;
+   p->start_position_last_printed_match=l->m.start_pos_in_token;
+   p->end_position_last_printed_match=l->m.end_pos_in_token;
    if (p->number_of_matches==p->search_limit) {
       /* If we have reached the search limitation, we free the remaining
        * matches and return */

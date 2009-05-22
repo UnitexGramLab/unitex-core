@@ -680,9 +680,9 @@ for (i=0;i<length;i++) {
 
 /* Now, we insert the tag sequences found in the 'tags.ind' file, if any */
 struct match_list* tmp;
-while ((*tag_list)!=NULL && (*tag_list)->start>=current_global_position_in_tokens
-       && (*tag_list)->start<=current_global_position_in_tokens+length) {
-   if ((*tag_list)->end>current_global_position_in_tokens+length) {
+while ((*tag_list)!=NULL && (*tag_list)->m.start_pos_in_token>=current_global_position_in_tokens
+       && (*tag_list)->m.start_pos_in_token<=current_global_position_in_tokens+length) {
+   if ((*tag_list)->m.end_pos_in_token>current_global_position_in_tokens+length) {
       /* If we have a tag sequence that overlap two sentences, we must ignore it */
       tmp=(*tag_list)->next;
       free_match_list_element((*tag_list));
@@ -690,8 +690,8 @@ while ((*tag_list)!=NULL && (*tag_list)->start>=current_global_position_in_token
       continue;
    }
    /* We compute the local bounds of the tag sequence */
-   int start_index=(*tag_list)->start-current_global_position_in_tokens;
-   int end_index=(*tag_list)->end-current_global_position_in_tokens;
+   int start_index=(*tag_list)->m.start_pos_in_token-current_global_position_in_tokens;
+   int end_index=(*tag_list)->m.end_pos_in_token-current_global_position_in_tokens;
    int start_pos_in_token=start_index;
    int end_pos_in_token=end_index;
    /* And we adjust them to our state indexes, because spaces
@@ -708,7 +708,7 @@ while ((*tag_list)!=NULL && (*tag_list)->start>=current_global_position_in_token
    }
    add_path_to_sentence_automaton(start_pos_in_token,end_pos_in_token,start_index,
                                   INFO.alph,tfst->automaton,tmp_tags,
-                                  (*tag_list)->output,end_index+1,foo,&INFO);
+                                  (*tag_list)->m.output,end_index+1,foo,&INFO);
    tmp=(*tag_list)->next;
    free_match_list_element((*tag_list));
    (*tag_list)=tmp;

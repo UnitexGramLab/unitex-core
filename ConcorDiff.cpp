@@ -25,6 +25,7 @@
 #include "Unicode.h"
 #include "Copyright.h"
 #include "Diff.h"
+#include "Error.h"
 #include "getopt.h"
 
 

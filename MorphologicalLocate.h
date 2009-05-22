@@ -22,7 +22,7 @@
 #ifndef MorphologicalLocateH
 #define MorphologicalLocateH
 
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "Fst2.h"
 #include "TransductionStack.h"
 #include "String_hash.h"

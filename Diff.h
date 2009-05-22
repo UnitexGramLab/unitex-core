@@ -22,7 +22,7 @@
 #ifndef DiffH
 #define DiffH
 
-#include "Matches.h"
+#include "LocateMatches.h"
 
 int diff(const char*,const char*,const char*,const char*,int);
 void compute_concordance_differences(struct match_list*,struct match_list*,U_FILE*,U_FILE*,U_FILE*);

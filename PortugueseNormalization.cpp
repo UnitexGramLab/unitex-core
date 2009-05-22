@@ -82,18 +82,18 @@ unichar temp[2000];
 unichar prefix[2000];
 struct string_hash* hash=new_string_hash();
 while (L!=NULL) {
-   if (L->output!=NULL) {
+   if (L->m.output!=NULL) {
       // first, we normalize the sequences by removing all spaces
-      u_strcpy_without_space(temp,L->output);
-      u_strcpy(L->output,temp);
+      u_strcpy_without_space(temp,L->m.output);
+      u_strcpy(L->m.output,temp);
       // then we check if this sequence has already been processed
-      int J=get_value_index(L->output,hash,DONT_INSERT);
+      int J=get_value_index(L->m.output,hash,DONT_INSERT);
       if (J!=-1) {
          // if the sequence has already been analyzed, we do nothing
       }
       else {
-         get_value_index(L->output,hash);
-         get_bracket_prefix(L->output,prefix);
+         get_value_index(L->m.output,hash);
+         get_bracket_prefix(L->m.output,prefix);
          if (!u_strcmp(prefix,"FuturConditional")) {
             N=N+replace_match_output_by_normalization_line(L,alph,root_bin,root_inf,inflected_bin,
                                                            inflected_inf,norm_tree);
@@ -154,16 +154,16 @@ int replace_match_output_by_normalization_line(struct match_list* L,Alphabet* al
                                                 struct INF_codes* root_inf,unsigned char* inflected_bin,
                                                 struct INF_codes* inflected_inf,
                                                 struct normalization_tree* norm_tree) {
-if (L->output==NULL) {
+if (L->m.output==NULL) {
    return 0;
 }
 unichar radical[1000];
 unichar pronoun[1000];
 unichar inflectional_code[1000];
 unichar suffix[1000];
-if (!tokenize_portuguese_match(L->output,radical,pronoun,suffix,inflectional_code)) {
-   free(L->output);
-   L->output=NULL;
+if (!tokenize_portuguese_match(L->m.output,radical,pronoun,suffix,inflectional_code)) {
+   free(L->m.output);
+   L->m.output=NULL;
    return 0;
 }
 // we put the radical, the pronoun and the suffix in lowercase,
@@ -178,8 +178,8 @@ struct list_ustring* pronouns=tokenize_portuguese_pronoun(pronoun);
 struct list_ustring* lemmas=NULL;
 // we look for the lemma in the radical form dictionary
 if (!get_radical_lemma(radical,&lemmas,alph,root_bin,root_inf)) {
-   free(L->output);
-   L->output=NULL;
+   free(L->m.output);
+   L->m.output=NULL;
    return 0;
 }
 
@@ -245,10 +245,10 @@ while (lemmas!=NULL) {
 }
 
 // we clear the output in order to replace it by the normalization lines
-free(L->output);
-L->output=NULL;
+free(L->m.output);
+L->m.output=NULL;
 if (temp_result[0]!='\0') {
-   L->output=u_strdup(temp_result);
+   L->m.output=u_strdup(temp_result);
 }
 free_list_ustring(pronouns);
 return RESULT;
@@ -459,17 +459,17 @@ u_fprintf(f,"\n\"\" 600 100 0 \n");
 // and then, we save the normalization rules
 int current_state=2;
 while (list!=NULL) {
-   if (list->output!=NULL) {
+   if (list->m.output!=NULL) {
       // if there is an output to process, we process it
       int i=0;
-      while (list->output[i]=='@') {
+      while (list->m.output[i]=='@') {
          // as the string has the form @rule1@rule2@....@ruleN
          // we produce a rule for each of its tokens
          i++;
          int j=0;
          unichar s[1000];
-         while (list->output[i]!='\0' && list->output[i]!='@') {
-            s[j++]=list->output[i++];
+         while (list->m.output[i]!='\0' && list->m.output[i]!='@') {
+            s[j++]=list->m.output[i++];
          }
          s[j]='\0';
          u_fprintf(f,"\"%S",s);
@@ -480,8 +480,8 @@ while (list!=NULL) {
    }
    struct match_list* l=list;
    list=list->next;
-   if (l->output!=NULL) {
-      free(l->output);
+   if (l->m.output!=NULL) {
+      free(l->m.output);
    }
    free(l);
 }

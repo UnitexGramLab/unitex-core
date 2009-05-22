@@ -29,7 +29,7 @@
 #include "DELA_tree.h"
 #include "String_hash.h"
 #include "NormalizationFst2.h"
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "LanguageDefinition.h"
 
 #define MAX_TOKENS_IN_SENTENCE 2000

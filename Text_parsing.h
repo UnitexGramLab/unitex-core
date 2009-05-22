@@ -22,7 +22,7 @@
 #ifndef Text_parsingH
 #define Text_parsingH
 
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "Fst2.h"
 #include "TransductionStack.h"
 #include "String_hash.h"

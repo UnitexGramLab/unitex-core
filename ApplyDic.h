@@ -30,6 +30,7 @@
 #include "CompoundWordHashTable.h"
 #include "Buffer.h"
 #include "BitArray.h"
+#include "LocateMatches.h"
 
 
 /**
