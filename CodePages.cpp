@@ -68,6 +68,8 @@ struct encodings_context {
 	int number_of_encodings;
 	/* Root of the encoding name tree */
 	struct search_tree_node* encoding_names;
+	/* context of html function */
+	void* character_context;
 #ifndef HGH_INSERT
 	convert_windows949kr_uni_CodePageOnly* uniKoran949;
 #endif
@@ -1316,6 +1318,7 @@ void (*z)(unichar,void*,struct encoding*,ABSTRACTFILE*,unsigned char*);
 unichar unicode_src[256];
 unichar unicode_dest[256];
 unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
+struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
 switch(input_encoding->type) {
 	/* For UTF-16 encodings, we need to read the 2-byte header */
 	case E_UTF16_LE:
@@ -1397,7 +1400,7 @@ while ((tmp=read_one_char(encoding_ctx,input->f,input_encoding,unicode_src))!=EO
 			/* Now, temp contains "#228" or "eacute". We look for the associated
 			 * code and we print it to the output if any; otherwise, we print
 			 * the '?' character. */
-			i=get_HTML_character(temp,decode_HTML_control_characters);
+			i=get_HTML_character(ectx->character_context,temp,decode_HTML_control_characters);
 			switch (i) {
 				case UNKNOWN_CHARACTER: z('?',encoding_ctx,output_encoding,output->f,ascii_dest); break;
 				case MALFORMED_HTML_CODE: error("Malformed HTML character declaration &%s;\n",temp);
@@ -1692,6 +1695,10 @@ if (ectx==NULL) {
 ectx->encoding_names = NULL;
 ectx->encodings = NULL;
 ectx->number_of_encodings = 0;
+ectx->character_context = init_HTML_character_context();
+if (ectx->character_context == NULL) {
+   fatal_alloc_error("install_all_encodings");
+}
 #ifndef HGH_INSERT
 ectx->uniKoran949 = new convert_windows949kr_uni_CodePageOnly;
 #endif
@@ -1775,7 +1782,7 @@ free_search_tree_node(ectx->encoding_names);
 #ifndef HGH_INSERT
 delete (ectx->uniKoran949);
 #endif
-
+free_HTML_character_context(ectx->character_context);
 free(ectx);
 }
 

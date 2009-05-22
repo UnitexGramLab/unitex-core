@@ -73,6 +73,9 @@ return 0;
 static const char *body = "body";
 
 void tei2txt(char *fin, char *fout) {
+	void* html_ctx = init_HTML_character_context();
+	if (html_ctx == NULL) fatal_alloc_error("tei2txt");
+
 	U_FILE* input = u_fopen(UTF8, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
@@ -168,7 +171,7 @@ void tei2txt(char *fin, char *fout) {
 				schars[j] = '\0';
 				//u_printf("Current S-chain: %S\n", schars);
 
-				k = get_HTML_character(schars, 1);
+				k = get_HTML_character(html_ctx,schars, 1);
 				switch (k) {
 					case UNKNOWN_CHARACTER: {
 						u_fputc('?', output);
@@ -193,8 +196,8 @@ void tei2txt(char *fin, char *fout) {
 		}
 	}
 
+	free_HTML_character_context(html_ctx);
 	u_fclose(input);
 	u_fclose(output);
 	u_printf("Done.\n");
 }
-

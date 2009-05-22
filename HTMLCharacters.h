@@ -29,7 +29,9 @@
 #define DO_NOT_DECODE_CHARACTER -2
 #define MALFORMED_HTML_CODE -3
 
-int get_HTML_character(const char*,int);
+void* init_HTML_character_context();
+void free_HTML_character_context(void*);
+int get_HTML_character(void* html_ctx,const char*,int);
 int is_HTML_control_character(unichar);
 
 #endif

@@ -34,8 +34,31 @@
 struct search_tree_node* init_control_characters();
 struct search_tree_node* init_normal_characters();
 
-static struct search_tree_node* control_characters=init_control_characters();
-static struct search_tree_node* normal_characters=init_normal_characters();
+
+struct HTML_character_context {
+  struct search_tree_node* control_characters;
+  struct search_tree_node* normal_characters;
+} ;
+
+
+void* init_HTML_character_context()
+{
+	struct HTML_character_context* html_ctx = (struct HTML_character_context*)malloc(sizeof(struct HTML_character_context));
+	if (html_ctx==NULL)
+		fatal_alloc_error("init_HTML_character_context");
+
+	html_ctx->control_characters = init_control_characters();
+	html_ctx->normal_characters = init_normal_characters();
+	return html_ctx;
+}
+
+void free_HTML_character_context(void* html_ctx)
+{
+struct HTML_character_context* html_context=(HTML_character_context*)html_ctx;
+free_search_tree_node(html_context->control_characters);
+free_search_tree_node(html_context->normal_characters);
+free(html_ctx);
+}
 
 
 /**
@@ -323,9 +346,9 @@ return root;
  * This function takes a sequence representing an HTML normal character
  * name like "eacute" and returns its unicode number, or -1 if not found.
  */
-int get_normal_character_number(const char* sequence) {
+int get_normal_character_number(struct HTML_character_context* html_context,const char* sequence) {
 int value;
-if (get_string_number(normal_characters,sequence,&value)) return value;
+if (get_string_number(html_context->normal_characters,sequence,&value)) return value;
 return -1;
 }
 
@@ -334,9 +357,9 @@ return -1;
  * This function takes a sequence representing an HTML control character
  * name like "gt" and returns its unicode number, or -1 if not found.
  */
-int get_control_character_number(const char* sequence) {
+int get_control_character_number(struct HTML_character_context* html_context,const char* sequence) {
 int value;
-if (get_string_number(control_characters,sequence,&value)) return value;
+if (get_string_number(html_context->control_characters,sequence,&value)) return value;
 return -1;
 }
 
@@ -394,18 +417,19 @@ return value;
  * returns MALFORMED_HTML_CODE if the sequence is a malformed integer code
  * like "#x42W4"
  */
-int get_HTML_character(const char* sequence,int decode_control_character) {
+int get_HTML_character(void* html_ctx,const char* sequence,int decode_control_character) {
+struct HTML_character_context* html_context=(HTML_character_context*)html_ctx;
 if (sequence==NULL || sequence[0]=='\0') {
 	fatal_error("Internal error in get_HTML_character\n");
 }
 int value;
 if (sequence[0]!='#') {
 	/* If we have a character name */
-	value=get_normal_character_number(sequence);
+	value=get_normal_character_number(html_context,sequence);
 	if (value!=-1) return value;
 	/* If the character is not in the normal character set, we
 	 * look in the control character set. */
-	value=get_control_character_number(sequence);
+	value=get_control_character_number(html_context,sequence);
 	if (value==-1) {
 		/* If the character is not a control character, then we
 		 * say that it is an unknown character. */
