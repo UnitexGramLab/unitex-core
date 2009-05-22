@@ -102,6 +102,7 @@ u_fclose(f2);
 /* We open the output file */
 U_FILE* output=u_fopen(UTF8,out,U_WRITE);
 if (output==NULL) {
+   fatal_error("Cannot open output file %s\n",out);
    return 0;
 }
 /* We open the two concordance files */
@@ -136,7 +137,6 @@ void compute_concordance_differences(struct match_list* list1,
                                      U_FILE* f1,
                                      U_FILE* f2,
                                      U_FILE* output) {
-#if 0
 /* We look both match index entirely */
 while (!(list1==NULL && list2==NULL)) {
    if (list1==NULL) {
@@ -144,81 +144,75 @@ while (!(list1==NULL && list2==NULL)) {
        * must be green */
       print_diff_matches(output,NULL,f2,"green");
       list2=list2->next;
+      continue;
    }
-   else if (list2==NULL) {
+   if (list2==NULL) {
       /* If the second list is empty, then the current match in the first list
        * must be green */
       print_diff_matches(output,f1,NULL,"green");
       list1=list1->next;
+      continue;
    }
-   else if (list1->start < list2->start) {
-           if (list1->end < list2->start) {
-              /* list1 has no common part with list2:
-               * abcd,efgh */
-              print_diff_matches(output,f1,NULL,"green");
-              list1=list1->next;
-           }
-           else {
-              /* list1 and list2 have something in common */
-              if (list2->end <= list1->end) {
-                 /* list2 is included in list1:
-                  * abcdef,cdef */
-                 print_diff_matches(output,f1,f2,"red");
-                 list1=list1->next;
-                 list2=list2->next;
-              }
-              else {
-                 /* list2 overlaps list1:
-                  * abcdef,cdefgh
-                  *
-                  * We consider that they are two distinct lines, and we
-                  * print the first */
-                 print_diff_matches(output,f1,NULL,"green");
-                 list1=list1->next;
-              }
-           }
-   }
-   else if (list2->start < list1->start) {
-           if (list2->end < list1->start) {
-              /* list2 has no common part with list1:
-               * abcd,efgh */
-              print_diff_matches(output,NULL,f2,"green");
-              list2=list2->next;
-           }
-           else {
-              /* list1 and list2 have something in common */
-              if (list1->end <= list2->end) {
-                 /* list1 is included in list2:
-                  * abcd,abcdef */
-                 print_diff_matches(output,f1,f2,"red");
-                 list1=list1->next;
-                 list2=list2->next;
-              }
-              else {
-                 /* list1 overlaps list2
-                  * abcdef,cdefgh
-                  * We consider that they are two distinct lines, and we
-                  * print the first */
-                 print_diff_matches(output,NULL,f2,"green");
-                 list2=list2->next;
-              }
-           }
-   }
-   else {
-      if (list1->end == list2->end) {
+   switch (compare_matches(&(list1->m),&(list2->m))) {
+      case A_BEFORE_B: {
+         /* list1 has no common part with list2:
+          * abcd,efgh */
+         print_diff_matches(output,f1,NULL,"green");
+         list1=list1->next;
+         break;
+      }
+      case A_INCLUDES_B: {
+         /* list2 is included in list1:
+          * abcdef,cdef */
+         print_diff_matches(output,f1,f2,"red");
+         list1=list1->next;
+         list2=list2->next;
+         break;
+      }
+      case A_BEFORE_B_OVERLAP: {
+         /* list2 overlaps list1:
+          * abcdef,cdefgh
+          *
+          * We consider that they are two distinct lines, and we
+          * print the first */
+         print_diff_matches(output,f1,NULL,"green");
+         list1=list1->next;
+         break;
+      }
+      case A_AFTER_B: {
+         /* list2 has no common part with list1:
+          * abcd,efgh */
+         print_diff_matches(output,NULL,f2,"green");
+         list2=list2->next;
+         break;
+      }
+      case B_INCLUDES_A: {
+         /* list1 is included in list2:
+          * abcd,abcdef */
+         print_diff_matches(output,f1,f2,"red");
+         list1=list1->next;
+         list2=list2->next;
+         break;
+      }
+      case A_AFTER_B_OVERLAP: {
+         /* list1 overlaps list2
+          * abcdef,cdefgh
+          * We consider that they are two distinct lines, and we
+          * print the first */
+         print_diff_matches(output,NULL,f2,"green");
+         list2=list2->next;         
+         break;
+      }
+      case A_EQUALS_B: {
          /* list1 == list2:
           * abcd,abcd */
          print_diff_matches(output,f1,f2,"blue");
+         list1=list1->next;
+         list2=list2->next;
+         break;
       }
-      else {
-         /* abcd,abcdef or abcedf,abcd */
-         print_diff_matches(output,f1,f2,"red");
-      }
-      list1=list1->next;
-      list2=list2->next;
    }
 }
-#endif
 }
 
 
