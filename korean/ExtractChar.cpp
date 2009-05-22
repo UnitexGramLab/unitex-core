@@ -41,10 +41,11 @@ u_printf(
 " -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \n");
 }
 
-unsigned short retvalue[3];
+
 
 
 int main_ExtractChar(int argc, char *argv[]) {
+    unsigned short retvalue[3];
 
     char *ifilename;
   	char *ofilename =0;

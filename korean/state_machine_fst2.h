@@ -69,13 +69,13 @@ public:
 		HeadStacks = 0;
 		smemIdx = 0;
 		dmemIdx = 0;
+		saveTransductionTable = 0;
 		for(int i=0; i< 2048;i++){
 			IncludeMap[i] = 0;
 		}
 		for(i = 0; i< CNT_SZ_MAX_ARRAY;i++)
 			smemArray[i] = dmemArray[i]= 0;
 		outCnt = 0;
-	
 	};
 	~state_machine(){
 		struct link *sp,*ntp;

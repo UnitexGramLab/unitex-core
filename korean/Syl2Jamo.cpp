@@ -73,11 +73,12 @@ void static setLocalKorean()
 }
 #endif
 
-class jamoCodage hangul;
+
 
 
 
 int main_Syl2Jamo(int argc,char *argv[]) {
+	class jamoCodage hangul;
 
 	char *ifilename = 0;
 	char *ofilename =0;

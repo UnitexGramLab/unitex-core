@@ -60,6 +60,19 @@
 //unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 
 
+
+struct encodings_context {
+	/* Array of all encodings */
+	struct encoding** encodings;
+	/* Size of in 'encodings' */
+	int number_of_encodings;
+	/* Root of the encoding name tree */
+	struct search_tree_node* encoding_names;
+#ifndef HGH_INSERT
+	convert_windows949kr_uni_CodePageOnly* uniKoran949;
+#endif
+} ;
+
 /**
  * Microsoft Thai code page (Windows 874).
  */
@@ -1042,7 +1055,6 @@ u_printf("    Swedish\n");
 }
 
 #ifndef HGH_INSERT
-convert_windows949kr_uni_CodePageOnly uniKoran949;
 void usage_windows_949() {
 u_printf("Microsoft Windows Codepage 949 - Korean\n");
 }
@@ -1051,7 +1063,8 @@ u_printf("Microsoft Windows Codepage 949 - Korean\n");
 /**
  * Reads a Korean character encoded in Windows 949.
  */
-int read_mbcs_char(ABSTRACTFILE* f) {
+int read_mbcs_char(ABSTRACTFILE* f,void* encoding_ctx) {
+struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
 int page;
 int off;
 unsigned char c;
@@ -1071,24 +1084,25 @@ if(page&0x80){
 	off = page;
 	page = 0;
 }
-return uniKoran949.mbcsUni949Table[page*256+off];
+return ectx->uniKoran949->mbcsUni949Table[page*256+off];
 }
 
 
 /**
  * Writes a Korean character encoded in Windows 949.
  */
-int write_mbcs_char(unichar c,ABSTRACTFILE* f) {
+int write_mbcs_char(unichar c,ABSTRACTFILE* f,void* encoding_ctx) {
+struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
 int ret;
 unsigned char cw;
-cw=(unsigned char)(uniKoran949.uniMbcs949Table[c*2]&0xFF);
+cw=(unsigned char)(ectx->uniKoran949->uniMbcs949Table[c*2]&0xFF);
 if (af_fwrite(&cw,1,1,f)!=1)
   return EOF;
 else
   ret=(int)c;
 if(c<128) return ret;
 
-cw=(unsigned char)(uniKoran949.uniMbcs949Table[c*2+1]&0xFF);
+cw=(unsigned char)(ectx->uniKoran949->uniMbcs949Table[c*2+1]&0xFF);
 if (af_fwrite(&cw,1,1,f)!=1)
   return EOF;
 else
@@ -1140,11 +1154,16 @@ return (int)af_fwrite(&c,1,1,f);
 }
 
 
-int write_one_char(unichar c,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
+int write_one_char(unichar c,void* encoding_ctx,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
 if (encoding->type==E_ONE_BYTE_ENCODING) {
 	return write_1_byte_character(ascii_dest[c],f);
 } else {
-	return encoding->output_function(c,f);
+	if (encoding->output_function != NULL) {
+	  return encoding->output_function(c,f);
+	}
+	else {
+		return encoding->output_function_ctx(c,f,encoding_ctx);
+    }
 }
 }
 
@@ -1156,13 +1175,13 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
  * '&' '#' '2' '3' '3' and ';' encoded as 2-bytes characters, for instance
  * with an UTF16 output encoding.
  */
-void write_integer(int n,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
+void write_integer(int n,void* encoding_ctx,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
 if (n<10) {
-	write_one_char('0'+n,f,encoding,ascii_dest);
+	write_one_char('0'+n,encoding_ctx,f,encoding,ascii_dest);
 	return;
 }
-write_integer(n/10,f,encoding,ascii_dest);
-write_one_char('0'+n%10,f,encoding,ascii_dest);
+write_integer(n/10,encoding_ctx,f,encoding,ascii_dest);
+write_one_char('0'+n%10,encoding_ctx,f,encoding,ascii_dest);
 }
 
 
@@ -1174,34 +1193,34 @@ write_one_char('0'+n%10,f,encoding,ascii_dest);
  * and 'encode_HTML_control_characters'.
  *
  */
-void html_characters_encoding(unichar c,struct encoding* encoding,ABSTRACTFILE* f,
+void html_characters_encoding(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,
 			int encode_all_characters,int encode_HTML_control_characters,
 			unsigned char* ascii_dest) {
 /* First, we check if we have an HTML control character */
 if (is_HTML_control_character(c)) {
 	/* If necessary, we encode it in HTML */
 	if (encode_HTML_control_characters) {
-		write_one_char('&',f,encoding,ascii_dest);
+		write_one_char('&',encoding_ctx,f,encoding,ascii_dest);
 		switch (c) {
-			case '<': write_one_char('l',f,encoding,ascii_dest);
-			          write_one_char('t',f,encoding,ascii_dest);
+			case '<': write_one_char('l',encoding_ctx,f,encoding,ascii_dest);
+			          write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
 			          break;
-			case '>': write_one_char('g',f,encoding,ascii_dest);
-			          write_one_char('t',f,encoding,ascii_dest);
+			case '>': write_one_char('g',encoding_ctx,f,encoding,ascii_dest);
+			          write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
 			          break;
-			case '&': write_one_char('a',f,encoding,ascii_dest);
-			          write_one_char('m',f,encoding,ascii_dest);
-			          write_one_char('p',f,encoding,ascii_dest);
+			case '&': write_one_char('a',encoding_ctx,f,encoding,ascii_dest);
+			          write_one_char('m',encoding_ctx,f,encoding,ascii_dest);
+			          write_one_char('p',encoding_ctx,f,encoding,ascii_dest);
 			          break;
-			case '\'': write_one_char('q',f,encoding,ascii_dest);
-			           write_one_char('u',f,encoding,ascii_dest);
-			           write_one_char('o',f,encoding,ascii_dest);
-			           write_one_char('t',f,encoding,ascii_dest);
+			case '\'': write_one_char('q',encoding_ctx,f,encoding,ascii_dest);
+			           write_one_char('u',encoding_ctx,f,encoding,ascii_dest);
+			           write_one_char('o',encoding_ctx,f,encoding,ascii_dest);
+			           write_one_char('t',encoding_ctx,f,encoding,ascii_dest);
 			           break;
 			default: error("Internal error in html_characters_encoding:\n");
 					fatal_error("inconsistency about HTML characters\n");
 		}
-		write_one_char(';',f,encoding,ascii_dest);
+		write_one_char(';',encoding_ctx,f,encoding,ascii_dest);
 		return;
 	}
 	/* Otherwise, we just print it, but only if it is supported by the encoding */
@@ -1210,21 +1229,21 @@ if (is_HTML_control_character(c)) {
 	} else {
 		/* If the control character can not be encoded as it, we
 		 * print the default character '?' */
-		write_one_char('?',f,encoding,ascii_dest);
+		write_one_char('?',encoding_ctx,f,encoding,ascii_dest);
 	}
 	return;
 }
 /* Here, we have to deal with a normal character */
 if (!encoding->can_be_encoded_function(c,ascii_dest) && encode_all_characters) {
 	/* If the character can not be encoded as it, we encode it like &#1200; */
-	write_one_char('&',f,encoding,ascii_dest);
-	write_one_char('#',f,encoding,ascii_dest);
-	write_integer(c,f,encoding,ascii_dest);
-	write_one_char(';',f,encoding,ascii_dest);
+	write_one_char('&',encoding_ctx,f,encoding,ascii_dest);
+	write_one_char('#',encoding_ctx,f,encoding,ascii_dest);
+	write_integer(c,encoding_ctx,f,encoding,ascii_dest);
+	write_one_char(';',encoding_ctx,f,encoding,ascii_dest);
 	return;
 }
 /* Otherwise, we just print the character */
-write_one_char(c,f,encoding,ascii_dest);
+write_one_char(c,encoding_ctx,f,encoding,ascii_dest);
 }
 
 
@@ -1232,17 +1251,17 @@ write_one_char(c,f,encoding,ascii_dest);
  * These 4 functions are shorcuts for invoking the 'html_characters_encoding'
  * function.
  */
-void f00(unichar c,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
-html_characters_encoding(c,encoding,f,0,0,ascii_dest);
+void f00(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
+html_characters_encoding(c,encoding_ctx,encoding,f,0,0,ascii_dest);
 }
-void f01(unichar c,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
-html_characters_encoding(c,encoding,f,0,1,ascii_dest);
+void f01(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
+html_characters_encoding(c,encoding_ctx,encoding,f,0,1,ascii_dest);
 }
-void f10(unichar c,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
-html_characters_encoding(c,encoding,f,1,0,ascii_dest);
+void f10(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
+html_characters_encoding(c,encoding_ctx,encoding,f,1,0,ascii_dest);
 }
-void f11(unichar c,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
-html_characters_encoding(c,encoding,f,1,1,ascii_dest);
+void f11(unichar c,void* encoding_ctx,struct encoding* encoding,ABSTRACTFILE* f,unsigned char* ascii_dest) {
+html_characters_encoding(c,encoding_ctx,encoding,f,1,1,ascii_dest);
 }
 
 
@@ -1251,11 +1270,17 @@ html_characters_encoding(c,encoding,f,1,1,ascii_dest);
  * 'unicode_src' if the encoding is a 1-byte one.
  *
  */
-int read_one_char(ABSTRACTFILE* input,struct encoding* encoding,unichar* unicode_src) {
+int read_one_char(void* encoding_ctx,ABSTRACTFILE* input,struct encoding* encoding,unichar* unicode_src) {
 if (encoding->type==E_ONE_BYTE_ENCODING) {
 	return read_1_byte_character(input,unicode_src);
+
 } else {
-	return encoding->input_function(input);
+	if (encoding->input_function != NULL) {
+	  return encoding->input_function(input);
+	}
+	else {
+		return encoding->input_function_ctx(input,encoding_ctx);
+    }
 }
 }
 
@@ -1279,7 +1304,7 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
  *      characters like '<' must be encoded as HTML strings like '&#228;' instead
  *      of being encoded as any other character
  */
-int convert(U_FILE* input,U_FILE* output,struct encoding* input_encoding,
+int convert(void* encoding_ctx,U_FILE* input,U_FILE* output,struct encoding* input_encoding,
 			struct encoding* output_encoding,
             int decode_HTML_normal_characters,int decode_HTML_control_characters,
             int encode_all_characters,int encode_HTML_control_characters) {
@@ -1287,7 +1312,7 @@ int convert(U_FILE* input,U_FILE* output,struct encoding* input_encoding,
  * Initialization for the source encoding.
  */
 int tmp;
-void (*z)(unichar,struct encoding*,ABSTRACTFILE*,unsigned char*);
+void (*z)(unichar,void*,struct encoding*,ABSTRACTFILE*,unsigned char*);
 unichar unicode_src[256];
 unichar unicode_dest[256];
 unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
@@ -1330,17 +1355,17 @@ else if (encode_HTML_control_characters)
 		z=f01;
 	else z=f00;
 /* Then we read all the characters from the input file and we encode them */
-while ((tmp=read_one_char(input->f,input_encoding,unicode_src))!=EOF) {
+while ((tmp=read_one_char(encoding_ctx,input->f,input_encoding,unicode_src))!=EOF) {
 	if (!decode_HTML_normal_characters || tmp!='&') {
 		/* If we do not need to decode HTML normal characters like &#eacute;
 		 * or if we do not have '&', we can print the character to the output */
-		z((unichar)tmp,output_encoding,output->f,ascii_dest);
+		z((unichar)tmp,encoding_ctx,output_encoding,output->f,ascii_dest);
 	} else {
 		/* We read everything until we find the ';' character */
 		char temp[257];
 		int i=0;
 		do {
-			tmp=read_one_char(input->f,input_encoding,unicode_src);
+			tmp=read_one_char(encoding_ctx,input->f,input_encoding,unicode_src);
 			if (tmp==EOF) {
 				/* If we find an unexpected end of file, we raise an error */
 				return ERROR_IN_HTML_CHARACTER_NAME;
@@ -1356,7 +1381,7 @@ while ((tmp=read_one_char(input->f,input_encoding,unicode_src))!=EOF) {
 			/* If the character declaration contains a non ascii character,
 			 * we print an error message and we write '?' to the output. */
 			error("Non ASCII character in a HTML character declaration of the form &......;\n");
-			z('?',output_encoding,output->f,ascii_dest);
+			z('?',encoding_ctx,output_encoding,output->f,ascii_dest);
 		} else if (i==1) {
 			/* If we have an empty code '&;' we print an error message and
 			 * we print nothing to the output. */
@@ -1366,7 +1391,7 @@ while ((tmp=read_one_char(input->f,input_encoding,unicode_src))!=EOF) {
 			/* If the HTML character if too long, we print an error message
 			 * and print '?' in the output. */
 			 error("Too long HTML character of the form &........;\n");
-			 z('?',output_encoding,output->f,ascii_dest);
+			 z('?',encoding_ctx,output_encoding,output->f,ascii_dest);
 		} else {
 			temp[i-1]='\0';
 			/* Now, temp contains "#228" or "eacute". We look for the associated
@@ -1374,31 +1399,31 @@ while ((tmp=read_one_char(input->f,input_encoding,unicode_src))!=EOF) {
 			 * the '?' character. */
 			i=get_HTML_character(temp,decode_HTML_control_characters);
 			switch (i) {
-				case UNKNOWN_CHARACTER: z('?',output_encoding,output->f,ascii_dest); break;
+				case UNKNOWN_CHARACTER: z('?',encoding_ctx,output_encoding,output->f,ascii_dest); break;
 				case MALFORMED_HTML_CODE: error("Malformed HTML character declaration &%s;\n",temp);
-									z('?',output_encoding,output->f,ascii_dest); break;
+									z('?',encoding_ctx,output_encoding,output->f,ascii_dest); break;
 				case DO_NOT_DECODE_CHARACTER:
 					/* If we have a control character that we must not decode like '&gt;',
 					 * we print it as it to the output */
-					 z('&',output_encoding,output->f,ascii_dest);
+					 z('&',encoding_ctx,output_encoding,output->f,ascii_dest);
 					 for (int j=0;temp[j]!='\0';j++) {
-					 	z(temp[j],output_encoding,output->f,ascii_dest);
+					 	z(temp[j],encoding_ctx,output_encoding,output->f,ascii_dest);
 					 }
-					 z(';',output_encoding,output->f,ascii_dest);
+					 z(';',encoding_ctx,output_encoding,output->f,ascii_dest);
 					 break;
 				default: if (!is_HTML_control_character(i) || decode_HTML_control_characters) {
 							/* If we have a normal character or if we can
 							 * encode control characters, then we print it */
-							z(i,output_encoding,output->f,ascii_dest);
+							z(i,encoding_ctx,output_encoding,output->f,ascii_dest);
 						} else {
 							/* If we have a control character and if we can not decode it,
 							 * then we copy the string representation that was in
 							 * the input */
-							z('&',output_encoding,output->f,ascii_dest);
+							z('&',encoding_ctx,output_encoding,output->f,ascii_dest);
 							for (int j=0;temp[j]!='\0';j++) {
-								z(temp[j],output_encoding,output->f,ascii_dest);
+								z(temp[j],encoding_ctx,output_encoding,output->f,ascii_dest);
 							}
-							z(';',output_encoding,output->f,ascii_dest);
+							z(';',encoding_ctx,output_encoding,output->f,ascii_dest);
 					 		break;
 						}
 			}
@@ -1408,14 +1433,6 @@ while ((tmp=read_one_char(input->f,input_encoding,unicode_src))!=EOF) {
 return CONVERSION_OK;
 }
 
-
-
-/* Array of all encodings */
-struct encoding** encodings=NULL;
-/* Size of in 'encodings' */
-int number_of_encodings=0;
-/* Root of the encoding name tree */
-struct search_tree_node* encoding_names=NULL;
 
 
 /**
@@ -1432,6 +1449,8 @@ encoding->number_of_aliases=0;
 encoding->init_function=NULL;
 encoding->input_function=NULL;
 encoding->output_function=NULL;
+encoding->input_function_ctx=NULL;
+encoding->output_function_ctx=NULL;
 encoding->usage_function=NULL;
 encoding->can_be_encoded_function=NULL;
 return encoding;
@@ -1483,9 +1502,10 @@ for (int i=0;s[i];i++) {
  * If not NULL, the 'aliases' array is supposed to contains NULL as last
  * element.
  */
-void install_one_byte_encoding(const char* name,void (*init_function)(unichar*),
+void install_one_byte_encoding(void*ctx,const char* name,void (*init_function)(unichar*),
                                void (*usage_function)(void),
                                const char** aliases) {
+struct encodings_context* ectx=(struct encodings_context*)ctx;
 if (name==NULL) {
    fatal_error("NULL name error in install_one_byte_encoding\n");
 }
@@ -1525,25 +1545,25 @@ while (aliases[i]!=NULL) {
 }
 encoding->number_of_aliases=i;
 /* Now, we install this encoding, enlarging the encoding array */
-encodings=(struct encoding**)realloc(encodings,(number_of_encodings+1)*sizeof(struct encoding*));
-if (encodings==NULL) {
+ectx->encodings=(struct encoding**)realloc(ectx->encodings,(ectx->number_of_encodings+1)*sizeof(struct encoding*));
+if (ectx->encodings==NULL) {
    fatal_alloc_error("install_one_byte_encoding");
-}
-encodings[number_of_encodings]=encoding;
+} 
+ectx->encodings[ectx->number_of_encodings]=encoding;
 /* Then we insert the encoding name and its aliases in the encoding name tree,
  * associating them to the corresponding index in 'encodings'. The insertion
  * operation will raise a fatal error if the given encoding name is already
  * in the encoding name tree. */
-if (!insert_string(&encoding_names,name,number_of_encodings)) {
+if (!insert_string(&ectx->encoding_names,name,ectx->number_of_encodings)) {
 	fatal_error("Internal error in install_multi_bytes_encoding: encoding name %s already used\n",name);
 }
 for (i=0;i<encoding->number_of_aliases;i++) {
-	if (!insert_string(&encoding_names,encoding->aliases[i],number_of_encodings)) {
+	if (!insert_string(&ectx->encoding_names,encoding->aliases[i],ectx->number_of_encodings)) {
 		fatal_error("Internal error in install_multi_bytes_encoding: encoding name %s already used\n",encoding->aliases[i]);
 	}
 }
 /* And finally, we do not forget to increase the number of encodings */
-number_of_encodings++;
+ectx->number_of_encodings++;
 }
 
 
@@ -1559,10 +1579,14 @@ number_of_encodings++;
  *
  * We consider that a multi-bytes encoding can encode any character.
  */
-void install_multi_bytes_encoding(const char* name,int type,int (*input_function)(ABSTRACTFILE*),
+void install_multi_bytes_encoding_ctxfunc(void* ctx,const char* name,int type,
+								int (*input_function)(ABSTRACTFILE*),
+								int (*input_function_ctx)(ABSTRACTFILE*,void*),
 								int (*output_function)(unichar,ABSTRACTFILE*),
+								int (*output_function_ctx)(unichar,ABSTRACTFILE*,void*),
 								void (*usage_function)(void),
 								const char** aliases) {
+struct encodings_context* ectx=(struct encodings_context*)ctx;
 if (name==NULL) {
    fatal_error("NULL name error in install_multi_bytes_encoding\n");
 }
@@ -1573,16 +1597,20 @@ if ((encoding->name=strdup(name))==NULL) {
 	fatal_alloc_error("install_multi_bytes_encoding");
 }
 strtolower(encoding->name);
-if (input_function==NULL) {
-	fatal_error("NULL input_function error in install_multi_bytes_encoding\n");
+if ((input_function==NULL) && (input_function_ctx==NULL)) {
+	fatal_error("NULL input_function error in install_multi_bytes_encoding_ctxfunc\n");
 }
 encoding->input_function=input_function;
-if (output_function==NULL) {
-	fatal_error("NULL output_function error in install_multi_bytes_encoding\n");
+encoding->input_function_ctx=input_function_ctx;
+
+if ((output_function==NULL) && (output_function_ctx==NULL)) {
+	fatal_error("NULL output_function error in install_multi_bytes_encoding_ctxfunc\n");
 }
 encoding->output_function=output_function;
+encoding->output_function_ctx=output_function_ctx;
+
 if (usage_function==NULL) {
-	fatal_error("NULL usage_function error in install_multi_bytes_encoding\n");
+	fatal_error("NULL usage_function error in install_multi_bytes_encoding_ctxfunc\n");
 }
 encoding->usage_function=usage_function;
 /*
@@ -1596,37 +1624,53 @@ int i=0;
 while (aliases[i]!=NULL) {
 	encoding->aliases=(char**)realloc(encoding->aliases,(i+1)*sizeof(char*));
 	if (encoding->aliases==NULL) {
-	   fatal_alloc_error("install_multi_bytes_encoding");
+	   fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
 	}
 	encoding->aliases[i]=strdup(aliases[i]);
 	strtolower(encoding->aliases[i]);
 	if (encoding->aliases[i]==NULL) {
-	   fatal_alloc_error("install_multi_bytes_encoding");
+	   fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
 	}
 	i++;
 }
 encoding->number_of_aliases=i;
 /* Now, we install this encoding, enlarging the encoding array */
-encodings=(struct encoding**)realloc(encodings,(number_of_encodings+1)*sizeof(struct encoding*));
-if (encodings==NULL) {
-   fatal_alloc_error("install_multi_bytes_encoding");
+ectx->encodings=(struct encoding**)realloc(ectx->encodings,(ectx->number_of_encodings+1)*sizeof(struct encoding*));
+if (ectx->encodings==NULL) {
+   fatal_alloc_error("install_multi_bytes_encoding_ctxfunc");
 }
-encodings[number_of_encodings]=encoding;
+ectx->encodings[ectx->number_of_encodings]=encoding;
 /* Then we insert the encoding name and its aliases in the encoding name tree,
  * associating them to the corresponding index in 'encodings'. The insertion
  * operation will raise a fatal error if the given encoding name is already
  * in the encoding name tree. */
-if (!insert_string(&encoding_names,name,number_of_encodings)) {
-	fatal_error("Internal error in install_multi_bytes_encoding: encoding name %s already used\n",name);
+if (!insert_string(&ectx->encoding_names,name,ectx->number_of_encodings)) {
+	fatal_error("Internal error in install_multi_bytes_encoding_ctxfunc: encoding name %s already used\n",name);
 }
 for (i=0;i<encoding->number_of_aliases;i++) {
-	if (!insert_string(&encoding_names,encoding->aliases[i],number_of_encodings)) {
-		fatal_error("Internal error in install_multi_bytes_encoding: encoding name %s already used\n",encoding->aliases[i]);
+	if (!insert_string(&ectx->encoding_names,encoding->aliases[i],ectx->number_of_encodings)) {
+		fatal_error("Internal error in install_multi_bytes_encoding_ctxfunc: encoding name %s already used\n",encoding->aliases[i]);
 	}
 }
 /* And finally, we do not forget to increase the number of encodings */
-number_of_encodings++;
+ectx->number_of_encodings++;
 }
+
+
+/* same as install_multi_bytes_encoding_ctxfunc but without specify context in/out function
+ */
+void install_multi_bytes_encoding(void*encoding_ctx,const char* name,int type,
+								int (*input_function)(ABSTRACTFILE*),
+								int (*output_function)(unichar,ABSTRACTFILE*),
+								void (*usage_function)(void),
+								const char** aliases)
+{
+    install_multi_bytes_encoding_ctxfunc(encoding_ctx,name,type,
+								input_function,NULL,
+								output_function,NULL,
+								usage_function,aliases);
+}
+
 
 
 /**
@@ -1636,37 +1680,49 @@ number_of_encodings++;
  * NOTE: all encoding will be put in lower case in order to match them
  *       ignoring case.
  */
-void install_all_encodings() {
+void* install_all_encodings() {
 /*
  * First we install UTF encodings.
  */
+struct encodings_context* ectx = (struct encodings_context*)malloc(sizeof(struct encodings_context));
+void* ctx=(void*)ectx;
+if (ectx==NULL) {
+   fatal_alloc_error("install_all_encodings");
+}
+ectx->encoding_names = NULL;
+ectx->encodings = NULL;
+ectx->number_of_encodings = 0;
+#ifndef HGH_INSERT
+ectx->uniKoran949 = new convert_windows949kr_uni_CodePageOnly;
+#endif
+
 const char* aliases_utf8[2]={"utf-8",NULL};
-install_multi_bytes_encoding("utf8",E_UTF8,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8,aliases_utf8);
+install_multi_bytes_encoding(ctx,"utf8",E_UTF8,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8,aliases_utf8);
 const char* aliases_utf16_le[4]={"utf-16-le","utf16le","little-endian",NULL};
-install_multi_bytes_encoding("utf16-le",E_UTF16_LE,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le,aliases_utf16_le);
+install_multi_bytes_encoding(ctx,"utf16-le",E_UTF16_LE,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le,aliases_utf16_le);
 const char* aliases_utf16_be[4]={"utf-16-be","utf16be","big-endian",NULL};
-install_multi_bytes_encoding("utf16-be",E_UTF16_BE,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be,aliases_utf16_be);
+install_multi_bytes_encoding(ctx,"utf16-be",E_UTF16_BE,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be,aliases_utf16_be);
 /*
  * ISO encodings
  */
 const char* aliases_iso_8859_1[4]={"iso88591","latin1","latin-1",NULL};
-install_one_byte_encoding("iso-8859-1",init_iso_8859_1,usage_iso_8859_1,aliases_iso_8859_1);
+install_one_byte_encoding(ctx,"iso-8859-1",init_iso_8859_1,usage_iso_8859_1,aliases_iso_8859_1);
 const char* aliases_iso_8859_2[4]={"iso88592","latin2","latin-2",NULL};
-install_one_byte_encoding("iso-8859-2",init_iso_8859_2,usage_iso_8859_2,aliases_iso_8859_2);
+install_one_byte_encoding(ctx,"iso-8859-2",init_iso_8859_2,usage_iso_8859_2,aliases_iso_8859_2);
 const char* aliases_iso_8859_3[4]={"iso88593","latin3","latin-3",NULL};
-install_one_byte_encoding("iso-8859-3",init_iso_8859_3,usage_iso_8859_3,aliases_iso_8859_3);
+install_one_byte_encoding(ctx,"iso-8859-3",init_iso_8859_3,usage_iso_8859_3,aliases_iso_8859_3);
 const char* aliases_iso_8859_4[4]={"iso88594","latin4","latin-4",NULL};
-install_one_byte_encoding("iso-8859-4",init_iso_8859_4,usage_iso_8859_4,aliases_iso_8859_4);
+install_one_byte_encoding(ctx,"iso-8859-4",init_iso_8859_4,usage_iso_8859_4,aliases_iso_8859_4);
 const char* aliases_iso_8859_5[4]={"iso88595","latin5","latin-5",NULL};
-install_one_byte_encoding("iso-8859-5",init_iso_8859_5,usage_iso_8859_5,aliases_iso_8859_5);
+install_one_byte_encoding(ctx,"iso-8859-5",init_iso_8859_5,usage_iso_8859_5,aliases_iso_8859_5);
 const char* aliases_iso_8859_7[4]={"iso88597","latin7","latin-7",NULL};
-install_one_byte_encoding("iso-8859-7",init_iso_8859_7,usage_iso_8859_7,aliases_iso_8859_7);
+install_one_byte_encoding(ctx,"iso-8859-7",init_iso_8859_7,usage_iso_8859_7,aliases_iso_8859_7);
 const char* aliases_iso_8859_9[4]={"iso88599","latin9","latin-9",NULL};
-install_one_byte_encoding("iso-8859-9",init_iso_8859_9,usage_iso_8859_9,aliases_iso_8859_9);
+install_one_byte_encoding(ctx,"iso-8859-9",init_iso_8859_9,usage_iso_8859_9,aliases_iso_8859_9);
 const char* aliases_iso_8859_10[4]={"iso885910","latin10","latin-10",NULL};
-install_one_byte_encoding("iso-8859-10",init_iso_8859_10,usage_iso_8859_10,aliases_iso_8859_10);
+install_one_byte_encoding(ctx,"iso-8859-10",init_iso_8859_10,usage_iso_8859_10,aliases_iso_8859_10);
 const char* aliases_iso_8859_15[4]={"iso885915","latin15","latin-15",NULL};
-install_one_byte_encoding("iso-8859-15",init_iso_8859_15,usage_iso_8859_15,aliases_iso_8859_15);
+install_one_byte_encoding(ctx,"iso-8859-15",init_iso_8859_15,usage_iso_8859_15,aliases_iso_8859_15);
 /*
  * Microsoft Windows code pages
  *
@@ -1674,33 +1730,53 @@ install_one_byte_encoding("iso-8859-15",init_iso_8859_15,usage_iso_8859_15,alias
  * we associate to it aliases for some language names.
  */
 const char* aliases_windows_874[4]={"windows-874","windows874","thai",NULL};
-install_one_byte_encoding("ms-windows-874",init_windows_874,usage_windows_874,aliases_windows_874);
+install_one_byte_encoding(ctx,"ms-windows-874",init_windows_874,usage_windows_874,aliases_windows_874);
 #ifndef HGH_INSERT
 /* Note that ms-windows-949 is a multi-bytes encoding */
 const char* aliases_windows_949[4]={"windows-949","windows949","korean",NULL};
-install_multi_bytes_encoding("ms-windows-949",E_MBCS_KR,read_mbcs_char,write_mbcs_char,usage_windows_949,aliases_windows_949);
+install_multi_bytes_encoding_ctxfunc(ctx,"ms-windows-949",E_MBCS_KR,NULL,read_mbcs_char,NULL,write_mbcs_char,usage_windows_949,aliases_windows_949);
 #endif
 const char* aliases_windows_1250[4]={"windows-1250","windows1250","czech",NULL};
-install_one_byte_encoding("ms-windows-1250",init_windows_1250,usage_windows_1250,aliases_windows_1250);
+install_one_byte_encoding(ctx,"ms-windows-1250",init_windows_1250,usage_windows_1250,aliases_windows_1250);
 const char* aliases_windows_1251[4]={"windows-1251","windows1251","cyrillic",NULL};
-install_one_byte_encoding("ms-windows-1251",init_windows_1251,usage_windows_1251,aliases_windows_1251);
+install_one_byte_encoding(ctx,"ms-windows-1251",init_windows_1251,usage_windows_1251,aliases_windows_1251);
 const char* aliases_windows_1252[10]={"windows-1252","windows1252","french","english",
 								"german","spanish","portuguese","italian",
 								"norwegian",NULL};
-install_one_byte_encoding("ms-windows-1252",init_windows_1252,usage_windows_1252,aliases_windows_1252);
+install_one_byte_encoding(ctx,"ms-windows-1252",init_windows_1252,usage_windows_1252,aliases_windows_1252);
 const char* aliases_windows_1253[4]={"windows-1253","windows1253","greek",NULL};
-install_one_byte_encoding("ms-windows-1253",init_windows_1253,usage_windows_1253,aliases_windows_1253);
+install_one_byte_encoding(ctx,"ms-windows-1253",init_windows_1253,usage_windows_1253,aliases_windows_1253);
 const char* aliases_windows_1254[4]={"windows-1254","windows1254","turkish",NULL};
-install_one_byte_encoding("ms-windows-1254",init_windows_1254,usage_windows_1254,aliases_windows_1254);
+install_one_byte_encoding(ctx,"ms-windows-1254",init_windows_1254,usage_windows_1254,aliases_windows_1254);
 const char* aliases_windows_1257[4]={"windows-1257","windows1257","baltic",NULL};
-install_one_byte_encoding("ms-windows-1257",init_windows_1257,usage_windows_1257,aliases_windows_1257);
+install_one_byte_encoding(ctx,"ms-windows-1257",init_windows_1257,usage_windows_1257,aliases_windows_1257);
 const char* aliases_windows_1258[5]={"windows-1258","windows1258","viet","vietnamese",NULL};
-install_one_byte_encoding("ms-windows-1258",init_windows_1258,usage_windows_1258,aliases_windows_1258);
+install_one_byte_encoding(ctx,"ms-windows-1258",init_windows_1258,usage_windows_1258,aliases_windows_1258);
 /*
  * NeXTSTEP encoding
  */
 const char* aliases_NeXTSTEP[2]={"next-step",NULL};
-install_one_byte_encoding("nextstep",init_NeXTSTEP,usage_NeXTSTEP,aliases_NeXTSTEP);
+install_one_byte_encoding(ctx,"nextstep",init_NeXTSTEP,usage_NeXTSTEP,aliases_NeXTSTEP);
+
+return (void*)ectx;
+}
+
+
+/*
+ * free the encoding context environement
+ */
+void free_encodings_context(void* encoding_ctx)
+{
+struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+int i;
+for (i=0;i<ectx->number_of_encodings;i++)
+  free(ectx->encodings[i]);
+free_search_tree_node(ectx->encoding_names);
+#ifndef HGH_INSERT
+delete (ectx->uniKoran949);
+#endif
+
+free(ectx);
 }
 
 
@@ -1708,9 +1784,10 @@ install_one_byte_encoding("nextstep",init_NeXTSTEP,usage_NeXTSTEP,aliases_NeXTST
  * This function prints the main names of encodings to the standard output,
  * so that a program can get the list of all supported encodings.
  */
-void print_encoding_main_names() {
-for (int i=0;i<number_of_encodings;i++) {
-	u_printf("%s\n",encodings[i]->name);
+void print_encoding_main_names(void* encoding_ctx) {
+struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+for (int i=0;i<ectx->number_of_encodings;i++) {
+	u_printf("%s\n",ectx->encodings[i]->name);
 }
 }
 
@@ -1719,10 +1796,11 @@ for (int i=0;i<number_of_encodings;i++) {
  * This function prints the aliases of encodings to the standard output,
  * so that a program can get the list of all supported encoding aliases.
  */
-void print_encoding_aliases() {
-for (int i=0;i<number_of_encodings;i++) {
-	for (int j=0;j<encodings[i]->number_of_aliases;j++) {
-		u_printf("%s\n",encodings[i]->aliases[j]);
+void print_encoding_aliases(void* encoding_ctx) {
+struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+for (int i=0;i<ectx->number_of_encodings;i++) {
+	for (int j=0;j<ectx->encodings[i]->number_of_aliases;j++) {
+		u_printf("%s\n",ectx->encodings[i]->aliases[j]);
 	}
 }
 }
@@ -1749,8 +1827,8 @@ encoding->usage_function();
  * Prints an error message if 'name' is not a valid encoding main
  * name or alias.
  */
-void print_encoding_infos(const char* name) {
-struct encoding* encoding=get_encoding(name);
+void print_encoding_infos(void* encoding_ctx,const char* name) {
+struct encoding* encoding=get_encoding(encoding_ctx,name);
 if (encoding==NULL) {
 	error("%s is not a valid encoding name\n",name);
 	return;
@@ -1762,9 +1840,10 @@ print_encoding_infos(encoding);
 /**
  * Prints information about all the available encodings.
  */
-void print_information_for_all_encodings() {
-for (int i=0;i<number_of_encodings;i++) {
-	print_encoding_infos(encodings[i]);
+void print_information_for_all_encodings(void* encoding_ctx) {
+struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+for (int i=0;i<ectx->number_of_encodings;i++) {
+	print_encoding_infos(ectx->encodings[i]);
 	u_printf("\n");
 }
 }
@@ -1774,14 +1853,15 @@ for (int i=0;i<number_of_encodings;i++) {
  * Returns the encoding named 'name' or NULL if 'name' is not a valid
  * encoding main name or alias.
  */
-struct encoding* get_encoding(const char* name) {
-	char name_in_lower[1024];
+struct encoding* get_encoding(void* encoding_ctx,const char* name) {
+struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
+char name_in_lower[1024];
 strcpy(name_in_lower,name);
 strtolower(name_in_lower);
 int encoding_number;
-if (!get_string_number(encoding_names,name_in_lower,&encoding_number)) {
+if (!get_string_number(ectx->encoding_names,name_in_lower,&encoding_number)) {
 	return NULL;
 }
-return encodings[encoding_number];
+return ectx->encodings[encoding_number];
 }
 

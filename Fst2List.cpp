@@ -349,7 +349,7 @@ verboseMode  = 0;
     }
     void finiCallIdMap()
     {
-        delete autoStackMap;
+        delete [] autoStackMap;
         while(mapOfCallHead)
         {
            mapOfCallTail = mapOfCallHead;

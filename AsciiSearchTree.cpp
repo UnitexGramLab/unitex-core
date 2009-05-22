@@ -156,3 +156,16 @@ return get_string_number(root,string,0,result);
 }
 
 
+/*
+ * free memory of a search tree node
+ */
+void free_search_tree_node(struct search_tree_node* root)
+{
+	if (root != NULL)
+	{
+		free_search_tree_node(root->left);
+		free_search_tree_node(root->middle);
+		free_search_tree_node(root->right);
+		free(root);
+	}
+}

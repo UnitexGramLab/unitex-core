@@ -69,6 +69,9 @@ struct encoding {
 	int (*input_function)(ABSTRACTFILE*);
 	int (*output_function)(unichar,ABSTRACTFILE*);
 
+	int (*input_function_ctx)(ABSTRACTFILE*,void*);
+	int (*output_function_ctx)(unichar,ABSTRACTFILE*,void*);
+
 	/* The usage function for this encoding */
 	void (*usage_function)(void);
 	/* This function returns 1 if the given char can be encoded with this encoding */
@@ -76,13 +79,14 @@ struct encoding {
 };
 
 
-void install_all_encodings();
-int convert(U_FILE*,U_FILE*,struct encoding*,struct encoding*,int,int,int,int);
-struct encoding* get_encoding(const char*);
+void* install_all_encodings();
+void free_encodings_context(void*);
+int convert(void*,U_FILE*,U_FILE*,struct encoding*,struct encoding*,int,int,int,int);
+struct encoding* get_encoding(void*,const char*);
 
-void print_encoding_main_names();
-void print_encoding_aliases();
-void print_encoding_infos(const char*);
-void print_information_for_all_encodings();
+void print_encoding_main_names(void*);
+void print_encoding_aliases(void*);
+void print_encoding_infos(void*,const char*);
+void print_information_for_all_encodings(void*);
 
 #endif

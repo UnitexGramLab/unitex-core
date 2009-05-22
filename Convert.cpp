@@ -85,7 +85,7 @@ if (argc==1) {
 	return 0;
 }
 /* First, we install all the available encoding */
-install_all_encodings();
+void *encoding_ctx = install_all_encodings();
 /* And we analyze the parameters */
 
 const char* optstring=":s:d:ri:hmaA";
@@ -141,15 +141,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 7: encode_control_characters=1; break;
 
 
-   case 'm': print_encoding_main_names(); return 0;
-   case 'a': print_encoding_aliases(); return 0;
-   case 'A': print_information_for_all_encodings(); return 0;
+   case 'm': print_encoding_main_names(encoding_ctx); free_encodings_context(encoding_ctx); return 0;
+   case 'a': print_encoding_aliases(encoding_ctx); free_encodings_context(encoding_ctx); return 0;
+   case 'A': print_information_for_all_encodings(encoding_ctx); free_encodings_context(encoding_ctx); return 0;
    case 'i': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty encoding\n");
              }
-             print_encoding_infos(vars->optarg);
+             print_encoding_infos(encoding_ctx,vars->optarg);
+			 free_encodings_context(encoding_ctx); 
              return 0;
-   case 'h': usage(); return 0;
+   case 'h': usage(); free_encodings_context(encoding_ctx); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -169,11 +170,11 @@ if (vars->optind==argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-struct encoding* src_encoding=get_encoding(src);
+struct encoding* src_encoding=get_encoding(encoding_ctx,src);
 if (src_encoding==NULL) {
 	fatal_error("%s is not a valid encoding name\n",src);
 }
-struct encoding* dest_encoding=get_encoding(dest);
+struct encoding* dest_encoding=get_encoding(encoding_ctx,dest);
 if (dest_encoding==NULL) {
    fatal_error("%s is not a valid encoding name\n",dest);
 }
@@ -231,7 +232,7 @@ for (int i=vars->optind;i<argc;i++) {
 	 * We do the conversion and we close the files.
 	 */
 	if (!problem) {
-		error_code=convert(input,output,src_encoding,dest_encoding,
+		error_code=convert(encoding_ctx,input,output,src_encoding,dest_encoding,
 							decode_normal_characters,
 							decode_control_characters,
 							encode_all_characters,
@@ -255,6 +256,7 @@ for (int i=vars->optind;i<argc;i++) {
 	}
 }
 free_OptVars(vars);
+free_encodings_context(encoding_ctx);
 return 0;
 }
 

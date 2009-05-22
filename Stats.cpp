@@ -1026,7 +1026,7 @@ void swap_ptr(void *array, int idx1, int idx2)
 	real_arr[idx2] = tmp;
 }
 
-int compare_ptr(void *array, int idx1, int idx2, void* hash, void* unused)
+int compare_ptr(void *array, int idx1, int idx2, void* hash, void* /*unused*/)
 {
 	void **real_arr = (void**)array;
 	hash_table* hsh = (hash_table*)hash;
