@@ -31,10 +31,8 @@ Alphabet* alphabet=(Alphabet*)malloc(sizeof(Alphabet));
 if (alphabet==NULL) {
    fatal_alloc_error("new_alphabet");
 }
-for (int i=0;i<0x10000;i++) {
-    alphabet->t[i]=NULL;
-    alphabet->t2[i]=0;
-}
+memset(alphabet,0,sizeof(Alphabet));
+
 if (korean) {
    alphabet->korean_equivalent_syllab=(unichar*)malloc(0x10000*sizeof(unichar));
    if (alphabet->korean_equivalent_syllab==NULL) {
@@ -55,7 +53,7 @@ return alphabet;
  */
 void free_alphabet(Alphabet* alphabet) {
 if (alphabet==NULL) return;
-for (int i=0;i<0x10000;i++) {
+for (int i=0;i<alphabet->higher_written;i++) {
   if (alphabet->t[i]!=NULL)
     free(alphabet->t[i]);
 }
@@ -72,6 +70,9 @@ free(alphabet);
  * uppercase equivalent of "e".
  */
 void add_letter_equivalence(Alphabet* alphabet,unichar lower,unichar upper) {
+if (alphabet->higher_written <= (int)lower) {
+	alphabet->higher_written = (int)lower+1;
+}
 if (alphabet->t[lower]==NULL) {
    alphabet->t[lower]=(unichar*)malloc(2*sizeof(unichar));
    if (alphabet->t[lower]==NULL) {

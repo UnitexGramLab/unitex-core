@@ -37,6 +37,7 @@ struct alphabet_ {
   /* This array is only used for Korean alphabets, because it is useful to
    * know for a given Chinese character its Hangul syllab equivalent */
   unichar* korean_equivalent_syllab;
+  int higher_written;
 };
 
 typedef struct alphabet_ Alphabet;
