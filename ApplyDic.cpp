@@ -710,7 +710,7 @@ while (l!=NULL) {
    struct dela_entry* entry=tokenize_DELAF_line(l->m.output,1);
    if (entry!=NULL) {
       /* If the entry is valid */
-      if(l->m.start_pos_in_token==l->m.end_pos_in_token) {
+      if (is_sequence_of_letters(entry->inflected,info->alphabet)) {
          /* If it is a simple word */
          int token_number=get_token_number(entry->inflected,info->tokens);
          if (token_number!=-1) {
@@ -727,7 +727,7 @@ while (l!=NULL) {
             }
          }
       }
-      else if(l->m.start_pos_in_token<l->m.end_pos_in_token)    {
+      else {
          /* If it is a compound word, we turn it into a token sequence
           * ended by -1 */
          build_token_sequence(entry->inflected,info->tokens,token_tab_coumpounds);
@@ -743,8 +743,6 @@ while (l!=NULL) {
             /* We save it to the DLC */
             u_fprintf(info->dlc,"%S\n",l->m.output);
          }
-      } else {
-         error("Invalid match in concord.ind\n");
       }
       /* Finally, we free the entry */
       free_dela_entry(entry);
