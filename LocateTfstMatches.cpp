@@ -580,10 +580,44 @@ return NULL;
 /**
  * Saves the elements of 'list' in reverse order into 'items'.
  */
-void fill_vector(vector_ptr* items,struct tfst_match* list) {
+static void fill_vector(vector_ptr* items,struct tfst_match* list) {
 if (list==NULL) return;
 fill_vector(items,list->next);
 vector_ptr_add(items,list);
+}
+
+
+/**
+ * Inserts the text interval defined by the parameters into the given string. 
+ */
+static void insert_output(struct locate_tfst_infos* infos,Ustring* s,int start_token,int start_char,
+                   int end_token,int end_char) {
+//error("de %d.%d a %d.%d\n",start_token,start_char,end_token,end_char);
+int current_token=start_token;
+int current_char=start_char;
+unichar* token=infos->tfst->token_content[current_token];
+while (1) {
+   u_strcat(s,token[current_char]);
+   if (current_token==end_token && current_char==end_char) {
+      /* Done */
+      return;
+   }
+   current_char++;
+   if (token[current_char]=='\0') {
+      /* We go on the next token */
+      current_token++;
+      token=infos->tfst->token_content[current_token];
+      current_char=0;
+   }
+}
+}
+
+
+void process_output_for_tfst_match(struct locate_tfst_infos* infos,Ustring* output,int fst2_tag_number) {
+unichar* tmp=infos->fst2->tags[fst2_tag_number]->output;
+if (tmp!=NULL) {
+   u_strcat(output,tmp);
+}
 }
 
 
@@ -605,29 +639,55 @@ if (current_item==items->nbelems) {
 /* We save the length because it will be modified */
 int len=s->len;
 struct tfst_match* item=(struct tfst_match*)(items->tab[current_item]);
+if (item==NULL) {
+   fatal_error("Unexpected NULL item in explore_match_for_MERGE_mode\n");
+}
 struct list_int* text_tags=item->text_tag_numbers;
 /* We explore all the text tags */
 while (text_tags!=NULL) {
    /* First, we restore the output string */
    s->len=len;
    s->str[len]='\0';
+   /* We add the fst2 tag output, if any */
+   process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number);
+   int last_tag=last_tfst_tag;
    TfstTag* current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
-   int current_start,current_end;
-   get_global_offsets(current_tag,&current_start,&current_end);
-   if (current_item>0) {
-      /* If the item is not the first, we must insert the original text that is
-       * between the end of the previous merged text and the beginning of the
-       * current one, typically to insert spaces */
-      TfstTag* previous_tag=(TfstTag*)(infos->tfst->tags->tab[last_tfst_tag]);
-      int a,b;
-      get_global_offsets(previous_tag,&a,&b);
-      /* We start just after the end of the previous match */
-      current_start=b+1;
+   if (text_tags->n==-1) {
+     /* We have a text independent match */
+   } else {
+      /* We update the last tag */
+      last_tag=text_tags->n;
+      /* If the current text tag is not a text independent one */
+      int previous_start_token,previous_start_char; 
+      if (last_tfst_tag!=-1) {
+         /* If the item is not the first, we must insert the original text that is
+          * between the end of the previous merged text and the beginning of the
+          * current one, typically to insert spaces */
+         TfstTag* previous_tag=(TfstTag*)(infos->tfst->tags->tab[last_tfst_tag]);
+         previous_start_token=previous_tag->end_pos_token;
+         previous_start_char=previous_tag->end_pos_char;
+         /* We start just after the end of the previous match */
+         if (infos->tfst->token_content[previous_start_token][previous_start_char+1]!='\0') {
+            /* If we were not at the end of the previous text token, we just inscrease
+             * the char position */
+            previous_start_char++;
+         } else {
+            /* Otherwise, we go on the next token */
+            previous_start_token++;
+            previous_start_char=0;
+         }
+      } else {
+         /* Otherwise, we start on the beginning of the current text tag */
+         previous_start_token=current_tag->start_pos_token;
+         previous_start_char=current_tag->start_pos_char;
+      }
+      /* Here we have to insert the text that is between current_start and current_end,
+       * and then, the ouput of the fst2 transition */
+      insert_output(infos,s,previous_start_token,previous_start_char,
+                 current_tag->end_pos_token,current_tag->end_pos_char);
    }
-#warning todo
-   /* Here we have to insert the text that is between current_start and current_end,
-    * and then, the ouput of the fst2 transition */
-   
+   /* Then, we go on the next item */
+   explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag);
    if (infos->ambiguous_output_policy==IGNORE_AMBIGUOUS_OUTPUTS) {
       /* If we don't want ambiguous outputs, then the first path is
        * enough for our purpose */ 
@@ -654,7 +714,7 @@ if (infos->output_policy==REPLACE_OUTPUTS) {
 	for (int i=0;i<items->nbelems;i++) {
 		struct tfst_match* item=(struct tfst_match*)(items->tab[i]);
 		int fst2_tag_number=item->fst2_transition->tag_number;
-		u_strcat(s,infos->fst2->tags[fst2_tag_number]->output);
+		process_output_for_tfst_match(infos,s,fst2_tag_number);
 	}
 	/* Trick: as 'element' is a variable that will soon be destroyed, 
 	 * we don't need to u_strdup s->str */

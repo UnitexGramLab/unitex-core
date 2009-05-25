@@ -134,7 +134,6 @@ void free_TfstTag(TfstTag*);
 void TfstTag_to_string(TfstTag*,unichar*);
 
 void compute_token_contents(Tfst*);
-void get_global_offsets(TfstTag*,int*,int*);
 
 #endif
 

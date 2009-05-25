@@ -59,6 +59,7 @@ static inline void empty(Ustring * ustr);
 
 void u_strcat(Ustring*,const unichar*,int);
 void u_strcat(Ustring*,const char*,int);
+void u_strcat(Ustring*,unichar);
 static inline void u_strcat(Ustring*,const Ustring*);
 static inline void u_strcat(Ustring*,const unichar*);
 static inline void u_strcat(Ustring*,const char*);
