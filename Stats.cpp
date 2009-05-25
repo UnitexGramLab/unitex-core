@@ -23,7 +23,7 @@
 #include "File.h"
 #include "Copyright.h"
 #include "Text_tokens.h"
-#include "Matches.h"
+#include "LocateMatches.h"
 #include "HashTable.h"
 #include "Vector.h"
 #include "Alphabet.h"
@@ -746,8 +746,8 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
 
 	vector_int* res = new_vector_int();
 
-	long startFrom = match->start - 1;
-	long endAt = match->end + 1;
+	long startFrom = match->m.start_pos_in_token - 1;
+	long endAt = match->m.end_pos_in_token + 1;
 	int foundLeft = 0;
 	int foundRight = 0;
 
@@ -785,7 +785,7 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
 
 	for (i = startFrom + 1 ; i <= endAt - 1 ; i++)
 	{
-		if (!includeMatch && i >= match->start && i <= match->end)
+		if (!includeMatch && i >= match->m.start_pos_in_token && i <= match->m.end_pos_in_token)
 		{
 			// we don't want the match, just the context
 			continue;
