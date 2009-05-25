@@ -22,6 +22,22 @@
 #include "Alphabet.h"
 #include "Error.h"
 
+// 0x400 in final release, good for all langage 
+#define FIRST_SIZE_ARRAYCOLLECTION 0x400
+#define ENLARGE_ARRAYCOLLECTION_FACTOR 0x10
+
+void enlarge_buffer_alphabet(Alphabet* alphabet) {
+	alphabet->i_nb_array_pos_allocated = alphabet->i_nb_array_pos_allocated * ENLARGE_ARRAYCOLLECTION_FACTOR;
+	if (alphabet->i_nb_array_pos_allocated > 0x10000)
+		alphabet->i_nb_array_pos_allocated = 0x10000;
+
+	alphabet->t_array_collection=(unichar**)realloc(alphabet->t_array_collection,
+		                      alphabet->i_nb_array_pos_allocated*sizeof(unichar*));
+	if (alphabet->t_array_collection == NULL) {
+		fatal_alloc_error("enlarge_buffer_alphabet");
+	}
+}
+
 
 /**
  * Allocates, initializes an returns an 'Alphabet*' structure
@@ -32,15 +48,23 @@ if (alphabet==NULL) {
    fatal_alloc_error("new_alphabet");
 }
 memset(alphabet,0,sizeof(Alphabet));
-
+//alphabet->higher_written = 0; // 0 is reserved
+alphabet->i_nb_array_pos_allocated = FIRST_SIZE_ARRAYCOLLECTION;
+alphabet->t_array_collection=(unichar**)malloc(alphabet->i_nb_array_pos_allocated*sizeof(unichar*));
+if (alphabet->t_array_collection==NULL) {
+   fatal_alloc_error("new_alphabet");
+}
+alphabet->t_array_collection[0] = NULL;
 if (korean) {
    alphabet->korean_equivalent_syllab=(unichar*)malloc(0x10000*sizeof(unichar));
    if (alphabet->korean_equivalent_syllab==NULL) {
       fatal_alloc_error("new_alphabet");
    }
+   memset(alphabet->korean_equivalent_syllab,0,0x10000*sizeof(unichar));
+   /*
    for (int i=0;i<0x10000;i++) {
       alphabet->korean_equivalent_syllab[i]=0;
-   }
+   }*/
 } else {
    alphabet->korean_equivalent_syllab=NULL;
 }
@@ -53,10 +77,14 @@ return alphabet;
  */
 void free_alphabet(Alphabet* alphabet) {
 if (alphabet==NULL) return;
+/*
 for (int i=0;i<alphabet->higher_written;i++) {
   if (alphabet->t[i]!=NULL)
     free(alphabet->t[i]);
-}
+}*/
+for (int i=1;i<=alphabet->i_last_array_pos_used;i++)
+   free(alphabet->t_array_collection[i]);
+free(alphabet->t_array_collection);
 if (alphabet->korean_equivalent_syllab!=NULL) {
    free(alphabet->korean_equivalent_syllab);
 }
@@ -70,25 +98,29 @@ free(alphabet);
  * uppercase equivalent of "e".
  */
 void add_letter_equivalence(Alphabet* alphabet,unichar lower,unichar upper) {
-if (alphabet->higher_written <= (int)lower) {
-	alphabet->higher_written = (int)lower+1;
-}
-if (alphabet->t[lower]==NULL) {
-   alphabet->t[lower]=(unichar*)malloc(2*sizeof(unichar));
-   if (alphabet->t[lower]==NULL) {
+if (alphabet->pos_in_represent_list[lower]==0) {
+   alphabet->i_last_array_pos_used++;
+   int i_pos_in_array_of_string = alphabet->i_last_array_pos_used;
+   if (i_pos_in_array_of_string >= alphabet->i_nb_array_pos_allocated) {
+     enlarge_buffer_alphabet(alphabet);
+   }
+   alphabet->pos_in_represent_list[lower] = i_pos_in_array_of_string;
+   alphabet->t_array_collection[i_pos_in_array_of_string]=(unichar*)malloc(2*sizeof(unichar));
+   if (alphabet->t_array_collection[i_pos_in_array_of_string]==NULL) {
       fatal_alloc_error("add_letter_equivalence");
    }
-   alphabet->t[lower][0]=upper;
-   alphabet->t[lower][1]='\0';
+   alphabet->t_array_collection[i_pos_in_array_of_string][0]=upper;
+   alphabet->t_array_collection[i_pos_in_array_of_string][1]='\0';
    return;
 }
-int L=u_strlen(alphabet->t[lower]);
-alphabet->t[lower]=(unichar*)realloc(alphabet->t[lower],(L+2)*sizeof(unichar));
-if (alphabet->t[lower]==NULL) {
+int i_pos_in_array_of_string = alphabet->pos_in_represent_list[lower];
+int L=u_strlen(alphabet->t_array_collection[i_pos_in_array_of_string]);
+alphabet->t_array_collection[i_pos_in_array_of_string]=(unichar*)realloc(alphabet->t_array_collection[i_pos_in_array_of_string],(L+2)*sizeof(unichar));
+if (alphabet->t_array_collection[i_pos_in_array_of_string]==NULL) {
    fatal_alloc_error("add_letter_equivalence");
 }
-alphabet->t[lower][L]=upper;
-alphabet->t[lower][L+1]='\0';
+alphabet->t_array_collection[i_pos_in_array_of_string][L]=upper;
+alphabet->t_array_collection[i_pos_in_array_of_string][L+1]='\0';
 /* If needed, we look at the Korean case, but only if we have a Chinese character */
 if (alphabet->korean_equivalent_syllab!=NULL) {
    if (u_is_CJK_Unified_Ideographs(upper) || u_is_cjk_compatibility_ideographs(upper)) {
@@ -126,23 +158,22 @@ while ((c=u_fgetc(f))!=EOF) {
             return NULL;
          }
          for (c=lower;c<=upper;c++) {
-           alphabet->t2[c]=(char)(alphabet->t2[c] | 1);
-           alphabet->t2[c]=(char)(alphabet->t2[c] | 2);
+		   SET_CASE_FLAG_MACRO(c,alphabet,1|2);
            add_letter_equivalence(alphabet,(unichar)c,(unichar)c);
          }
          u_fgetc(f); // reading the \n
       }
       else {
-        alphabet->t2[upper]=(char)(alphabet->t2[upper] | 1);
+		SET_CASE_FLAG_MACRO(upper,alphabet,1);
         lower=(unichar)u_fgetc(f);
         if (lower!='\n') {
-          alphabet->t2[lower]=(char)(alphabet->t2[lower] | 2);
+          SET_CASE_FLAG_MACRO(lower,alphabet,2);
           u_fgetc(f); // reading the \n
           add_letter_equivalence(alphabet,lower,upper);
         }
         else {
           // we are in the case of a single (no min/maj distinction like in thai)
-          alphabet->t2[upper]=(char)(alphabet->t2[upper] | 2);
+          SET_CASE_FLAG_MACRO(upper,alphabet,2);
           add_letter_equivalence(alphabet,upper,upper);
         }
       }
@@ -165,10 +196,11 @@ return load_alphabet(filename,0);
  * of 'lower' for the given alphabet; returns 0 otherwise.
  */
 int is_upper_of(unichar lower,unichar upper,Alphabet* alphabet) {
-if (alphabet->t[lower]==NULL) return 0;
+int i_pos_in_array_of_string = alphabet->pos_in_represent_list[lower];
+if (i_pos_in_array_of_string == 0) return 0;
 int i=0;
-while (alphabet->t[lower][i]!='\0') {
-      if (alphabet->t[lower][i]==upper) return 1;
+while (alphabet->t_array_collection[i_pos_in_array_of_string][i]!='\0') {
+      if (alphabet->t_array_collection[i_pos_in_array_of_string][i]==upper) return 1;
       i++;
 }
 return 0;
@@ -211,7 +243,7 @@ return (a[i]=='\0' && b[i]=='\0');
  * in the given alphabet, 0 otherwise.
  */
 int is_upper(unichar c,Alphabet* alphabet) {
-return (alphabet->t2[c] & 1);
+return IS_UPPER_MACRO(c,alphabet);
 }
 
 
@@ -220,7 +252,7 @@ return (alphabet->t2[c] & 1);
  * in the given alphabet, 0 otherwise.
  */
 int is_lower(unichar c,Alphabet* alphabet) {
-return (alphabet->t2[c] & 2);
+return IS_LOWER_MACRO(c,alphabet);
 }
 
 
@@ -229,7 +261,7 @@ return (alphabet->t2[c] & 2);
  * as a letter in for the given alphabet, 0 otherwise.
  */
 int is_letter(unichar c,Alphabet* alphabet) {
-return is_upper(c,alphabet)||is_lower(c,alphabet);
+return CASE_FLAG_MACRO(c,alphabet) != 0;
 }
 
 
@@ -265,7 +297,7 @@ return 1;
 int is_sequence_of_lowercase_letters(unichar* s,Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
-  if (!is_lower(s[i],alphabet)) return 0;
+  if (!IS_LOWER_MACRO(s[i],alphabet)) return 0;
   i++;
 }
 return 1;
@@ -279,7 +311,7 @@ return 1;
 int is_sequence_of_uppercase_letters(unichar* s,Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
-  if (!is_upper(s[i],alphabet)) return 0;
+  if (!IS_UPPER_MACRO(s[i],alphabet)) return 0;
   i++;
 }
 return 1;
@@ -381,16 +413,22 @@ while (src[i]!='\0') {
              dest[j] = src[i];
              return;
          }
-         if (a->t2[src[i+1]] & 2) {
+         if (IS_LOWER_MACRO(src[i+1],a)) {
              // this is a lowercase letter in Unitex alphabet :
              // we don't need "\" and we make expansion "[eE]"
              ++i;
              if (!inside_a_set) dest[j++]='[';
              dest[j++]=src[i];
-             int k=0;
-             while (a->t[src[i]][k]!='\0') {
-                dest[j++]=a->t[src[i]][k++];
-             }
+
+			 unichar* tbrowse = NULL;
+			 int i_pos_in_array_of_string = a->pos_in_represent_list[src[i]];
+			 if (i_pos_in_array_of_string != 0)
+				 tbrowse = a->t_array_collection[i_pos_in_array_of_string];
+			 if (tbrowse != NULL)
+				 while ((*tbrowse) != '\0') {
+					 dest[j++]=*(tbrowse++);
+				 }
+             
              if (!inside_a_set) dest[j++]=']';
              i++;
           } else {
@@ -414,13 +452,19 @@ while (src[i]!='\0') {
           dest[j++]=src[i++];
           break;
        default:
-          if (a->t2[src[i]] & 2) {
+          if (IS_LOWER_MACRO(src[i],a)) {
              if (!inside_a_set) dest[j++]='[';
              dest[j++]=src[i];
-             int k=0;
-             while (a->t[src[i]][k]!='\0') {
-                dest[j++]=a->t[src[i]][k++];
-             }
+
+			 unichar* tbrowse = NULL;
+			 int i_pos_in_array_of_string = a->pos_in_represent_list[src[i]];
+			 if (i_pos_in_array_of_string != 0)
+				 tbrowse = a->t_array_collection[i_pos_in_array_of_string];
+			 if (tbrowse != NULL)
+				 while ((*tbrowse) != '\0') {
+					 dest[j++]=*(tbrowse++);
+				 }
+
              if (!inside_a_set) dest[j++]=']';
              i++;
           }

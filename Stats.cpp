@@ -23,7 +23,7 @@
 #include "File.h"
 #include "Copyright.h"
 #include "Text_tokens.h"
-#include "LocateMatches.h"
+#include "Matches.h"
 #include "HashTable.h"
 #include "Vector.h"
 #include "Alphabet.h"
@@ -746,8 +746,8 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
 
 	vector_int* res = new_vector_int();
 
-	long startFrom = match->m.start_pos_in_token - 1;
-	long endAt = match->m.end_pos_in_token + 1;
+	long startFrom = match->start - 1;
+	long endAt = match->end + 1;
 	int foundLeft = 0;
 	int foundRight = 0;
 
@@ -785,7 +785,7 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
 
 	for (i = startFrom + 1 ; i <= endAt - 1 ; i++)
 	{
-		if (!includeMatch && i >= match->m.start_pos_in_token && i <= match->m.end_pos_in_token)
+		if (!includeMatch && i >= match->start && i <= match->end)
 		{
 			// we don't want the match, just the context
 			continue;
@@ -1157,11 +1157,11 @@ int tokens_equal_ignore_case(unichar* s1, unichar* s2, Alphabet* a)
 
 unichar alphabet_to_upper(unichar c, Alphabet* alphabet)
 {
-	if (alphabet->t[c]==NULL) return c;
-	if (alphabet->t[c][0] == '\0')
-		return c;
-	else
-		return alphabet->t[c][0];
+	const unichar* t;
+	int i_pos_in_array_of_string = alphabet->pos_in_represent_list[c];
+	t = (i_pos_in_array_of_string == 0) ? NULL :
+		  (alphabet->t_array_collection[i_pos_in_array_of_string]);
+	return (t == NULL) ? c : (((*t)=='\0') ? c : (*t));
 }
 
 unsigned int hash_token_as_int(void* t)
