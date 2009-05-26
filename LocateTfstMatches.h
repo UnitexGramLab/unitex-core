@@ -72,6 +72,7 @@ struct tfst_match_list {
 struct tfst_simple_match_list {
 	struct tfst_match* match;
 	Match m;
+	unichar* output;
 	struct tfst_simple_match_list* next;
 };
 

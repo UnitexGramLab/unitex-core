@@ -46,6 +46,11 @@ typedef struct {
 
 /**
  * This structure defines the range of a variable in the text tokens.
+ * 
+ * Note: when used from LocateTfst, start and end represent the 
+ *       TfstTag indices of the first and last text dependent tags of 
+ *       a match. Moreover, 'end' must be taken into account, at the opposite
+ *       of the Locate use of this structure.
  */
 struct transduction_variable {
    /* Position of the first token of the sequence */

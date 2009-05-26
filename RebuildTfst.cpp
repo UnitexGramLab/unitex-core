@@ -227,12 +227,12 @@ TfstTag foo;
 foo.type=T_STD;
 for (int i=1;i<fst2->number_of_tags;i++) {
    foo.content=fst2->tags[i]->input;
-   u_sscanf(fst2->tags[i]->output,"%d %d %d %d %d %d",&(foo.start_pos_token)
-                                                     ,&(foo.start_pos_char)
-                                                     ,&(foo.start_pos_letter)
-                                                     ,&(foo.end_pos_token)
-                                                     ,&(foo.end_pos_char)
-                                                     ,&(foo.end_pos_letter));
+   u_sscanf(fst2->tags[i]->output,"%d %d %d %d %d %d",&(foo.m.start_pos_in_token)
+                                                     ,&(foo.m.start_pos_in_char)
+                                                     ,&(foo.m.start_pos_in_letter)
+                                                     ,&(foo.m.end_pos_in_token)
+                                                     ,&(foo.m.end_pos_in_char)
+                                                     ,&(foo.m.end_pos_in_letter));
    TfstTag_to_string(&foo,tmp);
    tags[i]=u_strdup(tmp);
 }

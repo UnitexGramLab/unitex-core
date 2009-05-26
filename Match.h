@@ -39,8 +39,6 @@ typedef struct {
    int end_pos_in_char;
    int start_pos_in_letter;
    int end_pos_in_letter;
-
-   unichar* output;
 } Match;
 
 

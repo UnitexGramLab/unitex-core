@@ -70,6 +70,9 @@ struct locate_tfst_infos {
 	MatchPolicy match_policy;
 	OutputPolicy output_policy;
 	AmbiguousOutputPolicy ambiguous_output_policy;
+	VariableErrorPolicy variable_error_policy;
+	
+	Variables* variables;
 
 	/* The total number of outputs. It may be different from the number
 	 * of matches if ambiguous outputs are allowed. */

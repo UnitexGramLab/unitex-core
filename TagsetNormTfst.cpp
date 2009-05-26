@@ -34,6 +34,7 @@
 #include "String_hash.h"
 #include "List_int.h"
 #include "DELA.h"
+#include "Match.h"
 
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
@@ -63,7 +64,7 @@ u_printf("Usage: TagsetNormTfst [OPTIONS] <tfst>\n"
 }
 
 
-int get_tfst_tag_index(vector_ptr*,unichar*,int,int,int,int,int,int);
+int get_tfst_tag_index(vector_ptr*,unichar*,Match*);
 
 
 int main_TagsetNormTfst(int argc,char* argv[]) {
@@ -195,9 +196,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
                unichar* old_first_code=e->inflectional_codes[0];
                e->inflectional_codes[0]=e->inflectional_codes[j];
                build_tag(e,NULL,foo);
-               int index=get_tfst_tag_index(txtin->tfst->tags,foo,
-                     t->start_pos_token,t->start_pos_char,t->start_pos_letter,
-                     t->end_pos_token,t->end_pos_char,t->end_pos_letter);
+               int index=get_tfst_tag_index(txtin->tfst->tags,foo,&(t->m));
                renumbering[i]=new_list_int(index,renumbering[i]);
                e->inflectional_codes[0]=old_first_code;
             }
@@ -298,33 +297,21 @@ return 0;
  * Returns the index of the TfstTag corresponding to the given information,
  * adding it to the given vector if necessary.
  */
-int get_tfst_tag_index(vector_ptr* tags,unichar* content,
-                       int start_pos_token,int start_pos_char,int start_pos_letter,
-                       int end_pos_token,int end_pos_char,int end_pos_letter) {
+int get_tfst_tag_index(vector_ptr* tags,unichar* content,Match* m) {
 for (int i=0;i<tags->nbelems;i++) {
    TfstTag* t=(TfstTag*)(tags->tab[i]);
    if (t!=NULL
          /* We must test for NULL, because some tags may have been removed */
     && t->type==T_STD
     && !u_strcmp(t->content,content)
-    && t->start_pos_token==start_pos_token
-    && t->start_pos_char==start_pos_char
-    && t->start_pos_letter==start_pos_letter
-    && t->end_pos_token==end_pos_token
-    && t->end_pos_char==end_pos_char
-    && t->end_pos_letter==end_pos_letter) {
+    && same_positions(&(t->m),m)) {
       return i;
    }
 }
 /* We must create it */
 TfstTag* t=new_TfstTag(T_STD);
 t->content=u_strdup(content);
-t->start_pos_token=start_pos_token;
-t->start_pos_char=start_pos_char;
-t->start_pos_letter=start_pos_letter;
-t->end_pos_token=end_pos_token;
-t->end_pos_char=end_pos_char;
-t->end_pos_letter=end_pos_letter;
+t->m=(*m);
 return vector_ptr_add(tags,t);
 }
 

@@ -903,7 +903,7 @@ while (matches!=NULL) {
 	end_pos_char=end_pos_char+matches->m.end_pos_in_char+1;
 	/* Now we extract the 3 parts of the concordance */
 	extract_left_context(start_pos,matches->m.start_pos_in_char,left,tokens,option,token_length,buffer);
-	extract_match(start_pos,matches->m.start_pos_in_char,end_pos,matches->m.end_pos_in_char,matches->m.output,middle,tokens,buffer);
+	extract_match(start_pos,matches->m.start_pos_in_char,end_pos,matches->m.end_pos_in_char,matches->output,middle,tokens,buffer);
 	/* To compute the 3rd part (right context), we need to know the length of
 	 * the matched sequence in displayable characters. */
 	int match_length_in_displayable_chars;
@@ -1133,8 +1133,8 @@ while (matches!=NULL) {
 		for (int i=current_global_position_in_char;i<matches->m.start_pos_in_char;i++) {
 		   u_fprintf(output,"%C",first_token[i]);
 		}
-		if (matches->m.output!=NULL) {
-			u_fprintf(output,"%S",matches->m.output);
+		if (matches->output!=NULL) {
+			u_fprintf(output,"%S",matches->output);
 		}
 		zz=matches->m.end_pos_in_token-current_global_position_in_token;
 		unichar* last_token=tokens->token[buffer->int_buffer[zz]];

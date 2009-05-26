@@ -123,6 +123,8 @@ if (infos.filters==NULL) {
 infos.match_policy=match_policy;
 infos.output_policy=output_policy;
 infos.ambiguous_output_policy=ambiguous_output_policy;
+infos.variable_error_policy=IGNORE_VARIABLE_ERRORS;
+infos.variables=new_Variables(infos.fst2->variables);
 infos.number_of_outputs=0;
 infos.start_position_last_printed_match_token=-1;
 infos.end_position_last_printed_match_token=-1;
@@ -195,6 +197,7 @@ free_FilterSet(infos.filters);
 #endif
 u_fclose(infos.output);
 free_alphabet(infos.alphabet);
+free_Variables(infos.variables);
 free_Korean_stuffs(&infos);
 free_LocateTfstTagMatchingCache(infos.cache);
 free_abstract_Fst2(infos.fst2,&fst2_free);
@@ -996,18 +999,18 @@ return pattern;
  * Returns 1 if there is a space on the immediate left of the given tag.
  */
 int is_space_on_the_left_in_tfst(Tfst* tfst,TfstTag* tag) {
-if (tag->start_pos_char==0) {
+if (tag->m.start_pos_in_char==0) {
 	/* The tag starts exactly at the beginning of a token, so we just
 	 * have to look if the previous token was ending with a space. By convention,
 	 * we say that the token #0 has no space on its left */
-	if (tag->start_pos_token==0) {
+	if (tag->m.start_pos_in_token==0) {
 		return 0;
 	}
-	int size_of_previous=tfst->token_sizes->tab[tag->start_pos_token-1];
-	return tfst->token_content[tag->start_pos_token-1][size_of_previous-1]==' ';
+	int size_of_previous=tfst->token_sizes->tab[tag->m.start_pos_in_token-1];
+	return tfst->token_content[tag->m.start_pos_in_token-1][size_of_previous-1]==' ';
 } else {
 	/* The tag is in the middle of a token */
-	return tfst->token_content[tag->start_pos_token][tag->start_pos_char-1]==' ';
+	return tfst->token_content[tag->m.start_pos_in_token][tag->m.start_pos_in_char-1]==' ';
 }
 }
 

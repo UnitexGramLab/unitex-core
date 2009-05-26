@@ -45,9 +45,9 @@ if (l==NULL) {
 l->m.start_pos_in_token=start;
 l->m.end_pos_in_token=end;
 if (output==NULL) {
-   l->m.output=NULL;
+   l->output=NULL;
 } else {
-   l->m.output=u_strdup(output);
+   l->output=u_strdup(output);
 }
 l->m.start_pos_in_char=start_char;
 l->m.end_pos_in_char=end_char;
@@ -63,7 +63,7 @@ return l;
  */
 void free_match_list_element(struct match_list* l) {
 if (l==NULL) return;
-if (l->m.output!=NULL) free(l->m.output);
+if (l->output!=NULL) free(l->output);
 free(l);
 }
 
@@ -114,12 +114,12 @@ switch (p->match_policy) {
       if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS
          && p->match_list->m.end_pos_in_token==end
          && p->match_list->m.start_pos_in_token==start
-         && u_strcmp(p->match_list->m.output,output)) {
+         && u_strcmp(p->match_list->output,output)) {
          /* Because matches with same range and same output may not come
           * one after another, we have to look if a match with same output
           * already exists */
          l=p->match_list;
-         while (l!=NULL && u_strcmp(l->m.output,output)) {
+         while (l!=NULL && u_strcmp(l->output,output)) {
             l=l->next;
          }
          if (l==NULL) {
@@ -136,7 +136,7 @@ switch (p->match_policy) {
       while (l!=NULL
              && !(l->m.start_pos_in_token==start && l->m.end_pos_in_token==end
                   && (p->ambiguous_output_policy!=ALLOW_AMBIGUOUS_OUTPUTS
-                      || u_strcmp(l->m.output,output)))) {
+                      || u_strcmp(l->output,output)))) {
          l=l->next;
       }
       if (l==NULL) {
@@ -180,7 +180,7 @@ struct match_list *l;
 if (ptr==NULL) return NULL;
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS
     && ptr->m.start_pos_in_token==start && ptr->m.end_pos_in_token==end
-    && u_strcmp(ptr->m.output,output)) {
+    && u_strcmp(ptr->output,output)) {
     /* In the case of ambiguous transductions producing different outputs,
      * we accept matches with same range */
    ptr->next=eliminate_longer_matches(ptr->next,start,end,output,dont_add_match,p);
@@ -200,8 +200,8 @@ if (start>=ptr->m.start_pos_in_token && end<=ptr->m.end_pos_in_token) {
      * update the current one with the value of the new match. */
     ptr->m.start_pos_in_token=start;
     ptr->m.end_pos_in_token=end;
-    if (ptr->m.output!=NULL) free(ptr->m.output);
-    ptr->m.output=u_strdup(output);
+    if (ptr->output!=NULL) free(ptr->output);
+    ptr->output=u_strdup(output);
     /* We note that the match does not need anymore to be added */
     (*dont_add_match)=1;
     ptr->next=eliminate_longer_matches(ptr->next,start,end,output,dont_add_match,p);
@@ -246,9 +246,9 @@ if (l->m.end_pos_in_token<current_position) {
     *   2) offset in char inside the token
     *   3) offset in logical letter inside the current char (for Korean) */
    u_fprintf(f,"%d.0.0 %d.%d.0",l->m.start_pos_in_token,l->m.end_pos_in_token,u_strlen(p->tokens->value[p->buffer[l->m.end_pos_in_token]])-1);
-   if (l->m.output!=NULL) {
+   if (l->output!=NULL) {
       /* If there is an output */
-      u_fprintf(f," %S",l->m.output);
+      u_fprintf(f," %S",l->output);
    }
    u_fprintf(f,"\n");
    if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {

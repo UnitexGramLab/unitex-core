@@ -31,6 +31,7 @@
 #include "getopt.h"
 #include "File.h"
 #include "SingleGraph.h"
+#include "Match.h"
 
 
 void implode(Tfst*,U_FILE*,U_FILE*);
@@ -220,12 +221,7 @@ free(infos);
  * Returns 1 if t1 and t2 have the same offsets; 0 otherwise.
  */
 int compatible_offets(TfstTag* t1,TfstTag* t2) {
-return t1->start_pos_token==t2->start_pos_token
-    && t1->start_pos_char==t2->start_pos_char
-    && t1->start_pos_letter==t2->start_pos_letter
-    && t1->end_pos_token==t2->end_pos_token
-    && t1->end_pos_char==t2->end_pos_char
-    && t1->end_pos_letter==t2->end_pos_letter;
+return same_positions(&(t1->m),&(t2->m));
 }
 
 

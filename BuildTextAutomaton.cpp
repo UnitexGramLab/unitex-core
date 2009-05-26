@@ -708,7 +708,7 @@ while ((*tag_list)!=NULL && (*tag_list)->m.start_pos_in_token>=current_global_po
    }
    add_path_to_sentence_automaton(start_pos_in_token,end_pos_in_token,start_index,
                                   INFO.alph,tfst->automaton,tmp_tags,
-                                  (*tag_list)->m.output,end_index+1,foo,&INFO);
+                                  (*tag_list)->output,end_index+1,foo,&INFO);
    tmp=(*tag_list)->next;
    free_match_list_element((*tag_list));
    (*tag_list)=tmp;
@@ -1008,7 +1008,7 @@ Transition* t=tfst->automaton->states[current_state]->outgoing_transitions;
 TfstTag* tag;
 while (t!=NULL) {
    tag=(TfstTag*)(tfst->tags->tab[t->tag_number]);
-   if (tag->type!=T_EPSILON && tag->end_pos_token==-1) {
+   if (tag->type!=T_EPSILON && tag->m.end_pos_in_token==-1) {
       /* We only process non epsilon tags that have not been explored */
       if (!u_strcmp(tag->content,"<BL>")) {
          /* The special <BL> tag was used to represent the space in a text automaton.
@@ -1030,18 +1030,18 @@ while (t!=NULL) {
       } else {
          /* Non <BL> tag */
          /* Remember that the original tag number was stored in 'start_pos_token' */
-         get_tag_content(jamo->tags[tag->start_pos_token]->input,jamo_tag);
+         get_tag_content(jamo->tags[tag->m.start_pos_in_token]->input,jamo_tag);
          if (!u_strcmp(jamo_tag,"<E>")) {
             /* If we have an empty surface form */
-            tag->start_pos_token=pos_in_token;
-            tag->end_pos_token=pos_in_token;
-            tag->start_pos_char=pos_in_char;
-            tag->end_pos_char=pos_in_char;
-            tag->start_pos_letter=pos_in_letter;
+            tag->m.start_pos_in_token=pos_in_token;
+            tag->m.end_pos_in_token=pos_in_token;
+            tag->m.start_pos_in_char=pos_in_char;
+            tag->m.end_pos_in_char=pos_in_char;
+            tag->m.start_pos_in_letter=pos_in_letter;
             /* We note that we have a tag that correspond to the empty word in the text by
              * setting end_pos_letter to -1. We set all other fields with correct values in
              * order to know where this empty surface form occurs */
-            tag->end_pos_letter=-1;
+            tag->m.end_pos_in_letter=-1;
             explore_korean_automaton_for_positions_with_buffer(tfst,jamo,jamo_text,t->state_number,
                                        pos_in_token,pos_in_char,pos_in_letter,
                                        pos_in_syllab_text,pos_in_jamo_text,alphabet,jamo_tag,syllab_tag);
@@ -1049,20 +1049,20 @@ while (t!=NULL) {
             /* Normal tag */ 
             //get_tag_content(tag->content,syllab_tag);
             /* The start positions are the current ones */
-            tag->start_pos_token=pos_in_token;
-            tag->start_pos_char=pos_in_char;
-            tag->start_pos_letter=pos_in_letter;
+            tag->m.start_pos_in_token=pos_in_token;
+            tag->m.start_pos_in_char=pos_in_char;
+            tag->m.start_pos_in_letter=pos_in_letter;
             /* We also initialize the end positions with the current ones */
-            tag->end_pos_token=pos_in_token;
-            tag->end_pos_char=pos_in_char;
-            tag->end_pos_letter=pos_in_letter;
+            tag->m.end_pos_in_token=pos_in_token;
+            tag->m.end_pos_in_char=pos_in_char;
+            tag->m.end_pos_in_letter=pos_in_letter;
                         
             int new_pos_in_token,new_pos_in_char,new_pos_in_letter;
             int new_pos_in_jamo_text=pos_in_jamo_text;
             int new_pos_in_syllab_text=pos_in_syllab_text;
             compute_end_positions(jamo_tag,jamo_text,&new_pos_in_jamo_text
                   ,tfst->text,&new_pos_in_syllab_text
-                  ,&(tag->end_pos_token),&(tag->end_pos_char),&(tag->end_pos_letter)
+                  ,&(tag->m.end_pos_in_token),&(tag->m.end_pos_in_char),&(tag->m.end_pos_in_letter)
                   ,&new_pos_in_token,&new_pos_in_char,&new_pos_in_letter,
                   tfst->token_sizes->tab,alphabet);
             
@@ -1257,7 +1257,7 @@ for (int i=0;i<jamo->number_of_states;i++) {
          /* In order to compute later positions in text, we keep the number of the original
           * transition, arbitrarily in 'start_pos_token'. The trick is that the Jamo2Syl
           * program keeps tag numbering */
-         tag->start_pos_token=trans_src->tag_number;
+         tag->m.start_pos_in_token=trans_src->tag_number;
          tag_number=vector_ptr_add(tfst->tags,tag);
       }
       (*trans_dest)=new_Transition(tag_number,trans_src->state_number);

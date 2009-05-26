@@ -357,7 +357,7 @@ IMPLODETFST_OBJS = Main_ImplodeTfst.o ImplodeTfst.o IOBuffer.o Af_stdio.o Unicod
                    String_hash.o Alphabet.o Error.o StringParsing.o Pattern.o List_ustring.o\
                    List_int.o BitMasks.o DELA.o List_pointer.o Transitions.o\
                    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-                   BitArray.o HashTable.o FIFO.o
+                   BitArray.o HashTable.o FIFO.o Match.o
 
 LOCATE      = Locate
 LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
@@ -377,7 +377,8 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o Unicode.o
                   Symbol.o LanguageDefinition.o Tagset.o String_hash.o StringParsing.o DELA.o \
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o \
                   LocateTfstMatches.o Match.o MorphologicalFilters.o jamoCodage.o codeForKorean.o pro_type.o \
-                  orgUniMbcsMap.o segtype.o etc.o Korean.o OptimizedTfstTagMatching.o
+                  orgUniMbcsMap.o segtype.o etc.o Korean.o OptimizedTfstTagMatching.o List_pointer.o\
+                  TransductionVariables.o TransductionStackTfst.o 
 
 
 MULTIFLEX      = MultiFlex
@@ -443,7 +444,7 @@ TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Af_stdio
 					Error.o File.o StringParsing.o DELA.o List_ustring.o Alphabet.o\
 					List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o\
 					BitMasks.o FIFO.o Transitions.o\
-					Symbol_op.o Fst2Automaton.o getopt.o Tfst.o
+					Symbol_op.o Fst2Automaton.o getopt.o Tfst.o Match.o
 
 TEI2TXT      = TEI2Txt
 TEI2TXT_OBJS = Main_TEI2Txt.o TEI2Txt.o IOBuffer.o Af_stdio.o Unicode.o Error.o File.o HTMLCharacters.o\
@@ -513,7 +514,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o \
                   codeForKorean.o orgUniMbcsMap.o CompressKr.o ConsultDic.o ExtractChar.o InflectKr.o Jamo2Syl.o \
                   jamoCodage.o MergeBin.o pro_type.o SortMorph.o SufForm2Rac.o Syl2Jamo.o \
-                  OptimizedTfstTagMatching.o
+                  OptimizedTfstTagMatching.o TransductionStackTfst.o
 
 ######################
 ## Korean programs  ##

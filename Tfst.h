@@ -30,6 +30,7 @@
 #include "Ustring.h"
 #include "Vector.h"
 #include "SingleGraph.h"
+#include "Match.h"
 
 #define NO_SENTENCE_LOADED -1
 
@@ -98,11 +99,6 @@ typedef struct {
    unichar* content;
 
    /* The boundings of the sentence area covered by the tag */
-   int start_pos_token;
-   int start_pos_char;
-   int end_pos_token;
-   int end_pos_char;
-   
    /* Special information for Korean transitions
     * 
     * In a Korean word, a character represents a syllab, which may contains several 
@@ -119,8 +115,7 @@ typedef struct {
     * in the text like '(afg)'. In that case, we would have start_pos_letter=1, because 'f' is 
     * the second logical letter of '(afg)'.
     */
-   int start_pos_letter;
-   int end_pos_letter;
+   Match m;
 } TfstTag;
 
 Tfst* new_Tfst(U_FILE* tfst,U_FILE* tind,int N);

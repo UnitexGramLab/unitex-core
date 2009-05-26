@@ -35,6 +35,7 @@
  */
 struct match_list {
    Match m;
+   unichar* output;
    struct match_list* next;
 };
 

@@ -696,7 +696,7 @@ if (f==NULL) {
 struct match_list* l=load_match_list(f,NULL);
 u_fclose(f);
 while (l!=NULL) {
-   if (l->m.output!=NULL && l->m.output[0]=='/') {
+   if (l->output!=NULL && l->output[0]=='/') {
 	   /* If we have a tag sequence to be used at the time of
 	    * building the text automaton */
 	   add_tag_sequence(info,l);
@@ -707,7 +707,7 @@ while (l!=NULL) {
 	   continue;
    }
    /* We test if the match is a valid dictionary entry */
-   struct dela_entry* entry=tokenize_DELAF_line(l->m.output,1);
+   struct dela_entry* entry=tokenize_DELAF_line(l->output,1);
    if (entry!=NULL) {
       /* If the entry is valid */
       if (is_sequence_of_letters(entry->inflected,info->alphabet)) {
@@ -723,7 +723,7 @@ while (l!=NULL) {
                set_value(info->part_of_a_word,token_number,1);
                set_value(info->simple_word,token_number,priority);
                /* We save it to the DLF */
-               u_fprintf(info->dlf,"%S\n",l->m.output);
+               u_fprintf(info->dlf,"%S\n",l->output);
             }
          }
       }
@@ -741,7 +741,7 @@ while (l!=NULL) {
                set_value(info->part_of_a_word,token_tab_coumpounds[k],1);
             }
             /* We save it to the DLC */
-            u_fprintf(info->dlc,"%S\n",l->m.output);
+            u_fprintf(info->dlc,"%S\n",l->output);
          }
       }
       /* Finally, we free the entry */
@@ -808,7 +808,7 @@ struct match_list* tmp;
 for (int i=0;i<info->n_tag_sequences;i++) {
    tmp=info->tag_sequences[i];
    /* We take tmp->output+1 in order to avoid copying the / character */
-   u_fprintf(f,"%d.0.0 %d.%d.0 %S\n",tmp->m.start_pos_in_token,tmp->m.end_pos_in_token,tmp->m.end_pos_in_char,tmp->m.output+1);
+   u_fprintf(f,"%d.0.0 %d.%d.0 %S\n",tmp->m.start_pos_in_token,tmp->m.end_pos_in_token,tmp->m.end_pos_in_char,tmp->output+1);
 }
 u_fclose(f);
 }

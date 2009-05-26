@@ -23,6 +23,8 @@
 #include "Error.h"
 #include <stdlib.h>
 #include "Tfst.h"
+#include "List_pointer.h"
+#include "TransductionStackTfst.h"
 
 
 /**
@@ -151,9 +153,9 @@ if (m==NULL) {
 	fatal_alloc_error("new_tfst_simple_match_list");
 }
 memcpy(m,e,sizeof(struct tfst_simple_match_list));
-if (m->m.output!=NULL) {
+if (m->output!=NULL) {
 	/* If there was an output, we have to clone it */
-	m->m.output=u_strdup(m->m.output);
+	m->output=u_strdup(m->output);
 }
 if (m->match!=NULL) {
 	(m->match->pointed_by)++;
@@ -174,7 +176,7 @@ if (m==NULL) {
 if (m->match!=NULL) {
 	(m->match->pointed_by)--;
 }
-free(m->m.output);
+free(m->output);
 free(m);
 }
 
@@ -245,12 +247,12 @@ while (tags!=NULL) {
    if (tags->n!=-1) {
       /* We only consider tags that are not text independent */
 	   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
-	   if (e->m.end_pos_in_token==-1 || e->m.end_pos_in_token<t->end_pos_token
-	       || e->m.end_pos_in_char<t->end_pos_char
-	       || e->m.end_pos_in_letter<t->end_pos_letter) {
-		   e->m.end_pos_in_token=t->end_pos_token;
-		   e->m.end_pos_in_char=t->end_pos_char;
-		   e->m.end_pos_in_letter=t->end_pos_letter;
+	   if (e->m.end_pos_in_token==-1 || e->m.end_pos_in_token<t->m.end_pos_in_token
+	       || e->m.end_pos_in_char<t->m.end_pos_in_char
+	       || e->m.end_pos_in_letter<t->m.end_pos_in_letter) {
+		   e->m.end_pos_in_token=t->m.end_pos_in_token;
+		   e->m.end_pos_in_char=t->m.end_pos_in_char;
+		   e->m.end_pos_in_letter=t->m.end_pos_in_letter;
 	   }
    }
 	tags=tags->next;
@@ -271,12 +273,12 @@ while (tags!=NULL) {
    if (tags->n!=-1) {
       /* We only consider tags that are not text independent */
 	   TfstTag* t=(TfstTag*)(infos->tfst->tags->tab[tags->n]);
-	   if (e->m.start_pos_in_token==-1 || e->m.start_pos_in_token>t->start_pos_token
-	       || e->m.start_pos_in_char>t->start_pos_char
-	       || e->m.start_pos_in_letter>t->start_pos_letter) {
-		   e->m.start_pos_in_token=t->start_pos_token;
-		   e->m.start_pos_in_char=t->start_pos_char;
-		   e->m.start_pos_in_letter=t->start_pos_letter;
+	   if (e->m.start_pos_in_token==-1 || e->m.start_pos_in_token>t->m.start_pos_in_token
+	       || e->m.start_pos_in_char>t->m.start_pos_in_char
+	       || e->m.start_pos_in_letter>t->m.start_pos_in_letter) {
+		   e->m.start_pos_in_token=t->m.start_pos_in_token;
+		   e->m.start_pos_in_char=t->m.start_pos_in_char;
+		   e->m.start_pos_in_letter=t->m.start_pos_in_letter;
 	   }
    }
 	tags=tags->next;
@@ -284,7 +286,7 @@ while (tags!=NULL) {
 /* Finally, we adjust offsets with the base offset of the current sentence */
 e->m.start_pos_in_token+=infos->tfst->offset_in_tokens;
 e->m.end_pos_in_token+=infos->tfst->offset_in_tokens;
-e->m.output=NULL;
+e->output=NULL;
 e->match=NULL;
 e->next=NULL;
 }
@@ -487,8 +489,8 @@ if (dest->match!=NULL) {
 }
 /* src->match->pointed_by does not need to be changed */
 dest->match=src->match;
-if (dest->m.output!=NULL) free(dest->m.output);
-dest->m.output=u_strdup(src->m.output);
+if (dest->output!=NULL) free(dest->output);
+dest->output=u_strdup(src->output);
 }
 
 
@@ -538,7 +540,7 @@ switch (compare_matches(&(list->m),&(e->m))) {
 	   //error("A equals B:   candidate=%S  current=%S\n",e->output,list->output);
 	   /* In any mode we replace the existing match by the new one, except if we allow
 	    * ambiguous outputs */
-	   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS && u_strcmp(list->m.output,e->m.output)) {
+	   if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS && u_strcmp(list->output,e->output)) {
 		   list=new_tfst_simple_match_list(e,list);
 		   return list;
 	   } else {
@@ -587,52 +589,33 @@ vector_ptr_add(items,list);
 }
 
 
-/**
- * Inserts the text interval defined by the parameters into the given string. 
- */
-static void insert_output(struct locate_tfst_infos* infos,Ustring* s,int start_token,int start_char,
-                   int end_token,int end_char) {
-//error("de %d.%d a %d.%d\n",start_token,start_char,end_token,end_char);
-int current_token=start_token;
-int current_char=start_char;
-unichar* token=infos->tfst->token_content[current_token];
-while (1) {
-   u_strcat(s,token[current_char]);
-   if (current_token==end_token && current_char==end_char) {
-      /* Done */
-      return;
-   }
-   current_char++;
-   if (token[current_char]=='\0') {
-      /* We go on the next token */
-      current_token++;
-      token=infos->tfst->token_content[current_token];
-      current_char=0;
-   }
-}
-}
-
 
 void process_output_for_tfst_match(struct locate_tfst_infos* infos,Ustring* output,int fst2_tag_number) {
-unichar* tmp=infos->fst2->tags[fst2_tag_number]->output;
-if (tmp!=NULL) {
-   u_strcat(output,tmp);
+unichar* s=infos->fst2->tags[fst2_tag_number]->output;
+if (s==NULL) {
+   /* We do nothing if there is no output */
+   return;
 }
+
 }
 
 
 /**
- * Explores all the partial matches to produce outputs in MERGE mode. 
+ * Explores all the partial matches to produce outputs in MERGE mode.
+ * 
+ * If *var_starts!=NULL, it means that there are pending $var_start( tags
+ * that wait for being taken into account when a text dependent tag is found.
  */
 void explore_match_for_MERGE_mode(struct locate_tfst_infos* infos,
                                   struct tfst_simple_match_list* element,
                                   vector_ptr* items,int current_item,Ustring* s,
-                                  int last_tfst_tag) {
+                                  int last_text_dependent_tfst_tag,
+                                  struct list_pointer* *var_starts) {
 if (current_item==items->nbelems) {
    /* If we have finished, we can save the current output */
-   element->m.output=s->str;
+   element->output=s->str;
    infos->matches=add_element_to_list(infos,infos->matches,element);
-   element->m.output=NULL;
+   element->output=NULL;
    return;
 }
 
@@ -650,22 +633,74 @@ while (text_tags!=NULL) {
    s->str[len]='\0';
    /* We add the fst2 tag output, if any */
    process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number);
-   int last_tag=last_tfst_tag;
+   int last_tag=last_text_dependent_tfst_tag;
    TfstTag* current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
    if (text_tags->n==-1) {
-     /* We have a text independent match */
+      /* We have a text independent match */
+      Fst2Tag fst2_tag=infos->fst2->tags[item->fst2_transition->tag_number];
+      if (fst2_tag->type==BEGIN_VAR_TAG) {
+         /* If we have a variable start tag $a(, we add it to our 
+          * variable tag list */
+         struct transduction_variable* v=get_transduction_variable(infos->variables,fst2_tag->variable);
+         error("here we set %S\n",fst2_tag->variable);
+         int old_value=v->start;
+         error("value=%d\n",v->start);
+         /* We add the address of the start field to our list */
+         (*var_starts)=new_list_pointer(&(v->start),(var_starts==NULL)?NULL:(*var_starts));
+         /* Then, we go on the next item */
+         error("Before\n");
+         explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
+         error("After\n");
+         /* After the exploration, there are 2 cases:
+          * 1) *var_starts is NULL: nothing to do
+          * 2) *var_starts is not NULL: we reached the end of the items without findind any
+          *                             text dependent match, so we can free the list */
+         free_list_pointer(*var_starts);
+         (*var_starts)=NULL;
+         v->start=old_value;
+         /* If we have a $a( tag, we know that we can only have just one text tag 
+          * with special value -1 */
+         return;
+      } else if (fst2_tag->type==END_VAR_TAG) {
+         /* If we have found a $a) tag */
+         if (last_tag==-1) {
+            /* If we have no tfst tag to use, then it's a variable definition error,
+             * and we have nothing special to do */
+            explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
+            return;
+         } else {
+            /* We can set the end of the variable, it's 'last_tag' */
+            struct transduction_variable* v=get_transduction_variable(infos->variables,fst2_tag->variable);
+            int old_value=v->end;
+            v->end=last_tag;
+            explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag,var_starts);
+            v->end=old_value;
+            return;
+         }
+      }
    } else {
       /* We update the last tag */
       last_tag=text_tags->n;
       /* If the current text tag is not a text independent one */
+      
+      /* If there are some pending $a( tags, we set them to the current tag */
+      if (var_starts!=NULL) {
+         struct list_pointer* ptr=(*var_starts);
+         while (ptr!=NULL) {
+            int* start=(int*)(ptr->pointer);
+            (*start)=text_tags->n;
+            ptr=ptr->next;
+         }
+      }
+      
       int previous_start_token,previous_start_char; 
-      if (last_tfst_tag!=-1) {
+      if (last_text_dependent_tfst_tag!=-1) {
          /* If the item is not the first, we must insert the original text that is
           * between the end of the previous merged text and the beginning of the
           * current one, typically to insert spaces */
-         TfstTag* previous_tag=(TfstTag*)(infos->tfst->tags->tab[last_tfst_tag]);
-         previous_start_token=previous_tag->end_pos_token;
-         previous_start_char=previous_tag->end_pos_char;
+         TfstTag* previous_tag=(TfstTag*)(infos->tfst->tags->tab[last_text_dependent_tfst_tag]);
+         previous_start_token=previous_tag->m.end_pos_in_token;
+         previous_start_char=previous_tag->m.end_pos_in_char;
          /* We start just after the end of the previous match */
          if (infos->tfst->token_content[previous_start_token][previous_start_char+1]!='\0') {
             /* If we were not at the end of the previous text token, we just inscrease
@@ -678,16 +713,21 @@ while (text_tags!=NULL) {
          }
       } else {
          /* Otherwise, we start on the beginning of the current text tag */
-         previous_start_token=current_tag->start_pos_token;
-         previous_start_char=current_tag->start_pos_char;
+         previous_start_token=current_tag->m.start_pos_in_token;
+         previous_start_char=current_tag->m.start_pos_in_char;
       }
       /* Here we have to insert the text that is between current_start and current_end,
        * and then, the ouput of the fst2 transition */
-      insert_output(infos,s,previous_start_token,previous_start_char,
-                 current_tag->end_pos_token,current_tag->end_pos_char);
+      insert_text_interval_tfst(infos,s,previous_start_token,previous_start_char,
+                 current_tag->m.end_pos_in_token,current_tag->m.end_pos_in_char);
    }
    /* Then, we go on the next item */
-   explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag);
+   struct list_pointer* ptr2=NULL;
+   explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag
+         ,&ptr2 /* We have encountered a text dependent tag, so there is no
+                * more pending start tag like $a( */
+         );
+   free_list_pointer(ptr2);
    if (infos->ambiguous_output_policy==IGNORE_AMBIGUOUS_OUTPUTS) {
       /* If we don't want ambiguous outputs, then the first path is
        * enough for our purpose */ 
@@ -718,13 +758,15 @@ if (infos->output_policy==REPLACE_OUTPUTS) {
 	}
 	/* Trick: as 'element' is a variable that will soon be destroyed, 
 	 * we don't need to u_strdup s->str */
-	element->m.output=s->str;
+	element->output=s->str;
 	infos->matches=add_element_to_list(infos,infos->matches,element);
-	element->m.output=NULL;
+	element->output=NULL;
 } else {
 	/* In MERGE mode, we have to explore the combination of partial matches */
    empty(s);
-   explore_match_for_MERGE_mode(infos,element,items,0,s,-1);
+   struct list_pointer* ptr=NULL;
+   explore_match_for_MERGE_mode(infos,element,items,0,s,-1,&ptr);
+   free_list_pointer(ptr);
 }
 free_Ustring(s);
 free_vector_ptr(items);
@@ -778,9 +820,9 @@ if (l==NULL) return;
 u_fprintf(f,"%d.%d.%d %d.%d.%d",l->m.start_pos_in_token,l->m.start_pos_in_char,
       l->m.start_pos_in_letter,l->m.end_pos_in_token,
       l->m.end_pos_in_char,l->m.end_pos_in_letter);
-if (l->m.output!=NULL) {
+if (l->output!=NULL) {
 	/* If there is an output */
-	u_fprintf(f," %S",l->m.output);
+	u_fprintf(f," %S",l->output);
 }
 u_fprintf(f,"\n");
 if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {

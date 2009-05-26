@@ -211,12 +211,12 @@ if (u_strcmp(foo->str,".\n")) {
 }
 TfstTag* tag=new_TfstTag(T_STD);
 tag->content=content;
-tag->start_pos_token=a;
-tag->start_pos_char=b;
-tag->start_pos_letter=c;
-tag->end_pos_token=d;
-tag->end_pos_char=e;
-tag->end_pos_letter=f;
+tag->m.start_pos_in_token=a;
+tag->m.start_pos_in_char=b;
+tag->m.start_pos_in_letter=c;
+tag->m.end_pos_in_token=d;
+tag->m.end_pos_in_char=e;
+tag->m.end_pos_in_letter=f;
 return tag;
 }
 
@@ -330,12 +330,12 @@ if (type==T_EPSILON) {
 } else {
    t->content=NULL;
 }
-t->start_pos_token=-1;
-t->start_pos_char=-1;
-t->start_pos_letter=-1;
-t->end_pos_token=-1;
-t->end_pos_char=-1;
-t->end_pos_letter=-1;
+t->m.start_pos_in_token=-1;
+t->m.start_pos_in_char=-1;
+t->m.start_pos_in_letter=-1;
+t->m.end_pos_in_token=-1;
+t->m.end_pos_in_char=-1;
+t->m.end_pos_in_letter=-1;
 return t;
 }
 
@@ -464,14 +464,14 @@ if (t->type==T_STD) {
    int pos=0;
    int n=u_sprintf(out,"@STD\n@%S\n",t->content);
    pos=pos+n;
-   if (t->start_pos_token<0 || t->start_pos_char<0 || t->start_pos_letter<0
-         || t->end_pos_token<0 || t->end_pos_char<0 /*|| t->end_pos_letter<0*/) {
-      /* We don't test t->end_pos_letter<0, because t->end_pos_letter==-1 is
+   if (t->m.start_pos_in_token<0 || t->m.start_pos_in_char<0 || t->m.start_pos_in_letter<0
+         || t->m.end_pos_in_token<0 || t->m.end_pos_in_char<0 /*|| t->m.end_pos_in_letter<0*/) {
+      /* We don't test t->m.end_pos_in_letter<0, because t->m.end_pos_in_letter==-1 is
        * the sign that the tag has an empty surface form like {<E>,.JO} */
       fatal_error("Invalid TfstTag information in TfstTag_to_string\n");
    }
-   n=u_sprintf(out+pos,"@%d.%d.%d-%d.%d.%d\n",t->start_pos_token,t->start_pos_char,t->start_pos_letter,
-                                               t->end_pos_token,t->end_pos_char,t->end_pos_letter);
+   n=u_sprintf(out+pos,"@%d.%d.%d-%d.%d.%d\n",t->m.start_pos_in_token,t->m.start_pos_in_char,t->m.start_pos_in_letter,
+                                              t->m.end_pos_in_token,t->m.end_pos_in_char,t->m.end_pos_in_letter);
    pos=pos+n;
    u_sprintf(out+pos,".\n");
    return;
