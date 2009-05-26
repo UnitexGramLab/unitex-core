@@ -63,6 +63,7 @@ int same_end_positions(Match* a,Match* b);
 int same_positions(Match* a,Match* b);
 int match_start_before(Match* a,Match* b);
 int compare_matches(Match* a,Match* b);
+int valid_text_interval_tfst(Match* a,Match* b);
 
 #endif
 

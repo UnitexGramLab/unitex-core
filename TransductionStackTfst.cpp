@@ -232,7 +232,7 @@ while (s[i]!='\0') {
       i++;
       if (l==0) {
          /* Case of $$ in order to print a $ */
-    	  push_output_char_tfst(stack,'$');
+     	   push_output_char_tfst(stack,'$');
          continue;
       }
       struct transduction_variable* v=get_transduction_variable(p->variables,name);
@@ -271,7 +271,7 @@ while (s[i]!='\0') {
       }
       TfstTag* first_tag=(TfstTag*)(p->tfst->tags->tab[v->start]);
       TfstTag* last_tag=(TfstTag*)(p->tfst->tags->tab[v->end]);
-      if (!match_start_before(&(first_tag->m),&(last_tag->m))) {
+      if (!valid_text_interval_tfst(&(first_tag->m),&(last_tag->m))) {
          switch (p->variable_error_policy) {
             case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: end position before starting position for variable $%S$\n",name);
             case IGNORE_VARIABLE_ERRORS: continue;
@@ -283,9 +283,8 @@ while (s[i]!='\0') {
          }
       }
       /* If the variable definition is correct */
-      for (int k=v->start;k<v->end;k++) {
-         //push_input_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
-      }
+      insert_text_interval_tfst(p,stack,first_tag->m.start_pos_in_token,first_tag->m.start_pos_in_char,
+                                last_tag->m.end_pos_in_token,last_tag->m.end_pos_in_char);
    }
    else {
       /* If we have a normal character */

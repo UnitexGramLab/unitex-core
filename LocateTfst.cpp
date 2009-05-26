@@ -63,6 +63,14 @@ u_printf("Usage: LocateTfst [OPTIONS] <fst2>\n"
          "                          but different outputs (default)\n"
          "  -z/--no_ambiguous_outputs: forbids ambiguous outputs\n"
          "\n"
+         "Variable error options:\n"
+         "These options have no effect if the output mode is --ignore; otherwise, they rule\n"
+         "the behavior of the Locate program when an output is found that contains a reference\n"
+         "to a variable that is not correctly defined.\n"
+         "  -X/--exit_on_variable_error: kills the program\n"
+         "  -Y/--ignore_variable_errors: acts as if the variable has an empty content (default)\n"
+         "  -Z/--backtrack_on_variable_errors: stop exploring the current path of the grammar\n"
+         "\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text automaton, and saves the matching sequence index in a\n"
@@ -81,7 +89,7 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":t:a:j:ln:SLAIMRbzh";
+const char* optstring=":t:a:j:ln:SLAIMRXYZbzh";
 const struct option_TS lopts[]= {
 	  {"text",required_argument_TS,NULL,'t'},
 	  {"alphabet",required_argument_TS,NULL,'a'},
@@ -94,6 +102,9 @@ const struct option_TS lopts[]= {
      {"ignore",no_argument_TS,NULL,'I'},
      {"merge",no_argument_TS,NULL,'M'},
      {"replace",no_argument_TS,NULL,'R'},
+     {"exit_on_variable_error",no_argument_TS,NULL,'X'},
+     {"ignore_variable_errors",no_argument_TS,NULL,'Y'},
+     {"backtrack_on_variable_errors",no_argument_TS,NULL,'Z'},
      {"ambiguous_outputs",no_argument_TS,NULL,'b'},
      {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
      {"help",no_argument_TS,NULL,'h'},
@@ -106,6 +117,7 @@ char jamo_table[FILENAME_MAX]="";
 MatchPolicy match_policy=LONGEST_MATCHES;
 OutputPolicy output_policy=IGNORE_OUTPUTS;
 AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
+VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int search_limit=NO_MATCH_LIMIT;
 struct OptVars* vars=new_OptVars();
 char foo;
@@ -138,6 +150,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 'I': output_policy=IGNORE_OUTPUTS; break;
    case 'M': output_policy=MERGE_OUTPUTS; break;
    case 'R': output_policy=REPLACE_OUTPUTS; break;
+   case 'X': variable_error_policy=EXIT_ON_VARIABLE_ERRORS; break;
+   case 'Y': variable_error_policy=IGNORE_VARIABLE_ERRORS; break;
+   case 'Z': variable_error_policy=BACKTRACK_ON_VARIABLE_ERRORS; break;
    case 'b': ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS; break;
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
    case 'h': usage(); return 0;
@@ -162,7 +177,8 @@ strcpy(grammar,argv[vars->optind]);
 get_path(text,output);
 strcat(output,"concord.ind");
 
-int OK=locate_tfst(text,grammar,alphabet,output,match_policy,output_policy,ambiguous_output_policy,search_limit,jamo_table);
+int OK=locate_tfst(text,grammar,alphabet,output,match_policy,output_policy,
+                   ambiguous_output_policy,variable_error_policy,search_limit,jamo_table);
 
 free_OptVars(vars);
 return (!OK);

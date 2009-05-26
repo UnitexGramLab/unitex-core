@@ -130,3 +130,14 @@ if (match_start_before(a,b)) {
    return A_AFTER_B_OVERLAP;
 }
 }
+
+
+/**
+ * Returns 1 if a starts before b ends; 0 otherwise.
+ */
+int valid_text_interval_tfst(Match* a,Match* b) {
+if (a->start_pos_in_token<b->end_pos_in_token) return 1;
+if (a->start_pos_in_token>b->end_pos_in_token) return 0;
+return (a->start_pos_in_char<=b->end_pos_in_char);
+}
+

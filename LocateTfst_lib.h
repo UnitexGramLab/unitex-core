@@ -102,7 +102,8 @@ struct locate_tfst_infos {
 };
 
 
-int locate_tfst(char*,char*,char*,char*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,int,char*);
+int locate_tfst(char*,char*,char*,char*,MatchPolicy,OutputPolicy,AmbiguousOutputPolicy,
+                VariableErrorPolicy,int,char*);
 
 
 #endif

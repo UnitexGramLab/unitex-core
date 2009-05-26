@@ -72,7 +72,7 @@ int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locat
  */
 int locate_tfst(char* text,char* grammar,char* alphabet,char* output,MatchPolicy match_policy,
 		        OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
-		        int search_limit,char* jamo_table) {
+		        VariableErrorPolicy variable_error_policy,int search_limit,char* jamo_table) {
 Tfst* tfst=open_text_automaton(text);
 if (tfst==NULL) {
 	return 0;
@@ -123,7 +123,7 @@ if (infos.filters==NULL) {
 infos.match_policy=match_policy;
 infos.output_policy=output_policy;
 infos.ambiguous_output_policy=ambiguous_output_policy;
-infos.variable_error_policy=IGNORE_VARIABLE_ERRORS;
+infos.variable_error_policy=variable_error_policy;
 infos.variables=new_Variables(infos.fst2->variables);
 infos.number_of_outputs=0;
 infos.start_position_last_printed_match_token=-1;
