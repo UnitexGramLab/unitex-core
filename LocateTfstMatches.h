@@ -31,6 +31,7 @@
 
 #define NO_TEXT_TOKEN_WAS_MATCHED -1
 
+
 /**
  * This structure is used to represent a partial match information while exploring
  * a .tfst. As we explore an automaton, we factorize node information in order to

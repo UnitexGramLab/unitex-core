@@ -576,7 +576,7 @@ while (grammar_transition!=NULL) {
          list->next=match_element_list;
          /* match_element_list is pointed by one more element */
          if (match_element_list!=NULL) {
-        	 (match_element_list->pointed_by)++;
+        	   (match_element_list->pointed_by)++;
          }
          Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
          int dest_state_in_fst2=(list->pos_kr!=-1)?-1:grammar_transition->state_number;
@@ -609,7 +609,6 @@ int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag gra
 if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
    || grammar_tag->type==BEGIN_NEGATIVE_CONTEXT_TAG
    || grammar_tag->type==END_CONTEXT_TAG
-   || grammar_tag->type==LEFT_CONTEXT_TAG
    || grammar_tag->type==BEGIN_MORPHO_TAG
    || grammar_tag->type==END_MORPHO_TAG) {
    fatal_error("Tag '%S' should not be found in a grammar applied to a text automaton\n",grammar_tag->input);
@@ -618,9 +617,11 @@ if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
  * We want to match something that is text independent */
 if (grammar_tag->type==BEGIN_VAR_TAG
    || grammar_tag->type==END_VAR_TAG
+   || grammar_tag->type==LEFT_CONTEXT_TAG
    || !u_strcmp(grammar_tag->input,"<E>")) {
    return TEXT_INDEPENDENT_MATCH;
 }
+
 /* Here we test the special case of the " " and # tags that are contextual matches, and 
  * for this reason, that cannot be cached */
 if (!u_strcmp(grammar_tag->input," ")) {

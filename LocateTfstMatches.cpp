@@ -27,6 +27,12 @@
 #include "TransductionStackTfst.h"
 
 
+/* This special negative value is used to indicate that a $* tag was found, and that
+ * we wait for a text dependent tag to set the actual beginning of the match to
+ * be added to the concordance file */
+#define LEFT_CONTEXT_PENDING -456
+
+
 /**
  * Allocates, initializes and returns a new tfst_match.
  */
@@ -438,6 +444,7 @@ struct tfst_match* item=(struct tfst_match*)(items->tab[current_item]);
 if (item==NULL) {
    fatal_error("Unexpected NULL item in explore_match_for_MERGE_mode\n");
 }
+Match saved_element=element->m;
 struct list_int* text_tags=item->text_tag_numbers;
 /* We explore all the text tags */
 while (text_tags!=NULL) {
@@ -486,6 +493,29 @@ while (text_tags!=NULL) {
             v->end=old_value;
             return;
          }
+      } else if (fst2_tag->type==LEFT_CONTEXT_TAG) {
+         /* If we have found a $* tag, we must reset the stack string and the 
+          * start position, so we save them */
+         unichar* old_stack=u_strdup(s->str);
+         int old_pos_token=element->m.start_pos_in_token;
+         int old_pos_char=element->m.start_pos_in_char;
+         int old_pos_letter=element->m.start_pos_in_letter;
+         /* We set the new values */
+         empty(s);
+         element->m.start_pos_in_token=LEFT_CONTEXT_PENDING;
+         /* We must reset last_tag to -1, because is not, we will have an 
+          * extra space on the left of the match */
+         explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,-1,var_starts);
+         
+         /* And we restore previous values */
+         element->m.start_pos_in_token=old_pos_token;
+         element->m.start_pos_in_char=old_pos_char;
+         element->m.start_pos_in_letter=old_pos_letter;
+         u_strcpy(s,old_stack);
+         free(old_stack);
+         /* If we have a $* tag, we know that we can only have just one text tag 
+          * with special value -1 */
+         return;
       }
    } else {
       /* We update the last tag */
@@ -532,10 +562,17 @@ while (text_tags!=NULL) {
    }
    /* Then, we go on the next item */
    struct list_pointer* ptr2=NULL;
+   if (element->m.start_pos_in_token==LEFT_CONTEXT_PENDING) {
+      element->m.start_pos_in_token=infos->tfst->offset_in_tokens+current_tag->m.start_pos_in_token;
+      element->m.start_pos_in_char=current_tag->m.start_pos_in_char;
+      element->m.start_pos_in_letter=current_tag->m.start_pos_in_letter;
+   }
    explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag
          ,&ptr2 /* We have encountered a text dependent tag, so there is no
                 * more pending start tag like $a( */
          );
+   element->m=saved_element;
+   /* If there was a $* tag pending */
    free_list_pointer(ptr2);
    if (infos->ambiguous_output_policy==IGNORE_AMBIGUOUS_OUTPUTS) {
       /* If we don't want ambiguous outputs, then the first path is
