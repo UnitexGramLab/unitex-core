@@ -55,6 +55,7 @@
 #include "Tfst2Unambig.h"
 #include "Tokenize.h"
 #include "Txt2Tfst.h"
+#include "Uncompress.h"
 #include "XMLizer.h"
 
 #include "UnitexTool.h"
@@ -130,6 +131,7 @@ const struct utility_item utility_array[]=
 	{ "Tokenize", 8, &main_Tokenize} ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
 	{ "Txt2Tfst", 8, &main_Txt2Tfst} ,
+   { "Uncompress", 10, &main_Uncompress} ,
 	{ "XMLizer", 7, &main_XMLizer} ,
 #endif
 
