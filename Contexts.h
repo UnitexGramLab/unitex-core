@@ -29,7 +29,7 @@
 /**
  * This structure stores the information needed to deal with 
  * the context marks $[ $![ and $]
- * If the state has a transition with a positive context start mark $[, we compute
+ * If fst2 state has a transition with a positive context start mark $[, we compute
  * one time for all where the associated context end marks are. This is useful to
  * know where to go in the grammar when the context has been matched. The same is
  * done for the negative context mark, if any.
@@ -55,5 +55,6 @@ struct opt_contexts* new_opt_contexts();
 void free_opt_contexts(struct opt_contexts*);
 void add_positive_context(Fst2*,struct opt_contexts**,Transition*);
 void add_negative_context(Fst2*,struct opt_contexts**,Transition*);
+struct opt_contexts** compute_contexts(Fst2*);
 
 #endif

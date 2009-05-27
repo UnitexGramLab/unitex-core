@@ -378,7 +378,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o Unicode.o
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o \
                   LocateTfstMatches.o Match.o MorphologicalFilters.o jamoCodage.o codeForKorean.o pro_type.o \
                   orgUniMbcsMap.o segtype.o etc.o Korean.o OptimizedTfstTagMatching.o List_pointer.o\
-                  TransductionVariables.o TransductionStackTfst.o 
+                  TransductionVariables.o TransductionStackTfst.o Contexts.o 
 
 
 MULTIFLEX      = MultiFlex

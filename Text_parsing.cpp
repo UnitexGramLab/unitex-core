@@ -210,9 +210,7 @@ if (current_state->control & 1) {
       /* If we have reached the final state of a graph while
        * looking for a context, it's an error because every
        * opened context must be closed before the end of the graph. */
-      error("ERROR: unclosed context in graph \"%S\"\n",p->fst2->graph_names[graph_depth+1]);
-      free_list_int(ctx);
-      return;
+      fatal_error("ERROR: unclosed context in graph \"%S\"\n",p->fst2->graph_names[graph_depth+1]);
    }
    /* In we are in the top level graph, we have a match */
    if (graph_depth==0) {
@@ -293,7 +291,10 @@ if (graph_call_list!=NULL) {
          p->dic_variables=clone_dic_variable_list(dic_variables_backup);
          locate(graph_depth+1, /* Exploration of the subgraph */
                 p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
-                pos,depth+1,&L,0,NULL,p);
+                pos,depth+1,&L,0,
+                NULL, /* ctx is set to NULL because the end of a context must occur in the
+                       * same graph than its beginning */
+                p);
          p->stack_base=old_StackBase;
          clear_dic_variable_list(&(p->dic_variables));
          if (L!=NULL) {

@@ -98,6 +98,7 @@ struct locate_tfst_infos {
 	unichar** jamo_tfst_tags;
 	
 	LocateTfstTagMatchingCache* cache;
+	struct opt_contexts** contexts;
 	#endif
 };
 

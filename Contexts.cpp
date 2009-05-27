@@ -202,3 +202,31 @@ if ((*contexts)->negative_mark[n+1]==NULL) {
    }
 }
 }
+
+
+/**
+ * Computes contexts for all states of the given fst2.
+ */
+struct opt_contexts** compute_contexts(Fst2* fst2) {
+struct opt_contexts** contexts=(struct opt_contexts**)calloc(fst2->number_of_states,sizeof(struct opt_contexts*));
+if (contexts==NULL) {
+   fatal_alloc_error("compute_contexts");
+}
+for (int i=0;i<fst2->number_of_states;i++) {
+   Transition* t=fst2->states[i]->transitions;
+   while (t!=NULL) {
+      if (t->tag_number>0) {
+         /* Subgraph calls and epsilon are not to be considered */
+         Fst2Tag tag=fst2->tags[t->tag_number];
+         if (tag->type==BEGIN_POSITIVE_CONTEXT_TAG) {
+            add_positive_context(fst2,&(contexts[i]),t);
+         } else if (tag->type==BEGIN_NEGATIVE_CONTEXT_TAG) {
+            add_negative_context(fst2,&(contexts[i]),t);
+         } 
+      }
+      t=t->next;
+   }
+}
+return contexts;
+}
+

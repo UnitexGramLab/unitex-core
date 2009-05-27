@@ -26,6 +26,8 @@
 #include "LocateTfst_lib.h"
 #include "File.h"
 #include "Korean.h"
+#include "Contexts.h"
+#include "List_int.h"
 
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
@@ -49,7 +51,8 @@ void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
                 int pos_kr_in_fst2_tag,
                 int pos_kr_in_tfst_tag,
                 Transition* current_kr_fst2_transition,
-                Transition* current_kr_tfst_transition);
+                Transition* current_kr_tfst_transition,
+                struct list_int* ctx);
 void init_Korean_stuffs(struct locate_tfst_infos* infos,char* jamo_table);
 void free_Korean_stuffs(struct locate_tfst_infos* infos);
 void compute_jamo_tfst_tags(struct locate_tfst_infos* infos);
@@ -136,6 +139,7 @@ infos.end_position_last_printed_match_letter=-1;
 infos.search_limit=search_limit;
 init_Korean_stuffs(&infos,jamo_table);
 infos.cache=new_LocateTfstTagMatchingCache(tfst->N,infos.fst2->number_of_tags);
+infos.contexts=compute_contexts(infos.fst2);
 /* We launch the matching for each sentence */
 for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
    if (i%100==0) {
@@ -159,7 +163,7 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	      visits[k]=0;
 	   }
 	   //error("sentence=%d  from state %d/%d\n",i,j,tfst->automaton->number_of_states);
-	   explore_tfst(visits,tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,-1,NULL,NULL);
+	   explore_tfst(visits,tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,-1,NULL,NULL,NULL);
 	}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 	free(visits);
@@ -200,6 +204,10 @@ free_alphabet(infos.alphabet);
 free_Variables(infos.variables);
 free_Korean_stuffs(&infos);
 free_LocateTfstTagMatchingCache(infos.cache);
+for (int i=0;i<infos.fst2->number_of_states;i++) {
+   free_opt_contexts(infos.contexts[i]);
+}
+free(infos.contexts);
 free_abstract_Fst2(infos.fst2,&fst2_free);
 close_text_automaton(tfst);
 return 1;
@@ -354,7 +362,8 @@ void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
                 int pos_kr_in_fst2_tag,
                 int pos_kr_in_tfst_tag,
                 Transition* current_kr_fst2_transition,
-                Transition* current_kr_tfst_transition) {
+                Transition* current_kr_tfst_transition,
+                struct list_int* ctx /* information about the current context, if any */) {
 //error("visits for current state=%d  tfst state=%d  fst2 state=%d\n",visits[current_state_in_tfst],current_state_in_tfst,current_state_in_fst2);
 if (visits[current_state_in_tfst]>MAX_VISITS_PER_TFST_STATE) {
    /* If there are too much recursive calls */
@@ -393,7 +402,7 @@ if (current_kr_fst2_transition!=NULL) {
       else if (result==PARTIAL_MATCH_STATUS) {
          /* If we have consumed all the fst2 tag but not all the tfst one, we go on */
          explore_tfst(visits,tfst,current_state_in_tfst,current_kr_fst2_transition->state_number,
-                                                graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition);
+                                                graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition,ctx);
       }
       text_transition=text_transition->next;
    }
@@ -414,7 +423,7 @@ if (current_kr_fst2_transition!=NULL) {
       Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
       int dest_state=(list->pos_kr!=-1)?-1:current_kr_fst2_transition->state_number;
       explore_tfst(visits,tfst,list->dest_state_text,dest_state,
-                        graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL);
+                        graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL,ctx);
       if (list->pointed_by==0) {
          /* If list is not blocked by being part of a match for the calling
           * graph, we can free it */
@@ -455,7 +464,7 @@ if (current_kr_tfst_transition!=NULL) {
          /* If we have a match independent of the text automaton (i.e. <E>) 
           * or that does not consume all the tfst tag, we go on */
          explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                                       graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition);
+                                       graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition,ctx);
       }
       grammar_transition=grammar_transition->next;
    }
@@ -476,7 +485,7 @@ if (current_kr_tfst_transition!=NULL) {
       Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
       int dest_state=(list->pos_kr!=-1)?-1:list->fst2_transition->state_number;
       explore_tfst(visits,tfst,list->dest_state_text,dest_state,
-                        graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL);
+                        graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL,ctx);
       if (list->pointed_by==0) {
          /* If list is not blocked by being part of a match for the calling
           * graph, we can free it */
@@ -489,10 +498,17 @@ if (current_kr_tfst_transition!=NULL) {
    return;
 } /* END OF CASE 2 */
 
+
 /* CASE 3: we are in the normal state exploration case */
 Fst2State current_state_in_grammar=infos->fst2->states[current_state_in_fst2];
 if (is_final_state(current_state_in_grammar)) {
    /* If the current state is final */
+   if (ctx!=NULL) {
+      /* If we have reached the final state of a graph while
+       * looking for a context, it's an error because every
+       * opened context must be closed before the end of the graph. */
+      fatal_error("ERROR: unclosed context\n");
+   }   
    if (graph_depth==0) {
       /* If we are in the main graph, we add a match to the main match list */
       add_tfst_match(infos,match_element_list);
@@ -512,7 +528,9 @@ while (grammar_transition!=NULL) {
       struct tfst_match_list* tmp;
 
       explore_tfst(visits,tfst,current_state_in_tfst,infos->fst2->initial_states[-e],
-              graph_depth+1,match_element_list,&list_for_subgraph,infos,-1,-1,NULL,NULL);
+              graph_depth+1,match_element_list,&list_for_subgraph,infos,-1,-1,NULL,NULL,
+              NULL); /* ctx is set to NULL because the end of a context must occur in the
+                      * same graph than its beginning */
       while (list_for_subgraph!=NULL) {
          tmp=list_for_subgraph->next;
          /* Before exploring an element that points on a subgraph match,
@@ -521,7 +539,7 @@ while (grammar_transition!=NULL) {
          (list_for_subgraph->match->pointed_by)--;
          explore_tfst(visits,tfst,list_for_subgraph->match->dest_state_text,
                            grammar_transition->state_number,
-                           graph_depth,list_for_subgraph->match,LIST,infos,-1,-1,NULL,NULL);
+                           graph_depth,list_for_subgraph->match,LIST,infos,-1,-1,NULL,NULL,ctx);
          /* Finally, we remove, if necessary, the list of match element
           * that was used for storing the subgraph match. This cleaning
           * will only free elements that are not involved in others
@@ -531,7 +549,75 @@ while (grammar_transition!=NULL) {
          list_for_subgraph=tmp;
       }
    }
-   else {
+   else if (infos->fst2->tags[e]->type==BEGIN_POSITIVE_CONTEXT_TAG) {
+      /* If we have a positive context tag $[ */
+      struct opt_contexts* context=infos->contexts[current_state_in_fst2];
+      if (context==NULL) {
+         fatal_error("Unexpected NULL contexts in explore_tfst\n");
+      }
+      Transition* t;
+      for (int n_ctxt=0;n_ctxt<context->size_positive;n_ctxt=n_ctxt+2) {
+         t=context->positive_mark[n_ctxt];
+         /* We look for a positive context from the current position */
+         struct list_int* c=new_list_int(0,ctx);
+         explore_tfst(visits,tfst,current_state_in_tfst,t->state_number,
+                                    graph_depth,NULL,LIST,infos,-1,-1,NULL,NULL,c);
+         /* Note that there is no matches to free since matches cannot be built within a context */
+         if (c->n) {
+            /* If the context has matched, then we can explore all the paths
+             * that starts from the context end */
+            Transition* states=context->positive_mark[n_ctxt+1];
+            while (states!=NULL) {
+               explore_tfst(visits,tfst,current_state_in_tfst,states->state_number,
+                                          graph_depth,match_element_list,LIST,infos,-1,-1,NULL,NULL,ctx);
+               states=states->next;
+            }
+         }
+         free(c);
+      }
+      /* End of $[ case */
+   }
+   else if (infos->fst2->tags[e]->type==BEGIN_NEGATIVE_CONTEXT_TAG) {
+      /* If we have a positive context tag $![ */
+      struct opt_contexts* context=infos->contexts[current_state_in_fst2];
+      if (context==NULL) {
+         fatal_error("Unexpected NULL contexts in explore_tfst\n");
+      }
+      Transition* t;
+      for (int n_ctxt=0;n_ctxt<context->size_negative;n_ctxt=n_ctxt+2) {
+         t=context->negative_mark[n_ctxt];
+         /* We look for a negative context from the current position */
+         struct list_int* c=new_list_int(0,ctx);
+         explore_tfst(visits,tfst,current_state_in_tfst,t->state_number,
+                                    graph_depth,NULL,LIST,infos,-1,-1,NULL,NULL,c);
+         /* Note that there is no matches to free since matches cannot be built within a context */
+         if (!c->n) {
+            /* If the context has not matched, then we can explore all the paths
+             * that starts from the context end */
+            Transition* states=context->negative_mark[n_ctxt+1];
+            while (states!=NULL) {
+               explore_tfst(visits,tfst,current_state_in_tfst,states->state_number,
+                                          graph_depth,match_element_list,LIST,infos,-1,-1,NULL,NULL,ctx);
+               states=states->next;
+            }
+         }
+         free(c);
+      }
+      /* End of $![ case */
+   }
+   else if (infos->fst2->tags[e]->type==END_CONTEXT_TAG) {
+      /* If we have a $] tag */
+      if (ctx==NULL) {
+         /* If there was no current opened context, it's an error */
+         error("ERROR: unexpected closing context mark\n");
+         return;
+      }
+      /* Otherwise, we just indicate that we have found a context closing mark,
+       * and we return */
+      ctx->n=1;
+      return;
+      /* End of $] case */
+   } else {
       /* Normal case (not a subgraph call) */
       struct tfst_match* list=NULL;
       Transition* text_transition=tfst->automaton->states[current_state_in_tfst]->outgoing_transitions;
@@ -560,7 +646,7 @@ while (grammar_transition!=NULL) {
              * add a partial match to 'list', because this must only be done when
              * a tfst tag has matched, and this is not the case here. */
             explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                              graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,text_transition);
+                              graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,text_transition,ctx);
          }
          text_transition=text_transition->next;
       }
@@ -581,7 +667,7 @@ while (grammar_transition!=NULL) {
          Transition* tmp_trans=(list->pos_kr!=-1)?list->fst2_transition:NULL;
          int dest_state_in_fst2=(list->pos_kr!=-1)?-1:grammar_transition->state_number;
          explore_tfst(visits,tfst,list->dest_state_text,dest_state_in_fst2,
-                           graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL);
+                           graph_depth,list,LIST,infos,list->pos_kr,-1,tmp_trans,NULL,ctx);
          if (list->pointed_by==0) {
             /* If list is not blocked by being part of a match for the calling
              * graph, we can free it */
@@ -605,11 +691,14 @@ int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag gra
                                         int tfst_tag_index,int fst2_tag_index,
                                         struct locate_tfst_infos* infos,
                                         int *pos_kr_fst2_tag,int *pos_kr_tfst_tag) {
-/* We start by looking at special fst2 tags */
 if (grammar_tag->type==BEGIN_POSITIVE_CONTEXT_TAG
    || grammar_tag->type==BEGIN_NEGATIVE_CONTEXT_TAG
-   || grammar_tag->type==END_CONTEXT_TAG
-   || grammar_tag->type==BEGIN_MORPHO_TAG
+   || grammar_tag->type==END_CONTEXT_TAG) {
+   fatal_error("Context tag '%S' should not be found in match_between_text_and_grammar_tags\n",grammar_tag->input);
+}
+
+/* We start by looking at special fst2 tags */
+if (grammar_tag->type==BEGIN_MORPHO_TAG
    || grammar_tag->type==END_MORPHO_TAG) {
    fatal_error("Tag '%S' should not be found in a grammar applied to a text automaton\n",grammar_tag->input);
 }
