@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -92,3 +92,113 @@ free_bit_array(marker);
 }
 
 
+/**
+ * Allocates, initializes and returns a new optimized context structure.
+ */
+struct opt_contexts* new_opt_contexts() {
+struct opt_contexts* c=(struct opt_contexts*)malloc(sizeof(struct opt_contexts));
+if (c==NULL) {
+   fatal_alloc_error("new_opt_contexts");
+}
+c->positive_mark=NULL;
+c->size_positive=0;
+c->negative_mark=NULL;
+c->size_negative=0;
+c->end_mark=NULL;
+return c;
+}
+
+
+/**
+ * Frees all the memory associated to the given optimized context structure.
+ */
+void free_opt_contexts(struct opt_contexts* c) {
+if (c==NULL) return;
+for (int i=0;i<c->size_positive;i++) {
+   free_Transition_list(c->positive_mark[i]);
+}
+if (c->positive_mark!=NULL) free(c->positive_mark);
+for (int i=0;i<c->size_negative;i++) {
+   free_Transition_list(c->negative_mark[i]);
+}
+if (c->negative_mark!=NULL) free(c->negative_mark);
+free_Transition_list(c->end_mark);
+free(c);
+}
+
+
+/**
+ * Adds a positive context to the given state or raises a fatal error if
+ * there is already one, because it would mean that the fst2 is not
+ * deterministic. As a side effect, this function looks for all the closing
+ * context marks reachable from this positive context mark and stores them into
+ * 'reacheable_states_from_positive_context'. If there is no reachable context
+ * end mark, the function emit an error message and ignores this "$[" transition.
+ */
+void add_positive_context(Fst2* fst2,struct opt_contexts* *contexts,Transition* transition) {
+int created=0;
+if (*contexts==NULL) {
+   created=1;
+   (*contexts)=new_opt_contexts();
+}
+if ((*contexts)->positive_mark!=NULL) {
+   fatal_error("Duplicate positive context mark\n");
+}
+int n=(*contexts)->size_positive;
+(*contexts)->size_positive=(*contexts)->size_positive+2;
+(*contexts)->positive_mark=(Transition**)realloc((*contexts)->positive_mark,(*contexts)->size_positive*sizeof(Transition*));
+if ((*contexts)->positive_mark==NULL) {
+   fatal_alloc_error("add_positive_context");
+}
+(*contexts)->positive_mark[n]=new_Transition(transition->tag_number,transition->state_number);
+get_reachable_closing_context_marks(fst2,transition->state_number,&((*contexts)->positive_mark[n+1]));
+if ((*contexts)->positive_mark[n+1]==NULL) {
+   error("Positive context with no end\n");
+   free_Transition_list((*contexts)->positive_mark[n]);
+   if (n==0) {
+      free((*contexts)->positive_mark);
+      (*contexts)->positive_mark=NULL;
+   }
+   if (created) {
+      free((*contexts));
+      (*contexts)=NULL;
+   }
+}
+}
+
+
+/**
+ * Adds a negative context to the given state or raises a fatal error if
+ * there is already one, because it would mean that the fst2 is not
+ * deterministic. As a side effect, this function looks for all the closing
+ * context marks reachable from this negative context mark and stores them into
+ * 'reacheable_states_from_negative_context'. If there is no reachable context
+ * end mark, the function emit an error message and ignores this "$![" transition.
+ */
+void add_negative_context(Fst2* fst2,struct opt_contexts* *contexts,Transition* transition) {
+int created=0;
+if (*contexts==NULL) {
+   created=1;
+   (*contexts)=new_opt_contexts();
+}
+int n=(*contexts)->size_negative;
+(*contexts)->size_negative=(*contexts)->size_negative+2;
+(*contexts)->negative_mark=(Transition**)realloc((*contexts)->negative_mark,(*contexts)->size_negative*sizeof(Transition*));
+if ((*contexts)->negative_mark==NULL) {
+   fatal_alloc_error("add_negative_context");
+}
+(*contexts)->negative_mark[n]=new_Transition(transition->tag_number,transition->state_number);
+get_reachable_closing_context_marks(fst2,transition->state_number,&((*contexts)->negative_mark[n+1]));
+if ((*contexts)->negative_mark[n+1]==NULL) {
+   error("Negative context with no end\n");
+   free_Transition_list((*contexts)->negative_mark[n]);
+   if (n==0) {
+      free((*contexts)->negative_mark);
+      (*contexts)->negative_mark=NULL;
+   }
+   if (created) {
+      free((*contexts));
+      (*contexts)=NULL;
+   }
+}
+}

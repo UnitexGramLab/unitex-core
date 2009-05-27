@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,7 @@
 #include "TransductionVariables.h"
 #include "MetaSymbols.h"
 #include "Transitions.h"
+#include "Contexts.h"
 
 
 /**
@@ -82,30 +83,6 @@ struct opt_variable {
    int variable_number;
    Transition* transition;
    struct opt_variable* next;
-};
-
-
-/**
- * This structure stores the information needed to deal with 
- * the context marks $[ $![ and $]
- * If the state has a transition with a positive context start mark $[, we compute
- * one time for all where the associated context end marks are. This is useful to
- * know where to go in the grammar when the context has been matched. The same is
- * done for the negative context mark, if any.
- */
-struct opt_contexts {
-   /* This is an array used to store both the positive context start marks and
-    * their associated ending context marks.
-    * 
-    * positive_mark[i] will contain the context transition and positive_mark[i+1] will
-    * contain the context end transitions. */
-   Transition** positive_mark;
-   /* Number of element of the previous array */
-    int size_positive;
-   /* The same as for positive context marks */
-   Transition** negative_mark;
-   int size_negative;
-   Transition* end_mark;
 };
 
 
