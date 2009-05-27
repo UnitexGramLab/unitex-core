@@ -452,7 +452,12 @@ while (text_tags!=NULL) {
    s->len=len;
    s->str[len]='\0';
    /* We add the fst2 tag output, if any */
-   process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number);
+   if (!process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number) 
+       && infos->variable_error_policy==BACKTRACK_ON_VARIABLE_ERRORS) {
+      /* We do not take into account matches with variable errors if the
+       * policy is BACKTRACK_ON_VARIABLE_ERRORS */
+      return;
+   }
    int last_tag=last_text_dependent_tfst_tag;
    TfstTag* current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
    if (text_tags->n==-1) {
@@ -600,7 +605,12 @@ if (infos->output_policy==REPLACE_OUTPUTS) {
 	for (int i=0;i<items->nbelems;i++) {
 		struct tfst_match* item=(struct tfst_match*)(items->tab[i]);
 		int fst2_tag_number=item->fst2_transition->tag_number;
-		process_output_for_tfst_match(infos,s,fst2_tag_number);
+		if (!process_output_for_tfst_match(infos,s,fst2_tag_number)
+		    && infos->variable_error_policy==BACKTRACK_ON_VARIABLE_ERRORS) {
+		   free_Ustring(s);
+		   free_vector_ptr(items); 
+		   return;
+		}
 	}
 	/* Trick: as 'element' is a variable that will soon be destroyed, 
 	 * we don't need to u_strdup s->str */
