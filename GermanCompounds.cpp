@@ -361,7 +361,7 @@ if (!(c&32768)) {
     }
     else {
       // else, we must explore the rest of the original word
-      if (right[index]) {
+      if (left[index]) {
          // but only if the current component was a valid left one
          // we go on with the next component
          unichar dec[2000];
