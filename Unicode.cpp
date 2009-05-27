@@ -297,6 +297,7 @@ return new_U_FILE(f,encoding);
  * Closes a UTF16 file.
  */
 int u_fclose(U_FILE* f) {
+if (f==NULL) return 0;
 int ret=af_fclose(f->f);
 free_U_FILE(f);
 return ret;

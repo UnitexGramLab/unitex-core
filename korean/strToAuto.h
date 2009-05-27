@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -823,7 +823,7 @@ public:
 		fseek(fptr,0,SEEK_END);	
 		int sizeFile =ftell(fptr)/2;
 		tokMap = new unsigned short[sizeFile];
-		if(!tokMap) fatal_error("mem alloc fail\n");
+		if(!tokMap) fatal_alloc_error("loadTokensMap");
 		fseek(fptr,2,SEEK_SET);
 		if(!u_fread_raw(tokMap,sizeFile-1,fptr))
 			fatal_error("Read Tokens fail\n");
@@ -868,7 +868,7 @@ public:
 		fseek(fptr,0,SEEK_END);	
 		int sizeFile =ftell(fptr)/2;
 		mophMap = new unsigned short[sizeFile];
-		if(!mophMap) fatal_error("mem alloc fail\n");
+		if(!mophMap) fatal_alloc_error("loadSousTokensMap");
 		fseek(fptr,2,SEEK_SET);
 		if(!u_fread_raw(mophMap,sizeFile-1,fptr))
 			fatal_error("Read Tokens fail\n");
@@ -956,13 +956,14 @@ public:
 		head.offset_morp_struct = ftell(f);
 		head.cnt_of_morpheme = sz;
         int i;
+      if (morStructTable!=NULL) {
+         fatal_error("Unexpected non NULL morStructTable in saveMorphems\n");
+      }
 		morStructTable = new struct morpheme_struct [sz];
-		if(!morStructTable) fatal_error("mem alloc fail\n");
+		if(!morStructTable) fatal_alloc_error("saveMorphems");
 		flechi.put(u_epsilon_string);
 		canon.put(u_epsilon_string);
 		info.put(u_epsilon_string);
-		
-
 		
 		for (i = 0; i < sz;i++){
 
@@ -1178,7 +1179,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 
 		fseek(phraseAutoMap,head.offset_morp_struct,SEEK_SET);
 		morStructTable = new struct morpheme_struct[head.cnt_of_morpheme];
-		if(!morStructTable) fatal_error("mem alloc fail\n");
+		if(!morStructTable) fatal_alloc_error("loadMorphemes");
 		fread(morStructTable,sizeof(struct morpheme_struct)*
 			head.cnt_of_morpheme,1,phraseAutoMap);
 
@@ -1261,7 +1262,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 
 		fseek(phraseAutoMap,head.offset_morp_struct,SEEK_SET);
 		morStructTable = new struct morpheme_struct[head.cnt_of_morpheme];
-		if(!morStructTable) fatal_error("mem alloc fail\n");
+		if(!morStructTable) fatal_alloc_error("loadMorphemesStruct__");
 		if(!fread(morStructTable,sizeof(struct morpheme_struct)*
 			head.cnt_of_morpheme,1,phraseAutoMap))
 			freadError(ftemp);
@@ -1477,7 +1478,9 @@ public:
 #ifdef DDEBUG
 		if(fdebug){fflush(fdebug);fclose(fdebug);}
 #endif
-		if(fout){ /*fflush(fout);*/ 	u_fclose(fout);}
+		if(fout){
+		   u_fclose(fout);
+		}
 		if(fidx){ u_fclose(fidx);}
 		if(loadFst2) free_Fst2(loadFst2);
 	}
@@ -1851,9 +1854,13 @@ public:
 		unePhraseAuto.saveSentencePosition();
 		
 		unePhraseAuto.write_head();
-
-
+		
+		/* Very important!!! If we don't do that, we will have a double u_fclose, because
+		 * fout is a clone of phraseAutoMap that is already closed in ~morpheme_info */ 
+		fout=NULL;
 	}
+	
+	
 //
 //	add morphemes to the automate by only text tokens
 //

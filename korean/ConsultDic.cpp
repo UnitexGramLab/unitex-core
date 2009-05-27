@@ -1,7 +1,7 @@
 /*
  * Unitex
  *
- * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+ * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -393,9 +393,9 @@ void consultationLesTokens(char *textfile,Alphabet *PtrAlphabet)
 		while(tmp){
         	findCnt = 0;
             tmp->dic.searchMotAtTree(tokensTable[wordCnt],0);
-            if (findCnt) {
+            /*if (findCnt) {
                u_printf("%S",tokensTable[wordCnt]);
-            }         
+            }*/        
             if(findCnt) findWordCnt++;
     	    tmp= tmp->next;                
         }

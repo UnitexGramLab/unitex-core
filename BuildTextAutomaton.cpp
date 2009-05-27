@@ -942,7 +942,7 @@ for (int i=0;jamo_tag[i]!='\0';i++) {
       (*end_pos_token)=current_token;
       (*end_pos_char)=current_char;
       (*end_pos_letter)=current_letter;
-      if (*pos_in_jamo_text==57) {
+      /*if (*pos_in_jamo_text==57) {
          error("pos_in_jamo_text==57  pour le tag %S\n",jamo_tag);
          error("  => current_char=%d  current token size=%d\n",current_char,token_sizes[current_token]);
          error("  => prochain char=%C (%X) jamo=%d\n",jamo_text[*pos_in_jamo_text],jamo_text[*pos_in_jamo_text],u_is_Hangul_Jamo(jamo_text[*pos_in_jamo_text]));
@@ -950,7 +950,7 @@ for (int i=0;jamo_tag[i]!='\0';i++) {
          error("    is Jamo=%d  is Jamo compatible=%d\n",u_is_Hangul_Jamo(syllab_text[(*pos_in_syllab_text)])
                ,u_is_Hangul_Compatility_Jamo(syllab_text[(*pos_in_syllab_text)]));
          error("current letter=%d\n",current_letter);
-      }
+      }*/
       
       if (current_char+1==token_sizes[current_token] &&
             /* If we are on the last char of the current token */

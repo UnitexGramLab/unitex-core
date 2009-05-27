@@ -298,7 +298,7 @@ if (!(c&32768)) {
     // we don't consider words with a length of 1
     if (original_word[pos_in_original_word]=='\0') {
       // if we have explored the entire original word
-      if (left[index]) {
+      if (right[index]) {
          // and if we have a valid right component
          struct list_ustring* l=inf_codes->codes[index];
          while (l!=NULL) {
@@ -310,6 +310,11 @@ if (!(c&32768)) {
             u_strcat(dec,entry);
             unichar new_dela_line[500];
             struct dela_entry* tmp_entry=tokenize_DELAF_line(entry,1);
+            if (tmp_entry==NULL) {
+               /* If there was an error in the dictionary, we skip the entry */
+               l=l->next;
+               continue;
+            }
             // change case if there is a prefix
             // prefixes are downcase, nouns (=suffixes) uppercase:
             // "investitionsObjekte" -> "Investitionsobjekte"
@@ -336,6 +341,7 @@ if (!(c&32768)) {
                u_strcat(new_dela_line,":");
                u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
             }
+            free_dela_entry(tmp_entry);
             struct german_word_decomposition* wd=new_german_word_decomposition();
             wd->n_parts=n_decomp;
             u_strcpy(wd->decomposition,dec);
