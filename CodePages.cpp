@@ -1227,7 +1227,7 @@ if (is_HTML_control_character(c)) {
 	}
 	/* Otherwise, we just print it, but only if it is supported by the encoding */
 	if (encoding->can_be_encoded_function(c,ascii_dest)) {
-
+	   write_one_char(c,encoding_ctx,f,encoding,ascii_dest);
 	} else {
 		/* If the control character can not be encoded as it, we
 		 * print the default character '?' */
@@ -1359,7 +1359,7 @@ else if (encode_HTML_control_characters)
 	else z=f00;
 /* Then we read all the characters from the input file and we encode them */
 while ((tmp=read_one_char(encoding_ctx,input->f,input_encoding,unicode_src))!=EOF) {
-	if (!decode_HTML_normal_characters || tmp!='&') {
+   if (!decode_HTML_normal_characters || tmp!='&') {
 		/* If we do not need to decode HTML normal characters like &#eacute;
 		 * or if we do not have '&', we can print the character to the output */
 		z((unichar)tmp,encoding_ctx,output_encoding,output->f,ascii_dest);
