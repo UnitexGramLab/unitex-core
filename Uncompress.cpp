@@ -24,6 +24,7 @@
 #include <string.h>
 #include "Unicode.h"
 #include "DELA.h"
+#include "AbstractDelaLoad.h"
 #include "File.h"
 #include "Copyright.h"
 #include "Error.h"
@@ -94,18 +95,20 @@ char inf_file[FILENAME_MAX];
 remove_extension(argv[vars->optind],inf_file);
 strcat(inf_file,".inf");
 
-unsigned char* bin=load_BIN_file(argv[vars->optind]);
+struct BIN_free_info bin_free;
+unsigned char* bin=load_abstract_BIN_file(argv[vars->optind],&bin_free);
 if (bin==NULL) {
    fatal_error("Problem with file %s\n",argv[vars->optind]);
 }
-struct INF_codes* inf=load_INF_file(inf_file);
+struct INF_free_info inf_free;
+struct INF_codes* inf=load_abstract_INF_file(inf_file,&inf_free);
 if (inf==NULL) {
    fatal_error("Problem with file %s\n",inf);
 }
 rebuild_dictionary(bin,inf,f);
 u_fclose(f);
-free(bin);
-free_INF_codes(inf);
+free_abstract_BIN(bin,&bin_free);
+free_abstract_INF(inf,&inf_free);
 u_printf("Done.\n");
 return 0;
 }

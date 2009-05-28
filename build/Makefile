@@ -490,14 +490,14 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o Unicode.o Fst2.o A
 
 
 UNCOMPRESS       = Uncompress
-UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o File.o Error.o Unicode.o DELA.o \
+UNCOMPRESS_OBJS  = Main_Uncompress.o Uncompress.o File.o Error.o Unicode.o DELA.o AbstractDelaLoad.o \
                    String_hash.o StringParsing.o List_ustring.o Alphabet.o Af_stdio.o\
                    getopt.o IOBuffer.o
 
 
 UNITEXTOOL   = UnitexTool
-UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o AutComplementation.o \
-                  AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
+UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
+                  AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
                   AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildTextAutomaton.o CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
                   ConcorDiff.o Contexts.o Convert.o DELA.o DELA_tree.o Dico.o DictionaryTree.o \
