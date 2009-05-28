@@ -108,23 +108,26 @@ int is_appropriate_token(int tokenID, text_tokens* tokens);
 
 #define STATS_BUFFER_LENGTH 4096
 
-static void usage()
-{
-	u_printf("%S",COPYRIGHT);
-	u_printf("Usage: Stats [ARGUMENTS]\n"
-			 "\n"
-			 "ARGUMENTS:\n"
-			"-m/--mode <mode>: specifies mode of operation: 0 - left + match + right count, 1 - collocate count, 2 - collocate count with z-score\n"
-			"-c/--concord <concord.ind>: path to concord.ind\n"
-			"-t/--tokens <tokens.txt>: path to tokens.txt\n"
-			"-x/--text <text.cod>: path to text.cod\n"
-			"-a/--alpha <alphabet.txt>: path to alphabet.txt\n"
-			"-o/--output <output.txt>: path to output.txt file to create with result\n"
-			"-l/--left <length>: length of left context\n"
-			"-r/--right <length>: length of right context\n"
-			"-s/--case <0/1>: 0 - case insensitive, 1 - case sensitive, default is 1!\n");
 
-	return;
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf("Usage: Stats [OPTIONS] <concord>\n"
+         "\n"
+         "  <concord>: a concord.ind file\n"
+         "\n"
+		   "OPTIONS:\n"
+			"-m/--mode=<MODE>: specifies mode of operation: \n"
+			"                  0 = left + match + right count\n"
+         "                  1 = collocate count\n"
+         "                  2 = collocate count with z-score\n"
+			"-a ALPH/--alphabet=ALPH: path to the alphabet file\n"
+			"-o OUT/--output=OUT: output file\n"
+			"-l N/--left=N: length of left context in tokens\n"
+			"-r N/--right=N: length of right context in tokens\n"
+			"-c N/--case=N: 0=case insensitive, 1=case sensitive (default is 1)\n"
+         "-h/--help: this help\n"
+         "\n"
+         "Computes some statistics.\n");
 }
 
 int main_Stats(int argc,char *argv[]) {
@@ -136,36 +139,55 @@ int main_Stats(int argc,char *argv[]) {
 	}
 
 	int leftContext = 0,  rightContext = 0, mode=-1, caseSensitive = 1;
-	const char *concord = NULL, *text = NULL, *tokens = NULL, *alpha = NULL, *output_file = NULL;
-	const char* optstring=":m:c:t:x:a:l:r:s:o:";
+	char concord_ind[FILENAME_MAX]="";
+	char tokens_txt[FILENAME_MAX]="";
+	char text_cod[FILENAME_MAX]="";
+	char output[FILENAME_MAX]="";
+   char alphabet[FILENAME_MAX]="";
+	const char* optstring=":m:a:l:r:c:o:";
 
 	struct option_TS lopts[]= {
 	      {"mode",required_argument_TS,NULL,'m'},
-	      {"concord",required_argument_TS,NULL,'c'},
-	      {"tokens",required_argument_TS,NULL,'t'},
-	      {"text",required_argument_TS,NULL,'x'},
-	      {"alpha",required_argument_TS,NULL,'a'},
+	      {"alphabet",required_argument_TS,NULL,'a'},
 	      {"left",required_argument_TS,NULL,'l'},
 	      {"right",required_argument_TS,NULL,'r'},
-	      {"case",optional_argument_TS,NULL,'s'},
-		  {"output",optional_argument_TS,NULL,'o'},
+	      {"case",optional_argument_TS,NULL,'c'},
+		   {"output",optional_argument_TS,NULL,'o'},
 	      {0, 0, 0, 0 }
 	 } ;
 
 
 	int val,index=-1;
+	char foo;
 	struct OptVars* vars=new_OptVars();
 	while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
 	   switch(val) {
-	   case 'm': mode = atoi(vars->optarg); break;
-	   case 'c': concord = vars->optarg; break;
-	   case 't': tokens = vars->optarg; break;
-	   case 'x': text = vars->optarg; break;
-	   case 'a': alpha = vars->optarg; break;
-	   case 'l': leftContext = atoi(vars->optarg); break;
-	   case 'r': rightContext = atoi(vars->optarg); break;
-	   case 's': caseSensitive = atoi(vars->optarg); break;
-	   case 'o': output_file = vars->optarg; break;
+	   case 'm': if (1!=sscanf(vars->optarg,"%d%c",&mode,&foo) || mode<0 || mode>2) {
+	                fatal_error("Invalid mode %s: should be 0, 1 or 2\n",vars->optarg);
+	             }
+	             break;
+	   case 'a': if (vars->optarg[0]=='\0') {
+	                fatal_error("You must specify a non empty alphabet file name\n");
+	             }
+	             strcpy(alphabet,vars->optarg);
+	             break;
+	   case 'l': if (1!=sscanf(vars->optarg,"%d%c",&leftContext,&foo) || leftContext<0) {
+                   fatal_error("Invalid left context %s: should >=0\n",vars->optarg);
+                }
+                break;
+      case 'r': if (1!=sscanf(vars->optarg,"%d%c",&rightContext,&foo) || rightContext<0) {
+                   fatal_error("Invalid right context %s: should >=0\n",vars->optarg);
+                }
+                break;
+      case 's': if (1!=sscanf(vars->optarg,"%d%c",&caseSensitive,&foo) || caseSensitive<0 || caseSensitive>1) {
+                   fatal_error("Invalid case mode %s: should be 0 or 1\n",vars->optarg);
+                }
+                break;
+      case 'o': if (vars->optarg[0]=='\0') {
+                   fatal_error("You must specify a non empty output file name\n");
+                }
+                strcpy(output,vars->optarg);
+                break;
 	   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
 	             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
 	   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -175,38 +197,25 @@ int main_Stats(int argc,char *argv[]) {
 	   index=-1;
 	}
 
-	if (concord == NULL)
-	{
-		fatal_error("Stats: path to concord.ind not specified!");
-	}
-
-	if (tokens == NULL)
-	{
-		fatal_error("Stats: path to tokens.txt not specified!");
-	}
-
-	if (text == NULL)
-	{
-		fatal_error("Stats: path to text.cod not specified!");
-	}
-
-	if (alpha == NULL)
-	{
-		fatal_error("Stats: path to alphabet.txt not specified!");
-	}
-
-
-	if (mode == 0 || mode == 1 || mode == 2)
-	{
-		concord_stats(output_file, mode, concord, tokens, text, alpha, leftContext, rightContext, caseSensitive);
-	}
-	else
-	{
-		fatal_error("Unknown mode!");
-	}
-
-	return 0;
+if (vars->optind!=argc-1) {
+   fatal_error("You must specify a concordance file\n");
 }
+if (output[0]=='\0') {
+   fatal_error("You must specify a output file\n");
+}
+if (alphabet[0]=='\0') {
+   fatal_error("You must specify the alphabet file\n");
+}
+strcpy(concord_ind,argv[vars->optind]);
+get_path(concord_ind,tokens_txt);
+strcat(tokens_txt,"tokens.txt");
+get_path(concord_ind,text_cod);
+strcat(text_cod,"text.cod");
+
+concord_stats(output, mode, concord_ind, tokens_txt, text_cod, alphabet, leftContext, rightContext, caseSensitive);
+return 0;
+}
+
 
 /**
  * This is the main function for making statistics on concordances. Parameter mode represents
