@@ -47,56 +47,56 @@
 
 #ifdef STRING_PARSING_LITTLE_ENDIAN
 
-const unichar* P_SPACE=(const unichar*)(" \0");
-const unichar* P_COMMA=(const unichar*)(",\0");
-const unichar* P_DOT=(const unichar*)(".\0");
-const unichar* P_EQUAL=(const unichar*)("=\0");
-const unichar* P_PLUS=(const unichar*)("+\0");
-const unichar* P_COLON=(const unichar*)(":\0");
-const unichar* P_SLASH=(const unichar*)("/\0");
-const unichar* P_EXCLAMATION=(const unichar*)("!\0");
-const unichar* P_DOUBLE_QUOTE=(const unichar*)("\"\0");
-const unichar* P_PLUS_COLON=(const unichar*)("+\0:\0");
-const unichar* P_PLUS_MINUS_COLON=(const unichar*)("+\0-\0:\0");
-const unichar* P_PLUS_COLON_SLASH=(const unichar*)("+\0:\0/\0");
-const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=(const unichar*)("+\0:\0/\0[\0");
-const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=(const unichar*)("+\0:\0/\0!\0[\0");
-const unichar* P_COLON_CLOSING_BRACKET=(const unichar*)(":\0]\0");
-const unichar* P_COLON_SLASH=(const unichar*)(":\0/\0");
-const unichar* P_CLOSING_ROUND_BRACKET=(const unichar*)("}\0");
-const unichar* P_COMMA_DOT=(const unichar*)(",\0.\0");
-const unichar* P_PLUS_COLON_SLASH_BACKSLASH=(const unichar*)("+\0:\0/\0\\\0");
-const unichar* P_COLON_SLASH_BACKSLASH=(const unichar*)(":\0/\0\\\0");
-const unichar* P_COMMA_DOT_BACKSLASH_DIGITS=(const unichar*)(",\0.\0\\\x00\x30\x00\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\x00");
-const unichar* P_DOT_PLUS_SLASH_BACKSLASH=(const unichar*)(".\0+\0/\0\\\0");
-const unichar* P_ELAG_TAG=(const unichar*)(".\0!\0:\0>\0");
+const unichar* P_SPACE=(const unichar*)(" \0\0");
+const unichar* P_COMMA=(const unichar*)(",\0\0");
+const unichar* P_DOT=(const unichar*)(".\0\0");
+const unichar* P_EQUAL=(const unichar*)("=\0\0");
+const unichar* P_PLUS=(const unichar*)("+\0\0");
+const unichar* P_COLON=(const unichar*)(":\0\0");
+const unichar* P_SLASH=(const unichar*)("/\0\0");
+const unichar* P_EXCLAMATION=(const unichar*)("!\0\0");
+const unichar* P_DOUBLE_QUOTE=(const unichar*)("\"\0\0");
+const unichar* P_PLUS_COLON=(const unichar*)("+\0:\0\0");
+const unichar* P_PLUS_MINUS_COLON=(const unichar*)("+\0-\0:\0\0");
+const unichar* P_PLUS_COLON_SLASH=(const unichar*)("+\0:\0/\0\0");
+const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=(const unichar*)("+\0:\0/\0[\0\0");
+const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=(const unichar*)("+\0:\0/\0!\0[\0\0");
+const unichar* P_COLON_CLOSING_BRACKET=(const unichar*)(":\0]\0\0");
+const unichar* P_COLON_SLASH=(const unichar*)(":\0/\0\0");
+const unichar* P_CLOSING_ROUND_BRACKET=(const unichar*)("}\0\0");
+const unichar* P_COMMA_DOT=(const unichar*)(",\0.\0\0");
+const unichar* P_PLUS_COLON_SLASH_BACKSLASH=(const unichar*)("+\0:\0/\0\\\0\0");
+const unichar* P_COLON_SLASH_BACKSLASH=(const unichar*)(":\0/\0\\\0\0");
+const unichar* P_COMMA_DOT_BACKSLASH_DIGITS=(const unichar*)(",\0.\0\\\x00\x30\x00\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\x00\x00");
+const unichar* P_DOT_PLUS_SLASH_BACKSLASH=(const unichar*)(".\0+\0/\0\\\0\0");
+const unichar* P_ELAG_TAG=(const unichar*)(".\0!\0:\0>\0\0");
 
 #else
 #ifdef STRING_PARSING_BIG_ENDIAN
 
-const unichar* P_SPACE=(const unichar*)("\0 ");
-const unichar* P_COMMA=(const unichar*)("\0,");
-const unichar* P_DOT=(const unichar*)("\0.");
-const unichar* P_EQUAL=(const unichar*)("\0=");
-const unichar* P_PLUS=(const unichar*)("\0+");
-const unichar* P_COLON=(const unichar*)("\0:");
-const unichar* P_SLASH=(const unichar*)("\0/");
-const unichar* P_EXCLAMATION=(const unichar*)("\0!");
-const unichar* P_DOUBLE_QUOTE=(const unichar*)("\0\"");
-const unichar* P_PLUS_COLON=(const unichar*)("\0+\0:");
-const unichar* P_PLUS_MINUS_COLON=(const unichar*)("\0+\0-\0:");
-const unichar* P_PLUS_COLON_SLASH=(const unichar*)("\0+\0:\0/");
-const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=(const unichar*)("\0+\0:\0/\0[");
-const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=(const unichar*)("\0+\0:\0/\0!\0[");
-const unichar* P_COLON_CLOSING_BRACKET=(const unichar*)("\0:\0]");
-const unichar* P_COLON_SLASH=(const unichar*)("\0:\0/");
-const unichar* P_CLOSING_ROUND_BRACKET=(const unichar*)("\0}");
-const unichar* P_COMMA_DOT=(const unichar*)("\0,\0.");
-const unichar* P_PLUS_COLON_SLASH_BACKSLASH=(const unichar*)("\0+\0:\0/\0\\");
-const unichar* P_COLON_SLASH_BACKSLASH=(const unichar*)("\0:\0/\0\\");
-const unichar* P_COMMA_DOT_BACKSLASH_DIGITS=(const unichar*)("\0,\0.\0\\\x00\x30\x00\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39");
-const unichar* P_DOT_PLUS_SLASH_BACKSLASH=(const unichar*)("\0.\0+\0/\0\\");
-const unichar* P_ELAG_TAG=(const unichar*)("\0.\0!\0:\0>");
+const unichar* P_SPACE=(const unichar*)("\0 \0");
+const unichar* P_COMMA=(const unichar*)("\0,\0");
+const unichar* P_DOT=(const unichar*)("\0.\0");
+const unichar* P_EQUAL=(const unichar*)("\0=\0");
+const unichar* P_PLUS=(const unichar*)("\0+\0");
+const unichar* P_COLON=(const unichar*)("\0:\0");
+const unichar* P_SLASH=(const unichar*)("\0/\0");
+const unichar* P_EXCLAMATION=(const unichar*)("\0!\0");
+const unichar* P_DOUBLE_QUOTE=(const unichar*)("\0\"\0");
+const unichar* P_PLUS_COLON=(const unichar*)("\0+\0:\0");
+const unichar* P_PLUS_MINUS_COLON=(const unichar*)("\0+\0-\0:\0");
+const unichar* P_PLUS_COLON_SLASH=(const unichar*)("\0+\0:\0/\0");
+const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=(const unichar*)("\0+\0:\0/\0[\0");
+const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=(const unichar*)("\0+\0:\0/\0!\0[\0");
+const unichar* P_COLON_CLOSING_BRACKET=(const unichar*)("\0:\0]\0");
+const unichar* P_COLON_SLASH=(const unichar*)("\0:\0/\0");
+const unichar* P_CLOSING_ROUND_BRACKET=(const unichar*)("\0}\0");
+const unichar* P_COMMA_DOT=(const unichar*)("\0,\0.\0");
+const unichar* P_PLUS_COLON_SLASH_BACKSLASH=(const unichar*)("\0+\0:\0/\0\\\0");
+const unichar* P_COLON_SLASH_BACKSLASH=(const unichar*)("\0:\0/\0\\\0");
+const unichar* P_COMMA_DOT_BACKSLASH_DIGITS=(const unichar*)("\0,\0.\0\\\x00\x30\x00\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\0");
+const unichar* P_DOT_PLUS_SLASH_BACKSLASH=(const unichar*)("\0.\0+\0/\0\\\0");
+const unichar* P_ELAG_TAG=(const unichar*)("\0.\0!\0:\0>\0");
 
 #else
 

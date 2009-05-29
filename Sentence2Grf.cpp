@@ -38,7 +38,7 @@
  * character */
 #define WIDTH_OF_A_CHAR 10
 
-static const unichar* EMPTY_AUTOMATON_DISCLAIMER=u_strdup("THIS SENTENCE AUTOMATON HAS BEEN EMPTIED");
+#define EMPTY_AUTOMATON_DISCLAIMER_TEXT ("THIS SENTENCE AUTOMATON HAS BEEN EMPTIED")
 
 
 int compute_state_ranks(Tfst*,int*);
@@ -57,6 +57,7 @@ void save_grf_states(U_FILE*,struct grf_state**,int,int,char* font,int);
  * the 'EMPTIED' disclaimer.
  */
 void check_automaton_is_empty(Tfst* t) {
+static const char* EMPTY_AUTOMATON_DISCLAIMER=EMPTY_AUTOMATON_DISCLAIMER_TEXT;
 SingleGraph g=t->automaton;
 if (g==NULL) {
    fatal_error("NULL automaton error in check_automaton_is_empty\n");
