@@ -62,10 +62,13 @@ free(u);
 }
 
 
-U_FILE* U_STDIN=new_U_FILE(return_af_stdin(),UTF8);
-U_FILE* U_STDOUT=new_U_FILE(return_af_stdout(),UTF8);
-U_FILE* U_STDERR=new_U_FILE(return_af_stderr(),UTF8);
+const U_FILE CTE_U_STDIN  = { (ABSTRACTFILE*)pVF_StdIn,  UTF8 };
+const U_FILE CTE_U_STDOUT = { (ABSTRACTFILE*)pVF_StdOut, UTF8 };
+const U_FILE CTE_U_STDERR = { (ABSTRACTFILE*)pVF_StdErr, UTF8 };
 
+U_FILE* U_STDIN  = (U_FILE*)&CTE_U_STDIN;
+U_FILE* U_STDOUT = (U_FILE*)&CTE_U_STDOUT;
+U_FILE* U_STDERR = (U_FILE*)&CTE_U_STDERR;
 
 int fseek(U_FILE* stream, long offset, int whence) {
 return af_fseek(stream->f,offset,whence);

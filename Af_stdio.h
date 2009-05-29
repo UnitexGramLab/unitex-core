@@ -63,6 +63,11 @@ ABSTRACTFILE* return_af_stdin();
 ABSTRACTFILE* return_af_stdout();
 ABSTRACTFILE* return_af_stderr();
 
+
+extern const ABSTRACTFILE* pVF_StdIn ;
+extern const ABSTRACTFILE* pVF_StdOut ;
+extern const ABSTRACTFILE* pVF_StdErr ;
+
 int IsStdIn(ABSTRACTFILE*);
 
 

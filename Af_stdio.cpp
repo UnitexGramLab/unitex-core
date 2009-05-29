@@ -134,9 +134,14 @@ typedef struct _ABSTRACTFILE_REAL
 /*********************************************************************/
 
 
-ABSTRACTFILE_REAL VF_StdIn = { {stdin},NULL };
-ABSTRACTFILE_REAL VF_StdOut = { {stdout},NULL };
-ABSTRACTFILE_REAL VF_StdErr = { {stderr},NULL };
+const ABSTRACTFILE_REAL VF_StdIn = { {stdin},NULL };
+const ABSTRACTFILE_REAL VF_StdOut = { {stdout},NULL };
+const ABSTRACTFILE_REAL VF_StdErr = { {stderr},NULL };
+
+
+const ABSTRACTFILE* pVF_StdIn  = (ABSTRACTFILE*)&VF_StdIn;
+const ABSTRACTFILE* pVF_StdOut = (ABSTRACTFILE*)&VF_StdOut;
+const ABSTRACTFILE* pVF_StdErr = (ABSTRACTFILE*)&VF_StdErr;
 
 ABSTRACTFILE* return_af_stdin()
 {
