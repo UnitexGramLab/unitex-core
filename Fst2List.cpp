@@ -62,7 +62,6 @@ u_printf(
 }
 
 
-//static char charBuffOut[1024];
 static char *getUtoChar(char charBuffOut[],unichar *s)
 {
     int i;
@@ -91,10 +90,8 @@ static unichar *uascToNum(unichar *uasc,int *val);
 
 
 #define MAX_CHANGE_SYMBOL_SIZE 32
-static unichar changeStrTo[16][MAX_CHANGE_SYMBOL_SIZE];
-static int changeStrToIdx;
 
-static int changeStrToVal(char *src)
+static int changeStrToVal(int &changeStrToIdx,unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE],char *src)
 {
 	char *wp = src;
 
@@ -177,9 +174,9 @@ public:
 	//	 seconde: print out all open paths
 	//			  at [filename]L.txt
 	//
-	void loadGraph(char *fname);
+	void loadGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE],char *fname);
 	void exploirerSubAuto(int startSubAutoNum);
-	void getWordsFromGraph(char *fst2_file_name);
+	void getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE],char *fst2_file_name);
 		void findCycleSubGraph(int autoNo,int autodep,int testEtat,int depthState);
 			void outWordsOfGraph(int depth);
 
@@ -962,7 +959,7 @@ void prAutoStackOnly()
 };    // end of fstApp
 
 
-void CFstApp::loadGraph(char *fname)
+void CFstApp::loadGraph(int& changeStrToIdx,unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE],char *fname)
 {
 	int i,j;
 	Transition *strans;
@@ -1070,15 +1067,16 @@ void CFstApp::loadGraph(char *fname)
 
 	}
 }
-	char ofNameTmp[1024];
-	char tmpchar[1024];
-	char ttpchar[1024];
-void CFstApp::getWordsFromGraph(char *fname)
+
+void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CHANGE_SYMBOL_SIZE],char *fname)
 {
 	int i;
  	char *dp;
+	char ofNameTmp[1024];
+	char tmpchar[1024];
+	char ttpchar[1024];
 	// load fst2 file
-	loadGraph(fname);
+	loadGraph(changeStrToIdx,changeStrTo,fname);
    CleanPathCounter();
    ofNameTmp[0] = 0;
 	switch(display_control){
@@ -1723,6 +1721,9 @@ int main_Fst2List(int argc,char* argv[]) {
 	int iargIndex = 1;
 	int i;
 
+	unichar changeStrTo[16][MAX_CHANGE_SYMBOL_SIZE];
+	int changeStrToIdx;
+
    CFstApp aa;
 
 	changeStrToIdx = 0;
@@ -1814,7 +1815,7 @@ int main_Fst2List(int argc,char* argv[]) {
 				aa.entreGF = wp2;
 			break;
 		case 'c':			iargIndex++;
-			if(!changeStrToVal(argv[iargIndex])) break;
+			if(!changeStrToVal(changeStrToIdx,changeStrTo,argv[iargIndex])) break;
 			usage();
          return 1;
 		case 's':{
@@ -1904,7 +1905,7 @@ int main_Fst2List(int argc,char* argv[]) {
       return 1;
    }
 	aa.fileNameSet(argv[iargIndex],ofilename);
-	aa.getWordsFromGraph(argv[iargIndex]);
+	aa.getWordsFromGraph(changeStrToIdx,changeStrTo,argv[iargIndex]);
 	if(ofilename) delete ofilename;
 	return 0;
 }
