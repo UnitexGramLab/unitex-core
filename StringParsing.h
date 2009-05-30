@@ -51,29 +51,29 @@
  * many times.
  */
 #define P_EMPTY U_EMPTY
-extern const unichar* P_SPACE;
-extern const unichar* P_COMMA;
-extern const unichar* P_DOT;
-extern const unichar* P_EQUAL;
-extern const unichar* P_PLUS;
-extern const unichar* P_COLON;
-extern const unichar* P_SLASH;
-extern const unichar* P_EXCLAMATION;
-extern const unichar* P_DOUBLE_QUOTE;
-extern const unichar* P_PLUS_COLON;
-extern const unichar* P_PLUS_MINUS_COLON;
-extern const unichar* P_PLUS_COLON_SLASH;
-extern const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET;
-extern const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET;
-extern const unichar* P_COLON_CLOSING_BRACKET;
-extern const unichar* P_COLON_SLASH;
-extern const unichar* P_CLOSING_ROUND_BRACKET;
-extern const unichar* P_COMMA_DOT;
-extern const unichar* P_PLUS_COLON_SLASH_BACKSLASH;
-extern const unichar* P_COLON_SLASH_BACKSLASH;
-extern const unichar* P_COMMA_DOT_BACKSLASH_DIGITS;
-extern const unichar* P_DOT_PLUS_SLASH_BACKSLASH;
-extern const unichar* P_ELAG_TAG;
+extern const unichar P_SPACE[] ;
+extern const unichar P_COMMA[] ;
+extern const unichar P_DOT[] ;
+extern const unichar P_EQUAL[] ;
+extern const unichar P_PLUS[] ;
+extern const unichar P_COLON[] ;
+extern const unichar P_SLASH[] ;
+extern const unichar P_EXCLAMATION[] ;
+extern const unichar P_DOUBLE_QUOTE[] ;
+extern const unichar P_PLUS_COLON[] ;
+extern const unichar P_PLUS_MINUS_COLON[] ;
+extern const unichar P_PLUS_COLON_SLASH[] ;
+extern const unichar P_PLUS_COLON_SLASH_OPENING_BRACKET[] ;
+extern const unichar P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET[] ;
+extern const unichar P_COLON_CLOSING_BRACKET[] ;
+extern const unichar P_COLON_SLASH[] ;
+extern const unichar P_CLOSING_ROUND_BRACKET[] ;
+extern const unichar P_COMMA_DOT[] ;
+extern const unichar P_PLUS_COLON_SLASH_BACKSLASH[] ;
+extern const unichar P_COLON_SLASH_BACKSLASH[] ;
+extern const unichar P_COMMA_DOT_BACKSLASH_DIGITS[] ;
+extern const unichar P_DOT_PLUS_SLASH_BACKSLASH[] ;
+extern const unichar P_ELAG_TAG[] ;
 
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
       const unichar* forbidden_chars,const unichar* chars_to_keep_protected);

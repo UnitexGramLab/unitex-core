@@ -21,111 +21,35 @@
 
 #include "StringParsing.h"
 
+
 /**
  * Here we define some separator sets that will be used
  * many times.
- *
- * if we can determine endianess at compile time, we use string constant instead u_strdup
-   so loading then unload library will no dos memory leak
  */
+const unichar P_SPACE []= { ' ', 0 };
+const unichar P_COMMA[] = { ',', 0 };
+const unichar P_DOT[] = { '.', 0 };
+const unichar P_EQUAL[] = { '=', 0 };
+const unichar P_PLUS[] = { '+', 0 };
+const unichar P_COLON[] = { ':', 0 };
+const unichar P_SLASH[] = { '/', 0 };
+const unichar P_EXCLAMATION[] = { '!', 0 };
+const unichar P_DOUBLE_QUOTE[] = { '\"', 0 };
+const unichar P_PLUS_COLON[] = { '+', ':', 0 };
+const unichar P_PLUS_MINUS_COLON[] = { '+', '-', ':', 0 };
+const unichar P_PLUS_COLON_SLASH[] = { '+', ':', '/', 0 };
+const unichar P_PLUS_COLON_SLASH_OPENING_BRACKET[] = { '+', ':', '/', '[', 0 };
+const unichar P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET[] = { '+', ':', '/', '!', '[', 0 };
+const unichar P_COLON_CLOSING_BRACKET[] = { ':', ']', 0 };
+const unichar P_COLON_SLASH[] = { ':', '/', 0 };
+const unichar P_CLOSING_ROUND_BRACKET[] = { '}', 0 };
+const unichar P_COMMA_DOT[] = { ',', '.', 0 };
+const unichar P_PLUS_COLON_SLASH_BACKSLASH[] = { '+', ':', '/' , '\\', 0 };
+const unichar P_COLON_SLASH_BACKSLASH[] = { ':', '/' , '\\', 0 };
+const unichar P_COMMA_DOT_BACKSLASH_DIGITS[] = { ',', '.' , '\\', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 0 };
+const unichar P_DOT_PLUS_SLASH_BACKSLASH[] = { '.', '+', '/', '\\', 0 };
+const unichar P_ELAG_TAG[] = { '.', '!', ':', '>', 0 };
 
-# if (defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(__INTEL__) || defined(__x86_64) || defined(__x86_64__) || defined (WIN32)) && (!(defined(STRING_LITTLE_ENDIAN)))
-#  define STRING_PARSING_LITTLE_ENDIAN 1
-#endif
-
-
-#if ((defined(LITTLE_ENDIAN)) || (defined(__LITTLE_ENDIAN__))) && (!defined(BIG_ENDIAN)) && (!defined(__BIG_ENDIAN__)) && (!defined(STRING_PARSING_LITTLE_ENDIAN)) && (!defined(STRING_PARSING_BIG_ENDIAN))
-#  define STRING_PARSING_LITTLE_ENDIAN 1
-#endif
-
-#if (!defined(LITTLE_ENDIAN)) && (!defined(__LITTLE_ENDIAN__)) && ((defined(BIG_ENDIAN)) || (defined(__BIG_ENDIAN__))) && (!defined(STRING_PARSING_LITTLE_ENDIAN)) && (!defined(STRING_PARSING_BIG_ENDIAN))
-#  define STRING_PARSING_BIG_ENDIAN 1
-#endif
-
-
-
-
-#ifdef STRING_PARSING_LITTLE_ENDIAN
-
-const unichar* P_SPACE=(const unichar*)(" \0\0");
-const unichar* P_COMMA=(const unichar*)(",\0\0");
-const unichar* P_DOT=(const unichar*)(".\0\0");
-const unichar* P_EQUAL=(const unichar*)("=\0\0");
-const unichar* P_PLUS=(const unichar*)("+\0\0");
-const unichar* P_COLON=(const unichar*)(":\0\0");
-const unichar* P_SLASH=(const unichar*)("/\0\0");
-const unichar* P_EXCLAMATION=(const unichar*)("!\0\0");
-const unichar* P_DOUBLE_QUOTE=(const unichar*)("\"\0\0");
-const unichar* P_PLUS_COLON=(const unichar*)("+\0:\0\0");
-const unichar* P_PLUS_MINUS_COLON=(const unichar*)("+\0-\0:\0\0");
-const unichar* P_PLUS_COLON_SLASH=(const unichar*)("+\0:\0/\0\0");
-const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=(const unichar*)("+\0:\0/\0[\0\0");
-const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=(const unichar*)("+\0:\0/\0!\0[\0\0");
-const unichar* P_COLON_CLOSING_BRACKET=(const unichar*)(":\0]\0\0");
-const unichar* P_COLON_SLASH=(const unichar*)(":\0/\0\0");
-const unichar* P_CLOSING_ROUND_BRACKET=(const unichar*)("}\0\0");
-const unichar* P_COMMA_DOT=(const unichar*)(",\0.\0\0");
-const unichar* P_PLUS_COLON_SLASH_BACKSLASH=(const unichar*)("+\0:\0/\0\\\0\0");
-const unichar* P_COLON_SLASH_BACKSLASH=(const unichar*)(":\0/\0\\\0\0");
-const unichar* P_COMMA_DOT_BACKSLASH_DIGITS=(const unichar*)(",\0.\0\\\x00\x30\x00\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\x00\x00");
-const unichar* P_DOT_PLUS_SLASH_BACKSLASH=(const unichar*)(".\0+\0/\0\\\0\0");
-const unichar* P_ELAG_TAG=(const unichar*)(".\0!\0:\0>\0\0");
-
-#else
-#ifdef STRING_PARSING_BIG_ENDIAN
-
-const unichar* P_SPACE=(const unichar*)("\0 \0");
-const unichar* P_COMMA=(const unichar*)("\0,\0");
-const unichar* P_DOT=(const unichar*)("\0.\0");
-const unichar* P_EQUAL=(const unichar*)("\0=\0");
-const unichar* P_PLUS=(const unichar*)("\0+\0");
-const unichar* P_COLON=(const unichar*)("\0:\0");
-const unichar* P_SLASH=(const unichar*)("\0/\0");
-const unichar* P_EXCLAMATION=(const unichar*)("\0!\0");
-const unichar* P_DOUBLE_QUOTE=(const unichar*)("\0\"\0");
-const unichar* P_PLUS_COLON=(const unichar*)("\0+\0:\0");
-const unichar* P_PLUS_MINUS_COLON=(const unichar*)("\0+\0-\0:\0");
-const unichar* P_PLUS_COLON_SLASH=(const unichar*)("\0+\0:\0/\0");
-const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=(const unichar*)("\0+\0:\0/\0[\0");
-const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=(const unichar*)("\0+\0:\0/\0!\0[\0");
-const unichar* P_COLON_CLOSING_BRACKET=(const unichar*)("\0:\0]\0");
-const unichar* P_COLON_SLASH=(const unichar*)("\0:\0/\0");
-const unichar* P_CLOSING_ROUND_BRACKET=(const unichar*)("\0}\0");
-const unichar* P_COMMA_DOT=(const unichar*)("\0,\0.\0");
-const unichar* P_PLUS_COLON_SLASH_BACKSLASH=(const unichar*)("\0+\0:\0/\0\\\0");
-const unichar* P_COLON_SLASH_BACKSLASH=(const unichar*)("\0:\0/\0\\\0");
-const unichar* P_COMMA_DOT_BACKSLASH_DIGITS=(const unichar*)("\0,\0.\0\\\x00\x30\x00\x31\x00\x32\x00\x33\x00\x34\x00\x35\x00\x36\x00\x37\x00\x38\x00\x39\0");
-const unichar* P_DOT_PLUS_SLASH_BACKSLASH=(const unichar*)("\0.\0+\0/\0\\\0");
-const unichar* P_ELAG_TAG=(const unichar*)("\0.\0!\0:\0>\0");
-
-#else
-
-const unichar* P_SPACE=u_strdup(" ");
-const unichar* P_COMMA=u_strdup(",");
-const unichar* P_DOT=u_strdup(".");
-const unichar* P_EQUAL=u_strdup("=");
-const unichar* P_PLUS=u_strdup("+");
-const unichar* P_COLON=u_strdup(":");
-const unichar* P_SLASH=u_strdup("/");
-const unichar* P_EXCLAMATION=u_strdup("!");
-const unichar* P_DOUBLE_QUOTE=u_strdup("\"");
-const unichar* P_PLUS_COLON=u_strdup("+:");
-const unichar* P_PLUS_MINUS_COLON=u_strdup("+-:");
-const unichar* P_PLUS_COLON_SLASH=u_strdup("+:/");
-const unichar* P_PLUS_COLON_SLASH_OPENING_BRACKET=u_strdup("+:/[");
-const unichar* P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET=u_strdup("+:/![");
-const unichar* P_COLON_CLOSING_BRACKET=u_strdup(":]");
-const unichar* P_COLON_SLASH=u_strdup(":/");
-const unichar* P_CLOSING_ROUND_BRACKET=u_strdup("}");
-const unichar* P_COMMA_DOT=u_strdup(",.");
-const unichar* P_PLUS_COLON_SLASH_BACKSLASH=u_strdup("+:/\\");
-const unichar* P_COLON_SLASH_BACKSLASH=u_strdup(":/\\");
-const unichar* P_COMMA_DOT_BACKSLASH_DIGITS=u_strdup(",.\\0123456789");
-const unichar* P_DOT_PLUS_SLASH_BACKSLASH=u_strdup(".+/\\");
-const unichar* P_ELAG_TAG=u_strdup(".!:>");
-
-#endif
-#endif
 
 /**
  * Parses the string 's' from the position '*ptr' until it finds '\0' 

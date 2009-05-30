@@ -62,8 +62,8 @@ u_printf(
 }
 
 
-static char charBuffOut[1024];
-static char *getUtoChar(unichar *s)
+//static char charBuffOut[1024];
+static char *getUtoChar(char charBuffOut[],unichar *s)
 {
     int i;
     for(i = 0; (i < 1024 ) && s[i] ;i++)
@@ -126,9 +126,12 @@ static int changeStrToVal(char *src)
 	uascToNum(&changeStrTo[changeStrToIdx][ptLoc],&i);
 	changeStrTo[changeStrToIdx][0] = (unsigned short)i;
 
-	u_printf("Change symbol %s --> %x\n",
-        getUtoChar(&changeStrTo[changeStrToIdx][1]),
-		changeStrTo[changeStrToIdx][0]);
+	{
+		char charBuffOut[1024];
+		u_printf("Change symbol %s --> %x\n",
+			getUtoChar(charBuffOut,&changeStrTo[changeStrToIdx][1]),
+			changeStrTo[changeStrToIdx][0]);
+	}
 	changeStrToIdx++;
 	return(0);
 }
@@ -358,7 +361,7 @@ verboseMode  = 0;
             delete mapOfCallTail;
         }
     }
-    unichar aa[64];
+    
 	//
 	// for level
 	//
@@ -394,7 +397,7 @@ verboseMode  = 0;
 	struct cycleNodeId *headCycNodes;
 	int cycNodeCnt;
 
-	unichar *getLabelNumber(int numOfPath,int &flag,int curidx,int setflag)
+	unichar *getLabelNumber(unichar*aa,int numOfPath,int &flag,int curidx,int setflag)
 	{
 		struct cycleNodeId *cnode = headCycNodes;
 		int i;
@@ -424,14 +427,12 @@ verboseMode  = 0;
 			cnode->flag = 1;
 		}
 		}
-      #ifdef __GNUC__
-      #warning beurk!!! aa is a static
-      #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
-#pragma message("warning : beurk!!! aa is a static")
-      #endif
-		u_sprintf(aa,"Loc%d",cnode->index);
-		return((unichar *)aa);
 
+		{
+			//unichar aa[64];
+			u_sprintf(aa,"Loc%d",cnode->index);
+			return((unichar *)aa);
+		}
 	}
 
 	void setIdentifyValue(int offset,int cntNode)
@@ -863,9 +864,10 @@ verboseMode  = 0;
 		int i;
 		for(i = 1; i <= a->number_of_graphs;i++)
 		{
+			char charBuffOut[1024];
 			if(a->states[a->initial_states[i]]->control & LOOP_NODE_MARK)
 				error("the sub-graph %s has cycle path\n",
-				  getUtoChar(a->graph_names[i]));
+				  getUtoChar(charBuffOut,a->graph_names[i]));
 		}
 	}
 
@@ -885,7 +887,10 @@ verboseMode  = 0;
     	arretSubList[arretSubListIdx++] = wp;
     	while(*cp) *wp++ = (unichar)(*cp++ & 0xff);
     	*wp = (unichar)'\0';
-    if(verboseMode) u_printf("IGNORE %s\n",getUtoChar(arretSubList[arretSubListIdx-1]));
+		if(verboseMode) {
+			char charBuffOut[1024];
+			u_printf("IGNORE %s\n",getUtoChar(charBuffOut,arretSubList[arretSubListIdx-1]));
+		}
     }
     char fileLine[1024];
      void arretExpoListFile(char *src)
@@ -912,7 +917,10 @@ verboseMode  = 0;
         	arretSubList[arretSubListIdx] = new unichar [i];
         	for(i = 0;EBuff[i];i++) arretSubList[arretSubListIdx][i] = EBuff[i];
         	arretSubList[arretSubListIdx][i] = 0;
-        	if(verboseMode) u_printf("IGNORE %s\n",getUtoChar(arretSubList[arretSubListIdx]));
+			if(verboseMode) {
+				char charBuffOut[1024];
+				u_printf("IGNORE %s\n",getUtoChar(charBuffOut,arretSubList[arretSubListIdx]));
+			}
     		arretSubListIdx++;
         }
         u_fclose(uf);
@@ -995,12 +1003,16 @@ void CFstApp::loadGraph(char *fname)
 					break;
 			}
 			if( j > a->number_of_graphs){
+				char charBuffOut[1024];
 				u_printf("Warning : Not exist the sub-graph %s\n",
-					getUtoChar(arretSubList[i]));
+					getUtoChar(charBuffOut,arretSubList[i]));
 				continue;
 			}
-			u_printf("%s %d graphe ignore the exploitation\n",
-                     getUtoChar(a->graph_names[j]),j);
+			{
+				char charBuffOut[1024];
+				u_printf("%s %d graphe ignore the exploitation\n",
+						 getUtoChar(charBuffOut,a->graph_names[j]),j);
+			}
 			ignoreTable[j] = 1;
 		}
 	}
@@ -1046,8 +1058,10 @@ void CFstApp::loadGraph(char *fname)
 			}
 			wp = (unichar *)a->tags[i]->input;
 			if(u_strcmp(wp,temp)){
+				char charBuffOut1[1024];
+				char charBuffOut2[1024];
 			   u_printf("%dth index, %s==>%s\n",i,
-                        getUtoChar(wp),getUtoChar(temp));
+                        getUtoChar(charBuffOut1,wp),getUtoChar(charBuffOut2,temp));
             for(j = 0; temp[j];j++) *wp++ = temp[j];
 			*wp=0;
 			}
@@ -1121,14 +1135,16 @@ void CFstApp::getWordsFromGraph(char *fname)
 				listOut = 1;
 				exploirerSubAuto(1);
 				if(verboseMode){
-                u_printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n"
-            ,getUtoChar(a->graph_names[1])
-            ,totalPath,totalLoop, errPath);
+					char charBuffOut[1024];
+					u_printf(" The automate %s : %d path, %d path stopped by cycle, %d error path\n",
+					          getUtoChar(charBuffOut,a->graph_names[1]),
+					          totalPath,totalLoop, errPath);
 					if(stopPath){
 					     for(int inx = 1; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
+                              char charBuffOut[1024];
                               u_printf(" Sub call [%s] %d\n"
-                                ,getUtoChar(a->graph_names[inx])
+                                ,getUtoChar(charBuffOut,a->graph_names[inx])
                                 ,numOfIgnore[inx]);
                                numOfIgnore[inx] = 0;
                            }
@@ -1185,15 +1201,17 @@ void CFstApp::getWordsFromGraph(char *fname)
 
 				if(recursiveMode == SYMBOL)	prOutCycle();
                 if(verboseMode){
-            u_printf(" the automate %s %d path, %d path stopped by cycle, %d error path \n"
-                    ,getUtoChar(a->graph_names[sui->tag_number & SUB_ID_MASK])
-                    ,totalPath,totalLoop, errPath);
+					char charBuffOut[1024];
+					u_printf(" the automate %s %d path, %d path stopped by cycle, %d error path \n",
+					           getUtoChar(charBuffOut,a->graph_names[sui->tag_number & SUB_ID_MASK]),
+                               totalPath,totalLoop, errPath);
 
 					if(stopPath){
 					     for(int inx = 1; inx <= a->number_of_graphs;inx++){
                           if(numOfIgnore[inx]){
+                              char charBuffOut[1024];
                               u_printf(" sub-call[%s] %d\n",
-                                  getUtoChar(a->graph_names[inx]),
+                                  getUtoChar(charBuffOut,a->graph_names[inx]),
                                   numOfIgnore[inx]);
                               numOfIgnore[inx] = 0;
                            }
@@ -1474,6 +1492,7 @@ void CFstApp::outWordsOfGraph(int depth)
 	depthDebug = pathEtiQidx;
 	EOutCnt = SOutCnt = 0;
 	ePtrCnt = tPtrCnt = 0;
+	unichar aaBuffer_for_getLabelNumber[64];
 
 	//	fini = (etiQ[etiQidx - 1] & (FILE_PATH_MARK | LOOP_PATH_MARK)) ?
 	//		etiQ[etiQidx -1 ]:0;
@@ -1539,11 +1558,11 @@ void CFstApp::outWordsOfGraph(int depth)
 
 				}
 				if(pathEtiQ[s].etatNo & STOP_PATH_MARK){
-				    sp = getLabelNumber(depth,indicateFirstUsed,s,0);
+				    sp = getLabelNumber(aaBuffer_for_getLabelNumber,depth,indicateFirstUsed,s,0);
 					outOneWord(sp);
 					break;
 				}
-				sp = getLabelNumber(s,indicateFirstUsed,s,1);
+				sp = getLabelNumber(aaBuffer_for_getLabelNumber,s,indicateFirstUsed,s,1);
 				if(!indicateFirstUsed){	// first print out
 					outOneWord(sp);
 				}	else {
