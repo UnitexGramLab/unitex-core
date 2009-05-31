@@ -57,6 +57,13 @@ struct int_CS_tag
 	Alphabet* alphabet;
 } ;
 
+struct counted_match_descriptor
+{
+	int countOfMatch;
+	int leftEndsAt;
+	int rightStartsAt;
+};
+
 // ... structs
 
 
@@ -65,8 +72,8 @@ inline int min_int(int, int);
 inline int max_int(int, int);
 inline long min_long(long, long);
 inline long max_long(long, long);
-vector_int* get_string_in_context_as_token_list(match_list*, int, int, int**, long*, long*, long, text_tokens*, U_FILE*, int);
-void print_string_token_list_with_count(U_FILE*,vector_int*, text_tokens*, int);
+vector_int* get_string_in_context_as_token_list(match_list*, int, int, int**, long*, long*, long, text_tokens*, U_FILE*, int, counted_match_descriptor*);
+void print_string_token_list_with_count(U_FILE*,vector_int*, text_tokens*, counted_match_descriptor*);
 void get_buffer_around_token(U_FILE*, int**, long, long, long, long*, long*);
 void count_collocates(U_FILE* , text_tokens* , Alphabet*, int, hash_table* , hash_table** , int* );
 int is_appropriate_token(int tokenID, text_tokens* tokens);
@@ -179,7 +186,7 @@ int main_Stats(int argc,char *argv[]) {
                    fatal_error("Invalid right context %s: should >=0\n",vars->optarg);
                 }
                 break;
-      case 's': if (1!=sscanf(vars->optarg,"%d%c",&caseSensitive,&foo) || caseSensitive<0 || caseSensitive>1) {
+      case 'c': if (1!=sscanf(vars->optarg,"%d%c",&caseSensitive,&foo) || caseSensitive<0 || caseSensitive>1) {
                    fatal_error("Invalid case mode %s: should be 0 or 1\n",vars->optarg);
                 }
                 break;
@@ -253,7 +260,7 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
 
 	int i;
 	any* hash_val;
-
+	counted_match_descriptor* descriptor;
 
 	if (mode == 0)
 	{
@@ -262,16 +269,18 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
 
 		build_counted_concord(matches, tokens, cod, alphabet, leftContext, rightContext, caseSensitive, &allMatches, &countsPerMatch);
 		// now we sort
-
 		sort_matches_ptr(allMatches->tab, 0, allMatches->nbelems-1, swap_ptr, compare_ptr, countsPerMatch, NULL, -1);
-
 		// and then print
 
 
 		for (i = 0; i < allMatches->nbelems ; i++)
 		{
 			hash_val = get_value(countsPerMatch, allMatches->tab[i], HT_DONT_INSERT);
-			print_string_token_list_with_count(outfile, ((vec_CS_tag*)(allMatches->tab[i]))->vec, tokens, hash_val->_int);
+			descriptor = (counted_match_descriptor*)hash_val->_ptr;
+			print_string_token_list_with_count(outfile, ((vec_CS_tag*)(allMatches->tab[i]))->vec, tokens, descriptor);
+			// we free descriptors here
+			free(descriptor);
+			hash_val->_ptr = NULL;
 		}
 
 		free_vector_ptr(allMatches, NULL);
@@ -389,9 +398,7 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
  * This function builds all strings that are based on matches found in original text surrounded with
  * left and right context. It outputs a vector and a hash table - vector contains distinct strings
  * found, and these strings are key to the hash table containing count per string in corpora. Strings
- * are represented by integer vector containing token IDs. NOTE: function is case-sensitive, so matches
- * that are different in case are counted separatly. This can easily be corrected using different
- * function instead of vectors_equal.
+ * are represented by integer vector containing token IDs.
  */
 void build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod, Alphabet* alphabet, int leftContext, int rightContext, int caseSensitive, vector_ptr** ret_vector, hash_table** ret_hash)
 {
@@ -423,12 +430,15 @@ void build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod
 
 	match_list* current_match = matches;
 
+	counted_match_descriptor* descriptor;
+	counted_match_descriptor tmpDescriptor;
+
 	int i = 0;
 
 	// for all matches, we form list of token IDs and check it against hash table
 	while(current_match != NULL)
 	{
-		currentMatchList = get_string_in_context_as_token_list(current_match, leftContext, rightContext, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 1);
+		currentMatchList = get_string_in_context_as_token_list(current_match, leftContext, rightContext, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 1, &tmpDescriptor);
 
 		currentKey = new_vec_CS_tag(currentMatchList, caseSensitive, tokens, alphabet);
 
@@ -436,13 +446,21 @@ void build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod
 
 		if (hash_ret == HT_KEY_ADDED)
 		{
-			// new value, we need to set count to 1
-			hash_val->_int = 1;
+			// new value, we need to set descriptor
+			descriptor = (counted_match_descriptor*)malloc(sizeof(counted_match_descriptor));
+			if (descriptor == NULL)
+				fatal_alloc_error("build_counted_concord, counted_match_descriptor");
+			descriptor->countOfMatch = 1;
+			descriptor->leftEndsAt = tmpDescriptor.leftEndsAt;
+			descriptor->rightStartsAt = tmpDescriptor.rightStartsAt;
+			hash_val->_ptr = descriptor;
+
 			vector_ptr_add(allMatches, currentKey);
 		}
 		else
 		{
-			hash_val->_int++;
+			descriptor = (counted_match_descriptor*)(hash_val->_ptr);
+			descriptor->countOfMatch++;
 			// we need to free, since it was not added to the table
 			free_vec_CS_tag(currentKey);
 		}
@@ -464,9 +482,7 @@ void build_counted_concord(match_list* matches, text_tokens* tokens, U_FILE* cod
  * all possible tokens found in left and right context of a match, as well as hash table containing
  * counts per tokens in context. In mode 2, it returns additional 2 hash tables, z_score hash table which
  * represents z-score of a collocate and countsInCorpora hash table which returns total count of a token
- * found in context of a match in the whole corpora. NOTE: Collocates are case-sensitive, as they are
- * identified by token IDs - there are ways around this, but they are not as straightforward as it was
- * in case of build_counted_concord.
+ * found in context of a match in the whole corpora.
  */
 void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* cod, Alphabet* alphabet, int leftContext, int rightContext, int caseSensitive, vector_int** ret_vector, hash_table** ret_hash, hash_table** z_score, hash_table** countsInCorpora)
 {
@@ -510,7 +526,7 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
 	// for all matches, we form list of token IDs and check it against hash table
 	while(current_match != NULL)
 	{
-		currentMatchList = get_string_in_context_as_token_list(current_match, leftContext, rightContext, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 0);
+		currentMatchList = get_string_in_context_as_token_list(current_match, leftContext, rightContext, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 0, NULL);
 
 		// now we don't just insert the whole match as we did in build_counted_concord, but
 		// for each token in the left and right context we treat it as a possible entry to a hash
@@ -549,7 +565,7 @@ void build_counted_collocates(match_list* matches, text_tokens* tokens, U_FILE* 
 		if (z_score != NULL && countsInCorpora != NULL)
 		{
 			// first we account for number of non-space tokens taken by the match itself
-			tmpMatchList = get_string_in_context_as_token_list(current_match, 0, 0, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 1);
+			tmpMatchList = get_string_in_context_as_token_list(current_match, 0, 0, &buffer, &buff_start, &buff_end, codSize, tokens, cod, 1, NULL);
 
 			for (i = 0 ; i < tmpMatchList->nbelems ; i++)
 			{
@@ -731,7 +747,7 @@ inline long max_long(long a, long b)
  * as an int vector. It expands match to the left and right by number of "appropriate" non-space tokens.
  * These tokens are determined by is_appropriate_token function.
  */
-vector_int* get_string_in_context_as_token_list(match_list* match, int leftContext, int rightContext, int** buffer, long* bufferStart, long* bufferEnd, long totalSize, text_tokens* tokens, U_FILE* source, int includeMatch)
+vector_int* get_string_in_context_as_token_list(match_list* match, int leftContext, int rightContext, int** buffer, long* bufferStart, long* bufferEnd, long totalSize, text_tokens* tokens, U_FILE* source, int includeMatch, counted_match_descriptor* descriptor)
 {
 	long i;
 
@@ -777,6 +793,15 @@ vector_int* get_string_in_context_as_token_list(match_list* match, int leftConte
 		}
 		startFrom--;
 	}
+
+	if (descriptor != NULL)
+	{
+		// we set where left context ends (last token of left context)
+		descriptor->leftEndsAt = match->m.start_pos_in_token - 1 - (startFrom + 1);
+		// we set where right context starts (first token of right context)
+		descriptor->rightStartsAt = match->m.end_pos_in_token + 1 - (startFrom + 1);
+	}
+
 	while(endAt <= totalSize-1 && foundRight < rightContext)
 	{
 		if (endAt > *bufferEnd || endAt < *bufferStart)
@@ -814,13 +839,13 @@ unsigned int hash_vector_int(void* vec)
 {
 	vec_CS_tag* v = (vec_CS_tag*)vec;
 	vector_int* vector = v->vec;
-	if (!v->CStag)
+	if (v->CStag)
 	{
 		return jenkins_one_at_a_time_hash((unsigned char*)&vector->tab[0], sizeof(int) * vector->nbelems);
 	}
 	else
 	{
-		// since we're in case-sensitive mode, we have to look at the contents of a token
+		// since we're in case-insensitive mode, we have to look at the contents of a token
 
 		int i = 0;
 		int hash = 0;
@@ -867,15 +892,23 @@ unsigned int jenkins_one_at_a_time_hash_string_uppercase(unichar *key, size_t ke
 }
 
 
-void print_string_token_list_with_count(U_FILE* outfile,vector_int* list, text_tokens* tokens, int count)
+void print_string_token_list_with_count(U_FILE* outfile,vector_int* list, text_tokens* tokens, counted_match_descriptor* descriptor)
 {
 	int i;
 
 	for (i = 0 ; i < list->nbelems ; i++)
 	{
+		if (i == descriptor->leftEndsAt + 1)
+		{
+			u_fprintf(outfile, "\t");
+		}
 		u_fprintf(outfile,"%S", tokens->token[list->tab[i]]);
+		if (i == descriptor->rightStartsAt - 1)
+		{
+			u_fprintf(outfile, "\t");
+		}
 	}
-	u_fprintf(outfile,"\t%d", count);
+	u_fprintf(outfile,"\t%d", descriptor->countOfMatch);
 	u_fprintf(outfile,"\n");
 }
 
@@ -1041,12 +1074,17 @@ int compare_ptr(void *array, int idx1, int idx2, void* hash, void* /*unused*/)
 	hash_table* hsh = (hash_table*)hash;
 	any* hash_val1, *hash_val2;
 
+	counted_match_descriptor* desc1, *desc2;
+
 	hash_val1 = get_value(hsh, real_arr[idx1], HT_DONT_INSERT);
 	hash_val2 = get_value(hsh, real_arr[idx2], HT_DONT_INSERT);
 
-	if (hash_val1->_int < hash_val2->_int)
+	desc1 = (counted_match_descriptor*)hash_val1->_ptr;
+	desc2 = (counted_match_descriptor*)hash_val2->_ptr;
+
+	if (desc1->countOfMatch < desc2->countOfMatch)
 		return -1;
-	else if (hash_val1->_int > hash_val2->_int)
+	else if (desc1->countOfMatch > desc2->countOfMatch)
 		return 1;
 	else
 		return 0;
