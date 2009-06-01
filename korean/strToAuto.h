@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -41,13 +41,13 @@ struct localhead {
 	int count_of_sentences;
 	int offset_of_sentence_init;
 	int cnt_of_morpheme;
-	
+
 	int offset_morp_struct;
 	int cnt_of_flechi;		// number of orgine form in text
 	int offset_of_flechi;
 	int cnt_of_canonique;	// number of canonique form
-	
-	int offset_of_canonique;	
+
+	int offset_of_canonique;
 	int cnt_of_info;		// number of etiquette
 	int offset_of_info;
 	int cnt_of_infoarray;
@@ -67,10 +67,10 @@ struct localhead {
 // token + 1 control	sous-graphe/phrase/paragraphe
 //       |
 //		 + 0 word + 1 sym + 1 num_poc  + 1 num
-//			      |       |            + 0 poctuation  ? ! . 
+//			      |       |            + 0 poctuation  ? ! .
 //		          |       + 0 gra_cnt  + 1 control
-//                |                    + 0 graphe   mg / 
-//                + 0 lex + 1 token    + 1orgine 
+//                |                    + 0 graphe   mg /
+//                + 0 lex + 1 token    + 1orgine
 //                        |            + 0 inconnu  // in the automate of motif
 //				  	      + 0 morpheme + 1 multi
 //				 	                   + 0 single	==> sequences of morpheme
@@ -102,7 +102,7 @@ struct localhead {
 //
 struct text_eti_fst2 {
 	unsigned int noEtiq;	// indentify
-	unsigned int offset;	// 
+	unsigned int offset;	//
 };
 struct text_transition_fst2 {
 	struct text_eti_fst2	eti;
@@ -126,7 +126,7 @@ struct in_file_trans {
 	unsigned int noEtiq;			// indentify
 	unsigned int offset;	// if segment == morphe then orgin identif segment
 	unsigned int nextEtatOffset;
-}; 
+};
 struct saveValueStack {
 	struct tmp_trans *lastcond;
 	struct tmp_trans *previous;
@@ -142,7 +142,7 @@ struct simpleLinks {
 //	controlCaracterName(){};
 //	~controlCaracterName(){};
 //};
-	
+
 typedef unsigned short TypeChar;
 
 //
@@ -167,7 +167,7 @@ class str2Auto {
 	TypeChar escapeZoneClose;
 	unsigned int epsilonIndex;
 	int autoEtatNumber;
-	int etiOffset;	// offset for distingua 
+	int etiOffset;	// offset for distingua
 	unsigned int passingNumber;
 	int currentSegNumber;
 public:
@@ -254,13 +254,13 @@ public:
 	void insBr(struct text_eti_fst2 *id,struct text_etat_fst2 *s,struct text_etat_fst2 *d)
 	{
 	struct text_transition_fst2 **t= &s->trans;
-	while(*t){ 
-		if( 
-			((*t)->eti.noEtiq == id->noEtiq) && 
-			((*t)->eti.offset == id->offset) && 
+	while(*t){
+		if(
+			((*t)->eti.noEtiq == id->noEtiq) &&
+			((*t)->eti.offset == id->offset) &&
 			((*t)->arr == d)
 			)
-			return; 
+			return;
 		t = &(*t)->next;}
 	struct text_transition_fst2 *n = (struct text_transition_fst2 *)trans.get();
 	n->arr = d;
@@ -285,7 +285,7 @@ public:
     	struct tmp_trans *stemp,*dtemp;
     	struct tmp_trans *t;
     	int mnum;
-    	
+
     	if(aStack[cStackIdx].avance){
     		stemp = aStack[cStackIdx].previous;
     		while(stemp){
@@ -340,7 +340,7 @@ void controlStack(TypeChar curChar)
 		aStack[cStackIdx].lastcond = t;
 		aStack[cStackIdx].avance = 1;
 		aStack[cStackIdx].previous = 0;
-		aStack[cStackIdx].current = newCond(t->src,t->src,epsilonIndex,0);		
+		aStack[cStackIdx].current = newCond(t->src,t->src,epsilonIndex,0);
 	}
 	if(curChar == entreClose){
 		saveToken();
@@ -395,7 +395,7 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 		if(*curScanP == escapeZoneClose) openFlag = 1;
 		if(*curScanP ==  escapeChar){
 			curScanP++;
-			if(!*curScanP) 
+			if(!*curScanP)
 				fatal_error("bad escape character\n");
 		}
 		saveTokenP[saveIdx++] = *curScanP;
@@ -408,22 +408,22 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
     void setIndexNumber(struct text_etat_fst2 *s)
     {
     	int totEtat = nodes.getSize();
-    	
+
     	struct text_etat_fst2 *lp;
     	int i;
-    
+
     	for(i = 0; i < totEtat; i++){
     		lp = (struct text_etat_fst2 *)nodes.getAddr(i);
     		lp->index = 0xcacacaca;
     	}
-    	lp = (struct text_etat_fst2 *)nodes.getAddr(0);	
+    	lp = (struct text_etat_fst2 *)nodes.getAddr(0);
     	if(s != lp) fatal_error("what\n");
     	autoEtatNumber = 0;
     	s->index = 0xfcfcfcfc;
     	autoEtatNumber++;
     	struct text_transition_fst2 *a=s->trans;
     	while(a){ markEtatNumber(a->arr); a = a->next;}
-    
+
     }
 	void markEtatNumber(struct text_etat_fst2 *s)
 	{
@@ -433,7 +433,7 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 		struct text_transition_fst2 *a=s->trans;
 		while(a){ markEtatNumber(a->arr); a = a->next;}
 	}
-	
+
 	int  outLesEtatToFile(U_FILE *f)
 	{
 		int totEtat = nodes.getSize();
@@ -459,7 +459,7 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 					tcnt++;
 					s = s->next;
 				};
-				sumOfOffset += 4 + 
+				sumOfOffset += 4 +
 					(sizeof(struct text_eti_fst2)+sizeof(int))*tcnt;	// for couunter
 			} else {
 				lp->index = 0xcacacaca;
@@ -486,7 +486,7 @@ struct text_etat_fst2 *constructAutoFromStr(TypeChar *iString,int offset)
 //					continue;
 //				} else
 //					fatal_error("illegal state\n");
-//			}			
+//			}
 			while(s){++tcnt;s = s->next;};
 			fwrite(&tcnt,sizeof(int),1,f);
 #ifdef PRDEBUG
@@ -505,7 +505,7 @@ error("<%d:%d>",s->arr->index,s->eti.noEtiq);
 error("\n");
 #endif // PRDEBUG
 		}
-		
+
 
 
 		return(offset_start_at_file);
@@ -521,7 +521,7 @@ error("\n");
 			if(a->arr->index) cleanIndex(a->arr);
 			a = a->next;
 		}
-    	
+
 	}
 
 	int getAutoEtatNumber()
@@ -542,7 +542,7 @@ error("\n");
 		while(*pTrans){
 			sTrans = &(*pTrans)->next;
 		while(*sTrans){
-					if(((*pTrans)->eti.noEtiq == (*sTrans)->eti.noEtiq) && 
+					if(((*pTrans)->eti.noEtiq == (*sTrans)->eti.noEtiq) &&
 					((*pTrans)->eti.offset == (*sTrans)->eti.offset)){
 					cTrans = (*sTrans)->arr->trans;
 					while(cTrans){
@@ -576,11 +576,11 @@ error("\n");
     	if(!base->trans){
           base->index = passingNumber;return;
           }
-	
+
     	struct text_transition_fst2 **Ptrans,*strans;
     	Ptrans = &base->trans;
     	while(*Ptrans){
-    		if(((*Ptrans)->eti.noEtiq == epsilonIndex) 
+    		if(((*Ptrans)->eti.noEtiq == epsilonIndex)
     			&& ((*Ptrans)->arr->trans)){
     				if((*Ptrans)->arr == base) fatal_error("what is cycle???\n");
     				strans = (*Ptrans)->arr->trans;
@@ -631,18 +631,18 @@ error("\n");
 		int i;
 		int totNodes = nodes.counter;
 		int eleCnt = nodes.pgEMcnt;
-		unsigned int *addrmap= new unsigned int[(totNodes + eleCnt -1 )/eleCnt];
+		uintptr_t *addrmap= new uintptr_t[(totNodes + eleCnt -1 )/eleCnt];
 		u_fprintf(fde,"total node %d \n\n",totNodes);
 		nodes.addMapOut(addrmap);
 		for( i = 0; i < totNodes ;i++){
 			base = (struct text_etat_fst2 *)(addrmap[i/eleCnt] +
 			(i % eleCnt) * sizeof(struct text_etat_fst2));
-			if(flag && (base->index != flag)) continue; 
-			u_fprintf(fde,"<%08x:%08x:0x%08x>:",base->index,i,(unsigned int)base);
+			if(flag && (base->index != flag)) continue;
+			u_fprintf(fde,"<%08x:%08x:0x%08x>:",base->index,i,(uintptr_t)base);
 			strans = base->trans;
 			while(strans){
 				u_fprintf(fde,"(0x%08x:0x%08x:0x%08x)",strans->eti.noEtiq,
-					strans->eti.offset,(unsigned int)strans->arr);
+					strans->eti.offset,(uintptr_t)strans->arr);
 				strans = strans->next;
 			}
 			u_fprintf(fde,"\n");
@@ -667,13 +667,13 @@ error("\n");
 
 
 //
-//	morpheme 
+//	morpheme
 //
 //
 //
 //
 //
-	
+
 class morpheme_info: public str2Auto ,public nameOfControlChars{
 public:
 	U_FILE *phraseAutoMap;
@@ -682,7 +682,7 @@ public:
 	char ftemp[2048];
 	struct localhead head;
 	int phraseMark;
-	struct morpheme_struct {	// structure for save 
+	struct morpheme_struct {	// structure for save
 		int idx_f;
 		int idx_c;
 		int idx_i;
@@ -696,9 +696,9 @@ public:
 	unsigned short *linfos_map;
 
 	unsigned int *infoArray_table;
-	
+
 	arbre_string0 tokenStruct;
-	arbre_string0	flechi; 
+	arbre_string0	flechi;
 	arbre_string0	canon;
 	arbre_string0	info;
 	arbre_string0	infoArr;
@@ -707,10 +707,10 @@ public:
 
 	struct org_variation_table {
 		int org;	// index of orgin
-		int var;	
+		int var;
 	} *orgConvTable;
 	pageHandle  variation_table;
-	
+
 
 
 	//
@@ -719,7 +719,7 @@ public:
 	unsigned short **mophTable;
 	int mophTableSz;
 	unsigned short *mophMap;
-	
+
 	unsigned short **tokTable;
 	int tokTableSz;
 	unsigned short *tokMap;
@@ -792,16 +792,16 @@ public:
                 b[1] = i & 0xff;i = i >> 8;
                 b[2] = i & 0xff;i = i >> 8;
                 b[3] = i & 0xff;
-                fwrite(b,4,1,phraseAutoMap);         
+                fwrite(b,4,1,phraseAutoMap);
 		fwrite(&head.offset_of_sentence_init,
-                sizeof(struct localhead)-8,1,phraseAutoMap);			
+                sizeof(struct localhead)-8,1,phraseAutoMap);
 	}
 	void read_head()
 	{
 		fseek(phraseAutoMap,0,0);
                unichar a = u_fgetc_UTF16LE_raw(phraseAutoMap->f);
                 a =u_fgetc_UTF16LE_raw(phraseAutoMap->f);
-                
+
                 unsigned char b[4];
                 fread(b,4,1,phraseAutoMap);
                 unsigned int i;
@@ -811,16 +811,16 @@ public:
                      | (( b[3] << 24) & 0xff000000);
                 head.count_of_sentences  = i;
 		fread(&head.offset_of_sentence_init,
-                sizeof(struct localhead)-8,1,phraseAutoMap);			
+                sizeof(struct localhead)-8,1,phraseAutoMap);
 	}
 
 	void loadTokensMap(char *f)
-	{		
+	{
 		U_FILE *fptr;
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"tokens.txt");
 		if((fptr = u_fopen(UTF16_LE,ftemp,U_READ)) ==0 )	fopenErrMessage(f);
-		fseek(fptr,0,SEEK_END);	
+		fseek(fptr,0,SEEK_END);
 		int sizeFile =ftell(fptr)/2;
 		tokMap = new unsigned short[sizeFile];
 		if(!tokMap) fatal_alloc_error("loadTokensMap");
@@ -835,14 +835,14 @@ public:
 #ifdef FFFFFFF
 	void loadTokensStruct(char *f)
 	{
-		
-		
+
+
 		U_FILE *fptr;
 
 		strcpy(temp,pathNameStore);
 		strcat(temp,"tokens.txt");
 		if((fptr = u_fopen(temp,U_READ)) ==0 )	fopenErrMessage(temp);
-		fseek(fptr,0,SEEK_END);	
+		fseek(fptr,0,SEEK_END);
 		int sizeFile =ftell(fptr);
 		tokMap = new unsigned char[sizeFile];
 		if(!tokMap) fatal_error("mem alloc fail\n");
@@ -865,7 +865,7 @@ public:
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"seqMorphs.txt");
 		if((fptr = u_fopen(UTF16_LE,ftemp,U_READ)) ==0 )	fopenErrMessage(ftemp);
-		fseek(fptr,0,SEEK_END);	
+		fseek(fptr,0,SEEK_END);
 		int sizeFile =ftell(fptr)/2;
 		mophMap = new unsigned short[sizeFile];
 		if(!mophMap) fatal_alloc_error("loadSousTokensMap");
@@ -874,16 +874,16 @@ public:
 			fatal_error("Read Tokens fail\n");
 		mophMap[sizeFile-1] = 0;
 //		mophMap[sizeFile-2] = 0;
-		loadStrTableFile(mophMap,mophTable,mophTableSz,1);		
+		loadStrTableFile(mophMap,mophTable,mophTableSz,1);
 		u_fclose(fptr);
 	}
-	void 
+	void
 	loadStrTableFile(unsigned short *wp,unsigned short **&table,int &table_sz,int cflag)
 	{
 		table_sz = 0;
 		for(;(*wp >= '0') && (*wp <= '9') ;wp++)
 				table_sz = table_sz * 10 + *wp - '0';
-		
+
 		if(*wp == '\r') wp++;
 		if(*wp == '\n') wp++;
 
@@ -902,11 +902,11 @@ public:
 			} else  if(*wp == 0x0d) {
 				*wp++ = 0;
 			} else
-				wp++;			
+				wp++;
 		}
 		if( index != table_sz) fatal_error("loadStrTableFile: illegal table size\n");
 	}
-	
+
 	void
 	loadStrStructFile(unsigned short *wp,class arbre_string0 &strStr)
 	{
@@ -914,7 +914,7 @@ public:
 		int table_sz = 0;
 		for(;(*wp >= '0') && (*wp <= '9') ;wp++)
 				table_sz = table_sz * 10 + *wp - '0';
-		
+
 		if(*wp == '\r') wp++;
 		if(*wp == '\n') wp++;
 
@@ -926,33 +926,33 @@ public:
 			} else  if(*wp == 0x0d) {
 				*wp++ = 0;
 			} else
-				wp++;			
+				wp++;
 		};
 		if(table_sz != strStr.size())
 			fatal_error("illegal token table size\n");
 	}
 	void saveMorphems()
 	{
-		U_FILE *f = phraseAutoMap;			
+		U_FILE *f = phraseAutoMap;
       U_FILE *fmor;
-		int count_eti; 
+		int count_eti;
 		unsigned short *wp;
 		unsigned short *sp;
 		int *frequenceMap;
 		int sz = morphStruct.size();
-		
+
         strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"Morphemes.txt");
 		if((fmor = u_fopen(UTF16_LE,ftemp,U_WRITE)) ==0 ) fopenErrMessage(ftemp);
-		
+
 		strFileHeadLine(fmor,sz);
 		morphStruct.save_tout_leaf(fmor,1);
 		u_fclose(fmor);
-		
+
 		unsigned short **m = morphStruct.make_strPtr_table(&frequenceMap);
-		
+
 		unsigned short tmpEti[2048];
-		
+
 		head.offset_morp_struct = ftell(f);
 		head.cnt_of_morpheme = sz;
         int i;
@@ -964,7 +964,7 @@ public:
 		flechi.put(u_epsilon_string);
 		canon.put(u_epsilon_string);
 		info.put(u_epsilon_string);
-		
+
 		for (i = 0; i < sz;i++){
 
 		    if(i < 2) continue;// skip for <E>,<BL>
@@ -973,7 +973,7 @@ public:
 
 			if(*wp != '{') illegal_format(wp);
 			sp = ++wp;
-			while(*wp != ','){ 
+			while(*wp != ','){
 				if(*wp == '\0') illegal_format(&m[i][1]);
 				wp++;
 			}
@@ -985,7 +985,7 @@ public:
 			}
 			wp++;
 			sp = wp;
-			while(*wp != '.'){ 
+			while(*wp != '.'){
 				if(*wp == '\0') illegal_format(&m[i][1]);
 				wp++;
 			}
@@ -1004,7 +1004,7 @@ public:
 #ifdef DEBUG
 u_fprintf(debugf,"<%S:%d>",sp,tmpEti[count_eti]);
 #endif
-				count_eti++;			
+				count_eti++;
 				sp =wp;
 				break;
 			default:
@@ -1021,13 +1021,13 @@ for(int kk  = 0; kk<count_eti;kk++) fprintf(debugf,"%04\n",tmpEti[kk]);
 		}
 		fwrite(morStructTable,sizeof(struct morpheme_struct)*sz,1,f);
 		morphStruct.release_value();
-		
+
 	//
-	//	save 
+	//	save
 	//
 		unsigned short **tables;
 		int tab_cnt;
-		
+
 		tab_cnt = flechi.size();
 		head.cnt_of_flechi = tab_cnt;
 		head.offset_of_flechi = ftell(f);
@@ -1049,7 +1049,7 @@ fprintf(debugf,"\nflechie form %d \n",tab_cnt);
 		tables = canon.make_strPtr_table();
 #ifdef DDEBUG
 fprintf(debugf,"\ncannonique form %d \n",tab_cnt);
-#endif 
+#endif
 		for(i = 0; i < tab_cnt;i++){
 			u_fprintf(f,"%S\n",&tables[i][1]);
 #ifdef DDEBUG
@@ -1075,9 +1075,9 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 
 
 	//
-	//	compress linguistic informations 
+	//	compress linguistic informations
 	//
-		
+
 		head.offset_of_infoarray = ftell(f);
 		head.cnt_of_infoarray = infoArr.size();
 		head.col_of_infoarray=
@@ -1086,9 +1086,9 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		head.cnt_of_variation_ecrit = variation_ecriture.size();
 		head.offset_of_variation_ecrit = ftell(f);
 
-		
+
 		int di = variation_ecriture.makeTableTNoeud();
-		for( i = 0; i < di;i++)// out 
+		for( i = 0; i < di;i++)// out
 			u_fprintf(f,"%S\n",variation_ecriture.getOneItemWithIndex(i));
 
 		head.offset_of_org_var = ftell(f);
@@ -1099,7 +1099,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 			unsigned short *dp;
 			struct org_variation_table *base;
 			di =  variation_table.getSize();
-			
+
 			for( i = 0; i < di;i++){
 				base = (struct org_variation_table *)variation_table.getAddr(i);
 				dp = variation_ecriture.getOneItemWithIndex(base->var);
@@ -1132,7 +1132,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		row_cnt = infoArray.size();
 		colon_size = (count_of_infos+31)/32 ; // number of data size
 		infoArray_table = new unsigned int[row_cnt*colon_size];
-	
+
 		tables = infoArray.make_strPtr_table();
 		wi = infoArray_table;
 		for(i = 0; i < row_cnt;i++){
@@ -1167,10 +1167,10 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 				t = a[i]; a[i] = a[j]; a[j] = t;
 			}
 	}
-	void 
+	void
 	loadMorphemes(char *fname)
 	{
-			
+
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
 		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_READ)) ==0 ) fopenErrMessage(ftemp);
@@ -1183,19 +1183,19 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		fread(morStructTable,sizeof(struct morpheme_struct)*
 			head.cnt_of_morpheme,1,phraseAutoMap);
 
-		flechi_map = 
+		flechi_map =
 		loadStrTableFromFile(phraseAutoMap,head.offset_of_flechi,
 			head.offset_of_canonique - head.offset_of_flechi,
 			head.cnt_of_flechi,	flechi_table);
 		canoni_map =
 		loadStrTableFromFile(phraseAutoMap,head.offset_of_canonique,
 			head.offset_of_info - head.offset_of_canonique,
-			head.cnt_of_canonique, 
+			head.cnt_of_canonique,
 				canoni_table);
 		linfos_map =
 		loadStrTableFromFile(phraseAutoMap,head.offset_of_info,
 				head.offset_of_infoarray - head.offset_of_info,
-				head.cnt_of_info, 
+				head.cnt_of_info,
 				linfos_table);
 		int szinfos = head.col_of_infoarray*head.cnt_of_infoarray;
 		infoArray_table = new unsigned int [szinfos];
@@ -1212,7 +1212,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
             variation_ecriture.tableLoadFromFile(phraseAutoMap,
 			     head.cnt_of_variation_ecrit,
 			     head.offset_of_org_var - head.offset_of_variation_ecrit);
-				
+
             fseek(phraseAutoMap,head.offset_of_org_var,SEEK_SET);
 		    orgConvTable = new struct org_variation_table[head.cnt_of_org_var];
 		    if(!fread(orgConvTable,head.cnt_of_org_var*
@@ -1244,12 +1244,12 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 			} else  if(*wp == 0x0d) {
 				*wp++ = 0;
 			} else
-				wp++;			
+				wp++;
 		}
 		if( index != cnt) fatal_error("loadStrTableFromFile: illegal table size\n");
 		return(map);
 	}
-	void 
+	void
 	loadMorphemesStruct__(char *fname)
 	{
 		strcpy(ftemp,pathNameStore);
@@ -1266,7 +1266,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 		if(!fread(morStructTable,sizeof(struct morpheme_struct)*
 			head.cnt_of_morpheme,1,phraseAutoMap))
 			freadError(ftemp);
-		
+
 		loadStrStructFromFile(phraseAutoMap,head.offset_of_flechi,
 			head.offset_of_canonique - head.offset_of_flechi,
 			flechi);
@@ -1306,7 +1306,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 			} else  if(*wp == 0x0d) {
 				*wp++ = 0;
 			} else
-				wp++;			
+				wp++;
 		};
 		if( table.size() != cnt) fatal_error("illegal table size\n");
 		delete [] map;
@@ -1383,7 +1383,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 			   ucharTmp[3] ='>';
 			   ucharTmp[4] = 0;
                break;
-               
+
             default:
 			ucharTmp[0] =sc;
 			ucharTmp[1] = 0;
@@ -1405,9 +1405,9 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 	void
 	saveSentencePosition()
 	{
-		
+
 		head.offset_of_sentence_init= ftell(phraseAutoMap);
-		head.count_of_sentences = sentenceInit.total+sentenceInit.curOffset;		
+		head.count_of_sentences = sentenceInit.total+sentenceInit.curOffset;
 		sentenceInit.writeTableAtFile(phraseAutoMap);
 	}
 	//
@@ -1468,7 +1468,7 @@ public:
 #ifdef DDEBUG
 		fdebug = u_fopen("debug.txt",U_WRITE);
 #endif
-  
+
     		fst2etiStr.put(u_epsilon_string);
 		loadFst2 = 0;
 	}
@@ -1490,23 +1490,23 @@ public:
 	void pathNameSet(char *f){
 	unePhraseAuto.pathNameSet(f);
 	}
-	
+
 	void getUnePhraseFst2(int demandNumberOfSentence,unsigned short *ctlCharString)
 	{
 	int idx;
 	int offset;
 	struct text_eti_fst2 teti;
 
-		
+
 	unePhraseAuto.setCtrlChar(ctlCharString,0);
-	
+
 	unePhraseAuto.setBlancSym(defaultSpaceStr);
 	numberOfPhrase = 1;
 	segOfPhraseIdx = 0;
 	segOfPhrase[segOfPhraseIdx++] = unePhraseAuto.newEtat();
 	teti.noEtiq = 0;
 	teti.offset = 0;
-	
+
 	while(fread(&idx,sizeof(int),1,fidx))
 	{
 		if(idx > unePhraseAuto.tokTableSz) fatal_error("Illegal index of token\n");
@@ -1520,7 +1520,7 @@ public:
 				break;
 			}
 			numberOfPhrase++;
-		} else { 
+		} else {
 			if(numberOfPhrase == demandNumberOfSentence){
 				segOfPhrase[segOfPhraseIdx] = unePhraseAuto.newEtat();
 				teti.noEtiq = idx;
@@ -1556,7 +1556,7 @@ public:
 					unePhraseAuto.mophTable[segNum],
 					segOfPhrase[i]->trans->eti.offset
 				);
-	
+
 				if(mode == MORPHEMEONLY){
 					segOfPhrase[i]->trans->arr = t;
 				} else {
@@ -1581,7 +1581,7 @@ public:
 //unePhraseAuto.prAuto(fdebug);
 	unePhraseAuto.setTerminalBranch(4,segOfPhrase[0],unePhraseAuto.newEtat());
 	unePhraseAuto.setIndexNumber(segOfPhrase[0]);
-	
+
 	u_fprintf(fout,"-1 %d\n",numberOfPhrase,numberOfPhrase);
 
 	convStrAutoToFst2(segOfPhrase[0],1);
@@ -1662,11 +1662,11 @@ public:
 		} else {
 			extractUnePhrase(lineNumber);
 		}
-	
+
 	}
 	//
 	// extract une phrase sous forme fst2 de code file
-	// 
+	//
 	void extractUnePhrase(int lineNum)
 	{
 		int off_automate =unePhraseAuto.sentenceInit.tableLoaded[lineNum-1];
@@ -1674,7 +1674,7 @@ public:
 		int tran_cnt;
 		unsigned short tt[2];
 		U_FILE *readFile = unePhraseAuto.phraseAutoMap;
-		
+
 		fseek(readFile,off_automate,SEEK_SET);
 		int offset = off_automate;
 		if(!fread(&cnt_etat,4,1,readFile))
@@ -1699,19 +1699,19 @@ public:
 		wp = (unsigned int *)autoMap;
 		if((int)*wp++ != cnt_etat) fatal_error("mem error\n");
 
-    	// get orgin sentence 
+    	// get orgin sentence
         for(i = 0; i < cnt_etat;i++)
 		{
 			tran_cnt = *wp++;
 			if(!tran_cnt)	break;
-			
+
 			switch(*wp&MASK_OF_TYPE){
 			case TT_CONTROL_:
 			case TE_SYMBOL_NUM:
 			case TE_SYMBOL_GRA:
-			   tt[0] = *wp & 0xffff; 
+			   tt[0] = *wp & 0xffff;
 			   u_fputc_UTF16LE_raw(tt[0],fout->f);
-			   break;			
+			   break;
 			case TE_SEGMENT:
 				u_fprintf(fout,"%S",unePhraseAuto.tokTable[*wp&MASK_OF_INDEX]);
 			   break;
@@ -1722,7 +1722,7 @@ public:
 			   break;
 			}
 			wp += 3*tran_cnt;
-		}		
+		}
 		u_fprintf(fout,"\n");
     	int k;
 		wp = (unsigned int *)autoMap;
@@ -1737,12 +1737,12 @@ public:
 			u_fprintf(fout,": ");
 			for(j = 0; j < tran_cnt;j++){
 //u_fprintf(unePhraseAuto.debugf,"%d %d %d\n",wp[0],wp[1],wp[2]);
-				if(((*wp&MASK_OF_TYPE) ==TE_SEGMENT)  && 
+				if(((*wp&MASK_OF_TYPE) ==TE_SEGMENT)  &&
                     ((int)(*wp&MASK_OF_INDEX)==unePhraseAuto.phraseMark))
                     u_fprintf(fout,"0 ");
-				else 
+				else
                     u_fprintf(fout,"%d ",getNewEtiq((struct text_eti_fst2 *)wp));
-				if( (k = find_index_array(tab,cnt_etat,wp[2])) < 0) 
+				if( (k = find_index_array(tab,cnt_etat,wp[2])) < 0)
 					fatal_error("illegal value at array index\n");
 				u_fprintf(fout,"%d ",k);
 				wp += 3;
@@ -1760,7 +1760,7 @@ public:
 	{
 		unsigned short *wp =
 			unePhraseAuto.getEtiquetteStr(et);
- 
+
 		int no = fst2etiStr.put(wp);
 		return(no);
 	}
@@ -1779,7 +1779,7 @@ public:
 //
 //	make sentence automate from idx file and tokens and sous-tokens
 //	the idx file presente text file to index of tokens
-//  sous tokens file presente a tokens to automata of morphems 
+//  sous tokens file presente a tokens to automata of morphems
 //
 	void convertIdxFileToFst2(char *f,unsigned short *ctrString)
 	{
@@ -1821,12 +1821,12 @@ public:
 
 				savePhrase();
 
-				if(!(numberOfPhrase % 100) ) 
+				if(!(numberOfPhrase % 100) )
 					u_printf("\r %dth sentence handling",numberOfPhrase);
 				unePhraseAuto.resetMem();
 				segOfPhraseIdx = 0;
 				segOfPhrase[segOfPhraseIdx++] = unePhraseAuto.newEtat();
-			} else { 
+			} else {
 				segOfPhrase[segOfPhraseIdx] = unePhraseAuto.newEtat();
 				teti.noEtiq = idx | TE_SEGMENT;
 				teti.offset = textIndexCount;
@@ -1843,7 +1843,7 @@ public:
 		if(segOfPhraseIdx){
 			numberOfPhrase++;
 			savePhrase();
-			if(!(numberOfPhrase % 100) ) 
+			if(!(numberOfPhrase % 100) )
 				error("\r %08dth sentence handling",numberOfPhrase);
 
 			unePhraseAuto.resetMem();
@@ -1852,15 +1852,15 @@ public:
 		}
 		unePhraseAuto.saveMorphems();
 		unePhraseAuto.saveSentencePosition();
-		
+
 		unePhraseAuto.write_head();
-		
+
 		/* Very important!!! If we don't do that, we will have a double u_fclose, because
-		 * fout is a clone of phraseAutoMap that is already closed in ~morpheme_info */ 
+		 * fout is a clone of phraseAutoMap that is already closed in ~morpheme_info */
 		fout=NULL;
 	}
-	
-	
+
+
 //
 //	add morphemes to the automate by only text tokens
 //
@@ -1908,7 +1908,7 @@ unePhraseAuto.prAuto(stderr,0);
 					strans = strans->next;
 				}
 				unePhraseAuto.setTerminalBranch(1,t,segOfPhrase[i]->trans->arr);
-				
+
 			} else {
 				tchar = unePhraseAuto.tokTable[segOrg];
 				if(check_range_character(*tchar) & 0x4){	// symbole
@@ -1924,7 +1924,7 @@ unePhraseAuto.prAuto(stderr,0);
 				}
 			}
 		}
-#ifdef PRDEBUG		
+#ifdef PRDEBUG
 unePhraseAuto.prAuto(stderr,0);
 #endif // PRDEBUG
 		unePhraseAuto.elimineEpsilonTrans(2,segOfPhrase[0]);
@@ -1945,10 +1945,10 @@ unePhraseAuto.prAuto(stderr,2);
 	{
 		char pathName[2048];
 		remove_extension(infile,pathName);
-		
-		
+
+
 		loadFst2 = load_abstract_fst2(fstna,1,NULL);
-		
+
 		unePhraseAuto.loadTokensMap(infile);
 		unePhraseAuto.loadMorphemes(infile);
 
@@ -1956,11 +1956,11 @@ unePhraseAuto.prAuto(stderr,2);
 	}
 	void modification(char *fstna,char *infile)
 	{
-	
+
 		char pathName[2048];
 		remove_extension(infile,pathName);
-		
-		
+
+
 		loadFst2 = load_abstract_fst2(fstna,1,NULL);
 
 		unePhraseAuto.loadTokensMap(infile);
@@ -1971,7 +1971,7 @@ unePhraseAuto.prAuto(stderr,2);
 	{
 #ifdef NOTFini
 		int lineNum = utoi(*loadFst2->graph_names);
-		
+
 		if( (lineNum < 1 ) || (lineNum > unePhraseAuto.head.count_of_sentences)){
 			error("%s ",getUtoChar(loadFst2->graph_names));
 			fatal_error("Illegal sentence number\n");
@@ -1980,7 +1980,7 @@ unePhraseAuto.prAuto(stderr,2);
 		int cnt_etat;
 		int tran_cnt;
 		U_FILE *readFile = unePhraseAuto.phraseAutoMap;
-		
+
 		fseek(readFile,off_automate,SEEK_SET);
 		int offset = off_automate;
 		if(!fread(&cnt_etat,4,1,readFile))
@@ -2022,4 +2022,4 @@ unePhraseAuto.prAuto(stderr,2);
 	}
 
 };
-#endif 
+#endif

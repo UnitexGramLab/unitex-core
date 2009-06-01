@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -50,9 +50,9 @@
 class state_machine {
     unichar *terSymbol;
     unsigned int Null_intValue;
-struct link 
+struct link
 {
-	unsigned int val;
+	uintptr_t val;
 	struct link *next;
 };
 	Fst2* a;
@@ -121,11 +121,11 @@ public:
 		}
 		outSize = sz;
 		outCnt = 0;
-	
+
 		saveTransductionTable = new unichar *[a->number_of_tags];
 		for(i = 1; i < a->number_of_tags;i++){
 			saveTransductionTable[i] = 0;
-		}	
+		}
 
 		for(i = 1; i < a->number_of_tags;i++){
 			saveTransductionTable[i]=a->tags[i]->output;
@@ -138,7 +138,7 @@ public:
 	           if( (*(wp+1) ==  'E') && (*(wp+2) ==  '>'))
 	          	 fatal_error("do not accept the transition with null\n");
 		       if((*(wp+1) == '!') && (*(wp+2) ==  '>') )
-                 continue;  		
+                 continue;
 		       if((*(wp+1) == '#') && (*(wp+2) == '>') )
          		  *wp = (unichar)*terSymbol;
                else if(findChangeStr(&ctx,wp,&wt)){
@@ -152,10 +152,10 @@ public:
 		//
 		      wt = *wp;
              IncludeMap[wt/32] |= bitSetL[wt%32];
-            
+
        }
 	}
-	
+
 	void cleanMachine(){
 		curEtat = 0;
 		cleardmem();
@@ -181,7 +181,7 @@ public:
 
 
 	int curEtat;
-	unsigned int IncludeMap[2048]; // bit 
+	unsigned int IncludeMap[2048]; // bit
 	struct link *HeadVari;
 	struct link *HeadStacks;
 	struct link *memArray;
@@ -208,9 +208,9 @@ public:
 
 	void traiteAct(struct cmdInst *map)
 	{
-	
+
 		while(map){
-if(debugPrFlag){	
+if(debugPrFlag){
 //wprintf(L"<%x,",map->op);
 switch(map->op){
 case CMD_ADD:
@@ -322,11 +322,11 @@ ajouteTransValue(unichar *istr)
 	struct cmdInst *lhead =0;
 	struct cmdInst **p;
 	struct cmdInst *tcmd=NULL;
-	unsigned int lstack[16];
+	uintptr_t lstack[16];
 	int lstackIdx = 0;
 	int sum;
 //printf("%s\n",getUtoChar(istr));
-	
+
 do {
 	i =0;
 	while(*sp) {
@@ -356,7 +356,7 @@ do {
 	}else if(!u_strcmp(wp,"<E>")){
 		tcmd = 0;
 	}else if(!*wp){
-		tcmd = 0;	
+		tcmd = 0;
 	} else {
 		int endFlag = 1;
 		do {
@@ -387,13 +387,13 @@ do {
 #if defined(_WIN64) && defined(_MSC_VER)
 #pragma message("warning : convert pointer to int (4 bytes) on MS Windows 64 bits truncate pointer")
 #endif
-						(*ss)->val = (int)new unichar[strSz+1];
+						(*ss)->val = (uintptr_t)new unichar[strSz+1];
 						u_strcpy((unichar *)(*ss)->val,valName);
 						(*ss)->next = 0;
 					}
-				} else 
+				} else
 					i = 0;
-				lstack[lstackIdx++] = (unsigned int)&dmemArray[i];
+				lstack[lstackIdx++] = (uintptr_t)&dmemArray[i];
 				break;
 			case '+':
 			case '-':
@@ -422,8 +422,8 @@ do {
 				} else {
 					fatal_error("syntax error\n");
 				}
-			
-	
+
+
 				endFlag = 0;
 				break;
 			case (unichar)' ':
@@ -438,7 +438,7 @@ do {
 				if(ii == smemIdx) // registe new constant variable
 					smemArray[smemIdx++] = sum;
 				if(smemIdx >= CNT_SZ_MAX_ARRAY) fatal_error("too many constants\n");
-				lstack[lstackIdx++] = (unsigned int)&smemArray[ii];
+				lstack[lstackIdx++] = (uintptr_t)&smemArray[ii];
 			}
 			if(lstackIdx >5) fatal_error("too much operations\n");
 		} while(endFlag);
@@ -548,8 +548,8 @@ if(debugPrFlag) {
 		cleanMachine();
 		int rsz,osz;
 		int totalRead = 0;
-	
-		do { 
+
+		do {
 //			if((rsz = fread(iBuff,2,SZ64K,fi)) > 0){
 			if((rsz = u_fread_raw(iBuff,SZ64K,fi)) > 0){
 				totalRead+= rsz;

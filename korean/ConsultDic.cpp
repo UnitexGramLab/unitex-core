@@ -200,7 +200,7 @@ static void ajouteForward()
     u_strcpy(save_inf,info_inf);
     u_strcat(save_inf,save_tmp);    
 }
-static int actForFinal(unichar *cc,int depth,int infoT,int suf,int sdepth)
+static int actForFinal(unichar *cc,int depth,intptr_t infoT,intptr_t suf,int sdepth)
 {
 
 	if(suf || infoT){ // not find
@@ -270,7 +270,7 @@ static int actForFinal(unichar *cc,int depth,int infoT,int suf,int sdepth)
 	findCnt++;
 	return(0);
 }
-static int actForInfo(unichar *c,int depth,int info,int suf,int sdepth)
+static int actForInfo(unichar *c,int depth,intptr_t info,intptr_t suf,int sdepth)
 {
 	aLine[sdepth].word = c;
 	aLine[sdepth].current_index = depth;

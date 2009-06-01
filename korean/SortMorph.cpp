@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -23,7 +23,7 @@
 // sort morphemes after the consultation of dictionaries
 //
 // sortMorph
-//     tokens file, morphems of a word file,  sequence de morpheme file 
+//     tokens file, morphems of a word file,  sequence de morpheme file
 
 #include <stdio.h>
 #include "Unicode.h"
@@ -59,7 +59,7 @@ static void getPrOutWithValue(void * arg0,void *arg1,void *arg2)
 static void getPrOut(void * arg0,void *arg1,void *arg2)
 {
     unichar *word = (unichar *)arg0;
- 
+
     u_fprintf(fout,"%S\n",word+1);
 }
 
@@ -73,7 +73,7 @@ static locdefi **table;
 static int *freqtable;
 static void getPrOutMorpheme(void * arg0,void *arg1,void *arg2)
 {
-    int index = (int)arg2;
+    intptr_t index = (intptr_t)arg2;
     u_fprintf(fout,"%S,%S.%S\t%d\n",table[index]->fl, table[index]->ca,
                table[index]->inf, freqtable[index]);
 }
@@ -97,7 +97,7 @@ static void getPrOutMorpheme(void * arg0,void *arg1,void *arg2)
 				tmp_char=table[i];
 				table[i]=table[j];
 				table[j]=tmp_char;
-			} else 
+			} else
 				return j;
 		}
 	}
@@ -119,11 +119,11 @@ sortMorphemTable(char *f)
 	int tcount;
 	unichar *wp,*mem;
 class arbre_string00 parFlechi, parCano;
-	 
+
 	if((fptr = u_fopen(BINARY,f,U_READ)) ==0 )	{
 	   fopenErrMessage(f);
 	}
-	fseek(fptr,0,SEEK_END);	
+	fseek(fptr,0,SEEK_END);
 	int sizeFile =ftell(fptr);
 	sizeFile /= 2;
 	mem = new unichar[sizeFile];
@@ -132,10 +132,10 @@ class arbre_string00 parFlechi, parCano;
 	if(!u_fread_raw(mem,sizeFile-1,fptr)) fatal_error("Read morpheme table fail\n");
 	mem[sizeFile-1] = 0;
    u_fclose(fptr);
-    
+
 	wp = mem;
 	for(;(*wp >= L'0') && (*wp <= '9') ;wp++) count = count * 10 + *wp - L'0';
-	
+
 	while((*wp == L'\r') || (*wp == L'\n')) wp++;
 
 	table = new struct locdefi *[count];
@@ -154,7 +154,7 @@ class arbre_string00 parFlechi, parCano;
                   {if(!*wp) fatal_error("illegal format 2\n");wp++;}
 
 	             while((*wp == L'\r') && (*wp == L'\n')) wp++;
-	             
+
 //	             table[index] = new struct locdefi;
 //	             table[index]->fl = curoffset;
 //	             table[index]->ca = curoffset;
@@ -165,7 +165,7 @@ class arbre_string00 parFlechi, parCano;
                 while((*wp == L'\r') || (*wp == L'\n')) wp++;
 //                parFlechi.put(curoffset,index);
 //                parCano.put(curoffset,index);
-                
+
 //                index++;
 	            continue;
           } else if ((*wp == L'\r') || (*wp == L'\n')) {
@@ -179,19 +179,19 @@ class arbre_string00 parFlechi, parCano;
 	    while(*wp != L','){if(!*wp) fatal_error("illegal format\n");wp++;}
 	    *wp++ = 0;
 	    table[index]->fl = curoffset;
-	    
-        curoffset = wp;	    
+
+        curoffset = wp;
 	    while(*wp != L'.'){if(!*wp) fatal_error("illegal format\n");wp++;}
 	    *wp++ = 0;
 	    table[index]->ca = curoffset;
-	    
-	    curoffset = wp;        
+
+	    curoffset = wp;
 	    while(*wp != L'}'){if(!*wp) fatal_error("illegal format\n");wp++;}
 	    *wp++ = 0;
 	    table[index]->inf = curoffset;
 	    while((*wp == L' ' ) || (*wp == '\t'))
           {if(!*wp) fatal_error("illegal format\n");wp++;}
-	    
+
 	    curoffset = wp;
 	    for(tcount = 0;(*wp >= L'0') && (*wp <= '9') ;wp++)
            tcount = tcount * 10 + *wp - L'0';
@@ -200,7 +200,7 @@ class arbre_string00 parFlechi, parCano;
         parFlechi.put(table[index]->fl,(void *)index);
         parCano.put(table[index]->ca,(void *)index);
         index++;
-		
+
 	};
 
     strcpy(ftemp,pathNameSave);
@@ -209,7 +209,7 @@ class arbre_string00 parFlechi, parCano;
     if(!fout) fopenErrMessage(ftemp);
     parFlechi.explore_tout_leaf((release_f)getPrOutMorpheme);
     u_fclose(fout);
-    
+
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"morph_by_cano.txt");
     fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
@@ -220,10 +220,10 @@ class arbre_string00 parFlechi, parCano;
     strcat(ftemp,"morph_by_freq.txt");
     fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
-    
+
     quicksort_by_frequence(0,index-1);
     int i;
-    
+
     for(i = 0; i < index;i++){
         u_fprintf(fout,"%S,%S.%S\t%d\n",table[i]->fl, table[i]->ca,
                table[i]->inf, freqtable[i]);
@@ -243,7 +243,7 @@ int main_SortMorph(int argc, char *argv[]) {
        return 0;
     }
     arbre_string00 tString,mString,sString,eString;
-    
+
     unichar *tMem = 0;
     unichar **tTable = 0 ;
     int tcount;
@@ -252,8 +252,8 @@ int main_SortMorph(int argc, char *argv[]) {
     int mcount;
     unichar *sMem = 0;
     unichar **sTable = 0;
-   
-    
+
+
     get_path(argv[1],pathNameSave);
     tcount = getStringTableFile(argv[1],tMem,tTable);
     mcount = getStringTableFileAvecNull(argv[2],mMem,mTable);
@@ -263,12 +263,12 @@ int main_SortMorph(int argc, char *argv[]) {
         if(*mTable[i] != '\0'){
             tString.put(tTable[i],mTable[i]);
         } else {
-            if(u_is_letter(tTable[i][0])) 
+            if(u_is_letter(tTable[i][0]))
                  eString.put(tTable[i],0);
-        }  
+        }
     }
 
-    
+
     int outSize;
     outSize = tString.size();
     strcpy(ftemp,pathNameSave);
@@ -282,7 +282,7 @@ int main_SortMorph(int argc, char *argv[]) {
     fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     tString.explore_tout_leaf((release_f)getPrOutWithValue);
-    
+
     u_fclose(fout);
 
     outSize = 0;
@@ -290,16 +290,16 @@ int main_SortMorph(int argc, char *argv[]) {
     strcat(ftemp,"dlf.n");
     fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
-    
+
     strFileHeadLine(fout,outSize);
     u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlf");
     fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
-    
+
     u_fclose(fout);
-    
+
     outSize = eString.size();
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"err.n");
@@ -314,8 +314,8 @@ int main_SortMorph(int argc, char *argv[]) {
     eString.explore_tout_leaf((release_f)getPrOut);
 
     u_fclose(fout);
-    
-    
+
+
     /* reserve these fields for sequences of morphems about multi segments
     */
     outSize = sString.size();
@@ -331,22 +331,22 @@ int main_SortMorph(int argc, char *argv[]) {
     if(!fout) fopenErrMessage(ftemp);
     sString.explore_tout_leaf((release_f)getPrOut);
     u_fclose(fout);
-    
+
     outSize = 0;
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlc.n");
     fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
-    if(!fout) fopenErrMessage(ftemp);   
+    if(!fout) fopenErrMessage(ftemp);
     strFileHeadLine(fout,outSize);
     u_fclose(fout);
-    
+
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlc");
     fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
-    
+
     u_fclose(fout);
-    
+
     if(tMem) delete [] tMem;
 	if(mMem) delete [] mMem;
 	if(sMem) delete [] sMem;
@@ -357,9 +357,9 @@ int main_SortMorph(int argc, char *argv[]) {
 	// load list of morphème file to sort by canonique form, forme flechi,
 	// frequence of occurence
 	//
-    
+
 	sortMorphemTable(argv[3]);
-	
+
     return(0);
 }
 

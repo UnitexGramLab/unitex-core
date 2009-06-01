@@ -52,7 +52,7 @@ if (argc==1) {
    return 0;
 }
 
-int FLIP=0;
+//int FLIP=0;
 const char* optstring=":o:h";
 const struct option_TS lopts[]= {
       {"output",required_argument_TS,NULL,'o'},
@@ -110,6 +110,7 @@ u_fclose(f);
 free_abstract_BIN(bin,&bin_free);
 free_abstract_INF(inf,&inf_free);
 u_printf("Done.\n");
+free_OptVars(vars);
 return 0;
 }
 

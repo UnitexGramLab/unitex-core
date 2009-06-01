@@ -1,7 +1,7 @@
  /*
-  * Unitex 
+  * Unitex
   *
-  * Copyright (C) 2001-2003 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -55,7 +55,7 @@ public:
 		};
 	}
 	void put(T v){
-		struct symLink *p = 
+		struct symLink *p =
 			(struct symLink *)
 			malloc(sizeof(struct symLink));
 		p->next = 0;
@@ -79,7 +79,7 @@ public:
 			free(p);
 			cnt--;
 			return(true);
-		} 
+		}
 		return(false);
 	}
 	int size()	{return(cnt);};
@@ -128,7 +128,7 @@ typedef void (*release_f)(void * arg0,void *arg1,void *arg2);
 typedef void (*release_ff)(void * arg0);
 
 //
-//	
+//
 //
 
 struct arbre_hash0 {
@@ -229,7 +229,7 @@ public:
 
 		struct arbre_hash_trans0  **t= &noeud->trans;
 		while(*t){
-			if((*t)->c == s[pos]) 
+			if((*t)->c == s[pos])
 				return insert(s,pos+1,(*t)->arr);
 			if( (*t)->c > s[pos]) break;
 			t = &((*t)->suivant);
@@ -249,7 +249,7 @@ public:
 	int put(unichar* s) {
 		modeExplore = 1;
 		struct arbre_hash0* noeud = insert(s,0,racine);
-		if(noeud->final == -1)	
+		if(noeud->final == -1)
 			noeud->final=N++;
 		if(N >= limit)	fatal_error("Too many hash elements\n");
       return noeud->final;
@@ -259,7 +259,7 @@ public:
 	{
 		modeExplore = 0;
 		struct arbre_hash0* noeud = insert(s,0,racine);
-		if(noeud == (struct arbre_hash0 *)-1)	
+		if(noeud == (struct arbre_hash0 *)-1)
 			return -1;
 		return(noeud->final);
 	}
@@ -283,7 +283,7 @@ public:
 			t = &((*t)->suivant);
 		}
 	}
-    //make string table 
+    //make string table
 	// after use this function , on doit call release_value()
 	unichar **make_strPtr_table()
 	{
@@ -328,7 +328,7 @@ public:
 		if(noeud->final != -1){
 			if(tab){
 				cbuff[0] = pos;
-				tab[noeud->final] = 
+				tab[noeud->final] =
 					(unichar *)malloc(
 					(pos+2) * sizeof(unichar));
 				for(i=0; i < pos; i++)	tab[noeud->final][i]=cbuff[i];
@@ -365,7 +365,7 @@ public:
 	void explore_to_get_avec_unsorted(struct arbre_hash0* noeud,int pos)
 	{
 		if(noeud->final != -1){
-			sortedmap[accessOrderCnt++] = noeud->final; 
+			sortedmap[accessOrderCnt++] = noeud->final;
 			cbuff[pos] = 0;
 			u_fprintf(tabOfile,"%S\n",cbuff);
 		}
@@ -394,7 +394,7 @@ public:
 		struct arbre_hash_trans0  **t= &noeud->trans;
 		unichar cc = (unichar)(cur->n);
 		while(*t){
-			if((*t)->c == cc ) 
+			if((*t)->c == cc )
 				return insertLink(cur->suivant,(*t)->arr);
 			if( (*t)->c > cc ) break;
 			t = &((*t)->suivant);
@@ -421,7 +421,7 @@ public:
 
 struct arbre_hash00 {
        int final;
-	   unsigned int value;
+       uintptr_t value;
        struct arbre_hash_trans00* trans;
 };
 struct arbre_hash_trans00 {
@@ -514,7 +514,7 @@ public:
 
 		struct arbre_hash_trans00  **t= &noeud->trans;
 		while(*t){
-			if((*t)->c == s[pos]) 
+			if((*t)->c == s[pos])
 				return insert(s,pos+1,(*t)->arr);
 			if( (*t)->c > s[pos]) break;
 			t = &((*t)->suivant);
@@ -534,9 +534,9 @@ public:
 	int put(unichar* s,void *value) {
 		modeExplore = 1;
 		struct arbre_hash00* noeud = insert(s,0,racine);
-		if(noeud->final == -1){	
+		if(noeud->final == -1){
 			noeud->final=N++;
-			noeud->value = (unsigned int)value;
+			noeud->value = (uintptr_t)value;
 		}
 		if(N >= limit)	fatal_error("Too many hash elements\n");
       return noeud->final;
@@ -551,7 +551,7 @@ public:
 		return(noeud->final);
 	}
 
-	
+
 	int insertWordAndInc(unichar *s,int sz)
 	{
         int i;
@@ -559,7 +559,7 @@ public:
 		cbuff[i] = 0;
 		modeExplore = 1;
 		struct arbre_hash00* noeud = insert(cbuff,0,racine);
-		if(noeud->final == -1){	
+		if(noeud->final == -1){
 			noeud->final=N++;
 			noeud->value = 0;
 		}
@@ -572,7 +572,7 @@ public:
      {
 		modeExplore = 1;
 		struct arbre_hash00* noeud = insert(s,0,racine);
-		if(noeud->final == -1){	
+		if(noeud->final == -1){
 			noeud->final=N++;
 			noeud->value = 0;
 		}
@@ -632,7 +632,7 @@ public:
 	{
 	    flag_value_out = flag;
 	    if(!f) return;
-        fileOut = f;  
+        fileOut = f;
 		explore_to_save(racine,0);
 	}
 	void explore_to_save(struct arbre_hash00* noeud,int pos)
@@ -643,7 +643,7 @@ public:
 			   u_fprintf(fileOut,"%S\t%d\n",cbuff,noeud->value);
 			else
 			   u_fprintf(fileOut,"%S\n",cbuff);
-			
+
 		}
 		struct arbre_hash_trans00  **t= &noeud->trans;
 		while(*t){
@@ -656,7 +656,7 @@ public:
 	//
 	//
 
-    //make string table 
+    //make string table
 	// after use this function , on doit call release_value()
 	unichar **make_strPtr_table(int **v)
 	{
@@ -689,7 +689,7 @@ public:
 	    int i;
 		if(noeud->final != -1){
 			cbuff[0] = pos;
-			tab[noeud->final] = 
+			tab[noeud->final] =
 				(unichar *)malloc(
 				(pos+2) * sizeof(unichar));
 			for(i=0; i < pos; i++)	tab[noeud->final][i]=cbuff[i];
@@ -717,7 +717,7 @@ public:
 		struct arbre_hash_trans00  **t= &noeud->trans;
 		unichar cc = (unichar)(cur->n);
 		while(*t){
-			if((*t)->c == cc ) 
+			if((*t)->c == cc )
 				return insertLink(cur->suivant,(*t)->arr);
 			if( (*t)->c > cc ) break;
 			t = &((*t)->suivant);
@@ -744,7 +744,7 @@ public:
 //
 struct arbre_hash02 {
        int final;
-	   unsigned int value;
+	   uintptr_t value;
        struct arbre_hash_trans02* trans;
 };
 struct arbre_hash_trans02 {
@@ -763,7 +763,7 @@ class arbre_string02 {
 	int *value_tab;
     int N;
 	int modeExplore;
-public:	
+public:
 	int sequenceMaxDepth;
 	arbre_string02(){
 		noeud_cnt=0;
@@ -841,7 +841,7 @@ public:
 
 		struct arbre_hash_trans02  **t= &noeud->trans;
 		while(*t){
-			if((*t)->c == s[pos]) 
+			if((*t)->c == s[pos])
 				return insert(s,pos+1,(*t)->arr);
 			if( (*t)->c > s[pos]) break;
 			t = &((*t)->suivant);
@@ -861,9 +861,9 @@ public:
 	int put(unsigned int* s,void *value) {
 		modeExplore = 1;
 		struct arbre_hash02* noeud = insert(s,0,racine);
-		if(noeud->final == -1){	
+		if(noeud->final == -1){
 			noeud->final=N++;
-			noeud->value = (unsigned int)value;
+			noeud->value = (uintptr_t)value;
 		}
 		if(N < limit) 	return noeud->final;
 		fatal_error("Too many hash elements\n");
@@ -887,7 +887,7 @@ public:
 
 		struct arbre_hash_trans02  **t= &noeud->trans;
 		while(*t){
-			if((*t)->c == s[pos]) 
+			if((*t)->c == s[pos])
 				return scanAvecDepth(s,pos+1,(*t)->arr,depth-1);
 			if( (*t)->c > s[pos]) break;
 			t = &((*t)->suivant);
@@ -896,7 +896,7 @@ public:
 	}
 
 
-	
+
 	int insertWordAndInc(unsigned int *s,int sz)
 	{
         int i;
@@ -904,7 +904,7 @@ public:
 		cbuff[i] = 0;
 		modeExplore = 1;
 		struct arbre_hash02* noeud = insert(cbuff,0,racine);
-		if(noeud->final == -1){	
+		if(noeud->final == -1){
 			noeud->final=N++;
 			noeud->value = 0;
 		}
@@ -968,7 +968,7 @@ public:
 			t = &((*t)->suivant);
 		}
 	}
-    //make string table 
+    //make string table
 	// after use this function , on doit call release_value()
 	unichar **make_strPtr_table(int **v)
 	{
@@ -980,7 +980,7 @@ public:
 		if (value_tab==NULL) {
 		    fatal_alloc_error("make_strPtr_table");
 		}
-		      
+
 		(*v) = value_tab;
 		explore_to_get(racine,1);
 		return(tab);
@@ -1002,7 +1002,7 @@ public:
 	    int i;
 		if(noeud->final != -1){
 			cbuff[0] = pos;
-			tab[noeud->final] = 
+			tab[noeud->final] =
 				(unichar *)malloc(
 				(pos+2) * sizeof(unichar));
 			for(i=0; i < pos; i++)	tab[noeud->final][i]=cbuff[i];
@@ -1030,7 +1030,7 @@ public:
 		struct arbre_hash_trans02  **t= &noeud->trans;
 		unichar cc = (unichar)(cur->n);
 		while(*t){
-			if((*t)->c == cc ) 
+			if((*t)->c == cc )
 				return insertLink(cur->suivant,(*t)->arr);
 			if( (*t)->c > cc ) break;
 			t = &((*t)->suivant);
@@ -1070,15 +1070,15 @@ private:
 	struct pageElement *tail;
 	struct pageElement *curr;	// indicate current used page
 	int pgSize;		// size of page
-	int pgESize;	// size of elements 
+	int pgESize;	// size of elements
 	unsigned int assignedCount;	// flag and count for repete using
 	int pgCnt;		// assined page number
 public:
-	int pgEMcnt;	// max element cnt	
+	int pgEMcnt;	// max element cnt
 	unsigned int counter;	// total assigned element count
-	unsigned int *addrMap;
-	
-	pageHandle(){ 
+	uintptr_t *addrMap;
+
+	pageHandle(){
 		head = 0;
 		tail = 0;
 		curr = 0;
@@ -1152,21 +1152,21 @@ public:
 	int getSize(){ return(counter);};
 	void getAddrMap()
 	{
-		addrMap = (unsigned int *)
-			malloc(sizeof(unsigned int)*pgCnt);
+		addrMap = (uintptr_t *)
+			malloc(sizeof(uintptr_t)*pgCnt);
 		struct pageElement *t = head;
 		int pgIdx = 0;
 		while(t){
-			addrMap[pgIdx++] =(unsigned int) t->pageAddr;
+			addrMap[pgIdx++] =(uintptr_t) t->pageAddr;
 			t = t->next;
 		}
 	}
-	void addMapOut(unsigned int *addMap)
+	void addMapOut(uintptr_t *addMap)
 	{
 		struct pageElement *t = head;
 		int pgIdx = 0;
 		while(t){
-			addMap[pgIdx++] =(unsigned int) t->pageAddr;
+			addMap[pgIdx++] =(uintptr_t) t->pageAddr;
 			t = t->next;
 		}
 	}
@@ -1177,7 +1177,7 @@ public:
 			if(idx < (*scan)->cnt)
 				return( (*scan)->pageAddr+
 						pgESize * idx);
-			idx -= pgEMcnt;	
+			idx -= pgEMcnt;
 			scan = &(*scan)->next;
 		}
 		return(0);
@@ -1186,7 +1186,7 @@ public:
 	{
 		struct pageElement **scan = &head;
 		int offset;
-	
+
 		while((*scan)){
 			if( addr >= (*scan)->pageAddr){
 				offset = (int)(addr - (*scan)->pageAddr);
@@ -1206,7 +1206,7 @@ public:
 	{
 		if(!counter) return;
 		if(!assignedCount){
-			assignedCount = 
+			assignedCount =
 				(counter + pgEMcnt -1) / pgEMcnt;
 			assignedCount *= pgEMcnt;
 		}

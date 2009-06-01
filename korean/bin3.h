@@ -50,7 +50,7 @@ class arbre_string3
 {
 	class pageHandle nodes;
 	class pageHandle avecTrans;
-	
+
 public:
 	struct arbre_string3_node *racine[2048];
 	int maxDepth;
@@ -60,12 +60,12 @@ public:
 	class arbre_string0	 racName;
 	class arbre_string0	 sufName;
 	class arbre_string0	 baseInf;
-	
+
 	int checkDepth;
 
 	arbre_string3(){
 //		racName.put(u_epsilon_string);
-		sufName.put(assignUstring(u_epsilon_string));		
+		sufName.put(assignUstring(u_epsilon_string));
 		baseInf.put(assignUstring(u_epsilon_string));
 		maxDepth = 0;
 		arbreCnt = 0;
@@ -79,9 +79,9 @@ public:
 	~arbre_string3()
 	{
 	};
-		unsigned int getRacine(int idx){
+		uintptr_t getRacine(int idx){
 		if(idx < arbreCnt){
-			return((unsigned int)racine[idx]);
+			return((uintptr_t)racine[idx]);
 		}
 		return(0);
 	}
@@ -100,26 +100,26 @@ public:
 		a->tcnt = 0;
 		a->trans = 0;
 		a->offset = -2;
-		return a;	
+		return a;
 	}
 	struct arbre_string3_node *put(struct arbre_string3_node *node,
 		unichar c, unichar info,int suffixe)
 	{
 
 		struct avec_sorti_tran **pT;
-		
+
 		pT = &node->trans;
 		if(c){
 			if(info & 0x8000){ // terminal ou jmp
 				while(*pT){
 					if((info & 0x8000 ) == 0) break;
 					if((*pT)->c){
-						if( ((*pT)->c == c ) && 
+						if( ((*pT)->c == c ) &&
 							((*pT)->info == info) &&
 							((*pT)->a.suf == suffixe))
 							return(node);
-						if( ( ((*pT)->c == c)  && 
-							( (*pT)->info < info) )  || 
+						if( ( ((*pT)->c == c)  &&
+							( (*pT)->info < info) )  ||
 							( ((*pT)->c  < c) ) )
 						break;
 					}
@@ -128,7 +128,7 @@ public:
 			} else { // normal node
 				while(*pT){
 					if((*pT)->c && ((info & 0x8000) == 0)){
-						if(((*pT)->c == c) && 
+						if(((*pT)->c == c) &&
 							((*pT)->info == info))
 								return((*pT)->a.node);
 						if((*pT)->info < info) 	break;
@@ -141,7 +141,7 @@ public:
 				while(*pT){
 					if((*pT)->c) break;
 					if(!((*pT)->info & 0x8000)) break;
-					if( ((*pT)->a.suf == suffixe ) && 
+					if( ((*pT)->a.suf == suffixe ) &&
 						((*pT)->info == info))
 						return(node);
 					if( (*pT)->info < info) break;
@@ -149,7 +149,7 @@ public:
 				}
 			} else {	// by pass
 				while(*pT){
-					if((*pT)->c) break; 
+					if((*pT)->c) break;
 					if(((*pT)->info & 0x8000) == 0){
 						if((*pT)->info == info)
 							return((*pT)->a.node);
@@ -180,7 +180,7 @@ public:
 
 	    struct arbre_string3_node *scanNode = racine[no_arbre];
 //		struct avec_sorti_tran *scanTran;
-		
+
 		unichar *wp;
 		class dicLines *tdl;
 		unichar infIdx;
@@ -206,9 +206,9 @@ printf("\nid (%x) =",scanNode);
 #ifdef __DEBUG
 printf("\n=== %x scanNode ====\n",scanNode);
 	  			prTreeId(no_arbre);
-#endif 
+#endif
 			}
-			
+
 			//
 			//	find
 			//
@@ -308,8 +308,8 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 				continue;
 			}
 			if(base->offset != -1)	fatal_error("illegal information on the tree link");
-			
-			// 
+
+			//
 			//	calcule the size of a node
 			//
 			tPtr = base->trans;
@@ -338,7 +338,7 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 		//init_tab_by_hauteur();
 		nodes.getAddrMap();
 		avecTrans.getAddrMap();
-		
+
 		int H;
 		int t =-1;
 		for(i = 0; i < arbreCnt;i++){
@@ -349,10 +349,10 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 		mfusionner(H);
 		u_printf("Minimization done.                     \n");
 	}
-	int sort_by_height(struct arbre_string3_node* n) 
+	int sort_by_height(struct arbre_string3_node* n)
 	{
 		if (n==NULL) fatal_error("Problem in sort_by_height\n");
-		
+
 		if (n->trans==NULL)
 			fatal_error("illegal transition\n"); // if the node is a leaf
 		struct avec_sorti_tran * trans=n->trans;
@@ -403,11 +403,11 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 				} // loop for compared trans
 
 			} // loop for pivot trans
-		}	
+		}
       u_printf("\n%d node delete\n",etCnt);
 		check_exist_sur_path();
 	}
-	int 
+	int
 	compare_nodes(struct avec_sorti_tran* a,struct avec_sorti_tran* b)
 	{
 		while((a!=NULL) && (b!=NULL)) {
@@ -447,7 +447,7 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 			fatal_error("Cannot create the file %s\n",inf);
 		}
 		tmpH.writeAtFile(bfile);	// reserve space
-		
+
 		strcpy(inf,fname);
 		strcat(inf,".aut");
 		displayfile=u_fopen(UTF16_LE,inf,U_WRITE);
@@ -481,14 +481,14 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 //		}
 		u_fclose(displayfile);
 
-		
+
 		strcpy(inf,fname);
 		strcat(inf,".suf");
 		displayfile=u_fopen(UTF16_LE,inf,U_WRITE);
 		if (!displayfile) {
 			fatal_error("Cannot create the file %s\n",inf);
 		}
-		
+
 		u_fprintf(displayfile,"%d\n",tmpH.cnt_suf);
 		for(i = 0; i < tmpH.cnt_suf;i++)
 		{
@@ -512,7 +512,7 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 		}
 
 		unichar **c = baseInf.make_strPtr_table();
-		
+
 //		positionOfInfo = new unsigned int[tmpH.cnt_inf];
 		u_fprintf(displayfile,"%d\n",tmpH.cnt_inf);
 
@@ -525,12 +525,12 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 			outbytes2(0,bfile);
 			offsetStrSave += c[i][0];
 		}
-		tmpH.size_inf = offsetStrSave;	
+		tmpH.size_inf = offsetStrSave;
 		baseInf.release_value();
 		u_fclose(displayfile);
 
 		struct arbre_string3_node* nPtr;
-		struct avec_sorti_tran*tmp; 
+		struct avec_sorti_tran*tmp;
 		for( i = 0; i < (int)nodes.counter ;i++){
 			nPtr = (struct arbre_string3_node*)
 			(nodes.addrMap[ i/nodes.pgEMcnt] +
@@ -543,12 +543,15 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 				outbytes2((unichar)tmp->c,bfile);
 				outbytes2((unichar)tmp->info,bfile);
 				if(tmp->info & 0x8000)
-					outbytes3((unsigned int)tmp->a.node,bfile);
+#if defined(_WIN64) && defined(_MSC_VER)
+#pragma message("warning (bin3.h): convert pointer to int (4 bytes) on MS Windows 64 bits truncate pointer")
+#endif
+					outbytes3((uintptr_t)tmp->a.node,bfile);
 				else
 					outbytes3((unsigned int)tmp->a.node->offset,bfile);
 				tmp=tmp->suivant;
 			}
-		
+
 		}
 		fseek(bfile,0,0);
 		tmpH.flag |= (racOrSuf) ? 0: TYPE_BIN_RACINE;
@@ -564,7 +567,7 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 //
 //	class for saved in file and handling
 //
-typedef int (*actDansTrBin)(unichar *arg0,int depth,int inf,int soff
+typedef int (*actDansTrBin)(unichar *arg0,int depth,intptr_t inf,intptr_t soff
 							,int sIdx);
 class explore_bin1 {
 
@@ -586,7 +589,7 @@ public:
 
 
 	actDansTrBin actFuncForFinal;
-	actDansTrBin actFuncForInfo;	// function called when we find the final state	
+	actDansTrBin actFuncForInfo;	// function called when we find the final state
 	Alphabet *AlphabetTable;
 	explore_bin1(){
 		name = 0;
@@ -626,7 +629,7 @@ public:
 
 		head.readFromFile(f);
 
-		int i = 
+		int i =
 			head.size_bin+
 			head.size_ref+
 			head.size_str*2+
@@ -640,7 +643,7 @@ public:
 		STR = (unichar *)(REF + head.size_ref);
 		INF = (unichar *)(STR + head.size_str);	// STR is short
 		BIN = (unsigned char *)((unsigned char*)INF + head.size_inf*2);
-//		if(protype.protype)// bin endian; 
+//		if(protype.protype)// bin endian;
 //			return;
 		autoffset = new unsigned int[head.cnt_auto+1];
 		sufoffset = new unsigned int[head.cnt_suf+1];
@@ -659,7 +662,7 @@ public:
 			autoffset[i] = offsetStr;
 		}
                 unsigned char *sp;
-                
+
 		refIdx = 0;
         sp = (unsigned char *)STR;
 		for( i = 0; i < head.cnt_auto ;i++){
@@ -692,9 +695,9 @@ public:
 			sufoffset[i] = 0;
 //printf("Demand suffixe 0x%x",i);printf(" %s\n",getUtoChar(STR+SUF[i]));
 		}
-		if((unsigned int)&STR[refIdx] != (unsigned int)INF)
+		if((uintptr_t)&STR[refIdx] != (uintptr_t)INF)
 			fatal_error("illegal size STR %d (expect %d Cnt suf %d(%d)\n ",
-                        (unsigned int)(&STR[refIdx]),(unsigned int)INF,i,head.cnt_suf);
+                        (uintptr_t)(&STR[refIdx]),(uintptr_t)INF,i,head.cnt_suf);
 		refIdx = 0;
         sp = (unsigned char *)INF;
 		for( i = 0; i < head.cnt_inf;i++)
@@ -710,9 +713,9 @@ public:
 //printf("INF 0x%x",i);printf(" %s\n",getUtoChar(INF+infoffset[i]));
 			refIdx++;sp+=2;
 		}
-		if((unsigned int)&INF[refIdx] != (unsigned int)BIN)
+		if((uintptr_t)&INF[refIdx] != (uintptr_t)BIN)
 			fatal_error("illegal size INF %d (expected %d) %d( %d) %d\n",
-                        (unsigned int)&INF[refIdx],(unsigned int)BIN,refIdx,i,head.cnt_inf);
+                        (uintptr_t)&INF[refIdx],(uintptr_t)BIN,refIdx,i,head.cnt_inf);
 		u_fclose(f);
 	}
 	void exploreTree(U_FILE *f,unichar *pBuff)
@@ -769,7 +772,7 @@ public:
 			--tcnt;
 		}
 	}
-	
+
 	void set_act_func(actDansTrBin ft,actDansTrBin fi){
 		actFuncForFinal = ft;
 		actFuncForInfo = fi;
@@ -799,7 +802,7 @@ public:
 		tcnt = BIN[pos++] << 8;
 		tcnt |=BIN[pos++];
 		if(!tcnt) fatal_error("illegal tree\n");
-//	printf("addr 0x%08x::---\n",spos);	
+//	printf("addr 0x%08x::---\n",spos);
 		for(int i = 0; i < tcnt;i++){
 			noff = soffset;
 			c = BIN[pos++]<< 8;
@@ -811,15 +814,15 @@ public:
 			npos  = BIN[pos++]<< 16;
 			npos |= BIN[pos++]<< 8;
 			npos |= BIN[pos++];
-			
-//printf("0x%08x:%04x %04x %x %x\n",pos,word[scanPosition],c,info | sinfo,npos);			
+
+//printf("0x%08x:%04x %04x %x %x\n",pos,word[scanPosition],c,info | sinfo,npos);
 			if(!word[scanPosition]){
 				if(c) continue;
 				if(sinfo){
 					findCnt++;
 					if(info)
-                      noff = (*actFuncForInfo)(word,scanPosition,(int)(INF + infoffset[info]),0,noff);
-					(*actFuncForFinal)(word,scanPosition,0,(int)((npos) ? SUF+sufoffset[npos]:0),noff);
+                      noff = (*actFuncForInfo)(word,scanPosition,(intptr_t)(INF + infoffset[info]),0,noff);
+					(*actFuncForFinal)(word,scanPosition,0,(intptr_t)((npos) ? SUF+sufoffset[npos]:0),noff);
 				}
 				continue;
 			}
@@ -827,20 +830,20 @@ public:
 				if(sinfo){
 					if(!npos){	// check terminal condition
 						if(!word[scanPosition]){
-							if(info) 
-                                 noff = (*actFuncForInfo)(word,scanPosition+1,(int)(INF + infoffset[info]),0,noff);
+							if(info)
+                                 noff = (*actFuncForInfo)(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff);
 							(*actFuncForFinal)(word,scanPosition+1,0,0,noff);
 						}
 					} else {
 						if(info)
-                           noff = (*actFuncForInfo)(word,0,(int)(INF + infoffset[info]),0,noff);
-						(*actFuncForFinal)(word,scanPosition,0,(int)SUF+sufoffset[npos],noff);
+                           noff = (*actFuncForInfo)(word,0,(intptr_t)(INF + infoffset[info]),0,noff);
+						(*actFuncForFinal)(word,scanPosition,0,(intptr_t)SUF+sufoffset[npos],noff);
 					}
 				} else { // sinfo = 0;	the node for passing
-					if(npos){ 
+					if(npos){
 						if(info){	// if there is info , reset pointer value
 							noff = (*actFuncForInfo)
-							(word,0,(int)(INF + infoffset[info]),0,noff);
+							(word,0,(intptr_t)(INF + infoffset[info]),0,noff);
 							scanNodes(npos,&word[scanPosition],0,noff);
 						} else { // simple jmp
 							scanNodes(npos,word,scanPosition,noff);
@@ -856,26 +859,26 @@ public:
             ){  if(sinfo){	// check terminal
 					if(npos){
 						if(info) {
-						   noff = (*actFuncForInfo)(word,scanPosition+1,(int)(INF + infoffset[info]),0,noff);
+						   noff = (*actFuncForInfo)(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff);
 						}
-                        (*actFuncForFinal)(word,scanPosition+1,0,(int)(SUF+sufoffset[npos]),noff);
+                        (*actFuncForFinal)(word,scanPosition+1,0,(intptr_t)(SUF+sufoffset[npos]),noff);
 					} else {// check stop condition
 						if(!word[scanPosition+1]){
 							if(info)noff = (*actFuncForInfo)
-							(word,scanPosition+1,(int)(INF + infoffset[info]),0,noff);
+							(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff);
 							(*actFuncForFinal)(word,scanPosition+1,0,0,noff);
 						}
 					}
 				} else {	// go to next node
 					if(npos){
 						if(info){noff = (*actFuncForInfo)
-							(word,scanPosition+1,(int)(INF + infoffset[info]),0,noff);
+							(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff);
 							scanNodes(npos,&word[scanPosition+1],0,noff);
 						} else {
 							scanNodes(npos,word,scanPosition+1,noff);
 						}
 					} else {
-						fatal_error("No transition found\n");			
+						fatal_error("No transition found\n");
 					}
 				}
 			}

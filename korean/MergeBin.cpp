@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -97,7 +97,7 @@ static struct binFileList *tailFile,*headFiles;
 static void
 getOneFile(char *fn)
 {
-	struct binFileList *tmp;	
+	struct binFileList *tmp;
     tmp = new struct binFileList;
 	tmp->fname = new char[strlen(fn)+1];
 	tmp->next = 0;
@@ -121,7 +121,7 @@ struct binFileList *tmp;
 	U_FILE *lstF;
 	u_printf("Load file %s\n",fn);
     if(!(lstF = u_fopen(BINARY,fn,U_READ)))
-    	fopenErrMessage(fn);	
+    	fopenErrMessage(fn);
     get_path(fn,pathName);
     pathLen = (int)strlen(pathName);
     while(af_fgets(buff,1024,lstF->f)){
@@ -132,7 +132,7 @@ struct binFileList *tmp;
     		if(*wp == 0x0a){ *wp = 0; break;}
     		wp++;
     	}
-    	
+
     	switch(buff[0]){
     	case ' ':	// comment line
     	case 0:
@@ -145,8 +145,8 @@ struct binFileList *tmp;
     	strcat(tmp->fname,buff);
     	tmp->next = 0;
     	tmp->newSufId = 0;
-    	if(headFiles){	
-           tailFile->next = tmp; 
+    	if(headFiles){
+           tailFile->next = tmp;
            tailFile = tailFile->next;
     	} else {
             tailFile = headFiles= tmp;	}
@@ -155,7 +155,7 @@ struct binFileList *tmp;
     u_fclose(lstF);
 }
 
-static void 
+static void
 load_bins(char *oFileName)
 {
 	path_of_locate[0] = 0;
@@ -164,19 +164,19 @@ load_bins(char *oFileName)
 
 
 	racStateCounter = 0;
-	rhead = shead = 0; 
+	rhead = shead = 0;
     rtail = stail = 0;
-	tmp = headFiles;	
+	tmp = headFiles;
 	while(tmp){
       u_printf("%s\n",tmp->fname);
 		tmp->image.loadBin(tmp->fname);
 		tmp->newSufId = 0;
-		
+
 		if(tmp->image.isRacine()){
 			racStateCounter++;
          u_printf("is racine %s\n",tmp->fname);
-  			if(rhead){	
-                rtail->next = tmp; 
+  			if(rhead){
+                rtail->next = tmp;
                 rtail = rtail->next;
 			} else {
                 rtail =rhead= tmp;
@@ -185,7 +185,7 @@ load_bins(char *oFileName)
 			rtail->next = 0;
 		} else {
          u_printf("Load suffix %s\n",tmp->fname);
-  			if(shead){	
+  			if(shead){
                 stail->next = tmp;
                 stail = stail->next;
 			} else {
@@ -195,21 +195,21 @@ load_bins(char *oFileName)
 			stail->next = 0;
 		}
 	}
-	
+
 	headFiles = rhead;
 	rtail->next = shead;
 	if(!headFiles)	fatal_error("null file read\n");
 	//
 	//	calcule the decalage by add dummy node for racines
 	//  in the image of the bin
-	
+
 	//
-	//	get value of addresss relocatable  
+	//	get value of addresss relocatable
 	//
 	int i =0;
 	int nidx;
 	int relBin,relInf;
-	
+
 	relBin = 0;
 	relInf = 0;
 	if(racStateCounter && (racStateCounter != 1)){
@@ -225,7 +225,7 @@ load_bins(char *oFileName)
 	while(tmp){
 		tmp->relocateInfOffset = 0; // set value of relocated location
 		tmp->relocateBinOffset = 0;
-		
+
 		for( i = 0; i <tmp->image.head.cnt_auto;i++){
 		  u_printf("Initial state %s located at %d"
              ,getUtoChar(tmp->image.STR + tmp->image.AUT[i])
@@ -250,14 +250,14 @@ load_bins(char *oFileName)
 		for( i = 0; i < tmp->image.head.cnt_suf;i++)
 			tmp->newSufId[i] = 0;
 		relInf += tmp->image.head.size_inf;
-		relBin += tmp->image.head.size_bin;		
+		relBin += tmp->image.head.size_bin;
 		tmp = tmp->next;
 	}
 	int unresolveSufCnt = 0;
 	//
-	//	set the value of the position of jmping suffixe 
+	//	set the value of the position of jmping suffixe
 	//
-	
+
 	tmp = headFiles;
 	while(tmp){
 		for( i = 1; i < tmp->image.head.cnt_suf;i++){// i = 0 : null
@@ -269,15 +269,15 @@ load_bins(char *oFileName)
 				  getUtoChar(tmp->image.STR + tmp->image.SUF[i]));
 				tmp->newSufId[i] = nidx;
 			} else {
-				nidx = (int)totSuf.getCheckValue();
-				tmp->image.sufoffset[i] = nidx;	
+				nidx = (int)((intptr_t)totSuf.getCheckValue());
+				tmp->image.sufoffset[i] = nidx;
 	            u_printf("the suffix, %s is set %d\n",
 				  getUtoChar(tmp->image.STR + tmp->image.SUF[i]),nidx);
 			}
 		}
 		tmp = tmp->next;
 	}
-	
+
 
 }
 
@@ -295,21 +295,21 @@ mergeFiles(char *ofn,struct binFileList *first)
 	unsigned short info,sinfo;
 	int trCnt;
 	unsigned int sufid;
-	
+
 	last = first;
-	
+
 	char ofilename[1024];
 	remove_extension(ofn,ofilename);
 	strcat(ofilename,".mtb");
 	if(!(f = u_fopen(BINARY,ofilename,U_WRITE)))
 		fopenErrMessage(ofilename);
-		
+
 	newHead.writeAtFile(f);
 	newHead.cnt_auto = totSuf.size();
 	newHead.cnt_suf = unresolSuf.size();
 
 	//
-	//	ref 
+	//	ref
 
 	//	racine name table
 	last = first;
@@ -321,13 +321,13 @@ mergeFiles(char *ofn,struct binFileList *first)
 	unichar **a = totSuf.make_strPtr_table(&offsetMap);
 	unichar **b = unresolSuf.make_strPtr_table();
 
-	
+
 	for(i = 0; i < newHead.cnt_auto;i++)
 	{
 	  u_printf("%s %d\n",getUtoChar(a[i]+1),offsetMap[i]);
 		outbytes3((unsigned int)offsetMap[i],f);		// offset of postition of state
 	}
-	
+
 	int j;
 	newHead.size_ref = newHead.cnt_auto * 3;
 	offsetStrSave = 0;
@@ -351,7 +351,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 
 	unresolSuf.release_value();
 	newHead.size_str = offsetStrSave;
-	
+
 	//
 	//	inf table
 	//
@@ -375,7 +375,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 		}
 
 //		fwrite(last->image.INF,1,last->image.head.size_inf*2,f);
-		
+
 		cntInf += last->image.head.cnt_inf;
 		offsetStrSave += last->image.head.size_inf;
 		last = last->next;
@@ -398,7 +398,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 			}
 			last = last->next;
 		}
-		offsetStrSave = 2 + 
+		offsetStrSave = 2 +
 			racStateCounter * SIZE_ONE_TRANSITION_BIN;
 	}
 	last = first;
@@ -414,7 +414,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 			if(!trCnt)
 				fatal_error("illegal bin value\n");
 			while(trCnt){
-				wp+= 2;	
+				wp+= 2;
 				info   = wp[0] << 8 ;
 				info  |= wp[1];
 				sufid  = wp[2] << 16;
@@ -444,12 +444,12 @@ mergeFiles(char *ofn,struct binFileList *first)
 				*wp++ = (unsigned char)((sufid >> 16)& 0xff);
 				*wp++ = (unsigned char)((sufid >> 8 )& 0xff);
 				*wp++ = (unsigned char)( sufid       & 0xff);
-				trCnt--; 
+				trCnt--;
 			}
 		} while(wp < limitBin);
 		if(wp != limitBin) fatal_error("size not match\n");
 
-		
+
 		if(fwrite(last->image.BIN,last->image.head.size_bin,1,f) != 1)
 			fatal_error("write fail\n");
 		last = last->next;
@@ -458,7 +458,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 	newHead.size_bin= offsetStrSave;
 	newHead.flag |= (racStateCounter) ? TYPE_BIN_RACINE:0;
 	fseek(f,0,0);
-	newHead.writeAtFile(f);	
+	newHead.writeAtFile(f);
 	u_fclose(f);
 }
 #ifdef DEBUG_MER
@@ -493,7 +493,7 @@ int main_MergeBin(int argc , char *argv[]) {
 #endif
 
 	initVar();
-	
+
 	iargIndex=1;
 	while(iargIndex < argc){
 
@@ -504,11 +504,11 @@ int main_MergeBin(int argc , char *argv[]) {
 #ifdef DEBUG_MER
         	case 'd':dMode  = 1;break;
 #endif
-        	case 'o':iargIndex++; 
+        	case 'o':iargIndex++;
         		nameOfoutput = new char [strlen(argv[iargIndex])+1];
         		strcpy(nameOfoutput,argv[iargIndex]);
         		break;
-        	case 'l':iargIndex++; 
+        	case 'l':iargIndex++;
                   getListFile(argv[iargIndex]);
         		break;
         	default:

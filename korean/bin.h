@@ -12,15 +12,15 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
   *
   */
 //
-//	compress files .bin 
-//	.ref	structure for linked 
+//	compress files .bin
+//	.ref	structure for linked
 //	.inf	infomation of lingustics
 //	.aut	initial states with nom and offset of start point
 //
@@ -40,7 +40,7 @@
 #define TYPE_BIN_CONT		0x1000	// exist divided part
 
 //
-//	structure for convert the form of INF from string to structure 
+//	structure for convert the form of INF from string to structure
 //	exist .ref file
 //
 #define INF_ENCODED				0x80	// codage
@@ -69,12 +69,12 @@
 
 struct INF_raw {
 	unsigned char flag;
-	unsigned int  sufIdx;
-	unsigned int infIdx;	// lingusitic informations
+	uintptr_t  sufIdx;
+	uintptr_t infIdx;	// lingusitic informations
 }PACK_STRUCT_BH;
 //#pragma pack(1)
 /*
-		bin structure 
+		bin structure
 		head
 		table of initial states
 		table of string for initial state and name of demanded state
@@ -95,13 +95,14 @@ public:
 	int cnt_suf;	// num of demanded suffixe not yet located value
 	int cnt_inf;
 #define IMAGE_HEAD_SZ		0x18
-    
+
 	binHead0()
 	{
 		flag = 0;
 		size_bin  = 0;
 		size_ref = 0;
 		size_inf = 0;
+		size_str = 0;
 		cnt_auto = 0;
 		cnt_suf = 0;
 		cnt_inf  = 0;
@@ -109,7 +110,7 @@ public:
 	~binHead0(){};
 	void writeAtFile(U_FILE *f)
 	{
-	    
+
 		outbytes2(0xfeff,f);
 		outbytes2(flag,f);
 		outbytes4(size_ref,f);
@@ -179,7 +180,7 @@ public:
 	class arbre_string0  sequence_info;
 
 	arbre_string2(){
-	
+
 		maxDepth = 0;
 		arbreCnt = 0;
 //		for(int i = 0; i < MAX_ARBRES;i++) nodeCnt[i] = 0;
@@ -199,7 +200,7 @@ public:
 			for( i = 0; i < nodes.counter ;i++){
 				base = (struct arbre_dico_with_depth*)
 				(nodes.addrMap[ i/ nodes.pgEMcnt] +
-				(i % nodes.pgEMcnt) * 
+				(i % nodes.pgEMcnt) *
 				sizeof(struct arbre_dico_with_depth));
 				if(!base->arr) continue;
 				struct simple_link* tmp , *l = base->arr;
@@ -207,22 +208,22 @@ public:
 						tmp=l;
 						l=l->suivant;
 						free(tmp);
-					}	
+					}
 
 			}
 		}
 	};
 
-	unsigned int getRacine(int idx){
+	uintptr_t getRacine(int idx){
 		if(idx < arbreCnt){
-			return((unsigned int)racine[idx]);
+			return((uintptr_t)racine[idx]);
 		}
 		return(0);
 	}
 	int getArbreCnt(){return(arbreCnt);};
 	int new_arbre(unichar *name){
 		racName.put(name);
-		racine[arbreCnt] = 
+		racine[arbreCnt] =
 			(struct arbre_dico_with_depth *)new_node();
 		return(arbreCnt++);
 	}
@@ -309,10 +310,10 @@ public:
 		unichar *info,int no_arbre)
 	{
 		if(no_arbre >= arbreCnt) fatal_error("error : bad request tree Id\n");
-		
+
 		cArbreIdx = no_arbre;
 		scaningBuff = contenu;
-		
+
 		struct arbre_dico_with_depth *noeud;
 
 		if(*contenu)
@@ -351,7 +352,7 @@ public:
 		if(no_arbre >= arbreCnt) fatal_error("error in tree\n");
 		cArbreIdx = no_arbre;
 		scaningBuff = contenu;
-		
+
 		struct arbre_dico_with_depth *noeud;
 
 		if(!contenu ||(*contenu == 0) ){
@@ -361,7 +362,7 @@ public:
 				noeud = put(0,st_node);
 			else
 				noeud = put(0,racine[no_arbre]);
-		} 
+		}
 		ccbuf[0] = 0;
 		if(suff && (*suff != 0) ){
 			if(u_strcmp(suff,"null"))
@@ -394,7 +395,7 @@ public:
 		}
 		fatal_error("illegal auto index demand\n");
 	}
-	unsigned int cbuff[1024];
+	uintptr_t cbuff[1024];
 	void explore_leaf(int depth,struct arbre_dico_with_depth* noeud,release_f ppr)
 	{
 		if(depth > 1024) return;
@@ -404,7 +405,7 @@ public:
 			if(ppr) (*ppr)((void *)depth,(void *)cbuff,(void *)depth);
 		}
 		while(t){
-			cbuff[depth] = (unsigned int)t;
+			cbuff[depth] = (uintptr_t)t;
 			explore_leaf(depth+1,t->noeud,ppr);
 			t = t->suivant;
 		}
@@ -419,7 +420,7 @@ public:
 			t = t->suivant;
 		}
 	}
-	
+
 	int taille_de_sauve;
 	// check exist node
 	//	and calcul offset
@@ -446,7 +447,7 @@ public:
 			}
 			if(base->offset != -1)
 				fatal_error("illegal information on the tree link\n");
-			// 
+			//
 			//	calcule the size of a node
 			//
 			base->offset = taille_de_sauve;
@@ -454,7 +455,7 @@ public:
 				infoNodeCnt++;
 				taille_de_sauve+=3;
 				base->hash_number = sequence_info.putLink(base->arr);
-			} else 
+			} else
 				noInfoNodeCnt++;
 			taille_de_sauve += base->n_trans*5 + 2;
 		}
@@ -491,10 +492,10 @@ public:
 		mfusionner(H);
 		u_printf("Minimization done.                     \n");
 	}
-   
-   
-   
-	int sort_by_height(struct arbre_dico_with_depth* n) 
+
+
+
+	int sort_by_height(struct arbre_dico_with_depth* n)
 	{
 		if (n==NULL) fatal_error("NULL error in sort_by_height\n");
 		if (n->trans==NULL) return(0); // if the node is a leaf
@@ -550,14 +551,14 @@ public:
 					}
 				} // loop for compared trans
 			} // loop for pivot trans
-		}	
+		}
       u_printf("%d transition delete\n",etCnt);
 		check_exist_sur_path();
 	}
-	int 
+	int
 	compare_nodes(struct arbre_dico_trans_with_depth* a,
 		struct arbre_dico_trans_with_depth* b) {
-		if (a==NULL || b==NULL || a->noeud==NULL || b->noeud==NULL) 
+		if (a==NULL || b==NULL || a->noeud==NULL || b->noeud==NULL)
 		fatal_error("Probleme dans compares_nodes\n");
 // then, the hash numbers
 if (a->noeud->arr!=NULL && b->noeud->arr==NULL) return -1;
@@ -592,10 +593,10 @@ return 1;
 
 	//
 	//	 head : unicode mark
-	//   number of auto 
+	//   number of auto
 	//	 number of request suffixe
 	//	 array for the initial state of autos
-	//	 array for the request suffixe 
+	//	 array for the request suffixe
 //	static int tailleKr;
 	void toBinTr(char *fname,int racOrSuf)
 	{
@@ -637,8 +638,8 @@ return 1;
 	{
 		struct arbre_dico_with_depth* base;
 		unsigned int i;
-	
-	
+
+
 		for( i = 0; i < nodes.counter ;i++){
 			base = (struct arbre_dico_with_depth*)
 			(nodes.addrMap[ i/nodes.pgEMcnt] +
@@ -649,7 +650,7 @@ return 1;
 				(base->arr==NULL) ?(unichar)(base->n_trans|0x8000)
 						:(unichar)base->n_trans
 					,f);
-			
+
 // we write the 2 bytes info about the node
 			if (base->arr!=NULL)
 				outbytes3((unsigned int)base->hash_number,f);
@@ -695,7 +696,7 @@ public:
 
 
 	actDansBin actFuncForFinal;
-	actDansBin actFuncForInfo;	// fonction when we find the final etat	
+	actDansBin actFuncForInfo;	// fonction when we find the final etat
 	explore_bin0(){
 		name = 0;
 		BIN = 0;
@@ -713,7 +714,7 @@ public:
 	int isRacine(){ return(head.flag & TYPE_BIN_RACINE);};
 	void loadbin(char *fname){
 		U_FILE *f;
-		if(!(f = u_fopen(BINARY,fname,U_READ))) 
+		if(!(f = u_fopen(BINARY,fname,U_READ)))
 			fopenErrMessage(fname);
 		name = (char *)malloc(strlen(fname)+1);
 		if (name==NULL) {
@@ -721,7 +722,7 @@ public:
 		}
 		strcpy(name,fname);
 		head.readFromFile(f);
-		int i = 
+		int i =
 			head.size_bin+
 			head.size_ref+
 			head.size_inf*2;
@@ -733,7 +734,7 @@ public:
 		REF = (unsigned char *)(BIN + head.size_bin);
 		INF = (unichar *)(REF + head.size_ref);
 
-		
+
 		autoffset = new unsigned int[head.cnt_auto+1];
 		sufoffset = new unsigned int[head.cnt_suf+1];
 		AUT = new unichar *[head.cnt_auto+1];
@@ -822,7 +823,7 @@ public:
 			for( i = 0; i <n_transitions;i++){
 				pos++; pos++;	// skip character
 				ref =    (BIN[pos] << 16) & 0xff0000;
-				ref |= 	(BIN[pos+1] << 8)  & 0xff00; 
+				ref |= 	(BIN[pos+1] << 8)  & 0xff00;
 				ref |=	BIN[pos+2] & 0xff ;
 				ref += decalage_bin;
 				BIN[pos++] =  (unsigned char) (((ref >> 16) & 0xff));
@@ -832,7 +833,7 @@ public:
 		} while( pos < head.size_bin);
 	}
 //
-//	relocate ref zone 
+//	relocate ref zone
 //	input:
 //	output : size of skip offset which for inital states
 //
@@ -843,7 +844,7 @@ public:
 	int sz,suf,inf;
 	unsigned char flag;
 	int i;
-	
+
 	sz  = REF[pos++] << 8;
 	sz |= REF[pos++];
 	pos += sz*7;
@@ -854,21 +855,21 @@ public:
 		{
 			flag =   REF[pos++];
 			suf  =  (REF[pos]   << 16) & 0xff0000;
-			suf |= 	(REF[pos+1] << 8)  & 0xff00; 
+			suf |= 	(REF[pos+1] << 8)  & 0xff00;
 			suf |=	 REF[pos+2]        & 0xff ;
 			suf = sufoffset[suf];
 			REF[pos++] =  (unsigned char) ((suf >> 16) & 0xff);
 			REF[pos++] =  (unsigned char) ((suf >>  8) & 0xff);
 			REF[pos++] =  (unsigned char) ( suf        & 0xff);
 			inf =    (REF[pos] << 16) & 0xff0000;
-			inf |= 	(REF[pos+1] << 8)  & 0xff00; 
+			inf |= 	(REF[pos+1] << 8)  & 0xff00;
 			inf |=	REF[pos+2] & 0xff ;
 			inf  += decalage_inf;
 			REF[pos++] =  (unsigned char) ((inf >> 16) & 0xff);
 			REF[pos++] =  (unsigned char) ((inf >>  8) & 0xff);
 			REF[pos++] =  (unsigned char) ( inf        & 0xff);
 		}
-		
+
 	} while(pos < head.size_ref);
 	if(pos != head.size_ref) fatal_error("ah\n");
 	}
@@ -882,14 +883,14 @@ public:
 		explorer_bin_avec_tokens(cc,offset,0,sidx);
 	}
 	void get_mots(int offset,unichar *cc,int idx)
-	{	
+	{
 		explorer_bin_sans_tokens(cc,offset,idx);
 	}
-	void 
+	void
 	explorer_bin_sans_tokens(unichar *contenu,int pos,int depth)
 	{
 		int n_transitions;
-		
+
 		if(pos >= margin_offset) fatal_error("illegal bin value\n");
 		n_transitions=BIN[pos++] << 8;
 		n_transitions |=BIN[pos++];
@@ -913,7 +914,7 @@ public:
 		refidx  = BIN[pos++] << 16;
 		refidx |= BIN[pos++] << 8;
 		refidx |= BIN[pos++];
-	
+
 //fwprintf(d.f,L"<%s:%s:%d>\n",c,inf,depth);
 		scanRef = &REF[refidx];
 		int cnt = (*scanRef++ << 8);
@@ -928,7 +929,7 @@ public:
 			infIdx  = *scanRef++ << 16;
 			infIdx |= *scanRef++ << 8;
 			infIdx |= *scanRef++;
-			contenu[sdepth++] = '['; 
+			contenu[sdepth++] = '[';
 			if(flag & (INF_IGNO_INF | INF_NAME_STR)){
 			   unichar nameArr[] = {'n','a','m','e','\0'};
 				wp = assignUstring(nameArr);
@@ -969,9 +970,9 @@ public:
 		}
 	}
 
-	void 
+	void
 	next_tran_sans_token(int n_transitions,unichar *contenu,int pos,int depth)
-	{	
+	{
 		int ref;
 		unichar c;
 		for (int i=0;i<n_transitions;i++) {
@@ -985,7 +986,7 @@ public:
 		}
 	}
 
-	void 
+	void
 	explorer_bin_avec_tokens(unichar *word,int pos,int depth,int saveIdx)
 	{
 		int n_transitions;
@@ -1002,7 +1003,7 @@ public:
 		(*actFuncForInfo)(this,word,depth,pos,saveIdx);
 	}
 
-	void 
+	void
 	next_tran_avec_token(int n_transitions,unichar *word,int pos,int depth,int saveIdx)
 	{
 		int ref;
@@ -1012,12 +1013,12 @@ public:
 			if(actFuncForFinal)	(*actFuncForFinal)(this,0,depth,0,saveIdx);
 			return;
 		}
-// fwprintf(d.f,L"[%c:",testc);		
+// fwprintf(d.f,L"[%c:",testc);
 		for (int i=0;i<n_transitions;i++) {
 			c=BIN[pos++];
 			c = c*256+BIN[pos++];
-// fwprintf(d.f,L"%c",c);		
-			if(c == testc){  
+// fwprintf(d.f,L"%c",c);
+			if(c == testc){
 				ref = BIN[pos++];
 				ref = ref * 256 + BIN[pos++];
 				ref = ref * 256 + BIN[pos++];
@@ -1050,13 +1051,13 @@ public:
 		  // to the INF line number
 			ref = BIN[pos++];
 			ref = ref * 256 + BIN[pos++];
-			ref = ref * 256 + BIN[pos++];			
+			ref = ref * 256 + BIN[pos++];
 		}
 		n_transitions=n_transitions & 0x7fff;
 		for (int i=0;i<n_transitions;i++) {
 			c=BIN[pos++];
 			c = c*256+BIN[pos++];
-			if(c == testc){  
+			if(c == testc){
 				ref = BIN[pos++];
 				ref = ref * 256 + BIN[pos++];
 				ref = ref * 256 + BIN[pos++];
@@ -1115,12 +1116,12 @@ public:
 			free(SUF_tmp_unichar);
 		}
 	};
-	
+
 	struct sufptr **load_bins(char *listFileName)
 	{
 		U_FILE *lstF;
 		if(!(lstF = u_fopen(BINARY,listFileName,U_READ)))
-			fopenErrMessage(listFileName);	
+			fopenErrMessage(listFileName);
 		char path_of_locate[1024];
 		char buff[1024];
 		char filename[1024];
@@ -1154,7 +1155,7 @@ public:
 			strcpy(tmp,filename);
 			fileLists.put(tmp);
 		}
-		u_fclose(lstF); 
+		u_fclose(lstF);
 		//
 		//	construction aut<->image map
 		//
@@ -1169,7 +1170,7 @@ public:
 		fileLists.reset();
 		racineCnt = 0;
 		SUF.put(assignUstring(u_epsilon_string),0);
-		
+
 		while((fnPtr = fileLists.getNext())){
 			loaded_map[idx] = new class explore_bin0;
 			loaded_map[idx]->loadbin(fnPtr);
@@ -1204,16 +1205,16 @@ public:
 			error("%d %S %d",
 				i,&SUF_tmp_unichar[i][1],offsetCommon[i]->offset);
 			error("%s\n",offsetCommon[i]->bin->name);
-				
+
 		}
 		racineCnt = 0;
-		
+
 		for( idx = 0; idx < loadMapCnt;idx++){
 #ifdef DDDDDDD
 			for( i = 1;i <= loaded_map[idx]->head.cnt_suf;i++){
 				if(!u_strcmp(loaded_map[idx]->SUF[i],"null"))
 					fatal_error("nom de suffixe violation, do not use 'null'\n");
-				nidx =SUF.check(loaded_map[idx]->SUF[i]); 
+				nidx =SUF.check(loaded_map[idx]->SUF[i]);
 				if( nidx == -1){
 					error("%s: ",getUtoChar(loaded_map[idx]->SUF[i]));
 					fatal_error("not solved suffixe link existe");
@@ -1228,7 +1229,7 @@ public:
 				offsetCommon[nidx]->bin = tp->bin;
 				offsetCommon[nidx]->offset = tp->offset;
 				offsetCommon[nidx]->w = tp->w;
-				
+
 			}
 #endif
 			if(loaded_map[idx]->isRacine())
@@ -1329,12 +1330,12 @@ public:
 			free(SUF_tmp_uni_char);
 		}
 	};
-	
+
 	void load_bins(char *listFileName)
 	{
 		U_FILE *lstF;
 		if(!(lstF = u_fopen(BINARY,listFileName,U_READ)))
-			fopenErrMessage(listFileName);	
+			fopenErrMessage(listFileName);
 		char path_of_locate[1024];
 		char buff[1024];
 		char filename[1024];
@@ -1367,7 +1368,7 @@ public:
 			strcpy(tmp,filename);
 			fileLists.put(tmp);
 		}
-		u_fclose(lstF); 
+		u_fclose(lstF);
 		//
 		//	construction aut<->image map
 		//
@@ -1379,7 +1380,7 @@ public:
 		char *fnPtr;
 		fileLists.reset();
 		racineCnt = 0;
-		
+
         SUF.put(assignUstring(u_epsilon_string),0);
 		while((fnPtr = fileLists.getNext())){
 			loaded_map[idx] = new class explore_bin0;
@@ -1409,16 +1410,16 @@ public:
 		for( i = 1; i < offsetCommonCnt;i++){
 			error("%d %s %d %d\n",i
                      ,getUtoChar(&SUF_tmp_uni_char[i][1])
-            , (unsigned int)offsetCommon[i]->bin,offsetCommon[i]->offset);
+            , (uintptr_t)offsetCommon[i]->bin,offsetCommon[i]->offset);
 		}
 		if(!offsetCommon)
 			fatal_error("mem alloc fail for offset array\n");
 		racineCnt = 0;
-		
+
 		int nidx;
 		for( idx = 0; idx < loadMapCnt;idx++){
 			for( i = 1;i <= loaded_map[idx]->head.cnt_suf;i++){
-				nidx =SUF.check(loaded_map[idx]->SUF[i]); 
+				nidx =SUF.check(loaded_map[idx]->SUF[i]);
 				if( nidx == -1){
 					fatal_error("%s: not solved suffixe link existe\n",getUtoChar(loaded_map[idx]->SUF[i]));
 				}
@@ -1443,12 +1444,12 @@ public:
 		//
 		//	calcul head
 		//
-/*		
+/*
 		for( idx = 0; idx < loadMapCnt;idx++){
 			head.size_bin += loaded_map[idx]->head.size_bin - 5;
-			head.size_ref += loaded_map[idx]->head.size_ref 
+			head.size_ref += loaded_map[idx]->head.size_ref
 				- loaded_map[idx].offset_org_REF;
-			head.size_inf += loaded_map[idx]->head.size_int 
+			head.size_inf += loaded_map[idx]->head.size_int
 				- loaded_map[idx].offset_org_INF;
 		}
 		*/
@@ -1456,7 +1457,7 @@ public:
 		//
 		//
 
-		
+
 
 	}
 	void set_act_func(actDansBin a, actDansBin b)
@@ -1488,7 +1489,7 @@ class union_bin_file {
 	int save_inf_offset;
 	int save_ref_offset;
 	int save_str_offset;
-	
+
 	unichar tmpBuff[4096];
 	unichar svBuff[4096];
 public:
@@ -1498,13 +1499,13 @@ public:
 		save_ref_offset = 0;
 		AUT_tmp = 0;
 		SUF_tmp_simpleTmp = 0;
-		
+
 	};
 	~union_bin_file()
 	{
 		int i;
 		if(newInfTable) delete [] newInfTable;
-		
+
 		if(AUT_tmp){
 			for( i = 0; i < imageHead.cnt_auto;i++)
 				if(AUT_tmp[i].name) delete [] AUT_tmp[i].name;
@@ -1528,7 +1529,7 @@ public:
 		load_ref();
 		load_bin_for_change();
 		save_inf_image();
-		
+
 		fseek(inf,0,SEEK_SET);
 		imageHead.flag |= TYPE_BIN_LINKED;
 		imageHead.writeAtFile(inf);
@@ -1547,15 +1548,15 @@ public:
 			fopenErrMessage(openfilename);
 		u_fgets(UtempBuff,lf);
 		imageHead.cnt_auto = utoi(UtempBuff);
-		AUT_tmp = new struct 
-			union_bin_file::simpleTmp[imageHead.cnt_auto +1]; 
+		AUT_tmp = new struct
+			union_bin_file::simpleTmp[imageHead.cnt_auto +1];
 		for( i = 0; i <= imageHead.cnt_auto;i++)
 		{
 			AUT_tmp[i].name = 0;
 			AUT_tmp[i].szStr = 0;
 			AUT_tmp[i].offset = 0;
 		}
-		//	first value 0 
+		//	first value 0
 		AUT.put(assignUstring(u_epsilon_string));
 		int lidx;
 		unichar *num;
@@ -1574,9 +1575,9 @@ public:
 			AUT.put(UtempBuff);
 			lidx++;
 		}
-		if((lidx-1) != imageHead.cnt_auto) 
+		if((lidx-1) != imageHead.cnt_auto)
 			fatal_error("suffix count is mismatch\n");
-		
+
 		u_fclose(lf);
 		strcpy(openfilename,sansExtension);
 		strcat(openfilename,".suf");
@@ -1584,8 +1585,8 @@ public:
 			fopenErrMessage(openfilename);
 		u_fgets(UtempBuff,lf);
 		imageHead.cnt_suf = utoi(UtempBuff);
-		SUF_tmp_simpleTmp = 
-			new struct union_bin_file::simpleTmp[imageHead.cnt_suf+1]; 
+		SUF_tmp_simpleTmp =
+			new struct union_bin_file::simpleTmp[imageHead.cnt_suf+1];
 		for( i = 0; i <= imageHead.cnt_suf;i++)
 		{
 			SUF_tmp_simpleTmp[i].name = 0;
@@ -1602,7 +1603,7 @@ public:
 //			SUF.put(UtempBuff,0);
 			lidx++;
 		}
-		if((lidx - 1 ) != imageHead.cnt_suf) 
+		if((lidx - 1 ) != imageHead.cnt_suf)
 			fatal_error("suffix count is mismatch\n");
 		u_fclose(lf);
 	}
@@ -1670,10 +1671,10 @@ public:
 		imageHead.size_ref = save_ref_offset;
 		imageHead.size_inf = save_inf_offset;
 	}
-	int 
+	int
 	makeNewINF(unichar *in,int racine_suffixe)
 	{
-		
+
 		simpleL<struct INF_raw *> links;
 		int tidx;
 		struct INF_raw *p;
@@ -1772,16 +1773,16 @@ public:
 						if(tidx == -1){
 							fatal_error(":%s :%s illegal suffixe value\n",getUtoChar(in),getUtoChar(sPtr));
 						}
-						p->sufIdx = (unsigned int)SUF.getCheckValue();
+						p->sufIdx = (uintptr_t)SUF.getCheckValue();
 					}
 				}
-				
+
 				if(NINF.check(iPtr) == -1){
-					p->infIdx = save_inf_offset; 
+					p->infIdx = save_inf_offset;
 					NINF.put(iPtr,(void *)save_inf_offset);
 					save_inf_offset+= u_strlen((unichar*)iPtr)+1;
 				} else {
-					p->infIdx =(unsigned int)NINF.getCheckValue();
+					p->infIdx =(uintptr_t)NINF.getCheckValue();
 				}
 				links.put(p);
             u_printf("<%s",getUtoChar(sPtr));
@@ -1801,7 +1802,7 @@ public:
 //					tmpBuff[sindex++] = 0;
 //					lsegs[segcnt++] = &tmpBuff[sindex];
 //					if(segcnt >= 4) fatal_error("too many inf\n");
-//					break;					
+//					break;
 //				}
 //			default:
 //				tmpBuff[sindex++] = info[index];
@@ -1829,7 +1830,7 @@ public:
 	}
 	void load_bin_for_change()
 	{
-		
+
 		int pos = 0;
 		int ref;
 		int n_transitions;
@@ -1856,7 +1857,7 @@ public:
 			for( i = 0; i <n_transitions;i++){
 				pos++; pos++;	// skip character
 				ref =    (BIN[pos] << 16) & 0xff0000;
-				ref |= 	(BIN[pos+1] << 8)  & 0xff00; 
+				ref |= 	(BIN[pos+1] << 8)  & 0xff00;
 				ref |=	BIN[pos+2] & 0xff ;
 				ref = ref + DECALAGE_NEW_BIN;
 				BIN[pos++] =  (unsigned char) (((ref >> 16) & 0xff));
@@ -1864,7 +1865,7 @@ public:
 				BIN[pos++] =  (unsigned char) ((ref & 0xff));
 			}
 		} while( pos < imageHead.size_bin);
-	
+
 		fseek(inf,IMAGE_HEAD_SZ,SEEK_SET);
 		outbytes2(0,inf);
 		outbytes3(0,inf);
@@ -1894,7 +1895,7 @@ public:
 			inf_offset += SUF_tmp_simpleTmp[i].szStr;
 		}
 		sz  = NINF.size();
-		int *s;		
+		int *s;
 		unichar **strTable = NINF.make_strPtr_table(&s);
 		for(i = 0; i < sz;i++)
 		{
@@ -1912,7 +1913,7 @@ public:
 };
 
 //
-//	consultation of bins files 
+//	consultation of bins files
 //
 class tableForMap {
 	unsigned char *BIN;

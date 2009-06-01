@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -60,7 +60,7 @@ class fst_array {
 		~fst_array(){
 		};
 	struct fst2 * loadfst2name(struct InflectKR_context *ictx,char *rep,unichar *nomFst);
-	
+
 
 } ;
 
@@ -199,7 +199,7 @@ void prSuffixeString(struct InflectKR_context *ictx,void *a,void *b,void *)
 {
 
 	unichar *obuf = (unichar *)a;
-	int i = (int)b;
+	intptr_t i = (intptr_t)b;
 	//
 	//	the first character of the line is a blanc for indicate comment line
 	//
@@ -236,14 +236,14 @@ int main_InflectKr(int argc, char *argv[]) {
 	ictx.debugFlag = 0;
 	ictx.lineInflect = 0;
 
-	
+
 	if(argc == 1) {
 	   usage();
 	   return 0;
 	}
 	memset(reference,0,1024*4);
 //	printf("%s\n",	setlocale(LC_ALL,"Korean_Korea.949"));
-    ictx.flagRacSuf = CONTENT_RACINE;    
+    ictx.flagRacSuf = CONTENT_RACINE;
 	ictx.dervRep =0;
 	ictx.flexRep = 0;
 	ictx.ofilename[0] = 0;
@@ -292,7 +292,7 @@ int main_InflectKr(int argc, char *argv[]) {
 			case 'x':
 			   argIdx++;
 			   if(loadChangeFileToTable(argv[argIdx]))  break;
-       
+
 			default:
 				usage();
 				cleanData(&ictx);
@@ -353,7 +353,7 @@ int main_InflectKr(int argc, char *argv[]) {
 	u_fclose(ictx.f_out);	//
 	//
 	//
-    if(ictx.ofilename1[0]) outFileRac(ictx.ofilename1);	
+    if(ictx.ofilename1[0]) outFileRac(ictx.ofilename1);
 	u_fprintf(ictx.f_out," suffixes list\n");
 	suffixeAuto.explore_tout_leaf((release_f )prSuffixeString);
 	u_fprintf(ictx.f_out," not handled suffixes list\n");
@@ -370,13 +370,13 @@ get_flexion_form(struct InflectKR_context* ictx,changeStrContext* ctx,U_FILE *f,
 //
 // reads the DELAS and produces the DELAF
 //
-// single,orgin,suffixe,information 
+// single,orgin,suffixe,information
 	#define MAX_LINE_NUMBER	4096
 	unichar readLine[MAX_LINE_NUMBER];
 	unichar workLine[MAX_LINE_NUMBER];
 
 	unichar *s,*ss;
-	
+
 
 	int scanIdx;
 	int saveIdx;
@@ -394,7 +394,7 @@ get_flexion_form(struct InflectKR_context* ictx,changeStrContext* ctx,U_FILE *f,
 		(readLine[scanIdx] == ' ')
 		) continue;
 	//
-	//	
+	//
 	//
 		for( saveIdx = 0; saveIdx < MAX_NUM_ELEMENT_BY_UNIT; saveIdx++)
 				fPtr[saveIdx] = 0;
@@ -413,7 +413,7 @@ get_flexion_form(struct InflectKR_context* ictx,changeStrContext* ctx,U_FILE *f,
 			default:
 				scanIdx++;
 			}
-			
+
 		}
 		if(saveIdx != MAX_NUM_ELEMENT_BY_UNIT) lineErrMess();
 
@@ -460,7 +460,7 @@ get_flexion_form(struct InflectKR_context* ictx,changeStrContext* ctx,U_FILE *f,
 		}
 		} while (s[scanIdx++]);
 		workLine[saveIdx] = 0;
-		
+
 		trait_renouvelle_lign(ictx,ctx,ictx->f_out,workLine);
 
 	}
@@ -475,7 +475,7 @@ trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FIL
 	int serialElementCnt = 0;
 	class dicElements *head_chaine = 0;
 	class dicElements *tail_chaine = 0;
-	
+
 	int segCnt;
 
 	unichar workLine[MAX_LINE_NUMBER];
@@ -487,7 +487,7 @@ trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FIL
 		case ',':
 			if(segCnt >= 4){
 				u_printf("error: line %d:%S is illegal\n",lineCnt,readLine);
-				return;		
+				return;
 			}
 			workLine[saveIdx++] = '\0';
 			segs[segCnt++] = saveIdx;
@@ -497,7 +497,7 @@ trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FIL
 			if(head_chaine){
 				workLine[saveIdx] = 0;
 
-				if((segCnt != 4) || !workLine[segs[0]] || 
+				if((segCnt != 4) || !workLine[segs[0]] ||
 				!workLine[segs[2]]) {
 					fatal_error("%d:%S line syntax error\n",lineCnt,readLine);
 				}
@@ -525,21 +525,21 @@ trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FIL
 			saveIdx = 0;
 			segs[segCnt++] = saveIdx;
 			break;
-		case '\t': 
+		case '\t':
 			workLine[saveIdx++]= ' ';
 			break;
 		case '\\':
 			workLine[saveIdx++] = readLine[scanIdx++];
 			if(!readLine[scanIdx]){
 				error("error: line %d:%S is illegal\n",lineCnt,readLine);
-				return;		
+				return;
 			}
 		default:
 			workLine[saveIdx++]=readLine[scanIdx];
 		}
 		if(scanIdx > MAX_LINE_NUMBER){
 			error("error: line %d:%S is illegal",lineCnt,readLine);
-			return;		
+			return;
 		}
 	} while (readLine[scanIdx++]);
 
@@ -563,7 +563,7 @@ for ( lineIdx = 0; lineIdx < 4;lineIdx++) {
 }
 u_printf("\n");
 }
-	
+
 	// find derivation information
 	// in the lingustic information
 	// extrait lingustic informations
@@ -574,11 +574,11 @@ u_printf("\n");
 	simpleL<unichar *> cmds;
 	do {
 		if((workLine[scanIdx] == '+') &&
-			(workLine[scanIdx+1] == '/') && 
-			((workLine[scanIdx+2] == 'd') ||  
+			(workLine[scanIdx+1] == '/') &&
+			((workLine[scanIdx+2] == 'd') ||
 			(workLine[scanIdx+2] == 'D') )
             ){
-			
+
 			workLine[saveIdx++] = workLine[scanIdx];
 			scanIdx+=3;
 			cmds.put(&workLine1[lineIdx]);
@@ -606,7 +606,7 @@ u_printf("\n");
 	//
 	//	set first word
 	//
-	ictx->orgWord = new class dicLines; 
+	ictx->orgWord = new class dicLines;
 
 	ictx->orgWord->set(u_null_string,
         &workLine[segIndex[0]],
@@ -669,7 +669,7 @@ u_printf("\n");
 			ictx->curDicElements->put(ictx->orgWord);
 			wEle = wEle->next;
 		}
-		
+
 	} while(wEle) ;
 	ictx->orgWord = ictx->curDicElements->hPtr;
 	do {
@@ -745,21 +745,21 @@ static void traiteEttiques(struct InflectKR_context *ictx,changeStrContext* ctx)
     int FIdx = 0;
     int OIdx = 0;
 	dp =0; ip = 0; op = 0;
-	
+
 // copy a orginal word before handling
-	if(grapheTraiteMode == FLEXION_MODE){ 
+	if(grapheTraiteMode == FLEXION_MODE){
  		swp = ictx->orgWord->EC_canonique;
-        while(*swp) FF[FIdx++] = *swp++; 
+        while(*swp) FF[FIdx++] = *swp++;
         if(ictx->orgWord->EC_orgin == u_null_string){
  		        swp = ictx->orgWord->EC_canonique;
         } else {
  		        swp = ictx->orgWord->EC_orgin;
  		        orgFlag = 1;
  		}
-        while(*swp) OF[OIdx++] = *swp++;     			
-	} 
-	FF[FIdx] = 0;OF[OIdx] = 0;    
-	
+        while(*swp) OF[OIdx++] = *swp++;
+	}
+	FF[FIdx] = 0;OF[OIdx] = 0;
+
 	for(int i = 0; i < curEtiCnt;i++){
 		et=Ptr_cAuto->tags[etiQueue[i]];
 if(ictx->debugFlag)
@@ -767,20 +767,20 @@ if(ictx->debugFlag)
 		//
 		//	gether informations
 		//
-		if (et->output && 
-            *(et->output) && 
+		if (et->output &&
+            *(et->output) &&
                 u_strcmp(et->output,"<E>")) {
 				// if we are in a final state, we save the computed things
 			wp = 0;
 			while(et->output[wp]){
 				if(et->output[wp] == '<') break;
 				wp++;
-			}			
+			}
 			if(!et->output[wp]) fst_err(ictx);
-			
+
 			wp++;
 			while(et->output[wp]){
-				if(et->output[wp]==',') break;	
+				if(et->output[wp]==',') break;
 				SuF[dp++] = et->output[wp++];
 			}
 			if(et->output[wp]!=',') fst_err(ictx);
@@ -789,10 +789,10 @@ if(ictx->debugFlag)
 				if(et->output[wp] == '>') break;
 				InF[ip++] = et->output[wp++];
 			}
-		
+
 		}
 		if(et->input[0] == '<'){
-		  if(!u_strcmp(et->input,"<$>")){ 
+		  if(!u_strcmp(et->input,"<$>")){
 			// copy org to working stack
 			swp = ictx->orgWord->EC_canonique;
 			while(*swp)  FF[FIdx++] = *swp++;
@@ -812,23 +812,23 @@ if(ictx->debugFlag)
 				continue;
 		  }
         }
-		
+
 	   // if the tag is not <E>, we process it
         for (wp=0; et->input[wp] !='\0';wp++) {
             if( (swp = getConvTable(et->input[wp])) != 0){
 			     while(*swp) FF[FIdx++] = *swp++;
                  OF[OIdx++] = et->input[wp];
                  transFlag = 1;
-                 continue; 
+                 continue;
 			}
 			switch (et->input[wp]) {
 			case '[':
 			      if(skipMark == -1 ){
                        fatal_error("skipMark is not defined\n");
-                  } 
+                  }
                   while((FIdx != 0) &&(Fpile[FpileIdx++] = FF[--FIdx])
 					!= skipMark) {};
-					
+
                   Ctmp = OF[OIdx-1];
                   if(u_is_CJK_Unified_Ideographs(Ctmp)
 	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
@@ -837,9 +837,9 @@ if(ictx->debugFlag)
                       break;
                   }
                   while((OIdx != 0) &&(Opile[OpileIdx++] = OF[--OIdx])
-					!= skipMark) {};			  	
+					!= skipMark) {};
                   break;
-			case 'L': 
+			case 'L':
                   Ctmp = OF[OIdx-1];
                   if(u_is_CJK_Unified_Ideographs(Ctmp)
 	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
@@ -855,7 +855,7 @@ if(ictx->debugFlag)
 			case 'X':	// delete a sylable
 		        if(skipMark == -1 ){
                     fatal_error("skipMark is not defined\n");
-                } 
+                }
                   Ctmp = OF[OIdx-1];
                   if(u_is_CJK_Unified_Ideographs(Ctmp)
 	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
@@ -867,11 +867,11 @@ if(ictx->debugFlag)
                   }
              	while((FpileIdx != 0) && (Fpile[--FpileIdx] != skipMark)) {};
              	while((OpileIdx != 0) && (Opile[--OpileIdx] != skipMark)) {};
-             	
+
 				break;
-			case 'R': 
-               if(FpileIdx != 0) FpileIdx--; 
-               if(OpileIdx != 0) OpileIdx--; 
+			case 'R':
+               if(FpileIdx != 0) FpileIdx--;
+               if(OpileIdx != 0) OpileIdx--;
                break;
 			case ']':
 			    if(skipMark == -1 ) fatal_error("skipMark is not defined\n");
@@ -879,12 +879,12 @@ if(ictx->debugFlag)
 				--FpileIdx;
 				if(OpileIdx == 0) break;
 				--OpileIdx;
-				
+
 				while(FpileIdx != 0 ){
 				    FF[FIdx++] = Fpile[FpileIdx++];
 					if(Fpile[FpileIdx] == skipMark) break;
 				}
-				
+
 				break;
 			case 'C':
 				if(OpileIdx != 0) { FF[FIdx++] = Opile[--OpileIdx];}
@@ -900,7 +900,7 @@ if(ictx->debugFlag){ FF[FIdx] = 0;  u_printf("%S >>>>\n",FF);}
 	OF[OIdx] = 0;
 	SuF[dp]=0;
 	InF[ip] = 0;
-	
+
 	class dicLines *wWord = new class  dicLines;
 	if(!wWord) fatal_error("mem alloc fail\n");
 	switch(grapheTraiteMode){
@@ -922,11 +922,11 @@ if(ictx->debugFlag){ FF[FIdx] = 0;  u_printf("%S >>>>\n",FF);}
  	     	    wWord->set(u_null_string,u_null_string
                      ,OF,u_null_string,u_null_string);
  	    }
-    
+
  	    if((SuF[0] == '\0') || !u_strcmp((unichar*)SuF,"<E>"))
  	    wWord->set(u_null_string,FF,u_null_string,ictx->tempBuff,
                   ictx->orgWord->EC_code);
- 	    else 
+ 	    else
  	    wWord->set(u_null_string,FF,u_null_string,ictx->tempBuff,SuF);
 	}
 	ictx->curDicElements->put(wWord);
