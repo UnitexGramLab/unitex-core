@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "retest", "retest.vcproj", "{56D59F23-BE8A-46AD-B086-CE1158AC83C0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19} = {F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tre", "tre.vcproj", "{F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+		ReleaseStatic|Win32 = ReleaseStatic|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{56D59F23-BE8A-46AD-B086-CE1158AC83C0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{56D59F23-BE8A-46AD-B086-CE1158AC83C0}.Debug|Win32.Build.0 = Debug|Win32
+		{56D59F23-BE8A-46AD-B086-CE1158AC83C0}.Release|Win32.ActiveCfg = Release|Win32
+		{56D59F23-BE8A-46AD-B086-CE1158AC83C0}.Release|Win32.Build.0 = Release|Win32
+		{56D59F23-BE8A-46AD-B086-CE1158AC83C0}.ReleaseStatic|Win32.ActiveCfg = ReleaseStatic|Win32
+		{56D59F23-BE8A-46AD-B086-CE1158AC83C0}.ReleaseStatic|Win32.Build.0 = ReleaseStatic|Win32
+		{F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19}.Debug|Win32.Build.0 = Debug|Win32
+		{F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19}.Release|Win32.ActiveCfg = Release|Win32
+		{F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19}.Release|Win32.Build.0 = Release|Win32
+		{F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19}.ReleaseStatic|Win32.ActiveCfg = ReleaseStatic|Win32
+		{F5AABD96-9C78-4DEF-9CE6-F5E9E8942C19}.ReleaseStatic|Win32.Build.0 = ReleaseStatic|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

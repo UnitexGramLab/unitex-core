@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -62,7 +62,7 @@ return t;
 void free_dictionary_node(struct dictionary_node* a) {
 if (a==NULL) return;
 if (a->incoming>1) {
-	/* We don't free a state that is still pointed by someone else 
+	/* We don't free a state that is still pointed by someone else
 	 * in order to avoid double freeing problems. */
    (a->incoming)--;
 	return;
@@ -74,7 +74,7 @@ free(a);
 
 
 /**
- * Frees the dictionary node transition 't', and all the dictionary graph whose root is 
+ * Frees the dictionary node transition 't', and all the dictionary graph whose root is
  * the dictionary node pointed out by 't'.
  */
 void free_dictionary_node_transition(struct dictionary_node_transition* t) {
@@ -89,10 +89,10 @@ while (t!=NULL) {
 
 
 /**
- * This function looks for a transition of the dictionary node '*n' that is 
+ * This function looks for a transition of the dictionary node '*n' that is
  * tagged with 'c'. If the transition exists, it is returned. Otherwise, the
  * transition is created, inserted according to the Unicode order and returned.
- * In that case, the destination dictionary node is NULL. 
+ * In that case, the destination dictionary node is NULL.
  */
 struct dictionary_node_transition* get_transition(unichar c,struct dictionary_node** n) {
 struct dictionary_node_transition* tmp;
@@ -141,6 +141,17 @@ struct info {
 
 
 /**
+ * This function create a string from two string, and build the hash value
+ * This function was extracted from add_entry_to_dictionary_tree, because each recursive call
+ * allocated 3000 unichar (and produce stack overflow)
+ */
+int get_value_index_for_string_colon_string(const unichar* str1,const unichar* str2,struct string_hash* hash) {
+   unichar tmp[3000];
+   u_sprintf(tmp,"%S,%S",str1,str2);
+   return get_value_index(tmp,hash);
+}
+
+/**
  * This function explores a dictionary tree in order to insert an entry.
  * 'inflected' is the inflected form to insert, and 'pos' is the current position
  * in the string 'inflected'. 'node' is the current node in the dictionary tree.
@@ -168,9 +179,7 @@ if (inflected[pos]=='\0') {
    /* Otherwise, we add it to the INF code list */
    node->single_INF_code_list=head_insert(N,node->single_INF_code_list);
    /* And we update the global INF line for this node */
-   unichar tmp[3000];
-   u_sprintf(tmp,"%S,%S",infos->INF_code_list->value[node->INF_code],infos->INF_code);
-   node->INF_code=get_value_index(tmp,infos->INF_code_list);
+   node->INF_code=get_value_index_for_string_colon_string(infos->INF_code_list->value[node->INF_code],infos->INF_code,infos->INF_code_list);
    return;
 }
 /* If we are not at the end of 'inflected', then we look for
@@ -205,11 +214,11 @@ add_entry_to_dictionary_tree(inflected,0,root,&infos);
 
 
 /******************************************************************
- * 
- * 
+ *
+ *
  * The following code is the minimization of the dictionary tree.
- * 
- * 
+ *
+ *
  ******************************************************************/
 
 
@@ -291,7 +300,7 @@ if (a->node->single_INF_code_list!=NULL && b->node->single_INF_code_list!=NULL &
 a=a->node->trans;
 b=b->node->trans;
 while(a!=NULL && b!=NULL) {
-   /* If the 2 current transitions are not tagged by the same 
+   /* If the 2 current transitions are not tagged by the same
     * character, then the nodes are different */
    if (a->letter != b->letter) return (a->letter - b->letter);
    /* If the characters are equal and destination nodes are different... */
@@ -360,7 +369,7 @@ free(transitions);
 
 
 /**
- * This function explores the dictionary and puts its transitions into the 
+ * This function explores the dictionary and puts its transitions into the
  * 'transitions' array. For a given height, the transitions are not sorted,
  * they will be later in the 'minimize_tree' function.
  * The function returns the height of the given node.
