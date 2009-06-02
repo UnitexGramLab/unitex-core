@@ -38,7 +38,7 @@
  * character */
 #define WIDTH_OF_A_CHAR 10
 
-#define EMPTY_AUTOMATON_DISCLAIMER_TEXT ("THIS SENTENCE AUTOMATON HAS BEEN EMPTIED")
+#define EMPTY_AUTOMATON_DISCLAIMER_TEXT "THIS SENTENCE AUTOMATON HAS BEEN EMPTIED"
 
 
 int compute_state_ranks(Tfst*,int*);
@@ -424,7 +424,7 @@ for (i=0;i<=maximum_rank;i++) {
 for (i=0;i<n_states;i++) {
    trans=tfst->automaton->states[i]->outgoing_transitions;
    while (trans!=NULL) {
-      TfstTag* t=(TfstTag*)tfst->tags->tab[trans->tag_number];
+      TfstTag* t=(TfstTag*)(tfst->tags->tab[trans->tag_number]);
       int v=WIDTH_OF_A_CHAR*(5+width_of_tag(t));
       if (pos_X[rank[i]+1]<v) {
          pos_X[rank[i]+1]=v;
