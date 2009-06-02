@@ -60,8 +60,8 @@ VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
 INSTALL_COMMAND = make install
-TRE_SRC = tre-0.7.5
-TRE_TGZ = ../tre-0.7.5.tar.gz
+TRE_SRC = tre-0.7.6
+TRE_TGZ = ../tre-0.7.6.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
 
