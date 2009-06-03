@@ -27,6 +27,10 @@
 #include "LocateConstants.h"
 
 
+int get_tct_hash_block_item_size_array(int nb_Item)
+{
+    return nb_Item * sizeof(tct_hash_block);
+}
 
 /**
  * This function initializes the blocks of the given hash table.
@@ -34,18 +38,21 @@
 void initialize_hash_blocks(struct tct_hash* hash_table,int block_size) {
 struct tct_hash_block* block;
 int size=hash_table->size;
+
+
 for (int i=0;i<size;i++) {
-   block=(struct tct_hash_block*)malloc(sizeof(struct tct_hash_block));
+   //block=(struct tct_hash_block*)malloc(sizeof(struct tct_hash_block));
+   block=(hash_table->hash_blocks+i);
    if (block==NULL) {
       fatal_alloc_error("initialize_hash_blocks");
    }
    block->size=block_size;
-   block->token_array=(int*)malloc(block_size*sizeof(int));
+   block->token_array=(hash_table->token_array_base_memory_alloc)+ (i*hash_table->token_array_standard_base_memory_nb_item_for_each_block);
+               //(int*)malloc(block_size*sizeof(int));
    if (block->token_array==NULL) {
       fatal_alloc_error("initialize_hash_blocks");
    }
-   block->length=0;
-   hash_table->hash_blocks[i]=block;
+   block->length=0;   
 }
 }
 
@@ -60,8 +67,13 @@ hash_table=(struct tct_hash*)malloc(sizeof(struct tct_hash));
 if (hash_table==NULL) {
    fatal_alloc_error("new_tct_hash");
 }
-hash_table->size=size;
-hash_table->hash_blocks=(struct tct_hash_block**)malloc(size*sizeof(struct tct_hash_block*));
+hash_table->size = 1;
+while (hash_table->size < size)
+	hash_table->size *= 2;
+//hash_table->hash_blocks_GV=(struct tct_hash_block**)malloc(size*sizeof(struct tct_hash_block*));
+hash_table->hash_blocks=(struct tct_hash_block*)malloc(get_tct_hash_block_item_size_array(size));
+hash_table->token_array_standard_base_memory_nb_item_for_each_block=tct_hash_block_size;
+hash_table->token_array_base_memory_alloc=(int*)malloc(sizeof(int*)*tct_hash_block_size*size);
 if (hash_table->hash_blocks==NULL) {
    fatal_alloc_error("new_tct_hash");
 }
@@ -86,10 +98,16 @@ return new_tct_hash(TCT_HASH_SIZE,TCT_DEFAULT_HASH_BLOCK_SIZE);
 void free_tct_hash(struct tct_hash* hash_table){
 if (hash_table==NULL) return;
 for (int j=0;j<hash_table->size;j++) {
-  free(hash_table->hash_blocks[j]->token_array);
-  free(hash_table->hash_blocks[j]);
+    int* token_array = (hash_table->hash_blocks+j)->token_array;
+    if (token_array != (hash_table->token_array_base_memory_alloc)+ (j*hash_table->token_array_standard_base_memory_nb_item_for_each_block))
+    {
+        free(token_array);
+    }
+  //free((hash_table->hash_blocks+j)->token_array);
+//  free(hash_table->hash_blocks[j]);
 }
 free(hash_table->hash_blocks);
+free(hash_table->token_array_base_memory_alloc);
 free(hash_table);
 }
 
@@ -116,7 +134,7 @@ unsigned long int hash_code=0;
 for (int i=0;token_sequence[i]!=-1;i++) {
    hash_code=hash_code+(token_sequence[i]<<i)+1357;
 }
-return abs(hash_code)%hash_table_size;
+return hash_code & (hash_table_size-1);
 }
 
 
@@ -129,14 +147,21 @@ return abs(hash_code)%hash_table_size;
  * of the array as many times as needed. If the array has already a sufficient
  * capacity, the function does nothing.
  */
-void realloc_tct_hash_block(struct tct_hash_block* block,int new_number_of_elements) {
-int factor=1;
+void realloc_tct_hash_block(struct tct_hash_block* block,int new_number_of_elements, int token_array_base_memory_nb_item_size) {
+if (block->size >=new_number_of_elements)
+  return;
+int factor=2;
 while (block->size*factor < new_number_of_elements) {
-   factor=factor*2;
+   factor*=2;
 }
-block->size=block->size*factor;
-if (factor==1) return;
-block->token_array=(int*)realloc(block->token_array,block->size*sizeof(int));
+if ((block->size) == token_array_base_memory_nb_item_size) {
+  if (factor < 4) factor=4;
+  block->token_array=(int*)malloc(block->size*sizeof(int)*factor);
+}
+else
+  block->token_array=(int*)realloc(block->token_array,block->size*sizeof(int)*factor);
+
+block->size*=factor;
 if (block->token_array==NULL) {
    fatal_alloc_error("realloc_tct_hash_block");
 }
@@ -152,13 +177,13 @@ if (block->token_array==NULL) {
  */
 void add_tct_token_sequence(int* token_seq,struct tct_hash* hash_table,int priority) {
 int hash_code=tct_hash(token_seq,hash_table->size);
-struct tct_hash_block* block=hash_table->hash_blocks[hash_code];
+struct tct_hash_block* block=hash_table->hash_blocks+hash_code;
 int old_length=block->length;
 /* We compute the number of integers required to encode the given token
  * sequence. We add 1 because of the priority. */
 int size=tct_length(token_seq)+1;
 /* We enlarge the token array if needed */
-realloc_tct_hash_block(block,size+block->length);
+realloc_tct_hash_block(block,size+block->length,hash_table->token_array_standard_base_memory_nb_item_for_each_block);
 /* Then we copy the token sequence at the end of the block's token array */
 int i;
 int* tokens=block->token_array;
@@ -210,7 +235,7 @@ return -1;
  */
 int was_already_in_tct_hash(int* token_sequence,struct tct_hash* hash_table,int priority){
 int hash_code=tct_hash(token_sequence,hash_table->size);
-struct tct_hash_block* block=hash_table->hash_blocks[hash_code];
+struct tct_hash_block* block=hash_table->hash_blocks+hash_code;
 /* We look for the token sequence in the token array of the correct block */
 int offset=tct_match(block,token_sequence);
 if (offset!=-1) {
@@ -252,4 +277,3 @@ while (list!=NULL) {
 /* We put the final -1 */
 token_sequence[i]=-1;
 }
-
