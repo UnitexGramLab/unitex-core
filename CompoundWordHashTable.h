@@ -33,13 +33,8 @@
  
 #include "Unicode.h"
 
-#ifdef MEMORY_HUNGRY
-#define TCT_HASH_SIZE 100000
-#define TCT_DEFAULT_HASH_BLOCK_SIZE 512
-#else
-#define TCT_HASH_SIZE (1024*4)
+#define TCT_HASH_SIZE 16384
 #define TCT_DEFAULT_HASH_BLOCK_SIZE 4
-#endif
 
 /**
  * This structure represents a cell of a hash table. It is made of a token
