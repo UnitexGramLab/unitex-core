@@ -233,6 +233,17 @@ while (l!=NULL) {
 }
 
 
+/* display uncompress entry
+ * function extracted from explore_bin_simple_words, because each recursive call
+ * allocated 4096 unichar (and produce stack overflow) 
+ */
+void display_uncompressed_entry(U_FILE* f,unichar* inflected,unichar* INF_code) {
+	unichar line[DIC_LINE_SIZE];
+	uncompress_entry(inflected,INF_code,line);
+	u_fprintf(f,"%S\n",line);
+}
+
+
 /**
  * This function explores a .bin dictionary in order to test if 'token' is a
  * simple word. 'offset' is the offset of the current dictionary node. 'inflected'
@@ -268,9 +279,7 @@ if (token[pos]=='\0') {
          struct list_ustring* tmp=info->inf->codes[inf_number];
          /* Then, we produce the DELAF line corresponding to each compressed line */
          while (tmp!=NULL) {
-            unichar line[DIC_LINE_SIZE];
-            uncompress_entry(inflected,tmp->string,line);
-            u_fprintf(info->dlf,"%S\n",line);
+            display_uncompressed_entry(info->dlf,inflected,tmp->string);
             tmp=tmp->next;
          }
       }

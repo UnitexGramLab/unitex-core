@@ -103,10 +103,11 @@ int line_number=1;
  * letters are used in the dictionary.
  */
 int i;
-char alphabet[MAX_NUMBER_OF_UNICODE_CHARS];
-for (i=0;i<MAX_NUMBER_OF_UNICODE_CHARS;i++) {
-	alphabet[i]=0;
+char* alphabet=(char*)malloc(sizeof(char)*MAX_NUMBER_OF_UNICODE_CHARS);
+if (alphabet==NULL) {
+	fatal_error("Cannot open dictionary %s\n",argv[vars->optind]);
 }
+memset(alphabet,0,sizeof(char)*MAX_NUMBER_OF_UNICODE_CHARS);
 /*
  * We use two structures for the storage of the codes found in the
  * dictionary. Note that 'semantic_codes' is used to store both grammatical and
@@ -220,6 +221,7 @@ free_OptVars(vars);
 u_printf("Done.\n");
 /* Note that we don't free anything since it would only waste time */
 
+free(alphabet);
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 /* cleanup for no leak on library */
 free_string_hash(semantic_codes);
