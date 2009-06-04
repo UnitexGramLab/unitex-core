@@ -645,10 +645,26 @@ while (grammar_transition!=NULL) {
          } else if (result==PARTIAL_MATCH_STATUS) {
             /* If the fst2 tag was entirely consumed, but not the tfst one,
              * we must go on. At the opposite of a partial fst2 tag, we don't 
-             * add a partial match to 'list', because this must only be done when
-             * a tfst tag has matched, and this is not the case here. */
+             * add a normal partial match to 'list', because this must only be done when
+             * a tfst tag has matched, and this is not the case here. We add a
+             * text independent match, just in order to use the output associated to
+             * the fst2 tag, if any */
+            struct tfst_match* foo=insert_in_tfst_matches(NULL,current_state_in_tfst,current_state_in_tfst,
+                             grammar_transition,pos_kr_tfst,NO_TEXT_TOKEN_WAS_MATCHED,1);
+            foo->next=match_element_list;
+            /* match_element_list is pointed by one more element */
+            if (match_element_list!=NULL) {
+               (match_element_list->pointed_by)++;
+            }
             explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                              graph_depth,match_element_list,LIST,infos,-1,pos_kr_tfst,NULL,text_transition,ctx);
+                              graph_depth,foo,LIST,infos,-1,pos_kr_tfst,NULL,text_transition,ctx);
+            if (foo->pointed_by==0) {
+               /* If list is not blocked by being part of a match for the calling
+                * graph, we can free it */
+               foo->next=NULL;
+               if (match_element_list!=NULL) {(match_element_list->pointed_by)--;}
+               free_tfst_match(foo);
+            }    
          }
          text_transition=text_transition->next;
       }
@@ -716,7 +732,8 @@ if (grammar_tag->type==BEGIN_VAR_TAG
 /* Here we test the special case of the " " and # tags that are contextual matches, and 
  * for this reason, that cannot be cached */
 if (!u_strcmp(grammar_tag->input," ")) {
-   if (is_space_on_the_left_in_tfst(tfst,text_tag)) {
+   if ((*pos_kr_tfst_tag)==-1 && is_space_on_the_left_in_tfst(tfst,text_tag)) {
+      //error("space has matched with %S\n",text_tag->content);
       return TEXT_INDEPENDENT_MATCH;
    }
    return NO_MATCH_STATUS;
