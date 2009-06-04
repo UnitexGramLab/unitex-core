@@ -40,7 +40,8 @@ struct tfst_match* new_tfst_match(int source_state_text,
                                   int dest_state_text,
                                   Transition* fst2_transition,
                                   int pos_kr,
-                                  int text_tag_number) {
+                                  int text_tag_number,
+                                  int first_time) {
 struct tfst_match* match=(struct tfst_match*)malloc(sizeof(struct tfst_match));
 if (match==NULL) {
    fatal_alloc_error("new_tfst_match");
@@ -52,6 +53,7 @@ match->pos_kr=pos_kr;
 match->text_tag_numbers=sorted_insert(text_tag_number,NULL);
 match->next=NULL;
 match->pointed_by=0;
+match->first_time=first_time;
 return match;
 }
 
@@ -64,10 +66,11 @@ struct tfst_match* insert_in_tfst_matches(struct tfst_match* list,
                                           int dest_state_text,
                                           Transition* fst2_transition,
                                           int pos_kr,
-                                          int text_tag_number) {
+                                          int text_tag_number,
+                                          int first_time) {
 if (list==NULL) {
    return new_tfst_match(source_state_text,dest_state_text,
-         fst2_transition,pos_kr,text_tag_number);
+         fst2_transition,pos_kr,text_tag_number,first_time);
 }
 if (list->source_state_text==source_state_text
     && list->dest_state_text==dest_state_text
@@ -78,7 +81,7 @@ if (list->source_state_text==source_state_text
 }
 list->next=insert_in_tfst_matches(list->next,
                          source_state_text,dest_state_text,
-                         fst2_transition,pos_kr,text_tag_number);
+                         fst2_transition,pos_kr,text_tag_number,first_time);
 return list;
 }
 
@@ -452,11 +455,13 @@ while (text_tags!=NULL) {
    s->len=len;
    s->str[len]='\0';
    /* We add the fst2 tag output, if any */
-   if (!process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number) 
-       && infos->variable_error_policy==BACKTRACK_ON_VARIABLE_ERRORS) {
-      /* We do not take into account matches with variable errors if the
-       * policy is BACKTRACK_ON_VARIABLE_ERRORS */
-      return;
+   if (item->first_time) {
+      if (!process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number) 
+           && infos->variable_error_policy==BACKTRACK_ON_VARIABLE_ERRORS) {
+         /* We do not take into account matches with variable errors if the
+          * policy is BACKTRACK_ON_VARIABLE_ERRORS */
+         return;
+      }
    }
    int last_tag=last_text_dependent_tfst_tag;
    TfstTag* current_tag=NULL;
@@ -606,11 +611,15 @@ if (infos->output_policy==REPLACE_OUTPUTS) {
 	for (int i=0;i<items->nbelems;i++) {
 		struct tfst_match* item=(struct tfst_match*)(items->tab[i]);
 		int fst2_tag_number=item->fst2_transition->tag_number;
-		if (!process_output_for_tfst_match(infos,s,fst2_tag_number)
-		    && infos->variable_error_policy==BACKTRACK_ON_VARIABLE_ERRORS) {
-		   free_Ustring(s);
-		   free_vector_ptr(items); 
-		   return;
+		if (item->first_time) {
+		   /* We don't want to consider a single fst2 transition more than once
+		    * (see comment in declaration of (struct tfst_match) */
+		   if (!process_output_for_tfst_match(infos,s,fst2_tag_number)
+		       && infos->variable_error_policy==BACKTRACK_ON_VARIABLE_ERRORS) {
+		      free_Ustring(s);
+		      free_vector_ptr(items); 
+		      return;
+		   }
 		}
 	}
 	/* Trick: as 'element' is a variable that will soon be destroyed, 

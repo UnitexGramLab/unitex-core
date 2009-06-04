@@ -391,12 +391,14 @@ if (current_kr_fst2_transition!=NULL) {
       if (result==OK_MATCH_STATUS) {
          /* Case of a match with something in the text automaton (i.e. <V>) */
          list=insert_in_tfst_matches(list,current_state_in_tfst,text_transition->state_number,
-               current_kr_fst2_transition,pos_kr_fst2,text_transition->tag_number);
+               current_kr_fst2_transition,pos_kr_fst2,text_transition->tag_number,0);
       }
       else if (result==TEXT_INDEPENDENT_MATCH) {
          /* Case of a match independent of the text automaton (i.e. <E>) */
+         /* I (S.P.) suspect that we should not arrive here, since the current
+          * case #1 is supposed to occur when a fst2 tag was not fully consumed */
          list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
-               current_kr_fst2_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED);
+               current_kr_fst2_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,0);
       }
       else if (result==PARTIAL_MATCH_STATUS) {
          /* If we have consumed all the fst2 tag but not all the tfst one, we go on */
@@ -457,7 +459,7 @@ if (current_kr_tfst_transition!=NULL) {
       if (result==OK_MATCH_STATUS) {
          /* Case of a match with something in the text automaton (i.e. <V>) */
          list=insert_in_tfst_matches(list,current_state_in_tfst,current_kr_tfst_transition->state_number,
-               grammar_transition,pos_kr_fst2,current_kr_tfst_transition->tag_number);
+               grammar_transition,pos_kr_fst2,current_kr_tfst_transition->tag_number,1);
       }
       else if (result==TEXT_INDEPENDENT_MATCH || result==PARTIAL_MATCH_STATUS) {
          /* If we have a match independent of the text automaton (i.e. <E>) 
@@ -634,12 +636,12 @@ while (grammar_transition!=NULL) {
          if (result==OK_MATCH_STATUS) {
             /* Case of a match with something in the text automaton (i.e. <V>) */
             list=insert_in_tfst_matches(list,current_state_in_tfst,text_transition->state_number,
-                 grammar_transition,pos_kr_fst2,text_transition->tag_number);
+                 grammar_transition,pos_kr_fst2,text_transition->tag_number,1);
          }
          else if (result==TEXT_INDEPENDENT_MATCH) {
             /* Case of a match independent of the text automaton (i.e. <E>) */
             list=insert_in_tfst_matches(list,current_state_in_tfst,current_state_in_tfst,
-                 grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED);
+                 grammar_transition,-1,NO_TEXT_TOKEN_WAS_MATCHED,1);
          } else if (result==PARTIAL_MATCH_STATUS) {
             /* If the fst2 tag was entirely consumed, but not the tfst one,
              * we must go on. At the opposite of a partial fst2 tag, we don't 

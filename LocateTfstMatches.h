@@ -42,6 +42,13 @@ struct tfst_match {
    int source_state_text;
    int dest_state_text;
    Transition* fst2_transition;
+   
+   /* This field is used when 1) a fst2 tag is consumed by several TfstTag and 2) outputs
+    * are used. In such a case, we don't want to consider the fst2 tag output more than
+    * once, so we use this field to know if it's the first time we use this transition
+    * or not */
+   int first_time;
+   
    int pos_kr;
    int pointed_by;
    struct list_int* text_tag_numbers;
@@ -78,7 +85,7 @@ struct tfst_simple_match_list {
 };
 
 
-struct tfst_match* insert_in_tfst_matches(struct tfst_match*,int,int,Transition*,int,int);
+struct tfst_match* insert_in_tfst_matches(struct tfst_match*,int,int,Transition*,int,int,int);
 void free_tfst_match(struct tfst_match*);
 struct tfst_match_list* add_match_in_list(struct tfst_match_list*,struct tfst_match*);
 void clean_tfst_match_list(struct tfst_match*,struct tfst_match*);
