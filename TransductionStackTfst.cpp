@@ -92,6 +92,14 @@ u_strcat(stack,s);
 void insert_text_interval_tfst(struct locate_tfst_infos* infos,Ustring* s,int start_token,int start_char,
                                int end_token,int end_char) {
 //error("de %d.%d a %d.%d\n",start_token,start_char,end_token,end_char);
+if (start_token==end_token && start_char==end_char+1) {
+   /* In Korean, when we have a match made of several TfstTags containing less than
+    * a character (for instance, a logical letter), then we can arrive here with a
+    * start position that has already been increased of 1 since the last TfstTag 
+    * was dealt with. So, we can have things like 0.2 -> 0.1 and such things must
+    * be ignored */
+   return;
+}
 int current_token=start_token;
 int current_char=start_char;
 unichar* token=infos->tfst->token_content[current_token];

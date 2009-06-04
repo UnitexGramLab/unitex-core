@@ -557,6 +557,7 @@ while (text_tags!=NULL) {
          }
       } else {
          /* Otherwise, we start on the beginning of the current text tag */
+         //error("current item=%d\n",text_tags->n);
          previous_start_token=current_tag->m.start_pos_in_token;
          previous_start_char=current_tag->m.start_pos_in_char;
       }
@@ -619,6 +620,17 @@ if (infos->output_policy==REPLACE_OUTPUTS) {
 	element->output=NULL;
 } else {
 	/* In MERGE mode, we have to explore the combination of partial matches */
+   /*for (int i=0;i<items->nbelems;i++) {
+      struct tfst_match* toto=(struct tfst_match*)(items->tab[i]);
+      struct list_int* rr=toto->text_tag_numbers;
+      error("i=%d:  ",i);
+      while (rr!=NULL) {
+         error("%d ",rr->n);
+         rr=rr->next;
+      }
+      error("\n");
+   }*/
+   
    empty(s);
    struct list_pointer* ptr=NULL;
    explore_match_for_MERGE_mode(infos,element,items,0,s,-1,&ptr);
@@ -641,7 +653,8 @@ if (element.m.end_pos_in_token==-1) {
    /* If the match was in fact completely text independent, then we reject it */
    return;
 }
-//error("match from token %d to %d\n",element.start_pos_in_token,element.end_pos_in_token);
+//error("match from token %d.%d to %d.%d\n",element.m.start_pos_in_token,element.m.start_pos_in_char,
+//      element.m.end_pos_in_token,element.m.end_pos_in_char);
 if (infos->output_policy==IGNORE_OUTPUTS) {
 	/* The simplest case */
 	infos->matches=add_element_to_list(infos,infos->matches,&element);

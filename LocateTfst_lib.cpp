@@ -646,7 +646,7 @@ while (grammar_transition!=NULL) {
              * add a partial match to 'list', because this must only be done when
              * a tfst tag has matched, and this is not the case here. */
             explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                              graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,text_transition,ctx);
+                              graph_depth,match_element_list,LIST,infos,-1,pos_kr_tfst,NULL,text_transition,ctx);
          }
          text_transition=text_transition->next;
       }
@@ -744,9 +744,7 @@ result=real_match_between_text_and_grammar_tags(tfst,text_tag,grammar_tag,
                                                 infos,pos_kr_fst2_tag,pos_kr_tfst_tag);
 /* And we save it in the cache */
 set_cached_result(infos->cache,tfst_tag_index,fst2_tag_index,
-                  *pos_kr_fst2_tag,*pos_kr_tfst_tag,result);
-result=get_cached_result(infos->cache,text_tag->content,fst2_tag_index,tfst_tag_index,
-      old_pos_kr_fst2_tag,old_pos_kr_tfst_tag);
+      old_pos_kr_fst2_tag,old_pos_kr_tfst_tag,result);
 return result;
 }
 
@@ -767,7 +765,7 @@ if (infos->korean && *pos_kr_fst2_tag!=-1 && *pos_kr_tfst_tag!=-1) {
    fatal_error("Internal error in match_between_text_and_grammar_tags: cannot have partial match on both\n"
                "text tag and grammar tag\n");
 }
-
+//error("ici tag=%S fst2 #%d\n",text_tag->content,fst2_tag_index);
 if (infos->korean && (*pos_kr_fst2_tag!=-1 || (grammar_tag->input[0]!='{' && grammar_tag->input[0]!='<'))) {
    /* If we have a Korean token in the fst2 */
    if (*pos_kr_fst2_tag==-1) {
@@ -779,7 +777,7 @@ if (infos->korean && (*pos_kr_fst2_tag!=-1 || (grammar_tag->input[0]!='{' && gra
    int k=(*pos_kr_fst2_tag);
    int j=(*pos_kr_tfst_tag!=-1)?(*pos_kr_tfst_tag):0;
    while (jamo_fst2[k]!='\0' && jamo_tfst[j]!='\0') {
-      /* We ignore syllab bounds n both tfst and fst2 tags */
+      /* We ignore syllab bounds in both tfst and fst2 tags */
       if (jamo_fst2[k]==KR_SYLLAB_BOUND) {
          k++;
          continue;
