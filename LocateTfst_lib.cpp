@@ -464,8 +464,22 @@ if (current_kr_tfst_transition!=NULL) {
       else if (result==TEXT_INDEPENDENT_MATCH || result==PARTIAL_MATCH_STATUS) {
          /* If we have a match independent of the text automaton (i.e. <E>) 
           * or that does not consume all the tfst tag, we go on */
+         struct tfst_match* foo=insert_in_tfst_matches(NULL,current_state_in_tfst,current_state_in_tfst,
+                                      grammar_transition,pos_kr_tfst,NO_TEXT_TOKEN_WAS_MATCHED,1);
+         foo->next=match_element_list;
+         /* match_element_list is pointed by one more element */
+         if (match_element_list!=NULL) {
+            (match_element_list->pointed_by)++;
+         }
          explore_tfst(visits,tfst,current_state_in_tfst,grammar_transition->state_number,
-                                       graph_depth,list,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition,ctx);
+                                       graph_depth,foo,LIST,infos,-1,pos_kr_tfst,NULL,current_kr_tfst_transition,ctx);
+         if (foo->pointed_by==0) {
+            /* If list is not blocked by being part of a match for the calling
+             * graph, we can free it */
+            foo->next=NULL;
+            if (match_element_list!=NULL) {(match_element_list->pointed_by)--;}
+            free_tfst_match(foo);
+         } 
       }
       grammar_transition=grammar_transition->next;
    }
