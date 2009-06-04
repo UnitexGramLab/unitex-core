@@ -437,13 +437,13 @@ if (current_item==items->nbelems) {
    element->output=NULL;
    return;
 }
-
 /* We save the length because it will be modified */
 int len=s->len;
 struct tfst_match* item=(struct tfst_match*)(items->tab[current_item]);
 if (item==NULL) {
    fatal_error("Unexpected NULL item in explore_match_for_MERGE_mode\n");
 }
+
 Match saved_element=element->m;
 struct list_int* text_tags=item->text_tag_numbers;
 /* We explore all the text tags */
@@ -459,7 +459,7 @@ while (text_tags!=NULL) {
       return;
    }
    int last_tag=last_text_dependent_tfst_tag;
-   TfstTag* current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
+   TfstTag* current_tag=NULL;
    if (text_tags->n==-1) {
       /* We have a text independent match */
       Fst2Tag fst2_tag=infos->fst2->tags[item->fst2_transition->tag_number];
@@ -523,6 +523,7 @@ while (text_tags!=NULL) {
          return;
       }
    } else {
+      current_tag=(TfstTag*)(infos->tfst->tags->tab[text_tags->n]);
       /* We update the last tag */
       last_tag=text_tags->n;
       /* If the current text tag is not a text independent one */
@@ -536,7 +537,6 @@ while (text_tags!=NULL) {
             ptr=ptr->next;
          }
       }
-      
       int previous_start_token,previous_start_char; 
       if (last_text_dependent_tfst_tag!=-1) {
          /* If the item is not the first, we must insert the original text that is
@@ -567,14 +567,14 @@ while (text_tags!=NULL) {
    }
    /* Then, we go on the next item */
    struct list_pointer* ptr2=NULL;
-   if (element->m.start_pos_in_token==LEFT_CONTEXT_PENDING) {
+   if (element->m.start_pos_in_token==LEFT_CONTEXT_PENDING && current_tag!=NULL) {
       element->m.start_pos_in_token=infos->tfst->offset_in_tokens+current_tag->m.start_pos_in_token;
       element->m.start_pos_in_char=current_tag->m.start_pos_in_char;
       element->m.start_pos_in_letter=current_tag->m.start_pos_in_letter;
    }
    explore_match_for_MERGE_mode(infos,element,items,current_item+1,s,last_tag
          ,&ptr2 /* We have encountered a text dependent tag, so there is no
-                * more pending start tag like $a( */
+                 * more pending start tag like $a( */
          );
    element->m=saved_element;
    /* If there was a $* tag pending */

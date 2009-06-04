@@ -228,7 +228,7 @@ if (tfst_tag_cache_index==-1) {
 }
 struct element** array=(struct element**)(cache->elements->tab[tfst_tag_cache_index]);
 if (array==NULL) {
-   fatal_error("Unexpected NULL array in get_cached_result\n");
+   fatal_error("Unexpected NULL array in set_cached_result\n");
 }
 array[fst2_tag_index]=new_element(result,pos_fst2,pos_tfst,array[fst2_tag_index]);
 }

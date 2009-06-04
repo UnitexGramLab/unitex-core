@@ -162,7 +162,6 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	   for (int k=0;k<tfst->automaton->number_of_states;k++) {
 	      visits[k]=0;
 	   }
-	   //error("sentence=%d  from state %d/%d\n",i,j,tfst->automaton->number_of_states);
 	   explore_tfst(visits,tfst,j,infos.fst2->initial_states[1],0,NULL,NULL,&infos,-1,-1,NULL,NULL,NULL);
 	}
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
@@ -626,6 +625,7 @@ while (grammar_transition!=NULL) {
       while (text_transition!=NULL) {
          int pos_kr_fst2=-1;
          int pos_kr_tfst=-1;
+         
          int result=match_between_text_and_grammar_tags(tfst,(TfstTag*)(tfst->tags->tab[text_transition->tag_number]),
                                                  infos->fst2->tags[grammar_transition->tag_number],
                                                  text_transition->tag_number,
@@ -737,12 +737,16 @@ if (result!=UNKNOWN_MATCH_STATUS) {
    return result;
 }
 /* Otherwise, we compute the result */
+int old_pos_kr_fst2_tag=*pos_kr_fst2_tag;
+int old_pos_kr_tfst_tag=*pos_kr_tfst_tag;
 result=real_match_between_text_and_grammar_tags(tfst,text_tag,grammar_tag,
                                                 tfst_tag_index,fst2_tag_index,
                                                 infos,pos_kr_fst2_tag,pos_kr_tfst_tag);
 /* And we save it in the cache */
 set_cached_result(infos->cache,tfst_tag_index,fst2_tag_index,
                   *pos_kr_fst2_tag,*pos_kr_tfst_tag,result);
+result=get_cached_result(infos->cache,text_tag->content,fst2_tag_index,tfst_tag_index,
+      old_pos_kr_fst2_tag,old_pos_kr_tfst_tag);
 return result;
 }
 

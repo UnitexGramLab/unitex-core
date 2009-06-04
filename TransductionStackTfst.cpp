@@ -105,6 +105,7 @@ while (1) {
    if (token[current_char]=='\0') {
       /* We go on the next token */
       current_token++;
+      //error("current=%d  end=%d  max=%d\n",current_token,end_token,infos->tfst->token_sizes->nbelems);
       token=infos->tfst->token_content[current_token];
       current_char=0;
    }
