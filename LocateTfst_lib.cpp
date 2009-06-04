@@ -732,7 +732,7 @@ if (!u_strcmp(text_tag->content,"{STOP}")) {
 /* Now, we will compare the text tag and the grammar one, but only if we
  * don't already know the result */
 int result=get_cached_result(infos->cache,text_tag->content,fst2_tag_index,tfst_tag_index,
-                             *pos_kr_fst2_tag,*pos_kr_tfst_tag);
+                             *pos_kr_fst2_tag,*pos_kr_tfst_tag,pos_kr_fst2_tag,pos_kr_tfst_tag);
 if (result!=UNKNOWN_MATCH_STATUS) {
    return result;
 }
@@ -744,7 +744,7 @@ result=real_match_between_text_and_grammar_tags(tfst,text_tag,grammar_tag,
                                                 infos,pos_kr_fst2_tag,pos_kr_tfst_tag);
 /* And we save it in the cache */
 set_cached_result(infos->cache,tfst_tag_index,fst2_tag_index,
-      old_pos_kr_fst2_tag,old_pos_kr_tfst_tag,result);
+      old_pos_kr_fst2_tag,old_pos_kr_tfst_tag,result,*pos_kr_fst2_tag,*pos_kr_tfst_tag);
 return result;
 }
 

@@ -31,8 +31,12 @@
  */
 struct element {
    int result;
-   int pos_kr_fst2_tag;
-   int pos_kr_tfst_tag;
+   /* old_XXX = positions before matching */
+   int old_pos_kr_fst2_tag;
+   int old_pos_kr_tfst_tag;
+   /* new_XXX = positions after matching */
+   int new_pos_kr_fst2_tag;
+   int new_pos_kr_tfst_tag;
    struct element* next;
 };
 
@@ -121,14 +125,17 @@ for (int i=0;i<n_tfst_tags;i++) {
 /**
  * Builds a new element.
  */
-static struct element* new_element(int result,int pos_fst2,int pos_tfst,struct element* next) {
+static struct element* new_element(int result,int old_pos_fst2,int old_pos_tfst,
+                                   int new_pos_fst2,int new_pos_tfst,struct element* next) {
 struct element* e=(struct element*)malloc(sizeof(struct element));
 if (e==NULL) {
    fatal_alloc_error("new_element");
 }
 e->result=result;
-e->pos_kr_fst2_tag=pos_fst2;
-e->pos_kr_tfst_tag=pos_tfst;
+e->old_pos_kr_fst2_tag=old_pos_fst2;
+e->old_pos_kr_tfst_tag=old_pos_tfst;
+e->new_pos_kr_fst2_tag=new_pos_fst2;
+e->new_pos_kr_tfst_tag=new_pos_tfst;
 e->next=next;
 return e;
 }
@@ -193,7 +200,8 @@ return value->_int;
 int get_cached_result(LocateTfstTagMatchingCache* cache,
                       unichar* tfst_tag,int fst2_tag_index,
                       int tfst_tag_index,
-                      int pos_fst2,int pos_tfst) {
+                      int old_pos_fst2,int old_pos_tfst,
+                      int *new_pos_fst2,int *new_pos_tfst) {
 int tfst_tag_cache_index=cache->cached_tfst_tags_index[tfst_tag_index];
 if (tfst_tag_cache_index==-1) {
    tfst_tag_cache_index=get_tfst_tag_index(tfst_tag,cache);
@@ -205,8 +213,10 @@ if (array==NULL) {
 }
 struct element* list=array[fst2_tag_index];
 while (list!=NULL) {
-   if (list->pos_kr_fst2_tag==pos_fst2 && list->pos_kr_tfst_tag==pos_tfst) {
+   if (list->old_pos_kr_fst2_tag==old_pos_fst2 && list->old_pos_kr_tfst_tag==old_pos_tfst) {
       /* If we have a result for the match, we return it */
+      (*new_pos_fst2)=list->new_pos_kr_fst2_tag;
+      (*new_pos_tfst)=list->new_pos_kr_tfst_tag;
       return list->result;
    }
    list=list->next;
@@ -221,7 +231,8 @@ return UNKNOWN_MATCH_STATUS;
  */
 void set_cached_result(LocateTfstTagMatchingCache* cache,
                       int tfst_tag_index,int fst2_tag_index,
-                      int pos_fst2,int pos_tfst,int result) {
+                      int old_pos_fst2,int old_pos_tfst,int result,
+                      int new_pos_fst2,int new_pos_tfst) {
 int tfst_tag_cache_index=cache->cached_tfst_tags_index[tfst_tag_index];
 if (tfst_tag_cache_index==-1) {
    fatal_error("Unexpected -1 tfst tag cache index in set_cached_result\n");
@@ -230,5 +241,5 @@ struct element** array=(struct element**)(cache->elements->tab[tfst_tag_cache_in
 if (array==NULL) {
    fatal_error("Unexpected NULL array in set_cached_result\n");
 }
-array[fst2_tag_index]=new_element(result,pos_fst2,pos_tfst,array[fst2_tag_index]);
+array[fst2_tag_index]=new_element(result,old_pos_fst2,old_pos_tfst,new_pos_fst2,new_pos_tfst,array[fst2_tag_index]);
 }

@@ -48,10 +48,10 @@ void free_LocateTfstTagMatchingCache(LocateTfstTagMatchingCache*);
 void prepare_cache_for_new_sentence(LocateTfstTagMatchingCache*,int);
 int get_cached_result(LocateTfstTagMatchingCache* cache,
                       unichar* tfst_tag,int fst2_tag_index,int tfst_tag_index, 
-                      int pos_fst2,int pos_tfst);
+                      int old_pos_fst2,int old_pos_tfst,int *new_pos_fst2,int *new_pos_tfst);
 void set_cached_result(LocateTfstTagMatchingCache* cache,
                       int tfst_tag_index,int fst2_tag_index,
-                      int pos_fst2,int pos_tfst,int result);
+                      int old_pos_fst2,int old_pos_tfst,int new_pos_fst2,int new_pos_tfst,int result);
 
 
 #endif
