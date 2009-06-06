@@ -51,8 +51,8 @@ ifeq ($(SYSTEM),linux-like)
 ##  BEGIN LINUX  ##
 ###################
 ###################
-CC      = g++
-#CC      = gcc -x c
+CC      = g++ 
+#CC      = gcc -x c 
 RM      = rm -f
 INSTALL = cp
 NAME    = unitex-src
@@ -74,9 +74,9 @@ APPDIR = ../../../App
 DEFFLAGS = -D_NOT_UNDER_WINDOWS
 #                                 -DDEBUG_STAT
 #                                 -DBDB
-CFLAGS   = -Wall -W
+CFLAGS   = -Wall -W 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0
+CFLAGS += -g -O0 
 else
 CFLAGS += -O2
 endif
@@ -84,16 +84,16 @@ endif
 ifeq ($(LIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
-endif
+endif 
 
 override CFLAGS   += $(DEFFLAGS) -I"../Libtre" -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre
+LIBS   = -Llibtre/lib -ltre 
 
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
-EXTENSION =
+EXTENSION = 
 
 ###################
 ###################
@@ -111,16 +111,7 @@ ifeq ($(SYSTEM), mingw32)
 #####################
 #####################
 
-ifeq ($(COMMANDPREFIXDEFINED),yes)
-CC     = $(COMMANDPREFIX)g++
-CC_GCC = $(COMMANDPREFIX)gcc
-AR     = $(COMMANDPREFIX)ar
-else
-CC     = i386-mingw32msvc-g++
-CC_GCC = i386-mingw32msvc-gcc
-AR     = i386-mingw32msvc-ar
-endif
-
+CC      = i386-mingw32msvc-g++
 RM      = rm -f
 INSTALL = cp
 
@@ -128,44 +119,37 @@ NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
-TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../tre_mingw32 -O3 -Wall -c -fmessage-length=0
 
 #
 # Compiling instructions for the TRE library
 #
 INSTALL_COMMAND = make install
 
-LIBS =  -L "." -ltre
+LIBS =  -L"../Libtre" ../Libtre/tre.lib 
 INCS =  -I"../korean" -I".." -I"../Libtre"
 #
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
 #
-CXXINCS =  -I"../korean" -I".."
+CXXINCS =  -I"../korean" -I".." 
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0
+CFLAGS += -g -O0 
 else
 CFLAGS += -O2
 endif
 
-
-LIBTRE   = libtre.a
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
 #CFLAGS += -fPIC
 #endif
 
-ifeq ($(LIBRARY),yes)
-CFLAGS += -DUNITEX_LIBRARY
-endif
-
 APPDIR = ../../../App
 
-OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
+OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS) 
 EXTENSION = .exe
 
 
@@ -185,55 +169,31 @@ else
 #####################
 #####################
 
-ifeq ($(COMMANDPREFIXDEFINED),yes)
-CC     = $(COMMANDPREFIX)g++.exe
-CC_GCC = $(COMMANDPREFIX)gcc.exe
-AR     = $(COMMANDPREFIX)ar.exe
-else
 CC   = g++.exe
-CC_GCC = gcc.exe
-AR   = ar.exe
-endif
-
-
 APPDIR = ../../../App
-
-ifneq ($(DEVCPP_PATHDEFINED),yes)
 DEVCPP_PATH = C:/Dev-Cpp
-endif
-
-
-
-TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../tre_mingw32 -O3 -Wall -c -fmessage-length=0
-
 
 #
-# USING TRE STATIC LIBRARY
+# USING TRE LIBRARY
 #
-LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." -ltre
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".."
+LIBS =  -L"$(DEVCPP_PATH)/lib" -L"../Libtre" ../Libtre/tre.lib
+INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".." 
 # Note: the -I".." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
-CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../Libtre" -I"../korean" -I".."
+CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../Libtre" -I"../korean" -I".." 
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0
+CFLAGS += -g -O0 
 else
 CFLAGS += -O2
 endif
-
-LIBTRE   = libtre.a
 
 # -fPIC is not required because all code is position independent under Windows
 #ifeq ($(LIBRARY),yes)
 #CFLAGS += -fPIC
 #endif
-
-ifeq ($(LIBRARY),yes)
-CFLAGS += -DUNITEX_LIBRARY
-endif
 
 OPTIONS = $(LIBS) $(CFLAGS) $(LDFLAGS)
 EXTENSION = .exe
@@ -259,7 +219,7 @@ endif ## MINGW (ifeq)
 #
 # All the informations about objects files needed to compile a given program
 # must appear between the lines #<PROG> and #</PROG>. Moreover, they must
-# conform to the following rules:
+# conform to the following rules: 
 # - the name of a program must be specified by a line like:
 # FOO = Foo
 # - the list of the objects needed by this program must be of the form:
@@ -332,7 +292,7 @@ ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Af_stdio.o Unicode.o ElagFunctions.o E
             AutIntersection.o Alphabet.o StringParsing.o DELA.o List_ustring.o\
             List_int.o SingleGraph.o HashTable.o BitArray.o Fst2.o Pattern.o\
             BitMasks.o FIFO.o Transitions.o ElagDebug.o File.o getopt.o Tfst.o
-
+ 
 ELAGCOMP      = ElagComp
 ELAGCOMP_OBJS = Main_ElagComp.o ElagComp.o IOBuffer.o Af_stdio.o Unicode.o ElagRulesCompilation.o Fst2Automaton.o\
                 ElagFstFilesIO.o String_hash.o\
@@ -418,7 +378,7 @@ LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o Unicode.o
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o \
                   LocateTfstMatches.o Match.o MorphologicalFilters.o jamoCodage.o codeForKorean.o pro_type.o \
                   orgUniMbcsMap.o segtype.o etc.o Korean.o OptimizedTfstTagMatching.o List_pointer.o\
-                  TransductionVariables.o TransductionStackTfst.o Contexts.o
+                  TransductionVariables.o TransductionStackTfst.o Contexts.o 
 
 
 MULTIFLEX      = MultiFlex
@@ -468,7 +428,7 @@ REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o Unicode.o RegularE
 SORTTXT      = SortTxt
 SORTTXT_OBJS = Main_SortTxt.o SortTxt.o IOBuffer.o Af_stdio.o Unicode.o Error.o Thai.o getopt.o\
                ProgramInvoker.o
-
+               
 STATS      = Stats
 STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Af_stdio.o Unicode.o Error.o Thai.o getopt.o\
                ProgramInvoker.o HashTable.o File.o Text_tokens.o String_hash.o \
@@ -570,7 +530,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
 COMPRESSKR	= CompressKr
 COMPRESSKR_OBJS = Main_CompressKr.o CompressKr.o IOBuffer.o etc.o pro_type.o \
                   String_hash.o File.o Af_stdio.o Unicode.o Alphabet.o Error.o StringParsing.o
-
+	
 CONSULTDIC = ConsultDic
 CONSULTDIC_OBJS = Main_ConsultDic.o ConsultDic.o IOBuffer.o etc.o pro_type.o \
 		    Af_stdio.o Unicode.o Fst2.o File.o Error.o Alphabet.o Pattern.o List_ustring.o\
@@ -632,7 +592,7 @@ EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o 
 ################################
 ################################
 
-PROGS__ = $(LOCATE)
+PROGS__ = $(LOCATE) 
 
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
 		$(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) \
@@ -661,7 +621,7 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(C
 		$(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
 		$(UNCOMPRESS_OBJS) $(UNITEXTOOL_OBJS)
-
+		
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
 		#$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS)  \
@@ -684,12 +644,12 @@ ifeq ($(LIBRARY),yes)
 all: $(LIBTRE) .libunitex
 else
 all: bin
-endif
-
-bin: $(LIBTRE) $(BINARIES)
 	@echo
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
+endif
+
+bin: $(LIBTRE) $(BINARIES)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
@@ -748,125 +708,6 @@ remake: clean all
 
 else
 
-################################
-################################
-##  WINDOWS or MINGW TARGETS  ##
-################################
-################################
-
-
-ifeq ($(LIBRARY),yes)
-all: $(LIBTRE) .libunitex
-else
-all: bin
-endif
-
-
-TRE_LIB = libtre.a
-
-ifeq ($(LIBRARY),OOOfdsjnfezqez)
-tre-0.7.6/lib/tre-stack.c: $(TRE_SRC)
-
-tre-0.7.6/lib/tre-parse.c: $(TRE_SRC)
-
-tre-0.7.6/lib/regexec.c: $(TRE_SRC)
-
-tre-0.7.6/lib/xmalloc.c: $(TRE_SRC)
-
-tre-0.7.6/lib/tre-match-parallel.c: $(TRE_SRC)
-
-tre-0.7.6/lib/tre-match-approx.c: $(TRE_SRC)
-
-tre-0.7.6/lib/tre-ast.c: $(TRE_SRC)
-
-tre-0.7.6/lib/regcomp.c: $(TRE_SRC)
-
-tre-0.7.6/lib/regerror.c: $(TRE_SRC)
-
-tre-0.7.6/lib/tre-compile.c: $(TRE_SRC)
-
-TRE_OBJS = tre-parse.o tre-stack.o regexec.o xmalloc.o tre-match-parallel.o tre-match-approx.o tre-ast.o \
-	regcomp.o regerror.o tre-ast.o tre-compile.o tre-match-backtrack.o tre-mem.o
-
-tre-stack.o: tre-0.7.6/lib/tre-stack.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-stack.c $(TRE_OPTIONS)
-
-tre-parse.o: tre-0.7.6/lib/tre-parse.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-parse.c $(TRE_OPTIONS)
-
-regexec.o: tre-0.7.6/lib/regexec.c
-	$(CC_GCC) -c tre-0.7.6/lib/regexec.c $(TRE_OPTIONS)
-
-xmalloc.o: tre-0.7.6/lib/xmalloc.c
-	$(CC_GCC) -c tre-0.7.6/lib/xmalloc.c $(TRE_OPTIONS)
-
-tre-match-parallel.o: tre-0.7.6/lib/tre-match-parallel.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-parallel.c $(TRE_OPTIONS)
-
-tre-match-approx.o: tre-0.7.6/lib/tre-match-approx.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-approx.c $(TRE_OPTIONS)
-
-tre-ast.o: tre-0.7.6/lib/tre-ast.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-ast.c $(TRE_OPTIONS)
-
-regcomp.o: tre-0.7.6/lib/regcomp.c
-	$(CC_GCC) -c tre-0.7.6/lib/regcomp.c $(TRE_OPTIONS)
-
-regerror.o: tre-0.7.6/lib/regerror.c
-	$(CC_GCC) -c tre-0.7.6/lib/regerror.c $(TRE_OPTIONS)
-
-tre-compile.o: tre-0.7.6/lib/tre-compile.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-compile.c $(TRE_OPTIONS)
-
-tre-match-backtrack.o: tre-0.7.6/lib/tre-match-backtrack.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-backtrack.c $(TRE_OPTIONS)
-
-tre-mem.o: tre-0.7.6/lib/tre-mem.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-mem.c $(TRE_OPTIONS)
-
-$(TRE_LIB): $(TRE_SRC) $(TRE_OBJS)
-	AR -r libtre.a $(TRE_OBJS)
-
-else
-TRE_OBJS = tre-parse.o tre-stack.o regexec.o xmalloc.o tre-match-parallel.o tre-match-approx.o tre-ast.o \
-	regcomp.o regerror.o tre-ast.o tre-compile.o tre-match-backtrack.o tre-mem.o
-
-$(TRE_LIB): $(TRE_TGZ)
-	@echo "unpacking TRE library......"
-	tar xzf $(TRE_TGZ)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-stack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-parse.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regexec.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/xmalloc.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-parallel.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-approx.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-ast.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regcomp.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regerror.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-compile.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-backtrack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-mem.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-stack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-parse.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regexec.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/xmalloc.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-parallel.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-approx.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-ast.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regcomp.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regerror.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-compile.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-backtrack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-mem.c $(TRE_OPTIONS)
-	$(AR) -r libtre.a $(TRE_OBJS)
-	
-endif
-
-
-TRE_SRC = tre-0.7.6
-TRE_TGZ = ../tre-0.7.6.tar.gz
-
-
 ifeq ($(SYSTEM),windows)
 
 #######################
@@ -874,30 +715,20 @@ ifeq ($(SYSTEM),windows)
 ##  WINDOWS TARGETS  ##
 #######################
 #######################
-
-
-bin: $(LIBTRE) $(BINARIES)
-	@echo ----------------------------------------------------------------------------
+ifeq ($(LIBRARY),yes)
+all: $(LIBTRE) .libunitex
+else
+all: bin
+	@echo ---------------------------------------------------------------------------- 
 	@echo All is done. You need to move .exe programs from '$(BIN_DIR)' to '$(APPDIR)'.
+endif
 
-
-TRE_TEMP = $(TRE_SRC)/TEMP
-
-$(TRE_SRC): $(TRE_TGZ)
-	@echo "unpacking TRE library...."
-	tar xzf $(TRE_TGZ)
-
-
-LIBTRE: $(TRE_SRC) $(TRE_LIB)
-	@echo "Making TRE library..."
-
-CLEAN-LIBTRE   =
-LIBS   = -L"." -ltre
+bin: $(BINARIES)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
 
-clean:
+clean: 
 	rm -f *.o $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll
 
 ##########################
@@ -905,37 +736,28 @@ clean:
 ##  END WINDOWS TARGETS ##
 ##########################
 ##########################
-else
+else 
 
 #############################
 #############################
 ##  MINGW WINDOWS TARGETS  ##
 #############################
 #############################
-
-bin: $(LIBTRE) $(BINARIES)
+ifeq ($(LIBRARY),yes)
+all: $(LIBTRE) .libunitex
+else
+all: bin
 	@echo
 	@echo "All is done. Type '$(INSTALL_COMMAND)' to install programs in '$(APPDIR)'."
 	@echo
+endif
 
-
-TRE_TEMP = $(TRE_SRC)/TEMP
-
-$(TRE_SRC): $(TRE_TGZ)
-	@echo "unpacking TRE library...."
-	tar xzf $(TRE_TGZ)
-
-
-LIBTRE: $(TRE_SRC) $(TRE_LIB)
-	@echo "Making TRE library..."
-
-CLEAN-LIBTRE   =
-LIBS   = -L"." -ltre
+bin: $(BINARIES)
 
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
 
-clean:
+clean: 
 	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
 
 #############################
@@ -943,7 +765,7 @@ clean:
 ##  MINGW WINDOWS TARGETS  ##
 #############################
 #############################
-endif
+endif 
 endif
 
 $(BIN_DIR)$(TEST)$(EXTENSION): Test.o
@@ -953,7 +775,7 @@ $(BIN_DIR)$(CHECKDIC)$(EXTENSION): $(CHECKDIC_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(COMPRESS)$(EXTENSION): $(COMPRESS_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
+	$(CC) -o $@ $+ $(OPTIONS) 
 
 $(BIN_DIR)$(CONCORD)$(EXTENSION): $(CONCORD_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
@@ -1047,7 +869,7 @@ $(BIN_DIR)$(TXT2TFST)$(EXTENSION): $(TXT2TFST_OBJS)
 
 $(BIN_DIR)$(XMLIZER)$(EXTENSION): $(XMLIZER_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
-
+	
 $(BIN_DIR)$(UNCOMPRESS)$(EXTENSION): $(UNCOMPRESS_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
@@ -1087,58 +909,58 @@ $(BIN_DIR)$(EXTRACTCHAR)$(EXTENSION): $(EXTRACTCHAR_OBJS)
 
 
 #
-# Compilation instructions for Korean .o
+# Compilation instructions for Korean .o 
 #
 InflectKr.o: ../korean/InflectKr.cpp
 	$(CC) -c ../korean/InflectKr.cpp $(OPTIONS)
 
 CompressKr.o: ../korean/CompressKr.cpp
-	$(CC) -c ../korean/CompressKr.cpp $(OPTIONS)
+	$(CC) -c ../korean/CompressKr.cpp $(OPTIONS) 
 
 etc.o: ../korean/etc.cpp
-	$(CC) -c ../korean/etc.cpp $(OPTIONS)
+	$(CC) -c ../korean/etc.cpp $(OPTIONS) 
 
 pro_type.o: ../korean/pro_type.cpp
-	$(CC) -c ../korean/pro_type.cpp $(OPTIONS)
+	$(CC) -c ../korean/pro_type.cpp $(OPTIONS) 
 
 codeForKorean.o: ../korean/codeForKorean.cpp
-	$(CC) -c ../korean/codeForKorean.cpp $(OPTIONS)
+	$(CC) -c ../korean/codeForKorean.cpp $(OPTIONS) 
 
 orgUniMbcsMap.o: ../korean/orgUniMbcsMap.cpp
-	$(CC) -c ../korean/orgUniMbcsMap.cpp $(OPTIONS)
+	$(CC) -c ../korean/orgUniMbcsMap.cpp $(OPTIONS) 
 
 bitmap.o: ../korean/bitmap.cpp
-	$(CC) -c ../korean/bitmap.cpp $(OPTIONS)
+	$(CC) -c ../korean/bitmap.cpp $(OPTIONS) 
 
 ConsultDic.o: ../korean/ConsultDic.cpp ../korean/bin.h ../korean/bin3.h
-	$(CC) -c ../korean/ConsultDic.cpp $(OPTIONS)
+	$(CC) -c ../korean/ConsultDic.cpp $(OPTIONS) 
 
 ExtractChar.o: ../korean/ExtractChar.cpp
-	$(CC) -c ../korean/ExtractChar.cpp $(OPTIONS)
+	$(CC) -c ../korean/ExtractChar.cpp $(OPTIONS) 
 
 Jamo2Syl.o: ../korean/Jamo2Syl.cpp
-	$(CC) -c ../korean/Jamo2Syl.cpp $(OPTIONS)
+	$(CC) -c ../korean/Jamo2Syl.cpp $(OPTIONS) 
 
 jamoCodage.o: ../korean/jamoCodage.cpp
-	$(CC) -c ../korean/jamoCodage.cpp $(OPTIONS)
+	$(CC) -c ../korean/jamoCodage.cpp $(OPTIONS) 
 
 MergeBin.o: ../korean/MergeBin.cpp ../korean/bin.h ../korean/bin3.h
-	$(CC) -c ../korean/MergeBin.cpp $(OPTIONS)
+	$(CC) -c ../korean/MergeBin.cpp $(OPTIONS) 
 
 segtype.o: ../korean/segtype.cpp
-	$(CC) -c ../korean/segtype.cpp $(OPTIONS)
+	$(CC) -c ../korean/segtype.cpp $(OPTIONS) 
 
 SortMorph.o: ../korean/SortMorph.cpp
-	$(CC) -c ../korean/SortMorph.cpp $(OPTIONS)
+	$(CC) -c ../korean/SortMorph.cpp $(OPTIONS) 
 
 SufForm2Rac.o: ../korean/SufForm2Rac.cpp
-	$(CC) -c ../korean/SufForm2Rac.cpp $(OPTIONS)
+	$(CC) -c ../korean/SufForm2Rac.cpp $(OPTIONS) 
 
 Syl2Jamo.o: ../korean/Syl2Jamo.cpp
-	$(CC) -c ../korean/Syl2Jamo.cpp $(OPTIONS)
+	$(CC) -c ../korean/Syl2Jamo.cpp $(OPTIONS) 
 
 Txt2Fst2Kr.o: ../korean/Txt2Fst2Kr.cpp ../korean/strToAuto.h
-	$(CC) -c ../korean/Txt2Fst2Kr.cpp $(OPTIONS)
+	$(CC) -c ../korean/Txt2Fst2Kr.cpp $(OPTIONS) 
 
 
 # Compiling Unitex as a library under Linux-like systems
@@ -1154,7 +976,7 @@ no_o_files:
 	$(CC) Test_lib.o -L../bin -Wl,-rpath,. -lunitex -o ../bin/Test_lib
 
 
-else
+else 
 
 # Compiling Unitex as a library under Windows
 no_o_files:
@@ -1162,7 +984,8 @@ no_o_files:
 
 .libunitex: no_o_files $(OBJS) Test_lib.o
 	rm -f Main_*.o
-	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/unitex.dll
+	$(CC) *.o -shared -Wl,--export-all-symbols ../Libtre/tre.dll -o ../bin/unitex.dll
 	$(CC) Test_lib.o $(OPTIONS) ../Libtre/tre.dll ../bin/unitex.dll -o ../bin/Test_lib.exe
 
 endif
+	
