@@ -357,10 +357,10 @@ free(t);
 void dump_offset(long offset,U_FILE* tind) {
 uint32_t n=(uint32_t)offset;
 unsigned char t[4];
-t[0]=n&0xFF;
-t[1]=(n&0xFF00) >> 8;
-t[2]=(n&0xFF0000) >> 16;
-t[3]=(n&0xFF000000) >> 24;
+t[0]=(unsigned char)(n&0xFF);
+t[1]=(unsigned char)((n&0xFF00) >> 8);
+t[2]=(unsigned char)((n&0xFF0000) >> 16);
+t[3]=(unsigned char)((n&0xFF000000) >> 24);
 if (4!=fwrite(t,1,4,tind)) {
    fatal_error("dump_offset: Write error on .tind file\n");
 }
