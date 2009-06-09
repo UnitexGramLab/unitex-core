@@ -449,7 +449,7 @@ if (f==NULL) {
    return;
 }
 // we write the file header and the initial and final states
-write_grf_header(800,100+50*N,N+2,NULL,f);
+write_grf_header(800,100+50*N,N+2,NULL,f,10);
 u_fprintf(f,"\"<E>\" 50 100 ",f);
 u_fprintf(f,"%d ",N);
 for (int i=2;i<2+N;i++) {

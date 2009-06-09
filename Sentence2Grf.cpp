@@ -27,28 +27,24 @@
 #include "Transitions.h"
 
 
-/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it
    see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
 #if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
 
-/* This is an approximation of the average width in pixels of a
- * character */
-#define WIDTH_OF_A_CHAR 10
-
 #define EMPTY_AUTOMATON_DISCLAIMER_TEXT "THIS SENTENCE AUTOMATON HAS BEEN EMPTIED"
 
 
 int compute_state_ranks(Tfst*,int*);
-int get_max_width_for_ranks(Tfst*,int*,int*,int);
-void tfst_transitions_to_grf_states(Tfst*,int*,U_FILE*,int,int,int*,char*);
+int get_max_width_for_ranks(Tfst*,int*,int*,int,int);
+void tfst_transitions_to_grf_states(Tfst*,int*,U_FILE*,int,int,int*,char*,int);
 struct grf_state* new_grf_state(const char*,int,int);
 struct grf_state* new_grf_state(unichar*,int,int);
 void free_grf_state(struct grf_state*);
 void add_transition_to_grf_state(struct grf_state*,int);
-void save_grf_states(U_FILE*,struct grf_state**,int,int,char* font,int);
+void save_grf_states(U_FILE*,struct grf_state**,int,int,char*,int,int);
 
 
 /**
@@ -89,7 +85,7 @@ add_outgoing_transition(g->states[0],tag_number,1);
  *           2) being minimal
  *           2) having no outgoing transition from the final state
  */
-void sentence_to_grf(Tfst* tfst,char* font,U_FILE* f) {
+void sentence_to_grf(Tfst* tfst,char* font,int fontsize,U_FILE* f) {
 check_automaton_is_empty(tfst);
 /* The rank array will be used to store the rank of each state */
 int* rank=(int*)malloc(sizeof(int)*tfst->automaton->number_of_states);
@@ -105,8 +101,8 @@ int* pos_X=(int*)malloc(sizeof(int)*(maximum_rank+1));
 if (pos_X==NULL) {
    fatal_alloc_error("sentence_to_grf");
 }
-int width_max=get_max_width_for_ranks(tfst,pos_X,rank,maximum_rank);
-tfst_transitions_to_grf_states(tfst,rank,f,maximum_rank,width_max,pos_X,font);
+int width_max=get_max_width_for_ranks(tfst,pos_X,rank,maximum_rank,fontsize);
+tfst_transitions_to_grf_states(tfst,rank,f,maximum_rank,width_max,pos_X,font,fontsize);
 free(rank);
 free(pos_X);
 }
@@ -226,7 +222,7 @@ for (int i=2;i<*N;i++) {
  */
 void tfst_transitions_to_grf_states(Tfst* tfst,
                                     int* rank,U_FILE* f,int maximum_rank,
-                                    int width_max,int* pos_X,char* font) {
+                                    int width_max,int* pos_X,char* font,int fontsize) {
 int n_states=tfst->automaton->number_of_states;
 int* n_transitions_before_state=get_n_transitions_before_state(tfst);
 int max_transitions=get_maximum_difference(n_transitions_before_state,n_states);
@@ -292,7 +288,7 @@ for (int i=0;i<n_states;i++) {
 free(n_transitions_before_state);
 remove_duplicate_grf_states(grf_states,&N_GRF_STATES);
 /* And we save the grf */
-save_grf_states(f,grf_states,N_GRF_STATES,maximum_rank,font,max_transitions);
+save_grf_states(f,grf_states,N_GRF_STATES,maximum_rank,font,max_transitions,fontsize);
 /* Finally, we perform cleaning */
 for (int i=0;i<N_GRF_STATES;i++) {
    free_grf_state(grf_states[i]);
@@ -356,11 +352,11 @@ return maximum_rank;
 /**
  * Prints the header of the grf to the given file.
  */
-void write_grf_header(int width,int height,int n_states,char* font,U_FILE* f) {
+void write_grf_header(int width,int height,int n_states,char* font,U_FILE* f,int fontsize) {
 u_fprintf(f,"#Unigraph\n");
 u_fprintf(f,"SIZE %d %d\n",width,height);
-u_fprintf(f,"FONT %s:  10\n",font);
-u_fprintf(f,"OFONT %s:B 10\n",font);
+u_fprintf(f,"FONT %s:  %d\n",font,fontsize);
+u_fprintf(f,"OFONT %s:B %d\n",font,fontsize);
 u_fprintf(f,"BCOLOR 16777215\n");
 u_fprintf(f,"FCOLOR 0\n");
 u_fprintf(f,"ACOLOR 12632256\n");
@@ -413,7 +409,7 @@ return width;
  * the X coordinates of the grf boxes so that the graph will be readable.
  * The function returns the X position of the last rank boxes.
  */
-int get_max_width_for_ranks(Tfst* tfst,int* pos_X,int* rank,int maximum_rank) {
+int get_max_width_for_ranks(Tfst* tfst,int* pos_X,int* rank,int maximum_rank,int fontsize) {
 int n_states=tfst->automaton->number_of_states;
 int i;
 Transition* trans;
@@ -425,7 +421,7 @@ for (i=0;i<n_states;i++) {
    trans=tfst->automaton->states[i]->outgoing_transitions;
    while (trans!=NULL) {
       TfstTag* t=(TfstTag*)(tfst->tags->tab[trans->tag_number]);
-      int v=WIDTH_OF_A_CHAR*(5+width_of_tag(t));
+      int v=fontsize*(5+width_of_tag(t));
       if (pos_X[rank[i]+1]<v) {
          pos_X[rank[i]+1]=v;
       }
@@ -499,7 +495,7 @@ state->l=sorted_insert(dest_state,state->l);
  * Saves the given grf states to the given file.
  */
 void save_grf_states(U_FILE* f,struct grf_state** tab_grf_state,int N_GRF_STATES,
-                     int maximum_rank,char* font,int height_indication) {
+                     int maximum_rank,char* font,int height_indication,int fontsize) {
 /* We count the number of boxes for each rank */
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
 int *pos_Y=(int*)malloc(sizeof(int)*(maximum_rank+1));
@@ -513,7 +509,7 @@ for (int i=0;i<N_GRF_STATES;i++) {
    pos_Y[tab_grf_state[i]->rank]++;
 }
 /* We print the grf header and the initial state */
-write_grf_header(tab_grf_state[1]->pos_X+300,200+height_indication*100,N_GRF_STATES,font,f);
+write_grf_header(tab_grf_state[1]->pos_X+300,200+height_indication*100,N_GRF_STATES,font,f,fontsize);
 u_fprintf(f,"\"<E>\" 50 100 ");
 int j=0;
 struct list_int* l=tab_grf_state[0]->l;

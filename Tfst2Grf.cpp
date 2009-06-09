@@ -42,7 +42,8 @@ u_printf("Usage: Tfst2Grf [OPTIONS] <tfst>\n"
          "  -s N/--sentence=N: the number of the sentence to be converted.\n"
          "  -o XXX/--output=XXX:  name .grf file as XXX.grf and the .txt one as XXX.txt (default=cursentence)\n"
          "  -f FONT/--font=FONT: use the font FONT in the output .grf (default=Times new Roman).\n"
-         "  -h/--help: this help\n"
+         "  -z N/--fontsize=N: set the font size (default=10).\n"
+		 "  -h/--help: this help\n"
          "\n"
          "Converts a sentence automaton into a GRF file that can be viewed. The\n"
          "resulting file, named cursentence.grf, is stored in the same directory\n"
@@ -59,15 +60,17 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":s:o:f:h";
+const char* optstring=":s:o:f:z:h";
 const struct option_TS lopts[]= {
       {"sentence",required_argument_TS,NULL,'s'},
       {"output",required_argument_TS,NULL,'o'},
       {"font",required_argument_TS,NULL,'f'},
+      {"fontsize",required_argument_TS,NULL,'z'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
 int SENTENCE=-1;
+int size=10;
 char* fontname=NULL;
 char* output=NULL;
 int val,index=-1;
@@ -94,6 +97,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              fontname=strdup(vars->optarg);
              if (fontname==NULL) {
                 fatal_alloc_error("main_Tfst2Grf");
+             }
+             break;
+   case 'z': if (1!=sscanf(vars->optarg,"%d%c",&size,&foo) || size<=0) {
+                /* foo is used to check that the sentence number is not like "45gjh" */
+                fatal_error("Invalid font size: %s\n",vars->optarg);
              }
              break;
    case 'h': usage(); return 0;
@@ -170,7 +178,7 @@ for (int i=0;i<tfst->tokens->nbelems;i++) {
 u_fclose(tok);
 
 u_printf("Creating GRF...\n");
-sentence_to_grf(tfst,fontname,f);
+sentence_to_grf(tfst,fontname,size,f);
 u_fclose(f);
 free(fontname);
 if (output!=NULL) {

@@ -42,8 +42,8 @@ struct grf_state {
 
 
 
-void sentence_to_grf(Tfst*,char*,U_FILE*);
+void sentence_to_grf(Tfst*,char*,int,U_FILE*);
 int width_of_tag(TfstTag*);
-void write_grf_header(int,int,int,char*,U_FILE*);
+void write_grf_header(int,int,int,char*,U_FILE*,int);
 
 #endif
