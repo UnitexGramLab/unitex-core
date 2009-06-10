@@ -206,11 +206,19 @@ return (*(utility_called->fnc))(argc-1,((char**)argv)+1);
 }
 
 
-int UnitexTool_several(int argc,char* argv[],int* p_number_done)
+int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_tools_in_arg* ptia)
 {
 	int ret=0;
 	int number_done=0;
 	int pos = 1;
+	int next_num_util = 0;
+	pos_tools_in_arg tia;
+
+	tia.tool_number = 0;
+	tia.argcpos = 0;
+	tia.nbargs = 0;
+	tia.ret = 0;
+	
 
 #ifdef DEBUG
 	int icount;
@@ -230,8 +238,10 @@ int UnitexTool_several(int argc,char* argv[],int* p_number_done)
 			int j;
 			for (j=pos;j<argc;j++)
 			{
-				if (strcmp(argv[j],"}")==0)
+				if (strcmp(argv[j],"}")==0) {
+					next_num_util++;
 					break;
+				}
 			}
 
 			if (j==argc)
@@ -242,8 +252,12 @@ int UnitexTool_several(int argc,char* argv[],int* p_number_done)
 			else
 			{
 				const struct utility_item* utility_called = found_utility(argv[pos+1]);
-				if (utility_called != NULL)
-					ret = (*(utility_called->fnc))(j-(pos+1),((char**)argv)+pos+1);
+				if (utility_called != NULL) {
+					tia.argcpos = pos+1;
+					tia.nbargs = j-(pos+1);
+					tia.tool_number = next_num_util;
+					tia.ret = ret = (*(utility_called->fnc))(tia.nbargs,((char**)argv)+tia.argcpos);
+				}
 				else
 					ret = 1 ;
 
@@ -257,8 +271,11 @@ int UnitexTool_several(int argc,char* argv[],int* p_number_done)
 		else
 		{
 			const struct utility_item* utility_called = found_utility(argv[pos]);
-			if (utility_called != NULL)
-				ret = (*(utility_called->fnc))(argc-1,((char**)argv)+1);
+			if (utility_called != NULL) {
+				tia.argcpos = 1;
+				tia.nbargs = argc-1;
+				tia.ret = ret = (*(utility_called->fnc))(tia.nbargs,((char**)argv)+tia.argcpos);
+			}
 			else
 			{
 				unitex_tool_usage(1);
@@ -272,16 +289,23 @@ int UnitexTool_several(int argc,char* argv[],int* p_number_done)
 	}
 	if (p_number_done != NULL)
 		*p_number_done = number_done;
+	if (ptia != NULL)
+		*ptia = tia;
 
 	return ret;
 }
 
+int UnitexTool_several(int argc,char* argv[],int* p_number_done)
+{
+	return UnitexTool_several_info(argc,argv,p_number_done,NULL);
+}
+
 int main_UnitexTool(int argc,char* argv[])
 {
-	return UnitexTool_several(argc,argv,NULL);
+	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }
 
 int main_UnitexTool_C(int argc,char* argv[])
 {
-	return UnitexTool_several(argc,argv,NULL);
+	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }

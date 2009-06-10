@@ -28,6 +28,15 @@ int check_Utility(const char* name);
 
 int main_UnitexTool_single(int argc,char* argv[]);
 
+
+struct pos_tools_in_arg {
+	int tool_number;
+	int argcpos;
+	int nbargs;
+	int ret;
+} ;
+
+int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_tools_in_arg* ptia);
 int UnitexTool_several(int argc,char* argv[],int* p_number_done);
 int main_UnitexTool(int argc,char* argv[]);
 
