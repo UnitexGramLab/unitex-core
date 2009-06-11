@@ -112,15 +112,15 @@ char dest_file[FILENAME_MAX];
 remove_extension(argv[vars->optind],dest_file);
 strcat(dest_file,".snt");
 u_printf("Normalizing %s...\n",argv[vars->optind]);
-normalize(tmp_file, dest_file, mode, rules);
+int result=normalize(tmp_file, dest_file, mode, rules);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
 if (strcmp(tmp_file,argv[vars->optind])) {
    af_remove(tmp_file);
 }
 free_OptVars(vars);
-u_printf("Done.\n");
-return 0;
+u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
+return result;
 }
 
 

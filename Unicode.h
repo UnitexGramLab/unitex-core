@@ -222,6 +222,8 @@ int u_vsscanf(unichar*,const char*,va_list);
 int u_strlen(const unichar*);
 unichar* u_strcpy(unichar*,const unichar*);
 unichar* u_strcpy(unichar*,const char*);
+unichar* u_strcpy_sized(unichar*,size_t,const unichar*);
+unichar* u_strcpy_sized(unichar*,size_t,const char*);
 unichar* u_strcat(unichar*,const unichar*);
 unichar* u_strcat(unichar*,const char*);
 int u_strcmp(const unichar*, const unichar*);
@@ -301,4 +303,3 @@ unichar u_deaccentuate(unichar);
 
 
 #endif
-

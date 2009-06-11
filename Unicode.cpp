@@ -2124,6 +2124,60 @@ while (--n > 0);
 return s;
 }
 
+
+/**
+ * unicode version of a secure strcpy : like u_strncpy, but add 0 at end of string 
+ * if truncate
+ * do not full pad buffer with 0, just add one 0 to terminate string
+ * typical usage :
+ unichar dest[SIZE_BUFFER];
+ or
+ unichar*dest=malloc(sizeof(unichar)*SIZE_BUFFER);
+ u_strcpy_sized(dest,SIZE_BUFFER,src);
+ */
+unichar* u_strcpy_sized(unichar *dest,size_t n,const unichar *src) {
+if (n==0)
+  return dest;
+register unichar c;
+unichar *s = dest; // backup pointer to start of destination string
+do {
+   n--;
+   if (n == 0) {
+     *dest = 0;
+     return s;
+   }
+   c = *src++;
+   *dest++ = c;
+} while (c != 0);
+
+return s;
+}
+
+
+/**
+ * unicode version of a secure strcpy that takes a non unicode source string
+ * like u_strncpy, but add 0 at end of string if truncate
+ * do not full pad buffer with 0, just add one 0 to terminate string
+ */
+unichar* u_strcpy_sized(unichar *dest,size_t n,const char *src) {
+if (n==0)
+  return dest;
+register unichar c;
+unichar *s = dest; // backup pointer to start of destination string
+do {
+   n--;
+   if (n == 0) {
+     *dest = 0;
+     return s;
+   }
+   c = *src++;
+   *dest++ = c;
+} while (c != 0);
+
+return s;
+}
+
+
 /**
  * Unicode version of strcpy that takes a non unicode source string.
  */
@@ -2229,11 +2283,12 @@ return !u_strcmp(a,b);
  */
 unichar* u_strdup(const unichar* str) {
 if (str==NULL) return NULL;
-unichar* res=(unichar*)malloc((u_strlen(str)+1)*sizeof(unichar));
+size_t buflen=(u_strlen(str)+1)*sizeof(unichar);
+unichar* res=(unichar*)malloc(buflen);
 if (res==NULL) {
    fatal_alloc_error("u_strdup");
 }
-return u_strcpy(res,str);
+return (unichar*)memcpy(res,str,buflen);
 }
 
 
@@ -5752,5 +5807,3 @@ unichar u_deaccentuate (unichar c) {
 
 
 /* end of Sebastian Nagel */
-
-
