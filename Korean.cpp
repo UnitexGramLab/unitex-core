@@ -44,7 +44,7 @@ static unichar last_part_C[2][2];
 /**
  * Converts a Korean syllab S into a letter sequence stored in res. Returns 0
  * if S is not a Korean syllab, 1 otherwise.
- * 
+ *
  * Here we work with the Hangul Compatible Jamo alphabet.
  */
 int syllabToLetters_HCJ(unichar S,unichar* res) {
@@ -141,6 +141,10 @@ return 0;
 
 static int __korean_foo=initKoreanArrays();
 
+static int test_letter(unichar c,Alphabet* alphabet) {
+if (alphabet==NULL) return 0;
+return is_letter(c,alphabet);
+}
 
 /**
  * Converts a syllab text into a Jamo one, including Chinese -> Hangul conversion
@@ -157,7 +161,7 @@ jamo->convHJAtoHAN(src,dest);
  *    is turned into Jamo letters */
 int j=0;
 for (int i=0;dest[i]!='\0';i++) {
-   if ((is_letter(dest[i],alphabet) && !u_is_korea_syllabe_letter(dest[i]))
+   if ((test_letter(dest[i],alphabet) && !u_is_korea_syllabe_letter(dest[i]))
          || (u_is_Hangul_Compatility_Jamo(dest[i]) && dest[i]!=KR_SYLLAB_BOUND)
          || u_is_Hangul_Jamo(dest[i])){
       /* We do not put yet the real syllab bound character, because we will
@@ -171,7 +175,7 @@ temp[j]='\0';
 /* Then, we perform the syllab -> Jamo conversion */
 jamo->convertSyletCjamoToJamo(temp,temp2,j,1024);
 /* Finally, we insert the empty consonant where it is necessary and we replace
- * our 0x0001 marker by the syllab bound */ 
+ * our 0x0001 marker by the syllab bound */
 j=0;
 for (int i=0;temp2[i]!='\0';i++) {
    if (temp2[i]==0x0001) {

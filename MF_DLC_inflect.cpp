@@ -52,7 +52,8 @@ void DLC_delete_entry(DLC_entry_T* entry);
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
 int inflect(char* DLC, char* DLCF, int config_files_status,
-		d_class_equiv_T* D_CLASS_EQUIV, int error_check_status) {
+		d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
+		jamoCodage* jamo) {
 	U_FILE *dlc, *dlcf; //DELAS/DELAC and DELAF/DELACF files
 	unichar input_line[DIC_LINE_SIZE]; //current DELAS/DELAC line
 	unichar output_line[DIC_LINE_SIZE]; //current DELAF/DELACF line
@@ -102,7 +103,7 @@ int inflect(char* DLC, char* DLCF, int config_files_status,
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
 			err = SU_inflect(DELAS_entry->lemma, inflection_code,
-					DELAS_entry->filters, &forms, semitic);
+					DELAS_entry->filters, &forms, semitic, jamo);
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))

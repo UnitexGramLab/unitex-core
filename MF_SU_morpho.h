@@ -1,5 +1,5 @@
 /*
-  * Unitex 
+  * Unitex
   *
   * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
   *
@@ -28,11 +28,12 @@
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "MF_FormMorpho.h"
+#include "Korean.h"
 
 /////////////////////////////////////////////////
 //Structure for the morphology of a single (inflected) form
-//of a single graphical unit 
-//e.g. for French 
+//of a single graphical unit
+//e.g. for French
 //          form = "vives"
 //          features = {Gen=fem, Nb=pl}
 typedef struct {
@@ -69,7 +70,7 @@ typedef struct {
 // Structure for the unique identification of an inflected form
 // We suppose that each inflected form may be uniquely identified on the basis of 4 elements (in case of a word):
 // the form, its lemma, its paradigm, its features. In case of a separator or any other uninflected form,
-// the unit itself (e.g. ",") is enough to uniquely identify itself. 
+// the unit itself (e.g. ",") is enough to uniquely identify itself.
 // Given these elements we may access the form indentifier and conversely. See * below.
 // One possibility is to have a deterministic linear order of all forms (variants included) so that
 // the same form always gets the same identifier.
@@ -88,11 +89,11 @@ typedef struct {
 // forms: return parameter; set of the inflected forms corresponding to the given inflection features
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
-// Returns 0 on success, 1 otherwise.   
-int SU_inflect(SU_id_T* SU_id,f_morpho_T* feat, SU_forms_T* forms,int);
+// Returns 0 on success, 1 otherwise.
+int SU_inflect(SU_id_T* SU_id,f_morpho_T* feat, SU_forms_T* forms,int,jamoCodage* jamo);
 
 /* This prototype has been added in order to deal with simple words */
-int SU_inflect(unichar* lemma,char* inflection_code,unichar **filters,SU_forms_T* forms,int);
+int SU_inflect(unichar* lemma,char* inflection_code,unichar **filters,SU_forms_T* forms,int,jamoCodage*);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms
@@ -112,7 +113,7 @@ void SU_delete_features(f_morpho_T* f);
 // Returns the word form's identifier on the basis of the form, its lemma, its inflection paradigm, and its inflection features.
 // SU_form : form and its inflection features, e.g. [rekoma,{Gen=fem,Nb=pl,Case=Instr}], or ["-",{}]
 // SU_lemma : lemma and its inflection paradigm, e.g. [reka,noun,N56,{"Conc"},""body"], or void (if separator)
-// Returns the pointer to the forms identifier on success 
+// Returns the pointer to the forms identifier on success
 // (e.g. ->("reka",word,[reka,noun,N56,{"Conc"},"body"],{Gen=fem; Nb=sing; Case=I})), NULL otherwise.
 // The identifier is allocated in this function. The liberation must be done by the calling function.
 SU_id_T*  SU_get_id(SU_f_T* SU_form, SU_lemma_T* SU_lemma);
@@ -124,7 +125,7 @@ SU_id_T*  SU_get_id(SU_f_T* SU_form, SU_lemma_T* SU_lemma);
 // This is the essential function defining the segmentation
 // of a text into units.
 // If "eliminate_bcksl" is set to 1 each protecting backslash is omitted in the
-// copied sequence.                                                            
+// copied sequence.
 // Returns the length of the scanned sequence.
 // Returns -2 on memory allocation problem.
 int SU_get_unit(unichar* unit,unichar* line, int max, Alphabet* alph, int eliminate_bcksl);
@@ -139,7 +140,7 @@ int SU_delete_id(SU_id_T* id);
 void SU_init_forms(SU_forms_T* forms);
 
 ////////////////////////////////////////////
-// Initialize the set of inflected forms "forms" with 
+// Initialize the set of inflected forms "forms" with
 // the unique form "form"
 // E.g. if form = "rekami" then forms becomes (1,{("rekami",NULL)}
 void SU_init_invariable_form(SU_forms_T* forms,const unichar* form);
@@ -182,7 +183,7 @@ int SU_delete_lemma(SU_lemma_T* l);
 //	   e.g. given only the lemma "reka", the paradigm N56, and the features {Gen=fem,Nb=pl,Case=Inst}), we may not distinguish
 // 	   between "rekami" and "rekoma"
 //	2) If the lemma is missing we may not lemmatize the form (unless the paradigm allows to do that on the basis of the 3 elements).
-//         A certain form may be identical for two different lemmas.  
+//         A certain form may be identical for two different lemmas.
 //	3) If the inflection paradigm is missing we may not produce other inflected forms.
 //	4) If the inflection features are missing there may be an ambiguity in case of homographs e.g. "rece" may be both
 //	   {Gen=fem,Nb=pl,Case=Nom} and {Gen=fem,Nb=pl,Case=Acc}

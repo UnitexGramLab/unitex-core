@@ -388,7 +388,8 @@ MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_Dic
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check.o\
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
-                 MF_Operators_Util.o getopt.o ProgramInvoker.o
+                 MF_Operators_Util.o getopt.o ProgramInvoker.o jamoCodage.o codeForKorean.o pro_type.o \
+                  orgUniMbcsMap.o segtype.o etc.o Korean.o 
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Af_stdio.o Unicode.o File.o DELA.o List_ustring.o String_hash.o\

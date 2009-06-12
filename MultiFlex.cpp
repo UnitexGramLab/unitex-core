@@ -32,6 +32,7 @@
 #include "MF_DicoMorpho.h"
 #include "MF_DLC_inflect.h"
 #include "File.h"
+#include "Korean.h"
 #include "Copyright.h"
 #include "Error.h"
 #include "getopt.h"
@@ -55,6 +56,7 @@ u_printf("Usage: MultiFlex [OPTIONS] <dela>\n"
          "  -a ALPH/--alphabet=ALPH: the alphabet file \n"
          "  -d DIR/--directory=DIR: the directory containing 'Morphology' and 'Equivalences'\n"
                      "              files and inflection graphs for single and compound words.\n"
+		 "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use for Korean\n"
 		 "  -s/--only-simple-words: the program will consider compound words as errors\n"
 		 "  -c/--only-compound-words: the program will consider simple words as errors\n"
          "  -h/--help: this help\n"
@@ -70,11 +72,12 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":o:a:d:sch";
+const char* optstring=":o:a:d:j:sch";
 const struct option_TS lopts[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"directory",required_argument_TS,NULL,'d'},
+      {"jamo",required_argument_TS,NULL,'j'},
       {"only-simple-words",no_argument_TS,NULL,'s'},
       {"only-compound-words",no_argument_TS,NULL,'c'},
       {"help",no_argument_TS,NULL,'h'},
@@ -83,6 +86,7 @@ const struct option_TS lopts[]= {
 char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
+char jamo_table[FILENAME_MAX]="";
 int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -99,6 +103,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              strcpy(alphabet,vars->optarg);
              break;
    case 'd': strcpy(config_dir,vars->optarg); break;
+   case 'j': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty jamo table file name\n");
+             }
+             strcpy(jamo_table,vars->optarg);
+             break;
    case 's': error_check_status=ONLY_SIMPLE_WORDS; break;
    case 'c': error_check_status=ONLY_COMPOUND_WORDS; break;
    case 'h': usage(); return 0;
@@ -133,7 +142,7 @@ if (err) {
 }
 print_language_morpho();
 //Load alphabet
-alph=load_alphabet(alphabet);  //To be done once at the beginning of the inflection
+alph=load_alphabet(alphabet,1);  //To be done once at the beginning of the inflection
 if (alph==NULL) {
    error("Cannot open alphabet file %s\n",alphabet);
    free_language_morpho();
@@ -156,12 +165,25 @@ if (err) {
    MU_graph_free_graphs();
    return 1;
 }
+
+/* Korean */
+jamoCodage* jamo=NULL;
+if (jamo_table[0]!='\0') {
+	jamo=new jamoCodage();
+	jamo->loadJamoMap(jamo_table);
+	/* We also initializes the Chinese -> Hangul table */
+	jamo->cloneHJAMap(alph->korean_equivalent_syllab);
+}
+
 //DELAC inflection
-err=inflect(argv[vars->optind],output,config_files_status,&D_CLASS_EQUIV,error_check_status);
+err=inflect(argv[vars->optind],output,config_files_status,&D_CLASS_EQUIV,error_check_status,jamo);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();
 free_OptVars(vars);
+if (jamo!=NULL) {
+	delete jamo;
+}
 u_printf("Done.\n");
 return 0;
 }
