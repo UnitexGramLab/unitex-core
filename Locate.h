@@ -25,7 +25,7 @@
 #include "LocateConstants.h"
 
 int main_Locate(int, char**);
-int launch_locate_as_routine(char*,char*,char*,OutputPolicy,char*,int);
+int launch_locate_as_routine(char*,char*,char*,OutputPolicy,char*,int,char*);
 
 
 #endif

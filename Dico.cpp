@@ -62,6 +62,7 @@ u_printf("Usage: Dico [OPTIONS] <dic_1> [<dic_2> <dic_3> ...]\n"
          "  -m DICS/--morpho=DICS: specifies that DICS is the .bin dictionary\n"
          "                         list to use in Locate's morphological mode. .bin names are\n"
          "                         supposed to be separated with semi-colons.\n"
+		 "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use for Korean\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies dictionaries and/or local grammars to the text and produces \n"
@@ -127,11 +128,12 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":t:a:m:h";
+const char* optstring=":t:a:m:j:h";
 const struct option_TS lopts[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"morpho",required_argument_TS,NULL,'m'},
+      {"jamo",required_argument_TS,NULL,'j'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -139,6 +141,7 @@ int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char* morpho_dic=NULL;
+char jamo[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    switch(val) {
@@ -158,6 +161,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
                    fatal_alloc_error("main_Dico");
                 }
              }
+             break;
+   case 'j': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty jamo table file name\n");
+             }
+             strcpy(jamo,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -271,7 +279,7 @@ for (int priority=1;priority<4;priority++) {
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            launch_locate_as_routine(text,argv[i],alph,policy,morpho_dic,1);
+            launch_locate_as_routine(text,argv[i],alph,policy,morpho_dic,1,(jamo[0]!='\0')?jamo:NULL);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

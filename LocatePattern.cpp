@@ -89,6 +89,7 @@ p->dic_variables=NULL;
 p->left_ctx_shift=0;
 p->left_ctx_base=0;
 p->protect_dic_chars=0;
+p->jamo=NULL;
 return p;
 }
 
@@ -107,7 +108,8 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
                    char* dynamicDir,TokenizationPolicy tokenization_policy,
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
-                   VariableErrorPolicy variable_error_policy,int protect_dic_chars) {
+                   VariableErrorPolicy variable_error_policy,int protect_dic_chars,
+                   char* jamo) {
 
 U_FILE* text_file;
 U_FILE* out;
@@ -157,7 +159,7 @@ switch(output_policy) {
    case REPLACE_OUTPUTS: u_fprintf(out,"#R\n"); break;
 }
 u_printf("Loading alphabet...\n");
-p->alphabet=load_alphabet(alphabet);
+p->alphabet=load_alphabet(alphabet,jamo!=NULL);
 if (p->alphabet==NULL) {
    error("Cannot load alphabet file %s\n",alphabet);
    return 0;
@@ -244,8 +246,17 @@ free_string_hash(semantic_codes);
 p->variables=new_Variables(p->fst2->variables);
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
+if (jamo!=NULL) {
+	p->jamo=new jamoCodage();
+	p->jamo->loadJamoMap(jamo);
+	/* We also initializes the Chinese -> Hangul table */
+	p->jamo->cloneHJAMap(p->alphabet->korean_equivalent_syllab);
+
+}
+
 u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
+
 free_buffer(p->token_buffer);
 free_Variables(p->variables);
 u_fclose(text_file);
@@ -284,6 +295,9 @@ free(p->morpho_dic_bin_free);
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 free_DLC_tree(p->DLC_tree);
 #endif
+if (p->jamo!=NULL) {
+	delete p->jamo;
+}
 free_locate_parameters(p);
 u_printf("Done.\n");
 return 1;

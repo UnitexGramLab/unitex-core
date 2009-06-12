@@ -256,7 +256,8 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o Unicode.o Text_tok
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
 				Stack_unichar.o Transitions.o DicVariables.o\
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-				ProgramInvoker.o NewLineShifts.o
+				ProgramInvoker.o NewLineShifts.o jamoCodage.o codeForKorean.o pro_type.o \
+                  orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_stdio.o Unicode.o Text_tokens.o String_hash.o List_int.o\
@@ -268,7 +269,8 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-				ProgramInvoker.o NewLineShifts.o
+				ProgramInvoker.o NewLineShifts.o jamoCodage.o codeForKorean.o pro_type.o \
+                  orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
 
 CONVERT      = Convert
 CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o Unicode.o File.o CodePages.o orgUniMbcsMap.o Error.o\
@@ -282,7 +284,9 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             Text_parsing.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o Locate.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
-            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o
+            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o\
+            jamoCodage.o codeForKorean.o pro_type.o \
+            orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
 
 ELAG      = Elag
 ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Af_stdio.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \
@@ -319,7 +323,8 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.
 	           LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-	           ProgramInvoker.o NewLineShifts.o
+	           ProgramInvoker.o NewLineShifts.o jamoCodage.o codeForKorean.o pro_type.o \
+               orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Af_stdio.o Unicode.o Fst2.o Grf2Fst2_lib.o\
@@ -369,7 +374,8 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o Unicode.o Alphabet.o 
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o \
-              ProgramInvoker.o
+              ProgramInvoker.o jamoCodage.o codeForKorean.o pro_type.o \
+              orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
 
 LOCATETFST      = LocateTfst
 LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o Unicode.o Error.o getopt.o LocateTfst_lib.o \
@@ -420,7 +426,8 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
                Buffer.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o \
-               Tfst.o SingleGraph.o FIFO.o HashTable.o
+               Tfst.o SingleGraph.o FIFO.o HashTable.o jamoCodage.o codeForKorean.o pro_type.o \
+               orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o Unicode.o RegularExpressions.o Error.o File.o\
