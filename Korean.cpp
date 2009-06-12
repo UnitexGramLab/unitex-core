@@ -151,6 +151,9 @@ return is_letter(c,alphabet);
  * and Jamo compatible -> Jamo conversion.
  */
 void convert_Korean_text(unichar* src,unichar* dest,jamoCodage* jamo,Alphabet* alphabet) {
+if (jamo==NULL) {
+	fatal_error("NULL jamo error in convert_Korean_text\n");
+}
 unichar temp[1024];
 unichar temp2[1024];
 /* First, we convert the Chinese characters, if any */
@@ -191,4 +194,36 @@ for (int i=0;temp2[i]!='\0';i++) {
    }
 }
 dest[j]='\0';
+}
+
+
+/**
+ * Turns a Hangul compatibility jamo to a standard jamo sequence.
+ * If the input is not a compatibility jamo letter, it is just copied to
+ * the output string.
+ */
+void compatibility_jamo_to_standard_jamo(unichar c,unichar* dest,jamoCodage* jamo) {
+if (u_is_Hangul_Compatility_Jamo(c)) {
+   unichar tmp[32];
+   dest[0]=c;
+   dest[1]='\0';
+   convert_Korean_text(dest,tmp,jamo,NULL);
+   int start=0;
+   if (tmp[0]==KR_SYLLAB_BOUND) {
+	   start++;
+   }
+   u_strcpy(dest,tmp+start);
+} else {
+	dest[0]=c;
+	dest[1]='\0';
+}
+}
+
+
+/**
+ * Turns a standard Jamo letter sequence into a Hangul syllab sequence.
+ */
+void convert_jamo_to_hangul(unichar* src,unichar* dest,Jamo2Syl* jamo2syl) {
+jamo2syl->cleanMachine();
+jamo2syl->convStr(src,u_strlen(src)+1,dest);
 }

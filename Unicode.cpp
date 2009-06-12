@@ -881,7 +881,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 					  {
 						  unichar c;
 						  c = (((unichar)tab_in[(i*2)+hibytepos]) << 8) | (tab_in[(i*2)+(1-hibytepos)]) ;
-						  
+
 						  if (c!=0x0d)
 						  {
 							  if (c=='\n')
@@ -901,14 +901,14 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 								  return pos_in_unichar_line;
 							  }
 
-							  line[pos_in_unichar_line++] = c;						  
+							  line[pos_in_unichar_line++] = c;
 						  }
 					  }
 				  }
 			  }
 		  }
 		   /*
-	   case UTF8: 
+	   case UTF8:
 	   case ASCII:*/
 	   default:
 		   if (i_is_size==0)
@@ -2294,7 +2294,7 @@ return (unichar*)memcpy(res,str,buflen);
 
 /**
  * This version has the correct prototype to be used as a keycopy function for
- * hash tables. 
+ * hash tables.
  */
 unichar* keycopy(unichar* key) {
 return u_strdup(key);
@@ -2776,6 +2776,22 @@ int u_is_Hangul_Jamo_initial_consonant(unichar c)
 {
    return( (c>= 0x1100) && (c <= 0x1159));
 }
+
+int u_is_Hangul_Jamo_final_consonant(unichar c)
+{
+   return( (c>= 0x11A8) && (c <= 0x11F9));
+}
+
+int u_is_Hangul_Jamo_consonant(unichar c)
+{
+   return u_is_Hangul_Jamo_initial_consonant(c) || u_is_Hangul_Jamo_final_consonant(c);
+}
+
+int u_is_Hangul_Jamo_medial_vowel(unichar c)
+{
+   return( (c>= 0x1160) && (c <= 0x11A2));
+}
+
 
 //------End of Hyungue's inserts--------------
 

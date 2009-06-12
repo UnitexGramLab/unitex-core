@@ -230,7 +230,7 @@ int u_strcmp(const unichar*, const unichar*);
 int u_equal(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
 unichar* u_strdup(const unichar*);
-unichar* keycopy(unichar*); 
+unichar* keycopy(unichar*);
 unichar* u_strdup(const unichar*,int);
 unichar* u_strdup(const char*);
 unichar* u_strchr(const unichar*,unichar,int);
@@ -286,6 +286,9 @@ int u_is_cjk_compatibility_ideographs(unichar c);
 int u_is_Hangul_Compatility_Jamo(unichar c);
 int u_is_Hangul_Jamo(unichar c);
 int u_is_Hangul_Jamo_initial_consonant(unichar c);
+int u_is_Hangul_Jamo_final_consonant(unichar c);
+int u_is_Hangul_Jamo_consonant(unichar c);
+int u_is_Hangul_Jamo_medial_vowel(unichar c);
 //--------End of Hyungue's inserts----------------
 int u_is_letter(unichar);
 int u_is_word(const unichar*);

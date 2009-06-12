@@ -62,7 +62,8 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry,d_class_equiv_T* D_CLASS_EQ
 /////////////////////////////////////////////////////////////////////////////////
 // Inflects a DELAS/DELAC into a DELAC/DELACF.
 // On error returns 1, 0 otherwise.
-int inflect(char*,char*,int,d_class_equiv_T* D_CLASS_EQUIV,int error_check_status,jamoCodage* jamo);
+int inflect(char*,char*,int,d_class_equiv_T* D_CLASS_EQUIV,int error_check_status,
+		jamoCodage* jamo,Jamo2Syl* jamo2syl);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry.

@@ -58,19 +58,20 @@ struct inflect_infos {
 };
 
 //////////////////////////////
-int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,jamoCodage* jamo);
+int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
+		jamoCodage* jamo,Jamo2Syl* jamo2syl);
 int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
 		SU_forms_T* forms, unichar*, int, unsigned int, unichar **,
-		unichar *,jamoCodage*);
+		unichar *,jamoCodage*,Jamo2Syl* jamo2syl);
 int SU_explore_state_recursion(unichar* flechi, unichar* canonique,
 		unichar* sortie, Fst2* a, int etat_courant, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int,
-		unsigned int, unichar **, unichar *,jamoCodage*);
+		unsigned int, unichar **, unichar *,jamoCodage*,Jamo2Syl* jamo2syl);
 int SU_explore_tag(Transition* T, unichar* flechi, unichar* canonique,
 		unichar* sortie, Fst2* a, struct inflect_infos** LISTE,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int,
-		unsigned int, unichar **, unichar*,jamoCodage*);
+		unsigned int, unichar **, unichar*,jamoCodage*,Jamo2Syl* jamo2syl);
 void shift_stack(unichar* stack, int pos, int shift);
 void shift_stack(unichar* stack, int pos);
 void shift_stack_left(unichar* stack, int pos);
@@ -115,7 +116,7 @@ int save_pos;
 //
 // Returns 0 on success, 1 otherwise.
 int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
-		int semitic,jamoCodage* jamo) {
+		int semitic,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
 	unichar inflection_codes[MAX_CHARS_IN_STACK];
@@ -132,7 +133,7 @@ int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
 	local_sem_code[0] = '\0';
 	err = SU_explore_state(inflected, SU_id->lemma->unit, inflection_codes,
 			fst2[T], 0, desired_features, forms, semitic ? semitic_ : NULL, 0,
-			0, NULL, local_sem_code,jamo);
+			0, NULL, local_sem_code,jamo,jamo2syl);
 	return err;
 }
 
@@ -144,7 +145,7 @@ int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
  * The output DELAF lines will have to be built from 'forms'.
  */
 int SU_inflect(unichar* lemma, char* inflection_code, unichar** filters,
-		SU_forms_T* forms, int semitic,jamoCodage* jamo) {
+		SU_forms_T* forms, int semitic,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
 	unichar inflection_codes[MAX_CHARS_IN_STACK];
@@ -162,7 +163,7 @@ int SU_inflect(unichar* lemma, char* inflection_code, unichar** filters,
 	local_semantic_code[0] = '\0';
 	err = SU_explore_state(inflected, lemma, inflection_codes, fst2[T], 0,
 			NULL, forms, semitic ? semitic_ : NULL, 0, 0, filters,
-			local_semantic_code,jamo);
+			local_semantic_code,jamo,jamo2syl);
 	return err;
 }
 
@@ -225,7 +226,7 @@ int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
 		SU_forms_T* forms, unichar* semitic, int flag_var,
 		unsigned int var_in_use, unichar **filters,
-		unichar *local_semantic_codes,jamoCodage* jamo) {
+		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	int err;
 	Fst2State e = a->states[etat_courant];
 	if (e->control & 1) { //If final state
@@ -323,7 +324,7 @@ int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
 	while (t != NULL) {//u_fprintf(stderr,"Explore 1\n");
 		retour_tag = SU_explore_tag(t, flechi, canonique, sortie, a, NULL,
 				desired_features, forms, semitic, flag_var, var_in_use,
-				filters, local_semantic_codes,jamo);
+				filters, local_semantic_codes,jamo,jamo2syl);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
@@ -383,7 +384,7 @@ int SU_explore_state_recursion(unichar* inflected, unichar* lemma,
 		unichar* output, Fst2* a, int current_state, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
 		int flag_var, unsigned int var_in_use, unichar **filters,
-		unichar *local_semantic_codes,jamoCodage* jamo) {
+		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	Fst2State e = a->states[current_state];
 	if (e->control & 1) {
 		// if we are in a final state, we save the computed things
@@ -412,14 +413,14 @@ int SU_explore_state_recursion(unichar* inflected, unichar* lemma,
 	while (t != NULL) {//u_fprintf(stderr,"Explore 2\n");local_
 		retour_tag = SU_explore_tag(t, inflected, lemma, output, a, L,
 				desired_features, forms, semitic, flag_var, var_in_use,
-				filters, local_semantic_codes,jamo);
+				filters, local_semantic_codes,jamo,jamo2syl);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
 	if (default_trans != NULL) { //u_fprintf(stderr,"PASS2\n");
 		SU_explore_tag(default_trans, inflected, lemma, output, a, L,
 				desired_features, forms, semitic, flag_var, var_in_use,
-				filters, local_semantic_codes,jamo);
+				filters, local_semantic_codes,jamo,jamo2syl);
 	}
 
 	//if ((retour_all_tags+retour_tag)) return 0; else return 1;
@@ -438,7 +439,7 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 		unichar* output, Fst2* a, struct inflect_infos** LIST,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
 		int flag_var, unsigned int var_in_use, unichar **filters,
-		unichar *local_semantic_codes,jamoCodage* jamo) {
+		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	if (T->tag_number < 0) {
 		/* If we are in the case of a call to a sub-graph */
 		struct inflect_infos* L = NULL;
@@ -448,19 +449,19 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 		SU_explore_state_recursion(inflected, lemma, output, a,
 				a->initial_states[-(T->tag_number)], &L, desired_features,
 				forms, semitic, flag_var, var_in_use, filters,
-				local_semantic_codes,jamo);
+				local_semantic_codes,jamo,jamo2syl);
 		while (L != NULL) {
 			if (LIST == NULL) {//u_fprintf(stderr,"Explore state 1\n");
 				retour_state = SU_explore_state(L->inflected, lemma, L->output,
 						a, T->state_number, desired_features, forms,
 						L->semitic, flag_var, var_in_use, filters,
-						local_semantic_codes,jamo);
+						local_semantic_codes,jamo,jamo2syl);
 				retour_all_states += (retour_state + 1);
 			} else {//u_fprintf(stderr,"Explore state recursion 1\n");
 				retour_state = SU_explore_state_recursion(L->inflected, lemma,
 						L->output, a, T->state_number, LIST, desired_features,
 						forms, L->semitic, flag_var, var_in_use, filters,
-						local_semantic_codes,jamo);
+						local_semantic_codes,jamo,jamo2syl);
 				retour_all_states += (1 - retour_state);
 			}
 			temp = L;
@@ -552,32 +553,82 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 				break;
 			}
 
-			/* Korean operator that removes the final consonants */
+			/* Korean Jamo left operator */
 			case 'J': {
+				pos_tag++;
 				if (jamo==NULL) {
 					fatal_error("NULL jamo error: cannot apply operator J if no jamo table is defined\n");
 				}
-				if (!u_is_korea_syllabe_letter(stack[pos]) && !u_is_Hangul_Jamo(stack[pos])) {
-					fatal_error("Cannot apply J operator to a non Hangul or Jamo character '%C' (%04X)\n",stack[pos],stack[pos]);
+				if (pos==0) {
+					fatal_error("Cannot apply operator J to empty stack\n");
 				}
-				if (u_is_korea_syllabe_letter(stack[pos])) {
+				if (!u_is_korea_syllabe_letter(stack[pos-1]) && !u_is_Hangul_Jamo(stack[pos-1])) {
+					fatal_error("Cannot apply J operator to a non Hangul or Jamo character '%C' (%04X)\n",stack[pos-1],stack[pos-1]);
+				}
+				if (u_is_korea_syllabe_letter(stack[pos-1])) {
 					/* If we have a Hangul syllab, we first turn it into a Jamo
 					 * character sequence */
 					unichar tmp[10];
 					unichar src[2];
-					src[0]=stack[pos];
+					src[0]=stack[pos-1];
 					src[1]='\0';
 					convert_Korean_text(src,tmp,jamo,NULL);
 					int l=u_strlen(tmp);
-					/* Now, we shift the stack in order to insert the jamo sequence
+					/* Now, we copy the jamo sequence
 					 * in place of the hangul syllab. We use l-1 because we take into
 					 * account the hangul syllab */
-					shift_stack(stack,pos,l-1);
+					pos--;
 					for (int i=0;i<l;i++) {
 						stack[pos++]=tmp[i];
 					}
 				}
+				if (u_is_Hangul_Jamo_consonant(stack[pos-1])) {
+					while (u_is_Hangul_Jamo_consonant(stack[pos-1])) {
+						pos--;
+					}
+					stack[pos]='\0';
+				}
+				else if (u_is_Hangul_Jamo_medial_vowel(stack[pos-1])){
+					while (u_is_Hangul_Jamo_medial_vowel(stack[pos-1])) {
+						pos--;
+					}
+					stack[pos]='\0';
+				} else {
+					fatal_error("Operator J: unexpected character '%C' (%04X)\n",stack[pos-1],stack[pos-1]);
+				}
+				break;
+			}
 
+			/* Korean syllab delimiter operator */
+			case '.': {
+				if (pos>0 && u_is_Hangul_Jamo(stack[pos-1])) {
+					/* If the last char is a jamo, then we want to recombine all previous jamo
+					 * with the first syllab found on the left */
+                   int z=pos-1;
+                   while (z>0 && u_is_Hangul_Jamo(stack[z])) {
+                	   z--;
+                   }
+                   if (z<0 || !u_is_korea_syllabe_letter(stack[z])) {
+                	   fatal_error("Operator . unexpected if no hangul before jamos\n");
+                   }
+                   unichar hangul[2];
+                   hangul[0]=stack[z];
+                   hangul[1]='\0';
+                   unichar tmp[32];
+                   convert_Korean_text(hangul,tmp,jamo,NULL);
+                   int l=u_strlen(tmp);
+                   int i;
+                   for (i=z+1;i<pos;i++) {
+                	  tmp[l++]=stack[i];
+                   }
+                   tmp[l]='\0';
+                   unichar tmp2[32];
+                   convert_jamo_to_hangul(tmp,tmp2,jamo2syl);
+                   u_strcpy(stack+z,tmp2);
+                   pos=z+u_strlen(tmp2);
+				}
+				stack[pos++] = KR_SYLLAB_BOUND;
+				pos_tag++;
 				break;
 			}
 
@@ -636,7 +687,12 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 
 				/* Default push operator */
 			default: {
-				stack[pos++] = tag[pos_tag];
+				unichar tmp[32];
+				compatibility_jamo_to_standard_jamo(tag[pos_tag],tmp,jamo);
+				int l=u_strlen(tmp);
+				u_strcpy(stack+pos,tmp);
+				pos=pos+l;
+				//old version before Korean: stack[pos++] = tag[pos_tag];
 				if (semitic != NULL) {
 					out[pos_out++] = tag[pos_tag];
 				}
@@ -688,12 +744,12 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 			retour_state = SU_explore_state(stack, lemma, out, a,
 					T->state_number, desired_features, forms,
 					semitic ? semitic2 : NULL, flag_var, var_in_use, filters,
-					local_semantic_codes,jamo);
+					local_semantic_codes,jamo,jamo2syl);
 		} else {//u_fprintf(stderr,"Explore state recursion 2\n");
 			retour_state = SU_explore_state_recursion(stack, lemma, out, a,
 					T->state_number, LIST, desired_features, forms,
 					semitic ? semitic2 : NULL, flag_var, var_in_use, filters,
-					local_semantic_codes,jamo);
+					local_semantic_codes,jamo,jamo2syl);
 		}
 	}
 	//return (retour * (1-retour_state));
