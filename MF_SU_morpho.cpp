@@ -721,18 +721,15 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 				//u_fprintf(UTF8,stderr,"SEMANTIC:%S\n",semantic_codes);
 				//u_fprintf(UTF8,stderr,"SEM:%S\n",t->output);
 				int sem = 0;
-				while (t->output[sem] != ':') {
+				while (t->output[sem] != ':' && t->output[sem] != '\0') {
 					local_semantic_codes[sem] = t->output[sem];
 					sem++;
 				}
 				local_semantic_codes[sem] = '\0';
-				int jj = 0;
-				while (t->output[sem] != '\0')
-					t->output[jj++] = t->output[sem++];
-				t->output[jj] = '\0';
-				//u_fprintf(UTF8,stderr,"OUT:%S LOCAL_SEM:%S\n",t->output,semantic_codes);
+				u_strcat(out, t->output+sem);
+			} else {
+			    u_strcat(out, t->output);
 			}
-			u_strcat(out, t->output);
 		}
 	}
 	/* Then, we go the next state */
