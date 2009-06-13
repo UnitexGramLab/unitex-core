@@ -200,6 +200,7 @@ struct locate_parameters {
 
    /* This is useful for Korean */
    jamoCodage* jamo;
+   unichar** jamo_tags;
 };
 
 

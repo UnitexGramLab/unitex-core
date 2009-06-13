@@ -293,7 +293,8 @@ if (is_final_state(etat_courant)) {
       p->input_length=(pos);
     }
   } else { // in a subgraph
-    (*liste_arrivee)=insert_if_absent(pos,-1,-1,(*liste_arrivee),p->stack->stack_pointer+1,p->stack->stack,p->variables,NULL,-1,-1);
+    (*liste_arrivee)=insert_if_absent(pos,-1,-1,(*liste_arrivee),p->stack->stack_pointer+1,
+    		                          p->stack->stack,p->variables,NULL,-1,-1,NULL,-1	);
   }
 }
 

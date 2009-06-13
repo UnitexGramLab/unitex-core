@@ -600,7 +600,7 @@ EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o 
 ################################
 ################################
 
-PROGS__ = $(LOCATE) 
+PROGS__ = $(TEST) 
 
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
 		$(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) \
@@ -776,7 +776,7 @@ clean:
 endif 
 endif
 
-$(BIN_DIR)$(TEST)$(EXTENSION): Test.o
+$(BIN_DIR)$(TEST)$(EXTENSION): $(TEST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(CHECKDIC)$(EXTENSION): $(CHECKDIC_OBJS)

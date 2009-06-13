@@ -241,9 +241,13 @@ if (current_state->control & 1) {
          n_matches++;
          p->stack->stack[stack_top+1]='\0';
          if (p->ambiguous_output_policy==ALLOW_AMBIGUOUS_OUTPUTS) {
-            (*matches)=insert_if_different(pos,-1,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables,p->left_ctx_shift,p->left_ctx_base);
+            (*matches)=insert_if_different(pos,-1,-1,(*matches),p->stack->stack_pointer,
+            		                       &(p->stack->stack[p->stack_base+1]),p->variables,
+            		                       p->dic_variables,p->left_ctx_shift,p->left_ctx_base,NULL,-1);
          } else {
-            (*matches)=insert_if_absent(pos,-1,-1,(*matches),p->stack->stack_pointer,&(p->stack->stack[p->stack_base+1]),p->variables,p->dic_variables,p->left_ctx_shift,p->left_ctx_base);
+            (*matches)=insert_if_absent(pos,-1,-1,(*matches),p->stack->stack_pointer,
+            		                    &(p->stack->stack[p->stack_base+1]),p->variables,
+            		                    p->dic_variables,p->left_ctx_shift,p->left_ctx_base,NULL,-1);
          }
       }
    }

@@ -90,6 +90,7 @@ p->left_ctx_shift=0;
 p->left_ctx_base=0;
 p->protect_dic_chars=0;
 p->jamo=NULL;
+p->jamo_tags=NULL;
 return p;
 }
 
@@ -100,6 +101,24 @@ return p;
 void free_locate_parameters(struct locate_parameters* p) {
 if (p==NULL) return;
 free(p);
+}
+
+
+/**
+ * Returns an array containing the jamo versions of all the given tokens.
+ */
+unichar** create_jamo_tags(jamoCodage* jamo,struct string_hash* tokens,Alphabet* alphabet) {
+unichar** res=(unichar**)malloc(tokens->size*sizeof(unichar*));
+unichar foo[128];
+for (int i=0;i<tokens->size;i++) {
+	if (!u_strcmp(tokens->value[i],"{S}")) {
+		res[i]=u_strdup("{S}");
+	} else {
+	   convert_Korean_text(tokens->value[i],foo,jamo,alphabet);
+	   res[i]=u_strdup(foo);
+	}
+}
+return res;
 }
 
 
@@ -251,7 +270,7 @@ if (jamo!=NULL) {
 	p->jamo->loadJamoMap(jamo);
 	/* We also initializes the Chinese -> Hangul table */
 	p->jamo->cloneHJAMap(p->alphabet->korean_equivalent_syllab);
-
+	p->jamo_tags=create_jamo_tags(p->jamo,p->tokens,p->alphabet);
 }
 
 u_printf("Working...\n");
@@ -272,6 +291,17 @@ free_Fst2(p->fst2);
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);
+if (p->jamo!=NULL) {
+	delete p->jamo;
+}
+if (p->jamo_tags!=NULL) {
+	/* jamo tags must be freed before tokens, because we need to know how
+	 * many jamo tags there are, and this number is the number of tokens */
+	for (int i=0;i<p->tokens->size;i++) {
+		free(p->jamo_tags[i]);
+	}
+	free(p->jamo_tags);
+}
 free_string_hash(p->tokens);
 free_list_int(p->tag_token_list);
 free_lemma_node(root);
@@ -295,9 +325,6 @@ free(p->morpho_dic_bin_free);
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 free_DLC_tree(p->DLC_tree);
 #endif
-if (p->jamo!=NULL) {
-	delete p->jamo;
-}
 free_locate_parameters(p);
 u_printf("Done.\n");
 return 1;
