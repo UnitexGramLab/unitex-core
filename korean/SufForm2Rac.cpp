@@ -38,16 +38,17 @@ static unichar flechi[1024];
 //static unichar suffixe[1024];
 
 
-static void usage()
-{
-    u_printf("%s",COPYRIGHT);
-    u_printf("Usage:\r\n");
-    u_printf(
+const char* usage_SufForm2Rac =
     "SufForm2Rac [-m converTable] [-l] [-o ofilename] fname "\
     " fname : name of the input file name with extension \".fst2\"\r\n"\
     " -l : input file is liste of input files \r\n"\
     " -m convTable : change characters\r\n"\
-    " \r\n");
+    " \r\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_SufForm2Rac);
 }
 
 struct fileListe {

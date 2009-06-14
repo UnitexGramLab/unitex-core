@@ -31,17 +31,18 @@
 
 
 
-static void usage()
-{
-u_printf("%S",COPYRIGHT);
-u_printf("Usage:\n");
-u_printf(
+
+
+const char* usage_ExtractChar =
 "ExtractChar [-o outFile] [-c SS=0xxxx]* file.fs2 inputfile\n"\
 " -o outFile : if this option not exist, save paths at \"file\"lst.txt\n"\
-" -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \n");
+" -c SS=0xXXXX: change the symbol string between symbols < and >,\"<SS>\" \n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_ExtractChar);
 }
-
-
 
 
 int main_ExtractChar(int argc, char *argv[]) {

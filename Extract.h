@@ -22,6 +22,10 @@
 #ifndef ExtractH
 #define ExtractH
 
+extern const char* optstring_Extract;
+extern const struct option_TS lopts_Extract[];
+extern const char* usage_Extract;
+
 int main_Extract(int argc,char* argv[]);
 
 #endif

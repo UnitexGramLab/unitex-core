@@ -32,17 +32,21 @@
 #include "Error.h"
 
 
+const char* usage_CompressKr =
+         "Usage: CompressKr [-s] [-g] [-o ofilename] [-l] <dictionary>\n" \
+         "  -s  : suffixes dictionnary, indicate the type of dictionnary, Suffixe or Racine\n" \
+         "  -g  : dicitionary from the graph\n" \
+         "  -l  : <dictionnary> file has list of dictionnarys \n" \
+         "   <dictionary> : any unicode DELAF or DELACF dictionary\n" \
+         "  -o  : set output file\n" \
+         "Compresses a dictionary into an finite state automaton. This automaton\n" \
+         "is stored is a .bin file,  the associated flexional codes are\n" \
+         "written in a .inf file and the list of automates at .aut file\n\n";
+
+
 static void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: CompressKr [-s] [-g] [-o ofilename] [-l] <dictionary>\n");
-u_printf("  -s  : suffixes dictionnary, indicate the type of dictionnary, Suffixe or Racine\n");
-u_printf("  -g  : dicitionary from the graph\n");
-u_printf("  -l  : <dictionnary> file has list of dictionnarys \n");
-u_printf("   <dictionary> : any unicode DELAF or DELACF dictionary\n");
-u_printf("  -o  : set output file\n");
-u_printf("Compresses a dictionary into an finite state automaton. This automaton\n");
-u_printf("is stored is a .bin file,  the associated flexional codes are\n");
-u_printf("written in a .inf file and the list of automates at .aut file\n\n");
+u_printf(usage_CompressKr);
 }
 
 static void 

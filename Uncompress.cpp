@@ -29,11 +29,12 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "getopt.h"
+#include "LocateTfst.h"
+#include "Uncompress.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Uncompress [OPTIONS] <dictionary>\n"
+const char* usage_Uncompress =
+         "Usage: Uncompress [OPTIONS] <dictionary>\n"
          "\n"
          "  <dictionary>: a .bin dictionary\n"
          "\n"
@@ -42,8 +43,21 @@ u_printf("Usage: Uncompress [OPTIONS] <dictionary>\n"
          "                       'foo.dic' where 'foo.bin' is the input file.\n"
          "  -h/--help: this help\n"
          "\n"
-         "Uncompresses a binary dictionary into a text one.\n\n");
+         "Uncompresses a binary dictionary into a text one.\n\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Uncompress);
 }
+
+
+const char* optstring_Uncompress=":o:h";
+const struct option_TS lopts_Uncompress[]= {
+      {"output",required_argument_TS,NULL,'o'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Uncompress(int argc, char* argv[]) {
@@ -53,16 +67,10 @@ if (argc==1) {
 }
 
 //int FLIP=0;
-const char* optstring=":o:h";
-const struct option_TS lopts[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
 int val,index=-1;
 char output[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Uncompress,lopts_Uncompress,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
@@ -71,7 +79,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Uncompress[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

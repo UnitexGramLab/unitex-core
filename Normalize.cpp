@@ -29,11 +29,11 @@
 #include "Error.h"
 #include "NormalizeAsRoutine.h"
 #include "getopt.h"
+#include "Normalize.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Normalize [OPTIONS] <text>\n"
+const char* usage_Normalize =
+         "Usage: Normalize [OPTIONS] <text>\n"
          "\n"
          "  <text>: text file to be normalized\n"
          "\n"
@@ -54,8 +54,22 @@ u_printf("Usage: Normalize [OPTIONS] <text>\n"
          "If you specifies replacement rules with -f, they will be applied prior\n"
          "to the separator normalization, so you have to take care if you manipulate\n"
          "separators in your replacement rules.\n"
-         "The result is stored in a file with the same name as <text>, but with .snt extension.\n");
+         "The result is stored in a file with the same name as <text>, but with .snt extension.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Normalize);
 }
+
+
+const char* optstring_Normalize=":nr:h";
+const struct option_TS lopts_Normalize[]= {
+      {"no_carriage_return",no_argument_TS,NULL,'n'},
+      {"replacement_rules",required_argument_TS,NULL,'r'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Normalize(int argc,char* argv[]) {
@@ -64,18 +78,12 @@ if (argc==1) {
 	return 0;
 }
 
-const char* optstring=":nr:h";
-const struct option_TS lopts[]= {
-      {"no_carriage_return",no_argument_TS,NULL,'n'},
-      {"replacement_rules",required_argument_TS,NULL,'r'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int mode=KEEP_CARRIAGE_RETURN;
 char rules[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&index,vars))) {
    switch(val) {
    case 'n': mode=REMOVE_CARRIAGE_RETURN; break;
    case 'r': if (vars->optarg[0]=='\0') {
@@ -85,7 +93,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Normalize[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

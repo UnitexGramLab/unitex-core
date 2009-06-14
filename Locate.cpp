@@ -46,9 +46,10 @@
 #include "regex.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Locate [OPTIONS] <fst2>\n"
+
+
+const char* usage_Locate =
+         "Usage: Locate [OPTIONS] <fst2>\n"
          "\n"
          "  <fst2>: the grammar to be applied\n"
          "\n"
@@ -99,7 +100,12 @@ u_printf("Usage: Locate [OPTIONS] <fst2>\n"
          "\n"
          "Applies a grammar to a text, and saves the matching sequence index in a\n"
          "file named \"concord.ind\" stored in the text directory. A result info file\n"
-         "named \"concord.n\" is also saved in the same directory.\n");
+         "named \"concord.n\" is also saved in the same directory.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Locate);
 #ifndef TRE_WCHAR
    error("\nWARNING: on this system, morphological filters will not be taken into account,\n");
    error("         because wide characters are not supported\n");
@@ -107,19 +113,8 @@ u_printf("Usage: Locate [OPTIONS] <fst2>\n"
 }
 
 
-
-/*
- * This function behaves in the same way that a main one, except that it does
- * not invoke the setBufferMode function.
- */
-int main_Locate(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":t:a:m:SLAIMRXYZln:d:cwsxbpj:h";
-const struct option_TS lopts[]= {
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbpj:h";
+const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"morpho",required_argument_TS,NULL,'m'},
@@ -146,6 +141,19 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+/*
+ * This function behaves in the same way that a main one, except that it does
+ * not invoke the setBufferMode function.
+ */
+int main_Locate(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+
 int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
@@ -162,7 +170,7 @@ int protect_dic_chars=0;
 char jamo_table[FILENAME_MAX]="";
 char foo;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,vars))) {
    switch(val) {
    case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty text file name\n");
@@ -215,7 +223,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Locate[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
@@ -334,5 +342,3 @@ int ret=invoke(invoker);
 free_ProgramInvoker(invoker);
 return ret;
 }
-
-

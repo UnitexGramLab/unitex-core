@@ -21,6 +21,8 @@
 #ifndef ConsultDicH
 #define ConsultDicH
 
+extern const char* usage_ConsultDic;
+
 int main_ConsultDic(int argc,char* argv[]);
 
 #endif

@@ -28,6 +28,7 @@
 #include "File.h"
 #include "Error.h"
 #include "getopt.h"
+#include "Convert.h"
 
 
 #define REPLACE_FILE 0
@@ -37,9 +38,8 @@
 #define SUFFIX_DEST 4
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Convert [OPTIONS] <text_1> [<text_2> <text_3> ...]\n"
+const char* usage_Convert =
+         "Usage: Convert [OPTIONS] <text_1> [<text_2> <text_3> ...]\n"
          "\n"
          "  <text_i>: text file to be converted\n"
          "\n"
@@ -74,22 +74,17 @@ u_printf("Usage: Convert [OPTIONS] <text_1> [<text_2> <text_3> ...]\n"
          "  -i X/--info=X: to get information about the encoding X\n"
          "  -h/--help: this help\n"
          "\n"
-         "Converts a text file into another encoding.\n");
+         "Converts a text file into another encoding.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Convert);
 }
 
 
-
-int main_Convert(int argc,char* argv[]) {
-if (argc==1) {
-	usage();
-	return 0;
-}
-/* First, we install all the available encoding */
-void *encoding_ctx = install_all_encodings();
-/* And we analyze the parameters */
-
-const char* optstring=":s:d:ri:hmaA";
-const struct option_TS lopts[]= {
+const char* optstring_Convert=":s:d:ri:hmaA";
+const struct option_TS lopts_Convert[]= {
       {"src",required_argument_TS,NULL,'s'},
       {"dest",required_argument_TS,NULL,'d'},
       {"replace",no_argument_TS,NULL,'r'},
@@ -108,6 +103,18 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+int main_Convert(int argc,char* argv[]) {
+if (argc==1) {
+	usage();
+	return 0;
+}
+/* First, we install all the available encoding */
+void *encoding_ctx = install_all_encodings();
+/* And we analyze the parameters */
+
+
 int val,index=-1;
 char src[1024]="";
 char dest[1024]="";
@@ -118,7 +125,7 @@ int decode_control_characters=0;
 int encode_all_characters=0;
 int encode_control_characters=0;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Convert,lopts_Convert,&index,vars))) {
    switch(val) {
    case 's': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty source encoding\n");
@@ -152,7 +159,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              return 0;
    case 'h': usage(); free_encodings_context(encoding_ctx); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Convert[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

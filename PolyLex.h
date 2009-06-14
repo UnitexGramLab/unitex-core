@@ -22,6 +22,10 @@
 #ifndef PolyLexH
 #define PolyLexH
 
+extern const char* optstring_PolyLex;
+extern const struct option_TS lopts_PolyLex[];
+extern const char* usage_PolyLex;
+
 int main_PolyLex(int argc,char* argv[]);
 
 #endif

@@ -24,7 +24,11 @@
 
 #include "LocateConstants.h"
 
-int main_Locate(int, char**);
+extern const char* optstring_Locate;
+extern const struct option_TS lopts_Locate[];
+extern const char* usage_Locate;
+
+int main_Locate(int, char* argv[]);
 int launch_locate_as_routine(char*,char*,char*,OutputPolicy,char*,int,char*);
 
 

@@ -38,11 +38,12 @@
 #include "List_int.h"
 #include "Error.h"
 #include "getopt.h"
+#include "Reconstrucao.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Reconstrucao [OPTIONS] <index>\n"
+
+const char* usage_Reconstrucao =
+         "Usage: Reconstrucao [OPTIONS] <index>\n"
          "\n"
          "  <index> : the match list that describes the forms to be normalized. This\n"
          "            list must have been computed by Locate in MERGE or REPLACE mode.\n"
@@ -56,19 +57,17 @@ u_printf("Usage: Reconstrucao [OPTIONS] <index>\n"
          "  -o OUT/--output=OUT:  the name of the .grf graph to be generated\n"
          "  -h/--help: this help\n"
          "\n"
-         "Takes a list of multi-part verbs and creates an apropriate normalization grammar.\n");
+         "Takes a list of multi-part verbs and creates an apropriate normalization grammar.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Reconstrucao);
 }
 
 
-
-int main_Reconstrucao(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":a:r:d:p:n:o:h";
-const struct option_TS lopts[]= {
+const char* optstring_Reconstrucao=":a:r:d:p:n:o:h";
+const struct option_TS lopts_Reconstrucao[]= {
       {"alphabet",required_argument_TS,NULL,'a'},
       {"root",required_argument_TS,NULL,'r'},
       {"dictionary",required_argument_TS,NULL,'d'},
@@ -78,6 +77,14 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+int main_Reconstrucao(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
 char alphabet[FILENAME_MAX]="";
 char root[FILENAME_MAX]="";
 char dictionary[FILENAME_MAX]="";
@@ -86,7 +93,7 @@ char nasal_pronoun_rules[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reconstrucao,lopts_Reconstrucao,&index,vars))) {
    switch(val) {
    case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
@@ -120,7 +127,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Reconstrucao[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

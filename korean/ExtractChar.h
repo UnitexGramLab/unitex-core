@@ -21,6 +21,8 @@
 #ifndef ExtractCharH
 #define ExtractCharH
 
+extern const char* usage_ExtractChar;
+
 int main_ExtractChar(int argc,char* argv[]);
 
 #endif

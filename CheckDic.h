@@ -22,6 +22,10 @@
 #ifndef CheckDicH
 #define CheckDicH
 
+extern const char* optstring_CheckDic;
+extern const struct option_TS lopts_CheckDic[];
+extern const char* usage_CheckDic;
+
 int main_CheckDic(int argc,char* argv[]);
 
 #endif

@@ -32,6 +32,8 @@
 #include "Transitions.h"
 #include "Unicode.h"
 #include "getopt.h"
+#include "XMLizer.h"
+
 
 #define XML 0
 #define TEI 1
@@ -49,9 +51,8 @@ static const char *tei_close = "</div>\n</body>\n</text>\n</tei>";
 
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: XMLizer [OPTIONS] <txt>\n"
+const char* usage_XMLizer =
+         "Usage: XMLizer [OPTIONS] <txt>\n"
          "\n"
          "  <txt>: the input text file\n"
          "\n"
@@ -64,17 +65,17 @@ u_printf("Usage: XMLizer [OPTIONS] <txt>\n"
          "  -s SEG/--segmentation_grammar=SEG: .fst2 segmentation grammar\n"
          "  -h/--help: this help\n"
          "\n"
-	      "Produces a TEI or simple XML file from the given raw text file.\n");
+	      "Produces a TEI or simple XML file from the given raw text file.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_XMLizer);
 }
 
-int main_XMLizer(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
 
-const char* optstring = ":xtn:o:a:s:h";
-const struct option_TS lopts[] = {
+const char* optstring_XMLizer = ":xtn:o:a:s:h";
+const struct option_TS lopts_XMLizer[] = {
    {"xml", no_argument_TS, NULL, 'x'},
    {"tei", no_argument_TS, NULL, 't'},
    {"normalization", required_argument_TS, NULL, 'n'},
@@ -85,6 +86,13 @@ const struct option_TS lopts[] = {
    {NULL, no_argument_TS, NULL, 0}
 };
 
+
+int main_XMLizer(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
 int output_style=TEI;
 char output[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
@@ -92,7 +100,7 @@ char normalization[FILENAME_MAX]="";
 char segmentation[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_XMLizer,lopts_XMLizer,&index,vars))) {
    switch(val) {
    case 'x': output_style=XML; break;
    case 't': output_style=TEI; break;
@@ -118,7 +126,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_XMLizer[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

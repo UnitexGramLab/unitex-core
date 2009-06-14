@@ -22,6 +22,10 @@
 #ifndef TokenizeH
 #define TokenizeH
 
+extern const char* optstring_Tokenize;
+extern const struct option_TS lopts_Tokenize[];
+extern const char* usage_Tokenize;
+
 int main_Tokenize(int argc,char* argv[]);
 
 #endif

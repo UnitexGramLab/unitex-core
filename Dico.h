@@ -22,6 +22,10 @@
 #ifndef DicoH
 #define DicoH
 
+extern const char* optstring_Dico;
+extern const struct option_TS lopts_Dico[];
+extern const char* usage_Dico;
+
 int main_Dico(int argc,char* argv[]);
 
 #endif

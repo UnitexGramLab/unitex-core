@@ -22,6 +22,10 @@
 #ifndef TEI2TxtH
 #define TEI2TxtH
 
+extern const char* optstring_TEI2Txt;
+extern const struct option_TS lopts_TEI2Txt[];
+extern const char* usage_TEI2Txt;
+
 int main_TEI2Txt(int argc,char* argv[]);
 
 #endif

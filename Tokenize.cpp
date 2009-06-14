@@ -32,6 +32,7 @@
 #include "Vector.h"
 #include "HashTable.h"
 #include "getopt.h"
+#include "Tokenize.h"
 
 
 #define NORMAL 0
@@ -67,9 +68,10 @@ void write_number_of_tokens(const char* name,int n) {
 }
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Tokenize [OPTIONS] <txt>\n"
+
+
+const char* usage_Tokenize =
+         "Usage: Tokenize [OPTIONS] <txt>\n"
          "\n"
          "  <txt>: any unicode text file\n"
          "\n"
@@ -87,9 +89,23 @@ u_printf("Usage: Tokenize [OPTIONS] <txt>\n"
          "\"stats.n\" and \"enter.pos\". They contain the token list sorted by frequence and by\n"
          "alphabetical order and \"stats.n\" contains some statistics. The file \"enter.pos\"\n"
          "contains the position in tokens of all the carriage return sequences. All\n"
-         "files are saved in the XXX_snt directory where XXX is <txt> without its extension.\n");
+         "files are saved in the XXX_snt directory where XXX is <txt> without its extension.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Tokenize);
 }
 
+
+const char* optstring_Tokenize=":a:cwh";
+const struct option_TS lopts_Tokenize[]={
+   {"alphabet", required_argument_TS, NULL, 'a'},
+   {"char_by_char", no_argument_TS, NULL, 'c'},
+   {"word_by_word", no_argument_TS, NULL, 'w'},
+   {"help", no_argument_TS, NULL, 'h'},
+   {NULL, no_argument_TS, NULL, 0}
+};
 
 
 int main_Tokenize(int argc,char* argv[]) {
@@ -98,19 +114,11 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":a:cwh";
-const struct option_TS lopts[]={
-   {"alphabet", required_argument_TS, NULL, 'a'},
-   {"char_by_char", no_argument_TS, NULL, 'c'},
-   {"word_by_word", no_argument_TS, NULL, 'w'},
-   {"help", no_argument_TS, NULL, 'h'},
-   {NULL, no_argument_TS, NULL, 0}
-};
 char alphabet[FILENAME_MAX]="";
 int val,index=-1;
 int mode=NORMAL;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tokenize,lopts_Tokenize,&index,vars))) {
    switch(val) {
    case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
@@ -121,7 +129,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 'w': mode=NORMAL; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Tokenize[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

@@ -28,12 +28,13 @@
 #include "Error.h"
 #include "File.h"
 #include "getopt.h"
+#include "Reg2Grf.h"
 
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Reg2Grf <txt>\n"
+
+const char* usage_Reg2Grf =
+         "Usage: Reg2Grf <txt>\n"
          "\n"
          "  <txt>: unicode text file where the regular expression is stored.\n"
          "         We must use a file, because we cannot give Unicode\n"
@@ -51,8 +52,20 @@ u_printf("Usage: Reg2Grf <txt>\n"
          " (A)          matches the expression A\n"
          "If you want to match any character of ( ) * + .\n"
          "you must use the \\ char: \\* will match the char *\n"
-         "\nExample: \"(le+la) (<A:s>+<E>) <N:s>\"\n");
+         "\nExample: \"(le+la) (<A:s>+<E>) <N:s>\"\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Reg2Grf);
 }
+
+
+const char* optstring_Reg2Grf=":h";
+const struct option_TS lopts_Reg2Grf[]= {
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Reg2Grf(int argc,char* argv[]) {
@@ -61,18 +74,14 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":h";
-const struct option_TS lopts[]= {
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reg2Grf,lopts_Reg2Grf,&index,vars))) {
    switch(val) {
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Reg2Grf[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

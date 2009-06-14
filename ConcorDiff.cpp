@@ -27,11 +27,11 @@
 #include "Diff.h"
 #include "Error.h"
 #include "getopt.h"
+#include "ConcorDiff.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: ConcorDiff [OPTIONS] <concor1> <concor2>\n"
+const char* usage_ConcorDiff =
+         "Usage: ConcorDiff [OPTIONS] <concor1> <concor2>\n"
          "\n"
          "  <concor1>: the first concord.ind file\n"
          "  <concor2>: the second concord.ind file\n"
@@ -45,9 +45,23 @@ u_printf("Usage: ConcorDiff [OPTIONS] <concor1> <concor2>\n"
          "  -h/--help: this help\n"
          "\n"
          "\nProduces an HTML file that shows differences between input\n"
-         "concordance files.\n");
+         "concordance files.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_ConcorDiff);
 }
 
+
+const char* optstring_ConcorDiff=":o:f:s:h";
+const struct option_TS lopts_ConcorDiff[]= {
+      {"out",required_argument_TS,NULL,'o'},
+      {"font",required_argument_TS,NULL,'f'},
+      {"fontsize",required_argument_TS,NULL,'s'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_ConcorDiff(int argc,char* argv[]) {
@@ -56,21 +70,14 @@ if (argc==1) {
 	return 0;
 }
 
-const char* optstring=":o:f:s:h";
-const struct option_TS lopts[]= {
-      {"out",required_argument_TS,NULL,'o'},
-      {"font",required_argument_TS,NULL,'f'},
-      {"fontsize",required_argument_TS,NULL,'s'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int val,index=-1;
 char* out=NULL;
 char* font=NULL;
 int size=0;
 char foo;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ConcorDiff,lopts_ConcorDiff,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file\n");
@@ -96,7 +103,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_ConcorDiff[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

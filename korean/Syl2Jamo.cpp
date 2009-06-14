@@ -44,18 +44,22 @@ static int jamoFlag;
 #define S64K	1024*64
 
 
+const char* usage_Syl2Jamo =
+         "Syl2Jamo [-m mapfile] [-o outfile] [-j] [-c cTable] [-e [m/j]] input_file\n" \
+         "-m : convert table a sylabe to jamo\n" \
+         "-o : name of output file\n" \
+         "-O : remplace file \n" \
+         "   : default outfile name \"input_fileJM.ext\"\n" \
+         "-j : convert UNICODE compatibile jamos to UNICODE jamo of alphabet korean\n" \
+         "-c : convert characters with cTable which have pairs of change set\n" \
+         "   : format in the line \"[C/0xNNNN] [C/0xNNNN]\"  C: a character, NNNN : hex number\n" \
+         "-e : m : display from a syllalbe to jamos table\n" \
+         "-e : j : put jamoList to jamo.txt\n";
+
+
 static void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Syl2Jamo [-m mapfile] [-o outfile] [-j] [-c cTable] [-e [m/j]] input_file\n");
-u_printf("-m : convert table a sylabe to jamo\n");
-u_printf("-o : name of output file\n");
-u_printf("-O : remplace file \n");
-u_printf("   : default outfile name \"input_fileJM.ext\"\n");
-u_printf("-j : convert UNICODE compatibile jamos to UNICODE jamo of alphabet korean\n");
-u_printf("-c : convert characters with cTable which have pairs of change set\n");
-u_printf("   : format in the line \"[C/0xNNNN] [C/0xNNNN]\"  C: a character, NNNN : hex number\n");
-u_printf("-e : m : display from a syllalbe to jamos table\n");
-u_printf("-e : j : put jamoList to jamo.txt\n");
+u_printf(usage_Syl2Jamo);
 }
 
 

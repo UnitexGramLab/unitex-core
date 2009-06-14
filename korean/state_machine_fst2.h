@@ -384,9 +384,6 @@ do {
 					}
 					if(!*ss){
 						*ss = new struct link;
-#if defined(_WIN64) && defined(_MSC_VER)
-#pragma message("warning : convert pointer to int (4 bytes) on MS Windows 64 bits truncate pointer")
-#endif
 						(*ss)->val = (uintptr_t)new unichar[strSz+1];
 						u_strcpy((unichar *)(*ss)->val,valName);
 						(*ss)->next = 0;

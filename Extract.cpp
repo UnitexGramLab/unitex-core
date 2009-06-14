@@ -30,11 +30,11 @@
 #include "Error.h"
 #include "Snt.h"
 #include "getopt.h"
+#include "Extract.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Extract [OPTIONS] <text>\n"
+const char* usage_Extract =
+         "Usage: Extract [OPTIONS] <text>\n"
          "\n"
          "  <text>: the .snt text to extract from the units\n"
          "\n"
@@ -47,8 +47,24 @@ u_printf("Usage: Extract [OPTIONS] <text>\n"
          "  -h/--help: this help\n"
          "\n"
          "\nExtract all the units that contain (or not) any part of a utterance. The\n"
-         "units are supposed to be separated by the symbol {S}.\n");
+         "units are supposed to be separated by the symbol {S}.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Extract);
 }
+
+
+const char* optstring_Extract=":yni:o:h";
+const struct option_TS lopts_Extract[]= {
+      {"yes",no_argument_TS,NULL,'y'},
+      {"no",no_argument_TS,NULL,'n'},
+      {"output",required_argument_TS,NULL,'o'},
+      {"index",required_argument_TS,NULL,'i'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Extract(int argc,char* argv[]) {
@@ -57,22 +73,14 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":yni:o:h";
-const struct option_TS lopts[]= {
-      {"yes",no_argument_TS,NULL,'y'},
-      {"no",no_argument_TS,NULL,'n'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"index",required_argument_TS,NULL,'i'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int val,index=-1;
 char extract_matching_units=1;
 char text_name[FILENAME_MAX]="";
 char concord_ind[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Extract,lopts_Extract,&index,vars))) {
    switch(val) {
    case 'y': extract_matching_units=1; break;
    case 'n': extract_matching_units=0; break;
@@ -88,7 +96,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Extract[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

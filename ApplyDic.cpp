@@ -513,7 +513,7 @@ while (current_start_pos<info->buffer->size) {
             * we copy into 'entry' the sequence of character that leads to it in
             * the .bin */
            unichar line_buf[DIC_LINE_SIZE];
-           u_strcpy(inflected,l->content);
+           u_strcpy_sized(inflected,DIC_WORD_SIZE,l->content);
            explore_bin_compound_words(info,l->offset,info->tokens->token[info->buffer->int_buffer[current_start_pos+pos_offset]],inflected,0,u_strlen(inflected),w,
              pos_offset,token_sequence,current_token_in_compound/*0*/,priority,current_start_pos,line_buf);
            l=l->next;

@@ -22,6 +22,10 @@
 #ifndef EvambH
 #define EvambH
 
+extern const char* optstring_Evamb;
+extern const struct option_TS lopts_Evamb[];
+extern const char* usage_Evamb;
+
 int main_Evamb(int argc,char* argv[]);
 
 #endif

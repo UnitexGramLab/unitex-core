@@ -55,15 +55,18 @@ struct savePassingData {
 struct savePassingData aLine[4096];
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf(
+const char* usage_ConsultDic =
 "\nConsultDic [-d dicfile] [-l diclistfile] [-a alphabetfile] textTokenfile"\
 "\n diclistfile : list of dictionaries to be applied"\
 "\n divide a word to rac+ suf+ form"\
 "\n output file : seqMorphs.txt"\
-);
+;
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_ConsultDic);
 }
+
 
 //
 //	line for accumule all words on the path

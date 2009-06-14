@@ -21,6 +21,8 @@
 #ifndef MergeBinH
 #define MergeBinH
 
+extern const char* usage_MergeBin;
+
 int main_MergeBin(int argc,char* argv[]);
 
 #endif

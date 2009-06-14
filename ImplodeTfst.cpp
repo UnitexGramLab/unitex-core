@@ -32,14 +32,14 @@
 #include "File.h"
 #include "SingleGraph.h"
 #include "Match.h"
+#include "ImplodeTfst.h"
 
 
 void implode(Tfst*,U_FILE*,U_FILE*);
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: ImplodeTfst [OPTIONS] <tfst>\n"
+const char* usage_ImplodeTfst =
+         "Usage: ImplodeTfst [OPTIONS] <tfst>\n"
          "\n"
          "  <tfst>: input text automaton file\n"
          "\n"
@@ -49,8 +49,21 @@ u_printf("Usage: ImplodeTfst [OPTIONS] <tfst>\n"
          "  -h/--help: this help\n"
          "\n"
          "Implodes the specified text automaton by merging together lexical entries\n"
-         "which only differ in their inflectional features.\n");
+         "which only differ in their inflectional features.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_ImplodeTfst);
 }
+
+
+const char* optstring_ImplodeTfst=":o:h";
+const struct option_TS lopts_ImplodeTfst[]= {
+      {"output",required_argument_TS,NULL,'o'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_ImplodeTfst(int argc,char* argv[]) {
@@ -59,19 +72,14 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":o:h";
-const struct option_TS lopts[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int val,index=-1;
 char input_tfst[FILENAME_MAX]="";
 char input_tind[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char output_tind[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ImplodeTfst,lopts_ImplodeTfst,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name: %s\n",vars->optarg);
@@ -80,7 +88,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_ImplodeTfst[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

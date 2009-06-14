@@ -29,6 +29,7 @@
 #include "ConcorDiff.h"
 #include "Convert.h"
 #include "Dico.h"
+#include "DuplicateFile.h"
 #include "Elag.h"
 #include "ElagComp.h"
 #include "Evamb.h"
@@ -63,12 +64,16 @@
 #include "Unicode.h"
 #include "Copyright.h"
 
-typedef int mainFunc(int argc,char* argv[]) ;
+
 
 struct utility_item {
 	const char* name;
 	int len_name;
 	mainFunc* fnc;
+
+	const char* usage;
+	const char* optstring;
+	const struct option_TS *lopts;
 } ;
 
 #ifndef UNITEX_NO_KOREAN_TOOL
@@ -86,68 +91,69 @@ struct utility_item {
 
 const struct utility_item utility_array[]=
 {
-	{ "CheckDic", 8, &main_CheckDic} ,
-	{ "Compress", 8, &main_Compress} ,
-	{ "Concord", 7, &main_Concord} ,
+	{ "CheckDic", 8, &main_CheckDic, usage_CheckDic, optstring_CheckDic, lopts_CheckDic } ,
+	{ "Compress", 8, &main_Compress, usage_Compress, optstring_Compress, lopts_Compress } ,
+	{ "Concord", 7, &main_Concord, usage_Concord, optstring_Concord, lopts_Concord } ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
-	{ "ConcorDiff", 10, &main_ConcorDiff} ,
-	{ "Convert", 7, &main_Convert} ,
+	{ "ConcorDiff", 10, &main_ConcorDiff, usage_ConcorDiff, optstring_ConcorDiff, lopts_ConcorDiff } ,
+	{ "Convert", 7, &main_Convert, usage_Convert, optstring_Convert, lopts_Convert } ,
 #endif
-	{ "Dico", 4, &main_Dico} ,
+	{ "Dico", 4, &main_Dico, usage_Dico, optstring_Dico, lopts_Dico } ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
-	{ "Elag", 4, &main_Elag} ,
-	{ "ElagComp", 8, &main_ElagComp} ,
-	{ "Evamb", 5, &main_Evamb} ,
-	{ "Extract", 7, &main_Extract} ,
-	{ "Flatten", 7, &main_Flatten} ,
-	{ "Fst2List", 8, &main_Fst2List} ,
+	{ "DuplicateFile", 13, &main_DuplicateFile, usage_DuplicateFile, optstring_DuplicateFile, lopts_DuplicateFile } ,
+	{ "Elag", 4, &main_Elag, usage_Elag, optstring_Elag, lopts_Elag } ,
+	{ "ElagComp", 8, &main_ElagComp, usage_ElagComp, optstring_ElagComp, lopts_ElagComp } ,
+	{ "Evamb", 5, &main_Evamb, usage_Evamb, optstring_Evamb, lopts_Evamb } ,
+	{ "Extract", 7, &main_Extract, usage_Extract, optstring_Extract, lopts_Extract } ,
+	{ "Flatten", 7, &main_Flatten, usage_Flatten, optstring_Flatten, lopts_Flatten } ,
+	{ "Fst2List", 8, &main_Fst2List, usage_Fst2List, NULL, NULL } ,
 #endif
-	{ "Fst2Txt", 7, &main_Fst2Txt} ,
+	{ "Fst2Txt", 7, &main_Fst2Txt, usage_Fst2Txt, optstring_Fst2Txt, lopts_Fst2Txt } ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
-	{ "Grf2Fst2", 8, &main_Grf2Fst2} ,
-	{ "ImplodeTfst", 11, &main_ImplodeTfst} ,
+	{ "Grf2Fst2", 8, &main_Grf2Fst2, usage_Grf2Fst2, optstring_Grf2Fst2, lopts_Grf2Fst2 } ,
+	{ "ImplodeTfst", 11, &main_ImplodeTfst, usage_ImplodeTfst, optstring_ImplodeTfst, lopts_ImplodeTfst } ,
 #endif
-	{ "Locate", 6, &main_Locate} ,
+	{ "Locate", 6, &main_Locate, usage_Locate, optstring_Locate, lopts_Locate } ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
-	{ "LocateTfst", 10, &main_LocateTfst} ,
-	{ "MultiFlex", 9, &main_MultiFlex} ,
+	{ "LocateTfst", 10, &main_LocateTfst, usage_LocateTfst, optstring_LocateTfst, lopts_LocateTfst } ,
+	{ "MultiFlex", 9, &main_MultiFlex, usage_MultiFlex, optstring_MultiFlex, lopts_MultiFlex } ,
 #endif
-	{ "Normalize", 9, &main_Normalize} ,
+	{ "Normalize", 9, &main_Normalize, usage_Normalize, optstring_Normalize, lopts_Normalize } ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
-	{ "PolyLex", 7, &main_PolyLex} ,
-	{ "RebuildTfst", 11, &main_RebuildTfst} ,
-	{ "Reconstrucao", 12, &main_Reconstrucao} ,
-	{ "Reg2Grf", 7, &main_Reg2Grf} ,
+	{ "PolyLex", 7, &main_PolyLex, usage_PolyLex, optstring_PolyLex, lopts_PolyLex } ,
+	{ "RebuildTfst", 11, &main_RebuildTfst, usage_RebuildTfst, optstring_RebuildTfst, lopts_RebuildTfst } ,
+	{ "Reconstrucao", 12, &main_Reconstrucao, usage_Reconstrucao, optstring_Reconstrucao, lopts_Reconstrucao } ,
+	{ "Reg2Grf", 7, &main_Reg2Grf, usage_Reg2Grf, optstring_Reg2Grf, lopts_Reg2Grf } ,
 #endif
-	{ "SortTxt", 7, &main_SortTxt} ,
+	{ "SortTxt", 7, &main_SortTxt, usage_SortTxt, optstring_SortTxt, lopts_SortTxt } ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
-	{ "Stats", 5, &main_Stats} ,
-	{ "Table2Grf", 9, &main_Table2Grf} ,
-	{ "TagsetNormTfst", 14, &main_TagsetNormTfst} ,
-	{ "TEI2Txt", 7, &main_TEI2Txt} ,
-	{ "Tfst2Grf", 8, &main_Tfst2Grf} ,
-	{ "Tfst2Unambig", 12, &main_Tfst2Unambig} ,
+	{ "Stats", 5, &main_Stats, usage_Stats, optstring_Stats, lopts_Stats } ,
+	{ "Table2Grf", 9, &main_Table2Grf, usage_Table2Grf, optstring_Table2Grf, lopts_Table2Grf } ,
+	{ "TagsetNormTfst", 14, &main_TagsetNormTfst, usage_TagsetNormTfst, optstring_TagsetNormTfst, lopts_TagsetNormTfst } ,
+	{ "TEI2Txt", 7, &main_TEI2Txt, usage_TEI2Txt, optstring_TEI2Txt, lopts_TEI2Txt } ,
+	{ "Tfst2Grf", 8, &main_Tfst2Grf, usage_Tfst2Grf, optstring_Tfst2Grf, lopts_Tfst2Grf } ,
+	{ "Tfst2Unambig", 12, &main_Tfst2Unambig, usage_Tfst2Unambig, optstring_Tfst2Unambig, lopts_Tfst2Unambig } ,
 #endif
-	{ "Tokenize", 8, &main_Tokenize} ,
+	{ "Tokenize", 8, &main_Tokenize, usage_Tokenize, optstring_Tokenize, lopts_Tokenize } ,
 #ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
-	{ "Txt2Tfst", 8, &main_Txt2Tfst} ,
-   { "Uncompress", 10, &main_Uncompress} ,
-	{ "XMLizer", 7, &main_XMLizer} ,
+	{ "Txt2Tfst", 8, &main_Txt2Tfst, usage_Txt2Tfst, optstring_Txt2Tfst, lopts_Txt2Tfst } ,
+	{ "Uncompress", 10, &main_Uncompress, usage_Uncompress, optstring_Uncompress, lopts_Uncompress } ,
+	{ "XMLizer", 7, &main_XMLizer, usage_XMLizer, optstring_XMLizer, lopts_XMLizer } ,
 #endif
 
 #ifndef UNITEX_NO_KOREAN_TOOL
-	{ "CompressKr" ,10, &main_CompressKr} ,
-	{ "ConsultDic" ,10, &main_ConsultDic} ,
-	{ "ExtractChar" ,11, &main_ExtractChar} ,
-	{ "InflectKr" ,9, &main_InflectKr} ,
-	{ "Jamo2Syl" ,8, &main_Jamo2Syl} ,
-	{ "MergeBin" ,8, &main_MergeBin} ,
-	{ "SortMorph" ,9, &main_SortMorph} ,
-	{ "SufForm2Rac" ,11, &main_SufForm2Rac} ,
-	{ "Syl2Jamo" ,8, &main_Syl2Jamo} ,
-	{ "Txt2Fst2Kr" ,10, &main_Txt2Fst2Kr} ,
+	{ "CompressKr" ,10, &main_CompressKr, usage_CompressKr, NULL, NULL } ,
+	{ "ConsultDic" ,10, &main_ConsultDic, usage_ConsultDic, NULL, NULL } ,
+	{ "ExtractChar" ,11, &main_ExtractChar, usage_ExtractChar, NULL, NULL } ,
+	{ "InflectKr" ,9, &main_InflectKr, usage_InflectKr, NULL, NULL } ,
+	{ "Jamo2Syl" ,8, &main_Jamo2Syl, usage_Jamo2Syl, NULL, NULL } ,
+	{ "MergeBin" ,8, &main_MergeBin, usage_MergeBin, NULL, NULL } ,
+	{ "SortMorph" ,9, &main_SortMorph, usage_SortMorph, NULL, NULL } ,
+	{ "SufForm2Rac" ,11, &main_SufForm2Rac, usage_SufForm2Rac, NULL, NULL } ,
+	{ "Syl2Jamo" ,8, &main_Syl2Jamo, usage_Syl2Jamo, NULL, NULL } ,
+	{ "Txt2Fst2Kr" ,10, &main_Txt2Fst2Kr, usage_Txt2Fst2Kr, NULL, NULL } ,
 #endif
-	{ "", 0, NULL} 
+	{ "", 0, NULL, NULL, NULL, NULL} 
 };
 
 const struct utility_item* found_utility(const char* search)
@@ -163,6 +169,42 @@ const struct utility_item* found_utility(const char* search)
 	}
 	return NULL;
 }
+
+int GetToolInfo(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+{
+const struct utility_item* utility_called = found_utility(toolname);
+if (utility_called == NULL)
+  return -1;
+else {
+	if (usage != NULL) *usage=utility_called->usage;
+	if (optstring != NULL) *optstring = utility_called->optstring;
+	if (lopts != NULL) *lopts = utility_called->lopts;
+  return 0;
+}
+}
+
+int GetToolInfo(int toolnumber,const char**toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+{
+const struct utility_item* utility_called = &(utility_array[toolnumber]);
+{
+	if (toolname != NULL) *toolname = utility_called->name;
+	if (usage != NULL) *usage=utility_called->usage;
+	if (optstring != NULL) *optstring = utility_called->optstring;
+	if (lopts != NULL) *lopts = utility_called->lopts;
+  return 0;
+}
+}
+
+int GetNumberOfTool()
+{
+	int i=0;
+	while (utility_array[i].len_name > 0)
+	{		
+		i++;
+	}
+	return i;
+}
+
 
 void unitex_tool_usage(int several)
 {
@@ -209,15 +251,20 @@ return (*(utility_called->fnc))(argc-1,((char**)argv)+1);
 int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_tools_in_arg* ptia)
 {
 	int ret=0;
-	int number_done=0;
+	int number_done_dummy=0;
 	int pos = 1;
 	int next_num_util = 0;
-	pos_tools_in_arg tia;
+	pos_tools_in_arg tia_dummy;
 
-	tia.tool_number = 0;
-	tia.argcpos = 0;
-	tia.nbargs = 0;
-	tia.ret = 0;
+	if (p_number_done == NULL)
+		p_number_done = &number_done_dummy;
+	if (ptia == NULL)
+		ptia = &tia_dummy;
+
+	ptia->tool_number = 0;
+	ptia->argcpos = 0;
+	ptia->nbargs = 0;
+	ptia->ret = 0;
 	
 
 #ifdef DEBUG
@@ -253,16 +300,16 @@ int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_
 			{
 				const struct utility_item* utility_called = found_utility(argv[pos+1]);
 				if (utility_called != NULL) {
-					tia.argcpos = pos+1;
-					tia.nbargs = j-(pos+1);
-					tia.tool_number = next_num_util;
-					tia.ret = ret = (*(utility_called->fnc))(tia.nbargs,((char**)argv)+tia.argcpos);
+					ptia->argcpos = pos+1;
+					ptia->nbargs = j-(pos+1);
+					ptia->tool_number = next_num_util;
+					ptia->ret = ret = (*(utility_called->fnc))(ptia->nbargs,((char**)argv)+ptia->argcpos);
 				}
 				else
 					ret = 1 ;
 
 				if (ret == 0)
-					number_done++;
+					(*p_number_done)++;
 				else
 					break;
 				pos = j + 1;
@@ -272,9 +319,9 @@ int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_
 		{
 			const struct utility_item* utility_called = found_utility(argv[pos]);
 			if (utility_called != NULL) {
-				tia.argcpos = 1;
-				tia.nbargs = argc-1;
-				tia.ret = ret = (*(utility_called->fnc))(tia.nbargs,((char**)argv)+tia.argcpos);
+				ptia->argcpos = 1;
+				ptia->nbargs = argc-1;
+				ptia->ret = ret = (*(utility_called->fnc))(ptia->nbargs,((char**)argv)+ptia->argcpos);
 			}
 			else
 			{
@@ -283,14 +330,10 @@ int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_
 			}
 
 			if (ret == 0)
-				number_done++;
+				(*p_number_done)++;
 			break;
 		}
 	}
-	if (p_number_done != NULL)
-		*p_number_done = number_done;
-	if (ptia != NULL)
-		*ptia = tia;
 
 	return ret;
 }

@@ -22,6 +22,10 @@
 #ifndef SortTxtH
 #define SortTxtH
 
+extern const char* optstring_SortTxt;
+extern const struct option_TS lopts_SortTxt[];
+extern const char* usage_SortTxt;
+
 int main_SortTxt(int argc,char* argv[]);
 int pseudo_main_SortTxt(int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char*);
 

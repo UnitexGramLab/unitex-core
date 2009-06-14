@@ -35,9 +35,9 @@
 #include "getopt.h"
 #include "ProgramInvoker.h"
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage : Grf2Fst2 [OPTIONS] <grf>\n"
+
+const char* usage_Grf2Fst2 =
+         "Usage : Grf2Fst2 [OPTIONS] <grf>\n"
          "\n"
          "  <grf>: main graph of grammar (must be an absolute path)\n"
          "\n"
@@ -55,7 +55,12 @@ u_printf("Usage : Grf2Fst2 [OPTIONS] <grf>\n"
          "  -h/--help: this help\n"
          "\n"
          "Compiles the grammar <grf> and saves the result in a FST2 file\n"
-         "stored in the same directory as <grf>.\n");
+         "stored in the same directory as <grf>.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Grf2Fst2);
 }
 
 
@@ -84,18 +89,8 @@ return ret;
 }
 
 
-/**
- * The same than main, but no call to setBufferMode.
- */
-int main_Grf2Fst2(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-struct compilation_info* infos=new_compilation_info();
-int check_recursion=0,tfst_check=0;
-const char* optstring=":ynta:d:ech";
-const struct option_TS lopts[]= {
+const char* optstring_Grf2Fst2=":ynta:d:ech";
+const struct option_TS lopts_Grf2Fst2[]= {
       {"loop_check",no_argument_TS,NULL,'y'},
       {"no_loop_check",no_argument_TS,NULL,'n'},
       {"tfst_check",no_argument_TS,NULL,'t'},
@@ -106,9 +101,22 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+/**
+ * The same than main, but no call to setBufferMode.
+ */
+int main_Grf2Fst2(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+struct compilation_info* infos=new_compilation_info();
+int check_recursion=0,tfst_check=0;
+
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&index,vars))) {
    switch(val) {
    case 'y': check_recursion=1; break;
    case 'n': check_recursion=0; break;
@@ -132,7 +140,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 'd': strcpy(infos->repository,vars->optarg); break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Grf2Fst2[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

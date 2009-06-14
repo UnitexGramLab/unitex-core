@@ -22,6 +22,10 @@
 #ifndef UncompressH
 #define UncompressH
 
+extern const char* optstring_Uncompress;
+extern const struct option_TS lopts_Uncompress[];
+extern const char* usage_Uncompress;
+
 int main_Uncompress(int argc,char* argv[]);
 
 #endif

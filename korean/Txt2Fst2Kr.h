@@ -21,6 +21,8 @@
 #ifndef Txt2FstKrH
 #define Txt2FstKrH
 
+extern const char* usage_Txt2Fst2Kr;
+
 int main_Txt2Fst2Kr(int argc,char* argv[]);
 
 #endif

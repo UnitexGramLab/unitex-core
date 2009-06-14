@@ -116,9 +116,8 @@ int is_appropriate_token(int tokenID, text_tokens* tokens);
 #define STATS_BUFFER_LENGTH 4096
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Stats [OPTIONS] <concord>\n"
+const char* usage_Stats =
+         "Usage: Stats [OPTIONS] <concord>\n"
          "\n"
          "  <concord>: a concord.ind file\n"
          "\n"
@@ -134,8 +133,26 @@ u_printf("Usage: Stats [OPTIONS] <concord>\n"
 			"-c N/--case=N: 0=case insensitive, 1=case sensitive (default is 1)\n"
          "-h/--help: this help\n"
          "\n"
-         "Computes some statistics.\n");
+         "Computes some statistics.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Stats);
 }
+
+
+	const char* optstring_Stats=":m:a:l:r:c:o:";
+
+	const struct option_TS lopts_Stats[]= {
+	      {"mode",required_argument_TS,NULL,'m'},
+	      {"alphabet",required_argument_TS,NULL,'a'},
+	      {"left",required_argument_TS,NULL,'l'},
+	      {"right",required_argument_TS,NULL,'r'},
+	      {"case",optional_argument_TS,NULL,'c'},
+	      {"output",optional_argument_TS,NULL,'o'},
+	      {0, 0, 0, 0 }
+	 } ;
 
 int main_Stats(int argc,char *argv[]) {
 
@@ -151,23 +168,11 @@ int main_Stats(int argc,char *argv[]) {
 	char text_cod[FILENAME_MAX]="";
 	char output[FILENAME_MAX]="";
    char alphabet[FILENAME_MAX]="";
-	const char* optstring=":m:a:l:r:c:o:";
-
-	struct option_TS lopts[]= {
-	      {"mode",required_argument_TS,NULL,'m'},
-	      {"alphabet",required_argument_TS,NULL,'a'},
-	      {"left",required_argument_TS,NULL,'l'},
-	      {"right",required_argument_TS,NULL,'r'},
-	      {"case",optional_argument_TS,NULL,'c'},
-		   {"output",optional_argument_TS,NULL,'o'},
-	      {0, 0, 0, 0 }
-	 } ;
-
 
 	int val,index=-1;
 	char foo;
 	struct OptVars* vars=new_OptVars();
-	while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+	while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Stats,lopts_Stats,&index,vars))) {
 	   switch(val) {
 	   case 'm': if (1!=sscanf(vars->optarg,"%d%c",&mode,&foo) || mode<0 || mode>2) {
 	                fatal_error("Invalid mode %s: should be 0, 1 or 2\n",vars->optarg);
@@ -196,7 +201,7 @@ int main_Stats(int argc,char *argv[]) {
                 strcpy(output,vars->optarg);
                 break;
 	   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-	             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+	             else fatal_error("Missing argument for option --%s\n",lopts_Stats[index].name);
 	   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
 	             else fatal_error("Invalid option --%s\n",vars->optarg);
 	             break;

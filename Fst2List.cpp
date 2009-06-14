@@ -33,10 +33,9 @@
 #include "Transitions.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage:\n");
-u_printf(
+
+const char* usage_Fst2List =
+"Usage:\n" \
 "Fst2List [-o outFile][-p s/f/d][-[a/t] s/m] [-m] [-f s/a][-s[0s] \"Str\"] [-r[s/l] \"Str\"] [-l line#] [-i subname]* [-c SS=0xxxx]* fname\n"\
 " fname : name of the input file name with extension \".fst2\"\r\n"\
 " -o outFile : if this option not exist, save paths at \"file\"lst.txt\r\n"\
@@ -58,7 +57,12 @@ u_printf(
 "                    default null\r\n"\
 " -m  : mode special for description with alphabet\r\n"\
 " -v : verbose mode  default null\r\n"\
-" -r[s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n");
+" -r[s/l/x] \"L[,R]\"  : present recusive path(c0|...|cn) by Lc0|..|cnR : default null\r\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Fst2List);
 }
 
 

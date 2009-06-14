@@ -21,6 +21,8 @@
 #ifndef SortMorphH
 #define SortMorphH
 
+extern const char* usage_SortMorph;
+
 int main_SortMorph(int argc,char* argv[]);
 
 #endif

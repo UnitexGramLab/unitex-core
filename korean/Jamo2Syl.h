@@ -21,6 +21,8 @@
 #ifndef Jamo2SylH
 #define Jamo2SylH
 
+extern const char* usage_Jamo2Syl;
+
 int main_Jamo2Syl(int argc,char* argv[]);
 
 #endif

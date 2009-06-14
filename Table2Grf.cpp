@@ -27,13 +27,14 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "getopt.h"
+#include "Table2Grf.h"
+
 
 #define MAX_LINES_IN_TABLE 10000
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Table2Grf [OPTIONS] <table>\n"
+const char* usage_Table2Grf =
+         "Usage: Table2Grf [OPTIONS] <table>\n"
          "\n"
          "  <table>: unicode text table with tabs as separator\n"
          "\n"
@@ -47,11 +48,26 @@ u_printf("Usage: Table2Grf [OPTIONS] <table>\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies a reference graph to a lexicon-grammar table, producing a sub-graph\n"
-         "for each entry of the table.\n");
+         "for each entry of the table.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Table2Grf);
 }
 
 
 void table2grf(U_FILE*,U_FILE*,U_FILE*,char*,char*);
+
+
+const char* optstring_Table2Grf=":r:o:s:h";
+const struct option_TS lopts_Table2Grf[]= {
+      {"reference_graph",required_argument_TS,NULL,'r'},
+      {"output",required_argument_TS,NULL,'o'},
+      {"subgraph_pattern",required_argument_TS,NULL,'s'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Table2Grf(int argc,char* argv[]) {
@@ -59,20 +75,12 @@ if (argc==1) {
    usage();
    return 0;
 }
-const char* optstring=":r:o:s:h";
-const struct option_TS lopts[]= {
-      {"reference_graph",required_argument_TS,NULL,'r'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"subgraph_pattern",required_argument_TS,NULL,'s'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
 char reference_graph_name[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char subgraph_pattern[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Table2Grf,lopts_Table2Grf,&index,vars))) {
    switch(val) {
    case 'r': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty reference graph name\n");
@@ -91,7 +99,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Table2Grf[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

@@ -32,11 +32,12 @@
 #include "getopt.h"
 #include "Tfst.h"
 #include "Grf2Fst2.h"
+#include "RebuildTfst.h"
 
 
-static void usage() {
-   u_printf("%S", COPYRIGHT);
-   u_printf("Usage: RebuildTfst <tfst>\n"
+
+const char* usage_RebuildTfst =
+      "Usage: RebuildTfst <tfst>\n"
       "\n"
       "  <tfst>: text automaton to be rebuilt\n"
       "\n"
@@ -44,13 +45,24 @@ static void usage() {
       "  -h/--help: this help\n"
       "\n"
       "Rebuilds the text automaton taking into account sentence graphs that have\n"
-      "been manually modified. The text automaton is modified.\n");
-}
+      "been manually modified. The text automaton is modified.\n";
 
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_RebuildTfst);
+}
 
 
 SingleGraph create_copy_of_fst2_subgraph(Fst2* fst2,int n);
 unichar** create_tfst_tags(Fst2* fst2,int *n_tags);
+
+
+const char* optstring_RebuildTfst=":h";
+const struct option_TS lopts_RebuildTfst[]= {
+   { "help", no_argument_TS, NULL, 'h' },
+   { NULL, no_argument_TS, NULL, 0 }
+};
 
 
 int main_RebuildTfst(int argc,char* argv[]) {
@@ -59,14 +71,10 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":h";
-const struct option_TS lopts[]= {
-   { "help", no_argument_TS, NULL, 'h' },
-   { NULL, no_argument_TS, NULL, 0 }
-};
+
 int val, index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RebuildTfst,lopts_RebuildTfst,&index,vars))) {
    switch (val) {
    case 'h':
       usage();
@@ -75,7 +83,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
       if (index==-1)
          fatal_error("Missing argument for option -%c\n", vars->optopt);
       else
-         fatal_error("Missing argument for option --%s\n", lopts[index].name);
+         fatal_error("Missing argument for option --%s\n", lopts_RebuildTfst[index].name);
    case '?':
       if (index==-1)
          fatal_error("Invalid option -%c\n", vars->optopt);

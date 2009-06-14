@@ -36,6 +36,7 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "getopt.h"
+#include "MultiFlex.h"
 
 
 //Current language's alphabet
@@ -45,9 +46,8 @@ Alphabet* alph;
 extern char inflection_directory[FILENAME_MAX];
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: MultiFlex [OPTIONS] <dela>\n"
+const char* usage_MultiFlex =
+         "Usage: MultiFlex [OPTIONS] <dela>\n"
          "\n"
          "  <dela>: the unicode DELAS or DELAC file to be inflected\n"
          "\n"
@@ -63,18 +63,17 @@ u_printf("Usage: MultiFlex [OPTIONS] <dela>\n"
          "  -h/--help: this help\n"
          "\n"
          "Inflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n"
-         "simple and compound words in a same dictionary.\n");
+         "simple and compound words in a same dictionary.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_MultiFlex);
 }
 
 
-int main_MultiFlex(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":o:a:d:j:f:sch";
-const struct option_TS lopts[]= {
+const char* optstring_MultiFlex=":o:a:d:j:f:sch";
+const struct option_TS lopts_MultiFlex[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"directory",required_argument_TS,NULL,'d'},
@@ -85,6 +84,15 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+int main_MultiFlex(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+
 char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
@@ -93,7 +101,7 @@ char fst2[FILENAME_MAX]="";
 int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty DELAF file name\n");
@@ -120,7 +128,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 'c': error_check_status=ONLY_COMPOUND_WORDS; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_MultiFlex[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

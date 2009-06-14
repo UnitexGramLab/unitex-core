@@ -22,6 +22,10 @@
 #ifndef Reg2GrfH
 #define Reg2GrfH
 
+extern const char* optstring_Reg2Grf;
+extern const struct option_TS lopts_Reg2Grf[];
+extern const char* usage_Reg2Grf;
+
 int main_Reg2Grf(int argc,char* argv[]);
 
 #endif

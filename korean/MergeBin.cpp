@@ -33,18 +33,19 @@
 
 
 
-
-static void usage()
-{
-u_printf("%S",COPYRIGHT);
-u_printf(
+const char* usage_MergeBin =
 "MergeBin [-d] [-l lfilename] -o ofilename f0 f1 ... fn ] ] \n"\
 "         : merge files which has the extension .bin \n"\
 "  -d : debugMode set. all paths out to the file \"out.txt\"\n"\
 "  -l lfilename : get files from list file\"\n"\
-"  -o ofilename : set the output file name,at input files from command line\"\n"\
-);
+"  -o ofilename : set the output file name,at input files from command line\"\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_MergeBin);
 }
+
 
 struct binFileList {
 	char *fname;

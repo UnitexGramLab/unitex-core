@@ -29,11 +29,11 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "getopt.h"
+#include "CheckDic.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: CheckDic [OPTIONS] <dela>\n"
+const char* usage_CheckDic =
+         "Usage: CheckDic [OPTIONS] <dela>\n"
          "\n"
          "  <dela> : name of the unicode text dictionary (must be a full path)\n"
          "\n"
@@ -44,9 +44,22 @@ u_printf("Usage: CheckDic [OPTIONS] <dela>\n"
          "\n"
          "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
          "that contains check result informations. This file is stored in the\n"
-         "<dela> directory.\n");
+         "<dela> directory.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_CheckDic);
 }
 
+
+const char* optstring_CheckDic=":sfh";
+const struct option_TS lopts_CheckDic[]= {
+      {"delas",no_argument_TS,NULL,'s'},
+      {"delaf",no_argument_TS,NULL,'f'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 int main_CheckDic(int argc,char* argv[]) {
 if (argc==1) {
@@ -55,22 +68,16 @@ if (argc==1) {
 }
 
 int is_a_DELAF=-1;
-const char* optstring=":sfh";
-const struct option_TS lopts[]= {
-      {"delas",no_argument_TS,NULL,'s'},
-      {"delaf",no_argument_TS,NULL,'f'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&index,vars))) {
    switch(val) {
    case 'f': is_a_DELAF=1; break;
    case 's': is_a_DELAF=0; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_CheckDic[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

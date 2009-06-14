@@ -43,9 +43,7 @@
 
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf(
+const char* usage_Txt2Fst2Kr =         
 "Txt2Fst2Kr [[-e #sentence -p[m/a]]|[-c]|[-m/a fst2file] file\n"\
 "Txt2Fst2Kr :  get a fst2 for the 'number'th sentence\n"\
 "e : extract a automata with the form of fst2\n"\
@@ -55,8 +53,12 @@ u_printf(
 "c : create automata of sentences from code de text\n"\
 "m : modify a automata\n"\
 "a : add a automata\n"\
-"\n"
-);
+"\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Txt2Fst2Kr);
 }
 
 

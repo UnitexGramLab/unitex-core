@@ -26,17 +26,28 @@
 #include "getopt.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: DuplicateFile [OPTIONS] <outfile>\n"
+const char* usage_DuplicateFile =
+         "Usage: DuplicateFile [OPTIONS] <outfile>\n"
          "\n"
          "  <outfile>: the destination file\n"
          "\n"
          "OPTIONS:\n"
          "-i/--input <infile>: path to input file to read\n"
-         "\n");
+         "\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_DuplicateFile);
 }
 
+
+const char* optstring_DuplicateFile=":di:";
+const struct option_TS lopts_DuplicateFile[]= {
+      {"delete",no_argument_TS,NULL,'d'},
+      {"input",required_argument_TS,NULL,'i'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_DuplicateFile(int argc,char* argv[]) {
@@ -45,20 +56,24 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":i:";
-const struct option_TS lopts[]= {
-      {"input",required_argument_TS,NULL,'i'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 
 const char *input_file = NULL;
 const char *output_file = NULL;
+int do_delete=0;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DuplicateFile,lopts_DuplicateFile,&index,vars))) {
    switch(val) {
+   case 'd': do_delete=1; break;
    case 'i': input_file = vars->optarg; break;
+   case 'h': usage(); return 0;
+   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
+             else fatal_error("Missing argument for option --%s\n",lopts_DuplicateFile[index].name);
+   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
+             else fatal_error("Invalid option --%s\n",vars->optarg);
+             break;
    }
    index=-1;
 }
@@ -69,15 +84,24 @@ if (vars->optind!=argc-1) {
 
 output_file = argv[vars->optind];
 
-if (input_file==NULL) {
+if ((input_file==NULL) && (do_delete==0)) {
    fatal_error("You must specify the input_file file\n");
 }
 
+if ((input_file!=NULL) && (do_delete==1)) {
+   fatal_error("You cannont specify input_file when delete\n");
+}
 if (output_file==NULL) {
    fatal_error("You must specify the output_file file\n");
 }
 u_printf("copy file %s to %s\n",input_file,output_file);
-int result=af_copy(input_file,output_file);
+int result;
+if (input_file != NULL) {
+result=af_copy(input_file,output_file);
+}
+else {
+result=af_remove(output_file);
+}
 u_printf((result==0) ? "Done.\n" : "Unsucessfull.\n");
 return result;
 }

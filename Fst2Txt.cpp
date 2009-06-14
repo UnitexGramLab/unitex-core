@@ -26,11 +26,11 @@
 #include "Fst2TxtAsRoutine.h"
 #include "LocateConstants.h"
 #include "getopt.h"
+#include "Fst2Txt.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Fst2Txt [OPTIONS] <fst2>\n"
+const char* usage_Fst2Txt =
+         "Usage: Fst2Txt [OPTIONS] <fst2>\n"
          "\n"
          "  <fst2>: the grammar to be applied to the text\n"
          "\n"
@@ -48,19 +48,17 @@ u_printf("Usage: Fst2Txt [OPTIONS] <fst2>\n"
          "\n"
          "  -h/--help: this help\n"
          "\n"
-         "Applies a grammar to a text. The text file is modified.\n");
+         "Applies a grammar to a text. The text file is modified.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Fst2Txt);
 }
 
 
-
-int main_Fst2Txt(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":t:a:MRcwsxh";
-const struct option_TS lopts[]= {
+const char* optstring_Fst2Txt=":t:a:MRcwsxh";
+const struct option_TS lopts_Fst2Txt[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"merge",no_argument_TS,NULL,'M'},
@@ -72,10 +70,19 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+int main_Fst2Txt(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index,vars))) {
    switch(val) {
    case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty text file name\n");
@@ -101,7 +108,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 'x': p->space_policy=DONT_START_WITH_SPACE; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Fst2Txt[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

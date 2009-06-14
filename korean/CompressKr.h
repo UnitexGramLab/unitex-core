@@ -21,6 +21,8 @@
 #ifndef CompressKrH
 #define CompressKrH
 
+extern const char* usage_CompressKr;
+
 int main_CompressKr(int argc,char* argv[]);
 
 #endif

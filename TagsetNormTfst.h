@@ -22,6 +22,10 @@
 #ifndef TagsetNormTfstH
 #define TagsetNormTfstH
 
+extern const char* optstring_TagsetNormTfst;
+extern const struct option_TS lopts_TagsetNormTfst[];
+extern const char* usage_TagsetNormTfst;
+
 int main_TagsetNormTfst(int argc,char* argv[]);
 
 #endif

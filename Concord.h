@@ -22,6 +22,10 @@
 #ifndef ConcordH
 #define ConcordH
 
+extern const char* optstring_Concord;
+extern const struct option_TS lopts_Concord[];
+extern const char* usage_Concord;
+
 int main_Concord(int argc,char* argv[]);
 int pseudo_main_Concord(const char* index_file,const char* font,int fontsize,
                         int left_context,int right_context,const char* sort_order,

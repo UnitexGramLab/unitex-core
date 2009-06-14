@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "getopt.h"
+#include "ElagComp.h"
+
 
 #ifdef __GNUC__
 #include <unistd.h>
@@ -41,9 +43,8 @@
 
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: ElagComp [OPTIONS]\n"
+const char* usage_ElagComp =
+         "Usage: ElagComp [OPTIONS]\n"
          "\n"
          "OPTIONS:\n"
          "  -r RULES/--rules=RULES: Elag .fst2 grammar list file\n"
@@ -56,18 +57,17 @@ u_printf("Usage: ElagComp [OPTIONS]\n"
          "\n"
          "ElagComp compiles one Elag grammar specified by GRAMMAR or all the grammars\n"
          "specified in the RULES file. The result is stored into the file OUT\n"
-         "for later use by the Elag text disambiguation program.\n");
+         "for later use by the Elag text disambiguation program.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_ElagComp);
 }
 
 
-int main_ElagComp(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":l:r:o:d:g:h";
-const struct option_TS lopts[]= {
+const char* optstring_ElagComp=":l:r:o:d:g:h";
+const struct option_TS lopts_ElagComp[]= {
       {"language",required_argument_TS,NULL,'l'},
       {"rulelist",required_argument_TS,NULL,'r'},
       {"grammar",required_argument_TS,NULL,'g'},
@@ -76,6 +76,14 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+int main_ElagComp(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
 int val,index=-1;
 char compilename[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
@@ -83,7 +91,7 @@ char grammar[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char lang[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ElagComp,lopts_ElagComp,&index,vars))) {
    switch(val) {
    case 'l': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty language definition file\n");
@@ -112,7 +120,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_ElagComp[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

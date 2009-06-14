@@ -6,14 +6,15 @@
 #include "HTMLCharacters.h"
 #include "Unicode.h"
 #include "getopt.h"
+#include "TEI2Txt.h"
 
 
 void tei2txt(char*, char*);
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: TEI2Txt [OPTIONS] <xml>\n"
+
+const char* usage_TEI2Txt =
+         "Usage: TEI2Txt [OPTIONS] <xml>\n"
          "\n"
          "  <xml>: the input TEI file\n"
          "\n"
@@ -21,8 +22,22 @@ u_printf("Usage: TEI2Txt [OPTIONS] <xml>\n"
 	      "  -o TXT/--output=TXT: optional output file name (default: file.xml > file.txt)\n"
          "  -h/--help: this help\n"
          "\n"
-         "Produces a raw text file from the given TEI file.\n");
+         "Produces a raw text file from the given TEI file.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_TEI2Txt);
 }
+
+
+const char* optstring_TEI2Txt=":o:h";
+const struct option_TS lopts_TEI2Txt[]={
+   {"output", required_argument_TS, NULL, 'o'},
+   {"help", no_argument_TS, NULL, 'h'},
+   {NULL, no_argument_TS, NULL, 0}
+};
+
 
 int main_TEI2Txt(int argc,char* argv[]) {
 if (argc==1) {
@@ -30,16 +45,10 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":o:h";
-const struct option_TS lopts[]={
-   {"output", required_argument_TS, NULL, 'o'},
-   {"help", no_argument_TS, NULL, 'h'},
-   {NULL, no_argument_TS, NULL, 0}
-};
 char output[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TEI2Txt,lopts_TEI2Txt,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
@@ -48,7 +57,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_TEI2Txt[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

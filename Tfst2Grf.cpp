@@ -30,11 +30,11 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "getopt.h"
+#include "Tfst2Grf.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Tfst2Grf [OPTIONS] <tfst>\n"
+const char* usage_Tfst2Grf =
+         "Usage: Tfst2Grf [OPTIONS] <tfst>\n"
          "\n"
          "  <tfst>: the .tfst file that contains the text automaton.\n"
          "\n"
@@ -49,9 +49,24 @@ u_printf("Usage: Tfst2Grf [OPTIONS] <tfst>\n"
          "resulting file, named cursentence.grf, is stored in the same directory\n"
          "that <text automaton>. The text of the sentence is saved in the same\n"
          "directory, in a file named cursentence.txt. The numbers of the tokens are\n"
-         "saved in a file named cursentence.tok.\n");
+         "saved in a file named cursentence.tok.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Tfst2Grf);
 }
 
+
+const char* optstring_Tfst2Grf=":s:o:f:z:h";
+const struct option_TS lopts_Tfst2Grf[]= {
+      {"sentence",required_argument_TS,NULL,'s'},
+      {"output",required_argument_TS,NULL,'o'},
+      {"font",required_argument_TS,NULL,'f'},
+      {"fontsize",required_argument_TS,NULL,'z'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Tfst2Grf(int argc,char* argv[]) {
@@ -60,15 +75,7 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":s:o:f:z:h";
-const struct option_TS lopts[]= {
-      {"sentence",required_argument_TS,NULL,'s'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"font",required_argument_TS,NULL,'f'},
-      {"fontsize",required_argument_TS,NULL,'z'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int SENTENCE=-1;
 int size=10;
 char* fontname=NULL;
@@ -76,7 +83,7 @@ char* output=NULL;
 int val,index=-1;
 char foo;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tfst2Grf,lopts_Tfst2Grf,&index,vars))) {
    switch(val) {
    case 's': if (1!=sscanf(vars->optarg,"%d%c",&SENTENCE,&foo) || SENTENCE<=0) {
                 /* foo is used to check that the sentence number is not like "45gjh" */
@@ -106,7 +113,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Tfst2Grf[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

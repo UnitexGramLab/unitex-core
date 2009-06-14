@@ -27,11 +27,11 @@
 #include "Error.h"
 #include "SingleGraph.h"
 #include "getopt.h"
+#include "Evamb.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Evamb [OPTIONS] <tfst>\n"
+const char* usage_Evamb =
+         "Usage: Evamb [OPTIONS] <tfst>\n"
          "\n"
          "  <tfst>: text automaton file\n"
          "\n"
@@ -43,8 +43,21 @@ u_printf("Usage: Evamb [OPTIONS] <tfst>\n"
          "sentence specified by <#sentence>. This value represents the average number of\n"
          "hypothesis per word of the sentence. Note that the result won't be the same\n"
          "whether the automaton tags are imploded or not.\n"
-         "The text automaton is not modified.\n");
+         "The text automaton is not modified.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Evamb);
 }
+
+
+const char* optstring_Evamb=":s:h";
+const struct option_TS lopts_Evamb[]= {
+      {"sentence",required_argument_TS,NULL,'s'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Evamb(int argc,char* argv[]) {
@@ -53,17 +66,12 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":s:h";
-const struct option_TS lopts[]= {
-      {"sentence",required_argument_TS,NULL,'s'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int val,index=-1;
 int sentence_number=-1;
 char foo;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Evamb,lopts_Evamb,&index,vars))) {
    switch(val) {
    case 's': if (1!=sscanf(vars->optarg,"%d%c",&sentence_number,&foo) || sentence_number<=0) {
                 /* foo is used to check that the sentence number is not like "45gjh" */
@@ -72,7 +80,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Evamb[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

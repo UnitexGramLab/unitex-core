@@ -24,5 +24,9 @@
 
 int main_Txt2Tfst(int argc,char* argv[]);
 
+extern const char* optstring_Txt2Tfst;
+extern const struct option_TS lopts_Txt2Tfst[];
+extern const char* usage_Txt2Tfst;
+
 #endif
 

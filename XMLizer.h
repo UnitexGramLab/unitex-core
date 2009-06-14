@@ -22,6 +22,10 @@
 #ifndef XMLizerH
 #define XMLizerH
 
+extern const char* optstring_XMLizer ;
+extern const char* usage_XMLizer ;
+extern const struct option_TS lopts_XMLizer[];
+
 int main_XMLizer(int argc,char* argv[]);
 
 #endif

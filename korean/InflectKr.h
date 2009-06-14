@@ -21,6 +21,8 @@
 #ifndef InflectKrH
 #define InflectKrH
 
+extern const char* usage_InflectKr;
+
 int main_InflectKr(int argc,char* argv[]);
 
 #endif

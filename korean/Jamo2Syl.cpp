@@ -38,17 +38,20 @@
 #define SZ8M	1024*1024*8
 #define S64K	1024*64
 
-static void usage()
-{
-u_printf("%S",COPYRIGHT);
-u_printf("Jamo2Syl  [-m mapfile][-c Str=0xNNNN]* [-o outfile] transducter.fst2 input_file\n");
-u_printf("-m : encodage file\n");
-u_printf("-c : change pre-define value in transducter with '<' et '>' <Str> to hexdemal value\n");
-u_printf("-o : name of output file\n");
-u_printf("   : default outfile name \"input_fileSyl.ext\"\n");
-u_printf("transducter.fst2 : decoder \n");
-}
 
+const char* usage_Jamo2Syl =
+         "Jamo2Syl  [-m mapfile][-c Str=0xNNNN]* [-o outfile] transducter.fst2 input_file\n"
+         "-m : encodage file\n"
+         "-c : change pre-define value in transducter with '<' et '>' <Str> to hexdemal value\n"
+         "-o : name of output file\n"
+         "   : default outfile name \"input_fileSyl.ext\"\n"
+         "transducter.fst2 : decoder \n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Jamo2Syl);
+}
 
 class localtemp : public state_machine, public jamoCodage
 {

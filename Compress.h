@@ -22,6 +22,10 @@
 #ifndef CompressH
 #define CompressH
 
+extern const char* optstring_Compress;
+extern const struct option_TS lopts_Compress[];
+extern const char* usage_Compress;
+
 int main_Compress(int argc,char* argv[]);
 
 #endif

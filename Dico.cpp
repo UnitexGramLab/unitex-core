@@ -38,6 +38,8 @@
 #include "Snt.h"
 #include "LocateConstants.h"
 #include "getopt.h"
+#include "Dico.h"
+
 
 
 /**
@@ -50,9 +52,8 @@
  */
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Dico [OPTIONS] <dic_1> [<dic_2> <dic_3> ...]\n"
+const char* usage_Dico =
+         "Usage: Dico [OPTIONS] <dic_1> [<dic_2> <dic_3> ...]\n"
          "\n"
          "  <dic_i>: .bin dictionary or .fst2 local grammar to be applied\n"
          "\n"
@@ -103,7 +104,12 @@ u_printf("Usage: Dico [OPTIONS] <dic_1> [<dic_2> <dic_3> ...]\n"
          "\n"
          "Note: the 3 resulting files (DLF, DLC and ERR) are stored in the text\n"
          "directory. THEY ARE NOT SORTED AND MAY CONTAIN DUPLICATES. Use the\n"
-         "SortTxt program to clean these files.\n");
+         "SortTxt program to clean these files.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Dico);
 }
 
 
@@ -121,15 +127,8 @@ u_fclose(f);
 }
 
 
-
-int main_Dico(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":t:a:m:j:h";
-const struct option_TS lopts[]= {
+const char* optstring_Dico=":t:a:m:j:h";
+const struct option_TS lopts_Dico[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"morpho",required_argument_TS,NULL,'m'},
@@ -137,13 +136,22 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+int main_Dico(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+
 int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char* morpho_dic=NULL;
 char jamo[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars))) {
    switch(val) {
    case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty text file name\n");
@@ -169,7 +177,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Dico[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

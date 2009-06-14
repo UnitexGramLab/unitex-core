@@ -23,6 +23,10 @@
 #define LocateTfstH
 
 
+extern const char* optstring_LocateTfst;
+extern const struct option_TS lopts_LocateTfst[];
+extern const char* usage_LocateTfst;
+
 int main_LocateTfst(int,char* argv[]);
 
 

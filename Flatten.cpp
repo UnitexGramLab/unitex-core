@@ -29,11 +29,11 @@
 #include "FlattenFst2.h"
 #include "Error.h"
 #include "getopt.h"
+#include "Flatten.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Flatten [OPTIONS] <fst2>\n"
+const char* usage_Flatten =
+       "Usage: Flatten [OPTIONS] <fst2>\n"
        "\n"
        "  <fst2>: compiled grammar to flatten;\n"
        "\n"
@@ -49,9 +49,23 @@ u_printf("Usage: Flatten [OPTIONS] <fst2>\n"
        "Flattens a FST2 grammar into a finite state transducer in the limit of\n"
        "a recursion depth. The grammar <fst2> is replaced by its flattened equivalent.\n"
        "If the flattening process is complete, the resulting grammar contains only one\n"
-       "graph.\n");
+       "graph.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Flatten);
 }
 
+
+const char* optstring_Flatten=":frd:h";
+const struct option_TS lopts_Flatten[]= {
+      {"fst",no_argument_TS,NULL,'f'},
+      {"rtn",no_argument_TS,NULL,'r'},
+      {"depth",required_argument_TS,NULL,'d'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Flatten(int argc,char* argv[]) {
@@ -60,20 +74,13 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":frd:h";
-const struct option_TS lopts[]= {
-      {"fst",no_argument_TS,NULL,'f'},
-      {"rtn",no_argument_TS,NULL,'r'},
-      {"depth",required_argument_TS,NULL,'d'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int RTN=1;
 int depth=10;
 int val,index=-1;
 char foo;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Flatten,lopts_Flatten,&index,vars))) {
    switch(val) {
    case 'f': RTN=0; break;
    case 'r': RTN=1; break;
@@ -84,7 +91,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Flatten[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

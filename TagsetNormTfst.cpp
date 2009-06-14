@@ -35,6 +35,7 @@
 #include "List_int.h"
 #include "DELA.h"
 #include "Match.h"
+#include "TagsetNormTfst.h"
 
 
 /* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
@@ -44,9 +45,10 @@
 #endif
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: TagsetNormTfst [OPTIONS] <tfst>\n"
+
+
+const char* usage_TagsetNormTfst =
+         "Usage: TagsetNormTfst [OPTIONS] <tfst>\n"
          "\n"
          "  <tfst>: text automaton to normalize\n"
          "\n"
@@ -60,11 +62,25 @@ u_printf("Usage: TagsetNormTfst [OPTIONS] <tfst>\n"
          "file, discarding undeclared dictionary codes and incoherent lexical entries.\n"
          "Inflectional features are unfactorized so that '{rouge,.A:fs:ms}' will be\n"
          "divided into the 2 tags '{rouge,.A:fs}' and '{rouge,.A:ms}'.\n"
-         "The input text automaton is modified if -o option is not used.\n");
+         "The input text automaton is modified if -o option is not used.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_TagsetNormTfst);
 }
 
 
 int get_tfst_tag_index(vector_ptr*,unichar*,Match*);
+
+
+const char* optstring_TagsetNormTfst=":o:t:h";
+const struct option_TS lopts_TagsetNormTfst[]= {
+      {"output",required_argument_TS,NULL,'o'},
+      {"tagset",required_argument_TS,NULL,'t'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_TagsetNormTfst(int argc,char* argv[]) {
@@ -73,13 +89,6 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":o:t:h";
-const struct option_TS lopts[]= {
-      {"output",required_argument_TS,NULL,'o'},
-      {"tagset",required_argument_TS,NULL,'t'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
 char tfst[FILENAME_MAX]="";
 char tind[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
@@ -87,7 +96,7 @@ char output_tind[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TagsetNormTfst,lopts_TagsetNormTfst,&index,vars))) {
    switch(val) {
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file name\n");
@@ -103,7 +112,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_TagsetNormTfst[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

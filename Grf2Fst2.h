@@ -22,6 +22,10 @@
 #ifndef Grf2Fst2H
 #define Grf2Fst2H
 
+extern const char* optstring_Grf2Fst2;
+extern const struct option_TS lopts_Grf2Fst2[];
+extern const char* usage_Grf2Fst2;
+
 int main_Grf2Fst2(int argc,char* argv[]);
 int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet,
                          int no_empty_graph_warning,int tfst_check);

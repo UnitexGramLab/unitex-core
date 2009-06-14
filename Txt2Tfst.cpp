@@ -40,6 +40,7 @@
 #include "getopt.h"
 #include "LanguageDefinition.h"
 #include "NewLineShifts.h"
+#include "Txt2Tfst.h"
 
 
 /**
@@ -78,11 +79,11 @@ if (length==0) return 0;
 return 1;
 }
 
+#define STR_VALUE_MACRO(x) #x
+#define STR_VALUE_MACRO_STRING(x) STR_VALUE_MACRO(x)
 
-
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Txt2Tfst [OPTIONS] <snt>\n"
+const char* usage_Txt2Tfst =
+         "Usage: Txt2Tfst [OPTIONS] <snt>\n"
          "\n"
          "  <snt> : the .snt text file\n"
          "\n"
@@ -97,22 +98,21 @@ u_printf("Usage: Txt2Tfst [OPTIONS] <snt>\n"
          "\n"
          "Constructs the text automaton. If the sentences of the text were delimited\n"
          "with the special tag {S}, the program produces one automaton per sentence.\n"
-         "If not, the text is turned into %d token long automata. The result files\n"
+		 "If not, the text is turned into " STR_VALUE_MACRO_STRING(MAX_TOKENS_IN_SENTENCE) " token long automata. The result files\n"
          "named \"text.tfst\" and \"text.tind\" are stored is the text directory.\n"
          "\n"
-         "Note that the program will also take into account the file \"tags.ind\", if any.\n",MAX_TOKENS_IN_SENTENCE);
+         "Note that the program will also take into account the file \"tags.ind\", if any.\n";
+
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Txt2Tfst);
 }
 
 
-
-int main_Txt2Tfst(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":a:cn:t:k:j:h";
-const struct option_TS lopts[]={
+const char* optstring_Txt2Tfst=":a:cn:t:k:j:h";
+const struct option_TS lopts_Txt2Tfst[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"clean", no_argument_TS, NULL, 'c'},
    {"normalization_grammar", required_argument_TS, NULL, 'n'},
@@ -122,6 +122,15 @@ const struct option_TS lopts[]={
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
+
+
+int main_Txt2Tfst(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+
 char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
@@ -131,7 +140,7 @@ int CLEAN=0;
 int KOREAN=0;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&index,vars))) {
    switch(val) {
    case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty alphabet file name\n");
@@ -162,7 +171,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Txt2Tfst[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

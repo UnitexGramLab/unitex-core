@@ -22,6 +22,8 @@
 #ifndef UnitexToolH
 #define UnitexToolH
 
+#include "getopt.h"
+
 #define _UNITEX_VER 0210
 
 int check_Utility(const char* name);
@@ -39,6 +41,14 @@ struct pos_tools_in_arg {
 int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_tools_in_arg* ptia);
 int UnitexTool_several(int argc,char* argv[],int* p_number_done);
 int main_UnitexTool(int argc,char* argv[]);
+
+
+typedef int mainFunc(int argc,char* argv[]) ;
+
+
+int GetNumberOfTool();
+int GetToolInfo(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
+int GetToolInfo(int toolnumber,const char**toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
 #ifdef __cplusplus
 extern "C" {

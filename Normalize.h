@@ -22,6 +22,10 @@
 #ifndef NormalizeH
 #define NormalizeH
 
+extern const char* optstring_Normalize;
+extern const struct option_TS lopts_Normalize[];
+extern const char* usage_Normalize;
+
 int main_Normalize(int argc,char* argv[]);
 
 #endif

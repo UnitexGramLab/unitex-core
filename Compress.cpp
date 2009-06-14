@@ -31,11 +31,11 @@
 #include "Copyright.h"
 #include "Error.h"
 #include "getopt.h"
+#include "Compress.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: Compress [OPTIONS] <dictionary>\n"
+const char* usage_Compress =
+         "Usage: Compress [OPTIONS] <dictionary>\n"
          "\n"
          "  <dictionary>: any unicode DELAF or DELACF dictionary\n"
          "\n"
@@ -45,7 +45,12 @@ u_printf("Usage: Compress [OPTIONS] <dictionary>\n"
          "\n"
          "Compresses a dictionary into an finite state automaton. This automaton\n"
          "is stored is a .bin file, and the associated flexional codes are\n"
-         "written in a .inf file.\n\n");
+         "written in a .inf file.\n\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Compress);
 }
 
 
@@ -73,6 +78,14 @@ u_fclose(f);
 }
 
 
+const char* optstring_Compress=":fh";
+const struct option_TS lopts_Compress[]= {
+      {"flip",no_argument_TS,NULL,'f'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
+
+
 /**
  * This program reads a .dic file and compress it into a .bin and a .inf file.
  * First, it builds a tree with all the entries, and then, it builds a minimal
@@ -85,20 +98,14 @@ if (argc==1) {
 }
 
 int FLIP=0;
-const char* optstring=":fh";
-const struct option_TS lopts[]= {
-      {"flip",no_argument_TS,NULL,'f'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&index,vars))) {
    switch(val) {
    case 'f': FLIP=1; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Compress[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
@@ -174,8 +181,8 @@ while(EOF!=u_fgets(s,f)) {
 				 */
 				unichar inf_tmp[DIC_WORD_SIZE];
 				unichar lem_tmp[DIC_WORD_SIZE];
-				u_strcpy(inf_tmp,entry->inflected);
-				u_strcpy(lem_tmp,entry->lemma);
+				u_strcpy_sized(inf_tmp,DIC_WORD_SIZE,entry->inflected);
+				u_strcpy_sized(lem_tmp,DIC_WORD_SIZE,entry->lemma);
 				/* We replace the unprotected = signs by spaces */
 				replace_unprotected_equal_sign(entry->inflected,(unichar)' ');
 				replace_unprotected_equal_sign(entry->lemma,(unichar)' ');

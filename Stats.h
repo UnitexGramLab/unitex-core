@@ -23,6 +23,10 @@
 #ifndef StatsH
 #define StatsH
 
+extern const char* optstring_Stats;
+extern const struct option_TS lopts_Stats[];
+extern const char* usage_Stats;
+
 int main_Stats(int, char*[]);
 
 #endif

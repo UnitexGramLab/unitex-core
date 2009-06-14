@@ -148,22 +148,26 @@ static int curEtiCnt;
 #define DERIVATION_MODE	1
 int grapheTraiteMode;
 
+
+const char* usage_InflectKr =
+         "Usage: InflectKr -d d_dir -v v_dir [-o ofile] <dictionnary>\n" \
+         "     <delas> : the unicode delas file to be inflected\n" \
+         "    -v v_dir : the directory of inflectional graphs.\n" \
+         "    -d d_dir : the directory of graphs of the derivation.\n" \
+         "    -o ofile : the inflected result file name  \n" \
+         "             : the default output file name is <delas>IF  \n" \
+         "    -c SS=0xNNNN : change a sting to character \n" \
+         "    -m 0xNNNN : skipMark value set\n" \
+         "    -x file   : load a file to change a character to sting\n" \
+         "    -r : the content is racines\n" \
+         "    -s : the content is suffixs\n" \
+         "\nInflects a korean DELAS.\n";
+
+
 static void usage() {
 u_printf("%S",COPYRIGHT);
-u_printf("Usage: InflectKr -d d_dir -v v_dir [-o ofile] <dictionnary>\n");
-u_printf("     <delas> : the unicode delas file to be inflected\n");
-u_printf("    -v v_dir : the directory of inflectional graphs.\n");
-u_printf("    -d d_dir : the directory of graphs of the derivation.\n");
-u_printf("    -o ofile : the inflected result file name  \n");
-u_printf("             : the default output file name is <delas>IF  \n");
-u_printf("    -c SS=0xNNNN : change a sting to character \n");
-u_printf("    -m 0xNNNN : skipMark value set\n");
-u_printf("    -x file   : load a file to change a character to sting\n");
-u_printf("    -r : the content is racines\n");
-u_printf("    -s : the content is suffixs\n");
-u_printf("\nInflects a korean DELAS.\n");
+u_printf(usage_InflectKr);
 }
-
 
 static char *cfilename;
 static unichar *curLineTemp;

@@ -35,15 +35,17 @@
 
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage:\r\n");
-u_printf(
-"SortMorp tfile mfile mcfile\r\n"\
+const char* usage_SortMorph =         
+"SortMorph tfile mfile mcfile\r\n"\
 " tfile : name of lists of tokens file\r\n"\
 " sqfile : name of lists of sequences of morphemes in a word\r\n"\
 " mcfile : name of lists of morphemes\r\n"\
-"        : Output file DLC, DLF, ERR\r\n");\
+"        : Output file DLC, DLF, ERR\r\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_SortMorph);
 }
 
 

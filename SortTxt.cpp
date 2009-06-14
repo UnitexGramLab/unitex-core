@@ -206,9 +206,10 @@ u_fclose(f);
 }
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: SortTxt [OPTIONS] <txt>\n"
+
+
+const char* usage_SortTxt =
+         "Usage: SortTxt [OPTIONS] <txt>\n"
          "\n"
          "  <txt>: any unicode text file\n"
          "\n"
@@ -221,9 +222,13 @@ u_printf("Usage: SortTxt [OPTIONS] <txt>\n"
          "  -t/--thai: sort thai text\n"
          "  -h/--help: this help\n"
          "\n"
-         "By default, the sort is done according the Unicode char order, removing duplicates.\n");
-}
+         "By default, the sort is done according the Unicode char order, removing duplicates.\n";
 
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_SortTxt);
+}
 
 
 int pseudo_main_SortTxt(int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char* text) {
@@ -254,14 +259,8 @@ return ret;
 }
 
 
-int main_SortTxt(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":ndr:o:l:th";
-const struct option_TS lopts[]= {
+const char* optstring_SortTxt=":ndr:o:l:th";
+const struct option_TS lopts_SortTxt[]= {
       {"no_duplicates",no_argument_TS,NULL,'n'},
       {"duplicates",no_argument_TS,NULL,'d'},
       {"reverse",no_argument_TS,NULL,'r'},
@@ -271,13 +270,22 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+int main_SortTxt(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+
 struct sort_infos* inf=new_sort_infos();
 int mode=DEFAULT;
 char line_info[FILENAME_MAX]="";
 char sort_order[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_SortTxt,lopts_SortTxt,&index,vars))) {
    switch(val) {
    case 'n': inf->REMOVE_DUPLICATES=1; break;
    case 'd': inf->REMOVE_DUPLICATES=0; break;
@@ -295,7 +303,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 't': mode=THAI; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_SortTxt[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

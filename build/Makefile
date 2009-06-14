@@ -525,7 +525,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   Stack_int.o Stack_unichar.o Stats.o String_hash.o StringParsing.o Symbol.o Symbol_op.o \
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
-                  TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o \
+                  TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o Unicode.o Ustring.o XMLizer.o DuplicateFile.o \
                   Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o \
                   codeForKorean.o orgUniMbcsMap.o CompressKr.o ConsultDic.o ExtractChar.o InflectKr.o Jamo2Syl.o \
                   jamoCodage.o MergeBin.o pro_type.o SortMorph.o SufForm2Rac.o Syl2Jamo.o \

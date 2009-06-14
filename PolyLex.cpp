@@ -36,13 +36,14 @@
 #include "RussianCompounds.h"
 #include "Error.h"
 #include "getopt.h"
+#include "PolyLex.h"
+
 
 enum {DUTCH,GERMAN,NORWEGIAN,RUSSIAN};
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: PolyLex [OPTIONS] <list>\n"
+const char* usage_PolyLex =
+         "Usage: PolyLex [OPTIONS] <list>\n"
          "\n"
          "  <list>: text file containing the words to be analysed\n"
          "\n"
@@ -66,18 +67,17 @@ u_printf("Usage: PolyLex [OPTIONS] <list>\n"
          "This words are removed from the <list> files.\n"
          "NOTE: when the program is used for Dutch or Norwegian words, it tries to read a text file\n"
          "containing a list of forbidden words. This file is supposed to be named\n"
-         "'ForbiddenWords.txt' and stored in the same directory than BIN.\n");
+         "'ForbiddenWords.txt' and stored in the same directory than BIN.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_PolyLex);
 }
 
 
-int main_PolyLex(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":DGNRa:d:o:i:h";
-const struct option_TS lopts[]= {
+const char* optstring_PolyLex=":DGNRa:d:o:i:h";
+const struct option_TS lopts_PolyLex[]= {
       {"dutch",no_argument_TS,NULL,'D'},
       {"german",no_argument_TS,NULL,'G'},
       {"norwegian",no_argument_TS,NULL,'N'},
@@ -89,6 +89,15 @@ const struct option_TS lopts[]= {
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
+
+
+int main_PolyLex(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+
 int language=-1;
 char alphabet[FILENAME_MAX]="";
 char dictionary[FILENAME_MAX]="";
@@ -96,7 +105,7 @@ char output[FILENAME_MAX]="";
 char info[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_PolyLex,lopts_PolyLex,&index,vars))) {
    switch(val) {
    case 'D': language=DUTCH; break;
    case 'G': language=GERMAN; break;
@@ -124,7 +133,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_PolyLex[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

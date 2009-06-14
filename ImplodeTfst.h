@@ -22,6 +22,10 @@
 #ifndef ImplodeTfstH
 #define ImplodeTfstH
 
+extern const char* optstring_ImplodeTfst;
+extern const struct option_TS lopts_ImplodeTfst[];
+extern const char* usage_ImplodeTfst;
+
 int main_ImplodeTfst(int argc,char* argv[]);
 
 #endif

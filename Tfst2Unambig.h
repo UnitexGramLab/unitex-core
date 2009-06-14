@@ -22,6 +22,10 @@
 #ifndef Tfst2UnambigH
 #define Tfst2UnambigH
 
+extern const char* optstring_Tfst2Unambig;
+extern const struct option_TS lopts_Tfst2Unambig[];
+extern const char* usage_Tfst2Unambig;
+
 int main_Tfst2Unambig(int argc,char* argv[]);
 
 #endif

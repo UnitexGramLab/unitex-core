@@ -39,11 +39,11 @@
 #include "Error.h"
 #include "File.h"
 #include "Tfst.h"
+#include "Elag.h"
 
 
-static void usage() {
-u_printf("%S", COPYRIGHT);
-u_printf("Usage: Elag [OPTIONS] <tfst>\n"
+const char* usage_Elag =
+         "Usage: Elag [OPTIONS] <tfst>\n"
          "\n"
          "  <tfst>: input text automaton file\n"
          "\n"
@@ -54,8 +54,24 @@ u_printf("Usage: Elag [OPTIONS] <tfst>\n"
          "  -d DIR/--directory=DIR: directory where elag rules are located\n"
          "  -h/--help: this help\n"
          "\n"
-         "Disambiguate the input text automaton <tfst> using the specified compiled elag rules.\n");
+         "Disambiguate the input text automaton <tfst> using the specified compiled elag rules.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_Elag);
 }
+
+
+const char* optstring_Elag=":l:r:o:d:h";
+const struct option_TS lopts_Elag[]= {
+      {"language",required_argument_TS,NULL,'l'},
+      {"rules",required_argument_TS,NULL,'r'},
+      {"output",required_argument_TS,NULL,'o'},
+      {"directory",required_argument_TS,NULL,'d'},
+      {"help",no_argument_TS,NULL,'h'},
+      {NULL,no_argument_TS,NULL,0}
+};
 
 
 int main_Elag(int argc,char* argv[]) {
@@ -64,22 +80,14 @@ if (argc==1) {
    return 0;
 }
 
-const char* optstring=":l:r:o:d:h";
-const struct option_TS lopts[]= {
-      {"language",required_argument_TS,NULL,'l'},
-      {"rules",required_argument_TS,NULL,'r'},
-      {"output",required_argument_TS,NULL,'o'},
-      {"directory",required_argument_TS,NULL,'d'},
-      {"help",no_argument_TS,NULL,'h'},
-      {NULL,no_argument_TS,NULL,0}
-};
+
 int val,index=-1;
 char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Elag,lopts_Elag,&index,vars))) {
    switch(val) {
    case 'l': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty language definition file\n");
@@ -103,7 +111,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_Elag[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

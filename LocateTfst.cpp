@@ -30,11 +30,13 @@
 #include "LocateTfst_lib.h"
 #include "File.h"
 #include "LocateConstants.h"
+#include "LocateTfst.h"
 
 
-static void usage() {
-u_printf("%S",COPYRIGHT);
-u_printf("Usage: LocateTfst [OPTIONS] <fst2>\n"
+
+
+const char* usage_LocateTfst =
+         "Usage: LocateTfst [OPTIONS] <fst2>\n"
          "\n"
          "  <fst2>: the grammar to be applied\n"
          "\n"
@@ -74,23 +76,17 @@ u_printf("Usage: LocateTfst [OPTIONS] <fst2>\n"
          "  -h/--help: this help\n"
          "\n"
          "Applies a grammar to a text automaton, and saves the matching sequence index in a\n"
-         "file named 'concord.ind', just as Locate does.\n");
+         "file named 'concord.ind', just as Locate does.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_LocateTfst);
 }
 
 
-
-/*
- * This function behaves in the same way that a main one, except that it does
- * not invoke the setBufferMode function.
- */
-int main_LocateTfst(int argc,char* argv[]) {
-if (argc==1) {
-   usage();
-   return 0;
-}
-
-const char* optstring=":t:a:j:ln:SLAIMRXYZbzh";
-const struct option_TS lopts[]= {
+const char* optstring_LocateTfst=":t:a:j:ln:SLAIMRXYZbzh";
+const struct option_TS lopts_LocateTfst[]= {
 	  {"text",required_argument_TS,NULL,'t'},
 	  {"alphabet",required_argument_TS,NULL,'a'},
 	  {"jamo",required_argument_TS,NULL,'j'},
@@ -110,6 +106,19 @@ const struct option_TS lopts[]= {
      {"help",no_argument_TS,NULL,'h'},
      {NULL,no_argument_TS,NULL,0}
 };
+
+
+/*
+ * This function behaves in the same way that a main one, except that it does
+ * not invoke the setBufferMode function.
+ */
+int main_LocateTfst(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+
 int val,index=-1;
 char text[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
@@ -121,7 +130,7 @@ VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int search_limit=NO_MATCH_LIMIT;
 struct OptVars* vars=new_OptVars();
 char foo;
-while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,&index,vars))) {
    switch(val) {
    case 't': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty .tfst name\n");
@@ -157,7 +166,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring,lopts,&index,vars))) {
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
-             else fatal_error("Missing argument for option --%s\n",lopts[index].name);
+             else fatal_error("Missing argument for option --%s\n",lopts_LocateTfst[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

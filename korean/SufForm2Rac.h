@@ -21,6 +21,8 @@
 #ifndef SufForm2RacH
 #define SufForm2RacH
 
+extern const char* usage_SufForm2Rac;
+
 int main_SufForm2Rac(int argc,char* argv[]);
 
 #endif

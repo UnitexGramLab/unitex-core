@@ -22,6 +22,10 @@
 #ifndef ConvertH
 #define ConvertH
 
+extern const char* optstring_Convert;
+extern const struct option_TS lopts_Convert[];
+extern const char* usage_Convert;
+
 int main_Convert(int argc,char* argv[]);
 
 #endif
