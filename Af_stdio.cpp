@@ -304,8 +304,13 @@ ABSTRACTFILE* af_fopen(const char* name,const char* MODE)
         TYPEOPEN_MF TypeOpen;
         if ((*(MODE))=='w')
             TypeOpen = OPEN_CREATE_MF;
-        else
+        else {
             TypeOpen = OPEN_READWRITE_MF;
+			if ((*(MODE))=='r')
+				if ((*(MODE+1))=='b')
+					if ((*(MODE+2))=='\0')
+						TypeOpen = OPEN_READ_MF;
+		}
         //vfRet -> Std_Stream_Type = STD_STREAM_MEMFILE;
 		vf->afs = pafs;
 		vf->fabstr = (*(pafs->func_array.fnc_memOpenLowLevel))(name, TypeOpen,
