@@ -30,6 +30,7 @@
 #include "Error.h"
 #include "getopt.h"
 #include "CheckDic.h"
+#include "Alphabet.h"
 
 
 const char* usage_CheckDic =
@@ -40,6 +41,7 @@ const char* usage_CheckDic =
          "OPTIONS:\n"
          "  -s/--delas: checks a non inflected dictionary\n"
          "  -f/--delaf: checks an inflected dictionary\n"
+         "  -a ALPH/--alphabet=ALPH: alphabet file to use\n"
          "  -h/--help: this help\n"
          "\n"
          "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
@@ -53,10 +55,11 @@ u_printf(usage_CheckDic);
 }
 
 
-const char* optstring_CheckDic=":sfh";
+const char* optstring_CheckDic=":sfa:h";
 const struct option_TS lopts_CheckDic[]= {
       {"delas",no_argument_TS,NULL,'s'},
       {"delaf",no_argument_TS,NULL,'f'},
+      {"alphabet",required_argument_TS,NULL,'a'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -68,7 +71,7 @@ if (argc==1) {
 }
 
 int is_a_DELAF=-1;
-
+char alph[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&index,vars))) {
@@ -76,6 +79,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&ind
    case 'f': is_a_DELAF=1; break;
    case 's': is_a_DELAF=0; break;
    case 'h': usage(); return 0;
+   case 'a': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty alphabet argument\n");
+             }
+             strcpy(alph,vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_CheckDic[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -93,6 +101,10 @@ if (is_a_DELAF==-1 || vars->optind!=argc-1) {
 U_FILE* dic=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (dic==NULL) {
 	fatal_error("Cannot open dictionary %s\n",argv[vars->optind]);
+}
+Alphabet* alphabet0=NULL;
+if (alph[0]!='\0') {
+   alphabet0=load_alphabet(alph,1);
 }
 char output_filename[FILENAME_MAX];
 get_path(argv[vars->optind],output_filename);
@@ -112,7 +124,7 @@ int line_number=1;
 int i;
 char* alphabet=(char*)malloc(sizeof(char)*MAX_NUMBER_OF_UNICODE_CHARS);
 if (alphabet==NULL) {
-	fatal_error("Cannot open dictionary %s\n",argv[vars->optind]);
+	fatal_alloc_error("CheckDic's main");
 }
 memset(alphabet,0,sizeof(char)*MAX_NUMBER_OF_UNICODE_CHARS);
 /*
@@ -142,8 +154,9 @@ while (EOF!=u_fgets(line,dic)) {
 	else {
 		/* If we have a line to check, we check it according to the
 		 * dictionary type */
-		check_DELA_line(line,out,is_a_DELAF,line_number,alphabet,semantic_codes,inflectional_codes,
-                      simple_lemmas,compound_lemmas,&n_simple_entries,&n_compound_entries);
+		check_DELA_line(line,out,is_a_DELAF,line_number,alphabet,semantic_codes,
+		                inflectional_codes,simple_lemmas,compound_lemmas,
+		                &n_simple_entries,&n_compound_entries,alphabet0);
 	}
 	/* At regular intervals, we display a message on the standard
 	 * output to show that the program is working */
@@ -229,6 +242,9 @@ u_printf("Done.\n");
 /* Note that we don't free anything since it would only waste time */
 
 free(alphabet);
+if (alphabet0!=NULL) {
+   free_alphabet(alphabet0);
+}
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
 /* cleanup for no leak on library */
 free_string_hash(semantic_codes);
