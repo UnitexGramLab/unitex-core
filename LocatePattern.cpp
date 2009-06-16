@@ -265,7 +265,7 @@ free_string_hash(semantic_codes);
 p->variables=new_Variables(p->fst2->variables);
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
-if (jamo!=NULL) {
+if (jamo!=NULL && jamo[0]!='\0') {
 	p->jamo=new jamoCodage();
 	p->jamo->loadJamoMap(jamo);
 	/* We also initializes the Chinese -> Hangul table */
