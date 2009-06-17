@@ -1178,9 +1178,9 @@ else
 no_o_files:
 	rm -f *.o
 
-.libunitex: no_o_files $(OBJS) Test_lib.o
+.libunitex: no_o_files $(LIBTRE) $(OBJS) Test_lib.o
 	rm -f Main_*.o
 	$(CC) *.o -shared -Wl,--export-all-symbols -L"." -ltre -o ../bin/unitex.dll
-	$(CC) Test_lib.o $(OPTIONS) ../Libtre/tre.dll ../bin/unitex.dll -o ../bin/Test_lib.exe
+	$(CC) Test_lib.o $(OPTIONS) libtre.a ../bin/unitex.dll -o ../bin/Test_lib.exe
 
 endif
