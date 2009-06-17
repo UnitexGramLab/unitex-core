@@ -89,7 +89,7 @@ if ((input_file==NULL) && (do_delete==0)) {
 }
 
 if ((input_file!=NULL) && (do_delete==1)) {
-   fatal_error("You cannont specify input_file when delete\n");
+   fatal_error("You cannot specify input_file when delete\n");
 }
 if (output_file==NULL) {
    fatal_error("You must specify the output_file file\n");
