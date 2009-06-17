@@ -137,7 +137,7 @@ struct dico_application_info {
 
 
 struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,char*,U_FILE*,Alphabet*);
-void dico_application(char*,struct dico_application_info*,int);
+int dico_application(char*,struct dico_application_info*,int);
 void free_dico_application(struct dico_application_info*);
 void count_token_occurrences(struct dico_application_info*);
 void save_unknown_words(struct dico_application_info*);

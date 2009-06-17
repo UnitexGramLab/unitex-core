@@ -144,7 +144,7 @@ if (argc==1) {
    return 0;
 }
 
-
+int ret=0;
 int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
@@ -261,7 +261,8 @@ for (int priority=1;priority<4;priority++) {
             info->dlc=u_fopen(UTF16_LE,snt_files->dlc,U_APPEND);
             info->err=u_fopen(UTF16_LE,snt_files->err,U_WRITE);
             /* Working... */
-            dico_application(argv[i],info,priority);
+            if (dico_application(argv[i],info,priority) != 0)
+              ret = 1;
             /* Dumping and closing output files */
             save_unknown_words(info);
         	   u_fclose(info->dlf);
@@ -332,7 +333,5 @@ free_dico_application(info);
 free_snt_files(snt_files);
 if (morpho_dic!=NULL) free(morpho_dic);
 free_OptVars(vars);
-return 0;
+return ret;
 }
-
-
