@@ -86,7 +86,7 @@ CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
 endif
 
-override CFLAGS   += $(DEFFLAGS) -I"../Libtre" -Ilibtre/include -I"../korean" -I".."
+override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
 LIBS   = -Llibtre/lib -ltre
@@ -136,7 +136,7 @@ TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../tre_mingw32 -O3 -Wall -c -fmessage-length=0
 INSTALL_COMMAND = make install
 
 LIBS =  -L "." -ltre
-INCS =  -I"../korean" -I".." -I"../tre_mingw32"
+INCS =  -I"../korean" -I".." -I"../include_tre"
 #
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
@@ -204,17 +204,17 @@ endif
 
 
 
-TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../tre_mingw32 -O3 -Wall -c -fmessage-length=0
+TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 
 
 #
 # USING TRE STATIC LIBRARY
 #
 LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." -ltre
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../tre_mingw32" -I"../korean" -I".."
+INCS =  -I"$(DEVCPP_PATH)/include" -I"../include_tre" -I"../korean" -I".."
 # Note: the -I".." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
-CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../tre_mingw32" -I"../korean" -I".."
+CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../include_tre" -I"../korean" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
@@ -935,7 +935,7 @@ bin: $(LIBTRE) $(BINARIES)
 TRE_TEMP = $(TRE_SRC)/TEMP
 
 $(TRE_SRC): $(TRE_TGZ)
-	@echo "unpacking TRE library...."
+	@echo "Unpacking TRE library...."
 	tar xzf $(TRE_TGZ)
 
 
