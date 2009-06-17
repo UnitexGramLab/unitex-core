@@ -211,8 +211,8 @@ void unitex_tool_usage(int several)
 	int i=0;
 	u_printf("%S",COPYRIGHT);
 	u_printf("Usage: UnitexTool <Utility> [OPTIONS]\n" 
-		     "where OPTIONS can be -h/--help to display help"
-			 "and Utility is from this list :\n");
+		      "where OPTIONS can be -h/--help to display help\n"
+			   "and Utility is from this list :\n");
 	while (utility_array[i].len_name > 0)
 	{
 		u_printf("%s\n",utility_array[i].name);
