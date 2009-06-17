@@ -168,6 +168,14 @@ if (temp[0]=='\0') {
    free_dela_entry(res);
    return NULL;
 }
+if (u_strchr(temp,'.',1)) {
+   /* If the inflected form contains an unprotected dot, it's an error */
+   if (!verbose) {
+      error("***Dictionary error: incorrect line\n_%S_\n",line);
+   } else (*verbose)=P_UNPROTECTED_DOT;
+   free_dela_entry(res);
+   return NULL;
+}
 res->inflected=u_strdup(temp);
 /*
  * We read the lemma part
@@ -195,6 +203,14 @@ if (temp[0]=='\0') {
 }
 else {
 	/* Otherwise, we copy it */
+   if (u_strchr(temp,',',1)) {
+      /* If the lemma contains an unprotected comma, it's an error */
+      if (!verbose) {
+         error("***Dictionary error: incorrect line\n_%S_\n",line);
+      } else (*verbose)=P_UNPROTECTED_COMMA;
+      free_dela_entry(res);
+      return NULL;
+   }
 	res->lemma=u_strdup(temp);
 }
 /*
@@ -1134,6 +1150,14 @@ switch (error_code) {
    }
    case P_DUPLICATE_SEMANTIC_CODE: {
       u_fprintf(out,"Line %d: duplicate semantic code\n%S\n",line_number,DELA_line);
+      return;
+   }
+   case P_UNPROTECTED_DOT: {
+      u_fprintf(out,"Line %d: unprotected dot in inflected form\n%S\n",line_number,DELA_line);
+      return;
+   }
+   case P_UNPROTECTED_COMMA: {
+      u_fprintf(out,"Line %d: unprotected comma in lemma\n%S\n",line_number,DELA_line);
       return;
    }
 }
