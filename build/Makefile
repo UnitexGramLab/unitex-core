@@ -128,7 +128,7 @@ NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
-TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../tre_mingw32 -O3 -Wall -c -fmessage-length=0
+TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 
 #
 # Compiling instructions for the TRE library
