@@ -948,9 +948,6 @@ LIBS   = -L"." -ltre
 %.o: ../%.cpp
 	$(CC) -c $(CFLAGS) $<
 
-clean:
-	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
-
 clean-all-but-tre:
 	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
 
