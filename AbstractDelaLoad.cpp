@@ -191,7 +191,7 @@ void free_abstract_BIN(unsigned char* BIN,struct BIN_free_info* p_bin_free_info)
 		if (p_bin_free_info->must_be_free != 0)
 	{
 		if (p_bin_free_info->func_free_bin == NULL)
-			free(BIN);
+			free_BIN_file(BIN);
 		else
 		{
 			t_fnc_free_abstract_BIN fnc_free_abstract_BIN = (t_fnc_free_abstract_BIN)(p_bin_free_info->func_free_bin);

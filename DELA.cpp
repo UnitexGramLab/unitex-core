@@ -970,6 +970,14 @@ return tab;
 
 
 /**
+ * Frees all the memory allocated for the given structure.
+ */
+void free_BIN_file(unsigned char* BIN) {
+	free(BIN);
+}
+
+
+/**
  * This function explores all the paths from the current state in the
  * .bin automaton and produces all the corresponding DELAF lines in the
  * 'output' file.

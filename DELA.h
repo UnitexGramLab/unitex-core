@@ -123,6 +123,7 @@ void uncompress_entry(unichar*,unichar*,unichar*);
 struct INF_codes* load_INF_file(char*);
 void free_INF_codes(struct INF_codes*);
 unsigned char* load_BIN_file(char*);
+void free_BIN_file(unsigned char*);
 void rebuild_dictionary(unsigned char*,struct INF_codes*,U_FILE*);
 void extract_semantic_codes(char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(unichar*,unichar*,unichar*,unichar*);
