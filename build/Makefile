@@ -136,7 +136,7 @@ TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../tre_mingw32 -O3 -Wall -c -fmessage-length=0
 INSTALL_COMMAND = make install
 
 LIBS =  -L "." -ltre
-INCS =  -I"../korean" -I".." -I"../Libtre"
+INCS =  -I"../korean" -I".." -I"../tre_mingw32"
 #
 # Note: the -I"." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
@@ -211,10 +211,10 @@ TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../tre_mingw32 -O3 -Wall -c -fmessage-length=0
 # USING TRE STATIC LIBRARY
 #
 LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." -ltre
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../Libtre" -I"../korean" -I".."
+INCS =  -I"$(DEVCPP_PATH)/include" -I"../tre_mingw32" -I"../korean" -I".."
 # Note: the -I".." inclusion is intended to deal with compilation directory problem
 #       while compiling Korean programs
-CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../Libtre" -I"../korean" -I".."
+CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../tre_mingw32" -I"../korean" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
