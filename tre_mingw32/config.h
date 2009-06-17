@@ -52,7 +52,7 @@
 #define HAVE_ISWASCII 1
 
 /* Define to 1 if you have the `iswblank' function or macro. */
-#define HAVE_ISWBLANK 1
+//#define HAVE_ISWBLANK 1
 
 /* Define to 1 if you have the `iswctype' function or macro. */
 #define HAVE_ISWCTYPE 1
@@ -132,13 +132,13 @@
 #define HAVE_WCSNCPY 1
 
 /* Define to 1 if you have the `wcsrtombs' function or macro. */
-#define HAVE_WCSRTOMBS 1
+//#define HAVE_WCSRTOMBS 1
 
 /* Define to 1 if you have the `wcstombs' function or macro. */
 /* #undef HAVE_WCSTOMBS */
 
 /* Define to 1 if you have the `wctype' function or macro. */
-#define HAVE_WCTYPE 1
+//#define HAVE_WCTYPE 1
 
 /* Define to 1 if you have the <wctype.h> header file. */
 #define HAVE_WCTYPE_H 1
