@@ -145,9 +145,9 @@ i=0;
 /*
  * We read the inflected part
  */
-val=parse_string(line,&i,temp,P_COMMA,P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
+val=parse_string(line,&i,temp,P_COMMA,P_DOT,keep_equal_signs?P_EQUAL:P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
-   if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
+   if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
    free_dela_entry(res);
    return NULL;
@@ -155,7 +155,7 @@ if (val==P_BACKSLASH_AT_END) {
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
    if (!verbose) {
-      error("***Dictionary error: incorrect line\n_%S_\n",line);
+      error("***Dictionary error: unexpected end of line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
    free_dela_entry(res);
    return NULL;
@@ -163,15 +163,15 @@ if (line[i]=='\0') {
 /* The inflected form cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
-      error("***Dictionary error: incorrect line\n_%S_\n",line);
+      error("***Dictionary error: empty inflected form in line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_INFLECTED_FORM;
    free_dela_entry(res);
    return NULL;
 }
-if (u_strchr(temp,'.',1)) {
+if (val==P_FORBIDDEN_CHAR) {
    /* If the inflected form contains an unprotected dot, it's an error */
    if (!verbose) {
-      error("***Dictionary error: incorrect line\n_%S_\n",line);
+      error("***Dictionary error: unprotected dot in inflected form in line\n_%S_\n",line);
    } else (*verbose)=P_UNPROTECTED_DOT;
    free_dela_entry(res);
    return NULL;
@@ -181,17 +181,25 @@ res->inflected=u_strdup(temp);
  * We read the lemma part
  */
 i++;
-val=parse_string(line,&i,temp,P_DOT,P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
+val=parse_string(line,&i,temp,P_DOT,P_COMMA,keep_equal_signs?P_EQUAL:P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
-   if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
+   if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
+   free_dela_entry(res);
+   return NULL;
+}
+if (val==P_FORBIDDEN_CHAR) {
+   /* If the lemma contains an unprotected comma, it's an error */
+   if (!verbose) {
+      error("***Dictionary error: unprotected comma in lemma in line\n_%S_\n",line);
+   } else (*verbose)=P_UNPROTECTED_COMMA;
    free_dela_entry(res);
    return NULL;
 }
 /* If we are at the end of line, it's an error */
 if (line[i]=='\0') {
    if (!verbose) {
-      error("***Dictionary error: incorrect line\n_%S_\n",line);
+      error("***Dictionary error: unexpected end of line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
    free_dela_entry(res);
    return NULL;
@@ -203,14 +211,6 @@ if (temp[0]=='\0') {
 }
 else {
 	/* Otherwise, we copy it */
-   if (u_strchr(temp,',',1)) {
-      /* If the lemma contains an unprotected comma, it's an error */
-      if (!verbose) {
-         error("***Dictionary error: incorrect line\n_%S_\n",line);
-      } else (*verbose)=P_UNPROTECTED_COMMA;
-      free_dela_entry(res);
-      return NULL;
-   }
 	res->lemma=u_strdup(temp);
 }
 /*
@@ -219,7 +219,7 @@ else {
 i++;
 val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
-   if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
+   if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
    free_dela_entry(res);
    return NULL;
@@ -227,7 +227,7 @@ if (val==P_BACKSLASH_AT_END) {
 /* The grammatical code cannot be empty */
 if (temp[0]=='\0') {
    if (!verbose) {
-      error("***Dictionary error: incorrect line\n_%S_\n",line);
+      error("***Dictionary error: empty grammatical code in line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
    free_dela_entry(res);
    return NULL;
@@ -240,7 +240,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
 	i++;
    val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
-      if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
+      if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
       free_dela_entry(res);
       return NULL;
@@ -248,7 +248,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
    /* A grammatical or semantic code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
-         error("***Dictionary error: incorrect line\n_%S_\n",line);
+         error("***Dictionary error: empty semantic code in line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
       free_dela_entry(res);
       return NULL;
@@ -263,15 +263,15 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
 	i++;
    val=parse_string(line,&i,temp,P_COLON_SLASH,P_EMPTY,P_EMPTY);
    if (val==P_BACKSLASH_AT_END) {
-      if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
+      if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
       free_dela_entry(res);
       return NULL;
    }
-      /* An inflectional code cannot be empty */
+   /* An inflectional code cannot be empty */
    if (temp[0]=='\0') {
       if (!verbose) {
-         error("***Dictionary error: incorrect line\n_%S_\n",line);
+         error("***Dictionary error: empty inflectional code in line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
       free_dela_entry(res);
       return NULL;
