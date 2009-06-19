@@ -113,7 +113,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbpj:h";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpj:h";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
