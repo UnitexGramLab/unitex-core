@@ -57,7 +57,7 @@ UNITEX_FUNC int UNITEX_CALL AddAbstractDelaSpace(const t_persistent_dic_func_arr
 		struct List_AbstractDelaSpace* tmp = p_abstract_dela_space_list;
 		while ((tmp->next) != NULL)
 			tmp = tmp->next;
-		tmp->next = p_abstract_dela_space_list;
+		tmp->next = new_item;
 	}
 
 	if ((new_item->afs.func_array.fnc_Init_DelaSpace) != NULL)

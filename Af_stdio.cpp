@@ -62,7 +62,7 @@ UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpace(const t_fileio_func_array* func
 		struct List_AbstractFileSpace* tmp = p_abstract_file_space_list;
 		while ((tmp->next) != NULL)
 			tmp = tmp->next;
-		tmp->next = p_abstract_file_space_list;
+		tmp->next = new_item;
 	}
 
 	if ((new_item->afs.func_array.fnc_Init_FileSpace) != NULL)

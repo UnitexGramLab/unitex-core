@@ -59,7 +59,7 @@ UNITEX_FUNC int UNITEX_CALL AddAbstractFst2Space(const t_persistent_fst2_func_ar
 		struct List_AbstractFst2Space* tmp = p_abstract_fst2_space_list;
 		while ((tmp->next) != NULL)
 			tmp = tmp->next;
-		tmp->next = p_abstract_fst2_space_list;
+		tmp->next = new_item;
 	}
 
 	if ((new_item->afs.func_array.fnc_Init_Fst2Space) != NULL)
