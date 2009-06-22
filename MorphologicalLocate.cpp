@@ -92,9 +92,9 @@ unichar tmp[128];
 convert_Korean_text(tag_token,tmp,p->jamo,p->alphabet);
 int i=0;
 if (token==NULL) {
-	token=tag_token;
+	//token=u_strdup("<?>");
 }
-int OK=(token[0]==0xB2A5);
+int OK=0&&(token[0]==0xB2A5);
 if (OK) error("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
 while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
 	/* We ignore syllab bounds in both tfst and fst2 tags */
@@ -216,6 +216,7 @@ if (current_state->control & 1) {
       }
    }
 }
+
 /* If we have reached the end of the token buffer, we indicate it by setting
  * the current tokens to -1 */
 if (pos+p->current_origin>=p->token_buffer->size) {
@@ -656,7 +657,6 @@ while (trans!=NULL) {
          /* Here, we deal with all the "real" patterns: <be>, <N+z1:ms>, <be.V:K> and <am,be.V> */
          struct parsing_info* L=NULL;
          unichar var_name[128];
-         error("ici\n");
          int save_dic_entry=(p->output_policy!=IGNORE_OUTPUTS && is_morpho_variable_output(tag->output,var_name));
          explore_dic_in_morpho_mode(p,pos,pos_in_token,&L,tag->pattern,save_dic_entry,jamo,pos_in_jamo);
          unichar content[4096];
@@ -760,7 +760,7 @@ p->stack_base=p->stack->stack_pointer;
 struct dic_variable* dic_variable_backup=clone_dic_variable_list(p->dic_variables);
 int current_token=p->buffer[pos+p->current_origin];
 //error("current token=%d/%S  jamo=%S\n",current_token,p->tokens->value[current_token],p->jamo_tags[current_token]);
-morphological_locate(0,state,pos,0,depth+1,&L,0,NULL,p,p->jamo_tags[current_token],0);
+morphological_locate(0,state,pos,0,depth+1,&L,0,NULL,p,(p->jamo_tags!=NULL)?p->jamo_tags[current_token]:NULL,0);
 clear_dic_variable_list(&(p->dic_variables));
 p->stack_base=old_StackBase;
 if (L!=NULL) {
@@ -822,7 +822,7 @@ void explore_dic_in_morpho_mode__(struct locate_parameters* p,
 int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
 offset=offset+2;
 if (!(n_transitions & 32768)) {
-	error("\narriba!\n\n\n");
+	//error("\narriba!\n\n\n");
    /* If this node is final, we get the INF line number */
    inflected[pos_in_inflected]='\0';
    if (pattern==NULL) {
@@ -838,9 +838,10 @@ if (!(n_transitions & 32768)) {
          /* For each compressed code of the INF line, we save the corresponding
           * DELAF line in 'info->dlc' */
          uncompress_entry(inflected,tmp->string,line);
-         error("\non decompresse la ligne _%S_\n",line);
+         //error("\non decompresse la ligne _%S_\n",line);
          struct dela_entry* dela_entry=tokenize_DELAF_line(line);
          if (dela_entry!=NULL && is_entry_compatible_with_pattern(dela_entry,pattern)) {
+            //error("et ca matche!!\n");
             (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),
             		                              save_dic_entry?dela_entry:NULL,jamo,pos_in_jamo);
          }
@@ -925,7 +926,7 @@ for (int i=0;i<n_transitions;i++) {
 				   jamo,pos_in_jamo);
 	   }
    } else {
-	   error("la: jamo du text=%C (%04X)   jamo de dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	   //error("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 	   /* Korean mode: we may match just the current jamo, or also the current hangul, but aonly if we are
 	    * after a syllab bound */
 	   unichar c2[2];
@@ -936,6 +937,7 @@ for (int i=0;i<n_transitions;i++) {
 	   int new_pos_in_jamo=pos_in_jamo;
 	   int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_current_token,c2,p,NULL);
 	   if (result!=0) {
+	      //error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 		   /* Nothing to do if the match failed */
 		   int new_pos_offset=pos_offset;
 		   unichar* new_jamo=jamo;
@@ -963,19 +965,19 @@ for (int i=0;i<n_transitions;i++) {
 		   				   new_jamo,new_pos_in_jamo);
 	   }
 	   /* Then we try to match a hangul, but only if we are just after a syllab bound */
-	   error("after syllab=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
+	   //error("after syllab=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
 	   if (after_syllab_bound && c==current_token[pos_in_current_token]) {
 			/* We explore the rest of the dictionary only if the
 			 * dictionary char is compatible with the token char. In that case,
 			 * we copy in 'inflected' the exact character that is in the dictionary. */
 			inflected[pos_in_inflected]=c;
-			error("yes!\n\n\n");
+			//error("yes!\n\n\n");
 			int new_pos_in_current_token=pos_in_current_token+1;
 			int new_pos_in_jamo=pos_in_jamo;
 			if (current_token[new_pos_in_current_token]=='\0') {
 				/* If we matched the last character of the token, we must reset the jamo position to 0 */
 				new_pos_in_jamo=0;
-				error("we did it\n");
+				//error("we did it\n");
 			} else {
 				/* Otherwise, we must update the jamo position */
 				while (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
