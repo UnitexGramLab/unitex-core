@@ -322,6 +322,12 @@ void get_angle_bracket_sequence(unichar* input,int *pos,unichar* dest) {
 int i=0;
 do {
    dest[i++]=input[(*pos)++];
+   if (dest[i-1]=='\\') {
+      if (input[(*pos)]=='\0') {
+         fatal_error("Backslash at end of <... sequence: %S\n",input);
+      }
+      dest[i++]=input[(*pos)++];
+   }
 } while (input[*pos]!='>' && input[*pos]!='\0' && i<MAX_GRF_BOX_CONTENT);
 if (i==MAX_GRF_BOX_CONTENT) {
    fatal_error("Angle bracket sequence too long in get_angle_bracket_sequence\n");
