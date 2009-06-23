@@ -49,7 +49,7 @@ void normal_tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct ha
 void char_by_char_tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,struct hash_table*,vector_int*,vector_int*,
 		   int*,int*,int*,int*);
 void save_new_line_positions(U_FILE*,vector_int*);
-
+void load_token_file(char* filename,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
 void write_number_of_tokens(const char* name,int n) {
   U_FILE* f;
@@ -81,6 +81,8 @@ const char* usage_Tokenize =
          "                     (except for the tags {S}, {STOP} or like {today,.ADV}). This\n"
          "                     mode may be used for languages like Thai.\n"
          "  -w/--word_by_word: word by word tokenization (default);\n"
+         "  -t TOKENS/--tokens=TOKENS: specifies a tokens.txt file to load and modify, instead of\n"
+         "                             creating a new one from scratch;\n"
          "  -h/--help: this help\n"
          "\n"
          "Tokenizes the text. The token list is stored into \"tokens.txt\" and\n"
@@ -98,11 +100,12 @@ u_printf(usage_Tokenize);
 }
 
 
-const char* optstring_Tokenize=":a:cwh";
+const char* optstring_Tokenize=":a:cwt:h";
 const struct option_TS lopts_Tokenize[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"char_by_char", no_argument_TS, NULL, 'c'},
    {"word_by_word", no_argument_TS, NULL, 'w'},
+   {"tokens", required_argument_TS, NULL, 't'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -115,6 +118,7 @@ if (argc==1) {
 }
 
 char alphabet[FILENAME_MAX]="";
+char token_file[FILENAME_MAX]="";
 int val,index=-1;
 int mode=NORMAL;
 struct OptVars* vars=new_OptVars();
@@ -127,6 +131,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tokenize,lopts_Tokenize,&ind
              break;
    case 'c': mode=CHAR_BY_CHAR; break;
    case 'w': mode=NORMAL; break;
+   case 't': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty token file name\n");
+             }
+             strcpy(token_file,vars->optarg);
+             break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Tokenize[index].name);
@@ -206,6 +215,9 @@ vector_int* n_occur=new_vector_int(4096);
 vector_int* n_enter_pos=new_vector_int(4096);
 struct hash_table* hashtable=new_hash_table((HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
                                             (FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
+if (token_file[0]!='\0') {
+   load_token_file(token_file,tokens,hashtable,n_occur);
+}
 int SENTENCES=0;
 int TOKENS_TOTAL=0;
 int WORDS_TOTAL=0;
@@ -292,6 +304,26 @@ n_occur->tab[n]++;
 return n;
 }
 
+
+/**
+ * Loads an existing token file.
+ */
+void load_token_file(char* filename,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur) {
+U_FILE* f=u_fopen(UTF16_LE,filename,U_READ);
+if (f==NULL) {
+   fatal_error("Cannot open token file %s\n",filename);
+}
+unichar tmp[1024];
+if (EOF==u_fgets(tmp,f)) {
+   fatal_error("Unexpected empty token file %s\n",filename);
+}
+while (EOF!=u_fgets(tmp,f)) {
+   int n=get_token_number(tmp,tokens,hashtable,n_occur);
+   /* We decrease the number of occurrences, in order to have all those numbers equal to 0 */
+   n_occur->tab[n]--;
+}
+u_fclose(f);
+}
 
 
 void normal_tokenization(U_FILE* f,U_FILE* coded_text,U_FILE* output,Alphabet* alph,
