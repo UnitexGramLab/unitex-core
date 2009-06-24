@@ -1431,11 +1431,11 @@ code_gramm[i-(*semitic)]='\0';
 void build_tag(struct dela_entry* entry,unichar* token,unichar* tag) {
 int i;
 tag[0]='{';
-/* We protect the comma, if any, in the inflected form */
-int l=1+escape(((token!=NULL)?token:entry->inflected),&(tag[1]),P_COMMA);
+/* We protect the comma and dot, if any, in the inflected form */
+int l=1+escape(((token!=NULL)?token:entry->inflected),&(tag[1]),P_COMMA_DOT);
 tag[l++]=',';
-/* We protect the points, if any, in the lemma */
-l=l+escape(entry->lemma,&(tag[l]),P_DOT);
+/* We protect the comma and dots, if any, in the lemma */
+l=l+escape(entry->lemma,&(tag[l]),P_COMMA_DOT);
 tag[l++]='.';
 /* We protect the + and :, if any, in the grammatical code */
 l=l+escape(entry->semantic_codes[0],&(tag[l]),P_PLUS_COLON);
