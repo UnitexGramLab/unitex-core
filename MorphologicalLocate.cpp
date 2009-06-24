@@ -89,12 +89,16 @@ return (i!=1 && s[i]=='$' && s[i+1]=='\0');
 int get_jamo_longest_prefix(unichar* jamo,int *new_pos_in_jamo,int *new_pos_in_token,unichar* tag_token,
 		struct locate_parameters* p,unichar* token) {
 unichar tmp[128];
-convert_Korean_text(tag_token,tmp,p->jamo,p->alphabet);
+if (tag_token[0]==KR_SYLLAB_BOUND && tag_token[1]=='\0') {
+   u_strcpy(tmp,tag_token);
+} else {
+   convert_Korean_text(tag_token,tmp,p->jamo,p->alphabet);
+}
 int i=0;
 if (token==NULL) {
-	//token=u_strdup("<?>");
+	token=tag_token;
 }
-int OK=0&&(token[0]==0xB2A5);
+int OK=1||(token[0]==0xB2A5);
 if (OK) error("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
 while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
 	/* We ignore syllab bounds in both tfst and fst2 tags */
@@ -926,8 +930,8 @@ for (int i=0;i<n_transitions;i++) {
 				   jamo,pos_in_jamo);
 	   }
    } else {
-	   //error("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
-	   /* Korean mode: we may match just the current jamo, or also the current hangul, but aonly if we are
+	   error("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	   /* Korean mode: we may match just the current jamo, or also the current hangul, but only if we are
 	    * after a syllab bound */
 	   unichar c2[2];
 	   c2[0]=c;
@@ -935,9 +939,9 @@ for (int i=0;i<n_transitions;i++) {
 	   /* We try to match all the jamo sequence found in the dictionary */
 	   int new_pos_in_current_token=pos_in_current_token;
 	   int new_pos_in_jamo=pos_in_jamo;
-	   int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_current_token,c2,p,NULL);
+	   int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_current_token,c2,p,current_token);
 	   if (result!=0) {
-	      //error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	      error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 		   /* Nothing to do if the match failed */
 		   int new_pos_offset=pos_offset;
 		   unichar* new_jamo=jamo;
@@ -966,6 +970,7 @@ for (int i=0;i<n_transitions;i++) {
 	   }
 	   /* Then we try to match a hangul, but only if we are just after a syllab bound */
 	   //error("after syllab=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
+#if 0
 	   if (after_syllab_bound && c==current_token[pos_in_current_token]) {
 			/* We explore the rest of the dictionary only if the
 			 * dictionary char is compatible with the token char. In that case,
@@ -989,6 +994,7 @@ for (int i=0;i<n_transitions;i++) {
 					   pos_offset,matches,pattern,save_dic_entry,
 					   jamo,new_pos_in_jamo);
 	   }
+#endif
    }
 }
 }

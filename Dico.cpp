@@ -188,9 +188,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
 if (text[0]=='\0') {
    fatal_error("You must specify a .snt text file\n");
 }
-if (alph[0]=='\0') {
-   fatal_error("You must specify an alphabet file\n");
-}
 if (vars->optind==argc) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
@@ -209,11 +206,14 @@ if (!u_fempty(UTF16_LE,snt_files->dlc)) {
 if (!u_fempty(UTF16_LE,snt_files->err)) {
    fatal_error("Cannot create %s\n",snt_files->err);
 }
-/* We load the alphabet */
-Alphabet* alphabet=load_alphabet(alph);
-if (alphabet==NULL) {
-   error("Cannot open alphabet file %s\n",alph);
-   return 1;
+Alphabet* alphabet=NULL;
+if (alph[0]!='\0') {
+   /* We load the alphabet */
+   alphabet=load_alphabet(alph);
+   if (alphabet==NULL) {
+      error("Cannot open alphabet file %s\n",alph);
+      return 1;
+   }
 }
 /* We load the text tokens */
 tokens=load_text_tokens(snt_files->tokens_txt);

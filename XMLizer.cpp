@@ -137,9 +137,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_XMLizer,lopts_XMLizer,&index
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-if (alphabet[0]=='\0') {
-   fatal_error("You must specify the alphabet file\n");
-}
 if (segmentation[0]=='\0') {
    fatal_error("You must specify the segmentation grammar to use\n");
 }

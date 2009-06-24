@@ -145,9 +145,6 @@ if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-if (alphabet[0]=='\0') {
-   fatal_error("You must specify the alphabet file\n");
-}
 if (dictionary[0]=='\0') {
    fatal_error("You must specify the .bin dictionary to use\n");
 }
@@ -158,10 +155,13 @@ if (language==-1) {
    fatal_error("You must specify the language\n");
 }
 
-u_printf("Loading alphabet...\n");
-Alphabet* alph=load_alphabet(alphabet);
-if (alph==NULL) {
-   fatal_error("Cannot load alphabet file %s\n",alphabet);
+Alphabet* alph=NULL;
+if (alphabet[0]!='\0') {
+   u_printf("Loading alphabet...\n");
+   alph=load_alphabet(alphabet);
+   if (alph==NULL) {
+      fatal_error("Cannot load alphabet file %s\n",alphabet);
+   }
 }
 char temp[FILENAME_MAX];
 struct string_hash* forbiddenWords=NULL;

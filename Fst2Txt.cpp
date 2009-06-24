@@ -124,10 +124,6 @@ if (p->text_file==NULL) {
    fatal_error("You must specify the text file\n");
 }
 
-if (p->alphabet_file==NULL) {
-   fatal_error("You must specify the alphabet file\n");
-}
-
 char tmp[FILENAME_MAX];
 remove_extension(p->text_file,tmp);
 strcat(tmp,".tmp");

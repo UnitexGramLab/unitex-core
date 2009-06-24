@@ -234,9 +234,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
 if (text[0]=='\0') {
    fatal_error("You must specify a .snt text file\n");
 }
-if (alph[0]=='\0') {
-   fatal_error("You must specify an alphabet file\n");
-}
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }

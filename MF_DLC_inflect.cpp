@@ -111,7 +111,15 @@ int inflect(char* DLC, char* DLCF, int config_files_status,
 #endif
 			/* Then, we print its inflected forms to the output */
 			for (int i = 0; i < forms.no_forms; i++) {
-				u_fprintf(dlcf, "%S,%S.%S", forms.forms[i].form,
+			   
+			   unichar foo[1024];   
+			   if (jamo!=NULL) {
+			      convert_Korean_text(forms.forms[i].form,foo,jamo,alph);
+			   } else {
+			      u_strcpy(foo,forms.forms[i].form);
+			   }
+			   
+			   u_fprintf(dlcf, "%S,%S.%S", foo/*forms.forms[i].form*/,
 						DELAS_entry->lemma, code_gramm);
 				/* We add the semantic codes, if any */
 				for (int j = 1; j < DELAS_entry->n_semantic_codes; j++) {

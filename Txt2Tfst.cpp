@@ -130,7 +130,6 @@ if (argc==1) {
    return 0;
 }
 
-
 char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
@@ -182,10 +181,10 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-if (alphabet[0]=='\0') {
-   fatal_error("You must specify the alphabet file\n");
-}
 if (KOREAN) {
+   if (alphabet[0]=='\0') {
+      fatal_error("-a option is mandatory when -k is used\n");
+   }
    if (norm[0]!='\0') {
       error("-n option is ignored when -k is used\n");
    }
@@ -224,9 +223,12 @@ if (!KOREAN) {
       u_fclose(tag_file);
    }
 }
-Alphabet* alph=load_alphabet(alphabet,KOREAN);
-if (alph==NULL) {
-   fatal_error("Cannot open %s\n",alphabet);
+Alphabet* alph=NULL;
+if (alphabet[0]!='\0') {
+   alph=load_alphabet(alphabet,KOREAN);
+   if (alph==NULL) {
+      fatal_error("Cannot open %s\n",alphabet);
+   }
 }
 struct text_tokens* tokens=load_text_tokens(tokens_txt);
 if (tokens==NULL) {

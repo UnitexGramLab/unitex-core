@@ -187,7 +187,7 @@ while (list!=NULL) {
     * list. We don't raise an error because if there is by accident a token
     * in a dictionary that is not in the text, it would block the Locate
     * without necessity. */
-   if (is_letter2(list->string[0],alphabet) || j==-1) {
+   if (is_letter(list->string[0],alphabet) || j==-1) {
       /* If the current token is made of letters, we look for all
        * its case variants. If we have a non letter token that is
        * not in the text tokens, we handle it here to produce an

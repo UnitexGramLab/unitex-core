@@ -139,9 +139,6 @@ if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
 
-if (alphabet[0]=='\0') {
-   fatal_error("You must specify the alphabet file\n");
-}
 if (root[0]=='\0') {
    fatal_error("You must specify the root .bin dictionary\n");
 }
@@ -158,11 +155,14 @@ if (output[0]=='\0') {
    fatal_error("You must specify the output dictionary file name\n");
 }
 
-u_printf("Loading alphabet...\n");
-Alphabet* alph=load_alphabet(alphabet);
-if (alph==NULL) {
-   fatal_error("Cannot load alphabet file %s\n",alphabet);
-   return 1;
+Alphabet* alph=NULL;
+if (alphabet[0]!='\0') {
+   u_printf("Loading alphabet...\n");
+   alph=load_alphabet(alphabet);
+   if (alph==NULL) {
+      fatal_error("Cannot load alphabet file %s\n",alphabet);
+      return 1;
+   }
 }
 u_printf("Loading match list...\n");
 U_FILE* f_list=u_fopen(UTF16_LE,argv[vars->optind],U_READ);

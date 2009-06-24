@@ -260,7 +260,7 @@ return IS_LOWER_MACRO(c,alphabet);
  * Returns a non-zero value if 'c' is considered
  * as a letter in for the given alphabet, 0 otherwise.
  */
-int is_letter(unichar c,Alphabet* alphabet) {
+static int is_letter__(unichar c,Alphabet* alphabet) {
 return CASE_FLAG_MACRO(c,alphabet) != 0;
 }
 
@@ -270,11 +270,11 @@ return CASE_FLAG_MACRO(c,alphabet) != 0;
  * it is used to determine which characters are letters; otherwise, the
  * 'u_is_letter' function is used.
  */
-int is_letter2(unichar c,Alphabet* alphabet) {
+int is_letter(unichar c,Alphabet* alphabet) {
 if (alphabet==NULL) {
    return u_is_letter(c);
 }
-return is_letter(c,alphabet);
+return is_letter__(c,alphabet);
 }
 
 

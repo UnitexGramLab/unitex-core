@@ -174,9 +174,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
    index=-1;
 }
 
-if (alphabet[0]=='\0') {
-   fatal_error("You must specify an alphabet file\n");
-}
 char grammar[FILENAME_MAX];
 char output[FILENAME_MAX];
 if (vars->optind!=argc-1) {

@@ -396,7 +396,7 @@ while (c!=EOF) {
    else {
       s[0]=(unichar)c;
       n=1;
-      if (!is_letter2(s[0],alph)) {
+      if (!is_letter(s[0],alph)) {
          s[1]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
          (*TOKENS_TOTAL)++;
@@ -405,7 +405,7 @@ while (c!=EOF) {
          c=u_fgetc(f);
       }
       else {
-         while ((n<(MAX_TAG_LENGTH-1)) && is_letter2((unichar)(c=u_fgetc(f)),alph)) {
+         while ((n<(MAX_TAG_LENGTH-1)) && is_letter((unichar)(c=u_fgetc(f)),alph)) {
            s[n++]=(unichar)c;
            COUNT++;
          }

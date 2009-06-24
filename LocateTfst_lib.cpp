@@ -90,12 +90,17 @@ if (infos.fst2==NULL) {
 infos.tfst=tfst;
 infos.number_of_matches=0;
 int korean=(jamo_table!=NULL && jamo_table[0]!='\0');
-infos.alphabet=load_alphabet(alphabet,korean);
-if (infos.alphabet==NULL) {
-	close_text_automaton(tfst);
-	free_abstract_Fst2(infos.fst2,&fst2_free);
-	error("Cannot load alphabet file: %s\n",alphabet);
-	return 0;
+infos.alphabet=NULL;
+if (alphabet!=NULL && alphabet[0]!='\0') {
+   /* We want to allow undefined alphabets (see comments above 'is_letter'
+    * in Alphabet.cpp) */
+   infos.alphabet=load_alphabet(alphabet,korean);
+   if (infos.alphabet==NULL) {
+	   close_text_automaton(tfst);
+	   free_abstract_Fst2(infos.fst2,&fst2_free);
+	   error("Cannot load alphabet file: %s\n",alphabet);
+	   return 0;
+   }
 }
 infos.output=u_fopen(UTF16_LE,output,U_WRITE);
 if (infos.output==NULL) {
@@ -217,6 +222,9 @@ return 1;
  * If we must deal with a Korean .tfst, we compute the jamo version of all fst2 tags.
  */
 void init_Korean_stuffs(struct locate_tfst_infos* infos,char* jamo_table) {
+if (infos->alphabet==NULL) {
+   fatal_error("init_Korean_stuffs cannot be invoked with a NULL alphabet\n");
+}
 if (jamo_table==NULL || jamo_table[0]=='\0') {
    infos->korean=0;
    infos->jamo=NULL;

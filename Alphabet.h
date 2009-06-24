@@ -94,7 +94,6 @@ int is_equal_or_uppercase(unichar*,unichar*,Alphabet*);
 int is_lower(unichar,Alphabet*);
 int is_upper(unichar,Alphabet*);
 int is_letter(unichar,Alphabet*);
-int is_letter2(unichar,Alphabet*);
 int is_sequence_of_lowercase_letters(unichar*,Alphabet*);
 int is_sequence_of_uppercase_letters(unichar*,Alphabet*);
 int is_sequence_of_letters(unichar*,Alphabet*);

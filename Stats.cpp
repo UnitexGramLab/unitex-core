@@ -215,9 +215,6 @@ if (vars->optind!=argc-1) {
 if (output[0]=='\0') {
    fatal_error("You must specify a output file\n");
 }
-if (alphabet[0]=='\0') {
-   fatal_error("You must specify the alphabet file\n");
-}
 strcpy(concord_ind,argv[vars->optind]);
 get_path(concord_ind,tokens_txt);
 strcat(tokens_txt,"tokens.txt");
@@ -255,13 +252,13 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
 		fatal_error("Error in build_counted_concord, tokens cannot be loaded!");
 	}
 
-	Alphabet* alphabet = load_alphabet(alphabetName);
-
-	if (alphabet == NULL)
-	{
-		fatal_error("Error in concord_stats, alphabet cannot be loaded!");
+	Alphabet* alphabet = NULL;
+	if (alphabetName!=NULL && alphabetName[0]!='\0') {
+	   load_alphabet(alphabetName);
+	   if (alphabet == NULL) {
+	      fatal_error("Error in concord_stats, alphabet cannot be loaded!");
+	   }
 	}
-
 
 	int i;
 	any* hash_val;

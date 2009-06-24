@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -71,10 +71,10 @@ int pos=0;
 struct list_ustring* tokens=NULL;
 struct list_ustring* end=NULL;
 while (text[pos]!='\0') {
-   if (is_letter2(text[pos],alphabet)) {
+   if (is_letter(text[pos],alphabet)) {
       /* If we have a letter, we must read the whole letter sequence */
       int j=0;
-      while (j<(4096-1) && is_letter2(text[pos],alphabet)) {
+      while (j<(4096-1) && is_letter(text[pos],alphabet)) {
          /* The loop while end if we find a non letter chararacter,
           * including '\0' */
          tmp[j++]=text[pos++];

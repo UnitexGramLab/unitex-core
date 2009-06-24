@@ -177,11 +177,13 @@ switch(output_policy) {
    case MERGE_OUTPUTS: u_fprintf(out,"#M\n"); break;
    case REPLACE_OUTPUTS: u_fprintf(out,"#R\n"); break;
 }
-u_printf("Loading alphabet...\n");
-p->alphabet=load_alphabet(alphabet,jamo!=NULL);
-if (p->alphabet==NULL) {
-   error("Cannot load alphabet file %s\n",alphabet);
-   return 0;
+if (alphabet!=NULL && alphabet[0]!='\0') {
+   u_printf("Loading alphabet...\n");
+   p->alphabet=load_alphabet(alphabet,jamo!=NULL);
+   if (p->alphabet==NULL) {
+      error("Cannot load alphabet file %s\n",alphabet);
+      return 0;
+   }
 }
 struct string_hash* semantic_codes=new_string_hash();
 extract_semantic_codes(dlf,semantic_codes);

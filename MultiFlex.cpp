@@ -40,7 +40,7 @@
 
 
 //Current language's alphabet
-Alphabet* alph;
+Alphabet* alph=NULL;
 
 // Directory containing the inflection tranducers and the 'Morphology' file
 extern char inflection_directory[FILENAME_MAX];
@@ -143,10 +143,6 @@ if (vars->optind!=argc-1) {
 if (output[0]=='\0') {
    fatal_error("You must specify the output DELAF name\n");
 }
-if (alphabet[0]=='\0') {
-   fatal_error("You must specify the alphabet file\n");
-}
-
 int err;  //0 if a function completes with no error
 //Load morphology description
 char morphology[FILENAME_MAX];
@@ -157,13 +153,15 @@ if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
 print_language_morpho();
-//Load alphabet
-alph=load_alphabet(alphabet,1);  //To be done once at the beginning of the inflection
-if (alph==NULL) {
-   error("Cannot open alphabet file %s\n",alphabet);
-   free_language_morpho();
-   free_alphabet(alph);
-   return 1;
+if (alphabet[0]!='\0') {
+   //Load alphabet
+   alph=load_alphabet(alphabet,1);  //To be done once at the beginning of the inflection
+   if (alph==NULL) {
+      error("Cannot open alphabet file %s\n",alphabet);
+      free_language_morpho();
+      free_alphabet(alph);
+      return 1;
+   }
 }
 //Init equivalence files
 char equivalences[FILENAME_MAX];
@@ -186,6 +184,9 @@ if (err) {
 jamoCodage* jamo=NULL;
 Jamo2Syl* jamo2syl=NULL;
 if (jamo_table[0]!='\0') {
+   if (alph==NULL) {
+      fatal_error("Cannot initialize Korean data with a NULL alphabet\n");
+   }
 	jamo=new jamoCodage();
 	jamo->loadJamoMap(jamo_table);
 	/* We also initializes the Chinese -> Hangul table */
