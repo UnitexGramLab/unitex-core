@@ -149,10 +149,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tokenize,lopts_Tokenize,&ind
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-if (alphabet[0]=='\0') {
-   fatal_error("You must specify the alphabet file\n");
-}
-
 U_FILE* text;
 U_FILE* out;
 U_FILE* output;
@@ -160,7 +156,7 @@ U_FILE* enter;
 char tokens_txt[FILENAME_MAX];
 char text_cod[FILENAME_MAX];
 char enter_pos[FILENAME_MAX];
-Alphabet* alph;
+Alphabet* alph=NULL;
 
 get_snt_path(argv[vars->optind],text_cod);
 strcat(text_cod,"text.cod");
@@ -172,11 +168,13 @@ text=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
 if (text==NULL) {
    fatal_error("Cannot open text file %s\n",argv[vars->optind]);
 }
-alph=load_alphabet(alphabet);
-if (alph==NULL) {
-   error("Cannot load alphabet file %s\n",alphabet);
-   u_fclose(text);
-   return 1;
+if (alphabet[0]!='\0') {
+   alph=load_alphabet(alphabet);
+   if (alph==NULL) {
+      error("Cannot load alphabet file %s\n",alphabet);
+      u_fclose(text);
+      return 1;
+   }
 }
 out=u_fopen(BINARY,text_cod,U_WRITE);
 if (out==NULL) {
@@ -398,7 +396,7 @@ while (c!=EOF) {
    else {
       s[0]=(unichar)c;
       n=1;
-      if (!is_letter(s[0],alph)) {
+      if (!is_letter2(s[0],alph)) {
          s[1]='\0';
          n=get_token_number(s,tokens,hashtable,n_occur);
          (*TOKENS_TOTAL)++;
@@ -407,7 +405,7 @@ while (c!=EOF) {
          c=u_fgetc(f);
       }
       else {
-         while ((n<(MAX_TAG_LENGTH-1)) && is_letter((unichar)(c=u_fgetc(f)),alph)) {
+         while ((n<(MAX_TAG_LENGTH-1)) && is_letter2((unichar)(c=u_fgetc(f)),alph)) {
            s[n++]=(unichar)c;
            COUNT++;
          }
