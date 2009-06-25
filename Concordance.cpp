@@ -887,20 +887,35 @@ while (matches!=NULL) {
          }
       }
 	}
-	position_in_chars=start_pos_char+matches->m.start_pos_in_char;
+	position_in_chars=start_pos_char;
 	position_in_tokens=start_pos;
-	end_pos_char=start_pos_char;
-   end_from_eos=start_from_eos;
-	/* We update 'end_pos_char' in the same way */
-	for (int z=start_pos;z<end_pos;z++) {
-		int token_size=0;
-      if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
-         token_size=token_length[buffer->int_buffer[z]];
-      }
-      end_pos_char=end_pos_char+token_size;
-      end_from_eos=end_from_eos+token_size;
+	
+	if (matches->m.start_pos_in_token<matches->m.end_pos_in_token) {
+	   /* If the match is made of several tokens, we must set end_pos_in_char 
+	    * to the beginning of the next token */
+	   int start_of_first_token=start_pos_char;
+	   start_pos_char=start_of_first_token+matches->m.start_pos_in_char;
+	   
+	   end_pos_char=start_of_first_token;
+	   end_from_eos=start_from_eos;
+	   
+	   /* We update 'end_pos_char' in the same way */
+	   for (int z=start_pos;z<end_pos;z++) {
+	      int token_size=0;
+	      if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
+	         token_size=token_length[buffer->int_buffer[z]];
+	      }
+	      end_pos_char=end_pos_char+token_size;
+	      end_from_eos=end_from_eos+token_size;
+	   }
+	   end_pos_char=end_pos_char+matches->m.end_pos_in_char+1;
+	} else {
+	   /* If we work on just one token, we can set directly start_pos_in_char 
+	    * anf end_pos_in_char. DO NOT SWAP THE FOLLOWING LINES! */
+	   end_pos_char=start_pos_char+matches->m.end_pos_in_char+1;
+	   start_pos_char=start_pos_char+matches->m.start_pos_in_char;
 	}
-	end_pos_char=end_pos_char+matches->m.end_pos_in_char+1;
+	
 	/* Now we extract the 3 parts of the concordance */
 	extract_left_context(start_pos,matches->m.start_pos_in_char,left,tokens,option,token_length,buffer);
 	extract_match(start_pos,matches->m.start_pos_in_char,end_pos,matches->m.end_pos_in_char,matches->output,middle,tokens,buffer);
