@@ -111,13 +111,13 @@ u_printf(usage_Txt2Tfst);
 }
 
 
-const char* optstring_Txt2Tfst=":a:cn:t:k:j:h";
+const char* optstring_Txt2Tfst=":a:cn:t:f:j:h";
 const struct option_TS lopts_Txt2Tfst[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"clean", no_argument_TS, NULL, 'c'},
    {"normalization_grammar", required_argument_TS, NULL, 'n'},
    {"tagset", required_argument_TS, NULL, 't'},
-   {"korean", required_argument_TS, NULL, 'k'},
+   {"fst2", required_argument_TS, NULL, 'f'},
    {"jamo", required_argument_TS, NULL, 'j'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
@@ -157,13 +157,13 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
              }
              strcpy(tagset,vars->optarg);
              break;
-   case 'k': if (vars->optarg[0]=='\0') {
+   case 'j': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty Jamo table file name\n");
              }
              strcpy(jamoTable,vars->optarg);
              KOREAN=1; 
              break;
-   case 'j': if (vars->optarg[0]=='\0') {
+   case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty Jamo .fst2 file name\n");
              }
              strcpy(jamoFst2,vars->optarg);
