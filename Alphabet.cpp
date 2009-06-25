@@ -196,6 +196,9 @@ return load_alphabet(filename,0);
  * of 'lower' for the given alphabet; returns 0 otherwise.
  */
 int is_upper_of(unichar lower,unichar upper,Alphabet* alphabet) {
+if (alphabet==NULL) {
+   return upper==u_toupper(lower);   
+}
 int i_pos_in_array_of_string = alphabet->pos_in_represent_list[lower];
 if (i_pos_in_array_of_string == 0) return 0;
 int i=0;
