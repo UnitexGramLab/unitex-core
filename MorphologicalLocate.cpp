@@ -842,7 +842,7 @@ if (!(n_transitions & 32768)) {
          /* For each compressed code of the INF line, we save the corresponding
           * DELAF line in 'info->dlc' */
          uncompress_entry(inflected,tmp->string,line);
-         //error("\non decompresse la ligne _%S_\n",line);
+         //error("\non decompresse la ligne 1  _%S_\n",line);
          struct dela_entry* dela_entry=tokenize_DELAF_line(line);
          if (dela_entry!=NULL && is_entry_compatible_with_pattern(dela_entry,pattern)) {
             //error("et ca matche!!\n");

@@ -48,6 +48,7 @@ const unichar P_PLUS_COLON_SLASH_BACKSLASH[] = { '+', ':', '/' , '\\', 0 };
 const unichar P_COLON_SLASH_BACKSLASH[] = { ':', '/' , '\\', 0 };
 const unichar P_COMMA_DOT_BACKSLASH_DIGITS[] = { ',', '.' , '\\', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 0 };
 const unichar P_DOT_PLUS_SLASH_BACKSLASH[] = { '.', '+', '/', '\\', 0 };
+const unichar P_DOT_COMMA_PLUS_SLASH_BACKSLASH[] = { '.', ',', '+', '/', '\\', 0 };
 const unichar P_ELAG_TAG[] = { '.', '!', ':', '>', 0 };
 
 

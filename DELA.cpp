@@ -804,7 +804,9 @@ void uncompress_entry(unichar* inflected,unichar* INF_code,unichar* result) {
 int n;
 int pos,i;
 /* The rebuilt line must start by the inflected form, followed by a comma */
-escape(inflected,result,P_COMMA_DOT);
+unichar escaped_inflected[1024];
+escape(inflected,escaped_inflected,P_COMMA_DOT);
+u_strcpy(result,escaped_inflected);
 u_strcat(result,",");
 if (INF_code[0]=='.') {
    /* First case: the lemma is the same than the inflected form
@@ -823,12 +825,12 @@ if (INF_code[0]=='_') {
       pos++;
    }
    /* We add the inflected form */
-   u_strcat(result,inflected);
+   u_strcat(result,escaped_inflected);
    /* But we start copying the code at position length-n */
    i=u_strlen(result)-n;
    while (INF_code[pos]!='\0') {
-      /* If a char is protected in the code, it must stay protected,
-       * so there is nothing to do but a raw copy. */
+      /* If a char is protected in the code, it must stay protected.
+       * Nothing to do but a raw copy */
       result[i++]=INF_code[pos++];
    }
    result[i]='\0';
@@ -851,7 +853,7 @@ while (INF_code[pos]!='.') {
       int j=0;
       while (INF_code[pos]!='.' && INF_code[pos]!=' ' && INF_code[pos]!='-') {
          if (INF_code[pos]=='\\') {
-            /* If we find a protected char that is not a point, we let it protected */
+            // If we find a protected char that is not a point, we let it protected 
             pos++;
             if (INF_code[pos]!='.') {tmp[j++]='\\';}
          }
@@ -866,10 +868,10 @@ while (INF_code[pos]!='.') {
       tmp_entry[j]='\0';
       rebuild_token(tmp_entry,tmp);
       j=0;
-      /* Once we have rebuilt the token, we protect in it the following chars: . + \ /
+      /* Once we have rebuilt the token, we protect in it the following chars: , . + \ /
        * We must also update 'i'.
        */
-      i+=escape(tmp_entry,&(result[i]),P_DOT_PLUS_SLASH_BACKSLASH);
+      i+=escape(tmp_entry,&(result[i]),P_DOT_COMMA_PLUS_SLASH_BACKSLASH);
    }
 }
 /* Finally, we append the grammatical/inflectional information at the end

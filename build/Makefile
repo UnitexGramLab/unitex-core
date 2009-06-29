@@ -650,7 +650,7 @@ EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o 
 ################################
 ################################
 
-PROGS__ = $(TEST)
+PROGS = $(TEST)
 
 ifeq ($(UNITEXTOOLONLY), yes)
 
