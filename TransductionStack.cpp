@@ -152,9 +152,9 @@ while (s[i]!='\0') {
          }
          if (!u_strcmp(field,"INFLECTED")) {
             /* We use push_input_string because it can protect special chars */
-            push_input_string(p->stack,entry->inflected,1);
+            push_input_string(p->stack,entry->inflected,p->protect_dic_chars);
          } else if (!u_strcmp(field,"LEMMA")) {
-        	 push_input_string(p->stack,entry->lemma,1);
+        	 push_input_string(p->stack,entry->lemma,p->protect_dic_chars);
          } else if (!u_strcmp(field,"CODE")) {
         	 push_output_string(p->stack,entry->semantic_codes[0]);
             for (int i=1;i<entry->n_semantic_codes;i++) {
