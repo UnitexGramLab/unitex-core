@@ -19,6 +19,16 @@
 #
 # can be used to generate Windows executables under Linux, using the mingw32 tools.
 #
+# The option
+#    make UNITEXTOOLONLY=yes
+# build only the UnitexTool executable target
+#
+#    make SYSTEM=windows UNITEXTOOLONLY=yes
+# build only the UnitexTool executable target under Windows
+#
+#    make SYSTEM=mingw32 UNITEXTOOLONLY=yes
+# build only the UnitexTool Windows executable under Linux
+#
 #-----------------------------------
 #
 # If you want to generate a dynamic library, use:
@@ -642,6 +652,14 @@ EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o 
 
 PROGS__ = $(TEST)
 
+ifeq ($(UNITEXTOOLONLY), yes)
+
+
+PROGS = $(UNITEXTOOL)
+OBJS = $(UNITEXTOOL_OBJS)
+
+else
+
 PROGS = $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONVERT) $(DICO)\
 		$(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) \
 		$(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(LOCATETFST) $(MULTIFLEX)\
@@ -656,7 +674,6 @@ PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(S
 endif
 
 
-BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
 OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(CONVERT_OBJS) \
         $(DICO_OBJS) $(ELAG_OBJS)\
@@ -672,7 +689,11 @@ OBJS  = $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(C
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
-		#$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS)  \
+		#$(JAMO2SYL_OBJS) $(SYL2JAMO_OBJS) $(EXTRACTCHAR_OBJS)
+
+endif
+
+BINARIES = $(patsubst %,$(BIN_DIR)%$(EXTENSION),$(PROGS))
 
 
 ###########################
