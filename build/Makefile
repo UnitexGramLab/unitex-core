@@ -20,14 +20,23 @@
 # can be used to generate Windows executables under Linux, using the mingw32 tools.
 #
 # The option
+#    make UNITEX_RELEASE_MEMORY_AT_EXIT=yes
+# request freeing all memory possible at exit (
+#
+# The option
 #    make UNITEXTOOLONLY=yes
 # build only the UnitexTool executable target
+#
+#    you can mix somes parameters
 #
 #    make SYSTEM=windows UNITEXTOOLONLY=yes
 # build only the UnitexTool executable target under Windows
 #
 #    make SYSTEM=mingw32 UNITEXTOOLONLY=yes
 # build only the UnitexTool Windows executable under Linux
+#
+#    make DEBUG=yes UNITEX_RELEASE_MEMORY_AT_EXIT=yes
+# request freeing all memory possible at exit and produce debug version (useful for valgrind)
 #
 #-----------------------------------
 #
@@ -95,6 +104,11 @@ ifeq ($(LIBRARY),yes)
 CFLAGS += -fPIC
 DEFFLAGS += -DUNITEX_LIBRARY
 endif
+
+ifeq ($(UNITEX_RELEASE_MEMORY_AT_EXIT),yes)
+DEFFLAGS += -DUNITEX_RELEASE_MEMORY_AT_EXIT
+endif
+
 
 override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = .libtre-done
