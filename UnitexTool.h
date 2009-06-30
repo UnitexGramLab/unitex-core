@@ -47,8 +47,8 @@ typedef int mainFunc(int argc,char* argv[]) ;
 
 
 int GetNumberOfTool();
-int GetToolInfo(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
-int GetToolInfo(int toolnumber,const char**toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
+int GetToolInfo_byname(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
+int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
 #ifdef __cplusplus
 extern "C" {

@@ -170,7 +170,7 @@ const struct utility_item* found_utility(const char* search)
 	return NULL;
 }
 
-int GetToolInfo(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+int GetToolInfo_byname(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
 {
 const struct utility_item* utility_called = found_utility(toolname);
 if (utility_called == NULL)
@@ -183,7 +183,7 @@ else {
 }
 }
 
-int GetToolInfo(int toolnumber,const char**toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
 {
 const struct utility_item* utility_called = &(utility_array[toolnumber]);
 {
