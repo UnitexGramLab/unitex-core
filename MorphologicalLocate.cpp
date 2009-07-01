@@ -477,54 +477,51 @@ while (meta_list!=NULL) {
          }
          int new_pos;
          int new_pos_in_token;
-         unichar* new_jamo;
+         unichar* new_jamo=NULL;
          int new_pos_in_jamo;
          if (pos_in_token+1==current_token_length) {
             /* If we are at the end of the current token */
             new_pos=pos+1;
             new_pos_in_token=0;
             /* We also update the Jamo things */
-			new_jamo=NULL;
-			if (p->jamo_tags != NULL) {
-			  new_jamo=p->jamo_tags[p->buffer[new_pos+p->current_origin]];
-			}
+			   new_jamo=NULL;
+			   if (p->jamo_tags != NULL) {
+			      new_jamo=p->jamo_tags[p->buffer[new_pos+p->current_origin]];
+			   }
             new_pos_in_jamo=0;
          } else {
             /* If not */
             new_pos=pos;
             new_pos_in_token=pos_in_token+1;
             new_jamo=jamo;
-            /* We have to move in the jamo sequence */
-            new_pos_in_jamo=pos_in_jamo+1;
-
-			if (jamo != NULL) {
-                while (jamo[new_pos_in_jamo]!='\0') {
-            	    if (jamo[new_pos_in_jamo]==KR_SYLLAB_BOUND) {
-            		    /* A syllab bound is OK: we go on the following Jamo */
-            		    new_pos_in_jamo++;
-            		    if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-            			    fatal_error("Unexpected non jamo character after a syllab bound\n");
-            		    }
-            		    break;
-            	    }
-            	    if (u_is_korea_syllabe_letter(jamo[new_pos_in_jamo])) {
-            		    /* A Hangul is OK */
-            		    break;
-            	    }
-            	    if (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-            		    /* If we have a Jamo, we must go on */
-            		    new_pos_in_jamo++;
-            	    } else {
-            		    /* Any other char is OK */
-            		    break;
-            	    }
-                }
-                if (jamo[new_pos_in_jamo]!='\0') {
-            	    fatal_error("Unexpected end of Jamo sequence\n");
-
-			    }
+            /* If we are in Korean mode, we have to move in the jamo sequence */
+            if (jamo!=NULL) {
+               new_pos_in_jamo=pos_in_jamo+1;
+               while (jamo[new_pos_in_jamo]!='\0') {
+            	   if (jamo[new_pos_in_jamo]==KR_SYLLAB_BOUND) {
+            		   /* A syllab bound is OK: we go on the following Jamo */
+               		new_pos_in_jamo++;
+               		if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
+               			fatal_error("Unexpected non jamo character after a syllab bound\n");
+            	   	}
+            		   break;
+            	   }
+            	   if (u_is_korea_syllabe_letter(jamo[new_pos_in_jamo])) {
+            		   /* A Hangul is OK */
+            		   break;
+            	   }
+               	if (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
+               		/* If we have a Jamo, we must go on */
+               		new_pos_in_jamo++;
+               	} else {
+               		/* Any other char is OK */
+            	   	break;
+            	   }
+               }
+               if (jamo[new_pos_in_jamo]!='\0') {
+            	   fatal_error("Unexpected end of Jamo sequence\n");
+               }
             }
-
          }
          morphological_locate(graph_depth,t->state_number,new_pos,new_pos_in_token,depth+1,
                                  matches,n_matches,ctx,p,new_jamo,new_pos_in_jamo);
