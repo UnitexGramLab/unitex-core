@@ -484,7 +484,10 @@ while (meta_list!=NULL) {
             new_pos=pos+1;
             new_pos_in_token=0;
             /* We also update the Jamo things */
-            new_jamo=p->jamo_tags[p->buffer[new_pos+p->current_origin]];
+			new_jamo=NULL;
+			if (p->jamo_tags != NULL) {
+			  new_jamo=p->jamo_tags[p->buffer[new_pos+p->current_origin]];
+			}
             new_pos_in_jamo=0;
          } else {
             /* If not */
@@ -493,30 +496,35 @@ while (meta_list!=NULL) {
             new_jamo=jamo;
             /* We have to move in the jamo sequence */
             new_pos_in_jamo=pos_in_jamo+1;
-            while (jamo[new_pos_in_jamo]!='\0') {
-            	if (jamo[new_pos_in_jamo]==KR_SYLLAB_BOUND) {
-            		/* A syllab bound is OK: we go on the following Jamo */
-            		new_pos_in_jamo++;
-            		if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-            			fatal_error("Unexpected non jamo character after a syllab bound\n");
-            		}
-            		break;
-            	}
-            	if (u_is_korea_syllabe_letter(jamo[new_pos_in_jamo])) {
-            		/* A Hangul is OK */
-            		break;
-            	}
-            	if (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-            		/* If we have a Jamo, we must go on */
-            		new_pos_in_jamo++;
-            	} else {
-            		/* Any other char is OK */
-            		break;
-            	}
+
+			if (jamo != NULL) {
+                while (jamo[new_pos_in_jamo]!='\0') {
+            	    if (jamo[new_pos_in_jamo]==KR_SYLLAB_BOUND) {
+            		    /* A syllab bound is OK: we go on the following Jamo */
+            		    new_pos_in_jamo++;
+            		    if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
+            			    fatal_error("Unexpected non jamo character after a syllab bound\n");
+            		    }
+            		    break;
+            	    }
+            	    if (u_is_korea_syllabe_letter(jamo[new_pos_in_jamo])) {
+            		    /* A Hangul is OK */
+            		    break;
+            	    }
+            	    if (u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
+            		    /* If we have a Jamo, we must go on */
+            		    new_pos_in_jamo++;
+            	    } else {
+            		    /* Any other char is OK */
+            		    break;
+            	    }
+                }
+                if (jamo[new_pos_in_jamo]!='\0') {
+            	    fatal_error("Unexpected end of Jamo sequence\n");
+
+			    }
             }
-            if (jamo[new_pos_in_jamo]!='\0') {
-            	fatal_error("Unexpected end of Jamo sequence\n");
-            }
+
          }
          morphological_locate(graph_depth,t->state_number,new_pos,new_pos_in_token,depth+1,
                                  matches,n_matches,ctx,p,new_jamo,new_pos_in_jamo);
@@ -842,7 +850,7 @@ if (!(n_transitions & 32768)) {
          /* For each compressed code of the INF line, we save the corresponding
           * DELAF line in 'info->dlc' */
          uncompress_entry(inflected,tmp->string,line);
-         //error("\non decompresse la ligne 1  _%S_\n",line);
+         //error("\non decompresse la ligne _%S_\n",line);
          struct dela_entry* dela_entry=tokenize_DELAF_line(line);
          if (dela_entry!=NULL && is_entry_compatible_with_pattern(dela_entry,pattern)) {
             //error("et ca matche!!\n");
