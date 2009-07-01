@@ -141,7 +141,9 @@ if (alphabet->korean_equivalent_syllab!=NULL) {
 Alphabet* load_alphabet(const char* filename,int korean) {
 U_FILE* f;
 f=u_fopen(UTF16_LE,filename,U_READ);
-if (f==NULL) return NULL;
+if (f==NULL) {
+   return NULL;
+}
 Alphabet* alphabet=new_alphabet(korean);
 int c;
 unichar lower,upper;

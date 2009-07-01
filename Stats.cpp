@@ -254,7 +254,7 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
 
 	Alphabet* alphabet = NULL;
 	if (alphabetName!=NULL && alphabetName[0]!='\0') {
-	   load_alphabet(alphabetName);
+	   alphabet=load_alphabet(alphabetName);
 	   if (alphabet == NULL) {
 	      fatal_error("Error in concord_stats, alphabet cannot be loaded!");
 	   }
