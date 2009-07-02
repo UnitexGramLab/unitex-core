@@ -248,6 +248,11 @@ return (a[i]=='\0' && b[i]=='\0');
  * in the given alphabet, 0 otherwise.
  */
 int is_upper(unichar c,Alphabet* alphabet) {
+if (alphabet==NULL) {
+    if (u_is_letter(c) == 0)
+        return 0;
+    return (c == u_toupper(c)) ? 1 : 0;
+}
 return IS_UPPER_MACRO(c,alphabet);
 }
 
@@ -257,6 +262,11 @@ return IS_UPPER_MACRO(c,alphabet);
  * in the given alphabet, 0 otherwise.
  */
 int is_lower(unichar c,Alphabet* alphabet) {
+if (alphabet==NULL) {
+    if (u_is_letter(c) == 0)
+        return 0;
+    return (c == u_tolower(c)) ? 2 : 0;
+}
 return IS_LOWER_MACRO(c,alphabet);
 }
 
@@ -302,7 +312,7 @@ return 1;
 int is_sequence_of_lowercase_letters(unichar* s,Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
-  if (!IS_LOWER_MACRO(s[i],alphabet)) return 0;
+  if (!is_lower(s[i],alphabet)) return 0;
   i++;
 }
 return 1;
@@ -316,7 +326,7 @@ return 1;
 int is_sequence_of_uppercase_letters(unichar* s,Alphabet* alphabet) {
 int i=0;
 while (s[i]!='\0') {
-  if (!IS_UPPER_MACRO(s[i],alphabet)) return 0;
+  if (!is_upper(s[i],alphabet)) return 0;
   i++;
 }
 return 1;
@@ -418,7 +428,7 @@ while (src[i]!='\0') {
              dest[j] = src[i];
              return;
          }
-         if (IS_LOWER_MACRO(src[i+1],a)) {
+         if (is_lower(src[i+1],a)) {
              // this is a lowercase letter in Unitex alphabet :
              // we don't need "\" and we make expansion "[eE]"
              ++i;
@@ -457,7 +467,7 @@ while (src[i]!='\0') {
           dest[j++]=src[i++];
           break;
        default:
-          if (IS_LOWER_MACRO(src[i],a)) {
+          if (is_lower(src[i],a)) {
              if (!inside_a_set) dest[j++]='[';
              dest[j++]=src[i];
 
