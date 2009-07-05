@@ -47,7 +47,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 		return 1;
 	}
 
-	p->fst2=load_abstract_fst2(p->fst_file,1,&(p->fst2_free));
+	p->fst2=load_abstract_fst2(p->fst_file,1,NULL);
 	if (p->fst2==NULL) {
 		error("Cannot load grammar %s\n",p->fst_file);
 		u_fclose(p->f_input);
@@ -61,7 +61,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
 	      error("Cannot load alphabet file %s\n",p->alphabet_file);
 	      u_fclose(p->f_input);
 	      u_fclose(p->f_output);
-	      free_abstract_Fst2(p->fst2,&(p->fst2_free));
+	      free_Fst2(p->fst2);
 	      return 1;
 	   }
 	}
@@ -130,7 +130,7 @@ if (p->token_tree!=NULL) {
 }
 free_Variables(p->variables);
 free_buffer(p->text_buffer);
-free_abstract_Fst2(p->fst2,&(p->fst2_free));
+free_Fst2(p->fst2);
 free_alphabet(p->alphabet);
 free_stack_unichar(p->stack);
 free(p);
