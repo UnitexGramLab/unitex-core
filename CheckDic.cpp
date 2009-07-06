@@ -43,7 +43,7 @@ const char* usage_CheckDic =
          "  -f/--delaf: checks an inflected dictionary\n"
          "  -a ALPH/--alphabet=ALPH: alphabet file to use\n"
          "  -r/--strict: strict syntax checking against unprotected dot and comma\n"
-         "  -t/--tolerate: tolerate syntax checking against unprotected dot and comma\n"
+         "  -t/--tolerate: tolerate unprotected dot and comma\n"
          "  -h/--help: this help\n"
          "\n"
          "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
