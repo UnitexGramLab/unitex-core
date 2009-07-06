@@ -118,9 +118,10 @@ return 0;
  * program. If 'verbose' is NULL, the
  * function must print messages if there is an error; otherwise, the function prints
  * no error message and stores an error code in '*verbose'.
+ * if strict_unprotected is not 0, we don't accept unprotected comma and dot (for CheckDic)
  */
 struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,int keep_equal_signs,
-                                       int *verbose) {
+                                       int *verbose, int strict_unprotected) {
 struct dela_entry* res;
 unichar temp[DIC_LINE_SIZE];
 int i,val;
@@ -145,7 +146,7 @@ i=0;
 /*
  * We read the inflected part
  */
-val=parse_string(line,&i,temp,P_COMMA,P_DOT,keep_equal_signs?P_EQUAL:P_EMPTY);
+val=parse_string(line,&i,temp,P_COMMA,strict_unprotected ? P_DOT : P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
@@ -181,7 +182,7 @@ res->inflected=u_strdup(temp);
  * We read the lemma part
  */
 i++;
-val=parse_string(line,&i,temp,P_DOT,P_COMMA,keep_equal_signs?P_EQUAL:P_EMPTY);
+val=parse_string(line,&i,temp,P_DOT,strict_unprotected ? P_COMMA : P_EMPTY,keep_equal_signs?P_EQUAL:P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
@@ -327,11 +328,25 @@ return res;
 /**
  * Tokenizes a DELAF line and returns the information in a dela_entry structure, or
  * NULL if there is an error in the line. The second parameter indicates if
+ * comments are allowed at the end of the line or not. 'keep_equal_signs' indicates
+ * if protected equal signs must be unprotected. This option is used by the Compress
+ * program. If 'verbose' is NULL, the
+ * function must print messages if there is an error; otherwise, the function prints
+ * no error message and stores an error code in '*verbose'.
+ */
+struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,int keep_equal_signs,
+                                       int *verbose) {
+return tokenize_DELAF_line(line,comments_allowed,keep_equal_signs,verbose,0);
+}
+
+/**
+ * Tokenizes a DELAF line and returns the information in a dela_entry structure, or
+ * NULL if there is an error in the line. The second parameter indicates if
  * comments are allowed at the end of the line or not. The function prints
  * error message to the standard output in case of error.
  */
 struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed) {
-return tokenize_DELAF_line(line,comments_allowed,0,NULL);
+return tokenize_DELAF_line(line,comments_allowed,0,NULL,0);
 }
 
 
@@ -341,7 +356,7 @@ return tokenize_DELAF_line(line,comments_allowed,0,NULL);
  * line.
  */
 struct dela_entry* tokenize_DELAF_line(unichar* line) {
-return tokenize_DELAF_line(line,1,0,NULL);
+return tokenize_DELAF_line(line,1,0,NULL,0);
 }
 
 
@@ -804,9 +819,7 @@ void uncompress_entry(unichar* inflected,unichar* INF_code,unichar* result) {
 int n;
 int pos,i;
 /* The rebuilt line must start by the inflected form, followed by a comma */
-unichar escaped_inflected[1024];
-escape(inflected,escaped_inflected,P_COMMA_DOT);
-u_strcpy(result,escaped_inflected);
+escape(inflected,result,P_COMMA_DOT);
 u_strcat(result,",");
 if (INF_code[0]=='.') {
    /* First case: the lemma is the same than the inflected form
@@ -825,12 +838,12 @@ if (INF_code[0]=='_') {
       pos++;
    }
    /* We add the inflected form */
-   u_strcat(result,escaped_inflected);
+   u_strcat(result,inflected);
    /* But we start copying the code at position length-n */
    i=u_strlen(result)-n;
    while (INF_code[pos]!='\0') {
-      /* If a char is protected in the code, it must stay protected.
-       * Nothing to do but a raw copy */
+      /* If a char is protected in the code, it must stay protected,
+       * so there is nothing to do but a raw copy. */
       result[i++]=INF_code[pos++];
    }
    result[i]='\0';
@@ -853,7 +866,7 @@ while (INF_code[pos]!='.') {
       int j=0;
       while (INF_code[pos]!='.' && INF_code[pos]!=' ' && INF_code[pos]!='-') {
          if (INF_code[pos]=='\\') {
-            // If we find a protected char that is not a point, we let it protected 
+            /* If we find a protected char that is not a point, we let it protected */
             pos++;
             if (INF_code[pos]!='.') {tmp[j++]='\\';}
          }
@@ -868,10 +881,10 @@ while (INF_code[pos]!='.') {
       tmp_entry[j]='\0';
       rebuild_token(tmp_entry,tmp);
       j=0;
-      /* Once we have rebuilt the token, we protect in it the following chars: , . + \ /
+      /* Once we have rebuilt the token, we protect in it the following chars: . + \ /
        * We must also update 'i'.
        */
-      i+=escape(tmp_entry,&(result[i]),P_DOT_COMMA_PLUS_SLASH_BACKSLASH);
+      i+=escape(tmp_entry,&(result[i]),P_DOT_PLUS_SLASH_BACKSLASH);
    }
 }
 /* Finally, we append the grammatical/inflectional information at the end
@@ -1073,17 +1086,18 @@ return;
  *         used to build the list of all the codes that are used in the dictionary.
  * NOTE 2: the 'alphabet' array is used to mark characters that are used in
  *         inflected forms and lemmas.
+ * if strict_unprotected is not 0, we don't accept unprotected comma and dot (for CheckDic)
  */
 void check_DELA_line(unichar* DELA_line,U_FILE* out,int is_a_DELAF,int line_number,char* alphabet,
                      struct string_hash* semantic_codes,struct string_hash* inflectional_codes,
                      struct string_hash* simple_lemmas,struct string_hash* compound_lemmas,
-                     int *n_simple_entries,int *n_compound_entries,Alphabet* alph2) {
+                     int *n_simple_entries,int *n_compound_entries,Alphabet* alph2,int strict_unprotected) {
 int i;
 if (DELA_line==NULL) return;
 int error_code;
 struct dela_entry* entry;
 if (is_a_DELAF) {
-   entry=tokenize_DELAF_line(DELA_line,1,0,&error_code);
+   entry=tokenize_DELAF_line(DELA_line,1,0,&error_code,strict_unprotected);
 } else {
    entry=tokenize_DELAS_line(DELA_line,&error_code);
 }

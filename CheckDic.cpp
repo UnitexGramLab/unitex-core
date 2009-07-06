@@ -42,6 +42,8 @@ const char* usage_CheckDic =
          "  -s/--delas: checks a non inflected dictionary\n"
          "  -f/--delaf: checks an inflected dictionary\n"
          "  -a ALPH/--alphabet=ALPH: alphabet file to use\n"
+         "  -r/--strict: strict syntax checking against unprotected dot and comma\n"
+         "  -t/--tolerate: tolerate syntax checking against unprotected dot and comma\n"
          "  -h/--help: this help\n"
          "\n"
          "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
@@ -55,12 +57,14 @@ u_printf(usage_CheckDic);
 }
 
 
-const char* optstring_CheckDic=":sfa:h";
+const char* optstring_CheckDic=":sfa:hrt";
 const struct option_TS lopts_CheckDic[]= {
       {"delas",no_argument_TS,NULL,'s'},
       {"delaf",no_argument_TS,NULL,'f'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"help",no_argument_TS,NULL,'h'},
+      {"tolerate",no_argument_TS,NULL,'t'},
+      {"strict",no_argument_TS,NULL,'r'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -71,6 +75,7 @@ if (argc==1) {
 }
 
 int is_a_DELAF=-1;
+int strict_unprotected=0;
 char alph[FILENAME_MAX]="";
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -79,6 +84,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&ind
    case 'f': is_a_DELAF=1; break;
    case 's': is_a_DELAF=0; break;
    case 'h': usage(); return 0;
+   case 'r': strict_unprotected=1; break;
+   case 't': strict_unprotected=0; break;
    case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty alphabet argument\n");
              }
@@ -156,7 +163,7 @@ while (EOF!=u_fgets(line,dic)) {
 		 * dictionary type */
 		check_DELA_line(line,out,is_a_DELAF,line_number,alphabet,semantic_codes,
 		                inflectional_codes,simple_lemmas,compound_lemmas,
-		                &n_simple_entries,&n_compound_entries,alphabet0);
+		                &n_simple_entries,&n_compound_entries,alphabet0,strict_unprotected);
 	}
 	/* At regular intervals, we display a message on the standard
 	 * output to show that the program is working */
