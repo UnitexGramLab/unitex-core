@@ -213,7 +213,7 @@ if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   free_Fst2(p->fst2);
+   free_abstract_Fst2(p->fst2,NULL);
    return 0;
 }
 
@@ -224,7 +224,7 @@ if (p->filter_match_index==NULL) {
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    free_string_hash(p->tokens);
-   free_Fst2(p->fst2);
+   free_abstract_Fst2(p->fst2,NULL);
    return 0;
 }
 #endif
@@ -289,7 +289,7 @@ free_stack_unichar(p->stack);
  * free_DLC_tree(p->DLC_tree);
  */
 free_pattern_node(p->pattern_tree_root);
-free_Fst2(p->fst2);
+free_abstract_Fst2(p->fst2,NULL);
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);

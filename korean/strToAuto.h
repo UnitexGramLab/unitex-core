@@ -1482,7 +1482,7 @@ public:
 		   u_fclose(fout);
 		}
 		if(fidx){ u_fclose(fidx);}
-		if(loadFst2) free_Fst2(loadFst2);
+		if(loadFst2) free_abstract_Fst2(loadFst2,NULL);
 	}
 
 	void modeSet(int i)

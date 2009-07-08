@@ -1322,8 +1322,8 @@ close_text_automaton(tfst);
 free_string_hash(tmp_tags);
 free_string_hash(tags);
 free_Ustring(foo);
-free_Fst2(jamo);
-free_Fst2(syllab);
+free_abstract_Fst2(jamo,NULL);
+free_abstract_Fst2(syllab,NULL);
 free(jamo_text);
 return;
 

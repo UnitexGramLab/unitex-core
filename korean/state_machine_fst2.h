@@ -101,7 +101,7 @@ public:
 				}
 			delete [] saveTransductionTable;
 		}
-		if(a)free_Fst2(a);
+		if(a) free_abstract_Fst2(a,NULL);
 
 	};
 	changeStrContext* GetChangeStrContext() { return &ctx; } ;

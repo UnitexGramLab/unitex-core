@@ -154,16 +154,23 @@ int is_abstract_fst2_filename(char* filename)
 
 void free_abstract_Fst2(Fst2* fst2,struct FST2_free_info* p_fst2_free_info)
 {
-	if (fst2 != NULL)
-		if (p_fst2_free_info->must_be_free != 0)
-		{
-			if (p_fst2_free_info->func_free_fst2 == NULL)
-				free_Fst2(fst2);
-			else
-			{
-				t_fnc_free_abstract_fst2 fnc_free_abstract_fst2 = (t_fnc_free_abstract_fst2)(p_fst2_free_info->func_free_fst2);
-				if (fnc_free_abstract_fst2 != NULL)
-					(*fnc_free_abstract_fst2)(fst2,p_fst2_free_info,p_fst2_free_info->privateSpacePtr);
-			}
-		}
+    if (fst2 != NULL)
+    {
+        if (p_fst2_free_info == NULL)
+            free_Fst2(fst2);
+        else
+        {
+		    if (p_fst2_free_info->must_be_free != 0)
+		    {
+			    if (p_fst2_free_info->func_free_fst2 == NULL)
+				    free_Fst2(fst2);
+			    else
+			    {
+				    t_fnc_free_abstract_fst2 fnc_free_abstract_fst2 = (t_fnc_free_abstract_fst2)(p_fst2_free_info->func_free_fst2);
+				    if (fnc_free_abstract_fst2 != NULL)
+					    (*fnc_free_abstract_fst2)(fst2,p_fst2_free_info,p_fst2_free_info->privateSpacePtr);
+			    }
+		    }
+        }
+    }
 }
