@@ -26,6 +26,10 @@
 
 #define _UNITEX_VER 0210
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int check_Utility(const char* name);
 
 int main_UnitexTool_single(int argc,char* argv[]);
@@ -50,9 +54,6 @@ int GetNumberOfTool();
 int GetToolInfo_byname(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 int main_UnitexTool_C(int argc,char* argv[]);
 
