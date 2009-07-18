@@ -31,50 +31,50 @@ void parse_text(struct fst2txt_parameters*);
 
 
 int main_fst2txt(struct fst2txt_parameters* p) {
-	p->f_input=u_fopen(UTF16_LE,p->text_file,U_READ);
-	if (p->f_input==NULL) {
-		error("Cannot open file %s\n",p->text_file);
-		return 1;
-	}
+    p->f_input=u_fopen(UTF16_LE,p->text_file,U_READ);
+    if (p->f_input==NULL) {
+        error("Cannot open file %s\n",p->text_file);
+        return 1;
+    }
 
-	p->text_buffer=new_buffer_for_file(UNICHAR_BUFFER,p->f_input);
-	p->buffer=p->text_buffer->unichar_buffer;
+    p->text_buffer=new_buffer_for_file(UNICHAR_BUFFER,p->f_input);
+    p->buffer=p->text_buffer->unichar_buffer;
 
-	p->f_output=u_fopen(UTF16_LE,p->temp_file,U_WRITE);
-	if (p->f_output==NULL) {
-		error("Cannot open temporary file %s\n",p->temp_file);
-		u_fclose(p->f_input);
-		return 1;
-	}
+    p->f_output=u_fopen(UTF16_LE,p->temp_file,U_WRITE);
+    if (p->f_output==NULL) {
+        error("Cannot open temporary file %s\n",p->temp_file);
+        u_fclose(p->f_input);
+        return 1;
+    }
 
-	p->fst2=load_abstract_fst2(p->fst_file,1,NULL);
-	if (p->fst2==NULL) {
-		error("Cannot load grammar %s\n",p->fst_file);
-		u_fclose(p->f_input);
-		u_fclose(p->f_output);
-		return 1;
-	}
-	
-	if (p->alphabet_file!=NULL && p->alphabet_file[0]!='\0') {
-	   p->alphabet=load_alphabet(p->alphabet_file);
-	   if (p->alphabet==NULL) {
-	      error("Cannot load alphabet file %s\n",p->alphabet_file);
-	      u_fclose(p->f_input);
-	      u_fclose(p->f_output);
-	      free_abstract_Fst2(p->fst2,NULL);
-	      return 1;
-	   }
-	}
+    p->fst2=load_abstract_fst2(p->fst_file,1,NULL);
+    if (p->fst2==NULL) {
+        error("Cannot load grammar %s\n",p->fst_file);
+        u_fclose(p->f_input);
+        u_fclose(p->f_output);
+        return 1;
+    }
 
-	u_printf("Applying %s in %s mode...\n",p->fst_file,(p->output_policy==MERGE_OUTPUTS)?"merge":"replace");
-	build_state_token_trees(p);
-	parse_text(p);
-	u_fclose(p->f_input);
-	u_fclose(p->f_output);
-	af_remove(p->text_file);
-	af_rename(p->temp_file,p->text_file);
-	u_printf("Done.\n");
-	return 0;
+    if (p->alphabet_file!=NULL && p->alphabet_file[0]!='\0') {
+       p->alphabet=load_alphabet(p->alphabet_file);
+       if (p->alphabet==NULL) {
+          error("Cannot load alphabet file %s\n",p->alphabet_file);
+          u_fclose(p->f_input);
+          u_fclose(p->f_output);
+          free_abstract_Fst2(p->fst2,NULL);
+          return 1;
+       }
+    }
+
+    u_printf("Applying %s in %s mode...\n",p->fst_file,(p->output_policy==MERGE_OUTPUTS)?"merge":"replace");
+    build_state_token_trees(p);
+    parse_text(p);
+    u_fclose(p->f_input);
+    u_fclose(p->f_output);
+    af_remove(p->text_file);
+    af_rename(p->temp_file,p->text_file);
+    u_printf("Done.\n");
+    return 0;
 }
 
 /**
@@ -230,8 +230,8 @@ while (p->current_origin<p->text_buffer->size) {
          within_tag=0;
       } else if (!within_tag && (p->buffer[p->current_origin]!=' ' || p->space_policy==START_WITH_SPACE)) {
          // we don't start a match on a space
-        unichar mot_token_buffer[1000];
-        scan_graph(0,debut,0,0,NULL,mot_token_buffer,p);
+        unichar mot_buffer[1000];
+        scan_graph(0,debut,0,0,NULL,mot_buffer,p);
       }
       u_fprintf(p->f_output,"%S",p->output);
       if (p->input_length==0) {
@@ -256,7 +256,7 @@ void scan_graph(int n_graph,         // number of current graph
                      int pos,        //
                      int depth,
                      struct parsing_info** liste_arrivee,
-                     unichar* mot_token_buffer,
+                     unichar* mot_buffer,
                      struct fst2txt_parameters* p) {
 Fst2State etat_courant=p->fst2->states[e];
 if (depth > MAX_DEPTH) {
@@ -296,7 +296,7 @@ if (is_final_state(etat_courant)) {
     }
   } else { // in a subgraph
     (*liste_arrivee)=insert_if_absent(pos,-1,-1,(*liste_arrivee),p->stack->stack_pointer+1,
-    		                          p->stack->stack,p->variables,NULL,-1,-1,NULL,-1	);
+                                      p->stack->stack,p->variables,NULL,-1,-1,NULL,-1   );
   }
 }
 
@@ -317,7 +317,7 @@ if (p->token_tree[e]->transition_array!=NULL) {
     */
    else pos2=pos;
    int position=0;
-   unichar *token=mot_token_buffer;
+   unichar *token=(unichar*)malloc(1000*sizeof(unichar));
    if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION
        || (is_letter(p->buffer[pos2+p->current_origin],p->alphabet) && (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet)))) {
       /* If we are in character by character mode */
@@ -336,7 +336,7 @@ if (p->token_tree[e]->transition_array!=NULL) {
        Transition* RES=get_matching_tags(token,p->token_tree[e],p->alphabet);
        Transition* TMP;
        while (RES!=NULL) {
-    	   p->stack->stack_pointer=SOMMET2;
+           p->stack->stack_pointer=SOMMET2;
           Fst2Tag etiq=p->fst2->tags[RES->tag_number];
           traiter_transduction(p,etiq->output);
           int longueur=u_strlen(etiq->input);
@@ -347,37 +347,38 @@ if (p->token_tree[e]->transition_array!=NULL) {
              push_input_string(p->stack,token,0);
           }
           token[longueur]=C;
-          scan_graph(n_graph,RES->state_number,pos2-(position-longueur),depth,liste_arrivee,mot_token_buffer,p);
+          scan_graph(n_graph,RES->state_number,pos2-(position-longueur),depth,liste_arrivee,mot_buffer,p);
           TMP=RES;
           RES=RES->next;
           free(TMP);
        }
    }
 }
+free(token);
 }
 
 Transition* t=etat_courant->transitions;
 while (t!=NULL) {
-	p->stack->stack_pointer=SOMMET-1;
+    p->stack->stack_pointer=SOMMET-1;
       // we process the transition of the current state
       int n_etiq=t->tag_number;
       if (n_etiq<0) {
          // case of a sub-graph
          struct parsing_info* liste=NULL;
-		 unichar* pile_old;
+         unichar* pile_old;
          p->stack->stack[p->stack->stack_pointer+1]='\0';
-		 pile_old = u_strdup(p->stack->stack);
-         scan_graph((((unsigned)n_etiq)-1),p->fst2->initial_states[-n_etiq],pos,depth,&liste,mot_token_buffer,p);
+         pile_old = u_strdup(p->stack->stack);
+         scan_graph((((unsigned)n_etiq)-1),p->fst2->initial_states[-n_etiq],pos,depth,&liste,mot_buffer,p);
          while (liste!=NULL) {
-        	p->stack->stack_pointer=liste->stack_pointer-1;
+            p->stack->stack_pointer=liste->stack_pointer-1;
             u_strcpy(p->stack->stack,liste->stack);
-            scan_graph(n_graph,t->state_number,liste->position,depth,liste_arrivee,mot_token_buffer,p);
+            scan_graph(n_graph,t->state_number,liste->position,depth,liste_arrivee,mot_buffer,p);
             struct parsing_info* l_tmp=liste;
             liste=liste->next;
             free(l_tmp);
          }
          u_strcpy(p->stack->stack,pile_old);
-		 free(pile_old);
+         free(pile_old);
          p->stack->stack_pointer=SOMMET-1;
       }
       else {
@@ -399,7 +400,7 @@ while (t!=NULL) {
             //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
             else pos2=pos;
             L->start=pos2;
-            scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+            scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_buffer,p);
             //L->start=old;
          }
          else if (etiq->type==END_VAR_TAG) {
@@ -414,7 +415,7 @@ while (t!=NULL) {
                 L->end=pos-1;
               else L->end=pos;
               // BUG: qd changement de buffer, penser au cas start dans ancien buffer et end dans nouveau
-              scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
+              scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_buffer,p);
               //L->end=old;
          }
          else if (!u_strcmp(contenu,"<MOT>")) {
@@ -425,7 +426,7 @@ while (t!=NULL) {
               }
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
-              unichar* mot=mot_token_buffer;
+              unichar* mot=mot_buffer;
               int position=0;
               if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   ((pos2+p->current_origin)==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
@@ -441,7 +442,7 @@ while (t!=NULL) {
                          // if we are in MERGE mode, we add to ouput the char we have read
                          push_output_string(p->stack,mot);
                        }
-                       scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                       scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_buffer,p);
                      }
               }
          }
@@ -453,7 +454,7 @@ while (t!=NULL) {
               }
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
-              unichar* mot=mot_token_buffer;
+              unichar* mot=mot_buffer;
               int position=0;
               while (pos2+p->current_origin<p->text_buffer->size && (p->buffer[pos2+p->current_origin]>='0')
                      && (p->buffer[pos2+p->current_origin]<='9')) {
@@ -466,9 +467,9 @@ while (t!=NULL) {
                  traiter_transduction(p,etiq->output);
                  if (p->output_policy==MERGE_OUTPUTS /*|| etiq->transduction==NULL || etiq->transduction[0]=='\0'*/) {
                     // if we are in MERGE mode, we add to ouput the char we have read
-                	 push_output_string(p->stack,mot);
+                     push_output_string(p->stack,mot);
                  }
-                 scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                 scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_buffer,p);
               }
          }
          else if (!u_strcmp(contenu,"<MAJ>")) {
@@ -476,7 +477,7 @@ while (t!=NULL) {
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
-              unichar* mot=mot_token_buffer;
+              unichar* mot=mot_buffer;
               int position=0;
               if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   ((pos2+p->current_origin)==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
@@ -493,7 +494,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,mot,0);
                    }
-                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_buffer,p);
                  }
               }
          }
@@ -502,7 +503,7 @@ while (t!=NULL) {
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
-              unichar* mot=mot_token_buffer;
+              unichar* mot=mot_buffer;
               int position=0;
               if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet))) {
@@ -519,7 +520,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,mot,0);
                    }
-                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_buffer,p);
                  }
               }
          }
@@ -528,7 +529,7 @@ while (t!=NULL) {
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
               else pos2=pos;
-              unichar* mot=mot_token_buffer;
+              unichar* mot=mot_buffer;
               int position=0;
               if (p->tokenization_policy==CHAR_BY_CHAR_TOKENIZATION ||
                   (is_upper(p->buffer[pos2+p->current_origin],p->alphabet) && (pos2+p->current_origin==0 || !is_letter(p->buffer[pos2+p->current_origin-1],p->alphabet)))) {
@@ -545,7 +546,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,mot,0);
                    }
-                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_buffer,p);
                  }
               }
          }
@@ -566,7 +567,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     push(p->stack,C);
                  }
-                 scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_token_buffer,p);
+                 scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_buffer,p);
               }
               else {
                    // we consider the case of ...
@@ -578,7 +579,7 @@ while (t!=NULL) {
                             // if we are in MERGE mode, we add to ouput the ... we have read
                             push(p->stack,C);push(p->stack,C);push(p->stack,C);
                          }
-                         scan_graph(n_graph,t->state_number,pos2+3,depth,liste_arrivee,mot_token_buffer,p);
+                         scan_graph(n_graph,t->state_number,pos2+3,depth,liste_arrivee,mot_buffer,p);
                       } else {
                         // we consider the . as a normal punctuation sign
                         traiter_transduction(p,etiq->output);
@@ -586,7 +587,7 @@ while (t!=NULL) {
                           // if we are in MERGE mode, we add to ouput the char we have read
                           push(p->stack,C);
                         }
-                        scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_token_buffer,p);
+                        scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_buffer,p);
                       }
                    }
               }
@@ -595,7 +596,7 @@ while (t!=NULL) {
               // case of an empty sequence
               // in both modes MERGE and REPLACE, we process the transduction if any
               traiter_transduction(p,etiq->output);
-              scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
+              scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_buffer,p);
          }
          else if (!u_strcmp(contenu,"<^>")) {
               // case of a new line sequence
@@ -606,7 +607,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     push(p->stack,'\n');
                  }
-                 scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
+                 scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_buffer,p);
               }
          }
          else if (!u_strcmp(contenu,"#") && !(etiq->control&RESPECT_CASE_TAG_BIT_MASK)) {
@@ -614,7 +615,7 @@ while (t!=NULL) {
               if (p->buffer[pos+p->current_origin]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
                 traiter_transduction(p,etiq->output);
-                scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
+                scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_buffer,p);
               }
          }
          else if (!u_strcmp(contenu," ")) {
@@ -626,7 +627,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     push(p->stack,' ');
                  }
-                scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
+                scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_buffer,p);
               }
          }
          else if (!u_strcmp(contenu,"<L>")) {
@@ -641,7 +642,7 @@ while (t!=NULL) {
                     // if we are in MERGE mode, we add to ouput the char we have read
                     push(p->stack,p->buffer[pos2+p->current_origin]);
                  }
-                scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_token_buffer,p);
+                scan_graph(n_graph,t->state_number,pos2+1,depth,liste_arrivee,mot_buffer,p);
               }
          }
          else {
@@ -664,14 +665,14 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,contenu,0);
                    }
-                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_buffer,p);
                  }
               }
               else {
                  // case of variable case match
                  // the letter sequences may have been caught by the arbre_etiquette structure
                  int position=0;
-                 unichar* mot=mot_token_buffer;
+                 unichar* mot=mot_buffer;
                  while (pos2+p->current_origin<p->text_buffer->size && is_equal_or_uppercase(contenu[position],p->buffer[pos2+p->current_origin],p->alphabet)) {
                    mot[position++]=p->buffer[(pos2++)+p->current_origin];
                  }
@@ -685,7 +686,7 @@ while (t!=NULL) {
                      // if we are in MERGE mode, we add to ouput the char we have read
                      push_input_string(p->stack,mot,0);
                    }
-                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
+                   scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_buffer,p);
                  }
               }
          }
