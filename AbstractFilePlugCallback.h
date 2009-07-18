@@ -126,6 +126,9 @@ typedef struct
 UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr);
 UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr);
 
+/* just return the number of AbstractFileSpace Installed */
+UNITEX_FUNC int UNITEX_CALL GetNbAbstractFileSpaceInstalled();
+
 /**********************************************************************/
 
 
@@ -163,6 +166,7 @@ UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(enum stdwrite_kind swk, int* p_trashOu
 typedef size_t (ABSTRACT_CALLBACK_UNITEX *t_fnc_stdIn)(void *Buf, size_t size,void* privatePtr);
 UNITEX_FUNC int UNITEX_CALL SetStdInCB(t_fnc_stdIn fnc_stdInRead,void* privatePtr);
 UNITEX_FUNC int UNITEX_CALL GetStdInCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_privatePtr);
+
 
 
 #ifdef __cplusplus

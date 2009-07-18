@@ -2228,43 +2228,78 @@ return dest;
  * Unicode version of strcmp that tolerates NULL strings.
  */
 int u_strcmp(const unichar* a,const unichar* b) {
+if ((a!=NULL) && (b!=NULL)) {
+    const unichar *a_p=a;
+    const unichar *b_p=(const unichar*)b;
+    unichar a_c;
+    unichar b_c;
+    unsigned int i=0;
+
+
+    for(;;) {
+       a_c=(unichar)*(a_p+i);
+       b_c=(unichar)*(b_p+i);
+       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+
+       a_c=(unichar)*(a_p+i+1);
+       b_c=(unichar)*(b_p+i+1);
+       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+
+       a_c=(unichar)*(a_p+i+2);
+       b_c=(unichar)*(b_p+i+2);
+       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+
+       a_c=(unichar)*(a_p+i+3);
+       b_c=(unichar)*(b_p+i+3);
+       i+=4;
+       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+    } ;
+} else {
 if (a==NULL) {
    if (b==NULL) return 0;
    return 1;
 }
-if (b==NULL) return -1;
-register const unichar *a_p=a;
-register const unichar *b_p=b;
-register unichar a_c;
-register unichar b_c;
-do {
-   a_c=(unichar)*a_p++;
-   b_c=(unichar)*b_p++;
-   if (a_c=='\0') return a_c-b_c;
-} while (a_c==b_c);
-return a_c-b_c;
+return -1;
 }
-
+}
 
 /**
  * Unicode version of strcmp that tolerates NULL strings.
  */
 int u_strcmp(const unichar* a,const char* b) {
+if ((a!=NULL) && (b!=NULL)) {
+    const unichar *a_p=a;
+    const unsigned char *b_p=(const unsigned char*)b;
+    unichar a_c;
+    unsigned char b_c;
+    unsigned int i=0;
+
+
+    for(;;) {
+       a_c=(unichar)*(a_p+i);
+       b_c=(unsigned char)*(b_p+i);
+       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+
+       a_c=(unichar)*(a_p+i+1);
+       b_c=(unsigned char)*(b_p+i+1);
+       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+
+       a_c=(unichar)*(a_p+i+2);
+       b_c=(unsigned char)*(b_p+i+2);
+       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+
+       a_c=(unichar)*(a_p+i+3);
+       b_c=(unsigned char)*(b_p+i+3);
+       i+=4;
+       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+    } ;
+} else {
 if (a==NULL) {
    if (b==NULL) return 0;
    return 1;
 }
-if (b==NULL) return -1;
-register const unichar *a_p=a;
-register const unsigned char *b_p=(const unsigned char*)b;
-register unichar a_c;
-register unsigned char b_c;
-do {
-   a_c=(unichar)*a_p++;
-   b_c=(unsigned char)*b_p++;
-   if (a_c=='\0') return a_c-b_c;
-} while (a_c==b_c);
-return a_c-b_c;
+return -1;
+}
 }
 
 

@@ -114,6 +114,8 @@ typedef struct
 UNITEX_FUNC int UNITEX_CALL AddAbstractDelaSpace(const t_persistent_dic_func_array* func_array,void* privateSpacePtr);
 UNITEX_FUNC int UNITEX_CALL RemoveAbstractDelaSpace(const t_persistent_dic_func_array* func_array,void* privateSpacePtr);
 
+/* just return the number of AbstractDelaSpace Installed */
+UNITEX_FUNC int UNITEX_CALL GetNbAbstractDelaSpaceInstalled();
 
 
 #ifdef __cplusplus

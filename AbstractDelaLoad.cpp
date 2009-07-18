@@ -96,6 +96,20 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractDelaSpace(const t_persistent_dic_func_
 	return 0;
 }
 
+
+UNITEX_FUNC int UNITEX_CALL GetNbAbstractDelaSpaceInstalled()
+{
+    int count=0;
+    struct List_AbstractDelaSpace* tmp = p_abstract_dela_space_list;
+	while (tmp != NULL)
+	{
+        count++;
+		tmp = tmp->next;
+	}
+	return count;
+}
+
+
 const AbstractDelaSpace * GetDelaSpaceForFileName(const char*name)
 {
 	const struct List_AbstractDelaSpace* tmp = p_abstract_dela_space_list;

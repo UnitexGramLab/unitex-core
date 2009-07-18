@@ -103,6 +103,20 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* f
 	return 0;
 }
 
+
+UNITEX_FUNC int UNITEX_CALL GetNbAbstractFileSpaceInstalled()
+{
+    int count=0;
+    struct List_AbstractFileSpace* tmp = p_abstract_file_space_list;
+	while (tmp != NULL)
+	{
+        count++;
+		tmp = tmp->next;
+	}
+	return count;
+}
+
+
 const AbstractFileSpace * GetFileSpaceForFileName(const char*name)
 {
 	const struct List_AbstractFileSpace* tmp = p_abstract_file_space_list;

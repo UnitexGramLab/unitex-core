@@ -98,6 +98,20 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFst2Space(const t_persistent_fst2_func
 	return 0;
 }
 
+
+UNITEX_FUNC int UNITEX_CALL GetNbAbstractFst2SpaceInstalled()
+{
+    int count=0;
+    struct List_AbstractFst2Space* tmp = p_abstract_fst2_space_list;
+	while (tmp != NULL)
+	{
+        count++;
+		tmp = tmp->next;
+	}
+	return count;
+}
+
+
 const AbstractFst2Space * GetFst2SpaceForFileName(const char*name)
 {
 	const struct List_AbstractFst2Space* tmp = p_abstract_fst2_space_list;

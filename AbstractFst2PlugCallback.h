@@ -66,6 +66,9 @@ UNITEX_FUNC int UNITEX_CALL AddAbstractFst2Space(const t_persistent_fst2_func_ar
 UNITEX_FUNC int UNITEX_CALL RemoveAbstractFst2Space(const t_persistent_fst2_func_array* func_array,void* privateSpacePtr);
 
 
+/* just return the number of AbstractFst2Space Installed */
+UNITEX_FUNC int UNITEX_CALL GetNbAbstractFst2SpaceInstalled();
+
 
 #ifdef __cplusplus
 }
