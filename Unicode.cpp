@@ -2230,38 +2230,51 @@ return dest;
 int u_strcmp(const unichar* a,const unichar* b) {
 if ((a!=NULL) && (b!=NULL)) {
     const unichar *a_p=a;
-    const unichar *b_p=(const unichar*)b;
+    const unichar *b_p=b;
     unichar a_c;
     unichar b_c;
-    unsigned int i=0;
 
 
     for(;;) {
-       a_c=(unichar)*(a_p+i);
-       b_c=(unichar)*(b_p+i);
-       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+       a_c=(unichar)*(a_p);
+       b_c=(unichar)*(b_p);
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
 
-       a_c=(unichar)*(a_p+i+1);
-       b_c=(unichar)*(b_p+i+1);
-       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+       a_c=(unichar)*(a_p+1);
+       b_c=(unichar)*(b_p+1);
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
 
-       a_c=(unichar)*(a_p+i+2);
-       b_c=(unichar)*(b_p+i+2);
-       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+       a_c=(unichar)*(a_p+2);
+       b_c=(unichar)*(b_p+2);
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
 
-       a_c=(unichar)*(a_p+i+3);
-       b_c=(unichar)*(b_p+i+3);
-       i+=4;
-       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+       a_c=(unichar)*(a_p+3);
+       b_c=(unichar)*(b_p+3);
+       a_p+=4;
+	   b_p+=4;
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
     } ;
 } else {
-if (a==NULL) {
-   if (b==NULL) return 0;
-   return 1;
+  if (a==NULL) {
+       if (b==NULL) return 0;
+       return 1;
+    }
+  return -1;
+  }
 }
-return -1;
-}
-}
+
 
 /**
  * Unicode version of strcmp that tolerates NULL strings.
@@ -2271,35 +2284,46 @@ if ((a!=NULL) && (b!=NULL)) {
     const unichar *a_p=a;
     const unsigned char *b_p=(const unsigned char*)b;
     unichar a_c;
-    unsigned char b_c;
-    unsigned int i=0;
-
+    unichar b_c;
 
     for(;;) {
-       a_c=(unichar)*(a_p+i);
-       b_c=(unsigned char)*(b_p+i);
-       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+       a_c=(unichar)*(a_p);
+       b_c=(unichar)((unsigned char)*(b_p));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
 
-       a_c=(unichar)*(a_p+i+1);
-       b_c=(unsigned char)*(b_p+i+1);
-       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+       a_c=(unichar)*(a_p+1);
+       b_c=(unichar)((unsigned char)*(b_p+1));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
 
-       a_c=(unichar)*(a_p+i+2);
-       b_c=(unsigned char)*(b_p+i+2);
-       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+       a_c=(unichar)*(a_p+2);
+       b_c=(unichar)((unsigned char)*(b_p+2));
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
 
-       a_c=(unichar)*(a_p+i+3);
-       b_c=(unsigned char)*(b_p+i+3);
-       i+=4;
-       if ((a_c-b_c!=0) || (a_c=='\0')) return a_c-b_c;
+       a_c=(unichar)*(a_p+3);
+       b_c=(unichar)((unsigned char)*(b_p+3));
+       a_p+=4;
+	   b_p+=4;
+	   if (a_c=='\0')
+		   return -b_c;
+	   if (a_c-b_c!=0)
+		   return (a_c-b_c);
     } ;
 } else {
-if (a==NULL) {
-   if (b==NULL) return 0;
-   return 1;
-}
-return -1;
-}
+  if (a==NULL) {
+       if (b==NULL) return 0;
+       return 1;
+    }
+  return -1;
+  }
 }
 
 

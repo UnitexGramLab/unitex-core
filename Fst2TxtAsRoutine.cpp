@@ -250,6 +250,78 @@ p->variables=NULL;
 }
 
 
+/*
+ * scan_graph token a lot of time of comparing string against
+ *  "<E>", "<MOT>", "<NB>", "<MAJ>", "<MIN>", "<PRE>", "<PNC>", "<L>", "<^>", "#", " "
+ */
+static const unichar ETIQ_E_LN3[] = { '<', 'E', '>', 0 };
+static const unichar ETIQ_MOT_LN5[] = { '<', 'M', 'O' , 'T', '>', 0 };
+static const unichar ETIQ_NB_LN4[] = { '<', 'N', 'B' , '>', 0 };
+static const unichar ETIQ_MAJ_LN5[] = { '<', 'M', 'A' , 'J', '>', 0 };
+static const unichar ETIQ_MIN_LN5[] = { '<', 'M', 'I' , 'N', '>', 0 };
+static const unichar ETIQ_PRE_LN5[] = { '<', 'P', 'R' , 'E', '>', 0 };
+static const unichar ETIQ_PNC_LN5[] = { '<', 'P', 'N' , 'C', '>', 0 };
+static const unichar ETIQ_L_LN3[] =   { '<', 'L', '>', 0 };
+static const unichar ETIQ_CIRC_LN3[]= { '<', '^', '>', 0 };
+static const unichar ETIQ_DIESE_LN1[]= { '#', 0 };
+static const unichar ETIQ_SPACE_LN1[]= { ' ', 0 };
+
+
+/*
+ * fast u_strlen which return 6 if len >= 6
+ */
+static int u_strlen_limit_6(const unichar* s) {
+    if ((*(s+0))==0) return 0;
+    if ((*(s+1))==0) return 1;
+    if ((*(s+2))==0) return 2;
+    if ((*(s+3))==0) return 3;
+    if ((*(s+4))==0) return 4;
+    if ((*(s+5))==0) return 5;
+    return 6;
+}
+
+
+/*
+ * superfast hardcoded u_strcmp with specific len of one string
+ * we return 1 when different, 0 when equal
+ */
+static int u_strcmp_superfast_1(const unichar* a,const unichar*b)
+{
+    if ((*(a+0)) != (*(b+0))) return 1;
+    if ((*(a+1)) != (*(b+1))) return 1;
+    return 0;
+}
+
+static int u_strcmp_superfast_3(const unichar* a,const unichar*b)
+{
+    if ((*(a+0)) != (*(b+0))) return 1;
+    if ((*(a+1)) != (*(b+1))) return 1;
+    if ((*(a+2)) != (*(b+2))) return 1;
+    if ((*(a+3)) != (*(b+3))) return 1;
+    return 0;
+}
+
+static int u_strcmp_superfast_4(const unichar* a,const unichar*b)
+{
+    if ((*(a+0)) != (*(b+0))) return 1;
+    if ((*(a+1)) != (*(b+1))) return 1;
+    if ((*(a+2)) != (*(b+2))) return 1;
+    if ((*(a+3)) != (*(b+3))) return 1;
+    if ((*(a+4)) != (*(b+4))) return 1;
+    return 0;
+}
+
+static int u_strcmp_superfast_5(const unichar* a,const unichar*b)
+{
+    if ((*(a+0)) != (*(b+0))) return 1;
+    if ((*(a+1)) != (*(b+1))) return 1;
+    if ((*(a+2)) != (*(b+2))) return 1;
+    if ((*(a+3)) != (*(b+3))) return 1;
+    if ((*(a+4)) != (*(b+4))) return 1;
+    if ((*(a+5)) != (*(b+5))) return 1;
+    return 0;
+}
+
 
 void scan_graph(int n_graph,         // number of current graph
                      int e,          // number of current state
@@ -396,6 +468,7 @@ while (t!=NULL) {
          // case of a normal tag
          Fst2Tag etiq=p->fst2->tags[n_etiq];
          unichar* contenu=etiq->input;
+         int contenu_len_limit6=u_strlen_limit_6(contenu);
          if (etiq->type==BEGIN_VAR_TAG) {
             // case of a $a( variable tag
             //int old;
@@ -429,7 +502,7 @@ while (t!=NULL) {
               scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
               //L->end=old;
          }
-         else if (!u_strcmp(contenu,"<MOT>")) {
+         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MOT_LN5))) {
               // case of transition by any sequence of letters
               if (p->buffer[pos+p->current_origin]==' ' && pos+p->current_origin+1<p->text_buffer->size) {
                  pos2=pos+1;
@@ -457,7 +530,7 @@ while (t!=NULL) {
                      }
               }
          }
-         else if (!u_strcmp(contenu,"<NB>")) {
+         else if ((contenu_len_limit6==4) && (!u_strcmp_superfast_4(contenu,ETIQ_NB_LN4))) {
               // case of transition by any sequence of digits
               if (p->buffer[pos+p->current_origin]==' ') {
                  pos2=pos+1;
@@ -483,7 +556,7 @@ while (t!=NULL) {
                  scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if (!u_strcmp(contenu,"<MAJ>")) {
+         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MAJ_LN5))) {
               // case of upper case letter sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -509,7 +582,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if (!u_strcmp(contenu,"<MIN>")) {
+         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MIN_LN5))) {
               // case of lower case letter sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -535,7 +608,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if (!u_strcmp(contenu,"<PRE>")) {
+         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_PRE_LN5))) {
               // case of a sequence beginning by an upper case letter
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -561,7 +634,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if (!u_strcmp(contenu,"<PNC>")) {
+         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_PNC_LN5))) {
               // case of a punctuation sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -603,13 +676,13 @@ while (t!=NULL) {
                    }
               }
          }
-         else if (!u_strcmp(contenu,"<E>")) {
+         else if ((contenu_len_limit6==3) && (!u_strcmp_superfast_3(contenu,ETIQ_E_LN3))) {
               // case of an empty sequence
               // in both modes MERGE and REPLACE, we process the transduction if any
               traiter_transduction(p,etiq->output);
               scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
          }
-         else if (!u_strcmp(contenu,"<^>")) {
+         else if ((contenu_len_limit6==3) && (!u_strcmp_superfast_3(contenu,ETIQ_CIRC_LN3))) {
               // case of a new line sequence
               if (p->buffer[pos+p->current_origin]=='\n') {
                  // in both modes MERGE and REPLACE, we process the transduction if any
@@ -621,7 +694,7 @@ while (t!=NULL) {
                  scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if (!u_strcmp(contenu,"#") && !(etiq->control&RESPECT_CASE_TAG_BIT_MASK)) {
+         else if ((contenu_len_limit6==1) && (!u_strcmp_superfast_1(contenu,ETIQ_DIESE_LN1)) && (!(etiq->control&RESPECT_CASE_TAG_BIT_MASK))) {
               // case of a no space condition
               if (p->buffer[pos+p->current_origin]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
@@ -629,8 +702,8 @@ while (t!=NULL) {
                 scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if (!u_strcmp(contenu," ")) {
-              // case of an obligatory space
+         else if ((contenu_len_limit6==1) && (!u_strcmp_superfast_1(contenu,ETIQ_SPACE_LN1))) {
+         // case of an obligatory space
               if (p->buffer[pos+p->current_origin]==' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
                 traiter_transduction(p,etiq->output);
@@ -641,7 +714,7 @@ while (t!=NULL) {
                 scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if (!u_strcmp(contenu,"<L>")) {
+         else if ((contenu_len_limit6==3) && (!u_strcmp_superfast_5(contenu,ETIQ_L_LN3))) {
               // case of a single letter
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -718,17 +791,31 @@ if (e->control&RESPECT_CASE_TAG_BIT_MASK || e->type==BEGIN_VAR_TAG
 }
 unichar* s=e->input;
 if (!is_letter(s[0],alphabet)) return 1;
-if (!u_strcmp(s,"<E>") ||
-    !u_strcmp(s,"<MOT>") ||
-    !u_strcmp(s,"<MAJ>") ||
-    !u_strcmp(s,"<MIN>") ||
-    !u_strcmp(s,"<PRE>") ||
-    !u_strcmp(s,"<PNC>") ||
-    !u_strcmp(s,"<L>") ||
-    !u_strcmp(s,"<^>") ||
-    !u_strcmp(s,"#") ||
-    !u_strcmp(s," ")) {
-    return 1;
+int s_len_limit6=u_strlen_limit_6(s);
+if (s_len_limit6==1) {
+    if ((!u_strcmp_superfast_1(s,ETIQ_DIESE_LN1)) ||
+        (!u_strcmp_superfast_1(s,ETIQ_SPACE_LN1)))
+        return 1;
+}
+if (s_len_limit6==3) {
+    if ((!u_strcmp_superfast_3(s,ETIQ_L_LN3)) ||
+        (!u_strcmp_superfast_3(s,ETIQ_E_LN3)) ||
+        (!u_strcmp_superfast_3(s,ETIQ_CIRC_LN3)))
+        return 1;
+}
+/*
+// comment, because I don't known if we must check it
+if (s_len_limit6==4) {
+    if ((!u_strcmp_superfast_4(s,ETIQ_NB_LN4)))
+        return 1;
+}*/
+if (s_len_limit6==5) {
+    if ((!u_strcmp_superfast_5(s,ETIQ_MOT_LN5)) ||
+        (!u_strcmp_superfast_5(s,ETIQ_MAJ_LN5)) ||
+        (!u_strcmp_superfast_5(s,ETIQ_MIN_LN5)) ||
+        (!u_strcmp_superfast_5(s,ETIQ_PRE_LN5)) ||
+        (!u_strcmp_superfast_5(s,ETIQ_PNC_LN5)))
+        return 1;
 }
 return 0;
 }
