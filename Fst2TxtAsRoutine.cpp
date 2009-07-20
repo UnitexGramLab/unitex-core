@@ -292,20 +292,20 @@ static int u_len_possible_match(const unichar* s) {
  * u_len_possible_match also check string begin with '<' for len 3,4,5
  * we return 1 when different, 0 when equal
  */
-static int u_strcmp_superfast_1(const unichar* a,const unichar c)
+static inline int u_trymatch_superfast1(const unichar* a,const unichar c)
 {
     if ((*(a+0)) != (c)) return 1;
     return 0;
 }
 
-static int u_strcmp_superfast_3(const unichar* a,const unichar*b)
+static inline int u_trymatch_superfast3(const unichar* a,const unichar*b)
 {
     if ((*(a+1)) != (*(b+1))) return 1;
     if ((*(a+2)) != (*(b+2))) return 1;
     return 0;
 }
 
-static int u_strcmp_superfast_4(const unichar* a,const unichar*b)
+static inline int u_trymatch_superfast4(const unichar* a,const unichar*b)
 {
     if ((*(a+1)) != (*(b+1))) return 1;
     if ((*(a+2)) != (*(b+2))) return 1;
@@ -313,7 +313,7 @@ static int u_strcmp_superfast_4(const unichar* a,const unichar*b)
     return 0;
 }
 
-static int u_strcmp_superfast_5(const unichar* a,const unichar*b)
+static inline int u_trymatch_superfast5(const unichar* a,const unichar*b)
 {
     if ((*(a+1)) != (*(b+1))) return 1;
     if ((*(a+2)) != (*(b+2))) return 1;
@@ -502,7 +502,7 @@ while (t!=NULL) {
               scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
               //L->end=old;
          }
-         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MOT_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_trymatch_superfast5(contenu,ETIQ_MOT_LN5))) {
               // case of transition by any sequence of letters
               if (p->buffer[pos+p->current_origin]==' ' && pos+p->current_origin+1<p->text_buffer->size) {
                  pos2=pos+1;
@@ -530,7 +530,7 @@ while (t!=NULL) {
                      }
               }
          }
-         else if ((contenu_len_possible_match==4) && (!u_strcmp_superfast_4(contenu,ETIQ_NB_LN4))) {
+         else if ((contenu_len_possible_match==4) && (!u_trymatch_superfast4(contenu,ETIQ_NB_LN4))) {
               // case of transition by any sequence of digits
               if (p->buffer[pos+p->current_origin]==' ') {
                  pos2=pos+1;
@@ -556,7 +556,7 @@ while (t!=NULL) {
                  scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MAJ_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_trymatch_superfast5(contenu,ETIQ_MAJ_LN5))) {
               // case of upper case letter sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -582,7 +582,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MIN_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_trymatch_superfast5(contenu,ETIQ_MIN_LN5))) {
               // case of lower case letter sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -608,7 +608,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_PRE_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_trymatch_superfast5(contenu,ETIQ_PRE_LN5))) {
               // case of a sequence beginning by an upper case letter
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -634,7 +634,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_PNC_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_trymatch_superfast5(contenu,ETIQ_PNC_LN5))) {
               // case of a punctuation sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -676,13 +676,13 @@ while (t!=NULL) {
                    }
               }
          }
-         else if ((contenu_len_possible_match==3) && (!u_strcmp_superfast_3(contenu,ETIQ_E_LN3))) {
+         else if ((contenu_len_possible_match==3) && (!u_trymatch_superfast3(contenu,ETIQ_E_LN3))) {
               // case of an empty sequence
               // in both modes MERGE and REPLACE, we process the transduction if any
               traiter_transduction(p,etiq->output);
               scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
          }
-         else if ((contenu_len_possible_match==3) && (!u_strcmp_superfast_3(contenu,ETIQ_CIRC_LN3))) {
+         else if ((contenu_len_possible_match==3) && (!u_trymatch_superfast3(contenu,ETIQ_CIRC_LN3))) {
               // case of a new line sequence
               if (p->buffer[pos+p->current_origin]=='\n') {
                  // in both modes MERGE and REPLACE, we process the transduction if any
@@ -694,7 +694,7 @@ while (t!=NULL) {
                  scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if ((contenu_len_possible_match==1) && (!u_strcmp_superfast_1(contenu,'#')) && (!(etiq->control&RESPECT_CASE_TAG_BIT_MASK))) {
+         else if ((contenu_len_possible_match==1) && (!u_trymatch_superfast1(contenu,'#')) && (!(etiq->control&RESPECT_CASE_TAG_BIT_MASK))) {
               // case of a no space condition
               if (p->buffer[pos+p->current_origin]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
@@ -702,7 +702,7 @@ while (t!=NULL) {
                 scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if ((contenu_len_possible_match==1) && (!u_strcmp_superfast_1(contenu,' '))) {
+         else if ((contenu_len_possible_match==1) && (!u_trymatch_superfast1(contenu,' '))) {
          // case of an obligatory space
               if (p->buffer[pos+p->current_origin]==' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
@@ -714,7 +714,7 @@ while (t!=NULL) {
                 scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if ((contenu_len_possible_match==3) && (!u_strcmp_superfast_5(contenu,ETIQ_L_LN3))) {
+         else if ((contenu_len_possible_match==3) && (!u_trymatch_superfast5(contenu,ETIQ_L_LN3))) {
               // case of a single letter
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -793,27 +793,27 @@ unichar* s=e->input;
 if (!is_letter(s[0],alphabet)) return 1;
 int s_len_possible_match=u_len_possible_match(s);
 if (s_len_possible_match==1) {
-    if ((!u_strcmp_superfast_1(s,'#')) ||
-        (!u_strcmp_superfast_1(s,' ')))
+    if ((!u_trymatch_superfast1(s,'#')) ||
+        (!u_trymatch_superfast1(s,' ')))
         return 1;
 }
 if (s_len_possible_match==3) {
-    if ((!u_strcmp_superfast_3(s,ETIQ_L_LN3)) ||
-        (!u_strcmp_superfast_3(s,ETIQ_E_LN3)) ||
-        (!u_strcmp_superfast_3(s,ETIQ_CIRC_LN3)))
+    if ((!u_trymatch_superfast3(s,ETIQ_L_LN3)) ||
+        (!u_trymatch_superfast3(s,ETIQ_E_LN3)) ||
+        (!u_trymatch_superfast3(s,ETIQ_CIRC_LN3)))
         return 1;
 }
 // added in revision 1028
 if (s_len_possible_match==4) {
-    if ((!u_strcmp_superfast_4(s,ETIQ_NB_LN4)))
+    if ((!u_trymatch_superfast4(s,ETIQ_NB_LN4)))
         return 1;
 }
 if (s_len_possible_match==5) {
-    if ((!u_strcmp_superfast_5(s,ETIQ_MOT_LN5)) ||
-        (!u_strcmp_superfast_5(s,ETIQ_MAJ_LN5)) ||
-        (!u_strcmp_superfast_5(s,ETIQ_MIN_LN5)) ||
-        (!u_strcmp_superfast_5(s,ETIQ_PRE_LN5)) ||
-        (!u_strcmp_superfast_5(s,ETIQ_PNC_LN5)))
+    if ((!u_trymatch_superfast5(s,ETIQ_MOT_LN5)) ||
+        (!u_trymatch_superfast5(s,ETIQ_MAJ_LN5)) ||
+        (!u_trymatch_superfast5(s,ETIQ_MIN_LN5)) ||
+        (!u_trymatch_superfast5(s,ETIQ_PRE_LN5)) ||
+        (!u_trymatch_superfast5(s,ETIQ_PNC_LN5)))
         return 1;
 }
 return 0;
