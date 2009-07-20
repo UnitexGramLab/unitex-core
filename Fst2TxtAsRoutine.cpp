@@ -803,12 +803,11 @@ if (s_len_limit6==3) {
         (!u_strcmp_superfast_3(s,ETIQ_CIRC_LN3)))
         return 1;
 }
-/*
-// comment, because I don't known if we must check it
+// added in revision 1028
 if (s_len_limit6==4) {
     if ((!u_strcmp_superfast_4(s,ETIQ_NB_LN4)))
         return 1;
-}*/
+}
 if (s_len_limit6==5) {
     if ((!u_strcmp_superfast_5(s,ETIQ_MOT_LN5)) ||
         (!u_strcmp_superfast_5(s,ETIQ_MAJ_LN5)) ||
