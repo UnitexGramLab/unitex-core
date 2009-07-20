@@ -268,57 +268,57 @@ static const unichar ETIQ_SPACE_LN1[]= { ' ', 0 };
 
 
 /*
- * fast u_strlen which return 6 if len >= 6
+ * give the len of possible match
  */
-static int u_strlen_limit_6(const unichar* s) {
+static int u_len_possible_match(const unichar* s) {
     if ((*(s+0))==0) return 0;
     if ((*(s+1))==0) return 1;
-    if ((*(s+2))==0) return 2;
+
+    // all match with len > 1 begin with '>'
+    if ((*(s+0))!='<') return 0;
+
+    if ((*(s+2))==0) return 0;
     if ((*(s+3))==0) return 3;
     if ((*(s+4))==0) return 4;
     if ((*(s+5))==0) return 5;
-    return 6;
+    return 0;
 }
 
 
 /*
- * superfast hardcoded u_strcmp with specific len of one string
+ * superfast hardcoded compare with specific len of one string
+ * we must call after u_len_possible_match as returned the possible
+ * match length
+ * u_len_possible_match also check string begin with '<' for len 3,4,5
  * we return 1 when different, 0 when equal
  */
-static int u_strcmp_superfast_1(const unichar* a,const unichar*b)
+static int u_strcmp_superfast_1(const unichar* a,const unichar c)
 {
-    if ((*(a+0)) != (*(b+0))) return 1;
-    if ((*(a+1)) != (*(b+1))) return 1;
+    if ((*(a+0)) != (c)) return 1;
     return 0;
 }
 
 static int u_strcmp_superfast_3(const unichar* a,const unichar*b)
 {
-    if ((*(a+0)) != (*(b+0))) return 1;
     if ((*(a+1)) != (*(b+1))) return 1;
     if ((*(a+2)) != (*(b+2))) return 1;
-    if ((*(a+3)) != (*(b+3))) return 1;
     return 0;
 }
 
 static int u_strcmp_superfast_4(const unichar* a,const unichar*b)
 {
-    if ((*(a+0)) != (*(b+0))) return 1;
     if ((*(a+1)) != (*(b+1))) return 1;
     if ((*(a+2)) != (*(b+2))) return 1;
     if ((*(a+3)) != (*(b+3))) return 1;
-    if ((*(a+4)) != (*(b+4))) return 1;
     return 0;
 }
 
 static int u_strcmp_superfast_5(const unichar* a,const unichar*b)
 {
-    if ((*(a+0)) != (*(b+0))) return 1;
     if ((*(a+1)) != (*(b+1))) return 1;
     if ((*(a+2)) != (*(b+2))) return 1;
     if ((*(a+3)) != (*(b+3))) return 1;
     if ((*(a+4)) != (*(b+4))) return 1;
-    if ((*(a+5)) != (*(b+5))) return 1;
     return 0;
 }
 
@@ -468,7 +468,7 @@ while (t!=NULL) {
          // case of a normal tag
          Fst2Tag etiq=p->fst2->tags[n_etiq];
          unichar* contenu=etiq->input;
-         int contenu_len_limit6=u_strlen_limit_6(contenu);
+         int contenu_len_possible_match=u_len_possible_match(contenu);
          if (etiq->type==BEGIN_VAR_TAG) {
             // case of a $a( variable tag
             //int old;
@@ -502,7 +502,7 @@ while (t!=NULL) {
               scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
               //L->end=old;
          }
-         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MOT_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MOT_LN5))) {
               // case of transition by any sequence of letters
               if (p->buffer[pos+p->current_origin]==' ' && pos+p->current_origin+1<p->text_buffer->size) {
                  pos2=pos+1;
@@ -530,7 +530,7 @@ while (t!=NULL) {
                      }
               }
          }
-         else if ((contenu_len_limit6==4) && (!u_strcmp_superfast_4(contenu,ETIQ_NB_LN4))) {
+         else if ((contenu_len_possible_match==4) && (!u_strcmp_superfast_4(contenu,ETIQ_NB_LN4))) {
               // case of transition by any sequence of digits
               if (p->buffer[pos+p->current_origin]==' ') {
                  pos2=pos+1;
@@ -556,7 +556,7 @@ while (t!=NULL) {
                  scan_graph(n_graph,t->state_number,pos2,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MAJ_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MAJ_LN5))) {
               // case of upper case letter sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -582,7 +582,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MIN_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_MIN_LN5))) {
               // case of lower case letter sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -608,7 +608,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_PRE_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_PRE_LN5))) {
               // case of a sequence beginning by an upper case letter
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -634,7 +634,7 @@ while (t!=NULL) {
                  }
               }
          }
-         else if ((contenu_len_limit6==5) && (!u_strcmp_superfast_5(contenu,ETIQ_PNC_LN5))) {
+         else if ((contenu_len_possible_match==5) && (!u_strcmp_superfast_5(contenu,ETIQ_PNC_LN5))) {
               // case of a punctuation sequence
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -676,13 +676,13 @@ while (t!=NULL) {
                    }
               }
          }
-         else if ((contenu_len_limit6==3) && (!u_strcmp_superfast_3(contenu,ETIQ_E_LN3))) {
+         else if ((contenu_len_possible_match==3) && (!u_strcmp_superfast_3(contenu,ETIQ_E_LN3))) {
               // case of an empty sequence
               // in both modes MERGE and REPLACE, we process the transduction if any
               traiter_transduction(p,etiq->output);
               scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
          }
-         else if ((contenu_len_limit6==3) && (!u_strcmp_superfast_3(contenu,ETIQ_CIRC_LN3))) {
+         else if ((contenu_len_possible_match==3) && (!u_strcmp_superfast_3(contenu,ETIQ_CIRC_LN3))) {
               // case of a new line sequence
               if (p->buffer[pos+p->current_origin]=='\n') {
                  // in both modes MERGE and REPLACE, we process the transduction if any
@@ -694,7 +694,7 @@ while (t!=NULL) {
                  scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if ((contenu_len_limit6==1) && (!u_strcmp_superfast_1(contenu,ETIQ_DIESE_LN1)) && (!(etiq->control&RESPECT_CASE_TAG_BIT_MASK))) {
+         else if ((contenu_len_possible_match==1) && (!u_strcmp_superfast_1(contenu,'#')) && (!(etiq->control&RESPECT_CASE_TAG_BIT_MASK))) {
               // case of a no space condition
               if (p->buffer[pos+p->current_origin]!=' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
@@ -702,7 +702,7 @@ while (t!=NULL) {
                 scan_graph(n_graph,t->state_number,pos,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if ((contenu_len_limit6==1) && (!u_strcmp_superfast_1(contenu,ETIQ_SPACE_LN1))) {
+         else if ((contenu_len_possible_match==1) && (!u_strcmp_superfast_1(contenu,' '))) {
          // case of an obligatory space
               if (p->buffer[pos+p->current_origin]==' ') {
                 // in both modes MERGE and REPLACE, we process the transduction if any
@@ -714,7 +714,7 @@ while (t!=NULL) {
                 scan_graph(n_graph,t->state_number,pos+1,depth,liste_arrivee,mot_token_buffer,p);
               }
          }
-         else if ((contenu_len_limit6==3) && (!u_strcmp_superfast_5(contenu,ETIQ_L_LN3))) {
+         else if ((contenu_len_possible_match==3) && (!u_strcmp_superfast_5(contenu,ETIQ_L_LN3))) {
               // case of a single letter
               if (p->buffer[pos+p->current_origin]==' ') {pos2=pos+1;if (p->output_policy==MERGE_OUTPUTS) push(p->stack,' ');}
               //else if (buffer[pos+origine_courante]==0x0d) {pos2=pos+2;if (MODE==MERGE) empiler(0x0a);}
@@ -791,24 +791,24 @@ if (e->control&RESPECT_CASE_TAG_BIT_MASK || e->type==BEGIN_VAR_TAG
 }
 unichar* s=e->input;
 if (!is_letter(s[0],alphabet)) return 1;
-int s_len_limit6=u_strlen_limit_6(s);
-if (s_len_limit6==1) {
-    if ((!u_strcmp_superfast_1(s,ETIQ_DIESE_LN1)) ||
-        (!u_strcmp_superfast_1(s,ETIQ_SPACE_LN1)))
+int s_len_possible_match=u_len_possible_match(s);
+if (s_len_possible_match==1) {
+    if ((!u_strcmp_superfast_1(s,'#')) ||
+        (!u_strcmp_superfast_1(s,' ')))
         return 1;
 }
-if (s_len_limit6==3) {
+if (s_len_possible_match==3) {
     if ((!u_strcmp_superfast_3(s,ETIQ_L_LN3)) ||
         (!u_strcmp_superfast_3(s,ETIQ_E_LN3)) ||
         (!u_strcmp_superfast_3(s,ETIQ_CIRC_LN3)))
         return 1;
 }
 // added in revision 1028
-if (s_len_limit6==4) {
+if (s_len_possible_match==4) {
     if ((!u_strcmp_superfast_4(s,ETIQ_NB_LN4)))
         return 1;
 }
-if (s_len_limit6==5) {
+if (s_len_possible_match==5) {
     if ((!u_strcmp_superfast_5(s,ETIQ_MOT_LN5)) ||
         (!u_strcmp_superfast_5(s,ETIQ_MAJ_LN5)) ||
         (!u_strcmp_superfast_5(s,ETIQ_MIN_LN5)) ||
