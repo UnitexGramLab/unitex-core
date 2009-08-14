@@ -351,7 +351,7 @@ int u_fgetc_UTF16LE_raw(ABSTRACTFILE* f) {
 unsigned char tab[2];
 size_t ret_read = af_fread(&tab[0],1,2,f);
 if (ret_read == 2)
-  return (tab[1]*256)+tab[0];
+  return (((int)tab[1]) << 8) | tab[0];
 if (ret_read == 1)
   error("Alignment error: odd number of characters in a UTF16 file\n");
 return EOF;
@@ -367,7 +367,7 @@ int u_fgetc_UTF16BE_raw(ABSTRACTFILE* f) {
 unsigned char tab[2];
 size_t ret_read = af_fread(&tab[0],1,2,f);
 if (ret_read == 2)
-  return (tab[0]*256)+tab[1];
+  return (((int)tab[0]) << 8) | tab[1];
 if (ret_read == 1)
   error("Alignment error: odd number of characters in a UTF16 file\n");
 return EOF;
