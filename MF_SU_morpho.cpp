@@ -677,10 +677,17 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 					}
 					pos_tag++;
 				} else if (semitic != NULL) {
-					int i = tag[pos_tag++] - '1';
+				   int pos_letter=tag[pos_tag++]-'0';
+				   if (tag[pos_tag]>='0' && tag[pos_tag]<='9') {
+				      pos_letter=pos_letter*10+tag[pos_tag++]-'0';
+				      if (tag[pos_tag]>='0' && tag[pos_tag]<='9') {
+				         fatal_error("Semitic consonant skeletons are not supposed to have more than 99 letters\n");
+				      }
+				   }
+					int i = pos_letter-1; /* Numbering from 0, always... */
 					if (i >= u_strlen(lemma)) {
 						error(
-								"Reference in %S.fst2 to consonant #%C for skeleton \"%S\"\n",
+								"Invalid reference in %S.fst2 to consonant #%C for skeleton \"%S\"\n",
 								a->graph_names[1], tag[pos_tag - 1], lemma);
 						return 0;
 					}
