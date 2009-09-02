@@ -490,7 +490,23 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 	u_strcpy(tag, t->input);
 	if (u_strcmp(tag, "<E>")) {
 		/* If the tag is not <E>, we process it */
-		for (int pos_tag = 0; tag[pos_tag] != '\0';) {
+	   unichar foo;
+	   int val;
+	   if (semitic!=NULL && 1==u_sscanf(tag,"<%d>%C",&val,&foo)) {
+         /* If we are in semitic mode, we must handle tags like <12> like references
+          * to letters in the lemma. We must deal this way with values >9, because
+          * the graph compiler would split "12" in "1" and "2" */
+	      val--;
+	      if (val<0 || val>=u_strlen(lemma)) {
+	         error("Invalid reference in %S.fst2 to consonant #%d for skeleton \"%S\"\n",
+                  a->graph_names[1], val+1, lemma);
+            return 0;
+         }
+         stack[pos++] = lemma[val];
+         out[pos_out++] = lemma[val];
+	   }
+	   /* Otherwise, we deal with the tag in the normal way */
+	   else for (int pos_tag = 0; tag[pos_tag] != '\0';) {
 			switch (tag[pos_tag]) {
 			case '<':
 				retour = flex_op_with_var(Variables_op, stack, tag, &pos,
@@ -678,12 +694,6 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 					pos_tag++;
 				} else if (semitic != NULL) {
 				   int pos_letter=tag[pos_tag++]-'0';
-				   if (tag[pos_tag]>='0' && tag[pos_tag]<='9') {
-				      pos_letter=pos_letter*10+tag[pos_tag++]-'0';
-				      if (tag[pos_tag]>='0' && tag[pos_tag]<='9') {
-				         fatal_error("Semitic consonant skeletons are not supposed to have more than 99 letters\n");
-				      }
-				   }
 					int i = pos_letter-1; /* Numbering from 0, always... */
 					if (i >= u_strlen(lemma)) {
 						error(
