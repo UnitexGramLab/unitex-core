@@ -500,6 +500,22 @@ return fstf;
 
 
 /**
+ * Removes transitions that are tagged by a NULL symbol.
+ */
+Transition* filter_NULL_symbols(Transition* t) {
+if (t==NULL) return NULL;
+if (t->label==NULL) {
+   Transition* tmp=t->next;
+   free_Transition(t,NULL);
+   return filter_NULL_symbols(tmp);
+}
+t->next=filter_NULL_symbols(t->next);
+return t;
+}
+
+
+
+/**
  * Loads the given sentence automaton and converts its transitions tagged with integers
  * into transitions tagged with symbol_t*
  */
@@ -556,6 +572,7 @@ for (int i=0;i<input->tfst->automaton->number_of_states;i++) {
       t->label=(symbol_t*)input->symbols->value[input->renumber[t->tag_number]];
       t=t->next;
    }
+   state->outgoing_transitions=filter_NULL_symbols(state->outgoing_transitions);
 }
 /* We must indicate that now we deal a pointer tags */
 input->tfst->automaton->tag_type=PTR_TAGS;

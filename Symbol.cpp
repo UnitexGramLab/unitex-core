@@ -1045,7 +1045,11 @@ if (tag[0]=='{' && tag[1]!='\0') {
       fatal_error("Cannot load invalid tag '%S'\n",tag);
    }
    symbol_t* result=load_dic_entry(language,tag,entry,tag_number);
-   result->tfsttag_index=tag_number;
+   if (result==NULL) {
+      /* Nothing to do: an error message has already been printed */
+   } else {
+      result->tfsttag_index=tag_number;
+   }
    free_dela_entry(entry);
    return result;
 }
