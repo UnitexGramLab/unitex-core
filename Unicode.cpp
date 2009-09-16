@@ -215,7 +215,288 @@ return n;
 }
 
 
+/* ------------------ Encoding function ----------------- */
+
+struct reading_encoding_item
+{
+    const char* encoding_name;
+    int encoding_flag;
+};
+
+
+const struct reading_encoding_item reading_encoding_item_list[] =
+{
+    { "ascii", ASCII_NO_BOM_POSSIBLE },
+
+    { "utf8", UTF8_BOM_POSSIBLE | UTF8_NO_BOM_POSSIBLE },
+    { "utf8-no_bom", UTF8_NO_BOM_POSSIBLE },
+    { "utf8-bom", UTF8_BOM_POSSIBLE },
+
+
+    { "utf-16-le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf-16-le-no_bom", UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf-16-le-bom", UTF16_LE_BOM_POSSIBLE },
+
+    { "utf16-le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16-le-no_bom", UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16-le-bom", UTF16_LE_BOM_POSSIBLE },
+
+    { "utf16le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16le-no_bom", UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16le-bom", UTF16_LE_BOM_POSSIBLE },
+
+    { "little-endian", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
+    { "little-endian-no_bom", UTF16_LE_NO_BOM_POSSIBLE },
+    { "little-endian-bom", UTF16_LE_BOM_POSSIBLE },
+
+
+    { "utf-16-be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf-16-be-no_bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf-16-be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
+
+    { "utf16-be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16-be-no_bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16-be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
+
+    { "utf16be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16be-no_bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
+
+    { "big-endian", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "big-endian-no_bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "big-endian-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
+
+    { NULL, 0 }
+};
+
+
+struct write_encoding_item
+{
+    const char* encoding_name;
+    Encoding encoding;
+    int bom;
+};
+
+const struct write_encoding_item write_encoding_item_list[] =
+{
+    { "ascii", ASCII, 0 },
+
+    { "utf8", UTF8, 2 },
+    { "utf8-no_bom", UTF8, 0 },
+    { "utf8-bom", UTF8,1 },
+
+
+    { "utf-16-le", UTF16_LE, 2 },
+    { "utf-16-le-no_bom", UTF16_LE, 0 },
+    { "utf-16-le-bom", UTF16_LE, 1 },
+
+    { "utf16-le", UTF16_LE, 2 },
+    { "utf16-le-no_bom", UTF16_LE, 0 },
+    { "utf16-le-bom", UTF16_LE, 1 },
+
+    { "utf16le", UTF16_LE, 2 },
+    { "utf16le-no_bom", UTF16_LE, 0 },
+    { "utf16le-bom", UTF16_LE, 1 },
+
+    { "little-endian", UTF16_LE, 2 },
+    { "little-endian-no_bom", UTF16_LE, 0 },
+    { "little-endian-bom", UTF16_LE, 1 },
+
+
+    { "utf-16-be", BIG_ENDIAN_UTF16, 2 },
+    { "utf-16-be-no_bom", BIG_ENDIAN_UTF16, 0 },
+    { "utf-16-be-bom", BIG_ENDIAN_UTF16, 1 },
+
+    { "utf16-be", BIG_ENDIAN_UTF16, 2 },
+    { "utf16-be-no_bom", BIG_ENDIAN_UTF16, 0 },
+    { "utf16-be-bom", BIG_ENDIAN_UTF16, 1 },
+
+    { "utf16be", BIG_ENDIAN_UTF16, 2 },
+    { "utf16be-no_bom", BIG_ENDIAN_UTF16, 0 },
+    { "utf16be-bom", BIG_ENDIAN_UTF16, 1 },
+
+    { "big-endian", BIG_ENDIAN_UTF16, 2 },
+    { "big-endian-no_bom", BIG_ENDIAN_UTF16, 0 },
+    { "big-endian-bom", BIG_ENDIAN_UTF16, 1 },
+
+    { NULL, ASCII, 0 }
+};
+
+/*
+ * duplicate a string and convert to lower case
+ */
+char *strdup_lower_case(const char* text)
+{
+    size_t len_text=strlen(text);
+    char* new_str = (char*)malloc(len_text+1);
+    if (new_str==NULL)
+        return NULL;
+    strcpy(new_str,text);
+    for (size_t i=0;i < len_text;i++)
+        if (((*(new_str+i))>='A') && ((*(new_str+i))<='Z')) (*(new_str+i)) += 32; /* 32 = 'a'-'A' */
+
+    return new_str;
+}
+
+/*
+ * decode encoding parameter for reading file and fill encoding_compatibility mask
+ */
+int decode_reading_encoding_parameter(int* p_mask_encoding_compatibility,const char* encoding_text)
+{
+    char* lower_encoding_text=strdup_lower_case(encoding_text);
+    int ret=0;   
+    int i=0;
+    char * cur_encoding_text = lower_encoding_text;
+    char * next_encoding_text;
+    int mask_encoding_compatibility = 0;
+
+    while (cur_encoding_text != NULL)
+    {
+        int i;
+
+        i=0;
+        while ((*(cur_encoding_text+i)!='\0') && (*(cur_encoding_text+i)!=',')) {
+            i++;
+        }
+
+        if (*(cur_encoding_text+i)==',')
+        {
+            *(cur_encoding_text+i)='\0';
+            next_encoding_text = cur_encoding_text+i+1;
+        }
+        else
+            next_encoding_text = NULL;
+
+        i=0;
+        while (reading_encoding_item_list[i].encoding_name != NULL)
+        {
+            if (strcmp(cur_encoding_text,reading_encoding_item_list[i].encoding_name)==0)
+            {
+                ret = 1;
+                mask_encoding_compatibility = mask_encoding_compatibility | reading_encoding_item_list[i].encoding_flag;
+                break;
+            }           
+
+            i++;
+        }
+        cur_encoding_text = next_encoding_text;
+    }
+    free(lower_encoding_text);
+    *p_mask_encoding_compatibility = mask_encoding_compatibility;
+    return ret;
+}
+
+
+int decode_writing_encoding_parameter(Encoding* p_encoding,int* p_bom,const char* encoding_text)
+{
+    char* lower_encoding_text=strdup_lower_case(encoding_text);
+    int i=0;
+    while (write_encoding_item_list[i].encoding_name != NULL)
+    {
+        if (strcmp(write_encoding_item_list[i].encoding_name,lower_encoding_text)==0)
+        {
+            *p_bom = write_encoding_item_list[i].bom;
+            *p_encoding = write_encoding_item_list[i].encoding;
+            free(lower_encoding_text);
+            return 1;
+        }
+        i++;
+    }
+
+    free(lower_encoding_text);
+    return 0;
+}
+
 /* ------------------- File functions ------------------- */
+
+/*
+
+ */
+int GetFileEncoding(ABSTRACTFILE* f,Encoding* encoding,int *is_BOM,int MASK_ENCODING_COMPATIBILITY)
+{
+    af_fseek(f,0,0);
+
+    if ((MASK_ENCODING_COMPATIBILITY & (UTF16_LE_BOM_POSSIBLE | BIG_ENDIAN_UTF16_BOM_POSSIBLE | UTF8_BOM_POSSIBLE)) != 0)
+    {
+        /* check the BOM */
+        unsigned char c1,c2,c3;
+        if (af_fread(&c1,1,1,f)!=1)
+            c1=0;
+        if (af_fread(&c2,1,1,f)!=1)
+            c2=0;    
+
+        /* now we test BOM */
+
+
+        
+        if ((MASK_ENCODING_COMPATIBILITY & UTF16_LE_BOM_POSSIBLE) != 0)
+            if ((c1 == 0xff) && (c2==0xfe))
+            {
+                af_fseek(f,0,0);            
+                *encoding=UTF16_LE;
+                *is_BOM=1;
+                return 1;
+            }
+
+        if ((MASK_ENCODING_COMPATIBILITY & BIG_ENDIAN_UTF16_BOM_POSSIBLE) != 0)
+            if ((c1 == 0xfe) && (c2==0xff))
+            {
+                af_fseek(f,0,0);
+                *encoding=BIG_ENDIAN_UTF16;
+                *is_BOM=1;
+                return 1;
+            }
+
+
+        if ((MASK_ENCODING_COMPATIBILITY & UTF8_BOM_POSSIBLE) != 0)
+        {
+            if (af_fread(&c3,1,1,f)!=1)
+                c3=0;
+
+            if ((c1 == 0xef) && (c2==0xbb) && (c3==0xbf))
+            {
+                *encoding=UTF8;
+                af_fseek(f,0,0);
+                *is_BOM=1;
+                return 1;
+            }
+        }
+
+        af_fseek(f,0,0);
+    }
+    /* we known there is no BOM */
+
+
+    if ((MASK_ENCODING_COMPATIBILITY & UTF8_NO_BOM_POSSIBLE) != 0)
+    {
+        *encoding=UTF8;
+        *is_BOM=0;
+        return 1;
+    }
+
+    if ((MASK_ENCODING_COMPATIBILITY & ASCII_NO_BOM_POSSIBLE) != 0)
+    {
+        *encoding=ASCII;
+        *is_BOM=0;
+        return 1;
+    }
+
+    if ((MASK_ENCODING_COMPATIBILITY & UTF16_LE_NO_BOM_POSSIBLE) != 0)
+    {
+        *encoding=UTF16_LE;
+        *is_BOM=0;
+        return 1;
+    }
+
+    if ((MASK_ENCODING_COMPATIBILITY & BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE) != 0)
+    {
+        *encoding=BIG_ENDIAN_UTF16;
+        *is_BOM=0;
+        return 1;
+    }
+
+    return 0;
+}
 
 /**
  * Opens a file in binary mode for unicode I/O and returns the
@@ -226,8 +507,11 @@ return n;
  * that the file is not a UTF16 one.
  *
  * 'MODE' should be U_READ, U_WRITE, U_APPEND or U_MODIFY
+ * is_BOM = 0 : no BOM
+ * is_BOM = 1 : we have BOM
+ * is_BOM = 2 : we have BOM only for UTF16_LE or BIG_ENDIAN_UTF16
  */
-U_FILE* u_fopen(Encoding encoding,const char* name,OpenMode MODE) {
+U_FILE* u_fopen_internal(Encoding encoding,int is_BOM,const char* name,OpenMode MODE,int MASK_ENCODING_COMPATIBILITY) {
 if (name==NULL) {
 	fatal_error("NULL file name in u_fopen\n");
 }
@@ -236,13 +520,20 @@ if (MODE==U_APPEND || MODE==U_MODIFY) {
    /* If we are in APPEND or MODIFY mode, we check first if the file already exists */
    f=real_fopen(name,"rb");
    if (f!=NULL) {
+      if (MASK_ENCODING_COMPATIBILITY != USE_ENCODING_VALUE)
+          if (GetFileEncoding(f,&encoding,&is_BOM,MASK_ENCODING_COMPATIBILITY) == 0)
+          {
+              af_fclose(f);
+              error("u_fopen error: %s is not a compatible text file\n",name);
+              return NULL;
+          }
       /* If the file exists, we close it and reopen it in APPEND mode */
       af_fclose(f);
       f=real_fopen(name,(MODE==U_APPEND)?"ab":"r+b");
       if (MODE==U_MODIFY) {
          /* If we are in MODIFY mode, we must set the cursor at the beginning of the
           * file, i.e. after the byte order mark, if any. */
-         if (encoding==UTF16_LE || encoding==BIG_ENDIAN_UTF16) {
+         if ((encoding==UTF16_LE || encoding==BIG_ENDIAN_UTF16) && (is_BOM!=0)) {
             af_fseek(f,2,0);
          }
       }
@@ -267,7 +558,15 @@ if (f==NULL) return NULL;
 /* If the file is opened in READ mode and if we are in UTF16,
  * we check the presence of the byte order mark. */
 if (MODE==U_READ) {
-   if (encoding==UTF16_LE) {
+   if (MASK_ENCODING_COMPATIBILITY != USE_ENCODING_VALUE)
+      if (GetFileEncoding(f,&encoding,&is_BOM,MASK_ENCODING_COMPATIBILITY) == 0)
+      {
+          af_fclose(f);
+          error("u_fopen error: %s is not a compatible text file\n",name);
+          return NULL;
+      }
+
+   if ((encoding==UTF16_LE) && (is_BOM!=0)) {
       c=u_fgetc_UTF16LE(f);
       if (c!=U_BYTE_ORDER_MARK) {
          error("u_fopen error: %s is not a UTF16-LE text file\n",name);
@@ -276,7 +575,8 @@ if (MODE==U_READ) {
       }
       return new_U_FILE(f,encoding);
    }
-   if (encoding==BIG_ENDIAN_UTF16) {
+
+   if ((encoding==BIG_ENDIAN_UTF16) && (is_BOM!=0)) {
       c=u_fgetc_UTF16BE(f);
       if (c!=U_BYTE_ORDER_MARK) {
          error("u_fopen error: %s is not a UTF16-BE text file\n",name);
@@ -285,16 +585,49 @@ if (MODE==U_READ) {
       }
       return new_U_FILE(f,encoding);
    }
+
+   if ((encoding==UTF8) && (is_BOM==1)) {
+      c=u_fgetc_UTF8(f);
+      if (c!=U_BYTE_ORDER_MARK) {
+         error("u_fopen error: %s is not a UTF8 text file\n",name);
+         af_fclose(f);
+         return NULL;
+      }
+      return new_U_FILE(f,encoding);
+   }
+
    return new_U_FILE(f,encoding);
 }
 /* If the file is opened in WRITE mode, we may insert the 0xFEFF unicode char */
 if (MODE==U_WRITE) {
-   if (encoding==UTF16_LE) u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
-   else if (encoding==BIG_ENDIAN_UTF16) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
+   if ((encoding==UTF16_LE) && (is_BOM!=0)) u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
+   else if ((encoding==BIG_ENDIAN_UTF16) && (is_BOM!=0)) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
+   else if ((encoding==UTF8) && (is_BOM==1)) u_fputc_UTF8(U_BYTE_ORDER_MARK,f);
 }
 return new_U_FILE(f,encoding);
 }
 
+/*
+ * Create OR Open existing file with specific encoding
+ */
+U_FILE* u_fopen(Encoding encoding,const char* name,OpenMode MODE) {
+    return u_fopen_internal(encoding,2,name,MODE,USE_ENCODING_VALUE);
+}
+
+/*
+ * open existing text file, whith versatile encoding compatibility
+ * the encoding parameter we give will be used only if we create file
+ */
+U_FILE* u_fopen_versatile_encoding(Encoding encoding,int write_bom,int MASK_ENCODING_COMPATIBILITY,const char* name,OpenMode MODE) {
+    return u_fopen_internal(encoding,write_bom,name,MODE,MASK_ENCODING_COMPATIBILITY);
+}
+
+/*
+ * Same function, dedicated for file that already exist, without parameter used only for file creation
+ */
+U_FILE* u_fopen_existing_versatile_encoding(int MASK_ENCODING_COMPATIBILITY,const char* name,OpenMode MODE) {
+    return u_fopen_internal(UTF16_LE,1,name,MODE,MASK_ENCODING_COMPATIBILITY);
+}
 
 /**
  * Closes a UTF16 file.

@@ -88,6 +88,21 @@ typedef enum {
 } Encoding;
 
 
+/* now the mask of compatibility for opening file
+ */
+#define USE_ENCODING_VALUE 0
+#define UTF16_LE_BOM_POSSIBLE 0x0001
+#define BIG_ENDIAN_UTF16_BOM_POSSIBLE 0x0002
+#define UTF8_BOM_POSSIBLE 0x0004
+/* there 4 value are exclusive, because we have no way to determinate which use */
+#define UTF16_LE_NO_BOM_POSSIBLE 0x0010
+#define BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE 0x0020
+#define UTF8_NO_BOM_POSSIBLE 0x0040
+#define ASCII_NO_BOM_POSSIBLE 0x0080
+
+#define ALL_ENCODING_BOM_POSSIBLE 0x0007
+
+
 /**
  * This structure is used to represent a file with its encoding.
  */
@@ -124,6 +139,9 @@ extern U_FILE* U_STDIN;
 extern U_FILE* U_STDOUT;
 extern U_FILE* U_STDERR;
 
+/* decode encoding parameter, to prepare value for u_fopen */
+int decode_reading_encoding_parameter(int*, const char*);
+int decode_writing_encoding_parameter(Encoding*, int*, const char*);
 
 /* Some aliases for U_FILE */
 int fseek(U_FILE *stream, long offset, int whence);
@@ -175,6 +193,8 @@ int u_fscanf(U_FILE*,const char*,...);
 
 /* ------------------- File functions ------------------- */
 U_FILE* u_fopen(Encoding,const char*,OpenMode);
+U_FILE* u_fopen_versatile_encoding(Encoding,int,int,const char*,OpenMode);
+U_FILE* u_fopen_existing_versatile_encoding(int,const char*,OpenMode);
 int u_fclose(U_FILE*);
 int u_fempty(Encoding,const char*);
 int u_is_UTF16(const char*);
