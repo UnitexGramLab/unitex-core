@@ -229,41 +229,41 @@ const struct reading_encoding_item reading_encoding_item_list[] =
     { "ascii", ASCII_NO_BOM_POSSIBLE },
 
     { "utf8", UTF8_BOM_POSSIBLE | UTF8_NO_BOM_POSSIBLE },
-    { "utf8-no_bom", UTF8_NO_BOM_POSSIBLE },
+    { "utf8-no-bom", UTF8_NO_BOM_POSSIBLE },
     { "utf8-bom", UTF8_BOM_POSSIBLE },
 
 
     { "utf-16-le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf-16-le-no_bom", UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf-16-le-no-bom", UTF16_LE_NO_BOM_POSSIBLE },
     { "utf-16-le-bom", UTF16_LE_BOM_POSSIBLE },
 
     { "utf16-le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf16-le-no_bom", UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16-le-no-bom", UTF16_LE_NO_BOM_POSSIBLE },
     { "utf16-le-bom", UTF16_LE_BOM_POSSIBLE },
 
     { "utf16le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf16le-no_bom", UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16le-no-bom", UTF16_LE_NO_BOM_POSSIBLE },
     { "utf16le-bom", UTF16_LE_BOM_POSSIBLE },
 
     { "little-endian", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
-    { "little-endian-no_bom", UTF16_LE_NO_BOM_POSSIBLE },
+    { "little-endian-no-bom", UTF16_LE_NO_BOM_POSSIBLE },
     { "little-endian-bom", UTF16_LE_BOM_POSSIBLE },
 
 
     { "utf-16-be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf-16-be-no_bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf-16-be-no-bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
     { "utf-16-be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
     { "utf16-be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf16-be-no_bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16-be-no-bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
     { "utf16-be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
     { "utf16be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf16be-no_bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16be-no-bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
     { "utf16be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
     { "big-endian", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "big-endian-no_bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "big-endian-no-bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
     { "big-endian-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
     { NULL, 0 }
@@ -282,41 +282,41 @@ const struct write_encoding_item write_encoding_item_list[] =
     { "ascii", ASCII, 0 },
 
     { "utf8", UTF8, 2 },
-    { "utf8-no_bom", UTF8, 0 },
+    { "utf8-no-bom", UTF8, 0 },
     { "utf8-bom", UTF8,1 },
 
 
     { "utf-16-le", UTF16_LE, 2 },
-    { "utf-16-le-no_bom", UTF16_LE, 0 },
+    { "utf-16-le-no-bom", UTF16_LE, 0 },
     { "utf-16-le-bom", UTF16_LE, 1 },
 
     { "utf16-le", UTF16_LE, 2 },
-    { "utf16-le-no_bom", UTF16_LE, 0 },
+    { "utf16-le-no-bom", UTF16_LE, 0 },
     { "utf16-le-bom", UTF16_LE, 1 },
 
     { "utf16le", UTF16_LE, 2 },
-    { "utf16le-no_bom", UTF16_LE, 0 },
+    { "utf16le-no-bom", UTF16_LE, 0 },
     { "utf16le-bom", UTF16_LE, 1 },
 
     { "little-endian", UTF16_LE, 2 },
-    { "little-endian-no_bom", UTF16_LE, 0 },
+    { "little-endian-no-bom", UTF16_LE, 0 },
     { "little-endian-bom", UTF16_LE, 1 },
 
 
     { "utf-16-be", BIG_ENDIAN_UTF16, 2 },
-    { "utf-16-be-no_bom", BIG_ENDIAN_UTF16, 0 },
+    { "utf-16-be-no-bom", BIG_ENDIAN_UTF16, 0 },
     { "utf-16-be-bom", BIG_ENDIAN_UTF16, 1 },
 
     { "utf16-be", BIG_ENDIAN_UTF16, 2 },
-    { "utf16-be-no_bom", BIG_ENDIAN_UTF16, 0 },
+    { "utf16-be-no-bom", BIG_ENDIAN_UTF16, 0 },
     { "utf16-be-bom", BIG_ENDIAN_UTF16, 1 },
 
     { "utf16be", BIG_ENDIAN_UTF16, 2 },
-    { "utf16be-no_bom", BIG_ENDIAN_UTF16, 0 },
+    { "utf16be-no-bom", BIG_ENDIAN_UTF16, 0 },
     { "utf16be-bom", BIG_ENDIAN_UTF16, 1 },
 
     { "big-endian", BIG_ENDIAN_UTF16, 2 },
-    { "big-endian-no_bom", BIG_ENDIAN_UTF16, 0 },
+    { "big-endian-no-bom", BIG_ENDIAN_UTF16, 0 },
     { "big-endian-bom", BIG_ENDIAN_UTF16, 1 },
 
     { NULL, ASCII, 0 }
@@ -333,7 +333,10 @@ char *strdup_lower_case(const char* text)
         return NULL;
     strcpy(new_str,text);
     for (size_t i=0;i < len_text;i++)
+    {
         if (((*(new_str+i))>='A') && ((*(new_str+i))<='Z')) (*(new_str+i)) += 32; /* 32 = 'a'-'A' */
+        if (((*(new_str+i))=='_')) (*(new_str+i)) = '-'; /* 32 = 'a'-'A' */
+    }
 
     return new_str;
 }
@@ -419,18 +422,13 @@ int GetFileEncoding(ABSTRACTFILE* f,Encoding* encoding,int *is_BOM,int MASK_ENCO
     if ((MASK_ENCODING_COMPATIBILITY & (UTF16_LE_BOM_POSSIBLE | BIG_ENDIAN_UTF16_BOM_POSSIBLE | UTF8_BOM_POSSIBLE)) != 0)
     {
         /* check the BOM */
-        unsigned char c1,c2,c3;
-        if (af_fread(&c1,1,1,f)!=1)
-            c1=0;
-        if (af_fread(&c2,1,1,f)!=1)
-            c2=0;    
+        unsigned char tab[4];
+        if (af_fread(&tab[0],1,2,f)!=2)
+            tab[0]=tab[1]=0;
 
         /* now we test BOM */
-
-
-        
         if ((MASK_ENCODING_COMPATIBILITY & UTF16_LE_BOM_POSSIBLE) != 0)
-            if ((c1 == 0xff) && (c2==0xfe))
+            if ((tab[0] == 0xff) && (tab[1]==0xfe))
             {
                 af_fseek(f,0,0);            
                 *encoding=UTF16_LE;
@@ -439,7 +437,7 @@ int GetFileEncoding(ABSTRACTFILE* f,Encoding* encoding,int *is_BOM,int MASK_ENCO
             }
 
         if ((MASK_ENCODING_COMPATIBILITY & BIG_ENDIAN_UTF16_BOM_POSSIBLE) != 0)
-            if ((c1 == 0xfe) && (c2==0xff))
+            if ((tab[0] == 0xfe) && (tab[1]==0xff))
             {
                 af_fseek(f,0,0);
                 *encoding=BIG_ENDIAN_UTF16;
@@ -450,13 +448,13 @@ int GetFileEncoding(ABSTRACTFILE* f,Encoding* encoding,int *is_BOM,int MASK_ENCO
 
         if ((MASK_ENCODING_COMPATIBILITY & UTF8_BOM_POSSIBLE) != 0)
         {
-            if (af_fread(&c3,1,1,f)!=1)
-                c3=0;
+            if (af_fread(&tab[2],1,1,f)!=1)
+                tab[2]=0;
 
-            if ((c1 == 0xef) && (c2==0xbb) && (c3==0xbf))
+            if ((tab[0] == 0xef) && (tab[1]==0xbb) && (tab[2]==0xbf))
             {
-                *encoding=UTF8;
                 af_fseek(f,0,0);
+                *encoding=UTF8;
                 *is_BOM=1;
                 return 1;
             }

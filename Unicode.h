@@ -139,6 +139,11 @@ extern U_FILE* U_STDIN;
 extern U_FILE* U_STDOUT;
 extern U_FILE* U_STDERR;
 
+
+#define DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT (UTF16_LE_BOM_POSSIBLE | BIG_ENDIAN_UTF16_BOM_POSSIBLE)
+#define DEFAULT_ENCODING_OUTPUT (UTF16_LE)
+#define DEFAULT_BOM_OUTPUT (2)
+
 /* decode encoding parameter, to prepare value for u_fopen */
 int decode_reading_encoding_parameter(int*, const char*);
 int decode_writing_encoding_parameter(Encoding*, int*, const char*);
