@@ -951,7 +951,7 @@ return (int)af_fwrite(&c,1,1,f);
  *       a unicode character > 0xFFFF
  */
 int u_fputc_UTF8_raw(unichar c,ABSTRACTFILE *f) {
-unsigned char tab[2];
+unsigned char tab[8];
 unsigned int iCountByte;
 if (c<=0x7F) {
    tab[0] = (unsigned char)c;
