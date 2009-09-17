@@ -350,12 +350,15 @@ unichar output[3000];
 char is_an_output;
 /* We read the header */
 u_fscanf(f,"#%C\n",&c);
+OutputPolicy policy;
+switch(c) {
+   case 'M': policy=MERGE_OUTPUTS; break;
+   case 'R': policy=REPLACE_OUTPUTS; break;
+   case 'I':
+   default: policy=IGNORE_OUTPUTS; break;
+}
 if (output_policy!=NULL) {
-   switch(c) {
-      case 'I': *output_policy=IGNORE_OUTPUTS; break;
-      case 'M': *output_policy=MERGE_OUTPUTS; break;
-      case 'R': *output_policy=REPLACE_OUTPUTS; break;
-	}
+   (*output_policy)=policy;
 }
 while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&end_char,&end_letter)) {
    /* We look if there is an output or not, i.e. a space or a new line */
@@ -367,10 +370,8 @@ while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&
          output[i++]=(unichar)c;
       }
       output[i]='\0';
-      is_an_output=(i!=0);
-   } else {
-      is_an_output=0;
    }
+   is_an_output=(policy!=IGNORE_OUTPUTS);
    if (l==NULL) {
       l=new_match(start,end,start_char,end_char,start_letter,end_letter,is_an_output?output:NULL,NULL);
       end_of_list=l;
