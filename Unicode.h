@@ -147,6 +147,8 @@ extern U_FILE* U_STDERR;
 /* decode encoding parameter, to prepare value for u_fopen */
 int decode_reading_encoding_parameter(int*, const char*);
 int decode_writing_encoding_parameter(Encoding*, int*, const char*);
+int get_reading_encoding_text(char*,size_t,int);
+int get_writing_encoding_text(char*,size_t,Encoding,int);
 
 /* Some aliases for U_FILE */
 int fseek(U_FILE *stream, long offset, int whence);
@@ -200,6 +202,10 @@ int u_fscanf(U_FILE*,const char*,...);
 U_FILE* u_fopen(Encoding,const char*,OpenMode);
 U_FILE* u_fopen_versatile_encoding(Encoding,int,int,const char*,OpenMode);
 U_FILE* u_fopen_existing_versatile_encoding(int,const char*,OpenMode);
+
+U_FILE* u_fopen_existing_unitex_text_format(const char*,OpenMode);
+U_FILE* u_fopen_creating_unitex_text_format(Encoding,int,const char*,OpenMode);
+
 int u_fclose(U_FILE*);
 int u_fempty(Encoding,const char*);
 int u_is_UTF16(const char*);

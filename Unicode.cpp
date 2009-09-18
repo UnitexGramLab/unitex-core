@@ -390,6 +390,40 @@ int decode_reading_encoding_parameter(int* p_mask_encoding_compatibility,const c
 }
 
 
+int get_reading_encoding_text(char* text_encoding,size_t size_text_buffer,int mask_encoding_compatibility)
+{
+    char result[0x100];
+    result[0]=result[1]=0;
+
+    if ((mask_encoding_compatibility & UTF16_LE_BOM_POSSIBLE) != 0)
+        strcat(result,",utf16-le-bom");
+
+    if ((mask_encoding_compatibility & BIG_ENDIAN_UTF16_BOM_POSSIBLE) != 0)
+        strcat(result,",utf16-be-bom");
+
+    if ((mask_encoding_compatibility & UTF8_BOM_POSSIBLE) != 0)
+        strcat(result,",utf8-be-bom");
+
+
+    if ((mask_encoding_compatibility & UTF16_LE_NO_BOM_POSSIBLE) != 0)
+        strcat(result,",utf16-le-no-bom");
+
+    if ((mask_encoding_compatibility & BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE) != 0)
+        strcat(result,",utf16-be-no-bom");
+
+    if ((mask_encoding_compatibility & UTF8_NO_BOM_POSSIBLE) != 0)
+        strcat(result,",utf8-be-no-bom");
+
+    if ((mask_encoding_compatibility & ASCII_NO_BOM_POSSIBLE) != 0)
+        strcat(result,",ascii");
+
+    size_t len_result=strlen(result+1);
+    if (len_result+1 > size_text_buffer)
+        return 0;
+    strcpy(text_encoding,result+1);
+    return 1;
+}
+
 int decode_writing_encoding_parameter(Encoding* p_encoding,int* p_bom,const char* encoding_text)
 {
     char* lower_encoding_text=strdup_lower_case(encoding_text);
@@ -408,6 +442,27 @@ int decode_writing_encoding_parameter(Encoding* p_encoding,int* p_bom,const char
 
     free(lower_encoding_text);
     return 0;
+}
+
+
+
+int get_writing_encoding_text(char* text_encoding,size_t size_text_buffer,Encoding encoding,int bom)
+{
+    const char* result="";
+
+    switch (encoding)
+    {
+        case UTF16_LE : result = (bom != 0) ? "utf16-le-bom" : "utf16-le-no-bom";
+        case BIG_ENDIAN_UTF16 : result = (bom != 0) ? "utf16-be-bom" : "utf16-be-no-bom";
+        case UTF8 : result = (bom == 1) ? "utf8-bom" : "utf8-no-bom";
+        case ASCII : result = "ascii";
+    }
+
+    size_t len_result=strlen(result);
+    if (len_result+1 > size_text_buffer)
+        return 0;
+    strcpy(text_encoding,result);
+    return 1;
 }
 
 /* ------------------- File functions ------------------- */
@@ -625,6 +680,21 @@ U_FILE* u_fopen_versatile_encoding(Encoding encoding,int write_bom,int MASK_ENCO
  */
 U_FILE* u_fopen_existing_versatile_encoding(int MASK_ENCODING_COMPATIBILITY,const char* name,OpenMode MODE) {
     return u_fopen_internal(UTF16_LE,1,name,MODE,MASK_ENCODING_COMPATIBILITY);
+}
+
+
+
+U_FILE* u_fopen_existing_unitex_text_format(const char* name,OpenMode MODE)
+{
+    return u_fopen_internal(UTF16_LE,1,name,MODE,ALL_ENCODING_BOM_POSSIBLE);
+}
+
+U_FILE* u_fopen_creating_unitex_text_format(Encoding encoding,int write_bom,const char* name,OpenMode MODE) {
+    if ((encoding == ASCII) || (encoding == BINARY))
+        encoding = UTF8;
+    if ((encoding == UTF16_LE) || (encoding == BIG_ENDIAN_UTF16) || (encoding == UTF8))
+        write_bom = 1;
+    return u_fopen_internal(encoding,write_bom,name,MODE,ALL_ENCODING_BOM_POSSIBLE);
 }
 
 /**
