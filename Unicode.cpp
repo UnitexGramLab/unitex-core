@@ -348,7 +348,6 @@ int decode_reading_encoding_parameter(int* p_mask_encoding_compatibility,const c
 {
     char* lower_encoding_text=strdup_lower_case(encoding_text);
     int ret=0;   
-    int i=0;
     char * cur_encoding_text = lower_encoding_text;
     char * next_encoding_text;
     int mask_encoding_compatibility = 0;
@@ -588,6 +587,9 @@ if (MODE==U_APPEND || MODE==U_MODIFY) {
           * file, i.e. after the byte order mark, if any. */
          if ((encoding==UTF16_LE || encoding==BIG_ENDIAN_UTF16) && (is_BOM!=0)) {
             af_fseek(f,2,0);
+         }
+         if ((encoding==UTF8) && (is_BOM==1)) {
+            af_fseek(f,3,0);
          }
       }
       return new_U_FILE(f,encoding);

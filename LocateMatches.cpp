@@ -349,6 +349,7 @@ int c,start,end,start_char,end_char,start_letter,end_letter;
 unichar output[3000];
 char is_an_output;
 /* We read the header */
+c=0;
 u_fscanf(f,"#%C\n",&c);
 OutputPolicy policy;
 switch(c) {

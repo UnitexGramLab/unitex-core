@@ -478,7 +478,7 @@ while (meta_list!=NULL) {
          int new_pos;
          int new_pos_in_token;
          unichar* new_jamo=NULL;
-         int new_pos_in_jamo;
+         int new_pos_in_jamo=0;
          if (pos_in_token+1==current_token_length) {
             /* If we are at the end of the current token */
             new_pos=pos+1;
