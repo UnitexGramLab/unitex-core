@@ -345,14 +345,14 @@ return l;
 struct match_list* load_match_list(U_FILE* f,OutputPolicy *output_policy) {
 struct match_list* l=NULL;
 struct match_list* end_of_list=NULL;
-int c,start,end,start_char,end_char,start_letter,end_letter;
+int start,end,start_char,end_char,start_letter,end_letter;
 unichar output[3000];
 char is_an_output;
 /* We read the header */
-c=0;
-u_fscanf(f,"#%C\n",&c);
+unichar uc_policy=0;
+u_fscanf(f,"#%C\n",&uc_policy);
 OutputPolicy policy;
-switch(c) {
+switch(uc_policy) {
    case 'M': policy=MERGE_OUTPUTS; break;
    case 'R': policy=REPLACE_OUTPUTS; break;
    case 'I':
@@ -363,7 +363,7 @@ if (output_policy!=NULL) {
 }
 while (6==u_fscanf(f,"%d.%d.%d %d.%d.%d",&start,&start_char,&start_letter,&end,&end_char,&end_letter)) {
    /* We look if there is an output or not, i.e. a space or a new line */
-   c=u_fgetc(f);
+   int c=u_fgetc(f);
    if (c==' ') {
       /* If we have an output to read */
       int i=0;
