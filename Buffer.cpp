@@ -71,7 +71,9 @@ switch (type) {
 	   item_size = sizeof(int);
 	   break;
    case UNICHAR_BUFFER:
-	   item_size = sizeof(unichar);
+       int is_UTF16 = u_is_UTF16(fileread);
+       if ((is_UTF16 == UTF16_LITTLE_ENDIAN_FILE) || (is_UTF16 == UTF16_BIG_ENDIAN_FILE))
+           item_size = sizeof(unichar);
 	   break;
 }
 long save_pos=ftell(fileread);

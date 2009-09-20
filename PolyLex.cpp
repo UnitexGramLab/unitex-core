@@ -183,7 +183,7 @@ struct string_hash* forbiddenWords=NULL;
 if (language==DUTCH || language==NORWEGIAN) {
    get_path(dictionary,temp);
    strcat(temp,"ForbiddenWords.txt");
-   forbiddenWords=load_key_list(temp);
+   forbiddenWords=load_key_list(temp,mask_encoding_compatibility_input);
 }
 u_printf("Loading BIN file...\n");
 struct BIN_free_info bin_free;

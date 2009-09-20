@@ -212,13 +212,13 @@ U_FILE* text_cod;
 struct text_tokens* tokens;
 
 /* And we create empty files in order to append things to them */
-if (!u_fempty(UTF16_LE,snt_files->dlf)) {
+if (!u_fempty(encoding_output,bom_output,snt_files->dlf)) {
    fatal_error("Cannot create %s\n",snt_files->dlf);
 }
-if (!u_fempty(UTF16_LE,snt_files->dlc)) {
+if (!u_fempty(encoding_output,bom_output,snt_files->dlc)) {
    fatal_error("Cannot create %s\n",snt_files->dlc);
 }
-if (!u_fempty(UTF16_LE,snt_files->err)) {
+if (!u_fempty(encoding_output,bom_output,snt_files->err)) {
    fatal_error("Cannot create %s\n",snt_files->err);
 }
 Alphabet* alphabet=NULL;

@@ -91,6 +91,7 @@ p->left_ctx_base=0;
 p->protect_dic_chars=0;
 p->jamo=NULL;
 p->jamo_tags=NULL;
+p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 return p;
 }
 
@@ -153,6 +154,7 @@ p->search_limit=search_limit;
 p->ambiguous_output_policy=ambiguous_output_policy;
 p->variable_error_policy=variable_error_policy;
 p->protect_dic_chars=protect_dic_chars;
+p->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
 
 char concord[FILENAME_MAX];
 char concord_info[FILENAME_MAX];
@@ -489,7 +491,7 @@ return c;
  * must be matched by <!DIC>
  */
 void compute_token_controls(Alphabet* alph,char* err,struct locate_parameters* p) {
-struct string_hash* ERR=load_key_list(err);
+struct string_hash* ERR=load_key_list(err,p->mask_encoding_compatibility_input);
 int n=p->tokens->size;
 for (int i=0;i<n;i++) {
    p->token_control[i]=get_control_byte(p->tokens->value[i],alph,ERR,p->tokenization_policy);

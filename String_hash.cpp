@@ -271,8 +271,8 @@ return get_value_index_(key,0,hash->root,hash,INSERT_IF_NEEDED,key);
  * the remaining string as key and value. An error message will be printed if
  * an empty line is found.
  */
-struct string_hash* load_key_list(char* name) {
-U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+struct string_hash* load_key_list(char* name,int mask_encoding_compatibility_input) {
+U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
 unichar temp[4096];

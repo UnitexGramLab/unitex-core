@@ -198,6 +198,8 @@ struct locate_parameters {
    /* This information is used to know if we must protect input dots and commas */
    int protect_dic_chars;
 
+   int mask_encoding_compatibility_input;
+
    /* This is useful for Korean */
    jamoCodage* jamo;
    unichar** jamo_tags;

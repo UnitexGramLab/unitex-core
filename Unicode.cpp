@@ -724,8 +724,8 @@ return ret;
  * This function creates an empty Unicode file that just contains the
  * byte order mark. It returns 0 if it fails; 1 otherwise.
  */
-int u_fempty(Encoding encoding,const char* name) {
-U_FILE* f=u_fopen(encoding,name,U_WRITE);
+int u_fempty(Encoding encoding,int bom,const char* name) {
+U_FILE* f=u_fopen_versatile_encoding(encoding,bom,USE_ENCODING_VALUE,name,U_WRITE);
 if (f==NULL) {
    return 0;
 }
@@ -736,24 +736,39 @@ return 1;
 
 /**
  * This function tests if the given file name correspond to a UTF16 file.
+ * obsolete
  */
 int u_is_UTF16(const char* name) {
 ABSTRACTFILE* f=real_fopen(name,"rb");
+unsigned char tab[4];
+
 if (f==NULL) {
    /* If the file does not exist */
    return FILE_DOES_NOT_EXIST;
 }
-int c=u_fgetc_UTF16LE(f);
+size_t r1=af_fread(&tab[0],1,2,f);
 af_fclose(f);
-if (c==U_BYTE_ORDER_MARK) {
-   return UTF16_LITTLE_ENDIAN_FILE;
-}
-if (c==U_NOT_A_CHAR) {
-   return UTF16_BIG_ENDIAN_FILE;
-}
+if (r1 == 2)
+  if ((tab[0] == 0xff) && (tab[1]==0xfe))
+      return UTF16_LITTLE_ENDIAN_FILE;
+
+if (r1 == 2)
+  if ((tab[0] == 0xfe) && (tab[1]==0xff))
+      return UTF16_BIG_ENDIAN_FILE;
+
 return NOT_A_UTF16_FILE;
 }
 
+/**
+ * This function tests if opened file correspond to a UTF16 file.
+ */
+int u_is_UTF16(U_FILE *f) {
+ if (f->enc == UTF16_LE)
+     return UTF16_LITTLE_ENDIAN_FILE;
+ if (f->enc == BIG_ENDIAN_UTF16)
+     return UTF16_BIG_ENDIAN_FILE;
+ return NOT_A_UTF16_FILE;
+}
 
 /**
  * UTF16-LE version of fgetc. It does not read a char after reading 0x0D.

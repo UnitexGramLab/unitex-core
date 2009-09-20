@@ -207,8 +207,9 @@ U_FILE* u_fopen_existing_unitex_text_format(const char*,OpenMode);
 U_FILE* u_fopen_creating_unitex_text_format(Encoding,int,const char*,OpenMode);
 
 int u_fclose(U_FILE*);
-int u_fempty(Encoding,const char*);
+int u_fempty(Encoding,int,const char*);
 int u_is_UTF16(const char*);
+int u_is_UTF16(U_FILE*);
 
 int u_fgetc_UTF16LE_raw(ABSTRACTFILE*);
 int u_fgetc_UTF16BE_raw(ABSTRACTFILE*);
