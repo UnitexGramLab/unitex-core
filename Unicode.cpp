@@ -684,23 +684,33 @@ U_FILE* u_fopen_existing_versatile_encoding(int MASK_ENCODING_COMPATIBILITY,cons
     return u_fopen_internal(UTF16_LE,1,name,MODE,MASK_ENCODING_COMPATIBILITY);
 }
 
+/*
+ * an opening creating function for Unitex specific file
+ * (like .FST2, .INF, .TFST
+ * MODE must be U_WRITE, be this parameter is not removed for easy modification of code
+ * we try use encoding parameter, but we create always UTF (UTF16LE, UTF16BE or UTF8) with BOM
+ */
+U_FILE* u_fopen_creating_unitex_text_format(Encoding encoding,int write_bom,const char* name,OpenMode MODE) {
+    if ((encoding != UTF16_LE) && (encoding != BIG_ENDIAN_UTF16))
+        encoding = UTF8;
+    write_bom = 1;
+    return u_fopen_internal(encoding,write_bom,name,MODE,ALL_ENCODING_BOM_POSSIBLE);
+}
 
 
+/*
+ * function to open same file than u_fopen_creating_unitex_text_format
+ * this function accept all UTF with BOM file, regardless user parameter
+ * so FST2, INF, TFST... file are universal
+ * MODE must be U_READ, U_MODIFY or U_APPEND
+ */
 U_FILE* u_fopen_existing_unitex_text_format(const char* name,OpenMode MODE)
 {
     return u_fopen_internal(UTF16_LE,1,name,MODE,ALL_ENCODING_BOM_POSSIBLE);
 }
 
-U_FILE* u_fopen_creating_unitex_text_format(Encoding encoding,int write_bom,const char* name,OpenMode MODE) {
-    if ((encoding == ASCII) || (encoding == BINARY))
-        encoding = UTF8;
-    if ((encoding == UTF16_LE) || (encoding == BIG_ENDIAN_UTF16) || (encoding == UTF8))
-        write_bom = 1;
-    return u_fopen_internal(encoding,write_bom,name,MODE,ALL_ENCODING_BOM_POSSIBLE);
-}
-
 /**
- * Closes a UTF16 file.
+ * Closes a file.
  */
 int u_fclose(U_FILE* f) {
 if (f==NULL) return 0;

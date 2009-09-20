@@ -73,7 +73,9 @@ int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locat
  * This function applies the given grammar to the given text automaton.
  * It returns 1 in case of success; 0 otherwise.
  */
-int locate_tfst(char* text,char* grammar,char* alphabet,char* output,MatchPolicy match_policy,
+int locate_tfst(char* text,char* grammar,char* alphabet,char* output,
+                Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                MatchPolicy match_policy,
 		        OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
 		        VariableErrorPolicy variable_error_policy,int search_limit,char* jamo_table) {
 Tfst* tfst=open_text_automaton(text);
@@ -102,7 +104,7 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
 	   return 0;
    }
 }
-infos.output=u_fopen(UTF16_LE,output,U_WRITE);
+infos.output=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
 if (infos.output==NULL) {
 	close_text_automaton(tfst);
 	free_abstract_Fst2(infos.fst2,&fst2_free);
@@ -179,7 +181,7 @@ u_printf("\rDone.                                    \n");
 char concord_tfst_n[FILENAME_MAX];
 get_path(output,concord_tfst_n);
 strcat(concord_tfst_n,"concord_tfst.n");
-U_FILE* f=u_fopen(UTF16_LE,concord_tfst_n,U_WRITE);
+U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord_tfst_n,U_WRITE);
 if (f==NULL) {
 	error("Cannot save information in %s\n",concord_tfst_n);
 } else {

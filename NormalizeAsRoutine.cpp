@@ -19,8 +19,8 @@
   *
   */
 
-#include "NormalizeAsRoutine.h"
 #include "Buffer.h"
+#include "NormalizeAsRoutine.h"
 #include "DELA.h"
 #include "Error.h"
 #include "StringParsing.h"
@@ -42,16 +42,18 @@
  *
  * Note that 'replacements' is supposed to contain replacement rules for { and }
  */
-int normalize(char *fin, char *fout, int carriage_return_policy, char *rules) {
+int normalize(char *fin, char *fout, 
+              Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
+              int carriage_return_policy, char *rules) {
 	U_FILE* input;
-	input = u_fopen(UTF16_LE,fin,U_READ);
+	input = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,fin,U_READ);
 	if (input == NULL) {
 		error("Cannot open file %s\n", fin);
 		return 1;
 	}
 
 	U_FILE* output;
-	output = u_fopen(UTF16_LE,fout,U_WRITE);
+	output = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,fout,U_WRITE);
 	if (output == NULL) {
 		error("Cannot create file %s\n", fout);
 		u_fclose(input);

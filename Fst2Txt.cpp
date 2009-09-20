@@ -57,7 +57,7 @@ u_printf(usage_Fst2Txt);
 }
 
 
-const char* optstring_Fst2Txt=":t:a:MRcwsxh";
+const char* optstring_Fst2Txt=":t:a:MRcwsxhk:q:";
 const struct option_TS lopts_Fst2Txt[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -67,6 +67,8 @@ const struct option_TS lopts_Fst2Txt[]= {
       {"word_by_word",no_argument_TS,NULL,'w'},
       {"start_on_space",no_argument_TS,NULL,'s'},
       {"dont_start_on_space",no_argument_TS,NULL,'x'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -77,7 +79,6 @@ if (argc==1) {
    usage();
    return 0;
 }
-
 
 struct fst2txt_parameters* p=new_fst2txt_parameters();
 int val,index=-1;
@@ -109,6 +110,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Fst2Txt,lopts_Fst2Txt,&index
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Fst2Txt[index].name);
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&p->mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&p->encoding_output,&p->bom_output,vars->optarg);
+             break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;

@@ -74,10 +74,12 @@ u_printf(usage_TagsetNormTfst);
 int get_tfst_tag_index(vector_ptr*,unichar*,Match*);
 
 
-const char* optstring_TagsetNormTfst=":o:t:h";
+const char* optstring_TagsetNormTfst=":o:t:hk:q:";
 const struct option_TS lopts_TagsetNormTfst[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"tagset",required_argument_TS,NULL,'t'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -94,6 +96,9 @@ char tind[FILENAME_MAX]="";
 char output_tfst[FILENAME_MAX]="";
 char output_tind[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TagsetNormTfst,lopts_TagsetNormTfst,&index,vars))) {
@@ -109,6 +114,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TagsetNormTfst,lopts_TagsetN
                 fatal_error("You must specify a non empty tagset file name\n");
              }
              strcpy(tagset,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -145,7 +160,7 @@ if (txtin==NULL) {
    fatal_error("Unable to load text automaton '%s'\n",tfst);
 }
 
-U_FILE* out_tfst=u_fopen(UTF16_LE,output_tfst,U_WRITE);
+U_FILE* out_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output_tfst,U_WRITE);
 if (out_tfst==NULL) {
    fatal_error("Unable to open text automaton '%s'\n",output_tfst);
 }
@@ -323,4 +338,3 @@ t->content=u_strdup(content);
 t->m=(*m);
 return vector_ptr_add(tags,t);
 }
-

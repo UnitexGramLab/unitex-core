@@ -757,8 +757,8 @@ free_Ustring(foo);
  * Loads a whole file as a string. This is used to load the content
  * of the current sentence. 
  */
-unichar* load_as_a_string(char* name) {
-U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+unichar* load_as_a_string(int mask_encoding_compatibility_input,char* name) {
+U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) {
    fatal_error("Cannot open %s in load_as_a_string\n",name);
 }
@@ -1100,7 +1100,8 @@ unichar syllab_tag[256];
  * This function builds the sentence automaton that correspond to the
  * given Korean token buffer. It saves it into the given file.
  */
-void build_korean_sentence_automaton(char* exe_path,int* buffer,int length,struct text_tokens* tokens,
+void build_korean_sentence_automaton(int mask_encoding_compatibility_input,
+                               char* exe_path,int* buffer,int length,struct text_tokens* tokens,
                                Alphabet* alph,U_FILE* out_tfst,U_FILE* out_tind,
                                int sentence_number,
                                int we_must_clean,
@@ -1182,7 +1183,7 @@ for (int i=0;i<foo->len;i++) {
 char cursentence_txt[FILENAME_MAX];
 get_path(phrase_cod,cursentence_txt);
 strcat(cursentence_txt,"cursentence.txt");
-U_FILE* zz=u_fopen(UTF16_LE,cursentence_txt,U_WRITE);
+U_FILE* zz=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,cursentence_txt,U_WRITE);
 if (zz==NULL) {
    fatal_error("Cannot create %s\n",cursentence_txt);
 }
@@ -1208,7 +1209,7 @@ if (ret_value!=0) {
 /* Now, we load the letter version of the text of the current sentence */
 get_path(phrase_cod,current_sentence);
 strcat(current_sentence,"cursentencejm.txt");
-unichar* jamo_text=load_as_a_string(current_sentence); 
+unichar* jamo_text=load_as_a_string(mask_encoding_compatibility_input,current_sentence); 
 
 tfst->tags=new_vector_ptr(256);
 /* The epsilon tag must always be the first one */

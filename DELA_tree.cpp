@@ -135,8 +135,8 @@ tree->dela_entries[n]=insert_if_not_present(entry,tree->dela_entries[n]);
 /**
  * Loads the given DELA into the given DELA tree.
  */
-void load_DELA(char* name,struct DELA_tree* tree) {
-U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+void load_DELA(char* name,int mask_encoding_compatibility_input,struct DELA_tree* tree) {
+U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) {
    error("Cannot load dictionary %s\n",name);
    return;

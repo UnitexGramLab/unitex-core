@@ -48,9 +48,9 @@ struct text_tokens {
 };
 
 
-struct text_tokens* load_text_tokens(const char*);
-struct string_hash* load_text_tokens_hash(char*,int*);
-struct string_hash* load_text_tokens_hash(char*,int*,int*,int*);
+struct text_tokens* load_text_tokens(const char*,int);
+struct string_hash* load_text_tokens_hash(char*,int,int*);
+struct string_hash* load_text_tokens_hash(char*,int,int*,int*,int*);
 void free_text_tokens(struct text_tokens*);
 struct list_int* get_token_list_for_sequence(unichar*,Alphabet*,struct string_hash*);
 int get_token_number(unichar*,struct text_tokens*);

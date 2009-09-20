@@ -30,7 +30,7 @@
 #include "File.h"
 
 
-void load_dic_for_locate(char*,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
+void load_dic_for_locate(char*,int,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*);
 void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p);
 
@@ -124,6 +124,7 @@ return res;
 
 int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,char* err,
                    char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
+                   Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                    char* dynamicDir,TokenizationPolicy tokenization_policy,
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
@@ -162,13 +163,13 @@ strcat(concord,"concord.ind");
 strcpy(concord_info,dynamicDir);
 strcat(concord_info,"concord.n");
 
-out=u_fopen(UTF16_LE,concord,U_WRITE);
+out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord,U_WRITE);
 if (out==NULL) {
    error("Cannot write %s\n",concord);
    u_fclose(text_file);
    return 0;
 }
-info=u_fopen(UTF16_LE,concord_info,U_WRITE);
+info=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord_info,U_WRITE);
 if (info==NULL) {
    error("Cannot write %s\n",concord_info);
 }
@@ -208,7 +209,7 @@ if (p->filters==NULL) {
 #endif
 u_printf("Loading token list...\n");
 int n_text_tokens=0;
-p->tokens=load_text_tokens_hash(tokens,&(p->SENTENCE),&(p->STOP),&n_text_tokens);
+p->tokens=load_text_tokens_hash(tokens,mask_encoding_compatibility_input,&(p->SENTENCE),&(p->STOP),&n_text_tokens);
 if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
    free_alphabet(p->alphabet);
@@ -254,9 +255,9 @@ p->current_compound_pattern=number_of_patterns;
 p->DLC_tree=new_DLC_tree(p->tokens->size);
 struct lemma_node* root=new_lemma_node();
 u_printf("Loading dlf...\n");
-load_dic_for_locate(dlf,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
+load_dic_for_locate(dlf,mask_encoding_compatibility_input,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 u_printf("Loading dlc...\n");
-load_dic_for_locate(dlc,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
+load_dic_for_locate(dlc,mask_encoding_compatibility_input,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 /* We look if tag tokens like "{today,.ADV}" verify some patterns */
 check_patterns_for_tag_tokens(p->alphabet,number_of_patterns,root,p);
 u_printf("Optimizing fst2 pattern tags...\n");
@@ -514,14 +515,14 @@ free_string_hash(ERR);
  * the pattern "<CDIC>" is used in the grammar, it means that any token sequence that is a
  * compound word must be marked as be matched by this pattern.
  */
-void load_dic_for_locate(char* dic_name,Alphabet* alphabet,
+void load_dic_for_locate(char* dic_name,int mask_encoding_compatibility_input,Alphabet* alphabet,
                          int number_of_patterns,int is_DIC_pattern,
                          int is_CDIC_pattern,
                          struct lemma_node* root,struct locate_parameters* parameters) {
 struct string_hash* tokens=parameters->tokens;
 U_FILE* f;
 unichar line[DIC_LINE_SIZE];
-f=u_fopen(UTF16_LE,dic_name,U_READ);
+f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,dic_name,U_READ);
 if (f==NULL) {
    error("Cannot open dictionary %s\n",dic_name);
    return;

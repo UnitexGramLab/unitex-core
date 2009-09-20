@@ -46,8 +46,8 @@
 #define ELAG_UNDEFINED (-1)
 
 
-void split_elag_rule(elRule*,language_t*);
-int count_constraints(Fst2Automaton*,int*);
+void split_elag_rule(elRule*,Encoding encoding_output,int bom_output,language_t*);
+int count_constraints(Fst2Automaton*,Encoding encoding_output,int bom_output,int*);
 Fst2Automaton* compile_elag_rule(elRule*,language_t*);
 int get_sub_automaton(SingleGraph,SingleGraph,int,int,int);
 int get_sub_automaton(SingleGraph,SingleGraph,int,SymbolType,int*);
@@ -107,7 +107,7 @@ for (int i=0;i<A->number_of_states;i++) {
  * Allocates, initializes and returns a new Elag rule from the given .fst2.
  * Returns NULL in case of error at loading the rule.
  */
-elRule* new_elRule(char* fst2,language_t* language) {
+elRule* new_elRule(char* fst2,Encoding encoding_output,int bom_output,language_t* language) {
 elRule* rule=(elRule*)malloc(sizeof(elRule));
 if (rule==NULL) {
    fatal_alloc_error("new_elRule");
@@ -125,7 +125,7 @@ if ((rule->automaton=load_elag_grammar_automaton(rule->name,language))==NULL) {
    free(rule);
    return NULL;
 }
-split_elag_rule(rule,language);
+split_elag_rule(rule,encoding_output,bom_output,language);
 return rule;
 }
 
@@ -219,8 +219,8 @@ return Result;
  * Compiles the given .fst2 grammar into the given .elg file.
  * Returns 0 in case of success; -1 otherwise.
  */
-int compile_elag_grammar(char* grammar,char* elg_file,language_t* language) {
-elRule* rule=new_elRule(grammar,language);
+int compile_elag_grammar(char* grammar,char* elg_file,Encoding encoding_output,int bom_output,language_t* language) {
+elRule* rule=new_elRule(grammar,encoding_output,bom_output,language);
 if (rule==NULL) {
    error("Unable to read grammar '%s'\n",grammar);
    return -1;
@@ -230,7 +230,7 @@ if (A==NULL) {
    fatal_error("Unable to compile rule '%s'\n",grammar);
 }
 free_elRule(rule);
-save_automaton(A,elg_file,FST_GRAMMAR);
+save_automaton(A,elg_file,encoding_output,bom_output,FST_GRAMMAR);
 free_Fst2Automaton(A);
 return 0;
 }
@@ -242,7 +242,7 @@ return 0;
  * automaton is too big, it will be saved in several automata inside
  * the output file.
  */
-int compile_elag_rules(char* rulesname,char* outname,language_t* language) {
+int compile_elag_rules(char* rulesname,char* outname,Encoding encoding_output,int bom_output,language_t* language) {
 u_printf("Compilation of %s\n",rulesname);
 U_FILE* f=NULL;
 U_FILE* frules=u_fopen(ASCII,rulesname,U_READ);
@@ -277,7 +277,7 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
       remove_extension(buf);
       u_printf("Precompiling %s.fst2\n",buf);
       strcat(buf,".fst2");
-      elRule* rule=new_elRule(buf,language);
+      elRule* rule=new_elRule(buf,encoding_output,bom_output,language);
       if (rule==NULL) {
          fatal_error("Unable to read grammar '%s'\n",buf);
       }
@@ -317,7 +317,7 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
       u_sprintf(ustr,"%s: compiled elag grammar",fstoutname);
       free(res->name);
       res->name=u_strdup(ustr->str);
-      save_automaton(res,fstoutname,FST_GRAMMAR);
+      save_automaton(res,fstoutname,encoding_output,bom_output,FST_GRAMMAR);
       free_Fst2Automaton(res);
       res=NULL;
    }
@@ -331,7 +331,7 @@ if (res!=NULL) {
    u_sprintf(ustr,"%s: compiled elag grammar",fstoutname);
    free(res->name);
    res->name=u_strdup(ustr->str);
-   save_automaton(res,fstoutname,FST_GRAMMAR);
+   save_automaton(res,fstoutname,encoding_output,bom_output,FST_GRAMMAR);
    free_Fst2Automaton(res);
 }
 time_t end_time=time(0);
@@ -378,12 +378,12 @@ return res;
  * a fst2 grammar ("foo.fst2" => "foo-conc.fst2") that can be used by
  * the Locate program to match the <!> .... <!> .... <!> part of the rule.
  */
-void split_elag_rule(elRule* rule,language_t* language) {
+void split_elag_rule(elRule* rule,Encoding encoding_output,int bom_output,language_t* language) {
 int c;
 /* This array contains the numbers of the states that are pointed to by
  * middle '<=>' of the constraints */
 int constraints[ELAG_MAX_CONSTRAINTS];
-int nbConstraints=count_constraints(rule->automaton,constraints);
+int nbConstraints=count_constraints(rule->automaton,encoding_output,bom_output,constraints);
 /* +1 because we have to count the <!> .... <!> .... <!> part of the rule */
 rule->nbContexts=nbConstraints+1;
 rule->contexts=(elContext*)malloc(rule->nbContexts*sizeof(elContext));
@@ -444,7 +444,7 @@ strcat(buf,"-conc.fst2");
 
 /* We create the.fst2 to be used by Locate */
 Fst2Automaton* locate=make_locate_automaton(rule,language);
-save_automaton(locate,buf,FST_LOCATE);
+save_automaton(locate,buf,encoding_output,bom_output,FST_LOCATE);
 free_Fst2Automaton(locate);
 }
 
@@ -455,7 +455,7 @@ free_Fst2Automaton(locate);
  * It places their numbers into 'constraints' and it returns the size of this
  * array, i.e. the number of constraints expressed by this Elag rule.
  */
-int count_constraints(Fst2Automaton* aut,int* constraints) {
+int count_constraints(Fst2Automaton* aut,Encoding encoding_output,int bom_output,int* constraints) {
 int source=0;
 int e;
 Transition* t;

@@ -51,9 +51,12 @@ u_printf(usage_Tfst2Unambig);
 }
 
 
-const char* optstring_Tfst2Unambig=":o:h";
+const char* optstring_Tfst2Unambig=":o:hk:q:";
+
 const struct option_TS lopts_Tfst2Unambig[]= {
       {"out",required_argument_TS,NULL,'o'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -65,6 +68,9 @@ if (argc==1) {
    return 0;
 }
 
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -78,6 +84,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Tfst2Unambig,lopts_Tfst2Unam
              if (output==NULL) {
                 fatal_alloc_error("main_Tfst2Unambig");
              }
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -109,7 +125,7 @@ if (res!=LINEAR_AUTOMATON) {
    close_text_automaton(tfst);
    return 1;
 }
-U_FILE* f=u_fopen(UTF16_LE,output,U_WRITE);
+U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
 if (f==NULL) {
    error("Cannot create %s\n",output);
    close_text_automaton(tfst);

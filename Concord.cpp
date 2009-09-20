@@ -139,7 +139,7 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Htg:p:iuAxm:a:Td:h";
+const char* optstring_Concord=":f:s:l:r:Htg:p:iuAxm:a:Td:hk:q:";
 const struct option_TS lopts_Concord[]= {
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
@@ -165,6 +165,8 @@ const struct option_TS lopts_Concord[]= {
       {"thai",no_argument_TS,NULL,'T'},
       {"directory",required_argument_TS,NULL,'d'},
       {"help",no_argument_TS,NULL,'h'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -182,6 +184,9 @@ if (argc==1) {
 int val,index=-1;
 struct conc_opt* options=new_conc_opt();
 char foo;
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int ret;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index,vars))) {
@@ -272,6 +277,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    }
    index=-1;
 }
@@ -285,7 +300,7 @@ if (options->fontname==NULL || options->fontsize<=0) {
       fatal_error("The specified output mode is an HTML file: you must specify font parameters\n");
    }
 }
-U_FILE* concor=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
+U_FILE* concor=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (concor==NULL) {
    error("Cannot open concordance index file %s\n",argv[vars->optind]);
    return 1;
@@ -303,7 +318,7 @@ if (text==NULL) {
 	free_snt_files(snt_files);
 	return 1;
 }
-struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt);
+struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt,mask_encoding_compatibility_input);
 if (tok==NULL) {
 	error("Cannot load text token file %s\n",snt_files->tokens_txt);
 	u_fclose(concor);
@@ -341,7 +356,7 @@ if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->resu
 
 /* Once we have setted all the parameters, we call the function that
  * will actually create the concordance. */
-create_concordance(concor,text,tok,n_enter_char,enter_pos,options);
+create_concordance(encoding_output,bom_output,concor,text,tok,n_enter_char,enter_pos,options);
 free(enter_pos);
 u_fclose(concor);
 u_fclose(text);

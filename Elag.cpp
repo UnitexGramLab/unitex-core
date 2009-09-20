@@ -63,12 +63,14 @@ u_printf(usage_Elag);
 }
 
 
-const char* optstring_Elag=":l:r:o:d:h";
+const char* optstring_Elag=":l:r:o:d:hk:q:";
 const struct option_TS lopts_Elag[]= {
       {"language",required_argument_TS,NULL,'l'},
       {"rules",required_argument_TS,NULL,'r'},
       {"output",required_argument_TS,NULL,'o'},
       {"directory",required_argument_TS,NULL,'d'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -80,7 +82,9 @@ if (argc==1) {
    return 0;
 }
 
-
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 char language[FILENAME_MAX]="";
 char rule_file[FILENAME_MAX]="";
@@ -108,6 +112,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Elag,lopts_Elag,&index,vars)
                 fatal_error("You must specify a non empty directory\n");
              }
              strcpy(directory,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -153,7 +167,7 @@ if ((grammars=load_elag_grammars(rule_file,lang)) == NULL) {
    fatal_error("Unable to load grammar %s", rule_file);
 }
 u_printf("Grammars are loaded.\n");
-remove_ambiguities(input_tfst,grammars,output_tfst,lang);
+remove_ambiguities(input_tfst,grammars,output_tfst,encoding_output,bom_output,lang);
 free_language_t(lang);
 free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
 free_OptVars(vars);

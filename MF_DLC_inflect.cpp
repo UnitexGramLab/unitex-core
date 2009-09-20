@@ -51,9 +51,11 @@ void DLC_delete_entry(DLC_entry_T* entry);
 /////////////////////////////////////////////////////////////////////////////////
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
-int inflect(char* DLC, char* DLCF, int config_files_status,
-		d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
-		jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+int inflect(char* DLC, char* DLCF, 
+		    Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
+		    int config_files_status,
+		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
+		    jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	U_FILE *dlc, *dlcf; //DELAS/DELAC and DELAF/DELACF files
 	unichar input_line[DIC_LINE_SIZE]; //current DELAS/DELAC line
 	unichar output_line[DIC_LINE_SIZE]; //current DELAF/DELACF line
@@ -63,12 +65,12 @@ int inflect(char* DLC, char* DLCF, int config_files_status,
 	int err;
 
 	//Open DELAS/DELAC
-	dlc = u_fopen(UTF16_LE, DLC, U_READ);
+	dlc = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, DLC, U_READ);
 	if (!dlc) {
 		return 1;
 	}
 	//Open DELAF/DELACF
-	dlcf = u_fopen(UTF16_LE, DLCF, U_WRITE);
+	dlcf = u_fopen_versatile_encoding(encoding_output, bom_output, mask_encoding_compatibility_input, DLCF, U_WRITE);
 	if (!dlcf) {
 		error("Unable to open file: '%s' !\n", DLCF);
 		return 1;

@@ -58,8 +58,11 @@ SingleGraph create_copy_of_fst2_subgraph(Fst2* fst2,int n);
 unichar** create_tfst_tags(Fst2* fst2,int *n_tags);
 
 
-const char* optstring_RebuildTfst=":h";
+const char* optstring_RebuildTfst=":hk:q:";
+
 const struct option_TS lopts_RebuildTfst[]= {
+   { "input_encoding",required_argument_TS,NULL,'k'},
+   { "output_encoding",required_argument_TS,NULL,'q'},
    { "help", no_argument_TS, NULL, 'h' },
    { NULL, no_argument_TS, NULL, 0 }
 };
@@ -71,11 +74,23 @@ if (argc==1) {
    return 0;
 }
 
-
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val, index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RebuildTfst,lopts_RebuildTfst,&index,vars))) {
    switch (val) {
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case 'h':
       usage();
       return 0;
@@ -117,7 +132,7 @@ char output_tind[FILENAME_MAX];
 sprintf(output_tind, "%s.new.tind",input_tfst);
 
 U_FILE* f_tfst;
-if ((f_tfst = u_fopen(UTF16_LE,output_tfst,U_WRITE)) == NULL) {
+if ((f_tfst = u_fopen_creating_unitex_text_format(encoding_output,bom_output,output_tfst,U_WRITE)) == NULL) {
    fatal_error("Unable to open %s for writing\n", output_tfst);
 }
 U_FILE* f_tind;

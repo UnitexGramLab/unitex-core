@@ -73,6 +73,10 @@ struct fst2txt_parameters {
 
    /* Used to know how long was the input that has been matched */
    int input_length;
+
+   Encoding encoding_output;
+   int bom_output;
+   int mask_encoding_compatibility_input;
 };
 
 struct fst2txt_parameters* new_fst2txt_parameters();

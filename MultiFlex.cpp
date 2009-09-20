@@ -72,7 +72,7 @@ u_printf(usage_MultiFlex);
 }
 
 
-const char* optstring_MultiFlex=":o:a:d:j:f:sch";
+const char* optstring_MultiFlex=":o:a:d:j:f:schk:q:";
 const struct option_TS lopts_MultiFlex[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -81,6 +81,8 @@ const struct option_TS lopts_MultiFlex[]= {
       {"fst2",required_argument_TS,NULL,'f'},
       {"only-simple-words",no_argument_TS,NULL,'s'},
       {"only-compound-words",no_argument_TS,NULL,'c'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -99,6 +101,9 @@ char alphabet[FILENAME_MAX]="";
 char jamo_table[FILENAME_MAX]="";
 char fst2[FILENAME_MAX]="";
 int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&index,vars))) {
@@ -126,6 +131,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&i
              break;
    case 's': error_check_status=ONLY_SIMPLE_WORDS; break;
    case 'c': error_check_status=ONLY_COMPOUND_WORDS; break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_MultiFlex[index].name);
@@ -199,8 +214,9 @@ if (jamo_table[0]!='\0') {
 }
 
 //DELAC inflection
-err=inflect(argv[vars->optind],output,config_files_status,&D_CLASS_EQUIV,
-		error_check_status,jamo,jamo2syl);
+err=inflect(argv[vars->optind],output,encoding_output, bom_output, mask_encoding_compatibility_input,
+            config_files_status,&D_CLASS_EQUIV,
+		    error_check_status,jamo,jamo2syl);
 MU_graph_free_graphs();
 free_alphabet(alph);
 free_language_morpho();

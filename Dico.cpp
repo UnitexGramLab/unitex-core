@@ -116,8 +116,8 @@ u_printf(usage_Dico);
 /**
  * This function stores some statistics in 'stat_dic.n'.
  */
-void save_statistics(char* name,struct dico_application_info* info) {
-U_FILE* f=u_fopen(UTF16_LE,name,U_WRITE);
+void save_statistics(Encoding encoding_output,int bom_output,char* name,struct dico_application_info* info) {
+U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,USE_ENCODING_VALUE,name,U_WRITE);
 if (f==NULL) {
    error("Cannot write stat file %s\n",name);
    return;
@@ -127,13 +127,15 @@ u_fclose(f);
 }
 
 
-const char* optstring_Dico=":t:a:m:j:h";
+const char* optstring_Dico=":t:a:m:j:hk:q:";
 const struct option_TS lopts_Dico[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"morpho",required_argument_TS,NULL,'m'},
       {"jamo",required_argument_TS,NULL,'j'},
       {"help",no_argument_TS,NULL,'h'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -150,6 +152,9 @@ char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char* morpho_dic=NULL;
 char jamo[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars))) {
    switch(val) {
@@ -180,6 +185,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
              else fatal_error("Missing argument for option --%s\n",lopts_Dico[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    }
    index=-1;
@@ -216,7 +231,7 @@ if (alph[0]!='\0') {
    }
 }
 /* We load the text tokens */
-tokens=load_text_tokens(snt_files->tokens_txt);
+tokens=load_text_tokens(snt_files->tokens_txt,mask_encoding_compatibility_input);
 if (tokens==NULL) {
    free_alphabet(alphabet);
    error("Cannot open token file %s\n",snt_files->tokens_txt);
@@ -231,7 +246,7 @@ if (text_cod==NULL) {
    return 1;
 }
 u_printf("Initializing...\n");
-struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,snt_files->tags_ind,text_cod,alphabet);
+struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,snt_files->tags_ind,text_cod,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
@@ -257,9 +272,13 @@ for (int priority=1;priority<4;priority++) {
             /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
-            info->dlf=u_fopen(UTF16_LE,snt_files->dlf,U_APPEND);
-            info->dlc=u_fopen(UTF16_LE,snt_files->dlc,U_APPEND);
-            info->err=u_fopen(UTF16_LE,snt_files->err,U_WRITE);
+ 
+            /* 
+             * We are using encoding preference
+             */
+            info->dlf=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlf,U_APPEND);
+            info->dlc=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlc,U_APPEND);
+            info->err=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->err,U_WRITE);
             /* Working... */
             if (dico_application(argv[i],info,priority) != 0)
               ret = 1;
@@ -292,9 +311,9 @@ for (int priority=1;priority<4;priority++) {
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */
-            info->dlf=u_fopen(UTF16_LE,snt_files->dlf,U_APPEND);
-            info->dlc=u_fopen(UTF16_LE,snt_files->dlc,U_APPEND);
-            info->err=u_fopen(UTF16_LE,snt_files->err,U_WRITE);
+            info->dlf=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlf,U_APPEND);
+            info->dlc=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlc,U_APPEND);
+            info->err=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->err,U_WRITE);
             /* And we merge the Locate results with current dictionaries */
             merge_dic_locate_results(info,snt_files->concord_ind,priority);
             /* We dump and close output files */
@@ -316,11 +335,11 @@ save_and_sort_tag_sequences(info);
 /* Finally, we have to save the definitive list of unknown words */
 u_printf("Saving unknown words...\n");
 if (info->err==NULL ) {
-	info->err=u_fopen(UTF16_LE,snt_files->err,U_WRITE);
+	info->err=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->err,U_WRITE);
 }
 save_unknown_words(info);
 /* We compute some statistics */
-save_statistics(snt_files->stat_dic_n,info);
+save_statistics(encoding_output,bom_output,snt_files->stat_dic_n,info);
 u_printf("Done.\n");
 /* And we free remaining things */
 free_alphabet(alphabet);

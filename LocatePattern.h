@@ -205,7 +205,7 @@ struct locate_parameters {
 
 
 int locate_pattern(char*,char*,char*,char*,char*,char*,char*,
-                   MatchPolicy,OutputPolicy,char*,TokenizationPolicy,
+                   MatchPolicy,OutputPolicy,Encoding,int,int,char*,TokenizationPolicy,
                    SpacePolicy,int,char*,AmbiguousOutputPolicy,
                    VariableErrorPolicy,int,char*);
 

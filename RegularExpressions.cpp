@@ -108,12 +108,13 @@ info->states[src].transitions=sorted_insert(dest,info->states[src].transitions);
  * This function takes a unicode string representing a regular expression and
  * compiles it into a .grf file. It returns 1 in case of success; 0 otherwise.
  */
-int reg2grf(unichar* regexp,char* name_grf) {
+int reg2grf(unichar* regexp,char* name_grf,Encoding encoding_output, int bom_output,
+            int mask_encoding_compatibility_input) {
 if (regexp[0]=='\0') {
    error("You must specify a non empty regular expression\n");
    return 0;
 }
-U_FILE* out=u_fopen(UTF16_LE,name_grf,U_WRITE);
+U_FILE* out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,name_grf,U_WRITE);
 if (out==NULL) {
    error("Cannot open the output file for the regular expression\n");
    return 0;

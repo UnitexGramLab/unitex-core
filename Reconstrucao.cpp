@@ -66,7 +66,7 @@ u_printf(usage_Reconstrucao);
 }
 
 
-const char* optstring_Reconstrucao=":a:r:d:p:n:o:h";
+const char* optstring_Reconstrucao=":a:r:d:p:n:o:hk:q:";
 const struct option_TS lopts_Reconstrucao[]= {
       {"alphabet",required_argument_TS,NULL,'a'},
       {"root",required_argument_TS,NULL,'r'},
@@ -74,6 +74,8 @@ const struct option_TS lopts_Reconstrucao[]= {
       {"pronoun_rules",required_argument_TS,NULL,'p'},
       {"nasal_pronoun_rules",required_argument_TS,NULL,'n'},
       {"output",required_argument_TS,NULL,'o'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -91,6 +93,9 @@ char dictionary[FILENAME_MAX]="";
 char pronoun_rules[FILENAME_MAX]="";
 char nasal_pronoun_rules[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reconstrucao,lopts_Reconstrucao,&index,vars))) {
@@ -124,6 +129,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Reconstrucao,lopts_Reconstru
                 fatal_error("You must specify a non empty output file name\n");
              }
              strcpy(output,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -165,7 +180,7 @@ if (alphabet[0]!='\0') {
    }
 }
 u_printf("Loading match list...\n");
-U_FILE* f_list=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
+U_FILE* f_list=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (f_list==NULL) {
    error("Cannot load match list %s\n",argv[vars->optind]);
    free_alphabet(alph);
@@ -246,6 +261,7 @@ if (rewriting_rules==NULL) {
 }
 u_printf("Constructing normalization grammar...\n");
 build_portuguese_normalization_grammar(alph,list,root_bin,root_inf,inflected_bin,inflected_inf,output,
+                                       encoding_output,bom_output,mask_encoding_compatibility_input,
                                        rewriting_rules,nasal_rewriting_rules);
 free_alphabet(alph);
 free_abstract_BIN(root_bin,&root_bin_free);

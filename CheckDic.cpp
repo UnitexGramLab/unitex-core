@@ -57,7 +57,7 @@ u_printf(usage_CheckDic);
 }
 
 
-const char* optstring_CheckDic=":sfa:hrt";
+const char* optstring_CheckDic=":sfa:hrtk:q:";
 const struct option_TS lopts_CheckDic[]= {
       {"delas",no_argument_TS,NULL,'s'},
       {"delaf",no_argument_TS,NULL,'f'},
@@ -65,6 +65,8 @@ const struct option_TS lopts_CheckDic[]= {
       {"help",no_argument_TS,NULL,'h'},
       {"tolerate",no_argument_TS,NULL,'t'},
       {"strict",no_argument_TS,NULL,'r'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -77,6 +79,9 @@ if (argc==1) {
 int is_a_DELAF=-1;
 int strict_unprotected=0;
 char alph[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&index,vars))) {
@@ -90,6 +95,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&ind
                 fatal_error("Empty alphabet argument\n");
              }
              strcpy(alph,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_CheckDic[index].name);
@@ -105,7 +120,7 @@ if (is_a_DELAF==-1 || vars->optind!=argc-1) {
    return 1;
 }
 
-U_FILE* dic=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
+U_FILE* dic=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (dic==NULL) {
 	fatal_error("Cannot open dictionary %s\n",argv[vars->optind]);
 }
@@ -116,7 +131,7 @@ if (alph[0]!='\0') {
 char output_filename[FILENAME_MAX];
 get_path(argv[vars->optind],output_filename);
 strcat(output_filename,"CHECK_DIC.TXT");
-U_FILE* out=u_fopen(UTF16_LE,output_filename,U_WRITE);
+U_FILE* out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output_filename,U_WRITE);
 if (out==NULL) {
 	u_fclose(dic);
 	fatal_error("Cannot create %s\n",output_filename);

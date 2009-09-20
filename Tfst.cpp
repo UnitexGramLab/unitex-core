@@ -81,7 +81,7 @@ if (size==-1) {
    error("Cannot get size of file %s\n",tind);
    return NULL;
 }
-U_FILE* f=u_fopen(UTF16_LE,tfst,U_READ);
+U_FILE* f=u_fopen_existing_unitex_text_format(tfst,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",tfst);
    return NULL;

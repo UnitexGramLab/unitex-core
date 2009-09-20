@@ -113,7 +113,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpj:h";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpj:hk:q:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -138,6 +138,8 @@ const struct option_TS lopts_Locate[]= {
       {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
       {"protect_dic_chars",no_argument_TS,NULL,'p'},
       {"jamo",required_argument_TS,NULL,'j'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -169,6 +171,9 @@ VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int protect_dic_chars=0;
 char jamo_table[FILENAME_MAX]="";
 char foo;
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,vars))) {
    switch(val) {
@@ -222,6 +227,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
              strcpy(jamo_table,vars->optarg);
              break;
    case 'h': usage(); return 0;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Locate[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -266,6 +281,7 @@ strcpy(err,staticSntDir);
 strcat(err,"err");
 
 int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
+               encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
                ambiguous_output_policy,variable_error_policy,protect_dic_chars,jamo_table);
 if (morpho_dic!=NULL) {

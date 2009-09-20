@@ -63,10 +63,12 @@ u_printf(usage_Normalize);
 }
 
 
-const char* optstring_Normalize=":nr:h";
+const char* optstring_Normalize=":nr:hk:q:";
 const struct option_TS lopts_Normalize[]= {
       {"no_carriage_return",no_argument_TS,NULL,'n'},
       {"replacement_rules",required_argument_TS,NULL,'r'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -81,6 +83,9 @@ if (argc==1) {
 
 int mode=KEEP_CARRIAGE_RETURN;
 char rules[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&index,vars))) {
@@ -90,6 +95,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Normalize,lopts_Normalize,&i
                 fatal_error("You must specify a non empty replacement rule file name\n");
              }
              strcpy(rules,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -120,7 +135,7 @@ char dest_file[FILENAME_MAX];
 remove_extension(argv[vars->optind],dest_file);
 strcat(dest_file,".snt");
 u_printf("Normalizing %s...\n",argv[vars->optind]);
-int result=normalize(tmp_file, dest_file, mode, rules);
+int result=normalize(tmp_file, dest_file, encoding_output,bom_output,mask_encoding_compatibility_input,mode, rules);
 u_printf("\n");
 /* If we have used a temporary file, we delete it */
 if (strcmp(tmp_file,argv[vars->optind])) {

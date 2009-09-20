@@ -52,9 +52,11 @@ u_printf(usage_Uncompress);
 }
 
 
-const char* optstring_Uncompress=":o:h";
+const char* optstring_Uncompress=":o:hk:v:";
 const struct option_TS lopts_Uncompress[]= {
       {"output",required_argument_TS,NULL,'o'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -67,6 +69,9 @@ if (argc==1) {
 }
 
 //int FLIP=0;
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 char output[FILENAME_MAX]="";
 struct OptVars* vars=new_OptVars();
@@ -76,6 +81,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Uncompress,lopts_Uncompress,
                 fatal_error("You must specify a non empty output file name\n");
              }
              strcpy(output,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -95,7 +110,7 @@ if (output[0]=='\0') {
    remove_extension(argv[vars->optind],output);
    strcat(output,".dic");
 }
-U_FILE* f=u_fopen(UTF16_LE,output,U_WRITE);
+U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
 if (f==NULL) {
    fatal_error("Cannot open file %s\n",output);
 }

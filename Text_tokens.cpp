@@ -36,9 +36,9 @@ return tmp;
 }
 
 
-struct text_tokens* load_text_tokens(const char* nom) {
+struct text_tokens* load_text_tokens(const char* nom,int mask_encoding_compatibility_input) {
 U_FILE* f;
-f=u_fopen(UTF16_LE,nom,U_READ);
+f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
@@ -69,9 +69,9 @@ return res;
 
 
 
-struct string_hash* load_text_tokens_hash(char* nom,int *NUMBER_OF_TEXT_TOKENS) {
+struct string_hash* load_text_tokens_hash(char* nom,int mask_encoding_compatibility_input,int *NUMBER_OF_TEXT_TOKENS) {
 U_FILE* f;
-f=u_fopen(UTF16_LE,nom,U_READ);
+f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
@@ -89,11 +89,12 @@ return res;
 
 
 
-struct string_hash* load_text_tokens_hash(char* nom,int *SENTENCE_MARKER,
+struct string_hash* load_text_tokens_hash(char* nom,int mask_encoding_compatibility_input,
+                                          int *SENTENCE_MARKER,
                                           int* STOP_MARKER,
                                           int *NUMBER_OF_TEXT_TOKENS) {
 U_FILE* f;
-f=u_fopen(UTF16_LE,nom,U_READ);
+f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }

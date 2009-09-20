@@ -54,12 +54,14 @@ u_printf(usage_ConcorDiff);
 }
 
 
-const char* optstring_ConcorDiff=":o:f:s:h";
+const char* optstring_ConcorDiff=":o:f:s:hk:q:";
 const struct option_TS lopts_ConcorDiff[]= {
       {"out",required_argument_TS,NULL,'o'},
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
       {"help",no_argument_TS,NULL,'h'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -76,6 +78,9 @@ char* out=NULL;
 char* font=NULL;
 int size=0;
 char foo;
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ConcorDiff,lopts_ConcorDiff,&index,vars))) {
    switch(val) {
@@ -107,6 +112,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ConcorDiff,lopts_ConcorDiff,
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    }
    index=-1;
 }
@@ -124,7 +139,7 @@ if (vars->optind!=argc-2) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-diff(argv[vars->optind],argv[vars->optind+1],out,font,size);
+diff(mask_encoding_compatibility_input,argv[vars->optind],argv[vars->optind+1],out,font,size);
 free(out);
 free(font);
 free_OptVars(vars);

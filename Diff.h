@@ -24,7 +24,7 @@
 
 #include "LocateMatches.h"
 
-int diff(const char*,const char*,const char*,const char*,int);
+int diff(int,const char*,const char*,const char*,const char*,int);
 void compute_concordance_differences(struct match_list*,struct match_list*,U_FILE*,U_FILE*,U_FILE*);
 void print_diff_matches(U_FILE*,U_FILE*,U_FILE*,const char*);
 

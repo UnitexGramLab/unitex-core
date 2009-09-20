@@ -903,7 +903,7 @@ result[i]='\0';
  */
 struct INF_codes* load_INF_file(char* name) {
 struct INF_codes* res;
-U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+U_FILE* f=u_fopen_existing_unitex_text_format(name,U_READ);
 if (f==NULL) {
    error("Cannot open %s\n",name);
    return NULL;
@@ -1054,7 +1054,7 @@ explore_all_paths(4,content,0,bin,inf,output);
  * code when there is a pattern like "<XXX>".
  */
 void extract_semantic_codes(char* delaf,struct string_hash* hash) {
-U_FILE* f=u_fopen(UTF16_LE,delaf,U_READ);
+U_FILE* f=u_fopen_existing_unitex_text_format(delaf,U_READ);
 if (f==NULL) return;
 unichar line[DIC_LINE_SIZE];
 int i;

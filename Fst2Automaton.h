@@ -45,7 +45,7 @@ typedef struct {
 Fst2Automaton* new_Fst2Automaton(unichar* name=NULL,int size=8);
 void free_Fst2Automaton(Fst2Automaton*);
 void add_transition(SingleGraph,struct string_hash_ptr*,int,symbol_t*,int);
-void save_automaton(const Fst2Automaton * A, char * name, int type);
+void save_automaton(const Fst2Automaton * A, char * name, Encoding, int, int type);
 
 
 #endif

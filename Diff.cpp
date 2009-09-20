@@ -79,7 +79,7 @@ u_fprintf(f,"</table>\n</body>\n</html>\n");
  * produces a HTML file (out) that shows the differences between
  * those two concordances.
  */
-int diff(const char* in1,const char* in2,const char* out,const char* font,int size) {
+int diff(int mask_encoding_compatibility_input,const char* in1,const char* in2,const char* out,const char* font,int size) {
 char concor1[FILENAME_MAX];
 char concor2[FILENAME_MAX];
 get_path(in1,concor1);
@@ -89,11 +89,11 @@ strcat(concor2,"concord-2.txt");
 /* First, we build the two concordances */
 create_text_concordances(in1,in2,concor1,concor2);
 /* Then, we load the two index */
-U_FILE* f1=u_fopen(UTF16_LE,in1,U_READ);
+U_FILE* f1=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,in1,U_READ);
 if (f1==NULL) return 0;
 struct match_list* l1=load_match_list(f1,NULL);
 u_fclose(f1);
-U_FILE* f2=u_fopen(UTF16_LE,in2,U_READ);
+U_FILE* f2=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,in2,U_READ);
 if (f2==NULL) {
    return 0;
 }
@@ -106,8 +106,8 @@ if (output==NULL) {
    return 0;
 }
 /* We open the two concordance files */
-f1=u_fopen(UTF16_LE,concor1,U_READ);
-f2=u_fopen(UTF16_LE,concor2,U_READ);
+f1=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor1,U_READ);
+f2=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor2,U_READ);
 /* And then we fill the output file with the differences
  * between the two concordances */
 print_diff_HTML_header(output,font,size);
@@ -273,4 +273,3 @@ if (f2!=NULL) {
 }
 u_fprintf(output,"</font></td></tr>\n");
 }
-

@@ -66,13 +66,15 @@ u_printf(usage_ElagComp);
 }
 
 
-const char* optstring_ElagComp=":l:r:o:d:g:h";
+const char* optstring_ElagComp=":l:r:o:d:g:hk:q:";
 const struct option_TS lopts_ElagComp[]= {
       {"language",required_argument_TS,NULL,'l'},
       {"rulelist",required_argument_TS,NULL,'r'},
       {"grammar",required_argument_TS,NULL,'g'},
       {"output",required_argument_TS,NULL,'o'},
       {"directory",required_argument_TS,NULL,'d'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -84,6 +86,9 @@ if (argc==1) {
    return 0;
 }
 
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 char compilename[FILENAME_MAX]="";
 char directory[FILENAME_MAX]="";
@@ -117,6 +122,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ElagComp,lopts_ElagComp,&ind
                 fatal_error("You must specify a non empty directory\n");
              }
              strcpy(directory,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -166,7 +181,7 @@ if (rule_file[0]!='\0') {
          sprintf(compilename,"%s.rul",rule_file);
       }
    }
-   if (compile_elag_rules(rule_file,compilename,language)==-1) {
+   if (compile_elag_rules(rule_file,compilename,encoding_output,bom_output,language)==-1) {
       error("An error occurred\n");
       return 1;
    }
@@ -180,7 +195,7 @@ if (rule_file[0]!='\0') {
    }
    remove_extension(grammar,elg_file);
    strcat(elg_file,".elg");
-   if (compile_elag_grammar(grammar,elg_file,language)==-1) {
+   if (compile_elag_grammar(grammar,elg_file,encoding_output,bom_output,language)==-1) {
      error("An error occured while compiling %s\n",grammar);
      free_language_t(language);
      free_OptVars(vars);

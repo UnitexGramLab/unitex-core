@@ -221,7 +221,7 @@ Fst2* new_Fst2_clone(Fst2* fst2org);
 /* Functions for writing grammars */
 void write_graph(U_FILE*,Fst2*,int);
 void write_fst2_tags(U_FILE*,Fst2*);
-void save_Fst2(char*,Fst2*);
+void save_Fst2(char*,Fst2*,Encoding,int);
 
 
 int is_initial_state(Fst2State);

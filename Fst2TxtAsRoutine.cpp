@@ -31,7 +31,7 @@ void parse_text(struct fst2txt_parameters*);
 
 
 int main_fst2txt(struct fst2txt_parameters* p) {
-    p->f_input=u_fopen(UTF16_LE,p->text_file,U_READ);
+    p->f_input=u_fopen_existing_versatile_encoding(p->mask_encoding_compatibility_input,p->text_file,U_READ);
     if (p->f_input==NULL) {
         error("Cannot open file %s\n",p->text_file);
         return 1;
@@ -40,7 +40,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
     p->text_buffer=new_buffer_for_file(UNICHAR_BUFFER,p->f_input);
     p->buffer=p->text_buffer->unichar_buffer;
 
-    p->f_output=u_fopen(UTF16_LE,p->temp_file,U_WRITE);
+    p->f_output=u_fopen_versatile_encoding(p->encoding_output,p->bom_output,p->mask_encoding_compatibility_input,p->temp_file,U_WRITE);
     if (p->f_output==NULL) {
         error("Cannot open temporary file %s\n",p->temp_file);
         u_fclose(p->f_input);
@@ -109,6 +109,9 @@ p->current_origin=0;
 p->absolute_offset=0;
 p->stack=new_stack_unichar(MAX_OUTPUT_LENGTH);
 p->input_length=0;
+p->encoding_output = DEFAULT_ENCODING_OUTPUT;
+p->bom_output = DEFAULT_BOM_OUTPUT;
+p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 return p;
 }
 

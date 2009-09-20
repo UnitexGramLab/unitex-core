@@ -33,7 +33,7 @@ int create_raw_text_concordance(U_FILE*,U_FILE*,U_FILE*,struct text_tokens*,int,
                                 int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
 
-void create_modified_text_file(U_FILE*,U_FILE*,struct text_tokens*,char*,int,int*);
+void create_modified_text_file(Encoding,int,U_FILE*,U_FILE*,struct text_tokens*,char*,int,int*);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
 void reverse_initial_vowels_thai(unichar*);
@@ -90,7 +90,7 @@ void reverse_initial_vowels_thai(unichar*);
  * This segment
  * 2.5  9
  */
-void create_concordance(U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
+void create_concordance(Encoding encoding_output,int bom_output,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt* option) {
 U_FILE* out;
 U_FILE* f;
@@ -107,7 +107,7 @@ compute_token_length(token_length,tokens);
 if (option->result_mode==MERGE_) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
-	create_modified_text_file(concordance,text,tokens,option->output,n_enter_char,enter_pos);
+	create_modified_text_file(encoding_output,bom_output,concordance,text,tokens,option->output,n_enter_char,enter_pos);
 	return;
 }
 /* If the expected result is a concordance */
@@ -174,7 +174,7 @@ if (option->result_mode==TEXT_ || option->result_mode==INDEX_
       || option->result_mode==UIMA_ || option->result_mode==AXIS_) {
    /* If we have to produce a unicode text file, we open it
     * as a UTF16LE one */
-   out=u_fopen(UTF16_LE,option->output,U_WRITE);
+   out=u_fopen_versatile_encoding(encoding_output,bom_output,USE_ENCODING_VALUE,option->output,U_WRITE);
 }
 else {
    /* Otherwise, we open it as a UTF8 HTML file */
@@ -1104,10 +1104,10 @@ return pos_in_enter_pos;
  * the longest is preferred. If 2 matches start and end at the same positions,
  * then the first one is arbitrarily preferred.
  */
-void create_modified_text_file(U_FILE* concordance,U_FILE* text,
+void create_modified_text_file(Encoding encoding_output,int bom_output,U_FILE* concordance,U_FILE* text,
                                struct text_tokens* tokens,char* output_name,
                                int n_enter_char,int* enter_pos) {
-U_FILE* output=u_fopen(UTF16_LE,output_name,U_WRITE);
+U_FILE* output=u_fopen_versatile_encoding(encoding_output,bom_output,USE_ENCODING_VALUE,output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);
 	u_fclose(text);

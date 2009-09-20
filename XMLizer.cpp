@@ -74,7 +74,7 @@ u_printf(usage_XMLizer);
 }
 
 
-const char* optstring_XMLizer = ":xtn:o:a:s:h";
+const char* optstring_XMLizer = ":xtn:o:a:s:hk:q:";
 const struct option_TS lopts_XMLizer[] = {
    {"xml", no_argument_TS, NULL, 'x'},
    {"tei", no_argument_TS, NULL, 't'},
@@ -82,6 +82,8 @@ const struct option_TS lopts_XMLizer[] = {
    {"output", required_argument_TS, NULL, 'o'},
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"segmentation_grammar", required_argument_TS, NULL, 's'},
+   {"input_encoding",required_argument_TS,NULL,'k'},
+   {"output_encoding",required_argument_TS,NULL,'q'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -98,6 +100,9 @@ char output[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char normalization[FILENAME_MAX]="";
 char segmentation[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_XMLizer,lopts_XMLizer,&index,vars))) {
@@ -127,6 +132,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_XMLizer,lopts_XMLizer,&index
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_XMLizer[index].name);
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
@@ -148,8 +163,11 @@ strcat(snt,"_tmp.snt");
 char tmp[FILENAME_MAX];
 remove_extension(input,tmp);
 strcat(tmp,".tmp");
-normalize(input,snt,KEEP_CARRIAGE_RETURN,normalization);
+normalize(input,snt,encoding_output,bom_output,mask_encoding_compatibility_input,KEEP_CARRIAGE_RETURN,normalization);
 struct fst2txt_parameters* p=new_fst2txt_parameters();
+p->encoding_output = encoding_output;
+p->bom_output = bom_output;
+p->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
 p->text_file=strdup(snt);
 if (p->text_file==NULL) {
    fatal_alloc_error("main_XMLizer");

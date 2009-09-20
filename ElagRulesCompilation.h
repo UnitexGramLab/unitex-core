@@ -68,7 +68,7 @@ typedef struct {
 } elRule;
 
 
-int compile_elag_grammar(char*,char*,language_t*);
-int compile_elag_rules(char*,char*,language_t*);
+int compile_elag_grammar(char*,char*,Encoding,int,language_t*);
+int compile_elag_rules(char*,char*,Encoding,int,language_t*);
 
 #endif

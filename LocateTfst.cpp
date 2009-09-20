@@ -85,12 +85,12 @@ u_printf(usage_LocateTfst);
 }
 
 
-const char* optstring_LocateTfst=":t:a:j:ln:SLAIMRXYZbzh";
+const char* optstring_LocateTfst=":t:a:j:ln:SLAIMRXYZbzhk:q:";
 const struct option_TS lopts_LocateTfst[]= {
-	  {"text",required_argument_TS,NULL,'t'},
-	  {"alphabet",required_argument_TS,NULL,'a'},
-	  {"jamo",required_argument_TS,NULL,'j'},
-	  {"all",no_argument_TS,NULL,'l'},
+     {"text",required_argument_TS,NULL,'t'},
+     {"alphabet",required_argument_TS,NULL,'a'},
+     {"jamo",required_argument_TS,NULL,'j'},
+     {"all",no_argument_TS,NULL,'l'},
      {"number_of_matches",required_argument_TS,NULL,'n'},
      {"shortest_matches",no_argument_TS,NULL,'S'},
      {"longest_matches",no_argument_TS,NULL,'L'},
@@ -103,6 +103,8 @@ const struct option_TS lopts_LocateTfst[]= {
      {"backtrack_on_variable_errors",no_argument_TS,NULL,'Z'},
      {"ambiguous_outputs",no_argument_TS,NULL,'b'},
      {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
+     {"input_encoding",required_argument_TS,NULL,'k'},
+     {"output_encoding",required_argument_TS,NULL,'q'},
      {"help",no_argument_TS,NULL,'h'},
      {NULL,no_argument_TS,NULL,0}
 };
@@ -118,6 +120,9 @@ if (argc==1) {
    return 0;
 }
 
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
 int val,index=-1;
 char text[FILENAME_MAX]="";
@@ -165,6 +170,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
    case 'b': ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS; break;
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
    case 'h': usage(); return 0;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_LocateTfst[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -183,7 +198,9 @@ strcpy(grammar,argv[vars->optind]);
 get_path(text,output);
 strcat(output,"concord.ind");
 
-int OK=locate_tfst(text,grammar,alphabet,output,match_policy,output_policy,
+int OK=locate_tfst(text,grammar,alphabet,output,
+                   encoding_output,bom_output,mask_encoding_compatibility_input,
+                   match_policy,output_policy,
                    ambiguous_output_policy,variable_error_policy,search_limit,jamo_table);
 
 free_OptVars(vars);

@@ -624,7 +624,7 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
 Fst2* load_fst2(char* filename,int read_names,int graph_number) {
 
 U_FILE* f;
-f=u_fopen(UTF16_LE,filename,U_READ);
+f=u_fopen_existing_unitex_text_format(filename,U_READ);
 Fst2* fst2;
 if (f==NULL) {
 	error("Cannot open the file %s\n",filename);
@@ -795,14 +795,14 @@ u_fprintf(f,"f \n");
 /**
  * Saves the given fst2 into a file.
  */
-void save_Fst2(char* name,Fst2* fst2) {
+void save_Fst2(char* name,Fst2* fst2,Encoding encoding,int bom) {
 if (fst2==NULL) {
    fatal_error("NULL fst2 in save_Fst2\n");
 }
 if (name==NULL || name[0]=='\0') {
    fatal_error("NULL or empty name in save_Fst2\n");
 }
-U_FILE* f=u_fopen(UTF16_LE,name,U_WRITE);
+U_FILE* f=u_fopen_creating_unitex_text_format(encoding,bom,name,U_WRITE);
 if (f==NULL) {
    fatal_error("Cannot open %s in save_Fst2\n",name);
 }

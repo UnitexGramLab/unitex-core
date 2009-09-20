@@ -57,14 +57,16 @@ u_printf(usage_Table2Grf);
 }
 
 
-void table2grf(U_FILE*,U_FILE*,U_FILE*,char*,char*);
+void table2grf(U_FILE*,U_FILE*,U_FILE*,Encoding,int ,int ,char*,char*);
 
 
-const char* optstring_Table2Grf=":r:o:s:h";
+const char* optstring_Table2Grf=":r:o:s:hk:q:";
 const struct option_TS lopts_Table2Grf[]= {
       {"reference_graph",required_argument_TS,NULL,'r'},
       {"output",required_argument_TS,NULL,'o'},
       {"subgraph_pattern",required_argument_TS,NULL,'s'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -78,6 +80,9 @@ if (argc==1) {
 char reference_graph_name[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char subgraph_pattern[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Table2Grf,lopts_Table2Grf,&index,vars))) {
@@ -96,6 +101,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Table2Grf,lopts_Table2Grf,&i
                 fatal_error("You must specify a non empty subgraph name pattern\n");
              }
              strcpy(subgraph_pattern,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -118,17 +133,17 @@ if (output[0]=='\0') {
    fatal_error("You must specify the output graph name\n");
 }
 
-U_FILE* table=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
+U_FILE* table=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (table==NULL) {
    fatal_error("Cannot open table %s\n",argv[vars->optind]);
 }
-U_FILE* reference_graph=u_fopen(UTF16_LE,reference_graph_name,U_READ);
+U_FILE* reference_graph=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,reference_graph_name,U_READ);
 if (reference_graph==NULL) {
    error("Cannot open reference graph %s\n",reference_graph_name);
    u_fclose(table);
    return 1;
 }
-U_FILE* result_graph=u_fopen(UTF16_LE,output,U_WRITE);
+U_FILE* result_graph=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
 if (result_graph==NULL) {
    error("Cannot create result graph %s\n",output);
    u_fclose(table);
@@ -143,7 +158,7 @@ if (subgraph_pattern[0]=='\0') {
 }
 char path[FILENAME_MAX];
 get_path(output,path);
-table2grf(table,reference_graph,result_graph,subgraph_pattern,path);
+table2grf(table,reference_graph,result_graph,encoding_output,bom_output,mask_encoding_compatibility_input,subgraph_pattern,path);
 free_OptVars(vars);
 return 0;
 }
@@ -580,6 +595,7 @@ return 1;
 
 
 bool create_graph(int ligne_courante,unichar** ligne,int n_champs,struct graphe_patron* g,
+                  Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                   char* nom_resultat,char* chemin,U_FILE *f_coord,int graphs_printed) {
 
 struct graphe_patron r;
@@ -642,7 +658,7 @@ remove_extension(tmp3,tmp4);
 u_fprintf(f_coord,"%s",tmp4);
 }
 
-f=u_fopen(UTF16_LE,current_graph_char,U_WRITE);
+f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,current_graph_char,U_WRITE);
 if (f==NULL) {
   error("Cannot create subgraph %s\n",current_graph_char);
   return false;
@@ -667,7 +683,9 @@ return true;
 
 
 
-void table2grf(U_FILE* table,U_FILE* reference_graph,U_FILE* result_graph,char* subgraph,char* chemin) {
+void table2grf(U_FILE* table,U_FILE* reference_graph,U_FILE* result_graph,
+               Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+               char* subgraph,char* chemin) {
 int ligne_courante;
 struct graphe_patron structure;
 unichar* ligne[MAX_LINES_IN_TABLE];
@@ -683,7 +701,9 @@ read_table_first_line(table,&n_champs);
 ligne_courante=1;
 graphs_printed=0;
 while (read_table_line(table,(unichar**)ligne,n_champs)) {
-   if (create_graph(ligne_courante,ligne,n_champs,&structure,subgraph,chemin,result_graph,graphs_printed)) {
+   if (create_graph(ligne_courante,ligne,n_champs,&structure,
+                    encoding_output,bom_output,mask_encoding_compatibility_input,
+                    subgraph,chemin,result_graph,graphs_printed)) {
       graphs_printed++;
    }
    ligne_courante++;

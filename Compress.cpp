@@ -61,27 +61,30 @@ u_printf(usage_Compress);
  */
 void write_INF_file_header(char* name,int n) {
 U_FILE* f;
-/* First, we set the offset on the last zero */
-int offset=2+9*2; /* *2 because of Unicode and +2 because of FF FE at file start */
-/* The file must be opened as a binary one */
-f=u_fopen(UTF16_LE,name,U_MODIFY);
-do {
-	/* We go at the given offset */
-	fseek(f,offset,0);
-	/* And we write the appropriate digit */
-	u_fputc((unichar)((n%10)+'0'),f);
-	n=n/10;
-	/* And we update the offset (-2 because of Unicode) */
-	offset=offset-2;
-} while (n); /* We loop until there is no more digit to print */
+
+f=u_fopen_existing_unitex_text_format(name,U_MODIFY);
+
+char number[11];
+number[10]=0;
+int offset=9;
+for (;;) {
+    number[offset]=(char)((n%10)+'0');
+    n/=10;
+    if (offset==0)
+        break;
+    offset--;
+}
+u_fprintf(f,number);
 u_fclose(f);
 }
 
 
-const char* optstring_Compress=":fh";
+const char* optstring_Compress=":fhk:q:";
 const struct option_TS lopts_Compress[]= {
       {"flip",no_argument_TS,NULL,'f'},
       {"help",no_argument_TS,NULL,'h'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -98,6 +101,9 @@ if (argc==1) {
 }
 
 int FLIP=0;
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&index,vars))) {
@@ -106,6 +112,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Compress,lopts_Compress,&ind
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Compress[index].name);
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
@@ -128,7 +144,7 @@ struct dictionary_node* root; /* Root of the dictionary tree */
 struct string_hash* INF_codes; /* Structure that will contain all the INF codes */
 int line=0; /* Current line number */
 
-f=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
+f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (f==NULL) {
 	fatal_error("Cannot open %s\n",argv[vars->optind]);
 }
@@ -137,7 +153,7 @@ remove_extension(argv[vars->optind],bin);
 strcat(bin,".bin");
 remove_extension(argv[vars->optind],inf);
 strcat(inf,".inf");
-INF_file=u_fopen(UTF16_LE,inf,U_WRITE);
+INF_file=u_fopen_creating_unitex_text_format(encoding_output,bom_output,inf,U_WRITE);
 if (INF_file==NULL) {
 	u_fclose(f);
 	fatal_error("Cannot create %s\n",inf);

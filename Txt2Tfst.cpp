@@ -111,7 +111,7 @@ u_printf(usage_Txt2Tfst);
 }
 
 
-const char* optstring_Txt2Tfst=":a:cn:t:f:j:h";
+const char* optstring_Txt2Tfst=":a:cn:t:f:j:hk:q:";
 const struct option_TS lopts_Txt2Tfst[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"clean", no_argument_TS, NULL, 'c'},
@@ -120,6 +120,8 @@ const struct option_TS lopts_Txt2Tfst[]={
    {"fst2", required_argument_TS, NULL, 'f'},
    {"jamo", required_argument_TS, NULL, 'j'},
    {"help", no_argument_TS, NULL, 'h'},
+   {"input_encoding",required_argument_TS,NULL,'k'},
+   {"output_encoding",required_argument_TS,NULL,'q'},
    {NULL, no_argument_TS, NULL, 0}
 };
 
@@ -137,6 +139,9 @@ char jamoTable[FILENAME_MAX]="";
 char jamoFst2[FILENAME_MAX]="";
 int CLEAN=0;
 int KOREAN=0;
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&index,vars))) {
@@ -169,6 +174,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
              strcpy(jamoFst2,vars->optarg);
              break;
    case 'h': usage(); return 0;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Txt2Tfst[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -214,10 +229,10 @@ get_snt_path(argv[vars->optind],tags_ind);
 strcat(tags_ind,"tags.ind");
 struct match_list* tag_list=NULL;
 if (!KOREAN) {
-   load_DELA(dlf,tree);
-   load_DELA(dlc,tree);
+   load_DELA(dlf,mask_encoding_compatibility_input,tree);
+   load_DELA(dlc,mask_encoding_compatibility_input,tree);
    u_printf("Loading %s...\n",tags_ind);
-   U_FILE* tag_file=u_fopen(UTF16_LE,tags_ind,U_READ);
+   U_FILE* tag_file=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,tags_ind,U_READ);
    if (tag_file!=NULL) {
       tag_list=load_match_list(tag_file,NULL);
       u_fclose(tag_file);
@@ -230,7 +245,7 @@ if (alphabet[0]!='\0') {
       fatal_error("Cannot open %s\n",alphabet);
    }
 }
-struct text_tokens* tokens=load_text_tokens(tokens_txt);
+struct text_tokens* tokens=load_text_tokens(tokens_txt,mask_encoding_compatibility_input);
 if (tokens==NULL) {
    fatal_error("Cannot open %s\n",tokens_txt);
 }
@@ -241,7 +256,7 @@ if (f==NULL) {
 char text_tfst[FILENAME_MAX];
 get_snt_path(argv[vars->optind],text_tfst);
 strcat(text_tfst,"text.tfst");
-U_FILE* tfst=u_fopen(UTF16_LE,text_tfst,U_WRITE);
+U_FILE* tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,text_tfst,U_WRITE);
 if (tfst==NULL) {
    u_fclose(f);
    fatal_error("Cannot create %s\n",text_tfst);
@@ -303,7 +318,7 @@ strcat(phrase_cod ,"phrase.cod");
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
    if (KOREAN) {
-      build_korean_sentence_automaton(exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
+      build_korean_sentence_automaton(mask_encoding_compatibility_input,exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
                   current_global_position_in_tokens,
                   current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
                   phrase_cod,jamoTable,jamoFst2);

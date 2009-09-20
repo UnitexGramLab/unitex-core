@@ -133,10 +133,13 @@ struct dico_application_info {
    struct match_list** tag_sequences;
    int n_tag_sequences;
    int tag_sequences_capacity;
+   Encoding encoding_output;
+   int bom_output;
+   int mask_encoding_compatibility_input;
 };
 
 
-struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,char*,U_FILE*,Alphabet*);
+struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,char*,U_FILE*,Alphabet*,Encoding,int,int);
 int dico_application(char*,struct dico_application_info*,int);
 void free_dico_application(struct dico_application_info*);
 void count_token_occurrences(struct dico_application_info*);

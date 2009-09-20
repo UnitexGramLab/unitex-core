@@ -559,7 +559,8 @@ for (int i=0;i<info->tokens->N;i++) {
  */
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
                                                     U_FILE* dlf,U_FILE* dlc,U_FILE* err,char* tags,
-                                                    U_FILE* text_cod,Alphabet* alphabet) {
+                                                    U_FILE* text_cod,Alphabet* alphabet,
+                                                    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
    fatal_alloc_error("init_dico_application");
@@ -591,6 +592,9 @@ info->UNKNOWN_WORDS=0;
 info->tag_sequences=NULL;
 info->n_tag_sequences=0;
 info->tag_sequences_capacity=0;
+info->encoding_output = encoding_output;
+info->bom_output = bom_output;
+info->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
 return info;
 }
 
@@ -698,7 +702,7 @@ int merge_dic_locate_results(struct dico_application_info* info,char* concord_fi
 int token_tab_coumpounds[TOKENS_IN_A_COMPOUND];
 u_printf("Merging dic/locate result...\n");
 /* First, we load the match list */
-U_FILE* f=u_fopen(UTF16_LE,concord_filename,U_READ);
+U_FILE* f=u_fopen_existing_versatile_encoding(info->mask_encoding_compatibility_input,concord_filename,U_READ);
 if (f==NULL) {
    error("Cannot open %s\n",concord_filename);
    return 0;
@@ -810,7 +814,7 @@ return 0; /* Just to avoid a warning */
  */
 void save_and_sort_tag_sequences(struct dico_application_info* info) {
 qsort(info->tag_sequences,info->n_tag_sequences,sizeof(struct match_list*),compare_matches);
-U_FILE* f=u_fopen(UTF16_LE,info->tags_ind,U_WRITE);
+U_FILE* f=u_fopen_versatile_encoding(info->encoding_output,info->bom_output,info->mask_encoding_compatibility_input,info->tags_ind,U_WRITE);
 if (f==NULL) {return;}
 /* We use the header T, just to say something different from I, M and R */
 u_fprintf(f,"#T\n");

@@ -89,7 +89,7 @@ return ret;
 }
 
 
-const char* optstring_Grf2Fst2=":ynta:d:ech";
+const char* optstring_Grf2Fst2=":ynta:d:echk:q:";
 const struct option_TS lopts_Grf2Fst2[]= {
       {"loop_check",no_argument_TS,NULL,'y'},
       {"no_loop_check",no_argument_TS,NULL,'n'},
@@ -98,6 +98,8 @@ const struct option_TS lopts_Grf2Fst2[]= {
       {"pkgdir",required_argument_TS,NULL,'d'},
       {"no_empty_graph_warning",no_argument_TS,NULL,'e'},
       {"char_by_char",no_argument_TS,NULL,'c'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -113,6 +115,9 @@ if (argc==1) {
 }
 struct compilation_info* infos=new_compilation_info();
 int check_recursion=0,tfst_check=0;
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -141,6 +146,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Grf2Fst2,lopts_Grf2Fst2,&ind
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Grf2Fst2[index].name);
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
@@ -156,7 +171,10 @@ if (vars->optind!=argc-1) {
 char fst2_file_name[FILENAME_MAX];
 remove_extension(argv[vars->optind],fst2_file_name);
 strcat(fst2_file_name,".fst2");
-if ((infos->fst2=u_fopen(UTF16_LE,fst2_file_name,U_WRITE))==NULL) {
+infos->encoding_output = encoding_output;
+infos->bom_output = bom_output;
+infos->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
+if ((infos->fst2=u_fopen_creating_unitex_text_format(encoding_output,bom_output,fst2_file_name,U_WRITE))==NULL) {
    error("Cannot open file %s\n",fst2_file_name);
    return 1;
 }
@@ -187,4 +205,3 @@ free_compilation_info(infos);
 u_printf("Compilation has succeeded\n");
 return 0;
 }
-

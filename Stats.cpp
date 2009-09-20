@@ -33,7 +33,7 @@
 
 // main work functions
 
-void concord_stats(const char* , int , const char *, const char* , const char* , const char*, int , int, int );
+void concord_stats(const char* , int , const char *, const char* , const char* , const char*, Encoding, int, int, int , int, int );
 void build_counted_concord(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_ptr** , hash_table** );
 void build_counted_collocates(match_list* , text_tokens* , U_FILE* , Alphabet*, int , int , int, vector_int** , hash_table** , hash_table** , hash_table** );
 
@@ -142,7 +142,7 @@ u_printf(usage_Stats);
 }
 
 
-	const char* optstring_Stats=":m:a:l:r:c:o:";
+const char* optstring_Stats=":m:a:l:r:c:o:k:q:";
 
 	const struct option_TS lopts_Stats[]= {
 	      {"mode",required_argument_TS,NULL,'m'},
@@ -151,6 +151,8 @@ u_printf(usage_Stats);
 	      {"right",required_argument_TS,NULL,'r'},
 	      {"case",optional_argument_TS,NULL,'c'},
 	      {"output",optional_argument_TS,NULL,'o'},
+	      {"input_encoding",required_argument_TS,NULL,'k'},
+	      {"output_encoding",required_argument_TS,NULL,'q'},
 	      {0, 0, 0, 0 }
 	 } ;
 
@@ -167,7 +169,11 @@ int main_Stats(int argc,char *argv[]) {
 	char tokens_txt[FILENAME_MAX]="";
 	char text_cod[FILENAME_MAX]="";
 	char output[FILENAME_MAX]="";
-   char alphabet[FILENAME_MAX]="";
+	char alphabet[FILENAME_MAX]="";
+
+	Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+	int bom_output = DEFAULT_BOM_OUTPUT;
+	int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
 	int val,index=-1;
 	char foo;
@@ -200,6 +206,16 @@ int main_Stats(int argc,char *argv[]) {
                 }
                 strcpy(output,vars->optarg);
                 break;
+      case 'k': if (vars->optarg[0]=='\0') {
+                  fatal_error("Empty input_encoding argument\n");
+                }
+                decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+                break;
+      case 'q': if (vars->optarg[0]=='\0') {
+                  fatal_error("Empty output_encoding argument\n");
+                }
+                decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+                break;
 	   case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
 	             else fatal_error("Missing argument for option --%s\n",lopts_Stats[index].name);
 	   case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -221,7 +237,9 @@ strcat(tokens_txt,"tokens.txt");
 get_path(concord_ind,text_cod);
 strcat(text_cod,"text.cod");
 
-concord_stats(output, mode, concord_ind, tokens_txt, text_cod, alphabet, leftContext, rightContext, caseSensitive);
+concord_stats(output, mode, concord_ind, tokens_txt, text_cod, alphabet, 
+              encoding_output,bom_output,mask_encoding_compatibility_input,
+              leftContext, rightContext, caseSensitive);
 return 0;
 }
 
@@ -236,7 +254,9 @@ return 0;
  * "space"-like and "regular" tokens to include.
  */
 void concord_stats(const char* outfilename,int mode, const char *concordfname, const char* tokens_path, const char* codname,
-				   const char* alphabetName, int leftContext, int rightContext, int caseSensitive)
+				   const char* alphabetName, 
+                   Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                   int leftContext, int rightContext, int caseSensitive)
 {
 	U_FILE* concord = u_fopen(UTF16_LE, concordfname, U_READ);
 	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen(UTF16_LE, outfilename, U_WRITE);
@@ -245,7 +265,7 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
 	u_fclose(concord);
 
 
-	text_tokens* tokens = load_text_tokens(tokens_path);
+	text_tokens* tokens = load_text_tokens(tokens_path,mask_encoding_compatibility_input);
 
 	if (tokens == NULL)
 	{

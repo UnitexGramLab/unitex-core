@@ -170,6 +170,7 @@ const struct utility_item* found_utility(const char* search)
 	return NULL;
 }
 
+
 int GetToolInfo_byname(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
 {
 const struct utility_item* utility_called = found_utility(toolname);
@@ -206,6 +207,56 @@ int GetNumberOfTool()
 }
 
 
+
+void list_unused_option_letter()
+{
+    int optstring_lt[32];
+    int lopts[32];
+    int i;
+
+    for (i=0;i<32;i++)
+        optstring_lt[i]=lopts[i]=0;
+
+    i=0;
+    while (utility_array[i].len_name > 0)
+	{
+		const char* optstring_browse = utility_array[i].optstring;
+        if (optstring_browse!=NULL)
+            while ((*optstring_browse)!=0)
+            {
+                const char c=*optstring_browse;
+                if ((c>='a') && (c<='z'))
+                    optstring_lt[c-'a']=1;
+
+                optstring_browse++;
+            }
+
+        int j=0;
+        if (utility_array[i].lopts != NULL)
+            while (utility_array[i].lopts[j].name!=NULL)
+            {
+                int val = utility_array[i].lopts[j].val;
+                if ((val>='a') && (val<='z'))
+                    lopts[val-'a']=1;
+                j++;
+            }
+		i++;
+	}
+
+    u_printf("unused letter for optsting : ");
+    for (i=0;i<26;i++)
+        if (optstring_lt[i]==0)
+            u_printf("%c",i+'a');
+    u_printf("\n\n");
+
+    u_printf("unused letter for lopts : ");
+    for (i=0;i<26;i++)
+        if (lopts[i]==0)
+            u_printf("%c",i+'a');
+    u_printf("\n\n");
+
+}
+
 void unitex_tool_usage(int several)
 {
 	int i=0;
@@ -224,6 +275,7 @@ void unitex_tool_usage(int several)
 		   "\n"
 		   "You can chain several utility call by using\n"
 		   "UnitexTool { <Utility> [OPTIONS] } { <Utility> [OPTIONS] } ...\n");
+    //list_unused_option_letter();
 }
 
 int check_Utility(const char* name)

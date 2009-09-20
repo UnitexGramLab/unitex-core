@@ -219,6 +219,9 @@ public:
 	unichar *sep1;	// for each input/output
 	unichar *stopSignal;
 	unichar *saveEntre,*entreGO,*entreGF;
+	Encoding encoding_output;
+	int bom_output;
+	int mask_encoding_compatibility_input;
 	char ofdirName[1024];
 	char ofExt[16];
 	char ofnameOnly[512];
@@ -240,6 +243,12 @@ public:
 		    get_extension(tmp,ofExt);
 		}
 		if(ofnameOnly[0]== 0) fatal_error("ofile name not correct");
+	}
+    void fileEncodingSet(Encoding encoding_output_set,int bom_output_set,int mask_encoding_compatibility_input_set)
+	{
+        encoding_output = encoding_output_set;
+        bom_output = bom_output_set;
+        mask_encoding_compatibility_input = mask_encoding_compatibility_input_set;
 	}
 	void makeOfileName(char *des,const char *fn,const char *ext){
 	   strcpy(des,ofdirName);
@@ -1097,7 +1106,7 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 		strcat(tmpchar,"autolst");
 		makeOfileName(ofNameTmp,tmpchar,".txt");
 
-		foutput = u_fopen(UTF16_LE,ofNameTmp,U_WRITE);
+		foutput = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofNameTmp,U_WRITE);
 		if(!foutput) {
          fatal_error("Cannot open file %s\n",ofNameTmp);
       }
@@ -1130,7 +1139,7 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 				exploirerSubAuto(1);	// mark loop path start nodes
 				prSubGrapheCycle();
 				makeOfileName(ofNameTmp,0,0);
-				foutput = u_fopen(UTF16_LE,ofNameTmp,U_WRITE);
+				foutput = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofNameTmp,U_WRITE);
 				if(!foutput) {
 				    fatal_error("Cannot open file %s\n",ofNameTmp);
             }
@@ -1190,7 +1199,7 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 				u_fprintf(listFile,"%s\r\n",ttpchar);
 
 
-				if (!(foutput = u_fopen(UTF16_LE,ofNameTmp,U_WRITE))){
+				if (!(foutput = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofNameTmp,U_WRITE))){
                fatal_error("Cannot open file %s\n",ofNameTmp);
 				}
 				listOut = 0;     // output disable
@@ -1734,6 +1743,11 @@ int main_Fst2List(int argc,char* argv[]) {
 
 	char *wp;
 	unichar *wp2,*wp3;
+
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 	while(iargIndex < argc){
 		if(*argv[iargIndex] != '-') break;
 		switch(argv[iargIndex][1]){
@@ -1889,6 +1903,19 @@ int main_Fst2List(int argc,char* argv[]) {
 				*wp2++= (unichar)'>';
 				*wp2= 0;
 				break;
+            case 'k': iargIndex++;
+                     if (argv[iargIndex][0]=='\0') {
+                        fatal_error("Empty input_encoding argument\n");
+                     }
+                     decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[iargIndex]);
+                     break;
+            case 'q': iargIndex++;
+                     if (argv[iargIndex][0]=='\0') {
+                        fatal_error("Empty output_encoding argument\n");
+                     }
+                     decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[iargIndex]);
+                     break;
+
 			default:
 				usage();
       return 1;
@@ -1909,8 +1936,8 @@ int main_Fst2List(int argc,char* argv[]) {
       return 1;
    }
 	aa.fileNameSet(argv[iargIndex],ofilename);
+    aa.fileEncodingSet(encoding_output,bom_output,mask_encoding_compatibility_input);
 	aa.getWordsFromGraph(changeStrToIdx,changeStrTo,argv[iargIndex]);
 	if(ofilename) delete ofilename;
 	return 0;
 }
-

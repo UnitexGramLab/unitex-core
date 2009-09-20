@@ -67,6 +67,10 @@ struct compilation_info {
     * cases, and the behavior of the grammar will not be the expected one.
     */
    int CONTEXT_COUNTER;
+
+Encoding encoding_output;
+int bom_output;
+int mask_encoding_compatibility_input;
 };
 
 

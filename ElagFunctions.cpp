@@ -50,14 +50,14 @@ vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
  * This function loads a .tfst text automaton, disambiguates it according to the given rules,
  * and saves the result in another text automaton.
  */
-void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,language_t* language) {
+void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encoding encoding_output,int bom_output,language_t* language) {
    Elag_Tfst_file_in* input=load_tfst_file(input_tfst,language);
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
    }
    error("%d sentence(s) in %s\n", input->tfst->N,input_tfst);
 
-   U_FILE* output_tfst=u_fopen(UTF16_LE,output,U_WRITE);
+   U_FILE* output_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output,U_WRITE);
    if (output_tfst==NULL) {
       fatal_error("Cannot open %s\n",output);
    }
@@ -195,7 +195,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,languag
  *    {jeunes,jeune.A:mp}
  *    {jeunes,jeune.A:fp}
  */
-void explode_tfst(char* input_tfst,char* output,language_t* language) {
+void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom_output,language_t* language) {
    static unichar _unloadable[] = { 'U', 'N', 'L', 'O', 'A', 'D', 'A', 'B', 'L', 'E', 0 };
    static unichar _rejected[] = { 'R', 'E', 'J', 'E', 'C', 'T', 'E', 'D', 0 };
    symbol_t* unloadable = new_symbol_UNKNOWN(language, language_add_form(language,_unloadable),-1);
@@ -205,7 +205,7 @@ void explode_tfst(char* input_tfst,char* output,language_t* language) {
    if (input==NULL) {
       fatal_error("Unable to load text automaton'%s'\n",input_tfst);
    }
-   U_FILE* output_tfst=u_fopen(UTF16_LE,output,U_WRITE);
+   U_FILE* output_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output,U_WRITE);
    if (output_tfst==NULL) {
       fatal_error("Cannot open %s\n",output);
    }

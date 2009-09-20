@@ -173,10 +173,10 @@ free(inf);
 /**
  * This function reads the given char order file.
  */
-void read_char_order(char* name,struct sort_infos* inf) {
+void read_char_order(char* name,int mask_encoding_compatibility_input,struct sort_infos* inf) {
 int c;
 int current_line=1;
-U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",name);
    return;
@@ -259,7 +259,7 @@ return ret;
 }
 
 
-const char* optstring_SortTxt=":ndr:o:l:th";
+const char* optstring_SortTxt=":ndr:o:l:thk:q:";
 const struct option_TS lopts_SortTxt[]= {
       {"no_duplicates",no_argument_TS,NULL,'n'},
       {"duplicates",no_argument_TS,NULL,'d'},
@@ -267,6 +267,8 @@ const struct option_TS lopts_SortTxt[]= {
       {"sort_order",required_argument_TS,NULL,'o'},
       {"line_info",required_argument_TS,NULL,'l'},
       {"thai",no_argument_TS,NULL,'t'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -283,6 +285,10 @@ struct sort_infos* inf=new_sort_infos();
 int mode=DEFAULT;
 char line_info[FILENAME_MAX]="";
 char sort_order[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_SortTxt,lopts_SortTxt,&index,vars))) {
@@ -302,6 +308,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_SortTxt,lopts_SortTxt,&index
              break;
    case 't': mode=THAI; break;
    case 'h': usage(); return 0;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_SortTxt[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
@@ -316,18 +332,18 @@ if (vars->optind!=argc-1) {
 }
 
 if (sort_order[0]!='\0') {
-   read_char_order(sort_order,inf);
+   read_char_order(sort_order,mask_encoding_compatibility_input,inf);
 }
 
 char new_name[FILENAME_MAX];
 strcpy(new_name,argv[vars->optind]);
 strcat(new_name,".new");
-inf->f=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
+inf->f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (inf->f==NULL) {
    error("Cannot open file %s\n",argv[vars->optind]);
    return 1;
 }
-inf->f_out=u_fopen(UTF16_LE,new_name,U_WRITE);
+inf->f_out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,new_name,U_WRITE);
 if (inf->f_out==NULL) {
    error("Cannot open temporary file %s\n",new_name);
    u_fclose(inf->f);
@@ -338,7 +354,7 @@ switch (mode) {
    case THAI: sort_thai(inf); break;
 }
 if (line_info[0]!='\0') {
-   U_FILE* F=u_fopen(UTF16_LE,line_info,U_WRITE);
+   U_FILE* F=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,line_info,U_WRITE);
    if (F==NULL) {
       error("Cannot write %s\n",line_info);
    }

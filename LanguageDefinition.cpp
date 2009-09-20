@@ -448,7 +448,7 @@ return language;
  * Loads and returns the given tagset definition file.
  */
 language_t* load_language_definition(char* name) {
-U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+U_FILE* f=u_fopen_existing_unitex_text_format(name,U_READ);
 if (f==NULL) {
    fatal_error("Unable to open %s for reading.\n",name);
 }

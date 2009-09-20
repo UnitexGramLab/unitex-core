@@ -28,7 +28,7 @@
 #define REG_EXP_MAX_LENGTH 10000
 
 
-int reg2grf(unichar*,char*);
+int reg2grf(unichar*,char*,Encoding,int,int);
 
 /**
  * The automaton coded in reg_2_grf is designed from the one produced

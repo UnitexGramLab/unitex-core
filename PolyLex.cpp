@@ -76,7 +76,7 @@ u_printf(usage_PolyLex);
 }
 
 
-const char* optstring_PolyLex=":DGNRa:d:o:i:h";
+const char* optstring_PolyLex=":DGNRa:d:o:i:hk:q:";
 const struct option_TS lopts_PolyLex[]= {
       {"dutch",no_argument_TS,NULL,'D'},
       {"german",no_argument_TS,NULL,'G'},
@@ -86,6 +86,8 @@ const struct option_TS lopts_PolyLex[]= {
       {"dictionary",required_argument_TS,NULL,'d'},
       {"output",required_argument_TS,NULL,'o'},
       {"info",required_argument_TS,NULL,'i'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -103,6 +105,9 @@ char alphabet[FILENAME_MAX]="";
 char dictionary[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
 char info[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_PolyLex,lopts_PolyLex,&index,vars))) {
@@ -130,6 +135,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_PolyLex,lopts_PolyLex,&index
                 fatal_error("You must specify a non empty information file name\n");
              }
              strcpy(info,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -195,7 +210,7 @@ if (inf==NULL) {
 char tmp[FILENAME_MAX];
 strcpy(tmp,argv[vars->optind]);
 strcat(tmp,".tmp");
-U_FILE* words=u_fopen(UTF16_LE,argv[vars->optind],U_READ);
+U_FILE* words=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (words==NULL) {
    error("Cannot open word list file %s\n",argv[vars->optind]);
    free_alphabet(alph);
@@ -207,7 +222,7 @@ if (words==NULL) {
    // so that there is no "err" file
    return 0;
 }
-U_FILE* new_unknown_words=u_fopen(UTF16_LE,tmp,U_WRITE);
+U_FILE* new_unknown_words=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,tmp,U_WRITE);
 if (new_unknown_words==NULL) {
    error("Cannot open temporary word list file %s\n",tmp);
    free_alphabet(alph);
@@ -218,7 +233,7 @@ if (new_unknown_words==NULL) {
    return 1;
 }
 
-U_FILE* res=u_fopen(UTF16_LE,output,U_APPEND);
+U_FILE* res=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_APPEND);
 if (res==NULL) {
    error("Cannot open result file %s\n",output);
    free_alphabet(alph);
@@ -231,7 +246,7 @@ if (res==NULL) {
 }
 U_FILE* debug=NULL;
 if (info!=NULL) {
-   debug=u_fopen(UTF16_LE,info,U_WRITE);
+   debug=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,info,U_WRITE);
    if (debug==NULL) {
       error("Cannot open debug file %s\n",info);
    }

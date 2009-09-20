@@ -58,9 +58,11 @@ u_printf(usage_ImplodeTfst);
 }
 
 
-const char* optstring_ImplodeTfst=":o:h";
+const char* optstring_ImplodeTfst=":o:hk:q:";
 const struct option_TS lopts_ImplodeTfst[]= {
       {"output",required_argument_TS,NULL,'o'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -72,6 +74,9 @@ if (argc==1) {
    return 0;
 }
 
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
 int val,index=-1;
 char input_tfst[FILENAME_MAX]="";
@@ -89,6 +94,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ImplodeTfst,lopts_ImplodeTfs
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_ImplodeTfst[index].name);
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+             break;
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
              break;
@@ -115,7 +130,7 @@ Tfst* tfst=open_text_automaton(input_tfst);
 if (tfst==NULL) {
    fatal_error("Unable to load '%s'\n",input_tfst);
 }
-U_FILE* f_tfst=u_fopen(UTF16_LE,output_tfst,U_WRITE);
+U_FILE* f_tfst=u_fopen_creating_unitex_text_format(encoding_output,bom_output,output_tfst,U_WRITE);
 if (f_tfst==NULL) {
    fatal_error("Cannot open '%s' for writing\n",output_tfst);
 }

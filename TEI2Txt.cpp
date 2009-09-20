@@ -9,7 +9,7 @@
 #include "TEI2Txt.h"
 
 
-void tei2txt(char*, char*);
+void tei2txt(char*, char*, Encoding, int, int);
 
 
 
@@ -31,9 +31,11 @@ u_printf(usage_TEI2Txt);
 }
 
 
-const char* optstring_TEI2Txt=":o:h";
+const char* optstring_TEI2Txt=":o:hk:q:";
 const struct option_TS lopts_TEI2Txt[]={
    {"output", required_argument_TS, NULL, 'o'},
+   {"input_encoding",required_argument_TS,NULL,'k'},
+   {"output_encoding",required_argument_TS,NULL,'q'},
    {"help", no_argument_TS, NULL, 'h'},
    {NULL, no_argument_TS, NULL, 0}
 };
@@ -46,6 +48,9 @@ if (argc==1) {
 }
 
 char output[FILENAME_MAX]="";
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TEI2Txt,lopts_TEI2Txt,&index,vars))) {
@@ -54,6 +59,16 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_TEI2Txt,lopts_TEI2Txt,&index
                 fatal_error("You must specify a non empty output file name\n");
              }
              strcpy(output,vars->optarg);
+             break;
+   case 'k': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty input_encoding argument\n");
+             }
+             decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+             break;
+   case 'q': if (vars->optarg[0]=='\0') {
+                fatal_error("Empty output_encoding argument\n");
+             }
+             decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
@@ -73,7 +88,7 @@ if(output[0]=='\0') {
    remove_extension(argv[vars->optind],output);
 	strcat(output,".txt");
 }
-tei2txt(argv[vars->optind],output);
+tei2txt(argv[vars->optind],output,encoding_output,bom_output,mask_encoding_compatibility_input);
 free_OptVars(vars);
 return 0;
 }
@@ -81,14 +96,14 @@ return 0;
 
 static const char *body = "body";
 
-void tei2txt(char *fin, char *fout) {
+void tei2txt(char *fin, char *fout,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 	void* html_ctx = init_HTML_character_context();
 	if (html_ctx == NULL) fatal_alloc_error("tei2txt");
 
 	U_FILE* input = u_fopen(UTF8, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
-	U_FILE* output = u_fopen(UTF16_LE, fout, U_WRITE);
+	U_FILE* output = u_fopen_versatile_encoding(encoding_output, bom_output, mask_encoding_compatibility_input, fout, U_WRITE);
 	if (output == NULL) {
 		u_fclose(input);
 		fatal_error("Cannot open output file '%s'!\n", fout);

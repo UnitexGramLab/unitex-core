@@ -64,6 +64,10 @@ infos->alphabet=NULL;
 infos->fst2=NULL;
 infos->no_empty_graph_warning=0;
 infos->CONTEXT_COUNTER=0;
+infos->encoding_output = DEFAULT_ENCODING_OUTPUT;
+infos->bom_output = DEFAULT_BOM_OUTPUT;
+infos->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 return infos;
 }
 
@@ -805,7 +809,7 @@ SingleGraph graph=new_SingleGraph();
 u_printf("Compiling graph %S\n",infos->graph_names->value[n]);
 /* We get the absolute path of the graph */
 get_absolute_name(name,n,infos);
-U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+U_FILE* f=u_fopen_existing_versatile_encoding(infos->mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) {
    error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
@@ -935,7 +939,7 @@ return 1;
  * safer to let the U_MODIFY mode do the job.
  */
 void write_number_of_graphs(char* name,int n) {
-U_FILE* f=u_fopen(UTF16_LE,name,U_MODIFY);
+U_FILE* f=u_fopen_existing_unitex_text_format(name,U_MODIFY);
 /* And we print the number of graphs on 10 digits */
 u_fprintf(f,"%010d",n);
 u_fclose(f);
