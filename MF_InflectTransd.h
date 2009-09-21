@@ -63,4 +63,4 @@ void free_transducer_tree();
 ///////////////////////////////
 // Try to load the transducer flex and returns its position in the
 // 'fst2' array. Returns -1 if the transducer cannot be loaded
-int get_transducer(char* flex);
+int get_transducer(char* flex,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);

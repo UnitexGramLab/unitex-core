@@ -27,7 +27,8 @@ extern const struct option_TS lopts_Grf2Fst2[];
 extern const char* usage_Grf2Fst2;
 
 int main_Grf2Fst2(int argc,char* argv[]);
-int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet,
+int pseudo_main_Grf2Fst2(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                         char* name,int yes_or_no,char* alphabet,
                          int no_empty_graph_warning,int tfst_check);
 
 #endif

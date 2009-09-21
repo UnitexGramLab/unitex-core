@@ -30,15 +30,15 @@
  * This function takes two concordance index 'in1' and 'in2', and builds
  * the associated concordacnces 'out1' and 'out2'.
  */
-void create_text_concordances(const char* in1,const char* in2,const char* out1,const char* out2) {
-pseudo_main_Concord(in1,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
+void create_text_concordances(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,const char* in1,const char* in2,const char* out1,const char* out2) {
+pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,in1,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
 char f[FILENAME_MAX];
 get_path(in1,f);
 strcat(f,"concord.txt");
 af_remove(out1);
 af_rename(f,out1);
 
-pseudo_main_Concord(in2,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
+pseudo_main_Concord(encoding_output,bom_output,mask_encoding_compatibility_input,in2,NULL,0,20,40,NULL,"--text",NULL,NULL,0);
 af_remove(out2);
 af_rename(f,out2);
 }
@@ -79,7 +79,7 @@ u_fprintf(f,"</table>\n</body>\n</html>\n");
  * produces a HTML file (out) that shows the differences between
  * those two concordances.
  */
-int diff(int mask_encoding_compatibility_input,const char* in1,const char* in2,const char* out,const char* font,int size) {
+int diff(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,const char* in1,const char* in2,const char* out,const char* font,int size) {
 char concor1[FILENAME_MAX];
 char concor2[FILENAME_MAX];
 get_path(in1,concor1);
@@ -87,7 +87,7 @@ strcat(concor1,"concord-1.txt");
 get_path(in2,concor2);
 strcat(concor2,"concord-2.txt");
 /* First, we build the two concordances */
-create_text_concordances(in1,in2,concor1,concor2);
+create_text_concordances(encoding_output,bom_output,mask_encoding_compatibility_input,in1,in2,concor1,concor2);
 /* Then, we load the two index */
 U_FILE* f1=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,in1,U_READ);
 if (f1==NULL) return 0;

@@ -97,11 +97,27 @@ u_printf(usage_Concord);
 }
 
 
-int pseudo_main_Concord(const char* index_file,const char* font,int fontsize,
+int pseudo_main_Concord(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                        const char* index_file,const char* font,int fontsize,
                         int left_context,int right_context,const char* sort_order,
                         const char* output,const char* directory,const char* alphabet,int thai) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Concord,"main_Concord");
 char tmp[256];
+{
+    tmp[0]=0;
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-k");
+        add_argument(invoker,tmp);
+    }
+
+    tmp[0]=0;
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-q");
+        add_argument(invoker,tmp);
+    }
+}
 if (font!=NULL) {
    add_argument(invoker,"-f");
    add_argument(invoker,font);

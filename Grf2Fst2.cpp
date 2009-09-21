@@ -67,12 +67,28 @@ u_printf(usage_Grf2Fst2);
 /**
  * A convenient way to call the main function within a Unitex program.
  */
-int pseudo_main_Grf2Fst2(char* name,int yes_or_no,char* alphabet,
+int pseudo_main_Grf2Fst2(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                         char* name,int yes_or_no,char* alphabet,
                          int no_empty_graph_warning,int tfst_check) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_Grf2Fst2,"main_Grf2Fst2");
 add_argument(invoker,name);
 add_argument(invoker,yes_or_no?"-y":"-n");
 char tmp[FILENAME_MAX];
+{
+    tmp[0]=0;
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-k");
+        add_argument(invoker,tmp);
+    }
+
+    tmp[0]=0;
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-q");
+        add_argument(invoker,tmp);
+    }
+}
 if (alphabet!=NULL) {
    sprintf(tmp,"-a=%s",alphabet);
    add_argument(invoker,tmp);

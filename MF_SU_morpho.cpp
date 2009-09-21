@@ -115,7 +115,8 @@ int save_pos;
 //          "likatubna"
 //
 // Returns 0 on success, 1 otherwise.
-int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
+int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+               SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
 		int semitic,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
@@ -124,7 +125,7 @@ int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
 	unichar local_sem_code[MAX_CHARS_IN_STACK];
 	inflection_codes[0] = '\0';
 	semitic_[0] = '\0';
-	int T = get_transducer(SU_id->lemma->paradigm);
+	int T = get_transducer(SU_id->lemma->paradigm,encoding_output,bom_output,mask_encoding_compatibility_input);
 	if (fst2[T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
@@ -144,7 +145,8 @@ int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
  * will receive all the produced inflected forms with their inflectional features.
  * The output DELAF lines will have to be built from 'forms'.
  */
-int SU_inflect(unichar* lemma, char* inflection_code, unichar** filters,
+int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+               unichar* lemma, char* inflection_code, unichar** filters,
 		SU_forms_T* forms, int semitic,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
@@ -154,7 +156,7 @@ int SU_inflect(unichar* lemma, char* inflection_code, unichar** filters,
 
 	inflection_codes[0] = '\0';
 	semitic_[0] = '\0';
-	int T = get_transducer(inflection_code);
+	int T = get_transducer(inflection_code,encoding_output,bom_output,mask_encoding_compatibility_input);
 	if (fst2[T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;

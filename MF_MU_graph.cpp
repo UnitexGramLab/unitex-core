@@ -46,23 +46,23 @@ int T;
 // Current muli-word unit to be inflected
 MU_lemma_T* MU_lemma;
 
-int MU_graph_explore_graph(MU_lemma_T* MU_lemma, MU_forms_T* forms);
+int MU_graph_explore_graph(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* MU_lemma, MU_forms_T* forms);
 int MU_graph_init_graphs();
 void MU_graph_free_graphs();
-Fst2State MU_graph_get_initial(char* graph_name);
-int MU_graph_explore_state(Fst2State q,MU_forms_T* forms);
-int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms);
+Fst2State MU_graph_get_initial(char* graph_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+int MU_graph_explore_state(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,Fst2State q,MU_forms_T* forms);
+int MU_graph_explore_label(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T* MU_label);
-int MU_graph_explore_label_in_var(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
-int MU_graph_explore_label_in_var_rec(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
-int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms);
-int MU_graph_explore_label_in_morph_const(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
-int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
-int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
-int MU_graph_explore_label_out(MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms);
-int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms);
-int MU_graph_explore_label_out_morph_const(MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms);
-int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_in_var(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_in_var_rec(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_get_unit_forms(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms);
+int MU_graph_explore_label_in_morph_const(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_in_morph_inher(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_in_morph_unif(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_out(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_out_rec(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_out_morph_const(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms);
+int MU_graph_explore_label_out_morph_unif(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms);
 int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T* MU_label);
 int MU_graph_scan_label_in(unichar* label, MU_graph_in_T* MU_label_in);
 int MU_graph_scan_label_out(unichar* label, MU_graph_out_T* MU_label_out);
@@ -77,7 +77,8 @@ void MU_graph_free_morpho(MU_graph_morpho_T* MU_morpho);
 // in order to generate all its inflected forms. The generated forms are put to 'forms'
 // Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise.
-int MU_graph_explore_graph(MU_lemma_T* MU_l, MU_forms_T* forms) {
+int MU_graph_explore_graph(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                           MU_lemma_T* MU_l, MU_forms_T* forms) {
   int res;
 
  //Initialize the current muli-word unit
@@ -88,13 +89,13 @@ int MU_graph_explore_graph(MU_lemma_T* MU_l, MU_forms_T* forms) {
 
   //Get the initial state of the inflection tranducer
   Fst2State initial;
-  initial = MU_graph_get_initial(MU_lemma->paradigm);
+  initial = MU_graph_get_initial(MU_lemma->paradigm,encoding_output,bom_output,mask_encoding_compatibility_input);
 
   if (!initial)
     return 1;
 
   //Explore the inflection transducer starting from its initial state
-  res=MU_graph_explore_state(initial,forms);
+  res=MU_graph_explore_state(encoding_output,bom_output,mask_encoding_compatibility_input,initial,forms);
 
   unif_free_vars();
   return res;
@@ -118,9 +119,9 @@ void MU_graph_free_graphs() {
 /////////////////////////////////////////////////
 // In the graph not yet loaded loads it otherwise searches for it in the structure.
 // On success returns the graph's initial state, otherwise returns NULL.
-Fst2State MU_graph_get_initial(char* graph_name) {
+Fst2State MU_graph_get_initial(char* graph_name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
   //Get the index of the tranducer in the transducer table
-  T=get_transducer(graph_name);
+  T=get_transducer(graph_name,encoding_output,bom_output,mask_encoding_compatibility_input);
   if (fst2[T]==NULL) {
     // if the automaton has not been loaded
     return NULL;
@@ -139,7 +140,7 @@ Fst2State MU_graph_get_initial(char* graph_name) {
 // In case of error put an empty list into 'forms' (which is not identical to ((epsilon,empty_set))).
 // Initially, 'forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
+int MU_graph_explore_state(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,Fst2State q, MU_forms_T* forms) {
   int err;
   MU_graph_label_T* l;
   Fst2State q_bis;
@@ -165,7 +166,7 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
       return err;
     //Initialize the set of inflected forms
     MU_init_forms(&forms_bis);
-    err = MU_graph_explore_label(l,q_bis,&forms_bis);
+    err = MU_graph_explore_label(encoding_output,bom_output,mask_encoding_compatibility_input,l,q_bis,&forms_bis);
     if (err) {
       MU_delete_inflection(&forms_bis);
       return err;
@@ -193,7 +194,7 @@ int MU_graph_explore_state(Fst2State q, MU_forms_T* forms) {
 // In case of error put an empty list into 'forms'.
 // Initially, '*forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* forms) {
   int err;
   //If the current unit is a reference to a lemma's unit (e.g. <$2>)
   if (l->in && l->in->unit.type!=cst) {
@@ -202,7 +203,7 @@ int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* form
     u_no = l->in->unit.u.num-1;
     u = MU_lemma->units[u_no];  //Get the referenced lemma's unit
     //explore the current unit according to its morphology, then the label's output and the rest of the automaton
-    err = MU_graph_explore_label_in_var(u,l->in->morpho,l->out,q_bis,forms);
+    err = MU_graph_explore_label_in_var(encoding_output,bom_output,mask_encoding_compatibility_input,u,l->in->morpho,l->out,q_bis,forms);
     if (err)
       return err;
   }
@@ -229,7 +230,7 @@ int MU_graph_explore_label(MU_graph_label_T* l,Fst2State q_bis, MU_forms_T* form
     //Get the suffixes of the MWU forms
     MU_forms_T suffix_forms;
     MU_init_forms(&suffix_forms);
-    err = MU_graph_explore_label_out(l->out,q_bis,&suffix_forms);  //Explore the rest of the automaton
+    err = MU_graph_explore_label_out(encoding_output,bom_output,mask_encoding_compatibility_input,l->out,q_bis,&suffix_forms);  //Explore the rest of the automaton
     if (err) {
       SU_delete_inflection(&SU_forms);
       MU_delete_inflection(&suffix_forms);
@@ -269,11 +270,11 @@ int MU_graph_explore_label(MU_graph_label_T* l,Etat_fst q_bis, MU_forms_T* forms
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_in_var(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_in_var(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
   f_morpho_T feat;   //A set of the already treated morphological features contained in the label's input
   feat.no_cats = 0;
-  err = MU_graph_explore_label_in_var_rec(u, l_in_morpho, 0, &feat, l_out_morpho, q_bis, forms);
+  err = MU_graph_explore_label_in_var_rec(encoding_output,bom_output,mask_encoding_compatibility_input,u, l_in_morpho, 0, &feat, l_out_morpho, q_bis, forms);
   return err;
 }
 
@@ -291,7 +292,7 @@ int MU_graph_explore_label_in_var(SU_id_T* u,MU_graph_morpho_T* l_in_morpho, MU_
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_in_var_rec(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err = 0;
 
   /////////////////////////////////////////////////////////////////
@@ -301,13 +302,13 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
     c = &(l_in_morpho->cats[i_morpho]);
     switch (c->type) {
     case cnst : //e.g. Nb=pl
-      err = MU_graph_explore_label_in_morph_const(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
+      err = MU_graph_explore_label_in_morph_const(encoding_output,bom_output,mask_encoding_compatibility_input,c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
       break;
     case inherit_var: //e.g. Gen==$g
-      err = MU_graph_explore_label_in_morph_inher(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
+      err = MU_graph_explore_label_in_morph_inher(encoding_output,bom_output,mask_encoding_compatibility_input,c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
       break;
     case unif_var:  //e.g. Case=$c1
-      err = MU_graph_explore_label_in_morph_unif(c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
+      err = MU_graph_explore_label_in_morph_unif(encoding_output,bom_output,mask_encoding_compatibility_input,c,u,l_in_morpho,i_morpho+1,feat,l_out_morpho,q_bis,forms);
       break;
     }
     if (err)
@@ -330,7 +331,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
     //If all morphological category-value equations in the input label treated
     else {
       //Inflect the unit concerned according to desired features
-      err = MU_graph_get_unit_forms(u,feat,&SU_forms);
+      err = MU_graph_get_unit_forms(encoding_output,bom_output,mask_encoding_compatibility_input,u,feat,&SU_forms);
       if (err) {
 	SU_delete_inflection(&SU_forms);
 	return err;
@@ -341,7 +342,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
     //Get the suffixes of the MWU forms
     MU_forms_T suffix_forms;
     MU_init_forms(&suffix_forms);
-    err = MU_graph_explore_label_out(l_out_morpho,q_bis,&suffix_forms);  //Explore the rest of the automaton
+    err = MU_graph_explore_label_out(encoding_output,bom_output,mask_encoding_compatibility_input,l_out_morpho,q_bis,&suffix_forms);  //Explore the rest of the automaton
     if (err) {
       SU_delete_inflection(&SU_forms);
       MU_delete_inflection(&suffix_forms);
@@ -367,7 +368,7 @@ int MU_graph_explore_label_in_var_rec(SU_id_T* u, MU_graph_morpho_T* l_in_morpho
 // In case of error put an empty list into 'SU_forms'.
 // Initially, 'SU_forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
+int MU_graph_get_unit_forms(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
   int err;
   f_morpho_T old_feat;  //Features that the current unit has in the lemma of the MWU
 
@@ -383,7 +384,7 @@ int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
     return err;
 
   //Generate the desired inflected forms of the single unit
-  err = SU_inflect(u,&old_feat, SU_forms,0,NULL,NULL);
+  err = SU_inflect(encoding_output,bom_output,mask_encoding_compatibility_input,u,&old_feat, SU_forms,0,NULL,NULL);
   return err;
 }
 
@@ -402,7 +403,7 @@ int MU_graph_get_unit_forms(SU_id_T* u,f_morpho_T* feat,SU_forms_T* SU_forms) {
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_in_morph_const(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_in_morph_const(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
 
   //Add the current label's category-value pair to the features of the single unit to be generated
@@ -414,7 +415,7 @@ int MU_graph_explore_label_in_morph_const(MU_graph_category_T* c, SU_id_T* u, MU
   }
 
   //Explore recursively the rest of the label
-  return MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
+  return MU_graph_explore_label_in_var_rec(encoding_output,bom_output,mask_encoding_compatibility_input,u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
 }
 
 ////////////////////////////////////////////
@@ -432,7 +433,7 @@ int MU_graph_explore_label_in_morph_const(MU_graph_category_T* c, SU_id_T* u, MU
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_in_morph_inher(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;
   int new_instant=0;  //Controls if an instantiation occured in the current instance of the function
 
@@ -473,7 +474,7 @@ int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU
     return err;
 
   //Explore recursively the rest of the label
-  err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
+  err = MU_graph_explore_label_in_var_rec(encoding_output,bom_output,mask_encoding_compatibility_input,u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
   if (err)
     return err;
 
@@ -500,7 +501,7 @@ int MU_graph_explore_label_in_morph_inher(MU_graph_category_T* c, SU_id_T* u, MU
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_in_morph_unif(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, SU_id_T* u, MU_graph_morpho_T* l_in_morpho, int i_morpho, f_morpho_T* feat, MU_graph_morpho_T* l_out_morpho, Fst2State q_bis, MU_forms_T* forms) {
   int err;  //Result of a function called
 
   unichar* var;  //Unification variable's identifier
@@ -528,7 +529,7 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
     }
 
     //Return MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
-    err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
+    err = MU_graph_explore_label_in_var_rec(encoding_output,bom_output,mask_encoding_compatibility_input,u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,forms);
     if (err == -1) {
       error(" in graph %s.\n",MU_lemma->paradigm);
       MU_delete_inflection(forms);
@@ -555,7 +556,7 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
 
       //Explore the rest of the label and the rest of the automaton
       MU_init_forms(&suffix_forms);
-      err = MU_graph_explore_label_in_var_rec(u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,&suffix_forms);
+      err = MU_graph_explore_label_in_var_rec(encoding_output,bom_output,mask_encoding_compatibility_input,u,l_in_morpho,i_morpho,feat,l_out_morpho,q_bis,&suffix_forms);
       if (err) {
 	//Delete the intermediate simple et compound forms
 	MU_delete_inflection(&suffix_forms);
@@ -593,12 +594,12 @@ int MU_graph_explore_label_in_morph_unif(MU_graph_category_T* c, SU_id_T* u, MU_
 // In case of error put an empty list into 'forms'.
 // Initially, '*forms' has its space allocated but is empty.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_out(MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_out(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, MU_forms_T* forms) {
   int err;
   f_morpho_T feat;   //A set of the amready treated morphological features contained in the label's input
   f_init_morpho(&feat);
   //feat.no_cats = 0;
-  err = MU_graph_explore_label_out_rec(l_out_morpho,0,&feat,q_bis,forms);
+  err = MU_graph_explore_label_out_rec(encoding_output,bom_output,mask_encoding_compatibility_input,l_out_morpho,0,&feat,q_bis,forms);
   return(err);
 }
 
@@ -613,13 +614,13 @@ int MU_graph_explore_label_out(MU_graph_morpho_T* l_out_morpho,Fst2State q_bis, 
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_out_rec(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_morpho_T* l_out_morpho,int i_morpho,f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
   int err = 0;
 
   //If no morphology in the output label, then go to the next state
   if (!l_out_morpho) {
     //Explore the arrival state
-    err = MU_graph_explore_state(q_bis,forms);
+    err = MU_graph_explore_state(encoding_output,bom_output,mask_encoding_compatibility_input,q_bis,forms);
     if (err)
       return err;
   }
@@ -629,7 +630,7 @@ int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,
     if (i_morpho == l_out_morpho->no_cats) {
 
       //Explore the arrival state
-      err = MU_graph_explore_state(q_bis,forms);
+      err = MU_graph_explore_state(encoding_output,bom_output,mask_encoding_compatibility_input,q_bis,forms);
       if (err)
 	return err;
 
@@ -654,10 +655,10 @@ int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,
       c = &(l_out_morpho->cats[i_morpho]);
       switch (c->type) {
       case cnst : //e.g. Nb=pl
-	err = MU_graph_explore_label_out_morph_const(c,l_out_morpho,i_morpho+1,feat,q_bis,forms);
+	err = MU_graph_explore_label_out_morph_const(encoding_output,bom_output,mask_encoding_compatibility_input,c,l_out_morpho,i_morpho+1,feat,q_bis,forms);
 	break;
       case unif_var:  //e.g. Case=$c1
-	err = MU_graph_explore_label_out_morph_unif(c,l_out_morpho,i_morpho+1,feat,q_bis,forms);
+	err = MU_graph_explore_label_out_morph_unif(encoding_output,bom_output,mask_encoding_compatibility_input,c,l_out_morpho,i_morpho+1,feat,q_bis,forms);
 	break;
    default:;
       }
@@ -679,7 +680,7 @@ int MU_graph_explore_label_out_rec(MU_graph_morpho_T* l_out_morpho,int i_morpho,
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_out_morph_const(MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_out_morph_const(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
   int err;
   //Add the current label's category-value pair to the features of the single unit to be generated
   err = f_add_morpho(feat,c->cat,c->val.value);
@@ -689,7 +690,7 @@ int MU_graph_explore_label_out_morph_const(MU_graph_category_T* c, MU_graph_morp
     return 1;
   }
   //Explore recursively the rest of the label
-  return MU_graph_explore_label_out_rec(l_out_morpho,i_morpho,feat,q_bis,forms);
+  return MU_graph_explore_label_out_rec(encoding_output,bom_output,mask_encoding_compatibility_input,l_out_morpho,i_morpho,feat,q_bis,forms);
 }
 
 ////////////////////////////////////////////
@@ -704,7 +705,7 @@ int MU_graph_explore_label_out_morph_const(MU_graph_category_T* c, MU_graph_morp
 // Initially, '*forms' has its space allocated but is empty.
 // In case of error put an empty list into 'forms'.
 // Return a number !=0 in case of errors, 0 otherwise.
-int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
+int MU_graph_explore_label_out_morph_unif(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_graph_category_T* c, MU_graph_morpho_T* l_out_morpho, int i_morpho, f_morpho_T* feat, Fst2State q_bis, MU_forms_T* forms) {
   int err;  //Result of a function called
 
   unichar* var;  //Unification variable's identifier
@@ -724,7 +725,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
       MU_delete_inflection(forms);
       return 1;
     }
-    err = MU_graph_explore_label_out_rec(l_out_morpho,i_morpho,feat,q_bis,forms);
+    err = MU_graph_explore_label_out_rec(encoding_output,bom_output,mask_encoding_compatibility_input,l_out_morpho,i_morpho,feat,q_bis,forms);
 
     //Delete the current category-value pair
     f_del_one_morpho(feat, c->cat);
@@ -753,7 +754,7 @@ int MU_graph_explore_label_out_morph_unif(MU_graph_category_T* c, MU_graph_morph
 
       //Explore the rest of the label and the rest of the automaton
       MU_init_forms(&suffix_forms);
-      err = MU_graph_explore_label_out_rec(l_out_morpho,i_morpho,feat,q_bis,&suffix_forms);
+      err = MU_graph_explore_label_out_rec(encoding_output,bom_output,mask_encoding_compatibility_input,l_out_morpho,i_morpho,feat,q_bis,&suffix_forms);
       if (err) {
 	MU_delete_inflection(&suffix_forms);
 	return err;

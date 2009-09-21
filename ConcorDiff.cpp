@@ -139,7 +139,7 @@ if (vars->optind!=argc-2) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-diff(mask_encoding_compatibility_input,argv[vars->optind],argv[vars->optind+1],out,font,size);
+diff(encoding_output,bom_output,mask_encoding_compatibility_input,argv[vars->optind],argv[vars->optind+1],out,font,size);
 free(out);
 free(font);
 free_OptVars(vars);

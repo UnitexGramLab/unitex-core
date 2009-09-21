@@ -220,106 +220,106 @@ return n;
 struct reading_encoding_item
 {
     const char* encoding_name;
+    int len;
     int encoding_flag;
 };
 
 
 const struct reading_encoding_item reading_encoding_item_list[] =
 {
-    { "ascii", ASCII_NO_BOM_POSSIBLE },
+    { "ascii", 5, ASCII_NO_BOM_POSSIBLE },
 
-    { "utf8", UTF8_BOM_POSSIBLE | UTF8_NO_BOM_POSSIBLE },
-    { "utf8-no-bom", UTF8_NO_BOM_POSSIBLE },
-    { "utf8-bom", UTF8_BOM_POSSIBLE },
+    { "bom", 3, UTF8_BOM_POSSIBLE | UTF16_LE_BOM_POSSIBLE | BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
+    { "utf8", 4, UTF8_BOM_POSSIBLE | UTF8_NO_BOM_POSSIBLE },
+    { "utf8-no-bom", 11, UTF8_NO_BOM_POSSIBLE },
+    { "utf8-bom", 8, UTF8_BOM_POSSIBLE },
 
-    { "utf-16-le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf-16-le-no-bom", UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf-16-le-bom", UTF16_LE_BOM_POSSIBLE },
+    { "utf-16-le", 9, UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf-16-le-no-bom", 16, UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf-16-le-bom", 13, UTF16_LE_BOM_POSSIBLE },
 
-    { "utf16-le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf16-le-no-bom", UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf16-le-bom", UTF16_LE_BOM_POSSIBLE },
+    { "utf16-le", 8, UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16-le-no-bom", 15, UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16-le-bom", 12, UTF16_LE_BOM_POSSIBLE },
 
-    { "utf16le", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf16le-no-bom", UTF16_LE_NO_BOM_POSSIBLE },
-    { "utf16le-bom", UTF16_LE_BOM_POSSIBLE },
+    { "utf16le", 7, UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16le-no-bom", 14, UTF16_LE_NO_BOM_POSSIBLE },
+    { "utf16le-bom", 11, UTF16_LE_BOM_POSSIBLE },
 
-    { "little-endian", UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
-    { "little-endian-no-bom", UTF16_LE_NO_BOM_POSSIBLE },
-    { "little-endian-bom", UTF16_LE_BOM_POSSIBLE },
+    { "little-endian", 13, UTF16_LE_BOM_POSSIBLE | UTF16_LE_NO_BOM_POSSIBLE },
+    { "little-endian-no-bom", 20, UTF16_LE_NO_BOM_POSSIBLE },
+    { "little-endian-bom", 17, UTF16_LE_BOM_POSSIBLE },
 
+    { "utf-16-be", 9, BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf-16-be-no-bom", 16, BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf-16-be-bom", 13, BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
-    { "utf-16-be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf-16-be-no-bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf-16-be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
+    { "utf16-be", 8, BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16-be-no-bom", 15, BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16-be-bom", 12, BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
-    { "utf16-be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf16-be-no-bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf16-be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
+    { "utf16be", 7, BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16be-no-bom", 14, BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "utf16be-bom", 11, BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
-    { "utf16be", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf16be-no-bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "utf16be-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
+    { "big-endian", 10, BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "big-endian-no-bom", 17, BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
+    { "big-endian-bom", 14, BIG_ENDIAN_UTF16_BOM_POSSIBLE },
 
-    { "big-endian", BIG_ENDIAN_UTF16_BOM_POSSIBLE | BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "big-endian-no-bom", BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE },
-    { "big-endian-bom", BIG_ENDIAN_UTF16_BOM_POSSIBLE },
-
-    { NULL, 0 }
+    { NULL, 0, 0 }
 };
 
 
 struct write_encoding_item
 {
     const char* encoding_name;
+    int len;
     Encoding encoding;
     int bom;
 };
 
 const struct write_encoding_item write_encoding_item_list[] =
 {
-    { "ascii", ASCII, 0 },
+    { "ascii", 5, ASCII, 0 },
 
-    { "utf8", UTF8, 2 },
-    { "utf8-no-bom", UTF8, 0 },
-    { "utf8-bom", UTF8,1 },
+    { "utf8", 4, UTF8, 2 },
+    { "utf8-no-bom", 11, UTF8, 0 },
+    { "utf8-bom", 8, UTF8,1 },
 
+    { "utf-16-le", 9, UTF16_LE, 2 },
+    { "utf-16-le-no-bom", 16, UTF16_LE, 0 },
+    { "utf-16-le-bom", 13, UTF16_LE, 1 },
 
-    { "utf-16-le", UTF16_LE, 2 },
-    { "utf-16-le-no-bom", UTF16_LE, 0 },
-    { "utf-16-le-bom", UTF16_LE, 1 },
+    { "utf16-le", 8, UTF16_LE, 2 },
+    { "utf16-le-no-bom", 15, UTF16_LE, 0 },
+    { "utf16-le-bom", 12, UTF16_LE, 1 },
 
-    { "utf16-le", UTF16_LE, 2 },
-    { "utf16-le-no-bom", UTF16_LE, 0 },
-    { "utf16-le-bom", UTF16_LE, 1 },
+    { "utf16le", 7, UTF16_LE, 2 },
+    { "utf16le-no-bom", 14, UTF16_LE, 0 },
+    { "utf16le-bom", 11, UTF16_LE, 1 },
 
-    { "utf16le", UTF16_LE, 2 },
-    { "utf16le-no-bom", UTF16_LE, 0 },
-    { "utf16le-bom", UTF16_LE, 1 },
+    { "little-endian", 13, UTF16_LE, 2 },
+    { "little-endian-no-bom", 20, UTF16_LE, 0 },
+    { "little-endian-bom", 17, UTF16_LE, 1 },
 
-    { "little-endian", UTF16_LE, 2 },
-    { "little-endian-no-bom", UTF16_LE, 0 },
-    { "little-endian-bom", UTF16_LE, 1 },
+    { "utf-16-be", 9, BIG_ENDIAN_UTF16, 2 },
+    { "utf-16-be-no-bom", 16, BIG_ENDIAN_UTF16, 0 },
+    { "utf-16-be-bom", 13, BIG_ENDIAN_UTF16, 1 },
 
+    { "utf16-be", 8, BIG_ENDIAN_UTF16, 2 },
+    { "utf16-be-no-bom", 15, BIG_ENDIAN_UTF16, 0 },
+    { "utf16-be-bom", 12, BIG_ENDIAN_UTF16, 1 },
 
-    { "utf-16-be", BIG_ENDIAN_UTF16, 2 },
-    { "utf-16-be-no-bom", BIG_ENDIAN_UTF16, 0 },
-    { "utf-16-be-bom", BIG_ENDIAN_UTF16, 1 },
+    { "utf16be", 7, BIG_ENDIAN_UTF16, 2 },
+    { "utf16be-no-bom", 14, BIG_ENDIAN_UTF16, 0 },
+    { "utf16be-bom", 11, BIG_ENDIAN_UTF16, 1 },
 
-    { "utf16-be", BIG_ENDIAN_UTF16, 2 },
-    { "utf16-be-no-bom", BIG_ENDIAN_UTF16, 0 },
-    { "utf16-be-bom", BIG_ENDIAN_UTF16, 1 },
+    { "big-endian", 10, BIG_ENDIAN_UTF16, 2 },
+    { "big-endian-no-bom", 17, BIG_ENDIAN_UTF16, 0 },
+    { "big-endian-bom", 14, BIG_ENDIAN_UTF16, 1 },
 
-    { "utf16be", BIG_ENDIAN_UTF16, 2 },
-    { "utf16be-no-bom", BIG_ENDIAN_UTF16, 0 },
-    { "utf16be-bom", BIG_ENDIAN_UTF16, 1 },
-
-    { "big-endian", BIG_ENDIAN_UTF16, 2 },
-    { "big-endian-no-bom", BIG_ENDIAN_UTF16, 0 },
-    { "big-endian-bom", BIG_ENDIAN_UTF16, 1 },
-
-    { NULL, ASCII, 0 }
+    { NULL, 0, ASCII, 0 }
 };
 
 /*
@@ -402,7 +402,6 @@ int get_reading_encoding_text(char* text_encoding,size_t size_text_buffer,int ma
 
     if ((mask_encoding_compatibility & UTF8_BOM_POSSIBLE) != 0)
         strcat(result,",utf8-be-bom");
-
 
     if ((mask_encoding_compatibility & UTF16_LE_NO_BOM_POSSIBLE) != 0)
         strcat(result,",utf16-le-no-bom");

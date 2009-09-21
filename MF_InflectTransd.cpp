@@ -58,13 +58,13 @@ char inflection_directory[FILENAME_MAX];
 // ALL FUNCTIONS IN THIS MODULE
 int init_transducer_tree();
 void free_transducer_tree();
-int get_transducer(char* flex);
+int get_transducer(char* flex,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 struct node* new_node();
 struct transition* new_transition(char c);
 void free_transition(struct transition* t);
 void free_node(struct node* n);
 struct transition* get_transition(char c,struct transition* t,struct node** n);
-int get_node(char* flex,int pos,struct node* n);
+int get_node(char* flex,Encoding,int,int,int pos,struct node* n);
 
 ///////////////////////////////
 //Initiate the tree for inflection transducers' names
@@ -88,8 +88,8 @@ free_node(root);
 ///////////////////////////////
 // Try to load the transducer flex and returns its position in the
 // 'fst2' array. Returns -1 if the transducer cannot be loaded
-int get_transducer(char* flex) {
-return get_node(flex,0,root);
+int get_transducer(char* flex,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
+return get_node(flex,encoding_output,bom_output,mask_encoding_compatibility_input,0,root);
 }
 
 ///////////////////////////////
@@ -177,7 +177,7 @@ return (get_file_date(grf)>=get_file_date(fst2));
 ///////////////////////////////
 // Look for the path to 'flex', creating it if necessary
 // The current node is n, and pos is the position in the flex string
-int get_node(char* flex,int pos,struct node* n) {
+int get_node(char* flex,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,int pos,struct node* n) {
 if (flex[pos]=='\0') {
     // we are at the final node for flex (a leaf)
     if (n->final!=-1) {
@@ -198,7 +198,7 @@ if (flex[pos]=='\0') {
         if (must_compile_grf(grf,s)) {
            /* If there is no .fst2 file, of a one than is older than the
             * corresponding .grf, we try to compile it */
-           pseudo_main_Grf2Fst2(grf,1,NULL,1,0);
+           pseudo_main_Grf2Fst2(encoding_output,bom_output,mask_encoding_compatibility_input,grf,1,NULL,1,0);
         }
         fst2[n_fst2]=load_abstract_fst2(s,1,&(fst2_free[n_fst2]));
         n->final=n_fst2;
@@ -210,5 +210,5 @@ struct transition* trans=get_transition(flex[pos],n->t,&n);
 if (trans->n==NULL) {
     trans->n=new_node();
 }
-return get_node(flex,pos+1,trans->n);
+return get_node(flex,encoding_output,bom_output,mask_encoding_compatibility_input,pos+1,trans->n);
 }

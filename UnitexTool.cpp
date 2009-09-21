@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "Unicode.h"
 
 #include "CheckDic.h"
 #include "Compress.h"
@@ -61,7 +62,7 @@
 
 #include "UnitexTool.h"
 
-#include "Unicode.h"
+
 #include "Copyright.h"
 
 

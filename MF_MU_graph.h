@@ -118,7 +118,7 @@ void MU_graph_free_all_graphs();
 // in order to generate all its inflected forms. The generated forms are put to 'forms'
 // (initially, 'forms' does not have its space allocated).
 //Returns 0 on success, 1 otherwise. 
-int MU_graph_explore_graph(MU_lemma_T* MU_lemma, MU_forms_T* forms);
+int MU_graph_explore_graph(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* MU_lemma, MU_forms_T* forms);
 
 /////////////////////////////////////////////////
 // Creates a MU_graph label from two strings.    
