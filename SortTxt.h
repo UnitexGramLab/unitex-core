@@ -27,7 +27,8 @@ extern const struct option_TS lopts_SortTxt[];
 extern const char* usage_SortTxt;
 
 int main_SortTxt(int argc,char* argv[]);
-int pseudo_main_SortTxt(int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char*);
+int pseudo_main_SortTxt(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                        int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char*);
 
 #endif
 

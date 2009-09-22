@@ -231,8 +231,24 @@ u_printf(usage_SortTxt);
 }
 
 
-int pseudo_main_SortTxt(int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char* text) {
+int pseudo_main_SortTxt(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,int duplicates,int reverse,char* sort_alphabet,char* line_info,int thai,char* text) {
 ProgramInvoker* invoker=new_ProgramInvoker(main_SortTxt,"main_SortTxt");
+char tmp[200];
+{
+    tmp[0]=0;
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-k");
+        add_argument(invoker,tmp);
+    }
+
+    tmp[0]=0;
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-q");
+        add_argument(invoker,tmp);
+    }
+}
 if (duplicates) {
    add_argument(invoker,"-d");
 } else {

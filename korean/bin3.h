@@ -63,6 +63,11 @@ public:
 
 	int checkDepth;
 
+    Encoding encoding_output ;
+    int bom_output ;
+    int mask_encoding_compatibility_input ;
+
+
 	arbre_string3(){
 //		racName.put(u_epsilon_string);
 		sufName.put(assignUstring(u_epsilon_string));
@@ -75,10 +80,20 @@ public:
 			sizeof(struct avec_sorti_tran)*1024
 			,sizeof(struct avec_sorti_tran));
 
+        encoding_output = DEFAULT_ENCODING_OUTPUT;
+        bom_output = DEFAULT_BOM_OUTPUT;
+        mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 	};
 	~arbre_string3()
 	{
 	};
+
+    void setEncoding(Encoding encoding_outputSet,int bom_outputSet,int mask_encoding_compatibility_inputSet){
+        encoding_output = encoding_outputSet;
+        bom_output = bom_outputSet;
+        mask_encoding_compatibility_input = mask_encoding_compatibility_inputSet;
+    }
+
 		uintptr_t getRacine(int idx){
 		if(idx < arbreCnt){
 			return((uintptr_t)racine[idx]);

@@ -76,6 +76,10 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 	debugPrFlag = 0;
 	class localtemp trans;
 
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 	if(argc == 1) {
 	   usage();
 	   return 0;
@@ -98,6 +102,18 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 			ofilename = new char [strlen(argv[iargIndex])+1];
 			strcpy(ofilename,argv[iargIndex]);
 			break;
+        case 'k': iargIndex++;
+                 if (argv[iargIndex][0]=='\0') {
+                    fatal_error("Empty input_encoding argument\n");
+                 }
+                 decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[iargIndex]);
+                 break;
+        case 'q': iargIndex++;
+                 if (argv[iargIndex][0]=='\0') {
+                    fatal_error("Empty output_encoding argument\n");
+                 }
+                 decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[iargIndex]);
+                 break;
 		default: 
 		   usage();
 		   return 1;
@@ -113,7 +129,7 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 	iargIndex++;			
 	ifilename = new char [strlen(argv[iargIndex])+1];
 	strcpy(ifilename,argv[iargIndex]);
-	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ))) {
+	if(!(ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifilename,U_READ))) {
 	   usage();
 	   return 1;
 	}
@@ -126,7 +142,7 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 		strcat(ofilename,extension);
 	}
 	 
-	if(!(ofile = u_fopen(UTF16_LE,ofilename,U_WRITE))) { 
+	if(!(ofile = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofilename,U_WRITE))) { 
 		fatal_error("Can't open %s file for output\n",ofilename);
 	}
 	u_fclose(ifile);

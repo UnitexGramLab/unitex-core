@@ -90,6 +90,10 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 	int iargIndex = 1;
 	int remplaceFlag = 0;
 
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 	U_FILE *ifile;
 	U_FILE *ofile;
 
@@ -131,7 +135,7 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 			case 'm':
 			{
 //               setLocalKorean();
-                ofile = u_fopen(UTF16_LE,"jamoTable.txt",U_WRITE);
+                ofile = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,"jamoTable.txt",U_WRITE);
                 if(!ofile) fopenErrMessage("jamoTable.txt");
                 int length = hangul.mbcs949clen((unsigned char *)defaultSylToJamoMap);
                 unichar *outbuf = new unichar[length+1];
@@ -143,6 +147,18 @@ int main_Syl2Jamo(int argc,char *argv[]) {
             }
 			case 'j':hangul.jamoMapOut(); return(0);
 			}
+        case 'k': iargIndex++;
+                 if (argv[iargIndex][0]=='\0') {
+                    fatal_error("Empty input_encoding argument\n");
+                 }
+                 decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[iargIndex]);
+                 break;
+        case 'q': iargIndex++;
+                 if (argv[iargIndex][0]=='\0') {
+                    fatal_error("Empty output_encoding argument\n");
+                 }
+                 decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[iargIndex]);
+                 break;
 		default:
 		   usage();
 		   return 1;
@@ -159,7 +175,7 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 	ifilename = new char [strlen(argv[iargIndex])+1];
 	strcpy(ifilename,argv[iargIndex]);
 
-	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ))) {
+	if(!(ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifilename,U_READ))) {
 	   usage();
 	   return 1;
 	}
@@ -172,7 +188,7 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 		strcat(ofilename,extension);
 	}
 	 
-	if(!(ofile = u_fopen(UTF16_LE,ofilename,U_WRITE))) { 
+	if(!(ofile = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofilename,U_WRITE))) { 
 		fatal_error("Can't open %s file for output\n",ofilename);
 	}
 

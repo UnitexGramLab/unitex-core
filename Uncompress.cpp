@@ -52,7 +52,7 @@ u_printf(usage_Uncompress);
 }
 
 
-const char* optstring_Uncompress=":o:hk:v:";
+const char* optstring_Uncompress=":o:hk:q:";
 const struct option_TS lopts_Uncompress[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"input_encoding",required_argument_TS,NULL,'k'},

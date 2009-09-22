@@ -90,7 +90,7 @@ void reverse_initial_vowels_thai(unichar*);
  * This segment
  * 2.5  9
  */
-void create_concordance(Encoding encoding_output,int bom_output,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
+void create_concordance(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt* option) {
 U_FILE* out;
 U_FILE* f;
@@ -158,7 +158,9 @@ if(option->result_mode==XALIGN_) return;
 
 /* If necessary, we sort it by invoking the main function of the SortTxt program */
 if (option->sort_mode!=TEXT_ORDER) {
-   pseudo_main_SortTxt(0,0,option->sort_alphabet,NULL,option->thai_mode,temp_file_name);
+   // we dont use pseudo_main_SortTxt(encoding_output,bom_output,mask_encoding_compatibility_input,0,0,option->sort_alphabet,NULL,option->thai_mode,temp_file_name);
+   // because we work only on temp_file_name which is only internal temp file, so UTF16_LE
+   pseudo_main_SortTxt(UTF16_LE,1,ALL_ENCODING_BOM_POSSIBLE,0,0,option->sort_alphabet,NULL,option->thai_mode,temp_file_name);
 }
 /* Now, we will take the sorted raw text concordance and we will:
  * 1) reorder the columns

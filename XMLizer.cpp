@@ -38,7 +38,7 @@
 #define XML 0
 #define TEI 1
 
-void xmlize(char*,char*,int);
+void xmlize(int,char*,char*,int);
 
 
 /* Headers (XML & TEI) Variables
@@ -193,7 +193,7 @@ if (output[0]=='\0') {
    remove_extension(input,output);
 	strcat(output,".xml");
 }
-xmlize(snt,output,output_style);
+xmlize(mask_encoding_compatibility_input,snt,output,output_style);
 af_remove(snt);
 af_remove(tmp);
 free_OptVars(vars);
@@ -202,8 +202,8 @@ return 0;
 
 
 
-void xmlize(char* fin,char* fout,int ouput_style) {
-	U_FILE* input = u_fopen(UTF16_LE, fin, U_READ);
+void xmlize(int mask_encoding_compatibility_input,char* fin,char* fout,int ouput_style) {
+	U_FILE* input = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
 	U_FILE* output = u_fopen(UTF8, fout, U_WRITE);

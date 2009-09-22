@@ -179,6 +179,10 @@ public:
 	class arbre_string0	 baseInf;
 	class arbre_string0  sequence_info;
 
+    Encoding encoding_output ;
+    int bom_output ;
+    int mask_encoding_compatibility_input ;
+
 	arbre_string2(){
 
 		maxDepth = 0;
@@ -190,6 +194,9 @@ public:
 		transitions.setSz(
 			sizeof(struct arbre_dico_trans_with_depth)*1024
 			,sizeof(struct arbre_dico_trans_with_depth));
+        encoding_output = DEFAULT_ENCODING_OUTPUT;
+        bom_output = DEFAULT_BOM_OUTPUT;
+        mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
 	};
 	~arbre_string2(){
@@ -213,6 +220,12 @@ public:
 			}
 		}
 	};
+
+    void setEncoding(Encoding encoding_outputSet,int bom_outputSet,int mask_encoding_compatibility_inputSet){
+        encoding_output = encoding_outputSet;
+        bom_output = bom_outputSet;
+        mask_encoding_compatibility_input = mask_encoding_compatibility_inputSet;
+    }
 
 	uintptr_t getRacine(int idx){
 		if(idx < arbreCnt){
@@ -608,7 +621,7 @@ return 1;
 
 		strcpy(inf,fname);
 		strcat(inf,".aut");
-		bfile=u_fopen(UTF16_LE,inf,U_WRITE);
+		bfile=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,inf,U_WRITE);
 		if (!bfile) {
 			fatal_error("Cannot create the file %s\n",inf);
 		}
@@ -1492,6 +1505,11 @@ class union_bin_file {
 
 	unichar tmpBuff[4096];
 	unichar svBuff[4096];
+
+    Encoding encoding_output ;
+    int bom_output ;
+    int mask_encoding_compatibility_input ;
+
 public:
 	union_bin_file()
 	{
@@ -1500,6 +1518,9 @@ public:
 		AUT_tmp = 0;
 		SUF_tmp_simpleTmp = 0;
 
+        encoding_output = DEFAULT_ENCODING_OUTPUT;
+        bom_output = DEFAULT_BOM_OUTPUT;
+        mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 	};
 	~union_bin_file()
 	{
@@ -1515,6 +1536,13 @@ public:
 				if(SUF_tmp_simpleTmp[i].name) delete [] SUF_tmp_simpleTmp[i].name;
 		}
 	};
+
+    void setEncoding(Encoding encoding_outputSet,int bom_outputSet,int mask_encoding_compatibility_inputSet){
+        encoding_output = encoding_outputSet;
+        bom_output = bom_outputSet;
+        mask_encoding_compatibility_input = mask_encoding_compatibility_inputSet;
+    }
+
 	//
 	//	reconstruction of the bin file
 	//
@@ -1544,7 +1572,7 @@ public:
 
 		strcpy(openfilename,sansExtension);
 		strcat(openfilename,".aut");
-		if(!(lf = u_fopen(UTF16_LE,openfilename,U_READ)))
+		if(!(lf = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,openfilename,U_READ)))
 			fopenErrMessage(openfilename);
 		u_fgets(UtempBuff,lf);
 		imageHead.cnt_auto = utoi(UtempBuff);
@@ -1581,7 +1609,7 @@ public:
 		u_fclose(lf);
 		strcpy(openfilename,sansExtension);
 		strcat(openfilename,".suf");
-		if(!(lf = u_fopen(UTF16_LE,openfilename,U_READ)))
+		if(!(lf = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,openfilename,U_READ)))
 			fopenErrMessage(openfilename);
 		u_fgets(UtempBuff,lf);
 		imageHead.cnt_suf = utoi(UtempBuff);
@@ -1649,7 +1677,7 @@ public:
 
 		strcpy(fname_sans_extension,sansExtension);
 		strcat(fname_sans_extension,".inf");
-		if(!(lf = u_fopen(UTF16_LE,fname_sans_extension,U_READ)))
+		if(!(lf = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,fname_sans_extension,U_READ)))
 			fopenErrMessage(fname_sans_extension);
 		int rdInfCnt;// =u_read_int(lf);
       u_fscanf(lf,"%d\n",&rdInfCnt);

@@ -318,7 +318,8 @@ strcat(phrase_cod ,"phrase.cod");
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
    if (KOREAN) {
-      build_korean_sentence_automaton(mask_encoding_compatibility_input,exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
+      build_korean_sentence_automaton(encoding_output,bom_output,mask_encoding_compatibility_input,
+                  exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
                   current_global_position_in_tokens,
                   current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
                   phrase_cod,jamoTable,jamoFst2);

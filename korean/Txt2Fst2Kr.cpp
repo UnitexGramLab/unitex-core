@@ -70,6 +70,10 @@ int main_Txt2Fst2Kr(int argc,char *argv[]) {
 	int action = 0;	// code file
 	char *fstname = 0;
 
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 //		printf("%s\n",setlocale(LC_ALL,"Korean_korea.949"));
     if(argc == 1) {
        usage();
@@ -111,6 +115,18 @@ int main_Txt2Fst2Kr(int argc,char *argv[]) {
 			argIdx++;
 			fstname = argv[argIdx];
 			break;
+        case 'k': argIdx++;
+                 if (argv[argIdx][0]=='\0') {
+                    fatal_error("Empty input_encoding argument\n");
+                 }
+                 decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[argIdx]);
+                 break;
+        case 'q': argIdx++;
+                 if (argv[argIdx][0]=='\0') {
+                    fatal_error("Empty output_encoding argument\n");
+                 }
+                 decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[argIdx]);
+                 break;
 		default:
 			usage();
 			return 1;
@@ -128,7 +144,7 @@ int main_Txt2Fst2Kr(int argc,char *argv[]) {
 	txt.pathNameSet(argv[argIdx]);
 	switch(action){
 	case 1:
-		txt.convertIdxFileToFst2(argv[argIdx],defaultSeparateurs);
+		txt.convertIdxFileToFst2(mask_encoding_compatibility_input,argv[argIdx],defaultSeparateurs);
 		break;
 	case 2:
 		txt.getUnePhraseFst3(argv[argIdx],lineNumber);

@@ -858,13 +858,13 @@ public:
 		fclose(fptr);
 	}
 #endif //FFFFFFFFF
-	void loadSousTokensMap(char *f)
+	void loadSousTokensMap(int mask_encoding_compatibility_input,char *f)
 	{
 		U_FILE *fptr;
 
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"seqMorphs.txt");
-		if((fptr = u_fopen(UTF16_LE,ftemp,U_READ)) ==0 )	fopenErrMessage(ftemp);
+		if((fptr = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ftemp,U_READ)) ==0 )	fopenErrMessage(ftemp);
 		fseek(fptr,0,SEEK_END);
 		int sizeFile =ftell(fptr)/2;
 		mophMap = new unsigned short[sizeFile];
@@ -1781,7 +1781,7 @@ public:
 //	the idx file presente text file to index of tokens
 //  sous tokens file presente a tokens to automata of morphems
 //
-	void convertIdxFileToFst2(char *f,unsigned short *ctrString)
+	void convertIdxFileToFst2(int mask_encoding_compatibility_input,char *f,unsigned short *ctrString)
 	{
 		int idx;
 		char *ft= unePhraseAuto.ftemp;
@@ -1793,7 +1793,7 @@ public:
 		unePhraseAuto.loadTokensMap(f);
 		if(unePhraseAuto.phraseMark < 0)
 		fatal_error(" Sentence mark not exist!\n");
-		unePhraseAuto.loadSousTokensMap(f);
+		unePhraseAuto.loadSousTokensMap(mask_encoding_compatibility_input,f);
 		fout = unePhraseAuto.openForWrite(f);
 
 	// space for total count

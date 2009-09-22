@@ -1100,7 +1100,7 @@ unichar syllab_tag[256];
  * This function builds the sentence automaton that correspond to the
  * given Korean token buffer. It saves it into the given file.
  */
-void build_korean_sentence_automaton(int mask_encoding_compatibility_input,
+void build_korean_sentence_automaton(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                                char* exe_path,int* buffer,int length,struct text_tokens* tokens,
                                Alphabet* alph,U_FILE* out_tfst,U_FILE* out_tind,
                                int sentence_number,

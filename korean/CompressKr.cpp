@@ -107,7 +107,9 @@ static void lineErrMess(int lineCnt,const char *msg)
 	fatal_error("%s\n",msg);
 }
 
-static void make_compress_files(char *listFilename,int flag);
+static void make_compress_files(Encoding encoding_output,int bom_output,
+                                int mask_encoding_compatibility_input,
+                                char *listFilename,int flag);
 static int tokenize_entrees_Kr(int lcnt,unsigned short *line,class dicLines *& head);
 static int suffixeMode;	// racine or suffixe
 static int grapheMode;
@@ -115,6 +117,10 @@ static char *ofilename;
 
 
 int main_CompressKr(int argc, char *argv[]) {
+
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
 int argIdx = 1;
 int listFormFlag = 0;	// filename is dictionnary
@@ -141,6 +147,18 @@ suffixeMode = 0;
 			case 's':suffixeMode++; break;
 			case 'g':grapheMode++; break;
 			case 'o':argIdx++;ofilename = argv[argIdx];break;
+            case 'k': argIdx++;
+                     if (argv[argIdx][0]=='\0') {
+                        fatal_error("Empty input_encoding argument\n");
+                     }
+                     decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[argIdx]);
+                     break;
+            case 'q': argIdx++;
+                     if (argv[argIdx][0]=='\0') {
+                        fatal_error("Empty output_encoding argument\n");
+                     }
+                     decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[argIdx]);
+                     break;
 			default:
 				usage();
 				return 1;
@@ -153,7 +171,7 @@ suffixeMode = 0;
 	   usage();
 	   return 1;
 	}
-	make_compress_files(argv[argIdx],listFormFlag);
+	make_compress_files(encoding_output,bom_output,mask_encoding_compatibility_input,argv[argIdx],listFormFlag);
 	if(debugfile) u_fclose(debugfile);
 	return(0);
 }
@@ -200,7 +218,9 @@ static void read_list_files(simpleL<char *> &rd,char *filename)
 //
 //
 static void 
-make_compress_files(char *listFileName,int listFormFlag)
+make_compress_files(Encoding encoding_output,int bom_output,
+                    int mask_encoding_compatibility_input,
+                    char *listFileName,int listFormFlag)
 {
 	class arbre_string3 arbres;
 	simpleL<char *> readFiles;
@@ -208,6 +228,8 @@ make_compress_files(char *listFileName,int listFormFlag)
 	char extension[16];
 	unichar *tmp;
 	int autoStartIndex = 0;
+
+    arbres.setEncoding(encoding_output,bom_output,mask_encoding_compatibility_input);
 	
 	int lineCnt = 0;
 	if(listFormFlag){
@@ -444,7 +466,3 @@ u_fprintf(debugfile,"%S,\n", sPtr[i]);
 
 	return elecount;
 }
-
-
-
-

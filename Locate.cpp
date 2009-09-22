@@ -300,7 +300,8 @@ return (!OK);
  * @author Alexis Neme
  * Modified by S�bastien Paumier
  */
-int launch_locate_as_routine(char* text_snt,char* fst2,char* alphabet,
+int launch_locate_as_routine(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                             char* text_snt,char* fst2,char* alphabet,
                               OutputPolicy output_policy,char* morpho_dic,
                               int protect_dic_chars,char* jamo) {
 /* We test if we are working on Thai, on the basis of the alphabet file */
@@ -319,6 +320,21 @@ if (morpho_dic!=NULL) {
 }
 ProgramInvoker* invoker=new_ProgramInvoker(main_Locate,"main_Locate");
 char tmp[FILENAME_MAX];
+{
+    tmp[0]=0;
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-k");
+        add_argument(invoker,tmp);
+    }
+
+    tmp[0]=0;
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-q");
+        add_argument(invoker,tmp);
+    }
+}
 /* If needed: just to know that the call come from here if necessary */
 sprintf(tmp,"--text=%s",text_snt);
 add_argument(invoker,tmp);
