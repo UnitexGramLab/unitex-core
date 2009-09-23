@@ -220,7 +220,7 @@ return n;
 struct reading_encoding_item
 {
     const char* encoding_name;
-    int len;
+    size_t len;
     int encoding_flag;
 };
 
@@ -274,7 +274,7 @@ const struct reading_encoding_item reading_encoding_item_list[] =
 struct write_encoding_item
 {
     const char* encoding_name;
-    int len;
+    size_t len;
     Encoding encoding;
     int bom;
 };
@@ -316,7 +316,7 @@ const struct write_encoding_item write_encoding_item_list[] =
     { "utf16be-bom", 11, BIG_ENDIAN_UTF16, 1 },
 
     { "big-endian", 10, BIG_ENDIAN_UTF16, 2 },
-    { "big-endian-no-bom", 17, BIG_ENDIAN_UTF16, 0 },
+    { "big-endian-no-bom*", 17, BIG_ENDIAN_UTF16, 0 },
     { "big-endian-bom", 14, BIG_ENDIAN_UTF16, 1 },
 
     { NULL, 0, ASCII, 0 }
@@ -352,6 +352,7 @@ int decode_reading_encoding_parameter(int* p_mask_encoding_compatibility,const c
     char * next_encoding_text;
     int mask_encoding_compatibility = 0;
 
+
     while (cur_encoding_text != NULL)
     {
         int i;
@@ -370,14 +371,16 @@ int decode_reading_encoding_parameter(int* p_mask_encoding_compatibility,const c
             next_encoding_text = NULL;
 
         i=0;
+        size_t len_search = strlen(cur_encoding_text);
         while (reading_encoding_item_list[i].encoding_name != NULL)
         {
-            if (strcmp(cur_encoding_text,reading_encoding_item_list[i].encoding_name)==0)
-            {
-                ret = 1;
-                mask_encoding_compatibility = mask_encoding_compatibility | reading_encoding_item_list[i].encoding_flag;
-                break;
-            }           
+            if (len_search == reading_encoding_item_list[i].len)
+                if (strcmp(cur_encoding_text,reading_encoding_item_list[i].encoding_name)==0)
+                {
+                    ret = 1;
+                    mask_encoding_compatibility = mask_encoding_compatibility | reading_encoding_item_list[i].encoding_flag;
+                    break;
+                }           
 
             i++;
         }
@@ -426,15 +429,17 @@ int decode_writing_encoding_parameter(Encoding* p_encoding,int* p_bom,const char
 {
     char* lower_encoding_text=strdup_lower_case(encoding_text);
     int i=0;
+    size_t len_search=strlen(lower_encoding_text);
     while (write_encoding_item_list[i].encoding_name != NULL)
     {
-        if (strcmp(write_encoding_item_list[i].encoding_name,lower_encoding_text)==0)
-        {
-            *p_bom = write_encoding_item_list[i].bom;
-            *p_encoding = write_encoding_item_list[i].encoding;
-            free(lower_encoding_text);
-            return 1;
-        }
+        if (len_search == write_encoding_item_list[i].len)
+            if (strcmp(write_encoding_item_list[i].encoding_name,lower_encoding_text)==0)
+            {
+                *p_bom = write_encoding_item_list[i].bom;
+                *p_encoding = write_encoding_item_list[i].encoding;
+                free(lower_encoding_text);
+                return 1;
+            }
         i++;
     }
 
@@ -663,6 +668,7 @@ return new_U_FILE(f,encoding);
 
 /*
  * Create OR Open existing file with specific encoding
+ * 2 as BOM mean : BOM only for UTF16LE and UTF16BE (like previuous Unitex 2.1 revision 1045)
  */
 U_FILE* u_fopen(Encoding encoding,const char* name,OpenMode MODE) {
     return u_fopen_internal(encoding,2,name,MODE,USE_ENCODING_VALUE);
@@ -681,6 +687,14 @@ U_FILE* u_fopen_versatile_encoding(Encoding encoding,int write_bom,int MASK_ENCO
  */
 U_FILE* u_fopen_existing_versatile_encoding(int MASK_ENCODING_COMPATIBILITY,const char* name,OpenMode MODE) {
     return u_fopen_internal(UTF16_LE,1,name,MODE,MASK_ENCODING_COMPATIBILITY);
+}
+
+/*
+ * Same function, dedicated for file that NOT already exist, without parameter used only for file creation
+ * MODE must be U_WRITE
+ */
+U_FILE* u_fopen_creating_versatile_encoding(Encoding encoding,int write_bom,const char* name,OpenMode MODE) {
+    return u_fopen_internal(encoding,write_bom,name,MODE,USE_ENCODING_VALUE);
 }
 
 /*

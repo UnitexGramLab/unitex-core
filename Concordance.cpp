@@ -176,7 +176,7 @@ if (option->result_mode==TEXT_ || option->result_mode==INDEX_
       || option->result_mode==UIMA_ || option->result_mode==AXIS_) {
    /* If we have to produce a unicode text file, we open it
     * as a UTF16LE one */
-   out=u_fopen_versatile_encoding(encoding_output,bom_output,USE_ENCODING_VALUE,option->output,U_WRITE);
+   out=u_fopen_creating_versatile_encoding(encoding_output,bom_output,option->output,U_WRITE);
 }
 else {
    /* Otherwise, we open it as a UTF8 HTML file */
@@ -1109,7 +1109,7 @@ return pos_in_enter_pos;
 void create_modified_text_file(Encoding encoding_output,int bom_output,U_FILE* concordance,U_FILE* text,
                                struct text_tokens* tokens,char* output_name,
                                int n_enter_char,int* enter_pos) {
-U_FILE* output=u_fopen_versatile_encoding(encoding_output,bom_output,USE_ENCODING_VALUE,output_name,U_WRITE);
+U_FILE* output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);
 	u_fclose(text);

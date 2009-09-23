@@ -110,7 +110,7 @@ if (output[0]=='\0') {
    remove_extension(argv[vars->optind],output);
    strcat(output,".dic");
 }
-U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
+U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
 if (f==NULL) {
    fatal_error("Cannot open file %s\n",output);
 }

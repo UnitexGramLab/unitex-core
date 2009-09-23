@@ -40,7 +40,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
     p->text_buffer=new_buffer_for_file(UNICHAR_BUFFER,p->f_input);
     p->buffer=p->text_buffer->unichar_buffer;
 
-    p->f_output=u_fopen_versatile_encoding(p->encoding_output,p->bom_output,p->mask_encoding_compatibility_input,p->temp_file,U_WRITE);
+    p->f_output=u_fopen_creating_versatile_encoding(p->encoding_output,p->bom_output,p->temp_file,U_WRITE);
     if (p->f_output==NULL) {
         error("Cannot open temporary file %s\n",p->temp_file);
         u_fclose(p->f_input);

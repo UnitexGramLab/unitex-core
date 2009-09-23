@@ -57,6 +57,11 @@ int main_ExtractChar(int argc, char *argv[]) {
 	U_FILE *ofile = 0;
 	class state_machine extracter;
 	class jamoCodage encode;
+
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 	unichar tempBuff[1024];
 	if(argc == 1) {
 	   usage();
@@ -75,6 +80,18 @@ int main_ExtractChar(int argc, char *argv[]) {
 		case 'c':iargIndex++;
 		    u_strcpy(tempBuff,argv[iargIndex]);
 			if(!changeStrToVal(extracter.GetChangeStrContext(),(unsigned short*)tempBuff)) break;
+        case 'k': iargIndex++;
+                 if (argv[iargIndex][0]=='\0') {
+                    fatal_error("Empty input_encoding argument\n");
+                 }
+                 decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[iargIndex]);
+                 break;
+        case 'q': iargIndex++;
+                 if (argv[iargIndex][0]=='\0') {
+                    fatal_error("Empty output_encoding argument\n");
+                 }
+                 decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[iargIndex]);
+                 break;
 		default:
 			usage();
 			return 1;
@@ -97,8 +114,8 @@ int main_ExtractChar(int argc, char *argv[]) {
 	   strcat(ofilename,extTmp);
 	   
 	}
-	if(!(ofile = u_fopen(UTF16_LE,ofilename,U_WRITE)))fopenErrMessage(ofilename);
-	if(!(ifile = u_fopen(UTF16_LE,ifilename,U_READ))) fopenErrMessage(ifilename);
+	if(!(ofile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofilename,U_WRITE)))fopenErrMessage(ofilename);
+	if(!(ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifilename,U_READ))) fopenErrMessage(ifilename);
 
 	unsigned short exWord[1024];
 	unsigned short testWord[1024];

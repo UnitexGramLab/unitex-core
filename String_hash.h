@@ -106,7 +106,7 @@ int get_value_index(const unichar*,struct string_hash*,int,unichar*);
 int get_value_index(const unichar*,struct string_hash*,int);
 int get_value_index(const unichar*,struct string_hash*);
 struct string_hash* load_key_list(char*,int);
-struct string_hash* load_key_value_list(char*,unichar);
+struct string_hash* load_key_value_list(char*,int,unichar);
 void dump_values(U_FILE*,struct string_hash*);
 int get_longest_key_index(const unichar*,int*,struct string_hash*);
 

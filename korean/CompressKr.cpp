@@ -75,7 +75,7 @@ getFileName(unichar *des,unichar *src)
 //
 //
 
-static int read_DELA_to_DICO(class arbre_string3 &arbre,int a,char *fname);
+static int read_DELA_to_DICO(class arbre_string3 &arbre,int a,char *fname,int);
 //static void read_FST_to_DICO(class arbre_string3 &arbre,int a,char *fname); 
 U_FILE *debugfile;
 static 	unichar UtempBuff[512];
@@ -138,7 +138,7 @@ suffixeMode = 0;
 		if(argv[argIdx][0] == '-'){
 			switch(argv[argIdx][1]){
 			case 'D': 
-				debugfile = u_fopen(UTF16_LE,"dd.txt",U_WRITE);
+				debugfile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,"dd.txt",U_WRITE);
 				break;
 			case 'd': 
 				debugfile = U_STDOUT;
@@ -257,7 +257,7 @@ make_compress_files(Encoding encoding_output,int bom_output,
 		}
 		get_extension(fnamePtr,extension);
       u_printf("\n%s load\n",fnamePtr);
-        lineCnt += read_DELA_to_DICO(arbres,autoStartIndex,fnamePtr);
+        lineCnt += read_DELA_to_DICO(arbres,autoStartIndex,fnamePtr,mask_encoding_compatibility_input);
 		readFileCnt++;
 	}
 	if(readFileCnt > 1)
@@ -291,14 +291,14 @@ make_compress_files(Encoding encoding_output,int bom_output,
 //
 //
 static int
-read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname)
+read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname,int mask_encoding_compatibility_input)
 {
 	U_FILE *f;
 	int tokenCnt;
 	int flineCnt = 0;
 	class dicLines *heads,*wp;
 	unichar RLine[2048];
-	if(!(f=u_fopen(UTF16_LE,fname,U_READ)))	fopenErrMessage(fname);
+	if(!(f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,fname,U_READ)))	fopenErrMessage(fname);
 	cfilename = fname;
 	u_printf("Read File %s\n",fname);
 	while(EOF!=u_fgets(UtempBuff,f)){

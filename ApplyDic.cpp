@@ -814,7 +814,7 @@ return 0; /* Just to avoid a warning */
  */
 void save_and_sort_tag_sequences(struct dico_application_info* info) {
 qsort(info->tag_sequences,info->n_tag_sequences,sizeof(struct match_list*),compare_matches);
-U_FILE* f=u_fopen_versatile_encoding(info->encoding_output,info->bom_output,info->mask_encoding_compatibility_input,info->tags_ind,U_WRITE);
+U_FILE* f=u_fopen_creating_versatile_encoding(info->encoding_output,info->bom_output,info->tags_ind,U_WRITE);
 if (f==NULL) {return;}
 /* We use the header T, just to say something different from I, M and R */
 u_fprintf(f,"#T\n");

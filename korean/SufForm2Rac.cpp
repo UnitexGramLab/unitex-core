@@ -139,7 +139,7 @@ public:
 
 };
 
-static    void changeFile(char *,char *);
+static    void changeFile(Encoding encoding,int write_bom,int MASK_ENCODING_COMPATIBILITY,char *,char *);
 static char desFileName[2048];
 static char tfn[2048];
 static char ttfn[2048];
@@ -154,6 +154,11 @@ int main_SufForm2Rac(int argc, char *argv[]) {
     int listFileFlag = 0;
     char *ofilename =0;
     class fileLinkListe fileStock;
+
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
     int remFlag = 0;
     converMapExistFlag = 0;
     if(argc == 1) {
@@ -166,7 +171,7 @@ int main_SufForm2Rac(int argc, char *argv[]) {
     	if(*argv[iargIndex] != '-') break;
     	switch(argv[iargIndex][1]){
     	case 'm': iargIndex++;
-    	    loadChangeFileToTable(argv[iargIndex]);
+    	    loadChangeFileToTable(argv[iargIndex],mask_encoding_compatibility_input);
     	    converMapExistFlag = 1;
     		break;
     	case 'l':listFileFlag = 1; break;
@@ -178,6 +183,18 @@ int main_SufForm2Rac(int argc, char *argv[]) {
         case 'r': // replace
                 if(!ofilename) remFlag = 1;
                 break;
+        case 'k': iargIndex++;
+                 if (argv[iargIndex][0]=='\0') {
+                    fatal_error("Empty input_encoding argument\n");
+                 }
+                 decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[iargIndex]);
+                 break;
+        case 'q': iargIndex++;
+                 if (argv[iargIndex][0]=='\0') {
+                    fatal_error("Empty output_encoding argument\n");
+                 }
+                 decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[iargIndex]);
+                 break;
     	default:
     	   usage();
     	   return 1;
@@ -205,7 +222,7 @@ int main_SufForm2Rac(int argc, char *argv[]) {
         u_printf("[%s][%s]\n",tfn,desFileName);
         strcat(tfn,wpointer->filename);
         u_printf("[%s][%s]\n",tfn,desFileName);
-        changeFile(tfn,desFileName);
+        changeFile(encoding_output,bom_output,mask_encoding_compatibility_input,tfn,desFileName);
         wpointer = wpointer->next;
     }
   u_printf("Done\n");
@@ -213,7 +230,7 @@ int main_SufForm2Rac(int argc, char *argv[]) {
      
 }
 //static  char ofileNameBuff[1024];
-static void changeFile(char  *ifname,char *ofname)
+static void changeFile(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,char  *ifname,char *ofname)
 {
 U_FILE *ifile,*ofile;
   int c;
@@ -230,9 +247,9 @@ U_FILE *ifile,*ofile;
   countComma = 0;
   offset = 0;
   opened = 0;
-  if(!(ifile = u_fopen(UTF16_LE,ifname,U_READ)))
+  if(!(ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifname,U_READ)))
     fopenErrMessage(ifname);
-  if(!(ofile = u_fopen(UTF16_LE,ofname,U_WRITE)))
+  if(!(ofile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofname,U_WRITE)))
     fatal_error("Cannot open %s\n",ofname);
 //printf("%s %s\n",ifname,ofname);
   while((c = u_fgetc(ifile)) != EOF){

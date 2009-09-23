@@ -70,7 +70,7 @@ int inflect(char* DLC, char* DLCF,
 		return 1;
 	}
 	//Open DELAF/DELACF
-	dlcf = u_fopen_versatile_encoding(encoding_output, bom_output, mask_encoding_compatibility_input, DLCF, U_WRITE);
+	dlcf = u_fopen_creating_versatile_encoding(encoding_output, bom_output, DLCF, U_WRITE);
 	if (!dlcf) {
 		error("Unable to open file: '%s' !\n", DLCF);
 		return 1;

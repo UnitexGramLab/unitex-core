@@ -141,6 +141,7 @@ int main_Txt2Fst2Kr(int argc,char *argv[]) {
 	// from token file
 	unichar defaultSeparateurs[]={(unichar)' ',(unichar)'+',(unichar)'(',
                      (unichar)')',(unichar)'{',(unichar)'}',(unichar)'\0'};
+    txt.setEncoding(encoding_output,bom_output,mask_encoding_compatibility_input);
 	txt.pathNameSet(argv[argIdx]);
 	switch(action){
 	case 1:

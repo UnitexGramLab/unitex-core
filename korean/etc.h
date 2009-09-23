@@ -56,7 +56,7 @@ extern unichar u_null_string[];
 extern unichar u_epsilon_string[];
 extern unichar u_phraseMark_string[];
 extern unichar defaultSpaceStr[];
-extern int loadChangeFileToTable(char *f);
+extern int loadChangeFileToTable(char *f,int);
 extern unichar *getConvTable(unichar v);
 extern void converTableInit();
 extern char *getUtoChar(unichar *);

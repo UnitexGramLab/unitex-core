@@ -125,7 +125,7 @@ if (res!=LINEAR_AUTOMATON) {
    close_text_automaton(tfst);
    return 1;
 }
-U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
+U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
 if (f==NULL) {
    error("Cannot create %s\n",output);
    close_text_automaton(tfst);

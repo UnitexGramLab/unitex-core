@@ -114,7 +114,7 @@ static void getPrOutMorpheme(void * arg0,void *arg1,void *arg2)
 		}
 	}
 static void
-sortMorphemTable(char *f)
+sortMorphemTable(char *f,Encoding encoding_output,int bom_output)
 {
 	U_FILE *fptr;
 	int count = 0;
@@ -207,20 +207,20 @@ class arbre_string00 parFlechi, parCano;
 
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"morph_by_flei.txt");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     parFlechi.explore_tout_leaf((release_f)getPrOutMorpheme);
     u_fclose(fout);
 
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"morph_by_cano.txt");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     parCano.explore_tout_leaf((release_f)getPrOutMorpheme);
     u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"morph_by_freq.txt");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
 
     quicksort_by_frequence(0,index-1);
@@ -240,10 +240,43 @@ class arbre_string00 parFlechi, parCano;
 
 int main_SortMorph(int argc, char *argv[]) {
 
-    if(argc != 4) {
+
+    int nb_skip_arg=0;
+
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
+    while ((argc-nb_skip_arg)>4)
+    {
+        if(*argv[1+nb_skip_arg] != '-') break;
+        switch(argv[1+nb_skip_arg][1]){
+            case 'k': 
+                     if (argv[1+1+nb_skip_arg][0]=='\0') {
+                        fatal_error("Empty input_encoding argument\n");
+                     }
+                     decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[1+1+nb_skip_arg]);
+                     nb_skip_arg+=2;
+                     break;
+            case 'q':
+                     if (argv[1+1+nb_skip_arg][0]=='\0') {
+                        fatal_error("Empty output_encoding argument\n");
+                     }
+                     decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[1+1+nb_skip_arg]);
+                     nb_skip_arg+=2;
+                     break;
+            default:
+                     usage();
+                     return 1;
+        }
+    }
+
+    if(argc-nb_skip_arg != 4) {
        usage();
        return 0;
     }
+
+    
     arbre_string00 tString,mString,sString,eString;
 
     unichar *tMem = 0;
@@ -256,9 +289,9 @@ int main_SortMorph(int argc, char *argv[]) {
     unichar **sTable = 0;
 
 
-    get_path(argv[1],pathNameSave);
-    tcount = getStringTableFile(argv[1],tMem,tTable);
-    mcount = getStringTableFileAvecNull(argv[2],mMem,mTable);
+    get_path(argv[1+nb_skip_arg],pathNameSave);
+    tcount = getStringTableFile(argv[1+nb_skip_arg],tMem,tTable);
+    mcount = getStringTableFileAvecNull(argv[2+nb_skip_arg],mMem,mTable);
 
     int i;
     for	(i = 0; i < tcount; i++){
@@ -275,13 +308,13 @@ int main_SortMorph(int argc, char *argv[]) {
     outSize = tString.size();
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"mdlf.n");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     strFileHeadLine(fout,outSize);
     u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"mdlf");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     tString.explore_tout_leaf((release_f)getPrOutWithValue);
 
@@ -290,14 +323,14 @@ int main_SortMorph(int argc, char *argv[]) {
     outSize = 0;
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlf.n");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
 
     strFileHeadLine(fout,outSize);
     u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlf");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
 
     u_fclose(fout);
@@ -305,13 +338,13 @@ int main_SortMorph(int argc, char *argv[]) {
     outSize = eString.size();
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"err.n");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     strFileHeadLine(fout,outSize);
     u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"err");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     eString.explore_tout_leaf((release_f)getPrOut);
 
@@ -323,13 +356,13 @@ int main_SortMorph(int argc, char *argv[]) {
     outSize = sString.size();
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"mdlc.n");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     strFileHeadLine(fout,outSize);
     u_fclose(fout);
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"mdlc");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     sString.explore_tout_leaf((release_f)getPrOut);
     u_fclose(fout);
@@ -337,14 +370,14 @@ int main_SortMorph(int argc, char *argv[]) {
     outSize = 0;
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlc.n");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
     strFileHeadLine(fout,outSize);
     u_fclose(fout);
 
     strcpy(ftemp,pathNameSave);
     strcat(ftemp,"dlc");
-    fout = u_fopen(UTF16_LE,ftemp,U_WRITE);
+    fout = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ftemp,U_WRITE);
     if(!fout) fopenErrMessage(ftemp);
 
     u_fclose(fout);
@@ -360,7 +393,7 @@ int main_SortMorph(int argc, char *argv[]) {
 	// frequence of occurence
 	//
 
-	sortMorphemTable(argv[3]);
+	sortMorphemTable(argv[3+nb_skip_arg],encoding_output,bom_output);
 
     return(0);
 }

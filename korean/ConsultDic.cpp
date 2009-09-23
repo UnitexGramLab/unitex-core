@@ -352,7 +352,8 @@ static void getListFile(char *filename)
 }
 
 
-void consultationLesTokens(char *textfile,Alphabet *PtrAlphabet)
+void consultationLesTokens(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                           char *textfile,Alphabet *PtrAlphabet)
 {
 	
 
@@ -375,7 +376,7 @@ void consultationLesTokens(char *textfile,Alphabet *PtrAlphabet)
 
 	get_path(textfile,tmpBuff0);
 	strcat(tmpBuff0,"seqMorphs.txt");
-	findFile = u_fopen(UTF16_LE,tmpBuff0,U_WRITE);
+	findFile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,tmpBuff0,U_WRITE);
 	if(!findFile) fatal_error("Save file \"seqMorphs.txt\" open fail\n");
 
 	int wordCnt = 0;
@@ -417,6 +418,11 @@ int main_ConsultDic(int argc,char *argv[]) {
  	int debugFlag =0;
  	fileListCounter = 0;
  	Alphabet *saveAlphabet =0;
+
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 	if(argc == 1) {
 	   usage();
 	   return 9;
@@ -446,6 +452,18 @@ int main_ConsultDic(int argc,char *argv[]) {
 			++argIdx;
             getListFile(argv[argIdx]);
 			break;
+        case 'k': argIdx++;
+                 if (argv[argIdx][0]=='\0') {
+                    fatal_error("Empty input_encoding argument\n");
+                 }
+                 decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[argIdx]);
+                 break;
+        case 'q': argIdx++;
+                 if (argv[argIdx][0]=='\0') {
+                    fatal_error("Empty output_encoding argument\n");
+                 }
+                 decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[argIdx]);
+                 break;
 		case 'd':
 			debugFlag = 1; break;
 		default:
@@ -462,7 +480,7 @@ int main_ConsultDic(int argc,char *argv[]) {
 	   usage();
 	   return 1;
 	}
-	consultationLesTokens(argv[argIdx],saveAlphabet);
+	consultationLesTokens(encoding_output,bom_output,mask_encoding_compatibility_input,argv[argIdx],saveAlphabet);
 	if(saveAlphabet) free_alphabet(saveAlphabet);
 	return 0;
 }

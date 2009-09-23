@@ -1106,7 +1106,7 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 		strcat(tmpchar,"autolst");
 		makeOfileName(ofNameTmp,tmpchar,".txt");
 
-		foutput = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofNameTmp,U_WRITE);
+		foutput = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofNameTmp,U_WRITE);
 		if(!foutput) {
          fatal_error("Cannot open file %s\n",ofNameTmp);
       }
@@ -1139,7 +1139,7 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 				exploirerSubAuto(1);	// mark loop path start nodes
 				prSubGrapheCycle();
 				makeOfileName(ofNameTmp,0,0);
-				foutput = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofNameTmp,U_WRITE);
+				foutput = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofNameTmp,U_WRITE);
 				if(!foutput) {
 				    fatal_error("Cannot open file %s\n",ofNameTmp);
             }
@@ -1199,7 +1199,7 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 				u_fprintf(listFile,"%s\r\n",ttpchar);
 
 
-				if (!(foutput = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofNameTmp,U_WRITE))){
+				if (!(foutput = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofNameTmp,U_WRITE))){
                fatal_error("Cannot open file %s\n",ofNameTmp);
 				}
 				listOut = 0;     // output disable

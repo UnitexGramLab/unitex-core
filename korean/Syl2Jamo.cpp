@@ -135,7 +135,7 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 			case 'm':
 			{
 //               setLocalKorean();
-                ofile = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,"jamoTable.txt",U_WRITE);
+                ofile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,"jamoTable.txt",U_WRITE);
                 if(!ofile) fopenErrMessage("jamoTable.txt");
                 int length = hangul.mbcs949clen((unsigned char *)defaultSylToJamoMap);
                 unichar *outbuf = new unichar[length+1];
@@ -188,7 +188,7 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 		strcat(ofilename,extension);
 	}
 	 
-	if(!(ofile = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofilename,U_WRITE))) { 
+	if(!(ofile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofilename,U_WRITE))) { 
 		fatal_error("Can't open %s file for output\n",ofilename);
 	}
 

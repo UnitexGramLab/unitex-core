@@ -169,18 +169,18 @@ if (fontname==NULL) {
       fatal_alloc_error("main_Tfst2Grf");
    }
 }
-U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,grf_name,U_WRITE);
+U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,grf_name,U_WRITE);
 if (f==NULL) {
    error("Cannot file %s\n",grf_name);
    return 1;
 }
-U_FILE* txt=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,txt_name,U_WRITE);
+U_FILE* txt=u_fopen_creating_versatile_encoding(encoding_output,bom_output,txt_name,U_WRITE);
 if (txt==NULL) {
    error("Cannot file %s\n",txt_name);
    u_fclose(f);
    return 1;
 }
-U_FILE* tok=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,tok_name,U_WRITE);
+U_FILE* tok=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tok_name,U_WRITE);
 if (tok==NULL) {
    error("Cannot file %s\n",tok_name);
    u_fclose(f);

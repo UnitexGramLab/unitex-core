@@ -204,6 +204,7 @@ U_FILE* u_fopen_versatile_encoding(Encoding,int,int,const char*,OpenMode);
 U_FILE* u_fopen_existing_versatile_encoding(int,const char*,OpenMode);
 
 U_FILE* u_fopen_existing_unitex_text_format(const char*,OpenMode);
+U_FILE* u_fopen_creating_versatile_encoding(Encoding,int,const char* name,OpenMode MODE);
 U_FILE* u_fopen_creating_unitex_text_format(Encoding,int,const char*,OpenMode);
 
 int u_fclose(U_FILE*);

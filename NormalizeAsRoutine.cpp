@@ -53,7 +53,7 @@ int normalize(char *fin, char *fout,
 	}
 
 	U_FILE* output;
-	output = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,fout,U_WRITE);
+	output = u_fopen_creating_versatile_encoding(encoding_output,bom_output,fout,U_WRITE);
 	if (output == NULL) {
 		error("Cannot create file %s\n", fout);
 		u_fclose(input);
@@ -62,7 +62,7 @@ int normalize(char *fin, char *fout,
 
 	struct string_hash* replacements=NULL;
 	if(rules != NULL && rules[0]!='\0') {
-		replacements=load_key_value_list(rules,'\t');
+		replacements=load_key_value_list(rules,mask_encoding_compatibility_input,'\t');
 		if (replacements==NULL) {
 		   error("Cannot load replacement rules file %s\n", rules);
 		   replacements=new_string_hash();

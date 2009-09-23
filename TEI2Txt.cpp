@@ -103,7 +103,7 @@ void tei2txt(char *fin, char *fout,Encoding encoding_output,int bom_output,int m
 	U_FILE* input = u_fopen(UTF8, fin, U_READ);
 	if (input == NULL) fatal_error("Input file '%s' not found!\n", fin);
 
-	U_FILE* output = u_fopen_versatile_encoding(encoding_output, bom_output, mask_encoding_compatibility_input, fout, U_WRITE);
+	U_FILE* output = u_fopen_creating_versatile_encoding(encoding_output, bom_output, fout, U_WRITE);
 	if (output == NULL) {
 		u_fclose(input);
 		fatal_error("Cannot open output file '%s'!\n", fout);

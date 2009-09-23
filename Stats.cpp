@@ -259,7 +259,7 @@ void concord_stats(const char* outfilename,int mode, const char *concordfname, c
                    int leftContext, int rightContext, int caseSensitive)
 {
 	U_FILE* concord = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input, concordfname, U_READ);
-	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input, outfilename, U_WRITE);
+	U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen_creating_versatile_encoding(encoding_output,bom_output, outfilename, U_WRITE);
 	U_FILE* cod = u_fopen(BINARY, codname, U_READ);
 	match_list* matches = load_match_list(concord, NULL);
 	u_fclose(concord);

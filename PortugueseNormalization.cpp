@@ -446,7 +446,7 @@ return -1;
 void save_portuguese_normalization_grammar(int N,struct match_list* list,char* res_grf_name,
                                            Encoding encoding_output, int bom_output,
                                            int mask_encoding_compatibility_input) {
-U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,res_grf_name,U_WRITE);
+U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,res_grf_name,U_WRITE);
 if (f==NULL) {
    error("Cannot create file %s\n",res_grf_name);
    return;

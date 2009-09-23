@@ -118,7 +118,7 @@ struct fst2 * fst_array::loadfst2name(struct InflectKR_context *ictx,char *rep,u
 static Fst2* load_fst22(char* file,int noms) {
 if (is_abstract_fst2_filename(file) == 0) {
   U_FILE *f;
-  f=u_fopen(UTF16_LE,file,U_READ);
+  f=u_fopen(BINARY,file,U_READ);
   if (f==NULL) {
     return NULL;
   }
@@ -222,7 +222,7 @@ void prSuffixeString0(struct InflectKR_context *ictx,void *a,void *,void *)
 static void get_flexion_form(struct InflectKR_context *ictx,changeStrContext* ctx,U_FILE *ifile,U_FILE *ofile);
 static void trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FILE *ofile,unichar *readLine);
 static int get_forms_variant(struct InflectKR_context *ictx,changeStrContext* ctx,unichar *l,int *s,class dicElements *e);
-static void outFileRac(char *ofileName);
+static void outFileRac(Encoding,int,int,char *ofileName);
 
 
 
@@ -240,6 +240,9 @@ int main_InflectKr(int argc, char *argv[]) {
 	ictx.debugFlag = 0;
 	ictx.lineInflect = 0;
 
+    Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+    int bom_output = DEFAULT_BOM_OUTPUT;
+    int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
 	if(argc == 1) {
 	   usage();
@@ -295,7 +298,19 @@ int main_InflectKr(int argc, char *argv[]) {
                break;
 			case 'x':
 			   argIdx++;
-			   if(loadChangeFileToTable(argv[argIdx]))  break;
+			   if(loadChangeFileToTable(argv[argIdx],mask_encoding_compatibility_input))  break;
+            case 'k': argIdx++;
+                     if (argv[argIdx][0]=='\0') {
+                        fatal_error("Empty input_encoding argument\n");
+                     }
+                     decode_reading_encoding_parameter(&mask_encoding_compatibility_input,argv[argIdx]);
+                     break;
+            case 'q': argIdx++;
+                     if (argv[argIdx][0]=='\0') {
+                        fatal_error("Empty output_encoding argument\n");
+                     }
+                     decode_writing_encoding_parameter(&encoding_output,&bom_output,argv[argIdx]);
+                     break;
 
 			default:
 				usage();
@@ -337,13 +352,13 @@ int main_InflectKr(int argc, char *argv[]) {
             sprintf(ictx.ofilename1,"%s.ric",fNameSansExt);
        }
 	}
-	f=u_fopen(UTF16_LE,argv[argIdx],U_READ);
+	f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[argIdx],U_READ);
 	if (f==NULL) {
 		error("Cannot open %s\n",argv[argIdx]);
 		cleanData(&ictx);
 		return 1;
 	}
- 	ictx.f_out=u_fopen(UTF16_LE,ictx.ofilename,U_WRITE);
+ 	ictx.f_out=u_fopen_creating_versatile_encoding(encoding_output,bom_output,ictx.ofilename,U_WRITE);
 	if (ictx.f_out==NULL) {
 		error("Cannot open %s\n",ictx.ofilename);
 		cleanData(&ictx);
@@ -357,7 +372,7 @@ int main_InflectKr(int argc, char *argv[]) {
 	u_fclose(ictx.f_out);	//
 	//
 	//
-    if(ictx.ofilename1[0]) outFileRac(ictx.ofilename1);
+    if(ictx.ofilename1[0]) outFileRac(encoding_output,bom_output,mask_encoding_compatibility_input,ictx.ofilename1);
 	u_fprintf(ictx.f_out," suffixes list\n");
 	suffixeAuto.explore_tout_leaf((release_f )prSuffixeString);
 	u_fprintf(ictx.f_out," not handled suffixes list\n");
@@ -964,9 +979,9 @@ void explore_state(struct InflectKR_context *ictx,changeStrContext* ctx,int etat
    }
    return;
 }
-static void outFileRac(char *ofileName)
+static void outFileRac(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,char *ofileName)
 {
-    U_FILE *of = u_fopen(UTF16_LE,ofileName,U_WRITE);
+    U_FILE *of = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofileName,U_WRITE);
     char nameOfSuf[1024],temp[1024];
     remove_path(ofileName,temp);
     remove_extension(temp,nameOfSuf);

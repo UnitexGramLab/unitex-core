@@ -55,7 +55,7 @@ void write_number_of_tokens(const char* name,Encoding encoding_output,int bom_ou
   U_FILE* f;
   char number[11];
 
-  f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,name,U_MODIFY);
+  f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,name,U_MODIFY);
   
   number[10]=0;
   int offset=9;
@@ -214,7 +214,7 @@ if (enter==NULL) {
    }
    return 1;
 }
-output=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,tokens_txt,U_WRITE);
+output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot create file %s\n",tokens_txt);
    u_fclose(text);
@@ -258,7 +258,7 @@ write_number_of_tokens(tokens_txt,encoding_output,bom_output,mask_encoding_compa
 // we compute some statistics
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"stats.n");
-output=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,tokens_txt,U_WRITE);
+output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
@@ -269,7 +269,7 @@ else {
 // we save the tokens by frequence
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_freq.txt");
-output=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,tokens_txt,U_WRITE);
+output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }
@@ -280,7 +280,7 @@ else {
 // we save the tokens by alphabetical order
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"tok_by_alph.txt");
-output=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,tokens_txt,U_WRITE);
+output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,tokens_txt,U_WRITE);
 if (output==NULL) {
    error("Cannot write %s\n",tokens_txt);
 }

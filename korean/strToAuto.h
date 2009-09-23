@@ -726,6 +726,11 @@ public:
 
 	int info_col;
 	class link_tables<int> sentenceInit;
+
+    Encoding encoding_output;
+    int bom_output;
+    int mask_encoding_compatibility_input;
+
 	morpheme_info(){
 		phraseAutoMap=NULL;
 		head.uni_mark=0;
@@ -748,6 +753,11 @@ public:
 		tokMap = 0;
 		tokTable = 0;
 		mophMap = 0;
+
+        encoding_output = DEFAULT_ENCODING_OUTPUT;
+        bom_output = DEFAULT_BOM_OUTPUT;
+        mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
 		sentenceInit.setMaxSz(1024);
 		variation_table.setSz(sizeof(struct org_variation_table)*1024,
 			sizeof(struct org_variation_table));
@@ -766,6 +776,11 @@ public:
 		if(mophMap) delete [] mophMap;
 		if(phraseAutoMap!=NULL) u_fclose(phraseAutoMap);
 	};
+    void setEncoding(Encoding encoding_outputSet,int bom_outputSet,int mask_encoding_compatibility_inputSet){
+        encoding_output = encoding_outputSet;
+        bom_output = bom_outputSet;
+        mask_encoding_compatibility_input = mask_encoding_compatibility_inputSet;
+    }
 	void pathNameSet(char *f)
 	{
 	  get_path(f,pathNameStore);
@@ -1446,6 +1461,10 @@ class mkTxt2Fst2Kr : public wideCharTable{
 	U_FILE *fidx;	// index file
 	class morpheme_info unePhraseAuto;
 
+    Encoding encoding_output;
+    int bom_output;
+    int mask_encoding_compatibility_input;
+
 public:
 	U_FILE *fout;
 #ifdef DDEBUG
@@ -1471,6 +1490,10 @@ public:
 
     		fst2etiStr.put(u_epsilon_string);
 		loadFst2 = 0;
+
+        encoding_output = DEFAULT_ENCODING_OUTPUT;
+        bom_output = DEFAULT_BOM_OUTPUT;
+        mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 	}
 	~mkTxt2Fst2Kr()
 	{
@@ -1484,6 +1507,13 @@ public:
 		if(fidx){ u_fclose(fidx);}
 		if(loadFst2) free_abstract_Fst2(loadFst2,NULL);
 	}
+    void setEncoding(Encoding encoding_outputSet,int bom_outputSet,int mask_encoding_compatibility_inputSet){
+        encoding_output = encoding_outputSet;
+        bom_output = bom_outputSet;
+        mask_encoding_compatibility_input = mask_encoding_compatibility_inputSet;
+        unePhraseAuto.setEncoding(encoding_outputSet,bom_outputSet,mask_encoding_compatibility_inputSet);
+    }
+
 
 	void modeSet(int i)
 	{ mode = i;};

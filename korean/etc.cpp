@@ -369,9 +369,9 @@ if(debugPrFlag){
 //
 unichar *changeTableMap[0x10000];
 int
-loadChangeFileToTable(char *f)
+loadChangeFileToTable(char *f,int mask_encoding_compatibility_input)
 {
-	U_FILE *lf = u_fopen(UTF16_LE,f,U_READ);
+	U_FILE *lf = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,f,U_READ);
 	if(!lf) return(0);
 	int idx;
 	int srcIdx;

@@ -143,7 +143,7 @@ if (reference_graph==NULL) {
    u_fclose(table);
    return 1;
 }
-U_FILE* result_graph=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
+U_FILE* result_graph=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
 if (result_graph==NULL) {
    error("Cannot create result graph %s\n",output);
    u_fclose(table);
@@ -658,7 +658,7 @@ remove_extension(tmp3,tmp4);
 u_fprintf(f_coord,"%s",tmp4);
 }
 
-f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,current_graph_char,U_WRITE);
+f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,current_graph_char,U_WRITE);
 if (f==NULL) {
   error("Cannot create subgraph %s\n",current_graph_char);
   return false;

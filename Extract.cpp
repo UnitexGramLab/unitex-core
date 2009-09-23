@@ -164,7 +164,7 @@ if (concord==NULL) {
    free_text_tokens(tok);
    return 1;
 }
-U_FILE* result=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
+U_FILE* result=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
 if (result==NULL) {
    error("Cannot write output file %s\n",output);
    u_fclose(text);

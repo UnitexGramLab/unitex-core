@@ -104,7 +104,7 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
 	   return 0;
    }
 }
-infos.output=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,output,U_WRITE);
+infos.output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
 if (infos.output==NULL) {
 	close_text_automaton(tfst);
 	free_abstract_Fst2(infos.fst2,&fst2_free);
@@ -181,7 +181,7 @@ u_printf("\rDone.                                    \n");
 char concord_tfst_n[FILENAME_MAX];
 get_path(output,concord_tfst_n);
 strcat(concord_tfst_n,"concord_tfst.n");
-U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord_tfst_n,U_WRITE);
+U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,concord_tfst_n,U_WRITE);
 if (f==NULL) {
 	error("Cannot save information in %s\n",concord_tfst_n);
 } else {

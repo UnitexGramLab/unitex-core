@@ -114,7 +114,7 @@ if (regexp[0]=='\0') {
    error("You must specify a non empty regular expression\n");
    return 0;
 }
-U_FILE* out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,name_grf,U_WRITE);
+U_FILE* out=u_fopen_creating_versatile_encoding(encoding_output,bom_output,name_grf,U_WRITE);
 if (out==NULL) {
    error("Cannot open the output file for the regular expression\n");
    return 0;

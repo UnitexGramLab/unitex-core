@@ -302,8 +302,8 @@ return hash;
  * =ONE_TWO_THREE_NEW_LINE
  *
  */
-struct string_hash* load_key_value_list(char* name,unichar separator) {
-U_FILE* f=u_fopen(UTF16_LE,name,U_READ);
+struct string_hash* load_key_value_list(char* name,int mask_encoding_compatibility_input,unichar separator) {
+U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash();
 unichar temp[4096];

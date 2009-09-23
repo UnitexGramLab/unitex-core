@@ -117,7 +117,7 @@ u_printf(usage_Dico);
  * This function stores some statistics in 'stat_dic.n'.
  */
 void save_statistics(Encoding encoding_output,int bom_output,char* name,struct dico_application_info* info) {
-U_FILE* f=u_fopen_versatile_encoding(encoding_output,bom_output,USE_ENCODING_VALUE,name,U_WRITE);
+U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,name,U_WRITE);
 if (f==NULL) {
    error("Cannot write stat file %s\n",name);
    return;
@@ -278,7 +278,7 @@ for (int priority=1;priority<4;priority++) {
              */
             info->dlf=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlf,U_APPEND);
             info->dlc=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlc,U_APPEND);
-            info->err=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->err,U_WRITE);
+            info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
             /* Working... */
             if (dico_application(argv[i],info,priority) != 0)
               ret = 1;
@@ -313,7 +313,7 @@ for (int priority=1;priority<4;priority++) {
              * each dictionary application may reduce this file */
             info->dlf=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlf,U_APPEND);
             info->dlc=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlc,U_APPEND);
-            info->err=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->err,U_WRITE);
+            info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
             /* And we merge the Locate results with current dictionaries */
             merge_dic_locate_results(info,snt_files->concord_ind,priority);
             /* We dump and close output files */
@@ -335,7 +335,7 @@ save_and_sort_tag_sequences(info);
 /* Finally, we have to save the definitive list of unknown words */
 u_printf("Saving unknown words...\n");
 if (info->err==NULL ) {
-	info->err=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->err,U_WRITE);
+	info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
 }
 save_unknown_words(info);
 /* We compute some statistics */
