@@ -424,9 +424,19 @@ while (meta_list!=NULL) {
             fatal_error("Unexpected <NB> tag in morphological mode\n");
             break;
 
-         case META_TOKEN:
-            fatal_error("Unexpected <TOKEN> tag in morphological mode\n");
+         case META_TOKEN: {
+            unichar one_letter[2];
+            one_letter[0]=current_token[pos_in_token];
+            one_letter[1]='\0';
+            #ifdef TRE_WCHAR
+            int filter_number=p->tags[t->tag_number]->filter_number;
+            int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,one_letter,filter_number));
+            if (morpho_filter_OK) {
+               match_one_letter=1;
+            }
+            #endif
             break;
+         }
 
          case META_LEFT_CONTEXT:
             fatal_error("Unexpected left context mark in morphological mode\n");
@@ -682,7 +692,7 @@ while (trans!=NULL) {
                   L=L->next;
                   continue;
                }
-                  #endif
+               #endif
                /* WARNING: we don't process the tag's output as usual if it
                 *          is a variable declaration like $abc$. Note that it could
                 *          make a difference if a variable with the same
