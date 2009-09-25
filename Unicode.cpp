@@ -455,10 +455,10 @@ int get_writing_encoding_text(char* text_encoding,size_t size_text_buffer,Encodi
 
     switch (encoding)
     {
-        case UTF16_LE : result = (bom != 0) ? "utf16-le-bom" : "utf16-le-no-bom";
-        case BIG_ENDIAN_UTF16 : result = (bom != 0) ? "utf16-be-bom" : "utf16-be-no-bom";
-        case UTF8 : result = (bom == 1) ? "utf8-bom" : "utf8-no-bom";
-        case ASCII : result = "ascii";
+        case UTF16_LE : result = (bom != 0) ? "utf16-le-bom" : "utf16-le-no-bom"; break;
+        case BIG_ENDIAN_UTF16 : result = (bom != 0) ? "utf16-be-bom" : "utf16-be-no-bom"; break;
+        case UTF8 : result = (bom == 1) ? "utf8-bom" : "utf8-no-bom"; break;
+        case ASCII : result = "ascii"; break;
     }
 
     size_t len_result=strlen(result);
