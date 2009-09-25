@@ -20,6 +20,7 @@
   */
 
 #include "IOBuffer.h"
+#include "FileEncoding.h"
 #include "Concord.h"
 
 

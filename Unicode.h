@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include "Af_stdio.h"
 
+#include "FileEncoding.h"
+
 /* This line is used to prevent people from using printf and scanf. We do
  * that because we want to parametrize I/O operations with encodings. */
 #define printf DONT_USE_PRINTF_BUT_U_PRINTF
@@ -75,33 +77,6 @@ typedef enum {
  */
 typedef uint16_t unichar;
 
-/**
- * We define here the I/O encodings that are supported by the Unicode library.
- */
-typedef enum {
-   UTF16_LE,
-   /* We give such a name to UTF16_BE in order to avoid encoding errors due to completion */
-   BIG_ENDIAN_UTF16,
-   UTF8,
-   ASCII,
-   BINARY=ASCII
-} Encoding;
-
-
-/* now the mask of compatibility for opening file
- */
-#define USE_ENCODING_VALUE 0
-#define UTF16_LE_BOM_POSSIBLE 0x0001
-#define BIG_ENDIAN_UTF16_BOM_POSSIBLE 0x0002
-#define UTF8_BOM_POSSIBLE 0x0004
-/* there 4 value are exclusive, because we have no way to determinate which use */
-#define UTF16_LE_NO_BOM_POSSIBLE 0x0010
-#define BIG_ENDIAN_UTF16_NO_BOM_POSSIBLE 0x0020
-#define UTF8_NO_BOM_POSSIBLE 0x0040
-#define ASCII_NO_BOM_POSSIBLE 0x0080
-
-#define ALL_ENCODING_BOM_POSSIBLE 0x0007
-
 
 /**
  * This structure is used to represent a file with its encoding.
@@ -139,10 +114,6 @@ extern U_FILE* U_STDIN;
 extern U_FILE* U_STDOUT;
 extern U_FILE* U_STDERR;
 
-
-#define DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT (UTF16_LE_BOM_POSSIBLE | BIG_ENDIAN_UTF16_BOM_POSSIBLE | UTF8_BOM_POSSIBLE)
-#define DEFAULT_ENCODING_OUTPUT (UTF16_LE)
-#define DEFAULT_BOM_OUTPUT (2)
 
 /* decode encoding parameter, to prepare value for u_fopen */
 int decode_reading_encoding_parameter(int*, const char*);
