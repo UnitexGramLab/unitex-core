@@ -22,6 +22,8 @@
 #ifndef Grf2Fst2H
 #define Grf2Fst2H
 
+#include "FileEncoding.h"
+
 extern const char* optstring_Grf2Fst2;
 extern const struct option_TS lopts_Grf2Fst2[];
 extern const char* usage_Grf2Fst2;

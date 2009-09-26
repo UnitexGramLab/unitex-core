@@ -51,7 +51,7 @@ void char_by_char_tokenization(U_FILE*,U_FILE*,U_FILE*,Alphabet*,vector_ptr*,str
 void save_new_line_positions(U_FILE*,vector_int*);
 void load_token_file(char* filename,int mask_encoding_compatibility_input,vector_ptr* tokens,struct hash_table* hashtable,vector_int* n_occur);
 
-void write_number_of_tokens(const char* name,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,int n) {
+void write_number_of_tokens(const char* name,Encoding encoding_output,int bom_output,int n) {
   U_FILE* f;
   char number[11];
 
@@ -254,7 +254,7 @@ u_fclose(enter);
 u_fclose(text);
 u_fclose(out);
 u_fclose(output);
-write_number_of_tokens(tokens_txt,encoding_output,bom_output,mask_encoding_compatibility_input,tokens->nbelems);
+write_number_of_tokens(tokens_txt,encoding_output,bom_output,tokens->nbelems);
 // we compute some statistics
 get_snt_path(argv[vars->optind],tokens_txt);
 strcat(tokens_txt,"stats.n");

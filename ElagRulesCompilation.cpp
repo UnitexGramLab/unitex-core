@@ -47,7 +47,7 @@
 
 
 void split_elag_rule(elRule*,Encoding encoding_output,int bom_output,language_t*);
-int count_constraints(Fst2Automaton*,Encoding encoding_output,int bom_output,int*);
+int count_constraints(Fst2Automaton*,int*);
 Fst2Automaton* compile_elag_rule(elRule*,language_t*);
 int get_sub_automaton(SingleGraph,SingleGraph,int,int,int);
 int get_sub_automaton(SingleGraph,SingleGraph,int,SymbolType,int*);
@@ -383,7 +383,7 @@ int c;
 /* This array contains the numbers of the states that are pointed to by
  * middle '<=>' of the constraints */
 int constraints[ELAG_MAX_CONSTRAINTS];
-int nbConstraints=count_constraints(rule->automaton,encoding_output,bom_output,constraints);
+int nbConstraints=count_constraints(rule->automaton,constraints);
 /* +1 because we have to count the <!> .... <!> .... <!> part of the rule */
 rule->nbContexts=nbConstraints+1;
 rule->contexts=(elContext*)malloc(rule->nbContexts*sizeof(elContext));
@@ -455,7 +455,7 @@ free_Fst2Automaton(locate);
  * It places their numbers into 'constraints' and it returns the size of this
  * array, i.e. the number of constraints expressed by this Elag rule.
  */
-int count_constraints(Fst2Automaton* aut,Encoding encoding_output,int bom_output,int* constraints) {
+int count_constraints(Fst2Automaton* aut,int* constraints) {
 int source=0;
 int e;
 Transition* t;

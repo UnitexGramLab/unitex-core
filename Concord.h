@@ -22,6 +22,9 @@
 #ifndef ConcordH
 #define ConcordH
 
+#include "FileEncoding.h"
+
+
 extern const char* optstring_Concord;
 extern const struct option_TS lopts_Concord[];
 extern const char* usage_Concord;

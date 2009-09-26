@@ -121,7 +121,7 @@ u_fclose(f);
 char grf_name[FILENAME_MAX];
 get_path(argv[vars->optind],grf_name);
 strcat(grf_name,"regexp.grf");
-if (!reg2grf(exp,grf_name,encoding_output,bom_output,mask_encoding_compatibility_input)) {
+if (!reg2grf(exp,grf_name,encoding_output,bom_output)) {
    return 1;
 }
 free_OptVars(vars);

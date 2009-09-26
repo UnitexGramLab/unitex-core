@@ -111,7 +111,7 @@ while (L!=NULL) {
 }
 free_string_hash(hash);
 u_printf("Saving the grammar...\n");
-save_portuguese_normalization_grammar(N,list,res_grf_name, encoding_output, bom_output, mask_encoding_compatibility_input);
+save_portuguese_normalization_grammar(N,list,res_grf_name, encoding_output, bom_output);
 u_printf("%d normalization rules have been produced.\n",N);
 }
 
@@ -444,8 +444,7 @@ return -1;
 // this function saves the normalization rules into a file
 //
 void save_portuguese_normalization_grammar(int N,struct match_list* list,char* res_grf_name,
-                                           Encoding encoding_output, int bom_output,
-                                           int mask_encoding_compatibility_input) {
+                                           Encoding encoding_output, int bom_output) {
 U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,res_grf_name,U_WRITE);
 if (f==NULL) {
    error("Cannot create file %s\n",res_grf_name);

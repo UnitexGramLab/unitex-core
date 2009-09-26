@@ -372,7 +372,7 @@ if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->resu
 
 /* Once we have setted all the parameters, we call the function that
  * will actually create the concordance. */
-create_concordance(encoding_output,bom_output,mask_encoding_compatibility_input,concor,text,tok,n_enter_char,enter_pos,options);
+create_concordance(encoding_output,bom_output,concor,text,tok,n_enter_char,enter_pos,options);
 free(enter_pos);
 u_fclose(concor);
 u_fclose(text);

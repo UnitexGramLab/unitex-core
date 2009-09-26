@@ -1116,8 +1116,18 @@ return ret;
 
 void usage_utf8() {
 u_printf("UTF8: universal multi-bytes encoding with a variable code length\n");
+u_printf("By default, no Byte Order Mark is inserted at the beginning of file\n");
 }
 
+void usage_utf8_bom() {
+u_printf("UTF8-bom: universal multi-bytes encoding with a variable code length\n");
+u_printf("A Byte Order Mark is inserted at the beginning of file\n");
+}
+
+void usage_utf8_no_bom() {
+u_printf("UTF8-bom: universal multi-bytes encoding with a variable code length\n");
+u_printf("A Byte Order Mark is NOT inserted at the beginning of file\n");
+}
 
 void usage_utf16_le() {
 u_printf("UTF16 Little-Endian: universal 2-bytes encoding\n");
@@ -1126,6 +1136,19 @@ u_printf("Bytes are encoded in the little endian order, that is to say lower\n")
 u_printf("byte first.\n");
 }
 
+void usage_utf16_le_bom() {
+u_printf("UTF16 Little-Endian: universal 2-bytes encoding\n");
+u_printf("This encoding requires that the 2 first bytes of a file are FF FE\n");
+u_printf("Bytes are encoded in the little endian order, that is to say lower\n");
+u_printf("byte first.\n");
+}
+
+void usage_utf16_le_no_bom() {
+u_printf("UTF16 Little-Endian: universal 2-bytes encoding WITHOUT Byte Order Mark\n");
+u_printf("This encoding doesn't requires that the 2 first bytes of a file are FF FE\n");
+u_printf("Bytes are encoded in the little endian order, that is to say lower\n");
+u_printf("byte first.\n");
+}
 
 void usage_utf16_be() {
 u_printf("UTF16 Big-Endian: universal 2-bytes encoding\n");
@@ -1134,6 +1157,19 @@ u_printf("Bytes are encoded in the big endian order, that is to say higher\n");
 u_printf("byte first.\n");
 }
 
+void usage_utf16_be_bom() {
+u_printf("UTF16 Big-Endian: universal 2-bytes encoding\n");
+u_printf("This encoding requires that the 2 first bytes of a file are FE FF\n");
+u_printf("Bytes are encoded in the big endian order, that is to say higher\n");
+u_printf("byte first.\n");
+}
+
+void usage_utf16_be_no_bom() {
+u_printf("UTF16 Big-Endian: universal 2-bytes encoding WITHOUT Byte Order Mark\n");
+u_printf("This encoding doesn't requires that the 2 first bytes of a file are FE FF\n");
+u_printf("Bytes are encoded in the big endian order, that is to say higher\n");
+u_printf("byte first.\n");
+}
 
 /**
  * This function reads a 1 byte character from the given file
@@ -1320,17 +1356,48 @@ unichar unicode_dest[256];
 unsigned char ascii_dest[MAX_NUMBER_OF_UNICODE_CHARS];
 struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
 switch(input_encoding->type) {
-	/* For UTF-16 encodings, we need to read the 2-byte header */
+	/* For UTF, we need to read the 2 or 3 BYTE ORDER MASK header */
+    /* for E_UTF_xx, we accept if there is no BOM */
+    /* for E_UTF_xx_BOM, we don't accept if there is no BOM */
 	case E_UTF16_LE:
+    case E_UTF16_LE_BOM:
 		tmp=u_fgetc_UTF16LE(input->f);
 		if (tmp!=U_BYTE_ORDER_MARK) {
-			return INPUT_FILE_NOT_IN_UTF16_LE;
+            if (input_encoding->type == E_UTF16_LE_BOM)
+			  return INPUT_FILE_NOT_IN_UTF16_LE;
+            else
+              af_fseek(input->f,0,0);
 		}
 		break;
+
 	case E_UTF16_BE:
+    case E_UTF16_BE_BOM:
 		tmp=u_fgetc_UTF16BE(input->f);
 		if (tmp!=U_BYTE_ORDER_MARK) {
-			return INPUT_FILE_NOT_IN_UTF16_BE;
+            if (input_encoding->type == E_UTF16_BE_BOM)
+			  return INPUT_FILE_NOT_IN_UTF16_BE;
+            else
+              af_fseek(input->f,0,0);
+		}
+		break;
+
+    case E_UTF8_BOM:
+    case E_UTF8: 
+        {
+            unsigned char utf8_bom[3];
+            int bom_present=0;
+            if (af_fread(&utf8_bom[0],1,3,input->f)==3)
+            {
+                if ((utf8_bom[0] == 0xef) && (utf8_bom[1]==0xbb) && (utf8_bom[2]==0xbf))
+                     bom_present=1;
+            }
+            if (bom_present==0)
+            {
+            if (input_encoding->type == E_UTF8_BOM)
+			  return INPUT_FILE_NOT_IN_UTF8;
+            else
+                af_fseek(input->f,0,0);
+            }
 		}
 		break;
 	case E_ONE_BYTE_ENCODING: input_encoding->init_function(unicode_src);
@@ -1342,8 +1409,11 @@ switch(input_encoding->type) {
  * function.
  */
 switch(output_encoding->type) {
+    case E_UTF16_LE_BOM:
 	case E_UTF16_LE: u_fputc_UTF16LE(U_BYTE_ORDER_MARK,output->f); break;
+    case E_UTF16_BE_BOM:
 	case E_UTF16_BE: u_fputc_UTF16BE(U_BYTE_ORDER_MARK,output->f); break;
+    case E_UTF8_BOM: u_fputc_UTF8(U_BYTE_ORDER_MARK,output->f); break;
 	case E_ONE_BYTE_ENCODING: output_encoding->init_function(unicode_dest);
 							init_uni2asc_code_page_array(ascii_dest,unicode_dest);
 							break;
@@ -1705,10 +1775,24 @@ ectx->uniKoran949 = new convert_windows949kr_uni_CodePageOnly;
 
 const char* aliases_utf8[2]={"utf-8",NULL};
 install_multi_bytes_encoding(ctx,"utf8",E_UTF8,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8,aliases_utf8);
+const char* aliases_utf8_bom[2]={"utf-8-bom",NULL};
+install_multi_bytes_encoding(ctx,"utf8-bom",E_UTF8_BOM,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8_bom,aliases_utf8_bom);
+const char* aliases_utf8_no_bom[2]={"utf-8-no-bom",NULL};
+install_multi_bytes_encoding(ctx,"utf8-no-bom",E_UTF8_NO_BOM,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8_no_bom,aliases_utf8_no_bom);
+
 const char* aliases_utf16_le[4]={"utf-16-le","utf16le","little-endian",NULL};
 install_multi_bytes_encoding(ctx,"utf16-le",E_UTF16_LE,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le,aliases_utf16_le);
+const char* aliases_utf16_le_bom[4]={"utf-16-le-bom","utf16le-bom","little-endian-bom",NULL};
+install_multi_bytes_encoding(ctx,"utf16-le-bom",E_UTF16_LE_BOM,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le_bom,aliases_utf16_le_bom);
+const char* aliases_utf16_le_no_bom[4]={"utf-16-le-no-bom","utf16le-no-bom","little-endian-no-bom",NULL};
+install_multi_bytes_encoding(ctx,"utf16-le-no-bom",E_UTF16_LE_NO_BOM,u_fgetc_UTF16LE_raw,u_fputc_UTF16LE_raw,usage_utf16_le_no_bom,aliases_utf16_le_no_bom);
+
 const char* aliases_utf16_be[4]={"utf-16-be","utf16be","big-endian",NULL};
 install_multi_bytes_encoding(ctx,"utf16-be",E_UTF16_BE,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be,aliases_utf16_be);
+const char* aliases_utf16_be_bom[4]={"utf-16-be-bom","utf16be-bom","big-endian-bom",NULL};
+install_multi_bytes_encoding(ctx,"utf16-be-bom",E_UTF16_BE_BOM,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be_bom,aliases_utf16_be_bom);
+const char* aliases_utf16_be_no_bom[4]={"utf-16-be-no-bom","utf16be-no-bom","big-endian-no-bom",NULL};
+install_multi_bytes_encoding(ctx,"utf16-be-no-bom",E_UTF16_BE_NO_BOM,u_fgetc_UTF16BE_raw,u_fputc_UTF16BE_raw,usage_utf16_be_no_bom,aliases_utf16_be_no_bom);
 /*
  * ISO encodings
  */
@@ -1871,4 +1955,3 @@ if (!get_string_number(ectx->encoding_names,name_in_lower,&encoding_number)) {
 }
 return ectx->encodings[encoding_number];
 }
-

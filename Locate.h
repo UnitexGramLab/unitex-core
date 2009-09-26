@@ -22,6 +22,7 @@
 #ifndef LocateH
 #define LocateH
 
+#include "FileEncoding.h"
 #include "LocateConstants.h"
 
 extern const char* optstring_Locate;

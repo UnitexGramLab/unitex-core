@@ -42,7 +42,7 @@ int tokenize_portuguese_match(unichar*,unichar*,unichar*,unichar*,unichar*);
 int get_radical_lemma(unichar*,struct list_ustring**,Alphabet*,unsigned char*,struct INF_codes*);
 int get_inf_number_for_token(int,unichar*,int,unichar*,Alphabet*,unsigned char*);
 int compatible_portuguese_inflectional_codes(struct dela_entry*,int,unichar**);
-void save_portuguese_normalization_grammar(int,struct match_list*,char*,Encoding,int,int);
+void save_portuguese_normalization_grammar(int,struct match_list*,char*,Encoding,int);
 int explore_portuguese_normalization_tree(unichar*,unichar*,struct list_ustring*,struct normalization_tree*,
                                           Alphabet*);
 struct list_ustring* tokenize_portuguese_pronoun(unichar*);

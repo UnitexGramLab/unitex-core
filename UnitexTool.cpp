@@ -172,7 +172,7 @@ const struct utility_item* found_utility(const char* search)
 }
 
 
-int GetToolInfo_byname(const char* toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+int GetToolInfo_byname(const char* toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
 {
 const struct utility_item* utility_called = found_utility(toolname);
 if (utility_called == NULL)
@@ -181,11 +181,12 @@ else {
 	if (usage != NULL) *usage=utility_called->usage;
 	if (optstring != NULL) *optstring = utility_called->optstring;
 	if (lopts != NULL) *lopts = utility_called->lopts;
+    if (pfunc != NULL) *pfunc = utility_called->fnc;
   return 0;
 }
 }
 
-int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc* pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
 {
 const struct utility_item* utility_called = &(utility_array[toolnumber]);
 {
@@ -193,6 +194,7 @@ const struct utility_item* utility_called = &(utility_array[toolnumber]);
 	if (usage != NULL) *usage=utility_called->usage;
 	if (optstring != NULL) *optstring = utility_called->optstring;
 	if (lopts != NULL) *lopts = utility_called->lopts;
+    if (pfunc != NULL) *pfunc = utility_called->fnc;
   return 0;
 }
 }

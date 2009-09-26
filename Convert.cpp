@@ -36,7 +36,7 @@
 #define SUFFIX_SRC 2
 #define PREFIX_DEST 3
 #define SUFFIX_DEST 4
-
+#define OUTPUT_EXPLICIT_FILENAME 5
 
 const char* usage_Convert =
          "Usage: Convert [OPTIONS] <text_1> [<text_2> <text_3> ...]\n"
@@ -50,6 +50,7 @@ const char* usage_Convert =
          "\n"
          "Output options:\n"
          "  -r/--replace: sources files will be replaced by destination files (default)\n"
+         "  -o file/--output==file: name of destination file (only one file to convert)\n"
          "  --ps=PFX: source files will be renamed with the prefix PFX\n"
          "  --pd=PFX: destination files will be named with the prefix PFX\n"
          "  --ss=SFX: source files will be renamed with the suffix SFX\n"
@@ -83,10 +84,11 @@ u_printf(usage_Convert);
 }
 
 
-const char* optstring_Convert=":s:d:ri:hmaA";
+const char* optstring_Convert=":s:d:ri:hmaAo:k:q:";
 const struct option_TS lopts_Convert[]= {
       {"src",required_argument_TS,NULL,'s'},
       {"dest",required_argument_TS,NULL,'d'},
+      {"output",no_argument_TS,NULL,'o'},
       {"replace",no_argument_TS,NULL,'r'},
       {"ps",required_argument_TS,NULL,0},
       {"pd",required_argument_TS,NULL,1},
@@ -101,6 +103,8 @@ const struct option_TS lopts_Convert[]= {
       {"all-infos",no_argument_TS,NULL,'A'},
       {"info",required_argument_TS,NULL,'i'},
       {"help",no_argument_TS,NULL,'h'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -119,6 +123,8 @@ int val,index=-1;
 char src[1024]="";
 char dest[1024]="";
 char FX[128]="";
+char input_name[FILENAME_MAX];
+char output_name[FILENAME_MAX];
 int output_mode=REPLACE_FILE;
 int decode_normal_characters=0;
 int decode_control_characters=0;
@@ -127,16 +133,19 @@ int encode_control_characters=0;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Convert,lopts_Convert,&index,vars))) {
    switch(val) {
+   case 'k': 
    case 's': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty source encoding\n");
              }
              strcpy(src,vars->optarg);
              break;
+   case 'q':
    case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty destination encoding\n");
              }
              strcpy(dest,vars->optarg);
              break;
+   case 'o': output_mode=OUTPUT_EXPLICIT_FILENAME; strcpy(output_name,vars->optarg); break;
    case 'r': output_mode=REPLACE_FILE; break;
    case 0: output_mode=PREFIX_SRC; strcpy(FX,vars->optarg); break;
    case 1: output_mode=PREFIX_DEST; strcpy(FX,vars->optarg); break;
@@ -190,16 +199,19 @@ if (dest_encoding==NULL) {
  * Now we will transcode all the files described by the remaining
  * parameters.
  */
-char input_name[FILENAME_MAX];
-char output_name[FILENAME_MAX];
 U_FILE* input=NULL;
 U_FILE* output=NULL;
 int error_code;
+if ((output_mode == OUTPUT_EXPLICIT_FILENAME) && ((vars->optind+1)!=argc)) {
+    fatal_error("explicit output filename need exactly one input file\n");
+}
+  
 for (int i=vars->optind;i<argc;i++) {
 	/*
 	 * We set input and output file names according to the output mode
 	 */
 	switch (output_mode) {
+        case OUTPUT_EXPLICIT_FILENAME: strcpy(input_name,argv[i]); break;
 		case REPLACE_FILE: strcpy(input_name,argv[i]);
 						add_suffix_to_file_name(output_name,input_name,"_TEMP"); break;
 		case PREFIX_SRC: strcpy(output_name,argv[i]);
@@ -258,6 +270,8 @@ for (int i=vars->optind;i<argc;i++) {
 								error("Error: %s is not a Unicode Little-Endian file\n",argv[i]); break;
 			case INPUT_FILE_NOT_IN_UTF16_BE:
 								error("Error: %s is not a Unicode Big-Endian file\n",argv[i]); break;
+            case INPUT_FILE_NOT_IN_UTF8:
+								error("Error: %s is not a UTF8 file\n",argv[i]); break;
 			default: fatal_error("Internal error in Convert\n");
 		}
 	}

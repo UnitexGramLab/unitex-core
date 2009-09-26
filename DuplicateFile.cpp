@@ -42,10 +42,12 @@ u_printf(usage_DuplicateFile);
 }
 
 
-const char* optstring_DuplicateFile=":di:";
+const char* optstring_DuplicateFile=":di:k:q:";
 const struct option_TS lopts_DuplicateFile[]= {
       {"delete",no_argument_TS,NULL,'d'},
       {"input",required_argument_TS,NULL,'i'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -73,6 +75,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_DuplicateFile,lopts_Duplicat
              else fatal_error("Missing argument for option --%s\n",lopts_DuplicateFile[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
              else fatal_error("Invalid option --%s\n",vars->optarg);
+             break;
+   case 'k':
+   case 'q': /* ignore -k and -q parameter instead make error */
              break;
    }
    index=-1;

@@ -222,7 +222,7 @@ void prSuffixeString0(struct InflectKR_context *ictx,void *a,void *,void *)
 static void get_flexion_form(struct InflectKR_context *ictx,changeStrContext* ctx,U_FILE *ifile,U_FILE *ofile);
 static void trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FILE *ofile,unichar *readLine);
 static int get_forms_variant(struct InflectKR_context *ictx,changeStrContext* ctx,unichar *l,int *s,class dicElements *e);
-static void outFileRac(Encoding,int,int,char *ofileName);
+static void outFileRac(Encoding,int,char *ofileName);
 
 
 
@@ -372,7 +372,7 @@ int main_InflectKr(int argc, char *argv[]) {
 	u_fclose(ictx.f_out);	//
 	//
 	//
-    if(ictx.ofilename1[0]) outFileRac(encoding_output,bom_output,mask_encoding_compatibility_input,ictx.ofilename1);
+    if(ictx.ofilename1[0]) outFileRac(encoding_output,bom_output,ictx.ofilename1);
 	u_fprintf(ictx.f_out," suffixes list\n");
 	suffixeAuto.explore_tout_leaf((release_f )prSuffixeString);
 	u_fprintf(ictx.f_out," not handled suffixes list\n");
@@ -979,7 +979,8 @@ void explore_state(struct InflectKR_context *ictx,changeStrContext* ctx,int etat
    }
    return;
 }
-static void outFileRac(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,char *ofileName)
+
+static void outFileRac(Encoding encoding_output,int bom_output,char *ofileName)
 {
     U_FILE *of = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofileName,U_WRITE);
     char nameOfSuf[1024],temp[1024];

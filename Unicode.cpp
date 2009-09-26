@@ -601,13 +601,11 @@ if (MODE==U_APPEND || MODE==U_MODIFY) {
    /* If the file does not exists, we are in WRITE mode */
    f=real_fopen(name,"wb");
    if (f==NULL) return NULL;
-   /* As the file is new, we must insert the byte order char if we are in
-    * UTF16. */
-   if (encoding==UTF16_LE) {
-	   u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
-   } else if (encoding==BIG_ENDIAN_UTF16) {
-      u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
-   }
+   /* As the file is new, we must insert the byte order char */
+   if ((encoding==UTF16_LE) && (is_BOM!=0)) u_fputc_UTF16LE(U_BYTE_ORDER_MARK,f);
+   else if ((encoding==BIG_ENDIAN_UTF16) && (is_BOM!=0)) u_fputc_UTF16BE(U_BYTE_ORDER_MARK,f);
+   else if ((encoding==UTF8) && (is_BOM==1)) u_fputc_UTF8(U_BYTE_ORDER_MARK,f);
+
    return new_U_FILE(f,encoding);
 }
 /* Here we have U_READ or U_WRITE */

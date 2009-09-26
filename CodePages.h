@@ -34,6 +34,12 @@
 #ifndef HGH_INSERT
 #define E_MBCS_KR    4
 #endif // HGH_INSERT
+#define E_UTF8_BOM 0x101
+#define E_UTF16_LE_BOM 0x102
+#define E_UTF16_BE_BOM 0x103
+#define E_UTF8_NO_BOM 0x201
+#define E_UTF16_LE_NO_BOM 0x202
+#define E_UTF16_BE_NO_BOM 0x203
 
 /*
  * Error codes that may be returned by the 'convert' function
@@ -43,7 +49,7 @@
 #define INPUT_FILE_NOT_IN_UTF16_BE 2
 #define UNSUPPORTED_INPUT_ENCODING 3
 #define ERROR_IN_HTML_CHARACTER_NAME 4
-
+#define INPUT_FILE_NOT_IN_UTF8 5
 
 /**
  * This structure represents a one byte encoding.

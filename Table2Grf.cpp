@@ -595,7 +595,7 @@ return 1;
 
 
 bool create_graph(int ligne_courante,unichar** ligne,int n_champs,struct graphe_patron* g,
-                  Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                  Encoding encoding_output,int bom_output,
                   char* nom_resultat,char* chemin,U_FILE *f_coord,int graphs_printed) {
 
 struct graphe_patron r;
@@ -702,7 +702,7 @@ ligne_courante=1;
 graphs_printed=0;
 while (read_table_line(table,(unichar**)ligne,n_champs)) {
    if (create_graph(ligne_courante,ligne,n_champs,&structure,
-                    encoding_output,bom_output,mask_encoding_compatibility_input,
+                    encoding_output,bom_output,
                     subgraph,chemin,result_graph,graphs_printed)) {
       graphs_printed++;
    }

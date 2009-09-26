@@ -22,6 +22,8 @@
 #ifndef SortTxtH
 #define SortTxtH
 
+#include "FileEncoding.h"
+
 extern const char* optstring_SortTxt;
 extern const struct option_TS lopts_SortTxt[];
 extern const char* usage_SortTxt;

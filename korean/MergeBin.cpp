@@ -505,6 +505,9 @@ int main_MergeBin(int argc , char *argv[]) {
 #ifdef DEBUG_MER
         	case 'd':dMode  = 1;break;
 #endif
+            /* ignore -k and -q encoding parameter instead make error */
+        	case 'k':iargIndex++;break;
+        	case 'q':iargIndex++;break;
         	case 'o':iargIndex++;
         		nameOfoutput = new char [strlen(argv[iargIndex])+1];
         		strcpy(nameOfoutput,argv[iargIndex]);

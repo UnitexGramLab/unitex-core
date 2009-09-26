@@ -352,7 +352,7 @@ static void getListFile(char *filename)
 }
 
 
-void consultationLesTokens(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+void consultationLesTokens(Encoding encoding_output,int bom_output,
                            char *textfile,Alphabet *PtrAlphabet)
 {
 	
@@ -480,7 +480,7 @@ int main_ConsultDic(int argc,char *argv[]) {
 	   usage();
 	   return 1;
 	}
-	consultationLesTokens(encoding_output,bom_output,mask_encoding_compatibility_input,argv[argIdx],saveAlphabet);
+	consultationLesTokens(encoding_output,bom_output,argv[argIdx],saveAlphabet);
 	if(saveAlphabet) free_alphabet(saveAlphabet);
 	return 0;
 }

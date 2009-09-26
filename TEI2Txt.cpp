@@ -9,7 +9,7 @@
 #include "TEI2Txt.h"
 
 
-void tei2txt(char*, char*, Encoding, int, int);
+void tei2txt(char*, char*, Encoding, int);
 
 
 
@@ -88,7 +88,7 @@ if(output[0]=='\0') {
    remove_extension(argv[vars->optind],output);
 	strcat(output,".txt");
 }
-tei2txt(argv[vars->optind],output,encoding_output,bom_output,mask_encoding_compatibility_input);
+tei2txt(argv[vars->optind],output,encoding_output,bom_output);
 free_OptVars(vars);
 return 0;
 }
@@ -96,7 +96,7 @@ return 0;
 
 static const char *body = "body";
 
-void tei2txt(char *fin, char *fout,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
+void tei2txt(char *fin, char *fout,Encoding encoding_output,int bom_output) {
 	void* html_ctx = init_HTML_character_context();
 	if (html_ctx == NULL) fatal_alloc_error("tei2txt");
 

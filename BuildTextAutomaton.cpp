@@ -1113,9 +1113,23 @@ void build_korean_sentence_automaton(Encoding encoding_output,int bom_output,int
 u_printf("sentence #%d\n",sentence_number);
 char n[32];
 char command[FILENAME_MAX];
+char tmpEncoding[256];
 sprintf(command,"%s%s",exe_path,"Txt2Fst2Kr");
 //ProgramInvoker* invoker=new_ProgramInvoker(NULL,command);
 ProgramInvoker* invoker=new_ProgramInvoker(main_Txt2Fst2Kr,command);
+tmpEncoding[0]=0;
+get_reading_encoding_text(tmpEncoding,sizeof(tmpEncoding)-1,mask_encoding_compatibility_input);
+if (tmpEncoding[0] != '\0') {
+    add_argument(invoker,"-k");
+    add_argument(invoker,tmpEncoding);
+}
+tmpEncoding[0]=0;
+get_writing_encoding_text(tmpEncoding,sizeof(tmpEncoding)-1,encoding_output,bom_output);
+if (tmpEncoding[0] != '\0') {
+    add_argument(invoker,"-q");
+    add_argument(invoker,tmpEncoding);
+}
+
 add_argument(invoker,"-e");
 sprintf(n,"%d",sentence_number);
 add_argument(invoker,n);
@@ -1126,9 +1140,24 @@ free_ProgramInvoker(invoker);
 if (ret_value!=0) {
    fatal_error("Txt2Fst2Kr did not quit normally. Cannot go on constructing .tfst file\n");
 }
+
+
 sprintf(command,"%s%s",exe_path,"Jamo2Syl");
 //invoker=new_ProgramInvoker(NULL,command);
 invoker=new_ProgramInvoker(main_Jamo2Syl,command);
+tmpEncoding[0]=0;
+get_reading_encoding_text(tmpEncoding,sizeof(tmpEncoding)-1,mask_encoding_compatibility_input);
+if (tmpEncoding[0] != '\0') {
+    add_argument(invoker,"-k");
+    add_argument(invoker,tmpEncoding);
+}
+tmpEncoding[0]=0;
+get_writing_encoding_text(tmpEncoding,sizeof(tmpEncoding)-1,encoding_output,bom_output);
+if (tmpEncoding[0] != '\0') {
+    add_argument(invoker,"-q");
+    add_argument(invoker,tmpEncoding);
+}
+
 add_argument(invoker,"-m");
 add_argument(invoker,jamoTable);
 add_argument(invoker,kr_fst2);
@@ -1190,9 +1219,23 @@ if (zz==NULL) {
 u_fprintf(zz,"%S",foo->str);
 u_fclose(zz);
 /* And we convert it to cursentencejm.txt */
+
 sprintf(command,"%s%s",exe_path,"Syl2Jamo");
 //invoker=new_ProgramInvoker(NULL,command);
 invoker=new_ProgramInvoker(main_Syl2Jamo,command);
+tmpEncoding[0]=0;
+get_reading_encoding_text(tmpEncoding,sizeof(tmpEncoding)-1,mask_encoding_compatibility_input);
+if (tmpEncoding[0] != '\0') {
+    add_argument(invoker,"-k");
+    add_argument(invoker,tmpEncoding);
+}
+tmpEncoding[0]=0;
+get_writing_encoding_text(tmpEncoding,sizeof(tmpEncoding)-1,encoding_output,bom_output);
+if (tmpEncoding[0] != '\0') {
+    add_argument(invoker,"-q");
+    add_argument(invoker,tmpEncoding);
+}
+
 add_argument(invoker,"-j");
 add_argument(invoker,"-m");
 add_argument(invoker,jamoTable);

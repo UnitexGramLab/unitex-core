@@ -20,7 +20,6 @@
   */
 
 #include "IOBuffer.h"
-#include "FileEncoding.h"
 #include "Locate.h"
 
 

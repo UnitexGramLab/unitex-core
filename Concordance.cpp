@@ -90,7 +90,7 @@ void reverse_initial_vowels_thai(unichar*);
  * This segment
  * 2.5  9
  */
-void create_concordance(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
+void create_concordance(Encoding encoding_output,int bom_output,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt* option) {
 U_FILE* out;
 U_FILE* f;
