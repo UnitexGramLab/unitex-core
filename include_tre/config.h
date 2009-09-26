@@ -159,13 +159,13 @@
 #define PACKAGE_NAME "TRE"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "TRE 0.7.6"
+#define PACKAGE_STRING "TRE 0.8.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "tre"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.7.6"
+#define PACKAGE_VERSION "0.8.0"
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
@@ -202,22 +202,22 @@
 /* #undef TRE_USE_SYSTEM_REGEX_H */
 
 /* TRE version string. */
-#define TRE_VERSION "0.7.6"
+#define TRE_VERSION "0.8.0"
 
 /* TRE version level 1. */
 #define TRE_VERSION_1 0
 
 /* TRE version level 2. */
-#define TRE_VERSION_2 7
+#define TRE_VERSION_2 8
 
 /* TRE version level 3. */
-#define TRE_VERSION_3 6
+#define TRE_VERSION_3 0
 
 /* Define to enable wide character (wchar_t) support. */
 #define TRE_WCHAR 1
 
 /* Version number of package */
-#define VERSION "0.7.6"
+#define VERSION "0.8.0"
 
 /* Define to the maximum value of wchar_t if not already defined elsewhere */
 /* #undef WCHAR_MAX */

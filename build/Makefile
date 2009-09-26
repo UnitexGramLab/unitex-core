@@ -79,8 +79,8 @@ VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
 INSTALL_COMMAND = make install
-TRE_SRC = tre-0.7.6
-TRE_TGZ = ../tre-0.7.6.tar.gz
+TRE_SRC = tre-0.8.0
+TRE_TGZ = ../tre-0.8.0.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
 
@@ -808,64 +808,64 @@ endif
 TRE_LIB = libtre.a
 
 ifeq ($(LIBRARY),OOOfdsjnfezqez)
-tre-0.7.6/lib/tre-stack.c: $(TRE_SRC)
+tre-0.8.0/lib/tre-stack.c: $(TRE_SRC)
 
-tre-0.7.6/lib/tre-parse.c: $(TRE_SRC)
+tre-0.8.0/lib/tre-parse.c: $(TRE_SRC)
 
-tre-0.7.6/lib/regexec.c: $(TRE_SRC)
+tre-0.8.0/lib/regexec.c: $(TRE_SRC)
 
-tre-0.7.6/lib/xmalloc.c: $(TRE_SRC)
+tre-0.8.0/lib/xmalloc.c: $(TRE_SRC)
 
-tre-0.7.6/lib/tre-match-parallel.c: $(TRE_SRC)
+tre-0.8.0/lib/tre-match-parallel.c: $(TRE_SRC)
 
-tre-0.7.6/lib/tre-match-approx.c: $(TRE_SRC)
+tre-0.8.0/lib/tre-match-approx.c: $(TRE_SRC)
 
-tre-0.7.6/lib/tre-ast.c: $(TRE_SRC)
+tre-0.8.0/lib/tre-ast.c: $(TRE_SRC)
 
-tre-0.7.6/lib/regcomp.c: $(TRE_SRC)
+tre-0.8.0/lib/regcomp.c: $(TRE_SRC)
 
-tre-0.7.6/lib/regerror.c: $(TRE_SRC)
+tre-0.8.0/lib/regerror.c: $(TRE_SRC)
 
-tre-0.7.6/lib/tre-compile.c: $(TRE_SRC)
+tre-0.8.0/lib/tre-compile.c: $(TRE_SRC)
 
 TRE_OBJS = tre-parse.o tre-stack.o regexec.o xmalloc.o tre-match-parallel.o tre-match-approx.o tre-ast.o \
 	regcomp.o regerror.o tre-ast.o tre-compile.o tre-match-backtrack.o tre-mem.o
 
-tre-stack.o: tre-0.7.6/lib/tre-stack.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-stack.c $(TRE_OPTIONS)
+tre-stack.o: tre-0.8.0/lib/tre-stack.c
+	$(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
 
-tre-parse.o: tre-0.7.6/lib/tre-parse.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-parse.c $(TRE_OPTIONS)
+tre-parse.o: tre-0.8.0/lib/tre-parse.c
+	$(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
 
-regexec.o: tre-0.7.6/lib/regexec.c
-	$(CC_GCC) -c tre-0.7.6/lib/regexec.c $(TRE_OPTIONS)
+regexec.o: tre-0.8.0/lib/regexec.c
+	$(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
 
-xmalloc.o: tre-0.7.6/lib/xmalloc.c
-	$(CC_GCC) -c tre-0.7.6/lib/xmalloc.c $(TRE_OPTIONS)
+xmalloc.o: tre-0.8.0/lib/xmalloc.c
+	$(CC_GCC) -c tre-0.8.0/lib/xmalloc.c $(TRE_OPTIONS)
 
-tre-match-parallel.o: tre-0.7.6/lib/tre-match-parallel.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-parallel.c $(TRE_OPTIONS)
+tre-match-parallel.o: tre-0.8.0/lib/tre-match-parallel.c
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-parallel.c $(TRE_OPTIONS)
 
-tre-match-approx.o: tre-0.7.6/lib/tre-match-approx.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-approx.c $(TRE_OPTIONS)
+tre-match-approx.o: tre-0.8.0/lib/tre-match-approx.c
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-approx.c $(TRE_OPTIONS)
 
-tre-ast.o: tre-0.7.6/lib/tre-ast.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-ast.c $(TRE_OPTIONS)
+tre-ast.o: tre-0.8.0/lib/tre-ast.c
+	$(CC_GCC) -c tre-0.8.0/lib/tre-ast.c $(TRE_OPTIONS)
 
-regcomp.o: tre-0.7.6/lib/regcomp.c
-	$(CC_GCC) -c tre-0.7.6/lib/regcomp.c $(TRE_OPTIONS)
+regcomp.o: tre-0.8.0/lib/regcomp.c
+	$(CC_GCC) -c tre-0.8.0/lib/regcomp.c $(TRE_OPTIONS)
 
-regerror.o: tre-0.7.6/lib/regerror.c
-	$(CC_GCC) -c tre-0.7.6/lib/regerror.c $(TRE_OPTIONS)
+regerror.o: tre-0.8.0/lib/regerror.c
+	$(CC_GCC) -c tre-0.8.0/lib/regerror.c $(TRE_OPTIONS)
 
-tre-compile.o: tre-0.7.6/lib/tre-compile.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-compile.c $(TRE_OPTIONS)
+tre-compile.o: tre-0.8.0/lib/tre-compile.c
+	$(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
 
-tre-match-backtrack.o: tre-0.7.6/lib/tre-match-backtrack.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-backtrack.c $(TRE_OPTIONS)
+tre-match-backtrack.o: tre-0.8.0/lib/tre-match-backtrack.c
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
 
-tre-mem.o: tre-0.7.6/lib/tre-mem.c
-	$(CC_GCC) -c tre-0.7.6/lib/tre-mem.c $(TRE_OPTIONS)
+tre-mem.o: tre-0.8.0/lib/tre-mem.c
+	$(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
 
 $(TRE_LIB): $(TRE_SRC) $(TRE_OBJS)
 	AR -r libtre.a $(TRE_OBJS)
@@ -877,37 +877,37 @@ TRE_OBJS = tre-parse.o tre-stack.o regexec.o xmalloc.o tre-match-parallel.o tre-
 $(TRE_LIB): $(TRE_TGZ)
 	@echo "unpacking TRE library......"
 	tar xzf $(TRE_TGZ)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-stack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-parse.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regexec.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/xmalloc.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-parallel.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-approx.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-ast.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regcomp.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regerror.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-compile.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-backtrack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-mem.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-stack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-parse.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regexec.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/xmalloc.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-parallel.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-approx.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-ast.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regcomp.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/regerror.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-compile.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-match-backtrack.c $(TRE_OPTIONS)
-	$(CC_GCC) -c tre-0.7.6/lib/tre-mem.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/xmalloc.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-parallel.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-approx.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-ast.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/regcomp.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/regerror.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/xmalloc.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-parallel.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-approx.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-ast.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/regcomp.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/regerror.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-compile.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-match-backtrack.c $(TRE_OPTIONS)
+	$(CC_GCC) -c tre-0.8.0/lib/tre-mem.c $(TRE_OPTIONS)
 	$(AR) -r libtre.a $(TRE_OBJS)
 	
 endif
 
 
-TRE_SRC = tre-0.7.6
-TRE_TGZ = ../tre-0.7.6.tar.gz
+TRE_SRC = tre-0.8.0
+TRE_TGZ = ../tre-0.8.0.tar.gz
 
 
 ifeq ($(SYSTEM),windows)
@@ -944,7 +944,7 @@ clean-all-but-tre:
 	rm -f *.o $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll
 
 clean: clean-all-but-tre
-	rm -rf tre-0.7.6
+	rm -rf tre-0.8.0
 	rm libtre.a
 
 
@@ -987,7 +987,7 @@ clean-all-but-tre:
 	rm -f $(OBJ_DIR)$(OBJS) $(BIN_DIR)*.exe $(BIN_DIR)unitex.dll Main_*.o
 
 clean: clean-all-but-tre
-	rm -rf tre-0.7.6
+	rm -rf tre-0.8.0
 	rm libtre.a
 
 

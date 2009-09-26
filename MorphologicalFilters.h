@@ -34,7 +34,7 @@
  * Claude Devis (devis@tedm.ucl.ac.be).
  */
 
-#include "regex.h"
+#include "tre.h"
 #ifdef TRE_WCHAR
 #include "Unicode.h"
 #include "Alphabet.h"

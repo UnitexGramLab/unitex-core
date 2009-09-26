@@ -115,11 +115,11 @@ if (filters->size>0) {
       /* As the TRE library manipulates wchar_t* strings, we must convert our unichar* one */
       w_strcpy(warray,filter_set->filter[i].content);
       /* Then, we build the regular expression matcher associated to our filter */
-      ccode=regwcomp(filter_set->filter[i].matcher,warray,cflags);
+      ccode=tre_regwcomp(filter_set->filter[i].matcher,warray,cflags);
       if (ccode!=0) {
          error("Morphological filter '%S' : ",filter_set->filter[i].content);
          char errbuf[512];
-         regerror(ccode,filter_set->filter[i].matcher,errbuf,512);
+         tre_regerror(ccode,filter_set->filter[i].matcher,errbuf,512);
          error("Syntax error : %s\n",errbuf);
          free_string_hash(filters);
          free_FilterSet(filter_set,i);
@@ -151,7 +151,7 @@ for (int i=0;i<n;i++) {
    if (filters->filter[i].options!= NULL) free(filters->filter[i].options);
    if (filters->filter[i].content!= NULL) free(filters->filter[i].content);
    if (filters->filter[i].matcher!= NULL) {
-	   regfree(filters->filter[i].matcher);
+	   tre_regfree(filters->filter[i].matcher);
 	   free(filters->filter[i].matcher);
    }
 }
@@ -203,7 +203,7 @@ if (filters->size>0) {
          w_strcpy(inflected,current_token);
       }
       for (k=0;k<filters->size;k++) {
-         if (regwexec(filters->filter[k].matcher,inflected,0,NULL,0)==0) {
+         if (tre_regwexec(filters->filter[k].matcher,inflected,0,NULL,0)==0) {
             /* If the current token matches the filter k */
             if (index->matching_tokens[k]==NULL) {
                /* If necessary, we allocate the bit array of the filter k */
@@ -242,7 +242,7 @@ free(index);
 int string_match_filter(FilterSet* filters,unichar* s,int filter_number) {
 wchar_t tmp[2048];
 w_strcpy(tmp,s);
-return !regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
 }
 
 
