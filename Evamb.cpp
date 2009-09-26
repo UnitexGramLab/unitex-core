@@ -36,6 +36,7 @@ const char* usage_Evamb =
          "  <tfst>: text automaton file\n"
          "\n"
          "OPTIONS:\n"
+         "  -o OUT/--output=OUT: output file\n"
          "  -s N/--sentence=N: sentence number\n"
          "  -h/--help: this help\n"
          "\n"
@@ -52,9 +53,12 @@ u_printf(usage_Evamb);
 }
 
 
-const char* optstring_Evamb=":s:h";
+const char* optstring_Evamb=":s:ho:k:q:";
 const struct option_TS lopts_Evamb[]= {
       {"sentence",required_argument_TS,NULL,'s'},
+      {"output",optional_argument_TS,NULL,'o'},
+      {"input_encoding",required_argument_TS,NULL,'k'},
+      {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
       {NULL,no_argument_TS,NULL,0}
 };
@@ -69,7 +73,14 @@ if (argc==1) {
 
 int val,index=-1;
 int sentence_number=-1;
-char foo;
+const char* outfilename=NULL;
+char output_name_buffer[FILENAME_MAX]="";
+
+Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
+int bom_output = DEFAULT_BOM_OUTPUT;
+int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+
+
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Evamb,lopts_Evamb,&index,vars))) {
    switch(val) {
@@ -78,6 +89,23 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Evamb,lopts_Evamb,&index,var
                 fatal_error("Invalid sentence number: %s\n",vars->optarg);
              }
              break;
+
+      case 'o': if (vars->optarg[0]=='\0') {
+                   fatal_error("You must specify a non empty output file name\n");
+                }
+                strcpy(output_name_buffer,vars->optarg);
+                outfilename=output_name_buffer;
+                break;
+      case 'k': if (vars->optarg[0]=='\0') {
+                  fatal_error("Empty input_encoding argument\n");
+                }
+                decode_reading_encoding_parameter(&mask_encoding_compatibility_input,vars->optarg);
+                break;
+      case 'q': if (vars->optarg[0]=='\0') {
+                  fatal_error("Empty output_encoding argument\n");
+                }
+                decode_writing_encoding_parameter(&encoding_output,&bom_output,vars->optarg);
+                break;
    case 'h': usage(); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Evamb[index].name);
@@ -99,6 +127,13 @@ if (tfst==NULL) {
 }
 if (sentence_number>tfst->N) {
    fatal_error("Invalid sentence number %d: should be in [1;%d]\n",sentence_number,tfst->N);
+}
+U_FILE* outfile = (outfilename == NULL) ? U_STDOUT : u_fopen_creating_versatile_encoding(encoding_output,bom_output, outfilename, U_WRITE);
+if (outfile==NULL) {
+    close_text_automaton(tfst);
+    free_OptVars(vars);
+    error("Cannot create file %s\n",outfilename);
+    return 1;
 }
 if (sentence_number==-1) {
    /* If we have to evaluate the ambiguity rate of the whole automaton */
@@ -144,10 +179,10 @@ if (sentence_number==-1) {
    if (n_bad_automata>=tfst->N) {
       error("No stats to print because no non-empty sentence automata were found.\n");
    } else {
-      u_printf("%d/%d sentence%s taken into account\n",tfst->N-n_bad_automata,tfst->N,(tfst->N>1)?"s":"");
-      u_printf("Average ambiguity rate=%.3f\n",exp(lognp_total/lmoy_total));
-      u_printf("Minimum ambiguity rate=%.3f (sentence %d)\n",exp(minlogamb),minambno);
-      u_printf("Maximum ambiguity rate=%.3f (sentence %d)\n",exp(maxlogamb),maxambno);
+      u_fprintf(outfile,"%d/%d sentence%s taken into account\n",tfst->N-n_bad_automata,tfst->N,(tfst->N>1)?"s":"");
+      u_fprintf(outfile,"Average ambiguity rate=%.3f\n",exp(lognp_total/lmoy_total));
+      u_fprintf(outfile,"Minimum ambiguity rate=%.3f (sentence %d)\n",exp(minlogamb),minambno);
+      u_fprintf(outfile,"Maximum ambiguity rate=%.3f (sentence %d)\n",exp(maxlogamb),maxambno);
    }
 } else {
    /* If we have to evaluate the ambiguity rate of a single sentence automaton */
@@ -160,11 +195,13 @@ if (sentence_number==-1) {
       int max;
       double lognp=evaluate_ambiguity(graph,&min,&max);
       double lmoy=(double)(min+max)/2.0;
-      u_printf("Sentence %d: ambiguity rate=%.3f\n",sentence_number,exp(lognp/lmoy));
+      u_fprintf(outfile,"Sentence %d: ambiguity rate=%.3f\n",sentence_number,exp(lognp/lmoy));
    }
 }
+if (outfile!=U_STDOUT)
+  u_fclose(outfile);
+
 close_text_automaton(tfst);
 free_OptVars(vars);
 return 0;
 }
-
