@@ -24,3 +24,15 @@
 
 /* Define to enable wide character (wchar_t) support. */
 #define TRE_WCHAR 1
+
+/* TRE version string. */
+#define TRE_VERSION "0.8.0"
+
+/* TRE version level 1. */
+#define TRE_VERSION_1 0
+
+/* TRE version level 2. */
+#define TRE_VERSION_2 8
+
+/* TRE version level 3. */
+#define TRE_VERSION_3 0
