@@ -26,7 +26,7 @@
 #include "Reg2Grf.h"
 #include "Locate.h"
 #include "ProgramInvoker.h"
-#include "regex.h"
+#include "tre.h"
 
 /**
  * This program is an example of compilation using the unitex library (unitex.dll/libunitex.so).
@@ -61,7 +61,7 @@ af_remove(grf);
 /* These lines are just here to test if the TRE library was correctly linked. */
 wchar_t warray[512];
 regex_t matcher;
-regwcomp(&matcher,warray,REG_NOSUB);
+tre_regwcomp(&matcher,warray,REG_NOSUB);
 return 0;
 }
 
