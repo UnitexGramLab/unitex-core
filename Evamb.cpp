@@ -36,7 +36,7 @@ const char* usage_Evamb =
          "  <tfst>: text automaton file\n"
          "\n"
          "OPTIONS:\n"
-         "  -o OUT/--output=OUT: output file\n"
+         "  -o OUT/--output=OUT: optional output file\n"
          "  -s N/--sentence=N: sentence number\n"
          "  -h/--help: this help\n"
          "\n"
