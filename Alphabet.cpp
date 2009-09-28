@@ -470,20 +470,30 @@ while (src[i]!='\0') {
           if (is_lower(src[i],a)) {
              if (!inside_a_set) dest[j++]='[';
              dest[j++]=src[i];
-
-			 unichar* tbrowse = NULL;
-			 int i_pos_in_array_of_string = a->pos_in_represent_list[src[i]];
-			 if (i_pos_in_array_of_string != 0)
-				 tbrowse = a->t_array_collection[i_pos_in_array_of_string];
-			 if (tbrowse != NULL)
-				 while ((*tbrowse) != '\0') {
-					 dest[j++]=*(tbrowse++);
-				 }
-
+             if (a==NULL) {
+                /* If there is no alphabet file, we just consider the unique
+                 * uppercase variant of the letter */
+                dest[j++]=u_toupper(src[i]);
+             } else {
+                /* If there is an alphabet file, we use it */
+                unichar* tbrowse = NULL;
+                int i_pos_in_array_of_string = a->pos_in_represent_list[src[i]];
+                if (i_pos_in_array_of_string != 0) {
+                   tbrowse = a->t_array_collection[i_pos_in_array_of_string];
+                }
+                if (tbrowse != NULL) {
+                   while ((*tbrowse) != '\0') {
+                      dest[j++]=*(tbrowse++);
+                   }
+                }
+             }
              if (!inside_a_set) dest[j++]=']';
              i++;
+         }
+          else {
+             /* Not a lower case letter */
+             dest[j++]=src[i++];
           }
-          else dest[j++]=src[i++];
    }
 }
 dest[j]='\0';
