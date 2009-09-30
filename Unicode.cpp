@@ -404,7 +404,7 @@ int get_reading_encoding_text(char* text_encoding,size_t size_text_buffer,int ma
         strcat(result,",utf16-be-bom");
 
     if ((mask_encoding_compatibility & UTF8_BOM_POSSIBLE) != 0)
-        strcat(result,",utf8-be-bom");
+        strcat(result,",utf8-bom");
 
     if ((mask_encoding_compatibility & UTF16_LE_NO_BOM_POSSIBLE) != 0)
         strcat(result,",utf16-le-no-bom");
@@ -413,7 +413,7 @@ int get_reading_encoding_text(char* text_encoding,size_t size_text_buffer,int ma
         strcat(result,",utf16-be-no-bom");
 
     if ((mask_encoding_compatibility & UTF8_NO_BOM_POSSIBLE) != 0)
-        strcat(result,",utf8-be-no-bom");
+        strcat(result,",utf8-no-bom");
 
     if ((mask_encoding_compatibility & ASCII_NO_BOM_POSSIBLE) != 0)
         strcat(result,",ascii");
