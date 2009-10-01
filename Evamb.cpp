@@ -84,12 +84,13 @@ int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPU
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Evamb,lopts_Evamb,&index,vars))) {
    switch(val) {
-   case 's': if (1!=sscanf(vars->optarg,"%d%c",&sentence_number,&foo) || sentence_number<=0) {
-                /* foo is used to check that the sentence number is not like "45gjh" */
-                fatal_error("Invalid sentence number: %s\n",vars->optarg);
-             }
-             break;
-
+   case 's':   {  char c_foo;
+                  if (1!=sscanf(vars->optarg,"%d%c",&sentence_number,&c_foo) || sentence_number<=0) {
+                    /* foo is used to check that the sentence number is not like "45gjh" */
+                    fatal_error("Invalid sentence number: %s\n",vars->optarg);
+                  }
+                }
+                break;
       case 'o': if (vars->optarg[0]=='\0') {
                    fatal_error("You must specify a non empty output file name\n");
                 }
