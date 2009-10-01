@@ -993,6 +993,21 @@ void free_BIN_file(unsigned char* BIN) {
 
 
 /**
+ * function extracted from explore_all_paths to minimize stack uage of recursive
+ *    function. Produce entries from the INF codes associated to this final state
+ */
+void uncompress_entry_and_print(unichar*content,struct list_ustring* tmp,U_FILE* output)
+{
+   while (tmp!=NULL) {
+      unichar res[DIC_WORD_SIZE];
+      uncompress_entry(content,tmp->string,res);
+      u_fprintf(output,"%S\n",res);
+      tmp=tmp->next;
+   }
+}
+
+
+/**
  * This function explores all the paths from the current state in the
  * .bin automaton and produces all the corresponding DELAF lines in the
  * 'output' file.
@@ -1011,14 +1026,9 @@ if (!(n_transitions & 32768)) {
    ref=((unsigned char)bin[pos])*256*256+((unsigned char)bin[pos+1])*256+(unsigned char)bin[pos+2];
    pos=pos+3;
    content[string_pos]='\0';
-   struct list_ustring* tmp=inf->codes[ref];
+
    /* We produce entries from the INF codes associated to this final state */
-   while (tmp!=NULL) {
-      unichar res[DIC_WORD_SIZE];
-      uncompress_entry(content,tmp->string,res);
-      u_fprintf(output,"%S\n",res);
-      tmp=tmp->next;
-   }
+   uncompress_entry_and_print(content,inf->codes[ref],output);
 }
 else {
    /* If we are in a normal node, we remove the control bit to
