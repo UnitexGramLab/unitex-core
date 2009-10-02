@@ -19,6 +19,7 @@
   *
   */
 
+#include "UnusedParameter.h"
 #include "LocateFst2Tags.h"
 #include "BitMasks.h"
 #include "MetaSymbols.h"
@@ -235,6 +236,7 @@ tag[i]->matching_tokens=destructive_sorted_merge(get_token_list_for_sequence(opt
  */
 void optimize_full_pattern_for_tag(unichar* tag_token,int i,Fst2Tag* tag,Alphabet* alph,
                struct locate_parameters* p) {
+DISCARD_UNUSED_PARAMETER(alph)
 int token_number=get_value_index(tag_token,p->tokens);
 struct dela_entry* entry=tokenize_tag_token(tag_token);
 struct pattern* pattern=tag[i]->pattern;

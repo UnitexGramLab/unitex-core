@@ -19,6 +19,7 @@
   *
   */
 
+#include "UnusedParameter.h"
 #include "Fst2.h"
 #include "AbstractFst2Load.h"
 #include "DELA.h"
@@ -804,6 +805,7 @@ int real_match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Ta
                                         int tfst_tag_index,int fst2_tag_index,
                                         struct locate_tfst_infos* infos,
                                         int *pos_kr_fst2_tag,int *pos_kr_tfst_tag) {
+DISCARD_UNUSED_PARAMETER(tfst)
 if (infos->korean && *pos_kr_fst2_tag!=-1 && *pos_kr_tfst_tag!=-1) {
    fatal_error("Internal error in match_between_text_and_grammar_tags: cannot have partial match on both\n"
                "text tag and grammar tag\n");

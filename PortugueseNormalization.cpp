@@ -19,6 +19,7 @@
   *
   */
 
+#include "UnusedParameter.h"
 #include "PortugueseNormalization.h"
 #include "Error.h"
 
@@ -77,6 +78,7 @@ void build_portuguese_normalization_grammar(Alphabet* alph,struct match_list* li
                                             Encoding encoding_output, int bom_output,
                                             struct normalization_tree* norm_tree,
                                             struct normalization_tree* nasal_norm_tree) {
+DISCARD_UNUSED_PARAMETER(nasal_norm_tree)
 struct match_list* L=list;
 int N=0;
 unichar temp[2000];

@@ -231,7 +231,7 @@ printf("\n=== %x scanNode ====\n",scanNode);
 			if(!tdl->EC_code_gramm)
 				fatal_error("illegal null value;information");
 			if(tdl->EC_code_gramm && (*(tdl->EC_code_gramm) != 0))
-				infIdx = baseInf.put((unichar)tdl->EC_code_gramm);
+				infIdx = (unichar)baseInf.put(tdl->EC_code_gramm);
 			if(infIdx > 0x8000) fatal_error("too many information");
 			sufIdx = 0;
 			if(!head){

@@ -24,6 +24,7 @@
 //
 #ifndef STR_TO_AUTO_DEF
 #define STR_TO_AUTO_DEF
+#include "UnusedParameter.h"
 #include "bitmap.h"
 #include "segtype.h"
 #include "etcclass.h"

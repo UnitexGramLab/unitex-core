@@ -19,6 +19,7 @@
   *
   */
 
+#include "UnusedParameter.h"
 #include "Unicode.h"
 #include "CodePages.h"
 #include "HTMLCharacters.h"
@@ -1535,7 +1536,9 @@ return encoding;
  */
 int can_always_encode(unichar c,unsigned char* a) {
 /* Stupid expression, but its real purpose is to avoid the 'unused parameter warning' */
-return 1 || c || a;
+    DISCARD_UNUSED_PARAMETER(c)
+    DISCARD_UNUSED_PARAMETER(a)
+return 1;
 }
 
 
