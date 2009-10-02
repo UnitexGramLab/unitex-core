@@ -42,7 +42,7 @@ struct element {
 
 
 static int estimate_number_of_tfs_tags(int);
-static struct element* new_element(int,int,int,struct element*);
+static struct element* new_element(int,int,int,int,int,struct element*);
 static void free_element_list(struct element*);
 static struct element** new_element_array(int);
 static void free_element_array(struct element**,int);
