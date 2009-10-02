@@ -116,10 +116,10 @@ public:
 		outbytes4(size_ref,f);
 		outbytes4(size_inf,f);
 		outbytes4(size_bin,f);
-		outbytes2(size_str,f);
-		outbytes2(cnt_auto,f);
-		outbytes2(cnt_suf,f);
-		outbytes2(cnt_inf,f);
+		outbytes2((unichar)size_str,f);
+		outbytes2((unichar)cnt_auto,f);
+		outbytes2((unichar)cnt_suf,f);
+		outbytes2((unichar)cnt_inf,f);
 	}
 	void readFromFile(U_FILE *f)
 	{
@@ -515,7 +515,7 @@ public:
 		struct arbre_dico_trans_with_depth * trans=n->trans;
 		int maxD = -1;
 		while (trans!=NULL) {
-			trans->depth = sort_by_height(trans->noeud);
+			trans->depth = (unichar)sort_by_height(trans->noeud);
 		  if(maxD < trans->depth ) maxD = trans->depth ;
 		 trans = trans->suivant;
 		}
@@ -1647,7 +1647,7 @@ public:
 		// make inf 0 for automate
 		save_ref_offset = 0;
 		save_inf_offset = 0;
-		outbytes2(imageHead.cnt_auto,inf);
+		outbytes2((unichar)imageHead.cnt_auto,inf);
 		save_ref_offset +=2;
 		int infIdx;
 		int sufIdx;

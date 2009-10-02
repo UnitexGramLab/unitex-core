@@ -814,8 +814,8 @@ public:
 	void read_head()
 	{
 		fseek(phraseAutoMap,0,0);
-               unichar a = u_fgetc_UTF16LE_raw(phraseAutoMap->f);
-                a =u_fgetc_UTF16LE_raw(phraseAutoMap->f);
+               unichar a = (unichar)u_fgetc_UTF16LE_raw(phraseAutoMap->f);
+                a = (unichar)u_fgetc_UTF16LE_raw(phraseAutoMap->f);
 
                 unsigned char b[4];
                 fread(b,4,1,phraseAutoMap);
@@ -1015,7 +1015,7 @@ public:
 			case '+':
 			case '.':
 				*wp++ = '\0';
-				tmpEti[count_eti] =info.put(sp);
+				tmpEti[count_eti] = (unsigned short)info.put(sp);
 #ifdef DEBUG
 u_fprintf(debugf,"<%S:%d>",sp,tmpEti[count_eti]);
 #endif

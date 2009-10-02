@@ -129,7 +129,8 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 	iargIndex++;			
 	ifilename = new char [strlen(argv[iargIndex])+1];
 	strcpy(ifilename,argv[iargIndex]);
-	if(!(ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifilename,U_READ))) {
+	ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifilename,U_READ);
+	if(!ifile) {
 	   usage();
 	   return 1;
 	}
@@ -142,7 +143,8 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 		strcat(ofilename,extension);
 	}
 	 
-	if(!(ofile = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofilename,U_WRITE))) { 
+	ofile = u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,ofilename,U_WRITE);
+	if(!ofile) { 
 		fatal_error("Can't open %s file for output\n",ofilename);
 	}
 	u_fclose(ifile);

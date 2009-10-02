@@ -600,7 +600,7 @@ int i=start-1;
 /* Final pivot index */
 int j=end+1;
 pivot=array[(start+end)/2];
-while (true) {
+for (;;) {
    do j--;
    while ((j>(start-1)) && array[j]>pivot);
    do i++;
@@ -646,7 +646,7 @@ int i=start-1;
 int j=end+1;
 pivot=array1[(start+end)/2];
 void* tmp2;
-while (true) {
+for (;;) {
    do j--;
    while ((j>(start-1)) && array1[j]>pivot);
    do i++;

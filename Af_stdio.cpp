@@ -78,11 +78,6 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* f
 
 	while (tmp != NULL)
 	{
-		t_fileio_func_array test_func_array = tmp->afs.func_array;
-		t_fileio_func_array request_func_array = *func_array;
-		//if ((test_func_array == request_func_array) && (tmp->afs.privateSpacePtr == privateSpacePtr))
-		//if ((tmp->afs.func_array == (*func_array)) && (tmp->afs.privateSpacePtr == privateSpacePtr))
-
 		if ((memcmp(&tmp->afs.func_array,func_array,sizeof(t_fileio_func_array))==0) &&
 			(tmp->afs.privateSpacePtr == privateSpacePtr))
 		{

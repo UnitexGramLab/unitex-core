@@ -89,7 +89,8 @@ int d_init_morpho_equiv(char* equiv_file) {
   unichar line[MAX_EQUIV_LINE];  //current line of the Equivalence file
 
   //Opening the equivalence file
-  if ( !(ef = u_fopen_existing_unitex_text_format(equiv_file,U_READ)))  {
+  ef = u_fopen_existing_unitex_text_format(equiv_file,U_READ);
+  if (!ef)  {
     error("Unable to open equivalence file %s\n",equiv_file);
     return 1;
   }
@@ -166,7 +167,8 @@ int d_read_line(unichar* line, int line_no) {
     error("Line %d: a \'=\' missing.\n",line_no);
     return 1;
   }
-  if (!(cat = is_valid_cat(tmp))) {
+  cat = is_valid_cat(tmp);
+  if (!cat) {
     error("In \'Equivalence\' file:\n");
     error("%S is not a valid category in line %d.\n",tmp,line_no);
     return 1;

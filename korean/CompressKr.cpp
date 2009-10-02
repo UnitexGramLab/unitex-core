@@ -298,7 +298,8 @@ read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname,int mas
 	int flineCnt = 0;
 	class dicLines *heads,*wp;
 	unichar RLine[2048];
-	if(!(f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,fname,U_READ)))	fopenErrMessage(fname);
+	f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,fname,U_READ);
+	if(!f)	fopenErrMessage(fname);
 	cfilename = fname;
 	u_printf("Read File %s\n",fname);
 	while(EOF!=u_fgets(UtempBuff,f)){

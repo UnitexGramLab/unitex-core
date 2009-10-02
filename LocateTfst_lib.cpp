@@ -74,7 +74,7 @@ int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locat
  * It returns 1 in case of success; 0 otherwise.
  */
 int locate_tfst(char* text,char* grammar,char* alphabet,char* output,
-                Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                Encoding encoding_output,int bom_output,
                 MatchPolicy match_policy,
 		        OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
 		        VariableErrorPolicy variable_error_policy,int search_limit,char* jamo_table) {

@@ -541,7 +541,7 @@ unichar* tmp_char;
 int i = m-1;
 int j = n+1; // final pivot index
 pivot=n_occur->tab[(m+n)/2];
-while (true) {
+for (;;) {
   do j--;
   while ((j>(m-1))&&(pivot>n_occur->tab[j]));
   do i++;
@@ -578,7 +578,7 @@ int tmp_int;
 int i = m-1;
 int j = n+1; // final pivot index
 pivot=(unichar*)tokens->tab[(m+n)/2];
-while (true) {
+for (;;) {
   do j--;
   while ((j>(m-1))&&(u_strcmp(pivot,(unichar*)tokens->tab[j])<0));
   do i++;

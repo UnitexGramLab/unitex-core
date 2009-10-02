@@ -119,7 +119,7 @@ public:
 			struct double_link_trans *tt=new_trans();
 			tt->arr=new_noeud();
 			tt->arr->c = s[pos];
-			tt->arr->depth = pos+1;
+			tt->arr->depth = (unsigned short)(pos+1);
 			tt->arr->parent = noeud;
 			tt->suivant=*t;
 			*t=tt;
@@ -215,7 +215,7 @@ public:
 	{
 		cbuff[pos] = noeud->c;
 		if(noeud->final != -1){
-			cbuff[0] = pos;
+			cbuff[0] = (unsigned short)pos;
 			cbuff[pos] = 0;
 			if(ppr) (*ppr)((void *)cbuff,(void *)noeud->final,
 				(void *)0);
@@ -276,7 +276,7 @@ public:
 		cbuff[pos] = noeud->c;
 		if(noeud->final != -1){
 			if(tab){
-				cbuff[0] = pos;
+				cbuff[0] = (unsigned short)pos;
 				tab[noeud->final] = 
 					(unsigned short *)malloc(
 					(pos+1) * sizeof(unsigned short));

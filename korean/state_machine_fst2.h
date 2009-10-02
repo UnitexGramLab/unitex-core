@@ -471,13 +471,13 @@ if(debugPrFlag) {
 			if(IncludeMap[wt/32] & bitSetL[wt%32]){
 				if(!isPreviousJamo) cleanMachine();
 				curSMvalue(wt);
-				for( i = 0; i < outCnt;i++)	obuff[outputCnt++] = uWord[i];
+				for( i = 0; i < outCnt;i++)	obuff[outputCnt++] = (unichar)(uWord[i]);
 				outCnt = 0;
 				isPreviousJamo = 1;
 			} else {
 				if(isPreviousJamo){
 					curSMvalue(*terSymbol);
-					for( i = 0; i < outCnt;i++)	obuff[outputCnt++] = uWord[i];
+					for( i = 0; i < outCnt;i++)	obuff[outputCnt++] = (unichar)(uWord[i]);
 					outCnt = 0;
 				}
 				obuff[outputCnt++] = wt;
@@ -498,14 +498,14 @@ if(debugPrFlag) {
 				if(!isPreviousJamo) cleanMachine();
 					curSMvalue(*wt);
 				for( i = 0; i < outCnt;i++)
-					obuff[outputCnt++] = uWord[i];
+					obuff[outputCnt++] = (unichar)(uWord[i]);
 				outCnt = 0;
 				isPreviousJamo = 1;
 			} else {
 				if(isPreviousJamo){
 					curSMvalue(*terSymbol);
 					for( i = 0; i < outCnt;i++)
-						obuff[outputCnt++] = uWord[i];
+						obuff[outputCnt++] = (unichar)(uWord[i]);
 					outCnt = 0;
 				}
 				obuff[outputCnt++] = *wt;
@@ -516,7 +516,7 @@ if(debugPrFlag) {
 		if(isPreviousJamo){
 		curSMvalue(*terSymbol);
 		for( i = 0; i < outCnt;i++)
-				obuff[outputCnt++] = uWord[i];
+				obuff[outputCnt++] = (unichar)(uWord[i]);
 		outCnt = 0;
 		}
 		obuff[outputCnt] = 0;

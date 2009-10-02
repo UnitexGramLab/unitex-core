@@ -121,7 +121,8 @@ static void getListFile(char *fn)
 struct binFileList *tmp;
 	U_FILE *lstF;
 	u_printf("Load file %s\n",fn);
-    if(!(lstF = u_fopen(BINARY,fn,U_READ)))
+    lstF = u_fopen(BINARY,fn,U_READ);
+    if (!lstF)
     	fopenErrMessage(fn);
     get_path(fn,pathName);
     pathLen = (int)strlen(pathName);
@@ -302,7 +303,8 @@ mergeFiles(char *ofn,struct binFileList *first)
 	char ofilename[1024];
 	remove_extension(ofn,ofilename);
 	strcat(ofilename,".mtb");
-	if(!(f = u_fopen(BINARY,ofilename,U_WRITE)))
+	f = u_fopen(BINARY,ofilename,U_WRITE);
+	if(!f)
 		fopenErrMessage(ofilename);
 
 	newHead.writeAtFile(f);
@@ -388,7 +390,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 	offsetStrSave = 0;
 	if(racStateCounter && (racStateCounter != 1) ){ // dummy initial node
 //printf("node  0 for racines");
-		outbytes2((unsigned int)racStateCounter,f);
+		outbytes2((unichar)((unsigned int)racStateCounter),f);
 		last = first;
 		while(last){
 			if(last->image.isRacine()){
@@ -423,7 +425,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 				sufid |= wp[4];
 				sinfo  = info & 0x8000;
 				if(info & 0x7fff){
-					info = last->relocateInfCnt + (info & 0x7fff);
+					info = (unsigned short)(last->relocateInfCnt + (info & 0x7fff));
 					info |= sinfo;
 				}
 				if(sinfo){

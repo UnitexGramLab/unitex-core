@@ -114,8 +114,11 @@ int main_ExtractChar(int argc, char *argv[]) {
 	   strcat(ofilename,extTmp);
 	   
 	}
-	if(!(ofile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofilename,U_WRITE)))fopenErrMessage(ofilename);
-	if(!(ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifilename,U_READ))) fopenErrMessage(ifilename);
+	ofile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofilename,U_WRITE);
+	if(!ofile) fopenErrMessage(ofilename);
+
+	ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifilename,U_READ);
+	if(!ifile) fopenErrMessage(ifilename);
 
 	unsigned short exWord[1024];
 	unsigned short testWord[1024];
@@ -133,7 +136,7 @@ int main_ExtractChar(int argc, char *argv[]) {
              do{
                 extracter.curSMvalue(*wwp);
                 for(ii = 0; ii < extracter.outCnt;ii++)
-                  *wp++= extracter.uWord[ii];
+                  *wp++= (unsigned short)(extracter.uWord[ii]);
                 extracter.outCnt=0;
                 
              } while(*wwp++);

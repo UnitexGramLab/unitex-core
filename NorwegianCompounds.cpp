@@ -380,7 +380,7 @@ return res;
 char check_N(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"N");
-return dic_entry_contain_gram_code(d,t1);
+return (char)dic_entry_contain_gram_code(d,t1);
 }
 
 
@@ -434,7 +434,7 @@ return res;
 char check_a(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"a");
-return dic_entry_contain_inflectional_code(d,t1);
+return (char)dic_entry_contain_inflectional_code(d,t1);
 }
 
 
@@ -480,7 +480,7 @@ return res;
 char check_A(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"A");
-return dic_entry_contain_gram_code(d,t1);
+return (char)dic_entry_contain_gram_code(d,t1);
 }
 
 

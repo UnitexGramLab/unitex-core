@@ -451,7 +451,7 @@ int i=start-1;
 /* Final pivot index */
 int j=end+1;
 pivot=transitions[(start+end)/2];
-while (true) {
+for (;;) {
    do j--;
    while ((j>(start-1))&&(compare_nodes(pivot,transitions[j]) < 0));
    do i++;

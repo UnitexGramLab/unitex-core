@@ -954,7 +954,7 @@ if (c==0x0D) {
       switch(encoding) {
          case UTF16_LE:
          case BIG_ENDIAN_UTF16: {
-            u_ungetc_raw(encoding,c,f);
+            u_ungetc_raw(encoding,(unichar)c,f);
             break;
          }
          case UTF8:
@@ -1781,7 +1781,7 @@ while (*format) {
                   break;
                }
                case 'c': {
-                  c=va_arg(list,int);
+                  c=(char)(va_arg(list,int));
                   n_printed=n_printed+sprintf(result,format2,c);
                   break;
                }
@@ -1990,7 +1990,7 @@ while (*format) {
                   break;
                }
                case 'c': {
-                  c=va_arg(list,int);
+                  c=(char)va_arg(list,int);
                   n_printed=n_printed+sprintf(result,format2,c);
                   break;
                }
@@ -2105,7 +2105,7 @@ while (*format) {
       } else {
          /* 2) the format is for instance a '\t' and we have a current input
           *    separator that is not a '\t' => we skip all separators that are not '\t' */
-         while ((c=u_fgetc_raw(encoding,f))!=EOF && is_separator(c) && c!=*format) {}
+         while ((c=u_fgetc_raw(encoding,f))!=EOF && is_separator((unichar)c) && c!=*format) {}
          /* Subcase 1: EOF */
          if (c==EOF) return (n_variables==0)?EOF:n_variables;
          /* Subcase 2: we found the correct separator */
@@ -2119,7 +2119,7 @@ while (*format) {
    }
    /* Now we must deal with an input separator when the current format character
     * is not a separator */
-   while (c!=EOF && is_separator(c)) {
+   while (c!=EOF && is_separator((unichar)c)) {
       c=u_fgetc_raw(encoding,f);
    }
    /* Again, we may have reached the EOF */
@@ -2152,7 +2152,7 @@ while (*format) {
          /* If we have %C we must read a unicode character */
          case 'C': {
             uc=va_arg(list,unichar*);
-            *uc=c;
+            *uc=(unichar)c;
             n_variables++;
             break;
          }
@@ -2163,7 +2163,7 @@ while (*format) {
             int pos=0;
             do {
                ch[pos++]=(char)c;
-            } while ((c=u_fgetc_raw(encoding,f))!=EOF && !is_separator(c));
+            } while ((c=u_fgetc_raw(encoding,f))!=EOF && !is_separator((unichar)c));
             ch[pos]='\0';
             if (c!=EOF) {
                /* If we have read a separator, we put it back in the file, for
@@ -2172,7 +2172,7 @@ while (*format) {
                   stdin_ch=c;
                }
                else {
-                  u_ungetc_raw(encoding,c,f);
+                  u_ungetc_raw(encoding,(unichar)c,f);
                }
             }
             n_variables++;
@@ -2184,8 +2184,8 @@ while (*format) {
             uc=va_arg(list,unichar*);
             int pos=0;
             do {
-               uc[pos++]=c;
-            } while ((c=u_fgetc_raw(encoding,f))!=EOF && !is_separator(c));
+               uc[pos++]=(unichar)c;
+            } while ((c=u_fgetc_raw(encoding,f))!=EOF && !is_separator((unichar)c));
             uc[pos]='\0';
             if (c!=EOF) {
                /* If we have read a separator, we put it back in the file, for
@@ -2194,7 +2194,7 @@ while (*format) {
                   stdin_ch=c;
                }
                else {
-                  u_ungetc_raw(encoding,c,f);
+                  u_ungetc_raw(encoding,(unichar)c,f);
                }
             }
             n_variables++;
@@ -2229,7 +2229,7 @@ while (*format) {
                   stdin_ch=c;
                }
                else {
-                  u_ungetc_raw(encoding,c,f);
+                  u_ungetc_raw(encoding,(unichar)c,f);
                }
             }
             n_variables++;
@@ -2244,11 +2244,11 @@ while (*format) {
                /* If we have a sign, we must read the next character */
                if (c=='-') multiplier=-1;
                c=u_fgetc_raw(encoding,f);
-               if (c==EOF || !u_is_hexa_digit(c)) {
+               if (c==EOF || !u_is_hexa_digit((unichar)c)) {
                   /* If we have reached the EOF or if we have a non hexa digit character */
                   return n_variables;
                }
-            } else if (!u_is_hexa_digit(c)) {
+            } else if (!u_is_hexa_digit((unichar)c)) {
                /* If we have a character that neither a sign nor a digit, we fail */
                return n_variables;
             }
@@ -2258,7 +2258,7 @@ while (*format) {
                else if (c>='a' && c<='f') c=c-'a'+10;
                else c=c-'A'+10;
                *i=(*i)*16+c;
-            } while ((c=u_fgetc_raw(encoding,f))!=EOF && u_is_hexa_digit(c));
+            } while ((c=u_fgetc_raw(encoding,f))!=EOF && u_is_hexa_digit((unichar)c));
             *i=(*i)*multiplier;
             if (c!=EOF) {
                /* If we have read a non digit, we put it back in the file, for
@@ -2267,7 +2267,7 @@ while (*format) {
                   stdin_ch=c;
                }
                else {
-                  u_ungetc_raw(encoding,c,f);
+                  u_ungetc_raw(encoding,(unichar)c,f);
                }
             }
             n_variables++;

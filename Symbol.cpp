@@ -885,7 +885,7 @@ void symbol_dump(const symbol_t * s) {
 void symbols_dump(const symbol_t * s) {
 
   u_printf("(");
-  while (s) { symbol_dump(s); if ((s = ((s == SYMBOL_DEF) ? NULL : s->next))) { u_printf(", "); } }
+  while (s) { symbol_dump(s); s = ((s == SYMBOL_DEF) ? NULL : s->next); if (s) { u_printf(", "); } }
   u_printf(")");
 }
 

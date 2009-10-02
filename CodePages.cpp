@@ -1215,7 +1215,7 @@ if (encoding->type==E_ONE_BYTE_ENCODING) {
  */
 void write_integer(int n,void* encoding_ctx,ABSTRACTFILE* f,struct encoding* encoding,unsigned char* ascii_dest) {
 if (n<10) {
-	write_one_char('0'+n,encoding_ctx,f,encoding,ascii_dest);
+	write_one_char((unichar)('0'+n),encoding_ctx,f,encoding,ascii_dest);
 	return;
 }
 write_integer(n/10,encoding_ctx,f,encoding,ascii_dest);
@@ -1484,10 +1484,10 @@ while ((tmp=read_one_char(encoding_ctx,input->f,input_encoding,unicode_src))!=EO
 					 }
 					 z(';',encoding_ctx,output_encoding,output->f,ascii_dest);
 					 break;
-				default: if (!is_HTML_control_character(i) || decode_HTML_control_characters) {
+				default: if (!is_HTML_control_character((unichar)i) || decode_HTML_control_characters) {
 							/* If we have a normal character or if we can
 							 * encode control characters, then we print it */
-							z(i,encoding_ctx,output_encoding,output->f,ascii_dest);
+							z((unichar)i,encoding_ctx,output_encoding,output->f,ascii_dest);
 						} else {
 							/* If we have a control character and if we can not decode it,
 							 * then we copy the string representation that was in

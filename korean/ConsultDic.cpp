@@ -317,7 +317,8 @@ static void getListFile(char *filename)
 	int pathLen;
 	struct binFileList *tmp;
 	U_FILE *lstF;
-    if(!(lstF = u_fopen(BINARY,filename,U_READ)))
+    lstF = u_fopen(BINARY,filename,U_READ);
+    if (!lstF)
     	fopenErrMessage(filename);	
     get_path(filename,pathName);
     pathLen = (int)strlen(pathName);

@@ -271,7 +271,7 @@ public:
 	void explore_leaf(struct arbre_hash0* noeud,int pos,release_f ppr)
 	{
 		if(noeud->final != -1){
-			cbuff[0] = pos;
+			cbuff[0] = (unichar)pos;
 			cbuff[pos] = 0;
 			if(ppr) (*ppr)((void *)cbuff,(void *)noeud->final,
 				(void *)0);
@@ -327,7 +327,7 @@ public:
 	 int i;
 		if(noeud->final != -1){
 			if(tab){
-				cbuff[0] = pos;
+				cbuff[0] = (unichar)pos;
 				tab[noeud->final] =
 					(unichar *)malloc(
 					(pos+2) * sizeof(unichar));
@@ -611,7 +611,7 @@ public:
 	void explore_leaf(struct arbre_hash00* noeud,int pos,release_f ppr)
 	{
 		if(noeud->final != -1){
-			cbuff[0] = pos;
+			cbuff[0] = (unichar)pos;
 			cbuff[pos] = 0;
 			if(ppr) (*ppr)((void *)cbuff,(void *)noeud->final,(void *)noeud->value);
 		}
@@ -688,7 +688,7 @@ public:
 	{
 	    int i;
 		if(noeud->final != -1){
-			cbuff[0] = pos;
+			cbuff[0] = (unichar)pos;
 			tab[noeud->final] =
 				(unichar *)malloc(
 				(pos+2) * sizeof(unichar));
@@ -1005,7 +1005,7 @@ public:
 			tab[noeud->final] =
 				(unichar *)malloc(
 				(pos+2) * sizeof(unichar));
-			for(i=0; i < pos; i++)	tab[noeud->final][i]=cbuff[i];
+			for(i=0; i < pos; i++)	tab[noeud->final][i]=(unichar)cbuff[i];
 			tab[noeud->final][i] = 0;
 			value_tab[noeud->final] = (int)noeud->value;
 		}

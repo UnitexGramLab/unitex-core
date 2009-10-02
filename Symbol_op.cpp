@@ -213,7 +213,8 @@ if (type_order(a->type) != type_order(b->type)) { return type_order(b->type) - t
 
   /* next compare by traits */
 
-  if ((cmp = compare_traits(a, b))) { return cmp; }
+  cmp = compare_traits(a, b);
+  if (cmp) { return cmp; }
 
 
   /* end then compare strings */
@@ -753,7 +754,7 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
       if (v == UNSPECIFIED || v == b->feature[idx]) { continue; }
 
-      templat->feature[idx] = v;
+      templat->feature[idx] = (char)v;
 
       concat_symbols(end, dup_symbol(templat), & end);
     }
@@ -774,7 +775,7 @@ static symbol_t * minus_traits(const symbol_t * a, const symbol_t * b) {
 
 	if (v == UNSPECIFIED || v == b->feature[idx]) { continue; }
 
-	templat->feature[idx] = v;
+	templat->feature[idx] = (char)v;
 	concat_symbols(end, dup_symbol(templat), & end);
       }
 

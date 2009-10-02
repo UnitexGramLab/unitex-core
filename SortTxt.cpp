@@ -152,7 +152,7 @@ inf->root=new_sort_tree_node();
 inf->resulting_line_number=0;
 for (int i=0;i<0x10000;i++) {
    inf->class_numbers[i]=0;
-   inf->canonical[i]=i;
+   inf->canonical[i]=(unichar)i;
    inf->priority[i]=0;
 }
 return inf;
@@ -708,7 +708,7 @@ struct sort_tree_transition* tmp;
 int i=m-1;
 int j=n+1;         /* Final index of the pivot */
 pivot=t[(m+n)/2]->c;
-while (true) {
+for (;;) {
   do j--;
   while ((j>(m-1))&&(char_cmp(pivot,t[j]->c,inf) < 0));
   do i++;

@@ -199,7 +199,7 @@ get_path(text,output);
 strcat(output,"concord.ind");
 
 int OK=locate_tfst(text,grammar,alphabet,output,
-                   encoding_output,bom_output,mask_encoding_compatibility_input,
+                   encoding_output,bom_output,
                    match_policy,output_policy,
                    ambiguous_output_policy,variable_error_policy,search_limit,jamo_table);
 

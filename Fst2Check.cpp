@@ -435,7 +435,7 @@ if (graphs_matching_E!=NULL) {
 }
 int ALL_MASKS=CONDITIONAL_E_MATCH|UNCONDITIONAL_E_MATCH|DOES_NOT_MATCH_E|TMP_LOOP_MARK|VISITED_MARK;
 for (i=0;i<fst2->number_of_states;i++) {
-   unset_bit_mask(&(fst2->states[i]->control),ALL_MASKS);
+   unset_bit_mask(&(fst2->states[i]->control),(unsigned char)ALL_MASKS);
 }
 }
 

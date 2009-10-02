@@ -35,7 +35,7 @@ if (infos==NULL) {
 }
 infos->type=type;
 infos->CATid=CATid;
-infos->val=val;
+infos->val=(char)val;
 return infos;
 }
 
@@ -278,7 +278,7 @@ CAT_t* CAT=POS_get_CAT(code->POS,index);
 for (int v=1;v<CAT->values->size;v++) {
    /* If we must expand the category #index, we take all its possible values,
     * except LOCKED and UNSPECIFIED */
-   templat->feature[index]=v;
+   templat->feature[index]=(char)v;
    /* Then, for a given value of the feature #index, we expand recursively
     * the rest of the code and we concatenate the result to the resulting
     * symbol list. */

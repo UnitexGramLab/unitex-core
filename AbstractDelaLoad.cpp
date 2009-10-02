@@ -73,9 +73,6 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractDelaSpace(const t_persistent_dic_func_
 
 	while (tmp != NULL)
 	{
-		t_persistent_dic_func_array test_func_array = tmp->afs.func_array;
-		t_persistent_dic_func_array request_func_array = *func_array;
-
 		if ((memcmp(&tmp->afs.func_array,func_array,sizeof(t_persistent_dic_func_array))==0) &&
 			(tmp->afs.privateSpacePtr == privateSpacePtr))
 		{

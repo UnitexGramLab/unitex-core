@@ -104,7 +104,7 @@ if (alphabet->pos_in_represent_list[lower]==0) {
    if (i_pos_in_array_of_string >= alphabet->i_nb_array_pos_allocated) {
      enlarge_buffer_alphabet(alphabet);
    }
-   alphabet->pos_in_represent_list[lower] = i_pos_in_array_of_string;
+   alphabet->pos_in_represent_list[lower] = (uint16_t)i_pos_in_array_of_string;
    alphabet->t_array_collection[i_pos_in_array_of_string]=(unichar*)malloc(2*sizeof(unichar));
    if (alphabet->t_array_collection[i_pos_in_array_of_string]==NULL) {
       fatal_alloc_error("add_letter_equivalence");

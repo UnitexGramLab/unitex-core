@@ -103,7 +103,7 @@ if (start_token>end_token || (start_token==end_token && start_char>end_char)) {
 int current_token=start_token;
 int current_char=start_char;
 unichar* token=infos->tfst->token_content[current_token];
-while (1) {
+for (;;) {
    u_strcat(s,token[current_char]);
    if (current_token==end_token && current_char==end_char) {
       /* Done */

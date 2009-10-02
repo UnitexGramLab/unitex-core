@@ -90,7 +90,7 @@ int value_mask=value<<((n%divider)*length);
 /* First, we clean the previous information */
 array->array[n/divider]=array->array[n/divider] & cleaning_mask;
 /* And then we set the new value */
-array->array[n/divider]=array->array[n/divider] | value_mask;
+array->array[n/divider]=(unsigned char)(array->array[n/divider] | value_mask);
 }
 
 

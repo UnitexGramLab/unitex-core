@@ -91,7 +91,8 @@ int read_language_morpho(char *file) {
   u_strcpy(EMPTY_VAL,"<E>");
 
   //Open the Morphology file
-  if ( !(lf = u_fopen_existing_unitex_text_format(file,U_READ)))  {
+  lf = u_fopen_existing_unitex_text_format(file,U_READ);
+  if ( !(lf))  {
     error("Unable to open language morphology file %s\n",file);
     return 1;
   }

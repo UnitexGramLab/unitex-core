@@ -185,7 +185,7 @@ jamoCodage::loadJamoMap(char *mfName)
 			orderTableJamo[jamoOffset] = new unichar[8];
 			mapJamoTable[JamoIndex - 0x1100] = orderTableJamo[jamoOffset];
 			for(int i = 0; i < 8;i++)orderTableJamo[jamoOffset][i] = 0;
-			orderTableJamo[jamoOffset][JamoCnt++] = JamoIndex;
+			orderTableJamo[jamoOffset][JamoCnt++] = (unichar)JamoIndex;
 		} else if( *wp == '<'){	// symbol for syllabe mark
 			if (sylMarkStr !=NULL)
 			  delete [] sylMarkStr ;
@@ -198,7 +198,7 @@ jamoCodage::loadJamoMap(char *mfName)
 				orderTableJamo[0xff] = new unichar[8];
 				for(int i = 0; i < 8;i++)orderTableJamo[0xff][i] = 0;
 				if(*wp == '0') 
-    orderTableJamo[0xff][0] = uniToInt((unichar *)wp);
+    orderTableJamo[0xff][0] = (unichar)uniToInt((unichar *)wp);
 				else orderTableJamo[0xff][0] = *wp;
 				sylMark = orderTableJamo[0xff][0];
 			}
@@ -225,7 +225,7 @@ jamoCodage::loadJamoMap(char *mfName)
 		if(wp[1] == '\0') 
 			orderTableJamo[jamoOffset][JamoCnt++] = *wp;
 		else
-			orderTableJamo[jamoOffset][JamoCnt++] = uniToInt((unichar *)wp);
+			orderTableJamo[jamoOffset][JamoCnt++] = (unichar)uniToInt((unichar *)wp);
 		 
 		for(i = 2;i < segCnt;i++)
 		{
@@ -233,7 +233,7 @@ jamoCodage::loadJamoMap(char *mfName)
 			if(wp[1] == '\0') 
 				orderTableJamo[jamoOffset][JamoCnt++] = *wp;
 			else
-				orderTableJamo[jamoOffset][JamoCnt++] = uniToInt((unichar *)wp);
+				orderTableJamo[jamoOffset][JamoCnt++] = (unichar)uniToInt((unichar *)wp);
 		}
 		jamoOffset++;
 	} while(true);
@@ -332,7 +332,8 @@ void jamoCodage::jamoMapOut()
 	
 	U_FILE *f;
 	int i,j;
-	if(!(f=u_fopen(UTF16_LE,"jamoCTable.txt",U_WRITE))) fopenErrMessage("jamoCTable.txt");
+	f=u_fopen(UTF16_LE,"jamoCTable.txt",U_WRITE);
+	if(!f) fopenErrMessage("jamoCTable.txt");
 
 	u_fprintf(f,"Unicode Jamos, pair of Hangul Jamo et Hangul Compatiblity Jamo\n");	
 	for(i = 0; i < jamoSize;i++){

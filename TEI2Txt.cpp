@@ -116,7 +116,7 @@ void tei2txt(char *fin, char *fout,Encoding encoding_output,int bom_output) {
 	if((i = u_fgetc(input)) != EOF) {
 		c = (unichar)i;
 
-		while(1) {
+		for (;;) {
 			while(c != '<' && (i = u_fgetc(input)) != EOF)
 				c = (unichar)i;
 

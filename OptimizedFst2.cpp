@@ -90,7 +90,7 @@ if (p==NULL) {
    fatal_alloc_error("new_opt_pattern");
 }
 p->pattern_number=pattern_number;
-p->negation=negation;
+p->negation=(char)negation;
 p->transition=NULL;
 p->next=NULL;
 return p;
@@ -239,7 +239,7 @@ if (m==NULL) {
    fatal_alloc_error("new_opt_meta");
 }
 m->meta=meta;
-m->negation=negation;
+m->negation=(char)negation;
 m->transition=NULL;
 m->next=NULL;
 return m;

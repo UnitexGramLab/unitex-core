@@ -74,7 +74,7 @@ do {
 void build_portuguese_normalization_grammar(Alphabet* alph,struct match_list* list,unsigned char* root_bin,
                                             struct INF_codes* root_inf,unsigned char* inflected_bin,
                                             struct INF_codes* inflected_inf,char* res_grf_name,
-                                            Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
+                                            Encoding encoding_output, int bom_output,
                                             struct normalization_tree* norm_tree,
                                             struct normalization_tree* nasal_norm_tree) {
 struct match_list* L=list;

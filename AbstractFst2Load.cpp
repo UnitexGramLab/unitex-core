@@ -75,9 +75,6 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFst2Space(const t_persistent_fst2_func
 
 	while (tmp != NULL)
 	{
-		t_persistent_fst2_func_array test_func_array = tmp->afs.func_array;
-		t_persistent_fst2_func_array request_func_array = *func_array;
-
 		if ((memcmp(&tmp->afs.func_array,func_array,sizeof(t_persistent_fst2_func_array))==0) &&
 			(tmp->afs.privateSpacePtr == privateSpacePtr))
 		{

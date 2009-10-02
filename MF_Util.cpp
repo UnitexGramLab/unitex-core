@@ -318,11 +318,13 @@ int u_add_unitab_elem(unichar* form, unitab_t* tab) {
 
    //If the table doesn't exist
    if ((tab->n) == 1) {
-      if (!(tab->t = (unichar**) malloc(sizeof(unichar**)))) {
+      tab->t = (unichar**) malloc(sizeof(unichar**));
+      if (!(tab->t)) {
          fatal_alloc_error("u_add_unitab_elem");
       }
    } else {
-      if (!(tab->t = (unichar**) realloc(tab->t, tab->n * sizeof(unichar*)))) {
+      tab->t = (unichar**) realloc(tab->t, tab->n * sizeof(unichar*));
+      if (!(tab->t)) {
          fatal_alloc_error("u_add_unitab_elem");
       }
    }

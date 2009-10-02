@@ -261,7 +261,7 @@ if (rewriting_rules==NULL) {
 }
 u_printf("Constructing normalization grammar...\n");
 build_portuguese_normalization_grammar(alph,list,root_bin,root_inf,inflected_bin,inflected_inf,output,
-                                       encoding_output,bom_output,mask_encoding_compatibility_input,
+                                       encoding_output,bom_output,
                                        rewriting_rules,nasal_rewriting_rules);
 free_alphabet(alph);
 free_abstract_BIN(root_bin,&root_bin_free);

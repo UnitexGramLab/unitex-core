@@ -247,9 +247,11 @@ U_FILE *ifile,*ofile;
   countComma = 0;
   offset = 0;
   opened = 0;
-  if(!(ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifname,U_READ)))
+  ifile = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,ifname,U_READ);
+  if(!ifile)
     fopenErrMessage(ifname);
-  if(!(ofile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofname,U_WRITE)))
+  ofile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofname,U_WRITE);
+  if(!ofile)
     fatal_error("Cannot open %s\n",ofname);
 //printf("%s %s\n",ifname,ofname);
   while((c = u_fgetc(ifile)) != EOF){
@@ -264,8 +266,8 @@ U_FILE *ifile,*ofile;
          }
          switch(countComma){
          case 3:
-                u_fputc(c,ofile);                  
-                if(!opened){u_fputc(c,ofile);u_fputc(c,ofile);u_fputc(c,ofile);};                
+                u_fputc((unichar)c,ofile);                  
+                if(!opened){u_fputc((unichar)c,ofile);u_fputc((unichar)c,ofile);u_fputc((unichar)c,ofile);};                
                 break;
          case 0:
                   flechi[flechiIndex] = 0;
@@ -330,14 +332,14 @@ U_FILE *ifile,*ofile;
         countComma = 0;
         flechiIndex = 0;
         flechi[flechiIndex] = 0;
-        u_fputc(c,ofile);
+        u_fputc((unichar)c,ofile);
         break;
     default:
         if(openFlag)
-                saveOrg[index][offset++] = c;
+                saveOrg[index][offset++] = (unichar)c;
         else {
-           if(!countComma)flechi[flechiIndex++] = c;
-           u_fputc(c,ofile);
+           if(!countComma) flechi[flechiIndex++] = (unichar)c;
+           u_fputc((unichar)c,ofile);
         }
     }
   }

@@ -1175,7 +1175,8 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 		strcpy(tmpchar,ofnameOnly);
 		strcat(tmpchar,"lst");
 			makeOfileName(ofNameTmp,tmpchar,".txt");
-			if(!(listFile = u_fopen(ASCII,ofNameTmp,U_WRITE)))
+			listFile = u_fopen(ASCII,ofNameTmp,U_WRITE);
+			if(!(listFile))
 				fatal_error("list file open error");
 			i = 0;
 
@@ -1199,8 +1200,9 @@ void CFstApp::getWordsFromGraph(int &changeStrToIdx,unichar changeStrTo[][MAX_CH
 				u_fprintf(listFile,"%s\r\n",ttpchar);
 
 
-				if (!(foutput = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofNameTmp,U_WRITE))){
-               fatal_error("Cannot open file %s\n",ofNameTmp);
+				foutput = u_fopen_creating_versatile_encoding(encoding_output,bom_output,ofNameTmp,U_WRITE);
+				if (!foutput){
+				  fatal_error("Cannot open file %s\n",ofNameTmp);
 				}
 				listOut = 0;     // output disable
 

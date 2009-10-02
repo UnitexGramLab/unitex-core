@@ -122,11 +122,11 @@ public:
     int i;
         wp = orgUniMbcsMap;
         for( i = 0 ; i < 128 ;i++)
-                mbcsUni949Table[i] = i;
+                mbcsUni949Table[i] = (short int)i;
         for( i = 128; i < 128 * 256; i++)
              mbcsUni949Table[i] = '?';
         for( i = 0; i < 256;i++){
-                uniMbcs949Table[i*2] = i;
+                uniMbcs949Table[i*2] = (unsigned char)i;
         }
         for( i = 256; i < 0x10000;i++){
                 uniMbcs949Table[i*2] = '?';

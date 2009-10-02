@@ -57,7 +57,7 @@ u_printf(usage_Table2Grf);
 }
 
 
-void table2grf(U_FILE*,U_FILE*,U_FILE*,Encoding,int ,int ,char*,char*);
+void table2grf(U_FILE*,U_FILE*,U_FILE*,Encoding, int, char*, char*);
 
 
 const char* optstring_Table2Grf=":r:o:s:hk:q:";
@@ -158,7 +158,7 @@ if (subgraph_pattern[0]=='\0') {
 }
 char path[FILENAME_MAX];
 get_path(output,path);
-table2grf(table,reference_graph,result_graph,encoding_output,bom_output,mask_encoding_compatibility_input,subgraph_pattern,path);
+table2grf(table,reference_graph,result_graph,encoding_output,bom_output,subgraph_pattern,path);
 free_OptVars(vars);
 return 0;
 }
@@ -684,7 +684,7 @@ return true;
 
 
 void table2grf(U_FILE* table,U_FILE* reference_graph,U_FILE* result_graph,
-               Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+               Encoding encoding_output,int bom_output,
                char* subgraph,char* chemin) {
 int ligne_courante;
 struct graphe_patron structure;

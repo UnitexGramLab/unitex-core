@@ -231,7 +231,7 @@ printf("\n=== %x scanNode ====\n",scanNode);
 			if(!tdl->EC_code_gramm)
 				fatal_error("illegal null value;information");
 			if(tdl->EC_code_gramm && (*(tdl->EC_code_gramm) != 0))
-				infIdx = baseInf.put(tdl->EC_code_gramm);
+				infIdx = baseInf.put((unichar)tdl->EC_code_gramm);
 			if(infIdx > 0x8000) fatal_error("too many information");
 			sufIdx = 0;
 			if(!head){
@@ -552,7 +552,7 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 			i % nodes.pgEMcnt * sizeof(struct arbre_string3_node));
 			if(nPtr->offset == -2 ) continue;
 			if(nPtr->tcnt > 0x10000) fatal_error("too many transitions\n");
-			outbytes2(nPtr->tcnt,bfile);
+			outbytes2((unichar)nPtr->tcnt,bfile);
 			tmp= nPtr->trans;
 			while (tmp!=NULL) {
 				outbytes2((unichar)tmp->c,bfile);
@@ -637,7 +637,8 @@ public:
 	{
 		U_FILE *f;
 
-		if(!(f = u_fopen(BINARY,fname,U_READ)))
+		f = u_fopen(BINARY,fname,U_READ);
+		if (!f)
 			fopenErrMessage(fname);
 		name = (char *)malloc(strlen(fname)+1);
 		strcpy(name,fname);

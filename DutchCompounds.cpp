@@ -162,7 +162,7 @@ return 0;
 char check_N_dutch(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"N");
-return dic_entry_contain_gram_code(d,t1);
+return (char)dic_entry_contain_gram_code(d,t1);
 }
 
 
@@ -173,7 +173,7 @@ return dic_entry_contain_gram_code(d,t1);
 char check_A_dutch(struct dela_entry* d) {
 unichar t1[2];
 u_strcpy(t1,"A");
-return dic_entry_contain_gram_code(d,t1);
+return (char)dic_entry_contain_gram_code(d,t1);
 }
 
 
@@ -195,7 +195,7 @@ return dic_entry_contain_gram_code(d,t1) && dic_entry_contain_inflectional_code(
 char check_ADV_dutch(struct dela_entry* d) {
 unichar t1[4];
 u_strcpy(t1,"ADV");
-return dic_entry_contain_gram_code(d,t1);
+return (char)dic_entry_contain_gram_code(d,t1);
 }
 
 

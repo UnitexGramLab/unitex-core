@@ -33,7 +33,7 @@
 
 void build_portuguese_normalization_grammar(Alphabet*,struct match_list*,unsigned char*,
                                             struct INF_codes*,unsigned char*,struct INF_codes*,
-                                            char*,Encoding, int, int,
+                                            char*,Encoding, int,
                                             struct normalization_tree*, struct normalization_tree* nasal_norm_tree);
 int replace_match_output_by_normalization_line(struct match_list*,Alphabet*,unsigned char*,
                                                 struct INF_codes*,unsigned char*,struct INF_codes*,
