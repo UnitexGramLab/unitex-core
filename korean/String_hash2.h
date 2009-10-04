@@ -220,7 +220,7 @@ public:
 		limit  = li;
 	}
 
-	struct arbre_hash0* insert(unichar* s,int pos,
+	struct arbre_hash0* insert(const unichar* s,int pos,
 		struct arbre_hash0* noeud) {
 		if (noeud==NULL) {
 		  fatal_error("Erreur dans fonction inserer\n");
@@ -246,7 +246,7 @@ public:
 	}
 
 
-	int put(unichar* s) {
+	int put(const unichar* s) {
 		modeExplore = 1;
 		struct arbre_hash0* noeud = insert(s,0,racine);
 		if(noeud->final == -1)
@@ -505,7 +505,7 @@ public:
 		limit  = li;
 	}
 
-	struct arbre_hash00* insert(unichar* s,int pos,
+	struct arbre_hash00* insert(const unichar* s,int pos,
 		struct arbre_hash00* noeud) {
 		if (noeud==NULL) {
 		  fatal_error("Erreur dans fonction inserer\n");
@@ -568,7 +568,7 @@ public:
 		fatal_error("Too many hash elements\n");
 		return 0;
 	}
-     int insertWord(unichar *s)
+     int insertWord(const unichar *s)
      {
 		modeExplore = 1;
 		struct arbre_hash00* noeud = insert(s,0,racine);

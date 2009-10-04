@@ -27,6 +27,7 @@
 
 #ifndef RELOCATABLE_BIN_DEF
 #define RELOCATABLE_BIN_DEF
+#include "UnusedParameter.h"
 #include "String_hash2.h"
 #include "etc.h"
 #include "pro_type.h"
@@ -1702,6 +1703,7 @@ public:
 	int
 	makeNewINF(unichar *in,int racine_suffixe)
 	{
+		DISCARD_UNUSED_PARAMETER(racine_suffixe)
 
 		simpleL<struct INF_raw *> links;
 		int tidx;

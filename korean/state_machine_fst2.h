@@ -48,7 +48,7 @@
 #define FLOW_CONTROL_FINI   0x2
 
 class state_machine {
-    unichar *terSymbol;
+    const unichar *terSymbol;
     unsigned int Null_intValue;
 struct link
 {

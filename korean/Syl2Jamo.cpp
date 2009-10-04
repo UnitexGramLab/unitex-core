@@ -36,7 +36,7 @@
 //	change korean syllabes to korean alphabet
 //	syl2alpakr.exe -m mapfile -o out_file input_file 
 //
-static int jamoFlag;
+
 
 
 #define SZ1M	1024*1024
@@ -89,6 +89,7 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 	char extension[16];
 	int iargIndex = 1;
 	int remplaceFlag = 0;
+	int jamoFlag;
 
     Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
     int bom_output = DEFAULT_BOM_OUTPUT;
