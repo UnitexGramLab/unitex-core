@@ -62,6 +62,9 @@ while (EOF!=u_fgets(tmp,f)) {
             (res->STOP_MARKER)=i;
          }
   i++;
+  if (i>res->N) {
+     fatal_error("Inconsistency in file %s between header (%d) and actual number of lines\n",nom,res->N);
+  }
 }
 u_fclose(f);
 return res;
@@ -122,7 +125,10 @@ return res;
 
 
 void free_text_tokens(struct text_tokens* tok) {
+error("%p\n",tok);
+error("%d tokens\n",tok->N);
 for (int i=0;i<tok->N;i++) {
+   error("token %d=%S\n",i,tok->token[i]);
    free(tok->token[i]);
 }
 free(tok->token);
