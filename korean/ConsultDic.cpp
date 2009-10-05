@@ -24,6 +24,7 @@
 
 #include <locale.h>
 #include <stdlib.h>
+#include "UnusedParameter.h"
 #include "Unicode.h"
 #include "Copyright.h"
 #include "File.h"
@@ -35,14 +36,14 @@
 
 
 
-static U_FILE *findFile;
-static unichar closeSymbol=(unichar)')';
-static unichar openSymbol=(unichar)'(';
-static unichar newLineSymbol=(unichar)'\n';
-//static unichar blancChar=L' ';
-static unichar ordinationChar=(unichar)' ';
-//static unichar tabsymbole = L'\t';
-static unichar coordinationChar=(unichar)'+';
+
+static const unichar closeSymbol=(unichar)')';
+static const unichar openSymbol=(unichar)'(';
+static const unichar newLineSymbol=(unichar)'\n';
+//static const unichar blancChar=L' ';
+static const unichar ordinationChar=(unichar)' ';
+//static const unichar tabsymbole = L'\t';
+static const unichar coordinationChar=(unichar)'+';
 
 //
 //	save data for passing
@@ -52,7 +53,7 @@ struct savePassingData {
 	unichar *info;
 	int current_index;
 };
-struct savePassingData aLine[4096];
+
 
 
 const char* usage_ConsultDic =
@@ -74,39 +75,58 @@ u_printf(usage_ConsultDic);
 #define SEGMAX	5
 #define SEG_LINE_MAX	2048
 
-static unichar lsegs[SEGMAX][SEG_LINE_MAX];
-static unichar info_flechi[SEG_LINE_MAX];
-static unichar info_cano[SEG_LINE_MAX];
-static unichar info_org[SEG_LINE_MAX];
-static unichar info_inf[SEG_LINE_MAX];
-							
-static unichar workBuff[1024*5];
+struct binFileList {
+	char *fname;
+	class explore_bin1 dic;
+	struct binFileList *next;
+};
+
+struct ConsultDic_ctx {
+    U_FILE *findFile;
+
+    struct savePassingData aLine[4096];
+
+    unichar lsegs[SEGMAX][SEG_LINE_MAX];
+    unichar info_flechi[SEG_LINE_MAX];
+    unichar info_cano[SEG_LINE_MAX];
+    unichar info_org[SEG_LINE_MAX];
+    unichar info_inf[SEG_LINE_MAX];
+    							
+    unichar workBuff[1024*5];
 
 
-struct sufptr **sufoffset;
+    struct sufptr **sufoffset;
 
-static int findCnt;
-static int notFindCnt;
-static unichar save_flechi[SEG_LINE_MAX];
-static unichar save_cano[SEG_LINE_MAX];
-static unichar save_org[SEG_LINE_MAX];
-static unichar save_inf[SEG_LINE_MAX];
-static unichar save_tmp[SEG_LINE_MAX];
+    int findCnt;
+    int notFindCnt;
+    unichar save_flechi[SEG_LINE_MAX];
+    unichar save_cano[SEG_LINE_MAX];
+    unichar save_org[SEG_LINE_MAX];
+    unichar save_inf[SEG_LINE_MAX];
+    unichar save_tmp[SEG_LINE_MAX];
 
+    int findWordCnt;
+    char tmpBuff0[2048];
+
+    struct binFileList *tailFile,*headFiles;
+    int fileListCounter;
+
+    char buff[2048];
+};
 
 static int
-convertInfosToGrf(int index)
+convertInfosToGrf(struct ConsultDic_ctx * p_consultDic_ctx,int index)
 {
     int signal = 0;
 	int i,cdepth;
-	struct savePassingData *sp = &aLine[index];
+	struct savePassingData *sp = &(p_consultDic_ctx->aLine[index]);
 	unichar *infos = sp->info;
 	unichar *wp;
-	wp = info_flechi;
+	wp = p_consultDic_ctx->info_flechi;
 	for( i = 0; i < sp->current_index;i++) 	*wp++ = sp->word[i];
 	*wp = 0;
 	
-	wp = info_cano;
+	wp = p_consultDic_ctx->info_cano;
 	if((*infos == '+') ||(*infos == '-'))infos++;
 	if( ( *infos >= '0') && (*infos <= '9')){
 		i = 0;
@@ -124,7 +144,7 @@ convertInfosToGrf(int index)
 	}
 	*wp = 0;
 	infos++;
-	wp = info_org;
+	wp = p_consultDic_ctx->info_org;
 	while(*infos != '.'){
 		if(!(*infos)) {
 //                  die("bad infos orig : %S\n", info_org);
@@ -135,7 +155,7 @@ convertInfosToGrf(int index)
 	}
 	*wp=0;
 	infos++;
-	wp = info_inf;
+	wp = p_consultDic_ctx->info_inf;
 	while((*infos == ' ') || (*infos == '\t')) infos++;
 	
 	switch(*infos){
@@ -151,13 +171,13 @@ convertInfosToGrf(int index)
 	*wp = 0;
 	return(signal);
 }
-static void saveAsequnceMorpheme(int &saveCnt)
+static void saveAsequnceMorpheme(struct ConsultDic_ctx * p_consultDic_ctx,int &saveCnt)
 {
-   if( (!save_flechi[0]) &&
-	(!save_cano[0])&&
-	(!save_org[0])&&
-	(!save_inf[0])) return;
-    unichar *iPtr = workBuff;
+   if( (!(p_consultDic_ctx->save_flechi[0])) &&
+	(!(p_consultDic_ctx->save_cano[0]))&&
+	(!(p_consultDic_ctx->save_org[0]))&&
+	(!(p_consultDic_ctx->save_inf[0]))) return;
+    unichar *iPtr = p_consultDic_ctx->workBuff;
     unichar *wp;
 	if(saveCnt){
 		*iPtr++ = ordinationChar;
@@ -166,134 +186,131 @@ static void saveAsequnceMorpheme(int &saveCnt)
 	}
 	*iPtr++ = '{';
 
-	wp = save_flechi;while(*wp) *iPtr++ = *wp++;
+	wp = p_consultDic_ctx->save_flechi;while(*wp) *iPtr++ = *wp++;
 	*iPtr++ = ',';
-	wp = save_cano;while(*wp) *iPtr++ = *wp++;
+	wp = p_consultDic_ctx->save_cano;while(*wp) *iPtr++ = *wp++;
 	
-	if(lsegs[2][0]){
+	if(p_consultDic_ctx->lsegs[2][0]){
 		*iPtr++ = '(';
-		wp = save_org;while(*wp) *iPtr++ = *wp++;
+		wp = p_consultDic_ctx->save_org;while(*wp) *iPtr++ = *wp++;
 		*iPtr++ = ')';
 	}
 	*iPtr++ = '.';
-	wp = save_inf;while(*wp) *iPtr++ = *wp++;
+	wp = p_consultDic_ctx->save_inf;while(*wp) *iPtr++ = *wp++;
 	*iPtr++ = '}';
 	saveCnt++;
 	*iPtr=0;
-	u_fwrite_raw(workBuff,(int)(iPtr-workBuff),findFile);
-	save_flechi[0]= 0;
-	save_cano[0]= 0;
-	save_org[0]= 0;
-	save_inf[0]= 0;
+	u_fwrite_raw(p_consultDic_ctx->workBuff,(int)(iPtr-(p_consultDic_ctx->workBuff)),p_consultDic_ctx->findFile);
+	p_consultDic_ctx->save_flechi[0]= 0;
+	p_consultDic_ctx->save_cano[0]= 0;
+	p_consultDic_ctx->save_org[0]= 0;
+	p_consultDic_ctx->save_inf[0]= 0;
 }
 
-static void ajouteBack()
+static void ajouteBack(struct ConsultDic_ctx * p_consultDic_ctx)
 {
-    u_strcat(save_flechi,info_flechi);
-    u_strcat(save_cano,info_cano);
-    u_strcat(save_org,info_org);
-    u_strcat(save_inf,info_inf);
+    u_strcat(p_consultDic_ctx->save_flechi,p_consultDic_ctx->info_flechi);
+    u_strcat(p_consultDic_ctx->save_cano,p_consultDic_ctx->info_cano);
+    u_strcat(p_consultDic_ctx->save_org,p_consultDic_ctx->info_org);
+    u_strcat(p_consultDic_ctx->save_inf,p_consultDic_ctx->info_inf);
 }
-static void ajouteForward()
+static void ajouteForward(struct ConsultDic_ctx * p_consultDic_ctx)
 {
-    u_strcat(save_flechi,info_flechi);
-    u_strcat(save_cano,info_cano);
-    u_strcat(save_org,info_org);
-    u_strcpy(save_tmp,save_inf);
-    u_strcpy(save_inf,info_inf);
-    u_strcat(save_inf,save_tmp);    
+    u_strcat(p_consultDic_ctx->save_flechi,p_consultDic_ctx->info_flechi);
+    u_strcat(p_consultDic_ctx->save_cano,p_consultDic_ctx->info_cano);
+    u_strcat(p_consultDic_ctx->save_org,p_consultDic_ctx->info_org);
+    u_strcpy(p_consultDic_ctx->save_tmp,p_consultDic_ctx->save_inf);
+    u_strcpy(p_consultDic_ctx->save_inf,p_consultDic_ctx->info_inf);
+    u_strcat(p_consultDic_ctx->save_inf,p_consultDic_ctx->save_tmp);    
 }
-static int actForFinal(unichar *cc,int depth,intptr_t infoT,intptr_t suf,int sdepth)
+static int actForFinal(unichar *cc,int depth,intptr_t infoT,intptr_t suf,int sdepth,void* private_ptr)
 {
+    DISCARD_UNUSED_PARAMETER(depth)
+    DISCARD_UNUSED_PARAMETER(cc)
+    DISCARD_UNUSED_PARAMETER(suf)
+
+    struct ConsultDic_ctx * p_consultDic_ctx=(struct ConsultDic_ctx *)private_ptr;
 
 	if(suf || infoT){ // not find
-		notFindCnt++;
+		(p_consultDic_ctx->notFindCnt)++;
 		return(0);
 	}
 	int index;
 	unichar *wp;
 	int saveCnt = 0;
 
-	if(findCnt)
-		u_fputc(coordinationChar,findFile);
+	if(p_consultDic_ctx->findCnt)
+		u_fputc(coordinationChar,p_consultDic_ctx->findFile);
 
 	int lastSign = 0;
 	for( index = 0; index < sdepth;index++){
-		if(aLine[index].info == 0) fatal_error("illegal info value\n");
-		wp = aLine[index].info;
+		if((p_consultDic_ctx->aLine[index].info) == 0) fatal_error("illegal info value\n");
+		wp = (p_consultDic_ctx->aLine[index].info);
 		if((wp[0] == '.') &&
 			(wp[1] == '.') &&
 			(wp[2] == 0)){	// info for branch the transition of path
 			continue;
 		}        
-		switch(convertInfosToGrf(index)){	// call next item and concation
+		switch(convertInfosToGrf(p_consultDic_ctx,index)){	// call next item and concation
         case 1:     
              switch(lastSign){
              case 1: 
-                     ajouteBack(); break;
-             case 0: saveAsequnceMorpheme(saveCnt); 
-                     ajouteBack(); break;
+                     ajouteBack(p_consultDic_ctx); break;
+             case 0: saveAsequnceMorpheme(p_consultDic_ctx,saveCnt); 
+                     ajouteBack(p_consultDic_ctx); break;
              case -1:
              default: 
-                   fatal_error("%s::%d::+1\nInacceptable format\n",getUtoChar(aLine[index].info),lastSign);
+                   fatal_error("%s::%d::+1\nInacceptable format\n",getUtoChar(p_consultDic_ctx->aLine[index].info),lastSign);
              }
              lastSign = 1;
              break;
 		case -1: 
 			 switch(lastSign){
              case -1: 
-             case  0: ajouteBack(); break;
+             case  0: ajouteBack(p_consultDic_ctx); break;
              case  1:
              default: 
-                   fatal_error("%s::%d::-1\nInacceptable format\n",getUtoChar(aLine[index].info),lastSign);
+                   fatal_error("%s::%d::-1\nInacceptable format\n",getUtoChar(p_consultDic_ctx->aLine[index].info),lastSign);
              }// call next item and concation with info	
      	   lastSign = -1;
      	   break;
 		case 0:
 			 switch(lastSign){
              case -1:
-             case  0: saveAsequnceMorpheme(saveCnt); 
-                      ajouteBack();break;  
+             case  0: saveAsequnceMorpheme(p_consultDic_ctx,saveCnt); 
+                      ajouteBack(p_consultDic_ctx);break;  
              case  1:
-                      ajouteForward();
+                      ajouteForward(p_consultDic_ctx);
                       break;
              default: 
-                   fatal_error("%s::%d\nInacceptable format\n",getUtoChar(aLine[index].info),lastSign);
+                   fatal_error("%s::%d\nInacceptable format\n",getUtoChar(p_consultDic_ctx->aLine[index].info),lastSign);
              }// call next item and concation with info	
            lastSign = 0;
 		}
 	}
-    saveAsequnceMorpheme(saveCnt);
+    saveAsequnceMorpheme(p_consultDic_ctx,saveCnt);
 	
 	if(saveCnt)
-	    u_fputc(closeSymbol,findFile);
+	    u_fputc(closeSymbol,p_consultDic_ctx->findFile);
 //		fwrite(&closeSymbol,2,1,findFile);
 	else
 		fatal_error("Illegal dictionary value\n");
-	findCnt++;
+	(p_consultDic_ctx->findCnt)++;
 	return(0);
 }
-static int actForInfo(unichar *c,int depth,intptr_t info,intptr_t suf,int sdepth)
+static int actForInfo(unichar *c,int depth,intptr_t info,intptr_t suf,int sdepth,void* private_ptr)
 {
-	aLine[sdepth].word = c;
-	aLine[sdepth].current_index = depth;
-	aLine[sdepth].info = (unichar *)info;
+    DISCARD_UNUSED_PARAMETER(suf)
+    struct ConsultDic_ctx * p_consultDic_ctx=(struct ConsultDic_ctx *)private_ptr;
+	p_consultDic_ctx->aLine[sdepth].word = c;
+	p_consultDic_ctx->aLine[sdepth].current_index = depth;
+	p_consultDic_ctx->aLine[sdepth].info = (unichar *)info;
 	return(++sdepth);
 }
 
-static 	int findWordCnt;
-static char tmpBuff0[2048];
 
-struct binFileList {
-	char *fname;
-	class explore_bin1 dic;
-	struct binFileList *next;
-};
-
-static struct binFileList *tailFile,*headFiles;
-int fileListCounter;
 static void
-getOneFile(char *filename)
+getOneFile(struct ConsultDic_ctx * p_consultDic_ctx,char *filename)
 {
 	struct binFileList *tmp;	
     tmp = new struct binFileList;
@@ -301,16 +318,16 @@ getOneFile(char *filename)
 	tmp->next = 0;
 
 	strcpy(tmp->fname,filename);
-	if(headFiles){
-        tailFile->next = tmp;
-        tailFile = tailFile->next;
+	if(p_consultDic_ctx->headFiles){
+        p_consultDic_ctx->tailFile->next = tmp;
+        p_consultDic_ctx->tailFile = p_consultDic_ctx->tailFile->next;
 	} else {
-        tailFile = headFiles= tmp;
+        p_consultDic_ctx->tailFile = p_consultDic_ctx->headFiles= tmp;
   	}
-	fileListCounter++;
+	(p_consultDic_ctx->fileListCounter)++;
 }
-static char buff[2048];
-static void getListFile(char *filename)
+
+static void getListFile(struct ConsultDic_ctx * p_consultDic_ctx,char *filename)
 {
 	register char *wp;
 	char pathName[1024];
@@ -322,8 +339,8 @@ static void getListFile(char *filename)
     	fopenErrMessage(filename);	
     get_path(filename,pathName);
     pathLen = (int)strlen(pathName);
-    while(af_fgets(buff,1024,lstF->f)){
-    	wp = buff;
+    while(af_fgets(p_consultDic_ctx->buff,1024,lstF->f)){
+    	wp = p_consultDic_ctx->buff;
 
     	while(*wp){
     		if(*wp == 0x0d){ *wp = 0; break;}
@@ -331,39 +348,39 @@ static void getListFile(char *filename)
     		wp++;
     	}
     	
-    	switch(buff[0]){
+    	switch(p_consultDic_ctx->buff[0]){
     	case ' ':	// comment line
     	case 0:
     		continue;
     	}
 
     	tmp = new struct binFileList;
-    	tmp->fname = new char[pathLen+strlen(buff)+1];
+    	tmp->fname = new char[pathLen+strlen(p_consultDic_ctx->buff)+1];
     	strcpy(tmp->fname,pathName);
-    	strcat(tmp->fname,buff);
+    	strcat(tmp->fname,p_consultDic_ctx->buff);
     	tmp->next = 0;
-    	if(headFiles){	
-           tailFile->next = tmp; 
-           tailFile = tailFile->next;
+    	if(p_consultDic_ctx->headFiles){	
+           p_consultDic_ctx->tailFile->next = tmp; 
+           p_consultDic_ctx->tailFile = p_consultDic_ctx->tailFile->next;
     	} else {
-            tailFile = headFiles= tmp;	}
-    	fileListCounter++;
+            p_consultDic_ctx->tailFile = p_consultDic_ctx->headFiles= tmp;	}
+    	(p_consultDic_ctx->fileListCounter)++;
     }
     u_fclose(lstF);
 }
 
 
-void consultationLesTokens(Encoding encoding_output,int bom_output,
+void consultationLesTokens(struct ConsultDic_ctx * p_consultDic_ctx,Encoding encoding_output,int bom_output,
                            char *textfile,Alphabet *PtrAlphabet)
 {
 	
 
 	struct binFileList *tmp;
 	
-	tmp = headFiles;
+	tmp = p_consultDic_ctx->headFiles;
 	while(tmp){
 	     tmp->dic.loadBin(tmp->fname);
-	     tmp->dic.set_act_func(actForFinal,actForInfo);
+	     tmp->dic.set_act_func(actForFinal,(void*)p_consultDic_ctx,actForInfo,(void*)p_consultDic_ctx);
 	     if(PtrAlphabet) tmp->dic.setAlphabetTable(PtrAlphabet);
 	    tmp= tmp->next;                
     }
@@ -375,15 +392,15 @@ void consultationLesTokens(Encoding encoding_output,int bom_output,
 		tokensTable);
 
 
-	get_path(textfile,tmpBuff0);
-	strcat(tmpBuff0,"seqMorphs.txt");
-	findFile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,tmpBuff0,U_WRITE);
-	if(!findFile) fatal_error("Save file \"seqMorphs.txt\" open fail\n");
+	get_path(textfile,p_consultDic_ctx->tmpBuff0);
+	strcat(p_consultDic_ctx->tmpBuff0,"seqMorphs.txt");
+	p_consultDic_ctx->findFile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,p_consultDic_ctx->tmpBuff0,U_WRITE);
+	if(!(p_consultDic_ctx->findFile)) fatal_error("Save file \"seqMorphs.txt\" open fail\n");
 
 	int wordCnt = 0;
 
-	strFileHeadLine(findFile,tokensCnt);
-    tmp = headFiles;	    
+	strFileHeadLine(p_consultDic_ctx->findFile,tokensCnt);
+    tmp = p_consultDic_ctx->headFiles;	    
 	while(tmp){
 	  u_printf("load dictionnaire %s\n",tmp->fname);
       tmp= tmp->next;                
@@ -394,20 +411,20 @@ void consultationLesTokens(Encoding encoding_output,int bom_output,
 
 		if(!(wordCnt % 10000)) u_printf("\rread token %d",wordCnt);
 		sidx = 0;
-	    tmp = headFiles;	    
+	    tmp = p_consultDic_ctx->headFiles;	    
 		while(tmp){
-        	findCnt = 0;
+        	p_consultDic_ctx->findCnt = 0;
             tmp->dic.searchMotAtTree(tokensTable[wordCnt],0);
             /*if (findCnt) {
                u_printf("%S",tokensTable[wordCnt]);
             }*/        
-            if(findCnt) findWordCnt++;
+            if(p_consultDic_ctx->findCnt) (p_consultDic_ctx->findWordCnt)++;
     	    tmp= tmp->next;                
         }
-//		fwrite(&newLineSymbol,2,1,findFile);
-        u_fputc(newLineSymbol,findFile);
+//		fwrite(&newLineSymbol,2,1,p_consultDic_ctx->findFile);
+        u_fputc(newLineSymbol,p_consultDic_ctx->findFile);
 	}
-	u_fclose(findFile);
+	u_fclose(p_consultDic_ctx->findFile);
 }
 
 
@@ -417,8 +434,15 @@ int main_ConsultDic(int argc,char *argv[]) {
 //	char *decodageMap = 0;
 //	char *hanjaFileName;
  	int debugFlag =0;
- 	fileListCounter = 0;
- 	Alphabet *saveAlphabet =0;
+
+    struct ConsultDic_ctx * p_consultDic_ctx = new struct ConsultDic_ctx;
+    if (p_consultDic_ctx == NULL)
+        fatal_error("mem alloc fail\n");
+    memset(p_consultDic_ctx,0,sizeof(struct ConsultDic_ctx));
+
+ 	p_consultDic_ctx->fileListCounter = 0;
+ 	p_consultDic_ctx->tailFile = p_consultDic_ctx->headFiles = NULL;
+ 	Alphabet *saveAlphabet = 0;
 
     Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
     int bom_output = DEFAULT_BOM_OUTPUT;
@@ -426,12 +450,13 @@ int main_ConsultDic(int argc,char *argv[]) {
 
 	if(argc == 1) {
 	   usage();
+       delete p_consultDic_ctx;
 	   return 9;
 	}
 	
     while(argIdx < argc -1 ){
 		if(argv[argIdx][0] != '-'){
-			getOneFile(argv[argIdx]);
+			getOneFile(p_consultDic_ctx,argv[argIdx]);
 			argIdx++;
    			continue;
 		}
@@ -446,12 +471,13 @@ int main_ConsultDic(int argc,char *argv[]) {
              ++argIdx; saveAlphabet =load_alphabet(argv[argIdx] );
              if(!saveAlphabet) {
                 usage();
+                delete p_consultDic_ctx;
                 return 0;
              }
              break; 
 		case 'l':
 			++argIdx;
-            getListFile(argv[argIdx]);
+            getListFile(p_consultDic_ctx,argv[argIdx]);
 			break;
         case 'k': argIdx++;
                  if (argv[argIdx][0]=='\0') {
@@ -469,19 +495,23 @@ int main_ConsultDic(int argc,char *argv[]) {
 			debugFlag = 1; break;
 		default:
 			usage();
+            delete p_consultDic_ctx;
 			return 1;
 		}
 		argIdx++;
 	}
 	if(argc -1  != argIdx) {
 	   usage();
+       delete p_consultDic_ctx;
 	   return 1;
 	}
-	if(!fileListCounter) {
+	if(!(p_consultDic_ctx->fileListCounter)) {
 	   usage();
+       delete p_consultDic_ctx;
 	   return 1;
 	}
-	consultationLesTokens(encoding_output,bom_output,argv[argIdx],saveAlphabet);
+	consultationLesTokens(p_consultDic_ctx,encoding_output,bom_output,argv[argIdx],saveAlphabet);
 	if(saveAlphabet) free_alphabet(saveAlphabet);
+    delete p_consultDic_ctx;
 	return 0;
 }

@@ -583,7 +583,7 @@ u_printf("%sT\n",getUtoChar(prTreeBuff));
 //	class for saved in file and handling
 //
 typedef int (*actDansTrBin)(unichar *arg0,int depth,intptr_t inf,intptr_t soff
-							,int sIdx);
+							,int sIdx, void* private_ptr);
 class explore_bin1 {
 
 public:
@@ -605,6 +605,8 @@ public:
 
 	actDansTrBin actFuncForFinal;
 	actDansTrBin actFuncForInfo;	// function called when we find the final state
+	void* private_actFuncForFinal;
+	void* private_actFuncForInfo;
 	Alphabet *AlphabetTable;
 	explore_bin1(){
 		name = 0;
@@ -789,9 +791,11 @@ public:
 		}
 	}
 
-	void set_act_func(actDansTrBin ft,actDansTrBin fi){
+	void set_act_func(actDansTrBin ft,void* private_ptr_ft,actDansTrBin fi,void* private_ptr_fi){
 		actFuncForFinal = ft;
+		private_actFuncForFinal=private_ptr_ft;
 		actFuncForInfo = fi;
+		private_actFuncForInfo=private_ptr_fi;
 	}
 	void searchMotAtTree(unichar *word,int saveIdx)
 	{
@@ -837,8 +841,8 @@ public:
 				if(sinfo){
 					findCnt++;
 					if(info)
-                      noff = (*actFuncForInfo)(word,scanPosition,(intptr_t)(INF + infoffset[info]),0,noff);
-					(*actFuncForFinal)(word,scanPosition,0,(intptr_t)((npos) ? SUF+sufoffset[npos]:0),noff);
+                      noff = (*actFuncForInfo)(word,scanPosition,(intptr_t)(INF + infoffset[info]),0,noff,private_actFuncForInfo);
+					(*actFuncForFinal)(word,scanPosition,0,(intptr_t)((npos) ? SUF+sufoffset[npos]:0),noff,private_actFuncForFinal);
 				}
 				continue;
 			}
@@ -847,19 +851,19 @@ public:
 					if(!npos){	// check terminal condition
 						if(!word[scanPosition]){
 							if(info)
-                                 noff = (*actFuncForInfo)(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff);
-							(*actFuncForFinal)(word,scanPosition+1,0,0,noff);
+                                 noff = (*actFuncForInfo)(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff,private_actFuncForInfo);
+							(*actFuncForFinal)(word,scanPosition+1,0,0,noff,private_actFuncForFinal);
 						}
 					} else {
 						if(info)
-                           noff = (*actFuncForInfo)(word,0,(intptr_t)(INF + infoffset[info]),0,noff);
-						(*actFuncForFinal)(word,scanPosition,0,(intptr_t)SUF+sufoffset[npos],noff);
+                           noff = (*actFuncForInfo)(word,0,(intptr_t)(INF + infoffset[info]),0,noff,private_actFuncForInfo);
+						(*actFuncForFinal)(word,scanPosition,0,(intptr_t)SUF+sufoffset[npos],noff,private_actFuncForFinal);
 					}
 				} else { // sinfo = 0;	the node for passing
 					if(npos){
 						if(info){	// if there is info , reset pointer value
 							noff = (*actFuncForInfo)
-							(word,0,(intptr_t)(INF + infoffset[info]),0,noff);
+							(word,0,(intptr_t)(INF + infoffset[info]),0,noff,private_actFuncForInfo);
 							scanNodes(npos,&word[scanPosition],0,noff);
 						} else { // simple jmp
 							scanNodes(npos,word,scanPosition,noff);
@@ -875,20 +879,20 @@ public:
             ){  if(sinfo){	// check terminal
 					if(npos){
 						if(info) {
-						   noff = (*actFuncForInfo)(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff);
+						   noff = (*actFuncForInfo)(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff,private_actFuncForInfo);
 						}
-                        (*actFuncForFinal)(word,scanPosition+1,0,(intptr_t)(SUF+sufoffset[npos]),noff);
+                        (*actFuncForFinal)(word,scanPosition+1,0,(intptr_t)(SUF+sufoffset[npos]),noff,private_actFuncForFinal);
 					} else {// check stop condition
 						if(!word[scanPosition+1]){
 							if(info)noff = (*actFuncForInfo)
-							(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff);
-							(*actFuncForFinal)(word,scanPosition+1,0,0,noff);
+							(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff,private_actFuncForInfo);
+							(*actFuncForFinal)(word,scanPosition+1,0,0,noff,private_actFuncForFinal);
 						}
 					}
 				} else {	// go to next node
 					if(npos){
 						if(info){noff = (*actFuncForInfo)
-							(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff);
+							(word,scanPosition+1,(intptr_t)(INF + infoffset[info]),0,noff,private_actFuncForInfo);
 							scanNodes(npos,&word[scanPosition+1],0,noff);
 						} else {
 							scanNodes(npos,word,scanPosition+1,noff);
@@ -900,7 +904,7 @@ public:
 			}
 		}
 		if(!word[scanPosition] && !findCnt){
-			(*actFuncForFinal)(0,scanPosition,1,0,soffset);
+			(*actFuncForFinal)(0,scanPosition,1,0,soffset,private_actFuncForFinal);
 		}
 
 	}

@@ -75,10 +75,9 @@ getFileName(unichar *des,unichar *src)
 //
 //
 
-static int read_DELA_to_DICO(class arbre_string3 &arbre,int a,char *fname,int);
+static int read_DELA_to_DICO(struct CompressKr_ctx* p_compressKr_ctx,class arbre_string3 &arbre,int a,char *fname,int);
 //static void read_FST_to_DICO(class arbre_string3 &arbre,int a,char *fname); 
-U_FILE *debugfile;
-static 	unichar UtempBuff[512];
+
 
 
 //
@@ -90,33 +89,45 @@ static 	unichar UtempBuff[512];
 //
 #define MAX_LINE_ELEMENT_DELAKR	5
 #define MAX_LINE_ELEMENT	1024
-static unichar segs[MAX_LINE_ELEMENT_DELAKR+1][MAX_LINE_ELEMENT];
-static unichar Etmp[4096];
-static unichar Stmp[4096];
 
 
+struct CompressKr_ctx {
+    U_FILE *debugfile;
+    unichar UtempBuff[512];
 
-class arbre_string0 MotEtr;
-static char *cfilename;
-static 	char templine[512];
+    unichar segs[MAX_LINE_ELEMENT_DELAKR+1][MAX_LINE_ELEMENT];
+    unichar Etmp[4096];
+    unichar Stmp[4096];
 
-static void lineErrMess(int lineCnt,const char *msg)
+
+    class arbre_string0 MotEtr;
+    char *cfilename;
+    char templine[512];
+
+    int suffixeMode;	// racine or suffixe
+    int grapheMode;
+    char *ofilename;
+};
+
+
+static void lineErrMess(struct CompressKr_ctx* p_compressKr_ctx,int lineCnt,const char *msg)
 {
-	error("%s file at line %d\n",cfilename,lineCnt);
-	error("<<%S>>\nhas syntax error",UtempBuff);
+	error("%s file at line %d\n",p_compressKr_ctx->cfilename,lineCnt);
+	error("<<%S>>\nhas syntax error",p_compressKr_ctx->UtempBuff);
 	fatal_error("%s\n",msg);
 }
 
-static void make_compress_files(Encoding encoding_output,int bom_output,
+static void make_compress_files(struct CompressKr_ctx* p_compressKr_ctx,Encoding encoding_output,int bom_output,
                                 int mask_encoding_compatibility_input,
                                 char *listFilename,int flag);
-static int tokenize_entrees_Kr(int lcnt,unsigned short *line,class dicLines *& head);
-static int suffixeMode;	// racine or suffixe
-static int grapheMode;
-static char *ofilename;
+static int tokenize_entrees_Kr(struct CompressKr_ctx* p_compressKr_ctx,int lcnt,unsigned short *line,class dicLines *& head);
+
 
 
 int main_CompressKr(int argc, char *argv[]) {
+
+struct CompressKr_ctx compressKr_ctx;
+memset(&compressKr_ctx,0,sizeof(struct CompressKr_ctx));
 
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -124,10 +135,10 @@ int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPU
 
 int argIdx = 1;
 int listFormFlag = 0;	// filename is dictionnary
-	debugfile = 0;
- grapheMode = 0;
-suffixeMode = 0;
-	ofilename  =0;
+	compressKr_ctx.debugfile = 0;
+ compressKr_ctx.grapheMode = 0;
+compressKr_ctx.suffixeMode = 0;
+	compressKr_ctx.ofilename  =0;
 	if(argc == 1) {
        usage();
        return 0;
@@ -138,15 +149,15 @@ suffixeMode = 0;
 		if(argv[argIdx][0] == '-'){
 			switch(argv[argIdx][1]){
 			case 'D': 
-				debugfile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,"dd.txt",U_WRITE);
+				compressKr_ctx.debugfile = u_fopen_creating_versatile_encoding(encoding_output,bom_output,"dd.txt",U_WRITE);
 				break;
 			case 'd': 
-				debugfile = U_STDOUT;
+				compressKr_ctx.debugfile = U_STDOUT;
 				break;
 			case 'l': listFormFlag++;break;
-			case 's':suffixeMode++; break;
-			case 'g':grapheMode++; break;
-			case 'o':argIdx++;ofilename = argv[argIdx];break;
+			case 's':compressKr_ctx.suffixeMode++; break;
+			case 'g':compressKr_ctx.grapheMode++; break;
+			case 'o':argIdx++; compressKr_ctx.ofilename = argv[argIdx];break;
             case 'k': argIdx++;
                      if (argv[argIdx][0]=='\0') {
                         fatal_error("Empty input_encoding argument\n");
@@ -171,13 +182,13 @@ suffixeMode = 0;
 	   usage();
 	   return 1;
 	}
-	make_compress_files(encoding_output,bom_output,mask_encoding_compatibility_input,argv[argIdx],listFormFlag);
-	if(debugfile) u_fclose(debugfile);
+	make_compress_files(&compressKr_ctx,encoding_output,bom_output,mask_encoding_compatibility_input,argv[argIdx],listFormFlag);
+	if(compressKr_ctx.debugfile) u_fclose(compressKr_ctx.debugfile);
 	return(0);
 }
 /*
  */
-static void read_list_files(simpleL<char *> &rd,char *filename)
+static void read_list_files(struct CompressKr_ctx* p_compressKr_ctx,simpleL<char *> &rd,char *filename)
 {
 	int sc;
 	char fullPathName[2048];
@@ -190,23 +201,23 @@ static void read_list_files(simpleL<char *> &rd,char *filename)
 		fatal_error("file %s open fail\n",filename);
 	}
 	get_path(filename,pathName);
-	while(af_fgets(templine,256,f->f)){
+	while(af_fgets(p_compressKr_ctx->templine,256,f->f)){
 		sc =0;
-		while(templine[sc]){
-			if( (templine[sc] == 0x0d) ||
-				(templine[sc] == 0x0a)||
-				(templine[sc] == '#') ){
-				templine[sc] = 0;
+		while(p_compressKr_ctx->templine[sc]){
+			if( (p_compressKr_ctx->templine[sc] == 0x0d) ||
+				(p_compressKr_ctx->templine[sc] == 0x0a)||
+				(p_compressKr_ctx->templine[sc] == '#') ){
+				p_compressKr_ctx->templine[sc] = 0;
 				break;
 			}
 			sc++;
 		}
-		if((templine[0] == ' ') ||
-		   (templine[0]== 0) )
+		if((p_compressKr_ctx->templine[0] == ' ') ||
+		   (p_compressKr_ctx->templine[0]== 0) )
 			continue;
 
 		strcpy(fullPathName,pathName);
-		strcat(fullPathName,templine);
+		strcat(fullPathName,p_compressKr_ctx->templine);
 		
 		t = new char[strlen(fullPathName)+1];
 		strcpy(t,fullPathName);
@@ -218,7 +229,8 @@ static void read_list_files(simpleL<char *> &rd,char *filename)
 //
 //
 static void 
-make_compress_files(Encoding encoding_output,int bom_output,
+make_compress_files(struct CompressKr_ctx* p_compressKr_ctx,
+                    Encoding encoding_output,int bom_output,
                     int mask_encoding_compatibility_input,
                     char *listFileName,int listFormFlag)
 {
@@ -233,31 +245,31 @@ make_compress_files(Encoding encoding_output,int bom_output,
 	
 	int lineCnt = 0;
 	if(listFormFlag){
-		read_list_files(readFiles,listFileName);
+		read_list_files(p_compressKr_ctx,readFiles,listFileName);
 	} else {
 		readFiles.put(listFileName);
 	}
 	readFiles.reset();
-	if(!suffixeMode){	// racine
-		u_strcpy(segs[0],listFileName);
-		getFileName(segs[1],segs[0]);
-		tmp = new unichar[u_strlen(segs[1])+1];
-		u_strcpy(tmp,segs[1]);
+	if(!(p_compressKr_ctx->suffixeMode)) {	// racine
+		u_strcpy(p_compressKr_ctx->segs[0],listFileName);
+		getFileName(p_compressKr_ctx->segs[1],p_compressKr_ctx->segs[0]);
+		tmp = new unichar[u_strlen(p_compressKr_ctx->segs[1])+1];
+		u_strcpy(tmp,p_compressKr_ctx->segs[1]);
 		autoStartIndex = arbres.new_arbre((unichar*)tmp);
 	}
 	// suffixe
 	int readFileCnt=0;
-	while( (fnamePtr = readFiles.getNext())){
-		if(suffixeMode){	// suffixe
-			u_strcpy(segs[0],fnamePtr);
-			getFileName(segs[1],segs[0]);
-			tmp = new unichar[u_strlen(segs[1])+1];
-			u_strcpy(tmp,segs[1]);
+	while( (fnamePtr = readFiles.getNext()) != 0) {
+		if(p_compressKr_ctx->suffixeMode){	// suffixe
+			u_strcpy(p_compressKr_ctx->segs[0],fnamePtr);
+			getFileName(p_compressKr_ctx->segs[1],p_compressKr_ctx->segs[0]);
+			tmp = new unichar[u_strlen(p_compressKr_ctx->segs[1])+1];
+			u_strcpy(tmp,p_compressKr_ctx->segs[1]);
 			autoStartIndex = arbres.new_arbre((unichar *)tmp);
 		}
 		get_extension(fnamePtr,extension);
       u_printf("\n%s load\n",fnamePtr);
-        lineCnt += read_DELA_to_DICO(arbres,autoStartIndex,fnamePtr,mask_encoding_compatibility_input);
+        lineCnt += read_DELA_to_DICO(p_compressKr_ctx,arbres,autoStartIndex,fnamePtr,mask_encoding_compatibility_input);
 		readFileCnt++;
 	}
 	if(readFileCnt > 1)
@@ -269,21 +281,21 @@ make_compress_files(Encoding encoding_output,int bom_output,
 	u_printf("Compressing... \n\n");
 	arbres.minimize_tree();
 
-	if(debugfile) {
+	if(p_compressKr_ctx->debugfile) {
 		int i;
 		for( i = 0; i < arbres.getArbreCnt();i++){
-			u_fprintf(debugfile,"%i th===\n",i);
-//			arbres.prNode(debugfile,arbrelistOut);
+			u_fprintf(p_compressKr_ctx->debugfile,"%i th===\n",i);
+//			arbres.prNode(p_compressKr_ctx->debugfile,arbrelistOut);
 		}
 	}
 	
-	if(ofilename)
-	 remove_extension(ofilename,templine);
+	if(p_compressKr_ctx->ofilename)
+	 remove_extension(p_compressKr_ctx->ofilename,p_compressKr_ctx->templine);
 	else	 
-	 remove_extension(listFileName,templine);
-	arbres.toBinTr(templine,suffixeMode);
+	 remove_extension(listFileName,p_compressKr_ctx->templine);
+	arbres.toBinTr(p_compressKr_ctx->templine,p_compressKr_ctx->suffixeMode);
 
-	if(debugfile) u_fclose(debugfile);
+	if(p_compressKr_ctx->debugfile) u_fclose(p_compressKr_ctx->debugfile);
 }
 
 //
@@ -291,7 +303,8 @@ make_compress_files(Encoding encoding_output,int bom_output,
 //
 //
 static int
-read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname,int mask_encoding_compatibility_input)
+read_DELA_to_DICO(struct CompressKr_ctx* p_compressKr_ctx,
+                  class arbre_string3 &arbre,int curArbreIdx,char *fname,int mask_encoding_compatibility_input)
 {
 	U_FILE *f;
 	int tokenCnt;
@@ -300,18 +313,18 @@ read_DELA_to_DICO(class arbre_string3 &arbre,int curArbreIdx,char *fname,int mas
 	unichar RLine[2048];
 	f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,fname,U_READ);
 	if(!f)	fopenErrMessage(fname);
-	cfilename = fname;
+	p_compressKr_ctx->cfilename = fname;
 	u_printf("Read File %s\n",fname);
-	while(EOF!=u_fgets(UtempBuff,f)){
-		if( (UtempBuff[0] == '\0') ||( UtempBuff[0] == ' '))
+	while(EOF!=u_fgets(p_compressKr_ctx->UtempBuff,f)){
+		if( (p_compressKr_ctx->UtempBuff[0] == '\0') ||(p_compressKr_ctx->UtempBuff[0] == ' '))
 			continue; // comment line
-		heads = 0; u_strcpy(RLine,UtempBuff);
-		tokenCnt = tokenize_entrees_Kr(flineCnt,RLine,heads);
+		heads = 0; u_strcpy(RLine,p_compressKr_ctx->UtempBuff);
+		tokenCnt = tokenize_entrees_Kr(p_compressKr_ctx,flineCnt,RLine,heads);
 
-		if(!suffixeMode && 
+		if(!(p_compressKr_ctx->suffixeMode) && 
 			(heads->EC_flechi == 0) && 
 			(*heads->EC_flechi == '\0'))
-			lineErrMess(flineCnt,"not accept the data null at racine");
+			lineErrMess(p_compressKr_ctx,flineCnt,"not accept the data null at racine");
 		arbre.insert(curArbreIdx,heads);
 		for(;tokenCnt > 0;tokenCnt--){
 			wp = heads;
@@ -365,7 +378,7 @@ res[j+l_NB]= '\0';
 //
 static unichar u_zero_string[] = {(unichar)'0',(unichar)'\0'};
 static int
-tokenize_entrees_Kr(int lineCnt,unsigned short *iline,class dicLines *&head)
+    tokenize_entrees_Kr(struct CompressKr_ctx* p_compressKr_ctx,int lineCnt,unsigned short *iline,class dicLines *&head)
 {
 	int scanIdx = 0;
 	int openF = 0;
@@ -373,7 +386,7 @@ tokenize_entrees_Kr(int lineCnt,unsigned short *iline,class dicLines *&head)
 	int saveIdx = 0;
 	int i;
 	dicLines *tail = 0;
-	unichar *s = Stmp;
+	unichar *s = p_compressKr_ctx->Stmp;
 	unichar *sPtr[MAX_NUM_ENTREE_COMP_LINE];// 0:flechi 
 											  // 1:org
 											  // 2:canonique
@@ -389,10 +402,10 @@ tokenize_entrees_Kr(int lineCnt,unsigned short *iline,class dicLines *&head)
 		case ',': 
 			if(openF){
 				s[saveIdx++] = iline[scanIdx];
-				if(saveIdx > MAX_LINE_ELEMENT)	lineErrMess(lineCnt,"linecount error");
+				if(saveIdx > MAX_LINE_ELEMENT)	lineErrMess(p_compressKr_ctx,lineCnt,"linecount error");
 				break;
 			}
-			if(segIdx > MAX_NUM_ENTREE_COMP_LINE) lineErrMess(lineCnt,"line count error");
+			if(segIdx > MAX_NUM_ENTREE_COMP_LINE) lineErrMess(p_compressKr_ctx,lineCnt,"line count error");
 			s[saveIdx++] = '\0';
 			sPtr[segIdx++] = &s[saveIdx];
             break;
@@ -409,13 +422,13 @@ tokenize_entrees_Kr(int lineCnt,unsigned short *iline,class dicLines *&head)
 				if(head){
 					s[saveIdx] = 0;
 					if((segIdx != MAX_LINE_ELEMENT_DELAKR) ||
-					     ((!suffixeMode) && (elecount == 0)&&( sPtr[0][0]== 0)))
-						lineErrMess(lineCnt,"format error");
-					Etmp[0] = 0;
+					     ((!(p_compressKr_ctx->suffixeMode)) && (elecount == 0)&&( sPtr[0][0]== 0)))
+						lineErrMess(p_compressKr_ctx,lineCnt,"format error");
+					p_compressKr_ctx->Etmp[0] = 0;
 
-if(debugfile){
+if(p_compressKr_ctx->debugfile){
 for( i = 0; i <  MAX_NUM_ENTREE_COMP_LINE;i++)
-u_fprintf(debugfile,"%S,\n", sPtr[i]);
+u_fprintf(p_compressKr_ctx->debugfile,"%S,\n", sPtr[i]);
 }
 					if(*sPtr[4] == '-'){// control for suffixe 
 						sPtr[4]++;
@@ -423,18 +436,18 @@ u_fprintf(debugfile,"%S,\n", sPtr[i]);
 					} else 
                     if(*sPtr[0] && *sPtr[2]){
 					    if((*sPtr[2] == '-') || (*sPtr[2] == '+')){
-					        Etmp[0] = *sPtr[2];
-					    	get_compressed_token(sPtr[0],&sPtr[2][1],&Etmp[1]);
+					        p_compressKr_ctx->Etmp[0] = *sPtr[2];
+					    	get_compressed_token(sPtr[0],&sPtr[2][1],&(p_compressKr_ctx->Etmp[1]));
 					    } else {
-					    	get_compressed_token(sPtr[0],sPtr[2],Etmp);
+					    	get_compressed_token(sPtr[0],sPtr[2],p_compressKr_ctx->Etmp);
 						}
-                        sPtr[2] = Etmp;
+                        sPtr[2] = p_compressKr_ctx->Etmp;
 						
 					}
                     // flechi,origin,canonique,info,suff
-if(debugfile){
+if(p_compressKr_ctx->debugfile){
 for( i = 0; i <  MAX_NUM_ENTREE_COMP_LINE;i++)
-u_fprintf(debugfile,"%S,\n", sPtr[i]);
+u_fprintf(p_compressKr_ctx->debugfile,"%S,\n", sPtr[i]);
 }
 					tail->makeInfField((unichar*)sPtr[0],
                               (unichar*)sPtr[1],
@@ -459,7 +472,7 @@ u_fprintf(debugfile,"%S,\n", sPtr[i]);
 			break;
 		case '\\':
 			s[saveIdx++] = iline[scanIdx++];
-			if(iline[scanIdx] == 0) lineErrMess(lineCnt,"");
+			if(iline[scanIdx] == 0) lineErrMess(p_compressKr_ctx,lineCnt,"");
 		default:
 			s[saveIdx++] = iline[scanIdx];
 		}

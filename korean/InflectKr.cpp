@@ -84,7 +84,38 @@ unichar tempBuff[1096];
 int flagRacSuf;
 class fst_array *suf;
 class fst_array *dev;
-} ;
+
+
+
+int ADD_TWO_POINTS;
+int REMOVE_DIGITS_FROM_GRAMM_CODE;
+
+#define MAX_DEPTH_AUTO	2048
+int etiQueue[MAX_DEPTH_AUTO];
+int curEtiCnt;
+
+int grapheTraiteMode;
+
+char *cfilename;
+unichar *curLineTemp;
+int lineCnt;
+
+Fst2* Ptr_cAuto;
+
+class arbre_string0 suffixeAuto;
+class arbre_string0 notTraiteSuff;
+
+int reference[1024];
+int skipMark;
+
+unichar Fpile[MAX_CHARS_IN_STACK];
+unichar Opile[MAX_CHARS_IN_STACK];
+
+unichar FF[MAX_CHARS_IN_STACK];	// form of the flexion
+unichar OF[MAX_CHARS_IN_STACK];  // form of orgin
+unichar SuF[1024];
+unichar InF[1024];
+};
 
 static Fst2* load_fst22(char* file,int noms);
 struct fst2 * fst_array::loadfst2name(struct InflectKR_context *ictx,char *rep,unichar *nomFst)
@@ -131,22 +162,15 @@ return load_abstract_fst2(file,noms,NULL);
 //
 
 
-int ADD_TWO_POINTS=0;
-int REMOVE_DIGITS_FROM_GRAMM_CODE=1;
-
 
 static int inflect_kr(struct InflectKR_context *ictx,changeStrContext* ctx,struct fst2 *,unichar*,int mode);
 
 static void explore_state(struct InflectKR_context *ictx,changeStrContext*,int);
-#define MAX_DEPTH_AUTO	2048
-static int etiQueue[MAX_DEPTH_AUTO];
-static int curEtiCnt;
 //
 //	mode for handling graphs of the flexion or the derivation
 //
 #define FLEXION_MODE	0
 #define DERIVATION_MODE	1
-int grapheTraiteMode;
 
 
 const char* usage_InflectKr =
@@ -169,16 +193,12 @@ u_printf("%S",COPYRIGHT);
 u_printf(usage_InflectKr);
 }
 
-static char *cfilename;
-static unichar *curLineTemp;
-static int lineCnt;
-static void lineErrMess()
+static void lineErrMess(struct InflectKR_context* ictx)
 {
-	error("%s file at line %d\n",cfilename,lineCnt);
-	fatal_error("Line <<%S>>\nhas syntax error",curLineTemp);
+	error("%s file at line %d\n",ictx->cfilename,ictx->lineCnt);
+	fatal_error("Line <<%S>>\nhas syntax error",ictx->curLineTemp);
 }
 
-static Fst2* Ptr_cAuto;
 
 void cleanData(struct InflectKR_context* ictx)
 {
@@ -194,11 +214,6 @@ static void fst_err(struct InflectKR_context *ictx)
 	fatal_error("%S fst2 file error\n",ictx->curFstName);
 }
 
-class arbre_string0 suffixeAuto;
-class arbre_string0 notTraiteSuff;
-
-int reference[1024];
-int skipMark;
 void prSuffixeString(struct InflectKR_context *ictx,void *a,void *b,void *)
 {
 
@@ -207,7 +222,7 @@ void prSuffixeString(struct InflectKR_context *ictx,void *a,void *b,void *)
 	//
 	//	the first character of the line is a blanc for indicate comment line
 	//
-	u_fprintf(ictx->f_out," %S %d\n",&obuf[1],reference[i]);
+	u_fprintf(ictx->f_out," %S %d\n",&obuf[1],ictx->reference[i]);
 }
 void prSuffixeString0(struct InflectKR_context *ictx,void *a,void *,void *)
 {
@@ -233,12 +248,17 @@ int main_InflectKr(int argc, char *argv[]) {
 	unichar *tt;
 	int argIdx;
 	changeStrContext ctx;
-	skipMark= -1;
 	argIdx = 1;
 	char fNameSansExt[1024];
 	struct InflectKR_context ictx;
+    memset(&ictx,0,sizeof(struct InflectKR_context));
+	ictx.skipMark= -1;
 	ictx.debugFlag = 0;
 	ictx.lineInflect = 0;
+
+    ictx.ADD_TWO_POINTS=0;
+    ictx.REMOVE_DIGITS_FROM_GRAMM_CODE=1;
+
 
     Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
     int bom_output = DEFAULT_BOM_OUTPUT;
@@ -248,7 +268,7 @@ int main_InflectKr(int argc, char *argv[]) {
 	   usage();
 	   return 0;
 	}
-	memset(reference,0,1024*4);
+	memset(ictx.reference,0,1024*4);
 //	printf("%s\n",	setlocale(LC_ALL,"Korean_Korea.949"));
     ictx.flagRacSuf = CONTENT_RACINE;
 	ictx.dervRep =0;
@@ -288,7 +308,7 @@ int main_InflectKr(int argc, char *argv[]) {
 				argIdx++;
 			   tt = new unichar[strlen(argv[argIdx])+1];
 			   u_strcpy((unichar *)tt,argv[argIdx]);
-				skipMark = (unichar)(uniToInt(tt) & 0xffff);
+				ictx.skipMark = (unichar)(uniToInt(tt) & 0xffff);
                break;
 			case 'r':
 			   ictx.flagRacSuf |= CONTENT_RACINE;
@@ -331,9 +351,9 @@ int main_InflectKr(int argc, char *argv[]) {
 	   return 1;
 	}
 
-	cfilename = argv[argIdx];
+	ictx.cfilename = argv[argIdx];
 	if(!(ictx.ofilename[0])){
-		remove_extension(cfilename,fNameSansExt);
+		remove_extension(ictx.cfilename,fNameSansExt);
 		switch(ictx.flagRacSuf){
 		case CONTENT_RACINE:
           sprintf(ictx.ofilename,"%s.ric",fNameSansExt);break;
@@ -374,9 +394,9 @@ int main_InflectKr(int argc, char *argv[]) {
 	//
     if(ictx.ofilename1[0]) outFileRac(encoding_output,bom_output,ictx.ofilename1);
 	u_fprintf(ictx.f_out," suffixes list\n");
-	suffixeAuto.explore_tout_leaf((release_f )prSuffixeString);
+	ictx.suffixeAuto.explore_tout_leaf((release_f )prSuffixeString);
 	u_fprintf(ictx.f_out," not handled suffixes list\n");
-	notTraiteSuff.explore_tout_leaf((release_f )prSuffixeString0);
+	ictx.notTraiteSuff.explore_tout_leaf((release_f )prSuffixeString0);
 
 
 	u_printf("Done.\n");
@@ -401,10 +421,10 @@ get_flexion_form(struct InflectKR_context* ictx,changeStrContext* ctx,U_FILE *f,
 	int saveIdx;
 	unichar *fPtr[MAX_NUM_ELEMENT_BY_UNIT];
 	readLine[0] = 0;
-	lineCnt = 0;
-	curLineTemp = readLine;
+	ictx->lineCnt = 0;
+	ictx->curLineTemp = readLine;
 	while (EOF!=u_fgets(readLine,f)){
-		lineCnt++;
+		ictx->lineCnt++;
 
 
 		scanIdx = 0;
@@ -428,13 +448,13 @@ get_flexion_form(struct InflectKR_context* ictx,changeStrContext* ctx,U_FILE *f,
 			break;
 			case '\\':
 				if(readLine[scanIdx] == 0)
-					lineErrMess();
+					lineErrMess(ictx);
 			default:
 				scanIdx++;
 			}
 
 		}
-		if(saveIdx != MAX_NUM_ELEMENT_BY_UNIT) lineErrMess();
+		if(saveIdx != MAX_NUM_ELEMENT_BY_UNIT) lineErrMess(ictx);
 
 		scanIdx = 0;
 		int curColume = 0;
@@ -464,7 +484,7 @@ get_flexion_form(struct InflectKR_context* ictx,changeStrContext* ctx,U_FILE *f,
 				break;
 			}
 		case '\0':
-			if(curColume) lineErrMess();
+			if(curColume) lineErrMess(ictx);
 			for(i = 1; i < MAX_NUM_ELEMENT_BY_UNIT; i++)
 			{
 				workLine[saveIdx++] = ',';
@@ -505,7 +525,7 @@ trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FIL
 		switch(readLine[scanIdx]){
 		case ',':
 			if(segCnt >= 4){
-				u_printf("error: line %d:%S is illegal\n",lineCnt,readLine);
+				u_printf("error: line %d:%S is illegal\n",ictx->lineCnt,readLine);
 				return;
 			}
 			workLine[saveIdx++] = '\0';
@@ -518,14 +538,14 @@ trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FIL
 
 				if((segCnt != 4) || !workLine[segs[0]] ||
 				!workLine[segs[2]]) {
-					fatal_error("%d:%S line syntax error\n",lineCnt,readLine);
+					fatal_error("%d:%S line syntax error\n",ictx->lineCnt,readLine);
 				}
 				if(serialElementCnt){
 					unichar c = workLine[segs[0]];
 					if( (workLine[segs[2]] != c) ||
 						((workLine[segs[1]] != 0) && (workLine[1] != c)) ||
 						(workLine[segs[3]] != c))
-					fatal_error("%d:%S line syntax error\n",lineCnt,readLine);
+					fatal_error("%d:%S line syntax error\n",ictx->lineCnt,readLine);
 				}
 				get_forms_variant(ictx,ctx,workLine,segs,tail_chaine);
 				if(readLine[scanIdx] != '\0')
@@ -550,14 +570,14 @@ trait_renouvelle_lign(struct InflectKR_context *ictx,changeStrContext* ctx,U_FIL
 		case '\\':
 			workLine[saveIdx++] = readLine[scanIdx++];
 			if(!readLine[scanIdx]){
-				error("error: line %d:%S is illegal\n",lineCnt,readLine);
+				error("error: line %d:%S is illegal\n",ictx->lineCnt,readLine);
 				return;
 			}
 		default:
 			workLine[saveIdx++]=readLine[scanIdx];
 		}
 		if(scanIdx > MAX_LINE_NUMBER){
-			error("error: line %d:%S is illegal",lineCnt,readLine);
+			error("error: line %d:%S is illegal",ictx->lineCnt,readLine);
 			return;
 		}
 	} while (readLine[scanIdx++]);
@@ -616,7 +636,7 @@ u_printf("\n");
 				&& (workLine[scanIdx] !='\0'));
 		}
 		if(scanIdx > MAX_LINE_NUMBER) {
-			error("error: line %d:%S is illegal",lineCnt,workLine);
+			error("error: line %d:%S is illegal",ictx->lineCnt,workLine);
 			return 0;
 		}
 	} while(workLine[scanIdx]);
@@ -646,7 +666,7 @@ u_printf("\n");
 		for( scanIdx = 0; scanIdx < cmds.size() ;scanIdx++){
 			wp = cmds.getNext();
 			if(!wp){
-				fatal_error("Warning: line %d:%S is illegal\n",lineCnt,workLine);
+				fatal_error("Warning: line %d:%S is illegal\n",ictx->lineCnt,workLine);
 			}
 			if((fstAuto = ictx->dev->loadfst2name(ictx,ictx->dervRep,wp))
 				!= (struct fst2 *)0 ){
@@ -677,7 +697,7 @@ u_printf("\n");
 			inflect_kr(ictx,ctx,fstAuto,ictx->orgWord->EC_canonique,FLEXION_MODE);
 			wEle = wEle->next;
 		} else{
-			notTraiteSuff.put(ictx->orgWord->EC_code);
+			ictx->notTraiteSuff.put(ictx->orgWord->EC_code);
 			ictx->orgWord = new class dicLines;
 			ictx->orgWord->set(
                wEle->EC_canonique,
@@ -698,7 +718,7 @@ u_printf("\n");
 		case '+':
 			variation_code++;
 		}
-		reference[suffixeAuto.put(variation_code)]++;
+		ictx->reference[ictx->suffixeAuto.put(variation_code)]++;
 		ictx->orgWord = ictx->orgWord->next;
 	} while(ictx->orgWord);
 	return 1;
@@ -716,12 +736,12 @@ u_printf("\n");
 //
 static int inflect_kr(struct InflectKR_context *ictx,changeStrContext* ctx,Fst2*fstAuto,unichar* /* flex */,int modeflex)
 {
-	grapheTraiteMode = modeflex;
+	ictx->grapheTraiteMode = modeflex;
 	ictx->auto_courant = 1;
 	ictx->startAutoNum = ictx->auto_courant;
-	curEtiCnt = 0;
-	Ptr_cAuto= fstAuto;
-	explore_state(ictx,ctx,Ptr_cAuto->initial_states[ictx->auto_courant]);
+	ictx->curEtiCnt = 0;
+	ictx->Ptr_cAuto= fstAuto;
+	explore_state(ictx,ctx,ictx->Ptr_cAuto->initial_states[ictx->auto_courant]);
 	return(1);
 }
 
@@ -739,13 +759,7 @@ for (int i=(MAX_CHARS_IN_STACK-1);i>=pos;i--) {
    stack[i]=stack[i-1];
 }
 }
-static unichar Fpile[MAX_CHARS_IN_STACK];
-static unichar Opile[MAX_CHARS_IN_STACK];
 
-static unichar FF[MAX_CHARS_IN_STACK];	// form of the flexion
-static unichar OF[MAX_CHARS_IN_STACK];  // form of orgin
-static 	unichar SuF[1024];
-static	unichar InF[1024];
 
 
 static void traiteEttiques(struct InflectKR_context *ictx,changeStrContext* ctx)
@@ -766,21 +780,21 @@ static void traiteEttiques(struct InflectKR_context *ictx,changeStrContext* ctx)
 	dp =0; ip = 0; op = 0;
 
 // copy a orginal word before handling
-	if(grapheTraiteMode == FLEXION_MODE){
+	if(ictx->grapheTraiteMode == FLEXION_MODE){
  		swp = ictx->orgWord->EC_canonique;
-        while(*swp) FF[FIdx++] = *swp++;
+        while(*swp) (ictx->FF)[FIdx++] = *swp++;
         if(ictx->orgWord->EC_orgin == u_null_string){
  		        swp = ictx->orgWord->EC_canonique;
         } else {
  		        swp = ictx->orgWord->EC_orgin;
  		        orgFlag = 1;
  		}
-        while(*swp) OF[OIdx++] = *swp++;
+        while(*swp) (ictx->OF)[OIdx++] = *swp++;
 	}
-	FF[FIdx] = 0;OF[OIdx] = 0;
+	(ictx->FF)[FIdx] = 0;(ictx->OF)[OIdx] = 0;
 
-	for(int i = 0; i < curEtiCnt;i++){
-		et=Ptr_cAuto->tags[etiQueue[i]];
+	for(int i = 0; i < ictx->curEtiCnt;i++){
+		et=ictx->Ptr_cAuto->tags[ictx->etiQueue[i]];
 if(ictx->debugFlag)
 	u_printf("%S %S\n",et->output,et->input);
 		//
@@ -800,13 +814,13 @@ if(ictx->debugFlag)
 			wp++;
 			while(et->output[wp]){
 				if(et->output[wp]==',') break;
-				SuF[dp++] = et->output[wp++];
+				(ictx->SuF)[dp++] = et->output[wp++];
 			}
 			if(et->output[wp]!=',') fst_err(ictx);
 			wp++;
 			while(et->output[wp]){
 				if(et->output[wp] == '>') break;
-				InF[ip++] = et->output[wp++];
+				(ictx->InF)[ip++] = et->output[wp++];
 			}
 
 		}
@@ -814,20 +828,20 @@ if(ictx->debugFlag)
 		  if(!u_strcmp(et->input,"<$>")){
 			// copy org to working stack
 			swp = ictx->orgWord->EC_canonique;
-			while(*swp)  FF[FIdx++] = *swp++;
+			while(*swp)  (ictx->FF)[FIdx++] = *swp++;
 		    if(ictx->orgWord->EC_orgin == u_null_string){
  		        swp = ictx->orgWord->EC_canonique;
             } else {
  		        swp = ictx->orgWord->EC_orgin;
  		        orgFlag = 1;
  		    }
-            while(*swp) OF[OIdx++] = *swp++;
+            while(*swp) (ictx->OF)[OIdx++] = *swp++;
             continue;
 		  } else if (!u_strcmp(et->input,"<E>")) {
 		     continue;
 		  } else if (findChangeStr(ctx,(unichar*)et->input,temp)) {
-				FF[FIdx++] = temp[0];
-				OF[OIdx++] = temp[0];
+				(ictx->FF)[FIdx++] = temp[0];
+				(ictx->OF)[OIdx++] = temp[0];
 				continue;
 		  }
         }
@@ -835,57 +849,57 @@ if(ictx->debugFlag)
 	   // if the tag is not <E>, we process it
         for (wp=0; et->input[wp] !='\0';wp++) {
             if( (swp = getConvTable(et->input[wp])) != 0){
-			     while(*swp) FF[FIdx++] = *swp++;
-                 OF[OIdx++] = et->input[wp];
+			     while(*swp) (ictx->FF)[FIdx++] = *swp++;
+                 (ictx->OF)[OIdx++] = et->input[wp];
                  transFlag = 1;
                  continue;
 			}
 			switch (et->input[wp]) {
 			case '[':
-			      if(skipMark == -1 ){
+			      if(ictx->skipMark == -1 ){
                        fatal_error("skipMark is not defined\n");
                   }
-                  while((FIdx != 0) &&(Fpile[FpileIdx++] = FF[--FIdx])
-					!= skipMark) {};
+                  while((FIdx != 0) &&((ictx->Fpile)[FpileIdx++] = (ictx->FF)[--FIdx])
+					!= ictx->skipMark) {};
 
-                  Ctmp = OF[OIdx-1];
+                  Ctmp = (ictx->OF)[OIdx-1];
                   if(u_is_CJK_Unified_Ideographs(Ctmp)
 	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
-                      if(OIdx != 0)	Opile[OpileIdx++]= Ctmp;
+                      if(OIdx != 0)	(ictx->Opile)[OpileIdx++]= Ctmp;
                       --OIdx;
                       break;
                   }
-                  while((OIdx != 0) &&(Opile[OpileIdx++] = OF[--OIdx])
-					!= skipMark) {};
+                  while((OIdx != 0) &&((ictx->Opile)[OpileIdx++] = (ictx->OF)[--OIdx])
+					!= (ictx->skipMark)) {};
                   break;
 			case 'L':
-                  Ctmp = OF[OIdx-1];
+                  Ctmp = (ictx->OF)[OIdx-1];
                   if(u_is_CJK_Unified_Ideographs(Ctmp)
 	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
-                      if(OIdx != 0)	Opile[OpileIdx++]= Ctmp;
+                      if(OIdx != 0)	(ictx->Opile)[OpileIdx++]= Ctmp;
                       --OIdx;
-                     while((FIdx != 0) &&(Fpile[FpileIdx++] = FF[--FIdx])
-					  != skipMark) {};
+                     while((FIdx != 0) &&((ictx->Fpile)[FpileIdx++] = (ictx->FF)[--FIdx])
+					  != (ictx->skipMark)) {};
                       break;
                   }
-               if(FIdx!= 0)	Fpile[FpileIdx++]= FF[--FIdx];
-               if(OIdx!= 0)	Opile[OpileIdx++]= OF[--OIdx];
+               if(FIdx!= 0)	(ictx->Fpile)[FpileIdx++]= (ictx->FF)[--FIdx];
+               if(OIdx!= 0)	(ictx->Opile)[OpileIdx++]= (ictx->OF)[--OIdx];
                break;
 			case 'X':	// delete a sylable
-		        if(skipMark == -1 ){
+		        if((ictx->skipMark) == -1 ){
                     fatal_error("skipMark is not defined\n");
                 }
-                  Ctmp = OF[OIdx-1];
+                  Ctmp = (ictx->OF)[OIdx-1];
                   if(u_is_CJK_Unified_Ideographs(Ctmp)
 	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
-                      if(OIdx != 0)	Opile[OpileIdx++]= Ctmp;
+                      if(OIdx != 0)	(ictx->Opile)[OpileIdx++]= Ctmp;
                       --OIdx;
-                     while((FIdx != 0) &&(Fpile[FpileIdx++] = FF[--FIdx])
-					  != skipMark) {};
+                     while((FIdx != 0) &&((ictx->Fpile)[FpileIdx++] = (ictx->FF)[--FIdx])
+					  != (ictx->skipMark)) {};
                       break;
                   }
-             	while((FpileIdx != 0) && (Fpile[--FpileIdx] != skipMark)) {};
-             	while((OpileIdx != 0) && (Opile[--OpileIdx] != skipMark)) {};
+             	while((FpileIdx != 0) && ((ictx->Fpile)[--FpileIdx] != (ictx->skipMark))) {};
+             	while((OpileIdx != 0) && ((ictx->Opile)[--OpileIdx] != (ictx->skipMark))) {};
 
 				break;
 			case 'R':
@@ -893,60 +907,60 @@ if(ictx->debugFlag)
                if(OpileIdx != 0) OpileIdx--;
                break;
 			case ']':
-			    if(skipMark == -1 ) fatal_error("skipMark is not defined\n");
+			    if((ictx->skipMark) == -1 ) fatal_error("skipMark is not defined\n");
 				if(FpileIdx == 0) break;
 				--FpileIdx;
 				if(OpileIdx == 0) break;
 				--OpileIdx;
 
 				while(FpileIdx != 0 ){
-				    FF[FIdx++] = Fpile[FpileIdx++];
-					if(Fpile[FpileIdx] == skipMark) break;
+				    (ictx->FF)[FIdx++] = (ictx->Fpile)[FpileIdx++];
+					if((ictx->Fpile)[FpileIdx] == (ictx->skipMark)) break;
 				}
 
 				break;
 			case 'C':
-				if(OpileIdx != 0) { FF[FIdx++] = Opile[--OpileIdx];}
+				if(OpileIdx != 0) { (ictx->FF)[FIdx++] = (ictx->Opile)[--OpileIdx];}
 				break;
 			default:
-		       FF[FIdx++] = et->input[wp];
-		       OF[OIdx++] = et->input[wp];
+		       (ictx->FF)[FIdx++] = et->input[wp];
+		       (ictx->OF)[OIdx++] = et->input[wp];
 			}
-if(ictx->debugFlag){ FF[FIdx] = 0;  u_printf("%S >>>>\n",FF);}
+if(ictx->debugFlag){ (ictx->FF)[FIdx] = 0;  u_printf("%S >>>>\n",ictx->FF);}
 		}
 	} // parcours
-	FF[FIdx] = 0;
-	OF[OIdx] = 0;
-	SuF[dp]=0;
-	InF[ip] = 0;
+	(ictx->FF)[FIdx] = 0;
+	(ictx->OF)[OIdx] = 0;
+	(ictx->SuF)[dp]=0;
+	(ictx->InF)[ip] = 0;
 
 	class dicLines *wWord = new class  dicLines;
 	if(!wWord) fatal_error("mem alloc fail\n");
-	switch(grapheTraiteMode){
+	switch(ictx->grapheTraiteMode){
     case FLEXION_MODE: // copy a orginal word before handling
-          wWord->set(FF,ictx->orgWord->EC_canonique,
-                      (transFlag || orgFlag) ?OF:u_null_string,
-                      ictx->orgWord->EC_code_gramm,SuF);
+          wWord->set(ictx->FF,ictx->orgWord->EC_canonique,
+                      (transFlag || orgFlag) ? (ictx->OF):u_null_string,
+                      ictx->orgWord->EC_code_gramm,ictx->SuF);
 		break;
 	case  DERIVATION_MODE :// derivation
-		if(InF[0]== '+'){
+		if((ictx->InF)[0]== '+'){
 			u_strcpy((unichar*)ictx->tempBuff,(unichar *)ictx->orgWord->EC_code_gramm);
-			u_strcat((unichar *)ictx->tempBuff,(unichar*)InF);
+			u_strcat((unichar *)ictx->tempBuff,(unichar*)ictx->InF);
 		} else {
-  			u_strcpy((unichar*)ictx->tempBuff,(unichar *)InF);
+  			u_strcpy((unichar*)ictx->tempBuff,(unichar *)ictx->InF);
 		}
- 	    wWord->set(u_null_string,FF,u_null_string,ictx->tempBuff,u_null_string);
+ 	    wWord->set(u_null_string,ictx->FF,u_null_string,ictx->tempBuff,u_null_string);
 
  	    if(transFlag||orgFlag){
  	     	    wWord->set(u_null_string,u_null_string
-                     ,OF,u_null_string,u_null_string);
+                     ,ictx->OF,u_null_string,u_null_string);
  	    }
 
- 	    if((SuF[0] == '\0') || !u_strcmp((unichar*)SuF,"<E>"))
- 	    wWord->set(u_null_string,FF,u_null_string,ictx->tempBuff,
+ 	    if(((ictx->SuF)[0] == '\0') || !u_strcmp((unichar*)ictx->SuF,"<E>"))
+ 	    wWord->set(u_null_string,ictx->FF,u_null_string,ictx->tempBuff,
                   ictx->orgWord->EC_code);
  	    else
- 	    wWord->set(u_null_string,FF,u_null_string,ictx->tempBuff,SuF);
+ 	    wWord->set(u_null_string,ictx->FF,u_null_string,ictx->tempBuff,ictx->SuF);
 	}
 	ictx->curDicElements->put(wWord);
 }
@@ -957,7 +971,7 @@ if(ictx->debugFlag){ FF[FIdx] = 0;  u_printf("%S >>>>\n",FF);}
 void explore_state(struct InflectKR_context *ictx,changeStrContext* ctx,int etat_courant)
 {
 	int save_auto;
-	Fst2State e=Ptr_cAuto->states[etat_courant];
+	Fst2State e=ictx->Ptr_cAuto->states[etat_courant];
 	if (is_final_state(e)) {
 		if(ictx->auto_courant == ictx->startAutoNum){
 			traiteEttiques(ictx,ctx);
@@ -968,13 +982,13 @@ void explore_state(struct InflectKR_context *ictx,changeStrContext* ctx,int etat
 		if (t->tag_number < 0) {
 			save_auto = ictx->auto_courant;
 			ictx->auto_courant = -(t->tag_number);
-		    explore_state(ictx,ctx,Ptr_cAuto->initial_states[-(t->tag_number)]);
+		    explore_state(ictx,ctx,ictx->Ptr_cAuto->initial_states[-(t->tag_number)]);
 		    ictx->auto_courant = save_auto;
 		}
 
-		etiQueue[curEtiCnt++] = t->tag_number;
+		ictx->etiQueue[(ictx->curEtiCnt)++] = t->tag_number;
 		explore_state(ictx,ctx,t->state_number);
-		curEtiCnt--;
+		(ictx->curEtiCnt)--;
 		t = t->next;
    }
    return;

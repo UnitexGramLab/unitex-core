@@ -32,7 +32,7 @@
 #include "IOBuffer.h"
 
 
-
+#define DEBUG_MER 1
 const char* usage_MergeBin =
 "MergeBin [-d] [-l lfilename] -o ofilename f0 f1 ... fn ] ] \n"\
 "         : merge files which has the extension .bin \n"\
@@ -57,46 +57,51 @@ struct binFileList {
 	int relocateInfCnt;
 };
 
+struct MergeBin_ctx {
+    int INF_offset;
+    int REF_offset;
+    int BIN_offset;
+    int racTableIdx;
+    int sufTableIdx;
+    int infTableIdx;
+    class arbre_string00 totSuf;
+    class arbre_string0 unresolSuf;	// not resoled suffixe
+    char *nameOfoutput;
 
-static int INF_offset;
-static int REF_offset;
-static int BIN_offset;
-static int racTableIdx;
-static int sufTableIdx;
-static int infTableIdx;
-class arbre_string00 totSuf;
-class arbre_string0 unresolSuf;	// not resoled suffixe
-char *nameOfoutput;
+    char path_of_locate[1024];
+    char buff[1024];
+    int racStateCounter;
+    int fileListCounter;
+
+    struct binFileList *tailFile,*headFiles;
+#ifdef DEBUG_MER
+    int dMode;
+    unichar PrBuff[4096];
+#endif
+};
+
 struct racTable {
 	unsigned short *s;
 	int pos;
 	int offset;
 };
-#ifdef DEBUG_MER
-static int dMode;
-#endif
-static void initVar()
+
+static void initVar(struct MergeBin_ctx* p_mergeBin_ctx)
 {
-INF_offset = 0;
-REF_offset =0;
-BIN_offset =0;
-racTableIdx =0 ;
-sufTableIdx =0;
-infTableIdx =0;
-unresolSuf.put(assignUstring(u_epsilon_string));
+p_mergeBin_ctx->INF_offset = 0;
+p_mergeBin_ctx->REF_offset =0;
+p_mergeBin_ctx->BIN_offset =0;
+p_mergeBin_ctx->racTableIdx =0 ;
+p_mergeBin_ctx->sufTableIdx =0;
+p_mergeBin_ctx->infTableIdx =0;
+p_mergeBin_ctx->unresolSuf.put(assignUstring(u_epsilon_string));
 #ifdef DEBUG_MER
-dMode = 0;
+p_mergeBin_ctx->dMode = 0;
 #endif
 }
 
-static		char path_of_locate[1024];
-static		char buff[1024];
-static		int racStateCounter;
-static 		int fileListCounter;
-
-static struct binFileList *tailFile,*headFiles;
 static void
-getOneFile(char *fn)
+getOneFile(struct MergeBin_ctx* p_mergeBin_ctx,char *fn)
 {
 	struct binFileList *tmp;
     tmp = new struct binFileList;
@@ -104,16 +109,16 @@ getOneFile(char *fn)
 	tmp->next = 0;
 	tmp->newSufId = 0;
 	strcpy(tmp->fname,fn);
-	if(headFiles){
-        tailFile->next = tmp;
-        tailFile = tailFile->next;
+	if(p_mergeBin_ctx->headFiles){
+        p_mergeBin_ctx->tailFile->next = tmp;
+        p_mergeBin_ctx->tailFile = p_mergeBin_ctx->tailFile->next;
 	} else {
-        tailFile = headFiles= tmp;
+        p_mergeBin_ctx->tailFile = p_mergeBin_ctx->headFiles= tmp;
   	}
   	u_printf("Load file name :: <%s>\n",fn);
-	fileListCounter++;
+	p_mergeBin_ctx->fileListCounter++;
 }
-static void getListFile(char *fn)
+static void getListFile(struct MergeBin_ctx* p_mergeBin_ctx,char *fn)
 {
 	register char *wp;
 	char pathName[1024];
@@ -126,8 +131,8 @@ struct binFileList *tmp;
     	fopenErrMessage(fn);
     get_path(fn,pathName);
     pathLen = (int)strlen(pathName);
-    while(af_fgets(buff,1024,lstF->f)){
-    	wp = buff;
+    while(af_fgets(p_mergeBin_ctx->buff,1024,lstF->f)){
+    	wp = p_mergeBin_ctx->buff;
 
     	while(*wp){
     		if(*wp == 0x0d){ *wp = 0; break;}
@@ -135,47 +140,47 @@ struct binFileList *tmp;
     		wp++;
     	}
 
-    	switch(buff[0]){
+    	switch(p_mergeBin_ctx->buff[0]){
     	case ' ':	// comment line
     	case 0:
     		continue;
     	}
 
     	tmp = new struct binFileList;
-    	tmp->fname = new char[pathLen+strlen(buff)+1];
+    	tmp->fname = new char[pathLen+strlen(p_mergeBin_ctx->buff)+1];
     	strcpy(tmp->fname,pathName);
-    	strcat(tmp->fname,buff);
+    	strcat(tmp->fname,p_mergeBin_ctx->buff);
     	tmp->next = 0;
     	tmp->newSufId = 0;
-    	if(headFiles){
-           tailFile->next = tmp;
-           tailFile = tailFile->next;
+    	if(p_mergeBin_ctx->headFiles){
+           p_mergeBin_ctx->tailFile->next = tmp;
+           p_mergeBin_ctx->tailFile = p_mergeBin_ctx->tailFile->next;
     	} else {
-            tailFile = headFiles= tmp;	}
-    	fileListCounter++;
+            p_mergeBin_ctx->tailFile = p_mergeBin_ctx->headFiles = tmp;	}
+    	p_mergeBin_ctx->fileListCounter++;
     }
     u_fclose(lstF);
 }
 
 static void
-load_bins(char *oFileName)
+load_bins(struct MergeBin_ctx* p_mergeBin_ctx,char *oFileName)
 {
-	path_of_locate[0] = 0;
+	p_mergeBin_ctx->path_of_locate[0] = 0;
 	struct binFileList *tmp;
 	struct binFileList *rhead,*rtail,*shead,*stail;
 
 
-	racStateCounter = 0;
+	p_mergeBin_ctx->racStateCounter = 0;
 	rhead = shead = 0;
     rtail = stail = 0;
-	tmp = headFiles;
+	tmp = p_mergeBin_ctx->headFiles;
 	while(tmp){
       u_printf("%s\n",tmp->fname);
 		tmp->image.loadBin(tmp->fname);
 		tmp->newSufId = 0;
 
 		if(tmp->image.isRacine()){
-			racStateCounter++;
+			(p_mergeBin_ctx->racStateCounter)++;
          u_printf("is racine %s\n",tmp->fname);
   			if(rhead){
                 rtail->next = tmp;
@@ -198,9 +203,9 @@ load_bins(char *oFileName)
 		}
 	}
 
-	headFiles = rhead;
+	p_mergeBin_ctx->headFiles = rhead;
 	rtail->next = shead;
-	if(!headFiles)	fatal_error("null file read\n");
+	if(!(p_mergeBin_ctx->headFiles))	fatal_error("null file read\n");
 	//
 	//	calcule the decalage by add dummy node for racines
 	//  in the image of the bin
@@ -214,16 +219,16 @@ load_bins(char *oFileName)
 
 	relBin = 0;
 	relInf = 0;
-	if(racStateCounter && (racStateCounter != 1)){
+	if((p_mergeBin_ctx->racStateCounter) && ((p_mergeBin_ctx->racStateCounter) != 1)){
 	    char charRootName[1024];
-		relBin = racStateCounter * SIZE_ONE_TRANSITION_BIN + 2;
+		relBin = (p_mergeBin_ctx->racStateCounter) * SIZE_ONE_TRANSITION_BIN + 2;
 		remove_extension(oFileName,charRootName);
 		unichar  *RootName = new unichar[strlen(charRootName)+1];
 		u_strcpy(RootName,charRootName);
-		totSuf.put((unichar *)RootName,0);
+		p_mergeBin_ctx->totSuf.put((unichar *)RootName,0);
 	}
 
-	tmp = headFiles;
+	tmp = p_mergeBin_ctx->headFiles;
 	while(tmp){
 		tmp->relocateInfOffset = 0; // set value of relocated location
 		tmp->relocateBinOffset = 0;
@@ -234,7 +239,7 @@ load_bins(char *oFileName)
              ,tmp->image.autoffset[i]);
 			tmp->image.autoffset[i] += relBin;
             u_printf("relocated at %d\n",tmp->image.autoffset[i]);
-			nidx = totSuf.check(tmp->image.STR + tmp->image.AUT[i]);
+			nidx = p_mergeBin_ctx->totSuf.check(tmp->image.STR + tmp->image.AUT[i]);
 			if(nidx != -1){
 				fatal_error("at %s file,symbol %s:\ndupliate initial state name\n"
                  ,tmp->image.name
@@ -243,7 +248,7 @@ load_bins(char *oFileName)
 			if(!nidx){
 				fatal_error("at %s file,symbol\nnull initial state name\n",tmp->image.name);
 			}
-			nidx = totSuf.put(tmp->image.STR + tmp->image.AUT[i],
+			nidx = p_mergeBin_ctx->totSuf.put(tmp->image.STR + tmp->image.AUT[i],
 				  (void *)(tmp->image.autoffset[i]));
 		}
 		tmp->relocateInfOffset = relInf;
@@ -260,18 +265,18 @@ load_bins(char *oFileName)
 	//	set the value of the position of jmping suffixe
 	//
 
-	tmp = headFiles;
+	tmp = p_mergeBin_ctx->headFiles;
 	while(tmp){
 		for( i = 1; i < tmp->image.head.cnt_suf;i++){// i = 0 : null
-			nidx = totSuf.check(tmp->image.STR + tmp->image.SUF[i]);
+			nidx = p_mergeBin_ctx->totSuf.check(tmp->image.STR + tmp->image.SUF[i]);
 			if(!nidx || nidx == -1){
-				nidx = unresolSuf.put(tmp->image.STR + tmp->image.SUF[i]);
+				nidx = p_mergeBin_ctx->unresolSuf.put(tmp->image.STR + tmp->image.SUF[i]);
 				unresolveSufCnt++;
 				u_printf("the suffix, %s is not located\n",
 				  getUtoChar(tmp->image.STR + tmp->image.SUF[i]));
 				tmp->newSufId[i] = nidx;
 			} else {
-				nidx = (int)((intptr_t)totSuf.getCheckValue());
+				nidx = (int)((intptr_t)p_mergeBin_ctx->totSuf.getCheckValue());
 				tmp->image.sufoffset[i] = nidx;
 	            u_printf("the suffix, %s is set %d\n",
 				  getUtoChar(tmp->image.STR + tmp->image.SUF[i]),nidx);
@@ -285,7 +290,7 @@ load_bins(char *oFileName)
 
 static
 void
-mergeFiles(char *ofn,struct binFileList *first)
+mergeFiles(struct MergeBin_ctx* p_mergeBin_ctx,char *ofn,struct binFileList *first)
 {
 	struct binFileList *last;
 	int i;
@@ -308,8 +313,8 @@ mergeFiles(char *ofn,struct binFileList *first)
 		fopenErrMessage(ofilename);
 
 	newHead.writeAtFile(f);
-	newHead.cnt_auto = totSuf.size();
-	newHead.cnt_suf = unresolSuf.size();
+	newHead.cnt_auto = p_mergeBin_ctx->totSuf.size();
+	newHead.cnt_suf = p_mergeBin_ctx->unresolSuf.size();
 
 	//
 	//	ref
@@ -321,8 +326,8 @@ mergeFiles(char *ofn,struct binFileList *first)
 		newHead.size_inf += last->image.head.size_inf;
 		last = last->next;
 	}
-	unichar **a = totSuf.make_strPtr_table(&offsetMap);
-	unichar **b = unresolSuf.make_strPtr_table();
+	unichar **a = p_mergeBin_ctx->totSuf.make_strPtr_table(&offsetMap);
+	unichar **b = p_mergeBin_ctx->unresolSuf.make_strPtr_table();
 
 
 	for(i = 0; i < newHead.cnt_auto;i++)
@@ -343,7 +348,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 			offsetStrSave += a[i][0];
 		}
 
-	totSuf.release_value();
+	p_mergeBin_ctx->totSuf.release_value();
 
 	for(i = 0; i < newHead.cnt_suf;i++){
 		for(j = 1; j < b[i][0];j++)
@@ -352,7 +357,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 		offsetStrSave += b[i][0];
 	}
 
-	unresolSuf.release_value();
+	p_mergeBin_ctx->unresolSuf.release_value();
 	newHead.size_str = offsetStrSave;
 
 	//
@@ -388,9 +393,9 @@ mergeFiles(char *ofn,struct binFileList *first)
 
 
 	offsetStrSave = 0;
-	if(racStateCounter && (racStateCounter != 1) ){ // dummy initial node
+	if((p_mergeBin_ctx->racStateCounter) && ((p_mergeBin_ctx->racStateCounter) != 1) ){ // dummy initial node
 //printf("node  0 for racines");
-		outbytes2((unichar)((unsigned int)racStateCounter),f);
+		outbytes2((unichar)((unsigned int)(p_mergeBin_ctx->racStateCounter)),f);
 		last = first;
 		while(last){
 			if(last->image.isRacine()){
@@ -402,7 +407,7 @@ mergeFiles(char *ofn,struct binFileList *first)
 			last = last->next;
 		}
 		offsetStrSave = 2 +
-			racStateCounter * SIZE_ONE_TRANSITION_BIN;
+			(p_mergeBin_ctx->racStateCounter) * SIZE_ONE_TRANSITION_BIN;
 	}
 	last = first;
 	while(last){
@@ -459,23 +464,23 @@ mergeFiles(char *ofn,struct binFileList *first)
 	}
 
 	newHead.size_bin= offsetStrSave;
-	newHead.flag |= (racStateCounter) ? TYPE_BIN_RACINE:0;
+	newHead.flag |= (p_mergeBin_ctx->racStateCounter) ? TYPE_BIN_RACINE:0;
 	fseek(f,0,0);
 	newHead.writeAtFile(f);
 	u_fclose(f);
 }
 #ifdef DEBUG_MER
-static unichar PrBuff[4096];
-static void testLoad(char *fname)
+static void testLoad(struct MergeBin_ctx* p_mergeBin_ctx,char *fname)
 {
 	class explore_bin1 tbin;
+    char filename[1024];
 	U_FILE *t = u_fopen(UTF16_LE,"out.txt",U_WRITE);
 	u_printf("result out\n");
 	remove_extension(fname,filename);
 	strcat(filename,".bin");
 	tbin.loadBin(filename);
-	tbin.exploreTree(t,PrBuff);
-	fclose(t);
+	tbin.exploreTree(t,p_mergeBin_ctx->PrBuff);
+	u_fclose(t);
 }
 #endif
 
@@ -484,38 +489,40 @@ static void testLoad(char *fname)
 int main_MergeBin(int argc , char *argv[]) {
 
 	int iargIndex=1;
-	nameOfoutput = 0;
-	headFiles = tailFile = 0;
-	fileListCounter = 0;
+    struct MergeBin_ctx mergeBin_ctx;
+    memset(&mergeBin_ctx,0,sizeof(struct MergeBin_ctx));
+	mergeBin_ctx.nameOfoutput = 0;
+	mergeBin_ctx.headFiles = mergeBin_ctx.tailFile = 0;
+	mergeBin_ctx.fileListCounter = 0;
 	if(argc == 1) {
 	   usage();
 	   return 0;
 	}
 #ifdef DEBUG_MER
-	dMode = 0;
+	mergeBin_ctx.dMode = 0;
 #endif
 
-	initVar();
+	initVar(&mergeBin_ctx);
 
 	iargIndex=1;
 	while(iargIndex < argc){
 
 		if(argv[iargIndex][0] != '-'){
-           getOneFile(argv[iargIndex]);
+           getOneFile(&mergeBin_ctx,argv[iargIndex]);
         } else {
         	switch(argv[iargIndex][1]){
 #ifdef DEBUG_MER
-        	case 'd':dMode  = 1;break;
+        	case 'd': mergeBin_ctx.dMode  = 1;break;
 #endif
             /* ignore -k and -q encoding parameter instead make error */
         	case 'k':iargIndex++;break;
         	case 'q':iargIndex++;break;
         	case 'o':iargIndex++;
-        		nameOfoutput = new char [strlen(argv[iargIndex])+1];
-        		strcpy(nameOfoutput,argv[iargIndex]);
+        		mergeBin_ctx.nameOfoutput = new char [strlen(argv[iargIndex])+1];
+        		strcpy(mergeBin_ctx.nameOfoutput,argv[iargIndex]);
         		break;
         	case 'l':iargIndex++;
-                  getListFile(argv[iargIndex]);
+                  getListFile(&mergeBin_ctx,argv[iargIndex]);
         		break;
         	default:
         	  usage();
@@ -524,30 +531,30 @@ int main_MergeBin(int argc , char *argv[]) {
        	}
 		iargIndex++;
 	}
-	if(!fileListCounter) fatal_error("null file read\n");
+	if(!(mergeBin_ctx.fileListCounter)) fatal_error("null file read\n");
 //printf("%d",fileListCounter);
 
-	if(!nameOfoutput){
- 		nameOfoutput = new char [strlen("merged")+1];
-		strcpy(nameOfoutput,"merged");
+	if(!(mergeBin_ctx.nameOfoutput)){
+ 		mergeBin_ctx.nameOfoutput = new char [strlen("merged")+1];
+		strcpy(mergeBin_ctx.nameOfoutput,"merged");
 	}
-	if(headFiles && headFiles->next){
-		load_bins(nameOfoutput);
-		mergeFiles(nameOfoutput,headFiles);
+	if((mergeBin_ctx.headFiles) && (mergeBin_ctx.headFiles->next)) {
+		load_bins(&mergeBin_ctx,mergeBin_ctx.nameOfoutput);
+		mergeFiles(&mergeBin_ctx,mergeBin_ctx.nameOfoutput,mergeBin_ctx.headFiles);
 	}
 #ifdef DEBUG_MER
-	struct binFileList *tail=	headFiles;
+	struct binFileList *tail=	mergeBin_ctx.headFiles;
 	while(tail){
-		headFiles = tail;
+		mergeBin_ctx.headFiles = tail;
 		tail = tail->next;
-		if(headFiles->newSufId)
-			delete [] headFiles->newSufId;
-		delete headFiles;
+		if(mergeBin_ctx.headFiles->newSufId)
+			delete [] mergeBin_ctx.headFiles->newSufId;
+		delete mergeBin_ctx.headFiles;
 	}
 
-	if(dMode)	testLoad(argv[iargIndex]);
+	if(mergeBin_ctx.dMode)	testLoad(&mergeBin_ctx,argv[iargIndex]);
 #endif
-	if(nameOfoutput) delete [] nameOfoutput;
+	if(mergeBin_ctx.nameOfoutput) delete [] mergeBin_ctx.nameOfoutput;
 	u_printf("Done.\n");
 
 	return(0);

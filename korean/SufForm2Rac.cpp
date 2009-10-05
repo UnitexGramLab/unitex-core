@@ -32,11 +32,17 @@
 //
 // change the format which is get from graph to format of list form
 //
-static unichar saveOrg[2][1024];
-static unichar canonique[1024];
-static unichar flechi[1024];
-//static unichar suffixe[1024];
-
+struct SufForm2Rac_ctx {
+    unichar saveOrg[2][1024];
+    unichar canonique[1024];
+    unichar flechi[1024];
+//    unichar suffixe[1024];
+    char desFileName[2048];
+    char tfn[2048];
+    char ttfn[2048];
+    int    converMapExistFlag;
+    char inputFilePath[2048];
+};
 
 const char* usage_SufForm2Rac =
     "SufForm2Rac [-m converTable] [-l] [-o ofilename] fname "\
@@ -139,12 +145,8 @@ public:
 
 };
 
-static    void changeFile(Encoding encoding,int write_bom,int MASK_ENCODING_COMPATIBILITY,char *,char *);
-static char desFileName[2048];
-static char tfn[2048];
-static char ttfn[2048];
-static int    converMapExistFlag;
-static char inputFilePath[2048];
+static    void changeFile(struct SufForm2Rac_ctx*,Encoding encoding,int write_bom,int MASK_ENCODING_COMPATIBILITY,char *,char *);
+
 
 
 
@@ -155,12 +157,15 @@ int main_SufForm2Rac(int argc, char *argv[]) {
     char *ofilename =0;
     class fileLinkListe fileStock;
 
+    struct SufForm2Rac_ctx sufForm2Rac_ctx;
+    memset(&sufForm2Rac_ctx,0,sizeof(struct SufForm2Rac_ctx));
+
     Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
     int bom_output = DEFAULT_BOM_OUTPUT;
     int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 
     int remFlag = 0;
-    converMapExistFlag = 0;
+    sufForm2Rac_ctx.converMapExistFlag = 0;
     if(argc == 1) {
        usage();
        return 0;
@@ -172,7 +177,7 @@ int main_SufForm2Rac(int argc, char *argv[]) {
     	switch(argv[iargIndex][1]){
     	case 'm': iargIndex++;
     	    loadChangeFileToTable(argv[iargIndex],mask_encoding_compatibility_input);
-    	    converMapExistFlag = 1;
+    	    sufForm2Rac_ctx.converMapExistFlag = 1;
     		break;
     	case 'l':listFileFlag = 1; break;
     	case 'o': 
@@ -205,32 +210,32 @@ int main_SufForm2Rac(int argc, char *argv[]) {
     
     if(listFileFlag){
         fileStock.ajouteFromFile(argv[iargIndex]);
-        get_path(argv[iargIndex],inputFilePath);
+        get_path(argv[iargIndex],sufForm2Rac_ctx.inputFilePath);
     } else {
-        get_path(argv[iargIndex],inputFilePath);
-        remove_path(argv[iargIndex],tfn);
-        fileStock.ajouteList(tfn);    
+        get_path(argv[iargIndex],sufForm2Rac_ctx.inputFilePath);
+        remove_path(argv[iargIndex],sufForm2Rac_ctx.tfn);
+        fileStock.ajouteList(sufForm2Rac_ctx.tfn);    
     }
     struct fileListe *wpointer = fileStock.getHead();
     while(wpointer){
-        remove_path(wpointer->filename,tfn);
-        u_printf("[%s][%s]\n",tfn,wpointer->filename);
-        remove_extension(tfn,ttfn);
-        u_printf("[%s][%s]\n",tfn,ttfn);
-        fileStock.makeOfileName(desFileName,ttfn,0);
-        strcpy(tfn,inputFilePath);
-        u_printf("[%s][%s]\n",tfn,desFileName);
-        strcat(tfn,wpointer->filename);
-        u_printf("[%s][%s]\n",tfn,desFileName);
-        changeFile(encoding_output,bom_output,mask_encoding_compatibility_input,tfn,desFileName);
+        remove_path(wpointer->filename,sufForm2Rac_ctx.tfn);
+        u_printf("[%s][%s]\n",sufForm2Rac_ctx.tfn,wpointer->filename);
+        remove_extension(sufForm2Rac_ctx.tfn,sufForm2Rac_ctx.ttfn);
+        u_printf("[%s][%s]\n",sufForm2Rac_ctx.tfn,sufForm2Rac_ctx.ttfn);
+        fileStock.makeOfileName(sufForm2Rac_ctx.desFileName,sufForm2Rac_ctx.ttfn,0);
+        strcpy(sufForm2Rac_ctx.tfn,sufForm2Rac_ctx.inputFilePath);
+        u_printf("[%s][%s]\n",sufForm2Rac_ctx.tfn,sufForm2Rac_ctx.desFileName);
+        strcat(sufForm2Rac_ctx.tfn,wpointer->filename);
+        u_printf("[%s][%s]\n",sufForm2Rac_ctx.tfn,sufForm2Rac_ctx.desFileName);
+        changeFile(&sufForm2Rac_ctx,encoding_output,bom_output,mask_encoding_compatibility_input,sufForm2Rac_ctx.tfn,sufForm2Rac_ctx.desFileName);
         wpointer = wpointer->next;
     }
   u_printf("Done\n");
   return 0;
-     
 }
+
 //static  char ofileNameBuff[1024];
-static void changeFile(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,char  *ifname,char *ofname)
+static void changeFile(struct SufForm2Rac_ctx* p_sufForm2Rac_ctx, Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,char  *ifname,char *ofname)
 {
 U_FILE *ifile,*ofile;
   int c;
@@ -258,7 +263,7 @@ U_FILE *ifile,*ofile;
     switch(c){
     case L',':
         if(openFlag){
-           saveOrg[index][offset] = 0;
+           p_sufForm2Rac_ctx->saveOrg[index][offset] = 0;
          index++;
          offset = 0;
            if(index >= 2) fatal_error("format error\n");
@@ -270,7 +275,7 @@ U_FILE *ifile,*ofile;
                 if(!opened){u_fputc((unichar)c,ofile);u_fputc((unichar)c,ofile);u_fputc((unichar)c,ofile);};                
                 break;
          case 0:
-                  flechi[flechiIndex] = 0;
+                  p_sufForm2Rac_ctx->flechi[flechiIndex] = 0;
          case 1:
          case 2:
                   break;
@@ -284,12 +289,12 @@ U_FILE *ifile,*ofile;
         openFlag = 1;
         index = 0;
         offset = 0;
-        saveOrg[index][offset] =0;
+        p_sufForm2Rac_ctx->saveOrg[index][offset] =0;
         break;
     case L'>':
-        saveOrg[index][offset++] = 0;
+        p_sufForm2Rac_ctx->saveOrg[index][offset++] = 0;
         changeFlag = 0;
-        wp = saveOrg[0];
+        wp = p_sufForm2Rac_ctx->saveOrg[0];
         switch(*wp){
         case L'+':
         case L'-':
@@ -297,14 +302,14 @@ U_FILE *ifile,*ofile;
                 wp++;
                 if(*wp != 0) break;
         case L'\0':
-                u_strcpy(wp,flechi);
+                u_strcpy(wp,p_sufForm2Rac_ctx->flechi);
                 break;
         default:
                 break;
         }
-        if(converMapExistFlag){
-            twp = canonique;
-            wp = saveOrg[0];
+        if(p_sufForm2Rac_ctx->converMapExistFlag){
+            twp = p_sufForm2Rac_ctx->canonique;
+            wp = p_sufForm2Rac_ctx->saveOrg[0];
             while(*wp){
                 cwp = getConvTable(*wp);
                 if(cwp)
@@ -319,26 +324,26 @@ U_FILE *ifile,*ofile;
             *twp=0;
             
             if(changeFlag){
-                u_fprintf(ofile,",%S,%S,%S",saveOrg[0],canonique,saveOrg[1]);
+                u_fprintf(ofile,",%S,%S,%S",p_sufForm2Rac_ctx->saveOrg[0],p_sufForm2Rac_ctx->canonique,p_sufForm2Rac_ctx->saveOrg[1]);
             } else {
-                u_fprintf(ofile,",,%S,%S",saveOrg[0],saveOrg[1]);
+                u_fprintf(ofile,",,%S,%S",p_sufForm2Rac_ctx->saveOrg[0],p_sufForm2Rac_ctx->saveOrg[1]);
             }
         } else 
-            u_fprintf(ofile,",,%S,%S",saveOrg[0],saveOrg[1]);
+            u_fprintf(ofile,",,%S,%S",p_sufForm2Rac_ctx->saveOrg[0],p_sufForm2Rac_ctx->saveOrg[1]);
         openFlag = 0;
         break;
     case L';':
         opened = 0;
         countComma = 0;
         flechiIndex = 0;
-        flechi[flechiIndex] = 0;
+        p_sufForm2Rac_ctx->flechi[flechiIndex] = 0;
         u_fputc((unichar)c,ofile);
         break;
     default:
         if(openFlag)
-                saveOrg[index][offset++] = (unichar)c;
+                p_sufForm2Rac_ctx->saveOrg[index][offset++] = (unichar)c;
         else {
-           if(!countComma) flechi[flechiIndex++] = (unichar)c;
+           if(!countComma) p_sufForm2Rac_ctx->flechi[flechiIndex++] = (unichar)c;
            u_fputc((unichar)c,ofile);
         }
     }
