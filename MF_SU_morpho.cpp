@@ -623,7 +623,7 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 					/* If the last char is a jamo, then we want to recombine all previous jamo
 					 * with the first syllab found on the left */
                    int z=pos-1;
-                   while (z>0 && u_is_Hangul_Jamo(stack[z]) || stack[z]==KR_SYLLAB_BOUND) {
+                   while (z>0 && (u_is_Hangul_Jamo(stack[z]) || stack[z]==KR_SYLLAB_BOUND)) {
                 	   z--;
                    }
                    if (z<0 || !u_is_korea_syllabe_letter(stack[z])) {
