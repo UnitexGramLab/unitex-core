@@ -32,8 +32,8 @@
 #include "ParsingInfo.h"
 
 void morphological_locate(int,int,int,int,int,struct parsing_info**,int,struct list_int*,
-		                  struct locate_parameters*,unichar*,int);
-void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*);
+		                  struct locate_parameters*,struct Token_error_ctx*,unichar*,int);
+void enter_morphological_mode(int,int,int,int,struct parsing_info**,struct locate_parameters*,struct Token_error_ctx*,int,struct list_int*);
 int input_is_token(Fst2Tag tag);
 void explore_dic_in_morpho_mode(struct locate_parameters* p,int pos,int pos_in_token,
                                 struct parsing_info* *matches,struct pattern* pattern,
@@ -160,6 +160,7 @@ void morphological_locate(int graph_depth, /* 0 means that we are in the top lev
                             * explosions due to bad written grammars. */
             struct list_int* ctx, /* information about the current context, if any */
             struct locate_parameters* p, /* miscellaneous parameters needed by the function */
+            struct Token_error_ctx* p_token_error_ctx,
             unichar* jamo, int pos_in_jamo
             ) {
 OptimizedFst2State current_state=p->optimized_states[current_state_index];
@@ -178,13 +179,13 @@ if (depth>STACK_MAX) {
    /* If there are too much recursive calls */
    error_at_token_pos("\nMaximal stack size reached!\n"
                       "(There may be longer matches not recognized!)",
-                      p->current_origin,pos,p);
+                      p->current_origin,pos,p,p_token_error_ctx);
    return;
 }
 if (n_matches_at_token_pos>MAX_MATCHES_AT_TOKEN_POS) {
    /* If there are too much matches from the current origin in the text */
    error_at_token_pos("\nToo many (ambiguous) matches starting from one position in text!",
-                      p->current_origin,pos,p);
+                      p->current_origin,pos,p,p_token_error_ctx);
    return;
 }
 if (current_state->control & 1) {
@@ -200,7 +201,7 @@ if (current_state->control & 1) {
          /* If there are too much matches, we suspect an error in the grammar
           * like an infinite recursion */
          error_at_token_pos("\nMaximal number of matches per subgraph reached!",
-                            p->current_origin,pos,p);
+                            p->current_origin,pos,p,p_token_error_ctx);
          return;
       }
       else {
@@ -257,7 +258,7 @@ if (graph_call_list!=NULL) {
          p->stack_base=p->stack->stack_pointer;
          morphological_locate(graph_depth+1, /* Exploration of the subgraph */
                 p->fst2->initial_states[graph_call_list->graph_number],
-                pos,pos_in_token,depth+1,&L,0,NULL,p,jamo,pos_in_jamo);
+                pos,pos_in_token,depth+1,&L,0,NULL,p,p_token_error_ctx,jamo,pos_in_jamo);
          p->stack_base=old_StackBase;
          if (L!=NULL) {
             struct parsing_info* L_first=L;
@@ -271,7 +272,7 @@ if (graph_call_list!=NULL) {
                }
                /* And we continue the exploration */
                morphological_locate(graph_depth,t->state_number,L->position,L->pos_in_token,depth+1,
-            		                matches,n_matches,ctx,p,L->jamo,L->pos_in_jamo);
+            		                matches,n_matches,ctx,p,p_token_error_ctx,L->jamo,L->pos_in_jamo);
                p->stack->stack_pointer=stack_top;
                L=L->next;
             } while (L!=NULL);
@@ -312,7 +313,7 @@ while (meta_list!=NULL) {
                }
             }
             morphological_locate(graph_depth,meta_list->transition->state_number,pos,pos_in_token,depth+1,
-                                 matches,n_matches,ctx,p,jamo,pos_in_jamo);
+                                 matches,n_matches,ctx,p,p_token_error_ctx,jamo,pos_in_jamo);
             p->stack->stack_pointer=stack_top;
             break;
 
@@ -382,7 +383,8 @@ while (meta_list!=NULL) {
                   }
                   /* We continue the exploration */
                   morphological_locate(graph_depth,meta_list->transition->state_number,
-                		               new_pos,new_pos_in_token,depth+1,matches,n_matches,ctx,p,
+                		               new_pos,new_pos_in_token,depth+1,matches,n_matches,ctx,
+                		               p,p_token_error_ctx,
                 		               L2->jamo,L2->pos_in_jamo);
                   p->stack->stack_pointer=stack_top;
                   L2=L2->next;
@@ -534,7 +536,7 @@ while (meta_list!=NULL) {
             }
          }
          morphological_locate(graph_depth,t->state_number,new_pos,new_pos_in_token,depth+1,
-                                 matches,n_matches,ctx,p,new_jamo,new_pos_in_jamo);
+                                 matches,n_matches,ctx,p,p_token_error_ctx,new_jamo,new_pos_in_jamo);
          p->stack->stack_pointer=stack_top;
       }
       next: t=t->next;
@@ -630,7 +632,7 @@ while (trans!=NULL) {
             	    //push_input_substring(p->stack,current_token+pos_in_token,prefix_length,p->protect_dic_chars);
             	}
             	morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,depth+1,
-            	                                    matches,n_matches,ctx,p,new_jamo,new_pos_in_jamo);
+            	                                    matches,n_matches,ctx,p,p_token_error_ctx,new_jamo,new_pos_in_jamo);
             	p->stack->stack_pointer=stack_top;
             }
          	/* End of KOREAN token matching */
@@ -664,7 +666,7 @@ while (trans!=NULL) {
                   new_pos_in_token=0;
                }
                morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,depth+1,
-                                    matches,n_matches,ctx,p,jamo,pos_in_jamo);
+                                    matches,n_matches,ctx,p,p_token_error_ctx,jamo,pos_in_jamo);
                p->stack->stack_pointer=stack_top;
             } else {
            	   /* No else here, because a grammar tag is not supposed to match a sequence that
@@ -723,7 +725,7 @@ while (trans!=NULL) {
                   set_dic_variable(var_name,L->dic_entry,&(p->dic_variables));
                }
                morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,
-            		                depth+1,matches,n_matches,ctx,p,L->jamo,L->pos_in_jamo);
+            		                depth+1,matches,n_matches,ctx,p,p_token_error_ctx,L->jamo,L->pos_in_jamo);
                if (save_dic_entry) {
                   set_dic_variable(var_name,old_value,&(p->dic_variables));
                   free_dela_entry(old_value);
@@ -764,7 +766,8 @@ void enter_morphological_mode(int graph_depth, /* 0 means that we are in the top
                             * matched in several ways. It is used to detect combinatory
                             * explosions due to bad written grammars. */
             struct list_int* ctx, /* information about the current context, if any */
-            struct locate_parameters* p /* miscellaneous parameters needed by the function */
+            struct locate_parameters* p, /* miscellaneous parameters needed by the function */
+            struct Token_error_ctx* p_token_error_ctx
             ) {
 int* var_backup=NULL;
 int old_StackBase;
@@ -779,7 +782,7 @@ p->stack_base=p->stack->stack_pointer;
 struct dic_variable* dic_variable_backup=clone_dic_variable_list(p->dic_variables);
 int current_token=p->buffer[pos+p->current_origin];
 //error("current token=%d/%S  jamo=%S\n",current_token,p->tokens->value[current_token],p->jamo_tags[current_token]);
-morphological_locate(0,state,pos,0,depth+1,&L,0,NULL,p,(p->jamo_tags!=NULL)?p->jamo_tags[current_token]:NULL,0);
+morphological_locate(0,state,pos,0,depth+1,&L,0,NULL,p,p_token_error_ctx,(p->jamo_tags!=NULL)?p->jamo_tags[current_token]:NULL,0);
 clear_dic_variable_list(&(p->dic_variables));
 p->stack_base=old_StackBase;
 if (L!=NULL) {
@@ -794,7 +797,7 @@ if (L!=NULL) {
       }
       p->dic_variables=clone_dic_variable_list(L->dic_variable_backup);
       /* And we continue the exploration */
-      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p);
+      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
       p->stack->stack_pointer=stack_top;
       if (graph_depth==0) {
          /* If we are at the top graph level, we restore the variables */

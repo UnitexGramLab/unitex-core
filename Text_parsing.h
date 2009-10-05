@@ -50,10 +50,15 @@
                           needed to avoid overflow of error buffers in Java GUI */
 
 
+struct Token_error_ctx {
+int n_errors;
+int last_start;
+int last_length;
+};
 
-void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p);
+void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p,struct Token_error_ctx*);
 void launch_locate(U_FILE*,U_FILE*,long int,U_FILE*,struct locate_parameters*);
-void locate(int,OptimizedFst2State,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*);
+void locate(int,OptimizedFst2State,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*,struct Token_error_ctx*);
 int XOR(int a,int b);
 
 #endif

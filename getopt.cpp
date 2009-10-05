@@ -276,6 +276,8 @@ parse_long_options_TS(char * const *nargv, const char *options,
 		return (long_options[match].val);
 }
 
+static const int posixly_correct = (getenv("POSIXLY_CORRECT") != NULL);
+
 /*
  * getopt_internal --
  *	Parse argc/argv argument vector.  Called by user level routines.
@@ -286,7 +288,6 @@ getopt_internal_TS(int nargc, char * const *nargv, const char *options,
 {
 	char *oli;				/* option letter list index */
 	int optchar, short_too;
-	static int posixly_correct = -1;
 
 	if (options == NULL)
 		return (-1);
@@ -295,8 +296,6 @@ getopt_internal_TS(int nargc, char * const *nargv, const char *options,
 	 * Disable GNU extensions if POSIXLY_CORRECT is set or options
 	 * string begins with a '+'.
 	 */
-	if (posixly_correct == -1)
-		posixly_correct = (getenv("POSIXLY_CORRECT") != NULL);
 	if (posixly_correct || *options == '+')
 		flags &= ~FLAG_PERMUTE;
 	else if (*options == '-')

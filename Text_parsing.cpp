@@ -37,8 +37,9 @@
 int binary_search(int,int*,int);
 int find_compound_word(int,int,struct DLC_tree_info*,struct locate_parameters*);
 unichar* get_token_sequence(int*,struct string_hash*,int,int);
-void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*);
+void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*,struct Token_error_ctx*);
 void shift_variable_bounds(Variables*,int);
+
 
 
 /**
@@ -48,6 +49,11 @@ void shift_variable_bounds(Variables*,int);
 void launch_locate(U_FILE* f,U_FILE* out,
                    long int text_size,U_FILE* info,
                    struct locate_parameters* p) {
+struct Token_error_ctx token_error_ctx;
+token_error_ctx.n_errors=0;
+token_error_ctx.last_start=-1;
+token_error_ctx.last_length=0;
+
 fill_buffer(p->token_buffer,f);
 OptimizedFst2State initial_state=p->optimized_states[p->fst2->initial_states[1]];
 p->current_origin=0;
@@ -80,7 +86,7 @@ while (p->current_origin<p->token_buffer->size
       struct parsing_info* matches = NULL;
       p->left_ctx_shift=0;
       p->left_ctx_base=0;
-      locate(0,initial_state,0,0,&matches,0,NULL,p);
+      locate(0,initial_state,0,0,&matches,0,NULL,p,&token_error_ctx);
       free_parsing_info(matches);
       clear_dic_variable_list(&(p->dic_variables));
    }
@@ -118,12 +124,12 @@ if (info!=NULL) {
  *  If there are more than MAX_ERRORS errors,
  *  exit the programm by calling "fatal_error".
  */
-void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p) {
-static int n_errors;
-static int last_start=-1;
-static int last_length;
+void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p,struct Token_error_ctx* p_token_error_ctx) {
+//static int n_errors;
+//static int last_start=-1;
+//static int last_length;
 int i;
-if (last_start==start) {
+if ((p_token_error_ctx->last_start)==start) {
    /* The context was already printed */
    return;
 }
@@ -144,11 +150,11 @@ if (i<(start+length)) {
    error(" ...");
 }
 error("\n");
-if (++n_errors>=MAX_ERRORS) {
+if (++(p_token_error_ctx->n_errors)>=MAX_ERRORS) {
    fatal_error("Too many errors, giving up!\n");
 }
-last_start=start;
-last_length=length;
+p_token_error_ctx->last_start=start;
+p_token_error_ctx->last_length=length;
 }
 
 
@@ -174,7 +180,8 @@ void locate(int graph_depth, /* 0 means that we are in the top level graph */
                             * matched in several ways. It is used to detect combinatory
                             * explosions due to bad written grammars. */
             struct list_int* ctx, /* information about the current context, if any */
-            struct locate_parameters* p /* miscellaneous parameters needed by the function */
+            struct locate_parameters* p, /* miscellaneous parameters needed by the function */
+            struct Token_error_ctx* p_token_error_ctx
             ) {
 #ifdef TRE_WCHAR
 int filter_number;
@@ -195,13 +202,13 @@ if (depth>STACK_MAX) {
    /* If there are too much recursive calls */
    error_at_token_pos("\nMaximal stack size reached!\n"
                       "(There may be longer matches not recognized!)",
-                      p->current_origin,pos,p);
+                      p->current_origin,pos,p,p_token_error_ctx);
    return;
 }
 if (n_matches_at_token_pos>MAX_MATCHES_AT_TOKEN_POS) {
    /* If there are too much matches from the current origin in the text */
    error_at_token_pos("\nToo many (ambiguous) matches starting from one position in text!",
-                      p->current_origin,pos,p);
+                      p->current_origin,pos,p,p_token_error_ctx);
    return;
 }
 if (current_state->control & 1) {
@@ -232,7 +239,7 @@ if (current_state->control & 1) {
          /* If there are too much matches, we suspect an error in the grammar
           * like an infinite recursion */
          error_at_token_pos("\nMaximal number of matches per subgraph reached!",
-                            p->current_origin,pos,p);
+                            p->current_origin,pos,p,p_token_error_ctx);
          return;
       }
       else {
@@ -298,7 +305,8 @@ if (graph_call_list!=NULL) {
                 pos,depth+1,&L,0,
                 NULL, /* ctx is set to NULL because the end of a context must occur in the
                        * same graph than its beginning */
-                p);
+                p,
+                p_token_error_ctx);
          p->stack_base=old_StackBase;
          clear_dic_variable_list(&(p->dic_variables));
          if (L!=NULL) {
@@ -317,7 +325,7 @@ if (graph_call_list!=NULL) {
              int old_left_ctx_base=p->left_ctx_base;
              p->left_ctx_shift=L->left_ctx_shift;
              p->left_ctx_base=L->left_ctx_base;
-             locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p);
+             locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
              p->left_ctx_shift=old_left_ctx_shift;
              p->left_ctx_base=old_left_ctx_base;
              p->stack->stack_pointer=stack_top;
@@ -459,7 +467,7 @@ while (meta_list!=NULL) {
                            push_input_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]],p->protect_dic_chars);
                         }
                      }
-                     locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
+                     locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
                      p->stack->stack_pointer=stack_top;
                   }
                }
@@ -517,7 +525,7 @@ while (meta_list!=NULL) {
                         push_input_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]],p->protect_dic_chars);
                      }
                   }
-                  locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
+                  locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
                   p->stack->stack_pointer=stack_top;
                }
             }
@@ -609,7 +617,7 @@ while (meta_list!=NULL) {
          if (p->output_policy==MERGE_OUTPUTS) {
             if (pos2!=pos) push_input_char(p->stack,' ',p->protect_dic_chars);
          }
-         enter_morphological_mode(graph_depth,t->state_number,pos2,depth+1,matches,n_matches,ctx,p);
+         enter_morphological_mode(graph_depth,t->state_number,pos2,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
          p->stack->stack_pointer=stack_top;
          break;
 
@@ -632,7 +640,7 @@ while (meta_list!=NULL) {
         	   var_backup=create_variable_backup(p->variables);
         	   shift_variable_bounds(p->variables,real_origin-p->current_origin);
          }*/
-         locate(graph_depth,p->optimized_states[t->state_number],pos2,depth+1,matches,n_matches,ctx,p);
+         locate(graph_depth,p->optimized_states[t->state_number],pos2,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
          /*if (p->output_policy!=IGNORE_OUTPUTS) {
             install_variable_backup(p->variables,var_backup);
             free_variable_backup(var_backup);
@@ -663,7 +671,7 @@ while (meta_list!=NULL) {
             }
          }
          /* Then, we continue the exploration of the grammar */
-         locate(graph_depth,p->optimized_states[t->state_number],end,depth+1,matches,n_matches,ctx,p);
+         locate(graph_depth,p->optimized_states[t->state_number],end,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
          /* Once we have finished, we restore the stack */
          p->stack->stack_pointer=stack_top;
       }
@@ -679,7 +687,7 @@ struct opt_variable* variable_list=current_state->variable_starts;
 while (variable_list!=NULL) {
    int old=get_variable_start(p->variables,variable_list->variable_number);
    set_variable_start(p->variables,variable_list->variable_number,pos2);
-   locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
+   locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
    p->stack->stack_pointer=stack_top;
    if (ctx==NULL) {
       /* We do not restore previous value if we are inside a context, in order
@@ -697,7 +705,7 @@ variable_list=current_state->variable_ends;
 while (variable_list!=NULL) {
    int old=get_variable_end(p->variables,variable_list->variable_number);
    set_variable_end(p->variables,variable_list->variable_number,pos);
-   locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p);
+   locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
    p->stack->stack_pointer=stack_top;
    if (ctx==NULL) {
       /* We do not restore previous value if we are inside a context, in order
@@ -718,7 +726,7 @@ if (contexts!=NULL) {
       t=contexts->positive_mark[n_ctxt];
       /* We look for a positive context from the current position */
       struct list_int* c=new_list_int(0,ctx);
-      locate(graph_depth,p->optimized_states[t->state_number],pos,depth+1,NULL,0,c,p);
+      locate(graph_depth,p->optimized_states[t->state_number],pos,depth+1,NULL,0,c,p,p_token_error_ctx);
       /* Note that there is no matches to free since matches cannot be built within a context */
       p->stack->stack_pointer=stack_top;
       if (c->n) {
@@ -726,7 +734,7 @@ if (contexts!=NULL) {
           * that starts from the context end */
          Transition* states=contexts->positive_mark[n_ctxt+1];
          while (states!=NULL) {
-            locate(graph_depth,p->optimized_states[states->state_number],pos,depth+1,matches,n_matches,ctx,p);
+            locate(graph_depth,p->optimized_states[states->state_number],pos,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
             p->stack->stack_pointer=stack_top;
             states=states->next;
          }
@@ -737,7 +745,7 @@ if (contexts!=NULL) {
       t=contexts->negative_mark[n_ctxt];
       /* We look for a negative context from the current position */
       struct list_int* c=new_list_int(0,ctx);
-      locate(graph_depth,p->optimized_states[t->state_number],pos,depth+1,NULL,0,c,p);
+      locate(graph_depth,p->optimized_states[t->state_number],pos,depth+1,NULL,0,c,p,p_token_error_ctx);
       /* Note that there is no matches to free since matches cannot be built within a context */
       p->stack->stack_pointer=stack_top;
       if (!c->n) {
@@ -745,7 +753,7 @@ if (contexts!=NULL) {
           * that starts from the context end */
          Transition* states=contexts->negative_mark[n_ctxt+1];
          while (states!=NULL) {
-            locate(graph_depth,p->optimized_states[states->state_number],pos,depth+1,matches,n_matches,ctx,p);
+            locate(graph_depth,p->optimized_states[states->state_number],pos,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
             p->stack->stack_pointer=stack_top;
             states=states->next;
          }
@@ -810,7 +818,7 @@ while (pattern_list!=NULL) {
                   push_input_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]],p->protect_dic_chars);
                }
             }
-            locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
+            locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
             p->stack->stack_pointer=stack_top;
          }
       }
@@ -858,7 +866,7 @@ while (pattern_list!=NULL) {
                   push_input_string(p->stack,p->tokens->value[p->buffer[x+p->current_origin]],p->protect_dic_chars);
                }
             }
-            locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p);
+            locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
             p->stack->stack_pointer=stack_top;
          }
          /* This useless instruction is just here to enable the declaration of the next6 label */
@@ -883,7 +891,7 @@ while (pattern_list!=NULL) {
                if (p->output_policy==MERGE_OUTPUTS) {
                   push_input_string(p->stack,p->tokens->value[token2],p->protect_dic_chars);
                }
-               locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
+               locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
                p->stack->stack_pointer=stack_top;
             }
          } else {
@@ -901,7 +909,7 @@ while (pattern_list!=NULL) {
                if (p->output_policy==MERGE_OUTPUTS) {
                   push_input_string(p->stack,p->tokens->value[token2],p->protect_dic_chars);
                }
-               locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
+               locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
                p->stack->stack_pointer=stack_top;
             }
          }
@@ -936,7 +944,7 @@ if (current_state->number_of_tokens!=0) {
             if (p->output_policy==MERGE_OUTPUTS) {
                push_input_string(p->stack,p->tokens->value[token2],p->protect_dic_chars);
             }
-            locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p);
+            locate(graph_depth,p->optimized_states[t->state_number],pos2+1,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
             p->stack->stack_pointer=stack_top;
          }
          next3: t=t->next;
