@@ -38,7 +38,7 @@ struct List_AbstractFst2Space {
 } ;
 
 
-struct List_AbstractFst2Space* p_abstract_fst2_space_list;
+struct List_AbstractFst2Space* p_abstract_fst2_space_list=NULL;
 
 
 

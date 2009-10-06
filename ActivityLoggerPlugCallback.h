@@ -32,9 +32,22 @@
 extern "C" {
 #endif
 
+/* use this header to define an Unitex logger
+   Reading and understanding AbstractFilePlugCallback.h before
+   this using this file is suggested
+
+   An logger is a set of callback called before and after starting an UnitexTool,
+   and before and after opening or closing file.
+   There is also a callback to capture standard output (stdout and stderr)
+ */
 
 
-
+/* there fopen callback are called when an Unitex tool open a file 
+ *  In the Unitex contact, MODE is one of these value :
+ *   - "rb" : open the file in read only mode
+ *   - "wb" : open the file in write only mode (the previous file is erased, if exist)
+ *   - "r+b" or "ab" : open the file in read and write mode ("ab" mean append)
+ */
 typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_before_af_fopen)(const char* name,const char* MODE,void* privateLoggerPtr);
 typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_after_af_fopen)(const char* name,const char* MODE,ABSTRACTFILE*,void* privateLoggerPtr);
 
@@ -91,13 +104,13 @@ typedef struct
     t_fnc_LogErrWrite fnc_LogErrWrite;
 } t_logger_func_array;
 
-/* these functions respectively add and remove filespaces.
-  you can add several filespaces with the same func_array callback set, but with different privateSpacePtr
-  privateSpacePtr is the parameters which can be set as the last parameter of each callback */
+/* these functions respectively add and remove logger.
+  you can add several logger with the same func_array callback set, but with different privateLoggerPtr
+  privateLoggerPtr is the parameters which can be set as the last parameter of each callback */
 UNITEX_FUNC int UNITEX_CALL AddLogger(const t_logger_func_array* func_array,void* privateLoggerPtr);
 UNITEX_FUNC int UNITEX_CALL RemoveLogger(const t_logger_func_array* func_array,void* privateLoggerPtr);
 
-/* just return the number of AbstractFileSpace Installed */
+/* just return the number of Logger Installed */
 UNITEX_FUNC int UNITEX_CALL GetNbLoggerInstalled();
 
 /**********************************************************************/

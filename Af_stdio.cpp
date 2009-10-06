@@ -42,7 +42,7 @@ struct List_AbstractFileSpace {
 } ;
 
 
-struct List_AbstractFileSpace* p_abstract_file_space_list;
+struct List_AbstractFileSpace* p_abstract_file_space_list=NULL;
 
 
 

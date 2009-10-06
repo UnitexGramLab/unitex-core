@@ -36,7 +36,7 @@ struct List_AbstractDelaSpace {
 } ;
 
 
-struct List_AbstractDelaSpace* p_abstract_dela_space_list;
+struct List_AbstractDelaSpace* p_abstract_dela_space_list=NULL;
 
 
 
