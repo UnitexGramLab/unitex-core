@@ -60,10 +60,11 @@
 #include "Uncompress.h"
 #include "XMLizer.h"
 
-#include "UnitexTool.h"
-
-
 #include "Copyright.h"
+
+#include "UnitexTool.h"
+#include "ActivityLogger.h"
+
 
 
 
@@ -290,6 +291,15 @@ else
   return 0;
 }
 
+static int CallToolLogged(mainFunc* fnc,int argc,char* argv[])
+{
+    int ret;
+    Call_logger_fnc_before_calling_tool(fnc,argc,argv);
+    ret = (*fnc)(argc,argv);
+    Call_logger_fnc_after_calling_tool(fnc,argc,argv,ret);
+    return ret;
+}
+
 int main_UnitexTool_single(int argc,char* argv[]) {
 const struct utility_item* utility_called = NULL;
 if (argc>1)
@@ -299,7 +309,7 @@ if (utility_called==NULL) {
    return 0;
 }
 
-return (*(utility_called->fnc))(argc-1,((char**)argv)+1);
+return CallToolLogged(utility_called->fnc,argc-1,((char**)argv)+1);
 }
 
 
@@ -358,7 +368,7 @@ int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_
 					ptia->argcpos = pos+1;
 					ptia->nbargs = j-(pos+1);
 					ptia->tool_number = next_num_util;
-					ptia->ret = ret = (*(utility_called->fnc))(ptia->nbargs,((char**)argv)+ptia->argcpos);
+					ptia->ret = ret = CallToolLogged(utility_called->fnc,ptia->nbargs,((char**)argv)+ptia->argcpos);
 				}
 				else
 					ret = 1 ;
@@ -376,7 +386,7 @@ int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_
 			if (utility_called != NULL) {
 				ptia->argcpos = 1;
 				ptia->nbargs = argc-1;
-				ptia->ret = ret = (*(utility_called->fnc))(ptia->nbargs,((char**)argv)+ptia->argcpos);
+				ptia->ret = ret = CallToolLogged(utility_called->fnc,ptia->nbargs,((char**)argv)+ptia->argcpos);
 			}
 			else
 			{

@@ -26,6 +26,7 @@
 #include "Error.h"
 #include "AbstractFilePlugCallback.h"
 #include "Af_stdio.h"
+#include "ActivityLogger.h"
 
 
 
@@ -174,6 +175,19 @@ int IsStdIn(ABSTRACTFILE* stream)
 }
 
 
+int IsStdOut(ABSTRACTFILE* stream)
+{
+	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
+	return (((p_abfr->f)==stdout) && (p_abfr->afs==NULL));
+}
+
+
+int IsStdErr(ABSTRACTFILE* stream)
+{
+	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
+	return (((p_abfr->f)==stderr) && (p_abfr->afs==NULL));
+}
+
 
 struct stdwrite_param
 {
@@ -289,8 +303,11 @@ UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_
 }
 
 /*****************************************************************************/
-
-ABSTRACTFILE* af_fopen(const char* name,const char* MODE)
+/*
+ * f_open like function
+ * MODE value used in Unitex : "rb", "ab", "r+b", "wb"
+ */
+ABSTRACTFILE* af_fopen_unlogged(const char* name,const char* MODE)
 {
 	ABSTRACTFILE_REAL* vf= (ABSTRACTFILE_REAL*)malloc(sizeof(ABSTRACTFILE_REAL));
 	const AbstractFileSpace * pafs ;
@@ -340,7 +357,7 @@ ABSTRACTFILE* af_fopen(const char* name,const char* MODE)
 }
 
 
-int af_fclose(ABSTRACTFILE* stream)
+int af_fclose_unlogged(ABSTRACTFILE* stream)
 {
 	ABSTRACTFILE_REAL* p_abfr=(ABSTRACTFILE_REAL*)stream;
 	ABSTRACTFILE_REAL abfr=*p_abfr;
@@ -399,6 +416,10 @@ size_t af_fwrite(const void *ptr,size_t sizeItem,size_t nmemb,ABSTRACTFILE *stre
 					res /= sizeItem;
 				return res;
 			}
+            if (IsStdOut(stream))
+                Call_logger_fnc_LogOutWrite(ptr,sizeItem);
+            if (IsStdErr(stream))
+                Call_logger_fnc_LogErrWrite(ptr,sizeItem);
 		}
 		return fwrite(ptr,sizeItem,nmemb,p_abfr->f);
 	}
@@ -506,7 +527,7 @@ void af_setsizereservation(ABSTRACTFILE* stream, long size_planned)
 			(*(p_abfr->afs->func_array.fnc_memLowLevelSetSizeReservation))(p_abfr->fabstr, size_planned,p_abfr->afs->privateSpacePtr);	
 }
 
-int af_remove(const char * Filename)
+int af_remove_unlogged(const char * Filename)
 {
 	const AbstractFileSpace * pafs = GetFileSpaceForFileName(Filename);
 	if (pafs==NULL)
@@ -517,7 +538,7 @@ int af_remove(const char * Filename)
 
 
 #define BUFFER_IO_SIZE (0x4000)
-int af_copy(const char* srcFile, const char* dstFile)
+int af_copy_unlogged(const char* srcFile, const char* dstFile)
 {
     ABSTRACTFILE* vfRead;
     ABSTRACTFILE* vfWrite;
@@ -579,7 +600,7 @@ int af_copy(const char* srcFile, const char* dstFile)
 }
 
 
-int af_rename(const char * OldFilename, const char * NewFilename)
+int af_rename_unlogged(const char * OldFilename, const char * NewFilename)
 {
 	const AbstractFileSpace * pafsOld = GetFileSpaceForFileName(OldFilename);
 	const AbstractFileSpace * pafsNew = GetFileSpaceForFileName(NewFilename);
@@ -598,4 +619,49 @@ int af_rename(const char * OldFilename, const char * NewFilename)
 			return ret;
 		return af_remove(OldFilename);
 	}
+}
+
+ABSTRACTFILE* af_fopen(const char* name,const char* MODE)
+{
+    ABSTRACTFILE* stream;
+    Call_logger_fnc_before_af_fopen(name,MODE);
+    stream = af_fopen_unlogged(name,MODE);
+    Call_logger_fnc_after_af_fopen(name,MODE,stream);
+    return stream;
+}
+
+int af_fclose(ABSTRACTFILE* stream)
+{
+    int ret;
+    Call_logger_fnc_before_af_fclose(stream);
+    ret = af_fclose_unlogged(stream);
+    Call_logger_fnc_after_af_fclose(stream, ret);
+    return ret;
+}
+
+int af_remove(const char * Filename)
+{
+    int ret;
+    Call_logger_fnc_before_af_remove(Filename);
+    ret = af_remove_unlogged(Filename);
+    Call_logger_fnc_after_af_remove(Filename,ret);
+    return ret;
+}
+
+int af_copy(const char* srcFile, const char* dstFile)
+{
+    int ret;
+    Call_logger_fnc_before_af_copy(srcFile, dstFile);
+    ret = af_copy_unlogged(srcFile, dstFile);
+    Call_logger_fnc_after_af_copy(srcFile, dstFile, ret);
+    return ret;
+}
+
+int af_rename(const char * OldFilename, const char * NewFilename)
+{
+    int ret;
+    Call_logger_fnc_before_af_copy(OldFilename, NewFilename);
+    ret = af_rename_unlogged(OldFilename, NewFilename);
+    Call_logger_fnc_after_af_copy(OldFilename, NewFilename, ret);
+    return ret;
 }
