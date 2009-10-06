@@ -846,7 +846,7 @@ for (i=0;i<n_states;i++) {
       write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
       free_SingleGraph(graph);
       u_fclose(f);
-      if (n==0) return 0;
+      if (n==1) return 0;
       return 1;
    }
    /* We process the box */
