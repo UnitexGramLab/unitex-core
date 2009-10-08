@@ -39,7 +39,9 @@ size_t af_fwrite(const void *ptr,size_t size,size_t nmemb,ABSTRACTFILE *stream);
 
 char *af_fgets(char * _Buf, int _MaxCount, ABSTRACTFILE * _File);
 
-ABSTRACTFILE* af_fopen(const char*,const char*);
+ABSTRACTFILE* af_fopen(const char* name,const char* MODE);
+
+ABSTRACTFILE* af_fopen_unlogged(const char* name,const char* MODE);
 
 int af_fseek(ABSTRACTFILE* stream, long offset, int whence) ;
 
@@ -50,6 +52,8 @@ int af_feof(ABSTRACTFILE* stream) ;
 int af_ungetc(int, ABSTRACTFILE* stream) ;
 
 int af_fclose(ABSTRACTFILE* stream) ;
+
+int af_fclose_unlogged(ABSTRACTFILE* stream) ;
 
 void af_setsizereservation(ABSTRACTFILE* stream, long size_planned);
 
