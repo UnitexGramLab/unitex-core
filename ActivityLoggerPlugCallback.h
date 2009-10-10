@@ -43,7 +43,7 @@ extern "C" {
 
 
 /* there fopen callback are called when an Unitex tool open a file 
- *  In the Unitex contact, MODE is one of these value :
+ *  In the Unitex context, MODE is one of these value :
  *   - "rb" : open the file in read only mode
  *   - "wb" : open the file in write only mode (the previous file is erased, if exist)
  *   - "r+b" or "ab" : open the file in read and write mode ("ab" mean append)
@@ -107,8 +107,8 @@ typedef struct
 /* these functions respectively add and remove logger.
   you can add several logger with the same func_array callback set, but with different privateLoggerPtr
   privateLoggerPtr is the parameters which can be set as the last parameter of each callback */
-UNITEX_FUNC int UNITEX_CALL AddLogger(const t_logger_func_array* func_array,void* privateLoggerPtr);
-UNITEX_FUNC int UNITEX_CALL RemoveLogger(const t_logger_func_array* func_array,void* privateLoggerPtr);
+UNITEX_FUNC int UNITEX_CALL AddLoggerInfo(const t_logger_func_array* func_array,void* privateLoggerPtr);
+UNITEX_FUNC int UNITEX_CALL RemoveLoggerInfo(const t_logger_func_array* func_array,void* privateLoggerPtr);
 
 /* just return the number of Logger Installed */
 UNITEX_FUNC int UNITEX_CALL GetNbLoggerInstalled();

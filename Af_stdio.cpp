@@ -417,9 +417,9 @@ size_t af_fwrite(const void *ptr,size_t sizeItem,size_t nmemb,ABSTRACTFILE *stre
 				return res;
 			}
             if (IsStdOut(stream))
-                Call_logger_fnc_LogOutWrite(ptr,sizeItem);
+                Call_logger_fnc_LogOutWrite(ptr,sizeItem*nmemb);
             if (IsStdErr(stream))
-                Call_logger_fnc_LogErrWrite(ptr,sizeItem);
+                Call_logger_fnc_LogErrWrite(ptr,sizeItem*nmemb);
 		}
 		return fwrite(ptr,sizeItem,nmemb,p_abfr->f);
 	}

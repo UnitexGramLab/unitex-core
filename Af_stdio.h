@@ -58,10 +58,13 @@ int af_fclose_unlogged(ABSTRACTFILE* stream) ;
 void af_setsizereservation(ABSTRACTFILE* stream, long size_planned);
 
 int af_rename(const char * OldFilename, const char * NewFilename);
+int af_rename_unlogged(const char * OldFilename, const char * NewFilename);
 
 int af_remove(const char * Filename);
+int af_remove_unlogged(const char * Filename);
 
 int af_copy(const char* srcFile, const char* dstFile);
+int af_copy_unlogged(const char* srcFile, const char* dstFile);
 
 ABSTRACTFILE* return_af_stdin();
 ABSTRACTFILE* return_af_stdout();
