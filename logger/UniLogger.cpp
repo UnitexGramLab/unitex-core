@@ -405,10 +405,12 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_before_calling_tool(mainFunc*,int argc,c
         const char* szLogFileName = buildDupFileNameWithPrefixDir(pULS->szPathLog,szNumFileSuffix);
 
         pEL=InitExecutionLogging(szLogFileName);
+        free((void*)szLogFileName);
+        if (pEL == NULL)
+            return;
+
         pEL->store_file_out_content = pULS->store_file_out_content;
         pEL->store_list_file_out_content = pULS->store_list_file_out_content;
-
-        free((void*)szLogFileName);
 
     }
     
@@ -1017,6 +1019,7 @@ InstallLogger::~InstallLogger()
     {
         RemoveLoggerInfo(&logger_func_array,&ule);
         free(ule.szPathLog);
+        ule.szPathLog=NULL;
     }
 }
 
