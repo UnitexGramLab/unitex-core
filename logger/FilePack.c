@@ -366,9 +366,9 @@ local uLong ziplocal_TmzDateToDosDate(ptm,dosDate)
     const tm_zip* ptm;
     uLong dosDate;
 {
-    (void)dosDate;
-
     uLong year = (uLong)ptm->tm_year;
+
+    (void)dosDate;
     if (year>1980)
         year-=1980;
     else if (year>80)
@@ -759,17 +759,17 @@ extern int ZEXPORT zipOpenNewFileInZip3 (file, filename, zipfi,
     const char* password;
     uLong crcForCrypting;
 {
+    zip_internal* zi;
+    uInt size_filename;
+    uInt size_comment;
+    uInt i;
+    int err = ZIP_OK;
 
     (void)windowBits;
     (void)memLevel;
     (void)strategy;
     (void)crcForCrypting;
 
-    zip_internal* zi;
-    uInt size_filename;
-    uInt size_comment;
-    uInt i;
-    int err = ZIP_OK;
 
 #    ifdef NOCRYPT
     if (password != NULL)
@@ -917,6 +917,8 @@ extern int ZEXPORT zipOpenNewFileInZip3 (file, filename, zipfi,
     zi->ci.stream.next_out = zi->ci.buffered_data;
     zi->ci.stream.total_in = 0;
     zi->ci.stream.total_out = 0;
+
+    zi->ci.stream.data_type = Z_BINARY; // THANK VALGRIND UNITEX
 
 #ifndef NO_ZLIB
     if ((err==ZIP_OK) && (zi->ci.method == Z_DEFLATED) && (!zi->ci.raw))

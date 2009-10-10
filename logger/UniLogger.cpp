@@ -342,7 +342,9 @@ char* buildDupFileNameWithPrefixDir(const char*szPathPrefix,const char*fn)
 struct ExecutionLogging* GetExecutionLogging(void* privateLoggerPtr)
 {
     struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
-    struct ExecutionLogging* pEL = pULS->pEL;
+    struct ExecutionLogging* pEL = NULL;
+    if (pULS != NULL)
+        pEL = pULS->pEL;
     return pEL;
 }
 
@@ -755,6 +757,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
         free(*(pEL->argv+i));
     }
 
+    free(pEL->argv);
+
 
     zipClose(pEL->zf,param_list);
     pEL->zf=NULL;
@@ -764,6 +768,9 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
     pEL->pAE_StdOut = NULL;
     FreeArrayExpanding(pEL->pAE_StdErr);
     pEL->pAE_StdErr = NULL;
+
+    free(pEL);
+    SetExecutionLogging(privateLoggerPtr,NULL);
     
     free(param_list);
 }
@@ -910,8 +917,8 @@ void FlushOutData(const void*Buf, size_t size,
 void ABSTRACT_CALLBACK_UNITEX UniLogger_LogOutWrite(const void*Buf, size_t size,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
-
-    FlushOutData(Buf,size,pEL,pEL->pAE_StdOut);
+    if (pEL!=NULL)
+        FlushOutData(Buf,size,pEL,pEL->pAE_StdOut);
 }
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_LogErrWrite(const void*Buf, size_t size,void* privateLoggerPtr)
@@ -958,11 +965,13 @@ public:
     ~InstallLogger();
 private:
     struct UniLoggerSpace ule;
+    int init_done;
 };
 
 
 InstallLogger::InstallLogger()
 {
+    init_done = 0;
     
     ABSTRACTFILE *af_fin = af_fopen_unlogged("unitex_logging_parameters.txt","rb");
     if (af_fin!=NULL)
@@ -990,7 +999,8 @@ InstallLogger::InstallLogger()
                 ule.szPathLog = szPath;
                 ule.store_file_out_content = write_file_out;
                 ule.store_list_file_out_content = 1;
-                AddLoggerInfo(&logger_func_array,&ule);
+                if (AddLoggerInfo(&logger_func_array,&ule) != 0)
+                    init_done = 1;
             }
             else
                 free(szPath);
@@ -1003,7 +1013,11 @@ InstallLogger::InstallLogger()
 
 InstallLogger::~InstallLogger()
 {
-    RemoveLoggerInfo(&logger_func_array,&ule);
+    if (init_done != 0)
+    {
+        RemoveLoggerInfo(&logger_func_array,&ule);
+        free(ule.szPathLog);
+    }
 }
 
 InstallLogger InstallLoggerInst;
