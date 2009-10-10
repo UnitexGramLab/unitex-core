@@ -645,6 +645,8 @@ int DumpMemToPack(struct ExecutionLogging* pEL,const char* filename_to_store,con
 void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*/,char*[] /* argv[]*/,int ret,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
 
     unsigned int iNbFileWrite=GetNbFileToWrite(pEL);
     unsigned int iFile;
@@ -848,6 +850,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_fopen(const char* name,const c
 void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_fopen(const char* name,const char* MODE,ABSTRACTFILE* af,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
 
     int file_read=0;
     int file_write=0;
@@ -870,6 +874,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_rename(const char*,const char*
 void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_rename(const char* name1,const char* name2,int result,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
 
     DoFileReadWork(pEL,name1);
     if (result==0)
@@ -882,6 +888,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_rename(const char* name1,const 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_copy(const char* name1,const char*,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
 
     DoFileReadWork(pEL,name1);
 }
@@ -901,6 +909,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_copy(const char*,const char* na
 void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_remove(const char* name,int result,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
 
     if (result==0)
         RemoveFileFileOnWriteArray(pEL,name);
@@ -919,6 +929,9 @@ void FlushOutData(const void*Buf, size_t size,
 void ABSTRACT_CALLBACK_UNITEX UniLogger_LogOutWrite(const void*Buf, size_t size,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
+
     if (pEL!=NULL)
         FlushOutData(Buf,size,pEL,pEL->pAE_StdOut);
 }
@@ -926,6 +939,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_LogOutWrite(const void*Buf, size_t size,
 void ABSTRACT_CALLBACK_UNITEX UniLogger_LogErrWrite(const void*Buf, size_t size,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
 
     FlushOutData(Buf,size,pEL,pEL->pAE_StdErr);
 }
