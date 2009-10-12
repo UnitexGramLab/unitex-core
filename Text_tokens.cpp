@@ -125,10 +125,7 @@ return res;
 
 
 void free_text_tokens(struct text_tokens* tok) {
-error("%p\n",tok);
-error("%d tokens\n",tok->N);
 for (int i=0;i<tok->N;i++) {
-   error("token %d=%S\n",i,tok->token[i]);
    free(tok->token[i]);
 }
 free(tok->token);
