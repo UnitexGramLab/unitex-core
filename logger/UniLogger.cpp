@@ -521,7 +521,7 @@ int DumpFileToPack(struct ExecutionLogging* pEL,const char* filename,const char*
 
                 if (size_read>0)
                 {
-                    err = zipWriteInFileInZip (pEL->zf,buf,size_read);
+                    err = zipWriteInFileInZip (pEL->zf,buf,(unsigned int)size_read);
                     if (err<0)
                     {
                         /*
@@ -530,7 +530,7 @@ int DumpFileToPack(struct ExecutionLogging* pEL,const char* filename,const char*
                     }
                     else 
                     {
-                        *size_done += size_read;
+                        *size_done += (unsigned int)size_read;
                         *crc = crc32(*crc,buf,size_read);
                     }
 
@@ -601,7 +601,7 @@ int ComputeFileCrc(const char* filename,unsigned int*size_done,unsigned long*crc
 
         if (size_read>0)
         {
-            *size_done += size_read;
+            *size_done += (unsigned int)size_read;
             *crc = crc32(*crc,buf,size_read);
         }
     } while ((size_read>0));
@@ -699,7 +699,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
             sprintf(buf_list_file_out + pos_in_list_file_out,"%010u\t%08lx\t%s\n",
                  pFileToWriteInfoItem->size,pFileToWriteInfoItem->crc,
                  pFileToWriteInfoItem->FileName);
-            pos_in_list_file_out += strlen(buf_list_file_out + pos_in_list_file_out);
+            pos_in_list_file_out += (unsigned int)strlen(buf_list_file_out + pos_in_list_file_out);
         }
         DumpMemToPack(pEL,"test_info/list_file_out.txt",buf_list_file_out,pos_in_list_file_out);
         free(buf_list_file_out);
@@ -729,7 +729,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
         strcat(param_list,"\n");
     }
 
-    DumpMemToPack(pEL,"test_info/command_line.txt",param_list,strlen(param_list));
+    DumpMemToPack(pEL,"test_info/command_line.txt",param_list,(unsigned int)strlen(param_list));
 
     *param_list=0;
     for (i=0;i<(pEL->argc);i++)
@@ -753,7 +753,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
             strcat(param_list," ");
     }
 
-    DumpMemToPack(pEL,"test_info/command_line_synth.txt",param_list,strlen(param_list));
+    DumpMemToPack(pEL,"test_info/command_line_synth.txt",param_list,(unsigned int)strlen(param_list));
 
 
     for (i=0;i<(pEL->argc);i++)
@@ -832,8 +832,10 @@ void AnalyseMode(const char*MODE,int* p_file_read,int* p_file_write)
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_fopen(const char* name,const char* MODE,void* privateLoggerPtr)
 {
-    struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
-    struct ExecutionLogging* pEL = pULS->pEL;
+    struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    /* pEL can be NULL if we are not executing a tool */
+    if (pEL == NULL)
+        return;
 
 
     int file_read=0;
@@ -920,7 +922,7 @@ void FlushOutData(const void*Buf, size_t size,
                   struct ExecutionLogging* /* pEL */,struct ArrayExpanding* pAEWrite)
 {
     unsigned int previous_size = GetNbItemPtrArrayExpanding(pAEWrite);
-    if (ExpandArrayExpanding(pAEWrite,previous_size + size + 0x00)==1)
+    if (ExpandArrayExpanding(pAEWrite,(unsigned int)(previous_size + size + 0x00)) == 1)
     {
         memcpy(GetItemPtrArrayExpanding(pAEWrite,previous_size),Buf,size);
     }

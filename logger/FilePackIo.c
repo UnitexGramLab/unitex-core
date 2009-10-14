@@ -11,6 +11,8 @@
 #include <string.h>
 
 
+#include "Af_stdio.h"
+
 #include "FilePack.h"
 #include "FilePackIo.h"
 
@@ -88,7 +90,7 @@ voidpf ZCALLBACK fopen_file_func (opaque, filename, mode)
    const char* filename;
    int mode;
 {
-    FILE* file = NULL;
+    ABSTRACTFILE* file = NULL;
     const char* mode_fopen = NULL;
 
     (void)opaque;
@@ -103,7 +105,7 @@ voidpf ZCALLBACK fopen_file_func (opaque, filename, mode)
         mode_fopen = "wb";
 
     if ((filename!=NULL) && (mode_fopen != NULL))
-        file = fopen(filename, mode_fopen);
+        file = af_fopen_unlogged(filename, mode_fopen);
     return file;
 }
 
@@ -118,7 +120,7 @@ uLong ZCALLBACK fread_file_func (opaque, stream, buf, size)
 
     (void)opaque;
 
-    ret = (uLong)fread(buf, 1, (size_t)size, (FILE *)stream);
+    ret = (uLong)af_fread(buf, 1, (size_t)size, (ABSTRACTFILE *)stream);
     return ret;
 }
 
@@ -133,7 +135,7 @@ uLong ZCALLBACK fwrite_file_func (opaque, stream, buf, size)
 
     (void)opaque;
 
-    ret = (uLong)fwrite(buf, 1, (size_t)size, (FILE *)stream);
+    ret = (uLong)af_fwrite(buf, 1, (size_t)size, (ABSTRACTFILE *)stream);
     return ret;
 }
 
@@ -145,7 +147,7 @@ long ZCALLBACK ftell_file_func (opaque, stream)
 
     (void)opaque;
 
-    ret = ftell((FILE *)stream);
+    ret = af_ftell((ABSTRACTFILE *)stream);
     return ret;
 }
 
@@ -174,7 +176,7 @@ long ZCALLBACK fseek_file_func (opaque, stream, offset, origin)
     default: return -1;
     }
     ret = 0;
-    fseek((FILE *)stream, offset, fseek_origin);
+    af_fseek((ABSTRACTFILE *)stream, offset, fseek_origin);
     return ret;
 }
 
@@ -186,7 +188,7 @@ int ZCALLBACK fclose_file_func (opaque, stream)
 
     (void)opaque;
 
-    ret = fclose((FILE *)stream);
+    ret = af_fclose_unlogged((ABSTRACTFILE *)stream);
     return ret;
 }
 
@@ -197,8 +199,11 @@ int ZCALLBACK ferror_file_func (opaque, stream)
     int ret;
 
     (void)opaque;
+    (void)stream;
 
-    ret = ferror((FILE *)stream);
+    /* ret = ferror((ABSTRACTFILE *)stream); */
+    /* ferror is not implemented in ABSTRACTFILE */
+    ret = 0;
     return ret;
 }
 
