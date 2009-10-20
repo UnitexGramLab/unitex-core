@@ -1232,7 +1232,7 @@ extern int ZEXPORT zipClose (
         }
     }
     //free_datablock(zi->central_dir.first_block);
-    free_linkedlist(zi->central_dir);
+    free_linkedlist(&(zi->central_dir));
 
     if (err==ZIP_OK) /* Magic End */
         err = ziplocal_putValue(&zi->z_filefunc,zi->filestream,(uLong)ENDHEADERMAGIC,4);
