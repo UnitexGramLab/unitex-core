@@ -1175,14 +1175,14 @@ $(BIN_DIR)$(EXTRACTCHAR)$(EXTENSION): $(EXTRACTCHAR_OBJS)
 # Compilation instructions for Logger
 #
 
-FilePack.o: ../logger/FilePack.c
-	$(CC_GCC) -c ../logger/FilePack.c $(OPTIONS)
+FilePack.o: ../logger/FilePack.cpp
+	$(CC) -c ../logger/FilePack.cpp $(OPTIONS)
 
-FilePackCrc32.o: ../logger/FilePackCrc32.c
-	$(CC_GCC) -c ../logger/FilePackCrc32.c $(OPTIONS)
+FilePackCrc32.o: ../logger/FilePackCrc32.cpp
+	$(CC) -c ../logger/FilePackCrc32.cpp $(OPTIONS)
 
-FilePackIo.o: ../logger/FilePackIo.c
-	$(CC_GCC) -c ../logger/FilePackIo.c $(OPTIONS)
+FilePackIo.o: ../logger/FilePackIo.cpp
+	$(CC) -c ../logger/FilePackIo.cpp $(OPTIONS)
 
 UniLogger.o: ../logger/UniLogger.cpp
 	$(CC) -c ../logger/UniLogger.cpp $(OPTIONS)

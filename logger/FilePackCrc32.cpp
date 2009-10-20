@@ -151,8 +151,8 @@ uLong crc32(uLong dwCRC, const void* pvBuffer, size_t cbBuffer)
 
   {
   uLong dwHeight,dwRest;
-  dwHeight = cbBuffer/8;
-  dwRest = cbBuffer - (dwHeight*8);
+  dwHeight = (uLong)(cbBuffer/8);
+  dwRest = (uLong)(cbBuffer - (dwHeight*8));
 
     for(i = 0; i < dwHeight ; i++)
     {
