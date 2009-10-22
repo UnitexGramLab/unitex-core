@@ -33,7 +33,7 @@
 #include "Unicode.h"
 #include "MF_LangMorpho.h"
 #include "MF_MU_morpho.h"
-
+#include "MF_Global.h"
 
 #define MAX_GRAPH_NODE 2000  //Maximum length of the contents of a graph node
 
@@ -103,28 +103,28 @@ typedef struct {
 /////////////////////////////////////////////////
 // Initializes the structure for inflection graphs
 // Returns 1 on success, 1 otherwise.
-int MU_graph_init_graphs();
+int MU_graph_init_graphs(MultiFlex_ctx* p_multiFlex_ctx);
 
 /////////////////////////////////////////////////
 // Liberates the memory allocated for the structure for inflection graphs
-void MU_graph_free_graphs();
+void MU_graph_free_graphs(MultiFlex_ctx* p_multiFlex_ctx);
 
 /////////////////////////////////////////////////
 // Frees the memory allocated for all inflection tranducers.
-void MU_graph_free_all_graphs();
+void MU_graph_free_all_graphs(MultiFlex_ctx* p_multiFlex_ctx);
 
 /////////////////////////////////////////////////
 // Explores the inflection transducer of the MU-lemma 'MU_lemma' 
 // in order to generate all its inflected forms. The generated forms are put to 'forms'
 // (initially, 'forms' does not have its space allocated).
 //Returns 0 on success, 1 otherwise. 
-int MU_graph_explore_graph(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* MU_lemma, MU_forms_T* forms);
+int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* MU_lemma, MU_forms_T* forms);
 
 /////////////////////////////////////////////////
 // Creates a MU_graph label from two strings.    
 // We suppose that MU_label already has its memory allocated.
 // Returns 0 on success, 1 otherwise.
-int MU_graph_scan_label(unichar* label_in, unichar* label_out, MU_graph_label_T* MU_label);
+int MU_graph_scan_label(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* label_in, unichar* label_out, MU_graph_label_T* MU_label);
 
 /////////////////////////////////////////////////
 // Prints a MU_graph label.    

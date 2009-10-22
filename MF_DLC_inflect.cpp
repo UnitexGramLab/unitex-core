@@ -36,15 +36,15 @@
 #include "DELA.h"
 
 //Alphabet of the current language
-extern Alphabet* alph;
+//extern Alphabet* alph;
 
-int DLC_scan_unit(SU_id_T* u, unichar* line, d_class_equiv_T* D_CLASS_EQUIV);
+int DLC_scan_unit(Alphabet* alph,struct l_morpho_t* pL_MORPHO,SU_id_T* u, unichar* line, d_class_equiv_T* D_CLASS_EQUIV);
 int DLC_scan_codes(unichar* codes[MAX_CODES], unichar* line);
 int DLC_scan_comment(unichar** comment, unichar* line);
 l_class_T* DLC_class_para(unichar* para, d_class_equiv_T* D_CLASS_EQUIV);
-int DLC_print_entry(DLC_entry_T* entry);
-int DLC_print_unit(SU_id_T* unit);
-int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry,
+int DLC_print_entry(struct l_morpho_t* pL_MORPHO,DLC_entry_T* entry);
+int DLC_print_unit(struct l_morpho_t* pL_MORPHO,SU_id_T* unit);
+int DLC_format_form(struct l_morpho_t* pL_MORPHO,unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry,
 		d_class_equiv_T* D_CLASS_EQUIV);
 void DLC_delete_entry(DLC_entry_T* entry);
 
@@ -52,6 +52,7 @@ void DLC_delete_entry(DLC_entry_T* entry);
 // Inflect a DELAS/DELAC into a DELAF/DELACF.
 // On error returns 1, 0 otherwise.
 int inflect(char* DLC, char* DLCF, 
+		    MultiFlex_ctx* p_multiFlex_ctx, struct l_morpho_t* pL_MORPHO, Alphabet* alph,
 		    Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
 		    int config_files_status,
 		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
@@ -104,7 +105,7 @@ int inflect(char* DLC, char* DLCF,
 					inflection_code, code_gramm, &semitic);
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
-			err = SU_inflect(encoding_output,bom_output,mask_encoding_compatibility_input,DELAS_entry->lemma, inflection_code,
+			err = SU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,DELAS_entry->lemma, inflection_code,
 					DELAS_entry->filters, &forms, semitic, jamo, jamo2syl);
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
@@ -153,22 +154,22 @@ int inflect(char* DLC, char* DLCF,
 					fatal_alloc_error("inflect");
 				}
 				/* Convert a DELAC entry into the internal multi-word format */
-				err = DLC_line2entry(input_line, dlc_entry, D_CLASS_EQUIV);
+				err = DLC_line2entry(alph,pL_MORPHO,input_line, dlc_entry, D_CLASS_EQUIV);
 				if (!err) {
 					//Inflect the entry
 					MU_init_forms(&MU_forms);
-					err = MU_inflect(encoding_output,bom_output,mask_encoding_compatibility_input,dlc_entry->lemma, &MU_forms);
+					err = MU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,dlc_entry->lemma, &MU_forms);
 					if (!err) {
 						int f; //index of the current inflected form
 						//Inform the user if no form generated
 						if (MU_forms.no_forms == 0) {
 							error("No inflected form could be generated for ");
-							DLC_print_entry(dlc_entry);
+							DLC_print_entry(pL_MORPHO,dlc_entry);
 						}
 						//Print inflected forms
 						for (f = 0; f < MU_forms.no_forms; f++) {
 							//Format the inflected form to the DELACF format
-							err = DLC_format_form(output_line, DIC_LINE_SIZE
+							err = DLC_format_form(pL_MORPHO,output_line, DIC_LINE_SIZE
 									- 1, MU_forms.forms[f], dlc_entry,
 									D_CLASS_EQUIV);
 							if (!err) {
@@ -214,7 +215,7 @@ int inflect(char* DLC, char* DLCF,
 // 'line' is non terminated by a newline.
 // Initially, entry has its space allocated but is empty.
 // Returns 1 if 'line' is empty, 2 if its format is incorrect, -1 if memory allocation problems, 0 otherwise.
-int DLC_line2entry(unichar* line, DLC_entry_T* entry,
+int DLC_line2entry(Alphabet* alph,struct l_morpho_t* pL_MORPHO,unichar* line, DLC_entry_T* entry,
 		d_class_equiv_T* D_CLASS_EQUIV) {
 	int l; //length of the scanned sequence
 	int pos; //index of the next character to be read
@@ -237,7 +238,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry,
 		if (!unit) {
 			fatal_alloc_error("DLC_line2entry");
 		}
-		l = DLC_scan_unit(unit, &(line[pos]), D_CLASS_EQUIV);
+		l = DLC_scan_unit(alph,pL_MORPHO,unit, &(line[pos]), D_CLASS_EQUIV);
 		if (l <= 0) {
 			free(unit);
 			MU_delete_lemma(entry->lemma);
@@ -306,7 +307,7 @@ int DLC_line2entry(unichar* line, DLC_entry_T* entry,
 // Scans a single unit from a DELAC entry. 'line' is non terminated by a newline.
 // Initially, 'u' has its space allocated but is empty.
 // Returns the length of the scanned sequence, -1 if a format error occurred, -2 if a memory allocation problem occured.
-int DLC_scan_unit(SU_id_T* u, unichar* line, d_class_equiv_T* D_CLASS_EQUIV) {
+int DLC_scan_unit(Alphabet* alph,struct l_morpho_t* pL_MORPHO,SU_id_T* u, unichar* line, d_class_equiv_T* D_CLASS_EQUIV) {
 	int l; //length of the scanned sequence
 	int pos; //index of the next caracter to be scanned
 	unichar tmp[DIC_LINE_SIZE];
@@ -409,7 +410,7 @@ int DLC_scan_unit(SU_id_T* u, unichar* line, d_class_equiv_T* D_CLASS_EQUIV) {
 			return -1;
 		}
 		pos++; //Omit the ')'
-		u->feat = d_get_feat_str(tmp);
+		u->feat = d_get_feat_str(pL_MORPHO,tmp);
 		if (!u->feat) {
 			error("Incorrect inflection features in a unit:\n%S\n", line);
 			free(u->form);
@@ -484,13 +485,13 @@ l_class_T* DLC_class_para(unichar* para, d_class_equiv_T* D_CLASS_EQUIV) {
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry into a DELAC file..
 // If entry void or entry's lemma void returns 1, 0 otherwise.
-int DLC_print_entry(DLC_entry_T* entry) {
+int DLC_print_entry(struct l_morpho_t* pL_MORPHO,DLC_entry_T* entry) {
 	if (!entry || !entry->lemma)
 		return 1;
 
 	//Print  units
 	for (int u = 0; u < entry->lemma->no_units; u++) {
-		DLC_print_unit(entry->lemma->units[u]);
+		DLC_print_unit(pL_MORPHO,entry->lemma->units[u]);
 	}
 
 	//Print paradigm
@@ -512,7 +513,7 @@ int DLC_print_entry(DLC_entry_T* entry) {
 /////////////////////////////////////////////////////////////////////////////////
 // Prints single unit into a DELAC file.
 // If 'unit' void returns 1, if memory allocation problem returns -1, 0 otherwise.
-int DLC_print_unit(SU_id_T* unit) {
+int DLC_print_unit(struct l_morpho_t* pL_MORPHO,SU_id_T* unit) {
 	if (unit == NULL)
 		return 1;
 	u_printf("%S", unit->form);
@@ -520,7 +521,7 @@ int DLC_print_unit(SU_id_T* unit) {
 		u_printf("(%S.%s", unit->lemma->unit, unit->lemma->paradigm);
 		if (unit->feat) {
 			unichar* tmp;
-			tmp = d_get_str_feat(unit->feat);
+			tmp = d_get_str_feat(pL_MORPHO,unit->feat);
 			if (tmp == NULL)
 				return -1;
 			u_printf(":%S", tmp);
@@ -536,7 +537,7 @@ int DLC_print_unit(SU_id_T* unit) {
 // The resulting enntry may takes up to 'max' characters.
 // 'entry' almready has its space allocated.
 // Returns 1 on error, 0 otherwise.
-int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry,
+int DLC_format_form(struct l_morpho_t* pL_MORPHO,unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry,
 		d_class_equiv_T* D_CLASS_EQUIV) {
 	int l; //length of the entry
 
@@ -592,7 +593,7 @@ int DLC_format_form(unichar* entry, int max, MU_f_T f, DLC_entry_T* dlc_entry,
 	//Inflection features
 	unichar* feat; //sequence of single-letter inflection features, e.g. 'sIf'
 	if (f.features && f.features->no_cats > 0) {
-		feat = d_get_str_feat(f.features);
+		feat = d_get_str_feat(pL_MORPHO,f.features);
 		l = l + u_strlen(feat) + 1; //Place for a ':' and all features
 		if (l >= max)
 			return 1;

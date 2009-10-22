@@ -27,7 +27,7 @@
 
 
 #include "Unicode.h"
-#include "MF_LangMorpho.h"
+#include "MF_LangMorphoBase.h"
 
 // Structure for a category-value couple, e.g. Gen=fem
 typedef struct {
@@ -56,7 +56,7 @@ void f_delete_morpho(f_morpho_T *feat);
 // Each category-value appearing in 'new_feat' replaces the corresponding category in 'old_feat',
 // e.g. if 'old_feat'={Gen=fem, Nb=sing} and 'new_feat'={Nb=pl} then 'old_feat' becomes {Gen=fem, Nb=pl}
 // Returns 0 on success, 1 otherwise.
-int f_change_morpho(f_morpho_T *old_feat, f_morpho_T *new_feat);
+int f_change_morpho(struct l_morpho_t* pL_MORPHO,f_morpho_T *old_feat, f_morpho_T *new_feat);
 
 ////////////////////////////////////////////
 // Compare two morphological descriptions
@@ -77,7 +77,7 @@ int f_add_morpho(f_morpho_T *feat, l_category_T *cat, int val);
 // e.g. if 'feat'={Gen=fem}, 'cat'="Nb" and 'val'="pl" then 'feat' becomes {Gen=fem, Nb=pl}.
 // Returns 0 on success, returns 1 if 'cat' already appears in 'feat'.
 // Returns -1 if 'cat' or 'val' invalid category or value names in the current language.
-int f_add_morpho_unichar(f_morpho_T *feat, unichar *cat, unichar* val);
+int f_add_morpho_unichar(struct l_morpho_t* pL_MORPHO,f_morpho_T *feat, unichar *cat, unichar* val);
 
 ////////////////////////////////////////////
 // Reduces the morphology of a form.
@@ -92,7 +92,7 @@ int f_del_one_morpho(f_morpho_T *feat, l_category_T* cat);
 // e.g. if 'feat'={Gen=neu,Nb=pl}, 'cat'=Gen, and Gen={masc,fem,neu} then return 2.
 // If 'cat' does not appear in 'feat' but it admits an emmpty value, then returns the index of the empty value.
 // Returns -1 if 'cat' not found in 'feat' and 'cat' does not admit an empty value.
-int f_get_value(f_morpho_T *feat, l_category_T* cat);
+int f_get_value(struct l_morpho_t* pL_MORPHO,f_morpho_T *feat, l_category_T* cat);
 
 /////////////////////////////////////////////////
 // Prints the contents of a form's morphology.

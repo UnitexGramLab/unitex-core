@@ -30,52 +30,14 @@
 #ifndef MU_morphoH
 #define MU_morphoH
 
-#include "Unicode.h"
-#include "MF_FormMorpho.h"
-#include "MF_SU_morpho.h"
-
-/////////////////////////////////////////////////
-//Maximum number of constituents in a multi-word unit
-#define MAX_UNITS 20
-
-/////////////////////////////////////////////////
-//Structure for the morphology of a multi-word (inflected) form
-typedef struct {
-  unichar* form;         //e.g. "pommes de terre"
-  f_morpho_T* features;   //e.g. {Gen=fem, Nb=pl}
-} MU_f_T;
-
-/////////////////////////////////////////////////
-// Set of inflected forms of a MWU
-typedef struct  {
-  int no_forms;   //number of inflected forms
-  MU_f_T *forms;  //table of inflected forms
-} MU_forms_T;
-
-/////////////////////////////////////////////////
-//Structure for the lemma of a MWU
-typedef struct {
-  int no_units;
-  SU_id_T* units[MAX_UNITS];	//e.g. pointer to "vive" in the paadigm of "vif"
-  l_class_T *cl;	        //e_.g. adj
-  char *paradigm;		//e.g. N41
-} MU_lemma_T;
-
-/////////////////////////////////////////////////
-// Structure for the unique identification of an inflected form of a MWU.
-// See comment on unique identification of single graphical units (MF_SU_morpho.h file)
-typedef struct {
-  unichar* form;         // the textual form, e.g. "pommes de terre"
-  MU_lemma_T *MU_lemma; //lemma and its info
-  f_morpho_T* feat;   //the form's morphology, e.g. {Gen=fem; Nb=pl; Case=I}
-  //  int form_nr;   	//ordinal number of the form in the list of all inflected forms of the lemma
-} MU_id_T;
+#include "MF_MU_morphoBase.h"
+#include "MF_Global.h"
 
 ////////////////////////////////////////////
 // For a given multi-word unit, generates all the inflected forms,
 // e.g. {["mémoire vive",{Gen=fem,Nb=sing}],["mémoires vives",{Gen=fem,Nb=pl}]}
 // Returns 0 on success, 1 otherwise.   
-int MU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* lemma, MU_forms_T* forms);
+int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* lemma, MU_forms_T* forms);
 
 ////////////////////////////////////////////
 // Liberates the memory allocated for a set of forms

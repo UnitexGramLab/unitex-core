@@ -28,9 +28,10 @@
 /********************************************************************************/
 
 #include "MF_FormMorpho.h"
+#include "MF_LangMorpho.h"
 #include "Error.h"
 
-extern l_cats_T L_CATS;
+//extern l_cats_T L_CATS;
 
 ////////////////////////////////////////////
 // Initializes the morphology of a form.
@@ -54,7 +55,7 @@ void f_delete_morpho(f_morpho_T *feat) {
 // e.g. if 'old_feat'={Gen=fem, Nb=sing} and 'new_feat'={Nb=pl, Gr=D} and Gr:<E>,D,A then
 // 'old_feat' becomes {Gen=fem, Nb=pl, Gr=D}. But if Gr:B,D,A than an error appears.
 // Returns 0 on success, 1 otherwise  
-int f_change_morpho(f_morpho_T *old_feat, f_morpho_T *new_feat) {
+int f_change_morpho(struct l_morpho_t* pL_MORPHO,f_morpho_T *old_feat, f_morpho_T *new_feat) {
   int c_old, c_new;  //category indices in old_feat and in new_feat
   int found;
 
@@ -67,7 +68,7 @@ int f_change_morpho(f_morpho_T *old_feat, f_morpho_T *new_feat) {
       }
     //If a category was not found in 'old_feat' but is admits and empty value
     //then it is added to 'old_feat' with the current value
-    if (!found && admits_empty_val(new_feat->cats[c_new].cat)) {
+    if (!found && admits_empty_val(pL_MORPHO,new_feat->cats[c_new].cat)) {
       f_add_morpho(old_feat, new_feat->cats[c_new].cat, new_feat->cats[c_new].val);
     }
 
@@ -138,11 +139,11 @@ int f_add_morpho(f_morpho_T *feat, l_category_T *cat, int val) {
 // e.g. if 'feat'={Gen=fem}, 'cat'="Nb" and 'val'="pl" then 'feat' becomes {Gen=fem, Nb=pl}.
 // Returns 0 on success, returns 1 if 'cat' already appears in 'feat'.
 // Returns -1 if 'cat' or 'val' invalid category or value names in the current language.
-int f_add_morpho_unichar(f_morpho_T *feat, unichar *cat, unichar* val) {
+int f_add_morpho_unichar(struct l_morpho_t* pL_MORPHO,f_morpho_T *feat, unichar *cat, unichar* val) {
   l_category_T *c;
   int v;  //category index in feat
 
-  c = is_valid_cat(cat);    //Checks if 'cat' is a valid category name in the current language
+  c = is_valid_cat(pL_MORPHO,cat);    //Checks if 'cat' is a valid category name in the current language
   if (!c) {
     error("Invalid category: %S",cat);
     //    error("\n");
@@ -183,13 +184,13 @@ int f_del_one_morpho(f_morpho_T *feat, l_category_T* cat) {
 // e.g. if 'feat'={Gen=neu,Nb=pl}, 'cat'=Gen, and Gen={masc,fem,neu} then return 2.
 // If 'cat' does not appear in 'feat' but it admits an empty value, then returns the index of the empty value.
 // Returns -1 if 'cat' not found in 'feat' and 'cat' does not admit an empty value.
-int f_get_value(f_morpho_T *feat, l_category_T* cat) {
+int f_get_value(struct l_morpho_t* pL_MORPHO,f_morpho_T *feat, l_category_T* cat) {
   int c; //category index in feat
   for (c=0; c<feat->no_cats; c++)
     if (feat->cats[c].cat == cat)    //Category 'cat' found in 'feat'.
       return feat->cats[c].val;
   //If the category 'cat' not found in 'feat' check if 'cat' admits an empty value
-  return get_empty_val(cat);
+  return get_empty_val(pL_MORPHO,cat);
 }
 
 /////////////////////////////////////////////////

@@ -34,16 +34,18 @@
 #include "StringParsing.h"
 #include "Transitions.h"
 #include "MF_Operators_Util.h"
+#include "MF_Global.h"
+
 
 #define MAX_CHARS_IN_STACK 4096
 
 //////////////////////////////
 //Description of all classes in the current language
-extern l_classes_T L_CLASSES;
+//extern l_classes_T L_CLASSES;
 
 //////////////////////////////
 // Table of inflection tranducers
-extern Fst2* fst2[N_FST2];
+//extern Fst2* fst2[N_FST2];
 
 /**
  * This structure represents a list of inflection information. It is used
@@ -58,26 +60,26 @@ struct inflect_infos {
 };
 
 //////////////////////////////
-int SU_inflect(SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
 		jamoCodage* jamo,Jamo2Syl* jamo2syl);
-int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
+int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
 		SU_forms_T* forms, unichar*, int, unsigned int, unichar **,
 		unichar *,jamoCodage*,Jamo2Syl* jamo2syl);
-int SU_explore_state_recursion(unichar* flechi, unichar* canonique,
+int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique,
 		unichar* sortie, Fst2* a, int etat_courant, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int,
 		unsigned int, unichar **, unichar *,jamoCodage*,Jamo2Syl* jamo2syl);
-int SU_explore_tag(Transition* T, unichar* flechi, unichar* canonique,
+int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Transition* T, unichar* flechi, unichar* canonique,
 		unichar* sortie, Fst2* a, struct inflect_infos** LISTE,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int,
 		unsigned int, unichar **, unichar*,jamoCodage*,Jamo2Syl* jamo2syl);
 void shift_stack(unichar* stack, int pos, int shift);
 void shift_stack(unichar* stack, int pos);
 void shift_stack_left(unichar* stack, int pos);
-int SU_convert_features(f_morpho_T*** feat, unichar* feat_str);
+int SU_convert_features(struct l_morpho_t* pL_MORPHO,f_morpho_T*** feat, unichar* feat_str);
 struct list_ustring* SU_split_raw_features(unichar*);
-int SU_feature_agreement(f_morpho_T* feat, f_morpho_T* desired_features);
+int SU_feature_agreement(struct l_morpho_t* pL_MORPHO,f_morpho_T* feat, f_morpho_T* desired_features);
 void SU_delete_inflection(SU_forms_T* forms);
 int SU_cpy_features(f_morpho_T* feat, SU_id_T* SU_id);
 void SU_delete_features(f_morpho_T* f);
@@ -87,11 +89,11 @@ void SU_init_forms(SU_forms_T** forms);
 int SU_print_f(SU_f_T* f);
 int SU_print_forms(SU_forms_T* F);
 int SU_print_lemma(SU_lemma_T* l);
-int SU_init_lemma(SU_lemma_T* l, char* word, char* cl, char* para);
+int SU_init_lemma(struct l_morpho_t* pL_MORPHO,SU_lemma_T* l, char* word, char* cl, char* para);
 int SU_delete_lemma(SU_lemma_T* l);
 
-unichar Variables_op[22][100];
-int save_pos;
+//unichar Variables_op[22][100];
+//int save_pos;
 
 ////////////////////////////////////////////
 // For a given single unit, generates all the inflected forms corresponding to
@@ -115,7 +117,7 @@ int save_pos;
 //          "likatubna"
 //
 // Returns 0 on success, 1 otherwise.
-int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
 		int semitic,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	int err;
@@ -125,15 +127,15 @@ int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compati
 	unichar local_sem_code[MAX_CHARS_IN_STACK];
 	inflection_codes[0] = '\0';
 	semitic_[0] = '\0';
-	int T = get_transducer(SU_id->lemma->paradigm,encoding_output,bom_output,mask_encoding_compatibility_input);
-	if (fst2[T] == NULL) {
+	int T = get_transducer(p_multiFlex_ctx,SU_id->lemma->paradigm,encoding_output,bom_output,mask_encoding_compatibility_input);
+	if (p_multiFlex_ctx->fst2[p_multiFlex_ctx->T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
 	}
 	u_strcpy(inflected, semitic ? U_EMPTY : SU_id->lemma->unit);
 	local_sem_code[0] = '\0';
-	err = SU_explore_state(inflected, SU_id->lemma->unit, inflection_codes,
-			fst2[T], 0, desired_features, forms, semitic ? semitic_ : NULL, 0,
+	err = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,inflected, SU_id->lemma->unit, inflection_codes,
+			p_multiFlex_ctx->fst2[T], 0, desired_features, forms, semitic ? semitic_ : NULL, 0,
 			0, NULL, local_sem_code,jamo,jamo2syl);
 	return err;
 }
@@ -145,7 +147,7 @@ int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compati
  * will receive all the produced inflected forms with their inflectional features.
  * The output DELAF lines will have to be built from 'forms'.
  */
-int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                unichar* lemma, char* inflection_code, unichar** filters,
 		SU_forms_T* forms, int semitic,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	int err;
@@ -156,14 +158,14 @@ int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compati
 
 	inflection_codes[0] = '\0';
 	semitic_[0] = '\0';
-	int T = get_transducer(inflection_code,encoding_output,bom_output,mask_encoding_compatibility_input);
-	if (fst2[T] == NULL) {
+	int T = get_transducer(p_multiFlex_ctx,inflection_code,encoding_output,bom_output,mask_encoding_compatibility_input);
+	if (p_multiFlex_ctx->fst2[T] == NULL) {
 		// if the automaton has not been loaded
 		return 1;
 	}
 	u_strcpy(inflected, semitic ? U_EMPTY : lemma);
 	local_semantic_code[0] = '\0';
-	err = SU_explore_state(inflected, lemma, inflection_codes, fst2[T], 0,
+	err = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,inflected, lemma, inflection_codes, p_multiFlex_ctx->fst2[T], 0,
 			NULL, forms, semitic ? semitic_ : NULL, 0, 0, filters,
 			local_semantic_code,jamo,jamo2syl);
 	return err;
@@ -224,7 +226,7 @@ void aff_trans(Transition* T, Fst2* a) {
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.
-int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
+int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
 		SU_forms_T* forms, unichar* semitic, int flag_var,
 		unsigned int var_in_use, unichar **filters,
@@ -235,7 +237,7 @@ int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
 		if (desired_features != NULL) {
 			/* If we want to select only some inflected forms */
 			f_morpho_T** feat; //Table of sets of inflection features; necessary in case of factorisation of entries, e.g. :ms:fs
-			err = SU_convert_features(&feat, sortie);
+			err = SU_convert_features(pL_MORPHO,&feat, sortie);
 			if (err) {
 				return (err);
 			}
@@ -243,7 +245,7 @@ int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
 			f = 0;
 			while (feat[f]) {
 				//If the form's morphology agrees with the desired features
-				if (SU_feature_agreement(feat[f], desired_features)) {
+				if (SU_feature_agreement(pL_MORPHO,feat[f], desired_features)) {
 					//Put the form into 'forms'
 					forms->forms = (SU_f_T*) realloc(forms->forms,
 							(forms->no_forms + 1) * sizeof(SU_f_T));
@@ -324,7 +326,7 @@ int SU_explore_state(unichar* flechi, unichar* canonique, unichar* sortie,
 	default_trans = explore_trans(&(e->transitions), &t, a);
 
 	while (t != NULL) {//u_fprintf(stderr,"Explore 1\n");
-		retour_tag = SU_explore_tag(t, flechi, canonique, sortie, a, NULL,
+		retour_tag = SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,t, flechi, canonique, sortie, a, NULL,
 				desired_features, forms, semitic, flag_var, var_in_use,
 				filters, local_semantic_codes,jamo,jamo2syl);
 		retour_all_tags += retour_tag;
@@ -382,7 +384,7 @@ void free_inflect_infos(struct inflect_infos* i) {
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.
-int SU_explore_state_recursion(unichar* inflected, unichar* lemma,
+int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* inflected, unichar* lemma,
 		unichar* output, Fst2* a, int current_state, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
 		int flag_var, unsigned int var_in_use, unichar **filters,
@@ -413,14 +415,14 @@ int SU_explore_state_recursion(unichar* inflected, unichar* lemma,
 	int retour_all_tags = 0;
 	int retour_tag;
 	while (t != NULL) {//u_fprintf(stderr,"Explore 2\n");local_
-		retour_tag = SU_explore_tag(t, inflected, lemma, output, a, L,
+		retour_tag = SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,t, inflected, lemma, output, a, L,
 				desired_features, forms, semitic, flag_var, var_in_use,
 				filters, local_semantic_codes,jamo,jamo2syl);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
 	if (default_trans != NULL) { //u_fprintf(stderr,"PASS2\n");
-		SU_explore_tag(default_trans, inflected, lemma, output, a, L,
+		SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,default_trans, inflected, lemma, output, a, L,
 				desired_features, forms, semitic, flag_var, var_in_use,
 				filters, local_semantic_codes,jamo,jamo2syl);
 	}
@@ -437,7 +439,7 @@ int SU_explore_state_recursion(unichar* inflected, unichar* lemma,
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.
-int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
+int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Transition* T, unichar* inflected, unichar* lemma,
 		unichar* output, Fst2* a, struct inflect_infos** LIST,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
 		int flag_var, unsigned int var_in_use, unichar **filters,
@@ -448,19 +450,19 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 		struct inflect_infos* temp;
 		int retour_state = 0;
 		int retour_all_states = 1;
-		SU_explore_state_recursion(inflected, lemma, output, a,
+		SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,inflected, lemma, output, a,
 				a->initial_states[-(T->tag_number)], &L, desired_features,
 				forms, semitic, flag_var, var_in_use, filters,
 				local_semantic_codes,jamo,jamo2syl);
 		while (L != NULL) {
 			if (LIST == NULL) {//u_fprintf(stderr,"Explore state 1\n");
-				retour_state = SU_explore_state(L->inflected, lemma, L->output,
+				retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma, L->output,
 						a, T->state_number, desired_features, forms,
 						L->semitic, flag_var, var_in_use, filters,
 						local_semantic_codes,jamo,jamo2syl);
 				retour_all_states += (retour_state + 1);
 			} else {//u_fprintf(stderr,"Explore state recursion 1\n");
-				retour_state = SU_explore_state_recursion(L->inflected, lemma,
+				retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma,
 						L->output, a, T->state_number, LIST, desired_features,
 						forms, L->semitic, flag_var, var_in_use, filters,
 						local_semantic_codes,jamo,jamo2syl);
@@ -511,7 +513,7 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 	   else for (int pos_tag = 0; tag[pos_tag] != '\0';) {
 			switch (tag[pos_tag]) {
 			case '<':
-				retour = flex_op_with_var(Variables_op, stack, tag, &pos,
+				retour = flex_op_with_var(p_multiFlex_ctx->Variables_op, stack, tag, &pos,
 						&pos_tag, &var_in_use);
 
 				break;
@@ -519,12 +521,12 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 			case (unichar) POUND: {
 				var_name[0] = tag[pos_tag];
 				var_name[1] = '\0';
-				save_pos = pos;
+				p_multiFlex_ctx->save_pos = pos;
 				ind = get_indice_var_op(var_name);
 				if (get_flag_var(ind, var_in_use)) {
-					l = u_strlen(Variables_op[ind]);
+					l = u_strlen(p_multiFlex_ctx->Variables_op[ind]);
 					for (i = 0; i < l; i++, pos++)
-						stack[pos] = Variables_op[ind][i];
+						stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
 				}
 				//if (VERBOSE) fprintf(stderr,"COPIE VAR \n");
 				flag_var = 1;
@@ -686,12 +688,12 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 					var_name[1] = tag[pos_tag];
 					var_name[2] = '\0';
 					flag_var = 0;
-					pos = save_pos;
+					pos = p_multiFlex_ctx->save_pos;
 					ind = get_indice_var_op(var_name);
 					if (get_flag_var(ind, var_in_use)) {
-						l = u_strlen(Variables_op[ind]);
+						l = u_strlen(p_multiFlex_ctx->Variables_op[ind]);
 						for (i = 0; i < l; i++, pos++)
-							stack[pos] = Variables_op[ind][i];
+							stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
 					}
 					pos_tag++;
 				} else if (semitic != NULL) {
@@ -761,12 +763,12 @@ int SU_explore_tag(Transition* T, unichar* inflected, unichar* lemma,
 	int retour_state = 1;
 	if (retour) {
 		if (LIST == NULL) {//u_fprintf(stderr,"Explore state 2\n");
-			retour_state = SU_explore_state(stack, lemma, out, a,
+			retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,stack, lemma, out, a,
 					T->state_number, desired_features, forms,
 					semitic ? semitic2 : NULL, flag_var, var_in_use, filters,
 					local_semantic_codes,jamo,jamo2syl);
 		} else {//u_fprintf(stderr,"Explore state recursion 2\n");
-			retour_state = SU_explore_state_recursion(stack, lemma, out, a,
+			retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,stack, lemma, out, a,
 					T->state_number, LIST, desired_features, forms,
 					semitic ? semitic2 : NULL, flag_var, var_in_use, filters,
 					local_semantic_codes,jamo,jamo2syl);
@@ -815,7 +817,7 @@ void shift_stack_left(unichar* stack, int pos) {
 // into a set of feature structures, e.g. <<Case=I; Nb=p; Gen=f>,<Case=I; Nb=p; Gen=m>>
 // Initially 'feat' does not have its space allocated
 // Returns 1 on error, 0 otherwise.
-int SU_convert_features(f_morpho_T*** feat, unichar* feat_str) {
+int SU_convert_features(struct l_morpho_t* pL_MORPHO,f_morpho_T*** feat, unichar* feat_str) {
 	unichar tmp[MAX_CATS]; //buffer for a single set of features, e.g. Ipf
 	f_morpho_T* f; //current feature structure
 	int l; //length of a scanned sequence
@@ -835,7 +837,7 @@ int SU_convert_features(f_morpho_T*** feat, unichar* feat_str) {
 		l = u_scan_until_char(tmp, feat_str, MAX_CATS - 1, ":", 1);
 		feat_str = feat_str + l;
 		//Convert the set of features, e.g. Ipm, into a feature structure, e.g. <Case=I; Nb=p; Gen=m>
-		f = d_get_feat_str(tmp);
+		f = d_get_feat_str(pL_MORPHO,tmp);
 		if (!f) {
 			for (int i = 0; i < no_f; i++)
 				//delete the previously constracted feature structures
@@ -893,7 +895,7 @@ struct list_ustring* SU_split_raw_features(unichar* features) {
 // In order to facilitate the processing of simple words, we say
 // that 'feat2'=NULL means that all the inflected forms are
 // to keep.
-int SU_feature_agreement(f_morpho_T* feat1, f_morpho_T* feat2) {
+int SU_feature_agreement(struct l_morpho_t* pL_MORPHO,f_morpho_T* feat1, f_morpho_T* feat2) {
 	if (feat2 == NULL)
 		return 1;
 
@@ -920,7 +922,7 @@ int SU_feature_agreement(f_morpho_T* feat1, f_morpho_T* feat2) {
 		}
 		//If a desired category has a non empty value, and it does not appear in 'feat'
 		//then both feature sets do not agree
-		if (!found && !is_empty_val(feat2->cats[f2].cat, feat2->cats[f2].val))
+		if (!found && !is_empty_val(pL_MORPHO,feat2->cats[f2].cat, feat2->cats[f2].val))
 			return 0;
 	}
 
@@ -940,7 +942,7 @@ int SU_feature_agreement(f_morpho_T* feat1, f_morpho_T* feat2) {
 		}
 		//If a desired category has a non empty value, and it does not appear in 'feat'
 		//then both feature sets do not agree
-		if (!found && !is_empty_val(feat1->cats[f1].cat, feat1->cats[f1].val))
+		if (!found && !is_empty_val(pL_MORPHO,feat1->cats[f1].cat, feat1->cats[f1].val))
 			return 0;
 	}
 	return 1;
@@ -1183,16 +1185,16 @@ int SU_print_lemma(SU_lemma_T* l) {
 ////////////////////////////////////////////
 // For testing purposes
 // Initialise a sample lemma structure for tests.
-int SU_init_lemma(SU_lemma_T* l, char* word, char* cl, char* para) {
+int SU_init_lemma(struct l_morpho_t* pL_MORPHO,SU_lemma_T* l, char* word, char* cl, char* para) {
 	//lemma
 	l->unit = u_strdup(word);
 	//class
 	if (!strcmp(cl, "noun"))
-		l->cl = &(L_CLASSES.classes[0]);
+		l->cl = &(pL_MORPHO->L_CLASSES.classes[0]);
 	else if (!strcmp(cl, "adj"))
-		l->cl = &(L_CLASSES.classes[1]);
+		l->cl = &(pL_MORPHO->L_CLASSES.classes[1]);
 	else if (!strcmp(cl, "adv"))
-		l->cl = &(L_CLASSES.classes[2]);
+		l->cl = &(pL_MORPHO->L_CLASSES.classes[2]);
 	else
 		l->cl = NULL;
 	//paradigm

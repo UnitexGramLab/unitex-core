@@ -21,7 +21,6 @@
 #include "MF_Operators_Util.h"
 #include "Error.h"
 
-U_FILE* f_sort;
 
 //
 // fonction comparer  qu'un code de sortie est conforme ou non aux filtres

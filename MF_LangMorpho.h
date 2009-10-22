@@ -26,7 +26,9 @@
 #define LangMorphoH
 
 #include "Unicode.h"
-
+//#include "MF_DicoMorpho.h" //add
+#include "MF_DicoMorphoBase.h" //add
+#include "MF_LangMorphoBase.h" //add
 /**
  * 
  * This library is used to parse the "Morphology" file that is 
@@ -34,7 +36,7 @@
  * 
  */
 
-
+/*
 
 
 //maximum number of inflection categories (number, gender etc.)
@@ -88,6 +90,36 @@ typedef struct{
   l_class_T classes[MAX_CLASSES];  //e.g. (noun, verb, etc.)
 } l_classes_T;
 
+*/
+
+struct l_morpho_t
+{
+///////////////////////////////////////////////////////////////////////////////////////
+//Global structure describing the morphological categories of a language
+l_cats_T L_CATS;
+///////////////////////////////////////////////////////////////////////////////////////
+//Global structure describing the morphological system of a language
+l_classes_T L_CLASSES;
+
+//Morphology file
+U_FILE* lf;
+//Current line of the morphology file
+unichar line[MAX_LANG_MORPHO_LINE];
+//Curent line number of the morphology file
+int line_no ;
+//Current character (not unichar) line, and current character word of the morphology file
+char line_ch[MAX_LANG_MORPHO_LINE], word_ch[MAX_LANG_MORPHO_LINE];
+
+//empty morphological value
+unichar EMPTY_VAL[MAX_MORPHO_NAME];
+
+//Says if we are in a category block (0) or in a class block (1) in the language morphology file
+int CATS_OR_CLASSES;
+
+d_morpho_equiv_T D_MORPHO_EQUIV;
+} ;
+
+struct l_morpho_t* init_langage_morph();
 /**************************************************************************************/
 /* Read the language file "file".                                                     */
 /* This file contains lists of all classes (nous, verb, etc.) of the language,        */
@@ -108,22 +140,22 @@ typedef struct{
 /*                      adv: (Gr,<var>)                                               */
 /* Fills out L_CLASSES and L_CATS.						      */
 /* Returns 0 if success, 1 otherwise                                                  */
-int read_language_morpho(char *file);
+int read_language_morpho(struct l_morpho_t*,char *file);
 
 /**************************************************************************************/
 /* Prints to the standard output the morphological system of the language             */
 /* as defined by L_CLASSES.       		    			              */
 /* Returns 0 on success, 1 otherwise.                                                 */
-int print_language_morpho();
+int print_language_morpho(struct l_morpho_t*);
 
 /**************************************************************************************/
 /* Liberates the space allocated for the language morphology description.             */
-int free_language_morpho();
+int free_language_morpho(struct l_morpho_t*);
 
 /**************************************************************************************/
 /* If cat is a valid category name, returns a pointer to this category.               */
 /* Otherwise returns NULL.                                                            */
-l_category_T* is_valid_cat(unichar* cat);
+l_category_T* is_valid_cat(struct l_morpho_t*,unichar* cat);
 
 /**************************************************************************************/
 /* If val is a valid value in the domain of category cat, returns the index of val    */
@@ -134,22 +166,22 @@ int is_valid_val(l_category_T* cat, unichar* val);
 /* If val is an empty value in the domain of category cat, returns 1,                 */
 /* otherwise returns 0.                                                               */
 /* val is the ordinal number of the value in 'cat'                                    */
-int is_empty_val(l_category_T* cat, int val);
+int is_empty_val(struct l_morpho_t*,l_category_T* cat, int val);
 
 /**************************************************************************************/
 /* If category 'cat' admits an empty value returns 1, otherwise returns 0.                                                               */
 /* val is the ordinal number of the value in 'cat'                                    */
-int admits_empty_val(l_category_T* cat);
+int admits_empty_val(struct l_morpho_t*,l_category_T* cat);
 
 /**************************************************************************************/
 /* If category 'cat' admits an empty value returns the ordinal number of this value   */
 /* in 'cat'. Otherwise returns -1.                                                    */
-int get_empty_val(l_category_T* cat);
+int get_empty_val(struct l_morpho_t*,l_category_T* cat);
 
 /**************************************************************************************/
 /* If val is a  valid value, returns the pointer to its (first) category.             */
 /* Otherwise returns NULL.                                                            */
-l_category_T* get_cat(unichar* val);
+l_category_T* get_cat(struct l_morpho_t*,unichar* val);
 
 /**************************************************************************************/
 /* If 'cat' is a valid category, copies its name to 'cat_str' which should have its   */

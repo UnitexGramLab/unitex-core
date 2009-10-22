@@ -57,17 +57,17 @@ typedef struct {
 // Converts a DELAC line ('line') into a structured DELAC entry ('entry').
 // Initially, entry has its space allocated but is empty.
 // Return 1 if 'line' is empty, -1 if its format is incorrect, 0 otherwise.
-int DLC_line2entry(unichar* line, DLC_entry_T* entry,d_class_equiv_T* D_CLASS_EQUIV);
+int DLC_line2entry(Alphabet* alph,struct l_morpho_t* pL_MORPHO,unichar* line, DLC_entry_T* entry,d_class_equiv_T* D_CLASS_EQUIV);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Inflects a DELAS/DELAC into a DELAC/DELACF.
 // On error returns 1, 0 otherwise.
-int inflect(char*,char*,Encoding,int,int,int,d_class_equiv_T* D_CLASS_EQUIV,int error_check_status,
+int inflect(char*,char*,MultiFlex_ctx*,struct l_morpho_t*,Alphabet* alph,Encoding,int,int,int,d_class_equiv_T* D_CLASS_EQUIV,int error_check_status,
 		jamoCodage* jamo,Jamo2Syl* jamo2syl);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Prints a DELAC entry.
-int DLC_print_entry(DLC_entry_T* entry);
+int DLC_print_entry(struct l_morpho_t* pL_MORPHO, DLC_entry_T* entry);
 
 /////////////////////////////////////////////////////////////////////////////////
 // Liberates the memory allocated for a DELAC entry.

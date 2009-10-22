@@ -27,7 +27,7 @@
 #define DicoMorphoH
 
 #include "Unicode.h"
-#include "MF_LangMorpho.h"
+//#include "MF_LangMorpho.h" //add
 #include "MF_MU_morpho.h"
 
 
@@ -37,8 +37,8 @@
  * supposed to be in the same directory than the inflection graphs.
  *
  */
-
-
+#include "MF_DicoMorphoBase.h"
+/*
 #define CONFIG_FILES_OK 0
 #define CONFIG_FILES_ERROR 1
 
@@ -62,6 +62,8 @@ typedef struct {
   int no_equiv;       //number of equivalences
   d_morpho_eq_T equiv[MAX_MORPHO_EQUIV];  //set of equivalences
 } d_morpho_equiv_T;
+
+*/
 
 ////////////////////////////////////////////
 //A list of equivalences between class names in a dictionary (e.g. "N") and a language class (e.g. noun).
@@ -112,14 +114,14 @@ typedef struct {
 /*                    n:Gen=neu                                                       */
 /* The function fills out D_MORPHO_EQUIV.                                             */
 /* Returns 0 on success, 1 otherwise.                                                 */
-int d_init_morpho_equiv(char* equiv_file);
+int d_init_morpho_equiv(struct l_morpho_t* pL_MORPHO,char* equiv_file);
 
 /**************************************************************************************/
 /* Initialises the set of equivalences between class names in a dictionary (e.g. "N") */
 /* and language classes (e.g. noun)                                                   */
 /* This function is temporarily done for Polish. In future it has to be replaced by   */
 /* a function scanning an external equivalence file for the given language.           */
-void d_init_class_equiv(d_class_equiv_T *D_CLASS_EQUIV);
+void d_init_class_equiv(struct l_morpho_t* pL_MORPHO,d_class_equiv_T *D_CLASS_EQUIV);
 
 /**************************************************************************************/
 /* Prints to the standard output the equivalences between dictionary and morphology   */
@@ -132,7 +134,7 @@ void d_print_morpho_equiv();
 /* If the string component is not equivalent to a morphological feature, returns NULL.*/
 /* The return structure is allocated in the function. The liberation has to take place*/
 /* in the calling function (by f_delete_morpho).                                      */
-f_morpho_T* d_get_feat_str(unichar* feat_str);
+f_morpho_T* d_get_feat_str(struct l_morpho_t* pL_MORPHO,unichar* feat_str);
 
 /**************************************************************************************/
 /* Produces a feature string (e.g. "fIs") from a set of structured inflection features*/
@@ -141,7 +143,7 @@ f_morpho_T* d_get_feat_str(unichar* feat_str);
 /* in the calling function.                                                           */
 /* If 'feat' is empty or a morphological feature has no corresponding character value,*/
 /* returns NULL.                                                                      */
-unichar* d_get_str_feat(f_morpho_T* feat);
+unichar* d_get_str_feat(struct l_morpho_t* pL_MORPHO,f_morpho_T* feat);
 
 /**************************************************************************************/
 /* Returns the class (e.g. noun) corresponding to a class string as it appears in a   */

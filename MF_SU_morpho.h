@@ -30,57 +30,9 @@
 #include "MF_FormMorpho.h"
 #include "Korean.h"
 
-/////////////////////////////////////////////////
-//Structure for the morphology of a single (inflected) form
-//of a single graphical unit
-//e.g. for French
-//          form = "vives"
-//          features = {Gen=fem, Nb=pl}
-typedef struct {
-   unichar* form;         //e.g. "vives", or "-"
-   unichar* local_semantic_code;
-   union {
-      f_morpho_T* features;   //e.g. {Gen=fem, Nb=pl}, or {}
-      unichar* raw_features; // used for simple words
-   };
-} SU_f_T;
+#include "MF_SU_morphoBase.h"
 
-/////////////////////////////////////////////////
-// Set of inflected forms
-typedef struct  {
-  int no_forms;   //number of inflected forms
-  SU_f_T *forms;  //table of inflected forms
-} SU_forms_T;
-
-/////////////////////////////////////////////////
-//Structure for the lemma of a single word
-typedef struct {
-  unichar* unit;		//e.g. "vif"
-  l_class_T *cl;	        //e.g. adj
-  char *paradigm;		//e.g. A41
-} SU_lemma_T;
-
-/////////////////////////////////////////////////
-// Possible types of a unit
-// - a word
-// - a separator
-//typedef enum {word,sep} SU_unit_T;
-
-/////////////////////////////////////////////////
-// Structure for the unique identification of an inflected form
-// We suppose that each inflected form may be uniquely identified on the basis of 4 elements (in case of a word):
-// the form, its lemma, its paradigm, its features. In case of a separator or any other uninflected form,
-// the unit itself (e.g. ",") is enough to uniquely identify itself.
-// Given these elements we may access the form indentifier and conversely. See * below.
-// One possibility is to have a deterministic linear order of all forms (variants included) so that
-// the same form always gets the same identifier.
-typedef struct {
-  unichar* form;          //the textual form
-  //  SU_unit_T type;        //word or sep
-  SU_lemma_T *lemma;     //lemma and its info; empty for a separator
-  f_morpho_T* feat;    //the form's morphology, e.g. {Gen=fem; Nb=sing; Case=I}
-  //  int form_nr;   	 //identifier of the form in the list of all inflected forms of the lemma; irrelevant for a separator
-} SU_id_T;
+#include "MF_Global.h"
 
 ////////////////////////////////////////////
 // For a given single word, generates all the inflected forms corresponding to the given inflection features.
@@ -90,11 +42,11 @@ typedef struct {
 //        e.g. (3,{[reka,{Gen=fem,Nb=sing,Case=Instr}],[rekami,{Gen=fem,Nb=pl,Case=Instr}],[rekoma,{Gen=fem,Nb=pl,Case=Instr}]})
 //        or   (1,{["-",{}]})
 // Returns 0 on success, 1 otherwise.
-int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* SU_id,f_morpho_T* feat, SU_forms_T* forms,int,
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,SU_id_T* SU_id,f_morpho_T* feat, SU_forms_T* forms,int,
 		jamoCodage* jamo,Jamo2Syl* jamo2syl);
 
 /* This prototype has been added in order to deal with simple words */
-int SU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,unichar* lemma,char* inflection_code,unichar **filters,SU_forms_T* forms,
+int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,unichar* lemma,char* inflection_code,unichar **filters,SU_forms_T* forms,
 		int,jamoCodage*,Jamo2Syl*);
 
 ////////////////////////////////////////////
@@ -165,7 +117,7 @@ int SU_print_lemma(SU_lemma_T* l);
 
 ////////////////////////////////////////////
 // Initialise the sample lemma structure for tests.
-int SU_init_lemma(SU_lemma_T* l, char* word, char* cl, char* para);
+int SU_init_lemma(struct l_morpho_t* pL_MORPHO,SU_lemma_T* l, char* word, char* cl, char* para);
 
 ////////////////////////////////////////////
 // Delete sample lemma stucture for tests.

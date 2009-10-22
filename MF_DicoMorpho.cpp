@@ -23,6 +23,8 @@
  */
 
 #include <stdio.h>
+
+#include "MF_Global.h"
 #include "MF_LangMorpho.h"
 #include "MF_FormMorpho.h"
 #include "MF_DicoMorpho.h"
@@ -30,25 +32,14 @@
 #include "Error.h"
 
 
-//////////////////////////////////////////////////////////////////////////////////////
-//Global structure describing the morphological equivalences between morphological and dictionary values
-d_morpho_equiv_T D_MORPHO_EQUIV;
-
-///////////////////////////////////////////////////////////////////////////////////////
-//Global structure describing the morphological categories of a language
-extern l_cats_T L_CATS;
-///////////////////////////////////////////////////////////////////////////////////////
-//Global structure describing the morphological system of a language
-extern l_classes_T L_CLASSES;
-
 ///////////////////////////////////////
 //All functions defined in this file
-int d_init_morpho_equiv(char* equiv_file, char *di);
-int d_read_line(unichar* line,int line_no);
+int d_init_morpho_equiv(struct l_morpho_t* pL_MORPHO,char* equiv_file, char *di);
+int d_read_line(struct l_morpho_t* pL_MORPHO,unichar* line,int line_no);
 void d_init_class_equiv();
 void d_print_morpho_equiv();
-f_morpho_T* d_get_feat_str(unichar* feat_str);
-unichar* d_get_str_feat(f_morpho_T* feat);
+f_morpho_T* d_get_feat_str(struct l_morpho_t* pL_MORPHO,unichar* feat_str);
+unichar* d_get_str_feat(struct l_morpho_t* pL_MORPHO,f_morpho_T* feat);
 l_class_T* d_get_class_str(unichar* cl_str);
 unichar* d_get_str_class(l_class_T* cl);
 
@@ -80,9 +71,9 @@ unichar* d_get_str_class(l_class_T* cl);
 /*                    r:Gen=masc_inanim                                               */
 /*                    f:Gen=fem                                                       */
 /*                    n:Gen=neu                                                       */
-/* The function fills out D_MORPHO_EQUIV.                                             */
+/* The function fills out pL_MORPHO->D_MORPHO_EQUIV.                                             */
 /* Returns 0 on success, 1 otherwise.                                                 */
-int d_init_morpho_equiv(char* equiv_file) {
+int d_init_morpho_equiv(struct l_morpho_t* pL_MORPHO,char* equiv_file) {
 
   U_FILE* ef; //equivalence file
   int line_no;  //number of the current line
@@ -95,8 +86,8 @@ int d_init_morpho_equiv(char* equiv_file) {
     return 1;
   }
 
-  //Initialize D_MORPHO_EQUIV
-  D_MORPHO_EQUIV.no_equiv = 0;
+  //Initialize pL_MORPHO->D_MORPHO_EQUIV
+  pL_MORPHO->D_MORPHO_EQUIV.no_equiv = 0;
 
   line_no = 0;
 
@@ -114,16 +105,16 @@ int d_init_morpho_equiv(char* equiv_file) {
        /* If necessary, we remove the final \n */
        line[l-1]='\0';
     }
-    if (line[0]!='\0' && d_read_line(line,line_no)) return 1;
+    if (line[0]!='\0' && d_read_line(pL_MORPHO,line,line_no)) return 1;
   }
   return 0;
 }
 
 /**************************************************************************************/
 /* Read a line of the morphology-dictionary equivalence file, e.g. s:Nb=sing          */
-/* Fill out a line of D_MORPHO_EQUIV.                                                 */
+/* Fill out a line of pL_MORPHO->D_MORPHO_EQUIV.                                                 */
 /* Return 0 on success, 1 otherwise.                                                  */
-int d_read_line(unichar* line, int line_no) {
+int d_read_line(struct l_morpho_t* pL_MORPHO,unichar* line, int line_no) {
   int l;   //Length of a scanned sequence
   unichar* line_pos;   //current position in the input line
   unichar tmp[MAX_MORPHO_NAME];  //buffer for line elements
@@ -149,7 +140,7 @@ int d_read_line(unichar* line, int line_no) {
     error("Line %d: s morphological values in a dictionary must be of one caracter.\n", line_no);
     return 1;
   }
-  D_MORPHO_EQUIV.equiv[D_MORPHO_EQUIV.no_equiv].dico_feat = tmp[0];
+  pL_MORPHO->D_MORPHO_EQUIV.equiv[pL_MORPHO->D_MORPHO_EQUIV.no_equiv].dico_feat = tmp[0];
   line_pos++;  //Skip the ':'
 
   //Read the category
@@ -167,13 +158,13 @@ int d_read_line(unichar* line, int line_no) {
     error("Line %d: a \'=\' missing.\n",line_no);
     return 1;
   }
-  cat = is_valid_cat(tmp);
+  cat = is_valid_cat(pL_MORPHO,tmp);
   if (!cat) {
     error("In \'Equivalence\' file:\n");
     error("%S is not a valid category in line %d.\n",tmp,line_no);
     return 1;
   };
-  D_MORPHO_EQUIV.equiv[D_MORPHO_EQUIV.no_equiv].cat.cat = cat;
+  pL_MORPHO->D_MORPHO_EQUIV.equiv[pL_MORPHO->D_MORPHO_EQUIV.no_equiv].cat.cat = cat;
   line_pos++;  //Skip the '='
 
   //Read the value
@@ -186,7 +177,7 @@ int d_read_line(unichar* line, int line_no) {
     error("Line %d: value missing.\n",line_no);
     return 1;
   }
-  if ((D_MORPHO_EQUIV.equiv[D_MORPHO_EQUIV.no_equiv].cat.val = is_valid_val(cat,tmp)) == -1) {
+  if ((pL_MORPHO->D_MORPHO_EQUIV.equiv[pL_MORPHO->D_MORPHO_EQUIV.no_equiv].cat.val = is_valid_val(cat,tmp)) == -1) {
     error("In \'Equivalence\' file\n");
     error("%S is not a valid value in line %d.\n",tmp,line_no);
     return 1;
@@ -197,21 +188,21 @@ int d_read_line(unichar* line, int line_no) {
     return 1;
   }
 
-  D_MORPHO_EQUIV.no_equiv++;
+  pL_MORPHO->D_MORPHO_EQUIV.no_equiv++;
   return 0;
 }
 
 /**************************************************************************************/
 /* Prints to the standard output the equivalences between dictionary qnd morphology   */
 /* features.                                                                          */
-void d_print_morpho_equiv() {
+void d_print_morpho_equiv(struct l_morpho_t* pL_MORPHO) {
 int e;  //index of the current equivalence
 unichar tmp[MAX_MORPHO_NAME+1];
-for (e=0; e<D_MORPHO_EQUIV.no_equiv; e++) {
-   u_printf("%C:",D_MORPHO_EQUIV.equiv[e].dico_feat);
-   copy_cat_str(tmp,D_MORPHO_EQUIV.equiv[e].cat.cat);
+for (e=0; e<pL_MORPHO->D_MORPHO_EQUIV.no_equiv; e++) {
+   u_printf("%C:",pL_MORPHO->D_MORPHO_EQUIV.equiv[e].dico_feat);
+   copy_cat_str(tmp,pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.cat);
    u_printf("%S=",tmp);
-   copy_val_str(tmp,D_MORPHO_EQUIV.equiv[e].cat.cat,D_MORPHO_EQUIV.equiv[e].cat.val);
+   copy_val_str(tmp,pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.cat,pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.val);
    u_printf("%S\n",tmp);
 }
 }
@@ -222,28 +213,28 @@ for (e=0; e<D_MORPHO_EQUIV.no_equiv; e++) {
 /* and language classes (e.g. noun)                                                   */
 /* This function is temporarily done for Polish. In future it has to be replaced by   */
 /* a function scanning an external equivalence file for the given language.           */
-void d_init_class_equiv(d_class_equiv_T *D_CLASS_EQUIV) {
+void d_init_class_equiv(struct l_morpho_t* pL_MORPHO,d_class_equiv_T *D_CLASS_EQUIV) {
   //Noun
   u_strcpy(D_CLASS_EQUIV->equiv[0].dico_class,"N");
-  D_CLASS_EQUIV->equiv[0].cl = &(L_CLASSES.classes[0]);
+  D_CLASS_EQUIV->equiv[0].cl = &(pL_MORPHO->L_CLASSES.classes[0]);
   u_strcpy(D_CLASS_EQUIV->equiv[1].dico_class,"NC");
-  D_CLASS_EQUIV->equiv[1].cl = &(L_CLASSES.classes[0]);
+  D_CLASS_EQUIV->equiv[1].cl = &(pL_MORPHO->L_CLASSES.classes[0]);
 
   //Adjectif
   u_strcpy(D_CLASS_EQUIV->equiv[2].dico_class,"A");
-  D_CLASS_EQUIV->equiv[2].cl = &(L_CLASSES.classes[1]);
+  D_CLASS_EQUIV->equiv[2].cl = &(pL_MORPHO->L_CLASSES.classes[1]);
   u_strcpy(D_CLASS_EQUIV->equiv[3].dico_class,"AC");
-  D_CLASS_EQUIV->equiv[3].cl = &(L_CLASSES.classes[1]);
+  D_CLASS_EQUIV->equiv[3].cl = &(pL_MORPHO->L_CLASSES.classes[1]);
 
   //Adverb
   u_strcpy(D_CLASS_EQUIV->equiv[4].dico_class,"ADV");
-  D_CLASS_EQUIV->equiv[4].cl = &(L_CLASSES.classes[2]);
+  D_CLASS_EQUIV->equiv[4].cl = &(pL_MORPHO->L_CLASSES.classes[2]);
 
   //Verb
   u_strcpy(D_CLASS_EQUIV->equiv[5].dico_class,"V");
-  D_CLASS_EQUIV->equiv[5].cl = &(L_CLASSES.classes[3]);
+  D_CLASS_EQUIV->equiv[5].cl = &(pL_MORPHO->L_CLASSES.classes[3]);
   u_strcpy(D_CLASS_EQUIV->equiv[6].dico_class,"VC");
-  D_CLASS_EQUIV->equiv[6].cl = &(L_CLASSES.classes[3]);
+  D_CLASS_EQUIV->equiv[6].cl = &(pL_MORPHO->L_CLASSES.classes[3]);
 
   D_CLASS_EQUIV->no_equiv = 7;
 }
@@ -254,7 +245,7 @@ void d_init_class_equiv(d_class_equiv_T *D_CLASS_EQUIV) {
 /* If a string component is not equivalent to a morphological feature, returns NULL.  */
 /* The return structure is allocated in the function. The liberation has to take place*/
 /* in the calling function (by f_delete_morpho).                                                           */
-f_morpho_T* d_get_feat_str(unichar* feat_str) {
+f_morpho_T* d_get_feat_str(struct l_morpho_t* pL_MORPHO,unichar* feat_str) {
   int e;  //index of the current equivalence
   int f;  //index of the current feature in the string 'feat_str'
   int found;
@@ -266,9 +257,9 @@ f_morpho_T* d_get_feat_str(unichar* feat_str) {
   f_init_morpho(feat);
   for (f=0; f<u_strlen(feat_str); f++) {
     found = 0;
-    for (e=0; e<D_MORPHO_EQUIV.no_equiv && !found; e++)
-      if (D_MORPHO_EQUIV.equiv[e].dico_feat == feat_str[f]) {
-	f_add_morpho(feat, D_MORPHO_EQUIV.equiv[e].cat.cat, D_MORPHO_EQUIV.equiv[e].cat.val);
+    for (e=0; e<pL_MORPHO->D_MORPHO_EQUIV.no_equiv && !found; e++)
+      if (pL_MORPHO->D_MORPHO_EQUIV.equiv[e].dico_feat == feat_str[f]) {
+	f_add_morpho(feat, pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.cat, pL_MORPHO->D_MORPHO_EQUIV.equiv[e].cat.val);
 	found = 1;
       }
     if (!found)
@@ -283,9 +274,9 @@ f_morpho_T* d_get_feat_str(unichar* feat_str) {
 /* The return string is allocated in the function. The liberation has to take place   */
 /* in the calling function.                                                           */
 /* If 'feat' empty or a morphological feature has no corresponding character value, returns NULL.   */
-unichar* d_get_str_feat(f_morpho_T* feat) {
+unichar* d_get_str_feat(struct l_morpho_t* pL_MORPHO,f_morpho_T* feat) {
   int f;  //index of the current category-value pair in 'feat'
-  int ef; //index of the current category-value pair in D_MORPHO_EQUIV
+  int ef; //index of the current category-value pair in pL_MORPHO->D_MORPHO_EQUIV
   unichar* tmp;
   int c;   //index of the current character in tmp;
   tmp = (unichar*) malloc((MAX_CATS+1) * sizeof(unichar));
@@ -301,16 +292,16 @@ unichar* d_get_str_feat(f_morpho_T* feat) {
 
   for (f=0; f<feat->no_cats; f++) {
     found = 0;
-    for (ef=0; ef<D_MORPHO_EQUIV.no_equiv && !found; ef++) {
-      if ((feat->cats[f].cat == D_MORPHO_EQUIV.equiv[ef].cat.cat) && (feat->cats[f].val == D_MORPHO_EQUIV.equiv[ef].cat.val) ) {
-	tmp[c] = D_MORPHO_EQUIV.equiv[ef].dico_feat;
+    for (ef=0; ef<pL_MORPHO->D_MORPHO_EQUIV.no_equiv && !found; ef++) {
+      if ((feat->cats[f].cat == pL_MORPHO->D_MORPHO_EQUIV.equiv[ef].cat.cat) && (feat->cats[f].val == pL_MORPHO->D_MORPHO_EQUIV.equiv[ef].cat.val) ) {
+	tmp[c] = pL_MORPHO->D_MORPHO_EQUIV.equiv[ef].dico_feat;
 	c++;
 	found = 1;
       }
     }
     //If a feature was not found in equivalences and it is not empty
     //no string corresponds to the desired morphology
-    if (!found && !is_empty_val(feat->cats[f].cat,feat->cats[f].val))
+    if (!found && !is_empty_val(pL_MORPHO,feat->cats[f].cat,feat->cats[f].val))
       return NULL;
     //If the feature is empty, it is simply omitted from the string
   }

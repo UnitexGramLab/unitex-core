@@ -29,6 +29,7 @@
 #include "MF_MU_morpho.h"
 #include "MF_Unif.h"
 #include "MF_MU_graph.h"
+#include "MF_SU_morpho.h"
 #include "Error.h"
 
 ////////////////////////////////////////////
@@ -36,11 +37,11 @@
 // e.g. {["m�moire vive",{Gen=fem,Nb=sing}],["m�moires vives",{Gen=fem,Nb=pl}]}
 // Initially, 'forms' has its space allocated but is empty.
 // Returns 0 on success, 1 otherwise.
-int MU_inflect(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* lemma, MU_forms_T* forms) {
+int MU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,MU_lemma_T* lemma, MU_forms_T* forms) {
 	int err;
 
 	//Explore the inflection tranducer and produce the inflected forms
-	err = MU_graph_explore_graph(encoding_output,bom_output,mask_encoding_compatibility_input,lemma, forms);
+	err = MU_graph_explore_graph(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,lemma, forms);
 	if (err)
 		return 1;
 	else

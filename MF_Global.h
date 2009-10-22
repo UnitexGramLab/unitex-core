@@ -23,35 +23,42 @@
  */
 
 
-#ifndef MF_InflectTransH
-#define MF_InflectTransH
+#ifndef MF_GlobalH
+#define MF_GlobalH
 
-
-
-////////////////////////////////////////////////////////////
-// Implementation of the management of inflectional tranducers
-////////////////////////////////////////////////////////////
-// Copy of some functions from Inflect.cpp
-
-#include "Fst2.h"
-#include "AbstractFst2Load.h"
 
 #include "MF_InflectTransdBase.h"
+#include "MF_MU_morphoBase.h"
 
+typedef struct {
 
+// GLOBAL VARIABLES
+///////////////////////////////
+///////////////////////////////
+// Root of the tree for inflection transducers' names
+struct node* root;
 
 ///////////////////////////////
-//Initiate the tree for inflection transducers' names
-//On succes return 0, 1 otherwise
-int init_transducer_tree(MultiFlex_ctx* p_multiFlex_ctx);
+// Table of inflection tranducers
+struct FST2_free_info fst2_free[N_FST2];
+Fst2* fst2[N_FST2];
 
 ///////////////////////////////
-// Free the transducer tree memory
-void free_transducer_tree(MultiFlex_ctx* p_multiFlex_ctx);
+// Number of inflection tranducers
+int n_fst2;
 
 ///////////////////////////////
-// Try to load the transducer flex and returns its position in the
-// 'fst2' array. Returns -1 if the transducer cannot be loaded
-int get_transducer(MultiFlex_ctx* p_multiFlex_ctx,char* flex,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
+// Directory containing the inflection tranducers
+char inflection_directory[FILENAME_MAX];
+
+int T;
+
+////////////////////////////////////////////
+// Current muli-word unit to be inflected
+MU_lemma_T* MU_lemma;
+
+unichar Variables_op[22][100];
+int save_pos;
+} MultiFlex_ctx;
 
 #endif

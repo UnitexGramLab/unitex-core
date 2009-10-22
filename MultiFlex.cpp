@@ -37,13 +37,11 @@
 #include "Error.h"
 #include "getopt.h"
 #include "MultiFlex.h"
+#include "MF_Global.h"
 
-
-//Current language's alphabet
-Alphabet* alph=NULL;
 
 // Directory containing the inflection tranducers and the 'Morphology' file
-extern char inflection_directory[FILENAME_MAX];
+//extern char inflection_directory[FILENAME_MAX];
 
 
 const char* usage_MultiFlex =
@@ -100,6 +98,9 @@ char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char jamo_table[FILENAME_MAX]="";
 char fst2[FILENAME_MAX]="";
+MultiFlex_ctx* p_multiFlex_ctx;
+//Current language's alphabet
+Alphabet* alph=NULL;
 int error_check_status=SIMPLE_AND_COMPOUND_WORDS;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -158,40 +159,50 @@ if (vars->optind!=argc-1) {
 if (output[0]=='\0') {
    fatal_error("You must specify the output DELAF name\n");
 }
+p_multiFlex_ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
+if (p_multiFlex_ctx == NULL) {
+   fatal_error("memory error\n");
+}
 int err;  //0 if a function completes with no error
 //Load morphology description
 char morphology[FILENAME_MAX];
 new_file(config_dir,"Morphology.txt",morphology);
 int config_files_status=CONFIG_FILES_OK;
-err=read_language_morpho(morphology);
+struct l_morpho_t* pL_MORPHO=init_langage_morph();
+if (pL_MORPHO == NULL) {
+   fatal_error("init_langage_morph error\n");
+}
+err=read_language_morpho(pL_MORPHO,morphology);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
-print_language_morpho();
+print_language_morpho(pL_MORPHO);
 if (alphabet[0]!='\0') {
    //Load alphabet
    alph=load_alphabet(alphabet,1);  //To be done once at the beginning of the inflection
    if (alph==NULL) {
       error("Cannot open alphabet file %s\n",alphabet);
-      free_language_morpho();
+      free_language_morpho(pL_MORPHO);
       free_alphabet(alph);
+      free(p_multiFlex_ctx);
       return 1;
    }
 }
 //Init equivalence files
 char equivalences[FILENAME_MAX];
 new_file(config_dir,"Equivalences.txt",equivalences);
-err=d_init_morpho_equiv(equivalences);
+err=d_init_morpho_equiv(pL_MORPHO,equivalences);
 if (err) {
    config_files_status=CONFIG_FILES_ERROR;
 }
 d_class_equiv_T D_CLASS_EQUIV;
-d_init_class_equiv(&D_CLASS_EQUIV);
+d_init_class_equiv(pL_MORPHO,&D_CLASS_EQUIV);
 //Initialize the structure for inflection transducers
-strcpy(inflection_directory,config_dir);
-err=MU_graph_init_graphs();
+strcpy(p_multiFlex_ctx->inflection_directory,config_dir);
+err=MU_graph_init_graphs(p_multiFlex_ctx);
 if (err) {
-   MU_graph_free_graphs();
+   MU_graph_free_graphs(p_multiFlex_ctx);
+   free(p_multiFlex_ctx);
    return 1;
 }
 
@@ -214,13 +225,14 @@ if (jamo_table[0]!='\0') {
 }
 
 //DELAC inflection
-err=inflect(argv[vars->optind],output,encoding_output, bom_output, mask_encoding_compatibility_input,
+err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,encoding_output, bom_output, mask_encoding_compatibility_input,
             config_files_status,&D_CLASS_EQUIV,
 		    error_check_status,jamo,jamo2syl);
-MU_graph_free_graphs();
+MU_graph_free_graphs(p_multiFlex_ctx);
 free_alphabet(alph);
-free_language_morpho();
+free_language_morpho(pL_MORPHO);
 free_OptVars(vars);
+free(p_multiFlex_ctx);
 if (jamo!=NULL) {
 	delete jamo;
 	delete jamo2syl;
@@ -228,5 +240,4 @@ if (jamo!=NULL) {
 u_printf("Done.\n");
 return 0;
 }
-
 
