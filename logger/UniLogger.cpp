@@ -1,12 +1,28 @@
+ /*
+  * Unitex
+  *
+  * Copyright (C) 2001-2009 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  * 
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+  *
+  */
 
 
 /* */
 /*
  todo :
- - file parameter with location then number
-
- - read/file file with list of output, with size + crc
- - select the content of .ULP
  - using thread local storage
 
 
@@ -20,11 +36,12 @@
 
 
 #include "ActivityLoggerPlugCallback.h"
-#include "UniLogger.h"
 #include "File.h"
 
 #include "FilePack.h"
 #include "FilePackCrc32.h"
+
+#include "UniLogger.h"
 
 struct ArrayExpanding {    
     unsigned int nb_item_filled;
@@ -295,14 +312,6 @@ struct ExecutionLogging* InitExecutionLogging(const char*pathZip)
 }
 
 
-struct UniLoggerSpace {
-    struct ExecutionLogging* pEL;
-
-    int store_file_out_content;
-    int store_list_file_out_content;
-
-    char* szPathLog;
-} ;
 
 
 
@@ -344,7 +353,7 @@ struct ExecutionLogging* GetExecutionLogging(void* privateLoggerPtr)
     struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
     struct ExecutionLogging* pEL = NULL;
     if (pULS != NULL)
-        pEL = pULS->pEL;
+        pEL = (struct ExecutionLogging*)pULS->privateUnloggerPtr;
     return pEL;
 }
 
@@ -352,7 +361,7 @@ struct ExecutionLogging* GetExecutionLogging(void* privateLoggerPtr)
 void SetExecutionLogging(void* privateLoggerPtr,struct ExecutionLogging* pEL)
 {
     struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
-    pULS->pEL = pEL;
+    pULS->privateUnloggerPtr = pEL;
 }
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_before_calling_tool(mainFunc*,int argc,char* argv[],void* privateLoggerPtr)
@@ -898,8 +907,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_copy(const char* name1,const c
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_copy(const char*,const char* name2,int result,void* privateLoggerPtr)
 {
-    struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
-    struct ExecutionLogging* pEL = pULS->pEL;
+    struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
 
     if (result==0)
     {
@@ -977,67 +985,13 @@ const t_logger_func_array logger_func_array =
 } ;
 
 
-class InstallLogger
+/****************************************/
+UNITEX_FUNC int UNITEX_CALL AddActivityLogger(struct UniLoggerSpace *p_ule)
 {
-public:
-    InstallLogger();
-    ~InstallLogger();
-private:
-    struct UniLoggerSpace ule;
-    int init_done;
-};
-
-
-InstallLogger::InstallLogger()
-{
-    init_done = 0;
-    
-    ABSTRACTFILE *af_fin = af_fopen_unlogged("unitex_logging_parameters.txt","rb");
-    if (af_fin!=NULL)
-    {
-        size_t size_param=0;
-
-        if (af_fseek(af_fin, 0, SEEK_END) == 0)
-	    {
-		    size_param = af_ftell(af_fin);
-            af_fseek(af_fin, 0, SEEK_SET);
-        }
-
-        char* param=(char*)malloc(size_param+1);
-        *(param+size_param)=0;
-        if (af_fread(param,1,size_param,af_fin) == size_param)
-        {
-            
-            int write_file_out=0;
-            char*szPath = (char*)malloc(size_param+1);
-            *szPath=0;
-            sscanf(param,"%s\n%u",szPath,&write_file_out);
-            write_file_out+=0;
-            if ((*szPath) != 0)
-            {
-                ule.szPathLog = szPath;
-                ule.store_file_out_content = write_file_out;
-                ule.store_list_file_out_content = 1;
-                if (AddLoggerInfo(&logger_func_array,&ule) != 0)
-                    init_done = 1;
-            }
-            else
-                free(szPath);
-        }
-        af_fclose(af_fin);
-        free(param);        
-    }
-    
+    return AddLoggerInfo(&logger_func_array,p_ule);
 }
 
-InstallLogger::~InstallLogger()
+UNITEX_FUNC int UNITEX_CALL RemoveActivityLogger(struct UniLoggerSpace *p_ule)
 {
-    if (init_done != 0)
-    {
-        RemoveLoggerInfo(&logger_func_array,&ule);
-        free(ule.szPathLog);
-        ule.szPathLog=NULL;
-    }
+    return RemoveLoggerInfo(&logger_func_array,p_ule);
 }
-
-InstallLogger InstallLoggerInst;

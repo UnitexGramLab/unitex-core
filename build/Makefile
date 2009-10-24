@@ -598,7 +598,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
-UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o \
+UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
                   Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
                   AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildTextAutomaton.o CheckDic.o \
@@ -1186,6 +1186,9 @@ FilePackIo.o: ../logger/FilePackIo.cpp
 
 UniLogger.o: ../logger/UniLogger.cpp
 	$(CC) -c ../logger/UniLogger.cpp $(OPTIONS)
+	
+UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
+	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
 
 #
