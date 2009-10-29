@@ -466,10 +466,12 @@ while (c!=EOF) {
    }
    if (c==' ' || c==0x0d || c==0x0a) {
       ENTER=0;
-      if (c==0x0d) ENTER=1;
+      if (c=='\n') {
+         ENTER=1;
+      }
       // if the char is a separator, we jump all the separators
       while ((c=u_fgetc(f))==' ' || c==0x0d || c==0x0a) {
-         if (c==0x0d) ENTER=1;
+         if (c=='\n') ENTER=1;
          COUNT++;
       }
       s[0]=' ';

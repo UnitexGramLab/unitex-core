@@ -444,6 +444,7 @@ while (jump_size!=0) {
       int token_size=0;
       if (RES!=UIMA_ || buffer->int_buffer[i]!=tokens->SENTENCE_MARKER) {
          token_size=token_length[buffer->int_buffer[i]];
+
       }
       (*current_origin_in_chars)=(*current_origin_in_chars)+token_size;
 		(*position_from_eos)=(*position_from_eos)+token_size;
@@ -913,7 +914,7 @@ while (matches!=NULL) {
 	   end_pos_char=end_pos_char+matches->m.end_pos_in_char+1;
 	} else {
 	   /* If we work on just one token, we can set directly start_pos_in_char 
-	    * anf end_pos_in_char. DO NOT SWAP THE FOLLOWING LINES! */
+	    * and end_pos_in_char. DO NOT SWAP THE FOLLOWING LINES! */
 	   end_pos_char=start_pos_char+matches->m.end_pos_in_char+1;
 	   start_pos_char=start_pos_char+matches->m.start_pos_in_char;
 	}

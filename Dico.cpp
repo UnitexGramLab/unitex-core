@@ -342,15 +342,26 @@ save_unknown_words(info);
 save_statistics(encoding_output,bom_output,snt_files->stat_dic_n,info);
 u_printf("Done.\n");
 /* And we free remaining things */
+error("A\n");
 free_alphabet(alphabet);
+error("B\n");
 free_text_tokens(tokens);
+error("C\n");
 if (info->dlf!=NULL) u_fclose(info->dlf);
+error("D\n");
 if (info->dlc!=NULL) u_fclose(info->dlc);
+error("E\n");
 if (info->err!=NULL) u_fclose(info->err);
+error("F\n");
 u_fclose(text_cod);
+error("G\n");
 free_dico_application(info);
+error("H\n");
 free_snt_files(snt_files);
+error("I\n");
 if (morpho_dic!=NULL) free(morpho_dic);
+error("J\n");
 free_OptVars(vars);
+error("K\n");
 return ret;
 }
