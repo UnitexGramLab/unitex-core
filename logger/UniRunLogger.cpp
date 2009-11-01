@@ -101,7 +101,7 @@ InstallLoggerForRunner InstallLoggerForRunnerInstance;
 
 
 
-int mkdir_recursive(const char*dirname)
+int mkdir_recursive(const char*dirname,int iContainOnlyDirName)
 {
   if ((*dirname)!='\0')
   {
@@ -126,7 +126,10 @@ int mkdir_recursive(const char*dirname)
       free(dupname);
   }
 
-  return mkDirPortable(dirname);
+  int ret = 0;
+  if (iContainOnlyDirName != 0)
+      ret = mkDirPortable(dirname);
+  return ret;
 }
 
 /****************************************************************************************/
@@ -230,10 +233,13 @@ int do_extracting_currentfile(
                                 (filename_withoutpath!=(char*)filename_touse))
               if (is_filename_in_abstract_file_space(write_filename)==0)
             {
+                /*
                 char c=*(filename_withoutpath-1);
                 *(filename_withoutpath-1)='\0';
                 mkdir_recursive(write_filename);
                 *(filename_withoutpath-1)=c;
+                */
+                mkdir_recursive(write_filename,0);
                 fout=af_fopen_unlogged(write_filename,"wb");
             }
         }
@@ -356,15 +362,17 @@ char* GetNextLine(char** pLine)
 }
 
 
-int get_max_nb_line_in_file(char*buf,size_t size_file)
+unsigned int get_max_nb_line_in_file(char*buf,size_t size_file)
 {
       size_t walk_arglist;
-      int nb_max_arg_for_allocwide = 1;
+      unsigned int nb_max_arg_for_allocwide = 1;
       for (walk_arglist=0;walk_arglist<size_file;walk_arglist++)
       {
           char c=*(buf+walk_arglist);
           if ((c==0x0d) || (c==0x0a))
               nb_max_arg_for_allocwide ++;
+          if (c==0)
+              break;
       }
       return nb_max_arg_for_allocwide;
 }
@@ -375,6 +383,99 @@ struct ListFile_entry {
     uLong size;
 } ;
 
+struct ListFile {
+    unsigned int iNbFile;
+    unsigned int iNbAllocated;
+    struct ListFile_entry * p_ListFile_entry;
+};
+
+struct ListFile* AllocListFile(unsigned int iNbAlloc)
+{
+    struct ListFile_entry * p_ListFile_entry = 
+        (struct ListFile_entry *)malloc(sizeof(struct ListFile_entry)*(iNbAlloc+1));
+    if (p_ListFile_entry == NULL)
+        return NULL;
+    struct ListFile* p_ListFile = (struct ListFile*)malloc(sizeof(struct ListFile));
+    if (p_ListFile == NULL)
+    {
+        free(p_ListFile_entry);
+        return NULL;
+    }
+    p_ListFile->p_ListFile_entry = p_ListFile_entry;
+    p_ListFile->iNbAllocated = iNbAlloc;
+    p_ListFile->iNbFile = 0;
+
+    return p_ListFile ;
+}
+
+void FreeListFile(struct ListFile* p_ListFile)
+{
+  unsigned int walk;
+  if (p_ListFile != NULL)
+  {
+      for (walk=0;walk < p_ListFile->iNbFile;walk++)
+          free(((p_ListFile->p_ListFile_entry) + walk) -> filename);
+
+      free(p_ListFile->p_ListFile_entry);
+      free(p_ListFile);
+  }
+}
+
+struct ListFile* ReadListFile(char* content,size_t list_out)
+{
+    struct ListFile* p_ListFile;
+    unsigned int max_nb_line = get_max_nb_line_in_file(content,list_out);
+
+    p_ListFile = AllocListFile(max_nb_line+1);
+    if (p_ListFile == NULL)
+        return NULL;
+
+    char *walk_list = content;
+    unsigned int walk;
+    for (walk=0;(walk<max_nb_line);walk++)
+    {
+        char *curLine = GetNextLine(&walk_list);
+        if (curLine == NULL)
+            break;
+        unsigned long lSize=0;
+        unsigned long lCrc=0;
+        char*name=NULL;
+        name=(char*)malloc(strlen(curLine)+1);
+        name[0] = 0;
+        sscanf(curLine,"%lu\t%lx\t%s",&lSize,&lCrc,name);
+
+        if (name[0] != 0)
+        {
+            ((p_ListFile->p_ListFile_entry) + (p_ListFile->iNbFile)) -> crc = lCrc;
+            ((p_ListFile->p_ListFile_entry) + (p_ListFile->iNbFile)) -> size = lSize;
+            ((p_ListFile->p_ListFile_entry) + (p_ListFile->iNbFile)) -> filename = (name);
+            (p_ListFile->iNbFile)++;
+        }
+        else
+        {
+            free(name);
+            break;
+        }
+    }
+    return p_ListFile;
+}
+
+
+void CombineRunPathOnPathName(char* filename_to_write,const char*FileRunPath,int need_add_dir_sep,const char*filename_original)
+{
+      strcpy(filename_to_write,FileRunPath);
+      if (need_add_dir_sep != 0)
+          strcat(filename_to_write,"/");
+      strcat(filename_to_write,filename_original);
+
+      char * browse=filename_to_write;
+      while ((*browse) != '\0')
+      {
+          if (((*browse) == '\\') || ((*browse) == '/'))
+              *browse=PATH_SEPARATOR_CHAR;
+          browse++;
+      }
+}
 
 UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite)
 {
@@ -386,6 +487,9 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
 
     char* list_out_buf = NULL;
     size_t size_list_out = 0;
+
+    struct ListFile* list_file_out = NULL;
+    struct ListFile* list_file_in = NULL;
 
     if (FileRunPath==NULL)
         FileRunPath="";
@@ -406,7 +510,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
     err = unzGetGlobalInfo (uf,&gi);
     if (err==UNZ_OK)
     {
-      struct ListFile_entry* pListIn = (struct ListFile_entry*)malloc(sizeof(struct ListFile_entry) * (gi.number_entry+1));
+      list_file_in = AllocListFile(gi.number_entry);
       int nb_listfile_in=0;
 
       for (i=0;i<gi.number_entry;i++)
@@ -424,6 +528,9 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
               int opt_extract_without_path = 0;
               int opt_overwrite = 1;
               char filename_to_write[256];
+
+              CombineRunPathOnPathName(filename_to_write,FileRunPath,need_add_dir_sep,filename_to_extract);
+              /*
               strcpy(filename_to_write,FileRunPath);
               if (need_add_dir_sep != 0)
                   strcat(filename_to_write,"/");
@@ -436,15 +543,16 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
                       *browse=PATH_SEPARATOR_CHAR;
                   browse++;
               }
-
+*/
               int extres = do_extracting_currentfile(uf,filename_to_write,&opt_extract_without_path,&opt_overwrite,NULL);
 
               if (extres == UNZ_OK)
               {
-                  (pListIn + nb_listfile_in) -> filename = strdup(filename_to_extract);
-                  (pListIn + nb_listfile_in) -> crc = file_info.crc;
-                  (pListIn + nb_listfile_in) -> size = file_info.uncompressed_size;
+                  ((list_file_in->p_ListFile_entry) + nb_listfile_in) -> filename = strdup(filename_to_extract);
+                  ((list_file_in->p_ListFile_entry) + nb_listfile_in) -> crc = file_info.crc;
+                  ((list_file_in->p_ListFile_entry) + nb_listfile_in) -> size = file_info.uncompressed_size;
                   nb_listfile_in++;
+                  list_file_in->iNbFile = nb_listfile_in;
               }
           }
 /*
@@ -456,6 +564,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
           if (strcmp(filename_inzip,"test_info/list_file_out.txt")==0)
           {
               do_extracting_currentfile_memory(uf,(void**)&list_out_buf,&size_list_out,NULL);
+              list_file_out = ReadListFile(list_out_buf,size_list_out);
           }
 
           if (strcmp(filename_inzip,"test_info/command_line.txt")==0)
@@ -523,6 +632,16 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
       if (LogNameWrite != NULL)
           InstallLoggerForRunnerInstance.SelectNextLogName(LogNameWrite,FileRunPath);
 
+      unsigned int walk_list_out;
+      for (walk_list_out = 0;walk_list_out < list_file_out->iNbFile;walk_list_out++)
+      {
+          const char* filename_out = ((list_file_out->p_ListFile_entry) + walk_list_out) -> filename;
+          const char* filename_out_usable = get_filename_to_copy(filename_out);
+          char filename_to_be_written[256];
+          CombineRunPathOnPathName(filename_to_be_written,FileRunPath,need_add_dir_sep,filename_out_usable);
+          mkdir_recursive(filename_to_be_written,0);
+      }
+
       main_UnitexTool_C(argc_log+1,(char**)argv_log_reworked);
 
 
@@ -540,12 +659,8 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
       if (list_out_buf != NULL)
           free(list_out_buf);
 
-      if (pListIn != NULL)
-      {
-          for (walk=0;walk<nb_listfile_in;walk++)
-              free((pListIn + walk) -> filename);
-          free(pListIn);
-      }
+      FreeListFile(list_file_out);
+      FreeListFile(list_file_in);
     }
 
     return 0;
