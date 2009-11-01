@@ -647,6 +647,8 @@ for (i=1;i<fst2->number_of_graphs+1;i++) {
 }
 free_abstract_Fst2(fst2,&fst2_free);
 u_printf("Recursion detection completed\n");
+free(conditions);
+free(graphs_matching_E);
 if (ERROR) return LEFT_RECURSION;
 return NO_LEFT_RECURSION;
 }

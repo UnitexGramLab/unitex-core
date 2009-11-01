@@ -958,6 +958,7 @@ void SU_delete_inflection(SU_forms_T* forms) {
 		free(forms->forms[f].form);
 		free(forms->forms[f].features);
 	}
+    free(forms->forms);
 }
 
 ////////////////////////////////////////////
@@ -1118,6 +1119,8 @@ int SU_delete_id(SU_id_T* id) {
 	free(id->form);
 	if (id->lemma)
 		SU_delete_lemma(id->lemma);
+    if (id->feat)
+        f_delete_morpho(id->feat);
 	free(id);
 	return 0;
 }

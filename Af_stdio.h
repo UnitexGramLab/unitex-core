@@ -33,6 +33,8 @@ struct _ABSTRACTFILE {
         };
 typedef struct _ABSTRACTFILE ABSTRACTFILE;
 
+int is_filename_in_abstract_file_space(const char*name);
+
 size_t af_fread(void *ptr,size_t size,size_t nmemb,ABSTRACTFILE *stream);
 
 size_t af_fwrite(const void *ptr,size_t size,size_t nmemb,ABSTRACTFILE *stream);

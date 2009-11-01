@@ -229,6 +229,10 @@ err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,encoding_ou
             config_files_status,&D_CLASS_EQUIV,
 		    error_check_status,jamo,jamo2syl);
 MU_graph_free_graphs(p_multiFlex_ctx);
+for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fst2++) {
+    free_abstract_Fst2(p_multiFlex_ctx->fst2[count_free_fst2],&(p_multiFlex_ctx->fst2_free[count_free_fst2]));
+    p_multiFlex_ctx->fst2[count_free_fst2] = NULL;
+}
 free_alphabet(alph);
 free_language_morpho(pL_MORPHO);
 free_OptVars(vars);

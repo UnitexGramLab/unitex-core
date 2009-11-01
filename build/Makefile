@@ -85,6 +85,8 @@ TRE_TGZ = ../tre-0.8.0.tar.gz
 TRE_TEMP = $(TRE_SRC)/TEMP
 INSTALL_COMMAND = make install
 
+SYSLIBLOGGER = DirLoggerPosix.o SyncLoggerPosix.o
+
 #APPDIR = where to install binaries
 APPDIR = ../../../App
 
@@ -114,7 +116,7 @@ endif
 override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I"../korean" -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
-LIBS   = -Llibtre/lib -ltre
+LIBS   = -Llibtre/lib -ltre -lpthread
 
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -188,6 +190,8 @@ ifeq ($(LIBRARY),yes)
 CFLAGS += -DUNITEX_LIBRARY
 endif
 
+SYSLIBLOGGER = DirLoggerWin.o SyncLoggerWin.o
+
 APPDIR = ../../../App
 
 OPTIONS = $(CFLAGS) $(LDFLAGS) $(LIBS)
@@ -220,6 +224,7 @@ CC_GCC = gcc.exe
 AR   = ar.exe
 endif
 
+SYSLIBLOGGER = DirLoggerWin.o SyncLoggerWin.o
 
 APPDIR = ../../../App
 
@@ -599,7 +604,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
 UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o UniLoggerAutoInstall.o \
-                  Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
+                  FileUnPack.o ReworkArg.o UniRunLogger.o $(SYSLIBLOGGER) \
+                  Main_UnitexToolLogger.o UnitexTool.o AbstractDelaLoad.o AbstractFst2Load.o Alphabet.o ApplyDic.o AsciiSearchTree.o \
                   AutComplementation.o AutConcat.o AutDeterminization.o AutIntersection.o AutMinimization.o \
                   AutomatonDictionary2Bin.o BitArray.o BitMasks.o Buffer.o BuildTextAutomaton.o CheckDic.o \
                   CodePages.o CompoundWordHashTable.o CompoundWordTree.o Compress.o Concord.o Concordance.o \
@@ -1175,6 +1181,15 @@ $(BIN_DIR)$(EXTRACTCHAR)$(EXTENSION): $(EXTRACTCHAR_OBJS)
 # Compilation instructions for Logger
 #
 
+FileUnPack.o: ../logger/FileUnPack.cpp
+	$(CC) -c ../logger/FileUnPack.cpp $(OPTIONS)
+
+ReworkArg.o: ../logger/ReworkArg.cpp
+	$(CC) -c ../logger/ReworkArg.cpp $(OPTIONS)
+
+UniRunLogger.o: ../logger/UniRunLogger.cpp
+	$(CC) -c ../logger/UniRunLogger.cpp $(OPTIONS)
+
 FilePack.o: ../logger/FilePack.cpp
 	$(CC) -c ../logger/FilePack.cpp $(OPTIONS)
 
@@ -1187,6 +1202,21 @@ FilePackIo.o: ../logger/FilePackIo.cpp
 UniLogger.o: ../logger/UniLogger.cpp
 	$(CC) -c ../logger/UniLogger.cpp $(OPTIONS)
 	
+SyncLoggerWin.o: ../logger/SyncLoggerWin.cpp
+	$(CC) -c ../logger/SyncLoggerWin.cpp $(OPTIONS)
+
+SyncLoggerPosix.o: ../logger/SyncLoggerPosix.cpp
+	$(CC) -c ../logger/SyncLoggerPosix.cpp $(OPTIONS)
+
+SyncLoggerDummy.o: ../logger/SyncLoggerDummy.cpp
+	$(CC) -c ../logger/SyncLoggerDummy.cpp $(OPTIONS)
+
+DirLoggerWin.o: ../logger/DirLoggerWin.cpp
+	$(CC) -c ../logger/DirLoggerWin.cpp $(OPTIONS)
+
+DirLoggerPosix.o: ../logger/DirLoggerPosix.cpp
+	$(CC) -c ../logger/DirLoggerPosix.cpp $(OPTIONS)
+
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 

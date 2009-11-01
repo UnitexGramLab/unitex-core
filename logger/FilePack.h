@@ -81,23 +81,7 @@ extern "C" {
 #else
 
 
-#define _ZLIB_H
-#define ZEXPORT
-
-#ifndef OF /* function prototypes */
-#if defined(STDC) || (defined(__STDC__) || defined(__cplusplus))
-#    define OF(args)  args
-#  else
-#    define OF(args)  ()
-#  endif
-#endif
-
-typedef unsigned long  uInt; /* 32 bits or more */
-typedef unsigned long  uLong; /* 32 bits or more */
-typedef unsigned char  Byte;  /* 8 bits */
-typedef unsigned char  Bytef;  /* 8 bits */
-typedef void *voidp;
-typedef void *voidpf;
+#include "FilePackType.h"
 
 #endif
 

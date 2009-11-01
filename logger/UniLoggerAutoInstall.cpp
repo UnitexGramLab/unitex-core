@@ -70,10 +70,16 @@ InstallLogger::InstallLogger()
             write_file_out+=0;
             if ((*szPath) != 0)
             {
-                ule.privateUnloggerPtr = NULL;
+                ule.privateUnloggerData = NULL;
                 ule.szPathLog = szPath;
                 ule.store_file_out_content = write_file_out;
                 ule.store_list_file_out_content = 1;
+
+                ule.store_file_in_content = 1;
+                ule.store_list_file_in_content = 1;
+
+                ule.auto_increment_logfilename = 1;
+
                 if (AddActivityLogger(&ule) != 0)
                     init_done = 1;
             }
@@ -95,4 +101,4 @@ InstallLogger::~InstallLogger()
     }
 }
 
-InstallLogger InstallLoggerInst;
+InstallLogger InstallLoggerInstance;

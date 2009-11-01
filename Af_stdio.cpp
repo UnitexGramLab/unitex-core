@@ -292,7 +292,6 @@ UNITEX_FUNC int UNITEX_CALL SetStdInCB(t_fnc_stdIn fnc_stdInRead,void* privatePt
 
 UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_privatePtr)
 {
-
 	if (p_fnc_stdInRead != NULL)
 		*p_fnc_stdInRead = stdin_param.fnc_stdIn;
 
@@ -300,6 +299,20 @@ UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_
 		*p_privatePtr = stdin_param.privatePtr ;
 
 	return 1;
+}
+
+
+/*
+ * is_filename_in_abstract_file_space return 
+       0 if a filename is a file opened with fopen
+       1 if a filename use an installed abstract filespace
+ */
+int is_filename_in_abstract_file_space(const char*name)
+{
+    const AbstractFileSpace * pafs ;
+    pafs = GetFileSpaceForFileName(name);
+
+    return (pafs == NULL) ? 0 : 1;
 }
 
 /*****************************************************************************/

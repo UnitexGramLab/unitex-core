@@ -381,6 +381,9 @@ int free_language_morpho(struct l_morpho_t* pL_MORPHO) {
     for (c=0; c<pL_MORPHO->L_CLASSES.no_classes; c++)
       free(pL_MORPHO->L_CLASSES.classes[c].name);
 
+    if (pL_MORPHO->lf != NULL)
+        u_fclose(pL_MORPHO->lf);
+
     free(pL_MORPHO);
   }
   return 0;

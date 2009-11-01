@@ -95,6 +95,7 @@ int d_init_morpho_equiv(struct l_morpho_t* pL_MORPHO,char* equiv_file) {
   if (u_fgets(line,MAX_EQUIV_LINE-1,ef)!=EOF) {
     line_no++;
   } else {
+   u_fclose(ef);
    return 1;
   }
 
@@ -107,6 +108,7 @@ int d_init_morpho_equiv(struct l_morpho_t* pL_MORPHO,char* equiv_file) {
     }
     if (line[0]!='\0' && d_read_line(pL_MORPHO,line,line_no)) return 1;
   }
+  u_fclose(ef);
   return 0;
 }
 

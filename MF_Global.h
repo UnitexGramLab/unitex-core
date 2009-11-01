@@ -29,6 +29,7 @@
 
 #include "MF_InflectTransdBase.h"
 #include "MF_MU_morphoBase.h"
+#include "MF_UnifBase.h"
 
 typedef struct {
 
@@ -59,6 +60,8 @@ MU_lemma_T* MU_lemma;
 
 unichar Variables_op[22][100];
 int save_pos;
+
+unif_vars_T UNIF_VARS;
 } MultiFlex_ctx;
 
 #endif

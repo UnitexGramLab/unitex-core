@@ -73,7 +73,7 @@ int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_
  p_multiFlex_ctx->MU_lemma = MU_l;
 
  //Initialize the structure for graph unification variables
-  unif_init_vars();
+  unif_init_vars(p_multiFlex_ctx);
 
   //Get the initial state of the inflection tranducer
   Fst2State initial;
@@ -85,7 +85,7 @@ int MU_graph_explore_graph(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_
   //Explore the inflection transducer starting from its initial state
   res=MU_graph_explore_state(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,initial,forms);
 
-  unif_free_vars();
+  unif_free_vars(p_multiFlex_ctx);
   return res;
 }
 
@@ -130,7 +130,7 @@ Fst2State MU_graph_get_initial(MultiFlex_ctx* p_multiFlex_ctx,char* graph_name,E
 // Return a number !=0 in case of errors, 0 otherwise.
 int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,Fst2State q, MU_forms_T* forms) {
   int err;
-  MU_graph_label_T* l;
+  MU_graph_label_T* lab;
   Fst2State q_bis;
 
   //If we are in a final state, then the empty word is recognized, we add it to 'forms' and we continue to explore
@@ -143,18 +143,18 @@ int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_
 
   t = q->transitions;
   while (t) {
-    l = (MU_graph_label_T*) malloc(sizeof(MU_graph_label_T));
-    if (!l) {
+    lab = (MU_graph_label_T*) malloc(sizeof(MU_graph_label_T));
+    if (!lab) {
        fatal_alloc_error("MU_graph_explore_state");
     }
     q_bis = p_multiFlex_ctx->fst2[p_multiFlex_ctx->T]->states[t->state_number];  //get the arrival state
     Fst2Tag e = p_multiFlex_ctx->fst2[p_multiFlex_ctx->T]->tags[t->tag_number];  //get the transition's label
-    err = MU_graph_scan_label(p_multiFlex_ctx,pL_MORPHO,e->input,e->output,l);  //transform the label into a MU_graph_label
+    err = MU_graph_scan_label(p_multiFlex_ctx,pL_MORPHO,e->input,e->output,lab);  //transform the label into a MU_graph_label
     if (err)
       return err;
     //Initialize the set of inflected forms
     MU_init_forms(&forms_bis);
-    err = MU_graph_explore_label(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,l,q_bis,&forms_bis);
+    err = MU_graph_explore_label(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,lab,q_bis,&forms_bis);
     if (err) {
       MU_delete_inflection(&forms_bis);
       return err;
@@ -163,8 +163,11 @@ int MU_graph_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_
     //Add each new form to the one generated previously, if it does not exist already
     MU_merge_forms(forms, &forms_bis);
 
+    MU_delete_inflection(&forms_bis);
+
     //Free the current label
-    MU_graph_free_label(l);
+    MU_graph_free_label(lab);
+    free(lab);
 
     //Go to the next transition
     t = t->next;
@@ -442,15 +445,15 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,struct 
   //Instantiate the variable if necessary
   unichar* var;
   var = c->val.inherit_var;  //get the identifier of the variable, e.g. g1
-  if (unif_instantiated(var)) {
+  if (unif_instantiated(p_multiFlex_ctx,var)) {
     //If the same variable already instantiated to a DIFFERENT value then cut off the exploration path
     //The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
-    if ( (unif_get_cat(var)!=c->cat) || (unif_get_val_index(var)!=val))
+    if ( (unif_get_cat(p_multiFlex_ctx,var)!=c->cat) || (unif_get_val_index(p_multiFlex_ctx,var)!=val))
       return 0;
     //If variable already instantiated to the same value, no further instantiation needed
   }
   else {  //Variable not yet instantiated
-    err = unif_instantiate_index(var,c->cat,val);
+    err = unif_instantiate_index(p_multiFlex_ctx,var,c->cat,val);
     if (err)
       return err;
     new_instant = 1;
@@ -468,7 +471,7 @@ int MU_graph_explore_label_in_morph_inher(MultiFlex_ctx* p_multiFlex_ctx,struct 
 
   //Desinstantiate the variable only if it has been instantiated by the current category-value pair 'c'
   if (new_instant)
-    unif_desinstantiate(var);
+    unif_desinstantiate(p_multiFlex_ctx,var);
 
   err = f_del_one_morpho(feat, c->cat);
   return err;
@@ -501,15 +504,15 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l
   //  if (err)
   //    return err;
 
-  if (unif_instantiated(var)) {
+  if (unif_instantiated(p_multiFlex_ctx,var)) {
     //If the same variable already instantiated for a DIFFERENT category then cut off the exploration path
     //The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
-    if (unif_get_cat(var)!=c->cat)
+    if (unif_get_cat(p_multiFlex_ctx,var)!=c->cat)
       return 0;
 
     //If the same variable already instantiated for the same category, only this instantiation is taken into account
     //Add the instantiated category-value pair to the features of the single unit to be generated
-    err = f_add_morpho(feat,c->cat,unif_get_val_index(var));
+    err = f_add_morpho(feat,c->cat,unif_get_val_index(p_multiFlex_ctx,var));
     if (err == -1) {
       error(" in graph %s.\n",p_multiFlex_ctx->MU_lemma->paradigm);
       MU_delete_inflection(forms);
@@ -533,7 +536,7 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l
     for (val=0; val<c->cat->no_values; val++) {
 
       //Instantiated to the current value
-      unif_instantiate_index(var,c->cat,val);
+      unif_instantiate_index(p_multiFlex_ctx,var,c->cat,val);
 
       //Add the the instantiated category-value pair to the features of the single unit to be generated
       err = f_add_morpho(feat, c->cat, val);
@@ -564,7 +567,7 @@ int MU_graph_explore_label_in_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct l
       }
 
       //Delete the current instantiation
-      unif_desinstantiate(var);
+      unif_desinstantiate(p_multiFlex_ctx,var);
 
       //Delete the intermediate simple et compound forms
       MU_delete_inflection(&suffix_forms);
@@ -699,15 +702,15 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct 
   unichar* var;  //Unification variable's identifier
   var = c->val.unif_var;
 
-  if (unif_instantiated(var)) {
+  if (unif_instantiated(p_multiFlex_ctx,var)) {
     //If the same variable already instantiated for a DIFFERENT category then cut off the exploration path
     //The 'forms' remain empty list as they were (which is not equivalent to a list containing (epsilon,empty_set)
-    if (unif_get_cat(var)!=c->cat)
+    if (unif_get_cat(p_multiFlex_ctx,var)!=c->cat)
       return 0;
 
     //If the same variable already instantiated for the same category, only this instantiation is taken into account
     //Add the the instantiated category-value pair to the features of the single unit to be generated
-    err = f_add_morpho(feat,c->cat,unif_get_val_index(var));
+    err = f_add_morpho(feat,c->cat,unif_get_val_index(p_multiFlex_ctx,var));
     if (err == -1) {
       error(" in graph %s.\n",p_multiFlex_ctx->MU_lemma->paradigm);
       MU_delete_inflection(forms);
@@ -730,7 +733,7 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct 
     for (val=0; val<c->cat->no_values; val++) {
 
       //Instantiated to the current value
-      unif_instantiate_index(var,c->cat,val);
+      unif_instantiate_index(p_multiFlex_ctx,var,c->cat,val);
 
       //Add the the instantiated category-value pair to the features of the single unit to be generated
       err = f_add_morpho(feat,c->cat,val);   //e.g. 'feat' devient <Nb=pl; Case=Nom; Gen=fem>
@@ -754,7 +757,7 @@ int MU_graph_explore_label_out_morph_unif(MultiFlex_ctx* p_multiFlex_ctx,struct 
       f_del_one_morpho(feat, c->cat);
 
       //Delete the current instantiation
-      unif_desinstantiate(var);
+      unif_desinstantiate(p_multiFlex_ctx,var);
     }
   }
   return 0;
@@ -1134,8 +1137,10 @@ void MU_graph_free_label(MU_graph_label_T* MU_label) {
   if (MU_label->in) {
     if (MU_label->in->unit.type == cst)
       free(MU_label->in->unit.u.seq);
-    if (MU_label->in->morpho)
+    if (MU_label->in->morpho) {
       MU_graph_free_morpho(MU_label->in->morpho);
+      free(MU_label->in->morpho);
+    }
     free(MU_label->in);
   }
   //Free the label's output

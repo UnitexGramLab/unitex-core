@@ -35,16 +35,23 @@ extern "C" {
 
 
 struct UniLoggerSpace {
-    void* privateUnloggerPtr;
+    void* privateUnloggerData;
 
     int store_file_out_content;
     int store_list_file_out_content;
+
+    int store_file_in_content;
+    int store_list_file_in_content;
+
+    int auto_increment_logfilename;
 
     char* szPathLog;
 } ;
 
 UNITEX_FUNC int UNITEX_CALL AddActivityLogger(struct UniLoggerSpace *p_ule);
 UNITEX_FUNC int UNITEX_CALL RemoveActivityLogger(struct UniLoggerSpace *p_ule);
+
+UNITEX_FUNC int UNITEX_CALL SelectNextLogName(struct UniLoggerSpace *p_ule,const char* LogName,const char* portion_ignore_pathname);
 
 
 #ifdef __cplusplus

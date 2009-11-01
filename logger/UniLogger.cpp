@@ -39,9 +39,12 @@
 #include "File.h"
 
 #include "FilePack.h"
+#include "FilePackIo.h"
 #include "FilePackCrc32.h"
 
 #include "UniLogger.h"
+#include "SyncLogger.h"
+#include "ReworkArg.h"
 
 struct ArrayExpanding {    
     unsigned int nb_item_filled;
@@ -127,6 +130,15 @@ unsigned int GetNbItemPtrArrayExpanding(struct ArrayExpanding* pAE)
 }
 
 
+void FlushOutData(const void*Buf, size_t size,
+                  struct ArrayExpanding* pAEWrite)
+{
+    unsigned int previous_size = GetNbItemPtrArrayExpanding(pAEWrite);
+    if (ExpandArrayExpanding(pAEWrite,(unsigned int)(previous_size + size + 0x00)) == 1)
+    {
+        memcpy(GetItemPtrArrayExpanding(pAEWrite,previous_size),Buf,size);
+    }
+}
 
 /***********************************************************************************/
 
@@ -151,12 +163,20 @@ struct ExecutionLogging {
     struct ArrayExpanding* pAE_FileToWrite;
     struct ArrayExpanding* pAE_StdOut;
     struct ArrayExpanding* pAE_StdErr;
+
+    struct ArrayExpanding* pAE_FileReadList;
     int argc;
     char** argv;
     zipFile zf;
+    zlib_filefunc_def zlib_filefunc;
 
     int store_file_out_content;
     int store_list_file_out_content;
+
+    int store_file_in_content;
+    int store_list_file_in_content;
+
+    char* portion_ignore_pathname;
 } ;
 
 /***********************************************************************************/
@@ -196,15 +216,18 @@ int AddFileInFileToReadArray(struct ExecutionLogging* pEL,const char*fn)
 
 void CleanFileReadArray(struct ExecutionLogging* pEL)
 {
-    unsigned int nbItem=GetNbItemPtrArrayExpanding(pEL->pAE_FileReading);
-    unsigned int i;
-    for (i=0;i<nbItem;i++)
+    if (pEL->pAE_FileReading != NULL)
     {
-        struct FileReadingInfoItem* pFrif = (struct FileReadingInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileReading,i);
-        free((void*)pFrif->FileName);
+        unsigned int nbItem=GetNbItemPtrArrayExpanding(pEL->pAE_FileReading);
+        unsigned int i;
+        for (i=0;i<nbItem;i++)
+        {
+            struct FileReadingInfoItem* pFrif = (struct FileReadingInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileReading,i);
+            free((void*)pFrif->FileName);
+        }
+        FreeArrayExpanding(pEL->pAE_FileReading);
+        pEL->pAE_FileReading=NULL;
     }
-    FreeArrayExpanding(pEL->pAE_FileReading);
-    pEL->pAE_FileReading=NULL;
 }
 
 
@@ -263,29 +286,33 @@ void RemoveFileFileOnWriteArray(struct ExecutionLogging* pEL,const char*fn)
 
 void CleanFileWriteArray(struct ExecutionLogging* pEL)
 {
-    unsigned int nbItem=GetNbItemPtrArrayExpanding(pEL->pAE_FileToWrite);
-    unsigned int i;
-    for (i=0;i<nbItem;i++)
+    if (pEL->pAE_FileToWrite != NULL)
     {
-        struct FileToWriteInfoItem* pFrif = (struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite,i);
-        free((void*)pFrif->FileName);
-    }
+        unsigned int nbItem=GetNbItemPtrArrayExpanding(pEL->pAE_FileToWrite);
+        unsigned int i;
+        for (i=0;i<nbItem;i++)
+        {
+            struct FileToWriteInfoItem* pFrif = (struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite,i);
+            free((void*)pFrif->FileName);
+        }
 
-    FreeArrayExpanding(pEL->pAE_FileToWrite);
-    pEL->pAE_FileToWrite=NULL;
+        FreeArrayExpanding(pEL->pAE_FileToWrite);
+        pEL->pAE_FileToWrite=NULL;
+    }
 }
+
 /***********************************************************************************/
 
 struct ExecutionLogging* InitExecutionLogging(const char*pathZip)
 {
     struct ExecutionLogging* pEL;
 
-
     pEL = (struct ExecutionLogging*)malloc(sizeof(struct ExecutionLogging));
     if (pEL==NULL)
         return NULL;
 
-    pEL->zf=zipOpen(pathZip,APPEND_STATUS_CREATE);
+    fill_afopen_filefunc(&(pEL->zlib_filefunc));
+    pEL->zf=zipOpen2(pathZip,APPEND_STATUS_CREATE,NULL,&(pEL->zlib_filefunc));
     if (pEL->zf==NULL)
     {
         free(pEL);
@@ -297,12 +324,25 @@ struct ExecutionLogging* InitExecutionLogging(const char*pathZip)
 
     pEL->pAE_StdOut = InitArrayExpanding(sizeof(char),0);
     pEL->pAE_StdErr = InitArrayExpanding(sizeof(char),0);
-    if ((pEL->pAE_StdOut == NULL) || (pEL->pAE_StdErr == NULL) || (pEL->pAE_FileReading == NULL) || (pEL->pAE_FileToWrite == NULL))
+    pEL->pAE_FileReadList = InitArrayExpanding(sizeof(char),0);
+
+    pEL->argc = 0;
+    pEL->argv = NULL;
+
+    pEL -> store_file_out_content = pEL -> store_list_file_out_content = 
+    pEL -> store_file_in_content = pEL -> store_list_file_in_content = 0;
+
+    pEL->portion_ignore_pathname = NULL;
+
+    if ((pEL->pAE_StdOut == NULL) || (pEL->pAE_StdErr == NULL) ||
+        (pEL->pAE_FileReading == NULL) || (pEL->pAE_FileToWrite == NULL) ||
+        (pEL->pAE_FileReadList == NULL))
     {
         FreeArrayExpanding(pEL->pAE_StdOut);
         FreeArrayExpanding(pEL->pAE_StdErr);
         FreeArrayExpanding(pEL->pAE_FileReading);
         FreeArrayExpanding(pEL->pAE_FileToWrite);
+        FreeArrayExpanding(pEL->pAE_FileReadList);
         zipClose(pEL->zf,"");
         free(pEL);
         return NULL;
@@ -348,95 +388,192 @@ char* buildDupFileNameWithPrefixDir(const char*szPathPrefix,const char*fn)
     return szRet;
 }
 
-struct ExecutionLogging* GetExecutionLogging(void* privateLoggerPtr)
+/****************************************************************************/
+
+
+struct ActivityLoggerPrivateData
+{
+    struct UniLoggerSpace ule;
+    SYNC_TLS_OBJECT pTlsSlot;
+    SYNC_Mutex_OBJECT pMutexLog;
+} ;
+
+struct ExecutionLogging* BuildAllocInitExecutionLogging(void* privateLoggerPtr,const char* szLogFileName)
 {
     struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
-    struct ExecutionLogging* pEL = NULL;
-    if (pULS != NULL)
-        pEL = (struct ExecutionLogging*)pULS->privateUnloggerPtr;
+    if (pULS == NULL)
+        return NULL;
+    struct ActivityLoggerPrivateData* pALPD = (struct ActivityLoggerPrivateData*) pULS->privateUnloggerData;
+
+    struct ExecutionLogging* pEL = (struct ExecutionLogging*)SyncTlsGetValue(pALPD->pTlsSlot);
+    if (pEL != NULL)
+        return pEL;
+
+    pEL=InitExecutionLogging(szLogFileName);
+        
+    if (pEL == NULL)
+        return NULL;
+
+    pEL->store_file_out_content = pULS->store_file_out_content;
+    pEL->store_list_file_out_content = pULS->store_list_file_out_content;
+
+    pEL->store_file_in_content = pULS->store_file_in_content;
+    pEL->store_list_file_in_content = pULS->store_list_file_in_content;
+
+    SyncTlsSetValue(pALPD->pTlsSlot,(void*)pEL);
     return pEL;
 }
 
 
+struct ExecutionLogging* GetExecutionLogging(void* privateLoggerPtr)
+{
+    struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
+    if (pULS == NULL)
+        return NULL;
+    struct ActivityLoggerPrivateData* pALPD = (struct ActivityLoggerPrivateData*) pULS->privateUnloggerData;
+
+    struct ExecutionLogging* pEL = (struct ExecutionLogging*)SyncTlsGetValue(pALPD->pTlsSlot);
+    return pEL;
+}
+
+void FreeExecutionLogging(void* privateLoggerPtr)
+{
+    struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
+    if (pULS == NULL)
+        return ;
+    struct ActivityLoggerPrivateData* pALPD = (struct ActivityLoggerPrivateData*) pULS->privateUnloggerData;
+
+    struct ExecutionLogging* pEL = (struct ExecutionLogging*)SyncTlsGetValue(pALPD->pTlsSlot);
+    if (pEL != NULL)
+    {
+        int i;
+        if (pEL->zf != NULL)
+            zipClose(pEL->zf,NULL);
+        pEL->zf=NULL;
+
+        for (i=0;i<(pEL->argc);i++)
+        {
+            free(*(pEL->argv+i));
+        }
+
+        free(pEL->argv);
+        pEL->argc = 0;
+        pEL->argv = NULL;
+
+        CleanFileReadArray(pEL);
+        CleanFileWriteArray(pEL);
+        FreeArrayExpanding(pEL->pAE_StdOut);
+        pEL->pAE_StdOut = NULL;
+        FreeArrayExpanding(pEL->pAE_StdErr);
+        pEL->pAE_StdErr = NULL;
+
+        FreeArrayExpanding(pEL->pAE_FileReadList);
+        pEL->pAE_FileReadList = NULL;
+
+        if (pEL->portion_ignore_pathname != NULL)
+            free(pEL->portion_ignore_pathname);
+        pEL->portion_ignore_pathname = NULL;
+
+        free(pEL);
+        SyncTlsSetValue(pALPD->pTlsSlot,NULL);
+    }
+    return ;
+}
+
+/*
 void SetExecutionLogging(void* privateLoggerPtr,struct ExecutionLogging* pEL)
 {
     struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
     pULS->privateUnloggerPtr = pEL;
-}
+}*/
 
-void ABSTRACT_CALLBACK_UNITEX UniLogger_before_calling_tool(mainFunc*,int argc,char* argv[],void* privateLoggerPtr)
+UNITEX_FUNC int UNITEX_CALL SelectNextLogName(struct UniLoggerSpace *p_ule,const char* szLogFileName,const char* portion_ignore_pathname)
 {
-    struct ExecutionLogging* pEL ;
+    void* privateLoggerPtr = (void*)p_ule;
+    struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
 
+    if (pEL != NULL)
+        return 0;
+
+    pEL=BuildAllocInitExecutionLogging(privateLoggerPtr,szLogFileName);
+
+    if (pEL == NULL)
+        return 0;
+
+    if (portion_ignore_pathname != NULL)
     {
-        struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
-        unsigned int current_number=0;
-
-        const char* szNumFile = buildDupFileNameWithPrefixDir(pULS->szPathLog,"unitex_logging_parameters_count.txt");
-
-        /* here : we will need protect with a mutex */
-        ABSTRACTFILE *af_fin = af_fopen_unlogged(szNumFile,"rb");
-        if (af_fin!=NULL)
-        {
-            size_t size_num_file=0;
-
-            if (af_fseek(af_fin, 0, SEEK_END) == 0)
-	        {
-		        size_num_file = af_ftell(af_fin);
-                af_fseek(af_fin, 0, SEEK_SET);
-            }
-
-            char* buf_num_file=(char*)malloc(size_num_file+1);
-            *(buf_num_file+size_num_file)=0;
-            if (af_fread(buf_num_file,1,size_num_file,af_fin) == size_num_file)
-            {
-                sscanf(buf_num_file,"%u",&current_number);
-            }
-            af_fclose(af_fin);
-            free(buf_num_file);        
-        }
-
-        current_number++;
-    
-
-        ABSTRACTFILE *af_fout = af_fopen_unlogged(szNumFile,"wb");
-        if (af_fout!=NULL)
-        {
-            char szNumOut[32];
-            sprintf(szNumOut,"%010u",current_number);
-            af_fwrite(szNumOut,1,strlen(szNumOut),af_fout);
-            af_fclose(af_fout);
-        }
-        free((void*)szNumFile);
-
-        char szNumFileSuffix[64];
-        sprintf(szNumFileSuffix,"unitex_log_%08u.ulp",current_number);
-        const char* szLogFileName = buildDupFileNameWithPrefixDir(pULS->szPathLog,szNumFileSuffix);
-
-        pEL=InitExecutionLogging(szLogFileName);
-        free((void*)szLogFileName);
-        if (pEL == NULL)
-            return;
-
-        pEL->store_file_out_content = pULS->store_file_out_content;
-        pEL->store_list_file_out_content = pULS->store_list_file_out_content;
-
+        pEL ->portion_ignore_pathname = strdup(portion_ignore_pathname);
     }
-    
 
-    SetExecutionLogging(privateLoggerPtr,pEL);
-
-    pEL->argc = argc;
-    pEL->argv=(char**)malloc((sizeof(char*)*(argc+1)));
-
-    int i;
-    for (i=0;i<argc;i++)
-    {
-        *(pEL->argv+i)=(char*)malloc(strlen(argv[i])+1);
-        strcpy(*(pEL->argv+i),argv[i]);
-    }
-    *(pEL->argv+argc)=NULL;
+    return 1;
 }
+
+
+static struct ExecutionLogging* BuildAllocInitExecutionLoggingForIncrementedNumber(void* privateLoggerPtr)
+{
+    struct ExecutionLogging* pEL = NULL;
+ 
+    struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
+    struct ActivityLoggerPrivateData* pALPD = (struct ActivityLoggerPrivateData*) pULS->privateUnloggerData;
+
+
+    if (pULS -> auto_increment_logfilename == 0)
+    {
+        return NULL;
+    }
+    /* we take a mutex, to be sure two thread don't increment and use same number at same time */
+    SyncGetMutex(pALPD->pMutexLog);
+
+    unsigned int current_number = 0;
+    const char* szNumFile = buildDupFileNameWithPrefixDir(pULS->szPathLog,"unitex_logging_parameters_count.txt");
+
+    /* here : we will need protect with a mutex */
+    ABSTRACTFILE *af_fin = af_fopen_unlogged(szNumFile,"rb");
+    if (af_fin!=NULL)
+    {
+        size_t size_num_file=0;
+
+        if (af_fseek(af_fin, 0, SEEK_END) == 0)
+        {
+	        size_num_file = af_ftell(af_fin);
+            af_fseek(af_fin, 0, SEEK_SET);
+        }
+
+        char* buf_num_file=(char*)malloc(size_num_file+1);
+        *(buf_num_file+size_num_file)=0;
+        if (af_fread(buf_num_file,1,size_num_file,af_fin) == size_num_file)
+        {
+            sscanf(buf_num_file,"%u",&current_number);
+        }
+        af_fclose(af_fin);
+        free(buf_num_file);        
+    }
+
+    current_number++;
+
+
+    ABSTRACTFILE *af_fout = af_fopen_unlogged(szNumFile,"wb");
+    if (af_fout!=NULL)
+    {
+        char szNumOut[32];
+        sprintf(szNumOut,"%010u",current_number);
+        af_fwrite(szNumOut,1,strlen(szNumOut),af_fout);
+        af_fclose(af_fout);
+    }
+    free((void*)szNumFile);
+
+    SyncReleaseMutex(pALPD->pMutexLog);
+
+    char szNumFileSuffix[64];
+    sprintf(szNumFileSuffix,"unitex_log_%08u.ulp",current_number);
+    const char* szLogFileName = buildDupFileNameWithPrefixDir(pULS->szPathLog,szNumFileSuffix);
+
+    pEL=BuildAllocInitExecutionLogging(privateLoggerPtr,szLogFileName);
+    free((void*)szLogFileName);
+
+    return pEL;
+}
+
 
 int DumpFileToPack(struct ExecutionLogging* pEL,const char* filename,const char* prefix,unsigned int*size_done,unsigned long*crc)
 {
@@ -459,7 +596,7 @@ int DumpFileToPack(struct ExecutionLogging* pEL,const char* filename,const char*
     else
         *name_to_store=0;
 
-    const char* filenamecpy=filename;
+    const char* filenamecpy=GetFileNameRemovePrefixIfFound(filename,pEL->portion_ignore_pathname);
 
     if (((*filenamecpy)== '\\') && ((*(filenamecpy+1))== '\\'))
     {
@@ -621,6 +758,7 @@ int ComputeFileCrc(const char* filename,unsigned int*size_done,unsigned long*crc
 }
 
 
+
 int DumpMemToPack(struct ExecutionLogging* pEL,const char* filename_to_store,const void* buf,unsigned int size)
 {
     zip_fileinfo zi;
@@ -651,11 +789,71 @@ int DumpMemToPack(struct ExecutionLogging* pEL,const char* filename_to_store,con
 }
 
 
+void ABSTRACT_CALLBACK_UNITEX UniLogger_before_calling_tool(mainFunc*,int argc,char* argv[],void* privateLoggerPtr)
+{
+    struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+
+    if (pEL == NULL)
+        pEL = BuildAllocInitExecutionLoggingForIncrementedNumber(privateLoggerPtr);
+    
+    if (pEL == NULL)
+        return;
+
+    pEL->argc = argc;
+    pEL->argv=(char**)malloc((sizeof(char*)*(argc+1)));
+
+    int i;
+    size_t len_all_param_list = 0x100;
+    for (i=0;i<argc;i++)
+    {
+        size_t len_this = strlen(argv[i]);
+        len_all_param_list += len_this + 4;
+        *(pEL->argv+i)=(char*)malloc(len_this+1);
+        strcpy(*(pEL->argv+i),argv[i]);
+    }
+    *(pEL->argv+argc)=NULL;
+
+
+
+    char* param_list= (char*)malloc(len_all_param_list);
+    *param_list=0;
+    for (i=0;i<(pEL->argc);i++)
+    {
+        size_t j=0;
+        int add_quote=0;
+        const char* curarg=*(pEL->argv+i);
+        while ( * (curarg+j) != 0)
+        {            
+            char c=(*(curarg+j));
+            if (c==' ') add_quote=1;
+            j++;
+        }
+        if (add_quote != 0)
+            strcat(param_list,"\"");
+        //strcat(param_list,curarg);
+        CopyReworkedArgRemoving(param_list+strlen(param_list),curarg,pEL->portion_ignore_pathname);
+        if (add_quote != 0)
+            strcat(param_list,"\"");
+        
+        if ((i+1)!=(pEL->argc))
+            strcat(param_list," ");
+    }
+
+    DumpMemToPack(pEL,"test_info/command_line_synth.txt",param_list,(unsigned int)strlen(param_list));
+    free(param_list);
+
+}
+
+
 void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*/,char*[] /* argv[]*/,int ret,void* privateLoggerPtr)
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
     if (pEL == NULL)
         return;
+
+    unsigned int len_list_in = GetNbItemPtrArrayExpanding(pEL->pAE_FileReadList);
+    if (len_list_in != 0)
+        DumpMemToPack(pEL,"test_info/list_file_in.txt",GetItemPtrArrayExpanding(pEL->pAE_FileReadList,0),len_list_in);
 
     unsigned int iNbFileWrite=GetNbFileToWrite(pEL);
     unsigned int iFile;
@@ -707,7 +905,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
 
             sprintf(buf_list_file_out + pos_in_list_file_out,"%010u\t%08lx\t%s\n",
                  pFileToWriteInfoItem->size,pFileToWriteInfoItem->crc,
-                 pFileToWriteInfoItem->FileName);
+                 GetFileNameRemovePrefixIfFound(pFileToWriteInfoItem->FileName,pEL->portion_ignore_pathname));
+
             pos_in_list_file_out += (unsigned int)strlen(buf_list_file_out + pos_in_list_file_out);
         }
         DumpMemToPack(pEL,"test_info/list_file_out.txt",buf_list_file_out,pos_in_list_file_out);
@@ -734,12 +933,14 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
 
     for (i=0;i<(pEL->argc);i++)
     {
-        strcat(param_list,*(pEL->argv+i));
+        const char* curarg=*(pEL->argv+i);
+        //strcat(param_list,curarg);
+        CopyReworkedArgRemoving(param_list+strlen(param_list),curarg,pEL->portion_ignore_pathname);
         strcat(param_list,"\n");
     }
 
     DumpMemToPack(pEL,"test_info/command_line.txt",param_list,(unsigned int)strlen(param_list));
-
+    
     *param_list=0;
     for (i=0;i<(pEL->argc);i++)
     {
@@ -754,7 +955,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
         }
         if (add_quote != 0)
             strcat(param_list,"\"");
-        strcat(param_list,curarg);
+        //strcat(param_list,curarg);
+        CopyReworkedArgRemoving(param_list+strlen(param_list),curarg,pEL->portion_ignore_pathname);
         if (add_quote != 0)
             strcat(param_list,"\"");
         
@@ -762,30 +964,18 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
             strcat(param_list," ");
     }
 
-    DumpMemToPack(pEL,"test_info/command_line_synth.txt",param_list,(unsigned int)strlen(param_list));
+    /* command_line_synth has moved */
+    /*
+    DumpMemToPack(pEL,"test_info/command_line_synth_after.txt",param_list,(unsigned int)strlen(param_list));
+    */
 
-
-    for (i=0;i<(pEL->argc);i++)
-    {
-        free(*(pEL->argv+i));
-    }
-
-    free(pEL->argv);
-
-
-    zipClose(pEL->zf,param_list);
+    if (pEL->zf != NULL)
+        zipClose(pEL->zf,param_list);
     pEL->zf=NULL;
-    CleanFileReadArray(pEL);
-    CleanFileWriteArray(pEL);
-    FreeArrayExpanding(pEL->pAE_StdOut);
-    pEL->pAE_StdOut = NULL;
-    FreeArrayExpanding(pEL->pAE_StdErr);
-    pEL->pAE_StdErr = NULL;
 
-    free(pEL);
-    SetExecutionLogging(privateLoggerPtr,NULL);
-    
     free(param_list);
+
+    FreeExecutionLogging(privateLoggerPtr);
 }
 
 void DoFileReadWork(struct ExecutionLogging* pEL,const char* name)
@@ -793,10 +983,26 @@ void DoFileReadWork(struct ExecutionLogging* pEL,const char* name)
     if (SearchFileInFileToWriteArray(pEL,name,NULL)==0)
         if (SearchFileInFileToReadArray(pEL,name,NULL)==0)
         {
-            unsigned int size;
-            unsigned long crc;
-            AddFileInFileToReadArray(pEL,name);
-            DumpFileToPack(pEL,name,"src/",&size,&crc);
+            unsigned int size=0;
+            unsigned long crc=0;
+                AddFileInFileToReadArray(pEL,name);
+            if (pEL->store_file_in_content != 0)
+              DumpFileToPack(pEL,name,"src/",&size,&crc);
+
+            if ((pEL->store_file_in_content == 0) && (pEL->store_list_file_in_content != 0))
+              ComputeFileCrc(name,&size,&crc);
+
+            if ((pEL->store_list_file_in_content != 0))
+            {
+                char* szBuf = (char*)malloc(strlen(name) + 0x40);
+                if (szBuf != NULL)
+                {
+                    sprintf(szBuf,"%010u\t%08lx\t%s\n",size,crc,
+                            GetFileNameRemovePrefixIfFound(name,pEL->portion_ignore_pathname));
+                    FlushOutData(szBuf,strlen(szBuf),pEL->pAE_FileReadList);
+                    free(szBuf);
+                }
+            }
         }
 }
 
@@ -926,15 +1132,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_remove(const char* name,int res
         RemoveFileFileOnWriteArray(pEL,name);
 }
 
-void FlushOutData(const void*Buf, size_t size,
-                  struct ExecutionLogging* /* pEL */,struct ArrayExpanding* pAEWrite)
-{
-    unsigned int previous_size = GetNbItemPtrArrayExpanding(pAEWrite);
-    if (ExpandArrayExpanding(pAEWrite,(unsigned int)(previous_size + size + 0x00)) == 1)
-    {
-        memcpy(GetItemPtrArrayExpanding(pAEWrite,previous_size),Buf,size);
-    }
-}
+
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_LogOutWrite(const void*Buf, size_t size,void* privateLoggerPtr)
 {
@@ -943,7 +1141,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_LogOutWrite(const void*Buf, size_t size,
         return;
 
     if (pEL!=NULL)
-        FlushOutData(Buf,size,pEL,pEL->pAE_StdOut);
+        FlushOutData(Buf,size,pEL->pAE_StdOut);
 }
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_LogErrWrite(const void*Buf, size_t size,void* privateLoggerPtr)
@@ -952,7 +1150,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_LogErrWrite(const void*Buf, size_t size,
     if (pEL == NULL)
         return;
 
-    FlushOutData(Buf,size,pEL,pEL->pAE_StdErr);
+    FlushOutData(Buf,size,pEL->pAE_StdErr);
 }
 
 const t_logger_func_array logger_func_array =
@@ -986,12 +1184,35 @@ const t_logger_func_array logger_func_array =
 
 
 /****************************************/
+
+
 UNITEX_FUNC int UNITEX_CALL AddActivityLogger(struct UniLoggerSpace *p_ule)
 {
+    struct ActivityLoggerPrivateData* pALPD;
+    pALPD = (struct ActivityLoggerPrivateData*)malloc(sizeof(struct ActivityLoggerPrivateData));
+    if (pALPD == NULL)
+        return 0;
+    pALPD -> pTlsSlot = SyncBuildTls();
+    
+    if (pALPD -> pTlsSlot == NULL)
+    {
+        free(pALPD);
+        return 0;
+    }
+
+    SyncTlsSetValue(pALPD -> pTlsSlot,NULL);
+
+    pALPD -> pMutexLog = SyncBuildMutex();
+
+    p_ule -> privateUnloggerData = (void*)pALPD;
     return AddLoggerInfo(&logger_func_array,p_ule);
 }
 
 UNITEX_FUNC int UNITEX_CALL RemoveActivityLogger(struct UniLoggerSpace *p_ule)
 {
+    struct ActivityLoggerPrivateData* pALPD = (struct ActivityLoggerPrivateData*)p_ule -> privateUnloggerData;
+    SyncDeleteTls(pALPD->pTlsSlot);
+    SyncDeleteMutex(pALPD->pMutexLog);
+    free(pALPD);
     return RemoveLoggerInfo(&logger_func_array,p_ule);
 }

@@ -209,11 +209,13 @@ free_OptVars(vars);
 write_number_of_graphs(fst2_file_name,infos->graph_names->size-1);
 if (check_recursion) {
    if (!OK_for_Locate(fst2_file_name,infos->no_empty_graph_warning)) {
+      free_compilation_info(infos);
       return 1;
    }
 }
 if (tfst_check) {
    if (!valid_sentence_automaton(fst2_file_name)) {
+      free_compilation_info(infos);
       return 1;
    }
 }

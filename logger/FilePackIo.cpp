@@ -70,43 +70,43 @@
 #define SEEK_SET    0
 #endif
 
-voidpf ZCALLBACK fopen_file_func OF((
+voidpf ZCALLBACK afopen_file_func OF((
    voidpf opaque,
    const char* filename,
    int mode));
 
-uLong ZCALLBACK fread_file_func OF((
+uLong ZCALLBACK afread_file_func OF((
    voidpf opaque,
    voidpf stream,
    void* buf,
    uLong size));
 
-uLong ZCALLBACK fwrite_file_func OF((
+uLong ZCALLBACK afwrite_file_func OF((
    voidpf opaque,
    voidpf stream,
    const void* buf,
    uLong size));
 
-long ZCALLBACK ftell_file_func OF((
+long ZCALLBACK aftell_file_func OF((
    voidpf opaque,
    voidpf stream));
 
-long ZCALLBACK fseek_file_func OF((
+long ZCALLBACK afseek_file_func OF((
    voidpf opaque,
    voidpf stream,
    uLong offset,
    int origin));
 
-int ZCALLBACK fclose_file_func OF((
+int ZCALLBACK afclose_file_func OF((
    voidpf opaque,
    voidpf stream));
 
-int ZCALLBACK ferror_file_func OF((
+int ZCALLBACK aferror_file_func OF((
    voidpf opaque,
    voidpf stream));
 
 
-voidpf ZCALLBACK fopen_file_func (
+voidpf ZCALLBACK afopen_file_func (
    voidpf opaque,
    const char* filename,
    int mode)
@@ -131,7 +131,7 @@ voidpf ZCALLBACK fopen_file_func (
 }
 
 
-uLong ZCALLBACK fread_file_func (
+uLong ZCALLBACK afread_file_func (
    voidpf opaque,
    voidpf stream,
    void* buf,
@@ -146,7 +146,7 @@ uLong ZCALLBACK fread_file_func (
 }
 
 
-uLong ZCALLBACK fwrite_file_func (
+uLong ZCALLBACK afwrite_file_func (
    voidpf opaque,
    voidpf stream,
    const void* buf,
@@ -160,7 +160,7 @@ uLong ZCALLBACK fwrite_file_func (
     return ret;
 }
 
-long ZCALLBACK ftell_file_func (
+long ZCALLBACK aftell_file_func (
    voidpf opaque,
    voidpf stream)
 {
@@ -172,7 +172,7 @@ long ZCALLBACK ftell_file_func (
     return ret;
 }
 
-long ZCALLBACK fseek_file_func (
+long ZCALLBACK afseek_file_func (
    voidpf opaque,
    voidpf stream,
    uLong offset,
@@ -201,7 +201,7 @@ long ZCALLBACK fseek_file_func (
     return ret;
 }
 
-int ZCALLBACK fclose_file_func (
+int ZCALLBACK afclose_file_func (
    voidpf opaque,
    voidpf stream)
 {
@@ -213,7 +213,7 @@ int ZCALLBACK fclose_file_func (
     return ret;
 }
 
-int ZCALLBACK ferror_file_func (
+int ZCALLBACK aferror_file_func (
    voidpf opaque,
    voidpf stream)
 {
@@ -228,15 +228,15 @@ int ZCALLBACK ferror_file_func (
     return ret;
 }
 
-void fill_fopen_filefunc (
+void fill_afopen_filefunc (
   zlib_filefunc_def* pzlib_filefunc_def)
 {
-    pzlib_filefunc_def->zopen_file = fopen_file_func;
-    pzlib_filefunc_def->zread_file = fread_file_func;
-    pzlib_filefunc_def->zwrite_file = fwrite_file_func;
-    pzlib_filefunc_def->ztell_file = ftell_file_func;
-    pzlib_filefunc_def->zseek_file = fseek_file_func;
-    pzlib_filefunc_def->zclose_file = fclose_file_func;
-    pzlib_filefunc_def->zerror_file = ferror_file_func;
+    pzlib_filefunc_def->zopen_file = afopen_file_func;
+    pzlib_filefunc_def->zread_file = afread_file_func;
+    pzlib_filefunc_def->zwrite_file = afwrite_file_func;
+    pzlib_filefunc_def->ztell_file = aftell_file_func;
+    pzlib_filefunc_def->zseek_file = afseek_file_func;
+    pzlib_filefunc_def->zclose_file = afclose_file_func;
+    pzlib_filefunc_def->zerror_file = aferror_file_func;
     pzlib_filefunc_def->opaque = NULL;
 }

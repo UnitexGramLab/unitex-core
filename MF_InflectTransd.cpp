@@ -151,7 +151,11 @@ if (!fexists(fst2)) {
    /* A grf and no .fst2? Let's compile the .grf! */
    return 1;
 }
-/* There are both .grf and .fst2? Let's see which file is older */
+if ((is_filename_in_abstract_file_space(fst2) != 0) || (is_filename_in_abstract_file_space(grf) != 0)) {
+    /* abstract ? no compare, no recompile*/
+    return 0;
+}
+ /* There are both .grf and .fst2? Let's see which file is older */
 return (get_file_date(grf)>=get_file_date(fst2));
 }
 
