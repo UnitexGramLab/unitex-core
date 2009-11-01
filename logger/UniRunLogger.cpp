@@ -485,9 +485,13 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
     char* command_line_buf = NULL;
     size_t size_command_line = 0;
 
+    char* list_out_newlog_buf = NULL;
+    size_t size_list_out_newlog = 0;
+
     char* list_out_buf = NULL;
     size_t size_list_out = 0;
 
+    struct ListFile* list_file_out_newlog = NULL;
     struct ListFile* list_file_out = NULL;
     struct ListFile* list_file_in = NULL;
 
@@ -619,7 +623,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
           reworkCommandLineAddPrefix(next_buf_arg_reworked,*(argv_log+walk),FileRunPath);
           *(argv_log_reworked+walk+1) = next_buf_arg_reworked;
           next_buf_arg_reworked += strlen(next_buf_arg_reworked) + 1;
-          u_printf("%d\n'%s'\n'%s'\n\n",walk,*(argv_log+walk),*(argv_log_reworked+walk+1));
+          //u_printf("%d\n'%s'\n'%s'\n\n",walk,*(argv_log+walk),*(argv_log_reworked+walk+1));
       }
 
       argc_log+=0;
@@ -646,6 +650,84 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
 
 
 
+
+
+      if (LogNameWrite!=NULL)
+      {
+        unzFile ufNewLog = unzOpen2(LogNameWrite,&zlib_filefunc);
+
+        if (ufNewLog != NULL)
+        {
+            uLong i;
+            unz_global_info gi;
+            int err;
+            
+            err = unzGetGlobalInfo (ufNewLog,&gi);
+            if (err==UNZ_OK)
+            {
+              list_file_in = AllocListFile(gi.number_entry);
+
+              for (i=0;i<gi.number_entry;i++)
+              {
+                  char filename_inzip[256];
+                  unz_file_info file_info;
+                  err = unzGetCurrentFileInfo(ufNewLog,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+
+                  if (strcmp(filename_inzip,"test_info/list_file_out.txt")==0)
+                  {
+                      do_extracting_currentfile_memory(ufNewLog,(void**)&list_out_newlog_buf,&size_list_out_newlog,NULL);
+                      list_file_out_newlog = ReadListFile(list_out_newlog_buf,size_list_out_newlog);
+                  }
+
+
+                  if ((i+1)<gi.number_entry)
+                    {
+                        err = unzGoToNextFile(ufNewLog);
+                        if (err!=UNZ_OK)
+                        {
+                            error("error %d with zipfile in unzGoToNextFile\n",err);
+                            break;
+                        }
+                    }
+              }
+            }
+            unzClose(ufNewLog);
+        }
+      }
+
+
+
+      if ((list_file_out_newlog != NULL) && (list_file_out != NULL))
+      {
+          unsigned int i,j;
+          int error_compare=0;
+          for (i=0;i<list_file_out->iNbFile;i++)
+          {
+              const char* fn_compare_original_log = get_filename_to_copy(((list_file_out->p_ListFile_entry)+i)->filename);
+              for (j=0;j<list_file_out_newlog->iNbFile;j++)
+              {
+                  const char* fn_compare_new_log = get_filename_to_copy(((list_file_out_newlog->p_ListFile_entry)+j)->filename);
+                  if (strcmp(fn_compare_original_log,fn_compare_new_log)==0)
+                  {
+                      if (((((list_file_out->p_ListFile_entry)+i)->size) != (((list_file_out_newlog->p_ListFile_entry)+j)->size)) ||
+                          ((((list_file_out->p_ListFile_entry)+i)->crc) != (((list_file_out_newlog->p_ListFile_entry)+j)->crc)))
+                      {
+                          error_compare = 1;
+                          u_printf("bad compare %s\n",fn_compare_original_log);
+                      }
+                      break;
+                  }
+              }
+              if (j == list_file_out_newlog->iNbFile)
+              {
+                  error_compare = 1;
+                  u_printf("file %s not found in new log\n",fn_compare_original_log);
+              }
+          }
+          if (error_compare == 0)
+              u_printf("good news: new log result is compatible with previous log\n");
+      }
+
       free(buf_arg);
       free(argv_log);
 
@@ -659,6 +741,10 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
       if (list_out_buf != NULL)
           free(list_out_buf);
 
+      if (list_out_newlog_buf != NULL)
+          free(list_out_newlog_buf);
+
+      FreeListFile(list_file_out_newlog);
       FreeListFile(list_file_out);
       FreeListFile(list_file_in);
     }
