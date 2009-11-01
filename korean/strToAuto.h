@@ -789,6 +789,7 @@ public:
 	U_FILE *
 	openForWrite(char *f)
 	{
+		DISCARD_UNUSED_PARAMETER(f)
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
 		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_WRITE)) == 0)
@@ -877,6 +878,7 @@ public:
 	void loadSousTokensMap(int mask_encoding_compatibility_input,char *f)
 	{
 		U_FILE *fptr;
+		DISCARD_UNUSED_PARAMETER(f)
 
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"seqMorphs.txt");
@@ -1186,6 +1188,7 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 	void
 	loadMorphemes(char *fname)
 	{
+		DISCARD_UNUSED_PARAMETER(fname)
 
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
@@ -1268,6 +1271,8 @@ fprintf(debugf,"\ninfos form %d \n",tab_cnt);
 	void
 	loadMorphemesStruct__(char *fname)
 	{
+		DISCARD_UNUSED_PARAMETER(fname)
+
 		strcpy(ftemp,pathNameStore);
 		strcat(ftemp,"phrase.cod");
 		if((phraseAutoMap = u_fopen(BINARY,ftemp,U_READ)) ==0 ) fopenErrMessage(ftemp);
@@ -2000,6 +2005,7 @@ unePhraseAuto.prAuto(stderr,2);
 	}
 	void changeFst2TextAuto(int flag)
 	{
+		DISCARD_UNUSED_PARAMETER(flag)
 #ifdef NOTFini
 		int lineNum = utoi(*loadFst2->graph_names);
 

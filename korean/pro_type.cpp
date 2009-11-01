@@ -39,7 +39,7 @@ class pro_associ proType;
 		return(ret);
 	};
 	unichar LEintRead2(unsigned char *a){
-		return((unichar)*a++ * 256 + *a);
+		return((((unichar)*(a)) * 256) + (*(a+1)));
 	};
 	int LEoutbytes2(unichar v,U_FILE *f)
 	{

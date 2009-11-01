@@ -750,6 +750,8 @@ static int inflect_kr(struct InflectKR_context *ictx,changeStrContext* ctx,Fst2*
 //
 // Shifts all the stack from the position pos
 //
+// this unused static function is in comment to prevent warning
+/*
 static void shift_stack(unichar* stack,int pos) {
 if (pos==0) {
    // this case should never happen
@@ -759,7 +761,7 @@ for (int i=(MAX_CHARS_IN_STACK-1);i>=pos;i--) {
    stack[i]=stack[i-1];
 }
 }
-
+*/
 
 
 static void traiteEttiques(struct InflectKR_context *ictx,changeStrContext* ctx)

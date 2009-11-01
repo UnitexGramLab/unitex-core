@@ -390,15 +390,17 @@ verboseMode  = 0;
     //	the path from initial to the node is used to identify the node
     //	in sous graphe
     //
+    struct linkCycle {
+    	struct cyclePathMark *cyc;
+    	struct linkCycle *next;
+    } *cycInfos;
+
     struct cycleNodeId {
     	int index;
    	    int autoNo;
    	    int etatNo;
    	    int eti;
-    	struct linkCycle {
-    		struct cyclePathMark *cyc;
-    		struct linkCycle *next;
-    	} *cycInfos;
+    	struct linkCycle *cycInfos;
     	int flag;
     	struct cycleNodeId *next;
     };
@@ -474,13 +476,13 @@ verboseMode  = 0;
 		}
 
 		struct cyclePathMark *pCyc = getLoopId(offset);
-		struct cycleNodeId::linkCycle **a = &((*cnode)->cycInfos);
+		struct linkCycle **a = &((*cnode)->cycInfos);
 		while(*a){
 			if(pCyc->index == (*a)->cyc->index) return;
 			if((*a)->cyc->index < pCyc->index) break;
 			a = &((*a)->next);
 		}
-		*a = new struct cycleNodeId::linkCycle;
+		*a = new struct linkCycle;
 		if(!(*a)) fatal_error(StrMemLack);
 		(*a)->next = 0;
 		(*a)->cyc = pCyc;
@@ -546,7 +548,7 @@ verboseMode  = 0;
 	{
 		struct cycleNodeId *cnode = headCycNodes;
 		struct cycleNodeId *tnode;
-		struct cycleNodeId::linkCycle *inf,*tnf;
+		struct linkCycle *inf,*tnf;
 		struct cyclePathMark *tc,*cp;
 		int i;
       while(cnode){
