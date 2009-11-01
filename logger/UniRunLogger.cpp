@@ -477,6 +477,25 @@ void CombineRunPathOnPathName(char* filename_to_write,const char*FileRunPath,int
       }
 }
 
+int CompareFileName(const char* n1,const char*n2)
+{
+    for (;;)
+    {
+        if ((*n1) == 0)
+            return ((*n2) == 0) ? 0 : 1;
+        if ((*n2) == 0)
+            return 1;
+        char c1 = *n1;
+        char c2 = *n2;
+        if (c1 == '\\') c1='/';
+        if (c2 == '\\') c2='/';
+        if (c1 != c2)
+            return 1;
+        n1++;
+        n2++;
+    }
+}
+
 UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite)
 {
     zlib_filefunc_def zlib_filefunc;
@@ -707,7 +726,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
               for (j=0;j<list_file_out_newlog->iNbFile;j++)
               {
                   const char* fn_compare_new_log = get_filename_to_copy(((list_file_out_newlog->p_ListFile_entry)+j)->filename);
-                  if (strcmp(fn_compare_original_log,fn_compare_new_log)==0)
+                  if (CompareFileName(fn_compare_original_log,fn_compare_new_log)==0)
                   {
                       if (((((list_file_out->p_ListFile_entry)+i)->size) != (((list_file_out_newlog->p_ListFile_entry)+j)->size)) ||
                           ((((list_file_out->p_ListFile_entry)+i)->crc) != (((list_file_out_newlog->p_ListFile_entry)+j)->crc)))
@@ -725,7 +744,9 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
               }
           }
           if (error_compare == 0)
-              u_printf("good news: new log result is compatible with previous log\n");
+              u_printf("-> LOG COMPARE: good news: new log result is compatible with previous log for %s and %s\n",LogNameRead,LogNameWrite);
+          else
+              u_printf("-> LOG COMPARE: bad news: new log result is compatible with previous log for %s and %s\n",LogNameRead,LogNameWrite);
       }
 
       free(buf_arg);
