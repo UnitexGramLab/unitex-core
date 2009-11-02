@@ -613,6 +613,12 @@ int DumpFileToPack(struct ExecutionLogging* pEL,const char* filename,const char*
              filenamecpy+=2;
     if (((*filenamecpy)== '\\') || ((*(filenamecpy))== '/'))
         filenamecpy++;
+
+    if ((*filenamecpy) == '.')
+        if (((*(filenamecpy+1)) == '/') || ((*(filenamecpy+1)) == '\\'))
+            filenamecpy+=2;
+
+
     strcat(name_to_store,filenamecpy);
 
     char* name_to_store_browse=name_to_store;
