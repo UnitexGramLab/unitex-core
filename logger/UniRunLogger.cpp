@@ -95,7 +95,7 @@ InstallLoggerForRunner::~InstallLoggerForRunner()
     }
 }
 
-InstallLoggerForRunner InstallLoggerForRunnerInstance;
+//InstallLoggerForRunner InstallLoggerForRunnerSingleton;
 
 /****************************************************************************************/
 
@@ -587,8 +587,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
 
     struct dir_list_for_clean* pdlfc = NULL;
 
-
-    pdlfc = build_list_dir_for_clean();
+    InstallLoggerForRunner InstallLoggerForRunnerSingleton;
 
     if (FileRunPath==NULL)
         FileRunPath="";
@@ -610,6 +609,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
     if (err==UNZ_OK)
     {
       list_file_in = AllocListFile(gi.number_entry);
+      pdlfc = build_list_dir_for_clean();
       int nb_listfile_in=0;
 
       for (i=0;i<gi.number_entry;i++)
@@ -729,7 +729,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
       //char *buf_reworked=malloc(size_command_line + 
 
       if (LogNameWrite != NULL)
-          InstallLoggerForRunnerInstance.SelectNextLogName(LogNameWrite,FileRunPath);
+          InstallLoggerForRunnerSingleton.SelectNextLogName(LogNameWrite,FileRunPath);
 
       unsigned int walk_list_out;
       for (walk_list_out = 0;walk_list_out < list_file_out->iNbFile;walk_list_out++)
@@ -745,7 +745,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
       main_UnitexTool_C(argc_log+1,(char**)argv_log_reworked);
 
       /* put nonzero to clean file after execute log */
-      int clean_file = 0;
+      int clean_file = 666;
 
       if (LogNameWrite!=NULL)
       {
@@ -846,17 +846,14 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
           if (error_compare == 0)
               u_printf("-> LOG COMPARE: good news: new log result is compatible with previous log for %s and %s\n",LogNameRead,LogNameWrite);
           else
-              u_printf("-> LOG COMPARE: bad news: new log result is compatible with previous log for %s and %s\n",LogNameRead,LogNameWrite);
+              u_printf("-> LOG COMPARE: bad news: new log result is NOT compatible with previous log for %s and %s\n",LogNameRead,LogNameWrite);
       }
 
       free(buf_arg);
       free(argv_log);
 
       free(buf_arg_reworked);
-      free(argv_log_reworked);
-
-      clean_list_dir_for_clean(pdlfc);
-
+      free(argv_log_reworked);      
 
 
       if (command_line_buf != NULL)
@@ -872,6 +869,8 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
       FreeListFile(list_file_out);
       FreeListFile(list_file_in);
     }
+
+    clean_list_dir_for_clean(pdlfc);
 
     return 0;
 }

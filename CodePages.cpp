@@ -1532,6 +1532,19 @@ return encoding;
 
 
 /**
+ * This function free encoding memory
+ */
+void delete_encoding(struct encoding* encoding) {
+free(encoding->name);
+for (int i=0;i<encoding->number_of_aliases;i++) {
+    free(encoding->aliases[i]);
+}
+free(encoding->aliases);
+free(encoding);
+}
+
+
+/**
  * This function is used for unrestricted encodings like UTF8 and UTF16.
  */
 int can_always_encode(unichar c,unsigned char* a) {
@@ -1863,8 +1876,10 @@ void free_encodings_context(void* encoding_ctx)
 {
 struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
 int i;
-for (i=0;i<ectx->number_of_encodings;i++)
-  free(ectx->encodings[i]);
+for (i=0;i<ectx->number_of_encodings;i++) {
+  delete_encoding(ectx->encodings[i]);
+}
+free(ectx->encodings);
 free_search_tree_node(ectx->encoding_names);
 #ifndef HGH_INSERT
 delete (ectx->uniKoran949);

@@ -120,7 +120,7 @@ void DeleteItemPtrArrayExpanding(struct ArrayExpanding* pAE,unsigned int pos)
     unsigned int nbItem = (pAE->nb_item_filled);
     unsigned int nbItemToCopy = (nbItem-pos)-1;
 
-    memcpy(ptrToRemove,ptrToRemove + (pAE->size_item), (pAE->size_item)*nbItemToCopy);
+    memmove(ptrToRemove,ptrToRemove + (pAE->size_item), (pAE->size_item)*nbItemToCopy);
     pAE->nb_item_filled--;
 }
 
@@ -280,6 +280,9 @@ void RemoveFileFileOnWriteArray(struct ExecutionLogging* pEL,const char*fn)
     unsigned int pos;
     if (SearchFileInFileToWriteArray(pEL,fn,&pos) == 0)
         return ;
+
+    struct FileToWriteInfoItem* pFrif = (struct FileToWriteInfoItem*)GetItemPtrArrayExpanding(pEL->pAE_FileToWrite,pos);
+    free((void*)pFrif->FileName);
 
     DeleteItemPtrArrayExpanding(pEL->pAE_FileToWrite,pos);
 }
@@ -1098,7 +1101,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_rename(const char* name1,const 
     if (result==0)
     {
         DoFileWriteWork(pEL,name2);
-        RemoveFileFileOnWriteArray(pEL,name2);
+        RemoveFileFileOnWriteArray(pEL,name1);
     }
 }
 

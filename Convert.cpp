@@ -157,16 +157,17 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Convert,lopts_Convert,&index
    case 7: encode_control_characters=1; break;
 
 
-   case 'm': print_encoding_main_names(encoding_ctx); free_encodings_context(encoding_ctx); return 0;
-   case 'a': print_encoding_aliases(encoding_ctx); free_encodings_context(encoding_ctx); return 0;
-   case 'A': print_information_for_all_encodings(encoding_ctx); free_encodings_context(encoding_ctx); return 0;
+   case 'm': print_encoding_main_names(encoding_ctx); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
+   case 'a': print_encoding_aliases(encoding_ctx); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
+   case 'A': print_information_for_all_encodings(encoding_ctx); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
    case 'i': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty encoding\n");
              }
              print_encoding_infos(encoding_ctx,vars->optarg);
 			 free_encodings_context(encoding_ctx); 
+			 free_OptVars(vars);
              return 0;
-   case 'h': usage(); free_encodings_context(encoding_ctx); return 0;
+   case 'h': usage(); free_encodings_context(encoding_ctx); free_OptVars(vars); return 0;
    case ':': if (index==-1) fatal_error("Missing argument for option -%c\n",vars->optopt);
              else fatal_error("Missing argument for option --%s\n",lopts_Convert[index].name);
    case '?': if (index==-1) fatal_error("Invalid option -%c\n",vars->optopt);
