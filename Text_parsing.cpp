@@ -53,6 +53,8 @@ struct Token_error_ctx token_error_ctx;
 token_error_ctx.n_errors=0;
 token_error_ctx.last_start=-1;
 token_error_ctx.last_length=0;
+token_error_ctx.n_matches_at_token_pos__locate=0;
+token_error_ctx.n_matches_at_token_pos__morphological_locate=0;
 
 fill_buffer(p->token_buffer,f);
 OptimizedFst2State initial_state=p->optimized_states[p->fst2->initial_states[1]];
@@ -193,10 +195,10 @@ int stack_top=p->stack->stack_pointer;
 unichar* output;
 /* The following static variable holds the number of matches at
  * one position in text. */
-static int n_matches_at_token_pos;
+//static int n_matches_at_token_pos;
 if (depth==0) {
    /* We reset if this is first call to 'locate' from a given position in the text */
-   n_matches_at_token_pos=0;
+   p_token_error_ctx->n_matches_at_token_pos__morphological_locate = 0;
 }
 if (depth>STACK_MAX) {
    /* If there are too much recursive calls */
@@ -205,7 +207,7 @@ if (depth>STACK_MAX) {
                       p->current_origin,pos,p,p_token_error_ctx);
    return;
 }
-if (n_matches_at_token_pos>MAX_MATCHES_AT_TOKEN_POS) {
+if ((p_token_error_ctx->n_matches_at_token_pos__morphological_locate) > MAX_MATCHES_AT_TOKEN_POS) {
    /* If there are too much matches from the current origin in the text */
    error_at_token_pos("\nToo many (ambiguous) matches starting from one position in text!",
                       p->current_origin,pos,p,p_token_error_ctx);
@@ -221,7 +223,7 @@ if (current_state->control & 1) {
    }
    /* In we are in the top level graph, we have a match */
    if (graph_depth==0) {
-      n_matches_at_token_pos++;
+      (p_token_error_ctx->n_matches_at_token_pos__morphological_locate)++;
       if (p->output_policy==IGNORE_OUTPUTS) {
          if (pos>0) {add_match(pos+p->current_origin+p->absolute_offset-1,NULL,p);}
          else {

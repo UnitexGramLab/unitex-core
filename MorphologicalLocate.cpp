@@ -32,8 +32,9 @@
 #include "ParsingInfo.h"
 
 void morphological_locate(int,int,int,int,int,struct parsing_info**,int,struct list_int*,
-		                  struct locate_parameters*,struct Token_error_ctx*,unichar*,int);
-void enter_morphological_mode(int,int,int,int,struct parsing_info**,struct locate_parameters*,struct Token_error_ctx*,int,struct list_int*);
+		                  struct locate_parameters*,struct Token_error_ctx*,unichar*,int,
+		                  unichar*);
+void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*,struct Token_error_ctx*);
 int input_is_token(Fst2Tag tag);
 void explore_dic_in_morpho_mode(struct locate_parameters* p,int pos,int pos_in_token,
                                 struct parsing_info* *matches,struct pattern* pattern,
@@ -161,7 +162,8 @@ void morphological_locate(int graph_depth, /* 0 means that we are in the top lev
             struct list_int* ctx, /* information about the current context, if any */
             struct locate_parameters* p, /* miscellaneous parameters needed by the function */
             struct Token_error_ctx* p_token_error_ctx,
-            unichar* jamo, int pos_in_jamo
+            unichar* jamo, int pos_in_jamo,
+            unichar* content_buffer /* reusable unichar 4096 buffer for content */
             ) {
 OptimizedFst2State current_state=p->optimized_states[current_state_index];
 Fst2State current_state_old=p->fst2->states[current_state_index];
@@ -170,10 +172,9 @@ Transition* t;
 int stack_top=p->stack->stack_pointer;
 /* The following static variable holds the number of matches at
  * one position in text. */
-static int n_matches_at_token_pos;
 if (depth==0) {
    /* We reset if this is first call to 'locate' from a given position in the text */
-   n_matches_at_token_pos=0;
+   p_token_error_ctx->n_matches_at_token_pos__morphological_locate=0;
 }
 if (depth>STACK_MAX) {
    /* If there are too much recursive calls */
@@ -182,7 +183,7 @@ if (depth>STACK_MAX) {
                       p->current_origin,pos,p,p_token_error_ctx);
    return;
 }
-if (n_matches_at_token_pos>MAX_MATCHES_AT_TOKEN_POS) {
+if ((p_token_error_ctx->n_matches_at_token_pos__morphological_locate) > MAX_MATCHES_AT_TOKEN_POS) {
    /* If there are too much matches from the current origin in the text */
    error_at_token_pos("\nToo many (ambiguous) matches starting from one position in text!",
                       p->current_origin,pos,p,p_token_error_ctx);
@@ -258,7 +259,7 @@ if (graph_call_list!=NULL) {
          p->stack_base=p->stack->stack_pointer;
          morphological_locate(graph_depth+1, /* Exploration of the subgraph */
                 p->fst2->initial_states[graph_call_list->graph_number],
-                pos,pos_in_token,depth+1,&L,0,NULL,p,p_token_error_ctx,jamo,pos_in_jamo);
+                pos,pos_in_token,depth+1,&L,0,NULL,p,p_token_error_ctx,jamo,pos_in_jamo,content_buffer);
          p->stack_base=old_StackBase;
          if (L!=NULL) {
             struct parsing_info* L_first=L;
@@ -272,7 +273,7 @@ if (graph_call_list!=NULL) {
                }
                /* And we continue the exploration */
                morphological_locate(graph_depth,t->state_number,L->position,L->pos_in_token,depth+1,
-            		                matches,n_matches,ctx,p,p_token_error_ctx,L->jamo,L->pos_in_jamo);
+            		                matches,n_matches,ctx,p,p_token_error_ctx,L->jamo,L->pos_in_jamo,content_buffer);
                p->stack->stack_pointer=stack_top;
                L=L->next;
             } while (L!=NULL);
@@ -313,7 +314,7 @@ while (meta_list!=NULL) {
                }
             }
             morphological_locate(graph_depth,meta_list->transition->state_number,pos,pos_in_token,depth+1,
-                                 matches,n_matches,ctx,p,p_token_error_ctx,jamo,pos_in_jamo);
+                                 matches,n_matches,ctx,p,p_token_error_ctx,jamo,pos_in_jamo,content_buffer);
             p->stack->stack_pointer=stack_top;
             break;
 
@@ -342,15 +343,15 @@ while (meta_list!=NULL) {
             if (token==-1 || token==p->STOP) {break;}
             struct parsing_info* L2=NULL;
             explore_dic_in_morpho_mode(p,pos,pos_in_token,&L2,NULL,0,jamo,pos_in_jamo);
-            unichar content[4096];
+            unichar *content1=content_buffer;
             if (L2!=NULL) {
                struct parsing_info* L_first=L2;
                /* If there is at least one match, we process the match list */
                do  {
-                  get_content(content,p,pos,pos_in_token,L2->position,L2->pos_in_token);
+                  get_content(content1,p,pos,pos_in_token,L2->position,L2->pos_in_token);
                   #ifdef TRE_WCHAR
                   int filter_number=p->tags[t->tag_number]->filter_number;
-                  int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content,filter_number));
+                  int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content1,filter_number));
                   if (!morpho_filter_OK) {
                      p->stack->stack_pointer=stack_top;
                      L2=L2->next;
@@ -363,7 +364,7 @@ while (meta_list!=NULL) {
                      }
                   }
                   if (p->output_policy==MERGE_OUTPUTS) {
-                     push_input_string(p->stack,content,p->protect_dic_chars);
+                     push_input_string(p->stack,content1,p->protect_dic_chars);
                   }
                   unichar* reached_token=p->tokens->value[p->buffer[p->current_origin+L2->position]];
                   int new_pos,new_pos_in_token;
@@ -385,12 +386,13 @@ while (meta_list!=NULL) {
                   morphological_locate(graph_depth,meta_list->transition->state_number,
                 		               new_pos,new_pos_in_token,depth+1,matches,n_matches,ctx,
                 		               p,p_token_error_ctx,
-                		               L2->jamo,L2->pos_in_jamo);
+                		               L2->jamo,L2->pos_in_jamo,content_buffer);
                   p->stack->stack_pointer=stack_top;
                   L2=L2->next;
                } while (L2!=NULL);
                free_parsing_info(L_first);
             }
+            /* end of usage of content1 */
             break;
          }
 
@@ -536,7 +538,7 @@ while (meta_list!=NULL) {
             }
          }
          morphological_locate(graph_depth,t->state_number,new_pos,new_pos_in_token,depth+1,
-                                 matches,n_matches,ctx,p,p_token_error_ctx,new_jamo,new_pos_in_jamo);
+                                 matches,n_matches,ctx,p,p_token_error_ctx,new_jamo,new_pos_in_jamo,content_buffer);
          p->stack->stack_pointer=stack_top;
       }
       next: t=t->next;
@@ -632,7 +634,7 @@ while (trans!=NULL) {
             	    //push_input_substring(p->stack,current_token+pos_in_token,prefix_length,p->protect_dic_chars);
             	}
             	morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,depth+1,
-            	                                    matches,n_matches,ctx,p,p_token_error_ctx,new_jamo,new_pos_in_jamo);
+            	                                    matches,n_matches,ctx,p,p_token_error_ctx,new_jamo,new_pos_in_jamo,content_buffer);
             	p->stack->stack_pointer=stack_top;
             }
          	/* End of KOREAN token matching */
@@ -666,7 +668,7 @@ while (trans!=NULL) {
                   new_pos_in_token=0;
                }
                morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,depth+1,
-                                    matches,n_matches,ctx,p,p_token_error_ctx,jamo,pos_in_jamo);
+                                    matches,n_matches,ctx,p,p_token_error_ctx,jamo,pos_in_jamo,content_buffer);
                p->stack->stack_pointer=stack_top;
             } else {
            	   /* No else here, because a grammar tag is not supposed to match a sequence that
@@ -680,15 +682,15 @@ while (trans!=NULL) {
          unichar var_name[128];
          int save_dic_entry=(p->output_policy!=IGNORE_OUTPUTS && is_morpho_variable_output(tag->output,var_name));
          explore_dic_in_morpho_mode(p,pos,pos_in_token,&L,tag->pattern,save_dic_entry,jamo,pos_in_jamo);
-         unichar content[4096];
+         unichar *content2=content_buffer;
          if (L!=NULL) {
             struct parsing_info* L_first=L;
             /* If there is at least one match, we process the match list */
             do  {
-               get_content(content,p,pos,pos_in_token,L->position,L->pos_in_token);
+               get_content(content2,p,pos,pos_in_token,L->position,L->pos_in_token);
                #ifdef TRE_WCHAR
                int filter_number=p->tags[trans->tag_number]->filter_number;
-               int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content,filter_number));
+               int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content2,filter_number));
                if (!morpho_filter_OK) {
                   p->stack->stack_pointer=stack_top;
                   L=L->next;
@@ -705,7 +707,7 @@ while (trans!=NULL) {
                   }
                }
                if (p->output_policy==MERGE_OUTPUTS) {
-                  push_input_string(p->stack,content,p->protect_dic_chars);
+                  push_input_string(p->stack,content2,p->protect_dic_chars);
                }
                unichar* reached_token=p->tokens->value[p->buffer[p->current_origin+L->position]];
                int new_pos,new_pos_in_token;
@@ -725,7 +727,7 @@ while (trans!=NULL) {
                   set_dic_variable(var_name,L->dic_entry,&(p->dic_variables));
                }
                morphological_locate(graph_depth,trans->state_number,new_pos,new_pos_in_token,
-            		                depth+1,matches,n_matches,ctx,p,p_token_error_ctx,L->jamo,L->pos_in_jamo);
+            		                depth+1,matches,n_matches,ctx,p,p_token_error_ctx,L->jamo,L->pos_in_jamo,content_buffer);
                if (save_dic_entry) {
                   set_dic_variable(var_name,old_value,&(p->dic_variables));
                   free_dela_entry(old_value);
@@ -735,6 +737,7 @@ while (trans!=NULL) {
             } while (L!=NULL);
             free_parsing_info(L_first);
          }
+         /* end of usage of content2 */
       }
    }
    trans=trans->next;
@@ -769,6 +772,7 @@ void enter_morphological_mode(int graph_depth, /* 0 means that we are in the top
             struct locate_parameters* p, /* miscellaneous parameters needed by the function */
             struct Token_error_ctx* p_token_error_ctx
             ) {
+unichar content_buffer[4096];
 int* var_backup=NULL;
 int old_StackBase;
 int stack_top=p->stack->stack_pointer;
@@ -782,7 +786,7 @@ p->stack_base=p->stack->stack_pointer;
 struct dic_variable* dic_variable_backup=clone_dic_variable_list(p->dic_variables);
 int current_token=p->buffer[pos+p->current_origin];
 //error("current token=%d/%S  jamo=%S\n",current_token,p->tokens->value[current_token],p->jamo_tags[current_token]);
-morphological_locate(0,state,pos,0,depth+1,&L,0,NULL,p,p_token_error_ctx,(p->jamo_tags!=NULL)?p->jamo_tags[current_token]:NULL,0);
+morphological_locate(0,state,pos,0,depth+1,&L,0,NULL,p,p_token_error_ctx,(p->jamo_tags!=NULL)?p->jamo_tags[current_token]:NULL,0,content_buffer);
 clear_dic_variable_list(&(p->dic_variables));
 p->stack_base=old_StackBase;
 if (L!=NULL) {

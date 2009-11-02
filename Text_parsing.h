@@ -54,6 +54,8 @@ struct Token_error_ctx {
 int n_errors;
 int last_start;
 int last_length;
+int n_matches_at_token_pos__locate;
+int n_matches_at_token_pos__morphological_locate;
 };
 
 void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p,struct Token_error_ctx*);
