@@ -344,19 +344,18 @@ if (tok==NULL) {
 }
 
 U_FILE* f_enter=u_fopen(BINARY,snt_files->enter_pos,U_READ);
-int n_enter_char;
+int n_enter_char=0;
+int* enter_pos=NULL;
 /* New lines are encoded in 'enter.pos' files. Those files will disappear in the future */
-int* enter_pos;
-long size=get_file_size(f_enter);
-enter_pos=(int*)malloc(size);
-if (enter_pos==NULL) {
-	fatal_alloc_error("main_Concord");
-}
 if (f_enter==NULL) {
 	error("Cannot open file %s\n",snt_files->enter_pos);
-	n_enter_char=0;
 }
 else {
+	long size=get_file_size(f_enter);
+	enter_pos=(int*)malloc(size);
+	if (enter_pos==NULL) {
+		fatal_alloc_error("main_Concord");
+	}
 	n_enter_char=(int)fread(enter_pos,sizeof(int),size/sizeof(int),f_enter);
 	if (n_enter_char!=(int)(size/sizeof(int))) {
 		fatal_error("Read error on enter.pos file in main_Concord\n");

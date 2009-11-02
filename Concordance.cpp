@@ -108,6 +108,7 @@ if (option->result_mode==MERGE_) {
 	/* If we have to produced a modified version of the original text, we
 	 * do it and return. */
 	create_modified_text_file(encoding_output,bom_output,concordance,text,tokens,option->output,n_enter_char,enter_pos);
+	free(token_length);
 	return;
 }
 /* If the expected result is a concordance */
@@ -142,6 +143,7 @@ if (option->result_mode==XALIGN_) f=u_fopen(UTF8,option->output,U_WRITE);
 else f=u_fopen(UTF16_LE,temp_file_name,U_WRITE);
 if (f==NULL) {
 	error("Cannot write %s\n",temp_file_name);
+	free(token_length);
 	return;
 }
 /* First, we create a raw text concordance.
@@ -1187,6 +1189,7 @@ while (matches!=NULL) {
 move_to_end_of_text_with_writing(text,tokens,current_global_position_in_token,output,
 								n_enter_char,enter_pos,pos_in_enter_pos,buffer);
 free_buffer(buffer);
+u_fclose(output);
 u_printf("Done.\n");
 }
 

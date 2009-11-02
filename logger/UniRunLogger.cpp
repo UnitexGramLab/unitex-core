@@ -99,9 +99,93 @@ InstallLoggerForRunner InstallLoggerForRunnerInstance;
 
 /****************************************************************************************/
 
+struct dir_list_for_clean_item {
+    char*dirname;
+    struct dir_list_for_clean_item *next;
+};
 
+struct dir_list_for_clean {    
+    struct dir_list_for_clean_item *first;
+} ;
 
-int mkdir_recursive(const char*dirname,int iContainOnlyDirName)
+struct dir_list_for_clean* build_list_dir_for_clean()
+{
+    struct dir_list_for_clean* ret = (struct dir_list_for_clean*)malloc(sizeof(struct dir_list_for_clean));
+    if (ret != NULL)
+    {
+        ret -> first = NULL;
+    }
+    return ret;
+}
+
+void clean_list_dir_for_clean(struct dir_list_for_clean* pdlfc)
+{
+    if (pdlfc != NULL)
+    {
+        struct dir_list_for_clean_item *browse = pdlfc ->first;
+        while (browse != NULL)
+        {
+            struct dir_list_for_clean_item *tmp = browse;
+            browse = browse -> next;
+            free(tmp->dirname);
+            free(tmp);
+        }
+        free(pdlfc);
+    }
+}
+
+int add_dir_in_log_for_clean(struct dir_list_for_clean* pdlfc,const char*dirname)
+{
+    if (pdlfc == NULL)
+        return 0;
+    else
+    {
+        struct dir_list_for_clean_item * pdlfci;
+        pdlfci = (struct dir_list_for_clean_item *)malloc(sizeof(struct dir_list_for_clean_item));
+        if (pdlfci == NULL)
+            return 0;
+        pdlfci->dirname = strdup(dirname);
+        pdlfci->next = NULL;
+        if (pdlfci->dirname == NULL)
+        {
+            free(pdlfci);
+            return 0;
+        }
+
+        pdlfci->next = pdlfc->first;
+        pdlfc->first = pdlfci;
+    
+        return 1;
+    }
+}
+
+int mkDirPortable_log_for_clean(const char*dirname,struct dir_list_for_clean* pdlfc)
+{
+    int ret=mkDirPortable(dirname);
+    if ((ret == 0) && (pdlfc != NULL))
+    {
+        add_dir_in_log_for_clean(pdlfc,dirname);
+    }
+    return ret;
+}
+
+int rm_log_dir_portable(struct dir_list_for_clean* pdlfc)
+{
+    if (pdlfc == NULL)
+        return 0;
+    else
+    {
+        struct dir_list_for_clean_item *browse = pdlfc ->first;
+        while (browse != NULL)
+        {
+            rmDirPortable(browse->dirname);
+            browse = browse -> next;
+        }
+        return 1;
+    }
+}
+
+int mkdir_recursive(const char*dirname,int iContainOnlyDirName,struct dir_list_for_clean* pdlfc)
 {
   if ((*dirname)!='\0')
   {
@@ -117,7 +201,7 @@ int mkdir_recursive(const char*dirname,int iContainOnlyDirName)
               {
                   char c=*(lpParc);
                   *(lpParc) = '\0';
-                  mkDirPortable (dupname);
+                  mkDirPortable_log_for_clean (dupname,pdlfc);
                   *(lpParc) = c;
               }
 
@@ -128,7 +212,7 @@ int mkdir_recursive(const char*dirname,int iContainOnlyDirName)
 
   int ret = 0;
   if (iContainOnlyDirName != 0)
-      ret = mkDirPortable(dirname);
+      ret = mkDirPortable_log_for_clean (dirname,pdlfc);
   return ret;
 }
 
@@ -152,6 +236,7 @@ char* get_filename_withoutpath_portion(char* fn)
 int do_extracting_currentfile(
     unzFile uf,
     char* write_filename,
+    struct dir_list_for_clean* pdlfc,
     const int* popt_extract_without_path,
     int* popt_overwrite,
     const char* password)
@@ -193,15 +278,7 @@ int do_extracting_currentfile(
         p++;
     }
 
-    if ((*filename_withoutpath)=='\0')
-    {
-        if ((*popt_extract_without_path)==0)
-        {
-            //printf("creating directory: %s\n",filename_touse);
-            //mkdir_recursive(filename_touse);
-        }
-    }
-    else
+    if ((*filename_withoutpath)!='\0')
     {
         const char* write_filename;
         int skip=0;
@@ -232,16 +309,10 @@ int do_extracting_currentfile(
             if ((fout==NULL) && ((*popt_extract_without_path)==0) &&
                                 (filename_withoutpath!=(char*)filename_touse))
               if (is_filename_in_abstract_file_space(write_filename)==0)
-            {
-                /*
-                char c=*(filename_withoutpath-1);
-                *(filename_withoutpath-1)='\0';
-                mkdir_recursive(write_filename);
-                *(filename_withoutpath-1)=c;
-                */
-                mkdir_recursive(write_filename,0);
-                fout=af_fopen_unlogged(write_filename,"wb");
-            }
+                {
+                    mkdir_recursive(write_filename,0,pdlfc);
+                    fout=af_fopen_unlogged(write_filename,"wb");
+                }
         }
 
         if (fout!=NULL)
@@ -514,6 +585,11 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
     struct ListFile* list_file_out = NULL;
     struct ListFile* list_file_in = NULL;
 
+    struct dir_list_for_clean* pdlfc = NULL;
+
+
+    pdlfc = build_list_dir_for_clean();
+
     if (FileRunPath==NULL)
         FileRunPath="";
     int need_add_dir_sep = 0;
@@ -567,7 +643,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
                   browse++;
               }
 */
-              int extres = do_extracting_currentfile(uf,filename_to_write,&opt_extract_without_path,&opt_overwrite,NULL);
+              int extres = do_extracting_currentfile(uf,filename_to_write,pdlfc,&opt_extract_without_path,&opt_overwrite,NULL);
 
               if (extres == UNZ_OK)
               {
@@ -662,14 +738,14 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
           const char* filename_out_usable = get_filename_to_copy(filename_out);
           char filename_to_be_written[256];
           CombineRunPathOnPathName(filename_to_be_written,FileRunPath,need_add_dir_sep,filename_out_usable);
-          mkdir_recursive(filename_to_be_written,0);
+          if (is_filename_in_abstract_file_space(filename_to_be_written) == 0)
+            mkdir_recursive(filename_to_be_written,0,pdlfc);
       }
 
       main_UnitexTool_C(argc_log+1,(char**)argv_log_reworked);
 
-
-
-
+      /* put nonzero to clean file after execute log */
+      int clean_file = 0;
 
       if (LogNameWrite!=NULL)
       {
@@ -684,7 +760,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
             err = unzGetGlobalInfo (ufNewLog,&gi);
             if (err==UNZ_OK)
             {
-              list_file_in = AllocListFile(gi.number_entry);
+              //list_file_in = AllocListFile(gi.number_entry);
 
               for (i=0;i<gi.number_entry;i++)
               {
@@ -714,6 +790,30 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
         }
       }
 
+      
+      if ((clean_file != 0) && (list_file_out_newlog != NULL))
+      {
+          unsigned int i,j;
+          for (i=0;i<list_file_in->iNbFile;i++)
+          {
+              const char* filename = (((list_file_in->p_ListFile_entry)+i)->filename);
+              char filename_written[256];
+              CombineRunPathOnPathName(filename_written,FileRunPath,need_add_dir_sep,filename);
+              af_remove_unlogged(filename_written);
+          }
+
+
+          for (j=0;j<list_file_out_newlog->iNbFile;j++)
+          {
+              const char* filename = (((list_file_out_newlog->p_ListFile_entry)+j)->filename);
+              char filename_written[256];
+              CombineRunPathOnPathName(filename_written,FileRunPath,need_add_dir_sep,get_filename_to_copy(filename));
+              af_remove_unlogged(filename_written);
+          }
+
+          rm_log_dir_portable(pdlfc);
+
+      }
 
 
       if ((list_file_out_newlog != NULL) && (list_file_out != NULL))
@@ -754,6 +854,9 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
 
       free(buf_arg_reworked);
       free(argv_log_reworked);
+
+      clean_list_dir_for_clean(pdlfc);
+
 
 
       if (command_line_buf != NULL)
