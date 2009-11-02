@@ -673,8 +673,8 @@ int af_copy(const char* srcFile, const char* dstFile)
 int af_rename(const char * OldFilename, const char * NewFilename)
 {
     int ret;
-    Call_logger_fnc_before_af_copy(OldFilename, NewFilename);
+    Call_logger_fnc_before_af_rename(OldFilename, NewFilename);
     ret = af_rename_unlogged(OldFilename, NewFilename);
-    Call_logger_fnc_after_af_copy(OldFilename, NewFilename, ret);
+    Call_logger_fnc_after_af_rename(OldFilename, NewFilename, ret);
     return ret;
 }

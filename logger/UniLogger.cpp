@@ -1115,6 +1115,9 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_copy(const char*,const char* na
 {
     struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
 
+    if (pEL == NULL)
+        return;
+
     if (result==0)
     {
         DoFileWriteWork(pEL,name2);
