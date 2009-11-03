@@ -24,6 +24,7 @@
 #include <stdarg.h>
 
 #include "Unicode.h"
+#include "UnusedParameter.h"
 
 #define DEFAULT_ERROR_CODE 1
 #define ALLOC_ERROR_CODE 2
@@ -88,6 +89,8 @@ va_list list;
 va_start(list,format);
 u_vfprintf(U_STDERR,format,list);
 va_end(list);
+#else
+DISCARD_UNUSED_PARAMETER(format)
 #endif
 }
 
@@ -98,6 +101,8 @@ va_end(list);
 void set_debug(char mode) {
 #ifdef DEBUG
 DEBUG_ON=mode;
+#else
+DISCARD_UNUSED_PARAMETER(mode)
 #endif
 }
 

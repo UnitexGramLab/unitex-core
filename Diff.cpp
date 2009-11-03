@@ -113,8 +113,8 @@ f2=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concor2
 print_diff_HTML_header(output,font,size);
 compute_concordance_differences(l1,l2,f1,f2,output);
 print_diff_HTML_end(output);
-free_match_list_element(l1);
-free_match_list_element(l2);
+free_match_list(l1);
+free_match_list(l2);
 u_fclose(f1);
 u_fclose(f2);
 u_fclose(output);

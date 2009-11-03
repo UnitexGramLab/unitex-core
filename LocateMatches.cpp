@@ -69,6 +69,19 @@ free(l);
 
 
 /**
+ * Frees a single match list element.
+ */
+void free_match_list(struct match_list* l) {
+while (l!=NULL) {
+   struct match_list* ptr=l;
+   l=l->next;
+   if (ptr->output!=NULL) free(ptr->output);
+   free(ptr);
+}
+}
+
+
+/**
  * Adds a match to the global list of matches. The function takes into
  * account the match policy. For instance, we don't take [2;3] into account
  * if we are in longest match mode and if we already have [2;5].

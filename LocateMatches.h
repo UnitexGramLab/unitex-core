@@ -43,6 +43,7 @@ struct match_list {
 struct match_list* new_match(int,int,unichar*,struct match_list*);
 struct match_list* new_match(int,int,int,int,int,int,unichar*,struct match_list*);
 void free_match_list_element(struct match_list*);
+void free_match_list(struct match_list*);
 void add_match(int,unichar*,struct locate_parameters*);
 struct match_list* eliminate_longer_matches(struct match_list*,int,int,unichar*,int*,struct locate_parameters*);
 struct match_list* save_matches(struct match_list*,int,U_FILE*,struct locate_parameters*);
