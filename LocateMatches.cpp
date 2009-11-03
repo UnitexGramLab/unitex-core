@@ -354,7 +354,8 @@ u_fscanf(f,"#%C\n",&uc_policy);
 OutputPolicy policy;
 switch(uc_policy) {
    case 'M': policy=MERGE_OUTPUTS; break;
-   case 'R': policy=REPLACE_OUTPUTS; break;
+   case 'R':
+   case 'T': policy=REPLACE_OUTPUTS; break;
    case 'I':
    default: policy=IGNORE_OUTPUTS; break;
 }
