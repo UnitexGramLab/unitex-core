@@ -203,13 +203,14 @@ struct locate_parameters {
    /* This is useful for Korean */
    jamoCodage* jamo;
    unichar** jamo_tags;
+   Jamo2Syl* jamo2syl;
 };
 
 
 int locate_pattern(char*,char*,char*,char*,char*,char*,char*,
                    MatchPolicy,OutputPolicy,Encoding,int,int,char*,TokenizationPolicy,
                    SpacePolicy,int,char*,AmbiguousOutputPolicy,
-                   VariableErrorPolicy,int,char*);
+                   VariableErrorPolicy,int,char*,char*);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,TokenizationPolicy);

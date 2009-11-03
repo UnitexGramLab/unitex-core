@@ -76,7 +76,7 @@ while (p->current_origin<p->token_buffer->size
    }
    if (unite!=0) {
       n_read=((p->current_origin+p->absolute_offset)%unite);
-      if (n_read==0 && ((currentTime=clock())-startTime > DELAY) ) {
+      if (n_read==0 && ((currentTime=clock())-startTime > DELAY)) {
          startTime=currentTime;
          u_printf("%2.0f%% done        \r",100.0*(float)(p->absolute_offset+p->current_origin)/(float)text_size);
       }

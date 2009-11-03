@@ -91,6 +91,7 @@ p->left_ctx_base=0;
 p->protect_dic_chars=0;
 p->jamo=NULL;
 p->jamo_tags=NULL;
+p->jamo2syl=NULL;
 p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 return p;
 }
@@ -130,7 +131,7 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
-                   char* jamo) {
+                   char* jamo,char* korean_fst2) {
 
 U_FILE* text_file;
 U_FILE* out;
@@ -276,6 +277,8 @@ if (jamo!=NULL && jamo[0]!='\0') {
 	/* We also initializes the Chinese -> Hangul table */
 	p->jamo->cloneHJAMap(p->alphabet->korean_equivalent_syllab);
 	p->jamo_tags=create_jamo_tags(p->jamo,p->tokens,p->alphabet);
+	p->jamo2syl=new Jamo2Syl();
+	p->jamo2syl->init(jamo,korean_fst2);
 }
 
 u_printf("Working...\n");
@@ -306,6 +309,9 @@ if (p->jamo_tags!=NULL) {
 		free(p->jamo_tags[i]);
 	}
 	free(p->jamo_tags);
+}
+if (p->jamo2syl!=NULL) {
+   delete p->jamo2syl;
 }
 free_string_hash(p->tokens);
 free_list_int(p->tag_token_list);

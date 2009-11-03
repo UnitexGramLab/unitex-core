@@ -22,6 +22,7 @@
 #include "TransductionStack.h"
 #include "Error.h"
 #include "DicVariables.h"
+#include "Korean.h"
 
 
 /**
@@ -150,13 +151,37 @@ while (s[i]!='\0') {
                case BACKTRACK_ON_VARIABLE_ERRORS: p->stack->stack_pointer=old_stack_pointer; return 0;
             }
          }
-         if (!u_strcmp(field,"INFLECTED")) {
+         if (u_starts_with(field,"EQ=")) {
+            /* We deal with restrictions on semantic codes, especially brewed for
+             * Korean dictionary graphs */
+            unichar* filter_code=field+3;
+            int match=0;
+            for (int i=0;!match && i<entry->n_semantic_codes;i++) {
+               if (!u_strcmp(entry->semantic_codes[i],filter_code)) {
+                  match=1;
+               }
+            }
+            if (match) {
+               /* If the filter match, we go on without outputing anything */
+               continue;
+            } else {
+               /* Otherwise, we backtrack */
+               p->stack->stack_pointer=old_stack_pointer; return 0;
+            }
+         } else if (!u_strcmp(field,"INFLECTED")) {
             /* We use push_input_string because it can protect special chars */
-            push_input_string(p->stack,entry->inflected,p->protect_dic_chars);
+            if (p->jamo!=NULL) {
+               /* If we work in Korean mode, we must convert text into Hanguls */
+               unichar z[1024];
+               convert_jamo_to_hangul(entry->inflected,z,p->jamo2syl);
+               push_input_string(p->stack,z,p->protect_dic_chars);
+            } else {
+               push_input_string(p->stack,entry->inflected,p->protect_dic_chars);
+            }
          } else if (!u_strcmp(field,"LEMMA")) {
         	 push_input_string(p->stack,entry->lemma,p->protect_dic_chars);
          } else if (!u_strcmp(field,"CODE")) {
-        	 push_output_string(p->stack,entry->semantic_codes[0]);
+        	   push_output_string(p->stack,entry->semantic_codes[0]);
             for (int i=1;i<entry->n_semantic_codes;i++) {
                push_output_char(p->stack,'+');
                push_output_string(p->stack,entry->semantic_codes[i]);

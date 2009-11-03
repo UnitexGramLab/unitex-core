@@ -40,6 +40,10 @@
  */
 int main(int argc,char *argv[]) {
 setBufferMode();
+debug("aa\n");
+set_debug(1);
+debug("BB\n");
+return 0;
 
 U_FILE* input=u_fopen(UTF16_LE,argv[1],U_READ);
 if (input==NULL) {

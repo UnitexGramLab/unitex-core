@@ -225,5 +225,14 @@ if (u_is_Hangul_Compatility_Jamo(c)) {
  */
 void convert_jamo_to_hangul(unichar* src,unichar* dest,Jamo2Syl* jamo2syl) {
 jamo2syl->cleanMachine();
-jamo2syl->convStr(src,u_strlen(src)+1,dest);
+unichar t[128];
+/* We make a copy without empty initial consonants, if any */
+int j=0;
+for (int i=0;src[i]!='\0';i++) {
+   if (src[i]!=KR_EMPTY_INITIAL_CONSONANT) {
+      t[j++]=src[i];
+   }
+}
+t[j]='\0';
+jamo2syl->convStr(t,j+1,dest);
 }

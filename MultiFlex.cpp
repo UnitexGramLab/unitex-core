@@ -220,8 +220,8 @@ if (jamo_table[0]!='\0') {
 	if (fst2[0]=='\0') {
 		fatal_error("You must specify the Korean transducer to use with -f\n");
 	}
-    jamo2syl=new Jamo2Syl();
-    jamo2syl->init(jamo_table,fst2);
+   jamo2syl=new Jamo2Syl();
+   jamo2syl->init(jamo_table,fst2);
 }
 
 //DELAC inflection

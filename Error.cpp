@@ -28,6 +28,9 @@
 #define DEFAULT_ERROR_CODE 1
 #define ALLOC_ERROR_CODE 2
 
+#ifdef DEBUG
+static char DEBUG_ON=0;
+#endif
 
 /**
  * Exits the program with the given exit code.
@@ -73,6 +76,30 @@ u_vfprintf(U_STDERR,format,list);
 va_end(list);
 }
 
+
+/**
+ * Prints the given message on the error stream, but only if
+ * we are in debug mode.
+ */
+void debug(const char* format,...) {
+#ifdef DEBUG
+if (!DEBUG_ON) return;
+va_list list;
+va_start(list,format);
+u_vfprintf(U_STDERR,format,list);
+va_end(list);
+#endif
+}
+
+
+/**
+ * Sets debug mode.
+ */
+void set_debug(char mode) {
+#ifdef DEBUG
+DEBUG_ON=mode;
+#endif
+}
 
 
 /**

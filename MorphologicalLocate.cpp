@@ -99,48 +99,49 @@ int i=0;
 if (token==NULL) {
 	token=tag_token;
 }
-int OK=1||(token[0]==0xB2A5);
-if (OK) error("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
+set_debug(0 && token[0]==0xB2A5);
+debug("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
 while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
 	/* We ignore syllab bounds in both tfst and fst2 tags */
 	if (tmp[i]==KR_SYLLAB_BOUND) {
 		i++;
-		if (OK) error("ignoring . in tag: %S\n",tmp+i);
+		debug("ignoring . in tag: %S\n",tmp+i);
 		continue;
 	}
 	/*if (jamo[(*new_pos_in_jamo)]!=KR_SYLLAB_BOUND && !u_is_Hangul_Jamo(jamo[(*new_pos_in_jamo)])) {
 		// If we have a non jamo character, then we have to go on in the text token
 		(*new_pos_in_token)++;
-		if (OK) error("new pos in token=%d\n",(*new_pos_in_token));
+		debug("new pos in token=%d\n",(*new_pos_in_token));
 	}*/
 	if (jamo[(*new_pos_in_jamo)]==KR_SYLLAB_BOUND) {
 		(*new_pos_in_jamo)++;
 		(*new_pos_in_token)++;
-		if (OK) error("ignoring . in text: %S\n",jamo+((*new_pos_in_jamo)));
+		debug("ignoring . in text: %S\n",jamo+((*new_pos_in_jamo)));
 		continue;
 	}
 	if (tmp[i]!=jamo[(*new_pos_in_jamo)]) {
 	   /* If a character doesn't match */
-	   if (OK) error("match failed between text=%S and fst2=%S\n",jamo,tmp);
+	   debug("match failed between text=%S and fst2=%S\n",jamo,tmp);
 	   return 0;
 	}
 	i++;
 	(*new_pos_in_jamo)++;
-	if (OK) error("moving in tag: %S\n",tmp+i);
-	if (OK) error("moving in text: %S\n",jamo+((*new_pos_in_jamo)));
+	debug("moving in tag: %S\n",tmp+i);
+	debug("moving in text: %S\n",jamo+((*new_pos_in_jamo)));
 }
 if (tmp[i]=='\0' && jamo[(*new_pos_in_jamo)]=='\0') {
    /* If we are at both ends of strings, it's a full match */
-   if (OK) error("XX full match between text=%S and fst2=%S\n",jamo,tmp);
+   debug("XX full match between text=%S and fst2=%S\n",jamo,tmp);
    return 1;
 }
 if (tmp[i]=='\0') {
 	/* If the tag has not consumed all the jamo sequence, it's a partial match */
-	if (OK) error("XX partial match between text=%S and fst2=%S\n",jamo,tmp);
+   debug("XX partial match between text=%S and fst2=%S\n",jamo,tmp);
 	return 2;
 }
 /* If we are at the end of the jamo sequence, but not at the end of the tag, it's a failure */
-if (OK) error("match failed #2 between text=%S and fst2=%S\n",jamo,tmp);
+debug("match failed #2 between text=%S and fst2=%S\n",jamo,tmp);
+set_debug(0);
 return 0;
 }
 
@@ -952,7 +953,7 @@ for (int i=0;i<n_transitions;i++) {
 				   jamo,pos_in_jamo);
 	   }
    } else {
-	   error("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	   debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 	   /* Korean mode: we may match just the current jamo, or also the current hangul, but only if we are
 	    * after a syllab bound */
 	   unichar c2[2];
@@ -963,7 +964,7 @@ for (int i=0;i<n_transitions;i++) {
 	   int new_pos_in_jamo=pos_in_jamo;
 	   int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_current_token,c2,p,current_token);
 	   if (result!=0) {
-	      error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	      debug("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 		   /* Nothing to do if the match failed */
 		   int new_pos_offset=pos_offset;
 		   unichar* new_jamo=jamo;

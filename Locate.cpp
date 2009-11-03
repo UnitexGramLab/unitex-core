@@ -65,6 +65,7 @@ const char* usage_Locate =
          "  -d X/--sntdir=X: uses directory X instead of the text directory; note that X must be\n"
          "                   (back)slash terminated\n"
          "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use for Korean\n"
+         "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use for Korean\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -80,8 +81,8 @@ const char* usage_Locate =
          "  -M/--merge\n"
          "  -R/--replace\n"
          "  -p/--protect_dic_chars: when -M or -R mode is used, -p protects some input characters\n"
-		 "                          with a backslash. This is useful when Locate is called by Dico\n"
-		 "                          in order to avoid producing bad lines like \"3,14,.PI.NUM\"\n"
+		   "                          with a backslash. This is useful when Locate is called by Dico\n"
+		   "                          in order to avoid producing bad lines like \"3,14,.PI.NUM\"\n"
          "\n"
          "Ambiguous output options:\n"
          "  -b/--ambiguous_outputs: allows the production of several matches with same input\n"
@@ -113,7 +114,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpj:hk:q:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpj:f:hk:q:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -138,6 +139,7 @@ const struct option_TS lopts_Locate[]= {
       {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
       {"protect_dic_chars",no_argument_TS,NULL,'p'},
       {"jamo",required_argument_TS,NULL,'j'},
+      {"fst2",required_argument_TS,NULL,'f'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
@@ -170,6 +172,7 @@ AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int protect_dic_chars=0;
 char jamo_table[FILENAME_MAX]="";
+char korean_fst2[FILENAME_MAX]="";
 char foo;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -225,6 +228,11 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
                 fatal_error("You must specify a non empty jamo table file name\n");
              }
              strcpy(jamo_table,vars->optarg);
+             break;
+   case 'f': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty transducer file name\n");
+             }
+             strcpy(korean_fst2,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case 'k': if (vars->optarg[0]=='\0') {
@@ -283,7 +291,7 @@ strcat(err,"err");
 int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
                encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
-               ambiguous_output_policy,variable_error_policy,protect_dic_chars,jamo_table);
+               ambiguous_output_policy,variable_error_policy,protect_dic_chars,jamo_table,korean_fst2);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }
