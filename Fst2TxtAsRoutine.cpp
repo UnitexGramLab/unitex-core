@@ -836,6 +836,7 @@ if (trans->tag_number<0 || not_a_letter_sequence(p->fst2->tags[trans->tag_number
 }
 Transition* tmp=add_tag_to_token_tree(tree,trans->next,p);
 add_tag(p->fst2->tags[trans->tag_number]->input,trans->tag_number,trans->state_number,tree);
+free(trans);
 return tmp;
 }
 
