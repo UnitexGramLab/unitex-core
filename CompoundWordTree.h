@@ -73,6 +73,14 @@
  * the					   47
  */
 struct DLC_tree_node {
+    /*
+     * to allow duplicate pointer to a DLC_tree_node, we count reference
+     * use increment_reference_DLC_tree_node when a pointer is duplicated
+     * use decrement_reference_DLC_tree_node when a pointer is removed
+     *   (this free_DLC_tree_node)
+     */
+
+    unsigned int count_reference;
 	/*
 	 * 'patterns' is the list of the numbers of all the patterns that
 	 * can match the compound words corresponding to this node.
@@ -108,12 +116,6 @@ struct DLC_tree_node {
 	 * Sorted array of nodes. See comment above.
 	 */
 	struct DLC_tree_node** destination_nodes;
-	/*
-	 * An array to store duplicate nodes both in transitions and in destination nodes.
-	 * It has the same size than destination_nodes and if duplicates[i] = 1 then it
-	 * means that destination_nodes[i] is a duplicate. Otherwise it is 0.
-	 */
-	short* duplicates;
 };
 
 

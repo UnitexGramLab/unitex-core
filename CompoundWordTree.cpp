@@ -26,7 +26,8 @@
 
 
 
-void free_DLC_tree_node(struct DLC_tree_node*);
+void increment_reference_DLC_tree_node(struct DLC_tree_node*);
+void decrement_reference_DLC_tree_node(struct DLC_tree_node*);
 void quicksort(int*,int);
 void quicksort2(int*,void**,int);
 IntSequence clone_IntSequence(IntSequence);
@@ -44,12 +45,12 @@ if (n==NULL) {
 }
 n->patterns=NULL;
 n->number_of_patterns=0;
+n->count_reference=1;
 n->array_of_patterns=NULL;
 n->transitions=NULL;
 n->number_of_transitions=0;
 n->destination_tokens=NULL;
 n->destination_nodes=NULL;
-n->duplicates=NULL;
 return n;
 }
 
@@ -102,45 +103,45 @@ return DLC_tree;
 void free_DLC_tree_transitions(struct DLC_tree_transition* transitions) {
 struct DLC_tree_transition* tmp;
 while (transitions!=NULL) {
-	free_DLC_tree_node(transitions->node);
-   if (transitions->token_sequence!=NULL) free(transitions->token_sequence);
+	decrement_reference_DLC_tree_node(transitions->node);
+	if (transitions->token_sequence!=NULL) free(transitions->token_sequence);
 	tmp=transitions->next;
 	free(transitions);
 	transitions=tmp;
 }
 }
 
+/**
+  * Increment the counter usage of a pointer to a node
+  */
+void increment_reference_DLC_tree_node(struct DLC_tree_node* node) {
+node->count_reference++;
+}
 
 /**
- * Frees the compound word tree whose root is 'node'.
+ * Decrement the counter usage of a pointer to a node 
+ *  (a compound word tree whose root is 'node'.)
+ * Frees the object from memory if counter became 0
  *
  * WARNING: this function tries to free both 'transitions' and 'destination_nodes',
  *          so, in order to avoid double freeing, the programmer must take care not
  *          to have a same node referenced in both 'transitions' and 'destination_nodes'.
  */
-void free_DLC_tree_node(struct DLC_tree_node* node) {
+void decrement_reference_DLC_tree_node(struct DLC_tree_node* node) {
 if (node==NULL) return;
+node->count_reference--;
+if (node->count_reference>0) return ;
+
 free_list_int(node->patterns);
 if (node->array_of_patterns!=NULL) free(node->array_of_patterns);
 free_DLC_tree_transitions(node->transitions);
 if (node->destination_tokens!=NULL) free(node->destination_tokens);
 if (node->destination_nodes!=NULL) {
-	for (int i=0;i<node->number_of_transitions;i++) {
-		if (node->duplicates[i] == 0) {
-			bool bDup = false;
-
-			for (int j = 0; j < i; j++)
-				if (node->destination_nodes[i] == node->destination_nodes[j]) {
-					bDup = true;
-					break;
-				}
-			if (!bDup)
-				free_DLC_tree_node(node->destination_nodes[i]);
-		}
+    for (int i=0;i<node->number_of_transitions;i++) {
+				decrement_reference_DLC_tree_node(node->destination_nodes[i]);
 	}
 	free(node->destination_nodes);
 }
-free(node->duplicates);
 free(node);
 }
 
@@ -151,7 +152,7 @@ free(node);
 void free_DLC_tree(struct DLC_tree_info* DLC_tree) {
 if (DLC_tree==NULL) return;
 if (DLC_tree->index!=NULL) free(DLC_tree->index);
-free_DLC_tree_node(DLC_tree->root);
+decrement_reference_DLC_tree_node(DLC_tree->root);
 free(DLC_tree);
 }
 
@@ -552,18 +553,15 @@ if (n->transitions!=NULL) {
    if (n->destination_nodes==NULL) {
       fatal_alloc_error("optimize_DLC_node");
    }
-   n->duplicates = (short*)malloc(sizeof(short) * n->number_of_transitions);
+
    i=0;
    while (n->transitions!=NULL) {
      /* Recursively, we optimize the destination node */
      optimize_DLC_node(n->transitions->node);
      int* token_sequence=n->transitions->token_sequence;
      for (int j=0;token_sequence[j]!=-1;j++) {
-    	 if (j > 0)
-    		 n->duplicates[i] = 1;
-    	 else
-    		 n->duplicates[i] = 0;
         n->destination_nodes[i]=n->transitions->node;
+        increment_reference_DLC_tree_node(n->destination_nodes[i]);
         n->destination_tokens[i]=token_sequence[j];
         i++;
      }
@@ -572,6 +570,7 @@ if (n->transitions!=NULL) {
      /* WARNING: don't call free_DLC_tree_transitions(t), because it would
       *          free the destination node that is still used. */
      free(t->token_sequence);
+     decrement_reference_DLC_tree_node(t->node);
      free(t);
    }
    /* Finally, we sort the n->destination_nodes and n->destination_tokens
