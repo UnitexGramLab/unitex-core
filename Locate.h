@@ -30,7 +30,8 @@ extern const struct option_TS lopts_Locate[];
 extern const char* usage_Locate;
 
 int main_Locate(int, char* argv[]);
-int launch_locate_as_routine(Encoding,int,int,char*,char*,char*,OutputPolicy,char*,int,char*);
+int launch_locate_as_routine(Encoding,int,int,char*,char*,char*,
+                             OutputPolicy,char*,int,char*,char*);
 
 
 #endif
