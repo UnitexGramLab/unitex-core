@@ -196,6 +196,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
+KOREAN=0;
 if (KOREAN) {
    if (alphabet[0]=='\0') {
       fatal_error("-a option is mandatory when -k is used\n");
