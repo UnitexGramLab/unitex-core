@@ -159,6 +159,30 @@ const char* GetFileNameRemovePrefixIfFound(const char* filename,const char*porti
     return filename;
 }
 
+const char* ExtractUsablePortionOfFileNameForPack(const char*filenamecpy)
+{
+    while (((*filenamecpy) == '*') || ((*filenamecpy)== '#'))
+        filenamecpy++;
+
+    if (((*filenamecpy)== '\\') && ((*(filenamecpy+1))== '\\'))
+    {
+        filenamecpy+=2;
+        while (((*filenamecpy)!='\\') && ((*filenamecpy)!='\0'))
+            filenamecpy++;
+    }
+    else
+        if ( ((((*filenamecpy)>= 'a') && ((*filenamecpy)<= 'z')) || (((*filenamecpy)>= 'A') && ((*filenamecpy)<= 'Z'))) &&
+             ((*(filenamecpy+1))== ':'))
+             filenamecpy+=2;
+    if (((*filenamecpy)== '\\') || ((*(filenamecpy))== '/'))
+        filenamecpy++;
+
+    if ((*filenamecpy) == '.')
+        if (((*(filenamecpy+1)) == '/') || ((*(filenamecpy+1)) == '\\'))
+            filenamecpy+=2;
+    return filenamecpy;
+}
+
 void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunPath)
 {
     int PossiblePos = -1;

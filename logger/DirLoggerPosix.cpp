@@ -35,7 +35,8 @@
 int mkDirPortable(const char* dirname)
 {
     int retMkDir = (int)(mkdir(dirname,S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP|S_IXGRP|S_IXOTH));
-    return (retMkDir != -1);
+    /* retMkDir is 0 for success */
+    return (retMkDir);
     //return mkdir(dirname);
 }
 

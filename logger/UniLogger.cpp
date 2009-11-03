@@ -601,23 +601,7 @@ int DumpFileToPack(struct ExecutionLogging* pEL,const char* filename,const char*
 
     const char* filenamecpy=GetFileNameRemovePrefixIfFound(filename,pEL->portion_ignore_pathname);
 
-    if (((*filenamecpy)== '\\') && ((*(filenamecpy+1))== '\\'))
-    {
-        filenamecpy+=2;
-        while (((*filenamecpy)!='\\') && ((*filenamecpy)!='\0'))
-            filenamecpy++;
-    }
-    else
-        if ( ((((*filenamecpy)>= 'a') && ((*filenamecpy)<= 'z')) || (((*filenamecpy)>= 'A') && ((*filenamecpy)<= 'Z'))) &&
-             ((*(filenamecpy+1))== ':'))
-             filenamecpy+=2;
-    if (((*filenamecpy)== '\\') || ((*(filenamecpy))== '/'))
-        filenamecpy++;
-
-    if ((*filenamecpy) == '.')
-        if (((*(filenamecpy+1)) == '/') || ((*(filenamecpy+1)) == '\\'))
-            filenamecpy+=2;
-
+    filenamecpy = ExtractUsablePortionOfFileNameForPack(filenamecpy);
 
     strcat(name_to_store,filenamecpy);
 

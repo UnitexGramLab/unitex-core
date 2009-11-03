@@ -41,6 +41,8 @@ const char* get_filename_to_copy(const char*filename);
 
 const char* GetFileNameRemovePrefixIfFound(const char* filename,const char*portion_ignore_pathname);
 
+const char* ExtractUsablePortionOfFileNameForPack(const char*filenamecpy);
+
 #ifdef __cplusplus
 }
 #endif
