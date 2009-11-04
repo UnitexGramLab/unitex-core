@@ -283,6 +283,8 @@ struct output_info {
    int end_pos;
    int start_pos_char;
    int end_pos_char;
+   int start_pos_letter;
+   int end_pos_letter;
 };
 
 
@@ -312,6 +314,10 @@ x->start_pos=-1;
 x->end_pos=-1;
 x->start_pos_char=-1;
 x->end_pos_char=-1;
+/* We can initialize xxx_letter fields to 0, because in non Korean mode, there
+ * is exactly one letter per character. Korean case will be especially handled */
+x->start_pos_letter=0;
+x->end_pos_letter=0;
 return x;
 }
 
@@ -393,12 +399,18 @@ if (result->nbelems==0) {
 return result;
 }
 
+/* This value must be negative */
+#define UNDEF_KR_TAG_START -6
 
 /**
  * This function does its best to compute the start/end values for each tag
- * to be produced.
+ * to be produced. It is an adaptation for Korean of 'solve_alignment_puzzle'.
+ *
+ * OK, I (S.P.) know that it's bad to duplicate code. But it's even bader to
+ * fight with inner mysteries of Korean Hangul/Jamo tricks. Trust me.
  */
-void solve_alignment_puzzle(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph) {
+void solve_alignment_puzzle_for_Korean(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph,
+                            jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 if (vector==NULL) {
    fatal_error("NULL vector in solve_alignment_puzzle\n");
 }
@@ -413,6 +425,212 @@ if (vector->nbelems==1) {
    tab[0]->start_pos_char=0;
    tab[0]->end_pos=end;
    tab[0]->end_pos_char=u_strlen(INFO->tok->token[INFO->buffer[end]])-1;
+   tab[0]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[0]->end_pos_char],jamo,alph);
+   return;
+}
+
+/* We try to find an exact match (modulo case variations) between the text and the tags' content */
+int current_token=start;
+int current_tag=0;
+int current_pos_in_char_in_token=0;
+/* Warning: the next 2 variable are not to be confused.
+ * - current_index_in_jamo_token is the index used to browse the jamo string
+ * - current_pos_in_letter_in_token is not the same, since it doe not take syllab bounds
+ *   into account. Moreover, this one is reinitialized to 0 everytime we cross a syllab
+ *   bound
+ */
+int current_index_in_jamo_token=0;
+int current_pos_in_letter_in_token=0;
+/* The same for the next 2 variables */
+int current_index_in_jamo_tag=0;
+
+tab[current_tag]->start_pos=current_token;
+tab[current_tag]->start_pos_char=0;
+unichar* token=INFO->tok->token[INFO->buffer[current_token]];
+unichar jamo_token[256];
+unichar jamo_tag[256];
+convert_Korean_text(token,jamo_token,jamo,alph);
+if (!u_strcmp(tab[current_tag]->content,"<E>")) {
+   fatal_error("solve_alignment_puzzle_for_Korean: {<E>,xxx.yyy} tag is not supposed to start a tag sequence\n");
+}
+convert_Korean_text(tab[current_tag]->content,jamo_tag,jamo,alph);
+
+int everything_still_OK=1;
+while(everything_still_OK) {
+   if (jamo_tag[current_index_in_jamo_tag]=='\0') {
+      /* If we are at the end of a tag */
+      tab[current_tag]->end_pos=current_token;
+      tab[current_tag]->end_pos_char=current_pos_in_char_in_token;
+      /* letter-1 because we moved on */
+      tab[current_tag]->end_pos_letter=current_pos_in_letter_in_token-1;
+      if (current_tag==vector->nbelems-1) {
+         /* If we are at the end of the last tag, we must also be
+          * at the end of the last token if we want to have a perfect alignment */
+         if (current_token==end && jamo_token[current_index_in_jamo_token]=='\0') {
+            return;
+         }
+         break;
+      }
+      /* We are not at the last tag, so we have to move to the next tag.
+       * However, we have to deal with the special case of tags like
+       * {<E>,xxx.yyy}. For those tags, we don't move in the text token,
+       * and we have to set end_pos_letter=-1. As we don't know if several
+       * <E> tags can be combined, we use a loop for safety */
+      for (;;) {
+         if (current_tag==vector->nbelems-1) {
+            /* We have taken the loop more than once, and we have reached the last tag.
+             * Then, we must also be at the end of the last token if we want to have a
+             * perfect alignment */
+            if (current_token==end && jamo_token[current_index_in_jamo_token]=='\0') {
+               return;
+            }
+            /* If not, we fail */
+            everything_still_OK=0;
+            break;
+         }
+         current_tag++;
+         tab[current_tag]->start_pos=current_token;
+         tab[current_tag]->start_pos_char=UNDEF_KR_TAG_START;//current_pos_in_char_in_token;
+         tab[current_tag]->start_pos_letter=UNDEF_KR_TAG_START;//current_pos_in_letter_in_token;
+         current_index_in_jamo_tag=0;
+         if (!u_strcmp(tab[current_tag]->content,"<E>")) {
+            /* If we have a {<E>,xxx.yyy} tag */
+            tab[current_tag]->start_pos_char=current_pos_in_char_in_token;
+            tab[current_tag]->start_pos_letter=current_pos_in_letter_in_token-1;
+            tab[current_tag]->end_pos=tab[current_tag]->start_pos;
+            tab[current_tag]->end_pos_char=tab[current_tag]->start_pos_char;
+            tab[current_tag]->end_pos_letter=-1;
+         } else {
+            /* We have a non <E> tag, so we can set 'jamo_tag' and get out of the for(;;) loop */
+            convert_Korean_text(tab[current_tag]->content,jamo_tag,jamo,alph);
+            break;
+         }
+
+      } /* End of for(;;) loop to move on next tag */
+      continue;
+   }
+   /* We are not at the end of a tag, but we can be at the end of the current token */
+   if (jamo_token[current_index_in_jamo_token]=='\0') {
+      if (current_token==end) {
+         /* If this is the last token, then we cannot have a perfect alignment */
+         break;
+      }
+      current_token++;
+      if (tab[current_tag]->start_pos_char==UNDEF_KR_TAG_START) {
+         /* If we change of token whereas we have not started to read the current tag,
+          * we can say that the current tag starts on the current token */
+         (tab[current_tag]->start_pos)++;
+         tab[current_tag]->start_pos_char=0;
+         tab[current_tag]->start_pos_letter=0;
+      }
+      if (INFO->buffer[current_token]==INFO->SPACE && current_index_in_jamo_tag==0) {
+         /* If 1) the new token is a space and 2) we are at the beginning of a tag
+          * (that, by construction, cannot start with a space), then we must skip this
+          * space token */
+         if (current_token==end) {
+            /* If this space token was the last token, then we cannot have a perfect alignement */
+            break;
+         }
+         /* By construction, we cannot have 2 contiguous spaces, but we raise an error in
+          * order not to forget that the day this rule will change */
+         current_token++;
+         /* See comment above */
+         (tab[current_tag]->start_pos)++;
+         tab[current_tag]->start_pos_char=0;
+         tab[current_tag]->start_pos_letter=0;
+         if (INFO->buffer[current_token]==INFO->SPACE) {
+            fatal_error("Contiguous spaces not handled in solve_alignment_puzzle_for_Korean\n");
+         }
+      }
+      token=INFO->tok->token[INFO->buffer[current_token]];
+      current_pos_in_char_in_token=0;
+      current_index_in_jamo_token=0;
+      current_pos_in_letter_in_token=0;
+      convert_Korean_text(token,jamo_token,jamo,alph);
+      continue;
+   }
+   if (jamo_token[current_index_in_jamo_token]==KR_SYLLAB_BOUND) {
+      /* If we find a syllab bound in the jamo token, we have to change the current
+       * character and to update start_pos_letter to 0 */
+      current_index_in_jamo_token++;
+      if (jamo_token[current_index_in_jamo_token]==KR_SYLLAB_BOUND) {
+         fatal_error("Contiguous syllab bounds in jamo token in solve_alignment_puzzle_for_Korean\n");
+      }
+      if (jamo_token[current_index_in_jamo_token]=='\0') {
+         fatal_error("Unexpected end of jamo token in solve_alignment_puzzle_for_Korean\n");
+      }
+      if (current_index_in_jamo_token!=1) {
+         /* We update the char position only if we find a syllab bound that is not the
+          * first one */
+         current_pos_in_char_in_token++;
+      }
+      current_pos_in_letter_in_token=0;
+      /* No need to 'continue' here; we can deal with the jamo tag first */
+      /* continue; */
+   }
+   if (tab[current_tag]->start_pos_char==UNDEF_KR_TAG_START) {
+      /* If the start_pos_... of the new jamo tag have not been set yet, we do it now */
+      tab[current_tag]->start_pos_char=current_pos_in_char_in_token;
+      tab[current_tag]->start_pos_letter=current_pos_in_letter_in_token;
+   }
+   if (jamo_tag[current_index_in_jamo_tag]==KR_SYLLAB_BOUND) {
+      current_index_in_jamo_tag++;
+      if (jamo_tag[current_index_in_jamo_tag]==KR_SYLLAB_BOUND) {
+         fatal_error("Contiguous syllab bounds in jamo tag in solve_alignment_puzzle_for_Korean\n");
+      }
+      if (jamo_tag[current_index_in_jamo_tag]=='\0') {
+         fatal_error("Unexpected end of jamo tag in solve_alignment_puzzle_for_Korean\n");
+      }
+   }
+   /* If we arrive here, we have 2 characters to be compared in the token and the tag */
+   if (jamo_tag[current_index_in_jamo_tag]!=jamo_token[current_index_in_jamo_token]) {
+      break;
+   }
+
+   current_index_in_jamo_tag++;
+   current_index_in_jamo_token++;
+   current_pos_in_letter_in_token++;
+}
+
+/* Default case: all tags will have the same start/end bounds */
+for (int i=0;i<vector->nbelems;i++) {
+   tab[i]->start_pos=start;
+   tab[i]->start_pos_char=0;
+   tab[i]->end_pos=end;
+   tab[i]->end_pos_char=u_strlen(INFO->tok->token[INFO->buffer[end]])-1;
+   tab[i]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[i]->end_pos_char],jamo,alph);
+}
+}
+
+
+/**
+ * This function does its best to compute the start/end values for each tag
+ * to be produced.
+ */
+void solve_alignment_puzzle(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph,
+                            jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+if (jamo!=NULL) {
+   /* The Korean case is so special that it seems risky to merge it with the
+    * normal case that works fine */
+   solve_alignment_puzzle_for_Korean(vector,start,end,INFO,alph,jamo,jamo2syl);
+   return;
+}
+if (vector==NULL) {
+   fatal_error("NULL vector in solve_alignment_puzzle\n");
+}
+if (vector->nbelems==0) {
+   fatal_error("Empty vector in solve_alignment_puzzle\n");
+}
+struct output_info** tab=(struct output_info**)vector->tab;
+
+if (vector->nbelems==1) {
+   /* If there is only one tag, there is no puzzle to solve */
+   tab[0]->start_pos=start;
+   tab[0]->start_pos_char=0;
+   tab[0]->end_pos=end;
+   tab[0]->end_pos_char=u_strlen(INFO->tok->token[INFO->buffer[end]])-1;
+   /* No need to deal with xxx_letter fields in non Korean mode, since
+    * default initialization to 0 is OK */
    return;
 }
 
@@ -514,17 +732,18 @@ void add_path_to_sentence_automaton(int start_pos,int end_pos,
                                     int start_state_index,Alphabet* alph,
                                     SingleGraph graph,struct string_hash* tmp_tags,
                                     unichar* s,int destination_state_index,Ustring* foo,
-                                    struct info* INFO) {
+                                    struct info* INFO,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 vector_ptr* vector=tokenize_normalization_output(s,alph);
 if (vector==NULL) {
    /* If the output to be generated has no interest, we do nothing */
    return;
 }
-solve_alignment_puzzle(vector,start_pos,end_pos,INFO,alph);
+solve_alignment_puzzle(vector,start_pos,end_pos,INFO,alph,jamo,jamo2syl);
 int current_state=start_state_index;
 for (int i=0;i<vector->nbelems;i++) {
    struct output_info* info=(struct output_info*)(vector->tab[i]);
-   u_sprintf(foo,"@STD\n@%S\n@%d.%d.0-%d.%d.0\n.\n",info->output,info->start_pos,info->start_pos_char,info->end_pos,info->end_pos_char);
+   u_sprintf(foo,"@STD\n@%S\n@%d.%d.%d-%d.%d.%d\n.\n",info->output,info->start_pos,info->start_pos_char,
+                    info->start_pos_letter,info->end_pos,info->end_pos_char,info->end_pos_letter);
    if (i==vector->nbelems-1) {
       /* If this is the last transition to create, we make it point to the
        * destination state */
@@ -559,13 +778,15 @@ void explore_normalization_tree(int first_pos_in_buffer,int current_pos_in_buffe
                                 SingleGraph graph,struct string_hash* tmp_tags,
                                 struct normalization_tree* norm_tree_node,
                                 int first_state_index,int shift,Ustring* foo,
-                                int increment,language_t* language) {
+                                int increment,language_t* language,
+                                jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 struct list_ustring* outputs=norm_tree_node->outputs;
 while (outputs!=NULL) {
    /* If there are outputs, we add paths in the text automaton */
    add_path_to_sentence_automaton(first_pos_in_buffer,current_pos_in_buffer-increment,
                                   first_state_index,INFO->alph,graph,tmp_tags,
-                                  outputs->string,first_state_index+shift-1,foo,INFO);
+                                  outputs->string,first_state_index+shift-1,foo,INFO,
+                                  jamo,jamo2syl);
    outputs=outputs->next;
 }
 /* Then, we explore the transitions from this node. Note that transitions
@@ -582,7 +803,8 @@ while (trans!=NULL) {
       explore_normalization_tree(first_pos_in_buffer,current_pos_in_buffer+increment,
                                  INFO->buffer[current_pos_in_buffer+increment],
                                  INFO,graph,tmp_tags,trans->node,
-                                 first_state_index,shift+1,foo,increment,language);
+                                 first_state_index,shift+1,foo,increment,language,
+                                 jamo,jamo2syl);
       /* As there can be only one matching transition, we exit the while */
       trans=NULL;
    }
@@ -606,7 +828,8 @@ void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
                                struct match_list* *tag_list,
                                int current_global_position_in_tokens,
                                int current_global_position_in_chars,
-                               language_t* language) {
+                               language_t* language,jamoCodage* jamo,
+                               Jamo2Syl* jamo2syl) {
 /* We declare the graph that will represent the sentence as well as
  * a temporary string_hash 'tmp_tags' that will be used to store the tags of this
  * graph. We don't put tags directly in the main 'tags', because a tag can
@@ -666,7 +889,8 @@ for (i=0;i<length;i++) {
                               current_state,&is_not_unknown_token,i,i,tmp_tags,foo,language);
       if (norm_tree!=NULL) {
          /* If there is a normalization tree, we explore it */
-         explore_normalization_tree(i,i,buffer[i],&INFO,tfst->automaton,tmp_tags,norm_tree,current_state,1,foo,0,language);
+         explore_normalization_tree(i,i,buffer[i],&INFO,tfst->automaton,tmp_tags,norm_tree,
+                                    current_state,1,foo,0,language,jamo,jamo2syl);
       }
       if (!is_not_unknown_token) {
          /* If the token was not matched in the dictionary, we put it as an unknown one */
@@ -708,7 +932,8 @@ while ((*tag_list)!=NULL && (*tag_list)->m.start_pos_in_token>=current_global_po
    }
    add_path_to_sentence_automaton(start_pos_in_token,end_pos_in_token,start_index,
                                   INFO.alph,tfst->automaton,tmp_tags,
-                                  (*tag_list)->output,end_index+1,foo,&INFO);
+                                  (*tag_list)->output,end_index+1,foo,&INFO,
+                                  jamo,jamo2syl);
    tmp=(*tag_list)->next;
    free_match_list_element((*tag_list));
    (*tag_list)=tmp;

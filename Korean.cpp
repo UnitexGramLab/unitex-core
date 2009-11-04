@@ -236,3 +236,23 @@ for (int i=0;src[i]!='\0';i++) {
 t[j]='\0';
 jamo2syl->convStr(t,j+1,dest);
 }
+
+
+/**
+ * Returns the number of Jamo letters contained in the given Hangul.
+ * If the given character is neither a Hangul nor a Chinese character,
+ * the function should return 1.
+ */
+int get_length_in_jamo(unichar hangul,jamoCodage* jamo,Alphabet* alphabet) {
+unichar t[2];
+t[0]=hangul;
+t[1]='\0';
+unichar t2[16];
+convert_Korean_text(t,t2,jamo,alphabet);
+int pos=0;
+if (t2[0]==KR_SYLLAB_BOUND) {
+   pos=1;
+}
+return u_strlen(t2+pos)-1;
+}
+

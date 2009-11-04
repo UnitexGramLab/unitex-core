@@ -41,6 +41,7 @@
 #include "LanguageDefinition.h"
 #include "NewLineShifts.h"
 #include "Txt2Tfst.h"
+#include "Korean.h"
 
 
 /**
@@ -98,7 +99,7 @@ const char* usage_Txt2Tfst =
          "\n"
          "Constructs the text automaton. If the sentences of the text were delimited\n"
          "with the special tag {S}, the program produces one automaton per sentence.\n"
-		 "If not, the text is turned into " STR_VALUE_MACRO_STRING(MAX_TOKENS_IN_SENTENCE) " token long automata. The result files\n"
+		   "If not, the text is turned into " STR_VALUE_MACRO_STRING(MAX_TOKENS_IN_SENTENCE) " token long automata. The result files\n"
          "named \"text.tfst\" and \"text.tind\" are stored is the text directory.\n"
          "\n"
          "Note that the program will also take into account the file \"tags.ind\", if any.\n";
@@ -135,8 +136,8 @@ if (argc==1) {
 char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
-char jamoTable[FILENAME_MAX]="";
-char jamoFst2[FILENAME_MAX]="";
+char jamo_table[FILENAME_MAX]="";
+char korean_fst2[FILENAME_MAX]="";
 int CLEAN=0;
 int KOREAN=0;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -165,13 +166,13 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
    case 'j': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty Jamo table file name\n");
              }
-             strcpy(jamoTable,vars->optarg);
+             strcpy(jamo_table,vars->optarg);
              KOREAN=1; 
              break;
    case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty Jamo .fst2 file name\n");
              }
-             strcpy(jamoFst2,vars->optarg);
+             strcpy(korean_fst2,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case 'k': if (vars->optarg[0]=='\0') {
@@ -207,10 +208,11 @@ if (KOREAN) {
    if (tagset[0]!='\0') {
       error("-t option is ignored when -k is used\n");
    }
-   if (jamoFst2[0]=='\0') {
+   if (korean_fst2[0]=='\0') {
       fatal_error("-j option is mandatory when -k is used\n");
    }
 }
+
 struct DELA_tree* tree=new_DELA_tree();
 int buffer[MAX_TOKENS_IN_SENTENCE];
 char tokens_txt[FILENAME_MAX];
@@ -241,10 +243,23 @@ if (!KOREAN) {
 }
 Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
-   alph=load_alphabet(alphabet,KOREAN);
+   alph=load_alphabet(alphabet,jamo_table[0]!='\0');
    if (alph==NULL) {
       fatal_error("Cannot open %s\n",alphabet);
    }
+}
+jamoCodage* jamo=NULL;
+Jamo2Syl* jamo2syl=NULL;
+if (jamo_table[0]!='\0') {
+   jamo=new jamoCodage();
+   jamo->loadJamoMap(jamo_table);
+   /* We also initializes the Chinese -> Hangul table */
+   jamo->cloneHJAMap(alph->korean_equivalent_syllab);
+   jamo2syl=new Jamo2Syl();
+   if (korean_fst2[0]=='\0') {
+      fatal_error("-f option is mandatory when -j is used\n");
+   }
+   jamo2syl->init(jamo_table,korean_fst2);
 }
 struct text_tokens* tokens=load_text_tokens(tokens_txt,mask_encoding_compatibility_input);
 if (tokens==NULL) {
@@ -323,13 +338,13 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
                   exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
                   current_global_position_in_tokens,
                   current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
-                  phrase_cod,jamoTable,jamoFst2);
+                  phrase_cod,jamo_table,korean_fst2);
    } else {
       build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
             normalization_tree,&tag_list,
             current_global_position_in_tokens,
             current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
-            language);
+            language,jamo,jamo2syl);
    }
    if (sentence_number%100==0) u_printf("%d sentences read...        \r",sentence_number);
    sentence_number++;
@@ -344,6 +359,12 @@ free(enter_pos);
 free_Ustring(text);
 u_fclose(tfst);
 u_fclose(tind);
+if (jamo!=NULL) {
+   delete jamo;
+}
+if (jamo2syl!=NULL) {
+   delete jamo2syl;
+}
 write_number_of_graphs(text_tfst,sentence_number-1);
 free_DELA_tree(tree);
 free_text_tokens(tokens);

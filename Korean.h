@@ -60,5 +60,6 @@ int syllabToLetters_HCJ(unichar,unichar*);
 void convert_Korean_text(unichar* src,unichar* dest,jamoCodage* jamo,Alphabet* alphabet);
 void compatibility_jamo_to_standard_jamo(unichar c,unichar* dest,jamoCodage* jamo);
 void convert_jamo_to_hangul(unichar* src,unichar* dest,Jamo2Syl* jamo2syl);
+int get_length_in_jamo(unichar hangul,jamoCodage* jamo,Alphabet* alphabet);
 
 #endif
