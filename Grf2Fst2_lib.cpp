@@ -813,6 +813,7 @@ U_FILE* f=u_fopen_existing_versatile_encoding(infos->mask_encoding_compatibility
 if (f==NULL) {
    error("Cannot open the graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+   free_SingleGraph(graph);
    if (n==0) return 0;
    return 1;
 }
@@ -824,6 +825,7 @@ while ((c=u_fgetc(f))!=EOF && c!='#') {}
 if (c==EOF) {
    error("Invalid graph %S.grf\n(%s)\n",infos->graph_names->value[n],name);
    write_graph(infos->fst2,graph,-n,infos->graph_names->value[n]);
+   free_SingleGraph(graph);
    if (n==0) return 0;
    return 1;
 }
