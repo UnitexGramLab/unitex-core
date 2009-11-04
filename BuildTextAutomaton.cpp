@@ -894,7 +894,9 @@ for (i=0;i<length;i++) {
       }
       if (!is_not_unknown_token) {
          /* If the token was not matched in the dictionary, we put it as an unknown one */
-         u_sprintf(foo,"@STD\n@%S\n@%d.0.0-%d.%d.0\n.\n",tokens->token[buffer[i]],i,i,tfst->token_sizes->tab[i]-1);
+         u_sprintf(foo,"@STD\n@%S\n@%d.0.0-%d.%d.%d\n.\n",tokens->token[buffer[i]],i,i,
+               tfst->token_sizes->tab[i]-1,
+               get_length_in_jamo(tokens->token[buffer[i]][tfst->token_sizes->tab[i]-1],jamo,alph));
          int tag_number=get_value_index(foo->str,tmp_tags);
          add_outgoing_transition(tfst->automaton->states[current_state],tag_number,current_state+1);
       }
