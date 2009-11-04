@@ -232,7 +232,7 @@ if (!u_fempty(encoding_output,bom_output,snt_files->err)) {
 Alphabet* alphabet=NULL;
 if (alph[0]!='\0') {
    /* We load the alphabet */
-   alphabet=load_alphabet(alph);
+   alphabet=load_alphabet(alph,jamo[0]!='\0');
    if (alphabet==NULL) {
       error("Cannot open alphabet file %s\n",alph);
       return 1;
