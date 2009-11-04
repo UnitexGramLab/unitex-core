@@ -463,7 +463,7 @@ for(;;) {
           * space token */
          if (current_token==end) {
             /* If this space token was the last token, then we cannot have a perfect alignement */
-            u_printf("current tag=%S/%d  current token=%S/%d\n",tab[current_tag]->content,
+            debug("current tag=%S/%d  current token=%S/%d\n",tab[current_tag]->content,
                       current_pos_in_char_in_tag,token,current_pos_in_char_in_token);
             break;
          }
@@ -755,7 +755,7 @@ free_Ustring(foo);
 
 /**
  * Loads a whole file as a string. This is used to load the content
- * of the current sentence. 
+ * of the current sentence.
  */
 unichar* load_as_a_string(int mask_encoding_compatibility_input,char* name) {
 U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,name,U_READ);
@@ -794,7 +794,7 @@ free_dela_entry(e);
 
 int token_contains_Hangul_or_Chinese_chars(unichar* s,Alphabet* a) {
 for (int i=0;s[i]!='\0';i++) {
-   if (u_is_korea_syllabe_letter(s[i]) 
+   if (u_is_korea_syllabe_letter(s[i])
          || a->korean_equivalent_syllab[s[i]]!=0
          || (s[i]!=0x318D && u_is_Hangul_Compatility_Jamo(s[i]))) {
       return 1;
@@ -850,10 +850,10 @@ if (/*u_is_korea_syllabe_letter(jamo_tag[0]) || alphabet->korean_equivalent_syll
       (*end_pos_char)=current_char;
       current_char++;
       /* We also must go on in the Jamo text */
-      if ((i>0 || !was_a_Jamo_in_syllab_text) 
+      if ((i>0 || !was_a_Jamo_in_syllab_text)
             /* The previous char was a Jamo ? */
           && *pos_in_jamo_text>0 && u_is_Hangul_Jamo(jamo_text[(*pos_in_jamo_text)-1])
-            /* Not a Jamo syllab bound ? */ 
+            /* Not a Jamo syllab bound ? */
           && jamo_text[*pos_in_jamo_text]!=0x318D
             /* Not a non Jamo letter ? */
           && !is_letter(jamo_text[*pos_in_jamo_text],alphabet)) {
@@ -951,12 +951,12 @@ for (int i=0;jamo_tag[i]!='\0';i++) {
                ,u_is_Hangul_Compatility_Jamo(syllab_text[(*pos_in_syllab_text)]));
          error("current letter=%d\n",current_letter);
       }*/
-      
+
       if (current_char+1==token_sizes[current_token] &&
             /* If we are on the last char of the current token */
             (!u_is_Hangul_Jamo(jamo_text[*pos_in_jamo_text])
-               /* and if 1) there is no more Jamo char in the Jamo text */ 
-            || 
+               /* and if 1) there is no more Jamo char in the Jamo text */
+            ||
                /* or 2) if there is a Jamo char but we are in the case were this char
                 * comes from a Jamo char that was present in the original syllabic text */
                u_is_Hangul_Jamo(syllab_text[(*pos_in_syllab_text)+1])
@@ -974,7 +974,7 @@ for (int i=0;jamo_tag[i]!='\0';i++) {
       } else {
          /* We are not at the end of the current token */
          if (u_is_Hangul_Jamo(jamo_text[*pos_in_jamo_text])) {
-            /* If the next character is a Jamo letter, then we just increase the 
+            /* If the next character is a Jamo letter, then we just increase the
              * letter position */
             current_letter++;
          } else {
@@ -1012,7 +1012,7 @@ while (t!=NULL) {
       /* We only process non epsilon tags that have not been explored */
       if (!u_strcmp(tag->content,"<BL>")) {
          /* The special <BL> tag was used to represent the space in a text automaton.
-          * Now, we just increase our positions and then turn this tag into an 
+          * Now, we just increase our positions and then turn this tag into an
           * epsilon one, after some error checking */
          if (jamo_text[pos_in_jamo_text]!=' ') {
             fatal_error("explore_korean_automaton_for_positions_with_buffer: jamo_text <BL> error\n");
@@ -1023,7 +1023,7 @@ while (t!=NULL) {
          }
          /* We set the tag number to 0 in order to replace this <BL> transition by an epsilon one */
          t->tag_number=0;
-         
+
          explore_korean_automaton_for_positions_with_buffer(tfst,jamo,jamo_text,t->state_number,
                /* We change of token */
                pos_in_token+1,0,0,pos_in_syllab_text+1,pos_in_jamo_text+1,alphabet,jamo_tag,syllab_tag);
@@ -1046,7 +1046,7 @@ while (t!=NULL) {
                                        pos_in_token,pos_in_char,pos_in_letter,
                                        pos_in_syllab_text,pos_in_jamo_text,alphabet,jamo_tag,syllab_tag);
          } else {
-            /* Normal tag */ 
+            /* Normal tag */
             //get_tag_content(tag->content,syllab_tag);
             /* The start positions are the current ones */
             tag->m.start_pos_in_token=pos_in_token;
@@ -1056,7 +1056,7 @@ while (t!=NULL) {
             tag->m.end_pos_in_token=pos_in_token;
             tag->m.end_pos_in_char=pos_in_char;
             tag->m.end_pos_in_letter=pos_in_letter;
-                        
+
             int new_pos_in_token,new_pos_in_char,new_pos_in_letter;
             int new_pos_in_jamo_text=pos_in_jamo_text;
             int new_pos_in_syllab_text=pos_in_syllab_text;
@@ -1065,7 +1065,7 @@ while (t!=NULL) {
                   ,&(tag->m.end_pos_in_token),&(tag->m.end_pos_in_char),&(tag->m.end_pos_in_letter)
                   ,&new_pos_in_token,&new_pos_in_char,&new_pos_in_letter,
                   tfst->token_sizes->tab,alphabet);
-            
+
             //error("\nafter tag %S, pos_token=%d pos_char=%d pos_letter=%d      pos_syllab=%d pos_jamo=%d\n",syllab_tag,
             //      new_pos_in_token,new_pos_in_char,new_pos_in_letter,new_pos_in_syllab_text,new_pos_in_jamo_text);
             explore_korean_automaton_for_positions_with_buffer(tfst,jamo,jamo_text,t->state_number,
@@ -1081,9 +1081,9 @@ while (t!=NULL) {
 
 /**
  * This function explores the sentence automaton in order to set up the positions
- * in its TfstTag. In order to avoid combinatorial explosion, we use 
- * TfstTag->end_pos_token!=-1 as a test to determine if a transition was already 
- * visited (we don't use TfstTag->start_pos_token because it is already used to 
+ * in its TfstTag. In order to avoid combinatorial explosion, we use
+ * TfstTag->end_pos_token!=-1 as a test to determine if a transition was already
+ * visited (we don't use TfstTag->start_pos_token because it is already used to
  * know the number of the original tag).
  */
 void explore_korean_automaton_for_positions(Tfst* tfst,Fst2* jamo,unichar* jamo_text,
@@ -1175,7 +1175,7 @@ if (ret_value!=0) {
    fatal_error("Jamo2Syl did not quit normally. Cannot go on constructing .tfst file\n");
 }
 
-/* We load the two versions of the Korean sentence automaton */ 
+/* We load the two versions of the Korean sentence automaton */
 Fst2* jamo=load_abstract_fst2(jamo_fst2,1,NULL);
 Fst2* syllab=load_abstract_fst2(syllab_fst2,0,NULL);
 
@@ -1252,7 +1252,7 @@ if (ret_value!=0) {
 /* Now, we load the letter version of the text of the current sentence */
 get_path(phrase_cod,current_sentence);
 strcat(current_sentence,"cursentencejm.txt");
-unichar* jamo_text=load_as_a_string(mask_encoding_compatibility_input,current_sentence); 
+unichar* jamo_text=load_as_a_string(mask_encoding_compatibility_input,current_sentence);
 
 tfst->tags=new_vector_ptr(256);
 /* The epsilon tag must always be the first one */
@@ -1284,12 +1284,12 @@ for (int i=0;i<jamo->number_of_states;i++) {
          /* We have to create TfstTag structures, because we have not all the information
           * yet: we will need 1) to compute positions and 2) to replace <BR> transitions
           * by epsilon transitions. So, we cannot rawly produce strings ready to be dumped
-          * into the .tfst file */   
+          * into the .tfst file */
          TfstTag* tag=new_TfstTag(T_STD);
          /* We say that the content of the transition is the syllabic version */
          unichar* q=syllab->tags[trans_src->tag_number]->input;
          if (q[0]=='\\' && q[2]=='\0') {
-            /* The f#!&*@ing program that constructed the Korean sentence 
+            /* The f#!&*@ing program that constructed the Korean sentence
              * automaton shouldn't have protected things with \ */
             tag->content=u_strdup(q+1);
             /* We also modify the jamo and syllab .fst2 */
@@ -1310,7 +1310,7 @@ for (int i=0;i<jamo->number_of_states;i++) {
    }
 }
 /* Now, we have to explore the automaton we have just created in order
- * to compute the positions for each transition tag */ 
+ * to compute the positions for each transition tag */
 explore_korean_automaton_for_positions(tfst,jamo,jamo_text,0,0,0,0,0,0,alph);
 
 /* We clean epsilon transitions */
@@ -1345,7 +1345,7 @@ if (we_must_clean) {
 /* Then we minimize */
 minimize(tfst->automaton,1);
 
-/* Finally, we renumber one more time the tags, because the minimization may have 
+/* Finally, we renumber one more time the tags, because the minimization may have
  * removed unused tags */
 struct string_hash* tags=new_string_hash(32);
 /* The epsilon tag is always the first one */
