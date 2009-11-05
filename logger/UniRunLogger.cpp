@@ -1230,11 +1230,14 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
                               p_RunLog_ctx->clean,(p_RunLog_ctx->cleanlog==1) ? 0 : 1,
                               NULL,&p_RunLog_ThreadData->summary,NULL,&time_elasped,&exec_statuc);
 
+        
+        if (p_RunLog_ctx->quiet != 0)
         {
-        char resume[0x400];
-        sprintf(resume,"resume : thread %u , run %s on %s to %s %u\n",p_RunLog_ThreadData->num_thread,runulp,rundir,resultulp,add_thread);
-        puts(resume);
+            char resume[0x400];
+            sprintf(resume,"resume : thread %u , run %s on %s to %s %lu\n",p_RunLog_ThreadData->num_thread,runulp,rundir,resultulp,add_thread);
+            puts(resume);
         }
+        
         if (p_RunLog_ctx->cleanlog==1)
           af_remove_unlogged(p_RunLog_ctx->resultulp);
     }
