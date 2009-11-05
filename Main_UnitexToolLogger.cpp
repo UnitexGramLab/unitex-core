@@ -21,11 +21,21 @@
 
 #include "IOBuffer.h"
 #include "UnitexTool.h"
+#include "Copyright.h"
 #include "logger/UniRunLogger.h"
 
 
 #include <stdlib.h>
 #include <string.h>
+
+
+const char*	usage_RunLog_mini = "Usage: UnitexToolLogger RunLog\n"
+                                "or \n";;
+
+static void disp_usage_RunLog_mini() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_RunLog_mini);
+}
 
 int main(int argc,char* argv[]) {
 /* Every Unitex program must start by this instruction,
@@ -33,11 +43,23 @@ int main(int argc,char* argv[]) {
  * the graphical interface */
 setBufferMode();
 
-if (argc>3)
+if (argc <= 1) {
+    disp_usage_RunLog_mini();
+}
+
+if (argc>1) {
+    if (strcmp(argv[1],"RunLog")==0)
+    {
+        return main_RunLog(argc-1,argv+1);
+    }
+}
+
+if (argc>3) {
     if (strcmp(argv[1],"RunUnitexLog")==0)
     {
-        return RunUnitexLog(argv[2],argv[3],(argc > 4) ? argv[4] : NULL);
+        return RunLog(argv[2],argv[3],(argc > 4) ? argv[4] : NULL);
     }
+}
 
 return main_UnitexTool(argc,argv);
 }

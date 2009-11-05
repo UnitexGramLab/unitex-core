@@ -28,7 +28,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
+#include "Copyright.h"
 
 #include "ActivityLoggerPlugCallback.h"
 #include "File.h"
@@ -46,12 +48,12 @@
 
 #include "Error.h"
 
-
+#include "AbstractFilePlugCallback.h"
 
 class InstallLoggerForRunner
 {
 public:
-    InstallLoggerForRunner();
+    InstallLoggerForRunner(int real_content_in_log);
     ~InstallLoggerForRunner();
 
     int SelectNextLogName(const char*LogName,const char*portion_ignore_pathname);
@@ -61,19 +63,19 @@ private:
 };
 
 
-InstallLoggerForRunner::InstallLoggerForRunner()
+InstallLoggerForRunner::InstallLoggerForRunner(int real_content_in_log)
 {
     init_done = 0;
 
     /* we want "mini log" with only list */
-    
+
     ule.privateUnloggerData = NULL;
     ule.szPathLog = NULL;
-    ule.store_file_out_content = 0+1;
+    ule.store_file_out_content = real_content_in_log;
     ule.store_list_file_out_content = 1;
 
-    ule.store_file_in_content = 0+1;
-    ule.store_list_file_in_content = 1;
+    ule.store_file_in_content = real_content_in_log;
+    ule.store_list_file_in_content = real_content_in_log;
 
     /* we dont want "auto generate" log */
     ule.auto_increment_logfilename = 0;
@@ -567,7 +569,41 @@ int CompareFileName(const char* n1,const char*n2)
     }
 }
 
-UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite)
+
+int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo)
+{
+  size_t lenMsg = strlen(msgThis);
+  if (summaryInfo != NULL)
+  {
+      if (*summaryInfo == NULL)
+      {
+          *summaryInfo = (char*)malloc(lenMsg+1);
+          if ((*summaryInfo) != NULL)
+            memcpy(*summaryInfo,msgThis,lenMsg+1);
+          return ((*summaryInfo) == NULL) ? 0 : 1;
+      }
+      else
+      {
+          size_t pos = strlen(*summaryInfo);
+          char*newbuf = (char*)realloc(*summaryInfo,pos+(lenMsg+1));
+          if (newbuf != NULL)
+          {
+              *summaryInfo = newbuf;
+              memcpy(newbuf+pos,msgThis,lenMsg+1);
+          }
+          return ((newbuf) == NULL) ? 0 : 1;
+      }
+  }
+  else
+      return 0;
+}
+
+UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,int clean_file,
+                                        int real_content_in_log,
+                                        const char* /* LocationUnfoundVirtualRessource */,
+                                        char** summaryInfo,
+                                        int *pReturn,unsigned int*pTimeElapsed,
+                                        Exec_status* p_exec_status)
 {
     zlib_filefunc_def zlib_filefunc;
     fill_afopen_filefunc(&zlib_filefunc);
@@ -586,8 +622,9 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
     struct ListFile* list_file_in = NULL;
 
     struct dir_list_for_clean* pdlfc = NULL;
+    Exec_status exec_status = EXEC_NOTRUN;
 
-    InstallLoggerForRunner InstallLoggerForRunnerSingleton;
+    InstallLoggerForRunner InstallLoggerForRunnerSingleton(real_content_in_log);
 
     if (FileRunPath==NULL)
         FileRunPath="";
@@ -599,11 +636,16 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
 
     unzFile uf = unzOpen2(LogNameRead,&zlib_filefunc);
     if (uf == NULL)
+    {
+        if (p_exec_status!=NULL)
+            *p_exec_status = exec_status;
         return -1;
+    }
 
     uLong i;
     unz_global_info gi;
     int err;
+    
     
     err = unzGetGlobalInfo (uf,&gi);
     if (err==UNZ_OK)
@@ -698,7 +740,9 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
       //int retvalue = atoi(cur_command_line_entry);
 
       cur_command_line_entry = GetNextLine(&walk_arg);
-      int nb_arg = atoi(cur_command_line_entry);
+      int nb_arg = 0;
+      if (cur_command_line_entry != NULL)
+        nb_arg = atoi(cur_command_line_entry);
 
       int walk;
       int argc_log=0;
@@ -732,20 +776,28 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
           InstallLoggerForRunnerSingleton.SelectNextLogName(LogNameWrite,FileRunPath);
 
       unsigned int walk_list_out;
-      for (walk_list_out = 0;walk_list_out < list_file_out->iNbFile;walk_list_out++)
-      {
-          const char* filename_out = ((list_file_out->p_ListFile_entry) + walk_list_out) -> filename;
-          const char* filename_out_usable = get_filename_to_copy(filename_out);
-          char filename_to_be_written[256];
-          CombineRunPathOnPathName(filename_to_be_written,FileRunPath,need_add_dir_sep,filename_out_usable);
-          if (is_filename_in_abstract_file_space(filename_to_be_written) == 0)
-            mkdir_recursive(filename_to_be_written,0,pdlfc);
-      }
+      if (list_file_out != NULL)
+          for (walk_list_out = 0;walk_list_out < list_file_out->iNbFile;walk_list_out++)
+          {
+              const char* filename_out = ((list_file_out->p_ListFile_entry) + walk_list_out) -> filename;
+              const char* filename_out_usable = get_filename_to_copy(filename_out);
+              char filename_to_be_written[256];
+              CombineRunPathOnPathName(filename_to_be_written,FileRunPath,need_add_dir_sep,filename_out_usable);
+              if (is_filename_in_abstract_file_space(filename_to_be_written) == 0)
+                mkdir_recursive(filename_to_be_written,0,pdlfc);
+          }
 
-      main_UnitexTool_C(argc_log+1,(char**)argv_log_reworked);
 
-      /* put nonzero to clean file after execute log */
-      int clean_file = 666;
+      hTimeElasped htm = NULL;
+      if (pTimeElapsed != NULL)
+        htm = SyncBuidTimeMarkerObject();
+      int ret_tool = main_UnitexTool_C(argc_log+1,(char**)argv_log_reworked);
+      if (htm != NULL)
+          *pTimeElapsed = SyncGetMSecElapsed(htm);
+
+      if (pReturn != NULL)
+          *pReturn = ret_tool;
+      
 
       if (LogNameWrite!=NULL)
       {
@@ -794,27 +846,29 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
       if ((clean_file != 0) && (list_file_out_newlog != NULL))
       {
           unsigned int i,j;
-          for (i=0;i<list_file_in->iNbFile;i++)
-          {
-              const char* filename = (((list_file_in->p_ListFile_entry)+i)->filename);
-              char filename_written[256];
-              CombineRunPathOnPathName(filename_written,FileRunPath,need_add_dir_sep,filename);
-              af_remove_unlogged(filename_written);
-          }
+          if (list_file_in != NULL)
+              for (i=0;i<list_file_in->iNbFile;i++)
+              {
+                  const char* filename = (((list_file_in->p_ListFile_entry)+i)->filename);
+                  char filename_written[256];
+                  CombineRunPathOnPathName(filename_written,FileRunPath,need_add_dir_sep,filename);
+                  af_remove_unlogged(filename_written);
+              }
 
 
-          for (j=0;j<list_file_out_newlog->iNbFile;j++)
-          {
-              const char* filename = (((list_file_out_newlog->p_ListFile_entry)+j)->filename);
-              char filename_written[256];
-              CombineRunPathOnPathName(filename_written,FileRunPath,need_add_dir_sep,get_filename_to_copy(filename));
-              af_remove_unlogged(filename_written);
-          }
+          if (list_file_out_newlog != NULL)
+              for (j=0;j<list_file_out_newlog->iNbFile;j++)
+              {
+                  const char* filename = (((list_file_out_newlog->p_ListFile_entry)+j)->filename);
+                  char filename_written[256];
+                  CombineRunPathOnPathName(filename_written,FileRunPath,need_add_dir_sep,get_filename_to_copy(filename));
+                  af_remove_unlogged(filename_written);
+              }
 
           rm_log_dir_portable(pdlfc);
-
       }
 
+      exec_status = EXEC_COMPARE_OK;
 
       if ((list_file_out_newlog != NULL) && (list_file_out != NULL))
       {
@@ -822,6 +876,7 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
           int error_compare=0;
           for (i=0;i<list_file_out->iNbFile;i++)
           {
+              char msgThis[0x400]="";
               const char* fn_compare_original_log = get_filename_to_copy(((list_file_out->p_ListFile_entry)+i)->filename);
               for (j=0;j<list_file_out_newlog->iNbFile;j++)
               {
@@ -832,7 +887,8 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
                           ((((list_file_out->p_ListFile_entry)+i)->crc) != (((list_file_out_newlog->p_ListFile_entry)+j)->crc)))
                       {
                           error_compare = 1;
-                          u_printf("bad compare %s\n",fn_compare_original_log);
+                          sprintf(msgThis,"-> log error : bad compare %s\n",fn_compare_original_log);
+                          exec_status = EXEC_COMPARE_ERROR;
                       }
                       break;
                   }
@@ -840,13 +896,40 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
               if (j == list_file_out_newlog->iNbFile)
               {
                   error_compare = 1;
-                  u_printf("file %s not found in new log\n",fn_compare_original_log);
+                  if ((((list_file_out->p_ListFile_entry)+i)->size) == 0)
+                  {
+                      sprintf(msgThis,"-> log warning : empty file %s not found in new log\n",fn_compare_original_log);
+                      if (exec_status != EXEC_COMPARE_ERROR)
+                          exec_status = EXEC_COMPARE_WARNING;
+                  }
+                  else
+                  {
+                      sprintf(msgThis,"-> log error : file %s not found in new log\n",fn_compare_original_log);
+                      exec_status = EXEC_COMPARE_ERROR;
+                  }
               }
+
+              if (msgThis[0] != 0)
+              {
+                  AddMsgToSummaryBuf(msgThis,summaryInfo);
+              }
+              
           }
-          if (error_compare == 0)
-              u_printf("-> LOG COMPARE: good news: new log result is compatible with previous log for %s and %s\n",LogNameRead,LogNameWrite);
-          else
-              u_printf("-> LOG COMPARE: bad news: new log result is NOT compatible with previous log for %s and %s\n",LogNameRead,LogNameWrite);
+
+          {
+              char msgEnd[0x400];
+              char msgTime[0x80];
+              if (pTimeElapsed != NULL)
+                  sprintf(msgTime,"%u msec, ",*pTimeElapsed);
+              else
+                  msgTime[0]=0;
+              
+              if (error_compare == 0)
+                  sprintf(msgEnd,"--> LOG COMPARE: good news: %snew log result is compatible with previous log for %s and %s\n\n",msgTime,LogNameRead,LogNameWrite);
+              else
+                  sprintf(msgEnd,"--> LOG COMPARE: bad news: %snew log result is NOT compatible with previous log for %s and %s\n\n",msgTime,LogNameRead,LogNameWrite);
+              AddMsgToSummaryBuf(msgEnd,summaryInfo);
+          }
       }
 
       free(buf_arg);
@@ -872,5 +955,426 @@ UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* Fil
 
     clean_list_dir_for_clean(pdlfc);
 
+    if (p_exec_status!=NULL)
+        *p_exec_status = exec_status;
+
     return 0;
+}
+
+
+UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite)
+{
+    char*summary=NULL;
+    int ret= RunLogParam(LogNameRead,FileRunPath,LogNameWrite,1,1,NULL,&summary,NULL,NULL,NULL);
+    if (summary!=NULL)
+    {
+        u_printf("%s",summary);
+        free(summary);
+    }
+    return ret;
+}
+
+
+
+
+
+
+static int IsNumber(char c)
+{
+  return ((c>='0') && (c<='9'));
+}
+
+int IncNumberInName(char* lpFn,int fNeedAbsolute,unsigned long dwStepIncr,unsigned long* prev_value)
+{
+int i,iBegName,iPoint,iEndName,iln,iBegChif,iEndChif;
+int fFoundChif=0;
+int fForce=0;
+int fInExt;
+int fExpand = 0;
+
+    iBegName = 0;
+    iBegChif = iEndChif = 0;
+    fInExt = 0;
+
+    lpFn += get_filename_withoutpath_position(lpFn);
+    iEndName = iln = (int)strlen(lpFn);
+
+    if (iln == 0) return 0;
+    for (i=iln-1;i>=0;i--)
+      {
+      if ((*(lpFn+i)) == '.') iEndName = i;
+      }
+    iPoint = iEndName;
+
+    //if ((!fFoundChif) && ((*(lpFn+iPoint)) == '.'))
+    if ((*(lpFn+iPoint)) == '.') // search number in ext if there is ext
+      {
+      iBegName = iPoint + 1;
+      iEndName = iln;
+      for (i=iEndName-1;i>=iBegName;i--)
+        if (IsNumber(*(lpFn+i)))
+        {
+          for (iBegChif=iEndChif=i;iBegChif>0;iBegChif--)
+            if (!IsNumber(*(lpFn+iBegChif-1))) break;
+          break;
+        }
+      fInExt = fFoundChif = (i>=iBegName) ;
+      }
+
+    if (!fFoundChif)
+      {
+      iBegName = 0 ;
+      iEndName = iPoint;
+      for (i=iEndName-1;i>=iBegName;i--)
+        if (IsNumber(*(lpFn+i)))
+          {
+            for (iBegChif=iEndChif=i;iBegChif>0;iBegChif--)
+              if (!IsNumber(*(lpFn+iBegChif-1))) break;
+            break;
+          }
+      fFoundChif = (i>=iBegName) ;
+      }
+
+    if ((!fFoundChif) && fNeedAbsolute)
+      {
+      fForce = 1;/*
+      if (iPoint > 7)
+        {
+          iBegChif = iEndChif = 7 ;
+          fExpand = 0;
+        }
+       else*/
+        {
+          iBegChif = iPoint;
+          iEndChif = iBegChif -1;
+          fExpand = 1;
+        }
+      }
+
+    if (fFoundChif || fForce)
+      {
+      unsigned long dwNb;
+      char szBuf[32];
+      char szFmt[16];
+      int iLenChif;
+
+      int j;
+    if (!fForce)
+      {
+      fExpand = 1;
+      for (j=iBegChif;j<=iEndChif;j++)
+        if (*(lpFn+j) != '9') fExpand = 0;
+      if ((iEndName-iBegName > (fInExt ? 2 : 7)) && (fExpand))
+        {
+        fExpand = 0;
+        if (((iBegChif > 0) && (!fInExt)) || ((iBegChif > (iPoint+2)) && (fInExt)))
+          {
+        iBegChif --;
+        *(lpFn+iBegChif) = '0';
+          }
+        }
+      }
+    if (fExpand)
+      {
+        for (j = iln;j>iEndChif;j--)
+          * (lpFn+j+1) = * (lpFn+j);
+        iEndChif++;
+      }
+
+    iLenChif=iEndChif+1-iBegChif;
+    memcpy(szBuf,lpFn+iBegChif,iLenChif);
+    szBuf[iLenChif] = '\0';
+    if (fForce) dwNb =0 ;
+    else
+        dwNb = atol(szBuf) ;
+
+    dwNb+=dwStepIncr;
+    if (prev_value!=NULL)
+        *prev_value=dwNb;
+
+    {
+        char szTest[0x20];
+        sprintf(szTest,"%lu",dwNb);
+        int iNewLenChif = (int)strlen(szTest);
+        if (iNewLenChif > iLenChif)
+        {
+            memmove(lpFn+iBegChif+iNewLenChif,lpFn+iBegChif+iLenChif,strlen(lpFn+iBegChif+iLenChif)+1);
+            iLenChif = iNewLenChif ;
+        }
+    }
+
+    sprintf(szFmt,("%%0%ulu"),iLenChif);
+    sprintf(szBuf,szFmt,dwNb);
+    memcpy((lpFn)+iBegChif,szBuf,iLenChif);
+    return 1;
+      }
+  return 0;
+}
+
+
+const char* usage_RunLog =
+         "Usage : RunLog [OPTIONS] <ulp>\n"
+         "\n"
+         "  <ulp>: name of log to run\n"
+         "\n"
+         "OPTIONS:\n"
+         "  -p/--quiet: do not emit message when running\n"
+         "  -v/--verbose: emit message when running\n"
+         "  -d DIR/--rundir=DIR: path where log is executed\n"
+         "  -r newfile.ulp/--result=newfile.ulp : name of result ulp created\n"
+         "  -c/--clean: remove work file after execution\n"
+         "  -k/--keep: keep work file after execution\n"
+         "  -s file.txt/--summary=file.txt: name of summary file with log compare result\n"
+         "  -n/--cleanlog: remove result ulp after execution\n"
+         "  -l/--keeplog: keep result ulp after execution\n"
+         "\n"
+         "future:\n"
+         "  -i N/--increment=N: increment filename until N\n"
+         "  -t N/--thread=N: create N thread\n"
+         "  -a N/--random=N: select N time a random log in the list (in each thread)\n"
+         "\n"
+         "rerun a log.\n";
+
+
+static void usage() {
+u_printf("%S",COPYRIGHT);
+u_printf(usage_RunLog);
+}
+const char* optstring_RunLog=":pcd:r:i:s:mvt:lna:";
+const struct option_TS lopts_RunLog[]= {
+      {"rundir",required_argument_TS,NULL,'d'},
+      {"result",required_argument_TS,NULL,'r'},
+      {"increment",required_argument_TS,NULL,'i'},
+      {"clean",no_argument_TS,NULL,'c'},
+      {"keep",no_argument_TS,NULL,'p'},
+      {"summary",required_argument_TS,NULL,'s'},
+      {"quiet",no_argument_TS,NULL,'m'},
+      {"verbose",no_argument_TS,NULL,'v'},
+      {"thread",required_argument_TS,NULL,'t'},
+      {"cleanlog",no_argument_TS,NULL,'n'},
+      {"keeplog",no_argument_TS,NULL,'l'},
+      {"increment",required_argument_TS,NULL,'i'},
+      {"thread",required_argument_TS,NULL,'t'},
+      {"random",required_argument_TS,NULL,'a'},
+      {NULL,no_argument_TS,NULL,0}
+};
+
+
+typedef struct {
+    char resultulp[0x200];
+    char rundir[0x200];
+    char summaryfile[0x200];
+    const char* runulp;
+
+    int quiet;
+    int clean;
+    int cleanlog;
+    int nb_thread;
+    long increment;
+    long random;
+} RunLog_ctx;
+
+
+typedef struct {
+    const RunLog_ctx * p_RunLog_ctx;
+    char*summary;
+    unsigned int num_thread;
+} RunLog_ThreadData;
+
+void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/)
+{
+    RunLog_ThreadData* p_RunLog_ThreadData =(RunLog_ThreadData*)privateDataPtr;
+    const RunLog_ctx* p_RunLog_ctx = p_RunLog_ThreadData->p_RunLog_ctx;
+
+    long i;
+    long nb_iteration = (p_RunLog_ctx->random != 0) ? p_RunLog_ctx->random : p_RunLog_ctx->increment;
+    if (nb_iteration==0)
+        nb_iteration=1;
+    unsigned long add_thread = p_RunLog_ThreadData->num_thread * nb_iteration;
+
+    if (p_RunLog_ctx->random != 0)
+        srand ( (unsigned int)(time(NULL) + p_RunLog_ThreadData->num_thread) );
+    for (i=0;i<nb_iteration;i++)
+    {
+        char runulp[0x200];
+        char resultulp[0x200];
+        char rundir[0x200];
+
+
+        strcpy(runulp,p_RunLog_ctx->runulp);
+        strcpy(rundir,p_RunLog_ctx->rundir);
+        strcpy(resultulp,p_RunLog_ctx->resultulp);
+
+        if ((p_RunLog_ctx->increment>0) || (p_RunLog_ctx->random>0))
+        {
+            unsigned long lprev=0;
+            unsigned long inc_this = i;
+            if (p_RunLog_ctx->random != 0)
+            { 
+                unsigned int j;
+                inc_this = 0;
+                for (j=0;j<17;j++)
+                    inc_this = inc_this ^ (rand() << j);
+                inc_this = inc_this % p_RunLog_ctx->increment;
+            }
+            IncNumberInName(runulp,1,(unsigned long)inc_this,(i==0) ? (&lprev) : NULL);
+            if (p_RunLog_ctx->random != 0)
+                lprev=0;
+            IncNumberInName(rundir,1,(unsigned long)((i+lprev)+add_thread),NULL);
+            IncNumberInName(resultulp,1,(unsigned long)((i+lprev)+add_thread),NULL);
+        }
+
+        unsigned int time_elasped=0;
+        Exec_status exec_statuc;
+        RunLogParam(runulp,rundir,resultulp,
+                              p_RunLog_ctx->clean,(p_RunLog_ctx->cleanlog==1) ? 0 : 1,
+                              NULL,&p_RunLog_ThreadData->summary,NULL,&time_elasped,&exec_statuc);
+
+        {
+        char resume[0x400];
+        sprintf(resume,"resume : thread %u , run %s on %s to %s %u\n",p_RunLog_ThreadData->num_thread,runulp,rundir,resultulp,add_thread);
+        puts(resume);
+        }
+        if (p_RunLog_ctx->cleanlog==1)
+          af_remove_unlogged(p_RunLog_ctx->resultulp);
+    }
+}
+
+/**
+ * The same than main, but no call to setBufferMode.
+ */
+int main_RunLog(int argc,char* argv[]) {
+if (argc==1) {
+   usage();
+   return 0;
+}
+
+RunLog_ctx runLog_ctx;
+runLog_ctx.resultulp[0]='\0';
+runLog_ctx.rundir[0]='\0';
+runLog_ctx.summaryfile[0]='\0';
+runLog_ctx.quiet=2;
+runLog_ctx.clean=1;
+runLog_ctx.cleanlog=0;
+runLog_ctx.nb_thread=1;
+runLog_ctx.increment=0;
+runLog_ctx.random=0;
+
+int val,index=-1;
+struct OptVars* vars=new_OptVars();
+while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,vars))) {
+   switch(val) {
+   case 'c': runLog_ctx.clean=1; break;
+   case 'p': runLog_ctx.clean=0; break;
+   case 'n': runLog_ctx.cleanlog=1; break;
+   case 'l': runLog_ctx.cleanlog=0; break;
+   case 'm': runLog_ctx.quiet=1; break;
+   case 'v': runLog_ctx.quiet=0; break;
+   case 'a': 
+             if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a number of random execution\n");
+             }
+             
+             runLog_ctx.random=atol(vars->optarg);
+             break;
+   case 'i': 
+             if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a number of increment\n");
+             }
+             runLog_ctx.increment=atol(vars->optarg);
+             break;
+   case 't': 
+             if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a number of thread\n");
+             }
+             runLog_ctx.nb_thread=atoi(vars->optarg);
+             break;
+   case 'r': strcpy(runLog_ctx.resultulp,vars->optarg); break;
+   case 'd': strcpy(runLog_ctx.rundir,vars->optarg); break;
+   case 's': strcpy(runLog_ctx.summaryfile,vars->optarg); break;
+   }
+   index=-1;
+}
+
+if (vars->optind!=argc-1) {
+   error("Invalid arguments: rerun with --help\n");
+   free_OptVars(vars);
+   return 1;
+}
+if (runLog_ctx.nb_thread == 0)
+  runLog_ctx.nb_thread = 1;
+
+if (runLog_ctx.nb_thread > 1)
+  if (IsSeveralThreadsPossible() == 0)
+      runLog_ctx.nb_thread = 1;
+
+if (runLog_ctx.quiet==2)
+  runLog_ctx.quiet = (runLog_ctx.nb_thread == 1) ? 0 : 1;
+
+
+runLog_ctx.runulp=argv[vars->optind];
+
+
+int trash_out=0;
+int trash_err=0;
+t_fnc_stdOutWrite fnc_out=NULL;
+t_fnc_stdOutWrite fnc_err=NULL;
+void* private_out=NULL;
+void* private_err=NULL;
+if (runLog_ctx.quiet==1)
+{
+    GetStdWriteCB(stdwrite_kind_out, &trash_out, &fnc_out,&private_out);
+    GetStdWriteCB(stdwrite_kind_err, &trash_err, &fnc_err,&private_err);
+    SetStdWriteCB(stdwrite_kind_out,1,NULL,NULL);
+    SetStdWriteCB(stdwrite_kind_err,1,NULL,NULL);
+}
+
+RunLog_ThreadData* prunLog_ThreadData;
+
+prunLog_ThreadData = (RunLog_ThreadData*)malloc(sizeof(RunLog_ThreadData)*(runLog_ctx.nb_thread+1));
+void** ptrptr = (void**)malloc(sizeof(void**)*(runLog_ctx.nb_thread+1));
+
+int ut;
+for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
+    (prunLog_ThreadData+ut)->p_RunLog_ctx = &runLog_ctx;
+    (prunLog_ThreadData+ut)->summary = NULL;
+    (prunLog_ThreadData+ut)->num_thread = ut;
+
+    *(ptrptr+ut) = (void*)(prunLog_ThreadData+ut);
+}
+
+//int res = RunLogParam(runLog_ctx.runulp,runLog_ctx.rundir,runLog_ctx.resultulp,runLog_ctx.clean,NULL,&summary,NULL,NULL,NULL);
+//DoWork(prunLog_ThreadData);
+
+
+SyncDoRunThreads(runLog_ctx.nb_thread,DoWork,ptrptr);
+
+if (runLog_ctx.quiet==1)
+{
+    SetStdWriteCB(stdwrite_kind_out, trash_out, fnc_out, private_out);
+    SetStdWriteCB(stdwrite_kind_err, trash_err, fnc_err, private_err);
+}
+
+for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
+    if ((prunLog_ThreadData+ut)->summary!=NULL)
+    {
+        if (runLog_ctx.quiet == 0)
+          u_printf("%s",(prunLog_ThreadData+ut)->summary);
+        if (runLog_ctx.summaryfile != NULL)
+        {
+            ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx.summaryfile,"ab");
+            if (afw != NULL)
+            {
+                af_fwrite((prunLog_ThreadData+ut)->summary,strlen((prunLog_ThreadData+ut)->summary),1,afw);
+                af_fclose_unlogged(afw);
+            }
+        }
+        free((prunLog_ThreadData+ut)->summary);
+        (prunLog_ThreadData+ut)->summary=NULL;
+    }
+}
+free(prunLog_ThreadData);
+free(ptrptr);
+free_OptVars(vars);
+return 0;
 }

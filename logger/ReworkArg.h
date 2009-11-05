@@ -30,6 +30,7 @@
 extern "C" {
 #endif
 
+unsigned int get_filename_withoutpath_position(const char*filename);
 
 int SearchPossiblePosFileNameInArg(const char*arg);
 

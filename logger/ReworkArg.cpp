@@ -30,6 +30,25 @@
 #include "ReworkArg.h"
 
 
+unsigned int get_filename_withoutpath_position(const char*filename)
+{
+    unsigned int curpos=0;
+    unsigned int ret=0;
+    while ((*filename)!='\0')
+    {
+        char c=*filename;
+        if ((c=='*') || (c=='#') || (c=='/') || (c=='\\'))
+        {
+            char c_after=*(filename+1);
+            if (c_after != '\0')
+                ret=curpos+1;
+        }
+        filename++;
+        curpos++;
+    }
+    return ret;
+}
+
 
 const char* get_filename_to_copy(const char*filename)
 {

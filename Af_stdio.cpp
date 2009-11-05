@@ -416,6 +416,16 @@ size_t af_fwrite(const void *ptr,size_t sizeItem,size_t nmemb,ABSTRACTFILE *stre
 		struct stdwrite_param* p_std_write_param = get_std_write_param(stream);
 		if (p_std_write_param != NULL)
 		{
+			/* trashOutput == 2 mean hard trash : no log of output, include logger */
+			/* trashOutput == 1 mean softer trash : log of output go to logger */
+			if (p_std_write_param->trashOutput != 2)
+			{
+				if (IsStdOut(stream))
+					Call_logger_fnc_LogOutWrite(ptr,sizeItem*nmemb);
+				if (IsStdErr(stream))
+					Call_logger_fnc_LogErrWrite(ptr,sizeItem*nmemb);
+			}
+
 			if (p_std_write_param->trashOutput != 0)
 				return nmemb;
 
@@ -429,10 +439,7 @@ size_t af_fwrite(const void *ptr,size_t sizeItem,size_t nmemb,ABSTRACTFILE *stre
 					res /= sizeItem;
 				return res;
 			}
-            if (IsStdOut(stream))
-                Call_logger_fnc_LogOutWrite(ptr,sizeItem*nmemb);
-            if (IsStdErr(stream))
-                Call_logger_fnc_LogErrWrite(ptr,sizeItem*nmemb);
+
 		}
 		return fwrite(ptr,sizeItem,nmemb,p_abfr->f);
 	}

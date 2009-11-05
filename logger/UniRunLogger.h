@@ -33,8 +33,32 @@ extern "C" {
 
 /* */
 
+typedef enum {
+    EXEC_NOTRUN,
+    EXEC_COMPARE_ERROR,
+    EXEC_COMPARE_WARNING,
+    EXEC_COMPARE_OK
+} Exec_status;
 
-UNITEX_FUNC int UNITEX_CALL RunUnitexLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite);
+
+UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,int clean_file,
+                                        int real_content_in_log,
+                                        const char* /* LocationUnfoundVirtualRessource */,
+                                        char** summaryInfo,
+                                        int *pReturn,unsigned int*pTimeElapsed,
+                                        Exec_status* p_exec_status);
+
+UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite);
+
+
+
+
+extern const char* optstring_RunLog;
+extern const struct option_TS lopts_RunLog[];
+extern const char* usage_RunLog;
+
+int main_RunLog(int argc,char* argv[]);
+
 
 #ifdef __cplusplus
 }
