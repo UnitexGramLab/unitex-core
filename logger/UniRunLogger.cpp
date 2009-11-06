@@ -378,7 +378,7 @@ int do_extracting_currentfile_memory(
         return err;
     }
 
-    *ptr = malloc(file_info.uncompressed_size+2);
+    *ptr = malloc(file_info.uncompressed_size+3);
     if ((*ptr) == NULL)
         return UNZ_INTERNALERROR;
     *size_file = file_info.uncompressed_size;
@@ -400,9 +400,10 @@ int do_extracting_currentfile_memory(
         *size_file = 0;
     }
     else
-    {   /* we append two '\0' at end of file */
+    {   /* we append three '\0' at end of file, to be sure UTF16 are NULL terminated */
         *(((char*)(*ptr)) + file_info.uncompressed_size) = 0;
         *(((char*)(*ptr)) + file_info.uncompressed_size+1) = 0;
+        *(((char*)(*ptr)) + file_info.uncompressed_size+2) = 0;
     }
     return err;
 }
@@ -598,10 +599,13 @@ int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo)
       return 0;
 }
 
-UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,int clean_file,
+UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
+                                        const char* SelectTool,
+                                        int clean_file,
                                         int real_content_in_log,
                                         const char* /* LocationUnfoundVirtualRessource */,
                                         char** summaryInfo,
+                                        char** summaryInfoErrorOnly,
                                         int *pReturn,unsigned int*pTimeElapsed,
                                         Exec_status* p_exec_status)
 {
@@ -624,7 +628,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
     struct dir_list_for_clean* pdlfc = NULL;
     Exec_status exec_status = EXEC_NOTRUN;
 
-    InstallLoggerForRunner InstallLoggerForRunnerSingleton(real_content_in_log);
+    
 
     if (FileRunPath==NULL)
         FileRunPath="";
@@ -650,6 +654,63 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
     err = unzGetGlobalInfo (uf,&gi);
     if (err==UNZ_OK)
     {
+        if (SelectTool != NULL)
+            if ((*SelectTool)!='\0')
+            {
+              for (i=0;i<gi.number_entry;i++)
+              {
+                  char filename_inzip[256];
+                  unz_file_info file_info;
+                  err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip)-1,NULL,0,NULL,0);
+
+                  if ((strcmp(filename_inzip,"test_info/command_line.txt")==0))
+                  {
+                      do_extracting_currentfile_memory(uf,(void**)&command_line_buf,&size_command_line,NULL);
+                      break;
+                  }
+
+
+                  if ((i+1)<gi.number_entry)
+                    {
+                        err = unzGoToNextFile(uf);
+                        if (err!=UNZ_OK)
+                        {
+                            error("error %d with zipfile in unzGoToNextFile\n",err);
+                            break;
+                        }
+                    }
+              }
+
+              unzGoToFirstFile(uf);
+
+              if (command_line_buf != NULL)
+              {
+                char* command_line_buf_backup = (char*)malloc(size_command_line+3);
+                memcpy(command_line_buf_backup,command_line_buf,size_command_line+3);
+
+                char *walk_command_line = command_line_buf_backup;
+
+
+                char*cur_command_line_entry;
+                cur_command_line_entry = GetNextLine(&walk_command_line);
+                
+
+                cur_command_line_entry = GetNextLine(&walk_command_line);
+                if (strcmp(cur_command_line_entry,SelectTool) != 0)
+                    exec_status = EXEC_NOTRUN_UNWANTEDTOOL;
+
+                free(command_line_buf_backup);
+              }
+            }
+
+      if (exec_status == EXEC_NOTRUN_UNWANTEDTOOL)
+      {
+          free(command_line_buf);
+          unzClose(uf);
+          return 0;
+      }
+
+
       list_file_in = AllocListFile(gi.number_entry);
       pdlfc = build_list_dir_for_clean();
       int nb_listfile_in=0;
@@ -671,20 +732,8 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
               char filename_to_write[256];
 
               CombineRunPathOnPathName(filename_to_write,FileRunPath,need_add_dir_sep,filename_to_extract);
-              /*
-              strcpy(filename_to_write,FileRunPath);
-              if (need_add_dir_sep != 0)
-                  strcat(filename_to_write,"/");
-              strcat(filename_to_write,filename_to_extract);
 
-              char * browse=filename_to_write;
-              while ((*browse) != '\0')
-              {
-                  if (((*browse) == '\\') || ((*browse) == '/'))
-                      *browse=PATH_SEPARATOR_CHAR;
-                  browse++;
-              }
-*/
+
               int extres = do_extracting_currentfile(uf,filename_to_write,pdlfc,&opt_extract_without_path,&opt_overwrite,NULL);
 
               if (extres == UNZ_OK)
@@ -696,19 +745,16 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
                   list_file_in->iNbFile = nb_listfile_in;
               }
           }
-/*
-          if (strcmp(filename_inzip,"test_info/list_file_in.txt")==0)
-          {
-              do_extracting_currentfile_memory(uf,(void**)&list_in_buf,&size_list_in,NULL);
-          }
-*/
+
+
           if (strcmp(filename_inzip,"test_info/list_file_out.txt")==0)
           {
               do_extracting_currentfile_memory(uf,(void**)&list_out_buf,&size_list_out,NULL);
               list_file_out = ReadListFile(list_out_buf,size_list_out);
           }
 
-          if (strcmp(filename_inzip,"test_info/command_line.txt")==0)
+          if ((strcmp(filename_inzip,"test_info/command_line.txt")==0) &&
+              (command_line_buf == NULL))
           {
               do_extracting_currentfile_memory(uf,(void**)&command_line_buf,&size_command_line,NULL);
           }
@@ -772,6 +818,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 
       //char *buf_reworked=malloc(size_command_line + 
 
+      InstallLoggerForRunner InstallLoggerForRunnerSingleton(real_content_in_log);
       if (LogNameWrite != NULL)
           InstallLoggerForRunnerSingleton.SelectNextLogName(LogNameWrite,FileRunPath);
 
@@ -912,6 +959,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
               if (msgThis[0] != 0)
               {
                   AddMsgToSummaryBuf(msgThis,summaryInfo);
+                  AddMsgToSummaryBuf(msgThis,summaryInfoErrorOnly);
               }
               
           }
@@ -929,6 +977,8 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
               else
                   sprintf(msgEnd,"--> LOG COMPARE: bad news: %snew log result is NOT compatible with previous log for %s and %s\n\n",msgTime,LogNameRead,LogNameWrite);
               AddMsgToSummaryBuf(msgEnd,summaryInfo);
+              if (error_compare != 0)
+                AddMsgToSummaryBuf(msgEnd,summaryInfoErrorOnly);
           }
       }
 
@@ -965,11 +1015,16 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite)
 {
     char*summary=NULL;
-    int ret= RunLogParam(LogNameRead,FileRunPath,LogNameWrite,1,1,NULL,&summary,NULL,NULL,NULL);
+    char*summaryError=NULL;
+    int ret= RunLogParam(LogNameRead,FileRunPath,LogNameWrite,NULL,1,1,NULL,&summary,&summaryError,NULL,NULL,NULL);
     if (summary!=NULL)
     {
         u_printf("%s",summary);
         free(summary);
+    }
+    if (summaryError!=NULL)
+    {
+        free(summaryError);
     }
     return ret;
 }
@@ -1118,15 +1173,17 @@ const char* usage_RunLog =
          "  <ulp>: name of log to run\n"
          "\n"
          "OPTIONS:\n"
-         "  -p/--quiet: do not emit message when running\n"
+         "  -m/--quiet: do not emit message when running\n"
          "  -v/--verbose: emit message when running\n"
          "  -d DIR/--rundir=DIR: path where log is executed\n"
          "  -r newfile.ulp/--result=newfile.ulp : name of result ulp created\n"
          "  -c/--clean: remove work file after execution\n"
-         "  -k/--keep: keep work file after execution\n"
+         "  -p/--keep: keep work file after execution\n"
          "  -s file.txt/--summary=file.txt: name of summary file with log compare result\n"
+         "  -e file.txt/--summary-error=file.txt: summary file with error compare result\n"
          "  -n/--cleanlog: remove result ulp after execution\n"
          "  -l/--keeplog: keep result ulp after execution\n"
+         "  -o NameTool/--tool=NameTool: run only log for NameTool\n"
          "\n"
          "future:\n"
          "  -i N/--increment=N: increment filename until N\n"
@@ -1140,7 +1197,7 @@ static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(usage_RunLog);
 }
-const char* optstring_RunLog=":pcd:r:i:s:mvt:lna:";
+const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1148,6 +1205,7 @@ const struct option_TS lopts_RunLog[]= {
       {"clean",no_argument_TS,NULL,'c'},
       {"keep",no_argument_TS,NULL,'p'},
       {"summary",required_argument_TS,NULL,'s'},
+      {"summary-error",required_argument_TS,NULL,'e'},
       {"quiet",no_argument_TS,NULL,'m'},
       {"verbose",no_argument_TS,NULL,'v'},
       {"thread",required_argument_TS,NULL,'t'},
@@ -1156,6 +1214,7 @@ const struct option_TS lopts_RunLog[]= {
       {"increment",required_argument_TS,NULL,'i'},
       {"thread",required_argument_TS,NULL,'t'},
       {"random",required_argument_TS,NULL,'a'},
+      {"tool",required_argument_TS,NULL,'o'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -1164,6 +1223,8 @@ typedef struct {
     char resultulp[0x200];
     char rundir[0x200];
     char summaryfile[0x200];
+    char summary_error_file[0x200];
+    char select_tool[0x200];
     const char* runulp;
 
     int quiet;
@@ -1178,6 +1239,7 @@ typedef struct {
 typedef struct {
     const RunLog_ctx * p_RunLog_ctx;
     char*summary;
+    char*summary_error;
     unsigned int num_thread;
 } RunLog_ThreadData;
 
@@ -1226,9 +1288,9 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
 
         unsigned int time_elasped=0;
         Exec_status exec_statuc;
-        RunLogParam(runulp,rundir,resultulp,
+        RunLogParam(runulp,rundir,resultulp,  p_RunLog_ctx->select_tool,
                               p_RunLog_ctx->clean,(p_RunLog_ctx->cleanlog==1) ? 0 : 1,
-                              NULL,&p_RunLog_ThreadData->summary,NULL,&time_elasped,&exec_statuc);
+                              NULL,&p_RunLog_ThreadData->summary,&p_RunLog_ThreadData->summary_error,NULL,&time_elasped,&exec_statuc);
 
         
         if (p_RunLog_ctx->quiet != 0)
@@ -1256,6 +1318,8 @@ RunLog_ctx runLog_ctx;
 runLog_ctx.resultulp[0]='\0';
 runLog_ctx.rundir[0]='\0';
 runLog_ctx.summaryfile[0]='\0';
+runLog_ctx.summary_error_file[0]='\0';
+runLog_ctx.select_tool[0]='\0';
 runLog_ctx.quiet=2;
 runLog_ctx.clean=1;
 runLog_ctx.cleanlog=0;
@@ -1295,6 +1359,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
    case 'r': strcpy(runLog_ctx.resultulp,vars->optarg); break;
    case 'd': strcpy(runLog_ctx.rundir,vars->optarg); break;
    case 's': strcpy(runLog_ctx.summaryfile,vars->optarg); break;
+   case 'e': strcpy(runLog_ctx.summary_error_file,vars->optarg); break;
+   case 'o': strcpy(runLog_ctx.select_tool,vars->optarg); break;
    }
    index=-1;
 }
@@ -1341,6 +1407,7 @@ int ut;
 for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
     (prunLog_ThreadData+ut)->p_RunLog_ctx = &runLog_ctx;
     (prunLog_ThreadData+ut)->summary = NULL;
+    (prunLog_ThreadData+ut)->summary_error = NULL;
     (prunLog_ThreadData+ut)->num_thread = ut;
 
     *(ptrptr+ut) = (void*)(prunLog_ThreadData+ut);
@@ -1358,6 +1425,7 @@ if (runLog_ctx.quiet==1)
 }
 
 for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
+
     if ((prunLog_ThreadData+ut)->summary!=NULL)
     {
         if (runLog_ctx.quiet == 0)
@@ -1375,7 +1443,26 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
         free((prunLog_ThreadData+ut)->summary);
         (prunLog_ThreadData+ut)->summary=NULL;
     }
+
+    if ((prunLog_ThreadData+ut) -> summary_error != NULL)
+    {
+        if (runLog_ctx.quiet == 0)
+          fwrite((prunLog_ThreadData+ut)->summary_error,strlen((prunLog_ThreadData+ut)->summary_error),1,U_STDERR);
+
+        if (runLog_ctx.summary_error_file != NULL)
+        {
+            ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx.summary_error_file,"ab");
+            if (afw != NULL)
+            {
+                af_fwrite((prunLog_ThreadData+ut)->summary_error,strlen((prunLog_ThreadData+ut)->summary_error),1,afw);
+                af_fclose_unlogged(afw);
+            }
+        }
+        free((prunLog_ThreadData+ut)->summary_error);
+        (prunLog_ThreadData+ut)->summary_error=NULL;
+    }
 }
+
 free(prunLog_ThreadData);
 free(ptrptr);
 free_OptVars(vars);

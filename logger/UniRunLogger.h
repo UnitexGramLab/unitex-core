@@ -35,16 +35,20 @@ extern "C" {
 
 typedef enum {
     EXEC_NOTRUN,
+    EXEC_NOTRUN_UNWANTEDTOOL,
     EXEC_COMPARE_ERROR,
     EXEC_COMPARE_WARNING,
     EXEC_COMPARE_OK
 } Exec_status;
 
 
-UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,int clean_file,
+UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
+                                        const char* SelectTool,
+                                        int clean_file,
                                         int real_content_in_log,
                                         const char* /* LocationUnfoundVirtualRessource */,
                                         char** summaryInfo,
+                                        char** summaryInfoErrorOnly,
                                         int *pReturn,unsigned int*pTimeElapsed,
                                         Exec_status* p_exec_status);
 

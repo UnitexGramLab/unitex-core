@@ -42,6 +42,7 @@ int is_empty(struct stack_unichar*);
 void empty(struct stack_unichar* stack);
 int is_full(struct stack_unichar*);
 void push(struct stack_unichar*,unichar);
+void push_array(struct stack_unichar*,const unichar*,unsigned int);
 unichar pop(struct stack_unichar*);
 
 #endif
