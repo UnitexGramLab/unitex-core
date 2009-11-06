@@ -118,11 +118,11 @@ int* backup=(int*)malloc(sizeof(int)*2*l);
 if (backup==NULL) {
    fatal_alloc_error("create_variable_backup");
 }
-int j=0;
-for (int i=0;i<l;i++) {
-   backup[j++]=v->variables[i].start;
-   backup[j++]=v->variables[i].end;
-}
+
+/* v->variables is an array of struct transduction_variable 
+   which is a structure of two int */
+memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*2*l);
+
 return backup;
 }
 
@@ -142,12 +142,9 @@ void install_variable_backup(Variables* v,int* backup) {
 if (backup==NULL) {
 	fatal_error("NULL error in install_variable_backup\n");
 }
-int j=0;
 int l=v->variable_index->size;
-for (int i=0;i<l;i++) {
-   v->variables[i].start=backup[j++];
-   v->variables[i].end=backup[j++];
-}
-}
 
-
+/* v->variables is an array of struct transduction_variable 
+   which is a structure of two int */
+memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*2*l);
+}

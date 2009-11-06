@@ -90,6 +90,7 @@ void push_output_string(struct stack_unichar* stack,unichar* s) {
 push_input_string(stack,s,0);
 }
 
+
 /**
  * This function processes the given output string.
  * Returns 1 if OK; 0 otherwise (for instance, if a variable is
@@ -102,8 +103,23 @@ if (s==NULL) {
    /* We do nothing if there is no output */
    return 1;
 }
-while (s[i]!='\0') {
-   if (s[i]=='$') {
+
+for (;;)
+{
+    int char_to_push_count=0;
+    while ((s[i+char_to_push_count]!='\0') && (s[i+char_to_push_count]!='$'))
+        char_to_push_count++;
+    if (char_to_push_count!=0)
+    {
+        push_array(p->stack,&s[i],char_to_push_count);
+        i+=char_to_push_count;
+    }
+
+    if (s[i]=='\0')
+        break;
+    /* now s[i]=='$' */
+
+   /*if (s[i]=='$')*/ {
       /* Case of a variable name */
       unichar name[128];
       int l=0;
@@ -239,12 +255,8 @@ while (s[i]!='\0') {
          push_input_string(p->stack,p->tokens->value[p->buffer[k+p->current_origin]],p->protect_dic_chars);
       }
    }
-   else {
-      /* If we have a normal character */
-      push_output_char(p->stack,s[i]);
-      i++;
-   }
 }
+
 return 1;
 }
 

@@ -97,6 +97,24 @@ stack->stack[++(stack->stack_pointer)]=c;
 
 
 /**
+ * Pushes the given characters from an array on the given stack.
+ */
+void push_array(struct stack_unichar* stack,const unichar *array,unsigned int size) {
+if (stack==NULL) {
+   fatal_error("NULL error in push_multiple\n");
+}
+if ((stack->stack_pointer + (int)size) >= stack->capacity) {
+   fatal_error("Cannot push_array on a full stack\n");
+}
+
+unsigned int i;
+for (i=0;i<size;i++) {
+   stack->stack[++(stack->stack_pointer)]=*(array+i);
+}
+}
+
+
+/**
  * Pops and returns the top element of the stack.
  */
 unichar pop(struct stack_unichar* stack) {

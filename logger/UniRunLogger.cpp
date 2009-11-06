@@ -923,7 +923,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
                   sprintf(msgTime,"%u msec, ",*pTimeElapsed);
               else
                   msgTime[0]=0;
-              
+
               if (error_compare == 0)
                   sprintf(msgEnd,"--> LOG COMPARE: good news: %snew log result is compatible with previous log for %s and %s\n\n",msgTime,LogNameRead,LogNameWrite);
               else
@@ -1346,11 +1346,10 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
     *(ptrptr+ut) = (void*)(prunLog_ThreadData+ut);
 }
 
-//int res = RunLogParam(runLog_ctx.runulp,runLog_ctx.rundir,runLog_ctx.resultulp,runLog_ctx.clean,NULL,&summary,NULL,NULL,NULL);
-//DoWork(prunLog_ThreadData);
-
-
-SyncDoRunThreads(runLog_ctx.nb_thread,DoWork,ptrptr);
+if (runLog_ctx.nb_thread == 1)
+   DoWork(*ptrptr,0);
+else
+   SyncDoRunThreads(runLog_ctx.nb_thread,DoWork,ptrptr);
 
 if (runLog_ctx.quiet==1)
 {
@@ -1362,7 +1361,8 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
     if ((prunLog_ThreadData+ut)->summary!=NULL)
     {
         if (runLog_ctx.quiet == 0)
-          u_printf("%s",(prunLog_ThreadData+ut)->summary);
+          fwrite((prunLog_ThreadData+ut)->summary,strlen((prunLog_ThreadData+ut)->summary),1,U_STDOUT);
+
         if (runLog_ctx.summaryfile != NULL)
         {
             ABSTRACTFILE* afw = af_fopen_unlogged(runLog_ctx.summaryfile,"ab");

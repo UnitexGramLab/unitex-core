@@ -91,6 +91,8 @@ if (value==NULL) {
 if (l==NULL) {
    return new_list_ustring(value);
 }
+
+list_ustring* baselist = l;
 int res=u_strcmp(value,l->string);
 if (!res) {
    return l;
@@ -98,8 +100,25 @@ if (!res) {
 if (res<0) {
    return new_list_ustring(value,l);
 }
-l->next=sorted_insert(value,l->next);
-return l;
+
+for (;;) {
+    list_ustring* lnext = l->next;
+    if (lnext==NULL)
+    {
+        l->next=new_list_ustring(value);
+        return baselist;
+    }
+    int res2=u_strcmp(value,lnext->string);
+    if (res2==0)
+        return baselist;
+    if (res2<0)
+    {
+        l->next=new_list_ustring(value,lnext);
+        return baselist;
+    }
+    l=lnext;
+}
+
 }
 
 
