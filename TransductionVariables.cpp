@@ -148,3 +148,118 @@ int l=v->variable_index->size;
    which is a structure of two int */
 memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*2*l);
 }
+
+
+/* to limit number of malloc, we define a pool of memory (like a stack)
+ * we use this thing : free will be done in reverse order than alloc
+ **/
+
+/*
+ * create_variable_backup_memory_reserve : build a reserve of memory
+ * with space for nb_item_allocated int
+ */
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(int nb_item_allocated)
+{
+variable_backup_memory_reserve* ptr = (variable_backup_memory_reserve*)
+   malloc(sizeof(variable_backup_memory_reserve)+(sizeof(int)*nb_item_allocated));
+
+if (ptr==NULL) {
+   fatal_alloc_error("create_variable_backup_memory_reserve");
+}
+ptr->nb_item_allocated = nb_item_allocated;
+ptr->pos_used = 0;
+return ptr;
+}
+
+/*
+ * clear the reserve from memory
+ */
+void free_reserve(variable_backup_memory_reserve*r)
+{
+    if (r->pos_used != 0) {
+        fatal_alloc_error("free_reserve : used reserve");
+}
+free(r);
+}
+
+#define SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE (32)
+#define LIMIT_MIN_SUGGESTED_SIZE (16384)
+#define LIMIT_MAX_SUGGESTED_SIZE (65536)
+/*
+ * is_enough_memory_in_reserve_for_Variable return 1 is there is sufficient space in reserve
+ *  to create a backup of v
+ * else, return 0
+ * *needed will contain the minimal space needed
+ * *suggested_alloc is a suggestion of nb_item to allocate
+ */
+int is_enough_memory_in_reserve_for_Variable(Variables* v,variable_backup_memory_reserve* r)
+{
+    return ((r->pos_used + (v->variable_index->size)) <= r->nb_item_allocated) ;
+}
+
+int suggest_size_backup_reserve(Variables*v)
+{
+/* we store the number of element after the list.
+   we add 2 and not 1 for alignement and faster memcpy */
+int size_one_backup = 0;
+if (v!=NULL)
+  size_one_backup = ((v->variable_index->size*2) + 2);
+
+/* we suggest several SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE because we want prevent malloc/free at each step */
+
+int suggested_size = size_one_backup * SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE;
+if (suggested_size > LIMIT_MAX_SUGGESTED_SIZE)
+    suggested_size = LIMIT_MAX_SUGGESTED_SIZE;
+if (suggested_size < LIMIT_MIN_SUGGESTED_SIZE)
+    suggested_size = LIMIT_MIN_SUGGESTED_SIZE;
+
+suggested_size -= suggested_size % size_one_backup;
+if (suggested_size < size_one_backup)
+    suggested_size = size_one_backup;
+
+return suggested_size;
+}
+
+/*
+ * create the backup, taking memory from reserve
+ */
+int* create_variable_backup_using_reserve(Variables* v,variable_backup_memory_reserve* r) {
+if (is_enough_memory_in_reserve_for_Variable(v,r)==0)
+  fatal_error("not enough space in create_variable_backup_using_reserve\n");
+
+int l=v->variable_index->size;
+/* v->variables is an array of struct transduction_variable 
+   which is a structure of two int */
+int* ret = &(r->array_int[r->pos_used]);
+memcpy((void*)ret,(void*)(&(v->variables[0])),sizeof(int)*2*l);
+*(ret + (l*2))=l;
+
+r->pos_used += (2*l)+2;
+
+/* we store the number of element after the list. */
+
+return ret;
+}
+
+/*
+ * free memory from reserve
+ * return 0 if there is still used space in reserve
+ * return 1 if the reserve can be free
+ */
+int free_variable_backup_using_reserve(int*backup,variable_backup_memory_reserve* r)
+{
+if (r == NULL)
+    fatal_error("free_variable_backup_using_reserve NULL parameter");
+if (r->pos_used<2)
+    fatal_error("free_variable_backup_using_reserve using empty reserve");
+
+int size_transition = r->array_int[r->pos_used - 2];
+int size_int = ((size_transition*2)+2);
+
+if (r->pos_used < size_int)
+    fatal_error("free_variable_backup_using_reserve using corrupt reserve");
+if (backup != (&(r->array_int[r->pos_used - size_int])))
+    fatal_error("free_variable_backup_using_reserve using not latest allocated");
+r->pos_used -= size_int;
+return (r->pos_used == 0) ? 1 : 0;
+}

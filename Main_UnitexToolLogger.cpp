@@ -45,6 +45,8 @@ setBufferMode();
 
 if (argc <= 1) {
     disp_usage_RunLog_mini();
+    unitex_tool_usage(1,0);
+    return 0;
 }
 
 if (argc>1) {

@@ -685,21 +685,21 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 
               if (command_line_buf != NULL)
               {
-                char* command_line_buf_backup = (char*)malloc(size_command_line+3);
-                memcpy(command_line_buf_backup,command_line_buf,size_command_line+3);
+                char* command_line_buf_copy = (char*)malloc(size_command_line+1);
+                memcpy(command_line_buf_copy,command_line_buf,size_command_line+1);
 
-                char *walk_command_line = command_line_buf_backup;
+                char *walk_command_line = command_line_buf_copy;
 
 
                 char*cur_command_line_entry;
                 cur_command_line_entry = GetNextLine(&walk_command_line);
-                
-
                 cur_command_line_entry = GetNextLine(&walk_command_line);
+                cur_command_line_entry = GetNextLine(&walk_command_line);
+
                 if (strcmp(cur_command_line_entry,SelectTool) != 0)
                     exec_status = EXEC_NOTRUN_UNWANTEDTOOL;
 
-                free(command_line_buf_backup);
+                free(command_line_buf_copy);
               }
             }
 
@@ -707,6 +707,8 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
       {
           free(command_line_buf);
           unzClose(uf);
+          if (p_exec_status != NULL)
+              *p_exec_status = exec_status;
           return 0;
       }
 
@@ -1184,9 +1186,7 @@ const char* usage_RunLog =
          "  -n/--cleanlog: remove result ulp after execution\n"
          "  -l/--keeplog: keep result ulp after execution\n"
          "  -o NameTool/--tool=NameTool: run only log for NameTool\n"
-         "\n"
-         "future:\n"
-         "  -i N/--increment=N: increment filename until N\n"
+         "  -i N/--increment=N: increment filename <ulp> by 0 to N\n"
          "  -t N/--thread=N: create N thread\n"
          "  -a N/--random=N: select N time a random log in the list (in each thread)\n"
          "\n"
@@ -1197,7 +1197,7 @@ static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(usage_RunLog);
 }
-const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:";
+const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:o:";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1225,6 +1225,7 @@ typedef struct {
     char summaryfile[0x200];
     char summary_error_file[0x200];
     char select_tool[0x200];
+    char LocationUnfoundVirtualRessource[0x200];
     const char* runulp;
 
     int quiet;
@@ -1286,17 +1287,20 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
             IncNumberInName(resultulp,1,(unsigned long)((i+lprev)+add_thread),NULL);
         }
 
-        unsigned int time_elasped=0;
-        Exec_status exec_statuc;
+        unsigned int time_elapsed=0;
+        Exec_status exec_status;
         RunLogParam(runulp,rundir,resultulp,  p_RunLog_ctx->select_tool,
                               p_RunLog_ctx->clean,(p_RunLog_ctx->cleanlog==1) ? 0 : 1,
-                              NULL,&p_RunLog_ThreadData->summary,&p_RunLog_ThreadData->summary_error,NULL,&time_elasped,&exec_statuc);
+                              p_RunLog_ctx->LocationUnfoundVirtualRessource,
+                              &(p_RunLog_ThreadData->summary),&(p_RunLog_ThreadData->summary_error),
+                              NULL,&time_elapsed,&exec_status);
 
         
-        if (p_RunLog_ctx->quiet != 0)
+        if ((p_RunLog_ctx->quiet != 0) && (exec_status != EXEC_NOTRUN_UNWANTEDTOOL))
         {
             char resume[0x400];
-            sprintf(resume,"resume : thread %u , run %s on %s to %s %lu\n",p_RunLog_ThreadData->num_thread,runulp,rundir,resultulp,add_thread);
+            sprintf(resume,"resume : thread %u , run %s on %s to %s, %u msec\n",
+                p_RunLog_ThreadData->num_thread,runulp,rundir,resultulp,time_elapsed);
             puts(resume);
         }
         
@@ -1320,6 +1324,7 @@ runLog_ctx.rundir[0]='\0';
 runLog_ctx.summaryfile[0]='\0';
 runLog_ctx.summary_error_file[0]='\0';
 runLog_ctx.select_tool[0]='\0';
+runLog_ctx.LocationUnfoundVirtualRessource[0]='\0';
 runLog_ctx.quiet=2;
 runLog_ctx.clean=1;
 runLog_ctx.cleanlog=0;
@@ -1361,6 +1366,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
    case 's': strcpy(runLog_ctx.summaryfile,vars->optarg); break;
    case 'e': strcpy(runLog_ctx.summary_error_file,vars->optarg); break;
    case 'o': strcpy(runLog_ctx.select_tool,vars->optarg); break;
+   case 'u': strcpy(runLog_ctx.LocationUnfoundVirtualRessource,vars->optarg); break;
    }
    index=-1;
 }

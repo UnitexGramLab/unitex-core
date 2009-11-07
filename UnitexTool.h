@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+void unitex_tool_usage(int several, int display_copyright);
+
 int check_Utility(const char* name);
 
 int main_UnitexTool_single(int argc,char* argv[]);

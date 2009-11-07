@@ -261,13 +261,17 @@ void list_unused_option_letter()
 
 }
 
-void unitex_tool_usage(int several)
+const char* usage_UnitexTool_prefix =
+    "Usage: UnitexTool <Utility> [OPTIONS]\n" 
+		          "where OPTIONS can be -h/--help to display help\n"
+			       "and Utility is from this list :\n";
+
+void unitex_tool_usage(int several, int display_copyright)
 {
 	int i=0;
-	u_printf("%S",COPYRIGHT);
-	u_printf("Usage: UnitexTool <Utility> [OPTIONS]\n" 
-		      "where OPTIONS can be -h/--help to display help\n"
-			   "and Utility is from this list :\n");
+    if (display_copyright != 0)
+	  u_printf("%S",COPYRIGHT);
+	u_printf(usage_UnitexTool_prefix);
 	while (utility_array[i].len_name > 0)
 	{
 		u_printf("%s\n",utility_array[i].name);
@@ -305,7 +309,7 @@ const struct utility_item* utility_called = NULL;
 if (argc>1)
   utility_called = found_utility(argv[1]);
 if (utility_called==NULL) {
-   unitex_tool_usage(0);
+   unitex_tool_usage(0,1);
    return 0;
 }
 
@@ -340,7 +344,7 @@ int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_
 	
 	if (argc <= 1)
 	{
-		unitex_tool_usage(1);
+		unitex_tool_usage(1,1);
 	}
 	else
 	while ((pos<argc) && (ret == 0))
@@ -390,7 +394,7 @@ int UnitexTool_several_info(int argc,char* argv[],int* p_number_done,struct pos_
 			}
 			else
 			{
-				unitex_tool_usage(1);
+				unitex_tool_usage(1,1);
 				ret = 1;
 			}
 

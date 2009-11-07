@@ -802,7 +802,13 @@ if (L!=NULL) {
       }
       p->dic_variables=clone_dic_variable_list(L->dic_variable_backup);
       /* And we continue the exploration */
-      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
+
+      int suggested_param_alloc_reserve=0;
+      suggested_param_alloc_reserve = suggest_size_backup_reserve(p->variables);
+      variable_backup_memory_reserve* backup_reserve = create_variable_backup_memory_reserve(suggested_param_alloc_reserve);
+      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve);
+      free_reserve(backup_reserve);
+
       p->stack->stack_pointer=stack_top;
       if (graph_depth==0) {
          /* If we are at the top graph level, we restore the variables */

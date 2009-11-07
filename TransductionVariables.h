@@ -74,4 +74,46 @@ int* create_variable_backup(Variables*);
 void free_variable_backup(int*);
 void install_variable_backup(Variables*,int*);
 
+
+/* to limit number of malloc, we define a pool of memory
+   we use this thing : free will be done in reverse order than alloc
+   */
+
+typedef struct {
+    int nb_item_allocated;
+    int pos_used;
+    int array_int[1];
+} variable_backup_memory_reserve;
+
+/*
+ * create_variable_backup_memory_reserve : build a reserve of memory
+ * with space for nb_item_allocated int
+ */
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(int nb_item_allocated);
+
+/*
+ * clear the reserve from memory
+ */
+void free_reserve(variable_backup_memory_reserve*r);
+
+/*
+ * is_enough_memory_in_reserve_for_Variable return 1 is there is sufficient space in reserve
+ */
+int is_enough_memory_in_reserve_for_Variable(Variables* v,variable_backup_memory_reserve* r);
+
+/* suggest a nb_item_allocated */
+int suggest_size_backup_reserve(Variables*v);
+
+/*
+ * create the backup, taking memory from reserve
+ */
+int* create_variable_backup_using_reserve(Variables* v,variable_backup_memory_reserve* r) ;
+
+/*
+ * free memory from reserve
+ * return 0 if there is still used space in reserve
+ * return 1 if the reserve can be free
+ */
+int free_variable_backup_using_reserve(int*backup,variable_backup_memory_reserve* r) ;
+
 #endif
