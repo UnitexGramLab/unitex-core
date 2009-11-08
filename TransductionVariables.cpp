@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -119,7 +119,7 @@ if (backup==NULL) {
    fatal_alloc_error("create_variable_backup");
 }
 
-/* v->variables is an array of struct transduction_variable 
+/* v->variables is an array of struct transduction_variable
    which is a structure of two int */
 memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*2*l);
 
@@ -144,7 +144,7 @@ if (backup==NULL) {
 }
 int l=v->variable_index->size;
 
-/* v->variables is an array of struct transduction_variable 
+/* v->variables is an array of struct transduction_variable
    which is a structure of two int */
 memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*2*l);
 }
@@ -158,29 +158,7 @@ memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*2*l);
  * create_variable_backup_memory_reserve : build a reserve of memory
  * with space for nb_item_allocated int
  */
-variable_backup_memory_reserve* create_variable_backup_memory_reserve(int nb_item_allocated)
-{
-variable_backup_memory_reserve* ptr = (variable_backup_memory_reserve*)
-   malloc(sizeof(variable_backup_memory_reserve)+(sizeof(int)*nb_item_allocated));
 
-if (ptr==NULL) {
-   fatal_alloc_error("create_variable_backup_memory_reserve");
-}
-ptr->nb_item_allocated = nb_item_allocated;
-ptr->pos_used = 0;
-return ptr;
-}
-
-/*
- * clear the reserve from memory
- */
-void free_reserve(variable_backup_memory_reserve*r)
-{
-    if (r->pos_used != 0) {
-        fatal_alloc_error("free_reserve : used reserve");
-}
-free(r);
-}
 
 #define SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE (32)
 #define LIMIT_MIN_SUGGESTED_SIZE (16384)
@@ -189,21 +167,21 @@ free(r);
  * is_enough_memory_in_reserve_for_Variable return 1 is there is sufficient space in reserve
  *  to create a backup of v
  * else, return 0
- * *needed will contain the minimal space needed
- * *suggested_alloc is a suggestion of nb_item to allocate
+ */
+
+
+/*
+ * check if the reserve contain space and is correct to save variable v
  */
 int is_enough_memory_in_reserve_for_Variable(Variables* v,variable_backup_memory_reserve* r)
 {
-    return ((r->pos_used + (v->variable_index->size)) <= r->nb_item_allocated) ;
+    return ((r->pos_used != r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
 }
 
-int suggest_size_backup_reserve(Variables*v)
+int suggest_size_backup_reserve(int size_one_backup)
 {
 /* we store the number of element after the list.
    we add 2 and not 1 for alignement and faster memcpy */
-int size_one_backup = 0;
-if (v!=NULL)
-  size_one_backup = ((v->variable_index->size*2) + 2);
 
 /* we suggest several SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE because we want prevent malloc/free at each step */
 
@@ -220,23 +198,55 @@ if (suggested_size < size_one_backup)
 return suggested_size;
 }
 
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(Variables* v)
+{
+int size_variable_index = v->variable_index->size;
+int size_unaligned = (size_variable_index*2);
+int size_aligned = (((size_unaligned * sizeof(int)) + 0x0f) & 0x7ffffff0) / sizeof(int);
+
+int nb_item_allocated=suggest_size_backup_reserve(size_aligned);
+variable_backup_memory_reserve* ptr = (variable_backup_memory_reserve*)
+   malloc(sizeof(variable_backup_memory_reserve)+(sizeof(int)*nb_item_allocated));
+
+if (ptr==NULL) {
+   fatal_alloc_error("create_variable_backup_memory_reserve");
+}
+ptr->nb_item_allocated = nb_item_allocated;
+ptr->nb_backup_possible_array = nb_item_allocated / size_aligned;
+ptr->pos_used = 0;
+ptr->size_variable_index = size_variable_index;
+ptr->size_copydata = size_unaligned*sizeof(int);
+ptr->size_aligned = size_aligned;
+return ptr;
+}
+
+/*
+ * clear the reserve from memory
+ */
+void free_reserve(variable_backup_memory_reserve*r)
+{
+    if (r->pos_used != 0) {
+        fatal_alloc_error("free_reserve : used reserve");
+}
+free(r);
+}
+
+
 /*
  * create the backup, taking memory from reserve
+ * we assume is_enough_memory_in_reserve_for_Variable was already called to verify
  */
 int* create_variable_backup_using_reserve(Variables* v,variable_backup_memory_reserve* r) {
-if (is_enough_memory_in_reserve_for_Variable(v,r)==0)
-  fatal_error("not enough space in create_variable_backup_using_reserve\n");
-
 int l=v->variable_index->size;
-/* v->variables is an array of struct transduction_variable 
+if (l != r->size_variable_index) {
+    fatal_error("bad size\n");
+}
+/* v->variables is an array of struct transduction_variable
    which is a structure of two int */
-int* ret = &(r->array_int[r->pos_used]);
-memcpy((void*)ret,(void*)(&(v->variables[0])),sizeof(int)*2*l);
-*(ret + (l*2))=l;
+int* ret = &(r->array_int[0+(r->pos_used * r->size_aligned)]);
+memcpy((void*)ret,(void*)(&(v->variables[0])),r->size_copydata);
 
-r->pos_used += (2*l)+2;
-
-/* we store the number of element after the list. */
+r->pos_used ++;
 
 return ret;
 }
@@ -248,18 +258,11 @@ return ret;
  */
 int free_variable_backup_using_reserve(int*backup,variable_backup_memory_reserve* r)
 {
-if (r == NULL)
-    fatal_error("free_variable_backup_using_reserve NULL parameter");
-if (r->pos_used<2)
-    fatal_error("free_variable_backup_using_reserve using empty reserve");
+if (r->pos_used >= 1) {
+  r->pos_used --;
+  return (r->pos_used == 0) ? 1 : 0;
+}
 
-int size_transition = r->array_int[r->pos_used - 2];
-int size_int = ((size_transition*2)+2);
-
-if (r->pos_used < size_int)
-    fatal_error("free_variable_backup_using_reserve using corrupt reserve");
-if (backup != (&(r->array_int[r->pos_used - size_int])))
-    fatal_error("free_variable_backup_using_reserve using not latest allocated");
-r->pos_used -= size_int;
-return (r->pos_used == 0) ? 1 : 0;
+  fatal_error("free_variable_backup_using_reserve error");
+  return 0;
 }

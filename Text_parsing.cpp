@@ -65,9 +65,7 @@ clock_t startTime=clock();
 clock_t currentTime ;
 unite=((text_size/100)>1000)?(text_size/100):1000;
 
-int suggested_param_alloc_reserve=0;
-suggested_param_alloc_reserve = suggest_size_backup_reserve(p->variables);
-variable_backup_memory_reserve* backup_reserve = create_variable_backup_memory_reserve(suggested_param_alloc_reserve);
+variable_backup_memory_reserve* backup_reserve = create_variable_backup_memory_reserve(p->variables);
 
 while (p->current_origin<p->token_buffer->size
        && p->number_of_matches!=p->search_limit) {
@@ -307,9 +305,7 @@ if (graph_call_list!=NULL) {
 
 
       if (is_enough_memory_in_reserve_for_Variable(p->variables,reserve_used)==0) {
-          int suggested_param_alloc_reserve;
-          suggested_param_alloc_reserve = suggest_size_backup_reserve(p->variables);
-          reserve_used = create_variable_backup_memory_reserve(suggested_param_alloc_reserve);
+          reserve_used = create_variable_backup_memory_reserve(p->variables);
           create_new_reserve_done = 1;
       }
 

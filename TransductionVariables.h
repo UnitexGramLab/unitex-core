@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -46,9 +46,9 @@ typedef struct {
 
 /**
  * This structure defines the range of a variable in the text tokens.
- * 
- * Note: when used from LocateTfst, start and end represent the 
- *       TfstTag indices of the first and last text dependent tags of 
+ *
+ * Note: when used from LocateTfst, start and end represent the
+ *       TfstTag indices of the first and last text dependent tags of
  *       a match. Moreover, 'end' must be taken into account, at the opposite
  *       of the Locate use of this structure.
  */
@@ -77,32 +77,39 @@ void install_variable_backup(Variables*,int*);
 
 /* to limit number of malloc, we define a pool of memory
    we use this thing : free will be done in reverse order than alloc
+
+   we want help the compiler to understand we want array_int[0] aligned on
+   16 bytes boundaries. This is very important for memcpy size.
+   We don't care lost somes bytes : there will a very small number of
+   variable_backup_memory_reserve structure allocated
    */
 
+
 typedef struct {
+    int size_variable_index;
     int nb_item_allocated;
     int pos_used;
-    int array_int[1];
+    int size_aligned;
+
+    int size_copydata;
+    int nb_backup_possible_array;
+    int dummy1,dummy2;
+    int array_int[4];
 } variable_backup_memory_reserve;
 
 /*
  * create_variable_backup_memory_reserve : build a reserve of memory
  * with space for nb_item_allocated int
  */
-variable_backup_memory_reserve* create_variable_backup_memory_reserve(int nb_item_allocated);
+variable_backup_memory_reserve* create_variable_backup_memory_reserve(Variables*);
 
 /*
  * clear the reserve from memory
  */
 void free_reserve(variable_backup_memory_reserve*r);
 
-/*
- * is_enough_memory_in_reserve_for_Variable return 1 is there is sufficient space in reserve
- */
+/* check if the reserve contain space and is correct to save variable v */
 int is_enough_memory_in_reserve_for_Variable(Variables* v,variable_backup_memory_reserve* r);
-
-/* suggest a nb_item_allocated */
-int suggest_size_backup_reserve(Variables*v);
 
 /*
  * create the backup, taking memory from reserve
