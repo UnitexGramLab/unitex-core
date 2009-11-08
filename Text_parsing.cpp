@@ -289,12 +289,15 @@ if (pos+p->current_origin>=p->token_buffer->size) {
    }
 }
 
+
 /**
  * SUBGRAPHS
  */
 struct opt_graph_call* graph_call_list=current_state->graph_calls;
 if (graph_call_list!=NULL) {
    /* If there are subgraphs, we process them */
+
+   int* save_previous_ptr_var=NULL;
    int* var_backup=NULL;
    int create_new_reserve_done = 0;
    variable_backup_memory_reserve* reserve_used=backup_reserve;
@@ -304,7 +307,7 @@ if (graph_call_list!=NULL) {
       /* For better performance when ignoring outputs */
 
 
-      if (is_enough_memory_in_reserve_for_Variable(p->variables,reserve_used)==0) {
+      if (is_enough_memory_in_reserve_for_two_set_variables(p->variables,reserve_used)==0) {
           reserve_used = create_variable_backup_memory_reserve(p->variables);
           create_new_reserve_done = 1;
       }
@@ -312,6 +315,7 @@ if (graph_call_list!=NULL) {
       var_backup=create_variable_backup_using_reserve(p->variables,reserve_used);
       dic_variables_backup=p->dic_variables;
    }
+
    do {
       /* For each graph call, we look all the reachable states */
       t=graph_call_list->transition;
@@ -319,6 +323,7 @@ if (graph_call_list!=NULL) {
          struct parsing_info* L=NULL;
          p->stack_base=p->stack->stack_pointer;
          p->dic_variables=clone_dic_variable_list(dic_variables_backup);
+
          locate(graph_depth+1, /* Exploration of the subgraph */
                 p->optimized_states[p->fst2->initial_states[graph_call_list->graph_number]],
                 pos,depth+1,&L,0,
@@ -327,17 +332,26 @@ if (graph_call_list!=NULL) {
                 p,
                 p_token_error_ctx,
                 reserve_used);
+
          p->stack_base=old_StackBase;
          clear_dic_variable_list(&(p->dic_variables));
          if (L!=NULL) {
            struct parsing_info* L_first=L;
            /* If there is at least one match, we process the match list */
            do  {
+
              /* We restore the settings of the current graph level */
              if (p->output_policy!=IGNORE_OUTPUTS) {
                u_strcpy(&(p->stack->stack[stack_top+1]),L->stack);
                p->stack->stack_pointer=L->stack_pointer;
-               install_variable_backup(p->variables,L->variable_backup);
+
+               if (save_previous_ptr_var==NULL) {
+                   save_previous_ptr_var=install_variable_backup_preserving(p->variables,reserve_used,L->variable_backup);
+               }
+               else {
+                   install_variable_backup(p->variables,L->variable_backup);
+               }
+
                p->dic_variables=clone_dic_variable_list(L->dic_variable_backup);
              }
              /* And we continue the exploration */
@@ -345,7 +359,9 @@ if (graph_call_list!=NULL) {
              int old_left_ctx_base=p->left_ctx_base;
              p->left_ctx_shift=L->left_ctx_shift;
              p->left_ctx_base=L->left_ctx_base;
+
              locate(graph_depth,p->optimized_states[t->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve);
+
              p->left_ctx_shift=old_left_ctx_shift;
              p->left_ctx_base=old_left_ctx_base;
              p->stack->stack_pointer=stack_top;
@@ -353,7 +369,10 @@ if (graph_call_list!=NULL) {
              if (graph_depth==0) {
                 /* If we are at the top graph level, we restore the variables */
                 if (p->output_policy!=IGNORE_OUTPUTS) {
-                   install_variable_backup(p->variables,var_backup);
+                    if (save_previous_ptr_var != NULL) {
+                        restore_variable_array(p->variables,reserve_used,save_previous_ptr_var);
+                        save_previous_ptr_var=NULL;
+                    }
                 }
              }
              L=L->next;
@@ -369,16 +388,22 @@ if (graph_call_list!=NULL) {
    p->stack->stack_pointer=stack_top;
    p->stack_base=old_StackBase; /* May be changed by recursive subgraph calls */
    if (p->output_policy!=IGNORE_OUTPUTS) { /* For better performance (see above) */
-      install_variable_backup(p->variables,var_backup);
-      int reserve_freeable = free_variable_backup_using_reserve(var_backup,reserve_used);
+       if (save_previous_ptr_var != NULL) {
+           restore_variable_array(p->variables,reserve_used,save_previous_ptr_var);
+           save_previous_ptr_var=NULL;
+       }
+
+      int reserve_freeable = free_variable_backup_using_reserve(reserve_used);
       if ((reserve_freeable == 0) && (create_new_reserve_done != 0)) {
           fatal_error("incoherent reserve free result\n");
       }
       if (create_new_reserve_done == 1)
           free_reserve(reserve_used);
+
    }
    p->dic_variables=dic_variables_backup;
 } /* End of processing subgraphs */
+
 
 /**
  * METAS
@@ -642,6 +667,10 @@ while (meta_list!=NULL) {
          if (p->output_policy==MERGE_OUTPUTS) {
             if (pos2!=pos) push_input_char(p->stack,' ',p->protect_dic_chars);
          }
+         /* we don't known if enter_morphological_mode will modify variable
+            so we increment the dirty flag, without any associated decrement, to be sure
+            having no problem */
+         inc_dirty(backup_reserve);
          enter_morphological_mode(graph_depth,t->state_number,pos2,depth+1,matches,n_matches,ctx,p,p_token_error_ctx);
          p->stack->stack_pointer=stack_top;
          break;
@@ -710,8 +739,11 @@ while (meta_list!=NULL) {
  */
 struct opt_variable* variable_list=current_state->variable_starts;
 while (variable_list!=NULL) {
+
+   inc_dirty(backup_reserve);
    int old=get_variable_start(p->variables,variable_list->variable_number);
    set_variable_start(p->variables,variable_list->variable_number,pos2);
+
    locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve);
    p->stack->stack_pointer=stack_top;
    if (ctx==NULL) {
@@ -719,6 +751,8 @@ while (variable_list!=NULL) {
        * to allow extracting things from contexts (see the
        * "the cat is white" example in Unitex manual). */
       set_variable_start(p->variables,variable_list->variable_number,old);
+      dec_dirty(backup_reserve);
+        // restore dirty
    }
    variable_list=variable_list->next;
 }
@@ -728,8 +762,11 @@ while (variable_list!=NULL) {
  */
 variable_list=current_state->variable_ends;
 while (variable_list!=NULL) {
+
+   inc_dirty(backup_reserve);
    int old=get_variable_end(p->variables,variable_list->variable_number);
    set_variable_end(p->variables,variable_list->variable_number,pos);
+
    locate(graph_depth,p->optimized_states[variable_list->transition->state_number],pos,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve);
    p->stack->stack_pointer=stack_top;
    if (ctx==NULL) {
@@ -737,6 +774,7 @@ while (variable_list!=NULL) {
        * to allow extracting things from contexts (see the
        * "the cat is white" example in Unitex manual). */
       set_variable_end(p->variables,variable_list->variable_number,old);
+      dec_dirty(backup_reserve);
    }
    variable_list=variable_list->next;
 }

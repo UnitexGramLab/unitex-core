@@ -163,6 +163,8 @@ memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*2*l);
 #define SUGGESTED_NB_VARIABLE_BACKUP_IN_RESERVE (32)
 #define LIMIT_MIN_SUGGESTED_SIZE (16384)
 #define LIMIT_MAX_SUGGESTED_SIZE (65536)
+
+
 /*
  * is_enough_memory_in_reserve_for_Variable return 1 is there is sufficient space in reserve
  *  to create a backup of v
@@ -173,9 +175,9 @@ memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*2*l);
 /*
  * check if the reserve contain space and is correct to save variable v
  */
-int is_enough_memory_in_reserve_for_Variable(Variables* v,variable_backup_memory_reserve* r)
+int is_enough_memory_in_reserve_for_two_set_variables(Variables* v,variable_backup_memory_reserve* r)
 {
-    return ((r->pos_used != r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
+    return (((r->pos_used+1) < r->nb_backup_possible_array) && (v->variable_index->size == r->size_variable_index));
 }
 
 int suggest_size_backup_reserve(int size_one_backup)
@@ -202,7 +204,7 @@ variable_backup_memory_reserve* create_variable_backup_memory_reserve(Variables*
 {
 int size_variable_index = v->variable_index->size;
 int size_unaligned = (size_variable_index*2);
-int size_aligned = (((size_unaligned * sizeof(int)) + 0x0f) & 0x7ffffff0) / sizeof(int);
+int size_aligned = ((((size_unaligned+4) * sizeof(int)) + 0x0f) & 0x7ffffff0) / sizeof(int);
 
 int nb_item_allocated=suggest_size_backup_reserve(size_aligned);
 variable_backup_memory_reserve* ptr = (variable_backup_memory_reserve*)
@@ -211,12 +213,20 @@ variable_backup_memory_reserve* ptr = (variable_backup_memory_reserve*)
 if (ptr==NULL) {
    fatal_alloc_error("create_variable_backup_memory_reserve");
 }
-ptr->nb_item_allocated = nb_item_allocated;
+
 ptr->nb_backup_possible_array = nb_item_allocated / size_aligned;
 ptr->pos_used = 0;
 ptr->size_variable_index = size_variable_index;
 ptr->size_copydata = size_unaligned*sizeof(int);
 ptr->size_aligned = size_aligned;
+
+/* we set Dirty to one, because where there is no filling varriable array, we
+   cannot try reuse it */
+
+ptr->array_int[OFFSET_DIRTY]=1;
+ptr->array_int[OFFSET_COUNTER]=0;
+ptr->array_int[OFFSET_SWAPPER]=0;
+
 return ptr;
 }
 
@@ -231,7 +241,6 @@ void free_reserve(variable_backup_memory_reserve*r)
 free(r);
 }
 
-
 /*
  * create the backup, taking memory from reserve
  * we assume is_enough_memory_in_reserve_for_Variable was already called to verify
@@ -241,12 +250,29 @@ int l=v->variable_index->size;
 if (l != r->size_variable_index) {
     fatal_error("bad size\n");
 }
+
+/* DIRTY==0 mean :
+   - there is a least one backup
+   - there is no modification made on the variable array since last backup
+   - the last used array is not a "swapper" 
+    so we can reuse the backup previously made !  
+ */
+if ((r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] == 0))
+{
+    r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]++;
+    int* prev = &(r->array_int[OFFSET_BACKUP+((r->pos_used-1) * r->size_aligned)]);
+    return prev;
+}
+
 /* v->variables is an array of struct transduction_variable
    which is a structure of two int */
-int* ret = &(r->array_int[0+(r->pos_used * r->size_aligned)]);
+int* ret = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
 memcpy((void*)ret,(void*)(&(v->variables[0])),r->size_copydata);
 
 r->pos_used ++;
+r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] = 0;
+r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)] = 0;
+r->array_int[OFFSET_SWAPPER+(r->pos_used * r->size_aligned)] = 0;
 
 return ret;
 }
@@ -256,13 +282,44 @@ return ret;
  * return 0 if there is still used space in reserve
  * return 1 if the reserve can be free
  */
-int free_variable_backup_using_reserve(int*backup,variable_backup_memory_reserve* r)
+int free_variable_backup_using_reserve(variable_backup_memory_reserve* r)
 {
-if (r->pos_used >= 1) {
-  r->pos_used --;
-  return (r->pos_used == 0) ? 1 : 0;
+if (r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]>0)
+{
+    r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)]--;
+    return 0;
 }
 
-  fatal_error("free_variable_backup_using_reserve error");
-  return 0;
+r->pos_used --;
+return (r->pos_used == 0) ? 1 : 0;
+}
+
+
+/*
+ * This function select a new content for the set of variable, and return a
+ * pointer to restore current set using restore_variable_array
+ */
+int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,int* data)
+{
+int *save = &(v->variables[0].start);
+int* newptr = &(r->array_int[OFFSET_BACKUP+(r->pos_used * r->size_aligned)]);
+memcpy((void*)newptr,(void*)data,r->size_copydata);
+v->variables = (struct transduction_variable*)newptr;
+
+r->pos_used ++;
+r->array_int[OFFSET_DIRTY+(r->pos_used * r->size_aligned)] = 1;
+r->array_int[OFFSET_COUNTER+(r->pos_used * r->size_aligned)] = 0;
+r->array_int[OFFSET_SWAPPER+(r->pos_used * r->size_aligned)] = 1;
+
+return save;
+}
+
+    
+void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int* rest)
+{
+    r->pos_used--;
+
+    v->variables = (struct transduction_variable*)rest;
+    if (v->variables[0].start == UNDEF_VAR_BOUND)
+        v->variables[0].start+=0;
 }

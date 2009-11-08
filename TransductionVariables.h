@@ -87,13 +87,12 @@ void install_variable_backup(Variables*,int*);
 
 typedef struct {
     int size_variable_index;
-    int nb_item_allocated;
     int pos_used;
     int size_aligned;
-
     int size_copydata;
     int nb_backup_possible_array;
-    int dummy1,dummy2;
+    int dummy_align1,dummy_align2,dummy_align3;
+
     int array_int[4];
 } variable_backup_memory_reserve;
 
@@ -109,7 +108,7 @@ variable_backup_memory_reserve* create_variable_backup_memory_reserve(Variables*
 void free_reserve(variable_backup_memory_reserve*r);
 
 /* check if the reserve contain space and is correct to save variable v */
-int is_enough_memory_in_reserve_for_Variable(Variables* v,variable_backup_memory_reserve* r);
+int is_enough_memory_in_reserve_for_two_set_variables(Variables* v,variable_backup_memory_reserve* r);
 
 /*
  * create the backup, taking memory from reserve
@@ -121,6 +120,51 @@ int* create_variable_backup_using_reserve(Variables* v,variable_backup_memory_re
  * return 0 if there is still used space in reserve
  * return 1 if the reserve can be free
  */
-int free_variable_backup_using_reserve(int*backup,variable_backup_memory_reserve* r) ;
+int free_variable_backup_using_reserve(variable_backup_memory_reserve* r) ;
+
+/*
+ * the function below are replaced by macro for performance
+ */
+/*
+  
+int get_dirty(variable_backup_memory_reserve* r) ;
+void set_dirty(variable_backup_memory_reserve* r,int d) ;
+
+void inc_dirty(variable_backup_memory_reserve* r) ;
+void dec_dirty(variable_backup_memory_reserve* r) ;
+*/
+
+
+#define OFFSET_COUNTER (0)
+#define OFFSET_DIRTY (1)
+#define OFFSET_SWAPPER (2)
+#define OFFSET_BACKUP (4)
+
+/*
+ * get the dirty counter of the current slot
+ */
+
+#define get_dirty(r) \
+ ( ((r)->array_int[OFFSET_DIRTY+((r)->pos_used * (r)->size_aligned)]) )
+
+
+#define set_dirty(r,d) \
+{ \
+    ((r)->array_int[OFFSET_DIRTY+((r)->pos_used * (r)->size_aligned)]=(d)); \
+}
+
+#define inc_dirty(r) \
+{ \
+    ((r)->array_int[OFFSET_DIRTY+((r)->pos_used * (r)->size_aligned)]++); \
+}
+
+#define dec_dirty(r) \
+{ \
+    ((r)->array_int[OFFSET_DIRTY+((r)->pos_used * (r)->size_aligned)]--); \
+}
+
+
+int* install_variable_backup_preserving(Variables* v,variable_backup_memory_reserve* r,int*);
+void restore_variable_array(Variables* v,variable_backup_memory_reserve* r,int*);
 
 #endif
