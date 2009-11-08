@@ -84,8 +84,14 @@ void read_one_sentence(struct buffer* buffer,U_FILE* text,struct text_tokens* to
 int i=0;
 int t=-15;
 int res=-15;
-while ((res=(int)fread(&t,sizeof(int),1,text)) && (t!=tok->SENTENCE_MARKER) && (i!=MAX_TOKENS_BY_SENTENCE)) {
-   buffer->int_buffer[i++]=t;
+for (;;)
+{
+    res=(int)fread(&t,sizeof(int),1,text);
+    if (res==0)
+        break;
+    if ((t==tok->SENTENCE_MARKER) || (i==MAX_TOKENS_BY_SENTENCE))
+        break;
+    buffer->int_buffer[i++]=t;
 }
 if (i==MAX_TOKENS_BY_SENTENCE) {
    error("Sentence too long to be entirely displayed\n");
