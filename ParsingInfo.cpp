@@ -87,6 +87,7 @@ if (list->position==pos && list->pos_in_token==pos_in_token && list->state_numbe
    list->stack=u_strdup(stack);
    free_variable_backup(list->variable_backup);
    list->variable_backup=create_variable_backup(v);
+   list->variable_backup_size=v->variable_index->size;
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);
    if (list->dic_entry!=NULL) {
@@ -121,8 +122,16 @@ if ((list->position==pos) /* If the length is the same... */
     && list->pos_in_jamo==pos_in_jamo) {
     /* then we overwrite the current list element */
    list->stack_pointer=stack_pointer;
-   free_variable_backup(list->variable_backup);
-   list->variable_backup=create_variable_backup(v);
+
+   if (list->variable_backup_size == v->variable_index->size) {
+      install_variable_backup(v,list->variable_backup);
+   }
+   else {
+      free_variable_backup(list->variable_backup);
+      list->variable_backup=create_variable_backup(v);
+      list->variable_backup_size=v->variable_index->size;
+   }
+
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);
    if (list->dic_entry!=NULL) {

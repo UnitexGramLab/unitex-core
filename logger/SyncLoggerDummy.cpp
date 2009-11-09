@@ -1,7 +1,7 @@
 #include "Unicode.h"
 #include "AbstractCallbackFuncModifier.h"
 #include "SyncLogger.h"
-
+#include <time.h>
 
 UNITEX_FUNC int UNITEX_CALL IsSeveralThreadsPossible()
 {
@@ -17,12 +17,15 @@ UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_fu
 
 typedef struct
 {
-    int dummy;
+    //clock_t startTime;
+    time_t t_start;
 } TIMEBEGIN;
 
 UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)malloc(sizeof(TIMEBEGIN));
+    // pBegin->startTime=clock();
+    time(&pBegin->t_start);
     return (hTimeElasped)pBegin;
 }
 
@@ -32,10 +35,11 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
     TIMEBEGIN* pBegin = (TIMEBEGIN*)ptr;
     unsigned int iRet;
 
+    time_t t_end;
+    time(&t_end);
+    iRet = (unsigned int)(difftime(t_end,pBegin->t_start) * 1000);
     free(pBegin);
 
-
-    iRet = 0;
     return iRet;
 }
 

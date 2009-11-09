@@ -56,6 +56,9 @@ struct parsing_info {
    /* A copy of the variable ranges */
    int* variable_backup;
 
+   /* size of the variable_backup copy (number of variable) */
+   int variable_backup_size;
+
    /* A copy of the DELAF entry variables */
    struct dic_variable* dic_variable_backup;
 
