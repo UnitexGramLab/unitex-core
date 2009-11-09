@@ -50,10 +50,13 @@ unsigned int get_filename_withoutpath_position(const char*filename)
 }
 
 
-const char* get_filename_to_copy(const char*filename)
+const char* get_filename_to_copy(const char*filename,int skip_star)
 {
     const char* filenamecpy=filename;
 
+    if (skip_star != 0)
+        while (((*filenamecpy)== '*') || ((*(filenamecpy))== '#'))
+            filenamecpy++;
 
     if (((*filenamecpy)== '\\') && ((*(filenamecpy+1))== '\\'))
     {
@@ -202,9 +205,15 @@ const char* ExtractUsablePortionOfFileNameForPack(const char*filenamecpy)
     return filenamecpy;
 }
 
-void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunPath)
+void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunPath,
+                                const char**p_position_filename,const char** p_portion_filename_from_param)
 {
     int PossiblePos = -1;
+    if (p_position_filename != NULL)
+        *p_position_filename = NULL;
+    if (p_portion_filename_from_param != NULL)
+        *p_portion_filename_from_param = NULL;
+
     if (FileAddRunPath != NULL)
         if ((*FileAddRunPath) != '\0')
             PossiblePos = SearchPossiblePosFileNameInArg(arg);
@@ -238,7 +247,12 @@ void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunP
         memcpy(dest+PossiblePos,FileAddRunPath,len_FileAddRunPath);
         if (iAddSeparator != 0)
             *(dest+PossiblePos+len_FileAddRunPath) = PATH_SEPARATOR_CHAR;
-        strcpy(dest+PossiblePos+len_FileAddRunPath+iAddSeparator,get_filename_to_copy(arg + PossiblePos));
+
+        strcpy(dest+PossiblePos+len_FileAddRunPath+iAddSeparator,get_filename_to_copy(arg + PossiblePos,1));
+        if (p_position_filename != NULL)
+            *p_position_filename = dest+PossiblePos;
+        if (p_portion_filename_from_param != NULL)
+            *p_portion_filename_from_param=dest+PossiblePos+len_FileAddRunPath+iAddSeparator;
 
         char *browse=dest;
 

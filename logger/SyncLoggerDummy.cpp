@@ -17,15 +17,15 @@ UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_fu
 
 typedef struct
 {
-    //clock_t startTime;
-    time_t t_start;
+    clock_t startTime;
+    //time_t t_start;
 } TIMEBEGIN;
 
 UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)malloc(sizeof(TIMEBEGIN));
-    // pBegin->startTime=clock();
-    time(&pBegin->t_start);
+    pBegin->startTime=clock();
+    //time(&pBegin->t_start);
     return (hTimeElasped)pBegin;
 }
 
@@ -34,10 +34,13 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)ptr;
     unsigned int iRet;
-
+/*
     time_t t_end;
     time(&t_end);
     iRet = (unsigned int)(difftime(t_end,pBegin->t_start) * 1000);
+	*/
+	clock_t endTime=clock();
+	iRet= (int)((((double)(endTime-(pBegin->startTime))) / CLOCKS_PER_SEC) * 1000);
     free(pBegin);
 
     return iRet;

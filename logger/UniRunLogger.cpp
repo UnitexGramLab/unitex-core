@@ -603,7 +603,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
                                         const char* SelectTool,
                                         int clean_file,
                                         int real_content_in_log,
-                                        const char* /* LocationUnfoundVirtualRessource */,
+                                        const char*LocationUnfoundVirtualRessource,
                                         char** summaryInfo,
                                         char** summaryInfoErrorOnly,
                                         int *pReturn,unsigned int*pTimeElapsed,
@@ -625,6 +625,8 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
     struct ListFile* list_file_out = NULL;
     struct ListFile* list_file_in = NULL;
 
+    struct ListFile* list_file_fromarg_todel = NULL;
+
     struct dir_list_for_clean* pdlfc = NULL;
     Exec_status exec_status = EXEC_NOTRUN;
 
@@ -637,6 +639,21 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
     if (len_RunPath>0)
         if (((*(FileRunPath+len_RunPath-1)) != '/') && ((*(FileRunPath+len_RunPath-1)) != '\\'))
             need_add_dir_sep=1;
+
+    int need_add_dir_sep_unfoud_virtual_resource = 0;
+    if (LocationUnfoundVirtualRessource != NULL)
+        if ((*LocationUnfoundVirtualRessource)=='\0')
+            LocationUnfoundVirtualRessource=NULL;
+
+    if (LocationUnfoundVirtualRessource != NULL)
+    {
+        size_t len_LocationUnfoundVirtualRessource = strlen(LocationUnfoundVirtualRessource);
+        if (len_LocationUnfoundVirtualRessource>0)
+            if (((*(LocationUnfoundVirtualRessource+len_LocationUnfoundVirtualRessource-1)) != '/') && 
+                ((*(LocationUnfoundVirtualRessource+len_LocationUnfoundVirtualRessource-1)) != '\\'))
+                need_add_dir_sep_unfoud_virtual_resource=1;
+    }
+
 
     unzFile uf = unzOpen2(LogNameRead,&zlib_filefunc);
     if (uf == NULL)
@@ -807,10 +824,64 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
       *(argv_log_reworked+0) = "UnitexTool";
       for (walk=0;walk<argc_log;walk++)
       {
-          reworkCommandLineAddPrefix(next_buf_arg_reworked,*(argv_log+walk),FileRunPath);
+          const char* portionFileName=NULL;
+          const char* portionFileNameFromParam=NULL;
+          reworkCommandLineAddPrefix(next_buf_arg_reworked,*(argv_log+walk),
+               FileRunPath,&portionFileName,&portionFileNameFromParam);
           *(argv_log_reworked+walk+1) = next_buf_arg_reworked;
           next_buf_arg_reworked += strlen(next_buf_arg_reworked) + 1;
           //u_printf("%d\n'%s'\n'%s'\n\n",walk,*(argv_log+walk),*(argv_log_reworked+walk+1));
+          if ((portionFileName!=NULL) && (LocationUnfoundVirtualRessource!=NULL))
+          {
+              size_t len_portionFileNameFromParam = strlen(portionFileNameFromParam);
+              if (len_portionFileNameFromParam>4)
+              {
+                  const char* ext3 = portionFileNameFromParam + len_portionFileNameFromParam-4;
+                  const char* ext4 = portionFileNameFromParam + len_portionFileNameFromParam-5;
+                  int is_bin = ((strcmp(ext3,".bin")==0) || (strcmp(ext3,".BIN")==0) || (strcmp(ext3,".Bin")==0));
+                  int is_fst2 = ((strcmp(ext4,".fst2")==0) || (strcmp(ext4,".FST2")==0) || (strcmp(ext4,".Fst2")==0));
+                  if (is_bin || is_fst2)
+                  {
+                      ABSTRACTFILE* tryOpen = af_fopen(portionFileName,"rb");
+                      if (tryOpen != NULL)
+                          af_fclose(tryOpen);
+                      else
+                      {
+                          if (list_file_fromarg_todel == NULL)
+                            list_file_fromarg_todel = AllocListFile((argc_log+1)*2);
+
+                          char filename_on_location_res[256];
+                          CombineRunPathOnPathName(filename_on_location_res,LocationUnfoundVirtualRessource,need_add_dir_sep_unfoud_virtual_resource,portionFileNameFromParam);
+
+                          if (is_filename_in_abstract_file_space(portionFileName) == 0)
+                            mkdir_recursive(portionFileName,0,pdlfc);
+
+                          if ((af_copy_unlogged(filename_on_location_res,portionFileName) == 0) && (list_file_fromarg_todel != NULL))
+                          {
+                              ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename = 
+                                  strdup(portionFileName);
+                              list_file_fromarg_todel->iNbFile++;
+                          }
+
+                          if (is_bin)
+                          {
+                              char portionFileNameInf[256];
+                              strcpy(portionFileNameInf,portionFileName);
+                              strcpy(filename_on_location_res+strlen(filename_on_location_res)-4,".inf");
+                              strcpy(portionFileNameInf+strlen(portionFileNameInf)-4,".inf");
+                              af_copy_unlogged(filename_on_location_res,portionFileNameInf);
+
+                              if ((af_copy_unlogged(filename_on_location_res,portionFileNameInf) == 0) && (list_file_fromarg_todel != NULL))
+                              {
+                                  ((list_file_fromarg_todel->p_ListFile_entry) + (list_file_fromarg_todel->iNbFile)) -> filename = 
+                                      strdup(portionFileNameInf);
+                                  list_file_fromarg_todel->iNbFile++;
+                              }
+                          }
+                      }
+                  }
+              }
+          }
       }
 
       argc_log+=0;
@@ -829,7 +900,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
           for (walk_list_out = 0;walk_list_out < list_file_out->iNbFile;walk_list_out++)
           {
               const char* filename_out = ((list_file_out->p_ListFile_entry) + walk_list_out) -> filename;
-              const char* filename_out_usable = get_filename_to_copy(filename_out);
+              const char* filename_out_usable = get_filename_to_copy(filename_out,0);
               char filename_to_be_written[256];
               CombineRunPathOnPathName(filename_to_be_written,FileRunPath,need_add_dir_sep,filename_out_usable);
               if (is_filename_in_abstract_file_space(filename_to_be_written) == 0)
@@ -895,6 +966,14 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
       if ((clean_file != 0) && (list_file_out_newlog != NULL))
       {
           unsigned int i,j;
+
+          if (list_file_fromarg_todel != NULL)
+              for (i=0;i<list_file_fromarg_todel->iNbFile;i++)
+              {
+                  const char* filename = (((list_file_fromarg_todel->p_ListFile_entry)+i)->filename);
+                  af_remove_unlogged(filename);
+              }
+
           if (list_file_in != NULL)
               for (i=0;i<list_file_in->iNbFile;i++)
               {
@@ -910,7 +989,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
               {
                   const char* filename = (((list_file_out_newlog->p_ListFile_entry)+j)->filename);
                   char filename_written[256];
-                  CombineRunPathOnPathName(filename_written,FileRunPath,need_add_dir_sep,get_filename_to_copy(filename));
+                  CombineRunPathOnPathName(filename_written,FileRunPath,need_add_dir_sep,get_filename_to_copy(filename,0));
                   af_remove_unlogged(filename_written);
               }
 
@@ -926,10 +1005,10 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
           for (i=0;i<list_file_out->iNbFile;i++)
           {
               char msgThis[0x400]="";
-              const char* fn_compare_original_log = get_filename_to_copy(((list_file_out->p_ListFile_entry)+i)->filename);
+              const char* fn_compare_original_log = get_filename_to_copy(((list_file_out->p_ListFile_entry)+i)->filename,0);
               for (j=0;j<list_file_out_newlog->iNbFile;j++)
               {
-                  const char* fn_compare_new_log = get_filename_to_copy(((list_file_out_newlog->p_ListFile_entry)+j)->filename);
+                  const char* fn_compare_new_log = get_filename_to_copy(((list_file_out_newlog->p_ListFile_entry)+j)->filename,0);
                   if (CompareFileName(fn_compare_original_log,fn_compare_new_log)==0)
                   {
                       if (((((list_file_out->p_ListFile_entry)+i)->size) != (((list_file_out_newlog->p_ListFile_entry)+j)->size)) ||
@@ -977,7 +1056,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
               if (error_compare == 0)
                   sprintf(msgEnd,"--> LOG COMPARE: good news: %snew log result is compatible with previous log for %s and %s\n\n",msgTime,LogNameRead,LogNameWrite);
               else
-                  sprintf(msgEnd,"--> LOG COMPARE: bad news: %snew log result is NOT compatible with previous log for %s and %s\n\n",msgTime,LogNameRead,LogNameWrite);
+                  sprintf(msgEnd,"--> LOG COMPARE: !!!! bad news: %snew log result is NOT compatible with previous log for %s and %s\n\n",msgTime,LogNameRead,LogNameWrite);
               AddMsgToSummaryBuf(msgEnd,summaryInfo);
               if (error_compare != 0)
                 AddMsgToSummaryBuf(msgEnd,summaryInfoErrorOnly);
@@ -1003,6 +1082,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
       FreeListFile(list_file_out_newlog);
       FreeListFile(list_file_out);
       FreeListFile(list_file_in);
+      FreeListFile(list_file_fromarg_todel);
     }
 
     clean_list_dir_for_clean(pdlfc);
@@ -1189,6 +1269,8 @@ const char* usage_RunLog =
          "  -i N/--increment=N: increment filename <ulp> by 0 to N\n"
          "  -t N/--thread=N: create N thread\n"
          "  -a N/--random=N: select N time a random log in the list (in each thread)\n"
+         "  -u PATH/--unfound-location==PATH: take dictionnary and FST2 from PATH if\n"
+         "               not found on the logfile\n"
          "\n"
          "rerun a log.\n";
 
@@ -1197,7 +1279,7 @@ static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(usage_RunLog);
 }
-const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:o:";
+const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:o:u:";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1215,6 +1297,7 @@ const struct option_TS lopts_RunLog[]= {
       {"thread",required_argument_TS,NULL,'t'},
       {"random",required_argument_TS,NULL,'a'},
       {"tool",required_argument_TS,NULL,'o'},
+      {"unfound-location",required_argument_TS,NULL,'u'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -1299,8 +1382,20 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         if ((p_RunLog_ctx->quiet != 0) && (exec_status != EXEC_NOTRUN_UNWANTEDTOOL))
         {
             char resume[0x400];
-            sprintf(resume,"resume : thread %u , run %s on %s to %s, %u msec\n",
-                p_RunLog_ThreadData->num_thread,runulp,rundir,resultulp,time_elapsed);
+            const char* exec_string="";
+
+            if (exec_status == EXEC_NOTRUN)
+                exec_string = "tool not run";
+            if (exec_status == EXEC_COMPARE_ERROR)
+                exec_string = "error in comparing";
+            if (exec_status == EXEC_COMPARE_WARNING)
+                exec_string = "warning in comparing";
+            if (exec_status == EXEC_COMPARE_OK)
+                exec_string = "compare ok";
+
+
+            sprintf(resume,"resume : thread %u , run %s on %s to %s, %u msec: %s\n",
+                p_RunLog_ThreadData->num_thread,runulp,rundir,resultulp,time_elapsed,exec_string);
             puts(resume);
         }
         
@@ -1327,7 +1422,7 @@ runLog_ctx.select_tool[0]='\0';
 runLog_ctx.LocationUnfoundVirtualRessource[0]='\0';
 runLog_ctx.quiet=2;
 runLog_ctx.clean=1;
-runLog_ctx.cleanlog=0;
+runLog_ctx.cleanlog=2;
 runLog_ctx.nb_thread=1;
 runLog_ctx.increment=0;
 runLog_ctx.random=0;
@@ -1376,6 +1471,7 @@ if (vars->optind!=argc-1) {
    free_OptVars(vars);
    return 1;
 }
+
 if (runLog_ctx.nb_thread == 0)
   runLog_ctx.nb_thread = 1;
 
@@ -1388,7 +1484,27 @@ if (runLog_ctx.quiet==2)
 
 
 runLog_ctx.runulp=argv[vars->optind];
+if (runLog_ctx.runulp == NULL)
+  runLog_ctx.runulp="";
+if (runLog_ctx.runulp[0]=='\0') {
+   error("Invalid arguments: rerun with --help\n");
+   free_OptVars(vars);
+   return 1;
+}
 
+if (runLog_ctx.rundir[0]==0) {
+    strcpy(runLog_ctx.rundir,runLog_ctx.runulp);
+    strcat(runLog_ctx.rundir,"_tmpdir");
+}
+
+if (runLog_ctx.resultulp[0]=='\0') {
+    if (runLog_ctx.cleanlog==2)
+        runLog_ctx.cleanlog=1;
+    strcpy(runLog_ctx.resultulp,runLog_ctx.runulp);
+    strcat(runLog_ctx.resultulp,".rerun.ulp");
+}
+if (runLog_ctx.cleanlog==2)
+   runLog_ctx.cleanlog=0;
 
 int trash_out=0;
 int trash_err=0;

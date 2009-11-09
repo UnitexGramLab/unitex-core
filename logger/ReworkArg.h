@@ -36,9 +36,10 @@ int SearchPossiblePosFileNameInArg(const char*arg);
 
 void CopyReworkedArgRemoving(char* dst,const char* arg,const char*portion_ignore_pathname);
 
-void reworkCommandLineAddPrefix(char*dest,const char*org,const char* FileRunPath);
+void reworkCommandLineAddPrefix(char*dest,const char*org,const char* FileRunPath,
+                                const char**p_position_filename,const char** p_portionFileNameFromParam);
 
-const char* get_filename_to_copy(const char*filename);
+const char* get_filename_to_copy(const char*filename,int skip_star);
 
 const char* GetFileNameRemovePrefixIfFound(const char* filename,const char*portion_ignore_pathname);
 
