@@ -41,6 +41,7 @@ info->next=NULL;
 info->stack_pointer=stack_pointer;
 info->stack=u_strdup(stack);
 info->variable_backup=create_variable_backup(v);
+info->variable_backup_size=v->variable_index->size;
 info->dic_entry=clone_dela_entry(dic_entry);
 info->dic_variable_backup=clone_dic_variable_list(v2);
 info->left_ctx_shift=left_ctx_shift;
@@ -85,9 +86,20 @@ if (list->position==pos && list->pos_in_token==pos_in_token && list->state_numbe
    /* We free the previous stack */
    free(list->stack);
    list->stack=u_strdup(stack);
-   free_variable_backup(list->variable_backup);
-   list->variable_backup=create_variable_backup(v);
-   list->variable_backup_size=v->variable_index->size;
+   
+   //free_variable_backup(list->variable_backup);
+   //list->variable_backup=create_variable_backup(v);
+   //list->variable_backup_size=v->variable_index->size;
+
+   if (list->variable_backup_size == v->variable_index->size) {
+      update_variable_backup(list->variable_backup,v);
+   }
+   else {
+      free_variable_backup(list->variable_backup);
+      list->variable_backup=create_variable_backup(v);
+      list->variable_backup_size=v->variable_index->size;
+   }
+
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);
    if (list->dic_entry!=NULL) {
@@ -123,14 +135,20 @@ if ((list->position==pos) /* If the length is the same... */
     /* then we overwrite the current list element */
    list->stack_pointer=stack_pointer;
 
+
+   //free_variable_backup(list->variable_backup);
+   //list->variable_backup=create_variable_backup(v);
+   //list->variable_backup_size=v->variable_index->size;
+
    if (list->variable_backup_size == v->variable_index->size) {
-      install_variable_backup(v,list->variable_backup);
+      update_variable_backup(list->variable_backup,v);
    }
    else {
       free_variable_backup(list->variable_backup);
       list->variable_backup=create_variable_backup(v);
       list->variable_backup_size=v->variable_index->size;
    }
+
 
    clear_dic_variable_list(&list->dic_variable_backup);
    list->dic_variable_backup=clone_dic_variable_list(v2);

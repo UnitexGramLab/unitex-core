@@ -150,6 +150,20 @@ memcpy((void*)(&(v->variables[0])),(void*)&backup[0],sizeof(int)*2*l);
 }
 
 
+/**
+ * Sets the variable ranges with the values of the given backup.
+ */
+void update_variable_backup(int* backup,Variables* v) {
+if (backup==NULL) {
+	fatal_error("NULL error in install_variable_backup\n");
+}
+int l=v->variable_index->size;
+
+/* v->variables is an array of struct transduction_variable
+   which is a structure of two int */
+memcpy((void*)&backup[0],(void*)(&(v->variables[0])),sizeof(int)*2*l);
+}
+
 /* to limit number of malloc, we define a pool of memory (like a stack)
  * we use this thing : free will be done in reverse order than alloc
  **/

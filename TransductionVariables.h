@@ -73,6 +73,7 @@ int get_variable_end(Variables*,int);
 int* create_variable_backup(Variables*);
 void free_variable_backup(int*);
 void install_variable_backup(Variables*,int*);
+void update_variable_backup(int*,Variables*);
 
 
 /* to limit number of malloc, we define a pool of memory
