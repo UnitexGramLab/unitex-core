@@ -27,6 +27,8 @@
    Copyright (C) 1998-2005 Gilles Vollant
 */
 
+#ifndef NO_UNITEX_LOGGER
+
 #ifndef _ZLIBIOAPI_H
 #define _ZLIBIOAPI_H
 
@@ -90,6 +92,8 @@ void fill_afopen_filefunc OF((zlib_filefunc_def* pzlib_filefunc_def));
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 #endif

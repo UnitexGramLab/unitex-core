@@ -22,6 +22,7 @@
 /* ReworkArg.h
 */
 
+#ifndef NO_UNITEX_LOGGER
 
 #include <stdlib.h>
 #include <string.h>
@@ -264,3 +265,5 @@ void reworkCommandLineAddPrefix(char*dest,const char*arg,const char* FileAddRunP
         }
     }
 }
+
+#endif

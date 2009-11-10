@@ -20,6 +20,8 @@
   */
 
 
+#ifndef NO_UNITEX_LOGGER
+
 
 #ifndef _UNI_LOGGER_H_INCLUDED
 #define _UNI_LOGGER_H_INCLUDED 1
@@ -56,6 +58,8 @@ UNITEX_FUNC int UNITEX_CALL SelectNextLogName(struct UniLoggerSpace *p_ule,const
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 #endif

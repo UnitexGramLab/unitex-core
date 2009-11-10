@@ -30,6 +30,8 @@
  - execute an ULP
  */
 
+#ifndef NO_UNITEX_LOGGER
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -844,10 +846,6 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
     if (pEL == NULL)
         return;
 
-    unsigned int len_list_in = GetNbItemPtrArrayExpanding(pEL->pAE_FileReadList);
-    if (len_list_in != 0)
-        DumpMemToPack(pEL,"test_info/list_file_in.txt",GetItemPtrArrayExpanding(pEL->pAE_FileReadList,0),len_list_in);
-
     unsigned int iNbFileWrite=GetNbFileToWrite(pEL);
     unsigned int iFile;
     for (iFile=0;iFile<iNbFileWrite;iFile++)
@@ -871,18 +869,19 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
         pFileToWriteInfoItem ->size = size;
     }
 
+    char* buf_list_file_out = NULL;
+    unsigned int pos_in_list_file_out = 0;
 
     if (pEL->store_list_file_out_content!=0)
     {
         unsigned int iNbFileWrite=GetNbFileToWrite(pEL);
         unsigned int iFile;
         size_t size_buf_list_file_out = 0x100;
-        unsigned int pos_in_list_file_out ;
         for (iFile=0;iFile<iNbFileWrite;iFile++)
             size_buf_list_file_out += strlen(GetFileToWriteItemFN(pEL,iFile)) + 0x40;
 
         
-        char* buf_list_file_out = (char*)malloc(size_buf_list_file_out);
+        buf_list_file_out = (char*)malloc(size_buf_list_file_out);
         *buf_list_file_out=0;
         pos_in_list_file_out = 0;
 
@@ -902,9 +901,8 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
 
             pos_in_list_file_out += (unsigned int)strlen(buf_list_file_out + pos_in_list_file_out);
         }
-        DumpMemToPack(pEL,"test_info/list_file_out.txt",buf_list_file_out,pos_in_list_file_out);
-        free(buf_list_file_out);
     }
+
 
     unsigned int len_std_out = GetNbItemPtrArrayExpanding(pEL->pAE_StdOut);
     if (len_std_out != 0)
@@ -913,6 +911,18 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
     unsigned int len_std_err = GetNbItemPtrArrayExpanding(pEL->pAE_StdErr);
     if (len_std_err != 0)
         DumpMemToPack(pEL,"test_info/std_err.txt",GetItemPtrArrayExpanding(pEL->pAE_StdErr,0),len_std_err);
+
+    unsigned int len_list_in = GetNbItemPtrArrayExpanding(pEL->pAE_FileReadList);
+    if (len_list_in != 0)
+        DumpMemToPack(pEL,"test_info/list_file_in.txt",GetItemPtrArrayExpanding(pEL->pAE_FileReadList,0),len_list_in);
+
+
+    if (pEL->store_list_file_out_content!=0)
+    {
+        DumpMemToPack(pEL,"test_info/list_file_out.txt",buf_list_file_out,pos_in_list_file_out);
+        free(buf_list_file_out);
+        buf_list_file_out = NULL;
+    }
 
     size_t len_all_param_list = 0x100;
     int i;
@@ -1212,3 +1222,5 @@ UNITEX_FUNC int UNITEX_CALL RemoveActivityLogger(struct UniLoggerSpace *p_ule)
     free(pALPD);
     return RemoveLoggerInfo(&logger_func_array,p_ule);
 }
+
+#endif

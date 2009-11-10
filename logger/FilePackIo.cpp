@@ -27,6 +27,8 @@
    http://www.winimage.com/zLibDll/minizip.html
 */
 
+#ifndef NO_UNITEX_LOGGER
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -240,3 +242,6 @@ void fill_afopen_filefunc (
     pzlib_filefunc_def->zerror_file = aferror_file_func;
     pzlib_filefunc_def->opaque = NULL;
 }
+
+#endif
+

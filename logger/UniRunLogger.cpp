@@ -25,6 +25,8 @@
  *
  */
 
+#if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -1590,3 +1592,5 @@ free(ptrptr);
 free_OptVars(vars);
 return 0;
 }
+
+#endif

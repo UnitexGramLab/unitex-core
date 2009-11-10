@@ -23,6 +23,9 @@
  * Simple CRC32 code, originally made by Francois Liger for Solo project
  * It's slower but smaller than crc32.c from zLib
  */
+
+#ifndef NO_UNITEX_LOGGER
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -203,3 +206,5 @@ uLong crc32(uLong dwCRC, const void* pvBuffer, size_t cbBuffer)
 
   return dwCRC ;
 }
+
+#endif

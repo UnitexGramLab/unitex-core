@@ -32,6 +32,7 @@
    Read zip.h - FilePack.h for more info
 */
 
+#ifndef NO_UNITEX_LOGGER
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1267,3 +1268,5 @@ extern int ZEXPORT zipClose (
 
     return err;
 }
+
+#endif

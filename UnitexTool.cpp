@@ -96,39 +96,47 @@ const struct utility_item utility_array[]=
 	{ "CheckDic", 8, &main_CheckDic, usage_CheckDic, optstring_CheckDic, lopts_CheckDic } ,
 	{ "Compress", 8, &main_Compress, usage_Compress, optstring_Compress, lopts_Compress } ,
 	{ "Concord", 7, &main_Concord, usage_Concord, optstring_Concord, lopts_Concord } ,
-#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "ConcorDiff", 10, &main_ConcorDiff, usage_ConcorDiff, optstring_ConcorDiff, lopts_ConcorDiff } ,
+#endif
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))))
 	{ "Convert", 7, &main_Convert, usage_Convert, optstring_Convert, lopts_Convert } ,
 #endif
 	{ "Dico", 4, &main_Dico, usage_Dico, optstring_Dico, lopts_Dico } ,
-#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "DuplicateFile", 13, &main_DuplicateFile, usage_DuplicateFile, optstring_DuplicateFile, lopts_DuplicateFile } ,
 	{ "Elag", 4, &main_Elag, usage_Elag, optstring_Elag, lopts_Elag } ,
 	{ "ElagComp", 8, &main_ElagComp, usage_ElagComp, optstring_ElagComp, lopts_ElagComp } ,
 	{ "Evamb", 5, &main_Evamb, usage_Evamb, optstring_Evamb, lopts_Evamb } ,
+#endif
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))))
 	{ "Extract", 7, &main_Extract, usage_Extract, optstring_Extract, lopts_Extract } ,
+#endif
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "Flatten", 7, &main_Flatten, usage_Flatten, optstring_Flatten, lopts_Flatten } ,
 	{ "Fst2List", 8, &main_Fst2List, usage_Fst2List, NULL, NULL } ,
 #endif
 	{ "Fst2Txt", 7, &main_Fst2Txt, usage_Fst2Txt, optstring_Fst2Txt, lopts_Fst2Txt } ,
-#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "Grf2Fst2", 8, &main_Grf2Fst2, usage_Grf2Fst2, optstring_Grf2Fst2, lopts_Grf2Fst2 } ,
 	{ "ImplodeTfst", 11, &main_ImplodeTfst, usage_ImplodeTfst, optstring_ImplodeTfst, lopts_ImplodeTfst } ,
 #endif
 	{ "Locate", 6, &main_Locate, usage_Locate, optstring_Locate, lopts_Locate } ,
-#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))))
 	{ "LocateTfst", 10, &main_LocateTfst, usage_LocateTfst, optstring_LocateTfst, lopts_LocateTfst } ,
+#endif
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "MultiFlex", 9, &main_MultiFlex, usage_MultiFlex, optstring_MultiFlex, lopts_MultiFlex } ,
 #endif
 	{ "Normalize", 9, &main_Normalize, usage_Normalize, optstring_Normalize, lopts_Normalize } ,
-#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "PolyLex", 7, &main_PolyLex, usage_PolyLex, optstring_PolyLex, lopts_PolyLex } ,
 	{ "RebuildTfst", 11, &main_RebuildTfst, usage_RebuildTfst, optstring_RebuildTfst, lopts_RebuildTfst } ,
 	{ "Reconstrucao", 12, &main_Reconstrucao, usage_Reconstrucao, optstring_Reconstrucao, lopts_Reconstrucao } ,
 	{ "Reg2Grf", 7, &main_Reg2Grf, usage_Reg2Grf, optstring_Reg2Grf, lopts_Reg2Grf } ,
 #endif
 	{ "SortTxt", 7, &main_SortTxt, usage_SortTxt, optstring_SortTxt, lopts_SortTxt } ,
-#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "Stats", 5, &main_Stats, usage_Stats, optstring_Stats, lopts_Stats } ,
 	{ "Table2Grf", 9, &main_Table2Grf, usage_Table2Grf, optstring_Table2Grf, lopts_Table2Grf } ,
 	{ "TagsetNormTfst", 14, &main_TagsetNormTfst, usage_TagsetNormTfst, optstring_TagsetNormTfst, lopts_TagsetNormTfst } ,
@@ -137,7 +145,7 @@ const struct utility_item utility_array[]=
 	{ "Tfst2Unambig", 12, &main_Tfst2Unambig, usage_Tfst2Unambig, optstring_Tfst2Unambig, lopts_Tfst2Unambig } ,
 #endif
 	{ "Tokenize", 8, &main_Tokenize, usage_Tokenize, optstring_Tokenize, lopts_Tokenize } ,
-#ifndef UNITEX_ONLY_EXEC_GRAPH_TOOLS
+#if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "Txt2Tfst", 8, &main_Txt2Tfst, usage_Txt2Tfst, optstring_Txt2Tfst, lopts_Txt2Tfst } ,
 	{ "Uncompress", 10, &main_Uncompress, usage_Uncompress, optstring_Uncompress, lopts_Uncompress } ,
 	{ "XMLizer", 7, &main_XMLizer, usage_XMLizer, optstring_XMLizer, lopts_XMLizer } ,

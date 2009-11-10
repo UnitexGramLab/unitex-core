@@ -27,7 +27,7 @@
    Read unzip.h for more info
 */
 
-
+#if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
 
 
 #include <stdio.h>
@@ -1569,3 +1569,5 @@ extern int ZEXPORT unzSetOffset (
     s->current_file_ok = (err == UNZ_OK);
     return err;
 }
+
+#endif

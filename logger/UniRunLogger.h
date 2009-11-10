@@ -19,7 +19,7 @@
   *
   */
 
-
+#if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
 
 #ifndef _UNI_RUN_LOGGER_H_INCLUDED
 #define _UNI_RUN_LOGGER_H_INCLUDED 1
@@ -66,6 +66,8 @@ int main_RunLog(int argc,char* argv[]);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 #endif

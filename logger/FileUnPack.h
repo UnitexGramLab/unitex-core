@@ -63,6 +63,8 @@
       ftp://ftp.pkware.com/probdesc.zip
 */
 
+#if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_RUNLOGGER_AUTOINSTALL))))
+
 #ifndef _unz_H
 #define _unz_H
 
@@ -384,3 +386,5 @@ extern int ZEXPORT unzSetOffset (unzFile file, uLong pos);
 #endif
 
 #endif /* _unz_H */
+
+#endif

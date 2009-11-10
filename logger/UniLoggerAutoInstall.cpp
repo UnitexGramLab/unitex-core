@@ -20,6 +20,8 @@
   */
 
 
+#if ((!(defined(NO_UNITEX_LOGGER))) && (!(defined(NO_UNITEX_LOGGER_AUTOINSTALL))))
+
 #include <string.h>
 #include <stdlib.h>
 #include <memory.h>
@@ -102,3 +104,5 @@ InstallLogger::~InstallLogger()
 }
 
 InstallLogger InstallLoggerInstance;
+
+#endif
