@@ -240,14 +240,14 @@ DISCARD_UNUSED_PARAMETER(alph)
 int token_number=get_value_index(tag_token,p->tokens);
 struct dela_entry* entry=tokenize_tag_token(tag_token);
 struct pattern* pattern=tag[i]->pattern;
-if (pattern->type==LEMMA_PATTERN || INFLECTED_AND_LEMMA_PATTERN) {
+if ((pattern->type==LEMMA_PATTERN) || (pattern->type==INFLECTED_AND_LEMMA_PATTERN)) {
    /* If the pattern has a constraint on the lemma, we check it */
    if (u_strcmp(entry->lemma,pattern->lemma)) {
       free_dela_entry(entry);
       return;
    }
 }
-if (pattern->type==LEMMA_AND_CODE_PATTERN || pattern->type==FULL_PATTERN) {
+if ((pattern->type==LEMMA_AND_CODE_PATTERN) || (pattern->type==FULL_PATTERN)) {
    /* If the pattern contains a constraint on grammatical/semantic/inflectional
     * codes, then it has been put in the pattern tree, and so, this pattern
     * was tried on the current tag token in the 'check_patterns_for_tag_tokens'

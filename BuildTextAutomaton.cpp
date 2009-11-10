@@ -38,6 +38,7 @@
 #include "Korean.h"
 #include "File.h"
 #include "AbstractFst2Load.h"
+#include "UnusedParameter.h"
 
 /**
  * This is an internal structure only used to give a set of parameters to some functions.
@@ -411,6 +412,7 @@ return result;
  */
 void solve_alignment_puzzle_for_Korean(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph,
                             jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+DISCARD_UNUSED_PARAMETER(jamo2syl)
 if (vector==NULL) {
    fatal_error("NULL vector in solve_alignment_puzzle\n");
 }
