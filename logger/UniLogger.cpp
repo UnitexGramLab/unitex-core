@@ -897,7 +897,7 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_calling_tool(mainFunc*,int /*argc*
 
             sprintf(buf_list_file_out + pos_in_list_file_out,"%010u\t%08lx\t%s\n",
                  pFileToWriteInfoItem->size,pFileToWriteInfoItem->crc,
-                 GetFileNameRemovePrefixIfFound(pFileToWriteInfoItem->FileName,pEL->portion_ignore_pathname));
+                 ExtractUsablePortionOfFileNameForPack(GetFileNameRemovePrefixIfFound(pFileToWriteInfoItem->FileName,pEL->portion_ignore_pathname)));
 
             pos_in_list_file_out += (unsigned int)strlen(buf_list_file_out + pos_in_list_file_out);
         }
@@ -1001,7 +1001,7 @@ void DoFileReadWork(struct ExecutionLogging* pEL,const char* name)
                 if (szBuf != NULL)
                 {
                     sprintf(szBuf,"%010u\t%08lx\t%s\n",size,crc,
-                            GetFileNameRemovePrefixIfFound(name,pEL->portion_ignore_pathname));
+                            ExtractUsablePortionOfFileNameForPack(GetFileNameRemovePrefixIfFound(name,pEL->portion_ignore_pathname)));
                     FlushOutData(szBuf,strlen(szBuf),pEL->pAE_FileReadList);
                     free(szBuf);
                 }

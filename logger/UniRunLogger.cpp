@@ -1007,10 +1007,10 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
           for (i=0;i<list_file_out->iNbFile;i++)
           {
               char msgThis[0x400]="";
-              const char* fn_compare_original_log = get_filename_to_copy(((list_file_out->p_ListFile_entry)+i)->filename,0);
+              const char* fn_compare_original_log = get_filename_to_copy(((list_file_out->p_ListFile_entry)+i)->filename,1);
               for (j=0;j<list_file_out_newlog->iNbFile;j++)
               {
-                  const char* fn_compare_new_log = get_filename_to_copy(((list_file_out_newlog->p_ListFile_entry)+j)->filename,0);
+                  const char* fn_compare_new_log = get_filename_to_copy(((list_file_out_newlog->p_ListFile_entry)+j)->filename,1);
                   if (CompareFileName(fn_compare_original_log,fn_compare_new_log)==0)
                   {
                       if (((((list_file_out->p_ListFile_entry)+i)->size) != (((list_file_out_newlog->p_ListFile_entry)+j)->size)) ||
@@ -1363,9 +1363,10 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
                 inc_this = 0;
                 for (j=0;j<17;j++)
                     inc_this = inc_this ^ (rand() << j);
-                inc_this = inc_this % p_RunLog_ctx->increment;
+                if (p_RunLog_ctx->increment != 0)
+                  inc_this = inc_this % p_RunLog_ctx->increment;
             }
-            IncNumberInName(runulp,1,(unsigned long)inc_this,(i==0) ? (&lprev) : NULL);
+            IncNumberInName(runulp,(i!=0),(unsigned long)inc_this,(i==0) ? (&lprev) : NULL);
             if (p_RunLog_ctx->random != 0)
                 lprev=0;
             IncNumberInName(rundir,1,(unsigned long)((i+lprev)+add_thread),NULL);
