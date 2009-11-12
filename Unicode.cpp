@@ -1277,7 +1277,27 @@ return i;
 	optimized by reading several char at same time in a buffer for UTF16
 	call char by char f_gets for UTF8 and BIN/ASCII
   */
-#define BUFFER_IN_CACHE_SIZE (0x80)
+
+
+#define GetUtf8Size(ch)  \
+        (((((unsigned char)(ch)) & ((unsigned char)0x80))==((unsigned char)0x00)) ? 1 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xe0))==((unsigned char)0xc0)) ? 2 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xf0))==((unsigned char)0xe0)) ? 3 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xf8))==((unsigned char)0xf0)) ? 4 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xfc))==((unsigned char)0xf8)) ? 5 : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xfe))==((unsigned char)0xfc)) ? 6 : 001))))))
+
+#define GetUtf8Mask(ch)  \
+        (((((unsigned char)(ch)) & ((unsigned char)0x80))==((unsigned char)0x00)) ? ((unsigned char)0x7f) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xe0))==((unsigned char)0xc0)) ? ((unsigned char)0x1f) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xf0))==((unsigned char)0xe0)) ? ((unsigned char)0x0f) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xf8))==((unsigned char)0xf0)) ? ((unsigned char)0x07) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xfc))==((unsigned char)0xf8)) ? ((unsigned char)0x03) : \
+        (((((unsigned char)(ch)) & ((unsigned char)0xfe))==((unsigned char)0xfc)) ? ((unsigned char)0x01) : 0))))))
+
+
+#define BUFFER_IN_CACHE_SIZE (0x100)
+
 int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABSTRACTFILE* f)
 {
 	unsigned char tab_in[BUFFER_IN_CACHE_SIZE];
@@ -1346,9 +1366,156 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 				  }
 			  }
 		  }
-		   /*
-	   case UTF8:
-	   case ASCII:*/
+
+
+       case ASCII:
+		  {
+			  int pos_in_unichar_line = 0;
+
+			  for (;;)
+			  {
+				  int size_to_read_binary = BUFFER_IN_CACHE_SIZE;
+				  if (i_is_size != 0)
+					  if ((size-1) < BUFFER_IN_CACHE_SIZE)
+						  size_to_read_binary = size-1;
+
+				  size_t read_ascii_in_file = 0;
+				  if (size_to_read_binary>0)
+					  read_ascii_in_file = af_fread(&tab_in[0],1,(size_t)size_to_read_binary,f);
+				  if (read_ascii_in_file<=0)
+				  {
+					  if (pos_in_unichar_line == 0)
+						  return EOF;
+					  else
+					  {
+						  line[pos_in_unichar_line]='\0';
+						  return pos_in_unichar_line;
+					  }
+				  }
+
+				  if (read_ascii_in_file > 0)
+				  {
+					  int i;
+					  for (i=0;i<(int)read_ascii_in_file;i++)
+					  {
+						  unichar c;
+						  c = (((unichar)tab_in[(i)])) ;
+
+						  if (c!=0x0d)
+						  {
+							  if (c=='\n')
+							  {
+								  af_fseek(f,-1 * (long)(read_ascii_in_file - (i+1)),SEEK_CUR);
+								  if (i_is_size!=0) {
+									  line[pos_in_unichar_line++]='\n';
+								  }
+								  line[pos_in_unichar_line]='\0';
+								  return pos_in_unichar_line;
+							  }
+
+							  if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
+							  {
+								  af_fseek(f,-1 * (long)(read_ascii_in_file - i),SEEK_CUR);
+								  line[pos_in_unichar_line]='\0';
+								  return pos_in_unichar_line;
+							  }
+
+							  line[pos_in_unichar_line++] = c;
+						  }
+					  }
+				  }
+			  }
+		  }
+
+       case UTF8:
+		  {
+              /*  pos_already_read_in_disk is non zero when we have already read only
+               *   a portion of an UTF8 char
+               *   so tab_in contain the first pos_already_read_in_disk byte of the UTF8 char
+               */
+              size_t pos_already_read_in_disk = 0;
+			  int pos_in_unichar_line = 0;
+
+			  for (;;)
+			  {
+				  size_t size_to_read_binary = BUFFER_IN_CACHE_SIZE - pos_already_read_in_disk;
+
+				  size_t read_binary_in_file = 0;
+				  if (size_to_read_binary>0)
+					  read_binary_in_file = af_fread(&tab_in[pos_already_read_in_disk],1,(size_t)size_to_read_binary,f);
+				  if (read_binary_in_file<=0)
+				  {
+					  if (pos_in_unichar_line == 0)
+						  return EOF;
+					  else
+					  {
+						  line[pos_in_unichar_line]='\0';
+						  return pos_in_unichar_line;
+					  }
+				  }
+                  read_binary_in_file += pos_already_read_in_disk;
+
+				  if (read_binary_in_file > 0)
+				  {
+					  int i;
+					  pos_already_read_in_disk=0;
+					  for (i=0;i<(int)read_binary_in_file;)
+					  {
+						  unichar c;
+                          unsigned char ch=tab_in[i];
+                          int nbbyte=GetUtf8Size(ch);
+
+                          if (i+nbbyte > read_binary_in_file)
+                          {
+                              pos_already_read_in_disk = read_binary_in_file-i;
+                              int j;
+                              for (j=0;j<pos_already_read_in_disk;j++)
+                                  tab_in[j] = tab_in[i+j];
+                              break;
+                          }
+
+                          c=((unichar)ch) & GetUtf8Mask(ch);
+                          int nbbyte_loop=nbbyte;
+
+                          if (nbbyte_loop>0) {
+                              int i_in_char = 0;
+                              for(;;)
+                              {
+                                   nbbyte_loop--;
+                                   if (nbbyte_loop==0)
+                                       break;
+                                   i_in_char++;
+                                   c = (c<<6) | ( (tab_in[i+i_in_char]) & 0x3F);
+                              }
+                          }
+
+						  if (c!=0x0d)
+						  {
+							  if (c=='\n')
+							  {
+								  af_fseek(f,-1 * (long)(read_binary_in_file - (i+nbbyte)),SEEK_CUR);
+								  if (i_is_size!=0) {
+									  line[pos_in_unichar_line++]='\n';
+								  }
+								  line[pos_in_unichar_line]='\0';
+								  return pos_in_unichar_line;
+							  }
+
+							  if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
+							  {
+								  af_fseek(f,-1 * (long)(read_binary_in_file - i),SEEK_CUR);
+								  line[pos_in_unichar_line]='\0';
+								  return pos_in_unichar_line;
+							  }
+
+							  line[pos_in_unichar_line++] = c;
+						  }
+                          i += nbbyte;                          
+					  }
+				  }
+			  }
+		  }
+
 	   default:
 		   if (i_is_size==0)
 			   return u_fgets_unbuffered(encoding,line,f);
@@ -1504,7 +1671,6 @@ int BuildEncodedOutForUnicharString(Encoding encoding,unichar *pc,Buffer_Out* pB
 
            case UTF8:
                {
-
                     if (c<=0x7F) {
                        pBufOut->tabOut[(pBufOut->iPosInTabOut)++] = (unsigned char)c;
                     }
