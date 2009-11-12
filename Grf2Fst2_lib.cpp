@@ -596,7 +596,7 @@ return 0;
  */
 void token_sequence_2_integer_sequence(struct fifo* u_tokens,unichar* output,
                                 int* i_tokens,struct compilation_info* infos,
-                                int *n_tokens) {
+                                int *n_tokens,int current_graph) {
 if (u_tokens==NULL) {
    fatal_error("NULL error in token_sequence_2_integer_sequence\n");
 }
@@ -610,10 +610,12 @@ int is_an_output=(output!=NULL && output[0]!='\0');
 if (token[0]==':' && token[1]!='\0') {
    /* If we have a subgraph call */
    if (is_an_output) {
-      error("WARNING: ignoring output associated to subgraph call %S\n",token);
+      error("WARNING in %S: ignoring output associated to subgraph call %S\n",
+            infos->graph_names->value[current_graph],token);
    }
    if (!is_empty(u_tokens)) {
-      fatal_error("Unexpected token after subgraph call in token_sequence_2_integer_sequence\n");
+      fatal_error("%S: unexpected token after subgraph call in token_sequence_2_integer_sequence\n",
+            infos->graph_names->value[current_graph]);
    }
    i_tokens[(*n_tokens)++]=-get_value_index(&(token[1]),infos->graph_names);
    free(token);
@@ -632,7 +634,8 @@ free(token);
 while (!is_empty(u_tokens)) {
    token=(unichar*)take_ptr(u_tokens);
    if (token[0]==':' && token[1]!='\0') {
-      fatal_error("Unexpected subgraph call in token_sequence_2_integer_sequence\n");
+      fatal_error("%S: unexpected subgraph call in token_sequence_2_integer_sequence\n",
+            infos->graph_names->value[current_graph]);
    }
    u_sprintf(tmp,"%S",token);
    i_tokens[(*n_tokens)++]=get_value_index(tmp,infos->tags);
@@ -683,7 +686,7 @@ while (result==0 && input[*pos]!='\0') {
 }
 int sequence_ent[MAX_TOKENS_IN_A_SEQUENCE];
 int n_tokens;
-token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens);
+token_sequence_2_integer_sequence(sequence,output,sequence_ent,infos,&n_tokens,n);
 free_fifo(sequence);
 write_transitions(graph,sequence_ent,transitions,state,n_tokens);
 }
@@ -695,12 +698,13 @@ write_transitions(graph,sequence_ent,transitions,state,n_tokens);
  */
 void process_variable_or_context(SingleGraph graph,unichar* input,
                                 struct list_int* transitions,
-                                int state,struct compilation_info* infos) {
+                                int state,struct compilation_info* infos,
+                                int current_graph) {
 struct fifo* tmp=new_fifo();
 put_ptr(tmp,u_strdup(input));
 int token[1];
 int i;
-token_sequence_2_integer_sequence(tmp,NULL,token,infos,&i);
+token_sequence_2_integer_sequence(tmp,NULL,token,infos,&i,current_graph);
 free_fifo(tmp);
 write_transitions(graph,token,transitions,state,1);
 }
@@ -737,7 +741,7 @@ if ((length>2 && box_content[0]=='$' &&
       u_sprintf(input,"%s%d",(box_content[1]=='!')?"$![":"$[",(infos->CONTEXT_COUNTER)++);
    }
    u_strcpy(output,"");
-   process_variable_or_context(graph,input,transitions,current_state,infos);
+   process_variable_or_context(graph,input,transitions,current_state,infos,n);
    return;
 }
 /* Otherwise, we deal with the output of the box, if any */
