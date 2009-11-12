@@ -1273,9 +1273,8 @@ return i;
 
 /**
   * this function act as u_fgets(encoding,line,f) if i_size==0 and
-                    like u_fgets(encoding,line,size,f) if i_size==1 and
-	optimized by reading several char at same time in a buffer for UTF16
-	call char by char f_gets for UTF8 and BIN/ASCII
+  *          like u_fgets(encoding,line,size,f) if i_size==1 and
+  *	optimized by reading several char at same time in a buffer
   */
 
 
@@ -1465,11 +1464,11 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                           unsigned char ch=tab_in[i];
                           int nbbyte=GetUtf8Size(ch);
 
-                          if (i+nbbyte > read_binary_in_file)
+                          if (i+nbbyte > (int)read_binary_in_file)
                           {
                               pos_already_read_in_disk = read_binary_in_file-i;
                               int j;
-                              for (j=0;j<pos_already_read_in_disk;j++)
+                              for (j=0;j<(int)pos_already_read_in_disk;j++)
                                   tab_in[j] = tab_in[i+j];
                               break;
                           }
