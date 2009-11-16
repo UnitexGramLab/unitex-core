@@ -152,7 +152,9 @@ return is_letter(c,alphabet);
  */
 void convert_Korean_text(unichar* src,unichar* dest,jamoCodage* jamo,Alphabet* alphabet) {
 if (jamo==NULL) {
-	fatal_error("NULL jamo error in convert_Korean_text\n");
+   /* No Korean data? A simple copy will do. */
+	u_strcpy(dest,src);
+   return;
 }
 unichar temp[1024];
 unichar temp2[1024];
