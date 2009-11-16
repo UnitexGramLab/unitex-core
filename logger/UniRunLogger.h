@@ -49,6 +49,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
                                         const char* /* LocationUnfoundVirtualRessource */,
                                         char** summaryInfo,
                                         char** summaryInfoErrorOnly,
+                                        int benchmark,
                                         int *pReturn,unsigned int*pTimeElapsed,
                                         Exec_status* p_exec_status);
 

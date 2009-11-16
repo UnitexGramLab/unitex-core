@@ -608,6 +608,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
                                         const char*LocationUnfoundVirtualRessource,
                                         char** summaryInfo,
                                         char** summaryInfoErrorOnly,
+                                        int benchmark,
                                         int *pReturn,unsigned int*pTimeElapsed,
                                         Exec_status* p_exec_status)
 {
@@ -1050,7 +1051,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
           {
               char msgEnd[0x400];
               char msgTime[0x80];
-              if (pTimeElapsed != NULL)
+              if ((pTimeElapsed != NULL) && (benchmark!=0))
                   sprintf(msgTime,"%u msec, ",*pTimeElapsed);
               else
                   msgTime[0]=0;
@@ -1100,7 +1101,7 @@ UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPa
 {
     char*summary=NULL;
     char*summaryError=NULL;
-    int ret= RunLogParam(LogNameRead,FileRunPath,LogNameWrite,NULL,1,1,NULL,&summary,&summaryError,NULL,NULL,NULL);
+    int ret= RunLogParam(LogNameRead,FileRunPath,LogNameWrite,NULL,1,1,NULL,&summary,&summaryError,1,NULL,NULL,NULL);
     if (summary!=NULL)
     {
         u_printf("%s",summary);
@@ -1265,6 +1266,7 @@ const char* usage_RunLog =
          "  -p/--keep: keep work file after execution\n"
          "  -s file.txt/--summary=file.txt: name of summary file with log compare result\n"
          "  -e file.txt/--summary-error=file.txt: summary file with error compare result\n"
+         "  -b/--no-benchmark: do not store time execution in result log\n"
          "  -n/--cleanlog: remove result ulp after execution\n"
          "  -l/--keeplog: keep result ulp after execution\n"
          "  -o NameTool/--tool=NameTool: run only log for NameTool\n"
@@ -1281,7 +1283,7 @@ static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(usage_RunLog);
 }
-const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:o:u:";
+const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:o:u:b";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1300,6 +1302,7 @@ const struct option_TS lopts_RunLog[]= {
       {"random",required_argument_TS,NULL,'a'},
       {"tool",required_argument_TS,NULL,'o'},
       {"unfound-location",required_argument_TS,NULL,'u'},
+      {"no-benchmark",no_argument_TS,NULL,'b'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -1319,6 +1322,7 @@ typedef struct {
     int nb_thread;
     long increment;
     long random;
+    int benchmark;
 } RunLog_ctx;
 
 
@@ -1379,6 +1383,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
                               p_RunLog_ctx->clean,(p_RunLog_ctx->cleanlog==1) ? 0 : 1,
                               p_RunLog_ctx->LocationUnfoundVirtualRessource,
                               &(p_RunLog_ThreadData->summary),&(p_RunLog_ThreadData->summary_error),
+                              p_RunLog_ctx->benchmark,
                               NULL,&time_elapsed,&exec_status);
 
         
@@ -1429,6 +1434,7 @@ runLog_ctx.cleanlog=2;
 runLog_ctx.nb_thread=1;
 runLog_ctx.increment=0;
 runLog_ctx.random=0;
+runLog_ctx.benchmark=1;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -1440,6 +1446,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
    case 'l': runLog_ctx.cleanlog=0; break;
    case 'm': runLog_ctx.quiet=1; break;
    case 'v': runLog_ctx.quiet=0; break;
+   case 'b': runLog_ctx.benchmark=0; break;
    case 'a': 
              if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a number of random execution\n");
