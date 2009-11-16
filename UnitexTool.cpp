@@ -429,3 +429,25 @@ int main_UnitexTool_C(int argc,char* argv[])
 {
 	return UnitexTool_several_info(argc,argv,NULL,NULL);
 }
+
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* argv[],int* p_number_done,struct pos_tools_in_arg* ptia)
+{
+    return UnitexTool_several_info(argc,argv,p_number_done,ptia);
+}
+
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetNumberOfTool()
+{
+    return GetNumberOfTool();
+}
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_byname(const char* toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+{
+    return GetToolInfo_byname(toolname,pfunc,usage,optstring,lopts);
+}
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+{
+    return GetToolInfo_bynumber(toolnumber,toolname, pfunc, usage, optstring, lopts);
+}

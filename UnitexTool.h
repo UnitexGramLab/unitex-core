@@ -23,6 +23,7 @@
 #define UnitexToolH
 
 #include "getopt.h"
+#include "AbstractCallbackFuncModifier.h"
 
 #define _UNITEX_VER 0210
 
@@ -58,6 +59,13 @@ int GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,co
 
 
 int main_UnitexTool_C(int argc,char* argv[]);
+
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* argv[],int* p_number_done,struct pos_tools_in_arg* ptia);
+
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetNumberOfTool();
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_byname(const char* toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetToolInfo_bynumber(int toolnumber,const char**toolname,mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
 #ifdef __cplusplus
 }
