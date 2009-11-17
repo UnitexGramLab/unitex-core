@@ -436,6 +436,17 @@ UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run(int argc,char* argv[],int* p_n
     return UnitexTool_several_info(argc,argv,p_number_done,ptia);
 }
 
+UNITEX_FUNC int UNITEX_CALL UnitexTool_public_run_one_tool(const char*toolname,int argc,char* argv[])
+{
+	const struct utility_item* utility_called = found_utility(toolname);
+	if (utility_called != NULL) {
+		return CallToolLogged(utility_called->fnc,argc,argv);
+	}
+	else {
+		return 0;
+	}
+}
+
 
 UNITEX_FUNC int UNITEX_CALL UnitexTool_public_GetNumberOfTool()
 {
