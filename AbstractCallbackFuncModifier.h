@@ -25,11 +25,6 @@
 
 
 #if (((defined(_WIN32)) || defined(WIN32)) && (!(defined(NO_WIN32_DLLLIKE_FUNCSPEC))))
-/*
-#define ULIB__EXPORT __declspec(dllexport)
-#define ULIB__IMPORT __declspec(dllimport)
-*/
-
 
 
 #ifndef ABSTRACT_CALLBACK_UNITEX_DEFINED
@@ -39,8 +34,18 @@
 
 #ifndef UNITEX_FUNC_DEFINED
 #define UNITEX_FUNC_DEFINED
+
+#ifdef UNITEX_FUNC_EXPORT_DLL
+#define UNITEX_FUNC __declspec(dllexport)
+#else
+#ifdef UNITEX_FUNC_IMPORT_DLL
+#define UNITEX_FUNC __declspec(dllimport)
+#else
 #define UNITEX_FUNC
 #endif
+#endif
+#endif
+
 
 #ifndef UNITEX_CALL_DEFINED
 #define UNITEX_CALL_DEFINED

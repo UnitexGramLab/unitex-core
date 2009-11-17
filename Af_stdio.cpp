@@ -290,7 +290,7 @@ UNITEX_FUNC int UNITEX_CALL SetStdInCB(t_fnc_stdIn fnc_stdInRead,void* privatePt
 	return 1;
 }
 
-UNITEX_FUNC int UNITEX_CALL GetStdWriteCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_privatePtr)
+UNITEX_FUNC int UNITEX_CALL GetStdInCB(t_fnc_stdIn* p_fnc_stdInRead,void** p_privatePtr)
 {
 	if (p_fnc_stdInRead != NULL)
 		*p_fnc_stdInRead = stdin_param.fnc_stdIn;

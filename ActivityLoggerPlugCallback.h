@@ -111,7 +111,7 @@ UNITEX_FUNC int UNITEX_CALL AddLoggerInfo(const t_logger_func_array* func_array,
 UNITEX_FUNC int UNITEX_CALL RemoveLoggerInfo(const t_logger_func_array* func_array,void* privateLoggerPtr);
 
 /* just return the number of Logger Installed */
-UNITEX_FUNC int UNITEX_CALL GetNbLoggerInstalled();
+UNITEX_FUNC int UNITEX_CALL GetNbLoggerInfoInstalled();
 
 /**********************************************************************/
 
