@@ -1603,7 +1603,7 @@ return 0;
 
 
 
-UNITEX_FUNC int UNITEX_CALL GetRunLogInfo_bynumber(mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+UNITEX_FUNC int UNITEX_CALL GetRunLogInfo(mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
 {
     if (pfunc != NULL)
         *pfunc = &main_RunLog;
@@ -1616,7 +1616,7 @@ UNITEX_FUNC int UNITEX_CALL GetRunLogInfo_bynumber(mainFunc** pfunc,const char**
     return 0;
 }
 
-UNITEX_FUNC int UNITEX_CALL RunLog_run(int argc,char* argv[])
+UNITEX_FUNC int UNITEX_CALL RunLog_run_main(int argc,char* argv[])
 {
     return main_RunLog(argc,argv);
 }
