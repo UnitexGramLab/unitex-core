@@ -55,7 +55,9 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 
 UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite);
 
+UNITEX_FUNC int UNITEX_CALL GetRunLogInfo_bynumber(mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts);
 
+UNITEX_FUNC int UNITEX_CALL RunLog_run(int argc,char* argv[]);
 
 
 extern const char* optstring_RunLog;

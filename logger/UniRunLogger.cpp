@@ -1601,4 +1601,24 @@ free_OptVars(vars);
 return 0;
 }
 
+
+
+UNITEX_FUNC int UNITEX_CALL GetRunLogInfo_bynumber(mainFunc** pfunc,const char** usage,const char** optstring,const struct option_TS **lopts)
+{
+    if (pfunc != NULL)
+        *pfunc = &main_RunLog;
+    if (usage != NULL)
+        *usage = usage_RunLog;
+    if (optstring != NULL)
+        *optstring = optstring_RunLog;
+    if (lopts != NULL)
+        *lopts = lopts_RunLog;
+    return 0;
+}
+
+UNITEX_FUNC int UNITEX_CALL RunLog_run(int argc,char* argv[])
+{
+    return main_RunLog(argc,argv);
+}
+
 #endif
