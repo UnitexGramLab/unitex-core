@@ -45,7 +45,8 @@
 #define UIMA_ 6
 #define MERGE_ 7
 #define SCRIPT_ 8
-
+#define XML_ 9
+#define XML_WITH_HEADER_ 10
 
 /**
  * This structure is used to store information about the current

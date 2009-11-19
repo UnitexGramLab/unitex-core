@@ -133,6 +133,8 @@ if (option->result_mode==TEXT_ || option->result_mode==INDEX_
       || option->result_mode==UIMA_ || option->result_mode==AXIS_
       || option->result_mode==XALIGN_)
 	strcat(option->output,"concord.txt");
+else if ((option->result_mode==XML_) || (option->result_mode==XML_WITH_HEADER_))
+	strcat(option->output,"concord.xml");
 else
 	strcat(option->output,"concord.html");
 int N_MATCHES;
@@ -175,6 +177,7 @@ if (f==NULL) {
 	return;
 }
 if (option->result_mode==TEXT_ || option->result_mode==INDEX_
+      || option->result_mode==XML_ || option->result_mode==XML_WITH_HEADER_
       || option->result_mode==UIMA_ || option->result_mode==AXIS_) {
    /* If we have to produce a unicode text file, we open it
     * as a UTF16LE one */
@@ -193,6 +196,20 @@ if (out==NULL) {
  * file header. */
 if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_ || option->result_mode==SCRIPT_) {
 	write_HTML_header(out,N_MATCHES,option);
+}
+if ((option->result_mode==XML_WITH_HEADER_)) {
+  if ((encoding_output == UTF16_LE) || (encoding_output == BIG_ENDIAN_UTF16)) {
+    u_fprintf(out,"<?xml version='1.0' encoding='UTF-16'?>\n<concord>\n");
+  }
+  else
+  if ((encoding_output == UTF8)) {
+    u_fprintf(out,"<?xml version='1.0' encoding='UTF-8'?>\n<concord>\n");
+  }
+  else
+    u_fprintf(out,"<?xml version='1.0'>\n<concord>\n");
+}
+if ((option->result_mode==XML_)) {
+  u_fprintf(out,"<concord>\n");
 }
 unichar A[3000];
 unichar B[3000];
@@ -335,6 +352,13 @@ while ((c=u_fgetc(f))!=EOF) {
          sscanf(tmp1,"%d %d",&start,&end);
          u_fprintf(out,"%d %d\t%S\n",start,end,middle);
       }
+      else if ((option->result_mode==XML_) || (option->result_mode==XML_WITH_HEADER_)) {
+         char tmp1[100];
+         u_to_char(tmp1,indices);
+         int start,end;
+         sscanf(tmp1,"%d %d",&start,&end);
+         u_fprintf(out,"<concordance start=\"%d\" end=\"%d\">%S<\\concordance>\n",start,end,middle);
+      }
       /* If must must produce an axis file...
          VARIABLES :
          -----------
@@ -358,7 +382,10 @@ while ((c=u_fgetc(f))!=EOF) {
 }
 /* If we have an HTML or a GlossaNet concordance, we must write some
  * HTML closing tags. */
-if (option->result_mode==HTML_ || option->result_mode==GLOSSANET_) write_HTML_end(out);
+if ((option->result_mode==HTML_) || (option->result_mode==GLOSSANET_)) write_HTML_end(out);
+if ((option->result_mode==XML_) || (option->result_mode==XML_WITH_HEADER_)){
+  u_fprintf(out,"<\\concord>\n");
+}
 u_fclose(f);
 af_remove(temp_file_name);
 u_fclose(out);

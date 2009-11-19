@@ -70,6 +70,8 @@ const char* usage_Concord =
 		"                             are links described by SCRIPT\n"
         "  -i/--index: produces an index of the concordance\n"
         "  -u/--uima: produces another index of the concordance\n"
+        "  -e/--xml: produces xml index of the concordance\n"
+        "  -w/--xml-with-header: produces xml index of the concordance with header\n"
         "  -A/--axis: produces an axis file for the concordance (cf. [Melamed 06])\n"
         "  -x/--xalign: produces an index file for XAlign display\n"
         "  -m TXT/--merge=TXT: produces a file named TXT which is the SNT file\n"
@@ -155,7 +157,7 @@ return ret;
 }
 
 
-const char* optstring_Concord=":f:s:l:r:Htg:p:iuAxm:a:Td:hk:q:";
+const char* optstring_Concord=":f:s:l:r:Htewg:p:iuAxm:a:Td:hk:q:";
 const struct option_TS lopts_Concord[]= {
       {"font",required_argument_TS,NULL,'f'},
       {"fontsize",required_argument_TS,NULL,'s'},
@@ -170,6 +172,8 @@ const struct option_TS lopts_Concord[]= {
       {"RC",no_argument_TS,NULL,6},
       {"html",no_argument_TS,NULL,'H'},
       {"text",no_argument_TS,NULL,'t'},
+      {"xml",no_argument_TS,NULL,'e'},
+      {"xml-with-header",no_argument_TS,NULL,'w'},
       {"glossanet",required_argument_TS,NULL,'g'},
       {"script",required_argument_TS,NULL,'p'},
       {"index",no_argument_TS,NULL,'i'},
@@ -265,6 +269,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Concord,lopts_Concord,&index
              break;
    case 'i': options->result_mode=INDEX_; break;
    case 'u': options->result_mode=UIMA_; break;
+   case 'e': options->result_mode=XML_; break;
+   case 'w': options->result_mode=XML_WITH_HEADER_; break;
    case 'A': options->result_mode=AXIS_; break;
    case 'x': options->result_mode=XALIGN_; break;
    case 'm': options->result_mode=MERGE_;
@@ -362,7 +368,9 @@ else {
 	}
    u_fclose(f_enter);
 }
-if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || options->result_mode==AXIS_) {
+if (options->result_mode==INDEX_ || options->result_mode==UIMA_ || 
+    options->result_mode==XML_ || options->result_mode==XML_WITH_HEADER_ ||
+    options->result_mode==AXIS_) {
    /* We force some options for index, uima and axis files */
    options->left_context=0;
    options->right_context=0;
