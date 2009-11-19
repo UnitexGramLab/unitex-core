@@ -26,6 +26,7 @@
 
 
 #include "AbstractCallbackFuncModifier.h"
+#include "UnitexTool.h"
 
 #ifdef __cplusplus
 extern "C" {
