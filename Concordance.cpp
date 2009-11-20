@@ -357,7 +357,7 @@ while ((c=u_fgetc(f))!=EOF) {
          u_to_char(tmp1,indices);
          int start,end;
          sscanf(tmp1,"%d %d",&start,&end);
-         u_fprintf(out,"<concordance start=\"%d\" end=\"%d\">%S<\\concordance>\n",start,end,middle);
+         u_fprintf(out,"<concordance start=\"%d\" end=\"%d\">%S</concordance>\n",start,end,middle);
       }
       /* If must must produce an axis file...
          VARIABLES :
@@ -384,7 +384,7 @@ while ((c=u_fgetc(f))!=EOF) {
  * HTML closing tags. */
 if ((option->result_mode==HTML_) || (option->result_mode==GLOSSANET_)) write_HTML_end(out);
 if ((option->result_mode==XML_) || (option->result_mode==XML_WITH_HEADER_)){
-  u_fprintf(out,"<\\concord>\n");
+  u_fprintf(out,"</concord>\n");
 }
 u_fclose(f);
 af_remove(temp_file_name);
