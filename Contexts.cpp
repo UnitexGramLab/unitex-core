@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -43,7 +43,7 @@ while (ptr!=NULL) {
       Fst2Tag tag=fst2->tags[ptr->tag_number];
       switch (tag->type) {
          /* If we have a context start mark, we go on with an increased nesting level */
-         case BEGIN_POSITIVE_CONTEXT_TAG: 
+         case BEGIN_POSITIVE_CONTEXT_TAG:
          case BEGIN_NEGATIVE_CONTEXT_TAG: look_for_closing_context_mark(fst2,ptr->state_number,list,marker,nesting_level+1);
                                           break;
          /* If we have a context end mark */
@@ -74,10 +74,10 @@ while (ptr!=NULL) {
  * transition tagged by the closing context mark "$]". Such transitions are added to
  * the given list, but only if they are at the same nesting level that the original
  * state. For instance, if we find the following tag sequence:
- * 
+ *
  * <MOT> $[ <ADV> $] $]
- * 
- * we will stop on the second "$]", since the first corresponds to a different 
+ *
+ * we will stop on the second "$]", since the first corresponds to a different
  * context start mark than ours.
  */
 void get_reachable_closing_context_marks(Fst2* fst2,int state,Transition** list) {
@@ -128,9 +128,7 @@ free(c);
 
 
 /**
- * Adds a positive context to the given state or raises a fatal error if
- * there is already one, because it would mean that the fst2 is not
- * deterministic. As a side effect, this function looks for all the closing
+ * Adds a positive context to the given state. As a side effect, this function looks for all the closing
  * context marks reachable from this positive context mark and stores them into
  * 'reacheable_states_from_positive_context'. If there is no reachable context
  * end mark, the function emit an error message and ignores this "$[" transition.
@@ -141,9 +139,11 @@ if (*contexts==NULL) {
    created=1;
    (*contexts)=new_opt_contexts();
 }
+/* This test is deprecated and not to be ever used again. It stays
+ * here as a comment to remind future coders no to use it
 if ((*contexts)->positive_mark!=NULL) {
    fatal_error("Duplicate positive context mark\n");
-}
+}*/
 int n=(*contexts)->size_positive;
 (*contexts)->size_positive=(*contexts)->size_positive+2;
 (*contexts)->positive_mark=(Transition**)realloc((*contexts)->positive_mark,(*contexts)->size_positive*sizeof(Transition*));
@@ -168,9 +168,7 @@ if ((*contexts)->positive_mark[n+1]==NULL) {
 
 
 /**
- * Adds a negative context to the given state or raises a fatal error if
- * there is already one, because it would mean that the fst2 is not
- * deterministic. As a side effect, this function looks for all the closing
+ * Adds a negative context to the given state. As a side effect, this function looks for all the closing
  * context marks reachable from this negative context mark and stores them into
  * 'reacheable_states_from_negative_context'. If there is no reachable context
  * end mark, the function emit an error message and ignores this "$![" transition.
@@ -222,7 +220,7 @@ for (int i=0;i<fst2->number_of_states;i++) {
             add_positive_context(fst2,&(contexts[i]),t);
          } else if (tag->type==BEGIN_NEGATIVE_CONTEXT_TAG) {
             add_negative_context(fst2,&(contexts[i]),t);
-         } 
+         }
       }
       t=t->next;
    }

@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -164,7 +164,7 @@ while (list!=NULL) {
 /**
  * This function add the given token in the given 'token_list', if not already present.
  * '*number_of_tokens' is increased of 1 if the token was not present.
- * 
+ *
  * Note that this function must perform a sorted insert, since the resulting
  * list will be supposed to be sorted at the time of converting it into an array
  * in 'token_list_2_token_array'.
@@ -325,9 +325,7 @@ v->next=(*variable_list);
 
 
 /**
- * Adds a positive context to the given state or raises a fatal error if
- * there is already one, because it would mean that the fst2 is not
- * deterministic. As a side effect, this function looks for all the closing
+ * Adds a positive context to the given state. As a side effect, this function looks for all the closing
  * context marks reachable from this positive context mark and stores them into
  * 'reacheable_states_from_positive_context'. If there is no reachable context
  * end mark, the function emit an error message and ignores this "$[" transition.
@@ -338,9 +336,7 @@ add_positive_context(fst2,&(state->contexts),transition);
 
 
 /**
- * Adds a negative context to the given state or raises a fatal error if
- * there is already one, because it would mean that the fst2 is not
- * deterministic. As a side effect, this function looks for all the closing
+ * Adds a negative context to the given state. As a side effect, this function looks for all the closing
  * context marks reachable from this negative context mark and stores them into
  * 'reacheable_states_from_negative_context'. If there is no reachable context
  * end mark, the function emit an error message and ignores this "$![" transition.
