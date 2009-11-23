@@ -89,18 +89,19 @@ if (list->position==pos && list->pos_in_token==pos_in_token && list->state_numbe
    /* We free the previous stack */
    free(list->stack);
    list->stack=u_strdup(stack);
-   
-   //free_variable_backup(list->variable_backup);
-   //list->variable_backup=create_variable_backup(v);
-   //list->variable_backup_size=v->variable_index->size;
 
-   if (list->variable_backup_size == v->variable_index->size) {
+   int v_variable_index_size=0;
+   if (v!=NULL)
+     if (v->variable_index!=NULL)
+         v_variable_index_size=v->variable_index->size;
+
+   if (list->variable_backup_size == v_variable_index_size) {
       update_variable_backup(list->variable_backup,v);
    }
    else {
       free_variable_backup(list->variable_backup);
       list->variable_backup=create_variable_backup(v);
-      list->variable_backup_size=v->variable_index->size;
+      list->variable_backup_size=v_variable_index_size;
    }
 
    clear_dic_variable_list(&list->dic_variable_backup);
@@ -138,18 +139,18 @@ if ((list->position==pos) /* If the length is the same... */
     /* then we overwrite the current list element */
    list->stack_pointer=stack_pointer;
 
+   int v_variable_index_size=0;
+   if (v!=NULL)
+     if (v->variable_index!=NULL)
+         v_variable_index_size=v->variable_index->size;
 
-   //free_variable_backup(list->variable_backup);
-   //list->variable_backup=create_variable_backup(v);
-   //list->variable_backup_size=v->variable_index->size;
-
-   if (list->variable_backup_size == v->variable_index->size) {
+   if (list->variable_backup_size == v_variable_index_size) {
       update_variable_backup(list->variable_backup,v);
    }
    else {
       free_variable_backup(list->variable_backup);
       list->variable_backup=create_variable_backup(v);
-      list->variable_backup_size=v->variable_index->size;
+      list->variable_backup_size=v_variable_index_size;
    }
 
 

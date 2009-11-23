@@ -157,7 +157,10 @@ void update_variable_backup(int* backup,Variables* v) {
 if (backup==NULL) {
 	fatal_error("NULL error in install_variable_backup\n");
 }
-int l=v->variable_index->size;
+int l=0;
+if (v!=NULL)
+  if (v->variable_index != NULL)
+      l=v->variable_index->size;
 
 /* v->variables is an array of struct transduction_variable
    which is a structure of two int */
