@@ -336,10 +336,12 @@ while (meta_list!=NULL) {
             break;
 
          case META_DIC: {
+#ifndef UNITEX_LIBRARY // these TODO warning are not useful for user of the library
 #ifdef __GNUC__
 #warning todo
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
 #pragma message("#warning todo")
+#endif
 #endif
             if (token==-1 || token==p->STOP) {break;}
             struct parsing_info* L2=NULL;
@@ -371,10 +373,12 @@ while (meta_list!=NULL) {
                   int new_pos,new_pos_in_token;
                   if (reached_token[L2->pos_in_token]=='\0') {
                      /* If we are at the end of the last token matched by the <DIC> tag */
+#ifndef UNITEX_LIBRARY // these TODO warning are not useful for user of the library
 #ifdef __GNUC__
 #warning a modifier
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
 #pragma message("#warning a modifier")
+#endif
 #endif
                      new_pos=L2->position+1;
                      new_pos_in_token=0;
@@ -849,7 +853,8 @@ void explore_dic_in_morpho_mode__(struct locate_parameters* p,
                                 int pos_in_current_token,
                                 int pos_in_inflected,int pos_offset,
                                 struct parsing_info* *matches,struct pattern* pattern,
-                                int save_dic_entry,unichar* jamo,int pos_in_jamo) {
+                                int save_dic_entry,unichar* jamo,int pos_in_jamo,
+                                unichar *line_buffer) {
 int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
 offset=offset+2;
 if (!(n_transitions & 32768)) {
@@ -863,7 +868,8 @@ if (!(n_transitions & 32768)) {
    } else {
       /* If we have to check the pattern */
       int inf_number=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];
-      unichar line[DIC_LINE_SIZE];
+      //unichar line[DIC_LINE_SIZE];
+      unichar*line = line_buffer; // replace unichar line[DIC_LINE_SIZE] to preserve stack
       struct list_ustring* tmp=inf->codes[inf_number];
       while (tmp!=NULL) {
          /* For each compressed code of the INF line, we save the corresponding
@@ -954,7 +960,7 @@ for (int i=0;i<n_transitions;i++) {
 		   explore_dic_in_morpho_mode__(p,bin,inf,adr,current_token,inflected,
 				   pos_in_current_token+1,pos_in_inflected+1,
 				   pos_offset,matches,pattern,save_dic_entry,
-				   jamo,pos_in_jamo);
+				   jamo,pos_in_jamo,line_buffer);
 	   }
    } else {
 	   debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
@@ -993,7 +999,7 @@ for (int i=0;i<n_transitions;i++) {
 		   explore_dic_in_morpho_mode__(p,bin,inf,adr,new_current_token,inflected,
 		   				   new_pos_in_current_token,pos_in_inflected+1,
 		   				   new_pos_offset,matches,pattern,save_dic_entry,
-		   				   new_jamo,new_pos_in_jamo);
+		   				   new_jamo,new_pos_in_jamo,line_buffer);
 	   }
 	   /* Then we try to match a hangul, but only if we are just after a syllab bound */
 	   //error("after syllab=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
@@ -1019,7 +1025,7 @@ for (int i=0;i<n_transitions;i++) {
 			explore_dic_in_morpho_mode__(p,bin,inf,adr,current_token,inflected,
 					new_pos_in_current_token,pos_in_inflected+1,
 					   pos_offset,matches,pattern,save_dic_entry,
-					   jamo,new_pos_in_jamo);
+					   jamo,new_pos_in_jamo,line_buffer);
 	   }
 #endif
    }
@@ -1037,12 +1043,13 @@ void explore_dic_in_morpho_mode(struct locate_parameters* p,int pos,int pos_in_t
                                 struct parsing_info* *matches,struct pattern* pattern,
                                 int save_dic_entry,unichar* jamo,int pos_in_jamo) {
 unichar inflected[4096];
+unichar line_buffer[DIC_LINE_SIZE];
 for (int i=0;i<p->n_morpho_dics;i++) {
    if (p->morpho_dic_bin[i]!=NULL) {
       /* Can't match anything in an empty dictionary */
       explore_dic_in_morpho_mode__(p,p->morpho_dic_bin[i],p->morpho_dic_inf[i],4,
     		                       p->tokens->value[p->buffer[p->current_origin+pos]],inflected,pos_in_token,
-                                   0,pos,matches,pattern,save_dic_entry,jamo,pos_in_jamo);
+                                   0,pos,matches,pattern,save_dic_entry,jamo,pos_in_jamo,line_buffer);
    }
 }
 }
