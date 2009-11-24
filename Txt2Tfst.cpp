@@ -172,6 +172,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
    case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty Jamo .fst2 file name\n");
              }
+             KOREAN=1;
              strcpy(korean_fst2,vars->optarg);
              break;
    case 'h': usage(); return 0;
@@ -197,7 +198,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-KOREAN=0;
 if (KOREAN) {
    if (alphabet[0]=='\0') {
       fatal_error("-a option is mandatory when -k is used\n");
@@ -231,6 +231,8 @@ strcat(dlc,"dlc");
 get_snt_path(argv[vars->optind],tags_ind);
 strcat(tags_ind,"tags.ind");
 struct match_list* tag_list=NULL;
+/* We don't want to block things because of Korean behavior */
+KOREAN=0;
 if (!KOREAN) {
    load_DELA(dlf,mask_encoding_compatibility_input,tree);
    load_DELA(dlc,mask_encoding_compatibility_input,tree);
@@ -333,8 +335,8 @@ get_snt_path(argv[vars->optind],phrase_cod);
 strcat(phrase_cod ,"phrase.cod");
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
-   if (KOREAN) {
-      build_korean_sentence_automaton(encoding_output,bom_output,mask_encoding_compatibility_input,
+   if (0 && KOREAN) {
+       build_korean_sentence_automaton(encoding_output,bom_output,mask_encoding_compatibility_input,
                   exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
                   current_global_position_in_tokens,
                   current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
