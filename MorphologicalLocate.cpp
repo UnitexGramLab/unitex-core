@@ -336,13 +336,6 @@ while (meta_list!=NULL) {
             break;
 
          case META_DIC: {
-#ifndef UNITEX_LIBRARY // these TODO warning are not useful for user of the library
-#ifdef __GNUC__
-#warning todo
-#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
-#pragma message("#warning todo")
-#endif
-#endif
             if (token==-1 || token==p->STOP) {break;}
             struct parsing_info* L2=NULL;
             explore_dic_in_morpho_mode(p,pos,pos_in_token,&L2,NULL,0,jamo,pos_in_jamo);
@@ -373,13 +366,6 @@ while (meta_list!=NULL) {
                   int new_pos,new_pos_in_token;
                   if (reached_token[L2->pos_in_token]=='\0') {
                      /* If we are at the end of the last token matched by the <DIC> tag */
-#ifndef UNITEX_LIBRARY // these TODO warning are not useful for user of the library
-#ifdef __GNUC__
-#warning a modifier
-#elif ((defined(__VISUALC__)) || defined(_MSC_VER))
-#pragma message("#warning a modifier")
-#endif
-#endif
                      new_pos=L2->position+1;
                      new_pos_in_token=0;
                   } else {
