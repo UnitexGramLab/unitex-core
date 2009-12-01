@@ -158,7 +158,7 @@ void free_feature_info_t(feature_info_t*);
 
 CAT_t* new_CAT_t(unichar*);
 void free_CAT_t(CAT_t*);
-int CAT_add_value(CAT_t * CAT, unichar * value);
+int CAT_add_value(CAT_t * CAT, const unichar * value);
 
 
 static inline unichar * CAT_get_valname(CAT_t * CAT, int v) {
