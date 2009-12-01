@@ -518,8 +518,25 @@ struct ListFile* ReadListFile(char* content,size_t list_out)
         char*name=NULL;
         name=(char*)malloc(strlen(curLine)+1);
         name[0] = 0;
-        sscanf(curLine,"%lu\t%lx\t%s",&lSize,&lCrc,name);
 
+        sscanf(curLine,"%lu\t%lx",&lSize,&lCrc);
+        
+        const char* browse_cur_line = curLine;
+        int count_tab=0;
+        while ((*browse_cur_line)!=0)
+        {
+            if (*(browse_cur_line)=='\t')
+            {
+                count_tab++;
+                if (count_tab==2)
+                {
+                    strcpy(name,browse_cur_line+1);
+                    break;
+                }
+            }
+            browse_cur_line++;
+        }
+        
         if (name[0] != 0)
         {
             ((p_ListFile->p_ListFile_entry) + (p_ListFile->iNbFile)) -> crc = lCrc;
