@@ -224,6 +224,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
                renumbering[i]=new_list_int(index,renumbering[i]);
                e->inflectional_codes[0]=old_first_code;
             }
+            free_dela_entry(e);
          }
       }
    }

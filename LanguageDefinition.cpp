@@ -52,7 +52,7 @@ if (infos!=NULL) free(infos);
  * Allocates, initializes and returns a new category description.
  */
 CAT_t* new_CAT_t(unichar* name) {
-static unichar unspecified[]={ 'u', 'n', 's', 'p', 'e', 'c', 'i', 'f', 'i', 'e', 'd', 0 };
+static const unichar unspecified[]={ 'u', 'n', 's', 'p', 'e', 'c', 'i', 'f', 'i', 'e', 'd', 0 };
 CAT_t* CAT=(CAT_t*)malloc(sizeof(CAT_t));
 if (CAT==NULL) {
    fatal_alloc_error("new_CAT_t");
@@ -78,7 +78,7 @@ free(CAT);
 /**
  * Adds the given value to the given category.
  */
-int CAT_add_value(CAT_t* CAT,unichar* value) {
+int CAT_add_value(CAT_t* CAT,const unichar* value) {
 return get_value_index(value,CAT->values);
 }
 
@@ -452,7 +452,9 @@ U_FILE* f=u_fopen_existing_unitex_text_format(name,U_READ);
 if (f==NULL) {
    fatal_error("Unable to open %s for reading.\n",name);
 }
-return load_language_definition(f);
+language_t* ret=load_language_definition(f);
+u_fclose(f);
+return ret;
 }
 
 

@@ -352,7 +352,7 @@ if (depth > MAX_DEPTH) {
     while (*liste_arrivee != NULL) { // free list of subgraph matches
       struct parsing_info* la_tmp=*liste_arrivee;
       *liste_arrivee=(*liste_arrivee)->next;
-      free(la_tmp);
+      free_parsing_info(la_tmp);
     }
   }
   return;
