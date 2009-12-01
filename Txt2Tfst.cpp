@@ -335,13 +335,14 @@ get_snt_path(argv[vars->optind],phrase_cod);
 strcat(phrase_cod ,"phrase.cod");
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
+   /* DEPRECATED CODE
    if (0 && KOREAN) {
        build_korean_sentence_automaton(encoding_output,bom_output,mask_encoding_compatibility_input,
                   exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
                   current_global_position_in_tokens,
                   current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
                   phrase_cod,jamo_table,korean_fst2);
-   } else {
+   } else*/ {
       build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
             normalization_tree,&tag_list,
             current_global_position_in_tokens,
