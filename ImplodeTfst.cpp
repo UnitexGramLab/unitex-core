@@ -241,7 +241,7 @@ free(infos);
 
 void free_implode_infos_for_free_list_pointer(void* ptr) {
 struct implode_infos* infos=(struct implode_infos*)ptr;
-free(infos);
+free_implode_infos(infos);
 }
 
 
@@ -330,6 +330,7 @@ for (int i=1;i<=tfst->N;i++) {
                new_transitions=new_Transition(tag_number,previous_state,new_transitions);
                struct list_pointer* ptr=entry_list;
                entry_list=entry_list->next;
+               free_implode_infos((struct implode_infos*)ptr->pointer);
                free(ptr);
             }
          }
