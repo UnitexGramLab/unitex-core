@@ -91,7 +91,7 @@ void explore_dictionary_tree(int pos,unichar* token,unichar* inflected,int pos_i
                              int start_state_index,int *is_not_unknown_token,
                              int first_token_index,int current_token_index,
                              struct string_hash* tmp_tags,Ustring* foo,
-                             language_t* language) {
+                             language_t* language,unichar* tag_buffer) {
 if (token[pos]=='\0') {
    if (shift==1 && n->value_index!=-1) {
       /* If we are on the first token and if there are some DELA entries for it,
@@ -109,7 +109,8 @@ if (token[pos]=='\0') {
          entry=filter_dela_entry(list->entry,NULL,language,0);
       }
       if (entry!=NULL) {
-         unichar tag[4096];
+         //unichar tag[4096];
+         unichar* tag=tag_buffer;
          build_tag(entry,inflected,tag);
          u_sprintf(foo,"@STD\n@%S\n@%d.0.0-%d.%d.0\n.\n",tag,first_token_index,current_token_index,pos-1);
          add_outgoing_transition(state,get_value_index(foo->str,tmp_tags),start_state_index+shift);
@@ -131,7 +132,7 @@ if (token[pos]=='\0') {
       explore_dictionary_tree(0,INFO->tok->token[INFO->buffer[current_token_index]],
                               inflected,pos_inflected,n,tree,INFO,state,shift,
                               start_state_index,is_not_unknown_token,
-                              first_token_index,current_token_index,tmp_tags,foo,language);
+                              first_token_index,current_token_index,tmp_tags,foo,language,tag_buffer);
    }
    return;
 }
@@ -143,7 +144,7 @@ while (trans!=NULL) {
        * token one */
       explore_dictionary_tree(pos+1,token,inflected,pos_inflected+1,trans->node,tree,INFO,state,
                               shift,start_state_index,is_not_unknown_token,
-                              first_token_index,current_token_index,tmp_tags,foo,language);
+                              first_token_index,current_token_index,tmp_tags,foo,language,tag_buffer);
    }
    trans=trans->next;
 }
@@ -887,8 +888,9 @@ for (i=0;i<length;i++) {
    if (buffer[i]!=tokens->SPACE) {
       /* We try to produce every transition from the current token */
       is_not_unknown_token=0;
+      unichar tag_buffer[4096];
       explore_dictionary_tree(0,tokens->token[buffer[i]],inflected,0,DELA_tree->inflected_forms->root,DELA_tree,&INFO,tfst->automaton->states[current_state],1,
-                              current_state,&is_not_unknown_token,i,i,tmp_tags,foo,language);
+                              current_state,&is_not_unknown_token,i,i,tmp_tags,foo,language,tag_buffer);
       if (norm_tree!=NULL) {
          /* If there is a normalization tree, we explore it */
          explore_normalization_tree(i,i,buffer[i],&INFO,tfst->automaton,tmp_tags,norm_tree,
@@ -1658,8 +1660,9 @@ for (i=0;i<length;i++) {
    if (buffer[i]!=tokens->SPACE) {
       /* We try to produce every transition from the current token */
       is_not_unknown_token=0;
+      unichar tag_buffer[4096];
       explore_dictionary_tree(0,tokens->token[buffer[i]],inflected,0,DELA_tree->inflected_forms->root,DELA_tree,&INFO,tfst->automaton->states[current_state],1,
-                              current_state,&is_not_unknown_token,i,i,tmp_tags,foo,language);
+                              current_state,&is_not_unknown_token,i,i,tmp_tags,foo,language,tag_buffer);
       if (norm_tree!=NULL) {
          /* If there is a normalization tree, we explore it */
          explore_normalization_tree(i,i,buffer[i],&INFO,tfst->automaton,tmp_tags,norm_tree,current_state,1,foo,0,language);
