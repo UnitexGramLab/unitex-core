@@ -1105,9 +1105,9 @@ void fill_negative_lemma_list(language_t* language,symbol_t* s,unichar* lemma) {
 struct list_int* list=NULL;
 /* We take a buffer large enough */
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-unichar *tmp = (unichar*)malloc(sizeof(unichar)*u_strlen(lemma));
+unichar *tmp = (unichar*)malloc(sizeof(unichar)*(u_strlen(lemma)+1));
 #else
-unichar tmp[u_strlen(lemma)];
+unichar tmp[u_strlen(lemma)+1];
 #endif
 int position=0;
 while (lemma[position]!='\0') {
