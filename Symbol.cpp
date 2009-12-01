@@ -1144,11 +1144,11 @@ if (tag[0]!='<' || tag[length-1]!='>') {
 /* We copy the content of the label without the angles */
 unichar* buffer=u_strdup(&(tag[1]),length-2);
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
-unichar *lemma = (unichar *)malloc(sizeof(unichar)*(length-2));
-unichar *tmp = (unichar *)malloc(sizeof(unichar)*(length-2));
+unichar *lemma = (unichar *)malloc(sizeof(unichar)*(length-1));
+unichar *tmp = (unichar *)malloc(sizeof(unichar)*(length-1));
 #else
-unichar lemma[length-2];
-unichar tmp[length-2];
+unichar lemma[length-1];
+unichar tmp[length-1];
 #endif
 int position=0;
 /* We look for a dot in the tag */
