@@ -789,6 +789,7 @@ if (!(c&32768)) {
                   u_strcat(new_dela_line,":");
                   u_strcat(new_dela_line,tmp_entry->inflectional_codes[k]);
                }
+					free_dela_entry(tmp_entry);
 					/*
 					 * Now we can build an analysis in the form of a word decomposition
 					 * structure, but only if the last component is a valid

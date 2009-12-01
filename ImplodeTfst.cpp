@@ -239,6 +239,11 @@ void free_implode_infos(struct implode_infos* infos) {
 free(infos);
 }
 
+void free_implode_infos_for_free_list_pointer(void* ptr) {
+struct implode_infos* infos=(struct implode_infos*)ptr;
+free(infos);
+}
+
 
 /**
  * Returns 1 if t1 and t2 have the same offsets; 0 otherwise.
@@ -346,6 +351,7 @@ for (int i=1;i<=tfst->N;i++) {
             new_transitions=new_Transition(tag_number,previous_state,new_transitions);
          }
       }
+      free_list_pointer(entry_list,free_implode_infos_for_free_list_pointer);
       /* At the end, we replace the original transition list by the new one */
       free_Transition_list(state->outgoing_transitions);
       state->outgoing_transitions=new_transitions;

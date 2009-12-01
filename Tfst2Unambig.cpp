@@ -117,18 +117,24 @@ u_printf("Loading text automaton...\n");
 Tfst* tfst=open_text_automaton(argv[vars->optind]);
 if (tfst==NULL) {
    error("Cannot load text automaton %s\n",argv[vars->optind]);
+   free(output);
+   free_OptVars(vars);
    return 1;
 }
 int res=isLinearAutomaton(tfst);
 if (res!=LINEAR_AUTOMATON) {
    error("Error: the text automaton is not linear in sentence %d\n",res);
    close_text_automaton(tfst);
+   free(output);
+   free_OptVars(vars);
    return 1;
 }
 U_FILE* f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
 if (f==NULL) {
    error("Cannot create %s\n",output);
    close_text_automaton(tfst);
+   free(output);
+   free_OptVars(vars);
    return 1;
 }
 u_printf("Converting linear automaton into text...\n");
@@ -140,8 +146,3 @@ free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
 }
-
-
-
-
-
