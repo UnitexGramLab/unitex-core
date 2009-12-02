@@ -969,7 +969,8 @@ if (entry->n_inflectional_codes==0) {
          error("'%S': doesn't match with POS '%S' definition\n",tag,POS->name);
          get_value_index(tag,language->unknown_codes,INSERT_IF_NEEDED,NULL);
       }
-      goto err_symb;
+      free_symbols(symbol);
+      return NULL;
    }
    return symbol;
 }
@@ -981,39 +982,40 @@ for (i=0;i<entry->n_inflectional_codes;i++) {
    for (;*p!='\0';p++) {
       feature_info_t* infos=POS_get_inflect_feature_infos(POS,*p);
       if (infos==NULL) {
-         unichar tmp[4096];
+         unichar tmp_tag[4096];
          if (tag==NULL) {
-            build_tag(entry,NULL,tmp);
-            tag=tmp;
+            build_tag(entry,NULL,tmp_tag);
+            tag=tmp_tag;
          }
          error("'%S': unknown inflectional code '%C'\n",tag,*p);
-         goto err_model;
+         free_symbol(tmp);
+         free_symbol(model);
+         free_symbols(symbol);
+         return NULL;
       }
       tmp->feature[infos->CATid]=infos->val;
    }
    if (POS->codes!=0 && !symbol_match_codes(tmp,NULL)) {
-      unichar tmp[4096];
+      unichar tmp_tag[4096];
       if (tag==NULL) {
-         build_tag(entry,NULL,tmp);
-         tag=tmp;
+         build_tag(entry,NULL,tmp_tag);
+         tag=tmp_tag;
       }
       if (get_value_index(tag,language->unknown_codes,DONT_INSERT)==-1) {
          /* We don't want to print several times the same error message */
          error("'%S': doesn't match with POS '%S' definition\n",tag,POS->name);
          get_value_index(tag,language->unknown_codes,INSERT_IF_NEEDED,NULL);
       }
-      goto err_model;
+      free_symbol(tmp);
+      free_symbol(model);
+      free_symbols(symbol);
+      return NULL;
    }
    tmp->next=symbol;
    symbol=tmp;
 }
 free_symbol(model);
 return symbol;
-
-err_model: free_symbol(model);
-
-err_symb: free_symbols(symbol);
-return NULL;
 }
 
 
