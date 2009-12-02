@@ -714,12 +714,13 @@ while (read_table_line(table,(unichar**)ligne,n_champs)) {
                     subgraph,chemin,result_graph,graphs_printed)) {
       graphs_printed++;
    }
+   for (i=0;i<n_champs;i++) {
+     free(ligne[i]);
+   }
    ligne_courante++;
 }
 u_fclose(table);
-for (i=0;i<n_champs;i++) {
-  free(ligne[i]);
-}
+
 free_graphe_patron(&structure);
 u_fprintf(result_graph,"\" 216 368 1 1 \n");
 u_fclose(result_graph);
