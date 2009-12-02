@@ -461,7 +461,7 @@ while (t!=NULL) {
             scan_graph(n_graph,t->state_number,liste->position,depth,liste_arrivee,mot_token_buffer,p);
             struct parsing_info* l_tmp=liste;
             liste=liste->next;
-            free(l_tmp);
+            free_parsing_info(l_tmp);
          }
          u_strcpy(p->stack->stack,pile_old);
          free(pile_old);
