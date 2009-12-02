@@ -137,6 +137,7 @@ int inflect(char* DLC, char* DLCF,
 				}
 				u_fprintf(dlcf, "\n");
 			}
+			SU_delete_inflection(&forms);
 			free_dela_entry(DELAS_entry);
 			/* End of simple word case */
 		} else {

@@ -64,15 +64,15 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,SU_id
 		jamoCodage* jamo,Jamo2Syl* jamo2syl);
 int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
-		SU_forms_T* forms, unichar*, int, unsigned int, unichar **,
+		SU_forms_T* forms, unichar*, int, unichar* var_name, unsigned int, unichar **,
 		unichar *,jamoCodage*,Jamo2Syl* jamo2syl);
 int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique,
 		unichar* sortie, Fst2* a, int etat_courant, struct inflect_infos** L,
-		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int,
+		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int, unichar* var_name,
 		unsigned int, unichar **, unichar *,jamoCodage*,Jamo2Syl* jamo2syl);
 int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Transition* T, unichar* flechi, unichar* canonique,
 		unichar* sortie, Fst2* a, struct inflect_infos** LISTE,
-		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int,
+		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int, unichar* var_name,
 		unsigned int, unichar **, unichar*,jamoCodage*,Jamo2Syl* jamo2syl);
 void shift_stack(unichar* stack, int pos, int shift);
 void shift_stack(unichar* stack, int pos);
@@ -134,8 +134,9 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encod
 	}
 	u_strcpy(inflected, semitic ? U_EMPTY : SU_id->lemma->unit);
 	local_sem_code[0] = '\0';
+    unichar var_name[100];
 	err = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,inflected, SU_id->lemma->unit, inflection_codes,
-			p_multiFlex_ctx->fst2[T], 0, desired_features, forms, semitic ? semitic_ : NULL, 0,
+			p_multiFlex_ctx->fst2[T], 0, desired_features, forms, semitic ? semitic_ : NULL, 0, var_name,
 			0, NULL, local_sem_code,jamo,jamo2syl);
 	return err;
 }
@@ -165,8 +166,9 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encod
 	}
 	u_strcpy(inflected, semitic ? U_EMPTY : lemma);
 	local_semantic_code[0] = '\0';
+    unichar var_name[100];
 	err = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,inflected, lemma, inflection_codes, p_multiFlex_ctx->fst2[T], 0,
-			NULL, forms, semitic ? semitic_ : NULL, 0, 0, filters,
+			NULL, forms, semitic ? semitic_ : NULL, 0, var_name, 0, filters,
 			local_semantic_code,jamo,jamo2syl);
 	return err;
 }
@@ -228,7 +230,7 @@ void aff_trans(Transition* T, Fst2* a) {
 // Returns 0 on success, 1 otherwise.
 int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
-		SU_forms_T* forms, unichar* semitic, int flag_var,
+		SU_forms_T* forms, unichar* semitic, int flag_var, unichar* var_name, 
 		unsigned int var_in_use, unichar **filters,
 		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	int err;
@@ -327,12 +329,12 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO
 
 	while (t != NULL) {//u_fprintf(stderr,"Explore 1\n");
 		retour_tag = SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,t, flechi, canonique, sortie, a, NULL,
-				desired_features, forms, semitic, flag_var, var_in_use,
+				desired_features, forms, semitic, flag_var, var_name, var_in_use,
 				filters, local_semantic_codes,jamo,jamo2syl);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
-	if (default_trans != NULL) {//u_fprintf(stderr,"PASS02\n");retour_tag = SU_explore_tag(default_trans,flechi,canonique,sortie,a,NULL,desired_features,forms,semitic,flag_var,var_in_use,filters);
+	if (default_trans != NULL) {//u_fprintf(stderr,"PASS02\n");retour_tag = SU_explore_tag(default_trans,flechi,canonique,sortie,a,NULL,desired_features,forms,semitic,flag_var,var_name, var_in_use,filters);
 		//default_trans->next=e2->transitions->next;e2->transitions=default_trans;e=e2;
 	}
 
@@ -387,7 +389,7 @@ void free_inflect_infos(struct inflect_infos* i) {
 int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* inflected, unichar* lemma,
 		unichar* output, Fst2* a, int current_state, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
-		int flag_var, unsigned int var_in_use, unichar **filters,
+		int flag_var, unichar* var_name, unsigned int var_in_use, unichar **filters,
 		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	Fst2State e = a->states[current_state];
 	if (e->control & 1) {
@@ -416,14 +418,14 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t*
 	int retour_tag;
 	while (t != NULL) {//u_fprintf(stderr,"Explore 2\n");local_
 		retour_tag = SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,t, inflected, lemma, output, a, L,
-				desired_features, forms, semitic, flag_var, var_in_use,
+				desired_features, forms, semitic, flag_var, var_name, var_in_use,
 				filters, local_semantic_codes,jamo,jamo2syl);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
 	if (default_trans != NULL) { //u_fprintf(stderr,"PASS2\n");
 		SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,default_trans, inflected, lemma, output, a, L,
-				desired_features, forms, semitic, flag_var, var_in_use,
+				desired_features, forms, semitic, flag_var, var_name, var_in_use,
 				filters, local_semantic_codes,jamo,jamo2syl);
 	}
 
@@ -431,6 +433,13 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t*
 	return 1;
 }
 
+struct SU_explore_tag_buffers
+{
+	unichar out[MAX_CHARS_IN_STACK];
+	unichar stack[MAX_CHARS_IN_STACK];
+	unichar tag[MAX_CHARS_IN_STACK];
+	unichar semitic2[MAX_CHARS_IN_STACK];
+} ;
 ////////////////////////////////////////////
 // Explores the tag of the transition T
 //
@@ -442,7 +451,7 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t*
 int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Transition* T, unichar* inflected, unichar* lemma,
 		unichar* output, Fst2* a, struct inflect_infos** LIST,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
-		int flag_var, unsigned int var_in_use, unichar **filters,
+		int flag_var, unichar* var_name, unsigned int var_in_use, unichar **filters,
 		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
 	if (T->tag_number < 0) {
 		/* If we are in the case of a call to a sub-graph */
@@ -452,19 +461,19 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 		int retour_all_states = 1;
 		SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,inflected, lemma, output, a,
 				a->initial_states[-(T->tag_number)], &L, desired_features,
-				forms, semitic, flag_var, var_in_use, filters,
+				forms, semitic, flag_var, var_name, var_in_use, filters,
 				local_semantic_codes,jamo,jamo2syl);
 		while (L != NULL) {
 			if (LIST == NULL) {//u_fprintf(stderr,"Explore state 1\n");
 				retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma, L->output,
 						a, T->state_number, desired_features, forms,
-						L->semitic, flag_var, var_in_use, filters,
+						L->semitic, flag_var, var_name, var_in_use, filters,
 						local_semantic_codes,jamo,jamo2syl);
 				retour_all_states += (retour_state + 1);
 			} else {//u_fprintf(stderr,"Explore state recursion 1\n");
 				retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma,
 						L->output, a, T->state_number, LIST, desired_features,
-						forms, L->semitic, flag_var, var_in_use, filters,
+						forms, L->semitic, flag_var, var_name, var_in_use, filters,
 						local_semantic_codes,jamo,jamo2syl);
 				retour_all_states += (1 - retour_state);
 			}
@@ -477,26 +486,33 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 	}
 	Fst2Tag t = a->tags[T->tag_number];
 	int pos = u_strlen(inflected);
+    /*
 	unichar out[MAX_CHARS_IN_STACK];
 	unichar stack[MAX_CHARS_IN_STACK];
 	unichar tag[MAX_CHARS_IN_STACK];
 	unichar semitic2[MAX_CHARS_IN_STACK];
+    */
+    struct SU_explore_tag_buffers* p_SU_buf = (struct SU_explore_tag_buffers*)malloc(sizeof(struct SU_explore_tag_buffers));
+    if (p_SU_buf == NULL) {
+        fatal_alloc_error("SU_explore_tag");
+    }
+
 
 	int i, l, ind, retour;
-	static unichar var_name[100];
+	//static unichar var_name[100];
 	retour = 1;
 
-	u_strcpy(out, output);
+	u_strcpy(p_SU_buf->out, output);
 	if (semitic != NULL)
-		u_strcpy(semitic2, semitic);
-	int pos_out = u_strlen(out);
-	u_strcpy(stack, inflected);
-	u_strcpy(tag, t->input);
-	if (u_strcmp(tag, "<E>")) {
+		u_strcpy(p_SU_buf->semitic2, semitic);
+	int pos_out = u_strlen(p_SU_buf->out);
+	u_strcpy(p_SU_buf->stack, inflected);
+	u_strcpy(p_SU_buf->tag, t->input);
+	if (u_strcmp(p_SU_buf->tag, "<E>")) {
 		/* If the tag is not <E>, we process it */
 	   unichar foo;
 	   int val;
-	   if (semitic!=NULL && 1==u_sscanf(tag,"<%d>%C",&val,&foo)) {
+	   if (semitic!=NULL && 1==u_sscanf(p_SU_buf->tag,"<%d>%C",&val,&foo)) {
          /* If we are in semitic mode, we must handle tags like <12> like references
           * to letters in the lemma. We must deal this way with values >9, because
           * the graph compiler would split "12" in "1" and "2" */
@@ -504,29 +520,30 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 	      if (val<0 || val>=u_strlen(lemma)) {
 	         error("Invalid reference in %S.fst2 to consonant #%d for skeleton \"%S\"\n",
                   a->graph_names[1], val+1, lemma);
+            free(p_SU_buf);
             return 0;
          }
-         stack[pos++] = lemma[val];
-         out[pos_out++] = lemma[val];
+         p_SU_buf->stack[pos++] = lemma[val];
+         p_SU_buf->out[pos_out++] = lemma[val];
 	   }
 	   /* Otherwise, we deal with the tag in the normal way */
-	   else for (int pos_tag = 0; tag[pos_tag] != '\0';) {
-			switch (tag[pos_tag]) {
+	   else for (int pos_tag = 0; p_SU_buf->tag[pos_tag] != '\0';) {
+			switch (p_SU_buf->tag[pos_tag]) {
 			case '<':
-				retour = flex_op_with_var(p_multiFlex_ctx->Variables_op, stack, tag, &pos,
+				retour = flex_op_with_var(p_multiFlex_ctx->Variables_op, p_SU_buf->stack, p_SU_buf->tag, &pos,
 						&pos_tag, &var_in_use);
 
 				break;
 			case '$':
 			case (unichar) POUND: {
-				var_name[0] = tag[pos_tag];
+				var_name[0] = p_SU_buf->tag[pos_tag];
 				var_name[1] = '\0';
 				p_multiFlex_ctx->save_pos = pos;
 				ind = get_indice_var_op(var_name);
 				if (get_flag_var(ind, var_in_use)) {
 					l = u_strlen(p_multiFlex_ctx->Variables_op[ind]);
 					for (i = 0; i < l; i++, pos++)
-						stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
+						p_SU_buf->stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
 				}
 				//if (VERBOSE) fprintf(stderr,"COPIE VAR \n");
 				flag_var = 1;
@@ -553,7 +570,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 
 				/* Unaccent operator */
 			case 'U': {
-				stack[pos] = u_deaccentuate(stack[pos]);
+				p_SU_buf->stack[pos] = u_deaccentuate(p_SU_buf->stack[pos]);
 				pos++;
 				pos_tag++;
 				break;
@@ -561,14 +578,14 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 
 				/* Lowercase operator */
 			case 'W': {
-				stack[0] = u_tolower(stack[0]);
+				p_SU_buf->stack[0] = u_tolower(p_SU_buf->stack[0]);
 				pos_tag++;
 				break;
 			}
 
 				/* Uppercase operator */
 			case 'P': {
-				stack[0] = u_toupper(stack[0]);
+				p_SU_buf->stack[0] = u_toupper(p_SU_buf->stack[0]);
 				pos_tag++;
 				break;
 			}
@@ -582,15 +599,15 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 				if (pos==0) {
 					fatal_error("Cannot apply operator J to empty stack\n");
 				}
-				if (!u_is_korea_syllabe_letter(stack[pos-1]) && !u_is_Hangul_Jamo(stack[pos-1])) {
-					fatal_error("Cannot apply J operator to a non Hangul or Jamo character '%C' (%04X)\n",stack[pos-1],stack[pos-1]);
+				if (!u_is_korea_syllabe_letter(p_SU_buf->stack[pos-1]) && !u_is_Hangul_Jamo(p_SU_buf->stack[pos-1])) {
+					fatal_error("Cannot apply J operator to a non Hangul or Jamo character '%C' (%04X)\n",p_SU_buf->stack[pos-1],p_SU_buf->stack[pos-1]);
 				}
-				if (u_is_korea_syllabe_letter(stack[pos-1])) {
+				if (u_is_korea_syllabe_letter(p_SU_buf->stack[pos-1])) {
 					/* If we have a Hangul syllab, we first turn it into a Jamo
 					 * character sequence */
 					unichar tmp[10];
 					unichar src[2];
-					src[0]=stack[pos-1];
+					src[0]=p_SU_buf->stack[pos-1];
 					src[1]='\0';
 					convert_Korean_text(src,tmp,jamo,NULL);
 					int l=u_strlen(tmp);
@@ -599,66 +616,66 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 					 * account the hangul syllab */
 					pos--;
 					for (int i=0;i<l;i++) {
-						stack[pos++]=tmp[i];
+						p_SU_buf->stack[pos++]=tmp[i];
 					}
 				}
-				if (u_is_Hangul_Jamo_consonant(stack[pos-1])) {
-					while (u_is_Hangul_Jamo_consonant(stack[pos-1])) {
+				if (u_is_Hangul_Jamo_consonant(p_SU_buf->stack[pos-1])) {
+					while (u_is_Hangul_Jamo_consonant(p_SU_buf->stack[pos-1])) {
 						pos--;
 					}
-					stack[pos]='\0';
+					p_SU_buf->stack[pos]='\0';
 				}
-				else if (u_is_Hangul_Jamo_medial_vowel(stack[pos-1])){
-					while (u_is_Hangul_Jamo_medial_vowel(stack[pos-1])) {
+				else if (u_is_Hangul_Jamo_medial_vowel(p_SU_buf->stack[pos-1])){
+					while (u_is_Hangul_Jamo_medial_vowel(p_SU_buf->stack[pos-1])) {
 						pos--;
 					}
-					stack[pos]='\0';
+					p_SU_buf->stack[pos]='\0';
 				} else {
-					fatal_error("Operator J: unexpected character '%C' (%04X)\n",stack[pos-1],stack[pos-1]);
+					fatal_error("Operator J: unexpected character '%C' (%04X)\n",p_SU_buf->stack[pos-1],p_SU_buf->stack[pos-1]);
 				}
 				break;
 			}
 
 			/* Korean syllab delimiter operator */
 			case '.': {
-				if (pos>0 && u_is_Hangul_Jamo(stack[pos-1])) {
+				if (pos>0 && u_is_Hangul_Jamo(p_SU_buf->stack[pos-1])) {
 					/* If the last char is a jamo, then we want to recombine all previous jamo
 					 * with the first syllab found on the left */
                    int z=pos-1;
-                   while (z>0 && (u_is_Hangul_Jamo(stack[z]) || stack[z]==KR_SYLLAB_BOUND)) {
+                   while (z>0 && (u_is_Hangul_Jamo(p_SU_buf->stack[z]) || p_SU_buf->stack[z]==KR_SYLLAB_BOUND)) {
                 	   z--;
                    }
-                   if (z<0 || !u_is_korea_syllabe_letter(stack[z])) {
+                   if (z<0 || !u_is_korea_syllabe_letter(p_SU_buf->stack[z])) {
                 	   fatal_error("Operator . unexpected if no hangul before jamos\n");
                    }
                    unichar hangul[2];
-                   hangul[0]=stack[z];
+                   hangul[0]=p_SU_buf->stack[z];
                    hangul[1]='\0';
                    unichar tmp[32];
                    convert_Korean_text(hangul,tmp,jamo,NULL);
                    int l=u_strlen(tmp);
                    int i;
                    for (i=z+1;i<pos;i++) {
-                	  if (stack[i]!=KR_SYLLAB_BOUND) {
+                	  if (p_SU_buf->stack[i]!=KR_SYLLAB_BOUND) {
                 		  /* The syllab bound must be ignored when we have to recombine
                 		   * jamos with an hangul */
-                		  tmp[l++]=stack[i];
+                		  tmp[l++]=p_SU_buf->stack[i];
                 	  }
                    }
                    tmp[l]='\0';
                    unichar tmp2[32];
                    convert_jamo_to_hangul(tmp,tmp2,jamo2syl);
-                   u_strcpy(stack+z,tmp2);
+                   u_strcpy(p_SU_buf->stack+z,tmp2);
                    pos=z+u_strlen(tmp2);
 				}
-				stack[pos++] = KR_SYLLAB_BOUND;
+				p_SU_buf->stack[pos++] = KR_SYLLAB_BOUND;
 				pos_tag++;
 				break;
 			}
 
 				/* Right copy operator */
 			case 'C': {
-				shift_stack(stack, pos);
+				shift_stack(p_SU_buf->stack, pos);
 				pos++;
 				pos_tag++;
 				break;
@@ -666,7 +683,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 
 				/* Left copy operator */
 			case 'D': {
-				shift_stack_left(stack, pos);
+				shift_stack_left(p_SU_buf->stack, pos);
 				pos--;
 				pos_tag++;
 				break;
@@ -685,7 +702,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 			case '8':
 			case '9':
 				if (flag_var) {
-					var_name[1] = tag[pos_tag];
+					var_name[1] = p_SU_buf->tag[pos_tag];
 					var_name[2] = '\0';
 					flag_var = 0;
 					pos = p_multiFlex_ctx->save_pos;
@@ -693,33 +710,34 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 					if (get_flag_var(ind, var_in_use)) {
 						l = u_strlen(p_multiFlex_ctx->Variables_op[ind]);
 						for (i = 0; i < l; i++, pos++)
-							stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
+							p_SU_buf->stack[pos] = p_multiFlex_ctx->Variables_op[ind][i];
 					}
 					pos_tag++;
 				} else if (semitic != NULL) {
-				   int pos_letter=tag[pos_tag++]-'0';
+				   int pos_letter=p_SU_buf->tag[pos_tag++]-'0';
 					int i = pos_letter-1; /* Numbering from 0, always... */
 					if (i >= u_strlen(lemma)) {
 						error(
 								"Invalid reference in %S.fst2 to consonant #%C for skeleton \"%S\"\n",
-								a->graph_names[1], tag[pos_tag - 1], lemma);
+								a->graph_names[1], p_SU_buf->tag[pos_tag - 1], lemma);
+                        free(p_SU_buf);
 						return 0;
 					}
-					stack[pos++] = lemma[i];
-					out[pos_out++] = lemma[i];
+					p_SU_buf->stack[pos++] = lemma[i];
+					p_SU_buf->out[pos_out++] = lemma[i];
 				}
 				break;
 
 				/* Default push operator */
 			default: {
 				unichar tmp[32];
-				compatibility_jamo_to_standard_jamo(tag[pos_tag],tmp,jamo);
+				compatibility_jamo_to_standard_jamo(p_SU_buf->tag[pos_tag],tmp,jamo);
 				int l=u_strlen(tmp);
-				u_strcpy(stack+pos,tmp);
+				u_strcpy(p_SU_buf->stack+pos,tmp);
 				pos=pos+l;
 				//old version before Korean: stack[pos++] = tag[pos_tag];
 				if (semitic != NULL) {
-					out[pos_out++] = tag[pos_tag];
+					p_SU_buf->out[pos_out++] = p_SU_buf->tag[pos_tag];
 				}
 				pos_tag++;
 				break;
@@ -727,17 +745,17 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 			}
 		}
 	}
-	out[pos_out] = '\0';
+	p_SU_buf->out[pos_out] = '\0';
 	/* We process the output, if any and not NULL */
 	if (t->output != NULL && u_strcmp(t->output, "<E>")) {
 		if (semitic != NULL) {
 			/* If we are in semitic mode, we append the output to the current one, stored in 'semitic' */
-			u_strcat(semitic2, t->output);
+			u_strcat(p_SU_buf->semitic2, t->output);
 			/* Then, we test if the new output contains an unprotected '}' or if it is "{" */
-			if (!u_strcmp(semitic2, "{") || u_strchr(semitic2, '}', 1) != NULL) {
+			if (!u_strcmp(p_SU_buf->semitic2, "{") || u_strchr(p_SU_buf->semitic2, '}', 1) != NULL) {
 				/* In that case, we must append the current output to the global one */
-				u_strcat(out, semitic2);
-				semitic2[0] = '\0';
+				u_strcat(p_SU_buf->out, p_SU_buf->semitic2);
+				p_SU_buf->semitic2[0] = '\0';
 			}
 		} else {
 			/* If we are in normal mode, we just append the tag's output to the global one */
@@ -751,30 +769,31 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 					sem++;
 				}
 				local_semantic_codes[sem] = '\0';
-				u_strcat(out, t->output+sem);
+				u_strcat(p_SU_buf->out, t->output+sem);
 			} else {
-			    u_strcat(out, t->output);
+			    u_strcat(p_SU_buf->out, t->output);
 			}
 		}
 	}
 	/* Then, we go the next state */
-	stack[pos] = '\0';
+	p_SU_buf->stack[pos] = '\0';
 
 	int retour_state = 1;
 	if (retour) {
 		if (LIST == NULL) {//u_fprintf(stderr,"Explore state 2\n");
-			retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,stack, lemma, out, a,
+			retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,p_SU_buf->stack, lemma, p_SU_buf->out, a,
 					T->state_number, desired_features, forms,
-					semitic ? semitic2 : NULL, flag_var, var_in_use, filters,
+					semitic ? p_SU_buf->semitic2 : NULL, flag_var, var_name, var_in_use, filters,
 					local_semantic_codes,jamo,jamo2syl);
 		} else {//u_fprintf(stderr,"Explore state recursion 2\n");
-			retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,stack, lemma, out, a,
+			retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,p_SU_buf->stack, lemma, p_SU_buf->out, a,
 					T->state_number, LIST, desired_features, forms,
-					semitic ? semitic2 : NULL, flag_var, var_in_use, filters,
+					semitic ? p_SU_buf->semitic2 : NULL, flag_var, var_name, var_in_use, filters,
 					local_semantic_codes,jamo,jamo2syl);
 		}
 	}
 	//return (retour * (1-retour_state));
+    free(p_SU_buf);
 	return retour;
 }
 
@@ -957,6 +976,9 @@ void SU_delete_inflection(SU_forms_T* forms) {
 	for (f = 0; f < forms->no_forms; f++) {
 		free(forms->forms[f].form);
 		free(forms->forms[f].features);
+        if (forms->forms[f].local_semantic_code != NULL) {
+		   free(forms->forms[f].local_semantic_code);
+        }
 	}
     free(forms->forms);
 }
