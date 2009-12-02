@@ -110,7 +110,7 @@ while (transA!=NULL) {
       }
    }
    /* We don't need transa anymore */
-   free_Transition(transa);
+   free_Transition(transa,free_symbol);
 }
 if (A->states[q1]->default_state!=-1) {
    /* If q1 has a default transition, it will match
@@ -122,7 +122,7 @@ if (A->states[q1]->default_state!=-1) {
       add_outgoing_transition(res->states[q],transb->label,destination);
       /* See above */
       transb->label=NULL;
-      free_Transition(transb);
+      free_Transition(transb,free_symbol);
    }
    if (B->states[q2]->default_state!=-1) {
       /* If both q1 and q2 have default transitions */
