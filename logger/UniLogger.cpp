@@ -1083,12 +1083,13 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_fopen(const char* name,const ch
     }
 }
 
-void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_rename(const char*,const char*,void*)
+void ABSTRACT_CALLBACK_UNITEX UniLogger_before_af_rename(const char* name1,const char*,void* privateLoggerPtr)
 {
-    /*
-    struct UniLoggerSpace * pULS=(struct UniLoggerSpace *)privateLoggerPtr;
-    struct ExecutionLogging* pEL = pULS->pEL;
-    */
+    struct ExecutionLogging* pEL = GetExecutionLogging(privateLoggerPtr);
+    if (pEL == NULL)
+        return;
+
+    DoFileReadWork(pEL,name1);
 }
 
 void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_rename(const char* name1,const char* name2,int result,void* privateLoggerPtr)
@@ -1097,7 +1098,6 @@ void ABSTRACT_CALLBACK_UNITEX UniLogger_after_af_rename(const char* name1,const 
     if (pEL == NULL)
         return;
 
-    DoFileReadWork(pEL,name1);
     if (result==0)
     {
         DoFileWriteWork(pEL,name2);
