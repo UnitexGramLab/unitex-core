@@ -352,6 +352,7 @@ if (depth > MAX_DEPTH) {
     while (*liste_arrivee != NULL) { // free list of subgraph matches
       struct parsing_info* la_tmp=*liste_arrivee;
       *liste_arrivee=(*liste_arrivee)->next;
+      la_tmp->next=NULL; // to don't free the next item
       free_parsing_info(la_tmp);
     }
   }
@@ -461,6 +462,7 @@ while (t!=NULL) {
             scan_graph(n_graph,t->state_number,liste->position,depth,liste_arrivee,mot_token_buffer,p);
             struct parsing_info* l_tmp=liste;
             liste=liste->next;
+            l_tmp->next=NULL; // to don't free the next item
             free_parsing_info(l_tmp);
          }
          u_strcpy(p->stack->stack,pile_old);
