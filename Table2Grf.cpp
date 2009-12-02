@@ -280,7 +280,13 @@ for (i=0;i<g->n_etats;i++) {
 }
 }
 
-
+void free_graphe_patron(struct graphe_patron* p)
+{
+int i;
+for (i=0;i<p->n_etats;i++) {
+  free(p->tab[i]);
+}
+}
 
 void read_table_first_line(U_FILE *f,int *n) {
 int c;
@@ -628,6 +634,7 @@ u_to_char(current_graph_char,current_graph);
 if (!nettoyer_graphe(res)) {
   // if the graph has been emptied, we return
   error("%S has been emptied\n",current_graph);
+  free_graphe_patron(res);
   return false;
 }
 if (graphs_printed!=0) {
@@ -661,6 +668,7 @@ u_fprintf(f_coord,"%s",tmp4);
 f=u_fopen_creating_versatile_encoding(encoding_output,bom_output,current_graph_char,U_WRITE);
 if (f==NULL) {
   error("Cannot create subgraph %s\n",current_graph_char);
+  free_graphe_patron(res);
   return false;
 }
 if (ligne_courante%10==0) {
@@ -709,9 +717,10 @@ while (read_table_line(table,(unichar**)ligne,n_champs)) {
    ligne_courante++;
 }
 u_fclose(table);
-for (i=0;i<structure.n_etats;i++) {
-  free(structure.tab[i]);
+for (i=0;i<n_champs;i++) {
+  free(ligne[i]);
 }
+free_graphe_patron(&structure);
 u_fprintf(result_graph,"\" 216 368 1 1 \n");
 u_fclose(result_graph);
 u_printf("Done.                                             \n");
