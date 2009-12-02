@@ -470,6 +470,6 @@ if (symbol==NULL) {
    return NULL;
 }
 struct dela_entry* result=symbol_to_dela_entry(symbol);
-free_symbol(symbol);
+free_symbols(symbol);
 return result;
 }

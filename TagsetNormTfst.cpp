@@ -188,6 +188,7 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
    for (int i=0;i<original_number_of_tags;i++) {
       renumbering[i]=NULL;
       TfstTag* t=(TfstTag*)(txtin->tfst->tags->tab[i]);
+      int t_to_free=0;
       if (t->type==T_STD && t->content[0]=='{' && t->content[1]!='\0') {
          /* If the tag is a dictionary entry */
          struct dela_entry* e=tokenize_tag_token(t->content);
@@ -212,6 +213,9 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
              * if we have "{jeunes,jeune.A:ms:fs}", replacing it by "{jeunes,jeune.A:ms}"
              * and creating, if necessary, a new tag "{jeunes,jeune.A:fs}", could lead
              * to a bug if the tag "{jeunes,jeune.A:ms}" already exists. */
+            if (txtin->tfst->tags->tab[i] != NULL) {
+               t_to_free=1;
+            }
             txtin->tfst->tags->tab[i]=NULL;
             int N=e->n_inflectional_codes;
             e->n_inflectional_codes=1;
@@ -222,10 +226,17 @@ for (int current_sentence=1;current_sentence<=txtin->tfst->N;current_sentence++)
                build_tag(e,NULL,foo);
                int index=get_tfst_tag_index(txtin->tfst->tags,foo,&(t->m));
                renumbering[i]=new_list_int(index,renumbering[i]);
+               if (j!=0) {
+                  free(e->inflectional_codes[0]);
+               }
                e->inflectional_codes[0]=old_first_code;
             }
             free_dela_entry(e);
          }
+      }
+
+      if (t_to_free!=0) {
+         free_TfstTag(t);
       }
    }
    SingleGraph g=txtin->tfst->automaton;
