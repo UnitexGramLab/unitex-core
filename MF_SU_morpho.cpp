@@ -255,6 +255,7 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO
 						fatal_alloc_error("SU_explore_state");
 					}
 					forms->forms[forms->no_forms].form = u_strdup(flechi);
+					forms->forms[forms->no_forms].local_semantic_code = NULL;
 					forms->forms[forms->no_forms].features = feat[f];
 					forms->no_forms++;
 				} else { // If undesired form delete 'feat'
@@ -272,8 +273,8 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO
 				fatal_alloc_error("SU_explore_state");
 			}
 			forms->forms[forms->no_forms].form = u_strdup(flechi);
+         forms->forms[forms->no_forms].local_semantic_code = NULL;
 			forms->forms[forms->no_forms].raw_features = u_strdup(sortie);
-			forms->forms[forms->no_forms].local_semantic_code = NULL;
 			forms->no_forms++;
 		} else {
 			/* If we want all the inflected forms */
@@ -1166,6 +1167,7 @@ void SU_init_invariable_form(SU_forms_T* forms, const unichar* form) {
 		fatal_alloc_error("SU_init_invariable_form");
 	}
 	forms->forms[0].form = u_strdup(form);
+	forms->forms[0].local_semantic_code=NULL;
 	forms->forms[0].features = NULL;
 }
 
@@ -1178,6 +1180,7 @@ void SU_init_invariable_form_char(SU_forms_T* forms, const char* form) {
 		fatal_alloc_error("SU_init_invariable_form_char");
 	}
 	forms->forms[0].form = u_strdup(form);
+	forms->forms[0].local_semantic_code=NULL;
 	forms->forms[0].features = NULL;
 }
 
