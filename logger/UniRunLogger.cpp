@@ -1382,6 +1382,10 @@ typedef struct {
     char*summary;
     char*summary_error;
     unsigned int num_thread;
+
+    int count_run_ok;
+    int count_run_warning;
+    int count_run_error;
 } RunLog_ThreadData;
 
 
@@ -1477,8 +1481,25 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
                               p_RunLog_ctx->benchmark,
                               NULL,&time_elapsed,&exec_status);
 
+        int disp_resume=0;
+        if (p_RunLog_ctx->quiet == 0)
+            disp_resume=1;
+        else
+            if (exec_status == EXEC_NOTRUN_UNWANTEDTOOL)
+
+        if ((exec_status == EXEC_COMPARE_ERROR) || (exec_status == EXEC_COMPARE_WARNING))
+            disp_resume=0;
+
+
+        if (exec_status == EXEC_COMPARE_OK)
+            p_RunLog_ThreadData->count_run_ok++;
+        if (exec_status == EXEC_COMPARE_ERROR)
+            p_RunLog_ThreadData->count_run_error++;
+        if (exec_status == EXEC_COMPARE_WARNING)
+            p_RunLog_ThreadData->count_run_warning++;
+
         
-        if ((p_RunLog_ctx->quiet != 0) && (exec_status != EXEC_NOTRUN_UNWANTEDTOOL))
+        if (disp_resume != 0)
         {
             char resume[0x400];
             const char* exec_string="";
@@ -1649,6 +1670,10 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
     (prunLog_ThreadData+ut)->summary_error = NULL;
     (prunLog_ThreadData+ut)->num_thread = ut;
 
+    (prunLog_ThreadData+ut)->count_run_ok=0;
+    (prunLog_ThreadData+ut)->count_run_error=0;
+    (prunLog_ThreadData+ut)->count_run_warning=0;
+
     *(ptrptr+ut) = (void*)(prunLog_ThreadData+ut);
 }
 
@@ -1713,6 +1738,16 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
         free((prunLog_ThreadData+ut)->summary_error);
         (prunLog_ThreadData+ut)->summary_error=NULL;
     }
+}
+
+u_printf("\n");
+for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
+    u_printf("final resume");
+    if (runLog_ctx.nb_thread>1)
+        u_printf(" for thread %u",ut);
+    u_printf(": %u good run, %u warning compare, %u error compare\n",
+        (prunLog_ThreadData+ut)->count_run_ok,(prunLog_ThreadData+ut)->count_run_warning,
+        (prunLog_ThreadData+ut)->count_run_error);
 }
 
 free(prunLog_ThreadData);
