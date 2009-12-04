@@ -121,6 +121,7 @@ int is_cancelling_requested()
 	{
         if (((*(tmp->lgi.func_array.fnc_is_cancelling))(tmp->lgi.privateCancelPtr)) != 0)
             return 1;
+        tmp = tmp->next;
 	}
     return 0;
 }
