@@ -247,9 +247,9 @@ u_fclose(output);
  * Returns 1 if the given file exists and can be read; 0 otherwise.
  */
 int fexists(char* name) {
-U_FILE* f=u_fopen(ASCII,name,U_READ);
+ABSTRACTFILE* f=af_fopen_unlogged(name,"rb");
 if (f==NULL) return 0;
-u_fclose(f);
+af_fclose(f);
 return 1;
 }
 
