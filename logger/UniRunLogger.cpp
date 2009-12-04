@@ -1422,6 +1422,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
     RunLog_CancelCount* pRunLog_CancelCount = GetRunLog_CancelCount();
 
     long i;
+    unsigned long lprev=0;
     long nb_iteration = (p_RunLog_ctx->random != 0) ? p_RunLog_ctx->random : p_RunLog_ctx->increment;
     if (nb_iteration==0)
         nb_iteration=1;
@@ -1441,8 +1442,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         strcpy(resultulp,p_RunLog_ctx->resultulp);
 
         if ((p_RunLog_ctx->increment>0) || (p_RunLog_ctx->random>0))
-        {
-            unsigned long lprev=0;
+        {            
             unsigned long inc_this = i;
             if (p_RunLog_ctx->random != 0)
             { 
