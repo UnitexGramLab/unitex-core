@@ -51,6 +51,7 @@
 #include "Error.h"
 
 #include "AbstractFilePlugCallback.h"
+#include "UserCancellingPlugCallback.h"
 
 class InstallLoggerForRunner
 {
@@ -1290,6 +1291,7 @@ const char* usage_RunLog =
          "  -i N/--increment=N: increment filename <ulp> by 0 to N\n"
          "  -t N/--thread=N: create N thread\n"
          "  -a N/--random=N: select N time a random log in the list (in each thread)\n"
+         "  -f N/--break-after=N: user cancel after N run (with one thread only)\n"
          "  -u PATH/--unfound-location==PATH: take dictionnary and FST2 from PATH if\n"
          "               not found on the logfile\n"
          "\n"
@@ -1300,7 +1302,7 @@ static void usage() {
 u_printf("%S",COPYRIGHT);
 u_printf(usage_RunLog);
 }
-const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:o:u:b";
+const char* optstring_RunLog=":pcd:r:i:s:e:mvt:lna:o:u:bf:";
 const struct option_TS lopts_RunLog[]= {
       {"rundir",required_argument_TS,NULL,'d'},
       {"result",required_argument_TS,NULL,'r'},
@@ -1320,6 +1322,7 @@ const struct option_TS lopts_RunLog[]= {
       {"tool",required_argument_TS,NULL,'o'},
       {"unfound-location",required_argument_TS,NULL,'u'},
       {"no-benchmark",no_argument_TS,NULL,'b'},
+      {"break-after",required_argument_TS,NULL,'f'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -1340,6 +1343,7 @@ typedef struct {
     long increment;
     long random;
     int benchmark;
+    int run_before_break;
 } RunLog_ctx;
 
 
@@ -1350,10 +1354,38 @@ typedef struct {
     unsigned int num_thread;
 } RunLog_ThreadData;
 
+
+typedef struct {
+    int run_before_break_max;
+    int run_before_break_count;
+} RunLog_CancelCount;
+
+static RunLog_CancelCount runLog_CancelCount_Global;
+RunLog_CancelCount* GetRunLog_CancelCount() 
+{
+    return &runLog_CancelCount_Global;
+}
+
+int ABSTRACT_CALLBACK_UNITEX is_cancelling(void*)
+{
+    RunLog_CancelCount* pRunLog_CancelCount = GetRunLog_CancelCount();
+    if (pRunLog_CancelCount == NULL)
+        return 0;
+    if (pRunLog_CancelCount->run_before_break_max != -1)
+        if (pRunLog_CancelCount->run_before_break_count>=pRunLog_CancelCount->run_before_break_max)
+            return 1;
+    pRunLog_CancelCount->run_before_break_count++;
+    return 0;
+}
+
+
 void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/)
 {
     RunLog_ThreadData* p_RunLog_ThreadData =(RunLog_ThreadData*)privateDataPtr;
     const RunLog_ctx* p_RunLog_ctx = p_RunLog_ThreadData->p_RunLog_ctx;
+
+
+    RunLog_CancelCount* pRunLog_CancelCount = GetRunLog_CancelCount();
 
     long i;
     long nb_iteration = (p_RunLog_ctx->random != 0) ? p_RunLog_ctx->random : p_RunLog_ctx->increment;
@@ -1396,6 +1428,13 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
 
         unsigned int time_elapsed=0;
         Exec_status exec_status;
+
+        if (pRunLog_CancelCount != NULL)
+        {
+            pRunLog_CancelCount -> run_before_break_max = p_RunLog_ctx->run_before_break;
+            pRunLog_CancelCount -> run_before_break_count = 0;
+        }
+
         RunLogParam(runulp,rundir,resultulp,  p_RunLog_ctx->select_tool,
                               p_RunLog_ctx->clean,(p_RunLog_ctx->cleanlog==1) ? 0 : 1,
                               p_RunLog_ctx->LocationUnfoundVirtualRessource,
@@ -1429,6 +1468,9 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
     }
 }
 
+
+
+
 /**
  * The same than main, but no call to setBufferMode.
  */
@@ -1452,6 +1494,7 @@ runLog_ctx.nb_thread=1;
 runLog_ctx.increment=0;
 runLog_ctx.random=0;
 runLog_ctx.benchmark=1;
+runLog_ctx.run_before_break=-1;
 
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
@@ -1482,6 +1525,12 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
                 fatal_error("You must specify a number of thread\n");
              }
              runLog_ctx.nb_thread=atoi(vars->optarg);
+             break;
+   case 'f': 
+             if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a number of test before break\n");
+             }
+             runLog_ctx.run_before_break=atoi(vars->optarg);
              break;
    case 'r': strcpy(runLog_ctx.resultulp,vars->optarg); break;
    case 'd': strcpy(runLog_ctx.rundir,vars->optarg); break;
@@ -1562,7 +1611,20 @@ for (ut=0;ut<runLog_ctx.nb_thread;ut++) {
     *(ptrptr+ut) = (void*)(prunLog_ThreadData+ut);
 }
 
-if (runLog_ctx.nb_thread == 1)
+if (runLog_ctx.nb_thread>1)
+  runLog_ctx.run_before_break=-1;
+
+if (runLog_ctx.run_before_break!=-1)
+{
+    t_user_cancelling_func_array user_cancelling_func_array;
+    user_cancelling_func_array.size_struct = sizeof(user_cancelling_func_array);
+    user_cancelling_func_array.fnc_Init_User_Cancelling = NULL;
+    user_cancelling_func_array.fnc_Uninit_User_Cancelling = NULL;
+    user_cancelling_func_array.fnc_is_cancelling = is_cancelling;
+    AddUserCancellingInfo(&user_cancelling_func_array,NULL);
+}
+
+if (runLog_ctx.nb_thread <= 1)
    DoWork(*ptrptr,0);
 else
    SyncDoRunThreads(runLog_ctx.nb_thread,DoWork,ptrptr);

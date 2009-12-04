@@ -318,7 +318,7 @@ COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Af_stdio.o ActivityLogger.
 CONCORD      = Concord
 CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o Text_tokens.o String_hash.o\
 				List_int.o Alphabet.o LocateMatches.o Match.o Concordance.o File.o\
-				Text_parsing.o MorphologicalLocate.o LocatePattern.o\
+				Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o\
 				TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o DELA.o List_ustring.o Fst2.o \
 				AbstractDelaLoad.o AbstractFst2Load.o Pattern.o LocateFst2Tags.o Error.o SortTxt.o\
@@ -332,7 +332,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_stdio.o ActivityLogger.o Unicode.o Text_tokens.o String_hash.o List_int.o\
 				Alphabet.o LocateMatches.o Match.o Concordance.o File.o\
-				Text_parsing.o MorphologicalLocate.o LocatePattern.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
+				Text_parsing.o UserCancelling.o MorphologicalLocate.o LocatePattern.o TransductionStack.o OptimizedFst2.o TransductionVariables.o ParsingInfo.o\
 				CompoundWordTree.o MorphologicalFilters.o\
 				DELA.o List_ustring.o Fst2.o AbstractDelaLoad.o AbstractFst2Load.o Pattern.o LocateFst2Tags.o\
 				Error.o SortTxt.o\
@@ -351,7 +351,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             List_ustring.o Af_stdio.o ActivityLogger.o Unicode.o CompoundWordHashTable.o Fst2.o AbstractDelaLoad.o AbstractFst2Load.o \
             IOBuffer.o Error.o CompoundWordTree.o\
             Pattern.o ParsingInfo.o LocatePattern.o LocateMatches.o Match.o OptimizedFst2.o \
-            Text_parsing.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o Locate.o\
+            Text_parsing.o UserCancelling.o MorphologicalLocate.o TransductionVariables.o TransductionStack.o MorphologicalFilters.o Locate.o\
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
             Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o\
@@ -385,7 +385,7 @@ EVAMB_OBJS = Main_Evamb.o Evamb.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode
              Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o Tfst.o File.o
 
 EXTRACT      = Extract
-EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
+EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.o UserCancelling.o MorphologicalLocate.o TransductionStack.o OptimizedFst2.o TransductionVariables.o \
                ParsingInfo.o CompoundWordTree.o  List_int.o Concordance.o \
                DELA.o List_ustring.o Fst2.o Pattern.o Af_stdio.o ActivityLogger.o Unicode.o AbstractDelaLoad.o AbstractFst2Load.o\
                Text_tokens.o File.o ExtractUnits.o Alphabet.o String_hash.o LocateMatches.o Match.o\
@@ -440,7 +440,7 @@ LOCATE      = Locate
 LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o Alphabet.o DELA.o List_ustring.o String_hash.o \
               LocatePattern.o AbstractDelaLoad.o AbstractFst2Load.o Fst2.o Text_tokens.o List_int.o\
               Pattern.o CompoundWordTree.o LocateFst2Tags.o \
-              OptimizedFst2.o Text_parsing.o MorphologicalLocate.o LocateMatches.o \
+              OptimizedFst2.o Text_parsing.o UserCancelling.o MorphologicalLocate.o LocateMatches.o \
               Match.o TransductionVariables.o TransductionStack.o\
               ParsingInfo.o File.o MorphologicalFilters.o Error.o StringParsing.o\
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
@@ -493,7 +493,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                DELA.o AbstractDelaLoad.o List_ustring.o Fst2.o AbstractFst2Load.o IOBuffer.o TransductionStack.o Pattern.o \
                Af_stdio.o ActivityLogger.o Unicode.o Alphabet.o LocateMatches.o Match.o File.o NormalizationFst2.o\
 	            PortugueseNormalization.o TransductionVariables.o \
-               Text_parsing.o MorphologicalLocate.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
+               Text_parsing.o UserCancelling.o MorphologicalLocate.o String_hash.o LocatePattern.o Text_tokens.o List_int.o\
                Sentence2Grf.o MorphologicalFilters.o Error.o StringParsing.o BitArray.o\
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
                Buffer.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
@@ -597,7 +597,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   PatternTree.o PolyLex.o PortugueseNormalization.o ProgramInvoker.o RebuildTfst.o Reconstrucao.o \
                   Reg2Grf.o RegularExpressions.o RussianCompounds.o Sentence2Grf.o SingleGraph.o Snt.o SortTxt.o \
                   Stack_int.o Stack_unichar.o Stats.o String_hash.o StringParsing.o Symbol.o Symbol_op.o \
-                  SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o Text_tokens.o Tfst.o \
+                  SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o Ustring.o XMLizer.o DuplicateFile.o \
                   Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o \
@@ -628,7 +628,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   PatternTree.o PolyLex.o PortugueseNormalization.o ProgramInvoker.o RebuildTfst.o Reconstrucao.o \
                   Reg2Grf.o RegularExpressions.o RussianCompounds.o Sentence2Grf.o SingleGraph.o Snt.o SortTxt.o \
                   Stack_int.o Stack_unichar.o Stats.o String_hash.o StringParsing.o Symbol.o Symbol_op.o \
-                  SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o Text_tokens.o Tfst.o \
+                  SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o Ustring.o XMLizer.o DuplicateFile.o \
                   Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o \

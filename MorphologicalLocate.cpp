@@ -794,7 +794,8 @@ if (L!=NULL) {
       /* And we continue the exploration */
 
       variable_backup_memory_reserve* backup_reserve = create_variable_backup_memory_reserve(p->variables);
-      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve);
+      int count_cancel_trying=0;
+      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve,&count_cancel_trying);
       free_reserve(backup_reserve);
 
       p->stack->stack_pointer=stack_top;

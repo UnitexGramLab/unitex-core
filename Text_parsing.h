@@ -50,6 +50,9 @@
                           needed to avoid overflow of error buffers in Java GUI */
 
 
+/* we try to known if user request cancel each COUNT_CANCEL_TRYING_INIT_CONST locate */
+#define COUNT_CANCEL_TRYING_INIT_CONST (1024)
+
 struct Token_error_ctx {
 int n_errors;
 int last_start;
@@ -60,7 +63,7 @@ int n_matches_at_token_pos__morphological_locate;
 
 void error_at_token_pos(const char* message,int start,int length,struct locate_parameters* p,struct Token_error_ctx*);
 void launch_locate(U_FILE*,U_FILE*,long int,U_FILE*,struct locate_parameters*);
-void locate(int,OptimizedFst2State,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*,struct Token_error_ctx*,variable_backup_memory_reserve*);
+void locate(int,OptimizedFst2State,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*,struct Token_error_ctx*,variable_backup_memory_reserve*,int*);
 int XOR(int a,int b);
 
 #endif

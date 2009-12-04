@@ -164,6 +164,8 @@ if (chdir(directory)==-1) {
 }
 vector_ptr* grammars;
 if ((grammars=load_elag_grammars(rule_file,lang)) == NULL) {
+   free_language_t(lang);
+   free_OptVars(vars);
    fatal_error("Unable to load grammar %s", rule_file);
 }
 u_printf("Grammars are loaded.\n");
