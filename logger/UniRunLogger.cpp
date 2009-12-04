@@ -932,6 +932,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
       hTimeElasped htm = NULL;
       if (pTimeElapsed != NULL)
         htm = SyncBuidTimeMarkerObject();
+      /* calling the tool to rerun */
       int ret_tool = main_UnitexTool_C(argc_log+1,(char**)argv_log_reworked);
       if (htm != NULL)
           *pTimeElapsed = SyncGetMSecElapsed(htm);
@@ -1475,8 +1476,8 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
                               *p_RunLog_ctx->pInstallLoggerForRunnerSingleton,
                               p_RunLog_ctx->LocationUnfoundVirtualRessource,
 
-                              (p_RunLog_ctx->junk_summary != 0) ? (&(p_RunLog_ThreadData->summary)) : NULL,
-                              (p_RunLog_ctx->junk_summary != 0) ? (&(p_RunLog_ThreadData->summary_error)) : NULL,
+                              (p_RunLog_ctx->junk_summary == 0) ? (&(p_RunLog_ThreadData->summary)) : NULL,
+                              (p_RunLog_ctx->junk_summary == 0) ? (&(p_RunLog_ThreadData->summary_error)) : NULL,
 
                               p_RunLog_ctx->benchmark,
                               NULL,&time_elapsed,&exec_status);
