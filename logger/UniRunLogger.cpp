@@ -622,7 +622,8 @@ int AddMsgToSummaryBuf(const char*msgThis,char**summaryInfo)
 UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
                                         const char* SelectTool,
                                         int clean_file,
-                                        int real_content_in_log,
+                                        InstallLoggerForRunner &InstallLoggerForRunnerSingleton,
+                                        //int real_content_in_log,
                                         const char*LocationUnfoundVirtualRessource,
                                         char** summaryInfo,
                                         char** summaryInfoErrorOnly,
@@ -911,8 +912,7 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
       /* we have done extracting */
 
       //char *buf_reworked=malloc(size_command_line + 
-
-      InstallLoggerForRunner InstallLoggerForRunnerSingleton(real_content_in_log);
+      
       if (LogNameWrite != NULL)
           InstallLoggerForRunnerSingleton.SelectNextLogName(LogNameWrite,FileRunPath);
 
@@ -1115,11 +1115,38 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 }
 
 
+
+UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite,
+                                        const char* SelectTool,
+                                        int clean_file,
+                                        int real_content_in_log,
+                                        const char* LocationUnfoundVirtualRessource,
+                                        char** summaryInfo,
+                                        char** summaryInfoErrorOnly,
+                                        int benchmark,
+                                        int *pReturn,unsigned int*pTimeElapsed,
+                                        Exec_status* p_exec_status)
+{
+    InstallLoggerForRunner InstallLoggerForRunnerSingleton(real_content_in_log);
+    return RunLogParam(LogNameRead,FileRunPath,LogNameWrite,
+                                        SelectTool,
+                                        clean_file,
+                                        InstallLoggerForRunnerSingleton,
+                                        LocationUnfoundVirtualRessource,
+                                        summaryInfo,
+                                        summaryInfoErrorOnly,
+                                        benchmark,
+                                        pReturn,pTimeElapsed,
+                                        p_exec_status);
+}
+
+
 UNITEX_FUNC int UNITEX_CALL RunLog(const char* LogNameRead,const char* FileRunPath,const char* LogNameWrite)
 {
     char*summary=NULL;
     char*summaryError=NULL;
-    int ret= RunLogParam(LogNameRead,FileRunPath,LogNameWrite,NULL,1,1,NULL,&summary,&summaryError,1,NULL,NULL,NULL);
+    InstallLoggerForRunner InstallLoggerForRunnerSingleton(1);
+    int ret= RunLogParam(LogNameRead,FileRunPath,LogNameWrite,NULL,1,InstallLoggerForRunnerSingleton,NULL,&summary,&summaryError,1,NULL,NULL,NULL);
     if (summary!=NULL)
     {
         u_printf("%s",summary);
@@ -1316,13 +1343,13 @@ const struct option_TS lopts_RunLog[]= {
       {"thread",required_argument_TS,NULL,'t'},
       {"cleanlog",no_argument_TS,NULL,'n'},
       {"keeplog",no_argument_TS,NULL,'l'},
-      {"increment",required_argument_TS,NULL,'i'},
       {"thread",required_argument_TS,NULL,'t'},
       {"random",required_argument_TS,NULL,'a'},
       {"tool",required_argument_TS,NULL,'o'},
       {"unfound-location",required_argument_TS,NULL,'u'},
       {"no-benchmark",no_argument_TS,NULL,'b'},
       {"break-after",required_argument_TS,NULL,'f'},
+      {"junk-summary",no_argument_TS,NULL,'j'},
       {NULL,no_argument_TS,NULL,0}
 };
 
@@ -1344,6 +1371,9 @@ typedef struct {
     long random;
     int benchmark;
     int run_before_break;
+    int junk_summary;
+    
+    InstallLoggerForRunner * pInstallLoggerForRunnerSingleton;
 } RunLog_ctx;
 
 
@@ -1435,10 +1465,15 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
             pRunLog_CancelCount -> run_before_break_count = 0;
         }
 
+        
         RunLogParam(runulp,rundir,resultulp,  p_RunLog_ctx->select_tool,
-                              p_RunLog_ctx->clean,(p_RunLog_ctx->cleanlog==1) ? 0 : 1,
+                              p_RunLog_ctx->clean,
+                              *p_RunLog_ctx->pInstallLoggerForRunnerSingleton,
                               p_RunLog_ctx->LocationUnfoundVirtualRessource,
-                              &(p_RunLog_ThreadData->summary),&(p_RunLog_ThreadData->summary_error),
+
+                              (p_RunLog_ctx->junk_summary != 0) ? (&(p_RunLog_ThreadData->summary)) : NULL,
+                              (p_RunLog_ctx->junk_summary != 0) ? (&(p_RunLog_ThreadData->summary_error)) : NULL,
+
                               p_RunLog_ctx->benchmark,
                               NULL,&time_elapsed,&exec_status);
 
@@ -1464,7 +1499,7 @@ void SYNC_CALLBACK_UNITEX DoWork(void* privateDataPtr,unsigned int /*iNbThread*/
         }
         
         if (p_RunLog_ctx->cleanlog==1)
-          af_remove_unlogged(p_RunLog_ctx->resultulp);
+          af_remove_unlogged(resultulp);
     }
 }
 
@@ -1494,6 +1529,7 @@ runLog_ctx.nb_thread=1;
 runLog_ctx.increment=0;
 runLog_ctx.random=0;
 runLog_ctx.benchmark=1;
+runLog_ctx.junk_summary=0;
 runLog_ctx.run_before_break=-1;
 
 int val,index=-1;
@@ -1505,6 +1541,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_RunLog,lopts_RunLog,&index,v
    case 'n': runLog_ctx.cleanlog=1; break;
    case 'l': runLog_ctx.cleanlog=0; break;
    case 'm': runLog_ctx.quiet=1; break;
+   case 'j': runLog_ctx.junk_summary=1; break;
    case 'v': runLog_ctx.quiet=0; break;
    case 'b': runLog_ctx.benchmark=0; break;
    case 'a': 
@@ -1581,6 +1618,10 @@ if (runLog_ctx.resultulp[0]=='\0') {
 }
 if (runLog_ctx.cleanlog==2)
    runLog_ctx.cleanlog=0;
+
+
+InstallLoggerForRunner InstallLoggerForRunnerSingleton((runLog_ctx.cleanlog==1) ? 0:1);
+runLog_ctx.pInstallLoggerForRunnerSingleton=&InstallLoggerForRunnerSingleton;
 
 int trash_out=0;
 int trash_err=0;
