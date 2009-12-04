@@ -28,6 +28,7 @@
 #include "BitMasks.h"
 #include "Tokenization.h"
 #include "File.h"
+#include "UserCancelling.h"
 
 
 void load_dic_for_locate(char*,int,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
@@ -192,14 +193,33 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
 struct string_hash* semantic_codes=new_string_hash();
 extract_semantic_codes(dlf,semantic_codes);
 extract_semantic_codes(dlc,semantic_codes);
+
+if (is_cancelling_requested() != 0) {
+	   error("user cancel request.\n");
+	   free_alphabet(p->alphabet);
+	   free_string_hash(semantic_codes);
+	   return 0;
+	}
+
+
 u_printf("Loading fst2...\n");
 p->fst2=load_abstract_fst2(fst2_name,1,NULL);
+
 if (p->fst2==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    return 0;
 }
+
+if (is_cancelling_requested() != 0) {
+   error("User cancel request..\n");
+   free_alphabet(p->alphabet);
+   free_string_hash(semantic_codes);
+   free_abstract_Fst2(p->fst2,NULL);
+   return 0;
+}
+
 p->tags=p->fst2->tags;
 #ifdef TRE_WCHAR
 p->filters=new_FilterSet(p->fst2,p->alphabet);
@@ -207,6 +227,7 @@ if (p->filters==NULL) {
    error("Cannot compile filter(s)\n");
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
+   free_abstract_Fst2(p->fst2,NULL);
    return 0;
 }
 #endif
