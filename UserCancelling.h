@@ -24,7 +24,6 @@
 #define _USER_CANCELLING_H_INCLUDED 1
 
 
-
 int is_cancelling_requested();
 
 #endif

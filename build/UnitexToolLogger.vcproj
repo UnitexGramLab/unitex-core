@@ -1203,6 +1203,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\UserCancelling.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\UserCancelling.h"
+				>
+			</File>
+			<File
+				RelativePath="..\UserCancellingPlugCallback.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ustring.cpp"
 				>
 			</File>

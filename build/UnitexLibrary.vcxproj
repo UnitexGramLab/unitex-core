@@ -190,6 +190,8 @@
     <ClInclude Include="..\logger\SyncLogger.h" />
     <ClInclude Include="..\logger\UniLogger.h" />
     <ClInclude Include="..\logger\UniRunLogger.h" />
+    <ClInclude Include="..\UserCancelling.h" />
+    <ClInclude Include="..\UserCancellingPlugCallback.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp" />
@@ -344,6 +346,7 @@
     <ClCompile Include="..\Uncompress.cpp" />
     <ClCompile Include="..\Unicode.cpp" />
     <ClCompile Include="..\UnitexTool.cpp" />
+    <ClCompile Include="..\UserCancelling.cpp" />
     <ClCompile Include="..\Ustring.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />
     <ClCompile Include="..\korean\bitmap.cpp" />

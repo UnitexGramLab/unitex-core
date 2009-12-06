@@ -295,6 +295,8 @@
     <ClInclude Include="..\logger\SyncLogger.h" />
     <ClInclude Include="..\logger\UniLogger.h" />
     <ClInclude Include="..\logger\UniRunLogger.h" />
+    <ClInclude Include="..\UserCancelling.h" />
+    <ClInclude Include="..\UserCancellingPlugCallback.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp" />
@@ -457,6 +459,7 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <ClCompile Include="..\UnitexTool.cpp" />
+    <ClCompile Include="..\UserCancelling.cpp" />
     <ClCompile Include="..\ustring.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />
     <ClCompile Include="..\tre-0.8.0\lib\regcomp.c" />

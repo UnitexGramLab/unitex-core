@@ -28,7 +28,6 @@
 
 
 
-
 struct UserCancellingInfo {
 	t_user_cancelling_func_array func_array;
 	void* privateCancelPtr;
