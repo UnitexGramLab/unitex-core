@@ -227,4 +227,3 @@ for (int i=0;i<fst2->number_of_states;i++) {
 }
 return contexts;
 }
-

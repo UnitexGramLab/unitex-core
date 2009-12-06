@@ -111,4 +111,3 @@ int mask=((1<<length)-1)<<((n%divider)*length);
 int unshifted_value=array->array[n/array->divider] & mask;
 return unshifted_value>>((n%divider)*length);
 }
-

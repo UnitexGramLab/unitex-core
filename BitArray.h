@@ -55,4 +55,3 @@ void free_bit_array(struct bit_array*);
 void set_value(struct bit_array*,int,int);
 int get_value(struct bit_array*,int);
 #endif
-

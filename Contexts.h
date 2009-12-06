@@ -58,3 +58,4 @@ void add_negative_context(Fst2*,struct opt_contexts**,Transition*);
 struct opt_contexts** compute_contexts(Fst2*);
 
 #endif
+

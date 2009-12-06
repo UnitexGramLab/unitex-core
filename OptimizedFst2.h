@@ -112,3 +112,4 @@ OptimizedFst2State* build_optimized_fst2_states(Variables*,Fst2*);
 void free_optimized_states(OptimizedFst2State*,int);
 
 #endif
+

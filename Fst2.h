@@ -229,3 +229,4 @@ int is_final_state(Fst2State);
 
 
 #endif
+

@@ -930,3 +930,4 @@ Fst2* fst2ret;
     }
 	return fst2ret;
 }
+
