@@ -302,3 +302,16 @@ path[l]=PATH_SEPARATOR_CHAR;
 path[l+1]='\0';
 return 1;
 }
+
+
+/**
+ * Returns 1 if the given path is absolute; 0 otherwise.
+ */
+int is_absolute_path(char* path) {
+#ifdef _NOT_UNDER_WINDOWS
+return path[0]==PATH_SEPARATOR_CHAR;
+#else
+return ((path[0]>='a' && path[0]<='z') || (path[0]>='A' && path[0]<='Z'))
+       && path[1]==':' && path[2]=='\\';
+#endif
+}

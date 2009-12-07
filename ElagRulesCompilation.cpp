@@ -263,6 +263,11 @@ Fst2Automaton* res=NULL;
 Fst2Automaton* A;
 int fst_number=0;
 Ustring* ustr=new_Ustring();
+
+char buf2[FILENAME_MAX];
+char directory[FILENAME_MAX];
+get_path(rulesname,directory);
+
 while (af_fgets(buf,FILENAME_MAX,frules->f)) {
    /* We read one by one the Elag grammar names in the .lst file */
    chomp(buf);
@@ -270,6 +275,11 @@ while (af_fgets(buf,FILENAME_MAX,frules->f)) {
       /* If we have an empty line */
       continue;
    }
+   if (!is_absolute_path(buf)) {
+      strcpy(buf2,buf);
+      sprintf(buf,"%s%s",directory,buf2);
+   }
+
    u_printf("\n%s...\n",buf);
    remove_extension(buf);
    strcat(buf,".elg");
