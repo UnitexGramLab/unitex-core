@@ -62,7 +62,7 @@ u_printf(usage_Elag);
 }
 
 
-const char* optstring_Elag=":l:r:o:d:hk:q:";
+const char* optstring_Elag=":l:r:o:hk:q:";
 const struct option_TS lopts_Elag[]= {
       {"language",required_argument_TS,NULL,'l'},
       {"rules",required_argument_TS,NULL,'r'},
