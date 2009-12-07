@@ -52,7 +52,6 @@ const char* usage_ElagComp =
          "  -l LANG/--language=LANG: Elag language description file\n"
          "  -o OUT/--output=OUT: output file where the resulting compiled grammar is stored\n"
          "                       The default name is same as RULES except for the .rul extension\n"
-         "  -d DIR/--directory=DIR: directory where Elag grammars are located\n"
          "  -h/--help: this help\n"
          "\n"
          "ElagComp compiles one Elag grammar specified by GRAMMAR or all the grammars\n"
@@ -66,13 +65,12 @@ u_printf(usage_ElagComp);
 }
 
 
-const char* optstring_ElagComp=":l:r:o:d:g:hk:q:";
+const char* optstring_ElagComp=":l:r:o:g:hk:q:";
 const struct option_TS lopts_ElagComp[]= {
       {"language",required_argument_TS,NULL,'l'},
       {"rulelist",required_argument_TS,NULL,'r'},
       {"grammar",required_argument_TS,NULL,'g'},
       {"output",required_argument_TS,NULL,'o'},
-      {"directory",required_argument_TS,NULL,'d'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
@@ -107,22 +105,18 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ElagComp,lopts_ElagComp,&ind
                 fatal_error("You must specify a non empty rule file\n");
              }
              strcpy(rule_file,vars->optarg);
+             get_path(rule_file,directory);
              break;
    case 'g': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty grammar file name\n");
              }
              strcpy(grammar,vars->optarg);
+             get_path(grammar,directory);
              break;
    case 'o': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty output file\n");
              }
              strcpy(compilename,vars->optarg);
-             break;
-   case 'd': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty directory\n");
-             }
-             strcpy(directory,vars->optarg);
-             add_path_separator(directory);
              break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
@@ -164,15 +158,6 @@ if (rule_file[0]!='\0' && grammar[0]!='\0') {
 }
 if (rule_file[0]!='\0') {
    /* If we work with a rule list */
-   char rule_file_name[FILENAME_MAX];
-   if (directory==NULL) {
-      get_path(rule_file,directory);
-      remove_path(rule_file,rule_file_name);
-      strcpy(rule_file,rule_file_name);
-   }
-   if (chdir(directory)==-1) {
-      fatal_error("Unable to change to %s directory\n",directory);
-   }
    if (compilename[0]=='\0') {
       int l=(int)strlen(rule_file);
       if (strcmp(rule_file+l-4,".lst")==0) {

@@ -219,7 +219,8 @@ return Result;
  * Compiles the given .fst2 grammar into the given .elg file.
  * Returns 0 in case of success; -1 otherwise.
  */
-int compile_elag_grammar(char* grammar,char* elg_file,Encoding encoding_output,int bom_output,language_t* language) {
+int compile_elag_grammar(char* grammar,char* elg_file,Encoding encoding_output,int bom_output,
+                         language_t* language) {
 elRule* rule=new_elRule(grammar,encoding_output,bom_output,language);
 if (rule==NULL) {
    error("Unable to read grammar '%s'\n",grammar);
