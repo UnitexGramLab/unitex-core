@@ -287,3 +287,18 @@ long size=ftell(f);
 fseek(f,old_pos,SEEK_SET);
 return size;
 }
+
+
+/**
+ * Adds the path separator char at the end of the given string if not
+ * already present and returns 1. Returns 0 otherwise.
+ */
+int add_path_separator(char* path) {
+int l=strlen(path);
+if (path[l-1]==PATH_SEPARATOR_CHAR) {
+   return 0;
+}
+path[l]=PATH_SEPARATOR_CHAR;
+path[l+1]='\0';
+return 1;
+}

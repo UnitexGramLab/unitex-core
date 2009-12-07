@@ -62,5 +62,6 @@ int fexists(char*);
 time_t get_file_date(char* name);
 long get_file_size(char*);
 long get_file_size(U_FILE*);
+int add_path_separator(char*);
 
 #endif

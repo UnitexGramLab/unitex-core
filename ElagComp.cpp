@@ -122,6 +122,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_ElagComp,lopts_ElagComp,&ind
                 fatal_error("You must specify a non empty directory\n");
              }
              strcpy(directory,vars->optarg);
+             add_path_separator(directory);
              break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");

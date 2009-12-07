@@ -112,6 +112,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Elag,lopts_Elag,&index,vars)
                 fatal_error("You must specify a non empty directory\n");
              }
              strcpy(directory,vars->optarg);
+             add_path_separator(directory);
              break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
@@ -158,6 +159,7 @@ if (directory[0]=='\0') {
    strcpy(tmp,rule_file);
    remove_path(tmp,rule_file);
 }
+
 u_printf("Changing to %s directory\n",directory);
 if (chdir(directory)==-1) {
    error("Unable to change to %s directory.\n", directory);
