@@ -244,7 +244,7 @@ void explode_tfst(char* input_tfst,char* output,Encoding encoding_output,int bom
 /**
  * Loads all the ELAG grammars contained in the given .elg file.
  */
-vector_ptr* load_elag_grammars(char* filename,language_t* language) {
+vector_ptr* load_elag_grammars(char* filename,language_t* language,char* directory) {
 U_FILE* f=u_fopen(ASCII,filename,U_READ);
 if (f==NULL) {
    error("Cannot open file %s\n",filename);
@@ -252,22 +252,24 @@ if (f==NULL) {
 }
 vector_ptr* grammars=new_vector_ptr(16);
 char buf[FILENAME_MAX];
+char buf2[FILENAME_MAX];
 while (af_fgets(buf,FILENAME_MAX,f->f) != NULL) {
    if (*buf != '<') {
       continue;
    }
    char* p=strchr(buf,'>');
    if (p==NULL) {
-      error("In %s: at line '%s': delimitor '>' not found\n",filename,buf);
+      error("In %s: at line '%s': delimiter '>' not found\n",filename,buf);
       free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
       u_fclose(f);
       return NULL;
    }
    (*p)='\0';
-   u_printf("\nLoadding %s...\n",buf+1);
-   Fst2Automaton* A=load_elag_grammar_automaton(buf+1,language);
+   u_printf("\nLoading %s...\n",buf+1);
+   sprintf(buf2,"%s%s",directory,buf+1);
+   Fst2Automaton* A=load_elag_grammar_automaton(buf2,language);
    if (A==NULL) {
-      error("Unable to load '%s' automaton\n",buf+1);
+      error("Unable to load '%s' automaton\n",buf2);
       free_vector_ptr(grammars,(release_f)free_Fst2Automaton);
       u_fclose(f);
       return NULL;

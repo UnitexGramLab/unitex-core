@@ -51,7 +51,6 @@ const char* usage_Elag =
          "  -l LANG/--language=LANG: language definition file\n"
          "  -r RULES/--rules=RULES: compiled elag rules file\n"
          "  -o OUT/--output=OUT: resulting output .tfst file\n"
-         "  -d DIR/--directory=DIR: directory where elag rules are located\n"
          "  -h/--help: this help\n"
          "\n"
          "Disambiguate the input text automaton <tfst> using the specified compiled elag rules.\n";
@@ -68,7 +67,6 @@ const struct option_TS lopts_Elag[]= {
       {"language",required_argument_TS,NULL,'l'},
       {"rules",required_argument_TS,NULL,'r'},
       {"output",required_argument_TS,NULL,'o'},
-      {"directory",required_argument_TS,NULL,'d'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
@@ -108,12 +106,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Elag,lopts_Elag,&index,vars)
              }
              strcpy(output_tfst,vars->optarg);
              break;
-   case 'd': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty directory\n");
-             }
-             strcpy(directory,vars->optarg);
-             add_path_separator(directory);
-             break;
    case 'k': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty input_encoding argument\n");
              }
@@ -146,26 +138,16 @@ if (vars->optind!=argc-1) {
 char input_tfst[FILENAME_MAX];
 strcpy(input_tfst,argv[vars->optind]);
 
-u_printf("Loading %s langage definition ...\n", language);
+u_printf("Loading %s language definition ...\n",language);
 language_t* lang = load_language_definition(language);
 if (output_tfst[0]=='\0') {
    remove_extension(input_tfst,output_tfst);
    strcat(output_tfst,"-elag.tfst");
 }
 
-if (directory[0]=='\0') {
-   get_path(rule_file,directory);
-   char tmp[FILENAME_MAX];
-   strcpy(tmp,rule_file);
-   remove_path(tmp,rule_file);
-}
-
-u_printf("Changing to %s directory\n",directory);
-if (chdir(directory)==-1) {
-   error("Unable to change to %s directory.\n", directory);
-}
+get_path(rule_file,directory);
 vector_ptr* grammars;
-if ((grammars=load_elag_grammars(rule_file,lang)) == NULL) {
+if ((grammars=load_elag_grammars(rule_file,lang,directory)) == NULL) {
    free_language_t(lang);
    free_OptVars(vars);
    fatal_error("Unable to load grammar %s", rule_file);
