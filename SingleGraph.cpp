@@ -729,7 +729,7 @@ if (states[old_state_number]->default_state==old_state_number) {
  * been previously marked with 'check_accessibility' and 'check_co_accessibility'.
  * Of course, all transitions related to useless states are removed.
  */
-void remove_useless_states(SingleGraph graph) {
+void remove_useless_states(SingleGraph graph,void (*free_elag_symbol)(symbol_t*)) {
 int i;
 for (i=0;i<graph->number_of_states;i++) {
    /* For each state, we remove transitions that go to/come from a state
@@ -754,7 +754,7 @@ do {
    }
    /* We free all the states that we can */
    while ((last_state>=0) && is_useless_state(graph->states[last_state])) {
-      free_SingleGraphState(graph->states[last_state]);
+      free_SingleGraphState(graph->states[last_state],free_elag_symbol);
       graph->states[last_state]=NULL;
       last_state--;
    }
@@ -781,7 +781,7 @@ do {
    SingleGraphState tmp=graph->states[i];
    graph->states[i]=graph->states[last_state];
    graph->states[last_state]=tmp;
-   free_SingleGraphState(graph->states[last_state]);
+   free_SingleGraphState(graph->states[last_state],free_elag_symbol);
    graph->states[last_state]=NULL;
    last_state--;
 } while (i<last_state);
@@ -795,7 +795,7 @@ graph->number_of_states=last_state+1;
  * also removed.
  * No epsilon removal is done.
  */
-void trim(SingleGraph graph) {
+void trim(SingleGraph graph,void (*free_elag_symbol)(symbol_t*)) {
 /* First, we reset all the accessibility info */
 for (int h=0;h<graph->number_of_states;h++) {
    reset_accessibility_info(graph->states[h]);
@@ -813,7 +813,7 @@ for (int h=0;h<graph->number_of_states;h++) {
       check_accessibility(graph->states,h);
    }
 }
-remove_useless_states(graph);
+remove_useless_states(graph,free_elag_symbol);
 }
 
 

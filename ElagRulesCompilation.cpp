@@ -95,7 +95,7 @@ for (int i=0;i<A->number_of_states;i++) {
        * its transitions, since the Kleene star transition will
        * include them. We use NULL since we don't want to NULL the
        * symbols that tag transitions, because these symbols can be shared */
-      free_Transition_list(A->states[i]->outgoing_transitions,NULL);
+      free_Transition_list(A->states[i]->outgoing_transitions);
       A->states[i]->outgoing_transitions=NULL;
       add_outgoing_transition(A->states[i],new_symbol(S_LEXIC,-1),i);
     }

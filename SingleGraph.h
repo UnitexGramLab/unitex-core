@@ -114,11 +114,11 @@ void compute_reverse_transitions(SingleGraph);
 void check_accessibility(SingleGraphState*,int);
 void check_co_accessibility(SingleGraphState*,int);
 void remove_epsilon_transitions(SingleGraph,int);
-void remove_useless_states(SingleGraph);
+void remove_useless_states(SingleGraph,void (*free_elag_symbol)(symbol_t*)=NULL);
 void reverse(SingleGraph);
 SingleGraph clone(SingleGraph,symbol_t*(*clone_elag_symbol)(const symbol_t*)=NULL);
 
-void trim(SingleGraph);
+void trim(SingleGraph,void (*free_elag_symbol)(symbol_t*)=NULL);
 void determinize(SingleGraph);
 void minimize(SingleGraph,int);
 void topological_sort(SingleGraph);
