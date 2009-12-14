@@ -638,7 +638,8 @@ free(closures);
  * Takes a list of transitions and removes those that point to useless states.
  */
 Transition* remove_transitions_to_useless_states(Transition* transitions,
-                                                    SingleGraphState* states) {
+                                                    SingleGraphState* states,
+                                                    void(*free_elag_tag)(symbol_t*)) {
 Transition* tmp;
 Transition* tmp2;
 Transition* tmp_old=NULL;
@@ -650,6 +651,9 @@ while (tmp!=NULL) {
          transitions=tmp2;
       } else {
          tmp_old->next=tmp2;
+      }
+      if (free_elag_tag!=NULL && tmp->label!=NULL) {
+         free_elag_tag(tmp->label);
       }
       free(tmp);
       tmp=tmp2;
@@ -734,8 +738,8 @@ int i;
 for (i=0;i<graph->number_of_states;i++) {
    /* For each state, we remove transitions that go to/come from a state
     * to be removed */
-   graph->states[i]->outgoing_transitions=remove_transitions_to_useless_states(graph->states[i]->outgoing_transitions,graph->states);
-   graph->states[i]->reverted_incoming_transitions=remove_transitions_to_useless_states(graph->states[i]->reverted_incoming_transitions,graph->states);
+   graph->states[i]->outgoing_transitions=remove_transitions_to_useless_states(graph->states[i]->outgoing_transitions,graph->states,free_elag_symbol);
+   graph->states[i]->reverted_incoming_transitions=remove_transitions_to_useless_states(graph->states[i]->reverted_incoming_transitions,graph->states,NULL);
    /* We don't forget to update default transitions */
    if (graph->states[i]->default_state!=-1) {
       SingleGraphState s=graph->states[graph->states[i]->default_state];
@@ -1258,6 +1262,8 @@ for (q=0;q<graph->number_of_states;q++) {
 }
 free(graph->states);
 graph->states=new_states;
+free(incoming);
+free(renumber);
 }
 
 

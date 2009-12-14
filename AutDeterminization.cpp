@@ -27,14 +27,15 @@
  * Determinizes an automaton with transitions tagged with Elag symbols.
  * The given automaton is modified.
  */
-void elag_determinize(language_t* language,SingleGraph A) {
+void elag_determinize(language_t* language,SingleGraph A,void (*free_elag_symbol)(symbol_t*)) {
 SingleGraph res=new_SingleGraph(PTR_TAGS);
 state_set_array* ARRAY=new_state_set_array();
 state_set* initial_states=new_state_set();
 struct list_int* l=get_initial_states(A);
-while (l!=NULL) {
-   state_set_add(initial_states,A,l->n);
-   l=l->next;
+struct list_int* l_tmp=l;
+while (l_tmp!=NULL) {
+   state_set_add(initial_states,A,l_tmp->n);
+   l_tmp=l_tmp->next;
 }
 free_list_int(l);
 /* First, we create a state set containing all the initial states */
@@ -78,5 +79,5 @@ for (int current_state_set=0;current_state_set<ARRAY->size;current_state_set++) 
 }
 free_state_set_array(ARRAY);
 /* Now, we empty A's automaton and replace it by res */
-move_SingleGraph(A,&res,NULL);
+move_SingleGraph(A,&res,free_elag_symbol);
 }

@@ -336,7 +336,7 @@ for (int c=0;c<nbColors;c++) {
    state->default_state=original->default_state;
 }
 /* Now we have to replace the old automaton by the new one */
-move_SingleGraph(automaton,&result,NULL);
+move_SingleGraph(automaton,&result,free_symbol);
 /* And we don't need these arrays anymore */
 free(color);
 free(chosen);
