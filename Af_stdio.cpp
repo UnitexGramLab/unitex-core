@@ -475,7 +475,7 @@ char *af_fgets(char * _Buf, int count, ABSTRACTFILE * stream)
 							return retval;
                     }
 
-              (*(pointer++)) = ch ;
+              (*(pointer)) = ch ;
               pointer++;
               if (ch == '\n')
                 break;

@@ -284,6 +284,29 @@ return res;
 
 
 /**
+ * Returns an identical duplicate of the given symbol list, in same order
+ */
+symbol_t* dup_symbols_identical(const symbol_t* symbols) {
+    symbol_t* ret = NULL;
+    symbol_t* prev = NULL;
+    while (symbols!=NULL) {
+        symbol_t* new_item = dup_symbol(symbols);
+        if (ret == NULL)
+        {
+            ret = new_item;
+        }
+        else
+        {
+            prev->next = new_item;
+        }
+        prev=new_item;
+        symbols=symbols->next;
+    }
+    return ret;
+}
+
+
+/**
  * Frees the memory associated to the given symbol, except
  * its 'POS' field, because it is supposed to be freed when
  * the field 'string_hash_ptr* POSs' of language_t is freed.
