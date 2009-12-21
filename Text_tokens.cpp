@@ -63,8 +63,9 @@ while (EOF!=u_fgets(tmp,MAX_TAG_LENGTH,f)) {
             (res->STOP_MARKER)=i;
          }
   i++;
-  if (i>=res->N) {
-     fatal_error("Inconsistency in file %s between header (%d) and actual number of lines\n",nom,res->N);
+  if (i>res->N) {
+     fatal_error("Inconsistency in file %s between header (%d) and actual number of lines\n"
+    		     "Last token loaded=%S\n",nom,res->N,tmp);
   }
 }
 u_fclose(f);
