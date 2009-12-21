@@ -21,6 +21,7 @@
 
 #include "Text_tokens.h"
 #include "Error.h"
+#include "Token.h"
 
 
 struct text_tokens* new_text_tokens() {
@@ -48,10 +49,10 @@ res->token=(unichar**)malloc((res->N)*sizeof(unichar*));
 if (res->token==NULL) {
    fatal_alloc_error("load_text_tokens");
 }
-unichar tmp[1000];
+unichar tmp[MAX_TAG_LENGTH];
 res->SENTENCE_MARKER=-1;
 int i=0;
-while (EOF!=u_fgets(tmp,f)) {
+while (EOF!=u_fgets(tmp,MAX_TAG_LENGTH,f)) {
   res->token[i]=u_strdup(tmp);
   if (!u_strcmp(tmp,"{S}")) {
      res->SENTENCE_MARKER=i;
@@ -62,7 +63,7 @@ while (EOF!=u_fgets(tmp,f)) {
             (res->STOP_MARKER)=i;
          }
   i++;
-  if (i>res->N) {
+  if (i>=res->N) {
      fatal_error("Inconsistency in file %s between header (%d) and actual number of lines\n",nom,res->N);
   }
 }

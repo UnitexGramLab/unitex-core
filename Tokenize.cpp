@@ -33,11 +33,12 @@
 #include "HashTable.h"
 #include "getopt.h"
 #include "Tokenize.h"
+#include "Token.h"
 
 
 #define NORMAL 0
 #define CHAR_BY_CHAR 1
-#define MAX_TAG_LENGTH 4000
+
 
 
 
