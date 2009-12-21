@@ -52,7 +52,13 @@ if (res->token==NULL) {
 unichar tmp[MAX_TAG_LENGTH];
 res->SENTENCE_MARKER=-1;
 int i=0;
-while (EOF!=u_fgets(tmp,MAX_TAG_LENGTH,f)) {
+int size_gets;
+while (EOF!=(size_gets=u_fgets(tmp,MAX_TAG_LENGTH,f))) {
+  if (size_gets>0) {
+    if (tmp[size_gets-1]=='\n') {
+        tmp[size_gets-1]=0;
+    }
+  }
   res->token[i]=u_strdup(tmp);
   if (!u_strcmp(tmp,"{S}")) {
      res->SENTENCE_MARKER=i;
