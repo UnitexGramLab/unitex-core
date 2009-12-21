@@ -294,7 +294,7 @@ return size;
  * already present and returns 1. Returns 0 otherwise.
  */
 int add_path_separator(char* path) {
-int l=strlen(path);
+int l=(int)strlen(path);
 if (path[l-1]==PATH_SEPARATOR_CHAR) {
    return 0;
 }
