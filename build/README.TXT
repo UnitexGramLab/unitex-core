@@ -1,10 +1,36 @@
 The following files:
 
-tar.exe
-cygiconv-2.dll
-cygintl-3.dll
-cygwin1.dll
+untgz.exe 
 
-have been taken from Cygwin. Those files are covered by the GPL license.
+is a compilation of untgz.exe, taken from zLib 1.2.3.
 According to that license, you can access their source code. To do that,
-please consult the official Cygwin page: http://cygwin.com
+please consult the official zLib page: http://www.zlib.net/
+
+the zLib licence is very liberal, and can be downloaded
+http://www.zlib.net/zlib_license.html
+
+/* zlib.h -- interface of the 'zlib' general purpose compression library
+  version 1.2.3, July 18th, 2005
+
+  Copyright (C) 1995-2005 Jean-loup Gailly and Mark Adler
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+
+  Jean-loup Gailly jloup@gzip.org
+  Mark Adler madler@alumni.caltech.edu
+
+*/
