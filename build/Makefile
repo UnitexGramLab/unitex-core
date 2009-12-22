@@ -79,6 +79,10 @@ NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
 BUILD   = $(NAME)-$(VERSION)
 
+
+TAR_COMMAND = tar
+TAR_PARAM = xzf
+
 INSTALL_COMMAND = make install
 TRE_SRC = tre-0.8.0
 TRE_TGZ = ../tre-0.8.0.tar.gz
