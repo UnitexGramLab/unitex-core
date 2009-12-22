@@ -22,9 +22,9 @@
 #include "Error.h"
 
 
-//
-// fonction comparer  qu'un code de sortie est conforme ou non aux filtres
-//
+/*
+ * fonction comparer  qu'un code de sortie est conforme ou non aux filtres
+ */
 
 
 int compare(unichar *tmp,unichar **filtre) {
