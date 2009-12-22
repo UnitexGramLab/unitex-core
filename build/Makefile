@@ -150,6 +150,8 @@ endif
 
 RM      = rm -f
 INSTALL = cp
+TAR_COMMAND = tar
+TAR_PARAM = xzf
 
 NAME    = unitex-src
 VERSION = $(shell date +"%Y-%m-%d")
@@ -223,6 +225,9 @@ CC   = g++.exe
 CC_GCC = gcc.exe
 AR   = ar.exe
 endif
+
+TAR_COMMAND = untgz.exe
+TAR_PARAM =
 
 SYSLIBLOGGER = DirLoggerWin.o SyncLoggerWin.o
 
@@ -778,7 +783,7 @@ bin: $(LIBTRE) $(BINARIES)
 
 $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library ..."
-	tar xzf $(TRE_TGZ)
+	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
 .libtre-done: $(TRE_SRC)
 	@echo "Making TRE library ..."
@@ -915,7 +920,7 @@ TRE_OBJS = tre-parse.o tre-stack.o regexec.o xmalloc.o tre-match-parallel.o tre-
 
 $(TRE_LIB): $(TRE_TGZ)
 	@echo "unpacking TRE library......"
-	tar xzf $(TRE_TGZ)
+	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 	$(CC_GCC) -c tre-0.8.0/lib/tre-stack.c $(TRE_OPTIONS)
 	$(CC_GCC) -c tre-0.8.0/lib/tre-parse.c $(TRE_OPTIONS)
 	$(CC_GCC) -c tre-0.8.0/lib/regexec.c $(TRE_OPTIONS)
@@ -967,7 +972,7 @@ TRE_TEMP = $(TRE_SRC)/TEMP
 
 $(TRE_SRC): $(TRE_TGZ)
 	@echo "unpacking TRE library...."
-	tar xzf $(TRE_TGZ)
+	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
 
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
@@ -1010,7 +1015,7 @@ TRE_TEMP = $(TRE_SRC)/TEMP
 
 $(TRE_SRC): $(TRE_TGZ)
 	@echo "Unpacking TRE library...."
-	tar xzf $(TRE_TGZ)
+	$(TAR_COMMAND) $(TAR_PARAM) $(TRE_TGZ)
 
 
 LIBTRE: $(TRE_SRC) $(TRE_LIB)
