@@ -1,0 +1,1411 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		225CCD4310DB201D003F0910 /* bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBA110DB201D003F0910 /* bitmap.cpp */; };
+		225CCD4410DB201D003F0910 /* codeForKorean.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBA310DB201D003F0910 /* codeForKorean.cpp */; };
+		225CCD4510DB201D003F0910 /* CompressKr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBA710DB201D003F0910 /* CompressKr.cpp */; };
+		225CCD4610DB201D003F0910 /* ConsultDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBAA10DB201D003F0910 /* ConsultDic.cpp */; };
+		225CCD4710DB201D003F0910 /* etc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBAD10DB201D003F0910 /* etc.cpp */; };
+		225CCD4810DB201D003F0910 /* ExtractChar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBB010DB201D003F0910 /* ExtractChar.cpp */; };
+		225CCD4910DB201D003F0910 /* InflectKr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBB310DB201D003F0910 /* InflectKr.cpp */; };
+		225CCD4A10DB201D003F0910 /* Jamo2Syl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBB510DB201D003F0910 /* Jamo2Syl.cpp */; };
+		225CCD4B10DB201D003F0910 /* jamoCodage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBB710DB201D003F0910 /* jamoCodage.cpp */; };
+		225CCD4C10DB201D003F0910 /* MergeBin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBBA10DB201D003F0910 /* MergeBin.cpp */; };
+		225CCD4D10DB201D003F0910 /* orgUniMbcsMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBBC10DB201D003F0910 /* orgUniMbcsMap.cpp */; };
+		225CCD4E10DB201D003F0910 /* pro_type.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBBE10DB201D003F0910 /* pro_type.cpp */; };
+		225CCD4F10DB201D003F0910 /* segtype.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBC110DB201D003F0910 /* segtype.cpp */; };
+		225CCD5010DB201D003F0910 /* SortMorph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBC410DB201D003F0910 /* SortMorph.cpp */; };
+		225CCD5110DB201D003F0910 /* SufForm2Rac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBCA10DB201D003F0910 /* SufForm2Rac.cpp */; };
+		225CCD5210DB201D003F0910 /* Syl2Jamo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBCC10DB201D003F0910 /* Syl2Jamo.cpp */; };
+		225CCD5310DB201D003F0910 /* Txt2Fst2Kr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBCE10DB201D003F0910 /* Txt2Fst2Kr.cpp */; };
+		225CCD5410DB201D003F0910 /* AbstractDelaLoad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBD310DB201D003F0910 /* AbstractDelaLoad.cpp */; };
+		225CCD5510DB201D003F0910 /* AbstractFst2Load.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBD710DB201D003F0910 /* AbstractFst2Load.cpp */; };
+		225CCD5610DB201D003F0910 /* ActivityLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBDA10DB201D003F0910 /* ActivityLogger.cpp */; };
+		225CCD5710DB201D003F0910 /* Af_stdio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBDD10DB201D003F0910 /* Af_stdio.cpp */; };
+		225CCD5810DB201D003F0910 /* Alphabet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBDF10DB201D003F0910 /* Alphabet.cpp */; };
+		225CCD5910DB201D003F0910 /* ApplyDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBE210DB201D003F0910 /* ApplyDic.cpp */; };
+		225CCD5A10DB201D003F0910 /* AsciiSearchTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBE410DB201D003F0910 /* AsciiSearchTree.cpp */; };
+		225CCD5B10DB201D003F0910 /* AutComplementation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBE610DB201D003F0910 /* AutComplementation.cpp */; };
+		225CCD5C10DB201D003F0910 /* AutConcat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBE810DB201D003F0910 /* AutConcat.cpp */; };
+		225CCD5D10DB201D003F0910 /* AutDeterminization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBEA10DB201D003F0910 /* AutDeterminization.cpp */; };
+		225CCD5E10DB201D003F0910 /* AutIntersection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBEC10DB201D003F0910 /* AutIntersection.cpp */; };
+		225CCD5F10DB201D003F0910 /* AutMinimization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBEE10DB201D003F0910 /* AutMinimization.cpp */; };
+		225CCD6010DB201D003F0910 /* AutomatonDictionary2Bin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBF010DB201D003F0910 /* AutomatonDictionary2Bin.cpp */; };
+		225CCD6110DB201D003F0910 /* BitArray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBF210DB201D003F0910 /* BitArray.cpp */; };
+		225CCD6210DB201D003F0910 /* BitMasks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBF410DB201D003F0910 /* BitMasks.cpp */; };
+		225CCD6310DB201D003F0910 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBF610DB201D003F0910 /* Buffer.cpp */; };
+		225CCD6410DB201D003F0910 /* BuildTextAutomaton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBF810DB201D003F0910 /* BuildTextAutomaton.cpp */; };
+		225CCD6510DB201D003F0910 /* CheckDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBFA10DB201D003F0910 /* CheckDic.cpp */; };
+		225CCD6610DB201D003F0910 /* CodePages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBFC10DB201D003F0910 /* CodePages.cpp */; };
+		225CCD6710DB201D003F0910 /* CompoundWordHashTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBFE10DB201D003F0910 /* CompoundWordHashTable.cpp */; };
+		225CCD6810DB201D003F0910 /* CompoundWordTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC0010DB201D003F0910 /* CompoundWordTree.cpp */; };
+		225CCD6910DB201D003F0910 /* Compress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC0210DB201D003F0910 /* Compress.cpp */; };
+		225CCD6A10DB201D003F0910 /* Concord.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC0410DB201D003F0910 /* Concord.cpp */; };
+		225CCD6B10DB201D003F0910 /* Concordance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC0610DB201D003F0910 /* Concordance.cpp */; };
+		225CCD6C10DB201D003F0910 /* ConcorDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC0810DB201D003F0910 /* ConcorDiff.cpp */; };
+		225CCD6D10DB201D003F0910 /* Contexts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC0B10DB201D003F0910 /* Contexts.cpp */; };
+		225CCD6E10DB201D003F0910 /* Convert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC0D10DB201D003F0910 /* Convert.cpp */; };
+		225CCD6F10DB201D003F0910 /* DELA_tree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC1010DB201D003F0910 /* DELA_tree.cpp */; };
+		225CCD7010DB201D003F0910 /* DELA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC1210DB201D003F0910 /* DELA.cpp */; };
+		225CCD7110DB201D003F0910 /* Dico.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC1410DB201D003F0910 /* Dico.cpp */; };
+		225CCD7210DB201D003F0910 /* DictionaryTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC1610DB201D003F0910 /* DictionaryTree.cpp */; };
+		225CCD7310DB201D003F0910 /* DicVariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC1810DB201D003F0910 /* DicVariables.cpp */; };
+		225CCD7410DB201D003F0910 /* Diff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC1A10DB201D003F0910 /* Diff.cpp */; };
+		225CCD7510DB201D003F0910 /* DuplicateFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC1C10DB201D003F0910 /* DuplicateFile.cpp */; };
+		225CCD7610DB201D003F0910 /* DutchCompounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC1E10DB201D003F0910 /* DutchCompounds.cpp */; };
+		225CCD7710DB201D003F0910 /* Elag.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC2010DB201D003F0910 /* Elag.cpp */; };
+		225CCD7810DB201D003F0910 /* ElagComp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC2210DB201D003F0910 /* ElagComp.cpp */; };
+		225CCD7910DB201D003F0910 /* ElagDebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC2410DB201D003F0910 /* ElagDebug.cpp */; };
+		225CCD7A10DB201D003F0910 /* ElagFstFilesIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC2610DB201D003F0910 /* ElagFstFilesIO.cpp */; };
+		225CCD7B10DB201D003F0910 /* ElagFunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC2810DB201D003F0910 /* ElagFunctions.cpp */; };
+		225CCD7C10DB201D003F0910 /* ElagRulesCompilation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC2A10DB201D003F0910 /* ElagRulesCompilation.cpp */; };
+		225CCD7D10DB201D003F0910 /* ElagStateSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC2C10DB201D003F0910 /* ElagStateSet.cpp */; };
+		225CCD7E10DB201D003F0910 /* Error.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC2E10DB201D003F0910 /* Error.cpp */; };
+		225CCD7F10DB201D003F0910 /* Evamb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC3010DB201D003F0910 /* Evamb.cpp */; };
+		225CCD8010DB201D003F0910 /* Extract.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC3210DB201D003F0910 /* Extract.cpp */; };
+		225CCD8110DB201D003F0910 /* ExtractUnits.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC3410DB201D003F0910 /* ExtractUnits.cpp */; };
+		225CCD8210DB201D003F0910 /* FIFO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC3610DB201D003F0910 /* FIFO.cpp */; };
+		225CCD8310DB201D003F0910 /* File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC3810DB201D003F0910 /* File.cpp */; };
+		225CCD8410DB201D003F0910 /* Flatten.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC3B10DB201D003F0910 /* Flatten.cpp */; };
+		225CCD8510DB201D003F0910 /* FlattenFst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC3D10DB201D003F0910 /* FlattenFst2.cpp */; };
+		225CCD8610DB201D003F0910 /* Fst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC3F10DB201D003F0910 /* Fst2.cpp */; };
+		225CCD8710DB201D003F0910 /* Fst2Automaton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC4110DB201D003F0910 /* Fst2Automaton.cpp */; };
+		225CCD8810DB201D003F0910 /* Fst2Check.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC4310DB201D003F0910 /* Fst2Check.cpp */; };
+		225CCD8910DB201D003F0910 /* Fst2List.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC4510DB201D003F0910 /* Fst2List.cpp */; };
+		225CCD8A10DB201D003F0910 /* Fst2Txt_TokenTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC4710DB201D003F0910 /* Fst2Txt_TokenTree.cpp */; };
+		225CCD8B10DB201D003F0910 /* Fst2Txt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC4910DB201D003F0910 /* Fst2Txt.cpp */; };
+		225CCD8C10DB201D003F0910 /* Fst2TxtAsRoutine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC4B10DB201D003F0910 /* Fst2TxtAsRoutine.cpp */; };
+		225CCD8D10DB201D003F0910 /* GeneralDerivation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC4D10DB201D003F0910 /* GeneralDerivation.cpp */; };
+		225CCD8E10DB201D003F0910 /* GermanCompounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC4F10DB201D003F0910 /* GermanCompounds.cpp */; };
+		225CCD8F10DB201D003F0910 /* getopt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC5110DB201D003F0910 /* getopt.cpp */; };
+		225CCD9010DB201D003F0910 /* Grf2Fst2_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC5310DB201D003F0910 /* Grf2Fst2_lib.cpp */; };
+		225CCD9110DB201D003F0910 /* Grf2Fst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC5510DB201D003F0910 /* Grf2Fst2.cpp */; };
+		225CCD9210DB201D003F0910 /* HashTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC5710DB201D003F0910 /* HashTable.cpp */; };
+		225CCD9310DB201D003F0910 /* HTMLCharacters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC5910DB201D003F0910 /* HTMLCharacters.cpp */; };
+		225CCD9410DB201D003F0910 /* ImplodeTfst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC5B10DB201D003F0910 /* ImplodeTfst.cpp */; };
+		225CCD9510DB201D003F0910 /* IOBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC5D10DB201D003F0910 /* IOBuffer.cpp */; };
+		225CCD9610DB201D003F0910 /* Korean.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC5F10DB201D003F0910 /* Korean.cpp */; };
+		225CCD9710DB201D003F0910 /* LanguageDefinition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC6110DB201D003F0910 /* LanguageDefinition.cpp */; };
+		225CCD9810DB201D003F0910 /* LemmaTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC6310DB201D003F0910 /* LemmaTree.cpp */; };
+		225CCD9910DB201D003F0910 /* LinearAutomaton2Txt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC6510DB201D003F0910 /* LinearAutomaton2Txt.cpp */; };
+		225CCD9A10DB201D003F0910 /* List_int.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC6710DB201D003F0910 /* List_int.cpp */; };
+		225CCD9B10DB201D003F0910 /* List_pointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC6910DB201D003F0910 /* List_pointer.cpp */; };
+		225CCD9C10DB201D003F0910 /* List_ustring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC6B10DB201D003F0910 /* List_ustring.cpp */; };
+		225CCD9D10DB201D003F0910 /* Locate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC6D10DB201D003F0910 /* Locate.cpp */; };
+		225CCD9E10DB201D003F0910 /* LocateFst2Tags.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC7010DB201D003F0910 /* LocateFst2Tags.cpp */; };
+		225CCD9F10DB201D003F0910 /* LocateMatches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC7210DB201D003F0910 /* LocateMatches.cpp */; };
+		225CCDA010DB201D003F0910 /* LocatePattern.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC7410DB201D003F0910 /* LocatePattern.cpp */; };
+		225CCDA110DB201D003F0910 /* LocateTfst_lib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC7610DB201D003F0910 /* LocateTfst_lib.cpp */; };
+		225CCDA210DB201D003F0910 /* LocateTfst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC7810DB201D003F0910 /* LocateTfst.cpp */; };
+		225CCDA310DB201D003F0910 /* LocateTfstMatches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC7A10DB201D003F0910 /* LocateTfstMatches.cpp */; };
+		225CCDAF10DB201D003F0910 /* Match.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC9210DB201D003F0910 /* Match.cpp */; };
+		225CCDB010DB201D003F0910 /* MF_DicoMorpho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC9510DB201D003F0910 /* MF_DicoMorpho.cpp */; };
+		225CCDB110DB201D003F0910 /* MF_DLC_inflect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC9810DB201D003F0910 /* MF_DLC_inflect.cpp */; };
+		225CCDB210DB201D003F0910 /* MF_FormMorpho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC9A10DB201D003F0910 /* MF_FormMorpho.cpp */; };
+		225CCDB310DB201D003F0910 /* MF_InflectTransd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCC9D10DB201D003F0910 /* MF_InflectTransd.cpp */; };
+		225CCDB410DB201D003F0910 /* MF_LangMorpho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCA010DB201D003F0910 /* MF_LangMorpho.cpp */; };
+		225CCDB510DB201D003F0910 /* MF_MU_graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCA310DB201D003F0910 /* MF_MU_graph.cpp */; };
+		225CCDB610DB201D003F0910 /* MF_MU_morpho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCA510DB201D003F0910 /* MF_MU_morpho.cpp */; };
+		225CCDB710DB201D003F0910 /* MF_Operators_Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCA810DB201D003F0910 /* MF_Operators_Util.cpp */; };
+		225CCDB810DB201D003F0910 /* MF_SU_morpho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCAA10DB201D003F0910 /* MF_SU_morpho.cpp */; };
+		225CCDB910DB201D003F0910 /* MF_Unif.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCAD10DB201D003F0910 /* MF_Unif.cpp */; };
+		225CCDBA10DB201D003F0910 /* MF_Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCB010DB201D003F0910 /* MF_Util.cpp */; };
+		225CCDBB10DB201D003F0910 /* MorphologicalFilters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCB210DB201D003F0910 /* MorphologicalFilters.cpp */; };
+		225CCDBC10DB201D003F0910 /* MorphologicalLocate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCB410DB201D003F0910 /* MorphologicalLocate.cpp */; };
+		225CCDBD10DB201D003F0910 /* MultiFlex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCB610DB201D003F0910 /* MultiFlex.cpp */; };
+		225CCDBE10DB201D003F0910 /* NewLineShifts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCB810DB201D003F0910 /* NewLineShifts.cpp */; };
+		225CCDBF10DB201D003F0910 /* NormalizationFst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCBA10DB201D003F0910 /* NormalizationFst2.cpp */; };
+		225CCDC010DB201D003F0910 /* Normalize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCBC10DB201D003F0910 /* Normalize.cpp */; };
+		225CCDC110DB201D003F0910 /* NormalizeAsRoutine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCBE10DB201D003F0910 /* NormalizeAsRoutine.cpp */; };
+		225CCDC210DB201D003F0910 /* NorwegianCompounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCC010DB201D003F0910 /* NorwegianCompounds.cpp */; };
+		225CCDC310DB201D003F0910 /* OptimizedFst2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCC210DB201D003F0910 /* OptimizedFst2.cpp */; };
+		225CCDC410DB201D003F0910 /* OptimizedTfstTagMatching.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCC410DB201D003F0910 /* OptimizedTfstTagMatching.cpp */; };
+		225CCDC510DB201D003F0910 /* ParsingInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCC610DB201D003F0910 /* ParsingInfo.cpp */; };
+		225CCDC610DB201D003F0910 /* Pattern.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCC810DB201D003F0910 /* Pattern.cpp */; };
+		225CCDC710DB201D003F0910 /* PatternTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCCA10DB201D003F0910 /* PatternTree.cpp */; };
+		225CCDC810DB201D003F0910 /* PolyLex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCCC10DB201D003F0910 /* PolyLex.cpp */; };
+		225CCDC910DB201D003F0910 /* PortugueseNormalization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCCE10DB201D003F0910 /* PortugueseNormalization.cpp */; };
+		225CCDCA10DB201D003F0910 /* ProgramInvoker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCD010DB201D003F0910 /* ProgramInvoker.cpp */; };
+		225CCDCB10DB201D003F0910 /* RebuildTfst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCD210DB201D003F0910 /* RebuildTfst.cpp */; };
+		225CCDCC10DB201D003F0910 /* Reconstrucao.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCD410DB201D003F0910 /* Reconstrucao.cpp */; };
+		225CCDCD10DB201D003F0910 /* Reg2Grf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCD610DB201D003F0910 /* Reg2Grf.cpp */; };
+		225CCDCE10DB201D003F0910 /* RegularExpressions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCD810DB201D003F0910 /* RegularExpressions.cpp */; };
+		225CCDCF10DB201D003F0910 /* RussianCompounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCDA10DB201D003F0910 /* RussianCompounds.cpp */; };
+		225CCDD010DB201D003F0910 /* Sentence2Grf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCDC10DB201D003F0910 /* Sentence2Grf.cpp */; };
+		225CCDD110DB201D003F0910 /* SingleGraph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCDE10DB201D003F0910 /* SingleGraph.cpp */; };
+		225CCDD210DB201D003F0910 /* Snt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCE010DB201D003F0910 /* Snt.cpp */; };
+		225CCDD310DB201D003F0910 /* SortTxt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCE210DB201D003F0910 /* SortTxt.cpp */; };
+		225CCDD410DB201D003F0910 /* Stack_int.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCE410DB201D003F0910 /* Stack_int.cpp */; };
+		225CCDD510DB201D003F0910 /* Stack_pointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCE610DB201D003F0910 /* Stack_pointer.cpp */; };
+		225CCDD610DB201D003F0910 /* Stack_unichar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCE810DB201D003F0910 /* Stack_unichar.cpp */; };
+		225CCDD710DB201D003F0910 /* Stats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCEA10DB201D003F0910 /* Stats.cpp */; };
+		225CCDD810DB201D003F0910 /* String_hash.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCEC10DB201D003F0910 /* String_hash.cpp */; };
+		225CCDD910DB201D003F0910 /* StringParsing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCEE10DB201D003F0910 /* StringParsing.cpp */; };
+		225CCDDA10DB201D003F0910 /* Symbol_op.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCF010DB201D003F0910 /* Symbol_op.cpp */; };
+		225CCDDB10DB201D003F0910 /* Symbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCF210DB201D003F0910 /* Symbol.cpp */; };
+		225CCDDC10DB201D003F0910 /* SymbolAlphabet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCF410DB201D003F0910 /* SymbolAlphabet.cpp */; };
+		225CCDDD10DB201D003F0910 /* Table2Grf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCF610DB201D003F0910 /* Table2Grf.cpp */; };
+		225CCDDE10DB201D003F0910 /* Tagset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCF810DB201D003F0910 /* Tagset.cpp */; };
+		225CCDDF10DB201D003F0910 /* TagsetNormTfst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCFA10DB201D003F0910 /* TagsetNormTfst.cpp */; };
+		225CCDE010DB201D003F0910 /* TEI2Txt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCFC10DB201D003F0910 /* TEI2Txt.cpp */; };
+		225CCDE110DB201D003F0910 /* Text_parsing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCCFE10DB201D003F0910 /* Text_parsing.cpp */; };
+		225CCDE210DB201D003F0910 /* Text_tokens.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD0010DB201D003F0910 /* Text_tokens.cpp */; };
+		225CCDE310DB201D003F0910 /* Tfst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD0210DB201D003F0910 /* Tfst.cpp */; };
+		225CCDE410DB201D003F0910 /* Tfst2Grf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD0410DB201D003F0910 /* Tfst2Grf.cpp */; };
+		225CCDE510DB201D003F0910 /* Tfst2Unambig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD0610DB201D003F0910 /* Tfst2Unambig.cpp */; };
+		225CCDE610DB201D003F0910 /* Thai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD0810DB201D003F0910 /* Thai.cpp */; };
+		225CCDE710DB201D003F0910 /* Tokenization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD0A10DB201D003F0910 /* Tokenization.cpp */; };
+		225CCDE810DB201D003F0910 /* Tokenize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD0C10DB201D003F0910 /* Tokenize.cpp */; };
+		225CCDE910DB201D003F0910 /* TransductionStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD0E10DB201D003F0910 /* TransductionStack.cpp */; };
+		225CCDEA10DB201D003F0910 /* TransductionStackTfst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1010DB201D003F0910 /* TransductionStackTfst.cpp */; };
+		225CCDEB10DB201D003F0910 /* TransductionVariables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1210DB201D003F0910 /* TransductionVariables.cpp */; };
+		225CCDEC10DB201D003F0910 /* Transitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1410DB201D003F0910 /* Transitions.cpp */; };
+		225CCDED10DB201D003F0910 /* regcomp.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1B10DB201D003F0910 /* regcomp.c */; };
+		225CCDEE10DB201D003F0910 /* regerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1C10DB201D003F0910 /* regerror.c */; };
+		225CCDEF10DB201D003F0910 /* regexec.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1E10DB201D003F0910 /* regexec.c */; };
+		225CCDF010DB201D003F0910 /* tre-ast.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1F10DB201D003F0910 /* tre-ast.c */; };
+		225CCDF110DB201D003F0910 /* tre-compile.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2110DB201D003F0910 /* tre-compile.c */; };
+		225CCDF210DB201D003F0910 /* tre-match-approx.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2510DB201D003F0910 /* tre-match-approx.c */; };
+		225CCDF310DB201D003F0910 /* tre-match-backtrack.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2610DB201D003F0910 /* tre-match-backtrack.c */; };
+		225CCDF410DB201D003F0910 /* tre-match-parallel.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2710DB201D003F0910 /* tre-match-parallel.c */; };
+		225CCDF510DB201D003F0910 /* tre-mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2910DB201D003F0910 /* tre-mem.c */; };
+		225CCDF610DB201D003F0910 /* tre-parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2B10DB201D003F0910 /* tre-parse.c */; };
+		225CCDF710DB201D003F0910 /* tre-stack.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2D10DB201D003F0910 /* tre-stack.c */; };
+		225CCDF810DB201D003F0910 /* xmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD3010DB201D003F0910 /* xmalloc.c */; };
+		225CCDF910DB201D003F0910 /* Txt2Tfst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD3210DB201D003F0910 /* Txt2Tfst.cpp */; };
+		225CCDFA10DB201D003F0910 /* Uncompress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD3410DB201D003F0910 /* Uncompress.cpp */; };
+		225CCDFB10DB201D003F0910 /* Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD3610DB201D003F0910 /* Unicode.cpp */; };
+		225CCDFC10DB201D003F0910 /* UnitexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD3810DB201D003F0910 /* UnitexTool.cpp */; };
+		225CCDFD10DB201D003F0910 /* UserCancelling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD3B10DB201D003F0910 /* UserCancelling.cpp */; };
+		225CCDFE10DB201D003F0910 /* Ustring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD3E10DB201D003F0910 /* Ustring.cpp */; };
+		225CCDFF10DB201D003F0910 /* XMLizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD4110DB201D003F0910 /* XMLizer.cpp */; };
+		225CCE0310DB2048003F0910 /* Main_UnitexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCE0210DB2048003F0910 /* Main_UnitexTool.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DD76F690486A84900D96B5E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		225CCB9F10DB201D003F0910 /* bin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bin.h; path = korean/bin.h; sourceTree = SOURCE_ROOT; };
+		225CCBA010DB201D003F0910 /* bin3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bin3.h; path = korean/bin3.h; sourceTree = SOURCE_ROOT; };
+		225CCBA110DB201D003F0910 /* bitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bitmap.cpp; path = korean/bitmap.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBA210DB201D003F0910 /* bitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitmap.h; path = korean/bitmap.h; sourceTree = SOURCE_ROOT; };
+		225CCBA310DB201D003F0910 /* codeForKorean.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = codeForKorean.cpp; path = korean/codeForKorean.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBA410DB201D003F0910 /* codeForKorean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = codeForKorean.h; path = korean/codeForKorean.h; sourceTree = SOURCE_ROOT; };
+		225CCBA510DB201D003F0910 /* codePageKr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = codePageKr.h; path = korean/codePageKr.h; sourceTree = SOURCE_ROOT; };
+		225CCBA610DB201D003F0910 /* compareAutos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = compareAutos.h; path = korean/compareAutos.h; sourceTree = SOURCE_ROOT; };
+		225CCBA710DB201D003F0910 /* CompressKr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CompressKr.cpp; path = korean/CompressKr.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBA810DB201D003F0910 /* CompressKr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CompressKr.h; path = korean/CompressKr.h; sourceTree = SOURCE_ROOT; };
+		225CCBA910DB201D003F0910 /* consultation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = consultation.h; path = korean/consultation.h; sourceTree = SOURCE_ROOT; };
+		225CCBAA10DB201D003F0910 /* ConsultDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConsultDic.cpp; path = korean/ConsultDic.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBAB10DB201D003F0910 /* ConsultDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConsultDic.h; path = korean/ConsultDic.h; sourceTree = SOURCE_ROOT; };
+		225CCBAC10DB201D003F0910 /* double_link_arbre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = double_link_arbre.h; path = korean/double_link_arbre.h; sourceTree = SOURCE_ROOT; };
+		225CCBAD10DB201D003F0910 /* etc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = etc.cpp; path = korean/etc.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBAE10DB201D003F0910 /* etc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = etc.h; path = korean/etc.h; sourceTree = SOURCE_ROOT; };
+		225CCBAF10DB201D003F0910 /* etcclass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = etcclass.h; path = korean/etcclass.h; sourceTree = SOURCE_ROOT; };
+		225CCBB010DB201D003F0910 /* ExtractChar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ExtractChar.cpp; path = korean/ExtractChar.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBB110DB201D003F0910 /* ExtractChar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExtractChar.h; path = korean/ExtractChar.h; sourceTree = SOURCE_ROOT; };
+		225CCBB210DB201D003F0910 /* formation_dic_line.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = formation_dic_line.h; path = korean/formation_dic_line.h; sourceTree = SOURCE_ROOT; };
+		225CCBB310DB201D003F0910 /* InflectKr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InflectKr.cpp; path = korean/InflectKr.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBB410DB201D003F0910 /* InflectKr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InflectKr.h; path = korean/InflectKr.h; sourceTree = SOURCE_ROOT; };
+		225CCBB510DB201D003F0910 /* Jamo2Syl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Jamo2Syl.cpp; path = korean/Jamo2Syl.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBB610DB201D003F0910 /* Jamo2Syl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Jamo2Syl.h; path = korean/Jamo2Syl.h; sourceTree = SOURCE_ROOT; };
+		225CCBB710DB201D003F0910 /* jamoCodage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jamoCodage.cpp; path = korean/jamoCodage.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBB810DB201D003F0910 /* jamoCodage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = jamoCodage.h; path = korean/jamoCodage.h; sourceTree = SOURCE_ROOT; };
+		225CCBB910DB201D003F0910 /* KSC5601.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = KSC5601.txt; path = korean/KSC5601.txt; sourceTree = SOURCE_ROOT; };
+		225CCBBA10DB201D003F0910 /* MergeBin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MergeBin.cpp; path = korean/MergeBin.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBBB10DB201D003F0910 /* MergeBin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MergeBin.h; path = korean/MergeBin.h; sourceTree = SOURCE_ROOT; };
+		225CCBBC10DB201D003F0910 /* orgUniMbcsMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = orgUniMbcsMap.cpp; path = korean/orgUniMbcsMap.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBBD10DB201D003F0910 /* orgUniMbcsMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = orgUniMbcsMap.h; path = korean/orgUniMbcsMap.h; sourceTree = SOURCE_ROOT; };
+		225CCBBE10DB201D003F0910 /* pro_type.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pro_type.cpp; path = korean/pro_type.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBBF10DB201D003F0910 /* pro_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pro_type.h; path = korean/pro_type.h; sourceTree = SOURCE_ROOT; };
+		225CCBC010DB201D003F0910 /* segment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = segment.h; path = korean/segment.h; sourceTree = SOURCE_ROOT; };
+		225CCBC110DB201D003F0910 /* segtype.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = segtype.cpp; path = korean/segtype.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBC210DB201D003F0910 /* segtype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = segtype.h; path = korean/segtype.h; sourceTree = SOURCE_ROOT; };
+		225CCBC310DB201D003F0910 /* sentencekr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sentencekr.h; path = korean/sentencekr.h; sourceTree = SOURCE_ROOT; };
+		225CCBC410DB201D003F0910 /* SortMorph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SortMorph.cpp; path = korean/SortMorph.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBC510DB201D003F0910 /* SortMorph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SortMorph.h; path = korean/SortMorph.h; sourceTree = SOURCE_ROOT; };
+		225CCBC610DB201D003F0910 /* state_machine_fst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = state_machine_fst2.h; path = korean/state_machine_fst2.h; sourceTree = SOURCE_ROOT; };
+		225CCBC710DB201D003F0910 /* String_hash2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = String_hash2.h; path = korean/String_hash2.h; sourceTree = SOURCE_ROOT; };
+		225CCBC810DB201D003F0910 /* strToAuto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = strToAuto.h; path = korean/strToAuto.h; sourceTree = SOURCE_ROOT; };
+		225CCBC910DB201D003F0910 /* structDeMorpheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = structDeMorpheme.h; path = korean/structDeMorpheme.h; sourceTree = SOURCE_ROOT; };
+		225CCBCA10DB201D003F0910 /* SufForm2Rac.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SufForm2Rac.cpp; path = korean/SufForm2Rac.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBCB10DB201D003F0910 /* SufForm2Rac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SufForm2Rac.h; path = korean/SufForm2Rac.h; sourceTree = SOURCE_ROOT; };
+		225CCBCC10DB201D003F0910 /* Syl2Jamo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Syl2Jamo.cpp; path = korean/Syl2Jamo.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBCD10DB201D003F0910 /* Syl2Jamo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Syl2Jamo.h; path = korean/Syl2Jamo.h; sourceTree = SOURCE_ROOT; };
+		225CCBCE10DB201D003F0910 /* Txt2Fst2Kr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Txt2Fst2Kr.cpp; path = korean/Txt2Fst2Kr.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBCF10DB201D003F0910 /* Txt2Fst2Kr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Txt2Fst2Kr.h; path = korean/Txt2Fst2Kr.h; sourceTree = SOURCE_ROOT; };
+		225CCBD010DB201D003F0910 /* uioForKorean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uioForKorean.h; path = korean/uioForKorean.h; sourceTree = SOURCE_ROOT; };
+		225CCBD110DB201D003F0910 /* unimap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unimap.h; path = korean/unimap.h; sourceTree = SOURCE_ROOT; };
+		225CCBD210DB201D003F0910 /* AbstractCallbackFuncModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractCallbackFuncModifier.h; sourceTree = SOURCE_ROOT; };
+		225CCBD310DB201D003F0910 /* AbstractDelaLoad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbstractDelaLoad.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBD410DB201D003F0910 /* AbstractDelaLoad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractDelaLoad.h; sourceTree = SOURCE_ROOT; };
+		225CCBD510DB201D003F0910 /* AbstractDelaPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractDelaPlugCallback.h; sourceTree = SOURCE_ROOT; };
+		225CCBD610DB201D003F0910 /* AbstractFilePlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractFilePlugCallback.h; sourceTree = SOURCE_ROOT; };
+		225CCBD710DB201D003F0910 /* AbstractFst2Load.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AbstractFst2Load.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBD810DB201D003F0910 /* AbstractFst2Load.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractFst2Load.h; sourceTree = SOURCE_ROOT; };
+		225CCBD910DB201D003F0910 /* AbstractFst2PlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractFst2PlugCallback.h; sourceTree = SOURCE_ROOT; };
+		225CCBDA10DB201D003F0910 /* ActivityLogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActivityLogger.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBDB10DB201D003F0910 /* ActivityLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActivityLogger.h; sourceTree = SOURCE_ROOT; };
+		225CCBDC10DB201D003F0910 /* ActivityLoggerPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActivityLoggerPlugCallback.h; sourceTree = SOURCE_ROOT; };
+		225CCBDD10DB201D003F0910 /* Af_stdio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Af_stdio.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBDE10DB201D003F0910 /* Af_stdio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Af_stdio.h; sourceTree = SOURCE_ROOT; };
+		225CCBDF10DB201D003F0910 /* Alphabet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Alphabet.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBE010DB201D003F0910 /* Alphabet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alphabet.h; sourceTree = SOURCE_ROOT; };
+		225CCBE110DB201D003F0910 /* Any.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Any.h; sourceTree = SOURCE_ROOT; };
+		225CCBE210DB201D003F0910 /* ApplyDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ApplyDic.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBE310DB201D003F0910 /* ApplyDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ApplyDic.h; sourceTree = SOURCE_ROOT; };
+		225CCBE410DB201D003F0910 /* AsciiSearchTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AsciiSearchTree.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBE510DB201D003F0910 /* AsciiSearchTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsciiSearchTree.h; sourceTree = SOURCE_ROOT; };
+		225CCBE610DB201D003F0910 /* AutComplementation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutComplementation.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBE710DB201D003F0910 /* AutComplementation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutComplementation.h; sourceTree = SOURCE_ROOT; };
+		225CCBE810DB201D003F0910 /* AutConcat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutConcat.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBE910DB201D003F0910 /* AutConcat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutConcat.h; sourceTree = SOURCE_ROOT; };
+		225CCBEA10DB201D003F0910 /* AutDeterminization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutDeterminization.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBEB10DB201D003F0910 /* AutDeterminization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutDeterminization.h; sourceTree = SOURCE_ROOT; };
+		225CCBEC10DB201D003F0910 /* AutIntersection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutIntersection.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBED10DB201D003F0910 /* AutIntersection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutIntersection.h; sourceTree = SOURCE_ROOT; };
+		225CCBEE10DB201D003F0910 /* AutMinimization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutMinimization.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBEF10DB201D003F0910 /* AutMinimization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutMinimization.h; sourceTree = SOURCE_ROOT; };
+		225CCBF010DB201D003F0910 /* AutomatonDictionary2Bin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutomatonDictionary2Bin.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBF110DB201D003F0910 /* AutomatonDictionary2Bin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutomatonDictionary2Bin.h; sourceTree = SOURCE_ROOT; };
+		225CCBF210DB201D003F0910 /* BitArray.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitArray.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBF310DB201D003F0910 /* BitArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BitArray.h; sourceTree = SOURCE_ROOT; };
+		225CCBF410DB201D003F0910 /* BitMasks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitMasks.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBF510DB201D003F0910 /* BitMasks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BitMasks.h; sourceTree = SOURCE_ROOT; };
+		225CCBF610DB201D003F0910 /* Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buffer.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBF710DB201D003F0910 /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = SOURCE_ROOT; };
+		225CCBF810DB201D003F0910 /* BuildTextAutomaton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BuildTextAutomaton.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBF910DB201D003F0910 /* BuildTextAutomaton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BuildTextAutomaton.h; sourceTree = SOURCE_ROOT; };
+		225CCBFA10DB201D003F0910 /* CheckDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CheckDic.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBFB10DB201D003F0910 /* CheckDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CheckDic.h; sourceTree = SOURCE_ROOT; };
+		225CCBFC10DB201D003F0910 /* CodePages.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CodePages.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBFD10DB201D003F0910 /* CodePages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CodePages.h; sourceTree = SOURCE_ROOT; };
+		225CCBFE10DB201D003F0910 /* CompoundWordHashTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompoundWordHashTable.cpp; sourceTree = SOURCE_ROOT; };
+		225CCBFF10DB201D003F0910 /* CompoundWordHashTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompoundWordHashTable.h; sourceTree = SOURCE_ROOT; };
+		225CCC0010DB201D003F0910 /* CompoundWordTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompoundWordTree.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC0110DB201D003F0910 /* CompoundWordTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompoundWordTree.h; sourceTree = SOURCE_ROOT; };
+		225CCC0210DB201D003F0910 /* Compress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Compress.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC0310DB201D003F0910 /* Compress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Compress.h; sourceTree = SOURCE_ROOT; };
+		225CCC0410DB201D003F0910 /* Concord.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Concord.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC0510DB201D003F0910 /* Concord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Concord.h; sourceTree = SOURCE_ROOT; };
+		225CCC0610DB201D003F0910 /* Concordance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Concordance.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC0710DB201D003F0910 /* Concordance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Concordance.h; sourceTree = SOURCE_ROOT; };
+		225CCC0810DB201D003F0910 /* ConcorDiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConcorDiff.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC0910DB201D003F0910 /* ConcorDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConcorDiff.h; sourceTree = SOURCE_ROOT; };
+		225CCC0A10DB201D003F0910 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = SOURCE_ROOT; };
+		225CCC0B10DB201D003F0910 /* Contexts.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Contexts.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC0C10DB201D003F0910 /* Contexts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Contexts.h; sourceTree = SOURCE_ROOT; };
+		225CCC0D10DB201D003F0910 /* Convert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Convert.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC0E10DB201D003F0910 /* Convert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Convert.h; sourceTree = SOURCE_ROOT; };
+		225CCC0F10DB201D003F0910 /* Copyright.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Copyright.h; sourceTree = SOURCE_ROOT; };
+		225CCC1010DB201D003F0910 /* DELA_tree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DELA_tree.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC1110DB201D003F0910 /* DELA_tree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DELA_tree.h; sourceTree = SOURCE_ROOT; };
+		225CCC1210DB201D003F0910 /* DELA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DELA.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC1310DB201D003F0910 /* DELA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DELA.h; sourceTree = SOURCE_ROOT; };
+		225CCC1410DB201D003F0910 /* Dico.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dico.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC1510DB201D003F0910 /* Dico.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Dico.h; sourceTree = SOURCE_ROOT; };
+		225CCC1610DB201D003F0910 /* DictionaryTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DictionaryTree.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC1710DB201D003F0910 /* DictionaryTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DictionaryTree.h; sourceTree = SOURCE_ROOT; };
+		225CCC1810DB201D003F0910 /* DicVariables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DicVariables.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC1910DB201D003F0910 /* DicVariables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DicVariables.h; sourceTree = SOURCE_ROOT; };
+		225CCC1A10DB201D003F0910 /* Diff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Diff.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC1B10DB201D003F0910 /* Diff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Diff.h; sourceTree = SOURCE_ROOT; };
+		225CCC1C10DB201D003F0910 /* DuplicateFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DuplicateFile.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC1D10DB201D003F0910 /* DuplicateFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DuplicateFile.h; sourceTree = SOURCE_ROOT; };
+		225CCC1E10DB201D003F0910 /* DutchCompounds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DutchCompounds.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC1F10DB201D003F0910 /* DutchCompounds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DutchCompounds.h; sourceTree = SOURCE_ROOT; };
+		225CCC2010DB201D003F0910 /* Elag.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Elag.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC2110DB201D003F0910 /* Elag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Elag.h; sourceTree = SOURCE_ROOT; };
+		225CCC2210DB201D003F0910 /* ElagComp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElagComp.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC2310DB201D003F0910 /* ElagComp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElagComp.h; sourceTree = SOURCE_ROOT; };
+		225CCC2410DB201D003F0910 /* ElagDebug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElagDebug.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC2510DB201D003F0910 /* ElagDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElagDebug.h; sourceTree = SOURCE_ROOT; };
+		225CCC2610DB201D003F0910 /* ElagFstFilesIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElagFstFilesIO.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC2710DB201D003F0910 /* ElagFstFilesIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElagFstFilesIO.h; sourceTree = SOURCE_ROOT; };
+		225CCC2810DB201D003F0910 /* ElagFunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElagFunctions.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC2910DB201D003F0910 /* ElagFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElagFunctions.h; sourceTree = SOURCE_ROOT; };
+		225CCC2A10DB201D003F0910 /* ElagRulesCompilation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElagRulesCompilation.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC2B10DB201D003F0910 /* ElagRulesCompilation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElagRulesCompilation.h; sourceTree = SOURCE_ROOT; };
+		225CCC2C10DB201D003F0910 /* ElagStateSet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElagStateSet.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC2D10DB201D003F0910 /* ElagStateSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ElagStateSet.h; sourceTree = SOURCE_ROOT; };
+		225CCC2E10DB201D003F0910 /* Error.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Error.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC2F10DB201D003F0910 /* Error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Error.h; sourceTree = SOURCE_ROOT; };
+		225CCC3010DB201D003F0910 /* Evamb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Evamb.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC3110DB201D003F0910 /* Evamb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Evamb.h; sourceTree = SOURCE_ROOT; };
+		225CCC3210DB201D003F0910 /* Extract.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Extract.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC3310DB201D003F0910 /* Extract.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Extract.h; sourceTree = SOURCE_ROOT; };
+		225CCC3410DB201D003F0910 /* ExtractUnits.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExtractUnits.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC3510DB201D003F0910 /* ExtractUnits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExtractUnits.h; sourceTree = SOURCE_ROOT; };
+		225CCC3610DB201D003F0910 /* FIFO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FIFO.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC3710DB201D003F0910 /* FIFO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FIFO.h; sourceTree = SOURCE_ROOT; };
+		225CCC3810DB201D003F0910 /* File.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = File.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC3910DB201D003F0910 /* File.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = File.h; sourceTree = SOURCE_ROOT; };
+		225CCC3A10DB201D003F0910 /* FileEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileEncoding.h; sourceTree = SOURCE_ROOT; };
+		225CCC3B10DB201D003F0910 /* Flatten.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Flatten.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC3C10DB201D003F0910 /* Flatten.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Flatten.h; sourceTree = SOURCE_ROOT; };
+		225CCC3D10DB201D003F0910 /* FlattenFst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FlattenFst2.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC3E10DB201D003F0910 /* FlattenFst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlattenFst2.h; sourceTree = SOURCE_ROOT; };
+		225CCC3F10DB201D003F0910 /* Fst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fst2.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC4010DB201D003F0910 /* Fst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fst2.h; sourceTree = SOURCE_ROOT; };
+		225CCC4110DB201D003F0910 /* Fst2Automaton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fst2Automaton.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC4210DB201D003F0910 /* Fst2Automaton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fst2Automaton.h; sourceTree = SOURCE_ROOT; };
+		225CCC4310DB201D003F0910 /* Fst2Check.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fst2Check.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC4410DB201D003F0910 /* Fst2Check.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fst2Check.h; sourceTree = SOURCE_ROOT; };
+		225CCC4510DB201D003F0910 /* Fst2List.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fst2List.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC4610DB201D003F0910 /* Fst2List.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fst2List.h; sourceTree = SOURCE_ROOT; };
+		225CCC4710DB201D003F0910 /* Fst2Txt_TokenTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fst2Txt_TokenTree.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC4810DB201D003F0910 /* Fst2Txt_TokenTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fst2Txt_TokenTree.h; sourceTree = SOURCE_ROOT; };
+		225CCC4910DB201D003F0910 /* Fst2Txt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fst2Txt.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC4A10DB201D003F0910 /* Fst2Txt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fst2Txt.h; sourceTree = SOURCE_ROOT; };
+		225CCC4B10DB201D003F0910 /* Fst2TxtAsRoutine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fst2TxtAsRoutine.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC4C10DB201D003F0910 /* Fst2TxtAsRoutine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fst2TxtAsRoutine.h; sourceTree = SOURCE_ROOT; };
+		225CCC4D10DB201D003F0910 /* GeneralDerivation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GeneralDerivation.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC4E10DB201D003F0910 /* GeneralDerivation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GeneralDerivation.h; sourceTree = SOURCE_ROOT; };
+		225CCC4F10DB201D003F0910 /* GermanCompounds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GermanCompounds.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC5010DB201D003F0910 /* GermanCompounds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GermanCompounds.h; sourceTree = SOURCE_ROOT; };
+		225CCC5110DB201D003F0910 /* getopt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = getopt.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC5210DB201D003F0910 /* getopt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = getopt.h; sourceTree = SOURCE_ROOT; };
+		225CCC5310DB201D003F0910 /* Grf2Fst2_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Grf2Fst2_lib.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC5410DB201D003F0910 /* Grf2Fst2_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Grf2Fst2_lib.h; sourceTree = SOURCE_ROOT; };
+		225CCC5510DB201D003F0910 /* Grf2Fst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Grf2Fst2.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC5610DB201D003F0910 /* Grf2Fst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Grf2Fst2.h; sourceTree = SOURCE_ROOT; };
+		225CCC5710DB201D003F0910 /* HashTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HashTable.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC5810DB201D003F0910 /* HashTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HashTable.h; sourceTree = SOURCE_ROOT; };
+		225CCC5910DB201D003F0910 /* HTMLCharacters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HTMLCharacters.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC5A10DB201D003F0910 /* HTMLCharacters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTMLCharacters.h; sourceTree = SOURCE_ROOT; };
+		225CCC5B10DB201D003F0910 /* ImplodeTfst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImplodeTfst.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC5C10DB201D003F0910 /* ImplodeTfst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImplodeTfst.h; sourceTree = SOURCE_ROOT; };
+		225CCC5D10DB201D003F0910 /* IOBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IOBuffer.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC5E10DB201D003F0910 /* IOBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IOBuffer.h; sourceTree = SOURCE_ROOT; };
+		225CCC5F10DB201D003F0910 /* Korean.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Korean.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC6010DB201D003F0910 /* Korean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Korean.h; sourceTree = SOURCE_ROOT; };
+		225CCC6110DB201D003F0910 /* LanguageDefinition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LanguageDefinition.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC6210DB201D003F0910 /* LanguageDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LanguageDefinition.h; sourceTree = SOURCE_ROOT; };
+		225CCC6310DB201D003F0910 /* LemmaTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LemmaTree.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC6410DB201D003F0910 /* LemmaTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LemmaTree.h; sourceTree = SOURCE_ROOT; };
+		225CCC6510DB201D003F0910 /* LinearAutomaton2Txt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LinearAutomaton2Txt.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC6610DB201D003F0910 /* LinearAutomaton2Txt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinearAutomaton2Txt.h; sourceTree = SOURCE_ROOT; };
+		225CCC6710DB201D003F0910 /* List_int.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = List_int.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC6810DB201D003F0910 /* List_int.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = List_int.h; sourceTree = SOURCE_ROOT; };
+		225CCC6910DB201D003F0910 /* List_pointer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = List_pointer.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC6A10DB201D003F0910 /* List_pointer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = List_pointer.h; sourceTree = SOURCE_ROOT; };
+		225CCC6B10DB201D003F0910 /* List_ustring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = List_ustring.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC6C10DB201D003F0910 /* List_ustring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = List_ustring.h; sourceTree = SOURCE_ROOT; };
+		225CCC6D10DB201D003F0910 /* Locate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Locate.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC6E10DB201D003F0910 /* Locate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Locate.h; sourceTree = SOURCE_ROOT; };
+		225CCC6F10DB201D003F0910 /* LocateConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocateConstants.h; sourceTree = SOURCE_ROOT; };
+		225CCC7010DB201D003F0910 /* LocateFst2Tags.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocateFst2Tags.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC7110DB201D003F0910 /* LocateFst2Tags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocateFst2Tags.h; sourceTree = SOURCE_ROOT; };
+		225CCC7210DB201D003F0910 /* LocateMatches.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocateMatches.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC7310DB201D003F0910 /* LocateMatches.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocateMatches.h; sourceTree = SOURCE_ROOT; };
+		225CCC7410DB201D003F0910 /* LocatePattern.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocatePattern.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC7510DB201D003F0910 /* LocatePattern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocatePattern.h; sourceTree = SOURCE_ROOT; };
+		225CCC7610DB201D003F0910 /* LocateTfst_lib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocateTfst_lib.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC7710DB201D003F0910 /* LocateTfst_lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocateTfst_lib.h; sourceTree = SOURCE_ROOT; };
+		225CCC7810DB201D003F0910 /* LocateTfst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocateTfst.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC7910DB201D003F0910 /* LocateTfst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocateTfst.h; sourceTree = SOURCE_ROOT; };
+		225CCC7A10DB201D003F0910 /* LocateTfstMatches.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocateTfstMatches.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC7B10DB201D003F0910 /* LocateTfstMatches.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocateTfstMatches.h; sourceTree = SOURCE_ROOT; };
+		225CCC9210DB201D003F0910 /* Match.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Match.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC9310DB201D003F0910 /* Match.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Match.h; sourceTree = SOURCE_ROOT; };
+		225CCC9410DB201D003F0910 /* MetaSymbols.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetaSymbols.h; sourceTree = SOURCE_ROOT; };
+		225CCC9510DB201D003F0910 /* MF_DicoMorpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_DicoMorpho.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC9610DB201D003F0910 /* MF_DicoMorpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_DicoMorpho.h; sourceTree = SOURCE_ROOT; };
+		225CCC9710DB201D003F0910 /* MF_DicoMorphoBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_DicoMorphoBase.h; sourceTree = SOURCE_ROOT; };
+		225CCC9810DB201D003F0910 /* MF_DLC_inflect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_DLC_inflect.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC9910DB201D003F0910 /* MF_DLC_inflect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_DLC_inflect.h; sourceTree = SOURCE_ROOT; };
+		225CCC9A10DB201D003F0910 /* MF_FormMorpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_FormMorpho.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC9B10DB201D003F0910 /* MF_FormMorpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_FormMorpho.h; sourceTree = SOURCE_ROOT; };
+		225CCC9C10DB201D003F0910 /* MF_Global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_Global.h; sourceTree = SOURCE_ROOT; };
+		225CCC9D10DB201D003F0910 /* MF_InflectTransd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_InflectTransd.cpp; sourceTree = SOURCE_ROOT; };
+		225CCC9E10DB201D003F0910 /* MF_InflectTransd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_InflectTransd.h; sourceTree = SOURCE_ROOT; };
+		225CCC9F10DB201D003F0910 /* MF_InflectTransdBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_InflectTransdBase.h; sourceTree = SOURCE_ROOT; };
+		225CCCA010DB201D003F0910 /* MF_LangMorpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_LangMorpho.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCA110DB201D003F0910 /* MF_LangMorpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_LangMorpho.h; sourceTree = SOURCE_ROOT; };
+		225CCCA210DB201D003F0910 /* MF_LangMorphoBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_LangMorphoBase.h; sourceTree = SOURCE_ROOT; };
+		225CCCA310DB201D003F0910 /* MF_MU_graph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_MU_graph.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCA410DB201D003F0910 /* MF_MU_graph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_MU_graph.h; sourceTree = SOURCE_ROOT; };
+		225CCCA510DB201D003F0910 /* MF_MU_morpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_MU_morpho.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCA610DB201D003F0910 /* MF_MU_morpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_MU_morpho.h; sourceTree = SOURCE_ROOT; };
+		225CCCA710DB201D003F0910 /* MF_MU_morphoBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_MU_morphoBase.h; sourceTree = SOURCE_ROOT; };
+		225CCCA810DB201D003F0910 /* MF_Operators_Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_Operators_Util.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCA910DB201D003F0910 /* MF_Operators_Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_Operators_Util.h; sourceTree = SOURCE_ROOT; };
+		225CCCAA10DB201D003F0910 /* MF_SU_morpho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_SU_morpho.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCAB10DB201D003F0910 /* MF_SU_morpho.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_SU_morpho.h; sourceTree = SOURCE_ROOT; };
+		225CCCAC10DB201D003F0910 /* MF_SU_morphoBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_SU_morphoBase.h; sourceTree = SOURCE_ROOT; };
+		225CCCAD10DB201D003F0910 /* MF_Unif.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_Unif.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCAE10DB201D003F0910 /* MF_Unif.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_Unif.h; sourceTree = SOURCE_ROOT; };
+		225CCCAF10DB201D003F0910 /* MF_UnifBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_UnifBase.h; sourceTree = SOURCE_ROOT; };
+		225CCCB010DB201D003F0910 /* MF_Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MF_Util.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCB110DB201D003F0910 /* MF_Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MF_Util.h; sourceTree = SOURCE_ROOT; };
+		225CCCB210DB201D003F0910 /* MorphologicalFilters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MorphologicalFilters.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCB310DB201D003F0910 /* MorphologicalFilters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MorphologicalFilters.h; sourceTree = SOURCE_ROOT; };
+		225CCCB410DB201D003F0910 /* MorphologicalLocate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MorphologicalLocate.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCB510DB201D003F0910 /* MorphologicalLocate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MorphologicalLocate.h; sourceTree = SOURCE_ROOT; };
+		225CCCB610DB201D003F0910 /* MultiFlex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MultiFlex.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCB710DB201D003F0910 /* MultiFlex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultiFlex.h; sourceTree = SOURCE_ROOT; };
+		225CCCB810DB201D003F0910 /* NewLineShifts.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NewLineShifts.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCB910DB201D003F0910 /* NewLineShifts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NewLineShifts.h; sourceTree = SOURCE_ROOT; };
+		225CCCBA10DB201D003F0910 /* NormalizationFst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NormalizationFst2.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCBB10DB201D003F0910 /* NormalizationFst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NormalizationFst2.h; sourceTree = SOURCE_ROOT; };
+		225CCCBC10DB201D003F0910 /* Normalize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Normalize.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCBD10DB201D003F0910 /* Normalize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Normalize.h; sourceTree = SOURCE_ROOT; };
+		225CCCBE10DB201D003F0910 /* NormalizeAsRoutine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NormalizeAsRoutine.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCBF10DB201D003F0910 /* NormalizeAsRoutine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NormalizeAsRoutine.h; sourceTree = SOURCE_ROOT; };
+		225CCCC010DB201D003F0910 /* NorwegianCompounds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NorwegianCompounds.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCC110DB201D003F0910 /* NorwegianCompounds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NorwegianCompounds.h; sourceTree = SOURCE_ROOT; };
+		225CCCC210DB201D003F0910 /* OptimizedFst2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OptimizedFst2.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCC310DB201D003F0910 /* OptimizedFst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OptimizedFst2.h; sourceTree = SOURCE_ROOT; };
+		225CCCC410DB201D003F0910 /* OptimizedTfstTagMatching.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OptimizedTfstTagMatching.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCC510DB201D003F0910 /* OptimizedTfstTagMatching.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OptimizedTfstTagMatching.h; sourceTree = SOURCE_ROOT; };
+		225CCCC610DB201D003F0910 /* ParsingInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParsingInfo.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCC710DB201D003F0910 /* ParsingInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParsingInfo.h; sourceTree = SOURCE_ROOT; };
+		225CCCC810DB201D003F0910 /* Pattern.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Pattern.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCC910DB201D003F0910 /* Pattern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Pattern.h; sourceTree = SOURCE_ROOT; };
+		225CCCCA10DB201D003F0910 /* PatternTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PatternTree.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCCB10DB201D003F0910 /* PatternTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PatternTree.h; sourceTree = SOURCE_ROOT; };
+		225CCCCC10DB201D003F0910 /* PolyLex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PolyLex.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCCD10DB201D003F0910 /* PolyLex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PolyLex.h; sourceTree = SOURCE_ROOT; };
+		225CCCCE10DB201D003F0910 /* PortugueseNormalization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PortugueseNormalization.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCCF10DB201D003F0910 /* PortugueseNormalization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PortugueseNormalization.h; sourceTree = SOURCE_ROOT; };
+		225CCCD010DB201D003F0910 /* ProgramInvoker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProgramInvoker.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCD110DB201D003F0910 /* ProgramInvoker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgramInvoker.h; sourceTree = SOURCE_ROOT; };
+		225CCCD210DB201D003F0910 /* RebuildTfst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RebuildTfst.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCD310DB201D003F0910 /* RebuildTfst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RebuildTfst.h; sourceTree = SOURCE_ROOT; };
+		225CCCD410DB201D003F0910 /* Reconstrucao.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reconstrucao.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCD510DB201D003F0910 /* Reconstrucao.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reconstrucao.h; sourceTree = SOURCE_ROOT; };
+		225CCCD610DB201D003F0910 /* Reg2Grf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reg2Grf.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCD710DB201D003F0910 /* Reg2Grf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reg2Grf.h; sourceTree = SOURCE_ROOT; };
+		225CCCD810DB201D003F0910 /* RegularExpressions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RegularExpressions.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCD910DB201D003F0910 /* RegularExpressions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegularExpressions.h; sourceTree = SOURCE_ROOT; };
+		225CCCDA10DB201D003F0910 /* RussianCompounds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RussianCompounds.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCDB10DB201D003F0910 /* RussianCompounds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RussianCompounds.h; sourceTree = SOURCE_ROOT; };
+		225CCCDC10DB201D003F0910 /* Sentence2Grf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sentence2Grf.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCDD10DB201D003F0910 /* Sentence2Grf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sentence2Grf.h; sourceTree = SOURCE_ROOT; };
+		225CCCDE10DB201D003F0910 /* SingleGraph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SingleGraph.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCDF10DB201D003F0910 /* SingleGraph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SingleGraph.h; sourceTree = SOURCE_ROOT; };
+		225CCCE010DB201D003F0910 /* Snt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Snt.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCE110DB201D003F0910 /* Snt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Snt.h; sourceTree = SOURCE_ROOT; };
+		225CCCE210DB201D003F0910 /* SortTxt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SortTxt.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCE310DB201D003F0910 /* SortTxt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SortTxt.h; sourceTree = SOURCE_ROOT; };
+		225CCCE410DB201D003F0910 /* Stack_int.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stack_int.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCE510DB201D003F0910 /* Stack_int.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stack_int.h; sourceTree = SOURCE_ROOT; };
+		225CCCE610DB201D003F0910 /* Stack_pointer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stack_pointer.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCE710DB201D003F0910 /* Stack_pointer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stack_pointer.h; sourceTree = SOURCE_ROOT; };
+		225CCCE810DB201D003F0910 /* Stack_unichar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stack_unichar.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCE910DB201D003F0910 /* Stack_unichar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stack_unichar.h; sourceTree = SOURCE_ROOT; };
+		225CCCEA10DB201D003F0910 /* Stats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stats.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCEB10DB201D003F0910 /* Stats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stats.h; sourceTree = SOURCE_ROOT; };
+		225CCCEC10DB201D003F0910 /* String_hash.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = String_hash.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCED10DB201D003F0910 /* String_hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = String_hash.h; sourceTree = SOURCE_ROOT; };
+		225CCCEE10DB201D003F0910 /* StringParsing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringParsing.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCEF10DB201D003F0910 /* StringParsing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringParsing.h; sourceTree = SOURCE_ROOT; };
+		225CCCF010DB201D003F0910 /* Symbol_op.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Symbol_op.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCF110DB201D003F0910 /* Symbol_op.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Symbol_op.h; sourceTree = SOURCE_ROOT; };
+		225CCCF210DB201D003F0910 /* Symbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Symbol.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCF310DB201D003F0910 /* Symbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Symbol.h; sourceTree = SOURCE_ROOT; };
+		225CCCF410DB201D003F0910 /* SymbolAlphabet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolAlphabet.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCF510DB201D003F0910 /* SymbolAlphabet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SymbolAlphabet.h; sourceTree = SOURCE_ROOT; };
+		225CCCF610DB201D003F0910 /* Table2Grf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Table2Grf.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCF710DB201D003F0910 /* Table2Grf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Table2Grf.h; sourceTree = SOURCE_ROOT; };
+		225CCCF810DB201D003F0910 /* Tagset.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tagset.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCF910DB201D003F0910 /* Tagset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tagset.h; sourceTree = SOURCE_ROOT; };
+		225CCCFA10DB201D003F0910 /* TagsetNormTfst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TagsetNormTfst.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCFB10DB201D003F0910 /* TagsetNormTfst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TagsetNormTfst.h; sourceTree = SOURCE_ROOT; };
+		225CCCFC10DB201D003F0910 /* TEI2Txt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TEI2Txt.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCFD10DB201D003F0910 /* TEI2Txt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TEI2Txt.h; sourceTree = SOURCE_ROOT; };
+		225CCCFE10DB201D003F0910 /* Text_parsing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text_parsing.cpp; sourceTree = SOURCE_ROOT; };
+		225CCCFF10DB201D003F0910 /* Text_parsing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Text_parsing.h; sourceTree = SOURCE_ROOT; };
+		225CCD0010DB201D003F0910 /* Text_tokens.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text_tokens.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD0110DB201D003F0910 /* Text_tokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Text_tokens.h; sourceTree = SOURCE_ROOT; };
+		225CCD0210DB201D003F0910 /* Tfst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tfst.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD0310DB201D003F0910 /* Tfst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tfst.h; sourceTree = SOURCE_ROOT; };
+		225CCD0410DB201D003F0910 /* Tfst2Grf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tfst2Grf.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD0510DB201D003F0910 /* Tfst2Grf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tfst2Grf.h; sourceTree = SOURCE_ROOT; };
+		225CCD0610DB201D003F0910 /* Tfst2Unambig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tfst2Unambig.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD0710DB201D003F0910 /* Tfst2Unambig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tfst2Unambig.h; sourceTree = SOURCE_ROOT; };
+		225CCD0810DB201D003F0910 /* Thai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Thai.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD0910DB201D003F0910 /* Thai.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thai.h; sourceTree = SOURCE_ROOT; };
+		225CCD0A10DB201D003F0910 /* Tokenization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tokenization.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD0B10DB201D003F0910 /* Tokenization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tokenization.h; sourceTree = SOURCE_ROOT; };
+		225CCD0C10DB201D003F0910 /* Tokenize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tokenize.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD0D10DB201D003F0910 /* Tokenize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tokenize.h; sourceTree = SOURCE_ROOT; };
+		225CCD0E10DB201D003F0910 /* TransductionStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransductionStack.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD0F10DB201D003F0910 /* TransductionStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransductionStack.h; sourceTree = SOURCE_ROOT; };
+		225CCD1010DB201D003F0910 /* TransductionStackTfst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransductionStackTfst.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD1110DB201D003F0910 /* TransductionStackTfst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransductionStackTfst.h; sourceTree = SOURCE_ROOT; };
+		225CCD1210DB201D003F0910 /* TransductionVariables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransductionVariables.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD1310DB201D003F0910 /* TransductionVariables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransductionVariables.h; sourceTree = SOURCE_ROOT; };
+		225CCD1410DB201D003F0910 /* Transitions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Transitions.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD1510DB201D003F0910 /* Transitions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Transitions.h; sourceTree = SOURCE_ROOT; };
+		225CCD1810DB201D003F0910 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
+		225CCD1910DB201D003F0910 /* Makefile.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.in; sourceTree = "<group>"; };
+		225CCD1A10DB201D003F0910 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		225CCD1B10DB201D003F0910 /* regcomp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = regcomp.c; sourceTree = "<group>"; };
+		225CCD1C10DB201D003F0910 /* regerror.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = regerror.c; sourceTree = "<group>"; };
+		225CCD1D10DB201D003F0910 /* regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = regex.h; sourceTree = "<group>"; };
+		225CCD1E10DB201D003F0910 /* regexec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = regexec.c; sourceTree = "<group>"; };
+		225CCD1F10DB201D003F0910 /* tre-ast.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "tre-ast.c"; sourceTree = "<group>"; };
+		225CCD2010DB201D003F0910 /* tre-ast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tre-ast.h"; sourceTree = "<group>"; };
+		225CCD2110DB201D003F0910 /* tre-compile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "tre-compile.c"; sourceTree = "<group>"; };
+		225CCD2210DB201D003F0910 /* tre-compile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tre-compile.h"; sourceTree = "<group>"; };
+		225CCD2310DB201D003F0910 /* tre-config.h.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "tre-config.h.in"; sourceTree = "<group>"; };
+		225CCD2410DB201D003F0910 /* tre-internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tre-internal.h"; sourceTree = "<group>"; };
+		225CCD2510DB201D003F0910 /* tre-match-approx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "tre-match-approx.c"; sourceTree = "<group>"; };
+		225CCD2610DB201D003F0910 /* tre-match-backtrack.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "tre-match-backtrack.c"; sourceTree = "<group>"; };
+		225CCD2710DB201D003F0910 /* tre-match-parallel.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "tre-match-parallel.c"; sourceTree = "<group>"; };
+		225CCD2810DB201D003F0910 /* tre-match-utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tre-match-utils.h"; sourceTree = "<group>"; };
+		225CCD2910DB201D003F0910 /* tre-mem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "tre-mem.c"; sourceTree = "<group>"; };
+		225CCD2A10DB201D003F0910 /* tre-mem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tre-mem.h"; sourceTree = "<group>"; };
+		225CCD2B10DB201D003F0910 /* tre-parse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "tre-parse.c"; sourceTree = "<group>"; };
+		225CCD2C10DB201D003F0910 /* tre-parse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tre-parse.h"; sourceTree = "<group>"; };
+		225CCD2D10DB201D003F0910 /* tre-stack.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "tre-stack.c"; sourceTree = "<group>"; };
+		225CCD2E10DB201D003F0910 /* tre-stack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tre-stack.h"; sourceTree = "<group>"; };
+		225CCD2F10DB201D003F0910 /* tre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tre.h; sourceTree = "<group>"; };
+		225CCD3010DB201D003F0910 /* xmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xmalloc.c; sourceTree = "<group>"; };
+		225CCD3110DB201D003F0910 /* xmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xmalloc.h; sourceTree = "<group>"; };
+		225CCD3210DB201D003F0910 /* Txt2Tfst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Txt2Tfst.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD3310DB201D003F0910 /* Txt2Tfst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Txt2Tfst.h; sourceTree = SOURCE_ROOT; };
+		225CCD3410DB201D003F0910 /* Uncompress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Uncompress.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD3510DB201D003F0910 /* Uncompress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Uncompress.h; sourceTree = SOURCE_ROOT; };
+		225CCD3610DB201D003F0910 /* Unicode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Unicode.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD3710DB201D003F0910 /* Unicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Unicode.h; sourceTree = SOURCE_ROOT; };
+		225CCD3810DB201D003F0910 /* UnitexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnitexTool.cpp; sourceTree = "<group>"; };
+		225CCD3910DB201D003F0910 /* UnitexTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitexTool.h; sourceTree = "<group>"; };
+		225CCD3A10DB201D003F0910 /* UnusedParameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnusedParameter.h; sourceTree = SOURCE_ROOT; };
+		225CCD3B10DB201D003F0910 /* UserCancelling.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UserCancelling.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD3C10DB201D003F0910 /* UserCancelling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserCancelling.h; sourceTree = SOURCE_ROOT; };
+		225CCD3D10DB201D003F0910 /* UserCancellingPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserCancellingPlugCallback.h; sourceTree = SOURCE_ROOT; };
+		225CCD3E10DB201D003F0910 /* Ustring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Ustring.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD3F10DB201D003F0910 /* Ustring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ustring.h; sourceTree = SOURCE_ROOT; };
+		225CCD4010DB201D003F0910 /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = SOURCE_ROOT; };
+		225CCD4110DB201D003F0910 /* XMLizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XMLizer.cpp; sourceTree = SOURCE_ROOT; };
+		225CCD4210DB201D003F0910 /* XMLizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLizer.h; sourceTree = SOURCE_ROOT; };
+		225CCE0210DB2048003F0910 /* Main_UnitexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Main_UnitexTool.cpp; sourceTree = SOURCE_ROOT; };
+		8DD76F6C0486A84900D96B5E /* UnitexTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitexTool; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DD76F660486A84900D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* UnitexTool */ = {
+			isa = PBXGroup;
+			children = (
+				08FB7795FE84155DC02AAC07 /* Source */,
+				C6859E8C029090F304C91782 /* Documentation */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+			);
+			name = UnitexTool;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				225CCE0210DB2048003F0910 /* Main_UnitexTool.cpp */,
+				225CCBD210DB201D003F0910 /* AbstractCallbackFuncModifier.h */,
+				225CCBD310DB201D003F0910 /* AbstractDelaLoad.cpp */,
+				225CCBD410DB201D003F0910 /* AbstractDelaLoad.h */,
+				225CCBD510DB201D003F0910 /* AbstractDelaPlugCallback.h */,
+				225CCBD610DB201D003F0910 /* AbstractFilePlugCallback.h */,
+				225CCBD710DB201D003F0910 /* AbstractFst2Load.cpp */,
+				225CCBD810DB201D003F0910 /* AbstractFst2Load.h */,
+				225CCBD910DB201D003F0910 /* AbstractFst2PlugCallback.h */,
+				225CCBDA10DB201D003F0910 /* ActivityLogger.cpp */,
+				225CCBDB10DB201D003F0910 /* ActivityLogger.h */,
+				225CCBDC10DB201D003F0910 /* ActivityLoggerPlugCallback.h */,
+				225CCBDD10DB201D003F0910 /* Af_stdio.cpp */,
+				225CCBDE10DB201D003F0910 /* Af_stdio.h */,
+				225CCBDF10DB201D003F0910 /* Alphabet.cpp */,
+				225CCBE010DB201D003F0910 /* Alphabet.h */,
+				225CCBE110DB201D003F0910 /* Any.h */,
+				225CCBE210DB201D003F0910 /* ApplyDic.cpp */,
+				225CCBE310DB201D003F0910 /* ApplyDic.h */,
+				225CCBE410DB201D003F0910 /* AsciiSearchTree.cpp */,
+				225CCBE510DB201D003F0910 /* AsciiSearchTree.h */,
+				225CCBE610DB201D003F0910 /* AutComplementation.cpp */,
+				225CCBE710DB201D003F0910 /* AutComplementation.h */,
+				225CCBE810DB201D003F0910 /* AutConcat.cpp */,
+				225CCBE910DB201D003F0910 /* AutConcat.h */,
+				225CCBEA10DB201D003F0910 /* AutDeterminization.cpp */,
+				225CCBEB10DB201D003F0910 /* AutDeterminization.h */,
+				225CCBEC10DB201D003F0910 /* AutIntersection.cpp */,
+				225CCBED10DB201D003F0910 /* AutIntersection.h */,
+				225CCBEE10DB201D003F0910 /* AutMinimization.cpp */,
+				225CCBEF10DB201D003F0910 /* AutMinimization.h */,
+				225CCBF010DB201D003F0910 /* AutomatonDictionary2Bin.cpp */,
+				225CCBF110DB201D003F0910 /* AutomatonDictionary2Bin.h */,
+				225CCBF210DB201D003F0910 /* BitArray.cpp */,
+				225CCBF310DB201D003F0910 /* BitArray.h */,
+				225CCBF410DB201D003F0910 /* BitMasks.cpp */,
+				225CCBF510DB201D003F0910 /* BitMasks.h */,
+				225CCBF610DB201D003F0910 /* Buffer.cpp */,
+				225CCBF710DB201D003F0910 /* Buffer.h */,
+				225CCBF810DB201D003F0910 /* BuildTextAutomaton.cpp */,
+				225CCBF910DB201D003F0910 /* BuildTextAutomaton.h */,
+				225CCBFA10DB201D003F0910 /* CheckDic.cpp */,
+				225CCBFB10DB201D003F0910 /* CheckDic.h */,
+				225CCBFC10DB201D003F0910 /* CodePages.cpp */,
+				225CCBFD10DB201D003F0910 /* CodePages.h */,
+				225CCBFE10DB201D003F0910 /* CompoundWordHashTable.cpp */,
+				225CCBFF10DB201D003F0910 /* CompoundWordHashTable.h */,
+				225CCC0010DB201D003F0910 /* CompoundWordTree.cpp */,
+				225CCC0110DB201D003F0910 /* CompoundWordTree.h */,
+				225CCC0210DB201D003F0910 /* Compress.cpp */,
+				225CCC0310DB201D003F0910 /* Compress.h */,
+				225CCC0410DB201D003F0910 /* Concord.cpp */,
+				225CCC0510DB201D003F0910 /* Concord.h */,
+				225CCC0610DB201D003F0910 /* Concordance.cpp */,
+				225CCC0710DB201D003F0910 /* Concordance.h */,
+				225CCC0810DB201D003F0910 /* ConcorDiff.cpp */,
+				225CCC0910DB201D003F0910 /* ConcorDiff.h */,
+				225CCC0A10DB201D003F0910 /* config.h */,
+				225CCC0B10DB201D003F0910 /* Contexts.cpp */,
+				225CCC0C10DB201D003F0910 /* Contexts.h */,
+				225CCC0D10DB201D003F0910 /* Convert.cpp */,
+				225CCC0E10DB201D003F0910 /* Convert.h */,
+				225CCC0F10DB201D003F0910 /* Copyright.h */,
+				225CCC1010DB201D003F0910 /* DELA_tree.cpp */,
+				225CCC1110DB201D003F0910 /* DELA_tree.h */,
+				225CCC1210DB201D003F0910 /* DELA.cpp */,
+				225CCC1310DB201D003F0910 /* DELA.h */,
+				225CCC1410DB201D003F0910 /* Dico.cpp */,
+				225CCC1510DB201D003F0910 /* Dico.h */,
+				225CCC1610DB201D003F0910 /* DictionaryTree.cpp */,
+				225CCC1710DB201D003F0910 /* DictionaryTree.h */,
+				225CCC1810DB201D003F0910 /* DicVariables.cpp */,
+				225CCC1910DB201D003F0910 /* DicVariables.h */,
+				225CCC1A10DB201D003F0910 /* Diff.cpp */,
+				225CCC1B10DB201D003F0910 /* Diff.h */,
+				225CCC1C10DB201D003F0910 /* DuplicateFile.cpp */,
+				225CCC1D10DB201D003F0910 /* DuplicateFile.h */,
+				225CCC1E10DB201D003F0910 /* DutchCompounds.cpp */,
+				225CCC1F10DB201D003F0910 /* DutchCompounds.h */,
+				225CCC2010DB201D003F0910 /* Elag.cpp */,
+				225CCC2110DB201D003F0910 /* Elag.h */,
+				225CCC2210DB201D003F0910 /* ElagComp.cpp */,
+				225CCC2310DB201D003F0910 /* ElagComp.h */,
+				225CCC2410DB201D003F0910 /* ElagDebug.cpp */,
+				225CCC2510DB201D003F0910 /* ElagDebug.h */,
+				225CCC2610DB201D003F0910 /* ElagFstFilesIO.cpp */,
+				225CCC2710DB201D003F0910 /* ElagFstFilesIO.h */,
+				225CCC2810DB201D003F0910 /* ElagFunctions.cpp */,
+				225CCC2910DB201D003F0910 /* ElagFunctions.h */,
+				225CCC2A10DB201D003F0910 /* ElagRulesCompilation.cpp */,
+				225CCC2B10DB201D003F0910 /* ElagRulesCompilation.h */,
+				225CCC2C10DB201D003F0910 /* ElagStateSet.cpp */,
+				225CCC2D10DB201D003F0910 /* ElagStateSet.h */,
+				225CCC2E10DB201D003F0910 /* Error.cpp */,
+				225CCC2F10DB201D003F0910 /* Error.h */,
+				225CCC3010DB201D003F0910 /* Evamb.cpp */,
+				225CCC3110DB201D003F0910 /* Evamb.h */,
+				225CCC3210DB201D003F0910 /* Extract.cpp */,
+				225CCC3310DB201D003F0910 /* Extract.h */,
+				225CCC3410DB201D003F0910 /* ExtractUnits.cpp */,
+				225CCC3510DB201D003F0910 /* ExtractUnits.h */,
+				225CCC3610DB201D003F0910 /* FIFO.cpp */,
+				225CCC3710DB201D003F0910 /* FIFO.h */,
+				225CCC3810DB201D003F0910 /* File.cpp */,
+				225CCC3910DB201D003F0910 /* File.h */,
+				225CCC3A10DB201D003F0910 /* FileEncoding.h */,
+				225CCC3B10DB201D003F0910 /* Flatten.cpp */,
+				225CCC3C10DB201D003F0910 /* Flatten.h */,
+				225CCC3D10DB201D003F0910 /* FlattenFst2.cpp */,
+				225CCC3E10DB201D003F0910 /* FlattenFst2.h */,
+				225CCC3F10DB201D003F0910 /* Fst2.cpp */,
+				225CCC4010DB201D003F0910 /* Fst2.h */,
+				225CCC4110DB201D003F0910 /* Fst2Automaton.cpp */,
+				225CCC4210DB201D003F0910 /* Fst2Automaton.h */,
+				225CCC4310DB201D003F0910 /* Fst2Check.cpp */,
+				225CCC4410DB201D003F0910 /* Fst2Check.h */,
+				225CCC4510DB201D003F0910 /* Fst2List.cpp */,
+				225CCC4610DB201D003F0910 /* Fst2List.h */,
+				225CCC4710DB201D003F0910 /* Fst2Txt_TokenTree.cpp */,
+				225CCC4810DB201D003F0910 /* Fst2Txt_TokenTree.h */,
+				225CCC4910DB201D003F0910 /* Fst2Txt.cpp */,
+				225CCC4A10DB201D003F0910 /* Fst2Txt.h */,
+				225CCC4B10DB201D003F0910 /* Fst2TxtAsRoutine.cpp */,
+				225CCC4C10DB201D003F0910 /* Fst2TxtAsRoutine.h */,
+				225CCC4D10DB201D003F0910 /* GeneralDerivation.cpp */,
+				225CCC4E10DB201D003F0910 /* GeneralDerivation.h */,
+				225CCC4F10DB201D003F0910 /* GermanCompounds.cpp */,
+				225CCC5010DB201D003F0910 /* GermanCompounds.h */,
+				225CCC5110DB201D003F0910 /* getopt.cpp */,
+				225CCC5210DB201D003F0910 /* getopt.h */,
+				225CCC5310DB201D003F0910 /* Grf2Fst2_lib.cpp */,
+				225CCC5410DB201D003F0910 /* Grf2Fst2_lib.h */,
+				225CCC5510DB201D003F0910 /* Grf2Fst2.cpp */,
+				225CCC5610DB201D003F0910 /* Grf2Fst2.h */,
+				225CCC5710DB201D003F0910 /* HashTable.cpp */,
+				225CCC5810DB201D003F0910 /* HashTable.h */,
+				225CCC5910DB201D003F0910 /* HTMLCharacters.cpp */,
+				225CCC5A10DB201D003F0910 /* HTMLCharacters.h */,
+				225CCC5B10DB201D003F0910 /* ImplodeTfst.cpp */,
+				225CCC5C10DB201D003F0910 /* ImplodeTfst.h */,
+				225CCC5D10DB201D003F0910 /* IOBuffer.cpp */,
+				225CCC5E10DB201D003F0910 /* IOBuffer.h */,
+				225CCC5F10DB201D003F0910 /* Korean.cpp */,
+				225CCC6010DB201D003F0910 /* Korean.h */,
+				225CCC6110DB201D003F0910 /* LanguageDefinition.cpp */,
+				225CCC6210DB201D003F0910 /* LanguageDefinition.h */,
+				225CCC6310DB201D003F0910 /* LemmaTree.cpp */,
+				225CCC6410DB201D003F0910 /* LemmaTree.h */,
+				225CCC6510DB201D003F0910 /* LinearAutomaton2Txt.cpp */,
+				225CCC6610DB201D003F0910 /* LinearAutomaton2Txt.h */,
+				225CCC6710DB201D003F0910 /* List_int.cpp */,
+				225CCC6810DB201D003F0910 /* List_int.h */,
+				225CCC6910DB201D003F0910 /* List_pointer.cpp */,
+				225CCC6A10DB201D003F0910 /* List_pointer.h */,
+				225CCC6B10DB201D003F0910 /* List_ustring.cpp */,
+				225CCC6C10DB201D003F0910 /* List_ustring.h */,
+				225CCC6D10DB201D003F0910 /* Locate.cpp */,
+				225CCC6E10DB201D003F0910 /* Locate.h */,
+				225CCC6F10DB201D003F0910 /* LocateConstants.h */,
+				225CCC7010DB201D003F0910 /* LocateFst2Tags.cpp */,
+				225CCC7110DB201D003F0910 /* LocateFst2Tags.h */,
+				225CCC7210DB201D003F0910 /* LocateMatches.cpp */,
+				225CCC7310DB201D003F0910 /* LocateMatches.h */,
+				225CCC7410DB201D003F0910 /* LocatePattern.cpp */,
+				225CCC7510DB201D003F0910 /* LocatePattern.h */,
+				225CCC7610DB201D003F0910 /* LocateTfst_lib.cpp */,
+				225CCC7710DB201D003F0910 /* LocateTfst_lib.h */,
+				225CCC7810DB201D003F0910 /* LocateTfst.cpp */,
+				225CCC7910DB201D003F0910 /* LocateTfst.h */,
+				225CCC7A10DB201D003F0910 /* LocateTfstMatches.cpp */,
+				225CCC7B10DB201D003F0910 /* LocateTfstMatches.h */,
+				225CCC9210DB201D003F0910 /* Match.cpp */,
+				225CCC9310DB201D003F0910 /* Match.h */,
+				225CCC9410DB201D003F0910 /* MetaSymbols.h */,
+				225CCC9510DB201D003F0910 /* MF_DicoMorpho.cpp */,
+				225CCC9610DB201D003F0910 /* MF_DicoMorpho.h */,
+				225CCC9710DB201D003F0910 /* MF_DicoMorphoBase.h */,
+				225CCC9810DB201D003F0910 /* MF_DLC_inflect.cpp */,
+				225CCC9910DB201D003F0910 /* MF_DLC_inflect.h */,
+				225CCC9A10DB201D003F0910 /* MF_FormMorpho.cpp */,
+				225CCC9B10DB201D003F0910 /* MF_FormMorpho.h */,
+				225CCC9C10DB201D003F0910 /* MF_Global.h */,
+				225CCC9D10DB201D003F0910 /* MF_InflectTransd.cpp */,
+				225CCC9E10DB201D003F0910 /* MF_InflectTransd.h */,
+				225CCC9F10DB201D003F0910 /* MF_InflectTransdBase.h */,
+				225CCCA010DB201D003F0910 /* MF_LangMorpho.cpp */,
+				225CCCA110DB201D003F0910 /* MF_LangMorpho.h */,
+				225CCCA210DB201D003F0910 /* MF_LangMorphoBase.h */,
+				225CCCA310DB201D003F0910 /* MF_MU_graph.cpp */,
+				225CCCA410DB201D003F0910 /* MF_MU_graph.h */,
+				225CCCA510DB201D003F0910 /* MF_MU_morpho.cpp */,
+				225CCCA610DB201D003F0910 /* MF_MU_morpho.h */,
+				225CCCA710DB201D003F0910 /* MF_MU_morphoBase.h */,
+				225CCCA810DB201D003F0910 /* MF_Operators_Util.cpp */,
+				225CCCA910DB201D003F0910 /* MF_Operators_Util.h */,
+				225CCCAA10DB201D003F0910 /* MF_SU_morpho.cpp */,
+				225CCCAB10DB201D003F0910 /* MF_SU_morpho.h */,
+				225CCCAC10DB201D003F0910 /* MF_SU_morphoBase.h */,
+				225CCCAD10DB201D003F0910 /* MF_Unif.cpp */,
+				225CCCAE10DB201D003F0910 /* MF_Unif.h */,
+				225CCCAF10DB201D003F0910 /* MF_UnifBase.h */,
+				225CCCB010DB201D003F0910 /* MF_Util.cpp */,
+				225CCCB110DB201D003F0910 /* MF_Util.h */,
+				225CCCB210DB201D003F0910 /* MorphologicalFilters.cpp */,
+				225CCCB310DB201D003F0910 /* MorphologicalFilters.h */,
+				225CCCB410DB201D003F0910 /* MorphologicalLocate.cpp */,
+				225CCCB510DB201D003F0910 /* MorphologicalLocate.h */,
+				225CCCB610DB201D003F0910 /* MultiFlex.cpp */,
+				225CCCB710DB201D003F0910 /* MultiFlex.h */,
+				225CCCB810DB201D003F0910 /* NewLineShifts.cpp */,
+				225CCCB910DB201D003F0910 /* NewLineShifts.h */,
+				225CCCBA10DB201D003F0910 /* NormalizationFst2.cpp */,
+				225CCCBB10DB201D003F0910 /* NormalizationFst2.h */,
+				225CCCBC10DB201D003F0910 /* Normalize.cpp */,
+				225CCCBD10DB201D003F0910 /* Normalize.h */,
+				225CCCBE10DB201D003F0910 /* NormalizeAsRoutine.cpp */,
+				225CCCBF10DB201D003F0910 /* NormalizeAsRoutine.h */,
+				225CCCC010DB201D003F0910 /* NorwegianCompounds.cpp */,
+				225CCCC110DB201D003F0910 /* NorwegianCompounds.h */,
+				225CCCC210DB201D003F0910 /* OptimizedFst2.cpp */,
+				225CCCC310DB201D003F0910 /* OptimizedFst2.h */,
+				225CCCC410DB201D003F0910 /* OptimizedTfstTagMatching.cpp */,
+				225CCCC510DB201D003F0910 /* OptimizedTfstTagMatching.h */,
+				225CCCC610DB201D003F0910 /* ParsingInfo.cpp */,
+				225CCCC710DB201D003F0910 /* ParsingInfo.h */,
+				225CCCC810DB201D003F0910 /* Pattern.cpp */,
+				225CCCC910DB201D003F0910 /* Pattern.h */,
+				225CCCCA10DB201D003F0910 /* PatternTree.cpp */,
+				225CCCCB10DB201D003F0910 /* PatternTree.h */,
+				225CCCCC10DB201D003F0910 /* PolyLex.cpp */,
+				225CCCCD10DB201D003F0910 /* PolyLex.h */,
+				225CCCCE10DB201D003F0910 /* PortugueseNormalization.cpp */,
+				225CCCCF10DB201D003F0910 /* PortugueseNormalization.h */,
+				225CCCD010DB201D003F0910 /* ProgramInvoker.cpp */,
+				225CCCD110DB201D003F0910 /* ProgramInvoker.h */,
+				225CCCD210DB201D003F0910 /* RebuildTfst.cpp */,
+				225CCCD310DB201D003F0910 /* RebuildTfst.h */,
+				225CCCD410DB201D003F0910 /* Reconstrucao.cpp */,
+				225CCCD510DB201D003F0910 /* Reconstrucao.h */,
+				225CCCD610DB201D003F0910 /* Reg2Grf.cpp */,
+				225CCCD710DB201D003F0910 /* Reg2Grf.h */,
+				225CCCD810DB201D003F0910 /* RegularExpressions.cpp */,
+				225CCCD910DB201D003F0910 /* RegularExpressions.h */,
+				225CCCDA10DB201D003F0910 /* RussianCompounds.cpp */,
+				225CCCDB10DB201D003F0910 /* RussianCompounds.h */,
+				225CCCDC10DB201D003F0910 /* Sentence2Grf.cpp */,
+				225CCCDD10DB201D003F0910 /* Sentence2Grf.h */,
+				225CCCDE10DB201D003F0910 /* SingleGraph.cpp */,
+				225CCCDF10DB201D003F0910 /* SingleGraph.h */,
+				225CCCE010DB201D003F0910 /* Snt.cpp */,
+				225CCCE110DB201D003F0910 /* Snt.h */,
+				225CCCE210DB201D003F0910 /* SortTxt.cpp */,
+				225CCCE310DB201D003F0910 /* SortTxt.h */,
+				225CCCE410DB201D003F0910 /* Stack_int.cpp */,
+				225CCCE510DB201D003F0910 /* Stack_int.h */,
+				225CCCE610DB201D003F0910 /* Stack_pointer.cpp */,
+				225CCCE710DB201D003F0910 /* Stack_pointer.h */,
+				225CCCE810DB201D003F0910 /* Stack_unichar.cpp */,
+				225CCCE910DB201D003F0910 /* Stack_unichar.h */,
+				225CCCEA10DB201D003F0910 /* Stats.cpp */,
+				225CCCEB10DB201D003F0910 /* Stats.h */,
+				225CCCEC10DB201D003F0910 /* String_hash.cpp */,
+				225CCCED10DB201D003F0910 /* String_hash.h */,
+				225CCCEE10DB201D003F0910 /* StringParsing.cpp */,
+				225CCCEF10DB201D003F0910 /* StringParsing.h */,
+				225CCCF010DB201D003F0910 /* Symbol_op.cpp */,
+				225CCCF110DB201D003F0910 /* Symbol_op.h */,
+				225CCCF210DB201D003F0910 /* Symbol.cpp */,
+				225CCCF310DB201D003F0910 /* Symbol.h */,
+				225CCCF410DB201D003F0910 /* SymbolAlphabet.cpp */,
+				225CCCF510DB201D003F0910 /* SymbolAlphabet.h */,
+				225CCCF610DB201D003F0910 /* Table2Grf.cpp */,
+				225CCCF710DB201D003F0910 /* Table2Grf.h */,
+				225CCCF810DB201D003F0910 /* Tagset.cpp */,
+				225CCCF910DB201D003F0910 /* Tagset.h */,
+				225CCCFA10DB201D003F0910 /* TagsetNormTfst.cpp */,
+				225CCCFB10DB201D003F0910 /* TagsetNormTfst.h */,
+				225CCCFC10DB201D003F0910 /* TEI2Txt.cpp */,
+				225CCCFD10DB201D003F0910 /* TEI2Txt.h */,
+				225CCCFE10DB201D003F0910 /* Text_parsing.cpp */,
+				225CCCFF10DB201D003F0910 /* Text_parsing.h */,
+				225CCD0010DB201D003F0910 /* Text_tokens.cpp */,
+				225CCD0110DB201D003F0910 /* Text_tokens.h */,
+				225CCD0210DB201D003F0910 /* Tfst.cpp */,
+				225CCD0310DB201D003F0910 /* Tfst.h */,
+				225CCD0410DB201D003F0910 /* Tfst2Grf.cpp */,
+				225CCD0510DB201D003F0910 /* Tfst2Grf.h */,
+				225CCD0610DB201D003F0910 /* Tfst2Unambig.cpp */,
+				225CCD0710DB201D003F0910 /* Tfst2Unambig.h */,
+				225CCD0810DB201D003F0910 /* Thai.cpp */,
+				225CCD0910DB201D003F0910 /* Thai.h */,
+				225CCD0A10DB201D003F0910 /* Tokenization.cpp */,
+				225CCD0B10DB201D003F0910 /* Tokenization.h */,
+				225CCD0C10DB201D003F0910 /* Tokenize.cpp */,
+				225CCD0D10DB201D003F0910 /* Tokenize.h */,
+				225CCD0E10DB201D003F0910 /* TransductionStack.cpp */,
+				225CCD0F10DB201D003F0910 /* TransductionStack.h */,
+				225CCD1010DB201D003F0910 /* TransductionStackTfst.cpp */,
+				225CCD1110DB201D003F0910 /* TransductionStackTfst.h */,
+				225CCD1210DB201D003F0910 /* TransductionVariables.cpp */,
+				225CCD1310DB201D003F0910 /* TransductionVariables.h */,
+				225CCD1410DB201D003F0910 /* Transitions.cpp */,
+				225CCD1510DB201D003F0910 /* Transitions.h */,
+				225CCD1610DB201D003F0910 /* tre-0.8.0 */,
+				225CCD3210DB201D003F0910 /* Txt2Tfst.cpp */,
+				225CCD3310DB201D003F0910 /* Txt2Tfst.h */,
+				225CCD3410DB201D003F0910 /* Uncompress.cpp */,
+				225CCD3510DB201D003F0910 /* Uncompress.h */,
+				225CCD3610DB201D003F0910 /* Unicode.cpp */,
+				225CCD3710DB201D003F0910 /* Unicode.h */,
+				225CCD3810DB201D003F0910 /* UnitexTool.cpp */,
+				225CCD3910DB201D003F0910 /* UnitexTool.h */,
+				225CCD3A10DB201D003F0910 /* UnusedParameter.h */,
+				225CCD3B10DB201D003F0910 /* UserCancelling.cpp */,
+				225CCD3C10DB201D003F0910 /* UserCancelling.h */,
+				225CCD3D10DB201D003F0910 /* UserCancellingPlugCallback.h */,
+				225CCD3E10DB201D003F0910 /* Ustring.cpp */,
+				225CCD3F10DB201D003F0910 /* Ustring.h */,
+				225CCD4010DB201D003F0910 /* Vector.h */,
+				225CCD4110DB201D003F0910 /* XMLizer.cpp */,
+				225CCD4210DB201D003F0910 /* XMLizer.h */,
+				225CCB9E10DB201D003F0910 /* korean */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DD76F6C0486A84900D96B5E /* UnitexTool */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		225CCB9E10DB201D003F0910 /* korean */ = {
+			isa = PBXGroup;
+			children = (
+				225CCB9F10DB201D003F0910 /* bin.h */,
+				225CCBA010DB201D003F0910 /* bin3.h */,
+				225CCBA110DB201D003F0910 /* bitmap.cpp */,
+				225CCBA210DB201D003F0910 /* bitmap.h */,
+				225CCBA310DB201D003F0910 /* codeForKorean.cpp */,
+				225CCBA410DB201D003F0910 /* codeForKorean.h */,
+				225CCBA510DB201D003F0910 /* codePageKr.h */,
+				225CCBA610DB201D003F0910 /* compareAutos.h */,
+				225CCBA710DB201D003F0910 /* CompressKr.cpp */,
+				225CCBA810DB201D003F0910 /* CompressKr.h */,
+				225CCBA910DB201D003F0910 /* consultation.h */,
+				225CCBAA10DB201D003F0910 /* ConsultDic.cpp */,
+				225CCBAB10DB201D003F0910 /* ConsultDic.h */,
+				225CCBAC10DB201D003F0910 /* double_link_arbre.h */,
+				225CCBAD10DB201D003F0910 /* etc.cpp */,
+				225CCBAE10DB201D003F0910 /* etc.h */,
+				225CCBAF10DB201D003F0910 /* etcclass.h */,
+				225CCBB010DB201D003F0910 /* ExtractChar.cpp */,
+				225CCBB110DB201D003F0910 /* ExtractChar.h */,
+				225CCBB210DB201D003F0910 /* formation_dic_line.h */,
+				225CCBB310DB201D003F0910 /* InflectKr.cpp */,
+				225CCBB410DB201D003F0910 /* InflectKr.h */,
+				225CCBB510DB201D003F0910 /* Jamo2Syl.cpp */,
+				225CCBB610DB201D003F0910 /* Jamo2Syl.h */,
+				225CCBB710DB201D003F0910 /* jamoCodage.cpp */,
+				225CCBB810DB201D003F0910 /* jamoCodage.h */,
+				225CCBB910DB201D003F0910 /* KSC5601.txt */,
+				225CCBBA10DB201D003F0910 /* MergeBin.cpp */,
+				225CCBBB10DB201D003F0910 /* MergeBin.h */,
+				225CCBBC10DB201D003F0910 /* orgUniMbcsMap.cpp */,
+				225CCBBD10DB201D003F0910 /* orgUniMbcsMap.h */,
+				225CCBBE10DB201D003F0910 /* pro_type.cpp */,
+				225CCBBF10DB201D003F0910 /* pro_type.h */,
+				225CCBC010DB201D003F0910 /* segment.h */,
+				225CCBC110DB201D003F0910 /* segtype.cpp */,
+				225CCBC210DB201D003F0910 /* segtype.h */,
+				225CCBC310DB201D003F0910 /* sentencekr.h */,
+				225CCBC410DB201D003F0910 /* SortMorph.cpp */,
+				225CCBC510DB201D003F0910 /* SortMorph.h */,
+				225CCBC610DB201D003F0910 /* state_machine_fst2.h */,
+				225CCBC710DB201D003F0910 /* String_hash2.h */,
+				225CCBC810DB201D003F0910 /* strToAuto.h */,
+				225CCBC910DB201D003F0910 /* structDeMorpheme.h */,
+				225CCBCA10DB201D003F0910 /* SufForm2Rac.cpp */,
+				225CCBCB10DB201D003F0910 /* SufForm2Rac.h */,
+				225CCBCC10DB201D003F0910 /* Syl2Jamo.cpp */,
+				225CCBCD10DB201D003F0910 /* Syl2Jamo.h */,
+				225CCBCE10DB201D003F0910 /* Txt2Fst2Kr.cpp */,
+				225CCBCF10DB201D003F0910 /* Txt2Fst2Kr.h */,
+				225CCBD010DB201D003F0910 /* uioForKorean.h */,
+				225CCBD110DB201D003F0910 /* unimap.h */,
+			);
+			name = korean;
+			sourceTree = "<group>";
+		};
+		225CCD1610DB201D003F0910 /* tre-0.8.0 */ = {
+			isa = PBXGroup;
+			children = (
+				225CCD1710DB201D003F0910 /* lib */,
+			);
+			path = "tre-0.8.0";
+			sourceTree = SOURCE_ROOT;
+		};
+		225CCD1710DB201D003F0910 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				225CCD1810DB201D003F0910 /* Makefile.am */,
+				225CCD1910DB201D003F0910 /* Makefile.in */,
+				225CCD1A10DB201D003F0910 /* README */,
+				225CCD1B10DB201D003F0910 /* regcomp.c */,
+				225CCD1C10DB201D003F0910 /* regerror.c */,
+				225CCD1D10DB201D003F0910 /* regex.h */,
+				225CCD1E10DB201D003F0910 /* regexec.c */,
+				225CCD1F10DB201D003F0910 /* tre-ast.c */,
+				225CCD2010DB201D003F0910 /* tre-ast.h */,
+				225CCD2110DB201D003F0910 /* tre-compile.c */,
+				225CCD2210DB201D003F0910 /* tre-compile.h */,
+				225CCD2310DB201D003F0910 /* tre-config.h.in */,
+				225CCD2410DB201D003F0910 /* tre-internal.h */,
+				225CCD2510DB201D003F0910 /* tre-match-approx.c */,
+				225CCD2610DB201D003F0910 /* tre-match-backtrack.c */,
+				225CCD2710DB201D003F0910 /* tre-match-parallel.c */,
+				225CCD2810DB201D003F0910 /* tre-match-utils.h */,
+				225CCD2910DB201D003F0910 /* tre-mem.c */,
+				225CCD2A10DB201D003F0910 /* tre-mem.h */,
+				225CCD2B10DB201D003F0910 /* tre-parse.c */,
+				225CCD2C10DB201D003F0910 /* tre-parse.h */,
+				225CCD2D10DB201D003F0910 /* tre-stack.c */,
+				225CCD2E10DB201D003F0910 /* tre-stack.h */,
+				225CCD2F10DB201D003F0910 /* tre.h */,
+				225CCD3010DB201D003F0910 /* xmalloc.c */,
+				225CCD3110DB201D003F0910 /* xmalloc.h */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
+		C6859E8C029090F304C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DD76F620486A84900D96B5E /* UnitexTool */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "UnitexTool" */;
+			buildPhases = (
+				8DD76F640486A84900D96B5E /* Sources */,
+				8DD76F660486A84900D96B5E /* Frameworks */,
+				8DD76F690486A84900D96B5E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = UnitexTool;
+			productInstallPath = "$(HOME)/bin";
+			productName = UnitexTool;
+			productReference = 8DD76F6C0486A84900D96B5E /* UnitexTool */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "UnitexTool" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* UnitexTool */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DD76F620486A84900D96B5E /* UnitexTool */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DD76F640486A84900D96B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				225CCD4310DB201D003F0910 /* bitmap.cpp in Sources */,
+				225CCD4410DB201D003F0910 /* codeForKorean.cpp in Sources */,
+				225CCD4510DB201D003F0910 /* CompressKr.cpp in Sources */,
+				225CCD4610DB201D003F0910 /* ConsultDic.cpp in Sources */,
+				225CCD4710DB201D003F0910 /* etc.cpp in Sources */,
+				225CCD4810DB201D003F0910 /* ExtractChar.cpp in Sources */,
+				225CCD4910DB201D003F0910 /* InflectKr.cpp in Sources */,
+				225CCD4A10DB201D003F0910 /* Jamo2Syl.cpp in Sources */,
+				225CCD4B10DB201D003F0910 /* jamoCodage.cpp in Sources */,
+				225CCD4C10DB201D003F0910 /* MergeBin.cpp in Sources */,
+				225CCD4D10DB201D003F0910 /* orgUniMbcsMap.cpp in Sources */,
+				225CCD4E10DB201D003F0910 /* pro_type.cpp in Sources */,
+				225CCD4F10DB201D003F0910 /* segtype.cpp in Sources */,
+				225CCD5010DB201D003F0910 /* SortMorph.cpp in Sources */,
+				225CCD5110DB201D003F0910 /* SufForm2Rac.cpp in Sources */,
+				225CCD5210DB201D003F0910 /* Syl2Jamo.cpp in Sources */,
+				225CCD5310DB201D003F0910 /* Txt2Fst2Kr.cpp in Sources */,
+				225CCD5410DB201D003F0910 /* AbstractDelaLoad.cpp in Sources */,
+				225CCD5510DB201D003F0910 /* AbstractFst2Load.cpp in Sources */,
+				225CCD5610DB201D003F0910 /* ActivityLogger.cpp in Sources */,
+				225CCD5710DB201D003F0910 /* Af_stdio.cpp in Sources */,
+				225CCD5810DB201D003F0910 /* Alphabet.cpp in Sources */,
+				225CCD5910DB201D003F0910 /* ApplyDic.cpp in Sources */,
+				225CCD5A10DB201D003F0910 /* AsciiSearchTree.cpp in Sources */,
+				225CCD5B10DB201D003F0910 /* AutComplementation.cpp in Sources */,
+				225CCD5C10DB201D003F0910 /* AutConcat.cpp in Sources */,
+				225CCD5D10DB201D003F0910 /* AutDeterminization.cpp in Sources */,
+				225CCD5E10DB201D003F0910 /* AutIntersection.cpp in Sources */,
+				225CCD5F10DB201D003F0910 /* AutMinimization.cpp in Sources */,
+				225CCD6010DB201D003F0910 /* AutomatonDictionary2Bin.cpp in Sources */,
+				225CCD6110DB201D003F0910 /* BitArray.cpp in Sources */,
+				225CCD6210DB201D003F0910 /* BitMasks.cpp in Sources */,
+				225CCD6310DB201D003F0910 /* Buffer.cpp in Sources */,
+				225CCD6410DB201D003F0910 /* BuildTextAutomaton.cpp in Sources */,
+				225CCD6510DB201D003F0910 /* CheckDic.cpp in Sources */,
+				225CCD6610DB201D003F0910 /* CodePages.cpp in Sources */,
+				225CCD6710DB201D003F0910 /* CompoundWordHashTable.cpp in Sources */,
+				225CCD6810DB201D003F0910 /* CompoundWordTree.cpp in Sources */,
+				225CCD6910DB201D003F0910 /* Compress.cpp in Sources */,
+				225CCD6A10DB201D003F0910 /* Concord.cpp in Sources */,
+				225CCD6B10DB201D003F0910 /* Concordance.cpp in Sources */,
+				225CCD6C10DB201D003F0910 /* ConcorDiff.cpp in Sources */,
+				225CCD6D10DB201D003F0910 /* Contexts.cpp in Sources */,
+				225CCD6E10DB201D003F0910 /* Convert.cpp in Sources */,
+				225CCD6F10DB201D003F0910 /* DELA_tree.cpp in Sources */,
+				225CCD7010DB201D003F0910 /* DELA.cpp in Sources */,
+				225CCD7110DB201D003F0910 /* Dico.cpp in Sources */,
+				225CCD7210DB201D003F0910 /* DictionaryTree.cpp in Sources */,
+				225CCD7310DB201D003F0910 /* DicVariables.cpp in Sources */,
+				225CCD7410DB201D003F0910 /* Diff.cpp in Sources */,
+				225CCD7510DB201D003F0910 /* DuplicateFile.cpp in Sources */,
+				225CCD7610DB201D003F0910 /* DutchCompounds.cpp in Sources */,
+				225CCD7710DB201D003F0910 /* Elag.cpp in Sources */,
+				225CCD7810DB201D003F0910 /* ElagComp.cpp in Sources */,
+				225CCD7910DB201D003F0910 /* ElagDebug.cpp in Sources */,
+				225CCD7A10DB201D003F0910 /* ElagFstFilesIO.cpp in Sources */,
+				225CCD7B10DB201D003F0910 /* ElagFunctions.cpp in Sources */,
+				225CCD7C10DB201D003F0910 /* ElagRulesCompilation.cpp in Sources */,
+				225CCD7D10DB201D003F0910 /* ElagStateSet.cpp in Sources */,
+				225CCD7E10DB201D003F0910 /* Error.cpp in Sources */,
+				225CCD7F10DB201D003F0910 /* Evamb.cpp in Sources */,
+				225CCD8010DB201D003F0910 /* Extract.cpp in Sources */,
+				225CCD8110DB201D003F0910 /* ExtractUnits.cpp in Sources */,
+				225CCD8210DB201D003F0910 /* FIFO.cpp in Sources */,
+				225CCD8310DB201D003F0910 /* File.cpp in Sources */,
+				225CCD8410DB201D003F0910 /* Flatten.cpp in Sources */,
+				225CCD8510DB201D003F0910 /* FlattenFst2.cpp in Sources */,
+				225CCD8610DB201D003F0910 /* Fst2.cpp in Sources */,
+				225CCD8710DB201D003F0910 /* Fst2Automaton.cpp in Sources */,
+				225CCD8810DB201D003F0910 /* Fst2Check.cpp in Sources */,
+				225CCD8910DB201D003F0910 /* Fst2List.cpp in Sources */,
+				225CCD8A10DB201D003F0910 /* Fst2Txt_TokenTree.cpp in Sources */,
+				225CCD8B10DB201D003F0910 /* Fst2Txt.cpp in Sources */,
+				225CCD8C10DB201D003F0910 /* Fst2TxtAsRoutine.cpp in Sources */,
+				225CCD8D10DB201D003F0910 /* GeneralDerivation.cpp in Sources */,
+				225CCD8E10DB201D003F0910 /* GermanCompounds.cpp in Sources */,
+				225CCD8F10DB201D003F0910 /* getopt.cpp in Sources */,
+				225CCD9010DB201D003F0910 /* Grf2Fst2_lib.cpp in Sources */,
+				225CCD9110DB201D003F0910 /* Grf2Fst2.cpp in Sources */,
+				225CCD9210DB201D003F0910 /* HashTable.cpp in Sources */,
+				225CCD9310DB201D003F0910 /* HTMLCharacters.cpp in Sources */,
+				225CCD9410DB201D003F0910 /* ImplodeTfst.cpp in Sources */,
+				225CCD9510DB201D003F0910 /* IOBuffer.cpp in Sources */,
+				225CCD9610DB201D003F0910 /* Korean.cpp in Sources */,
+				225CCD9710DB201D003F0910 /* LanguageDefinition.cpp in Sources */,
+				225CCD9810DB201D003F0910 /* LemmaTree.cpp in Sources */,
+				225CCD9910DB201D003F0910 /* LinearAutomaton2Txt.cpp in Sources */,
+				225CCD9A10DB201D003F0910 /* List_int.cpp in Sources */,
+				225CCD9B10DB201D003F0910 /* List_pointer.cpp in Sources */,
+				225CCD9C10DB201D003F0910 /* List_ustring.cpp in Sources */,
+				225CCD9D10DB201D003F0910 /* Locate.cpp in Sources */,
+				225CCD9E10DB201D003F0910 /* LocateFst2Tags.cpp in Sources */,
+				225CCD9F10DB201D003F0910 /* LocateMatches.cpp in Sources */,
+				225CCDA010DB201D003F0910 /* LocatePattern.cpp in Sources */,
+				225CCDA110DB201D003F0910 /* LocateTfst_lib.cpp in Sources */,
+				225CCDA210DB201D003F0910 /* LocateTfst.cpp in Sources */,
+				225CCDA310DB201D003F0910 /* LocateTfstMatches.cpp in Sources */,
+				225CCDAF10DB201D003F0910 /* Match.cpp in Sources */,
+				225CCDB010DB201D003F0910 /* MF_DicoMorpho.cpp in Sources */,
+				225CCDB110DB201D003F0910 /* MF_DLC_inflect.cpp in Sources */,
+				225CCDB210DB201D003F0910 /* MF_FormMorpho.cpp in Sources */,
+				225CCDB310DB201D003F0910 /* MF_InflectTransd.cpp in Sources */,
+				225CCDB410DB201D003F0910 /* MF_LangMorpho.cpp in Sources */,
+				225CCDB510DB201D003F0910 /* MF_MU_graph.cpp in Sources */,
+				225CCDB610DB201D003F0910 /* MF_MU_morpho.cpp in Sources */,
+				225CCDB710DB201D003F0910 /* MF_Operators_Util.cpp in Sources */,
+				225CCDB810DB201D003F0910 /* MF_SU_morpho.cpp in Sources */,
+				225CCDB910DB201D003F0910 /* MF_Unif.cpp in Sources */,
+				225CCDBA10DB201D003F0910 /* MF_Util.cpp in Sources */,
+				225CCDBB10DB201D003F0910 /* MorphologicalFilters.cpp in Sources */,
+				225CCDBC10DB201D003F0910 /* MorphologicalLocate.cpp in Sources */,
+				225CCDBD10DB201D003F0910 /* MultiFlex.cpp in Sources */,
+				225CCDBE10DB201D003F0910 /* NewLineShifts.cpp in Sources */,
+				225CCDBF10DB201D003F0910 /* NormalizationFst2.cpp in Sources */,
+				225CCDC010DB201D003F0910 /* Normalize.cpp in Sources */,
+				225CCDC110DB201D003F0910 /* NormalizeAsRoutine.cpp in Sources */,
+				225CCDC210DB201D003F0910 /* NorwegianCompounds.cpp in Sources */,
+				225CCDC310DB201D003F0910 /* OptimizedFst2.cpp in Sources */,
+				225CCDC410DB201D003F0910 /* OptimizedTfstTagMatching.cpp in Sources */,
+				225CCDC510DB201D003F0910 /* ParsingInfo.cpp in Sources */,
+				225CCDC610DB201D003F0910 /* Pattern.cpp in Sources */,
+				225CCDC710DB201D003F0910 /* PatternTree.cpp in Sources */,
+				225CCDC810DB201D003F0910 /* PolyLex.cpp in Sources */,
+				225CCDC910DB201D003F0910 /* PortugueseNormalization.cpp in Sources */,
+				225CCDCA10DB201D003F0910 /* ProgramInvoker.cpp in Sources */,
+				225CCDCB10DB201D003F0910 /* RebuildTfst.cpp in Sources */,
+				225CCDCC10DB201D003F0910 /* Reconstrucao.cpp in Sources */,
+				225CCDCD10DB201D003F0910 /* Reg2Grf.cpp in Sources */,
+				225CCDCE10DB201D003F0910 /* RegularExpressions.cpp in Sources */,
+				225CCDCF10DB201D003F0910 /* RussianCompounds.cpp in Sources */,
+				225CCDD010DB201D003F0910 /* Sentence2Grf.cpp in Sources */,
+				225CCDD110DB201D003F0910 /* SingleGraph.cpp in Sources */,
+				225CCDD210DB201D003F0910 /* Snt.cpp in Sources */,
+				225CCDD310DB201D003F0910 /* SortTxt.cpp in Sources */,
+				225CCDD410DB201D003F0910 /* Stack_int.cpp in Sources */,
+				225CCDD510DB201D003F0910 /* Stack_pointer.cpp in Sources */,
+				225CCDD610DB201D003F0910 /* Stack_unichar.cpp in Sources */,
+				225CCDD710DB201D003F0910 /* Stats.cpp in Sources */,
+				225CCDD810DB201D003F0910 /* String_hash.cpp in Sources */,
+				225CCDD910DB201D003F0910 /* StringParsing.cpp in Sources */,
+				225CCDDA10DB201D003F0910 /* Symbol_op.cpp in Sources */,
+				225CCDDB10DB201D003F0910 /* Symbol.cpp in Sources */,
+				225CCDDC10DB201D003F0910 /* SymbolAlphabet.cpp in Sources */,
+				225CCDDD10DB201D003F0910 /* Table2Grf.cpp in Sources */,
+				225CCDDE10DB201D003F0910 /* Tagset.cpp in Sources */,
+				225CCDDF10DB201D003F0910 /* TagsetNormTfst.cpp in Sources */,
+				225CCDE010DB201D003F0910 /* TEI2Txt.cpp in Sources */,
+				225CCDE110DB201D003F0910 /* Text_parsing.cpp in Sources */,
+				225CCDE210DB201D003F0910 /* Text_tokens.cpp in Sources */,
+				225CCDE310DB201D003F0910 /* Tfst.cpp in Sources */,
+				225CCDE410DB201D003F0910 /* Tfst2Grf.cpp in Sources */,
+				225CCDE510DB201D003F0910 /* Tfst2Unambig.cpp in Sources */,
+				225CCDE610DB201D003F0910 /* Thai.cpp in Sources */,
+				225CCDE710DB201D003F0910 /* Tokenization.cpp in Sources */,
+				225CCDE810DB201D003F0910 /* Tokenize.cpp in Sources */,
+				225CCDE910DB201D003F0910 /* TransductionStack.cpp in Sources */,
+				225CCDEA10DB201D003F0910 /* TransductionStackTfst.cpp in Sources */,
+				225CCDEB10DB201D003F0910 /* TransductionVariables.cpp in Sources */,
+				225CCDEC10DB201D003F0910 /* Transitions.cpp in Sources */,
+				225CCDED10DB201D003F0910 /* regcomp.c in Sources */,
+				225CCDEE10DB201D003F0910 /* regerror.c in Sources */,
+				225CCDEF10DB201D003F0910 /* regexec.c in Sources */,
+				225CCDF010DB201D003F0910 /* tre-ast.c in Sources */,
+				225CCDF110DB201D003F0910 /* tre-compile.c in Sources */,
+				225CCDF210DB201D003F0910 /* tre-match-approx.c in Sources */,
+				225CCDF310DB201D003F0910 /* tre-match-backtrack.c in Sources */,
+				225CCDF410DB201D003F0910 /* tre-match-parallel.c in Sources */,
+				225CCDF510DB201D003F0910 /* tre-mem.c in Sources */,
+				225CCDF610DB201D003F0910 /* tre-parse.c in Sources */,
+				225CCDF710DB201D003F0910 /* tre-stack.c in Sources */,
+				225CCDF810DB201D003F0910 /* xmalloc.c in Sources */,
+				225CCDF910DB201D003F0910 /* Txt2Tfst.cpp in Sources */,
+				225CCDFA10DB201D003F0910 /* Uncompress.cpp in Sources */,
+				225CCDFB10DB201D003F0910 /* Unicode.cpp in Sources */,
+				225CCDFC10DB201D003F0910 /* UnitexTool.cpp in Sources */,
+				225CCDFD10DB201D003F0910 /* UserCancelling.cpp in Sources */,
+				225CCDFE10DB201D003F0910 /* Ustring.cpp in Sources */,
+				225CCDFF10DB201D003F0910 /* XMLizer.cpp in Sources */,
+				225CCE0310DB2048003F0910 /* Main_UnitexTool.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB923208733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"_GLIBCXX_DEBUG=1",
+					"_GLIBCXX_DEBUG_PEDANTIC=1",
+				);
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = UnitexTool;
+			};
+			name = Debug;
+		};
+		1DEB923308733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = UnitexTool;
+			};
+			name = Release;
+		};
+		1DEB923608733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"_NOT_UNDER_WINDOWS=1",
+					"UNITEX_LIBRARY=1",
+					"HAVE_CONFIG_H=1",
+					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"_NOT_UNDER_WINDOWS=1",
+					"UNITEX_LIBRARY=1",
+					"HAVE_CONFIG_H=1",
+					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
+				);
+				GCC_VERSION = 4.0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"tre-0.8.0/lib",
+					korean,
+					mac,
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.4;
+			};
+			name = Debug;
+		};
+		1DEB923708733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"_NOT_UNDER_WINDOWS=1",
+					"UNITEX_LIBRARY=1",
+					"HAVE_CONFIG_H=1",
+					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"_NOT_UNDER_WINDOWS=1",
+					"UNITEX_LIBRARY=1",
+					"HAVE_CONFIG_H=1",
+					"UNITEX_RELEASE_MEMORY_AT_EXIT=yes",
+				);
+				GCC_VERSION = 4.0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"tre-0.8.0/lib",
+					korean,
+					mac,
+				);
+				PREBINDING = NO;
+				SDKROOT = macosx10.4;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "UnitexTool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923208733DC60010E9CD /* Debug */,
+				1DEB923308733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "UnitexTool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923608733DC60010E9CD /* Debug */,
+				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
