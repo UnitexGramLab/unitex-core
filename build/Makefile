@@ -292,22 +292,6 @@ endif ## MINGW (ifeq)
 ##################################
 ##################################
 
-#############################################################################
-# IMPORTANT!!! DO NOT MOVE OR REMOVE THE FOLLOWING LINE #<PROG>. IT IS USED
-# TO GENERATE AUTOMATICALLY THE DEV-C++ FILES FROM THIS MAKEFILE.
-#
-# All the informations about objects files needed to compile a given program
-# must appear between the lines #<PROG> and #</PROG>. Moreover, they must
-# conform to the following rules:
-# - the name of a program must be specified by a line like:
-# FOO = Foo
-# - the list of the objects needed by this program must be of the form:
-# FOO_OBJS = ...
-#
-#
-#<PROG>
-#############################################################################
-
 TEST      = Test
 TEST_OBJS = Main_Test.o Af_stdio.o ActivityLogger.o Unicode.o Pattern.o String_hash.o IOBuffer.o Error.o \
 			List_ustring.o StringParsing.o PatternTree.o List_pointer.o DELA.o\
@@ -700,12 +684,6 @@ EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o 
 		            Pattern.o List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
 		            Transitions.o DELA.o Alphabet.o\
 		            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-
-#############################################################################
-# IMPORTANT!!! DO NOT MOVE OR REMOVE THE FOLLOWING LINE #</PROG>. IT IS USED
-# TO GENERATE THE DEV-C++ FILES FROM THIS MAKEFILE.
-#</PROG>
-#############################################################################
 
 
 ################################
