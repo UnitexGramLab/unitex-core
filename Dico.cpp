@@ -259,7 +259,6 @@ struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,s
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
 count_token_occurrences(info);
-/* We save optind since it is a global variable that can be modified by Locate */
 /* We all dictionaries according their priority */
 for (int priority=1;priority<4;priority++) {
    /* For a given priority, we apply all concerned dictionaries
