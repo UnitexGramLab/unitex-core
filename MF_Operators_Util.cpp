@@ -1,23 +1,24 @@
 /*
-  * Unitex
-  *
-  * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version 2
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * You should have received a copy of the GNU General Public License
-  * along with this program; if not, write to the Free Software
-  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  *
-  */
+ * Unitex
+ *
+ * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
+
 #include "MF_Operators_Util.h"
 #include "Error.h"
 
@@ -195,7 +196,7 @@ unsigned int protege;
     parcours_pile = pos_test;
     parcours_fact = 0;
     while (parcours_fact < l && pile[parcours_pile] == facteur[parcours_fact]){
-      if (VERBOSE) fprintf(stderr,"Egalit�: %c\n",pile[parcours_pile]);
+      if (VERBOSE) fprintf(stderr,"Equality: %c\n",pile[parcours_pile]);
       parcours_pile++; parcours_fact++;
     }
     if (VERBOSE) fprintf(stderr,"parcours_fact = %d\n",parcours_fact);
@@ -250,7 +251,7 @@ unsigned int mode=0;
       if (get_var_op(var_name,etiq,&pos_pattern)) {
     //if (VERBOSE) u_fprintf(stderr,"GET Variable name  : %S\n",var_name);
 	 if (is_var_op(etiq,pos_pattern-1) || etiq[pos_pattern-1] == '<') {
-         // si <$  ou <$1$  ou �$ ....on capte le contenu de la variable
+         // si <$  ou <$1$  ou (POUND?) $ ....on capte le contenu de la variable
              (*pos)--;
              var_end = *pos;
              if (var_name[0] == '$' ) {pos_match = var_end-1;}
