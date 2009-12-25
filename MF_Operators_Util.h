@@ -19,6 +19,7 @@
  *
  */
 
+
 #ifndef MF_Operators_UtilsH
 #define MF_Operators_UtilsH
 
@@ -37,12 +38,11 @@
 
 
 
-int compare(unichar *, unichar **);
-int filtrer(unichar * ,unichar **);
+int compare(unichar *,unichar **);
+int filtrer(unichar *,unichar **);
 int get_indice_var_op(unichar *);
 int flex_op_with_var(unichar (*)[L1],unichar *,unichar *,int *,int *,unsigned int *);
 unsigned int get_flag_var(int,unsigned int);
 
 
 #endif
-
