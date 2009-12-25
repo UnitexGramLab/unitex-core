@@ -19,7 +19,6 @@
  *
  */
 
-
 #include "MF_Operators_Util.h"
 #include "Error.h"
 
@@ -300,3 +299,4 @@ unsigned int mode=0;
     if (retour == 0) *pos = init_pos;
 return retour;
 }
+
