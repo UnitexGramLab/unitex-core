@@ -1227,7 +1227,7 @@ return 1;
  * if this code contains space, tabulation or any non-ASCII char
  * it returns 1 and stores a warning message in 'comment'; returns 0 otherwise
  */
-int warning_on_code(unichar* code,unichar* comment) {
+int warning_on_code(unichar* code,unichar* comment,int space_warnings) {
 int i;
 int space=0;
 int tab=0;
@@ -1239,12 +1239,12 @@ for (i=0;i<l;i++) {
    else if (code[i]=='\t') {tab++;n++;}
    else if (code[i]>=128) {non_ascii++;n++;}
 }
-if (space || tab || non_ascii) {
+if ((space && space_warnings) || tab || non_ascii) {
    /* We build a message that indicates the number of suspect chars */
    unichar temp[DIC_LINE_SIZE];
    u_sprintf(temp,"warning: %d suspect char%s (",n,(n>1)?"s":"");
    u_strcpy(comment,temp);
-   if (space) {
+   if (space && space_warnings) {
       u_sprintf(temp,"%d space%s, ",space,(space>1)?"s":"");
       u_strcat(comment,temp);
    }

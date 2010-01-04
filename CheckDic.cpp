@@ -44,6 +44,7 @@ const char* usage_CheckDic =
          "  -a ALPH/--alphabet=ALPH: alphabet file to use\n"
          "  -r/--strict: strict syntax checking against unprotected dot and comma\n"
          "  -t/--tolerate: tolerates unprotected dot and comma (default)\n"
+         "  -n/--no_space_warning: tolerates spaces in grammatical/semantic/inflectional codes\n"
          "  -h/--help: this help\n"
          "\n"
          "Checks the format of <dela> and produces a file named CHECK_DIC.TXT\n"
@@ -57,13 +58,14 @@ u_printf(usage_CheckDic);
 }
 
 
-const char* optstring_CheckDic=":sfa:hrtk:q:";
+const char* optstring_CheckDic=":sfa:hrtk:nq:";
 const struct option_TS lopts_CheckDic[]= {
       {"delas",no_argument_TS,NULL,'s'},
       {"delaf",no_argument_TS,NULL,'f'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"help",no_argument_TS,NULL,'h'},
       {"tolerate",no_argument_TS,NULL,'t'},
+      {"no_space_warning",no_argument_TS,NULL,'n'},
       {"strict",no_argument_TS,NULL,'r'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -83,6 +85,7 @@ Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 int val,index=-1;
+int space_warnings=1;
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&index,vars))) {
    switch(val) {
@@ -91,6 +94,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_CheckDic,lopts_CheckDic,&ind
    case 'h': usage(); return 0;
    case 'r': strict_unprotected=1; break;
    case 't': strict_unprotected=0; break;
+   case 'n': space_warnings=0; break;
    case 'a': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty alphabet argument\n");
              }
@@ -236,7 +240,7 @@ unichar comment[2000];
 for (i=0;i<semantic_codes->size;i++) {
 	/* We print the code, followed if necessary by a warning */
 	u_fprintf(out,"%S",semantic_codes->value[i]);
-	if (warning_on_code(semantic_codes->value[i],comment)) {
+	if (warning_on_code(semantic_codes->value[i],comment,space_warnings)) {
 		u_fprintf(out," %S",comment);
 	}
 	u_fprintf(out,"\n");
@@ -253,7 +257,7 @@ u_fprintf(out,"-----------------------------------------------------\n");
 
 for (i=0;i<inflectional_codes->size;i++) {
 	u_fprintf(out,"%S",inflectional_codes->value[i]);
-	if (warning_on_code(inflectional_codes->value[i],comment)) {
+	if (warning_on_code(inflectional_codes->value[i],comment,space_warnings)) {
 		u_fprintf(out," %S",comment);
 	}
 	u_fprintf(out,"\n");

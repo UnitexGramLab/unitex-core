@@ -129,7 +129,7 @@ void extract_semantic_codes(char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(unichar*,unichar*,unichar*,unichar*);
 void check_DELA_line(unichar*,U_FILE*,int,int,char*,struct string_hash*,struct string_hash*,
                      struct string_hash*,struct string_hash*,int*,int*,Alphabet*,int);
-int warning_on_code(unichar*,unichar*);
+int warning_on_code(unichar*,unichar*,int);
 int contains_unprotected_equal_sign(unichar*);
 void replace_unprotected_equal_sign(unichar*,unichar);
 void unprotect_equal_signs(unichar*);
