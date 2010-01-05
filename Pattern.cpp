@@ -203,6 +203,15 @@ if (s[pos]=='\0') {
       return p;
    }
 }
+else if (s[pos]=='.' && s[pos+1]=='\0') {
+   if (tmp[0]=='\0') {
+      fatal_error("Invalid pattern <.> has been found\n");
+   }
+   /* If we are in the case <be.>, we know that we have a lemma pattern */
+   p->type=LEMMA_PATTERN;
+   p->lemma=u_strdup(tmp);
+   return p;
+}
 /* If are in the <be.V> or <.V> case */
 if (s[pos]=='.') {
    if (tmp[0]=='\0') {
