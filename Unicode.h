@@ -153,6 +153,7 @@ int u_fwrite(unichar*,int,U_FILE*);
 
 int u_fgets(unichar*,U_FILE*);
 int u_fgets(unichar*,int,U_FILE*);
+int u_fgets_limit2(unichar*,int,U_FILE*);
 int u_fgets2(unichar*,U_FILE*);
 
 int u_printf(const char*,...);
@@ -210,7 +211,8 @@ int u_fwrite(unichar*,int,U_FILE*);
 
 int u_fgets(unichar*,U_FILE*);
 int u_fgets(unichar*,int,U_FILE*);
-int u_fgets2(unichar* line,U_FILE* f);
+int u_fgets_limit2(unichar*,int,U_FILE*);
+int u_fgets2(unichar*,U_FILE*);
 
 int u_fprintf(U_FILE*,const char*,...);
 int u_vfprintf(U_FILE*,const char*,va_list);

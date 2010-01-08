@@ -185,6 +185,11 @@ int u_fgets2(unichar* s,U_FILE* f) {
 return u_fgets2(f->enc,s,f->f);
 }
 
+int u_fgets_limit2(Encoding,unichar*,int,ABSTRACTFILE*);
+int u_fgets_limit2(unichar* s,int size,U_FILE* f) {
+return u_fgets_limit2(f->enc,s,size,f->f);
+}
+
 /**
  * By default, messages printed to the standard output are UTF8-encoded.
  */
@@ -1345,14 +1350,14 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 							  if (c=='\n')
 							  {
 								  af_fseek(f,-2 * (long)(read_utf16_in_file - (i+1)),SEEK_CUR);
-								  if (i_is_size!=0) {
+								  if (i_is_size==1) {
 									  line[pos_in_unichar_line++]='\n';
 								  }
 								  line[pos_in_unichar_line]='\0';
 								  return pos_in_unichar_line;
 							  }
 
-							  if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
+							  if ((i_is_size!=0) && (pos_in_unichar_line == (size-1)))
 							  {
 								  af_fseek(f,-2 * (long)(read_utf16_in_file - i),SEEK_CUR);
 								  line[pos_in_unichar_line]='\0';
@@ -1405,14 +1410,14 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 							  if (c=='\n')
 							  {
 								  af_fseek(f,-1 * (long)(read_ascii_in_file - (i+1)),SEEK_CUR);
-								  if (i_is_size!=0) {
+								  if (i_is_size==1) {
 									  line[pos_in_unichar_line++]='\n';
 								  }
 								  line[pos_in_unichar_line]='\0';
 								  return pos_in_unichar_line;
 							  }
 
-							  if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
+							  if ((i_is_size!=0) && (pos_in_unichar_line == (size-1)))
 							  {
 								  af_fseek(f,-1 * (long)(read_ascii_in_file - i),SEEK_CUR);
 								  line[pos_in_unichar_line]='\0';
@@ -1493,14 +1498,14 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 							  if (c=='\n')
 							  {
 								  af_fseek(f,-1 * (long)(read_binary_in_file - (i+nbbyte)),SEEK_CUR);
-								  if (i_is_size!=0) {
+								  if (i_is_size==1) {
 									  line[pos_in_unichar_line++]='\n';
 								  }
 								  line[pos_in_unichar_line]='\0';
 								  return pos_in_unichar_line;
 							  }
 
-							  if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
+							  if ((i_is_size!=0) && (pos_in_unichar_line == (size-1)))
 							  {
 								  af_fseek(f,-1 * (long)(read_binary_in_file - i),SEEK_CUR);
 								  line[pos_in_unichar_line]='\0';
@@ -1553,6 +1558,27 @@ int u_fgets(Encoding encoding,unichar* line,ABSTRACTFILE* f) {
  */
 int u_fgets(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
 	return u_fgets_buffered(encoding,line,1,size,f);
+}
+
+
+/**
+ * Reads a complete line or at most (size-1) unichars if the line is too long.
+ * If the line is not too long, the '\n' is put before the final '\0'.
+ * The function skips all '\r' and the resulting buffer is always '\0' ended.
+ * It returns the length of the string:
+ * - EOF : means that it was the end of file
+ * - 0 : means that we have read an empty line ended by '\n'
+ * - (len ==(size-1)) : means that the line was too long for the buffer (or fill exactly!)
+ * - (0 < len < size-1) : means that we have read a complete line (str[len]=='\0', str[len-1]!='\n')
+ *
+ *      this function is useful to don't have to remove the \n at end of line
+ *
+ * Original author: Olivier Blanc
+ * Modified by S�bastien Paumier
+ * option limit2 by Gilles Vollant
+ */
+int u_fgets_limit2(Encoding encoding,unichar* line,int size,ABSTRACTFILE* f) {
+	return u_fgets_buffered(encoding,line,2,size,f);
 }
 
 
