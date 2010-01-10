@@ -923,7 +923,7 @@ unichar s[DIC_LINE_SIZE*10];
 int i=0;
 /* For each line of the .inf file, we tokenize it to get the single INF codes
  * it contains. */
-while (EOF!=u_fgets(s,f)) {
+while (EOF!=u_fgets_limit2(s,DIC_LINE_SIZE*10,f)) {
    res->codes[i++]=tokenize_compressed_info(s);
 }
 u_fclose(f);
@@ -1069,7 +1069,7 @@ if (f==NULL) return;
 unichar line[DIC_LINE_SIZE];
 int i;
 struct dela_entry* entry;
-while (EOF!=u_fgets(line,f)) {
+while (EOF!=u_fgets_limit2(line,DIC_LINE_SIZE,f)) {
    /* NOTE: DLF and DLC files are not supposed to contain comment
     *       lines, but we test them, just in the case */
    if (line[0]!='/') {

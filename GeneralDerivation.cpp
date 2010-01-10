@@ -199,7 +199,7 @@ void analyse_word_list(unsigned char* tableau_bin,
   u_printf("Analysing russian unknown words...\n");
   int n=0;
   int words_done = 0;
-  while (EOF!=u_fgets(s,words)) {
+  while (EOF!=u_fgets_limit2(s,MAX_WORD_LENGTH,words)) {
     if (!analyse_word(s,tableau_bin,debug,result,inf,prefix,suffix,alph,UTAG,rules,entries)) {
       // if the analysis has failed, we store the word in the new unknown word file
       u_fprintf(new_unknown_words,"%S\n",s);

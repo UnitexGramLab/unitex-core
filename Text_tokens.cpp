@@ -91,7 +91,7 @@ u_fscanf(f,"%d\n",NUMBER_OF_TEXT_TOKENS);
 struct string_hash* res;
 res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
 unichar tmp[4096];
-while (EOF!=u_fgets(tmp,f)) {
+while (EOF!=u_fgets_limit2(tmp,4096,f)) {
    get_value_index(tmp,res);
 }
 u_fclose(f);
@@ -116,7 +116,7 @@ struct string_hash* res;
 res=new_string_hash(*NUMBER_OF_TEXT_TOKENS);
 unichar tmp[4096];
 int x;
-while (EOF!=u_fgets(tmp,f)) {
+while (EOF!=u_fgets_limit2(tmp,4096,f)) {
    x=get_value_index(tmp,res);
    if (!u_strcmp(tmp,"{S}")) {
       (*SENTENCE_MARKER)=x;

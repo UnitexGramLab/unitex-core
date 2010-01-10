@@ -143,7 +143,7 @@ if (f==NULL) {
 }
 u_printf("Loading %s...\n",name);
 unichar line[4096];
-while (EOF!=u_fgets(line,f)) {
+while (EOF!=u_fgets_limit2(line,4096,f)) {
    struct dela_entry* entry=tokenize_DELAF_line(line,1);
    if (entry!=NULL) {
       add_entry(tree,entry);

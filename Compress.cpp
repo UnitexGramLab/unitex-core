@@ -167,7 +167,7 @@ INF_codes=new_string_hash();
 unichar tmp[DIC_WORD_SIZE];
 u_printf("Compressing...\n");
 /* We read until there is no more lines in the .dic file */
-while(EOF!=u_fgets(s,f)) {
+while(EOF!=u_fgets_limit2(s,DIC_WORD_SIZE,f)) {
 	if (s[0]=='\0') {
 		/* Empty lines should not appear in a .dic file */
 		error("Line %d: empty line\n",line);

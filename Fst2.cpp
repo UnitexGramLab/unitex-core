@@ -507,7 +507,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 	 * We read the graph name
 	 */
 	unichar graph_name[10000];
-   u_fgets(graph_name,f);
+	u_fgets_limit2(graph_name,10000,f);
 	if (graph_number==NO_GRAPH_NUMBER_SPECIFIED || graph_number==current_graph) {
 		/* If we must read the graph either because it is the one we look for
 		 * or because we must read them all, then we initialize 'max_tag_number' */

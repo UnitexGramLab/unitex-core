@@ -1575,7 +1575,7 @@ public:
 		strcat(openfilename,".aut");
 		if(!(lf = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,openfilename,U_READ)))
 			fopenErrMessage(openfilename);
-		u_fgets(UtempBuff,lf);
+		u_fgets(UtempBuff,4096,lf);
 		imageHead.cnt_auto = utoi(UtempBuff);
 		AUT_tmp = new struct
 			union_bin_file::simpleTmp[imageHead.cnt_auto +1];
@@ -1590,7 +1590,7 @@ public:
 		int lidx;
 		unichar *num;
 		lidx = 1;
-		while(EOF!=u_fgets(UtempBuff,lf)){
+		while(EOF!=u_fgets_limit2(UtempBuff,4096,lf)){
 			num = UtempBuff;
 			while(*num != ' '){
 				if(*num == 0) fatal_error("Illegal autolist file\n");
@@ -1612,7 +1612,7 @@ public:
 		strcat(openfilename,".suf");
 		if(!(lf = u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,openfilename,U_READ)))
 			fopenErrMessage(openfilename);
-		u_fgets(UtempBuff,lf);
+		u_fgets_limit2(UtempBuff,4096,lf);
 		imageHead.cnt_suf = utoi(UtempBuff);
 		SUF_tmp_simpleTmp =
 			new struct union_bin_file::simpleTmp[imageHead.cnt_suf+1];
@@ -1624,7 +1624,7 @@ public:
 		}
 		SUF.put(assignUstring(u_epsilon_string),0);
 		lidx = 1;
-		while(EOF!=u_fgets(UtempBuff,lf)){
+		while(EOF!=u_fgets_limit2(UtempBuff,4096,lf)){
 			SUF_tmp_simpleTmp[lidx].szStr = u_strlen(UtempBuff) +1;
 			SUF_tmp_simpleTmp[lidx].name = new unichar[SUF_tmp_simpleTmp[lidx].szStr+1];
 			u_strcpy(SUF_tmp_simpleTmp[lidx].name,UtempBuff);
@@ -1689,7 +1689,7 @@ public:
 		NINF.put(assignUstring(u_epsilon_string),(void *)save_inf_offset);
 		save_inf_offset += 4;	// length of epsilon
 		int cidx = 0;
-		while(EOF!=u_fgets(UtempBuff,lf)){
+		while(EOF!=u_fgets_limit2(UtempBuff,4096,lf)){
 			newInfTable[cidx] = makeNewINF(UtempBuff,rsFlag);
 			if(!newInfTable[cidx]) fatal_error("illegal reference value\n");
 			cidx++;

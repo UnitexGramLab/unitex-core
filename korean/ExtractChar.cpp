@@ -125,7 +125,7 @@ int main_ExtractChar(int argc, char *argv[]) {
 	
 	unsigned short  *wp,*wwp;
 	int ii;
-    while(EOF!=u_fgets(tempBuff,ifile)){
+    while(EOF!=u_fgets_limit2(tempBuff,1024,ifile)){
 	    wp = (unsigned short *)tempBuff;
 	    if((*wp != '\0') && (*wp != ' ')){
              for (ii = 0; *wp && (*wp != ',');ii++)

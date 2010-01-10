@@ -332,10 +332,10 @@ if (f==NULL) {
    fatal_error("Cannot open token file %s\n",filename);
 }
 unichar tmp[1024];
-if (EOF==u_fgets(tmp,f)) {
+if (EOF==u_fgets_limit2(tmp,1024,f)) {
    fatal_error("Unexpected empty token file %s\n",filename);
 }
-while (EOF!=u_fgets(tmp,f)) {
+while (EOF!=u_fgets_limit2(tmp,1024,f)) {
    int n=get_token_number(tmp,tokens,hashtable,n_occur);
    /* We decrease the number of occurrences, in order to have all those numbers equal to 0 */
    n_occur->tab[n]--;

@@ -150,7 +150,7 @@ jamoCodage::loadJamoMap(char *mfName)
 
 		
 		if(f){
-          if(EOF==u_fgets(buff,f)) break;
+          if(EOF==u_fgets_limit2(buff,256,f)) break;
 		} else{
           if(*rp == 0) break;
           while(*rp != '\n') line[rsz++] = *rp++;

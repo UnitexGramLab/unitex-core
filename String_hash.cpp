@@ -276,7 +276,7 @@ U_FILE* f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,
 if (f==NULL) return NULL;
 struct string_hash* hash=new_string_hash(DONT_USE_VALUES);
 unichar temp[4096];
-while (EOF!=u_fgets(temp,f)) {
+while (EOF!=u_fgets_limit2(temp,4096,f)) {
    if (temp[0]=='\0') {
       error("Empty line in %s\n",name);
    } else {

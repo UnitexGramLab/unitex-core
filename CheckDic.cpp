@@ -33,6 +33,10 @@
 #include "Alphabet.h"
 
 
+/* Maximum size of a DIC line */
+#define CHECKDIC_LINE_SIZE 10000
+
+
 const char* usage_CheckDic =
          "Usage: CheckDic [OPTIONS] <dela>\n"
          "\n"
@@ -141,7 +145,7 @@ if (out==NULL) {
 	fatal_error("Cannot create %s\n",output_filename);
 }
 u_printf("Checking %s...\n",argv[vars->optind]);
-unichar line[10000];
+unichar line[CHECKDIC_LINE_SIZE];
 int line_number=1;
 /*
  * We declare and initialize an array in order to know which
@@ -167,7 +171,7 @@ int n_compound_entries=0;
 /*
  * We read all the lines and check them.
  */
-while (EOF!=u_fgets(line,dic)) {
+while (EOF!=u_fgets_limit2(line,DIC_LINE_SIZE,dic)) {
    if (line[0]=='\0') {
 		/* If we have an empty line, we print a unicode error message
 		 * into the output file */

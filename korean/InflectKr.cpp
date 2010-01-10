@@ -423,7 +423,7 @@ get_flexion_form(struct InflectKR_context* ictx,changeStrContext* ctx,U_FILE *f,
 	readLine[0] = 0;
 	ictx->lineCnt = 0;
 	ictx->curLineTemp = readLine;
-	while (EOF!=u_fgets(readLine,f)){
+	while (EOF!=u_fgets_limit2(readLine,MAX_LINE_NUMBER,f)){
 		ictx->lineCnt++;
 
 

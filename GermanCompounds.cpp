@@ -189,7 +189,7 @@ void analyse_german_word_list(unsigned char* bin,struct INF_codes* inf,
 unichar s[1000];
 u_printf("Analysing german unknown words...\n");
 int n=0;
-while (EOF!=u_fgets(s,words)) {
+while (EOF!=u_fgets_limit2(s,1000,words)) {
   if (!analyse_german_word(s,debug,result,left,right,inf,alphabet,bin)) {
      // if the analysis has failed, we store the word in the new unknown word file
      u_fprintf(new_unknown_words,"%S\n",s);

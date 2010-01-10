@@ -377,7 +377,7 @@ loadChangeFileToTable(char *f,int mask_encoding_compatibility_input)
 	int srcIdx;
 	unichar UtempLine[256];
 	converTableInit();
-	while(EOF!=u_fgets(UtempLine,lf)){
+	while(EOF!=u_fgets_limit2(UtempLine,256,lf)){
 		idx = 0;
 		if(UtempLine[idx] == ' ') continue;
 		srcIdx = (int)UtempLine[idx++];
