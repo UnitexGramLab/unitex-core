@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -1350,7 +1350,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 							  if (c=='\n')
 							  {
 								  af_fseek(f,-2 * (long)(read_utf16_in_file - (i+1)),SEEK_CUR);
-								  if (i_is_size==1) {
+								  if ((i_is_size==1) && (pos_in_unichar_line < (size-1))) {
 									  line[pos_in_unichar_line++]='\n';
 								  }
 								  line[pos_in_unichar_line]='\0';
@@ -1410,7 +1410,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 							  if (c=='\n')
 							  {
 								  af_fseek(f,-1 * (long)(read_ascii_in_file - (i+1)),SEEK_CUR);
-								  if (i_is_size==1) {
+								  if ((i_is_size==1) && (pos_in_unichar_line < (size-1))) {
 									  line[pos_in_unichar_line++]='\n';
 								  }
 								  line[pos_in_unichar_line]='\0';
@@ -1498,7 +1498,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
 							  if (c=='\n')
 							  {
 								  af_fseek(f,-1 * (long)(read_binary_in_file - (i+nbbyte)),SEEK_CUR);
-								  if (i_is_size==1) {
+								  if ((i_is_size==1) && (pos_in_unichar_line < (size-1))) {
 									  line[pos_in_unichar_line++]='\n';
 								  }
 								  line[pos_in_unichar_line]='\0';
