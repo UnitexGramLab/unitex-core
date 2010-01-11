@@ -206,6 +206,24 @@ for (;;)
             	push_output_char(p->stack,':');
                push_output_string(p->stack,entry->inflectional_codes[i]);
             }
+         } else if (!u_strcmp(field,"CODE.GRAM")) {
+            push_output_string(p->stack,entry->semantic_codes[0]);
+         } else if (!u_strcmp(field,"CODE.SEM")) {
+            if (entry->n_semantic_codes>1) {
+               push_output_string(p->stack,entry->semantic_codes[1]);
+               for (int i=2;i<entry->n_semantic_codes;i++) {
+                  push_output_char(p->stack,'+');
+                  push_output_string(p->stack,entry->semantic_codes[i]);
+               }
+            }
+         } else if (!u_strcmp(field,"CODE.FLEX")) {
+            if (entry->n_inflectional_codes>0) {
+               push_output_string(p->stack,entry->inflectional_codes[0]);
+               for (int i=1;i<entry->n_inflectional_codes;i++) {
+                  push_output_char(p->stack,'+');
+                  push_output_string(p->stack,entry->inflectional_codes[i]);
+               }
+            }
          } else {
             switch (p->variable_error_policy) {
                case EXIT_ON_VARIABLE_ERRORS: fatal_error("Invalid morphological variable field $%S.%S$\n",name,field);
