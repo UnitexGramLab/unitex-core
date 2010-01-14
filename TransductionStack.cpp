@@ -220,7 +220,7 @@ for (;;)
             if (entry->n_inflectional_codes>0) {
                push_output_string(p->stack,entry->inflectional_codes[0]);
                for (int i=1;i<entry->n_inflectional_codes;i++) {
-                  push_output_char(p->stack,'+');
+                  push_output_char(p->stack,':');
                   push_output_string(p->stack,entry->inflectional_codes[i]);
                }
             }
