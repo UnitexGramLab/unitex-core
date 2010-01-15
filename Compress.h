@@ -22,6 +22,8 @@
 #ifndef CompressH
 #define CompressH
 
+#include "Unicode.h"
+
 extern const char* optstring_Compress;
 extern const struct option_TS lopts_Compress[];
 extern const char* usage_Compress;
