@@ -34,6 +34,7 @@
 void load_dic_for_locate(char*,int,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
 void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*);
 void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p);
+void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p,char* local_morpho_dic);
 
 
 /**
@@ -167,6 +168,10 @@ strcat(concord,"concord.ind");
 strcpy(concord_info,dynamicDir);
 strcat(concord_info,"concord.n");
 
+char morpho_bin[FILENAME_MAX];
+strcpy(morpho_bin,dynamicDir);
+strcat(morpho_bin,"morpho.bin");
+
 out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord,U_WRITE);
 if (out==NULL) {
    error("Cannot write %s\n",concord);
@@ -256,7 +261,7 @@ if (p->filter_match_index==NULL) {
 
 extract_semantic_codes_from_tokens(p->tokens,semantic_codes);
 u_printf("Loading morphological dictionaries...\n");
-load_morphological_dictionaries(morpho_dic_list,p);
+load_morphological_dictionaries(morpho_dic_list,p,morpho_bin);
 extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes);
 p->token_control=(unsigned char*)malloc(n_text_tokens*sizeof(unsigned char));
 if (p->token_control==NULL) {
@@ -413,6 +418,35 @@ for (int i=0;i<p->n_morpho_dics;i++) {
       }
    }
 }
+}
+
+
+/**
+ * Takes a string containing .bin names separated with semi-colons and
+ * loads the corresponding dictionaries.
+ */
+void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p,
+                                     char* local_morpho_dic) {
+if (fexists(local_morpho_dic)) {
+   if (morpho_dic_list!=NULL && morpho_dic_list[0]!='\0') {
+      /* If we have both local and non-local dictionaries */
+      char* temp;
+      /* +2 because we have a ';' to insert */
+      temp=(char*)malloc(strlen(local_morpho_dic)+strlen(morpho_dic_list)+2);
+      if (temp==NULL) {
+         fatal_alloc_error("load_morphological_dictionaries");
+      }
+      sprintf(temp,"%s;%s",local_morpho_dic,morpho_dic_list);
+      load_morphological_dictionaries(temp,p);
+      free(temp);
+      return;
+   } else {
+      /* We just have the local one */
+      return load_morphological_dictionaries(local_morpho_dic,p);
+   }
+}
+/* We have no local dictionary*/
+load_morphological_dictionaries(morpho_dic_list,p);
 }
 
 
