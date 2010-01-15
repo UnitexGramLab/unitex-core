@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,9 @@ extern const struct option_TS lopts_Compress[];
 extern const char* usage_Compress;
 
 int main_Compress(int argc,char* argv[]);
+int pseudo_main_Compress(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                         int flip,char* dic);
+
 
 #endif
 

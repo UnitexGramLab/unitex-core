@@ -96,6 +96,7 @@ struct dico_application_info {
    U_FILE* dlf;
    U_FILE* dlc;
    U_FILE* err;
+   U_FILE* morpho;
    char tags_ind[FILENAME_MAX];
    /* The buffer to use to read the text.cod file */
    struct buffer* buffer;
@@ -139,14 +140,15 @@ struct dico_application_info {
 };
 
 
-struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,char*,U_FILE*,Alphabet*,Encoding,int,int);
+struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,
+                                                    U_FILE*,char*,U_FILE*,Alphabet*,Encoding,int,int);
 int dico_application(char*,struct dico_application_info*,int);
 void free_dico_application(struct dico_application_info*);
 void count_token_occurrences(struct dico_application_info*);
 void save_unknown_words(struct dico_application_info*);
 
 /* Added by Alexis Neme: FST Functionality of Dico */
-int merge_dic_locate_results(struct dico_application_info*,char*,int);
+int merge_dic_locate_results(struct dico_application_info*,char*,int,int);
 
 void save_and_sort_tag_sequences(struct dico_application_info*);
 

@@ -39,6 +39,8 @@
 #include "LocateConstants.h"
 #include "getopt.h"
 #include "Dico.h"
+#include "SortTxt.h"
+#include "Compress.h"
 
 
 
@@ -87,11 +89,16 @@ const char* usage_Dico =
          "These grammars will be applied in MERGE mode, except if a .fst2 ends\n"
          "with -r. In that case, it will be applied in REPLACE mode.\n"
          "Note that -r can be combined with - or + priority marks (-r- and -r+)\n"
+         "If one grammar name or more is ended by -b -b+ -b- -rb -rb+  or -rb-,\n"
+         "all its DELAF outputs will also be copied in a file named morpho.dic located\n"
+         "in the text directory. At the end of Dico, this dictionary will be compressed\n"
+         "to produce the morpho.bin file that will be used by Locate as a local morphological\n"
+         "dictionary for the current text.\n"
          "\n"
          "The grammar output shall respect the file format of both DLF and DLC.\n"
          "If an output starts with a / character, it will be considered as a tag\n"
          "sequence to be put in the 'tags.ind' file. Such sequences are used\n"
-         "by the Txt2Fst2 program in order to add paths to the text automaton.\n"
+         "by the Txt2Tfst program in order to add paths to the text automaton.\n"
          "\n"
          "The numbers of simple, compound and unknown forms are saved\n"
          "in a file named stat_dic.n which is created in the text directory.\n"
@@ -229,6 +236,10 @@ if (!u_fempty(encoding_output,bom_output,snt_files->dlc)) {
 if (!u_fempty(encoding_output,bom_output,snt_files->err)) {
    fatal_error("Cannot create %s\n",snt_files->err);
 }
+/* We remove the text morphological dictionary files, if any */
+remove(snt_files->morpho_dic);
+remove(snt_files->morpho_bin);
+remove(snt_files->morpho_inf);
 Alphabet* alphabet=NULL;
 if (alph[0]!='\0') {
    /* We load the alphabet */
@@ -254,7 +265,7 @@ if (text_cod==NULL) {
    return 1;
 }
 u_printf("Initializing...\n");
-struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,snt_files->tags_ind,text_cod,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
+struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,NULL,snt_files->tags_ind,text_cod,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
@@ -305,6 +316,13 @@ for (int priority=1;priority<4;priority++) {
              */
             int l=(int)(strlen(tmp)-((priority==2)?1:2));
             OutputPolicy policy=MERGE_OUTPUTS;
+            int export_in_morpho_dic=0;
+            if (l>0 && (tmp[l]=='b' || tmp[l]=='B')
+                  && (tmp[l-1]=='-' ||
+                        l>1 && (tmp[l-1]=='r' || tmp[l-1]=='R') && tmp[l-2]=='-')) {
+               export_in_morpho_dic=1;
+               l--;
+            }
             if (l>0 && (tmp[l]=='r' || tmp[l]=='R') && tmp[l-1]=='-') {
                policy=REPLACE_OUTPUTS;
             }
@@ -321,8 +339,18 @@ for (int priority=1;priority<4;priority++) {
             info->dlf=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlf,U_APPEND);
             info->dlc=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlc,U_APPEND);
             info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
+            if (export_in_morpho_dic) {
+               /* If necessary, we deal with the morpho.dic file */
+               if (info->morpho==NULL) {
+                  /* We create it if needed */
+                  info->morpho=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->morpho_dic,U_WRITE);
+                  if (info->morpho==NULL) {
+                     fatal_error("");
+                  }
+               }
+            }
             /* And we merge the Locate results with current dictionaries */
-            merge_dic_locate_results(info,snt_files->concord_ind,priority);
+            merge_dic_locate_results(info,snt_files->concord_ind,priority,export_in_morpho_dic);
             /* We dump and close output files */
             save_unknown_words(info);
         	   u_fclose(info->dlf);
@@ -354,6 +382,16 @@ free_text_tokens(tokens);
 if (info->dlf!=NULL) u_fclose(info->dlf);
 if (info->dlc!=NULL) u_fclose(info->dlc);
 if (info->err!=NULL) u_fclose(info->err);
+if (info->morpho!=NULL) {
+   /* If we have produced a morpho.dic file, it's time to work with it */
+   u_fclose(info->morpho);
+   /* We sort it to remove duplicates */
+   pseudo_main_SortTxt(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,
+                       snt_files->morpho_dic);
+   /* Then we compress it */
+   pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,snt_files->morpho_dic);
+}
+
 u_fclose(text_cod);
 free_dico_application(info);
 free_snt_files(snt_files);

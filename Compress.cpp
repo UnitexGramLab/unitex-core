@@ -32,7 +32,7 @@
 #include "Error.h"
 #include "getopt.h"
 #include "Compress.h"
-
+#include "ProgramInvoker.h"
 
 const char* usage_Compress =
          "Usage: Compress [OPTIONS] <dictionary>\n"
@@ -76,6 +76,34 @@ for (;;) {
 }
 u_fprintf(f,number);
 u_fclose(f);
+}
+
+
+int pseudo_main_Compress(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                         int flip,char* dic) {
+ProgramInvoker* invoker=new_ProgramInvoker(main_Compress,"main_Compress");
+char tmp[200];
+{
+    tmp[0]=0;
+    get_reading_encoding_text(tmp,sizeof(tmp)-1,mask_encoding_compatibility_input);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-k");
+        add_argument(invoker,tmp);
+    }
+
+    tmp[0]=0;
+    get_writing_encoding_text(tmp,sizeof(tmp)-1,encoding_output,bom_output);
+    if (tmp[0] != '\0') {
+        add_argument(invoker,"-q");
+        add_argument(invoker,tmp);
+    }
+}
+if (flip) {
+   add_argument(invoker,"-f");
+}add_argument(invoker,dic);
+int ret=invoke(invoker);
+free_ProgramInvoker(invoker);
+return ret;
 }
 
 

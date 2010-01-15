@@ -306,7 +306,7 @@ CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Af_stdio.o ActivityLogger.
 COMPRESS      = Compress
 COMPRESS_OBJS = Main_Compress.o Compress.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o DELA.o DictionaryTree.o Alphabet.o\
 				String_hash.o AutomatonDictionary2Bin.o File.o List_int.o\
-				List_ustring.o Error.o StringParsing.o getopt.o
+				List_ustring.o Error.o StringParsing.o getopt.o ProgramInvoker.o
 
 CONCORD      = Concord
 CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o Text_tokens.o String_hash.o\
@@ -349,7 +349,8 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
             Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o\
             jamoCodage.o codeForKorean.o pro_type.o \
-            orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+            orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o SortTxt.o Thai.o Compress.o DictionaryTree.o\
+            AutomatonDictionary2Bin.o 
 
 ELAG      = Elag
 ELAG_OBJS = Main_Elag.o Elag.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o ElagFunctions.o ElagFstFilesIO.o AutDeterminization.o \

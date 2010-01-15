@@ -558,8 +558,8 @@ for (int i=0;i<info->tokens->N;i++) {
  * the information needed for the application of dictionaries.
  */
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
-                                                    U_FILE* dlf,U_FILE* dlc,U_FILE* err,char* tags,
-                                                    U_FILE* text_cod,Alphabet* alphabet,
+                                                    U_FILE* dlf,U_FILE* dlc,U_FILE* err,U_FILE* morpho,
+                                                    char* tags,U_FILE* text_cod,Alphabet* alphabet,
                                                     Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
@@ -570,6 +570,7 @@ info->tokens=tokens;
 info->dlf=dlf;
 info->dlc=dlc;
 info->err=err;
+info->morpho=morpho;
 strcpy(info->tags_ind,tags);
 info->buffer=new_buffer_for_file(INTEGER_BUFFER,info->text_cod);
 info->alphabet=alphabet;
@@ -696,7 +697,7 @@ info->tag_sequences[(info->n_tag_sequences)++]=match;
  * Modified by S�bastien Paumier
  */
 int merge_dic_locate_results(struct dico_application_info* info,char* concord_filename,
-                             int priority) {
+                             int priority,int export_to_morpho_dic) {
 /* This array is used to represent a compound word at a token sequence ended by -1.
  * Example: cinquante-deux could be represented by (1347,35,582,-1) */
 int token_tab_coumpounds[TOKENS_IN_A_COMPOUND];
@@ -738,6 +739,10 @@ while (l!=NULL) {
                set_value(info->simple_word,token_number,priority);
                /* We save it to the DLF */
                u_fprintf(info->dlf,"%S\n",l->output);
+               /* If needed, we save it to the morpho.dic file */
+               if (export_to_morpho_dic) {
+                  u_fprintf(info->morpho,"%S\n",l->output);
+               }
             }
          }
       }
@@ -756,6 +761,10 @@ while (l!=NULL) {
             }
             /* We save it to the DLC */
             u_fprintf(info->dlc,"%S\n",l->output);
+            /* If needed, we save it to the morpho.dic file */
+            if (export_to_morpho_dic) {
+               u_fprintf(info->morpho,"%S\n",l->output);
+            }
          }
       }
       /* Finally, we free the entry */
