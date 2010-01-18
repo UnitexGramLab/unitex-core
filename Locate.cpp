@@ -267,7 +267,6 @@ char text_cod[FILENAME_MAX];
 char dlf[FILENAME_MAX];
 char dlc[FILENAME_MAX];
 char err[FILENAME_MAX];
-char morpho_bin[FILENAME_MAX];
 
 get_snt_path(text,staticSntDir);
 if (dynamicSntDir[0]=='\0') {
