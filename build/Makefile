@@ -297,7 +297,7 @@ TEST_OBJS = Main_Test.o Af_stdio.o ActivityLogger.o Unicode.o Pattern.o String_h
 			List_ustring.o StringParsing.o PatternTree.o List_pointer.o DELA.o\
 			Alphabet.o Fst2.o Transitions.o List_int.o Tfst.o File.o SingleGraph.o\
 			BitArray.o HashTable.o FIFO.o BitMasks.o Ustring.o Symbol.o\
-			LanguageDefinition.o Tagset.o
+			LanguageDefinition.o Tagset.o AbstractFst2Load.o
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
@@ -713,7 +713,7 @@ PROGS = $(BUILDKRMWUDIC) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONV
 		$(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TXT2TFST) $(XMLIZER) \
-		$(UNCOMPRESS) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER)
+		$(UNCOMPRESS) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(TEST)
 
 ifeq ($(64BITS),no)
 PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \

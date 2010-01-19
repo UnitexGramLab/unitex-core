@@ -34,70 +34,30 @@
 #include "Fst2.h"
 #include "Error.h"
 #include "Tfst.h"
+#include "AbstractFst2Load.h"
 
 /**
  * This program is designed for test purpose only.
  */
 int main(int argc,char *argv[]) {
 setBufferMode();
-debug("aa\n");
-set_debug(1);
-debug("BB\n");
-return 0;
 
-U_FILE* input=u_fopen(UTF16_LE,argv[1],U_READ);
-if (input==NULL) {
-	fatal_error("Cannot open %s\n",argv[1]);
+if (argc!=2) {
+   u_printf("Usage: %s <fst2>\n",argv[0]);
+   return 0;
 }
-U_FILE* output=u_fopen(UTF16_LE,argv[2],U_WRITE);
-if (output==NULL) {
-	fatal_error("Cannot open %s\n",argv[2]);
+Fst2* fst2=load_abstract_fst2(argv[1],0,NULL);
+u_printf("%d graphs\n",fst2->number_of_graphs);
+u_printf("%d states\n",fst2->number_of_states);
+int n=0;
+for (int i=0;i<fst2->number_of_states;i++) {
+   Transition* t=fst2->states[i]->transitions;
+   while (t!=NULL) {
+      n++;
+      t=t->next;
+   }
 }
-unichar line[4096];
-while (u_fgets(line,input)!=EOF) {
-   int i=0;
-   while (line[i]!=',') {
-	   u_fprintf(output,"%C",line[i++]);
-   }
-   if (line[i]!=',') {
-	   fatal_error("Oops\n");
-   }
-   i+=2;
-   u_fprintf(output,",");
-   while (line[i]!=',') {
-	   u_fprintf(output,"%C",line[i++]);
-   }
-   int j=u_strlen(line);
-   do {
-	   j--;
-   } while (line[j+1]!=',');
-   line[j+1]='\0';
-   do {
-	   j--;
-   } while (line[j]>='0' && line[j]<='9');
-   u_fprintf(output,"%S",line+j+1);
-   int last_was_comma=0;
-   while (i!=j-1) {
-	   if (line[i]==',') {
-		   if (!last_was_comma) {
-			   i++;
-			   last_was_comma=1;
-		   } else {
-			   i++;
-		   }
-	   } else {
-		   if (last_was_comma) {
-			   u_fprintf(output,"+");
-			   last_was_comma=0;
-		   }
-		   u_fprintf(output,"%C",line[i++]);
-	   }
-   }
-   u_fprintf(output,"\n");
-}
-
-u_fclose(input);
-u_fclose(output);
+u_printf("%d transitions\n",n);
 return 0;
 }
 
