@@ -534,6 +534,7 @@ if (input->renumber==NULL) {
 /* And we compute all the symbol_t* from the tags */
 input->symbols=new_string_hash_ptr(input->tfst->tags->size);
 Ustring* ustr=new_Ustring(256);
+Ustring* tmp_content=new_Ustring(256);
 for (int i=0;i<input->tfst->tags->nbelems;i++) {
    TfstTag* tag=(TfstTag*)input->tfst->tags->tab[i];
    symbol_t* symbol=load_text_symbol(input->language,tag->content,i);
@@ -542,17 +543,28 @@ for (int i=0;i<input->tfst->tags->nbelems;i++) {
     * string, so that we don't exit the function. Whatever it is,
     * we add the symbol to the symbols of the .fst2 */
    int index;
+   unichar* content;
    if (symbol!=NULL && u_strcmp(tag->content,"<E>")) {
       /* We convert the symbol into a string in order to avoid
        * duplicates after the normalization. For instance,
        * "N+z2:ms" and "N+z3:ms" would become equivalent if "z2" and
        * "z3" are optional codes. */
       symbol_to_text_label(symbol,ustr);
-      index=get_value_index(ustr->str,input->symbols,INSERT_IF_NEEDED,symbol);
+      content=ustr->str;
    }
    else {
-      index=get_value_index(tag->content,input->symbols,INSERT_IF_NEEDED,symbol);
+      content=tag->content;
    }
+   /* We must take into account the positions in the original text. So,
+    * we build a string key that contains those positions. It has no side effect,
+    * since this key is used only here to check whether a given symbol already
+    * exists or not
+    */
+   Match m=tag->m;
+   u_sprintf(tmp_content,"%S\t%d.%d.%d-%d.%d.%d",content
+                        ,m.start_pos_in_token,m.start_pos_in_char,m.start_pos_in_letter
+                        ,m.end_pos_in_token,m.end_pos_in_char,m.end_pos_in_letter);
+   index=get_value_index(tmp_content->str,input->symbols,INSERT_IF_NEEDED,symbol);
    if (n_tags==size && input->renumber!=NULL) {
       /* If necessary, we double the size of the renumbering array */
       size=size*2;
@@ -564,6 +576,7 @@ for (int i=0;i<input->tfst->tags->nbelems;i++) {
    input->renumber[n_tags++]=index;
 }
 free_Ustring(ustr);
+free_Ustring(tmp_content);
 /* Now, we must replace integer transitions by symbol transitions */
 for (int i=0;i<input->tfst->automaton->number_of_states;i++) {
    SingleGraphState state=input->tfst->automaton->states[i];

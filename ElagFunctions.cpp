@@ -46,6 +46,7 @@ static void add_sentence_delimiters(Tfst* tfst,language_t*);
 static void remove_sentence_delimiters(Tfst* tfst,language_t*);
 vector_ptr* convert_elag_symbols_to_tfst_tags(Elag_Tfst_file_in*);
 
+
 /**
  * This function loads a .tfst text automaton, disambiguates it according to the given rules,
  * and saves the result in another text automaton.
@@ -106,7 +107,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
          if (tfst->automaton->number_of_states<2) {
             error("Sentence %d is empty\n",current_sentence) ;
          } else {
-            for (int j=0;j<gramms->nbelems;j++) {
+            for (int j=0;j< 0 */* ZZZ */ gramms->nbelems;j++) {
                Fst2Automaton* grammar=(Fst2Automaton*)(gramms->tab[j]);
                SingleGraph temp=elag_intersection(language,tfst->automaton,grammar->automaton,TEXT_GRAMMAR);
                trim(temp);
