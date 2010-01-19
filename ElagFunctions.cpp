@@ -91,7 +91,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
       if (tfst->automaton->number_of_states<2) {
          /* If the sentence is empty, we replace the sentence automaton
           * by a 1-state automaton with no transition. */
-    	 error("Sentence %d is empty\n",current_sentence+1);
+    	 error("Sentence %d is empty\n",current_sentence);
          free_SingleGraph(tfst->automaton);
          tfst->automaton=new_SingleGraph(1,PTR_TAGS);
          SingleGraphState initial_state=add_state(tfst->automaton);
@@ -104,7 +104,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
          length_before = length_before + ((double) (min + max) / (double) 2);
          add_sentence_delimiters(tfst,language);
          if (tfst->automaton->number_of_states<2) {
-            error("Sentence %d is empty\n",current_sentence+1) ;
+            error("Sentence %d is empty\n",current_sentence) ;
          } else {
             for (int j=0;j<gramms->nbelems;j++) {
                Fst2Automaton* grammar=(Fst2Automaton*)(gramms->tab[j]);
@@ -114,7 +114,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
                tfst->automaton=temp;
                if (tfst->automaton->number_of_states<2) {
                   /* If the sentence has been rejected by the grammar */
-                  error("Sentence %d rejected\n\n",current_sentence+1);
+                  error("Sentence %d rejected\n\n",current_sentence);
                   j=gramms->nbelems; /* We don't go on intersecting with other grammars */
                   n_rejected_sentences++;
                   free_SingleGraph(tfst->automaton);
