@@ -107,7 +107,7 @@ void remove_ambiguities(char* input_tfst,vector_ptr* gramms,char* output,Encodin
          if (tfst->automaton->number_of_states<2) {
             error("Sentence %d is empty\n",current_sentence) ;
          } else {
-            for (int j=0;j< 0 */* ZZZ */ gramms->nbelems;j++) {
+            for (int j=0;j< gramms->nbelems;j++) {
                Fst2Automaton* grammar=(Fst2Automaton*)(gramms->tab[j]);
                SingleGraph temp=elag_intersection(language,tfst->automaton,grammar->automaton,TEXT_GRAMMAR);
                trim(temp);
