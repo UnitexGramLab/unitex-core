@@ -27,15 +27,17 @@
 #include "Error.h"
 #include "getopt.h"
 #include "BuildKrMwuDic.h"
+#include "KrMwuDic.h"
 
 
 
 const char* usage_BuildKrMwuDic =
-         "Usage: BuildKrMwuDic [OPTIONS] xxxxx\n"
+        "Usage: BuildKrMwuDic [OPTIONS] <dic>\n"
         "\n"
-        " ???????"
+        "  <dic>: text file describing a Korean compound word DELAS\n"
         "\n"
         "OPTIONS:\n"
+
         "\n";
 
 
@@ -97,6 +99,14 @@ if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
+U_FILE* delas=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
+if (delas==NULL) {
+   fatal_error("Cannot open %s\n",argv[vars->optind]);
+}
+
+create_mwu_dictionary(delas);
+
+u_fclose(delas);
 free_OptVars(vars);
 u_printf("Done.\n");
 return 0;
