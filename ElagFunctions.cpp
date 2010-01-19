@@ -266,7 +266,12 @@ while (af_fgets(buf,FILENAME_MAX,f->f) != NULL) {
    }
    (*p)='\0';
    u_printf("\nLoading %s...\n",buf+1);
-   sprintf(buf2,"%s%s",directory,buf+1);
+
+   if (is_absolute_path(buf+1)) {
+      strcpy(buf2,buf+1);
+   } else {
+      sprintf(buf2,"%s%s",directory,buf+1);
+   }
    Fst2Automaton* A=load_elag_grammar_automaton(buf2,language);
    if (A==NULL) {
       error("Unable to load '%s' automaton\n",buf2);
