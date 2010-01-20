@@ -64,6 +64,18 @@ if (res==NULL) {
    error("Cannot create %s\n",temp);
    return FLATTEN_ERROR;
 }
+
+u_printf("Original fst2: %d graphs, ",origin->number_of_graphs);
+u_printf("%d states, ",origin->number_of_states);
+int n=0;
+for (int i=0;i<origin->number_of_states;i++) {
+Transition* t=origin->states[i]->transitions; while (t!=NULL) {
+n++;
+t=t->next;
+}
+}
+u_printf("%d transitions\n",n);
+
 u_printf("Computing grammar dependencies...\n");
 /* We build the dependency tree of the grammar */
 dependencies=compute_dependencies(origin);
@@ -110,6 +122,39 @@ remove_useless_states(new_fst2);
 /* We minimize the new main graph */
 u_printf("Minimization...\n");
 minimize(new_fst2,0);
+
+int number_keep_graphs=0;
+int number_keep_states=0;
+int number_keep_transitions=0;
+if ((new_graph_number!=NULL) && RTN && (result == EQUIVALENT_RTN))
+{
+int i;
+for (i=2;i<=origin->number_of_graphs;i++)
+  if (new_graph_number[i]!=0) {
+      number_keep_graphs++;
+      number_keep_states+=origin->number_of_states_per_graphs[i];
+      if (origin->number_of_states_per_graphs[i]<0) u_printf("_%d,%d,%u_",origin->number_of_states_per_graphs[i],origin->initial_states[i],i);
+      int limit=origin->initial_states[i]+origin->number_of_states_per_graphs[i];
+      for (int k=origin->initial_states[i];k<limit;k++) {
+        Transition* t=origin->states[k]->transitions; while (t!=NULL) {
+        number_keep_transitions++;
+        t=t->next;
+        }
+      }
+  }
+}
+u_printf("Resulting fst2: %d+%d=%d graphs, ",1,number_keep_graphs,1+number_keep_graphs);
+u_printf("%d+%d=%d states, ",new_fst2->number_of_states,number_keep_states,new_fst2->number_of_states+number_keep_states);
+int n3=0;
+for (int i=0;i<new_fst2->number_of_states;i++) {
+  Transition* t=new_fst2->states[i]->outgoing_transitions; while (t!=NULL) {
+    n3++;
+    t=t->next;
+  }
+}
+u_printf("%d+%d=%d transitions\n",n3,number_keep_transitions,n3+number_keep_transitions);
+
+
 /* Now, we can start saving the grammar, so we print the header of the .fst2,
  * which is the number of graphs it contains. */
 u_fprintf(res,"%010d\n",(RTN?n_graphs_to_keep:1));
