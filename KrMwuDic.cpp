@@ -27,20 +27,27 @@
 #include "KrMwuDic.h"
 #include "StringParsing.h"
 #include "DELA.h"
+#include "MF_SU_morphoBase.h"
+#include "MF_SU_morpho.h"
 
 
 #define MAX_LINE_SIZE 4096
 #define MAX_PARTS 32
 
 int tokenize_kr_mwu_dic_line(unichar** part,unichar* line);
-void produce_mwu_entries(int n_parts,struct dela_entry** entries);
+void produce_mwu_entries(int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
+                         Alphabet* alphabet,jamoCodage* jamo,Jamo2Syl* jamo2syl,
+                         struct l_morpho_t* morpho,
+                         Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 
 
 
 /**
  * Builds the .grf dictionary corresponding to the given Korean compound DELAS.
  */
-void create_mwu_dictionary(U_FILE* delas) {
+void create_mwu_dictionary(U_FILE* delas,MultiFlex_ctx* ctx,Alphabet* alphabet,
+                           jamoCodage* jamo,Jamo2Syl* jamo2syl,struct l_morpho_t* morpho,
+                           Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 unichar line[MAX_LINE_SIZE];
 int size_line;
 int line_number=-1;
@@ -95,7 +102,8 @@ while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
    if (OK) {
       /* If everything went OK, we can start inflecting the root of the last
        * component */
-      produce_mwu_entries(n_parts,entries);
+      produce_mwu_entries(n_parts,entries,ctx,alphabet,jamo,jamo2syl,morpho,
+            encoding_output,bom_output,mask_encoding_compatibility_input);
    }
    /* We free the 'part' and 'entries' tab*/
    for (int i=0;i<n_parts;i++) {
@@ -159,7 +167,50 @@ return n_parts;
 /**
  * TO DO
  */
-void produce_mwu_entries(int n_parts,struct dela_entry** entries) {
+void produce_mwu_entries(int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
+                         Alphabet* alphabet,jamoCodage* jamo,Jamo2Syl* jamo2syl,
+                         struct l_morpho_t* morpho,
+                         Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
+SU_forms_T forms;
+SU_init_forms(&forms); //Allocate the space for forms and initialize it to null values
+char inflection_code[1024];
+unichar code_gramm[1024];
+int semitic;
+/* We take the first grammatical code, and we extract from it the name
+ * of the inflection transducer to use */
+get_inflection_code(entries[n_parts-1]->semantic_codes[0],
+                    inflection_code, code_gramm, &semitic);
+/* And we inflect the word */
+SU_inflect(ctx,morpho,encoding_output,bom_output,mask_encoding_compatibility_input,
+      entries[n_parts-1]->lemma,inflection_code,
+      entries[n_parts-1]->filters, &forms, semitic, jamo, jamo2syl);
+
+/* Then, we print its inflected forms to the output */
+U_FILE* dlcf=U_STDERR;
+for (int i = 0; i < forms.no_forms; i++) {
+   unichar foo[1024];
+   if (jamo!=NULL) {
+      convert_Korean_text(forms.forms[i].form,foo,jamo,alphabet);
+   } else {
+      u_strcpy(foo,forms.forms[i].form);
+   }
+
+   u_fprintf(dlcf, "%S,%S.%S", foo,
+         entries[n_parts-1]->lemma, code_gramm);
+   /* We add the semantic codes, if any */
+   for (int j = 1; j < entries[n_parts-1]->n_semantic_codes; j++) {
+      u_fprintf(dlcf, "+%S", entries[n_parts-1]->semantic_codes[j]);
+   }
+   if (forms.forms[i].local_semantic_code != NULL) {
+      u_fprintf(dlcf, "%S", forms.forms[i].local_semantic_code);
+   }
+   if (forms.forms[i].raw_features != NULL
+         && forms.forms[i].raw_features[0] != '\0') {
+      u_fprintf(dlcf, ":%S", forms.forms[i].raw_features);
+   }
+   u_fprintf(dlcf, "\n");
+}
+SU_delete_inflection(&forms);
 
 }
 

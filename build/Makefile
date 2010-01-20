@@ -302,7 +302,13 @@ TEST_OBJS = Main_Test.o Af_stdio.o ActivityLogger.o Unicode.o Pattern.o String_h
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
 					 Unicode.o Error.o getopt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o\
-					 Alphabet.o List_ustring.o
+					 Alphabet.o List_ustring.o jamoCodage.o codeForKorean.o pro_type.o \
+                     orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o AbstractFst2Load.o Fst2.o\
+                     Pattern.o List_int.o Transitions.o Symbol.o LanguageDefinition.o Tagset.o\
+                     Ustring.o MF_InflectTransd.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o\
+                     BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check.o ProgramInvoker.o\
+                     MF_SU_morpho.o MF_LangMorpho.o MF_Util.o MF_FormMorpho.o\
+                     MF_Operators_Util.o MF_DicoMorpho.o
 
 CHECKDIC      = CheckDic
 CHECKDIC_OBJS = Main_CheckDic.o CheckDic.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o File.o DELA.o Alphabet.o String_hash.o\

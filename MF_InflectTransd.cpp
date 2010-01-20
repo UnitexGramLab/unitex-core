@@ -55,7 +55,7 @@ int init_transducer_tree(MultiFlex_ctx* p_multiFlex_ctx) {
   p_multiFlex_ctx->n_fst2 = 0;
   p_multiFlex_ctx->root=new_node();
   if (!(p_multiFlex_ctx->root)) {
-    error("Tranducer tree could not be initialized in function 'init_transducer_tree'\n");
+    error("Transducer tree could not be initialized in function 'init_transducer_tree'\n");
     return 1;
   }
   return  0;

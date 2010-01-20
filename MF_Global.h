@@ -1,7 +1,7 @@
 /*
   * Unitex 
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
@@ -55,7 +55,7 @@ char inflection_directory[FILENAME_MAX];
 int T;
 
 ////////////////////////////////////////////
-// Current muli-word unit to be inflected
+// Current multi-word unit to be inflected
 MU_lemma_T* MU_lemma;
 
 unichar Variables_op[22][100];

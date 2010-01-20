@@ -23,8 +23,14 @@
 #define KrMwuDicH
 
 #include "Unicode.h"
+#include "Alphabet.h"
+#include "Korean.h"
+#include "MF_Global.h"
+#include "MF_LangMorpho.h"
 
-void create_mwu_dictionary(U_FILE* delas);
+void create_mwu_dictionary(U_FILE* delas,MultiFlex_ctx* ctx,Alphabet* alphabet,
+                           jamoCodage* jamo,Jamo2Syl* jamo2syl,struct l_morpho_t* morpho,
+                           Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 
 #endif
 

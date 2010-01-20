@@ -53,11 +53,11 @@ const char* usage_MultiFlex =
          "  -o DELAF/--output=DELAF: the unicode resulting DELAF or DELACF dictionary\n"
          "  -a ALPH/--alphabet=ALPH: the alphabet file \n"
          "  -d DIR/--directory=DIR: the directory containing 'Morphology' and 'Equivalences'\n"
-                     "              files and inflection graphs for single and compound words.\n"
-		 "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use for Korean\n"
-		 "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use for Korean\n"
-		 "  -s/--only-simple-words: the program will consider compound words as errors\n"
-		 "  -c/--only-compound-words: the program will consider simple words as errors\n"
+         "                          files and inflection graphs for single and compound words.\n"
+		   "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use for Korean\n"
+		   "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use for Korean\n"
+		   "  -s/--only-simple-words: the program will consider compound words as errors\n"
+		   "  -c/--only-compound-words: the program will consider simple words as errors\n"
          "  -h/--help: this help\n"
          "\n"
          "Inflects a DELAS or DELAC into a DELAF or DELACF. Note that you can merge\n"
@@ -161,7 +161,7 @@ if (output[0]=='\0') {
 }
 p_multiFlex_ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
 if (p_multiFlex_ctx == NULL) {
-   fatal_error("memory error\n");
+   fatal_alloc_error("main_MultiFlex");
 }
 int err;  //0 if a function completes with no error
 //Load morphology description
@@ -183,7 +183,6 @@ if (alphabet[0]!='\0') {
    if (alph==NULL) {
       error("Cannot open alphabet file %s\n",alphabet);
       free_language_morpho(pL_MORPHO);
-      free_alphabet(alph);
       free(p_multiFlex_ctx);
       return 1;
    }
