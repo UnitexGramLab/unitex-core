@@ -112,8 +112,21 @@ if ((p->number_of_outputs != p->number_of_matches)
     && (p->number_of_outputs != 0))
   u_printf("(%d output%s)\n",p->number_of_outputs,(p->number_of_outputs==1)?"":"s");
 u_printf("%d recognized units\n",p->matching_units);
+
+long per_halfhundred=0;
+if (text_size!=0)
+{
+    if (text_size<21473)
+        per_halfhundred = (((long)p->matching_units)*100000)/text_size;
+    else
+    if (text_size<2147300)
+        per_halfhundred = ((((long)p->matching_units)*1000)/text_size)*100;
+    else
+        per_halfhundred = ((((long)p->matching_units)*1)/text_size)*100000;
+}
+
 if (text_size!=0) {
-   u_printf("(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
+   u_printf("(%2.3f%% of the text is covered)\n",(float)(per_halfhundred/(float)1000.0));
 }
 if (info!=NULL) {
    u_fprintf(info,"%d match%s\n",p->number_of_matches,(p->number_of_matches<=1)?"":"es");
@@ -124,7 +137,7 @@ if (info!=NULL) {
      }
    u_fprintf(info,"%d recognized units\n",p->matching_units);
    if (text_size!=0) {
-      u_fprintf(info,"(%2.3f%% of the text is covered)\n",((float)p->matching_units*100.0)/text_size);
+      u_fprintf(info,"(%2.3f%% of the text is covered)\n",(float)(per_halfhundred/(float)1000.0));
    }
 }
 }
