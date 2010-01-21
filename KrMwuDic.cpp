@@ -30,6 +30,7 @@
 #include "MF_SU_morphoBase.h"
 #include "MF_SU_morpho.h"
 #include "Vector.h"
+#include "String_hash.h"
 
 
 #define MAX_LINE_SIZE 4096
@@ -40,11 +41,12 @@ void write_grf_start_things(U_FILE* grf,int *offset,int *start_state_offset,int 
 void write_grf_end_things(U_FILE* grf,int offset,int start_state_offset,int current_state,
                           vector_int* state_index);
 int tokenize_kr_mwu_dic_line(unichar** part,unichar* line);
-void produce_mwu_entries(int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
+void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
                          Alphabet* alphabet,jamoCodage* jamo,Jamo2Syl* jamo2syl,
                          struct l_morpho_t* morpho,
                          Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                         vector_int* state_index);
+                         vector_int* state_index,int *current_state,int end_state,int *line,
+                         struct string_hash* subgraphs,int *subgraph_Y);
 
 
 /**
@@ -65,6 +67,9 @@ int start_state_offset;
 int end_state;
 write_grf_start_things(grf,&offset,&start_state_offset,&current_state,&end_state);
 vector_int* state_index=new_vector_int(16);
+struct string_hash* subgraphs=new_string_hash(DONT_USE_VALUES);
+int line_grf=1;
+int subgraph_Y=20;
 while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
    /* We place the line counter here, so we can use 'continue' */
    line_number++;
@@ -113,8 +118,9 @@ while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
    if (OK) {
       /* If everything went OK, we can start inflecting the root of the last
        * component */
-      produce_mwu_entries(n_parts,entries,ctx,alphabet,jamo,jamo2syl,morpho,
-            encoding_output,bom_output,mask_encoding_compatibility_input,state_index);
+      produce_mwu_entries(grf,n_parts,entries,ctx,alphabet,jamo,jamo2syl,morpho,
+            encoding_output,bom_output,mask_encoding_compatibility_input,state_index,
+            &current_state,end_state,&line_grf,subgraphs,&subgraph_Y);
    }
    /* We free the 'part' and 'entries' tab*/
    for (int i=0;i<n_parts;i++) {
@@ -124,6 +130,7 @@ while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
 }
 write_grf_end_things(grf,offset,start_state_offset,current_state,state_index);
 free_vector_int(state_index);
+free_string_hash(subgraphs);
 }
 
 
@@ -178,13 +185,53 @@ return n_parts;
 
 
 /**
+ * Adds the couple name/state in the given structure.
+ */
+void add_subgraph(struct string_hash* subgraphs,unichar* name,int state) {
+subgraphs->size=state;
+get_value_index(name,subgraphs);
+}
+
+
+/**
+ * Returns the state number associated to the given graph name or -1 if
+ * not found.
+ */
+int get_subgraph(struct string_hash* subgraphs,unichar* name) {
+int n=get_value_index(name,subgraphs,DONT_INSERT);
+if (n==NO_VALUE_INDEX) {
+   /* NO_VALUE_INDEX==-1 but it's safer to do that in case the value ever changes */
+   return -1;
+}
+return n;
+}
+
+
+/**
+ * Takes a code of the form +XXXX and turns it into a YYYY sequence with
+ * no + at the beginning and where all # have been replaced by :
+ */
+void get_post_position_graph_name(const unichar* code,unichar* name) {
+code++;
+int i=0;
+while ((name[i]=code[i])!='\0') {
+   if (name[i]=='#') {
+      name[i]=':';
+   }
+   i++;
+}
+}
+
+
+/**
  * Adds the given compound entries to the given grf.
  */
-void produce_mwu_entries(int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
+void produce_mwu_entries(U_FILE* grf,int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
                          Alphabet* alphabet,jamoCodage* jamo,Jamo2Syl* jamo2syl,
                          struct l_morpho_t* morpho,
                          Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
-                         vector_int* state_index) {
+                         vector_int* state_index,int *current_state,int end_state,int *line,
+                         struct string_hash* subgraphs,int *subgraph_Y) {
 SU_forms_T forms;
 SU_init_forms(&forms); //Allocate the space for forms and initialize it to null values
 char inflection_code[1024];
@@ -198,31 +245,96 @@ get_inflection_code(entries[n_parts-1]->semantic_codes[0],
 SU_inflect(ctx,morpho,encoding_output,bom_output,mask_encoding_compatibility_input,
       entries[n_parts-1]->lemma,inflection_code,
       entries[n_parts-1]->filters, &forms, semitic, jamo, jamo2syl);
-
-/* Then, we print its inflected forms to the output */
-U_FILE* dlcf=U_STDERR;
-for (int i = 0; i < forms.no_forms; i++) {
-   unichar foo[1024];
-   if (jamo!=NULL) {
-      convert_Korean_text(forms.forms[i].form,foo,jamo,alphabet);
-   } else {
-      u_strcpy(foo,forms.forms[i].form);
+if (forms.no_forms==0) {
+   /* If no form was generated, we have nothing to do */
+   SU_delete_inflection(&forms);
+   return;
+}
+/* We have to save the first n_parts-1 components in the graph. We also
+ * have to add the first state of the path in the 'state_index' vector */
+vector_int_add(state_index,*current_state);
+/* line is an approximation for a row coordinate in the grf */
+unichar inflected_jamo[1024];
+int foo_offset=-1;
+for (int i=0;i<n_parts-1;i++) {
+   /* We convert all inflected forms to Jamo, in order to speed up
+    * dictionary lookup */
+   convert_Korean_text(entries[i]->inflected,inflected_jamo,jamo,alphabet);
+   u_fprintf(grf,"\"%S\" %d %d 1 %d \n",inflected_jamo,200+i*500,20+(*line)*50,(*current_state)+1);
+   (*current_state)++;
+   u_fprintf(grf,"\"<E>/%S,%S.%S",entries[i]->inflected,
+                               entries[i]->lemma,entries[i]->semantic_codes[0]);
+   for (int j=1;j<entries[i]->n_semantic_codes;j++) {
+      u_fprintf(grf,"+%S",entries[i]->semantic_codes[j]);
    }
+   for (int j=0;j<entries[i]->n_inflectional_codes;j++) {
+      u_fprintf(grf,":%S",entries[i]->inflectional_codes[j]);
+   }
+   if (i<n_parts-2) {
+      u_fprintf(grf,"}{\" %d %d 1 %d \n",400+i*500,20+(*line)*50,(*current_state)+1);
+   } else {
+      /* If this is the n_parts-2 component, we may have to generate several outputs
+       * transitions, so we use the offset+0000000000 trick again */
+      u_fprintf(grf,"}{\" %d %d %d ",400+i*500,20+(*line)*50,forms.no_forms);
+      foo_offset=ftell(grf);
+      for (int k=0;k<forms.no_forms;k++) {
+         u_fprintf(grf,"0000000000 ");
+      }
+      u_fprintf(grf,"\n");
+   }
+   (*current_state)++;
+}
 
-   u_fprintf(dlcf, "%S,%S.%S", foo,
-         entries[n_parts-1]->lemma, code_gramm);
+/* Now, we have to produce all the forms generated from the root inflection process */
+int x=n_parts-1;
+for (int i = 0; i < forms.no_forms; i++,(*line)++) {
+   (*current_state)++;
+   convert_Korean_text(forms.forms[i].form,inflected_jamo,jamo,alphabet);
+   u_fprintf(grf,"\"%S\" %d %d 1 %d \n",inflected_jamo,200+x*500,20+(*line)*50,(*current_state));
+   /* We must backtrack to add the transition to this state */
+   fseek(grf,foo_offset,SEEK_SET);
+   u_fprintf(grf,"%010d ",(*current_state)-1);
+   /* We note the new offset and we return at the end of the file */
+   foo_offset=ftell(grf);
+   fseek(grf,0,SEEK_END);
+
+   (*current_state)++;
+   u_fprintf(grf,"\"<E>/%S,%S.%S", forms.forms[i].form,
+                                  entries[n_parts-1]->lemma, code_gramm);
    /* We add the semantic codes, if any */
    for (int j = 1; j < entries[n_parts-1]->n_semantic_codes; j++) {
-      u_fprintf(dlcf, "+%S", entries[n_parts-1]->semantic_codes[j]);
+      u_fprintf(grf, "+%S", entries[n_parts-1]->semantic_codes[j]);
    }
-   if (forms.forms[i].local_semantic_code != NULL) {
-      u_fprintf(dlcf, "%S", forms.forms[i].local_semantic_code);
+   /* We may not want to output this information */
+   unichar* code=forms.forms[i].local_semantic_code;
+   if (code != NULL && code[0]!='\0') {
+      if (code[0]!='+') {
+         fatal_error("Invalid code %S produced by inflection grammar %s: should start with a +\n",code,inflection_code);
+      }
+      u_fprintf(grf, "%S", code);
+   } else {
+      fatal_error("Error in inflection grammar %s: it does not produce a +XXX code \n",inflection_code);
    }
    if (forms.forms[i].raw_features != NULL
          && forms.forms[i].raw_features[0] != '\0') {
-      u_fprintf(dlcf, ":%S", forms.forms[i].raw_features);
+      u_fprintf(grf, ":%S", forms.forms[i].raw_features);
    }
-   u_fprintf(dlcf, "\n");
+   /* Now, we must get the number of the state corresponding to the
+    * post-position graph */
+   int subgraph_state=get_subgraph(subgraphs,code);
+   if (subgraph_state==-1) {
+      /* If this is the first time we see this graph, we add it */
+      subgraph_state=(*current_state);
+      (*current_state)++;
+      add_subgraph(subgraphs,code,subgraph_state);
+      u_fprintf(grf, "}\" %d %d 1 %d \n",400+x*500,20+(*line)*50,subgraph_state);
+      unichar graph_name[FILENAME_MAX];
+      get_post_position_graph_name(code,graph_name);
+      u_fprintf(grf, "\":%S\" 3600 %d 1 %d \n",graph_name,(*subgraph_Y),end_state);
+      (*subgraph_Y)=(*subgraph_Y)+50;
+   } else {
+      u_fprintf(grf, "}\" %d %d 1 %d \n",400+x*500,20+(*line)*50,subgraph_state);
+   }
 }
 SU_delete_inflection(&forms);
 
@@ -241,7 +353,7 @@ SU_delete_inflection(&forms);
  */
 void write_grf_start_things(U_FILE* grf,int *offset,int *start_state_offset,int *current_state,int *end_state) {
 u_fprintf(grf,"#Unigraph\n");
-u_fprintf(grf,"SIZE 1188 840\n");
+u_fprintf(grf,"SIZE 4000 840\n");
 u_fprintf(grf,"FONT Haansoft Batang:  10\n");
 u_fprintf(grf,"OFONT Haansoft Batang:B 10\n");
 u_fprintf(grf,"BCOLOR 16777215\n");
@@ -261,9 +373,9 @@ u_fprintf(grf,"PORIENT L\n");
 u_fprintf(grf,"#\n");
 (*offset)=ftell(grf);
 u_fprintf(grf,"0000000000\n");
-u_fprintf(grf,"\"<E>\" 70 200 1 2 \n");
-u_fprintf(grf,"\"\" 1125 188 0 \n");
-u_fprintf(grf,"\"$<\" 105 200 1 ");
+u_fprintf(grf,"\"<E>\" 70 20 1 2 \n");
+u_fprintf(grf,"\"\" 3800 20 0 \n");
+u_fprintf(grf,"\"$<\" 105 20 1 ");
 (*start_state_offset)=ftell(grf);
 u_fprintf(grf,"0000000000 \n");
 /*
@@ -271,7 +383,7 @@ u_fprintf(grf,"0000000000 \n");
  * in 'write_grf_end_things'
  *
  * u_fprintf(grf,"\"<E>//{\" 152 200 0 \n");*/
-u_fprintf(grf,"\"$>\" 1082 188 1 1 \n");
+u_fprintf(grf,"\"$>\" 3750 20 1 1 \n");
 (*end_state)=3;
 (*current_state)=4;
 }
@@ -284,13 +396,12 @@ u_fprintf(grf,"\"$>\" 1082 188 1 1 \n");
  */
 void write_grf_end_things(U_FILE* grf,int offset,int start_state_offset,int current_state,
                           vector_int* state_index) {
-u_fprintf(grf,"\"<E>//{\" 152 200 %d",state_index->nbelems);
+u_fprintf(grf,"\"<E>//{\" 152 20 %d ",state_index->nbelems);
 for (int i=0;i<state_index->nbelems;i++) {
    u_fprintf(grf,"%d ",state_index->tab[i]);
 }
 u_fprintf(grf,"\n");
 fseek(grf,offset,SEEK_SET);
-error("current_state=%d\n",current_state);
 u_fprintf(grf,"%010d",current_state+1);
 fseek(grf,start_state_offset,SEEK_SET);
 u_fprintf(grf,"%010d",current_state);
