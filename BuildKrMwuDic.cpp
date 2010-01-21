@@ -41,6 +41,7 @@ const char* usage_BuildKrMwuDic =
         "  <dic>: text file describing a Korean compound word DELAS\n"
         "\n"
         "OPTIONS:\n"
+        "  -o GRF/--output=GRF: output .grf file to produce\n"
         "  -d DIR/--directory=DIR: specifies the directory that contains the inflection graphs\n"
         "                          required to produce morphological variants of roots\n"
         "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use\n"
@@ -58,8 +59,9 @@ u_printf(usage_BuildKrMwuDic);
 
 
 
-const char* optstring_BuildKrMwuDic="d:j:f:a:hk:q:";
+const char* optstring_BuildKrMwuDic="o:d:j:f:a:hk:q:";
 const struct option_TS lopts_BuildKrMwuDic[]= {
+      {"output",required_argument_TS,NULL,'o'},
       {"directory",required_argument_TS,NULL,'d'},
       {"jamo",required_argument_TS,NULL,'j'},
       {"fst2",required_argument_TS,NULL,'f'},
@@ -82,6 +84,7 @@ if (argc==1) {
 
 
 int val,index=-1;
+char output[FILENAME_MAX]="";
 char inflection_dir[FILENAME_MAX]="";
 char jamo_table[FILENAME_MAX]="";
 char fst2[FILENAME_MAX]="";
@@ -92,6 +95,11 @@ int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPU
 struct OptVars* vars=new_OptVars();
 while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrMwuDic,&index,vars))) {
    switch(val) {
+   case 'o': if (vars->optarg[0]=='\0') {
+                fatal_error("You must specify a non empty output file name\n");
+             }
+             strcpy(output,vars->optarg);
+             break;
    case 'd': if (vars->optarg[0]=='\0') {
                 fatal_error("Empty inflection directory\n");
              }
@@ -134,6 +142,9 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrM
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
+if (output[0]=='\0') {
+   fatal_error("Output file must be specified\n");
+}
 if (inflection_dir[0]=='\0') {
    fatal_error("Inflection directory must be specified\n");
 }
@@ -150,6 +161,10 @@ if (alphabet[0]=='\0') {
 U_FILE* delas=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,argv[vars->optind],U_READ);
 if (delas==NULL) {
    fatal_error("Cannot open %s\n",argv[vars->optind]);
+}
+U_FILE* grf=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,output,U_WRITE);
+if (grf==NULL) {
+   fatal_error("Cannot open %s\n",output);
 }
 Alphabet* alph=load_alphabet(alphabet,1);
 if (alph==NULL) {
@@ -175,10 +190,11 @@ if (pL_MORPHO == NULL) {
 }
 
 
-create_mwu_dictionary(delas,multiFlex_ctx,alph,jamo,jamo2syl,pL_MORPHO,encoding_output,
+create_mwu_dictionary(delas,grf,multiFlex_ctx,alph,jamo,jamo2syl,pL_MORPHO,encoding_output,
        bom_output,mask_encoding_compatibility_input);
 
 u_fclose(delas);
+u_fclose(grf);
 free_alphabet(alph);
 delete jamo;
 delete jamo2syl;

@@ -29,23 +29,28 @@
 #include "DELA.h"
 #include "MF_SU_morphoBase.h"
 #include "MF_SU_morpho.h"
+#include "Vector.h"
 
 
 #define MAX_LINE_SIZE 4096
 #define MAX_PARTS 32
 
+void write_grf_start_things(U_FILE* grf,int *offset,int *start_state_offset,int *current_state,
+                            int *end_state);
+void write_grf_end_things(U_FILE* grf,int offset,int start_state_offset,int current_state,
+                          vector_int* state_index);
 int tokenize_kr_mwu_dic_line(unichar** part,unichar* line);
 void produce_mwu_entries(int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
                          Alphabet* alphabet,jamoCodage* jamo,Jamo2Syl* jamo2syl,
                          struct l_morpho_t* morpho,
-                         Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
-
+                         Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                         vector_int* state_index);
 
 
 /**
  * Builds the .grf dictionary corresponding to the given Korean compound DELAS.
  */
-void create_mwu_dictionary(U_FILE* delas,MultiFlex_ctx* ctx,Alphabet* alphabet,
+void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,Alphabet* alphabet,
                            jamoCodage* jamo,Jamo2Syl* jamo2syl,struct l_morpho_t* morpho,
                            Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 unichar line[MAX_LINE_SIZE];
@@ -54,6 +59,12 @@ int line_number=-1;
 unichar* part[MAX_PARTS];
 struct dela_entry* entries[MAX_PARTS];
 int n_parts;
+int offset;
+int current_state;
+int start_state_offset;
+int end_state;
+write_grf_start_things(grf,&offset,&start_state_offset,&current_state,&end_state);
+vector_int* state_index=new_vector_int(16);
 while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
    /* We place the line counter here, so we can use 'continue' */
    line_number++;
@@ -103,7 +114,7 @@ while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
       /* If everything went OK, we can start inflecting the root of the last
        * component */
       produce_mwu_entries(n_parts,entries,ctx,alphabet,jamo,jamo2syl,morpho,
-            encoding_output,bom_output,mask_encoding_compatibility_input);
+            encoding_output,bom_output,mask_encoding_compatibility_input,state_index);
    }
    /* We free the 'part' and 'entries' tab*/
    for (int i=0;i<n_parts;i++) {
@@ -111,6 +122,8 @@ while ((size_line=u_fgets(line,MAX_LINE_SIZE,delas))!=EOF) {
       free_dela_entry(entries[i]);
    }
 }
+write_grf_end_things(grf,offset,start_state_offset,current_state,state_index);
+free_vector_int(state_index);
 }
 
 
@@ -165,12 +178,13 @@ return n_parts;
 
 
 /**
- * TO DO
+ * Adds the given compound entries to the given grf.
  */
 void produce_mwu_entries(int n_parts,struct dela_entry** entries,MultiFlex_ctx* ctx,
                          Alphabet* alphabet,jamoCodage* jamo,Jamo2Syl* jamo2syl,
                          struct l_morpho_t* morpho,
-                         Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
+                         Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                         vector_int* state_index) {
 SU_forms_T forms;
 SU_init_forms(&forms); //Allocate the space for forms and initialize it to null values
 char inflection_code[1024];
@@ -214,3 +228,72 @@ SU_delete_inflection(&forms);
 
 }
 
+
+/**
+ * Writes the grf header and somes states. '*offset' is used to remember where
+ * in the file is to be written the number of states that we don't know yet.
+ * We will temporarily write ten zeros that should be overwritten at the end of the
+ * graph creation process. We use the same trick for the state that will contain
+ * all transitions to all created paths. As this state will contain as many transitions
+ * as compound entries, we can't create it right now. We will create it at the end, but
+ * we will need to backtrack in the file to write its actual number the unique
+ * output of state #2. This is why we use '*start_state_offset'.
+ */
+void write_grf_start_things(U_FILE* grf,int *offset,int *start_state_offset,int *current_state,int *end_state) {
+u_fprintf(grf,"#Unigraph\n");
+u_fprintf(grf,"SIZE 1188 840\n");
+u_fprintf(grf,"FONT Haansoft Batang:  10\n");
+u_fprintf(grf,"OFONT Haansoft Batang:B 10\n");
+u_fprintf(grf,"BCOLOR 16777215\n");
+u_fprintf(grf,"FCOLOR 0\n");
+u_fprintf(grf,"ACOLOR 13487565\n");
+u_fprintf(grf,"SCOLOR 255\n");
+u_fprintf(grf,"CCOLOR 255\n");
+u_fprintf(grf,"DBOXES y\n");
+u_fprintf(grf,"DFRAME y\n");
+u_fprintf(grf,"DDATE y\n");
+u_fprintf(grf,"DFILE y\n");
+u_fprintf(grf,"DDIR n\n");
+u_fprintf(grf,"DRIG n\n");
+u_fprintf(grf,"DRST n\n");
+u_fprintf(grf,"FITS 100\n");
+u_fprintf(grf,"PORIENT L\n");
+u_fprintf(grf,"#\n");
+(*offset)=ftell(grf);
+u_fprintf(grf,"0000000000\n");
+u_fprintf(grf,"\"<E>\" 70 200 1 2 \n");
+u_fprintf(grf,"\"\" 1125 188 0 \n");
+u_fprintf(grf,"\"$<\" 105 200 1 ");
+(*start_state_offset)=ftell(grf);
+u_fprintf(grf,"0000000000 \n");
+/*
+ * We don't write this one, since it must written as the last state of the grf,
+ * in 'write_grf_end_things'
+ *
+ * u_fprintf(grf,"\"<E>//{\" 152 200 0 \n");*/
+u_fprintf(grf,"\"$>\" 1082 188 1 1 \n");
+(*end_state)=3;
+(*current_state)=4;
+}
+
+
+/**
+ * We create the state that will have transitions to all states specified in the
+ * 'state_index' vector. We add it as the last state of the grf, and then, we
+ * go back in the file to write the number of states and the index of this last state.
+ */
+void write_grf_end_things(U_FILE* grf,int offset,int start_state_offset,int current_state,
+                          vector_int* state_index) {
+u_fprintf(grf,"\"<E>//{\" 152 200 %d",state_index->nbelems);
+for (int i=0;i<state_index->nbelems;i++) {
+   u_fprintf(grf,"%d ",state_index->tab[i]);
+}
+u_fprintf(grf,"\n");
+fseek(grf,offset,SEEK_SET);
+error("current_state=%d\n",current_state);
+u_fprintf(grf,"%010d",current_state+1);
+fseek(grf,start_state_offset,SEEK_SET);
+u_fprintf(grf,"%010d",current_state);
+/* For safety, we return at the end of the file */
+fseek(grf,0,SEEK_END);
+}
