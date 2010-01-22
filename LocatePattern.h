@@ -201,7 +201,7 @@ struct locate_parameters {
    int mask_encoding_compatibility_input;
 
    /* This is useful for Korean */
-   jamoCodage* jamo;
+   Korean* korean;
    unichar** jamo_tags;
    Jamo2Syl* jamo2syl;
 };

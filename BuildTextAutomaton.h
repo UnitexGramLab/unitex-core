@@ -41,7 +41,7 @@ void build_sentence_automaton(int*,int,struct text_tokens*,
                               Alphabet*,U_FILE*,U_FILE*,int,int,
                               struct normalization_tree*,
                               struct match_list**,int,int,
-                              language_t*,jamoCodage* jamo,
+                              language_t*,Korean* korean,
                               Jamo2Syl* jamo2syl);
 
 void build_korean_sentence_automaton(Encoding,int,int,char*,int* buffer,int length,struct text_tokens* tokens,

@@ -154,7 +154,7 @@ for (int i=1;i<=tfst->N && infos.number_of_matches!=infos.search_limit;i++) {
 	}
    load_sentence(tfst,i);
 	compute_token_contents(tfst);
-	if (infos.korean) {
+	if (infos.korean!=NULL) {
 	   compute_jamo_tfst_tags(&infos);
 	}
 	infos.matches=NULL;
@@ -228,20 +228,17 @@ if (infos->alphabet==NULL) {
    fatal_error("init_Korean_stuffs cannot be invoked with a NULL alphabet\n");
 }
 if (!is_korean) {
-   infos->korean=0;
-   infos->jamo=NULL;
+   infos->korean=NULL;
    infos->n_jamo_fst2_tags=0;
    infos->jamo_fst2_tags=NULL;
    infos->n_jamo_tfst_tags=0;
    infos->jamo_tfst_tags=NULL;
    return;
 }
-infos->korean=1;
-infos->jamo=new jamoCodage();
+infos->korean=new Korean(infos->alphabet);
 infos->n_jamo_tfst_tags=0;
 infos->jamo_tfst_tags=NULL;
 /* We also initializes the Chinese -> Hangul table */ 
-infos->jamo->cloneHJAMap(infos->alphabet->korean_equivalent_syllab);
 infos->n_jamo_fst2_tags=infos->fst2->number_of_tags;
 infos->jamo_fst2_tags=(unichar**)malloc(sizeof(unichar*)*infos->n_jamo_fst2_tags);
 if (infos->jamo_fst2_tags==NULL) {
@@ -262,12 +259,12 @@ for (int i=0;i<infos->n_jamo_fst2_tags;i++) {
           * is empty. In order to be careful, we prefer not to convert it */
          u_strcpy(tmp,"<E>");
       } else {
-         convert_Korean_text(entry->inflected,tmp,infos->jamo,infos->alphabet);
+         convert_Korean_text(entry->inflected,tmp,infos->korean,infos->alphabet);
       }
       free_dela_entry(entry);
    } else {
       if (i!=0) {
-         convert_Korean_text(t->input,tmp,infos->jamo,infos->alphabet);
+         convert_Korean_text(t->input,tmp,infos->korean,infos->alphabet);
       } else {
          /* We don't want to convert the epsilon transition tag */
          u_strcpy(tmp,"<E>");
@@ -285,10 +282,10 @@ for (int i=0;i<infos->n_jamo_fst2_tags;i++) {
  * Frees memory associated to Korean stuffs.
  */
 void free_Korean_stuffs(struct locate_tfst_infos* infos) {
-if (!infos->korean) {
+if (infos->korean==NULL) {
    return;
 }
-delete infos->jamo;
+delete infos->korean;
 for (int i=0;i<infos->n_jamo_fst2_tags;i++) {
    free(infos->jamo_fst2_tags[i]);
 }
@@ -333,7 +330,7 @@ for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
           * is empty. In order to be careful, we prefer not to convert it */
          u_strcpy(tmp,"<E>");
       } else {
-         convert_Korean_text(entry->inflected,tmp,infos->jamo,infos->alphabet);
+         convert_Korean_text(entry->inflected,tmp,infos->korean,infos->alphabet);
       }
       free_dela_entry(entry);
    } else {
@@ -342,7 +339,7 @@ for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
           * but, in order to be careful, we prefer not to convert it */
          u_strcpy(tmp,"<E>");
       } else {
-         convert_Korean_text(t->content,tmp,infos->jamo,infos->alphabet);
+         convert_Korean_text(t->content,tmp,infos->korean,infos->alphabet);
       }
    }
    infos->jamo_tfst_tags[i]=u_strdup(tmp);

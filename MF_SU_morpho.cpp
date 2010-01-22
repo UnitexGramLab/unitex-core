@@ -61,19 +61,19 @@ struct inflect_infos {
 
 //////////////////////////////
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
-		jamoCodage* jamo,Jamo2Syl* jamo2syl);
+		         Korean* korean,Jamo2Syl* jamo2syl);
 int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique, unichar* sortie,
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
 		SU_forms_T* forms, unichar*, int, unichar* var_name, unsigned int, unichar **,
-		unichar *,jamoCodage*,Jamo2Syl* jamo2syl);
+		unichar *,Korean* korean,Jamo2Syl* jamo2syl);
 int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,unichar* flechi, unichar* canonique,
 		unichar* sortie, Fst2* a, int etat_courant, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int, unichar* var_name,
-		unsigned int, unichar **, unichar *,jamoCodage*,Jamo2Syl* jamo2syl);
+		unsigned int, unichar **, unichar *,Korean* korean,Jamo2Syl* jamo2syl);
 int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Transition* T, unichar* flechi, unichar* canonique,
 		unichar* sortie, Fst2* a, struct inflect_infos** LISTE,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar*, int, unichar* var_name,
-		unsigned int, unichar **, unichar*,jamoCodage*,Jamo2Syl* jamo2syl);
+		unsigned int, unichar **, unichar*,Korean* korean,Jamo2Syl* jamo2syl);
 void shift_stack(unichar* stack, int pos, int shift);
 void shift_stack(unichar* stack, int pos);
 void shift_stack_left(unichar* stack, int pos);
@@ -119,7 +119,7 @@ int SU_delete_lemma(SU_lemma_T* l);
 // Returns 0 on success, 1 otherwise.
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                SU_id_T* SU_id, f_morpho_T* desired_features, SU_forms_T* forms,
-		int semitic,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+		         int semitic,Korean* korean,Jamo2Syl* jamo2syl) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
 	unichar inflection_codes[MAX_CHARS_IN_STACK];
@@ -137,7 +137,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encod
     unichar var_name[100];
 	err = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,inflected, SU_id->lemma->unit, inflection_codes,
 			p_multiFlex_ctx->fst2[T], 0, desired_features, forms, semitic ? semitic_ : NULL, 0, var_name,
-			0, NULL, local_sem_code,jamo,jamo2syl);
+			0, NULL, local_sem_code,korean,jamo2syl);
 	return err;
 }
 
@@ -150,7 +150,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encod
  */
 int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                unichar* lemma, char* inflection_code, unichar** filters,
-		SU_forms_T* forms, int semitic,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+		SU_forms_T* forms, int semitic,Korean* korean,Jamo2Syl* jamo2syl) {
 	int err;
 	unichar inflected[MAX_CHARS_IN_STACK];
 	unichar inflection_codes[MAX_CHARS_IN_STACK];
@@ -169,7 +169,7 @@ int SU_inflect(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,Encod
     unichar var_name[100];
 	err = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,inflected, lemma, inflection_codes, p_multiFlex_ctx->fst2[T], 0,
 			NULL, forms, semitic ? semitic_ : NULL, 0, var_name, 0, filters,
-			local_semantic_code,jamo,jamo2syl);
+			local_semantic_code,korean,jamo2syl);
 	return err;
 }
 
@@ -232,7 +232,7 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO
 		Fst2* a, int etat_courant, f_morpho_T* desired_features,
 		SU_forms_T* forms, unichar* semitic, int flag_var, unichar* var_name, 
 		unsigned int var_in_use, unichar **filters,
-		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+		unichar *local_semantic_codes,Korean* korean,Jamo2Syl* jamo2syl) {
 	int err;
 	Fst2State e = a->states[etat_courant];
 	if (e->control & 1) { //If final state
@@ -331,7 +331,7 @@ int SU_explore_state(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO
 	while (t != NULL) {//u_fprintf(stderr,"Explore 1\n");
 		retour_tag = SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,t, flechi, canonique, sortie, a, NULL,
 				desired_features, forms, semitic, flag_var, var_name, var_in_use,
-				filters, local_semantic_codes,jamo,jamo2syl);
+				filters, local_semantic_codes,korean,jamo2syl);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
@@ -391,7 +391,7 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t*
 		unichar* output, Fst2* a, int current_state, struct inflect_infos** L,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
 		int flag_var, unichar* var_name, unsigned int var_in_use, unichar **filters,
-		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+		unichar *local_semantic_codes,Korean* korean,Jamo2Syl* jamo2syl) {
 	Fst2State e = a->states[current_state];
 	if (e->control & 1) {
 		// if we are in a final state, we save the computed things
@@ -420,14 +420,14 @@ int SU_explore_state_recursion(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t*
 	while (t != NULL) {//u_fprintf(stderr,"Explore 2\n");local_
 		retour_tag = SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,t, inflected, lemma, output, a, L,
 				desired_features, forms, semitic, flag_var, var_name, var_in_use,
-				filters, local_semantic_codes,jamo,jamo2syl);
+				filters, local_semantic_codes,korean,jamo2syl);
 		retour_all_tags += retour_tag;
 		t = t->next;
 	}
 	if (default_trans != NULL) { //u_fprintf(stderr,"PASS2\n");
 		SU_explore_tag(p_multiFlex_ctx,pL_MORPHO,default_trans, inflected, lemma, output, a, L,
 				desired_features, forms, semitic, flag_var, var_name, var_in_use,
-				filters, local_semantic_codes,jamo,jamo2syl);
+				filters, local_semantic_codes,korean,jamo2syl);
 	}
 
 	//if ((retour_all_tags+retour_tag)) return 0; else return 1;
@@ -453,7 +453,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 		unichar* output, Fst2* a, struct inflect_infos** LIST,
 		f_morpho_T* desired_features, SU_forms_T* forms, unichar* semitic,
 		int flag_var, unichar* var_name, unsigned int var_in_use, unichar **filters,
-		unichar *local_semantic_codes,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+		unichar *local_semantic_codes,Korean* korean,Jamo2Syl* jamo2syl) {
 	if (T->tag_number < 0) {
 		/* If we are in the case of a call to a sub-graph */
 		struct inflect_infos* L = NULL;
@@ -463,19 +463,19 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 		SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,inflected, lemma, output, a,
 				a->initial_states[-(T->tag_number)], &L, desired_features,
 				forms, semitic, flag_var, var_name, var_in_use, filters,
-				local_semantic_codes,jamo,jamo2syl);
+				local_semantic_codes,korean,jamo2syl);
 		while (L != NULL) {
 			if (LIST == NULL) {//u_fprintf(stderr,"Explore state 1\n");
 				retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma, L->output,
 						a, T->state_number, desired_features, forms,
 						L->semitic, flag_var, var_name, var_in_use, filters,
-						local_semantic_codes,jamo,jamo2syl);
+						local_semantic_codes,korean,jamo2syl);
 				retour_all_states += (retour_state + 1);
 			} else {//u_fprintf(stderr,"Explore state recursion 1\n");
 				retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,L->inflected, lemma,
 						L->output, a, T->state_number, LIST, desired_features,
 						forms, L->semitic, flag_var, var_name, var_in_use, filters,
-						local_semantic_codes,jamo,jamo2syl);
+						local_semantic_codes,korean,jamo2syl);
 				retour_all_states += (1 - retour_state);
 			}
 			temp = L;
@@ -594,7 +594,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 			/* Korean Jamo left operator */
 			case 'J': {
 				pos_tag++;
-				if (jamo==NULL) {
+				if (korean==NULL) {
 					fatal_error("NULL jamo error: cannot apply operator J if no jamo table is defined\n");
 				}
 				if (pos==0) {
@@ -610,7 +610,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 					unichar src[2];
 					src[0]=p_SU_buf->stack[pos-1];
 					src[1]='\0';
-					convert_Korean_text(src,tmp,jamo,NULL);
+					convert_Korean_text(src,tmp,korean,NULL);
 					int l=u_strlen(tmp);
 					/* Now, we copy the jamo sequence
 					 * in place of the hangul syllab. We use l-1 because we take into
@@ -653,7 +653,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
                    hangul[0]=p_SU_buf->stack[z];
                    hangul[1]='\0';
                    unichar tmp[32];
-                   convert_Korean_text(hangul,tmp,jamo,NULL);
+                   convert_Korean_text(hangul,tmp,korean,NULL);
                    int l=u_strlen(tmp);
                    int i;
                    for (i=z+1;i<pos;i++) {
@@ -732,7 +732,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 				/* Default push operator */
 			default: {
 				unichar tmp[32];
-				compatibility_jamo_to_standard_jamo(p_SU_buf->tag[pos_tag],tmp,jamo);
+				compatibility_jamo_to_standard_jamo(p_SU_buf->tag[pos_tag],tmp,korean);
 				int l=u_strlen(tmp);
 				u_strcpy(p_SU_buf->stack+pos,tmp);
 				pos=pos+l;
@@ -785,12 +785,12 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 			retour_state = SU_explore_state(p_multiFlex_ctx,pL_MORPHO,p_SU_buf->stack, lemma, p_SU_buf->out, a,
 					T->state_number, desired_features, forms,
 					semitic ? p_SU_buf->semitic2 : NULL, flag_var, var_name, var_in_use, filters,
-					local_semantic_codes,jamo,jamo2syl);
+					local_semantic_codes,korean,jamo2syl);
 		} else {//u_fprintf(stderr,"Explore state recursion 2\n");
 			retour_state = SU_explore_state_recursion(p_multiFlex_ctx,pL_MORPHO,p_SU_buf->stack, lemma, p_SU_buf->out, a,
 					T->state_number, LIST, desired_features, forms,
 					semitic ? p_SU_buf->semitic2 : NULL, flag_var, var_name, var_in_use, filters,
-					local_semantic_codes,jamo,jamo2syl);
+					local_semantic_codes,korean,jamo2syl);
 		}
 	}
 	//return (retour * (1-retour_state));

@@ -377,7 +377,7 @@ int jamoCodage::sylToJamo(unichar syl,unichar* output,int pos) {
 if (syl<HANGUL_SYL_START || syl>HANGUL_SYL_END) {
    fatal_error("Invalid Hangul %X in sylToJamo\n",syl);
 }
-output[pos++]=KR_SYLLAB_BOUND;
+output[pos++]=KR_SYLLAB_BOUND_v2;
 unichar tmp=syl-HANGUL_SYL_START;
 int final_consonant=tmp%N_FINAL_CONSONANTS;
 tmp=tmp/N_FINAL_CONSONANTS;

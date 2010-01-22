@@ -203,15 +203,14 @@ if (err) {
 }
 
 /* Korean */
-jamoCodage* jamo=NULL;
+Korean* korean=NULL;
 Jamo2Syl* jamo2syl=NULL;
 if (is_korean) {
    if (alph==NULL) {
       fatal_error("Cannot initialize Korean data with a NULL alphabet\n");
    }
-	jamo=new jamoCodage();
+	korean=new Korean(alph);
 	/* We also initializes the Chinese -> Hangul table */
-	jamo->cloneHJAMap(alph->korean_equivalent_syllab);
 	if (fst2[0]=='\0') {
 		fatal_error("You must specify the Korean transducer to use with -f\n");
 	}
@@ -222,7 +221,7 @@ if (is_korean) {
 //DELAC inflection
 err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,encoding_output, bom_output, mask_encoding_compatibility_input,
             config_files_status,&D_CLASS_EQUIV,
-		    error_check_status,jamo,jamo2syl);
+		      error_check_status,korean,jamo2syl);
 MU_graph_free_graphs(p_multiFlex_ctx);
 for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fst2++) {
     free_abstract_Fst2(p_multiFlex_ctx->fst2[count_free_fst2],&(p_multiFlex_ctx->fst2_free[count_free_fst2]));
@@ -232,8 +231,8 @@ free_alphabet(alph);
 free_language_morpho(pL_MORPHO);
 free_OptVars(vars);
 free(p_multiFlex_ctx);
-if (jamo!=NULL) {
-	delete jamo;
+if (korean!=NULL) {
+	delete korean;
 	delete jamo2syl;
 }
 u_printf("Done.\n");

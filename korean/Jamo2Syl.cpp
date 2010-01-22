@@ -89,7 +89,7 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 		switch(argv[iargIndex][1]){
 		case 'm':iargIndex++;
 		        /*trans.loadJamoMap(argv[iargIndex]);*/
-				setStrToVal(trans.GetChangeStrContext(),sylMarkStr,KR_SYLLAB_BOUND);
+				setStrToVal(trans.GetChangeStrContext(),sylMarkStr,KR_SYLLAB_BOUND_v2);
 		    break;
 		case 'c': iargIndex++;
             trans.mbcsToUniStr((unsigned char *)argv[iargIndex],temp);

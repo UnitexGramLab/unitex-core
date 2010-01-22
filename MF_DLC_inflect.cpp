@@ -56,7 +56,7 @@ int inflect(char* DLC, char* DLCF,
 		    Encoding encoding_output, int bom_output, int mask_encoding_compatibility_input,
 		    int config_files_status,
 		    d_class_equiv_T* D_CLASS_EQUIV, int error_check_status,
-		    jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+		    Korean* korean,Jamo2Syl* jamo2syl) {
 	U_FILE *dlc, *dlcf; //DELAS/DELAC and DELAF/DELACF files
 	unichar input_line[DIC_LINE_SIZE]; //current DELAS/DELAC line
 	unichar output_line[DIC_LINE_SIZE]; //current DELAF/DELACF line
@@ -106,7 +106,7 @@ int inflect(char* DLC, char* DLCF,
 			/* And we inflect the word */
 			//   err=SU_inflect(DELAS_entry->lemma,inflection_code,&forms,semitic);
 			err = SU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,DELAS_entry->lemma, inflection_code,
-					DELAS_entry->filters, &forms, semitic, jamo, jamo2syl);
+					DELAS_entry->filters, &forms, semitic, korean, jamo2syl);
 #ifdef __GNUC__
 #warning mettre toutes les entrees sur une meme ligne
 #elif ((defined(__VISUALC__)) || defined(_MSC_VER))
@@ -116,8 +116,8 @@ int inflect(char* DLC, char* DLCF,
 			for (int i = 0; i < forms.no_forms; i++) {
 			   
 			   unichar foo[1024];   
-			   if (jamo!=NULL) {
-			      convert_Korean_text(forms.forms[i].form,foo,jamo,alph);
+			   if (korean!=NULL) {
+			      convert_Korean_text(forms.forms[i].form,foo,korean,alph);
 			   } else {
 			      u_strcpy(foo,forms.forms[i].form);
 			   }

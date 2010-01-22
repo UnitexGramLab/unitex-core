@@ -247,12 +247,10 @@ if (alphabet[0]!='\0') {
       fatal_error("Cannot open %s\n",alphabet);
    }
 }
-jamoCodage* jamo=NULL;
+Korean* korean=NULL;
 Jamo2Syl* jamo2syl=NULL;
 if (is_korean) {
-   jamo=new jamoCodage();
-   /* We also initializes the Chinese -> Hangul table */
-   jamo->cloneHJAMap(alph->korean_equivalent_syllab);
+   korean=new Korean(alph);
    jamo2syl=new Jamo2Syl();
    if (korean_fst2[0]=='\0') {
       fatal_error("-f option is mandatory when -j is used\n");
@@ -343,7 +341,7 @@ while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
             normalization_tree,&tag_list,
             current_global_position_in_tokens,
             current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
-            language,jamo,jamo2syl);
+            language,korean,jamo2syl);
    }
    if (sentence_number%100==0) u_printf("%d sentences read...        \r",sentence_number);
    sentence_number++;
@@ -358,8 +356,8 @@ free(enter_pos);
 free_Ustring(text);
 u_fclose(tfst);
 u_fclose(tind);
-if (jamo!=NULL) {
-   delete jamo;
+if (korean!=NULL) {
+   delete korean;
 }
 if (jamo2syl!=NULL) {
    delete jamo2syl;

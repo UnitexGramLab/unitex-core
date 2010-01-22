@@ -28,7 +28,7 @@
 #include "MorphologicalFilters.h"
 #include "LocateTfstMatches.h"
 #include "LocateConstants.h"
-#include "jamoCodage.h"
+#include "Korean.h"
 #include "OptimizedTfstTagMatching.h"
 
 /* Following values must be !=-1, because -1 is used in
@@ -90,8 +90,7 @@ struct locate_tfst_infos {
 	struct tfst_simple_match_list* matches;
 	
 	/* Stuffs for Korean */
-	int korean;
-	jamoCodage* jamo;
+	Korean* korean;
 	int n_jamo_fst2_tags;
 	unichar** jamo_fst2_tags;
 	int n_jamo_tfst_tags;

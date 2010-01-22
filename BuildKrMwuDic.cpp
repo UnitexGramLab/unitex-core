@@ -159,9 +159,8 @@ Alphabet* alph=load_alphabet(alphabet,1);
 if (alph==NULL) {
    fatal_error("Cannot open alphabet file %s\n",alphabet);
 }
-jamoCodage* jamo=new jamoCodage();
+Korean* korean=new Korean(alph);
 /* We also initializes the Chinese -> Hangul table */
-jamo->cloneHJAMap(alph->korean_equivalent_syllab);
 Jamo2Syl* jamo2syl=new Jamo2Syl();
 jamo2syl->init(fst2);
 MultiFlex_ctx* multiFlex_ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
@@ -178,13 +177,13 @@ if (pL_MORPHO == NULL) {
 }
 
 
-create_mwu_dictionary(delas,grf,multiFlex_ctx,alph,jamo,jamo2syl,pL_MORPHO,encoding_output,
+create_mwu_dictionary(delas,grf,multiFlex_ctx,alph,korean,jamo2syl,pL_MORPHO,encoding_output,
        bom_output,mask_encoding_compatibility_input);
 
 u_fclose(delas);
 u_fclose(grf);
 free_alphabet(alph);
-delete jamo;
+delete korean;
 delete jamo2syl;
 free_transducer_tree(multiFlex_ctx);
 for (int count_free_fst2=0;count_free_fst2<multiFlex_ctx->n_fst2;count_free_fst2++) {

@@ -186,7 +186,7 @@ for (;;)
             }
          } else if (!u_strcmp(field,"INFLECTED")) {
             /* We use push_input_string because it can protect special chars */
-            if (p->jamo!=NULL) {
+            if (p->korean!=NULL) {
                /* If we work in Korean mode, we must convert text into Hanguls */
                unichar z[1024];
                convert_jamo_to_hangul(entry->inflected,z,p->jamo2syl);

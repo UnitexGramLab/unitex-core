@@ -91,7 +91,7 @@ p->dic_variables=NULL;
 p->left_ctx_shift=0;
 p->left_ctx_base=0;
 p->protect_dic_chars=0;
-p->jamo=NULL;
+p->korean=NULL;
 p->jamo_tags=NULL;
 p->jamo2syl=NULL;
 p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
@@ -111,14 +111,14 @@ free(p);
 /**
  * Returns an array containing the jamo versions of all the given tokens.
  */
-unichar** create_jamo_tags(jamoCodage* jamo,struct string_hash* tokens,Alphabet* alphabet) {
+unichar** create_jamo_tags(Korean* korean,struct string_hash* tokens,Alphabet* alphabet) {
 unichar** res=(unichar**)malloc(tokens->size*sizeof(unichar*));
 unichar foo[128];
 for (int i=0;i<tokens->size;i++) {
 	if (!u_strcmp(tokens->value[i],"{S}")) {
 		res[i]=u_strdup("{S}");
 	} else {
-	   convert_Korean_text(tokens->value[i],foo,jamo,alphabet);
+	   convert_Korean_text(tokens->value[i],foo,korean,alphabet);
 	   res[i]=u_strdup(foo);
 	}
 }
@@ -298,10 +298,9 @@ p->variables=new_Variables(p->fst2->variables);
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
 if (is_korean) {
-	p->jamo=new jamoCodage();
+	p->korean=new Korean(p->alphabet);
 	/* We also initializes the Chinese -> Hangul table */
-	p->jamo->cloneHJAMap(p->alphabet->korean_equivalent_syllab);
-	p->jamo_tags=create_jamo_tags(p->jamo,p->tokens,p->alphabet);
+	p->jamo_tags=create_jamo_tags(p->korean,p->tokens,p->alphabet);
 	p->jamo2syl=new Jamo2Syl();
 	p->jamo2syl->init(korean_fst2);
 }
@@ -324,8 +323,8 @@ free_abstract_Fst2(p->fst2,NULL);
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);
-if (p->jamo!=NULL) {
-	delete p->jamo;
+if (p->korean!=NULL) {
+	delete p->korean;
 }
 if (p->jamo_tags!=NULL) {
 	/* jamo tags must be freed before tokens, because we need to know how

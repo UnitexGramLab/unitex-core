@@ -40,7 +40,7 @@
 
 #define JAMO_SIZE 68
 #define MAX_ORDER_JAMO_SIZE 8
-#define KR_SYLLAB_BOUND 0x318D
+#define KR_SYLLAB_BOUND_v2 0x318D
 
 #define N_VOWELS 21
 #define N_FINAL_CONSONANTS 28
@@ -80,10 +80,10 @@ public:
 		}
 	};
 
-	int sylToJamo(unichar syl,unichar *obuff,int o_off);
-	int jamoToSJamo(unichar jamo,unichar *obuff,int o_off);
-	int convertSylToJamo(unichar *ibuff,unichar *obuff,int sz,int limit);
-	int convertSyletCjamoToJamo(unichar *ibuff,unichar *obuff,int sz,int limit);
+	int sylToJamo(unichar syl,unichar* output,int pos);
+	int jamoToSJamo(unichar jamo,unichar* output,int pos);
+	int convertSylToJamo(unichar* input,unichar* output,int size,int limit);
+	int convertSyletCjamoToJamo(unichar* input,unichar* output,int size,int limit);
 	void jamoMapOut();
 	
 private:

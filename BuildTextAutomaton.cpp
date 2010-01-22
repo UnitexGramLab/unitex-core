@@ -412,7 +412,7 @@ return result;
  * fight with inner mysteries of Korean Hangul/Jamo tricks. Trust me.
  */
 void solve_alignment_puzzle_for_Korean(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph,
-                            jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+                            Korean* korean,Jamo2Syl* jamo2syl) {
 DISCARD_UNUSED_PARAMETER(jamo2syl)
 if (vector==NULL) {
    fatal_error("NULL vector in solve_alignment_puzzle\n");
@@ -428,7 +428,7 @@ if (vector->nbelems==1) {
    tab[0]->start_pos_char=0;
    tab[0]->end_pos=end;
    tab[0]->end_pos_char=u_strlen(INFO->tok->token[INFO->buffer[end]])-1;
-   tab[0]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[0]->end_pos_char],jamo,alph);
+   tab[0]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[0]->end_pos_char],korean,alph);
    return;
 }
 
@@ -452,11 +452,11 @@ tab[current_tag]->start_pos_char=0;
 unichar* token=INFO->tok->token[INFO->buffer[current_token]];
 unichar jamo_token[256];
 unichar jamo_tag[256];
-convert_Korean_text(token,jamo_token,jamo,alph);
+convert_Korean_text(token,jamo_token,korean,alph);
 if (!u_strcmp(tab[current_tag]->content,"<E>")) {
    fatal_error("solve_alignment_puzzle_for_Korean: {<E>,xxx.yyy} tag is not supposed to start a tag sequence\n");
 }
-convert_Korean_text(tab[current_tag]->content,jamo_tag,jamo,alph);
+convert_Korean_text(tab[current_tag]->content,jamo_tag,korean,alph);
 
 int everything_still_OK=1;
 while(everything_still_OK) {
@@ -505,7 +505,7 @@ while(everything_still_OK) {
             tab[current_tag]->end_pos_letter=-1;
          } else {
             /* We have a non <E> tag, so we can set 'jamo_tag' and get out of the for(;;) loop */
-            convert_Korean_text(tab[current_tag]->content,jamo_tag,jamo,alph);
+            convert_Korean_text(tab[current_tag]->content,jamo_tag,korean,alph);
             break;
          }
 
@@ -549,7 +549,7 @@ while(everything_still_OK) {
       current_pos_in_char_in_token=0;
       current_index_in_jamo_token=0;
       current_pos_in_letter_in_token=0;
-      convert_Korean_text(token,jamo_token,jamo,alph);
+      convert_Korean_text(token,jamo_token,korean,alph);
       continue;
    }
    if (jamo_token[current_index_in_jamo_token]==KR_SYLLAB_BOUND) {
@@ -601,7 +601,7 @@ for (int i=0;i<vector->nbelems;i++) {
    tab[i]->start_pos_char=0;
    tab[i]->end_pos=end;
    tab[i]->end_pos_char=u_strlen(INFO->tok->token[INFO->buffer[end]])-1;
-   tab[i]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[i]->end_pos_char],jamo,alph);
+   tab[i]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[i]->end_pos_char],korean,alph);
 }
 }
 
@@ -611,11 +611,11 @@ for (int i=0;i<vector->nbelems;i++) {
  * to be produced.
  */
 void solve_alignment_puzzle(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph,
-                            jamoCodage* jamo,Jamo2Syl* jamo2syl) {
-if (jamo!=NULL) {
+                            Korean* korean,Jamo2Syl* jamo2syl) {
+if (korean!=NULL) {
    /* The Korean case is so special that it seems risky to merge it with the
     * normal case that works fine */
-   solve_alignment_puzzle_for_Korean(vector,start,end,INFO,alph,jamo,jamo2syl);
+   solve_alignment_puzzle_for_Korean(vector,start,end,INFO,alph,korean,jamo2syl);
    return;
 }
 if (vector==NULL) {
@@ -735,13 +735,13 @@ void add_path_to_sentence_automaton(int start_pos,int end_pos,
                                     int start_state_index,Alphabet* alph,
                                     SingleGraph graph,struct string_hash* tmp_tags,
                                     unichar* s,int destination_state_index,Ustring* foo,
-                                    struct info* INFO,jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+                                    struct info* INFO,Korean* korean,Jamo2Syl* jamo2syl) {
 vector_ptr* vector=tokenize_normalization_output(s,alph);
 if (vector==NULL) {
    /* If the output to be generated has no interest, we do nothing */
    return;
 }
-solve_alignment_puzzle(vector,start_pos,end_pos,INFO,alph,jamo,jamo2syl);
+solve_alignment_puzzle(vector,start_pos,end_pos,INFO,alph,korean,jamo2syl);
 int current_state=start_state_index;
 for (int i=0;i<vector->nbelems;i++) {
    struct output_info* info=(struct output_info*)(vector->tab[i]);
@@ -782,14 +782,14 @@ void explore_normalization_tree(int first_pos_in_buffer,int current_pos_in_buffe
                                 struct normalization_tree* norm_tree_node,
                                 int first_state_index,int shift,Ustring* foo,
                                 int increment,language_t* language,
-                                jamoCodage* jamo,Jamo2Syl* jamo2syl) {
+                                Korean* korean,Jamo2Syl* jamo2syl) {
 struct list_ustring* outputs=norm_tree_node->outputs;
 while (outputs!=NULL) {
    /* If there are outputs, we add paths in the text automaton */
    add_path_to_sentence_automaton(first_pos_in_buffer,current_pos_in_buffer-increment,
                                   first_state_index,INFO->alph,graph,tmp_tags,
                                   outputs->string,first_state_index+shift-1,foo,INFO,
-                                  jamo,jamo2syl);
+                                  korean,jamo2syl);
    outputs=outputs->next;
 }
 /* Then, we explore the transitions from this node. Note that transitions
@@ -807,7 +807,7 @@ while (trans!=NULL) {
                                  INFO->buffer[current_pos_in_buffer+increment],
                                  INFO,graph,tmp_tags,trans->node,
                                  first_state_index,shift+1,foo,increment,language,
-                                 jamo,jamo2syl);
+                                 korean,jamo2syl);
       /* As there can be only one matching transition, we exit the while */
       trans=NULL;
    }
@@ -831,7 +831,7 @@ void build_sentence_automaton(int* buffer,int length,struct text_tokens* tokens,
                                struct match_list* *tag_list,
                                int current_global_position_in_tokens,
                                int current_global_position_in_chars,
-                               language_t* language,jamoCodage* jamo,
+                               language_t* language,Korean* korean,
                                Jamo2Syl* jamo2syl) {
 /* We declare the graph that will represent the sentence as well as
  * a temporary string_hash 'tmp_tags' that will be used to store the tags of this
@@ -894,13 +894,13 @@ for (i=0;i<length;i++) {
       if (norm_tree!=NULL) {
          /* If there is a normalization tree, we explore it */
          explore_normalization_tree(i,i,buffer[i],&INFO,tfst->automaton,tmp_tags,norm_tree,
-                                    current_state,1,foo,0,language,jamo,jamo2syl);
+                                    current_state,1,foo,0,language,korean,jamo2syl);
       }
       if (!is_not_unknown_token) {
          /* If the token was not matched in the dictionary, we put it as an unknown one */
          u_sprintf(foo,"@STD\n@%S\n@%d.0.0-%d.%d.%d\n.\n",tokens->token[buffer[i]],i,i,
                tfst->token_sizes->tab[i]-1,
-               get_length_in_jamo(tokens->token[buffer[i]][tfst->token_sizes->tab[i]-1],jamo,alph));
+               get_length_in_jamo(tokens->token[buffer[i]][tfst->token_sizes->tab[i]-1],korean,alph));
          int tag_number=get_value_index(foo->str,tmp_tags);
          add_outgoing_transition(tfst->automaton->states[current_state],tag_number,current_state+1);
       }
@@ -939,7 +939,7 @@ while ((*tag_list)!=NULL && (*tag_list)->m.start_pos_in_token>=current_global_po
    add_path_to_sentence_automaton(start_pos_in_token,end_pos_in_token,start_index,
                                   INFO.alph,tfst->automaton,tmp_tags,
                                   (*tag_list)->output,end_index+1,foo,&INFO,
-                                  jamo,jamo2syl);
+                                  korean,jamo2syl);
    tmp=(*tag_list)->next;
    free_match_list_element((*tag_list));
    (*tag_list)=tmp;
