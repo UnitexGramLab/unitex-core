@@ -65,7 +65,7 @@ const char* usage_Dico =
          "  -m DICS/--morpho=DICS: specifies that DICS is the .bin dictionary\n"
          "                         list to use in Locate's morphological mode. .bin names are\n"
          "                         supposed to be separated with semi-colons.\n"
-		   "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use for Korean\n"
+		   "  -K/--korean: tells Dico that it works on Korean\n"
          "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use for Korean\n"
          "  -h/--help: this help\n"
          "\n"
@@ -135,12 +135,12 @@ u_fclose(f);
 }
 
 
-const char* optstring_Dico=":t:a:m:j:f:hk:q:";
+const char* optstring_Dico=":t:a:m:Kf:hk:q:";
 const struct option_TS lopts_Dico[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"morpho",required_argument_TS,NULL,'m'},
-      {"jamo",required_argument_TS,NULL,'j'},
+      {"korean",no_argument_TS,NULL,'K'},
       {"fst2",required_argument_TS,NULL,'f'},
       {"help",no_argument_TS,NULL,'h'},
       {"input_encoding",required_argument_TS,NULL,'k'},
@@ -160,7 +160,7 @@ int val,index=-1;
 char alph[FILENAME_MAX]="";
 char text[FILENAME_MAX]="";
 char* morpho_dic=NULL;
-char jamo[FILENAME_MAX]="";
+int is_korean=0;
 char korean_fst2[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -185,10 +185,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Dico,lopts_Dico,&index,vars)
                 }
              }
              break;
-   case 'j': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty jamo table file name\n");
-             }
-             strcpy(jamo,vars->optarg);
+   case 'K': is_korean=1;
              break;
    case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty transducer file name\n");
@@ -243,7 +240,7 @@ remove(snt_files->morpho_inf);
 Alphabet* alphabet=NULL;
 if (alph[0]!='\0') {
    /* We load the alphabet */
-   alphabet=load_alphabet(alph,jamo[0]!='\0');
+   alphabet=load_alphabet(alph,is_korean);
    if (alphabet==NULL) {
       error("Cannot open alphabet file %s\n",alph);
       return 1;
@@ -332,7 +329,7 @@ for (int priority=1;priority<4;priority++) {
              * dlf, dlc and err must not be open while launch_locate_as_routine
              * is running, because this function tries to read in these files.
              */
-            launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,text,argv[i],alph,policy,morpho_dic,1,(jamo[0]!='\0')?jamo:NULL,(korean_fst2[0]!='\0')?korean_fst2:NULL);
+            launch_locate_as_routine(encoding_output,bom_output,mask_encoding_compatibility_input,text,argv[i],alph,policy,morpho_dic,1,is_korean,(korean_fst2[0]!='\0')?korean_fst2:NULL);
 	         /* We open output files: dictionaries in APPEND mode since we
              * can only add entries to them, and 'err' in WRITE mode because
              * each dictionary application may reduce this file */

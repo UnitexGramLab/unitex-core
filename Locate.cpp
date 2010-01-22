@@ -308,7 +308,7 @@ return (!OK);
 int launch_locate_as_routine(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                              char* text_snt,char* fst2,char* alphabet,
                               OutputPolicy output_policy,char* morpho_dic,
-                              int protect_dic_chars,char* jamo,char* korean_fst2) {
+                              int protect_dic_chars,int is_korean,char* korean_fst2) {
 /* We test if we are working on Thai, on the basis of the alphabet file */
 char path[FILENAME_MAX];
 char lang[FILENAME_MAX];
@@ -366,9 +366,8 @@ if (md) {
 if (protect_dic_chars) {
 	add_argument(invoker,"-p");
 }
-if (jamo!=NULL) {
-	sprintf(tmp,"-j%s",jamo);
-	add_argument(invoker,tmp);
+if (is_korean) {
+	add_argument(invoker,"-K");
 }
 if (korean_fst2!=NULL) {
    sprintf(tmp,"-f%s",korean_fst2);
