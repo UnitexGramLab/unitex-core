@@ -93,7 +93,7 @@ const char* usage_Txt2Tfst =
          "  -c/---clean: cleans each sentence automaton, keeping best paths\n"
          "  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
          "  -t XXX/--tagset=XXX: use the XXX ELAG tagset file to normalize the dictionary entries\n"
-         "  -j XXX/--jamo=XXX: produces a text automaton for Korean, using the XXX Jamo table file\n"
+         "  -K/--korean: tells Txt2Tfst that it works on Korean\n"
          "  -f XXX/--fst2=XXX: set the XXX Jamo .fst2 transducer to use; required for Korean mode\n"
          "  -h/--help: this help\n"
          "\n"
@@ -112,14 +112,14 @@ u_printf(usage_Txt2Tfst);
 }
 
 
-const char* optstring_Txt2Tfst=":a:cn:t:f:j:hk:q:";
+const char* optstring_Txt2Tfst=":a:cn:t:f:Khk:q:";
 const struct option_TS lopts_Txt2Tfst[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"clean", no_argument_TS, NULL, 'c'},
    {"normalization_grammar", required_argument_TS, NULL, 'n'},
    {"tagset", required_argument_TS, NULL, 't'},
    {"fst2", required_argument_TS, NULL, 'f'},
-   {"jamo", required_argument_TS, NULL, 'j'},
+   {"korean", no_argument_TS, NULL, 'K'},
    {"help", no_argument_TS, NULL, 'h'},
    {"input_encoding",required_argument_TS,NULL,'k'},
    {"output_encoding",required_argument_TS,NULL,'q'},
@@ -136,7 +136,7 @@ if (argc==1) {
 char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
-char jamo_table[FILENAME_MAX]="";
+int is_korean;
 char korean_fst2[FILENAME_MAX]="";
 int CLEAN=0;
 int KOREAN=0;
@@ -163,11 +163,8 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
              }
              strcpy(tagset,vars->optarg);
              break;
-   case 'j': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty Jamo table file name\n");
-             }
-             strcpy(jamo_table,vars->optarg);
-             KOREAN=1; 
+   case 'K': is_korean=1;
+             KOREAN=1;
              break;
    case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty Jamo .fst2 file name\n");
@@ -198,7 +195,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
 if (vars->optind!=argc-1) {
    fatal_error("Invalid arguments: rerun with --help\n");
 }
-if (KOREAN) {
+if (is_korean) {
    if (alphabet[0]=='\0') {
       fatal_error("-a option is mandatory when -k is used\n");
    }
@@ -245,23 +242,22 @@ if (!KOREAN) {
 }
 Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
-   alph=load_alphabet(alphabet,jamo_table[0]!='\0');
+   alph=load_alphabet(alphabet,is_korean);
    if (alph==NULL) {
       fatal_error("Cannot open %s\n",alphabet);
    }
 }
 jamoCodage* jamo=NULL;
 Jamo2Syl* jamo2syl=NULL;
-if (jamo_table[0]!='\0') {
+if (is_korean) {
    jamo=new jamoCodage();
-   jamo->loadJamoMap(jamo_table);
    /* We also initializes the Chinese -> Hangul table */
    jamo->cloneHJAMap(alph->korean_equivalent_syllab);
    jamo2syl=new Jamo2Syl();
    if (korean_fst2[0]=='\0') {
       fatal_error("-f option is mandatory when -j is used\n");
    }
-   jamo2syl->init(jamo_table,korean_fst2);
+   jamo2syl->init(korean_fst2);
 }
 struct text_tokens* tokens=load_text_tokens(tokens_txt,mask_encoding_compatibility_input);
 if (tokens==NULL) {

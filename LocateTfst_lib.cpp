@@ -54,7 +54,7 @@ void explore_tfst(int* visits,Tfst* tfst,int current_state_in_tfst,
                 Transition* current_kr_fst2_transition,
                 Transition* current_kr_tfst_transition,
                 struct list_int* ctx);
-void init_Korean_stuffs(struct locate_tfst_infos* infos,char* jamo_table);
+void init_Korean_stuffs(struct locate_tfst_infos* infos,int is_korean);
 void free_Korean_stuffs(struct locate_tfst_infos* infos);
 void compute_jamo_tfst_tags(struct locate_tfst_infos* infos);
 int match_between_text_and_grammar_tags(Tfst* tfst,TfstTag* text_tag,Fst2Tag grammar_tag,
@@ -77,8 +77,8 @@ int morphological_filter_is_ok(unichar* content,Fst2Tag grammar_tag,struct locat
 int locate_tfst(char* text,char* grammar,char* alphabet,char* output,
                 Encoding encoding_output,int bom_output,
                 MatchPolicy match_policy,
-		        OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
-		        VariableErrorPolicy variable_error_policy,int search_limit,char* jamo_table) {
+		          OutputPolicy output_policy,AmbiguousOutputPolicy ambiguous_output_policy,
+		          VariableErrorPolicy variable_error_policy,int search_limit,int is_korean) {
 Tfst* tfst=open_text_automaton(text);
 if (tfst==NULL) {
 	return 0;
@@ -92,12 +92,11 @@ if (infos.fst2==NULL) {
 }
 infos.tfst=tfst;
 infos.number_of_matches=0;
-int korean=(jamo_table!=NULL && jamo_table[0]!='\0');
 infos.alphabet=NULL;
 if (alphabet!=NULL && alphabet[0]!='\0') {
    /* We want to allow undefined alphabets (see comments above 'is_letter'
     * in Alphabet.cpp) */
-   infos.alphabet=load_alphabet(alphabet,korean);
+   infos.alphabet=load_alphabet(alphabet,is_korean);
    if (infos.alphabet==NULL) {
 	   close_text_automaton(tfst);
 	   free_abstract_Fst2(infos.fst2,&fst2_free);
@@ -145,7 +144,7 @@ infos.start_position_last_printed_match_letter=-1;
 infos.end_position_last_printed_match_letter=-1;
 
 infos.search_limit=search_limit;
-init_Korean_stuffs(&infos,jamo_table);
+init_Korean_stuffs(&infos,is_korean);
 infos.cache=new_LocateTfstTagMatchingCache(tfst->N,infos.fst2->number_of_tags);
 infos.contexts=compute_contexts(infos.fst2);
 /* We launch the matching for each sentence */
@@ -224,11 +223,11 @@ return 1;
 /**
  * If we must deal with a Korean .tfst, we compute the jamo version of all fst2 tags.
  */
-void init_Korean_stuffs(struct locate_tfst_infos* infos,char* jamo_table) {
+void init_Korean_stuffs(struct locate_tfst_infos* infos,int is_korean) {
 if (infos->alphabet==NULL) {
    fatal_error("init_Korean_stuffs cannot be invoked with a NULL alphabet\n");
 }
-if (jamo_table==NULL || jamo_table[0]=='\0') {
+if (!is_korean) {
    infos->korean=0;
    infos->jamo=NULL;
    infos->n_jamo_fst2_tags=0;
@@ -241,8 +240,6 @@ infos->korean=1;
 infos->jamo=new jamoCodage();
 infos->n_jamo_tfst_tags=0;
 infos->jamo_tfst_tags=NULL;
-/* We initialize the Jamo table */
-infos->jamo->loadJamoMap(jamo_table);
 /* We also initializes the Chinese -> Hangul table */ 
 infos->jamo->cloneHJAMap(infos->alphabet->korean_equivalent_syllab);
 infos->n_jamo_fst2_tags=infos->fst2->number_of_tags;

@@ -29,7 +29,6 @@
 
 
 #define MAX_LETTERS_IN_A_SYLLAB 5
-#define KR_SYLLAB_BOUND 0x318D
 #define KR_EMPTY_INITIAL_CONSONANT 0x110B
 
 
@@ -47,9 +46,8 @@ public:
 	 * fst2 is supposed to be the path of the uneSyl.fst2 transducer included
 	 * in Korean resources.
 	 */
-	void init(char* jamo_table,char* fst2) {
-		loadJamoMap(jamo_table);
-		setStrToVal(GetChangeStrContext(),sylMarkStr,sylMark);
+	void init(char* fst2) {
+		setStrToVal(GetChangeStrContext(),sylMarkStr,KR_SYLLAB_BOUND);
 		init_machine(fst2,2);
 	}
 

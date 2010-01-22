@@ -64,7 +64,7 @@ const char* usage_Locate =
          "  -w/--word_by_word: uses word by word tokenization (default)\n"
          "  -d X/--sntdir=X: uses directory X instead of the text directory; note that X must be\n"
          "                   (back)slash terminated\n"
-         "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use for Korean\n"
+         "  -K/--korean: tells Locate that it works on Korean\n"
          "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use for Korean\n"
          "\n"
          "Search limit options:\n"
@@ -114,7 +114,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpj:f:hk:q:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKf:hk:q:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -138,7 +138,7 @@ const struct option_TS lopts_Locate[]= {
       {"ambiguous_outputs",no_argument_TS,NULL,'b'},
       {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
       {"protect_dic_chars",no_argument_TS,NULL,'p'},
-      {"jamo",required_argument_TS,NULL,'j'},
+      {"korean",no_argument_TS,NULL,'K'},
       {"fst2",required_argument_TS,NULL,'f'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
@@ -171,7 +171,7 @@ SpacePolicy space_policy=DONT_START_WITH_SPACE;
 AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int protect_dic_chars=0;
-char jamo_table[FILENAME_MAX]="";
+int is_korean=0;
 char korean_fst2[FILENAME_MAX]="";
 char foo;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -224,10 +224,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'b': ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS; break;
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
    case 'p': protect_dic_chars=1; break;
-   case 'j': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty jamo table file name\n");
-             }
-             strcpy(jamo_table,vars->optarg);
+   case 'K': is_korean=1;
              break;
    case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty transducer file name\n");
@@ -291,7 +288,7 @@ strcat(err,"err");
 int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
                encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
-               ambiguous_output_policy,variable_error_policy,protect_dic_chars,jamo_table,korean_fst2);
+               ambiguous_output_policy,variable_error_policy,protect_dic_chars,korean_fst2,is_korean);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }

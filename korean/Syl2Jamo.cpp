@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -108,7 +108,7 @@ int main_Syl2Jamo(int argc,char *argv[]) {
 		switch(argv[iargIndex][1]){
 		case 'm': 
             iargIndex++;
-			hangul.loadJamoMap(argv[iargIndex]);
+			/*hangul.loadJamoMap(argv[iargIndex]);*/
 			break;
 		case 'o':iargIndex++; 
 			ofilename = new char [strlen(argv[iargIndex])+1];

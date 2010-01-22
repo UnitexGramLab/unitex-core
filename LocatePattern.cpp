@@ -133,7 +133,7 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
-                   char* jamo,char* korean_fst2) {
+                   char* korean_fst2,int is_korean) {
 
 U_FILE* text_file;
 U_FILE* out;
@@ -189,7 +189,7 @@ switch(output_policy) {
 }
 if (alphabet!=NULL && alphabet[0]!='\0') {
    u_printf("Loading alphabet...\n");
-   p->alphabet=load_alphabet(alphabet,jamo!=NULL);
+   p->alphabet=load_alphabet(alphabet,is_korean);
    if (p->alphabet==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
       return 0;
@@ -297,14 +297,13 @@ free_string_hash(semantic_codes);
 p->variables=new_Variables(p->fst2->variables);
 u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
-if (jamo!=NULL && jamo[0]!='\0') {
+if (is_korean) {
 	p->jamo=new jamoCodage();
-	p->jamo->loadJamoMap(jamo);
 	/* We also initializes the Chinese -> Hangul table */
 	p->jamo->cloneHJAMap(p->alphabet->korean_equivalent_syllab);
 	p->jamo_tags=create_jamo_tags(p->jamo,p->tokens,p->alphabet);
 	p->jamo2syl=new Jamo2Syl();
-	p->jamo2syl->init(jamo,korean_fst2);
+	p->jamo2syl->init(korean_fst2);
 }
 
 u_printf("Working...\n");

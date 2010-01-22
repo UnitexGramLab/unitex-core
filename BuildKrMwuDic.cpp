@@ -44,7 +44,6 @@ const char* usage_BuildKrMwuDic =
         "  -o GRF/--output=GRF: output .grf file to produce\n"
         "  -d DIR/--directory=DIR: specifies the directory that contains the inflection graphs\n"
         "                          required to produce morphological variants of roots\n"
-        "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use\n"
         "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use\n"
         "  -a ALPH/--alphabet=ALPH: specifies the alphabet file to use\n"
         "\n";
@@ -59,11 +58,10 @@ u_printf(usage_BuildKrMwuDic);
 
 
 
-const char* optstring_BuildKrMwuDic="o:d:j:f:a:hk:q:";
+const char* optstring_BuildKrMwuDic="o:d:f:a:hk:q:";
 const struct option_TS lopts_BuildKrMwuDic[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"directory",required_argument_TS,NULL,'d'},
-      {"jamo",required_argument_TS,NULL,'j'},
       {"fst2",required_argument_TS,NULL,'f'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"help",no_argument_TS,NULL,'h'},
@@ -86,7 +84,6 @@ if (argc==1) {
 int val,index=-1;
 char output[FILENAME_MAX]="";
 char inflection_dir[FILENAME_MAX]="";
-char jamo_table[FILENAME_MAX]="";
 char fst2[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
@@ -104,11 +101,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_BuildKrMwuDic,lopts_BuildKrM
                 fatal_error("Empty inflection directory\n");
              }
              strcpy(inflection_dir,vars->optarg);
-             break;
-   case 'j': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty jamo table file name\n");
-             }
-             strcpy(jamo_table,vars->optarg);
              break;
    case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty transducer file name\n");
@@ -148,9 +140,6 @@ if (output[0]=='\0') {
 if (inflection_dir[0]=='\0') {
    fatal_error("Inflection directory must be specified\n");
 }
-if (jamo_table[0]=='\0') {
-   fatal_error("Jamo conversion table must be specified\n");
-}
 if (fst2[0]=='\0') {
    fatal_error("Jamo->Hangul transducer must be specified\n");
 }
@@ -171,11 +160,10 @@ if (alph==NULL) {
    fatal_error("Cannot open alphabet file %s\n",alphabet);
 }
 jamoCodage* jamo=new jamoCodage();
-jamo->loadJamoMap(jamo_table);
 /* We also initializes the Chinese -> Hangul table */
 jamo->cloneHJAMap(alph->korean_equivalent_syllab);
 Jamo2Syl* jamo2syl=new Jamo2Syl();
-jamo2syl->init(jamo_table,fst2);
+jamo2syl->init(fst2);
 MultiFlex_ctx* multiFlex_ctx = (MultiFlex_ctx*)malloc(sizeof(MultiFlex_ctx));
 if (multiFlex_ctx==NULL) {
    fatal_alloc_error("main_BuildKrMwuDic");

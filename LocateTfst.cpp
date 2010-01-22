@@ -43,8 +43,7 @@ const char* usage_LocateTfst =
          "OPTIONS:\n"
          "  -t TFST/--text=TFST: the .tfst text automaton\n"
          "  -a ALPH/--alphabet=ALPH: the language alphabet file\n"
-         "  -j JAMOTABLE/--jamo=JAMOTABLE: the Jamo table conversion to use\n"
-         "                                 when we work on a Korean .tfst\n"
+         "  -K/--korean: tells LocateTfst that it works on Korean\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -85,11 +84,11 @@ u_printf(usage_LocateTfst);
 }
 
 
-const char* optstring_LocateTfst=":t:a:j:ln:SLAIMRXYZbzhk:q:";
+const char* optstring_LocateTfst=":t:a:Kln:SLAIMRXYZbzhk:q:";
 const struct option_TS lopts_LocateTfst[]= {
      {"text",required_argument_TS,NULL,'t'},
      {"alphabet",required_argument_TS,NULL,'a'},
-     {"jamo",required_argument_TS,NULL,'j'},
+     {"korean",no_argument_TS,NULL,'K'},
      {"all",no_argument_TS,NULL,'l'},
      {"number_of_matches",required_argument_TS,NULL,'n'},
      {"shortest_matches",no_argument_TS,NULL,'S'},
@@ -127,7 +126,7 @@ int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPU
 int val,index=-1;
 char text[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
-char jamo_table[FILENAME_MAX]="";
+int is_korean=0;
 MatchPolicy match_policy=LONGEST_MATCHES;
 OutputPolicy output_policy=IGNORE_OUTPUTS;
 AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
@@ -147,10 +146,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_LocateTfst,lopts_LocateTfst,
              }
              strcpy(alphabet,vars->optarg);
              break;
-   case 'j': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty jamo table name\n");
-             }
-             strcpy(jamo_table,vars->optarg);
+   case 'K': is_korean=1;
              break;
    case 'l': search_limit=NO_MATCH_LIMIT; break;
    case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
@@ -201,7 +197,7 @@ strcat(output,"concord.ind");
 int OK=locate_tfst(text,grammar,alphabet,output,
                    encoding_output,bom_output,
                    match_policy,output_policy,
-                   ambiguous_output_policy,variable_error_policy,search_limit,jamo_table);
+                   ambiguous_output_policy,variable_error_policy,search_limit,is_korean);
 
 free_OptVars(vars);
 return (!OK);

@@ -54,7 +54,7 @@ const char* usage_MultiFlex =
          "  -a ALPH/--alphabet=ALPH: the alphabet file \n"
          "  -d DIR/--directory=DIR: the directory containing 'Morphology' and 'Equivalences'\n"
          "                          files and inflection graphs for single and compound words.\n"
-		   "  -j TABLE/--jamo=TABLE: specifies the jamo conversion table to use for Korean\n"
+		   "  -K/--korean: tells MultiFlex that it works on Korean\n"
 		   "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use for Korean\n"
 		   "  -s/--only-simple-words: the program will consider compound words as errors\n"
 		   "  -c/--only-compound-words: the program will consider simple words as errors\n"
@@ -70,12 +70,12 @@ u_printf(usage_MultiFlex);
 }
 
 
-const char* optstring_MultiFlex=":o:a:d:j:f:schk:q:";
+const char* optstring_MultiFlex=":o:a:d:Kf:schk:q:";
 const struct option_TS lopts_MultiFlex[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"directory",required_argument_TS,NULL,'d'},
-      {"jamo",required_argument_TS,NULL,'j'},
+      {"korean",no_argument_TS,NULL,'K'},
       {"fst2",required_argument_TS,NULL,'f'},
       {"only-simple-words",no_argument_TS,NULL,'s'},
       {"only-compound-words",no_argument_TS,NULL,'c'},
@@ -96,7 +96,7 @@ if (argc==1) {
 char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
-char jamo_table[FILENAME_MAX]="";
+int is_korean;
 char fst2[FILENAME_MAX]="";
 MultiFlex_ctx* p_multiFlex_ctx;
 //Current language's alphabet
@@ -120,10 +120,7 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&i
              strcpy(alphabet,vars->optarg);
              break;
    case 'd': strcpy(config_dir,vars->optarg); break;
-   case 'j': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty jamo table file name\n");
-             }
-             strcpy(jamo_table,vars->optarg);
+   case 'K': is_korean=1;
              break;
    case 'f': if (vars->optarg[0]=='\0') {
                 fatal_error("You must specify a non empty transducer file name\n");
@@ -208,19 +205,18 @@ if (err) {
 /* Korean */
 jamoCodage* jamo=NULL;
 Jamo2Syl* jamo2syl=NULL;
-if (jamo_table[0]!='\0') {
+if (is_korean) {
    if (alph==NULL) {
       fatal_error("Cannot initialize Korean data with a NULL alphabet\n");
    }
 	jamo=new jamoCodage();
-	jamo->loadJamoMap(jamo_table);
 	/* We also initializes the Chinese -> Hangul table */
 	jamo->cloneHJAMap(alph->korean_equivalent_syllab);
 	if (fst2[0]=='\0') {
 		fatal_error("You must specify the Korean transducer to use with -f\n");
 	}
    jamo2syl=new Jamo2Syl();
-   jamo2syl->init(jamo_table,fst2);
+   jamo2syl->init(fst2);
 }
 
 //DELAC inflection

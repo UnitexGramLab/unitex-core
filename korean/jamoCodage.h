@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -21,56 +21,74 @@
 #ifndef JamoCodageH
 #define JamoCodageH
 
-#define HANGUL_SYL_START	0xac00     // GA
+#include "Unicode.h"
+/* This include is only required by Jamo2Syl */
+#include "codeForKorean.h"
+
+#define HANGUL_SYL_START	0xAC00     // GA
 #define HANGUL_SYL_END		0xD7A3      // HIH
 #define UNI_HJA   0x4E00 /* Start code of CJK Unified Ideagraphs */
 #define UNI_HANJAE 0x9FFF /* End code of CJK Unified Ideagraphs */
 #define UNI_CHANJAS 0xF900 /* Start code of CJK Compatiblilty  Ideagraphs */
 #define UNI_CHANJAE 0xFA2D /* End code of CJK Compatiblilty  Ideagraphs */
 #define UNI_HJAMO_CSTART  0x3130 /* Start code of Hangul Compatibility Jamo */
+#define UNI_HJAMO_CEND  0x318E   /* End code of Hangul Compatibility Jamo */
 //#define UNI_CHG_JAMO_CE  0x318E /* End code of Hangul Compatibility Jamo  */
 //#define UNI_CHG_CS  0x3130 /* Start code of Hangul Jamo Initial consonants:19 */
 //#define UNI_CHG_CE  0x314E /* End code of Hangul Jamo Initial consonants */
 //#define UNI_CHG_VS  0x314F /* Start code of Hangul Jamo Final consonants:28 */
-#define UNI_HJAMO_CEND  0x3163 /* End code of Hangul Jamo Final consonants */
 
-#include "codeForKorean.h"
-#include "Error.h"
+#define JAMO_SIZE 68
+#define MAX_ORDER_JAMO_SIZE 8
+#define KR_SYLLAB_BOUND 0x318D
 
-class jamoCodage : public convert_windows949kr_uni  {
+#define N_VOWELS 21
+#define N_FINAL_CONSONANTS 28
 
-	unichar *orderTableJamo[256];
-	unichar *mapJamoTable[256];
-	unichar *CjamoUjamoTable[256];
-	int jamoSize;
+#define INDEX_FIRST_VOWEL 19
+#define INDEX_FIRST_FINAL_CONSONANT 40
+
+extern unichar sylMarkStr[5];
+
+/* This extent is only required by Jamo2Syl */
+class jamoCodage : public convert_windows949kr_uni {
+
+   /* This array contains the lines of the Jamo configuration file. Index are
+    * line numbers */
+	unichar* orderTableJamo[256];
+
+	/* This array is another indirection for converting Unicode Jamos to Jamos.
+	 * If we have a Unicode Jamo #Z, CjamoUjamoTable[Z-0x3130] will point
+	 * to a unichar array containing equivalent Jamos */
+	unichar* CjamoUjamoTable[256];
+
 public:
-	unichar sylMark;
-	unichar *sylMarkStr;
-	jamoCodage(){
-		jamoSize=0;
-		orderTableJamo[0xff]=0;
-		sylMark = 0;
-		sylMarkStr = 0;
-		for(int i = 0; i < 256; i++) CjamoUjamoTable[i] = 0;
-		loadJamoMap(0);
-	};
-	~jamoCodage(){
 
-		if(sylMarkStr) delete [] sylMarkStr;
-		for(int i = 0; i< jamoSize;i++)
-			if (orderTableJamo[i])
-				delete [] orderTableJamo[i];
-		if (jamoSize<0xff)
-			if (orderTableJamo[0xff])
-				delete [] orderTableJamo[0xff];
+	jamoCodage() {
+		for(int i=0;i<256;i++) {
+		   orderTableJamo[i]=NULL;
+		   CjamoUjamoTable[i]=NULL;
+		}
+		initJamoMap();
 	};
-	int loadJamoMap(char *fname);
+
+	~jamoCodage() {
+		for(int i=0;i<JAMO_SIZE;i++) {
+			if (orderTableJamo[i]!=NULL) {
+				delete [] orderTableJamo[i];
+			}
+		}
+	};
+
 	int sylToJamo(unichar syl,unichar *obuff,int o_off);
 	int jamoToSJamo(unichar jamo,unichar *obuff,int o_off);
 	int convertSylToJamo(unichar *ibuff,unichar *obuff,int sz,int limit);
 	int convertSyletCjamoToJamo(unichar *ibuff,unichar *obuff,int sz,int limit);
 	void jamoMapOut();
 	
+private:
+	void initJamoMap();
+
 
 
 };

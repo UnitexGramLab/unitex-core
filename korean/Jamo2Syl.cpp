@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -88,8 +88,8 @@ int main_Jamo2Syl(int argc, char *argv[]) {
 		if(*argv[iargIndex] != '-') break;
 		switch(argv[iargIndex][1]){
 		case 'm':iargIndex++;
-		        trans.loadJamoMap(argv[iargIndex]);
-				setStrToVal(trans.GetChangeStrContext(),trans.sylMarkStr,trans.sylMark);
+		        /*trans.loadJamoMap(argv[iargIndex]);*/
+				setStrToVal(trans.GetChangeStrContext(),sylMarkStr,KR_SYLLAB_BOUND);
 		    break;
 		case 'c': iargIndex++;
             trans.mbcsToUniStr((unsigned char *)argv[iargIndex],temp);
