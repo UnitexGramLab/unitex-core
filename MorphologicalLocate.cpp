@@ -93,7 +93,7 @@ unichar tmp[128];
 if (tag_token[0]==KR_SYLLAB_BOUND && tag_token[1]=='\0') {
    u_strcpy(tmp,tag_token);
 } else {
-   convert_Korean_text(tag_token,tmp,p->jamo,p->alphabet);
+   convert_Korean_text(tag_token,tmp,p->korean,p->alphabet);
 }
 int i=0;
 if (token==NULL) {
