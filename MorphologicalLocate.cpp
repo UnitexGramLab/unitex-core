@@ -93,7 +93,7 @@ unichar tmp[128];
 if (tag_token[0]==KR_SYLLAB_BOUND && tag_token[1]=='\0') {
    u_strcpy(tmp,tag_token);
 } else {
-   convert_Korean_text(tag_token,tmp,p->korean,p->alphabet);
+   convert_Korean_text(tag_token,tmp,p->jamo,p->alphabet);
 }
 int i=0;
 if (token==NULL) {
@@ -1029,8 +1029,13 @@ for (int i=0;i<n_transitions;i++) {
 void explore_dic_in_morpho_mode(struct locate_parameters* p,int pos,int pos_in_token,
                                 struct parsing_info* *matches,struct pattern* pattern,
                                 int save_dic_entry,unichar* jamo,int pos_in_jamo) {
-unichar inflected[4096];
-unichar line_buffer[DIC_LINE_SIZE];
+unichar* buffer_line_buffer_inflected;
+buffer_line_buffer_inflected = (unichar*)malloc(sizeof(unichar)*(4096+DIC_LINE_SIZE));
+if (buffer_line_buffer_inflected==NULL) {
+   fatal_alloc_error("new_FilterSet");
+}
+unichar* inflected = buffer_line_buffer_inflected;
+unichar* line_buffer = buffer_line_buffer_inflected + 4096;
 for (int i=0;i<p->n_morpho_dics;i++) {
    if (p->morpho_dic_bin[i]!=NULL) {
       /* Can't match anything in an empty dictionary */
@@ -1039,7 +1044,5 @@ for (int i=0;i<p->n_morpho_dics;i++) {
                                    0,pos,matches,pattern,save_dic_entry,jamo,pos_in_jamo,line_buffer);
    }
 }
+free(buffer_line_buffer_inflected);
 }
-
-
-
