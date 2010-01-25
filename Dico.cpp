@@ -42,8 +42,6 @@
 #include "SortTxt.h"
 #include "Compress.h"
 
-
-
 /**
  * This enhanced version of Dico was rewritten by Alexis Neme,
  * based on the original version written by S�bastien Paumier
@@ -52,6 +50,11 @@
  * local grammars representent by an FST2 as part of the lexical identification
  * stage.
  */
+
+
+#define DONT_PRODUCE_MORPHO_DIC 0
+#define PRODUCE_MORPHO_DIC_AT_THE_END 1
+#define PRODUCE_MORPHO_DIC_NOW 2
 
 
 const char* usage_Dico =
@@ -307,17 +310,20 @@ for (int priority=1;priority<4;priority++) {
             info->dlc=NULL;
             info->err=NULL;
          }
-         else if (!strcmp(tmp2,".fst2"))       {
+         else if (!strcmp(tmp2,".fst2")) {
             /*
              * If it is a .fst2 dictionary
              */
             int l=(int)(strlen(tmp)-((priority==2)?1:2));
             OutputPolicy policy=MERGE_OUTPUTS;
-            int export_in_morpho_dic=0;
-            if (l>0 && (tmp[l]=='b' || tmp[l]=='B')
+            int export_in_morpho_dic=DONT_PRODUCE_MORPHO_DIC;
+            if (l>0 && (tmp[l]=='b' || tmp[l]=='B' || tmp[l]=='z' || tmp[l]=='Z')
                   && (tmp[l-1]=='-' ||
                         l>1 && (tmp[l-1]=='r' || tmp[l-1]=='R') && tmp[l-2]=='-')) {
-               export_in_morpho_dic=1;
+               export_in_morpho_dic=PRODUCE_MORPHO_DIC_AT_THE_END;
+               if (tmp[l]=='z' || tmp[l]=='Z') {
+                  export_in_morpho_dic=PRODUCE_MORPHO_DIC_NOW;
+               }
                l--;
             }
             if (l>0 && (tmp[l]=='r' || tmp[l]=='R') && tmp[l-1]=='-') {
@@ -336,7 +342,7 @@ for (int priority=1;priority<4;priority++) {
             info->dlf=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlf,U_APPEND);
             info->dlc=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->dlc,U_APPEND);
             info->err=u_fopen_creating_versatile_encoding(encoding_output,bom_output,snt_files->err,U_WRITE);
-            if (export_in_morpho_dic) {
+            if (export_in_morpho_dic!=DONT_PRODUCE_MORPHO_DIC) {
                /* If necessary, we deal with the morpho.dic file */
                if (info->morpho==NULL) {
                   /* We create it if needed */
@@ -348,6 +354,19 @@ for (int priority=1;priority<4;priority++) {
             }
             /* And we merge the Locate results with current dictionaries */
             merge_dic_locate_results(info,snt_files->concord_ind,priority,export_in_morpho_dic);
+            if (export_in_morpho_dic==PRODUCE_MORPHO_DIC_NOW) {
+               /* If we have to compress right now the local morphological dictionary,
+                * we must close it, sort it, call Compress and reopen it in append mode */
+               u_fclose(info->morpho);
+               pseudo_main_SortTxt(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,
+                                   snt_files->morpho_dic);
+               /* Then we compress it */
+               pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,snt_files->morpho_dic);
+               info->morpho=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input | ALL_ENCODING_BOM_POSSIBLE,snt_files->morpho_dic,U_APPEND);
+               if (info->morpho==NULL) {
+                  fatal_error("");
+               }
+            }
             /* We dump and close output files */
             save_unknown_words(info);
         	   u_fclose(info->dlf);
