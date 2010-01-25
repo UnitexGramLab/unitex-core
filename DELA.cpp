@@ -657,8 +657,8 @@ return n;
 
 
 /**
- * This function compares a lemma and an inflected form. If both are spaces
- * or hyphens, it copies the lemma in 'result'. Otherwise, 'result' will
+ * This function compares a lemma and an inflected form. If the lemma is a space
+ * or an hyphen, it copies the lemma in 'result'. Otherwise, 'result' will
  * contain the length of the suffix to be removed from the inflected form in
  * order to get the longest common prefix, followed by the suffix
  * of the lemma. For instance:
@@ -673,8 +673,9 @@ void get_compressed_token(unichar* inflected,unichar* lemma,unichar* result) {
 int prefix=get_longuest_prefix(inflected,lemma);
 int length_of_sfx_to_remove=u_strlen(inflected)-prefix;
 int lemma_length=u_strlen(lemma);
-if (lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
-   u_strlen(inflected)==1 && (inflected[0]==' ' || inflected[0]=='-')) {
+if (/*lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
+   u_strlen(inflected)==1 && (inflected[0]==' ' || inflected[0]=='-')*/
+    !u_strcmp(lemma," ") || !u_strcmp(lemma,"-")) {
    /* If we have 2 separators, we write the lemma one rawly in order
     * to make the INF file visible.
     * Ex: "jean-pierre,jean-pierre.N" => "0-0.N" instead of "000.N" */
