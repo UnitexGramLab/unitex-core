@@ -136,7 +136,7 @@ if (argc==1) {
 char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
-int is_korean;
+int is_korean=0;
 char korean_fst2[FILENAME_MAX]="";
 int CLEAN=0;
 int KOREAN=0;
