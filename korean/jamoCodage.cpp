@@ -275,7 +275,7 @@ if (first!=0) {
    va_list args;
    va_start(args,first);
    while ((d=va_arg(args,int))!=0) {
-      result[n++]=d;
+      result[n++]=(unichar)d;
    }
    va_end(args);
 }
