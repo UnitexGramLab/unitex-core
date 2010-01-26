@@ -204,6 +204,10 @@ struct locate_parameters {
    Korean* korean;
    unichar** jamo_tags;
    Jamo2Syl* jamo2syl;
+
+   /* a recyclable buffer to be given to string_match_filter function.
+    *   To avoid stack or heap allocation at each call */
+   wchar_t* recyclable_wchart_buffer;
 };
 
 

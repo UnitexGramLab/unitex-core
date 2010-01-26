@@ -238,6 +238,16 @@ free(index);
 
 /**
  * Returns 1 if the given string matches the given filter.
+ * with a user provided buffer
+ */
+int string_match_filter(FilterSet* filters,unichar* s,int filter_number,wchar_t* tmp) {
+w_strcpy(tmp,s);
+return !tre_regwexec(filters->filter[filter_number].matcher,tmp,0,NULL,0);
+}
+
+
+/**
+ * Returns 1 if the given string matches the given filter.
  */
 int string_match_filter(FilterSet* filters,unichar* s,int filter_number) {
 wchar_t tmp[2048];

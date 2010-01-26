@@ -95,6 +95,10 @@ p->korean=NULL;
 p->jamo_tags=NULL;
 p->jamo2syl=NULL;
 p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
+p->recyclable_wchart_buffer=(wchar_t*)malloc(sizeof(wchar_t)*2048);
+if (p->recyclable_wchart_buffer==NULL) {
+   fatal_alloc_error("new_locate_parameters");
+}
 return p;
 }
 
@@ -104,6 +108,9 @@ return p;
  */
 void free_locate_parameters(struct locate_parameters* p) {
 if (p==NULL) return;
+if (p->recyclable_wchart_buffer!=NULL) {
+    free(p->recyclable_wchart_buffer);
+}
 free(p);
 }
 

@@ -347,7 +347,7 @@ while (meta_list!=NULL) {
                   get_content(content1,p,pos,pos_in_token,L2->position,L2->pos_in_token);
                   #ifdef TRE_WCHAR
                   int filter_number=p->tags[t->tag_number]->filter_number;
-                  int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content1,filter_number));
+                  int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content1,filter_number,p->recyclable_wchart_buffer));
                   if (!morpho_filter_OK) {
                      p->stack->stack_pointer=stack_top;
                      L2=L2->next;
@@ -425,7 +425,7 @@ while (meta_list!=NULL) {
             one_letter[1]='\0';
             #ifdef TRE_WCHAR
             int filter_number=p->tags[t->tag_number]->filter_number;
-            int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,one_letter,filter_number));
+            int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,one_letter,filter_number,p->recyclable_wchart_buffer));
             if (morpho_filter_OK) {
                match_one_letter=1;
             }
@@ -681,7 +681,7 @@ while (trans!=NULL) {
                get_content(content2,p,pos,pos_in_token,L->position,L->pos_in_token);
                #ifdef TRE_WCHAR
                int filter_number=p->tags[trans->tag_number]->filter_number;
-               int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content2,filter_number));
+               int morpho_filter_OK=(filter_number==-1 || string_match_filter(p->filters,content2,filter_number,p->recyclable_wchart_buffer));
                if (!morpho_filter_OK) {
                   p->stack->stack_pointer=stack_top;
                   L=L->next;
@@ -763,7 +763,10 @@ void enter_morphological_mode(int graph_depth, /* 0 means that we are in the top
             struct locate_parameters* p, /* miscellaneous parameters needed by the function */
             struct Token_error_ctx* p_token_error_ctx
             ) {
-unichar content_buffer[4096];
+unichar* content_buffer=(unichar*)malloc(sizeof(unichar)*4096);
+if (content_buffer==NULL) {
+   fatal_alloc_error("enter_morphological_mode");
+}
 int* var_backup=NULL;
 int old_StackBase;
 int stack_top=p->stack->stack_pointer;
@@ -827,6 +830,7 @@ if (ctx==NULL) {
 } else {
    clear_dic_variable_list(&dic_variable_backup);
 }
+free(content_buffer);
 }
 
 
@@ -1032,7 +1036,7 @@ void explore_dic_in_morpho_mode(struct locate_parameters* p,int pos,int pos_in_t
 unichar* buffer_line_buffer_inflected;
 buffer_line_buffer_inflected = (unichar*)malloc(sizeof(unichar)*(4096+DIC_LINE_SIZE));
 if (buffer_line_buffer_inflected==NULL) {
-   fatal_alloc_error("new_FilterSet");
+   fatal_alloc_error("explore_dic_in_morpho_mode");
 }
 unichar* inflected = buffer_line_buffer_inflected;
 unichar* line_buffer = buffer_line_buffer_inflected + 4096;
