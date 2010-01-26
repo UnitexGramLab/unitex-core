@@ -104,28 +104,31 @@ if (s==NULL) {
    return 1;
 }
 
-for (;;)
-{
+for (;;) {
+    /* First, we push all chars before '\0' or '$' */
     int char_to_push_count=0;
-    while ((s[i+char_to_push_count]!='\0') && (s[i+char_to_push_count]!='$'))
+    while ((s[i+char_to_push_count]!='\0') && (s[i+char_to_push_count]!='$')) {
         char_to_push_count++;
-    if (char_to_push_count!=0)
-    {
+    }
+    if (char_to_push_count!=0) {
         push_array(p->stack,&s[i],char_to_push_count);
         i+=char_to_push_count;
     }
 
-    if (s[i]=='\0')
+    if (s[i]=='\0') {
         break;
-    /* now s[i]=='$' */
-
-   /*if (s[i]=='$')*/ {
+    }
+    /* Now we are sure to have s[i]=='$' */
+    {
       /* Case of a variable name */
-      unichar name[128];
+      unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
       int l=0;
       i++;
-      while (is_variable_char(s[i])) {
+      while (is_variable_char(s[i]) && l<MAX_TRANSDUCTION_VAR_LENGTH) {
          name[l++]=s[i++];
+      }
+      if (l==MAX_TRANSDUCTION_VAR_LENGTH) {
+         fatal_error("Too long variable name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
       }
       name[l]='\0';
       if (s[i]!='$' && s[i]!='.') {
@@ -137,11 +140,14 @@ for (;;)
       }
       if (s[i]=='.') {
          /* Here we deal with the case of a field like $a.CODE$ */
-         unichar field[128];
+         unichar field[MAX_TRANSDUCTION_FIELD_LENGTH];
          l=0;
          i++;
-         while (s[i]!='\0' && s[i]!='$') {
+         while (s[i]!='\0' && s[i]!='$' && l<MAX_TRANSDUCTION_FIELD_LENGTH) {
             field[l++]=s[i++];
+         }
+         if (l==MAX_TRANSDUCTION_FIELD_LENGTH) {
+            fatal_error("Too long field name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_FIELD_LENGTH,s);
          }
          field[l]='\0';
          if (s[i]=='\0') {
@@ -159,6 +165,57 @@ for (;;)
             }
          }
          i++;
+         if (!u_strcmp(field,"SET") || !u_strcmp(field,"UNSET")) {
+            /* If we have $a.SET$, we must go on only if the variable a is set, no
+             * matter if it is a normal or a dictionary variable */
+            struct transduction_variable* v=get_transduction_variable(p->variables,name);
+            if (v==NULL) {
+               /* We do nothing, since this normal variable may not exist */
+            } else {
+               if (v->start==UNDEF_VAR_BOUND || v->end==UNDEF_VAR_BOUND
+                     || v->start>v->end) {
+                  /* If the variable is not defined properly */
+                  if (field[0]=='S') {
+                     /* $a.SET$ is false, we backtrack */
+                     p->stack->stack_pointer=old_stack_pointer; return 0;
+                  } else {
+                     /* $a.UNSET$ is true, we go on */
+                     continue;
+                  }
+               } else {
+                  /* If the variable is correctly defined */
+                  if (field[0]=='S') {
+                     /* $a.SET$ is true, we go on */
+                     continue;
+                  } else {
+                     /* $a.UNSET$ is false, we backtrack */
+                     p->stack->stack_pointer=old_stack_pointer; return 0;
+                  }
+               }
+            }
+            /* If we arrive here, the variable was not a normal one, so we
+             * try to match dictionary one */
+            struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
+            if (entry==NULL) {
+               /* If the variable is not defined properly */
+               if (field[0]=='S') {
+                  /* $a.SET$ is false, we backtrack */
+                  p->stack->stack_pointer=old_stack_pointer; return 0;
+               } else {
+                  /* $a.UNSET$ is true, we go on */
+                  continue;
+               }
+            }
+            /* If the dictionary variable is defined */
+            if (field[0]=='S') {
+               /* $a.SET$ is true, we go on */
+               continue;
+            } else {
+               /* $a.UNSET$ is false, we backtrack */
+               p->stack->stack_pointer=old_stack_pointer; return 0;
+            }
+         }
+
          struct dela_entry* entry=get_dic_variable(name,p->dic_variables);
          if (entry==NULL) {
             switch (p->variable_error_policy) {

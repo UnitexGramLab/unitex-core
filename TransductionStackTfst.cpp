@@ -136,11 +136,14 @@ if (s==NULL) {
 while (s[i]!='\0') {
    if (s[i]=='$') {
       /* Case of a variable name */
-      unichar name[128];
+      unichar name[MAX_TRANSDUCTION_VAR_LENGTH];
       int l=0;
       i++;
-      while (is_variable_char(s[i])) {
+      while (is_variable_char(s[i]) && l<MAX_TRANSDUCTION_VAR_LENGTH) {
          name[l++]=s[i++];
+      }
+      if (l==MAX_TRANSDUCTION_VAR_LENGTH) {
+         fatal_error("Too long variable name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_VAR_LENGTH,s);
       }
       name[l]='\0';
       if (s[i]!='$' && s[i]!='.') {
@@ -155,9 +158,55 @@ while (s[i]!='\0') {
          }
       }
       if (s[i]=='.') {
+         /* Here we deal with the case of a field like $a.SET$ */
+         unichar field[MAX_TRANSDUCTION_FIELD_LENGTH];
+         l=0;
+         i++;
+         while (s[i]!='\0' && s[i]!='$' && l<MAX_TRANSDUCTION_FIELD_LENGTH) {
+            field[l++]=s[i++];
+         }
+         if (l==MAX_TRANSDUCTION_FIELD_LENGTH) {
+            fatal_error("Too long field name (>%d chars) in following output:\n%S\n",MAX_TRANSDUCTION_FIELD_LENGTH,s);
+         }
+         field[l]='\0';
+         if (!u_strcmp(field,"SET") || !u_strcmp(field,"UNSET")) {
+            /* We only accept those 2 fields. We look if a variable exists */
+            struct transduction_variable* v=get_transduction_variable(p->variables,name);
+            TfstTag* first_tag=NULL;
+            TfstTag* last_tag=NULL;
+            if (v!=NULL) {
+               first_tag=(TfstTag*)(p->tfst->tags->tab[v->start]);
+               last_tag=(TfstTag*)(p->tfst->tags->tab[v->end]);
+            }
+            if (v==NULL || v->start==UNDEF_VAR_BOUND || v->end==UNDEF_VAR_BOUND
+                  || !valid_text_interval_tfst(&(first_tag->m),&(last_tag->m))) {
+               /* If the variable is not defined properly */
+               if (field[0]=='S') {
+                  /* $a.SET$ is false, we backtrack */
+                  stack->len=old_length;
+                  stack->str[old_length]='\0';
+                  return 0;
+               } else {
+                  /* $a.UNSET$ is true, we go on */
+                  continue;
+               }
+            } else {
+               /* If the variable is correctly defined */
+               if (field[0]=='S') {
+                  /* $a.SET$ is true, we go on */
+                  continue;
+               } else {
+                  /* $a.UNSET$ is false, we backtrack */
+                  stack->len=old_length;
+                  stack->str[old_length]='\0';
+                  return 0;
+               }
+            }
+         }
+
          /* Dic variables are not currently not handled */
          switch (p->variable_error_policy) {
-            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error: dictionary variables not allowed by LocateTfst\n");
+            case EXIT_ON_VARIABLE_ERRORS: fatal_error("Output error with:\n%S\n\nYou may try to use dictionary variables that are not allowed by LocateTfst\n",s);
             case IGNORE_VARIABLE_ERRORS: continue;
             case BACKTRACK_ON_VARIABLE_ERRORS: {
                stack->len=old_length;

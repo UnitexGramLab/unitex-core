@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,10 @@
 
 /* Value to use to indicate that a variable bound is undefined */
 #define UNDEF_VAR_BOUND -666666
+
+/* Maximum length in chars of a transduction variable or field */
+#define MAX_TRANSDUCTION_VAR_LENGTH 127
+#define MAX_TRANSDUCTION_FIELD_LENGTH 127
 
 
 /**

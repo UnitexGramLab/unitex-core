@@ -456,10 +456,11 @@ while (text_tags!=NULL) {
    s->str[len]='\0';
    /* We add the fst2 tag output, if any */
    if (item->first_time) {
-      if (!process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number) 
-           && infos->variable_error_policy==BACKTRACK_ON_VARIABLE_ERRORS) {
+      if (!process_output_for_tfst_match(infos,s,item->fst2_transition->tag_number)) {
          /* We do not take into account matches with variable errors if the
-          * policy is BACKTRACK_ON_VARIABLE_ERRORS */
+          * process_output_for_tfst_match function has decided that backtracking
+          * was necessary, either because of a variable error of because of a
+          * $a.SET$ or $a.UNSET$ test */
          return;
       }
    }
@@ -614,8 +615,7 @@ if (infos->output_policy==REPLACE_OUTPUTS) {
 		if (item->first_time) {
 		   /* We don't want to consider a single fst2 transition more than once
 		    * (see comment in declaration of (struct tfst_match) */
-		   if (!process_output_for_tfst_match(infos,s,fst2_tag_number)
-		       && infos->variable_error_policy==BACKTRACK_ON_VARIABLE_ERRORS) {
+		   if (!process_output_for_tfst_match(infos,s,fst2_tag_number)) {
 		      free_Ustring(s);
 		      free_vector_ptr(items); 
 		      return;
