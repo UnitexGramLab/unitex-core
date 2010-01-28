@@ -124,3 +124,12 @@ int is_cancelling_requested()
 	}
     return 0;
 }
+
+
+/*
+ * this is a library function for external use
+ */
+UNITEX_FUNC int UNITEX_CALL UnitexIsUserCancellingRequested()
+{
+    return is_cancelling_requested();
+}

@@ -72,6 +72,8 @@ UNITEX_FUNC int UNITEX_CALL RemoveUserCancellingInfo(const t_user_cancelling_fun
 /* just return the number of user cancelling Installed */
 UNITEX_FUNC int UNITEX_CALL GetNbUserCancellingInfoInstalled();
 
+UNITEX_FUNC int UNITEX_CALL UnitexIsUserCancellingRequested();
+
 /**********************************************************************/
 
 
