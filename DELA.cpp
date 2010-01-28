@@ -672,7 +672,7 @@ return n;
 void get_compressed_token(unichar* inflected,unichar* lemma,unichar* result) {
 int prefix=get_longuest_prefix(inflected,lemma);
 int length_of_sfx_to_remove=u_strlen(inflected)-prefix;
-int lemma_length=u_strlen(lemma);
+/*int lemma_length=u_strlen(lemma);*/
 if (/*lemma_length==1 && (lemma[0]==' ' || lemma[0]=='-') &&
    u_strlen(inflected)==1 && (inflected[0]==' ' || inflected[0]=='-')*/
     !u_strcmp(lemma," ") || !u_strcmp(lemma,"-")) {
