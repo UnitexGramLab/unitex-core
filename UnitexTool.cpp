@@ -66,7 +66,7 @@
 #include "ActivityLogger.h"
 
 
-
+#include "UserCancelling.h"
 
 struct utility_item {
 	const char* name;
@@ -307,7 +307,10 @@ static int CallToolLogged(mainFunc* fnc,int argc,char* argv[])
 {
     int ret;
     Call_logger_fnc_before_calling_tool(fnc,argc,argv);
-    ret = (*fnc)(argc,argv);
+    if (is_cancelling_requested() != 0)
+        ret = 0;
+    else
+        ret = (*fnc)(argc,argv);
     Call_logger_fnc_after_calling_tool(fnc,argc,argv,ret);
     return ret;
 }
