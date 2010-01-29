@@ -23,7 +23,7 @@ UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
 }
 
 
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElasped ptr, int destructObject)
 {
     TIMEBEGIN tBegin;
     TIMEBEGIN tEnd;
@@ -31,14 +31,18 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
     unsigned int iRet;
     tBegin = *pBegin;
     tEnd.Tick = GetTickCount();
-    free(pBegin);
+    if (destructObject != 0)
+      free(pBegin);
 
 
     iRet = (unsigned int)(tEnd.Tick - tBegin.Tick) ;
     return iRet;
 }
 
-
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+{
+    return SyncGetMSecElapsedNotDestructive(ptr,1);
+}
 
 typedef struct
 {
@@ -87,6 +91,7 @@ UNITEX_FUNC void UNITEX_CALL SyncDoRunThreads(unsigned int iNbThread,t_thread_fu
 /* Mutex implementation for Win32 API */
 /* see http://msdn.microsoft.com/en-us/library/ms686927(VS.85).aspx */
 
+/*
 UNITEX_FUNC SYNC_Mutex_OBJECT UNITEX_CALL SyncBuildMutex()
 {
     HANDLE hMutex;
@@ -118,6 +123,47 @@ UNITEX_FUNC void UNITEX_CALL SyncDeleteMutex(SYNC_Mutex_OBJECT pMut)
         CloseHandle(hMutex);
 }
 
+*/
+
+
+typedef struct
+{
+    CRITICAL_SECTION cs;
+} SYNC_MUTEX_OBJECT_INTERNAL;
+
+UNITEX_FUNC SYNC_Mutex_OBJECT UNITEX_CALL SyncBuildMutex()
+{
+    SYNC_MUTEX_OBJECT_INTERNAL* pMoi = (SYNC_MUTEX_OBJECT_INTERNAL*)malloc(sizeof(SYNC_MUTEX_OBJECT_INTERNAL));
+    if (pMoi == NULL)
+        return NULL;
+    InitializeCriticalSection(&(pMoi->cs));
+
+    return (SYNC_Mutex_OBJECT)pMoi;
+}
+
+UNITEX_FUNC void UNITEX_CALL SyncGetMutex(SYNC_Mutex_OBJECT pMut)
+{
+    SYNC_MUTEX_OBJECT_INTERNAL* pMoi = (SYNC_MUTEX_OBJECT_INTERNAL*)pMut;
+    if (pMoi != NULL)
+        EnterCriticalSection(&pMoi->cs);
+}
+
+UNITEX_FUNC void UNITEX_CALL SyncReleaseMutex(SYNC_Mutex_OBJECT pMut)
+{
+    SYNC_MUTEX_OBJECT_INTERNAL* pMoi = (SYNC_MUTEX_OBJECT_INTERNAL*)pMut;
+    if (pMut != NULL)
+        LeaveCriticalSection(&pMoi->cs);
+}
+
+UNITEX_FUNC void UNITEX_CALL SyncDeleteMutex(SYNC_Mutex_OBJECT pMut)
+{
+    SYNC_MUTEX_OBJECT_INTERNAL* pMoi = (SYNC_MUTEX_OBJECT_INTERNAL*)pMut;
+    if (pMoi != NULL)
+    {
+        DeleteCriticalSection(&pMoi->cs);
+        free(pMoi);
+    }
+}
 
 
 typedef struct

@@ -73,7 +73,7 @@ UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
 }
 
 
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElasped ptr, int destructObject)
 {
     TIMEBEGIN tBegin;
     TIMEBEGIN tEnd;
@@ -82,12 +82,17 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
     tBegin = *pBegin;
     tEnd.tm_t = time(NULL);
     gettimeofday(&(tEnd.tp),NULL);
-    free(pBegin);
-
+    if (destructObject != 0)
+      free(pBegin);
 
     iRet = (unsigned int)(((tEnd.tp.tv_sec*1000) + (tEnd.tp.tv_usec/1000)) -
                  ((tBegin.tp.tv_sec*1000) + (tBegin.tp.tv_usec/1000))) ;
     return iRet;
+}
+
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+{
+    return SyncGetMSecElapsedNotDestructive(ptr,1);
 }
 
 /*

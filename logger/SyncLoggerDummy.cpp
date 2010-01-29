@@ -30,7 +30,7 @@ UNITEX_FUNC hTimeElasped UNITEX_CALL SyncBuidTimeMarkerObject()
 }
 
 
-UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsedNotDestructive(hTimeElasped ptr, int destructObject)
 {
     TIMEBEGIN* pBegin = (TIMEBEGIN*)ptr;
     unsigned int iRet;
@@ -41,10 +41,18 @@ UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
 	*/
 	clock_t endTime=clock();
 	iRet= (int)((((double)(endTime-(pBegin->startTime))) / CLOCKS_PER_SEC) * 1000);
-    free(pBegin);
+    if (destructObject != 0)
+      free(pBegin);
 
     return iRet;
 }
+
+
+UNITEX_FUNC unsigned int UNITEX_CALL SyncGetMSecElapsed(hTimeElasped ptr)
+{
+    return SyncGetMSecElapsedNotDestructive(ptr,1);
+}
+
 
 /*
 Mutex implementation for Posix API
