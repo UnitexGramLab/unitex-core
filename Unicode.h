@@ -286,9 +286,9 @@ int u_is_sinhala_letter(unichar);
 int u_is_thai_letter(unichar);
 int u_is_greek_extended_letter(unichar);	//$CD:20021115
 //--------Beginning of Hyungue's inserts------------------
-int u_is_korea_syllabe_letter(unichar c);
-int u_is_CJK_Unified_Ideographs(unichar c);
-int u_is_cjk_compatibility_ideographs(unichar c);
+int u_is_Hangul(unichar c);
+int u_is_CJK_Unified_Ideograph(unichar c);
+int u_is_CJK_compatibility_ideograph(unichar c);
 int u_is_Hangul_Compatility_Jamo(unichar c);
 int u_is_Hangul_Jamo(unichar c);
 int u_is_Hangul_Jamo_initial_consonant(unichar c);

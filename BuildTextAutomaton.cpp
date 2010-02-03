@@ -411,7 +411,7 @@ return result;
  * OK, I (S.P.) know that it's bad to duplicate code. But it's even bader to
  * fight with inner mysteries of Korean Hangul/Jamo tricks. Trust me.
  */
-void solve_alignment_puzzle_for_Korean(vector_ptr* vector,int start,int end,struct info* INFO,Alphabet* alph,
+void solve_alignment_puzzle_for_Korean(vector_ptr* vector,int start,int end,struct info* INFO,
                             Korean* korean,Jamo2Syl* jamo2syl) {
 DISCARD_UNUSED_PARAMETER(jamo2syl)
 if (vector==NULL) {
@@ -428,7 +428,7 @@ if (vector->nbelems==1) {
    tab[0]->start_pos_char=0;
    tab[0]->end_pos=end;
    tab[0]->end_pos_char=u_strlen(INFO->tok->token[INFO->buffer[end]])-1;
-   tab[0]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[0]->end_pos_char],korean,alph);
+   tab[0]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[0]->end_pos_char],korean)-1;
    return;
 }
 
@@ -452,11 +452,11 @@ tab[current_tag]->start_pos_char=0;
 unichar* token=INFO->tok->token[INFO->buffer[current_token]];
 unichar jamo_token[256];
 unichar jamo_tag[256];
-convert_Korean_text(token,jamo_token,korean,alph);
+Hanguls_to_Jamos(token,jamo_token,korean);
 if (!u_strcmp(tab[current_tag]->content,"<E>")) {
    fatal_error("solve_alignment_puzzle_for_Korean: {<E>,xxx.yyy} tag is not supposed to start a tag sequence\n");
 }
-convert_Korean_text(tab[current_tag]->content,jamo_tag,korean,alph);
+Hanguls_to_Jamos(tab[current_tag]->content,jamo_tag,korean);
 
 int everything_still_OK=1;
 while(everything_still_OK) {
@@ -505,7 +505,7 @@ while(everything_still_OK) {
             tab[current_tag]->end_pos_letter=-1;
          } else {
             /* We have a non <E> tag, so we can set 'jamo_tag' and get out of the for(;;) loop */
-            convert_Korean_text(tab[current_tag]->content,jamo_tag,korean,alph);
+            Hanguls_to_Jamos(tab[current_tag]->content,jamo_tag,korean);
             break;
          }
 
@@ -549,14 +549,14 @@ while(everything_still_OK) {
       current_pos_in_char_in_token=0;
       current_index_in_jamo_token=0;
       current_pos_in_letter_in_token=0;
-      convert_Korean_text(token,jamo_token,korean,alph);
+      Hanguls_to_Jamos(token,jamo_token,korean);
       continue;
    }
-   if (jamo_token[current_index_in_jamo_token]==KR_SYLLAB_BOUND) {
+   if (jamo_token[current_index_in_jamo_token]==KR_SYLLABLE_BOUND) {
       /* If we find a syllab bound in the jamo token, we have to change the current
        * character and to update start_pos_letter to 0 */
       current_index_in_jamo_token++;
-      if (jamo_token[current_index_in_jamo_token]==KR_SYLLAB_BOUND) {
+      if (jamo_token[current_index_in_jamo_token]==KR_SYLLABLE_BOUND) {
          fatal_error("Contiguous syllab bounds in jamo token in solve_alignment_puzzle_for_Korean\n");
       }
       if (jamo_token[current_index_in_jamo_token]=='\0') {
@@ -576,9 +576,9 @@ while(everything_still_OK) {
       tab[current_tag]->start_pos_char=current_pos_in_char_in_token;
       tab[current_tag]->start_pos_letter=current_pos_in_letter_in_token;
    }
-   if (jamo_tag[current_index_in_jamo_tag]==KR_SYLLAB_BOUND) {
+   if (jamo_tag[current_index_in_jamo_tag]==KR_SYLLABLE_BOUND) {
       current_index_in_jamo_tag++;
-      if (jamo_tag[current_index_in_jamo_tag]==KR_SYLLAB_BOUND) {
+      if (jamo_tag[current_index_in_jamo_tag]==KR_SYLLABLE_BOUND) {
          fatal_error("Contiguous syllab bounds in jamo tag in solve_alignment_puzzle_for_Korean\n");
       }
       if (jamo_tag[current_index_in_jamo_tag]=='\0') {
@@ -601,7 +601,7 @@ for (int i=0;i<vector->nbelems;i++) {
    tab[i]->start_pos_char=0;
    tab[i]->end_pos=end;
    tab[i]->end_pos_char=u_strlen(INFO->tok->token[INFO->buffer[end]])-1;
-   tab[i]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[i]->end_pos_char],korean,alph);
+   tab[i]->end_pos_letter=get_length_in_jamo(INFO->tok->token[INFO->buffer[end]][tab[i]->end_pos_char],korean)-1;
 }
 }
 
@@ -615,7 +615,7 @@ void solve_alignment_puzzle(vector_ptr* vector,int start,int end,struct info* IN
 if (korean!=NULL) {
    /* The Korean case is so special that it seems risky to merge it with the
     * normal case that works fine */
-   solve_alignment_puzzle_for_Korean(vector,start,end,INFO,alph,korean,jamo2syl);
+   solve_alignment_puzzle_for_Korean(vector,start,end,INFO,korean,jamo2syl);
    return;
 }
 if (vector==NULL) {
@@ -900,7 +900,7 @@ for (i=0;i<length;i++) {
          /* If the token was not matched in the dictionary, we put it as an unknown one */
          u_sprintf(foo,"@STD\n@%S\n@%d.0.0-%d.%d.%d\n.\n",tokens->token[buffer[i]],i,i,
                tfst->token_sizes->tab[i]-1,
-               get_length_in_jamo(tokens->token[buffer[i]][tfst->token_sizes->tab[i]-1],korean,alph));
+               get_length_in_jamo(tokens->token[buffer[i]][tfst->token_sizes->tab[i]-1],korean)-1);
          int tag_number=get_value_index(foo->str,tmp_tags);
          add_outgoing_transition(tfst->automaton->states[current_state],tag_number,current_state+1);
       }
@@ -1025,8 +1025,8 @@ free_dela_entry(e);
 
 int token_contains_Hangul_or_Chinese_chars(unichar* s,Alphabet* a) {
 for (int i=0;s[i]!='\0';i++) {
-   if (u_is_korea_syllabe_letter(s[i])
-         || a->korean_equivalent_syllab[s[i]]!=0
+   if (u_is_Hangul(s[i])
+         || a->korean_equivalent_syllable[s[i]]!=0
          || (s[i]!=0x318D && u_is_Hangul_Compatility_Jamo(s[i]))) {
       return 1;
    }
@@ -1435,7 +1435,7 @@ tfst->text=u_strdup(foo->str);
 /* Now, we create cursentence.txt, but we save a modified version of the text in which
  * Chinese characters are replaced by their Hangul equivalents */
 for (int i=0;i<foo->len;i++) {
-   unichar c=alph->korean_equivalent_syllab[foo->str[i]];
+   unichar c=alph->korean_equivalent_syllable[foo->str[i]];
    if (c!=0) {
       foo->str[i]=c;
    }

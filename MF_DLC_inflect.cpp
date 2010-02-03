@@ -117,7 +117,7 @@ int inflect(char* DLC, char* DLCF,
 			   
 			   unichar foo[1024];   
 			   if (korean!=NULL) {
-			      convert_Korean_text(forms.forms[i].form,foo,korean,alph);
+			      Hanguls_to_Jamos(forms.forms[i].form,foo,korean);
 			   } else {
 			      u_strcpy(foo,forms.forms[i].form);
 			   }

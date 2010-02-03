@@ -28,7 +28,7 @@
 #include "MF_Global.h"
 #include "MF_LangMorpho.h"
 
-void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,Alphabet* alphabet,
+void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,
                            Korean* korean,Jamo2Syl* jamo2syl,struct l_morpho_t* morpho,
                            Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 

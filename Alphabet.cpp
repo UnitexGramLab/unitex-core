@@ -56,17 +56,17 @@ if (alphabet->t_array_collection==NULL) {
 }
 alphabet->t_array_collection[0] = NULL;
 if (korean) {
-   alphabet->korean_equivalent_syllab=(unichar*)malloc(0x10000*sizeof(unichar));
-   if (alphabet->korean_equivalent_syllab==NULL) {
+   alphabet->korean_equivalent_syllable=(unichar*)malloc(0x10000*sizeof(unichar));
+   if (alphabet->korean_equivalent_syllable==NULL) {
       fatal_alloc_error("new_alphabet");
    }
-   memset(alphabet->korean_equivalent_syllab,0,0x10000*sizeof(unichar));
+   memset(alphabet->korean_equivalent_syllable,0,0x10000*sizeof(unichar));
    /*
    for (int i=0;i<0x10000;i++) {
       alphabet->korean_equivalent_syllab[i]=0;
    }*/
 } else {
-   alphabet->korean_equivalent_syllab=NULL;
+   alphabet->korean_equivalent_syllable=NULL;
 }
 return alphabet;
 }
@@ -85,8 +85,8 @@ for (int i=0;i<alphabet->higher_written;i++) {
 for (int i=1;i<=alphabet->i_last_array_pos_used;i++)
    free(alphabet->t_array_collection[i]);
 free(alphabet->t_array_collection);
-if (alphabet->korean_equivalent_syllab!=NULL) {
-   free(alphabet->korean_equivalent_syllab);
+if (alphabet->korean_equivalent_syllable!=NULL) {
+   free(alphabet->korean_equivalent_syllable);
 }
 free(alphabet);
 }
@@ -122,12 +122,12 @@ if (alphabet->t_array_collection[i_pos_in_array_of_string]==NULL) {
 alphabet->t_array_collection[i_pos_in_array_of_string][L]=upper;
 alphabet->t_array_collection[i_pos_in_array_of_string][L+1]='\0';
 /* If needed, we look at the Korean case, but only if we have a Chinese character */
-if (alphabet->korean_equivalent_syllab!=NULL) {
-   if (u_is_CJK_Unified_Ideographs(upper) || u_is_cjk_compatibility_ideographs(upper)) {
-      if (alphabet->korean_equivalent_syllab[upper]!=0) {
+if (alphabet->korean_equivalent_syllable!=NULL) {
+   if (u_is_CJK_Unified_Ideograph(upper) || u_is_CJK_compatibility_ideograph(upper)) {
+      if (alphabet->korean_equivalent_syllable[upper]!=0) {
          fatal_error("add_letter_equivalence: Chinese character %C has several equivalent Hangul characters\n",upper);
       }
-      alphabet->korean_equivalent_syllab[upper]=lower;
+      alphabet->korean_equivalent_syllable[upper]=lower;
    }
 }
 }

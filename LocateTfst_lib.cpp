@@ -259,12 +259,12 @@ for (int i=0;i<infos->n_jamo_fst2_tags;i++) {
           * is empty. In order to be careful, we prefer not to convert it */
          u_strcpy(tmp,"<E>");
       } else {
-         convert_Korean_text(entry->inflected,tmp,infos->korean,infos->alphabet);
+         Hanguls_to_Jamos(entry->inflected,tmp,infos->korean);
       }
       free_dela_entry(entry);
    } else {
       if (i!=0) {
-         convert_Korean_text(t->input,tmp,infos->korean,infos->alphabet);
+         Hanguls_to_Jamos(t->input,tmp,infos->korean);
       } else {
          /* We don't want to convert the epsilon transition tag */
          u_strcpy(tmp,"<E>");
@@ -330,7 +330,7 @@ for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
           * is empty. In order to be careful, we prefer not to convert it */
          u_strcpy(tmp,"<E>");
       } else {
-         convert_Korean_text(entry->inflected,tmp,infos->korean,infos->alphabet);
+         Hanguls_to_Jamos(entry->inflected,tmp,infos->korean);
       }
       free_dela_entry(entry);
    } else {
@@ -339,7 +339,7 @@ for (int i=0;i<infos->n_jamo_tfst_tags;i++) {
           * but, in order to be careful, we prefer not to convert it */
          u_strcpy(tmp,"<E>");
       } else {
-         convert_Korean_text(t->content,tmp,infos->korean,infos->alphabet);
+         Hanguls_to_Jamos(t->content,tmp,infos->korean);
       }
    }
    infos->jamo_tfst_tags[i]=u_strdup(tmp);
@@ -817,11 +817,11 @@ if (infos->korean && (*pos_kr_fst2_tag!=-1 || (grammar_tag->input[0]!='{' && gra
    int j=(*pos_kr_tfst_tag!=-1)?(*pos_kr_tfst_tag):0;
    while (jamo_fst2[k]!='\0' && jamo_tfst[j]!='\0') {
       /* We ignore syllab bounds in both tfst and fst2 tags */
-      if (jamo_fst2[k]==KR_SYLLAB_BOUND) {
+      if (jamo_fst2[k]==KR_SYLLABLE_BOUND) {
          k++;
          continue;
       }
-      if (jamo_tfst[j]==KR_SYLLAB_BOUND) {
+      if (jamo_tfst[j]==KR_SYLLABLE_BOUND) {
          j++;
          continue;
       }

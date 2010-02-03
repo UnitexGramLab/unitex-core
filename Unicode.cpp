@@ -3673,30 +3673,30 @@ return (c>=0x0386 && c<=0x03F5 && c!=0x0387 && c!=0x038B
 //
 //	return true if c is a korean syllalbe
 //
-int u_is_korea_syllabe_letter(unichar c)
+int u_is_Hangul(unichar c)
 {
-	return( (c >= 0xac00) && (c<= 0xd7af));
+	return( (c >= 0xac00) && (c<= 0xd7a3));
 }
 //
 //	return true if c is a korean ideograme
 //
 
-int u_is_CJK_Unified_Ideographs(unichar c)
+int u_is_CJK_Unified_Ideograph(unichar c)
 {
 	return( (c>= 0x4e00) && (c <= 0x9fff));
 }
-int u_is_cjk_compatibility_ideographs(unichar c)
+int u_is_CJK_compatibility_ideograph(unichar c)
 {
 	return( (c>= 0xf900) && (c <= 0xfaff));
 }
 //
 //	return true if c is a character of the alphabet coreen
-//	when charcters of this zone exit in the korean text
+//	when characters of this zone exit in the korean text
 //	these is symbols
 //
 int u_is_Hangul_Compatility_Jamo(unichar c)
 {
-	return( (c>= 0x3130) && (c <= 0x318f));
+	return( (c>= 0x3130) && (c <= 0x3163));
 }
 //
 //	return true
@@ -3953,9 +3953,9 @@ return u_is_basic_latin_letter(c)
        || u_is_thai_letter(c)
        || u_is_greek_extended_letter(c)	//$CD:20021115
 //---------Beginning of Hyungue's inserts--------
-       || u_is_korea_syllabe_letter(c)
-	   || u_is_CJK_Unified_Ideographs(c)
-	   || u_is_cjk_compatibility_ideographs(c)
+       || u_is_Hangul(c)
+	   || u_is_CJK_Unified_Ideograph(c)
+	   || u_is_CJK_compatibility_ideograph(c)
 //---------End of Hyungue's inserts--------
        ;
 }

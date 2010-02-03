@@ -319,7 +319,7 @@ for (int priority=1;priority<4;priority++) {
             int export_in_morpho_dic=DONT_PRODUCE_MORPHO_DIC;
             if (l>0 && (tmp[l]=='b' || tmp[l]=='B' || tmp[l]=='z' || tmp[l]=='Z')
                   && (tmp[l-1]=='-' ||
-                        l>1 && (tmp[l-1]=='r' || tmp[l-1]=='R') && tmp[l-2]=='-')) {
+                        (l>1 && (tmp[l-1]=='r' || tmp[l-1]=='R') && tmp[l-2]=='-'))) {
                export_in_morpho_dic=PRODUCE_MORPHO_DIC_AT_THE_END;
                if (tmp[l]=='z' || tmp[l]=='Z') {
                   export_in_morpho_dic=PRODUCE_MORPHO_DIC_NOW;

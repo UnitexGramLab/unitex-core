@@ -118,14 +118,14 @@ free(p);
 /**
  * Returns an array containing the jamo versions of all the given tokens.
  */
-unichar** create_jamo_tags(Korean* korean,struct string_hash* tokens,Alphabet* alphabet) {
+unichar** create_jamo_tags(Korean* korean,struct string_hash* tokens) {
 unichar** res=(unichar**)malloc(tokens->size*sizeof(unichar*));
-unichar foo[128];
+unichar foo[1024];
 for (int i=0;i<tokens->size;i++) {
 	if (!u_strcmp(tokens->value[i],"{S}")) {
 		res[i]=u_strdup("{S}");
 	} else {
-	   convert_Korean_text(tokens->value[i],foo,korean,alphabet);
+	   Hanguls_to_Jamos(tokens->value[i],foo,korean);
 	   res[i]=u_strdup(foo);
 	}
 }
@@ -307,7 +307,7 @@ p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
 if (is_korean) {
 	p->korean=new Korean(p->alphabet);
 	/* We also initializes the Chinese -> Hangul table */
-	p->jamo_tags=create_jamo_tags(p->korean,p->tokens,p->alphabet);
+	p->jamo_tags=create_jamo_tags(p->korean,p->tokens);
 	p->jamo2syl=new Jamo2Syl();
 	p->jamo2syl->init(korean_fst2);
 }

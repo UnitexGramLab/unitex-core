@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -865,8 +865,8 @@ if(ictx->debugFlag)
 					!= ictx->skipMark) {};
 
                   Ctmp = (ictx->OF)[OIdx-1];
-                  if(u_is_CJK_Unified_Ideographs(Ctmp)
-	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
+                  if(u_is_CJK_Unified_Ideograph(Ctmp)
+	                         || u_is_CJK_compatibility_ideograph(Ctmp)){
                       if(OIdx != 0)	(ictx->Opile)[OpileIdx++]= Ctmp;
                       --OIdx;
                       break;
@@ -876,8 +876,8 @@ if(ictx->debugFlag)
                   break;
 			case 'L':
                   Ctmp = (ictx->OF)[OIdx-1];
-                  if(u_is_CJK_Unified_Ideographs(Ctmp)
-	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
+                  if(u_is_CJK_Unified_Ideograph(Ctmp)
+	                         || u_is_CJK_compatibility_ideograph(Ctmp)){
                       if(OIdx != 0)	(ictx->Opile)[OpileIdx++]= Ctmp;
                       --OIdx;
                      while((FIdx != 0) &&((ictx->Fpile)[FpileIdx++] = (ictx->FF)[--FIdx])
@@ -892,8 +892,8 @@ if(ictx->debugFlag)
                     fatal_error("skipMark is not defined\n");
                 }
                   Ctmp = (ictx->OF)[OIdx-1];
-                  if(u_is_CJK_Unified_Ideographs(Ctmp)
-	                         || u_is_cjk_compatibility_ideographs(Ctmp)){
+                  if(u_is_CJK_Unified_Ideograph(Ctmp)
+	                         || u_is_CJK_compatibility_ideograph(Ctmp)){
                       if(OIdx != 0)	(ictx->Opile)[OpileIdx++]= Ctmp;
                       --OIdx;
                      while((FIdx != 0) &&((ictx->Fpile)[FpileIdx++] = (ictx->FF)[--FIdx])

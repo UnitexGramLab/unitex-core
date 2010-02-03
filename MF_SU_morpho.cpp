@@ -600,17 +600,17 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 				if (pos==0) {
 					fatal_error("Cannot apply operator J to empty stack\n");
 				}
-				if (!u_is_korea_syllabe_letter(p_SU_buf->stack[pos-1]) && !u_is_Hangul_Jamo(p_SU_buf->stack[pos-1])) {
+				if (!u_is_Hangul(p_SU_buf->stack[pos-1]) && !u_is_Hangul_Jamo(p_SU_buf->stack[pos-1])) {
 					fatal_error("Cannot apply J operator to a non Hangul or Jamo character '%C' (%04X)\n",p_SU_buf->stack[pos-1],p_SU_buf->stack[pos-1]);
 				}
-				if (u_is_korea_syllabe_letter(p_SU_buf->stack[pos-1])) {
+				if (u_is_Hangul(p_SU_buf->stack[pos-1])) {
 					/* If we have a Hangul syllab, we first turn it into a Jamo
 					 * character sequence */
 					unichar tmp[10];
 					unichar src[2];
 					src[0]=p_SU_buf->stack[pos-1];
 					src[1]='\0';
-					convert_Korean_text(src,tmp,korean,NULL);
+					Hanguls_to_Jamos(src,tmp,korean);
 					int l=u_strlen(tmp);
 					/* Now, we copy the jamo sequence
 					 * in place of the hangul syllab. We use l-1 because we take into
@@ -643,21 +643,21 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 					/* If the last char is a jamo, then we want to recombine all previous jamo
 					 * with the first syllab found on the left */
                    int z=pos-1;
-                   while (z>0 && (u_is_Hangul_Jamo(p_SU_buf->stack[z]) || p_SU_buf->stack[z]==KR_SYLLAB_BOUND)) {
+                   while (z>0 && (u_is_Hangul_Jamo(p_SU_buf->stack[z]) || p_SU_buf->stack[z]==KR_SYLLABLE_BOUND)) {
                 	   z--;
                    }
-                   if (z<0 || !u_is_korea_syllabe_letter(p_SU_buf->stack[z])) {
+                   if (z<0 || !u_is_Hangul(p_SU_buf->stack[z])) {
                 	   fatal_error("Operator . unexpected if no hangul before jamos\n");
                    }
                    unichar hangul[2];
                    hangul[0]=p_SU_buf->stack[z];
                    hangul[1]='\0';
                    unichar tmp[32];
-                   convert_Korean_text(hangul,tmp,korean,NULL);
+                   Hanguls_to_Jamos(hangul,tmp,korean);
                    int l=u_strlen(tmp);
                    int i;
                    for (i=z+1;i<pos;i++) {
-                	  if (p_SU_buf->stack[i]!=KR_SYLLAB_BOUND) {
+                	  if (p_SU_buf->stack[i]!=KR_SYLLABLE_BOUND) {
                 		  /* The syllab bound must be ignored when we have to recombine
                 		   * jamos with an hangul */
                 		  tmp[l++]=p_SU_buf->stack[i];
@@ -669,7 +669,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
                    u_strcpy(p_SU_buf->stack+z,tmp2);
                    pos=z+u_strlen(tmp2);
 				}
-				p_SU_buf->stack[pos++] = KR_SYLLAB_BOUND;
+				p_SU_buf->stack[pos++] = KR_SYLLABLE_BOUND;
 				pos_tag++;
 				break;
 			}
@@ -732,7 +732,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 				/* Default push operator */
 			default: {
 				unichar tmp[32];
-				compatibility_jamo_to_standard_jamo(p_SU_buf->tag[pos_tag],tmp,korean);
+				single_HGJ_to_Jamos(p_SU_buf->tag[pos_tag],tmp,korean);
 				int l=u_strlen(tmp);
 				u_strcpy(p_SU_buf->stack+pos,tmp);
 				pos=pos+l;

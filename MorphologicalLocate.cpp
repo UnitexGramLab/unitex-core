@@ -90,10 +90,10 @@ return (i!=1 && s[i]=='$' && s[i+1]=='\0');
 int get_jamo_longest_prefix(unichar* jamo,int *new_pos_in_jamo,int *new_pos_in_token,unichar* tag_token,
 		struct locate_parameters* p,unichar* token) {
 unichar tmp[128];
-if (tag_token[0]==KR_SYLLAB_BOUND && tag_token[1]=='\0') {
+if (tag_token[0]==KR_SYLLABLE_BOUND && tag_token[1]=='\0') {
    u_strcpy(tmp,tag_token);
 } else {
-   convert_Korean_text(tag_token,tmp,p->korean,p->alphabet);
+   Hanguls_to_Jamos(tag_token,tmp,p->korean);
 }
 int i=0;
 if (token==NULL) {
@@ -103,7 +103,7 @@ set_debug(0 && token[0]==0xB2A5);
 debug("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
 while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
 	/* We ignore syllab bounds in both tfst and fst2 tags */
-	if (tmp[i]==KR_SYLLAB_BOUND) {
+	if (tmp[i]==KR_SYLLABLE_BOUND) {
 		i++;
 		debug("ignoring . in tag: %S\n",tmp+i);
 		continue;
@@ -113,7 +113,7 @@ while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
 		(*new_pos_in_token)++;
 		debug("new pos in token=%d\n",(*new_pos_in_token));
 	}*/
-	if (jamo[(*new_pos_in_jamo)]==KR_SYLLAB_BOUND) {
+	if (jamo[(*new_pos_in_jamo)]==KR_SYLLABLE_BOUND) {
 		(*new_pos_in_jamo)++;
 		(*new_pos_in_token)++;
 		debug("ignoring . in text: %S\n",jamo+((*new_pos_in_jamo)));
@@ -136,7 +136,7 @@ if (tmp[i]=='\0' && jamo[(*new_pos_in_jamo)]=='\0') {
 }
 if (tmp[i]=='\0') {
 	/* If the tag has not consumed all the jamo sequence, it's a partial match */
-   debug("XX partial match between text=%S and fst2=%S\n",jamo,tmp);
+    debug("XX partial match between text=%S and fst2=%S\n",jamo,tmp);
 	return 2;
 }
 /* If we are at the end of the jamo sequence, but not at the end of the tag, it's a failure */
@@ -499,19 +499,19 @@ while (meta_list!=NULL) {
             new_pos=pos;
             new_pos_in_token=pos_in_token+1;
             new_jamo=jamo;
-            /* If we are in Korean mode, we have to move in the jamo sequence */
+            /* If we are in Korean mode, we have to move in the Jamo sequence */
             if (jamo!=NULL) {
                new_pos_in_jamo=pos_in_jamo+1;
                while (jamo[new_pos_in_jamo]!='\0') {
-            	   if (jamo[new_pos_in_jamo]==KR_SYLLAB_BOUND) {
+            	   if (jamo[new_pos_in_jamo]==KR_SYLLABLE_BOUND) {
             		   /* A syllab bound is OK: we go on the following Jamo */
                		new_pos_in_jamo++;
                		if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
-               			fatal_error("Unexpected non jamo character after a syllab bound\n");
+               			fatal_error("Unexpected non Jamo character after a syllable bound\n");
             	   	}
             		   break;
             	   }
-            	   if (u_is_korea_syllabe_letter(jamo[new_pos_in_jamo])) {
+            	   if (u_is_Hangul(jamo[new_pos_in_jamo])) {
             		   /* A Hangul is OK */
             		   break;
             	   }
@@ -912,12 +912,12 @@ if (current_token[pos_in_current_token]=='\0') {
 int after_syllab_bound=0;
 if (jamo!=NULL) {
 	/* We test wether we are in the middle of a syllab or just after a syllab bound */
-    if (jamo[pos_in_jamo]==KR_SYLLAB_BOUND) {
+    if (jamo[pos_in_jamo]==KR_SYLLABLE_BOUND) {
     	/* If we have a syllab bound */
     	after_syllab_bound=1;
     	pos_in_jamo++;
     }
-    else if (pos_in_jamo>0 && jamo[pos_in_jamo-1]==KR_SYLLAB_BOUND) {
+    else if (pos_in_jamo>0 && jamo[pos_in_jamo-1]==KR_SYLLABLE_BOUND) {
     	/* If we are just after a syllab bound */
     	after_syllab_bound=1;
     }

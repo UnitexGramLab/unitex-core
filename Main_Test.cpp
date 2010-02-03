@@ -23,18 +23,23 @@
 #include <string.h>
 #include <stdlib.h>
 #include "IOBuffer.h"
-#include "Pattern.h"
-#include "PatternTree.h"
 #include "Unicode.h"
-#include "String_hash.h"
-#include "DELA.h"
-#include "List_pointer.h"
-#include "StringParsing.h"
 #include "Copyright.h"
 #include "Fst2.h"
 #include "Error.h"
-#include "Tfst.h"
 #include "AbstractFst2Load.h"
+#include "Korean.h"
+#include "Alphabet.h"
+
+
+void kprintf(unichar* s) {
+error("s=_%S_\n",s);
+for (int i=0;s[i];i++) {
+	error("%C (%X) ",s[i],s[i]);
+}
+error("\n");
+}
+
 
 /**
  * This program is designed for test purpose only.
@@ -42,22 +47,43 @@
 int main(int argc,char *argv[]) {
 setBufferMode();
 
-if (argc!=2) {
-   u_printf("Usage: %s <fst2>\n",argv[0]);
-   return 0;
-}
-Fst2* fst2=load_abstract_fst2(argv[1],0,NULL);
-u_printf("%d graphs\n",fst2->number_of_graphs);
-u_printf("%d states\n",fst2->number_of_states);
-int n=0;
-for (int i=0;i<fst2->number_of_states;i++) {
-   Transition* t=fst2->states[i]->transitions;
-   while (t!=NULL) {
-      n++;
-      t=t->next;
-   }
-}
-u_printf("%d transitions\n",n);
+/* Korean tests */
+Alphabet* alph=load_alphabet("/home/igm/unitex/KoreanJeeSun/Alphabet.txt",1);
+Korean* korean=new Korean(alph);
+unichar out[256];
+
+Jamo2Syl* jamo2Syl=new Jamo2Syl();
+jamo2Syl->init("/home/igm/unitex/KoreanJeeSun/Decoding/uneSyl.fst2");
+
+
+unichar z[]={0x3134,'a',0x71B9,0x1104,0};
+
+jamoCodage* jamo=new jamoCodage();
+//jamo->loadJamoMap("/home/igm/unitex/KoreanJeeSun/jamoTable.txt");
+//jamo->convertSyletCjamoToJamo(z,out,u_strlen(z),1024);
+Hanguls_to_Jamos(z,out,korean);
+error("input=: ");
+kprintf(out);
+error("\n");
+return 0;
+
+
+//unichar s[]={KR_SYLLABLE_BOUND,HCJ_KIYEOK,0x314F,0};
+unichar s[]={KR_SYLLABLE_BOUND,0x1100,0x1104,0x1161,0x1105,'A',KR_SYLLABLE_BOUND,0x1161,0};
+
+error("input=: ");
+kprintf(s);
+error("\n");
+
+
+convert_jamo_to_hangul(s,out,jamo2Syl);
+error("avant: ");
+kprintf(out);
+
+korean->Jamos_to_Hangul(s,out);
+error("apres: ");
+kprintf(out);
+
 return 0;
 }
 

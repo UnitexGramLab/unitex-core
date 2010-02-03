@@ -177,7 +177,7 @@ if (pL_MORPHO == NULL) {
 }
 
 
-create_mwu_dictionary(delas,grf,multiFlex_ctx,alph,korean,jamo2syl,pL_MORPHO,encoding_output,
+create_mwu_dictionary(delas,grf,multiFlex_ctx,korean,jamo2syl,pL_MORPHO,encoding_output,
        bom_output,mask_encoding_compatibility_input);
 
 u_fclose(delas);
