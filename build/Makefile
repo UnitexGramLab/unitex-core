@@ -704,8 +704,6 @@ EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o 
 ################################
 ################################
 
-PROGS = $(TEST)
-
 ifeq ($(UNITEXTOOLONLY), yes)
 
 
@@ -721,6 +719,8 @@ PROGS = $(BUILDKRMWUDIC) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONV
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TXT2TFST) $(XMLIZER) \
 		$(UNCOMPRESS) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER)
+
+#PROGS = $(TEST)
 
 ifeq ($(64BITS),no)
 PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \

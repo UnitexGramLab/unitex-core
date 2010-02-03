@@ -194,6 +194,12 @@ int readline(Ustring* ustr,U_FILE* f) {
 unichar buf[MAXBUF];
 int len=0;
 empty(ustr);
+
+/* - EOF : means that it was the end of file
+* - 0 : means that we have read an empty line ended by '\n'
+* - (len ==(size-1)) and (line[len-1] != '\n') : means that the line was too long for the buffer
+* - (0 < len < size-1) : means that we have read a complete line (str[len-1]=='\n', unless EOF)
+*/
 do {
    len=u_fgets(buf,MAXBUF,f);
    u_strcat(ustr,buf,len);

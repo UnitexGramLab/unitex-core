@@ -187,11 +187,11 @@ while (readline(ustr,fstf->f) && ustr->str[0]!='f') {
       if (fstf->renumber!=NULL) {
          tag_number=fstf->renumber[tag_number];
       }
-      while (*p!='\0' && !u_is_digit(*p)) {
+      while (*p==' ') {
          p++;
       }
-      if (*p=='\0') {
-         fatal_error("load_automaton: %S: bad file format (line='%S')\n",fstf->name,ustr->str);
+      if (!u_is_digit(*p)) {
+         fatal_error("load_automaton: %s: bad file format (line='%S')\n",fstf->name,ustr->str);
       }
       int state_number=u_parse_int(p,&p);
       symbol_t* tmp=(symbol_t*)fstf->symbols->value[tag_number];
@@ -209,7 +209,7 @@ while (readline(ustr,fstf->f) && ustr->str[0]!='f') {
             add_all_outgoing_transitions(state,tmp,state_number);
          }
       }
-      while (*p!='\0' && !u_is_digit(*p)) {
+      while (*p==' ') {
          p++;
       }
    }
