@@ -197,6 +197,7 @@
 		225CCAF610DA9FB9003F0910 /* SufForm2Rac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCADF10DA9FB9003F0910 /* SufForm2Rac.cpp */; };
 		225CCAF710DA9FB9003F0910 /* Syl2Jamo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCAE110DA9FB9003F0910 /* Syl2Jamo.cpp */; };
 		225CCAF910DA9FB9003F0910 /* Txt2Fst2Kr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCAE410DA9FB9003F0910 /* Txt2Fst2Kr.cpp */; };
+		229851B0111A6F3300503A07 /* Fst2Chk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851AE111A6F3300503A07 /* Fst2Chk.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -633,6 +634,8 @@
 		225CCAE510DA9FB9003F0910 /* Txt2Fst2Kr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Txt2Fst2Kr.h; path = ../korean/Txt2Fst2Kr.h; sourceTree = "<group>"; };
 		225CCAE610DA9FB9003F0910 /* uioForKorean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uioForKorean.h; path = ../korean/uioForKorean.h; sourceTree = "<group>"; };
 		225CCAE710DA9FB9003F0910 /* unimap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unimap.h; path = ../korean/unimap.h; sourceTree = "<group>"; };
+		229851AE111A6F3300503A07 /* Fst2Chk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Fst2Chk.cpp; path = ../Fst2Chk.cpp; sourceTree = SOURCE_ROOT; };
+		229851AF111A6F3300503A07 /* Fst2Chk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Chk.h; path = ../Fst2Chk.h; sourceTree = SOURCE_ROOT; };
 		8DD76F6C0486A84900D96B5E /* UnitexToolLogger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitexToolLogger; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -660,6 +663,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				229851AE111A6F3300503A07 /* Fst2Chk.cpp */,
+				229851AF111A6F3300503A07 /* Fst2Chk.h */,
 				222F7C9B1107A83D00C91CC7 /* logger */,
 				222F7A0E1107A68E00C91CC7 /* AbstractCallbackFuncModifier.h */,
 				222F7A0F1107A68E00C91CC7 /* AbstractDelaLoad.cpp */,
@@ -1365,6 +1370,7 @@
 				222F7C6B1107A68E00C91CC7 /* UserCancelling.cpp in Sources */,
 				222F7C6C1107A68E00C91CC7 /* Ustring.cpp in Sources */,
 				222F7C6D1107A68E00C91CC7 /* XMLizer.cpp in Sources */,
+				229851B0111A6F3300503A07 /* Fst2Chk.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

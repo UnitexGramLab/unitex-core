@@ -31,7 +31,7 @@
 #define NO_C99_VARIABLE_LENGTH_ARRAY 1
 #endif
 
-int look_for_recursion(int,struct list_int*,Fst2*,int*);
+int look_for_recursion(int,struct list_int*,Fst2*,int*,U_FILE*);
 
 
 #define NO_LEFT_RECURSION 1
@@ -168,13 +168,17 @@ else e->control=0;
 /**
  * Prints the graph call sequence that leads to the graph #n.
  */
-void print_reversed_list(struct list_int* l,int n,unichar** graph_names) {
+void print_reversed_list(struct list_int* l,int n,unichar** graph_names,U_FILE* ferr) {
 if (l->n==n) {
    error("ERROR: %S",graph_names[l->n]);
+   if (ferr != NULL)
+       u_fprintf(ferr,"ERROR: %S",graph_names[l->n]);
    return;
 }
-print_reversed_list(l->next,n,graph_names);
+print_reversed_list(l->next,n,graph_names,ferr);
 error(" calls %S that",graph_names[l->n]);
+if (ferr != NULL)
+  u_fprintf(ferr," calls %S that",graph_names[l->n]);
 }
 
 
@@ -334,11 +338,13 @@ return c;
  * the values to be taken by '*matches_E'.
  */
 ConditionList resolve_condition_list(ConditionList l,Fst2State* states,
-                               int* initial_states,int *modification,int *matches_E) {
+                               int* initial_states,int *modification,int *matches_E,U_FILE*ferr) {
 ConditionList tmp;
 if (l==NULL) return NULL;
 if (l->condition==NULL) {
    error("NULL internal error in resolve_condition_list\n");
+   if (ferr != NULL)
+     u_fprintf(ferr,"NULL internal error in resolve_condition_list\n");
    return NULL;
 }
 l->condition=resolve_simple_condition(l->condition,states,initial_states,modification,matches_E);
@@ -351,10 +357,10 @@ if (l->condition==NULL) {
     * clean the rest of the condition list. */
    tmp=l->next;
    free(l);
-   return resolve_condition_list(tmp,states,initial_states,modification,matches_E);
+   return resolve_condition_list(tmp,states,initial_states,modification,matches_E,ferr);
 }
 /* Otherwise, we clean the rest of the condition list. */
-l->next=resolve_condition_list(l->next,states,initial_states,modification,matches_E);
+l->next=resolve_condition_list(l->next,states,initial_states,modification,matches_E,ferr);
 return l;
 }
 
@@ -364,14 +370,16 @@ return l;
  * It returns 1 if at least one condition was resolved.
  */
 int resolve_conditions_for_one_graph(int n,ConditionList* conditions,
-                                     Fst2State* states,int* initial_states) {
+                                     Fst2State* states,int* initial_states,U_FILE*ferr) {
 int modification=0;
 int matches_E=DOES_NOT_KNOW_IF_E_IS_MATCHED;
 if (conditions[n]==NULL) {
    error("NULL internal error in resolve_conditions_for_one_graph for graph %d\n",n);
+   if (ferr != NULL)
+     u_fprintf(ferr,"NULL internal error in resolve_conditions_for_one_graph for graph %d\n",n);
    return modification;
 }
-conditions[n]=resolve_condition_list(conditions[n],states,initial_states,&modification,&matches_E);
+conditions[n]=resolve_condition_list(conditions[n],states,initial_states,&modification,&matches_E,ferr);
 if (matches_E==E_IS_MATCHED) {
    /* If at least one condition was verified */
    set_bit_mask(&(states[initial_states[n]]->control),UNCONDITIONAL_E_MATCH);
@@ -398,7 +406,7 @@ return modification;
  * even just one; 0 otherwise.
  */
 int resolve_conditions(ConditionList* conditions,int n_graphs,
-                       Fst2State* states,int* initial_states) {
+                       Fst2State* states,int* initial_states,U_FILE*ferr) {
 int modification=0;
 for (int i=1;i<n_graphs+1;i++) {
    if (!is_bit_mask_set(states[initial_states[i]]->control,
@@ -411,7 +419,7 @@ for (int i=1;i<n_graphs+1;i++) {
          modification++;
       } else {
          /* Otherwise, we try to solve the conditions of the graph */
-         modification=modification+resolve_conditions_for_one_graph(i,conditions,states,initial_states);
+         modification=modification+resolve_conditions_for_one_graph(i,conditions,states,initial_states,ferr);
       }
    }
 }
@@ -484,11 +492,13 @@ return 0;
  * Returns 1 and prints an error message if an <E> loop is found the graph #n;
  * returns 0 otherwise.
  */
-int look_for_E_loops(int n,Fst2* fst2,int* graphs_matching_E) {
+int look_for_E_loops(int n,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
 int first_state=fst2->initial_states[n];
 for (int i=0;i<fst2->number_of_states_per_graphs[n];i++) {
    if (look_for_E_loop_in_state(first_state+i,fst2,graphs_matching_E)) {
       error("ERROR: <E> loop in the graph %S\n",fst2->graph_names[n]);
+      if (ferr != NULL)
+        u_fprintf(ferr,"ERROR: <E> loop in the graph %S\n",fst2->graph_names[n]);
       return 1;
    }
 }
@@ -500,7 +510,7 @@ return 0;
  * Explores the transitions that outgo from the given state.
  * Returns 1 if a recursion is found; 0 otherwise.
  */
-int explore_state(int state_number,struct list_int* l,Fst2* fst2,int* graphs_matching_E) {
+int explore_state(int state_number,struct list_int* l,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
 Fst2State s=fst2->states[state_number];
 int ret=0;
 if (s==NULL) return 0;
@@ -513,17 +523,17 @@ Transition* list=s->transitions;
 while (list!=NULL) {
    if (list->tag_number<0) {
       /* If we have a subgraph call */
-      if (look_for_recursion(-(list->tag_number),l,fst2,graphs_matching_E)) {
+      if (look_for_recursion(-(list->tag_number),l,fst2,graphs_matching_E,ferr)) {
          /* If there is a recursion */
          return 1;
       }
-      if (graphs_matching_E[-list->tag_number] && explore_state(list->state_number,l,fst2,graphs_matching_E)) {
+      if (graphs_matching_E[-list->tag_number] && explore_state(list->state_number,l,fst2,graphs_matching_E,ferr)) {
          /* If the graph matches <E> */
          return 1;
       }
    } else if (fst2->tags[list->tag_number]->control==1) {
       /* If we have a transition that can match <E> */
-      if (explore_state(list->state_number,l,fst2,graphs_matching_E)) {
+      if (explore_state(list->state_number,l,fst2,graphs_matching_E,ferr)) {
          return 1;
       }
    }
@@ -538,15 +548,17 @@ return ret;
  * Returns 1 and prints an error message if a recursion is found in graph #n;
  * returns 0 otherwise.
  */
-int look_for_recursion(int n,struct list_int* l,Fst2* fst2,int* graphs_matching_E) {
+int look_for_recursion(int n,struct list_int* l,Fst2* fst2,int* graphs_matching_E,U_FILE*ferr) {
 if (is_in_list(n,l)) {
    /* If we find a graph that has already been visited */
-   print_reversed_list(l,n,fst2->graph_names);
+   print_reversed_list(l,n,fst2->graph_names,ferr);
    error(" recalls the graph %S\n",fst2->graph_names[n]);
+   if (ferr != NULL)
+      u_fprintf(ferr," recalls the graph %S\n",fst2->graph_names[n]);
    return 1;
 }
 l=new_list_int(n,l);
-int ret=explore_state(fst2->initial_states[n],l,fst2,graphs_matching_E);
+int ret=explore_state(fst2->initial_states[n],l,fst2,graphs_matching_E,ferr);
 delete_head(&l);
 return ret;
 }
@@ -560,7 +572,7 @@ return ret;
  * 2) no loop that can recognize the empty word (<E> with an output or subgraph
  *    that can match the empty word).
  */
-int OK_for_Locate(char* name,char no_empty_graph_warning) {
+int OK_for_Locate_write_error(char* name,char no_empty_graph_warning,U_FILE* ferr) {
 ConditionList* conditions;
 ConditionList* conditions_for_state;
 int i,j;
@@ -614,17 +626,25 @@ for (i=1;i<=fst2->number_of_graphs;i++) {
  * and this case will be dealt with later. */
 u_printf("Resolving <E> conditions\n");
 while (resolve_conditions(conditions,fst2->number_of_graphs,
-							fst2->states,fst2->initial_states)) {}
+							fst2->states,fst2->initial_states,ferr)) {}
 if (is_bit_mask_set(fst2->states[fst2->initial_states[1]]->control,UNCONDITIONAL_E_MATCH)) {
    /* If the main graph matches <E> */
-   if (!no_empty_graph_warning) error("ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
+   if (!no_empty_graph_warning) {
+       error("ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
+       if (ferr != NULL)
+         u_fprintf(ferr,"ERROR: the main graph %S recognizes <E>\n",fst2->graph_names[1]);
+   }
    ERROR=1;
 }
 if (!ERROR) {
    for (i=1;i<fst2->number_of_graphs+1;i++) {
       if (is_bit_mask_set(fst2->states[fst2->initial_states[i]]->control,UNCONDITIONAL_E_MATCH)) {
          /* If the graph matches <E> */
-         if (!no_empty_graph_warning) error("WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
+         if (!no_empty_graph_warning) {
+             error("WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
+             if (ferr != NULL)
+                u_fprintf(ferr,"WARNING: the graph %S recognizes <E>\n",fst2->graph_names[i]);
+         }
       }
    }
 }
@@ -632,14 +652,14 @@ clean_controls(fst2,graphs_matching_E);
 if (!ERROR) {
    u_printf("Looking for <E> loops\n");
    for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
-      ERROR=look_for_E_loops(i,fst2,graphs_matching_E);
+      ERROR=look_for_E_loops(i,fst2,graphs_matching_E,ferr);
    }
 }
 clean_controls(fst2,NULL);
 if (!ERROR) {
    u_printf("Looking for infinite recursions\n");
    for (i=1;!ERROR && i<fst2->number_of_graphs+1;i++) {
-      ERROR=look_for_recursion(i,NULL,fst2,graphs_matching_E);
+      ERROR=look_for_recursion(i,NULL,fst2,graphs_matching_E,ferr);
    }
 }
 for (i=1;i<fst2->number_of_graphs+1;i++) {
@@ -654,6 +674,10 @@ return NO_LEFT_RECURSION;
 }
 
 
+int OK_for_Locate(char* name,char no_empty_graph_warning)
+{
+    return OK_for_Locate_write_error(name,no_empty_graph_warning,NULL);
+}
 
 #define NOT_SEEN_YET 0
 #define SEEN 1
@@ -753,7 +777,7 @@ return 1;
  * 5) all other tags must have an ouput of the form w x y z f g, with
  *    w and y being integers >=0, and x, z, f and g being integers >=-1 
  */
-int valid_sentence_automaton(char* name) {
+int valid_sentence_automaton_write_error(char* name,U_FILE*) {
 struct FST2_free_info fst2_free;
 Fst2* fst2=load_abstract_fst2(name,0,&fst2_free);
 if (fst2==NULL) return 0;
@@ -774,6 +798,11 @@ if (!valid_outputs(fst2)) {
 }
 /* Victory! */
 return 1;
+}
+
+int valid_sentence_automaton(char* name)
+{
+    return valid_sentence_automaton_write_error(name,NULL);
 }
 
 

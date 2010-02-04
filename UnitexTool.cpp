@@ -36,6 +36,7 @@
 #include "Evamb.h"
 #include "Extract.h"
 #include "Flatten.h"
+#include "Fst2Chk.h"
 #include "Fst2List.h"
 #include "Fst2Txt.h"
 #include "Grf2Fst2.h"
@@ -114,6 +115,7 @@ const struct utility_item utility_array[]=
 #endif
 #if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "Flatten", 7, &main_Flatten, usage_Flatten, optstring_Flatten, lopts_Flatten } ,
+	{ "Fst2Check", 9, &main_Fst2Check, usage_Fst2Check, optstring_Fst2Check, lopts_Fst2Check } ,
 	{ "Fst2List", 8, &main_Fst2List, usage_Fst2List, NULL, NULL } ,
 #endif
 	{ "Fst2Txt", 7, &main_Fst2Txt, usage_Fst2Txt, optstring_Fst2Txt, lopts_Fst2Txt } ,

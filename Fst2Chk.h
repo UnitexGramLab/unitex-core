@@ -19,20 +19,18 @@
   *
   */
 
-#ifndef Fst2CheckH
-#define Fst2CheckH
+#ifndef Fst2ChkH
+#define Fst2ChkH
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "Unicode.h"
-#include "Fst2.h"
-#include "AbstractFst2Load.h"
+#include "FileEncoding.h"
 
+extern const char* optstring_Fst2Check;
+extern const struct option_TS lopts_Fst2Check[];
+extern const char* usage_Fst2Check;
 
-int OK_for_Locate(char*,char);
-int OK_for_Locate_write_error(char*,char,U_FILE*);
-int valid_sentence_automaton(char*);
-int valid_sentence_automaton_write_error(char*,U_FILE*);
-
-
+int main_Fst2Check(int argc,char* argv[]);
+int pseudo_main_Fst2Check(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
+                          const char* fst2name,const char* output_name,int append,int display_statistics,
+                          int yes_or_no,int no_empty_graph_warning,int tfst_check);
 #endif
+

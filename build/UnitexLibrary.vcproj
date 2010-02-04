@@ -581,6 +581,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Fst2Chk.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Fst2List.cpp"
 				>
 			</File>

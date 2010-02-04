@@ -187,6 +187,7 @@
 		225CCDF610DB201D003F0910 /* tre-parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2B10DB201D003F0910 /* tre-parse.c */; };
 		225CCDF710DB201D003F0910 /* tre-stack.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD2D10DB201D003F0910 /* tre-stack.c */; };
 		225CCDF810DB201D003F0910 /* xmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD3010DB201D003F0910 /* xmalloc.c */; };
+		229851AA111A6F2000503A07 /* Fst2Chk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851A8111A6F2000503A07 /* Fst2Chk.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -603,6 +604,8 @@
 		225CCD2F10DB201D003F0910 /* tre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tre.h; sourceTree = "<group>"; };
 		225CCD3010DB201D003F0910 /* xmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xmalloc.c; sourceTree = "<group>"; };
 		225CCD3110DB201D003F0910 /* xmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xmalloc.h; sourceTree = "<group>"; };
+		229851A8111A6F2000503A07 /* Fst2Chk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Fst2Chk.cpp; path = ../Fst2Chk.cpp; sourceTree = SOURCE_ROOT; };
+		229851A9111A6F2000503A07 /* Fst2Chk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Chk.h; path = ../Fst2Chk.h; sourceTree = SOURCE_ROOT; };
 		8DD76F6C0486A84900D96B5E /* UnitexTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitexTool; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -630,6 +633,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				229851A8111A6F2000503A07 /* Fst2Chk.cpp */,
+				229851A9111A6F2000503A07 /* Fst2Chk.h */,
 				222F778A1107A48300C91CC7 /* AbstractCallbackFuncModifier.h */,
 				222F778B1107A48300C91CC7 /* AbstractDelaLoad.cpp */,
 				222F778C1107A48300C91CC7 /* AbstractDelaLoad.h */,
@@ -1297,6 +1302,7 @@
 				222F79C51107A48400C91CC7 /* UserCancelling.cpp in Sources */,
 				222F79C61107A48400C91CC7 /* Ustring.cpp in Sources */,
 				222F79C71107A48400C91CC7 /* XMLizer.cpp in Sources */,
+				229851AA111A6F2000503A07 /* Fst2Chk.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
