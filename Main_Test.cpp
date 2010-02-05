@@ -44,7 +44,7 @@ error("\n");
 /**
  * This program is designed for test purpose only.
  */
-int main(int /*argc*/,char /* *argv[]*/) {
+int main(int /*argc*/,char * /* argv*/ []) {
 setBufferMode();
 
 /* Korean tests */
