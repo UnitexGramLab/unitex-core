@@ -44,7 +44,7 @@ error("\n");
 /**
  * This program is designed for test purpose only.
  */
-int main(int argc,char *argv[]) {
+int main(int /*argc*/,char /* *argv[]*/) {
 setBufferMode();
 
 /* Korean tests */
@@ -61,6 +61,7 @@ unichar z[]={0x3134,'a',0x71B9,0x1104,0};
 jamoCodage* jamo=new jamoCodage();
 //jamo->loadJamoMap("/home/igm/unitex/KoreanJeeSun/jamoTable.txt");
 //jamo->convertSyletCjamoToJamo(z,out,u_strlen(z),1024);
+delete(jamo);
 Hanguls_to_Jamos(z,out,korean);
 error("input=: ");
 kprintf(out);

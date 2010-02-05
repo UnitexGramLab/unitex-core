@@ -109,7 +109,7 @@ public:
 	//
 	//	load fst2 file and set variables
 	//
-	void init_machine(char *mapfilename,int sz)
+	void init_machine(const char *mapfilename,int sz)
 	{
 		int i;
 		unichar wt;

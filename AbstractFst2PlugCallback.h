@@ -43,7 +43,7 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_Uninit_Fst2Space)(void* privateSpa
 */
 
 
-typedef Fst2* (ABSTRACT_CALLBACK_UNITEX* t_fnc_load_abstract_fst2)(char* name,int read_names,struct FST2_free_info* p_fst2_free_info,void* privateSpacePtr);
+typedef Fst2* (ABSTRACT_CALLBACK_UNITEX* t_fnc_load_abstract_fst2)(const char* name,int read_names,struct FST2_free_info* p_fst2_free_info,void* privateSpacePtr);
 
 typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_fst2)(Fst2* fst2,struct FST2_free_info* p_inf_free_info,void* privateSpacePtr);
 

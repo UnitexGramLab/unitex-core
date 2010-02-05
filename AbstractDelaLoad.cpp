@@ -124,7 +124,7 @@ const AbstractDelaSpace * GetDelaSpaceForFileName(const char*name)
 
 /*******************************/
 
-struct INF_codes* load_abstract_INF_file(char* name,struct INF_free_info* p_inf_free_info)
+struct INF_codes* load_abstract_INF_file(const char* name,struct INF_free_info* p_inf_free_info)
 {
 	struct INF_codes* res = NULL;
 	const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;
@@ -170,7 +170,7 @@ void free_abstract_INF(struct INF_codes* INF,struct INF_free_info* p_inf_free_in
 
 
 
-unsigned char* load_abstract_BIN_file(char* name,struct BIN_free_info* p_bin_free_info)
+unsigned char* load_abstract_BIN_file(const char* name,struct BIN_free_info* p_bin_free_info)
 {
 	unsigned char* res = NULL;
 	const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;

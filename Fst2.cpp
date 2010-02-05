@@ -621,7 +621,7 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
 #define GRAPH_IS_EMPTY 1
 #define FILE_POINTER_NULL 2
 
-Fst2* load_fst2(char* filename,int read_names,int graph_number) {
+Fst2* load_fst2(const char* filename,int read_names,int graph_number) {
 
 U_FILE* f;
 f=u_fopen_existing_unitex_text_format(filename,U_READ);
@@ -697,7 +697,7 @@ return 0;
 /**
  * Loads a .fst2 file and returns its representation in a Fst2 structure.
  */
-Fst2* load_fst2(char* filename,int read_names) {
+Fst2* load_fst2(const char* filename,int read_names) {
 return load_fst2(filename,read_names,NO_GRAPH_NUMBER_SPECIFIED);
 }
 
@@ -712,7 +712,7 @@ int load_fst2_from_file(U_FILE* f,int read_names,Fst2* *fst2) {
  * and returns its representation in a Fst2 structure. The graph name
  * is stored because it represents the text of the sentence.
  */
-Fst2* load_one_sentence_from_fst2(char* filename,int sentence_number) {
+Fst2* load_one_sentence_from_fst2(const char* filename,int sentence_number) {
 return load_fst2(filename,1,sentence_number);
 }
 

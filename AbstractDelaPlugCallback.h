@@ -73,7 +73,7 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_Uninit_DelaSpace)(void* privateSpa
      a private value.
    the p_inf_free_info pointer is never NULL */
 
-typedef struct INF_codes* (ABSTRACT_CALLBACK_UNITEX* t_fnc_load_abstract_INF_file)(char* name,
+typedef struct INF_codes* (ABSTRACT_CALLBACK_UNITEX* t_fnc_load_abstract_INF_file)(const char* name,
                    struct INF_free_info* p_inf_free_info,void* privateSpacePtr);
 
 /* t_fnc_free_abstract_INF can be NULL.
@@ -89,7 +89,7 @@ typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_INF)(struct INF_code
   Tips : you can use it with file mapped io (CreateFileMapping on Win32, mmap on Posix)
    the p_bin_free_info pointer is never NULL */
 
-typedef unsigned char* (ABSTRACT_CALLBACK_UNITEX* t_fnc_load_abstract_BIN_file)(char* name,
+typedef unsigned char* (ABSTRACT_CALLBACK_UNITEX* t_fnc_load_abstract_BIN_file)(const char* name,
                    struct BIN_free_info* p_bin_free_info,void* privateSpacePtr);
 
 typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_free_abstract_BIN)(unsigned char* BIN,

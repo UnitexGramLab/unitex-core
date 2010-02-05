@@ -127,7 +127,7 @@ const AbstractFst2Space * GetFst2SpaceForFileName(const char*name)
 /*******************************/
 
 
-Fst2* load_abstract_fst2(char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
+Fst2* load_abstract_fst2(const char* filename,int read_names,struct FST2_free_info* p_fst2_free_info)
 {
 	Fst2* res = NULL;
 	const AbstractFst2Space * pads = GetFst2SpaceForFileName(filename) ;
@@ -157,7 +157,7 @@ Fst2* load_abstract_fst2(char* filename,int read_names,struct FST2_free_info* p_
 	}
 }
 
-int is_abstract_fst2_filename(char* filename)
+int is_abstract_fst2_filename(const char* filename)
 {
 	return ((GetFst2SpaceForFileName(filename) == NULL) ? 0 : 1);
 }

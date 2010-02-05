@@ -268,7 +268,7 @@ public:
 	 * fst2 is supposed to be the path of the uneSyl.fst2 transducer included
 	 * in Korean resources.
 	 */
-	void init(char* fst2) {
+	void init(const char* fst2) {
 		setStrToVal(GetChangeStrContext(),sylMarkStr,KR_SYLLABLE_BOUND);
 		init_machine(fst2,2);
 	}

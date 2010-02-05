@@ -208,12 +208,12 @@ typedef struct fst2 Fst2;
 
 
 /* Functions for loading grammars */
-Fst2* load_fst2(char*,int);
+Fst2* load_fst2(const char*,int);
 
 int   load_fst2_from_file(U_FILE*,int,Fst2 **);
 int   load_fst2_from_file(U_FILE*,int,Fst2 **, int);
 
-Fst2* load_one_sentence_from_fst2(char*,int);
+Fst2* load_one_sentence_from_fst2(const char*,int);
 void free_Fst2(Fst2*);
 
 Fst2* new_Fst2_clone(Fst2* fst2org);

@@ -902,7 +902,7 @@ result[i]='\0';
  * a structure containing the lines of the file tokenized into INF
  * codes.
  */
-struct INF_codes* load_INF_file(char* name) {
+struct INF_codes* load_INF_file(const char* name) {
 struct INF_codes* res;
 U_FILE* f=u_fopen_existing_unitex_text_format(name,U_READ);
 if (f==NULL) {
@@ -949,7 +949,7 @@ free(INF);
  * Loads a .bin file into an unsigned char array that is returned.
  * Returns NULL if an error occurs.
  */
-unsigned char* load_BIN_file(char* name) {
+unsigned char* load_BIN_file(const char* name) {
 U_FILE* f;
 /* We open the file as a binary one */
 f=u_fopen(BINARY,name,U_READ);
