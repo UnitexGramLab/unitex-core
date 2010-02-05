@@ -31,9 +31,6 @@
 #define E_UTF8 1
 #define E_UTF16_LE 2
 #define E_UTF16_BE 3
-#ifndef HGH_INSERT
-#define E_MBCS_KR    4
-#endif // HGH_INSERT
 #define E_UTF8_BOM 0x101
 #define E_UTF16_LE_BOM 0x102
 #define E_UTF16_BE_BOM 0x103

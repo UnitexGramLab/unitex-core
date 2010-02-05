@@ -183,8 +183,8 @@ unichar* content=u_strdup(foo->str+1);
  * f=end pos in logical letters (for Korean)
  *
  * Z is used for Korean:
- *    Z='#' if there is no syllab bound at the end of the input sequence
- *    If there is a syllab bound, then Z is not set.
+ *    Z='#' if there is no syllable bound at the end of the input sequence
+ *    If there is a syllable bound, then Z is not set.
  */
 readline(foo,t->tfst);
 chomp_new_line(foo);

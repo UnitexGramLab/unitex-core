@@ -32,8 +32,7 @@
 
 #include "Unicode.h"
 #include "Alphabet.h"
-#include "jamoCodage.h"
-#include "state_machine_fst2.h"
+#include "Error.h"
 
 #define JAMO_SIZE 68
 #define MAX_ORDER_JAMO_SIZE 8
@@ -46,11 +45,11 @@
 #define INDEX_FIRST_VOWEL 19
 #define INDEX_FIRST_FINAL_CONSONANT 40
 
-#define KR_HANGUL_SYL_START	0xAC00
-#define KR_HANGUL_SYL_END	0xD7A3
+#define KR_HANGUL_SYL_START   0xAC00
+#define KR_HANGUL_SYL_END     0xD7A3
 
 #define KR_HCJ_START		0x3130
-#define KR_HCJ_END			0x3163
+#define KR_HCJ_END		0x318E
 
 
 /**
@@ -246,39 +245,16 @@ public:
    int single_Hangul_to_Jamos(unichar syl,unichar* output,int pos);
    int single_HCJ_to_Jamos(unichar jamo,unichar* output,int pos);
    int Jamos_to_Hangul(unichar* input,unichar* output);
-   void Hanguls_to_Jamos(unichar* src,unichar* dest);
+   void Hanguls_to_Jamos(unichar* src,unichar* dest,int only_syllables);
 
 private:
    void initJamoMap();
-   int Hanguls_to_Jamos_internal(unichar* input,unichar* output);
+   int Hanguls_to_Jamos_internal(unichar* input,unichar* output,int only_syllables);
 };
 
-
-/**
- * This object is used to convert a Jamo letter sequence into
- * a Hangul syllab sequence.
- */
-class Jamo2Syl : public state_machine, public jamoCodage
-{
-public:
-	Jamo2Syl(){};
-    ~Jamo2Syl(){};
-
-	/**
-	 * fst2 is supposed to be the path of the uneSyl.fst2 transducer included
-	 * in Korean resources.
-	 */
-	void init(const char* fst2) {
-		setStrToVal(GetChangeStrContext(),sylMarkStr,KR_SYLLABLE_BOUND);
-		init_machine(fst2,2);
-	}
-
-} ;
-
-
 int single_HGJ_to_Jamos(unichar c,unichar* dest,Korean* korean);
-void convert_jamo_to_hangul(unichar* src,unichar* dest,Jamo2Syl* jamo2syl);
-void Hanguls_to_Jamos(unichar* src,unichar* dest,Korean* korean);
+int convert_jamo_to_hangul(unichar* src,unichar* dest,Korean* korean);
+void Hanguls_to_Jamos(unichar* src,unichar* dest,Korean* korean,int only_syllables);
 int get_length_in_jamo(unichar hangul,Korean* korean);
 
 #endif

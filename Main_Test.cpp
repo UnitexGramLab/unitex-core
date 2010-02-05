@@ -77,7 +77,7 @@ kprintf(s);
 error("\n");
 
 
-convert_jamo_to_hangul(s,out,jamo2Syl);
+convert_jamo_to_hangul(s,out,jamo2Syl,korean);
 error("avant: ");
 kprintf(out);
 

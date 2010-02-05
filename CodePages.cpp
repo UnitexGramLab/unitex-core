@@ -24,9 +24,6 @@
 #include "CodePages.h"
 #include "HTMLCharacters.h"
 #include "Error.h"
-#ifndef HGH_INSERT
-#include "codePageKr.h"
-#endif // HGH_INSERT
 
 
 /**
@@ -71,9 +68,6 @@ struct encodings_context {
 	struct search_tree_node* encoding_names;
 	/* context of html function */
 	void* character_context;
-#ifndef HGH_INSERT
-	convert_windows949kr_uni_CodePageOnly* uniKoran949;
-#endif
 } ;
 
 /**
@@ -1057,64 +1051,6 @@ u_printf("    Norwegian\n");
 u_printf("    Swedish\n");
 }
 
-#ifndef HGH_INSERT
-void usage_windows_949() {
-u_printf("Microsoft Windows Codepage 949 - Korean\n");
-}
-
-
-/**
- * Reads a Korean character encoded in Windows 949.
- */
-int read_mbcs_char(ABSTRACTFILE* f,void* encoding_ctx) {
-struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
-int page;
-int off;
-unsigned char c;
-if (af_fread((void*)&c,1,1,f)==1)
-  page=(int)c;
-else
-  return EOF;
-
-if(page&0x80){
-	if (af_fread(&c,1,1,f)==1)
-	  off=(int)c;
-	else
-	  return EOF;
-
-	page=page&0x7F;
-} else {
-	off = page;
-	page = 0;
-}
-return ectx->uniKoran949->mbcsUni949Table[page*256+off];
-}
-
-
-/**
- * Writes a Korean character encoded in Windows 949.
- */
-int write_mbcs_char(unichar c,ABSTRACTFILE* f,void* encoding_ctx) {
-struct encodings_context* ectx=(struct encodings_context*)encoding_ctx;
-int ret;
-unsigned char cw;
-cw=(unsigned char)(ectx->uniKoran949->uniMbcs949Table[c*2]&0xFF);
-if (af_fwrite(&cw,1,1,f)!=1)
-  return EOF;
-else
-  ret=(int)c;
-if(c<128) return ret;
-
-cw=(unsigned char)(ectx->uniKoran949->uniMbcs949Table[c*2+1]&0xFF);
-if (af_fwrite(&cw,1,1,f)!=1)
-  return EOF;
-else
-  ret=(int)c;
-return ret;
-}
-#endif
-
-
 void usage_utf8() {
 u_printf("UTF8: universal multi-bytes encoding with a variable code length\n");
 u_printf("By default, no Byte Order Mark is inserted at the beginning of file\n");
@@ -1785,9 +1721,6 @@ ectx->character_context = init_HTML_character_context();
 if (ectx->character_context == NULL) {
    fatal_alloc_error("install_all_encodings");
 }
-#ifndef HGH_INSERT
-ectx->uniKoran949 = new convert_windows949kr_uni_CodePageOnly;
-#endif
 
 const char* aliases_utf8[2]={"utf-8",NULL};
 install_multi_bytes_encoding(ctx,"utf8",E_UTF8,u_fgetc_UTF8_raw,u_fputc_UTF8_raw,usage_utf8,aliases_utf8);
@@ -1838,11 +1771,6 @@ install_one_byte_encoding(ctx,"iso-8859-15",init_iso_8859_15,usage_iso_8859_15,a
  */
 const char* aliases_windows_874[4]={"windows-874","windows874","thai",NULL};
 install_one_byte_encoding(ctx,"ms-windows-874",init_windows_874,usage_windows_874,aliases_windows_874);
-#ifndef HGH_INSERT
-/* Note that ms-windows-949 is a multi-bytes encoding */
-const char* aliases_windows_949[4]={"windows-949","windows949","korean",NULL};
-install_multi_bytes_encoding_ctxfunc(ctx,"ms-windows-949",E_MBCS_KR,NULL,read_mbcs_char,NULL,write_mbcs_char,usage_windows_949,aliases_windows_949);
-#endif
 const char* aliases_windows_1250[4]={"windows-1250","windows1250","czech",NULL};
 install_one_byte_encoding(ctx,"ms-windows-1250",init_windows_1250,usage_windows_1250,aliases_windows_1250);
 const char* aliases_windows_1251[4]={"windows-1251","windows1251","cyrillic",NULL};
@@ -1881,9 +1809,6 @@ for (i=0;i<ectx->number_of_encodings;i++) {
 }
 free(ectx->encodings);
 free_search_tree_node(ectx->encoding_names);
-#ifndef HGH_INSERT
-delete (ectx->uniKoran949);
-#endif
 free_HTML_character_context(ectx->character_context);
 free(ectx);
 }

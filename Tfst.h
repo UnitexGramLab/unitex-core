@@ -101,7 +101,7 @@ typedef struct {
    /* The boundings of the sentence area covered by the tag */
    /* Special information for Korean transitions
     * 
-    * In a Korean word, a character represents a syllab, which may contains several 
+    * In a Korean word, a character represents a syllable, which may contains several 
     * logical letters. Note that these information must always be set to values
     * between 0 and MAX_LETTERS, where MAX_LETTERS is the maximum number of logical
     * letters in the last syllabic character of the input of the transition.
@@ -111,7 +111,7 @@ typedef struct {
     *    {(fg)(fda) (zegd)(ddz),.XXX}
     * 
     * we would have end_pos_letter=2, because the 'z' of '(ddz)' is the third logical letter.
-    * In the same way, let us assume that the initial '(fg)' is actually the end of a syllab 
+    * In the same way, let us assume that the initial '(fg)' is actually the end of a syllable 
     * in the text like '(afg)'. In that case, we would have start_pos_letter=1, because 'f' is 
     * the second logical letter of '(afg)'.
     */

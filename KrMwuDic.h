@@ -29,7 +29,7 @@
 #include "MF_LangMorpho.h"
 
 void create_mwu_dictionary(U_FILE* delas,U_FILE* grf,MultiFlex_ctx* ctx,
-                           Korean* korean,Jamo2Syl* jamo2syl,struct l_morpho_t* morpho,
+                           Korean* korean,struct l_morpho_t* morpho,
                            Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input);
 
 #endif

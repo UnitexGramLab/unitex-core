@@ -94,7 +94,6 @@ const char* usage_Txt2Tfst =
          "  -n XXX/--normalization_grammar=XXX: the .fst2 grammar used to normalize the text automaton\n"
          "  -t XXX/--tagset=XXX: use the XXX ELAG tagset file to normalize the dictionary entries\n"
          "  -K/--korean: tells Txt2Tfst that it works on Korean\n"
-         "  -f XXX/--fst2=XXX: set the XXX Jamo .fst2 transducer to use; required for Korean mode\n"
          "  -h/--help: this help\n"
          "\n"
          "Constructs the text automaton. If the sentences of the text were delimited\n"
@@ -112,13 +111,12 @@ u_printf(usage_Txt2Tfst);
 }
 
 
-const char* optstring_Txt2Tfst=":a:cn:t:f:Khk:q:";
+const char* optstring_Txt2Tfst=":a:cn:t:Khk:q:";
 const struct option_TS lopts_Txt2Tfst[]={
    {"alphabet", required_argument_TS, NULL, 'a'},
    {"clean", no_argument_TS, NULL, 'c'},
    {"normalization_grammar", required_argument_TS, NULL, 'n'},
    {"tagset", required_argument_TS, NULL, 't'},
-   {"fst2", required_argument_TS, NULL, 'f'},
    {"korean", no_argument_TS, NULL, 'K'},
    {"help", no_argument_TS, NULL, 'h'},
    {"input_encoding",required_argument_TS,NULL,'k'},
@@ -137,9 +135,7 @@ char alphabet[FILENAME_MAX]="";
 char norm[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
 int is_korean=0;
-char korean_fst2[FILENAME_MAX]="";
 int CLEAN=0;
-int KOREAN=0;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
 int mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
@@ -164,13 +160,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Txt2Tfst,lopts_Txt2Tfst,&ind
              strcpy(tagset,vars->optarg);
              break;
    case 'K': is_korean=1;
-             KOREAN=1;
-             break;
-   case 'f': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty Jamo .fst2 file name\n");
-             }
-             KOREAN=1;
-             strcpy(korean_fst2,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case 'k': if (vars->optarg[0]=='\0') {
@@ -205,9 +194,6 @@ if (is_korean) {
    if (tagset[0]!='\0') {
       error("-t option is ignored when -k is used\n");
    }
-   if (korean_fst2[0]=='\0') {
-      fatal_error("-j option is mandatory when -k is used\n");
-   }
 }
 
 struct DELA_tree* tree=new_DELA_tree();
@@ -228,17 +214,13 @@ strcat(dlc,"dlc");
 get_snt_path(argv[vars->optind],tags_ind);
 strcat(tags_ind,"tags.ind");
 struct match_list* tag_list=NULL;
-/* We don't want to block things because of Korean behavior */
-KOREAN=0;
-if (!KOREAN) {
-   load_DELA(dlf,mask_encoding_compatibility_input,tree);
-   load_DELA(dlc,mask_encoding_compatibility_input,tree);
-   u_printf("Loading %s...\n",tags_ind);
-   U_FILE* tag_file=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,tags_ind,U_READ);
-   if (tag_file!=NULL) {
-      tag_list=load_match_list(tag_file,NULL);
-      u_fclose(tag_file);
-   }
+load_DELA(dlf,mask_encoding_compatibility_input,tree);
+load_DELA(dlc,mask_encoding_compatibility_input,tree);
+u_printf("Loading %s...\n",tags_ind);
+U_FILE* tag_file=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,tags_ind,U_READ);
+if (tag_file!=NULL) {
+   tag_list=load_match_list(tag_file,NULL);
+   u_fclose(tag_file);
 }
 Alphabet* alph=NULL;
 if (alphabet[0]!='\0') {
@@ -248,14 +230,8 @@ if (alphabet[0]!='\0') {
    }
 }
 Korean* korean=NULL;
-Jamo2Syl* jamo2syl=NULL;
 if (is_korean) {
    korean=new Korean(alph);
-   jamo2syl=new Jamo2Syl();
-   if (korean_fst2[0]=='\0') {
-      fatal_error("-f option is mandatory when -j is used\n");
-   }
-   jamo2syl->init(korean_fst2);
 }
 struct text_tokens* tokens=load_text_tokens(tokens_txt,mask_encoding_compatibility_input);
 if (tokens==NULL) {
@@ -283,7 +259,7 @@ if (tind==NULL) {
    fatal_error("Cannot create %s\n",text_tind);
 }
 struct normalization_tree* normalization_tree=NULL;
-if (!KOREAN && norm[0]!='\0') {
+if (norm[0]!='\0') {
    normalization_tree=load_normalization_fst2(norm,alph,tokens);
 }
 char enter_pos_f[FILENAME_MAX];
@@ -309,7 +285,7 @@ else {
 }
 
 language_t* language=NULL;
-if (!KOREAN && tagset[0]!='\0') {
+if (tagset[0]!='\0') {
    language=load_language_definition(tagset);
 }
 
@@ -329,20 +305,11 @@ get_snt_path(argv[vars->optind],phrase_cod);
 strcat(phrase_cod ,"phrase.cod");
 while (read_sentence(buffer,&N,&total,f,tokens->SENTENCE_MARKER)) {
    /* We compute and save the current sentence description */
-   /* DEPRECATED CODE
-   if (0 && KOREAN) {
-       build_korean_sentence_automaton(encoding_output,bom_output,mask_encoding_compatibility_input,
-                  exe_path,buffer,N,tokens,alph,tfst,tind,sentence_number,CLEAN,
-                  current_global_position_in_tokens,
-                  current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
-                  phrase_cod,jamo_table,korean_fst2);
-   } else*/ {
-      build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
+   build_sentence_automaton(buffer,N,tokens,tree,alph,tfst,tind,sentence_number,CLEAN,
             normalization_tree,&tag_list,
             current_global_position_in_tokens,
             current_global_position_in_chars+get_shift(n_enter_char,enter_pos,current_global_position_in_tokens),
-            language,korean,jamo2syl);
-   }
+            language,korean);
    if (sentence_number%100==0) u_printf("%d sentences read...        \r",sentence_number);
    sentence_number++;
    current_global_position_in_tokens=current_global_position_in_tokens+total;
@@ -358,9 +325,6 @@ u_fclose(tfst);
 u_fclose(tind);
 if (korean!=NULL) {
    delete korean;
-}
-if (jamo2syl!=NULL) {
-   delete jamo2syl;
 }
 write_number_of_graphs(text_tfst,sentence_number-1);
 free_DELA_tree(tree);

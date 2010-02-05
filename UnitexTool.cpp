@@ -79,19 +79,6 @@ struct utility_item {
 	const struct option_TS *lopts;
 } ;
 
-#ifndef UNITEX_NO_KOREAN_TOOL
-#include "CompressKr.h"
-#include "ConsultDic.h"
-#include "ExtractChar.h"
-#include "InflectKr.h"
-#include "Jamo2Syl.h"
-#include "MergeBin.h"
-#include "SortMorph.h"
-#include "SufForm2Rac.h"
-#include "Syl2Jamo.h"
-#include "Txt2Fst2Kr.h"
-#endif
-
 const struct utility_item utility_array[]=
 {
 	{ "CheckDic", 8, &main_CheckDic, usage_CheckDic, optstring_CheckDic, lopts_CheckDic } ,
@@ -153,18 +140,6 @@ const struct utility_item utility_array[]=
 	{ "XMLizer", 7, &main_XMLizer, usage_XMLizer, optstring_XMLizer, lopts_XMLizer } ,
 #endif
 
-#ifndef UNITEX_NO_KOREAN_TOOL
-	{ "CompressKr" ,10, &main_CompressKr, usage_CompressKr, NULL, NULL } ,
-	{ "ConsultDic" ,10, &main_ConsultDic, usage_ConsultDic, NULL, NULL } ,
-	{ "ExtractChar" ,11, &main_ExtractChar, usage_ExtractChar, NULL, NULL } ,
-	{ "InflectKr" ,9, &main_InflectKr, usage_InflectKr, NULL, NULL } ,
-	{ "Jamo2Syl" ,8, &main_Jamo2Syl, usage_Jamo2Syl, NULL, NULL } ,
-	{ "MergeBin" ,8, &main_MergeBin, usage_MergeBin, NULL, NULL } ,
-	{ "SortMorph" ,9, &main_SortMorph, usage_SortMorph, NULL, NULL } ,
-	{ "SufForm2Rac" ,11, &main_SufForm2Rac, usage_SufForm2Rac, NULL, NULL } ,
-	{ "Syl2Jamo" ,8, &main_Syl2Jamo, usage_Syl2Jamo, NULL, NULL } ,
-	{ "Txt2Fst2Kr" ,10, &main_Txt2Fst2Kr, usage_Txt2Fst2Kr, NULL, NULL } ,
-#endif
 	{ "", 0, NULL, NULL, NULL, NULL} 
 };
 

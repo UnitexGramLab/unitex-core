@@ -93,7 +93,6 @@ p->left_ctx_base=0;
 p->protect_dic_chars=0;
 p->korean=NULL;
 p->jamo_tags=NULL;
-p->jamo2syl=NULL;
 p->mask_encoding_compatibility_input = DEFAULT_MASK_ENCODING_COMPATIBILITY_INPUT;
 p->recyclable_wchart_buffer=(wchar_t*)malloc(sizeof(wchar_t)*2048);
 if (p->recyclable_wchart_buffer==NULL) {
@@ -125,7 +124,7 @@ for (int i=0;i<tokens->size;i++) {
 	if (!u_strcmp(tokens->value[i],"{S}")) {
 		res[i]=u_strdup("{S}");
 	} else {
-	   Hanguls_to_Jamos(tokens->value[i],foo,korean);
+	   Hanguls_to_Jamos(tokens->value[i],foo,korean,0);
 	   res[i]=u_strdup(foo);
 	}
 }
@@ -140,7 +139,7 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
-                   char* korean_fst2,int is_korean) {
+                   int is_korean) {
 
 U_FILE* text_file;
 U_FILE* out;
@@ -306,10 +305,7 @@ u_printf("Optimizing fst2...\n");
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
 if (is_korean) {
 	p->korean=new Korean(p->alphabet);
-	/* We also initializes the Chinese -> Hangul table */
 	p->jamo_tags=create_jamo_tags(p->korean,p->tokens);
-	p->jamo2syl=new Jamo2Syl();
-	p->jamo2syl->init(korean_fst2);
 }
 
 u_printf("Working...\n");
@@ -340,9 +336,6 @@ if (p->jamo_tags!=NULL) {
 		free(p->jamo_tags[i]);
 	}
 	free(p->jamo_tags);
-}
-if (p->jamo2syl!=NULL) {
-   delete p->jamo2syl;
 }
 free_string_hash(p->tokens);
 free_list_int(p->tag_token_list);

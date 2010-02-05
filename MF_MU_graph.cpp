@@ -375,7 +375,7 @@ int MU_graph_get_unit_forms(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL
     return err;
 
   //Generate the desired inflected forms of the single unit
-  err = SU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,u,&old_feat, SU_forms,0,NULL,NULL);
+  err = SU_inflect(p_multiFlex_ctx,pL_MORPHO,encoding_output,bom_output,mask_encoding_compatibility_input,u,&old_feat, SU_forms,0,NULL);
   return err;
 }
 

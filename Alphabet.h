@@ -63,7 +63,7 @@ struct alphabet_ {
   //            (x << 1) == (x * 2)
   
   /* This array is only used for Korean alphabets, because it is useful to
-   * know for a given Chinese character its Hangul syllab equivalent */
+   * know for a given Chinese character its Hangul syllable equivalent */
   unichar* korean_equivalent_syllable;
 };
 

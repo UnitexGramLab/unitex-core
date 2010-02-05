@@ -246,7 +246,7 @@ for (;;) {
             if (p->korean!=NULL) {
                /* If we work in Korean mode, we must convert text into Hanguls */
                unichar z[1024];
-               convert_jamo_to_hangul(entry->inflected,z,p->jamo2syl);
+               convert_jamo_to_hangul(entry->inflected,z,p->korean);
                push_input_string(p->stack,z,p->protect_dic_chars);
             } else {
                push_input_string(p->stack,entry->inflected,p->protect_dic_chars);

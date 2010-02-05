@@ -55,7 +55,6 @@ const char* usage_MultiFlex =
          "  -d DIR/--directory=DIR: the directory containing 'Morphology' and 'Equivalences'\n"
          "                          files and inflection graphs for single and compound words.\n"
 		   "  -K/--korean: tells MultiFlex that it works on Korean\n"
-		   "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use for Korean\n"
 		   "  -s/--only-simple-words: the program will consider compound words as errors\n"
 		   "  -c/--only-compound-words: the program will consider simple words as errors\n"
          "  -h/--help: this help\n"
@@ -70,13 +69,12 @@ u_printf(usage_MultiFlex);
 }
 
 
-const char* optstring_MultiFlex=":o:a:d:Kf:schk:q:";
+const char* optstring_MultiFlex=":o:a:d:Kschk:q:";
 const struct option_TS lopts_MultiFlex[]= {
       {"output",required_argument_TS,NULL,'o'},
       {"alphabet",required_argument_TS,NULL,'a'},
       {"directory",required_argument_TS,NULL,'d'},
       {"korean",no_argument_TS,NULL,'K'},
-      {"fst2",required_argument_TS,NULL,'f'},
       {"only-simple-words",no_argument_TS,NULL,'s'},
       {"only-compound-words",no_argument_TS,NULL,'c'},
       {"input_encoding",required_argument_TS,NULL,'k'},
@@ -97,7 +95,6 @@ char output[FILENAME_MAX]="";
 char config_dir[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 int is_korean;
-char fst2[FILENAME_MAX]="";
 MultiFlex_ctx* p_multiFlex_ctx;
 //Current language's alphabet
 Alphabet* alph=NULL;
@@ -121,11 +118,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_MultiFlex,lopts_MultiFlex,&i
              break;
    case 'd': strcpy(config_dir,vars->optarg); break;
    case 'K': is_korean=1;
-             break;
-   case 'f': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty transducer file name\n");
-             }
-             strcpy(fst2,vars->optarg);
              break;
    case 's': error_check_status=ONLY_SIMPLE_WORDS; break;
    case 'c': error_check_status=ONLY_COMPOUND_WORDS; break;
@@ -204,24 +196,17 @@ if (err) {
 
 /* Korean */
 Korean* korean=NULL;
-Jamo2Syl* jamo2syl=NULL;
 if (is_korean) {
    if (alph==NULL) {
       fatal_error("Cannot initialize Korean data with a NULL alphabet\n");
    }
 	korean=new Korean(alph);
-	/* We also initializes the Chinese -> Hangul table */
-	if (fst2[0]=='\0') {
-		fatal_error("You must specify the Korean transducer to use with -f\n");
-	}
-   jamo2syl=new Jamo2Syl();
-   jamo2syl->init(fst2);
 }
 
 //DELAC inflection
 err=inflect(argv[vars->optind],output,p_multiFlex_ctx,pL_MORPHO,alph,encoding_output, bom_output, mask_encoding_compatibility_input,
             config_files_status,&D_CLASS_EQUIV,
-		      error_check_status,korean,jamo2syl);
+		      error_check_status,korean);
 MU_graph_free_graphs(p_multiFlex_ctx);
 for (int count_free_fst2=0;count_free_fst2<p_multiFlex_ctx->n_fst2;count_free_fst2++) {
     free_abstract_Fst2(p_multiFlex_ctx->fst2[count_free_fst2],&(p_multiFlex_ctx->fst2_free[count_free_fst2]));
@@ -233,7 +218,6 @@ free_OptVars(vars);
 free(p_multiFlex_ctx);
 if (korean!=NULL) {
 	delete korean;
-	delete jamo2syl;
 }
 u_printf("Done.\n");
 return 0;

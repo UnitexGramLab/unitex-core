@@ -65,7 +65,6 @@ const char* usage_Locate =
          "  -d X/--sntdir=X: uses directory X instead of the text directory; note that X must be\n"
          "                   (back)slash terminated\n"
          "  -K/--korean: tells Locate that it works on Korean\n"
-         "  -f FST2/--fst2=FST2: specifies the jamo->hangul transducer to use for Korean\n"
          "\n"
          "Search limit options:\n"
          "  -l/--all: looks for all matches (default)\n"
@@ -114,7 +113,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKf:hk:q:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKhk:q:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -139,7 +138,6 @@ const struct option_TS lopts_Locate[]= {
       {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
       {"protect_dic_chars",no_argument_TS,NULL,'p'},
       {"korean",no_argument_TS,NULL,'K'},
-      {"fst2",required_argument_TS,NULL,'f'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
@@ -172,7 +170,6 @@ AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int protect_dic_chars=0;
 int is_korean=0;
-char korean_fst2[FILENAME_MAX]="";
 char foo;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -225,11 +222,6 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'z': ambiguous_output_policy=IGNORE_AMBIGUOUS_OUTPUTS; break;
    case 'p': protect_dic_chars=1; break;
    case 'K': is_korean=1;
-             break;
-   case 'f': if (vars->optarg[0]=='\0') {
-                fatal_error("You must specify a non empty transducer file name\n");
-             }
-             strcpy(korean_fst2,vars->optarg);
              break;
    case 'h': usage(); return 0;
    case 'k': if (vars->optarg[0]=='\0') {
@@ -288,7 +280,7 @@ strcat(err,"err");
 int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
                encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
-               ambiguous_output_policy,variable_error_policy,protect_dic_chars,korean_fst2,is_korean);
+               ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }
@@ -308,7 +300,7 @@ return (!OK);
 int launch_locate_as_routine(Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                              char* text_snt,char* fst2,char* alphabet,
                               OutputPolicy output_policy,char* morpho_dic,
-                              int protect_dic_chars,int is_korean,char* korean_fst2) {
+                              int protect_dic_chars,int is_korean) {
 /* We test if we are working on Thai, on the basis of the alphabet file */
 char path[FILENAME_MAX];
 char lang[FILENAME_MAX];
@@ -368,10 +360,6 @@ if (protect_dic_chars) {
 }
 if (is_korean) {
 	add_argument(invoker,"-K");
-}
-if (korean_fst2!=NULL) {
-   sprintf(tmp,"-f%s",korean_fst2);
-   add_argument(invoker,tmp);
 }
 add_argument(invoker,fst2);
 /* Finally, we call the main function of Locate */

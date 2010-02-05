@@ -43,24 +43,28 @@ return src;
 
 /**
  * Converts a syllable text into a Jamo one, including Chinese -> Hangul conversion
- * and Jamo compatible -> Jamo conversion.
+ * and Jamo compatible -> Jamo conversion. If 'only_syllables' is non zero,
+ * characters that are neither Chinese chars nor Hanguls are left untouched.
+ * This is useful in MultiFlex, when a string may already have been turned into
+ * Jamos. For all other use cases, this value should be 0.
  */
-void Hanguls_to_Jamos(unichar* src,unichar* dest,Korean* korean) {
+void Hanguls_to_Jamos(unichar* src,unichar* dest,Korean* korean,int only_syllables) {
 if (korean==NULL) {
    /* No Korean data? A simple copy will do. */
 	u_strcpy(dest,src);
    return;
 }
-korean->Hanguls_to_Jamos(src,dest);
+korean->Hanguls_to_Jamos(src,dest,only_syllables);
 }
 
 
 
 /**
  * Converts a syllable text into a Jamo one, including Chinese -> Hangul conversion
- * and Jamo compatible -> Jamo conversion.
+ * and Jamo compatible -> Jamo conversion. If 'only_syllables' is non zero,
+ * characters that are neither Chinese chars nor Hanguls are left untouched.
  */
-void Korean::Hanguls_to_Jamos(unichar* src,unichar* dest) {
+void Korean::Hanguls_to_Jamos(unichar* src,unichar* dest,int only_syllables) {
 unichar temp[1024];
 /* Then, we put a syllable bound before every character that is
  * 1) not a syllable one but in the alphabet (i.e. latin letters)
@@ -71,16 +75,16 @@ unichar c;
 unichar* map=alphabet->korean_equivalent_syllable;
 for (int i=0;src[i]!='\0';i++) {
    c=Chinese_to_Hangul(src[i],map);
-   if ((test_letter(c,alphabet) && !u_is_Hangul(c))
+   if (!only_syllables && ((test_letter(c,alphabet) && !u_is_Hangul(c))
          || (u_is_Hangul_Compatility_Jamo(c) && c!=KR_SYLLABLE_BOUND)
-         || u_is_Hangul_Jamo(c)){
+         || u_is_Hangul_Jamo(c))){
       temp[j++]=KR_SYLLABLE_BOUND;
    }
    temp[j++]=c;
 }
 temp[j]='\0';
 /* Then, we perform the syllable -> Jamo conversion */
-Hanguls_to_Jamos_internal(temp,dest);
+Hanguls_to_Jamos_internal(temp,dest,only_syllables);
 }
 
 
@@ -102,21 +106,44 @@ if (u_is_Hangul_Compatility_Jamo(c) && korean!=NULL) {
 }
 
 
+void kprintf(unichar* s) {
+error("s=_%S_\n",s);
+for (int i=0;s[i];i++) {
+   error("%C (%X) ",s[i],s[i]);
+}
+error("\n");
+}
+
 /**
  * Turns a standard Jamo letter sequence into a Hangul syllable sequence.
+ *
+ * for debug only: returns 1 if old and new versions of Jamo->Hangul conversions
+ *                 provide the same results; 0 otherwise.
  */
-void convert_jamo_to_hangul(unichar* src,unichar* dest,Jamo2Syl* jamo2syl) {
-jamo2syl->cleanMachine();
+int convert_jamo_to_hangul(unichar* src,unichar* dest,Korean* korean) {
 unichar t[1024];
 /* We make a copy without empty initial consonants, if any */
 int j=0;
 for (int i=0;src[i]!='\0';i++) {
-   if (src[i]!=SJ_IC_IEUNG) {
+   if (src[i]==SJ_IC_IEUNG) {
+      if (i>0 && src[i-1]==KR_SYLLABLE_BOUND) {
+         if (src[i+1]==KR_SYLLABLE_BOUND) {
+            t[j++]=src[i];
+         }
+      } else {
+         t[j++]=src[i];
+      }
+   } else {
       t[j++]=src[i];
    }
+
+   /*if (src[i]!=SJ_IC_IEUNG || (i>0 && src[i-1]!=KR_SYLLABLE_BOUND)) {
+      t[j++]=src[i];
+   }*/
 }
 t[j]='\0';
-jamo2syl->convStr(t,j+1,dest);
+korean->Jamos_to_Hangul(src,dest);
+return 1;
 }
 
 
@@ -130,7 +157,7 @@ unichar t[2];
 t[0]=hangul;
 t[1]='\0';
 unichar t2[16];
-Hanguls_to_Jamos(t,t2,korean);
+Hanguls_to_Jamos(t,t2,korean,0);
 int pos=0;
 if (t2[0]==KR_SYLLABLE_BOUND) {
    pos=1;
@@ -252,11 +279,11 @@ for (int i=0;i<JAMO_SIZE;i++) {
  * NOTE: this function inserts the syllable bound before the Jamos
  */
 int Korean::single_Hangul_to_Jamos(unichar syl,unichar* output,int pos) {
-if (syl<HANGUL_SYL_START || syl>HANGUL_SYL_END) {
+if (syl<KR_HANGUL_SYL_START || syl>KR_HANGUL_SYL_END) {
    fatal_error("Invalid Hangul %X in single_Hangul_to_Jamos\n",syl);
 }
 output[pos++]=KR_SYLLABLE_BOUND;
-unichar tmp=syl-HANGUL_SYL_START;
+unichar tmp=syl-KR_HANGUL_SYL_START;
 int final_consonant=tmp%N_FINAL_CONSONANTS;
 tmp=tmp/N_FINAL_CONSONANTS;
 int vowel=tmp%N_VOWELS;
@@ -284,10 +311,10 @@ return pos;
  * NOTE: this function DOES NOT insert the syllable bound before the Jamos
  */
 int Korean::single_HCJ_to_Jamos(unichar jamo,unichar* output,int pos) {
-if (jamo<UNI_HJAMO_CSTART || jamo>UNI_HJAMO_CEND) {
+if (jamo<KR_HCJ_START || jamo>KR_HCJ_END) {
    fatal_error("Invalid Hangul Compatibility Jamo %X in single_HCJ_to_Jamos\n",jamo);
 }
-unichar* ptr=HCJ_to_SJ_table[jamo-UNI_HJAMO_CSTART];
+unichar* ptr=HCJ_to_SJ_table[jamo-KR_HCJ_START];
 if (ptr!=NULL) {
    while (*ptr!='\0') {
       output[pos++]=*ptr++;
@@ -302,9 +329,9 @@ return pos;
 /**
  * Converts a Hangul string into its Jamo equivalent. Returns the length of the output.
  * Note that it ignores backslashes and that it converts Hangul Compatibility Jamos
- * into standard Jamos.
+ * into standard Jamos, but only if 'only_syllables' is set to zero.
  */
-int Korean::Hanguls_to_Jamos_internal(unichar* input,unichar* output) {
+int Korean::Hanguls_to_Jamos_internal(unichar* input,unichar* output,int only_syllables) {
 int n=0;
 unichar c;
 for (int i=0;input[i]!='\0';i++) {
@@ -316,7 +343,7 @@ for (int i=0;input[i]!='\0';i++) {
    if (c>=KR_HANGUL_SYL_START && c<=KR_HANGUL_SYL_END) {
 	   n=single_Hangul_to_Jamos(c,output,n);
    }
-   else if (c>=KR_HCJ_START && c<=KR_HCJ_END) {
+   else if (!only_syllables && c>=KR_HCJ_START && c<=KR_HCJ_END) {
       n=single_HCJ_to_Jamos(c,output,n);
    }
    else {
@@ -486,6 +513,23 @@ case SJ_IC_PHIEUPH: {
 case SJ_IC_HIEUH: {
 	*initial_consonant=18;
 	*hcj=HCJ_HIEUH;
+	if (/*input[(*pos_input)+1]==HCJ_KIYEOK ||*/ input[(*pos_input)+1]==SJ_IC_KIYEOK) {
+	   *initial_consonant=15;
+	   *hcj=HCJ_KHIEUKH;
+	   (*pos_input)++;
+	} else if (/*input[(*pos_input)+1]==HCJ_CIEUC ||*/ input[(*pos_input)+1]==SJ_IC_CIEUC) {
+      *initial_consonant=14;
+      *hcj=HCJ_CHIEUCH;
+      (*pos_input)++;
+   } else if (/*input[(*pos_input)+1]==HCJ_TIKEUT ||*/ input[(*pos_input)+1]==SJ_IC_TIKEUT) {
+      *initial_consonant=16;
+      *hcj=HCJ_THIEUTH;
+      (*pos_input)++;
+   } else if (/*input[(*pos_input)+1]==HCJ_PIEUP ||*/ input[(*pos_input)+1]==SJ_IC_PIEUP) {
+      *initial_consonant=17;
+      *hcj=HCJ_PHIEUPH;
+      (*pos_input)++;
+   }
 	break;
 }
 default: {
@@ -648,7 +692,7 @@ case SJ_YI: {
 case SJ_I: {
 	*vowel=20;
 	*hcj=HCJ_I;
-	if (/*input[(*pos_input)+1]==HCJ_EO ||*/ input[(*pos_input)+1]==SJ_EO) {
+	if (/*input[(*pos_input)+1]==HCJ_A ||*/ input[(*pos_input)+1]==SJ_A) {
 		*vowel=2;
 		*hcj=HCJ_YA;
 		(*pos_input)++;

@@ -117,7 +117,7 @@ DEFFLAGS += -DUNITEX_RELEASE_MEMORY_AT_EXIT
 endif
 
 
-override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I"../korean" -I".."
+override CFLAGS   += $(DEFFLAGS) -I"../include_tre" -Ilibtre/include -I".."
 LIBTRE   = .libtre-done
 CLEAN-LIBTRE   = clean-libtre
 LIBS   = -Llibtre/lib -ltre -lpthread
@@ -169,12 +169,8 @@ TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 INSTALL_COMMAND = make install
 
 LIBS =  -L "." -ltre
-INCS =  -I"../korean" -I".." -I"../include_tre"
-#
-# Note: the -I"." inclusion is intended to deal with compilation directory problem
-#       while compiling Korean programs
-#
-CXXINCS =  -I"../korean" -I".."
+INCS =  -I".." -I"../include_tre"
+CXXINCS =  -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
@@ -250,10 +246,8 @@ TRE_OPTIONS = -DHAVE_CONFIG_H=1 -I../include_tre -O3 -Wall -c -fmessage-length=0
 # USING TRE STATIC LIBRARY
 #
 LIBS =  -L"$(DEVCPP_PATH)/lib" -L"." -ltre
-INCS =  -I"$(DEVCPP_PATH)/include" -I"../include_tre" -I"../korean" -I".."
-# Note: the -I".." inclusion is intended to deal with compilation directory problem
-#       while compiling Korean programs
-CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../include_tre" -I"../korean" -I".."
+INCS =  -I"$(DEVCPP_PATH)/include" -I"../include_tre" -I".."
+CXXINCS =  -I"$(DEVCPP_PATH)/include/c++"  -I"$(DEVCPP_PATH)/include/c++/mingw32"  -I"$(DEVCPP_PATH)/include/c++/backward"  -I"$(DEVCPP_PATH)/include"  -I"../include_tre" -I".."
 CXXFLAGS = $(CXXINCS)  -Wall
 CFLAGS = $(INCS)  -Wall
 
@@ -297,15 +291,12 @@ TEST_OBJS = Main_Test.o Af_stdio.o ActivityLogger.o Unicode.o Pattern.o String_h
 			List_ustring.o StringParsing.o PatternTree.o List_pointer.o DELA.o\
 			Alphabet.o Fst2.o Transitions.o List_int.o Tfst.o File.o SingleGraph.o\
 			BitArray.o HashTable.o FIFO.o BitMasks.o Ustring.o Symbol.o\
-			LanguageDefinition.o Tagset.o AbstractFst2Load.o Korean.o\
-			codeForKorean.o pro_type.o \
-            orgUniMbcsMap.o segtype.o etc.o bitmap.o jamoCodage.o
+			LanguageDefinition.o Tagset.o AbstractFst2Load.o Korean.o
 
 BUILDKRMWUDIC      = BuildKrMwuDic
 BUILDKRMWUDIC_OBJS = Main_BuildKrMwuDic.o BuildKrMwuDic.o IOBuffer.o Af_stdio.o ActivityLogger.o\
 					 Unicode.o Error.o getopt.o KrMwuDic.o StringParsing.o DELA.o String_hash.o\
-					 Alphabet.o List_ustring.o jamoCodage.o codeForKorean.o pro_type.o \
-                     orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o AbstractFst2Load.o Fst2.o\
+					 Alphabet.o List_ustring.o Korean.o AbstractFst2Load.o Fst2.o\
                      Pattern.o List_int.o Transitions.o Symbol.o LanguageDefinition.o Tagset.o\
                      Ustring.o MF_InflectTransd.o Grf2Fst2.o Grf2Fst2_lib.o SingleGraph.o File.o\
                      BitArray.o HashTable.o FIFO.o BitMasks.o Fst2Check.o ProgramInvoker.o\
@@ -332,8 +323,7 @@ CONCORD_OBJS = Main_Concord.o Concord.o IOBuffer.o Af_stdio.o ActivityLogger.o U
 				List_pointer.o PatternTree.o BitMasks.o Tokenization.o Thai.o Contexts.o\
 				Stack_unichar.o Transitions.o DicVariables.o\
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-				ProgramInvoker.o NewLineShifts.o jamoCodage.o codeForKorean.o pro_type.o \
-                  orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+				ProgramInvoker.o NewLineShifts.o Korean.o
 
 CONCORDIFF      = ConcorDiff
 CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_stdio.o ActivityLogger.o Unicode.o Text_tokens.o String_hash.o List_int.o\
@@ -345,11 +335,10 @@ CONCORDIFF_OBJS = Main_ConcorDiff.o ConcorDiff.o IOBuffer.o Diff.o Concord.o Af_
 				Buffer.o StringParsing.o Snt.o BitArray.o LemmaTree.o List_pointer.o BitMasks.o\
 				PatternTree.o Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 				Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-				ProgramInvoker.o NewLineShifts.o jamoCodage.o codeForKorean.o pro_type.o \
-                  orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+				ProgramInvoker.o NewLineShifts.o Korean.o
 
 CONVERT      = Convert
-CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o File.o CodePages.o orgUniMbcsMap.o Error.o\
+CONVERT_OBJS = Main_Convert.o Convert.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o File.o CodePages.o Error.o\
 				HTMLCharacters.o AsciiSearchTree.o getopt.o
 
 DICO      = Dico
@@ -361,8 +350,7 @@ DICO_OBJS = Main_Dico.o Dico.o List_int.o DELA.o ApplyDic.o File.o Alphabet.o St
             StringParsing.o Buffer.o BitArray.o Snt.o LemmaTree.o List_pointer.o PatternTree.o\
             LocateFst2Tags.o BitMasks.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
             Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o ProgramInvoker.o\
-            jamoCodage.o codeForKorean.o pro_type.o \
-            orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o SortTxt.o Thai.o Compress.o DictionaryTree.o\
+            Korean.o SortTxt.o Thai.o Compress.o DictionaryTree.o\
             AutomatonDictionary2Bin.o 
 
 ELAG      = Elag
@@ -400,8 +388,7 @@ EXTRACT_OBJS = Main_Extract.o Extract.o IOBuffer.o LocatePattern.o Text_parsing.
 	           LemmaTree.o Snt.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
 	           Tokenization.o Thai.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-	           ProgramInvoker.o NewLineShifts.o jamoCodage.o codeForKorean.o pro_type.o \
-               orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+	           ProgramInvoker.o NewLineShifts.o Korean.o
 
 FLATTEN      = Flatten
 FLATTEN_OBJS = Main_Flatten.o Flatten.o IOBuffer.o Alphabet.o Af_stdio.o ActivityLogger.o Unicode.o Fst2.o Grf2Fst2_lib.o\
@@ -424,8 +411,7 @@ FST2TXT_OBJS = Main_Fst2Txt.o Fst2Txt.o IOBuffer.o Af_stdio.o ActivityLogger.o U
                Fst2Txt_TokenTree.o Buffer.o Transitions.o File.o \
 	           Fst2TxtAsRoutine.o DELA.o DicVariables.o TransductionStack.o\
 	           Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o Stack_unichar.o\
-	           jamoCodage.o codeForKorean.o pro_type.o \
-               orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+	           Korean.o
 
 GRF2FST2      = Grf2Fst2
 GRF2FST2_OBJS = Main_Grf2Fst2.o Grf2Fst2.o IOBuffer.o Alphabet.o Af_stdio.o ActivityLogger.o Unicode.o Fst2.o AbstractFst2Load.o \
@@ -453,17 +439,15 @@ LOCATE_OBJS = Main_Locate.o Locate.o IOBuffer.o Af_stdio.o ActivityLogger.o Unic
               BitArray.o LemmaTree.o List_pointer.o PatternTree.o BitMasks.o Buffer.o\
               Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
               Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o \
-              ProgramInvoker.o jamoCodage.o codeForKorean.o pro_type.o \
-              orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+              ProgramInvoker.o Korean.o
 
 LOCATETFST      = LocateTfst
 LOCATETFST_OBJS = Main_LocateTfst.o LocateTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o Error.o getopt.o LocateTfst_lib.o \
                   Tfst.o File.o Ustring.o SingleGraph.o List_int.o BitMasks.o FIFO.o Transitions.o \
                   Symbol.o LanguageDefinition.o Tagset.o String_hash.o StringParsing.o DELA.o \
                   Alphabet.o List_ustring.o HashTable.o BitArray.o Fst2.o AbstractFst2Load.o Pattern.o \
-                  LocateTfstMatches.o Match.o MorphologicalFilters.o jamoCodage.o codeForKorean.o pro_type.o \
-                  orgUniMbcsMap.o segtype.o etc.o Korean.o OptimizedTfstTagMatching.o List_pointer.o\
-                  TransductionVariables.o TransductionStackTfst.o Contexts.o bitmap.o
+                  LocateTfstMatches.o Match.o MorphologicalFilters.o Korean.o OptimizedTfstTagMatching.o List_pointer.o\
+                  TransductionVariables.o TransductionStackTfst.o Contexts.o
 
 
 MULTIFLEX      = MultiFlex
@@ -473,8 +457,7 @@ MULTIFLEX_OBJS = Main_MultiFlex.o MultiFlex.o Alphabet.o MF_DLC_inflect.o MF_Dic
                  String_hash.o Pattern.o List_int.o BitMasks.o Transitions.o Grf2Fst2.o\
                  Grf2Fst2_lib.o SingleGraph.o BitArray.o FIFO.o HashTable.o Fst2Check.o\
                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o\
-                 MF_Operators_Util.o getopt.o ProgramInvoker.o jamoCodage.o codeForKorean.o pro_type.o \
-                  orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+                 MF_Operators_Util.o getopt.o ProgramInvoker.o Korean.o
 
 NORMALIZE      = Normalize
 NORMALIZE_OBJS = Main_Normalize.o Normalize.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o File.o DELA.o List_ustring.o String_hash.o\
@@ -505,8 +488,7 @@ RECONSTRUCAO_OBJS = Main_Reconstrucao.o Reconstrucao.o OptimizedFst2.o ParsingIn
                LemmaTree.o List_pointer.o PatternTree.o LocateFst2Tags.o BitMasks.o\
                Buffer.o Tokenization.o Contexts.o Stack_unichar.o Transitions.o DicVariables.o\
                Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o \
-               Tfst.o SingleGraph.o FIFO.o HashTable.o jamoCodage.o codeForKorean.o pro_type.o \
-               orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+               Tfst.o SingleGraph.o FIFO.o HashTable.o Korean.o
 
 REG2GRF      = Reg2Grf
 REG2GRF_OBJS = Main_Reg2Grf.o Reg2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o RegularExpressions.o Error.o File.o\
@@ -562,10 +544,7 @@ TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o A
                 StringParsing.o Pattern.o BitMasks.o Grf2Fst2_lib.o SingleGraph.o\
                 FIFO.o BitArray.o HashTable.o Transitions.o LocateMatches.o Match.o\
                 Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o getopt.o\
-                Tfst.o NewLineShifts.o ProgramInvoker.o\
-                Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o Jamo2Syl.o jamoCodage.o\
-                codeForKorean.o pro_type.o orgUniMbcsMap.o \
-                Syl2Jamo.o
+                Tfst.o NewLineShifts.o Korean.o
 
 XMLIZER      = XMLizer
 XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o Fst2.o AbstractFst2Load.o Alphabet.o \
@@ -574,8 +553,7 @@ XMLIZER_OBJS = Main_XMLizer.o XMLizer.o IOBuffer.o Af_stdio.o ActivityLogger.o U
                NormalizeAsRoutine.o DELA.o Buffer.o Fst2Txt_TokenTree.o ParsingInfo.o Transitions.o \
 	           getopt.o DicVariables.o TransductionStack.o \
 	           Symbol.o Symbol_op.o LanguageDefinition.o Tagset.o Ustring.o Stack_unichar.o\
-	           jamoCodage.o codeForKorean.o pro_type.o \
-               orgUniMbcsMap.o segtype.o etc.o Korean.o bitmap.o
+	           Korean.o
 
 
 UNCOMPRESS       = Uncompress
@@ -607,10 +585,7 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o Ustring.o XMLizer.o DuplicateFile.o \
-                  Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o \
-                  codeForKorean.o orgUniMbcsMap.o CompressKr.o ConsultDic.o ExtractChar.o InflectKr.o Jamo2Syl.o \
-                  jamoCodage.o MergeBin.o pro_type.o SortMorph.o SufForm2Rac.o Syl2Jamo.o \
-                  OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o
+                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -638,66 +613,7 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o Ustring.o XMLizer.o DuplicateFile.o \
-                  Txt2Fst2Kr.o bitmap.o etc.o segtype.o Korean.o \
-                  codeForKorean.o orgUniMbcsMap.o CompressKr.o ConsultDic.o ExtractChar.o InflectKr.o Jamo2Syl.o \
-                  jamoCodage.o MergeBin.o pro_type.o SortMorph.o SufForm2Rac.o Syl2Jamo.o \
-                  OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o
-
-######################
-## Korean programs  ##
-######################
-
-COMPRESSKR	= CompressKr
-COMPRESSKR_OBJS = Main_CompressKr.o CompressKr.o IOBuffer.o etc.o pro_type.o \
-                  String_hash.o File.o Af_stdio.o ActivityLogger.o Unicode.o Alphabet.o Error.o StringParsing.o
-
-CONSULTDIC = ConsultDic
-CONSULTDIC_OBJS = Main_ConsultDic.o ConsultDic.o IOBuffer.o etc.o pro_type.o \
-		    Af_stdio.o ActivityLogger.o Unicode.o Fst2.o File.o Error.o Alphabet.o Pattern.o List_ustring.o\
-		    StringParsing.o String_hash.o List_int.o BitMasks.o Transitions.o DELA.o\
-		    Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-
-INFLECTKR = InflectKr
-INFLECTKR_OBJS  = Main_InflectKr.o InflectKr.o IOBuffer.o etc.o pro_type.o AbstractFst2Load.o \
-                  Af_stdio.o ActivityLogger.o Unicode.o Fst2.o File.o Error.o Pattern.o List_ustring.o\
-                  String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o\
-                  Alphabet.o Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-
-SUFFORM2RAC  = SufForm2Rac
-SUFFORM2RAC_OBJS  = Main_SufForm2Rac.o SufForm2Rac.o IOBuffer.o etc.o Af_stdio.o ActivityLogger.o Unicode.o File.o Error.o
-
-MERGEBIN  = MergeBin
-MERGEBIN_OBJS  = Main_MergeBin.o MergeBin.o IOBuffer.o etc.o pro_type.o Af_stdio.o ActivityLogger.o Unicode.o File.o Error.o
-
-SORTMORPH  = SortMorph
-SORTMORPH_OBJS  = Main_SortMorph.o SortMorph.o IOBuffer.o etc.o File.o Af_stdio.o ActivityLogger.o Unicode.o Error.o
-
-JAMO2SYL  = Jamo2Syl
-JAMO2SYL_OBJS  = Main_Jamo2Syl.o Jamo2Syl.o IOBuffer.o etc.o bitmap.o \
-                  codeForKorean.o orgUniMbcsMap.o segtype.o \
-                  pro_type.o jamoCodage.o AbstractFst2Load.o \
-                  Af_stdio.o ActivityLogger.o Unicode.o File.o Fst2.o Error.o Pattern.o\
-                  List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
-                  Transitions.o DELA.o Alphabet.o\
-                  Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-
-SYL2JAMO  = Syl2Jamo
-SYL2JAMO_OBJS  = Main_Syl2Jamo.o Syl2Jamo.o IOBuffer.o jamoCodage.o etc.o \
-                 pro_type.o codeForKorean.o orgUniMbcsMap.o segtype.o \
-                 Af_stdio.o ActivityLogger.o Unicode.o File.o Error.o
-
-TXT2FST2KR  = Txt2Fst2Kr
-TXT2FST2KR_OBJS  = Main_Txt2Fst2Kr.o Txt2Fst2Kr.o IOBuffer.o bitmap.o etc.o segtype.o \
-		   Af_stdio.o ActivityLogger.o Unicode.o File.o Fst2.o AbstractFst2Load.o Error.o Pattern.o List_ustring.o\
-		   String_hash.o StringParsing.o List_int.o BitMasks.o Transitions.o DELA.o Alphabet.o\
-		   Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
-
-EXTRACTCHAR  = ExtractChar
-EXTRACTCHAR_OBJS  = Main_ExtractChar.o ExtractChar.o IOBuffer.o codeForKorean.o orgUniMbcsMap.o bitmap.o etc.o segtype.o \
-		            jamoCodage.o pro_type.o Af_stdio.o ActivityLogger.o Unicode.o File.o Fst2.o AbstractFst2Load.o Error.o\
-		            Pattern.o List_ustring.o String_hash.o StringParsing.o List_int.o BitMasks.o\
-		            Transitions.o DELA.o Alphabet.o\
-		            Symbol.o Symbol_op.o LanguageDefinition.o Ustring.o Tagset.o
+                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o
 
 
 ################################
@@ -720,14 +636,10 @@ PROGS = $(BUILDKRMWUDIC) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONV
 		$(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
 		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGSETNORMTFST) $(TEI2TXT) \
 		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TXT2TFST) $(XMLIZER) \
-		$(UNCOMPRESS) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER) $(TEST)
+		$(UNCOMPRESS) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER)
 
 #PROGS = $(TEST)
 
-ifeq ($(64BITS),no)
-PROGS += $(INFLECTKR) $(SUFFORM2RAC) $(COMPRESSKR) $(MERGEBIN) $(CONSULTDIC) $(SORTMORPH) \
-         $(TXT2FST2KR) $(JAMO2SYL) $(SYL2JAMO) $(EXTRACTCHAR)
-endif
 
 OBJS  = $(BUILDKRMWUDIC_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) $(CONCORDIFF_OBJS) $(CONVERT_OBJS) \
         $(DICO_OBJS) $(ELAG_OBJS)\
@@ -801,10 +713,10 @@ install: bin
 
 
 clean: $(CLEAN-LIBTRE)
-	rm -f $(OBJS) $(PROGS) *~ korean/*.o korean/*~ Main_*.o
+	rm -f $(OBJS) $(PROGS) *~ Main_*.o
 
 clean-all-but-tre:
-	rm -f $(OBJS) $(PROGS) *~ korean/*.o korean/*~ Main_*.o
+	rm -f $(OBJS) $(PROGS) *~ Main_*.o
 
 dist: clean
 	if test -d $(BUILD); then rm -rf $(BUILD); fi
@@ -1153,35 +1065,6 @@ $(BIN_DIR)$(UNITEXTOOL)$(EXTENSION): $(UNITEXTOOL_OBJS)
 $(BIN_DIR)$(UNITEXTOOL_LOGGER)$(EXTENSION): $(UNITEXTOOL_LOGGER_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
-$(BIN_DIR)$(INFLECTKR)$(EXTENSION): $(INFLECTKR_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(SUFFORM2RAC)$(EXTENSION): $(SUFFORM2RAC_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(COMPRESSKR)$(EXTENSION): $(COMPRESSKR_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(MERGEBIN)$(EXTENSION): $(MERGEBIN_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(CONSULTDIC)$(EXTENSION): $(CONSULTDIC_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(SORTMORPH)$(EXTENSION): $(SORTMORPH_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(TXT2FST2KR)$(EXTENSION): $(TXT2FST2KR_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(SYL2JAMO)$(EXTENSION): $(SYL2JAMO_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(JAMO2SYL)$(EXTENSION): $(JAMO2SYL_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
-
-$(BIN_DIR)$(EXTRACTCHAR)$(EXTENSION): $(EXTRACTCHAR_OBJS)
-	$(CC) -o $@ $+ $(OPTIONS)
 
 #
 # Compilation instructions for Logger
@@ -1226,60 +1109,6 @@ DirLoggerPosix.o: ../logger/DirLoggerPosix.cpp
 UniLoggerAutoInstall.o: ../logger/UniLoggerAutoInstall.cpp
 	$(CC) -c ../logger/UniLoggerAutoInstall.cpp $(OPTIONS)
 
-
-#
-# Compilation instructions for Korean .o
-#
-InflectKr.o: ../korean/InflectKr.cpp
-	$(CC) -c ../korean/InflectKr.cpp $(OPTIONS)
-
-CompressKr.o: ../korean/CompressKr.cpp
-	$(CC) -c ../korean/CompressKr.cpp $(OPTIONS)
-
-etc.o: ../korean/etc.cpp
-	$(CC) -c ../korean/etc.cpp $(OPTIONS)
-
-pro_type.o: ../korean/pro_type.cpp
-	$(CC) -c ../korean/pro_type.cpp $(OPTIONS)
-
-codeForKorean.o: ../korean/codeForKorean.cpp
-	$(CC) -c ../korean/codeForKorean.cpp $(OPTIONS)
-
-orgUniMbcsMap.o: ../korean/orgUniMbcsMap.cpp
-	$(CC) -c ../korean/orgUniMbcsMap.cpp $(OPTIONS)
-
-bitmap.o: ../korean/bitmap.cpp
-	$(CC) -c ../korean/bitmap.cpp $(OPTIONS)
-
-ConsultDic.o: ../korean/ConsultDic.cpp ../korean/bin.h ../korean/bin3.h
-	$(CC) -c ../korean/ConsultDic.cpp $(OPTIONS)
-
-ExtractChar.o: ../korean/ExtractChar.cpp
-	$(CC) -c ../korean/ExtractChar.cpp $(OPTIONS)
-
-Jamo2Syl.o: ../korean/Jamo2Syl.cpp
-	$(CC) -c ../korean/Jamo2Syl.cpp $(OPTIONS)
-
-jamoCodage.o: ../korean/jamoCodage.cpp
-	$(CC) -c ../korean/jamoCodage.cpp $(OPTIONS)
-
-MergeBin.o: ../korean/MergeBin.cpp ../korean/bin.h ../korean/bin3.h
-	$(CC) -c ../korean/MergeBin.cpp $(OPTIONS)
-
-segtype.o: ../korean/segtype.cpp
-	$(CC) -c ../korean/segtype.cpp $(OPTIONS)
-
-SortMorph.o: ../korean/SortMorph.cpp
-	$(CC) -c ../korean/SortMorph.cpp $(OPTIONS)
-
-SufForm2Rac.o: ../korean/SufForm2Rac.cpp
-	$(CC) -c ../korean/SufForm2Rac.cpp $(OPTIONS)
-
-Syl2Jamo.o: ../korean/Syl2Jamo.cpp
-	$(CC) -c ../korean/Syl2Jamo.cpp $(OPTIONS)
-
-Txt2Fst2Kr.o: ../korean/Txt2Fst2Kr.cpp ../korean/strToAuto.h
-	$(CC) -c ../korean/Txt2Fst2Kr.cpp $(OPTIONS)
 
 
 # Compiling Unitex as a library under Linux-like systems

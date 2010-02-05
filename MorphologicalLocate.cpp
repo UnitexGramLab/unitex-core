@@ -93,7 +93,7 @@ unichar tmp[128];
 if (tag_token[0]==KR_SYLLABLE_BOUND && tag_token[1]=='\0') {
    u_strcpy(tmp,tag_token);
 } else {
-   Hanguls_to_Jamos(tag_token,tmp,p->korean);
+   Hanguls_to_Jamos(tag_token,tmp,p->korean,0);
 }
 int i=0;
 if (token==NULL) {
@@ -102,7 +102,7 @@ if (token==NULL) {
 set_debug(0 && token[0]==0xB2A5);
 debug("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
 while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
-	/* We ignore syllab bounds in both tfst and fst2 tags */
+	/* We ignore syllable bounds in both tfst and fst2 tags */
 	if (tmp[i]==KR_SYLLABLE_BOUND) {
 		i++;
 		debug("ignoring . in tag: %S\n",tmp+i);
@@ -504,7 +504,7 @@ while (meta_list!=NULL) {
                new_pos_in_jamo=pos_in_jamo+1;
                while (jamo[new_pos_in_jamo]!='\0') {
             	   if (jamo[new_pos_in_jamo]==KR_SYLLABLE_BOUND) {
-            		   /* A syllab bound is OK: we go on the following Jamo */
+            		   /* A syllable bound is OK: we go on the following Jamo */
                		new_pos_in_jamo++;
                		if (!u_is_Hangul_Jamo(jamo[new_pos_in_jamo])) {
                			fatal_error("Unexpected non Jamo character after a syllable bound\n");
@@ -911,18 +911,18 @@ if (current_token[pos_in_current_token]=='\0') {
 }
 int after_syllab_bound=0;
 if (jamo!=NULL) {
-	/* We test wether we are in the middle of a syllab or just after a syllab bound */
+	/* We test wether we are in the middle of a syllable or just after a syllable bound */
     if (jamo[pos_in_jamo]==KR_SYLLABLE_BOUND) {
-    	/* If we have a syllab bound */
+    	/* If we have a syllable bound */
     	after_syllab_bound=1;
     	pos_in_jamo++;
     }
     else if (pos_in_jamo>0 && jamo[pos_in_jamo-1]==KR_SYLLABLE_BOUND) {
-    	/* If we are just after a syllab bound */
+    	/* If we are just after a syllable bound */
     	after_syllab_bound=1;
     }
     else {
-    	/* By default, we must be in the middle of a syllab, and there's nothing to do */
+    	/* By default, we must be in the middle of a syllable, and there's nothing to do */
     }
 }
 
@@ -956,7 +956,7 @@ for (int i=0;i<n_transitions;i++) {
    } else {
 	   debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 	   /* Korean mode: we may match just the current jamo, or also the current hangul, but only if we are
-	    * after a syllab bound */
+	    * after a syllable bound */
 	   unichar c2[2];
 	   c2[0]=c;
 	   c2[1]='\0';
@@ -992,8 +992,8 @@ for (int i=0;i<n_transitions;i++) {
 		   				   new_pos_offset,matches,pattern,save_dic_entry,
 		   				   new_jamo,new_pos_in_jamo,line_buffer);
 	   }
-	   /* Then we try to match a hangul, but only if we are just after a syllab bound */
-	   //error("after syllab=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
+	   /* Then we try to match a hangul, but only if we are just after a syllable bound */
+	   //error("after syllable=%d:  text=%C (%04X)   dico=%C (%04X)\n",after_syllab_bound,current_token[pos_in_current_token],current_token[pos_in_current_token],c,c);
 #if 0
 	   if (after_syllab_bound && c==current_token[pos_in_current_token]) {
 			/* We explore the rest of the dictionary only if the
