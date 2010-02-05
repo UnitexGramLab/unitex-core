@@ -158,23 +158,6 @@
 		222F79C51107A48400C91CC7 /* UserCancelling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78F81107A48400C91CC7 /* UserCancelling.cpp */; };
 		222F79C61107A48400C91CC7 /* Ustring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78FB1107A48400C91CC7 /* Ustring.cpp */; };
 		222F79C71107A48400C91CC7 /* XMLizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 222F78FE1107A48400C91CC7 /* XMLizer.cpp */; };
-		225CCD4310DB201D003F0910 /* bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBA110DB201D003F0910 /* bitmap.cpp */; };
-		225CCD4410DB201D003F0910 /* codeForKorean.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBA310DB201D003F0910 /* codeForKorean.cpp */; };
-		225CCD4510DB201D003F0910 /* CompressKr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBA710DB201D003F0910 /* CompressKr.cpp */; };
-		225CCD4610DB201D003F0910 /* ConsultDic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBAA10DB201D003F0910 /* ConsultDic.cpp */; };
-		225CCD4710DB201D003F0910 /* etc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBAD10DB201D003F0910 /* etc.cpp */; };
-		225CCD4810DB201D003F0910 /* ExtractChar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBB010DB201D003F0910 /* ExtractChar.cpp */; };
-		225CCD4910DB201D003F0910 /* InflectKr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBB310DB201D003F0910 /* InflectKr.cpp */; };
-		225CCD4A10DB201D003F0910 /* Jamo2Syl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBB510DB201D003F0910 /* Jamo2Syl.cpp */; };
-		225CCD4B10DB201D003F0910 /* jamoCodage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBB710DB201D003F0910 /* jamoCodage.cpp */; };
-		225CCD4C10DB201D003F0910 /* MergeBin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBBA10DB201D003F0910 /* MergeBin.cpp */; };
-		225CCD4D10DB201D003F0910 /* orgUniMbcsMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBBC10DB201D003F0910 /* orgUniMbcsMap.cpp */; };
-		225CCD4E10DB201D003F0910 /* pro_type.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBBE10DB201D003F0910 /* pro_type.cpp */; };
-		225CCD4F10DB201D003F0910 /* segtype.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBC110DB201D003F0910 /* segtype.cpp */; };
-		225CCD5010DB201D003F0910 /* SortMorph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBC410DB201D003F0910 /* SortMorph.cpp */; };
-		225CCD5110DB201D003F0910 /* SufForm2Rac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBCA10DB201D003F0910 /* SufForm2Rac.cpp */; };
-		225CCD5210DB201D003F0910 /* Syl2Jamo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBCC10DB201D003F0910 /* Syl2Jamo.cpp */; };
-		225CCD5310DB201D003F0910 /* Txt2Fst2Kr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225CCBCE10DB201D003F0910 /* Txt2Fst2Kr.cpp */; };
 		225CCDED10DB201D003F0910 /* regcomp.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1B10DB201D003F0910 /* regcomp.c */; };
 		225CCDEE10DB201D003F0910 /* regerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1C10DB201D003F0910 /* regerror.c */; };
 		225CCDEF10DB201D003F0910 /* regexec.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CCD1E10DB201D003F0910 /* regexec.c */; };
@@ -527,57 +510,6 @@
 		222F78FD1107A48400C91CC7 /* Vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Vector.h; path = ../Vector.h; sourceTree = SOURCE_ROOT; };
 		222F78FE1107A48400C91CC7 /* XMLizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = XMLizer.cpp; path = ../XMLizer.cpp; sourceTree = SOURCE_ROOT; };
 		222F78FF1107A48400C91CC7 /* XMLizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = XMLizer.h; path = ../XMLizer.h; sourceTree = SOURCE_ROOT; };
-		225CCB9F10DB201D003F0910 /* bin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bin.h; path = ../korean/bin.h; sourceTree = SOURCE_ROOT; };
-		225CCBA010DB201D003F0910 /* bin3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bin3.h; path = ../korean/bin3.h; sourceTree = SOURCE_ROOT; };
-		225CCBA110DB201D003F0910 /* bitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = bitmap.cpp; path = ../korean/bitmap.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBA210DB201D003F0910 /* bitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitmap.h; path = ../korean/bitmap.h; sourceTree = SOURCE_ROOT; };
-		225CCBA310DB201D003F0910 /* codeForKorean.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = codeForKorean.cpp; path = ../korean/codeForKorean.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBA410DB201D003F0910 /* codeForKorean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = codeForKorean.h; path = ../korean/codeForKorean.h; sourceTree = SOURCE_ROOT; };
-		225CCBA510DB201D003F0910 /* codePageKr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = codePageKr.h; path = ../korean/codePageKr.h; sourceTree = SOURCE_ROOT; };
-		225CCBA610DB201D003F0910 /* compareAutos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = compareAutos.h; path = ../korean/compareAutos.h; sourceTree = SOURCE_ROOT; };
-		225CCBA710DB201D003F0910 /* CompressKr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CompressKr.cpp; path = ../korean/CompressKr.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBA810DB201D003F0910 /* CompressKr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CompressKr.h; path = ../korean/CompressKr.h; sourceTree = SOURCE_ROOT; };
-		225CCBA910DB201D003F0910 /* consultation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = consultation.h; path = ../korean/consultation.h; sourceTree = SOURCE_ROOT; };
-		225CCBAA10DB201D003F0910 /* ConsultDic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConsultDic.cpp; path = ../korean/ConsultDic.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBAB10DB201D003F0910 /* ConsultDic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConsultDic.h; path = ../korean/ConsultDic.h; sourceTree = SOURCE_ROOT; };
-		225CCBAC10DB201D003F0910 /* double_link_arbre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = double_link_arbre.h; path = ../korean/double_link_arbre.h; sourceTree = SOURCE_ROOT; };
-		225CCBAD10DB201D003F0910 /* etc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = etc.cpp; path = ../korean/etc.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBAE10DB201D003F0910 /* etc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = etc.h; path = ../korean/etc.h; sourceTree = SOURCE_ROOT; };
-		225CCBAF10DB201D003F0910 /* etcclass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = etcclass.h; path = ../korean/etcclass.h; sourceTree = SOURCE_ROOT; };
-		225CCBB010DB201D003F0910 /* ExtractChar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ExtractChar.cpp; path = ../korean/ExtractChar.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBB110DB201D003F0910 /* ExtractChar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExtractChar.h; path = ../korean/ExtractChar.h; sourceTree = SOURCE_ROOT; };
-		225CCBB210DB201D003F0910 /* formation_dic_line.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = formation_dic_line.h; path = ../korean/formation_dic_line.h; sourceTree = SOURCE_ROOT; };
-		225CCBB310DB201D003F0910 /* InflectKr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InflectKr.cpp; path = ../korean/InflectKr.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBB410DB201D003F0910 /* InflectKr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InflectKr.h; path = ../korean/InflectKr.h; sourceTree = SOURCE_ROOT; };
-		225CCBB510DB201D003F0910 /* Jamo2Syl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Jamo2Syl.cpp; path = ../korean/Jamo2Syl.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBB610DB201D003F0910 /* Jamo2Syl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Jamo2Syl.h; path = ../korean/Jamo2Syl.h; sourceTree = SOURCE_ROOT; };
-		225CCBB710DB201D003F0910 /* jamoCodage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jamoCodage.cpp; path = ../korean/jamoCodage.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBB810DB201D003F0910 /* jamoCodage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = jamoCodage.h; path = ../korean/jamoCodage.h; sourceTree = SOURCE_ROOT; };
-		225CCBB910DB201D003F0910 /* KSC5601.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = KSC5601.txt; path = ../korean/KSC5601.txt; sourceTree = SOURCE_ROOT; };
-		225CCBBA10DB201D003F0910 /* MergeBin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MergeBin.cpp; path = ../korean/MergeBin.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBBB10DB201D003F0910 /* MergeBin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MergeBin.h; path = ../korean/MergeBin.h; sourceTree = SOURCE_ROOT; };
-		225CCBBC10DB201D003F0910 /* orgUniMbcsMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = orgUniMbcsMap.cpp; path = ../korean/orgUniMbcsMap.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBBD10DB201D003F0910 /* orgUniMbcsMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = orgUniMbcsMap.h; path = ../korean/orgUniMbcsMap.h; sourceTree = SOURCE_ROOT; };
-		225CCBBE10DB201D003F0910 /* pro_type.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pro_type.cpp; path = ../korean/pro_type.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBBF10DB201D003F0910 /* pro_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pro_type.h; path = ../korean/pro_type.h; sourceTree = SOURCE_ROOT; };
-		225CCBC010DB201D003F0910 /* segment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = segment.h; path = ../korean/segment.h; sourceTree = SOURCE_ROOT; };
-		225CCBC110DB201D003F0910 /* segtype.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = segtype.cpp; path = ../korean/segtype.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBC210DB201D003F0910 /* segtype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = segtype.h; path = ../korean/segtype.h; sourceTree = SOURCE_ROOT; };
-		225CCBC310DB201D003F0910 /* sentencekr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sentencekr.h; path = ../korean/sentencekr.h; sourceTree = SOURCE_ROOT; };
-		225CCBC410DB201D003F0910 /* SortMorph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SortMorph.cpp; path = ../korean/SortMorph.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBC510DB201D003F0910 /* SortMorph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SortMorph.h; path = ../korean/SortMorph.h; sourceTree = SOURCE_ROOT; };
-		225CCBC610DB201D003F0910 /* state_machine_fst2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = state_machine_fst2.h; path = ../korean/state_machine_fst2.h; sourceTree = SOURCE_ROOT; };
-		225CCBC710DB201D003F0910 /* String_hash2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = String_hash2.h; path = ../korean/String_hash2.h; sourceTree = SOURCE_ROOT; };
-		225CCBC810DB201D003F0910 /* strToAuto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = strToAuto.h; path = ../korean/strToAuto.h; sourceTree = SOURCE_ROOT; };
-		225CCBC910DB201D003F0910 /* structDeMorpheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = structDeMorpheme.h; path = ../korean/structDeMorpheme.h; sourceTree = SOURCE_ROOT; };
-		225CCBCA10DB201D003F0910 /* SufForm2Rac.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SufForm2Rac.cpp; path = ../korean/SufForm2Rac.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBCB10DB201D003F0910 /* SufForm2Rac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SufForm2Rac.h; path = ../korean/SufForm2Rac.h; sourceTree = SOURCE_ROOT; };
-		225CCBCC10DB201D003F0910 /* Syl2Jamo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Syl2Jamo.cpp; path = ../korean/Syl2Jamo.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBCD10DB201D003F0910 /* Syl2Jamo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Syl2Jamo.h; path = ../korean/Syl2Jamo.h; sourceTree = SOURCE_ROOT; };
-		225CCBCE10DB201D003F0910 /* Txt2Fst2Kr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Txt2Fst2Kr.cpp; path = ../korean/Txt2Fst2Kr.cpp; sourceTree = SOURCE_ROOT; };
-		225CCBCF10DB201D003F0910 /* Txt2Fst2Kr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Txt2Fst2Kr.h; path = ../korean/Txt2Fst2Kr.h; sourceTree = SOURCE_ROOT; };
-		225CCBD010DB201D003F0910 /* uioForKorean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uioForKorean.h; path = ../korean/uioForKorean.h; sourceTree = SOURCE_ROOT; };
-		225CCBD110DB201D003F0910 /* unimap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unimap.h; path = ../korean/unimap.h; sourceTree = SOURCE_ROOT; };
 		225CCD1810DB201D003F0910 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
 		225CCD1910DB201D003F0910 /* Makefile.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.in; sourceTree = "<group>"; };
 		225CCD1A10DB201D003F0910 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -960,7 +892,6 @@
 				222F78FE1107A48400C91CC7 /* XMLizer.cpp */,
 				222F78FF1107A48400C91CC7 /* XMLizer.h */,
 				225CCD1610DB201D003F0910 /* tre-0.8.0 */,
-				225CCB9E10DB201D003F0910 /* korean */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -971,64 +902,6 @@
 				8DD76F6C0486A84900D96B5E /* UnitexTool */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		225CCB9E10DB201D003F0910 /* korean */ = {
-			isa = PBXGroup;
-			children = (
-				225CCB9F10DB201D003F0910 /* bin.h */,
-				225CCBA010DB201D003F0910 /* bin3.h */,
-				225CCBA110DB201D003F0910 /* bitmap.cpp */,
-				225CCBA210DB201D003F0910 /* bitmap.h */,
-				225CCBA310DB201D003F0910 /* codeForKorean.cpp */,
-				225CCBA410DB201D003F0910 /* codeForKorean.h */,
-				225CCBA510DB201D003F0910 /* codePageKr.h */,
-				225CCBA610DB201D003F0910 /* compareAutos.h */,
-				225CCBA710DB201D003F0910 /* CompressKr.cpp */,
-				225CCBA810DB201D003F0910 /* CompressKr.h */,
-				225CCBA910DB201D003F0910 /* consultation.h */,
-				225CCBAA10DB201D003F0910 /* ConsultDic.cpp */,
-				225CCBAB10DB201D003F0910 /* ConsultDic.h */,
-				225CCBAC10DB201D003F0910 /* double_link_arbre.h */,
-				225CCBAD10DB201D003F0910 /* etc.cpp */,
-				225CCBAE10DB201D003F0910 /* etc.h */,
-				225CCBAF10DB201D003F0910 /* etcclass.h */,
-				225CCBB010DB201D003F0910 /* ExtractChar.cpp */,
-				225CCBB110DB201D003F0910 /* ExtractChar.h */,
-				225CCBB210DB201D003F0910 /* formation_dic_line.h */,
-				225CCBB310DB201D003F0910 /* InflectKr.cpp */,
-				225CCBB410DB201D003F0910 /* InflectKr.h */,
-				225CCBB510DB201D003F0910 /* Jamo2Syl.cpp */,
-				225CCBB610DB201D003F0910 /* Jamo2Syl.h */,
-				225CCBB710DB201D003F0910 /* jamoCodage.cpp */,
-				225CCBB810DB201D003F0910 /* jamoCodage.h */,
-				225CCBB910DB201D003F0910 /* KSC5601.txt */,
-				225CCBBA10DB201D003F0910 /* MergeBin.cpp */,
-				225CCBBB10DB201D003F0910 /* MergeBin.h */,
-				225CCBBC10DB201D003F0910 /* orgUniMbcsMap.cpp */,
-				225CCBBD10DB201D003F0910 /* orgUniMbcsMap.h */,
-				225CCBBE10DB201D003F0910 /* pro_type.cpp */,
-				225CCBBF10DB201D003F0910 /* pro_type.h */,
-				225CCBC010DB201D003F0910 /* segment.h */,
-				225CCBC110DB201D003F0910 /* segtype.cpp */,
-				225CCBC210DB201D003F0910 /* segtype.h */,
-				225CCBC310DB201D003F0910 /* sentencekr.h */,
-				225CCBC410DB201D003F0910 /* SortMorph.cpp */,
-				225CCBC510DB201D003F0910 /* SortMorph.h */,
-				225CCBC610DB201D003F0910 /* state_machine_fst2.h */,
-				225CCBC710DB201D003F0910 /* String_hash2.h */,
-				225CCBC810DB201D003F0910 /* strToAuto.h */,
-				225CCBC910DB201D003F0910 /* structDeMorpheme.h */,
-				225CCBCA10DB201D003F0910 /* SufForm2Rac.cpp */,
-				225CCBCB10DB201D003F0910 /* SufForm2Rac.h */,
-				225CCBCC10DB201D003F0910 /* Syl2Jamo.cpp */,
-				225CCBCD10DB201D003F0910 /* Syl2Jamo.h */,
-				225CCBCE10DB201D003F0910 /* Txt2Fst2Kr.cpp */,
-				225CCBCF10DB201D003F0910 /* Txt2Fst2Kr.h */,
-				225CCBD010DB201D003F0910 /* uioForKorean.h */,
-				225CCBD110DB201D003F0910 /* unimap.h */,
-			);
-			name = korean;
 			sourceTree = "<group>";
 		};
 		225CCD1610DB201D003F0910 /* tre-0.8.0 */ = {
@@ -1122,23 +995,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				225CCD4310DB201D003F0910 /* bitmap.cpp in Sources */,
-				225CCD4410DB201D003F0910 /* codeForKorean.cpp in Sources */,
-				225CCD4510DB201D003F0910 /* CompressKr.cpp in Sources */,
-				225CCD4610DB201D003F0910 /* ConsultDic.cpp in Sources */,
-				225CCD4710DB201D003F0910 /* etc.cpp in Sources */,
-				225CCD4810DB201D003F0910 /* ExtractChar.cpp in Sources */,
-				225CCD4910DB201D003F0910 /* InflectKr.cpp in Sources */,
-				225CCD4A10DB201D003F0910 /* Jamo2Syl.cpp in Sources */,
-				225CCD4B10DB201D003F0910 /* jamoCodage.cpp in Sources */,
-				225CCD4C10DB201D003F0910 /* MergeBin.cpp in Sources */,
-				225CCD4D10DB201D003F0910 /* orgUniMbcsMap.cpp in Sources */,
-				225CCD4E10DB201D003F0910 /* pro_type.cpp in Sources */,
-				225CCD4F10DB201D003F0910 /* segtype.cpp in Sources */,
-				225CCD5010DB201D003F0910 /* SortMorph.cpp in Sources */,
-				225CCD5110DB201D003F0910 /* SufForm2Rac.cpp in Sources */,
-				225CCD5210DB201D003F0910 /* Syl2Jamo.cpp in Sources */,
-				225CCD5310DB201D003F0910 /* Txt2Fst2Kr.cpp in Sources */,
 				225CCDED10DB201D003F0910 /* regcomp.c in Sources */,
 				225CCDEE10DB201D003F0910 /* regerror.c in Sources */,
 				225CCDEF10DB201D003F0910 /* regexec.c in Sources */,

@@ -350,29 +350,6 @@
     <ClCompile Include="..\UserCancelling.cpp" />
     <ClCompile Include="..\Ustring.cpp" />
     <ClCompile Include="..\XMLizer.cpp" />
-    <ClCompile Include="..\korean\bitmap.cpp" />
-    <ClCompile Include="..\korean\codeForKorean.cpp" />
-    <ClCompile Include="..\korean\CompressKr.cpp" />
-    <ClCompile Include="..\korean\ConsultDic.cpp" />
-    <ClCompile Include="..\korean\etc.cpp" />
-    <ClCompile Include="..\korean\ExtractChar.cpp" />
-    <ClCompile Include="..\korean\InflectKr.cpp" />
-    <ClCompile Include="..\korean\Jamo2Syl.cpp" />
-    <ClCompile Include="..\korean\jamoCodage.cpp" />
-    <ClCompile Include="..\korean\MergeBin.cpp" />
-    <ClCompile Include="..\korean\orgUniMbcsMap.cpp" />
-    <ClCompile Include="..\korean\pro_type.cpp" />
-    <ClCompile Include="..\korean\segtype.cpp" />
-    <ClCompile Include="..\korean\SortMorph.cpp" />
-    <ClCompile Include="..\korean\SufForm2Rac.cpp" />
-    <ClCompile Include="..\korean\Syl2Jamo.cpp" />
-    <ClCompile Include="..\korean\TokenKr.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|X64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\korean\Txt2Fst2Kr.cpp" />
     <ClCompile Include="..\logger\DirLoggerPosix.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">true</ExcludedFromBuild>

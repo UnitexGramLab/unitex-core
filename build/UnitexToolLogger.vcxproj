@@ -480,31 +480,6 @@
     </ClCompile>
     <ClCompile Include="..\tre-0.8.0\lib\tre-stack.c" />
     <ClCompile Include="..\tre-0.8.0\lib\xmalloc.c" />
-    <ClCompile Include="..\korean\bitmap.cpp" />
-    <ClCompile Include="..\korean\codeForKorean.cpp" />
-    <ClCompile Include="..\korean\CompressKr.cpp" />
-    <ClCompile Include="..\korean\ConsultDic.cpp" />
-    <ClCompile Include="..\korean\etc.cpp" />
-    <ClCompile Include="..\korean\ExtractChar.cpp" />
-    <ClCompile Include="..\korean\InflectKr.cpp" />
-    <ClCompile Include="..\korean\Jamo2Syl.cpp" />
-    <ClCompile Include="..\korean\jamoCodage.cpp" />
-    <ClCompile Include="..\korean\MergeBin.cpp" />
-    <ClCompile Include="..\korean\orgUniMbcsMap.cpp" />
-    <ClCompile Include="..\korean\pro_type.cpp" />
-    <ClCompile Include="..\korean\segtype.cpp" />
-    <ClCompile Include="..\korean\SortMorph.cpp" />
-    <ClCompile Include="..\korean\SufForm2Rac.cpp" />
-    <ClCompile Include="..\korean\Syl2Jamo.cpp" />
-    <ClCompile Include="..\korean\TokenKr.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOptim|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOptim|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\korean\Txt2Fst2Kr.cpp" />
     <ClCompile Include="..\logger\DirLoggerPosix.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOptim|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugOptim|x64'">true</ExcludedFromBuild>
