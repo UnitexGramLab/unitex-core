@@ -53,7 +53,7 @@
  * of the best predecessor).
  */
 struct matrix_entry {
-	dela_entry* tag;
+	struct dela_entry* tag;
 	unichar* tag_code;
 	int predecessor;
 	int tag_number;
@@ -61,15 +61,15 @@ struct matrix_entry {
 	float partial_prob;
 };
 
-void compute_tag_code(dela_entry*,unichar*,int);
+void compute_tag_code(struct dela_entry*,unichar*,int);
 int create_matrix_entry(unichar*,struct matrix_entry**,int,int,int);
 struct matrix_entry** allocate_matrix(int);
-matrix_entry** initialize_viterbi_matrix(SingleGraph,int);
-void free_matrix_entry(matrix_entry*);
-void free_viterbi_matrix(matrix_entry**,int);
+struct matrix_entry** initialize_viterbi_matrix(SingleGraph,int);
+void free_matrix_entry(struct matrix_entry*);
+void free_viterbi_matrix(struct matrix_entry**,int);
 
 unichar* get_pos_unknown(unichar*);
-int search_matrix_predecessor(matrix_entry**,unichar*,int,int,int);
+int search_matrix_predecessor(struct matrix_entry**,unichar*,int,int,int);
 void get_INF_code(unsigned char*,unichar*,int,int,int,Alphabet*,int*);
 long int get_inf_value(struct INF_codes*,int);
 long int get_sequence_integer(unichar*,unsigned char*,struct INF_codes*,Alphabet*);
@@ -81,11 +81,11 @@ unichar* u_strnsuffix(unichar*,int);
 
 float compute_emit_probability(unsigned char*,struct INF_codes*,Alphabet*,unichar*,unichar*);
 float compute_transition_probability(unsigned char*,struct INF_codes*,Alphabet*,unichar*,unichar*,unichar*);
-float compute_partial_probability(unsigned char*,struct INF_codes*,Alphabet*,matrix_entry*,matrix_entry*,matrix_entry*);
-int* get_state_sequence(matrix_entry**,int);
+float compute_partial_probability(unsigned char*,struct INF_codes*,Alphabet*,struct matrix_entry*,struct matrix_entry*,struct matrix_entry*);
+int* get_state_sequence(struct matrix_entry**,int);
 int is_compound_word(unichar*);
-vector_ptr* do_backtracking(matrix_entry**,int,SingleGraph,vector_ptr*,int);
-void compute_best_probability(unsigned char*,struct INF_codes*,Alphabet*,matrix_entry**,int,int,int);
+vector_ptr* do_backtracking(struct matrix_entry**,int,SingleGraph,vector_ptr*,int);
+void compute_best_probability(unsigned char*,struct INF_codes*,Alphabet*,struct matrix_entry**,int,int,int);
 
 vector_ptr* do_viterbi(unsigned char*,struct INF_codes*,Alphabet*,Tfst*,int);
 int get_form_type(unsigned char*,struct INF_codes*,Alphabet*);

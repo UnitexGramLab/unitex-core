@@ -30,7 +30,7 @@
  * For example if we have a dela_entry with semantic code = N
  * and inflectional codes = mp, the tag code will be N:mp.
  */
-void compute_tag_code(dela_entry* tag,unichar* tag_code,int form_type){
+void compute_tag_code(struct dela_entry* tag,unichar* tag_code,int form_type){
 if(form_type == 0){
 	/* we use simple forms, we extract only the first semantic code */
 	unichar* tmp = u_strcpy(tag_code,tag->semantic_codes[0]);
@@ -80,7 +80,7 @@ return pos;
  * to a transition in the automata.
  */
 int create_matrix_entry(unichar* tag,struct matrix_entry** mx,int form_type,int tag_number,int state_number){
-*mx = (matrix_entry*)malloc(sizeof(matrix_entry));
+*mx = (struct matrix_entry*)malloc(sizeof(struct matrix_entry));
 if(mx == NULL){
 	fatal_alloc_error("create_matrix_entry");
 }
@@ -89,7 +89,7 @@ if(mx == NULL){
 (*mx)->tag_number = tag_number;
 (*mx)->state_number = state_number;
 int verbose = 0;
-dela_entry* tmp = tokenize_DELAF_line(tag,1,0,&verbose);
+struct dela_entry* tmp = tokenize_DELAF_line(tag,1,0,&verbose);
 free_dela_entry(tmp);
 if(verbose == 0){
 	(*mx)->tag = tokenize_tag_token(tag);
@@ -110,6 +110,9 @@ else {
 	u_strcpy(inflected,tag);
 	(*mx)->tag = new_dela_entry(inflected,tag,code);
 	(*mx)->tag_code = (unichar*)malloc(sizeof(unichar)*DIC_LINE_SIZE);
+	if((*mx)->tag_code == NULL){
+		fatal_alloc_error("create_matrix_entry");
+	}
 	compute_tag_code((*mx)->tag,(*mx)->tag_code,form_type);
 	free(code);
 	free(inflected);
@@ -122,7 +125,7 @@ return 0;
  * Allocates a matrix of matrix_entry*.
  */
 struct matrix_entry** allocate_matrix(int size){
-matrix_entry** matrix = (matrix_entry**)malloc(size*sizeof(matrix_entry));
+struct matrix_entry** matrix = (struct matrix_entry**)malloc(size*sizeof(struct matrix_entry));
 if(matrix == NULL){
 	fatal_alloc_error("allocate_matrix");
 }
@@ -133,7 +136,7 @@ return matrix;
  * Initializes a matrix by determining its size (number of transitions
  * in the automata.
  */
-matrix_entry** initialize_viterbi_matrix(SingleGraph automaton,int form_type){
+struct matrix_entry** initialize_viterbi_matrix(SingleGraph automaton,int form_type){
 int nb_transitions = 0;
 for(int i=0;i<automaton->number_of_states;i++){
 	SingleGraphState state = automaton->states[i];
@@ -144,7 +147,7 @@ for(int i=0;i<automaton->number_of_states;i++){
 /* we allocate the matrix with a size of nb_transitions+2 because
  * we will add two entries "#" at start of this matrix representing
  * the start of the automata. */
-matrix_entry** matrix = allocate_matrix(nb_transitions+2);
+struct matrix_entry** matrix = allocate_matrix(nb_transitions+2);
 /* we add the two entries "#" */
 for(int i=0;i<2;i++){
 	unichar* token = (unichar*)malloc(sizeof(unichar)*DIC_LINE_SIZE);
@@ -163,7 +166,7 @@ return matrix;
 /**
  * Liberates memory used by a matrix_entry.
  */
-void free_matrix_entry(matrix_entry* entry){
+void free_matrix_entry(struct matrix_entry* entry){
 	free_dela_entry(entry->tag);
 	free(entry->tag_code);
 	free(entry);
@@ -172,7 +175,7 @@ void free_matrix_entry(matrix_entry* entry){
 /**
  * Liberates memory used by a viterbi matrix.
  */
-void free_viterbi_matrix(matrix_entry** matrix,int size){
+void free_viterbi_matrix(struct matrix_entry** matrix,int size){
 	for(int i=0;i<size;i++){
 		free_matrix_entry(matrix[i]);
 	}
@@ -182,8 +185,9 @@ void free_viterbi_matrix(matrix_entry** matrix,int size){
 /**
  * Return the index of the tag in matrix.
  */
-int search_matrix_predecessor(matrix_entry** matrix,unichar* tag,int start,int tag_number,int state_number){
-dela_entry* entry = tokenize_tag_token(tag);
+int search_matrix_predecessor(struct matrix_entry** matrix,unichar* tag,int start,
+		                      int tag_number,int state_number){
+struct dela_entry* entry = tokenize_tag_token(tag);
 for(int i=start;i>=0;i--){
 	if(equal(entry,matrix[i]->tag) == 1 && matrix[i]->tag_number == tag_number && matrix[i]->state_number == state_number){
 		free_dela_entry(entry);
@@ -276,13 +280,13 @@ return get_inf_value(inf,inf_index);
  * In our case, the tokens could be "N" and "dog". The result is a
  * new unichar "N\dog".
  */
-unichar* create_bigram_sequence(unichar* first_token,unichar* second_token,int tabular){
+unichar* create_bigram_sequence(unichar* first_token,unichar* second_token,int tabulation){
 unichar* sequence = (unichar*)malloc(sizeof(unichar)*(2+u_strlen(first_token)+u_strlen(second_token)));
 if(sequence == NULL){
 	fatal_alloc_error("create_bigram_sequence");
 }
 unichar* tmp = u_strcpy_sized(sequence,u_strlen(first_token)+1,first_token);
-if(tabular == 1){
+if(tabulation == 1){
 	tmp = u_strcat(tmp,"\t");
 }
 u_strcat(tmp,second_token);
@@ -292,10 +296,10 @@ return sequence;
 /**
  * Same as create_bigram_sequence but the first token is there a char*.
  */
-unichar* create_bigram_sequence(char* first_token,unichar* second_token,int tabular){
+unichar* create_bigram_sequence(char* first_token,unichar* second_token,int tabulation){
 /* we convert first token in a unichar* string sequence */
 unichar* tmp_first = u_strdup(first_token);
-unichar* sequence = create_bigram_sequence(tmp_first,second_token,tabular);
+unichar* sequence = create_bigram_sequence(tmp_first,second_token,tabulation);
 free(tmp_first);
 return sequence;
 }
@@ -403,8 +407,8 @@ return C1/float(C2);
  * This probability is the product of emit and transition probabilities.
  */
 float compute_partial_probability(unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet,
-								  matrix_entry* ancestor,matrix_entry* predecessor,
-								  matrix_entry* current){
+								  struct matrix_entry* ancestor,struct matrix_entry* predecessor,
+								  struct matrix_entry* current){
 float emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,current->tag->inflected);
 float trans_prob = compute_transition_probability(bin,inf,alphabet,ancestor->tag_code,predecessor->tag_code,current->tag_code);
 return emit_prob+trans_prob;
@@ -415,7 +419,7 @@ return emit_prob+trans_prob;
  * is better than the previous best transition, we replace this one by the new.
  */
 void compute_best_probability(unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet,
-							  matrix_entry** matrix,int index_matrix,int indexI,int cover_span){
+							  struct matrix_entry** matrix,int index_matrix,int indexI,int cover_span){
 float score = cover_span==1?0:compute_partial_probability(bin,inf,alphabet,matrix[matrix[indexI]->predecessor],
 										  matrix[indexI],matrix[index_matrix])+matrix[indexI]->partial_prob;
 /* best predecessor is saved for the current output transition*/
@@ -429,7 +433,7 @@ if(score >= matrix[index_matrix]->partial_prob){
  * Reconstructs by a backtracking way and returns the sequence of transition
  * corresponding to the best path in the automata.
  */
-int* get_state_sequence(matrix_entry** matrix,int index){
+int* get_state_sequence(struct matrix_entry** matrix,int index){
 /* the sequence is just a table of matrix index */
 int* state_sequence = (int*)malloc(index*sizeof(int));
 if(state_sequence == NULL){
@@ -464,7 +468,7 @@ return 0;
  * the Viterbi Path algorithm. We keep transitions tagged by
  * compound words.
  */
-vector_ptr* do_backtracking(matrix_entry** matrix,int index,SingleGraph graph,vector_ptr* tags,int form_type){
+vector_ptr* do_backtracking(struct matrix_entry** matrix,int index,SingleGraph graph,vector_ptr* tags,int form_type){
 /* we extract the best sequence of transitions (indexes) from the viterbi matrix */
 int* state_sequence = get_state_sequence(matrix,index);
 /* we initialize the new vector of tags (extracted from the pruning automaton) */
@@ -487,7 +491,7 @@ for(int i=state_sequence[1];i<=index;i=state_sequence[i]){
 	Transition *first = new_Transition(-1,-1),*list = first;
 	for(Transition* transO=state->outgoing_transitions;transO!=NULL;transO=transO->next){
 		TfstTag* tag = (TfstTag*)tags->tab[transO->tag_number];
-		dela_entry* entry = tokenize_tag_token(tag->content);
+		struct dela_entry* entry = tokenize_tag_token(tag->content);
 		if(((same_codes(entry,matrix[i]->tag) == 1 && form_type == 1) ||
 				(form_type == 0 && (u_strcmp(entry->semantic_codes[0],matrix[i]->tag->semantic_codes[0]) == 0))) &&
 				(u_strcmp(entry->inflected,matrix[i]->tag->inflected) == 0) &&
@@ -544,7 +548,7 @@ SingleGraph automaton = input_tfst->automaton;
 int index_matrix = 2;
 topological_sort(automaton);
 compute_reverse_transitions(automaton);
-matrix_entry** matrix = initialize_viterbi_matrix(automaton,form_type);
+struct matrix_entry** matrix = initialize_viterbi_matrix(automaton,form_type);
 for(int i=0;i<automaton->number_of_states;i++){
 	SingleGraphState state = automaton->states[i];
 	for(Transition* transO=state->outgoing_transitions;transO!=NULL;transO=transO->next){

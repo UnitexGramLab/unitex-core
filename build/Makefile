@@ -507,6 +507,15 @@ STATS_OBJS = Main_Stats.o Stats.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode
 TABLE2GRF      = Table2Grf
 TABLE2GRF_OBJS = Main_Table2Grf.o Table2Grf.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o File.o Error.o getopt.o
 
+TAGGER      = Tagger
+TAGGER_OBJS = Main_Tagger.o Tagger.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o\
+			  Tfst.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o getopt.o\
+			  Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o\
+			  String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
+			  File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o\
+			  AutMinimization.o ElagFstFilesIO.o AutIntersection.o Fst2Automaton.o\
+			  SymbolAlphabet.o ElagStateSet.o Symbol_op.o
+
 TAGSETNORMTFST = TagsetNormTfst
 TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o ElagFstFilesIO.o Ustring.o \
 					String_hash.o Symbol.o LanguageDefinition.o Tagset.o\
@@ -536,6 +545,15 @@ TFST2UNAMBIG_OBJS = Main_Tfst2Unambig.o Tfst2Unambig.o Tfst.o Error.o IOBuffer.o
 TOKENIZE      = Tokenize
 TOKENIZE_OBJS = Main_Tokenize.o Tokenize.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o Alphabet.o String_hash.o\
 				File.o DELA.o AbstractDelaLoad.o List_ustring.o HashTable.o Error.o StringParsing.o getopt.o
+
+TRAININGTAGGER      = TrainingTagger
+TRAININGTAGGER_OBJS = Main_TrainingTagger.o TrainingTagger.o TrainingProcess.o IOBuffer.o\
+			  Af_stdio.o ActivityLogger.o Unicode.o\
+			  Tfst.o Ustring.o SingleGraph.o List_int.o BitMasks.o Error.o getopt.o\
+			  Transitions.o FIFO.o HashTable.o BitArray.o Symbol.o DELA.o StringParsing.o\
+			  String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
+			  File.o TaggingProcess.o Match.o Compress.o SortTxt.o ProgramInvoker.o Thai.o\
+			  DictionaryTree.o AutomatonDictionary2Bin.o
 
 TXT2TFST      = Txt2Tfst
 TXT2TFST_OBJS = Main_Txt2Tfst.o Txt2Tfst.o IOBuffer.o Text_tokens.o Alphabet.o Af_stdio.o ActivityLogger.o Unicode.o DELA_tree.o\
@@ -585,7 +603,8 @@ UNITEXTOOL_OBJS = Main_UnitexTool.o UnitexTool.o AbstractDelaLoad.o AbstractFst2
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o Ustring.o XMLizer.o DuplicateFile.o \
-                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o
+                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Tagger.o\
+                  TaggingProcess.o TrainingTagger.o TrainingProcess.o
 
 
 UNITEXTOOL_LOGGER   = UnitexToolLogger
@@ -613,7 +632,8 @@ UNITEXTOOL_LOGGER_OBJS = FilePack.o FilePackCrc32.o FilePackIo.o UniLogger.o Uni
                   SymbolAlphabet.o Table2Grf.o Tagset.o TagsetNormTfst.o TEI2Txt.o Text_parsing.o UserCancelling.o Text_tokens.o Tfst.o \
                   Tfst2Grf.o Tfst2Unambig.o Thai.o Tokenization.o Tokenize.o TransductionStack.o \
                   TransductionVariables.o Transitions.o Txt2Tfst.o Af_stdio.o ActivityLogger.o Unicode.o Ustring.o XMLizer.o DuplicateFile.o \
-                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o
+                  Korean.o OptimizedTfstTagMatching.o TransductionStackTfst.o Uncompress.o Tagger.o\
+                  TaggingProcess.o TrainingTagger.o TrainingProcess.o
 
 
 ################################
@@ -634,8 +654,8 @@ PROGS = $(BUILDKRMWUDIC) $(CHECKDIC) $(COMPRESS) $(CONCORD) $(CONCORDIFF) $(CONV
 		$(ELAG) $(ELAGCOMP) $(EVAMB) $(EXTRACT) $(FLATTEN) \
 		$(FST2LIST) $(FST2TXT) $(GRF2FST2) $(IMPLODETFST) $(LOCATE) $(LOCATETFST) $(MULTIFLEX)\
 		$(NORMALIZE) $(POLYLEX) $(REBUILDTFST) $(RECONSTRUCAO) \
-		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGSETNORMTFST) $(TEI2TXT) \
-		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TXT2TFST) $(XMLIZER) \
+		$(REG2GRF) $(SORTTXT) $(STATS) $(TABLE2GRF) $(TAGGER) $(TAGSETNORMTFST) $(TEI2TXT) \
+		$(TFST2GRF) $(TFST2UNAMBIG) $(TOKENIZE) $(TRAININGTAGGER) $(TXT2TFST) $(XMLIZER) \
 		$(UNCOMPRESS) $(UNITEXTOOL) $(UNITEXTOOL_LOGGER)
 
 #PROGS = $(TEST)
@@ -651,7 +671,8 @@ OBJS  = $(BUILDKRMWUDIC_OBJS) $(CHECKDIC_OBJS) $(COMPRESS_OBJS) $(CONCORD_OBJS) 
 		$(RECONSTRUCAO_OBJS) $(REG2GRF_OBJS) $(SORTTXT_OBJS) $(STATS_OBJS) $(TABLE2GRF_OBJS)\
 		$(TAGSETNORMTFST_OBJS) $(TEST_OBJS) $(TEI2TXT_OBJS) $(TFST2GRF_OBJS) \
 		$(TFST2UNAMBIG_OBJS) $(TOKENIZE_OBJS) $(TXT2TFST_OBJS) $(XMLIZER_OBJS) \
-		$(UNCOMPRESS_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS)
+		$(UNCOMPRESS_OBJS) $(UNITEXTOOL_OBJS) $(UNITEXTOOL_LOGGER_OBJS) \
+		$(TAGGER_OBJS) $(TRAININGTAGGER_OBJS)
 
 		#$(COMPRESSKR_OBJS) $(CONSULTDIC_OBJS) $(INFLECTKR_OBJS) $(SUFFORM2RAC_OBJS) \
 		#$(MERGEBIN_OBJS) $(SORTMORPH_OBJS) $(TXT2FST2KR_OBJS) \
@@ -1035,6 +1056,9 @@ $(BIN_DIR)$(STATS)$(EXTENSION): $(STATS_OBJS)
 $(BIN_DIR)$(TABLE2GRF)$(EXTENSION): $(TABLE2GRF_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
+$(BIN_DIR)$(TAGGER)$(EXTENSION): $(TAGGER_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
 $(BIN_DIR)$(TAGSETNORMTFST)$(EXTENSION): $(TAGSETNORMTFST_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
@@ -1048,6 +1072,9 @@ $(BIN_DIR)$(TFST2UNAMBIG)$(EXTENSION): $(TFST2UNAMBIG_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TOKENIZE)$(EXTENSION): $(TOKENIZE_OBJS)
+	$(CC) -o $@ $+ $(OPTIONS)
+
+$(BIN_DIR)$(TRAININGTAGGER)$(EXTENSION): $(TRAININGTAGGER_OBJS)
 	$(CC) -o $@ $+ $(OPTIONS)
 
 $(BIN_DIR)$(TXT2TFST)$(EXTENSION): $(TXT2TFST_OBJS)

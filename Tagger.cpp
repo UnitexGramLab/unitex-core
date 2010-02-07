@@ -42,12 +42,12 @@ const char* usage_Tagger =
          "\n"
          "OPTIONS:\n"
 		 "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
-		 "  -d DICT/--dictionnary=DICT: use the DICT .bin dictionnary containing statistical values of lexical units\n"
+		 "  -d DICT/--dictionnary=DICT: use the .bin tagger dictionary containing tuples (unigrams,bigrams and trigrams)"
+		 " with frequencies\n"
 		 "  -t TAGSET/--tagset=TAGSET: use the TAGSET ELAG tagset file to normalize the dictionary entries\n"
 		 "\n"
 		 "Output options:\n"
 		 "  -o OUT/--output=OUT: specifies the output .tfst file\n"
-		 "\n"
 		 "  -h/--help: this help\n"
 		 "\n"
          "Applies statistical tagging to the given text automaton\n"
@@ -125,6 +125,9 @@ if (vars->optind!=argc-1) {
 if (output[0]=='\0') {
    fatal_error("No output specified!\n");
 }
+if(alphabet[0] == '\0'){
+	fatal_error("No alphabet file specified\n");
+}
 strcpy(tfst,argv[vars->optind]);
 Alphabet* alpha = load_alphabet(alphabet);
 
@@ -142,10 +145,16 @@ if (inf==NULL) {
 char* current_tfst = tfst;
 int form_type = get_form_type(bin,inf,alpha);
 if(form_type == 1){
+	if(tagset[0] == '\0'){
+		fatal_error("No tagset file specified\n");
+	}
 	/* if we use compound forms in the viterbi algorithm
 	 * we must separate tags according to their morphological
 	 * features (one tag per feature). Explode operation is
 	 * necessary.*/
+	if(tagset[0] == '\0'){
+		fatal_error("-t option is mandatory when compound forms dictionary is used\n");
+	}
 	strcpy(tmp_tfst,tfst);
 	remove_extension(tmp_tfst);
 	strcat(tmp_tfst,"_explode.tfst");
@@ -154,6 +163,7 @@ if(form_type == 1){
 	language_t* lang = load_language_definition(tagset);
 	explode_tfst(tfst,tmp_tfst,enc,bom_output,lang);
 	current_tfst = tmp_tfst;
+	u_printf("\n");
 }
 
 Tfst* input_tfst = open_text_automaton(current_tfst);
