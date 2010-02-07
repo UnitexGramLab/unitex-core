@@ -221,9 +221,11 @@ int analyse_word(unichar* mot,unsigned char* tableau_bin,U_FILE* debug,U_FILE* r
                  struct INF_codes* inf_codes,bool* prefix,bool* suffix,Alphabet* alphabet,
                  struct utags UTAG,vector_ptr* rules,vector_ptr* entries)
 {
-  if (DDEBUG) {
+#if DDEBUG > 0
+  {
     u_fprintf(debug,"\n  %S\n",mot);
   }
+#endif
 
   unichar decomposition[MAX_DICT_LINE_LENGTH];
   unichar dela_line[MAX_DICT_LINE_LENGTH];
@@ -708,18 +710,24 @@ struct rule_list* parse_rules (unichar* entry,struct utags UTAG,vector_ptr* rule
 
 
 int composition_rule_matches_entry (struct pattern* rule,
-				     struct dela_entry* d,U_FILE* debug_file) {
+				     struct dela_entry* d,U_FILE* 
+#if DDEBUG > 1                         
+				     debug_file
+#endif
+                     ) {
   int ok = 1;
   // "ok = 0;"  may be replaced by "return 0;"
   int flex_code_already_matched = 1;
   unichar tmp[MAX_DICT_LINE_LENGTH];
   tmp[0] = '\0';
-  if (DDEBUG == 2)
+#if DDEBUG > 1
     u_strcat(tmp, "   trying ");
+#endif
   for (int i = 0; i < MAX_NUMBER_OF_COMPOSITION_RULES; i++) {
     if (rule[i].string[0] == '\0')
       break; // last rule reached: return 1
-    if (DDEBUG == 2) {
+#if DDEBUG > 1
+    {
       if (rule[i].type == 'f')
 	u_strcat(tmp, ":");
       else if (rule[i].YesNo)
@@ -728,6 +736,7 @@ int composition_rule_matches_entry (struct pattern* rule,
 	u_strcat(tmp, "-");
       u_strcat(tmp, rule[i].string);
     }
+#endif
     if (rule[i].YesNo) { // rule '+' => pattern must be in entry, too
       if (rule[i].type == 'g') {
 	if (dic_entry_contain_gram_code(d,rule[i].string))
@@ -762,7 +771,8 @@ int composition_rule_matches_entry (struct pattern* rule,
       }
     }
   }
-  if ( DDEBUG == 2 ) {
+#if DDEBUG > 1
+  {
     if (ok && flex_code_already_matched) u_fprintf(debug_file,"\n   === matched ");
     else u_fprintf(debug_file,"\n   === not matched ");
     if ( d->semantic_codes != 0 ) {
@@ -777,6 +787,7 @@ int composition_rule_matches_entry (struct pattern* rule,
     }
     u_fprintf(debug_file,"\n");
   }
+#endif
   return (ok && flex_code_already_matched);
 }
 
@@ -923,9 +934,11 @@ void explore_state (int adresse,
     if (pos_in_current_component >= 1) {
       // go on if word length equals zero
 
-      if (DDEBUG) {
+#if DDEBUG > 0
+      {
          u_fprintf(debug_file,". %S\n",current_component);
       }
+#endif
 
       struct list_ustring* l = inf_codes->codes[index];
       while ( l != 0 ) {
@@ -935,9 +948,11 @@ void explore_state (int adresse,
 	unichar entry[MAX_DICT_LINE_LENGTH];
 	uncompress_entry(current_component, l->string, entry);
 
-	if (DDEBUG) {
+#if DDEBUG > 0
+	{
 	  u_fprintf(debug_file,": %S\n",entry);
 	}
+#endif
 
 	struct dela_entry* dic_entr = new_dic_entry(entry,entries);
 
@@ -1068,9 +1083,12 @@ void explore_state (int adresse,
 		}
 	      }
 
-	      if (DDEBUG) {
+#if DDEBUG > 0
+	      {
             u_fprintf(debug_file,"= %S\n",new_dela_line);
 	      }
+#endif
+
 	      struct decomposed_word* wd = new_decomposed_word();
 	      wd->n_parts = n_decomp;
 	      u_strcpy(wd->decomposition,decomposition_new);
@@ -1117,13 +1135,18 @@ void explore_state (int adresse,
 	      next_remaining_word[j] = '\0';
 	      if (rule->then.substr_next[0] != '\0') {
             substring_operation(next_remaining_word, rule->then.substr_next);
-            if (DDEBUG) {
+#if DDEBUG > 0
+            {
                u_fprintf(debug_file,"| %S|%S\n",affix,next_remaining_word);
             }
+#endif
 	      }
-	      if (DDEBUG) {
+
+#if DDEBUG > 0
+	      {
             u_fprintf(debug_file,"- %S\n",entry);
 	      }
+#endif
 	      struct rule_list* tmp = new_rule_list(rules);
 	      tmp->rule = new_composition_rule();
 	      copy_composition_rule(tmp->rule, rule);
@@ -1154,9 +1177,11 @@ void explore_state (int adresse,
 	// prefix found, try to decomposite rest of word
 	if ( rule_list_new != 0 && dic_entr != 0 ) {
 	  unichar next_component[MAX_WORD_LENGTH];
-	  if (DDEBUG) {
+#if DDEBUG > 0
+	  {
 	    u_fprintf(debug_file,"> %S\n",next_remaining_word);
 	  }
+#endif
 	  explore_state(4,
 			next_component,
 			0,

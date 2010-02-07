@@ -28,8 +28,11 @@
 #include "DELA.h"
 #include "String_hash.h"
 
-const int DDEBUG = 0; // 1 for additional debugging information
-                      // 2 plus information about rule matching
+// 0 no debugfing information
+// 1 for additional debugging information
+// 2 plus information about rule matching
+#define DDEBUG 0
+
 
 // some definitions
 const int MAX_COMPOSITION_RULE_LENGTH = 100;

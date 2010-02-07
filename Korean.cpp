@@ -1151,7 +1151,7 @@ if (input[*pos_input]==KR_SYLLABLE_BOUND) {
 		ret=read_final_consonants(input,pos_input,&final_consonant,&hcj,0);
 	}
 	int syllable=(initial_consonant*21+vowel)*28+final_consonant+0xAC00;
-	output[(*pos_output)++]=syllable;
+	output[(*pos_output)++]=(unichar)syllable;
 	return KR_END_OF_SYLLABLE;
 }
 /* We try to read a Jamo sequence that is not part of a syllable */
