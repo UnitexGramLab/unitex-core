@@ -175,7 +175,7 @@ return matrix;
 void add_key_table(unichar* key,struct string_hash_ptr* table){
 void* value = get_value(key,table);
 if(value != NULL){
-	table->value[get_value_index(key,table)] = (void*)((int)value+1);
+	table->value[get_value_index(key,table)] = (void*)(((char*)value)+1);
 }
 else{
 	get_value_index(key,table,INSERT_IF_NEEDED,(void*)1);
