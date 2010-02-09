@@ -25,6 +25,7 @@ static ABSTRACTFILE* (*real_fopen)(const char*,const char*)=af_fopen;
 
 #include "Unicode.h"
 #include "Error.h"
+#include "AbstractAllocator.h"
 
 
 /* This array is a bit array used to define characters that are letters */
@@ -2991,6 +2992,17 @@ return (unichar*)memcpy(res,str,buflen);
 }
 
 
+unichar* u_strdup(const unichar* str,Abstract_allocator prv_alloc) {
+if (str==NULL) return NULL;
+size_t buflen=(u_strlen(str)+1)*sizeof(unichar);
+unichar* res=(unichar*)malloc_cb(buflen,prv_alloc);
+if (res==NULL) {
+   fatal_alloc_error("u_strdup");
+}
+return (unichar*)memcpy(res,str,buflen);
+}
+
+
 /**
  * This version has the correct prototype to be used as a keycopy function for
  * hash tables.
@@ -3027,6 +3039,25 @@ return res;
 }
 
 
+unichar* u_strdup(const unichar* str,int n,Abstract_allocator prv_alloc) {
+if (str==NULL) return NULL;
+if (n<0) {
+   fatal_error("Invalid length in u_strdup\n");
+}
+int length=u_strlen(str);
+if (length<n) {
+   n=length;
+}
+unichar* res=(unichar*)malloc_cb((n+1)*sizeof(unichar),prv_alloc);
+if (res==NULL) {
+   fatal_alloc_error("u_strdup");
+}
+u_strncpy(res,str,n);
+res[n]='\0';
+return res;
+}
+
+
 /**
  * Unicode version of strdup.
  * This function returns an allocated string that is a copy of the given one.
@@ -3036,6 +3067,16 @@ return res;
 unichar* u_strdup(const char* str) {
 if (str==NULL) return NULL;
 unichar* res=(unichar*)malloc((strlen(str)+1)*sizeof(unichar));
+if (res==NULL) {
+   fatal_alloc_error("u_strdup");
+}
+return u_strcpy(res,str);
+}
+
+
+unichar* u_strdup(const char* str,Abstract_allocator prv_alloc) {
+if (str==NULL) return NULL;
+unichar* res=(unichar*)malloc_cb((strlen(str)+1)*sizeof(unichar),prv_alloc);
 if (res==NULL) {
    fatal_alloc_error("u_strdup");
 }

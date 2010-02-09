@@ -181,6 +181,7 @@
 		225CCA8C10DA9DB1003F0910 /* tre-stack.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC93410DA9DB1003F0910 /* tre-stack.c */; };
 		225CCA8D10DA9DB1003F0910 /* xmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC93710DA9DB1003F0910 /* xmalloc.c */; };
 		229851B0111A6F3300503A07 /* Fst2Chk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851AE111A6F3300503A07 /* Fst2Chk.cpp */; };
+		22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -568,6 +569,9 @@
 		225CC93810DA9DB1003F0910 /* xmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xmalloc.h; sourceTree = "<group>"; };
 		229851AE111A6F3300503A07 /* Fst2Chk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Fst2Chk.cpp; path = ../Fst2Chk.cpp; sourceTree = SOURCE_ROOT; };
 		229851AF111A6F3300503A07 /* Fst2Chk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Chk.h; path = ../Fst2Chk.h; sourceTree = SOURCE_ROOT; };
+		22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
+		22EA01E61121EDB000A89AD4 /* AbstractAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocator.h; path = ../AbstractAllocator.h; sourceTree = SOURCE_ROOT; };
+		22EA01E71121EDB000A89AD4 /* AbstractAllocatorPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocatorPlugCallback.h; path = ../AbstractAllocatorPlugCallback.h; sourceTree = SOURCE_ROOT; };
 		8DD76F6C0486A84900D96B5E /* UnitexToolLogger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitexToolLogger; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -595,6 +599,9 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */,
+				22EA01E61121EDB000A89AD4 /* AbstractAllocator.h */,
+				22EA01E71121EDB000A89AD4 /* AbstractAllocatorPlugCallback.h */,
 				229851AE111A6F3300503A07 /* Fst2Chk.cpp */,
 				229851AF111A6F3300503A07 /* Fst2Chk.h */,
 				222F7C9B1107A83D00C91CC7 /* logger */,
@@ -1227,6 +1234,7 @@
 				222F7C6C1107A68E00C91CC7 /* Ustring.cpp in Sources */,
 				222F7C6D1107A68E00C91CC7 /* XMLizer.cpp in Sources */,
 				229851B0111A6F3300503A07 /* Fst2Chk.cpp in Sources */,
+				22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

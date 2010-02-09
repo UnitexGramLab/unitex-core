@@ -28,7 +28,7 @@
 #include "MetaSymbols.h"
 #include "Transitions.h"
 #include "Contexts.h"
-
+#include "AbstractAllocator.h"
 
 /**
  * This structure defines a list of graph calls. For each call, we have the
@@ -108,8 +108,8 @@ struct optimizedFst2State {
 typedef struct optimizedFst2State* OptimizedFst2State;
 
 
-OptimizedFst2State* build_optimized_fst2_states(Variables*,Fst2*);
-void free_optimized_states(OptimizedFst2State*,int);
+OptimizedFst2State* build_optimized_fst2_states(Variables*,Fst2*,Abstract_allocator);
+void free_optimized_states(OptimizedFst2State*,int,Abstract_allocator);
 
 #endif
 

@@ -24,9 +24,9 @@
 #include "Token.h"
 
 
-struct text_tokens* new_text_tokens() {
+struct text_tokens* new_text_tokens(Abstract_allocator prv_alloc) {
 struct text_tokens* tmp;
-tmp=(struct text_tokens*)malloc(sizeof(struct text_tokens));
+tmp=(struct text_tokens*)malloc_cb(sizeof(struct text_tokens),prv_alloc);
 if (tmp==NULL) {
    fatal_alloc_error("new_text_tokens");
 }
@@ -37,15 +37,15 @@ return tmp;
 }
 
 
-struct text_tokens* load_text_tokens(const char* nom,int mask_encoding_compatibility_input) {
+struct text_tokens* load_text_tokens(const char* nom,int mask_encoding_compatibility_input,Abstract_allocator prv_alloc) {
 U_FILE* f;
 f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
 if (f==NULL) {
    return NULL;
 }
-struct text_tokens* res=new_text_tokens();
+struct text_tokens* res=new_text_tokens(prv_alloc);
 u_fscanf(f,"%d\n",&(res->N));
-res->token=(unichar**)malloc((res->N)*sizeof(unichar*));
+res->token=(unichar**)malloc_cb((res->N)*sizeof(unichar*),prv_alloc);
 if (res->token==NULL) {
    fatal_alloc_error("load_text_tokens");
 }
@@ -59,7 +59,7 @@ while (EOF!=(size_gets=u_fgets(tmp,MAX_TAG_LENGTH,f))) {
         tmp[size_gets-1]=0;
     }
   }
-  res->token[i]=u_strdup(tmp);
+  res->token[i]=u_strdup(tmp,prv_alloc);
   if (!u_strcmp(tmp,"{S}")) {
      res->SENTENCE_MARKER=i;
   } else if (!u_strcmp(tmp," ")) {
@@ -80,7 +80,7 @@ return res;
 
 
 
-struct string_hash* load_text_tokens_hash(char* nom,int mask_encoding_compatibility_input,int *NUMBER_OF_TEXT_TOKENS) {
+struct string_hash* load_text_tokens_hash(char* nom,int mask_encoding_compatibility_input,int *NUMBER_OF_TEXT_TOKENS,Abstract_allocator /* prv_alloc */) {
 U_FILE* f;
 f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
 if (f==NULL) {
@@ -103,7 +103,7 @@ return res;
 struct string_hash* load_text_tokens_hash(char* nom,int mask_encoding_compatibility_input,
                                           int *SENTENCE_MARKER,
                                           int* STOP_MARKER,
-                                          int *NUMBER_OF_TEXT_TOKENS) {
+                                          int *NUMBER_OF_TEXT_TOKENS,Abstract_allocator /* prv_alloc */) {
 U_FILE* f;
 f=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,nom,U_READ);
 if (f==NULL) {
@@ -132,23 +132,23 @@ return res;
 
 
 
-void free_text_tokens(struct text_tokens* tok) {
+void free_text_tokens(struct text_tokens* tok,Abstract_allocator prv_alloc) {
 for (int i=0;i<tok->N;i++) {
-   free(tok->token[i]);
+   free_cb(tok->token[i],prv_alloc);
 }
-free(tok->token);
-free(tok);
+free_cb(tok->token,prv_alloc);
+free_cb(tok,prv_alloc);
 }
 
 
 
 
-void explorer_token_tree(int pos,unichar* sequence,Alphabet* alph,struct string_hash_tree_node* n,struct list_int** l) {
+void explorer_token_tree(int pos,unichar* sequence,Alphabet* alph,struct string_hash_tree_node* n,struct list_int** l,Abstract_allocator prv_alloc) {
 if (sequence[pos]=='\0') {
    // if we are at the end of the sequence
    if (n->value_index!=-1) {
       // if the sequence is a text token, we add its number to the list
-      (*l)=sorted_insert(n->value_index,*l);
+      (*l)=sorted_insert(n->value_index,*l,prv_alloc);
    }
    return;
 }
@@ -156,7 +156,7 @@ struct string_hash_tree_transition* trans=n->trans;
 while (trans!=NULL) {
   if (is_equal_or_uppercase(sequence[pos],trans->letter,alph)) {
      // if we can follow the transition
-     explorer_token_tree(pos+1,sequence,alph,trans->node,l);
+     explorer_token_tree(pos+1,sequence,alph,trans->node,l,prv_alloc);
   }
   trans=trans->next;
 }
@@ -165,9 +165,9 @@ while (trans!=NULL) {
 
 
 struct list_int* get_token_list_for_sequence(unichar* sequence,Alphabet* alph,
-                                                  struct string_hash* hash) {
+                                                  struct string_hash* hash,Abstract_allocator prv_alloc) {
 struct list_int* l=NULL;
-explorer_token_tree(0,sequence,alph,hash->root,&l);
+explorer_token_tree(0,sequence,alph,hash->root,&l,prv_alloc);
 return l;
 }
 
@@ -204,15 +204,15 @@ return 1;
 // Scans text tokens to extract semantic codes contained in tags like {le,.DET:ms}
 //
 void extract_semantic_codes_from_tokens(struct string_hash* tok,
-                                        struct string_hash* semantic_codes) {
+                                        struct string_hash* semantic_codes,Abstract_allocator prv_alloc) {
 for (int i=0;i<tok->size;i++) {
     if (tok->value[i][0]=='{' && u_strcmp(tok->value[i],"{S}")
                             && u_strcmp(tok->value[i],"{STOP}")) {
-       struct dela_entry* temp=tokenize_tag_token(tok->value[i]);
+       struct dela_entry* temp=tokenize_tag_token(tok->value[i],prv_alloc);
        for (int j=0;j<temp->n_semantic_codes;j++) {
           get_value_index(temp->semantic_codes[j],semantic_codes);
        }
-       free_dela_entry(temp);
+       free_dela_entry(temp,prv_alloc);
     }
 }
 }
@@ -224,7 +224,7 @@ for (int i=0;i<tok->size;i++) {
  * of morphological mode dictionaries.
  */
 void extract_semantic_codes_from_morpho_dics(struct INF_codes** array,int N,
-                                        struct string_hash* semantic_codes) {
+                                        struct string_hash* semantic_codes,Abstract_allocator prv_alloc) {
 unichar line[2048];
 /* Foo line for generating a dela_entry */
 u_strcpy(line,"a,a");
@@ -237,14 +237,14 @@ for (int i=0;i<N;i++) {
       while (codes!=NULL) {
          u_strcpy(line+3,codes->string);
          //u_printf("code=_%S_\n",codes->string);
-         struct dela_entry* entry=tokenize_DELAF_line(line);
+         struct dela_entry* entry=tokenize_DELAF_line(line,prv_alloc);
          if (entry!=NULL) {
             /* There could be an error due to an old dictionary with,
              * for instance, duplicate semantic codes */
             for (int k=0;k<entry->n_semantic_codes;k++) {
                get_value_index(entry->semantic_codes[k],semantic_codes);
             }
-            free_dela_entry(entry);
+            free_dela_entry(entry,prv_alloc);
          }
          codes=codes->next;
       }

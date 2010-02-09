@@ -31,6 +31,7 @@
 #include "Pattern.h"
 #include "List_int.h"
 #include "Transitions.h"
+#include "AbstractAllocator.h"
 
 
 /* Maximum number of tags in a .fst2 */
@@ -208,15 +209,15 @@ typedef struct fst2 Fst2;
 
 
 /* Functions for loading grammars */
-Fst2* load_fst2(const char*,int);
+Fst2* load_fst2(const char*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
-int   load_fst2_from_file(U_FILE*,int,Fst2 **);
-int   load_fst2_from_file(U_FILE*,int,Fst2 **, int);
+int   load_fst2_from_file(U_FILE*,int,Fst2 **,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+int   load_fst2_from_file(U_FILE*,int,Fst2 **, int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
-Fst2* load_one_sentence_from_fst2(const char*,int);
-void free_Fst2(Fst2*);
+Fst2* load_one_sentence_from_fst2(const char*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_Fst2(Fst2*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
-Fst2* new_Fst2_clone(Fst2* fst2org);
+Fst2* new_Fst2_clone(Fst2* fst2org,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 /* Functions for writing grammars */
 void write_graph(U_FILE*,Fst2*,int);

@@ -30,8 +30,8 @@
  * of elements. 'info_length' corresponds to the length in bits of one
  * information.
  */
-struct bit_array* new_bit_array(int number_of_elements,InfoLength info_length) {
-struct bit_array* bit_array=(struct bit_array*)malloc(sizeof(struct bit_array));
+struct bit_array* new_bit_array(int number_of_elements,InfoLength info_length,Abstract_allocator prv_alloc) {
+struct bit_array* bit_array=(struct bit_array*)malloc_cb(sizeof(struct bit_array),prv_alloc);
 if (bit_array==NULL) {
 	fatal_alloc_error("new_bit_array");
 }
@@ -45,7 +45,7 @@ switch(info_length) {
    case FOUR_BITS: bit_array->divider=2; break;
 };
 bit_array->size_in_bytes=(number_of_elements/bit_array->divider)+1;
-bit_array->array=(unsigned char*)malloc(sizeof(unsigned char)*bit_array->size_in_bytes);
+bit_array->array=(unsigned char*)malloc_cb(sizeof(unsigned char)*bit_array->size_in_bytes,prv_alloc);
 if (bit_array->array==NULL) {
 	fatal_alloc_error("new_bit_array");
 }
@@ -60,10 +60,10 @@ return bit_array;
 /**
  * Frees a bit array, assuming that the field 'array' was not already freed.
  */
-void free_bit_array(struct bit_array* bit_array) {
+void free_bit_array(struct bit_array* bit_array,Abstract_allocator prv_alloc) {
 if (bit_array==NULL) return;
-free(bit_array->array);
-free(bit_array);
+free_cb(bit_array->array,prv_alloc);
+free_cb(bit_array,prv_alloc);
 }
 
 

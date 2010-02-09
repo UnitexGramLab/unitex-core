@@ -26,6 +26,7 @@
 #include "List_ustring.h"
 #include "String_hash.h"
 #include "DELA.h"
+#include "AbstractAllocator.h"
 
 
 /**
@@ -91,10 +92,10 @@ struct pattern {
 };
 
 
-struct pattern* build_pattern(unichar*,struct string_hash*);
-struct pattern* build_token_pattern(unichar*);
-void free_pattern(struct pattern*);
+struct pattern* build_pattern(unichar*,struct string_hash*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct pattern* build_token_pattern(unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_pattern(struct pattern*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int is_entry_compatible_with_pattern(struct dela_entry* entry,struct pattern* pattern);
-struct pattern* clone(struct pattern* src);
+struct pattern* clone(struct pattern* src,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 #endif

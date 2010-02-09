@@ -27,16 +27,16 @@
 /**
  * Allocates, initializes and returns a new string list element.
  */
-struct list_ustring* new_list_ustring(const unichar* string,struct list_ustring* following) {
+struct list_ustring* new_list_ustring(const unichar* string,struct list_ustring* following,Abstract_allocator prv_alloc) {
 if (string==NULL) {
    fatal_error("NULL string argument in new_list_ustring\n");
 }
 struct list_ustring* l;
-l=(struct list_ustring*)malloc(sizeof(struct list_ustring));
+l=(struct list_ustring*)malloc_cb(sizeof(struct list_ustring),prv_alloc);
 if (l==NULL) {
    fatal_alloc_error("new_list_ustring");
 }
-l->string=u_strdup(string);
+l->string=u_strdup(string,prv_alloc);
 l->next=following;
 return l;
 }
@@ -45,24 +45,24 @@ return l;
 /**
  * Allocates, initializes and returns a new string list element.
  */
-struct list_ustring* new_list_ustring(const unichar* string) {
-return new_list_ustring(string,NULL);
+struct list_ustring* new_list_ustring(const unichar* string,Abstract_allocator prv_alloc) {
+return new_list_ustring(string,NULL,prv_alloc);
 }
 
 
 /**
  * Frees a whole unicode string list.
  */
-void free_list_ustring(struct list_ustring* head) {
+void free_list_ustring(struct list_ustring* head,Abstract_allocator prv_alloc) {
 struct list_ustring* tmp;
 while (head!=NULL) {
    tmp=head;
    head=head->next;
    if (tmp->string!=NULL) {
       /* This case should always happen */
-      free(tmp->string);
+      free_cb(tmp->string,prv_alloc);
    }
-   free(tmp);
+   free_cb(tmp,prv_alloc);
 }
 }
 
@@ -70,10 +70,10 @@ while (head!=NULL) {
 /**
  * Frees a unicode string list element.
  */
-void free_list_ustring_element(struct list_ustring* element) {
+void free_list_ustring_element(struct list_ustring* element,Abstract_allocator prv_alloc) {
 if (element==NULL) return;
-if (element->string!=NULL) free(element->string);
-free(element);
+if (element->string!=NULL) free_cb(element->string,prv_alloc);
+free_cb(element,prv_alloc);
 }
 
 
@@ -84,12 +84,12 @@ free(element);
  * NOTE: in the general case, a struct list_ustring is not supposed
  *       to be sorted.
  */
-struct list_ustring* sorted_insert(const unichar* value,struct list_ustring* l) {
+struct list_ustring* sorted_insert(const unichar* value,struct list_ustring* l,Abstract_allocator prv_alloc) {
 if (value==NULL) {
    fatal_error("NULL string argument in sorted_insert\n");
 }
 if (l==NULL) {
-   return new_list_ustring(value);
+   return new_list_ustring(value,prv_alloc);
 }
 
 list_ustring* baselist = l;
@@ -98,14 +98,14 @@ if (!res) {
    return l;
 }
 if (res<0) {
-   return new_list_ustring(value,l);
+   return new_list_ustring(value,l,prv_alloc);
 }
 
 for (;;) {
     list_ustring* lnext = l->next;
     if (lnext==NULL)
     {
-        l->next=new_list_ustring(value);
+        l->next=new_list_ustring(value,prv_alloc);
         return baselist;
     }
     int res2=u_strcmp(value,lnext->string);
@@ -113,7 +113,7 @@ for (;;) {
         return baselist;
     if (res2<0)
     {
-        l->next=new_list_ustring(value,lnext);
+        l->next=new_list_ustring(value,lnext,prv_alloc);
         return baselist;
     }
     l=lnext;
@@ -125,11 +125,11 @@ for (;;) {
 /**
  * Inserts an element at the head of the list.
  */
-struct list_ustring* head_insert(const unichar* value,struct list_ustring* old_head) {
+struct list_ustring* head_insert(const unichar* value,struct list_ustring* old_head,Abstract_allocator prv_alloc) {
 if (value==NULL) {
    fatal_error("NULL string argument in head_insert\n");
 }
-struct list_ustring* new_head=new_list_ustring(value);
+struct list_ustring* new_head=new_list_ustring(value,prv_alloc);
 new_head->next=old_head;
 return new_head;
 }
@@ -138,9 +138,9 @@ return new_head;
 /**
  * Inserts an element at the end of a list.
  */
-struct list_ustring* insert_at_end_of_list(const unichar* s,struct list_ustring* l) {
-if (l==NULL) return new_list_ustring(s);
-l->next=insert_at_end_of_list(s,l->next);
+struct list_ustring* insert_at_end_of_list(const unichar* s,struct list_ustring* l,Abstract_allocator prv_alloc) {
+if (l==NULL) return new_list_ustring(s,prv_alloc);
+l->next=insert_at_end_of_list(s,l->next,prv_alloc);
 return l;
 }
 
@@ -183,13 +183,13 @@ return equal(a->next,b->next);
 /**
  * Returns a clone of the list.
  */
-struct list_ustring* clone(struct list_ustring* list) {
+struct list_ustring* clone(struct list_ustring* list,Abstract_allocator prv_alloc) {
 if (list==NULL) return NULL;
-list_ustring* result=new_list_ustring(list->string,NULL);
+list_ustring* result=new_list_ustring(list->string,NULL,prv_alloc);
 list=list->next;
 list_ustring* tmp=result;
 while (list!=NULL) {
-   tmp->next=new_list_ustring(list->string,NULL);
+   tmp->next=new_list_ustring(list->string,NULL,prv_alloc);
    tmp->next->next=NULL;
    list=list->next;
    tmp=tmp->next;

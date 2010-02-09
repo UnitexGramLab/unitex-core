@@ -1206,7 +1206,19 @@
 				RelativePath="..\UnitexTool.cpp"
 				>
 			</File>
-			<File
+      <File
+				RelativePath="..\AbstractAllocator.cpp"
+				>
+      </File>
+      <File
+				RelativePath="..\AbstractAllocator.h"
+				>
+      </File>
+      <File
+				RelativePath="..\AbstractAllocatorPlugCallback.h"
+				>
+      </File>
+      <File
 				RelativePath="..\UserCancelling.cpp"
 				>
 			</File>

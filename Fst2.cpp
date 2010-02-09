@@ -44,31 +44,31 @@
 /**
  * Frees a state and all its transitions.
  */
-void free_Fst2State(Fst2State e) {
-free_Transition_list(e->transitions);
-free(e);
+void free_Fst2State(Fst2State e,Abstract_allocator prv_alloc) {
+free_Transition_list(e->transitions,prv_alloc);
+free_cb(e,prv_alloc);
 }
 
 
 /**
  * Frees a tag.
  */
-void free_Fst2Tag(Fst2Tag e) {
-if (e->input!=NULL) free(e->input);
-if (e->output!=NULL) free(e->output);
-if (e->morphological_filter!=NULL) free(e->morphological_filter);
-if (e->pattern!=NULL) free_pattern(e->pattern);
-if (e->variable!=NULL) free(e->variable);
-free_list_int(e->matching_tokens);
-free(e);
+void free_Fst2Tag(Fst2Tag e,Abstract_allocator prv_alloc) {
+if (e->input!=NULL) free_cb(e->input,prv_alloc);
+if (e->output!=NULL) free_cb(e->output,prv_alloc);
+if (e->morphological_filter!=NULL) free_cb(e->morphological_filter,prv_alloc);
+if (e->pattern!=NULL) free_pattern(e->pattern,prv_alloc);
+if (e->variable!=NULL) free_cb(e->variable,prv_alloc);
+free_list_int(e->matching_tokens,prv_alloc);
+free_cb(e,prv_alloc);
 }
 
 
 /**
  * Allocates, initializes and returns an empty automaton.
  */
-Fst2* new_Fst2() {
-Fst2* a=(Fst2*)malloc(sizeof(Fst2));
+Fst2* new_Fst2(Abstract_allocator prv_alloc) {
+Fst2* a=(Fst2*)malloc_cb(sizeof(Fst2),prv_alloc);
 if (a==NULL) {
    fatal_alloc_error("new_Fst2");
 }
@@ -89,17 +89,17 @@ return a;
  * Frees a fst2. The function assumes that if 'fst2' is not NULL, all
  * its field are neither NULL nor already freed.
  */
-void free_Fst2(Fst2* fst2) {
+void free_Fst2(Fst2* fst2,Abstract_allocator prv_alloc) {
 if (fst2==NULL) return;
 int i;
 for (i=0;i<fst2->number_of_states;i++) {
-  free_Fst2State(fst2->states[i]);
+  free_Fst2State(fst2->states[i],prv_alloc);
 }
-free(fst2->states);
+free_cb(fst2->states,prv_alloc);
 for (i=0;i<fst2->number_of_tags;i++) {
-   free_Fst2Tag(fst2->tags[i]);
+   free_Fst2Tag(fst2->tags[i],prv_alloc);
 }
-free(fst2->tags);
+free_cb(fst2->tags,prv_alloc);
 if (fst2->graph_names!=NULL) {
   for ( i = 1;                       /* start at 1 because at pos 0
                                         there is no graph */
@@ -107,23 +107,23 @@ if (fst2->graph_names!=NULL) {
                                         number_of_graphs+1 */
         i++ )
     {
-      if (fst2->graph_names[i]!=NULL) free(fst2->graph_names[i]);
+      if (fst2->graph_names[i]!=NULL) free_cb(fst2->graph_names[i],prv_alloc);
     }
-  free(fst2->graph_names);
+  free_cb(fst2->graph_names,prv_alloc);
 }
-free(fst2->initial_states);
-free(fst2->number_of_states_per_graphs);
-free_list_ustring(fst2->variables);
-free(fst2);
+free_cb(fst2->initial_states,prv_alloc);
+free_cb(fst2->number_of_states_per_graphs,prv_alloc);
+free_list_ustring(fst2->variables,prv_alloc);
+free_cb(fst2,prv_alloc);
 }
 
 
 /**
  * Allocates, initializes and returns a new tag
  */
-Fst2Tag new_Fst2Tag() {
+Fst2Tag new_Fst2Tag(Abstract_allocator prv_alloc) {
 Fst2Tag e;
-e=(Fst2Tag)malloc(sizeof(struct fst2Tag));
+e=(Fst2Tag)malloc_cb(sizeof(struct fst2Tag),prv_alloc);
 if (e==NULL) {
   fatal_alloc_error("new_Fst2Tag");
 }
@@ -145,7 +145,7 @@ return e;
  * Creates and returns the tag for the string 'line', representing a tag line
  * in a .fst2 file like "%<V>/VERB", without an ending '\n'.
  */
-Fst2Tag create_tag(Fst2* fst2,unichar* line) {
+Fst2Tag create_tag(Fst2* fst2,unichar* line,Abstract_allocator prv_alloc) {
 unichar all_input[2048],output[2048];
 int i=1,j=0,k=0;
 /* First, we look if the tag must respect case */
@@ -213,14 +213,14 @@ if (all_input[i]!='\0') {
 /* If there is a morphological filter but no input ("%<<^in>>/PFX"), then
  * we say that the input is any token */
 if (input[0]=='\0') {u_strcpy(input,"<TOKEN>");}
-Fst2Tag tag=new_Fst2Tag();
-tag->input=u_strdup(input);
+Fst2Tag tag=new_Fst2Tag(prv_alloc);
+tag->input=u_strdup(input,prv_alloc);
 if (output[0]!='\0') {
-   tag->output=u_strdup(output);
+   tag->output=u_strdup(output,prv_alloc);
 } else {tag->output=NULL;}
 
 if (filter[0]!='\0') {
-   tag->morphological_filter=u_strdup(filter);
+   tag->morphological_filter=u_strdup(filter,prv_alloc);
 } else {tag->morphological_filter=NULL;}
 if (respect_case) {
    /* We set the case respect bit if necessary */
@@ -259,8 +259,8 @@ if (!u_strcmp(input,"$>")) {
 int length=u_strlen(input);
 if (input[0]=='$' &&
     (input[length-1]=='(' || input[length-1]==')')) {
-   tag->variable=u_strdup(&(input[1]),length-2);
-   fst2->variables=sorted_insert(tag->variable,fst2->variables);
+   tag->variable=u_strdup(&(input[1]),length-2,prv_alloc);
+   fst2->variables=sorted_insert(tag->variable,fst2->variables,prv_alloc);
    if (input[length-1]=='(') {
       tag->type=BEGIN_VAR_TAG;
    }
@@ -314,14 +314,14 @@ u_fprintf(f,"\n");
  * when you load just one sentence from a .fst2 that represents a text
  * automaton.
  */
-void read_fst2_tags(U_FILE* f,Fst2* fst2,int limit) {
+void read_fst2_tags(U_FILE* f,Fst2* fst2,int limit,Abstract_allocator prv_alloc) {
 int SIZE=2;
 int i;
 unichar c;
 unichar line[10000];
 int current_tag=0;
 /* First, we allocate the tag array */
-fst2->tags=(Fst2Tag*)malloc(SIZE*sizeof(Fst2Tag));
+fst2->tags=(Fst2Tag*)malloc_cb(SIZE*sizeof(Fst2Tag),prv_alloc);
 if (fst2->tags==NULL) {
    fatal_alloc_error("read_fst2_tags");
 }
@@ -344,13 +344,13 @@ while (c!='f' && (limit==NO_TAG_LIMIT || current_tag<=limit)) {
   	}
 	line[i]='\0';
 	/* We create the tag and add it to the fst2 */
-	fst2->tags[current_tag]=create_tag(fst2,line);
+	fst2->tags[current_tag]=create_tag(fst2,line,prv_alloc);
 	/* We do not forget to increase the tag counter */
 	current_tag++;
    if (current_tag==SIZE) {
       /* If necessary, we double the size of the array */
       SIZE=SIZE*2;
-      fst2->tags=(Fst2Tag*)realloc(fst2->tags,SIZE*sizeof(Fst2Tag));
+      fst2->tags=(Fst2Tag*)realloc_cb(fst2->tags,(SIZE/2)*sizeof(Fst2Tag),SIZE*sizeof(Fst2Tag),prv_alloc);
       if (fst2->tags==NULL) {
          fatal_alloc_error("read_fst2_tags");
       }
@@ -359,7 +359,7 @@ while (c!='f' && (limit==NO_TAG_LIMIT || current_tag<=limit)) {
 /* Finally, we set the number of tags of the fst2 */
 fst2->number_of_tags=current_tag;
 /* And we resize the array to the exact size */
-fst2->tags=(Fst2Tag*)realloc(fst2->tags,current_tag*sizeof(Fst2Tag));
+fst2->tags=(Fst2Tag*)realloc_cb(fst2->tags,current_tag*sizeof(Fst2Tag),current_tag*sizeof(Fst2Tag),prv_alloc);
 if (fst2->tags==NULL) {
    fatal_alloc_error("read_fst2_tags");
 }
@@ -369,8 +369,8 @@ if (fst2->tags==NULL) {
 /**
  * Reads all the tags of the .fst2 file 'f'.
  */
-void read_fst2_tags(U_FILE* f,Fst2* fst2) {
-read_fst2_tags(f,fst2,NO_TAG_LIMIT);
+void read_fst2_tags(U_FILE* f,Fst2* fst2,Abstract_allocator prv_alloc) {
+read_fst2_tags(f,fst2,NO_TAG_LIMIT,prv_alloc);
 }
 
 
@@ -404,9 +404,9 @@ u_fputc((unichar)'\n',f);
 /**
  * Creates, initializes and returns a fst2 state.
  */
-Fst2State new_Fst2State() {
+Fst2State new_Fst2State(Abstract_allocator prv_alloc) {
 Fst2State state;
-state=(Fst2State)malloc(sizeof(struct fst2State));
+state=(Fst2State)malloc_cb(sizeof(struct fst2State),prv_alloc);
 if (state==NULL) {
   fatal_alloc_error("new_Fst2State");
 }
@@ -463,8 +463,8 @@ return value;
  *       transitions, we do not check if the transition already
  *       exists before adding it.
  */
-void add_transition_to_state(Fst2State state,int tag_number,int state_number) {
-state->transitions=new_Transition(tag_number,state_number,state->transitions);
+void add_transition_to_state(Fst2State state,int tag_number,int state_number,Abstract_allocator prv_alloc) {
+state->transitions=new_Transition(tag_number,state_number,state->transitions,prv_alloc);
 }
 
 
@@ -485,12 +485,12 @@ void set_final_state(fst2State*,int);
  * a text automaton. If the value of 'graph_number' is NO_GRAPH_NUMBER_SPECIFIED,
  * then all the fst2 is loaded, and the 'max_tag_number' parameter is ignored.
  */
-void read_fst2_states(U_FILE* f,Fst2* fst2,int read_names,int graph_number,int *max_tag_number) {
+void read_fst2_states(U_FILE* f,Fst2* fst2,int read_names,int graph_number,int *max_tag_number,Abstract_allocator prv_alloc) {
 int SIZE=256;
 unichar c;
 int i,end_of_line,tag_number,destination_state_number,current_graph;
 int current_state=0;
-fst2->states=(Fst2State*)malloc(SIZE*sizeof(Fst2State));
+fst2->states=(Fst2State*)malloc_cb(SIZE*sizeof(Fst2State),prv_alloc);
 if (fst2->states==NULL) {
    fatal_alloc_error("read_fst2_states");
 }
@@ -529,7 +529,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 		 */
 		fst2->number_of_states_per_graphs[current_graph]=0;
 		while (c!='f') {
-			fst2->states[current_state]=new_Fst2State();
+			fst2->states[current_state]=new_Fst2State(prv_alloc);
 			fst2->number_of_states_per_graphs[current_graph]++;
 			/*
 			 * We set the finality and initiality bits of the state
@@ -555,7 +555,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 				/* We adjust the destination state number in order to make it global */
 				destination_state_number=destination_state_number+fst2->initial_states[current_graph];
 				/* We add the transition to the current state */
-				add_transition_to_state(fst2->states[current_state],tag_number,destination_state_number);
+				add_transition_to_state(fst2->states[current_state],tag_number,destination_state_number,prv_alloc);
 				/* And we do not forget to read the next integer */
 				tag_number=read_int(f,&end_of_line);
 			}
@@ -566,7 +566,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
          if (current_state==SIZE) {
             /* If necessary, we double the size of the state array */
             SIZE=SIZE*2;
-            fst2->states=(Fst2State*)realloc(fst2->states,SIZE*sizeof(Fst2State));
+            fst2->states=(Fst2State*)realloc_cb(fst2->states,(SIZE/2)*sizeof(Fst2State),SIZE*sizeof(Fst2State),prv_alloc);
             if (fst2->states==NULL) {
                fatal_alloc_error("read_fst2_states");
             }
@@ -593,7 +593,7 @@ for (i=0;i<fst2->number_of_graphs;i++) {
 /* Finally, we set the number of states of the fst2, and we resize the state array
  * to the exact size */
 fst2->number_of_states=current_state;
-fst2->states=(Fst2State*)realloc(fst2->states,current_state*sizeof(Fst2State));
+fst2->states=(Fst2State*)realloc_cb(fst2->states,current_state*sizeof(Fst2State),current_state*sizeof(Fst2State),prv_alloc);
 if (fst2->states==NULL) {
    fatal_alloc_error("read_fst2_states");
 }
@@ -605,8 +605,8 @@ if (fst2->states==NULL) {
  * the given fst2. If 'read_names' is non null, graph names are
  * stored in the 'graph_names' array of the fst2.
  */
-void read_fst2_states(U_FILE* f,Fst2* fst2,int read_names) {
-read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
+void read_fst2_states(U_FILE* f,Fst2* fst2,int read_names,Abstract_allocator prv_alloc) {
+read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL,prv_alloc);
 }
 
 
@@ -621,7 +621,7 @@ read_fst2_states(f,fst2,read_names,NO_GRAPH_NUMBER_SPECIFIED,NULL);
 #define GRAPH_IS_EMPTY 1
 #define FILE_POINTER_NULL 2
 
-Fst2* load_fst2(const char* filename,int read_names,int graph_number) {
+Fst2* load_fst2(const char* filename,int read_names,int graph_number,Abstract_allocator prv_alloc) {
 
 U_FILE* f;
 f=u_fopen_existing_unitex_text_format(filename,U_READ);
@@ -631,7 +631,7 @@ if (f==NULL) {
 	return NULL;
 }
 
-int ret=load_fst2_from_file(f,read_names, &fst2, graph_number);
+int ret=load_fst2_from_file(f,read_names, &fst2, graph_number, prv_alloc);
 switch (ret) {
 case GRAPH_IS_EMPTY:
 	error("Graph %s is empty\n",filename);
@@ -642,11 +642,11 @@ return fst2;
 
 }
 
-int load_fst2_from_file(U_FILE* f,int read_names,Fst2** retval, int graph_number) {
+int load_fst2_from_file(U_FILE* f,int read_names,Fst2** retval, int graph_number,Abstract_allocator prv_alloc) {
 if (f==NULL) {
    return 2;
 }
-Fst2* fst2=new_Fst2();
+Fst2* fst2=new_Fst2(prv_alloc);
 /* We read the number of graphs contained in the fst2 */
 u_fscanf(f,"%d\n",&(fst2->number_of_graphs));
 if (fst2->number_of_graphs==0) {
@@ -657,11 +657,11 @@ if (fst2->number_of_graphs==0) {
  * allocated with the correct size. We add +1 because graph numeration
  * starts at 1.
  */
-fst2->initial_states=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
+fst2->initial_states=(int*)malloc_cb((fst2->number_of_graphs+1)*sizeof(int),prv_alloc);
 if (fst2->initial_states==NULL) {
    fatal_alloc_error("load_fst2_from_file");
 }
-fst2->number_of_states_per_graphs=(int*)malloc((fst2->number_of_graphs+1)*sizeof(int));
+fst2->number_of_states_per_graphs=(int*)malloc_cb((fst2->number_of_graphs+1)*sizeof(int),prv_alloc);
 if (fst2->number_of_states_per_graphs==NULL) {
    fatal_alloc_error("load_fst2_from_file");
 }
@@ -670,7 +670,7 @@ if (fst2->number_of_states_per_graphs==NULL) {
  * than above.
  */
 if (read_names) {
-	fst2->graph_names=(unichar**)malloc((fst2->number_of_graphs+1)*sizeof(unichar*));
+	fst2->graph_names=(unichar**)malloc_cb((fst2->number_of_graphs+1)*sizeof(unichar*),prv_alloc);
 	if (fst2->graph_names==NULL) {
 	   fatal_alloc_error("load_fst2_from_file");
 	}
@@ -679,14 +679,14 @@ if (read_names) {
  * Then we read the states of the fst2
  */
 int max_tag_number;
-read_fst2_states(f,fst2,read_names,graph_number,&max_tag_number);
+read_fst2_states(f,fst2,read_names,graph_number,&max_tag_number,prv_alloc);
 /*
  * And we read the tags
  */
 if (graph_number==NO_GRAPH_NUMBER_SPECIFIED) {
-	read_fst2_tags(f,fst2);
+	read_fst2_tags(f,fst2,prv_alloc);
 } else {
-	read_fst2_tags(f,fst2,max_tag_number);
+	read_fst2_tags(f,fst2,max_tag_number,prv_alloc);
 }
 u_fclose(f);
 *retval=fst2;
@@ -697,12 +697,12 @@ return 0;
 /**
  * Loads a .fst2 file and returns its representation in a Fst2 structure.
  */
-Fst2* load_fst2(const char* filename,int read_names) {
-return load_fst2(filename,read_names,NO_GRAPH_NUMBER_SPECIFIED);
+Fst2* load_fst2(const char* filename,int read_names,Abstract_allocator prv_alloc) {
+return load_fst2(filename,read_names,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
 }
 
-int load_fst2_from_file(U_FILE* f,int read_names,Fst2* *fst2) {
-	return load_fst2_from_file(f,read_names,fst2,NO_GRAPH_NUMBER_SPECIFIED);
+int load_fst2_from_file(U_FILE* f,int read_names,Fst2* *fst2,Abstract_allocator prv_alloc) {
+	return load_fst2_from_file(f,read_names,fst2,NO_GRAPH_NUMBER_SPECIFIED,prv_alloc);
 
 }
 
@@ -712,8 +712,8 @@ int load_fst2_from_file(U_FILE* f,int read_names,Fst2* *fst2) {
  * and returns its representation in a Fst2 structure. The graph name
  * is stored because it represents the text of the sentence.
  */
-Fst2* load_one_sentence_from_fst2(const char* filename,int sentence_number) {
-return load_fst2(filename,1,sentence_number);
+Fst2* load_one_sentence_from_fst2(const char* filename,int sentence_number,Abstract_allocator prv_alloc) {
+return load_fst2(filename,1,sentence_number,prv_alloc);
 }
 
 
@@ -815,48 +815,56 @@ write_fst2_tags(f,fst2);
 u_fclose(f);
 }
 
+/*******************************************************************/
+/* cloning 
+*/
 
-Fst2State new_Fst2State_clone(Fst2State Fst2StateSrc)
+
+Fst2State new_Fst2State_clone(Fst2State Fst2StateSrc,Abstract_allocator prv_alloc)
 {
 	if (Fst2StateSrc == NULL)
 		return NULL;
 
-	Fst2State Fst2dest=(fst2State*)malloc(sizeof(fst2State));
+	Fst2State Fst2dest=(fst2State*)malloc_cb(sizeof(fst2State),prv_alloc);
 	if (Fst2dest==NULL) {
 	   fatal_error("Not enough memory in new_Fst2State_clone\n");
 	}
 	Fst2dest->control = Fst2StateSrc->control;
-	Fst2dest->transitions = clone_transition_list(Fst2StateSrc->transitions,NULL,NULL);
+	Fst2dest->transitions = clone_transition_list(Fst2StateSrc->transitions,NULL,NULL,prv_alloc);
 	return Fst2dest;
 }
 
-Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc)
+Fst2Tag new_Fst2Tag_clone(Fst2Tag Fst2TagSrc,Abstract_allocator prv_alloc)
 {
 	if  (Fst2TagSrc==NULL)
 		return NULL;
 
-	Fst2Tag Fst2TagDest=(fst2Tag*)malloc(sizeof(fst2Tag));
+
+	Fst2Tag Fst2TagDest=(fst2Tag*)malloc_cb(sizeof(fst2Tag),prv_alloc);
 	Fst2TagDest->type = Fst2TagSrc->type;
 	Fst2TagDest->control = Fst2TagSrc->control;
-	Fst2TagDest->input = u_strdup(Fst2TagSrc->input);
-	Fst2TagDest->morphological_filter = u_strdup(Fst2TagSrc->morphological_filter);
+
+    Fst2TagDest->input = u_strdup(Fst2TagSrc->input,prv_alloc);
+    Fst2TagDest->morphological_filter = u_strdup(Fst2TagSrc->morphological_filter,prv_alloc);
+    Fst2TagDest->output = u_strdup(Fst2TagSrc->output,prv_alloc);
+    Fst2TagDest->variable = u_strdup(Fst2TagSrc->variable,prv_alloc);	 
+    Fst2TagDest->matching_tokens = clone(Fst2TagSrc->matching_tokens,prv_alloc);
+
 	Fst2TagDest->filter_number = Fst2TagSrc->filter_number;
-	Fst2TagDest->output = u_strdup(Fst2TagSrc->output);
 	Fst2TagDest->meta = Fst2TagSrc->meta;
-	Fst2TagDest->pattern = clone(Fst2TagSrc->pattern);
+	Fst2TagDest->pattern = clone(Fst2TagSrc->pattern,prv_alloc);
 	Fst2TagDest->pattern_number = Fst2TagSrc->pattern_number;
-	Fst2TagDest->variable = u_strdup(Fst2TagSrc->variable);
-	Fst2TagDest->matching_tokens = clone(Fst2TagSrc->matching_tokens);
+	
 	Fst2TagDest->compound_pattern = Fst2TagSrc->compound_pattern;
 
 	return Fst2TagDest;
 }
 
 
-Fst2* new_Fst2_clone(Fst2* fst2org)
+Fst2* new_Fst2_clone(Fst2* fst2org,Abstract_allocator prv_alloc)
 {
 Fst2* fst2ret;
-    fst2ret =(Fst2*)malloc(sizeof(Fst2));
+    fst2ret =(Fst2*)malloc_cb(sizeof(Fst2),prv_alloc);
     if (fst2ret==NULL) {fatal_error("Not enough memory in load_fst2\n");}
 
     if (fst2ret != NULL)
@@ -873,35 +881,33 @@ Fst2* fst2ret;
         fst2ret->number_of_states_per_graphs = NULL;
         fst2ret->variables = NULL;
 
-        fst2ret->states = (Fst2State*)malloc(sizeof(Fst2State)*fst2ret->number_of_states);
+        fst2ret->states = (Fst2State*)malloc_cb(sizeof(Fst2State)*fst2ret->number_of_states,prv_alloc);
         for (i=0;i<fst2org->number_of_states;i++)
         {
-            fst2ret->states[i] = new_Fst2State_clone(fst2org->states[i]);
+            fst2ret->states[i] = new_Fst2State_clone(fst2org->states[i],prv_alloc);
         }
 
-		fst2ret->tags = (Fst2Tag*)malloc(sizeof(Fst2Tag)*fst2ret->number_of_tags);
+		fst2ret->tags = (Fst2Tag*)malloc_cb(sizeof(Fst2Tag)*fst2ret->number_of_tags,prv_alloc);
         for (i=0;i<fst2org->number_of_tags;i++)
         {
-            fst2ret->tags[i] = new_Fst2Tag_clone(fst2org->tags[i]);
+            fst2ret->tags[i] = new_Fst2Tag_clone(fst2org->tags[i],prv_alloc);
         }
 
-
-        fst2ret->initial_states=(int*)malloc((fst2ret->number_of_graphs+1)*sizeof(int));
+   
+        fst2ret->initial_states=(int*)malloc_cb((fst2ret->number_of_graphs+1)*sizeof(int),prv_alloc);
         if (fst2ret->initial_states==NULL) {fatal_error("Not enough memory in load_fst2\n");}
 
         for (i=0;i<fst2ret->number_of_graphs+1;i++)
             fst2ret->initial_states[i] = fst2org->initial_states[i];
 
-
-        fst2ret->number_of_states_per_graphs=(int*)malloc((fst2ret->number_of_graphs+1)*sizeof(int));
+        fst2ret->number_of_states_per_graphs=(int*)malloc_cb((fst2ret->number_of_graphs+1)*sizeof(int),prv_alloc);
         if (fst2ret->number_of_states_per_graphs==NULL) {fatal_error("Not enough memory in load_fst2\n");}
 
         for (i=0;i<fst2ret->number_of_graphs+1;i++)
             fst2ret->number_of_states_per_graphs[i] = fst2org->number_of_states_per_graphs[i];
 
-
         if (fst2org->graph_names!=NULL) {
-          fst2ret->graph_names = (unichar**)malloc(sizeof(unichar*) * (fst2ret->number_of_graphs+1));
+          fst2ret->graph_names = (unichar**)malloc_cb(sizeof(unichar*) * (fst2ret->number_of_graphs+1),prv_alloc);
           if (fst2ret->graph_names==NULL) {fatal_error("Not enough memory in load_fst2\n");}
 
           if (fst2ret->graph_names != NULL)
@@ -914,18 +920,18 @@ Fst2* fst2ret;
                     i++ )
                 {
                   if (fst2org->graph_names[i] != NULL)
-                      fst2ret->graph_names[i] = u_strdup(fst2org->graph_names[i]);
+                      fst2ret->graph_names[i] = u_strdup(fst2org->graph_names[i],prv_alloc);
                   else
                       fst2ret->graph_names[i] = NULL;
                 }
           }
         }
 
-		if (fst2org->variables!=NULL)
-		{
-			fst2ret->variables = clone(fst2org->variables);
-			if (fst2ret->variables == NULL) {fatal_error("Not enough memory in load_fst2\n");}
-		}
+	    if (fst2org->variables!=NULL)
+	    {
+		    fst2ret->variables = clone(fst2org->variables,prv_alloc);
+		    if (fst2ret->variables == NULL) {fatal_error("Not enough memory in load_fst2\n");}
+	    }
 
     }
 	return fst2ret;

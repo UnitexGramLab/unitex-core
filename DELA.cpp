@@ -29,15 +29,15 @@
 /**
  * Allocates, initializes and returns a dela_entry.
  */
-struct dela_entry* new_dela_entry(unichar* inflected,unichar* lemma,unichar* code) {
-struct dela_entry* res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
+struct dela_entry* new_dela_entry(unichar* inflected,unichar* lemma,unichar* code,Abstract_allocator prv_alloc) {
+struct dela_entry* res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
 if (res==NULL) {
    fatal_alloc_error("new_dela_entry");
 }
-res->inflected=u_strdup(inflected);
-res->lemma=u_strdup(lemma);
+res->inflected=u_strdup(inflected,prv_alloc);
+res->lemma=u_strdup(lemma,prv_alloc);
 res->n_semantic_codes=1;
-res->semantic_codes[0]=u_strdup(code);
+res->semantic_codes[0]=u_strdup(code,prv_alloc);
 res->n_inflectional_codes=0;
 res->n_filters=0;
 return res;
@@ -49,22 +49,22 @@ return res;
  * WARNING: filters are not taken into account since they aren't
  *          used, except in the inflection module
  */
-struct dela_entry* clone_dela_entry(struct dela_entry* entry) {
+struct dela_entry* clone_dela_entry(struct dela_entry* entry,Abstract_allocator prv_alloc) {
 if (entry==NULL) return NULL;
 int i;
-struct dela_entry* res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
+struct dela_entry* res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
 if (res==NULL) {
    fatal_alloc_error("clone_dela_entry");
 }
-res->inflected=u_strdup(entry->inflected);
-res->lemma=u_strdup(entry->lemma);
+res->inflected=u_strdup(entry->inflected,prv_alloc);
+res->lemma=u_strdup(entry->lemma,prv_alloc);
 res->n_semantic_codes=entry->n_semantic_codes;
 for (i=0;i<res->n_semantic_codes;i++) {
-   res->semantic_codes[i]=u_strdup(entry->semantic_codes[i]);
+   res->semantic_codes[i]=u_strdup(entry->semantic_codes[i],prv_alloc);
 }
 res->n_inflectional_codes=entry->n_inflectional_codes;
 for (i=0;i<res->n_inflectional_codes;i++) {
-   res->inflectional_codes[i]=u_strdup(entry->inflectional_codes[i]);
+   res->inflectional_codes[i]=u_strdup(entry->inflectional_codes[i],prv_alloc);
 }
 res->n_filters=0;
 return res;
@@ -121,7 +121,7 @@ return 0;
  * if strict_unprotected is not 0, we don't accept unprotected comma and dot (for CheckDic)
  */
 struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,int keep_equal_signs,
-                                       int *verbose, int strict_unprotected) {
+                                       int *verbose, int strict_unprotected,Abstract_allocator prv_alloc) {
 struct dela_entry* res;
 unichar temp[DIC_LINE_SIZE];
 int i,val;
@@ -131,7 +131,7 @@ if (line==NULL) {
 	return NULL;
 }
 /* Initialization of the result structure */
-res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
+res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
 if (res==NULL) {
 	fatal_alloc_error("tokenize_DELAF_line");
 }
@@ -158,7 +158,7 @@ if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: unexpected end of line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 /* The inflected form cannot be empty */
@@ -166,7 +166,7 @@ if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: empty inflected form in line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_INFLECTED_FORM;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 if (val==P_FORBIDDEN_CHAR) {
@@ -174,10 +174,10 @@ if (val==P_FORBIDDEN_CHAR) {
    if (!verbose) {
       error("***Dictionary error: unprotected dot in inflected form in line\n_%S_\n",line);
    } else (*verbose)=P_UNPROTECTED_DOT;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
-res->inflected=u_strdup(temp);
+res->inflected=u_strdup(temp,prv_alloc);
 /*
  * We read the lemma part
  */
@@ -186,7 +186,7 @@ val=parse_string(line,&i,temp,P_DOT,strict_unprotected ? P_COMMA : P_EMPTY,keep_
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 if (val==P_FORBIDDEN_CHAR) {
@@ -194,7 +194,7 @@ if (val==P_FORBIDDEN_CHAR) {
    if (!verbose) {
       error("***Dictionary error: unprotected comma in lemma in line\n_%S_\n",line);
    } else (*verbose)=P_UNPROTECTED_COMMA;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 /* If we are at the end of line, it's an error */
@@ -202,17 +202,17 @@ if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: unexpected end of line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 if (temp[0]=='\0') {
 	/* If the lemma is empty like in "eat,.V:W", it is supposed to be
 	 * the same as the inflected form. */
-	res->lemma=u_strdup(res->inflected);
+	res->lemma=u_strdup(res->inflected,prv_alloc);
 }
 else {
 	/* Otherwise, we copy it */
-	res->lemma=u_strdup(temp);
+	res->lemma=u_strdup(temp,prv_alloc);
 }
 /*
  * We read the grammatical code
@@ -222,7 +222,7 @@ val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 /* The grammatical code cannot be empty */
@@ -230,10 +230,10 @@ if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: empty grammatical code in line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
-res->semantic_codes[0]=u_strdup(temp);
+res->semantic_codes[0]=u_strdup(temp,prv_alloc);
 /*
  * Now we read the other gramatical and semantic codes if any
  */
@@ -243,7 +243,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
    /* A grammatical or semantic code cannot be empty */
@@ -251,10 +251,10 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
       if (!verbose) {
          error("***Dictionary error: empty semantic code in line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
-   res->semantic_codes[res->n_semantic_codes]=u_strdup(temp);
+   res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
 	(res->n_semantic_codes)++;
 }
 /*
@@ -266,7 +266,7 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: backslash at end of line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
    /* An inflectional code cannot be empty */
@@ -274,17 +274,17 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
       if (!verbose) {
          error("***Dictionary error: empty inflectional code in line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
-   res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp);
+   res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
 	(res->n_inflectional_codes)++;
 }
 /* Finally we check if there is a comment */
 if (line[i]=='/' && !comments_allowed) {
    if (!verbose) error("***Dictionary error: unexpected comment at end of entry\n_%S_\n",line);
    else (*verbose)=P_UNEXPECTED_COMMENT;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 /* We check if a character appears several times in an inflectional code like :KKms */
@@ -292,7 +292,7 @@ for (int i=0;i<res->n_inflectional_codes;i++) {
    if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[i])) {
       if (!verbose) error("***Dictionary error: duplicate character in an inflectional code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
 }
@@ -304,7 +304,7 @@ for (int i=0;i<res->n_inflectional_codes;i++) {
                                                     res->inflectional_codes[j])) {
          if (!verbose) error("***Dictionary error: an inflectional code is a subset of another\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_INFLECTIONAL_CODE;
-         free_dela_entry(res);
+         free_dela_entry(res,prv_alloc);
          return NULL;
       }
    }
@@ -316,7 +316,7 @@ for (int i=0;i<res->n_semantic_codes;i++) {
       if (!u_strcmp(res->semantic_codes[i],res->semantic_codes[j])) {
          if (!verbose) error("***Dictionary error: duplicate semantic code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_SEMANTIC_CODE;
-         free_dela_entry(res);
+         free_dela_entry(res,prv_alloc);
          return NULL;
       }
    }
@@ -335,8 +335,8 @@ return res;
  * no error message and stores an error code in '*verbose'.
  */
 struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,int keep_equal_signs,
-                                       int *verbose) {
-return tokenize_DELAF_line(line,comments_allowed,keep_equal_signs,verbose,0);
+                                       int *verbose,Abstract_allocator prv_alloc) {
+return tokenize_DELAF_line(line,comments_allowed,keep_equal_signs,verbose,0,prv_alloc);
 }
 
 /**
@@ -345,8 +345,8 @@ return tokenize_DELAF_line(line,comments_allowed,keep_equal_signs,verbose,0);
  * comments are allowed at the end of the line or not. The function prints
  * error message to the standard output in case of error.
  */
-struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed) {
-return tokenize_DELAF_line(line,comments_allowed,0,NULL,0);
+struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,Abstract_allocator prv_alloc) {
+return tokenize_DELAF_line(line,comments_allowed,0,NULL,0,prv_alloc);
 }
 
 
@@ -355,8 +355,8 @@ return tokenize_DELAF_line(line,comments_allowed,0,NULL,0);
  * NULL if there is an error in the line. Comments are allowed at the end of the
  * line.
  */
-struct dela_entry* tokenize_DELAF_line(unichar* line) {
-return tokenize_DELAF_line(line,1,0,NULL,0);
+struct dela_entry* tokenize_DELAF_line(unichar* line,Abstract_allocator prv_alloc) {
+return tokenize_DELAF_line(line,1,0,NULL,0,prv_alloc);
 }
 
 
@@ -365,7 +365,7 @@ return tokenize_DELAF_line(line,1,0,NULL,0);
  * information in a dela_entry structure, or NULL if there is an error in
  * the tag.
  */
-struct dela_entry* tokenize_tag_token(unichar* tag) {
+struct dela_entry* tokenize_tag_token(unichar* tag,Abstract_allocator prv_alloc) {
 if (tag==NULL || tag[0]!='{') {
 	error("Internal error in tokenize_tag_token\n");
 	return NULL;
@@ -385,7 +385,7 @@ if (tag[i]!='}' || val!=P_OK) {
    return NULL;
 }
 /* And we tokenize it as a normal DELAF line */
-return tokenize_DELAF_line(temp,0);
+return tokenize_DELAF_line(temp,0,prv_alloc);
 }
 
 
@@ -395,7 +395,7 @@ return tokenize_DELAF_line(temp,0);
  * function must print messages if there is an error; otherwise, the function prints
  * no error message and stores an error code in '*verbose'.
  */
-struct dela_entry* tokenize_DELAS_line(unichar* line,int *verbose) {
+struct dela_entry* tokenize_DELAS_line(unichar* line,int *verbose,Abstract_allocator prv_alloc) {
 struct dela_entry* res;
 unichar temp[DIC_LINE_SIZE];
 int i,val;
@@ -405,7 +405,7 @@ if (line==NULL) {
    return NULL;
 }
 /* Initialization of the result structure */
-res=(struct dela_entry*)malloc(sizeof(struct dela_entry));
+res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
 if (res==NULL) {
    fatal_alloc_error("tokenize_DELAS_line");
 }
@@ -426,7 +426,7 @@ val=parse_string(line,&i,temp,P_COMMA,P_EMPTY,P_EMPTY);
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 /* If we are at the end of line, it's an error */
@@ -434,7 +434,7 @@ if (line[i]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_UNEXPECTED_END_OF_LINE;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 /* The lemma form cannot be empty */
@@ -442,10 +442,10 @@ if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_LEMMA;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
-res->lemma=u_strdup(temp);
+res->lemma=u_strdup(temp,prv_alloc);
 /*
  * We read the grammatical code
  */
@@ -454,7 +454,7 @@ val=parse_string(line,&i,temp,P_PLUS_COLON_SLASH_EXCLAMATION_OPENING_BRACKET,P_E
 if (val==P_BACKSLASH_AT_END) {
    if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
    else (*verbose)=P_BACKSLASH_AT_END;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 /* The grammatical code cannot be empty */
@@ -462,19 +462,19 @@ if (temp[0]=='\0') {
    if (!verbose) {
       error("***Dictionary error: incorrect line\n_%S_\n",line);
    } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
-res->semantic_codes[0]=u_strdup(temp);
+res->semantic_codes[0]=u_strdup(temp,prv_alloc);
 /*
  * Now we read the filters if any
  */
 if (line[i] == '!' ) {//Negative filter
-	res->filters[0]=u_strdup("n");
+	res->filters[0]=u_strdup("n",prv_alloc);
 	i=i+2; //we skip !
 }
 else if (line[i] == '[' ) {//Positive filter
-	res->filters[0]=u_strdup("p");
+	res->filters[0]=u_strdup("p",prv_alloc);
 	i++;
 }
 /*
@@ -486,7 +486,7 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
    /*  */
@@ -494,10 +494,10 @@ while (res->n_filters<MAX_FILTERS && line[i]==':' ) {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_FILTER;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
-   res->filters[res->n_filters]=u_strdup(temp);
+   res->filters[res->n_filters]=u_strdup(temp,prv_alloc);
    (res->n_filters)++;
 }
 /*
@@ -509,7 +509,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
    /* A grammatical or semantic code cannot be empty */
@@ -517,10 +517,10 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
-   res->semantic_codes[res->n_semantic_codes]=u_strdup(temp);
+   res->semantic_codes[res->n_semantic_codes]=u_strdup(temp,prv_alloc);
    (res->n_semantic_codes)++;
 }
 /*
@@ -532,7 +532,7 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
    if (val==P_BACKSLASH_AT_END) {
       if (!verbose) error("***Dictionary error: incorrect line\n_%S_\n",line);
       else (*verbose)=P_BACKSLASH_AT_END;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
    /* An inflectional code cannot be empty */
@@ -540,10 +540,10 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
-   res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp);
+   res->inflectional_codes[res->n_inflectional_codes]=u_strdup(temp,prv_alloc);
    (res->n_inflectional_codes)++;
 }
 /* We check if a character appears several times in an inflectional code like :KKms */
@@ -551,7 +551,7 @@ for (int i=0;i<res->n_inflectional_codes;i++) {
    if (is_duplicate_char_in_inflectional_code(res->inflectional_codes[i])) {
       if (!verbose) error("***Dictionary error: duplicate character in an inflectional code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_CHAR_IN_INFLECTIONAL_CODE;
-      free_dela_entry(res);
+      free_dela_entry(res,prv_alloc);
       return NULL;
    }
 }
@@ -563,7 +563,7 @@ for (int i=0;i<res->n_inflectional_codes;i++) {
                                                     res->inflectional_codes[j])) {
          if (!verbose) error("***Dictionary error: an inflectional code is a subset of another\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_INFLECTIONAL_CODE;
-         free_dela_entry(res);
+         free_dela_entry(res,prv_alloc);
          return NULL;
       }
    }
@@ -575,7 +575,7 @@ for (int i=0;i<res->n_semantic_codes;i++) {
       if (!u_strcmp(res->semantic_codes[i],res->semantic_codes[j])) {
          if (!verbose) error("***Dictionary error: duplicate semantic code\n_%S_\n",line);
          else (*verbose)=P_DUPLICATE_SEMANTIC_CODE;
-         free_dela_entry(res);
+         free_dela_entry(res,prv_alloc);
          return NULL;
       }
    }
@@ -591,12 +591,12 @@ return res;
  * In case of success, the function returns a dela_entry structure describing the
  * line; NULL otherwise.
  */
-struct dela_entry* is_strict_DELAS_line(unichar* line,Alphabet* alphabet) {
+struct dela_entry* is_strict_DELAS_line(unichar* line,Alphabet* alphabet,Abstract_allocator prv_alloc) {
 int verbose;
 struct dela_entry* res=tokenize_DELAS_line(line,&verbose);
 if (res==NULL) return NULL;
 if (!is_sequence_of_letters(res->lemma,alphabet)) {
-   free_dela_entry(res);
+   free_dela_entry(res,prv_alloc);
    return NULL;
 }
 return res;
@@ -769,13 +769,13 @@ return;
  * several single codes.
  * Example: .N,.V  =>  code 0=".N" ; code 1=".V"
  */
-struct list_ustring* tokenize_compressed_info(unichar* line) {
+struct list_ustring* tokenize_compressed_info(unichar* line,Abstract_allocator prv_alloc) {
 struct list_ustring* result=NULL;
 unichar tmp[DIC_LINE_SIZE];
 int pos=0;
 /* Note: all protected characters must stay protected */
 while (P_EOS!=parse_string(line,&pos,tmp,P_COMMA,P_EMPTY,NULL)) {
-   result=new_list_ustring(tmp,result);
+   result=new_list_ustring(tmp,result,prv_alloc);
    if (line[pos]==',') pos++;
 }
 return result;
@@ -902,21 +902,21 @@ result[i]='\0';
  * a structure containing the lines of the file tokenized into INF
  * codes.
  */
-struct INF_codes* load_INF_file(const char* name) {
+struct INF_codes* load_INF_file(const char* name,Abstract_allocator prv_alloc) {
 struct INF_codes* res;
 U_FILE* f=u_fopen_existing_unitex_text_format(name,U_READ);
 if (f==NULL) {
    error("Cannot open %s\n",name);
    return NULL;
 }
-res=(struct INF_codes*)malloc(sizeof(struct INF_codes));
+res=(struct INF_codes*)malloc_cb(sizeof(struct INF_codes),prv_alloc);
 if (res==NULL) {
    fatal_alloc_error("in load_INF_file");
 }
 if (1!=u_fscanf(f,"%d\n",&(res->N))) {
    fatal_error("Invalid INF file: %s\n",name);
 }
-res->codes=(struct list_ustring**)malloc(sizeof(struct list_ustring*)*(res->N));
+res->codes=(struct list_ustring**)malloc_cb(sizeof(struct list_ustring*)*(res->N),prv_alloc);
 if (res->codes==NULL) {
    fatal_alloc_error("in load_INF_file");
 }
@@ -925,7 +925,7 @@ int i=0;
 /* For each line of the .inf file, we tokenize it to get the single INF codes
  * it contains. */
 while (EOF!=u_fgets_limit2(s,DIC_LINE_SIZE*10,f)) {
-   res->codes[i++]=tokenize_compressed_info(s);
+   res->codes[i++]=tokenize_compressed_info(s,prv_alloc);
 }
 u_fclose(f);
 return res;
@@ -935,13 +935,13 @@ return res;
 /**
  * Frees all the memory allocated for the given structure.
  */
-void free_INF_codes(struct INF_codes* INF) {
+void free_INF_codes(struct INF_codes* INF,Abstract_allocator prv_alloc) {
 if (INF==NULL) {return;}
 for (int i=0;i<INF->N;i++) {
-   free_list_ustring(INF->codes[i]);
+   free_list_ustring(INF->codes[i],prv_alloc);
 }
-free(INF->codes);
-free(INF);
+free_cb(INF->codes,prv_alloc);
+free_cb(INF,prv_alloc);
 }
 
 
@@ -949,7 +949,7 @@ free(INF);
  * Loads a .bin file into an unsigned char array that is returned.
  * Returns NULL if an error occurs.
  */
-unsigned char* load_BIN_file(const char* name) {
+unsigned char* load_BIN_file(const char* name,Abstract_allocator prv_alloc) {
 U_FILE* f;
 /* We open the file as a binary one */
 f=u_fopen(BINARY,name,U_READ);
@@ -969,14 +969,14 @@ if ((int)fread(tab_size,sizeof(char),4,f)!=4) {
 int file_size=tab_size[3]+(256*tab_size[2])+(256*256*tab_size[1])+(256*256*256*tab_size[0]);
 /* We come back to the beginning and we load rawly the ABSTRACTFILE */
 fseek(f,0,SEEK_SET);
-tab=(unsigned char*)malloc(sizeof(unsigned char)*file_size);
+tab=(unsigned char*)malloc_cb(sizeof(unsigned char)*file_size,prv_alloc);
 if (tab==NULL) {
    fatal_alloc_error("load_BIN_file");
    return NULL;
 }
 if (file_size!=(int)fread(tab,sizeof(char),file_size,f)) {
    error("Error while reading %s\n",name);
-   free(tab);
+   free_cb(tab,prv_alloc);
    u_fclose(f);
    return NULL;
 }
@@ -988,8 +988,8 @@ return tab;
 /**
  * Frees all the memory allocated for the given structure.
  */
-void free_BIN_file(unsigned char* BIN) {
-	free(BIN);
+void free_BIN_file(unsigned char* BIN,Abstract_allocator prv_alloc) {
+	free_cb(BIN,prv_alloc);
 }
 
 
@@ -1102,15 +1102,16 @@ return;
 void check_DELA_line(unichar* DELA_line,U_FILE* out,int is_a_DELAF,int line_number,char* alphabet,
                      struct string_hash* semantic_codes,struct string_hash* inflectional_codes,
                      struct string_hash* simple_lemmas,struct string_hash* compound_lemmas,
-                     int *n_simple_entries,int *n_compound_entries,Alphabet* alph2,int strict_unprotected) {
+                     int *n_simple_entries,int *n_compound_entries,Alphabet* alph2,int strict_unprotected,
+                     Abstract_allocator prv_alloc) {
 int i;
 if (DELA_line==NULL) return;
 int error_code;
 struct dela_entry* entry;
 if (is_a_DELAF) {
-   entry=tokenize_DELAF_line(DELA_line,1,0,&error_code,strict_unprotected);
+   entry=tokenize_DELAF_line(DELA_line,1,0,&error_code,strict_unprotected,prv_alloc);
 } else {
-   entry=tokenize_DELAS_line(DELA_line,&error_code);
+   entry=tokenize_DELAS_line(DELA_line,&error_code,prv_alloc);
 }
 if (entry!=NULL) {
    /* If the line is correct, we just have to note its codes and the characters
@@ -1144,7 +1145,7 @@ if (entry!=NULL) {
    for (i=0;entry->lemma[i]!='\0';i++) {
       alphabet[entry->lemma[i]]=1;
    }
-   free_dela_entry(entry);
+   free_dela_entry(entry,prv_alloc);
    return;
 }
 /**
@@ -1332,20 +1333,20 @@ s[j]='\0';
 /**
  * Frees all the memory consumed by the given dela_entry structure.
  */
-void free_dela_entry(struct dela_entry* d) {
+void free_dela_entry(struct dela_entry* d,Abstract_allocator prv_alloc) {
 if (d==NULL) return;
-if (d->inflected!=NULL) free(d->inflected);
-if (d->lemma!=NULL) free(d->lemma);
+if (d->inflected!=NULL) free_cb(d->inflected,prv_alloc);
+if (d->lemma!=NULL) free_cb(d->lemma,prv_alloc);
 for (int i=0;i<d->n_semantic_codes;i++) {
-   free(d->semantic_codes[i]);
+   free_cb(d->semantic_codes[i],prv_alloc);
 }
 for (int i=0;i<d->n_inflectional_codes;i++) {
-   free(d->inflectional_codes[i]);
+   free_cb(d->inflectional_codes[i],prv_alloc);
 }
 for (int i=0;i<d->n_filters;i++) {
-   free(d->filters[i]);
+   free_cb(d->filters[i],prv_alloc);
 }
-free(d);
+free_cb(d,prv_alloc);
 }
 
 
@@ -1517,11 +1518,11 @@ return same_semantic_codes(a,b) && same_inflectional_codes(a,b);
  * Adds to dst all the inflectional codes of src, it not already present.
  * Both are supposed to be non NULL.
  */
-void merge_inflectional_codes(struct dela_entry* dst,struct dela_entry* src) {
+void merge_inflectional_codes(struct dela_entry* dst,struct dela_entry* src,Abstract_allocator prv_alloc) {
 for (int i=0;i<src->n_inflectional_codes;i++) {
    if (!dic_entry_contain_inflectional_code(dst,src->inflectional_codes[i])) {
       /* If necessary, we add the code */
-      dst->inflectional_codes[dst->n_inflectional_codes]=u_strdup(src->inflectional_codes[i]);
+      dst->inflectional_codes[dst->n_inflectional_codes]=u_strdup(src->inflectional_codes[i],prv_alloc);
       dst->n_inflectional_codes++;
    }
 }

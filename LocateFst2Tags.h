@@ -28,13 +28,14 @@
 #include "String_hash.h"
 #include "LocatePattern.h"
 #include "LemmaTree.h"
-
+#include "AbstractAllocator.h"
 
 void process_tags(int*,
                   struct string_hash*,
                   int*,int*,
-                  int*,struct locate_parameters*);
+                  int*,struct locate_parameters*,
+                  Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
-void optimize_pattern_tags(Alphabet*,struct lemma_node*,struct locate_parameters*);
+void optimize_pattern_tags(Alphabet*,struct lemma_node*,struct locate_parameters*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 #endif

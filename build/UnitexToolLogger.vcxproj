@@ -299,6 +299,7 @@
     <ClInclude Include="..\UserCancellingPlugCallback.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\AbstractAllocator.cpp" />
     <ClCompile Include="..\AbstractDelaLoad.cpp" />
     <ClCompile Include="..\AbstractFst2Load.cpp" />
     <ClCompile Include="..\ActivityLogger.cpp" />

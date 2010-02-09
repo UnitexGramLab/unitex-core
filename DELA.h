@@ -26,6 +26,7 @@
 #include "String_hash.h"
 #include "List_ustring.h"
 #include "Alphabet.h"
+#include "AbstractAllocator.h"
 
 /* Maximum size of a DELA line */
 #define DIC_LINE_SIZE 4096
@@ -108,32 +109,32 @@ struct INF_codes {
 };
 
 
-struct dela_entry* new_dela_entry(unichar*,unichar*,unichar*);
-struct dela_entry* clone_dela_entry(struct dela_entry*);
+struct dela_entry* new_dela_entry(unichar*,unichar*,unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* clone_dela_entry(struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int equal(struct dela_entry*,struct dela_entry*);
-struct dela_entry* tokenize_DELAF_line(unichar*);
-struct dela_entry* tokenize_DELAF_line(unichar*,int);
-struct dela_entry* tokenize_DELAF_line(unichar*,int,int,int*);
-struct dela_entry* tokenize_tag_token(unichar*);
-struct dela_entry* tokenize_DELAS_line(unichar*,int*);
-struct dela_entry* is_strict_DELAS_line(unichar*,Alphabet*);
+struct dela_entry* tokenize_DELAF_line(unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* tokenize_DELAF_line(unichar*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* tokenize_DELAF_line(unichar*,int,int,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* tokenize_tag_token(unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* tokenize_DELAS_line(unichar*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* is_strict_DELAS_line(unichar*,Alphabet*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void get_compressed_line(struct dela_entry*,unichar*);
-struct list_ustring* tokenize_compressed_info(unichar*);
+struct list_ustring* tokenize_compressed_info(unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void uncompress_entry(unichar*,unichar*,unichar*);
-struct INF_codes* load_INF_file(const char*);
-void free_INF_codes(struct INF_codes*);
-unsigned char* load_BIN_file(const char*);
-void free_BIN_file(unsigned char*);
+struct INF_codes* load_INF_file(const char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_INF_codes(struct INF_codes*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+unsigned char* load_BIN_file(const char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_BIN_file(unsigned char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void rebuild_dictionary(unsigned char*,struct INF_codes*,U_FILE*);
 void extract_semantic_codes(char*,struct string_hash*);
 void tokenize_DELA_line_into_3_parts(unichar*,unichar*,unichar*,unichar*);
 void check_DELA_line(unichar*,U_FILE*,int,int,char*,struct string_hash*,struct string_hash*,
-                     struct string_hash*,struct string_hash*,int*,int*,Alphabet*,int);
+                     struct string_hash*,struct string_hash*,int*,int*,Alphabet*,int,Abstract_allocator prv_alloc=NULL);
 int warning_on_code(unichar*,unichar*,int);
 int contains_unprotected_equal_sign(unichar*);
 void replace_unprotected_equal_sign(unichar*,unichar);
 void unprotect_equal_signs(unichar*);
-void free_dela_entry(struct dela_entry*);
+void free_dela_entry(struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int check_tag_token(unichar*);
 int dic_entry_contain_gram_code(struct dela_entry*,unichar*);
 int dic_entry_contain_inflectional_code(struct dela_entry*,unichar*);
@@ -142,7 +143,7 @@ void build_tag(struct dela_entry*,unichar*,unichar*);
 int same_semantic_codes(struct dela_entry*,struct dela_entry*);
 int same_inflectional_codes(struct dela_entry*,struct dela_entry*);
 int same_codes(struct dela_entry*,struct dela_entry*);
-void merge_inflectional_codes(struct dela_entry*,struct dela_entry*);
+void merge_inflectional_codes(struct dela_entry*,struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int is_a_valid_tag_sequence(unichar*);
 int one_inflectional_codes_contains_the_other(unichar*,unichar*);
 

@@ -32,7 +32,7 @@
 
 
 void load_dic_for_locate(char*,int,Alphabet*,int,int,int,struct lemma_node*,struct locate_parameters*);
-void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*);
+void check_patterns_for_tag_tokens(Alphabet*,int,struct lemma_node*,struct locate_parameters*,Abstract_allocator);
 void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p);
 void load_morphological_dictionaries(char* morpho_dic_list,struct locate_parameters* p,char* local_morpho_dic);
 
@@ -131,7 +131,202 @@ for (int i=0;i<tokens->size;i++) {
 return res;
 }
 
+/*************************************************************************************/
 
+#ifndef VERBOSE_PERFORMANCE
+#define disp_time(msg)
+#else
+#ifdef WIN32
+#include <windows.h>
+void disp_time(const char* strptr)
+{
+	
+	DWORD tp_end;
+	static DWORD tp;
+    tp_end=GetTickCount();
+	
+	
+	
+    int timeBld = (int)(tp_end-tp) ;
+	tp=tp_end;
+	
+	char sz[155];
+	sprintf(sz,"marker %s : %u msec - %lu\t",strptr,timeBld,(long)(tp_end-tp)) ;
+	puts(sz);
+}
+#else
+
+#include <sys/time.h>
+void disp_time(const char* strptr)
+{
+	
+	struct timeval tp_end;
+	static struct timeval tp;
+	gettimeofday(&tp_end,NULL);
+	
+	
+    int timeBld = (int)(((tp_end.tv_sec*1000) + (tp_end.tv_usec/1000)) -
+						((tp.tv_sec*1000) + (tp.tv_usec/1000))) ;
+	tp=tp_end;
+	
+	char sz[155];
+	sprintf(sz,"marker %s : %u msec - %lu\n",strptr,timeBld,(long)(((tp_end.tv_sec*1000) + (tp_end.tv_usec/1000)))) ;
+	puts(sz);
+}
+#endif
+#endif
+
+/*
+struct my_allocator_pool {
+    void*buf;
+    size_t size_buf;
+    size_t pos_buf;
+} ;
+
+void* my_alloc_cb(size_t size,void* pb)
+{ 
+    struct my_allocator_pool* pab= (struct my_allocator_pool*)pb;
+    if (pab -> pos_buf + size >= pab->size_buf)
+        fatal_error("full");
+    void*ret = (void*)(((char*)pab->buf)+ (pab->pos_buf));
+    pab->pos_buf += (((size + 7)/8)*8);
+    return ret;
+}
+
+
+struct my_allocator_pool* build_allocator_pool()
+{
+    struct my_allocator_pool* ret=(struct my_allocator_pool*)malloc(sizeof(struct my_allocator_pool));
+    ret->size_buf=1024*1024*2; // 4 mo
+    ret->pos_buf=0;
+    ret->buf = malloc(ret->size_buf);
+    return ret;
+}
+
+void delete_allocator_pool(struct my_allocator_pool*mab)
+{
+    free(mab->buf);
+    free(mab);
+}
+*/
+
+/*
+struct my_allocator_pool_atom {
+    void*buf;
+    struct my_allocator_pool_atom* previous;
+    size_t size_buf;
+    size_t pos_buf;
+} ;
+
+struct my_allocator_pool {
+    struct my_allocator_pool_atom *last;
+} ;
+
+
+//#define POOL_ATOM_SIZE (1024*64)
+#define POOL_ATOM_SIZE (1024*1024*1)
+#define POOL_ATOM_ALIGN (sizeof(void*))
+
+struct my_allocator_pool_atom* build_allocator_pool_atom(size_t size_buf)
+{
+    struct my_allocator_pool_atom* ret= (struct my_allocator_pool_atom*)malloc(sizeof(struct my_allocator_pool_atom));
+    if (ret == NULL) {
+        fatal_alloc_error("build_allocator_pool_atom");
+    }
+    ret -> pos_buf = 0;
+    ret -> previous = NULL;
+    ret -> size_buf = size_buf;
+    ret -> buf = malloc(ret -> size_buf);
+    if (ret->buf == NULL) {
+        fatal_alloc_error("build_allocator_pool_atom");
+    }
+    
+    return ret;
+}
+
+struct my_allocator_pool* build_allocator_pool()
+{
+    struct my_allocator_pool* ret= (struct my_allocator_pool*)malloc(sizeof(struct my_allocator_pool));
+    if (ret == NULL) {
+        fatal_alloc_error("build_allocator_pool");
+    }
+    ret -> last = build_allocator_pool_atom(POOL_ATOM_SIZE);
+
+    return ret;
+}
+
+
+void delete_allocator_pool(struct my_allocator_pool* pool)
+{
+    struct my_allocator_pool_atom* browse = pool -> last;
+    while (browse != NULL)
+    {
+        struct my_allocator_pool_atom* tmp = browse -> previous;
+        free(browse->buf);
+        free(browse);
+        browse = tmp;
+    }
+    free(pool);
+}
+
+
+size_t get_allocator_pool_size(struct my_allocator_pool* pool)
+{
+    if (pool == NULL)
+        return 0;
+    size_t total=0;
+    struct my_allocator_pool_atom* browse = pool -> last;
+    while (browse != NULL)
+    {
+        total += browse->pos_buf;
+        browse = browse->previous;
+    }
+    return total;
+}
+
+#define alloc_around(v,round) ((((v)+((round)-1)) / (round)) * (round))
+
+
+void* my_alloc_cb(size_t size,void* pb)
+{ 
+    size_t rounded_size = alloc_around(size,POOL_ATOM_ALIGN);
+    struct my_allocator_pool* ap = (struct my_allocator_pool*)pb;
+
+    if (((ap->last->pos_buf) + rounded_size) > (ap->last->size_buf)) {
+        struct my_allocator_pool_atom* new_atom = 
+            build_allocator_pool_atom((rounded_size<POOL_ATOM_SIZE) ? POOL_ATOM_SIZE : rounded_size);
+        if (new_atom == NULL) {
+            fatal_alloc_error("my_alloc_cb");    
+        }
+        new_atom->previous = ap->last;
+        ap->last = new_atom;
+    }
+    
+    struct my_allocator_pool_atom* work_atom = ap->last;
+
+    void*ret = (void*)(((char*)work_atom->buf)+ (work_atom->pos_buf));
+    work_atom->pos_buf += rounded_size;
+    return ret;
+}
+
+
+void my_free_cb(void*,void*)
+{
+}
+
+
+void* my_realloc_cb(void* oldptr,size_t oldsize,size_t newsize,void*pb)
+{
+    void*ret;
+    if (oldsize >= newsize)
+        return oldptr;
+    ret = my_alloc_cb(newsize,pb);
+    if ((oldptr!=NULL) && (ret != NULL)) {
+        memcpy(ret,oldptr,oldsize);
+    }
+    return ret;
+}
+*/
 int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,char* err,
                    char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
                    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
@@ -144,6 +339,7 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
 U_FILE* text_file;
 U_FILE* out;
 U_FILE* info;
+																  disp_time("init");
 text_file=u_fopen(BINARY,text,U_READ);
 if (text_file==NULL) {
    error("Cannot load %s\n",text);
@@ -174,6 +370,7 @@ strcat(concord,"concord.ind");
 strcpy(concord_info,dynamicDir);
 strcat(concord_info,"concord.n");
 
+	disp_time("zero");
 char morpho_bin[FILENAME_MAX];
 strcpy(morpho_bin,dynamicDir);
 strcat(morpho_bin,"morpho.bin");
@@ -212,25 +409,62 @@ if (is_cancelling_requested() != 0) {
 	   return 0;
 	}
 
-
+	disp_time("one");
+	
 u_printf("Loading fst2...\n");
-p->fst2=load_abstract_fst2(fst2_name,1,NULL);
-
-if (p->fst2==NULL) {
+	disp_time("before load fst2");
+struct FST2_free_info fst2load_free;
+Fst2* fst2load=load_abstract_fst2(fst2_name,1,&fst2load_free);
+    disp_time("after load fst2");
+if (fst2load==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    return 0;
 }
 
+
+/*
+private_allocator prv;
+prv.fnc_alloc = my_alloc_cb;
+prv.fnc_free = my_free_cb;
+prv.fnc_realloc = my_realloc_cb;
+prv.private_allocator_ptr = (void*)build_allocator_pool();
+*/
+    disp_time("before clone fst2");
+Abstract_allocator ptr_prv=create_abstract_allocator("locate_pattern",0);
+//private_allocator* ptr_prv=&prv;
+p->fst2=new_Fst2_clone(fst2load,ptr_prv);
+	disp_time("after clone fst2 ++");
+
+
+	disp_time("before free fst2 real");
+free_abstract_Fst2(fst2load,&fst2load_free);
+	disp_time("after free fst2 real");
+
+/*
+int kk; for (kk=0;kk<40;kk++)
+{
+    p->fst2=new_Fst2_clone(fst2load,ptr_prv,1*0);
+
+    if (kk<39)
+    {
+    delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
+    prv.private_allocator_ptr = (void*)build_allocator_pool();
+    }
+}*/
+
+
 if (is_cancelling_requested() != 0) {
    error("User cancel request..\n");
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   free_abstract_Fst2(p->fst2,NULL);
+   //free_abstract_Fst2(p->fst2,NULL);
+   //delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
+   close_abstract_allocator(ptr_prv);
    return 0;
 }
-
+	
 p->tags=p->fst2->tags;
 #ifdef TRE_WCHAR
 p->filters=new_FilterSet(p->fst2,p->alphabet);
@@ -238,18 +472,23 @@ if (p->filters==NULL) {
    error("Cannot compile filter(s)\n");
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   free_abstract_Fst2(p->fst2,NULL);
+   //free_abstract_Fst2(p->fst2,NULL);
+   //delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
+   close_abstract_allocator(ptr_prv);
    return 0;
 }
 #endif
 u_printf("Loading token list...\n");
 int n_text_tokens=0;
+	disp_time("three");
 p->tokens=load_text_tokens_hash(tokens,mask_encoding_compatibility_input,&(p->SENTENCE),&(p->STOP),&n_text_tokens);
 if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   free_abstract_Fst2(p->fst2,NULL);
+   //free_abstract_Fst2(p->fst2,NULL);
+   //delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
+   close_abstract_allocator(ptr_prv);
    return 0;
 }
 
@@ -260,15 +499,23 @@ if (p->filter_match_index==NULL) {
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    free_string_hash(p->tokens);
-   free_abstract_Fst2(p->fst2,NULL);
+   //free_abstract_Fst2(p->fst2,NULL);
+   //delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
+   close_abstract_allocator(ptr_prv);
    return 0;
 }
 #endif
 
-extract_semantic_codes_from_tokens(p->tokens,semantic_codes);
+
+
+
+extract_semantic_codes_from_tokens(p->tokens,semantic_codes,ptr_prv);
 u_printf("Loading morphological dictionaries...\n");
+	  disp_time("four");
 load_morphological_dictionaries(morpho_dic_list,p,morpho_bin);
-extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes);
+	  disp_time("five");
+extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes,ptr_prv);
+	  disp_time("six");
 p->token_control=(unsigned char*)malloc(n_text_tokens*sizeof(unsigned char));
 if (p->token_control==NULL) {
    fatal_alloc_error("locate_pattern");
@@ -283,46 +530,72 @@ for (int i=0;i<n_text_tokens;i++) {
 }
 compute_token_controls(p->alphabet,err,p);
 int number_of_patterns,is_DIC,is_CDIC,is_SDIC;
-p->pattern_tree_root=new_pattern_node();
+p->pattern_tree_root=new_pattern_node(ptr_prv);
 u_printf("Computing fst2 tags...\n");
-process_tags(&number_of_patterns,semantic_codes,&is_DIC,&is_CDIC,&is_SDIC,p);
+	disp_time("six half");
+process_tags(&number_of_patterns,semantic_codes,&is_DIC,&is_CDIC,&is_SDIC,p,ptr_prv);
 p->current_compound_pattern=number_of_patterns;
 p->DLC_tree=new_DLC_tree(p->tokens->size);
 struct lemma_node* root=new_lemma_node();
+	  disp_time("seven");
 u_printf("Loading dlf...\n");
 load_dic_for_locate(dlf,mask_encoding_compatibility_input,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 u_printf("Loading dlc...\n");
 load_dic_for_locate(dlc,mask_encoding_compatibility_input,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 /* We look if tag tokens like "{today,.ADV}" verify some patterns */
-check_patterns_for_tag_tokens(p->alphabet,number_of_patterns,root,p);
+check_patterns_for_tag_tokens(p->alphabet,number_of_patterns,root,p,ptr_prv);
+	disp_time("eight");
 u_printf("Optimizing fst2 pattern tags...\n");
-optimize_pattern_tags(p->alphabet,root,p);
+optimize_pattern_tags(p->alphabet,root,p,ptr_prv);
 u_printf("Optimizing compound word dictionary...\n");
 optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
 p->variables=new_Variables(p->fst2->variables);
+
 u_printf("Optimizing fst2...\n");
-p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2);
+
+    disp_time("before optim fst2");
+p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2,ptr_prv);
+	disp_time("after optim fst2");
+
 if (is_korean) {
 	p->korean=new Korean(p->alphabet);
 	p->jamo_tags=create_jamo_tags(p->korean,p->tokens);
 }
 
+disp_time("av work");
 u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
-
+disp_time("ap work");
 free_buffer(p->token_buffer);
 free_Variables(p->variables);
 u_fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
-free_optimized_states(p->optimized_states,p->fst2->number_of_states);
+	disp_time("before free state");
+//    malloc(2);
+free_optimized_states(p->optimized_states,p->fst2->number_of_states,ptr_prv);
+	disp_time("after free state");
 free_stack_unichar(p->stack);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
  */
-free_pattern_node(p->pattern_tree_root);
-free_abstract_Fst2(p->fst2,NULL);
+free_pattern_node(p->pattern_tree_root,ptr_prv);
+
+	disp_time("before free fst2");
+//free_abstract_Fst2(p->fst2,NULL);
+	disp_time("after free fst2 (empty)");
+
+    {/*
+        size_t size_pool=get_allocator_pool_size((struct my_allocator_pool*)prv.private_allocator_ptr);
+        char sz[80];
+        sprintf(sz,"%08lu\t",(long)size_pool);
+        puts(sz);*/
+    }
+ //delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
+ //prv.private_allocator_ptr=NULL;
+ close_abstract_allocator(ptr_prv);
+ ptr_prv=NULL;
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);
@@ -345,6 +618,7 @@ for (int i=0;i<n_text_tokens;i++) {
    free_bit_array(p->matching_patterns[i]);
 }
 free(p->matching_patterns);
+	disp_time("before free filter");
 #ifdef TRE_WCHAR
 free_FilterSet(p->filters);
 free_FilterMatchIndex(p->filter_match_index);
@@ -358,10 +632,13 @@ free(p->morpho_dic_inf_free);
 free(p->morpho_dic_bin);
 free(p->morpho_dic_bin_free);
 #if (defined(UNITEX_LIBRARY) || defined(UNITEX_RELEASE_MEMORY_AT_EXIT))
+	
+	disp_time("before DLCtree free");
 free_DLC_tree(p->DLC_tree);
 #endif
 free_locate_parameters(p);
 u_printf("Done.\n");
+	disp_time("done");
 return 1;
 }
 
@@ -683,14 +960,14 @@ u_fclose(f);
  * This list is later used during Locate preprocessings.
  */
 void check_patterns_for_tag_tokens(Alphabet* alphabet,int number_of_patterns,
-                           struct lemma_node* root,struct locate_parameters* parameters) {
+                           struct lemma_node* root,struct locate_parameters* parameters,Abstract_allocator prv_alloc) {
 struct string_hash* tokens=parameters->tokens;
 for (int i=0;i<tokens->size;i++) {
    if (tokens->value[i][0]=='{' && u_strcmp(tokens->value[i],"{S}")  && u_strcmp(tokens->value[i],"{STOP}")) {
       /* If the token is tag like "{today,.ADV}", we add its number to the tag token list */
-      parameters->tag_token_list=head_insert(i,parameters->tag_token_list);
+      parameters->tag_token_list=head_insert(i,parameters->tag_token_list,prv_alloc);
       /* And we look for the patterns that can match it */
-      struct dela_entry* entry=tokenize_tag_token(tokens->value[i]);
+      struct dela_entry* entry=tokenize_tag_token(tokens->value[i],prv_alloc);
       if (entry==NULL) {
          /* This should never happen */
          fatal_error("Invalid tag token in function check_patterns_for_tag_tokens\n");

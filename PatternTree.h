@@ -27,7 +27,7 @@
 #include "Pattern.h"
 #include "DELA.h"
 #include "List_pointer.h"
-
+#include "AbstractAllocator.h"
 
 /**
  * This structure defines a list of constraints that is associated to a given
@@ -71,10 +71,10 @@ struct pattern_node_transition {
 
 
 
-struct pattern_node* new_pattern_node();
-void free_pattern_node(struct pattern_node*);
-int add_pattern(int*,struct pattern*,struct pattern_node*);                              
-struct list_pointer* get_matching_patterns(struct dela_entry*,struct pattern_node*);
+struct pattern_node* new_pattern_node(Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_pattern_node(struct pattern_node*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+int add_pattern(int*,struct pattern*,struct pattern_node*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct list_pointer* get_matching_patterns(struct dela_entry*,struct pattern_node*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 
 #endif

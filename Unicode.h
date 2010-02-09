@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2009 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,8 @@
 #include "Af_stdio.h"
 
 #include "FileEncoding.h"
+
+#include "AbstractAllocator.h"
 
 /* This line is used to prevent people from using printf and scanf. We do
  * that because we want to parametrize I/O operations with encodings. */
@@ -248,6 +250,11 @@ int u_starts_with(const unichar*,const unichar*);
 int u_starts_with(const unichar*,const char*);
 int u_ends_with(const unichar*,const unichar*);
 int u_ends_with(const unichar*,const char*);
+
+
+unichar* u_strdup(const unichar* str,Abstract_allocator prv_alloc);
+unichar* u_strdup(const char* str,Abstract_allocator prv_alloc);
+unichar* u_strdup(const unichar* str,int n,Abstract_allocator prv_alloc);
 
 void u_to_char(char*,unichar*);
 void u_chomp_new_line(unichar*);

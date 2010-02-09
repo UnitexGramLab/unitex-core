@@ -27,8 +27,8 @@
 /**
  * Allocates, initializes and returns a pointer list cell.
  */
-struct list_pointer* new_list_pointer(void* pointer,struct list_pointer* next) {
-struct list_pointer* p=(struct list_pointer*)malloc(sizeof(struct list_pointer));
+struct list_pointer* new_list_pointer(void* pointer,struct list_pointer* next,Abstract_allocator prv_alloc) {
+struct list_pointer* p=(struct list_pointer*)malloc_cb(sizeof(struct list_pointer),prv_alloc);
 if (p==NULL) {
    fatal_alloc_error("new_list_pointer");
 }
@@ -42,13 +42,13 @@ return p;
  * Frees the whole memory associated to the given list. We free the pointers
  * using the given 'free_pointer' function, if not NULL.
  */
-void free_list_pointer(struct list_pointer* list,void (*free_pointer)(void*)) {
+void free_list_pointer(struct list_pointer* list,void (*free_pointer)(void*),Abstract_allocator prv_alloc) {
 struct list_pointer* tmp;
 while (list!=NULL) {
    tmp=list;
    list=list->next;
    if (free_pointer!=NULL) free_pointer(tmp->pointer);
-   free(tmp);
+   free_cb(tmp,prv_alloc);
 }
 }
 
@@ -57,6 +57,6 @@ while (list!=NULL) {
  * Frees the memory associated to the given list, but not the pointers it
  * contains.
  */
-void free_list_pointer(struct list_pointer* list) {
-free_list_pointer(list,NULL);
+void free_list_pointer(struct list_pointer* list,Abstract_allocator prv_alloc) {
+free_list_pointer(list,NULL,prv_alloc);
 }

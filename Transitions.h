@@ -24,6 +24,7 @@
 
 #include "Symbol.h"
 #include "Symbol_op.h"
+#include "AbstractAllocator.h"
 
 /**
  * This library provides functions and types for manipulating 
@@ -68,23 +69,22 @@ struct transition_ {
 typedef struct transition_ Transition;
 
 
-Transition* new_Transition(int,int,Transition*);
-Transition* new_Transition(int,int);
-Transition* new_Transition(symbol_t*,int,Transition*);
-Transition* new_Transition_no_copy(symbol_t*,int,Transition*);
-Transition* new_Transition(symbol_t*,int);
-void free_Transition_list(Transition*,void(*)(symbol_t*));
-void free_Transition_list(Transition*);
-void free_Transition(Transition*,void(*free_elag_symbol)(symbol_t*)=NULL);
-void add_transition_if_not_present(Transition**,int,int);
-void add_transition_if_not_present(Transition**,symbol_t*,int);
-Transition* clone_transition(Transition*,symbol_t*(*)(const symbol_t*));
-Transition* clone_transition_list(Transition*,int*,symbol_t*(*)(const symbol_t*));
+Transition* new_Transition(int,int,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+Transition* new_Transition(int,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+Transition* new_Transition(symbol_t*,int,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+Transition* new_Transition_no_copy(symbol_t*,int,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+Transition* new_Transition(symbol_t*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_Transition_list(Transition*,void(*)(symbol_t*),Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_Transition_list(Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_Transition(Transition*,void(*free_elag_symbol)(symbol_t*)=NULL,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void add_transition_if_not_present(Transition**,int,int,Abstract_allocator prv_alloc);
+void add_transition_if_not_present(Transition**,symbol_t*,int,Abstract_allocator prv_alloc);
+Transition* clone_transition(Transition*,symbol_t*(*)(const symbol_t*),Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+Transition* clone_transition_list(Transition*,int*,symbol_t*(*)(const symbol_t*),Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void concat(Transition**,Transition*);
 void renumber_transitions(Transition*,int,int);
 Transition* shift_destination_states(Transition*,int);
-void add_transitions_int(Transition*,Transition**);
-void add_transitions_ptr(Transition*,Transition**);
+void add_transitions_int(Transition*,Transition**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void add_transitions_ptr(Transition*,Transition**,Abstract_allocator prv_alloc);
 
 #endif
-

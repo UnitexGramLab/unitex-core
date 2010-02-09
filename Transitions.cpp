@@ -27,9 +27,9 @@
 /**
  * Creates, initializes and returns a transition tagged by an integer.
  */
-Transition* new_Transition(int tag_number,int state_number,Transition* next) {
+Transition* new_Transition(int tag_number,int state_number,Transition* next,Abstract_allocator prv_alloc) {
 Transition* transition;
-transition=(Transition*)malloc(sizeof(Transition));
+transition=(Transition*)malloc_cb(sizeof(Transition),prv_alloc);
 if (transition==NULL) {
   fatal_alloc_error("new_Transition");
 }
@@ -43,17 +43,17 @@ return transition;
 /**
  * Creates, initializes and returns a transition tagged by an integer.
  */
-Transition* new_Transition(int tag_number,int state_number) {
-return new_Transition(tag_number,state_number,NULL);
+Transition* new_Transition(int tag_number,int state_number,Abstract_allocator prv_alloc) {
+return new_Transition(tag_number,state_number,NULL,prv_alloc);
 }
 
 
 /**
  * Creates, initializes and returns a transition tagged by a pointer.
  */
-Transition* new_Transition(symbol_t* label,int state_number,Transition* next) {
+Transition* new_Transition(symbol_t* label,int state_number,Transition* next,Abstract_allocator prv_alloc) {
 Transition* transition;
-transition=(Transition*)malloc(sizeof(Transition));
+transition=(Transition*)malloc_cb(sizeof(Transition),prv_alloc);
 if (transition==NULL) {
   fatal_alloc_error("new_Transition");
 }
@@ -67,9 +67,9 @@ return transition;
 /**
  * The same than above, except that it does not duplicate the given symbol.
  */
-Transition* new_Transition_no_copy(symbol_t* label,int state_number,Transition* next) {
+Transition* new_Transition_no_copy(symbol_t* label,int state_number,Transition* next,Abstract_allocator prv_alloc) {
 Transition* transition;
-transition=(Transition*)malloc(sizeof(Transition));
+transition=(Transition*)malloc_cb(sizeof(Transition),prv_alloc);
 if (transition==NULL) {
   fatal_alloc_error("new_Transition");
 }
@@ -83,15 +83,15 @@ return transition;
 /**
  * Creates, initializes and returns a transition tagged by a pointer.
  */
-Transition* new_Transition(symbol_t* label,int state_number) {
-return new_Transition(label,state_number,NULL);
+Transition* new_Transition(symbol_t* label,int state_number,Abstract_allocator prv_alloc) {
+return new_Transition(label,state_number,NULL,prv_alloc);
 }
 
 
 /**
  * Frees a transition list.
- */
-void free_Transition_list(Transition* t,void(*free_elag_tag)(symbol_t*)) {
+ */ // WARNING : Callback "free"
+void free_Transition_list(Transition* t,void(*free_elag_tag)(symbol_t*),Abstract_allocator prv_alloc) {
 Transition* tmp;
 while (t!=NULL) {
    tmp=t;
@@ -99,7 +99,7 @@ while (t!=NULL) {
    if (free_elag_tag!=NULL && tmp->label!=NULL) {
       free_elag_tag(tmp->label);
    }
-   free(tmp);
+   free_cb(tmp,prv_alloc);
 }
 }
 
@@ -107,20 +107,20 @@ while (t!=NULL) {
 /**
  * Frees a transition list.
  */
-void free_Transition_list(Transition* t) {
-free_Transition_list(t,NULL);
+void free_Transition_list(Transition* t,Abstract_allocator prv_alloc) {
+free_Transition_list(t,NULL,prv_alloc);
 }
 
 
 /**
  * Frees a single transition.
- */
-void free_Transition(Transition* t,void(*free_elag_tag)(symbol_t*)) {
+ */ // WARNING : Callback "free"
+void free_Transition(Transition* t,void(*free_elag_tag)(symbol_t*),Abstract_allocator prv_alloc) {
 if (t==NULL) return;
 if (free_elag_tag!=NULL && t->label!=NULL) {
    free_elag_tag(t->label);
 }
-free(t);
+free_cb(t,prv_alloc);
 }
 
 
@@ -128,7 +128,7 @@ free(t);
  * This function adds a transition to the given transition list, if not
  * already present.
  */
-void add_transition_if_not_present(Transition** list,int tag_number,int state_number) {
+void add_transition_if_not_present(Transition** list,int tag_number,int state_number,Abstract_allocator prv_alloc) {
 Transition* ptr;
 ptr=*list;
 /* We look for a transition with the same properties */
@@ -137,7 +137,7 @@ while (ptr!=NULL && !(ptr->state_number==state_number && ptr->tag_number==tag_nu
 }
 if (ptr==NULL) {
    /* If we have not found one, we add a new transition at the head of the list */
-   *list=new_Transition(tag_number,state_number,*list);
+   *list=new_Transition(tag_number,state_number,*list,prv_alloc);
 }
 }
 
@@ -146,7 +146,7 @@ if (ptr==NULL) {
  * This function adds a transition to the given transition list, if not
  * already present.
  */
-void add_transition_if_not_present(Transition** list,symbol_t* label,int state_number) {
+void add_transition_if_not_present(Transition** list,symbol_t* label,int state_number,Abstract_allocator prv_alloc) {
 Transition* ptr;
 ptr=*list;
 /* We look for a transition with the same properties */
@@ -155,7 +155,7 @@ while (ptr!=NULL && !(ptr->state_number==state_number && ptr->label==label)) {
 }
 if (ptr==NULL) {
    /* If we have not found one, we add a new transition at the head of the list */
-   *list=new_Transition(label,state_number,*list);
+   *list=new_Transition(label,state_number,*list,prv_alloc);
 }
 }
 
@@ -164,10 +164,10 @@ if (ptr==NULL) {
  * Returns a clone of the given transition, whatever it's tagged by
  * an integer or a pointer. If 'clone_tag_label' is not NULL,
  * this function is used to duplicate t's pointer label.
- */
-Transition* clone_transition(Transition* t,symbol_t*(*clone_elag_symbol)(const symbol_t*)) {
+ */ // WARNING : Callback "clone"
+Transition* clone_transition(Transition* t,symbol_t*(*clone_elag_symbol)(const symbol_t*),Abstract_allocator prv_alloc) {
 Transition* transition;
-transition=(Transition*)malloc(sizeof(Transition));
+transition=(Transition*)malloc_cb(sizeof(Transition),prv_alloc);
 if (transition==NULL) {
   fatal_alloc_error("clone_transition");
 }
@@ -187,10 +187,10 @@ return transition;
  * is used to renumber destination states on the fly. If 
  * 'clone_tag_label' is not NULL, it is used to clone the pointer
  * labels. If NULL, transitions are rawly copied with a memcpy.
- */
-Transition* clone_transition_list(Transition* list,int* renumber,symbol_t*(*clone_elag_symbol)(const symbol_t*)) {
+ */ // WARNING : Callback "clone"
+Transition* clone_transition_list(Transition* list,int* renumber,symbol_t*(*clone_elag_symbol)(const symbol_t*),Abstract_allocator prv_alloc) {
 if (list==NULL) return NULL;
-Transition* result=clone_transition(list,clone_elag_symbol);
+Transition* result=clone_transition(list,clone_elag_symbol,prv_alloc);
 result->next=NULL;
 if (renumber!=NULL) {
    result->state_number=renumber[result->state_number];
@@ -198,7 +198,7 @@ if (renumber!=NULL) {
 list=list->next;
 Transition* tmp=result;
 while (list!=NULL) {
-   tmp->next=clone_transition(list,clone_elag_symbol);
+   tmp->next=clone_transition(list,clone_elag_symbol,prv_alloc);
    tmp->next->next=NULL;
    if (renumber!=NULL) {
       tmp->next->state_number=renumber[tmp->next->state_number];
@@ -250,9 +250,9 @@ return trans;
 /**
  * Adds all the transitions of 'src' to '*dest', if not already present.
  */
-void add_transitions_int(Transition* src,Transition** dest) {
+void add_transitions_int(Transition* src,Transition** dest,Abstract_allocator prv_alloc) {
 while (src!=NULL) {
-   add_transition_if_not_present(dest,src->tag_number,src->state_number);
+   add_transition_if_not_present(dest,src->tag_number,src->state_number,prv_alloc);
    src=src->next;
 }
 }
@@ -261,9 +261,9 @@ while (src!=NULL) {
 /**
  * Adds all the transitions of 'src' to '*dest', if not already present.
  */
-void add_transitions_ptr(Transition* src,Transition** dest) {
+void add_transitions_ptr(Transition* src,Transition** dest,Abstract_allocator prv_alloc) {
 while (src!=NULL) {
-   add_transition_if_not_present(dest,src->label,src->state_number);
+   add_transition_if_not_present(dest,src->label,src->state_number,prv_alloc);
    src=src->next;
 }
 }

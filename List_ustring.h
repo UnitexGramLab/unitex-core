@@ -22,6 +22,7 @@
 #define List_ustringH
 
 #include "Unicode.h"
+#include "AbstractAllocator.h"
 
 
 /**
@@ -33,16 +34,16 @@ struct list_ustring {
 };
 
 
-struct list_ustring* new_list_ustring(const unichar*,struct list_ustring*);
-struct list_ustring* new_list_ustring(const unichar*);
-void free_list_ustring(struct list_ustring*);
-void free_list_ustring_element(struct list_ustring*);
-struct list_ustring* sorted_insert(const unichar*,struct list_ustring*);
-struct list_ustring* head_insert(const unichar*,struct list_ustring*);
-struct list_ustring* insert_at_end_of_list(const unichar*,struct list_ustring*);
+struct list_ustring* new_list_ustring(const unichar*,struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct list_ustring* new_list_ustring(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_list_ustring(struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_list_ustring_element(struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct list_ustring* sorted_insert(const unichar*,struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct list_ustring* head_insert(const unichar*,struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct list_ustring* insert_at_end_of_list(const unichar*,struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int is_in_list(const unichar*,struct list_ustring*);
 int equal(struct list_ustring*,struct list_ustring*);
-struct list_ustring* clone(struct list_ustring*);
+struct list_ustring* clone(struct list_ustring*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int length(struct list_ustring*);
 
 #endif

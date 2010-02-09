@@ -28,7 +28,7 @@
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "DELA.h"
-
+#include "AbstractAllocator.h"
 
 /*
  * This is the structure that holds 
@@ -48,15 +48,15 @@ struct text_tokens {
 };
 
 
-struct text_tokens* load_text_tokens(const char*,int);
-struct string_hash* load_text_tokens_hash(char*,int,int*);
-struct string_hash* load_text_tokens_hash(char*,int,int*,int*,int*);
-void free_text_tokens(struct text_tokens*);
-struct list_int* get_token_list_for_sequence(unichar*,Alphabet*,struct string_hash*);
+struct text_tokens* load_text_tokens(const char*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct string_hash* load_text_tokens_hash(char*,int,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct string_hash* load_text_tokens_hash(char*,int,int*,int*,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_text_tokens(struct text_tokens*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct list_int* get_token_list_for_sequence(unichar*,Alphabet*,struct string_hash*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int get_token_number(unichar*,struct text_tokens*);
 int is_a_digit_token(unichar* s);
-void extract_semantic_codes_from_tokens(struct string_hash*,struct string_hash*);
-void extract_semantic_codes_from_morpho_dics(struct INF_codes**,int,struct string_hash*);
+void extract_semantic_codes_from_tokens(struct string_hash*,struct string_hash*,Abstract_allocator prv_alloc);
+void extract_semantic_codes_from_morpho_dics(struct INF_codes**,int,struct string_hash*,Abstract_allocator prv_alloc);
 
 //---------------------------------------------------------------------------
 #endif

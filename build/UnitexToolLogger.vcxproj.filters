@@ -668,6 +668,9 @@
     <ClCompile Include="..\UnitexTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\AbstractAllocator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\UserCancelling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -40,7 +40,8 @@
 void process_tags(int *number_of_patterns,
                   struct string_hash* semantic_codes,
                   int *is_DIC,int *is_CDIC,
-                  int *is_SDIC,struct locate_parameters* parameters) {
+                  int *is_SDIC,struct locate_parameters* parameters,
+                  Abstract_allocator prv_alloc) {
 (*number_of_patterns)=0;
 (*is_DIC)=0;
 (*is_CDIC)=0;
@@ -67,7 +68,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
       if (is_bit_mask_set(tag[i]->control,RESPECT_CASE_TAG_BIT_MASK)) {
          /* If the case respect bit is set to 1, then we have the "#" token */
          tag[i]->type=PATTERN_TAG;
-         tag[i]->pattern=build_token_pattern(tag[i]->input);
+         tag[i]->pattern=build_token_pattern(tag[i]->input,prv_alloc);
       }
       else {
          /* If we have the meta # */
@@ -91,7 +92,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
          } else {
             /* If it is a normal token */
             tag[i]->type=PATTERN_TAG;
-            tag[i]->pattern=build_token_pattern(tag[i]->input);
+            tag[i]->pattern=build_token_pattern(tag[i]->input,prv_alloc);
          }
       }
       else {
@@ -104,7 +105,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
              * case variations, we could match "FOO" if this token is in the
              * text. */
             tag[i]->type=PATTERN_TAG;
-            tag[i]->pattern=build_token_pattern(tag[i]->input);
+            tag[i]->pattern=build_token_pattern(tag[i]->input,prv_alloc);
          } else {
             /* If we have something of the form <...>, we must test first if it is
              * or not a negative tag like <!XXX> */
@@ -114,7 +115,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
             }
             /* Then, we must test if we have or not a meta. To do that, we
              * extract the content without < > and ! if any.*/
-            unichar* content=u_strdup(&(tag[i]->input[1+negative_tag]),length-2-negative_tag);
+            unichar* content=u_strdup(&(tag[i]->input[1+negative_tag]),length-2-negative_tag,prv_alloc);
             /* And we test all the possible metas */
             if (!u_strcmp(content,"MOT")) {
                tag[i]->type=META_TAG;
@@ -171,14 +172,14 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                /* If we arrive here, we have not a meta but a pattern like
                 * <be>, <be.V>, <V:K>, ... */
                tag[i]->type=PATTERN_TAG;
-               tag[i]->pattern=build_pattern(content,semantic_codes);
+               tag[i]->pattern=build_pattern(content,semantic_codes,prv_alloc);
                if (tag[i]->pattern->type==CODE_PATTERN ||
                    tag[i]->pattern->type==LEMMA_AND_CODE_PATTERN ||
                    tag[i]->pattern->type==FULL_PATTERN || 
                    tag[i]->pattern->type==INFLECTED_AND_LEMMA_PATTERN) {
                   /* If the pattern we obtain contains grammatical/semantic
                    * codes, then we put it in the pattern tree and we note its number. */
-                  tag[i]->pattern_number=add_pattern(number_of_patterns,tag[i]->pattern,parameters->pattern_tree_root);
+                  tag[i]->pattern_number=add_pattern(number_of_patterns,tag[i]->pattern,parameters->pattern_tree_root,prv_alloc);
                   if (tag[i]->pattern->type==CODE_PATTERN) {
                      /* If we have a code pattern, then the tag will just need to contain
                       * the pattern number, BUT, WE DO NOT FREE THE PATTERN,
@@ -188,7 +189,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                }
             }
             /* We don't forget to free the content */
-            free(content);
+            free_cb(content,prv_alloc);
          }
       }
    }
@@ -200,7 +201,7 @@ for (int i=0;i<fst2->number_of_tags;i++) {
  * This function optimizes a pattern of the form "eat".
  */
 void optimize_token_pattern(int i,Fst2Tag* tag,Alphabet* alph,
-               struct locate_parameters* p) {
+               struct locate_parameters* p,Abstract_allocator prv_alloc) {
 /* Whatever happens, this pattern will be turned into a token list */
 tag[i]->type=TOKEN_LIST_TAG;
 unichar* opt_token=tag[i]->pattern->inflected;
@@ -210,9 +211,9 @@ while (list!=NULL) {
    struct dela_entry* entry=tokenize_tag_token(p->tokens->value[list->n]);
    if ((!is_bit_mask_set(tag[i]->control,RESPECT_CASE_TAG_BIT_MASK) && is_equal_or_uppercase(opt_token,entry->inflected,alph)) ||
        !u_strcmp(opt_token,entry->inflected)) {
-      tag[i]->matching_tokens=sorted_insert(list->n,tag[i]->matching_tokens);
+      tag[i]->matching_tokens=sorted_insert(list->n,tag[i]->matching_tokens,prv_alloc);
    }
-   free_dela_entry(entry);
+   free_dela_entry(entry,prv_alloc);
    list=list->next;
 }
 /* Then, we look for normal tokens */
@@ -221,12 +222,12 @@ if (is_bit_mask_set(tag[i]->control,RESPECT_CASE_TAG_BIT_MASK)) {
     * of the token, but only if this token in the text ones. */
    int token_number;
    if (-1!=(token_number=get_value_index(opt_token,p->tokens,DONT_INSERT))) {
-      tag[i]->matching_tokens=sorted_insert(token_number,tag[i]->matching_tokens);
+      tag[i]->matching_tokens=sorted_insert(token_number,tag[i]->matching_tokens,prv_alloc);
    }
    return;
 }
 /* Here, we have to get all the case variants of the token. */
-tag[i]->matching_tokens=destructive_sorted_merge(get_token_list_for_sequence(opt_token,alph,p->tokens),tag[i]->matching_tokens);
+tag[i]->matching_tokens=destructive_sorted_merge(get_token_list_for_sequence(opt_token,alph,p->tokens,prv_alloc),tag[i]->matching_tokens,prv_alloc);
 }
 
 
@@ -235,7 +236,7 @@ tag[i]->matching_tokens=destructive_sorted_merge(get_token_list_for_sequence(opt
  * can match the given tag token like "{today,.ADV}".
  */
 void optimize_full_pattern_for_tag(unichar* tag_token,int i,Fst2Tag* tag,Alphabet* alph,
-               struct locate_parameters* p) {
+               struct locate_parameters* p,Abstract_allocator prv_alloc) {
 DISCARD_UNUSED_PARAMETER(alph)
 int token_number=get_value_index(tag_token,p->tokens);
 struct dela_entry* entry=tokenize_tag_token(tag_token);
@@ -243,7 +244,7 @@ struct pattern* pattern=tag[i]->pattern;
 if ((pattern->type==LEMMA_PATTERN) || (pattern->type==INFLECTED_AND_LEMMA_PATTERN)) {
    /* If the pattern has a constraint on the lemma, we check it */
    if (u_strcmp(entry->lemma,pattern->lemma)) {
-      free_dela_entry(entry);
+      free_dela_entry(entry,prv_alloc);
       return;
    }
 }
@@ -261,7 +262,7 @@ if ((pattern->type==LEMMA_AND_CODE_PATTERN) || (pattern->type==FULL_PATTERN)) {
 }
 /* If the pattern matches the tag token, we add the tag token number to the list of
  * the tokens matched by the tag. */
-tag[i]->matching_tokens=sorted_insert(token_number,tag[i]->matching_tokens);
+tag[i]->matching_tokens=sorted_insert(token_number,tag[i]->matching_tokens,prv_alloc);
 /* We don't forget to free the dela entry. */
 free_dela_entry(entry);
 }
@@ -275,7 +276,7 @@ free_dela_entry(entry);
  * can match the given token sequence like "today" or "black-eyed".
  */
 void optimize_full_pattern_for_sequence(unichar* sequence,int i,Fst2Tag* tag,Alphabet* alph,
-               struct locate_parameters* p) {
+               struct locate_parameters* p,Abstract_allocator prv_alloc) {
 /* First, we test if the given sequence corresponds or not to a single token
  * like "today". */
 if (!is_a_simple_token(sequence,p->tokenization_policy,alph)) {
@@ -302,7 +303,7 @@ while (list!=NULL) {
        ((p->matching_patterns[list->n]!=NULL) && get_value(p->matching_patterns[list->n],tag[i]->pattern_number))) {
       /* If the token can be matched by the pattern, we put it in the list of
        * the tokens that the tag can match. */
-      tag[i]->matching_tokens=sorted_insert(list->n,tag[i]->matching_tokens);
+      tag[i]->matching_tokens=sorted_insert(list->n,tag[i]->matching_tokens,prv_alloc);
    }
    list=list->next;
 }
@@ -316,7 +317,8 @@ free_list_int(head);
  */
 void optimize_full_pattern(int i,Fst2Tag* tag,Alphabet* alph,
                struct lemma_node* root,
-               struct locate_parameters* p) {
+               struct locate_parameters* p,
+               Abstract_allocator prv_alloc) {
 /* Whatever happens, this pattern will be turned into a token list */
 tag[i]->type=TOKEN_LIST_TAG;
 /* We look at all the inflected forms that corresponds to the lemma of the pattern.
@@ -326,10 +328,10 @@ struct list_ustring* inflected_forms=get_inflected_forms(tag[i]->pattern->lemma,
 while (inflected_forms!=NULL) {
    if (inflected_forms->string[0]=='{' && u_strcmp(inflected_forms->string,"{")) {
       /* We can have a tag token like "{today,.ADV}" */
-      optimize_full_pattern_for_tag(inflected_forms->string,i,tag,alph,p);
+      optimize_full_pattern_for_tag(inflected_forms->string,i,tag,alph,p,prv_alloc);
    } else {
       /* Or a normal token sequence like "today" */
-      optimize_full_pattern_for_sequence(inflected_forms->string,i,tag,alph,p);
+      optimize_full_pattern_for_sequence(inflected_forms->string,i,tag,alph,p,prv_alloc);
    }
    inflected_forms=inflected_forms->next;
 }
@@ -351,20 +353,21 @@ while (inflected_forms!=NULL) {
  */
 void optimize_pattern_tags(Alphabet* alphabet,
                            struct lemma_node* root,
-                           struct locate_parameters* parameters) {
+                           struct locate_parameters* parameters,
+                           Abstract_allocator prv_alloc) {
 int n_tags=parameters->fst2->number_of_tags;
 Fst2Tag* tag=parameters->fst2->tags;
 for (int i=0;i<n_tags;i++) {
    if (tag[i]->type==PATTERN_TAG) {
       /* We just look at pattern tags */
       switch (tag[i]->pattern->type) {
-         case TOKEN_PATTERN: optimize_token_pattern(i,tag,alphabet,parameters);
+         case TOKEN_PATTERN: optimize_token_pattern(i,tag,alphabet,parameters,prv_alloc);
                              break;
          case LEMMA_PATTERN: /* There is no difference in the handling of these
                               * kind of patterns */
          case LEMMA_AND_CODE_PATTERN: 
          case INFLECTED_AND_LEMMA_PATTERN:
-         case FULL_PATTERN: optimize_full_pattern(i,tag,alphabet,root,parameters);
+         case FULL_PATTERN: optimize_full_pattern(i,tag,alphabet,root,parameters,prv_alloc);
                             break;
          default: /* Here, a code pattern would be an error since they are supposed
                    * to have been replaced by pattern numbers. An undefined pattern

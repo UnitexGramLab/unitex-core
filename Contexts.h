@@ -24,7 +24,7 @@
 
 #include "Fst2.h"
 #include "Transitions.h"
-
+#include "AbstractAllocator.h"
 
 /**
  * This structure stores the information needed to deal with 
@@ -50,12 +50,12 @@ struct opt_contexts {
 };
 
 
-void get_reachable_closing_context_marks(Fst2*,int,Transition**);
-struct opt_contexts* new_opt_contexts();
-void free_opt_contexts(struct opt_contexts*);
-void add_positive_context(Fst2*,struct opt_contexts**,Transition*);
-void add_negative_context(Fst2*,struct opt_contexts**,Transition*);
-struct opt_contexts** compute_contexts(Fst2*);
+void get_reachable_closing_context_marks(Fst2*,int,Transition**,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct opt_contexts* new_opt_contexts(Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void free_opt_contexts(struct opt_contexts*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void add_positive_context(Fst2*,struct opt_contexts**,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+void add_negative_context(Fst2*,struct opt_contexts**,Transition*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct opt_contexts** compute_contexts(Fst2*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 
 #endif
 

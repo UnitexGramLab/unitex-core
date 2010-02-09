@@ -27,9 +27,9 @@
 /**
  * Allocates, initializes and returns a new pattern.
  */
-struct pattern* new_pattern() {
+struct pattern* new_pattern(Abstract_allocator prv_alloc) {
 struct pattern* p;
-p=(struct pattern*)malloc(sizeof(struct pattern));
+p=(struct pattern*)malloc_cb(sizeof(struct pattern),prv_alloc);
 if (p==NULL) {
    fatal_alloc_error("new_pattern");
 }
@@ -46,14 +46,14 @@ return p;
 /**
  * Frees all the memory associated to the given pattern.
  */
-void free_pattern(struct pattern* p) {
+void free_pattern(struct pattern* p,Abstract_allocator prv_alloc) {
 if (p==NULL) return;
-if (p->inflected!=NULL) free(p->inflected);
-if (p->lemma!=NULL) free(p->lemma);
-free_list_ustring(p->grammatical_codes);
-free_list_ustring(p->inflectional_codes);
-free_list_ustring(p->forbidden_codes);
-free(p);
+if (p->inflected!=NULL) free_cb(p->inflected,prv_alloc);
+if (p->lemma!=NULL) free_cb(p->lemma,prv_alloc);
+free_list_ustring(p->grammatical_codes,prv_alloc);
+free_list_ustring(p->inflectional_codes,prv_alloc);
+free_list_ustring(p->forbidden_codes,prv_alloc);
+free_cb(p,prv_alloc);
 }
 
 
@@ -124,7 +124,7 @@ while (s[i]!='\0') {
  * "z3" -> p->forbidden_codes
  * "P3s" and "I3s" -> p->inflectional_codes
  */
-void build_code_pattern(struct pattern* p,unichar* codes) {
+void build_code_pattern(struct pattern* p,unichar* codes,Abstract_allocator prv_alloc) {
 unichar tmp[2048];
 int pos=0;
 int minus=0;
@@ -143,10 +143,10 @@ do {
    }
    if (minus) {
       /* If we have read a forbidden code */
-      p->forbidden_codes=sorted_insert(tmp,p->forbidden_codes);
+      p->forbidden_codes=sorted_insert(tmp,p->forbidden_codes,prv_alloc);
    } else {
       /* If we have read a grammatical/semantic code */
-      p->grammatical_codes=sorted_insert(tmp,p->grammatical_codes);
+      p->grammatical_codes=sorted_insert(tmp,p->grammatical_codes,prv_alloc);
    }
 } while (codes[pos]!='\0' && codes[pos]!=':');
 /* Then, we read for inflectional codes, if any */
@@ -159,7 +159,7 @@ do {
    /* Remember that the characters that compose an inflectional code
     * must be sorted. For instance, "P3s" will be represented by "3Ps" */
    sort_ustring(tmp);
-   p->inflectional_codes=sorted_insert(tmp,p->inflectional_codes);
+   p->inflectional_codes=sorted_insert(tmp,p->inflectional_codes,prv_alloc);
 } while (codes[pos]!='\0');
 }
 
@@ -170,8 +170,8 @@ do {
  * and builds a pattern from it. Raises a fatal error in case
  * of malformed pattern.
  */
-struct pattern* build_pattern(unichar* s,struct string_hash* semantic_codes) {
-struct pattern* p=new_pattern();
+struct pattern* build_pattern(unichar* s,struct string_hash* semantic_codes,Abstract_allocator prv_alloc) {
+struct pattern* p=new_pattern(prv_alloc);
 int pos;
 unichar tmp[2048];
 if ((s==NULL)||(s[0]=='\0')) {
@@ -193,13 +193,13 @@ if (s[pos]=='\0') {
    p->type=is_code_pattern(s,semantic_codes);
    if (p->type==CODE_PATTERN) {
       /* If we are in the <V> case */
-      build_code_pattern(p,s);
+      build_code_pattern(p,s,prv_alloc);
       return p;
    }
    else {
       /* If we are in the <XXX> where XXX is either a lemma or an unknown element
        * that can be both lemma and grammatical code */
-      p->lemma=u_strdup(tmp);
+      p->lemma=u_strdup(tmp,prv_alloc);
       return p;
    }
 }
@@ -217,13 +217,13 @@ if (s[pos]=='.') {
    if (tmp[0]=='\0') {
       /* If we are in the <.V> case */
       p->type=CODE_PATTERN;
-      build_code_pattern(p,&(s[pos+1]));
+      build_code_pattern(p,&(s[pos+1]),prv_alloc);
       return p;
    }
    /* If we are in the <be.V> case */
-   p->lemma=u_strdup(tmp);
+   p->lemma=u_strdup(tmp,prv_alloc);
    p->type=LEMMA_AND_CODE_PATTERN;
-   build_code_pattern(p,&(s[pos+1]));
+   build_code_pattern(p,&(s[pos+1]),prv_alloc);
    return p;
 }
 /* If we are in the  <am,be.V> case */
@@ -231,7 +231,7 @@ if (tmp[0]=='\0') {
    fatal_error("Invalid pattern <,XXX> has been found\n");
 }
 p->type=FULL_PATTERN;
-p->inflected=u_strdup(tmp);
+p->inflected=u_strdup(tmp,prv_alloc);
 
 pos++;
 switch(parse_string(s,&pos,tmp,P_DOT)) {
@@ -244,12 +244,12 @@ switch(parse_string(s,&pos,tmp,P_DOT)) {
 }
 if (s[pos]=='\0') {
    /* We have a <XXX,YYY> pattern */
-   p->lemma=u_strdup(tmp);
+   p->lemma=u_strdup(tmp,prv_alloc);
    p->type=INFLECTED_AND_LEMMA_PATTERN;
    return p;
 }
-p->lemma=u_strdup(tmp);
-build_code_pattern(p,&(s[pos+1]));
+p->lemma=u_strdup(tmp,prv_alloc);
+build_code_pattern(p,&(s[pos+1]),prv_alloc);
 return p;
 }
 
@@ -257,10 +257,10 @@ return p;
 /**
  * This function builds a token pattern from the given information.
  */
-struct pattern* build_token_pattern(unichar* token) {
-struct pattern* p=new_pattern();
+struct pattern* build_token_pattern(unichar* token,Abstract_allocator prv_alloc) {
+struct pattern* p=new_pattern(prv_alloc);
 p->type=TOKEN_PATTERN;
-p->inflected=u_strdup(token);
+p->inflected=u_strdup(token,prv_alloc);
 return p;
 }
 
@@ -319,21 +319,21 @@ return 0;
 /**
  * Returns a clone of the pattern.
  */
-struct pattern* clone(struct pattern* src) {
+struct pattern* clone(struct pattern* src,Abstract_allocator prv_alloc) {
 	struct pattern* dst;
 
 	if (src == NULL)
 		return NULL;
 
-	dst=(struct pattern*)malloc(sizeof(struct pattern));
+	dst=(struct pattern*)malloc_cb(sizeof(struct pattern),prv_alloc);
 	if (dst==NULL) {
 	   fatal_error("Not enough memory in new_pattern_ByCopy\n");
 	}
-	dst->inflected=u_strdup(src->inflected);
-	dst->lemma=u_strdup(src->lemma);
-	dst->grammatical_codes=clone(src->grammatical_codes);
-	dst->inflectional_codes=clone(src->inflectional_codes);
-	dst->forbidden_codes=clone(src->forbidden_codes);
+	dst->inflected=u_strdup(src->inflected,prv_alloc);
+	dst->lemma=u_strdup(src->lemma,prv_alloc);
+	dst->grammatical_codes=clone(src->grammatical_codes,prv_alloc);
+	dst->inflectional_codes=clone(src->inflectional_codes,prv_alloc);
+	dst->forbidden_codes=clone(src->forbidden_codes,prv_alloc);
 	dst->type=src->type;
 	return dst;
 }
