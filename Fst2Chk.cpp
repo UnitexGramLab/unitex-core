@@ -84,7 +84,7 @@ const char* usage_Fst2Check =
          "                   automaton\n"
          "  -e/--no_empty_graph_warning: no warning will be emitted when a graph matches <E>\n"
          "  -o OUT/--output=OUT: output file for error message\n"
-         "  -p/--append: to open the output file in append mode.\n"
+         "  -a/--append: to open the output file in append mode.\n"
          "  -s/--statistics: display statistics about fst2 file.\n"
          "  -h/--help: this help\n"
          "\n"
@@ -148,9 +148,9 @@ free_ProgramInvoker(invoker);
 return ret;
 }
 
-const char* optstring_Fst2Check=":ynp   tesho:k:q:";
+const char* optstring_Fst2Check=":ynatesho:k:q:";
 const struct option_TS lopts_Fst2Check[]= {
-      {"append",no_argument_TS,NULL,'p'},
+      {"append",no_argument_TS,NULL,'a'},
       {"statistics",no_argument_TS,NULL,'s'},
       {"loop_check",no_argument_TS,NULL,'y'},
       {"no_loop_check",no_argument_TS,NULL,'n'},
