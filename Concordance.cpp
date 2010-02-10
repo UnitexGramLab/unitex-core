@@ -941,11 +941,13 @@ while (matches!=NULL) {
 	      end_from_eos=end_from_eos+token_size;
 	   }
 	   end_pos_char=end_pos_char+matches->m.end_pos_in_char+1;
+	   end_from_eos=end_from_eos+matches->m.end_pos_in_char+1;
 	} else {
 	   /* If we work on just one token, we can set directly start_pos_in_char 
 	    * and end_pos_in_char. DO NOT SWAP THE FOLLOWING LINES! */
 	   end_pos_char=start_pos_char+matches->m.end_pos_in_char+1;
 	   start_pos_char=start_pos_char+matches->m.start_pos_in_char;
+	   end_from_eos=start_from_eos+matches->m.end_pos_in_char+1;
 	}
 	
 	/* Now we extract the 3 parts of the concordance */
