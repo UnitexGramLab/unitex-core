@@ -82,6 +82,8 @@ UNITEX_FUNC int UNITEX_CALL RemoveAllocatorSpace(const t_allocator_func_array* f
 /* just return the number of Allocator Installed */
 UNITEX_FUNC int UNITEX_CALL GetNbAllocatorSpaceInstalled();
 
+UNITEX_FUNC Abstract_allocator UNITEX_CALL BuildAbstractAllocatorFromSpecificAllocatorSpace(const t_allocator_func_array*,void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size);
+
 /**********************************************************************/
 
 

@@ -514,7 +514,7 @@ TAGGER_OBJS = Main_Tagger.o Tagger.o IOBuffer.o Af_stdio.o ActivityLogger.o Unic
 			  String_hash.o Alphabet.o List_ustring.o LanguageDefinition.o Tagset.o\
 			  File.o TaggingProcess.o Match.o ElagFunctions.o AutDeterminization.o\
 			  AutMinimization.o ElagFstFilesIO.o AutIntersection.o Fst2Automaton.o\
-			  SymbolAlphabet.o ElagStateSet.o Symbol_op.o
+			  SymbolAlphabet.o ElagStateSet.o Symbol_op.o AbstractDelaLoad.o
 
 TAGSETNORMTFST = TagsetNormTfst
 TAGSETNORMTFST_OBJS = Main_TagsetNormTfst.o TagsetNormTfst.o IOBuffer.o Af_stdio.o ActivityLogger.o Unicode.o AbstractAllocator.o ElagFstFilesIO.o Ustring.o \

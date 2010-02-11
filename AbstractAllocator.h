@@ -56,9 +56,6 @@ typedef struct tag_abstract_allocator
 typedef abstract_allocator* Abstract_allocator;
 
 
-
-
-
 Abstract_allocator create_abstract_allocator(const char*creator,int flagAllocator=0,size_t expected_size=0);
 
 void close_abstract_allocator(Abstract_allocator);

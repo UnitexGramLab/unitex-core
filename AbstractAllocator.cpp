@@ -124,28 +124,38 @@ const AllocatorSpace * GetAllocatorSpaceForParam(const char*creator,int flagAllo
 }
 
 
-
-
-Abstract_allocator create_abstract_allocator(const char*creator,int flagAllocator,size_t expected_size)
+Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocator_func_array *p_func_array,void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size)
 {
     Abstract_allocator aas;
-    const AllocatorSpace * paas = GetAllocatorSpaceForParam(creator,flagAllocator,expected_size) ;
-    if (paas == NULL)
-        return NULL;
 
     aas=(abstract_allocator*)malloc(sizeof(abstract_allocator));
     if (aas == NULL)
         return NULL;
-    if (paas->func_array.fnc_create_abstract_allocator(aas,creator,flagAllocator,expected_size,paas->privateAllocatorSpacePtr) == 0)
+    if (p_func_array->fnc_create_abstract_allocator(aas,creator,flagAllocator,expected_size,privateAllocatorSpacePtr) == 0)
     {
         free(aas);
         return NULL;
     }
 
-    aas->fnc_delete_abstract_allocator = paas->func_array.fnc_delete_abstract_allocator;
-    aas->privateAllocatorSpacePtr = paas->privateAllocatorSpacePtr;
+    aas->fnc_delete_abstract_allocator = p_func_array->fnc_delete_abstract_allocator;
+    aas->privateAllocatorSpacePtr = privateAllocatorSpacePtr;
 
     return aas;
+}
+
+UNITEX_FUNC Abstract_allocator UNITEX_CALL BuildAbstractAllocatorFromSpecificAllocatorSpace(const t_allocator_func_array *p_func_array,
+                    void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size)
+{
+    return build_Abstract_allocator_from_AllocatorSpace(p_func_array,privateAllocatorSpacePtr,creator,flagAllocator,expected_size);
+}
+
+Abstract_allocator create_abstract_allocator(const char*creator,int flagAllocator,size_t expected_size)
+{
+    const AllocatorSpace * paas = GetAllocatorSpaceForParam(creator,flagAllocator,expected_size) ;
+    if (paas == NULL)
+        return NULL;
+
+    return build_Abstract_allocator_from_AllocatorSpace(&(paas->func_array),paas->privateAllocatorSpacePtr,creator,flagAllocator,expected_size);
 }
 
 void close_abstract_allocator(Abstract_allocator aa)

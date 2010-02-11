@@ -32,6 +32,7 @@
 #include "Tfst.h"
 #include "File.h"
 #include "DELA.h"
+#include "AbstractDelaLoad.h"
 #include "Unicode.h"
 
 
@@ -131,13 +132,15 @@ if(alphabet[0] == '\0'){
 strcpy(tfst,argv[vars->optind]);
 Alphabet* alpha = load_alphabet(alphabet);
 
-unsigned char* bin=load_BIN_file(dictionary);
+struct BIN_free_info bin_free;
+unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
 if (bin==NULL) {
 	fatal_error("");
 }
 remove_extension(dictionary);
 strcat(dictionary,".inf");
-struct INF_codes* inf=load_INF_file(dictionary);
+struct INF_free_info inf_free;
+struct INF_codes* inf=load_abstract_INF_file(dictionary,&inf_free);
 if (inf==NULL) {
 	fatal_error("");
 }
@@ -188,9 +191,9 @@ do_tagging(input_tfst,result,bin,inf,alpha,form_type);
 
 close_text_automaton(input_tfst);
 close_text_automaton(result);
-free(bin);
 free_alphabet(alpha);
-free_INF_codes(inf);
+free_abstract_BIN(bin,&bin_free);
+free_abstract_INF(inf,&inf_free);
 free_OptVars(vars);
 return 0;
 }
