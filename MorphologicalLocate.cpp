@@ -324,7 +324,10 @@ while (meta_list!=NULL) {
             break;
 
          case META_SPACE:
-            /* This case will be handled in the token case (see below) */
+            if (token==-1 || token==p->STOP) {break;}
+            if (current_token[pos_in_token]==' ') {
+               match_one_letter=1;
+            }
             break;
 
          case META_MOT: /* In morphological mode, this tag matches a letter, as defined in
@@ -592,7 +595,6 @@ while (trans!=NULL) {
         	 /* We want to avoid a copy */
         	 tag_token[comma]='\0';
          }
-
          int tag_token_length=u_strlen(tag_token);
          if (jamo!=NULL) {
         	/* KOREAN token matching */
@@ -631,7 +633,7 @@ while (trans!=NULL) {
          	/* End of KOREAN token matching */
          } else {
             /* Non Korean token matching*/
-        	int prefix_length;
+            int prefix_length;
             if (tag->control&RESPECT_CASE_TAG_BIT_MASK) {
                /* If we must have a perfect match */
                prefix_length=get_longuest_prefix(current_token+pos_in_token,tag_token);
@@ -663,7 +665,7 @@ while (trans!=NULL) {
                p->stack->stack_pointer=stack_top;
             } else {
            	   /* No else here, because a grammar tag is not supposed to match a sequence that
-        	    * overlaps two text tokens. */
+        	       * overlaps two text tokens. */
             }
             /* End of non Korean token matching */
          }
