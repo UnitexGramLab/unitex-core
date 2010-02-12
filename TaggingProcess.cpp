@@ -252,7 +252,7 @@ if(code == NULL){
 	fatal_alloc_error("get_inf_value");
 }
 for(int i=0;i<u_strlen(tmp->string);i++){
-	code[i] = tmp->string[i+1];
+	code[i] = (char)tmp->string[i+1];
 }
 /* conversion string to int value */
 long int value = strtol(code,NULL,10);

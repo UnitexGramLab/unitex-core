@@ -31,6 +31,7 @@
 #include "File.h"
 #include "DELA.h"
 #include "Unicode.h"
+#include "TrainingTagger.h"
 #include "TrainingProcess.h"
 
 

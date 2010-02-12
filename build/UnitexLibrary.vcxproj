@@ -180,6 +180,10 @@
     <ClInclude Include="..\ActivityLoggerPlugCallback.h" />
     <ClInclude Include="..\Af_stdio.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
+    <ClInclude Include="..\Tagger.h" />
+    <ClInclude Include="..\TaggingProcess.h" />
+    <ClInclude Include="..\TrainingProcess.h" />
+    <ClInclude Include="..\TrainingTagger.h" />
     <ClInclude Include="..\TransductionVariables.h" />
     <ClInclude Include="..\logger\DirLogger.h" />
     <ClInclude Include="..\logger\FilePack.h" />
@@ -323,6 +327,8 @@
     <ClCompile Include="..\Symbol_op.cpp" />
     <ClCompile Include="..\SymbolAlphabet.cpp" />
     <ClCompile Include="..\Table2Grf.cpp" />
+    <ClCompile Include="..\Tagger.cpp" />
+    <ClCompile Include="..\TaggingProcess.cpp" />
     <ClCompile Include="..\Tagset.cpp" />
     <ClCompile Include="..\TagsetNormTfst.cpp" />
     <ClCompile Include="..\TEI2Txt.cpp" />
@@ -340,6 +346,8 @@
     <ClCompile Include="..\Thai.cpp" />
     <ClCompile Include="..\Tokenization.cpp" />
     <ClCompile Include="..\Tokenize.cpp" />
+    <ClCompile Include="..\TrainingProcess.cpp" />
+    <ClCompile Include="..\TrainingTagger.cpp" />
     <ClCompile Include="..\TransductionStack.cpp" />
     <ClCompile Include="..\TransductionStackTfst.cpp" />
     <ClCompile Include="..\TransductionVariables.cpp" />

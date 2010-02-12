@@ -60,6 +60,18 @@
     <ClInclude Include="..\UserCancellingPlugCallback.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\TaggingProcess.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TrainingTagger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Tagger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TrainingProcess.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -265,60 +277,6 @@
     </ClCompile>
     <ClCompile Include="..\Korean.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\bitmap.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\codeForKorean.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\CompressKr.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\ConsultDic.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\etc.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\ExtractChar.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\InflectKr.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\Jamo2Syl.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\jamoCodage.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\MergeBin.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\orgUniMbcsMap.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\pro_type.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\segtype.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\SortMorph.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\SufForm2Rac.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\Syl2Jamo.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\TokenKr.cpp">
-      <Filter>Source Files\korean</Filter>
-    </ClCompile>
-    <ClCompile Include="..\korean\Txt2Fst2Kr.cpp">
-      <Filter>Source Files\korean</Filter>
     </ClCompile>
     <ClCompile Include="..\LanguageDefinition.cpp">
       <Filter>Source Files</Filter>
@@ -609,6 +567,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\XMLizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TaggingProcess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Tagger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TrainingTagger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TrainingProcess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -52,8 +52,10 @@
 #include "SortTxt.h"
 #include "Stats.h"
 #include "Table2Grf.h"
+#include "Tagger.h"
 #include "TagsetNormTfst.h"
 #include "TEI2Txt.h"
+#include "TrainingTagger.h"
 #include "Tfst2Grf.h"
 #include "Tfst2Unambig.h"
 #include "Tokenize.h"
@@ -128,6 +130,7 @@ const struct utility_item utility_array[]=
 #if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
 	{ "Stats", 5, &main_Stats, usage_Stats, optstring_Stats, lopts_Stats } ,
 	{ "Table2Grf", 9, &main_Table2Grf, usage_Table2Grf, optstring_Table2Grf, lopts_Table2Grf } ,
+	{ "Tagger", 6, &main_Tagger, usage_Tagger, optstring_Tagger, lopts_Tagger } ,
 	{ "TagsetNormTfst", 14, &main_TagsetNormTfst, usage_TagsetNormTfst, optstring_TagsetNormTfst, lopts_TagsetNormTfst } ,
 	{ "TEI2Txt", 7, &main_TEI2Txt, usage_TEI2Txt, optstring_TEI2Txt, lopts_TEI2Txt } ,
 	{ "Tfst2Grf", 8, &main_Tfst2Grf, usage_Tfst2Grf, optstring_Tfst2Grf, lopts_Tfst2Grf } ,
@@ -135,6 +138,7 @@ const struct utility_item utility_array[]=
 #endif
 	{ "Tokenize", 8, &main_Tokenize, usage_Tokenize, optstring_Tokenize, lopts_Tokenize } ,
 #if ((!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS))) && (!(defined(UNITEX_ONLY_EXEC_GRAPH_TOOLS_RICH))))
+	{ "TrainingTagger", 14, &main_TrainingTagger, usage_TrainingTagger, optstring_TrainingTagger, lopts_TrainingTagger } ,
 	{ "Txt2Tfst", 8, &main_Txt2Tfst, usage_Txt2Tfst, optstring_Txt2Tfst, lopts_Txt2Tfst } ,
 	{ "Uncompress", 10, &main_Uncompress, usage_Uncompress, optstring_Uncompress, lopts_Uncompress } ,
 	{ "XMLizer", 7, &main_XMLizer, usage_XMLizer, optstring_XMLizer, lopts_XMLizer } ,

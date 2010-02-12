@@ -180,6 +180,10 @@
 		225CCA8B10DA9DB1003F0910 /* tre-parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC93210DA9DB1003F0910 /* tre-parse.c */; };
 		225CCA8C10DA9DB1003F0910 /* tre-stack.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC93410DA9DB1003F0910 /* tre-stack.c */; };
 		225CCA8D10DA9DB1003F0910 /* xmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 225CC93710DA9DB1003F0910 /* xmalloc.c */; };
+		225FE442112569C500F33C2A /* Tagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE43C112569C500F33C2A /* Tagger.cpp */; };
+		225FE443112569C500F33C2A /* TaggingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE43E112569C500F33C2A /* TaggingProcess.cpp */; };
+		225FE444112569C500F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE440112569C500F33C2A /* TrainingTagger.cpp */; };
+		225FE86E11256B6A00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86C11256B6A00F33C2A /* TrainingProcess.cpp */; };
 		229851B0111A6F3300503A07 /* Fst2Chk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851AE111A6F3300503A07 /* Fst2Chk.cpp */; };
 		22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */; };
 /* End PBXBuildFile section */
@@ -567,6 +571,14 @@
 		225CC93610DA9DB1003F0910 /* tre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tre.h; sourceTree = "<group>"; };
 		225CC93710DA9DB1003F0910 /* xmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xmalloc.c; sourceTree = "<group>"; };
 		225CC93810DA9DB1003F0910 /* xmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xmalloc.h; sourceTree = "<group>"; };
+		225FE43C112569C500F33C2A /* Tagger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Tagger.cpp; path = ../Tagger.cpp; sourceTree = SOURCE_ROOT; };
+		225FE43D112569C500F33C2A /* Tagger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Tagger.h; path = ../Tagger.h; sourceTree = SOURCE_ROOT; };
+		225FE43E112569C500F33C2A /* TaggingProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TaggingProcess.cpp; path = ../TaggingProcess.cpp; sourceTree = SOURCE_ROOT; };
+		225FE43F112569C500F33C2A /* TaggingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TaggingProcess.h; path = ../TaggingProcess.h; sourceTree = SOURCE_ROOT; };
+		225FE440112569C500F33C2A /* TrainingTagger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TrainingTagger.cpp; path = ../TrainingTagger.cpp; sourceTree = SOURCE_ROOT; };
+		225FE441112569C500F33C2A /* TrainingTagger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingTagger.h; path = ../TrainingTagger.h; sourceTree = SOURCE_ROOT; };
+		225FE86C11256B6A00F33C2A /* TrainingProcess.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TrainingProcess.cpp; path = ../TrainingProcess.cpp; sourceTree = SOURCE_ROOT; };
+		225FE86D11256B6A00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
 		229851AE111A6F3300503A07 /* Fst2Chk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Fst2Chk.cpp; path = ../Fst2Chk.cpp; sourceTree = SOURCE_ROOT; };
 		229851AF111A6F3300503A07 /* Fst2Chk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Chk.h; path = ../Fst2Chk.h; sourceTree = SOURCE_ROOT; };
 		22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
@@ -599,6 +611,14 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				225FE86C11256B6A00F33C2A /* TrainingProcess.cpp */,
+				225FE86D11256B6A00F33C2A /* TrainingProcess.h */,
+				225FE43C112569C500F33C2A /* Tagger.cpp */,
+				225FE43D112569C500F33C2A /* Tagger.h */,
+				225FE43E112569C500F33C2A /* TaggingProcess.cpp */,
+				225FE43F112569C500F33C2A /* TaggingProcess.h */,
+				225FE440112569C500F33C2A /* TrainingTagger.cpp */,
+				225FE441112569C500F33C2A /* TrainingTagger.h */,
 				22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */,
 				22EA01E61121EDB000A89AD4 /* AbstractAllocator.h */,
 				22EA01E71121EDB000A89AD4 /* AbstractAllocatorPlugCallback.h */,
@@ -1235,6 +1255,10 @@
 				222F7C6D1107A68E00C91CC7 /* XMLizer.cpp in Sources */,
 				229851B0111A6F3300503A07 /* Fst2Chk.cpp in Sources */,
 				22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */,
+				225FE442112569C500F33C2A /* Tagger.cpp in Sources */,
+				225FE443112569C500F33C2A /* TaggingProcess.cpp in Sources */,
+				225FE444112569C500F33C2A /* TrainingTagger.cpp in Sources */,
+				225FE86E11256B6A00F33C2A /* TrainingProcess.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -495,6 +495,18 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\AbstractAllocator.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\AbstractAllocator.h"
+				>
+			</File>
+			<File
+				RelativePath="..\AbstractAllocatorPlugCallback.h"
+				>
+			</File>
+			<File
 				RelativePath="..\AbstractCallbackFuncModifier.h"
 				>
 			</File>
@@ -1051,6 +1063,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Tagger.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Tagger.h"
+				>
+			</File>
+			<File
+				RelativePath="..\TaggingProcess.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\TaggingProcess.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Tagset.cpp"
 				>
 			</File>
@@ -1163,6 +1191,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\TrainingProcess.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\TrainingProcess.h"
+				>
+			</File>
+			<File
+				RelativePath="..\TrainingTagger.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\TrainingTagger.h"
+				>
+			</File>
+			<File
 				RelativePath="..\TransductionStack.cpp"
 				>
 			</File>
@@ -1206,18 +1250,6 @@
 				RelativePath="..\UnitexTool.cpp"
 				>
 			</File>
-      <File
-				RelativePath="..\AbstractAllocator.cpp"
-				>
-      </File>
-      <File
-				RelativePath="..\AbstractAllocator.h"
-				>
-      </File>
-      <File
-				RelativePath="..\AbstractAllocatorPlugCallback.h"
-				>
-      </File>      
 			<File
 				RelativePath="..\UserCancelling.cpp"
 				>
