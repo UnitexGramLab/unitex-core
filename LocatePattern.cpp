@@ -258,7 +258,6 @@ if (is_cancelling_requested() != 0) {
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2,ptr_prv);
-   //delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
    close_abstract_allocator(ptr_prv);
    u_fclose(text_file);
    free_buffer(p->token_buffer);
@@ -277,7 +276,6 @@ if (p->filters==NULL) {
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2,ptr_prv);
-   //delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
    close_abstract_allocator(ptr_prv);
    free_buffer(p->token_buffer);
    free_stack_unichar(p->stack);
@@ -297,7 +295,6 @@ if (p->tokens==NULL) {
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2,ptr_prv);
-   //delete_allocator_pool((struct my_allocator_pool*)prv.private_allocator_ptr);
    close_abstract_allocator(ptr_prv);
    free_buffer(p->token_buffer);
    free_locate_parameters(p);
@@ -393,6 +390,7 @@ free_stack_unichar(p->stack);
  */
 free_pattern_node(p->pattern_tree_root,ptr_prv);
 free_Fst2(p->fst2,ptr_prv);
+free_list_int(p->tag_token_list,ptr_prv);
 close_abstract_allocator(ptr_prv);
 ptr_prv=NULL;
 
@@ -410,7 +408,6 @@ if (p->jamo_tags!=NULL) {
 	free(p->jamo_tags);
 }
 free_string_hash(p->tokens);
-free_list_int(p->tag_token_list);
 free_lemma_node(root);
 free(p->token_control);
 for (int i=0;i<n_text_tokens;i++) {
@@ -762,7 +759,7 @@ for (int i=0;i<tokens->size;i++) {
       /* If the token is tag like "{today,.ADV}", we add its number to the tag token list */
       parameters->tag_token_list=head_insert(i,parameters->tag_token_list,prv_alloc);
       /* And we look for the patterns that can match it */
-      struct dela_entry* entry=tokenize_tag_token(tokens->value[i],prv_alloc);
+      struct dela_entry* entry=tokenize_tag_token(tokens->value[i]);
       if (entry==NULL) {
          /* This should never happen */
          fatal_error("Invalid tag token in function check_patterns_for_tag_tokens\n");

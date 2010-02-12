@@ -838,7 +838,7 @@ void substring_operation (unichar* affix, unichar* rule)
  *
  * "3\,14,.PI" => inflected="3,14" lemma="3,14" codes="PI"
  */
-void tokenize_DELA_line_into_3_parts(unichar* line,unichar* inflected,unichar* lemma,unichar* codes) {
+void tokenize_DELA_line_into_3_parts(const unichar* line,unichar* inflected,unichar* lemma,unichar* codes) {
 int i,j;
 if (line==NULL) return;
 /* We read the inflected form */

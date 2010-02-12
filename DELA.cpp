@@ -29,7 +29,7 @@
 /**
  * Allocates, initializes and returns a dela_entry.
  */
-struct dela_entry* new_dela_entry(unichar* inflected,unichar* lemma,unichar* code,Abstract_allocator prv_alloc) {
+struct dela_entry* new_dela_entry(const unichar* inflected,const unichar* lemma,const unichar* code,Abstract_allocator prv_alloc) {
 struct dela_entry* res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
 if (res==NULL) {
    fatal_alloc_error("new_dela_entry");
@@ -49,7 +49,7 @@ return res;
  * WARNING: filters are not taken into account since they aren't
  *          used, except in the inflection module
  */
-struct dela_entry* clone_dela_entry(struct dela_entry* entry,Abstract_allocator prv_alloc) {
+struct dela_entry* clone_dela_entry(const struct dela_entry* entry,Abstract_allocator prv_alloc) {
 if (entry==NULL) return NULL;
 int i;
 struct dela_entry* res=(struct dela_entry*)malloc_cb(sizeof(struct dela_entry),prv_alloc);
@@ -79,7 +79,7 @@ return res;
  *
  * WARNING: this comparison does not take inflection filters into account
  */
-int equal(struct dela_entry* a,struct dela_entry* b) {
+int equal(const struct dela_entry* a,const struct dela_entry* b) {
 int i;
 if (a==b) return 1;
 if (a==NULL || b==NULL) return 0;
@@ -100,7 +100,7 @@ return 1;
 /**
  * Returns 1 if s contains several times the same characters; 0 otherwise.
  */
-int is_duplicate_char_in_inflectional_code(unichar* s) {
+int is_duplicate_char_in_inflectional_code(const unichar* s) {
 for (int i=0;s[i]!='\0';i++) {
    if (NULL!=u_strchr(s+i+1,s[i])) {
       return 1;
@@ -120,7 +120,7 @@ return 0;
  * no error message and stores an error code in '*verbose'.
  * if strict_unprotected is not 0, we don't accept unprotected comma and dot (for CheckDic)
  */
-struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,int keep_equal_signs,
+struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,int keep_equal_signs,
                                        int *verbose, int strict_unprotected,Abstract_allocator prv_alloc) {
 struct dela_entry* res;
 unichar temp[DIC_LINE_SIZE];
@@ -334,7 +334,7 @@ return res;
  * function must print messages if there is an error; otherwise, the function prints
  * no error message and stores an error code in '*verbose'.
  */
-struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,int keep_equal_signs,
+struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,int keep_equal_signs,
                                        int *verbose,Abstract_allocator prv_alloc) {
 return tokenize_DELAF_line(line,comments_allowed,keep_equal_signs,verbose,0,prv_alloc);
 }
@@ -345,7 +345,7 @@ return tokenize_DELAF_line(line,comments_allowed,keep_equal_signs,verbose,0,prv_
  * comments are allowed at the end of the line or not. The function prints
  * error message to the standard output in case of error.
  */
-struct dela_entry* tokenize_DELAF_line(unichar* line,int comments_allowed,Abstract_allocator prv_alloc) {
+struct dela_entry* tokenize_DELAF_line(const unichar* line,int comments_allowed,Abstract_allocator prv_alloc) {
 return tokenize_DELAF_line(line,comments_allowed,0,NULL,0,prv_alloc);
 }
 
@@ -355,7 +355,7 @@ return tokenize_DELAF_line(line,comments_allowed,0,NULL,0,prv_alloc);
  * NULL if there is an error in the line. Comments are allowed at the end of the
  * line.
  */
-struct dela_entry* tokenize_DELAF_line(unichar* line,Abstract_allocator prv_alloc) {
+struct dela_entry* tokenize_DELAF_line(const unichar* line,Abstract_allocator prv_alloc) {
 return tokenize_DELAF_line(line,1,0,NULL,0,prv_alloc);
 }
 
@@ -365,7 +365,7 @@ return tokenize_DELAF_line(line,1,0,NULL,0,prv_alloc);
  * information in a dela_entry structure, or NULL if there is an error in
  * the tag.
  */
-struct dela_entry* tokenize_tag_token(unichar* tag,Abstract_allocator prv_alloc) {
+struct dela_entry* tokenize_tag_token(const unichar* tag,Abstract_allocator prv_alloc) {
 if (tag==NULL || tag[0]!='{') {
 	error("Internal error in tokenize_tag_token\n");
 	return NULL;
@@ -395,7 +395,7 @@ return tokenize_DELAF_line(temp,0,prv_alloc);
  * function must print messages if there is an error; otherwise, the function prints
  * no error message and stores an error code in '*verbose'.
  */
-struct dela_entry* tokenize_DELAS_line(unichar* line,int *verbose,Abstract_allocator prv_alloc) {
+struct dela_entry* tokenize_DELAS_line(const unichar* line,int *verbose,Abstract_allocator prv_alloc) {
 struct dela_entry* res;
 unichar temp[DIC_LINE_SIZE];
 int i,val;
@@ -591,7 +591,7 @@ return res;
  * In case of success, the function returns a dela_entry structure describing the
  * line; NULL otherwise.
  */
-struct dela_entry* is_strict_DELAS_line(unichar* line,Alphabet* alphabet,Abstract_allocator prv_alloc) {
+struct dela_entry* is_strict_DELAS_line(const unichar* line,Alphabet* alphabet,Abstract_allocator prv_alloc) {
 int verbose;
 struct dela_entry* res=tokenize_DELAS_line(line,&verbose);
 if (res==NULL) return NULL;
@@ -612,7 +612,7 @@ return res;
  *
  * .N+blood=A\+:ms
  */
-void get_codes(struct dela_entry* e,unichar* codes) {
+void get_codes(const struct dela_entry* e,unichar* codes) {
 int i,l;
 /* First, we add the grammatical and semantic code */
 codes[0]='.';
@@ -769,7 +769,7 @@ return;
  * several single codes.
  * Example: .N,.V  =>  code 0=".N" ; code 1=".V"
  */
-struct list_ustring* tokenize_compressed_info(unichar* line,Abstract_allocator prv_alloc) {
+struct list_ustring* tokenize_compressed_info(const unichar* line,Abstract_allocator prv_alloc) {
 struct list_ustring* result=NULL;
 unichar tmp[DIC_LINE_SIZE];
 int pos=0;
@@ -816,7 +816,7 @@ if (P_EOS==parse_string(compress_info,&pos,&(inflected[i]),P_EMPTY)) {
  *
  * Example: entry="mains" + info="1.N:fs" ==> res="mains,main.N:fs"
  */
-void uncompress_entry(unichar* inflected,unichar* INF_code,unichar* result) {
+void uncompress_entry(const unichar* inflected,unichar* INF_code,unichar* result) {
 int n;
 int pos,i;
 /* The rebuilt line must start by the inflected form, followed by a comma */
@@ -1016,8 +1016,8 @@ void uncompress_entry_and_print(unichar*content,struct list_ustring* tmp,U_FILE*
  * that contains the characters corresponding to the current position in the
  * automaton. 'string_pos' is the current position in 'content'.
  */
-void explore_all_paths(int pos,unichar* content,int string_pos,unsigned char* bin,
-                      struct INF_codes* inf,U_FILE* output) {
+void explore_all_paths(int pos,unichar* content,int string_pos,const unsigned char* bin,
+                      const struct INF_codes* inf,U_FILE* output) {
 int n_transitions;
 int ref;
 n_transitions=((unsigned char)bin[pos])*256+(unsigned char)bin[pos+1];
@@ -1051,7 +1051,7 @@ for (int i=0;i<n_transitions;i++) {
  * This function explores the automaton stored in the .bin and rebuilds
  * the original DELAF in the 'output' file.
  */
-void rebuild_dictionary(unsigned char* bin,struct INF_codes* inf,U_FILE* output) {
+void rebuild_dictionary(const unsigned char* bin,const struct INF_codes* inf,U_FILE* output) {
 unichar content[DIC_LINE_SIZE];
 /* The offset of the initial state is 4 */
 explore_all_paths(4,content,0,bin,inf,output);
@@ -1064,7 +1064,7 @@ explore_all_paths(4,content,0,bin,inf,output);
  * used in the Locate program in order to know if XXX can be such a
  * code when there is a pattern like "<XXX>".
  */
-void extract_semantic_codes(char* delaf,struct string_hash* hash) {
+void extract_semantic_codes(const char* delaf,struct string_hash* hash) {
 U_FILE* f=u_fopen_existing_unitex_text_format(delaf,U_READ);
 if (f==NULL) return;
 unichar line[DIC_LINE_SIZE];
@@ -1099,7 +1099,7 @@ return;
  *         inflected forms and lemmas.
  * if strict_unprotected is not 0, we don't accept unprotected comma and dot (for CheckDic)
  */
-void check_DELA_line(unichar* DELA_line,U_FILE* out,int is_a_DELAF,int line_number,char* alphabet,
+void check_DELA_line(const unichar* DELA_line,U_FILE* out,int is_a_DELAF,int line_number,char* alphabet,
                      struct string_hash* semantic_codes,struct string_hash* inflectional_codes,
                      struct string_hash* simple_lemmas,struct string_hash* compound_lemmas,
                      int *n_simple_entries,int *n_compound_entries,Alphabet* alph2,int strict_unprotected,
@@ -1209,7 +1209,7 @@ switch (error_code) {
  * It returns 1 on success. Otherwise, it prints an error message to the error output
  * and returns 0.
  */
-int check_tag_token(unichar* s) {
+int check_tag_token(const unichar* s) {
 if (s==NULL) {
    /* This case should never happen */
    fatal_error("Interal NULL error in check_tag_token\n");
@@ -1229,7 +1229,7 @@ return 1;
  * if this code contains space, tabulation or any non-ASCII char
  * it returns 1 and stores a warning message in 'comment'; returns 0 otherwise
  */
-int warning_on_code(unichar* code,unichar* comment,int space_warnings) {
+int warning_on_code(const unichar* code,unichar* comment,int space_warnings) {
 int i;
 int space=0;
 int tab=0;
@@ -1286,7 +1286,7 @@ return 0;
 /**
  * Tests if the given sequence contains an unprotected = sign
  */
-int contains_unprotected_equal_sign(unichar* s) {
+int contains_unprotected_equal_sign(const unichar* s) {
 if (s[0]=='=') {
    return 1;
 }
@@ -1353,7 +1353,7 @@ free_cb(d,prv_alloc);
 /**
  * Returns 1 if the given entry contains the given grammatical code; 0 otherwise.
  */
-int dic_entry_contain_gram_code(struct dela_entry* entry,unichar* code) {
+int dic_entry_contain_gram_code(const struct dela_entry* entry,const unichar* code) {
 for (int i=0;i<entry->n_semantic_codes;i++) {
    if (!u_strcmp(entry->semantic_codes[i],code)) {
       return 1;
@@ -1367,7 +1367,7 @@ return 0;
  * Returns 1 if the inflectional code 'a' contains the inflectional code 'b';
  * 0 otherwise.
  */
-int one_inflectional_codes_contains_the_other(unichar* a,unichar* b) {
+int one_inflectional_codes_contains_the_other(const unichar* a,const unichar* b) {
 int i=0;
 while (b[i]!='\0') {
    int j=0;
@@ -1387,7 +1387,7 @@ return 1;
 /**
  * Returns 1 if the given entry contains the given inflectional code; 0 otherwise.
  */
-int dic_entry_contain_inflectional_code(struct dela_entry* entry,unichar* code) {
+int dic_entry_contain_inflectional_code(const struct dela_entry* entry,const unichar* code) {
 for (int i=0;i<entry->n_inflectional_codes;i++) {
    if (one_inflectional_codes_contains_the_other(entry->inflectional_codes[i],code)) {
       return 1;
@@ -1456,7 +1456,7 @@ code_gramm[i-(*semitic)]='\0';
  * the form "{AM,be.V:P1s}". 'tag' is supposed to be large enough.
  * If 'token' is not NULL, it is used as the inflected form.
  */
-void build_tag(struct dela_entry* entry,unichar* token,unichar* tag) {
+void build_tag(struct dela_entry* entry,const unichar* token,unichar* tag) {
 int i;
 tag[0]='{';
 /* We protect the comma and dot, if any, in the inflected form */
@@ -1484,7 +1484,7 @@ tag[l++]='\0';
  * Returns 1 if a and b have exactly the same semantic codes; 0
  * otherwise. a and b are supposed to be non NULL.
  */
-int same_semantic_codes(struct dela_entry* a,struct dela_entry* b) {
+int same_semantic_codes(const struct dela_entry* a,const struct dela_entry* b) {
 if (a->n_semantic_codes!=b->n_semantic_codes) return 0;
 for (int i=0;i<b->n_semantic_codes;i++) {
    if (!dic_entry_contain_gram_code(a,b->semantic_codes[i])) return 0;
@@ -1497,7 +1497,7 @@ return 1;
  * Returns 1 if a and b have exactly the same semantic codes; 0
  * otherwise. a and b are supposed to be non NULL.
  */
-int same_inflectional_codes(struct dela_entry* a,struct dela_entry* b) {
+int same_inflectional_codes(const struct dela_entry* a,const struct dela_entry* b) {
 if (a->n_inflectional_codes!=b->n_inflectional_codes) return 0;
 for (int i=0;i<b->n_inflectional_codes;i++) {
    if (!dic_entry_contain_inflectional_code(a,b->inflectional_codes[i])) return 0;
@@ -1510,7 +1510,7 @@ return 1;
  * Returns 1 if a and b have exactly the same semantic and inflectional codes; 0
  * otherwise. a and b are supposed to be non NULL.
  */
-int same_codes(struct dela_entry* a,struct dela_entry* b) {
+int same_codes(const struct dela_entry* a,const struct dela_entry* b) {
 return same_semantic_codes(a,b) && same_inflectional_codes(a,b);
 }
 
@@ -1518,7 +1518,7 @@ return same_semantic_codes(a,b) && same_inflectional_codes(a,b);
  * Adds to dst all the inflectional codes of src, it not already present.
  * Both are supposed to be non NULL.
  */
-void merge_inflectional_codes(struct dela_entry* dst,struct dela_entry* src,Abstract_allocator prv_alloc) {
+void merge_inflectional_codes(struct dela_entry* dst,const struct dela_entry* src,Abstract_allocator prv_alloc) {
 for (int i=0;i<src->n_inflectional_codes;i++) {
    if (!dic_entry_contain_inflectional_code(dst,src->inflectional_codes[i])) {
       /* If necessary, we add the code */
