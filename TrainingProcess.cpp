@@ -290,6 +290,7 @@ if(cforms_file != NULL){
 }
 /* we initialize a contextual matrix */
 struct corpus_entry** context = new_context_matrix();
+initialize_context_matrix(context);
 unichar line[4096];
 while(u_fgets(line,input_text) !=EOF){
 	if(u_strlen(line) == 0){
