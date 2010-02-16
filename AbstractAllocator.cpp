@@ -108,14 +108,14 @@ UNITEX_FUNC int UNITEX_CALL GetNbAllocatorSpaceInstalled()
 	return count;
 }
 
-const AllocatorSpace * GetAllocatorSpaceForParam(const char*creator,int flagAllocator,size_t expected_size)
+const AllocatorSpace * GetAllocatorSpaceForParam(const char*creator,int flagAllocator,size_t expected_size_item,const void* private_create_ptr)
 {
 	const struct List_AllocatorSpace* tmp = p_allocator_info_list;
 
 	while (tmp != NULL)
 	{
 		const AllocatorSpace * test_aas = &(tmp->aas);
-        if (tmp->aas.func_array.fnc_is_param_allocator_compatible(creator,flagAllocator,expected_size,tmp->aas.privateAllocatorSpacePtr) != 0)
+        if (tmp->aas.func_array.fnc_is_param_allocator_compatible(creator,flagAllocator,expected_size_item,private_create_ptr,tmp->aas.privateAllocatorSpacePtr) != 0)
 			return test_aas;		
 
 		tmp = tmp->next;
@@ -124,14 +124,14 @@ const AllocatorSpace * GetAllocatorSpaceForParam(const char*creator,int flagAllo
 }
 
 
-Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocator_func_array *p_func_array,void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size)
+Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocator_func_array *p_func_array,void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size_item,const void* private_create_ptr)
 {
     Abstract_allocator aas;
 
     aas=(abstract_allocator*)malloc(sizeof(abstract_allocator));
     if (aas == NULL)
         return NULL;
-    if (p_func_array->fnc_create_abstract_allocator(aas,creator,flagAllocator,expected_size,privateAllocatorSpacePtr) == 0)
+    if (p_func_array->fnc_create_abstract_allocator(aas,creator,flagAllocator,expected_size_item,private_create_ptr,privateAllocatorSpacePtr) == 0)
     {
         free(aas);
         return NULL;
@@ -144,18 +144,18 @@ Abstract_allocator build_Abstract_allocator_from_AllocatorSpace(const t_allocato
 }
 
 UNITEX_FUNC Abstract_allocator UNITEX_CALL BuildAbstractAllocatorFromSpecificAllocatorSpace(const t_allocator_func_array *p_func_array,
-                    void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size)
+                    void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size_item,const void* private_create_ptr)
 {
-    return build_Abstract_allocator_from_AllocatorSpace(p_func_array,privateAllocatorSpacePtr,creator,flagAllocator,expected_size);
+    return build_Abstract_allocator_from_AllocatorSpace(p_func_array,privateAllocatorSpacePtr,creator,flagAllocator,expected_size_item,private_create_ptr);
 }
 
-Abstract_allocator create_abstract_allocator(const char*creator,int flagAllocator,size_t expected_size)
+Abstract_allocator create_abstract_allocator(const char*creator,int flagAllocator,size_t expected_size_item,const void* private_create_ptr)
 {
-    const AllocatorSpace * paas = GetAllocatorSpaceForParam(creator,flagAllocator,expected_size) ;
+    const AllocatorSpace * paas = GetAllocatorSpaceForParam(creator,flagAllocator,expected_size_item,private_create_ptr) ;
     if (paas == NULL)
         return NULL;
 
-    return build_Abstract_allocator_from_AllocatorSpace(&(paas->func_array),paas->privateAllocatorSpacePtr,creator,flagAllocator,expected_size);
+    return build_Abstract_allocator_from_AllocatorSpace(&(paas->func_array),paas->privateAllocatorSpacePtr,creator,flagAllocator,expected_size_item,private_create_ptr);
 }
 
 void close_abstract_allocator(Abstract_allocator aa)
@@ -171,13 +171,13 @@ void close_abstract_allocator(Abstract_allocator aa)
     }
 }
 
-size_t get_allocator_size(Abstract_allocator aa)
+int get_allocator_flag(Abstract_allocator aa)
 {
-    size_t ret=0;
+    int ret=0;
     if (aa != NULL)
     {
-        if (aa->fnc_get_size_allocator != NULL)
-            ret = (aa->fnc_get_size_allocator)(aa->abstract_allocator_ptr);      
+        if (aa->fnc_get_flag_allocator != NULL)
+            ret = (aa->fnc_get_flag_allocator)(aa->abstract_allocator_ptr);      
     }
     return ret;
 }

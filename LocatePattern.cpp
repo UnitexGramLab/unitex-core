@@ -383,14 +383,20 @@ u_fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
 
-free_optimized_states(p->optimized_states,p->fst2->number_of_states,ptr_prv);
+int free_ptr_ptv=(get_allocator_cb_flag(ptr_prv) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
+
+if (free_ptr_ptv) {
+  free_optimized_states(p->optimized_states,p->fst2->number_of_states,ptr_prv);
+}
 free_stack_unichar(p->stack);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
  */
-free_pattern_node(p->pattern_tree_root,ptr_prv);
-free_Fst2(p->fst2,ptr_prv);
-free_list_int(p->tag_token_list,ptr_prv);
+if (free_ptr_ptv) {
+  free_pattern_node(p->pattern_tree_root,ptr_prv);
+  free_Fst2(p->fst2,ptr_prv);
+  free_list_int(p->tag_token_list,ptr_prv);
+}
 close_abstract_allocator(ptr_prv);
 ptr_prv=NULL;
 

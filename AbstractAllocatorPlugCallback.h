@@ -42,7 +42,7 @@ typedef int (ABSTRACT_CALLBACK_UNITEX* t_fnc_Init_AllocatorSpace)(void* privateS
 typedef void (ABSTRACT_CALLBACK_UNITEX* t_fnc_Uninit_AllocatorSpace)(void* privateSpacePtr);
 
 
-typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_is_param_allocator_compatible)(const char*creator,int flagAllocator,size_t,void* privateSpacePtr);
+typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_is_param_allocator_compatible)(const char*creator,int flagAllocator,size_t,const void* private_create_ptr,void* privateSpacePtr);
 
 /* Unlike the load callback for dictionnary, p_fst2_free_info can be NULL
    this mean the caller (Locate) will modify the Fst2* object, and then call free_Fst2
@@ -52,7 +52,7 @@ typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_is_param_allocator_compatible)(cons
 
 /* try create an abstract allocator with parameter
 if successful, fill the Abstract_allocator struct and return 1, else return 0 */
-typedef int (ABSTRACT_CALLBACK_UNITEX* t_fnc_create_abstract_allocator)(Abstract_allocator,const char*creator,int flagAllocator,size_t,void* privateAllocatorSpacePtr);
+typedef int (ABSTRACT_CALLBACK_UNITEX* t_fnc_create_abstract_allocator)(Abstract_allocator,const char*creator,int flagAllocator,size_t,const void* private_create_ptr,void* privateAllocatorSpacePtr);
 
 
 
@@ -82,7 +82,7 @@ UNITEX_FUNC int UNITEX_CALL RemoveAllocatorSpace(const t_allocator_func_array* f
 /* just return the number of Allocator Installed */
 UNITEX_FUNC int UNITEX_CALL GetNbAllocatorSpaceInstalled();
 
-UNITEX_FUNC Abstract_allocator UNITEX_CALL BuildAbstractAllocatorFromSpecificAllocatorSpace(const t_allocator_func_array*,void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size);
+UNITEX_FUNC Abstract_allocator UNITEX_CALL BuildAbstractAllocatorFromSpecificAllocatorSpace(const t_allocator_func_array*,void* privateAllocatorSpacePtr,const char*creator,int flagAllocator,size_t expected_size_item,const void* private_create_ptr);
 
 /**********************************************************************/
 

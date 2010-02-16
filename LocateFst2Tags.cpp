@@ -213,7 +213,7 @@ while (list!=NULL) {
        !u_strcmp(opt_token,entry->inflected)) {
       tag[i]->matching_tokens=sorted_insert(list->n,tag[i]->matching_tokens,prv_alloc);
    }
-   free_dela_entry(entry,prv_alloc);
+   free_dela_entry(entry);
    list=list->next;
 }
 /* Then, we look for normal tokens */
