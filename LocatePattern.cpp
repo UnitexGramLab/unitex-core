@@ -245,7 +245,7 @@ if (fst2load==NULL) {
    return 0;
 }
 
-Abstract_allocator ptr_prv=create_abstract_allocator("locate_pattern",0);
+Abstract_allocator ptr_prv=create_abstract_allocator("locate_pattern",AllocatorCreationFlagAutoFreePrefered);
 
 p->fst2=new_Fst2_clone(fst2load,ptr_prv);
 
