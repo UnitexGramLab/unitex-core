@@ -61,6 +61,8 @@ typedef abstract_allocator* Abstract_allocator;
 
 #define AllocatorCreationFlagAutoFreeMask       0x000003
 
+#define AllocatorFreeOnlyAtAllocatorDelete      0x000004
+
 #define AllocatorGetFlagAutoFreePresent         0x000001
 
 /*

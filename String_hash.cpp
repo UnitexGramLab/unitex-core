@@ -27,8 +27,8 @@
 #define DEFAULT_STRING_HASH_SIZE 4096
 
 
-struct string_hash_tree_node* new_string_hash_tree_node();
-void free_arbre_hash(struct string_hash_tree_node*);
+struct string_hash_tree_node* new_string_hash_tree_node(struct string_hash*);
+void free_arbre_hash(struct string_hash_tree_node*,int,int,struct string_hash*);
 
 
 /**
@@ -54,7 +54,19 @@ if (s->capacity==DONT_USE_VALUES) {
       fatal_alloc_error("new_string_hash");
    }
 }
-s->root=new_string_hash_tree_node();
+s->allocator_tree_node=NULL;
+s->allocator_tree_transition=NULL;
+
+#define VA
+#ifdef VA
+s->allocator_tree_node=create_abstract_allocator("new_string_hash.tree_node",
+                                                 AllocatorCreationFlagAutoFreePrefered | AllocatorFreeOnlyAtAllocatorDelete,
+                                                 sizeof(struct string_hash_tree_node),NULL);
+s->allocator_tree_transition=create_abstract_allocator("new_string_hash.tree_transition",
+                                                       AllocatorCreationFlagAutoFreePrefered | AllocatorFreeOnlyAtAllocatorDelete,
+                                                       sizeof(struct string_hash_tree_transition),NULL);
+#endif
+s->root=new_string_hash_tree_node(s);
 return s;
 }
 
@@ -80,9 +92,9 @@ return new_string_hash(DEFAULT_STRING_HASH_SIZE,ENLARGE_IF_NEEDED);
 /**
  * Allocates, initializes and returns a new string_hash_tree_node.
  */
-struct string_hash_tree_node* new_string_hash_tree_node() {
+struct string_hash_tree_node* new_string_hash_tree_node(struct string_hash* s) {
 struct string_hash_tree_node* node;
-node=(struct string_hash_tree_node*)malloc(sizeof(struct string_hash_tree_node));
+node=(struct string_hash_tree_node*)malloc_cb(sizeof(struct string_hash_tree_node),s->allocator_tree_node);
 if (node==NULL) {
    fatal_alloc_error("new_string_hash_tree_node");
 }
@@ -95,9 +107,9 @@ return node;
 /**
  * Allocates, initializes and returns a new string_hash_tree_transition.
  */
-struct string_hash_tree_transition* new_string_hash_tree_transition() {
+struct string_hash_tree_transition* new_string_hash_tree_transition(struct string_hash* s) {
 struct string_hash_tree_transition* transition;
-transition=(struct string_hash_tree_transition*)malloc(sizeof(struct string_hash_tree_transition));
+transition=(struct string_hash_tree_transition*)malloc_cb(sizeof(struct string_hash_tree_transition),s->allocator_tree_transition);
 if (transition==NULL) {
    fatal_alloc_error("new_string_hash_tree_transition");
 }
@@ -111,13 +123,15 @@ return transition;
 /**
  * Frees a string_hash_tree transition list.
  */
-void free_string_hash_tree_transition(struct string_hash_tree_transition* t) {
+void free_string_hash_tree_transition(struct string_hash_tree_transition* t,int free_tree_node_struct,int free_tree_transition_struct,struct string_hash* s) {
 struct string_hash_tree_transition* tmp;
 while (t!=NULL) {
-   free_arbre_hash(t->node);
+   free_arbre_hash(t->node,free_tree_node_struct,free_tree_transition_struct,s);
    tmp=t;
    t=t->next;
-   free(tmp);
+   if (free_tree_transition_struct) {
+     free_cb(tmp,s->allocator_tree_transition);
+   }
 }
 }
 
@@ -125,10 +139,12 @@ while (t!=NULL) {
 /**
  * Frees a string_hash_tree.
  */
-void free_arbre_hash(struct string_hash_tree_node* node) {
+void free_arbre_hash(struct string_hash_tree_node* node,int free_tree_node_struct,int free_tree_transition_struct,struct string_hash* s) {
 if (node==NULL) return;
-free_string_hash_tree_transition(node->trans);
-free(node);
+free_string_hash_tree_transition(node->trans,free_tree_node_struct,free_tree_transition_struct,s);
+if (free_tree_node_struct) {
+  free_cb(node,s->allocator_tree_node);
+}
 }
 
 
@@ -137,7 +153,12 @@ free(node);
  */
 void free_string_hash(struct string_hash* s) {
 if (s==NULL) return;
-free_arbre_hash(s->root);
+int free_tree_node_struct=(get_allocator_cb_flag(s->allocator_tree_node) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
+int free_tree_transition_struct=(get_allocator_cb_flag(s->allocator_tree_transition) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
+if (free_tree_node_struct || free_tree_transition_struct) {
+    free_arbre_hash(s->root,free_tree_node_struct,free_tree_transition_struct,s);
+}
+
 if (s->value!=NULL) {
    /* One may have not used the value array */
    for (int i=0;i<s->size;i++) {
@@ -149,6 +170,8 @@ if (s->value!=NULL) {
    }
    free(s->value);
 }
+close_abstract_allocator(s->allocator_tree_node);
+close_abstract_allocator(s->allocator_tree_transition);
 free(s);
 }
 
@@ -226,10 +249,10 @@ if (t==NULL) {
       return NO_VALUE_INDEX;
    }
    /* Otherwise, we create a transition */
-   t=new_string_hash_tree_transition();
+   t=new_string_hash_tree_transition(hash);
    t->letter=key[pos];
    t->next=node->trans;
-   t->node=new_string_hash_tree_node();
+   t->node=new_string_hash_tree_node(hash);
    node->trans=t;
 }
 return get_value_index_(key,pos+1,t->node,hash,insert_policy,value);

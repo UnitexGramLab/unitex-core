@@ -73,6 +73,9 @@ if (free_element==NULL) {
 h->free=free_element;
 h->keycopy=keycopy;
 h->number_of_elements=0;
+h->allocator_hash_list=create_abstract_allocator("new_hash_table",
+                                                 AllocatorCreationFlagAutoFreePrefered | AllocatorFreeOnlyAtAllocatorDelete,
+                                                 sizeof(struct hash_list),NULL);
 return h;
 }
 
@@ -112,6 +115,9 @@ h->hash=NULL;
 h->equal=NULL;
 h->free=NULL;
 h->number_of_elements=0;
+h->allocator_hash_list=create_abstract_allocator("new_hash_table",
+                                                 AllocatorCreationFlagAutoFreePrefered | AllocatorFreeOnlyAtAllocatorDelete,
+                                                 sizeof(struct hash_list),NULL);
 return h;
 }
 
@@ -127,8 +133,8 @@ return new_hash_table(DEFAULT_HASH_SIZE,DEFAULT_RATIO);
 /**
  * Allocates, initializes and returns a new hash_list with an integer key.
  */
-struct hash_list* new_hash_list(int key,struct hash_list* next) {
-struct hash_list* list=(struct hash_list*)malloc(sizeof(struct hash_list));
+struct hash_list* new_hash_list(int key,struct hash_list* next,struct hash_table* h) {
+struct hash_list* list=(struct hash_list*)malloc_cb(sizeof(struct hash_list),h->allocator_hash_list);
 if (list==NULL) {
    fatal_alloc_error("new_hash_list");
 }
@@ -141,8 +147,8 @@ return list;
 /**
  * Allocates, initializes and returns a new hash_list with a pointer key.
  */
-struct hash_list* new_hash_list(KEYCOPY_FUNCTION keycopy,void* key,struct hash_list* next) {
-struct hash_list* list=(struct hash_list*)malloc(sizeof(struct hash_list));
+struct hash_list* new_hash_list(KEYCOPY_FUNCTION keycopy,void* key,struct hash_list* next,struct hash_table* h) {
+struct hash_list* list=(struct hash_list*)malloc_cb(sizeof(struct hash_list),h->allocator_hash_list);
 if (list==NULL) {
    fatal_alloc_error("new_hash_list");
 }
@@ -158,7 +164,7 @@ return list;
 /**
  * Frees a list of elements.
  */
-void free_hash_list(struct hash_list* list,void (*free_element)(void*)) {
+void free_hash_list(struct hash_list* list,void (*free_element)(void*),int free_hash_list_struct,struct hash_table* h) {
 while (list!=NULL) {
    struct hash_list* tmp=list;
    list=list->next;
@@ -166,7 +172,9 @@ while (list!=NULL) {
       /* If we have pointer elements, we must free them */
       free_element(tmp->ptr_key);
    }
-   free(tmp);
+   if (free_hash_list_struct) {
+       free_cb(tmp,h->allocator_hash_list);
+   }
 }
 }
  
@@ -176,13 +184,15 @@ while (list!=NULL) {
  */
 void free_hash_table(struct hash_table* h) {
 if (h==NULL) return;
+int free_hash_list_struct=(get_allocator_cb_flag(h->allocator_hash_list) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
 if (h->table!=NULL) {
    /* This case should always happen, but we never know... */
    for (unsigned int i=0;i<h->capacity;i++) {
-      free_hash_list(h->table[i],h->free);
+      free_hash_list(h->table[i],h->free,free_hash_list_struct,h);
    }
    free(h->table);
 }
+close_abstract_allocator(h->allocator_hash_list);
 free(h);
 }
 
@@ -192,13 +202,19 @@ free(h);
  */
 void clear_hash_table(struct hash_table* h) {
 if (h==NULL) return;
+int free_hash_list_struct=(get_allocator_cb_flag(h->allocator_hash_list) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
 if (h->table!=NULL) {
    /* This case should always happen, but we never know... */
    for (unsigned int i=0;i<h->capacity;i++) {
-      free_hash_list(h->table[i],h->free);
+      free_hash_list(h->table[i],h->free,free_hash_list_struct,h);
       h->table[i]=NULL;
    }
 }
+
+close_abstract_allocator(h->allocator_hash_list);
+h->allocator_hash_list=create_abstract_allocator("new_hash_table",
+                                                 AllocatorCreationFlagAutoFreePrefered | AllocatorFreeOnlyAtAllocatorDelete,
+                                                 sizeof(struct hash_list),NULL);
 h->number_of_elements=0;
 }
 
@@ -284,7 +300,7 @@ if (h->number_of_elements>=(h->ratio*h->capacity)) {
 }
 /* Then we add the new key */
 int cell_index=h->hash(key) & ( h->capacity-1);
-h->table[cell_index]=new_hash_list(h->keycopy,key,h->table[cell_index]);
+h->table[cell_index]=new_hash_list(h->keycopy,key,h->table[cell_index],h);
 h->number_of_elements++;
 return &(h->table[cell_index]->value);
 }
@@ -366,7 +382,7 @@ if (h->number_of_elements>=(h->ratio*h->capacity)) {
 }
 /* Then we add the new key */
 int cell_index=key & (h->capacity-1);
-h->table[cell_index]=new_hash_list(key,h->table[cell_index]);
+h->table[cell_index]=new_hash_list(key,h->table[cell_index],h);
 h->number_of_elements++;
 return &(h->table[cell_index]->value);
 }

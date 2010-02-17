@@ -245,9 +245,9 @@ if (fst2load==NULL) {
    return 0;
 }
 
-Abstract_allocator ptr_prv=create_abstract_allocator("locate_pattern",AllocatorCreationFlagAutoFreePrefered);
+Abstract_allocator locate_abstract_allocator=create_abstract_allocator("locate_pattern",AllocatorCreationFlagAutoFreePrefered);
 
-p->fst2=new_Fst2_clone(fst2load,ptr_prv);
+p->fst2=new_Fst2_clone(fst2load,locate_abstract_allocator);
 
 free_abstract_Fst2(fst2load,&fst2load_free);
 
@@ -257,8 +257,8 @@ if (is_cancelling_requested() != 0) {
    error("User cancel request..\n");
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   free_Fst2(p->fst2,ptr_prv);
-   close_abstract_allocator(ptr_prv);
+   free_Fst2(p->fst2,locate_abstract_allocator);
+   close_abstract_allocator(locate_abstract_allocator);
    u_fclose(text_file);
    free_buffer(p->token_buffer);
    free_stack_unichar(p->stack);
@@ -275,8 +275,8 @@ if (p->filters==NULL) {
    error("Cannot compile filter(s)\n");
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   free_Fst2(p->fst2,ptr_prv);
-   close_abstract_allocator(ptr_prv);
+   free_Fst2(p->fst2,locate_abstract_allocator);
+   close_abstract_allocator(locate_abstract_allocator);
    free_buffer(p->token_buffer);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
@@ -294,8 +294,8 @@ if (p->tokens==NULL) {
    error("Cannot load token list %s\n",tokens);
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   free_Fst2(p->fst2,ptr_prv);
-   close_abstract_allocator(ptr_prv);
+   free_Fst2(p->fst2,locate_abstract_allocator);
+   close_abstract_allocator(locate_abstract_allocator);
    free_buffer(p->token_buffer);
    free_locate_parameters(p);
    u_fclose(text_file);
@@ -312,7 +312,7 @@ if (p->filter_match_index==NULL) {
    free_string_hash(semantic_codes);
    free_string_hash(p->tokens);
 
-   close_abstract_allocator(ptr_prv);
+   close_abstract_allocator(locate_abstract_allocator);
    free_buffer(p->token_buffer);
    free_locate_parameters(p);
    u_fclose(text_file);
@@ -325,12 +325,12 @@ if (p->filter_match_index==NULL) {
 
 
 
-extract_semantic_codes_from_tokens(p->tokens,semantic_codes,ptr_prv);
+extract_semantic_codes_from_tokens(p->tokens,semantic_codes,locate_abstract_allocator);
 u_printf("Loading morphological dictionaries...\n");
 
 load_morphological_dictionaries(morpho_dic_list,p,morpho_bin);
 
-extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes,ptr_prv);
+extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes,locate_abstract_allocator);
 
 p->token_control=(unsigned char*)malloc(n_text_tokens*sizeof(unsigned char));
 if (p->token_control==NULL) {
@@ -346,9 +346,9 @@ for (int i=0;i<n_text_tokens;i++) {
 }
 compute_token_controls(p->alphabet,err,p);
 int number_of_patterns,is_DIC,is_CDIC,is_SDIC;
-p->pattern_tree_root=new_pattern_node(ptr_prv);
+p->pattern_tree_root=new_pattern_node(locate_abstract_allocator);
 u_printf("Computing fst2 tags...\n");
-process_tags(&number_of_patterns,semantic_codes,&is_DIC,&is_CDIC,&is_SDIC,p,ptr_prv);
+process_tags(&number_of_patterns,semantic_codes,&is_DIC,&is_CDIC,&is_SDIC,p,locate_abstract_allocator);
 p->current_compound_pattern=number_of_patterns;
 p->DLC_tree=new_DLC_tree(p->tokens->size);
 struct lemma_node* root=new_lemma_node();
@@ -357,9 +357,9 @@ load_dic_for_locate(dlf,mask_encoding_compatibility_input,p->alphabet,number_of_
 u_printf("Loading dlc...\n");
 load_dic_for_locate(dlc,mask_encoding_compatibility_input,p->alphabet,number_of_patterns,is_DIC,is_CDIC,root,p);
 /* We look if tag tokens like "{today,.ADV}" verify some patterns */
-check_patterns_for_tag_tokens(p->alphabet,number_of_patterns,root,p,ptr_prv);
+check_patterns_for_tag_tokens(p->alphabet,number_of_patterns,root,p,locate_abstract_allocator);
 u_printf("Optimizing fst2 pattern tags...\n");
-optimize_pattern_tags(p->alphabet,root,p,ptr_prv);
+optimize_pattern_tags(p->alphabet,root,p,locate_abstract_allocator);
 u_printf("Optimizing compound word dictionary...\n");
 optimize_DLC(p->DLC_tree);
 free_string_hash(semantic_codes);
@@ -367,7 +367,7 @@ p->variables=new_Variables(p->fst2->variables);
 
 u_printf("Optimizing fst2...\n");
 
-p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2,ptr_prv);
+p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2,locate_abstract_allocator);
 
 if (is_korean) {
 	p->korean=new Korean(p->alphabet);
@@ -383,22 +383,22 @@ u_fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
 
-int free_ptr_ptv=(get_allocator_cb_flag(ptr_prv) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
+int free_abstract_allocator_item=(get_allocator_cb_flag(locate_abstract_allocator) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
 
-if (free_ptr_ptv) {
-  free_optimized_states(p->optimized_states,p->fst2->number_of_states,ptr_prv);
+if (free_abstract_allocator_item) {
+  free_optimized_states(p->optimized_states,p->fst2->number_of_states,locate_abstract_allocator);
 }
 free_stack_unichar(p->stack);
 /** Too long to free the DLC tree if it is big
  * free_DLC_tree(p->DLC_tree);
  */
-if (free_ptr_ptv) {
-  free_pattern_node(p->pattern_tree_root,ptr_prv);
-  free_Fst2(p->fst2,ptr_prv);
-  free_list_int(p->tag_token_list,ptr_prv);
+if (free_abstract_allocator_item) {
+  free_pattern_node(p->pattern_tree_root,locate_abstract_allocator);
+  free_Fst2(p->fst2,locate_abstract_allocator);
+  free_list_int(p->tag_token_list,locate_abstract_allocator);
 }
-close_abstract_allocator(ptr_prv);
-ptr_prv=NULL;
+close_abstract_allocator(locate_abstract_allocator);
+locate_abstract_allocator=NULL;
 
 /* We don't free 'parameters->tags' because it was just a link on 'parameters->fst2->tags' */
 free_alphabet(p->alphabet);

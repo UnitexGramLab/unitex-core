@@ -24,6 +24,7 @@
 
 #include "Unicode.h"
 #include "Alphabet.h"
+#include "AbstractAllocator.h"
 
 
 #define ENLARGE_IF_NEEDED 0
@@ -80,6 +81,8 @@ struct string_hash {
    int bound_policy;
    struct string_hash_tree_node* root;
    unichar** value;
+   Abstract_allocator allocator_tree_node;
+   Abstract_allocator allocator_tree_transition;
 };
 
 

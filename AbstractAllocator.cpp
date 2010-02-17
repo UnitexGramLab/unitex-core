@@ -111,16 +111,24 @@ UNITEX_FUNC int UNITEX_CALL GetNbAllocatorSpaceInstalled()
 const AllocatorSpace * GetAllocatorSpaceForParam(const char*creator,int flagAllocator,size_t expected_size_item,const void* private_create_ptr)
 {
 	const struct List_AllocatorSpace* tmp = p_allocator_info_list;
+	const AllocatorSpace * best_aas = NULL;
+	int best_priority = 0;
 
 	while (tmp != NULL)
 	{
 		const AllocatorSpace * test_aas = &(tmp->aas);
-        if (tmp->aas.func_array.fnc_is_param_allocator_compatible(creator,flagAllocator,expected_size_item,private_create_ptr,tmp->aas.privateAllocatorSpacePtr) != 0)
-			return test_aas;		
+
+        int cur_priority = tmp->aas.func_array.fnc_is_param_allocator_compatible(creator,flagAllocator,expected_size_item,private_create_ptr,tmp->aas.privateAllocatorSpacePtr) ;
+
+        if ((cur_priority>0) && (cur_priority>best_priority))
+        {
+            best_aas = test_aas;
+            best_priority = cur_priority;
+        }
 
 		tmp = tmp->next;
 	}
-	return NULL;
+	return best_aas;
 }
 
 

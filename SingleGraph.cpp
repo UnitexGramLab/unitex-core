@@ -1104,7 +1104,7 @@ while (!is_empty(fifo)) {
           */
          struct hash_list* tmp=list;
          list=list->next;
-         free(tmp);
+         free_cb(tmp,transition_hash->allocator_hash_list);
       }
       transition_hash->table[i]=NULL;
    }

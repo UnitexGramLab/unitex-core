@@ -23,6 +23,7 @@
 #define HashTableH
 
 #include "Any.h"
+#include "AbstractAllocator.h"
 
 
 /* Values used to set the behavior if the key is not in the table */
@@ -86,6 +87,7 @@ struct hash_table {
     * in the table. This is useful when we look for a key that may already be in the table:
     * in such a case, we don't want to malloc a key that finally will have to be freed. */
    KEYCOPY_FUNCTION keycopy;
+   Abstract_allocator allocator_hash_list;
 };
 
 
