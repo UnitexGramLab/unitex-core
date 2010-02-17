@@ -513,7 +513,7 @@ while (res->n_semantic_codes<MAX_SEMANTIC_CODES && line[i]=='+') {
       return NULL;
    }
    /* A grammatical or semantic code cannot be empty */
-   if (temp[0]=='\0') {
+   if (val==P_EOS || temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_SEMANTIC_CODE;
@@ -536,7 +536,7 @@ while (res->n_inflectional_codes<MAX_INFLECTIONAL_CODES && line[i]==':') {
       return NULL;
    }
    /* An inflectional code cannot be empty */
-   if (temp[0]=='\0') {
+   if (val==P_EOS || temp[0]=='\0') {
       if (!verbose) {
          error("***Dictionary error: incorrect line\n_%S_\n",line);
       } else (*verbose)=P_EMPTY_INFLECTIONAL_CODE;

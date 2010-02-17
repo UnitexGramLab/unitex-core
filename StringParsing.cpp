@@ -74,6 +74,7 @@ const unichar P_ELAG_TAG[] = { '.', '!', ':', '>', 0 };
 int parse_string(const unichar* s,int *ptr,unichar* result,const unichar* stop_chars,
                  const unichar* forbidden_chars,const unichar* chars_to_keep_protected) {
 int j=0;
+result[0]='\0';
 if (s[*ptr]=='\0') return P_EOS;
 while (s[*ptr]!='\0') {
    if (s[*ptr]==PROTECTION_CHAR) {
