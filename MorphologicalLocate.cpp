@@ -341,7 +341,9 @@ while (meta_list!=NULL) {
          case META_DIC: {
             if (token==-1 || token==p->STOP) {break;}
             struct parsing_info* L2=NULL;
-            explore_dic_in_morpho_mode(p,pos,pos_in_token,&L2,NULL,0,jamo,pos_in_jamo);
+            unichar var_name[128];
+            int save_dic_entry=(p->output_policy!=IGNORE_OUTPUTS && is_morpho_variable_output(p->tags[t->tag_number]->output,var_name));
+            explore_dic_in_morpho_mode(p,pos,pos_in_token,&L2,NULL,save_dic_entry,jamo,pos_in_jamo);
             unichar *content1=content_buffer;
             if (L2!=NULL) {
                struct parsing_info* L_first=L2;
@@ -357,7 +359,12 @@ while (meta_list!=NULL) {
                      continue;
                   }
                   #endif
-                  if (p->output_policy!=IGNORE_OUTPUTS) {
+
+                  /* WARNING: we don't process the tag's output as usual if it
+                   *          is a variable declaration like $abc$. Note that it could
+                   *          make a difference if a variable with the same
+                   *          name was declared before entering the morphological mode */
+                  if (!save_dic_entry && p->output_policy!=IGNORE_OUTPUTS) {
                      if (!process_output(p->tags[t->tag_number]->output,p)) {
                         break;
                      }
@@ -377,10 +384,19 @@ while (meta_list!=NULL) {
                      new_pos_in_token=L2->pos_in_token;
                   }
                   /* We continue the exploration */
+                  struct dela_entry* old_value=NULL;
+                  if (save_dic_entry) {
+                     old_value=clone_dela_entry(get_dic_variable(var_name,p->dic_variables));
+                     set_dic_variable(var_name,L2->dic_entry,&(p->dic_variables));
+                  }
                   morphological_locate(graph_depth,meta_list->transition->state_number,
-                		               new_pos,new_pos_in_token,depth+1,matches,n_matches,ctx,
-                		               p,p_token_error_ctx,
-                		               L2->jamo,L2->pos_in_jamo,content_buffer);
+                                    new_pos,new_pos_in_token,depth+1,matches,n_matches,ctx,
+                                    p,p_token_error_ctx,
+                                    L2->jamo,L2->pos_in_jamo,content_buffer);
+                  if (save_dic_entry) {
+                     set_dic_variable(var_name,old_value,&(p->dic_variables));
+                     free_dela_entry(old_value);
+                  }
                   p->stack->stack_pointer=stack_top;
                   L2=L2->next;
                } while (L2!=NULL);
@@ -854,7 +870,7 @@ if (!(n_transitions & 32768)) {
 	//error("\narriba!\n\n\n");
    /* If this node is final, we get the INF line number */
    inflected[pos_in_inflected]='\0';
-   if (pattern==NULL) {
+   if (pattern==NULL && !save_dic_entry) {
       /* If any word will do. Note that we don't save DELAF entries
        * for the <DIC> pattern */
       (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),NULL,jamo,pos_in_jamo);
@@ -870,7 +886,7 @@ if (!(n_transitions & 32768)) {
          uncompress_entry(inflected,tmp->string,line);
          //error("\non decompresse la ligne _%S_\n",line);
          struct dela_entry* dela_entry=tokenize_DELAF_line(line);
-         if (dela_entry!=NULL && is_entry_compatible_with_pattern(dela_entry,pattern)) {
+         if (dela_entry!=NULL && (pattern==NULL || is_entry_compatible_with_pattern(dela_entry,pattern))) {
             //error("et ca matche!!\n");
             (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),
             		                              save_dic_entry?dela_entry:NULL,jamo,pos_in_jamo);
