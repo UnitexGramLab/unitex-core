@@ -1105,17 +1105,14 @@ return ret_value;
 struct pattern* tokenize_grammar_tag(unichar* tag,int *negation) {
 (*negation)=0;
 if (tag==NULL) {
-   error("NULL pattern error in tokenize_grammar_tag\n");
-   return NULL;
+   fatal_error("NULL pattern error in tokenize_grammar_tag\n");
 }
 if (tag[0]!='<') {
-   error("ERROR: a pattern does not start with < in tokenize_grammar_tag\n");
-   return NULL;
+   fatal_error("ERROR: a pattern does not start with < in tokenize_grammar_tag\n");
 }
 int l=u_strlen(tag);
 if (tag[l-1]!='>') {
-   error("ERROR: a pattern does not end with > in tokenize_grammar_tag\n");
-   return NULL;
+   fatal_error("ERROR: a pattern does not end with > in tokenize_grammar_tag\n");
 }
 if (tag[1]=='!') {(*negation)=1;}
 else {(*negation)=0;}
