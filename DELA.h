@@ -127,7 +127,7 @@ unsigned char* load_BIN_file(const char*,Abstract_allocator prv_alloc=STANDARD_A
 void free_BIN_file(unsigned char*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 void rebuild_dictionary(const unsigned char*,const struct INF_codes*,U_FILE*);
 void extract_semantic_codes(const char*,struct string_hash*);
-void tokenize_DELA_line_into_3_parts(const unichar*,unichar*,unichar*,unichar*);
+void tokenize_DELA_line_into_3_parts(unichar*,unichar*,unichar*,unichar*);
 void check_DELA_line(const unichar*,U_FILE*,int,int,char*,struct string_hash*,struct string_hash*,
                      struct string_hash*,struct string_hash*,int*,int*,Alphabet*,int,Abstract_allocator prv_alloc=NULL);
 int warning_on_code(const unichar*,unichar*,int);
@@ -144,7 +144,6 @@ int same_semantic_codes(const struct dela_entry*,const struct dela_entry*);
 int same_inflectional_codes(const struct dela_entry*,const struct dela_entry*);
 int same_codes(const struct dela_entry*,const struct dela_entry*);
 void merge_inflectional_codes(struct dela_entry*,const struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
-int is_a_valid_tag_sequence(const unichar*);
 int one_inflectional_codes_contains_the_other(const unichar*,const unichar*);
 
 #endif
