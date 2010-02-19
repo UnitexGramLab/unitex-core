@@ -35,10 +35,10 @@
 #ifndef UNITEX_FUNC_DEFINED
 #define UNITEX_FUNC_DEFINED
 
-#ifdef UNITEX_FUNC_EXPORT_DLL
+#if defined(UNITEX_FUNC_EXPORT_DLL) || defined(UNITEX_FUNC_EXPORT)
 #define UNITEX_FUNC __declspec(dllexport)
 #else
-#ifdef UNITEX_FUNC_IMPORT_DLL
+#if defined(UNITEX_FUNC_IMPORT_DLL) || defined(UNITEX_FUNC_IMPORT)
 #define UNITEX_FUNC __declspec(dllimport)
 #else
 #define UNITEX_FUNC
@@ -64,7 +64,27 @@
 
 #ifndef UNITEX_FUNC_DEFINED
 #define UNITEX_FUNC_DEFINED
+
+
+#if defined(__GCC__)
+#if __GCC__ >= 4
+#define GCC_V4_or_upper
+#endif
+#endif
+
+#if defined(__GNUC__) && (!defined(GCC_V4_or_upper))
+#if __GNUC__ >= 4
+#define GCC_V4_or_upper
+#endif
+#endif
+
+
+#if defined(GCC_V4_or_upper) && (defined(UNITEX_FUNC_EXPORT) || defined(UNITEX_FUNC_IMPORT))
+#define UNITEX_FUNC __attribute__ ((visibility("default")))
+#else
 #define UNITEX_FUNC
+#endif
+
 #endif
 
 #ifndef UNITEX_CALL_DEFINED
