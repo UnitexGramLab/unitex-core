@@ -43,7 +43,7 @@ const char* usage_Tagger =
          "\n"
          "OPTIONS:\n"
 		 "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
-		 "  -d DICT/--dictionnary=DICT: use the .bin tagger dictionary containing tuples (unigrams,bigrams and trigrams)"
+		 "  -d DICT/--dictionary=DICT: use the .bin tagger dictionary containing tuples (unigrams,bigrams and trigrams)"
 		 " with frequencies\n"
 		 "  -t TAGSET/--tagset=TAGSET: use the TAGSET ELAG tagset file to normalize the dictionary entries\n"
 		 "\n"
@@ -82,8 +82,12 @@ if (argc==1) {
 int val,index=-1;
 struct OptVars* vars=new_OptVars();
 char tfst[FILENAME_MAX]="";
+char tind[FILENAME_MAX]="";
+char tmp_tind[FILENAME_MAX]="";
+char output_tind[FILENAME_MAX];
 char tmp_tfst[FILENAME_MAX]="";
 char output[FILENAME_MAX]="";
+char temp[FILENAME_MAX]="";
 char dictionary[FILENAME_MAX]="";
 char alphabet[FILENAME_MAX]="";
 char tagset[FILENAME_MAX]="";
@@ -123,14 +127,20 @@ if (vars->optind!=argc-1) {
    error("Invalid arguments: rerun with --help\n");
    return 1;
 }
-if (output[0]=='\0') {
-   fatal_error("No output specified!\n");
-}
+
 if(alphabet[0] == '\0'){
 	fatal_error("No alphabet file specified\n");
 }
 strcpy(tfst,argv[vars->optind]);
+
+strcpy(tind,tfst);
+remove_extension(tind);
+strcat(tind,".tind");
+
 Alphabet* alpha = load_alphabet(alphabet);
+
+get_path(tfst,temp);
+strcat(temp,"temp.tfst");
 
 struct BIN_free_info bin_free;
 unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
@@ -173,14 +183,16 @@ Tfst* input_tfst = open_text_automaton(current_tfst);
 if(input_tfst == NULL) {
 	fatal_error("Cannot load input .tfst\n");
 }
-char output_tind[FILENAME_MAX];
-remove_extension(output,output_tind);
-strcat(output_tind,".tind");
-U_FILE* out_tfst=u_fopen(UTF16_LE,output,U_WRITE);
+
+
+remove_extension(temp,tmp_tind);
+strcat(tmp_tind,".tind");
+
+U_FILE* out_tfst=u_fopen(UTF16_LE,temp,U_WRITE);
 if (out_tfst==NULL) {
 	fatal_error("Cannot create output .tfst\n");
 }
-U_FILE* out_tind=u_fopen(BINARY,output_tind,U_WRITE);
+U_FILE* out_tind=u_fopen(BINARY,tmp_tind,U_WRITE);
 if (out_tind==NULL) {
 	fatal_error("Cannot create output .tind\n");
 }
@@ -191,6 +203,19 @@ do_tagging(input_tfst,result,bin,inf,alpha,form_type);
 
 close_text_automaton(input_tfst);
 close_text_automaton(result);
+if(output[0]=='\0'){
+	af_remove(tfst);
+	af_remove(tind);
+	af_rename(temp,tfst);
+	af_rename(tmp_tind,tind);
+}
+else {
+	af_rename(temp,output);
+	strcpy(output_tind,output);
+	remove_extension(output_tind);
+	strcat(output_tind,".tind");
+	af_rename(tmp_tind,output_tind);
+}
 free_alphabet(alpha);
 free_abstract_BIN(bin,&bin_free);
 free_abstract_INF(inf,&inf_free);

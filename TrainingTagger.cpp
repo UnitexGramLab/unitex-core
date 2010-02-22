@@ -36,7 +36,7 @@
 
 
 const char* usage_TrainingTagger =
-         "Usage: Tagger [OPTIONS] <text>\n"
+         "Usage: TrainingTagger [OPTIONS] <text>\n"
          "\n"
          "  <text>: the text corpus to use in input\n"
          "\n"
@@ -129,7 +129,7 @@ if(output[0]=='\0'){
 	remove_path_and_extension(text,output);
 }
 
-char path[4096],filename[4096];
+char path[FILENAME_MAX],filename[FILENAME_MAX];
 get_path(text,path);
 /* we create files which will contain statistics extracted from the tagged corpus */
 U_FILE* sforms_file = NULL, *cforms_file = NULL;
