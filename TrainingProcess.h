@@ -48,11 +48,21 @@ struct corpus_entry{
 	unichar* overall_codes;
 };
 
+void create_disclaimer(char* file);
 void free_corpus_entry(corpus_entry*);
 void push_corpus_entry(corpus_entry*,corpus_entry**);
+int u_strrchr(unichar*,unichar);
+int u_strrchr(unichar*,char);
+struct corpus_entry* new_corpus_entry(unichar*);
 struct corpus_entry* create_corpus_entry(unichar*);
-//void add_statistics(corpus_entry**,U_FILE*,U_FILE*);
-
+void free_context_matrix(struct corpus_entry**);
+void initialize_context_matrix(struct corpus_entry**);
+struct corpus_entry** new_context_matrix();
+void add_key_table(unichar*,struct string_hash_ptr*);
+void add_key_table(char*,struct string_hash_ptr*);
+unichar* compute_contextual_entries(struct corpus_entry**,int,int);
+void add_statistics(struct corpus_entry**,struct string_hash_ptr*,struct string_hash_ptr*);
+void write_keys_values(struct string_hash_ptr*,struct string_hash_tree_node*,unichar*,U_FILE*);
 void do_training(U_FILE*,U_FILE*,U_FILE*);
 
 #endif

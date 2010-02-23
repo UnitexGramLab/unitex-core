@@ -144,17 +144,27 @@ if(c_forms == 1){
 	cforms_file=u_fopen(UTF16_LE,compound_forms,U_WRITE);
 }
 
+u_printf("Gathering statistics from tagged corpus...\n");
 do_training(input_text,sforms_file,cforms_file);
 
 /* we close all files and then we sort text dictionaries */
 u_fclose(input_text);
+char disclaimer[FILENAME_MAX];
 if(sforms_file != NULL){
 	u_fclose(sforms_file);
 	pseudo_main_SortTxt(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,simple_forms);
+	strcpy(disclaimer,simple_forms);
+	remove_extension(disclaimer);
+	strcat(disclaimer,".txt");
+	create_disclaimer(disclaimer);
 }
 if(cforms_file != NULL){
 	u_fclose(cforms_file);
 	pseudo_main_SortTxt(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,0,NULL,NULL,0,compound_forms);
+	strcpy(disclaimer,compound_forms);
+	remove_extension(disclaimer);
+	strcat(disclaimer,".txt");
+	create_disclaimer(disclaimer);
 }
 
 /* we compress dictionaries if option is specified by user (output is ".bin") */
@@ -168,8 +178,8 @@ if(c_forms == 1){
 	pseudo_main_Compress(DEFAULT_ENCODING_OUTPUT,DEFAULT_BOM_OUTPUT,ALL_ENCODING_BOM_POSSIBLE,0,compound_forms);
 }
 }
-
 free_OptVars(vars);
+u_printf("Done.\n");
 return 0;
 }
 

@@ -619,5 +619,9 @@ for(int i=1;i<=input_tfst->N;i++){
 	vector_ptr* new_tags = do_viterbi(bin,inf,alphabet,input_tfst,form_type);
 	save_current_sentence(input_tfst,result_tfst->tfst,result_tfst->tind,(unichar**)new_tags->tab,new_tags->nbelems);
 	free_vector_ptr(new_tags,free);
+	if(i%100 == 0){
+		u_printf("Sentence %d/%d...\r",i,input_tfst->N);
+	}
 }
+u_printf("\n");
 }

@@ -26,6 +26,18 @@
 #include "TrainingProcess.h"
 
 /**
+ * Creates a Disclaimer text file for each one of the training dictionaries.
+ * Indicates that those cannot be used like other dictionaries.
+ */
+void create_disclaimer(char* file){
+	U_FILE* disclaimer = u_fopen(UTF16_LE,file,U_WRITE);
+	unichar* text = u_strdup("This file contains statistics gathered from a tagged corpus.\nIt cannot be used like other .bin dictionaries but only in input of Tagger program.\n\nContact : unitex@univ-mlv.fr");
+	fwrite(text,sizeof(unichar),u_strlen(text),disclaimer);
+	free(text);
+	u_fclose(disclaimer);
+}
+
+/**
  * Frees all the memory associated to the given corpus_entry structure.
  */
 void free_corpus_entry(struct corpus_entry* entry){
@@ -222,7 +234,8 @@ return line;
 /**
  * Computes lexical and contextual entries to put into the file containing statistics.
  */
-void add_statistics(struct corpus_entry** context,struct string_hash_ptr* sforms_table,struct string_hash_ptr* cforms_table){
+void add_statistics(struct corpus_entry** context,struct string_hash_ptr* sforms_table,
+		            struct string_hash_ptr* cforms_table){
 char prefix[] = "word_";
 /* we first raise the number of time current word occurs in the corpus (unigrams) */
 struct corpus_entry* current = context[MAX_CONTEXT-1];

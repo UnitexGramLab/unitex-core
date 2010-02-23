@@ -168,6 +168,7 @@ if(form_type == 1){
 	if(tagset[0] == '\0'){
 		fatal_error("-t option is mandatory when compound forms dictionary is used\n");
 	}
+	u_printf("explodes tfst automaton according to tagset...\n");
 	strcpy(tmp_tfst,tfst);
 	remove_extension(tmp_tfst);
 	strcat(tmp_tfst,"_explode.tfst");
@@ -198,6 +199,7 @@ if (out_tind==NULL) {
 }
 Tfst* result=new_Tfst(out_tfst,out_tind,input_tfst->N);
 
+u_printf("Tagging...\n");
 /* launches tagging process on the input tfst file */
 do_tagging(input_tfst,result,bin,inf,alpha,form_type);
 
@@ -220,6 +222,7 @@ free_alphabet(alpha);
 free_abstract_BIN(bin,&bin_free);
 free_abstract_INF(inf,&inf_free);
 free_OptVars(vars);
+u_printf("Done.\n");
 return 0;
 }
 
