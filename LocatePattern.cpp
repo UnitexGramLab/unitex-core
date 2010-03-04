@@ -64,6 +64,8 @@ p->fst2=NULL;
 p->tokens=NULL;
 p->absolute_offset=0;
 p->current_origin=-1;
+p->max_count_call=0;
+p->max_count_call_warning=0;
 p->token_buffer=new_buffer_for_file(INTEGER_BUFFER,fileread);
 p->buffer=p->token_buffer->int_buffer;
 p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
@@ -140,7 +142,7 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
                    SpacePolicy space_policy,int search_limit,char* morpho_dic_list,
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
-                   int is_korean) {
+                   int is_korean,int max_count_call,int max_count_call_warning) {
 
 U_FILE* text_file;
 U_FILE* out;
@@ -155,6 +157,12 @@ fseek(text_file,0,SEEK_END);
 long text_size=ftell(text_file)/sizeof(int);
 fseek(text_file,save_pos,SEEK_SET);
 
+if (max_count_call == -1) {
+   max_count_call = text_size;
+}
+if (max_count_call_warning == -1) {
+   max_count_call_warning = text_size;
+}
 struct locate_parameters* p=new_locate_parameters(text_file);
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;
@@ -165,6 +173,8 @@ p->ambiguous_output_policy=ambiguous_output_policy;
 p->variable_error_policy=variable_error_policy;
 p->protect_dic_chars=protect_dic_chars;
 p->mask_encoding_compatibility_input = mask_encoding_compatibility_input;
+p->max_count_call = max_count_call;
+p->max_count_call_warning = max_count_call_warning;
 
 char concord[FILENAME_MAX];
 char concord_info[FILENAME_MAX];

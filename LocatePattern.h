@@ -121,6 +121,10 @@ struct locate_parameters {
    /* Current origin position in the token buffer */
    int current_origin;
 
+   /* the maximum number of locate call for each token */
+   int max_count_call;
+   int max_count_call_warning;
+
    /* The token buffer used to parse the text. The 'buffer' array is a
     * shortcut to the real integer array of 'token_buffer'. */
    struct buffer* token_buffer;
@@ -213,7 +217,7 @@ struct locate_parameters {
 int locate_pattern(char*,char*,char*,char*,char*,char*,char*,
                    MatchPolicy,OutputPolicy,Encoding,int,int,char*,TokenizationPolicy,
                    SpacePolicy,int,char*,AmbiguousOutputPolicy,
-                   VariableErrorPolicy,int,int);
+                   VariableErrorPolicy,int,int,int,int);
 
 void numerote_tags(Fst2*,struct string_hash*,int*,struct string_hash*,Alphabet*,int*,int*,int*,int,struct locate_parameters*);
 unsigned char get_control_byte(unichar*,Alphabet*,struct string_hash*,TokenizationPolicy);

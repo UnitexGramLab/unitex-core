@@ -113,7 +113,7 @@ u_printf(usage_Locate);
 }
 
 
-const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKhk:q:";
+const char* optstring_Locate=":t:a:m:SLAIMRXYZln:d:cwsxbzpKhk:q:o:";
 const struct option_TS lopts_Locate[]= {
       {"text",required_argument_TS,NULL,'t'},
       {"alphabet",required_argument_TS,NULL,'a'},
@@ -138,6 +138,7 @@ const struct option_TS lopts_Locate[]= {
       {"no_ambiguous_outputs",no_argument_TS,NULL,'z'},
       {"protect_dic_chars",no_argument_TS,NULL,'p'},
       {"korean",no_argument_TS,NULL,'K'},
+      {"stop_token_count",required_argument_TS,NULL,'o'},
       {"input_encoding",required_argument_TS,NULL,'k'},
       {"output_encoding",required_argument_TS,NULL,'q'},
       {"help",no_argument_TS,NULL,'h'},
@@ -170,6 +171,8 @@ AmbiguousOutputPolicy ambiguous_output_policy=ALLOW_AMBIGUOUS_OUTPUTS;
 VariableErrorPolicy variable_error_policy=IGNORE_VARIABLE_ERRORS;
 int protect_dic_chars=0;
 int is_korean=0;
+int max_count_call=0;
+int max_count_call_warning=0;
 char foo;
 Encoding encoding_output = DEFAULT_ENCODING_OUTPUT;
 int bom_output = DEFAULT_BOM_OUTPUT;
@@ -207,6 +210,25 @@ while (EOF!=(val=getopt_long_TS(argc,argv,optstring_Locate,lopts_Locate,&index,v
    case 'n': if (1!=sscanf(vars->optarg,"%d%c",&search_limit,&foo) || search_limit<=0) {
                 /* foo is used to check that the search limit is not like "45gjh" */
                 fatal_error("Invalid search limit argument: %s\n",vars->optarg);
+             }
+             break;
+   case 'o': {
+                int param1 = 0;
+                int param2 = 0;
+                int ret_scan = sscanf(vars->optarg,"%d,%d%c",&param1,&param2,&foo);
+                if (ret_scan == 2) {
+                    max_count_call_warning = param1;
+                    max_count_call = param2;
+                    if (((max_count_call < -1)) || (max_count_call_warning < -1)) {
+                        /* foo is used to check that the search limit is not like "45gjh" */
+                        fatal_error("Invalid stop count argument: %s\n",vars->optarg);
+                    }
+                }
+                else
+                    if (1!=sscanf(vars->optarg,"%d%c",&max_count_call,&foo) || (max_count_call < -1)) {
+                        /* foo is used to check that the search limit is not like "45gjh" */
+                        fatal_error("Invalid stop count argument: %s\n",vars->optarg);
+                    }
              }
              break;
    case 'd': if (vars->optarg[0]=='\0') {
@@ -280,7 +302,7 @@ strcat(err,"err");
 int OK=locate_pattern(text_cod,tokens_txt,argv[vars->optind],dlf,dlc,err,alph,match_policy,output_policy,
                encoding_output,bom_output,mask_encoding_compatibility_input,
                dynamicSntDir,tokenization_policy,space_policy,search_limit,morpho_dic,
-               ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean);
+               ambiguous_output_policy,variable_error_policy,protect_dic_chars,is_korean,max_count_call,max_count_call_warning);
 if (morpho_dic!=NULL) {
    free(morpho_dic);
 }

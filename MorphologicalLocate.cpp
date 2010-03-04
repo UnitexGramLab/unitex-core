@@ -816,7 +816,16 @@ if (L!=NULL) {
 
       variable_backup_memory_reserve* backup_reserve = create_variable_backup_memory_reserve(p->variables);
       int count_cancel_trying=0;
-      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve,&count_cancel_trying);
+      int count_call=0;
+      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve,&count_cancel_trying,&count_call);
+      if ((p->max_count_call > 0) && (count_call>=p->max_count_call)) {
+          u_printf("stop computing token %u after %u step computing\n",p->absolute_offset+p->current_origin,count_call);
+      }
+      else
+      if ((p->max_count_call_warning > 0) && (count_call>=p->max_count_call_warning)) {
+          u_printf("warning : computing token %u take %u step computing\n",p->absolute_offset+p->current_origin,count_call);
+      }
+
       free_reserve(backup_reserve);
 
       p->stack->stack_pointer=stack_top;
