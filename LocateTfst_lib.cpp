@@ -1015,6 +1015,13 @@ if (grammar_tag->input[0]=='<' && grammar_tag->input[1]!='\0') {
       }
       goto no_match;
    }
+   if (!u_strcmp(grammar_tag->input,"<TDIC>")) {
+      /* <TDIC> matches any tag like {tutu,toto.XXX} */
+      if (text_entry!=NULL) {
+         goto ok_match;
+      }
+      goto no_match;
+   }
    if (!u_strcmp(grammar_tag->input,"<!DIC>")) {
       /* <DIC> matches any sequence of letters that is not a tag like {tutu,toto.XXX} */
       if (is_letter(text_tag->content[0],infos->alphabet)) {
