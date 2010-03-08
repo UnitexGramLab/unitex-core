@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,7 @@ enum meta_symbol {
    META_DIC, // <DIC>: used to match a simple or compound word present in the text dictionaries (dlf/dlc)
    META_SDIC, // <SDIC>: used to match a simple word present in the text dlf dictionary
    META_CDIC, // <CDIC>: used to match a compound word present in the text dlc dictionary
+   META_TDIC, // <TDIC>: used to match a tag like {XXX,XXX.XXX}
    META_MAJ, // <MAJ>: used to match a token made of uppercase letters
    META_MIN, // <MIN>: used to match a token made of lowercase letters
    META_PRE, // <PRE>: used to match a token made of letters that starts with an uppercase one

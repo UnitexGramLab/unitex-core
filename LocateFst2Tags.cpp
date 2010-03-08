@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -33,8 +33,8 @@
  * This function analyses the inputs of all the tags of the given .fst2 in
  * order to determine their kind. 'tokens' contains all the text tokens.
  * After the execution of the function, 'number_of_patterns' will contain
- * the number of patterns found in the grammar, and 'is_DIC'/'is_CDIC'/'is_SDIC'
- * will contain 1 if the tag 'DIC'/'CDIC'/'SDIC' has been found. See
+ * the number of patterns found in the grammar, and 'is_DIC'/'is_CDIC'/'is_SDIC'/'is_TDIC'
+ * will contain 1 if the tag 'DIC'/'CDIC'/'SDIC'/'TDIC' has been found. See
  * the comment below about the special case for '<!DIC>'.
  */
 void process_tags(int *number_of_patterns,
@@ -144,6 +144,10 @@ for (int i=0;i<fst2->number_of_tags;i++) {
                tag[i]->type=META_TAG;
                tag[i]->meta=META_SDIC;
                (*is_SDIC)=1;
+            }
+            else if (!u_strcmp(content,"TDIC")) {
+               tag[i]->type=META_TAG;
+               tag[i]->meta=META_TDIC;
             }
             else if (!u_strcmp(content,"MAJ")) {
                tag[i]->type=META_TAG;

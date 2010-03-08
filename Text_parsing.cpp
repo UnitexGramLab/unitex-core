@@ -644,6 +644,13 @@ while (meta_list!=NULL) {
             }
             break;
 
+         case META_TDIC:
+            if (morpho_filter_OK && (ctrl&TDIC_TOKEN_BIT_MASK)) {
+               start=pos2;
+               end=pos2+1;
+            }
+            break;
+
          case META_MAJ:
             if (!morpho_filter_OK) break;
             if (!negation) {

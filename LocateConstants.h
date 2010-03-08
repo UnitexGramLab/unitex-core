@@ -1,7 +1,7 @@
  /*
   * Unitex
   *
-  * Copyright (C) 2001-2010 Université Paris-Est Marne-la-Vallée <unitex@univ-mlv.fr>
+  * Copyright (C) 2001-2010 Universitï¿½ Paris-Est Marne-la-Vallï¿½e <unitex@univ-mlv.fr>
   *
   * This library is free software; you can redistribute it and/or
   * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@
 #define PRE_TOKEN_BIT_MASK 16
 #define CDIC_TOKEN_BIT_MASK 32
 #define NOT_DIC_TOKEN_BIT_MASK 64
+#define TDIC_TOKEN_BIT_MASK 128
 
 /* This negative constant is used to indicate that we want all the matches */
 #define NO_MATCH_LIMIT -1

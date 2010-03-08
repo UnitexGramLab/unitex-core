@@ -588,7 +588,7 @@ if (is_letter(token[0],alph)) {
  * checking if it is a tag like {today,.ADV} */
 if (token[0]=='{' && u_strcmp(token,"{S}") && u_strcmp(token,"{STOP}")) {
    /* Anyway, such a tag is classed as verifying <MOT> and <DIC> */
-   set_bit_mask(&c,MOT_TOKEN_BIT_MASK|DIC_TOKEN_BIT_MASK);
+   set_bit_mask(&c,MOT_TOKEN_BIT_MASK|DIC_TOKEN_BIT_MASK|TDIC_TOKEN_BIT_MASK);
    struct dela_entry* temp=tokenize_tag_token(token);
    if (is_upper(temp->inflected[0],alph)) {
       set_bit_mask(&c,PRE_TOKEN_BIT_MASK);
