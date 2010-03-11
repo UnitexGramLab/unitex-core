@@ -414,6 +414,10 @@ while (meta_list!=NULL) {
             fatal_error("Unexpected <CDIC> tag in morphological mode\n");
             break;
 
+         case META_TDIC:
+            fatal_error("Unexpected <TDIC> tag in morphological mode\n");
+            break;
+
          case META_MAJ: /* In morphological mode, this tag matches an uppercase letter, as defined in
                            the alphabet file */
             if (token==-1 || token==p->STOP) {break;}
