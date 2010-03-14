@@ -131,6 +131,9 @@ if(output[0]=='\0'){
 
 char path[FILENAME_MAX],filename[FILENAME_MAX];
 get_path(text,path);
+if(strlen(path) == 0){
+	strcpy(path,".");
+}
 /* we create files which will contain statistics extracted from the tagged corpus */
 U_FILE* sforms_file = NULL, *cforms_file = NULL;
 if(s_forms == 1){
