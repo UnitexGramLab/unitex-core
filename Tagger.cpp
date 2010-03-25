@@ -42,17 +42,17 @@ const char* usage_Tagger =
          "  <tfst>: the text automaton to use in input\n"
          "\n"
          "OPTIONS:\n"
-		 "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
-		 "  -d DICT/--dictionary=DICT: use the .bin tagger dictionary containing tuples (unigrams,bigrams and trigrams)"
-		 " with frequencies\n"
-		 "  -t TAGSET/--tagset=TAGSET: use the TAGSET ELAG tagset file to normalize the dictionary entries\n"
-		 "\n"
-		 "Output options:\n"
-		 "  -o OUT/--output=OUT: specifies the output .tfst file\n"
-		 "  -h/--help: this help\n"
-		 "\n"
-         "Applies statistical tagging to the given text automaton\n"
-		 "The output tfst file is a linear text automaton.\n\n";
+		   "  -a ALPH/--alphabet=ALPH: the alphabet file\n"
+		   "  -d DICT/--dictionary=DICT: use the .bin tagger dictionary containing tuples (unigrams,bigrams and trigrams)"
+		   " with frequencies\n"
+		   "  -t TAGSET/--tagset=TAGSET: use the TAGSET ELAG tagset file to normalize the dictionary entries\n"
+		   "\n"
+		   "Output options:\n"
+		   "  -o OUT/--output=OUT: specifies the output .tfst file. By default, the input .tfst is replaced.\n"
+		   "  -h/--help: this help\n"
+		   "\n"
+         "Applies statistical tagging to the given text automaton.\n"
+		   "The output .tfst file is a linear text automaton.\n\n";
 
 
 
