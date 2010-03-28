@@ -149,24 +149,15 @@ const ABSTRACTFILE_REAL VF_StdOut = { {stdout},NULL };
 const ABSTRACTFILE_REAL VF_StdErr = { {stderr},NULL };
 
 
-const ABSTRACTFILE* pVF_StdIn  = (ABSTRACTFILE*)&VF_StdIn;
-const ABSTRACTFILE* pVF_StdOut = (ABSTRACTFILE*)&VF_StdOut;
-const ABSTRACTFILE* pVF_StdErr = (ABSTRACTFILE*)&VF_StdErr;
+const ABSTRACTFILE_REAL* pVF_StdInReal = &VF_StdIn;
+const ABSTRACTFILE* pVF_StdIn  = (const ABSTRACTFILE*)pVF_StdInReal;
 
-ABSTRACTFILE* return_af_stdin()
-{
-	return (ABSTRACTFILE*)&VF_StdIn;
-}
+const ABSTRACTFILE_REAL* pVF_StdOutReal = &VF_StdOut;
+const ABSTRACTFILE* pVF_StdOut  = (const ABSTRACTFILE*)pVF_StdOutReal;
 
-ABSTRACTFILE* return_af_stdout()
-{
-	return (ABSTRACTFILE*)&VF_StdOut;
-}
+const ABSTRACTFILE_REAL* pVF_StdErrReal = &VF_StdErr;
+const ABSTRACTFILE* pVF_StdErr  = (const ABSTRACTFILE*)pVF_StdErrReal;
 
-ABSTRACTFILE* return_af_stderr()
-{
-	return (ABSTRACTFILE*)&VF_StdErr;
-}
 
 int IsStdIn(ABSTRACTFILE* stream)
 {

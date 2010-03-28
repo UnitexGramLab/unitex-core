@@ -704,7 +704,8 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 
                   if ((strcmp(filename_inzip,"test_info/command_line.txt")==0))
                   {
-                      do_extracting_currentfile_memory(uf,(void**)&command_line_buf,&size_command_line,NULL);
+                      char** p_command_line_buf = &command_line_buf;
+                      do_extracting_currentfile_memory(uf,(void**)p_command_line_buf,&size_command_line,NULL);
                       break;
                   }
 
@@ -790,14 +791,16 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 
           if (strcmp(filename_inzip,"test_info/list_file_out.txt")==0)
           {
-              do_extracting_currentfile_memory(uf,(void**)&list_out_buf,&size_list_out,NULL);
+              char** p_list_out_buf = &list_out_buf;
+              do_extracting_currentfile_memory(uf,(void**)p_list_out_buf,&size_list_out,NULL);
               list_file_out = ReadListFile(list_out_buf,size_list_out);
           }
 
           if ((strcmp(filename_inzip,"test_info/command_line.txt")==0) &&
               (command_line_buf == NULL))
           {
-              do_extracting_currentfile_memory(uf,(void**)&command_line_buf,&size_command_line,NULL);
+              char** p_command_line_buf = &command_line_buf;
+              do_extracting_currentfile_memory(uf,(void**)p_command_line_buf,&size_command_line,NULL);
           }
 
           if ((i+1)<gi.number_entry)
@@ -964,7 +967,8 @@ UNITEX_FUNC int UNITEX_CALL RunLogParam(const char* LogNameRead,const char* File
 
                   if (strcmp(filename_inzip,"test_info/list_file_out.txt")==0)
                   {
-                      do_extracting_currentfile_memory(ufNewLog,(void**)&list_out_newlog_buf,&size_list_out_newlog,NULL);
+                      char** p_list_out_newlog_buf = &list_out_newlog_buf;
+                      do_extracting_currentfile_memory(ufNewLog,(void**)p_list_out_newlog_buf,&size_list_out_newlog,NULL);
                       list_file_out_newlog = ReadListFile(list_out_newlog_buf,size_list_out_newlog);
                   }
 

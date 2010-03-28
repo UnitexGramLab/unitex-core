@@ -68,10 +68,6 @@ int af_remove_unlogged(const char * Filename);
 int af_copy(const char* srcFile, const char* dstFile);
 int af_copy_unlogged(const char* srcFile, const char* dstFile);
 
-ABSTRACTFILE* return_af_stdin();
-ABSTRACTFILE* return_af_stdout();
-ABSTRACTFILE* return_af_stderr();
-
 
 extern const ABSTRACTFILE* pVF_StdIn ;
 extern const ABSTRACTFILE* pVF_StdOut ;
