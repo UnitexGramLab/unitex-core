@@ -113,6 +113,7 @@ struct dela_entry* new_dela_entry(const unichar*,const unichar*,const unichar*,A
 struct dela_entry* clone_dela_entry(const struct dela_entry*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 int equal(const struct dela_entry*,const struct dela_entry*);
 struct dela_entry* tokenize_DELAF_line(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
+struct dela_entry* tokenize_DELAF_line_opt(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAF_line(const unichar*,int,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_DELAF_line(const unichar*,int,int,int*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
 struct dela_entry* tokenize_tag_token(const unichar*,Abstract_allocator prv_alloc=STANDARD_ALLOCATOR);
