@@ -258,7 +258,7 @@ if (l->m.end_pos_in_token<current_position) {
     *   1) offset in token
     *   2) offset in char inside the token
     *   3) offset in logical letter inside the current char (for Korean) */
-   u_fprintf(f,"%d.0.0 %d.%d.0",l->m.start_pos_in_token,l->m.end_pos_in_token,u_strlen(p->tokens->value[p->buffer[l->m.end_pos_in_token]])-1);
+   //u_fprintf(f,"%d.0.0 %d.%d.0",l->m.start_pos_in_token,l->m.end_pos_in_token,u_strlen(p->tokens->value[p->buffer[l->m.end_pos_in_token]])-1);
    if (l->output!=NULL) {
       /* If there is an output */
       u_fprintf(f," %S",l->output);

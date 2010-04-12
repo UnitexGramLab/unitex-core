@@ -350,7 +350,7 @@ while (meta_list!=NULL) {
             struct parsing_info* L2=NULL;
             int len_var_name=0;
             if (p->tags[t->tag_number]->output != NULL) {
-              len_var_name = 127;//u_strlen(p->tags[t->tag_number]->output);
+              len_var_name = 31;//u_strlen(p->tags[t->tag_number]->output);
             }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
             unichar *var_name;
@@ -716,7 +716,7 @@ while (trans!=NULL) {
          struct parsing_info* L=NULL;
          int len_var_name=0;
          if (tag->output != NULL) {
-           len_var_name = 127;//u_strlen(tag->output);
+           len_var_name = 31;//u_strlen(tag->output);
          }
 #ifdef NO_C99_VARIABLE_LENGTH_ARRAY
          unichar *var_name;
@@ -935,7 +935,7 @@ if (!(n_transitions & 32768)) {
           * DELAF line in 'info->dlc' */
          uncompress_entry(inflected,tmp->string,line);
          //error("\non decompresse la ligne _%S_\n",line);
-         struct dela_entry* dela_entry=tokenize_DELAF_line(line);
+         struct dela_entry* dela_entry=tokenize_DELAF_line_opt(line);
          if (dela_entry!=NULL && (pattern==NULL || is_entry_compatible_with_pattern(dela_entry,pattern))) {
             //error("et ca matche!!\n");
             (*matches)=insert_morphological_match(pos_offset,pos_in_current_token,-1,(*matches),

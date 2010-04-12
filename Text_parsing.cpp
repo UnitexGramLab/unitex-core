@@ -210,7 +210,7 @@ void locate(int graph_depth, /* 0 means that we are in the top level graph */
             struct parsing_info** matches, /* current match list. Irrelevant if graph_depth==0 */
             int n_matches, /* number of sequences that have matched. It may be different from
                             * the length of the 'matches' list if a given sequence can be
-                            * matched in several ways. It is used to detect combinatory
+                            * matched in several ways. It is used to detect combinatorial
                             * explosions due to bad written grammars. */
             struct list_int* ctx, /* information about the current context, if any */
             struct locate_parameters* p, /* miscellaneous parameters needed by the function */

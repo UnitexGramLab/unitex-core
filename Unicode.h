@@ -235,6 +235,7 @@ unichar* u_strcpy_sized(unichar*,size_t,const char*);
 unichar* u_strcat(unichar*,const unichar*);
 unichar* u_strcat(unichar*,const char*);
 int u_strcmp(const unichar*, const unichar*);
+int u_strcmp_opt(const unichar*, const unichar*);
 int u_equal(const unichar*, const unichar*);
 int u_strcmp(const unichar*,const char*);
 unichar* u_strdup(const unichar*);

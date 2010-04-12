@@ -102,9 +102,9 @@ DEFFLAGS = -D_NOT_UNDER_WINDOWS
 #                                 -DBDB
 CFLAGS   = -Wall -W
 ifeq ($(DEBUG), yes)
-CFLAGS += -g -O0
+CFLAGS += -g -O0 -pg
 else
-CFLAGS += -O2
+CFLAGS += -O3
 endif
 
 ifeq ($(LIBRARY),yes)
