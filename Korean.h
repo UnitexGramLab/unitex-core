@@ -33,6 +33,8 @@
 #include "Unicode.h"
 #include "Alphabet.h"
 #include "Error.h"
+#include "HashTable.h"
+
 
 #define JAMO_SIZE 68
 #define MAX_ORDER_JAMO_SIZE 8
@@ -217,7 +219,11 @@ class Korean {
 
    Alphabet* alphabet;
 
+
 public:
+
+   /* This is used to optimize Hangul->Jamo conversions */
+   struct hash_table* table;
 
    Korean(Alphabet* alph) {
 	   if (alph==NULL) {
@@ -232,6 +238,8 @@ public:
       }
       initJamoMap();
       alphabet=alph;
+      table=new_hash_table(1024,0.75f,(HASH_FUNCTION)hash_unichar,(EQUAL_FUNCTION)u_equal,
+      	      (FREE_FUNCTION)free,(KEYCOPY_FUNCTION)keycopy);
    };
 
    ~Korean() {
@@ -240,6 +248,7 @@ public:
             delete [] jamo_table[i];
          }
       }
+      free_hash_table(table);
    };
 
    int single_Hangul_to_Jamos(unichar syl,unichar* output,int pos);

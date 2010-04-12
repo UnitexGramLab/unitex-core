@@ -21,7 +21,6 @@
 
 #include "Korean.h"
 
-
 static int test_letter(unichar c,Alphabet* alphabet) {
 if (alphabet==NULL) return 0;
 return is_letter(c,alphabet);
@@ -54,7 +53,15 @@ if (korean==NULL) {
 	u_strcpy(dest,src);
    return;
 }
-korean->Hanguls_to_Jamos(src,dest,only_syllables);
+int ret;
+struct any* value=get_value(korean->table,src,HT_INSERT_IF_NEEDED,&ret);
+if (ret==HT_KEY_ADDED) {
+   /* If we had not already this tag, we insert it */
+   korean->Hanguls_to_Jamos(src,dest,only_syllables);
+   value->_ptr=u_strdup(dest);
+   return;
+}
+u_strcpy(dest,(unichar*)(value->_ptr));
 }
 
 
