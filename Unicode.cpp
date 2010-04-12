@@ -3182,10 +3182,7 @@ return NULL;
 int u_starts_with(const unichar* s,const unichar* prefix) {
 if (s==NULL) return 0;
 if (prefix==NULL) return 1;
-int l1=u_strlen(s);
-int l2=u_strlen(prefix);
-if (l2>l1) return 0;
-for (int i=0;i<l2;i++) {
+for (int i=0;prefix[i]!='\0';i++) {
    if (s[i]!=prefix[i]) {
       return 0;
    }
