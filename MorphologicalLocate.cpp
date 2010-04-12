@@ -106,13 +106,13 @@ int i=0;
 if (token==NULL) {
 	token=tag_token;
 }
-set_debug(0 && token[0]==0xB2A5);
-debug("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
+//set_debug(0 && token[0]==0xB2A5);
+//debug("on compare text=_%S/%S_ et tag=_%S/%S\n",token,jamo+(*new_pos_in_jamo),tag_token,tmp);
 while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
 	/* We ignore syllable bounds in both tfst and fst2 tags */
 	if (tmp[i]==KR_SYLLABLE_BOUND) {
 		i++;
-		debug("ignoring . in tag: %S\n",tmp+i);
+		//debug("ignoring . in tag: %S\n",tmp+i);
 		continue;
 	}
 	/*if (jamo[(*new_pos_in_jamo)]!=KR_SYLLAB_BOUND && !u_is_Hangul_Jamo(jamo[(*new_pos_in_jamo)])) {
@@ -123,32 +123,32 @@ while (tmp[i]!='\0' && jamo[(*new_pos_in_jamo)]!='\0') {
 	if (jamo[(*new_pos_in_jamo)]==KR_SYLLABLE_BOUND) {
 		(*new_pos_in_jamo)++;
 		(*new_pos_in_token)++;
-		debug("ignoring . in text: %S\n",jamo+((*new_pos_in_jamo)));
+		//debug("ignoring . in text: %S\n",jamo+((*new_pos_in_jamo)));
 		continue;
 	}
 	if (tmp[i]!=jamo[(*new_pos_in_jamo)]) {
 	   /* If a character doesn't match */
-	   debug("match failed between text=%S and fst2=%S\n",jamo,tmp);
+	   //debug("match failed between text=%S and fst2=%S\n",jamo,tmp);
 	   return 0;
 	}
 	i++;
 	(*new_pos_in_jamo)++;
-	debug("moving in tag: %S\n",tmp+i);
-	debug("moving in text: %S\n",jamo+((*new_pos_in_jamo)));
+	//debug("moving in tag: %S\n",tmp+i);
+	//debug("moving in text: %S\n",jamo+((*new_pos_in_jamo)));
 }
 if (tmp[i]=='\0' && jamo[(*new_pos_in_jamo)]=='\0') {
    /* If we are at both ends of strings, it's a full match */
-   debug("XX full match between text=%S and fst2=%S\n",jamo,tmp);
+   //debug("XX full match between text=%S and fst2=%S\n",jamo,tmp);
    return 1;
 }
 if (tmp[i]=='\0') {
 	/* If the tag has not consumed all the jamo sequence, it's a partial match */
-    debug("XX partial match between text=%S and fst2=%S\n",jamo,tmp);
+    //debug("XX partial match between text=%S and fst2=%S\n",jamo,tmp);
 	return 2;
 }
 /* If we are at the end of the jamo sequence, but not at the end of the tag, it's a failure */
-debug("match failed #2 between text=%S and fst2=%S\n",jamo,tmp);
-set_debug(0);
+//debug("match failed #2 between text=%S and fst2=%S\n",jamo,tmp);
+//set_debug(0);
 return 0;
 }
 

@@ -679,8 +679,8 @@ for(;;) {
           * space token */
          if (current_token==end) {
             /* If this space token was the last token, then we cannot have a perfect alignement */
-            debug("current tag=%S/%d  current token=%S/%d\n",tab[current_tag]->content,
-                      current_pos_in_char_in_tag,token,current_pos_in_char_in_token);
+            /*debug("current tag=%S/%d  current token=%S/%d\n",tab[current_tag]->content,
+                      current_pos_in_char_in_tag,token,current_pos_in_char_in_token);*/
             break;
          }
          /* By construction, we cannot have 2 contiguous spaces, but we raise an error in
