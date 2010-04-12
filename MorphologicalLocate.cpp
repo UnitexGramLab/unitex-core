@@ -31,6 +31,13 @@
 #include "DicVariables.h"
 #include "ParsingInfo.h"
 
+
+/* see http://en.wikipedia.org/wiki/Variable_Length_Array . MSVC did not support it 
+   see http://msdn.microsoft.com/en-us/library/zb1574zs(VS.80).aspx */
+#if defined(_MSC_VER) && (!(defined(NO_C99_VARIABLE_LENGTH_ARRAY)))
+#define NO_C99_VARIABLE_LENGTH_ARRAY 1
+#endif
+
 void morphological_locate(int,int,int,int,int,struct parsing_info**,int,struct list_int*,
 		                  struct locate_parameters*,struct Token_error_ctx*,unichar*,int,
 		                  unichar*);
@@ -341,11 +348,19 @@ while (meta_list!=NULL) {
          case META_DIC: {
             if (token==-1 || token==p->STOP) {break;}
             struct parsing_info* L2=NULL;
+            int len_var_name=0;
+            if (p->tags[t->tag_number]->output != NULL) {
+              len_var_name = 127;//u_strlen(p->tags[t->tag_number]->output);
+            }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
             unichar *var_name;
-            var_name=(unichar*)malloc(sizeof(unichar)*128);
+            var_name=(unichar*)malloc(sizeof(unichar)*(len_var_name+1));
             if (var_name==NULL) {
               fatal_alloc_error("morphological_locate");
-            }			 
+            }
+#else
+            unichar var_name[len_var_name+1];
+#endif
             int save_dic_entry=(p->output_policy!=IGNORE_OUTPUTS && is_morpho_variable_output(p->tags[t->tag_number]->output,var_name));
             explore_dic_in_morpho_mode(p,pos,pos_in_token,&L2,NULL,save_dic_entry,jamo,pos_in_jamo);
             unichar *content1=content_buffer;
@@ -406,7 +421,9 @@ while (meta_list!=NULL) {
                } while (L2!=NULL);
                free_parsing_info(L_first);
             }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
             free(var_name);
+#endif
             /* end of usage of content1 */
             break;
          }
@@ -697,11 +714,19 @@ while (trans!=NULL) {
       } else {
          /* Here, we deal with all the "real" patterns: <be>, <N+z1:ms>, <be.V:K> and <am,be.V> */
          struct parsing_info* L=NULL;
+         int len_var_name=0;
+         if (tag->output != NULL) {
+           len_var_name = 127;//u_strlen(tag->output);
+         }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
          unichar *var_name;
-         var_name=(unichar*)malloc(sizeof(unichar)*128);
+         var_name=(unichar*)malloc(sizeof(unichar)*(len_var_name+1));
          if (var_name==NULL) {
             fatal_alloc_error("morphological_locate");
          }
+#else
+         unichar var_name[len_var_name+1];
+#endif
          int save_dic_entry=(p->output_policy!=IGNORE_OUTPUTS && is_morpho_variable_output(tag->output,var_name));
          explore_dic_in_morpho_mode(p,pos,pos_in_token,&L,tag->pattern,save_dic_entry,jamo,pos_in_jamo);
          unichar *content2=content_buffer;
@@ -759,7 +784,9 @@ while (trans!=NULL) {
             } while (L!=NULL);
             free_parsing_info(L_first);
          }
+#ifdef NO_C99_VARIABLE_LENGTH_ARRAY
          free(var_name);
+#endif
          /* end of usage of content2 */
       }
    }
