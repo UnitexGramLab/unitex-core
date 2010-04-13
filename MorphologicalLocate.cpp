@@ -1022,7 +1022,7 @@ for (int i=0;i<n_transitions;i++) {
 				   jamo,pos_in_jamo,line_buffer);
 	   }
    } else {
-	   debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	   //debug("la: jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 	   /* Korean mode: we may match just the current jamo, or also the current hangul, but only if we are
 	    * after a syllable bound */
 	   unichar c2[2];
@@ -1033,7 +1033,7 @@ for (int i=0;i<n_transitions;i++) {
 	   int new_pos_in_jamo=pos_in_jamo;
 	   int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_current_token,c2,p,current_token);
 	   if (result!=0) {
-	      debug("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	      //debug("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 		   /* Nothing to do if the match failed */
 		   int new_pos_offset=pos_offset;
 		   unichar* new_jamo=jamo;
