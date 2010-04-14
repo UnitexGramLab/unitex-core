@@ -100,6 +100,7 @@ p->recyclable_wchart_buffer=(wchar_t*)malloc(sizeof(wchar_t)*2048);
 if (p->recyclable_wchart_buffer==NULL) {
    fatal_alloc_error("new_locate_parameters");
 }
+p->failfast=NULL;
 return p;
 }
 
@@ -383,10 +384,11 @@ if (is_korean) {
 	p->korean=new Korean(p->alphabet);
 	p->jamo_tags=create_jamo_tags(p->korean,p->tokens);
 }
+p->failfast=new_bit_array(n_text_tokens,ONE_BIT);
 
 u_printf("Working...\n");
 launch_locate(text_file,out,text_size,info,p);
-
+free_bit_array(p->failfast);
 free_buffer(p->token_buffer);
 free_Variables(p->variables);
 u_fclose(text_file);

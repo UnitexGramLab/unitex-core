@@ -90,6 +90,9 @@ while (l!=NULL) {
  * mode when the grammar is an ambiguous transducer (S.N.) */
 void add_match(int end,unichar* output,struct locate_parameters* p) {
 int start=p->current_origin+p->absolute_offset+p->left_ctx_shift;
+if (end>p->last_matched_position) {
+	p->last_matched_position=end;
+}
 struct match_list *l;
 if (p->match_list==NULL) {
    /* If the match list was empty, we always can put the match in the list */

@@ -68,7 +68,7 @@ clock_t currentTime ;
 unite=((text_size/100)>1000)?(text_size/100):1000;
 
 variable_backup_memory_reserve* backup_reserve = create_variable_backup_memory_reserve(p->variables);
-
+int current_token;
 while (p->current_origin<p->token_buffer->size
        && p->number_of_matches!=p->search_limit) {
    if (!p->token_buffer->end_of_file
@@ -86,8 +86,8 @@ while (p->current_origin<p->token_buffer->size
          u_printf("%2.0f%% done        \r",100.0*(float)(p->absolute_offset+p->current_origin)/(float)text_size);
       }
    }
-   if (!(p->token_buffer->int_buffer[p->current_origin]==p->SPACE
-       && p->space_policy==DONT_START_WITH_SPACE)) {
+   current_token=p->token_buffer->int_buffer[p->current_origin];
+   if (!(current_token==p->SPACE && p->space_policy==DONT_START_WITH_SPACE) && !get_value(p->failfast,current_token)) {
       p->stack_base=-1;
       p->stack->stack_pointer=-1;
       struct parsing_info* matches = NULL;
@@ -96,6 +96,8 @@ while (p->current_origin<p->token_buffer->size
 
       int count_cancel_trying=0;
       int count_call=0;
+      p->last_tested_position=0;
+      p->last_matched_position=-1;
       locate(0,initial_state,0,0,&matches,0,NULL,p,&token_error_ctx,backup_reserve,&count_cancel_trying,&count_call);
       if ((p->max_count_call > 0) && (count_call>=p->max_count_call)) {
           u_printf("stop computing token %u after %u step computing.\n",p->absolute_offset+p->current_origin,count_call);
@@ -104,7 +106,12 @@ while (p->current_origin<p->token_buffer->size
       if ((p->max_count_call_warning > 0) && (count_call>=p->max_count_call_warning)) {
           u_printf("warning : computing token %u take %u step computing.\n",p->absolute_offset+p->current_origin,count_call);
       }
-
+      if (p->last_matched_position==-1 && p->last_tested_position==0) {
+    	  /* We are in the fail fast case, nothing has been matched while
+    	   * looking only at the first current token. That means that no match
+    	   * could ever happen when this token is found in the text */
+    	  set_value(p->failfast,current_token,1);
+      }
       free_parsing_info(matches);
       clear_dic_variable_list(&(p->dic_variables));
    }
@@ -197,6 +204,13 @@ p_token_error_ctx->last_length=length;
  */
 int XOR(int a,int b) {
 return (a && !b) || (!a && b);
+}
+
+
+void update_last_position(struct locate_parameters* p,int pos) {
+if (pos>p->last_tested_position) {
+	p->last_tested_position=pos;
+}
 }
 
 
@@ -487,7 +501,7 @@ while (meta_list!=NULL) {
       #ifdef TRE_WCHAR
       filter_number=p->tags[t->tag_number]->filter_number;
       if (token2!=-1) {
-         morpho_filter_OK=(filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number));
+          morpho_filter_OK=(filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number));
       }
       #endif
       int negation=meta_list->negation;
@@ -507,6 +521,11 @@ while (meta_list!=NULL) {
                 * if we are at the end of the token buffer. */
                start=pos;
                end=pos;
+               if (token!=-1) {
+            	   /* We don't update the position if # has matched because of the
+            	    * end of the buffer */
+            	   update_last_position(p,pos);
+               }
             }
             break;
 
@@ -517,6 +536,7 @@ while (meta_list!=NULL) {
                 * the text contains no space. */
                start=pos;
                end=pos+1;
+               update_last_position(p,pos);
             }
             break;
 
@@ -526,7 +546,7 @@ while (meta_list!=NULL) {
             end=pos;
             break;
 
-         case META_MOT:
+         case META_MOT: update_last_position(p,pos2);
             if (!morpho_filter_OK || token2==p->SENTENCE || token2==p->STOP) {
                /* <MOT> and <!MOT> must NEVER match {S} and {STOP}! */
                break;
@@ -543,7 +563,11 @@ while (meta_list!=NULL) {
             break;
 
          case META_DIC:
-            if (token2==-1 || token2==p->STOP) break;
+            if (token2==-1) break;
+        	update_last_position(p,pos2);
+            if (token2==p->STOP) {
+            	break;
+            }
             if (!negation) {
                /* If there is no negation on DIC, we can look for a compound word */
                end_of_compound=find_compound_word(pos2,COMPOUND_WORD_PATTERN,p->DLC_tree,p);
@@ -594,6 +618,11 @@ while (meta_list!=NULL) {
             break;
 
          case META_SDIC:
+             if (token2==-1) break;
+             update_last_position(p,pos2);
+             if (token2==p->STOP) {
+             	break;
+             }
             if (morpho_filter_OK && (ctrl&DIC_TOKEN_BIT_MASK) && !(ctrl&CDIC_TOKEN_BIT_MASK)) {
                /* We match only simple words */
                start=pos2;
@@ -602,7 +631,11 @@ while (meta_list!=NULL) {
             break;
 
          case META_CDIC:
-            if (token2==-1 || token2==p->STOP) break;
+             if (token2==-1) break;
+             update_last_position(p,pos2);
+             if (token2==p->STOP) {
+             	break;
+             }
             end_of_compound=find_compound_word(pos2,COMPOUND_WORD_PATTERN,p->DLC_tree,p);
             if (end_of_compound!=-1) {
                /* If we find a compound word */
@@ -645,6 +678,11 @@ while (meta_list!=NULL) {
             break;
 
          case META_TDIC:
+             if (token2==-1) break;
+             update_last_position(p,pos2);
+             if (token2==p->STOP) {
+             	break;
+             }
             if (morpho_filter_OK && (ctrl&TDIC_TOKEN_BIT_MASK)) {
                start=pos2;
                end=pos2+1;
@@ -652,6 +690,11 @@ while (meta_list!=NULL) {
             break;
 
          case META_MAJ:
+             if (token2==-1) break;
+             update_last_position(p,pos2);
+             if (token2==p->STOP) {
+             	break;
+             }
             if (!morpho_filter_OK) break;
             if (!negation) {
                if (ctrl&MAJ_TOKEN_BIT_MASK) {
@@ -668,6 +711,11 @@ while (meta_list!=NULL) {
             break;
 
          case META_MIN:
+             if (token2==-1) break;
+             update_last_position(p,pos2);
+             if (token2==p->STOP) {
+             	break;
+             }
             if (!morpho_filter_OK) break;
             if (!negation) {
                if (ctrl&MIN_TOKEN_BIT_MASK) {
@@ -684,6 +732,11 @@ while (meta_list!=NULL) {
             break;
 
          case META_PRE:
+             if (token2==-1) break;
+             update_last_position(p,pos2);
+             if (token2==p->STOP) {
+             	break;
+             }
             if (!morpho_filter_OK) break;
             if (!negation) {
                if (ctrl&PRE_TOKEN_BIT_MASK) {
@@ -700,7 +753,11 @@ while (meta_list!=NULL) {
             break;
 
       case META_NB:
-         if (token2==-1) break;
+          if (token2==-1) break;
+          update_last_position(p,pos2);
+          if (token2==p->STOP) {
+          	break;
+          }
          { /* This block avoids visibility problem about 'z' */
             int z=pos2;
             while (z+p->current_origin<p->token_buffer->size
@@ -711,12 +768,21 @@ while (meta_list!=NULL) {
                /* If we have found a contiguous digit sequence */
                start=pos2;
                end=z;
+               if (z+p->current_origin==p->token_buffer->size) {
+                   /* If we have stopped because of the end of the buffer */
+            	   update_last_position(p,pos2);
+               } else {
+                   /* Otherwise, we have stopped because of a non matching token */
+            	   update_last_position(p,pos2+1);
+               }
             }
          }
          break;
 
       case META_TOKEN:
-         if (token2==-1 || token2==p->STOP || !morpho_filter_OK) {
+          if (token2==-1) break;
+          update_last_position(p,pos2);
+          if (token2==p->STOP || !morpho_filter_OK) {
             /* The {STOP} tag must NEVER be matched by any pattern */
             break;
          }
@@ -725,7 +791,9 @@ while (meta_list!=NULL) {
          break;
 
       case META_BEGIN_MORPHO:
-         if (token2==-1 || token2==p->STOP || !morpho_filter_OK) {
+          if (token2==-1) break;
+          update_last_position(p,pos2);
+          if (token2==p->STOP) {
             /* The {STOP} tag must NEVER be matched by any pattern */
             break;
          }
@@ -997,11 +1065,12 @@ while (pattern_list!=NULL) {
             locate(graph_depth,p->optimized_states[t->state_number],end_of_compound+1,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve,p_count_cancel_trying,p_count_call);
             p->stack->stack_pointer=stack_top;
          }
-         /* This useless instruction is just here to enable the declaration of the next6 label */
-         next6: OK++;
+         /* This useless empty block is just here to enable the declaration of the next6 label */
+         next6: {}
       }
       /* And now, we look for simple words */
       int OK=1;
+      update_last_position(p,pos2);
       #ifdef TRE_WCHAR
       OK=(filter_number==-1 || token_match_filter(p->filter_match_index,token2,filter_number));
       #endif
@@ -1051,6 +1120,7 @@ while (pattern_list!=NULL) {
  * TOKENS
  */
 if (current_state->number_of_tokens!=0) {
+	update_last_position(p,pos2);
    int n=binary_search(token2,current_state->tokens,current_state->number_of_tokens);
    if (n!=-1) {
       t=current_state->token_transitions[n];
@@ -1080,6 +1150,9 @@ if (current_state->number_of_tokens!=0) {
    }
 }
 }
+
+//modifier mode morpho
+//ajouter fail fast si on n'a pas dépassé le premier token et qu'on n'a rien matché
 
 
 /**
@@ -1114,6 +1187,7 @@ int find_longest_compound_word(int pos,struct DLC_tree_node* node,int pattern_nu
 if (node==NULL) {
    fatal_error("NULL node in find_longest_compound_word\n");
 }
+update_last_position(p,pos);
 int current_token=p->buffer[pos+p->current_origin];
 int position_max;
 if (-1!=binary_search(pattern_number,node->array_of_patterns,node->number_of_patterns))

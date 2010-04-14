@@ -211,6 +211,18 @@ struct locate_parameters {
    /* a recyclable buffer to be given to string_match_filter function.
     *   To avoid stack or heap allocation at each call */
    wchar_t* recyclable_wchart_buffer;
+
+   /* This field is used to store the maximum position in tokens reached
+    * during an exploration from a given start position. After the exploration
+    * is complete, if this position is <= than the end position of the longest match
+    * computed from the current start position, then we know that no longer match
+    * could have been possible and we can cache the matches for later quick lookups.
+    */
+   int last_tested_position;
+   /* This is the end position of the current longest match */
+   int last_matched_position;
+   /* This structure is used to mark tokens that cannot start any match */
+   struct bit_array* failfast;
 };
 
 
