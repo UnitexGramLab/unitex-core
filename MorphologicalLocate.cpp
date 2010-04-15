@@ -153,6 +153,12 @@ return 0;
 }
 
 
+static void update_last_position(struct locate_parameters* p,int pos) {
+if (pos>p->last_tested_position) {
+	p->last_tested_position=pos;
+}
+}
+
 
 /**
  * This is the core function of the morphological mode.
@@ -331,7 +337,9 @@ while (meta_list!=NULL) {
             break;
 
          case META_SPACE:
-            if (token==-1 || token==p->STOP) {break;}
+            if (token==-1) break;
+            update_last_position(p,pos);
+            if (token==p->STOP) break;
             if (current_token[pos_in_token]==' ') {
                match_one_letter=1;
             }
@@ -339,14 +347,18 @@ while (meta_list!=NULL) {
 
          case META_MOT: /* In morphological mode, this tag matches a letter, as defined in
                            the alphabet file */
-            if (token==-1 || token==p->STOP) {break;}
+             if (token==-1) break;
+             update_last_position(p,pos);
+             if (token==p->STOP) break;
             if (XOR(is_letter(current_token[pos_in_token],p->alphabet),meta_list->negation)) {
                match_one_letter=1;
             }
             break;
 
          case META_DIC: {
-            if (token==-1 || token==p->STOP) {break;}
+             if (token==-1) break;
+             update_last_position(p,pos);
+             if (token==p->STOP) break;
             struct parsing_info* L2=NULL;
             int len_var_name=0;
             if (p->tags[t->tag_number]->output != NULL) {
@@ -442,7 +454,9 @@ while (meta_list!=NULL) {
 
          case META_MAJ: /* In morphological mode, this tag matches an uppercase letter, as defined in
                            the alphabet file */
-            if (token==-1 || token==p->STOP) {break;}
+             if (token==-1) break;
+             update_last_position(p,pos);
+             if (token==p->STOP) break;
             if (XOR(is_upper(current_token[pos_in_token],p->alphabet),meta_list->negation)) {
                match_one_letter=1;
             }
@@ -450,7 +464,9 @@ while (meta_list!=NULL) {
 
          case META_MIN: /* In morphological mode, this tag matches a lowercase letter, as defined in
                            the alphabet file */
-            if (token==-1 || token==p->STOP) {break;}
+             if (token==-1) break;
+             update_last_position(p,pos);
+             if (token==p->STOP) break;
             if (XOR(is_lower(current_token[pos_in_token],p->alphabet),meta_list->negation)) {
                match_one_letter=1;
             }
@@ -465,6 +481,9 @@ while (meta_list!=NULL) {
             break;
 
          case META_TOKEN: {
+             if (token==-1) break;
+             update_last_position(p,pos);
+             if (token==p->STOP) break;
             unichar one_letter[2];
             one_letter[0]=current_token[pos_in_token];
             one_letter[1]='\0';
@@ -625,6 +644,7 @@ while (trans!=NULL) {
    }
    Fst2Tag tag=p->tags[trans->tag_number];
    if (tag->pattern!=NULL) {
+       update_last_position(p,pos);
       if (tag->pattern->type==TOKEN_PATTERN) {
          unichar* tag_token=tag->pattern->inflected;
          int comma=-1;
@@ -1004,6 +1024,7 @@ if (n_transitions & 32768) {
    offset=offset+3;
 }
 for (int i=0;i<n_transitions;i++) {
+    update_last_position(p,pos_offset);
    unichar c=(unichar)(((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1]);
    offset=offset+2;
    int adr=((unsigned char)bin[offset])*256*256+((unsigned char)bin[offset+1])*256+(unsigned char)bin[offset+2];

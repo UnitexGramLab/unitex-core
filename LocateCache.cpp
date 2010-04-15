@@ -1,0 +1,136 @@
+ /*
+  * Unitex
+  *
+  * Copyright (C) 2001-2010 Universit� Paris-Est Marne-la-Vall�e <unitex@univ-mlv.fr>
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+  * License as published by the Free Software Foundation; either
+  * version 2.1 of the License, or (at your option) any later version.
+  *
+  * This library is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  * Lesser General Public License for more details.
+  *
+  * You should have received a copy of the GNU Lesser General Public
+  * License along with this library; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+  *
+  */
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "LocateCache.h"
+#include "Error.h"
+
+
+/**
+ * Builds, initializes and returns a new LocateCache.
+ */
+LocateCache new_LocateCache(int token,struct match_list* matches) {
+LocateCache c=(LocateCache)malloc(sizeof(struct locate_cache));
+if (c==NULL) {
+	fatal_alloc_error("new_LocateCache");
+}
+c->left=NULL;
+c->middle=NULL;
+c->right=NULL;
+c->token=token;
+c->matches=matches;
+return c;
+}
+
+
+/**
+ * Frees all the memory associated to the given LocateCache, including
+ * its match list, if any.
+ */
+void free_LocateCache(LocateCache c) {
+if (c==NULL) return;
+free_LocateCache(c->left);
+free_LocateCache(c->middle);
+free_LocateCache(c->right);
+free_match_list(c->matches);
+free(c);
+}
+
+
+/**
+ * Caches the given token sequence in the given cache. Note that
+ * match is supposed to contain a single match, not a match list.
+ */
+void cache_match(struct match_list* match,int* tab,int start,int end,LocateCache *c) {
+int token=-1;
+struct match_list* m=match;
+if (start<=end) {
+	token=tab[start];
+	m=NULL;
+}
+/* No node */
+if (*c==NULL) {
+	*c=new_LocateCache(token,m);
+	if (token!=-1) {
+		cache_match(match,tab,start+1,end,&((*c)->middle));
+	}
+	return;
+}
+/* There is a node */
+if (token<(*c)->token) {
+	/* If we have to move on the left */
+	return cache_match(match,tab,start,end,&((*c)->left));
+}
+if (token>(*c)->token) {
+	/* If we have to move on the right */
+	return cache_match(match,tab,start,end,&((*c)->right));
+}
+/* We have the correct token */
+if (token==-1) {
+	/* If we are in a final node that already existed, we just add
+	 * the new match */
+	match->next=(*c)->matches;
+	(*c)->matches=match;
+	return;
+}
+cache_match(match,tab,start+1,end,&((*c)->middle));
+}
+
+
+/**
+ * Explores a given node of the cache tree.
+ */
+void explore_cache_node(int* tab,int pos,int tab_size,LocateCache c,vector_ptr* res) {
+if (pos==tab_size || c==NULL) return;
+if (c->token==-1) {
+	/* If we have found a token sequence end mark, then we have matches to
+	 * store before trying the right node to look for longer matches. As -1 is
+	 * lower than any token value, we don't need to explore the left side */
+	vector_ptr_add(res,c->matches);
+	explore_cache_node(tab,pos,tab_size,c->right,res);
+	return;
+}
+int token=tab[pos];
+if (token==c->token) {
+	explore_cache_node(tab,pos+1,tab_size,c->middle,res);
+	return;
+}
+if (token<c->token) {
+	explore_cache_node(tab,pos,tab_size,c->left,res);
+	return;
+}
+explore_cache_node(tab,pos,tab_size,c->right,res);
+}
+
+
+/**
+ * Consults the cache to find matches. If some are found, the match list pointers
+ * associated to token sequences are stored in 'res'. Returns 1 if matches
+ * were found; 0 otherwise.
+ */
+int consult_cache(int* tab,int start,int tab_size,LocateCache c,vector_ptr* res) {
+res->nbelems=0;
+explore_cache_node(tab,start,tab_size,c,res);
+return res->nbelems!=0;
+}
+

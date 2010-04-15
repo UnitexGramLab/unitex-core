@@ -101,6 +101,10 @@ if (p->recyclable_wchart_buffer==NULL) {
    fatal_alloc_error("new_locate_parameters");
 }
 p->failfast=NULL;
+p->match_cache_first=NULL;
+p->match_cache_last=NULL;
+p->match_cache=NULL;
+p->cached_match_vector=new_vector_ptr(16);
 return p;
 }
 
@@ -113,6 +117,8 @@ if (p==NULL) return;
 if (p->recyclable_wchart_buffer!=NULL) {
     free(p->recyclable_wchart_buffer);
 }
+free_LocateCache(p->match_cache);
+free_vector_ptr(p->cached_match_vector,NULL);
 free(p);
 }
 

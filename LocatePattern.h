@@ -43,7 +43,8 @@
 #include "DELA.h"
 #include "AbstractDelaLoad.h"
 #include "Korean.h"
-
+#include "LocateCache.h"
+#include "Vector.h"
 
 
 /**
@@ -223,6 +224,16 @@ struct locate_parameters {
    int last_matched_position;
    /* This structure is used to mark tokens that cannot start any match */
    struct bit_array* failfast;
+   /* Those two fields are used to store matches while exploring from a given
+    * position. Once the exploration is complete, we deal with the matches,
+    * caching them if possible. We need two pointers because we have to insert
+    * at the end of the cache list */
+   struct match_list* match_cache_first;
+   struct match_list* match_cache_last;
+   /* This is the cache to store matches */
+   LocateCache match_cache;
+   /* This vector is used to store results obtained from cache consultation */
+   vector_ptr* cached_match_vector;
 };
 
 
