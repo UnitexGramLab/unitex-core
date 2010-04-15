@@ -77,6 +77,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 void shift_stack(unichar* stack, int pos, int shift);
 void shift_stack(unichar* stack, int pos);
 void shift_stack_left(unichar* stack, int pos);
+void shift_stack_left2(unichar* stack,int shift);
 int SU_convert_features(struct l_morpho_t* pL_MORPHO,f_morpho_T*** feat, unichar* feat_str);
 struct list_ustring* SU_split_raw_features(unichar*);
 int SU_feature_agreement(struct l_morpho_t* pL_MORPHO,f_morpho_T* feat, f_morpho_T* desired_features);
@@ -513,7 +514,26 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 		/* If the tag is not <E>, we process it */
 	   unichar foo;
 	   int val;
-	   if (semitic!=NULL && 1==u_sscanf(p_SU_buf->tag,"<%d>%C",&val,&foo)) {
+
+	   if (u_starts_with(p_SU_buf->tag,"<R=")) {
+		   /* Replacement of the first letter, useful for Malagasy */
+		   if (p_SU_buf->tag[4]!='>' || p_SU_buf->tag[5]!='\0') {
+			   fatal_error("Invalid <R=?> tag\n");
+		   }
+		   p_SU_buf->stack[0]=p_SU_buf->tag[3];
+	   } else if (u_starts_with(p_SU_buf->tag,"<I=")) {
+		   /* Insertion of an initial letter, useful for Malagasy */
+		   if (p_SU_buf->tag[4]!='>' || p_SU_buf->tag[5]!='\0') {
+			   fatal_error("Invalid <I=?> tag\n");
+		   }
+		   shift_stack(p_SU_buf->stack,1);
+		   pos++;
+		   p_SU_buf->stack[0]=p_SU_buf->tag[3];
+	   } else if (1==u_sscanf(p_SU_buf->tag,"<X=%d>%C",&val,&foo)) {
+		   /* Removal of the first val letters */
+		   shift_stack_left2(p_SU_buf->stack,val);
+		   pos=pos-val;
+	   } else if (semitic!=NULL && 1==u_sscanf(p_SU_buf->tag,"<%d>%C",&val,&foo)) {
          /* If we are in semitic mode, we must handle tags like <12> like references
           * to letters in the lemma. We must deal this way with values >9, because
           * the graph compiler would split "12" in "1" and "2" */
@@ -827,10 +847,24 @@ void shift_stack_left(unichar* stack, int pos) {
 		// this case should never happen
 		return;
 	}
-	for (int i = pos - 1; i < MAX_CHARS_IN_STACK; i++) {
+	for (int i = pos - 1; i < MAX_CHARS_IN_STACK-1; i++) {
 		stack[i] = stack[i + 1];
 	}
 }
+
+//
+// Shifts all the stack to the left from the position pos
+//
+void shift_stack_left2(unichar* stack,int shift) {
+	if (shift == 0) {
+		// this case should never happen
+		return;
+	}
+	for (int i=0;i<MAX_CHARS_IN_STACK-shift;i++) {
+		stack[i]=stack[i+shift];
+	}
+}
+
 
 ////////////////////////////////////////////
 // Convert a textual representation of features 'feat_str', e.g. :Ipf:Ipm
