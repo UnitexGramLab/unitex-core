@@ -202,7 +202,13 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 	long per_halfhundred=0;
 	if ((text_size_calc_per_halfhundred / factor) != 0)
 	{
-	    per_halfhundred = (long)(((matching_units_per_halfhundred * 100000 ) / factor) / (text_size_calc_per_halfhundred / factor));
+	    unsigned long multiplicator = 100000 ;
+        unsigned long factor_matching_units = factor;
+        while ((multiplicator > 1) && (factor_matching_units > 1)) {
+          multiplicator /= 10;
+          factor_matching_units /= 10;
+        }
+	    per_halfhundred = (long)(((matching_units_per_halfhundred * multiplicator ) / factor_matching_units) / (text_size_calc_per_halfhundred / factor));
 	}
 
 	if (text_size != 0) {
