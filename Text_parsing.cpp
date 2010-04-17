@@ -165,7 +165,7 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 						 * we just want to consider this single match */
 						tmp->next=NULL;
 						cache_match(tmp, p->buffer, tmp->m.start_pos_in_token,
-								tmp->m.end_pos_in_token, &(p->match_cache[current_token]));
+								tmp->m.end_pos_in_token, &(p->match_cache));
 					} else {
 						free_match_list_element(tmp);
 					}
@@ -192,16 +192,17 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 				== 1) ? "" : "s");
 	u_printf("%d recognized units\n", p->matching_units);
 
-	long per_halfhundred = 0;
-	if (text_size != 0) {
-		if (text_size < 21473)
-			per_halfhundred = (((long) p->matching_units) * 100000) / text_size;
-		else if (text_size < 2147300)
-			per_halfhundred = ((((long) p->matching_units) * 1000) / text_size)
-					* 100;
-		else
-			per_halfhundred = ((((long) p->matching_units) * 1) / text_size)
-					* 100000;
+	unsigned long text_size_calc_per_halfhundred = text_size;
+	unsigned long matching_units_per_halfhundred = (unsigned long)(p->matching_units);
+	unsigned long factor = 1;
+	while (text_size_calc_per_halfhundred / factor >= 21473) {
+	    factor *= 10;
+	}
+
+	long per_halfhundred=0;
+	if ((text_size_calc_per_halfhundred / factor) != 0)
+	{
+	    per_halfhundred = (long)(((matching_units_per_halfhundred * 100000 ) / factor) / (text_size_calc_per_halfhundred / factor));
 	}
 
 	if (text_size != 0) {
