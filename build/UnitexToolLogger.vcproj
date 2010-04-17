@@ -847,6 +847,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\LocateCache.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\LocateCache.h"
+				>
+			</File>
+			<File
 				RelativePath="..\LocateFst2Tags.cpp"
 				>
 			</File>

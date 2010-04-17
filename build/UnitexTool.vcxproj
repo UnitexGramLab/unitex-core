@@ -285,6 +285,7 @@
     <ClInclude Include="..\ActivityLoggerPlugCallback.h" />
     <ClInclude Include="..\Af_stdio.h" />
     <ClInclude Include="..\CompoundWordHashTable.h" />
+    <ClInclude Include="..\LocateCache.h" />
     <ClInclude Include="..\Tagger.h" />
     <ClInclude Include="..\TaggingProcess.h" />
     <ClInclude Include="..\TrainingProcess.h" />
@@ -370,6 +371,7 @@
     <ClCompile Include="..\List_pointer.cpp" />
     <ClCompile Include="..\List_ustring.cpp" />
     <ClCompile Include="..\Locate.cpp" />
+    <ClCompile Include="..\LocateCache.cpp" />
     <ClCompile Include="..\LocateFst2Tags.cpp" />
     <ClCompile Include="..\LocateMatches.cpp" />
     <ClCompile Include="..\LocatePattern.cpp" />

@@ -186,6 +186,7 @@
 		225FE86E11256B6A00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86C11256B6A00F33C2A /* TrainingProcess.cpp */; };
 		229851B0111A6F3300503A07 /* Fst2Chk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851AE111A6F3300503A07 /* Fst2Chk.cpp */; };
 		22EA01E81121EDB000A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */; };
+		22FE473F117A22860011D758 /* LocateCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22FE473D117A22860011D758 /* LocateCache.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -584,6 +585,8 @@
 		22EA01E51121EDB000A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
 		22EA01E61121EDB000A89AD4 /* AbstractAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocator.h; path = ../AbstractAllocator.h; sourceTree = SOURCE_ROOT; };
 		22EA01E71121EDB000A89AD4 /* AbstractAllocatorPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocatorPlugCallback.h; path = ../AbstractAllocatorPlugCallback.h; sourceTree = SOURCE_ROOT; };
+		22FE473D117A22860011D758 /* LocateCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocateCache.cpp; path = ../LocateCache.cpp; sourceTree = SOURCE_ROOT; };
+		22FE473E117A22860011D758 /* LocateCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocateCache.h; path = ../LocateCache.h; sourceTree = SOURCE_ROOT; };
 		8DD76F6C0486A84900D96B5E /* UnitexToolLogger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitexToolLogger; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -784,6 +787,8 @@
 				222F7AAA1107A68E00C91CC7 /* List_ustring.h */,
 				222F7AAB1107A68E00C91CC7 /* Locate.cpp */,
 				222F7AAC1107A68E00C91CC7 /* Locate.h */,
+				22FE473D117A22860011D758 /* LocateCache.cpp */,
+				22FE473E117A22860011D758 /* LocateCache.h */,
 				222F7AAD1107A68E00C91CC7 /* LocateConstants.h */,
 				222F7AAE1107A68E00C91CC7 /* LocateFst2Tags.cpp */,
 				222F7AAF1107A68E00C91CC7 /* LocateFst2Tags.h */,
@@ -1259,6 +1264,7 @@
 				225FE443112569C500F33C2A /* TaggingProcess.cpp in Sources */,
 				225FE444112569C500F33C2A /* TrainingTagger.cpp in Sources */,
 				225FE86E11256B6A00F33C2A /* TrainingProcess.cpp in Sources */,
+				22FE473F117A22860011D758 /* LocateCache.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -72,6 +72,9 @@
     <ClInclude Include="..\TrainingProcess.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\LocateCache.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\AbstractDelaLoad.cpp">
@@ -579,6 +582,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\TrainingProcess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LocateCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
