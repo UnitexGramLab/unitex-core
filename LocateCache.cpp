@@ -61,7 +61,7 @@ free(c);
  * Caches the given token sequence in the given cache. Note that
  * match is supposed to contain a single match, not a match list.
  */
-void cache_match(struct match_list* match,int* tab,int start,int end,LocateCache *c) {
+static void cache_match_internal(struct match_list* match,int* tab,int start,int end,LocateCache *c) {
 int token=-1;
 struct match_list* m=match;
 if (start<=end) {
@@ -72,18 +72,18 @@ if (start<=end) {
 if (*c==NULL) {
 	*c=new_LocateCache(token,m);
 	if (token!=-1) {
-		cache_match(match,tab,start+1,end,&((*c)->middle));
+		cache_match_internal(match,tab,start+1,end,&((*c)->middle));
 	}
 	return;
 }
 /* There is a node */
 if (token<(*c)->token) {
 	/* If we have to move on the left */
-	return cache_match(match,tab,start,end,&((*c)->left));
+	return cache_match_internal(match,tab,start,end,&((*c)->left));
 }
 if (token>(*c)->token) {
 	/* If we have to move on the right */
-	return cache_match(match,tab,start,end,&((*c)->right));
+	return cache_match_internal(match,tab,start,end,&((*c)->right));
 }
 /* We have the correct token */
 if (token==-1) {
@@ -93,7 +93,18 @@ if (token==-1) {
 	(*c)->matches=match;
 	return;
 }
-cache_match(match,tab,start+1,end,&((*c)->middle));
+cache_match_internal(match,tab,start+1,end,&((*c)->middle));
+}
+
+
+/**
+ * Caches the given token sequence in the given cache. Note that
+ * match is supposed to contain a single match, not a match list.
+ * There is no need to save the first token, since caches are stored
+ * in an array indexed on first tokens.
+ */
+void cache_match(struct match_list* match,int* tab,int start,int end,LocateCache *c) {
+cache_match_internal(match,tab,start+1,end,c);
 }
 
 
@@ -128,9 +139,13 @@ explore_cache_node(tab,pos,tab_size,c->right,res);
  * associated to token sequences are stored in 'res'. Returns 1 if matches
  * were found; 0 otherwise.
  */
-int consult_cache(int* tab,int start,int tab_size,LocateCache c,vector_ptr* res) {
+int consult_cache(int* tab,int start,int tab_size,LocateCache* caches,vector_ptr* res) {
 res->nbelems=0;
-explore_cache_node(tab,start,tab_size,c,res);
+int first_token=tab[start];
+if (first_token==-1) {
+	return 0;
+}
+explore_cache_node(tab,start,tab_size,caches[first_token],res);
 return res->nbelems!=0;
 }
 

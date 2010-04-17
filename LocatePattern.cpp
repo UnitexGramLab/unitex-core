@@ -117,7 +117,6 @@ if (p==NULL) return;
 if (p->recyclable_wchart_buffer!=NULL) {
     free(p->recyclable_wchart_buffer);
 }
-free_LocateCache(p->match_cache);
 free_vector_ptr(p->cached_match_vector,NULL);
 free(p);
 }
@@ -320,6 +319,10 @@ if (p->tokens==NULL) {
    u_fclose(out);
    return 0;
 }
+p->match_cache=(LocateCache*)calloc(p->tokens->size,sizeof(LocateCache));
+if (p->match_cache==NULL) {
+	fatal_alloc_error("locate_pattern");
+}
 
 #ifdef TRE_WCHAR
 p->filter_match_index=new_FilterMatchIndex(p->filters,p->tokens);
@@ -401,6 +404,12 @@ u_fclose(text_file);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
 
+if (p->match_cache!=NULL) {
+	for (int i=0;i<p->tokens->size;i++) {
+		free_LocateCache(p->match_cache[i]);
+	}
+	free(p->match_cache);
+}
 int free_abstract_allocator_item=(get_allocator_cb_flag(locate_abstract_allocator) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
 
 if (free_abstract_allocator_item) {

@@ -230,8 +230,8 @@ struct locate_parameters {
     * at the end of the cache list */
    struct match_list* match_cache_first;
    struct match_list* match_cache_last;
-   /* This is the cache to store matches */
-   LocateCache match_cache;
+   /* This is the cache array to store matches */
+   LocateCache* match_cache;
    /* This vector is used to store results obtained from cache consultation */
    vector_ptr* cached_match_vector;
 };
