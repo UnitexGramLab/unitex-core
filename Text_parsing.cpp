@@ -165,7 +165,7 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 						 * we just want to consider this single match */
 						tmp->next=NULL;
 						cache_match(tmp, p->buffer, tmp->m.start_pos_in_token,
-								tmp->m.end_pos_in_token, &(p->match_cache));
+								tmp->m.end_pos_in_token, &(p->match_cache[current_token]));
 					} else {
 						free_match_list_element(tmp);
 					}
