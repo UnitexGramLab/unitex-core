@@ -319,7 +319,10 @@ if (p->tokens==NULL) {
    u_fclose(out);
    return 0;
 }
-p->match_cache=(LocateCache*)calloc(p->tokens->size,sizeof(LocateCache));
+Abstract_allocator locate_work_abstract_allocator = locate_abstract_allocator;
+
+p->match_cache=(LocateCache*)malloc_cb(p->tokens->size * sizeof(LocateCache),locate_work_abstract_allocator);
+memset(p->match_cache,0,p->tokens->size * sizeof(LocateCache));
 if (p->match_cache==NULL) {
 	fatal_alloc_error("locate_pattern");
 }
@@ -396,7 +399,7 @@ if (is_korean) {
 p->failfast=new_bit_array(n_text_tokens,ONE_BIT);
 
 u_printf("Working...\n");
-launch_locate(text_file,out,text_size,info,p);
+launch_locate(text_file,out,text_size,info,p,locate_work_abstract_allocator);
 free_bit_array(p->failfast);
 free_buffer(p->token_buffer);
 free_Variables(p->variables);
@@ -406,9 +409,9 @@ u_fclose(out);
 
 if (p->match_cache!=NULL) {
 	for (int i=0;i<p->tokens->size;i++) {
-		free_LocateCache(p->match_cache[i]);
+		free_LocateCache(p->match_cache[i],locate_work_abstract_allocator);
 	}
-	free(p->match_cache);
+	free_cb(p->match_cache,locate_work_abstract_allocator);
 }
 int free_abstract_allocator_item=(get_allocator_cb_flag(locate_abstract_allocator) & AllocatorGetFlagAutoFreePresent) ? 0 : 1;
 

@@ -29,8 +29,8 @@
 /**
  * Builds, initializes and returns a new LocateCache.
  */
-LocateCache new_LocateCache(int token,struct match_list* matches) {
-LocateCache c=(LocateCache)malloc(sizeof(struct locate_cache));
+LocateCache new_LocateCache(int token,struct match_list* matches,Abstract_allocator prv_alloc) {
+LocateCache c=(LocateCache)malloc_cb(sizeof(struct locate_cache),prv_alloc);
 if (c==NULL) {
 	fatal_alloc_error("new_LocateCache");
 }
@@ -47,13 +47,13 @@ return c;
  * Frees all the memory associated to the given LocateCache, including
  * its match list, if any.
  */
-void free_LocateCache(LocateCache c) {
+void free_LocateCache(LocateCache c,Abstract_allocator prv_alloc) {
 if (c==NULL) return;
-free_LocateCache(c->left);
-free_LocateCache(c->middle);
-free_LocateCache(c->right);
-free_match_list(c->matches);
-free(c);
+free_LocateCache(c->left,prv_alloc);
+free_LocateCache(c->middle,prv_alloc);
+free_LocateCache(c->right,prv_alloc);
+free_match_list(c->matches,prv_alloc);
+free_cb(c,prv_alloc);
 }
 
 
@@ -61,7 +61,7 @@ free(c);
  * Caches the given token sequence in the given cache. Note that
  * match is supposed to contain a single match, not a match list.
  */
-static void cache_match_internal(struct match_list* match,int* tab,int start,int end,LocateCache *c) {
+static void cache_match_internal(struct match_list* match,int* tab,int start,int end,LocateCache *c,Abstract_allocator prv_alloc) {
 int token=-1;
 struct match_list* m=match;
 if (start<=end) {
@@ -70,20 +70,20 @@ if (start<=end) {
 }
 /* No node */
 if (*c==NULL) {
-	*c=new_LocateCache(token,m);
+	*c=new_LocateCache(token,m,prv_alloc);
 	if (token!=-1) {
-		cache_match_internal(match,tab,start+1,end,&((*c)->middle));
+		cache_match_internal(match,tab,start+1,end,&((*c)->middle),prv_alloc);
 	}
 	return;
 }
 /* There is a node */
 if (token<(*c)->token) {
 	/* If we have to move on the left */
-	return cache_match_internal(match,tab,start,end,&((*c)->left));
+	return cache_match_internal(match,tab,start,end,&((*c)->left),prv_alloc);
 }
 if (token>(*c)->token) {
 	/* If we have to move on the right */
-	return cache_match_internal(match,tab,start,end,&((*c)->right));
+	return cache_match_internal(match,tab,start,end,&((*c)->right),prv_alloc);
 }
 /* We have the correct token */
 if (token==-1) {
@@ -93,7 +93,7 @@ if (token==-1) {
 	(*c)->matches=match;
 	return;
 }
-cache_match_internal(match,tab,start+1,end,&((*c)->middle));
+cache_match_internal(match,tab,start+1,end,&((*c)->middle),prv_alloc);
 }
 
 
@@ -103,8 +103,8 @@ cache_match_internal(match,tab,start+1,end,&((*c)->middle));
  * There is no need to save the first token, since caches are stored
  * in an array indexed on first tokens.
  */
-void cache_match(struct match_list* match,int* tab,int start,int end,LocateCache *c) {
-cache_match_internal(match,tab,start+1,end,c);
+void cache_match(struct match_list* match,int* tab,int start,int end,LocateCache *c, Abstract_allocator prv_alloc) {
+cache_match_internal(match,tab,start+1,end,c,prv_alloc);
 }
 
 

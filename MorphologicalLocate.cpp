@@ -41,7 +41,7 @@
 void morphological_locate(int,int,int,int,int,struct parsing_info**,int,struct list_int*,
 		                  struct locate_parameters*,struct Token_error_ctx*,unichar*,int,
 		                  unichar*);
-void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*,struct Token_error_ctx*);
+void enter_morphological_mode(int,int,int,int,struct parsing_info**,int,struct list_int*,struct locate_parameters*,struct Token_error_ctx*,Abstract_allocator prv_alloc);
 int input_is_token(Fst2Tag tag);
 void explore_dic_in_morpho_mode(struct locate_parameters* p,int pos,int pos_in_token,
                                 struct parsing_info* *matches,struct pattern* pattern,
@@ -840,7 +840,8 @@ void enter_morphological_mode(int graph_depth, /* 0 means that we are in the top
                             * explosions due to bad written grammars. */
             struct list_int* ctx, /* information about the current context, if any */
             struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-            struct Token_error_ctx* p_token_error_ctx
+            struct Token_error_ctx* p_token_error_ctx,
+            Abstract_allocator prv_alloc
             ) {
 unichar* content_buffer=(unichar*)malloc(sizeof(unichar)*4096);
 if (content_buffer==NULL) {
@@ -878,7 +879,7 @@ if (L!=NULL) {
       variable_backup_memory_reserve* backup_reserve = create_variable_backup_memory_reserve(p->variables);
       int count_cancel_trying=0;
       int count_call=0;
-      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve,&count_cancel_trying,&count_call);
+      locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve,&count_cancel_trying,&count_call,prv_alloc);
       if ((p->max_count_call > 0) && (count_call>=p->max_count_call)) {
           u_printf("stop computing token %u after %u step computing\n",p->absolute_offset+p->current_origin,count_call);
       }

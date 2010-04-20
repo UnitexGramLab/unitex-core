@@ -38,21 +38,21 @@ int find_compound_word(int, int, struct DLC_tree_info*,
 		struct locate_parameters*);
 unichar* get_token_sequence(int*, struct string_hash*, int, int);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
-		struct list_int*, struct locate_parameters*, struct Token_error_ctx*);
+		struct list_int*, struct locate_parameters*, struct Token_error_ctx*, Abstract_allocator);
 void shift_variable_bounds(Variables*, int);
-void add_match(int, unichar*, struct locate_parameters*);
-void real_add_match(struct match_list*, struct locate_parameters*);
+void add_match(int, unichar*, struct locate_parameters*, Abstract_allocator);
+void real_add_match(struct match_list*, struct locate_parameters*, Abstract_allocator);
 struct match_list* eliminate_longer_matches(struct match_list*, int, int,
-		unichar*, int*, struct locate_parameters*);
+		unichar*, int*, struct locate_parameters*, Abstract_allocator);
 struct match_list* save_matches(struct match_list*, int, U_FILE*,
-		struct locate_parameters*);
+		struct locate_parameters*, Abstract_allocator);
 
 /**
  * Performs the Locate operation on the text, saving the occurrences
  * on the fly.
  */
 void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
-		struct locate_parameters* p) {
+		struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	struct Token_error_ctx token_error_ctx;
 	token_error_ctx.n_errors = 0;
 	token_error_ctx.last_start = -1;
@@ -108,7 +108,7 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 						int size=tmp->m.end_pos_in_token-tmp->m.start_pos_in_token;
 						tmp->m.start_pos_in_token=p->current_origin+p->absolute_offset;
 						tmp->m.end_pos_in_token=tmp->m.start_pos_in_token+size;
-						real_add_match(tmp,p);
+						real_add_match(tmp,p,prv_alloc);
 						tmp=tmp->next;
 					}
 				}
@@ -126,7 +126,7 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 				p->last_matched_position = -1;
 				locate(0, initial_state, 0, 0, &matches, 0, NULL, p,
 						&token_error_ctx, backup_reserve, &count_cancel_trying,
-						&count_call);
+						&count_call, prv_alloc);
 				if ((p->max_count_call > 0)
 						&& (count_call >= p->max_count_call)) {
 					u_printf(
@@ -155,7 +155,7 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 				}
 				struct match_list* tmp;
 				while (p->match_cache_first != NULL) {
-					real_add_match(p->match_cache_first, p);
+					real_add_match(p->match_cache_first, p, prv_alloc);
 					tmp = p->match_cache_first;
 					p->match_cache_first = p->match_cache_first->next;
 					if (can_cache_matches && tmp->m.start_pos_in_token
@@ -165,9 +165,9 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 						 * we just want to consider this single match */
 						tmp->next=NULL;
 						cache_match(tmp, p->buffer, tmp->m.start_pos_in_token,
-								tmp->m.end_pos_in_token, &(p->match_cache[current_token]));
+								tmp->m.end_pos_in_token, &(p->match_cache[current_token]), prv_alloc);
 					} else {
-						free_match_list_element(tmp);
+						free_match_list_element(tmp, prv_alloc);
 					}
 				}
 				p->match_cache_last = NULL;
@@ -176,13 +176,13 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 			}
 		}
 		p->match_list = save_matches(p->match_list, p->absolute_offset
-				+ p->current_origin, out, p);
+				+ p->current_origin, out, p, prv_alloc);
 		(p->current_origin)++;
 	}
 	free_reserve(backup_reserve);
 
 	p->match_list = save_matches(p->match_list, p->absolute_offset
-			+ p->current_origin, out, p);
+			+ p->current_origin, out, p, prv_alloc);
 	u_printf("100%% done      \n\n");
 	u_printf("%d match%s\n", p->number_of_matches,
 			(p->number_of_matches == 1) ? "" : "es");
@@ -300,7 +300,7 @@ struct list_int* ctx, /* information about the current context, if any */
 struct locate_parameters* p, /* miscellaneous parameters needed by the function */
 struct Token_error_ctx* p_token_error_ctx,
 		variable_backup_memory_reserve*backup_reserve,
-		int* p_count_cancel_trying, int* p_count_call) {
+		int* p_count_cancel_trying, int* p_count_call, Abstract_allocator prv_alloc) {
 #ifdef TRE_WCHAR
 	int filter_number;
 #endif
@@ -376,19 +376,19 @@ struct Token_error_ctx* p_token_error_ctx,
 			if (p->output_policy == IGNORE_OUTPUTS) {
 				if (pos > 0) {
 					add_match(pos + p->current_origin + p->absolute_offset - 1,
-							NULL, p);
+							NULL, p, prv_alloc);
 				} else {
 					add_match(pos + p->current_origin + p->absolute_offset,
-							NULL, p);
+							NULL, p, prv_alloc);
 				}
 			} else {
 				p->stack->stack[stack_top + 1] = '\0';
 				if (pos > 0) {
 					add_match(pos + p->current_origin + p->absolute_offset - 1,
-							p->stack->stack + p->left_ctx_base, p);
+							p->stack->stack + p->left_ctx_base, p, prv_alloc);
 				} else {
 					add_match(pos + p->current_origin + p->absolute_offset,
-							p->stack->stack + p->left_ctx_base, p);
+							p->stack->stack + p->left_ctx_base, p, prv_alloc);
 				}
 			}
 		} else {
@@ -488,7 +488,7 @@ struct Token_error_ctx* p_token_error_ctx,
 						pos, depth + 1, &L, 0, NULL, /* ctx is set to NULL because the end of a context must occur in the
 						 * same graph than its beginning */
 						p, p_token_error_ctx, reserve_used,
-						p_count_cancel_trying, p_count_call);
+						p_count_cancel_trying, p_count_call, prv_alloc);
 
 				p->stack_base = old_StackBase;
 				clear_dic_variable_list(&(p->dic_variables));
@@ -526,7 +526,7 @@ struct Token_error_ctx* p_token_error_ctx,
 								p->optimized_states[t->state_number],
 								L->position, depth + 1, matches, n_matches,
 								ctx, p, p_token_error_ctx, backup_reserve,
-								p_count_cancel_trying, p_count_call);
+								p_count_cancel_trying, p_count_call, prv_alloc);
 
 						p->left_ctx_shift = old_left_ctx_shift;
 						p->left_ctx_base = old_left_ctx_base;
@@ -715,7 +715,7 @@ struct Token_error_ctx* p_token_error_ctx,
 									end_of_compound + 1, depth + 1, matches,
 									n_matches, ctx, p, p_token_error_ctx,
 									backup_reserve, p_count_cancel_trying,
-									p_count_call);
+									p_count_call, prv_alloc);
 							p->stack->stack_pointer = stack_top;
 						}
 					}
@@ -798,7 +798,7 @@ struct Token_error_ctx* p_token_error_ctx,
 								end_of_compound + 1, depth + 1, matches,
 								n_matches, ctx, p, p_token_error_ctx,
 								backup_reserve, p_count_cancel_trying,
-								p_count_call);
+								p_count_call, prv_alloc);
 						p->stack->stack_pointer = stack_top;
 					}
 				}
@@ -950,7 +950,7 @@ struct Token_error_ctx* p_token_error_ctx,
 				;
 				enter_morphological_mode(graph_depth, t->state_number, pos2,
 						depth + 1, matches, n_matches, ctx, p,
-						p_token_error_ctx);
+						p_token_error_ctx, prv_alloc);
 				p->stack->stack_pointer = stack_top;
 				break;
 
@@ -976,7 +976,7 @@ struct Token_error_ctx* p_token_error_ctx,
 				locate(graph_depth, p->optimized_states[t->state_number], pos2,
 						depth + 1, matches, n_matches, ctx, p,
 						p_token_error_ctx, backup_reserve,
-						p_count_cancel_trying, p_count_call);
+						p_count_cancel_trying, p_count_call, prv_alloc);
 				/*if (p->output_policy!=IGNORE_OUTPUTS) {
 				 install_variable_backup(p->variables,var_backup);
 				 free_variable_backup(var_backup);
@@ -1014,7 +1014,7 @@ struct Token_error_ctx* p_token_error_ctx,
 				locate(graph_depth, p->optimized_states[t->state_number], end,
 						depth + 1, matches, n_matches, ctx, p,
 						p_token_error_ctx, backup_reserve,
-						p_count_cancel_trying, p_count_call);
+						p_count_cancel_trying, p_count_call, prv_alloc);
 				/* Once we have finished, we restore the stack */
 				p->stack->stack_pointer = stack_top;
 			}
@@ -1037,7 +1037,7 @@ struct Token_error_ctx* p_token_error_ctx,
 		locate(graph_depth,
 				p->optimized_states[variable_list->transition->state_number],
 				pos, depth + 1, matches, n_matches, ctx, p, p_token_error_ctx,
-				backup_reserve, p_count_cancel_trying, p_count_call);
+				backup_reserve, p_count_cancel_trying, p_count_call, prv_alloc);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1065,7 +1065,7 @@ struct Token_error_ctx* p_token_error_ctx,
 		locate(graph_depth,
 				p->optimized_states[variable_list->transition->state_number],
 				pos, depth + 1, matches, n_matches, ctx, p, p_token_error_ctx,
-				backup_reserve, p_count_cancel_trying, p_count_call);
+				backup_reserve, p_count_cancel_trying, p_count_call, prv_alloc);
 		p->stack->stack_pointer = stack_top;
 		if (ctx == NULL) {
 			/* We do not restore previous value if we are inside a context, in order
@@ -1090,7 +1090,7 @@ struct Token_error_ctx* p_token_error_ctx,
 			struct list_int* c = new_list_int(0, ctx);
 			locate(graph_depth, p->optimized_states[t->state_number], pos,
 					depth + 1, NULL, 0, c, p, p_token_error_ctx,
-					backup_reserve, p_count_cancel_trying, p_count_call);
+					backup_reserve, p_count_cancel_trying, p_count_call, prv_alloc);
 			/* Note that there is no matches to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			if (c->n) {
@@ -1102,7 +1102,7 @@ struct Token_error_ctx* p_token_error_ctx,
 							p->optimized_states[states->state_number], pos,
 							depth + 1, matches, n_matches, ctx, p,
 							p_token_error_ctx, backup_reserve,
-							p_count_cancel_trying, p_count_call);
+							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1116,7 +1116,7 @@ struct Token_error_ctx* p_token_error_ctx,
 			struct list_int* c = new_list_int(0, ctx);
 			locate(graph_depth, p->optimized_states[t->state_number], pos,
 					depth + 1, NULL, 0, c, p, p_token_error_ctx,
-					backup_reserve, p_count_cancel_trying, p_count_call);
+					backup_reserve, p_count_cancel_trying, p_count_call, prv_alloc);
 			/* Note that there is no matches to free since matches cannot be built within a context */
 			p->stack->stack_pointer = stack_top;
 			if (!c->n) {
@@ -1128,7 +1128,7 @@ struct Token_error_ctx* p_token_error_ctx,
 							p->optimized_states[states->state_number], pos,
 							depth + 1, matches, n_matches, ctx, p,
 							p_token_error_ctx, backup_reserve,
-							p_count_cancel_trying, p_count_call);
+							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
 					states = states->next;
 				}
@@ -1208,7 +1208,7 @@ struct Token_error_ctx* p_token_error_ctx,
 					locate(graph_depth, p->optimized_states[t->state_number],
 							end_of_compound + 1, depth + 1, matches, n_matches,
 							ctx, p, p_token_error_ctx, backup_reserve,
-							p_count_cancel_trying, p_count_call);
+							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
 				}
 			}
@@ -1267,7 +1267,7 @@ struct Token_error_ctx* p_token_error_ctx,
 					locate(graph_depth, p->optimized_states[t->state_number],
 							end_of_compound + 1, depth + 1, matches, n_matches,
 							ctx, p, p_token_error_ctx, backup_reserve,
-							p_count_cancel_trying, p_count_call);
+							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
 				}
 				/* This useless empty block is just here to enable the declaration of the next6 label */
@@ -1303,7 +1303,7 @@ struct Token_error_ctx* p_token_error_ctx,
 								p->optimized_states[t->state_number], pos2 + 1,
 								depth + 1, matches, n_matches, ctx, p,
 								p_token_error_ctx, backup_reserve,
-								p_count_cancel_trying, p_count_call);
+								p_count_cancel_trying, p_count_call, prv_alloc);
 						p->stack->stack_pointer = stack_top;
 					}
 				} else {
@@ -1328,7 +1328,7 @@ struct Token_error_ctx* p_token_error_ctx,
 								p->optimized_states[t->state_number], pos2 + 1,
 								depth + 1, matches, n_matches, ctx, p,
 								p_token_error_ctx, backup_reserve,
-								p_count_cancel_trying, p_count_call);
+								p_count_cancel_trying, p_count_call, prv_alloc);
 						p->stack->stack_pointer = stack_top;
 					}
 				}
@@ -1370,7 +1370,7 @@ struct Token_error_ctx* p_token_error_ctx,
 					locate(graph_depth, p->optimized_states[t->state_number],
 							pos2 + 1, depth + 1, matches, n_matches, ctx, p,
 							p_token_error_ctx, backup_reserve,
-							p_count_cancel_trying, p_count_call);
+							p_count_cancel_trying, p_count_call, prv_alloc);
 					p->stack->stack_pointer = stack_top;
 				}
 				next3: t = t->next;
@@ -1559,12 +1559,12 @@ unichar* get_token_sequence(int* token_array, struct string_hash* tokens,
 /**
  * Stores the given match in a list. All matches will be processed later.
  */
-void add_match(int end, unichar* output, struct locate_parameters* p) {
+void add_match(int end, unichar* output, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	if (end > p->last_matched_position) {
 		p->last_matched_position = end;
 	}
 	int start = p->current_origin + p->absolute_offset + p->left_ctx_shift;
-	struct match_list* m = new_match(start, end, output, NULL);
+	struct match_list* m = new_match(start, end, output, NULL, prv_alloc);
 	if (p->match_cache_first == NULL) {
 		p->match_cache_first = p->match_cache_last = m;
 		return;
@@ -1580,7 +1580,7 @@ void add_match(int end, unichar* output, struct locate_parameters* p) {
  *
  * # Changed to allow different outputs in merge/replace
  * mode when the grammar is an ambiguous transducer (S.N.) */
-void real_add_match(struct match_list* m, struct locate_parameters* p) {
+void real_add_match(struct match_list* m, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	//int start=p->current_origin+p->absolute_offset+p->left_ctx_shift;
 	int start = m->m.start_pos_in_token;
 	int end = m->m.end_pos_in_token;
@@ -1588,7 +1588,7 @@ void real_add_match(struct match_list* m, struct locate_parameters* p) {
 	struct match_list *l;
 	if (p->match_list == NULL) {
 		/* If the match list was empty, we always can put the match in the list */
-		p->match_list = new_match(start, end, output, NULL);
+		p->match_list = new_match(start, end, output, NULL, prv_alloc);
 		return;
 	}
 	switch (p->match_policy) {
@@ -1606,15 +1606,15 @@ void real_add_match(struct match_list* m, struct locate_parameters* p) {
 				 * i.e. we may delete more than one match in the list. */
 				l = p->match_list;
 				p->match_list = p->match_list->next;
-				free_match_list_element(l);
-				add_match(end, output, p);
+				free_match_list_element(l, prv_alloc);
+				add_match(end, output, p, prv_alloc);
 				return;
 			}
 			/* We allow add shorter matches but with other start position.
 			 * Note that, by construction, we have start>p->match_list->start,
 			 * that is to say that we have two matches that overlap: ( [ ) ]
 			 */
-			p->match_list = new_match(start, end, output, p->match_list);
+			p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
 			return;
 		}
 		/* If we have the same start and the same end, we consider the
@@ -1631,7 +1631,7 @@ void real_add_match(struct match_list* m, struct locate_parameters* p) {
 				l = l->next;
 			}
 			if (l == NULL) {
-				p->match_list = new_match(start, end, output, p->match_list);
+				p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
 			}
 		}
 		break;
@@ -1647,7 +1647,7 @@ void real_add_match(struct match_list* m, struct locate_parameters* p) {
 			l = l->next;
 		}
 		if (l == NULL) {
-			p->match_list = new_match(start, end, output, p->match_list);
+			p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
 		}
 		break;
 
@@ -1658,9 +1658,9 @@ void real_add_match(struct match_list* m, struct locate_parameters* p) {
 		 * we eliminate matches that are longer than this one, if any. */
 		int dont_add_match = 0;
 		p->match_list = eliminate_longer_matches(p->match_list, start, end,
-				output, &dont_add_match, p);
+				output, &dont_add_match, p, prv_alloc);
 		if (!dont_add_match) {
-			p->match_list = new_match(start, end, output, p->match_list);
+			p->match_list = new_match(start, end, output, p->match_list, prv_alloc);
 		}
 		break;
 	}
@@ -1681,7 +1681,7 @@ void real_add_match(struct match_list* m, struct locate_parameters* p) {
  */
 struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
 		int end, unichar* output, int *dont_add_match,
-		struct locate_parameters* p) {
+		struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	struct match_list *l;
 	if (ptr == NULL)
 		return NULL;
@@ -1691,7 +1691,7 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
 		/* In the case of ambiguous transductions producing different outputs,
 		 * we accept matches with same range */
 		ptr->next = eliminate_longer_matches(ptr->next, start, end, output,
-				dont_add_match, p);
+				dont_add_match, p, prv_alloc);
 		return ptr;
 	}
 	if (start >= ptr->m.start_pos_in_token && end <= ptr->m.end_pos_in_token) {
@@ -1701,9 +1701,9 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
 			/* If we have already noticed that the match mustn't be added
 			 * to the list, we delete the current list element */
 			l = ptr->next;
-			free_match_list_element(ptr);
+			free_match_list_element(ptr, prv_alloc);
 			return eliminate_longer_matches(l, start, end, output,
-					dont_add_match, p);
+					dont_add_match, p, prv_alloc);
 		}
 		/* If the new match is shorter than the current one in the list, then we
 		 * update the current one with the value of the new match. */
@@ -1715,7 +1715,7 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
 		/* We note that the match does not need anymore to be added */
 		(*dont_add_match) = 1;
 		ptr->next = eliminate_longer_matches(ptr->next, start, end, output,
-				dont_add_match, p);
+				dont_add_match, p, prv_alloc);
 		return ptr;
 	}
 	if (start <= ptr->m.start_pos_in_token && end >= ptr->m.end_pos_in_token) {
@@ -1727,7 +1727,7 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
 	/* If we have disjunct ranges or overlapping ranges without inclusion,
 	 * we examine recursively the rest of the list */
 	ptr->next = eliminate_longer_matches(ptr->next, start, end, output,
-			dont_add_match, p);
+			dont_add_match, p, prv_alloc);
 	return ptr;
 }
 
@@ -1744,7 +1744,7 @@ struct match_list* eliminate_longer_matches(struct match_list *ptr, int start,
  * left-most stehen am Anfang der Liste
  */
 struct match_list* save_matches(struct match_list* l, int current_position,
-		U_FILE* f, struct locate_parameters* p) {
+		U_FILE* f, struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	struct match_list *ptr;
 	if (l == NULL)
 		return NULL;
@@ -1844,15 +1844,15 @@ struct match_list* save_matches(struct match_list* l, int current_position,
 			while (l != NULL) {
 				ptr = l;
 				l = l->next;
-				free_match_list_element(ptr);
+				free_match_list_element(ptr, prv_alloc);
 			}
 			return NULL;
 		}
 		ptr = l->next;
-		free_match_list_element(l);
-		return save_matches(ptr, current_position, f, p);
+		free_match_list_element(l, prv_alloc);
+		return save_matches(ptr, current_position, f, p, prv_alloc);
 	}
-	l->next = save_matches(l->next, current_position, f, p);
+	l->next = save_matches(l->next, current_position, f, p, prv_alloc);
 	return l;
 }
 

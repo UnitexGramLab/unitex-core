@@ -44,7 +44,8 @@ void enter_morphological_mode(int graph_depth, /* 0 means that we are in the top
                             * explosions due to bad written grammars. */
             struct list_int* ctx, /* information about the current context, if any */
             struct locate_parameters* p, /* miscellaneous parameters needed by the function */
-            struct Token_error_ctx* p_token_error_ctx
+            struct Token_error_ctx* p_token_error_ctx,
+            Abstract_allocator prv_alloc
 );
 
 #endif
