@@ -754,7 +754,7 @@ int SU_explore_tag(MultiFlex_ctx* p_multiFlex_ctx,struct l_morpho_t* pL_MORPHO,T
 				unichar tmp[32];
 				single_HGJ_to_Jamos(p_SU_buf->tag[pos_tag],tmp,korean);
 				int l=u_strlen(tmp);
-				u_strcpy(p_SU_buf->stack+pos,tmp);
+				u_strncpy(p_SU_buf->stack+pos,tmp,l);
 				pos=pos+l;
 				//old version before Korean: stack[pos++] = tag[pos_tag];
 				if (semitic != NULL) {

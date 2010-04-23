@@ -230,6 +230,7 @@ int u_vsscanf(unichar*,const char*,va_list);
 int u_strlen(const unichar*);
 unichar* u_strcpy(unichar*,const unichar*);
 unichar* u_strcpy(unichar*,const char*);
+unichar* u_strncpy(unichar *dest,const unichar *src,int n);
 unichar* u_strcpy_sized(unichar*,size_t,const unichar*);
 unichar* u_strcpy_sized(unichar*,size_t,const char*);
 unichar* u_strcat(unichar*,const unichar*);
