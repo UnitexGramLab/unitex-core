@@ -69,29 +69,6 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 	clock_t startTime = clock();
 	clock_t currentTime;
 
-/*
-	for (int y=4474190;y<4474190+3;y++) {
-		error("[%d]=<%S> ",y,p->tokens->value[p->buffer[y]]);
-	}
-	error("\n");
-	for (int y=6006522;y<6006522+3;y++) {
-		error("[%d]=<%S> ",y,p->tokens->value[p->buffer[y]]);
-	}
-	error("\n");
-	for (int y=7163881;y<7163881+3;y++) {
-		error("[%d]=<%S> ",y,p->tokens->value[p->buffer[y]]);
-	}
-	error("\n");
-	exit(1);
-*/
-	/*for (int y=7163881;y<7163881+3;y++) {
-		error("[%d]=<%S> ",y,p->tokens->value[p->buffer[y]]);
-	}
-	error("\n");
-	p->current_origin=7163881;
-	p->token_buffer->size=7163881+1;
-	p->token_buffer->end_of_file=1;
-*/
 
 	unite = ((text_size / 100) > 1000) ? (text_size / 100) : 1000;
 
