@@ -68,6 +68,31 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 	int unite;
 	clock_t startTime = clock();
 	clock_t currentTime;
+
+/*
+	for (int y=4474190;y<4474190+3;y++) {
+		error("[%d]=<%S> ",y,p->tokens->value[p->buffer[y]]);
+	}
+	error("\n");
+	for (int y=6006522;y<6006522+3;y++) {
+		error("[%d]=<%S> ",y,p->tokens->value[p->buffer[y]]);
+	}
+	error("\n");
+	for (int y=7163881;y<7163881+3;y++) {
+		error("[%d]=<%S> ",y,p->tokens->value[p->buffer[y]]);
+	}
+	error("\n");
+	exit(1);
+*/
+	/*for (int y=7163881;y<7163881+3;y++) {
+		error("[%d]=<%S> ",y,p->tokens->value[p->buffer[y]]);
+	}
+	error("\n");
+	p->current_origin=7163881;
+	p->token_buffer->size=7163881+1;
+	p->token_buffer->end_of_file=1;
+*/
+
 	unite = ((text_size / 100) > 1000) ? (text_size / 100) : 1000;
 
 	variable_backup_memory_reserve* backup_reserve =
@@ -78,10 +103,12 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 		if (!p->token_buffer->end_of_file && p->current_origin
 				> (p->token_buffer->size - 2000)) {
 			/* If must change of block, we update the absolute offset, and we fill the
-			 * buffer. */
-			p->absolute_offset = p->absolute_offset + p->current_origin;
-			fill_buffer(p->token_buffer, p->current_origin, f);
-			p->current_origin = 0;
+			 * buffer. We keep 1000 tokens of the previous parsed buffer, in case there
+			 * are some matches involving that part of the tokens that have not
+			 * been saved yet */
+			p->absolute_offset = p->absolute_offset + p->current_origin-1000;
+			fill_buffer(p->token_buffer, p->current_origin-1000, f);
+			p->current_origin = 1000;
 		}
 		if (unite != 0) {
 			n_read = ((p->current_origin + p->absolute_offset) % unite);
@@ -139,8 +166,9 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 							p->absolute_offset + p->current_origin, count_call);
 				}
 				int can_cache_matches = 0;
+				p->last_tested_position=p->last_tested_position+p->current_origin+p->absolute_offset;
 				if (p->last_matched_position == -1) {
-					if (p->last_tested_position == 0) {
+					if (p->last_tested_position == p->current_origin+p->absolute_offset) {
 						/* We are in the fail fast case, nothing has been matched while
 						 * looking only at the first current token. That means that no match
 						 * could ever happen when this token is found in the text */
@@ -182,7 +210,7 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 	free_reserve(backup_reserve);
 
 	p->match_list = save_matches(p->match_list, p->absolute_offset
-			+ p->current_origin, out, p, prv_alloc);
+			+ p->current_origin+1, out, p, prv_alloc);
 	u_printf("100%% done      \n\n");
 	u_printf("%d match%s\n", p->number_of_matches,
 			(p->number_of_matches == 1) ? "" : "es");
@@ -1759,7 +1787,7 @@ struct match_list* save_matches(struct match_list* l, int current_position,
 		 *   3) offset in logical letter inside the current char (for Korean) */
 		u_fprintf(f, "%d.0.0 %d.%d.0", l->m.start_pos_in_token,
 				l->m.end_pos_in_token, u_strlen(
-						p->tokens->value[p->buffer[l->m.end_pos_in_token]]) - 1);
+						p->tokens->value[p->buffer[l->m.end_pos_in_token-p->absolute_offset]]) - 1);
 		if (l->output != NULL) {
 			/* If there is an output */
 			u_fprintf(f, " %S", l->output);
