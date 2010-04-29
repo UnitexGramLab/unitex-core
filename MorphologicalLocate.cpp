@@ -955,7 +955,7 @@ if (!(n_transitions & 32768)) {
          /* For each compressed code of the INF line, we save the corresponding
           * DELAF line in 'info->dlc' */
          uncompress_entry(inflected,tmp->string,line);
-         //error("\non decompresse la ligne _%S_\n",line);
+     	 //error("\non decompresse la ligne _%S_\n",line);
          struct dela_entry* dela_entry=tokenize_DELAF_line_opt(line);
          if (dela_entry!=NULL && (pattern==NULL || is_entry_compatible_with_pattern(dela_entry,pattern))) {
             //error("et ca matche!!\n");
@@ -1055,7 +1055,7 @@ for (int i=0;i<n_transitions;i++) {
 	   int new_pos_in_jamo=pos_in_jamo;
 	   int result=get_jamo_longest_prefix(jamo,&new_pos_in_jamo,&new_pos_in_current_token,c2,p,current_token);
 	   if (result!=0) {
-	      //debug("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
+	      //error("MATCH entre jamo du text=%C (%04X)   char du dico=%C (%04X)\n",jamo[pos_in_jamo],jamo[pos_in_jamo],c,c);
 		   /* Nothing to do if the match failed */
 		   int new_pos_offset=pos_offset;
 		   unichar* new_jamo=jamo;
@@ -1064,7 +1064,6 @@ for (int i=0;i<n_transitions;i++) {
 			   /* The text token has been fully matched, so we go on the next one */
 			   new_pos_in_current_token=0;
 			   new_pos_offset=pos_offset+1;
-
 			   int token_number=p->buffer[new_pos_offset+p->current_origin];
 				if (token_number==-1 || token_number==p->STOP) {
 					/* Remember 1) that we must not be out of the array's bounds and
@@ -1072,7 +1071,7 @@ for (int i=0;i<n_transitions;i++) {
 					return;
 				}
 				new_current_token=p->tokens->value[token_number];
-  			    new_jamo=p->jamo_tags[p->buffer[token_number]];
+				new_jamo=p->jamo_tags[token_number];
  			    new_pos_in_jamo=0;
            }
 		   /* If we have a jamo letter match */
