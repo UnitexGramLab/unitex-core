@@ -90,6 +90,9 @@ for (int i=0;src[i]!='\0';i++) {
    temp[j++]=c;
 }
 temp[j]='\0';
+if (j>1024) {
+	fatal_error("Token too long in Korean::Hanguls_to_Jamos\n");
+}
 /* Then, we perform the syllable -> Jamo conversion */
 Hanguls_to_Jamos_internal(temp,dest,only_syllables);
 }
@@ -335,7 +338,7 @@ return pos;
 
 /**
  * Converts a Hangul string into its Jamo equivalent. Returns the length of the output.
- * Note that it ignores backslashes and that it converts Hangul Compatibility Jamos
+ * Note that it [ignores backslashes and that it] converts Hangul Compatibility Jamos
  * into standard Jamos, but only if 'only_syllables' is set to zero.
  */
 int Korean::Hanguls_to_Jamos_internal(unichar* input,unichar* output,int only_syllables) {
@@ -343,10 +346,10 @@ int n=0;
 unichar c;
 for (int i=0;input[i]!='\0';i++) {
    c=Chinese_to_Hangul(input[i],alphabet->korean_equivalent_syllable);
-   if (c=='\\') {
+   /*if (c=='\\') {
       i++;
       continue;
-   }
+   }*/
    if (c>=KR_HANGUL_SYL_START && c<=KR_HANGUL_SYL_END) {
 	   n=single_Hangul_to_Jamos(c,output,n);
    }
