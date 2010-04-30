@@ -32,7 +32,7 @@
  */
 void* my_mmap(char* filename,MappedFile *m) {
 m->f=u_fopen(BINARY,filename,U_READ);
-int fd=fileno(m->f->f->dummy);
+int fd=fileno((FILE*)m->f->f->dummy);
 m->length=get_file_size(m->f);
 m->ptr=mmap(NULL,m->length,PROT_READ,MAP_PRIVATE,fd,0);
 return m;
