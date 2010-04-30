@@ -25,13 +25,13 @@
 
 
 // main internal functions:
-void analyse_word_list(unsigned char*, struct INF_codes*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,Alphabet*,
+void analyse_word_list(const unsigned char*, const struct INF_codes*, U_FILE*, U_FILE*, U_FILE*, U_FILE*,Alphabet*,
                        bool*,bool*,struct utags,vector_ptr*,vector_ptr*);
-int analyse_word(unichar*,unsigned char*,U_FILE*,U_FILE*,struct INF_codes*,bool*,bool*,Alphabet*,struct utags
+int analyse_word(unichar*,const unsigned char*,U_FILE*,U_FILE*,const struct INF_codes*,bool*,bool*,Alphabet*,struct utags
       ,vector_ptr*,vector_ptr*);
 void explore_state(int, unichar*, int, unichar*, unichar*, int, unichar*, unichar*,
                    struct decomposed_word_list**, int, struct rule_list*, struct dela_entry*,
-                   unsigned char*,struct INF_codes*,bool*,bool*,Alphabet*,U_FILE*,struct utags,vector_ptr*,vector_ptr*);
+                   const unsigned char*,const struct INF_codes*,bool*,bool*,Alphabet*,U_FILE*,struct utags,vector_ptr*,vector_ptr*);
 
 
 // results of decomposition are written to
@@ -123,14 +123,14 @@ int composition_rule_matches_entry (struct pattern*, struct dela_entry*,U_FILE*)
 void substring_operation (unichar*, unichar*);
 
 
-void check_valid_INF_lines(unichar*, bool*, struct INF_codes*);
+void check_valid_INF_lines(unichar*, bool*, const struct INF_codes*);
 bool check_is_valid_for_an_INF_line(unichar*, struct list_ustring*);
 int check_is_valid_for_one_INF_code(unichar* t, unichar* s);
 int check_is_valid(unichar*, struct dela_entry*);
 
 
 
-void init_tableaux (struct INF_codes* inf,bool* *tableau_prefix,
+void init_tableaux (const struct INF_codes* inf,bool* *tableau_prefix,
                     bool* *tableau_suffix,struct utags UTAG) {
   *tableau_prefix = (bool*)malloc(sizeof(bool)*(inf->N));
   if (*tableau_prefix==NULL) {
@@ -162,8 +162,8 @@ void free_all_dic_entries(vector_ptr*);
 // this function analyses russian compound words
 //
 void analyse_compounds(Alphabet* alph,
-		       unsigned char* bin,
-		       struct INF_codes* inf,
+		       const unsigned char* bin,
+		       const struct INF_codes* inf,
 		       U_FILE* words,
 		       U_FILE* result,
 		       U_FILE* debug,
@@ -183,8 +183,8 @@ void analyse_compounds(Alphabet* alph,
 //
 // this function reads words in the word file and try analyse them
 //
-void analyse_word_list(unsigned char* tableau_bin,
-			       struct INF_codes* inf,
+void analyse_word_list(const unsigned char* tableau_bin,
+			       const struct INF_codes* inf,
 			       U_FILE* words,
 			       U_FILE* result,
 			       U_FILE* debug,
@@ -217,8 +217,8 @@ void analyse_word_list(unsigned char* tableau_bin,
 //
 // this function try to analyse an unknown russian word
 //
-int analyse_word(unichar* mot,unsigned char* tableau_bin,U_FILE* debug,U_FILE* result_file,
-                 struct INF_codes* inf_codes,bool* prefix,bool* suffix,Alphabet* alphabet,
+int analyse_word(unichar* mot,const unsigned char* tableau_bin,U_FILE* debug,U_FILE* result_file,
+                 const struct INF_codes* inf_codes,bool* prefix,bool* suffix,Alphabet* alphabet,
                  struct utags UTAG,vector_ptr* rules,vector_ptr* entries)
 {
 #if DDEBUG > 0
@@ -281,7 +281,7 @@ bool check_is_valid_for_an_INF_line(unichar* t, struct list_ustring* l)
   return 0;
 }
 
-void check_valid_INF_lines(unichar* t, bool* tableau, struct INF_codes* inf)
+void check_valid_INF_lines(unichar* t, bool* tableau, const struct INF_codes* inf)
 {
   u_printf("Check valid %S components...\n",t);
   for (int i=0;i<inf->N;i++) {
@@ -915,8 +915,8 @@ void explore_state (int adresse,
 		    int n_decomp,
 		    struct rule_list* rule_list_called,
 		    struct dela_entry* dic_entr_called,
-		    unsigned char* tableau_bin,
-		    struct INF_codes* inf_codes,
+		    const unsigned char* tableau_bin,
+		    const struct INF_codes* inf_codes,
 		    bool* prefix,bool* suffix,Alphabet* alphabet,
 		    U_FILE* debug_file,struct utags UTAG,
 		    vector_ptr* rules,vector_ptr* entries)

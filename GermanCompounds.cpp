@@ -27,7 +27,7 @@
 //
 // this function analyses the german compound words
 //
-void analyse_german_compounds(Alphabet* alph,unsigned char* bin,struct INF_codes* inf,
+void analyse_german_compounds(Alphabet* alph,const unsigned char* bin,const struct INF_codes* inf,
                                  U_FILE* words,U_FILE* result,U_FILE* debug,U_FILE* new_unknown_words) {
 char* tableau_correct_left_component=(char*)malloc(sizeof(char)*(inf->N));
 if (tableau_correct_left_component==NULL) {
@@ -67,7 +67,7 @@ return 0;
 // this function check for all the INF codes that are:
 // N+FF
 //
-void check_valid_right_component_german(char* tableau_correct_right_component,struct INF_codes* inf) {
+void check_valid_right_component_german(char* tableau_correct_right_component,const struct INF_codes* inf) {
 u_printf("Check valid right components...\n");
 for (int i=0;i<inf->N;i++) {
    tableau_correct_right_component[i]=check_valid_right_component_for_an_INF_line_german(inf->codes[i]);
@@ -80,7 +80,7 @@ for (int i=0;i<inf->N;i++) {
 // this function check for all the INF codes that are:
 // N but not FF
 //
-void check_valid_left_component_german(char* tableau_sia,struct INF_codes* inf) {
+void check_valid_left_component_german(char* tableau_sia,const struct INF_codes* inf) {
 u_printf("Check valid left components...\n");
 for (int i=0;i<inf->N;i++) {
    tableau_sia[i]=check_valid_left_component_for_an_INF_line_german(inf->codes[i]);
@@ -108,7 +108,7 @@ return 0;
 //
 // this function look for the first sia code of the line number n and stores it in s
 //
-void get_first_sia_code_german(int n,unichar* s,struct INF_codes* inf_codes) {
+void get_first_sia_code_german(int n,unichar* s,const struct INF_codes* inf_codes) {
 // we initialize s to prevent errors, but this case should never happen
 s[0]='\0';
 struct list_ustring* l=inf_codes->codes[n];
@@ -183,7 +183,7 @@ return res;
 //
 // this function reads words in the word file and try analyse them
 //
-void analyse_german_word_list(unsigned char* bin,struct INF_codes* inf,
+void analyse_german_word_list(const unsigned char* bin,const struct INF_codes* inf,
                               U_FILE* words,U_FILE* result,U_FILE* debug,U_FILE* new_unknown_words,
                               char* left,char* right,Alphabet* alphabet) {
 unichar s[1000];
@@ -204,7 +204,7 @@ u_printf("%d words decomposed as compound words\n",n);
 // this function try to analyse an unknown german word
 //
 int analyse_german_word(unichar* mot,U_FILE* debug_file,U_FILE* result_file,char* left,char* right,
-                        struct INF_codes* inf_codes,Alphabet* alphabet,unsigned char* bin) {
+                        const struct INF_codes* inf_codes,Alphabet* alphabet,const unsigned char* bin) {
 unichar decomposition[2000];
 unichar dela_line[2000];
 unichar correct_word[2000];
@@ -285,8 +285,8 @@ void explore_state_german(int adresse,unichar* current_component,int pos_in_curr
                    unichar* original_word,int pos_in_original_word,unichar* decomposition,
                    unichar* dela_line,struct german_word_decomposition_list** L,int n_decomp,
                    char* left,char* right,
-                   struct INF_codes* inf_codes,Alphabet* alphabet,
-                   unsigned char* tableau_bin) {
+                   const struct INF_codes* inf_codes,Alphabet* alphabet,
+                   const unsigned char* tableau_bin) {
 int c;
 int index,t;
 c=tableau_bin[adresse]*256+tableau_bin[adresse+1];

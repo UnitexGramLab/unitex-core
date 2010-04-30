@@ -27,7 +27,7 @@
 #include "String_hash.h"
 
 
-void analyse_norwegian_unknown_words(Alphabet*,unsigned char*,struct INF_codes*,U_FILE*,
+void analyse_norwegian_unknown_words(Alphabet*,const unsigned char*,const struct INF_codes*,U_FILE*,
 									U_FILE*,U_FILE*,U_FILE*,struct string_hash*);
 
 

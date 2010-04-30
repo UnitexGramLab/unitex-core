@@ -72,9 +72,9 @@ do {
 // this function builds the normalization grammar adapted to the match list
 // passed in parameter
 //
-void build_portuguese_normalization_grammar(Alphabet* alph,struct match_list* list,unsigned char* root_bin,
-                                            struct INF_codes* root_inf,unsigned char* inflected_bin,
-                                            struct INF_codes* inflected_inf,char* res_grf_name,
+void build_portuguese_normalization_grammar(Alphabet* alph,struct match_list* list,const unsigned char* root_bin,
+                                            const struct INF_codes* root_inf,const unsigned char* inflected_bin,
+                                            const struct INF_codes* inflected_inf,char* res_grf_name,
                                             Encoding encoding_output, int bom_output,
                                             struct normalization_tree* norm_tree,
                                             struct normalization_tree* nasal_norm_tree) {
@@ -153,9 +153,9 @@ while (s[i]==':') {
 // "dir-se-ia/{...,...V:C1s}-{se,.PRO}"
 // it returns i if i correct lines are produced, 0 else
 //
-int replace_match_output_by_normalization_line(struct match_list* L,Alphabet* alph,unsigned char* root_bin,
-                                                struct INF_codes* root_inf,unsigned char* inflected_bin,
-                                                struct INF_codes* inflected_inf,
+int replace_match_output_by_normalization_line(struct match_list* L,Alphabet* alph,const unsigned char* root_bin,
+                                                const struct INF_codes* root_inf,const unsigned char* inflected_bin,
+                                                const struct INF_codes* inflected_inf,
                                                 struct normalization_tree* norm_tree) {
 if (L->output==NULL) {
    return 0;
@@ -367,8 +367,8 @@ return 1;
 //
 // this function look for the lemma corresponding to the radical
 //
-int get_radical_lemma(unichar* radical,struct list_ustring** lemmas,Alphabet* alph,unsigned char* root_bin,
-                      struct INF_codes* root_inf) {
+int get_radical_lemma(unichar* radical,struct list_ustring** lemmas,Alphabet* alph,const unsigned char* root_bin,
+                      const struct INF_codes* root_inf) {
 unichar entry[1000];
 // we must use the entry variable because of the upper/lower case:
 // if the radical is Dir, we want it to be dir in order to get the correct form
@@ -399,7 +399,7 @@ return 1;
 // this function looks for the inf number associated to an inflected form
 // it returns this number on success, -1 else
 //
-int get_inf_number_for_token(int pos,unichar* contenu,int string_pos,unichar* entry,Alphabet* ALPH,unsigned char* BIN) {
+int get_inf_number_for_token(int pos,unichar* contenu,int string_pos,unichar* entry,Alphabet* ALPH,const unsigned char* BIN) {
 int n_transitions;
 int ref;
 n_transitions=((unsigned char)BIN[pos])*256+(unsigned char)BIN[pos+1];

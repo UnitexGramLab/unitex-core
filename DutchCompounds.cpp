@@ -40,8 +40,8 @@ struct dutch_infos {
 	Alphabet* alphabet;
 	/* The .bin and .inf parts of the dictionary that will be used
 	 * for the analysis */
-	unsigned char* bin;
-	struct INF_codes* inf;
+	const unsigned char* bin;
+	const struct INF_codes* inf;
 	/* The file where to read the words to analyze from */
 	U_FILE* unknown_word_list;
 	/* The file where new dictionary lines will be written */
@@ -80,10 +80,10 @@ void explore_state_dutch(int offset,unichar* current_component,int pos_in_curren
                    unichar* word_to_analyze,int pos_in_word_to_analyze,unichar* analysis,
                    unichar* output_dela_line,struct word_decomposition_list** L,
                    int number_of_components,struct dutch_infos* infos);
-void check_valid_right_component_dutch(char*,struct INF_codes*);
+void check_valid_right_component_dutch(char*,const struct INF_codes*);
 char check_valid_right_component_for_an_INF_line_dutch(struct list_ustring*);
 char check_valid_right_component_for_one_INF_code_dutch(unichar*);
-void check_valid_left_component_dutch(char*,struct INF_codes*);
+void check_valid_left_component_dutch(char*,const struct INF_codes*);
 char check_valid_left_component_for_an_INF_line_dutch(struct list_ustring*);
 char check_valid_left_component_for_one_INF_code_dutch(unichar*);
 
@@ -96,7 +96,7 @@ void free_word_decomposition_list_dutch(struct word_decomposition_list*);
 /**
  * This function analyzes a list of unknown Dutch words.
  */
-void analyse_dutch_unknown_words(Alphabet* alphabet,unsigned char* bin,struct INF_codes* inf,
+void analyse_dutch_unknown_words(Alphabet* alphabet,const unsigned char* bin,const struct INF_codes* inf,
 								U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
 								U_FILE* new_unknown_word_list,struct string_hash* forbidden_words) {
 /* We create a structure that will contain all settings */
@@ -133,7 +133,7 @@ free(infos.valid_right_component);
  * to 1 if the i-th INF line contains at least one INF code that contains
  * the "N" grammatical code.
  */
-void check_valid_right_component_dutch(char* valid_left_component,struct INF_codes* inf) {
+void check_valid_right_component_dutch(char* valid_left_component,const struct INF_codes* inf) {
 u_printf("Check valid right components...\n");
 for (int i=0;i<inf->N;i++) {
    valid_left_component[i]=check_valid_right_component_for_an_INF_line_dutch(inf->codes[i]);
@@ -205,7 +205,7 @@ return (char)dic_entry_contain_gram_code(d,t1);
  * to 1 if the i-th INF line contains at least one INF code that
  * one of the following codes: "N:sia", "A:sio", "V:W" or "ADV".
  */
-void check_valid_left_component_dutch(char* valid_right_component,struct INF_codes* inf) {
+void check_valid_left_component_dutch(char* valid_right_component,const struct INF_codes* inf) {
 u_printf("Check valid left components...\n");
 for (int i=0;i<inf->N;i++) {
    valid_right_component[i]=check_valid_left_component_for_an_INF_line_dutch(inf->codes[i]);

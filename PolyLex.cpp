@@ -187,7 +187,7 @@ if (language==DUTCH || language==NORWEGIAN) {
 }
 u_printf("Loading BIN file...\n");
 struct BIN_free_info bin_free;
-unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
+const unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
 if (bin==NULL) {
    error("Cannot load bin file %s\n",dictionary);
    free_alphabet(alph);
@@ -199,7 +199,7 @@ temp[strlen(dictionary)-3]='\0';
 strcat(temp,"inf");
 u_printf("Loading INF file...\n");
 struct INF_free_info inf_free;
-struct INF_codes* inf=load_abstract_INF_file(temp,&inf_free);
+const struct INF_codes* inf=load_abstract_INF_file(temp,&inf_free);
 if (inf==NULL) {
    error("Cannot load inf file %s\n",temp);
    free_alphabet(alph);

@@ -201,7 +201,7 @@ return -1;
 /**
  * Extracts INF_code of a given token in the dictionnary.
  */
-void get_INF_code(unsigned char* bin,unichar* token,
+void get_INF_code(const unsigned char* bin,unichar* token,
 				  int case_sensitive,int index,int offset,
 				  Alphabet* alphabet,int* inf_index){
 int n_transitions=((unsigned char)bin[offset])*256+(unsigned char)bin[offset+1];
@@ -243,7 +243,7 @@ for(int i=0;i<n_transitions;i++) {
 /*
  * Returns the value pointed by inf_code in the INF_codes structure.
  */
-long int get_inf_value(struct INF_codes* inf,int inf_index){
+long int get_inf_value(const struct INF_codes* inf,int inf_index){
 struct list_ustring* tmp=inf->codes[inf_index];
 /* we work only with integer values in all dictionnaries
  * so we convert the string found into long value. */
@@ -265,7 +265,7 @@ return value;
  * according to the extracted INF_codes index.
  * Returns -1 if the string is not in the dictionnary.
  */
-long int get_sequence_integer(unichar* sequence,unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet){
+long int get_sequence_integer(unichar* sequence,const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet){
 int inf_index = -1;
 get_INF_code(bin,sequence,1,0,4,alphabet,&inf_index);
 if(inf_index == -1){
@@ -341,7 +341,7 @@ return suffix;
  * with a code (semantic and sometimes inflectional codes).
  * This probability is a float value between 0 and 1.
  */
-float compute_emit_probability(unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet,unichar* tag,unichar* inflected){
+float compute_emit_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,unichar* tag,unichar* inflected){
 char prefix[] = "word_";
 unichar* new_inflected = create_bigram_sequence(prefix,inflected,0);
 unichar* sequence = create_bigram_sequence(tag,new_inflected,1);
@@ -385,7 +385,7 @@ return N2/(1+float(N1));
  * (semantic and sometimes inflectional codes). This probability is
  * a float value between 0 and 1.
  */
-float compute_transition_probability(unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet,
+float compute_transition_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,
 									 unichar* ancestor,unichar* predecessor,unichar* current){
 unichar* tri_sequence = create_trigram_sequence(ancestor,predecessor,current);
 unichar* bi_sequence = create_bigram_sequence(ancestor,predecessor,1);
@@ -406,7 +406,7 @@ return C1/float(C2);
  * Computes partial probability of a outgoing transition of a state.
  * This probability is the product of emit and transition probabilities.
  */
-float compute_partial_probability(unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet,
+float compute_partial_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,
 								  struct matrix_entry* ancestor,struct matrix_entry* predecessor,
 								  struct matrix_entry* current){
 float emit_prob = compute_emit_probability(bin,inf,alphabet,current->tag_code,current->tag->inflected);
@@ -418,7 +418,7 @@ return emit_prob+trans_prob;
  * Calculates partial probability for a transition and if this probability
  * is better than the previous best transition, we replace this one by the new.
  */
-void compute_best_probability(unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet,
+void compute_best_probability(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,
 							  struct matrix_entry** matrix,int index_matrix,int indexI,int cover_span){
 float score = cover_span==1?0:compute_partial_probability(bin,inf,alphabet,matrix[matrix[indexI]->predecessor],
 										  matrix[indexI],matrix[index_matrix])+matrix[indexI]->partial_prob;
@@ -543,7 +543,7 @@ return new_tags;
  * Computes the Viterbi Path algorithm to find the best path in
  * the automata and then this path is used to prune transitions.
  */
-vector_ptr* do_viterbi(unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet,Tfst* input_tfst,int form_type){
+vector_ptr* do_viterbi(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,Tfst* input_tfst,int form_type){
 SingleGraph automaton = input_tfst->automaton;
 int index_matrix = 2;
 topological_sort(automaton);
@@ -595,7 +595,7 @@ return new_tags;
  * this information is encoded in the dictionary
  * at the line "CODE\tFEATURES";returns 0 otherwise.
  */
-int get_form_type(unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet){
+int get_form_type(const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet){
 unichar code_type[DIC_LINE_SIZE];
 u_sprintf(code_type,"CODE\tFEATURES");
 long int value = get_sequence_integer(code_type,bin,inf,alphabet);
@@ -610,7 +610,7 @@ return value;
  * This algorithm aims at pruning tokens of the automata in order to
  * obtain a linear path (the most probable path).
  */
-void do_tagging(Tfst* input_tfst,Tfst* result_tfst,unsigned char* bin,struct INF_codes* inf,Alphabet* alphabet,int form_type){
+void do_tagging(Tfst* input_tfst,Tfst* result_tfst,const unsigned char* bin,const struct INF_codes* inf,Alphabet* alphabet,int form_type){
 /* we write the number of sentences in the result tfst file */
 u_fprintf(result_tfst->tfst,"%010d\n",input_tfst->N);
 /* for each sentence we compute Viterbi Path algorithm */

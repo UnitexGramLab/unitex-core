@@ -41,22 +41,22 @@ struct german_word_decomposition_list {
 };
 
 
-void analyse_german_compounds(Alphabet*,unsigned char*,struct INF_codes*,U_FILE*,U_FILE*,U_FILE*,U_FILE*);
-void check_valid_right_component_german(char*,struct INF_codes*);
-void check_valid_left_component_german(char*,struct INF_codes*);
+void analyse_german_compounds(Alphabet*,const unsigned char*,const struct INF_codes*,U_FILE*,U_FILE*,U_FILE*,U_FILE*);
+void check_valid_right_component_german(char*,const struct INF_codes*);
+void check_valid_left_component_german(char*,const struct INF_codes*);
 char check_valid_left_component_for_an_INF_line_german(struct list_ustring*);
 char check_valid_left_component_for_one_INF_code_german(unichar*);
 char check_valid_right_component_for_an_INF_line_german(struct list_ustring*);
 char check_valid_right_component_for_one_INF_code_german(unichar*);
-void analyse_german_word_list(unsigned char*,struct INF_codes*,U_FILE*,U_FILE*,U_FILE*,U_FILE*,char*,char*,Alphabet*);
-int analyse_german_word(unichar*,U_FILE*,U_FILE*,char*,char*,struct INF_codes*,Alphabet*,unsigned char*);
-void get_first_sia_code_german(int,unichar*,struct INF_codes*);
+void analyse_german_word_list(const unsigned char*,const struct INF_codes*,U_FILE*,U_FILE*,U_FILE*,U_FILE*,char*,char*,Alphabet*);
+int analyse_german_word(unichar*,U_FILE*,U_FILE*,char*,char*,const struct INF_codes*,Alphabet*,const unsigned char*);
+void get_first_sia_code_german(int,unichar*,const struct INF_codes*);
 
 struct german_word_decomposition* new_german_word_decomposition();
 void free_german_word_decomposition(struct german_word_decomposition*);
 struct german_word_decomposition_list* new_german_word_decomposition_list();
 void free_german_word_decomposition_list(struct german_word_decomposition_list*);
 void explore_state_german(int,unichar*,int,unichar*,int,unichar*,unichar*,
-      struct german_word_decomposition_list**,int,char*,char*,struct INF_codes*,Alphabet*,unsigned char*);
+      struct german_word_decomposition_list**,int,char*,char*,const struct INF_codes*,Alphabet*,const unsigned char*);
 
 #endif

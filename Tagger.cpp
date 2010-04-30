@@ -143,14 +143,14 @@ get_path(tfst,temp);
 strcat(temp,"temp.tfst");
 
 struct BIN_free_info bin_free;
-unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
+const unsigned char* bin=load_abstract_BIN_file(dictionary,&bin_free);
 if (bin==NULL) {
 	fatal_error("");
 }
 remove_extension(dictionary);
 strcat(dictionary,".inf");
 struct INF_free_info inf_free;
-struct INF_codes* inf=load_abstract_INF_file(dictionary,&inf_free);
+const struct INF_codes* inf=load_abstract_INF_file(dictionary,&inf_free);
 if (inf==NULL) {
 	fatal_error("");
 }

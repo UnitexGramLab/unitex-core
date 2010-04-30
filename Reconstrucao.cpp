@@ -196,7 +196,7 @@ if (output_policy==IGNORE_OUTPUTS) {
 }
 u_printf("Loading radical form dictionary...\n");
 struct BIN_free_info root_bin_free;
-unsigned char* root_bin=load_abstract_BIN_file(root,&root_bin_free);
+const unsigned char* root_bin=load_abstract_BIN_file(root,&root_bin_free);
 if (root_bin==NULL) {
    error("Cannot load radical form dictionary %s\n",root);
    free_alphabet(alph);
@@ -206,7 +206,7 @@ char root_inf_file[FILENAME_MAX];
 remove_extension(root,root_inf_file);
 strcat(root_inf_file,".inf");
 struct INF_free_info root_inf_free;
-struct INF_codes* root_inf=load_abstract_INF_file(root_inf_file,&root_inf_free);
+const struct INF_codes* root_inf=load_abstract_INF_file(root_inf_file,&root_inf_free);
 if (root_bin==NULL) {
    error("Cannot load radical form dictionary %s\n",root_inf_file);
    free_alphabet(alph);
@@ -215,7 +215,7 @@ if (root_bin==NULL) {
 }
 u_printf("Loading inflected form dictionary...\n");
 struct BIN_free_info inflected_bin_free;
-unsigned char* inflected_bin=load_abstract_BIN_file(dictionary,&inflected_bin_free);
+const unsigned char* inflected_bin=load_abstract_BIN_file(dictionary,&inflected_bin_free);
 if (inflected_bin==NULL) {
    error("Cannot load inflected form dictionary %s\n",dictionary);
    free_alphabet(alph);
@@ -227,7 +227,7 @@ char inflected_inf_file[FILENAME_MAX];
 remove_extension(dictionary,inflected_inf_file);
 strcat(inflected_inf_file,".inf");
 struct INF_free_info inflected_inf_free;
-struct INF_codes* inflected_inf=load_abstract_INF_file(inflected_inf_file,&inflected_inf_free);
+const struct INF_codes* inflected_inf=load_abstract_INF_file(inflected_inf_file,&inflected_inf_free);
 if (inflected_inf==NULL) {
    error("Cannot load inflected form dictionary %s\n",inflected_inf_file);
    free_alphabet(alph);

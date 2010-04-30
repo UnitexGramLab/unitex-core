@@ -31,16 +31,16 @@
 #include "NormalizationFst2.h"
 #include "DELA.h"
 
-void build_portuguese_normalization_grammar(Alphabet*,struct match_list*,unsigned char*,
-                                            struct INF_codes*,unsigned char*,struct INF_codes*,
+void build_portuguese_normalization_grammar(Alphabet*,struct match_list*,const unsigned char*,
+                                            const struct INF_codes*,const unsigned char*,const struct INF_codes*,
                                             char*,Encoding, int,
                                             struct normalization_tree*, struct normalization_tree* nasal_norm_tree);
-int replace_match_output_by_normalization_line(struct match_list*,Alphabet*,unsigned char*,
-                                                struct INF_codes*,unsigned char*,struct INF_codes*,
+int replace_match_output_by_normalization_line(struct match_list*,Alphabet*,const unsigned char*,
+                                                const struct INF_codes*,const unsigned char*,const struct INF_codes*,
                                                 struct normalization_tree*);
 int tokenize_portuguese_match(unichar*,unichar*,unichar*,unichar*,unichar*);
-int get_radical_lemma(unichar*,struct list_ustring**,Alphabet*,unsigned char*,struct INF_codes*);
-int get_inf_number_for_token(int,unichar*,int,unichar*,Alphabet*,unsigned char*);
+int get_radical_lemma(unichar*,struct list_ustring**,Alphabet*,const unsigned char*,const struct INF_codes*);
+int get_inf_number_for_token(int,unichar*,int,unichar*,Alphabet*,const unsigned char*);
 int compatible_portuguese_inflectional_codes(struct dela_entry*,int,unichar**);
 void save_portuguese_normalization_grammar(int,struct match_list*,char*,Encoding,int);
 int explore_portuguese_normalization_tree(unichar*,unichar*,struct list_ustring*,struct normalization_tree*,

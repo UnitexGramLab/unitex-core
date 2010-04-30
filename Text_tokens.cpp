@@ -223,7 +223,7 @@ for (int i=0;i<tok->size;i++) {
  * Scans text tokens to extract semantic codes contained in .inf
  * of morphological mode dictionaries.
  */
-void extract_semantic_codes_from_morpho_dics(struct INF_codes** array,int N,
+void extract_semantic_codes_from_morpho_dics(const struct INF_codes** array,int N,
                                         struct string_hash* semantic_codes,Abstract_allocator prv_alloc) {
 unichar line[2048];
 /* Foo line for generating a dela_entry */

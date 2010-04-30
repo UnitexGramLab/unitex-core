@@ -928,7 +928,7 @@ free(content_buffer);
  * Tries to find something in the dictionary that match both text content and given pattern.
  */
 void explore_dic_in_morpho_mode__(struct locate_parameters* p,
-                                unsigned char* bin,struct INF_codes* inf,
+                                const unsigned char* bin,const struct INF_codes* inf,
                                 int offset,unichar* current_token,unichar* inflected,
                                 int pos_in_current_token,
                                 int pos_in_inflected,int pos_offset,

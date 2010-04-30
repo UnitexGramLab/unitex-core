@@ -103,8 +103,8 @@ struct dico_application_info {
    /* The alphabet to use */
    Alphabet* alphabet;
    /* The dictionary to use */
-   unsigned char* bin;
-   struct INF_codes* inf;
+   const unsigned char* bin;
+   const struct INF_codes* inf;
    struct BIN_free_info bin_free;
    struct INF_free_info inf_free;
    /* Information about the recognized words:

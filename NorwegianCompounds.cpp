@@ -53,8 +53,8 @@ struct norwegian_infos {
 	Alphabet* alphabet;
 	/* The .bin and .inf parts of the dictionary that will be used
 	 * for the analysis */
-	unsigned char* bin;
-	struct INF_codes* inf;
+	const unsigned char* bin;
+	const struct INF_codes* inf;
 	/* The file where to read the words to analyze from */
 	U_FILE* unknown_word_list;
 	/* The file where new dictionary lines will be written */
@@ -93,8 +93,8 @@ void analyse_norwegian_unknown_words(struct norwegian_infos*);
 int analyse_norwegian_word(unichar* word,struct norwegian_infos*);
 void explore_state(int,unichar*,int,unichar*,int,unichar*,unichar*,
 					struct word_decomposition_list**,int,struct norwegian_infos*);
-void check_valid_right_component(char*,struct INF_codes*);
-void check_valid_left_component(char*,struct INF_codes*);
+void check_valid_right_component(char*,const struct INF_codes*);
+void check_valid_left_component(char*,const struct INF_codes*);
 char check_valid_left_component_for_an_INF_line(struct list_ustring*);
 char check_valid_left_component_for_one_INF_code(unichar*);
 char check_valid_right_component_for_an_INF_line(struct list_ustring*);
@@ -115,7 +115,7 @@ void free_word_decomposition_list(struct word_decomposition_list*);
 /**
  * This function analyzes a list of unknown Norwegian words.
  */
-void analyse_norwegian_unknown_words(Alphabet* alphabet,unsigned char* bin,struct INF_codes* inf,
+void analyse_norwegian_unknown_words(Alphabet* alphabet,const unsigned char* bin,const struct INF_codes* inf,
 								U_FILE* unknown_word_list,U_FILE* output,U_FILE* info_output,
 								U_FILE* new_unknown_word_list,
 								struct string_hash* forbidden_words) {
@@ -153,7 +153,7 @@ free(infos.valid_right_component);
  * to 1 if the i-th INF line contains at least one INF code that contains
  * one of the following grammatical codes: "N", "A" or "V".
  */
-void check_valid_right_component(char* valid_left_component,struct INF_codes* inf) {
+void check_valid_right_component(char* valid_left_component,const struct INF_codes* inf) {
 u_printf("Check valid right components...\n");
 for (int i=0;i<inf->N;i++) {
    valid_left_component[i]=check_valid_right_component_for_an_INF_line(inf->codes[i]);
@@ -181,7 +181,7 @@ return 0;
  * to 1 if the i-th INF line contains at least one INF code that
  * one of the following codes: "N:sia", "A:sio", "V:W" or "ADV".
  */
-void check_valid_left_component(char* valid_right_component,struct INF_codes* inf) {
+void check_valid_left_component(char* valid_right_component,const struct INF_codes* inf) {
 u_printf("Check valid left components...\n");
 for (int i=0;i<inf->N;i++) {
    valid_right_component[i]=check_valid_left_component_for_an_INF_line(inf->codes[i]);

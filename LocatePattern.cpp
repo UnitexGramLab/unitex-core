@@ -466,9 +466,9 @@ if (morpho_dic_list==NULL || morpho_dic_list[0]=='\0') {
    return;
 }
 p->n_morpho_dics=1+count_semi_colons(morpho_dic_list);
-p->morpho_dic_bin=(unsigned char**)malloc(p->n_morpho_dics*sizeof(unsigned char*));
+p->morpho_dic_bin=(const unsigned char**)malloc(p->n_morpho_dics*sizeof(const unsigned char*));
 p->morpho_dic_bin_free=(struct BIN_free_info*)malloc(p->n_morpho_dics*sizeof(struct BIN_free_info));
-p->morpho_dic_inf=(struct INF_codes**)malloc(p->n_morpho_dics*sizeof(struct INF_codes*));
+p->morpho_dic_inf=(const struct INF_codes**)malloc(p->n_morpho_dics*sizeof(struct INF_codes*));
 p->morpho_dic_inf_free=(struct INF_free_info*)malloc(p->n_morpho_dics*sizeof(struct INF_free_info));
 if (p->morpho_dic_bin==NULL || p->morpho_dic_inf==NULL || p->morpho_dic_bin_free==NULL || p->morpho_dic_inf_free==NULL) {
    fatal_alloc_error("load_morphological_dictionaries");

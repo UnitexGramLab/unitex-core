@@ -71,25 +71,25 @@ void free_viterbi_matrix(struct matrix_entry**,int);
 unichar* get_pos_unknown(unichar*);
 int search_matrix_predecessor(struct matrix_entry**,unichar*,int,int,int);
 void get_INF_code(unsigned char*,unichar*,int,int,int,Alphabet*,int*);
-long int get_inf_value(struct INF_codes*,int);
-long int get_sequence_integer(unichar*,unsigned char*,struct INF_codes*,Alphabet*);
+long int get_inf_value(const struct INF_codes*,int);
+long int get_sequence_integer(unichar*,unsigned char*,const struct INF_codes*,Alphabet*);
 
 unichar* create_bigram_sequence(unichar*,unichar*,int);
 unichar* create_bigram_sequence(char*,unichar*,int);
 unichar* create_trigram_sequence(unichar*,unichar*,unichar*);
 unichar* u_strnsuffix(unichar*,int);
 
-float compute_emit_probability(unsigned char*,struct INF_codes*,Alphabet*,unichar*,unichar*);
-float compute_transition_probability(unsigned char*,struct INF_codes*,Alphabet*,unichar*,unichar*,unichar*);
-float compute_partial_probability(unsigned char*,struct INF_codes*,Alphabet*,struct matrix_entry*,struct matrix_entry*,struct matrix_entry*);
+float compute_emit_probability(unsigned char*,const struct INF_codes*,Alphabet*,unichar*,unichar*);
+float compute_transition_probability(unsigned char*,const struct INF_codes*,Alphabet*,unichar*,unichar*,unichar*);
+float compute_partial_probability(unsigned char*,const struct INF_codes*,Alphabet*,struct matrix_entry*,struct matrix_entry*,struct matrix_entry*);
 int* get_state_sequence(struct matrix_entry**,int);
 int is_compound_word(unichar*);
 vector_ptr* do_backtracking(struct matrix_entry**,int,SingleGraph,vector_ptr*,int);
-void compute_best_probability(unsigned char*,struct INF_codes*,Alphabet*,struct matrix_entry**,int,int,int);
+void compute_best_probability(unsigned char*,const struct INF_codes*,Alphabet*,struct matrix_entry**,int,int,int);
 
-vector_ptr* do_viterbi(unsigned char*,struct INF_codes*,Alphabet*,Tfst*,int);
-int get_form_type(unsigned char*,struct INF_codes*,Alphabet*);
-void do_tagging(Tfst*,Tfst*,unsigned char*,struct INF_codes*,Alphabet*,int);
+vector_ptr* do_viterbi(unsigned char*,const struct INF_codes*,Alphabet*,Tfst*,int);
+int get_form_type(const unsigned char*,const struct INF_codes*,Alphabet*);
+void do_tagging(Tfst*,Tfst*,const unsigned char*,const struct INF_codes*,Alphabet*,int);
 
 #endif
 
