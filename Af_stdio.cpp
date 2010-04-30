@@ -657,7 +657,7 @@ void af_release_mapfile_pointer(ABSTRACTMAPFILE*streammap, const void* buf, size
 		return iomap_release_mapfile_pointer(p_abfr->f,buf);
 	else {
         if (p_abfr->afs->func_array.fnc_memFile_getMapPointer != NULL) {
-            if (p_abfr->afs->func_array.fnc_memFile_getMapPointer != NULL) {
+            if (p_abfr->afs->func_array.fnc_memFile_releaseMapPointer != NULL) {
                 (*(p_abfr->afs->func_array.fnc_memFile_releaseMapPointer))(p_abfr->fabstr, buf, sizemap,p_abfr->afs->privateSpacePtr);
             }
         }
