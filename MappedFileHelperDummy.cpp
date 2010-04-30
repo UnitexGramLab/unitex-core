@@ -23,22 +23,24 @@
 /**
  * This library provides an abstraction for mapping and unmapping files
  * in read-only mode in a portable way.
+ *  This implementation is "dummy" with only fread/malloc for full compatibility
+ *  when Posix or Windows API are not avaiable
  */
 
-#ifndef _NOT_UNDER_WINDOWS
+
+
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <windows.h>
+
 #include "Error.h"
 #include "MappedFileHelper.h"
 
 struct _MAPFILE_REAL {
-        HANDLE hFile;
-        HANDLE hMap;
-        LARGE_INTEGER li_size;
+        FILE*f;
+        long filesize;
         };
 typedef struct _MAPFILE_REAL MAPFILE_REAL;
 
@@ -49,24 +51,18 @@ MAPFILE* iomap_open_mapfile(const char*name)
         fatal_alloc_error("iomap_open_mapfile");
         return NULL;
     }
-    mfr->hFile = mfr->hMap = NULL;
+    mfr->f = NULL;
 
-    mfr->hFile=CreateFileA(name, GENERIC_READ, FILE_SHARE_READ, NULL,
-                  OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS, NULL);
-    if ((mfr->hFile != INVALID_HANDLE_VALUE) && (mfr->hFile != NULL))
-        mfr->hMap = CreateFileMapping(mfr->hFile, NULL,
-                        PAGE_READONLY, 0, 0, NULL);
-    if ((mfr->hMap == INVALID_HANDLE_VALUE) || (mfr->hMap == NULL))
+    mfr->f=fopen(name,"rb");
+    if (mfr -> f == NULL)
     {
-        if ((mfr->hFile != INVALID_HANDLE_VALUE) && (mfr->hFile != NULL))
-            CloseHandle(mfr->hFile);
         free(mfr);
         mfr = NULL;
     }
+	fseek(mfr->f,0,SEEK_END);
+    mfr->filesize=ftell(mfr->f);
+	fseek(mfr->f,0,SEEK_SET);
 
-
-    mfr->li_size.u.HighPart = 0;
-    mfr->li_size.u.LowPart = GetFileSize(mfr->hFile,(DWORD*)&(mfr->li_size.u.HighPart));
     return (MAPFILE*)mfr;
 }
 
@@ -75,27 +71,41 @@ size_t iomap_get_mapfile_size(MAPFILE* mf)
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
         return 0;
-
-    return (size_t) (mfr->li_size.QuadPart);
+    return mfr->filesize;
 }
 
 void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
 {
-    LARGE_INTEGER li;
-    li.QuadPart = pos;
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
         return 0;
     if ((pos==0) && (sizemap==0))
-        sizemap=(size_t)(mfr->li_size.QuadPart);
-    return MapViewOfFile(mfr->hMap,FILE_MAP_READ,li.u.HighPart,li.u.LowPart,sizemap);
+        sizemap=mfr->filesize;
+    if (pos+sizemap > ((size_t)mfr->filesize))
+        return NULL;
+    void* buf = (void*)malloc(sizemap);
+    if (buf == NULL) {
+        fatal_alloc_error("iomap_get_mapfile_pointer");
+        return NULL;
+    }
+
+    fseek(mfr->f,pos,SEEK_SET);
+    if (fread(buf,1,sizemap,mfr->f) != sizemap) {
+        free(buf);
+        buf=NULL;
+    }
+
+    return buf;
 }
 
-void iomap_release_mapfile_pointer(MAPFILE *, void*buf,size_t)
-{
-    if ((buf==NULL))
+void iomap_release_mapfile_pointer(MAPFILE *mf, void*buf, size_t sizemap)
+{    
+    MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
+    if (mfr==NULL)
         return ;
-    UnmapViewOfFile(buf);
+    if ((sizemap==0))
+        sizemap=mfr->filesize;
+    free(buf);
 }
 
 void iomap_close_mapfile(MAPFILE* mf)
@@ -103,9 +113,7 @@ void iomap_close_mapfile(MAPFILE* mf)
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
         return ;
-    CloseHandle(mfr->hMap);
-    CloseHandle(mfr->hFile);
+    fclose(mfr->f);
     free(mfr);
 }
 
-#endif
