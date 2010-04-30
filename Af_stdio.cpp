@@ -610,7 +610,7 @@ size_t af_get_mapfile_size(ABSTRACTMAPFILE* streammap)
 	}
 }
 
-void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_t sizemap)
+const void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_t sizemap)
 {
     ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)streammap;
     size_t filesize = af_get_mapfile_size(streammap);
@@ -650,7 +650,7 @@ void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_t size
 	}
 }
 
-void af_release_mapfile_pointer(ABSTRACTMAPFILE*streammap, void* buf, size_t sizemap)
+void af_release_mapfile_pointer(ABSTRACTMAPFILE*streammap, const void* buf, size_t sizemap)
 {
     ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)streammap;
 	if (p_abfr->afs == NULL)
@@ -664,7 +664,7 @@ void af_release_mapfile_pointer(ABSTRACTMAPFILE*streammap, void* buf, size_t siz
         else
         {
             if (buf != NULL)
-                free(buf);
+                free((void*)buf);
         }
 	}
 }

@@ -40,8 +40,8 @@ typedef struct _MAPFILE MAPFILE;
 MAPFILE* iomap_open_mapfile(const char*name);
 
 size_t iomap_get_mapfile_size(MAPFILE*);
-void* iomap_get_mapfile_pointer(MAPFILE*, size_t pos=0, size_t sizemap=0);
-void iomap_release_mapfile_pointer(MAPFILE*, void*,size_t sizemap=0);
+const void* iomap_get_mapfile_pointer(MAPFILE*, size_t pos=0, size_t sizemap=0);
+void iomap_release_mapfile_pointer(MAPFILE*, const void*,size_t sizemap=0);
 
 void iomap_close_mapfile(MAPFILE*);
 

@@ -79,7 +79,7 @@ size_t iomap_get_mapfile_size(MAPFILE* mf)
     return (size_t) (mfr->li_size.QuadPart);
 }
 
-void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
+const void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
 {
     LARGE_INTEGER li;
     li.QuadPart = pos;
@@ -91,7 +91,7 @@ void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
     return MapViewOfFile(mfr->hMap,FILE_MAP_READ,li.u.HighPart,li.u.LowPart,sizemap);
 }
 
-void iomap_release_mapfile_pointer(MAPFILE *, void*buf,size_t)
+void iomap_release_mapfile_pointer(MAPFILE *, const void*buf,size_t)
 {
     if ((buf==NULL))
         return ;

@@ -101,8 +101,8 @@ typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memLowLevelSetSizeReservation)(ABST
 typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFileRemove)(const char* lpFileName,void* privateSpacePtr);
 typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFileRename)(const char * _OldFilename, const char * _NewFilename,void* privateSpacePtr);
 
-typedef void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFile_getMapPointer)(ABSTRACTFILE_PTR llFile, afs_size_type pos, afs_size_type len,void* privateSpacePtr);
-typedef void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFile_releaseMapPointer)(ABSTRACTFILE_PTR llFile, void* ,afs_size_type len, void* privateSpacePtr);
+typedef const void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFile_getMapPointer)(ABSTRACTFILE_PTR llFile, afs_size_type pos, afs_size_type len,void* privateSpacePtr);
+typedef void (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFile_releaseMapPointer)(ABSTRACTFILE_PTR llFile, const void* ,afs_size_type len, void* privateSpacePtr);
 
 typedef struct
 {

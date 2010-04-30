@@ -74,7 +74,7 @@ size_t iomap_get_mapfile_size(MAPFILE* mf)
     return mfr->filesize;
 }
 
-void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
+const void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
 {
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
@@ -98,14 +98,14 @@ void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
     return buf;
 }
 
-void iomap_release_mapfile_pointer(MAPFILE *mf, void*buf, size_t sizemap)
+void iomap_release_mapfile_pointer(MAPFILE *mf, const void*buf, size_t sizemap)
 {    
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
         return ;
     if ((sizemap==0))
         sizemap=mfr->filesize;
-    free(buf);
+    free((void*)buf);
 }
 
 void iomap_close_mapfile(MAPFILE* mf)
