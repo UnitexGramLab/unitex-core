@@ -48,6 +48,9 @@
     <ClInclude Include="..\Af_stdio.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\MappedFileHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\CompoundWordHashTable.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -89,6 +92,9 @@
     <ClCompile Include="..\Af_stdio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClInclude Include="..\MappedFileHelperWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClCompile Include="..\Alphabet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

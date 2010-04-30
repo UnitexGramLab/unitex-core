@@ -392,6 +392,14 @@
 				RelativePath="..\Af_stdio.h"
 				>
 			</File>
+      <File
+				RelativePath="..\MappedFileHelper.h"
+				>
+      </File>
+      <File
+				RelativePath="..\MappedFileHelperWin.cpp"
+				>
+      </File>      
 			<File
 				RelativePath="..\Alphabet.cpp"
 				>
