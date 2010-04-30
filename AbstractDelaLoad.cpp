@@ -203,7 +203,7 @@ const unsigned char* load_abstract_BIN_file(const char* name,struct BIN_free_inf
         if (res != NULL)
 		{
 			p_bin_free_info->must_be_free = 1;
-			p_bin_free_info->func_free_bin = func_free_mapbin;
+			p_bin_free_info->func_free_bin = (void*)func_free_mapbin;
 			p_bin_free_info->private_ptr = amf;
 		}
 		return res;
