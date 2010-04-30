@@ -38,13 +38,13 @@
 /* $CD$ begin */
 #include "MorphologicalFilters.h"
 /* $CD$ end   */
-#include "Buffer.h"
 #include "Stack_unichar.h"
 #include "DELA.h"
 #include "AbstractDelaLoad.h"
 #include "Korean.h"
 #include "LocateCache.h"
 #include "Vector.h"
+#include "MappedFile.h"
 
 
 /**
@@ -115,10 +115,6 @@ struct locate_parameters {
    /* The text tokens */
    struct string_hash* tokens;
 
-   /* This value represents the absolute position of the first
-    * token in the buffer. */
-   int absolute_offset;
-
    /* Current origin position in the token buffer */
    int current_origin;
 
@@ -126,10 +122,13 @@ struct locate_parameters {
    int max_count_call;
    int max_count_call_warning;
 
-   /* The token buffer used to parse the text. The 'buffer' array is a
-    * shortcut to the real integer array of 'token_buffer'. */
-   struct buffer* token_buffer;
+   /* A system-dependent object that represents the mapped' text.cod' file */
+   MappedFile text_cod;
+
+   /* The token buffer used to parse the text. This is a pointer
+    * that must be initialized after mapping the 'text.cod' file */
    int* buffer;
+   int buffer_size;
 
    /* Indicates if we work char by char or not */
    TokenizationPolicy tokenization_policy;

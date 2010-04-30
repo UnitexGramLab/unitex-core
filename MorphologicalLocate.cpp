@@ -239,7 +239,7 @@ if (current_state->control & 1) {
 
 /* If we have reached the end of the token buffer, we indicate it by setting
  * the current tokens to -1 */
-if (pos+p->current_origin>=p->token_buffer->size) {
+if (pos+p->current_origin>=p->buffer_size) {
    token=-1;
 } else {
    token=p->buffer[pos+p->current_origin];
@@ -881,11 +881,11 @@ if (L!=NULL) {
       int count_call=0;
       locate(graph_depth,p->optimized_states[L->state_number],L->position,depth+1,matches,n_matches,ctx,p,p_token_error_ctx,backup_reserve,&count_cancel_trying,&count_call,prv_alloc);
       if ((p->max_count_call > 0) && (count_call>=p->max_count_call)) {
-          u_printf("stop computing token %u after %u step computing\n",p->absolute_offset+p->current_origin,count_call);
+          u_printf("stop computing token %u after %u step computing\n",p->current_origin,count_call);
       }
       else
       if ((p->max_count_call_warning > 0) && (count_call>=p->max_count_call_warning)) {
-          u_printf("warning : computing token %u take %u step computing\n",p->absolute_offset+p->current_origin,count_call);
+          u_printf("warning : computing token %u take %u step computing\n",p->current_origin,count_call);
       }
 
       free_reserve(backup_reserve);

@@ -24,7 +24,6 @@
 #include "Text_parsing.h"
 #include "Error.h"
 #include "BitArray.h"
-#include "Buffer.h"
 #include "Transitions.h"
 #include "MorphologicalLocate.h"
 #include "DicVariables.h"
@@ -54,7 +53,7 @@ struct match_list* save_matches(struct match_list*, int, U_FILE*,
  * Performs the Locate operation on the text, saving the occurrences
  * on the fly.
  */
-void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
+void launch_locate(U_FILE* out, long int text_size, U_FILE* info,
 		struct locate_parameters* p, Abstract_allocator prv_alloc) {
 	struct Token_error_ctx token_error_ctx;
 	token_error_ctx.n_errors = 0;
@@ -73,47 +72,28 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 	clock_t currentTime;
 
 
-	int filesize=get_file_size(f);
-	p->token_buffer->size=filesize/sizeof(int);
-	p->token_buffer->MAXIMUM_BUFFER_SIZE=p->token_buffer->size;
-	p->token_buffer->end_of_file=1;
-	//p->token_buffer->int_buffer=(int*)mmap(NULL,filesize,PROT_READ,MAP_PRIVATE,fd,0);
-	p->token_buffer->int_buffer=(int*)my_mmap(f);
-	p->buffer=p->token_buffer->int_buffer;
-
-
 	unite = ((text_size / 100) > 1000) ? (text_size / 100) : 1000;
 	variable_backup_memory_reserve* backup_reserve =
 			create_variable_backup_memory_reserve(p->variables);
 	int current_token;
-	while (p->current_origin < p->token_buffer->size && p->number_of_matches
+	while (p->current_origin < p->buffer_size && p->number_of_matches
 			!= p->search_limit) {
-		if (!p->token_buffer->end_of_file && p->current_origin
-				> (p->token_buffer->size - 2000)) {
-			/* If must change of block, we update the absolute offset, and we fill the
-			 * buffer. We keep 1000 tokens of the previous parsed buffer, in case there
-			 * are some matches involving that part of the tokens that have not
-			 * been saved yet */
-			p->absolute_offset = p->absolute_offset + p->current_origin-1000;
-			fill_buffer(p->token_buffer, p->current_origin-1000, f);
-			p->current_origin = 1000;
-		}
 		if (unite != 0) {
-			n_read = ((p->current_origin + p->absolute_offset) % unite);
+			n_read = p->current_origin % unite;
 			if (n_read == 0 && ((currentTime = clock()) - startTime > DELAY)) {
 				startTime = currentTime;
 				u_printf("%2.0f%% done        \r", 100.0
-						* (float) (p->absolute_offset + p->current_origin)
+						* (float) (p->current_origin)
 						/ (float) text_size);
 			}
 		}
-		current_token = p->token_buffer->int_buffer[p->current_origin];
+		current_token = p->buffer[p->current_origin];
 		if (!(current_token == p->SPACE && p->space_policy
 				== DONT_START_WITH_SPACE) && !get_value(p->failfast,
 				current_token)) {
 
 			if (consult_cache(p->buffer, p->current_origin,
-					p->token_buffer->size, p->match_cache,
+					p->buffer_size, p->match_cache,
 					p->cached_match_vector)) {
 				/* If we have found matches in the cache, we use them */
 				for (int i=0;i<p->cached_match_vector->nbelems;i++) {
@@ -121,7 +101,7 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 					while (tmp!=NULL) {
 						/* We have to adjust the match coordinates */
 						int size=tmp->m.end_pos_in_token-tmp->m.start_pos_in_token;
-						tmp->m.start_pos_in_token=p->current_origin+p->absolute_offset;
+						tmp->m.start_pos_in_token=p->current_origin;
 						tmp->m.end_pos_in_token=tmp->m.start_pos_in_token+size;
 						real_add_match(tmp,p,prv_alloc);
 						tmp=tmp->next;
@@ -146,17 +126,17 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 						&& (count_call >= p->max_count_call)) {
 					u_printf(
 							"stop computing token %u after %u step computing.\n",
-							p->absolute_offset + p->current_origin, count_call);
+							p->current_origin, count_call);
 				} else if ((p->max_count_call_warning > 0) && (count_call
 						>= p->max_count_call_warning)) {
 					u_printf(
 							"warning : computing token %u take %u step computing.\n",
-							p->absolute_offset + p->current_origin, count_call);
+							p->current_origin, count_call);
 				}
 				int can_cache_matches = 0;
-				p->last_tested_position=p->last_tested_position+p->current_origin+p->absolute_offset;
+				p->last_tested_position=p->last_tested_position+p->current_origin;
 				if (p->last_matched_position == -1) {
-					if (p->last_tested_position == p->current_origin+p->absolute_offset) {
+					if (p->last_tested_position == p->current_origin) {
 						/* We are in the fail fast case, nothing has been matched while
 						 * looking only at the first current token. That means that no match
 						 * could ever happen when this token is found in the text */
@@ -174,15 +154,15 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 					real_add_match(p->match_cache_first, p, prv_alloc);
 					tmp = p->match_cache_first;
 					p->match_cache_first = p->match_cache_first->next;
-					if (can_cache_matches && tmp->m.start_pos_in_token
-							== p->current_origin + p->absolute_offset) {
+					if (can_cache_matches &&
+					      tmp->m.start_pos_in_token==p->current_origin) {
 						/* We have to test the start position, because a match obtained using a left
 						 * context could cause problems. We have to set tmp->next to NULL because
 						 * we just want to consider this single match */
 						tmp->next=NULL;
 						cache_match(tmp, p->buffer,
-								tmp->m.start_pos_in_token-p->absolute_offset,
-								tmp->m.end_pos_in_token-p->absolute_offset,
+								tmp->m.start_pos_in_token,
+								tmp->m.end_pos_in_token,
 								&(p->match_cache[current_token]), prv_alloc);
 					} else {
 						free_match_list_element(tmp, prv_alloc);
@@ -193,14 +173,12 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 				clear_dic_variable_list(&(p->dic_variables));
 			}
 		}
-		p->match_list = save_matches(p->match_list, p->absolute_offset
-				+ p->current_origin, out, p, prv_alloc);
+		p->match_list = save_matches(p->match_list,p->current_origin, out, p, prv_alloc);
 		(p->current_origin)++;
 	}
 	free_reserve(backup_reserve);
 
-	p->match_list = save_matches(p->match_list, p->absolute_offset
-			+ p->current_origin+1, out, p, prv_alloc);
+	p->match_list = save_matches(p->match_list,p->current_origin+1, out, p, prv_alloc);
 	u_printf("100%% done      \n\n");
 	u_printf("%d match%s\n", p->number_of_matches,
 			(p->number_of_matches == 1) ? "" : "es");
@@ -247,9 +225,6 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 					(float) (per_halfhundred / (float) 1000.0));
 		}
 	}
-	my_munmap(p->token_buffer->int_buffer,filesize);
-	p->token_buffer->int_buffer=NULL;
-	p->buffer=NULL;
 }
 
 /**
@@ -396,19 +371,17 @@ struct Token_error_ctx* p_token_error_ctx,
 			(p_token_error_ctx->n_matches_at_token_pos__morphological_locate)++;
 			if (p->output_policy == IGNORE_OUTPUTS) {
 				if (pos > 0) {
-					add_match(pos + p->current_origin + p->absolute_offset - 1,
-							NULL, p, prv_alloc);
+					add_match(pos + p->current_origin-1,NULL, p, prv_alloc);
 				} else {
-					add_match(pos + p->current_origin + p->absolute_offset,
-							NULL, p, prv_alloc);
+					add_match(pos + p->current_origin,NULL, p, prv_alloc);
 				}
 			} else {
 				p->stack->stack[stack_top + 1] = '\0';
 				if (pos > 0) {
-					add_match(pos + p->current_origin + p->absolute_offset - 1,
+					add_match(pos + p->current_origin-1,
 							p->stack->stack + p->left_ctx_base, p, prv_alloc);
 				} else {
-					add_match(pos + p->current_origin + p->absolute_offset,
+					add_match(pos + p->current_origin,
 							p->stack->stack + p->left_ctx_base, p, prv_alloc);
 				}
 			}
@@ -444,7 +417,7 @@ struct Token_error_ctx* p_token_error_ctx,
 	}
 	/* If we have reached the end of the token buffer, we indicate it by setting
 	 * the current tokens to -1 */
-	if (pos + p->current_origin >= p->token_buffer->size) {
+	if (pos + p->current_origin >= p->buffer_size) {
 		token = -1;
 		token2 = -1;
 	} else {
@@ -459,7 +432,7 @@ struct Token_error_ctx* p_token_error_ctx,
 		else {
 			pos2 = pos;
 		}
-		if (pos2 + p->current_origin >= p->token_buffer->size) {
+		if (pos2 + p->current_origin >= p->buffer_size) {
 			token2 = -1;
 		} else {
 			token2 = p->buffer[pos2 + p->current_origin];
@@ -921,7 +894,7 @@ struct Token_error_ctx* p_token_error_ctx,
 				}
 				{ /* This block avoids visibility problem about 'z' */
 					int z = pos2;
-					while (z + p->current_origin < p->token_buffer->size
+					while (z + p->current_origin < p->buffer_size
 							&& is_a_digit_token(p->tokens->value[p->buffer[z
 									+ p->current_origin]])) {
 						z++;
@@ -930,7 +903,7 @@ struct Token_error_ctx* p_token_error_ctx,
 						/* If we have found a contiguous digit sequence */
 						start = pos2;
 						end = z;
-						if (z + p->current_origin == p->token_buffer->size) {
+						if (z + p->current_origin == p->buffer_size) {
 							/* If we have stopped because of the end of the buffer */
 							update_last_position(p, pos2);
 						} else {
@@ -1448,7 +1421,7 @@ int find_longest_compound_word(int pos, struct DLC_tree_node* node,
 		position_max = pos - 1;
 	else
 		position_max = -1;
-	if (pos + p->current_origin == p->token_buffer->size)
+	if (pos + p->current_origin == p->buffer_size)
 		return position_max;
 	/* As the 'node->destination_tokens' array may contain duplicates, we look for
 	 * one, and then we look before and after it, in order to examine all the
@@ -1504,7 +1477,7 @@ int find_compound_word_old_(int pos, struct DLC_tree_node* node,
 		position_max = pos - 1;
 	else
 		position_max = -1;
-	if (pos + p->current_origin == p->token_buffer->size)
+	if (pos + p->current_origin == p->buffer_size)
 		return position_max;
 	res = binary_search(p->buffer[pos + p->current_origin],
 			node->destination_tokens, node->number_of_transitions);
@@ -1527,7 +1500,7 @@ int find_compound_word_old(int pos, int pattern_number,
 		struct DLC_tree_info* DLC_tree, struct locate_parameters* p) {
 	int position_max, m, res;
 	struct DLC_tree_node *n;
-	if (pos + p->current_origin == p->token_buffer->size) {
+	if (pos + p->current_origin == p->buffer_size) {
 		return -1;
 	}
 	if ((n = DLC_tree->index[p->buffer[pos + p->current_origin]]) == NULL) {
@@ -1539,7 +1512,7 @@ int find_compound_word_old(int pos, int pattern_number,
 	} else
 		position_max = -1;
 	pos++;
-	if (pos + p->current_origin == p->token_buffer->size) {
+	if (pos + p->current_origin == p->buffer_size) {
 		return -1;
 	}
 	res = binary_search(p->buffer[pos + p->current_origin],
@@ -1584,7 +1557,7 @@ void add_match(int end, unichar* output, struct locate_parameters* p, Abstract_a
 	if (end > p->last_matched_position) {
 		p->last_matched_position = end;
 	}
-	int start = p->current_origin + p->absolute_offset + p->left_ctx_shift;
+	int start = p->current_origin + p->left_ctx_shift;
 	struct match_list* m = new_match(start, end, output, NULL, prv_alloc);
 	if (p->match_cache_first == NULL) {
 		p->match_cache_first = p->match_cache_last = m;
@@ -1780,7 +1753,7 @@ struct match_list* save_matches(struct match_list* l, int current_position,
 		 *   3) offset in logical letter inside the current char (for Korean) */
 		u_fprintf(f, "%d.0.0 %d.%d.0", l->m.start_pos_in_token,
 				l->m.end_pos_in_token, u_strlen(
-						p->tokens->value[p->buffer[l->m.end_pos_in_token-p->absolute_offset]]) - 1);
+						p->tokens->value[p->buffer[l->m.end_pos_in_token]]) - 1);
 		if (l->output != NULL) {
 			/* If there is an output */
 			u_fprintf(f, " %S", l->output);

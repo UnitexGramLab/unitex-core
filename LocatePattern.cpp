@@ -40,7 +40,7 @@ void load_morphological_dictionaries(char* morpho_dic_list,struct locate_paramet
 /**
  * Allocates, initializes and returns a new locate_parameters structure.
  */
-struct locate_parameters* new_locate_parameters(U_FILE* fileread) {
+struct locate_parameters* new_locate_parameters() {
 struct locate_parameters* p=(struct locate_parameters*)malloc(sizeof(struct locate_parameters));
 if (p==NULL) {
    fatal_alloc_error("new_locate_parameters");
@@ -62,12 +62,10 @@ p->DLC_tree=NULL;
 p->optimized_states=NULL;
 p->fst2=NULL;
 p->tokens=NULL;
-p->absolute_offset=0;
 p->current_origin=-1;
 p->max_count_call=0;
 p->max_count_call_warning=0;
-p->token_buffer=new_buffer_for_file(INTEGER_BUFFER,fileread);
-p->buffer=p->token_buffer->int_buffer;
+p->buffer=NULL;
 p->tokenization_policy=WORD_BY_WORD_TOKENIZATION;
 p->space_policy=DONT_START_WITH_SPACE;
 p->matching_units=0;
@@ -141,7 +139,7 @@ return res;
 
 
 
-int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,char* err,
+int locate_pattern(char* text_cod,char* tokens,char* fst2_name,char* dlf,char* dlc,char* err,
                    char* alphabet,MatchPolicy match_policy,OutputPolicy output_policy,
                    Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input,
                    char* dynamicDir,TokenizationPolicy tokenization_policy,
@@ -149,27 +147,18 @@ int locate_pattern(char* text,char* tokens,char* fst2_name,char* dlf,char* dlc,c
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
                    int is_korean,int max_count_call,int max_count_call_warning) {
-
-U_FILE* text_file;
-U_FILE* out;
-U_FILE* info;
-text_file=u_fopen(BINARY,text,U_READ);
-if (text_file==NULL) {
-   error("Cannot load %s\n",text);
-   return 0;
-}
-long save_pos=ftell(text_file);
-fseek(text_file,0,SEEK_END);
-long text_size=ftell(text_file)/sizeof(int);
-fseek(text_file,save_pos,SEEK_SET);
-
+long text_size=get_file_size(text_cod);
 if (max_count_call == -1) {
    max_count_call = text_size;
 }
 if (max_count_call_warning == -1) {
    max_count_call_warning = text_size;
 }
-struct locate_parameters* p=new_locate_parameters(text_file);
+U_FILE* out;
+U_FILE* info;
+struct locate_parameters* p=new_locate_parameters();
+p->buffer=(int*)my_mmap(text_cod,&(p->text_cod));
+p->buffer_size=text_size/sizeof(int);
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;
 p->space_policy=space_policy;
@@ -198,8 +187,7 @@ strcat(morpho_bin,"morpho.bin");
 out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord,U_WRITE);
 if (out==NULL) {
    error("Cannot write %s\n",concord);
-   u_fclose(text_file);
-   free_buffer(p->token_buffer);
+   my_munmap(p->text_cod);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
    u_fclose(out);
@@ -219,8 +207,7 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
    p->alphabet=load_alphabet(alphabet,is_korean);
    if (p->alphabet==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
-      u_fclose(text_file);
-      free_buffer(p->token_buffer);
+      my_munmap(p->text_cod);
       free_stack_unichar(p->stack);
       free_locate_parameters(p);
       if (info!=NULL) u_fclose(info);
@@ -236,12 +223,11 @@ if (is_cancelling_requested() != 0) {
 	   error("user cancel request.\n");
 	   free_alphabet(p->alphabet);
 	   free_string_hash(semantic_codes);
-       u_fclose(text_file);
-       free_buffer(p->token_buffer);
-       free_stack_unichar(p->stack);
-       free_locate_parameters(p);
-       if (info!=NULL) u_fclose(info);
-       u_fclose(out);
+	   my_munmap(p->text_cod);
+      free_stack_unichar(p->stack);
+      free_locate_parameters(p);
+      if (info!=NULL) u_fclose(info);
+      u_fclose(out);
 	   return 0;
 	}
 
@@ -252,8 +238,7 @@ if (fst2load==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   u_fclose(text_file);
-   free_buffer(p->token_buffer);
+   my_munmap(p->text_cod);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
@@ -262,12 +247,8 @@ if (fst2load==NULL) {
 }
 
 Abstract_allocator locate_abstract_allocator=create_abstract_allocator("locate_pattern",AllocatorCreationFlagAutoFreePrefered);
-
 p->fst2=new_Fst2_clone(fst2load,locate_abstract_allocator);
-
 free_abstract_Fst2(fst2load,&fst2load_free);
-
-
 
 if (is_cancelling_requested() != 0) {
    error("User cancel request..\n");
@@ -275,8 +256,7 @@ if (is_cancelling_requested() != 0) {
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2,locate_abstract_allocator);
    close_abstract_allocator(locate_abstract_allocator);
-   u_fclose(text_file);
-   free_buffer(p->token_buffer);
+   my_munmap(p->text_cod);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
@@ -293,10 +273,9 @@ if (p->filters==NULL) {
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2,locate_abstract_allocator);
    close_abstract_allocator(locate_abstract_allocator);
-   free_buffer(p->token_buffer);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
-   u_fclose(text_file);
+   my_munmap(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
    return 0;
@@ -312,9 +291,8 @@ if (p->tokens==NULL) {
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2,locate_abstract_allocator);
    close_abstract_allocator(locate_abstract_allocator);
-   free_buffer(p->token_buffer);
    free_locate_parameters(p);
-   u_fclose(text_file);
+   my_munmap(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
    return 0;
@@ -334,27 +312,19 @@ if (p->filter_match_index==NULL) {
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
    free_string_hash(p->tokens);
-
    close_abstract_allocator(locate_abstract_allocator);
-   free_buffer(p->token_buffer);
    free_locate_parameters(p);
-   u_fclose(text_file);
+   my_munmap(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
    return 0;
 }
 #endif
 
-
-
-
 extract_semantic_codes_from_tokens(p->tokens,semantic_codes,locate_abstract_allocator);
 u_printf("Loading morphological dictionaries...\n");
-
 load_morphological_dictionaries(morpho_dic_list,p,morpho_bin);
-
 extract_semantic_codes_from_morpho_dics(p->morpho_dic_inf,p->n_morpho_dics,semantic_codes,locate_abstract_allocator);
-
 p->token_control=(unsigned char*)malloc(n_text_tokens*sizeof(unsigned char));
 if (p->token_control==NULL) {
    fatal_alloc_error("locate_pattern");
@@ -389,9 +359,7 @@ free_string_hash(semantic_codes);
 p->variables=new_Variables(p->fst2->variables);
 
 u_printf("Optimizing fst2...\n");
-
 p->optimized_states=build_optimized_fst2_states(p->variables,p->fst2,locate_abstract_allocator);
-
 if (is_korean) {
 	p->korean=new Korean(p->alphabet);
 	p->jamo_tags=create_jamo_tags(p->korean,p->tokens);
@@ -399,11 +367,10 @@ if (is_korean) {
 p->failfast=new_bit_array(n_text_tokens,ONE_BIT);
 
 u_printf("Working...\n");
-launch_locate(text_file,out,text_size,info,p,locate_work_abstract_allocator);
+launch_locate(out,text_size,info,p,locate_work_abstract_allocator);
 free_bit_array(p->failfast);
-free_buffer(p->token_buffer);
 free_Variables(p->variables);
-u_fclose(text_file);
+my_munmap(p->text_cod);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
 

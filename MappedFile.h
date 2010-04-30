@@ -27,11 +27,33 @@
  * in read-only mode in a portable way.
  */
 
-
+#ifdef _NOT_UNDER_WINDOWS
+/* Linux definition of a mapped file */
 #include "Unicode.h"
 
-void* my_mmap(U_FILE*);
-void my_munmap(void*,int);
+typedef struct {
+   U_FILE* f;
+   void* ptr;
+   size_t length;
+} MappedFile;
+
+#else
+/* Windows definition of a mapped file */
+#include <windef.h>
+#include <stdarg.h>
+#include <winbase.h>
+
+typedef struct {
+   HANDLE file;
+   HANDLE mappedFile;
+   LPVOID ptr;
+} MappedFile;
+
+#endif
+
+
+void* my_mmap(char*,MappedFile*);
+void my_munmap(MappedFile);
 
 #endif
 

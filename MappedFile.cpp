@@ -30,45 +30,52 @@
 /**
  * Linux-like file mapping in read-only mode.
  */
-void* my_mmap(U_FILE* f) {
-int fd=fileno((FILE*)(f->f->dummy));
-int filesize=get_file_size(f);
-return mmap(NULL,filesize,PROT_READ,MAP_PRIVATE,fd,0);
+void* my_mmap(char* filename,MappedFile *m) {
+m->f=u_fopen(BINARY,filename,U_READ);
+int fd=fileno(m->f->f->dummy);
+m->length=get_file_size(m->f);
+m->ptr=mmap(NULL,m->length,PROT_READ,MAP_PRIVATE,fd,0);
+return m;
 }
 
 
 /**
  * Linux-like file unmapping.
  */
-void my_munmap(void* ptr,int size) {
-munmap(ptr,size);
+void my_munmap(MappedFile m) {
+munmap(m.ptr,m.length);
+u_fclose(m.f);
 }
 
 #else
 
 #include "Error.h"
 
+
 /**
  * Windows-like file mapping in read-only mode.
  */
-void* my_mmap(U_FILE* f) {
-int filesize=get_file_size(f);
-void* ptr=malloc(filesize);
-if (ptr==NULL) {
-	fatal_alloc_error("my_mmap");
+void* my_mmap(char* filename,MappedFile *m) {
+m->file=CreateFile(filename,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,
+                  FILE_ATTRIBUTE_NORMAL,NULL);
+if (m->file==INVALID_HANDLE_VALUE) {
+   fatal_error("Unable to open file in Windows-version of my_mmap\n");
 }
-int n=fread(ptr,1,size,f);
-if (n!=size) {
-	fatal_error("Unable to read whole file in my_mmap\n");
+m->mappedFile=CreateFileMapping(m->file,NULL,PAGE_READONLY,0,0,NULL);
+if (m->mappedFile==NULL) {
+   fatal_error("Unable to map file in Windows-version of my_mmap\n");
 }
-return ptr;
+m->ptr=MapViewOfFile(m->mappedFile,FILE_MAP_READ,0,0,0);
+return m->ptr;
 }
 
 /**
  * Windows-like file unmapping.
  */
-void my_munmap(void* ptr,int size) {
-free(ptr);
+void my_munmap(MappedFile m) {
+UnmapViewOfFile(m.ptr);
+CloseHandle(m.mappedFile);
+CloseHandle(m.file);
 }
 
 #endif
