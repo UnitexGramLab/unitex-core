@@ -175,6 +175,7 @@
 		225FE86611256AB900F33C2A /* TrainingTagger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE86211256AB900F33C2A /* TrainingTagger.cpp */; };
 		225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225FE87811256B7B00F33C2A /* TrainingProcess.cpp */; };
 		229851AA111A6F2000503A07 /* Fst2Chk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229851A8111A6F2000503A07 /* Fst2Chk.cpp */; };
+		22B2EB5E118B168100E00A77 /* MappedFileHelperPosix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22B2EB5D118B168100E00A77 /* MappedFileHelperPosix.cpp */; };
 		22EA01E11121ED9D00A89AD4 /* AbstractAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22EA01DE1121ED9D00A89AD4 /* AbstractAllocator.cpp */; };
 		22FE4747117A22990011D758 /* LocateCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22FE4745117A22990011D758 /* LocateCache.cpp */; };
 /* End PBXBuildFile section */
@@ -552,6 +553,8 @@
 		225FE87911256B7B00F33C2A /* TrainingProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TrainingProcess.h; path = ../TrainingProcess.h; sourceTree = SOURCE_ROOT; };
 		229851A8111A6F2000503A07 /* Fst2Chk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Fst2Chk.cpp; path = ../Fst2Chk.cpp; sourceTree = SOURCE_ROOT; };
 		229851A9111A6F2000503A07 /* Fst2Chk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Fst2Chk.h; path = ../Fst2Chk.h; sourceTree = SOURCE_ROOT; };
+		22B2EB5C118B168100E00A77 /* MappedFileHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MappedFileHelper.h; path = ../MappedFileHelper.h; sourceTree = SOURCE_ROOT; };
+		22B2EB5D118B168100E00A77 /* MappedFileHelperPosix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MappedFileHelperPosix.cpp; path = ../MappedFileHelperPosix.cpp; sourceTree = SOURCE_ROOT; };
 		22EA01DE1121ED9D00A89AD4 /* AbstractAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AbstractAllocator.cpp; path = ../AbstractAllocator.cpp; sourceTree = SOURCE_ROOT; };
 		22EA01DF1121ED9D00A89AD4 /* AbstractAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocator.h; path = ../AbstractAllocator.h; sourceTree = SOURCE_ROOT; };
 		22EA01E01121ED9D00A89AD4 /* AbstractAllocatorPlugCallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbstractAllocatorPlugCallback.h; path = ../AbstractAllocatorPlugCallback.h; sourceTree = SOURCE_ROOT; };
@@ -584,6 +587,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				22B2EB5C118B168100E00A77 /* MappedFileHelper.h */,
+				22B2EB5D118B168100E00A77 /* MappedFileHelperPosix.cpp */,
 				225FE87811256B7B00F33C2A /* TrainingProcess.cpp */,
 				225FE87911256B7B00F33C2A /* TrainingProcess.h */,
 				225FE85E11256AB900F33C2A /* Tagger.cpp */,
@@ -1197,6 +1202,7 @@
 				225FE86611256AB900F33C2A /* TrainingTagger.cpp in Sources */,
 				225FE87A11256B7B00F33C2A /* TrainingProcess.cpp in Sources */,
 				22FE4747117A22990011D758 /* LocateCache.cpp in Sources */,
+				22B2EB5E118B168100E00A77 /* MappedFileHelperPosix.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

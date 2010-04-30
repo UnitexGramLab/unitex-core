@@ -26,11 +26,15 @@
  */
 
 #ifdef _NOT_UNDER_WINDOWS
-//#include "Unicode.h"
-#include "MappedFileHelper.h"
+
+
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <memory.h>
 #include <sys/mman.h>
 #include "Error.h"
+#include "MappedFileHelper.h"
 
 struct _MAPFILE_REAL {
         FILE*f;
@@ -45,7 +49,7 @@ MAPFILE* iomap_open_mapfile(const char*name)
         fatal_alloc_error("iomap_open_mapfile");
         return NULL;
     }
-    mfr->hFile = mfr->hMap = NULL;
+    mfr->f = NULL;
 
     mfr->f=fopen(name,"rb");
     if (mfr -> f == NULL)
@@ -53,7 +57,9 @@ MAPFILE* iomap_open_mapfile(const char*name)
         free(mfr);
         mfr = NULL;
     }
+	fseek(mfr->f,0,SEEK_END);
     mfr->filesize=ftell(mfr->f);
+	fseek(mfr->f,0,SEEK_SET);
 
     return (MAPFILE*)mfr;
 }
@@ -68,8 +74,6 @@ size_t iomap_get_mapfile_size(MAPFILE* mf)
 
 void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
 {
-    LARGE_INTEGER li;
-    
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
         return 0;
@@ -80,14 +84,13 @@ void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
 
 void iomap_release_mapfile_pointer(MAPFILE *mf, void*buf, size_t sizemap)
 {
-    LARGE_INTEGER li;
     
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
-        return 0;
+        return ;
     if ((sizemap==0))
         sizemap=mfr->filesize;
-    return mmap(NULL,sizemap,PROT_READ,MAP_PRIVATE,fileno(mfr->f),0);
+    munmap(buf,sizemap);
 }
 
 void iomap_close_mapfile(MAPFILE* mf)
@@ -95,8 +98,7 @@ void iomap_close_mapfile(MAPFILE* mf)
     MAPFILE_REAL* mfr=(MAPFILE_REAL*)mf;
     if (mfr==NULL)
         return ;
-    CloseHandle(mfr->hMap);
-    CloseHandle(mfr->hFile);
+    fclose(mfr->f);
     free(mfr);
 }
 
