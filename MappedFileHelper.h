@@ -19,41 +19,31 @@
   *
   */
 
-#ifndef MappedFileH
-#define MappedFileH
+#ifndef MappedFileHelperH
+#define MappedFileHelperH
 
 /**
  * This library provides an abstraction for mapping and unmapping files
  * in read-only mode in a portable way.
  */
 
-#ifdef _NOT_UNDER_WINDOWS
-/* Linux definition of a mapped file */
-#include "Unicode.h"
 
-typedef struct {
-   U_FILE* f;
-   void* ptr;
-   size_t length;
-} MappedFile;
-
-#else
-/* Windows definition of a mapped file */
-#include <windef.h>
-#include <stdarg.h>
-#include <winbase.h>
-
-typedef struct {
-   HANDLE file;
-   HANDLE mappedFile;
-   LPVOID ptr;
-} MappedFile;
-
-#endif
+//#include "Unicode.h"
 
 
-void* my_mmap(char*,MappedFile*);
-void my_munmap(MappedFile);
+
+struct _MAPFILE {
+        void* dummy;
+        };
+typedef struct _MAPFILE MAPFILE;
+
+MAPFILE* iomap_open_mapfile(const char*name);
+
+size_t iomap_get_mapfile_size(MAPFILE*);
+void* iomap_get_mapfile_pointer(MAPFILE*, size_t pos=0, size_t sizemap=0);
+void iomap_release_mapfile_pointer(MAPFILE*, void*,size_t sizemap=0);
+
+void iomap_close_mapfile(MAPFILE*);
 
 #endif
 

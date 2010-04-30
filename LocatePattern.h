@@ -44,7 +44,7 @@
 #include "Korean.h"
 #include "LocateCache.h"
 #include "Vector.h"
-#include "MappedFile.h"
+#include "MappedFileHelper.h"
 
 
 /**
@@ -123,7 +123,7 @@ struct locate_parameters {
    int max_count_call_warning;
 
    /* A system-dependent object that represents the mapped' text.cod' file */
-   MappedFile text_cod;
+   ABSTRACTMAPFILE* text_cod;
 
    /* The token buffer used to parse the text. This is a pointer
     * that must be initialized after mapping the 'text.cod' file */

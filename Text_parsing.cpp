@@ -29,7 +29,7 @@
 #include "DicVariables.h"
 #include "UserCancelling.h"
 #include "File.h"
-#include "MappedFile.h"
+#include "MappedFileHelper.h"
 
 
 /* Delay between two prints (yyy% done) */

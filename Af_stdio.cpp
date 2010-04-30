@@ -26,12 +26,13 @@
 #include "Error.h"
 #include "AbstractFilePlugCallback.h"
 #include "Af_stdio.h"
+#include "MappedFileHelper.h"
 #include "ActivityLogger.h"
 
 
 
 struct AbstractFileSpace {
-	t_fileio_func_array func_array;
+	t_fileio_func_array_ex func_array;
 	void* privateSpacePtr;
 } ;
 
@@ -46,7 +47,7 @@ struct List_AbstractFileSpace* p_abstract_file_space_list=NULL;
 
 
 
-UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr)
+UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array,void* privateSpacePtr)
 {
 	struct List_AbstractFileSpace* new_item;
 	new_item = (struct List_AbstractFileSpace*)malloc(sizeof(struct List_AbstractFileSpace));
@@ -72,14 +73,14 @@ UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpace(const t_fileio_func_array* func
 	return 1;
 }
 
-UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr)
+UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array,void* privateSpacePtr)
 {
 	struct List_AbstractFileSpace* tmp = p_abstract_file_space_list;
 	struct List_AbstractFileSpace* tmp_previous = NULL;
 
 	while (tmp != NULL)
 	{
-		if ((memcmp(&tmp->afs.func_array,func_array,sizeof(t_fileio_func_array))==0) &&
+		if ((memcmp(&tmp->afs.func_array,func_array,sizeof(t_fileio_func_array_ex))==0) &&
 			(tmp->afs.privateSpacePtr == privateSpacePtr))
 		{
 			if (tmp_previous == NULL)
@@ -99,6 +100,21 @@ UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* f
 	return 0;
 }
 
+UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr)
+{
+    t_fileio_func_array_ex func_array_ex;
+    memset(&func_array_ex,0,sizeof(t_fileio_func_array_ex));
+    memcpy(&func_array_ex,func_array,sizeof(t_fileio_func_array));
+    return AddAbstractFileSpaceEx(&func_array_ex,privateSpacePtr);
+}
+
+UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr)
+{
+    t_fileio_func_array_ex func_array_ex;
+    memset(&func_array_ex,0,sizeof(t_fileio_func_array_ex));
+    memcpy(&func_array_ex,func_array,sizeof(t_fileio_func_array));
+    return RemoveAbstractFileSpaceEx(&func_array_ex,privateSpacePtr);
+}
 
 UNITEX_FUNC int UNITEX_CALL GetNbAbstractFileSpaceInstalled()
 {
@@ -140,6 +156,17 @@ typedef struct _ABSTRACTFILE_REAL
 	} ;
 	const AbstractFileSpace * afs;
 } ABSTRACTFILE_REAL;
+
+
+typedef struct _ABSTRACTMAPFILE_REAL
+{
+	union
+	{
+		MAPFILE* f;
+		ABSTRACTFILE_PTR fabstr;
+	} ;
+	const AbstractFileSpace * afs;
+} ABSTRACTMAPFILE_REAL;
 
 /*********************************************************************/
 
@@ -520,6 +547,128 @@ int af_ungetc(int ch, ABSTRACTFILE* stream)
 		return (af_fseek(stream,-1,SEEK_CUR) != 0 ) ? EOF:ch;
 }
 
+
+
+ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char* name)
+{
+	ABSTRACTMAPFILE_REAL* vf= (ABSTRACTMAPFILE_REAL*)malloc(sizeof(ABSTRACTMAPFILE_REAL));
+	const AbstractFileSpace * pafs ;
+	if (vf==NULL) {
+		fatal_alloc_error("af_open_mapfile_unlogged");
+		return NULL;
+	}
+
+	pafs = GetFileSpaceForFileName(name);
+	vf->afs = pafs;
+	if (pafs == NULL) {
+		vf->f = iomap_open_mapfile(name);
+		if (vf->f == NULL) {
+			free(vf);
+			vf = NULL;
+		}
+	}
+	else
+	{
+        TYPEOPEN_MF TypeOpen;
+        TypeOpen = OPEN_READ_MF;
+
+		vf->afs = pafs;
+		vf->fabstr = (*(pafs->func_array.fnc_memOpenLowLevel))(name, TypeOpen,
+			                      pafs->privateSpacePtr);
+
+        if (vf->fabstr == NULL)
+        {
+            free(vf);
+            vf= NULL;
+        }
+	}
+	return (ABSTRACTMAPFILE*)vf;
+}
+
+
+void af_close_mapfile_unlogged(ABSTRACTMAPFILE* stream)
+{
+	ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)stream;
+	ABSTRACTMAPFILE_REAL abfr=*p_abfr;
+	free(p_abfr);
+	if (abfr.afs == NULL)
+		return iomap_close_mapfile(abfr.f);
+	else
+		/*return*/ (*(abfr.afs->func_array.fnc_memLowLevelClose))(abfr.fabstr,abfr.afs->privateSpacePtr);
+}
+
+
+size_t af_get_mapfile_size(ABSTRACTMAPFILE* streammap)
+{
+	ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)streammap;
+	if (p_abfr->afs == NULL)
+		return iomap_get_mapfile_size(p_abfr->f);
+	else {
+		afs_size_type pos=0;
+        (*(p_abfr->afs->func_array.fnc_memLowLevelGetSize))(p_abfr->fabstr, &pos,p_abfr->afs->privateSpacePtr);
+        return (size_t)pos;
+	}
+}
+
+void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_t sizemap)
+{
+    ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)streammap;
+    size_t filesize = af_get_mapfile_size(streammap);
+    if ((pos==0) && (sizemap==0))
+        sizemap = filesize;
+    if (sizemap == 0)
+        return NULL;
+    if (pos>filesize)
+        return NULL;
+
+	if (p_abfr->afs == NULL)
+		return iomap_get_mapfile_pointer(p_abfr->f,pos,sizemap);
+	else {
+		afs_size_type pos=0;
+        if (p_abfr->afs->func_array.fnc_memFile_getMapPointer != NULL)
+            return (*(p_abfr->afs->func_array.fnc_memFile_getMapPointer))(p_abfr->fabstr, pos, sizemap,p_abfr->afs->privateSpacePtr);
+        else
+        {
+            void* buf=malloc(sizemap);
+            if (buf==NULL) {
+                fatal_alloc_error("af_get_mapfile_pointer");
+            }
+            afs_size_type prev_pos=0 ;
+            int success=1;
+            (*(p_abfr->afs->func_array.fnc_memLowLevelTell))(p_abfr->fabstr, &prev_pos, p_abfr->afs->privateSpacePtr);
+            (*(p_abfr->afs->func_array.fnc_memLowLevelSeek))(p_abfr->fabstr, pos, SEEK_SET, p_abfr->afs->privateSpacePtr);
+            if ((*(p_abfr->afs->func_array.fnc_memLowLevelRead))(p_abfr->fabstr, buf, sizemap, p_abfr->afs->privateSpacePtr) != sizemap)
+                success=0;
+            (*(p_abfr->afs->func_array.fnc_memLowLevelSeek))(p_abfr->fabstr, prev_pos, SEEK_SET , p_abfr->afs->privateSpacePtr);
+
+            if (success==0) {
+                free(buf);
+                return NULL;
+            }
+            return buf;
+        }
+	}
+}
+
+void af_release_mapfile_pointer(ABSTRACTMAPFILE*streammap, void* buf, size_t sizemap)
+{
+    ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)streammap;
+	if (p_abfr->afs == NULL)
+		return iomap_release_mapfile_pointer(p_abfr->f,buf);
+	else {
+        if (p_abfr->afs->func_array.fnc_memFile_getMapPointer != NULL) {
+            if (p_abfr->afs->func_array.fnc_memFile_getMapPointer != NULL) {
+                (*(p_abfr->afs->func_array.fnc_memFile_releaseMapPointer))(p_abfr->fabstr, buf, sizemap,p_abfr->afs->privateSpacePtr);
+            }
+        }
+        else
+        {
+            if (buf != NULL)
+                free(buf);
+        }
+	}
+}
+
 /* when we create a new file, before write into, we can set the filesize,
    (if we known the size of result file)
    like the chsize or _chsize . This can help to avoid fragmentation or 
@@ -642,6 +791,25 @@ int af_fclose(ABSTRACTFILE* stream)
     ret = af_fclose_unlogged(stream);
     Call_logger_fnc_after_af_fclose(stream, ret);
     return ret;
+}
+
+
+ABSTRACTMAPFILE* af_open_mapfile(const char*name)
+{
+    ABSTRACTMAPFILE* stream;
+    //Call_logger_fnc_before_af_fopen(name,MODE);
+    Call_logger_fnc_before_af_fopen(name,"rb");
+    stream = af_open_mapfile_unlogged(name);
+    //Call_logger_fnc_after_af_fopen(name,MODE,stream);
+    Call_logger_fnc_after_af_fopen(name,"rb",NULL);
+    return stream;
+}
+
+void af_close_mapfile(ABSTRACTMAPFILE* stream)
+{
+    //Call_logger_fnc_before_af_fclose(stream);
+    af_close_mapfile_unlogged(stream);
+    //Call_logger_fnc_after_af_fclose(stream, ret);
 }
 
 int af_remove(const char * Filename)

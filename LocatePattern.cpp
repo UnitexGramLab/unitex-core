@@ -157,7 +157,8 @@ if (max_count_call_warning == -1) {
 U_FILE* out;
 U_FILE* info;
 struct locate_parameters* p=new_locate_parameters();
-p->buffer=(int*)my_mmap(text_cod,&(p->text_cod));
+p->text_cod=af_open_mapfile(text_cod);
+p->buffer=(int*)af_get_mapfile_pointer(p->text_cod);
 p->buffer_size=text_size/sizeof(int);
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;
@@ -187,7 +188,8 @@ strcat(morpho_bin,"morpho.bin");
 out=u_fopen_versatile_encoding(encoding_output,bom_output,mask_encoding_compatibility_input,concord,U_WRITE);
 if (out==NULL) {
    error("Cannot write %s\n",concord);
-   my_munmap(p->text_cod);
+   af_release_mapfile_pointer(p->text_cod,p->buffer);
+   af_close_mapfile(p->text_cod);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
    u_fclose(out);
@@ -207,7 +209,8 @@ if (alphabet!=NULL && alphabet[0]!='\0') {
    p->alphabet=load_alphabet(alphabet,is_korean);
    if (p->alphabet==NULL) {
       error("Cannot load alphabet file %s\n",alphabet);
-      my_munmap(p->text_cod);
+      af_release_mapfile_pointer(p->text_cod,p->buffer);
+      af_close_mapfile(p->text_cod);
       free_stack_unichar(p->stack);
       free_locate_parameters(p);
       if (info!=NULL) u_fclose(info);
@@ -223,11 +226,12 @@ if (is_cancelling_requested() != 0) {
 	   error("user cancel request.\n");
 	   free_alphabet(p->alphabet);
 	   free_string_hash(semantic_codes);
-	   my_munmap(p->text_cod);
-      free_stack_unichar(p->stack);
-      free_locate_parameters(p);
-      if (info!=NULL) u_fclose(info);
-      u_fclose(out);
+       af_release_mapfile_pointer(p->text_cod,p->buffer);
+       af_close_mapfile(p->text_cod);
+       free_stack_unichar(p->stack);
+       free_locate_parameters(p);
+       if (info!=NULL) u_fclose(info);
+       u_fclose(out);
 	   return 0;
 	}
 
@@ -238,7 +242,8 @@ if (fst2load==NULL) {
    error("Cannot load grammar %s\n",fst2_name);
    free_alphabet(p->alphabet);
    free_string_hash(semantic_codes);
-   my_munmap(p->text_cod);
+   af_release_mapfile_pointer(p->text_cod,p->buffer);
+   af_close_mapfile(p->text_cod);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
@@ -256,7 +261,8 @@ if (is_cancelling_requested() != 0) {
    free_string_hash(semantic_codes);
    free_Fst2(p->fst2,locate_abstract_allocator);
    close_abstract_allocator(locate_abstract_allocator);
-   my_munmap(p->text_cod);
+   af_release_mapfile_pointer(p->text_cod,p->buffer);
+   af_close_mapfile(p->text_cod);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
    if (info!=NULL) u_fclose(info);
@@ -275,7 +281,8 @@ if (p->filters==NULL) {
    close_abstract_allocator(locate_abstract_allocator);
    free_stack_unichar(p->stack);
    free_locate_parameters(p);
-   my_munmap(p->text_cod);
+   af_release_mapfile_pointer(p->text_cod,p->buffer);
+   af_close_mapfile(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
    return 0;
@@ -292,7 +299,8 @@ if (p->tokens==NULL) {
    free_Fst2(p->fst2,locate_abstract_allocator);
    close_abstract_allocator(locate_abstract_allocator);
    free_locate_parameters(p);
-   my_munmap(p->text_cod);
+   af_release_mapfile_pointer(p->text_cod,p->buffer);
+   af_close_mapfile(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
    return 0;
@@ -314,7 +322,8 @@ if (p->filter_match_index==NULL) {
    free_string_hash(p->tokens);
    close_abstract_allocator(locate_abstract_allocator);
    free_locate_parameters(p);
-   my_munmap(p->text_cod);
+   af_release_mapfile_pointer(p->text_cod,p->buffer);
+   af_close_mapfile(p->text_cod);
    if (info!=NULL) u_fclose(info);
    u_fclose(out);
    return 0;
@@ -370,7 +379,8 @@ u_printf("Working...\n");
 launch_locate(out,text_size,info,p,locate_work_abstract_allocator);
 free_bit_array(p->failfast);
 free_Variables(p->variables);
-my_munmap(p->text_cod);
+af_release_mapfile_pointer(p->text_cod,p->buffer);
+af_close_mapfile(p->text_cod);
 if (info!=NULL) u_fclose(info);
 u_fclose(out);
 

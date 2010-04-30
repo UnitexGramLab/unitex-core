@@ -101,6 +101,9 @@ typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memLowLevelSetSizeReservation)(ABST
 typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFileRemove)(const char* lpFileName,void* privateSpacePtr);
 typedef int (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFileRename)(const char * _OldFilename, const char * _NewFilename,void* privateSpacePtr);
 
+typedef void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFile_getMapPointer)(ABSTRACTFILE_PTR llFile, afs_size_type pos, afs_size_type len,void* privateSpacePtr);
+typedef void* (ABSTRACT_CALLBACK_UNITEX *t_fnc_memFile_releaseMapPointer)(ABSTRACTFILE_PTR llFile, void* ,afs_size_type len, void* privateSpacePtr);
+
 typedef struct
 {
     t_fnc_is_filename_vf_object fnc_is_filename_object;
@@ -120,11 +123,34 @@ typedef struct
     t_fnc_memFileRename fnc_memFileRename;
 } t_fileio_func_array;
 
+typedef struct
+{
+    t_fnc_is_filename_vf_object fnc_is_filename_object;
+
+    t_fnc_Init_FileSpace fnc_Init_FileSpace;
+    t_fnc_Uninit_FileSpace fnc_Uninit_FileSpace;
+
+    t_fnc_memOpenLowLevel fnc_memOpenLowLevel;
+    t_fnc_memLowLevelWrite fnc_memLowLevelWrite;
+    t_fnc_memLowLevelRead fnc_memLowLevelRead;
+    t_fnc_memLowLevelSeek fnc_memLowLevelSeek;
+    t_fnc_memLowLevelGetSize fnc_memLowLevelGetSize;
+    t_fnc_memLowLevelTell fnc_memLowLevelTell;
+    t_fnc_memLowLevelClose fnc_memLowLevelClose;
+    t_fnc_memLowLevelSetSizeReservation fnc_memLowLevelSetSizeReservation;
+    t_fnc_memFileRemove fnc_memFileRemove;
+    t_fnc_memFileRename fnc_memFileRename;
+
+    t_fnc_memFile_getMapPointer fnc_memFile_getMapPointer;
+    t_fnc_memFile_releaseMapPointer fnc_memFile_releaseMapPointer;
+} t_fileio_func_array_ex;
 /* these functions respectively add and remove filespaces.
   you can add several filespaces with the same func_array callback set, but with different privateSpacePtr
   privateSpacePtr is the parameters which can be set as the last parameter of each callback */
 UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr);
+UNITEX_FUNC int UNITEX_CALL AddAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array_ex,void* privateSpacePtr);
 UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpace(const t_fileio_func_array* func_array,void* privateSpacePtr);
+UNITEX_FUNC int UNITEX_CALL RemoveAbstractFileSpaceEx(const t_fileio_func_array_ex* func_array_ex,void* privateSpacePtr);
 
 /* just return the number of AbstractFileSpace Installed */
 UNITEX_FUNC int UNITEX_CALL GetNbAbstractFileSpaceInstalled();

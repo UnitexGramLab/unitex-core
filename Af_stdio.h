@@ -33,6 +33,21 @@ struct _ABSTRACTFILE {
         };
 typedef struct _ABSTRACTFILE ABSTRACTFILE;
 
+struct _ABSTRACTMAPFILE {
+        void* dummy;
+        };
+typedef struct _ABSTRACTMAPFILE ABSTRACTMAPFILE;
+
+ABSTRACTMAPFILE* af_open_mapfile(const char*name);
+ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char*name);
+
+size_t af_get_mapfile_size(ABSTRACTMAPFILE*);
+void* af_get_mapfile_pointer(ABSTRACTMAPFILE*, size_t pos=0, size_t sizemap=0);
+void af_release_mapfile_pointer(ABSTRACTMAPFILE*, void*,size_t sizemap=0);
+
+void af_close_mapfile(ABSTRACTMAPFILE*);
+void af_close_mapfile_unlogged(ABSTRACTMAPFILE*);
+
 int is_filename_in_abstract_file_space(const char*name);
 
 size_t af_fread(void *ptr,size_t size,size_t nmemb,ABSTRACTFILE *stream);
