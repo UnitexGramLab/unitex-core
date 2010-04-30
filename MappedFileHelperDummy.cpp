@@ -89,7 +89,7 @@ const void* iomap_get_mapfile_pointer(MAPFILE* mf, size_t pos, size_t sizemap)
         return NULL;
     }
 
-    fseek(mfr->f,pos,SEEK_SET);
+    fseek(mfr->f,(long)pos,SEEK_SET);
     if (fread(buf,1,sizemap,mfr->f) != sizemap) {
         free(buf);
         buf=NULL;

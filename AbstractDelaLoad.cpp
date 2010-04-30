@@ -169,6 +169,13 @@ void free_abstract_INF(struct INF_codes* INF,struct INF_free_info* p_inf_free_in
 
 
 
+void ABSTRACT_CALLBACK_UNITEX func_free_mapbin(unsigned char* BIN,
+                   struct BIN_free_info* p_bin_free_info,void* /*privateSpacePtr*/)
+{
+    ABSTRACTMAPFILE *amf = (ABSTRACTMAPFILE *)p_bin_free_info->private_ptr;
+    af_release_mapfile_pointer(amf,(const void*)BIN);
+    af_close_mapfile(amf);
+}
 
 unsigned char* load_abstract_BIN_file(const char* name,struct BIN_free_info* p_bin_free_info)
 {
@@ -176,12 +183,28 @@ unsigned char* load_abstract_BIN_file(const char* name,struct BIN_free_info* p_b
 	const AbstractDelaSpace * pads = GetDelaSpaceForFileName(name) ;
 	if (pads == NULL)
 	{
+        /*
 		res = load_BIN_file(name);
 		if (res != NULL)
 		{
 			p_bin_free_info->must_be_free = 1;
 			p_bin_free_info->func_free_bin = NULL;
 			p_bin_free_info->private_ptr = NULL;
+		}
+        */
+        ABSTRACTMAPFILE *amf;
+        amf=af_open_mapfile(name);
+        if (amf != NULL) {
+            res=(unsigned char*)af_get_mapfile_pointer(amf);
+            if (res == NULL) {
+                af_close_mapfile(amf);
+            }
+        }
+        if (res != NULL)
+		{
+			p_bin_free_info->must_be_free = 1;
+			p_bin_free_info->func_free_bin = func_free_mapbin;
+			p_bin_free_info->private_ptr = amf;
 		}
 		return res;
 	}

@@ -589,6 +589,8 @@ ABSTRACTMAPFILE* af_open_mapfile_unlogged(const char* name)
 void af_close_mapfile_unlogged(ABSTRACTMAPFILE* stream)
 {
 	ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)stream;
+    if (p_abfr == NULL)
+        return ;
 	ABSTRACTMAPFILE_REAL abfr=*p_abfr;
 	free(p_abfr);
 	if (abfr.afs == NULL)
@@ -601,6 +603,8 @@ void af_close_mapfile_unlogged(ABSTRACTMAPFILE* stream)
 size_t af_get_mapfile_size(ABSTRACTMAPFILE* streammap)
 {
 	ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)streammap;
+    if (p_abfr == NULL)
+        return 0;
 	if (p_abfr->afs == NULL)
 		return iomap_get_mapfile_size(p_abfr->f);
 	else {
@@ -613,6 +617,8 @@ size_t af_get_mapfile_size(ABSTRACTMAPFILE* streammap)
 const void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_t sizemap)
 {
     ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)streammap;
+    if (p_abfr == NULL)
+        return 0;
     size_t filesize = af_get_mapfile_size(streammap);
     if ((pos==0) && (sizemap==0))
         sizemap = filesize;
@@ -653,6 +659,8 @@ const void* af_get_mapfile_pointer(ABSTRACTMAPFILE* streammap, size_t pos, size_
 void af_release_mapfile_pointer(ABSTRACTMAPFILE*streammap, const void* buf, size_t sizemap)
 {
     ABSTRACTMAPFILE_REAL* p_abfr=(ABSTRACTMAPFILE_REAL*)streammap;
+    if (p_abfr == NULL)
+        return ;
 	if (p_abfr->afs == NULL)
 		return iomap_release_mapfile_pointer(p_abfr->f,buf);
 	else {
