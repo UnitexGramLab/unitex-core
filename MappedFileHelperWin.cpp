@@ -95,7 +95,7 @@ void iomap_release_mapfile_pointer(MAPFILE *, const void*buf,size_t)
 {
     if ((buf==NULL))
         return ;
-    UnmapViewOfFile(buf);
+    UnmapViewOfFile((void*)buf);
 }
 
 void iomap_close_mapfile(MAPFILE* mf)
