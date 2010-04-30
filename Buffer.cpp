@@ -81,8 +81,8 @@ fseek(fileread,0,SEEK_END);
 long file_size=ftell(fileread);
 fseek(fileread,save_pos,SEEK_SET);
 int capacity=(file_size/item_size)+0x10;
-if (capacity>1000000) {
-	capacity=1000000;
+if (capacity>100) {
+	capacity=100;
 }
 return new_buffer(capacity,type);
 }

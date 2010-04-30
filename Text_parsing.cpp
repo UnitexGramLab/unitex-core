@@ -29,6 +29,9 @@
 #include "MorphologicalLocate.h"
 #include "DicVariables.h"
 #include "UserCancelling.h"
+#include "File.h"
+#include "MappedFile.h"
+
 
 /* Delay between two prints (yyy% done) */
 #define DELAY CLOCKS_PER_SEC
@@ -60,7 +63,7 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 	token_error_ctx.n_matches_at_token_pos__locate = 0;
 	token_error_ctx.n_matches_at_token_pos__morphological_locate = 0;
 
-	fill_buffer(p->token_buffer, f);
+	//fill_buffer(p->token_buffer, f);
 	OptimizedFst2State initial_state =
 			p->optimized_states[p->fst2->initial_states[1]];
 	p->current_origin = 0;
@@ -70,8 +73,16 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 	clock_t currentTime;
 
 
-	unite = ((text_size / 100) > 1000) ? (text_size / 100) : 1000;
+	int filesize=get_file_size(f);
+	p->token_buffer->size=filesize/sizeof(int);
+	p->token_buffer->MAXIMUM_BUFFER_SIZE=p->token_buffer->size;
+	p->token_buffer->end_of_file=1;
+	//p->token_buffer->int_buffer=(int*)mmap(NULL,filesize,PROT_READ,MAP_PRIVATE,fd,0);
+	p->token_buffer->int_buffer=(int*)my_mmap(f);
+	p->buffer=p->token_buffer->int_buffer;
 
+
+	unite = ((text_size / 100) > 1000) ? (text_size / 100) : 1000;
 	variable_backup_memory_reserve* backup_reserve =
 			create_variable_backup_memory_reserve(p->variables);
 	int current_token;
@@ -236,6 +247,9 @@ void launch_locate(U_FILE* f, U_FILE* out, long int text_size, U_FILE* info,
 					(float) (per_halfhundred / (float) 1000.0));
 		}
 	}
+	my_munmap(p->token_buffer->int_buffer,filesize);
+	p->token_buffer->int_buffer=NULL;
+	p->buffer=NULL;
 }
 
 /**
