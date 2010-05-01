@@ -29,16 +29,24 @@
 #include "Thai.h"
 #include "NewLineShifts.h"
 
-int create_raw_text_concordance(U_FILE*,U_FILE*,U_FILE*,struct text_tokens*,int,int,
+int create_raw_text_concordance(U_FILE*,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,int,int,
                                 int*,int*,int,int,struct conc_opt*);
 void compute_token_length(int*,struct text_tokens*);
 
-void create_modified_text_file(Encoding,int,U_FILE*,U_FILE*,struct text_tokens*,char*,int,int*);
+void create_modified_text_file(Encoding,int,U_FILE*,ABSTRACTMAPFILE*,struct text_tokens*,char*,int,int*);
 void write_HTML_header(U_FILE*,int,struct conc_opt*);
 void write_HTML_end(U_FILE*);
 void reverse_initial_vowels_thai(unichar*);
 
+struct buffer_mapped {
+    ABSTRACTMAPFILE* amf;
+    const int*int_buffer_;
+    size_t nb_item;
+    size_t pos;
+    int MAXIMUM_BUFFER_SIZE;
+} ;
 
+#define MAXIMUM_BUFFER_SIZE_VALUE 2147483000
 
 /**
  * This function builds a concordance from a 'concord.ind' file
@@ -90,7 +98,7 @@ void reverse_initial_vowels_thai(unichar*);
  * This segment
  * 2.5  9
  */
-void create_concordance(Encoding encoding_output,int bom_output,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
+void create_concordance(Encoding encoding_output,int bom_output,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
                         int n_enter_char,int* enter_pos,struct conc_opt* option) {
 U_FILE* out;
 U_FILE* f;
@@ -454,8 +462,8 @@ u_fprintf(f,"</html>\n");
  * '*current_sentence' is used to count the number of '{S}' in order to know
  * what is the current sentence number.
  */
-void move_buffer_to_position(int start_pos,U_FILE* text,struct text_tokens* tokens,int* token_length,
-					struct buffer* buffer,int *n_units_already_read,
+void move_buffer_to_position(int start_pos,ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,int* token_length,
+					struct buffer_mapped* buffer,int *n_units_already_read,
 					int *current_origin_in_chars,int *current_sentence,
 					int * position_from_eos,int RES) {
 /* Before moving in the file, buffer[0] contains the token number '*n_units_already_read'.
@@ -463,22 +471,24 @@ void move_buffer_to_position(int start_pos,U_FILE* text,struct text_tokens* toke
  * so we move of ((start_pos-MAX_CONTEXT_IN_UNITS)-*n_units_already_read) int. */
 int jump_size=((start_pos-MAX_CONTEXT_IN_UNITS)-(*n_units_already_read));
 /* We go to '*n_units_already_read' * sizeof(int) */
-fseek(text,(*n_units_already_read)*sizeof(int),SEEK_SET);
+///fseek(text,(*n_units_already_read)*sizeof(int),SEEK_SET);
+buffer->pos=(*n_units_already_read);
 /* And we read ((start_pos-MAX_CONTEXT_IN_UNITS)-*n_units_already_read) integers */
 while (jump_size!=0) {
-	buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(jump_size>=buffer->MAXIMUM_BUFFER_SIZE)?buffer->MAXIMUM_BUFFER_SIZE:jump_size,text);
-	jump_size=jump_size-buffer->size;
-	for (int i=0;i<buffer->size;i++) {
+    size_t this_advance=(jump_size>=buffer->MAXIMUM_BUFFER_SIZE)?buffer->MAXIMUM_BUFFER_SIZE:jump_size;
+	//buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(jump_size>=buffer->MAXIMUM_BUFFER_SIZE)?buffer->MAXIMUM_BUFFER_SIZE:jump_size,text);
+    buffer->pos += this_advance;
+	jump_size=(int)(jump_size-this_advance);
+	for (int i=0;i<(int)this_advance;i++) {
 		/* We update the current position in characters */
       int token_size=0;
-      if (RES!=UIMA_ || buffer->int_buffer[i]!=tokens->SENTENCE_MARKER) {
-         token_size=token_length[buffer->int_buffer[i]];
-
+      if (RES!=UIMA_ || buffer->int_buffer_[buffer->pos+i]!=tokens->SENTENCE_MARKER) {
+         token_size=token_length[buffer->int_buffer_[buffer->pos+i]];
       }
       (*current_origin_in_chars)=(*current_origin_in_chars)+token_size;
 		(*position_from_eos)=(*position_from_eos)+token_size;
 		/* And the current sentence number */
-		if (buffer->int_buffer[i]==tokens->SENTENCE_MARKER) {
+		if (buffer->int_buffer_[buffer->pos+i]==tokens->SENTENCE_MARKER) {
 			(*current_sentence)++;
 			(*position_from_eos) = 0;
 		}
@@ -487,7 +497,7 @@ while (jump_size!=0) {
 /* Finally, we update '*n_units_already_read' */
 (*n_units_already_read)=start_pos-MAX_CONTEXT_IN_UNITS;
 /* And we fill the buffer with the integers that we need */
-buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+//buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 }
 
 
@@ -504,7 +514,7 @@ buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SI
  */
 void extract_left_context(int pos,int pos_in_char,unichar* left,struct text_tokens* tokens,
                           struct conc_opt* option,int* token_length,
-                          struct buffer* buffer) {
+                          struct buffer_mapped* buffer) {
 int i;
 /* If there is no left context at all, we fill 'left' with spaces. */
 if (pos==0 && pos_in_char==0) {
@@ -524,7 +534,7 @@ if (pos_in_char==0) {
 } else {
 
    /* If we have to take a prefix of the match's first token */
-   unichar* s=tokens->token[buffer->int_buffer[pos]];
+   unichar* s=tokens->token[buffer->int_buffer_[buffer->pos+pos]];
    for (int j=pos_in_char-1;j>=0;j--) {
       left[i++]=s[j];
    }
@@ -541,8 +551,8 @@ if (pos_in_char==0) {
    }
 }
 
-int l=token_length[buffer->int_buffer[pos]]-1;
-unichar* s=tokens->token[buffer->int_buffer[pos]];
+int l=token_length[buffer->int_buffer_[buffer->pos+pos]]-1;
+unichar* s=tokens->token[buffer->int_buffer_[buffer->pos+pos]];
 /* We look for every token, until we have the correct number of displayable
  * characters. */
 while (pos>=0 && count<option->left_context) {
@@ -555,13 +565,13 @@ while (pos>=0 && count<option->left_context) {
 	if (l<0) {
 		/* If we must change of token */
 		if (option->left_context_until_eos
-                    && !u_strcmp(tokens->token[buffer->int_buffer[pos]],"{S}"))
+                    && !u_strcmp(tokens->token[buffer->int_buffer_[buffer->pos+pos]],"{S}"))
                   break; /* token was "{S}" */
 		pos--;
 		if (pos>=0) {
 			/* And if we can, i.e. we are not at the beginning of the text */
-			l=token_length[buffer->int_buffer[pos]]-1;
-			s=tokens->token[buffer->int_buffer[pos]];
+			l=token_length[buffer->int_buffer_[buffer->pos+pos]]-1;
+			s=tokens->token[buffer->int_buffer_[buffer->pos+pos]];
 		}
 	}
 }
@@ -591,7 +601,7 @@ mirror(left);
  * to work on.
  */
 void extract_match(int start_pos,int start_pos_char,int end_pos,int end_pos_char,unichar* output,unichar* middle,
-					struct text_tokens* tokens,struct buffer* buffer) {
+					struct text_tokens* tokens,struct buffer_mapped* buffer) {
 if (output!=NULL) {
    /* If there is an output, then the match is the output */
    u_strcpy(middle,output);
@@ -602,7 +612,7 @@ int j=0,k;
 unichar* s;
 if (start_pos_char!=0) {
    /* If the match doesn't start on the first char of the first token */
-   s=tokens->token[buffer->int_buffer[start_pos]];
+   s=tokens->token[buffer->int_buffer_[buffer->pos+start_pos]];
    int end=(end_pos==start_pos)?end_pos_char+1:u_strlen(s);
    for (k=start_pos_char;k<end;k++) {
       middle[j++]=s[k];
@@ -615,13 +625,13 @@ if (start_pos_char!=0) {
 }
 for (int i=start_pos;i<end_pos;i++) {
    k=0;
-	s=tokens->token[buffer->int_buffer[i]];
+	s=tokens->token[buffer->int_buffer_[buffer->pos+i]];
 	while (s[k]!='\0') {
 		middle[j++]=s[k++];
 	}
 }
 /* We write the last token */
-s=tokens->token[buffer->int_buffer[end_pos]];
+s=tokens->token[buffer->int_buffer_[buffer->pos+end_pos]];
 for (k=0;k<=end_pos_char;k++) {
    middle[j++]=s[k];
 }
@@ -642,7 +652,7 @@ middle[j]='\0';
  */
 void extract_right_context(int pos,int pos_char,unichar* right,struct text_tokens* tokens,
                            int match_length,struct conc_opt* option,
-                           struct buffer* buffer) {
+                           struct buffer_mapped* buffer) {
 right[0]='\0';
 if (match_length>=option->right_context) {
    /* We return if we have already overpassed the right context length
@@ -654,33 +664,33 @@ int i=0;
 int count=0;
 
 /* We save the end of the last match token, if needed */
-unichar* last_match_token=tokens->token[buffer->int_buffer[pos]];
+unichar* last_match_token=tokens->token[buffer->int_buffer_[buffer->pos+pos]];
 for (int u=pos_char+1;last_match_token[u]!='\0';u++) {
    right[i++]=last_match_token[u];
 }
 
 /* We must start after the last token of the matched sequence */
 pos++;
-if (pos==buffer->size) {
+if (pos==(int)(buffer->nb_item - buffer->pos)) {
    /* If this token was the last token of the text */
    return;
 }
 int l=0;
-unichar* s=tokens->token[buffer->int_buffer[pos]];
-while (pos<buffer->size && count<right_context_length) {
+unichar* s=tokens->token[buffer->int_buffer_[buffer->pos+pos]];
+while (pos<=((int)(buffer->nb_item - buffer->pos)) && count<right_context_length) {
 	right[i]=s[l++];
 	if (!option->thai_mode || !is_Thai_skipable(right[i])) count++;
 	i++;
 	if (s[l]=='\0') {
 		/* If we must change of token */
 		if (option->right_context_until_eos
-                    && !u_strcmp(tokens->token[buffer->int_buffer[pos]],"{S}"))
+                    && !u_strcmp(tokens->token[buffer->int_buffer_[buffer->pos+pos]],"{S}"))
                   break; /* token was "{S}" */
 		pos++;
-		if (pos<buffer->size) {
+		if (pos<(int)(buffer->nb_item - buffer->pos)) {
 			/* And if we can */
 			l=0;
-			s=tokens->token[buffer->int_buffer[pos]];
+			s=tokens->token[buffer->int_buffer_[buffer->pos+pos]];
 		}
 	}
 }
@@ -709,7 +719,7 @@ right[i]='\0';
  * The function assumes that 'buffer' is large enough to find the URL. It may
  * not work anymore if the buffer size is too small.
  */
-int extract_href(int end_pos,unichar* href,struct text_tokens* tokens,struct buffer* buffer,
+int extract_href(int end_pos,unichar* href,struct text_tokens* tokens,struct buffer_mapped* buffer,
 				int open_bracket,int close_bracket) {
 href[0]='\0';
 if (open_bracket==-1 || close_bracket==-1) {
@@ -721,9 +731,9 @@ int i=end_pos+1;
 int op=0;
 int cl=0;
 /* First, we look for [[ or ]] */
-while (i<buffer->size && op!=2 && cl!=2) {
-	if (buffer->int_buffer[i]==open_bracket) {op++;cl=0;}
-	else if (buffer->int_buffer[i]==close_bracket) {cl++;op=0;}
+while (i<((int)(buffer->nb_item - buffer->pos)) && op!=2 && cl!=2) {
+	if (buffer->int_buffer_[buffer->pos+i]==open_bracket) {op++;cl=0;}
+	else if (buffer->int_buffer_[buffer->pos+i]==close_bracket) {cl++;op=0;}
 	else {op=0;cl=0;}
 	i++;
 }
@@ -737,11 +747,11 @@ if (op!=2) {
 	return 1;
 }
 /* We concatenate all the tokens we find before ]] */
-while (i+1<buffer->size && (buffer->int_buffer[i]!=close_bracket || buffer->int_buffer[i+1]!=close_bracket)) {
-	u_strcat(href,tokens->token[buffer->int_buffer[i]]);
+while (i+1<((int)(buffer->nb_item - buffer->pos)) && (buffer->int_buffer_[buffer->pos+i]!=close_bracket || buffer->int_buffer_[buffer->pos+i+1]!=close_bracket)) {
+	u_strcat(href,tokens->token[buffer->int_buffer_[buffer->pos+i]]);
 	i++;
 }
-if (buffer->int_buffer[i]!=close_bracket || buffer->int_buffer[i+1]!=close_bracket) {
+if (buffer->int_buffer_[buffer->pos+i]!=close_bracket || buffer->int_buffer_[buffer->pos+i+1]!=close_bracket) {
 	/* If we don't find ]], we empty href */
 	href[0]='\0';
 }
@@ -818,7 +828,7 @@ while (s[i]!='\0') {
  *    - Column 2: shift in chars from the beginning of the sentence to the left side of the match
  *    - Column 3: shift in chars from the beginning of the sentence to the right side of the match
  */
-int create_raw_text_concordance(U_FILE* output,U_FILE* concordance,U_FILE* text,struct text_tokens* tokens,
+int create_raw_text_concordance(U_FILE* output,U_FILE* concordance,ABSTRACTMAPFILE* text,struct text_tokens* tokens,
                                 int expected_result,
                                 int n_enter_char,int* enter_pos,
                                 int* token_length,int open_bracket,int close_bracket,
@@ -835,14 +845,20 @@ int start_pos,end_pos;
 int n_units_already_read=0;
 int current_origin_in_chars=0;
 /* First, we allocate a buffer to read the "text.cod" file */
-struct buffer* buffer=new_buffer_for_file(INTEGER_BUFFER,text);
+struct buffer_mapped* buffer=(struct buffer_mapped*)malloc(sizeof(struct buffer_mapped));//new_buffer_for_file(INTEGER_BUFFER,text);
+buffer->amf=(text);
+buffer->int_buffer_=(const int*)af_get_mapfile_pointer(buffer->amf);
+buffer->nb_item=af_get_mapfile_size(buffer->amf)/sizeof(int);
+buffer->pos=0;
+buffer->MAXIMUM_BUFFER_SIZE=MAXIMUM_BUFFER_SIZE_VALUE;
 
 u_printf("Loading concordance index...\n");
 /* Then we load the concordance index. NULL means that the kind of output
  * doesn't matter. */
 matches=load_match_list(concordance,NULL);
 /* Then we fill the buffer with the beginning of the text */
-buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+//buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+//buffer->size=(int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 int start_pos_char;
 int end_pos_char;
 int current_sentence=1;
@@ -861,8 +877,8 @@ int end_from_eos=0;
  * position */
 u_printf("Constructing concordance...\n");
 while (matches!=NULL) {
-	if (buffer->size==buffer->MAXIMUM_BUFFER_SIZE
-		&& ((matches->m.start_pos_in_token-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>buffer->size) {
+	if (((int)(buffer->nb_item - buffer->pos))==buffer->MAXIMUM_BUFFER_SIZE
+		&& ((matches->m.start_pos_in_token-n_units_already_read)+MAX_CONTEXT_IN_UNITS)>((int)(buffer->nb_item - buffer->pos))) {
 		/* If we must change of block... */
       move_buffer_to_position(matches->m.start_pos_in_token,text,tokens,token_length,buffer,&n_units_already_read,
 						&current_origin_in_chars,&current_sentence,
@@ -887,13 +903,13 @@ while (matches!=NULL) {
 	   /* If we have to go backward, in the case a Locate made in "All matches mode" */
 	   for (int z=position_in_tokens-1; z>=start_pos; z--) {
          int token_size=0;
-         if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
-            token_size=token_length[buffer->int_buffer[z]];
+         if (expected_result!=UIMA_ || buffer->int_buffer_[buffer->pos+z]!=tokens->SENTENCE_MARKER) {
+            token_size=token_length[buffer->int_buffer_[buffer->pos+z]];
          }
          start_pos_char=start_pos_char-token_size;
          position_from_eos=position_from_eos-token_size;
          start_from_eos=position_from_eos;
-         if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
+         if (buffer->int_buffer_[buffer->pos+z]==tokens->SENTENCE_MARKER) {
             current_sentence--;
             error("Bug: concordances that contain a sentence marker {S} cannot be used in an unsorted concord.ind file\n");
             position_from_eos = 0;
@@ -906,13 +922,13 @@ while (matches!=NULL) {
 	   /* If we have to go forward */
       for (int z=position_in_tokens; z<start_pos; z++) {
          int token_size=0;
-         if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
-            token_size=token_length[buffer->int_buffer[z]];
+         if (expected_result!=UIMA_ || buffer->int_buffer_[buffer->pos+z]!=tokens->SENTENCE_MARKER) {
+            token_size=token_length[buffer->int_buffer_[buffer->pos+z]];
          }
          start_pos_char=start_pos_char+token_size;
          position_from_eos=position_from_eos+token_size;
          start_from_eos=position_from_eos;
-         if (buffer->int_buffer[z]==tokens->SENTENCE_MARKER) {
+         if (buffer->int_buffer_[buffer->pos+z]==tokens->SENTENCE_MARKER) {
             current_sentence++;
             position_from_eos = 0;
             start_from_eos = 0;
@@ -934,8 +950,8 @@ while (matches!=NULL) {
 	   /* We update 'end_pos_char' in the same way */
 	   for (int z=start_pos;z<end_pos;z++) {
 	      int token_size=0;
-	      if (expected_result!=UIMA_ || buffer->int_buffer[z]!=tokens->SENTENCE_MARKER) {
-	         token_size=token_length[buffer->int_buffer[z]];
+	      if (expected_result!=UIMA_ || buffer->int_buffer_[buffer->pos+z]!=tokens->SENTENCE_MARKER) {
+	         token_size=token_length[buffer->int_buffer_[buffer->pos+z]];
 	      }
 	      end_pos_char=end_pos_char+token_size;
 	      end_from_eos=end_from_eos+token_size;
@@ -1022,7 +1038,9 @@ while (matches!=NULL) {
 	matches=matches->next;
 	free_match_list_element(matches_tmp);
 }
-free_buffer(buffer);
+af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
+(buffer->amf);
+free(buffer);
 return number_of_matches;
 }
 
@@ -1037,7 +1055,7 @@ return number_of_matches;
  */
 int fprint_token(U_FILE* output,struct text_tokens* tokens,long int offset_in_buffer,
 				int current_global_position,int n_enter_char,int* enter_pos,
-				int pos_in_enter_pos,struct buffer* buffer) {
+				int pos_in_enter_pos,struct buffer_mapped* buffer) {
 /* We look for the new line that is closer (but after) to the token to print */
 while (pos_in_enter_pos < n_enter_char) {
 	if ((current_global_position+offset_in_buffer) < enter_pos[pos_in_enter_pos]) {
@@ -1058,7 +1076,7 @@ while (pos_in_enter_pos < n_enter_char) {
 	}
 }
 /* The token to print is not a new line, so we print it and return */
-u_fprintf(output,"%S",tokens->token[buffer->int_buffer[offset_in_buffer]]);
+u_fprintf(output,"%S",tokens->token[buffer->int_buffer_[buffer->pos+offset_in_buffer]]);
 return pos_in_enter_pos;
 }
 
@@ -1071,17 +1089,20 @@ return pos_in_enter_pos;
  *
  * The function also makes sure that the last token #match_end has been loaded into the buffer.
  */
-int move_in_text_with_writing(int match_start,int match_end,U_FILE* text,struct text_tokens* tokens,
+int move_in_text_with_writing(int match_start,int match_end,ABSTRACTMAPFILE* /*text*/,struct text_tokens* tokens,
 								int current_global_position,U_FILE* output,
 								int n_enter_char,int* enter_pos,int pos_in_enter_pos,
-								struct buffer* buffer,int *pos_int_char) {
+								struct buffer_mapped* buffer,int *pos_int_char) {
 long int address=current_global_position*sizeof(int);
-fseek(text,address,SEEK_SET);
+//fseek(text,address,SEEK_SET);
+buffer->pos=address/sizeof(int);
 int last_pos_to_be_loaded=match_end+1;
 while ((last_pos_to_be_loaded-current_global_position) > buffer->MAXIMUM_BUFFER_SIZE) {
 	/* If the distance between current position and final position is larger than
 	 * the buffer size, then we read a full buffer. */
-	fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
+    size_t this_advance=(buffer->MAXIMUM_BUFFER_SIZE> ((int)(buffer->nb_item - buffer->pos))) ? (buffer->nb_item - buffer->pos) : buffer->MAXIMUM_BUFFER_SIZE;
+    buffer->pos += this_advance;
+	///fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text);
 	/* We indicate that we are at the beginning of a token */
 	(*pos_int_char)=0;
 	for (int i=0;i<buffer->MAXIMUM_BUFFER_SIZE;i++) {
@@ -1092,12 +1113,12 @@ while ((last_pos_to_be_loaded-current_global_position) > buffer->MAXIMUM_BUFFER_
 	current_global_position=current_global_position+buffer->MAXIMUM_BUFFER_SIZE;
 }
 /* We read what we want to write in the output file + all the tokens of the match */
-buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(last_pos_to_be_loaded-current_global_position),text);
-if (buffer->size>0) {
+///buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(last_pos_to_be_loaded-current_global_position),text);
+if ((buffer->nb_item - buffer->pos)>0) {
    /* We indicate that we are at the beginning of a token */
    (*pos_int_char)=0;
 }
-int last_pos_to_be_written=buffer->size-(match_end+1-match_start);
+int last_pos_to_be_written=(int)((buffer->nb_item - buffer->pos)-(match_end+1-match_start));
 for (int i=0;i<last_pos_to_be_written;i++) {
 	pos_in_enter_pos=fprint_token(output,tokens,i,current_global_position,
 									n_enter_char,enter_pos,pos_in_enter_pos,
@@ -1111,16 +1132,28 @@ return pos_in_enter_pos;
  * This function saves all the text from the token n� 'current_global_position' to
  * the end.
  */
-int move_to_end_of_text_with_writing(U_FILE* text,struct text_tokens* tokens,
+int move_to_end_of_text_with_writing(ABSTRACTMAPFILE* /* text*/,struct text_tokens* tokens,
 									int current_global_position,U_FILE* output,
 									int n_enter_char,int* enter_pos,int pos_in_enter_pos,
-									struct buffer* buffer) {
+									struct buffer_mapped* buffer) {
 long int address=current_global_position*sizeof(int);
-fseek(text,address,SEEK_SET);
+//fseek(text,address,SEEK_SET);
+buffer->pos=address/sizeof(int);
+/*
 while (0!=(buffer->size = (int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text))) {
-	for (address=0;address<buffer->size;address++) {
+	for (address=0;address<(buffer->nb_item - buffer->pos);address++) {
 		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
 										n_enter_char,enter_pos,pos_in_enter_pos,buffer);
+	}*/
+
+  for (;;) {
+      size_t this_advance=(buffer->MAXIMUM_BUFFER_SIZE> ((int)(buffer->nb_item - buffer->pos))) ? (buffer->nb_item - buffer->pos) : buffer->MAXIMUM_BUFFER_SIZE;
+      if (this_advance==0)
+          break;
+      buffer->pos += this_advance;
+      for (address=0;address<((long)(buffer->nb_item - buffer->pos));address++) {
+		pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
+										n_enter_char,enter_pos,pos_in_enter_pos,buffer);	
 	}
    current_global_position = current_global_position+buffer->MAXIMUM_BUFFER_SIZE;
 }
@@ -1138,13 +1171,13 @@ return pos_in_enter_pos;
  * the longest is preferred. If 2 matches start and end at the same positions,
  * then the first one is arbitrarily preferred.
  */
-void create_modified_text_file(Encoding encoding_output,int bom_output,U_FILE* concordance,U_FILE* text,
+void create_modified_text_file(Encoding encoding_output,int bom_output,U_FILE* concordance,ABSTRACTMAPFILE* text,
                                struct text_tokens* tokens,char* output_name,
                                int n_enter_char,int* enter_pos) {
 U_FILE* output=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output_name,U_WRITE);
 if (output==NULL) {
 	u_fclose(concordance);
-	u_fclose(text);
+	af_close_mapfile(text);
 	fatal_error("Cannot write file %s\n",output_name);
 }
 struct match_list* matches;
@@ -1153,7 +1186,12 @@ int current_global_position_in_token=0;
 int current_global_position_in_char=0;
 
 /* We allocate a buffer to read the tokens of the text */
-struct buffer* buffer=new_buffer_for_file(INTEGER_BUFFER,text);
+struct buffer_mapped* buffer=(struct buffer_mapped*)malloc(sizeof(struct buffer_mapped));//new_buffer_for_file(INTEGER_BUFFER,text);
+buffer->amf=(text);
+buffer->int_buffer_=(const int*)af_get_mapfile_pointer(buffer->amf);
+buffer->nb_item=af_get_mapfile_size(buffer->amf)/sizeof(int);
+buffer->pos=0;
+buffer->MAXIMUM_BUFFER_SIZE=MAXIMUM_BUFFER_SIZE_VALUE;
 /* We load the match list */
 matches=load_match_list(concordance,NULL);
 int pos_in_enter_pos=0;
@@ -1178,7 +1216,7 @@ while (matches!=NULL) {
 		/* Now, we are sure that the buffer contains all we want */
 		/* If the match doesn't start at the beginning of the token, we add the prefix */
 		int zz=matches->m.start_pos_in_token-current_global_position_in_token;
-		unichar* first_token=tokens->token[buffer->int_buffer[zz]];
+		unichar* first_token=tokens->token[buffer->int_buffer_[buffer->pos+zz]];
 		for (int i=current_global_position_in_char;i<matches->m.start_pos_in_char;i++) {
 		   u_fprintf(output,"%C",first_token[i]);
 		}
@@ -1186,7 +1224,7 @@ while (matches!=NULL) {
 			u_fprintf(output,"%S",matches->output);
 		}
 		zz=matches->m.end_pos_in_token-current_global_position_in_token;
-		unichar* last_token=tokens->token[buffer->int_buffer[zz]];
+		unichar* last_token=tokens->token[buffer->int_buffer_[buffer->pos+zz]];
 		if (last_token[matches->m.end_pos_in_char+1]=='\0') {
 		   /* If we have completely consumed the last token of the match */
 		   current_global_position_in_token=matches->m.end_pos_in_token+1;
@@ -1217,7 +1255,8 @@ while (matches!=NULL) {
  * last match. */
 move_to_end_of_text_with_writing(text,tokens,current_global_position_in_token,output,
 								n_enter_char,enter_pos,pos_in_enter_pos,buffer);
-free_buffer(buffer);
+af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
+free(buffer);
 u_fclose(output);
 u_printf("Done.\n");
 }

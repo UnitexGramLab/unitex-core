@@ -333,7 +333,7 @@ if (options->working_directory[0]=='\0') {
 }
 /* We compute the name of the files associated to the text */
 struct snt_files* snt_files=new_snt_files_from_path(options->working_directory);
-U_FILE* text=u_fopen(BINARY,snt_files->text_cod,U_READ);
+ABSTRACTMAPFILE* text=af_open_mapfile(snt_files->text_cod);
 if (text==NULL) {
 	error("Cannot open file %s\n",snt_files->text_cod);
 	u_fclose(concor);
@@ -344,7 +344,7 @@ struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt,mask_encoding_com
 if (tok==NULL) {
 	error("Cannot load text token file %s\n",snt_files->tokens_txt);
 	u_fclose(concor);
-	u_fclose(text);
+	af_close_mapfile(text);
 	free_snt_files(snt_files);
 	return 1;
 }
@@ -382,7 +382,7 @@ if (options->result_mode==INDEX_ || options->result_mode==UIMA_ ||
 create_concordance(encoding_output,bom_output,concor,text,tok,n_enter_char,enter_pos,options);
 free(enter_pos);
 u_fclose(concor);
-u_fclose(text);
+af_close_mapfile(text);
 free_snt_files(snt_files);
 free_text_tokens(tok);
 free_conc_opt(options);
