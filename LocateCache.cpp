@@ -61,7 +61,7 @@ free_cb(c,prv_alloc);
  * Caches the given token sequence in the given cache. Note that
  * match is supposed to contain a single match, not a match list.
  */
-static void cache_match_internal(struct match_list* match,int* tab,int start,int end,LocateCache *c,Abstract_allocator prv_alloc) {
+static void cache_match_internal(struct match_list* match,const int* tab,int start,int end,LocateCache *c,Abstract_allocator prv_alloc) {
 int token=-1;
 struct match_list* m=match;
 if (start<=end) {
@@ -103,7 +103,7 @@ cache_match_internal(match,tab,start+1,end,&((*c)->middle),prv_alloc);
  * There is no need to save the first token, since caches are stored
  * in an array indexed on first tokens.
  */
-void cache_match(struct match_list* match,int* tab,int start,int end,LocateCache *c, Abstract_allocator prv_alloc) {
+void cache_match(struct match_list* match,const int* tab,int start,int end,LocateCache *c, Abstract_allocator prv_alloc) {
 cache_match_internal(match,tab,start+1,end,c,prv_alloc);
 }
 
@@ -111,7 +111,7 @@ cache_match_internal(match,tab,start+1,end,c,prv_alloc);
 /**
  * Explores a given node of the cache tree.
  */
-void explore_cache_node(int* tab,int pos,int tab_size,LocateCache c,vector_ptr* res) {
+void explore_cache_node(const int* tab,int pos,int tab_size,LocateCache c,vector_ptr* res) {
 if (pos==tab_size || c==NULL) return;
 if (c->token==-1) {
 	/* If we have found a token sequence end mark, then we have matches to
@@ -139,7 +139,7 @@ explore_cache_node(tab,pos,tab_size,c->right,res);
  * associated to token sequences are stored in 'res'. Returns 1 if matches
  * were found; 0 otherwise.
  */
-int consult_cache(int* tab,int start,int tab_size,LocateCache* caches,vector_ptr* res) {
+int consult_cache(const int* tab,int start,int tab_size,LocateCache* caches,vector_ptr* res) {
 res->nbelems=0;
 int first_token=tab[start];
 if (first_token==-1) {

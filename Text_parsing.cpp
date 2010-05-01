@@ -38,7 +38,7 @@
 int binary_search(int, int*, int);
 int find_compound_word(int, int, struct DLC_tree_info*,
 		struct locate_parameters*);
-unichar* get_token_sequence(int*, struct string_hash*, int, int);
+unichar* get_token_sequence(const int*, struct string_hash*, int, int);
 void enter_morphological_mode(int, int, int, int, struct parsing_info**, int,
 		struct list_int*, struct locate_parameters*, struct Token_error_ctx*, Abstract_allocator);
 void shift_variable_bounds(Variables*, int);
@@ -1531,7 +1531,7 @@ int find_compound_word_old(int pos, int pattern_number,
 /**
  * Returns a string corresponding to the tokens in the range [start;end].
  */
-unichar* get_token_sequence(int* token_array, struct string_hash* tokens,
+unichar* get_token_sequence(const int* token_array, struct string_hash* tokens,
 		int start, int end) {
 	int i;
 	int l = 0;

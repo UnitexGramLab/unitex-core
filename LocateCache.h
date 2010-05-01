@@ -43,7 +43,7 @@ typedef struct locate_cache {
 
 LocateCache new_LocateCache(int token,struct match_list* matches,Abstract_allocator);
 void free_LocateCache(LocateCache c,Abstract_allocator);
-void cache_match(struct match_list* matches,int* tab,int start,int end,LocateCache* c,Abstract_allocator);
-int consult_cache(int* tab,int start,int tab_size,LocateCache* c,vector_ptr* res);
+void cache_match(struct match_list* matches,const int* tab,int start,int end,LocateCache* c,Abstract_allocator);
+int consult_cache(const int* tab,int start,int tab_size,LocateCache* c,vector_ptr* res);
 
 #endif

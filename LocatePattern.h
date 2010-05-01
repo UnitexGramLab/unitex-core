@@ -127,7 +127,7 @@ struct locate_parameters {
 
    /* The token buffer used to parse the text. This is a pointer
     * that must be initialized after mapping the 'text.cod' file */
-   int* buffer;
+   const int* buffer;
    int buffer_size;
 
    /* Indicates if we work char by char or not */
