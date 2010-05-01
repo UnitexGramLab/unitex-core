@@ -116,4 +116,3 @@ void iomap_close_mapfile(MAPFILE* mf)
     fclose(mfr->f);
     free(mfr);
 }
-

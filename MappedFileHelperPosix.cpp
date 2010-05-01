@@ -25,7 +25,7 @@
  * in read-only mode in a portable way.
  */
 
-#ifdef _NOT_UNDER_WINDOWS
+//#ifdef _NOT_UNDER_WINDOWS
 
 
 #include <stdio.h>
@@ -101,4 +101,4 @@ void iomap_close_mapfile(MAPFILE* mf)
     free(mfr);
 }
 
-#endif
+//#endif
