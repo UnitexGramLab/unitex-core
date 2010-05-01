@@ -248,7 +248,7 @@ if (tokens==NULL) {
    error("Cannot open token file %s\n",snt_files->tokens_txt);
    return 1;
 }
-/* We open the text.cod file for binary reading */
+/* We try opening the text.cod file for binary reading */
 text_cod=u_fopen(BINARY,snt_files->text_cod,U_READ);
 if (text_cod==NULL) {
    free_alphabet(alphabet);
@@ -256,8 +256,9 @@ if (text_cod==NULL) {
    error("Cannot open coded text file %s\n",snt_files->text_cod);
    return 1;
 }
+u_fclose(text_cod);
 u_printf("Initializing...\n");
-struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,NULL,snt_files->tags_ind,text_cod,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
+struct dico_application_info* info=init_dico_application(tokens,NULL,NULL,NULL,NULL,snt_files->tags_ind,snt_files->text_cod,alphabet,encoding_output,bom_output,mask_encoding_compatibility_input);
 
 /* First of all, we compute the number of occurrences of each token */
 u_printf("Counting tokens...\n");
@@ -400,7 +401,6 @@ if (info->morpho!=NULL) {
    pseudo_main_Compress(encoding_output,bom_output,ALL_ENCODING_BOM_POSSIBLE,0,snt_files->morpho_dic);
 }
 
-u_fclose(text_cod);
 free_dico_application(info);
 free_snt_files(snt_files);
 if (morpho_dic!=NULL) free(morpho_dic);

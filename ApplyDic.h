@@ -91,7 +91,9 @@ struct word_struct_array {
  */
 struct dico_application_info {
    /* Info about the text files */
-   U_FILE* text_cod;
+   ABSTRACTMAPFILE* map_text_cod;
+   const int* text_cod_buf;
+   int text_cod_size_nb_int;
    struct text_tokens* tokens;
    U_FILE* dlf;
    U_FILE* dlc;
@@ -99,7 +101,7 @@ struct dico_application_info {
    U_FILE* morpho;
    char tags_ind[FILENAME_MAX];
    /* The buffer to use to read the text.cod file */
-   struct buffer* buffer;
+   //struct buffer* buffer;
    /* The alphabet to use */
    Alphabet* alphabet;
    /* The dictionary to use */
@@ -141,7 +143,7 @@ struct dico_application_info {
 
 
 struct dico_application_info* init_dico_application(struct text_tokens*,U_FILE*,U_FILE*,U_FILE*,
-                                                    U_FILE*,char*,U_FILE*,Alphabet*,Encoding,int,int);
+                                                    U_FILE*,char*,const char*,Alphabet*,Encoding,int,int);
 int dico_application(char*,struct dico_application_info*,int);
 void free_dico_application(struct dico_application_info*);
 void count_token_occurrences(struct dico_application_info*);

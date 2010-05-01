@@ -365,7 +365,7 @@ if (current_token[pos_in_current_token]=='\0') {
    /* If we are at the end of the current token, we look for the
     * corresponding node in the token tree */
    struct word_transition* trans;
-   ws->trans=insert_word_transition(ws->trans,&trans,info->buffer->int_buffer[current_start_pos+pos_offset]);
+   ws->trans=insert_word_transition(ws->trans,&trans,info->text_cod_buf[current_start_pos+pos_offset]);
    if (trans->node==NULL) {
       /* If the node does not exist in the token tree, we create it */
       trans->node=new_word_struct();
@@ -385,7 +385,7 @@ if (current_token[pos_in_current_token]=='\0') {
           * with a greater priority */
          for (int k=current_start_pos;k<=current_start_pos+pos_offset;k++) {
             /* We say that its tokens are not unknown words */
-            set_value(info->part_of_a_word,info->buffer->int_buffer[k],1);
+            set_value(info->part_of_a_word,info->text_cod_buf[k],1);
          }
          /* We get the INF line number */
          int inf_number=((unsigned char)info->bin[offset])*256*256+((unsigned char)info->bin[offset+1])*256+(unsigned char)info->bin[offset+2];
@@ -407,10 +407,10 @@ if (current_token[pos_in_current_token]=='\0') {
    pos_offset++;
    /* Then, we go on with the next token in the text, so we update 'current_token',
     * but only if we haven't reached the end of the text buffer */
-   if (current_start_pos+pos_offset >= info->buffer->size) {
+   if (current_start_pos+pos_offset >= info->text_cod_size_nb_int) {
       return;
    }
-   current_token=info->tokens->token[info->buffer->int_buffer[current_start_pos+pos_offset]];
+   current_token=info->tokens->token[info->text_cod_buf[current_start_pos+pos_offset]];
    pos_in_current_token=0;
    ws=trans->node;
    /* TRICK! We don't need to perform a call to 'explore_bin_compound_words', since
@@ -459,20 +459,21 @@ unichar inflected[DIC_WORD_SIZE];
 int token_sequence[TOKENS_IN_A_COMPOUND];
 struct word_struct* w;
 /* We go at the beginning of the file and we fill the buffer */
+/*
 fseek(info->text_cod,0,SEEK_SET);
 fill_buffer(info->buffer,info->text_cod);
+*/
 int current_start_pos=0;
 u_printf("First block...              \r");
-int current_block=1;
-while (current_start_pos<info->buffer->size) {
+while (current_start_pos<info->text_cod_size_nb_int) {/*
    if (!info->buffer->end_of_file
        && current_start_pos>(info->buffer->size-MARGIN_BEFORE_BUFFER_END)) {
-      /* If we must change of block and if we can */
+      // If we must change of block and if we can 
       u_printf("Block %d...              \r",++current_block);
       fill_buffer(info->buffer,current_start_pos,info->text_cod);
       current_start_pos=0;
-   }
-   int token_number=info->buffer->int_buffer[current_start_pos];
+   }*/
+   int token_number=info->text_cod_buf[current_start_pos];
    /* We look for compound words that start with the current token */
    w=info->word_array->element[token_number];
    if (w!=NULL) {
@@ -489,8 +490,8 @@ while (current_start_pos<info->buffer->size) {
        * in info->word_array to avoid some computation */
       while (!no_more_word_transition) {
          trans=NULL;
-         if (current_start_pos+pos_offset < info->buffer->size)
-           trans=get_word_transition(w->trans,info->buffer->int_buffer[current_start_pos+pos_offset]);
+         if (current_start_pos+pos_offset < info->text_cod_size_nb_int)
+           trans=get_word_transition(w->trans,info->text_cod_buf[current_start_pos+pos_offset]);
          if (trans==NULL) {
             /* If there is no more possibility to go on */
             no_more_word_transition=1;
@@ -498,7 +499,7 @@ while (current_start_pos<info->buffer->size) {
          else {
             w=trans->node;
             /* If we can go on, we add the current token to our token sequence */
-            token_sequence[current_token_in_compound++]=info->buffer->int_buffer[current_start_pos+pos_offset];
+            token_sequence[current_token_in_compound++]=info->text_cod_buf[current_start_pos+pos_offset];
             /* We add -1 at the end in the case this token would be the last
              * of the compound word */
             token_sequence[current_token_in_compound]=-1;
@@ -507,14 +508,14 @@ while (current_start_pos<info->buffer->size) {
       }
       struct offset_list* l=w->list;
 
-	  if (current_start_pos+pos_offset < info->buffer->size) {
+	  if (current_start_pos+pos_offset < info->text_cod_size_nb_int) {
         while (l!=NULL) {
            /* If there are dictionary nodes to explore, we do so. For each node
             * we copy into 'entry' the sequence of character that leads to it in
             * the .bin */
            unichar line_buf[DIC_LINE_SIZE];
            u_strcpy_sized(inflected,DIC_WORD_SIZE,l->content);
-           explore_bin_compound_words(info,l->offset,info->tokens->token[info->buffer->int_buffer[current_start_pos+pos_offset]],inflected,0,u_strlen(inflected),w,
+           explore_bin_compound_words(info,l->offset,info->tokens->token[info->text_cod_buf[current_start_pos+pos_offset]],inflected,0,u_strlen(inflected),w,
              pos_offset,token_sequence,current_token_in_compound/*0*/,priority,current_start_pos,line_buf);
            l=l->next;
         }
@@ -559,20 +560,21 @@ for (int i=0;i<info->tokens->N;i++) {
  */
 struct dico_application_info* init_dico_application(struct text_tokens* tokens,
                                                     U_FILE* dlf,U_FILE* dlc,U_FILE* err,U_FILE* morpho,
-                                                    char* tags,U_FILE* text_cod,Alphabet* alphabet,
+                                                    char* tags,const char* text_cod,Alphabet* alphabet,
                                                     Encoding encoding_output,int bom_output,int mask_encoding_compatibility_input) {
 struct dico_application_info* info=(struct dico_application_info*)malloc(sizeof(struct dico_application_info));
 if (info==NULL) {
    fatal_alloc_error("init_dico_application");
 }
-info->text_cod=text_cod;
+info->map_text_cod=af_open_mapfile(text_cod);
+info->text_cod_buf=(const int*)af_get_mapfile_pointer(info->map_text_cod);
+info->text_cod_size_nb_int=(int)(af_get_mapfile_size(info->map_text_cod)/sizeof(int));
 info->tokens=tokens;
 info->dlf=dlf;
 info->dlc=dlc;
 info->err=err;
 info->morpho=morpho;
 strcpy(info->tags_ind,tags);
-info->buffer=new_buffer_for_file(INTEGER_BUFFER,info->text_cod);
 info->alphabet=alphabet;
 info->bin=NULL;
 info->inf=NULL;
@@ -609,7 +611,8 @@ return info;
  */
 void free_dico_application(struct dico_application_info* info) {
 if (info==NULL) return;
-free_buffer(info->buffer);
+af_release_mapfile_pointer(info->map_text_cod,info->text_cod_buf);
+af_close_mapfile(info->map_text_cod);
 free_bit_array(info->part_of_a_word);
 free_bit_array(info->simple_word);
 free(info->n_occurrences);
@@ -785,14 +788,11 @@ return 1;
  * occurrences of each token.
  */
 void count_token_occurrences(struct dico_application_info* info) {
-fseek(info->text_cod,0,SEEK_SET);
-int* buffer=info->buffer->int_buffer;
-do {
-   fill_buffer(info->buffer,info->text_cod);
-   for (int i=0;i<info->buffer->size;i++) {
-      info->n_occurrences[buffer[i]]++;
-   }
-} while (!info->buffer->end_of_file);
+
+const int* buffer=info->text_cod_buf;
+for (int i=0;i<info->text_cod_size_nb_int;i++) {
+   info->n_occurrences[buffer[i]]++;
+}
 }
 
 
