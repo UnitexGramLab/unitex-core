@@ -147,19 +147,20 @@ int locate_pattern(char* text_cod,char* tokens,char* fst2_name,char* dlf,char* d
                    AmbiguousOutputPolicy ambiguous_output_policy,
                    VariableErrorPolicy variable_error_policy,int protect_dic_chars,
                    int is_korean,int max_count_call,int max_count_call_warning) {
-long text_size=get_file_size(text_cod);
+
+U_FILE* out;
+U_FILE* info;
+struct locate_parameters* p=new_locate_parameters();
+p->text_cod=af_open_mapfile(text_cod);
+p->buffer=(int*)af_get_mapfile_pointer(p->text_cod);
+long text_size=(long)af_get_mapfile_size(p->text_cod)/sizeof(int);
+p->buffer_size=text_size;
 if (max_count_call == -1) {
    max_count_call = text_size;
 }
 if (max_count_call_warning == -1) {
    max_count_call_warning = text_size;
 }
-U_FILE* out;
-U_FILE* info;
-struct locate_parameters* p=new_locate_parameters();
-p->text_cod=af_open_mapfile(text_cod);
-p->buffer=(int*)af_get_mapfile_pointer(p->text_cod);
-p->buffer_size=text_size/sizeof(int);
 p->match_policy=match_policy;
 p->tokenization_policy=tokenization_policy;
 p->space_policy=space_policy;
