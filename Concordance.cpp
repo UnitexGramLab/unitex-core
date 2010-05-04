@@ -1071,9 +1071,7 @@ int move_in_text_with_writing(int match_start,int match_end,ABSTRACTMAPFILE* /*t
 								int current_global_position,U_FILE* output,
 								int n_enter_char,int* enter_pos,int pos_in_enter_pos,
 								struct buffer_mapped* buffer,int *pos_int_char) {
-long int address=current_global_position*sizeof(int);
-//fseek(text,address,SEEK_SET);
-buffer->pos=address/sizeof(int);
+buffer->pos=current_global_position;
 
 /* We read what we want to write in the output file + all the tokens of the match */
 ///buffer->size=(int)fread(buffer->int_buffer,sizeof(int),(last_pos_to_be_loaded-current_global_position),text);
@@ -1099,9 +1097,7 @@ int move_to_end_of_text_with_writing(ABSTRACTMAPFILE* /* text*/,struct text_toke
 									int current_global_position,U_FILE* output,
 									int n_enter_char,int* enter_pos,int pos_in_enter_pos,
 									struct buffer_mapped* buffer) {
-long int address=current_global_position*sizeof(int);
-//fseek(text,address,SEEK_SET);
-buffer->pos=address/sizeof(int);
+buffer->pos=current_global_position;
 /*
 while (0!=(buffer->size = (int)fread(buffer->int_buffer,sizeof(int),buffer->MAXIMUM_BUFFER_SIZE,text))) {
 	for (address=0;address<(buffer->nb_item - buffer->pos);address++) {
@@ -1113,8 +1109,9 @@ while (0!=(buffer->size = (int)fread(buffer->int_buffer,sizeof(int),buffer->MAXI
       size_t this_advance=(buffer->nb_item - buffer->pos);
       if (this_advance!=0) {
         buffer->pos += this_advance;
-        for (address=0;address<((long)(buffer->nb_item - buffer->pos));address++) {
-	      pos_in_enter_pos=fprint_token(output,tokens,address,current_global_position,
+        size_t address;
+        for (address=0;address<((buffer->nb_item - buffer->pos));address++) {
+	      pos_in_enter_pos=fprint_token(output,tokens,(long)address,current_global_position,
 										n_enter_char,enter_pos,pos_in_enter_pos,buffer);	
         }
 	}
