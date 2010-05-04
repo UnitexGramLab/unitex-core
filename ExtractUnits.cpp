@@ -20,15 +20,22 @@
   */
 
 #include "ExtractUnits.h"
-#include "Buffer.h"
 #include "LocateMatches.h"
 #include "Error.h"
 
+struct extract_buf_mapped {
+    ABSTRACTMAPFILE* amf;
+    const int*int_buffer_;
+    size_t nb_item;
+    size_t pos;
+    size_t size_current_item;
+    size_t pos_read;
+} ;
 
 #define MAX_TOKENS_BY_SENTENCE 100000
 
 
-void read_one_sentence(struct buffer*,U_FILE*,struct text_tokens*,int*);
+void read_one_sentence(struct extract_buf_mapped*,struct text_tokens*,int*);
 struct match_list* is_a_match_in_the_sentence(struct match_list*,int*,int,int);
 
 
@@ -38,7 +45,7 @@ struct match_list* is_a_match_in_the_sentence(struct match_list*,int*,int,int);
  * occurrence. if 'extract_matching_units' is null, the function extracts
  * all sentences that do NOT contain any occurrence.
  */
-void extract_units(char extract_matching_units,U_FILE* snt,struct text_tokens* tokens,
+void extract_units(char extract_matching_units,ABSTRACTMAPFILE* snt,struct text_tokens* tokens,
                    U_FILE* concord,U_FILE* result) {
 int N_TOKENS_READ;
 OutputPolicy output_policy;
@@ -47,30 +54,40 @@ int current_beginning,current_end,RESULT;
 struct match_list* l=load_match_list(concord,&output_policy);
 current_end=-1;
 
-//struct buffer* buffer=new_buffer(MAX_TOKENS_BY_SENTENCE,INTEGER_BUFFER);
-struct buffer* buffer=new_buffer_for_file(INTEGER_BUFFER,snt);
-read_one_sentence(buffer,snt,tokens,&N_TOKENS_READ);
+struct extract_buf_mapped* buffer=(struct extract_buf_mapped*)malloc(sizeof(struct extract_buf_mapped));
+if (buffer==NULL) {
+	fatal_alloc_error("new_buffer");
+}
+buffer->amf=(snt);
+buffer->int_buffer_=(const int*)af_get_mapfile_pointer(buffer->amf);
+buffer->nb_item=af_get_mapfile_size(buffer->amf)/sizeof(int);
+buffer->pos=0;
+buffer->pos_read=0;
+
+read_one_sentence(buffer,tokens,&N_TOKENS_READ);
 u_printf("Extracting %smatching units...\n",extract_matching_units?"":"un");
-while (buffer->size!=0) {
+while (buffer->pos < buffer->nb_item) {
    current_beginning=current_end+1;
    current_end=current_end+N_TOKENS_READ;
    l=is_a_match_in_the_sentence(l,&RESULT,current_beginning,current_end);
    if ((RESULT && extract_matching_units) || (!RESULT && !extract_matching_units)) {
       /* if we must print this sentence, we print it */
-      for (int i=0;i<buffer->size;i++) {
-         u_fprintf(result,"%S",tokens->token[buffer->int_buffer[i]]);
+      for (size_t i=0;i<buffer->size_current_item;i++) {
+         u_fprintf(result,"%S",tokens->token[buffer->int_buffer_[buffer->pos+i]]);
       }
       u_fprintf(result,"\n");
    }
    if (l==NULL && extract_matching_units) {
       /* If there is no more match and if we must extract the matching units,
        * we can stop */
-      free_buffer(buffer);
+      af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
+      free(buffer);
       return;
    }
-   read_one_sentence(buffer,snt,tokens,&N_TOKENS_READ);
+   read_one_sentence(buffer,tokens,&N_TOKENS_READ);
 }
-free_buffer(buffer);
+af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
+free(buffer);
 }
 
 
@@ -79,33 +96,34 @@ free_buffer(buffer);
  * buffer->size will contain the length of the sentence, in the limit of MAX_TOKENS_BY_SENTENCE
  * N_TOKENS_READ returns the length of tokens actually read (can be more than MAX_TOKENS_BY_SENTENCE)
  */
-void read_one_sentence(struct buffer* buffer,U_FILE* text,struct text_tokens* tok,
+void read_one_sentence(struct extract_buf_mapped* buffer,struct text_tokens* tok,
                        int* N_TOKENS_READ) {
 int i=0;
 int t=-15;
-int res=-15;
+buffer->pos=buffer->pos_read;
 for (;;)
 {
-    res=(int)fread(&t,sizeof(int),1,text);
-    if (res==0)
+    if ((buffer->pos_read) == buffer->nb_item)
         break;
-    if ((t==tok->SENTENCE_MARKER) || (i==MAX_TOKENS_BY_SENTENCE))
+
+    t = buffer->int_buffer_[buffer->pos_read];
+    buffer->pos_read++;
+    i++;
+
+    if (t==tok->SENTENCE_MARKER)
         break;
-    buffer->int_buffer[i++]=t;
 }
-if (i==MAX_TOKENS_BY_SENTENCE) {
+
+if (i>=MAX_TOKENS_BY_SENTENCE) {
    error("Sentence too long to be entirely displayed\n");
    /* We show the error and we read the sentence till its end in order
-    * to keep a valid sentence numerotation */
-   while ((1==fread(&t,sizeof(int),1,text)) && (t!=tok->SENTENCE_MARKER)) i++;
-   buffer->size=MAX_TOKENS_BY_SENTENCE;
+    * to keep a valid sentence numerotation */  
+   buffer->size_current_item=MAX_TOKENS_BY_SENTENCE;
    (*N_TOKENS_READ)=i;
    return;
 }
-if (res!=0 && t==tok->SENTENCE_MARKER && i!=MAX_TOKENS_BY_SENTENCE) {
-    buffer->int_buffer[i++]=t;
-}
-buffer->size=i;
+
+buffer->size_current_item=i;
 (*N_TOKENS_READ)=i;
 }
 

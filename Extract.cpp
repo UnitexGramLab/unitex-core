@@ -128,7 +128,7 @@ if (vars->optind!=argc-1) {
 strcpy(text_name,argv[vars->optind]);
 
 struct snt_files* snt_files=new_snt_files(text_name);
-U_FILE* text=u_fopen(BINARY,snt_files->text_cod,U_READ);
+ABSTRACTMAPFILE* text=af_open_mapfile(snt_files->text_cod);
 if (text==NULL) {
    error("Cannot open %s\n",snt_files->text_cod);
    return 1;
@@ -136,12 +136,12 @@ if (text==NULL) {
 struct text_tokens* tok=load_text_tokens(snt_files->tokens_txt,mask_encoding_compatibility_input);
 if (tok==NULL) {
    error("Cannot load token list %s\n",snt_files->tokens_txt);
-   u_fclose(text);
+   af_close_mapfile(text);
    return 1;
 }
 if (tok->SENTENCE_MARKER==-1) {
    error("The text does not contain any sentence marker {S}\n");
-   u_fclose(text);
+   af_close_mapfile(text);
    free_text_tokens(tok);
    return 1;
 }
@@ -160,21 +160,21 @@ if (concord_ind[0]=='\0') {
 U_FILE* concord=u_fopen_existing_versatile_encoding(mask_encoding_compatibility_input,concord_ind,U_READ);
 if (concord==NULL) {
    error("Cannot open concordance %s\n",concord_ind);
-   u_fclose(text);
+   af_close_mapfile(text);
    free_text_tokens(tok);
    return 1;
 }
 U_FILE* result=u_fopen_creating_versatile_encoding(encoding_output,bom_output,output,U_WRITE);
 if (result==NULL) {
    error("Cannot write output file %s\n",output);
-   u_fclose(text);
+   af_close_mapfile(text);
    u_fclose(concord);
    free_text_tokens(tok);
    return 1;
 }
 free_snt_files(snt_files);
 extract_units(extract_matching_units,text,tok,concord,result);
-u_fclose(text);
+af_close_mapfile(text);
 u_fclose(concord);
 u_fclose(result);
 free_text_tokens(tok);

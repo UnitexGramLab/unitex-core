@@ -26,7 +26,7 @@
 #include "Text_tokens.h"
 
 
-void extract_units(char,U_FILE*,struct text_tokens*,U_FILE*,U_FILE*);
+void extract_units(char,ABSTRACTMAPFILE*,struct text_tokens*,U_FILE*,U_FILE*);
 
 
 #endif
