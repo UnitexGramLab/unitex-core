@@ -19,11 +19,14 @@
   *
   */
 
-#include "Buffer.h"
-#include "NormalizeAsRoutine.h"
+//#include "Buffer.h"
 #include "DELA.h"
 #include "Error.h"
 #include "StringParsing.h"
+#include "NormalizeAsRoutine.h"
+
+#define MAX_LINE_BUFFER_SIZE (32768)
+#define MINIMAL_CHAR_IN_BUFFER_BEFORE_CONTINUE_LINE (256)
 
 /**
  * This function produces a normalized version of 'input' and stores it into 'ouput'.
@@ -86,43 +89,105 @@ int normalize(char *fin, char *fout,
 	get_value_index(key,replacements,INSERT_IF_NEEDED,value);
 
 	unichar tmp[MAX_TAG_LENGTH];
-	struct buffer* buffer=new_buffer_for_file(UNICHAR_BUFFER,input);
-	unichar* buff=buffer->unichar_buffer;
+	//struct buffer* buffer=new_buffer_for_file(UNICHAR_BUFFER,input);
+
+    long save_pos=ftell(input);
+    fseek(input,0,SEEK_END);
+    long file_size_input=ftell(input);
+    fseek(input,save_pos,SEEK_SET);
+
+    int line_buffer_size = ((file_size_input+1) < MAX_LINE_BUFFER_SIZE) ? (file_size_input+1) : MAX_LINE_BUFFER_SIZE;
+
+    unichar *line_read;
+    line_read=(unichar*)malloc((line_buffer_size+0x10)*sizeof(unichar));
+    if (line_read==NULL) {
+        fatal_alloc_error("normalize");
+    }
+
 	/* We define some things that will be used for parsing the buffer */
-	unichar stop_chars[3];
-	stop_chars[0]='}';
-	stop_chars[1]='{';
-	stop_chars[2]='\0';
-	unichar forbidden_chars[2];
-	forbidden_chars[0]='\n';
-	forbidden_chars[1]='\0';
-	unichar open_bracket[2];
-	open_bracket[0]='{';
-	open_bracket[1]='\0';
-	unichar close_bracket[2];
-	close_bracket[0]='}';
-	close_bracket[1]='\0';
+
+
+    static const unichar stop_chars[]= { '{', '}', 0 };
+    static const unichar forbidden_chars[]= { '\n', 0 };
+    static const unichar open_bracket[]= { '{', 0 };
+    static const unichar close_bracket[]= { '}', 0 };
+
    int corrupted_file=0;
+   int eof_found=0;
    /* First, we fill the buffer */
-	if (!fill_buffer(buffer,input)) {
-	   corrupted_file=1;
-	   error("Corrupted text file containing NULL characters!\n");
-	   error("They have been ignored by Normalize, but you should clean your text\n");
-	}
-	int current_start_pos=0;
-	u_printf("First block...              \r");
-	int current_block=1;
-	while (current_start_pos<buffer->size) {
-		if (!buffer->end_of_file && current_start_pos>(buffer->size-MARGIN_BEFORE_BUFFER_END)) {
-			/* If we must change of block and if we can */
-			u_printf("Block %d...              \r",++current_block);
-			if (!fill_buffer(buffer,current_start_pos,input) && !corrupted_file) {
-			   corrupted_file=1;
-			   error("Corrupted text file containing NULL characters!\n");
-			   error("They have been ignored by Normalize, but you should clean your text\n");
-			}
-			current_start_pos=0;
-		}
+	
+    int lastline_was_terminated=0;
+
+    while (eof_found==0) {
+        int current_start_pos=0;
+        int found_null=0;
+        const unichar*buff=line_read;
+        int result_read = 0;
+
+        result_read = u_fgets_treat_cr_as_lf(line_read,line_buffer_size,input,1,&found_null);
+        if ((found_null != 0) && (corrupted_file==0)) {
+          corrupted_file=1;
+          error("Corrupted text file containing NULL characters!\n");
+          error("They have been ignored by Normalize, but you should clean your text\n");
+        }
+
+        if (result_read>0)
+            if (line_read[result_read-1]==0x0d)
+                line_read[result_read-1]='\n';
+        
+        if (result_read==EOF)
+            break;
+
+        if (lastline_was_terminated != 0)
+            while (current_start_pos<result_read) {
+                if (buff[current_start_pos]!=' ' && buff[current_start_pos]!='\t'
+							    && buff[current_start_pos]!=0x0d
+                                && buff[current_start_pos]!='\n')
+                                break;
+                current_start_pos++;
+            }
+
+        lastline_was_terminated = 0;
+        if (result_read > 0)
+            if ((buff[result_read-1]=='\n') || (buff[result_read-1]==0x0d))
+                lastline_was_terminated = 1;
+
+
+        while (current_start_pos<result_read) {
+            if ((lastline_was_terminated == 0) && (eof_found == 0) && 
+                (current_start_pos + MINIMAL_CHAR_IN_BUFFER_BEFORE_CONTINUE_LINE >= result_read))
+            {
+                int i;
+                int nb_to_keep = result_read-current_start_pos;
+                for (i=0;i<nb_to_keep;i++)
+                    line_read[i]=line_read[current_start_pos+i];
+                int found_null=0;
+                int result_read_continue = u_fgets_treat_cr_as_lf(line_read+nb_to_keep,line_buffer_size-nb_to_keep,input,1,&found_null);
+
+                if ((found_null != 0) && (corrupted_file==0)) {
+                    corrupted_file=1;
+                    error("Corrupted text file containing NULL characters!\n");
+                    error("They have been ignored by Normalize, but you should clean your text\n");
+                }
+
+                if (result_read_continue>0)
+                    if (line_read[(result_read_continue+nb_to_keep)-1]==0x0d)
+                        line_read[(result_read_continue+nb_to_keep)-1]='\n';
+                lastline_was_terminated = 0;
+                if (result_read_continue==EOF)
+                    eof_found = lastline_was_terminated = 1;
+
+                if (result_read_continue > 0)
+                    if ((buff[(result_read_continue+nb_to_keep)-1]=='\n') || (buff[(result_read_continue+nb_to_keep)-1]==0x0d))
+                        lastline_was_terminated = 1;
+
+                result_read = nb_to_keep;
+                current_start_pos = 0;
+
+                if (result_read_continue > 0)
+                    result_read += result_read_continue;
+            }
+
 		if (buff[current_start_pos]=='{') {
 			/* If we have a {, we try to find a sequence like {....}, that does not contain
 			 * new lines. If the sequence contains protected character, we want to keep them
@@ -170,12 +235,12 @@ int normalize(char *fin, char *fout,
 				current_start_pos=current_start_pos+key_length;
 			}
 			else {
-				if (buff[current_start_pos]==' ' || buff[current_start_pos]=='\t' || buff[current_start_pos]=='\n') {
+				if (buff[current_start_pos]==' ' || buff[current_start_pos]=='\t' || buff[current_start_pos]=='\n' || buff[current_start_pos]==0x0d) {
 					/* If we have a separator, we try to read the longest separator sequence
 					 * that we can read. By the way, we note if it contains a new line */
 					int new_line=0;
 					while (buff[current_start_pos]==' ' || buff[current_start_pos]=='\t'
-							|| buff[current_start_pos]=='\n') {
+							|| buff[current_start_pos]=='\n' || buff[current_start_pos]==0x0d) {
 						/* Note 1: no bound check is needed, since an unichar buffer is always
 						 *        ended by a \0
 						 *
@@ -184,7 +249,7 @@ int normalize(char *fin, char *fout,
 						 *         that the text contains something like MARGIN_BEFORE_BUFFER_END
 						 *         contiguous separators. Such a text would not be a reasonable one.
 						 */
-						if (buff[current_start_pos]=='\n') {
+						if (buff[current_start_pos]=='\n' || buff[current_start_pos]==0x0d) {
 							new_line=1;
 						}
 						current_start_pos++;
@@ -204,8 +269,10 @@ int normalize(char *fin, char *fout,
 				}
 			}
 		}
-	}
-	free_buffer(buffer);
+	    }
+    }
+
+	free(line_read);
 	free_string_hash(replacements);
 
 	u_fclose(input);
