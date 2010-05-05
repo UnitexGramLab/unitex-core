@@ -26,6 +26,8 @@
 #define MAX_DEPTH 300
 #define MOT_BUFFER_TOKEN_SIZE (1000)
 
+#define CAPACITY_LIMIT 16384
+
 void build_state_token_trees(struct fst2txt_parameters*);
 void parse_text(struct fst2txt_parameters*);
 
@@ -37,7 +39,7 @@ int main_fst2txt(struct fst2txt_parameters* p) {
         return 1;
     }
 
-    p->text_buffer=new_buffer_for_file(UNICHAR_BUFFER,p->f_input);
+    p->text_buffer=new_buffer_for_file(UNICHAR_BUFFER,p->f_input,CAPACITY_LIMIT);
     p->buffer=p->text_buffer->unichar_buffer;
 
     p->f_output=u_fopen_creating_versatile_encoding(p->encoding_output,p->bom_output,p->temp_file,U_WRITE);
@@ -227,6 +229,9 @@ while (p->current_origin<p->text_buffer->size) {
       p->output[0]='\0';
       empty(p->stack);
       p->input_length=0;
+
+
+      //memset(p->buffer,0,p->current_origin);
       if (p->buffer[p->current_origin]=='{') {
          within_tag=1;
       } else if (p->buffer[p->current_origin]=='}') {

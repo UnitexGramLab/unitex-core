@@ -64,7 +64,7 @@ return buffer;
 /**
  * Allocates, initializes and returns a new buffer of file size length
  */
-struct buffer* new_buffer_for_file(BufferType type,U_FILE* fileread) {
+struct buffer* new_buffer_for_file(BufferType type,U_FILE* fileread,int capacity_limit) {
 int item_size=1;
 switch (type) {
    case INTEGER_BUFFER:
@@ -81,8 +81,8 @@ fseek(fileread,0,SEEK_END);
 long file_size=ftell(fileread);
 fseek(fileread,save_pos,SEEK_SET);
 int capacity=(file_size/item_size)+0x10;
-if (capacity>1024) {
-	capacity=1024;
+if ((capacity_limit != 0) && (capacity>capacity_limit)) {
+	capacity=capacity_limit;
 }
 return new_buffer(capacity,type);
 }

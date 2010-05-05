@@ -1363,7 +1363,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                           if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
                               i_retract_for_newline=1;
                           if ((i_is_size==1) && (pos_in_unichar_line < (size-1))) {
-                             line[pos_in_unichar_line++]='\n';
+                             line[pos_in_unichar_line++]=c;
                           }
                           line[pos_in_unichar_line]='\0';
                           af_fseek(f,-2 * (long)((read_utf16_in_file - (i+1))+i_retract_for_newline),SEEK_CUR);
@@ -1430,7 +1430,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                           if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
                               i_retract_for_newline=1;
                           if ((i_is_size==1) && (pos_in_unichar_line < (size-1))) {
-                             line[pos_in_unichar_line++]='\n';
+                             line[pos_in_unichar_line++]=c;
                           }
                           line[pos_in_unichar_line]='\0';
                           af_fseek(f,-1 * (long)((read_ascii_in_file - (i+1))+i_retract_for_newline),SEEK_CUR);
@@ -1526,7 +1526,7 @@ int u_fgets_buffered(Encoding encoding,unichar* line,int i_is_size,int size,ABST
                           if ((i_is_size==1) && (pos_in_unichar_line == (size-1)))
                               i_retract_for_newline=1;
                           if ((i_is_size==1) && (pos_in_unichar_line < (size-1))) {
-                             line[pos_in_unichar_line++]='\n';
+                             line[pos_in_unichar_line++]=c;
                           }
                           line[pos_in_unichar_line]='\0';
                           af_fseek(f,-1 * (long)((read_binary_in_file - (i+nbbyte))+i_retract_for_newline),SEEK_CUR);
