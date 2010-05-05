@@ -1017,7 +1017,6 @@ while (matches!=NULL) {
 	free_match_list_element(matches_tmp);
 }
 af_release_mapfile_pointer(buffer->amf,buffer->int_buffer_);
-(buffer->amf);
 free(buffer);
 return number_of_matches;
 }

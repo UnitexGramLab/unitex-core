@@ -28,6 +28,40 @@
 #define MAX_LINE_BUFFER_SIZE (32768)
 #define MINIMAL_CHAR_IN_BUFFER_BEFORE_CONTINUE_LINE (256)
 
+#define SIZE_OUTPUT_BUFFER 0x100
+
+struct OUTBUF {
+    unichar outbuf[SIZE_OUTPUT_BUFFER+1];
+    int pos;
+} ;
+
+void WriteOufBuf(struct OUTBUF* pOutBuf,const unichar* str,U_FILE *f, int flush) {
+    for (;;) {
+
+        while (((*str) != 0) && (pOutBuf->pos < SIZE_OUTPUT_BUFFER)) {
+            pOutBuf->outbuf[pOutBuf->pos] = *str;
+            pOutBuf->pos++;
+            str++;
+        }
+
+        if ((pOutBuf->pos == SIZE_OUTPUT_BUFFER) || (flush != 0)) {
+            pOutBuf->outbuf[pOutBuf->pos]=0; // add null terminating marker
+            u_fprintf(f,"%S",pOutBuf->outbuf);
+            pOutBuf->pos = 0;
+        }
+
+        if ((*str) == 0)
+            break;
+    }
+}
+
+void WriteOufBuf(struct OUTBUF* pOutBuf,unichar c,U_FILE *f, int flush) {
+    unichar u_array[2];
+    u_array[0]=c;
+    u_array[1]=0;
+    WriteOufBuf(pOutBuf,u_array,f, flush);
+}
+
 /**
  * This function produces a normalized version of 'input' and stores it into 'ouput'.
  * The following rules are applied in the given order:
@@ -88,6 +122,8 @@ int normalize(char *fin, char *fout,
 	u_strcpy(value,"]");
 	get_value_index(key,replacements,INSERT_IF_NEEDED,value);
 
+    struct OUTBUF OutBuf;
+    OutBuf.pos=0;
 	unichar tmp[MAX_TAG_LENGTH];
 	//struct buffer* buffer=new_buffer_for_file(UNICHAR_BUFFER,input);
 
@@ -111,6 +147,7 @@ int normalize(char *fin, char *fout,
     static const unichar forbidden_chars[]= { '\n', 0 };
     static const unichar open_bracket[]= { '{', 0 };
     static const unichar close_bracket[]= { '}', 0 };
+    static const unichar empty_string[]= { 0 };
 
    int corrupted_file=0;
    int eof_found=0;
@@ -202,7 +239,7 @@ int normalize(char *fin, char *fout,
 				 * a backslash at the end of the buffer, or if we have reached the end
 				 * of the buffer, we assume that the initial
 				 * { was not a tag beginning, so we print the substitute of { */
-				u_fprintf(output,"%S",replacements->value[get_value_index(open_bracket,replacements)]);
+				WriteOufBuf(&OutBuf,replacements->value[get_value_index(open_bracket,replacements)],output, 0);
 				/* And we rewind the current position after the { */
 				current_start_pos=old_position+1;
 			}
@@ -213,13 +250,13 @@ int normalize(char *fin, char *fout,
 				if (!u_strcmp(tmp,"{S}") || !u_strcmp(tmp,"{STOP}") || check_tag_token(tmp)) {
 					/* If this is a special tag or a valid tag token, we just print
 					 * it to the output */
-					u_fprintf(output,"%S",tmp);
+					WriteOufBuf(&OutBuf,tmp,output, 0);
 					current_start_pos++;
 				}
 				else {
 					/* If we have a non valid tag token, we print the equivalent of {
 					 * and we rewind the current position after the { */
-					u_fprintf(output,"%S",replacements->value[get_value_index(open_bracket,replacements)]);
+					WriteOufBuf(&OutBuf,replacements->value[get_value_index(open_bracket,replacements)],output, 0);
 					current_start_pos=old_position+1;
 				}
 			}
@@ -231,7 +268,7 @@ int normalize(char *fin, char *fout,
 			int index=get_longest_key_index(&buff[current_start_pos],&key_length,replacements);
 			if (index!=NO_VALUE_INDEX) {
 				/* If there is something to replace */
-				u_fprintf(output,"%S",replacements->value[index]);
+				WriteOufBuf(&OutBuf,replacements->value[index],output, 0);
 				current_start_pos=current_start_pos+key_length;
 			}
 			else {
@@ -257,20 +294,23 @@ int normalize(char *fin, char *fout,
 					if (new_line && (carriage_return_policy==KEEP_CARRIAGE_RETURN)) {
 						/* We print a new line if the sequence contains one and if we are
 						 * allowed to; otherwise, we print a space. */
-						u_fputc('\n',output);
+						WriteOufBuf(&OutBuf,'\n',output, 0);
 					}
 					else {
-						u_fputc(' ',output);
+						WriteOufBuf(&OutBuf,' ',output, 0);
 					}
 				}
 				else {
 					/* If, finally, we have a normal character to normalize, we just print it */
-					u_fputc(buff[current_start_pos++],output);
+                    WriteOufBuf(&OutBuf,buff[current_start_pos++],output, 0);
 				}
 			}
 		}
 	    }
     }
+
+
+    WriteOufBuf(&OutBuf,empty_string,output, 1);
 
 	free(line_read);
 	free_string_hash(replacements);
