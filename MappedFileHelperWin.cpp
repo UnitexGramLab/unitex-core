@@ -61,7 +61,7 @@ MAPFILE* iomap_open_mapfile(const char*name)
         if ((mfr->hFile != INVALID_HANDLE_VALUE) && (mfr->hFile != NULL))
             CloseHandle(mfr->hFile);
         free(mfr);
-        mfr = NULL;
+        return NULL;
     }
 
 
